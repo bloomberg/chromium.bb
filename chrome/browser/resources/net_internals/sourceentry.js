@@ -223,6 +223,7 @@ SourceEntry.prototype.getDescription = function() {
   switch (e.source.type) {
     case LogSourceType.URL_REQUEST:
     case LogSourceType.SOCKET_STREAM:
+    case LogSourceType.HTTP_STREAM_JOB:
       description = e.params.url;
       break;
     case LogSourceType.CONNECT_JOB:

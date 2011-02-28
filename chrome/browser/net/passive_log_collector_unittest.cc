@@ -15,6 +15,7 @@ namespace {
 typedef PassiveLogCollector::RequestTracker RequestTracker;
 typedef PassiveLogCollector::SourceInfoList SourceInfoList;
 typedef PassiveLogCollector::SocketTracker SocketTracker;
+typedef PassiveLogCollector::HttpStreamJobTracker HttpStreamJobTracker;
 using net::NetLog;
 
 const NetLog::SourceType kSourceType = NetLog::SOURCE_NONE;
@@ -201,29 +202,29 @@ TEST(SpdySessionTracker, MovesToGraveyard) {
   EXPECT_EQ(1u, GetDeadSources(tracker).size());
 }
 
-// Test that when a SOURCE_SOCKET is connected to a SOURCE_URL_REQUEST
-// (via the TYPE_SOCKET_POOL_BOUND_TO_SOCKET event), it holds a reference
-// to the SOURCE_SOCKET preventing it from getting deleted as long as the
-// SOURCE_URL_REQUEST is still around.
+// Test that when a SOURCE_HTTP_STREAM_JOB is connected to a SOURCE_URL_REQUEST
+// (via the TYPE_HTTP_STREAM_REQUEST_BOUND_TO_JOB event), it holds a reference
+// to the SOURCE_HTTP_STREAM_JOB preventing it from getting deleted as long as
+// the SOURCE_URL_REQUEST is still around.
 TEST(PassiveLogCollectorTest, HoldReferenceToDependentSource) {
   PassiveLogCollector log;
 
   EXPECT_EQ(0u, GetLiveSources(log.url_request_tracker_).size());
-  EXPECT_EQ(0u, GetLiveSources(log.socket_tracker_).size());
+  EXPECT_EQ(0u, GetLiveSources(log.http_stream_job_tracker_).size());
 
   uint32 next_id = 0;
-  NetLog::Source socket_source(NetLog::SOURCE_SOCKET, next_id++);
+  NetLog::Source stream_job_source(NetLog::SOURCE_HTTP_STREAM_JOB, next_id++);
   NetLog::Source url_request_source(NetLog::SOURCE_URL_REQUEST, next_id++);
 
-  // Start a SOURCE_SOCKET.
-  log.OnAddEntry(NetLog::TYPE_SOCKET_ALIVE,
+  // Start a SOURCE_HTTP_STREAM_JOB.
+  log.OnAddEntry(NetLog::TYPE_HTTP_STREAM_JOB,
                  base::TimeTicks(),
-                 socket_source,
+                 stream_job_source,
                  NetLog::PHASE_BEGIN,
                  NULL);
 
   EXPECT_EQ(0u, GetLiveSources(log.url_request_tracker_).size());
-  EXPECT_EQ(1u, GetLiveSources(log.socket_tracker_).size());
+  EXPECT_EQ(1u, GetLiveSources(log.http_stream_job_tracker_).size());
 
   // Start a SOURCE_URL_REQUEST.
   log.OnAddEntry(NetLog::TYPE_REQUEST_ALIVE,
@@ -233,7 +234,7 @@ TEST(PassiveLogCollectorTest, HoldReferenceToDependentSource) {
                  NULL);
 
   // Check that there is no association between the SOURCE_URL_REQUEST and the
-  // SOURCE_SOCKET yet.
+  // SOURCE_HTTP_STREAM_JOB yet.
   ASSERT_EQ(1u, GetLiveSources(log.url_request_tracker_).size());
   {
     PassiveLogCollector::SourceInfo info =
@@ -241,40 +242,40 @@ TEST(PassiveLogCollectorTest, HoldReferenceToDependentSource) {
     EXPECT_EQ(0, info.reference_count);
     EXPECT_EQ(0u, info.dependencies.size());
   }
-  ASSERT_EQ(1u, GetLiveSources(log.socket_tracker_).size());
+  ASSERT_EQ(1u, GetLiveSources(log.http_stream_job_tracker_).size());
   {
     PassiveLogCollector::SourceInfo info =
-        GetLiveSources(log.socket_tracker_)[0];
+        GetLiveSources(log.http_stream_job_tracker_)[0];
     EXPECT_EQ(0, info.reference_count);
     EXPECT_EQ(0u, info.dependencies.size());
   }
 
-  // Associate the SOURCE_SOCKET with the SOURCE_URL_REQUEST.
-  log.OnAddEntry(NetLog::TYPE_SOCKET_POOL_BOUND_TO_SOCKET,
+  // Associate the SOURCE_HTTP_STREAM_JOB with the SOURCE_URL_REQUEST.
+  log.OnAddEntry(NetLog::TYPE_HTTP_STREAM_REQUEST_BOUND_TO_JOB,
                  base::TimeTicks(),
                  url_request_source,
                  NetLog::PHASE_NONE,
-                 new net::NetLogSourceParameter("x", socket_source));
+                 new net::NetLogSourceParameter("x", stream_job_source));
 
   // Check that an associate was made -- the SOURCE_URL_REQUEST should have
-  // added a reference to the SOURCE_SOCKET.
+  // added a reference to the SOURCE_HTTP_STREAM_JOB.
   ASSERT_EQ(1u, GetLiveSources(log.url_request_tracker_).size());
   {
     PassiveLogCollector::SourceInfo info =
         GetLiveSources(log.url_request_tracker_)[0];
     EXPECT_EQ(0, info.reference_count);
     EXPECT_EQ(1u, info.dependencies.size());
-    EXPECT_EQ(socket_source.id, info.dependencies[0].id);
+    EXPECT_EQ(stream_job_source.id, info.dependencies[0].id);
   }
-  ASSERT_EQ(1u, GetLiveSources(log.socket_tracker_).size());
+  ASSERT_EQ(1u, GetLiveSources(log.http_stream_job_tracker_).size());
   {
     PassiveLogCollector::SourceInfo info =
-        GetLiveSources(log.socket_tracker_)[0];
+        GetLiveSources(log.http_stream_job_tracker_)[0];
     EXPECT_EQ(1, info.reference_count);
     EXPECT_EQ(0u, info.dependencies.size());
   }
 
-  // Now end both |source_socket| and |source_url_request|. This sends them
+  // Now end both |stream_job_source| and |url_request_source|. This sends them
   // to deletion queue, and they will be deleted once space runs out.
 
   log.OnAddEntry(NetLog::TYPE_REQUEST_ALIVE,
@@ -283,14 +284,14 @@ TEST(PassiveLogCollectorTest, HoldReferenceToDependentSource) {
                  NetLog::PHASE_END,
                  NULL);
 
-  log.OnAddEntry(NetLog::TYPE_SOCKET_ALIVE,
+  log.OnAddEntry(NetLog::TYPE_HTTP_STREAM_JOB,
                  base::TimeTicks(),
-                 socket_source,
+                 stream_job_source,
                  NetLog::PHASE_END,
                  NULL);
 
-  // Verify that both sources are in fact dead, and that |source_url_request|
-  // still holds a reference to |source_socket|.
+  // Verify that both sources are in fact dead, and that |url_request_source|
+  // still holds a reference to |stream_job_source|.
   ASSERT_EQ(0u, GetLiveSources(log.url_request_tracker_).size());
   ASSERT_EQ(1u, GetDeadSources(log.url_request_tracker_).size());
   {
@@ -298,41 +299,41 @@ TEST(PassiveLogCollectorTest, HoldReferenceToDependentSource) {
         GetDeadSources(log.url_request_tracker_)[0];
     EXPECT_EQ(0, info.reference_count);
     EXPECT_EQ(1u, info.dependencies.size());
-    EXPECT_EQ(socket_source.id, info.dependencies[0].id);
+    EXPECT_EQ(stream_job_source.id, info.dependencies[0].id);
   }
-  EXPECT_EQ(0u, GetLiveSources(log.socket_tracker_).size());
-  ASSERT_EQ(1u, GetDeadSources(log.socket_tracker_).size());
+  EXPECT_EQ(0u, GetLiveSources(log.http_stream_job_tracker_).size());
+  ASSERT_EQ(1u, GetDeadSources(log.http_stream_job_tracker_).size());
   {
     PassiveLogCollector::SourceInfo info =
-        GetDeadSources(log.socket_tracker_)[0];
+        GetDeadSources(log.http_stream_job_tracker_)[0];
     EXPECT_EQ(1, info.reference_count);
     EXPECT_EQ(0u, info.dependencies.size());
   }
 
-  // Cycle through a bunch of SOURCE_SOCKET -- if it were not referenced, this
-  // loop will have deleted it.
-  for (size_t i = 0; i < SocketTracker::kMaxGraveyardSize; ++i) {
-      log.OnAddEntry(NetLog::TYPE_SOCKET_ALIVE,
+  // Cycle through a bunch of SOURCE_HTTP_STREAM_JOB -- if it were not
+  // referenced, this loop will have deleted it.
+  for (size_t i = 0; i < HttpStreamJobTracker::kMaxGraveyardSize; ++i) {
+      log.OnAddEntry(NetLog::TYPE_HTTP_STREAM_JOB,
                      base::TimeTicks(),
-                     NetLog::Source(NetLog::SOURCE_SOCKET, next_id++),
+                     NetLog::Source(NetLog::SOURCE_HTTP_STREAM_JOB, next_id++),
                      NetLog::PHASE_END,
                      NULL);
   }
 
-  EXPECT_EQ(0u, GetLiveSources(log.socket_tracker_).size());
-  ASSERT_EQ(SocketTracker::kMaxGraveyardSize + 1,
-            GetDeadSources(log.socket_tracker_).size());
+  EXPECT_EQ(0u, GetLiveSources(log.http_stream_job_tracker_).size());
+  ASSERT_EQ(HttpStreamJobTracker::kMaxGraveyardSize + 1,
+            GetDeadSources(log.http_stream_job_tracker_).size());
   {
     PassiveLogCollector::SourceInfo info =
-        GetDeadSources(log.socket_tracker_)[0];
-    EXPECT_EQ(socket_source.id, info.source_id);
+        GetDeadSources(log.http_stream_job_tracker_)[0];
+    EXPECT_EQ(stream_job_source.id, info.source_id);
     EXPECT_EQ(1, info.reference_count);
     EXPECT_EQ(0u, info.dependencies.size());
   }
 
   // Cycle through a bunch of SOURCE_URL_REQUEST -- this will cause
-  // |source_url_request| to be freed, which in turn should release the final
-  // reference to |source_socket| cause it to be freed as well.
+  // |url_request_source| to be freed, which in turn should release the final
+  // reference to |stream_job_source| cause it to be freed as well.
   for (size_t i = 0; i < RequestTracker::kMaxGraveyardSize; ++i) {
     log.OnAddEntry(NetLog::TYPE_REQUEST_ALIVE,
                    base::TimeTicks(),
@@ -345,25 +346,25 @@ TEST(PassiveLogCollectorTest, HoldReferenceToDependentSource) {
   EXPECT_EQ(RequestTracker::kMaxGraveyardSize,
             GetDeadSources(log.url_request_tracker_).size());
 
-  EXPECT_EQ(0u, GetLiveSources(log.socket_tracker_).size());
-  EXPECT_EQ(SocketTracker::kMaxGraveyardSize,
-            GetDeadSources(log.socket_tracker_).size());
+  EXPECT_EQ(0u, GetLiveSources(log.http_stream_job_tracker_).size());
+  EXPECT_EQ(HttpStreamJobTracker::kMaxGraveyardSize,
+            GetDeadSources(log.http_stream_job_tracker_).size());
 }
 
-// Have a URL_REQUEST hold a reference to a SOCKET. Then cause the SOCKET to
-// get evicted (by exceeding maximum sources limit). Now the URL_REQUEST is
-// referencing a non-existant SOCKET. Lastly, evict the URL_REQUEST so it
+// Have a HTTP_STREAM_JOB hold a reference to a SOCKET. Then cause the SOCKET to
+// get evicted (by exceeding maximum sources limit). Now the HTTP_STREAM_JOB is
+// referencing a non-existant SOCKET. Lastly, evict the HTTP_STREAM_JOB so it
 // tries to drop all of its references. Make sure that in releasing its
 // non-existant reference it doesn't trip any DCHECKs.
 TEST(PassiveLogCollectorTest, HoldReferenceToDeletedSource) {
   PassiveLogCollector log;
 
-  EXPECT_EQ(0u, GetLiveSources(log.url_request_tracker_).size());
+  EXPECT_EQ(0u, GetLiveSources(log.http_stream_job_tracker_).size());
   EXPECT_EQ(0u, GetLiveSources(log.socket_tracker_).size());
 
   uint32 next_id = 0;
   NetLog::Source socket_source(NetLog::SOURCE_SOCKET, next_id++);
-  NetLog::Source url_request_source(NetLog::SOURCE_URL_REQUEST, next_id++);
+  NetLog::Source stream_job_source(NetLog::SOURCE_HTTP_STREAM_JOB, next_id++);
 
   // Start a SOURCE_SOCKET.
   log.OnAddEntry(NetLog::TYPE_SOCKET_ALIVE,
@@ -372,29 +373,29 @@ TEST(PassiveLogCollectorTest, HoldReferenceToDeletedSource) {
                  NetLog::PHASE_BEGIN,
                  NULL);
 
-  EXPECT_EQ(0u, GetLiveSources(log.url_request_tracker_).size());
+  EXPECT_EQ(0u, GetLiveSources(log.http_stream_job_tracker_).size());
   EXPECT_EQ(1u, GetLiveSources(log.socket_tracker_).size());
 
-  // Start a SOURCE_URL_REQUEST.
-  log.OnAddEntry(NetLog::TYPE_REQUEST_ALIVE,
+  // Start a SOURCE_HTTP_STREAM_JOB.
+  log.OnAddEntry(NetLog::TYPE_HTTP_STREAM_JOB,
                  base::TimeTicks(),
-                 url_request_source,
+                 stream_job_source,
                  NetLog::PHASE_BEGIN,
                  NULL);
 
-  // Associate the SOURCE_SOCKET with the SOURCE_URL_REQUEST.
+  // Associate the SOURCE_SOCKET with the SOURCE_HTTP_STREAM_JOB.
   log.OnAddEntry(NetLog::TYPE_SOCKET_POOL_BOUND_TO_SOCKET,
                  base::TimeTicks(),
-                 url_request_source,
+                 stream_job_source,
                  NetLog::PHASE_NONE,
                  new net::NetLogSourceParameter("x", socket_source));
 
-  // Check that an associate was made -- the SOURCE_URL_REQUEST should have
+  // Check that an associate was made -- the SOURCE_HTTP_STREAM_JOB should have
   // added a reference to the SOURCE_SOCKET.
-  ASSERT_EQ(1u, GetLiveSources(log.url_request_tracker_).size());
+  ASSERT_EQ(1u, GetLiveSources(log.http_stream_job_tracker_).size());
   {
     PassiveLogCollector::SourceInfo info =
-        GetLiveSources(log.url_request_tracker_)[0];
+        GetLiveSources(log.http_stream_job_tracker_)[0];
     EXPECT_EQ(0, info.reference_count);
     EXPECT_EQ(1u, info.dependencies.size());
     EXPECT_EQ(socket_source.id, info.dependencies[0].id);
@@ -422,20 +423,20 @@ TEST(PassiveLogCollectorTest, HoldReferenceToDeletedSource) {
   // requests to cause it to be deleted. Once that source is deleted, it will
   // try to give up its reference to the SOCKET. However that socket_id no
   // longer exists -- should not DCHECK().
-  log.OnAddEntry(NetLog::TYPE_REQUEST_ALIVE,
+  log.OnAddEntry(NetLog::TYPE_HTTP_STREAM_JOB,
                  base::TimeTicks(),
-                 url_request_source,
+                 stream_job_source,
                  NetLog::PHASE_END,
                  NULL);
-  for (size_t i = 0; i < RequestTracker::kMaxGraveyardSize; ++i) {
-    log.OnAddEntry(NetLog::TYPE_REQUEST_ALIVE,
+  for (size_t i = 0; i < HttpStreamJobTracker::kMaxGraveyardSize; ++i) {
+    log.OnAddEntry(NetLog::TYPE_HTTP_STREAM_JOB,
                    base::TimeTicks(),
-                   NetLog::Source(NetLog::SOURCE_URL_REQUEST, next_id++),
+                   NetLog::Source(NetLog::SOURCE_HTTP_STREAM_JOB, next_id++),
                    NetLog::PHASE_END,
                    NULL);
   }
-  EXPECT_EQ(RequestTracker::kMaxGraveyardSize,
-            GetDeadSources(log.url_request_tracker_).size());
+  EXPECT_EQ(HttpStreamJobTracker::kMaxGraveyardSize,
+            GetDeadSources(log.http_stream_job_tracker_).size());
 }
 
 // Regression test for http://crbug.com/58847
@@ -443,17 +444,17 @@ TEST(PassiveLogCollectorTest, ReleaseDependencyToUnreferencedSource) {
   PassiveLogCollector log;
 
   // If these constants are weird, the test won't be testing the right thing.
-  EXPECT_LT(PassiveLogCollector::RequestTracker::kMaxGraveyardSize,
-            PassiveLogCollector::RequestTracker::kMaxNumSources);
+  EXPECT_LT(PassiveLogCollector::HttpStreamJobTracker::kMaxGraveyardSize,
+            PassiveLogCollector::HttpStreamJobTracker::kMaxNumSources);
 
-  // Add a "reference" to a non-existant source (sourceID=1706 does not exist).
+  // Add a "reference" to a non-existant source (sourceID=1263 does not exist).
   scoped_refptr<net::NetLog::EventParameters> params =
       new net::NetLogSourceParameter(
           "source_dependency",
           net::NetLog::Source(net::NetLog::SOURCE_SOCKET, 1263));
   log.OnAddEntry(net::NetLog::TYPE_SOCKET_POOL_BOUND_TO_SOCKET,
                  base::TimeTicks(),
-                 net::NetLog::Source(net::NetLog::SOURCE_URL_REQUEST, 1706),
+                 net::NetLog::Source(net::NetLog::SOURCE_HTTP_STREAM_JOB, 1706),
                  net::NetLog::PHASE_NONE,
                  params);
 
@@ -461,9 +462,9 @@ TEST(PassiveLogCollectorTest, ReleaseDependencyToUnreferencedSource) {
   // reference count for 1263 was not adjusted since it doesn't actually exist.
 
   // Move source 1706 to the graveyard.
-  log.OnAddEntry(net::NetLog::TYPE_REQUEST_ALIVE,
+  log.OnAddEntry(net::NetLog::TYPE_HTTP_STREAM_JOB,
                  base::TimeTicks(),
-                 net::NetLog::Source(net::NetLog::SOURCE_URL_REQUEST, 1706),
+                 net::NetLog::Source(net::NetLog::SOURCE_HTTP_STREAM_JOB, 1706),
                  net::NetLog::PHASE_END,
                  NULL);
 
@@ -474,21 +475,20 @@ TEST(PassiveLogCollectorTest, ReleaseDependencyToUnreferencedSource) {
                  net::NetLog::Source(net::NetLog::SOURCE_SOCKET, 1263),
                  net::NetLog::PHASE_END, NULL);
 
-  // Add kMaxGraveyardSize  unreferenced URL_REQUESTS, so the circular buffer
-  // containing source 1706. After adding kMaxGraveyardSize - 1 the buffer
-  // will be full. Now when we add one more more source it will now evict the
-  // oldest item, which is 1706. In doing so, 1706 will try to release the
+  // Add kMaxGraveyardSize  unreferenced HTTP_STREAM_JOBS, so the circular
+  // buffer containing source 1706. After adding kMaxGraveyardSize - 1 the
+  // buffer will be full. Now when we add one more more source it will now evict
+  // the oldest item, which is 1706. In doing so, 1706 will try to release the
   // reference it *thinks* it has on 1263. However 1263 has a reference count
   // of 0 and is already in a graveyard.
   for (size_t i = 0;
-       i < PassiveLogCollector::RequestTracker::kMaxGraveyardSize; ++i) {
-    log.OnAddEntry(net::NetLog::TYPE_REQUEST_ALIVE,
+       i < PassiveLogCollector::HttpStreamJobTracker::kMaxGraveyardSize; ++i) {
+    log.OnAddEntry(net::NetLog::TYPE_HTTP_STREAM_JOB,
                    base::TimeTicks(),
-                   net::NetLog::Source(net::NetLog::SOURCE_URL_REQUEST, i),
+                   net::NetLog::Source(net::NetLog::SOURCE_HTTP_STREAM_JOB, i),
                    net::NetLog::PHASE_END,
                    NULL);
   }
 
   // To pass, this should simply not have DCHECK-ed above.
 }
-
