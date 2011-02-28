@@ -45,6 +45,7 @@ class CommandBufferProxy : public gpu::CommandBuffer,
 
   // CommandBuffer implementation:
   virtual bool Initialize(int32 size);
+  virtual bool Initialize(base::SharedMemory* buffer, int32 size);
   virtual gpu::Buffer GetRingBuffer();
   virtual State GetState();
   virtual void Flush(int32 put_offset);

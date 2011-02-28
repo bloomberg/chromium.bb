@@ -177,6 +177,7 @@ class PepperCommandBuffer : public gpu::CommandBuffer {
 
   // CommandBuffer implementation:
   virtual bool Initialize(int32 size);
+  virtual bool Initialize(base::SharedMemory* buffer, int32 size);
   virtual gpu::Buffer GetRingBuffer();
   virtual State GetState();
   virtual void Flush(int32 put_offset);
@@ -245,6 +246,12 @@ bool PepperCommandBuffer::Initialize(int32 size) {
     ring_buffer_.reset();
   }
 
+  return false;
+}
+
+bool PepperCommandBuffer::Initialize(base::SharedMemory* buffer, int32 size) {
+  // Not implemented in proxy.
+  NOTREACHED();
   return false;
 }
 

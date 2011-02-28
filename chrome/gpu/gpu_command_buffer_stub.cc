@@ -192,11 +192,12 @@ bool GpuCommandBufferStub::Send(IPC::Message* message) {
 }
 
 void GpuCommandBufferStub::OnInitialize(
+    base::SharedMemoryHandle ring_buffer,
     int32 size,
-    base::SharedMemoryHandle* ring_buffer) {
+    bool* result) {
   DCHECK(!command_buffer_.get());
 
-  *ring_buffer = base::SharedMemory::NULLHandle();
+  *result = false;
 
   command_buffer_.reset(new gpu::CommandBufferService);
 
@@ -215,50 +216,57 @@ void GpuCommandBufferStub::OnInitialize(
   gfx::PluginWindowHandle output_window_handle = handle_;
 #endif  // defined(OS_WIN)
 
-  // Initialize the CommandBufferService and GPUProcessor.
-  if (command_buffer_->Initialize(size)) {
-    Buffer buffer = command_buffer_->GetRingBuffer();
-    if (buffer.shared_memory) {
-      gpu::GPUProcessor* parent_processor =
-          parent_ ? parent_->processor_.get() : NULL;
-      processor_.reset(new gpu::GPUProcessor(command_buffer_.get(), NULL));
-      if (processor_->Initialize(
-          output_window_handle,
-          initial_size_,
-          allowed_extensions_.c_str(),
-          requested_attribs_,
-          parent_processor,
-          parent_texture_id_)) {
-        command_buffer_->SetPutOffsetChangeCallback(
-            NewCallback(processor_.get(),
-                        &gpu::GPUProcessor::ProcessCommands));
-        processor_->SetSwapBuffersCallback(
-            NewCallback(this, &GpuCommandBufferStub::OnSwapBuffers));
+#if defined(OS_WIN)
+  // Windows dups the shared memory handle it receives into the current process
+  // and closes it when this variable goes out of scope.
+  base::SharedMemory shared_memory(ring_buffer,
+                                   false,
+                                   channel_->renderer_process());
+#else
+  // POSIX receives a dup of the shared memory handle and closes the dup when
+  // this variable goes out of scope.
+  base::SharedMemory shared_memory(ring_buffer, false);
+#endif
 
-        // Assume service is responsible for duplicating the handle from the
-        // calling process.
-        buffer.shared_memory->ShareToProcess(channel_->renderer_process(),
-                                             ring_buffer);
+  // Initialize the CommandBufferService and GPUProcessor.
+  if (command_buffer_->Initialize(&shared_memory, size)) {
+    gpu::GPUProcessor* parent_processor =
+        parent_ ? parent_->processor_.get() : NULL;
+    processor_.reset(new gpu::GPUProcessor(command_buffer_.get(), NULL));
+    if (processor_->Initialize(
+        output_window_handle,
+        initial_size_,
+        allowed_extensions_.c_str(),
+        requested_attribs_,
+        parent_processor,
+        parent_texture_id_)) {
+      command_buffer_->SetPutOffsetChangeCallback(
+          NewCallback(processor_.get(),
+                      &gpu::GPUProcessor::ProcessCommands));
+      processor_->SetSwapBuffersCallback(
+          NewCallback(this, &GpuCommandBufferStub::OnSwapBuffers));
+
 #if defined(OS_MACOSX)
-        if (handle_) {
-          // This context conceptually puts its output directly on the
-          // screen, rendered by the accelerated plugin layer in
-          // RenderWidgetHostViewMac. Set up a pathway to notify the
-          // browser process when its contents change.
-          processor_->SetSwapBuffersCallback(
-              NewCallback(this,
-                          &GpuCommandBufferStub::SwapBuffersCallback));
-        }
+      if (handle_) {
+        // This context conceptually puts its output directly on the
+        // screen, rendered by the accelerated plugin layer in
+        // RenderWidgetHostViewMac. Set up a pathway to notify the
+        // browser process when its contents change.
+        processor_->SetSwapBuffersCallback(
+            NewCallback(this,
+                        &GpuCommandBufferStub::SwapBuffersCallback));
+      }
 #endif  // defined(OS_MACOSX)
 
-        // Set up a pathway for resizing the output window or framebuffer at the
-        // right time relative to other GL commands.
-        processor_->SetResizeCallback(
-            NewCallback(this, &GpuCommandBufferStub::ResizeCallback));
-      } else {
-        processor_.reset();
-        command_buffer_.reset();
-      }
+      // Set up a pathway for resizing the output window or framebuffer at the
+      // right time relative to other GL commands.
+      processor_->SetResizeCallback(
+          NewCallback(this, &GpuCommandBufferStub::ResizeCallback));
+
+      *result = true;
+    } else {
+      processor_.reset();
+      command_buffer_.reset();
     }
   }
 }

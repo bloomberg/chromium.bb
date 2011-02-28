@@ -225,9 +225,10 @@ IPC_SYNC_MESSAGE_CONTROL1_0(GpuChannelMsg_DestroyVideoDecoder,
 // Initialize a command buffer with the given number of command entries.
 // Returns the shared memory handle for the command buffer mapped to the
 // calling process.
-IPC_SYNC_MESSAGE_ROUTED1_1(GpuCommandBufferMsg_Initialize,
+IPC_SYNC_MESSAGE_ROUTED2_1(GpuCommandBufferMsg_Initialize,
+                           base::SharedMemoryHandle /* ring_buffer */,
                            int32 /* size */,
-                           base::SharedMemoryHandle /* ring_buffer */)
+                           bool /* result */)
 
 // Get the current state of the command buffer.
 IPC_SYNC_MESSAGE_ROUTED0_1(GpuCommandBufferMsg_GetState,

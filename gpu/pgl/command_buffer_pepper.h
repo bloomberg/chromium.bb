@@ -15,6 +15,10 @@
 #include "third_party/npapi/bindings/nphostapi.h"
 #endif  // __native_client__
 
+namespace {
+class SharedMemory;
+}
+
 // A CommandBuffer proxy implementation that uses the Pepper API to access
 // the command buffer.
 
@@ -27,6 +31,7 @@ class CommandBufferPepper : public gpu::CommandBuffer {
 
   // CommandBuffer implementation.
   virtual bool Initialize(int32 size);
+  virtual bool Initialize(base::SharedMemory* buffer, int32 size);
   virtual gpu::Buffer GetRingBuffer();
   virtual State GetState();
   virtual void Flush(int32 put_offset);

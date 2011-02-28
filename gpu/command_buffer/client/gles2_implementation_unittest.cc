@@ -33,6 +33,11 @@ class GLES2MockCommandBufferHelper : public CommandBuffer {
     return true;
   }
 
+  virtual bool Initialize(base::SharedMemory* buffer, int32 size) {
+    GPU_NOTREACHED();
+    return false;
+  }
+
   virtual Buffer GetRingBuffer() {
     return ring_buffer_buffer_;
   }

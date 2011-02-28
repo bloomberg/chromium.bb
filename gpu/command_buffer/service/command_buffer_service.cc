@@ -25,6 +25,8 @@ CommandBufferService::CommandBufferService()
 }
 
 CommandBufferService::~CommandBufferService() {
+  delete ring_buffer_.shared_memory;
+
   for (size_t i = 0; i < registered_objects_.size(); ++i) {
     if (registered_objects_[i].shared_memory)
       delete registered_objects_[i].shared_memory;
@@ -33,42 +35,59 @@ CommandBufferService::~CommandBufferService() {
 
 bool CommandBufferService::Initialize(int32 size) {
   // Fail if already initialized.
-  if (ring_buffer_.get()) {
-    LOG(ERROR) << "CommandBufferService::Initialize "
-               << "failed because already initialized.";
+  if (ring_buffer_.shared_memory) {
+    LOG(ERROR) << "Failed because already initialized.";
     return false;
   }
 
   if (size <= 0 || size > kMaxCommandBufferSize) {
-    LOG(ERROR) << "CommandBufferService::Initialize "
-               << "because command buffer size was invalid.";
+    LOG(ERROR) << "Failed because command buffer size was invalid.";
     return false;
   }
 
   num_entries_ = size / sizeof(CommandBufferEntry);
 
-  ring_buffer_.reset(new SharedMemory);
-  if (ring_buffer_->CreateAndMapAnonymous(size)) {
+  SharedMemory shared_memory;
+  if (!shared_memory.CreateAnonymous(size)) {
+    LOG(ERROR) << "Failed to create shared memory for command buffer.";
     return true;
   }
 
-  num_entries_ = 0;
-  ring_buffer_.reset();
+  return Initialize(&shared_memory, size);
+}
 
-  LOG(ERROR) << "CommandBufferService::Initialize failed because ring buffer "
-             << "could not be created or mapped ";
+bool CommandBufferService::Initialize(base::SharedMemory* buffer, int32 size) {
+  // Fail if already initialized.
+  if (ring_buffer_.shared_memory) {
+    LOG(ERROR) << "Failed because already initialized.";
+    return false;
+  }
 
-  return false;
+  base::SharedMemoryHandle shared_memory_handle;
+  if (!buffer->ShareToProcess(base::GetCurrentProcessHandle(),
+                              &shared_memory_handle)) {
+    LOG(ERROR) << "Failed to duplicate command buffer shared memory handle.";
+    return false;
+  }
+
+  ring_buffer_.shared_memory = new base::SharedMemory(shared_memory_handle,
+                                                      false);
+  if (!ring_buffer_.shared_memory->Map(size)) {
+    LOG(ERROR) << "Failed because ring buffer could not be created or mapped ";
+    delete ring_buffer_.shared_memory;
+    ring_buffer_.shared_memory = NULL;
+    return false;
+  }
+
+  ring_buffer_.ptr = ring_buffer_.shared_memory->memory();
+  ring_buffer_.size = size;
+  num_entries_ = size / sizeof(CommandBufferEntry);
+
+  return true;
 }
 
 Buffer CommandBufferService::GetRingBuffer() {
-  Buffer buffer;
-  if (ring_buffer_.get()) {
-    buffer.ptr = ring_buffer_->memory();
-    buffer.size = ring_buffer_->created_size();
-    buffer.shared_memory = ring_buffer_.get();
-  }
-  return buffer;
+  return ring_buffer_;
 }
 
 CommandBufferService::State CommandBufferService::GetState() {

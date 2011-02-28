@@ -26,6 +26,7 @@ class CommandBufferService : public CommandBuffer {
 
   // CommandBuffer implementation:
   virtual bool Initialize(int32 size);
+  virtual bool Initialize(base::SharedMemory* buffer, int32 size);
   virtual Buffer GetRingBuffer();
   virtual State GetState();
   virtual void Flush(int32 put_offset);
@@ -52,7 +53,7 @@ class CommandBufferService : public CommandBuffer {
   virtual void SetPutOffsetChangeCallback(Callback0::Type* callback);
 
  private:
-  scoped_ptr< base::SharedMemory> ring_buffer_;
+  Buffer ring_buffer_;
   int32 num_entries_;
   int32 get_offset_;
   int32 put_offset_;

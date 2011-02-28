@@ -2,12 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "chrome/plugin/command_buffer_stub.h"
+
 #include "base/callback.h"
 #include "base/scoped_open_process.h"
 #include "base/shared_memory.h"
 #include "chrome/common/gpu_messages.h"
 #include "chrome/common/plugin_messages.h"
-#include "chrome/plugin/command_buffer_stub.h"
 #include "chrome/plugin/plugin_channel.h"
 
 using gpu::Buffer;
@@ -67,66 +68,13 @@ void CommandBufferStub::NotifyRepaint() {
   Send(new GpuCommandBufferMsg_NotifyRepaint(route_id_));
 }
 
-void CommandBufferStub::OnInitialize(int32 size,
-                                     base::SharedMemoryHandle* ring_buffer) {
-  DCHECK(!command_buffer_.get());
-
-  *ring_buffer = base::SharedMemory::NULLHandle();
-
-  // Assume service is responsible for duplicating the handle from the calling
-  // process.
-  base::ScopedOpenProcess peer_process;
-  if (!peer_process.Open(channel_->peer_pid()))
-    return;
-
-  command_buffer_.reset(new gpu::CommandBufferService);
-
-  // Initialize the CommandBufferService.
-  if (!command_buffer_->Initialize(size)) {
-    Destroy();
-    return;
-  }
-
-  // Get the ring buffer.
-  Buffer buffer = command_buffer_->GetRingBuffer();
-  if (!buffer.shared_memory) {
-    Destroy();
-    return;
-  }
-
-  // Initialize the GPUProcessor.
-  processor_.reset(new gpu::GPUProcessor(command_buffer_.get(), NULL));
-  if (!processor_->Initialize(window_, gfx::Size(), NULL, std::vector<int32>(),
-                              NULL, 0)) {
-    Destroy();
-    return;
-  }
-
-  // Perform platform specific initialization.
-  if (!InitializePlatformSpecific()) {
-    Destroy();
-    return;
-  }
-
-  // Share the ring buffer to the client process.
-  if (!buffer.shared_memory->ShareToProcess(peer_process.handle(),
-                                            ring_buffer)) {
-    Destroy();
-    return;
-  }
-
-  // Setup callbacks for events.
-  command_buffer_->SetPutOffsetChangeCallback(
-      NewCallback(processor_.get(),
-                  &gpu::GPUProcessor::ProcessCommands));
-#if defined(OS_MACOSX)
-  processor_->SetSwapBuffersCallback(
-      NewCallback(this,
-                  &CommandBufferStub::SwapBuffersCallback));
-  processor_->SetTransportDIBAllocAndFree(
-      NewCallback(this, &CommandBufferStub::AllocTransportDIB),
-      NewCallback(this, &CommandBufferStub::FreeTransportDIB));
-#endif
+void CommandBufferStub::OnInitialize(base::SharedMemoryHandle ring_buffer,
+                                     int32 size,
+                                     bool* result) {
+  // TODO(apatrick): Pepper3D v1 is not used anymore. This function is never
+  // called. Delete the GPU plugin.
+  NOTREACHED();
+  *result = false;
 }
 
 void CommandBufferStub::OnGetState(gpu::CommandBuffer::State* state) {

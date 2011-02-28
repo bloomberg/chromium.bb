@@ -68,7 +68,9 @@ class GpuCommandBufferStub
 
  private:
   // Message handlers:
-  void OnInitialize(int32 size, base::SharedMemoryHandle* ring_buffer);
+  void OnInitialize(base::SharedMemoryHandle ring_buffer,
+                    int32 size,
+                    bool* result);
   void OnGetState(gpu::CommandBuffer::State* state);
   void OnAsyncGetState();
   void OnFlush(int32 put_offset, gpu::CommandBuffer::State* state);

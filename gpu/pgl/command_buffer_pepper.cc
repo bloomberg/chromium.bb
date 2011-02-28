@@ -27,6 +27,11 @@ bool CommandBufferPepper::Initialize(int32 size) {
   return false;
 }
 
+bool CommandBufferPepper::Initialize(base::SharedMemory* buffer, int32 size) {
+  GPU_NOTREACHED();
+  return false;
+}
+
 Buffer CommandBufferPepper::GetRingBuffer() {
   Buffer buffer;
 #if defined(ENABLE_NEW_NPDEVICE_API)

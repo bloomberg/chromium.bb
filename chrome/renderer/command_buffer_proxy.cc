@@ -68,22 +68,62 @@ void CommandBufferProxy::SetChannelErrorCallback(Callback0::Type* callback) {
 bool CommandBufferProxy::Initialize(int32 size) {
   DCHECK(!ring_buffer_.get());
 
-  // Initialize the service. Assuming we are sandboxed, the GPU
-  // process is responsible for duplicating the handle. This might not be true
-  // for NaCl.
-  base::SharedMemoryHandle handle;
-  if (Send(new GpuCommandBufferMsg_Initialize(route_id_, size, &handle)) &&
-      base::SharedMemory::IsHandleValid(handle)) {
-    ring_buffer_.reset(new base::SharedMemory(handle, false));
-    if (ring_buffer_->Map(size)) {
-      num_entries_ = size / sizeof(gpu::CommandBufferEntry);
-      return true;
-    }
+  RenderThread* render_thread = RenderThread::current();
+  if (!render_thread)
+    return false;
 
-    ring_buffer_.reset();
+  base::SharedMemoryHandle handle;
+  if (!render_thread->Send(new ViewHostMsg_AllocateSharedMemoryBuffer(
+      size,
+      &handle))) {
+    return false;
   }
 
-  return false;
+  if (!base::SharedMemory::IsHandleValid(handle))
+    return false;
+
+#if defined(OS_POSIX)
+  handle.auto_close = false;
+#endif
+
+  // Take ownership of shared memory. This will close the handle if Send below
+  // fails. Otherwise, callee takes ownership before this variable
+  // goes out of scope.
+  base::SharedMemory shared_memory(handle, false);
+
+  return Initialize(&shared_memory, size);
+}
+
+bool CommandBufferProxy::Initialize(base::SharedMemory* buffer, int32 size) {
+  bool result;
+  if (!Send(new GpuCommandBufferMsg_Initialize(route_id_,
+                                               buffer->handle(),
+                                               size,
+                                               &result))) {
+    LOG(ERROR) << "Could not send GpuCommandBufferMsg_Initialize.";
+    return false;
+  }
+
+  if (!result) {
+    LOG(ERROR) << "Failed to initialize command buffer service.";
+    return false;
+  }
+
+  base::SharedMemoryHandle handle;
+  if (!buffer->GiveToProcess(base::GetCurrentProcessHandle(), &handle)) {
+    LOG(ERROR) << "Failed to duplicate command buffer handle.";
+    return false;
+  }
+
+  ring_buffer_.reset(new base::SharedMemory(handle, false));
+  if (!ring_buffer_->Map(size)) {
+    LOG(ERROR) << "Failed to map shared memory for command buffer.";
+    ring_buffer_.reset();
+    return false;
+  }
+
+  num_entries_ = size / sizeof(gpu::CommandBufferEntry);
+  return true;
 }
 
 Buffer CommandBufferProxy::GetRingBuffer() {

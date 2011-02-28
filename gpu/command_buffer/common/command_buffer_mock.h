@@ -22,6 +22,7 @@ class MockCommandBuffer : public CommandBuffer {
   virtual ~MockCommandBuffer();
 
   MOCK_METHOD1(Initialize, bool(int32 size));
+  MOCK_METHOD2(Initialize, bool(base::SharedMemory* buffer, int32 size));
   MOCK_METHOD0(GetRingBuffer, Buffer());
   MOCK_METHOD0(GetState, State());
   MOCK_METHOD1(Flush, void(int32 put_offset));
