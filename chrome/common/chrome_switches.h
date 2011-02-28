@@ -85,6 +85,7 @@ extern const char kDisableFlashSandbox[];
 extern const char kDisableGLMultisampling[];
 extern const char kDisableGLSLTranslator[];
 extern const char kDisableGeolocation[];
+extern const char kDisableGpuSandbox[];
 extern const char kDisableGpuWatchdog[];
 extern const char kDisableHangMonitor[];
 extern const char kDisableHistoryQuickProvider[];

@@ -265,6 +265,9 @@ const char kDisableGLMultisampling[]        = "disable-gl-multisampling";
 // Disable the GLSL translator.
 const char kDisableGLSLTranslator[]         = "disable-glsl-translator";
 
+// Disable the GPU process sandbox.
+const char kDisableGpuSandbox[]             = "disable-gpu-sandbox";
+
 // Disable the thread that crashes the GPU process if it stops responding to
 // messages.
 const char kDisableGpuWatchdog[]            = "disable-gpu-watchdog";
