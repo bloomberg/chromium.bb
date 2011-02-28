@@ -8,9 +8,6 @@
 // Skip an overly restrictive cross-origin HTTPS test
 BUGCR69594 SKIP : http/tests/appcache/different-https-origin-resource-main.html = FAIL
 
-// Due to r76098.  Need to fix upstream.
-BUG_ADAMK : fast/filesystem/op-get-entry.html = PASS TEXT
-
 BUGV8_1203 DEBUG : fast/canvas/webgl/gl-get-calls.html = PASS CRASH
 
 // Potential broken test found by r75985.
