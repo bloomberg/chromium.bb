@@ -199,13 +199,6 @@ const Experiment kExperiments[] = {
     MULTI_VALUE_TYPE(kPagePrerenderChoices)
   },
   {
-    "confirm-to-quit",  // FLAGS:RECORD_UMA
-    IDS_FLAGS_CONFIRM_TO_QUIT_NAME,
-    IDS_FLAGS_CONFIRM_TO_QUIT_DESCRIPTION,
-    kOsMac,
-    SINGLE_VALUE_TYPE(switches::kEnableConfirmToQuit)
-  },
-  {
     "extension-apis",  // FLAGS:RECORD_UMA
     IDS_FLAGS_EXPERIMENTAL_EXTENSION_APIS_NAME,
     IDS_FLAGS_EXPERIMENTAL_EXTENSION_APIS_DESCRIPTION,

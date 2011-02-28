@@ -206,6 +206,9 @@ const char kDisableBackgroundNetworking[] = "disable-background-networking";
 // users with many windows/tabs and lots of memory.
 const char kDisableBackingStoreLimit[]      = "disable-backing-store-limit";
 
+// Disable the Confirm to Quit experiment (Mac only).
+const char kDisableConfirmToQuit[]          = "disable-confirm-to-quit";
+
 // Disables blocked content warning animation. Currently shows animation for
 // blocked pop-ups only.
 const char kDisableBlockContentAnimation[]  =
@@ -484,9 +487,6 @@ const char kEnableCloudPrint[]              = "enable-cloud-print";
 
 // Enables compositing to texture instead of display.
 const char kEnableCompositeToTexture[]      = "enable-composite-to-texture";
-
-// Enable the Confirm to Quit experiment.
-const char kEnableConfirmToQuit[]           = "enable-confirm-to-quit";
 
 // Enables establishing a backup TCP connection if a specified timeout is
 // exceeded.
