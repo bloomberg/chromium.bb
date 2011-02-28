@@ -193,7 +193,7 @@ deps = {
     "/trunk/deps/third_party/yasm/patched-yasm@73761",
 
   "src/third_party/libjpeg_turbo":
-    "/trunk/deps/third_party/libjpeg_turbo@73971",
+    "/trunk/deps/third_party/libjpeg_turbo@75235",
 
   "src/third_party/flac":
     "/trunk/deps/third_party/flac@75901",
