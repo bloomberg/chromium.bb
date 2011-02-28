@@ -157,7 +157,7 @@ bool IBusIMEContext::FilterKeyEvent(const views::KeyEvent& event) {
     if (event.IsCapsLockDown())
       modifiers |= IBUS_LOCK_MASK;
 
-    ibus_input_context_process_key_event(context_,
+    ibus_input_context_process_key_event_async(context_,
         keyval, 0, modifiers,
         -1,
         NULL,
@@ -375,10 +375,10 @@ void IBusIMEContext::ProcessKeyEventDone(IBusInputContext *context,
 
   gboolean processed = FALSE;
 
-  if (!ibus_input_context_process_key_event_finish(context,
-                                                   res,
-                                                   &processed,
-                                                   NULL))
+  if (!ibus_input_context_process_key_event_async_finish(context,
+                                                         res,
+                                                         &processed,
+                                                         NULL))
     processed = FALSE;
 
   if (processed == FALSE)
