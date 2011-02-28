@@ -29,6 +29,7 @@ class NaClCommandLoop {
 
   void SetVariable(string name, string value);
   string GetVariable(string name) const;
+  void RegisterNonDeterministicOutput(string content, string name);
   void AddHandler(string name, CommandHandler handler);
   void AddDesc(NaClDesc* desc, string name);
   void AddUpcallRpc(string signature, NaClSrpcMethod rpc);
@@ -36,8 +37,10 @@ class NaClCommandLoop {
   NaClSrpcImcDescType FindDescByName(string name) const;
   NaClSrpcService* getService() const { return service_; }
   NaClSrpcChannel* getChannel() const { return channel_; }
+  void DumpArgsAndResults(NaClSrpcArg* inv[], NaClSrpcArg* outv[]);
 
-  bool StartInteractiveLoop(bool script_mode);
+  bool StartInteractiveLoop();
+  bool ProcessCommands(const vector<string>& commands);
 
  private:
   // Note, most handlers are not even class members, the ones below
@@ -50,15 +53,21 @@ class NaClCommandLoop {
                                   const vector<string>& args);
   static bool HandleInstallUpcalls(NaClCommandLoop* ncl,
                                    const vector<string>& args);
+  static bool HandleNondeterministic(NaClCommandLoop* ncl,
+                                     const vector<string>& args);
   static bool HandleEcho(NaClCommandLoop* ncl,
                          const vector<string>& args);
   int desc_count_;
   NaClSrpcService* service_;
   NaClSrpcChannel* channel_;
 
+  // map names to content
   map<string, string> vars_;
-  map<string, CommandHandler> handlers_;
+  // map non-determinisic content into deterministic names
+  map<string, string> nondeterministic_;
+  // map names to descriptors
   map<string, NaClSrpcImcDescType> descs_;
+  map<string, CommandHandler> handlers_;
   map<string, NaClSrpcMethod> upcall_rpcs_;
   bool upcall_installed_;
 };

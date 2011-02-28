@@ -1,82 +1,3 @@
-# First register a bunch of dummy replays with zero count
-# so that those signatures will get registered during "install_upcalls"
-# Note: because of the zero count we do not have to get the parameters right
-#
-# Enumerating all known methods ahead of time helps in many ways:
-# * we can delay registering non zero count replays till later which help
-#   readability
-# * we get an error if for some reason the nexe calls one of these functions.
-#   Sadly, the nexe usually fails silently when a method is missing from a
-#   service
-#
-# On the downside, this is currently replicated and must be updated by hand
-# when signatures change.
-
-replay 0 HasProperty:CCC:iC *
-replay 0 HasMethod:CCC:iC *
-replay 0 GetProperty:CCC:CC *
-replay 0 GetAllPropertyNames:CC:iCC *
-replay 0 SetProperty:CCCC:C *
-replay 0 RemoveProperty:CCC:C *
-replay 0 Call:CCiCC:CC *
-replay 0 Construct:CiCC:CC *
-replay 0 Deallocate:C: *
-replay 0 PPB_GetInterface:s:i *
-
-replay 0 PPB_Audio_Dev_Create:ii:i *
-replay 0 PPB_Audio_Dev_IsAudio:i:i *
-replay 0 PPB_Audio_Dev_GetCurrentConfig:i:i *
-replay 0 PPB_Audio_Dev_StopPlayback:i:i *
-replay 0 PPB_Audio_Dev_StartPlayback:i:i *
-
-replay 0 PPB_AudioConfig_Dev_CreateStereo16Bit:lii:l *
-replay 0 PPB_AudioConfig_Dev_IsAudioConfig:l:i *
-replay 0 PPB_AudioConfig_Dev_RecommendSampleFrameCount:i:i *
-replay 0 PPB_AudioConfig_Dev_GetSampleRate:l:i *
-replay 0 PPB_AudioConfig_Dev_GetSampleFrameCount:l:i *
-
-replay 0 PPB_Core_AddRefResource:i: *
-replay 0 PPB_Core_ReleaseResource:i: *
-replay 0 PPB_Core_GetTime::d *
-replay 0 ReleaseResourceMultipleTimes:ii: *
-
-replay 0 PPB_Graphics2D_Create:iCi:i *
-replay 0 PPB_Graphics2D_IsGraphics2D:i:i *
-replay 0 PPB_Graphics2D_Describe:i:Cii *
-replay 0 PPB_Graphics2D_PaintImageData:iiCC: *
-replay 0 PPB_Graphics2D_Scroll:iCC: *
-replay 0 PPB_Graphics2D_ReplaceContents:ii: *
-replay 0 PPB_Graphics2D_Flush:ii:i *
-
-replay 0 PPB_ImageData_GetNativeImageDataFormat::i *
-replay 0 PPB_ImageData_IsImageDataFormatSupported:i:i *
-replay 0 PPB_ImageData_Create:iiCi:i *
-replay 0 PPB_ImageData_IsImageData:i:i *
-replay 0 PPB_ImageData_Describe:i:Chii *
-
-replay 0 PPB_Instance_GetWindowObject:i:C *
-replay 0 PPB_Instance_GetOwnerElementObject:i:C *
-replay 0 PPB_Instance_BindGraphics:ii:i *
-replay 0 PPB_Instance_IsFullFrame:i:i *
-replay 0 PPB_Instance_ExecuteScript:iCC:CC *
-
-replay 0 PPB_URLRequestInfo_Create:i:l *
-replay 0 PPB_URLRequestInfo_IsURLRequestInfo:i:i *
-replay 0 PPB_URLRequestInfo_SetProperty:iiC:i *
-replay 0 PPB_URLRequestInfo_AppendDataToBody:iC:i *
-replay 0 PPB_URLRequestInfo_AppendFileToBody:illld:i *
-
-replay 0 PPB_URLLoader_Open:iii:i *
-replay 0 PPB_URLLoader_FollowRedirect:ii:i *
-replay 0 PPB_URLLoader_GetUploadProgress:i:lli *
-replay 0 PPB_URLLoader_GetDownloadProgress:i:lli *
-replay 0 PPB_URLLoader_ReadResponseBody:iii:Ci *
-replay 0 PPB_URLLoader_Close:i: *
-
-replay 0 PPB_URLResponseInfo_IsURLResponseInfo:i:i *
-replay 0 PPB_URLResponseInfo_GetProperty:ii:C *
-replay 0 PPB_URLResponseInfo_GetBodyAsFileRef:i:l *
-
 # define a bunch of variables for readability
 
 set_variable MODULE i(4444)
@@ -91,29 +12,14 @@ set_variable IMG_SIZE 64000
 # PP_Size
 set_variable GRAPHICS_FMT  R(8,4:400,4:400)
 
-# Register signatures found in all previous replay commands for export
-# via install_upcalls
-echo
-echo "*** REGISTER REPLAY METHODS"
-replay_activate
-
-# This is not strictly necessary
-echo
-echo "*** INITIALIZE PEPPER"
-initialize_pepper pepper_desc
-
-# create a upcall service on the channel between nexe and sel_univeral
-echo
-echo "*** CREATE UPCALL SERVICE"
-install_upcalls service_string
-
 echo
 echo "*** INIT MODULE"
 replay 1 PPB_GetInterface:s:i  s("PPB_Core;0.3") * i(1)
 replay 1 PPB_GetInterface:s:i  s("PPB_Instance;0.4") * i(1)
 replay 1 PPB_GetInterface:s:i  s("PPB_ImageData;0.3") * i(1)
 replay 1 PPB_GetInterface:s:i  s("PPB_Graphics2D;0.3") * i(1)
-rpc PPP_InitializeModule i(0) ${MODULE} h(pepper_desc) s("${service_string}") * i(0) i(0)
+# the results contain a process id which is non-determinisitic
+rpc PPP_InitializeModule hide-results i(0) ${MODULE} h(pepper_desc) s("${service_string}") * i(0) i(0)
 
 echo
 echo "*** INIT INSTANCE"
@@ -140,6 +46,7 @@ replay 1 PPB_Instance_BindGraphics:ii:i ${INSTANCE} ${GRAPHICS_HANLDE} * i(1)
 replay 1 PPB_Graphics2D_ReplaceContents:ii:  ${GRAPHICS_HANLDE}  ${IMG_HANDLE} *
 replay 1 PPB_Graphics2D_Flush:ii:i ${GRAPHICS_HANLDE} i(1) * i(-1)
 replay 1 ReleaseResourceMultipleTimes:ii:  ${IMG_HANDLE} i(1) *
+replay 1 PPB_Core_ReleaseResource:i:  ${GRAPHICS_HANLDE} *
 rpc PPP_Instance_DidChangeView ${INSTANCE} I(4,8,79,400,400) I(4,0,0,400,400) *
 
 echo

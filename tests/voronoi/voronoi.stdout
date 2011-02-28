@@ -1,9 +1,10 @@
-RPC Name                 Input args Output args
-  0 service_discovery               C         
-  1 nacl_multimedia_bridge hh                   
-  2 start_demo                                
-  3 checksum                        i         
-  4 stop_demo                                 
-start_demo RESULTS:
-checksum RESULTS:  i(542139623)
-stop_demo RESULTS:
+rpc call intiated start_demo::
+rpc call complete start_demo::
+
+rpc call intiated checksum::i
+rpc call complete checksum::i
+output 0:  i(542139623)
+
+rpc call intiated stop_demo::
+rpc call complete stop_demo::
+

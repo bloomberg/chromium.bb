@@ -62,12 +62,13 @@ env.Publish('ppapi_event_example.nexe', 'run',
 
 node = env.SelUniversalTest(
     'ppapi_event_example.out',
+    sel_universal_flags=['--command_file',
+                         env.File('sel_universal_ppapi_replay_prolog.stdin'),
+                         '--command_file',
+                         env.File('event_example.stdin'),
+                         ],
     command=[env.File('ppapi_event_example.nexe')],
-    stdin=env.File('event_example.stdin'),
     stdout_golden=env.File('event_example.stdout'),
-    # filter out a line that contains unpredictable values
-    filter_regex="'PPP_InitializeModule|PPP_Instance_GetInstanceObject'",
-    filter_inverse='true',
     )
 
 env.AddNodeToTestSuite(node,

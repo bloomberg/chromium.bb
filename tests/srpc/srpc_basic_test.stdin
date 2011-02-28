@@ -1,4 +1,3 @@
-service
 rpc bool b(0) * b(0)
 rpc bool b(1) * b(0)
 rpc double d(1.0) * d(0)

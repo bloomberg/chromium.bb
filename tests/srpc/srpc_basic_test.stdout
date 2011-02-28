@@ -1,38 +1,93 @@
-RPC Name                 Input args Output args
-  0 service_discovery               C         
-  1 bool                 b          b         
-  2 double               d          d         
-  3 nan                             d         
-  4 int                  i          i         
-  5 long                 l          l         
-  6 string               s          i         
-  7 char_array           C          C         
-  8 double_array         D          D         
-  9 int_array            I          I         
- 10 long_array           L          L         
- 11 null_method                               
- 12 stringret            i          s         
- 13 handle               h                    
- 14 handleret                       h         
- 15 invalid_handle       h                    
- 16 invalid_handle_ret              h         
-bool RESULTS:  b(1)
-bool RESULTS:  b(0)
-double RESULTS:  d(-1)
-nan RESULTS:  d(NaN)
-int RESULTS:  i(-1)
-long RESULTS:  l(-1)
-string RESULTS:  i(5)
-char_array RESULTS:  C(5,olleh)
-char_array RESULTS:  C(12,.dlrow,olleH)
-char_array RESULTS:  C(9,\x7f\\\"\"\t\n\f\bA)
-char_array RESULTS:  C(7,\xee\xdd\xcc\xbb\xaa\x99\x88)
-double_array RESULTS:  D(5,5.9,1.5,4.1,1.4,3.1)
-int_array RESULTS:  I(5,5,4,3,2,1)
-long_array RESULTS:  L(5,5,4,3,2,1)
-null_method RESULTS:
-stringret RESULTS:  s("Ich weiss nicht, was soll es bedeutenDass ich so traurig bin,Ein Maerchen aus uralten Zeiten,Das kommt mir nicht aus dem Sinn.Die Luft ist kuehl und es dunkelt,Und ruhig fliesst der Rhein;Der Gipfel des Berges funkelt,Im Abendsonnenschein.Die schoenste Jungfrau sitzetDort oben wunderbar,Ihr gold'nes Geschmeide blitzet,Sie kaemmt ihr goldenes Haar,Sie kaemmt es mit goldenem Kamme,Und singt ein Lied dabei;Das hat eine wundersame,Gewalt'ge Melodei.")
-handle RESULTS:
-handleret RESULTS:  h(imported_0)
-invalid_handle RESULTS:
-invalid_handle_ret RESULTS:  h(invalid)
+rpc call intiated bool:b:b
+input 0:  b(0)
+rpc call complete bool:b:b
+output 0:  b(1)
+
+rpc call intiated bool:b:b
+input 0:  b(1)
+rpc call complete bool:b:b
+output 0:  b(0)
+
+rpc call intiated double:d:d
+input 0:  d(1)
+rpc call complete double:d:d
+output 0:  d(-1)
+
+rpc call intiated nan::d
+rpc call complete nan::d
+output 0:  d(NaN)
+
+rpc call intiated int:i:i
+input 0:  i(1)
+rpc call complete int:i:i
+output 0:  i(-1)
+
+rpc call intiated long:l:l
+input 0:  l(1)
+rpc call complete long:l:l
+output 0:  l(-1)
+
+rpc call intiated string:s:i
+input 0:  s("hello")
+rpc call complete string:s:i
+output 0:  i(5)
+
+rpc call intiated char_array:C:C
+input 0:  C(5,hello)
+rpc call complete char_array:C:C
+output 0:  C(5,olleh)
+
+rpc call intiated char_array:C:C
+input 0:  C(12,Hello,world.)
+rpc call complete char_array:C:C
+output 0:  C(12,.dlrow,olleH)
+
+rpc call intiated char_array:C:C
+input 0:  C(9,A\b\f\n\t\"\"\\\x7f)
+rpc call complete char_array:C:C
+output 0:  C(9,\x7f\\\"\"\t\n\f\bA)
+
+rpc call intiated char_array:C:C
+input 0:  C(7,\x88\x99\xaa\xbb\xcc\xdd\xee)
+rpc call complete char_array:C:C
+output 0:  C(7,\xee\xdd\xcc\xbb\xaa\x99\x88)
+
+rpc call intiated double_array:D:D
+input 0:  D(5,3.1,1.4,4.1,1.5,5.9)
+rpc call complete double_array:D:D
+output 0:  D(5,5.9,1.5,4.1,1.4,3.1)
+
+rpc call intiated int_array:I:I
+input 0:  I(5,1,2,3,4,5)
+rpc call complete int_array:I:I
+output 0:  I(5,5,4,3,2,1)
+
+rpc call intiated long_array:L:L
+input 0:  L(5,1,2,3,4,5)
+rpc call complete long_array:L:L
+output 0:  L(5,5,4,3,2,1)
+
+rpc call intiated null_method::
+rpc call complete null_method::
+
+rpc call intiated stringret:i:s
+input 0:  i(0)
+rpc call complete stringret:i:s
+output 0:  s("Ich weiss nicht, was soll es bedeutenDass ich so traurig bin,Ein Maerchen aus uralten Zeiten,Das kommt mir nicht aus dem Sinn.Die Luft ist kuehl und es dunkelt,Und ruhig fliesst der Rhein;Der Gipfel des Berges funkelt,Im Abendsonnenschein.Die schoenste Jungfrau sitzetDort oben wunderbar,Ihr gold'nes Geschmeide blitzet,Sie kaemmt ihr goldenes Haar,Sie kaemmt es mit goldenem Kamme,Und singt ein Lied dabei;Das hat eine wundersame,Gewalt'ge Melodei.")
+
+rpc call intiated handle:h:
+input 0:  h(stderr)
+rpc call complete handle:h:
+
+rpc call intiated handleret::h
+rpc call complete handleret::h
+output 0:  h(imported_0)
+
+rpc call intiated invalid_handle:h:
+input 0:  h(invalid)
+rpc call complete invalid_handle:h:
+
+rpc call intiated invalid_handle_ret::h
+rpc call complete invalid_handle_ret::h
+output 0:  h(invalid)
+

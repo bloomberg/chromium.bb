@@ -14,10 +14,10 @@
 
 #include <stdio.h>
 
+#include <fstream>
 #include <map>
 #include <string>
 #include <vector>
-
 
 #include "native_client/src/include/nacl_string.h"
 #include "native_client/src/include/nacl_macros.h"
@@ -30,6 +30,7 @@
 #include "native_client/src/trusted/sel_universal/replay_handler.h"
 #include "native_client/src/trusted/sel_universal/rpc_universal.h"
 
+using std::ifstream;
 using std::map;
 using std::string;
 using std::vector;
@@ -52,9 +53,7 @@ static NaClSrpcChannel channel;
 
 // variables set via command line
 static map<string, string> initial_vars;
-
-// script_mode is the opposite of interactive mode, e.g. no prompt
-bool script_mode = false;
+static vector<string> initial_commands;
 
 // When given argc and argv this function (a) extracts the nacl_file argument,
 // (b) populates sel_ldr_argv with sel_ldr arguments, and (c) populates
@@ -79,10 +78,26 @@ static nacl::string ProcessArguments(int argc,
       exit(0);
     } else if (flag == "--debug") {
       NaClLogSetVerbosity(1);
-    } else if (flag == "--script_mode") {
-      script_mode = true;
+    } else if (flag == "--command_file") {
+      if (argc <= i + 1) {
+        NaClLog(LOG_FATAL,
+                "not enough args for --command_file option\n");
+        exit(1);
+      }
+      NaClLog(LOG_INFO, "reading commands from %s\n", argv[i + 1]);
+      ifstream f;
+      f.open(argv[i + 1]);
+      ++i;
+      while (!f.eof()) {
+        string s;
+        getline(f, s);
+        initial_commands.push_back(s);
+      }
+      f.close();
+      NaClLog(LOG_INFO, "total commands now: %d\n",
+              static_cast<int>(initial_commands.size()));
     } else if (flag == "--var") {
-      if (i + 2 >= argc) {
+      if (argc <= i + 2) {
         NaClLog(LOG_FATAL, "not enough args for --var option\n");
         exit(1);
       }
@@ -103,6 +118,8 @@ static nacl::string ProcessArguments(int argc,
         app_argv->push_back(argv[i]);
       }
     } else {
+      // NOTE: most sel_ldr args start with a single hyphen so there is not
+      // much confusion with sel_universal args. But this remains a hack.
       sel_ldr_argv->push_back(argv[i]);
     }
   }
@@ -178,8 +195,9 @@ int main(int argc, char* argv[]) {
     loop.SetVariable(it->first, it->second);
   }
 
-  NaClLog(1, "starting loop\n");
-  bool success = loop.StartInteractiveLoop(script_mode);
+  const bool success = initial_commands.size() > 0 ?
+                       loop.ProcessCommands(initial_commands) :
+                       loop.StartInteractiveLoop();
 
   // Close the connections to sel_ldr.
   NaClSrpcDtor(&command_channel);

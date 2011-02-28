@@ -1,2 +1,5 @@
+rpc call intiated map_sysv_handle:h:
+input 0:  h(desc_shmem)
 string 'Hello SysV shared memory.'
-map_sysv_handle RESULTS:
+rpc call complete map_sysv_handle:h:
+

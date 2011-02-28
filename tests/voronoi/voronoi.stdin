@@ -1,4 +1,3 @@
-service
 rpc start_demo *
 rpc checksum * i(0)
 rpc stop_demo *

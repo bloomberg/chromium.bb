@@ -364,10 +364,10 @@ static string UnescapeString(string s) {
 // input indicates whether this is an input our an output arg.
 // Output args are handled slightly different especially in the array case
 // where the merely allocate space but do not initialize it.
-static bool ParseArg(NaClSrpcArg* arg,
-                     string token,
-                     bool input,
-                     NaClCommandLoop* ncl) {
+bool ParseArg(NaClSrpcArg* arg,
+              string token,
+              bool input,
+              NaClCommandLoop* ncl) {
   if (token.size() <= 2) {
     NaClLog(LOG_ERROR, "parameter too short: %s\n", token.c_str());
     return false;
@@ -754,36 +754,41 @@ void BuildArgVec(NaClSrpcArg* argv[], NaClSrpcArg arg[], size_t count) {
 }
 
 
-void FreeArrayArgs(NaClSrpcArg** args) {
-  for (size_t i = 0; args[i] != NULL; ++i) {
-    switch (args[i]->tag) {
-     case NACL_SRPC_ARG_TYPE_CHAR_ARRAY:
-      free(args[i]->arrays.carr);
+void FreeArrayArg(NaClSrpcArg* arg) {
+  switch (arg->tag) {
+    case NACL_SRPC_ARG_TYPE_CHAR_ARRAY:
+      free(arg->arrays.carr);
       break;
-     case NACL_SRPC_ARG_TYPE_DOUBLE_ARRAY:
-      free(args[i]->arrays.darr);
+    case NACL_SRPC_ARG_TYPE_DOUBLE_ARRAY:
+      free(arg->arrays.darr);
       break;
-     case NACL_SRPC_ARG_TYPE_INT_ARRAY:
-      free(args[i]->arrays.iarr);
+    case NACL_SRPC_ARG_TYPE_INT_ARRAY:
+      free(arg->arrays.iarr);
       break;
-     case NACL_SRPC_ARG_TYPE_LONG_ARRAY:
-      free(args[i]->arrays.larr);
+    case NACL_SRPC_ARG_TYPE_LONG_ARRAY:
+      free(arg->arrays.larr);
       break;
-     case NACL_SRPC_ARG_TYPE_VARIANT_ARRAY:
-     case NACL_SRPC_ARG_TYPE_OBJECT:
+    case NACL_SRPC_ARG_TYPE_VARIANT_ARRAY:
+    case NACL_SRPC_ARG_TYPE_OBJECT:
       NaClLog(LOG_ERROR, "unsupported srpc arg type\n");
       break;
-     case NACL_SRPC_ARG_TYPE_STRING:
-      free(args[i]->arrays.str);
+    case NACL_SRPC_ARG_TYPE_STRING:
+      free(arg->arrays.str);
       break;
-     case NACL_SRPC_ARG_TYPE_INVALID:
-     case NACL_SRPC_ARG_TYPE_BOOL:
-     case NACL_SRPC_ARG_TYPE_DOUBLE:
-     case NACL_SRPC_ARG_TYPE_HANDLE:
-     case NACL_SRPC_ARG_TYPE_INT:
-     case NACL_SRPC_ARG_TYPE_LONG:
-     default:
+    case NACL_SRPC_ARG_TYPE_INVALID:
+    case NACL_SRPC_ARG_TYPE_BOOL:
+    case NACL_SRPC_ARG_TYPE_DOUBLE:
+    case NACL_SRPC_ARG_TYPE_HANDLE:
+    case NACL_SRPC_ARG_TYPE_INT:
+    case NACL_SRPC_ARG_TYPE_LONG:
+    default:
       break;
-    }
+  }
+}
+
+
+void FreeArrayArgs(NaClSrpcArg** args) {
+  for (size_t i = 0; args[i] != NULL; ++i) {
+    FreeArrayArg(args[i]);
   }
 }

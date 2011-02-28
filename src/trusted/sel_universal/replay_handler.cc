@@ -112,10 +112,7 @@ void ReplayRpc(NaClSrpcRpc* rpc,
     }
 
     printf("replaying %s:\n", signature.c_str());
-    for (size_t j = 0; outputs[j] != 0; ++j) {
-      string value = DumpArg(outputs[j], GlobalCommandLoop);
-      printf("output %d:  %s\n", (int) j, value.c_str());
-    }
+    GlobalCommandLoop->DumpArgsAndResults(inputs, outputs);
 
     rpc->result = NACL_SRPC_RESULT_OK;
     NaClLog(1, "invoke callback\n");

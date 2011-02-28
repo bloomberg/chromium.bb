@@ -1169,7 +1169,6 @@ def SelUniversalTest(env, name, command, sel_universal_flags=None, **kwargs):
 
   if sel_universal_flags is None:
     sel_universal_flags = []
-  sel_universal_flags.append('--script_mode')
 
   node = CommandSelLdrTestNacl(env,
                                name,

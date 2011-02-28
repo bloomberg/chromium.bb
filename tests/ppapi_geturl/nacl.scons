@@ -54,11 +54,16 @@ env.AddNodeToTestSuite(node,
 
 node = env.SelUniversalTest(
      'ppapi_geturl.out',
+     sel_universal_flags=['--command_file',
+                          env.File('${SCONSTRUCT_DIR}/tests/ppapi_proxy'
+                                   '/sel_universal_ppapi_replay_prolog.stdin'),
+                          '--command_file',
+                          env.File('ppapi_geturl.stdin'),
+                         ],
      command=[env.File('ppapi_geturl.nexe')],
-     stdin=env.File('ppapi_geturl.stdin'),
      stdout_golden=env.File('ppapi_geturl.stdout'),
      # filter out a line that contains unpredictable values
-     filter_regex="'PPP_InitializeModule|PPP_Instance_GetInstanceObject|ScriptableObject::Call'",
+     filter_regex="'ScriptableObject::Call'",
      filter_inverse='true',
      )
 

@@ -23,6 +23,15 @@ class NaClCommandLoop;
 // Also it does know about escape sequences but does not rewrite them.
 void Tokenize(string line, vector<string>* tokens);
 
+// Read argument from a string into an srpc arg
+// Returns true iff successful.
+// Note: this functions allocates memory which should be freed using
+// FreeArrayArg
+
+bool ParseArg(NaClSrpcArg* arg,
+              string token,
+              bool input,
+              NaClCommandLoop* ncl);
 // Read arguments from the tokens array into an srpc arg vector.
 // Returns true iff successful.
 // Note: this functions allocates memory which should be freed using
@@ -41,6 +50,9 @@ string DumpArg(const NaClSrpcArg* arg, NaClCommandLoop* ncl);
 
 // Initialize the array of NaClSrpcArg pointers from an array of NaClSrpcArg.
 void BuildArgVec(NaClSrpcArg* argv[], NaClSrpcArg arg[], size_t count);
+
+// Free memory allocated by ParseArg.
+void FreeArrayArg(NaClSrpcArg* arg);
 
 // Free memory allocated by ParseArgs.
 void FreeArrayArgs(NaClSrpcArg** args);

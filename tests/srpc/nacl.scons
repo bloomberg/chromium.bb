@@ -200,14 +200,16 @@ env.AddNodeToTestSuite(node, ['browser_tests'],
 node = env.SelUniversalTest(
     'srpc_rofile.out',
     command=[env.File('cat.nexe')],
-    sel_universal_flags=['--var', 'myfile', env.File('dummy.txt')],
-    stdin=env.File('srpc_ro_file.stdin'),
+    sel_universal_flags=['--command_file',
+                         env.File('srpc_ro_file.stdin'),
+                         '--var', 'myfile',
+                         env.File('dummy.txt')],
     stdout_golden=env.File('srpc_ro_file.stdout'),
     filter_regex="'CatFile'",
     filter_inverse='true',
     )
 env.AddNodeToTestSuite(node,
-                       ['small_tests'],
+                       ['sel_ldr_tests', 'small_tests'],
                        'run_srpc_ro_file_test',
                        is_broken=env.Bit('host_windows'))
 

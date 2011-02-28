@@ -1,4 +1,6 @@
 
+"*** REPLAY PROLOG"
+
 "*** REGISTER REPLAY METHODS"
 
 "*** INITIALIZE PEPPER"
@@ -6,40 +8,87 @@
 "*** CREATE UPCALL SERVICE"
 
 "*** INIT MODULE"
+rpc call intiated PPP_InitializeModule:iihs:ii
+input 0:  i(0)
+input 1:  i(4444)
+input 2:  h(pepper_desc)
+input 3:  @LENGTHY_SERIVE_STRING
 replaying PPB_GetInterface:s:i:
+input 0:  s("PPB_Core;0.3")
 output 0:  i(1)
 replaying PPB_GetInterface:s:i:
+input 0:  s("PPB_Instance;0.4")
 output 0:  i(1)
 replaying PPB_GetInterface:s:i:
+input 0:  s("PPB_ImageData;0.3")
 output 0:  i(1)
 replaying PPB_GetInterface:s:i:
+input 0:  s("PPB_Graphics2D;0.3")
 output 0:  i(1)
+rpc call complete PPP_InitializeModule:iihs:ii
+
 
 "*** INIT INSTANCE"
-PPP_GetInterface RESULTS:  i(1)
-PPP_Instance_DidCreate RESULTS:  i(1)
+rpc call intiated PPP_GetInterface:s:i
+input 0:  s("PPP_Instance;0.4")
+rpc call complete PPP_GetInterface:s:i
+output 0:  i(1)
+
+rpc call intiated PPP_Instance_DidCreate:iiCC:i
+input 0:  i(5555)
+input 1:  i(5)
+input 2:  C(23,id\x00name\x00src\x00style\x00type\x00)
+input 3:  C(74,naclModule\x00naclModule\x00ppapi.nexe\x00background-color:gray\x00application/x-nacl\x00)
+rpc call complete PPP_Instance_DidCreate:iiCC:i
+output 0:  i(1)
+
 
 "*** SETTTING UP VIDEO MEMORY"
 CHECKSUM: 0x00000000
 
 "*** TRIGGER REPAINT"
+rpc call intiated PPP_Instance_DidChangeView:iII:
+input 0:  i(5555)
+input 1:  I(4,8,79,400,400)
+input 2:  I(4,0,0,400,400)
 replaying PPB_ImageData_Create:iiCi:i:
+input 0:  i(5555)
+input 1:  i(0)
+input 2:  C(8,\x90\x01\x00\x00\x90\x01\x00\x00)
+input 3:  i(1)
 output 0:  i(7)
 replaying PPB_ImageData_Describe:i:Chii:
+input 0:  i(7)
 output 0:  C(16,\x00\x00\x00\x00\x90\x01\x00\x00\x90\x01\x00\x00@\x06\x00\x00)
 output 1:  h(video_handle)
 output 2:  i(64000)
 output 3:  i(1)
 replaying PPB_Graphics2D_Create:iCi:i:
+input 0:  i(5555)
+input 1:  C(8,\x90\x01\x00\x00\x90\x01\x00\x00)
+input 2:  i(0)
 output 0:  i(8)
 replaying PPB_Instance_BindGraphics:ii:i:
+input 0:  i(5555)
+input 1:  i(8)
 output 0:  i(1)
 replaying PPB_Graphics2D_ReplaceContents:ii::
+input 0:  i(8)
+input 1:  i(7)
 replaying PPB_Graphics2D_Flush:ii:i:
+input 0:  i(8)
+input 1:  i(1)
 output 0:  i(-1)
+replaying PPB_Core_ReleaseResource:i::
+input 0:  i(8)
 replaying ReleaseResourceMultipleTimes:ii::
-PPP_Instance_DidChangeView RESULTS:
+input 0:  i(7)
+input 1:  i(1)
+rpc call complete PPP_Instance_DidChangeView:iII:
+
 
 "*** CHECKING MEMORY"
 CHECKSUM: 0xffffff67
-PPP_ShutdownModule RESULTS:
+rpc call intiated PPP_ShutdownModule::
+rpc call complete PPP_ShutdownModule::
+

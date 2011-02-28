@@ -80,6 +80,20 @@ void NaClCommandLoop::AddHandler(string name, CommandHandler handler) {
 }
 
 
+void NaClCommandLoop::RegisterNonDeterministicOutput(string content,
+                                                     string name) {
+  NaClSrpcArg arg;
+  // we parse and then unparse to canonicalize the string representation
+  // of content
+  if (!ParseArg(&arg, content, true, this)) {
+    NaClLog(LOG_ERROR, "malformed argument to RegisterNonDeterministicOutput");
+  }
+  string data = DumpArg(&arg, this);
+  nondeterministic_[data] = name;
+  FreeArrayArg(&arg);
+}
+
+
 void NaClCommandLoop::SetVariable(string name, string value) {
   vars_[name] = value;
 }
@@ -105,6 +119,30 @@ void NaClCommandLoop::AddUpcallRpc(string name, NaClSrpcMethod rpc) {
     NaClLog(LOG_ERROR, "rpc %s already exists\n", name.c_str());
   }
   upcall_rpcs_[name] = rpc;
+}
+
+
+void NaClCommandLoop::DumpArgsAndResults(NaClSrpcArg* inv[],
+                                         NaClSrpcArg* outv[]) {
+  for (size_t j = 0; inv[j] != NULL; ++j) {
+    string value = DumpArg(inv[j], this);
+    if (nondeterministic_.find(value) != nondeterministic_.end()) {
+      value = nondeterministic_.find(value)->second;
+      NaClLog(LOG_INFO, "suppressing nondeterministic input: %s\n",
+              value.c_str());
+    }
+    printf("input %d:  %s\n", (int) j, value.c_str());
+  }
+
+  for (size_t j = 0; outv[j] != NULL; ++j) {
+    string value = DumpArg(outv[j], this);
+    if (nondeterministic_.find(value) != nondeterministic_.end()) {
+      value = nondeterministic_.find(value)->second;
+      NaClLog(LOG_INFO, "suppressing nondeterministic output: %s\n\n",
+              value.c_str());
+    }
+    printf("output %d:  %s\n", (int) j, value.c_str());
+  }
 }
 
 
@@ -170,6 +208,15 @@ bool NaClCommandLoop::HandleSetVariable(NaClCommandLoop* ncl,
   return true;
 }
 
+bool NaClCommandLoop::HandleNondeterministic(NaClCommandLoop* ncl,
+                                             const vector<string>& args) {
+  if (args.size() != 3) {
+    NaClLog(LOG_ERROR, "not the right number of args for this command\n");
+    return false;
+  }
+  ncl->RegisterNonDeterministicOutput(args[1], args[2]);
+  return true;
+}
 
 bool NaClCommandLoop::HandleEcho(NaClCommandLoop* ncl,
                                  const vector<string>& args) {
@@ -314,6 +361,9 @@ static bool HandleHelp(NaClCommandLoop* ncl, const vector<string>& args) {
   return true;
 }
 
+
+
+
 static bool HandleRpc(NaClCommandLoop* ncl, const vector<string>& args) {
   // we need two args at start and the "*" in out separator
   if (args.size() < 3) {
@@ -333,13 +383,19 @@ static bool HandleRpc(NaClCommandLoop* ncl, const vector<string>& args) {
     return false;
   }
 
+  bool show_results = true;
+  size_t arg_start = 2;
+  if (args[2] == "hide-results") {
+    show_results = false;
+    arg_start = 3;
+  }
   // Build the input parameter values.
-  const size_t n_in = in_out_sep - 2;
+  const size_t n_in = in_out_sep - arg_start;
   NaClSrpcArg  in[NACL_SRPC_MAX_ARGS];
   NaClSrpcArg* inv[NACL_SRPC_MAX_ARGS + 1];
   NaClLog(2, "SRPC: Parsing %d input args.\n", (int)n_in);
   BuildArgVec(inv, in, n_in);
-  if (!ParseArgs(inv, args, 2, true, ncl)) {
+  if (!ParseArgs(inv, args, arg_start, true, ncl)) {
     // TODO(sehr): reclaim memory here on failure.
     NaClLog(LOG_ERROR, "Bad input args for RPC.\n");
     return false;
@@ -368,6 +424,13 @@ static bool HandleRpc(NaClCommandLoop* ncl, const vector<string>& args) {
   }
 
   NaClLog(1, "Calling RPC %s (#%"NACL_PRIu32")...\n", args[1].c_str(), rpc_num);
+
+  NaClSrpcArg* empty[] = {NULL};
+  printf("rpc call intiated %s\n", signature.c_str());
+  ncl->DumpArgsAndResults(inv, empty);
+  fflush(stdout);
+  fflush(stderr);
+
   const  NaClSrpcError result = NaClSrpcInvokeV(
     ncl->getChannel(), rpc_num, inv, outv);
   NaClLog(1, "Result %d\n", result);
@@ -377,13 +440,14 @@ static bool HandleRpc(NaClCommandLoop* ncl, const vector<string>& args) {
     return false;
   }
 
-  printf("%s RESULTS:", args[1].c_str());
+  printf("rpc call complete %s\n", signature.c_str());
+  if (show_results) {
+    ncl->DumpArgsAndResults(empty, outv);
+  }
 
-
+  // save output into variables
   for (size_t i = 0; outv[i] != 0; ++i) {
     string value = DumpArg(outv[i], ncl);
-    printf("  %s", value.c_str());
-
     stringstream tag;
     tag << "result" << i;
     ncl->SetVariable(tag.str(), value);
@@ -426,6 +490,7 @@ NaClCommandLoop::NaClCommandLoop(NaClSrpcService* service,
   AddHandler("show_descriptors", HandleShowDescriptors);
   AddHandler("show_variables", HandleShowVariables);
   AddHandler("set_variable", HandleSetVariable);
+  AddHandler("nondeterministic", HandleNondeterministic);
   AddHandler("install_upcalls", HandleInstallUpcalls);
   AddHandler("strcpy", HandleStrcpy);
   AddHandler("memset", HandleMemset);
@@ -437,7 +502,49 @@ NaClCommandLoop::NaClCommandLoop(NaClSrpcService* service,
   AddHandler("service", HandleService);
 }
 
-bool NaClCommandLoop::StartInteractiveLoop(bool script_mode) {
+
+bool NaClCommandLoop::ProcessCommands(const vector<string>& commands) {
+  vector<string> tokens;
+  NaClLog(1, "entering processing commands\n");
+  for (size_t i = 0; i < commands.size(); ++i) {
+    fflush(stdout);
+    fflush(stderr);
+
+    tokens.clear();
+    Tokenize(commands[i], &tokens);
+
+    if (tokens.size() == 0) {
+      continue;
+    }
+
+    if (tokens[0][0] == '#') {
+      continue;
+    }
+
+    if (tokens[0] == "quit") {
+      break;
+    }
+
+    for (size_t i = 0; i < tokens.size(); ++i) {
+      tokens[i] = SubstituteVars(tokens[i], this);
+    }
+
+    if (handlers_.find(tokens[0])  == handlers_.end()) {
+      NaClLog(LOG_ERROR, "Unknown command [%s].\n", tokens[0].c_str());
+      return false;
+    }
+
+    if (!handlers_[tokens[0]](this, tokens)) {
+      NaClLog(LOG_ERROR, "Command [%s] failed.\n", tokens[0].c_str());
+      return false;
+    }
+  }
+
+  return true;
+}
+
+
+bool NaClCommandLoop::StartInteractiveLoop() {
   int command_count = 0;
   vector<string> tokens;
 
@@ -448,9 +555,7 @@ bool NaClCommandLoop::StartInteractiveLoop(bool script_mode) {
 
     char buffer[kMaxCommandLineLength];
 
-    if (!script_mode) {
-      fprintf(stderr, "%d> ", command_count);
-    }
+    fprintf(stderr, "%d> ", command_count);
     ++command_count;
 
     if (!fgets(buffer, sizeof(buffer), stdin))
@@ -477,17 +582,11 @@ bool NaClCommandLoop::StartInteractiveLoop(bool script_mode) {
 
     if (handlers_.find(tokens[0])  == handlers_.end()) {
       NaClLog(LOG_ERROR, "Unknown command [%s].\n", tokens[0].c_str());
-      if (script_mode) {
-        return false;
-      }
       continue;
     }
 
     if (!handlers_[tokens[0]](this, tokens)) {
       NaClLog(LOG_ERROR, "Command [%s] failed.\n", tokens[0].c_str());
-      if (script_mode) {
-        return false;
-      }
     }
   }
   NaClLog(1, "exiting print eval loop\n");

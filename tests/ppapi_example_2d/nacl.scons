@@ -25,12 +25,14 @@ env.Publish('ppapi_example_2d.nexe', 'run',
 
 node = env.SelUniversalTest(
     'ppapi_example_2d.out',
+    sel_universal_flags=['--command_file',
+                         env.File('${SCONSTRUCT_DIR}/tests/ppapi_proxy'
+                                   '/sel_universal_ppapi_replay_prolog.stdin'),
+                         '--command_file',
+                         env.File('ppapi_example_2d.stdin'),
+                         ],
     command=[env.File('ppapi_example_2d.nexe')],
-    stdin=env.File('ppapi_example_2d.stdin'),
     stdout_golden=env.File('ppapi_example_2d.stdout'),
-    # filter out a line that contains a process id
-    filter_regex="'PPP_InitializeModule'",
-    filter_inverse='true',
     )
 
 env.AddNodeToTestSuite(node,

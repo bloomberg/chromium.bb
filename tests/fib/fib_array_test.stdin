@@ -1,3 +1,2 @@
- service
- rpc fib i(1) i(1) * I(10)
- rpc fib i(1) i(2) * I(15)
+rpc fib i(1) i(1) * I(10)
+rpc fib i(1) i(2) * I(15)
