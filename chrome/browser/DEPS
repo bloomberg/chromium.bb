@@ -32,7 +32,6 @@ include_rules = [
   "+third_party/apple",  # Apple code ImageAndTextCell.
   "+third_party/cld",
   "+third_party/expat",
-  "+third_party/gpsd",
   "+third_party/sqlite",
   "+third_party/libevent",  # For the remote V8 debugging server
   "+third_party/libjingle",

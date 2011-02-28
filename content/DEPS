@@ -20,6 +20,7 @@ include_rules = [
   "-v8",
   "-tools",
 
+  "+third_party/gpsd",
   "+third_party/npapi/bindings",
   "+third_party/sqlite",
   # Allow inclusion of WebKit API files.
