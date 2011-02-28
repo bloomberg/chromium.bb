@@ -6,7 +6,7 @@
 
 #include "content/browser/renderer_host/resource_dispatcher_host.h"
 #include "content/browser/renderer_host/resource_dispatcher_host_request_info.h"
-#include "chrome/browser/worker_host/worker_service.h"
+#include "content/browser/worker_host/worker_service.h"
 
 ResourceRequestDetails::ResourceRequestDetails(const net::URLRequest* request,
                                                int cert_id)

@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/worker_host/message_port_service.h"
+#include "content/browser/worker_host/message_port_service.h"
 
-#include "chrome/browser/worker_host/worker_message_filter.h"
 #include "chrome/common/worker_messages.h"
+#include "content/browser/worker_host/worker_message_filter.h"
 
 struct MessagePortService::MessagePort {
   // |filter| and |route_id| are what we need to send messages to the port.

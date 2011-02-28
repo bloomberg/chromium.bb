@@ -2,17 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_WORKER_HOST_WORKER_SERVICE_H_
-#define CHROME_BROWSER_WORKER_HOST_WORKER_SERVICE_H_
+#ifndef CONTENT_BROWSER_WORKER_HOST_WORKER_SERVICE_H_
+#define CONTENT_BROWSER_WORKER_HOST_WORKER_SERVICE_H_
 #pragma once
-
-#include <list>
 
 #include "base/basictypes.h"
 #include "base/singleton.h"
-#include "chrome/browser/worker_host/worker_process_host.h"
+#include "content/browser/worker_host/worker_process_host.h"
 #include "googleurl/src/gurl.h"
-#include "ipc/ipc_message.h"
 
 class URLRequestContextGetter;
 struct ViewHostMsg_CreateWorker_Params;
@@ -121,4 +118,4 @@ class WorkerService {
   DISALLOW_COPY_AND_ASSIGN(WorkerService);
 };
 
-#endif  // CHROME_BROWSER_WORKER_HOST_WORKER_SERVICE_H_
+#endif  // CONTENT_BROWSER_WORKER_HOST_WORKER_SERVICE_H_

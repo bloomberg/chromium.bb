@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/worker_host/worker_process_host.h"
+#include "content/browser/worker_host/worker_process_host.h"
 
 #include <set>
 #include <vector>
@@ -14,11 +14,7 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/content_settings/host_content_settings_map.h"
 #include "chrome/browser/metrics/user_metrics.h"
-#include "chrome/browser/mime_registry_message_filter.h"
 #include "chrome/browser/net/chrome_url_request_context.h"
-#include "chrome/browser/worker_host/message_port_service.h"
-#include "chrome/browser/worker_host/worker_message_filter.h"
-#include "chrome/browser/worker_host/worker_service.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/debug_flags.h"
 #include "chrome/common/render_messages.h"
@@ -29,6 +25,7 @@
 #include "content/browser/browser_thread.h"
 #include "content/browser/child_process_security_policy.h"
 #include "content/browser/file_system/file_system_dispatcher_host.h"
+#include "content/browser/mime_registry_message_filter.h"
 #include "content/browser/renderer_host/blob_message_filter.h"
 #include "content/browser/renderer_host/database_message_filter.h"
 #include "content/browser/renderer_host/file_utilities_message_filter.h"
@@ -36,6 +33,9 @@
 #include "content/browser/renderer_host/render_view_host_delegate.h"
 #include "content/browser/renderer_host/render_view_host_notification_task.h"
 #include "content/browser/renderer_host/socket_stream_dispatcher_host.h"
+#include "content/browser/worker_host/message_port_service.h"
+#include "content/browser/worker_host/worker_message_filter.h"
+#include "content/browser/worker_host/worker_service.h"
 #include "net/base/mime_util.h"
 #include "ipc/ipc_switches.h"
 #include "net/base/registry_controlled_domain.h"

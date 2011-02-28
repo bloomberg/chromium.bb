@@ -2,17 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_WORKER_HOST_WORKER_PROCESS_HOST_H_
-#define CHROME_BROWSER_WORKER_HOST_WORKER_PROCESS_HOST_H_
+#ifndef CONTENT_BROWSER_WORKER_HOST_WORKER_PROCESS_HOST_H_
+#define CONTENT_BROWSER_WORKER_HOST_WORKER_PROCESS_HOST_H_
 #pragma once
 
 #include <list>
 
 #include "base/basictypes.h"
 #include "base/file_path.h"
-#include "chrome/browser/browser_child_process_host.h"
 #include "chrome/browser/net/chrome_url_request_context.h"
-#include "chrome/browser/worker_host/worker_document_set.h"
+#include "content/browser/browser_child_process_host.h"
+#include "content/browser/worker_host/worker_document_set.h"
 #include "googleurl/src/gurl.h"
 
 class URLRequestContextGetter;
@@ -184,4 +184,4 @@ class WorkerProcessHost : public BrowserChildProcessHost {
   DISALLOW_COPY_AND_ASSIGN(WorkerProcessHost);
 };
 
-#endif  // CHROME_BROWSER_WORKER_HOST_WORKER_PROCESS_HOST_H_
+#endif  // CONTENT_BROWSER_WORKER_HOST_WORKER_PROCESS_HOST_H_

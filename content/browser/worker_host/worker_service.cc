@@ -2,21 +2,19 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/worker_host/worker_service.h"
+#include "content/browser/worker_host/worker_service.h"
 
 #include <string>
 
 #include "base/command_line.h"
-#include "base/singleton.h"
 #include "base/sys_info.h"
 #include "base/threading/thread.h"
-#include "chrome/browser/content_settings/host_content_settings_map.h"
-#include "chrome/browser/worker_host/worker_message_filter.h"
-#include "chrome/browser/worker_host/worker_process_host.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/render_messages.h"
 #include "chrome/common/render_messages_params.h"
 #include "chrome/common/worker_messages.h"
+#include "content/browser/worker_host/worker_message_filter.h"
+#include "content/browser/worker_host/worker_process_host.h"
 #include "net/base/registry_controlled_domain.h"
 
 const int WorkerService::kMaxWorkerProcessesWhenSharing = 10;

@@ -7,12 +7,12 @@
 #include "base/test/test_timeouts.h"
 #include "base/threading/platform_thread.h"
 #include "chrome/app/chrome_command_ids.h"
-#include "chrome/browser/worker_host/worker_service.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/test/automation/browser_proxy.h"
 #include "chrome/test/automation/tab_proxy.h"
 #include "chrome/test/ui/ui_layout_test.h"
 #include "chrome/test/ui_test_utils.h"
+#include "content/browser/worker_host/worker_service.h"
 #include "net/test/test_server.h"
 
 namespace {

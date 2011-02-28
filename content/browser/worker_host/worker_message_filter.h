@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_WORKER_HOST_WORKER_MESSAGE_FILTER_H_
-#define CHROME_BROWSER_WORKER_HOST_WORKER_MESSAGE_FILTER_H_
+#ifndef CONTENT_BROWSER_WORKER_HOST_WORKER_MESSAGE_FILTER_H_
+#define CONTENT_BROWSER_WORKER_HOST_WORKER_MESSAGE_FILTER_H_
 
 #include "base/callback.h"
-#include "chrome/browser/browser_message_filter.h"
+#include "content/browser/browser_message_filter.h"
 
 class ResourceDispatcherHost;
 class URLRequestContextGetter;
@@ -59,4 +59,4 @@ class WorkerMessageFilter : public BrowserMessageFilter {
   DISALLOW_IMPLICIT_CONSTRUCTORS(WorkerMessageFilter);
 };
 
-#endif  // CHROME_BROWSER_WORKER_HOST_WORKER_MESSAGE_FILTER_H_
+#endif  // CONTENT_BROWSER_WORKER_HOST_WORKER_MESSAGE_FILTER_H_

@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/worker_host/worker_message_filter.h"
+#include "content/browser/worker_host/worker_message_filter.h"
 
 #include "chrome/browser/net/chrome_url_request_context.h"
-#include "chrome/browser/worker_host/message_port_service.h"
-#include "chrome/browser/worker_host/worker_service.h"
 #include "chrome/common/net/url_request_context_getter.h"
 #include "chrome/common/render_messages.h"
 #include "chrome/common/render_messages_params.h"
 #include "chrome/common/worker_messages.h"
+#include "content/browser/worker_host/message_port_service.h"
+#include "content/browser/worker_host/worker_service.h"
 
 WorkerMessageFilter::WorkerMessageFilter(
     int render_process_id,
