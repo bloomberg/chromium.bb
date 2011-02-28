@@ -6,6 +6,8 @@
 
 #include "chrome/test/sync/engine/mock_connection_manager.h"
 
+#include <map>
+
 #include "chrome/browser/sync/engine/syncer_proto_util.h"
 #include "chrome/browser/sync/protocol/bookmark_specifics.pb.h"
 #include "chrome/test/sync/engine/test_id_factory.h"
@@ -356,9 +358,16 @@ void MockConnectionManager::ProcessGetUpdates(ClientToServerMessage* csm,
   // expectation.
   for (int i = FIRST_REAL_MODEL_TYPE; i < MODEL_TYPE_COUNT; ++i) {
     ModelType model_type = syncable::ModelTypeFromInt(i);
-    EXPECT_EQ(expected_filter_[i],
-      IsModelTypePresentInSpecifics(gu.from_progress_marker(), model_type))
+    sync_pb::DataTypeProgressMarker const* progress_marker =
+        GetProgressMarkerForType(gu.from_progress_marker(), model_type);
+    EXPECT_EQ(expected_filter_[i], (progress_marker != NULL))
         << "Syncer requested_types differs from test expectation.";
+    if (progress_marker) {
+      EXPECT_EQ((expected_payloads_.count(model_type) > 0 ?
+                 expected_payloads_[model_type] :
+                 std::string()),
+                progress_marker->notification_hint());
+    }
   }
 
   // Verify that the items we're about to send back to the client are of
@@ -521,7 +530,7 @@ SyncEntity* MockConnectionManager::AddUpdateBookmark(
 
 SyncEntity* MockConnectionManager::GetMutableLastUpdate() {
   sync_pb::GetUpdatesResponse* updates = GetUpdateResponse();
-  EXPECT_TRUE(updates->entries_size() > 0);
+  EXPECT_GT(updates->entries_size(), 0);
   return updates->mutable_entries()->Mutable(updates->entries_size() - 1);
 }
 
@@ -576,6 +585,20 @@ bool MockConnectionManager::IsModelTypePresentInSpecifics(
     }
   }
   return false;
+}
+
+sync_pb::DataTypeProgressMarker const*
+    MockConnectionManager::GetProgressMarkerForType(
+        const google::protobuf::RepeatedPtrField<
+            sync_pb::DataTypeProgressMarker>& filter,
+        syncable::ModelType value) {
+  int data_type_id = syncable::GetExtensionFieldNumberFromModelType(value);
+  for (int i = 0; i < filter.size(); ++i) {
+    if (filter.Get(i).data_type_id() == data_type_id) {
+      return &(filter.Get(i));
+    }
+  }
+  return NULL;
 }
 
 void MockConnectionManager::SetServerReachable() {

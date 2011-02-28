@@ -20,6 +20,22 @@ using syncable::MODEL_TYPE_COUNT;
 class DownloadUpdatesCommandTest : public SyncerCommandTest {
  protected:
   DownloadUpdatesCommandTest() {}
+
+  virtual void SetUp() {
+    workers()->clear();
+    mutable_routing_info()->clear();
+    // GROUP_PASSIVE worker.
+    workers()->push_back(make_scoped_refptr(new ModelSafeWorker()));
+    SyncerCommandTest::SetUp();
+  }
+
+  virtual void SetRoutingInfo(const syncable::ModelTypeSet& types) {
+    for (syncable::ModelTypeSet::const_iterator iter = types.begin();
+         iter != types.end(); ++iter) {
+      (*mutable_routing_info())[*iter] = GROUP_PASSIVE;
+    }
+  }
+
   DownloadUpdatesCommand command_;
  private:
   DISALLOW_COPY_AND_ASSIGN(DownloadUpdatesCommandTest);
@@ -85,6 +101,35 @@ TEST_F(DownloadUpdatesCommandTest, SetRequestedTypes) {
     v.ExpectHasExtension(sync_pb::preference);
     v.ExpectNoOtherFieldsOrExtensions();
   }
+}
+
+TEST_F(DownloadUpdatesCommandTest, ExecuteNoPayloads) {
+  ConfigureMockServerConnection();
+
+  syncable::ModelTypeSet types;
+  types.insert(syncable::AUTOFILL);
+  types.insert(syncable::BOOKMARKS);
+  types.insert(syncable::PREFERENCES);
+  SetRoutingInfo(types);
+  mock_server()->ExpectGetUpdatesRequestTypes(ModelTypeBitSetFromSet(types));
+  command_.ExecuteImpl(session());
+}
+
+TEST_F(DownloadUpdatesCommandTest, ExecuteWithPayloads) {
+  ConfigureMockServerConnection();
+
+  syncable::ModelTypeSet types;
+  types.insert(syncable::AUTOFILL);
+  types.insert(syncable::BOOKMARKS);
+  types.insert(syncable::PREFERENCES);
+  SetRoutingInfo(types);
+  sessions::SyncSourceInfo source;
+  source.types[syncable::AUTOFILL] = "autofill_payload";
+  source.types[syncable::BOOKMARKS] = "bookmark_payload";
+  source.types[syncable::PREFERENCES] = "preferences_payload";
+  mock_server()->ExpectGetUpdatesRequestTypes(ModelTypeBitSetFromSet(types));
+  mock_server()->ExpectGetUpdatesRequestPayloads(source.types);
+  command_.ExecuteImpl(session(source));
 }
 
 }  // namespace browser_sync

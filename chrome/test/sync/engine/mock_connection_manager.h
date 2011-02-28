@@ -17,6 +17,7 @@
 #include "base/scoped_vector.h"
 #include "chrome/browser/sync/engine/net/server_connection_manager.h"
 #include "chrome/browser/sync/protocol/sync.pb.h"
+#include "chrome/browser/sync/sessions/session_state.h"
 #include "chrome/browser/sync/syncable/directory_manager.h"
 #include "chrome/browser/sync/syncable/model_type.h"
 
@@ -213,6 +214,11 @@ class MockConnectionManager : public browser_sync::ServerConnectionManager {
     expected_filter_ = expected_filter;
   }
 
+  void ExpectGetUpdatesRequestPayloads(
+      const browser_sync::sessions::TypePayloadMap& payloads) {
+    expected_payloads_ = payloads;
+  }
+
   void SetServerReachable();
 
   void SetServerNotReachable();
@@ -267,6 +273,11 @@ class MockConnectionManager : public browser_sync::ServerConnectionManager {
   // GetUpdates.from_progress_marker) indicates that a particular ModelType
   // should be included.
   bool IsModelTypePresentInSpecifics(
+      const google::protobuf::RepeatedPtrField<
+          sync_pb::DataTypeProgressMarker>& filter,
+      syncable::ModelType value);
+
+  sync_pb::DataTypeProgressMarker const* GetProgressMarkerForType(
       const google::protobuf::RepeatedPtrField<
           sync_pb::DataTypeProgressMarker>& filter,
       syncable::ModelType value);
@@ -338,6 +349,8 @@ class MockConnectionManager : public browser_sync::ServerConnectionManager {
   bool use_legacy_bookmarks_protocol_;
 
   std::bitset<syncable::MODEL_TYPE_COUNT> expected_filter_;
+
+  browser_sync::sessions::TypePayloadMap expected_payloads_;
 
   int num_get_updates_requests_;
 

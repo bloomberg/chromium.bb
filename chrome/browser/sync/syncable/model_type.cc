@@ -267,6 +267,15 @@ bool ModelTypeBitSetFromString(
   return true;
 }
 
+ModelTypeBitSet ModelTypeBitSetFromSet(const ModelTypeSet& set) {
+  ModelTypeBitSet bitset;
+  for (ModelTypeSet::const_iterator iter = set.begin(); iter != set.end();
+       ++iter) {
+    bitset.set(*iter);
+  }
+  return bitset;
+}
+
 ListValue* ModelTypeBitSetToValue(const ModelTypeBitSet& model_types) {
   ListValue* value = new ListValue();
   for (int i = FIRST_REAL_MODEL_TYPE; i < MODEL_TYPE_COUNT; ++i) {

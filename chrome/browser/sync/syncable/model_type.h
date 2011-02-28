@@ -117,6 +117,9 @@ bool ModelTypeBitSetFromString(
     const std::string& model_type_bitset_string,
     ModelTypeBitSet* model_types);
 
+// Convert a ModelTypeSet to a ModelTypeBitSet.
+ModelTypeBitSet ModelTypeBitSetFromSet(const ModelTypeSet& set);
+
 // Caller takes ownership of returned list.
 ListValue* ModelTypeBitSetToValue(const ModelTypeBitSet& model_types);
 

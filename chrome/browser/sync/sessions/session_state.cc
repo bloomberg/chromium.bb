@@ -4,7 +4,10 @@
 
 #include "chrome/browser/sync/sessions/session_state.h"
 
+#include <map>
 #include <set>
+#include <string>
+#include <utility>
 #include <vector>
 
 #include "base/base64.h"
@@ -68,6 +71,10 @@ void CoalescePayloads(TypePayloadMap* original,
 
 SyncSourceInfo::SyncSourceInfo()
     : updates_source(sync_pb::GetUpdatesCallerInfo::UNKNOWN) {}
+
+SyncSourceInfo::SyncSourceInfo(
+    const TypePayloadMap& t)
+    : updates_source(sync_pb::GetUpdatesCallerInfo::UNKNOWN), types(t) {}
 
 SyncSourceInfo::SyncSourceInfo(
     const sync_pb::GetUpdatesCallerInfo::GetUpdatesSource& u,

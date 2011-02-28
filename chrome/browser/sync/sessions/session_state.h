@@ -13,7 +13,10 @@
 #define CHROME_BROWSER_SYNC_SESSIONS_SESSION_STATE_H_
 #pragma once
 
+#include <map>
 #include <set>
+#include <string>
+#include <utility>
 #include <vector>
 
 #include "base/basictypes.h"
@@ -62,6 +65,8 @@ void CoalescePayloads(TypePayloadMap* original, const TypePayloadMap& update);
 // specific payloads which should be sent to the server.
 struct SyncSourceInfo {
   SyncSourceInfo();
+  SyncSourceInfo(
+      const TypePayloadMap& t);
   SyncSourceInfo(
       const sync_pb::GetUpdatesCallerInfo::GetUpdatesSource& u,
       const TypePayloadMap& t);

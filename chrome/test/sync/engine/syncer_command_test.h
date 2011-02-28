@@ -84,21 +84,26 @@ class SyncerCommandTestWithParam : public testing::TestWithParam<T>,
   sessions::SyncSessionContext* context() const { return context_.get(); }
   sessions::SyncSession::Delegate* delegate() { return this; }
   ModelSafeWorkerRegistrar* registrar() { return this; }
-  // Lazily create a session requesting all datatypes.
+
+  // Lazily create a session requesting all datatypes with no payload.
   sessions::SyncSession* session() {
+    sessions::TypePayloadMap types =
+        sessions::MakeTypePayloadMapFromRoutingInfo(routing_info_,
+                                                    std::string());
+    return session(sessions::SyncSourceInfo(types));
+  }
+
+  // Create a session with the provided source.
+  sessions::SyncSession* session(const sessions::SyncSourceInfo& source) {
     if (!session_.get()) {
       std::vector<ModelSafeWorker*> workers;
       GetWorkers(&workers);
-      ModelSafeRoutingInfo routes = routing_info();
-      sessions::TypePayloadMap types =
-          sessions::MakeTypePayloadMapFromRoutingInfo(routes, std::string());
-      session_.reset(new sessions::SyncSession(context(), delegate(),
-          sessions::SyncSourceInfo(sync_pb::GetUpdatesCallerInfo::UNKNOWN,
-                                   types),
-          routing_info_, workers));
+      session_.reset(new sessions::SyncSession(context(), delegate(), source,
+                     routing_info_, workers));
     }
     return session_.get();
   }
+
   void ClearSession() {
     session_.reset();
   }

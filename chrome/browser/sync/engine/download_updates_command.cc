@@ -43,12 +43,21 @@ void DownloadUpdatesCommand::ExecuteImpl(SyncSession* session) {
 
   // Request updates for all enabled types.
   syncable::ModelTypeBitSet enabled_types;
+  const sessions::TypePayloadMap& type_payload_map = session->source().types;
   for (ModelSafeRoutingInfo::const_iterator i = session->routing_info().begin();
        i != session->routing_info().end(); ++i) {
     syncable::ModelType model_type = syncable::ModelTypeFromInt(i->first);
     enabled_types[i->first] = true;
-    dir->GetDownloadProgress(model_type,
-        get_updates->add_from_progress_marker());
+    sync_pb::DataTypeProgressMarker* progress_marker =
+        get_updates->add_from_progress_marker();
+    dir->GetDownloadProgress(model_type, progress_marker);
+
+    // Set notification hint if present.
+    sessions::TypePayloadMap::const_iterator type_payload =
+        type_payload_map.find(i->first);
+    if (type_payload != type_payload_map.end()) {
+      progress_marker->set_notification_hint(type_payload->second);
+    }
   }
 
   VLOG(1) << "Getting updates for types " << enabled_types.to_string();
@@ -60,8 +69,6 @@ void DownloadUpdatesCommand::ExecuteImpl(SyncSession* session) {
   get_updates->set_fetch_folders(true);
 
   // Set GetUpdatesMessage.GetUpdatesCallerInfo information.
-  // TODO(zea): send SyncSourceInfo's payloads to server once we know it's all
-  // working properly.
   get_updates->mutable_caller_info()->set_source(
       session->TestAndSetSource().updates_source);
   get_updates->mutable_caller_info()->set_notifications_enabled(
