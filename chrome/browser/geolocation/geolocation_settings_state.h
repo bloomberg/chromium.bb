@@ -9,8 +9,8 @@
 #include <map>
 #include <set>
 
-#include "chrome/browser/tab_contents/navigation_controller.h"
 #include "chrome/common/content_settings.h"
+#include "content/browser/tab_contents/navigation_controller.h"
 
 class GeolocationContentSettingsMap;
 

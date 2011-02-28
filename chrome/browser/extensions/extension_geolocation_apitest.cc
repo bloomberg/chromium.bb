@@ -3,9 +3,9 @@
 // found in the LICENSE file.
 
 #include "chrome/browser/extensions/extension_apitest.h"
-#include "chrome/browser/geolocation/location_arbitrator.h"
-#include "chrome/browser/geolocation/mock_location_provider.h"
-#include "chrome/browser/geolocation/arbitrator_dependency_factories_for_test.h"
+#include "content/browser/geolocation/location_arbitrator.h"
+#include "content/browser/geolocation/mock_location_provider.h"
+#include "content/browser/geolocation/arbitrator_dependency_factories_for_test.h"
 
 class GeolocationApiTest : public ExtensionApiTest {
  public:

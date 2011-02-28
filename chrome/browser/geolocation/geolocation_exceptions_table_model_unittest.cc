@@ -3,7 +3,6 @@
 // found in the LICENSE file.
 
 #include "chrome/browser/geolocation/geolocation_exceptions_table_model.h"
-
 #include "chrome/common/content_settings_helper.h"
 #include "chrome/test/testing_profile.h"
 #include "content/browser/browser_thread.h"

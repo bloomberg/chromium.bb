@@ -2,16 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/geolocation/geolocation_content_settings_map.h"
-
 #include "base/message_loop.h"
-#include "chrome/browser/browser_thread.h"
 #include "chrome/browser/content_settings/content_settings_details.h"
+#include "chrome/browser/geolocation/geolocation_content_settings_map.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/common/notification_registrar.h"
 #include "chrome/common/notification_service.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/testing_profile.h"
+#include "content/browser/browser_thread.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 

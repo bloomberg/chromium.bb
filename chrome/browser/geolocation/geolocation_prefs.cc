@@ -4,7 +4,7 @@
 
 #include "chrome/browser/geolocation/geolocation_prefs.h"
 
-#include "chrome/browser/geolocation/access_token_store.h"
+#include "content/browser/geolocation/access_token_store.h"
 
 namespace geolocation {
 void RegisterPrefs(PrefService* prefs) {

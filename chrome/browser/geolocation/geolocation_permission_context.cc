@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/geolocation/geolocation_permission_context.h"
+#include "content/browser/geolocation/geolocation_permission_context.h"
 
 #include <functional>
 #include <string>
@@ -12,15 +12,10 @@
 #include "chrome/browser/browser_thread.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/geolocation/geolocation_content_settings_map.h"
-#include "chrome/browser/geolocation/geolocation_provider.h"
 #include "chrome/browser/google/google_util.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/renderer_host/render_process_host.h"
-#include "chrome/browser/renderer_host/render_view_host.h"
-#include "chrome/browser/renderer_host/render_view_host_notification_task.h"
 #include "chrome/browser/tab_contents/infobar_delegate.h"
-#include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/browser/tab_contents/tab_util.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/notification_registrar.h"
@@ -28,6 +23,10 @@
 #include "chrome/common/notification_type.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/render_messages.h"
+#include "content/browser/geolocation/geolocation_provider.h"
+#include "content/browser/renderer_host/render_process_host.h"
+#include "content/browser/renderer_host/render_view_host.h"
+#include "content/browser/tab_contents/tab_contents.h"
 #include "grit/generated_resources.h"
 #include "grit/locale_settings.h"
 #include "grit/theme_resources.h"
@@ -595,9 +594,12 @@ void GeolocationPermissionContext::NotifyPermissionSet(
                                                  allowed);
   }
 
-  CallRenderViewHost(render_process_id, render_view_id, &RenderViewHost::Send,
-      new ViewMsg_Geolocation_PermissionSet(render_view_id, bridge_id,
-                                            allowed));
+  RenderViewHost* r = RenderViewHost::FromID(render_process_id, render_view_id);
+  if (r) {
+    r->Send(new ViewMsg_Geolocation_PermissionSet(
+        render_view_id, bridge_id, allowed));
+  }
+
   if (allowed) {
     BrowserThread::PostTask(BrowserThread::IO, FROM_HERE, NewRunnableMethod(
         this, &GeolocationPermissionContext::NotifyArbitratorPermissionGranted,
