@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -17,33 +17,13 @@ cr.define('options', function() {
   cr.addSingletonGetter(Preferences);
 
   /**
-   * Extracts preference value.
-   * @param {Object} dict Map of preference values passed to fetchPrefs
-   *     callback.
-   * @param {string} name Preference name.
-   * @return preference value.
-   */
-  Preferences.getPref = function (dict, name) {
-    var parts = name.split('.');
-    var cur = dict;
-    for (var part; part = parts.shift(); ) {
-      if (cur[part]) {
-        cur = cur[part];
-      } else {
-        return null;
-      }
-    }
-    return cur;
-  };
-
-  /**
    * Sets value of a boolean preference.
    * and signals its changed value.
    * @param {string} name Preference name.
    * @param {boolean} value New preference value.
    * @param {string} metric User metrics identifier.
    */
-  Preferences.setBooleanPref = function (name, value, metric) {
+  Preferences.setBooleanPref = function(name, value, metric) {
     var argumentList = [name, Boolean(value)];
     if (metric != undefined) argumentList.push(metric);
     chrome.send('setBooleanPref', argumentList);
