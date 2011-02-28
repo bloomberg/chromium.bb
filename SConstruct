@@ -1347,8 +1347,8 @@ def AutoDepsCommand(env, name, command, extra_deps=[]):
         # Do not allow this, because it would cause "deps" to get out
         # of sync with the indexes in "command".
         # See http://code.google.com/p/nativeclient/issues/detail?id=1086
-        raise AssertionError('Argument to CommandTest() actually contains '
-                             'multiple arguments: %r' % c)
+        raise AssertionError('Argument to AutoDepsCommand() actually contains '
+                             'multiple (or zero) arguments: %r' % arg)
       command[index] = '${SOURCES[%d].abspath}' % len(deps)
       deps.append(arg)
 
