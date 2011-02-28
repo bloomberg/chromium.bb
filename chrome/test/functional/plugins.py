@@ -190,12 +190,9 @@ class PluginsTest(pyauto.PyUITest):
   def testBlockPluginException(self):
     """Verify that plugins can be blocked on a domain by adding
     an exception(s)."""
-    # We are using the same live site in order to detect if the web page
-    # is using shockwave flash process.
-    # On few test machines navigation takes more than the default time so
-    # setting 1 min of wait time here.
-    test_utils.CallFunctionWithNewTimeout(self, 1 * 60 * 1000,
-        lambda: self.NavigateToURL('http://vimeo.com'))
+    url = self.GetHttpURLForDataPath(os.path.join('plugin',
+                                                  'flash-clicktoplay.html'))
+    self.NavigateToURL(url)
     # Wait until Shockwave Flash plugin process loads.
     self.assertTrue(self.WaitUntil(
         lambda: self._GetPluginPID('Shockwave Flash') is not None),
@@ -205,9 +202,9 @@ class PluginsTest(pyauto.PyUITest):
         lambda: self._GetPluginPID('Shockwave Flash') is None),
         msg='Expected Shockwave Flash plugin to die after killing')
 
-    # Add an exception to block plugins on vimeo.com.
+    # Add an exception to block plugins on localhost.
     self.SetPrefs(pyauto.kContentSettingsPatterns,
-                 {'[*.]vimeo.com': {'plugins': 2}})
+                 {'[*.]127.0.0.1': {'plugins': 2}})
     self.GetBrowserWindow(0).GetTab(0).Reload()
     self.assertFalse(self._GetPluginPID('Shockwave Flash'),
                      msg='Shockwave Flash Plug-in not blocked.')
