@@ -5,168 +5,72 @@
   <head>
     <META HTTP-EQUIV="Pragma" CONTENT="no-cache" />
     <META HTTP-EQUIV="Expires" CONTENT="-1" />
-    <style type="text/css">
-      pre.notrun { background-color: skyblue }
-      pre.pass { background-color: lime }
-      pre.fail { background-color: red }
-    </style>
+    <script type="text/javascript" src="nacltest.js"></script>
     <script type="application/x-javascript">
       //<![CDATA[
-var logElement = 0;
-var plugin = 0;
-var TOTAL_TESTS = 8;
-var testsNotRun = TOTAL_TESTS;
-var testsPassed = 0;
-var testTimeoutHandler = 0;
-var testTimedOut = false;
+function setupTests(plugin) {
 
-// This function relies on global variable logElement whose value is set in
-// startTests.
-function setTestStatus(testName, message, success) {
-  logElementText = testName + ' ' + message + ': ' + success;
-  logElement.textContent += logElementText;
-  if (success) {
-    logElement.className = 'pass';
-    ++testsPassed;
-  } else {
-    logElement.className = 'fail';
-  }
-  --testsNotRun;
-}
+    tester.addTest('PPB_Core::GetTime', function() {
+      assert(plugin.testGetTime());
+    });
 
-// This is expected to be called within untrusted code, function
-// CompletionCallback defined in scriptable_object.c
-var CallOnMainThreadCallback = function() {
-  setTestStatus('\nPPB_Core::CallOnMainThread', 'completion callback called',
-                true);
+    tester.addTest('PPB_Core::GetTimeTicks', function() {
+      assert(plugin.testGetTimeTicks());
+    });
 
-  // This callback is called as a result of the last test in startTests.  Since
-  // it is the last test, check the count of tests run and conditionally remove
-  // timeout handler.
-  if (0 == testsNotRun) {
-    if (0 != testTimeoutHandler) {
-      clearTimeout(testTimeoutHandler);
-      testTimeoutHandler = 0;
-    }
-  }
-}
+    tester.addTest('PPB_Core::IsMainThread', function() {
+      assert(plugin.testIsMainThread());
+    });
 
-// Test watchdog timer. Makes sure the test does not run too long if
-// something hangs.
-function handleTestTimeout() {
-  clearTimeout(testTimeoutHandler);
-  testTimeoutHandler = 0;
-  testTimedOut = true;
-}
+    tester.addTest('PPB_Core::MemAlloc+MemFree', function() {
+      assert(plugin.testMemAllocAndMemFree());
+    });
 
-function startTests() {
-  plugin = document.getElementById('nacl');
-  testTimeoutHandler = setTimeout('handleTestTimeout()', 10000);
-  var TESTS = [
-    {
-      name: 'PPB_Core::GetTime',
-      elementId: 'getTime',
-      testFunction: function() { return plugin.testGetTime(); }
-    },
-    {
-      name: 'PPB_Core::GetTimeTicks',
-      elementId: 'getTimeTicks',
-      testFunction: function() { return plugin.testGetTimeTicks(); }
-    },
-    {
-      name: 'PPB_Core::IsOnMainThread',
-      elementId: 'isOnMainThread',
-      testFunction: function() { return plugin.testIsMainThread(); }
-    },
-    {
-      name: 'PPB_Core::MemAlloc and PPB_Core::MemFree',
-      elementId: 'memAllocAndMemFree',
-      testFunction: function() { return plugin.testMemAllocAndMemFree(); }
-    },
-    {
-      name: 'PPB_Core::AddRefResource and PPB_Core::Release',
-      elementId: 'addAndReleaseResource',
-      testFunction: function() { return plugin.testAddRefAndReleaseResource(); }
-    },
-    {
-      name: 'PPB_Core::AddRefResource and PPB_Core::Release' +
-            ' invalid PP_Resource',
-      elementId: 'addAndReleaseInvalidResource',
-      testFunction: function() {
-          return plugin.testAddRefAndReleaseInvalidResource(); }
-    },
-    {
-      name: 'PPB_Core::CallOnMainThread',
-      elementId: 'callOnMainThread',
-      testFunction: function() { return plugin.testCallOnMainThread(); }
-    }
-  ];
-  for (var j = 0; j < TESTS.length; j++) {
-    test = TESTS[j];
-    logElement = document.getElementById(test.elementId);
-    setTestStatus(test.name, 'invoked', test.testFunction());
-  }
+    tester.addTest('PPB_Core::AddRefResource+ReleaseResource', function() {
+      assert(plugin.testAddRefAndReleaseResource());
+    });
+
+    tester.addTest('PPB_Core::AddRefResource+Release(invalid)', function() {
+      assert(plugin.testAddRefAndReleaseInvalidResource());
+    });
+    
+    // TODO(ncbray) async test harness
+    tester.addTest('PPB_Core::CallOnMainThread', function() {
+      assert(plugin.testCallOnMainThread());
+      var got_callback = false;
+
+      // Deliberately global - this what the nexe expects.
+      CallOnMainThreadCallback = function() {
+        log('CallOnMainThread callback!');
+        got_callback = true;
+      }
+
+      function wait() {
+        if (!got_callback) {
+          halt_and_callback(1, wait);
+        } else {
+          log('Done waiting.');
+        }
+      }
+
+      wait();
+    });
 }
       //]]>
     </script>
     <title>PPAPI PPB_Core Test</title>
   </head>
-  <body onload="nacllib.waitForModulesAndRunTests();"
-        onunload="nacllib.cleanUp();" >
+  <body>
     <h1>PPAPI PPB_Core Test</h1>
 
-    <table border=5 cellpadding=5%>
-      <tr><td><pre id='getTime' class='notrun'></pre>
-      <tr><td><pre id='getTimeTicks' class='notrun'></pre>
-      <tr><td><pre id='isOnMainThread' class='notrun'></pre>
-      <tr><td><pre id='memAllocAndMemFree' class='notrun'></pre>
-      <tr><td><pre id='addAndReleaseResource' class='notrun'></pre>
-      <tr><td><pre id='addAndReleaseInvalidResource' class='notrun'></pre>
-      <tr><td><pre id='callOnMainThread' class='notrun'></pre>
-    </table>
-
-    <div id="status">NO-STATUS</div>
-
-    <embed type="application/x-nacl" id="nacl"
+    <embed type="application/x-nacl" id="test_nexe"
            name="nacl_module"
            nacl="ppapi_core.nmf"
            width="0" height="0" />
 
-    <script type="text/javascript" src="nacl_js_lib.js"></script>
     <script type="text/javascript">
       //<![CDATA[
-      var nacllib = new NaclLib('nacl_module', 'status', 500);
-
-      // Returns true (for "wait") to the NaclLib test driver until all of the
-      // tests are complete.  I.e., either all of the file load callbacks have
-      // completed successfully or an error has occurred.
-      nacllib.wait = function() {  // First call after the module was loaded.
-        if (0 == plugin) {
-          startTests();
-          return true;
-        } else if (testTimedOut) {  // Testing took too long.
-          return false;
-        } else if (0 < testsNotRun) {  // Still waiting for tests to finish.
-          return true;
-        } else { // Testing is complete.  Allow the test driver to call test().
-          return false;
-        }
-      }
-
-      // Returns the test status to the NaclLib test driver.  This is called
-      // by the NaclLib test driver after the wait() method has returned false.
-      // I.e., this is called only after all tests are complete.
-      nacllib.test = function() {
-        // The actual testing is all finished by the time this method is
-        // called, so just return the test results.
-        if (testsPassed == TOTAL_TESTS) {
-          return '';  // success
-        } else if (testTimedOut) {
-          return 'Test timed out.';
-        } else {
-          return 'Test failed.';
-        }
-      }
+      setupTests($('test_nexe'));
       //]]>
     </script>
   </body>

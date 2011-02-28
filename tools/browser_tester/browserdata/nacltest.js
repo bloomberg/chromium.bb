@@ -33,18 +33,24 @@ function RPCWrapper() {
 
   // Called if URL-encoded RPC gets a 404, can't find the server, etc. 
   function handleRPCFailure(name, message) {
-    this_.logLocalError('RPC failure for ' + name + ': ' + message);
+    // This isn't treated as a testing error - the test can be run without a
+    // web server that understands RPC.
+    this_.logLocal('RPC failure for ' + name + ': ' + message, 'red');
     this_.disableRPC();
   }
 
-  // URL-encoded RPC always responds 'OK'.  If we get anything else, worry.
-  function handleRPCResponse(name, message) {
-    if (message != 'OK') {
-      this_.logLocalError('Unexpected RPC response to ' + name +
-                          ': \'' + message + '\'');
+  function handleRPCResponse(name, req) {
+    if (req.status == 200) {
+      // URL-encoded RPC always responds 'OK'.  If we get anything else, worry.
+      if (req.responseText != 'OK') {
+        this_.logLocalError('Unexpected RPC response to ' + name +
+                            ': \'' + req.responseText + '\'');
+      }
+    } else {
+      handleRPCFailure(name, req.status.toString());
     }
   }
-
+  
   // Performs a URL-encoded RPC call, given a function name and a dictionary
   // (actually just an object - it's a JS idiom) of parameters.
   function rpcCall(name, params) {
@@ -58,12 +64,10 @@ function RPCWrapper() {
       var url = '/TESTER/' + name + '?' + args.join('&');
       var req = new XMLHttpRequest();
       // Async result handler
-      req.onreadystatechange = function() {
-        if (req.readyState == 4) {
-          if (req.status == 200) {
-            handleRPCResponse(name, req.responseText);
-          } else {
-            handleRPCFailure(name, req.status.toString());
+      if (this_.async) {
+        req.onreadystatechange = function() {
+          if (req.readyState == XMLHttpRequest.DONE) {
+            handleRPCResponse(name, req);
           }
         }
       }
@@ -71,7 +75,7 @@ function RPCWrapper() {
         req.open('GET', url, this_.async);
         req.send();
         if (!this_.async) {
-          handleRPCResponse(name, req.responseText);
+          handleRPCResponse(name, req);
         }
       } catch (err) {
         handleRPCFailure(name, err.toString());
@@ -89,7 +93,7 @@ function RPCWrapper() {
   this.disableRPC = function() {
     if (this.rpc_available) {
       this.rpc_available = false;
-      this.logLocalError('Disabling RPC');
+      this.logLocal('Disabling RPC', 'red');
     }
   }
 
