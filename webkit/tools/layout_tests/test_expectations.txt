@@ -34,3 +34,6 @@ BUG_PFELDMAN : http/tests/inspector/network/network-timing.html = TIMEOUT TEXT
 BUG_PFELDMAN : http/tests/inspector/network/network-size.html = TIMEOUT TEXT
 
 BUGCR_74414 : fast/overflow/horizontal-scroll-after-back.html = TIMEOUT
+
+BUGCR_74418 WIN LINUX RELEASE : transitions/default-timing-function.html = IMAGE
+BUGCR_74418 MAC DEBUG : transitions/default-timing-function.html = PASS
