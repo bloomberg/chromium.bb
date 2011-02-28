@@ -15,15 +15,15 @@ namespace path_parser {
 const char* kMachineNamePolicyVarName = "${machine_name}";
 const char* kUserNamePolicyVarName = "${user_name}";
 
-// Replaces all variable occurances in the policy string with the respective
+// Replaces all variable occurrences in the policy string with the respective
 // system settings values.
 FilePath::StringType ExpandPathVariables(
     const FilePath::StringType& untranslated_string) {
   FilePath::StringType result(untranslated_string);
-  // Translate two speacial variables ${user_name} and ${machine_name}
+  // Translate two special variables ${user_name} and ${machine_name}
   size_t position = result.find(kUserNamePolicyVarName);
   if (position != std::string::npos) {
-    struct passwd *user = getpwuid(geteuid());
+    struct passwd* user = getpwuid(geteuid());
     if (user) {
       result.replace(position, strlen(kUserNamePolicyVarName), user->pw_name);
     } else {

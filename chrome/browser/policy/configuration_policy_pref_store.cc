@@ -91,9 +91,9 @@ class ConfigurationPolicyPrefKeeper
   // handled and assumes ownership of |value| in that case.
   bool ApplyAutoFillPolicy(ConfigurationPolicyType policy, Value* value);
 
-  // Processes proxy-specific policies. Returns true if the specified policy
-  // is a proxy-related policy. ApplyProxyPolicy assumes the ownership
-  // of |value| in the case that the policy is proxy-specific.
+  // Processes download directory policy. Returns true if the specified policy
+  // is the download directory policy. ApplyDownloadDirPolicy assumes the
+  // ownership of |value| in the case that the policy is recognized.
   bool ApplyDownloadDirPolicy(ConfigurationPolicyType policy, Value* value);
 
   // Make sure that the |path| if present in |prefs_|.  If not, set it to
@@ -423,7 +423,8 @@ bool ConfigurationPolicyPrefKeeper::ApplyDownloadDirPolicy(
   // expanded string.
   if (policy == kPolicyDownloadDirectory) {
     FilePath::StringType string_value;
-    DCHECK(value->GetAsString(&string_value));
+    bool result = value->GetAsString(&string_value);
+    DCHECK(result);
     FilePath::StringType expanded_value =
         policy::path_parser::ExpandPathVariables(string_value);
     prefs_.SetValue(prefs::kDownloadDefaultDirectory,

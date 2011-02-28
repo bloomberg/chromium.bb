@@ -74,7 +74,7 @@ FilePath::StringType ExpandPathVariables(
                           machinename.get(), &return_length);
       std::wstring machinename_string(machinename.get());
       result.replace(
-        position, wcslen(kMachineNamePolicyVarName), machinename_string);
+          position, wcslen(kMachineNamePolicyVarName), machinename_string);
     }
   }
   return result;
