@@ -2,6 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+// Maximum numer of lines to record in the debug log.
+// Only the most recent <n> lines are displayed.
+var MAX_DEBUG_LOG_SIZE = 1000;
+
 // Message id so that we can identify (and ignore) message fade operations for
 // old messages.  This starts at 1 and is incremented for each new message.
 chromoting.messageId = 1;
@@ -18,8 +22,9 @@ function init() {
   // Setup the callback that the plugin will call when the connection status
   // has changes and the UI needs to be updated. It needs to be an object with
   // a 'callback' property that contains the callback function.
-  plugin.connectionInfoUpdate = pluginCallback;
-  plugin.loginChallenge = pluginLoginChallenge;
+  plugin.connectionInfoUpdate = connectionInfoUpdateCallback;
+  plugin.debugInfoUpdate = debugInfoUpdateCallback;
+  plugin.loginChallenge = loginChallengeCallback;
 
   console.log('connect request received: ' + chromoting.hostname + ' by ' +
               chromoting.username);
@@ -35,6 +40,19 @@ function init() {
   document.getElementById('title').innerText = chromoting.hostname;
 }
 
+function toggleDebugLog() {
+  debugLog = document.getElementById("debug_log");
+  toggleButton = document.getElementById("debug_log_toggle");
+
+  if (!debugLog.style.display || debugLog.style.display == "none") {
+    debugLog.style.display = "block";
+    toggleButton.value = "Hide Debug Log";
+  } else {
+    debugLog.style.display = "none";
+    toggleButton.value = "Show Debug Log";
+  }
+}
+
 function submitLogin() {
   var username = document.getElementById("username").value;
   var password = document.getElementById("password").value;
@@ -48,7 +66,7 @@ function submitLogin() {
  * This is the callback method that the plugin calls to request username and
  * password for logging into the remote host.
  */
-function pluginLoginChallenge() {
+function loginChallengeCallback() {
   // Make the login panel visible.
   document.getElementById("login_panel").style.display = "block";
 }
@@ -97,7 +115,7 @@ function showClientStateMessage(message, duration) {
  * This is that callback that the plugin invokes to indicate that the
  * host/client connection status has changed.
  */
-function pluginCallback() {
+function connectionInfoUpdateCallback() {
   var status = chromoting.plugin.status;
   var quality = chromoting.plugin.quality;
 
@@ -187,4 +205,37 @@ function fade(name, id, val, delta, delay) {
       e.style.display = 'none';
     }
   }
+}
+
+/**
+ * This is that callback that the plugin invokes to indicate that there
+ * is additional debug log info to display.
+ */
+function debugInfoUpdateCallback() {
+  var debugInfo = chromoting.plugin.debugInfo;
+  addToDebugLog(debugInfo);
+}
+
+/**
+ * Add the given message to the debug log.
+ *
+ * @param {string} message The debug info to add to the log.
+ */
+function addToDebugLog(message) {
+  console.log('DebugLog: ' + message);
+
+  var debugLog = document.getElementById('debug_log');
+
+  // Remove lines from top if we've hit our max log size.
+  if (debugLog.childNodes.length == MAX_DEBUG_LOG_SIZE) {
+    debugLog.removeChild(debugLog.firstChild);
+  }
+
+  // Add the new <p> to the end of the debug log.
+  var p = document.createElement('p');
+  p.appendChild(document.createTextNode(message));
+  debugLog.appendChild(p);
+
+  // Scroll to bottom of div
+  debugLog.scrollTop = debugLog.scrollHeight;
 }

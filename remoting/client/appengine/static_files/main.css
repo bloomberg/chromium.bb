@@ -105,7 +105,8 @@ a.hostentry { text-decoration: none; }
   scrollbars: no;
 }
 
-.status_msg {
+/* Old overlay-style status message. */
+.status_msg_overlay {
   -webkit-user-select: none;
   position: absolute;
   left: 20px;
@@ -115,8 +116,36 @@ a.hostentry { text-decoration: none; }
   font-weight: bold;
 }
 
+.status_msg {
+  margin: 5px;
+}
+
 .error_msg {
   color: red;
+}
+
+.debug_log {
+  -webkit-user-select: text;
+  padding: 0px;
+  margin: 0px;
+  position: fixed;
+  bottom: 0px;
+  width: 100%;
+  height: 150px;
+  overflow: auto;
+  font-family: monospace;
+  font-weight: bold;
+  line-height: 0.5em;
+  border: 2px solid #ffffff;
+  display: none;
+  opacity: 0.9;
+  background-color: #ffffff;
+  z-index: 1;
+}
+
+.debug_log_toggle {
+  line-height: 0.8em;
+  float: right;
 }
 
 .gaia_login_panel {

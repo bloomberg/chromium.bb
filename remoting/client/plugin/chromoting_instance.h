@@ -76,6 +76,8 @@ class ChromotingInstance : public pp::Instance {
   void SubmitLoginInfo(const std::string& username,
                        const std::string& password);
 
+  void LogDebugInfo(const std::string& info);
+
  private:
   FRIEND_TEST_ALL_PREFIXES(ChromotingInstanceTest, TestCaseSetup);
 

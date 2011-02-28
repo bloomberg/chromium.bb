@@ -90,6 +90,8 @@ bool ChromotingInstance::Init(uint32_t argc,
 void ChromotingInstance::Connect(const ClientConfig& config) {
   DCHECK(CurrentlyOnPluginThread());
 
+  LogDebugInfo(StringPrintf("Connecting to %s as %s", config.host_jid.c_str(),
+                            config.username.c_str()).c_str());
   client_.reset(new ChromotingClient(config,
                                      &context_,
                                      host_connection_.get(),
@@ -108,6 +110,7 @@ void ChromotingInstance::Connect(const ClientConfig& config) {
 void ChromotingInstance::Disconnect() {
   DCHECK(CurrentlyOnPluginThread());
 
+  LogDebugInfo("Disconnecting from host");
   if (client_.get()) {
     client_->Stop();
   }
@@ -198,6 +201,10 @@ void ChromotingInstance::SubmitLoginInfo(const std::string& username,
   host_connection_->host_stub()->BeginSessionRequest(
       credentials,
       new DeleteTask<protocol::LocalLoginCredentials>(credentials));
+}
+
+void ChromotingInstance::LogDebugInfo(const std::string& info) {
+  GetScriptableObject()->LogDebugInfo(info);
 }
 
 pp::Var ChromotingInstance::GetInstanceObject() {

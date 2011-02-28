@@ -13,12 +13,14 @@ using pp::Var;
 
 namespace remoting {
 
-const char kStatusAttribute[] = "status";
-const char kQualityAttribute[] = "quality";
-const char kDesktopWidth[] = "desktopWidth";
-const char kDesktopHeight[] = "desktopHeight";
 const char kConnectionInfoUpdate[] = "connectionInfoUpdate";
+const char kDebugInfoUpdate[] = "debugInfoUpdate";
+const char kDebugInfoAttribute[] = "debugInfo";
+const char kDesktopHeight[] = "desktopHeight";
+const char kDesktopWidth[] = "desktopWidth";
 const char kLoginChallenge[] = "loginChallenge";
+const char kQualityAttribute[] = "quality";
+const char kStatusAttribute[] = "status";
 
 ChromotingScriptableObject::ChromotingScriptableObject(
     ChromotingInstance* instance)
@@ -51,7 +53,11 @@ void ChromotingScriptableObject::Init() {
   AddAttribute("QUALITY_GOOD", Var(QUALITY_GOOD));
   AddAttribute("QUALITY_BAD", Var(QUALITY_BAD));
 
+  // Debug info to display.
+  AddAttribute(kDebugInfoAttribute, Var());
+
   AddAttribute(kConnectionInfoUpdate, Var());
+  AddAttribute(kDebugInfoUpdate, Var());
   AddAttribute(kLoginChallenge, Var());
   AddAttribute(kDesktopWidth, Var(0));
   AddAttribute(kDesktopHeight, Var(0));
@@ -126,7 +132,7 @@ void ChromotingScriptableObject::GetAllPropertyNames(
 void ChromotingScriptableObject::SetProperty(const Var& name,
                                              const Var& value,
                                              Var* exception) {
-  // TODO(ajwong): Check if all these name.is_string() sentinels are required.   120   // No externally settable properties for Chromoting.
+  // TODO(ajwong): Check if all these name.is_string() sentinels are required.
   if (!name.is_string()) {
     *exception = Var("SetProperty expects a string for the name.");
     return;
@@ -136,6 +142,7 @@ void ChromotingScriptableObject::SetProperty(const Var& name,
   // chromoting_scriptable_object.h for the object interface definition.
   std::string property_name = name.AsString();
   if (property_name != kConnectionInfoUpdate &&
+      property_name != kDebugInfoUpdate &&
       property_name != kLoginChallenge &&
       property_name != kDesktopWidth &&
       property_name != kDesktopHeight) {
@@ -177,6 +184,17 @@ void ChromotingScriptableObject::SetConnectionInfo(ConnectionStatus status,
   }
 }
 
+void ChromotingScriptableObject::LogDebugInfo(const std::string& info) {
+  int debug_info_index = property_names_[kDebugInfoAttribute];
+
+  // Update the debug info string.
+  // Note that this only stores the most recent debug string.
+  properties_[debug_info_index].attribute = Var(info);
+
+  // Signal the client UI to get the updated debug info.
+  SignalDebugInfoChange();
+}
+
 void ChromotingScriptableObject::SetDesktopSize(int width, int height) {
   int width_index = property_names_[kDesktopWidth];
   int height_index = property_names_[kDesktopHeight];
@@ -212,7 +230,24 @@ void ChromotingScriptableObject::SignalConnectionInfoChange() {
   cb.Call(Var(), 0, NULL, &exception);
 
   if (!exception.is_undefined()) {
-    LOG(WARNING) << "Exception when invoking JS callback"
+    LOG(WARNING) << "Exception when invoking connectionInfoUpdate JS callback"
+                 << exception.AsString();
+  }
+}
+
+void ChromotingScriptableObject::SignalDebugInfoChange() {
+  Var exception;
+
+  // The JavaScript callback function is the 'callback' property on the
+  // 'debugInfoUpdate' object.
+  Var cb = GetProperty(Var(kDebugInfoUpdate), &exception);
+
+  // Var() means call the object directly as a function rather than calling
+  // a method in the object.
+  cb.Call(Var(), 0, NULL, &exception);
+
+  if (!exception.is_undefined()) {
+    LOG(WARNING) << "Exception when invoking debugInfoUpdate JS callback"
                  << exception.AsString();
   }
 }
@@ -221,7 +256,7 @@ void ChromotingScriptableObject::SignalLoginChallenge() {
   Var exception;
 
   // The JavaScript callback function is the 'callback' property on the
-  // 'connectionInfoUpdate' object.
+  // 'loginChallenge' object.
   Var cb = GetProperty(Var(kLoginChallenge), &exception);
 
   // Var() means call the object directly as a function rather than calling
@@ -229,7 +264,7 @@ void ChromotingScriptableObject::SignalLoginChallenge() {
   cb.Call(Var(), 0, NULL, &exception);
 
   if (!exception.is_undefined()) {
-    LOG(WARNING) << "Exception when invoking JS callback"
+    LOG(WARNING) << "Exception when invoking loginChallenge JS callback"
                  << exception.AsString();
   }
 }

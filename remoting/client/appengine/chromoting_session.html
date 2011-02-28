@@ -23,7 +23,11 @@ found in the LICENSE file.
     </script>
   </head>
   <body class="chromoting_body" onload="init();">
-    <div id="status_msg" class="status_msg"></div>
+    <div id="status_msg_div">
+      <span id="status_msg" class="status_msg">Initializing...</span>
+      <input type="button" value="Show Debug Log" class="debug_log_toggle"
+             id="debug_log_toggle" onclick="toggleDebugLog();"/>
+    </div>
     <div id="login_panel" class="local_login_panel">
       <table><tr><td valign="top"
           style="text-align:center" nowrap="nowrap" bgcolor="#e8eefa">
@@ -53,9 +57,11 @@ found in the LICENSE file.
         </table>
       </td></tr></table>
     </div>
-    <div id="plugin_scroll_panel" class="plugin-scroll-panel">
+    <div id="plugin_scroll_panel" class="plugin_scroll_panel">
       <embed name="chromoting" id="chromoting"
              src="about://none" type="pepper-application/x-chromoting">
+    </div>
+    <div id="debug_log" class="debug_log">
     </div>
   </body>
 </html>

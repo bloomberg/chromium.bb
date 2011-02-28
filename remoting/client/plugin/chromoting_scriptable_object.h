@@ -7,13 +7,15 @@
 //
 // interface ChromotingScriptableObject {
 //
-//   // Connection status.
-//   readonly attribute unsigned short connection_status;
-//
 //   // Dimension of the desktop area.
 //   readonly attribute int desktopWidth;
 //   readonly attribute int desktopHeight;
 //
+//   // Debug info.
+//   readonly attribute string debugInfo;
+//
+//   // Connection status.
+//   readonly attribute unsigned short status;
 //   // Constants for connection status.
 //   const unsigned short STATUS_UNKNOWN = 0;
 //   const unsigned short STATUS_CONNECTING = 1;
@@ -23,7 +25,7 @@
 //   const unsigned short STATUS_FAILED = 5;
 //
 //   // Connection quality.
-//   readonly attribute unsigned short connection_quality;
+//   readonly attribute unsigned short quality;
 //   // Constants for connection quality
 //   const unsigned short QUALITY_UNKNOWN = 0;
 //   const unsigned short QUALITY_GOOD = 1;
@@ -32,6 +34,10 @@
 //   // JS callback function so we can signal the JS UI when the connection
 //   // status has been updated.
 //   attribute Function connectionInfoUpdate;
+//
+//   // JS callback function to call when there is new debug info to display
+//   // in the client UI.
+//   attribute Function debugInfoUpdate;
 //
 //   // This function is called when login information for the host machine is
 //   // needed.
@@ -106,6 +112,7 @@ class ChromotingScriptableObject : public pp::deprecated::ScriptableObject {
                        pp::Var* exception);
 
   void SetConnectionInfo(ConnectionStatus status, ConnectionQuality quality);
+  void LogDebugInfo(const std::string& info);
   void SetDesktopSize(int width, int height);
 
   // This should be called to signal JS code to provide login information.
@@ -142,6 +149,9 @@ class ChromotingScriptableObject : public pp::deprecated::ScriptableObject {
   // This should be called to signal the JS code that the connection status has
   // changed.
   void SignalConnectionInfoChange();
+
+  // Call this to signal that there is new debug info to display.
+  void SignalDebugInfoChange();
 
   pp::Var DoConnect(const std::vector<pp::Var>& args, pp::Var* exception);
   pp::Var DoDisconnect(const std::vector<pp::Var>& args, pp::Var* exception);
