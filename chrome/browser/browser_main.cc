@@ -45,7 +45,6 @@
 #include "chrome/browser/metrics/histogram_synchronizer.h"
 #include "chrome/browser/metrics/metrics_log.h"
 #include "chrome/browser/metrics/metrics_service.h"
-#include "chrome/browser/metrics/thread_watcher.h"
 #include "chrome/browser/net/blob_url_request_job_factory.h"
 #include "chrome/browser/net/chrome_dns_cert_provenance_checker.h"
 #include "chrome/browser/net/chrome_dns_cert_provenance_checker_factory.h"
@@ -703,9 +702,6 @@ void CreateChildThreads(BrowserProcessImpl* process) {
   process->process_launcher_thread();
   process->cache_thread();
   process->io_thread();
-  // Create watchdog thread after creating all other threads because it will
-  // watch the other threads and they must be running.
-  process->watchdog_thread();
 }
 
 // Returns the new local state object, guaranteed non-NULL.
@@ -1357,11 +1353,6 @@ int BrowserMain(const MainFunctionParams& parameters) {
   scoped_refptr<HistogramSynchronizer> histogram_synchronizer(
       new HistogramSynchronizer());
 
-  // Initialize thread watcher system. This is a singleton and is used by
-  // WatchDogThread to keep track of information about threads that are being
-  // watched.
-  scoped_ptr<ThreadWatcherList> thread_watcher_list(new ThreadWatcherList());
-
   // Initialize the prefs of the local state.
   browser::RegisterLocalState(local_state);
 
@@ -1394,14 +1385,6 @@ int BrowserMain(const MainFunctionParams& parameters) {
 #endif
 
   CreateChildThreads(browser_process.get());
-
-  // Start watching all browser threads for responsiveness.
-  MessageLoop* message_loop = WatchDogThread::CurrentMessageLoop();
-  if (message_loop)
-    message_loop->PostDelayedTask(
-        FROM_HERE,
-        NewRunnableFunction(&WatchDogThread::StartWatchingAll),
-        base::TimeDelta::FromSeconds(10).InMilliseconds());
 
 #if defined(OS_CHROMEOS)
   // Now that the file thread exists we can record our stats.
@@ -1919,9 +1902,6 @@ int BrowserMain(const MainFunctionParams& parameters) {
   chrome_browser_net_websocket_experiment::WebSocketExperimentRunner::Stop();
 
   process_singleton.Cleanup();
-
-  // Stop all tasks that might run on WatchDogThread.
-  ThreadWatcherList::StopWatchingAll();
 
   metrics->Stop();
 
