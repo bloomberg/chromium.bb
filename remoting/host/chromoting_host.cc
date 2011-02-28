@@ -375,4 +375,18 @@ void ChromotingHost::LocalLoginSucceeded() {
   recorder_->Start();
 }
 
+void ChromotingHost::LocalLoginFailed() {
+  if (MessageLoop::current() != context_->main_message_loop()) {
+    context_->main_message_loop()->PostTask(
+        FROM_HERE,
+        NewRunnableMethod(this, &ChromotingHost::LocalLoginFailed));
+    return;
+  }
+
+  protocol::LocalLoginStatus* status = new protocol::LocalLoginStatus();
+  status->set_success(false);
+  connection_->client_stub()->BeginSessionResponse(
+      status, new DeleteTask<protocol::LocalLoginStatus>(status));
+}
+
 }  // namespace remoting

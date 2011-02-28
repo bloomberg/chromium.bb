@@ -27,6 +27,9 @@ class DesktopEnvironment : public protocol::HostStub {
     // Called to signal that local login has succeeded and ChromotingHost can
     // proceed with the next step.
     virtual void LocalLoginSucceeded() = 0;
+
+    // Called to signal that local login has failed.
+    virtual void LocalLoginFailed() = 0;
   };
 
   DesktopEnvironment(Capturer* capturer, protocol::InputStub* input_stub);

@@ -107,6 +107,7 @@ class ChromotingHost : public base::RefCountedThreadSafe<ChromotingHost>,
   ////////////////////////////////////////////////////////////////////////////
   // DesktopEnvironment::EventHandler implementations
   virtual void LocalLoginSucceeded();
+  virtual void LocalLoginFailed();
 
   // Callback for ChromotingServer.
   void OnNewClientSession(

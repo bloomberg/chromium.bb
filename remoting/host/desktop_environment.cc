@@ -52,6 +52,7 @@ void DesktopEnvironment::BeginSessionRequest(
     event_handler_->LocalLoginSucceeded();
   } else {
     LOG(WARNING) << "Login failed for user " << credentials->username();
+    event_handler_->LocalLoginFailed();
   }
 
   done->Run();
