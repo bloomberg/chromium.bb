@@ -30,6 +30,15 @@ namespace prerender {
 
 namespace {
 
+bool CreateRedirect(const std::string& dest_url, std::string* redirect_path) {
+  std::vector<net::TestServer::StringPair> replacement_text;
+  replacement_text.push_back(make_pair("REPLACE_WITH_URL", dest_url));
+  return net::TestServer::GetFilePathWithReplacements(
+      "prerender_redirect.html",
+      replacement_text,
+      redirect_path);
+}
+
 // PrerenderContents that stops the UI message loop on DidStopLoading().
 class TestPrerenderContents : public PrerenderContents {
  public:
@@ -92,7 +101,7 @@ class WaitForLoadPrerenderContentsFactory : public PrerenderContents::Factory {
 
 class PrerenderBrowserTest : public InProcessBrowserTest {
  public:
-  PrerenderBrowserTest() {
+  PrerenderBrowserTest() : use_https_src_server_(false) {
     EnableDOMAutomation();
   }
 
@@ -126,7 +135,17 @@ class PrerenderBrowserTest : public InProcessBrowserTest {
         "files/prerender/prerender_loader.html",
         replacement_text,
         &replacement_path));
-    GURL src_url = test_server()->GetURL(replacement_path);
+
+    net::TestServer* src_server = test_server();
+    scoped_ptr<net::TestServer> https_src_server;
+    if (use_https_src_server_) {
+      https_src_server.reset(
+          new net::TestServer(net::TestServer::TYPE_HTTPS,
+                              FilePath(FILE_PATH_LITERAL("chrome/test/data"))));
+      ASSERT_TRUE(https_src_server->Start());
+      src_server = https_src_server.get();
+    }
+    GURL src_url = src_server->GetURL(replacement_path);
 
     Profile* profile = browser()->GetSelectedTabContents()->profile();
     PrerenderManager* prerender_manager = profile->GetPrerenderManager();
@@ -202,8 +221,13 @@ class PrerenderBrowserTest : public InProcessBrowserTest {
     EXPECT_TRUE(display_test_result);
   }
 
+  void set_use_https_src(bool use_https_src_server) {
+    use_https_src_server_ = use_https_src_server;
+  }
+
  private:
   GURL dest_url_;
+  bool use_https_src_server_;
 };
 
 // Checks that a page is correctly prerendered in the case of a
@@ -255,9 +279,12 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderHttpAuthentication) {
                    FINAL_STATUS_AUTH_NEEDED, 1);
 }
 
-// Checks that redirects work with prerendering.
+// Checks that HTML redirects work with prerendering - specifically, checks the
+// page is used and plugins aren't loaded.
 IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderRedirect) {
-  PrerenderTestURL("prerender_redirect.html",
+  std::string redirect_path;
+  ASSERT_TRUE(CreateRedirect("plugin_delay_load.html", &redirect_path));
+  PrerenderTestURL(redirect_path,
                    FINAL_STATUS_USED, 2);
   NavigateToDestURL();
 }
@@ -291,6 +318,15 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderReferrer) {
   NavigateToDestURL();
 }
 
+// Checks that the referrer is not set when prerendering and the source page is
+// HTTPS.
+IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderNoSSLReferrer) {
+  set_use_https_src(true);
+  PrerenderTestURL("prerender_no_referrer.html",
+                   FINAL_STATUS_USED, 1);
+  NavigateToDestURL();
+}
+
 // Checks that popups on a prerendered page cause cancellation.
 IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderPopup) {
   PrerenderTestURL("prerender_popup.html",
@@ -304,14 +340,8 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, FLAKY_PrerenderRedirectToHttps) {
                                FilePath(FILE_PATH_LITERAL("chrome/test/data")));
   ASSERT_TRUE(https_server.Start());
   GURL https_url = https_server.GetURL("files/prerender/prerender_page.html");
-  std::vector<net::TestServer::StringPair> replacement_text;
-  replacement_text.push_back(
-      make_pair("REPLACE_WITH_HTTPS_URL", https_url.spec()));
   std::string redirect_path;
-  ASSERT_TRUE(net::TestServer::GetFilePathWithReplacements(
-      "prerender_redirect_to_https.html",
-      replacement_text,
-      &redirect_path));
+  ASSERT_TRUE(CreateRedirect(https_url.spec(), &redirect_path));
   PrerenderTestURL(redirect_path,
                    FINAL_STATUS_HTTPS,
                    2);
