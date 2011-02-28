@@ -731,6 +731,7 @@ class TabContents : public PageNavigator,
   FRIEND_TEST_ALL_PREFIXES(TabContentsTest, NoJSMessageOnInterstitials);
   FRIEND_TEST_ALL_PREFIXES(TabContentsTest, UpdateTitle);
   FRIEND_TEST_ALL_PREFIXES(TabContentsTest, CrossSiteCantPreemptAfterUnload);
+  FRIEND_TEST_ALL_PREFIXES(TabContentsTest, ConstrainedWindows);
   FRIEND_TEST_ALL_PREFIXES(FormStructureBrowserTest, HTMLFiles);
   FRIEND_TEST_ALL_PREFIXES(NavigationControllerTest, HistoryNavigate);
   FRIEND_TEST_ALL_PREFIXES(RenderViewHostManagerTest, PageDoesBackAndReload);
@@ -1029,6 +1030,10 @@ class TabContents : public PageNavigator,
   // and if so, swap the RenderViewHost with the preload into this TabContents
   // object.
   bool MaybeUsePreloadedPage(const GURL& url);
+
+  // Adds the given window to the list of child windows. The window will notify
+  // via WillClose() when it is being destroyed.
+  void AddConstrainedDialog(ConstrainedWindow* window);
 
   // Data for core operation ---------------------------------------------------
 

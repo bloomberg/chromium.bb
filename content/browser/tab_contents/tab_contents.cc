@@ -868,14 +868,17 @@ ConstrainedWindow* TabContents::CreateConstrainedDialog(
       ConstrainedWindowDelegate* delegate) {
   ConstrainedWindow* window =
       ConstrainedWindow::CreateConstrainedDialog(this, delegate);
+  AddConstrainedDialog(window);
+  return window;
+}
+
+void TabContents::AddConstrainedDialog(ConstrainedWindow* window) {
   child_windows_.push_back(window);
 
   if (child_windows_.size() == 1) {
     window->ShowConstrainedWindow();
     BlockTabContent(true);
   }
-
-  return window;
 }
 
 void TabContents::BlockTabContent(bool blocked) {
@@ -1747,15 +1750,20 @@ void TabContents::DidNavigateAnyFramePostCommit(
 
 void TabContents::CloseConstrainedWindows() {
   // Clear out any constrained windows since we are leaving this page entirely.
-  // We use indices instead of iterators in case CloseWindow does something
-  // that may invalidate an iterator.
-  for (size_t i = 0; i < child_windows_.size(); ++i) {
-    ConstrainedWindow* window = child_windows_[child_windows_.size() - 1 - i];
+  // To ensure that we iterate over every element in child_windows_ we
+  // need to use a copy of child_windows_. Otherwise if
+  // window->CloseConstrainedWindow() modifies child_windows_ we could end up
+  // skipping some elements.
+  ConstrainedWindowList child_windows_copy(child_windows_);
+  for (ConstrainedWindowList::iterator it = child_windows_copy.begin();
+       it != child_windows_copy.end(); ++it) {
+    ConstrainedWindow* window = *it;
     if (window) {
       window->CloseConstrainedWindow();
       BlockTabContent(false);
     }
   }
+  DCHECK(child_windows_.empty());
 }
 
 void TabContents::UpdateAlternateErrorPageURL() {
