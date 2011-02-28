@@ -297,7 +297,7 @@ or packaged app can use.
 <p class="note">
 <strong>Note:</strong>
 Hosted apps can use the
-"geolocation", "notifications", and "unlimitedStorage" permissions,
+"background", "geolocation", "notifications", and "unlimitedStorage" permissions,
 but not any other permissions listed in this table.
 </p>
 
@@ -317,6 +317,37 @@ but not any other permissions listed in this table.
        require host permissions. For details on the syntax, see
        <a href="match_patterns.html">Match Patterns</a>.
   </td>
+</tr>
+<tr>
+  <td> "background" </td>
+  <td> <p>
+       Makes Chrome start up early and and shut down late,
+       so that apps and extensions can have a longer life.
+       </p>
+
+       <p>
+       When any installed hosted app, packaged app, or extension
+       has "background" permission, Chrome runs (invisibly)
+       as soon as the user logs into their computer&mdash;before
+       the user launches Chrome.
+       The "background" permission also makes Chrome continue running
+       (even after its last window is closed)
+       until the user explicitly quits Chrome.
+       </p>
+
+       <p class="note">
+       <b>Note:</b>
+       Disabled apps and extensions
+       are treated as if they aren't installed.
+       </p>
+
+       <p>
+       You typically use the "background" permission with a
+       <a href="background_pages.html">background page</a>
+       or (for hosted apps) a
+       <a href="http://code.google.com/chrome/apps/docs/background.html">background window</a>.
+       </p>
+       </td>
 </tr>
 <tr>
   <td> "bookmarks" </td>
