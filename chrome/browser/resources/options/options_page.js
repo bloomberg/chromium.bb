@@ -125,6 +125,9 @@ cr.define('options', function() {
     if (updateHistory)
       this.updateHistoryState_();
 
+    // Always update the page title.
+    document.title = targetPage.title;
+
     // Notify pages if they were shown.
     for (var name in this.registeredPages) {
       var page = this.registeredPages[name];
