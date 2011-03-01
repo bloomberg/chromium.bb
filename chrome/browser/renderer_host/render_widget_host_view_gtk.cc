@@ -103,11 +103,11 @@ class RenderWidgetHostViewGtkWidget {
     GTK_WIDGET_SET_FLAGS(widget, GTK_CAN_FOCUS);
 
     g_signal_connect(widget, "expose-event",
-                     G_CALLBACK(ExposeEvent), host_view);
+                     G_CALLBACK(OnExposeEvent), host_view);
     g_signal_connect(widget, "key-press-event",
-                     G_CALLBACK(KeyPressReleaseEvent), host_view);
+                     G_CALLBACK(OnKeyPressReleaseEvent), host_view);
     g_signal_connect(widget, "key-release-event",
-                     G_CALLBACK(KeyPressReleaseEvent), host_view);
+                     G_CALLBACK(OnKeyPressReleaseEvent), host_view);
     g_signal_connect(widget, "focus-in-event",
                      G_CALLBACK(OnFocusIn), host_view);
     g_signal_connect(widget, "focus-out-event",
@@ -115,23 +115,23 @@ class RenderWidgetHostViewGtkWidget {
     g_signal_connect(widget, "grab-notify",
                      G_CALLBACK(OnGrabNotify), host_view);
     g_signal_connect(widget, "button-press-event",
-                     G_CALLBACK(ButtonPressReleaseEvent), host_view);
+                     G_CALLBACK(OnButtonPressReleaseEvent), host_view);
     g_signal_connect(widget, "button-release-event",
-                     G_CALLBACK(ButtonPressReleaseEvent), host_view);
+                     G_CALLBACK(OnButtonPressReleaseEvent), host_view);
     g_signal_connect(widget, "motion-notify-event",
-                     G_CALLBACK(MouseMoveEvent), host_view);
+                     G_CALLBACK(OnMouseMoveEvent), host_view);
     g_signal_connect(widget, "enter-notify-event",
-                     G_CALLBACK(CrossingEvent), host_view);
+                     G_CALLBACK(OnCrossingEvent), host_view);
     g_signal_connect(widget, "leave-notify-event",
-                     G_CALLBACK(CrossingEvent), host_view);
+                     G_CALLBACK(OnCrossingEvent), host_view);
     g_signal_connect(widget, "client-event",
-                     G_CALLBACK(ClientEvent), host_view);
+                     G_CALLBACK(OnClientEvent), host_view);
 
 
     // Connect after so that we are called after the handler installed by the
     // TabContentsView which handles zoom events.
     g_signal_connect_after(widget, "scroll-event",
-                           G_CALLBACK(MouseScrollEvent), host_view);
+                           G_CALLBACK(OnMouseScrollEvent), host_view);
 
     g_object_set_data(G_OBJECT(widget), kRenderWidgetHostViewKey,
                       static_cast<RenderWidgetHostView*>(host_view));
@@ -140,19 +140,23 @@ class RenderWidgetHostViewGtkWidget {
   }
 
  private:
-  static gboolean ExposeEvent(GtkWidget* widget, GdkEventExpose* expose,
-                              RenderWidgetHostViewGtk* host_view) {
+  static gboolean OnExposeEvent(GtkWidget* widget,
+                                GdkEventExpose* expose,
+                                RenderWidgetHostViewGtk* host_view) {
     const gfx::Rect damage_rect(expose->area);
     host_view->Paint(damage_rect);
     return FALSE;
   }
 
-  static gboolean KeyPressReleaseEvent(GtkWidget* widget, GdkEventKey* event,
-                                       RenderWidgetHostViewGtk* host_view) {
-    if (host_view->IsPopup() && host_view->NeedsInputGrab() &&
-        GDK_Escape == event->keyval) {
-      // Force popups to close on Esc just in case the renderer is hung.  This
-      // allows us to release our keyboard grab.
+  static gboolean OnKeyPressReleaseEvent(GtkWidget* widget,
+                                         GdkEventKey* event,
+                                         RenderWidgetHostViewGtk* host_view) {
+    // Force popups or fullscreen windows to close on Escape so they won't keep
+    // the keyboard grabbed or be stuck onscreen if the renderer is hanging.
+    bool should_close_on_escape =
+        (host_view->IsPopup() && host_view->NeedsInputGrab()) ||
+        host_view->is_fullscreen_;
+    if (should_close_on_escape && GDK_Escape == event->keyval) {
       host_view->host_->Shutdown();
     } else {
       // Send key event to input method.
@@ -165,7 +169,8 @@ class RenderWidgetHostViewGtkWidget {
     return TRUE;
   }
 
-  static gboolean OnFocusIn(GtkWidget* widget, GdkEventFocus* focus,
+  static gboolean OnFocusIn(GtkWidget* widget,
+                            GdkEventFocus* focus,
                             RenderWidgetHostViewGtk* host_view) {
     int x, y;
     gtk_widget_get_pointer(widget, &x, &y);
@@ -198,7 +203,8 @@ class RenderWidgetHostViewGtkWidget {
     return TRUE;
   }
 
-  static gboolean OnFocusOut(GtkWidget* widget, GdkEventFocus* focus,
+  static gboolean OnFocusOut(GtkWidget* widget,
+                             GdkEventFocus* focus,
                              RenderWidgetHostViewGtk* host_view) {
     // Whenever we lose focus, set the cursor back to that of our parent window,
     // which should be the default arrow.
@@ -235,8 +241,9 @@ class RenderWidgetHostViewGtkWidget {
     }
   }
 
-  static gboolean ButtonPressReleaseEvent(
-      GtkWidget* widget, GdkEventButton* event,
+  static gboolean OnButtonPressReleaseEvent(
+      GtkWidget* widget,
+      GdkEventButton* event,
       RenderWidgetHostViewGtk* host_view) {
 #if defined (OS_CHROMEOS)
     // We support buttons 8 & 9 for scrolling with an attached USB mouse
@@ -321,8 +328,9 @@ class RenderWidgetHostViewGtkWidget {
     return FALSE;
   }
 
-  static gboolean MouseMoveEvent(GtkWidget* widget, GdkEventMotion* event,
-                                 RenderWidgetHostViewGtk* host_view) {
+  static gboolean OnMouseMoveEvent(GtkWidget* widget,
+                                   GdkEventMotion* event,
+                                   RenderWidgetHostViewGtk* host_view) {
     // We want to translate the coordinates of events that do not originate
     // from this widget to be relative to the top left of the widget.
     GtkWidget* event_widget = gtk_get_event_widget(
@@ -341,8 +349,9 @@ class RenderWidgetHostViewGtkWidget {
     return FALSE;
   }
 
-  static gboolean CrossingEvent(GtkWidget* widget, GdkEventCrossing* event,
-                                RenderWidgetHostViewGtk* host_view) {
+  static gboolean OnCrossingEvent(GtkWidget* widget,
+                                  GdkEventCrossing* event,
+                                  RenderWidgetHostViewGtk* host_view) {
     const int any_button_mask =
         GDK_BUTTON1_MASK |
         GDK_BUTTON2_MASK |
@@ -363,12 +372,13 @@ class RenderWidgetHostViewGtkWidget {
     return FALSE;
   }
 
-  static gboolean ClientEvent(GtkWidget* widget, GdkEventClient* event,
-                              RenderWidgetHostViewGtk* host_view) {
+  static gboolean OnClientEvent(GtkWidget* widget,
+                                GdkEventClient* event,
+                                RenderWidgetHostViewGtk* host_view) {
     VLOG(1) << "client event type: " << event->message_type
             << " data_format: " << event->data_format
             << " data: " << event->data.l;
-    return true;
+    return TRUE;
   }
 
   // Allow the vertical scroll delta to be overridden from the command line.
@@ -440,8 +450,9 @@ class RenderWidgetHostViewGtkWidget {
     return num_clicks * GetScrollPixelsPerTick();
   }
 
-  static gboolean MouseScrollEvent(GtkWidget* widget, GdkEventScroll* event,
-                                   RenderWidgetHostViewGtk* host_view) {
+  static gboolean OnMouseScrollEvent(GtkWidget* widget,
+                                     GdkEventScroll* event,
+                                     RenderWidgetHostViewGtk* host_view) {
     // If the user is holding shift, translate it into a horizontal scroll. We
     // don't care what other modifiers the user may be holding (zooming is
     // handled at the TabContentsView level).
@@ -563,6 +574,10 @@ void RenderWidgetHostViewGtk::InitAsFullscreen() {
   GtkWindow* window = GTK_WINDOW(gtk_window_new(GTK_WINDOW_TOPLEVEL));
   gtk_window_set_decorated(window, FALSE);
   gtk_window_fullscreen(window);
+  g_signal_connect(GTK_WIDGET(window),
+                   "window-state-event",
+                   G_CALLBACK(&OnWindowStateEventThunk),
+                   this);
   gtk_container_add(GTK_CONTAINER(window), view_.get());
 
   // Try to move and resize the window to cover the screen in case the window
@@ -805,6 +820,24 @@ void RenderWidgetHostViewGtk::AppendInputMethodsContextMenu(MenuGtk* menu) {
   im_context_->AppendInputMethodsContextMenu(menu);
 }
 #endif
+
+gboolean RenderWidgetHostViewGtk::OnWindowStateEvent(
+    GtkWidget* widget,
+    GdkEventWindowState* event) {
+  if (is_fullscreen_) {
+    // If a fullscreen widget got unfullscreened (e.g. by the window manager),
+    // close it.
+    bool unfullscreened =
+        (event->changed_mask & GDK_WINDOW_STATE_FULLSCREEN) &&
+        !(event->new_window_state & GDK_WINDOW_STATE_FULLSCREEN);
+    if (unfullscreened) {
+      host_->Shutdown();
+      return TRUE;
+    }
+  }
+
+  return FALSE;
+}
 
 bool RenderWidgetHostViewGtk::NeedsInputGrab() {
   return popup_type_ == WebKit::WebPopupTypeSelect;

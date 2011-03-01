@@ -17,6 +17,7 @@
 #include "chrome/browser/ui/gtk/owned_widget_gtk.h"
 #include "ui/base/animation/animation_delegate.h"
 #include "ui/base/animation/slide_animation.h"
+#include "ui/base/gtk/gtk_signal.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gfx/rect.h"
 #include "webkit/glue/webcursor.h"
@@ -124,6 +125,11 @@ class RenderWidgetHostViewGtk : public RenderWidgetHostView,
 
  private:
   friend class RenderWidgetHostViewGtkWidget;
+
+  CHROMEGTK_CALLBACK_1(RenderWidgetHostViewGtk,
+                       gboolean,
+                       OnWindowStateEvent,
+                       GdkEventWindowState*);
 
   // Returns whether the widget needs an input grab (GTK+ and X) to work
   // properly.
