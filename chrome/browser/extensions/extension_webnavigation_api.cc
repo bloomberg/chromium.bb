@@ -35,6 +35,98 @@ double MilliSecondsFromTime(const base::Time& time) {
   return 1000 * time.ToDoubleT();
 }
 
+// Dispatches events to the extension message service.
+void DispatchEvent(Profile* profile,
+                   const char* event_name,
+                   const std::string& json_args) {
+  if (profile && profile->GetExtensionEventRouter()) {
+    profile->GetExtensionEventRouter()->DispatchEventToRenderers(
+        event_name, json_args, profile, GURL());
+  }
+}
+
+// Constructs and dispatches an onBeforeNavigate event.
+void DispatchOnBeforeNavigate(NavigationController* controller,
+                              ProvisionalLoadDetails* details,
+                              uint64 request_id) {
+  ListValue args;
+  DictionaryValue* dict = new DictionaryValue();
+  dict->SetInteger(keys::kTabIdKey,
+                   ExtensionTabUtil::GetTabId(controller->tab_contents()));
+  dict->SetString(keys::kUrlKey, details->url().spec());
+  dict->SetInteger(keys::kFrameIdKey, GetFrameId(details));
+  dict->SetInteger(keys::kRequestIdKey, static_cast<int>(request_id));
+  dict->SetDouble(keys::kTimeStampKey, MilliSecondsFromTime(base::Time::Now()));
+  args.Append(dict);
+
+  std::string json_args;
+  base::JSONWriter::Write(&args, false, &json_args);
+  DispatchEvent(controller->profile(), keys::kOnBeforeNavigate, json_args);
+}
+
+// Constructs and dispatches an onCommitted event.
+void DispatchOnCommitted(NavigationController* controller,
+                         ProvisionalLoadDetails* details) {
+  ListValue args;
+  DictionaryValue* dict = new DictionaryValue();
+  dict->SetInteger(keys::kTabIdKey,
+                   ExtensionTabUtil::GetTabId(controller->tab_contents()));
+  dict->SetString(keys::kUrlKey, details->url().spec());
+  dict->SetInteger(keys::kFrameIdKey, GetFrameId(details));
+  dict->SetString(keys::kTransitionTypeKey,
+                  PageTransition::CoreTransitionString(
+                      details->transition_type()));
+  dict->SetString(keys::kTransitionQualifiersKey,
+                  PageTransition::QualifierString(
+                      details->transition_type()));
+  dict->SetDouble(keys::kTimeStampKey, MilliSecondsFromTime(base::Time::Now()));
+  args.Append(dict);
+
+  std::string json_args;
+  base::JSONWriter::Write(&args, false, &json_args);
+  DispatchEvent(controller->profile(), keys::kOnCommitted, json_args);
+}
+
+// Constructs and dispatches an onDOMContentLoaded event.
+void DispatchOnDOMContentLoaded(NavigationController* controller,
+                                const GURL& url,
+                                bool is_main_frame,
+                                int64 frame_id) {
+  ListValue args;
+  DictionaryValue* dict = new DictionaryValue();
+  dict->SetInteger(keys::kTabIdKey,
+                   ExtensionTabUtil::GetTabId(controller->tab_contents()));
+  dict->SetString(keys::kUrlKey, url.spec());
+  dict->SetInteger(keys::kFrameIdKey,
+      is_main_frame ? 0 : static_cast<int>(frame_id));
+  dict->SetDouble(keys::kTimeStampKey, MilliSecondsFromTime(base::Time::Now()));
+  args.Append(dict);
+
+  std::string json_args;
+  base::JSONWriter::Write(&args, false, &json_args);
+  DispatchEvent(controller->profile(), keys::kOnDOMContentLoaded, json_args);
+}
+
+// Constructs and dispatches an onCompleted event.
+void DispatchOnCompleted(NavigationController* controller,
+                         const GURL& url,
+                         bool is_main_frame,
+                         int64 frame_id) {
+  ListValue args;
+  DictionaryValue* dict = new DictionaryValue();
+  dict->SetInteger(keys::kTabIdKey,
+                   ExtensionTabUtil::GetTabId(controller->tab_contents()));
+  dict->SetString(keys::kUrlKey, url.spec());
+  dict->SetInteger(keys::kFrameIdKey,
+      is_main_frame ? 0 : static_cast<int>(frame_id));
+  dict->SetDouble(keys::kTimeStampKey, MilliSecondsFromTime(base::Time::Now()));
+  args.Append(dict);
+
+  std::string json_args;
+  base::JSONWriter::Write(&args, false, &json_args);
+  DispatchEvent(controller->profile(), keys::kOnCompleted, json_args);
+}
+
 }  // namespace
 
 
@@ -179,6 +271,7 @@ void ExtensionWebNavigationEventRouter::Observe(
       NOTREACHED();
   }
 }
+
 void ExtensionWebNavigationEventRouter::FrameProvisionalLoadStart(
     NavigationController* controller,
     ProvisionalLoadDetails* details) {
@@ -189,19 +282,7 @@ void ExtensionWebNavigationEventRouter::FrameProvisionalLoadStart(
                                controller->tab_contents());
   if (!navigation_state_.CanSendEvents(details->frame_id()))
     return;
-  ListValue args;
-  DictionaryValue* dict = new DictionaryValue();
-  dict->SetInteger(keys::kTabIdKey,
-                   ExtensionTabUtil::GetTabId(controller->tab_contents()));
-  dict->SetString(keys::kUrlKey, details->url().spec());
-  dict->SetInteger(keys::kFrameIdKey, GetFrameId(details));
-  dict->SetInteger(keys::kRequestIdKey, 0);
-  dict->SetDouble(keys::kTimeStampKey, MilliSecondsFromTime(base::Time::Now()));
-  args.Append(dict);
-
-  std::string json_args;
-  base::JSONWriter::Write(&args, false, &json_args);
-  DispatchEvent(controller->profile(), keys::kOnBeforeNavigate, json_args);
+  DispatchOnBeforeNavigate(controller, details, 0);
 }
 
 void ExtensionWebNavigationEventRouter::FrameProvisionalLoadCommitted(
@@ -209,24 +290,14 @@ void ExtensionWebNavigationEventRouter::FrameProvisionalLoadCommitted(
     ProvisionalLoadDetails* details) {
   if (!navigation_state_.CanSendEvents(details->frame_id()))
     return;
-  ListValue args;
-  DictionaryValue* dict = new DictionaryValue();
-  dict->SetInteger(keys::kTabIdKey,
-                   ExtensionTabUtil::GetTabId(controller->tab_contents()));
-  dict->SetString(keys::kUrlKey, details->url().spec());
-  dict->SetInteger(keys::kFrameIdKey, GetFrameId(details));
-  dict->SetString(keys::kTransitionTypeKey,
-                  PageTransition::CoreTransitionString(
-                      details->transition_type()));
-  dict->SetString(keys::kTransitionQualifiersKey,
-                  PageTransition::QualifierString(
-                      details->transition_type()));
-  dict->SetDouble(keys::kTimeStampKey, MilliSecondsFromTime(base::Time::Now()));
-  args.Append(dict);
-
-  std::string json_args;
-  base::JSONWriter::Write(&args, false, &json_args);
-  DispatchEvent(controller->profile(), keys::kOnCommitted, json_args);
+  // On reference fragment navigations, only a new navigation state is
+  // committed. We need to catch this case and generate a full sequence
+  // of events.
+  if (IsReferenceFragmentNavigation(details)) {
+    NavigatedReferenceFragment(controller, details);
+    return;
+  }
+  DispatchOnCommitted(controller, details);
 }
 
 void ExtensionWebNavigationEventRouter::FrameDomContentLoaded(
@@ -234,19 +305,10 @@ void ExtensionWebNavigationEventRouter::FrameDomContentLoaded(
     int64 frame_id) {
   if (!navigation_state_.CanSendEvents(frame_id))
     return;
-  ListValue args;
-  DictionaryValue* dict = new DictionaryValue();
-  dict->SetInteger(keys::kTabIdKey,
-                   ExtensionTabUtil::GetTabId(controller->tab_contents()));
-  dict->SetString(keys::kUrlKey, navigation_state_.GetUrl(frame_id).spec());
-  dict->SetInteger(keys::kFrameIdKey,
-      navigation_state_.IsMainFrame(frame_id) ? 0 : static_cast<int>(frame_id));
-  dict->SetDouble(keys::kTimeStampKey, MilliSecondsFromTime(base::Time::Now()));
-  args.Append(dict);
-
-  std::string json_args;
-  base::JSONWriter::Write(&args, false, &json_args);
-  DispatchEvent(controller->profile(), keys::kOnDOMContentLoaded, json_args);
+  DispatchOnDOMContentLoaded(controller,
+                             navigation_state_.GetUrl(frame_id),
+                             navigation_state_.IsMainFrame(frame_id),
+                             frame_id);
 }
 
 void ExtensionWebNavigationEventRouter::FrameDidFinishLoad(
@@ -254,19 +316,10 @@ void ExtensionWebNavigationEventRouter::FrameDidFinishLoad(
     int64 frame_id) {
   if (!navigation_state_.CanSendEvents(frame_id))
     return;
-  ListValue args;
-  DictionaryValue* dict = new DictionaryValue();
-  dict->SetInteger(keys::kTabIdKey,
-                   ExtensionTabUtil::GetTabId(controller->tab_contents()));
-  dict->SetString(keys::kUrlKey, navigation_state_.GetUrl(frame_id).spec());
-  dict->SetInteger(keys::kFrameIdKey,
-      navigation_state_.IsMainFrame(frame_id) ? 0 : static_cast<int>(frame_id));
-  dict->SetDouble(keys::kTimeStampKey, MilliSecondsFromTime(base::Time::Now()));
-  args.Append(dict);
-
-  std::string json_args;
-  base::JSONWriter::Write(&args, false, &json_args);
-  DispatchEvent(controller->profile(), keys::kOnCompleted, json_args);
+  DispatchOnCompleted(controller,
+                      navigation_state_.GetUrl(frame_id),
+                      navigation_state_.IsMainFrame(frame_id),
+                      frame_id);
 }
 
 void ExtensionWebNavigationEventRouter::FailProvisionalLoadWithError(
@@ -309,12 +362,36 @@ void ExtensionWebNavigationEventRouter::CreatingNewWindow(
   DispatchEvent(tab_contents->profile(), keys::kOnBeforeRetarget, json_args);
 }
 
-void ExtensionWebNavigationEventRouter::DispatchEvent(
-    Profile* profile,
-    const char* event_name,
-    const std::string& json_args) {
-  if (profile && profile->GetExtensionEventRouter()) {
-    profile->GetExtensionEventRouter()->DispatchEventToRenderers(
-        event_name, json_args, profile, GURL());
-  }
+// See also NavigationController::IsURLInPageNavigation.
+bool ExtensionWebNavigationEventRouter::IsReferenceFragmentNavigation(
+    ProvisionalLoadDetails* details) {
+  GURL existing_url = navigation_state_.GetUrl(details->frame_id());
+  if (existing_url == details->url())
+    return false;
+
+  url_canon::Replacements<char> replacements;
+  replacements.ClearRef();
+  return existing_url.ReplaceComponents(replacements) ==
+      details->url().ReplaceComponents(replacements);
+}
+
+void ExtensionWebNavigationEventRouter::NavigatedReferenceFragment(
+    NavigationController* controller,
+    ProvisionalLoadDetails* details) {
+  navigation_state_.TrackFrame(details->frame_id(),
+                               details->url(),
+                               details->main_frame(),
+                               details->is_error_page(),
+                               controller->tab_contents());
+
+  DispatchOnBeforeNavigate(controller, details, 0);
+  DispatchOnCommitted(controller, details);
+  DispatchOnDOMContentLoaded(controller,
+                             details->url(),
+                             details->main_frame(),
+                             details->frame_id());
+  DispatchOnCompleted(controller,
+                      details->url(),
+                      details->main_frame(),
+                      details->frame_id());
 }

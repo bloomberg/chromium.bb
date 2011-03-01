@@ -128,10 +128,12 @@ class ExtensionWebNavigationEventRouter : public NotificationObserver {
   void CreatingNewWindow(TabContents* tab_content,
                          const ViewHostMsg_CreateWindow_Params* details);
 
-  // Dispatches events to the extension message service.
-  void DispatchEvent(Profile* context,
-                     const char* event_name,
-                     const std::string& json_args);
+  // True if the load details correspond to a reference fragment navigation.
+  bool IsReferenceFragmentNavigation(ProvisionalLoadDetails* details);
+
+  // Simulates a complete series of events for reference fragment navigations.
+  void NavigatedReferenceFragment(NavigationController* controller,
+                                  ProvisionalLoadDetails* details);
 
   // Tracks the state of the frames we are sending events for.
   FrameNavigationState navigation_state_;
