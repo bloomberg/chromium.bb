@@ -171,8 +171,8 @@ void SetupFlow::GetDialogSize(gfx::Size* size) const {
 
   // TODO(pranavk) Replace the following SYNC resources with REMOTING Resources.
   *size = ui::GetLocalizedContentsSizeForFont(
-      IDS_SYNC_SETUP_WIZARD_WIDTH_CHARS,
-      IDS_SYNC_SETUP_WIZARD_HEIGHT_LINES,
+      IDS_REMOTING_SETUP_WIZARD_WIDTH_CHARS,
+      IDS_REMOTING_SETUP_WIZARD_HEIGHT_LINES,
       approximate_web_font);
 }
 

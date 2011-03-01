@@ -521,6 +521,16 @@
         https://www.google.com/accounts/IssuedAuthSubTokens?hl=[GRITLANGCODE]
       </message>
 
+      <!-- The width of the remoting setup wizard / login dialog in characters. -->
+      <message name="IDS_REMOTING_SETUP_WIZARD_WIDTH_CHARS" use_name_for_id="true">
+        56
+      </message>
+
+      <!-- The height of the remoting setup wizard / login dialog in lines. -->
+      <message name="IDS_REMOTING_SETUP_WIZARD_HEIGHT_LINES" use_name_for_id="true">
+        16
+      </message>
+
       <!-- The width of the cloud print setup wizard / login dialog in -->
       <!-- characters. -->
       <message name="IDS_CLOUD_PRINT_SETUP_WIZARD_WIDTH_CHARS" 
