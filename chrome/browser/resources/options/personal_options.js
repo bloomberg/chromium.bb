@@ -68,7 +68,7 @@ cr.define('options', function() {
           chrome.send('coreOptionsUserMetricsAction', ['Import_ShowDlg']);
         };
 
-        if (navigator.platform.match(/linux|BSD/i)) {
+        if ($('themes-GTK-button')) {
           $('themes-GTK-button').onclick = function(event) {
             chrome.send('themesSetGTK');
           };
