@@ -6065,12 +6065,15 @@ Keep your key file in a safe place. You will need it to create new versions of y
       </message>
 
       <message name="IDS_ERRORPAGES_SUMMARY_ESET_ANTI_VIRUS_SSL_INTERCEPTION" desc="Summary in the error page when we detect that ESET anti-virus is running and intercepting our HTTPS connections. 'ESET' is a product name and may be best left untranslated. 'Learn more' should be the contents of IDS_OPTIONS_LEARN_MORE_LABEL.">
-        <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> has detected that
-        an ESET product is intercepting secure connections. This is typically
-        not a security issue as the ESET software is usually running on the same
-        computer. However, due to an intolerance to specific aspects of Chrome's
-        secure connections, ESET products have to be configured to not perform
-        this interception. Click the 'Learn more' link for instructions.
+        <ph name="PRODUCT_NAME">&lt;span jscontent="productName"&gt;&lt;/span&gt;<ex>Google Chrome</ex></ph>
+        has detected that an ESET product is intercepting secure connections.
+        This is typically not a security issue as the ESET software is
+        usually running on the same computer. However, due to an intolerance
+        to specific aspects of 
+        <ph name="PRODUCT_NAME">&lt;span jscontent="productName"&gt;&lt;/span&gt;<ex>Google Chrome</ex></ph>'s
+        secure connections, ESET products have to be configured to not
+        perform this interception. Click the 'Learn more' link for
+        instructions.
       </message>
 
       <message name="IDS_ERRORPAGES_SUMMARY_NETNANNY_SSL_INTERCEPTION" desc="Summary in the error page when we detect that NetNanny is running and intercepting our HTTPS connections. 'NetNanny' is a product name and may be best left untranslated. 'Learn more' should be the contents of IDS_OPTIONS_LEARN_MORE_LABEL.">
