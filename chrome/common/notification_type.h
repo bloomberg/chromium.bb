@@ -407,6 +407,10 @@ class NotificationType {
     // pointer.
     RENDER_VIEW_HOST_CREATED_FOR_TAB,
 
+    // Notification than an interstitial has become associated with a tab. The
+    // source is the TabContents, the details not used.
+    INTERSTITIAL_ATTACHED,
+
     // Stuff inside the tabs ---------------------------------------------------
 
     // This message is sent after a constrained window has been closed.  The

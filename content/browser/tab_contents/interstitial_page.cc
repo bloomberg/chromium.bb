@@ -19,6 +19,7 @@
 #include "chrome/common/bindings_policy.h"
 #include "chrome/common/dom_storage_common.h"
 #include "chrome/common/net/url_request_context_getter.h"
+#include "chrome/common/notification_service.h"
 #include "chrome/common/notification_source.h"
 #include "content/browser/browser_thread.h"
 #include "content/browser/renderer_host/render_process_host.h"
@@ -354,6 +355,11 @@ void InterstitialPage::DidNavigate(
   // The RenderViewHost has loaded its contents, we can show it now.
   render_view_host_->view()->Show();
   tab_->set_interstitial_page(this);
+
+  NotificationService::current()->Notify(
+      NotificationType::INTERSTITIAL_ATTACHED,
+      Source<TabContents>(tab_),
+      NotificationService::NoDetails());
 
   RenderWidgetHostView* rwh_view = tab_->render_view_host()->view();
 

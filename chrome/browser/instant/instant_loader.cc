@@ -145,10 +145,6 @@ class InstantLoader::TabContentsDelegateImpl
   // Invoked prior to loading a new URL.
   void PrepareForNewLoad();
 
-  // Invoked when removed as the delegate. Gives a chance to do any necessary
-  // cleanup.
-  void Reset();
-
   // Invoked when the preview paints. Invokes PreviewPainted on the loader.
   void PreviewPainted();
 
@@ -263,17 +259,15 @@ InstantLoader::TabContentsDelegateImpl::TabContentsDelegateImpl(
       waiting_for_new_page_(true),
       is_mouse_down_from_activate_(false),
       user_typed_before_load_(false) {
+  DCHECK(loader->preview_contents());
+  registrar_.Add(this, NotificationType::INTERSTITIAL_ATTACHED,
+      Source<TabContents>(loader->preview_contents()->tab_contents()));
 }
 
 void InstantLoader::TabContentsDelegateImpl::PrepareForNewLoad() {
   user_typed_before_load_ = false;
   waiting_for_new_page_ = true;
   add_page_vector_.clear();
-  UnregisterForPaintNotifications();
-}
-
-void InstantLoader::TabContentsDelegateImpl::Reset() {
-  is_mouse_down_from_activate_ = false;
   UnregisterForPaintNotifications();
 }
 
@@ -367,13 +361,19 @@ void InstantLoader::TabContentsDelegateImpl::Observe(
     NotificationType type,
     const NotificationSource& source,
     const NotificationDetails& details) {
-  if (type == NotificationType::RENDER_WIDGET_HOST_DID_PAINT) {
-    UnregisterForPaintNotifications();
-    PreviewPainted();
-  } else if (type == NotificationType::RENDER_WIDGET_HOST_DESTROYED) {
-    UnregisterForPaintNotifications();
-  } else {
-    NOTREACHED() << "Got a notification we didn't register for.";
+  switch (type.value) {
+    case NotificationType::RENDER_WIDGET_HOST_DID_PAINT:
+      UnregisterForPaintNotifications();
+      PreviewPainted();
+      break;
+    case NotificationType::RENDER_WIDGET_HOST_DESTROYED:
+      UnregisterForPaintNotifications();
+      break;
+    case NotificationType::INTERSTITIAL_ATTACHED:
+      PreviewPainted();
+      break;
+    default:
+      NOTREACHED() << "Got a notification we didn't register for.";
   }
 }
 
@@ -570,13 +570,10 @@ InstantLoader::InstantLoader(InstantLoaderDelegate* delegate, TemplateURLID id)
       template_url_id_(id),
       ready_(false),
       last_transition_type_(PageTransition::LINK) {
-  preview_tab_contents_delegate_.reset(new TabContentsDelegateImpl(this));
 }
 
 InstantLoader::~InstantLoader() {
   registrar_.RemoveAll();
-
-  preview_tab_contents_delegate_->Reset();
 
   // Delete the TabContents before the delegate as the TabContents holds a
   // reference to the delegate.
@@ -716,7 +713,8 @@ void InstantLoader::SetOmniboxBounds(const gfx::Rect& bounds) {
 }
 
 bool InstantLoader::IsMouseDownFromActivate() {
-  return preview_tab_contents_delegate_->is_mouse_down_from_activate();
+  return preview_tab_contents_delegate_.get() &&
+      preview_tab_contents_delegate_->is_mouse_down_from_activate();
 }
 
 TabContentsWrapper* InstantLoader::ReleasePreviewContents(
@@ -762,7 +760,6 @@ TabContentsWrapper* InstantLoader::ReleasePreviewContents(
 #endif
     }
     preview_contents_->tab_contents()->set_delegate(NULL);
-    preview_tab_contents_delegate_->Reset();
     ready_ = false;
   }
   update_bounds_timer_.Stop();
@@ -918,6 +915,7 @@ void InstantLoader::CreatePreviewContents(TabContentsWrapper* tab_contents) {
   if (max_page_id != -1)
     preview_contents_->controller().set_max_restored_page_id(max_page_id + 1);
 
+  preview_tab_contents_delegate_.reset(new TabContentsDelegateImpl(this));
   new_contents->set_delegate(preview_tab_contents_delegate_.get());
 
   gfx::Rect tab_bounds;
