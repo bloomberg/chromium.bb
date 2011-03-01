@@ -7,9 +7,11 @@
 #include <string>
 
 #include "base/basictypes.h"
+#include "base/i18n/rtl.h"
 #include "base/string_number_conversions.h"
 #include "base/string_util.h"
 #include "base/values.h"
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/character_encoding.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
@@ -105,18 +107,32 @@ void FontSettingsHandler::HandleFetchFontsData(const ListValue* args) {
 void FontSettingsHandler::FontsListHasLoaded() {
   ListValue* fonts_list = fonts_list_loader_->GetFontsList();
 
-  int count = CharacterEncoding::GetSupportCanonicalEncodingCount();
   ListValue encoding_list;
-  for (int i = 0; i < count; ++i) {
-    int cmd_id = CharacterEncoding::GetEncodingCommandIdByIndex(i);
-    std::string encoding =
-        CharacterEncoding::GetCanonicalEncodingNameByCommandId(cmd_id);
-    string16 name =
-        CharacterEncoding::GetCanonicalEncodingDisplayNameByCommandId(cmd_id);
+  const std::vector<CharacterEncoding::EncodingInfo>* encodings;
+  PrefService* pref_service = web_ui_->GetProfile()->GetPrefs();
+  encodings = CharacterEncoding::GetCurrentDisplayEncodings(
+      g_browser_process->GetApplicationLocale(),
+      pref_service->GetString(prefs::kStaticEncodings),
+      pref_service->GetString(prefs::kRecentlySelectedEncoding));
+  DCHECK(encodings);
+  DCHECK(!encodings->empty());
 
+  std::vector<CharacterEncoding::EncodingInfo>::const_iterator it;
+  for (it = encodings->begin(); it != encodings->end(); ++it) {
     ListValue* option = new ListValue();
-    option->Append(Value::CreateStringValue(encoding));
-    option->Append(Value::CreateStringValue(name));
+    if (it->encoding_id) {
+      int cmd_id = it->encoding_id;
+      std::string encoding =
+      CharacterEncoding::GetCanonicalEncodingNameByCommandId(cmd_id);
+      string16 name = it->encoding_display_name;
+      base::i18n::AdjustStringForLocaleDirection(&name);
+      option->Append(Value::CreateStringValue(encoding));
+      option->Append(Value::CreateStringValue(name));
+    } else {
+      // Add empty name/value to indicate a separator item.
+      option->Append(Value::CreateStringValue(""));
+      option->Append(Value::CreateStringValue(""));
+    }
     encoding_list.Append(option);
   }
 

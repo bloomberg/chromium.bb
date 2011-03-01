@@ -129,8 +129,12 @@ cr.define('options', function() {
       for (var i = 0; i < items.length; i++) {
         value = items[i][0];
         text = items[i][1];
-        selected = value == selectedValue;
-        element.appendChild(new Option(text, value, false, selected));
+        if (text) {
+          selected = value == selectedValue;
+          element.appendChild(new Option(text, value, false, selected));
+        } else {
+          element.appendChild(document.createElement('hr'));
+        }
       }
 
       // Enable if not a managed pref.
