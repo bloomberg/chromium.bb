@@ -327,27 +327,6 @@ class DownloadsTest(pyauto.PyUITest):
     self.assertTrue(self.WaitUntil(
         lambda: len(self.GetDownloadsInfo().Downloads()) == num_downloads + 1))
 
-  def testNoUnsafeDownloadsOnRestart(self):
-    """Verify that unsafe file should not show up on session restart."""
-    file_path = self._GetDangerousDownload()
-    downloaded_pkg = os.path.join(self.GetDownloadDirectory().value(),
-                                  os.path.basename(file_path))
-    self._ClearLocalDownloadState(downloaded_pkg)
-    self._TriggerUnsafeDownload(os.path.basename(file_path))
-    self.assertTrue(self.IsDownloadShelfVisible())
-    current_downloads = self.GetDownloadsInfo().Downloads()
-    # Restart the browser and assert that the download was removed.
-    self.RestartBrowser(clear_profile=False)
-    self.assertFalse(os.path.exists(downloaded_pkg))
-    self.assertFalse(self.IsDownloadShelfVisible())
-    self.NavigateToURL("chrome://downloads")
-    new_downloads = self.GetDownloadsInfo().Downloads()
-    if new_downloads:
-      logging.info('Dangerous unconfirmed download survived restart.')
-      logging.info('Old downloads list: %s' % current_downloads)
-      logging.info('New downloads list: %s' % new_downloads)
-    self.assertFalse(new_downloads)
-
   def testPauseAndResume(self):
     """Verify that pause and resume work while downloading a file.
 
