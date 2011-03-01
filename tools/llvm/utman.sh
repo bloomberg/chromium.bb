@@ -804,8 +804,8 @@ llvm-configure() {
 llvm-configure-dbg() {
   StepBanner "LLVM" "Configure With Debugging"
   LLVM_EXTRA_OPTIONS="--disable-optimized \
-	--enable-debug-runtime \
-	--enable-assertions "
+        --enable-debug-runtime \
+        --enable-assertions "
   llvm-configure
 }
 
@@ -2342,33 +2342,19 @@ organize-native-code() {
 ######################################################################
 ######################################################################
 
-
 readonly LLVM_DIS=${INSTALL_DIR}/bin/llvm-dis
 readonly LLVM_OPT=${INSTALL_DIR}/bin/opt
 readonly LLVM_AR=${INSTALL_DIR}/bin/${CROSS_TARGET_ARM}-ar
 
+# Note: we could replace this with a modified version of tools/elf_checker.py
+#       if we do not want to depend on {NACL_TOOLCHAIN}
+readonly NACL_OBJDUMP=${NACL_TOOLCHAIN}/bin/nacl-objdump
 
-# Usage: VerifyObject <regexp> <filename>
-# Ensure that the ELF "file format" string for <filename> matches <regexp>.
-VerifyObject() {
-  local pattern=$1
-  local filename=$2
-  echo -n "verify $(basename "$filename") [$pattern]: "
-  local format=$(objdump -a "$filename" |
-                 sed -ne 's/^.* file format //p' |
-                 head -1)
-  if echo "$format" | grep -q -e "^$pattern$"; then
-    echo "PASS"
-  else
-    echo "FAIL (got '$format')"
-    exit -1
-  fi
-}
-
-# Usage: VerifyArchive <checker> <filename>
+# Usage: VerifyArchive <checker> <filename> <pattern>
 VerifyArchive() {
   local checker="$1"
-  local archive="$2"
+  local pattern="$2"
+  local archive="$3"
   local tmp="/tmp/ar-verify-${RANDOM}"
   rm -rf ${tmp}
   mkdir -p ${tmp}
@@ -2376,18 +2362,25 @@ VerifyArchive() {
   spushd ${tmp}
   echo -n "verify $(basename "${archive}"): "
   ${LLVM_AR} x $(basename ${archive})
-  for i in *.o ; do
-    if [ "$i" = "*.o" ]; then
-      echo "FAIL (no object files in ${archive})"
-      exit -1
+  # extract all the files
+  local count=0
+  for i in ${pattern} ; do
+    if [ ! -e "$i" ]; then
+      # we may also see the unexpanded pattern here if there is no match
+      continue
     fi
+    count=$((count+1))
     ${checker} $i
   done
-  echo "PASS"
+  if [ "${count}" = "0" ] ; then
+    echo "FAIL - archive empty or wrong contents: ${archive}"
+    ls -l "${tmp}"
+    exit -1
+  fi
+  echo "PASS  (${count} files)"
   rm -rf "${tmp}"
   spopd
 }
-
 
 #
 # verify-object-llvm <obj>
@@ -2410,6 +2403,8 @@ verify-object-llvm() {
 #   Ensure that the ARCH properties are what we expect, this is a little
 #   fragile and needs to be updated when tools change
 verify-object-arm() {
+  # TODO(robertm): we should check ABI version
+  # http://code.google.com/p/nativeclient/issues/detail?id=1482
   arch_info=$(readelf -A $1)
   #TODO(robertm): some refactoring and cleanup needed
   if ! grep -q "Tag_VFP_arch: VFPv2" <<< ${arch_info} ; then
@@ -2428,12 +2423,37 @@ verify-object-arm() {
 }
 
 
+# verify-object-x86-32 <obj>
+#
+verify-object-x86-32() {
+  arch_info=$(${NACL_OBJDUMP} -f $1)
+  if ! grep -q "elf32-nacl" <<< ${arch_info} ; then
+    echo "ERROR $1 - bad file format\n"
+    echo ${arch_info}
+    exit -1
+  fi
+}
+
+# verify-object-x86-64 <obj>
+#
+verify-object-x86-64() {
+  arch_info=$(${NACL_OBJDUMP} -f $1)
+  if ! grep -q "elf64-nacl" <<< ${arch_info} ; then
+    echo "ERROR $1 - bad file format\n"
+    echo ${arch_info}
+    exit -1
+  fi
+}
+
+
 #
 # verify-archive-llvm <archive>
 # Verifies that a given archive is bitcode and free of ASMSs
 #
 verify-archive-llvm() {
-  VerifyArchive verify-object-llvm "$@"
+  # Currently all the files are .o in the llvm archives.
+  # Eventually more and more should be .bc.
+  VerifyArchive verify-object-llvm '*.bc *.o' "$@"
 }
 
 #
@@ -2441,7 +2461,23 @@ verify-archive-llvm() {
 # Verifies that a given archive is a proper arm achive
 #
 verify-archive-arm() {
-  VerifyArchive verify-object-arm "$@"
+  VerifyArchive verify-object-arm '*.o' "$@"
+}
+
+#
+# verify-archive-x86-32 <archive>
+# Verifies that a given archive is a proper x86-32 achive
+#
+verify-archive-x86-32() {
+  VerifyArchive verify-object-x86-32 '*.o' "$@"
+}
+
+#
+# verify-archive-x86-64 <archive>
+# Verifies that a given archive is a proper x86-64 achive
+#
+verify-archive-x86-64() {
+  VerifyArchive verify-object-x86-64 '*.o' "$@"
 }
 #@-------------------------------------------------------------------------
 #+ verify                - Verifies that toolchain/pnacl-untrusted ELF files
@@ -2451,21 +2487,29 @@ verify() {
 
   SubBanner "VERIFY: ${PNACL_ARM_ROOT}"
   for i in ${PNACL_ARM_ROOT}/*.o ; do
-    verify-object-arm $i
+    verify-object-arm "$i"
   done
 
   for i in ${PNACL_ARM_ROOT}/*.a ; do
-    verify-archive-arm $i
+    verify-archive-arm "$i"
   done
 
   SubBanner "VERIFY: ${PNACL_X8632_ROOT}"
-  for i in ${PNACL_X8632_ROOT}/*.[oa] ; do
-    VerifyObject elf32-i386  "$i"
+  for i in ${PNACL_X8632_ROOT}/*.o ; do
+     verify-object-x86-32  "$i"
+  done
+
+  for i in ${PNACL_X8632_ROOT}/*.a ; do
+    verify-archive-x86-32 "$i"
   done
 
   SubBanner "VERIFY: ${PNACL_X8664_ROOT}"
-  for i in ${PNACL_X8664_ROOT}/*.[oa] ; do
-    VerifyObject elf64-x86-64 "$i"
+  for i in ${PNACL_X8664_ROOT}/*.o ; do
+     verify-object-x86-64  "$i"
+  done
+
+  for i in ${PNACL_X8664_ROOT}/*.a ; do
+    verify-archive-x86-64 "$i"
   done
 
   SubBanner "VERIFY: ${PNACL_BITCODE_ROOT}"
