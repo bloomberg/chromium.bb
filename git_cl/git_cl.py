@@ -162,40 +162,41 @@ class Settings(object):
 
       # Try to figure out which remote branch we're based on.
       # Strategy:
-      # 1) find all git-svn branches and note their svn URLs.
-      # 2) iterate through our branch history and match up the URLs.
+      # 1) iterate through our branch history and find the svn URL.
+      # 2) find the svn-remote that fetches from the URL.
 
       # regexp matching the git-svn line that contains the URL.
       git_svn_re = re.compile(r'^\s*git-svn-id: (\S+)@', re.MULTILINE)
 
-      # Get the refname and svn url for all refs/remotes/*.
-      remotes = RunGit(['for-each-ref', '--format=%(refname)',
-                        'refs/remotes']).splitlines()
-      svn_refs = {}
-      for ref in remotes:
-        match = git_svn_re.search(RunGit(['cat-file', '-p', ref]))
-        # Prefer origin/HEAD over all others.
-        if match and (match.group(1) not in svn_refs or
-                      ref == "refs/remotes/origin/HEAD"):
-          svn_refs[match.group(1)] = ref
+      # We don't want to go through all of history, so read a line from the
+      # pipe at a time.
+      # The -100 is an arbitrary limit so we don't search forever.
+      cmd = ['git', 'log', '-100', '--pretty=medium']
+      proc = Popen(cmd, stdout=subprocess.PIPE)
+      for line in proc.stdout:
+        match = git_svn_re.match(line)
+        if match:
+          url = match.group(1)
+          proc.stdout.close()  # Cut pipe.
+          break
 
-      if len(svn_refs) == 1:
-        # Only one svn branch exists -- seems like a good candidate.
-        self.svn_branch = svn_refs.values()[0]
-      elif len(svn_refs) > 1:
-        # We have more than one remote branch available.  We don't
-        # want to go through all of history, so read a line from the
-        # pipe at a time.
-        # The -100 is an arbitrary limit so we don't search forever.
-        cmd = ['git', 'log', '-100', '--pretty=medium']
-        proc = Popen(cmd, stdout=subprocess.PIPE)
-        for line in proc.stdout:
-          match = git_svn_re.match(line)
+      if url:
+        svn_remote_re = re.compile(r'^svn-remote\.([^.]+)\.url (.*)$')
+        remotes = RunGit(['config', '--get-regexp',
+                          r'^svn-remote\..*\.url']).splitlines()
+        for remote in remotes:
+          match = svn_remote_re.match(remote)
           if match:
-            url = match.group(1)
-            if url in svn_refs:
-              self.svn_branch = svn_refs[url]
-              proc.stdout.close()  # Cut pipe.
+            remote = match.group(1)
+            base_url = match.group(2)
+            fetch_spec = RunGit(
+                ['config', 'svn-remote.'+remote+'.fetch']).strip().split(':')
+            if fetch_spec[0]:
+              full_url = base_url + '/' + fetch_spec[0]
+            else:
+              full_url = base_url
+            if full_url == url:
+              self.svn_branch = fetch_spec[1]
               break
 
       if not self.svn_branch:
@@ -300,23 +301,28 @@ class Changelist(object):
     if upstream_branch:
       remote = RunGit(['config', 'branch.%s.remote' % branch]).strip()
     else:
-      # Fall back on trying a git-svn upstream branch.
-      if settings.GetIsGitSvn():
-        upstream_branch = settings.GetSVNBranch()
+      upstream_branch = RunGit(['config', 'rietveld.upstream-branch'],
+                               error_ok=True).strip()
+      if upstream_branch:
+        remote = RunGit(['config', 'rietveld.upstream-remote']).strip()
       else:
-        # Else, try to guess the origin remote.
-        remote_branches = RunGit(['branch', '-r']).split()
-        if 'origin/master' in remote_branches:
-          # Fall back on origin/master if it exits.
-          remote = 'origin'
-          upstream_branch = 'refs/heads/master'
-        elif 'origin/trunk' in remote_branches:
-          # Fall back on origin/trunk if it exists. Generally a shared
-          # git-svn clone
-          remote = 'origin'
-          upstream_branch = 'refs/heads/trunk'
+        # Fall back on trying a git-svn upstream branch.
+        if settings.GetIsGitSvn():
+          upstream_branch = settings.GetSVNBranch()
         else:
-          DieWithError("""Unable to determine default branch to diff against.
+          # Else, try to guess the origin remote.
+          remote_branches = RunGit(['branch', '-r']).split()
+          if 'origin/master' in remote_branches:
+            # Fall back on origin/master if it exits.
+            remote = 'origin'
+            upstream_branch = 'refs/heads/master'
+          elif 'origin/trunk' in remote_branches:
+            # Fall back on origin/trunk if it exists. Generally a shared
+            # git-svn clone
+            remote = 'origin'
+            upstream_branch = 'refs/heads/trunk'
+          else:
+            DieWithError("""Unable to determine default branch to diff against.
 Either pass complete "git diff"-style arguments, like
   git cl upload origin/master
 or verify this branch is set up to track another (via the --track argument to

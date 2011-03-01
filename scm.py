@@ -144,45 +144,42 @@ class GIT(object):
     """Returns the svn branch name if found."""
     # Try to figure out which remote branch we're based on.
     # Strategy:
-    # 1) find all git-svn branches and note their svn URLs.
-    # 2) iterate through our branch history and match up the URLs.
+    # 1) iterate through our branch history and find the svn URL.
+    # 2) find the svn-remote that fetches from the URL.
 
     # regexp matching the git-svn line that contains the URL.
     git_svn_re = re.compile(r'^\s*git-svn-id: (\S+)@', re.MULTILINE)
 
-    # Get the refname and svn url for all refs/remotes/*.
-    remotes = GIT.Capture(
-        ['for-each-ref', '--format=%(refname)', 'refs/remotes'],
-        cwd=cwd).splitlines()
-    svn_refs = {}
-    for ref in remotes:
-      match = git_svn_re.search(
-          GIT.Capture(['cat-file', '-p', ref], cwd=cwd))
-      # Prefer origin/HEAD over all others.
-      if match and (match.group(1) not in svn_refs or
-                    ref == "refs/remotes/origin/HEAD"):
-        svn_refs[match.group(1)] = ref
+    # We don't want to go through all of history, so read a line from the
+    # pipe at a time.
+    # The -100 is an arbitrary limit so we don't search forever.
+    cmd = ['git', 'log', '-100', '--pretty=medium']
+    proc = gclient_utils.Popen(cmd, stdout=subprocess.PIPE)
+    for line in proc.stdout:
+      match = git_svn_re.match(line)
+      if match:
+        url = match.group(1)
+        proc.stdout.close()  # Cut pipe.
+        break
 
-    svn_branch = ''
-    if len(svn_refs) == 1:
-      # Only one svn branch exists -- seems like a good candidate.
-      svn_branch = svn_refs.values()[0]
-    elif len(svn_refs) > 1:
-      # We have more than one remote branch available.  We don't
-      # want to go through all of history, so read a line from the
-      # pipe at a time.
-      # The -100 is an arbitrary limit so we don't search forever.
-      cmd = ['git', 'log', '-100', '--pretty=medium']
-      proc = gclient_utils.Popen(cmd, stdout=subprocess.PIPE, cwd=cwd)
-      for line in proc.stdout:
-        match = git_svn_re.match(line)
+    if url:
+      svn_remote_re = re.compile(r'^svn-remote\.([^.]+)\.url (.*)$')
+      remotes = GIT.Capture(['config', '--get-regexp',
+                            r'^svn-remote\..*\.url'], cwd=cwd).splitlines()
+      for remote in remotes:
+        match = svn_remote_re.match(remote)
         if match:
-          url = match.group(1)
-          if url in svn_refs:
-            svn_branch = svn_refs[url]
-            proc.stdout.close()  # Cut pipe.
-            break
-    return svn_branch
+          remote = match.group(1)
+          base_url = match.group(2)
+          fetch_spec = GIT.Capture(
+              ['config', 'svn-remote.%s.fetch' % remote],
+              cwd=cwd).strip().split(':')
+          if fetch_spec[0]:
+            full_url = base_url + '/' + fetch_spec[0]
+          else:
+            full_url = base_url
+          if full_url == url:
+            return fetch_spec[1]
 
   @staticmethod
   def FetchUpstreamTuple(cwd):
@@ -204,25 +201,37 @@ class GIT(object):
       except gclient_utils.Error:
         pass
     else:
-      # Fall back on trying a git-svn upstream branch.
-      if GIT.IsGitSvn(cwd):
-        upstream_branch = GIT.GetSVNBranch(cwd)
+      try:
+        upstream_branch = GIT.Capture(
+            ['config', 'rietveld.upstream-branch'], cwd=cwd).strip()
+      except gclient_utils.Error:
+        upstream_branch = None
+      if upstream_branch:
+        try:
+          remote = GIT.Capture(
+              ['config', 'rietveld.upstream-remote'], cwd=cwd).strip()
+        except gclient_utils.Error:
+          pass
       else:
-        # Else, try to guess the origin remote.
-        remote_branches = GIT.Capture(['branch', '-r'], cwd=cwd).split()
-        if 'origin/master' in remote_branches:
-          # Fall back on origin/master if it exits.
-          remote = 'origin'
-          upstream_branch = 'refs/heads/master'
-        elif 'origin/trunk' in remote_branches:
-          # Fall back on origin/trunk if it exists. Generally a shared
-          # git-svn clone
-          remote = 'origin'
-          upstream_branch = 'refs/heads/trunk'
+        # Fall back on trying a git-svn upstream branch.
+        if GIT.IsGitSvn(cwd):
+          upstream_branch = GIT.GetSVNBranch(cwd)
         else:
-          # Give up.
-          remote = None
-          upstream_branch = None
+          # Else, try to guess the origin remote.
+          remote_branches = GIT.Capture(['branch', '-r'], cwd=cwd).split()
+          if 'origin/master' in remote_branches:
+            # Fall back on origin/master if it exits.
+            remote = 'origin'
+            upstream_branch = 'refs/heads/master'
+          elif 'origin/trunk' in remote_branches:
+            # Fall back on origin/trunk if it exists. Generally a shared
+            # git-svn clone
+            remote = 'origin'
+            upstream_branch = 'refs/heads/trunk'
+          else:
+            # Give up.
+            remote = None
+            upstream_branch = None
     return remote, upstream_branch
 
   @staticmethod
