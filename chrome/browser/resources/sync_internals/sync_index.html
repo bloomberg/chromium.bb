@@ -4,36 +4,36 @@
 <!-- If you change the title, make sure you also update
 chrome/test/functional/special_tabs.py. -->
 <title>Sync Internals</title>
+<link rel="stylesheet" href="chrome://resources/css/tabs.css">
+<script src="chrome://resources/js/cr.js"></script>
+<script src="chrome://resources/js/cr/ui.js"></script>
+<script src="chrome://resources/js/cr/ui/tabs.js"></script>
 <script src="chrome_sync.js"></script>
 </head>
 <body i18n-values=".style.fontFamily:fontfamily;.style.fontSize:fontsize">
 
-<style>
-div.topLevel {
-  display: inline-block;
-  padding-right: 5em;
-  vertical-align: top;
-}
+<tabbox>
+  <tabs>
+    <tab>About</tab>
+    <tab>Notifications</tab>
+    <tab>Sync Node Browser</tab>
+  </tabs>
+  <tabpanels>
+    <tabpanel>
+      <include src="about.html" />
+    </tabpanel>
+    <tabpanel>
+      <include src="notifications.html" />
+    </tabpanel>
+    <tabpanel>
+      <include src="sync_node_browser.html" />
+    </tabpanel>
+  </tabpanels>
+</tabbox>
 
-h1.topLevel {
-  font-size: 150%;
-}
-</style>
-
-<!-- TODO(akalin): Add tab-style navigation. -->
-
-<div class="topLevel" id="about">
-  <h1 class="topLevel">About</h1>
-  <include src="about.html" />
-</div>
-<div class="topLevel" id="notifications">
-  <h1 class="topLevel">Notifications</h1>
-  <include src="notifications.html" />
-</div>
-<div class="topLevel" id="syncNodeBrowser">
-  <h1 class="topLevel">Node Browser</h1>
-  <include src="sync_node_browser.html" />
-</div>
+<script>
+cr.ui.decorate('tabbox', cr.ui.TabBox);
+</script>
 
 <include src="sync_events.html" />
 
