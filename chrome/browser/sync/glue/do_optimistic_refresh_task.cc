@@ -5,7 +5,7 @@
 #include "chrome/browser/sync/glue/do_optimistic_refresh_task.h"
 
 #include "chrome/browser/autofill/personal_data_manager.h"
-#include "chrome/browser/browser_thread.h"
+#include "content/browser/browser_thread.h"
 
 namespace browser_sync {
 

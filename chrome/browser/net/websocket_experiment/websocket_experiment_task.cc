@@ -6,9 +6,9 @@
 
 #include "base/hash_tables.h"
 #include "base/metrics/histogram.h"
-#include "chrome/browser/browser_thread.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/net/url_request_context_getter.h"
+#include "content/browser/browser_thread.h"
 #include "net/base/host_resolver.h"
 #include "net/base/load_flags.h"
 #include "net/base/net_errors.h"

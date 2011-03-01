@@ -18,7 +18,7 @@
 #include "base/time.h"
 #include "base/utf_string_conversions.h"
 #include "base/synchronization/waitable_event.h"
-#include "chrome/browser/browser_thread.h"
+#include "content/browser/browser_thread.h"
 
 using webkit_glue::PasswordForm;
 

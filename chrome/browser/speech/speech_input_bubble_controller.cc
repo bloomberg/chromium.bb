@@ -4,12 +4,12 @@
 
 #include "chrome/browser/speech/speech_input_bubble_controller.h"
 
-#include "chrome/browser/browser_thread.h"
-#include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/browser/tab_contents/tab_util.h"
 #include "chrome/common/notification_registrar.h"
 #include "chrome/common/notification_source.h"
 #include "chrome/common/notification_type.h"
+#include "content/browser/browser_thread.h"
+#include "content/browser/tab_contents/tab_contents.h"
 #include "ui/gfx/rect.h"
 
 namespace speech_input {

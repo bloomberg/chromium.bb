@@ -5,18 +5,17 @@
 #include "chrome/browser/printing/print_preview_message_handler.h"
 
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/browser_thread.h"
 #include "chrome/browser/printing/print_job_manager.h"
 #include "chrome/browser/printing/print_preview_tab_controller.h"
 #include "chrome/browser/printing/printer_query.h"
-#include "chrome/browser/renderer_host/render_view_host.h"
-#include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/browser/ui/webui/print_preview_handler.h"
 #include "chrome/browser/ui/webui/print_preview_ui.h"
 #include "chrome/browser/ui/webui/print_preview_ui_html_source.h"
 #include "chrome/common/render_messages.h"
 #include "chrome/common/render_messages_params.h"
-#include "ipc/ipc_message_macros.h"
+#include "content/browser/browser_thread.h"
+#include "content/browser/renderer_host/render_view_host.h"
+#include "content/browser/tab_contents/tab_contents.h"
 
 namespace printing {
 

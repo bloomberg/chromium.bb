@@ -6,7 +6,7 @@
 
 #include "base/file_util.h"
 #include "base/message_loop.h"
-#include "chrome/browser/browser_thread.h"
+#include "content/browser/browser_thread.h"
 #include "chrome/common/extensions/extension_resource.h"
 
 FileReader::FileReader(const ExtensionResource& resource, Callback* callback)

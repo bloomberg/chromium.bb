@@ -6,9 +6,9 @@
 
 #include "base/singleton.h"
 #include "base/stl_util-inl.h"
-#include "chrome/browser/browser_thread.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/service/service_process_control.h"
+#include "content/browser/browser_thread.h"
 
 ServiceProcessControlManager::ServiceProcessControlManager() {
 }

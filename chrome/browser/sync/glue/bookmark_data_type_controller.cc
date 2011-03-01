@@ -8,7 +8,6 @@
 #include "base/metrics/histogram.h"
 #include "base/time.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
-#include "chrome/browser/browser_thread.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sync/glue/bookmark_change_processor.h"
 #include "chrome/browser/sync/glue/bookmark_model_associator.h"
@@ -17,6 +16,7 @@
 #include "chrome/common/notification_details.h"
 #include "chrome/common/notification_source.h"
 #include "chrome/common/notification_type.h"
+#include "content/browser/browser_thread.h"
 
 namespace browser_sync {
 

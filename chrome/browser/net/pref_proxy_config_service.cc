@@ -5,7 +5,6 @@
 #include "chrome/browser/net/pref_proxy_config_service.h"
 
 #include "base/values.h"
-#include "chrome/browser/browser_thread.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/prefs/pref_set_observer.h"
 #include "chrome/browser/prefs/proxy_config_dictionary.h"
@@ -13,6 +12,7 @@
 #include "chrome/common/notification_source.h"
 #include "chrome/common/notification_type.h"
 #include "chrome/common/pref_names.h"
+#include "content/browser/browser_thread.h"
 
 PrefProxyConfigTracker::PrefProxyConfigTracker(PrefService* pref_service)
     : pref_service_(pref_service) {

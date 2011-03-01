@@ -6,7 +6,6 @@
 
 #include "base/message_loop.h"
 #include "base/singleton.h"
-#include "chrome/browser/browser_thread.h"
 #include "chrome/browser/google/google_util.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
@@ -16,6 +15,7 @@
 #include "chrome/common/jstemplate_builder.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
+#include "content/browser/browser_thread.h"
 #include "googleurl/src/gurl.h"
 #include "grit/app_resources.h"
 #include "grit/browser_resources.h"

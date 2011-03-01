@@ -11,7 +11,7 @@
 #include "base/file_path.h"
 #include "base/ref_counted.h"
 #include "base/string16.h"
-#include "chrome/browser/browser_thread.h"
+#include "content/browser/browser_thread.h"
 
 
 // Manages packing an extension on the file thread and reporting the result

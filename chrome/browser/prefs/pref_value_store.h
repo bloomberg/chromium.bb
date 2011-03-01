@@ -14,8 +14,8 @@
 #include "base/gtest_prod_util.h"
 #include "base/ref_counted.h"
 #include "base/values.h"
-#include "chrome/browser/browser_thread.h"
 #include "chrome/common/pref_store.h"
+#include "content/browser/browser_thread.h"
 
 class FilePath;
 class PrefNotifier;

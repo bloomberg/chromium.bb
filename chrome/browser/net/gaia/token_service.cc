@@ -6,13 +6,13 @@
 
 #include "base/command_line.h"
 #include "base/string_util.h"
-#include "chrome/browser/browser_thread.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/net/gaia/gaia_auth_fetcher.h"
 #include "chrome/common/net/gaia/gaia_constants.h"
 #include "chrome/common/net/url_request_context_getter.h"
 #include "chrome/common/notification_service.h"
+#include "content/browser/browser_thread.h"
 
 // Unfortunately kNumServices must be defined in the .h.
 // TODO(chron): Sync doesn't use the TalkToken anymore so we can stop

@@ -6,8 +6,8 @@
 
 #include "base/file_path.h"
 #include "base/file_util.h"
-#include "chrome/browser/browser_thread.h"
 #include "chrome/browser/history/top_sites_database.h"
+#include "content/browser/browser_thread.h"
 
 namespace history {
 

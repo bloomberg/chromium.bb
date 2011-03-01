@@ -4,11 +4,11 @@
 
 #include "chrome/browser/policy/device_management_service.h"
 
-#include "chrome/browser/browser_thread.h"
 #include "chrome/browser/io_thread.h"
 #include "chrome/browser/net/chrome_net_log.h"
 #include "chrome/browser/policy/device_management_backend_impl.h"
 #include "chrome/common/net/url_request_context_getter.h"
+#include "content/browser/browser_thread.h"
 #include "net/base/cookie_monster.h"
 #include "net/base/host_resolver.h"
 #include "net/base/load_flags.h"

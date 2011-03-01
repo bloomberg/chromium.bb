@@ -11,12 +11,12 @@
 #include "base/path_service.h"
 #include "base/values.h"
 #include "base/version.h"
-#include "chrome/browser/browser_thread.h"
 #include "chrome/browser/extensions/external_extension_provider_interface.h"
 #include "chrome/browser/extensions/external_policy_extension_loader.h"
 #include "chrome/browser/extensions/external_pref_extension_loader.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_paths.h"
+#include "content/browser/browser_thread.h"
 
 #if defined(OS_WIN)
 #include "chrome/browser/extensions/external_registry_extension_loader_win.h"

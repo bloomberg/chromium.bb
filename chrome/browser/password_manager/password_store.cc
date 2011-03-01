@@ -7,7 +7,7 @@
 #include "base/message_loop.h"
 #include "base/scoped_ptr.h"
 #include "base/task.h"
-#include "chrome/browser/browser_thread.h"
+#include "content/browser/browser_thread.h"
 
 using std::vector;
 using webkit_glue::PasswordForm;

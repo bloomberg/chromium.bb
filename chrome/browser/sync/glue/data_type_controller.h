@@ -9,10 +9,10 @@
 #include <map>
 
 #include "base/callback.h"
-#include "chrome/browser/browser_thread.h"
 #include "chrome/browser/sync/engine/model_safe_worker.h"
 #include "chrome/browser/sync/syncable/model_type.h"
 #include "chrome/browser/sync/unrecoverable_error_handler.h"
+#include "content/browser/browser_thread.h"
 
 namespace browser_sync {
 

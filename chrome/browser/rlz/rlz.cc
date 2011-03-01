@@ -23,7 +23,6 @@
 #include "base/synchronization/lock.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/browser_thread.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/search_engines/template_url.h"
@@ -33,6 +32,7 @@
 #include "chrome/common/notification_registrar.h"
 #include "chrome/common/notification_service.h"
 #include "chrome/installer/util/google_update_settings.h"
+#include "content/browser/browser_thread.h"
 
 namespace {
 

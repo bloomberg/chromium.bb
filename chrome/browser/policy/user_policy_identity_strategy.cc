@@ -6,7 +6,6 @@
 
 #include "base/file_util.h"
 #include "chrome/browser/browser_signin.h"
-#include "chrome/browser/browser_thread.h"
 #include "chrome/browser/net/gaia/token_service.h"
 #include "chrome/browser/policy/proto/device_management_local.pb.h"
 #include "chrome/browser/profiles/profile.h"
@@ -15,6 +14,7 @@
 #include "chrome/common/notification_details.h"
 #include "chrome/common/notification_service.h"
 #include "chrome/common/notification_source.h"
+#include "content/browser/browser_thread.h"
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/login/user_manager.h"

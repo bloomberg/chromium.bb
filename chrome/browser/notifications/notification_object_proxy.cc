@@ -6,9 +6,9 @@
 
 #include "base/message_loop.h"
 #include "base/string16.h"
-#include "chrome/browser/browser_thread.h"
-#include "chrome/browser/renderer_host/render_view_host.h"
 #include "chrome/common/render_messages.h"
+#include "content/browser/browser_thread.h"
+#include "content/browser/renderer_host/render_view_host.h"
 
 NotificationObjectProxy::NotificationObjectProxy(int process_id, int route_id,
     int notification_id, bool worker)

@@ -16,9 +16,7 @@
 #include "base/scoped_handle.h"
 #include "base/task.h"
 #include "base/utf_string_conversions.h"  // TODO(viettrungluu): delete me.
-#include "chrome/browser/browser_thread.h"
 #include "chrome/browser/extensions/extension_service.h"
-#include "chrome/browser/renderer_host/resource_dispatcher_host.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension.h"
@@ -27,6 +25,8 @@
 #include "chrome/common/extensions/extension_l10n_util.h"
 #include "chrome/common/extensions/extension_unpacker.h"
 #include "chrome/common/json_value_serializer.h"
+#include "content/browser/browser_thread.h"
+#include "content/browser/renderer_host/resource_dispatcher_host.h"
 #include "grit/generated_resources.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/base/l10n/l10n_util.h"

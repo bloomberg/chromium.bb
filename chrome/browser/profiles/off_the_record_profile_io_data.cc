@@ -8,7 +8,6 @@
 #include "base/logging.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/browser_thread.h"
 #include "chrome/browser/io_thread.h"
 #include "chrome/browser/net/chrome_cookie_policy.h"
 #include "chrome/browser/net/chrome_dns_cert_provenance_checker_factory.h"
@@ -16,6 +15,7 @@
 #include "chrome/browser/net/chrome_network_delegate.h"
 #include "chrome/browser/net/chrome_url_request_context.h"
 #include "chrome/common/url_constants.h"
+#include "content/browser/browser_thread.h"
 #include "net/ftp/ftp_network_layer.h"
 #include "net/http/http_cache.h"
 

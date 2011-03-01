@@ -6,8 +6,8 @@
 
 #include "base/command_line.h"
 #include "base/mac/scoped_cftyperef.h"
-#include "chrome/browser/browser_thread.h"
 #include "chrome/common/service_process_util_posix.h"
+#include "content/browser/browser_thread.h"
 #include "third_party/GTM/Foundation/GTMServiceManagement.h"
 
 void ServiceProcessControl::Launcher::DoRun() {

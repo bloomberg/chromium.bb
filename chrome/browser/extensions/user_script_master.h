@@ -10,10 +10,10 @@
 #include "base/gtest_prod_util.h"
 #include "base/scoped_ptr.h"
 #include "base/shared_memory.h"
-#include "chrome/browser/browser_thread.h"
 #include "chrome/common/extensions/user_script.h"
 #include "chrome/common/notification_observer.h"
 #include "chrome/common/notification_registrar.h"
+#include "content/browser/browser_thread.h"
 
 namespace base {
 class StringPiece;

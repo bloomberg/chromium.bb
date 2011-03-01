@@ -10,7 +10,7 @@
 #include "base/values.h"
 #include "base/version.h"
 #include "base/win/registry.h"
-#include "chrome/browser/browser_thread.h"
+#include "content/browser/browser_thread.h"
 #include "chrome/browser/extensions/external_extension_provider_impl.h"
 
 namespace {

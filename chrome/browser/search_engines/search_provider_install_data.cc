@@ -10,7 +10,6 @@
 #include "base/logging.h"
 #include "base/ref_counted.h"
 #include "base/task.h"
-#include "chrome/browser/browser_thread.h"
 #include "chrome/browser/search_engines/search_host_to_urls_map.h"
 #include "chrome/browser/search_engines/search_terms_data.h"
 #include "chrome/browser/search_engines/template_url.h"
@@ -22,6 +21,7 @@
 #include "chrome/common/notification_service.h"
 #include "chrome/common/notification_source.h"
 #include "chrome/common/notification_type.h"
+#include "content/browser/browser_thread.h"
 
 typedef SearchHostToURLsMap::TemplateURLSet TemplateURLSet;
 

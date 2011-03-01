@@ -4,11 +4,11 @@
 
 #include "chrome/browser/ssl/ssl_add_cert_handler.h"
 
-#include "chrome/browser/browser_thread.h"
-#include "chrome/browser/renderer_host/render_view_host_delegate.h"
-#include "chrome/browser/renderer_host/render_view_host_notification_task.h"
-#include "chrome/browser/renderer_host/resource_dispatcher_host.h"
-#include "chrome/browser/renderer_host/resource_dispatcher_host_request_info.h"
+#include "content/browser/browser_thread.h"
+#include "content/browser/renderer_host/render_view_host_delegate.h"
+#include "content/browser/renderer_host/render_view_host_notification_task.h"
+#include "content/browser/renderer_host/resource_dispatcher_host.h"
+#include "content/browser/renderer_host/resource_dispatcher_host_request_info.h"
 #include "net/base/cert_database.h"
 #include "net/base/net_errors.h"
 #include "net/base/x509_certificate.h"

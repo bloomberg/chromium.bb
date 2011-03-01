@@ -8,12 +8,12 @@
 #include <vector>
 
 #include "base/logging.h"
-#include "chrome/browser/browser_thread.h"
 #include "chrome/browser/search_engines/template_url.h"
 #include "chrome/browser/search_engines/template_url_model.h"
 #include "chrome/browser/search_engines/template_url_prepopulate_data.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
+#include "content/browser/browser_thread.h"
 
 string16 GetDefaultSearchEngineName(Profile* profile) {
   if (!profile) {

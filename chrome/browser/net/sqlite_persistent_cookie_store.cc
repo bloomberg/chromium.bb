@@ -18,8 +18,8 @@
 #include "base/scoped_ptr.h"
 #include "base/string_util.h"
 #include "base/threading/thread.h"
-#include "chrome/browser/browser_thread.h"
 #include "chrome/browser/diagnostics/sqlite_diagnostics.h"
+#include "content/browser/browser_thread.h"
 #include "googleurl/src/gurl.h"
 
 using base::Time;

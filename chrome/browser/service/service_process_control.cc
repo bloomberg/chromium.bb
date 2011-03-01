@@ -11,7 +11,6 @@
 #include "base/threading/thread.h"
 #include "base/threading/thread_restrictions.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/browser_thread.h"
 #include "chrome/browser/io_thread.h"
 #include "chrome/browser/upgrade_detector.h"
 #include "chrome/common/child_process_host.h"
@@ -19,6 +18,7 @@
 #include "chrome/common/notification_service.h"
 #include "chrome/common/service_messages.h"
 #include "chrome/common/service_process_util.h"
+#include "content/browser/browser_thread.h"
 #include "ui/base/ui_base_switches.h"
 
 

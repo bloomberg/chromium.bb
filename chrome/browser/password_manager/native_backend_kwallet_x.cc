@@ -10,7 +10,7 @@
 #include "base/pickle.h"
 #include "base/stl_util-inl.h"
 #include "base/string_util.h"
-#include "chrome/browser/browser_thread.h"
+#include "content/browser/browser_thread.h"
 
 using std::string;
 using std::vector;

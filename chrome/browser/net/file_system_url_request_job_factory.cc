@@ -4,9 +4,9 @@
 
 #include "chrome/browser/net/file_system_url_request_job_factory.h"
 
-#include "chrome/browser/browser_thread.h"
 #include "chrome/browser/net/chrome_url_request_context.h"
 #include "chrome/common/url_constants.h"
+#include "content/browser/browser_thread.h"
 #include "net/url_request/url_request.h"
 #include "webkit/fileapi/file_system_url_request_job.h"
 #include "webkit/fileapi/file_system_dir_url_request_job.h"

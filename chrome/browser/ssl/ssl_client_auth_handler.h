@@ -8,7 +8,7 @@
 
 #include "base/basictypes.h"
 #include "base/ref_counted.h"
-#include "chrome/browser/browser_thread.h"
+#include "content/browser/browser_thread.h"
 #include "net/base/ssl_cert_request_info.h"
 
 namespace net {

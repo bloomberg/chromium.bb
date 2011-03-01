@@ -8,7 +8,7 @@
 
 #include "base/basictypes.h"
 #include "base/hash_tables.h"
-#include "chrome/browser/browser_thread.h"
+#include "content/browser/browser_thread.h"
 #include "ui/base/keycodes/keyboard_codes.h"
 #include "views/events/event.h"
 

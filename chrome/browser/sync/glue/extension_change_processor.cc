@@ -9,7 +9,6 @@
 
 #include "base/logging.h"
 #include "base/stl_util-inl.h"
-#include "chrome/browser/browser_thread.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/sync/glue/extension_sync.h"
@@ -18,6 +17,7 @@
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/notification_details.h"
 #include "chrome/common/notification_source.h"
+#include "content/browser/browser_thread.h"
 
 namespace browser_sync {
 

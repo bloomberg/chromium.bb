@@ -4,9 +4,9 @@
 
 #include "chrome/browser/metrics/user_metrics.h"
 
-#include "chrome/browser/browser_thread.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/notification_service.h"
+#include "content/browser/browser_thread.h"
 
 void UserMetrics::RecordAction(const UserMetricsAction& action,
                                Profile* profile) {

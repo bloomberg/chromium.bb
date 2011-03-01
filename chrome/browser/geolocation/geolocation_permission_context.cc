@@ -9,7 +9,6 @@
 #include <vector>
 
 #include "base/utf_string_conversions.h"
-#include "chrome/browser/browser_thread.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/geolocation/geolocation_content_settings_map.h"
 #include "chrome/browser/google/google_util.h"
@@ -23,6 +22,7 @@
 #include "chrome/common/notification_type.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/render_messages.h"
+#include "content/browser/browser_thread.h"
 #include "content/browser/geolocation/geolocation_provider.h"
 #include "content/browser/renderer_host/render_process_host.h"
 #include "content/browser/renderer_host/render_view_host.h"

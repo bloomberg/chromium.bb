@@ -8,12 +8,12 @@
 
 #include "base/json/json_writer.h"
 #include "base/values.h"
-#include "chrome/browser/browser_thread.h"
 #include "chrome/browser/extensions/extension_event_router_forwarder.h"
 #include "chrome/browser/extensions/extension_webrequest_api_constants.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_extent.h"
 #include "chrome/common/extensions/url_pattern.h"
+#include "content/browser/browser_thread.h"
 #include "googleurl/src/gurl.h"
 
 namespace keys = extension_webrequest_api_constants;

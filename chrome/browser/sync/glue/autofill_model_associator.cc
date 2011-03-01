@@ -12,7 +12,6 @@
 #include "base/string_number_conversions.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/autofill/autofill_profile.h"
-#include "chrome/browser/browser_thread.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sync/engine/syncapi.h"
 #include "chrome/browser/sync/glue/autofill_change_processor.h"
@@ -22,6 +21,7 @@
 #include "chrome/browser/sync/protocol/autofill_specifics.pb.h"
 #include "chrome/browser/webdata/web_database.h"
 #include "chrome/common/guid.h"
+#include "content/browser/browser_thread.h"
 #include "net/base/escape.h"
 
 using base::TimeTicks;

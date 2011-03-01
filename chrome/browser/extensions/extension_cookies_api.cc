@@ -10,7 +10,6 @@
 #include "base/task.h"
 #include "base/values.h"
 #include "chrome/browser/browser_list.h"
-#include "chrome/browser/browser_thread.h"
 #include "chrome/browser/extensions/extension_cookies_api_constants.h"
 #include "chrome/browser/extensions/extension_cookies_helpers.h"
 #include "chrome/browser/extensions/extension_event_router.h"
@@ -20,6 +19,7 @@
 #include "chrome/common/net/url_request_context_getter.h"
 #include "chrome/common/notification_type.h"
 #include "chrome/common/notification_service.h"
+#include "content/browser/browser_thread.h"
 #include "net/base/cookie_monster.h"
 
 namespace keys = extension_cookies_api_constants;

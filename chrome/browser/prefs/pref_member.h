@@ -31,8 +31,8 @@
 #include "base/file_path.h"
 #include "base/ref_counted.h"
 #include "base/values.h"
-#include "chrome/browser/browser_thread.h"
 #include "chrome/common/notification_observer.h"
+#include "content/browser/browser_thread.h"
 
 class PrefService;
 

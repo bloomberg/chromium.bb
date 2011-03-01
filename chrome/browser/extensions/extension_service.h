@@ -19,7 +19,6 @@
 #include "base/task.h"
 #include "base/time.h"
 #include "base/tuple.h"
-#include "chrome/browser/browser_thread.h"
 #include "chrome/browser/extensions/default_apps.h"
 #include "chrome/browser/extensions/extension_icon_manager.h"
 #include "chrome/browser/extensions/extension_menu_manager.h"
@@ -34,6 +33,7 @@
 #include "chrome/common/notification_registrar.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/property_bag.h"
+#include "content/browser/browser_thread.h"
 
 class ExtensionBrowserEventRouter;
 class ExtensionServiceBackend;

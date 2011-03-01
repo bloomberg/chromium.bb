@@ -6,8 +6,8 @@
 
 #include "base/logging.h"
 #include "base/values.h"
-#include "chrome/browser/browser_thread.h"
 #include "chrome/browser/extensions/external_extension_provider_impl.h"
+#include "content/browser/browser_thread.h"
 
 ExternalExtensionLoader::ExternalExtensionLoader()
     : owner_(NULL),

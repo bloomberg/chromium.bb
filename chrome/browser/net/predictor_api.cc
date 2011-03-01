@@ -15,7 +15,6 @@
 #include "base/values.h"
 #include "base/synchronization/waitable_event.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/browser_thread.h"
 #include "chrome/browser/io_thread.h"
 #include "chrome/browser/net/preconnect.h"
 #include "chrome/browser/net/referrer.h"
@@ -28,6 +27,7 @@
 #include "chrome/common/notification_registrar.h"
 #include "chrome/common/notification_service.h"
 #include "chrome/common/pref_names.h"
+#include "content/browser/browser_thread.h"
 #include "net/base/host_resolver.h"
 #include "net/base/host_resolver_impl.h"
 

@@ -13,8 +13,8 @@
 #include "base/ref_counted.h"
 #include "base/scoped_vector.h"
 #include "build/build_config.h"
-#include "chrome/browser/browser_thread.h"
 #include "chrome/browser/importer/importer_data_types.h"
+#include "content/browser/browser_thread.h"
 
 class Importer;
 

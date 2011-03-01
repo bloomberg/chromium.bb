@@ -10,7 +10,7 @@
 #include "base/logging.h"
 #include "base/task.h"
 #include "base/values.h"
-#include "chrome/browser/browser_thread.h"
+#include "content/browser/browser_thread.h"
 #include "chrome/browser/policy/configuration_policy_pref_store.h"
 #include "chrome/browser/policy/proto/cloud_policy.pb.h"
 #include "chrome/browser/policy/proto/device_management_constants.h"

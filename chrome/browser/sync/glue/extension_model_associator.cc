@@ -5,11 +5,11 @@
 #include "chrome/browser/sync/glue/extension_model_associator.h"
 
 #include "base/logging.h"
-#include "chrome/browser/browser_thread.h"
 #include "chrome/browser/sync/glue/extension_data.h"
 #include "chrome/browser/sync/glue/extension_sync_traits.h"
 #include "chrome/browser/sync/glue/extension_sync.h"
 #include "chrome/browser/sync/protocol/extension_specifics.pb.h"
+#include "content/browser/browser_thread.h"
 
 namespace browser_sync {
 

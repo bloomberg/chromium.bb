@@ -4,14 +4,14 @@
 
 #include "chrome/browser/extensions/user_script_listener.h"
 
-#include "chrome/browser/browser_thread.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/renderer_host/global_request_id.h"
-#include "chrome/browser/renderer_host/resource_dispatcher_host_request_info.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/url_pattern.h"
 #include "chrome/common/notification_service.h"
+#include "content/browser/browser_thread.h"
+#include "content/browser/renderer_host/global_request_id.h"
+#include "content/browser/renderer_host/resource_dispatcher_host_request_info.h"
 #include "net/url_request/url_request.h"
 
 UserScriptListener::UserScriptListener(ResourceQueue* resource_queue)

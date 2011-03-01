@@ -6,7 +6,8 @@
 
 #include <vector>
 
-#include "chrome/browser/browser_thread.h"
+#include "base/logging.h"
+#include "base/stl_util-inl.h"
 #include "chrome/browser/password_manager/password_store_change.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
@@ -14,9 +15,7 @@
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/notification_service.h"
 #include "chrome/common/pref_names.h"
-
-#include "base/logging.h"
-#include "base/stl_util-inl.h"
+#include "content/browser/browser_thread.h"
 
 using webkit_glue::PasswordForm;
 
