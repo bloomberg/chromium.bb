@@ -24,15 +24,6 @@ import chromite.buildbot.cbuildbot_config as cbuildbot_config
 import chromite.buildbot.cbuildbot_stages as stages
 import chromite.lib.cros_build_lib as cros_lib
 
-# ======================== Basic Utility functions =============================
-
-def _PrintFile(path):
-  """Prints out the contents of a file to stderr."""
-  file_handle = open(path)
-  print >> sys.stderr, file_handle.read()
-  file_handle.close()
-  sys.stderr.flush()
-
 
 def _GetConfig(config_name):
   """Gets the configuration for the build"""

@@ -1,6 +1,6 @@
 #!/usr/bin/python
 
-# Copyright (c) 2010 The Chromium OS Authors. All rights reserved.
+# Copyright (c) 2011 The Chromium OS Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -16,7 +16,6 @@ import unittest
 import constants
 sys.path.append(constants.SOURCE_ROOT)
 import chromite.buildbot.cbuildbot_commands as commands
-import chromite.buildbot.cbuildbot_stages as stages
 import chromite.lib.cros_build_lib as cros_lib
 
 class CBuildBotTest(mox.MoxTestBase):
@@ -46,68 +45,6 @@ class CBuildBotTest(mox.MoxTestBase):
     self._chroot_overlays = [
         cros_lib.ReinterpretPathForChroot(p) for p in self._overlays
     ]
-
-  def LegacyTestParseRevisionString(self):
-    """Test whether _ParseRevisionString parses string correctly."""
-    return_array = commands._ParseRevisionString(self._test_string,
-                                                  self._test_dict)
-    self.assertEqual(len(return_array), 3)
-    self.assertTrue('chromeos-base/kernel', '12345test' in return_array)
-    self.assertTrue('dev-util/perf', '12345test' in return_array)
-    self.assertTrue('chromos-base/libcros', '12345test' in return_array)
-
-  def LegacyTestCreateDictionary(self):
-    self.mox.StubOutWithMock(cbuildbot, '_GetAllGitRepos')
-    self.mox.StubOutWithMock(cbuildbot, '_GetCrosWorkOnSrcPath')
-    commands._GetAllGitRepos(mox.IgnoreArg()).AndReturn(self._test_repos)
-    cros_lib.OldRunCommand(mox.IgnoreArg(),
-                            cwd='%s/src/scripts' % self._buildroot,
-                            redirect_stdout=True,
-                            redirect_stderr=True,
-                            enter_chroot=True,
-                            print_cmd=False).AndReturn(
-                                self._test_cros_workon_packages)
-    commands._GetCrosWorkOnSrcPath(
-        self._buildroot, self._test_board, 'chromeos-base/kernel').AndReturn(
-            '/home/test/third_party/kernel/files')
-    commands._GetCrosWorkOnSrcPath(
-        self._buildroot, self._test_board,
-        'chromeos-base/chromeos-login').AndReturn(
-            '/home/test/platform/login_manager')
-    self.mox.ReplayAll()
-    repo_dict = commands._CreateRepoDictionary(self._buildroot,
-                                                self._test_board)
-    self.assertEqual(repo_dict['kernel'], ['chromeos-base/kernel'])
-    self.assertEqual(repo_dict['login_manager'],
-                     ['chromeos-base/chromeos-login'])
-    self.mox.VerifyAll()
-
-  # TODO(sosa): Re-add once we use cros_mark vs. cros_mark_all.
-  #def testUprevPackages(self):
-  #  """Test if we get actual revisions in revisions.pfq."""
-  #  self.mox.StubOutWithMock(cbuildbot, '_CreateRepoDictionary')
-  #  self.mox.StubOutWithMock(cbuildbot, '_ParseRevisionString')
-  #  self.mox.StubOutWithMock(cbuildbot, '_UprevFromRevisionList')
-  #  self.mox.StubOutWithMock(__builtin__, 'open')
-
-  #  # Mock out file interaction.
-  #  m_file = self.mox.CreateMock(file)
-  #  __builtin__.open(self._revision_file).AndReturn(m_file)
-  #  m_file.read().AndReturn(self._test_string)
-  #  m_file.close()
-
-  #  commands._CreateRepoDictionary(self._buildroot,
-  #                                  self._test_board).AndReturn(
-  #                                      self._test_dict)
-  #  commands._ParseRevisionString(self._test_string,
-  #                                 self._test_dict).AndReturn(
-  #                                     self._test_parsed_string_array)
-  #  commands._UprevFromRevisionList(self._buildroot,
-  #                                   self._test_parsed_string_array)
-  #  self.mox.ReplayAll()
-  #  commands.UprevPackages(self._buildroot, self._revision_file,
-  #                           self._test_board)
-  #  self.mox.VerifyAll()
 
   def testArchiveTestResults(self):
     """Test if we can archive the latest results dir to Google Storage."""
@@ -146,19 +83,6 @@ class CBuildBotTest(mox.MoxTestBase):
     commands.UprevPackages(self._buildroot, self.tracking_branch,
                             self._test_board, self._overlays)
     self.mox.VerifyAll()
-
-  def testGetPortageEnvVar(self):
-    """Basic test case for _GetPortageEnvVar function."""
-    envvar = 'EXAMPLE'
-    cros_lib.OldRunCommand(mox.And(mox.IsA(list), mox.In(envvar)),
-                           cwd='%s/src/scripts' % self._buildroot,
-                           redirect_stdout=True, enter_chroot=True,
-                           error_ok=True).AndReturn('RESULT\n')
-    self.mox.ReplayAll()
-    result = stages._GetPortageEnvVar(self._buildroot, self._test_board,
-                                      envvar)
-    self.mox.VerifyAll()
-    self.assertEqual(result, 'RESULT')
 
   def testUploadPublicPrebuilts(self):
     """Test _UploadPrebuilts with a public location."""
