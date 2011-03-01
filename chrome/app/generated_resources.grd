@@ -1,7 +1,15 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<!-- This file contains definitions of resources that will be translated for
-each locale. -->
+<!--
+This file contains definitions of resources that will be translated for each
+locale. OS values are passed through from Python's sys.platform:
+
+  win32 - Windows
+  darwin - Mac
+  linux2 - Linux (both Views and GTK+)
+
+Other platform defines such as use_titlecase are declared in build/common.gypi.
+-->
 
 <grit base_dir="." latest_public_release="0" current_release="1"
       source_lang_id="en" enc_check="möl">
