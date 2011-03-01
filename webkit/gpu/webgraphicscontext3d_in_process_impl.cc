@@ -224,9 +224,6 @@ void WebGraphicsContext3DInProcessImpl::ValidateAttributes() {
       attributes_.antialias = false;
     }
   }
-  // FIXME: instead of enforcing premultipliedAlpha = true, implement the
-  // correct behavior when premultipliedAlpha = false is requested.
-  attributes_.premultipliedAlpha = true;
 }
 
 void WebGraphicsContext3DInProcessImpl::ResolveMultisampledFramebuffer(
