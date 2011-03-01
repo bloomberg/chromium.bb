@@ -46,7 +46,7 @@ static int MouseButtonToX11ButtonNumber(
 //
 // TODO(wez): Replace this with something more closely tied to what
 // WebInputEventFactory does on Linux/GTK, and which respects the
-// host's keyboard layout.
+// host's keyboard layout (see http://crbug.com/74550 ).
 const int kUsVkeyToKeysym[256] = {
    // 0x00 - 0x07
   -1, -1, -1, -1,
