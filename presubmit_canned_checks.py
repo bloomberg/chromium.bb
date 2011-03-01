@@ -624,3 +624,23 @@ def CheckBuildbotPendingBuilds(input_api, output_api, url, max_pendings,
             'builds are pending.' % max_pendings,
         long_text='\n'.join(out))]
   return []
+
+
+def CheckOwners(input_api, output_api):
+  affected_files = set(input_api.change.AffectedFiles())
+  owners_db = input_api.owners_db
+
+  if input_api.is_commiting:
+    missing_files = owners_db.FilesNotCoveredBy(affected_files,
+                                                input_api.change.approvers)
+    if missing_files:
+      return [output_api.PresubmitPromptWarning('Missing approvals for: %s' %
+              ','.join(missing_files))]
+    return []
+  else:
+    if not input_api.change.get('R', None):
+      suggested_reviewers = owners_db.OwnersFor(affected_files)
+
+      # TODO(dpranke): consider getting multiple covering sets of reviewers
+      # and displaying them somehow?
+      input_api.change['R'] = ','.join(suggested_reviewers)

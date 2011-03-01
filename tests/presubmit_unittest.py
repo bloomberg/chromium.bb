@@ -97,7 +97,14 @@ def GetPreferredTrySlaves():
 """
 
   def setUp(self):
+    class FakeChange(object):
+      root = '/'
+
+      def RepositoryRoot(self):
+        return self.root
+
     SuperMoxTestBase.setUp(self)
+    self.fake_change = FakeChange()
     self.mox.StubOutWithMock(presubmit, 'random')
     self.mox.StubOutWithMock(presubmit, 'warn')
     presubmit._ASKED_FOR_FEEDBACK = False
@@ -133,7 +140,7 @@ class PresubmitUnittest(PresubmitTestsBase):
       'PresubmitExecuter', 'PromptYesNo', 'ScanSubDirs',
       'SvnAffectedFile', 'SvnChange', 'cPickle', 'cStringIO',
       'exceptions', 'fnmatch', 'gclient_utils', 'glob', 'json',
-      'logging', 'marshal', 'normpath', 'optparse', 'os', 'pickle',
+      'logging', 'marshal', 'normpath', 'optparse', 'os', 'owners', 'pickle',
       'presubmit_canned_checks', 'random', 're', 'scm', 'subprocess',
       'sys', 'tempfile', 'time', 'traceback', 'types', 'unittest', 'urllib2',
       'warn',
@@ -692,12 +699,13 @@ class InputApiUnittest(PresubmitTestsBase):
       'LocalToDepotPath',
       'PresubmitLocalPath', 'ReadFile', 'RightHandSideLines', 'ServerPaths',
       'basename', 'cPickle', 'cStringIO', 'canned_checks', 'change', 'environ',
-      'is_committing', 'json', 'marshal', 'os_path', 'pickle', 'platform',
-      'python_executable', 're', 'subprocess', 'tempfile', 'traceback',
-      'unittest', 'urllib2', 'version',
+      'is_committing', 'json', 'marshal', 'os_path', 'owners_db', 'pickle',
+      'platform', 'python_executable', 're', 'subprocess', 'tempfile',
+      'traceback', 'unittest', 'urllib2', 'version',
     ]
     # If this test fails, you should add the relevant test.
-    self.compareMembers(presubmit.InputApi(None, './.', False), members)
+    self.compareMembers(presubmit.InputApi(self.fake_change, './.', False),
+                        members)
 
   def testDepotToLocalPath(self):
     presubmit.scm.SVN.CaptureInfo('svn://foo/smurf').AndReturn(
@@ -705,32 +713,31 @@ class InputApiUnittest(PresubmitTestsBase):
     presubmit.scm.SVN.CaptureInfo('svn:/foo/notfound/burp').AndReturn({})
     self.mox.ReplayAll()
 
-    path = presubmit.InputApi(None, './p', False).DepotToLocalPath(
+    path = presubmit.InputApi(self.fake_change, './p', False).DepotToLocalPath(
         'svn://foo/smurf')
     self.failUnless(path == 'prout')
-    path = presubmit.InputApi(None, './p', False).DepotToLocalPath(
+    path = presubmit.InputApi(self.fake_change, './p', False).DepotToLocalPath(
         'svn:/foo/notfound/burp')
     self.failUnless(path == None)
 
   def testLocalToDepotPath(self):
-    presubmit.scm.SVN.CaptureInfo('smurf').AndReturn({'URL':
-                                                               'svn://foo'})
+    presubmit.scm.SVN.CaptureInfo('smurf').AndReturn({'URL': 'svn://foo'})
     presubmit.scm.SVN.CaptureInfo('notfound-food').AndReturn({})
     self.mox.ReplayAll()
-
-    path = presubmit.InputApi(None, './p', False).LocalToDepotPath('smurf')
+    path = presubmit.InputApi(self.fake_change, './p', False).LocalToDepotPath(
+        'smurf')
     self.assertEqual(path, 'svn://foo')
-    path = presubmit.InputApi(None, './p', False).LocalToDepotPath(
+    path = presubmit.InputApi(self.fake_change, './p', False).LocalToDepotPath(
         'notfound-food')
     self.failUnless(path == None)
 
   def testInputApiConstruction(self):
     self.mox.ReplayAll()
-    # Fudge the change object, it's not used during construction anyway
-    api = presubmit.InputApi(change=42, presubmit_path='foo/path/PRESUBMIT.py',
+    api = presubmit.InputApi(self.fake_change,
+                             presubmit_path='foo/path/PRESUBMIT.py',
                              is_committing=False)
     self.assertEquals(api.PresubmitLocalPath(), 'foo/path')
-    self.assertEquals(api.change, 42)
+    self.assertEquals(api.change, self.fake_change)
 
   def testInputApiPresubmitScriptFiltering(self):
     join = presubmit.os.path.join
@@ -871,7 +878,7 @@ class InputApiUnittest(PresubmitTestsBase):
         ],
       ),
     ]
-    input_api = presubmit.InputApi(None, './PRESUBMIT.py', False)
+    input_api = presubmit.InputApi(self.fake_change, './PRESUBMIT.py', False)
     self.mox.ReplayAll()
 
     self.assertEqual(len(input_api.DEFAULT_WHITE_LIST), 22)
@@ -1163,7 +1170,7 @@ class GclChangeUnittest(PresubmitTestsBase):
         'AbsoluteLocalPaths', 'AffectedFiles', 'AffectedTextFiles',
         'DescriptionText', 'FullDescriptionText', 'LocalPaths', 'Name',
         'RepositoryRoot', 'RightHandSideLines', 'ServerPaths',
-        'issue', 'patchset', 'scm', 'tags',
+        'approvers', 'issue', 'patchset', 'scm', 'tags',
     ]
     # If this test fails, you should add the relevant test.
     self.mox.ReplayAll()
@@ -1214,6 +1221,7 @@ class CannedChecksUnittest(PresubmitTestsBase):
       'CheckLongLines', 'CheckTreeIsOpen', 'RunPythonUnitTests',
       'RunPylint',
       'CheckBuildbotPendingBuilds', 'CheckRietveldTryJobExecution',
+      'CheckOwners',
     ]
     # If this test fails, you should add the relevant test.
     self.compareMembers(presubmit_canned_checks, members)

@@ -51,6 +51,7 @@ except ImportError:
 
 # Local imports.
 import gclient_utils
+import owners
 import presubmit_canned_checks
 import scm
 
@@ -254,6 +255,11 @@ class InputApi(object):
 
     # We carry the canned checks so presubmit scripts can easily use them.
     self.canned_checks = presubmit_canned_checks
+
+    # TODO(dpranke): figure out a list of all approved owners for a repo
+    # in order to be able to handle wildcard OWNERS files?
+    self.owners_db = owners.Database(change.RepositoryRoot(),
+        fopen=file, os_path=self.os_path)
 
   def PresubmitLocalPath(self):
     """Returns the local path of the presubmit script currently being run.
@@ -634,6 +640,10 @@ class Change(object):
     self._local_root = os.path.abspath(local_root)
     self.issue = issue
     self.patchset = patchset
+
+    # TODO(dpranke): implement - get from the patchset?
+    self.approvers = set()
+
     self.scm = ''
 
     # From the description text, build up a dictionary of key/value pairs
