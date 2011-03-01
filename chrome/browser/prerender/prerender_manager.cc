@@ -14,6 +14,7 @@
 #include "chrome/common/render_messages.h"
 #include "content/browser/browser_thread.h"
 #include "content/browser/renderer_host/render_view_host.h"
+#include "content/browser/renderer_host/render_process_host.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/browser/tab_contents/render_view_host_manager.h"
 
@@ -81,6 +82,16 @@ bool PrerenderManager::AddPreload(const GURL& url,
   DeleteOldEntries();
   if (FindEntry(url))
     return false;
+  // Do not prerender if there are too many render processes, and we would
+  // have to use an existing one.  We do not want prerendering to happen in
+  // a shared process, so that we can always reliably lower the CPU
+  // priority for prerendering.
+  // TODO(tburkard): Figure out how to cancel prerendering in the opposite
+  // case, when a new tab is added to a process used for prerendering.
+  if (RenderProcessHost::ShouldTryToUseExistingProcessHost()) {
+    RecordFinalStatus(FINAL_STATUS_TOO_MANY_PROCESSES);
+    return false;
+  }
   // TODO(cbentzel): Move invalid checks here instead of PrerenderContents?
   PrerenderContentsData data(CreatePrerenderContents(url, alias_urls, referrer),
                              GetCurrentTime());
