@@ -200,14 +200,6 @@ class InProcessBrowserTest : public testing::Test {
   // Whether this test requires the TabCloseableStateWatcher.
   bool tab_closeable_state_watcher_enabled_;
 
-  // We muck with the global command line for this process.  Keep the original
-  // so we can reset it when we're done.  This matters when running the browser
-  // tests in "single process" (all tests in one process) mode.
-  scoped_ptr<CommandLine> original_command_line_;
-
-  // Saved to restore the value of RenderProcessHost::run_renderer_in_process.
-  bool original_single_process_;
-
   // Host resolver to use during the test.
   scoped_refptr<net::RuleBasedHostResolverProc> host_resolver_;
 

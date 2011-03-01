@@ -74,8 +74,7 @@ InProcessBrowserTest::InProcessBrowserTest()
     : browser_(NULL),
       show_window_(false),
       dom_automation_enabled_(false),
-      tab_closeable_state_watcher_enabled_(false),
-      original_single_process_(false) {
+      tab_closeable_state_watcher_enabled_(false) {
 #if defined(OS_MACOSX)
   base::mac::SetOverrideAmIBundled(true);
 #endif
@@ -99,14 +98,6 @@ InProcessBrowserTest::~InProcessBrowserTest() {
 }
 
 void InProcessBrowserTest::SetUp() {
-  // Remember the command line.  Normally this doesn't matter, because the test
-  // harness creates a new process for each test, but when the test harness is
-  // running in single process mode, we can't let one test's command-line
-  // changes (e.g. enabling DOM automation) affect other tests.
-  // TODO(phajdan.jr): This save/restore logic is unnecessary.  Remove it.
-  CommandLine* command_line = CommandLine::ForCurrentProcessMutable();
-  original_command_line_.reset(new CommandLine(*command_line));
-
   // Create a temporary user data directory if required.
   ASSERT_TRUE(CreateUserDataDirectory())
       << "Could not create user data directory.";
@@ -126,16 +117,13 @@ void InProcessBrowserTest::SetUp() {
   // bundle we'll crash.
   browser_shutdown::delete_resources_on_shutdown = false;
 
-  // Allow subclasses the opportunity to make changes to the command line before
-  // running any tests.
+  CommandLine* command_line = CommandLine::ForCurrentProcess();
+  // Allow subclasses to change the command line before running any tests.
   SetUpCommandLine(command_line);
   // Add command line arguments that are used by all InProcessBrowserTests.
   PrepareTestCommandLine(command_line);
 
-  // Save the single process mode state before it was reset in this test. This
-  // state will be recovered in TearDown(). Single-process mode is not set in
-  // BrowserMain so it needs to be processed explicitly.
-  original_single_process_ = RenderProcessHost::run_renderer_in_process();
+  // Single-process mode is not set in BrowserMain, so process it explicitly.
   if (command_line->HasSwitch(switches::kSingleProcess))
     RenderProcessHost::set_run_renderer_in_process(true);
 
@@ -170,8 +158,7 @@ void InProcessBrowserTest::SetUp() {
   TearDownInProcessBrowserTestFixture();
 }
 
-void InProcessBrowserTest::PrepareTestCommandLine(
-    CommandLine* command_line) {
+void InProcessBrowserTest::PrepareTestCommandLine(CommandLine* command_line) {
   // Propagate commandline settings from test_launcher_utils.
   test_launcher_utils::PrepareBrowserCommandLineForTests(command_line);
 
@@ -216,7 +203,7 @@ void InProcessBrowserTest::PrepareTestCommandLine(
 }
 
 bool InProcessBrowserTest::CreateUserDataDirectory() {
-  CommandLine* command_line = CommandLine::ForCurrentProcessMutable();
+  CommandLine* command_line = CommandLine::ForCurrentProcess();
   FilePath user_data_dir =
       command_line->GetSwitchValuePath(switches::kUserDataDir);
   if (user_data_dir.empty()) {
@@ -242,9 +229,6 @@ void InProcessBrowserTest::TearDown() {
 #if defined(OS_WIN)
   BrowserView::SetShowState(-1);
 #endif
-
-  *CommandLine::ForCurrentProcessMutable() = *original_command_line_;
-  RenderProcessHost::set_run_renderer_in_process(original_single_process_);
 }
 
 void InProcessBrowserTest::AddTabAtIndexToBrowser(
