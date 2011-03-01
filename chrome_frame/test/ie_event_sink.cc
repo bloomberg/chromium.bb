@@ -143,10 +143,8 @@ void IEEventSink::Uninitialize() {
         std::wstring browser_url_wstring;
         browser_url_wstring.assign(browser_url, browser_url.Length());
         std::string browser_url_string = WideToUTF8(browser_url_wstring);
-        EXPECT_TRUE(did_receive_on_quit_) << "OnQuit was not received for "
-                                          << "browser with url "
-                                          << browser_url_string;
-
+        LOG(ERROR) << "OnQuit was not received for browser with url "
+                   << browser_url_string;
         web_browser2_->Quit();
       }
 
