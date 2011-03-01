@@ -1,31 +1,6 @@
-# Copyright 2008, 2009, Google Inc.
-# All rights reserved.
-#
-# Redistribution and use in source and binary forms, with or without
-# modification, are permitted provided that the following conditions are
-# met:
-#
-#     * Redistributions of source code must retain the above copyright
-# notice, this list of conditions and the following disclaimer.
-#     * Redistributions in binary form must reproduce the above
-# copyright notice, this list of conditions and the following disclaimer
-# in the documentation and/or other materials provided with the
-# distribution.
-#     * Neither the name of Google Inc. nor the names of its
-# contributors may be used to endorse or promote products derived from
-# this software without specific prior written permission.
-#
-# THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
-# "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
-# LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
-# A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
-# OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
-# SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
-# LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
-# DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
-# THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-# (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
-# OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+# Copyright 2008-2011 The Native Client Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can
+# be found in the LICENSE file.
 
 ##############################################################################
 #  Description: Main makefile for NativeClient toolchain.
@@ -66,10 +41,19 @@ THISMAKEFILE := $(lastword $(MAKEFILE_LIST))
 
 SHELL=/bin/bash
 
-CROSSARCH=nacl64
-GITRW=ssh://git@gitrw.chromium.org:9222
-GITRO=http://git.chromium.org/git
+# By default, checkout from read-only repository:
+#   http://git.chromium.org/git
+# Maintainers can either override this with read-write repository:
+#   ssh://git.chromium.org
+# or add to git config:
+#   [url "ssh://git.chromium.org"]
+#     pushinsteadof = http://git.chromium.org/git
+# or add to git-cl codereview.settings:
+#   PUSH_URL_CONFIG: url.ssh://git.chromium.org.pushinsteadof
+#   ORIGIN_URL_CONFIG: http://git.chromium.org/git
 GIT_BASE_URL=http://git.chromium.org/git
+
+CROSSARCH=nacl64
 TOOLCHAINLOC?=out
 SDKLOC?=$(abspath $(TOOLCHAINLOC))
 SDKNAME=nacl-sdk
@@ -204,9 +188,9 @@ fetch-git-rw-sources: ALWAYS
 	  echo "Error: SRC exists." \
 	    "Remove the source directory before fetching new sources." ; \
 	else \
-	  git clone $(GITRW)/nacl-toolchain.git SRC && \
+	  git clone $(GIT_BASE_URL)/nacl-toolchain.git SRC && \
 	  $(MAKE) -f $(THISMAKEFILE) prepare-git-src && \
-	  git clone $(GITRW)/nacl-glibc.git SRC/glibc && \
+	  git clone $(GIT_BASE_URL)/nacl-glibc.git SRC/glibc && \
 	  touch SRC/stamp-glibc && \
 	  $(MAKE) -f $(THISMAKEFILE) fetch-glibc-sources-readonly ; \
 	fi
@@ -255,14 +239,14 @@ fetch-glibc-sources-readonly: SRC/stamp-glibc SRC/stamp-linux-headers
 SRC/stamp-glibc: | SRC
 	rm -rf SRC/glibc
 	@echo "Fetching glibc"
-	git clone $(GITRO)/nacl-glibc.git SRC/glibc
+	git clone $(GIT_BASE_URL)/nacl-glibc.git SRC/glibc
 	touch $@
 
 # Create linux headers source directory, and mark that we've done that.
 SRC/stamp-linux-headers: | SRC
 	@echo "Fetching linux headers for glibc."
 	rm -rf SRC/linux-headers-for-nacl
-	git clone $(GITRO)/linux-headers-for-nacl.git \
+	git clone $(GIT_BASE_URL)/linux-headers-for-nacl.git \
 	  SRC/linux-headers-for-nacl
 	cd SRC/linux-headers-for-nacl && \
 	  git checkout 0014b8d2e052dd3bf4cdc4be999d17e123c50dc2
