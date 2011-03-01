@@ -6,11 +6,11 @@
 
 #include "base/rand_util.h"
 #include "base/sys_info.h"
-#include "chrome/browser/child_process_security_policy.h"
 #include "chrome/common/child_process_info.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/notification_service.h"
 #include "content/browser/browser_thread.h"
+#include "content/browser/child_process_security_policy.h"
 
 namespace {
 

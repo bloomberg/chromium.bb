@@ -5,8 +5,8 @@
 #ifndef CHROME_BROWSER_SEARCH_ENGINES_SEARCH_PROVIDER_INSTALL_STATE_MESSAGE_FILTER_H_
 #define CHROME_BROWSER_SEARCH_ENGINES_SEARCH_PROVIDER_INSTALL_STATE_MESSAGE_FILTER_H_
 
-#include "chrome/browser/browser_message_filter.h"
 #include "chrome/browser/search_engines/search_provider_install_data.h"
+#include "content/browser/browser_message_filter.h"
 
 class GURL;
 class Profile;

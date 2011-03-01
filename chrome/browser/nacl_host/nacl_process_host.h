@@ -9,8 +9,8 @@
 #include "build/build_config.h"
 
 #include "base/ref_counted.h"
-#include "chrome/browser/browser_child_process_host.h"
 #include "chrome/common/nacl_types.h"
+#include "content/browser/browser_child_process_host.h"
 
 class RenderMessageFilter;
 

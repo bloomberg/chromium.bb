@@ -4,7 +4,7 @@
 
 #include "content/browser/renderer_host/mock_render_process_host.h"
 
-#include "chrome/browser/child_process_security_policy.h"
+#include "content/browser/child_process_security_policy.h"
 
 MockRenderProcessHost::MockRenderProcessHost(Profile* profile)
     : RenderProcessHost(profile),

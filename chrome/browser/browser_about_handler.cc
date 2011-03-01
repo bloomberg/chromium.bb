@@ -26,9 +26,7 @@
 #include "base/values.h"
 #include "chrome/browser/about_flags.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/browser_thread.h"
 #include "chrome/browser/defaults.h"
-#include "chrome/browser/gpu_process_host.h"
 #include "chrome/browser/gpu_process_host_ui_shim.h"
 #include "chrome/browser/memory_details.h"
 #include "chrome/browser/metrics/histogram_synchronizer.h"
@@ -36,8 +34,6 @@
 #include "chrome/browser/platform_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
-#include "chrome/browser/renderer_host/render_process_host.h"
-#include "chrome/browser/renderer_host/render_view_host.h"
 #include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/browser/ui/webui/chrome_url_data_manager.h"
 #include "chrome/common/about_handler.h"
@@ -48,6 +44,10 @@
 #include "chrome/common/net/gaia/google_service_auth_error.h"
 #include "chrome/common/render_messages.h"
 #include "chrome/common/url_constants.h"
+#include "content/browser/browser_thread.h"
+#include "content/browser/gpu_process_host.h"
+#include "content/browser/renderer_host/render_process_host.h"
+#include "content/browser/renderer_host/render_view_host.h"
 #include "googleurl/src/gurl.h"
 #include "grit/browser_resources.h"
 #include "grit/chromium_strings.h"
@@ -68,9 +68,9 @@
 #include "chrome/browser/chromeos/cros/network_library.h"
 #include "chrome/browser/chromeos/cros/syslogs_library.h"
 #include "chrome/browser/chromeos/version_loader.h"
-#include "chrome/browser/zygote_host_linux.h"
+#include "content/browser/zygote_host_linux.h"
 #elif defined(OS_LINUX)
-#include "chrome/browser/zygote_host_linux.h"
+#include "content/browser/zygote_host_linux.h"
 #endif
 
 #if defined(USE_TCMALLOC)

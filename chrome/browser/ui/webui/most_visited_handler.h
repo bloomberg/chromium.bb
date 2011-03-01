@@ -9,10 +9,10 @@
 #include <string>
 #include <vector>
 
-#include "chrome/browser/cancelable_request.h"
 #include "chrome/browser/history/history_types.h"
 #include "chrome/common/notification_observer.h"
 #include "chrome/common/notification_registrar.h"
+#include "content/browser/cancelable_request.h"
 #include "content/browser/webui/web_ui.h"
 
 class DictionaryValue;

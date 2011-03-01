@@ -10,7 +10,7 @@
 
 #include "base/callback.h"
 #include "base/gtest_prod_util.h"
-#include "chrome/browser/cancelable_request.h"
+#include "content/browser/cancelable_request.h"
 
 class FilePath;
 

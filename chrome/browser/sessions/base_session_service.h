@@ -10,8 +10,8 @@
 #include "base/callback.h"
 #include "base/file_path.h"
 #include "base/ref_counted.h"
-#include "chrome/browser/cancelable_request.h"
 #include "chrome/browser/sessions/session_id.h"
+#include "content/browser/cancelable_request.h"
 
 class NavigationEntry;
 class Profile;

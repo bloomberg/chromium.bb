@@ -4,12 +4,12 @@
 
 #include "chrome/browser/net/blob_url_request_job_factory.h"
 
-#include "chrome/browser/browser_thread.h"
-#include "chrome/browser/chrome_blob_storage_context.h"
 #include "chrome/browser/net/chrome_url_request_context.h"
-#include "chrome/browser/renderer_host/resource_dispatcher_host.h"
-#include "chrome/browser/renderer_host/resource_dispatcher_host_request_info.h"
 #include "chrome/common/url_constants.h"
+#include "content/browser/browser_thread.h"
+#include "content/browser/chrome_blob_storage_context.h"
+#include "content/browser/renderer_host/resource_dispatcher_host.h"
+#include "content/browser/renderer_host/resource_dispatcher_host_request_info.h"
 #include "webkit/blob/blob_storage_controller.h"
 #include "webkit/blob/blob_url_request_job.h"
 

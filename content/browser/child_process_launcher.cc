@@ -23,8 +23,8 @@
 #elif defined(OS_LINUX)
 #include "base/singleton.h"
 #include "chrome/browser/crash_handler_host_linux.h"
-#include "chrome/browser/zygote_host_linux.h"
-#include "chrome/browser/renderer_host/render_sandbox_host_linux.h"
+#include "content/browser/zygote_host_linux.h"
+#include "content/browser/renderer_host/render_sandbox_host_linux.h"
 #endif
 
 #if defined(OS_MACOSX)

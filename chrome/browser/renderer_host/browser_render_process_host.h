@@ -16,10 +16,10 @@
 #include "base/scoped_callback_factory.h"
 #include "base/scoped_ptr.h"
 #include "base/timer.h"
-#include "chrome/browser/child_process_launcher.h"
-#include "chrome/browser/renderer_host/render_process_host.h"
 #include "chrome/common/notification_observer.h"
 #include "chrome/common/notification_registrar.h"
+#include "content/browser/child_process_launcher.h"
+#include "content/browser/renderer_host/render_process_host.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebCache.h"
 
 class CommandLine;

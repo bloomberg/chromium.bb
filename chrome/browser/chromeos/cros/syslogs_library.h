@@ -7,7 +7,7 @@
 #pragma once
 
 #include "base/singleton.h"
-#include "chrome/browser/cancelable_request.h"
+#include "content/browser/cancelable_request.h"
 #include "third_party/cros/chromeos_syslogs.h"
 
 class CancelableRequestConsumerBase;

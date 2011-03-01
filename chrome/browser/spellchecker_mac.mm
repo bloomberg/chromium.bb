@@ -14,10 +14,10 @@
 #include "base/task.h"
 #include "base/time.h"
 #include "base/sys_string_conversions.h"
-#include "chrome/browser/browser_thread.h"
-#include "chrome/browser/browser_message_filter.h"
 #include "chrome/common/render_messages.h"
 #include "chrome/common/spellcheck_common.h"
+#include "content/browser/browser_thread.h"
+#include "content/browser/browser_message_filter.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebTextCheckingResult.h"
 
 using base::TimeTicks;

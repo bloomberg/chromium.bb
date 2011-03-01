@@ -14,10 +14,10 @@
 #include "chrome/browser/browser_main_gtk.h"
 #include "chrome/browser/browser_main_win.h"
 #include "chrome/browser/metrics/metrics_service.h"
-#include "chrome/browser/renderer_host/render_sandbox_host_linux.h"
-#include "chrome/browser/zygote_host_linux.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/result_codes.h"
+#include "content/browser/renderer_host/render_sandbox_host_linux.h"
+#include "content/browser/zygote_host_linux.h"
 #include "ui/base/x/x11_util.h"
 #include "ui/base/x/x11_util_internal.h"
 

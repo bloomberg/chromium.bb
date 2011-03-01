@@ -11,11 +11,11 @@
 
 #include "base/basictypes.h"
 #include "base/ref_counted.h"
-#include "chrome/browser/browser_child_process_host.h"
-#include "chrome/browser/browser_thread.h"
 #include "chrome/browser/history/history_types.h"
 #include "chrome/browser/importer/importer_data_types.h"
 #include "chrome/browser/importer/profile_writer.h"
+#include "content/browser/browser_child_process_host.h"
+#include "content/browser/browser_thread.h"
 
 namespace webkit_glue {
 struct PasswordForm;

@@ -11,9 +11,9 @@
 #include "base/atomic_sequence_num.h"
 #include "base/callback.h"
 #include "base/time.h"
-#include "chrome/browser/cancelable_request.h"
 #include "chrome/common/notification_observer.h"
 #include "chrome/common/notification_registrar.h"
+#include "content/browser/cancelable_request.h"
 
 namespace chromeos {
 

@@ -9,11 +9,11 @@
 #include "chrome/browser/renderer_host/gpu_message_filter.h"
 
 #include "base/callback.h"
-#include "chrome/browser/gpu_process_host.h"
 #include "chrome/browser/gpu_process_host_ui_shim.h"
 #include "chrome/common/gpu_create_command_buffer_config.h"
 #include "chrome/common/gpu_messages.h"
 #include "chrome/common/render_messages.h"
+#include "content/browser/gpu_process_host.h"
 
 GpuMessageFilter::GpuMessageFilter(int render_process_id)
     : gpu_host_id_(0),

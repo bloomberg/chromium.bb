@@ -11,7 +11,7 @@
 #include "base/basictypes.h"
 #include "base/callback.h"
 #include "base/ref_counted.h"
-#include "chrome/browser/cancelable_request.h"
+#include "content/browser/cancelable_request.h"
 
 class HistoryService;
 

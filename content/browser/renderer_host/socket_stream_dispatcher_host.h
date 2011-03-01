@@ -9,7 +9,7 @@
 #include <vector>
 
 #include "base/id_map.h"
-#include "chrome/browser/browser_message_filter.h"
+#include "content/browser/browser_message_filter.h"
 #include "content/browser/renderer_host/resource_message_filter.h"
 #include "net/socket_stream/socket_stream.h"
 

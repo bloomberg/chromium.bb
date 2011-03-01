@@ -7,7 +7,7 @@
 
 #include "base/basictypes.h"
 #include "base/file_path.h"
-#include "chrome/browser/browser_message_filter.h"
+#include "content/browser/browser_message_filter.h"
 #include "ipc/ipc_platform_file.h"
 
 namespace base {

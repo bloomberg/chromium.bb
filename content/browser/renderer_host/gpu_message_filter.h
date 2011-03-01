@@ -6,7 +6,7 @@
 #define CONTENT_BROWSER_RENDERER_HOST_GPU_MESSAGE_FILTER_H_
 #pragma once
 
-#include "chrome/browser/browser_message_filter.h"
+#include "content/browser/browser_message_filter.h"
 
 struct GPUCreateCommandBufferConfig;
 class GPUInfo;

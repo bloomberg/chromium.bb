@@ -5,7 +5,7 @@
 #ifndef CHROME_BROWSER_SPELLCHECK_MESSAGE_FILTER_H_
 #define CHROME_BROWSER_SPELLCHECK_MESSAGE_FILTER_H_
 
-#include "chrome/browser/browser_message_filter.h"
+#include "content/browser/browser_message_filter.h"
 
 // A message filter implementation that receives
 // the platform spell checker requests from SpellCheckProvider.

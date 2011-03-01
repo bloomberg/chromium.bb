@@ -10,12 +10,12 @@
 
 #include "base/basictypes.h"
 #include "base/scoped_ptr.h"
-#include "chrome/browser/cancelable_request.h"
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/sync/glue/data_type_controller.h"
 #include "chrome/common/notification_observer.h"
 #include "chrome/common/notification_registrar.h"
 #include "chrome/common/notification_type.h"
+#include "content/browser/cancelable_request.h"
 
 class NotificationSource;
 class NotificationDetails;

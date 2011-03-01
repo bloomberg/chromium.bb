@@ -8,10 +8,10 @@
 #include "base/message_loop_proxy.h"
 #include "base/metrics/histogram.h"
 #include "base/version.h"
-#include "chrome/browser/browser_thread.h"
-#include "chrome/browser/plugin_service.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/plugin_messages.h"
+#include "content/browser/browser_thread.h"
+#include "content/browser/plugin_service.h"
 #include "webkit/plugins/npapi/plugin_group.h"
 #include "webkit/plugins/npapi/plugin_list.h"
 

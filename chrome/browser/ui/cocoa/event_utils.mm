@@ -4,7 +4,7 @@
 
 #import "chrome/browser/ui/cocoa/event_utils.h"
 
-#include "chrome/browser/disposition_utils.h"
+#include "content/browser/disposition_utils.h"
 
 namespace event_utils {
 

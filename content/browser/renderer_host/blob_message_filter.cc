@@ -4,9 +4,9 @@
 
 #include "content/browser/renderer_host/blob_message_filter.h"
 
-#include "chrome/browser/child_process_security_policy.h"
-#include "chrome/browser/chrome_blob_storage_context.h"
 #include "chrome/common/render_messages.h"
+#include "content/browser/child_process_security_policy.h"
+#include "content/browser/chrome_blob_storage_context.h"
 #include "googleurl/src/gurl.h"
 #include "webkit/blob/blob_data.h"
 #include "webkit/blob/blob_storage_controller.h"

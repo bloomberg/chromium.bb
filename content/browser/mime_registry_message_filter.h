@@ -6,7 +6,7 @@
 #define CONTENT_BROWSER_MIME_REGISTRY_MESSAGE_FILTER_H_
 
 #include "base/file_path.h"
-#include "chrome/browser/browser_message_filter.h"
+#include "content/browser/browser_message_filter.h"
 
 class MimeRegistryMessageFilter : public BrowserMessageFilter {
  public:

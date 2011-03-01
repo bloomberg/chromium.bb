@@ -10,8 +10,7 @@
 
 #include "base/basictypes.h"
 #include "base/process.h"
-#include "chrome/browser/browser_message_filter.h"
-#include "ipc/ipc_channel_proxy.h"
+#include "content/browser/browser_message_filter.h"
 #include "ppapi/c/private/ppb_flash_net_connector.h"
 
 class Profile;

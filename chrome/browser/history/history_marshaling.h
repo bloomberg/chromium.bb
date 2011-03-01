@@ -10,10 +10,10 @@
 #pragma once
 
 #include "base/scoped_vector.h"
-#include "chrome/browser/cancelable_request.h"
 #include "chrome/browser/favicon_service.h"
 #include "chrome/browser/history/history.h"
 #include "chrome/browser/history/page_usage_data.h"
+#include "content/browser/cancelable_request.h"
 
 namespace history {
 

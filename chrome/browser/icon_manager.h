@@ -50,8 +50,8 @@
 
 #include "base/callback.h"
 #include "base/hash_tables.h"
-#include "chrome/browser/cancelable_request.h"
 #include "chrome/browser/icon_loader.h"
+#include "content/browser/cancelable_request.h"
 
 class FilePath;
 class SkBitmap;

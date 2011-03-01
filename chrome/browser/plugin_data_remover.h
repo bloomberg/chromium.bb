@@ -8,8 +8,7 @@
 
 #include "base/ref_counted.h"
 #include "base/time.h"
-#include "chrome/browser/plugin_process_host.h"
-#include "ipc/ipc_channel.h"
+#include "content/browser/plugin_process_host.h"
 
 class Task;
 

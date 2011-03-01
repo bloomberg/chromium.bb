@@ -18,11 +18,11 @@
 #include "base/synchronization/lock.h"
 #include "base/time.h"
 #include "base/timer.h"
-#include "chrome/browser/cancelable_request.h"
 #include "chrome/browser/history/history_types.h"
 #include "chrome/browser/history/history.h"
 #include "chrome/browser/history/page_usage_data.h"
 #include "chrome/common/thumbnail_score.h"
+#include "content/browser/cancelable_request.h"
 #include "googleurl/src/gurl.h"
 
 class DictionaryValue;

@@ -11,10 +11,10 @@
 #include "base/basictypes.h"
 #include "base/callback.h"
 #include "base/ref_counted.h"
-#include "chrome/browser/cancelable_request.h"
 #include "chrome/browser/favicon_service.h"
-#include "chrome/browser/tab_contents/tab_contents_observer.h"
 #include "chrome/common/ref_counted_util.h"
+#include "content/browser/cancelable_request.h"
+#include "content/browser/tab_contents/tab_contents_observer.h"
 #include "googleurl/src/gurl.h"
 
 class NavigationEntry;

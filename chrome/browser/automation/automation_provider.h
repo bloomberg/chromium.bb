@@ -23,13 +23,12 @@
 #include "base/string16.h"
 #include "base/weak_ptr.h"
 #include "chrome/browser/autofill/field_types.h"
-#include "chrome/browser/browser_thread.h"
-#include "chrome/browser/cancelable_request.h"
-#include "chrome/browser/tab_contents/navigation_entry.h"
 #include "chrome/common/automation_constants.h"
 #include "chrome/common/content_settings.h"
 #include "chrome/common/notification_observer.h"
-#include "ipc/ipc_message.h"
+#include "content/browser/browser_thread.h"
+#include "content/browser/cancelable_request.h"
+#include "content/browser/tab_contents/navigation_entry.h"
 #include "ipc/ipc_channel.h"
 
 #if defined(OS_WIN)

@@ -11,13 +11,13 @@
 
 #include "base/ref_counted.h"
 #include "base/scoped_nsobject.h"
-#include "chrome/browser/cancelable_request.h"
 #import "chrome/browser/favicon_service.h"
 #include "chrome/browser/history/history.h"
 #include "chrome/browser/sessions/session_id.h"
 #include "chrome/browser/sessions/tab_restore_service.h"
 #include "chrome/browser/sessions/tab_restore_service_observer.h"
 #include "chrome/common/notification_observer.h"
+#include "content/browser/cancelable_request.h"
 
 class NavigationEntry;
 class NotificationRegistrar;

@@ -6,7 +6,7 @@
 #define CHROME_BROWSER_PRINTING_PRINTING_MESSAGE_FILTER_H_
 #pragma once
 
-#include "chrome/browser/browser_message_filter.h"
+#include "content/browser/browser_message_filter.h"
 
 #if defined(OS_WIN)
 #include "base/shared_memory.h"

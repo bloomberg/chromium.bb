@@ -15,7 +15,6 @@
 #include "chrome/browser/automation/automation_provider_json.h"
 #include "chrome/browser/bookmarks/bookmark_model_observer.h"
 #include "chrome/browser/browsing_data_remover.h"
-#include "chrome/browser/cancelable_request.h"
 #include "chrome/browser/download/download_item.h"
 #include "chrome/browser/download/download_manager.h"
 #include "chrome/browser/history/history.h"
@@ -29,6 +28,7 @@
 #include "chrome/common/notification_observer.h"
 #include "chrome/common/notification_registrar.h"
 #include "chrome/common/notification_type.h"
+#include "content/browser/cancelable_request.h"
 #include "ui/gfx/size.h"
 
 class AutocompleteEditModel;

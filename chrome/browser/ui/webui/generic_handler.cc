@@ -6,8 +6,8 @@
 
 #include "base/logging.h"
 #include "base/values.h"
-#include "chrome/browser/disposition_utils.h"
-#include "chrome/browser/tab_contents/tab_contents.h"
+#include "content/browser/disposition_utils.h"
+#include "content/browser/tab_contents/tab_contents.h"
 #include "googleurl/src/gurl.h"
 
 GenericHandler::GenericHandler() {

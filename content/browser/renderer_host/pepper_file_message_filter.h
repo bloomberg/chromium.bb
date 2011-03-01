@@ -14,7 +14,7 @@
 #include "base/ref_counted.h"
 #include "base/task.h"
 #include "build/build_config.h"
-#include "chrome/browser/browser_message_filter.h"
+#include "content/browser/browser_message_filter.h"
 #include "ipc/ipc_platform_file.h"
 #include "webkit/plugins/ppapi/dir_contents.h"
 
