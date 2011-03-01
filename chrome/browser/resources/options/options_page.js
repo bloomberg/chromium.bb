@@ -140,6 +140,26 @@ cr.define('options', function() {
   };
 
   /**
+   * Updates the visibility and stacking order of the subpage backdrop
+   * according to which subpage is topmost and visible.
+   * @private
+   */
+  OptionsPage.updateSubpageBackdrop_ = function () {
+    var topmostPage = this.getTopmostVisibleNonOverlayPage_();
+    var nestingLevel = topmostPage ? topmostPage.nestingLevel : 0;
+
+    var subpageBackdrop = $('subpage-backdrop');
+    if (nestingLevel > 0) {
+      var container = $('subpage-sheet-container-' + nestingLevel);
+      subpageBackdrop.style.zIndex =
+          parseInt(window.getComputedStyle(container).zIndex) - 1;
+      subpageBackdrop.classList.remove('hidden');
+    } else {
+      subpageBackdrop.classList.add('hidden');
+    }
+  };
+
+  /**
    * Pushes the current page onto the history stack, overriding the last page
    * if it is the generic chrome://settings/.
    * @private
@@ -229,15 +249,11 @@ cr.define('options', function() {
   };
 
   /**
-   * Returns the topmost visible page, or null if no page is visible.
-   * @return {OptionPage} The topmost visible page.
+   * Returns the topmost visible page (overlays excluded).
+   * @return {OptionPage} The topmost visible page aside any overlay.
+   * @private
    */
-  OptionsPage.getTopmostVisiblePage = function() {
-    // Check overlays first since they're top-most if visible.
-    var overlay = this.getVisibleOverlay_();
-    if (overlay)
-      return overlay;
-
+  OptionsPage.getTopmostVisibleNonOverlayPage_ = function() {
     var topPage = null;
     for (var name in this.registeredPages) {
       var page = this.registeredPages[name];
@@ -247,6 +263,15 @@ cr.define('options', function() {
     }
 
     return topPage;
+  };
+
+  /**
+   * Returns the topmost visible page, or null if no page is visible.
+   * @return {OptionPage} The topmost visible page.
+   */
+  OptionsPage.getTopmostVisiblePage = function() {
+    // Check overlays first since they're top-most if visible.
+    return this.getVisibleOverlay_() || this.getTopmostVisibleNonOverlayPage_();
   };
 
   /**
@@ -451,13 +476,6 @@ cr.define('options', function() {
     chrome.send('coreOptionsInitialize');
     this.initialized_ = true;
 
-    // Set up the overlay sheets:
-    // Close nested sub-pages when clicking the visible part of an earlier page.
-    for (var level = 1; level <= 2; level++) {
-      var containerId = 'subpage-sheet-container-' + level;
-      $(containerId).onclick = this.subPageClosingClickHandler_(level);
-    }
-
     var self = this;
     // Close subpages if the user clicks on the html body. Listen in the
     // capturing phase so that we can stop the click from doing anything.
@@ -490,24 +508,17 @@ cr.define('options', function() {
   };
 
   /**
-   * Returns a function to handle clicks behind a subpage at level |level| by
-   * closing all subpages down to |level| - 1.
-   * @param {number} level The level of the subpage being handled.
-   * @return {Function} a function to handle clicks outside the given subpage.
+   * Does a bounds check for the element on the given x, y client coordinates.
+   * @param {Element} e The DOM element.
+   * @param {number} x The client X to check.
+   * @param {number} y The client Y to check.
+   * @return {boolean} True if the point falls within the element's bounds.
    * @private
    */
-  OptionsPage.subPageClosingClickHandler_ = function(level) {
-    var self = this;
-    return function(event) {
-      // Clicks on the narrow strip between the left of the subpage sheet and
-      // that shows part of the parent page should close the overlay, but
-      // not fall through to the parent page.
-      if (!$('subpage-sheet-' + level).contains(event.target)) {
-        self.closeSubPagesToLevel(level - 1);
-        event.stopPropagation();
-        event.preventDefault();
-      }
-    };
+  OptionsPage.elementContainsPoint_ = function(e, x, y) {
+    var clientRect = e.getBoundingClientRect();
+    return x >= clientRect.left && x <= clientRect.right &&
+        y >= clientRect.top && y <= clientRect.bottom;
   };
 
   /**
@@ -609,18 +620,27 @@ cr.define('options', function() {
     if ($('navbar').contains(event.target))
       return;
 
-    // If the click was within a subpage, do nothing.
-    for (var level = 1; level <= 2; level++) {
-      if ($('subpage-sheet-container-' + level).contains(event.target))
+    // Figure out which page the click happened in.
+    for (var level = topPage.nestingLevel; level >= 0; level--) {
+      var clickIsWithinLevel = level == 0 ? true :
+          OptionsPage.elementContainsPoint_(
+              $('subpage-sheet-' + level), event.clientX, event.clientY);
+
+      if (!clickIsWithinLevel)
+        continue;
+
+      // Event was within the topmost page; do nothing.
+      if (topPage.nestingLevel == level)
         return;
+
+      // Block propgation of both clicks and mousedowns, but only close subpages
+      // on click.
+      if (event.type == 'click')
+        this.closeSubPagesToLevel(level);
+      event.stopPropagation();
+      event.preventDefault();
+      return;
     }
-
-    // Close all subpages on click.
-    if (event.type == 'click')
-      this.closeSubPagesToLevel(0);
-
-    event.stopPropagation();
-    event.preventDefault();
   };
 
   /**
@@ -744,17 +764,11 @@ cr.define('options', function() {
           if (nestingLevel > 0) {
             var containerId = 'subpage-sheet-container-' + nestingLevel;
             $(containerId).classList.remove('hidden');
-            if (nestingLevel == 1)
-              $('subpage-backdrop').classList.remove('hidden');
-            OptionsPage.updateTopLevelPageFreezeState();
-            // Scroll to the top of the newly-opened subpage.
-            window.scroll(document.body.scrollLeft, 0)
           }
         }
 
-        if (this.tab) {
+        if (this.tab)
           this.tab.classList.add('navbar-item-selected');
-        }
       } else {
         this.pageDiv.classList.add('hidden');
         if (this.isOverlay) {
@@ -764,14 +778,20 @@ cr.define('options', function() {
           if (nestingLevel > 0) {
             var containerId = 'subpage-sheet-container-' + nestingLevel;
             $(containerId).classList.add('hidden');
-            if (nestingLevel == 1)
-              $('subpage-backdrop').classList.add('hidden');
-            OptionsPage.updateTopLevelPageFreezeState();
           }
         }
 
-        if (this.tab) {
+        if (this.tab)
           this.tab.classList.remove('navbar-item-selected');
+      }
+
+      // A subpage was shown or hidden.
+      if (!this.isOverlay && this.nestingLevel > 0) {
+        OptionsPage.updateSubpageBackdrop_();
+        OptionsPage.updateTopLevelPageFreezeState();
+        if (visible) {
+          // Scroll to the top of the newly-opened subpage.
+          window.scroll(document.body.scrollLeft, 0)
         }
       }
 

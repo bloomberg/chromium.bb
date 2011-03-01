@@ -213,7 +213,7 @@ html.hide-menu #navbar-container {
 
 #mainview {
   -webkit-box-align: stretch;
-  -webkit-padding-start: 267px;
+  -webkit-padding-start: 266px;
   margin: 0;
   position: absolute;
   left: 0;
@@ -239,11 +239,11 @@ html.hide-menu #mainview {
 #subpage-backdrop {
   background-color: rgba(233, 238, 242, .5);
   height: 100%;
-  left: 267px;
+  left: 266px;
+  right: 266px;
   position: fixed;
   top: 0;
   width: 100%;
-  z-index: 3;
 }
 
 .subpage-sheet-container {
@@ -267,7 +267,6 @@ html.hide-menu #mainview {
 
 #subpage-sheet-container-2 {
   -webkit-padding-start: 60px;
-  background-color: rgba(233, 238, 242, .5);
   z-index: 10;
 }
 
