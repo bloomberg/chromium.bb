@@ -17,6 +17,7 @@
 #include "base/message_loop.h"
 #include "base/path_service.h"
 #include "base/process_util.h"
+#include "base/ref_counted.h"
 #include "base/string_piece.h"
 #include "base/string_util.h"
 #include "base/stringprintf.h"
@@ -188,6 +189,26 @@ class WebKitClientMessageLoopImpl
   }
  private:
   MessageLoop* message_loop_;
+};
+
+// An wrapper object for giving TaskAdaptor ref-countability,
+// which NewRunnableMethod() requires.
+class TaskAdaptorHolder : public CancelableTask {
+ public:
+  explicit TaskAdaptorHolder(webkit_support::TaskAdaptor* adaptor)
+      : adaptor_(adaptor) {
+  }
+
+  virtual void Run() {
+    adaptor_->Run();
+  }
+
+  virtual void Cancel() {
+    adaptor_.reset();
+  }
+
+ private:
+  scoped_ptr<webkit_support::TaskAdaptor> adaptor_;
 };
 
 }  // namespace
@@ -369,6 +390,11 @@ WebDevToolsAgentClient::WebKitClientMessageLoop* CreateDevToolsMessageLoop() {
 void PostDelayedTask(void (*func)(void*), void* context, int64 delay_ms) {
   MessageLoop::current()->PostDelayedTask(
       FROM_HERE, NewRunnableFunction(func, context), delay_ms);
+}
+
+void PostDelayedTask(TaskAdaptor* task, int64 delay_ms) {
+  MessageLoop::current()->PostDelayedTask(
+      FROM_HERE, new TaskAdaptorHolder(task), delay_ms);
 }
 
 // Wrappers for FilePath and file_util

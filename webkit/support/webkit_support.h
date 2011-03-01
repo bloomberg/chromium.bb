@@ -102,6 +102,17 @@ void ServeAsynchronousMockedRequests();
 bool BeingDebugged();
 
 // -------- Message loop and task
+
+// A wrapper for Chromium's Task class.
+// The lifecycle is managed by webkit_support thus
+// You shouldn't delete the object.
+// Note that canceled object is just removed.
+class TaskAdaptor {
+ public:
+  virtual ~TaskAdaptor() {}
+  virtual void Run() = 0;
+};
+
 void RunMessageLoop();
 void QuitMessageLoop();
 void RunAllPendingMessages();
@@ -111,6 +122,8 @@ void MessageLoopSetNestableTasksAllowed(bool allowed);
 WebKit::WebDevToolsAgentClient::WebKitClientMessageLoop*
     CreateDevToolsMessageLoop();
 void PostDelayedTask(void (*func)(void*), void* context, int64 delay_ms);
+
+void PostDelayedTask(TaskAdaptor* task, int64 delay_ms);
 
 // -------- File path and PathService
 // Converts the specified path string to an absolute path in WebString.
