@@ -66,7 +66,6 @@
 #include "chrome/browser/sync/sync_ui_util.h"
 #include "chrome/browser/tab_closeable_state_watcher.h"
 #include "chrome/browser/tabs/tab_strip_model.h"
-#include "chrome/browser/ui/browser_navigator.h"
 #include "chrome/browser/ui/find_bar/find_bar.h"
 #include "chrome/browser/ui/find_bar/find_bar_controller.h"
 #include "chrome/browser/ui/find_bar/find_tab_helper.h"
@@ -694,7 +693,7 @@ void Browser::OpenHelpWindow(Profile* profile) {
 // static
 void Browser::OpenOptionsWindow(Profile* profile) {
   Browser* browser = Browser::Create(profile);
-  browser->ShowOptionsTab(chrome::kDefaultOptionsSubPage);
+  browser->OpenOptionsDialog();
   browser->window()->Show();
 }
 
@@ -1093,11 +1092,16 @@ bool Browser::NavigateToIndexWithDisposition(int index,
   return true;
 }
 
-void Browser::ShowSingletonTab(const GURL& url, bool ignore_path) {
+browser::NavigateParams Browser::GetSingletonTabNavigateParams(
+    const GURL& url) {
   browser::NavigateParams params(this, url, PageTransition::AUTO_BOOKMARK);
   params.disposition = SINGLETON_TAB;
   params.show_window = true;
-  params.ignore_path = ignore_path;
+  return params;
+}
+
+void Browser::ShowSingletonTab(const GURL& url) {
+  browser::NavigateParams params(GetSingletonTabNavigateParams(url));
   browser::Navigate(&params);
 }
 
@@ -1804,27 +1808,27 @@ void Browser::ShowAppMenu() {
 
 void Browser::ShowBookmarkManagerTab() {
   UserMetrics::RecordAction(UserMetricsAction("ShowBookmarks"), profile_);
-  ShowSingletonTab(GURL(chrome::kChromeUIBookmarksURL), false);
+  ShowSingletonTab(GURL(chrome::kChromeUIBookmarksURL));
 }
 
 void Browser::ShowHistoryTab() {
   UserMetrics::RecordAction(UserMetricsAction("ShowHistory"), profile_);
-  ShowSingletonTab(GURL(chrome::kChromeUIHistoryURL), false);
+  ShowSingletonTab(GURL(chrome::kChromeUIHistoryURL));
 }
 
 void Browser::ShowDownloadsTab() {
   UserMetrics::RecordAction(UserMetricsAction("ShowDownloads"), profile_);
-  ShowSingletonTab(GURL(chrome::kChromeUIDownloadsURL), false);
+  ShowSingletonTab(GURL(chrome::kChromeUIDownloadsURL));
 }
 
 void Browser::ShowExtensionsTab() {
   UserMetrics::RecordAction(UserMetricsAction("ShowExtensions"), profile_);
-  ShowSingletonTab(GURL(chrome::kChromeUIExtensionsURL), false);
+  ShowSingletonTab(GURL(chrome::kChromeUIExtensionsURL));
 }
 
 void Browser::ShowAboutConflictsTab() {
   UserMetrics::RecordAction(UserMetricsAction("AboutConflicts"), profile_);
-  ShowSingletonTab(GURL(chrome::kChromeUIConflictsURL), false);
+  ShowSingletonTab(GURL(chrome::kChromeUIConflictsURL));
 }
 
 void Browser::ShowBrokenPageTab(TabContents* contents) {
@@ -1839,12 +1843,14 @@ void Browser::ShowBrokenPageTab(TabContents* contents) {
   subst.push_back(page_url);
   std::string report_page_url =
       ReplaceStringPlaceholders(kBrokenPageUrl, subst, NULL);
-  ShowSingletonTab(GURL(report_page_url), false);
+  ShowSingletonTab(GURL(report_page_url));
 }
 
 void Browser::ShowOptionsTab(const std::string& sub_page) {
   GURL url(chrome::kChromeUISettingsURL + sub_page);
-  ShowSingletonTab(url, true);
+  browser::NavigateParams params(GetSingletonTabNavigateParams(url));
+  params.path_behavior = browser::NavigateParams::IGNORE_AND_NAVIGATE;
+  browser::Navigate(&params);
 }
 
 void Browser::OpenClearBrowsingDataDialog() {
@@ -1862,7 +1868,10 @@ void Browser::OpenOptionsDialog() {
   UserMetrics::RecordAction(UserMetricsAction("ShowOptions"), profile_);
   if (!CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kDisableTabbedOptions)) {
-    ShowOptionsTab(chrome::kDefaultOptionsSubPage);
+    GURL url(chrome::kChromeUISettingsURL);
+    browser::NavigateParams params(GetSingletonTabNavigateParams(url));
+    params.path_behavior = browser::NavigateParams::IGNORE_AND_STAY_PUT;
+    browser::Navigate(&params);
   } else {
     ShowOptionsWindow(OPTIONS_PAGE_DEFAULT, OPTIONS_GROUP_NONE, profile_);
   }
@@ -1900,7 +1909,7 @@ void Browser::OpenSyncMyBookmarksDialog() {
 void Browser::OpenAboutChromeDialog() {
   UserMetrics::RecordAction(UserMetricsAction("AboutChrome"), profile_);
 #if defined(OS_CHROMEOS)
-  ShowSingletonTab(GURL(chrome::kChromeUIAboutURL), false);
+  ShowSingletonTab(GURL(chrome::kChromeUIAboutURL));
 #else
   window_->ShowAboutChromeDialog();
 #endif

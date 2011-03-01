@@ -78,7 +78,7 @@ IN_PROC_BROWSER_TEST_F(RenderProcessHostTest, ProcessPerTab) {
 
   // Create a new TYPE_NORMAL tab.  It should be in its own process.
   GURL page1("data:text/html,hello world1");
-  browser()->ShowSingletonTab(page1, false);
+  browser()->ShowSingletonTab(page1);
   if (browser()->tab_count() == tab_count)
     ui_test_utils::WaitForNewTab(browser());
   tab_count++;
@@ -88,7 +88,7 @@ IN_PROC_BROWSER_TEST_F(RenderProcessHostTest, ProcessPerTab) {
 
   // Create another TYPE_NORMAL tab.  It should share the previous process.
   GURL page2("data:text/html,hello world2");
-  browser()->ShowSingletonTab(page2, false);
+  browser()->ShowSingletonTab(page2);
   if (browser()->tab_count() == tab_count)
     ui_test_utils::WaitForNewTab(browser());
   tab_count++;
@@ -122,7 +122,7 @@ IN_PROC_BROWSER_TEST_F(RenderProcessHostTest, DevToolsOnSelfInOwnProcessPPT) {
   int host_count = 1;
 
   GURL page1("data:text/html,hello world1");
-  browser()->ShowSingletonTab(page1, false);
+  browser()->ShowSingletonTab(page1);
   if (browser()->tab_count() == tab_count)
     ui_test_utils::WaitForNewTab(browser());
   tab_count++;
@@ -154,7 +154,7 @@ IN_PROC_BROWSER_TEST_F(RenderProcessHostTest, DevToolsOnSelfInOwnProcess) {
   int host_count = 1;
 
   GURL page1("data:text/html,hello world1");
-  browser()->ShowSingletonTab(page1, false);
+  browser()->ShowSingletonTab(page1);
   if (browser()->tab_count() == tab_count)
     ui_test_utils::WaitForNewTab(browser());
   tab_count++;
@@ -206,7 +206,7 @@ IN_PROC_BROWSER_TEST_F(RenderProcessHostTest, ProcessOverflow) {
 
   // Create a new TYPE_NORMAL tab.  It should be in its own process.
   GURL page1("data:text/html,hello world1");
-  browser()->ShowSingletonTab(page1, false);
+  browser()->ShowSingletonTab(page1);
   if (browser()->tab_count() == tab_count)
     ui_test_utils::WaitForNewTab(browser());
   tab_count++;
@@ -220,7 +220,7 @@ IN_PROC_BROWSER_TEST_F(RenderProcessHostTest, ProcessOverflow) {
 
   // Create another TYPE_NORMAL tab.  It should share the previous process.
   GURL page2("data:text/html,hello world2");
-  browser()->ShowSingletonTab(page2, false);
+  browser()->ShowSingletonTab(page2);
   if (browser()->tab_count() == tab_count)
     ui_test_utils::WaitForNewTab(browser());
   tab_count++;
@@ -235,7 +235,7 @@ IN_PROC_BROWSER_TEST_F(RenderProcessHostTest, ProcessOverflow) {
   // bug 43448 where extension and WebUI tabs could get combined into normal
   // renderers.
   GURL history(chrome::kChromeUIHistoryURL);
-  browser()->ShowSingletonTab(history, false);
+  browser()->ShowSingletonTab(history);
   if (browser()->tab_count() == tab_count)
     ui_test_utils::WaitForNewTab(browser());
   tab_count++;
@@ -248,7 +248,7 @@ IN_PROC_BROWSER_TEST_F(RenderProcessHostTest, ProcessOverflow) {
   // Create a TYPE_EXTENSION tab.  It should be in its own process.
   // (the bookmark manager is implemented as an extension)
   GURL bookmarks(chrome::kChromeUIBookmarksURL);
-  browser()->ShowSingletonTab(bookmarks, false);
+  browser()->ShowSingletonTab(bookmarks);
   if (browser()->tab_count() == tab_count)
     ui_test_utils::WaitForNewTab(browser());
   tab_count++;

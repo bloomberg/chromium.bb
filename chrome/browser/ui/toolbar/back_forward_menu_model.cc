@@ -155,7 +155,7 @@ void BackForwardMenuModel::ActivatedAtWithDisposition(
   if (index == GetItemCount() - 1) {
     UserMetrics::RecordComputedAction(BuildActionName("ShowFullHistory", -1),
                                       profile);
-    browser_->ShowSingletonTab(GURL(chrome::kChromeUIHistoryURL), false);
+    browser_->ShowSingletonTab(GURL(chrome::kChromeUIHistoryURL));
     return;
   }
 
