@@ -25,11 +25,10 @@
 #include "chrome/browser/sessions/tab_restore_service_observer.h"
 #include "chrome/browser/sync/profile_sync_service_observer.h"
 #include "chrome/browser/tabs/tab_handler.h"
-#include "chrome/browser/tabs/tab_strip_model_delegate.h"  // TODO(beng): remove
-#include "chrome/browser/tabs/tab_strip_model_observer.h"  // TODO(beng): remove
+#include "chrome/browser/tabs/tab_strip_model_delegate.h"   // TODO(beng): remove
+#include "chrome/browser/tabs/tab_strip_model_observer.h"   // TODO(beng): remove
 #include "chrome/browser/tab_contents/page_navigator.h"
 #include "chrome/browser/tab_contents/tab_contents_delegate.h"
-#include "chrome/browser/ui/browser_navigator.h"
 #include "chrome/browser/ui/search_engines/search_engine_tab_helper_delegate.h"
 #include "chrome/browser/ui/shell_dialogs.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper_delegate.h"
@@ -426,8 +425,9 @@ class Browser : public TabHandlerDelegate,
 
   // Show a given a URL. If a tab with the same URL (ignoring the ref) is
   // already visible in this browser, it becomes selected. Otherwise a new tab
-  // is created.
-  void ShowSingletonTab(const GURL& url);
+  // is created. If |ignore_path| is true, the paths of the URLs are ignored
+  // when locating the singleton tab.
+  void ShowSingletonTab(const GURL& url, bool ignore_path);
 
   // Update commands whose state depends on whether the window is in fullscreen
   // mode. This is a public function because on Linux, fullscreen mode is an
@@ -490,7 +490,7 @@ class Browser : public TabHandlerDelegate,
   // in |SupportsWindowFeature| for details on this.
   bool CanSupportWindowFeature(WindowFeature feature) const;
 
-  // TODO(port): port these, and re-merge the two function declaration lists.
+// TODO(port): port these, and re-merge the two function declaration lists.
   // Page-related commands.
   void Print();
   void EmailPageLocation();
@@ -1005,9 +1005,6 @@ class Browser : public TabHandlerDelegate,
 
   // Opens view-source tab for given tab contents.
   void ViewSource(TabContentsWrapper* tab);
-
-  // Creates a NavigateParams struct for a singleton tab navigation.
-  browser::NavigateParams GetSingletonTabNavigateParams(const GURL& url);
 
   // Data members /////////////////////////////////////////////////////////////
 

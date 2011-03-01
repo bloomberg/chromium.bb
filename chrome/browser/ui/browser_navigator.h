@@ -122,17 +122,9 @@ struct NavigateParams {
   // automatically.
   bool show_window;
 
-  // What to do with the path component of the URL for singleton navigations.
-  enum PathBehavior {
-    // Two URLs with differing paths are different.
-    RESPECT,
-    // Ignore path when finding existing tab, navigate to new URL.
-    IGNORE_AND_NAVIGATE,
-    // Ignore path when finding existing tab, don't navigate tab.
-    IGNORE_AND_STAY_PUT,
-  };
-  // Default is RESPECT.
-  PathBehavior path_behavior;
+  // True if the paths of the target content's URL and |url| should be ignored
+  // when locating a singleton tab.
+  bool ignore_path;
 
   // [in]  Specifies a Browser object where the navigation could occur or the
   //       tab could be added. Navigate() is not obliged to use this Browser if

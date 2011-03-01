@@ -103,8 +103,7 @@ int GetIndexOfSingletonTab(browser::NavigateParams* params) {
 
     url_canon::Replacements<char> replacements;
     replacements.ClearRef();
-    if (params->path_behavior == browser::NavigateParams::IGNORE_AND_NAVIGATE ||
-        params->path_behavior == browser::NavigateParams::IGNORE_AND_STAY_PUT) {
+    if (params->ignore_path) {
       replacements.ClearPath();
       replacements.ClearQuery();
     }
@@ -341,7 +340,7 @@ NavigateParams::NavigateParams(
       tabstrip_index(-1),
       tabstrip_add_types(TabStripModel::ADD_SELECTED),
       show_window(false),
-      path_behavior(RESPECT),
+      ignore_path(false),
       browser(a_browser),
       profile(NULL) {
 }
@@ -355,7 +354,7 @@ NavigateParams::NavigateParams(Browser* a_browser,
       tabstrip_index(-1),
       tabstrip_add_types(TabStripModel::ADD_SELECTED),
       show_window(false),
-      path_behavior(RESPECT),
+      ignore_path(false),
       browser(a_browser),
       profile(NULL) {
 }
@@ -479,8 +478,9 @@ void Navigate(NavigateParams* params) {
   if (singleton_index >= 0) {
     TabContents* target = params->browser->GetTabContentsAt(singleton_index);
 
-    if (params->path_behavior == NavigateParams::IGNORE_AND_NAVIGATE &&
-        target->GetURL() != params->url) {
+    // Load the URL if the target contents URL doesn't match. This can happen
+    // if the URL path is ignored when locating the singleton tab.
+    if (target->GetURL() != params->url) {
       target->controller().LoadURL(
           params->url, params->referrer, params->transition);
     }
