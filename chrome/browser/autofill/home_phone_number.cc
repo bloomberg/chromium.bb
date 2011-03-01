@@ -8,22 +8,22 @@ FormGroup* HomePhoneNumber::Clone() const {
   return new HomePhoneNumber(*this);
 }
 
-AutoFillFieldType HomePhoneNumber::GetNumberType() const {
+AutofillFieldType HomePhoneNumber::GetNumberType() const {
   return PHONE_HOME_NUMBER;
 }
 
-AutoFillFieldType HomePhoneNumber::GetCityCodeType() const {
+AutofillFieldType HomePhoneNumber::GetCityCodeType() const {
   return PHONE_HOME_CITY_CODE;
 }
 
-AutoFillFieldType HomePhoneNumber::GetCountryCodeType() const {
+AutofillFieldType HomePhoneNumber::GetCountryCodeType() const {
   return PHONE_HOME_COUNTRY_CODE;
 }
 
-AutoFillFieldType HomePhoneNumber::GetCityAndNumberType() const {
+AutofillFieldType HomePhoneNumber::GetCityAndNumberType() const {
   return PHONE_HOME_CITY_AND_NUMBER;
 }
 
-AutoFillFieldType HomePhoneNumber::GetWholeNumberType() const {
+AutofillFieldType HomePhoneNumber::GetWholeNumberType() const {
   return PHONE_HOME_WHOLE_NUMBER;
 }

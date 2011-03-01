@@ -339,7 +339,7 @@ TEST(AutoFillProfileTest, CreateInferredLabels) {
   EXPECT_EQ(ASCIIToUTF16("Jane Doe, 123 Letha Shore., Dis"),
             labels[1]);
 
-  std::vector<AutoFillFieldType> suggested_fields;
+  std::vector<AutofillFieldType> suggested_fields;
   suggested_fields.push_back(ADDRESS_HOME_CITY);
   suggested_fields.push_back(ADDRESS_HOME_STATE);
   suggested_fields.push_back(ADDRESS_HOME_ZIP);
@@ -409,7 +409,7 @@ TEST(AutoFillProfileTest, CreateInferredLabelsFallsBackToFullName) {
 
   // If the only name field in the suggested fields is the excluded field, we
   // should not fall back to the full name as a distinguishing field.
-  std::vector<AutoFillFieldType> suggested_fields;
+  std::vector<AutofillFieldType> suggested_fields;
   suggested_fields.push_back(NAME_LAST);
   suggested_fields.push_back(ADDRESS_HOME_LINE1);
   suggested_fields.push_back(EMAIL_ADDRESS);
@@ -443,7 +443,7 @@ TEST(AutoFillProfileTest, CreateInferredLabelsNoDuplicatedFields) {
 
   // If the only name field in the suggested fields is the excluded field, we
   // should not fall back to the full name as a distinguishing field.
-  std::vector<AutoFillFieldType> suggested_fields;
+  std::vector<AutofillFieldType> suggested_fields;
   suggested_fields.push_back(ADDRESS_HOME_LINE1);
   suggested_fields.push_back(ADDRESS_BILLING_LINE1);
   suggested_fields.push_back(EMAIL_ADDRESS);

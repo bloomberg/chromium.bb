@@ -21,8 +21,8 @@ TEST(AutoFillQueryXmlParserTest, BasicQuery) {
                     "<field autofilltype=\"2\" />"
                     "</autofillqueryresponse>";
 
-  // Create a vector of AutoFillFieldTypes, to assign the parsed field types to.
-  std::vector<AutoFillFieldType> field_types;
+  // Create a vector of AutofillFieldTypes, to assign the parsed field types to.
+  std::vector<AutofillFieldType> field_types;
   UploadRequired upload_required = USE_UPLOAD_RATES;
   std::string experiment_id;
 
@@ -43,7 +43,7 @@ TEST(AutoFillQueryXmlParserTest, BasicQuery) {
 
 // Test parsing the upload required attribute.
 TEST(AutoFillQueryXmlParserTest, TestUploadRequired) {
-  std::vector<AutoFillFieldType> field_types;
+  std::vector<AutofillFieldType> field_types;
   UploadRequired upload_required = USE_UPLOAD_RATES;
   std::string experiment_id;
 
@@ -95,7 +95,7 @@ TEST(AutoFillQueryXmlParserTest, TestUploadRequired) {
 
 // Test parsing the experiment id attribute
 TEST(AutoFillQueryXmlParserTest, ParseExperimentId) {
-  std::vector<AutoFillFieldType> field_types;
+  std::vector<AutofillFieldType> field_types;
   UploadRequired upload_required = USE_UPLOAD_RATES;
   std::string experiment_id;
 
@@ -155,7 +155,7 @@ TEST(AutoFillQueryXmlParserTest, ParseExperimentId) {
 
 // Test badly formed XML queries.
 TEST(AutoFillQueryXmlParserTest, ParseErrors) {
-  std::vector<AutoFillFieldType> field_types;
+  std::vector<AutofillFieldType> field_types;
   UploadRequired upload_required = USE_UPLOAD_RATES;
   std::string experiment_id;
 

@@ -26,7 +26,7 @@ void CreateTestFormField(const char* label,
 }
 
 inline void check_and_set(
-    FormGroup* profile, AutoFillFieldType type, const char* value) {
+    FormGroup* profile, AutofillFieldType type, const char* value) {
   if (value)
     profile->SetInfo(AutoFillType(type), ASCIIToUTF16(value));
 }

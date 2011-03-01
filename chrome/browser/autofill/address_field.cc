@@ -14,13 +14,13 @@
 #include "ui/base/l10n/l10n_util.h"
 
 bool AddressField::GetFieldInfo(FieldTypeMap* field_type_map) const {
-  AutoFillFieldType address_company;
-  AutoFillFieldType address_line1;
-  AutoFillFieldType address_line2;
-  AutoFillFieldType address_city;
-  AutoFillFieldType address_state;
-  AutoFillFieldType address_zip;
-  AutoFillFieldType address_country;
+  AutofillFieldType address_company;
+  AutofillFieldType address_line1;
+  AutofillFieldType address_line2;
+  AutofillFieldType address_city;
+  AutofillFieldType address_state;
+  AutofillFieldType address_zip;
+  AutofillFieldType address_country;
 
   switch (type_) {
     case kShippingAddress:

@@ -105,11 +105,11 @@ void FindSectionBounds(const FormStructure& form,
   *section_start = 0;
   *section_end = form.field_count();
 
-  std::set<AutoFillFieldType> seen_types;
+  std::set<AutofillFieldType> seen_types;
   bool initiating_field_is_in_current_section = false;
   for (size_t i = 0; i < form.field_count(); ++i) {
     const AutoFillField* current_field = form.field(i);
-    const AutoFillFieldType current_type =
+    const AutofillFieldType current_type =
         AutoFillType::GetEquivalentFieldType(current_field->type());
 
     // Fields of unknown type don't help us to distinguish sections.
@@ -624,8 +624,8 @@ void AutoFillManager::LogMetricsAboutSubmittedForm(
         metric_logger_->Log(AutofillMetrics::FIELD_AUTOFILL_FAILED,
                             experiment_id);
 
-        AutoFillFieldType heuristic_type = UNKNOWN_TYPE;
-        AutoFillFieldType server_type = NO_SERVER_DATA;
+        AutofillFieldType heuristic_type = UNKNOWN_TYPE;
+        AutofillFieldType server_type = NO_SERVER_DATA;
         std::map<std::string, const AutoFillField*>::const_iterator
             cached_field = cached_fields.find(field->FieldSignature());
         if (cached_field != cached_fields.end()) {
@@ -824,7 +824,7 @@ void AutoFillManager::GetProfileSuggestions(FormStructure* form,
     }
   }
 
-  std::vector<AutoFillFieldType> form_fields;
+  std::vector<AutofillFieldType> form_fields;
   form_fields.reserve(form->field_count());
   for (std::vector<AutoFillField*>::const_iterator iter = form->begin();
        iter != form->end(); ++iter) {

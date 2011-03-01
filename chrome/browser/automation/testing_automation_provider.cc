@@ -4201,7 +4201,7 @@ ListValue* TestingAutomationProvider::GetListFromAutoFillProfiles(
     const std::vector<AutoFillProfile*>& autofill_profiles) {
   ListValue* profiles = new ListValue;
 
-  std::map<AutoFillFieldType, std::string> autofill_type_to_string
+  std::map<AutofillFieldType, std::string> autofill_type_to_string
       = GetAutoFillFieldToStringMap();
 
   // For each AutoFillProfile, transform it to a dictionary object to return.
@@ -4211,7 +4211,7 @@ ListValue* TestingAutomationProvider::GetListFromAutoFillProfiles(
     AutoFillProfile* profile = *it;
     DictionaryValue* profile_info = new DictionaryValue;
     // For each of the types, if it has a value, add it to the dictionary.
-    for (std::map<AutoFillFieldType, std::string>::iterator
+    for (std::map<AutofillFieldType, std::string>::iterator
          type_it = autofill_type_to_string.begin();
          type_it != autofill_type_to_string.end(); ++type_it) {
       string16 value = profile->GetFieldText(AutoFillType(type_it->first));
@@ -4229,7 +4229,7 @@ ListValue* TestingAutomationProvider::GetListFromCreditCards(
     const std::vector<CreditCard*>& credit_cards) {
   ListValue* cards = new ListValue;
 
-  std::map<AutoFillFieldType, std::string> credit_card_type_to_string =
+  std::map<AutofillFieldType, std::string> credit_card_type_to_string =
       GetCreditCardFieldToStringMap();
 
   // For each AutoFillProfile, transform it to a dictionary object to return.
@@ -4239,7 +4239,7 @@ ListValue* TestingAutomationProvider::GetListFromCreditCards(
     CreditCard* card = *it;
     DictionaryValue* card_info = new DictionaryValue;
     // For each of the types, if it has a value, add it to the dictionary.
-    for (std::map<AutoFillFieldType, std::string>::iterator type_it =
+    for (std::map<AutofillFieldType, std::string>::iterator type_it =
         credit_card_type_to_string.begin();
         type_it != credit_card_type_to_string.end(); ++type_it) {
       string16 value = card->GetFieldText(AutoFillType(type_it->first));
@@ -4261,7 +4261,7 @@ TestingAutomationProvider::GetAutoFillProfilesFromList(
   DictionaryValue* profile_info = NULL;
   string16 current_value;
 
-  std::map<AutoFillFieldType, std::string> autofill_type_to_string =
+  std::map<AutofillFieldType, std::string> autofill_type_to_string =
       GetAutoFillFieldToStringMap();
 
   int num_profiles = profiles.GetSize();
@@ -4269,7 +4269,7 @@ TestingAutomationProvider::GetAutoFillProfilesFromList(
     profiles.GetDictionary(i, &profile_info);
     AutoFillProfile profile;
     // Loop through the possible profile types and add those provided.
-    for (std::map<AutoFillFieldType, std::string>::iterator type_it =
+    for (std::map<AutofillFieldType, std::string>::iterator type_it =
          autofill_type_to_string.begin();
          type_it != autofill_type_to_string.end(); ++type_it) {
       if (profile_info->HasKey(type_it->second)) {
@@ -4294,7 +4294,7 @@ std::vector<CreditCard> TestingAutomationProvider::GetCreditCardsFromList(
   DictionaryValue* card_info = NULL;
   string16 current_value;
 
-  std::map<AutoFillFieldType, std::string> credit_card_type_to_string =
+  std::map<AutofillFieldType, std::string> credit_card_type_to_string =
       GetCreditCardFieldToStringMap();
 
   int num_credit_cards = cards.GetSize();
@@ -4302,7 +4302,7 @@ std::vector<CreditCard> TestingAutomationProvider::GetCreditCardsFromList(
     cards.GetDictionary(i, &card_info);
     CreditCard card;
     // Loop through the possible credit card fields and add those provided.
-    for (std::map<AutoFillFieldType, std::string>::iterator type_it =
+    for (std::map<AutofillFieldType, std::string>::iterator type_it =
         credit_card_type_to_string.begin();
         type_it != credit_card_type_to_string.end(); ++type_it) {
       if (card_info->HasKey(type_it->second)) {
@@ -4320,9 +4320,9 @@ std::vector<CreditCard> TestingAutomationProvider::GetCreditCardsFromList(
 }
 
 /* static */
-std::map<AutoFillFieldType, std::string>
+std::map<AutofillFieldType, std::string>
     TestingAutomationProvider::GetAutoFillFieldToStringMap() {
-  std::map<AutoFillFieldType, std::string> autofill_type_to_string;
+  std::map<AutofillFieldType, std::string> autofill_type_to_string;
   autofill_type_to_string[NAME_FIRST] = "NAME_FIRST";
   autofill_type_to_string[NAME_MIDDLE] = "NAME_MIDDLE";
   autofill_type_to_string[NAME_LAST] = "NAME_LAST";
@@ -4342,9 +4342,9 @@ std::map<AutoFillFieldType, std::string>
 }
 
 /* static */
-std::map<AutoFillFieldType, std::string>
+std::map<AutofillFieldType, std::string>
     TestingAutomationProvider::GetCreditCardFieldToStringMap() {
-  std::map<AutoFillFieldType, std::string> credit_card_type_to_string;
+  std::map<AutofillFieldType, std::string> credit_card_type_to_string;
   credit_card_type_to_string[CREDIT_CARD_NAME] = "CREDIT_CARD_NAME";
   credit_card_type_to_string[CREDIT_CARD_NUMBER] = "CREDIT_CARD_NUMBER";
   credit_card_type_to_string[CREDIT_CARD_EXP_MONTH] = "CREDIT_CARD_EXP_MONTH";

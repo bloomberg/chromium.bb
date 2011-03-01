@@ -30,8 +30,8 @@ void InitPersonalInfo(FormGroupMap* personal_info) {
 
 // Like |AutoFillType::GetEquivalentFieldType()|, but also returns |NAME_FULL|
 // for first, middle, and last name field types.
-AutoFillFieldType GetEquivalentFieldTypeCollapsingNames(
-    AutoFillFieldType field_type) {
+AutofillFieldType GetEquivalentFieldTypeCollapsingNames(
+    AutofillFieldType field_type) {
   if (field_type == NAME_FIRST || field_type == NAME_MIDDLE ||
       field_type == NAME_LAST)
     return NAME_FULL;
@@ -47,10 +47,10 @@ AutoFillFieldType GetEquivalentFieldTypeCollapsingNames(
 // |UNKNOWN_TYPE| by convention. The resulting list of fields is sorted in
 // decreasing order of importance.
 void GetFieldsForDistinguishingProfiles(
-    const std::vector<AutoFillFieldType>* suggested_fields,
-    AutoFillFieldType excluded_field,
-    std::vector<AutoFillFieldType>* distinguishing_fields) {
-  static const AutoFillFieldType kDefaultDistinguishingFields[] = {
+    const std::vector<AutofillFieldType>* suggested_fields,
+    AutofillFieldType excluded_field,
+    std::vector<AutofillFieldType>* distinguishing_fields) {
+  static const AutofillFieldType kDefaultDistinguishingFields[] = {
     NAME_FULL,
     ADDRESS_HOME_LINE1,
     ADDRESS_HOME_CITY,
@@ -73,15 +73,15 @@ void GetFieldsForDistinguishingProfiles(
 
   // Keep track of which fields we've seen so that we avoid duplicate entries.
   // Always ignore fields of unknown type and the excluded field.
-  std::set<AutoFillFieldType> seen_fields;
+  std::set<AutofillFieldType> seen_fields;
   seen_fields.insert(UNKNOWN_TYPE);
   seen_fields.insert(GetEquivalentFieldTypeCollapsingNames(excluded_field));
 
   distinguishing_fields->clear();
-  for (std::vector<AutoFillFieldType>::const_iterator it =
+  for (std::vector<AutofillFieldType>::const_iterator it =
            suggested_fields->begin();
        it != suggested_fields->end(); ++it) {
-    AutoFillFieldType suggested_type =
+    AutofillFieldType suggested_type =
         GetEquivalentFieldTypeCollapsingNames(*it);
     if (seen_fields.insert(suggested_type).second)
       distinguishing_fields->push_back(suggested_type);
@@ -93,7 +93,7 @@ void GetFieldsForDistinguishingProfiles(
   // distinguish between profiles that are identical except for the name.
   if (excluded_field != NAME_FULL &&
       GetEquivalentFieldTypeCollapsingNames(excluded_field) == NAME_FULL) {
-    for (std::vector<AutoFillFieldType>::const_iterator it =
+    for (std::vector<AutofillFieldType>::const_iterator it =
              suggested_fields->begin();
          it != suggested_fields->end(); ++it) {
       if (*it != excluded_field &&
@@ -239,14 +239,14 @@ bool AutoFillProfile::AdjustInferredLabels(
 // static
 void AutoFillProfile::CreateInferredLabels(
     const std::vector<AutoFillProfile*>* profiles,
-    const std::vector<AutoFillFieldType>* suggested_fields,
-    AutoFillFieldType excluded_field,
+    const std::vector<AutofillFieldType>* suggested_fields,
+    AutofillFieldType excluded_field,
     size_t minimal_fields_shown,
     std::vector<string16>* created_labels) {
   DCHECK(profiles);
   DCHECK(created_labels);
 
-  std::vector<AutoFillFieldType> fields_to_use;
+  std::vector<AutofillFieldType> fields_to_use;
   GetFieldsForDistinguishingProfiles(suggested_fields, excluded_field,
                                      &fields_to_use);
 
@@ -307,7 +307,7 @@ void AutoFillProfile::operator=(const AutoFillProfile& source) {
 int AutoFillProfile::Compare(const AutoFillProfile& profile) const {
   // The following AutoFill field types are the only types we store in the WebDB
   // so far, so we're only concerned with matching these types in the profile.
-  const AutoFillFieldType types[] = { NAME_FIRST,
+  const AutofillFieldType types[] = { NAME_FIRST,
                                       NAME_MIDDLE,
                                       NAME_LAST,
                                       EMAIL_ADDRESS,
@@ -350,14 +350,14 @@ const string16 AutoFillProfile::PrimaryValue() const {
 }
 
 string16 AutoFillProfile::ConstructInferredLabel(
-    const std::vector<AutoFillFieldType>& included_fields,
+    const std::vector<AutofillFieldType>& included_fields,
     size_t num_fields_to_use) const {
   const string16 separator =
       l10n_util::GetStringUTF16(IDS_AUTOFILL_DIALOG_ADDRESS_SUMMARY_SEPARATOR);
 
   string16 label;
   size_t num_fields_used = 0;
-  for (std::vector<AutoFillFieldType>::const_iterator it =
+  for (std::vector<AutofillFieldType>::const_iterator it =
            included_fields.begin();
        it != included_fields.end() && num_fields_used < num_fields_to_use;
        ++it) {
@@ -383,14 +383,14 @@ string16 AutoFillProfile::ConstructInferredLabel(
 void AutoFillProfile::CreateDifferentiatingLabels(
     const std::vector<AutoFillProfile*>& profiles,
     const std::list<size_t>& indices,
-    const std::vector<AutoFillFieldType>& fields,
+    const std::vector<AutofillFieldType>& fields,
     size_t num_fields_to_include,
     std::vector<string16>* created_labels) {
   // For efficiency, we first construct a map of fields to their text values and
   // each value's frequency.
-  std::map<AutoFillFieldType,
+  std::map<AutofillFieldType,
            std::map<string16, size_t> > field_text_frequencies_by_field;
-  for (std::vector<AutoFillFieldType>::const_iterator field = fields.begin();
+  for (std::vector<AutofillFieldType>::const_iterator field = fields.begin();
        field != fields.end(); ++field) {
     std::map<string16, size_t>& field_text_frequencies =
         field_text_frequencies_by_field[*field];
@@ -420,9 +420,9 @@ void AutoFillProfile::CreateDifferentiatingLabels(
        it != indices.end(); ++it) {
     const AutoFillProfile* profile = profiles[*it];
 
-    std::vector<AutoFillFieldType> label_fields;
+    std::vector<AutofillFieldType> label_fields;
     bool found_differentiating_field = false;
-    for (std::vector<AutoFillFieldType>::const_iterator field = fields.begin();
+    for (std::vector<AutofillFieldType>::const_iterator field = fields.begin();
          field != fields.end(); ++field) {
       // Skip over empty fields.
       string16 field_text = profile->GetFieldText(AutoFillType(*field));

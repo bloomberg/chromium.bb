@@ -491,7 +491,7 @@ bool AddAutoFillProfilePhone(const std::string& guid,
                              const AutoFillProfile& profile,
                              AutoFillPhoneType phone_type,
                              sql::Connection* db) {
-  AutoFillFieldType field_type;
+  AutofillFieldType field_type;
   if (phone_type == kAutoFillPhoneNumber) {
     field_type = PHONE_HOME_WHOLE_NUMBER;
   } else if (phone_type == kAutoFillFaxNumber) {

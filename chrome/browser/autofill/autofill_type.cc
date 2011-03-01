@@ -137,7 +137,7 @@ AutoFillType::AutoFillTypeDefinition kAutoFillTypeDefinitions[] = {
 
 }  // namespace
 
-AutoFillType::AutoFillType(AutoFillFieldType field_type) {
+AutoFillType::AutoFillType(AutofillFieldType field_type) {
   if ((field_type < NO_SERVER_DATA || field_type >= MAX_VALID_FIELD_TYPE) ||
       (field_type >= 15 && field_type <= 19) ||
       (field_type >= 25 && field_type <= 29) ||
@@ -157,7 +157,7 @@ AutoFillType& AutoFillType::operator=(const AutoFillType& autofill_type) {
   return *this;
 }
 
-AutoFillFieldType AutoFillType::field_type() const {
+AutofillFieldType AutoFillType::field_type() const {
   return field_type_;
 }
 
@@ -170,8 +170,8 @@ FieldTypeSubGroup AutoFillType::subgroup() const {
 }
 
 // static
-AutoFillFieldType AutoFillType::GetEquivalentFieldType(
-    AutoFillFieldType field_type) {
+AutofillFieldType AutoFillType::GetEquivalentFieldType(
+    AutofillFieldType field_type) {
   // When billing information is requested from the profile we map to the
   // home address equivalents.
   switch (field_type) {
@@ -202,7 +202,7 @@ AutoFillFieldType AutoFillType::GetEquivalentFieldType(
 }
 
 // static
-std::string AutoFillType::FieldTypeToString(AutoFillFieldType type) {
+std::string AutoFillType::FieldTypeToString(AutofillFieldType type) {
   switch (type) {
     case NO_SERVER_DATA:
       return "NO_SERVER_DATA";
@@ -293,13 +293,13 @@ std::string AutoFillType::FieldTypeToString(AutoFillFieldType type) {
     case COMPANY_NAME:
       return "COMPANY_NAME";
     default:
-      NOTREACHED() << "Invalid AutoFillFieldType value.";
+      NOTREACHED() << "Invalid AutofillFieldType value.";
   }
   return std::string();
 }
 
 // static
-AutoFillFieldType AutoFillType::StringToFieldType(const std::string& str) {
+AutofillFieldType AutoFillType::StringToFieldType(const std::string& str) {
   if (str == "NO_SERVER_DATA")
     return NO_SERVER_DATA;
   if (str == "UNKNOWN_TYPE")
@@ -389,6 +389,6 @@ AutoFillFieldType AutoFillType::StringToFieldType(const std::string& str) {
   if (str == "COMPANY_NAME")
     return COMPANY_NAME;
 
-  NOTREACHED() << "Unknown AutoFillFieldType " << str;
+  NOTREACHED() << "Unknown AutofillFieldType " << str;
   return UNKNOWN_TYPE;
 }

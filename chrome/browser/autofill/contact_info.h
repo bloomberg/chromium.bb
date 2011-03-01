@@ -52,7 +52,7 @@ class ContactInfo : public FormGroup {
 
   // A helper function for FindInfoMatches that only handles matching the info
   // with the requested field type.
-  bool FindInfoMatchesHelper(const AutoFillFieldType& field_type,
+  bool FindInfoMatchesHelper(const AutofillFieldType& field_type,
                              const string16& info,
                              string16* matched_text) const;
 

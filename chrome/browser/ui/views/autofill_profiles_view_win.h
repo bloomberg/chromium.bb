@@ -340,7 +340,7 @@ class AutoFillProfilesView : public views::View,
 
     struct TextFieldToAutoFill {
       TextFields text_field;
-      AutoFillFieldType type;
+      AutofillFieldType type;
     };
 
     static TextFieldToAutoFill address_fields_[];

@@ -158,8 +158,8 @@ class TestFormStructure : public FormStructure {
   explicit TestFormStructure(const FormData& form) : FormStructure(form) {}
   virtual ~TestFormStructure() {}
 
-  void SetFieldTypes(const std::vector<AutoFillFieldType>& heuristic_types,
-                     const std::vector<AutoFillFieldType>& server_types) {
+  void SetFieldTypes(const std::vector<AutofillFieldType>& heuristic_types,
+                     const std::vector<AutofillFieldType>& server_types) {
     ASSERT_EQ(field_count(), heuristic_types.size());
     ASSERT_EQ(field_count(), server_types.size());
 
@@ -283,8 +283,8 @@ TEST_F(AutofillMetricsTest, QualityMetricsForFailure) {
     const char* label;
     const char* name;
     const char* value;
-    AutoFillFieldType heuristic_type;
-    AutoFillFieldType server_type;
+    AutofillFieldType heuristic_type;
+    AutofillFieldType server_type;
     AutofillMetrics::QualityMetric heuristic_metric;
     AutofillMetrics::QualityMetric server_metric;
   } failure_cases[] = {
@@ -344,7 +344,7 @@ TEST_F(AutofillMetricsTest, QualityMetricsForFailure) {
     }
   };
 
-  std::vector<AutoFillFieldType> heuristic_types, server_types;
+  std::vector<AutofillFieldType> heuristic_types, server_types;
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(failure_cases); ++i) {
     FormField field;
     autofill_test::CreateTestFormField(failure_cases[i].label,
@@ -390,7 +390,7 @@ TEST_F(AutofillMetricsTest, SaneMetricsWithCacheMismatch) {
   form.action = GURL("http://example.com/submit.html");
   form.user_submitted = true;
 
-  std::vector<AutoFillFieldType> heuristic_types, server_types;
+  std::vector<AutofillFieldType> heuristic_types, server_types;
 
   FormField field;
   autofill_test::CreateTestFormField(

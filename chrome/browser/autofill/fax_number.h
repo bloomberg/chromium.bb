@@ -18,11 +18,11 @@ class FaxNumber : public PhoneNumber {
   virtual FormGroup* Clone() const;
 
  protected:
-  virtual AutoFillFieldType GetNumberType() const;
-  virtual AutoFillFieldType GetCityCodeType() const;
-  virtual AutoFillFieldType GetCountryCodeType() const;
-  virtual AutoFillFieldType GetCityAndNumberType() const;
-  virtual AutoFillFieldType GetWholeNumberType() const;
+  virtual AutofillFieldType GetNumberType() const;
+  virtual AutofillFieldType GetCityCodeType() const;
+  virtual AutofillFieldType GetCountryCodeType() const;
+  virtual AutofillFieldType GetCityAndNumberType() const;
+  virtual AutofillFieldType GetWholeNumberType() const;
 
  private:
   explicit FaxNumber(const FaxNumber& phone) : PhoneNumber(phone) {}

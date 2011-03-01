@@ -78,7 +78,7 @@ string16 ReadAndDecryptValue(RegKey* key, const wchar_t* value_name) {
 }
 
 struct {
-  AutoFillFieldType field_type;
+  AutofillFieldType field_type;
   const wchar_t *reg_value_name;
 } profile_reg_values[] = {
   { NAME_FIRST,                    L"name_first" },
@@ -113,7 +113,7 @@ struct {
   // We do not import verification code.
 };
 
-typedef std::map<std::wstring, AutoFillFieldType> RegToFieldMap;
+typedef std::map<std::wstring, AutofillFieldType> RegToFieldMap;
 
 bool ImportSingleProfile(FormGroup* profile,
                          RegKey* key,

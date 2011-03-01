@@ -103,7 +103,7 @@ void Address::FindInfoMatches(const AutoFillType& type,
 }
 
 string16 Address::GetFieldText(const AutoFillType& type) const {
-  AutoFillFieldType field_type = type.field_type();
+  AutofillFieldType field_type = type.field_type();
   if (field_type == ADDRESS_HOME_LINE1)
     return line1_;
 

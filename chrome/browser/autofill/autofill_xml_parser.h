@@ -64,7 +64,7 @@ class AutoFillXmlParser : public buzz::XmlParseHandler {
 // unknown, other types are documented in chrome/browser/autofill/field_types.h.
 class AutoFillQueryXmlParser : public AutoFillXmlParser {
  public:
-  AutoFillQueryXmlParser(std::vector<AutoFillFieldType>* field_types,
+  AutoFillQueryXmlParser(std::vector<AutofillFieldType>* field_types,
                          UploadRequired* upload_required,
                          std::string* experiment_id);
 
@@ -83,7 +83,7 @@ class AutoFillQueryXmlParser : public AutoFillXmlParser {
   int GetIntValue(buzz::XmlParseContext* context, const char* attribute);
 
   // The parsed field types.
-  std::vector<AutoFillFieldType>* field_types_;
+  std::vector<AutofillFieldType>* field_types_;
 
   // A flag indicating whether the client should upload AutoFill data when this
   // form is submitted.

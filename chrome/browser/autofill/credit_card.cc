@@ -24,7 +24,7 @@ namespace {
 
 const char* kCreditCardObfuscationString = "************";
 
-const AutoFillFieldType kAutoFillCreditCardTypes[] = {
+const AutofillFieldType kAutoFillCreditCardTypes[] = {
   CREDIT_CARD_NAME,
   CREDIT_CARD_NUMBER,
   CREDIT_CARD_TYPE,
@@ -407,7 +407,7 @@ int CreditCard::Compare(const CreditCard& credit_card) const {
   // The following CreditCard field types are the only types we store in the
   // WebDB so far, so we're only concerned with matching these types in the
   // credit card.
-  const AutoFillFieldType types[] = { CREDIT_CARD_NAME,
+  const AutofillFieldType types[] = { CREDIT_CARD_NAME,
                                       CREDIT_CARD_NUMBER,
                                       CREDIT_CARD_EXP_MONTH,
                                       CREDIT_CARD_EXP_4_DIGIT_YEAR };
@@ -529,7 +529,7 @@ void CreditCard::set_expiration_year(int expiration_year) {
   expiration_year_ = expiration_year;
 }
 
-bool CreditCard::FindInfoMatchesHelper(const AutoFillFieldType& field_type,
+bool CreditCard::FindInfoMatchesHelper(const AutofillFieldType& field_type,
                                        const string16& info,
                                        string16* match) const {
   DCHECK(match);

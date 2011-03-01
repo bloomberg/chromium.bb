@@ -85,8 +85,8 @@ typedef enum _FieldType {
   // No new types can be added.
 
   MAX_VALID_FIELD_TYPE = 61,
-} AutoFillFieldType;
+} AutofillFieldType;
 
-typedef std::set<AutoFillFieldType> FieldTypeSet;
+typedef std::set<AutofillFieldType> FieldTypeSet;
 
 #endif  // CHROME_BROWSER_AUTOFILL_FIELD_TYPES_H_

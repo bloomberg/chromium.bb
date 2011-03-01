@@ -40,7 +40,7 @@ AutoFillField::AutoFillField(const webkit_glue::FormField& field,
 
 AutoFillField::~AutoFillField() {}
 
-void AutoFillField::set_heuristic_type(const AutoFillFieldType& type) {
+void AutoFillField::set_heuristic_type(const AutofillFieldType& type) {
   if (type >= 0 && type < MAX_VALID_FIELD_TYPE) {
     heuristic_type_ = type;
   } else {
@@ -51,7 +51,7 @@ void AutoFillField::set_heuristic_type(const AutoFillFieldType& type) {
   }
 }
 
-AutoFillFieldType AutoFillField::type() const {
+AutofillFieldType AutoFillField::type() const {
   if (server_type_ != NO_SERVER_DATA)
     return server_type_;
 

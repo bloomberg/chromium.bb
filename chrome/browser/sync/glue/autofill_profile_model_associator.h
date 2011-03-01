@@ -145,7 +145,7 @@ class AutofillProfileModelAssociator
   bool LoadAutofillData(std::vector<AutoFillProfile*>* profiles);
 
   static bool MergeField(FormGroup* f,
-                         AutoFillFieldType t,
+                         AutofillFieldType t,
                          const std::string& specifics_field);
 
   // Helper to persist any changes that occured during model association to

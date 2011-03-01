@@ -25,7 +25,7 @@ void AutoFillXmlParser::Error(buzz::XmlParseContext* context,
 }
 
 AutoFillQueryXmlParser::AutoFillQueryXmlParser(
-    std::vector<AutoFillFieldType>* field_types,
+    std::vector<AutofillFieldType>* field_types,
     UploadRequired* upload_required,
     std::string* experiment_id)
     : field_types_(field_types),
@@ -72,13 +72,13 @@ void AutoFillQueryXmlParser::StartElement(buzz::XmlParseContext* context,
 
     // Determine the field type from the attribute value.  There should be one
     // attribute (autofilltype) with an integer value.
-    AutoFillFieldType field_type = UNKNOWN_TYPE;
+    AutofillFieldType field_type = UNKNOWN_TYPE;
     buzz::QName attribute_qname = context->ResolveQName(attrs[0], true);
     const std::string& attribute_name = attribute_qname.LocalPart();
 
     if (attribute_name.compare("autofilltype") == 0) {
       int value = GetIntValue(context, attrs[1]);
-      field_type = static_cast<AutoFillFieldType>(value);
+      field_type = static_cast<AutofillFieldType>(value);
       if (field_type < 0 || field_type > MAX_VALID_FIELD_TYPE) {
         field_type = NO_SERVER_DATA;
       }

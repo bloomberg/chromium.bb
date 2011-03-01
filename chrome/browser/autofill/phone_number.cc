@@ -79,7 +79,7 @@ void PhoneNumber::GetAvailableFieldTypes(FieldTypeSet* available_types) const {
 }
 
 string16 PhoneNumber::GetFieldText(const AutoFillType& type) const {
-  AutoFillFieldType field_type = type.field_type();
+  AutofillFieldType field_type = type.field_type();
   if (field_type == GetNumberType())
     return number();
 

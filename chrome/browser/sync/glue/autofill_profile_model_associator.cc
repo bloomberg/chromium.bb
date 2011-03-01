@@ -208,7 +208,7 @@ bool AutofillProfileModelAssociator::DisassociateModels() {
 // Helper to compare the local value and cloud value of a field, merge into
 // the local value if they differ, and return whether the merge happened.
 bool AutofillProfileModelAssociator::MergeField(FormGroup* f,
-    AutoFillFieldType t,
+    AutofillFieldType t,
     const std::string& specifics_field) {
   if (UTF16ToUTF8(f->GetFieldText(AutoFillType(t))) == specifics_field)
     return false;

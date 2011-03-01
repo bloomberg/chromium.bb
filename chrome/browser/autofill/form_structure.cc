@@ -172,7 +172,7 @@ void FormStructure::ParseQueryResponse(const std::string& response_xml,
   metric_logger.Log(AutofillMetrics::QUERY_RESPONSE_RECEIVED);
 
   // Parse the field types from the server response to the query.
-  std::vector<AutoFillFieldType> field_types;
+  std::vector<AutofillFieldType> field_types;
   std::string experiment_id;
   AutoFillQueryXmlParser parse_handler(&field_types, upload_required,
                                        &experiment_id);
@@ -187,7 +187,7 @@ void FormStructure::ParseQueryResponse(const std::string& response_xml,
   bool query_response_overrode_heuristics = false;
 
   // Copy the field types into the actual form.
-  std::vector<AutoFillFieldType>::iterator current_type = field_types.begin();
+  std::vector<AutofillFieldType>::iterator current_type = field_types.begin();
   for (std::vector<FormStructure*>::const_iterator iter = forms.begin();
        iter != forms.end(); ++iter) {
     FormStructure* form = *iter;
@@ -213,7 +213,7 @@ void FormStructure::ParseQueryResponse(const std::string& response_xml,
       // UNKNOWN_TYPE is reserved for use by the client.
       DCHECK_NE(*current_type, UNKNOWN_TYPE);
 
-      AutoFillFieldType heuristic_type = (*field)->type();
+      AutofillFieldType heuristic_type = (*field)->type();
       (*field)->set_server_type(*current_type);
       if (heuristic_type != (*field)->type())
         query_response_overrode_heuristics = true;
@@ -370,7 +370,7 @@ void FormStructure::GetHeuristicAutoFillTypes() {
     DCHECK(field);
     FieldTypeMap::iterator iter = field_type_map.find(field->unique_name());
 
-    AutoFillFieldType heuristic_auto_fill_type;
+    AutofillFieldType heuristic_auto_fill_type;
     if (iter == field_type_map.end()) {
       heuristic_auto_fill_type = UNKNOWN_TYPE;
     } else {

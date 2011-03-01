@@ -80,8 +80,8 @@ class AutoFillProfile : public FormGroup {
   // least |minimal_fields_shown| fields, if possible.
   static void CreateInferredLabels(
       const std::vector<AutoFillProfile*>* profiles,
-      const std::vector<AutoFillFieldType>* suggested_fields,
-      AutoFillFieldType excluded_field,
+      const std::vector<AutofillFieldType>* suggested_fields,
+      AutofillFieldType excluded_field,
       size_t minimal_fields_shown,
       std::vector<string16>* created_labels);
 
@@ -116,7 +116,7 @@ class AutoFillProfile : public FormGroup {
   // fields in |label_fields|. Uses as many fields as possible if there are not
   // enough non-empty fields.
   string16 ConstructInferredLabel(
-      const std::vector<AutoFillFieldType>& label_fields,
+      const std::vector<AutofillFieldType>& label_fields,
       size_t num_fields_to_include) const;
 
   // Creates inferred labels for |profiles| at indices corresponding to
@@ -127,7 +127,7 @@ class AutoFillProfile : public FormGroup {
   static void CreateDifferentiatingLabels(
       const std::vector<AutoFillProfile*>& profiles,
       const std::list<size_t>& indices,
-      const std::vector<AutoFillFieldType>& fields,
+      const std::vector<AutofillFieldType>& fields,
       size_t num_fields_to_include,
       std::vector<string16>* created_labels);
 

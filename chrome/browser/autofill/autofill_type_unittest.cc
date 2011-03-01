@@ -45,13 +45,13 @@ TEST(AutoFillTypeTest, Basic) {
   EXPECT_EQ(AutoFillType::NO_SUBGROUP, boundary.subgroup());
 
   // Beyond the boundary (error) condition.
-  AutoFillType beyond(static_cast<AutoFillFieldType>(MAX_VALID_FIELD_TYPE+10));
+  AutoFillType beyond(static_cast<AutofillFieldType>(MAX_VALID_FIELD_TYPE+10));
   EXPECT_EQ(UNKNOWN_TYPE, beyond.field_type());
   EXPECT_EQ(AutoFillType::NO_GROUP, beyond.group());
   EXPECT_EQ(AutoFillType::NO_SUBGROUP, beyond.subgroup());
 
   // In-between value.  Missing from enum but within range.  Error condition.
-  AutoFillType between(static_cast<AutoFillFieldType>(16));
+  AutoFillType between(static_cast<AutofillFieldType>(16));
   EXPECT_EQ(UNKNOWN_TYPE, between.field_type());
   EXPECT_EQ(AutoFillType::NO_GROUP, between.group());
   EXPECT_EQ(AutoFillType::NO_SUBGROUP, between.subgroup());
