@@ -251,7 +251,8 @@ IN_PROC_BROWSER_TEST_F(PDFBrowserTest, FindAndCopy) {
 // Tests that loading async pdfs works correctly (i.e. document fully loads).
 // This also loads all documents that used to crash, to ensure we don't have
 // regressions.
-IN_PROC_BROWSER_TEST_F(PDFBrowserTest, SLOW_Loading) {
+// Flaky as per http://crbug.com/74548.
+IN_PROC_BROWSER_TEST_F(PDFBrowserTest, FLAKY_SLOW_Loading) {
   ASSERT_TRUE(pdf_test_server()->Start());
 
   NavigationController* controller =
@@ -305,7 +306,8 @@ IN_PROC_BROWSER_TEST_F(PDFBrowserTest, SLOW_Loading) {
   }
 }
 
-IN_PROC_BROWSER_TEST_F(PDFBrowserTest, OnLoadAndReload) {
+// Flaky as per http://crbug.com/74549.
+IN_PROC_BROWSER_TEST_F(PDFBrowserTest, FLAKY_OnLoadAndReload) {
   ASSERT_TRUE(pdf_test_server()->Start());
 
   GURL url = pdf_test_server()->GetURL("files/onload_reload.html");

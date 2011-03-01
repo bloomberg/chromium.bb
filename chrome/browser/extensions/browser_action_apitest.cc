@@ -114,7 +114,9 @@ IN_PROC_BROWSER_TEST_F(BrowserActionApiTest, DynamicBrowserAction) {
   // TODO(aa): Would be nice here to actually compare that the pixels change.
 }
 
-IN_PROC_BROWSER_TEST_F(BrowserActionApiTest, TabSpecificBrowserActionState) {
+// This test is flaky as per http://crbug.com/74557.
+IN_PROC_BROWSER_TEST_F(BrowserActionApiTest,
+                       FLAKY_TabSpecificBrowserActionState) {
   ASSERT_TRUE(RunExtensionTest("browser_action/tab_specific_state")) <<
       message_;
   const Extension* extension = GetSingleLoadedExtension();

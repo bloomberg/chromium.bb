@@ -102,7 +102,8 @@ ProcessSingleton::NotifyResult NotifyOtherProcessOrCreate(
 // Test if the socket file and symbol link created by ProcessSingletonLinux
 // are valid. When running this test, the ProcessSingleton object is already
 // initiated by UITest. So we just test against this existing object.
-TEST_F(ProcessSingletonLinuxTest, CheckSocketFile) {
+// This test is flaky as per http://crbug.com/74554.
+TEST_F(ProcessSingletonLinuxTest, FLAKY_CheckSocketFile) {
   struct stat statbuf;
   ASSERT_EQ(0, lstat(lock_path_.value().c_str(), &statbuf));
   ASSERT_TRUE(S_ISLNK(statbuf.st_mode));
