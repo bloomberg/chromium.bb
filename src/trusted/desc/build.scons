@@ -38,6 +38,7 @@ nrd_lib_inputs = [
     'nacl_desc_invalid.c',
     'nacl_desc_io.c',
     'nacl_desc_mutex.c',
+    'nacl_desc_rng.c',
     'nacl_desc_quota.c',
     'nacl_desc_semaphore.c',
     'nacl_desc_sync_socket.c',

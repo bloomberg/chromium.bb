@@ -72,6 +72,9 @@ extern int NaClAclBypassChecks;
 
 void NaClInsecurelyBypassAllAclChecks(void);
 
+int32_t NaClCommonSysNameService(struct NaClAppThread *natp,
+                                 int32_t              *desc_addr);
+
 int32_t NaClCommonSysDup(struct NaClAppThread *natp,
                          int                  oldfd);
 

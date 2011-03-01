@@ -19,7 +19,7 @@ EXTERN_C_BEGIN
 
 struct NaClSecureRngIf;  /* fwd: base interface class */
 
-struct NaClSecureRngVtbl {
+struct NaClSecureRngIfVtbl {
   void      (*Dtor)(struct NaClSecureRngIf  *self);
   /*
    * Generates a uniform random 8-bit byte (uint8_t).
@@ -41,7 +41,7 @@ struct NaClSecureRngVtbl {
 };
 
 struct NaClSecureRngIf {
-  struct NaClSecureRngVtbl const  *vtbl;
+  struct NaClSecureRngIfVtbl const  *vtbl;
 };
 
 EXTERN_C_END

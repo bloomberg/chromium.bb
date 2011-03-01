@@ -434,6 +434,61 @@ int32_t NaClCommonSysThreadExit(struct NaClAppThread  *natp,
   return -NACL_ABI_EINVAL;
 }
 
+int32_t NaClCommonSysNameService(struct NaClAppThread *natp,
+                                 int32_t              *desc_addr) {
+  int32_t   retval = -NACL_ABI_EINVAL;
+  uintptr_t sysaddr;
+  int32_t   desc;
+
+  NaClLog(3,
+          ("NaClCommonSysNameService(0x%08"NACL_PRIxPTR","
+           " 0x%08"NACL_PRIxPTR")\n"),
+          (uintptr_t) natp,
+          (uintptr_t) desc_addr);
+  NaClSysCommonThreadSyscallEnter(natp);
+
+  sysaddr = NaClUserToSysAddrRange(natp->nap,
+                                   (uintptr_t) desc_addr,
+                                   sizeof(uint32_t));
+  if (kNaClBadAddress == sysaddr) {
+    NaClLog(LOG_ERROR,
+            "Invalid address argument to NaClCommonSysNameService\n");
+    retval = -NACL_ABI_EFAULT;
+    goto done;
+  }
+
+  desc = *(int32_t *) sysaddr;
+  if (-1 == desc) {
+    /* read */
+    desc = NaClSetAvail(natp->nap,
+                        NaClDescRef(natp->nap->name_service_conn_cap));
+    *(int32_t *) sysaddr = desc;
+    retval = 0;
+  } else {
+    struct NaClDesc *desc_obj_ptr = NaClGetDesc(natp->nap, desc);
+
+    if (NULL == desc_obj_ptr) {
+      retval = -NACL_ABI_EBADF;
+      goto done;
+    }
+    if (NACL_DESC_CONN_CAP != NACL_VTBL(NaClDesc, desc_obj_ptr)->typeTag &&
+        NACL_DESC_CONN_CAP_FD != NACL_VTBL(NaClDesc, desc_obj_ptr)->typeTag) {
+      retval = -NACL_ABI_EINVAL;
+      goto done;
+    }
+    /* write */
+    NaClMutexLock(&natp->nap->mu);
+    NaClDescUnref(natp->nap->name_service_conn_cap);
+    natp->nap->name_service_conn_cap = desc_obj_ptr;
+    NaClMutexUnlock(&natp->nap->mu);
+    retval = 0;
+  }
+
+ done:
+  NaClSysCommonThreadSyscallLeave(natp);
+  return retval;
+}
+
 int32_t NaClCommonSysDup(struct NaClAppThread *natp,
                          int                  oldfd) {
   int             retval;

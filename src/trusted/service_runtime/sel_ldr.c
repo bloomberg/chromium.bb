@@ -14,8 +14,8 @@
 
 #include "native_client/src/shared/platform/nacl_check.h"
 #include "native_client/src/shared/platform/nacl_sync_checked.h"
-
 #include "native_client/src/shared/srpc/nacl_srpc.h"
+
 #include "native_client/src/trusted/desc/nacl_desc_base.h"
 #include "native_client/src/trusted/desc/nacl_desc_conn_cap.h"
 #include "native_client/src/trusted/desc/nacl_desc_imc.h"
@@ -29,10 +29,15 @@
 #include "native_client/src/trusted/service_runtime/nacl_app.h"
 #include "native_client/src/trusted/service_runtime/nacl_app_thread.h"
 #include "native_client/src/trusted/service_runtime/nacl_globals.h"
+#include "native_client/src/trusted/service_runtime/nacl_simple_service.h"
 #include "native_client/src/trusted/service_runtime/nacl_syscall_common.h"
 #include "native_client/src/trusted/service_runtime/sel_addrspace.h"
 #include "native_client/src/trusted/service_runtime/sel_ldr.h"
 #include "native_client/src/trusted/service_runtime/sel_memory.h"
+
+#include "native_client/src/trusted/service_runtime/name_service/name_service.h"
+#include "native_client/src/trusted/service_runtime/name_service/default_name_service.h"
+
 #include "native_client/src/trusted/service_runtime/include/sys/stat.h"
 
 static int IsEnvironmentVariableSet(char const *env_name) {
@@ -91,8 +96,23 @@ int NaClAppCtor(struct NaClApp  *nap) {
   nap->service_address = NULL;
   nap->secure_channel = NULL;
 
-  if (!NaClMutexCtor(&nap->mu)) {
+  nap->name_service = (struct NaClNameService *) malloc(
+      sizeof *nap->name_service);
+  if (NULL == nap->name_service) {
     goto cleanup_dynamic_load_mutex;
+  }
+  if (!NaClNameServiceCtor(nap->name_service)) {
+    free(nap->name_service);
+    goto cleanup_dynamic_load_mutex;
+  }
+  nap->name_service_conn_cap = NaClDescRef(nap->name_service->
+                                           base.base.bound_and_cap[1]);
+  if (!NaClDefaultNameServiceInit(nap->name_service)) {
+    goto cleanup_name_service;
+  }
+
+  if (!NaClMutexCtor(&nap->mu)) {
+    goto cleanup_name_service;
   }
   if (!NaClCondVarCtor(&nap->cv)) {
     goto cleanup_mu;
@@ -147,28 +167,31 @@ int NaClAppCtor(struct NaClApp  *nap) {
   return 1;
 
 #if 0
-cleanup_desc_mu:
+ cleanup_desc_mu:
   NaClMutexDtor(&nap->desc_mu);
 #endif
-cleanup_threads_cv:
+ cleanup_threads_cv:
   NaClCondVarDtor(&nap->threads_cv);
-cleanup_threads_mu:
+ cleanup_threads_mu:
   NaClMutexDtor(&nap->threads_mu);
-cleanup_work_queue:
+ cleanup_work_queue:
   NaClSyncQueueDtor(&nap->work_queue);
-cleanup_cv:
+ cleanup_cv:
   NaClCondVarDtor(&nap->cv);
-cleanup_mu:
+ cleanup_mu:
   NaClMutexDtor(&nap->mu);
-cleanup_dynamic_load_mutex:
+ cleanup_name_service:
+  NaClDescUnref(nap->name_service_conn_cap);
+  NaClRefCountUnref((struct NaClRefCount *) nap->name_service);
+ cleanup_dynamic_load_mutex:
   NaClMutexDtor(&nap->dynamic_load_mutex);
-cleanup_mem_map:
+ cleanup_mem_map:
   NaClVmmapDtor(&nap->mem_map);
-cleanup_desc_tbl:
+ cleanup_desc_tbl:
   DynArrayDtor(&nap->desc_tbl);
-cleanup_threads:
+ cleanup_threads:
   DynArrayDtor(&nap->threads);
-cleanup_none:
+ cleanup_none:
   return 0;
 }
 
@@ -695,7 +718,7 @@ void NaClAddImcHandle(struct NaClApp  *nap,
            " as nacl desc %d\n"),
           (uintptr_t) h,
           nacl_desc);
-  dp = malloc(sizeof *dp);
+  dp = (struct NaClDescImcDesc *) malloc(sizeof *dp);
   if (NULL == dp) {
     NaClLog(LOG_FATAL, "NaClAddImcHandle: no memory\n");
   }
@@ -826,7 +849,7 @@ static void NaClSecureChannelShutdownRpc(
 
   NaClLog(4, "NaClSecureChannelShutdownRpc (hard_shutdown), exiting\n");
   _exit(0);
-  /* Return is never reached, so no need to invoke done->Run(done). */
+  /* Return is never reached, so no need to invoke (*done->Run)(done). */
 }
 
 /*
@@ -914,6 +937,7 @@ static void NaClLoadModuleRpc(struct NaClSrpcRpc      *rpc,
     case NACL_DESC_TRANSFERABLE_DATA_SOCKET:
     case NACL_DESC_IMC_SOCKET:
     case NACL_DESC_QUOTA:
+    case NACL_DESC_DEVICE_RNG:
       /* Unsupported stuff */
       rpc->result = NACL_SRPC_RESULT_APP_ERROR;
       goto cleanup;
@@ -990,7 +1014,7 @@ static void NaClLoadModuleRpc(struct NaClSrpcRpc      *rpc,
 
   NaClDescUnref(nexe_binary);
   nexe_binary = NULL;
-  done->Run(done);
+  (*done->Run)(done);
 }
 
 #if NACL_WINDOWS && !defined(NACL_STANDALONE)
@@ -1016,7 +1040,7 @@ static void NaClInitHandlePassingRpc(struct NaClSrpcRpc      *rpc,
   } else {
     rpc->result = NACL_SRPC_RESULT_OK;
   }
-  done->Run(done);
+  (*done->Run)(done);
 }
 #endif
 
@@ -1044,9 +1068,13 @@ static void NaClSecureChannelStartModuleRpc(struct NaClSrpcRpc     *rpc,
 
   UNREFERENCED_PARAMETER(in_args);
 
-  NaClLog(4, "NaClSecureChannelStartModuleRpc started\n");
+  NaClLog(4,
+          "NaClSecureChannelStartModuleRpc started, nap 0x%"NACL_PRIxPTR"\n",
+          (uintptr_t) nap);
 
   status = NaClWaitForLoadModuleStatus(nap);
+
+  NaClLog(4, "NaClSecureChannelStartModuleRpc: load status %d\n", status);
 
   NaClXMutexLock(&nap->mu);
   if (nap->module_may_start) {
@@ -1061,7 +1089,10 @@ static void NaClSecureChannelStartModuleRpc(struct NaClSrpcRpc     *rpc,
   out_args[0]->u.ival = status;
   NaClLog(4, "NaClSecureChannelStartModuleRpc finished\n");
   rpc->result = NACL_SRPC_RESULT_OK;
-  done->Run(done);
+
+  NaClLog(4, "NaClSecureChannelStartModuleRpc running closure\n");
+  (*done->Run)(done);
+  NaClLog(4, "NaClSecureChannelStartModuleRpc exiting\n");
 }
 
 static void NaClSecureChannelLog(struct NaClSrpcRpc      *rpc,
@@ -1077,7 +1108,7 @@ static void NaClSecureChannelLog(struct NaClSrpcRpc      *rpc,
   NaClLog(severity, "%s\n", msg);
   NaClLog(5, "NaClSecureChannelLog finished\n");
   rpc->result = NACL_SRPC_RESULT_OK;
-  done->Run(done);
+  (*done->Run)(done);
 }
 
 NaClErrorCode NaClWaitForStartModuleCommand(struct NaClApp *nap) {
@@ -1107,7 +1138,7 @@ void WINAPI NaClSecureChannelThread(void *state) {
     { "init_handle_passing:hii:", NaClInitHandlePassingRpc, },
 #endif
     /* add additional calls here.  upcall set up?  start module signal? */
-    { (char const *) NULL, (NaClSrpcMethod) 0, },
+    { (char const *) NULL, (NaClSrpcMethod) NULL, },
   };
 
   NaClLog(4, "NaClSecureChannelThread started\n");
@@ -1117,7 +1148,7 @@ void WINAPI NaClSecureChannelThread(void *state) {
   _exit(0);
 }
 
-void NaClSecureCommandChannel(struct NaClApp  *nap) {
+void NaClSecureCommandChannelOld(struct NaClApp  *nap) {
   int                         status;
 
   NaClLog(4, "Waiting for secure command channel connect\n");
@@ -1141,6 +1172,157 @@ void NaClSecureCommandChannel(struct NaClApp  *nap) {
   NaClLog(4, "NaClSecureCommandChannel: thread spawned, continuing\n");
 }
 
+
+struct NaClSecureService {
+  struct NaClSimpleService  base;
+  struct NaClMutex          mu;
+  struct NaClCondVar        cv;
+  int                       connected;
+};
+
+struct NaClSecureServiceVtbl {
+  struct NaClSimpleServiceVtbl vbase;
+};
+
+struct NaclSecureServiceConnection;
+
+struct NaClSecureServiceVtbl const kNaClSecureServiceVtbl;
+
+int NaClSecureServiceCtor(struct NaClSecureService          *self,
+                         struct NaClSrpcHandlerDesc const *srpc_handlers,
+                         struct NaClApp                   *nap) {
+  if (!NaClMutexCtor(&self->mu)) {
+    goto failure_mu;
+  }
+  if (!NaClCondVarCtor(&self->cv)) {
+    goto failure_cv;
+  }
+  if (!NaClSimpleServiceWithSocketCtor(&self->base,
+                                       srpc_handlers,
+                                       nap,
+                                       nap->service_port,
+                                       nap->service_address)) {
+    goto failure_simple_ctor;
+  }
+  self->connected = 0;
+  NACL_VTBL(NaClRefCount, self) =
+      (struct NaClRefCountVtbl *) &kNaClSecureServiceVtbl;
+  return 1;
+ failure_simple_ctor:
+  NaClCondVarDtor(&self->cv);
+ failure_cv:
+  NaClMutexDtor(&self->mu);
+ failure_mu:
+  return 0;
+}
+
+void NaClSecureServiceDtor(struct NaClRefCount *vself) {
+  struct NaClSecureService *self = (struct NaClSecureService *) vself;
+
+  NACL_VTBL(NaClRefCount, self) = (struct NaClRefCountVtbl const *)
+      &kNaClSimpleServiceVtbl;
+  (*NACL_VTBL(NaClRefCount, self)->Dtor)(vself);
+}
+
+int NaClSecureServiceAcceptConnection(
+    struct NaClSimpleService           *vself,
+    struct NaClSimpleServiceConnection **conn_out) {
+  struct NaClSecureService *self =
+      (struct NaClSecureService *) vself;
+  int retval;
+
+  NaClLog(4,
+          "Entered NaClSecureServiceAcceptConnection,"
+          " self is 0x%"NACL_PRIxPTR"\n",
+          (uintptr_t) self);
+  retval = (*kNaClSimpleServiceVtbl.AcceptConnection)(vself, conn_out);
+  NaClLog(4,
+          "NaClSecureServiceAcceptConnection: AcceptConnection vfn returned"
+          " %d, conn_out is 0x%"NACL_PRIxPTR"\n",
+          retval, (uintptr_t) conn_out);
+  if (0 != retval) {
+    NaClLog(LOG_FATAL,
+            "NaClSecureServiceAcceptConnection: unable to establish channel\n");
+  }
+  NaClLog(4,
+          "NaClSecureServiceAcceptConnection: *conn_out is 0x%"NACL_PRIxPTR"\n",
+          (uintptr_t) *conn_out);
+  NaClXMutexLock(&self->mu);
+  self->connected = 1;
+  NaClXCondVarSignal(&self->cv);
+  NaClXMutexUnlock(&self->mu);
+  NaClLog(4, "Leaving NaClSecureServiceAcceptConnection, retval %d\n", retval);
+  return retval;
+}
+
+int NaClSecureServiceAcceptAndSpawnHandler(struct NaClSimpleService *vself) {
+  int rv = (*kNaClSimpleServiceVtbl.AcceptAndSpawnHandler)(vself);
+  NaClLog(4, "NaClSecureServiceAcceptAndSpawnHandler: thread exiting\n");
+  NaClThreadExit();
+  return rv;
+}
+
+void NaClSecureServiceRpcHandler(struct NaClSimpleService           *vself,
+                                struct NaClSimpleServiceConnection *vconn) {
+  NaClLog(4, "NaClSecureChannelThread started\n");
+  (*kNaClSimpleServiceVtbl.RpcHandler)(vself, vconn);
+  NaClLog(4, "NaClSecureChannelThread: channel closed, exiting.\n");
+  _exit(0);
+}
+
+struct NaClSecureServiceVtbl const kNaClSecureServiceVtbl = {
+  {
+    {
+      NaClSecureServiceDtor,
+    },
+    NaClSimpleServiceConnectionFactory,
+    NaClSecureServiceAcceptConnection,
+    NaClSecureServiceAcceptAndSpawnHandler,
+    NaClSecureServiceRpcHandler,
+  },
+};
+
+
+void NaClSecureCommandChannel(struct NaClApp *nap) {
+  struct NaClSecureService *secure_command_server;
+
+  static struct NaClSrpcHandlerDesc const secure_handlers[] = {
+    { "hard_shutdown::", NaClSecureChannelShutdownRpc, },
+    { "start_module::i", NaClSecureChannelStartModuleRpc, },
+    { "log:is:", NaClSecureChannelLog, },
+    { "load_module:hs:", NaClLoadModuleRpc, },
+#if NACL_WINDOWS && !defined(NACL_STANDALONE)
+    { "init_handle_passing:hii:", NaClInitHandlePassingRpc, },
+#endif
+    /* add additional calls here.  upcall set up?  start module signal? */
+    { (char const *) NULL, (NaClSrpcMethod) NULL, },
+  };
+
+  NaClLog(4, "Entered NaClSecureCommandChannel\n");
+
+  secure_command_server = (struct NaClSecureService *) malloc(
+      sizeof *secure_command_server);
+  if (NULL == secure_command_server) {
+    NaClLog(LOG_FATAL, "Out of memory for secure command channel\n");
+  }
+  if (!NaClSecureServiceCtor(secure_command_server, secure_handlers, nap)) {
+    NaClLog(LOG_FATAL, "NaClSecureServiceCtor failed\n");
+  }
+
+  NaClLog(4, "NaClSecureCommandChannel: starting service thread\n");
+  if (!NaClSimpleServiceStartServiceThread((struct NaClSimpleService *)
+                                           secure_command_server)) {
+    NaClLog(LOG_FATAL,
+            "Could not start secure command channel service thread\n");
+  }
+  NaClLog(4, "NaClSecureCommandChannel: waiting for connection\n");
+  NaClXMutexLock(&secure_command_server->mu);
+  while (!secure_command_server->connected) {
+    NaClXCondVarWait(&secure_command_server->cv, &secure_command_server->mu);
+  }
+  NaClXMutexUnlock(&secure_command_server->mu);
+  NaClLog(4, "Leaving NaClSecureCommandChannel\n");
+}
 
 
 #ifdef __GNUC__

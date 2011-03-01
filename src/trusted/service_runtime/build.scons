@@ -69,6 +69,7 @@ env.Command(target=env.File(GENERATED + '/nacl_syscall_handlers.c'),
 #                for easier unit testing
 ldr_inputs = [
     'dyn_array.c',
+    'elf_util.c',
     'nacl_all_modules.c',
     'nacl_app_thread.c',
     'nacl_bottom_half.c',
@@ -78,11 +79,15 @@ ldr_inputs = [
     'nacl_globals.c',
     'nacl_memory_object.c',
     'nacl_signal_common.c',
+    'nacl_simple_ltd_service.c',
+    'nacl_simple_service.c',
     'nacl_sync_queue.c',
     'nacl_syscall_common.c',
     GENERATED + '/nacl_syscall_handlers.c',
     'nacl_syscall_hook.c',
     'nacl_text.c',
+    'name_service/default_name_service.c',
+    'name_service/name_service.c',
     'sel_addrspace.c',
     'sel_ldr.c',
     'sel_ldr-inl.c',
@@ -94,7 +99,6 @@ ldr_inputs = [
     'sel_qualify.c',
     'sel_util-inl.c',
     'sel_validate_image.c',
-    'elf_util.c',
 ]
 
 if env.Bit('build_x86_32'):

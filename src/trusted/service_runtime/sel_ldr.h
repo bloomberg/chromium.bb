@@ -44,6 +44,8 @@
 #include "native_client/src/trusted/service_runtime/sel_util.h"
 #include "native_client/src/trusted/service_runtime/sel_rt.h"
 
+#include "native_client/src/trusted/service_runtime/name_service/name_service.h"
+
 
 EXTERN_C_BEGIN
 
@@ -109,7 +111,8 @@ struct NaClApp {
    */
   uintptr_t                 mem_start;
 
-#if NACL_ARCH(NACL_BUILD_ARCH) == NACL_x86 && NACL_BUILD_SUBARCH == 32 && __PIC__
+#if (NACL_ARCH(NACL_BUILD_ARCH) == NACL_x86 \
+     && NACL_BUILD_SUBARCH == 32 && __PIC__)
   uintptr_t                 pcrel_thunk;
 #endif
 
@@ -170,6 +173,9 @@ struct NaClApp {
 
   struct NaClDesc           *secure_channel;
   struct NaClThread         secure_channel_thr;  /* valid iff secure_channel */
+
+  struct NaClNameService    *name_service;  /* default name server */
+  struct NaClDesc           *name_service_conn_cap;
 
   struct NaClMutex          mu;
   struct NaClCondVar        cv;
@@ -456,7 +462,8 @@ void NaClFillTrampolineRegion(struct NaClApp *nap);
 
 void NaClFillEndOfTextRegion(struct NaClApp *nap);
 
-#if NACL_ARCH(NACL_BUILD_ARCH) == NACL_x86 && NACL_BUILD_SUBARCH == 32 && __PIC__
+#if (NACL_ARCH(NACL_BUILD_ARCH) == NACL_x86 \
+     && NACL_BUILD_SUBARCH == 32 && __PIC__)
 
 int NaClMakePcrelThunk(struct NaClApp *nap);
 

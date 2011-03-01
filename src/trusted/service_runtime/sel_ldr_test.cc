@@ -21,11 +21,11 @@ class SelLdrTest : public testing::Test {
 };
 
 void SelLdrTest::SetUp() {
-  NaClLogModuleInit();
+  NaClNrdAllModulesInit();
 }
 
 void SelLdrTest::TearDown() {
-  NaClLogModuleFini();
+  NaClNrdAllModulesFini();
 }
 
 // set, get, setavail operations on the descriptor table
@@ -87,7 +87,6 @@ TEST_F(SelLdrTest, CreateServiceSocket) {
   struct NaClApp app;
   int ret_code;
 
-  NaClNrdAllModulesInit();
   ret_code = NaClAppCtor(&app);
   ASSERT_EQ(1, ret_code);
 
@@ -98,8 +97,6 @@ TEST_F(SelLdrTest, CreateServiceSocket) {
   NaClCreateServiceSocket(&app);
   ASSERT_TRUE(NULL != app.service_port);
   ASSERT_TRUE(NULL != app.service_address);
-
-  NaClNrdAllModulesFini();
 }
 
 // add and remove operations on the threads table

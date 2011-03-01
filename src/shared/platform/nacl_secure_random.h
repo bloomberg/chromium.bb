@@ -26,6 +26,8 @@
 
 EXTERN_C_BEGIN
 
+struct NaClSecureRngIf;  /* fwd */
+
 void NaClSecureRngModuleInit(void);
 
 void NaClSecureRngModuleFini(void);

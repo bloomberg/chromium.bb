@@ -28,8 +28,6 @@
 #endif
 #endif
 
-struct NaClSecureRngVtbl;
-
 #if USE_CRYPTO
 # include <openssl/aes.h>
 
@@ -65,4 +63,5 @@ struct NaClSecureRng {
 EXTERN_C_END
 
 #endif
-#endif  /* NATIVE_CLIENT_SRC_TRUSTED_PLATFORM_LINUX_NACL_SECURE_RANDOM_TYPES_H__ */
+#endif
+/* NATIVE_CLIENT_SRC_TRUSTED_PLATFORM_LINUX_NACL_SECURE_RANDOM_TYPES_H__ */

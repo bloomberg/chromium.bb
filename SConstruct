@@ -2078,6 +2078,7 @@ nacl_env.Append(
     'tests/mmap/nacl.scons',
     'tests/nacl.scons',
     'tests/nacl_log/nacl.scons',
+    'tests/nameservice/nacl.scons',
     'tests/nanosleep/nacl.scons',
     'tests/native_worker/nacl.scons',
     'tests/noop/nacl.scons',

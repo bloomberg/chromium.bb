@@ -15,6 +15,7 @@
 
 #include "native_client/src/include/nacl_assert.h"
 #include "native_client/src/shared/gio/gio.h"
+#include "native_client/src/trusted/service_runtime/nacl_all_modules.h"
 #include "native_client/src/trusted/service_runtime/nacl_app_thread.h"
 #include "native_client/src/trusted/service_runtime/nacl_desc_effector_ldr.h"
 #include "native_client/src/trusted/service_runtime/nacl_syscall_common.h"
@@ -74,7 +75,7 @@ int main(int argc, char **argv) {
   }
   nacl_file = argv[1];
 
-  NaClLogModuleInit();
+  NaClAllModulesInit();
 
   NaClLogSetVerbosity((NULL == nacl_verbosity)
                       ? 0

@@ -34,6 +34,7 @@
 #include "native_client/src/trusted/desc/nacl_desc_invalid.h"
 #include "native_client/src/trusted/desc/nacl_desc_io.h"
 #include "native_client/src/trusted/desc/nacl_desc_mutex.h"
+#include "native_client/src/trusted/desc/nacl_desc_rng.h"
 #include "native_client/src/trusted/desc/nacl_desc_quota.h"
 #include "native_client/src/trusted/desc/nacl_desc_sync_socket.h"
 
@@ -129,6 +130,7 @@ int (*NaClDescInternalize[NACL_DESC_TYPE_MAX])(struct NaClDesc **,
   NaClDescXferableDataDescInternalize,
   NaClDescInternalizeNotImplemented,  /* imc socket */
   NaClDescQuotaInternalize,           /* quota wrapper */
+  NaClDescRngInternalize,             /* device: rng */
 };
 
 char const *NaClDescTypeString(enum NaClDescTypeTag type_tag) {
@@ -151,6 +153,7 @@ char const *NaClDescTypeString(enum NaClDescTypeTag type_tag) {
     MAP(NACL_DESC_TRANSFERABLE_DATA_SOCKET);
     MAP(NACL_DESC_IMC_SOCKET);
     MAP(NACL_DESC_QUOTA);
+    MAP(NACL_DESC_DEVICE_RNG);
   }
   return "BAD TYPE TAG";
 }

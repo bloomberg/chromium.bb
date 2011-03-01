@@ -15,6 +15,7 @@
 #include <sys/stat.h>
 #include <fcntl.h>
 
+#include "native_client/src/shared/platform/nacl_check.h"
 #include "native_client/src/shared/platform/nacl_log.h"
 #include "native_client/src/shared/platform/nacl_secure_random.h"
 
@@ -22,7 +23,7 @@
 # define NACL_SECURE_RANDOM_SYSTEM_RANDOM_SOURCE "/dev/urandom"
 #endif
 
-static struct NaClSecureRngVtbl const kNaClSecureRngVtbl;
+static struct NaClSecureRngIfVtbl const kNaClSecureRngVtbl;
 
 /* use -1 to ensure a fast failure if module initializer is not called */
 static int  urandom_d = -1;
@@ -78,6 +79,9 @@ int NaClSecureRngCtor(struct NaClSecureRng *self) {
    * (and whether it matters for our usage).
    */
 
+  VCHECK(-1 != urandom_d,
+         ("NaClSecureRngCtor: random descriptor invalid;"
+          " module initialization failed?\n"));
   if (sizeof key != read(urandom_d, key, sizeof key)) {
     return 0;
   }
@@ -154,6 +158,9 @@ static void NaClSecureRngDtor(struct NaClSecureRngIf *vself) {
 }
 
 static void NaClSecureRngFilbuf(struct NaClSecureRng *self) {
+  VCHECK(-1 != urandom_d,
+         ("NaClSecureRngCtor: random descriptor invalid;"
+          " module initialization failed?\n"));
   self->nvalid = read(urandom_d, self->buf, sizeof self->buf);
   if (self->nvalid <= 0) {
     NaClLog(LOG_FATAL, "NaClSecureRngFilbuf failed, read returned %d\n",
@@ -178,7 +185,7 @@ static uint8_t NaClSecureRngGenByte(struct NaClSecureRngIf *vself) {
 
 #endif
 
-static struct NaClSecureRngVtbl const kNaClSecureRngVtbl = {
+static struct NaClSecureRngIfVtbl const kNaClSecureRngVtbl = {
   NaClSecureRngDtor,
   NaClSecureRngGenByte,
   NaClSecureRngDefaultGenUint32,

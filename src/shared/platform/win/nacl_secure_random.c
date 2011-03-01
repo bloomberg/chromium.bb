@@ -16,7 +16,7 @@
 void NaClSecureRngDtor(struct NaClSecureRngIf *vself);
 static uint8_t NaClSecureRngGenByte(struct NaClSecureRngIf *vself);
 
-static struct NaClSecureRngVtbl const kNaClSecureRngVtbl = {
+static struct NaClSecureRngIfVtbl const kNaClSecureRngVtbl = {
   NaClSecureRngDtor,
   NaClSecureRngGenByte,
   NaClSecureRngDefaultGenUint32,
@@ -48,7 +48,7 @@ int NaClSecureRngTestingCtor(struct NaClSecureRng *self,
   return 0;
 }
 
-void NaClSecureRngDtor(struct NaClSecureRngIf *vself) {
+static void NaClSecureRngDtor(struct NaClSecureRngIf *vself) {
   vself->vtbl = NULL;
   return;
 }
@@ -81,4 +81,3 @@ static uint8_t NaClSecureRngGenByte(struct NaClSecureRngIf *vself) {
   }
   return self->buf[--self->nvalid];
 }
-

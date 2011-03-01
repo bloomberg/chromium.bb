@@ -79,6 +79,11 @@ int32_t NaClSysNull(struct NaClAppThread *natp) {
   return 0;
 }
 
+int32_t NaClSysNameService(struct NaClAppThread *natp,
+                           int                  *desc_in_out) {
+  return NaClCommonSysNameService(natp, desc_in_out);
+}
+
 int32_t NaClSysDup(struct NaClAppThread *natp,
                    int                  oldfd) {
   return NaClCommonSysDup(natp, oldfd);

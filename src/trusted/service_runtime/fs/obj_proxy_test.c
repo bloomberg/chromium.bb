@@ -311,7 +311,7 @@ struct WeakRng {
   uint32_t                x;
 };
 
-static struct NaClSecureRngVtbl const kWeakRngVtbl;
+static struct NaClSecureRngIfVtbl const kWeakRngVtbl;
 
 int WeakRngCtor(struct WeakRng *self) {
   self->base.vtbl = &kWeakRngVtbl;
@@ -347,7 +347,7 @@ uint8_t WeakRngGenByte(struct NaClSecureRngIf *vself) {
   return self->x;
 }
 
-static struct NaClSecureRngVtbl const kWeakRngVtbl = {
+static struct NaClSecureRngIfVtbl const kWeakRngVtbl = {
   WeakRngDtor,
   WeakRngGenByte,
   NaClSecureRngDefaultGenUint32,

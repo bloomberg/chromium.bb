@@ -19,18 +19,43 @@ int NaClRefCountCtor(struct NaClRefCount *nrcp) {
   return 0;
 }
 
-static void NaClRefCountDtor(struct NaClRefCount *nrcp) {
-  if (0 != nrcp->ref_count) {
-    NaClLog(LOG_FATAL, ("NaClRefCountDtor invoked on a generic descriptor"
-                        " at 0x%08"NACL_PRIxPTR" with non-zero"
-                        " reference count (%"NACL_PRIdS")\n"),
-            (uintptr_t) nrcp,
-            nrcp->ref_count);
+static void NaClRefCountDtor(struct NaClRefCount  *self) {
+  NaClLog(4, "NaClRefCountDtor(0x%08"NACL_PRIxPTR"), refcount %"NACL_PRIdS
+          ", destroying.\n",
+          self->ref_count,
+          (uintptr_t) self);
+  /*
+   * NB: refcount could be non-zero.  Here's why: if a subclass's Ctor
+   * fails, it will have already run NaClRefCountCtor and have
+   * initialized the mutex and set the ref_count to 1.  Because Unref
+   * would free memory and Ctors aren't factories, the subclass Ctor
+   * cannot just invoke NaClRefCountUnref; instead, it must directly
+   * invoke the base class Dtor.
+   *
+   * We do, however, expect the ref_count to be either 0 or 1.
+   */
+  switch (self->ref_count) {
+    case 0:
+      break;
+    case 1:
+      NaClLog(LOG_WARNING,
+              ("NaClRefCountDtor invoked on a generic refcounted"
+               " object at 0x%08"NACL_PRIxPTR" with refcount 1."
+               "  This legitimately occurs only during subclass"
+               " ctor failures.\n"),
+              (uintptr_t) self);
+      break;
+    default:
+      NaClLog(LOG_FATAL,
+              ("NaClRefCountDtor invoked on a generic refcounted"
+               " object at 0x%08"NACL_PRIxPTR" with non-zero"
+               " reference count (%"NACL_PRIdS")\n"),
+              (uintptr_t) self,
+              self->ref_count);
   }
-  NaClLog(4, "NaClRefCountDtor(0x%08"NACL_PRIxPTR"), refcount 0, destroying.\n",
-          (uintptr_t) nrcp);
-  NaClMutexDtor(&nrcp->mu);
-  nrcp->vtbl = (struct NaClRefCountVtbl const *) NULL;
+
+  NaClMutexDtor(&self->mu);
+  self->vtbl = (struct NaClRefCountVtbl const *) NULL;
 }
 
 struct NaClRefCountVtbl const kNaClRefCountVtbl = {
