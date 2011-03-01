@@ -2529,14 +2529,16 @@ def DumpCompilerVersion(cc, env):
     print "UNKNOWN COMPILER"
 
 
-def SanityCheckAndMapExtraction(all_envs, selected_envs):
+def SanityCheckEnvironments(all_envs):
   # simple completeness check
   for env in all_envs:
     for tag in RELEVANT_CONFIG:
       assert tag in env
       assert env[tag]
 
-  # collect build families and enforce now dup rules
+
+def LinkTrustedEnv(selected_envs):
+  # Collect build families and ensure that we have only one env per family.
   family_map = {}
   for env in selected_envs:
     family = env['NACL_BUILD_FAMILY']
@@ -2555,9 +2557,18 @@ def SanityCheckAndMapExtraction(all_envs, selected_envs):
       """
       assert 0
 
+  # Set TRUSTED_ENV so that tests of untrusted code can locate sel_ldr etc.
+  if 'TRUSTED' in family_map and 'UNTRUSTED' in family_map:
+    family_map['UNTRUSTED']['TRUSTED_ENV'] = family_map['TRUSTED']
+  else:
+    Banner('Warning: "--mode" did not specify both trusted and untrusted '
+           'build environments.  As a result, many tests will not be run.')
+
+
+def DumpEnvironmentInfo(selected_envs):
   if VerboseConfigInfo(pre_base_env):
     Banner("The following environments have been configured")
-    for family, env in family_map.iteritems():
+    for env in selected_envs:
       for tag in RELEVANT_CONFIG:
         assert tag in env
         print "%s:  %s" % (tag, env.subst(env.get(tag)))
@@ -2576,18 +2587,6 @@ def SanityCheckAndMapExtraction(all_envs, selected_envs):
           print "PNACL : %s" % line
 
 
-
-  if 'TRUSTED' not in family_map or 'UNTRUSTED' not in family_map:
-    Banner('W A R N I N G:')
-    print "Not all families have envs this may cause some tests to not run"
-  return family_map
-
-# This is where TRUSTED_ENV is set.
-def ExportSpecialFamilyVars(selected_envs, family_map):
-    for family, family_env in family_map.iteritems():
-      for env in selected_envs:
-        env[family + '_ENV'] = family_env
-
 # ----------------------------------------------------------
 # Blank out defaults.
 Default(None)
@@ -2605,9 +2604,10 @@ if VerboseConfigInfo(pre_base_env):
 
 CheckArguments()
 
+SanityCheckEnvironments(environment_list)
 selected_envs = FilterEnvironments(environment_list)
-family_map = SanityCheckAndMapExtraction(environment_list, selected_envs)
-ExportSpecialFamilyVars(selected_envs, family_map)
+DumpEnvironmentInfo(selected_envs)
+LinkTrustedEnv(selected_envs)
 BuildEnvironments(selected_envs)
 
 # Change default to build everything, but not run tests.
