@@ -65,7 +65,7 @@ void EndHTML(std::string* out) {
 
 void AddHTMLBoldText(const std::string& text, std::string* out) {
   out->append("<b>");
-  out->append(text);
+  out->append(EscapeForHTML(text));
   out->append("</b>");
 }
 
@@ -81,19 +81,22 @@ void AddHTMLListItem(const std::string& element_title,
                      const std::string& element_data,
                      std::string* out) {
   out->append("<li>");
+  // No need to escape element_title since constant string is passed.
   out->append(element_title);
-  out->append(element_data);
+  out->append(EscapeForHTML(element_data));
   out->append("</li>");
 }
 
 void AddHTMLButton(const std::string& title,
                    const std::string& command,
                    std::string* out) {
+  // No need to escape title since constant string is passed.
+  std::string escaped_command = EscapeForHTML(command.c_str());
   base::StringAppendF(out,
                       "<input type=\"button\" value=\"%s\" "
                       "onclick=\"SubmitCommand('%s')\" />",
                       title.c_str(),
-                      command.c_str());
+                      escaped_command.c_str());
 }
 
 }  // namespace
