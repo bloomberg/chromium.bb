@@ -88,39 +88,71 @@ int64 Now() {
 #endif
 }
 
+namespace {
+
+// A ScopedIndexUpdater temporarily removes an entry from an index,
+// and restores it to the index when the scope exits.  This simplifies
+// the common pattern where items need to be removed from an index
+// before updating the field.
+//
+// This class is parameterized on the Indexer traits type, which
+// must define a Comparator and a static bool ShouldInclude
+// function for testing whether the item ought to be included
+// in the index.
+template<typename Indexer>
+class ScopedIndexUpdater {
+ public:
+  ScopedIndexUpdater(const ScopedKernelLock& proof_of_lock,
+                     EntryKernel* entry,
+                     typename Index<Indexer>::Set* index)
+      : entry_(entry),
+        index_(index) {
+    // First call to ShouldInclude happens before the field is updated.
+    if (Indexer::ShouldInclude(entry_)) {
+      CHECK(index_->erase(entry_));
+    }
+  }
+
+  ~ScopedIndexUpdater() {
+    // Second call to ShouldInclude happens after the field is updated.
+    if (Indexer::ShouldInclude(entry_)) {
+      CHECK(index_->insert(entry_).second);
+    }
+  }
+ private:
+  // The entry that was temporarily removed from the index.
+  EntryKernel* entry_;
+  // The index which we are updating.
+  typename Index<Indexer>::Set* const index_;
+};
+
+}  // namespace
+
 ///////////////////////////////////////////////////////////////////////////
-// Compare functions and hashes for the indices.
+// Comparator and filter functions for the indices.
 
-template <Int64Field field_index>
-class SameField {
- public:
-  inline bool operator()(const syncable::EntryKernel* a,
-                         const syncable::EntryKernel* b) const {
-    return a->ref(field_index) == b->ref(field_index);
-  }
-};
+// static
+bool ClientTagIndexer::ShouldInclude(const EntryKernel* a) {
+  return !a->ref(UNIQUE_CLIENT_TAG).empty();
+}
 
-template <Int64Field field_index>
-class HashField {
- public:
-  inline size_t operator()(const syncable::EntryKernel* a) const {
-    return hasher_(a->ref(field_index));
-  }
-  base::hash_set<int64> hasher_;
-};
-
-class LessParentIdAndHandle {
+class ParentIdAndHandleIndexer::Comparator {
  public:
   bool operator() (const syncable::EntryKernel* a,
                    const syncable::EntryKernel* b) const {
-    if (a->ref(PARENT_ID) != b->ref(PARENT_ID)) {
-      return a->ref(PARENT_ID) < b->ref(PARENT_ID);
-    }
+    int cmp = a->ref(PARENT_ID).compare(b->ref(PARENT_ID));
+    if (cmp != 0)
+      return cmp < 0;
 
     // Meta handles are immutable per entry so this is ideal.
     return a->ref(META_HANDLE) < b->ref(META_HANDLE);
   }
 };
+
+// static
+bool ParentIdAndHandleIndexer::ShouldInclude(const EntryKernel* a) {
+  return !a->ref(IS_DEL);
+}
 
 ///////////////////////////////////////////////////////////////////////////
 // EntryKernel
@@ -449,47 +481,29 @@ void Directory::InsertEntry(EntryKernel* entry, ScopedKernelLock* lock) {
   CHECK(entry->ref(UNIQUE_CLIENT_TAG).empty());
 }
 
-void Directory::Undelete(EntryKernel* const entry) {
-  DCHECK(entry->ref(IS_DEL));
-  ScopedKernelLock lock(this);
-  entry->put(IS_DEL, false);
-  entry->mark_dirty(kernel_->dirty_metahandles);
-  CHECK(kernel_->parent_id_child_index->insert(entry).second);
-}
-
-void Directory::Delete(EntryKernel* const entry) {
-  DCHECK(!entry->ref(IS_DEL));
-  entry->put(IS_DEL, true);
-  entry->mark_dirty(kernel_->dirty_metahandles);
-  ScopedKernelLock lock(this);
-  CHECK_EQ(1U, kernel_->parent_id_child_index->erase(entry));
-}
-
 bool Directory::ReindexId(EntryKernel* const entry, const Id& new_id) {
   ScopedKernelLock lock(this);
   if (NULL != GetEntryById(new_id, &lock))
     return false;
-  CHECK_EQ(1U, kernel_->ids_index->erase(entry));
-  entry->put(ID, new_id);
-  CHECK(kernel_->ids_index->insert(entry).second);
+
+  {
+    // Update the indices that depend on the ID field.
+    ScopedIndexUpdater<IdIndexer> updater_a(lock, entry, kernel_->ids_index);
+    entry->put(ID, new_id);
+  }
   return true;
 }
 
 void Directory::ReindexParentId(EntryKernel* const entry,
                                 const Id& new_parent_id) {
   ScopedKernelLock lock(this);
-  if (entry->ref(IS_DEL)) {
+
+  {
+    // Update the indices that depend on the PARENT_ID field.
+    ScopedIndexUpdater<ParentIdAndHandleIndexer> index_updater(lock, entry,
+        kernel_->parent_id_child_index);
     entry->put(PARENT_ID, new_parent_id);
-    return;
   }
-
-  if (entry->ref(PARENT_ID) == new_parent_id) {
-    return;
-  }
-
-  CHECK_EQ(1U, kernel_->parent_id_child_index->erase(entry));
-  entry->put(PARENT_ID, new_parent_id);
-  CHECK(kernel_->parent_id_child_index->insert(entry).second);
 }
 
 void Directory::ClearDirtyMetahandles() {
@@ -1342,15 +1356,23 @@ bool MutableEntry::PutIsDel(bool is_del) {
   if (is_del == kernel_->ref(IS_DEL)) {
     return true;
   }
-  if (is_del) {
+  if (is_del)
     UnlinkFromOrder();
-    dir()->Delete(kernel_);
-    return true;
-  } else {
-    dir()->Undelete(kernel_);
-    PutPredecessor(Id());  // Restores position to the 0th index.
-    return true;
+
+  {
+    ScopedKernelLock lock(dir());
+    // Some indices don't include deleted items and must be updated
+    // upon a value change.
+    ScopedIndexUpdater<ParentIdAndHandleIndexer> updater(lock, kernel_,
+        dir()->kernel_->parent_id_child_index);
+
+    kernel_->put(IS_DEL, is_del);
+    kernel_->mark_dirty(dir()->kernel_->dirty_metahandles);
   }
+
+  if (!is_del)
+    PutPredecessor(Id());  // Restores position to the 0th index.
+  return true;
 }
 
 bool MutableEntry::Put(Int64Field field, const int64& value) {
@@ -1420,6 +1442,7 @@ bool MutableEntry::PutUniqueClientTag(const string& new_tag) {
     return true;
   }
 
+  ScopedKernelLock lock(dir());
   if (!new_tag.empty()) {
     // Make sure your new value is not in there already.
     EntryKernel lookup_kernel_ = *kernel_;
@@ -1429,17 +1452,11 @@ bool MutableEntry::PutUniqueClientTag(const string& new_tag) {
     if (new_tag_conflicts) {
       return false;
     }
+  }
 
-    // We're sure that the new tag doesn't exist now so,
-    // erase the old tag and finish up.
-    dir()->kernel_->client_tag_index->erase(kernel_);
-    kernel_->put(UNIQUE_CLIENT_TAG, new_tag);
-    kernel_->mark_dirty(dir()->kernel_->dirty_metahandles);
-    CHECK(dir()->kernel_->client_tag_index->insert(kernel_).second);
-  } else {
-    // The new tag is empty. Since the old tag is not equal to the new tag,
-    // The old tag isn't empty, and thus must exist in the index.
-    CHECK(dir()->kernel_->client_tag_index->erase(kernel_));
+  {
+    ScopedIndexUpdater<ClientTagIndexer> index_updater(lock, kernel_,
+        dir()->kernel_->client_tag_index);
     kernel_->put(UNIQUE_CLIENT_TAG, new_tag);
     kernel_->mark_dirty(dir()->kernel_->dirty_metahandles);
   }

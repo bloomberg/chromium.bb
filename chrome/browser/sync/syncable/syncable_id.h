@@ -20,7 +20,6 @@ struct sqlite3_stmt;
 
 namespace syncable {
 struct EntryKernel;
-struct IdRowTraits;
 class Id;
 }  // namespace syncable
 
@@ -44,7 +43,6 @@ std::ostream& operator<<(std::ostream& out, const Id& id);
 class Id {
   friend int UnpackEntry(SQLStatement* statement,
                          syncable::EntryKernel** kernel);
-  friend struct syncable::IdRowTraits;
   friend int BindFields(const EntryKernel& entry, SQLStatement* statement);
   friend std::ostream& operator<<(std::ostream& out, const Id& id);
   friend class MockConnectionManager;
@@ -77,6 +75,9 @@ class Id {
   }
   inline void Clear() {
     s_ = "r";
+  }
+  inline int compare(const Id& that) const {
+    return s_.compare(that.s_);
   }
   // Must never allow id == 0 or id < 0 to compile.
   inline bool operator == (const Id& that) const {

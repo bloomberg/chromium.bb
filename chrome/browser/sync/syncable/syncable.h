@@ -210,8 +210,6 @@ enum CreateNewUpdateItem {
   CREATE_NEW_UPDATE_ITEM
 };
 
-typedef std::set<std::string> AttributeKeySet;
-
 typedef std::set<int64> MetahandleSet;
 
 // Why the singular enums?  So the code compile-time dispatches instead of
@@ -539,12 +537,7 @@ class MutableEntry : public Entry {
   DISALLOW_COPY_AND_ASSIGN(MutableEntry);
 };
 
-template <Int64Field field_index>
-class SameField;
-template <Int64Field field_index>
-class HashField;
 class LessParentIdAndHandle;
-class LessMultiIncusionTargetAndMetahandle;
 template <typename FieldType, FieldType field_index>
 class LessField;
 class LessEntryMetaHandles {
@@ -555,6 +548,72 @@ class LessEntryMetaHandles {
   }
 };
 typedef std::set<EntryKernel, LessEntryMetaHandles> OriginalEntries;
+
+// How syncable indices & Indexers work.
+//
+// The syncable Directory maintains several indices on the Entries it tracks.
+// The indices follow a common pattern:
+//   (a) The index allows efficient lookup of an Entry* with particular
+//       field values.  This is done by use of a std::set<> and a custom
+//       comparator.
+//   (b) There may be conditions for inclusion in the index -- for example,
+//       deleted items might not be indexed.
+//   (c) Because the index set contains only Entry*, one must be careful
+//       to remove Entries from the set before updating the value of
+//       an indexed field.
+// The traits of an index are a Comparator (to define the set ordering) and a
+// ShouldInclude function (to define the conditions for inclusion).  For each
+// index, the traits are grouped into a class called an Indexer which
+// can be used as a template type parameter.
+
+// Traits type for metahandle index.
+struct MetahandleIndexer {
+  // This index is of the metahandle field values.
+  typedef LessField<MetahandleField, META_HANDLE> Comparator;
+
+  // This index includes all entries.
+  inline static bool ShouldInclude(const EntryKernel* a) {
+    return true;
+  }
+};
+
+// Traits type for ID field index.
+struct IdIndexer {
+  // This index is of the ID field values.
+  typedef LessField<IdField, ID> Comparator;
+
+  // This index includes all entries.
+  inline static bool ShouldInclude(const EntryKernel* a) {
+    return true;
+  }
+};
+
+// Traits type for unique client tag index.
+struct ClientTagIndexer {
+  // This index is of the client-tag values.
+  typedef LessField<StringField, UNIQUE_CLIENT_TAG> Comparator;
+
+  // Items are only in this index if they have a non-empty client tag value.
+  static bool ShouldInclude(const EntryKernel* a);
+};
+
+// This index contains EntryKernels ordered by parent ID and metahandle.
+// It allows efficient lookup of the children of a given parent.
+struct ParentIdAndHandleIndexer {
+  // This index is of the parent ID and metahandle.  We use a custom
+  // comparator.
+  class Comparator;
+
+  // This index does not include deleted items.
+  static bool ShouldInclude(const EntryKernel* a);
+};
+
+// Given an Indexer providing the semantics of an index, defines the
+// set type used to actually contain the index.
+template <typename Indexer>
+struct Index {
+  typedef std::set<EntryKernel*, typename Indexer::Comparator> Set;
+};
 
 // a WriteTransaction has a writer tag describing which body of code is doing
 // the write. This is defined up here since DirectoryChangeEvent also contains
@@ -597,9 +656,6 @@ struct DirectoryChangeEvent {
     return SHUTDOWN == e.todo;
   }
 };
-
-// A list of metahandles whose metadata should not be purged.
-typedef std::multiset<int64> Pegs;
 
 // The name Directory in this case means the entire directory
 // structure within a single user account.
@@ -779,8 +835,6 @@ class Directory {
 
   // These don't do semantic checking.
   // The semantic checking is implemented higher up.
-  void Undelete(EntryKernel* const entry);
-  void Delete(EntryKernel* const entry);
   void UnlinkEntryFromOrder(EntryKernel* entry,
                             WriteTransaction* trans,
                             ScopedKernelLock* lock);
@@ -917,27 +971,19 @@ class Directory {
 
   Directory& operator = (const Directory&);
 
-  // TODO(sync):  If lookups and inserts in these sets become
-  // the bottle-neck, then we can use hash-sets instead.  But
-  // that will require using #ifdefs and compiler-specific code,
-  // so use standard sets for now.
  public:
-  typedef std::set<EntryKernel*, LessField<MetahandleField, META_HANDLE> >
-    MetahandlesIndex;
-  typedef std::set<EntryKernel*, LessField<IdField, ID> > IdsIndex;
+  typedef Index<MetahandleIndexer>::Set MetahandlesIndex;
+  typedef Index<IdIndexer>::Set IdsIndex;
   // All entries in memory must be in both the MetahandlesIndex and
   // the IdsIndex, but only non-deleted entries will be the
   // ParentIdChildIndex.
-  // This index contains EntryKernels ordered by parent ID and metahandle.
-  // It allows efficient lookup of the children of a given parent.
-  typedef std::set<EntryKernel*, LessParentIdAndHandle> ParentIdChildIndex;
+  typedef Index<ParentIdAndHandleIndexer>::Set ParentIdChildIndex;
 
   // Contains both deleted and existing entries with tags.
   // We can't store only existing tags because the client would create
   // items that had a duplicated ID in the end, resulting in a DB key
   // violation. ID reassociation would fail after an attempted commit.
-  typedef std::set<EntryKernel*,
-                   LessField<StringField, UNIQUE_CLIENT_TAG> > ClientTagIndex;
+  typedef Index<ClientTagIndexer>::Set ClientTagIndex;
 
  protected:
   // Used by tests.
@@ -972,8 +1018,10 @@ class Directory {
     // Never hold the mutex and do anything with the database or any
     // other buffered IO.  Violating this rule will result in deadlock.
     base::Lock mutex;
-    MetahandlesIndex* metahandles_index;  // Entries indexed by metahandle
-    IdsIndex* ids_index;  // Entries indexed by id
+    // Entries indexed by metahandle
+    MetahandlesIndex* metahandles_index;
+    // Entries indexed by id
+    IdsIndex* ids_index;
     ParentIdChildIndex* parent_id_child_index;
     ClientTagIndex* client_tag_index;
     // So we don't have to create an EntryKernel every time we want to
