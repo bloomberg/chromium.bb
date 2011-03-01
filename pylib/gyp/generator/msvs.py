@@ -288,22 +288,49 @@ def _PrepareAction(spec, rule, has_input_path):
                            has_input_path, quote_cmd)
 
 
-def _PickPrimaryInput(inputs):
-  # Pick second input as the primary one, unless there's only one.
-  # TODO(bradnelson): this is a bit of a hack,
-  # find something more general.
-  if len(inputs) > 1:
-    return inputs[1]
-  else:
-    return inputs[0]
+def _AddActionStep(actions_dict, inputs, outputs, description, command):
+  """Merge action into an existing list of actions.
+
+  Care must be taken so that actions which have overlapping inputs either don't
+  get assigned to the same input, or get collapsed into one.
+
+  Arguments:
+    actions_dict: dictionary keyed on input name, which maps to a list of
+      dicts describing the actions attached to that input file.
+    inputs: list of inputs
+    outputs: list of outputs
+    description: description of the action
+    command: command line to execute
+  """
+  # Require there to be at least one input (call sites will ensure this).
+  assert inputs
+
+  action = {
+      'inputs': inputs,
+      'outputs': outputs,
+      'description': description,
+      'command': command,
+  }
+
+  # Pick where to stick this action.
+  # While less than optimal in terms of build time, attach them to the first
+  # input for now.
+  chosen_input = inputs[0]
+
+  # Add it there.
+  if chosen_input not in actions_dict:
+    actions_dict[chosen_input] = []
+  actions_dict[chosen_input].append(action)
 
 
-def _AddCustomBuildToolForMSVS(p, spec, inputs, outputs, description, cmd):
+def _AddCustomBuildToolForMSVS(p, spec, primary_input,
+                               inputs, outputs, description, cmd):
   """Add a custom build tool to execute something.
 
   Arguments:
     p: the target project
     spec: the target project dict
+    primary_input: input file to attach the build tool to
     inputs: list of inputs
     outputs: list of outputs
     description: description of the action
@@ -318,11 +345,42 @@ def _AddCustomBuildToolForMSVS(p, spec, inputs, outputs, description, cmd):
       'Outputs': ';'.join(outputs),
       'CommandLine': cmd,
       })
-  primary_input = _PickPrimaryInput(inputs)
   # Add to the properties of primary input for each config.
   for config_name, c_data in spec['configurations'].iteritems():
-    p.AddFileConfig(primary_input,
+    p.AddFileConfig(_FixPath(primary_input),
                     _ConfigFullName(config_name, c_data), tools=[tool])
+
+
+def _AddAccumulatedActions(p, spec, actions_dict):
+  """Add actions accumulated into an actions_dict, merging as needed.
+
+  Arguments:
+    p: the target project
+    spec: the target project dict
+    actions_dict: dictionary keyed on input name, which maps to a list of
+        dicts describing the actions attached to that input file.
+  """
+  for input in actions_dict:
+    inputs = set()
+    outputs = set()
+    description = []
+    command = []
+    for action in actions_dict[input]:
+      inputs.update(set(action['inputs']))
+      outputs.update(set(action['outputs']))
+      if description:
+        description.append(', and also ')
+      description.append(action['description'])
+      if command:
+        command.append(' && ')
+      command.append(action['command'])
+    # Add the custom build step for one input file.
+    _AddCustomBuildToolForMSVS(p, spec,
+                               primary_input=input,
+                               inputs=inputs,
+                               outputs=outputs,
+                               description=''.join(description),
+                               cmd=''.join(command))
 
 
 def _RuleExpandPath(path, input_file):
@@ -484,16 +542,15 @@ def _GenerateExternalRules(rules, output_dir, spec,
          '-j', '${NUMBER_OF_PROCESSORS_PLUS_1}',
          '-f', filename]
   cmd = _PrepareActionRaw(spec, cmd, True, False, True)
-  # TODO(bradnelson): this won't be needed if we have a better way to pick
-  #                   the primary input.
+  # Insert makefile as 0'th input, so it gets the action attached there,
+  # as this is easier to understand from in the IDE.
   all_inputs = list(all_inputs)
-  all_inputs.insert(1, filename)
-  actions_to_add.append({
-      'inputs': [_FixPath(i) for i in all_inputs],
-      'outputs': [_FixPath(i) for i in all_outputs],
-      'description': 'Running %s' % cmd,
-      'cmd': cmd,
-      })
+  all_inputs.insert(0, filename)
+  _AddActionStep(actions_to_add,
+                 inputs=[_FixPath(i) for i in all_inputs],
+                 outputs=[_FixPath(i) for i in all_outputs],
+                 description='Running %s' % cmd,
+                 command=cmd)
 
 
 def _EscapeEnvironmentVariableExpansion(s):
@@ -596,8 +653,8 @@ def _GenerateRulesForMSVS(p, output_dir, options, spec,
     _GenerateExternalRules(rules_external, output_dir, spec,
                            sources, options, actions_to_add)
   _AdjustSourcesForRules(rules, sources, excluded_sources)
-  
-  
+
+
 def _AdjustSourcesForRules(rules, sources, excluded_sources):
   # Add outputs generated by each rule (if applicable).
   for rule in rules:
@@ -613,6 +670,19 @@ def _AdjustSourcesForRules(rules, sources, excluded_sources):
         sources.update(inputs)
         excluded_sources.update(inputs)
         sources.update(outputs)
+
+
+def _FilterActionsFromExcluded(excluded_sources, actions_to_add):
+  """Take inputs with actions attached out of the list of exclusions.
+
+  Arguments:
+    excluded_sources: list of source files not to be built.
+    actions_to_add: dict of actions keyed on source file they're attached to.
+  Returns:
+    excluded_sources with files that have actions attached removed.
+  """
+  must_keep = set([_FixPath(s) for s in actions_to_add.keys()])
+  return [s for s in excluded_sources if s not in must_keep]
 
 
 def _GetDefaultConfiguration(spec):
@@ -684,30 +754,29 @@ def _GenerateMSVSProject(project, options, version):
   sources, excluded_sources = _PrepareListOfSources(spec, project.build_file)
 
   # Add rules.
-  actions_to_add = []
+  actions_to_add = {}
   _GenerateRulesForMSVS(p, gyp_dir, options, spec,
                         sources, excluded_sources,
                         actions_to_add)
-  sources, excluded_sources, excluded_idl = _AdjustSourcesAndConverToFilterHierarchy(spec, options,
-      gyp_dir, sources, excluded_sources)
+  sources, excluded_sources, excluded_idl = (
+      _AdjustSourcesAndConvertToFilterHierarchy(
+          spec, options, gyp_dir, sources, excluded_sources))
 
   # Add in files.
   p.AddFiles(sources)
 
-  # Add deferred actions to add.
-  for a in actions_to_add:
-    _AddCustomBuildToolForMSVS(p, spec,
-                               inputs=a['inputs'],
-                               outputs=a['outputs'],
-                               description=a['description'],
-                               cmd=a['cmd'])
-
-  _ExcludeFilesFromBeingBuilt(p, spec, excluded_sources, excluded_idl)
   _AddToolFilesToMSVS(p, spec)
   _HandlePreCompileHeaderStubs(p, spec)
-  _AddActionsToMSVS(p, spec)
+  _AddActionsToMSVS(actions_to_add, spec, project.build_file)
+  _AddCopiesForMSVS(actions_to_add, spec)
   _WriteMSVSUserFile(project.path, version, spec)
-  _AddCopiesForMSVS(p, spec)
+
+  # NOTE: this stanza must appear after all actions have been decided.
+  # Don't excluded sources with actions attached, or they won't run.
+  excluded_sources = _FilterActionsFromExcluded(
+      excluded_sources, actions_to_add)
+  _ExcludeFilesFromBeingBuilt(p, spec, excluded_sources, excluded_idl)
+  _AddAccumulatedActions(p, spec, actions_to_add)
 
   # Write it out.
   p.Write()
@@ -1023,10 +1092,12 @@ def _AddNormalizedSources(sources_set, sources_array):
   sources_set.update(set(sources))
 
 def _PrepareListOfSources(spec, build_file):
-  """Prepare list of sources and excluded sources. Besides the sources
-     specified directly in the spec, adds the gyp file so that a change
-     to it will cause a re-compile.  Also adds appropriate sources for
-     actions and copies.
+  """Prepare list of sources and excluded sources.
+
+  Besides the sources specified directly in the spec, adds the gyp file so
+  that a change to it will cause a re-compile. Also adds appropriate sources
+  for actions and copies. Assumes later stage will un-exclude files which
+  have custom build steps attached.
 
   Arguments:
     spec: The target dictionary containing the properties of the target.
@@ -1038,22 +1109,15 @@ def _PrepareListOfSources(spec, build_file):
   _AddNormalizedSources(sources, spec.get('sources', []))
   excluded_sources = set()
   # Add in the gyp file.
-  gyp_file = os.path.split(build_file)[1]
+  gyp_file = posixpath.split(build_file)[1]
   sources.add(_NormalizedSource(gyp_file))
   # Add in 'action' inputs and outputs.
   for a in spec.get('actions', []):
-    inputs = a.get('inputs')
-    if not inputs:
-      # This is an action with no inputs.  Make the primary input
-      # be the .gyp file itself so Visual Studio has a place to
-      # hang the custom build rule.
-      inputs = [gyp_file]
-      a['inputs'] = inputs
+    inputs = a.get('inputs', [])
     inputs = [_NormalizedSource(i) for i in inputs]
-    primary_input = _PickPrimaryInput(inputs)
+    # Add all inputs to sources and excluded sources.
     inputs = set(inputs)
     sources.update(inputs)
-    inputs.remove(primary_input)
     excluded_sources.update(inputs)
     if int(a.get('process_outputs_as_sources', False)):
       _AddNormalizedSources(sources, a.get('outputs', []))
@@ -1063,7 +1127,8 @@ def _PrepareListOfSources(spec, build_file):
   return (sources, excluded_sources)
 
 
-def _AdjustSourcesAndConverToFilterHierarchy(spec, options, gyp_dir, sources, excluded_sources):
+def _AdjustSourcesAndConvertToFilterHierarchy(
+    spec, options, gyp_dir, sources, excluded_sources):
   """Adjusts the list of sources and excluded sources.
      Also converts the sets to lists.
 
@@ -1184,16 +1249,19 @@ def _HandlePreCompileHeaderStubs(p, spec):
                       {}, tools=[tool])
 
 
-def _AddActionsToMSVS(p, spec):
+def _AddActionsToMSVS(actions_to_add, spec, gyp_file):
   # Add actions.
   actions = spec.get('actions', [])
   for a in actions:
     cmd = _PrepareAction(spec, a, has_input_path=False)
-    _AddCustomBuildToolForMSVS(p, spec,
-                               inputs=a.get('inputs', []),
-                               outputs=a.get('outputs', []),
-                               description=a.get('message', a['action_name']),
-                               cmd=cmd)
+    # Attach actions to the gyp file if nothing else is there.
+    inputs = a.get('inputs') or [gyp_file]
+    # Add the action.
+    _AddActionStep(actions_to_add,
+                   inputs=inputs,
+                   outputs=a.get('outputs', []),
+                   description=a.get('message', a['action_name']),
+                   command=cmd)
 
 
 def _WriteMSVSUserFile(project_path, version, spec):
@@ -1217,11 +1285,11 @@ def _WriteMSVSUserFile(project_path, version, spec):
   user_file.Write()
 
 
-def _AddCopiesForMSVS(p, spec):
+def _AddCopiesForMSVS(actions_to_add, spec):
   copies = _GetCopies(spec)
   for inputs, outputs, cmd, description in copies:
-    _AddCustomBuildToolForMSVS(p, spec, inputs=inputs, outputs=outputs,
-                               description=description, cmd=cmd)
+    _AddActionStep(actions_to_add, inputs=inputs, outputs=outputs,
+                   description=description, command=cmd)
 
 
 def _GetCopies(spec):
@@ -1438,7 +1506,7 @@ def GenerateOutput(target_list, target_dicts, data, params):
   # Figure out all the projects that will be generated and their guids
   project_objects = _CreateProjectObjects(target_list, target_dicts, options,
                                           msvs_version)
-  
+
   # Generate each project.
   for project in project_objects.values():
     fixpath_prefix = project.fixpath_prefix
