@@ -142,7 +142,6 @@ TEST(GpuBlacklistTest, BlacklistLogic) {
             static_cast<uint32>(GpuFeatureFlags::kGpuFeatureWebgl));
 #endif
 
-
   // Blacklist a vendor on Linux only.
   const std::string vendor_linux_json =
       "{\n"
@@ -162,6 +161,74 @@ TEST(GpuBlacklistTest, BlacklistLogic) {
       "  ]\n"
       "}";
   EXPECT_TRUE(blacklist.LoadGpuBlacklist(vendor_linux_json, false));
+  flags = blacklist.DetermineGpuFeatureFlags(
+      GpuBlacklist::kOsMacosx, os_version.get(), gpu_info);
+  EXPECT_EQ(flags.flags(), 0u);
+  flags = blacklist.DetermineGpuFeatureFlags(
+      GpuBlacklist::kOsWin, os_version.get(), gpu_info);
+  EXPECT_EQ(flags.flags(), 0u);
+  flags = blacklist.DetermineGpuFeatureFlags(
+      GpuBlacklist::kOsLinux, os_version.get(), gpu_info);
+  EXPECT_EQ(
+      flags.flags(),
+      static_cast<uint32>(GpuFeatureFlags::kGpuFeatureAccelerated2dCanvas));
+
+  // Blacklist all cards in Linux except NVIDIA.
+  const std::string linux_except_nvidia_json =
+      "{\n"
+      "  \"name\": \"gpu blacklist\",\n"
+      "  \"version\": \"0.1\",\n"
+      "  \"entries\": [\n"
+      "    {\n"
+      "      \"id\": \"1\",\n"
+      "      \"os\": {\n"
+      "        \"type\": \"linux\"\n"
+      "      },\n"
+      "      \"exceptions\": [\n"
+      "        {\n"
+      "          \"vendor_id\": \"0x10de\"\n"
+      "        }\n"
+      "      ],\n"
+      "      \"blacklist\": [\n"
+      "        \"accelerated_2d_canvas\"\n"
+      "      ]\n"
+      "    }\n"
+      "  ]\n"
+      "}";
+  EXPECT_TRUE(blacklist.LoadGpuBlacklist(linux_except_nvidia_json, false));
+  flags = blacklist.DetermineGpuFeatureFlags(
+      GpuBlacklist::kOsMacosx, os_version.get(), gpu_info);
+  EXPECT_EQ(flags.flags(), 0u);
+  flags = blacklist.DetermineGpuFeatureFlags(
+      GpuBlacklist::kOsWin, os_version.get(), gpu_info);
+  EXPECT_EQ(flags.flags(), 0u);
+  flags = blacklist.DetermineGpuFeatureFlags(
+      GpuBlacklist::kOsLinux, os_version.get(), gpu_info);
+  EXPECT_EQ(flags.flags(), 0u);
+
+  // Blacklist all cards in Linux except Intel.
+  const std::string linux_except_intel_json =
+      "{\n"
+      "  \"name\": \"gpu blacklist\",\n"
+      "  \"version\": \"0.1\",\n"
+      "  \"entries\": [\n"
+      "    {\n"
+      "      \"id\": \"1\",\n"
+      "      \"os\": {\n"
+      "        \"type\": \"linux\"\n"
+      "      },\n"
+      "      \"exceptions\": [\n"
+      "        {\n"
+      "          \"vendor_id\": \"0x8086\"\n"
+      "        }\n"
+      "      ],\n"
+      "      \"blacklist\": [\n"
+      "        \"accelerated_2d_canvas\"\n"
+      "      ]\n"
+      "    }\n"
+      "  ]\n"
+      "}";
+  EXPECT_TRUE(blacklist.LoadGpuBlacklist(linux_except_intel_json, false));
   flags = blacklist.DetermineGpuFeatureFlags(
       GpuBlacklist::kOsMacosx, os_version.get(), gpu_info);
   EXPECT_EQ(flags.flags(), 0u);

@@ -176,16 +176,18 @@ GpuBlacklist::StringInfo::Op GpuBlacklist::StringInfo::StringToOp(
 
 GpuBlacklist::GpuBlacklistEntry*
 GpuBlacklist::GpuBlacklistEntry::GetGpuBlacklistEntryFromValue(
-    DictionaryValue* value) {
+    DictionaryValue* value, bool top_level) {
   if (value == NULL)
     return NULL;
 
   GpuBlacklistEntry* entry = new GpuBlacklistEntry();
 
-  std::string id;
-  if (!value->GetString("id", &id) || !entry->SetId(id)) {
-    delete entry;
-    return NULL;
+  if (top_level) {
+    std::string id;
+    if (!value->GetString("id", &id) || !entry->SetId(id)) {
+      delete entry;
+      return NULL;
+    }
   }
 
   DictionaryValue* os_value = NULL;
@@ -263,30 +265,50 @@ GpuBlacklist::GpuBlacklistEntry::GetGpuBlacklistEntryFromValue(
     }
   }
 
-  ListValue* blacklist_value = NULL;
-  if (!value->GetList("blacklist", &blacklist_value)) {
-    delete entry;
-    return NULL;
-  }
-  std::vector<std::string> blacklist;
-  for (size_t i = 0; i < blacklist_value->GetSize(); ++i) {
-    std::string feature;
-    if (blacklist_value->GetString(i, &feature)) {
-      blacklist.push_back(feature);
-    } else {
+  if (top_level) {
+    ListValue* blacklist_value = NULL;
+    if (!value->GetList("blacklist", &blacklist_value)) {
+      delete entry;
+      return NULL;
+    }
+    std::vector<std::string> blacklist;
+    for (size_t i = 0; i < blacklist_value->GetSize(); ++i) {
+      std::string feature;
+      if (blacklist_value->GetString(i, &feature)) {
+        blacklist.push_back(feature);
+      } else {
+        delete entry;
+        return NULL;
+      }
+    }
+    if (!entry->SetBlacklistedFeatures(blacklist)) {
       delete entry;
       return NULL;
     }
   }
-  if (!entry->SetBlacklistedFeatures(blacklist)) {
-    delete entry;
-    return NULL;
+
+  if (top_level) {
+    ListValue* exception_list_value = NULL;
+    if (value->GetList("exceptions", &exception_list_value)) {
+      for (size_t i = 0; i < exception_list_value->GetSize(); ++i) {
+        DictionaryValue* exception_value = NULL;
+        if (!exception_list_value->GetDictionary(i, &exception_value))
+          continue;
+        GpuBlacklistEntry* exception = GetGpuBlacklistEntryFromValue(
+            exception_value, false);
+        if (exception)
+          entry->AddException(exception);
+      }
+    }
   }
 
   return entry;
 }
 
-GpuBlacklist::GpuBlacklistEntry::~GpuBlacklistEntry() {}
+GpuBlacklist::GpuBlacklistEntry::~GpuBlacklistEntry() {
+  for (size_t i = 0; i < exceptions_.size(); ++i)
+    delete exceptions_[i];
+}
 
 GpuBlacklist::GpuBlacklistEntry::GpuBlacklistEntry()
     : id_(0),
@@ -377,6 +399,11 @@ bool GpuBlacklist::GpuBlacklistEntry::SetBlacklistedFeatures(
   return true;
 }
 
+void GpuBlacklist::GpuBlacklistEntry::AddException(
+    GpuBlacklistEntry* exception) {
+  exceptions_.push_back(exception);
+}
+
 bool GpuBlacklist::GpuBlacklistEntry::Contains(
     OsType os_type, const Version& os_version, const GPUInfo& gpu_info) const {
   DCHECK(os_type != kOsAny);
@@ -399,6 +426,10 @@ bool GpuBlacklist::GpuBlacklistEntry::Contains(
   if (gl_renderer_info_.get() != NULL &&
       !gl_renderer_info_->Contains(gpu_info.gl_renderer()))
     return false;
+  for (size_t i = 0; i < exceptions_.size(); ++i) {
+    if (exceptions_[i]->Contains(os_type, os_version, gpu_info))
+    return false;
+  }
   return true;
 }
 
@@ -458,7 +489,7 @@ bool GpuBlacklist::LoadGpuBlacklist(const DictionaryValue& parsed_json,
     if (!valid)
       break;
     GpuBlacklistEntry* entry =
-        GpuBlacklistEntry::GetGpuBlacklistEntryFromValue(list_item);
+        GpuBlacklistEntry::GetGpuBlacklistEntryFromValue(list_item, true);
     if (entry == NULL)
       break;
     if (entry->id() > max_entry_id)

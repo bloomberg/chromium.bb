@@ -157,8 +157,9 @@ class GpuBlacklist {
   class GpuBlacklistEntry {
    public:
     // Constructs GpuBlacklistEntry from DictionaryValue loaded from json.
+    // Top-level entry must have an id number.  Others are exceptions.
     static GpuBlacklistEntry* GetGpuBlacklistEntryFromValue(
-        DictionaryValue* value);
+        DictionaryValue* value, bool top_level);
 
     // Determines if a given os/gc/driver is included in the Entry set.
     bool Contains(OsType os_type,
@@ -203,6 +204,8 @@ class GpuBlacklist {
     bool SetBlacklistedFeatures(
         const std::vector<std::string>& blacklisted_features);
 
+    void AddException(GpuBlacklistEntry* exception);
+
     uint32 id_;
     scoped_ptr<OsInfo> os_info_;
     uint32 vendor_id_;
@@ -211,6 +214,7 @@ class GpuBlacklist {
     scoped_ptr<VersionInfo> driver_version_info_;
     scoped_ptr<StringInfo> gl_renderer_info_;
     scoped_ptr<GpuFeatureFlags> feature_flags_;
+    std::vector<GpuBlacklistEntry*> exceptions_;
   };
 
   // Gets the current OS type.

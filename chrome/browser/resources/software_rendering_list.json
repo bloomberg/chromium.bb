@@ -22,7 +22,8 @@
 // 4. "driver_vendor" is a STRING structure (defined below).
 // 5. "driver_version" is a VERSION structure (defined below).
 // 6. "gl_renderer" is a STRING structure (defined below).
-// 7. "blacklist" is a list of gpu feature strings, valid values include
+// 7: "Exceptions" is a list of entries.
+// 8. "blacklist" is a list of gpu feature strings, valid values include
 //    "accelerated_2d_canvas", "accelerated_compositing", "webgl", and "all".
 //    Currently whatever feature is selected, the effect is the same as "all",
 //    i.e., it's not supported to turn off one GPU feature and not the others.
