@@ -83,7 +83,7 @@ struct PciInterface {
 PciInterface* InitializeLibPci(const char* lib_name) {
   void* handle = dlopen(lib_name, RTLD_LAZY);
   if (handle == NULL) {
-    LOG(ERROR) << "Fail to dlopen libpci";
+    LOG(INFO) << "Failed to dlopen " << lib_name;
     return NULL;
   }
   PciInterface* interface = new struct PciInterface;
@@ -106,7 +106,7 @@ PciInterface* InitializeLibPci(const char* lib_name) {
       interface->pci_scan_bus == NULL ||
       interface->pci_fill_info == NULL ||
       interface->pci_lookup_name == NULL) {
-    LOG(ERROR) << "Missing required function(s) from libpci";
+    LOG(ERROR) << "Missing required function(s) from " << lib_name;
     dlclose(handle);
     delete interface;
     return NULL;
@@ -158,7 +158,11 @@ bool CollectVideoCardInfo(GPUInfo* gpu_info) {
   // TODO(zmo): be more flexible about library name.
   PciInterface* interface = InitializeLibPci("libpci.so.3");
   if (interface == NULL)
+    interface = InitializeLibPci("libpci.so");
+  if (interface == NULL) {
+    LOG(ERROR) << "Failed to locate libpci";
     return false;
+  }
 
   PciAccess* access = (interface->pci_alloc)();
   DCHECK(access != NULL);
