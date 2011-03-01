@@ -123,22 +123,6 @@ bool LoadMemoryProfiler() {
   return prof_module != NULL;
 }
 
-#pragma optimize("", off)
-
-// Handlers to silently dump the current process when there is an assert in
-// chrome.
-void ChromeAssert(const std::string& str) {
-  // Get the breakpad pointer from chrome.exe
-  typedef void (__cdecl *DumpProcessFunction)();
-  DumpProcessFunction DumpProcess = reinterpret_cast<DumpProcessFunction>(
-      ::GetProcAddress(::GetModuleHandle(chrome::kBrowserProcessExecutableName),
-                       "DumpProcess"));
-  if (DumpProcess)
-    DumpProcess();
-}
-
-#pragma optimize("", on)
-
 // Early versions of Chrome incorrectly registered a chromehtml: URL handler,
 // which gives us nothing but trouble. Avoid launching chrome this way since
 // some apps fail to properly escape arguments.
@@ -704,15 +688,6 @@ int ChromeMain(int argc, char** argv) {
   // happen before we process any URLs with the affected schemes, and must be
   // done in all processes that work with these URLs (i.e. including renderers).
   chrome::RegisterChromeSchemes();
-
-#ifdef NDEBUG
-  if (command_line.HasSwitch(switches::kSilentDumpOnDCHECK) &&
-      command_line.HasSwitch(switches::kEnableDCHECK)) {
-#if defined(OS_WIN)
-    logging::SetLogReportHandler(ChromeAssert);
-#endif
-  }
-#endif  // NDEBUG
 
   if (SubprocessNeedsResourceBundle(process_type)) {
     // Initialize ResourceBundle which handles files loaded from external

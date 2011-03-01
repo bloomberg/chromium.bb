@@ -43,32 +43,36 @@
 #include "base/threading/thread_restrictions.h"
 #include "base/time.h"
 #include "base/utf_string_conversions.h"
+#include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/env_vars.h"
 #include "ipc/ipc_logging.h"
+
 #if defined(OS_WIN)
 #include "base/logging_win.h"
 #include <initguid.h>
 #endif
 
+namespace {
+
 // When true, this means that error dialogs should not be shown.
-static bool dialogs_are_suppressed_ = false;
+bool dialogs_are_suppressed_ = false;
 
 // This should be true for exactly the period between the end of
 // InitChromeLogging() and the beginning of CleanupChromeLogging().
-static bool chrome_logging_initialized_ = false;
+bool chrome_logging_initialized_ = false;
 
 // Set if we caled InitChromeLogging() but failed to initialize.
-static bool chrome_logging_failed_ = false;
+bool chrome_logging_failed_ = false;
 
 // This should be true for exactly the period between the end of
 // InitChromeLogging() and the beginning of CleanupChromeLogging().
-static bool chrome_logging_redirected_ = false;
+bool chrome_logging_redirected_ = false;
 
 #if defined(OS_WIN)
 // {7FE69228-633E-4f06-80C1-527FEA23E3A7}
-static const GUID kChromeTraceProviderName = {
+const GUID kChromeTraceProviderName = {
     0x7fe69228, 0x633e, 0x4f06,
         { 0x80, 0xc1, 0x52, 0x7f, 0xea, 0x23, 0xe3, 0xa7 } };
 #endif
@@ -77,16 +81,29 @@ static const GUID kChromeTraceProviderName = {
 // silenced.  To record a new error, pass the log string associated
 // with that error in the str parameter.
 MSVC_DISABLE_OPTIMIZE();
-static void SilentRuntimeAssertHandler(const std::string& str) {
+void SilentRuntimeAssertHandler(const std::string& str) {
   base::debug::BreakDebugger();
 }
-static void SilentRuntimeReportHandler(const std::string& str) {
+void SilentRuntimeReportHandler(const std::string& str) {
 }
+#if defined(OS_WIN)
+// Handler to silently dump the current process when there is an assert in
+// chrome.
+void DumpProcessAssertHandler(const std::string& str) {
+  // Get the breakpad pointer from chrome.exe
+  typedef void (__cdecl *DumpProcessFunction)();
+  DumpProcessFunction DumpProcess = reinterpret_cast<DumpProcessFunction>(
+      ::GetProcAddress(::GetModuleHandle(chrome::kBrowserProcessExecutableName),
+                       "DumpProcess"));
+  if (DumpProcess)
+    DumpProcess();
+}
+#endif  // OS_WIN
 MSVC_ENABLE_OPTIMIZE();
 
 // Suppresses error/assertion dialogs and enables the logging of
 // those errors into silenced_errors_.
-static void SuppressDialogs() {
+void SuppressDialogs() {
   if (dialogs_are_suppressed_)
     return;
 
@@ -105,6 +122,8 @@ static void SuppressDialogs() {
 
   dialogs_are_suppressed_ = true;
 }
+
+}  // anonymous namespace
 
 namespace logging {
 
@@ -340,6 +359,15 @@ void InitChromeLogging(const CommandLine& command_line,
   if (env->HasVar(env_vars::kEtwLogging))
     logging::LogEventProvider::Initialize(kChromeTraceProviderName);
 #endif
+
+#ifdef NDEBUG
+  if (command_line.HasSwitch(switches::kSilentDumpOnDCHECK) &&
+      command_line.HasSwitch(switches::kEnableDCHECK)) {
+#if defined(OS_WIN)
+    logging::SetLogReportHandler(DumpProcessAssertHandler);
+#endif
+  }
+#endif  // NDEBUG
 
   chrome_logging_initialized_ = true;
 }
