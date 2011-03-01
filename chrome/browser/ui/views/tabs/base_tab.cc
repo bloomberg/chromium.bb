@@ -82,10 +82,14 @@ void DrawIconCenter(gfx::Canvas* canvas,
   // Center the image within bounds.
   int dst_x = bounds.x() - (icon_width - bounds.width()) / 2;
   int dst_y = bounds.y() - (icon_height - bounds.height()) / 2;
+  // NOTE: the clipping is a work around for 69528, it shouldn't be necessary.
+  canvas->Save();
+  canvas->ClipRectInt(dst_x, dst_y, icon_width, icon_height);
   canvas->DrawBitmapInt(image,
                         image_offset, 0, icon_width, icon_height,
                         dst_x, dst_y, icon_width, icon_height,
                         filter);
+  canvas->Restore();
 }
 
 }  // namespace
