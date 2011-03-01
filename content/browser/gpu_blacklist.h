@@ -198,6 +198,10 @@ class GpuBlacklist {
                               const std::string& version_string,
                               const std::string& version_string2);
 
+    bool SetDriverDateInfo(const std::string& date_op,
+                           const std::string& date_string,
+                           const std::string& date_string2);
+
     bool SetGLRendererInfo(const std::string& renderer_op,
                            const std::string& renderer_value);
 
@@ -212,6 +216,7 @@ class GpuBlacklist {
     uint32 device_id_;
     scoped_ptr<StringInfo> driver_vendor_info_;
     scoped_ptr<VersionInfo> driver_version_info_;
+    scoped_ptr<VersionInfo> driver_date_info_;
     scoped_ptr<StringInfo> gl_renderer_info_;
     scoped_ptr<GpuFeatureFlags> feature_flags_;
     std::vector<GpuBlacklistEntry*> exceptions_;

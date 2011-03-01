@@ -21,9 +21,11 @@
 // 3. "device_id" has the value of a string.
 // 4. "driver_vendor" is a STRING structure (defined below).
 // 5. "driver_version" is a VERSION structure (defined below).
-// 6. "gl_renderer" is a STRING structure (defined below).
-// 7: "Exceptions" is a list of entries.
-// 8. "blacklist" is a list of gpu feature strings, valid values include
+// 6. "driver_date" is a VERSION structure (defined below).
+//    The version is interpreted as "year.month.day".
+// 7. "gl_renderer" is a STRING structure (defined below).
+// 8: "Exceptions" is a list of entries.
+// 9. "blacklist" is a list of gpu feature strings, valid values include
 //    "accelerated_2d_canvas", "accelerated_compositing", "webgl", and "all".
 //    Currently whatever feature is selected, the effect is the same as "all",
 //    i.e., it's not supported to turn off one GPU feature and not the others.
@@ -39,7 +41,7 @@
 {
   "name": "software rendering list",
   // Please update the version number whenever you change this file.
-  "version": "1.2",
+  "version": "1.3",
   "entries": [
     { // ATI Radeon X1900 on Mac, BUGWEBKIT=47028
       "id": "1",
@@ -175,6 +177,19 @@
       "blacklist": [
         "webgl",
         "accelerated_compositing"
+      ]
+    },
+    { // Drivers older than 2009-01 on Windows, BUG=72979
+      "id": "12",
+      "os": {
+        "type": "win"
+      },
+      "driver_date": {
+        "op": "<",
+        "number": "2009.1"
+      },
+      "blacklist": [
+        "all"
       ]
     }
   ]

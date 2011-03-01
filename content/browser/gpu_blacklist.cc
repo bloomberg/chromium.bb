@@ -7,12 +7,34 @@
 #include "base/json/json_reader.h"
 #include "base/logging.h"
 #include "base/string_number_conversions.h"
+#include "base/string_piece.h"
+#include "base/string_split.h"
 #include "base/string_util.h"
 #include "base/stringprintf.h"
 #include "base/sys_info.h"
 #include "base/values.h"
 #include "base/version.h"
 #include "chrome/common/gpu_info.h"
+
+namespace {
+
+// Encode a date as Version, where [0] is year, [1] is month, and [2] is day.
+Version* GetDateFromString(const std::string& date_string) {
+  // TODO(zmo): verify if in Windows registry, driver dates are always in the
+  // format of "mm-dd-yyyy".
+  std::vector<std::string> pieces;
+  base::SplitString(date_string, '-', &pieces);
+  if (pieces.size() > 3 || pieces.size() == 0)
+    return NULL;
+  std::string date_as_version_string = pieces[0];
+  for (size_t i = 1; i < pieces.size(); ++i) {
+    date_as_version_string += ".";
+    date_as_version_string += pieces[i];
+  }
+  return Version::GetVersionFromString(date_as_version_string);
+}
+
+}  // namespace anonymous
 
 GpuBlacklist::VersionInfo::VersionInfo(const std::string& version_op,
                                        const std::string& version_string,
@@ -253,6 +275,21 @@ GpuBlacklist::GpuBlacklistEntry::GetGpuBlacklistEntryFromValue(
     }
   }
 
+  DictionaryValue* driver_date_value = NULL;
+  if (value->GetDictionary("driver_date", &driver_date_value)) {
+    std::string driver_date_op = "any";
+    std::string driver_date_string;
+    std::string driver_date_string2;
+    driver_date_value->GetString("op", &driver_date_op);
+    driver_date_value->GetString("number", &driver_date_string);
+    driver_date_value->GetString("number2", &driver_date_string2);
+    if (!entry->SetDriverDateInfo(driver_date_op, driver_date_string,
+                                  driver_date_string2)) {
+      delete entry;
+      return NULL;
+    }
+  }
+
   DictionaryValue* gl_renderer_value = NULL;
   if (value->GetDictionary("gl_renderer", &gl_renderer_value)) {
     std::string renderer_op;
@@ -366,6 +403,15 @@ bool GpuBlacklist::GpuBlacklistEntry::SetDriverVersionInfo(
   return driver_version_info_->IsValid();
 }
 
+bool GpuBlacklist::GpuBlacklistEntry::SetDriverDateInfo(
+    const std::string& date_op,
+    const std::string& date_string,
+    const std::string& date_string2) {
+  driver_date_info_.reset(
+      new VersionInfo(date_op, date_string, date_string2));
+  return driver_date_info_->IsValid();
+}
+
 bool GpuBlacklist::GpuBlacklistEntry::SetGLRendererInfo(
     const std::string& renderer_op,
     const std::string& renderer_value) {
@@ -421,6 +467,13 @@ bool GpuBlacklist::GpuBlacklistEntry::Contains(
         Version::GetVersionFromString(gpu_info.driver_version()));
     if (driver_version.get() == NULL ||
         !driver_version_info_->Contains(*driver_version))
+      return false;
+  }
+  if (driver_date_info_.get() != NULL) {
+    scoped_ptr<Version> driver_date(GetDateFromString(
+        gpu_info.driver_date()));
+    if (driver_date.get() == NULL ||
+        !driver_date_info_->Contains(*driver_date))
       return false;
   }
   if (gl_renderer_info_.get() != NULL &&
