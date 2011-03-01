@@ -37,6 +37,10 @@
 
 default: build
 
+# Delete the target file if the recipe fails after beginning to change the file
+# http://www.gnu.org/software/make/manual/make.html#Errors (Errors in Recipes)
+.DELETE_ON_ERROR: ;
+
 THISMAKEFILE := $(lastword $(MAKEFILE_LIST))
 
 SHELL=/bin/bash
@@ -163,61 +167,17 @@ MPFR_VERSION=2.4.1
 SRC:
 	mkdir SRC
 
-unpack-src: stamp-src
-
-# Prepare all sources.
-stamp-src: SRC/stamp-binutils SRC/stamp-gcc SRC/stamp-newlib SRC/stamp-gdb | SRC
-	touch stamp-src
-
-# Prepare source directory from Git for building.
-prepare-git-src: ALWAYS
-	./use_gcc_extras.sh GMP_VERSION=$(GMP_VERSION) MPFR_VERSION=$(MPFR_VERSION)
-	touch SRC/stamp-binutils
-	touch SRC/stamp-gcc
-	touch SRC/stamp-newlib
-	touch SRC/stamp-gdb
-	touch stamp-src
-
-# Prepare glibc sources (checked out by hand) for building.
-prepare-git-glibc-src: ALWAYS
-	touch SRC/stamp-glibc
-	touch SRC/stamp-linux-headers
-
-fetch-git-rw-sources: ALWAYS
-	if [ -d SRC ] ; then \
-	  echo "Error: SRC exists." \
-	    "Remove the source directory before fetching new sources." ; \
-	else \
-	  git clone $(GIT_BASE_URL)/nacl-toolchain.git SRC && \
-	  $(MAKE) -f $(THISMAKEFILE) prepare-git-src && \
-	  git clone $(GIT_BASE_URL)/nacl-glibc.git SRC/glibc && \
-	  touch SRC/stamp-glibc && \
-	  $(MAKE) -f $(THISMAKEFILE) fetch-glibc-sources-readonly ; \
-	fi
-
 # Unpack binutils, apply patches.
 SRC/binutils: | SRC
 	@echo "Unpacking binutils"
 	git clone $(GIT_BASE_URL)/nacl-binutils SRC/binutils
 	cd SRC/binutils && git checkout "$(NACL_BINUTILS_COMMIT)"
 
-# Create binutils source directory, and mark that we've done that.
-SRC/stamp-binutils: | SRC
-	rm -rf SRC/binutils
-	$(MAKE) -f $(THISMAKEFILE) SRC/binutils
-	touch $@
-
 # Unpack newlib, apply patches.
 SRC/newlib: | SRC
 	@echo "Unpacking newlib"
 	git clone $(GIT_BASE_URL)/nacl-newlib SRC/newlib
 	cd SRC/newlib && git checkout "$(NACL_NEWLIB_COMMIT)"
-
-# Create newlib source directory, and mark that we've done that.
-SRC/stamp-newlib: | SRC
-	rm -rf SRC/newlib
-	$(MAKE) -f $(THISMAKEFILE) SRC/newlib
-	touch $@
 
 # Unpack gcc, apply patches.
 SRC/gcc: | SRC
@@ -226,43 +186,25 @@ SRC/gcc: | SRC
 	cd SRC/gcc && git checkout "$(NACL_GCC_COMMIT)"
 	./use_gcc_extras.sh GMP_VERSION=$(GMP_VERSION) MPFR_VERSION=$(MPFR_VERSION)
 
-# Create gcc source directory, and mark that we've done that.
-SRC/stamp-gcc: | SRC
-	rm -rf SRC/gcc
-	$(MAKE) -f $(THISMAKEFILE) SRC/gcc
-	touch $@
-
-fetch-glibc-sources-readonly: SRC/stamp-glibc SRC/stamp-linux-headers
-	@echo "Fetching glibc and linux headers done."
-
-# Create glibc source directory, and mark that we've done that.
-SRC/stamp-glibc: | SRC
-	rm -rf SRC/glibc
-	@echo "Fetching glibc"
+# Unpack glibc, apply patches.
+SRC/glibc: | SRC
+	@echo "Unpacking glibc"
 	git clone $(GIT_BASE_URL)/nacl-glibc.git SRC/glibc
-	touch $@
+	cd SRC/glibc && git checkout "$(NACL_GLIBC_COMMIT)"
 
-# Create linux headers source directory, and mark that we've done that.
-SRC/stamp-linux-headers: | SRC
-	@echo "Fetching linux headers for glibc."
-	rm -rf SRC/linux-headers-for-nacl
+# Unpack linux headers, apply patches.
+SRC/linux-headers-for-nacl: | SRC
+	@echo "Unpacking linux headers for glibc."
 	git clone $(GIT_BASE_URL)/linux-headers-for-nacl.git \
 	  SRC/linux-headers-for-nacl
 	cd SRC/linux-headers-for-nacl && \
-	  git checkout 0014b8d2e052dd3bf4cdc4be999d17e123c50dc2
-	touch $@
+	  git checkout "$(LINUX_HEADERS_FOR_NACL_COMMIT)"
 
 # Unpack gdb, apply patches.
 SRC/gdb: | SRC
 	@echo "Unpacking gdb"
 	git clone $(GIT_BASE_URL)/nacl-gdb SRC/gdb
 	cd SRC/gdb && git checkout "$(NACL_GDB_COMMIT)"
-
-# Create gdb source directory, and mark that we've done that.
-SRC/stamp-gdb: | SRC
-	rm -rf SRC/gdb
-	$(MAKE) -f $(THISMAKEFILE) SRC/gdb
-	touch $@
 
 # Create the build directories for compiled binaries.
 BUILD:
@@ -292,7 +234,7 @@ sdkdirs:
 # binutils:
 # Builds the cross assembler, linker, archiver, etc.
 ##################################################################
-BUILD/stamp-$(CROSSARCH)-binutils: SRC/stamp-binutils | BUILD
+BUILD/stamp-$(CROSSARCH)-binutils: | SRC/binutils BUILD
 	rm -rf BUILD/build-binutils-$(CROSSARCH)
 	mkdir BUILD/build-binutils-$(CROSSARCH)
 	# We'd like to build binutils with -Werror, but there are a
@@ -319,7 +261,7 @@ binutils: BUILD/stamp-$(CROSSARCH)-binutils
 # Builds the cross gcc used to build the libraries.
 ##################################################################
 
-BUILD/stamp-$(CROSSARCH)-pregcc: SRC/stamp-gcc | BUILD
+BUILD/stamp-$(CROSSARCH)-pregcc: | SRC/gcc BUILD
 	rm -rf BUILD/build-pregcc-$(CROSSARCH)
 	mkdir BUILD/build-pregcc-$(CROSSARCH)
 	PATH=$(BUILDPATH) $(MAKE) \
@@ -375,7 +317,7 @@ PREGCC_BUILD_DIR=BUILD/build-pregcc-$(CROSSARCH)
 #   the search path will include full gcc stuff that should not be picked.
 # make install:
 #   DESTDIR should be ignored at this step.
-BUILD/stamp-$(CROSSARCH)-pregcc-standalone: SRC/stamp-gcc | BUILD
+BUILD/stamp-$(CROSSARCH)-pregcc-standalone: | SRC/gcc BUILD
 	rm -rf $(PREGCC_PREFIX)
 	mkdir -p $(PREGCC_PREFIX)/$(CROSSARCH)/bin
 	for f in '$(PREFIX)/$(CROSSARCH)/bin/*'; do \
@@ -414,7 +356,7 @@ BUILD/stamp-$(CROSSARCH)-pregcc-standalone: SRC/stamp-gcc | BUILD
 # NOTE: removes the default pthread.h to enable correct install
 # by the Native Client threads package build.
 ##################################################################
-BUILD/stamp-$(CROSSARCH)-newlib: SRC/stamp-newlib | BUILD
+BUILD/stamp-$(CROSSARCH)-newlib: | SRC/newlib BUILD
 	rm -rf BUILD/build-newlib-$(CROSSARCH)
 	mkdir BUILD/build-newlib-$(CROSSARCH)
 	(cd $(DESTDIR)$(SDKROOT)/$(CROSSARCH) ; \
@@ -504,7 +446,7 @@ SCONS_DESTINATIONS=\
  extra_sdk_include_destination=$(DESTDIR)$(SDKROOT)/$(CROSSARCH)/include \
 
 # Build glibc:
-BUILD/stamp-$(CROSSARCH)-glibc: SRC/stamp-glibc SRC/stamp-linux-headers
+BUILD/stamp-$(CROSSARCH)-glibc: | SRC/glibc SRC/linux-headers-for-nacl
 	rm -rf $(GLIBC_BUILD_DIR)
 	mkdir -p $(GLIBC_BUILD_DIR)/lib
 	cd $(GLIBC_BUILD_DIR) && ../../SRC/glibc/configure \
@@ -616,7 +558,7 @@ BUILD/stamp-$(CROSSARCH)-full-gcc: BUILD/stamp-$(CROSSARCH)-glibc-adhoc-files
 # gcc:
 # Builds the gcc that will be used to build applications.
 ##################################################################
-BUILD/stamp-$(CROSSARCH)-gcc: SRC/stamp-gcc | BUILD
+BUILD/stamp-$(CROSSARCH)-gcc: | SRC/gcc BUILD
 	rm -rf BUILD/build-gcc-$(CROSSARCH)
 	mkdir BUILD/build-gcc-$(CROSSARCH)
 ifeq ($(CYGWIN17), 1)
@@ -688,7 +630,7 @@ gcc: BUILD/stamp-$(CROSSARCH)-gcc
 ##################################################################
 # TODO: Add 64-bit support.
 # Only linux is supported.
-BUILD/stamp-$(CROSSARCH)-gdb: SRC/stamp-gdb | BUILD
+BUILD/stamp-$(CROSSARCH)-gdb: | SRC/gdb BUILD
 	case $$(SRC/gdb/config.guess) in \
 	*-linux*) ;; \
 	*) echo "Unsupported host" >&2 ; false ;; \
@@ -821,11 +763,12 @@ build-with-glibc: ALWAYS
 	$(MAKE) -f $(THISMAKEFILE) BUILD/stamp-$(CROSSARCH)-libs-glibc
 	$(MAKE) -f $(THISMAKEFILE) BUILD/stamp-$(CROSSARCH)-stubout
 
+.PHONY: all-source
 all-source: | \
-	SRC/stamp-binutils \
-	SRC/stamp-gcc \
-	SRC/stamp-newlib \
-	SRC/stamp-gdb
+	SRC/binutils \
+	SRC/gcc \
+	SRC/newlib \
+	SRC/gdb
 
 build: ALWAYS all-source
 	$(MAKE) -f $(THISMAKEFILE) sdkdirs
@@ -883,7 +826,18 @@ nacl-check: ALWAYS
 # Remove the BUILD directory.
 # Library builds are maintained by scons.
 ##################################################################
+
+# WARNING! WARNING! WARNING! WARNING! WARNING! WARNING! WARNING! WARNING!
+# Temporary change to keep buildbots happy!
+#
+# "clean" removes not only BUILD, but SRC as well.
+#
+# In fact, "clean" temporary takes old "build" -> "all-source" responsibility
+# to remove and re-checkout all sources. This is needed to keep old
+# "make clean build" behaviour that is expected by buildbots.
+.PHONY: clean
 clean:
-	-rm -rf BUILD
+	rm -rf BUILD
+	rm -rf SRC
 
 .PHONY: ALWAYS
