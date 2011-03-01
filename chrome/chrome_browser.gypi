@@ -1601,6 +1601,8 @@
         'browser/prefs/value_map_pref_store.h',
         'browser/prerender/prerender_contents.cc',
         'browser/prerender/prerender_contents.h',
+        'browser/prerender/prerender_field_trial.cc',
+        'browser/prerender/prerender_field_trial.h',
         'browser/prerender/prerender_final_status.cc',
         'browser/prerender/prerender_final_status.h',
         'browser/prerender/prerender_manager.cc',

@@ -55,7 +55,7 @@
 #include "chrome/browser/prefs/browser_prefs.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/prefs/pref_value_store.h"
-#include "chrome/browser/prerender/prerender_manager.h"
+#include "chrome/browser/prerender/prerender_field_trial.h"
 #include "chrome/browser/printing/cloud_print/cloud_print_proxy_service.h"
 #include "chrome/browser/printing/print_dialog_cloud.h"
 #include "chrome/browser/process_singleton.h"
@@ -233,7 +233,7 @@ void BrowserMainParts::SetupFieldTrials() {
   ConnectionFieldTrial();
   SocketTimeoutFieldTrial();
   ProxyConnectionsFieldTrial();
-  PrefetchAndPrerenderFieldTrial();
+  prerender::ConfigurePrefetchAndPrerender(parsed_command_line());
   SpdyFieldTrial();
   ConnectBackupJobsFieldTrial();
   SSLFalseStartFieldTrial();
@@ -457,82 +457,6 @@ void BrowserMainParts::SSLFalseStartFieldTrial() {
     net::SSLConfigService::DisableFalseStart();
 }
 
-// Parse the --prerender= command line switch, which controls both prerendering
-// and prefetching.  If the switch is unset, or is set to "auto", then the user
-// is assigned to a field trial.
-void BrowserMainParts::PrefetchAndPrerenderFieldTrial() {
-  enum PrerenderOption {
-    PRERENDER_OPTION_AUTO,
-    PRERENDER_OPTION_DISABLED,
-    PRERENDER_OPTION_ENABLED,
-    PRERENDER_OPTION_PREFETCH_ONLY,
-  };
-
-  PrerenderOption prerender_option = PRERENDER_OPTION_AUTO;
-  if (parsed_command_line().HasSwitch(switches::kPrerender)) {
-    const std::string switch_value =
-        parsed_command_line().GetSwitchValueASCII(switches::kPrerender);
-
-    if (switch_value == switches::kPrerenderSwitchValueAuto) {
-      prerender_option = PRERENDER_OPTION_AUTO;
-    } else if (switch_value == switches::kPrerenderSwitchValueDisabled) {
-      prerender_option = PRERENDER_OPTION_DISABLED;
-    } else if (switch_value.empty() ||
-               switch_value == switches::kPrerenderSwitchValueEnabled) {
-      // The empty string means the option was provided with no value, and that
-      // means enable.
-      prerender_option = PRERENDER_OPTION_ENABLED;
-    } else if (switch_value == switches::kPrerenderSwitchValuePrefetchOnly) {
-      prerender_option = PRERENDER_OPTION_PREFETCH_ONLY;
-    } else {
-      prerender_option = PRERENDER_OPTION_DISABLED;
-      LOG(ERROR) << "Invalid --prerender option received on command line: "
-                 << switch_value;
-      LOG(ERROR) << "Disabling prerendering!";
-    }
-  }
-
-  switch (prerender_option) {
-    case PRERENDER_OPTION_AUTO: {
-      const base::FieldTrial::Probability kPrefetchDivisor = 1000;
-      const base::FieldTrial::Probability kYesPrefetchProbability = 500;
-      scoped_refptr<base::FieldTrial> trial(
-          new base::FieldTrial("Prefetch", kPrefetchDivisor,
-                               "ContentPrefetchDisabled", 2011, 6, 30));
-      const int kNoPrefetchGroup = trial->kDefaultGroupNumber;
-      trial->AppendGroup("ContentPrefetchEnabled", kYesPrefetchProbability);
-      const int kTrialGroup = trial->group();
-      ResourceDispatcherHost::set_is_prefetch_enabled(
-          kTrialGroup != kNoPrefetchGroup);
-
-      // There is currently no prerendering field trial.
-      prerender::PrerenderManager::SetMode(
-          prerender::PrerenderManager::PRERENDER_MODE_DISABLED);
-      break;
-    }
-    case PRERENDER_OPTION_DISABLED:
-      ResourceDispatcherHost::set_is_prefetch_enabled(false);
-      prerender::PrerenderManager::SetMode(
-          prerender::PrerenderManager::PRERENDER_MODE_DISABLED);
-      break;
-    case PRERENDER_OPTION_ENABLED:
-      ResourceDispatcherHost::set_is_prefetch_enabled(true);
-      prerender::PrerenderManager::SetMode(
-          prerender::PrerenderManager::PRERENDER_MODE_ENABLED);
-      break;
-    case PRERENDER_OPTION_PREFETCH_ONLY:
-      ResourceDispatcherHost::set_is_prefetch_enabled(true);
-      prerender::PrerenderManager::SetMode(
-          prerender::PrerenderManager::PRERENDER_MODE_DISABLED);
-      break;
-    default:
-      NOTREACHED();
-  }
-
-  UMA_HISTOGRAM_ENUMERATION("Prerender.Sessions",
-                            prerender::PrerenderManager::GetMode(),
-                            prerender::PrerenderManager::PRERENDER_MODE_MAX);
-}
 
 // If neither --enable-connect-backup-jobs or --disable-connect-backup-jobs is
 // specified, run an A/B test for automatically establishing backup TCP
