@@ -1,7 +1,7 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="ko">
-<translation id="IDS_STANDARD_FONT_IS_SERIF">false</translation>
+<translation id="IDS_STANDARD_FONT_FAMILY">Gulim</translation>
 <translation id="IDS_FIXED_FONT_FAMILY">Gulimche</translation>
 <translation id="IDS_SERIF_FONT_FAMILY">Batang</translation>
 <translation id="IDS_SANS_SERIF_FONT_FAMILY">Gulim</translation>

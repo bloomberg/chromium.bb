@@ -68,7 +68,7 @@ void FontSettingsHandler::GetLocalizedValues(
 
 void FontSettingsHandler::Initialize() {
   DCHECK(web_ui_);
-  SetupSerifFontSample();
+  SetupStandardFontSample();
   SetupMinimumFontSample();
   SetupFixedFontSample();
 }
@@ -83,7 +83,7 @@ WebUIMessageHandler* FontSettingsHandler::Attach(WebUI* web_ui) {
   FontSettingsUtilities::ValidateSavedFonts(pref_service);
 
   // Register for preferences that we need to observe manually.
-  serif_font_.Init(prefs::kWebKitSerifFontFamily, pref_service, this);
+  standard_font_.Init(prefs::kWebKitStandardFontFamily, pref_service, this);
   fixed_font_.Init(prefs::kWebKitFixedFontFamily, pref_service, this);
   font_encoding_.Init(prefs::kDefaultCharset, pref_service, this);
   default_font_size_.Init(prefs::kWebKitDefaultFontSize, pref_service, this);
@@ -137,7 +137,7 @@ void FontSettingsHandler::FontsListHasLoaded() {
   }
 
   ListValue selected_values;
-  selected_values.Append(Value::CreateStringValue(serif_font_.GetValue()));
+  selected_values.Append(Value::CreateStringValue(standard_font_.GetValue()));
   selected_values.Append(Value::CreateStringValue(fixed_font_.GetValue()));
   selected_values.Append(Value::CreateStringValue(font_encoding_.GetValue()));
 
@@ -150,9 +150,9 @@ void FontSettingsHandler::Observe(NotificationType type,
                                   const NotificationDetails& details) {
   if (type == NotificationType::PREF_CHANGED) {
     std::string* pref_name = Details<std::string>(details).ptr();
-    if (*pref_name == prefs::kWebKitSerifFontFamily ||
+    if (*pref_name == prefs::kWebKitStandardFontFamily ||
         *pref_name == prefs::kWebKitDefaultFontSize) {
-      SetupSerifFontSample();
+      SetupStandardFontSample();
     } else if (*pref_name == prefs::kWebKitFixedFontFamily ||
                *pref_name == prefs::kWebKitDefaultFixedFontSize) {
       SetupFixedFontSample();
@@ -162,11 +162,11 @@ void FontSettingsHandler::Observe(NotificationType type,
   }
 }
 
-void FontSettingsHandler::SetupSerifFontSample() {
-  StringValue font_value(serif_font_.GetValue());
+void FontSettingsHandler::SetupStandardFontSample() {
+  StringValue font_value(standard_font_.GetValue());
   FundamentalValue size_value(default_font_size_.GetValue());
   web_ui_->CallJavascriptFunction(
-      L"FontSettings.setupSerifFontSample", font_value, size_value);
+      L"FontSettings.setupStandardFontSample", font_value, size_value);
 }
 
 void FontSettingsHandler::SetupFixedFontSample() {

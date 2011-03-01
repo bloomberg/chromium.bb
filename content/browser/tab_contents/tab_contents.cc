@@ -169,6 +169,7 @@ const char* kPrefsToObserve[] = {
   prefs::kWebKitLoadsImagesAutomatically,
   prefs::kWebKitPluginsEnabled,
   prefs::kWebKitUsesUniversalDetector,
+  prefs::kWebKitStandardFontFamily,
   prefs::kWebKitSerifFontFamily,
   prefs::kWebKitSansSerifFontFamily,
   prefs::kWebKitFixedFontFamily,
@@ -178,10 +179,6 @@ const char* kPrefsToObserve[] = {
   prefs::kWebKitMinimumLogicalFontSize,
   prefs::kWebkitTabsToLinks,
   prefs::kDefaultCharset
-  // kWebKitStandardFontIsSerif needs to be added
-  // if we let users pick which font to use, serif or sans-serif when
-  // no font is specified or a CSS generic family (serif or sans-serif)
-  // is not specified.
 };
 
 const int kPrefsToObserveLength = arraysize(kPrefsToObserve);

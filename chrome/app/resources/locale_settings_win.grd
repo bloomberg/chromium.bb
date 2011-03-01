@@ -129,10 +129,9 @@
         84%
       </message>
 
-      <!-- The default value to determine whether
-           |WebPreference::standard_font_family| is serif or sans-serif. -->
-      <message name="IDS_STANDARD_FONT_IS_SERIF" use_name_for_id="true">
-        true
+      <!-- The default value for |WebPreference::standard_font_family| -->
+      <message name="IDS_STANDARD_FONT_FAMILY" use_name_for_id="true">
+        Times New Roman
       </message>
 
       <!-- The default value for |WebPreference::fixed_font_family| -->

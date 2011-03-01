@@ -197,16 +197,14 @@ WebPreferences RenderViewHostDelegateHelper::GetWebkitPrefs(
   PrefService* prefs = profile->GetPrefs();
   WebPreferences web_prefs;
 
+  web_prefs.standard_font_family =
+      UTF8ToUTF16(prefs->GetString(prefs::kWebKitStandardFontFamily));
   web_prefs.fixed_font_family =
       UTF8ToUTF16(prefs->GetString(prefs::kWebKitFixedFontFamily));
   web_prefs.serif_font_family =
       UTF8ToUTF16(prefs->GetString(prefs::kWebKitSerifFontFamily));
   web_prefs.sans_serif_font_family =
       UTF8ToUTF16(prefs->GetString(prefs::kWebKitSansSerifFontFamily));
-  if (prefs->GetBoolean(prefs::kWebKitStandardFontIsSerif))
-    web_prefs.standard_font_family = web_prefs.serif_font_family;
-  else
-    web_prefs.standard_font_family = web_prefs.sans_serif_font_family;
   web_prefs.cursive_font_family =
       UTF8ToUTF16(prefs->GetString(prefs::kWebKitCursiveFontFamily));
   web_prefs.fantasy_font_family =

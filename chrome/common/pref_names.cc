@@ -99,13 +99,7 @@ const char kStaticEncodings[] = "intl.static_encodings";
 const char kPopupWhitelistedHosts[] = "profile.popup_whitelisted_sites";
 
 // WebKit preferences.
-// A boolean flag to indicate whether WebKit standard font family is
-// serif or sans-serif. We don't have a UI for setting standard family.
-// Instead, we use this pref to map either serif or sans_serif to WebKit
-// standard font family. At the moment, we don't have a UI for this
-// flag, either.
-const char kWebKitStandardFontIsSerif[] =
-    "webkit.webprefs.standard_font_is_serif";
+const char kWebKitStandardFontFamily[] = "webkit.webprefs.standard_font_family";
 const char kWebKitFixedFontFamily[] = "webkit.webprefs.fixed_font_family";
 const char kWebKitSerifFontFamily[] = "webkit.webprefs.serif_font_family";
 const char kWebKitSansSerifFontFamily[] =

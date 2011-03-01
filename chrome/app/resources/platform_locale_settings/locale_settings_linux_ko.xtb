@@ -1,7 +1,7 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="ko">
-<translation id="IDS_STANDARD_FONT_IS_SERIF">false</translation>
+<translation id="IDS_STANDARD_FONT_FAMILY">UnDotum</translation>
 <translation id="IDS_WEB_FONT_FAMILY">NanumGothic,UnDotum,Baekmuk Gulim,sans-serif</translation>
 <translation id="IDS_FIXED_FONT_FAMILY">UnDotum</translation>
 <translation id="IDS_SERIF_FONT_FAMILY">UnBatang</translation>

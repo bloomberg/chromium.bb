@@ -95,8 +95,8 @@ void TabContentsWrapper::RegisterUserPrefs(PrefService* prefs) {
                                      IDS_ACCEPT_LANGUAGES);
   prefs->RegisterLocalizedStringPref(prefs::kDefaultCharset,
                                      IDS_DEFAULT_ENCODING);
-  prefs->RegisterLocalizedBooleanPref(prefs::kWebKitStandardFontIsSerif,
-                                      IDS_STANDARD_FONT_IS_SERIF);
+  prefs->RegisterLocalizedStringPref(prefs::kWebKitStandardFontFamily,
+                                     IDS_STANDARD_FONT_FAMILY);
   prefs->RegisterLocalizedStringPref(prefs::kWebKitFixedFontFamily,
                                      IDS_FIXED_FONT_FAMILY);
   prefs->RegisterLocalizedStringPref(prefs::kWebKitSerifFontFamily,

@@ -29,13 +29,13 @@ cr.define('options', function() {
     initializePage: function() {
       OptionsPage.prototype.initializePage.call(this);
 
-      var serifFontRange = $('serif-font-size');
-      serifFontRange.valueMap = $('fixed-font-size').valueMap = [9, 10, 11, 12,
-          13, 14, 15, 16, 17, 18, 20, 22, 24, 26, 28, 30, 32, 34, 36, 40, 44,
-          48, 56, 64, 72];
-      serifFontRange.continuous = false;
-      serifFontRange.fontSampleEl = $('serif-font-sample');
-      serifFontRange.notifyChange = this.rangeChanged_.bind(this);
+      var standardFontRange = $('standard-font-size');
+      standardFontRange.valueMap = $('fixed-font-size').valueMap = [9, 10, 11,
+          12, 13, 14, 15, 16, 17, 18, 20, 22, 24, 26, 28, 30, 32, 34, 36, 40,
+          44, 48, 56, 64, 72];
+      standardFontRange.continuous = false;
+      standardFontRange.fontSampleEl = $('standard-font-sample');
+      standardFontRange.notifyChange = this.rangeChanged_.bind(this);
 
       var minimumFontRange = $('minimum-font-size');
       minimumFontRange.valueMap = [9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 20,
@@ -47,17 +47,9 @@ cr.define('options', function() {
           this.minimumFontSizeChanged_.bind(this);
 
       var placeholder = localStrings.getString('fontSettingsPlaceholder');
-      $('serif-font-family').appendChild(new Option(placeholder));
+      $('standard-font-family').appendChild(new Option(placeholder));
       $('fixed-font-family').appendChild(new Option(placeholder));
       $('font-encoding').appendChild(new Option(placeholder));
-
-      // Add an additional listener to the font select menu for the
-      // 'sansserif_font_family' preference.
-      $('serif-font-family').addEventListener('change',
-          function(e) {
-            Preferences.setStringPref('webkit.webprefs.sansserif_font_family',
-                this.options[this.selectedIndex].value, '');
-          });
     },
 
     /**
@@ -145,7 +137,7 @@ cr.define('options', function() {
 
   // Chrome callbacks
   FontSettings.setFontsData = function(fonts, encodings, selectedValues) {
-    FontSettings.getInstance().populateSelect_($('serif-font-family'), fonts,
+    FontSettings.getInstance().populateSelect_($('standard-font-family'), fonts,
                                                selectedValues[0]);
     FontSettings.getInstance().populateSelect_($('fixed-font-family'), fonts,
                                                selectedValues[1]);
@@ -153,8 +145,8 @@ cr.define('options', function() {
                                                selectedValues[2]);
   };
 
-  FontSettings.setupSerifFontSample = function(font, size) {
-    FontSettings.getInstance().setupFontSample_($('serif-font-sample'), size,
+  FontSettings.setupStandardFontSample = function(font, size) {
+    FontSettings.getInstance().setupFontSample_($('standard-font-sample'), size,
                                                 font);
   };
 

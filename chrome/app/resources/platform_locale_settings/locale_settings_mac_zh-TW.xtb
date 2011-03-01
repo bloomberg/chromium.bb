@@ -2,7 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="zh-TW">
 <translation id="IDS_WEB_FONT_FAMILY">Helvetica,LiHei Pro,sans-serif</translation>
-<translation id="IDS_STANDARD_FONT_IS_SERIF">false</translation>
+<translation id="IDS_STANDARD_FONT_FAMILY">LiHei Pro</translation>
 <translation id="IDS_SERIF_FONT_FAMILY">LiSong Pro</translation>
 <translation id="IDS_SANS_SERIF_FONT_FAMILY">LiHei Pro</translation>
 <translation id="IDS_MINIMUM_FONT_SIZE">12</translation>

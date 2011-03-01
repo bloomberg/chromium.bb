@@ -36,7 +36,7 @@ extern const char kAcceptLanguages[];
 extern const char kStaticEncodings[];
 extern const char kPopupWhitelistedHosts[];
 extern const char kShowBookmarkBar[];
-extern const char kWebKitStandardFontIsSerif[];
+extern const char kWebKitStandardFontFamily[];
 extern const char kWebKitFixedFontFamily[];
 extern const char kWebKitSerifFontFamily[];
 extern const char kWebKitSansSerifFontFamily[];

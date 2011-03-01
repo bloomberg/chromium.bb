@@ -1,7 +1,7 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="ja">
-<translation id="IDS_STANDARD_FONT_IS_SERIF">false</translation>
+<translation id="IDS_STANDARD_FONT_FAMILY">MS PGothic</translation>
 <translation id="IDS_WEB_FONT_FAMILY">Arial,Meiryo,MS PGothic,sans-serif</translation>
 <translation id="IDS_FIXED_FONT_FAMILY">MS Gothic</translation>
 <translation id="IDS_SERIF_FONT_FAMILY">MS PMincho</translation>
