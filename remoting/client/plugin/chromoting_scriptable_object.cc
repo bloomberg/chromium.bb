@@ -230,8 +230,8 @@ void ChromotingScriptableObject::SignalConnectionInfoChange() {
   cb.Call(Var(), 0, NULL, &exception);
 
   if (!exception.is_undefined()) {
-    LOG(WARNING) << "Exception when invoking connectionInfoUpdate JS callback"
-                 << exception.AsString();
+    LOG(WARNING) << "Exception when invoking connectionInfoUpdate JS callback: "
+                 << exception.DebugString();
   }
 }
 
@@ -247,8 +247,8 @@ void ChromotingScriptableObject::SignalDebugInfoChange() {
   cb.Call(Var(), 0, NULL, &exception);
 
   if (!exception.is_undefined()) {
-    LOG(WARNING) << "Exception when invoking debugInfoUpdate JS callback"
-                 << exception.AsString();
+    LOG(WARNING) << "Exception when invoking debugInfoUpdate JS callback: "
+                 << exception.DebugString();
   }
 }
 
@@ -264,8 +264,8 @@ void ChromotingScriptableObject::SignalLoginChallenge() {
   cb.Call(Var(), 0, NULL, &exception);
 
   if (!exception.is_undefined()) {
-    LOG(WARNING) << "Exception when invoking loginChallenge JS callback"
-                 << exception.AsString();
+    LOG(WARNING) << "Exception when invoking loginChallenge JS callback: "
+                 << exception.DebugString();
   }
 }
 
@@ -282,7 +282,7 @@ Var ChromotingScriptableObject::DoConnect(const std::vector<Var>& args,
     *exception = Var("The username must be a string.");
     return Var();
   }
-  config.username = args[0].AsString();
+  config.username = args[0].DebugString();
 
   if (!args[1].is_string()) {
     *exception = Var("The host_jid must be a string.");
