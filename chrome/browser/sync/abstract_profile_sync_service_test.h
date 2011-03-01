@@ -11,10 +11,10 @@
 #include "base/message_loop.h"
 #include "base/scoped_ptr.h"
 #include "base/task.h"
+#include "chrome/browser/browser_thread.h"
 #include "chrome/browser/net/gaia/token_service.h"
 #include "chrome/browser/sync/profile_sync_factory_mock.h"
 #include "chrome/browser/sync/syncable/model_type.h"
-#include "content/browser/browser_thread.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 class ProfileSyncService;
