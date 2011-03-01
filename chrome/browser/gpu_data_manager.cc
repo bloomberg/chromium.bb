@@ -154,11 +154,11 @@ void GpuDataManager::UpdateGpuFeatureFlags() {
   if (gpu_blacklist != NULL) {
     gpu_feature_flags_ = gpu_blacklist->DetermineGpuFeatureFlags(
         GpuBlacklist::kOsAny, NULL, gpu_info_);
+    uint32 max_entry_id = gpu_blacklist->max_entry_id();
     if (gpu_feature_flags_.flags() != 0) {
       // If gpu is blacklisted, no further GPUInfo will be collected.
       gpu_info_.SetLevel(GPUInfo::kComplete);
       // TODO(zmo): move histograming to GpuBlacklist::DetermineGpuFeatureFlags.
-      uint32 max_entry_id = gpu_blacklist->max_entry_id();
       std::vector<uint32> flag_entries;
       gpu_blacklist->GetGpuFeatureFlagEntries(
           GpuFeatureFlags::kGpuFeatureAll, flag_entries);
@@ -167,6 +167,9 @@ void GpuDataManager::UpdateGpuFeatureFlags() {
         UMA_HISTOGRAM_ENUMERATION("GPU.BlacklistTestResultsPerEntry",
             flag_entries[i], max_entry_id + 1);
       }
+    } else {
+      UMA_HISTOGRAM_ENUMERATION("GPU.BlacklistTestResultsPerEntry",
+          0, max_entry_id + 1);
     }
   }
 }
