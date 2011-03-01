@@ -2,17 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_VIEWS_BOOKMARK_BAR_VIEW_H_
-#define CHROME_BROWSER_UI_VIEWS_BOOKMARK_BAR_VIEW_H_
+#ifndef CHROME_BROWSER_UI_VIEWS_BOOKMARKS_BOOKMARK_BAR_VIEW_H_
+#define CHROME_BROWSER_UI_VIEWS_BOOKMARKS_BOOKMARK_BAR_VIEW_H_
 #pragma once
 
 #include <set>
 
-#include "chrome/browser/bookmarks/bookmark_node_data.h"
 #include "chrome/browser/bookmarks/bookmark_model_observer.h"
+#include "chrome/browser/bookmarks/bookmark_node_data.h"
 #include "chrome/browser/sync/profile_sync_service.h"
-#include "chrome/browser/ui/views/bookmark_bar_instructions_view.h"
-#include "chrome/browser/ui/views/bookmark_menu_controller_views.h"
+#include "chrome/browser/ui/views/bookmarks/bookmark_bar_instructions_view.h"
+#include "chrome/browser/ui/views/bookmarks/bookmark_menu_controller_views.h"
 #include "chrome/browser/ui/views/detachable_toolbar_view.h"
 #include "chrome/common/notification_registrar.h"
 #include "ui/base/animation/animation_delegate.h"
@@ -520,4 +520,4 @@ class BookmarkBarView : public DetachableToolbarView,
   DISALLOW_COPY_AND_ASSIGN(BookmarkBarView);
 };
 
-#endif  // CHROME_BROWSER_UI_VIEWS_BOOKMARK_BAR_VIEW_H_
+#endif  // CHROME_BROWSER_UI_VIEWS_BOOKMARKS_BOOKMARK_BAR_VIEW_H_

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/views/bookmark_context_menu_controller_views.h"
+#include "chrome/browser/ui/views/bookmarks/bookmark_context_menu_controller_views.h"
 
 #include "base/compiler_specific.h"
 #include "chrome/app/chrome_command_ids.h"

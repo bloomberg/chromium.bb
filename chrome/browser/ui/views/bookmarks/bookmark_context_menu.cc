@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/views/bookmark_context_menu.h"
+#include "chrome/browser/ui/views/bookmarks/bookmark_context_menu.h"
 
 #include "base/i18n/rtl.h"
 #include "base/utf_string_conversions.h"

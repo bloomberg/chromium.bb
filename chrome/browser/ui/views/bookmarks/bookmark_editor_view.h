@@ -1,21 +1,21 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_VIEWS_BOOKMARK_EDITOR_VIEW_H_
-#define CHROME_BROWSER_UI_VIEWS_BOOKMARK_EDITOR_VIEW_H_
+#ifndef CHROME_BROWSER_UI_VIEWS_BOOKMARKS_BOOKMARK_EDITOR_VIEW_H_
+#define CHROME_BROWSER_UI_VIEWS_BOOKMARKS_BOOKMARK_EDITOR_VIEW_H_
 #pragma once
 
 #include "base/string16.h"
 #include "chrome/browser/bookmarks/bookmark_editor.h"
 #include "chrome/browser/bookmarks/bookmark_model_observer.h"
+#include "testing/gtest/include/gtest/gtest_prod.h"
+#include "ui/base/models/simple_menu_model.h"
+#include "ui/base/models/tree_node_model.h"
 #include "views/controls/button/button.h"
 #include "views/controls/textfield/textfield.h"
 #include "views/controls/tree/tree_view.h"
 #include "views/window/dialog_delegate.h"
-#include "testing/gtest/include/gtest/gtest_prod.h"
-#include "ui/base/models/simple_menu_model.h"
-#include "ui/base/models/tree_node_model.h"
 
 namespace views {
 class Label;
@@ -263,4 +263,4 @@ class BookmarkEditorView : public BookmarkEditor,
   DISALLOW_COPY_AND_ASSIGN(BookmarkEditorView);
 };
 
-#endif  // CHROME_BROWSER_UI_VIEWS_BOOKMARK_EDITOR_VIEW_H_
+#endif  // CHROME_BROWSER_UI_VIEWS_BOOKMARKS_BOOKMARK_EDITOR_VIEW_H_

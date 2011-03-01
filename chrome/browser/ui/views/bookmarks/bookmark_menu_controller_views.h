@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_VIEWS_BOOKMARK_MENU_CONTROLLER_VIEWS_H_
-#define CHROME_BROWSER_UI_VIEWS_BOOKMARK_MENU_CONTROLLER_VIEWS_H_
+#ifndef CHROME_BROWSER_UI_VIEWS_BOOKMARKS_BOOKMARK_MENU_CONTROLLER_VIEWS_H_
+#define CHROME_BROWSER_UI_VIEWS_BOOKMARKS_BOOKMARK_MENU_CONTROLLER_VIEWS_H_
 #pragma once
 
 #include <map>
@@ -11,7 +11,7 @@
 
 #include "chrome/browser/bookmarks/base_bookmark_model_observer.h"
 #include "chrome/browser/bookmarks/bookmark_node_data.h"
-#include "chrome/browser/ui/views/bookmark_context_menu.h"
+#include "chrome/browser/ui/views/bookmarks/bookmark_context_menu.h"
 #include "ui/gfx/native_widget_types.h"
 #include "views/controls/menu/menu_delegate.h"
 #include "views/controls/menu/menu_item_view.h"
@@ -203,4 +203,4 @@ class BookmarkMenuController : public BaseBookmarkModelObserver,
   DISALLOW_COPY_AND_ASSIGN(BookmarkMenuController);
 };
 
-#endif  // CHROME_BROWSER_UI_VIEWS_BOOKMARK_MENU_CONTROLLER_VIEWS_H_
+#endif  // CHROME_BROWSER_UI_VIEWS_BOOKMARKS_BOOKMARK_MENU_CONTROLLER_VIEWS_H_

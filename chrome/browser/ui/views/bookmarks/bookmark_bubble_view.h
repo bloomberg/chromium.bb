@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_VIEWS_BOOKMARK_BUBBLE_VIEW_H_
-#define CHROME_BROWSER_UI_VIEWS_BOOKMARK_BUBBLE_VIEW_H_
+#ifndef CHROME_BROWSER_UI_VIEWS_BOOKMARKS_BOOKMARK_BUBBLE_VIEW_H_
+#define CHROME_BROWSER_UI_VIEWS_BOOKMARKS_BOOKMARK_BUBBLE_VIEW_H_
 #pragma once
 
 #include "base/string16.h"
@@ -155,4 +155,4 @@ class BookmarkBubbleView : public views::View,
   DISALLOW_COPY_AND_ASSIGN(BookmarkBubbleView);
 };
 
-#endif  // CHROME_BROWSER_UI_VIEWS_BOOKMARK_BUBBLE_VIEW_H_
+#endif  // CHROME_BROWSER_UI_VIEWS_BOOKMARKS_BOOKMARK_BUBBLE_VIEW_H_

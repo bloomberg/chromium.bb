@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/views/bookmark_editor_view.h"
+#include "chrome/browser/ui/views/bookmarks/bookmark_editor_view.h"
 
 #include "base/basictypes.h"
 #include "base/logging.h"
@@ -11,9 +11,9 @@
 #include "chrome/browser/bookmarks/bookmark_model.h"
 #include "chrome/browser/bookmarks/bookmark_utils.h"
 #include "chrome/browser/history/history.h"
+#include "chrome/browser/net/url_fixer_upper.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/net/url_fixer_upper.h"
 #include "chrome/common/pref_names.h"
 #include "googleurl/src/gurl.h"
 #include "grit/chromium_strings.h"
@@ -22,10 +22,10 @@
 #include "net/base/net_util.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "views/background.h"
-#include "views/focus/focus_manager.h"
 #include "views/controls/button/native_button.h"
 #include "views/controls/label.h"
 #include "views/controls/menu/menu_2.h"
+#include "views/focus/focus_manager.h"
 #include "views/layout/grid_layout.h"
 #include "views/layout/layout_constants.h"
 #include "views/widget/widget.h"

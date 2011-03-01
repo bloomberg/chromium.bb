@@ -43,7 +43,7 @@
 #include "ui/gfx/color_utils.h"
 
 #if defined(OS_WIN) || defined(TOOLKIT_VIEWS)
-#include "chrome/browser/ui/views/bookmark_bar_view.h"
+#include "chrome/browser/ui/views/bookmarks/bookmark_bar_view.h"
 #elif defined(OS_MACOSX)
 #include "chrome/browser/ui/cocoa/bookmarks/bookmark_bar_constants.h"
 #elif defined(OS_POSIX)

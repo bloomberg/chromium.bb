@@ -382,7 +382,7 @@
         'browser/ui/gtk/bookmarks/bookmark_bar_gtk_interactive_uitest.cc',
         'browser/instant/instant_browsertest.cc',
         'browser/notifications/notifications_interactive_uitest.cc',
-        'browser/ui/views/bookmark_bar_view_test.cc',
+        'browser/ui/views/bookmarks/bookmark_bar_view_test.cc',
         'browser/ui/views/find_bar_host_interactive_uitest.cc',
         'browser/ui/views/tabs/tab_dragging_test.cc',
         'test/interactive_ui/fast_shutdown_interactive_uitest.cc',
@@ -406,7 +406,7 @@
         ['OS=="linux" and toolkit_views==0', {
           'sources!': [
             # TODO(port)
-            'browser/ui/views/bookmark_bar_view_test.cc',
+            'browser/ui/views/bookmarks/bookmark_bar_view_test.cc',
             'browser/ui/views/find_bar_host_interactive_uitest.cc',
             'browser/ui/views/tabs/tab_dragging_test.cc',
             'browser/ui/views/tabs/tab_strip_interactive_uitest.cc',
@@ -433,7 +433,7 @@
             # TODO(port)
             'browser/autocomplete/autocomplete_edit_view_browsertest.cc',
             'browser/debugger/devtools_sanity_unittest.cc',
-            'browser/ui/views/bookmark_bar_view_test.cc',
+            'browser/ui/views/bookmarks/bookmark_bar_view_test.cc',
             'browser/ui/views/find_bar_host_interactive_uitest.cc',
             'browser/ui/views/tabs/tab_dragging_test.cc',
             'browser/ui/views/tabs/tab_strip_interactive_uitest.cc',
@@ -1701,9 +1701,9 @@
         'browser/ui/toolbar/encoding_menu_controller_unittest.cc',
         'browser/ui/toolbar/wrench_menu_model_unittest.cc',
         'browser/ui/views/accessibility_event_router_views_unittest.cc',
-        'browser/ui/views/bookmark_bar_view_unittest.cc',
-        'browser/ui/views/bookmark_context_menu_test.cc',
-        'browser/ui/views/bookmark_editor_view_unittest.cc',
+        'browser/ui/views/bookmarks/bookmark_bar_view_unittest.cc',
+        'browser/ui/views/bookmarks/bookmark_context_menu_test.cc',
+        'browser/ui/views/bookmarks/bookmark_editor_view_unittest.cc',
         'browser/ui/views/extensions/browser_action_drag_data_unittest.cc',
         'browser/ui/views/generic_info_view_unittest.cc',
         'browser/ui/views/info_bubble_unittest.cc',
@@ -2063,7 +2063,7 @@
             'browser/login_prompt_unittest.cc',
             'browser/rlz/rlz_unittest.cc',
             'browser/search_engines/template_url_scraper_unittest.cc',
-            'browser/ui/views/bookmark_editor_view_unittest.cc',
+            'browser/ui/views/bookmarks/bookmark_editor_view_unittest.cc',
             'browser/ui/views/extensions/browser_action_drag_data_unittest.cc',
             'browser/ui/views/find_bar_host_unittest.cc',
             'browser/ui/views/generic_info_view_unittest.cc',
