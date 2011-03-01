@@ -32,6 +32,11 @@ bool CollectPreliminaryGraphicsInfo(GPUInfo* gpu_info);
 // A D3D argument is passed in for testing purposes
 bool CollectGraphicsInfoD3D(IDirect3D9* d3d, GPUInfo* gpu_info);
 
+// Collects D3D driver version/date through registry lookup.
+// Note that this does not require a D3D context.
+// device_id here is the raw data in DISPLAY_DEVICE.
+bool CollectDriverInfoD3D(const std::wstring& device_id, GPUInfo* gpu_info);
+
 // Collect the DirectX Disagnostics information about the attached displays.
 bool GetDxDiagnostics(DxDiagNode* output);
 #endif
@@ -46,7 +51,7 @@ bool CollectGLVersionInfo(GPUInfo* gpu_info);
 bool CollectVideoCardInfo(GPUInfo* gpu_info);
 
 // Each platform stores the driver version on the GL_VERSION string differently
-bool CollectDriverInfo(GPUInfo* gpu_info);
+bool CollectDriverInfoGL(GPUInfo* gpu_info);
 
 }  // namespace gpu_info_collector
 

@@ -134,6 +134,7 @@ void ParamTraits<GPUInfo> ::Write(Message* m, const param_type& p) {
   WriteParam(m, p.device_id());
   WriteParam(m, p.driver_vendor());
   WriteParam(m, p.driver_version());
+  WriteParam(m, p.driver_date());
   WriteParam(m, p.pixel_shader_version());
   WriteParam(m, p.vertex_shader_version());
   WriteParam(m, p.gl_version());
@@ -155,6 +156,7 @@ bool ParamTraits<GPUInfo> ::Read(const Message* m, void** iter, param_type* p) {
   uint32 device_id;
   std::string driver_vendor;
   std::string driver_version;
+  std::string driver_date;
   uint32 pixel_shader_version;
   uint32 vertex_shader_version;
   uint32 gl_version;
@@ -169,6 +171,7 @@ bool ParamTraits<GPUInfo> ::Read(const Message* m, void** iter, param_type* p) {
   ret = ret && ReadParam(m, iter, &device_id);
   ret = ret && ReadParam(m, iter, &driver_vendor);
   ret = ret && ReadParam(m, iter, &driver_version);
+  ret = ret && ReadParam(m, iter, &driver_date);
   ret = ret && ReadParam(m, iter, &pixel_shader_version);
   ret = ret && ReadParam(m, iter, &vertex_shader_version);
   ret = ret && ReadParam(m, iter, &gl_version);
@@ -183,7 +186,7 @@ bool ParamTraits<GPUInfo> ::Read(const Message* m, void** iter, param_type* p) {
 
   p->SetInitializationTime(initialization_time);
   p->SetVideoCardInfo(vendor_id, device_id);
-  p->SetDriverInfo(driver_vendor, driver_version);
+  p->SetDriverInfo(driver_vendor, driver_version, driver_date);
   p->SetShaderVersion(pixel_shader_version, vertex_shader_version);
   p->SetGLVersion(gl_version);
   p->SetGLVersionString(gl_version_string);
@@ -204,7 +207,7 @@ bool ParamTraits<GPUInfo> ::Read(const Message* m, void** iter, param_type* p) {
 }
 
 void ParamTraits<GPUInfo> ::Log(const param_type& p, std::string* l) {
-  l->append(base::StringPrintf("<GPUInfo> %d %d %x %x %s %s %x %x %x %d",
+  l->append(base::StringPrintf("<GPUInfo> %d %d %x %x %s %s %s %x %x %x %d",
                                p.level(),
                                static_cast<int32>(
                                    p.initialization_time().InMilliseconds()),
@@ -212,6 +215,7 @@ void ParamTraits<GPUInfo> ::Log(const param_type& p, std::string* l) {
                                p.device_id(),
                                p.driver_vendor().c_str(),
                                p.driver_version().c_str(),
+                               p.driver_date().c_str(),
                                p.pixel_shader_version(),
                                p.vertex_shader_version(),
                                p.gl_version(),

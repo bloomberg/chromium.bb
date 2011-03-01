@@ -14,7 +14,8 @@ TEST(GpuBlacklistTest, BlacklistLogic) {
   gpu_info.SetVideoCardInfo(0x10de,  // Vendor ID
                             0x0640);  // Device ID
   gpu_info.SetDriverInfo("NVIDIA",  // Driver vendor
-                         "1.6.18");  // Driver Version
+                         "1.6.18",  // Driver Version
+                         "7-14-2009");  // Driver date
   gpu_info.SetLevel(GPUInfo::kComplete);
   scoped_ptr<Version> os_version(Version::GetVersionFromString("10.6.4"));
 

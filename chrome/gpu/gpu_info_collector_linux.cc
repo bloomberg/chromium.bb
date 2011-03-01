@@ -232,7 +232,7 @@ bool CollectVideoCardInfo(GPUInfo* gpu_info) {
   return (gpu_active != NULL);
 }
 
-bool CollectDriverInfo(GPUInfo* gpu_info) {
+bool CollectDriverInfoGL(GPUInfo* gpu_info) {
   DCHECK(gpu_info);
 
   std::string gl_version_string = gpu_info->gl_version_string();
@@ -250,7 +250,7 @@ bool CollectDriverInfo(GPUInfo* gpu_info) {
   if (pos != std::string::npos)
     driver_version = driver_version.substr(0, pos);
 
-  gpu_info->SetDriverInfo(pieces[1], driver_version);
+  gpu_info->SetDriverInfo(pieces[1], driver_version, "");
   return true;
 }
 

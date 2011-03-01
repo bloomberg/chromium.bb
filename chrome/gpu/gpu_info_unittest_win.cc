@@ -27,9 +27,6 @@ class GPUInfoTest : public testing::Test {
     test_caps_.PixelShaderVersion = 0xffff0300;  // 3.0
     test_caps_.VertexShaderVersion = 0xfffe0300;  // 3.0
 
-    EXPECT_CALL(d3d_, GetAdapterIdentifier(_, _, _))
-        .WillOnce(DoAll(SetArgumentPointee<2>(test_identifier_),
-                        Return(D3D_OK)));
     EXPECT_CALL(d3d_, GetDeviceCaps(_, _, _))
         .WillOnce(DoAll(SetArgumentPointee<2>(test_caps_),
                         Return(D3D_OK)));
@@ -46,26 +43,6 @@ class GPUInfoTest : public testing::Test {
   D3DADAPTER_IDENTIFIER9 test_identifier_;
   D3DCAPS9 test_caps_;
 };
-
-TEST_F(GPUInfoTest, VendorIdD3D) {
-  GPUInfo gpu_info;
-  ASSERT_TRUE(gpu_info_collector::CollectGraphicsInfoD3D(&d3d_, &gpu_info));
-  EXPECT_EQ(gpu_info.vendor_id(), 0x10de);
-}
-
-TEST_F(GPUInfoTest, DeviceIdD3D) {
-  GPUInfo gpu_info;
-  ASSERT_TRUE(gpu_info_collector::CollectGraphicsInfoD3D(&d3d_, &gpu_info));
-  EXPECT_EQ(gpu_info.device_id(), 0x429);
-}
-
-TEST_F(GPUInfoTest, DriverVersionD3D) {
-  GPUInfo gpu_info;
-  ASSERT_TRUE(gpu_info_collector::CollectGraphicsInfoD3D(&d3d_, &gpu_info));
-  std::string driver_version = gpu_info.driver_version();
-  EXPECT_FALSE(driver_version.empty());
-  EXPECT_EQ(driver_version, "6.14.11.7715");
-}
 
 TEST_F(GPUInfoTest, PixelShaderVersionD3D) {
   GPUInfo gpu_info;

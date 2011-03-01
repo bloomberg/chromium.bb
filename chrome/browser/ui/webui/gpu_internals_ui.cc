@@ -322,6 +322,8 @@ DictionaryValue* GpuInfoToDict(const GPUInfo& gpu_info) {
       gpu_info.driver_vendor()));
   basic_info->Append(NewDescriptionValuePair("Driver version",
       gpu_info.driver_version()));
+  basic_info->Append(NewDescriptionValuePair("Driver date",
+      gpu_info.driver_date()));
   basic_info->Append(NewDescriptionValuePair("Pixel shader version",
       VersionNumberToString(gpu_info.pixel_shader_version())));
   basic_info->Append(NewDescriptionValuePair("Vertex shader version",

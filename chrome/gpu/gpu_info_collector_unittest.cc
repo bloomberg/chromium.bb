@@ -66,7 +66,7 @@ class GPUInfoCollectorTest : public testing::Test {
         "GL_EXT_read_format_bgra";
 #endif
     test_values_.SetVideoCardInfo(vendor_id, device_id);
-    test_values_.SetDriverInfo(driver_vendor, driver_version);
+    test_values_.SetDriverInfo(driver_vendor, driver_version, "");
     test_values_.SetShaderVersion(shader_version, shader_version);
     test_values_.SetGLVersion(gl_version);
     test_values_.SetGLRenderer(gl_renderer);

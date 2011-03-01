@@ -93,7 +93,7 @@ bool CollectGraphicsInfoGL(GPUInfo* gpu_info) {
 
   bool validGLVersionInfo = CollectGLVersionInfo(gpu_info);
   bool validVideoCardInfo = CollectVideoCardInfo(gpu_info);
-  bool validDriverInfo = CollectDriverInfo(gpu_info);
+  bool validDriverInfo = CollectDriverInfoGL(gpu_info);
 
   FinalizeGLContext(&context);
 

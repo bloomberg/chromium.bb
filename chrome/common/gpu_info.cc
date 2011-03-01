@@ -10,6 +10,7 @@ GPUInfo::GPUInfo()
       device_id_(0),
       driver_vendor_(""),
       driver_version_(""),
+      driver_date_(""),
       pixel_shader_version_(0),
       vertex_shader_version_(0),
       gl_version_(0),
@@ -45,6 +46,10 @@ std::string GPUInfo::driver_vendor() const {
 
 std::string GPUInfo::driver_version() const {
   return driver_version_;
+}
+
+std::string GPUInfo::driver_date() const {
+  return driver_date_;
 }
 
 uint32 GPUInfo::pixel_shader_version() const {
@@ -98,9 +103,14 @@ void GPUInfo::SetVideoCardInfo(uint32 vendor_id, uint32 device_id) {
 }
 
 void GPUInfo::SetDriverInfo(const std::string& driver_vendor,
-                            const std::string& driver_version) {
-  driver_vendor_ = driver_vendor;
-  driver_version_ = driver_version;
+                            const std::string& driver_version,
+                            const std::string& driver_date) {
+  if (driver_vendor.length() > 0)
+    driver_vendor_ = driver_vendor;
+  if (driver_version.length() > 0)
+    driver_version_ = driver_version;
+  if (driver_date.length() > 0)
+    driver_date_ = driver_date;
 }
 
 void GPUInfo::SetShaderVersion(uint32 pixel_shader_version,

@@ -84,7 +84,7 @@ bool CollectVideoCardInfo(GPUInfo* gpu_info) {
   return true;
 }
 
-bool CollectDriverInfo(GPUInfo* gpu_info) {
+bool CollectDriverInfoGL(GPUInfo* gpu_info) {
   DCHECK(gpu_info);
 
   // Extract the OpenGL driver version string from the GL_VERSION string.
@@ -95,7 +95,7 @@ bool CollectDriverInfo(GPUInfo* gpu_info) {
   size_t pos = gl_version_string.find_last_of('-');
   if (pos == std::string::npos)
     return false;
-  gpu_info->SetDriverInfo("", gl_version_string.substr(pos + 1));
+  gpu_info->SetDriverInfo("", gl_version_string.substr(pos + 1), "");
   return true;
 }
 

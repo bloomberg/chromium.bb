@@ -16,7 +16,7 @@ TEST(GPUIPCMessageTest, GPUInfo) {
   input.SetLevel(GPUInfo::kPartial);
   input.SetInitializationTime(base::TimeDelta::FromMilliseconds(100));
   input.SetVideoCardInfo(0x10de, 0x0658);
-  input.SetDriverInfo("NVIDIA", "195.36.24");
+  input.SetDriverInfo("NVIDIA", "195.36.24", "7-14-2009");
   input.SetShaderVersion(0x0162, 0x0162);
   input.SetGLVersion(0x0302);
   input.SetGLVersionString("3.2.0 NVIDIA 195.36.24");
@@ -38,6 +38,7 @@ TEST(GPUIPCMessageTest, GPUInfo) {
   EXPECT_EQ(input.device_id(), output.device_id());
   EXPECT_EQ(input.driver_vendor(), output.driver_vendor());
   EXPECT_EQ(input.driver_version(), output.driver_version());
+  EXPECT_EQ(input.driver_date(), output.driver_date());
   EXPECT_EQ(input.pixel_shader_version(), output.pixel_shader_version());
   EXPECT_EQ(input.vertex_shader_version(), output.vertex_shader_version());
   EXPECT_EQ(input.gl_version(), output.gl_version());
@@ -49,6 +50,7 @@ TEST(GPUIPCMessageTest, GPUInfo) {
 
   std::string log_message;
   IPC::LogParam(output, &log_message);
-  EXPECT_STREQ("<GPUInfo> 1 100 10de 658 NVIDIA 195.36.24 162 162 302 0",
+  EXPECT_STREQ("<GPUInfo> 1 100 10de 658 NVIDIA "
+               "195.36.24 7-14-2009 162 162 302 0",
                log_message.c_str());
 }

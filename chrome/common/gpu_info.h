@@ -50,6 +50,9 @@ class GPUInfo {
   // Return the version of the graphics driver currently installed.
   std::string driver_version() const;
 
+  // Return the date of the graphics driver currently installed.
+  std::string driver_date() const;
+
   // Return the version of the pixel/fragment shader used by the gpu.
   // Major version in the second lowest 8 bits, minor in the lowest 8 bits,
   // eg version 2.5 would be 0x00000205.
@@ -100,7 +103,8 @@ class GPUInfo {
   void SetVideoCardInfo(uint32 vendor_id, uint32 device_id);
 
   void SetDriverInfo(const std::string& driver_vendor,
-                     const std::string& driver_version);
+                     const std::string& driver_version,
+                     const std::string& driver_date);
 
   void SetShaderVersion(uint32 pixel_shader_version,
                         uint32 vertex_shader_version);
@@ -133,6 +137,7 @@ class GPUInfo {
   uint32 device_id_;
   std::string driver_vendor_;
   std::string driver_version_;
+  std::string driver_date_;
   uint32 pixel_shader_version_;
   uint32 vertex_shader_version_;
   uint32 gl_version_;
