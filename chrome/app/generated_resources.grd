@@ -11376,19 +11376,25 @@ This web page was killed, either because Chrome ran out of memory, or you chose 
       Working
     </message>
     <message name="IDS_SPEECH_INPUT_ERROR" desc="Message shown when audio recording failed with an error during speech recognition.">
-      Audio recording device returned an error.
+      There was a problem with your microphone.
     </message>
     <message name="IDS_SPEECH_INPUT_NO_MIC" desc="Message shown when speech recognizer could not find a suitable microphone or other audio input device.">
-      No audio recording devices found.
+      No microphone found.
     </message>
     <message name="IDS_SPEECH_INPUT_NO_SPEECH" desc="Message shown when speech recognizer detected no speech in the recorded audio.">
-      No speech heard.
+      We didn't hear you.
     </message>
     <message name="IDS_SPEECH_INPUT_NO_RESULTS" desc="Message shown when speech recognizer returned zero results.">
-      No matches found.
+      Speech not recognized.
     </message>
     <message name="IDS_SPEECH_INPUT_TRY_AGAIN" desc="Text shown on a button to retry speech recognition">
       Try again
+    </message>
+    <message name="IDS_SPEECH_INPUT_NET_ERROR" desc="Message shown when a network error occured and no results were received from the recognition server.">
+      Connection to speech servers failed.
+    </message>
+    <message name="IDS_SPEECH_INPUT_MIC_SETTINGS" desc="Text displayed on a button or link to open the microphone settings window.">
+      Microphone settings
     </message>
 
     <message name="IDS_IMAGE_FILES" desc="The description of the image file extensions in the select file dialog.">
