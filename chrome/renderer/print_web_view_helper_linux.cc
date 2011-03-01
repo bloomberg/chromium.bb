@@ -137,7 +137,7 @@ bool PrintWebViewHelper::RenderPages(const ViewMsg_PrintPages_Params& params,
                                      int* page_count,
                                      printing::NativeMetafile* metafile) {
   ViewMsg_Print_Params printParams = params.params;
-  skia::VectorCanvas* canvas = NULL;
+  scoped_ptr<skia::VectorCanvas> canvas;
 
   {
     // Hack - when |prep_frame_view| goes out of scope, PrintEnd() gets called.
@@ -166,19 +166,16 @@ bool PrintWebViewHelper::RenderPages(const ViewMsg_PrintPages_Params& params,
     if (params.pages.empty()) {
       for (int i = 0; i < *page_count; ++i) {
         page_params.page_number = i;
-        delete canvas;
         PrintPage(page_params, canvas_size, frame, metafile, &canvas);
       }
     } else {
       for (size_t i = 0; i < params.pages.size(); ++i) {
         page_params.page_number = params.pages[i];
-        delete canvas;
         PrintPage(page_params, canvas_size, frame, metafile, &canvas);
       }
     }
   }
 
-  delete canvas;
   metafile->Close();
 
   return true;
@@ -188,7 +185,7 @@ void PrintWebViewHelper::PrintPage(const ViewMsg_PrintPage_Params& params,
                                    const gfx::Size& canvas_size,
                                    WebFrame* frame,
                                    printing::NativeMetafile* metafile,
-                                   skia::VectorCanvas** canvas) {
+                                   scoped_ptr<skia::VectorCanvas>* canvas) {
   double content_width_in_points;
   double content_height_in_points;
   double margin_top_in_points;
@@ -215,10 +212,10 @@ void PrintWebViewHelper::PrintPage(const ViewMsg_PrintPage_Params& params,
   if (!cairo_context)
     return;
 
-  *canvas = new skia::VectorCanvas(cairo_context,
-                                   canvas_size.width(),
-                                   canvas_size.height());
-  frame->printPage(params.page_number, *canvas);
+  canvas->reset(new skia::VectorCanvas(cairo_context,
+                                       canvas_size.width(),
+                                       canvas_size.height()));
+  frame->printPage(params.page_number, canvas->get());
 
   // TODO(myhuang): We should handle transformation for paper margins.
   // TODO(myhuang): We should render the header and the footer.

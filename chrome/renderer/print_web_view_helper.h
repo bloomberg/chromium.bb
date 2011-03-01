@@ -99,7 +99,7 @@ class PrintWebViewHelper : public RenderViewObserver ,
                  const gfx::Size& canvas_size,
                  WebKit::WebFrame* frame,
                  printing::NativeMetafile* metafile,
-                 skia::VectorCanvas** canvas);
+                 scoped_ptr<skia::VectorCanvas>* canvas);
 #else
   void PrintPage(const ViewMsg_PrintPage_Params& params,
                  const gfx::Size& canvas_size,
