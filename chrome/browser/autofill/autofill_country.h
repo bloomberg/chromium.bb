@@ -9,16 +9,17 @@
 #include <string>
 #include <vector>
 
+#include "base/basictypes.h"
 #include "base/string16.h"
 
 // Stores data associated with a country. Strings are localized to the app
 // locale.
-class AutoFillCountry {
+class AutofillCountry {
  public:
   // Returns country data corresponding to the two-letter ISO code
   // |country_code|.
-  AutoFillCountry(const std::string& country_code, const std::string& locale);
-  ~AutoFillCountry();
+  AutofillCountry(const std::string& country_code, const std::string& locale);
+  ~AutofillCountry();
 
   // Fills |country_codes| with a list of the available countries' codes.
   static void GetAvailableCountries(
@@ -42,10 +43,10 @@ class AutoFillCountry {
   const string16 state_label() const { return state_label_; }
 
  private:
-  AutoFillCountry(const std::string& country_code,
-                  const string16& name_,
-                  const string16& postal_code_label_,
-                  const string16& state_label_);
+  AutofillCountry(const std::string& country_code,
+                  const string16& name,
+                  const string16& postal_code_label,
+                  const string16& state_label);
 
   // The two-letter ISO-3166 country code.
   std::string country_code_;
@@ -58,6 +59,8 @@ class AutoFillCountry {
 
   // The localized label for the state (or province, district, etc.) field.
   string16 state_label_;
+
+  DISALLOW_COPY_AND_ASSIGN(AutofillCountry);
 };
 
 #endif  // CHROME_BROWSER_AUTOFILL_AUTOFILL_COUNTRY_H_

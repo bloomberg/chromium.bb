@@ -22,7 +22,7 @@
 
 namespace {
 
-struct AutoFillCountryData {
+struct AutofillCountryData {
   std::string country_code;
   int postal_code_label_id;
   int state_label_id;
@@ -33,7 +33,7 @@ const size_t kLocaleCapacity =
     ULOC_LANG_CAPACITY + ULOC_SCRIPT_CAPACITY + ULOC_COUNTRY_CAPACITY + 1;
 
 // Maps country codes to localized label string identifiers.
-const AutoFillCountryData kCountryData[] = {
+const AutofillCountryData kCountryData[] = {
   {"AD", IDS_AUTOFILL_DIALOG_POSTAL_CODE, IDS_AUTOFILL_DIALOG_PARISH},
   {"AE", IDS_AUTOFILL_DIALOG_POSTAL_CODE, IDS_AUTOFILL_DIALOG_EMIRATE},
   {"AF", IDS_AUTOFILL_DIALOG_POSTAL_CODE, IDS_AUTOFILL_DIALOG_PROVINCE},
@@ -278,32 +278,32 @@ const AutoFillCountryData kCountryData[] = {
 };
 
 // A singleton class that encapsulates a map from country codes to country data.
-class AutoFillCountries {
+class AutofillCountries {
  public:
   // Map type from country codes to country data.
-  typedef std::map<std::string, AutoFillCountryData> MapType;
+  typedef std::map<std::string, AutofillCountryData> MapType;
 
-  static AutoFillCountries* GetInstance();
+  static AutofillCountries* GetInstance();
   static const MapType& countries();
 
  private:
-  AutoFillCountries();
-  friend struct DefaultSingletonTraits<AutoFillCountries>;
+  AutofillCountries();
+  friend struct DefaultSingletonTraits<AutofillCountries>;
 
   MapType countries_;
 
-  DISALLOW_COPY_AND_ASSIGN(AutoFillCountries);
+  DISALLOW_COPY_AND_ASSIGN(AutofillCountries);
 };
 
 // static
-AutoFillCountries* AutoFillCountries::GetInstance() {
-  return Singleton<AutoFillCountries>::get();
+AutofillCountries* AutofillCountries::GetInstance() {
+  return Singleton<AutofillCountries>::get();
 }
 
-AutoFillCountries::AutoFillCountries() {
+AutofillCountries::AutofillCountries() {
   // Add all the countries we have explicit data for.
   for (size_t i = 0; i < arraysize(kCountryData); ++i) {
-    const AutoFillCountryData& data = kCountryData[i];
+    const AutofillCountryData& data = kCountryData[i];
     countries_.insert(std::make_pair(data.country_code, data));
   }
 
@@ -314,7 +314,7 @@ AutoFillCountries::AutoFillCountries() {
        ++country_pointer) {
     std::string country_code = *country_pointer;
     if (!countries_.count(country_code)) {
-      AutoFillCountryData data = {
+      AutofillCountryData data = {
         country_code,
         IDS_AUTOFILL_DIALOG_POSTAL_CODE,
         IDS_AUTOFILL_DIALOG_PROVINCE
@@ -324,7 +324,7 @@ AutoFillCountries::AutoFillCountries() {
   }
 }
 
-const AutoFillCountries::MapType& AutoFillCountries::countries() {
+const AutofillCountries::MapType& AutofillCountries::countries() {
   return GetInstance()->countries_;
 }
 
@@ -342,11 +342,11 @@ string16 GetDisplayName(const std::string& country_code,
 
 }  // namespace
 
-AutoFillCountry::AutoFillCountry(const std::string& country_code,
+AutofillCountry::AutofillCountry(const std::string& country_code,
                                  const std::string& locale) {
-  const AutoFillCountries::MapType& countries = AutoFillCountries::countries();
+  const AutofillCountries::MapType& countries = AutofillCountries::countries();
   DCHECK(countries.count(country_code));
-  const AutoFillCountryData& data = countries.find(country_code)->second;
+  const AutofillCountryData& data = countries.find(country_code)->second;
 
   country_code_ = country_code;
   name_ = GetDisplayName(country_code, icu::Locale(locale.c_str()));
@@ -354,17 +354,17 @@ AutoFillCountry::AutoFillCountry(const std::string& country_code,
   state_label_ = l10n_util::GetStringUTF16(data.state_label_id);
 }
 
-AutoFillCountry::~AutoFillCountry() {
+AutofillCountry::~AutofillCountry() {
 }
 
 // static
-void AutoFillCountry::GetAvailableCountries(
+void AutofillCountry::GetAvailableCountries(
     std::vector<std::string>* country_codes) {
   DCHECK(country_codes);
 
-  const AutoFillCountries::MapType& country_data =
-      AutoFillCountries::countries();
-  for (AutoFillCountries::MapType::const_iterator it = country_data.begin();
+  const AutofillCountries::MapType& country_data =
+      AutofillCountries::countries();
+  for (AutofillCountries::MapType::const_iterator it = country_data.begin();
        it != country_data.end();
        ++it) {
     country_codes->push_back(it->first);
@@ -372,7 +372,7 @@ void AutoFillCountry::GetAvailableCountries(
 }
 
 // static
-const std::string AutoFillCountry::CountryCodeForLocale(
+const std::string AutofillCountry::CountryCodeForLocale(
     const std::string& locale) {
   // Add likely subtags to the locale. In particular, add any likely country
   // subtags -- e.g. for locales like "ru" that only include the language.
@@ -391,7 +391,7 @@ const std::string AutoFillCountry::CountryCodeForLocale(
 }
 
 // static
-const std::string AutoFillCountry::GetCountryCode(
+const std::string AutofillCountry::GetCountryCode(
     const string16& country, const std::string& locale) {
   // First, check for a few common synonyms.
   if (country == ASCIIToUTF16("United States of America"))
@@ -404,8 +404,8 @@ const std::string AutoFillCountry::GetCountryCode(
   if (country == ASCIIToUTF16("Deutschland"))
     return "DE";
 
-  const AutoFillCountries::MapType& country_data =
-      AutoFillCountries::countries();
+  const AutofillCountries::MapType& country_data =
+      AutofillCountries::countries();
 
   // Check to see if |country| is actually a country code, in which case we can
   // short-circuit a lot of the hard work.
@@ -423,7 +423,7 @@ const std::string AutoFillCountry::GetCountryCode(
   ignored = U_ZERO_ERROR;
   collator->setAttribute(UCOL_ALTERNATE_HANDLING, UCOL_SHIFTED, ignored);
 
-  for (AutoFillCountries::MapType::const_iterator it = country_data.begin();
+  for (AutofillCountries::MapType::const_iterator it = country_data.begin();
        it != country_data.end();
        ++it) {
     std::string country_code = it->first;
@@ -447,11 +447,11 @@ const std::string AutoFillCountry::GetCountryCode(
 }
 
 // static
-const std::string AutoFillCountry::ApplicationLocale() {
+const std::string AutofillCountry::ApplicationLocale() {
   return g_browser_process->GetApplicationLocale();
 }
 
-AutoFillCountry::AutoFillCountry(const std::string& country_code,
+AutofillCountry::AutofillCountry(const std::string& country_code,
                                  const string16& name,
                                  const string16& postal_code_label,
                                  const string16& state_label)

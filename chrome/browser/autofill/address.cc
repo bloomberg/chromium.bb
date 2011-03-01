@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -170,8 +170,8 @@ string16 Address::Country() const {
   if (country_code().empty())
     return string16();
 
-  std::string app_locale = AutoFillCountry::ApplicationLocale();
-  return AutoFillCountry(country_code(), app_locale).name();
+  std::string app_locale = AutofillCountry::ApplicationLocale();
+  return AutofillCountry(country_code(), app_locale).name();
 }
 
 void Address::set_line1(const string16& line1) {
@@ -193,8 +193,8 @@ void Address::set_line2(const string16& line2) {
 }
 
 void Address::SetCountry(const string16& country) {
-  std::string app_locale = AutoFillCountry::ApplicationLocale();
-  country_code_ = AutoFillCountry::GetCountryCode(country, app_locale);
+  std::string app_locale = AutofillCountry::ApplicationLocale();
+  country_code_ = AutofillCountry::GetCountryCode(country, app_locale);
 }
 
 bool Address::IsLine1(const string16& text) const {
@@ -214,8 +214,8 @@ bool Address::IsState(const string16& text) const {
 }
 
 bool Address::IsCountry(const string16& text) const {
-  std::string app_locale = AutoFillCountry::ApplicationLocale();
-  std::string country_code = AutoFillCountry::GetCountryCode(text, app_locale);
+  std::string app_locale = AutofillCountry::ApplicationLocale();
+  std::string country_code = AutofillCountry::GetCountryCode(text, app_locale);
   return (!country_code.empty() && country_code_ == country_code);
 }
 

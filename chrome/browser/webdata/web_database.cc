@@ -3050,8 +3050,8 @@ sql::InitStatus WebDatabase::MigrateOldVersionsAsNeeded(){
               return sql::INIT_FAILURE;
             }
             string16 country = s.ColumnString16(1);
-            std::string app_locale = AutoFillCountry::ApplicationLocale();
-            update_s.BindString(0, AutoFillCountry::GetCountryCode(country,
+            std::string app_locale = AutofillCountry::ApplicationLocale();
+            update_s.BindString(0, AutofillCountry::GetCountryCode(country,
                                                                    app_locale));
             update_s.BindString(1, s.ColumnString(0));
 

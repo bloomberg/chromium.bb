@@ -162,7 +162,7 @@ bool FillCountrySelectControl(const FormGroup& form_group,
   const AutoFillProfile& profile =
       static_cast<const AutoFillProfile&>(form_group);
   std::string country_code = profile.CountryCode();
-  std::string app_locale = AutoFillCountry::ApplicationLocale();
+  std::string app_locale = AutofillCountry::ApplicationLocale();
 
   for (std::vector<string16>::const_iterator iter =
            field->option_strings().begin();
@@ -170,7 +170,7 @@ bool FillCountrySelectControl(const FormGroup& form_group,
        ++iter) {
     // Canonicalize each <option> value to a country code, and compare to the
     // target country code.
-    if (country_code == AutoFillCountry::GetCountryCode(*iter, app_locale)) {
+    if (country_code == AutofillCountry::GetCountryCode(*iter, app_locale)) {
       field->set_value(*iter);
       return true;
     }

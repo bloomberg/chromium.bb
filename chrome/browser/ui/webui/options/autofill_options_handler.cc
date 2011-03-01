@@ -49,13 +49,13 @@ int CreditCardTypeToResourceID(const string16& type16) {
 
 // Returns a dictionary that maps country codes to data for the country.
 DictionaryValue* GetCountryData() {
-  std::string app_locale = AutoFillCountry::ApplicationLocale();
+  std::string app_locale = AutofillCountry::ApplicationLocale();
   std::vector<std::string> country_codes;
-  AutoFillCountry::GetAvailableCountries(&country_codes);
+  AutofillCountry::GetAvailableCountries(&country_codes);
 
   DictionaryValue* country_data = new DictionaryValue();
   for (size_t i = 0; i < country_codes.size(); ++i) {
-    const AutoFillCountry country(country_codes[i], app_locale);
+    const AutofillCountry country(country_codes[i], app_locale);
 
     DictionaryValue* details = new DictionaryValue();
     details->SetString("name", country.name());
@@ -169,9 +169,9 @@ void AutoFillOptionsHandler::SetAddressOverlayStrings(
   localized_strings->SetString("emailLabel",
       l10n_util::GetStringUTF16(IDS_AUTOFILL_DIALOG_EMAIL));
 
-  std::string app_locale = AutoFillCountry::ApplicationLocale();
+  std::string app_locale = AutofillCountry::ApplicationLocale();
   std::string default_country_code =
-      AutoFillCountry::CountryCodeForLocale(app_locale);
+      AutofillCountry::CountryCodeForLocale(app_locale);
   localized_strings->SetString("defaultCountryCode", default_country_code);
   localized_strings->Set("autofillCountryData", GetCountryData());
 }
