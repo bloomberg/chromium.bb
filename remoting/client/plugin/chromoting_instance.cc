@@ -163,6 +163,9 @@ bool ChromotingInstance::HandleInputEvent(const PP_InputEvent& event) {
 
     case PP_INPUTEVENT_TYPE_KEYDOWN:
     case PP_INPUTEVENT_TYPE_KEYUP:
+      VLOG(3) << "PP_INPUTEVENT_TYPE_KEY"
+                << (event.type==PP_INPUTEVENT_TYPE_KEYDOWN ? "DOWN" : "UP")
+                << " key=" << event.u.key.key_code;
       pih->HandleKeyEvent(event.type == PP_INPUTEVENT_TYPE_KEYDOWN,
                           event.u.key);
       return true;

@@ -5,6 +5,7 @@
 #include "remoting/host/event_executor_linux.h"
 
 #include <X11/Xlib.h>
+#include <X11/XF86keysym.h>
 #include <X11/keysym.h>
 #include <X11/extensions/XTest.h>
 
@@ -36,8 +37,17 @@ static int MouseButtonToX11ButtonNumber(
   }
 }
 
-// TODO(ajwong): Move this to a central keycodes translation file.
-const int kPepperToX11Keysym[256] = {
+// Hard-coded mapping from Virtual Key codes to X11 KeySyms.
+// This mapping is only valid if both client and host are using a
+// US English keyboard layout.
+// Because we're passing VK codes on the wire, with no Scancode,
+// "extended" flag, etc, things like distinguishing left & right
+// Shift keys doesn't work.
+//
+// TODO(wez): Replace this with something more closely tied to what
+// WebInputEventFactory does on Linux/GTK, and which respects the
+// host's keyboard layout.
+const int kUsVkeyToKeysym[256] = {
    // 0x00 - 0x07
   -1, -1, -1, -1,
    // 0x04 - 0x07
@@ -48,23 +58,22 @@ const int kPepperToX11Keysym[256] = {
   XK_Clear, XK_Return, -1, -1,
 
   // 0x10 - 0x13
-  XK_Shift_L, XK_Control_L, XK_Menu, XK_Pause,
+  XK_Shift_L, XK_Control_L, XK_Alt_L, XK_Pause,
   // 0x14 - 0x17
-  /* VKEY_CAPITAL */ -1, XK_Kana_Shift, -1, /* VKEY_JUNJA */ -1,
+  XK_Caps_Lock, XK_Kana_Shift, -1, /* VKEY_JUNJA */ -1,
   // 0x18 - 0x1B
   /* VKEY_FINAL */ -1, XK_Kanji, -1, XK_Escape,
   // 0x1C - 0x1F
-  /* VKEY_CONVERT */ -1, /* VKEY_NONCONVERT */ -1, /* VKEY_ACCEPT */ -1,
-  XK_Mode_switch,
+  XK_Henkan, XK_Muhenkan, /* VKEY_ACCEPT */ -1, XK_Mode_switch,
 
   // 0x20 - 0x23
   XK_space, XK_Prior, XK_Next, XK_End,
   // 0x24 - 0x27
   XK_Home, XK_Left, XK_Up, XK_Right,
   // 0x28 - 0x2B
-  XK_Down, XK_Select, XK_Print, XK_Execute,
+  XK_Down, XK_Select, /* VK_PRINT */ -1, XK_Execute,
   // 0x2C - 0x2F
-  /* VKEY_SNAPSHOT */ -1, XK_Insert, XK_Delete, XK_Help,
+  XK_Print, XK_Insert, XK_Delete, XK_Help,
 
   // 0x30 - 0x33
   XK_0, XK_1, XK_2, XK_3,
@@ -76,7 +85,7 @@ const int kPepperToX11Keysym[256] = {
   -1, -1, -1, -1,
 
   // 0x40 - 0x43
-  XK_0, XK_A, XK_B, XK_C,
+  -1, XK_A, XK_B, XK_C,
   // 0x44 - 0x47
   XK_D, XK_E, XK_F, XK_G,
   // 0x48 - 0x4B
@@ -89,9 +98,9 @@ const int kPepperToX11Keysym[256] = {
   // 0x54 - 0x57
   XK_T, XK_U, XK_V, XK_W,
   // 0x58 - 0x5B
-  XK_X, XK_Y, XK_Z, XK_Meta_L,
+  XK_X, XK_Y, XK_Z, XK_Super_L,
   // 0x5C - 0x5F
-  XK_Meta_R, /* VKEY_APPS */ -1, -1, /* VKEY_SLEEP */-1,
+  XK_Super_R, XK_Menu, -1, /* VKEY_SLEEP */-1,
 
   // 0x60 - 0x63
   XK_KP_0, XK_KP_1, XK_KP_2, XK_KP_3,
@@ -132,29 +141,24 @@ const int kPepperToX11Keysym[256] = {
   // 0xA0 - 0xA3
   XK_Num_Lock, XK_Scroll_Lock, XK_Control_L, XK_Control_R,
   // 0xA4 - 0xA7
-  XK_Meta_L, XK_Meta_R, /* VKEY_BROWSER_BACK */ -1,
-  /* VKEY_BROWSER_FORWARD */ -1,
+  XK_Meta_L, XK_Meta_R, XF86XK_Back, XF86XK_Forward,
   // 0xA8 - 0xAB
-  /* VKEY_BROWSER_REFRESH */ -1, /* VKEY_BROWSER_STOP */ -1,
-  /* VKEY_BROWSER_SEARCH */ -1, /* VKEY_BROWSER_FAVORITES */ -1,
+  XF86XK_Refresh, XF86XK_Stop, XF86XK_Search, XF86XK_Favorites,
   // 0xAC - 0xAF
-  /* VKEY_BROWSER_HOME */ -1, /* VKEY_VOLUME_MUTE */ -1,
-  /* VKEY_VOLUME_DOWN */ -1, /* VKEY_VOLUME_UP */ -1,
+  XF86XK_HomePage, XF86XK_AudioMute, XF86XK_AudioLowerVolume,
+  XF86XK_AudioRaiseVolume,
 
   // 0xB0 - 0xB3
-  /* VKEY_MEDIA_NEXT_TRACK */ -1, /* VKEY_MEDIA_PREV_TRACK */ -1,
-  /* VKEY_MEDIA_STOP */ -1, /* VKEY_MEDIA_PLAY_PAUSE */ -1,
+  XF86XK_AudioNext, XF86XK_AudioPrev, XF86XK_AudioStop, XF86XK_AudioPause,
   // 0xB4 - 0xB7
-  /* VKEY_MEDIA_LAUNCH_MAIL */ -1, /* VKEY_MEDIA_LAUNCH_MEDIA_SELECT */ -1,
-  /* VKEY_MEDIA_LAUNCH_APP1 */ -1, /* VKEY_MEDIA_MEDIA_LAUNCH_APP2 */ -1,
+  XF86XK_Mail, XF86XK_AudioMedia, XF86XK_Launch0, XF86XK_Launch1,
   // 0xB8 - 0xBB
-  -1, -1, /* VKEY_OEM_1 */ -1, /* VKEY_OEM_PLUS */ -1,
+  -1, -1, XK_semicolon, XK_plus,
   // 0xBC - 0xBF
-  /* VKEY_OEM_COMMA */ -1, /* VKEY_OEM_MINUS */ -1,
-  /* VKEY_OEM_PERIOD */ -1, /* VKEY_OEM_2 */ -1,
+  XK_comma, XK_minus, XK_period, XK_slash,
 
   // 0xC0 - 0xC3
-  /* VKEY_OEM_3 */ -1, -1, -1, -1,
+  XK_grave, -1, -1, -1,
   // 0xC4 - 0xC7
   -1, -1, -1, -1
   // 0xC8 - 0xCB
@@ -167,9 +171,9 @@ const int kPepperToX11Keysym[256] = {
   // 0xD4 - 0xD7
   -1, -1, -1, -1
   // 0xD8 - 0xDB
-  -1, -1, -1, /* VKEY_OEM_4 */ -1,
+  -1, -1, -1, XK_bracketleft,
   // 0xDC - 0xDF
-  /* VKEY_OEM_5 */ -1, /* VKEY_OEM_6 */ -1, /* VKEY_OEM_7 */ -1,
+  XK_backslash, XK_bracketright, XK_apostrophe,
   /* VKEY_OEM_8 */ -1,
 
   // 0xE0 - 0xE3
@@ -197,7 +201,7 @@ static int ChromotocolKeycodeToX11Keysym(int32_t keycode) {
     return -1;
   }
 
-  return kPepperToX11Keysym[keycode];
+  return kUsVkeyToKeysym[keycode];
 }
 
 class EventExecutorLinuxPimpl {
