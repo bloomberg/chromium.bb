@@ -128,6 +128,9 @@ ui::EventType EventTypeFromNative(NativeEvent2 native_event) {
         return ui::ET_MOUSEWHEEL;
       return ui::ET_MOUSE_PRESSED;
     case ButtonRelease:
+      if (native_event->xbutton.button == 4 ||
+          native_event->xbutton.button == 5)
+        return ui::ET_MOUSEWHEEL;
       return ui::ET_MOUSE_RELEASED;
     case MotionNotify:
       if (native_event->xmotion.state &
@@ -143,7 +146,8 @@ ui::EventType EventTypeFromNative(NativeEvent2 native_event) {
           return (xievent->detail == 4 || xievent->detail == 5) ?
               ui::ET_MOUSEWHEEL : ui::ET_MOUSE_PRESSED;
         case XI_ButtonRelease:
-          return ui::ET_MOUSE_RELEASED;
+          return (xievent->detail == 4 || xievent->detail == 5) ?
+              ui::ET_MOUSEWHEEL : ui::ET_MOUSE_RELEASED;
         case XI_Motion:
           return GetButtonMaskForX2Event(xievent) ? ui::ET_MOUSE_DRAGGED :
               ui::ET_MOUSE_MOVED;
