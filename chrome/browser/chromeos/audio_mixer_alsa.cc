@@ -13,9 +13,9 @@
 #include "base/task.h"
 #include "base/threading/thread_restrictions.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/browser_thread.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/common/pref_names.h"
+#include "content/browser/browser_thread.h"
 
 namespace chromeos {
 

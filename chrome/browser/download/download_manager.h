@@ -40,9 +40,9 @@
 #include "base/scoped_ptr.h"
 #include "base/time.h"
 #include "base/weak_ptr.h"
-#include "chrome/browser/browser_thread.h"
 #include "chrome/browser/download/download_status_updater_delegate.h"
 #include "chrome/browser/ui/shell_dialogs.h"
+#include "content/browser/browser_thread.h"
 
 class DownloadFileManager;
 class DownloadHistory;

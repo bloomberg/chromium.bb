@@ -16,7 +16,7 @@
 #include "base/file_util.h"
 #include "base/logging.h"
 #include "base/string_util.h"
-#include "chrome/browser/browser_thread.h"
+#include "content/browser/browser_thread.h"
 #include "googleurl/src/gurl.h"
 
 #if !defined(OS_CHROMEOS)

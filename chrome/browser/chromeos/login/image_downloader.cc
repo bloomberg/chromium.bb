@@ -10,7 +10,7 @@
 #include "base/message_loop.h"
 #include "base/string_util.h"
 #include "base/stringprintf.h"
-#include "chrome/browser/browser_thread.h"
+#include "content/browser/browser_thread.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/common/net/url_fetcher.h"
 

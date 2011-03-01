@@ -24,7 +24,7 @@
 #include "base/stringprintf.h"
 #include "base/threading/thread.h"
 #include "base/time.h"
-#include "chrome/browser/browser_thread.h"
+#include "content/browser/browser_thread.h"
 #include "skia/ext/image_operations.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/core/SkColorPriv.h"

@@ -4,11 +4,11 @@
 
 #include <string>
 
-#include "chrome/browser/browser_thread.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/browser/chromeos/login/authenticator.h"
 #include "chrome/browser/chromeos/login/login_utils.h"
 #include "chrome/browser/chromeos/webui/login/authenticator_facade_cros_helpers.h"
+#include "content/browser/browser_thread.h"
 
 namespace chromeos {
 

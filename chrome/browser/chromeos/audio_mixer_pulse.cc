@@ -10,7 +10,7 @@
 #include "base/message_loop.h"
 #include "base/task.h"
 #include "base/threading/thread_restrictions.h"
-#include "chrome/browser/browser_thread.h"
+#include "content/browser/browser_thread.h"
 
 namespace chromeos {
 

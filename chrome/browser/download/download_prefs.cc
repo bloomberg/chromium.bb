@@ -9,12 +9,12 @@
 #include "base/string_util.h"
 #include "base/sys_string_conversions.h"
 #include "base/utf_string_conversions.h"
-#include "chrome/browser/browser_thread.h"
 #include "chrome/browser/download/download_extensions.h"
 #include "chrome/browser/download/download_util.h"
 #include "chrome/browser/download/save_package.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/common/pref_names.h"
+#include "content/browser/browser_thread.h"
 
 DownloadPrefs::DownloadPrefs(PrefService* prefs) : prefs_(prefs) {
   prompt_for_download_.Init(prefs::kPromptForDownload, prefs, NULL);

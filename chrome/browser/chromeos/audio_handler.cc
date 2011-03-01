@@ -8,9 +8,9 @@
 
 #include "base/logging.h"
 #include "base/singleton.h"
-#include "chrome/browser/browser_thread.h"
 #include "chrome/browser/chromeos/audio_mixer_alsa.h"
 #include "chrome/browser/chromeos/audio_mixer_pulse.h"
+#include "content/browser/browser_thread.h"
 
 namespace chromeos {
 

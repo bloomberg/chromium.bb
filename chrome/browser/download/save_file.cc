@@ -5,7 +5,7 @@
 #include "chrome/browser/download/save_file.h"
 
 #include "base/logging.h"
-#include "chrome/browser/browser_thread.h"
+#include "content/browser/browser_thread.h"
 #include "net/base/file_stream.h"
 
 SaveFile::SaveFile(const SaveFileCreateInfo* info)

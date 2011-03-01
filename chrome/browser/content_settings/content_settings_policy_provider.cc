@@ -8,7 +8,6 @@
 #include <vector>
 
 #include "base/command_line.h"
-#include "chrome/browser/browser_thread.h"
 #include "chrome/browser/content_settings/content_settings_details.h"
 #include "chrome/browser/content_settings/content_settings_pattern.h"
 #include "chrome/browser/prefs/pref_service.h"
@@ -18,7 +17,7 @@
 #include "chrome/common/notification_service.h"
 #include "chrome/common/notification_source.h"
 #include "chrome/common/pref_names.h"
-
+#include "content/browser/browser_thread.h"
 #include "webkit/plugins/npapi/plugin_group.h"
 #include "webkit/plugins/npapi/plugin_list.h"
 

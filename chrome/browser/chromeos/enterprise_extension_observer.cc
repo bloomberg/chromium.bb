@@ -5,10 +5,10 @@
 #include "chrome/browser/chromeos/enterprise_extension_observer.h"
 
 #include "base/file_util.h"
-#include "chrome/browser/browser_thread.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/browser/chromeos/cros/login_library.h"
 #include "chrome/browser/profiles/profile.h"
+#include "content/browser/browser_thread.h"
 
 namespace chromeos {
 

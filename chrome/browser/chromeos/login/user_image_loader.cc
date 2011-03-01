@@ -7,7 +7,7 @@
 #include "base/file_path.h"
 #include "base/file_util.h"
 #include "base/message_loop.h"
-#include "chrome/browser/browser_thread.h"
+#include "content/browser/browser_thread.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/gfx/codec/png_codec.h"
 

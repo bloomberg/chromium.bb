@@ -13,7 +13,6 @@
 #include "base/message_loop.h"
 #include "base/string_util.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/browser_thread.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/browser/chromeos/cros/keyboard_library.h"
 #include "chrome/browser/chromeos/input_method/candidate_window.h"
@@ -22,6 +21,7 @@
 #include "chrome/common/notification_observer.h"
 #include "chrome/common/notification_registrar.h"
 #include "chrome/common/notification_service.h"
+#include "content/browser/browser_thread.h"
 
 namespace {
 

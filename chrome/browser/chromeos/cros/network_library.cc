@@ -14,11 +14,11 @@
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
-#include "chrome/browser/browser_thread.h"
 #include "chrome/browser/chromeos/network_login_observer.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/common/time_format.h"
+#include "content/browser/browser_thread.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 

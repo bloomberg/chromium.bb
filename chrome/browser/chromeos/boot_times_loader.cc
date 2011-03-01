@@ -20,12 +20,12 @@
 #include "base/threading/thread_restrictions.h"
 #include "base/time.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/browser_thread.h"
 #include "chrome/browser/chromeos/login/authentication_notification_details.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/chromeos/network_state_notifier.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/notification_service.h"
+#include "content/browser/browser_thread.h"
 
 namespace chromeos {
 

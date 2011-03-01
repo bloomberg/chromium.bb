@@ -12,7 +12,6 @@
 #include "base/timer.h"
 #include "base/utf_string_conversions.h"
 #include "net/base/net_util.h"
-#include "chrome/browser/browser_thread.h"
 #include "chrome/browser/download/download_extensions.h"
 #include "chrome/browser/download/download_file_manager.h"
 #include "chrome/browser/download/download_history.h"
@@ -25,6 +24,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/pref_names.h"
+#include "content/browser/browser_thread.h"
 #include "ui/base/l10n/l10n_util.h"
 
 // A DownloadItem normally goes through the following states:

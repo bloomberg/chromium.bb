@@ -6,12 +6,12 @@
 
 #include "base/lazy_instance.h"
 #include "base/ref_counted.h"
-#include "chrome/browser/browser_thread.h"
-#include "chrome/browser/tab_contents/navigation_controller.h"
-#include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/browser/tab_contents/tab_util.h"
 #include "chrome/common/notification_details.h"
 #include "chrome/common/notification_source.h"
+#include "content/browser/browser_thread.h"
+#include "content/browser/tab_contents/navigation_controller.h"
+#include "content/browser/tab_contents/tab_contents.h"
 
 namespace chromeos {
 

@@ -6,7 +6,6 @@
 #include "base/singleton.h"
 #include "base/string_piece.h"
 #include "base/values.h"
-#include "chrome/browser/browser_thread.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/browser/chromeos/cros/power_library.h"
 #include "chrome/browser/chromeos/webui/login/authenticator_facade.h"
@@ -15,11 +14,12 @@
 #include "chrome/browser/chromeos/webui/login/login_ui.h"
 #include "chrome/browser/chromeos/webui/login/login_ui_helpers.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/webui/chrome_url_data_manager.h"
 #include "chrome/common/url_constants.h"
+#include "content/browser/browser_thread.h"
+#include "content/browser/tab_contents/tab_contents.h"
 
 namespace chromeos {
 

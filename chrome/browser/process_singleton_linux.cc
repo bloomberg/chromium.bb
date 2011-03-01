@@ -76,7 +76,6 @@
 #include "base/timer.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/browser_thread.h"
 #if defined(TOOLKIT_GTK)
 #include "chrome/browser/ui/gtk/process_singleton_dialog.h"
 #endif
@@ -87,6 +86,7 @@
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
+#include "content/browser/browser_thread.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "net/base/net_util.h"

@@ -8,7 +8,6 @@
 
 #include "base/ref_counted.h"
 #include "base/scoped_ptr.h"
-#include "chrome/browser/browser_thread.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/browser/chromeos/login/auth_attempt_state.h"
 #include "chrome/browser/chromeos/login/auth_attempt_state_resolver.h"
@@ -17,6 +16,7 @@
 #include "chrome/common/net/gaia/gaia_auth_consumer.h"
 #include "chrome/common/net/gaia/gaia_auth_fetcher.h"
 #include "chrome/common/net/gaia/gaia_constants.h"
+#include "content/browser/browser_thread.h"
 #include "net/base/load_flags.h"
 #include "net/base/net_errors.h"
 #include "net/url_request/url_request_status.h"

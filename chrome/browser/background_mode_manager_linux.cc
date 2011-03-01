@@ -12,12 +12,12 @@
 #include "base/nix/xdg_util.h"
 #include "base/task.h"
 #include "chrome/browser/background_mode_manager.h"
-#include "chrome/browser/browser_thread.h"
 #include "chrome/browser/shell_integration.h"
 #include "chrome/browser/ui/gtk/gtk_util.h"
 #include "chrome/common/auto_start_linux.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/chrome_version_info.h"
+#include "content/browser/browser_thread.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 

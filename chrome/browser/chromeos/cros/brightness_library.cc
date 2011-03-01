@@ -6,10 +6,10 @@
 
 #include "base/message_loop.h"
 #include "base/observer_list.h"
-#include "chrome/browser/browser_thread.h"
 #include "chrome/browser/chromeos/brightness_bubble.h"
 #include "chrome/browser/chromeos/volume_bubble.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
+#include "content/browser/browser_thread.h"
 
 namespace chromeos {
 

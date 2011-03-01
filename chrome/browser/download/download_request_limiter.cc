@@ -5,14 +5,14 @@
 #include "chrome/browser/download/download_request_limiter.h"
 
 #include "base/stl_util-inl.h"
-#include "chrome/browser/browser_thread.h"
 #include "chrome/browser/download/download_request_infobar_delegate.h"
-#include "chrome/browser/tab_contents/navigation_controller.h"
-#include "chrome/browser/tab_contents/navigation_entry.h"
-#include "chrome/browser/tab_contents/tab_contents_delegate.h"
 #include "chrome/browser/tab_contents/tab_util.h"
-#include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/common/notification_source.h"
+#include "content/browser/browser_thread.h"
+#include "content/browser/tab_contents/navigation_controller.h"
+#include "content/browser/tab_contents/navigation_entry.h"
+#include "content/browser/tab_contents/tab_contents_delegate.h"
+#include "content/browser/tab_contents/tab_contents.h"
 
 // TabDownloadState ------------------------------------------------------------
 

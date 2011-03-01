@@ -9,12 +9,12 @@
 #include <string>
 #include <vector>
 
-#include "chrome/browser/browser_thread.h"
 #include "chrome/browser/chromeos/login/owner_key_utils.h"
 #include "chrome/browser/chromeos/login/owner_manager.h"
 #include "chrome/common/notification_observer.h"
 #include "chrome/common/notification_registrar.h"
 #include "chrome/common/notification_service.h"
+#include "content/browser/browser_thread.h"
 
 namespace base {
 template <typename T> struct DefaultLazyInstanceTraits;

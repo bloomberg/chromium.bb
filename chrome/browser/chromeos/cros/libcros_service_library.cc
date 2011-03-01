@@ -5,8 +5,8 @@
 #include "chrome/browser/chromeos/cros/libcros_service_library.h"
 
 #include "base/synchronization/lock.h"
-#include "chrome/browser/browser_thread.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
+#include "content/browser/browser_thread.h"
 #include "cros/chromeos_libcros_service.h"
 #include "net/base/net_errors.h"
 #include "net/proxy/proxy_service.h"

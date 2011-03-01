@@ -9,10 +9,10 @@
 #include "base/metrics/histogram.h"
 #include "base/metrics/stats_counters.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/browser_thread.h"
 #include "chrome/browser/download/download_manager.h"
 #include "chrome/browser/history/download_create_info.h"
-#include "chrome/browser/renderer_host/resource_dispatcher_host.h"
+#include "content/browser/browser_thread.h"
+#include "content/browser/renderer_host/resource_dispatcher_host.h"
 
 // TODO(lzheng): Get rid of the AddRef and Release after
 // SafeBrowsingService::Client is changed to RefCountedThreadSafe<>.

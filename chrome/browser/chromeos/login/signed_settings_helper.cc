@@ -10,8 +10,8 @@
 #include "base/lazy_instance.h"
 #include "base/logging.h"
 #include "base/ref_counted.h"
-#include "chrome/browser/browser_thread.h"
 #include "chrome/browser/chromeos/login/signed_settings.h"
+#include "content/browser/browser_thread.h"
 
 namespace chromeos {
 

@@ -10,11 +10,11 @@
 #include "base/file_path.h"
 #include "base/file_util.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/browser_thread.h"
 #include "chrome/browser/chromeos/boot_times_loader.h"
 #include "chrome/browser/chromeos/login/signed_settings_temp_storage.h"
 #include "chrome/common/notification_service.h"
 #include "chrome/common/notification_type.h"
+#include "content/browser/browser_thread.h"
 
 namespace chromeos {
 

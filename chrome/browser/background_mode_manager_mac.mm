@@ -5,9 +5,9 @@
 #include "base/command_line.h"
 #include "base/mac/mac_util.h"
 #include "chrome/browser/background_mode_manager.h"
-#include "chrome/browser/browser_thread.h"
 #include "chrome/common/app_mode_common_mac.h"
 #include "chrome/common/chrome_switches.h"
+#include "content/browser/browser_thread.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 

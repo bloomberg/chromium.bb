@@ -11,12 +11,12 @@
 #include "base/stringprintf.h"
 #include "base/threading/thread_restrictions.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/browser_thread.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/browser/chromeos/cros/login_library.h"
 #include "chrome/browser/chromeos/login/authenticator.h"
 #include "chrome/browser/chromeos/login/ownership_service.h"
 #include "chrome/browser/chromeos/login/signed_settings_temp_storage.h"
+#include "content/browser/browser_thread.h"
 
 namespace chromeos {
 

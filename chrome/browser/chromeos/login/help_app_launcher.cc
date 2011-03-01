@@ -7,9 +7,9 @@
 #include "base/file_util.h"
 #include "base/logging.h"
 #include "base/utf_string_conversions.h"
-#include "chrome/browser/browser_thread.h"
 #include "chrome/browser/chromeos/login/help_app_launcher.h"
 #include "chrome/common/url_constants.h"
+#include "content/browser/browser_thread.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 

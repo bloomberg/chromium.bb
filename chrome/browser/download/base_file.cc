@@ -10,8 +10,8 @@
 #include "base/stringprintf.h"
 #include "net/base/file_stream.h"
 #include "net/base/net_errors.h"
-#include "chrome/browser/browser_thread.h"
 #include "chrome/browser/download/download_util.h"
+#include "content/browser/browser_thread.h"
 
 #if defined(OS_WIN)
 #include "chrome/common/win_safe_util.h"

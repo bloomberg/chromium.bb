@@ -9,9 +9,9 @@
 #include "base/logging.h"
 #include "base/string_util.h"
 #include "base/task.h"
-#include "chrome/browser/browser_thread.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/common/json_value_serializer.h"
+#include "content/browser/browser_thread.h"
 
 namespace chromeos {
 

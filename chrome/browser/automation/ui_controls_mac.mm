@@ -10,7 +10,7 @@
 
 #include "base/message_loop.h"
 #include "chrome/browser/automation/ui_controls_internal.h"
-#include "chrome/browser/browser_thread.h"
+#include "content/browser/browser_thread.h"
 #include "ui/base/keycodes/keyboard_code_conversion_mac.h"
 
 // Implementation details: We use [NSApplication sendEvent:] instead

@@ -14,7 +14,7 @@
 #include "base/threading/thread.h"
 #include "base/time.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/browser_thread.h"
+#include "content/browser/browser_thread.h"
 
 namespace chromeos {
 

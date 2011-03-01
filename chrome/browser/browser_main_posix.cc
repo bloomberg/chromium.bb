@@ -16,8 +16,8 @@
 #include "base/string_number_conversions.h"
 #include "base/threading/platform_thread.h"
 #include "chrome/browser/browser_list.h"
-#include "chrome/browser/browser_thread.h"
 #include "chrome/common/chrome_switches.h"
+#include "content/browser/browser_thread.h"
 
 #if defined(OS_LINUX) && !defined(OS_CHROMEOS)
 #include "chrome/browser/printing/print_dialog_gtk.h"

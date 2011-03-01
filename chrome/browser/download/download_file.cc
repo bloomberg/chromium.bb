@@ -8,10 +8,10 @@
 
 #include "base/file_util.h"
 #include "base/stringprintf.h"
-#include "chrome/browser/browser_thread.h"
 #include "chrome/browser/download/download_manager.h"
 #include "chrome/browser/download/download_util.h"
 #include "chrome/browser/history/download_create_info.h"
+#include "content/browser/browser_thread.h"
 
 DownloadFile::DownloadFile(const DownloadCreateInfo* info,
                            DownloadManager* download_manager)

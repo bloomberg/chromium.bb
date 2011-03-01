@@ -6,11 +6,11 @@
 
 #include "base/message_loop.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/browser_thread.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/browser/chromeos/login/signed_settings_temp_storage.h"
 #include "chrome/common/notification_service.h"
 #include "chrome/common/notification_type.h"
+#include "content/browser/browser_thread.h"
 
 namespace chromeos {
 
