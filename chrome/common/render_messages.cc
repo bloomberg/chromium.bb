@@ -680,7 +680,6 @@ void ParamTraits<WebPreferences>::Write(Message* m, const param_type& p) {
   WriteParam(m, p.accelerated_video_enabled);
   WriteParam(m, p.memory_info_enabled);
   WriteParam(m, p.interactive_form_validation_enabled);
-  WriteParam(m, p.fullscreen_enabled);
 }
 
 bool ParamTraits<WebPreferences>::Read(const Message* m, void** iter,
@@ -737,8 +736,7 @@ bool ParamTraits<WebPreferences>::Read(const Message* m, void** iter,
       ReadParam(m, iter, &p->accelerated_layers_enabled) &&
       ReadParam(m, iter, &p->accelerated_video_enabled) &&
       ReadParam(m, iter, &p->memory_info_enabled) &&
-      ReadParam(m, iter, &p->interactive_form_validation_enabled) &&
-      ReadParam(m, iter, &p->fullscreen_enabled);
+      ReadParam(m, iter, &p->interactive_form_validation_enabled);
 }
 
 void ParamTraits<WebPreferences>::Log(const param_type& p, std::string* l) {

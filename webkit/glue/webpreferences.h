@@ -79,7 +79,6 @@ struct WebPreferences {
   bool accelerated_plugins_enabled;
   bool memory_info_enabled;
   bool interactive_form_validation_enabled;
-  bool fullscreen_enabled;
 
   // We try to keep the default values the same as the default values in
   // chrome, except for the cases where it would require lots of extra work for
