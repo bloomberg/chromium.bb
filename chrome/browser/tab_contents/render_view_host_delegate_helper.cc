@@ -307,6 +307,9 @@ WebPreferences RenderViewHostDelegateHelper::GetWebkitPrefs(
         !command_line.HasSwitch(switches::kNoPings);
     web_prefs.interactive_form_validation_enabled =
         !command_line.HasSwitch(switches::kDisableInteractiveFormValidation);
+    web_prefs.fullscreen_enabled =
+        command_line.HasSwitch(switches::kEnableFullScreen);
+
     // The user stylesheet watcher may not exist in a testing profile.
     if (profile->GetUserStyleSheetWatcher()) {
       web_prefs.user_style_sheet_enabled = true;
