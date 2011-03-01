@@ -29,3 +29,7 @@ void AutofillMetrics::Log(QualityMetric metric,
 
   UMA_HISTOGRAM_ENUMERATION(histogram_name, metric, NUM_QUALITY_METRICS);
 }
+
+void AutofillMetrics::LogProfileCount(size_t num_profiles) const {
+  UMA_HISTOGRAM_COUNTS("AutoFill.ProfileCount", num_profiles);
+}

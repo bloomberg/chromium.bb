@@ -64,6 +64,9 @@ class AutofillMetrics {
   virtual void Log(QualityMetric metric,
                    const std::string& experiment_id) const;
 
+  // This should be called at most once per run.
+  virtual void LogProfileCount(size_t num_profiles) const;
+
  private:
   DISALLOW_COPY_AND_ASSIGN(AutofillMetrics);
 };

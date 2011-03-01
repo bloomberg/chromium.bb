@@ -12,6 +12,7 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/autofill/autofill_field.h"
 #include "chrome/browser/autofill/autofill-inl.h"
+#include "chrome/browser/autofill/autofill_metrics.h"
 #include "chrome/browser/autofill/form_structure.h"
 #include "chrome/browser/autofill/phone_number.h"
 #include "chrome/browser/browser_thread.h"
@@ -91,6 +92,9 @@ bool IsMinimumAddress(const AutoFillProfile& profile) {
          !profile.GetFieldText(AutoFillType(ADDRESS_HOME_STATE)).empty() &&
          !profile.GetFieldText(AutoFillType(ADDRESS_HOME_ZIP)).empty();
 }
+
+// Whether we have already logged the number of profiles this session.
+bool g_has_logged_profile_count = false;
 
 }  // namespace
 
@@ -605,11 +609,18 @@ void PersonalDataManager::Refresh() {
   LoadCreditCards();
 }
 
+// static
+void PersonalDataManager::set_has_logged_profile_count(
+    bool has_logged_profile_count) {
+  g_has_logged_profile_count = has_logged_profile_count;
+}
+
 PersonalDataManager::PersonalDataManager()
     : profile_(NULL),
       is_data_loaded_(false),
       pending_profiles_query_(0),
-      pending_creditcards_query_(0) {
+      pending_creditcards_query_(0),
+      metric_logger_(new AutofillMetrics) {
 }
 
 void PersonalDataManager::Init(Profile* profile) {
@@ -666,6 +677,8 @@ void PersonalDataManager::ReceiveLoadedProfiles(WebDataService::Handle h,
        iter != profiles.end(); ++iter) {
     web_profiles_.push_back(*iter);
   }
+
+  LogProfileCount();
 }
 
 void PersonalDataManager::ReceiveLoadedCreditCards(
@@ -799,4 +812,21 @@ void PersonalDataManager::SaveImportedCreditCard(
     creditcards.push_back(imported_credit_card);
 
   SetCreditCards(&creditcards);
+}
+
+
+void PersonalDataManager::LogProfileCount() const {
+  if (!g_has_logged_profile_count) {
+    g_has_logged_profile_count = true;
+    metric_logger_->LogProfileCount(web_profiles_.size());
+  }
+}
+
+const AutofillMetrics* PersonalDataManager::metric_logger() const {
+  return metric_logger_.get();
+}
+
+void PersonalDataManager::set_metric_logger(
+    const AutofillMetrics* metric_logger) {
+  metric_logger_.reset(metric_logger);
 }

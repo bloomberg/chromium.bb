@@ -21,6 +21,7 @@
 #include "chrome/browser/webdata/web_data_service.h"
 
 class AutoFillManager;
+class AutofillMetrics;
 class FormStructure;
 class Profile;
 
@@ -158,6 +159,9 @@ class PersonalDataManager
   friend class ProfileImpl;
   friend class ProfileSyncServiceAutofillTest;
 
+  // For tests.
+  static void set_has_logged_profile_count(bool has_logged_profile_count);
+
   PersonalDataManager();
   virtual ~PersonalDataManager();
 
@@ -197,6 +201,14 @@ class PersonalDataManager
                     const std::vector<AutoFillProfile*>& existing_profiles,
                     std::vector<AutoFillProfile>* merged_profiles);
 
+  // The first time this is called, logs an UMA metrics for the number of
+  // profiles the user has. On subsequent calls, does nothing.
+  void LogProfileCount() const;
+
+  // For tests.
+  const AutofillMetrics* metric_logger() const;
+  void set_metric_logger(const AutofillMetrics* metric_logger);
+
   // The profile hosting this PersonalDataManager.
   Profile* profile_;
 
@@ -229,6 +241,10 @@ class PersonalDataManager
 
   // The observers.
   ObserverList<Observer> observers_;
+
+ private:
+  // For logging UMA metrics. Overridden by metrics tests.
+  scoped_ptr<const AutofillMetrics> metric_logger_;
 
   DISALLOW_COPY_AND_ASSIGN(PersonalDataManager);
 };

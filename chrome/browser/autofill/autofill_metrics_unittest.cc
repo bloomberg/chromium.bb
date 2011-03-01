@@ -12,6 +12,7 @@
 #include "chrome/browser/autofill/autofill_manager.h"
 #include "chrome/browser/autofill/autofill_metrics.h"
 #include "chrome/browser/autofill/personal_data_manager.h"
+#include "chrome/browser/webdata/web_data_service.h"
 #include "content/browser/renderer_host/test_render_view_host.h"
 #include "content/browser/tab_contents/test_tab_contents.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -24,10 +25,23 @@ using webkit_glue::FormField;
 
 namespace {
 
+class MockAutofillMetrics : public AutofillMetrics {
+ public:
+  MockAutofillMetrics() {}
+  MOCK_CONST_METHOD1(Log, void(ServerQueryMetric metric));
+  MOCK_CONST_METHOD2(Log, void(QualityMetric metric,
+                               const std::string& experiment_id));
+  MOCK_CONST_METHOD1(LogProfileCount, void(size_t num_profiles));
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(MockAutofillMetrics);
+};
+
 // TODO(isherman): Move this into autofill_common_test.h?
 class TestPersonalDataManager : public PersonalDataManager {
  public:
   TestPersonalDataManager() {
+    set_metric_logger(new MockAutofillMetrics);
     CreateTestAutoFillProfiles(&web_profiles_);
     CreateTestCreditCards(&credit_cards_);
   }
@@ -35,6 +49,31 @@ class TestPersonalDataManager : public PersonalDataManager {
   virtual void InitializeIfNeeded() {}
   virtual void SaveImportedFormData() {}
   virtual bool IsDataLoaded() const { return true; }
+
+  // Overridden to avoid a trip to the database. This should be a no-op except
+  // for the side-effect of logging the profile count.
+  virtual void LoadProfiles() {
+    std::vector<AutoFillProfile*> profiles;
+    web_profiles_.release(&profiles);
+    WDResult<std::vector<AutoFillProfile*> > result(AUTOFILL_PROFILES_RESULT,
+                                                    profiles);
+    ReceiveLoadedProfiles(0, &result);
+  }
+
+  // Adds |profile| to |web_profiles_| and takes ownership of the profile's
+  // memory.
+  virtual void AddProfile(AutoFillProfile* profile) {
+    web_profiles_.push_back(profile);
+  }
+
+  const MockAutofillMetrics* metric_logger() const {
+    return static_cast<const MockAutofillMetrics*>(
+        PersonalDataManager::metric_logger());
+  }
+
+  static void ResetHasLoggedProfileCount() {
+    PersonalDataManager::set_has_logged_profile_count(false);
+  }
 
  private:
   void CreateTestAutoFillProfiles(ScopedVector<AutoFillProfile>* profiles) {
@@ -81,17 +120,6 @@ class TestPersonalDataManager : public PersonalDataManager {
   }
 
   DISALLOW_COPY_AND_ASSIGN(TestPersonalDataManager);
-};
-
-class MockAutofillMetrics : public AutofillMetrics {
- public:
-  MockAutofillMetrics() {}
-  MOCK_CONST_METHOD1(Log, void(ServerQueryMetric metric));
-  MOCK_CONST_METHOD2(Log, void(QualityMetric metric,
-                               const std::string& experiment_id));
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(MockAutofillMetrics);
 };
 
 class TestAutofillManager : public AutoFillManager {
@@ -537,4 +565,19 @@ TEST_F(AutofillMetricsTest, QualityMetricsWithExperimentId) {
 
   // Simulate form submission.
   EXPECT_NO_FATAL_FAILURE(autofill_manager_->OnFormSubmitted(form));
+}
+
+// Test that the profile count is logged correctly.
+TEST_F(AutofillMetricsTest, ProfileCount) {
+  TestPersonalDataManager::ResetHasLoggedProfileCount();
+
+  // The metric should be logged when the profiles are first loaded.
+  EXPECT_CALL(*test_personal_data_->metric_logger(),
+              LogProfileCount(3)).Times(1);
+  test_personal_data_->LoadProfiles();
+
+  // The metric should only be logged once.
+  EXPECT_CALL(*test_personal_data_->metric_logger(),
+              LogProfileCount(::testing::_)).Times(0);
+  test_personal_data_->LoadProfiles();
 }
