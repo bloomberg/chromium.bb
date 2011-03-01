@@ -14,7 +14,6 @@
 #include "base/string_number_conversions.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
-#include "chrome/browser/browser_thread.h"
 #include "chrome/browser/platform_util.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/common/chrome_switches.h"
@@ -23,6 +22,7 @@
 #include "chrome/common/notification_type.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/installer/util/browser_distribution.h"
+#include "content/browser/browser_thread.h"
 
 #if defined(OS_WIN)
 #include "chrome/installer/util/install_util.h"

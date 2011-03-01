@@ -6,8 +6,8 @@
 
 #include "base/eintr_wrapper.h"
 #include "base/threading/thread.h"
-#include "chrome/browser/browser_thread.h"
 #include "chrome/common/render_messages_params.h"
+#include "content/browser/browser_thread.h"
 #include "content/browser/renderer_host/render_process_host.h"
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/renderer_host/resource_dispatcher_host.h"

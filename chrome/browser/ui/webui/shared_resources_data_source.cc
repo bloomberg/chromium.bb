@@ -8,10 +8,10 @@
 
 #include "base/singleton.h"
 #include "base/threading/thread_restrictions.h"
-#include "chrome/browser/browser_thread.h"
 #include "chrome/browser/io_thread.h"
 #include "chrome/browser/ui/webui/chrome_url_data_manager.h"
 #include "chrome/common/url_constants.h"
+#include "content/browser/browser_thread.h"
 #include "grit/app_resources.h"
 #include "grit/generated_resources.h"
 #include "grit/shared_resources.h"

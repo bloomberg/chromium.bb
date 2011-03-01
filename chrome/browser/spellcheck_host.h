@@ -13,8 +13,8 @@
 #include "base/platform_file.h"
 #include "base/ref_counted.h"
 #include "base/scoped_ptr.h"
-#include "chrome/browser/browser_thread.h"
 #include "chrome/common/net/url_fetcher.h"
+#include "content/browser/browser_thread.h"
 
 class Profile;
 class SpellCheckHostObserver;

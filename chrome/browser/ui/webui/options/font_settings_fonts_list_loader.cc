@@ -4,8 +4,8 @@
 
 #include "chrome/browser/ui/webui/options/font_settings_fonts_list_loader.h"
 
-#include "chrome/browser/browser_thread.h"
 #include "chrome/browser/ui/webui/options/font_settings_utils.h"
+#include "content/browser/browser_thread.h"
 
 FontSettingsFontsListLoader::FontSettingsFontsListLoader(Observer* observer)
     : observer_(observer) {

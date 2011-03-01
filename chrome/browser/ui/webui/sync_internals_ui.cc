@@ -11,7 +11,6 @@
 #include "base/task.h"
 #include "base/tracked_objects.h"
 #include "base/values.h"
-#include "chrome/browser/browser_thread.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sync/js_arg_list.h"
 #include "chrome/browser/sync/js_frontend.h"
@@ -20,6 +19,7 @@
 #include "chrome/browser/ui/webui/chrome_url_data_manager.h"
 #include "chrome/browser/ui/webui/sync_internals_html_source.h"
 #include "chrome/common/render_messages_params.h"
+#include "content/browser/browser_thread.h"
 
 SyncInternalsUI::SyncInternalsUI(TabContents* contents)
     : WebUI(contents) {

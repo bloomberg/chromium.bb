@@ -10,8 +10,8 @@
 #include "base/task.h"
 #include "base/win/registry.h"
 #include "chrome/browser/background_mode_manager.h"
-#include "chrome/browser/browser_thread.h"
 #include "chrome/common/chrome_switches.h"
+#include "content/browser/browser_thread.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 

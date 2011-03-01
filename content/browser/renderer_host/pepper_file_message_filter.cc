@@ -8,11 +8,11 @@
 #include "base/file_path.h"
 #include "base/file_util.h"
 #include "base/process_util.h"
-#include "chrome/browser/browser_thread.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/renderer_host/browser_render_process_host.h"
 #include "chrome/common/child_process_host.h"
 #include "chrome/common/pepper_file_messages.h"
+#include "content/browser/browser_thread.h"
 #include "ipc/ipc_platform_file.h"
 #include "webkit/plugins/ppapi/file_path.h"
 

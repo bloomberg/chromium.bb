@@ -22,10 +22,8 @@
 #include "base/scoped_ptr.h"
 #include "base/utf_string_conversions.h"
 #include "base/win/windows_version.h"
-#include "chrome/browser/browser_thread.h"
 #include "chrome/browser/download/download_util.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_plugin_util.h"
@@ -33,6 +31,8 @@
 #include "chrome/common/notification_registrar.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/common/web_apps.h"
+#include "content/browser/browser_thread.h"
+#include "content/browser/tab_contents/tab_contents.h"
 
 #if defined(OS_LINUX)
 #include "base/environment.h"

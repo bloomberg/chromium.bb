@@ -9,9 +9,8 @@
 #include "base/file_util.h"
 #include "base/string_number_conversions.h"
 #include "base/string_split.h"
-#include "chrome/browser/browser_thread.h"
 #include "chrome/common/chrome_paths.h"
-
+#include "content/browser/browser_thread.h"
 
 CrashUploadList::CrashInfo::CrashInfo(const std::string& c, const base::Time& t)
     : crash_id(c), crash_time(t) {}

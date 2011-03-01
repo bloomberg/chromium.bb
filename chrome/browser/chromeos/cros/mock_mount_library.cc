@@ -6,8 +6,8 @@
 
 #include "base/message_loop.h"
 #include "base/string_util.h"
-#include "chrome/browser/browser_thread.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
+#include "content/browser/browser_thread.h"
 
 namespace chromeos {
 

@@ -4,9 +4,9 @@
 
 #include "chrome/browser/sync/sessions/sync_session_context.h"
 
-#include "chrome/browser/browser_thread.h"
 #include "chrome/browser/sync/util/extensions_activity_monitor.h"
 #include "chrome/browser/sync/sessions/session_state.h"
+#include "content/browser/browser_thread.h"
 
 namespace browser_sync {
 namespace sessions {

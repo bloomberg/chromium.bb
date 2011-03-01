@@ -12,8 +12,8 @@
 #include "base/basictypes.h"
 #include "base/scoped_ptr.h"
 #include "base/ref_counted.h"
-#include "chrome/browser/browser_thread.h"
 #include "chrome/common/extensions/extension.h"
+#include "content/browser/browser_thread.h"
 #include "ui/gfx/color_utils.h"
 
 class DictionaryValue;

@@ -7,7 +7,7 @@
 #pragma once
 
 #include "base/basictypes.h"
-#include "chrome/browser/browser_thread.h"
+#include "content/browser/browser_thread.h"
 
 class NotificationService;
 

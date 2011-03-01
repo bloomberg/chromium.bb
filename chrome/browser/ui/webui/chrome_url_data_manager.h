@@ -10,7 +10,7 @@
 
 #include "base/ref_counted.h"
 #include "base/task.h"
-#include "chrome/browser/browser_thread.h"
+#include "content/browser/browser_thread.h"
 
 class ChromeURLDataManagerBackend;
 class DictionaryValue;

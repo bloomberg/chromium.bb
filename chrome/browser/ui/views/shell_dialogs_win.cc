@@ -20,7 +20,7 @@
 #include "base/utf_string_conversions.h"
 #include "base/win/registry.h"
 #include "base/win/windows_version.h"
-#include "chrome/browser/browser_thread.h"
+#include "content/browser/browser_thread.h"
 #include "grit/app_strings.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"

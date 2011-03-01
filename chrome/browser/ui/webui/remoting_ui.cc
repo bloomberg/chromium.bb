@@ -5,11 +5,11 @@
 #include "chrome/browser/ui/webui/remoting_ui.h"
 
 #include "base/singleton.h"
-#include "chrome/browser/browser_thread.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/browser/ui/webui/chrome_url_data_manager.h"
 #include "chrome/common/url_constants.h"
+#include "content/browser/browser_thread.h"
+#include "content/browser/tab_contents/tab_contents.h"
 #include "grit/theme_resources.h"
 #include "ui/base/resource/resource_bundle.h"
 

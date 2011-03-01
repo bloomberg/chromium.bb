@@ -8,7 +8,7 @@
 
 #include "base/ref_counted.h"
 #include "base/scoped_ptr.h"
-#include "chrome/browser/browser_thread.h"
+#include "content/browser/browser_thread.h"
 
 class GURL;
 

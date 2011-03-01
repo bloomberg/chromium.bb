@@ -5,7 +5,6 @@
 #include <vector>
 
 #include "base/message_loop.h"
-#include "chrome/browser/browser_thread.h"
 #include "chrome/browser/history/history.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
@@ -13,6 +12,7 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/test/in_process_browser_test.h"
 #include "chrome/test/ui_test_utils.h"
+#include "content/browser/browser_thread.h"
 #include "googleurl/src/gurl.h"
 
 namespace {

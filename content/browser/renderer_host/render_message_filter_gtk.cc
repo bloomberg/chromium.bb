@@ -4,8 +4,8 @@
 
 #include "content/browser/renderer_host/render_message_filter.h"
 
-#include "chrome/browser/browser_thread.h"
 #include "chrome/common/render_messages.h"
+#include "content/browser/browser_thread.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebScreenInfo.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/x11/WebScreenInfoFactory.h"
 #include "ui/base/clipboard/clipboard.h"

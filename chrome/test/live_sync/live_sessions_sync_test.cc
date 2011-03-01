@@ -4,14 +4,14 @@
 
 #include "chrome/test/live_sync/live_sessions_sync_test.h"
 
-#include "chrome/browser/browser_thread.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sessions/session_service.h"
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/test/ui_test_utils.h"
-#include "googleurl/src/gurl.h"
-#include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
+#include "content/browser/browser_thread.h"
+#include "content/browser/tab_contents/tab_contents.h"
+#include "googleurl/src/gurl.h"
 
 TestSessionService::TestSessionService()
     : SessionServiceTestHelper(),

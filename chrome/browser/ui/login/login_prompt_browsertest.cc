@@ -7,14 +7,14 @@
 #include <map>
 
 #include "base/utf_string_conversions.h"
-#include "chrome/browser/browser_thread.h"
-#include "chrome/browser/renderer_host/resource_dispatcher_host.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/login/login_prompt.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/common/notification_service.h"
 #include "chrome/test/in_process_browser_test.h"
 #include "chrome/test/ui_test_utils.h"
+#include "content/browser/browser_thread.h"
+#include "content/browser/renderer_host/resource_dispatcher_host.h"
 #include "net/base/auth.h"
 
 namespace {

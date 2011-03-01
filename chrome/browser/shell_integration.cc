@@ -9,11 +9,11 @@
 #include "base/path_service.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
-#include "chrome/browser/browser_thread.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
+#include "content/browser/browser_thread.h"
 
 ShellIntegration::ShortcutInfo::ShortcutInfo()
     : create_on_desktop(false),

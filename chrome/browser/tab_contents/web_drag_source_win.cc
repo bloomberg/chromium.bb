@@ -5,12 +5,12 @@
 #include "chrome/browser/tab_contents/web_drag_source_win.h"
 
 #include "base/task.h"
-#include "chrome/browser/browser_thread.h"
-#include "chrome/browser/renderer_host/render_view_host.h"
-#include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/browser/tab_contents/web_drag_utils_win.h"
 #include "chrome/common/notification_source.h"
 #include "chrome/common/notification_type.h"
+#include "content/browser/browser_thread.h"
+#include "content/browser/renderer_host/render_view_host.h"
+#include "content/browser/tab_contents/tab_contents.h"
 
 using WebKit::WebDragOperationNone;
 

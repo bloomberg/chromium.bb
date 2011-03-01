@@ -22,7 +22,7 @@
 #include "base/stack_container.h"
 #include "base/string_util.h"
 #include "base/threading/thread_restrictions.h"
-#include "chrome/browser/browser_thread.h"
+#include "content/browser/browser_thread.h"
 #include "chrome/browser/history/history.h"
 #include "chrome/browser/profiles/profile.h"
 

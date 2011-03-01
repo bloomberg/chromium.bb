@@ -11,10 +11,10 @@
 #include "base/nix/xdg_util.h"
 #include "base/process_util.h"
 #include "base/string_tokenizer.h"
-#include "chrome/browser/browser_list.h"
-#include "chrome/browser/browser_thread.h"
-#include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/common/process_watcher.h"
+#include "chrome/browser/browser_list.h"
+#include "content/browser/browser_thread.h"
+#include "content/browser/tab_contents/tab_contents.h"
 #include "ui/base/gtk/gtk_signal.h"
 
 // Command used to configure GNOME proxy settings. The command was renamed

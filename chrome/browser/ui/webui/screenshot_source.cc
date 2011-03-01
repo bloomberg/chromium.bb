@@ -9,9 +9,9 @@
 #include "base/ref_counted_memory.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/task.h"
-#include "chrome/browser/browser_thread.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/url_constants.h"
+#include "content/browser/browser_thread.h"
 
 static const char kCurrentScreenshot[] = "current";
 #if defined(OS_CHROMEOS)

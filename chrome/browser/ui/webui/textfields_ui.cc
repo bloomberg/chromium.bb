@@ -10,11 +10,11 @@
 #include "base/singleton.h"
 #include "base/string_piece.h"
 #include "base/values.h"
-#include "chrome/browser/browser_thread.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/common/jstemplate_builder.h"
 #include "chrome/common/url_constants.h"
+#include "content/browser/browser_thread.h"
+#include "content/browser/tab_contents/tab_contents.h"
 #include "grit/browser_resources.h"
 #include "ui/base/resource/resource_bundle.h"
 

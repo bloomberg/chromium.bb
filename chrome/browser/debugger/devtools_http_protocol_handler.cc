@@ -12,14 +12,14 @@
 #include "base/string_number_conversions.h"
 #include "base/threading/thread.h"
 #include "base/utf_string_conversions.h"
-#include "chrome/browser/browser_thread.h"
 #include "chrome/browser/debugger/devtools_client_host.h"
 #include "chrome/browser/debugger/devtools_manager.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/common/devtools_messages.h"
 #include "chrome/common/net/url_request_context_getter.h"
+#include "content/browser/browser_thread.h"
+#include "content/browser/tab_contents/tab_contents.h"
 #include "googleurl/src/gurl.h"
 #include "net/base/io_buffer.h"
 #include "net/server/http_server_request_info.h"
@@ -296,7 +296,7 @@ void DevToolsHttpProtocolHandler::OnWebSocketMessageUI(
 
   DevToolsManager* manager = DevToolsManager::GetInstance();
 
-  //TODO(pfeldman): remove this once front-end stops sending it upstream.
+  // TODO(pfeldman): remove this once front-end stops sending it upstream.
   if (data == "loaded")
     return;
 

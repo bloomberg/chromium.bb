@@ -6,12 +6,12 @@
 
 #include "base/message_loop.h"
 #include "base/ref_counted_memory.h"
-#include "chrome/browser/browser_thread.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/resources_util.h"
 #include "chrome/browser/themes/browser_theme_provider.h"
 #include "chrome/browser/ui/webui/ntp_resource_cache.h"
 #include "chrome/common/url_constants.h"
+#include "content/browser/browser_thread.h"
 #include "googleurl/src/gurl.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/theme_provider.h"

@@ -5,10 +5,10 @@
 #include "chrome/browser/sync/util/extensions_activity_monitor.h"
 
 #include "base/task.h"
-#include "chrome/browser/browser_thread.h"
 #include "chrome/browser/extensions/extension_bookmarks_module.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/notification_service.h"
+#include "content/browser/browser_thread.h"
 
 namespace browser_sync {
 

@@ -12,10 +12,10 @@
 #include "base/string_util.h"
 #include "base/synchronization/lock.h"
 #include "base/values.h"
-#include "chrome/browser/browser_thread.h"
 #include "chrome/browser/net/chrome_url_request_context.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/webui/chrome_url_data_manager_backend.h"
+#include "content/browser/browser_thread.h"
 #include "grit/platform_locale_settings.h"
 #include "ui/base/l10n/l10n_util.h"
 

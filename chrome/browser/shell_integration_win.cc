@@ -19,7 +19,6 @@
 #include "base/utf_string_conversions.h"
 #include "base/win/registry.h"
 #include "base/win/windows_version.h"
-#include "chrome/browser/browser_thread.h"
 #include "chrome/browser/web_applications/web_app.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_paths.h"
@@ -32,6 +31,7 @@
 #include "chrome/installer/util/util_constants.h"
 #include "chrome/installer/util/work_item.h"
 #include "chrome/installer/util/work_item_list.h"
+#include "content/browser/browser_thread.h"
 
 namespace {
 

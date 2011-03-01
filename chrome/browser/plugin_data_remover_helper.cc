@@ -7,11 +7,11 @@
 #include <string>
 
 #include "base/ref_counted.h"
-#include "chrome/browser/browser_thread.h"
 #include "chrome/browser/plugin_data_remover.h"
 #include "chrome/common/notification_service.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
+#include "content/browser/browser_thread.h"
 
 // The internal class is refcounted so it can outlive PluginDataRemoverHelper.
 class PluginDataRemoverHelper::Internal

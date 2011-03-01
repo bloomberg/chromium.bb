@@ -8,8 +8,8 @@
 #include "base/file_util.h"
 #include "base/message_loop.h"
 #include "base/path_service.h"
-#include "chrome/browser/browser_thread.h"
 #include "chrome/common/chrome_paths.h"
+#include "content/browser/browser_thread.h"
 #include "net/base/transport_security_state.h"
 
 TransportSecurityPersister::TransportSecurityPersister()

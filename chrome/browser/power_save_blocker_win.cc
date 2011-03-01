@@ -6,7 +6,7 @@
 
 #include <windows.h>
 
-#include "chrome/browser/browser_thread.h"
+#include "content/browser/browser_thread.h"
 
 // Runs on UI thread only.
 void PowerSaveBlocker::ApplyBlock(bool blocking) {
