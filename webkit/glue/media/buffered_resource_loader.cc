@@ -252,11 +252,7 @@ void BufferedResourceLoader::willSendRequest(
   if (single_origin_)
     single_origin_ = url_.GetOrigin() == GURL(newRequest.url()).GetOrigin();
 
-  // Enforce same-origin policy and cause redirects to other origins to
-  // look like network errors.
-  // http://dev.w3.org/html5/spec/Overview.html#concept-media-load-resource
-  // http://dev.w3.org/html5/spec/Overview.html#fetch
-  if (!single_origin_ || !IsProtocolSupportedForMedia(newRequest.url())) {
+  if (!IsProtocolSupportedForMedia(newRequest.url())) {
     // Set the url in the request to an invalid value (empty url).
     newRequest.setURL(WebKit::WebURL());
     DoneStart(net::ERR_ADDRESS_INVALID);

@@ -254,16 +254,16 @@ TEST_F(SimpleDataSourceTest, HasSingleOrigin) {
 
   // Test redirect to a different domain.
   InitializeDataSource(kHttpUrl, media::NewExpectedCallback());
-  EXPECT_CALL(host_, SetError(media::PIPELINE_ERROR_NETWORK));
   Redirect(kHttpRedirectToDifferentDomainUrl1);
+  RequestSucceeded(false);
   EXPECT_FALSE(data_source_->HasSingleOrigin());
   DestroyDataSource();
 
   // Test redirect to the same domain and then to a different domain.
   InitializeDataSource(kHttpUrl, media::NewExpectedCallback());
   Redirect(kHttpRedirectToSameDomainUrl1);
-  EXPECT_CALL(host_, SetError(media::PIPELINE_ERROR_NETWORK));
   Redirect(kHttpRedirectToDifferentDomainUrl1);
+  RequestSucceeded(false);
   EXPECT_FALSE(data_source_->HasSingleOrigin());
   DestroyDataSource();
 }

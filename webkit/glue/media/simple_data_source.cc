@@ -119,15 +119,6 @@ void SimpleDataSource::willSendRequest(
   if (single_origin_)
     single_origin_ = url_.GetOrigin() == GURL(newRequest.url()).GetOrigin();
 
-  // Enforce same-origin policy and cause redirects to other origins to
-  // look like network errors.
-  // http://dev.w3.org/html5/spec/Overview.html#concept-media-load-resource
-  // http://dev.w3.org/html5/spec/Overview.html#fetch
-  if (!single_origin_) {
-    DoneInitialization_Locked(false);
-    return;
-  }
-
   url_ = newRequest.url();
 }
 

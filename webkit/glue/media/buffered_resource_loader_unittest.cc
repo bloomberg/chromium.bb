@@ -526,7 +526,6 @@ TEST_F(BufferedResourceLoaderTest, HasSingleOrigin) {
   // Test redirect to a different domain.
   Initialize(kHttpUrl, -1, -1);
   Start();
-  EXPECT_CALL(*this, StartCallback(net::ERR_ADDRESS_INVALID));
   Redirect(kHttpRedirectToDifferentDomainUrl1);
   EXPECT_FALSE(loader_->HasSingleOrigin());
   StopWhenLoad();
@@ -535,7 +534,6 @@ TEST_F(BufferedResourceLoaderTest, HasSingleOrigin) {
   Initialize(kHttpUrl, -1, -1);
   Start();
   Redirect(kHttpRedirectToSameDomainUrl1);
-  EXPECT_CALL(*this, StartCallback(net::ERR_ADDRESS_INVALID));
   Redirect(kHttpRedirectToDifferentDomainUrl1);
   EXPECT_FALSE(loader_->HasSingleOrigin());
   StopWhenLoad();
