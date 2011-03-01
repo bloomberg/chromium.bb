@@ -49,7 +49,7 @@ bool EventRecorder::StartRecording(const FilePath& filename) {
     return false;
 
   // Open the recording file.
-  DCHECK(file_ == NULL);
+  DCHECK(!file_);
   file_ = file_util::OpenFile(filename, "wb+");
   if (!file_) {
     DLOG(ERROR) << "EventRecorder could not open log file";
@@ -100,7 +100,7 @@ bool EventRecorder::StartPlayback(const FilePath& filename) {
     return false;
 
   // Open the recording file.
-  DCHECK(file_ == NULL);
+  DCHECK(!file_);
   file_ = file_util::OpenFile(filename, "rb");
   if (!file_) {
     DLOG(ERROR) << "EventRecorder Playback could not open log file";
