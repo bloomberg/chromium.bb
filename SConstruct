@@ -2557,10 +2557,13 @@ def LinkTrustedEnv(selected_envs):
       """
       assert 0
 
-  # Set TRUSTED_ENV so that tests of untrusted code can locate sel_ldr etc.
-  if 'TRUSTED' in family_map and 'UNTRUSTED' in family_map:
-    family_map['UNTRUSTED']['TRUSTED_ENV'] = family_map['TRUSTED']
-  else:
+  # Set TRUSTED_ENV so that tests of untrusted code can locate sel_ldr
+  # etc.  We set this on trusted envs too because some tests on
+  # trusted envs run sel_ldr (e.g. using checked-in binaries).
+  if 'TRUSTED' in family_map:
+    for env in selected_envs:
+      env['TRUSTED_ENV'] = family_map['TRUSTED']
+  if 'TRUSTED' not in family_map or 'UNTRUSTED' not in family_map:
     Banner('Warning: "--mode" did not specify both trusted and untrusted '
            'build environments.  As a result, many tests will not be run.')
 
