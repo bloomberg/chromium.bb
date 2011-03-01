@@ -7,435 +7,147 @@
   <title>PPAPI Runtime Feature Test</title>
   <meta HTTP-EQUIV="Pragma" CONTENT="no-cache" />
   <meta HTTP-EQUIV="Expires" CONTENT="-1" />
-  <style type="text/css">
-    td.notrun { background-color: skyblue }
-    td.pass { background-color: lime }
-    td.fail { background-color: red }
-  </style>
-  <script type="text/javascript" src="nacl_js_lib.js"></script>
+  <script type="text/javascript" src="nacltest.js"></script>
 </head>
-<body onunload="nacllib.cleanUp();" >
+<body>
 
 <script type="text/javascript">
 //<![CDATA[
-// Provide the NaCl module namespace.
-var naclModule = {
-    failingCount: 0,  // The number of failing tests.
-    module: null,  // The NaCl module instance.
-    testTimeoutHandler: 0,
-    testTimedOut: false  // Indicates a test timed out.
-};
 
 var kSampleInt = 1;
 var kSampleString = 'hello, world';
 var kSampleObject = new Array(10);
 
-// Called when the NaCl module loads.  Prior to this call, |naclModule.
-// module| is undefined.  This is important because you don't want to make
-// calls on the NaCl module before it's loaded.
-var moduleDidLoad = function(moduleId) {
-  naclModule.module = document.getElementById(moduleId);
-  naclModule.testRunner = new NaclLib('naclModule', 'status', 500);
 
-  naclModule.testRunner.test = function() {
-    naclModule.testTimeoutHandler = setTimeout('HandleTestTimeout()', 10000);
-    EnqueueAndRunTests();
-    if (0 == naclModule.failingCount) {
-      return '';
-    } else if (naclModule.testTimedOut) {
-      return 'Test timed out.';
-    } else {
-      return 'Test failed.';
-    }
-  }
-
-  // Schedule all the test and run them.
-  naclModule.testRunner.waitForModulesAndRunTests();
-}
-
-var SetTestResult = function(element_id, result) {
-  var element = document.getElementById(element_id);
-  element.className = result;
-}
-
-// The queue of small tests.
-var testQueue = [ ];
-var appendTest = function(test_descr) {
-  testQueue[testQueue.length] = test_descr;
-}
-
-var expectPass = function(element, has_return, fp) {
-  appendTest(new Array('pass', element, has_return, fp));
-}
-
-var expectFail = function(element, fp) {
-  appendTest(new Array('fail', element, fp));
-}
-
-var EnqueueTests = function() {
+function EnqueueTests(naclModule, suffix) {
   // Test access to NaCl ppruntime objects from the browser.
   // Read a property that is not set.
-  expectPass('browser_nacl_read_notset',
-             true,
-             function() {
-               return naclModule.module.propertyUnset == undefined;
-             });
+  tester.addTest('browser_nacl_read_notset' + suffix, function() {
+    assertEqual(naclModule.propertyUnset, undefined);
+  });
+
   // Read a property that is set.
-  expectPass('browser_nacl_read_set',
-             true,
-             function() {
-               return naclModule.module.propNull == null;
-             });
-  // Write an integer property.
-  expectPass('browser_nacl_int_write',
-             false,
-             function() {
-               naclModule.module.propInt32 = kSampleInt;
-             });
+  tester.addTest('browser_nacl_read_set' + suffix, function() {
+    assertEqual(naclModule.propNull, null);
+  });
+
+  // Write and read back an integer property.
+  tester.addTest('browser_nacl_int_property' + suffix, function() {
+    naclModule.propInt32 = 7;
+    assertEqual(naclModule.propInt32, 7);
+    naclModule.propInt32 = 11;
+    assertEqual(naclModule.propInt32, 11);
+  });
+
   // Read back the property.
-  expectPass('browser_nacl_int_readback',
-             true,
-             function() {
-               return naclModule.module.propInt32 == kSampleInt;
-             });
-  // Remove the property.
-  // TODO(dspringer,sehr,polina): Add this test back in once RemoveProperty()
-  // starts working in PPAPI (see issue
-  // http://code.google.com/p/chromium/issues/detail?id=51086)
+  tester.addTest('browser_nacl_string_property' + suffix, function() {
+    naclModule.propString = 'hello';
+    assertEqual(naclModule.propString, 'hello');
+    naclModule.propString = 'world';
+    assertEqual(naclModule.propString, 'world');
+  });
+
+  // Broken, throws an exception.
+  // TODO(ncbray) fix or remove.
   /*
-  expectPass('browser_nacl_int_remove',
-             false,
-             function() {
-               delete naclModule.module.propInt32;
-               return naclModule.module.propInt32;
-             });
+  tester.addTest('browser_nacl_object_double_deref' + suffix, function() {
+    naclModule.propObject = kSampleObject;
+    var temp1 = naclModule.propObject;
+    var temp2 = naclModule.propObject;
+    // The second deref has throw an exception, in the past.
+  });
   */
-  // Write a string property.
-  expectPass('browser_nacl_string_write',
-             false,
-             function() {
-               naclModule.module.propString = kSampleString;
-             });
-  // Read back the property.
-  expectPass('browser_nacl_string_readback',
-             true,
-             function() {
-               return naclModule.module.propString == kSampleString;
-             });
-  // Remove the property.
-  // TODO(dspringer,sehr,polina): Add this test back in once RemoveProperty()
-  // starts working in PPAPI (see issue
-  // http://code.google.com/p/chromium/issues/detail?id=51086)
+
+  // Broken, corrupted object returned.
+  // TODO(ncbray) fix or remove.
+  // http://code.google.com/p/nativeclient/issues/detail?id=1367
   /*
-  expectPass('browser_nacl_string_remove',
-             false,
-             function() {
-               delete naclModule.module.propString;
-               return naclModule.module.propString;
-             });
+  // Write and read back an object property.
+  tester.addTest('browser_nacl_object_write' + suffix, function() {
+    naclModule.propObject = kSampleObject;
+    assertEqual(naclModule.propObject, kSampleObject);
+  });
   */
-  // Write an object property.
-  expectPass('browser_nacl_object_write',
-             false,
-             function() {
-               naclModule.module.propObject = kSampleObject;
-             });
-  // Read back the property.
-  expectPass('browser_nacl_object_readback',
-             true,
-             function() {
-               return naclModule.module.propObject === kSampleObject;
-             });
-  // Remove the property.
-  // TODO(dspringer,sehr,polina): Add this test back in once RemoveProperty()
-  // starts working in PPAPI (see issue
-  // http://code.google.com/p/chromium/issues/detail?id=51086)
-  /*
-  expectPass('browser_nacl_object_remove',
-             false,
-             function() {
-               delete naclModule.module.propObject;
-               return naclModule.module.propObject;
-             });
-  */
+
   // Argument passing and return.
-  expectPass('browser_nacl_int_argret',
-             true,
-             function() {
-               return naclModule.module.methodInt32(kSampleInt) == kSampleInt;
-             });
-  expectPass('browser_nacl_string_argret',
-             true,
-             function() {
-               return naclModule.module.methodString(kSampleString) ==
-                  kSampleString;
-             });
-  expectPass('browser_nacl_object_argret',
-             true,
-             function() {
-               return naclModule.module.methodObject(kSampleObject) ===
-                  kSampleObject;
-             });
+  tester.addTest('browser_nacl_int_argret' + suffix, function() {
+    assertEqual(naclModule.methodInt32(13), 13);
+  });
+  
+  tester.addTest('browser_nacl_string_argret' + suffix, function() {
+    assertEqual(naclModule.methodString('bogus'), 'bogus');
+  });
+
+  // Broken, corrupted object returned.
+  // TODO(ncbray) fix or remove.
+  // http://code.google.com/p/nativeclient/issues/detail?id=1367
+  /*
+  tester.addTest('browser_nacl_object_argret' + suffix, function() {
+    assertEqual(naclModule.methodObject(kSampleObject), kSampleObject);
+  });
+  */
+
   // Multi-argument passing and return.
-  expectPass('browser_nacl_int_2_argret',
-             true,
-             function() {
-               return naclModule.module.methodInt32With2Args(
-                  kSampleInt, kSampleInt) == kSampleInt;
-             });
-  expectPass('browser_nacl_string_2_argret',
-             true,
-             function() {
-               return naclModule.module.methodStringWith2Args(
-                  kSampleString, kSampleString) == kSampleString;
-             });
-  expectPass('browser_nacl_object_2_argret',
-             true,
-             function() {
-               return naclModule.module.methodObjectWith2Args(
-                  kSampleObject, kSampleObject) === kSampleObject;
-             });
+  tester.addTest('browser_nacl_int_2_argret' + suffix, function() {
+    assertEqual(naclModule.methodInt32With2Args(kSampleInt, kSampleInt),
+                kSampleInt);
+  });
+
+  tester.addTest('browser_nacl_string_2_argret' + suffix, function() {
+    assertEqual(naclModule.methodStringWith2Args(kSampleString, kSampleString),
+                kSampleString);
+  });
+  
+  // Broken, corrupted object returned.
+  // TODO(ncbray) fix or remove.
+  // http://code.google.com/p/nativeclient/issues/detail?id=1367
+  /*
+  tester.addTest('browser_nacl_object_2_argret' + suffix, function() {
+    assertEqual(naclModule.methodObjectWith2Args(kSampleObject, kSampleObject),
+                kSampleObject);
+  });
+  */
+
+  // Broken, returns "hell"
+  // TODO(ncbray) fix or remove.
+  // http://code.google.com/p/nativeclient/issues/detail?id=1456
+  /*
   // Call a method with 0 args (tests issue:
   // http://code.google.com/p/nativeclient/issues/detail?id=891)
-  expectPass('browser_nacl_0_argret',
-             true,
-             function() {
-               return naclModule.module.helloWorld() == kSampleString;
-             });
-  expectPass('nacl_browser_window_location_prop',
-             true,
-             function() {
-               return naclModule.module.windowLocation(window) == true;
-             });
+  tester.addTest('browser_nacl_0_argret' + suffix, function() {
+    assertEqual(naclModule.helloWorld(), 'hello, world');
+  });
+  */
+
+  tester.addTest('nacl_browser_window_location_prop', function() {
+    assertEqual(naclModule.windowLocation(window), true);
+  });
 }
 
-// The test run functions.
-var testExpectedPass = function(element, has_return, fp) {
-  var result = undefined;
-  try {
-    result = fp();
-    if (has_return && (undefined == result)) {
-      SetTestResult(element, 'fail');
-    } else {
-      SetTestResult(element, 'pass');
-      --naclModule.failingCount;
-    }
-  } catch (string) {
-    SetTestResult(element, 'fail');
-  }
-}
 
-var testExpectedFail = function(element, fp) {
-  var result = undefined;
-  try {
-    result = fp();
-    SetTestResult(element, 'fail');
-  } catch (string) {
-    if (undefined == result) {
-      SetTestResult(element, 'pass');
-      --naclModule.failingCount;
-    } else {
-      SetTestResult(element, 'fail');
-    }
-  }
-}
-
-var RunAllTests = function() {
-  var i;
-  var len = testQueue.length;
-  // All tests are considered failure until they have run successfully.
-  // This catches runs that end prematurely.
-  naclModule.failingCount = len;
-  for (i = 0; i < len; ++i) {
-    var test_descr = testQueue[i];
-    if ('pass' == test_descr[0]) {
-      testExpectedPass(test_descr[1], test_descr[2], test_descr[3]);
-    } else {
-      testExpectedFail(test_descr[1], test_descr[2]);
-    }
-  }
-  if (0 != naclModule.testTimeoutHandler) {
-    clearTimeout(naclModule.testTimeoutHandler);
-    naclModule.testTimeoutHandler = 0;
-  }
-}
-
-function HandleTestTimeout() {
-  clearTimeout(naclModule.testTimeoutHandler);
-  naclModule.testTimeoutHandler = 0;
-  naclModule.testTimedOut = true;
-}
-
-var EnqueueAndRunTests = function() {
-  // Enqueue the tests.
-  EnqueueTests();
-  // Run them all.
-  RunAllTests();
-}
 //]]>
 </script>
 
-<h1>Native Client PPAPI PPRuntime Feature Test</h1>
-<table cellspacing="5" cellpadding="5" border="5"
-       summary="PPAPI PPRuntime Feature Test Table">
-  <tr>
-    <td>
-    </td>
-    <td>
-      <b> Feature </b>
-    </td>
-  </tr>
-  <tr>
-    <td>
-      <b> Property read </b>
-    <td valign=top>
-      <table summary="Property read, Browser to NaCl">
-        <tr>
-          <td id="browser_nacl_read_notset" class="notrun">
-            property not set
-          </td>
-        </tr>
-        <tr>
-          <td id="browser_nacl_read_set" class="notrun">
-            property set
-          </td>
-        </tr>
-      </table>
-    </td>
-  </tr>
-  <tr>
-    <td>
-      <b> Property write </b>
-    <td valign=top>
-      <table summary="Property write, Browser to NaCl">
-        <tr>
-          <td id="browser_nacl_int_write" class="notrun">
-            write integer
-          </td>
-        </tr>
-        <tr>
-          <td id="browser_nacl_int_readback" class="notrun">
-            read back integer
-          </td>
-        </tr>
-        <tr>
-          <td id="browser_nacl_int_remove" class="notrun">
-            remove integer
-          </td>
-        </tr>
-        <tr>
-          <td id="browser_nacl_string_write" class="notrun">
-            write string
-          </td>
-        </tr>
-        <tr>
-          <td id="browser_nacl_string_readback" class="notrun">
-            read back string
-          </td>
-        </tr>
-        <tr>
-          <td id="browser_nacl_string_remove" class="notrun">
-            remove string
-          </td>
-        </tr>
-        <tr>
-          <td id="browser_nacl_object_write" class="notrun">
-            write object
-          </td>
-        </tr>
-        <tr>
-          <td id="browser_nacl_object_readback" class="notrun">
-            read back object
-          </td>
-        </tr>
-        <tr>
-          <td id="browser_nacl_object_remove" class="notrun">
-            remove object
-          </td>
-        </tr>
-      </table>
-    </td>
-  </tr>
-  <tr>
-    <td>
-      <b> Argument/return </b>
-    <td valign=top>
-      <table summary="Argument/return, Browser to NaCl">
-        <tr>
-          <td id="browser_nacl_int_argret" class="notrun">
-            integer
-          </td>
-        </tr>
-        <tr>
-          <td id="browser_nacl_string_argret" class="notrun">
-            string
-          </td>
-        </tr>
-        <tr>
-          <td id="browser_nacl_object_argret" class="notrun">
-            object
-          </td>
-        </tr>
-        <tr>
-          <td id="browser_nacl_0_argret" class="notrun">
-            helloWorld
-          </td>
-        </tr>
-      </table>
-    </td>
-  </tr>
-  <tr>
-    <td>
-      <b> Multi-argument/return </b>
-    <td valign=top>
-      <table summary="<Multi-argument/return, Browser to NaCl">
-        <tr>
-          <td id="browser_nacl_int_2_argret" class="notrun">
-            integer
-          </td>
-        </tr>
-        <tr>
-          <td id="browser_nacl_string_2_argret" class="notrun">
-            string
-          </td>
-        </tr>
-        <tr>
-          <td id="browser_nacl_object_2_argret" class="notrun">
-            object
-          </td>
-        </tr>
-      </table>
-    </td>
-  </tr>
-  <tr>
-    <td>
-      <b> Browser object access </b>
-    <td valign=top>
-      <table summary="Browser object access, NaCl to browser">
-        <tr>
-          <td id="nacl_browser_window_location_prop" class="notrun">
-            window.location
-          </td>
-        </tr>
-      </table>
-    </td>
-  </tr>
-</table>
-
-<table summary="The color codes used for identifying test outcomes">
-  <tr> <td align="center"> <em> Legend </em> </td> </tr>
-  <tr> <td align="center" class="notrun"> Test not run </td> </tr>
-  <tr> <td align="center" class="pass"> Test passed </td> </tr>
-  <tr> <td align="center" class="fail"> Test failed </td> </tr>
-</table>
-
-<div id="status">NO-STATUS</div>
-
-<embed id="naclModule"
+<embed id="basic_object"
        name="naclModule"
        width=0 height=0
        src="ppapi_basic_object.nexe"
-       type="application/x-nacl"
-       onload="moduleDidLoad('naclModule');" />
+       type="application/x-nacl" />
 </body>
+
+<embed id="user_main"
+       name="naclModule"
+       width=0 height=0
+       src="ppapi_user_main.nexe"
+       type="application/x-nacl" />
+</body>
+
+<script type="text/javascript">
+//<![CDATA[
+EnqueueTests($('basic_object'), '');
+
+// Same interface but with a user-supplied main() entry point.
+EnqueueTests($('user_main'), '_user');
+//]]>
+</script>
 </html>
