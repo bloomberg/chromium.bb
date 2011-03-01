@@ -26,7 +26,6 @@
           'ipc_logging.h',
           'ipc_message.cc',
           'ipc_message.h',
-          'ipc_message_impl_macros.h',
           'ipc_message_macros.h',
           'ipc_message_utils.cc',
           'ipc_message_utils.h',

@@ -4,7 +4,7 @@
 //
 // This file contains templates forward declared (but not defined) in
 // ipc_message_utils.h so that they are only instantiated in certain files,
-// notably ipc_message_impl_macros.h and a few IPC unit tests.
+// notably a few IPC unit tests.
 
 #ifndef IPC_IPC_MESSAGE_UTILS_IMPL_H_
 #define IPC_IPC_MESSAGE_UTILS_IMPL_H_
