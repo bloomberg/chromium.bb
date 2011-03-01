@@ -176,6 +176,9 @@ BaseTab::~BaseTab() {
 }
 
 void BaseTab::SetData(const TabRendererData& data) {
+  if (data_.Equals(data))
+    return;
+
   TabRendererData old(data_);
   data_ = data;
 
@@ -215,6 +218,7 @@ void BaseTab::SetData(const TabRendererData& data) {
   DataChanged(old);
 
   Layout();
+  SchedulePaint();
 }
 
 void BaseTab::UpdateLoadingAnimation(TabRendererData::NetworkState state) {

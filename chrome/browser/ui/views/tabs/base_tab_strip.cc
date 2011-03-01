@@ -175,7 +175,6 @@ void BaseTabStrip::SetTabData(int model_index, const TabRendererData& data) {
   BaseTab* tab = GetBaseTabAtModelIndex(model_index);
   bool mini_state_changed = tab->data().mini != data.mini;
   tab->SetData(data);
-  tab->SchedulePaint();
 
   if (mini_state_changed) {
     if (GetWindow() && GetWindow()->IsVisible())

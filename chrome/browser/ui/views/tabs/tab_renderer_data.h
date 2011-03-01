@@ -41,6 +41,24 @@ struct TabRendererData {
             crashed_status == base::TERMINATION_STATUS_ABNORMAL_TERMINATION);
   }
 
+  // Returns true if the TabRendererData is same as given |data|. Two favicons
+  // are considered equals if two SkBitmaps point to the same SkPixelRef object.
+  bool Equals(const TabRendererData& data) {
+    return
+        favicon.pixelRef() &&
+        favicon.pixelRef() == data.favicon.pixelRef() &&
+        favicon.pixelRefOffset() == data.favicon.pixelRefOffset() &&
+        network_state == data.network_state &&
+        title == data.title &&
+        loading == data.loading &&
+        crashed_status == data.crashed_status &&
+        off_the_record == data.off_the_record &&
+        show_icon == data.show_icon &&
+        mini == data.mini &&
+        blocked == data.blocked &&
+        app == data.app;
+  }
+
   SkBitmap favicon;
   NetworkState network_state;
   string16 title;
