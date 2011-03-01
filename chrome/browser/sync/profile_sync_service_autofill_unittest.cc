@@ -18,7 +18,6 @@
 #include "base/utf_string_conversions.h"
 #include "base/synchronization/waitable_event.h"
 #include "chrome/browser/autofill/autofill_common_test.h"
-#include "chrome/browser/browser_thread.h"
 #include "chrome/browser/sync/abstract_profile_sync_service_test.h"
 #include "chrome/browser/sync/engine/model_changing_syncer_command.h"
 #include "chrome/browser/sync/engine/syncapi.h"
@@ -47,6 +46,7 @@
 #include "chrome/common/notification_type.h"
 #include "chrome/test/profile_mock.h"
 #include "chrome/test/sync/engine/test_id_factory.h"
+#include "content/browser/browser_thread.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
 using base::Time;

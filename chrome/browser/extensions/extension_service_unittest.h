@@ -11,8 +11,8 @@
 #include "base/ref_counted.h"
 #include "base/scoped_ptr.h"
 #include "base/scoped_temp_dir.h"
-#include "chrome/browser/browser_thread.h"
 #include "chrome/browser/extensions/extension_service.h"
+#include "content/browser/browser_thread.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 class ExtensionServiceTestBase : public testing::Test {

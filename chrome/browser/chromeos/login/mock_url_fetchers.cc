@@ -8,9 +8,9 @@
 
 #include "base/message_loop.h"
 #include "base/stringprintf.h"
-#include "chrome/browser/browser_thread.h"
 #include "chrome/common/net/http_return.h"
 #include "chrome/common/net/url_fetcher.h"
+#include "content/browser/browser_thread.h"
 #include "googleurl/src/gurl.h"
 #include "net/url_request/url_request_status.h"
 #include "testing/gtest/include/gtest/gtest.h"

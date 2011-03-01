@@ -6,8 +6,8 @@
 #include "base/message_loop.h"
 #include "base/scoped_temp_dir.h"
 #include "base/string_number_conversions.h"
-#include "chrome/browser/browser_thread.h"
 #include "chrome/browser/download/base_file.h"
+#include "content/browser/browser_thread.h"
 #include "net/base/file_stream.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

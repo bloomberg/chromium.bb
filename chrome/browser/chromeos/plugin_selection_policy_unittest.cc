@@ -11,7 +11,7 @@
 #include "base/file_util.h"
 #include "base/ref_counted.h"
 #include "base/scoped_temp_dir.h"
-#include "chrome/browser/browser_thread.h"
+#include "content/browser/browser_thread.h"
 #include "googleurl/src/gurl.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"

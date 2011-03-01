@@ -6,7 +6,6 @@
 
 #include "base/logging.h"
 #include "base/utf_string_conversions.h"
-#include "chrome/browser/browser_thread.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/prefs/pref_value_store.h"
 #include "chrome/common/chrome_paths.h"
@@ -16,6 +15,7 @@
 #include "chrome/common/url_constants.h"
 #include "chrome/test/testing_pref_service.h"
 #include "chrome/test/testing_profile.h"
+#include "content/browser/browser_thread.h"
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/renderer_host/render_widget_host_view.h"
 #include "content/browser/renderer_host/test_render_view_host.h"
@@ -1623,7 +1623,7 @@ TEST_F(TabContentsTest, CopyStateFromAndPruneTargetInterstitial) {
 
 class ConstrainedWindowCloseTest : public ConstrainedWindow {
  public:
-  ConstrainedWindowCloseTest(TabContents* tab_contents)
+  explicit ConstrainedWindowCloseTest(TabContents* tab_contents)
       : tab_contents_(tab_contents) {
   }
 

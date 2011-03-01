@@ -12,11 +12,11 @@
 #include "base/ref_counted.h"
 #include "base/scoped_ptr.h"
 #include "base/synchronization/waitable_event.h"
-#include "chrome/browser/browser_thread.h"
 #include "chrome/browser/sync/profile_sync_service_observer.h"
 #include "chrome/common/notification_service.h"
 #include "chrome/common/notification_source.h"
 #include "chrome/common/notification_type.h"
+#include "content/browser/browser_thread.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
 namespace base {

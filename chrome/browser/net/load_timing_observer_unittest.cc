@@ -8,7 +8,7 @@
 #include "base/format_macros.h"
 #include "base/string_util.h"
 #include "base/time.h"
-#include "chrome/browser/browser_thread.h"
+#include "content/browser/browser_thread.h"
 #include "net/base/load_flags.h"
 #include "net/url_request/url_request_netlog_params.h"
 #include "testing/gtest/include/gtest/gtest.h"

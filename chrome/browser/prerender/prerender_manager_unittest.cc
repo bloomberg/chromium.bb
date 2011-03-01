@@ -3,9 +3,9 @@
 // found in the LICENSE file.
 
 #include "base/time.h"
-#include "chrome/browser/browser_thread.h"
 #include "chrome/browser/prerender/prerender_contents.h"
 #include "chrome/browser/prerender/prerender_manager.h"
+#include "content/browser/browser_thread.h"
 #include "googleurl/src/gurl.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

@@ -8,7 +8,6 @@
 #include "base/message_loop.h"
 #include "base/values.h"
 #include "base/version.h"
-#include "chrome/browser/browser_thread.h"
 #include "chrome/browser/extensions/external_extension_provider_interface.h"
 #include "chrome/browser/extensions/external_extension_provider_impl.h"
 #include "chrome/browser/extensions/external_policy_extension_loader.h"
@@ -16,6 +15,7 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/test/testing_pref_service.h"
 #include "chrome/test/testing_profile.h"
+#include "content/browser/browser_thread.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 class ExternalPolicyExtensionProviderTest : public testing::Test {

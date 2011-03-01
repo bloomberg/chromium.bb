@@ -8,7 +8,7 @@
 
 #include "base/ref_counted.h"
 #include "base/synchronization/waitable_event.h"
-#include "chrome/browser/browser_thread.h"
+#include "content/browser/browser_thread.h"
 #include "chrome/common/notification_observer_mock.h"
 #include "chrome/common/notification_registrar.h"
 

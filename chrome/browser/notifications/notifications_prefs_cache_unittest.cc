@@ -5,7 +5,7 @@
 #include "chrome/browser/notifications/notifications_prefs_cache.h"
 
 #include "base/message_loop.h"
-#include "chrome/browser/browser_thread.h"
+#include "content/browser/browser_thread.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebNotificationPresenter.h"
 

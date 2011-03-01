@@ -4,11 +4,11 @@
 
 #include "chrome/browser/chromeos/login/signed_settings_helper.h"
 
-#include "chrome/browser/browser_thread.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/browser/chromeos/login/mock_ownership_service.h"
 #include "chrome/browser/chromeos/login/owner_manager.h"
 #include "chrome/browser/chromeos/login/signed_settings.h"
+#include "content/browser/browser_thread.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

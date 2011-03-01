@@ -4,7 +4,6 @@
 
 #include "base/message_loop.h"
 #include "base/path_service.h"
-#include "chrome/browser/browser_thread.h"
 #include "chrome/browser/extensions/image_loading_tracker.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/extensions/extension.h"
@@ -13,6 +12,7 @@
 #include "chrome/common/json_value_serializer.h"
 #include "chrome/common/notification_service.h"
 #include "chrome/common/notification_type.h"
+#include "content/browser/browser_thread.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/gfx/size.h"

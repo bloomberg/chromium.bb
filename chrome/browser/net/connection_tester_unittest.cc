@@ -4,8 +4,8 @@
 
 #include "chrome/browser/net/connection_tester.h"
 
-#include "chrome/browser/browser_thread.h"
 #include "chrome/test/testing_pref_service.h"
+#include "content/browser/browser_thread.h"
 #include "net/base/cert_verifier.h"
 #include "net/base/cookie_monster.h"
 #include "net/base/dnsrr_resolver.h"

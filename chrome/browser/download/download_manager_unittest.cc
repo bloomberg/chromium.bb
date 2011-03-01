@@ -6,7 +6,6 @@
 
 #include "base/string_util.h"
 #include "build/build_config.h"
-#include "chrome/browser/browser_thread.h"
 #include "chrome/browser/download/download_file.h"
 #include "chrome/browser/download/download_file_manager.h"
 #include "chrome/browser/download/download_item.h"
@@ -19,6 +18,7 @@
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/testing_profile.h"
+#include "content/browser/browser_thread.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gmock_mutant.h"
 #include "testing/gtest/include/gtest/gtest.h"

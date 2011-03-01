@@ -12,12 +12,12 @@
 #include "base/string_piece.h"
 #include "base/utf_string_conversions.h"
 #include "base/win/registry.h"
-#include "chrome/browser/browser_thread.h"
 #include "chrome/browser/policy/asynchronous_policy_loader.h"
 #include "chrome/browser/policy/configuration_policy_pref_store.h"
 #include "chrome/browser/policy/configuration_policy_provider_win.h"
 #include "chrome/browser/policy/mock_configuration_policy_store.h"
 #include "chrome/common/pref_names.h"
+#include "content/browser/browser_thread.h"
 #include "policy/policy_constants.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

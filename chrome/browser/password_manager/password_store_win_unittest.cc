@@ -13,7 +13,6 @@
 #include "base/stl_util-inl.h"
 #include "base/time.h"
 #include "base/synchronization/waitable_event.h"
-#include "chrome/browser/browser_thread.h"
 #include "chrome/browser/password_manager/password_form_data.h"
 #include "chrome/browser/password_manager/password_store_win.h"
 #include "chrome/browser/password_manager/ie7_password.h"
@@ -21,6 +20,7 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/test/signaling_task.h"
 #include "chrome/test/testing_profile.h"
+#include "content/browser/browser_thread.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

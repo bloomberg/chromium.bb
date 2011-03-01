@@ -9,7 +9,7 @@
 #include "base/compiler_specific.h"
 #include "base/ref_counted.h"
 #include "base/synchronization/waitable_event.h"
-#include "chrome/browser/browser_thread.h"
+#include "content/browser/browser_thread.h"
 
 // Helper class that executes code on a given thread while blocking on the
 // invoking thread (normally the UI thread). To use, derive from this class and

@@ -9,13 +9,13 @@
 #include "base/file_path.h"
 #include "base/message_loop.h"
 #include "base/scoped_ptr.h"
-#include "chrome/browser/browser_thread.h"
 #include "chrome/browser/sync/engine/syncapi.h"
 #include "chrome/browser/sync/glue/data_type_controller.h"
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/sync/profile_sync_factory_impl.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/testing_profile.h"
+#include "content/browser/browser_thread.h"
 
 using browser_sync::DataTypeController;
 

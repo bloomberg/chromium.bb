@@ -13,12 +13,12 @@
 #include "chrome/browser/bookmarks/bookmark_index.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
 #include "chrome/browser/bookmarks/bookmark_utils.h"
-#include "chrome/browser/browser_thread.h"
 #include "chrome/browser/history/history_database.h"
 #include "chrome/browser/history/in_memory_database.h"
 #include "chrome/browser/history/query_parser.h"
 #include "chrome/test/testing_browser_process_test.h"
 #include "chrome/test/testing_profile.h"
+#include "content/browser/browser_thread.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 class BookmarkIndexTest : public TestingBrowserProcessTest {

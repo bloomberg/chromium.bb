@@ -13,8 +13,8 @@
 #include "base/ref_counted.h"
 #include "base/scoped_ptr.h"
 #include "base/string16.h"
-#include "chrome/browser/browser_thread.h"
 #include "chrome/browser/search_engines/template_url_model_observer.h"
+#include "content/browser/browser_thread.h"
 
 class TemplateURLModel;
 class TemplateURLModelTestingProfile;

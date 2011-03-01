@@ -8,8 +8,8 @@
 
 #include "base/basictypes.h"
 #include "base/message_loop.h"
-#include "chrome/browser/browser_thread.h"
 #include "chrome/browser/webdata/web_data_service.h"
+#include "content/browser/browser_thread.h"
 
 template <class T>
 class AutofillWebDataServiceConsumer: public WebDataServiceConsumer {

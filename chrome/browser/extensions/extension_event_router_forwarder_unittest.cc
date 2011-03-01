@@ -5,11 +5,11 @@
 #include "chrome/browser/extensions/extension_event_router_forwarder.h"
 
 #include "base/message_loop.h"
-#include "chrome/browser/browser_thread.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/test/testing_browser_process.h"
 #include "chrome/test/testing_profile.h"
 #include "chrome/test/thread_test_helper.h"
+#include "content/browser/browser_thread.h"
 #include "googleurl/src/gurl.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
