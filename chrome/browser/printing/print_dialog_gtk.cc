@@ -118,10 +118,10 @@ void PrintDialogGtk::OnResponse(GtkWidget* dialog, gint response_id) {
           gtk_print_settings_get_page_ranges(gtk_settings_, &num_ranges);
       if (gtk_range) {
         for (int i = 0; i < num_ranges; ++i) {
-          printing::PageRange* range = new printing::PageRange;
-          range->from = gtk_range[i].start;
-          range->to = gtk_range[i].end;
-          ranges_vector.push_back(*range);
+          printing::PageRange range;
+          range.from = gtk_range[i].start;
+          range.to = gtk_range[i].end;
+          ranges_vector.push_back(range);
         }
         g_free(gtk_range);
       }
