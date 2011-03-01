@@ -1252,7 +1252,7 @@ class Adjuster : public AdjustmentMethod {
   void CollectTraces(const AssemblyProgram* program, Trace* abs32, Trace* rel32,
                      bool is_model) {
     label_info_maker_.ResetDebugLabel();
-    const std::vector<Instruction*>& instructions = program->instructions();
+    const InstructionVector& instructions = program->instructions();
     for (size_t i = 0;  i < instructions.size();  ++i) {
       Instruction* instruction = instructions.at(i);
       if (Label* label = program->InstructionAbs32Label(instruction))

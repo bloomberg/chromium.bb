@@ -364,50 +364,32 @@ Status ApplyEnsemblePatch(SourceStream* base,
 Status ApplyEnsemblePatch(const FilePath::CharType* old_file_name,
                           const FilePath::CharType* patch_file_name,
                           const FilePath::CharType* new_file_name) {
-  Status status;
-
   // First read enough of the patch file to validate the header is well-formed.
   // A few varint32 numbers should fit in 100.
   FilePath patch_file_path(patch_file_name);
-  const int BIG_ENOUGH_FOR_HEADER = 100;
-  char buffer[BIG_ENOUGH_FOR_HEADER];
-  int read_count =
-      file_util::ReadFile(patch_file_path, buffer, sizeof(buffer));
-  if (read_count < 0)
+  file_util::MemoryMappedFile patch_file;
+  if (!patch_file.Initialize(patch_file_path))
     return C_READ_OPEN_ERROR;
 
   // 'Dry-run' the first step of the patch process to validate format of header.
   SourceStream patch_header_stream;
-  patch_header_stream.Init(buffer, read_count);
+  patch_header_stream.Init(patch_file.data(), patch_file.length());
   EnsemblePatchApplication patch_process;
-  status = patch_process.ReadHeader(&patch_header_stream);
+  Status status = patch_process.ReadHeader(&patch_header_stream);
   if (status != C_OK)
     return status;
 
-  // Header smells good so read the whole patch file for real.
-  int64 patch_file_size = 0;
-  if (!file_util::GetFileSize(patch_file_path, &patch_file_size))
-    return C_READ_ERROR;
-  std::string patch_file_buffer;
-  patch_file_buffer.reserve(static_cast<size_t>(patch_file_size));
-  if (!file_util::ReadFileToString(patch_file_path, &patch_file_buffer))
-    return C_READ_ERROR;
-
   // Read the old_file.
   FilePath old_file_path(old_file_name);
-  int64 old_file_size = 0;
-  if (!file_util::GetFileSize(old_file_path, &old_file_size))
-    return C_READ_ERROR;
-  std::string old_file_buffer;
-  old_file_buffer.reserve(static_cast<size_t>(old_file_size));
-  if (!file_util::ReadFileToString(old_file_path, &old_file_buffer))
+  file_util::MemoryMappedFile old_file;
+  if (!old_file.Initialize(old_file_path))
     return C_READ_ERROR;
 
   // Apply patch on streams.
   SourceStream old_source_stream;
   SourceStream patch_source_stream;
-  old_source_stream.Init(old_file_buffer);
-  patch_source_stream.Init(patch_file_buffer);
+  old_source_stream.Init(old_file.data(), old_file.length());
+  patch_source_stream.Init(patch_file.data(), patch_file.length());
   SinkStream new_sink_stream;
   status = ApplyEnsemblePatch(&old_source_stream, &patch_source_stream,
                               &new_sink_stream);

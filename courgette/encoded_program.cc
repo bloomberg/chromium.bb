@@ -39,18 +39,19 @@ EncodedProgram::EncodedProgram() : image_base_(0) {}
 EncodedProgram::~EncodedProgram() {}
 
 // Serializes a vector of integral values using Varint32 coding.
-template<typename T>
-void WriteVector(const std::vector<T>& items, SinkStream* buffer) {
+template<typename T, typename A>
+void WriteVector(const std::vector<T, A>& items, SinkStream* buffer) {
   size_t count = items.size();
   buffer->WriteSizeVarint32(count);
   for (size_t i = 0;  i < count;  ++i) {
-    COMPILE_ASSERT(sizeof(T) <= sizeof(uint32), T_must_fit_in_uint32);
+    COMPILE_ASSERT(sizeof(T) <= sizeof(uint32),  // NOLINT
+                   T_must_fit_in_uint32);
     buffer->WriteSizeVarint32(items[i]);
   }
 }
 
-template<typename T>
-bool ReadVector(std::vector<T>* items, SourceStream* buffer) {
+template<typename T, typename A>
+bool ReadVector(std::vector<T, A>* items, SourceStream* buffer) {
   uint32 count;
   if (!buffer->ReadVarint32(&count))
     return false;
@@ -68,7 +69,8 @@ bool ReadVector(std::vector<T>* items, SourceStream* buffer) {
 }
 
 // Serializes a vector, using delta coding followed by Varint32 coding.
-void WriteU32Delta(const std::vector<uint32>& set, SinkStream* buffer) {
+template<typename A>
+void WriteU32Delta(const std::vector<uint32, A>& set, SinkStream* buffer) {
   size_t count = set.size();
   buffer->WriteSizeVarint32(count);
   uint32 prev = 0;
@@ -80,7 +82,8 @@ void WriteU32Delta(const std::vector<uint32>& set, SinkStream* buffer) {
   }
 }
 
-static bool ReadU32Delta(std::vector<uint32>* set, SourceStream* buffer) {
+template <typename A>
+static bool ReadU32Delta(std::vector<uint32, A>* set, SourceStream* buffer) {
   uint32 count;
 
   if (!buffer->ReadVarint32(&count))
@@ -109,8 +112,8 @@ static bool ReadU32Delta(std::vector<uint32>* set, SourceStream* buffer) {
 // the possibility of a greater size for experiments comparing Varint32 encoding
 // of a vector of larger integrals vs a plain form.)
 //
-template<typename T>
-void WriteVectorU8(const std::vector<T>& items, SinkStream* buffer) {
+template<typename T, typename A>
+void WriteVectorU8(const std::vector<T, A>& items, SinkStream* buffer) {
   size_t count = items.size();
   buffer->WriteSizeVarint32(count);
   if (count != 0) {
@@ -119,8 +122,8 @@ void WriteVectorU8(const std::vector<T>& items, SinkStream* buffer) {
   }
 }
 
-template<typename T>
-bool ReadVectorU8(std::vector<T>* items, SourceStream* buffer) {
+template<typename T, typename A>
+bool ReadVectorU8(std::vector<T, A>* items, SourceStream* buffer) {
   uint32 count;
   if (!buffer->ReadVarint32(&count))
     return false;
@@ -146,7 +149,7 @@ void EncodedProgram::DefineAbs32Label(int index, RVA value) {
 
 static const RVA kUnassignedRVA = static_cast<RVA>(-1);
 
-void EncodedProgram::DefineLabelCommon(std::vector<RVA>* rvas,
+void EncodedProgram::DefineLabelCommon(RvaVector* rvas,
                                        int index,
                                        RVA rva) {
   if (static_cast<int>(rvas->size()) <= index) {
@@ -163,7 +166,7 @@ void EncodedProgram::EndLabels() {
   FinishLabelsCommon(&rel32_rva_);
 }
 
-void EncodedProgram::FinishLabelsCommon(std::vector<RVA>* rvas) {
+void EncodedProgram::FinishLabelsCommon(RvaVector* rvas) {
   // Replace all unassigned slots with the value at the previous index so they
   // delta-encode to zero.  (There might be better values than zero.  The way to
   // get that is have the higher level assembly program assign the unassigned
@@ -183,7 +186,7 @@ void EncodedProgram::AddOrigin(RVA origin) {
   origins_.push_back(origin);
 }
 
-void EncodedProgram::AddCopy(int count, const void* bytes) {
+void EncodedProgram::AddCopy(uint32 count, const void* bytes) {
   const uint8* source = static_cast<const uint8*>(bytes);
 
   // Fold adjacent COPY instructions into one.  This nearly halves the size of
@@ -199,7 +202,7 @@ void EncodedProgram::AddCopy(int count, const void* bytes) {
     }
     if (ops_.back() == COPY) {
       copy_counts_.back() += count;
-      for (int i = 0;  i < count;  ++i) {
+      for (uint32 i = 0;  i < count;  ++i) {
         copy_bytes_.push_back(source[i]);
       }
       return;
@@ -212,7 +215,7 @@ void EncodedProgram::AddCopy(int count, const void* bytes) {
   } else {
     ops_.push_back(COPY);
     copy_counts_.push_back(count);
-    for (int i = 0;  i < count;  ++i) {
+    for (uint32 i = 0;  i < count;  ++i) {
       copy_bytes_.push_back(source[i]);
     }
   }
@@ -349,8 +352,8 @@ bool EncodedProgram::ReadFrom(SourceStreamSet* streams) {
 
 // Safe, non-throwing version of std::vector::at().  Returns 'true' for success,
 // 'false' for out-of-bounds index error.
-template<typename T>
-bool VectorAt(const std::vector<T>& v, size_t index, T* output) {
+template<typename T, typename A>
+bool VectorAt(const std::vector<T, A>& v, size_t index, T* output) {
   if (index >= v.size())
     return false;
   *output = v[index];
@@ -390,11 +393,11 @@ bool EncodedProgram::AssembleTo(SinkStream* final_buffer) {
       }
 
       case COPY: {
-        int count;
+        uint32 count;
         if (!VectorAt(copy_counts_, ix_copy_counts, &count))
           return false;
         ++ix_copy_counts;
-        for (int i = 0;  i < count;  ++i) {
+        for (uint32 i = 0;  i < count;  ++i) {
           uint8 b;
           if (!VectorAt(copy_bytes_, ix_copy_bytes, &b))
             return false;

@@ -9,6 +9,7 @@
 
 #include "base/basictypes.h"
 #include "courgette/image_info.h"
+#include "courgette/memory_allocator.h"
 
 namespace courgette {
 
@@ -37,7 +38,7 @@ class EncodedProgram {
 
   // (3) Add instructions in the order needed to generate bytes of file.
   void AddOrigin(RVA rva);
-  void AddCopy(int count, const void* bytes);
+  void AddCopy(uint32 count, const void* bytes);
   void AddRel32(int label_index);
   void AddAbs32(int label_index);
   void AddMakeRelocs();
@@ -67,25 +68,30 @@ class EncodedProgram {
     OP_LAST
   };
 
+  typedef std::vector<RVA, MemoryAllocator<RVA> > RvaVector;
+  typedef std::vector<uint32, MemoryAllocator<uint32> > UInt32Vector;
+  typedef std::vector<uint8, MemoryAllocator<uint8> > UInt8Vector;
+  typedef std::vector<OP, MemoryAllocator<OP> > OPVector;
+
   void DebuggingSummary();
   void GenerateBaseRelocations(SinkStream *buffer);
-  void DefineLabelCommon(std::vector<RVA>*, int, RVA);
-  void FinishLabelsCommon(std::vector<RVA>* addresses);
+  void DefineLabelCommon(RvaVector*, int, RVA);
+  void FinishLabelsCommon(RvaVector* addresses);
 
   // Binary assembly language tables.
   uint64 image_base_;
-  std::vector<RVA> rel32_rva_;
-  std::vector<RVA> abs32_rva_;
-  std::vector<OP> ops_;
-  std::vector<RVA> origins_;
-  std::vector<int> copy_counts_;
-  std::vector<uint8> copy_bytes_;
-  std::vector<uint32> rel32_ix_;
-  std::vector<uint32> abs32_ix_;
+  RvaVector rel32_rva_;
+  RvaVector abs32_rva_;
+  OPVector ops_;
+  RvaVector origins_;
+  UInt32Vector copy_counts_;
+  UInt8Vector copy_bytes_;
+  UInt32Vector rel32_ix_;
+  UInt32Vector abs32_ix_;
 
   // Table of the addresses containing abs32 relocations; computed during
   // assembly, used to generate base relocation table.
-  std::vector<uint32> abs32_relocs_;
+  UInt32Vector abs32_relocs_;
 
   DISALLOW_COPY_AND_ASSIGN(EncodedProgram);
 };

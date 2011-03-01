@@ -12,11 +12,15 @@
 #include "base/basictypes.h"
 
 #include "courgette/image_info.h"
+#include "courgette/memory_allocator.h"
 
 namespace courgette {
 
 class EncodedProgram;
 class Instruction;
+
+typedef std::vector<Instruction*, MemoryAllocator<Instruction*> >
+    InstructionVector;
 
 // A Label is a symbolic reference to an address.  Unlike a conventional
 // assembly language, we always know the address.  The address will later be
@@ -89,7 +93,7 @@ class AssemblyProgram {
   EncodedProgram* Encode() const;
 
   // Accessor for instruction list.
-  const std::vector<Instruction*>& instructions() const {
+  const InstructionVector& instructions() const {
     return instructions_;
   }
 
@@ -100,7 +104,6 @@ class AssemblyProgram {
   // Returns the label if the instruction contains and rel32 offset,
   // otherwise returns NULL.
   Label* InstructionRel32Label(const Instruction* instruction) const;
-
 
  private:
   void Emit(Instruction* instruction) { instructions_.push_back(instruction); }
@@ -118,7 +121,7 @@ class AssemblyProgram {
 
   uint64 image_base_;  // Desired or mandated base address of image.
 
-  std::vector<Instruction*> instructions_;  // All the instructions in program.
+  InstructionVector instructions_;  // All the instructions in program.
 
   // These are lookup maps to find the label associated with a given address.
   // We have separate label spaces for addresses referenced by rel32 labels and

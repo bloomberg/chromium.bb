@@ -18,6 +18,7 @@
 
 #include "base/basictypes.h"
 
+#include "courgette/memory_allocator.h"
 #include "courgette/region.h"
 
 namespace courgette {
@@ -151,7 +152,11 @@ class SinkStream {
   void Retire();
 
  private:
-  std::string buffer_;  // Use a string to manage the stream's memory.
+  // Use a string to manage the stream's memory.
+  typedef std::basic_string<char,
+                            std::char_traits<char>,
+                            MemoryAllocator<char> > SinkBuffer;
+  SinkBuffer buffer_;
 
   DISALLOW_COPY_AND_ASSIGN(SinkStream);
 };
