@@ -23,8 +23,11 @@ AfterTranslateInfoBar::AfterTranslateInfoBar(
       revert_button_(NULL),
       options_menu_button_(NULL),
       original_language_menu_model_(delegate, LanguagesMenuModel::ORIGINAL),
+      original_language_menu_(new views::Menu2(&original_language_menu_model_)),
       target_language_menu_model_(delegate, LanguagesMenuModel::TARGET),
+      target_language_menu_(new views::Menu2(&target_language_menu_model_)),
       options_menu_model_(delegate),
+      options_menu_(new views::Menu2(&options_menu_model_)),
       swapped_language_buttons_(false) {
 }
 
