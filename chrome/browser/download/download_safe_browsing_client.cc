@@ -64,6 +64,8 @@ void DownloadSBClient::OnDownloadUrlCheckResult(
   Release();
 }
 
+DownloadSBClient::~DownloadSBClient() {}
+
 void DownloadSBClient::SafeBrowsingCheckUrlDone(
     SafeBrowsingService::UrlCheckResult result) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));

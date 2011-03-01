@@ -296,6 +296,8 @@ void ServiceProcessControl::Launcher::Run(Task* task) {
                          NewRunnableMethod(this, &Launcher::DoRun));
 }
 
+ServiceProcessControl::Launcher::~Launcher() {}
+
 void ServiceProcessControl::Launcher::Notify() {
   DCHECK(notify_task_.get());
   notify_task_->Run();

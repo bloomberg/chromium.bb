@@ -163,6 +163,7 @@
         '../ui/base/message_box_win.h',
         '../ui/base/models/accelerator.h',
         '../ui/base/models/accelerator_gtk.h',
+        '../ui/base/models/accelerator_cocoa.mm',
         '../ui/base/models/accelerator_cocoa.h',
         '../ui/base/models/button_menu_item_model.cc',
         '../ui/base/models/button_menu_item_model.h',

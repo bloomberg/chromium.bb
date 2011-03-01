@@ -23,7 +23,7 @@ namespace ui {
 class TransformSkia : public Transform {
  public:
   TransformSkia();
-  virtual ~TransformSkia() {}
+  virtual ~TransformSkia();
 
   // Overridden from ui::Transform
   virtual void SetRotate(float degree) OVERRIDE;

@@ -11,6 +11,11 @@ namespace {
 int g_signal_socket = -1;
 }
 
+ServiceProcessShutdownMonitor::ServiceProcessShutdownMonitor(
+    Task* shutdown_task)
+    : shutdown_task_(shutdown_task) {
+}
+
 ServiceProcessShutdownMonitor::~ServiceProcessShutdownMonitor() {
 }
 
@@ -47,6 +52,8 @@ static void SigTermHandler(int sig, siginfo_t* info, void* uap) {
   }
 }
 
+ServiceProcessState::StateData::StateData() {}
+
 void ServiceProcessState::StateData::SignalReady() {
   CHECK(MessageLoopForIO::current()->WatchFileDescriptor(
       sockets_[0], true, MessageLoopForIO::WATCH_READ,
@@ -71,6 +78,8 @@ void ServiceProcessState::StateData::SignalReady() {
     PLOG(ERROR) << "sigaction";
   }
 }
+
+ServiceProcessState::StateData::~StateData() {}
 
 bool ServiceProcessState::InitializeState() {
   CHECK(!state_);

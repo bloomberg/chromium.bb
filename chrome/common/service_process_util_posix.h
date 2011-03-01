@@ -37,9 +37,7 @@ class ServiceProcessShutdownMonitor
     kShutDownMessage = 0xdecea5e
   };
 
-  explicit ServiceProcessShutdownMonitor(Task* shutdown_task)
-      : shutdown_task_(shutdown_task) {
-  }
+  explicit ServiceProcessShutdownMonitor(Task* shutdown_task);
   virtual ~ServiceProcessShutdownMonitor();
 
   // base::MessagePumpLibevent::Watcher overrides
@@ -52,6 +50,12 @@ class ServiceProcessShutdownMonitor
 
 struct ServiceProcessState::StateData
     : public base::RefCountedThreadSafe<ServiceProcessState::StateData> {
+  StateData();
+
+  // WatchFileDescriptor needs to be set up by the thread that is going
+  // to be monitoring it.
+  void SignalReady();
+
 #if defined(OS_MACOSX)
   base::mac::ScopedCFTypeRef<CFDictionaryRef> launchd_conf_;
 #endif  // OS_MACOSX
@@ -65,9 +69,9 @@ struct ServiceProcessState::StateData
   struct sigaction old_action_;
   bool set_action_;
 
-  // WatchFileDescriptor needs to be set up by the thread that is going
-  // to be monitoring it.
-  void SignalReady();
+ protected:
+  friend class base::RefCountedThreadSafe<ServiceProcessState::StateData>;
+  virtual ~StateData();
 };
 
 #endif  // CHROME_COMMON_SERVICE_PROCESS_UTIL_POSIX_H_

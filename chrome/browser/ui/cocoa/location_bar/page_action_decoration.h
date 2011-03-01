@@ -57,15 +57,6 @@ class PageActionDecoration : public ImageDecoration,
   virtual NSString* GetToolTip();
   virtual NSMenu* GetMenu();
 
- protected:
-  // For unit testing only.
-  PageActionDecoration() : owner_(NULL),
-                           profile_(NULL),
-                           page_action_(NULL),
-                           tracker_(this),
-                           current_tab_id_(-1),
-                           preview_enabled_(false) {}
-
  private:
   // Overridden from NotificationObserver:
   virtual void Observe(NotificationType type,

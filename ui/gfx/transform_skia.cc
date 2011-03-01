@@ -22,6 +22,8 @@ TransformSkia::TransformSkia() {
   matrix_->reset();
 }
 
+TransformSkia::~TransformSkia() {}
+
 void TransformSkia::SetRotate(float degree) {
   matrix_->setRotate(SkFloatToScalar(degree));
 }

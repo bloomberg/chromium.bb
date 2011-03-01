@@ -142,6 +142,9 @@ class ServiceProcessControl : public IPC::Channel::Sender,
     bool launched() const { return launched_; }
 
    private:
+    friend class base::RefCountedThreadSafe<ServiceProcessControl::Launcher>;
+    virtual ~Launcher();
+
 #if !defined(OS_MACOSX)
     void DoDetectLaunched();
 #endif  // !OS_MACOSX

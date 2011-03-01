@@ -58,6 +58,9 @@ class DownloadSBClient
     DOWNLOAD_URL_CHECKS_MAX
   };
 
+  friend class base::RefCountedThreadSafe<DownloadSBClient>;
+  virtual ~DownloadSBClient();
+
   // Call DownloadManager on UI thread.
   void SafeBrowsingCheckUrlDone(SafeBrowsingService::UrlCheckResult result);
 

@@ -19,31 +19,14 @@ namespace ui {
 // |-copy| to the |key_code| paramater in the constructor.
 class AcceleratorCocoa : public Accelerator {
  public:
-  AcceleratorCocoa(NSString* key_code, NSUInteger mask)
-      : Accelerator(ui::VKEY_UNKNOWN, mask),
-        characters_([key_code copy]) {
-  }
+  AcceleratorCocoa();
+  AcceleratorCocoa(NSString* key_code, NSUInteger mask);
+  AcceleratorCocoa(const AcceleratorCocoa& accelerator);
+  virtual ~AcceleratorCocoa();
 
-  AcceleratorCocoa(const AcceleratorCocoa& accelerator)
-      : Accelerator(accelerator) {
-    characters_.reset([accelerator.characters_ copy]);
-  }
+  AcceleratorCocoa& operator=(const AcceleratorCocoa& accelerator);
 
-  AcceleratorCocoa() : Accelerator() {}
-  virtual ~AcceleratorCocoa() {}
-
-  AcceleratorCocoa& operator=(const AcceleratorCocoa& accelerator) {
-    if (this != &accelerator) {
-      *static_cast<Accelerator*>(this) = accelerator;
-      characters_.reset([accelerator.characters_ copy]);
-    }
-    return *this;
-  }
-
-  bool operator==(const AcceleratorCocoa& rhs) const {
-    return [characters_ isEqualToString:rhs.characters_.get()] &&
-        (modifiers_ == rhs.modifiers_);
-  }
+  bool operator==(const AcceleratorCocoa& rhs) const;
 
   NSString* characters() const {
     return characters_.get();
