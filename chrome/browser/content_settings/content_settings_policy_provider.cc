@@ -335,7 +335,7 @@ void PolicyProvider::GetContentSettingsFromPreferences(
     const char* pref_name = kPrefsForManagedContentSettingsMap[i].pref_name;
     // Skip unset policies.
     if (!prefs->HasPrefPath(pref_name)) {
-      LOG(INFO) << "Skiping unset preference: " << pref_name;
+      VLOG(2) << "Skipping unset preference: " << pref_name;
       continue;
     }
 
@@ -349,11 +349,11 @@ void PolicyProvider::GetContentSettingsFromPreferences(
       std::string original_pattern_str;
       pattern_str_list->GetString(j, &original_pattern_str);
       ContentSettingsPattern pattern(original_pattern_str);
+      // Ignore invalid patterns.
       if (!pattern.IsValid()) {
-        // Ignore invalid patterns
+        VLOG(1) << "Ignoring invalid content settings pattern: " <<
+                   pattern.AsString();
         continue;
-        LOG(WARNING) << "Ignoring invalid content settings pattern: "
-                     << pattern.AsString();
       }
       rules->push_back(MakeTuple(
           pattern,
