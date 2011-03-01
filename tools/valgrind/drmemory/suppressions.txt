@@ -482,5 +482,20 @@ LEAK
 *!remoting::ScreenRecorder::DoCapture
 *!remoting::ScreenRecorder::DoStart
 
+# http://crbug.com/74413
+LEAK
+*!operator new
+*!net::HttpAuthHandlerFactory::CreateDefault
+
+# http://crbug.com/74417
+LEAK
+*!operator new
+*!disk_cache::BackendImpl::CreateEntryImpl
+
+# http://crbug.com/74425
+LEAK
+*!operator new
+*!disk_cache::BackendImpl::NewEntry
+
 # Empty line at EOF - workaround for
 # http://code.google.com/p/drmemory/issues/detail?id=41
