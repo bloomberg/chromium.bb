@@ -172,27 +172,6 @@ class RenderWidgetHostViewGtkWidget {
   static gboolean OnFocusIn(GtkWidget* widget,
                             GdkEventFocus* focus,
                             RenderWidgetHostViewGtk* host_view) {
-    int x, y;
-    gtk_widget_get_pointer(widget, &x, &y);
-    // http://crbug.com/13389
-    // If the cursor is in the render view, fake a mouse move event so that
-    // webkit updates its state. Otherwise webkit might think the cursor is
-    // somewhere it's not.
-    if (x >= 0 && y >= 0 && x < widget->allocation.width &&
-        y < widget->allocation.height) {
-      WebKit::WebMouseEvent fake_event;
-      fake_event.timeStampSeconds = base::Time::Now().ToDoubleT();
-      fake_event.modifiers = 0;
-      fake_event.windowX = fake_event.x = x;
-      fake_event.windowY = fake_event.y = y;
-      gdk_window_get_origin(widget->window, &x, &y);
-      fake_event.globalX = fake_event.x + x;
-      fake_event.globalY = fake_event.y + y;
-      fake_event.type = WebKit::WebInputEvent::MouseMove;
-      fake_event.button = WebKit::WebMouseEvent::ButtonNone;
-      host_view->GetRenderWidgetHost()->ForwardMouseEvent(fake_event);
-    }
-
     host_view->ShowCurrentCursor();
     host_view->GetRenderWidgetHost()->GotFocus();
 
