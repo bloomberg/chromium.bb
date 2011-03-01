@@ -34,7 +34,8 @@ a:active {
   bottom: 0;
 }
 
-.frozen {
+.frozen,
+.subpage-sheet-container.frozen {
   position: fixed;
 }
 

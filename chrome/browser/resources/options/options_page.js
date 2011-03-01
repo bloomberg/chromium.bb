@@ -24,6 +24,8 @@ cr.define('options', function() {
     this.managed = false;
   }
 
+  const SUBPAGE_SHEET_COUNT = 2;
+
   /**
    * Main level option pages.
    * @protected
@@ -439,32 +441,49 @@ cr.define('options', function() {
   };
 
   /**
-   * Freezes/unfreezes the scroll position of the top-level page based on
-   * whether a subpage is showing.
+   * Freezes/unfreezes the scroll position of given level's page container.
+   * @param {boolean} freeze Whether the page should be frozen.
+   * @param {number} level The level to freeze/unfreeze.
+   * @private
    */
-  OptionsPage.updateTopLevelPageFreezeState = function() {
-    var freeze = OptionsPage.getTopmostVisiblePage().nestingLevel > 0;
-    var topPageContainer = $('toplevel-page-container');
-    if (topPageContainer.classList.contains('frozen') == freeze)
+  OptionsPage.setPageFrozenAtLevel_ = function(freeze, level) {
+    var container = level == 0 ? $('toplevel-page-container')
+                               : $('subpage-sheet-container-' + level);
+
+    if (container.classList.contains('frozen') == freeze)
       return;
 
     if (freeze) {
       var scrollPosition = document.body.scrollTop;
-      // Lock the width, since auto width computation will change.
-      topPageContainer.style.width =
-          window.getComputedStyle(topPageContainer).width;
-      topPageContainer.classList.add('frozen');
-      topPageContainer.style.top = -scrollPosition + 'px';
-      this.updateFrozenPageHorizontalPosition_();
+      // Lock the width, since auto width computation may change.
+      container.style.width = window.getComputedStyle(container).width;
+      container.classList.add('frozen');
+      container.style.top = -scrollPosition + 'px';
+      this.updateFrozenElementHorizontalPosition_(container);
     } else {
-      var scrollPosition = - parseInt(topPageContainer.style.top, 10);
-      topPageContainer.classList.remove('frozen');
-      topPageContainer.style.top = '';
-      topPageContainer.style.left = '';
-      topPageContainer.style.right = '';
-      topPageContainer.style.width = '';
+      var scrollPosition = - parseInt(container.style.top, 10);
+      container.classList.remove('frozen');
+      container.style.top = '';
+      container.style.left = '';
+      container.style.right = '';
+      container.style.width = '';
       // Restore the scroll position.
-      window.scroll(document.body.scrollLeft, scrollPosition);
+      if (!container.classList.contains('hidden'))
+        window.scroll(document.body.scrollLeft, scrollPosition);
+    }
+  };
+
+  /**
+   * Freezes/unfreezes the scroll position of visible pages based on the current
+   * page stack.
+   */
+  OptionsPage.updatePageFreezeStates = function() {
+    var topPage = OptionsPage.getTopmostVisiblePage();
+    if (!topPage)
+      return;
+    var nestingLevel = topPage.isOverlay ? 100 : topPage.nestingLevel;
+    for (var i = 0; i <= SUBPAGE_SHEET_COUNT; i++) {
+      this.setPageFrozenAtLevel_(i < nestingLevel, i);
     }
   };
 
@@ -503,6 +522,19 @@ cr.define('options', function() {
 
     document.addEventListener('scroll', this.handleScroll_.bind(this));
     window.addEventListener('resize', this.handleResize_.bind(this));
+
+    // Calculate and store the horizontal locations of elements that may be
+    // frozen later.
+    var sidebarWidth =
+        parseInt(window.getComputedStyle($('mainview')).webkitPaddingStart, 10);
+    $('toplevel-page-container').horizontalOffset = sidebarWidth +
+        parseInt(window.getComputedStyle(
+            $('mainview-content')).webkitPaddingStart, 10);
+    for (var level = 1; level <= SUBPAGE_SHEET_COUNT; level++) {
+      var containerId = 'subpage-sheet-container-' + level;
+      $(containerId).horizontalOffset = sidebarWidth;
+    }
+    $('subpage-backdrop').horizontalOffset = sidebarWidth;
     // Trigger the resize handler manually to set the initial state.
     this.handleResize_(null);
   };
@@ -554,32 +586,39 @@ cr.define('options', function() {
    * @private
    */
   OptionsPage.handleScroll_ = function(e) {
-    var horizontalOffset = document.body.scrollLeft;
+    var scrollHorizontalOffset = document.body.scrollLeft;
     // position:fixed doesn't seem to work for horizontal scrolling in RTL mode,
     // so only adjust in LTR mode (where scroll values will be positive).
-    if (horizontalOffset >= 0) {
-      $('navbar-container').style.left = -document.body.scrollLeft + 'px';
-      this.updateFrozenPageHorizontalPosition_();
+    if (scrollHorizontalOffset >= 0) {
+      $('navbar-container').style.left = -scrollHorizontalOffset + 'px';
+      var subpageBackdrop = $('subpage-backdrop');
+      subpageBackdrop.style.left = subpageBackdrop.horizontalOffset -
+          scrollHorizontalOffset + 'px';
+      this.updateAllFrozenElementPositions_();
     }
   };
 
   /**
-   * Updates any frozen pages to match the horizontal scroll position.
-   * @param {Event} e The scroll event.
+   * Updates all frozen pages to match the horizontal scroll position.
    * @private
    */
-  OptionsPage.updateFrozenPageHorizontalPosition_ = function() {
-    var horizontalOffset = document.body.scrollLeft;
-    var toplevelPage = $('toplevel-page-container');
-    if (toplevelPage.classList.contains('frozen')) {
-      const WINDOW_LEFT_OFFSET = 291;  // Sidebar width + padding
-      if (document.documentElement.dir == 'rtl') {
-        toplevelPage.style.right = WINDOW_LEFT_OFFSET + 'px';
-      } else {
-        toplevelPage.style.left =
-            WINDOW_LEFT_OFFSET -document.body.scrollLeft + 'px';
-      }
+  OptionsPage.updateAllFrozenElementPositions_ = function() {
+    var frozenElements = document.querySelectorAll('.frozen');
+    for (var i = 0; i < frozenElements.length; i++) {
+      this.updateFrozenElementHorizontalPosition_(frozenElements[i]);
     }
+  };
+
+  /**
+   * Updates the given frozen element to match the horizontal scroll position.
+   * @param {HTMLElement} e The frozen element to update
+   * @private
+   */
+  OptionsPage.updateFrozenElementHorizontalPosition_ = function(e) {
+    if (document.documentElement.dir == 'rtl')
+      e.style.right = e.horizontalOffset + 'px';
+    else
+      e.style.left = e.horizontalOffset - document.body.scrollLeft + 'px';
   };
 
   /**
@@ -788,13 +827,13 @@ cr.define('options', function() {
       // A subpage was shown or hidden.
       if (!this.isOverlay && this.nestingLevel > 0) {
         OptionsPage.updateSubpageBackdrop_();
-        OptionsPage.updateTopLevelPageFreezeState();
         if (visible) {
           // Scroll to the top of the newly-opened subpage.
           window.scroll(document.body.scrollLeft, 0)
         }
       }
 
+      OptionsPage.updatePageFreezeStates();
       // The managed prefs banner is global, so after any visibility change
       // update it based on the topmost page, not necessarily this page
       // (e.g., if an ancestor is made visible after a child).
