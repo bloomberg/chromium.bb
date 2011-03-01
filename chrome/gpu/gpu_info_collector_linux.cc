@@ -10,6 +10,7 @@
 #include "app/gfx/gl/gl_bindings.h"
 #include "app/gfx/gl/gl_context.h"
 #include "app/gfx/gl/gl_implementation.h"
+#include "base/file_util.h"
 #include "base/logging.h"
 #include "base/scoped_ptr.h"
 #include "base/string_piece.h"
@@ -76,6 +77,15 @@ struct PciInterface {
   FT_pci_fill_info pci_fill_info;
   FT_pci_lookup_name pci_lookup_name;
 };
+
+// This checks if a system supports PCI bus.
+// We check the existence of /sys/bus/pci or /sys/bug/pci_express.
+bool IsPciSupported() {
+  const FilePath pci_path("/sys/bus/pci/");
+  const FilePath pcie_path("/sys/bus/pci_express/");
+  return (file_util::PathExists(pci_path) ||
+          file_util::PathExists(pcie_path));
+}
 
 // This dynamically opens libpci and get function pointers we need.  Return
 // NULL if library fails to open or any functions can not be located.
@@ -154,6 +164,11 @@ bool CollectPreliminaryGraphicsInfo(GPUInfo* gpu_info) {
 
 bool CollectVideoCardInfo(GPUInfo* gpu_info) {
   DCHECK(gpu_info);
+
+  if (IsPciSupported() == false) {
+    LOG(INFO) << "PCI bus scanning is not supported";
+    return false;
+  }
 
   // TODO(zmo): be more flexible about library name.
   PciInterface* interface = InitializeLibPci("libpci.so.3");
