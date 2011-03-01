@@ -70,8 +70,8 @@ CROSSARCH=nacl64
 GITRW=ssh://git@gitrw.chromium.org:9222
 GITRO=http://git.chromium.org/git
 GIT_BASE_URL=http://git.chromium.org/git
-TOOLCHAINLOC?=/usr/local
-SDKLOC?=$(TOOLCHAINLOC)
+TOOLCHAINLOC?=out
+SDKLOC?=$(abspath $(TOOLCHAINLOC))
 SDKNAME=nacl-sdk
 SDKROOT=$(SDKLOC)/$(SDKNAME)
 DESTDIR?=
@@ -187,7 +187,7 @@ stamp-src: SRC/stamp-binutils SRC/stamp-gcc SRC/stamp-newlib SRC/stamp-gdb | SRC
 
 # Prepare source directory from Git for building.
 prepare-git-src: ALWAYS
-	$(MAKE) -f $(THISMAKEFILE) unpack-gcc-extras
+	./use_gcc_extras.sh GMP_VERSION=$(GMP_VERSION) MPFR_VERSION=$(MPFR_VERSION)
 	touch SRC/stamp-binutils
 	touch SRC/stamp-gcc
 	touch SRC/stamp-newlib
@@ -240,58 +240,13 @@ SRC/gcc: | SRC
 	@echo "Unpacking gcc"
 	git clone $(GIT_BASE_URL)/nacl-gcc SRC/gcc
 	cd SRC/gcc && git checkout "$(NACL_GCC_COMMIT)"
-	$(MAKE) -f $(THISMAKEFILE) unpack-gcc-extras
+	./use_gcc_extras.sh GMP_VERSION=$(GMP_VERSION) MPFR_VERSION=$(MPFR_VERSION)
 
 # Create gcc source directory, and mark that we've done that.
 SRC/stamp-gcc: | SRC
 	rm -rf SRC/gcc
 	$(MAKE) -f $(THISMAKEFILE) SRC/gcc
 	touch $@
-
-# Unpack GCC libs (GMP, MPFR) from tarballs if they are not in the system.
-unpack-gcc-extras: ALWAYS | SRC
-	GNU_MP_MAJOR=0 ; \
-	if [ -f /usr/include/gmp.h ] ; then \
-	  GNU_MP_MAJOR="`grep '#[ 	]*define[ 	]*__GNU_MP_VERSION ' /usr/include/gmp.h | sed -e s'@[ 	]*#define[ 	]*__GNU_MP_VERSION[ 	]*@@'`" ; \
-	  GNU_MP_MINOR="`grep '#[ 	]*define[ 	]*__GNU_MP_VERSION_MINOR ' /usr/include/gmp.h | sed -e s'@[ 	]*#[ 	]*define[ 	]*__GNU_MP_VERSION_MINOR[ 	]*@@'`" ; \
-	  GNU_MP_PATCHLEVEL="`grep '#[ 	]*define[ 	]*__GNU_MP_VERSION_PATCHLEVEL ' /usr/include/gmp.h | sed -e s'@[ 	]*[ 	]*#define[ 	]*__GNU_MP_VERSION_PATCHLEVEL[ 	]*@@'`" ; \
-	fi ; \
-	if [ "$$GNU_MP_MAJOR" -lt 4 ] || \
-	   ( [ "$$GNU_MP_MAJOR" -eq 4 ] && \
-	     [ "$$GNU_MP_MINOR" -lt 3 ] ) || \
-	   ( [ "$$GNU_MP_MAJOR" -eq 4 ] && \
-	     [ "$$GNU_MP_MINOR" -eq 3 ] && \
-	     [ "$$GNU_MP_PATCHLEVEL" -lt 1 ] ) ; then \
-	  cd SRC && \
-	    rm -rf gmp-$(GMP_VERSION) && \
-	    tar xf $(SRCDIR)/gmp/gmp-$(GMP_VERSION).tar.bz2 && \
-	    mv gmp-$(GMP_VERSION) gcc/gmp && \
-	    cp gcc/gmp/configure \
-	        gcc/gmp/configure.old && \
-	    cat gcc/gmp/configure.old | \
-	        sed -e 's/M4=m4-not-needed/: # no m4/g' \
-	        >gcc/gmp/configure && \
-	  cd .. ; \
-	fi ; \
-	MPFR_VERSION_MAJOR=0 ; \
-	if [ -f /usr/include/mpfr.h ] ; then \
-	  MPFR_VERSION_MAJOR="`grep '#[ 	]*define[ 	]*MPFR_VERSION_MAJOR ' /usr/include/mpfr.h | sed -e s'@[ 	]*#[ 	]*define[ 	]*MPFR_VERSION_MAJOR[ 	]*@@'`" ; \
-	  MPFR_VERSION_MINOR="`grep '#[ 	]*define[ 	]*MPFR_VERSION_MINOR ' /usr/include/mpfr.h | sed -e s'@[ 	]*#[ 	]*define[ 	]*MPFR_VERSION_MINOR[ 	]*@@'`" ; \
-	  MPFR_VERSION_PATCHLEVEL="`grep '#[ 	]*define[ 	]*MPFR_VERSION_PATCHLEVEL ' /usr/include/mpfr.h | sed -e s'@[ 	]*#[ 	]*define[ 	]*MPFR_VERSION_PATCHLEVEL[ 	]*@@'`" ; \
-	fi ; \
-	if [ ! -e /usr/include/mpfr.h ] || \
-	   [ "$$MPFR_VERSION_MAJOR" -lt 2 ] || \
-	   ( [ "$$MPFR_VERSION_MAJOR" -eq 2 ] && \
-	     [ "$$MPFR_VERSION_MINOR" -lt 4 ] ) || \
-	   ( [ "$$MPFR_VERSION_MAJOR" -eq 2 ] && \
-	     [ "$$MPFR_VERSION_MINOR" -eq 4 ] && \
-	     [ "$$MPFR_VERSION_PATCHLEVEL" -lt 1 ] ) ; then \
-	  cd SRC && \
-	    rm -rf mpfr-$(MPFR_VERSION) && \
-	    tar xf $(SRCDIR)/mpfr/mpfr-$(MPFR_VERSION).tar.bz2 && \
-	    mv mpfr-$(MPFR_VERSION) gcc/mpfr && \
-	  cd .. ; \
-	fi ;
 
 fetch-glibc-sources-readonly: SRC/stamp-glibc SRC/stamp-linux-headers
 	@echo "Fetching glibc and linux headers done."
