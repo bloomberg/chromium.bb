@@ -16,11 +16,11 @@
 #include "base/threading/thread.h"
 #include "base/win/registry.h"
 #include "base/win/windows_version.h"
-#include "chrome/browser/browser_thread.h"
 #include "chrome/installer/util/browser_distribution.h"
 #include "chrome/installer/util/google_update_constants.h"
 #include "chrome/installer/util/helper.h"
 #include "chrome/installer/util/install_util.h"
+#include "content/browser/browser_thread.h"
 #include "views/window/window.h"
 #include "google_update_idl_i.c"
 
