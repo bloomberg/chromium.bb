@@ -10,6 +10,7 @@
 #include "chrome/browser/net/gaia/token_service.h"
 #include "chrome/browser/policy/cloud_policy_cache.h"
 #include "chrome/browser/policy/device_management_service.h"
+#include "chrome/browser/policy/proto/device_management_backend.pb.h"
 #include "chrome/browser/policy/mock_device_management_backend.h"
 #include "chrome/common/net/gaia/gaia_constants.h"
 #include "chrome/test/testing_profile.h"
@@ -85,14 +86,6 @@ class ProxyDeviceManagementBackend : public DeviceManagementBackend {
     backend_->ProcessPolicyRequest(device_management_token, device_id,
                                    request, delegate);
   }
-  virtual void ProcessCloudPolicyRequest(
-      const std::string& device_management_token,
-      const std::string& device_id,
-      const em::CloudPolicyRequest& request,
-      DevicePolicyResponseDelegate* delegate) {
-    backend_->ProcessCloudPolicyRequest(device_management_token, device_id,
-                                        request, delegate);
-  }
 
  private:
   DeviceManagementBackend* backend_;  // weak
@@ -142,7 +135,8 @@ TEST_F(DeviceTokenFetcherTest, FetchToken) {
   EXPECT_CALL(observer, OnDeviceTokenAvailable());
   fetcher.AddObserver(&observer);
   EXPECT_EQ("", fetcher.GetDeviceToken());
-  fetcher.FetchToken("fake_auth_token", "fake_device_id");
+  fetcher.FetchToken("fake_auth_token", "fake_device_id",
+                     em::DeviceRegisterRequest::USER, "fake_machine_id");
   loop_.RunAllPending();
   Mock::VerifyAndClearExpectations(&observer);
   std::string token = fetcher.GetDeviceToken();
@@ -152,7 +146,8 @@ TEST_F(DeviceTokenFetcherTest, FetchToken) {
   EXPECT_CALL(backend_, ProcessRegisterRequest(_, _, _, _)).WillOnce(
       MockDeviceManagementBackendSucceedRegister());
   EXPECT_CALL(observer, OnDeviceTokenAvailable());
-  fetcher.FetchToken("fake_auth_token", "fake_device_id");
+  fetcher.FetchToken("fake_auth_token", "fake_device_id",
+                     em::DeviceRegisterRequest::USER, "fake_machine_id");
   loop_.RunAllPending();
   Mock::VerifyAndClearExpectations(&observer);
   std::string token2 = fetcher.GetDeviceToken();
@@ -171,7 +166,8 @@ TEST_F(DeviceTokenFetcherTest, RetryOnError) {
   MockTokenAvailableObserver observer;
   EXPECT_CALL(observer, OnDeviceTokenAvailable());
   fetcher.AddObserver(&observer);
-  fetcher.FetchToken("fake_auth_token", "fake_device_id");
+  fetcher.FetchToken("fake_auth_token", "fake_device_id",
+                     em::DeviceRegisterRequest::USER, "fake_machine_id");
   loop_.RunAllPending();
   Mock::VerifyAndClearExpectations(&observer);
   EXPECT_NE("", fetcher.GetDeviceToken());
@@ -187,7 +183,8 @@ TEST_F(DeviceTokenFetcherTest, UnmanagedDevice) {
   MockTokenAvailableObserver observer;
   EXPECT_CALL(observer, OnDeviceTokenAvailable()).Times(0);
   fetcher.AddObserver(&observer);
-  fetcher.FetchToken("fake_auth_token", "fake_device_id");
+  fetcher.FetchToken("fake_auth_token", "fake_device_id",
+                     em::DeviceRegisterRequest::USER, "fake_machine_id");
   loop_.RunAllPending();
   Mock::VerifyAndClearExpectations(&observer);
   EXPECT_EQ("", fetcher.GetDeviceToken());

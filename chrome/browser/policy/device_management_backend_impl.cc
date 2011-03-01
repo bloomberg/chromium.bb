@@ -27,14 +27,12 @@ const char DeviceManagementBackendImpl::kValueRequestRegister[] = "register";
 const char DeviceManagementBackendImpl::kValueRequestUnregister[] =
     "unregister";
 const char DeviceManagementBackendImpl::kValueRequestPolicy[] = "policy";
-const char DeviceManagementBackendImpl::kValueRequestCloudPolicy[] =
-    "cloud_policy";
-const char DeviceManagementBackendImpl::kValueDeviceType[] = "Chrome OS";
+const char DeviceManagementBackendImpl::kValueDeviceType[] = "2";
 const char DeviceManagementBackendImpl::kValueAppType[] = "Chrome";
 
 namespace {
 
-const char kValueAgent[] = "%s enterprise management client version %s (%s)";
+const char kValueAgent[] = "%s enterprise management client %s (%s)";
 
 const char kPostContentType[] = "application/protobuf";
 
@@ -332,41 +330,6 @@ class DeviceManagementPolicyJob : public DeviceManagementJobBase {
   DISALLOW_COPY_AND_ASSIGN(DeviceManagementPolicyJob);
 };
 
-// Handles cloud policy request jobs.
-class CloudPolicyJob : public DeviceManagementJobBase {
- public:
-  CloudPolicyJob(
-      DeviceManagementBackendImpl* backend_impl,
-      const std::string& device_management_token,
-      const std::string& device_id,
-      const em::CloudPolicyRequest& request,
-      DeviceManagementBackend::DevicePolicyResponseDelegate* delegate)
-      : DeviceManagementJobBase(
-          backend_impl,
-          DeviceManagementBackendImpl::kValueRequestCloudPolicy,
-          device_id),
-        delegate_(delegate) {
-    SetDeviceManagementToken(device_management_token);
-    em::DeviceManagementRequest request_wrapper;
-    request_wrapper.mutable_cloud_policy_request()->CopyFrom(request);
-    SetPayload(request_wrapper);
-  }
-  virtual ~CloudPolicyJob() {}
-
- private:
-  // DeviceManagementJobBase overrides.
-  virtual void OnError(DeviceManagementBackend::ErrorCode error) {
-    delegate_->OnError(error);
-  }
-  virtual void OnResponse(const em::DeviceManagementResponse& response) {
-    delegate_->HandleCloudPolicyResponse(response.cloud_policy_response());
-  }
-
-  DeviceManagementBackend::DevicePolicyResponseDelegate* delegate_;
-
-  DISALLOW_COPY_AND_ASSIGN(CloudPolicyJob);
-};
-
 DeviceManagementBackendImpl::DeviceManagementBackendImpl(
     DeviceManagementService* service)
     : service_(service) {
@@ -426,15 +389,6 @@ void DeviceManagementBackendImpl::ProcessPolicyRequest(
     DevicePolicyResponseDelegate* delegate) {
   AddJob(new DeviceManagementPolicyJob(this, device_management_token, device_id,
                                        request, delegate));
-}
-
-void DeviceManagementBackendImpl::ProcessCloudPolicyRequest(
-    const std::string& device_management_token,
-    const std::string& device_id,
-    const em::CloudPolicyRequest& request,
-    DevicePolicyResponseDelegate* delegate) {
-  AddJob(new CloudPolicyJob(this, device_management_token, device_id,
-                            request, delegate));
 }
 
 }  // namespace policy

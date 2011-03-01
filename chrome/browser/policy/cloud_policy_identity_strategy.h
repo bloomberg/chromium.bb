@@ -9,8 +9,11 @@
 #include <string>
 
 #include "base/observer_list.h"
+#include "chrome/browser/policy/proto/device_management_backend.pb.h"
 
 namespace policy {
+
+namespace em = enterprise_management;
 
 // Manages a device management token, i.e. an identifier that represents a
 // registration with the device management service, and the associated
@@ -41,8 +44,21 @@ class CloudPolicyIdentityStrategy {
   // if the device token is currently unavailable.
   virtual std::string GetDeviceToken() = 0;
 
-  // Returns the device ID for this device.
+  // Returns the device ID for this device. This is a unique identifier that is
+  // randomly generated at registration time on the client side. It always has
+  // to be sent along with the device token to the server.
   virtual std::string GetDeviceID() = 0;
+
+  // Returns physical machine ID for this device.
+  virtual std::string GetMachineID() = 0;
+
+  // Returns the policy type to be used for registering at the device management
+  // server.
+  virtual em::DeviceRegisterRequest_Type GetPolicyRegisterType() = 0;
+
+  // Returns the policy type to be used for requesting policies from the device
+  // management server.
+  virtual std::string GetPolicyType() = 0;
 
   // Retrieves authentication credentials to use when talking to the device
   // management service. Returns true if the data is available and writes the

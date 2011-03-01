@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -12,6 +12,8 @@
 #include "base/time.h"
 #include "base/values.h"
 #include "chrome/browser/policy/device_management_backend.h"
+#include "chrome/browser/policy/proto/cloud_policy.pb.h"
+#include "chrome/browser/policy/proto/device_management_backend.pb.h"
 #include "chrome/browser/policy/proto/device_management_constants.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -47,12 +49,6 @@ class MockDeviceManagementBackend : public DeviceManagementBackend {
       const em::DevicePolicyRequest& request,
       DevicePolicyResponseDelegate* delegate));
 
-  MOCK_METHOD4(ProcessCloudPolicyRequest, void(
-      const std::string& device_management_token,
-      const std::string& device_id,
-      const em::CloudPolicyRequest& request,
-      DevicePolicyResponseDelegate* delegate));
-
  private:
   DISALLOW_COPY_AND_ASSIGN(MockDeviceManagementBackend);
 };
@@ -81,21 +77,26 @@ ACTION_P2(MockDeviceManagementBackendSucceedBooleanPolicy, name, value) {
 }
 
 ACTION(MockDeviceManagementBackendSucceedSpdyCloudPolicy) {
-  em::SignedCloudPolicyResponse signed_response;
-  em::CloudPolicySettings* settings = signed_response.mutable_settings();
-  em::DisableSpdyProto* spdy_proto = settings->mutable_disablespdy();
+  em::PolicyData signed_response;
+  em::CloudPolicySettings settings;
+  em::DisableSpdyProto* spdy_proto = settings.mutable_disablespdy();
   spdy_proto->set_disablespdy(true);
   spdy_proto->mutable_policy_options()->set_mode(em::PolicyOptions::MANDATORY);
-  signed_response.set_timestamp(base::Time::NowFromSystemTime().ToTimeT());
+  EXPECT_TRUE(
+      settings.SerializeToString(signed_response.mutable_policy_value()));
+  base::TimeDelta timestamp =
+      base::Time::NowFromSystemTime() - base::Time::UnixEpoch();
+  signed_response.set_timestamp(timestamp.InMilliseconds());
   std::string serialized_signed_response;
   EXPECT_TRUE(signed_response.SerializeToString(&serialized_signed_response));
-  em::CloudPolicyResponse response;
-  response.set_signed_response(serialized_signed_response);
+  em::DevicePolicyResponse response;
+  em::PolicyFetchResponse* fetch_response = response.add_response();
+  fetch_response->set_policy_data(serialized_signed_response);
   // TODO(jkummerow): Set proper certificate_chain and signature (when
   // implementing support for signature verification).
-  response.set_signature("TODO");
-  response.add_certificate_chain("TODO");
-  arg3->HandleCloudPolicyResponse(response);
+  fetch_response->set_policy_data_signature("TODO");
+  fetch_response->add_certificate_chain("TODO");
+  arg3->HandlePolicyResponse(response);
 }
 
 ACTION_P(MockDeviceManagementBackendFailRegister, error) {

@@ -114,19 +114,25 @@ class RequestHandler(object):
     rmsg = dm.DeviceManagementRequest()
     rmsg.ParseFromString(self._request)
 
+    logging.debug('auth -> ' + self._headers.getheader('Authorization', ''))
+    logging.debug('deviceid -> ' + self.GetUniqueParam('deviceid'))
     self.DumpMessage('Request', rmsg)
 
     request_type = self.GetUniqueParam('request')
+    # Check server side requirements, as defined in
+    # device_management_backend.proto.
+    if (self.GetUniqueParam('devicetype') != '2' or
+        self.GetUniqueParam('apptype') != 'Chrome' or
+        (request_type != 'ping' and
+         len(self.GetUniqueParam('deviceid')) >= 64) or
+        len(self.GetUniqueParam('agent')) >= 64):
+      return (400, 'Invalid request parameter')
     if request_type == 'register':
       return self.ProcessRegister(rmsg.register_request)
     elif request_type == 'unregister':
       return self.ProcessUnregister(rmsg.unregister_request)
-    elif request_type == 'policy':
-      return self.ProcessPolicy(rmsg.policy_request)
-    elif request_type == 'cloud_policy':
-      return self.ProcessCloudPolicyRequest(rmsg.cloud_policy_request)
-    elif request_type == 'managed_check':
-      return self.ProcessManagedCheck(rmsg.managed_check_request)
+    elif request_type == 'policy' or request_type == 'ping':
+      return self.ProcessPolicy(rmsg.policy_request, request_type)
     else:
       return (400, 'Invalid request parameter')
 
@@ -139,12 +145,6 @@ class RequestHandler(object):
     if not match:
       return None
     return match.group(1)
-
-  def GetDeviceName(self):
-    """Returns the name for the currently authenticated device based on its
-    device id.
-    """
-    return 'chromeos-' + self.GetUniqueParam('deviceid')
 
   def ProcessRegister(self, msg):
     """Handles a register request.
@@ -166,13 +166,16 @@ class RequestHandler(object):
     if not device_id:
       return (400, 'Missing device identifier')
 
-    # Register the device and create a token.
-    dmtoken = self._server.RegisterDevice(device_id)
+    token_info = self._server.RegisterDevice(device_id,
+                                             msg.machine_id,
+                                             msg.type)
 
     # Send back the reply.
     response = dm.DeviceManagementResponse()
     response.error = dm.DeviceManagementResponse.SUCCESS
-    response.register_response.device_management_token = dmtoken
+    response.register_response.device_management_token = (
+        token_info['device_token'])
+    response.register_response.machine_name = token_info['machine_name']
 
     self.DumpMessage('Response', response)
 
@@ -207,41 +210,50 @@ class RequestHandler(object):
 
     return (200, response.SerializeToString())
 
-  def ProcessManagedCheck(self, msg):
-    """Handles a 'managed check' request.
+  def ProcessInitialPolicy(self, msg):
+    """Handles a 'preregister policy' request.
 
     Queries the list of managed users and responds the client if their user
     is managed or not.
 
     Args:
-      msg: The ManagedCheckRequest message received from the client.
+      msg: The PolicyFetchRequest message received from the client.
 
     Returns:
       A tuple of HTTP status code and response data to send to the client.
     """
-    # Check the management token.
+    # Check the GAIA token.
     auth = self.CheckGoogleLogin()
     if not auth:
       return (403, 'No authorization')
 
-    managed_check_response = dm.ManagedCheckResponse()
+    chrome_initial_settings = dm.ChromeInitialSettingsProto()
     if ('*' in self._server.policy['managed_users'] or
         auth in self._server.policy['managed_users']):
-      managed_check_response.mode = dm.ManagedCheckResponse.MANAGED;
+      chrome_initial_settings.enrollment_provision = (
+          dm.ChromeInitialSettingsProto.MANAGED);
     else:
-      managed_check_response.mode = dm.ManagedCheckResponse.UNMANAGED;
+      chrome_initial_settings.enrollment_provision = (
+          dm.ChromeInitialSettingsProto.UNMANAGED);
+
+    policy_data = dm.PolicyData()
+    policy_data.policy_type = msg.policy_type
+    policy_data.policy_value = chrome_initial_settings.SerializeToString()
 
     # Prepare and send the response.
     response = dm.DeviceManagementResponse()
     response.error = dm.DeviceManagementResponse.SUCCESS
-    response.managed_check_response.CopyFrom(managed_check_response)
+    fetch_response = response.policy_response.response.add()
+    fetch_response.policy_data = (
+        policy_data.SerializeToString())
 
     self.DumpMessage('Response', response)
 
     return (200, response.SerializeToString())
 
-  def ProcessPolicy(self, msg):
-    """Handles a policy request.
+  def ProcessDevicePolicy(self, msg):
+    """Handles a policy request that uses the deprecated protcol.
+    TODO(gfeher): Remove this when we certainly don't need it.
 
     Checks for authorization, encodes the policy into protobuf representation
     and constructs the response.
@@ -252,6 +264,7 @@ class RequestHandler(object):
     Returns:
       A tuple of HTTP status code and response data to send to the client.
     """
+
     # Check the management token.
     token, response = self.CheckToken()
     if not token:
@@ -264,8 +277,8 @@ class RequestHandler(object):
 
     # Respond only if the client requested policy for the cros/device scope,
     # since that's where chrome policy is supposed to live in.
-    if msg.policy_scope in self._server.policy:
-      policy = self._server.policy[msg.policy_scope]['mandatory']
+    if msg.policy_scope == 'chromeos/device':
+      policy = self._server.policy['google/chromeos/user']['mandatory']
       setting = response.policy_response.setting.add()
       setting.policy_key = 'chrome-policy'
       policy_value = dm.GenericSetting()
@@ -293,6 +306,35 @@ class RequestHandler(object):
 
     return (200, response.SerializeToString())
 
+  def ProcessPolicy(self, msg, request_type):
+    """Handles a policy request.
+
+    Checks for authorization, encodes the policy into protobuf representation
+    and constructs the response.
+
+    Args:
+      msg: The DevicePolicyRequest message received from the client.
+
+    Returns:
+      A tuple of HTTP status code and response data to send to the client.
+    """
+
+    if msg.request:
+      for request in msg.request:
+        if request.policy_type == 'google/chromeos/unregistered_user':
+          if request_type != 'ping':
+            return (400, 'Invalid request type')
+          return self.ProcessInitialPolicy(request)
+        elif (request.policy_type in
+              ('google/chromeos/user', 'google/chromeos/device')):
+          if request_type != 'policy':
+            return (400, 'Invalid request type')
+          return self.ProcessCloudPolicy(request)
+        else:
+          return (400, 'Invalid policy_type')
+    else:
+      return self.ProcessDevicePolicy(msg)
+
   def SetProtobufMessageField(self, group_message, field, field_value):
     '''Sets a field in a protobuf message.
 
@@ -302,23 +344,22 @@ class RequestHandler(object):
           group_message.DESCRIPTOR.fields.
       field_value: The value to set.
     '''
-    if field.label == field.LABEL_REPEATED:
+    if field.type == field.TYPE_BOOL:
+      assert type(field_value) == bool
+    elif field.type == field.TYPE_STRING:
+      assert type(field_value) == str
+    elif field.type == field.TYPE_INT64:
+      assert type(field_value) == int
+    elif (field.type == field.TYPE_MESSAGE and
+          field.message_type.name == 'StringList'):
       assert type(field_value) == list
-      assert field.type == field.TYPE_STRING
-      list_field = group_message.__getattribute__(field.name)
+      entries = group_message.__getattribute__(field.name).entries
       for list_item in field_value:
-        list_field.append(list_item)
+        entries.append(list_item)
+      return
     else:
-      # Simple cases:
-      if field.type == field.TYPE_BOOL:
-        assert type(field_value) == bool
-      elif field.type == field.TYPE_STRING:
-        assert type(field_value) == str
-      elif field.type == field.TYPE_INT64:
-        assert type(field_value) == int
-      else:
-        raise Exception('Unknown field type %s' % field.type_name)
-      group_message.__setattr__(field.name, field_value)
+      raise Exception('Unknown field type %s' % field.type)
+    group_message.__setattr__(field.name, field_value)
 
   def GatherPolicySettings(self, settings, policies):
     '''Copies all the policies from a dictionary into a protobuf of type
@@ -352,7 +393,7 @@ class RequestHandler(object):
       if got_fields:
         settings.__getattribute__(group.name).CopyFrom(group_message)
 
-  def ProcessCloudPolicyRequest(self, msg):
+  def ProcessCloudPolicy(self, msg):
     """Handles a cloud policy request. (New protocol for policy requests.)
 
     Checks for authorization, encodes the policy into protobuf representation,
@@ -364,37 +405,37 @@ class RequestHandler(object):
     Returns:
       A tuple of HTTP status code and response data to send to the client.
     """
-    token, response = self.CheckToken()
-    if not token:
-      return response
+
+    token_info, error = self.CheckToken()
+    if not token_info:
+      return error
 
     settings = cp.CloudPolicySettings()
 
-    if msg.policy_scope in self._server.policy:
-      # Respond is only given if the scope is specified in the config file.
+    if (msg.policy_type in token_info['allowed_policy_types'] and
+        msg.policy_type in self._server.policy):
+      # Response is only given if the scope is specified in the config file.
       # Normally 'chromeos/device' and 'chromeos/user' should be accepted.
       self.GatherPolicySettings(settings,
-                                self._server.policy[msg.policy_scope])
+                                self._server.policy[msg.policy_type])
 
-    # Construct response
-    signed_response = dm.SignedCloudPolicyResponse()
-    signed_response.settings.CopyFrom(settings)
-    signed_response.timestamp = int(time.time())
-    signed_response.request_token = token;
-    signed_response.device_name = self.GetDeviceName()
-
-    cloud_response = dm.CloudPolicyResponse()
-    cloud_response.signed_response = signed_response.SerializeToString()
-    signed_data = cloud_response.signed_response
-    cloud_response.signature = (
-        self._server.private_key.hashAndSign(signed_data).tostring())
-    for certificate in self._server.cert_chain:
-      cloud_response.certificate_chain.append(
-          certificate.writeBytes().tostring())
+    policy_data = dm.PolicyData()
+    policy_data.policy_value = settings.SerializeToString()
+    policy_data.policy_type = msg.policy_type
+    policy_data.timestamp = int(time.time() * 1000)
+    policy_data.request_token = token_info['device_token'];
+    policy_data.machine_name = token_info['machine_name']
+    signed_data = policy_data.SerializeToString()
 
     response = dm.DeviceManagementResponse()
     response.error = dm.DeviceManagementResponse.SUCCESS
-    response.cloud_policy_response.CopyFrom(cloud_response)
+    fetch_response = response.policy_response.response.add()
+    fetch_response.policy_data = signed_data
+    fetch_response.policy_data_signature = (
+        self._server.private_key.hashAndSign(signed_data).tostring())
+    for certificate in self._server.cert_chain:
+      fetch_response.certificate_chain.append(
+          certificate.writeBytes().tostring())
 
     self.DumpMessage('Response', response)
 
@@ -404,12 +445,13 @@ class RequestHandler(object):
     """Helper for checking whether the client supplied a valid DM token.
 
     Extracts the token from the request and passed to the server in order to
-    look up the client. Returns a pair of token and error response. If the token
-    is None, the error response is a pair of status code and error message.
+    look up the client.
 
     Returns:
-      A pair of DM token and error response. If the token is None, the message
-      will contain the error response to send back.
+      A pair of token information record and error response. If the first
+      element is None, then the second contains an error code to send back to
+      the client. Otherwise the first element is the same structure that is
+      returned by LookupToken().
     """
     error = None
     dmtoken = None
@@ -420,11 +462,14 @@ class RequestHandler(object):
       dmtoken = match.group(1)
     if not dmtoken:
       error = dm.DeviceManagementResponse.DEVICE_MANAGEMENT_TOKEN_INVALID
-    elif (not request_device_id or
-          not self._server.LookupDevice(dmtoken) == request_device_id):
-      error = dm.DeviceManagementResponse.DEVICE_NOT_FOUND
     else:
-      return (dmtoken, None)
+      token_info = self._server.LookupToken(dmtoken)
+      if (not token_info or
+          not request_device_id or
+          token_info['device_id'] != request_device_id):
+        error = dm.DeviceManagementResponse.DEVICE_NOT_FOUND
+      else:
+        return (token_info, None)
 
     response = dm.DeviceManagementResponse()
     response.error = error
@@ -448,7 +493,7 @@ class TestServer(object):
       policy_cert_chain: List of paths to X.509 certificate files of the
           certificate chain used for signing responses.
     """
-    self._registered_devices = {}
+    self._registered_tokens = {}
     self.policy = {}
     if json is None:
       print 'No JSON module, cannot parse policy information'
@@ -485,8 +530,8 @@ class TestServer(object):
     handler = RequestHandler(self, path, headers, request)
     return handler.HandleRequest()
 
-  def RegisterDevice(self, device_id):
-    """Registers a device and generate a DM token for it.
+  def RegisterDevice(self, device_id, machine_id, type):
+    """Registers a device or user and generates a DM token for it.
 
     Args:
       device_id: The device identifier provided by the client.
@@ -498,19 +543,30 @@ class TestServer(object):
     while len(dmtoken_chars) < 32:
       dmtoken_chars.append(random.choice('0123456789abcdef'))
     dmtoken = ''.join(dmtoken_chars)
-    self._registered_devices[dmtoken] = device_id
-    return dmtoken
+    allowed_policy_types = {
+      dm.DeviceRegisterRequest.USER: ['google/chromeos/user'],
+      dm.DeviceRegisterRequest.DEVICE: ['google/chromeos/device'],
+      dm.DeviceRegisterRequest.TT: ['google/chromeos/user'],
+    }
+    self._registered_tokens[dmtoken] = {
+      'device_id': device_id,
+      'device_token': dmtoken,
+      'allowed_policy_types': allowed_policy_types[type],
+      'machine_name': 'chromeos-' + machine_id,
+    }
+    return self._registered_tokens[dmtoken]
 
-  def LookupDevice(self, dmtoken):
-    """Looks up a device by DMToken.
+  def LookupToken(self, dmtoken):
+    """Looks up a device or a user by DM token.
 
     Args:
       dmtoken: The device management token provided by the client.
 
     Returns:
-      The corresponding device identifier or None if not found.
+      A dictionary with information about a device or user that is registered by
+      dmtoken, or None if the token is not found.
     """
-    return self._registered_devices.get(dmtoken, None)
+    return self._registered_tokens.get(dmtoken, None)
 
   def UnregisterDevice(self, dmtoken):
     """Unregisters a device identified by the given DM token.
@@ -518,5 +574,5 @@ class TestServer(object):
     Args:
       dmtoken: The device management token provided by the client.
     """
-    if dmtoken in self._registered_devices:
-      del self._registered_devices[dmtoken]
+    if dmtoken in self._registered_tokens.keys():
+      del self._registered_tokens[dmtoken]

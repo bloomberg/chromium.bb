@@ -7,6 +7,8 @@
 #include "base/file_util.h"
 #include "chrome/browser/browser_signin.h"
 #include "chrome/browser/net/gaia/token_service.h"
+#include "chrome/browser/policy/proto/device_management_backend.pb.h"
+#include "chrome/browser/policy/proto/device_management_constants.h"
 #include "chrome/browser/policy/proto/device_management_local.pb.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/guid.h"
@@ -163,6 +165,20 @@ std::string UserPolicyIdentityStrategy::GetDeviceID() {
   return device_id_;
 }
 
+std::string UserPolicyIdentityStrategy::GetMachineID() {
+  return "";
+}
+
+em::DeviceRegisterRequest_Type
+UserPolicyIdentityStrategy::GetPolicyRegisterType() {
+  return em::DeviceRegisterRequest::USER;
+}
+
+std::string UserPolicyIdentityStrategy::GetPolicyType() {
+  return kChromeUserPolicyType;
+}
+
+
 bool UserPolicyIdentityStrategy::GetCredentials(std::string* username,
                                                 std::string* auth_token) {
   *username = GetCurrentUser();
@@ -221,7 +237,11 @@ void UserPolicyIdentityStrategy::Observe(NotificationType type,
       const TokenService::TokenAvailableDetails* token_details =
           Details<const TokenService::TokenAvailableDetails>(details).ptr();
       if (token_details->service() == GaiaConstants::kDeviceManagementService)
-        CheckAndTriggerFetch();
+        if (device_token_.empty()) {
+          // Request a new device management server token, but only in case we
+          // don't already have it.
+          CheckAndTriggerFetch();
+        }
     }
 #if defined(OS_CHROMEOS)
   } else if (type == NotificationType::LOGIN_USER_CHANGED) {

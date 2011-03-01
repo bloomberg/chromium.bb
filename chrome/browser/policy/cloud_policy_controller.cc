@@ -93,17 +93,18 @@ void CloudPolicyController::HandlePolicyResponse(
   if (state_ == STATE_TOKEN_UNAVAILABLE)
     return;
 
-  cache_->SetDevicePolicy(response);
-  SetState(STATE_POLICY_VALID);
-}
-
-void CloudPolicyController::HandleCloudPolicyResponse(
-    const em::CloudPolicyResponse& response) {
-  if (state_ == STATE_TOKEN_UNAVAILABLE)
-    return;
-
-  cache_->SetPolicy(response);
-  SetState(STATE_POLICY_VALID);
+  if (response.response_size() > 0) {
+    if (response.response_size() > 1) {
+      LOG(WARNING) << "More than one policy in the response of the device "
+                   << "management server, discarding.";
+    }
+    // Use the new version of the protocol
+    cache_->SetPolicy(response.response(0));
+    SetState(STATE_POLICY_VALID);
+  } else {
+    cache_->SetDevicePolicy(response);
+    SetState(STATE_POLICY_VALID);
+  }
 }
 
 void CloudPolicyController::OnError(DeviceManagementBackend::ErrorCode code) {
@@ -119,17 +120,7 @@ void CloudPolicyController::OnError(DeviceManagementBackend::ErrorCode code) {
              DeviceManagementBackend::kErrorServiceManagementNotSupported) {
     VLOG(1) << "The device is no longer managed, resetting device token.";
     SetState(STATE_TOKEN_UNAVAILABLE);
-  } else if (!fallback_to_old_protocol_ &&
-             code == DeviceManagementBackend::kErrorRequestInvalid) {
-    LOG(WARNING) << "Device manager doesn't understand new protocol, falling "
-                 << "back to old request.";
-    fallback_to_old_protocol_ = true;
-    SetState(STATE_TOKEN_VALID);  // Triggers SendPolicyRequest() immediately.
   } else {
-    LOG(WARNING) << "Could not provide policy from the device manager (error = "
-                 << code << "), will retry in "
-                 << (effective_policy_refresh_error_delay_ms_ / 1000)
-                 << " seconds.";
     SetState(STATE_POLICY_ERROR);
   }
 }
@@ -185,7 +176,6 @@ void CloudPolicyController::Initialize(
   token_fetcher_ = token_fetcher;
   identity_strategy_ = identity_strategy;
   state_ = STATE_TOKEN_UNAVAILABLE;
-  fallback_to_old_protocol_ = false;
   delayed_work_task_ = NULL;
   policy_refresh_rate_ms_ = policy_refresh_rate_ms;
   policy_refresh_deviation_factor_percent_ =
@@ -206,31 +196,39 @@ void CloudPolicyController::FetchToken() {
   std::string username;
   std::string auth_token;
   std::string device_id = identity_strategy_->GetDeviceID();
+  std::string machine_id = identity_strategy_->GetMachineID();
+  em::DeviceRegisterRequest_Type policy_type =
+      identity_strategy_->GetPolicyRegisterType();
   if (identity_strategy_->GetCredentials(&username, &auth_token) &&
       CanBeInManagedDomain(username)) {
-    token_fetcher_->FetchToken(auth_token, device_id);
+    token_fetcher_->FetchToken(auth_token, device_id, policy_type, machine_id);
   }
 }
 
 void CloudPolicyController::SendPolicyRequest() {
   DCHECK(!identity_strategy_->GetDeviceToken().empty());
-  if (!fallback_to_old_protocol_) {
-    em::CloudPolicyRequest policy_request;
-    policy_request.set_policy_scope(kChromePolicyScope);
-    backend_->ProcessCloudPolicyRequest(identity_strategy_->GetDeviceToken(),
-                                        identity_strategy_->GetDeviceID(),
-                                        policy_request, this);
-  } else {
-    em::DevicePolicyRequest policy_request;
-    policy_request.set_policy_scope(kChromePolicyScope);
-    em::DevicePolicySettingRequest* setting =
-        policy_request.add_setting_request();
-    setting->set_key(kChromeDevicePolicySettingKey);
-    setting->set_watermark("");
-    backend_->ProcessPolicyRequest(identity_strategy_->GetDeviceToken(),
-                                   identity_strategy_->GetDeviceID(),
-                                   policy_request, this);
+  em::DevicePolicyRequest policy_request;
+  em::PolicyFetchRequest* fetch_request = policy_request.add_request();
+  fetch_request->set_signature_type(em::PolicyFetchRequest::X509);
+  fetch_request->set_policy_type(identity_strategy_->GetPolicyType());
+  if (!cache_->is_unmanaged() &&
+      !cache_->last_policy_refresh_time().is_null()) {
+    base::TimeDelta timestamp =
+        cache_->last_policy_refresh_time() - base::Time::UnixEpoch();
+    fetch_request->set_timestamp(timestamp.InMilliseconds());
   }
+
+  // TODO(gfeher): Remove the following block when the server is migrated.
+  // Set fields for the old protocol.
+  policy_request.set_policy_scope(kChromePolicyScope);
+  em::DevicePolicySettingRequest* setting =
+      policy_request.add_setting_request();
+  setting->set_key(kChromeDevicePolicySettingKey);
+  setting->set_watermark("");
+
+  backend_->ProcessPolicyRequest(identity_strategy_->GetDeviceToken(),
+                                 identity_strategy_->GetDeviceID(),
+                                 policy_request, this);
 }
 
 void CloudPolicyController::DoDelayedWork() {

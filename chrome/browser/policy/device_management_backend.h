@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -75,12 +75,8 @@ class DeviceManagementBackend : base::NonThreadSafe {
    public:
     virtual ~DevicePolicyResponseDelegate() {}
 
-    // Deprecated in favor of HandleCloudPolicyResponse. To be removed once
-    // DMServer supports the new protocol.
     virtual void HandlePolicyResponse(
         const em::DevicePolicyResponse& response) = 0;
-    virtual void HandleCloudPolicyResponse(
-        const em::CloudPolicyResponse& response) = 0;
     virtual void OnError(ErrorCode code) = 0;
 
    protected:
@@ -108,12 +104,6 @@ class DeviceManagementBackend : base::NonThreadSafe {
       const std::string& device_management_token,
       const std::string& device_id,
       const em::DevicePolicyRequest& request,
-      DevicePolicyResponseDelegate* delegate) = 0;
-
-  virtual void ProcessCloudPolicyRequest(
-      const std::string& device_management_token,
-      const std::string& device_id,
-      const em::CloudPolicyRequest& request,
       DevicePolicyResponseDelegate* delegate) = 0;
 
  protected:

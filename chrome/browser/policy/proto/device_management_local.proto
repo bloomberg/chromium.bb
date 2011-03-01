@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -14,14 +14,14 @@ import "device_management_backend.proto";
 message CachedCloudPolicyResponse {
   // The DevicePolicyResponse wrapped by this message.
   optional DevicePolicyResponse device_policy = 1;
-  // Timestamp noting when the |unmanaged| flag was set. The data format is
-  // a unix timestamp. When caching (deprecated) DevicePolicyResponses, this
-  // timestamp also notes when the response was cached.
+  // Timestamp noting when the |unmanaged| flag was set. The meaning is
+  // milliseconds since 1970. When caching (deprecated) DevicePolicyResponses,
+  // this timestamp also notes when the response was cached.
   optional uint64 timestamp = 2;
   // Flag that is set to true if this device is not managed.
   optional bool unmanaged = 3;
-  // The CloudPolicyResponse wrapped by this message.
-  optional CloudPolicyResponse cloud_policy = 4;
+  // The PolicyFetchResponse wrapped by this message.
+  optional PolicyFetchResponse cloud_policy = 4;
 }
 
 // Encapsulates a device ID and the associated device token.
@@ -29,4 +29,3 @@ message DeviceCredentials {
   optional string device_id = 1;
   optional string device_token = 2;
 }
-

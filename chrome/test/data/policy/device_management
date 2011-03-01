@@ -1,5 +1,5 @@
 {
-  "chromeos/device": {
+  "google/chromeos/user": {
     "mandatory": {
       "HomepageLocation" : "http://www.chromium.org"
     },

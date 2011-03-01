@@ -12,6 +12,7 @@
 #include "base/scoped_ptr.h"
 #include "base/task.h"
 #include "chrome/browser/policy/device_management_backend.h"
+#include "chrome/browser/policy/proto/device_management_backend.pb.h"
 
 namespace policy {
 
@@ -48,7 +49,9 @@ class DeviceTokenFetcher
   // Starts fetching a token.
   // Declared virtual so it can be overridden by mocks.
   virtual void FetchToken(const std::string& auth_token,
-                          const std::string& device_id);
+                          const std::string& device_id,
+                          em::DeviceRegisterRequest_Type policy_type,
+                          const std::string& machine_id);
 
   // Returns the device management token or the empty string if not available.
   // Declared virtual so it can be overridden by mocks.
@@ -125,6 +128,10 @@ class DeviceTokenFetcher
   std::string auth_token_;
   // Device identifier to send to the server.
   std::string device_id_;
+  // Contains policy type to send to the server.
+  em::DeviceRegisterRequest_Type policy_type_;
+  // Contains physical machine id to send to the server.
+  std::string machine_id_;
 
   // Task that has been scheduled to retry fetching a token.
   CancelableTask* retry_task_;

@@ -47,8 +47,6 @@ class CloudPolicyController
   // DevicePolicyResponseDelegate implementation:
   virtual void HandlePolicyResponse(
       const em::DevicePolicyResponse& response);
-  virtual void HandleCloudPolicyResponse(
-      const em::CloudPolicyResponse& response);
   virtual void OnError(DeviceManagementBackend::ErrorCode code);
 
   // DeviceTokenFetcher::Observer implementation:
@@ -119,7 +117,6 @@ class CloudPolicyController
   DeviceTokenFetcher* token_fetcher_;
   ControllerState state_;
   bool initial_fetch_done_;
-  bool fallback_to_old_protocol_;
 
   int64 policy_refresh_rate_ms_;
   int policy_refresh_deviation_factor_percent_;

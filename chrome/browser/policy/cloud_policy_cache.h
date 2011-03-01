@@ -52,7 +52,7 @@ class CloudPolicyCache : public base::NonThreadSafe {
   void LoadFromFile();
 
   // Resets the policy information.
-  void SetPolicy(const em::CloudPolicyResponse& policy);
+  void SetPolicy(const em::PolicyFetchResponse& policy);
   void SetDevicePolicy(const em::DevicePolicyResponse& policy);
 
   ConfigurationPolicyProvider* GetManagedPolicyProvider();
@@ -85,7 +85,7 @@ class CloudPolicyCache : public base::NonThreadSafe {
   // maps and a timestamp. Also performs verification, returns NULL if any
   // check fails.
   static bool DecodePolicyResponse(
-      const em::CloudPolicyResponse& policy_response,
+      const em::PolicyFetchResponse& policy_response,
       PolicyMap* mandatory,
       PolicyMap* recommended,
       base::Time* timestamp);

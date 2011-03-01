@@ -82,7 +82,7 @@ class CloudPolicyCache::CloudPolicyProvider
 class PersistPolicyTask : public Task {
  public:
   PersistPolicyTask(const FilePath& path,
-                    const em::CloudPolicyResponse* cloud_policy_response,
+                    const em::PolicyFetchResponse* cloud_policy_response,
                     const em::DevicePolicyResponse* device_policy_response,
                     const bool is_unmanaged)
       : path_(path),
@@ -95,7 +95,7 @@ class PersistPolicyTask : public Task {
   virtual void Run();
 
   const FilePath path_;
-  scoped_ptr<const em::CloudPolicyResponse> cloud_policy_response_;
+  scoped_ptr<const em::PolicyFetchResponse> cloud_policy_response_;
   scoped_ptr<const em::DevicePolicyResponse> device_policy_response_;
   const bool is_unmanaged_;
 };
@@ -211,7 +211,7 @@ void CloudPolicyCache::LoadFromFile() {
                     observer_list_, OnUpdatePolicy());
 }
 
-void CloudPolicyCache::SetPolicy(const em::CloudPolicyResponse& policy) {
+void CloudPolicyCache::SetPolicy(const em::PolicyFetchResponse& policy) {
   DCHECK(CalledOnValidThread());
   bool initialization_was_not_complete = !initialization_complete_;
   is_unmanaged_ = false;
@@ -242,7 +242,7 @@ void CloudPolicyCache::SetPolicy(const em::CloudPolicyResponse& policy) {
     LOG(WARNING) << "Server returned policy with timestamp from the future, "
                     "not persisting to disk.";
   } else {
-    em::CloudPolicyResponse* policy_copy = new em::CloudPolicyResponse;
+    em::PolicyFetchResponse* policy_copy = new em::PolicyFetchResponse;
     policy_copy->CopyFrom(policy);
     BrowserThread::PostTask(
         BrowserThread::FILE,
@@ -305,33 +305,38 @@ void CloudPolicyCache::SetUnmanaged() {
 
 // static
 bool CloudPolicyCache::DecodePolicyResponse(
-    const em::CloudPolicyResponse& policy_response,
+    const em::PolicyFetchResponse& policy_response,
     PolicyMap* mandatory,
     PolicyMap* recommended,
     base::Time* timestamp) {
-  std::string data = policy_response.signed_response();
+  std::string data = policy_response.policy_data();
 
-  if (!VerifySignature(policy_response.signature(), data,
+  if (!VerifySignature(policy_response.policy_data_signature(), data,
                        policy_response.certificate_chain())) {
     LOG(WARNING) << "Failed to verify signature.";
     return false;
   }
 
-  em::SignedCloudPolicyResponse response;
-  if (!response.ParseFromArray(data.c_str(), data.size())) {
-    LOG(WARNING) << "Failed to parse SignedCloudPolicyResponse protobuf.";
+  em::PolicyData policy_data;
+  if (!policy_data.ParseFromString(data)) {
+    LOG(WARNING) << "Failed to parse PolicyData protobuf.";
     return false;
   }
 
-  // TODO(jkummerow): Verify response.device_token(). Needs final specification
-  // which token we're actually sending / expecting to get back.
+  // TODO(jkummerow): Verify policy_data.device_token(). Needs final
+  // specification which token we're actually sending / expecting to get back.
 
-  // TODO(jkummerow): Store response.device_name(), if we decide to transfer
+  // TODO(jkummerow): Store policy_data.device_name(), if we decide to transfer
   // it from the server to the client.
 
-  DCHECK(timestamp);
-  *timestamp = base::Time::FromTimeT(response.timestamp());
-  DecodePolicy(response.settings(), mandatory, recommended);
+  *timestamp = base::Time::UnixEpoch() +
+               base::TimeDelta::FromMilliseconds(policy_data.timestamp());
+  em::CloudPolicySettings policy;
+  if (!policy.ParseFromString(policy_data.policy_value())) {
+    LOG(WARNING) << "Failed to parse CloudPolicySettings protobuf.";
+    return false;
+  }
+  DecodePolicy(policy, mandatory, recommended);
   return true;
 }
 

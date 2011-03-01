@@ -226,7 +226,7 @@ CPP_HEAD = '''
 #include "base/values.h"
 #include "chrome/browser/policy/configuration_policy_provider.h"
 #include "chrome/browser/policy/policy_map.h"
-#include "chrome/browser/policy/proto/device_management_backend.pb.h"
+#include "chrome/browser/policy/proto/cloud_policy.pb.h"
 #include "policy/configuration_policy_type.h"
 
 using google::protobuf::RepeatedPtrField;

@@ -4,18 +4,31 @@
 
 syntax = "proto2";
 
-import "cloud_policy.proto";
-
 option optimize_for = LITE_RUNTIME;
 
 package enterprise_management;
 
-// Protocol buffers for the obsolete protocol:
-// -------------------------------------------
-//    GenericValue, GenericNamedValue, GenericSetting, DevicePolicySetting,
-//    DevicePolicySettingRequest, DevicePolicyRequest, DevicePolicyResponse
-// TODO(gfeher): Remove these when both Chrome and DMServer is switched to
-// using the new protocol.
+// Meta-settings that control how a user receives regular settings
+// (CloudPolicySettings) for Chrome. The name "Initial" indicates that
+// these settings will be downloaded before Chrome starts requesting
+// regular settings.
+message ChromeInitialSettingsProto {
+  enum EnrollmentProvision {
+    // The users's device is not automatically enrolled for policies, but the
+    // user may choose to try to enroll it.
+    UNMANAGED = 0;
+    // The user must enroll its device for policies.
+    MANAGED = 1;
+  }
+  // Chrome will interpret this as UNMANAGED if unset.
+  optional EnrollmentProvision enrollment_provision = 1 [default = UNMANAGED];
+}
+
+// A setting is a set of generic name value pairs.
+// TODO(gfeher): remove this after Chrome OS TT is over.
+message GenericSetting {
+  repeated GenericNamedValue named_value = 1;
+}
 
 // Generic value container.
 message GenericValue {
@@ -51,12 +64,8 @@ message GenericNamedValue {
   optional GenericValue value = 2;
 }
 
-// A setting is a set of generic name value pairs.
-message GenericSetting {
-  repeated GenericNamedValue named_value = 1;
-}
-
 // Identify a single device policy setting key/value pair.
+// TODO(gfeher): remove this after Chrome OS TT is over.
 message DevicePolicySetting {
   // key of the policy setting
   required string policy_key = 1;
@@ -66,7 +75,61 @@ message DevicePolicySetting {
   optional string watermark = 3;
 }
 
+// Request from device to server to register device.
+message DeviceRegisterRequest {
+  // Reregister device without erasing server state.  It can be used
+  // to refresh dmtoken etc.  Client MUST set this value to true if it
+  // reuses an existing device id.
+  optional bool reregister = 1;
+
+  // Device register type.  This field does not exist for TT release.
+  // When a client requests for policies, server should verify the
+  // client has been registered properly.  For example, a client must
+  // register with type DEVICE in order to retrieve device policies.
+  enum Type {
+    TT   = 0;       // Register for TT release.
+    USER = 1;       // Register for user polices.
+    DEVICE = 2;     // Register for device policies.
+  }
+  // NOTE: we also use this field to detect client version.  If this
+  // field is missing, then the request comes from TT.  We will remove
+  // Chrome OS TT support once it is over.
+  optional Type type = 2 [default = TT];
+
+  // Machine hardware id, such as MEID, Mac adress.
+  // This field is required if register type == DEVICE.
+  optional string machine_id = 3;
+
+  // Machine model name, such as "ZGA", "Cr-48", "Nexus One".  If the
+  // model name is not available, client SHOULD send generic name like
+  // "Android", or "Chrome OS".
+  optional string machine_model = 4;
+}
+
+// Response from server to device register request.
+message DeviceRegisterResponse {
+  // Device mangement token for this registration.  This token MUST be
+  // part of HTTP Authorization header for all future requests from
+  // device to server.
+  required string device_management_token = 1;
+
+  // Device display name.  By default, server generates the name in
+  // the format of "Machine Model - Machine Id".  However, domain
+  // admin can update it using CPanel, so do NOT treat it as constant.
+  optional string machine_name = 2;
+}
+
+// Request from device to server to unregister device.
+// GoogleDMToken MUST be in HTTP Authorization header.
+message DeviceUnregisterRequest {
+}
+
+// Response from server to device for unregister request.
+message DeviceUnregisterResponse {
+}
+
 // Request for a setting or with optional watermark on client side.
+// TODO(gfeher): remove this after Chrome OS TT is over.
 message DevicePolicySettingRequest {
   // setting key
   required string key = 1;
@@ -74,181 +137,143 @@ message DevicePolicySettingRequest {
   optional string watermark = 2;
 }
 
-// Request from device to server to read device policies.
+message PolicyFetchRequest {
+  // This is the policy type, which maps to D3 policy type internally.
+  // By convention, we use "/" as separator to create policy namespace.
+  // The policy type names are case insensitive.
+  //
+  // Possible values for Chrome OS are:
+  //   google/chromeos/device => ChromeSettingsProto
+  //   google/chromeos/user => ChromeSettingsProto
+  //   google/chromeos/unregistered_user => ChromeInitialSettingsProto
+  optional string policy_type = 1;
+
+  // This is the last policy timestamp that client received from server.
+  optional int64 timestamp = 2;
+
+  // Tell server what kind of security signature is required.
+  enum SignatureType {
+    NONE = 0;
+    X509 = 1;
+  }
+  optional SignatureType signature_type = 3 [default = NONE];
+}
+
+// This message is included in serialized form in PolicyFetchResponse
+// below.  It may also be signed, with the signature being created for
+// the serialized form.
+message PolicyData {
+  // See PolicyFetchRequest.policy_type.
+  optional string policy_type = 1;
+
+  // [timestamp] is milli seconds since Epoch in UTC timezone. It is
+  // included here so that the time at which the server issued this
+  // response cannot be faked (as protection against replay attacks).
+  // It is the timestamp generated by DMServer, NOT the time admin
+  // last updated the policy or anything like that.
+  optional int64 timestamp = 2;
+
+  // The DM token that was used by the client in the HTTP POST header
+  // for authenticating the request. It is included here again so that
+  // the client can verify that the response is meant for him (and not
+  // issued by a replay or man-in-the-middle attack).
+  optional string request_token = 3;
+
+  // The serialized value of the actual policy protobuf.  This can be
+  // deserialized to an instance of, for example, ChromeSettingsProto
+  // or ChromeUserSettingsProto.
+  optional bytes policy_value = 4;
+
+  // The device display name assigned by the server.  It is only
+  // filled if the display name is available.
+  //
+  // The display name of the machine as generated by the server or set
+  // by the Administrator in the CPanel GUI. This is the same thing as
+  // |machine_name| in DeviceRegisterResponse but it might have
+  // changed since then.
+  optional string machine_name = 5;
+}
+
+message PolicyFetchResponse {
+  // Since a single policy request may ask for multiple policies, we
+  // provide separate error code for each individual policy fetch.
+
+  // We will use standard HTTP Status Code as error code.
+  optional int32  error_code = 1;
+
+  // Human readable error message for customer support purpose.
+  optional string error_message = 2;
+
+  // This is a serialized bytes of PolicyData protobuf above.
+  optional bytes policy_data = 3;
+
+  // Signature of the policy data above.
+  optional bytes policy_data_signature = 4;
+
+  // The chain of DER-encoded X.509 certificates of the server's
+  // signing key.  The first element should be the certificate whose
+  // private key was used for signing the response, and each of the
+  // following certificates signs the previous one.
+  //
+  // If this field does not exist, it means the policy_data is not
+  // signed.
+  repeated bytes certificate_chain = 5;
+}
+
+// Request from device to server for reading policies.
 message DevicePolicyRequest {
   // identify request scope: CrOS settings or other type of settings.
+  // TODO(gfeher): remove this after Chrome OS TT is over.
   optional string policy_scope = 1;
   // identify key to the settings: proxy etc.
+  // TODO(gfeher): remove this after Chrome OS TT is over.
   repeated DevicePolicySettingRequest setting_request = 2;
-}
 
-// Response from server to agent for reading policies.
-message DevicePolicyResponse {
-  // the result of the settings.
-  repeated DevicePolicySetting setting = 1;
-}
-
-// Request from device to server to register device. The response will include
-// a device token that can be used to query policies.
-message DeviceRegisterRequest {
-  // reregister device without erasing server state.
-  // it can be used to refresh dmtoken etc.
-  optional bool reregister = 1;
-}
-
-// Response from server to device register request.
-message DeviceRegisterResponse {
-  // device mangement toke for this registration.
-  required string device_management_token = 1;
-}
-
-// Protocol buffers for the new protocol:
-// --------------------------------------
-
-// Request from device to server to get policies for an unregistered user.
-// These are actually "meta-policies", that control the rules for the user
-// about enrolling for real policies.
-message InitialPolicyRequest {
-}
-
-message InitialPolicySettings {
-  enum EnrollmentRule {
-    // The user must enroll its device for policies.
-    MANAGED = 1;
-    // The users's device is not automatically enrolled for policies, but the
-    // user may choose to try to enroll it.
-    UNMANAGED = 2;
-  }
-
-  optional EnrollmentRule enrollment_rule = 1;
-}
-
-// Response from server to device containing the policies available before
-// registration.
-message InitialPolicyResponse {
-  optional InitialPolicySettings settings = 1;
-}
-
-// Request from device to server to unregister device management token.
-message DeviceUnregisterRequest {
-}
-
-// Response from server to unregister request.
-message DeviceUnregisterResponse {
-}
-
-// Request from device to server to register device. The response will include
-// a device token that can be used to query policies.
-message CloudRegisterRequest {
-  enum Type {
-    // Requesting token for user policies.
-    USER = 1;
-    // Requesting token for device policies.
-    DEVICE = 2;
-  }
-  optional Type type = 1;
-  // Unique identifier of the machine. Only set if type == DEVICE.
-  // This won't be sent in later requests, the machine can be identified
-  // by its device token.
-  optional string machine_id = 2;
-}
-
-// Response from server to device register request.
-message CloudRegisterResponse {
-  // Token for this registration.
-  required string device_management_token = 1;
-
-  // The name of the requesting device, assigned by the server.
-  optional string machine_name = 2;
-}
-
-message CloudPolicyRequest {
-  // Identify request scope: chromeos/device for device policies, chromeos/user
-  // for user policies. Only those policy scopes will be served, that are
-  // allowed by the type choice in CloudRegisterRequest.
-  optional string policy_scope = 1;
-
-  // The token used to query device policies on the device sending the request.
-  // Note, that the token used for actual authentication is sent in an HTTP
-  // header. These two tokens are the same if this request is for querying
-  // device policies and they differ if this request is for querying user
-  // policies. In the second case, the server can use device_policy_token to
-  // identify the device and determine if the user is allowed to get policies
-  // on the given device.
-  optional string device_policy_token = 2;
+  // The policy fetch request.  If this field exists, the request must
+  // comes from a non-TT client.  The repeated field allows client to
+  // request multiple policies for better performance.
+  repeated PolicyFetchRequest request = 3;
 }
 
 // Response from server to device for reading policies.
-message CloudPolicyResponse {
-  // Serialized SignedCloudPolicyResponse.
-  optional bytes signed_response = 1;
-  // RSA signature of the SHA1 hash of the above data.
-  optional bytes signature = 2;
-  // The chain of DER-encoded X.509 certificates of the server's signing key.
-  // The first element should be the certificate whose private key was used
-  // for signing the response, and each of the following certificates signs the
-  // previous one.
-  repeated bytes certificate_chain = 3;
-}
-message SignedCloudPolicyResponse {
-  // The following two are necessary against replay attacks.
-  // |timestamp| is a unix timestamp (seconds since 1970).
-  optional int64 timestamp = 1;
-  // The token that was used for the request.
-  optional string request_token = 2;
-  // The name of the device, assigned by the server.
-  optional string device_name = 3;
-  // CloudPolicySettings is defined in cloud_policy.proto (which is
-  // auto-generated from chrome/app/policy_templates.json).
-  optional CloudPolicySettings settings = 4;
+message DevicePolicyResponse {
+  // the result of the settings.
+  // TODO(gfeher): remove this after Chrome OS TT is over.
+  repeated DevicePolicySetting setting = 1;
+
+  // The policy fetch response.
+  repeated PolicyFetchResponse response = 3;
 }
 
-// Request from the DMAgent on the device to the DMServer.
-// This is container for all requests from client.
+// Request from the DMAgent on the device to the DMServer.  This is
+// container for all requests from device to server.  The overall HTTP
+// request MUST be in the following format:
 //
-// Http Query parameters:
-// Query parameters contain the following information in each request:
-//   request: register/unregister/policy/cloud_policy/cloud_register/
-//            initial_policy
-//   devicetype: CrOS/Android/Iphone etc.
-//   apptype: CrOS/AndroidDM etc.
-//   agent: identify agent on device.
+// * HTTP method is POST
+// * Data mime type is application/x-protobuffer
+// * HTTP parameters are (all required, all case sensitive):
+//   * request: MUST BE one of register/unregister/policy/ping
+//   * devicetype: MUST BE "1" for Android or "2" for Chrome OS.
+//   * apptype: MUST BE Android or Chrome.
+//   * deviceid: MUST BE no more than 64-char in [\x20-\x7E].
+//   * agent: MUST BE no more than 64-char long.
+// * HTTP Authorization header MUST be in the following formats:
+//   * For register and ping requests
+//     Authorization: GoogleLogin auth=<auth cookie for Mobile Sync>
 //
-// Authorization:
-// 1. If request is initial_policy, client must pass in GoogleLogin
-//    auth  cookie in Authorization header:
-//      Authorization: GoogleLogin auth=<auth cookie>
-//    The response will contain settings that a user can get without
-//    registration. Currently the only such setting is a flag indicating if the
-//    user is in a managed domain or not. (We don't want to expose device ids of
-//    users not in managed domains.)
-// 2. If request is register_request, client must pass in GoogleLogin auth
-//    cookie in Authorization header:
-//      Authorization: GoogleLogin auth=<auth cookie>
-//    The response will contain an unique DMToken for future requests.
-//    Depending on domain policy, the request may need admin approval before
-//    DMToken is issued.
-// 3. For other requests, client must pass in DMToken in Authorization header:
-//    Authorization: GoogleDMToken token=<google dm token>
+//   * For unregister and policy requests
+//      Authorization: GoogleDMToken token=<dm token from register>
 //
+//   * OAuth is NOT supported yet.
 message DeviceManagementRequest {
-  // Register request (old protocol).
+  // Register request.
   optional DeviceRegisterRequest register_request = 1;
 
   // Unregister request.
   optional DeviceUnregisterRequest unregister_request = 2;
 
-  // Data request.
+  // Policy request.
   optional DevicePolicyRequest policy_request = 3;
-
-  // Data request (new protocol).
-  optional CloudPolicyRequest cloud_policy_request = 4;
-
-  // Request for initial (before registration) policies.
-  optional InitialPolicyRequest initial_policy_request = 5;
-
-  // Register request (new protocol).
-  optional CloudRegisterRequest cloud_register_request = 6;
 }
 
 // Response from server to device.
@@ -276,7 +301,7 @@ message DeviceManagementResponse {
   // Error message.
   optional string error_message = 2;
 
-  // Register response (old protocol).
+  // Register response
   optional DeviceRegisterResponse register_response = 3;
 
   // Unregister response
@@ -284,13 +309,4 @@ message DeviceManagementResponse {
 
   // Policy response.
   optional DevicePolicyResponse policy_response = 5;
-
-  // Policy response (new protocol).
-  optional CloudPolicyResponse cloud_policy_response  = 6;
-
-  // Response to initial (before registration) policy request.
-  optional InitialPolicyResponse initial_policy_response = 7;
-
-  // Register response (new protocol).
-  optional CloudRegisterResponse cloud_register_response = 8;
 }

@@ -33,6 +33,10 @@ class UserPolicyIdentityStrategy : public CloudPolicyIdentityStrategy,
   // CloudPolicyIdentityStrategy implementation:
   virtual std::string GetDeviceToken();
   virtual std::string GetDeviceID();
+  virtual std::string GetMachineID();
+  virtual em::DeviceRegisterRequest_Type GetPolicyRegisterType();
+  virtual std::string GetPolicyType();
+
   virtual bool GetCredentials(std::string* username,
                               std::string* auth_token);
   virtual void OnDeviceTokenAvailable(const std::string& token);

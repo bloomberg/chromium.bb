@@ -58,36 +58,39 @@ class CloudPolicyCacheTest : public testing::Test {
     loop_.RunAllPending();
   }
 
-  // Creates a (signed) CloudPolicyResponse setting the given |homepage| and
+  // Creates a (signed) PolicyFetchResponse setting the given |homepage| and
   // featuring the given |timestamp| (as issued by the server).
   // Mildly hacky special feature: pass an empty string as |homepage| to get
   // a completely empty policy.
-  em::CloudPolicyResponse* CreateHomepagePolicy(
+  em::PolicyFetchResponse* CreateHomepagePolicy(
       const std::string& homepage,
       const base::Time& timestamp,
       const em::PolicyOptions::PolicyMode policy_mode) {
-    em::SignedCloudPolicyResponse signed_response;
+    em::PolicyData signed_response;
     if (homepage != "") {
-      em::CloudPolicySettings* settings = signed_response.mutable_settings();
+      em::CloudPolicySettings settings;
       em::HomepageLocationProto* homepagelocation_proto =
-          settings->mutable_homepagelocation();
+          settings.mutable_homepagelocation();
       homepagelocation_proto->set_homepagelocation(homepage);
       homepagelocation_proto->mutable_policy_options()->set_mode(policy_mode);
+      EXPECT_TRUE(
+          settings.SerializeToString(signed_response.mutable_policy_value()));
     }
-    signed_response.set_timestamp(timestamp.ToTimeT());
+    signed_response.set_timestamp(
+        (timestamp - base::Time::UnixEpoch()).InMilliseconds());
     std::string serialized_signed_response;
     EXPECT_TRUE(signed_response.SerializeToString(&serialized_signed_response));
 
-    em::CloudPolicyResponse* response = new em::CloudPolicyResponse;
-    response->set_signed_response(serialized_signed_response);
+    em::PolicyFetchResponse* response = new em::PolicyFetchResponse;
+    response->set_policy_data(serialized_signed_response);
     // TODO(jkummerow): Set proper certificate_chain and signature (when
     // implementing support for signature verification).
-    response->set_signature("TODO");
+    response->set_policy_data_signature("TODO");
     response->add_certificate_chain("TODO");
     return response;
   }
 
-  void WritePolicy(const em::CloudPolicyResponse& policy) {
+  void WritePolicy(const em::PolicyFetchResponse& policy) {
     std::string data;
     em::CachedCloudPolicyResponse cached_policy;
     cached_policy.mutable_cloud_policy()->CopyFrom(policy);
@@ -98,9 +101,9 @@ class CloudPolicyCacheTest : public testing::Test {
 
   // Takes ownership of |policy_response|.
   void SetPolicy(CloudPolicyCache* cache,
-                 em::CloudPolicyResponse* policy_response,
+                 em::PolicyFetchResponse* policy_response,
                  bool expect_changed_policy) {
-    scoped_ptr<em::CloudPolicyResponse> policy(policy_response);
+    scoped_ptr<em::PolicyFetchResponse> policy(policy_response);
     ConfigurationPolicyObserverRegistrar registrar;
     registrar.Init(cache->GetManagedPolicyProvider(), &observer);
     if (expect_changed_policy)
@@ -206,7 +209,7 @@ TEST_F(CloudPolicyCacheTest, LoadNoFile) {
 }
 
 TEST_F(CloudPolicyCacheTest, RejectFuture) {
-  scoped_ptr<em::CloudPolicyResponse> policy_response(
+  scoped_ptr<em::PolicyFetchResponse> policy_response(
       CreateHomepagePolicy("", base::Time::NowFromSystemTime() +
                                base::TimeDelta::FromMinutes(5),
                            em::PolicyOptions::MANDATORY));
@@ -219,7 +222,7 @@ TEST_F(CloudPolicyCacheTest, RejectFuture) {
 }
 
 TEST_F(CloudPolicyCacheTest, LoadWithFile) {
-  scoped_ptr<em::CloudPolicyResponse> policy_response(
+  scoped_ptr<em::PolicyFetchResponse> policy_response(
       CreateHomepagePolicy("", base::Time::NowFromSystemTime(),
                            em::PolicyOptions::MANDATORY));
   WritePolicy(*policy_response);
@@ -232,7 +235,7 @@ TEST_F(CloudPolicyCacheTest, LoadWithFile) {
 }
 
 TEST_F(CloudPolicyCacheTest, LoadWithData) {
-  scoped_ptr<em::CloudPolicyResponse> policy(
+  scoped_ptr<em::PolicyFetchResponse> policy(
       CreateHomepagePolicy("http://www.example.com",
                            base::Time::NowFromSystemTime(),
                            em::PolicyOptions::MANDATORY));
@@ -247,12 +250,12 @@ TEST_F(CloudPolicyCacheTest, LoadWithData) {
 
 TEST_F(CloudPolicyCacheTest, SetPolicy) {
   CloudPolicyCache cache(test_file());
-  em::CloudPolicyResponse* policy =
+  em::PolicyFetchResponse* policy =
       CreateHomepagePolicy("http://www.example.com",
                            base::Time::NowFromSystemTime(),
                            em::PolicyOptions::MANDATORY);
   SetPolicy(&cache, policy, true);
-  em::CloudPolicyResponse* policy2 =
+  em::PolicyFetchResponse* policy2 =
       CreateHomepagePolicy("http://www.example.com",
                            base::Time::NowFromSystemTime(),
                            em::PolicyOptions::MANDATORY);
@@ -264,8 +267,8 @@ TEST_F(CloudPolicyCacheTest, SetPolicy) {
   EXPECT_TRUE(expected.Equals(mandatory_policy(cache)));
   EXPECT_TRUE(empty.Equals(recommended_policy(cache)));
   policy = CreateHomepagePolicy("http://www.example.com",
-                                    base::Time::NowFromSystemTime(),
-                                    em::PolicyOptions::RECOMMENDED);
+                                base::Time::NowFromSystemTime(),
+                                em::PolicyOptions::RECOMMENDED);
   SetPolicy(&cache, policy, true);
   EXPECT_TRUE(expected.Equals(recommended_policy(cache)));
   EXPECT_TRUE(empty.Equals(mandatory_policy(cache)));
@@ -274,7 +277,7 @@ TEST_F(CloudPolicyCacheTest, SetPolicy) {
 TEST_F(CloudPolicyCacheTest, ResetPolicy) {
   CloudPolicyCache cache(test_file());
 
-  em::CloudPolicyResponse* policy =
+  em::PolicyFetchResponse* policy =
       CreateHomepagePolicy("http://www.example.com",
                            base::Time::NowFromSystemTime(),
                            em::PolicyOptions::MANDATORY);
@@ -284,7 +287,7 @@ TEST_F(CloudPolicyCacheTest, ResetPolicy) {
                Value::CreateStringValue("http://www.example.com"));
   EXPECT_TRUE(expected.Equals(mandatory_policy(cache)));
 
-  em::CloudPolicyResponse* empty_policy =
+  em::PolicyFetchResponse* empty_policy =
       CreateHomepagePolicy("", base::Time::NowFromSystemTime(),
                            em::PolicyOptions::MANDATORY);
   SetPolicy(&cache, empty_policy, true);
@@ -295,7 +298,7 @@ TEST_F(CloudPolicyCacheTest, ResetPolicy) {
 TEST_F(CloudPolicyCacheTest, PersistPolicy) {
   {
     CloudPolicyCache cache(test_file());
-    scoped_ptr<em::CloudPolicyResponse> policy(
+    scoped_ptr<em::PolicyFetchResponse> policy(
         CreateHomepagePolicy("http://www.example.com",
                              base::Time::NowFromSystemTime(),
                              em::PolicyOptions::MANDATORY));
@@ -314,14 +317,14 @@ TEST_F(CloudPolicyCacheTest, PersistPolicy) {
 }
 
 TEST_F(CloudPolicyCacheTest, FreshPolicyOverride) {
-  scoped_ptr<em::CloudPolicyResponse> policy(
+  scoped_ptr<em::PolicyFetchResponse> policy(
       CreateHomepagePolicy("http://www.example.com",
                            base::Time::NowFromSystemTime(),
                            em::PolicyOptions::MANDATORY));
   WritePolicy(*policy);
 
   CloudPolicyCache cache(test_file());
-  em::CloudPolicyResponse* updated_policy =
+  em::PolicyFetchResponse* updated_policy =
       CreateHomepagePolicy("http://www.chromium.org",
                            base::Time::NowFromSystemTime(),
                            em::PolicyOptions::MANDATORY);
