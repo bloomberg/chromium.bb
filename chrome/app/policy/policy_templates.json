@@ -91,7 +91,7 @@
 #   persistent IDs for all fields (but not for groups!) are needed. These are
 #   specified by the 'id' keys of each policy. NEVER CHANGE EXISTING IDs,
 #   because doing so would break the deployed wire format!
-#   For your editing convenience: highest ID currently used: 77
+#   For your editing convenience: highest ID currently used: 79
 #
   'policy_definitions': [
     {
@@ -390,8 +390,42 @@
 
       The wildcard characters '*' and '?' can be used to match sequences of arbitrary characters. '*' matches an arbitrary number of characters while '?' specifies an optional single character, i.e. matches zero or one characters. The escape character is '\\', so to match actual '*', '?', or '\\' characters, you can put a '\\' in front of them.
 
-      If you enable this setting, the specified list of plugins is never used in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>. The plugins are marked as disabled in 'about:plugins' and users cannot enable them.''',
+      If you enable this setting, the specified list of plugins is never used in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>. The plugins are marked as disabled in 'about:plugins' and users cannot enable them.
+
+      Note that this policy can be overriden by EnabledPlugins and DisabledPluginsExceptions.''',
       'label': '''List of disabled plugins''',
+    },
+    {
+      'name': 'EnabledPlugins',
+      'type': 'list',
+      'supported_on': ['chrome.*:11-'],
+      'features': {'dynamic_refresh': 1},
+      'example_value': ['Java', 'Shockwave Flash', 'Chrome PDF Viewer'],
+      'id': 78,
+      'caption': '''Specify a list of enabled plugins''',
+      'desc': '''Specifies a list of plugins that are enabled in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> and prevents users from changing this setting.
+
+      The wildcard characters '*' and '?' can be used to match sequences of arbitrary characters. '*' matches an arbitrary number of characters while '?' specifies an optional single character, i.e. matches zero or one characters. The escape character is '\\', so to match actual '*', '?', or '\\' characters, you can put a '\\' in front of them.
+
+      The specified list of plugins is always used in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> if they are installed. The plugins are marked as enabled in 'about:plugins' and users cannot disable them.
+
+      Note that this policy overrides both DisabledPlugins and DisabledPluginsExceptions.''',
+      'label': '''List of enabled plugins''',
+    },
+    {
+      'name': 'DisabledPluginsExceptions',
+      'type': 'list',
+      'supported_on': ['chrome.*:11-'],
+      'features': {'dynamic_refresh': 1},
+      'example_value': ['Java', 'Shockwave Flash', 'Chrome PDF Viewer'],
+      'id': 79,
+      'caption': '''Specify a list of plugins that the user can enable or disable''',
+      'desc': '''Specifies a list of plugins that user can enable or disable in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>.
+
+      The wildcard characters '*' and '?' can be used to match sequences of arbitrary characters. '*' matches an arbitrary number of characters while '?' specifies an optional single character, i.e. matches zero or one characters. The escape character is '\\', so to match actual '*', '?', or '\\' characters, you can put a '\\' in front of them.
+
+      If you enable this setting, the specified list of plugins can be used in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>. Users can enable or disable them in 'about:plugins', even if the plugin also matches a pattern in DisabledPlugins. Users can also enable and disable plugins that don't match any patterns in DisabledPlugins, DisabledPluginsExceptions and EnabledPlugins.''',
+      'label': '''List of exceptions to the list of disabled plugins''',
     },
     {
       'name': 'DisablePluginFinder',

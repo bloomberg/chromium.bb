@@ -89,11 +89,13 @@ class PluginGroupTest : public testing::Test {
   }
  protected:
   virtual void TearDown() {
-    PluginGroup::SetPolicyDisabledPluginPatterns(std::set<string16>());
+    PluginGroup::SetPolicyEnforcedPluginPatterns(std::set<string16>(),
+                                                 std::set<string16>(),
+                                                 std::set<string16>());
   }
 };
 
-TEST(PluginGroupTest, PluginGroupMatch) {
+TEST_F(PluginGroupTest, PluginGroupMatch) {
   scoped_ptr<PluginGroup> group(PluginGroupTest::CreatePluginGroup(
       kPluginDef3));
   EXPECT_TRUE(group->Match(kPlugin3045));
@@ -106,7 +108,7 @@ TEST(PluginGroupTest, PluginGroupMatch) {
   EXPECT_FALSE(group->Match(kPluginNoVersion));
 }
 
-TEST(PluginGroupTest, PluginGroupMatchCorrectVersion) {
+TEST_F(PluginGroupTest, PluginGroupMatchCorrectVersion) {
   scoped_ptr<PluginGroup> group(PluginGroupTest::CreatePluginGroup(
       kPluginDef3));
   EXPECT_TRUE(group->Match(kPlugin2043));
@@ -124,7 +126,7 @@ TEST(PluginGroupTest, PluginGroupMatchCorrectVersion) {
   EXPECT_TRUE(group->Match(kPlugin4043));
 }
 
-TEST(PluginGroupTest, PluginGroupDescription) {
+TEST_F(PluginGroupTest, PluginGroupDescription) {
   string16 desc3043(ASCIIToUTF16("MyPlugin version 3.0.43"));
   string16 desc3045(ASCIIToUTF16("MyPlugin version 3.0.45"));
 
@@ -163,7 +165,7 @@ TEST(PluginGroupTest, PluginGroupDescription) {
   }
 }
 
-TEST(PluginGroupTest, PluginGroupDefinition) {
+TEST_F(PluginGroupTest, PluginGroupDefinition) {
   for (size_t i = 0; i < arraysize(kPluginDefinitions); ++i) {
     scoped_ptr<PluginGroup> def_group(
         PluginGroupTest::CreatePluginGroup(kPluginDefinitions[i]));
@@ -171,7 +173,7 @@ TEST(PluginGroupTest, PluginGroupDefinition) {
   }
 }
 
-TEST(PluginGroupTest, DisableOutdated) {
+TEST_F(PluginGroupTest, DisableOutdated) {
   PluginGroupDefinition plugindefs[] = { kPluginDef3, kPluginDef34 };
   for (size_t i = 0; i < 2; ++i) {
     scoped_ptr<PluginGroup> group(PluginGroupTest::CreatePluginGroup(
@@ -188,7 +190,7 @@ TEST(PluginGroupTest, DisableOutdated) {
   }
 }
 
-TEST(PluginGroupTest, VersionExtraction) {
+TEST_F(PluginGroupTest, VersionExtraction) {
   // Some real-world plugin versions (spaces, commata, parentheses, 'r', oh my)
   const char* versions[][2] = {
     { "7.6.6 (1671)", "7.6.6.1671" },  // Quicktime
@@ -216,11 +218,13 @@ TEST(PluginGroupTest, VersionExtraction) {
   }
 }
 
-TEST(PluginGroupTest, DisabledByPolicy) {
+TEST_F(PluginGroupTest, DisabledByPolicy) {
   std::set<string16> disabled_plugins;
   disabled_plugins.insert(ASCIIToUTF16("Disable this!"));
   disabled_plugins.insert(ASCIIToUTF16("*Google*"));
-  PluginGroup::SetPolicyDisabledPluginPatterns(disabled_plugins);
+  PluginGroup::SetPolicyEnforcedPluginPatterns(disabled_plugins,
+                                               std::set<string16>(),
+                                               std::set<string16>());
 
   EXPECT_FALSE(PluginGroup::IsPluginNameDisabledByPolicy(ASCIIToUTF16("42")));
   EXPECT_TRUE(PluginGroup::IsPluginNameDisabledByPolicy(
@@ -229,7 +233,90 @@ TEST(PluginGroupTest, DisabledByPolicy) {
       ASCIIToUTF16("Google Earth")));
 }
 
-TEST(PluginGroupTest, IsVulnerable) {
+TEST_F(PluginGroupTest, EnabledByPolicy) {
+  std::set<string16> enabled_plugins;
+  enabled_plugins.insert(ASCIIToUTF16("Enable that!"));
+  enabled_plugins.insert(ASCIIToUTF16("PDF*"));
+  PluginGroup::SetPolicyEnforcedPluginPatterns(std::set<string16>(),
+                                               std::set<string16>(),
+                                               enabled_plugins);
+
+  EXPECT_FALSE(PluginGroup::IsPluginNameEnabledByPolicy(ASCIIToUTF16("42")));
+  EXPECT_TRUE(PluginGroup::IsPluginNameEnabledByPolicy(
+      ASCIIToUTF16("Enable that!")));
+  EXPECT_TRUE(PluginGroup::IsPluginNameEnabledByPolicy(
+      ASCIIToUTF16("PDF Reader")));
+}
+
+TEST_F(PluginGroupTest, EnabledAndDisabledByPolicy) {
+  const string16 k42(ASCIIToUTF16("42"));
+  const string16 kEnabled(ASCIIToUTF16("Enabled"));
+  const string16 kEnabled2(ASCIIToUTF16("Enabled 2"));
+  const string16 kEnabled3(ASCIIToUTF16("Enabled 3"));
+  const string16 kException(ASCIIToUTF16("Exception"));
+  const string16 kException2(ASCIIToUTF16("Exception 2"));
+  const string16 kGoogleMars(ASCIIToUTF16("Google Mars"));
+  const string16 kGoogleEarth(ASCIIToUTF16("Google Earth"));
+
+  std::set<string16> disabled_plugins;
+  std::set<string16> disabled_plugins_exceptions;
+  std::set<string16> enabled_plugins;
+
+  disabled_plugins.insert(kEnabled);
+  disabled_plugins_exceptions.insert(kEnabled);
+  enabled_plugins.insert(kEnabled);
+
+  disabled_plugins_exceptions.insert(kException);
+
+  disabled_plugins.insert(kEnabled2);
+  enabled_plugins.insert(kEnabled2);
+
+  disabled_plugins.insert(kException2);
+  disabled_plugins_exceptions.insert(kException2);
+
+  disabled_plugins_exceptions.insert(kEnabled3);
+  enabled_plugins.insert(kEnabled3);
+
+  PluginGroup::SetPolicyEnforcedPluginPatterns(disabled_plugins,
+                                               disabled_plugins_exceptions,
+                                               enabled_plugins);
+
+  EXPECT_FALSE(PluginGroup::IsPluginNameEnabledByPolicy(k42));
+  EXPECT_FALSE(PluginGroup::IsPluginNameDisabledByPolicy(k42));
+
+  EXPECT_TRUE(PluginGroup::IsPluginNameEnabledByPolicy(kEnabled));
+  EXPECT_FALSE(PluginGroup::IsPluginNameDisabledByPolicy(kEnabled));
+  EXPECT_TRUE(PluginGroup::IsPluginNameEnabledByPolicy(kEnabled2));
+  EXPECT_FALSE(PluginGroup::IsPluginNameDisabledByPolicy(kEnabled2));
+  EXPECT_TRUE(PluginGroup::IsPluginNameEnabledByPolicy(kEnabled3));
+  EXPECT_FALSE(PluginGroup::IsPluginNameDisabledByPolicy(kEnabled3));
+
+  EXPECT_FALSE(PluginGroup::IsPluginNameEnabledByPolicy(kException));
+  EXPECT_FALSE(PluginGroup::IsPluginNameDisabledByPolicy(kException));
+  EXPECT_FALSE(PluginGroup::IsPluginNameEnabledByPolicy(kException2));
+  EXPECT_FALSE(PluginGroup::IsPluginNameDisabledByPolicy(kException2));
+
+  disabled_plugins.clear();
+  disabled_plugins_exceptions.clear();
+  enabled_plugins.clear();
+
+  disabled_plugins.insert(ASCIIToUTF16("*"));
+  disabled_plugins_exceptions.insert(ASCIIToUTF16("*Google*"));
+  enabled_plugins.insert(kGoogleEarth);
+
+  PluginGroup::SetPolicyEnforcedPluginPatterns(disabled_plugins,
+                                               disabled_plugins_exceptions,
+                                               enabled_plugins);
+
+  EXPECT_TRUE(PluginGroup::IsPluginNameEnabledByPolicy(kGoogleEarth));
+  EXPECT_FALSE(PluginGroup::IsPluginNameDisabledByPolicy(kGoogleEarth));
+  EXPECT_FALSE(PluginGroup::IsPluginNameEnabledByPolicy(kGoogleMars));
+  EXPECT_FALSE(PluginGroup::IsPluginNameDisabledByPolicy(kGoogleMars));
+  EXPECT_FALSE(PluginGroup::IsPluginNameEnabledByPolicy(k42));
+  EXPECT_TRUE(PluginGroup::IsPluginNameDisabledByPolicy(k42));
+}
+
+TEST_F(PluginGroupTest, IsVulnerable) {
   // Adobe Reader 10
   VersionRangeDefinition adobe_reader_version_range[] = {
       { "10", "11", "", false },
@@ -270,7 +357,7 @@ TEST(PluginGroupTest, IsVulnerable) {
   EXPECT_TRUE(PluginGroup(*group).RequiresAuthorization());
 }
 
-TEST(PluginGroupTest, MultipleVersions) {
+TEST_F(PluginGroupTest, MultipleVersions) {
   scoped_ptr<PluginGroup> group(
       PluginGroupTest::CreatePluginGroup(kPluginDef3));
   group->AddPlugin(kPlugin3044);

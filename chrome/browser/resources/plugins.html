@@ -273,7 +273,19 @@ var pluginDataFormat = {
               'fileExtensions': [ 'bar','baz' ],
               'mimeType': 'application/my-bar' }
           ],
-          'enabledMode': 'enabled'
+          'enabledMode': 'enabledByUser'
+        },
+        {
+          'path': '/tmp/MyFirst.plugin',
+          'name': 'MyFirstPlugin',
+          'version': '3.14r15926',
+          'description': 'My first plugin',
+          'mimeTypes': [
+            { 'description': 'New Guy Media',
+              'fileExtensions': [ 'mfp' ],
+              'mimeType': 'application/x-my-first' }
+          ],
+          'enabledMode': 'enabledByPolicy'
         },
         {
           'path': '/foobar/baz/YourGreatPlugin.plugin',
@@ -438,6 +450,14 @@ function shouldDisplayPluginDescription(plugin) {
          plugin.description != plugin.name + ' ' + plugin.version;
 }
 
+/**
+ * Determines whether a plugin is enabled or not.
+ */
+function isPluginEnabled(plugin) {
+  return plugin.enabledMode == 'enabledByUser' ||
+         plugin.enabledMode == 'enabledByPolicy';
+}
+
 // Unfortunately, we don't have notifications for plugin (list) status changes
 // (yet), so in the meanwhile just update regularly.
 setInterval(requestPluginsData, 30000);
@@ -494,7 +514,7 @@ document.addEventListener('DOMContentLoaded', requestPluginsData);
       <div class="plugin" jsselect="plugins">
         <table width="100%" cellpadding="2" cellspacing="0">
         <tr jsvalues=
-            ".className:enabledMode == 'enabled' ? 'plugin-enabled' : 'plugin-disabled'">
+            ".className:isPluginEnabled($this) ? 'plugin-enabled' : 'plugin-disabled'">
         <td valign="top">
           <div class="plugin-text">
             <div>
@@ -513,6 +533,8 @@ document.addEventListener('DOMContentLoaded', requestPluginsData);
                     i18n-content="pluginDisabled">(DISABLED)</span>
               <span jsdisplay="enabledMode == 'disabledByPolicy'"
                     i18n-content="pluginDisabledByPolicy">(DISABLED_BY_POLICY)</span>
+              <span jsdisplay="enabledMode == 'enabledByPolicy'"
+                    i18n-content="pluginEnabledByPolicy">(ENABLED_BY_POLICY)</span>
               <div jsdisplay="shouldDisplayPluginDescription($this)">
                 <span dir="ltr" jsvalues=".innerHTML:description">
               </div>
@@ -520,7 +542,7 @@ document.addEventListener('DOMContentLoaded', requestPluginsData);
             <div jsselect="plugin_files" class="plugin-details">
               <div class="showInTmiMode">
                 <div jsvalues=
-                  ".className:enabledMode == 'enabled' ? 'plugin-file-enabled' : 'plugin-file-disabled'">
+                  ".className:isPluginEnabled($this) ? 'plugin-file-enabled' : 'plugin-file-disabled'">
                   <div><table><tr>
                     <td class="plugin-details-label"
                         i18n-content="pluginName">NAME:</td>
@@ -551,11 +573,13 @@ document.addEventListener('DOMContentLoaded', requestPluginsData);
                       <span jsdisplay="enabledMode == 'disabledByUser'"
                           i18n-content="pluginDisabled">(DISABLED)</span>
                       <span jsdisplay="enabledMode == 'disabledByPolicy'"
-                          i18n-content="pluginDisabled">(DISABLED_BY_POLICY)</span>
+                          i18n-content="pluginDisabledByPolicy">(DISABLED_BY_POLICY)</span>
+                      <span jsdisplay="enabledMode == 'enabledByPolicy'"
+                          i18n-content="pluginEnabledByPolicy">(ENABLED_BY_POLICY)</span>
                       <span>
                         <a
                           jsvalues=".path:path"
-                          jsdisplay="enabledMode == 'enabled'"
+                          jsdisplay="enabledMode == 'enabledByUser'"
                           onclick="handleEnablePlugin(this, false, false)"
                           href="javascript:void(0);"
                           i18n-content="disable"
@@ -567,6 +591,10 @@ document.addEventListener('DOMContentLoaded', requestPluginsData);
                           href="javascript:void(0);"
                           i18n-content="enable"
                           >ENABLE</a>
+                        <span
+                          jsdisplay="enabledMode == 'enabledByPolicy'"
+                          i18n-content="pluginCannotBeDisabledDueToPolicy"
+                          >CANNOT_DISABLE</span>
                         <span
                           jsdisplay="enabledMode == 'disabledByPolicy'"
                           i18n-content="pluginCannotBeEnabledDueToPolicy"
@@ -608,7 +636,7 @@ document.addEventListener('DOMContentLoaded', requestPluginsData);
             <span>
               <a
                 jsvalues=".path:name"
-                jsdisplay="enabledMode == 'enabled'"
+                jsdisplay="enabledMode == 'enabledByUser'"
                 onclick="handleEnablePlugin(this, false, true)"
                 href="javascript:void(0);"
                 i18n-content="disable"
@@ -620,6 +648,10 @@ document.addEventListener('DOMContentLoaded', requestPluginsData);
                 href="javascript:void(0);"
                 i18n-content="enable"
                 >ENABLE</a>
+              <span
+                jsdisplay="enabledMode == 'enabledByPolicy'"
+                i18n-content="pluginCannotBeDisabledDueToPolicy"
+                >CANNOT_DISABLE</span>
               <span
                 jsdisplay="enabledMode == 'disabledByPolicy'"
                 i18n-content="pluginCannotBeEnabledDueToPolicy"

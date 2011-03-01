@@ -84,8 +84,9 @@ bool PluginService::enable_chrome_plugins_ = true;
 void PluginService::InitGlobalInstance(Profile* profile) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  // We first group the plugins and then figure out which groups to disable.
-  PluginUpdater::GetInstance()->DisablePluginGroupsFromPrefs(profile);
+  // We first group the plugins and then figure out which groups to
+  // enable or disable.
+  PluginUpdater::GetInstance()->UpdatePluginGroupsStateFromPrefs(profile);
 
   // Have Chrome plugins write their data to the profile directory.
   GetInstance()->SetChromePluginDataDir(profile->GetPath());

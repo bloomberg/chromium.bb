@@ -80,6 +80,10 @@ void PluginsUIHTMLSource::StartDataRequest(const std::string& path,
       l10n_util::GetStringUTF16(IDS_PLUGINS_DISABLED_BY_POLICY_PLUGIN));
   localized_strings.SetString("pluginCannotBeEnabledDueToPolicy",
       l10n_util::GetStringUTF16(IDS_PLUGINS_CANNOT_ENABLE_DUE_TO_POLICY));
+  localized_strings.SetString("pluginEnabledByPolicy",
+      l10n_util::GetStringUTF16(IDS_PLUGINS_ENABLED_BY_POLICY_PLUGIN));
+  localized_strings.SetString("pluginCannotBeDisabledDueToPolicy",
+      l10n_util::GetStringUTF16(IDS_PLUGINS_CANNOT_DISABLE_DUE_TO_POLICY));
   localized_strings.SetString("pluginDownload",
       l10n_util::GetStringUTF16(IDS_PLUGINS_DOWNLOAD));
   localized_strings.SetString("pluginName",
@@ -102,6 +106,8 @@ void PluginsUIHTMLSource::StartDataRequest(const std::string& path,
       l10n_util::GetStringUTF16(IDS_PLUGINS_DISABLE));
   localized_strings.SetString("enable",
       l10n_util::GetStringUTF16(IDS_PLUGINS_ENABLE));
+  localized_strings.SetString("noPlugins",
+      l10n_util::GetStringUTF16(IDS_PLUGINS_NO_PLUGINS));
 
   ChromeURLDataManager::DataSource::SetFontAndTextDirection(&localized_strings);
 
@@ -366,7 +372,9 @@ void PluginsUI::RegisterUserPrefs(PrefService* prefs) {
   prefs->RegisterFilePathPref(prefs::kPluginsLastInternalDirectory,
                               internal_dir);
 
-  prefs->RegisterListPref(prefs::kPluginsPluginsBlacklist);
+  prefs->RegisterListPref(prefs::kPluginsDisabledPlugins);
+  prefs->RegisterListPref(prefs::kPluginsDisabledPluginsExceptions);
+  prefs->RegisterListPref(prefs::kPluginsEnabledPlugins);
   prefs->RegisterListPref(prefs::kPluginsPluginsList);
   prefs->RegisterBooleanPref(prefs::kPluginsEnabledInternalPDF, false);
   prefs->RegisterBooleanPref(prefs::kPluginsShowDetails, false);

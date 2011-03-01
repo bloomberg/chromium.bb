@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_PLUGIN_UPDATER_H_
 #pragma once
 
+#include <set>
 #include <vector>
 
 #include "base/basictypes.h"
@@ -38,8 +39,8 @@ class PluginUpdater : public NotificationObserver {
   // Enable or disable a specific plugin file.
   void EnablePlugin(bool enable, const FilePath::StringType& file_path);
 
-  // Disable all plugin groups as defined by the user's preference file.
-  void DisablePluginGroupsFromPrefs(Profile* profile);
+  // Enable or disable plugin groups as defined by the user's preference file.
+  void UpdatePluginGroupsStateFromPrefs(Profile* profile);
 
   // Write the enable/disable status to the user's preference file.
   void UpdatePreferences(Profile* profile, int delay_ms);
@@ -75,9 +76,15 @@ class PluginUpdater : public NotificationObserver {
   static DictionaryValue* CreatePluginFileSummary(
       const webkit::npapi::WebPluginInfo& plugin);
 
-  // Force plugins to be disabled due to policy. |plugins| contains
-  // the list of StringValues of the names of the policy-disabled plugins.
-  void DisablePluginsFromPolicy(const ListValue* plugin_names);
+  // Force plugins to be enabled or disabled due to policy.
+  // |disabled_list| contains the list of StringValues of the names of the
+  // policy-disabled plugins, |exceptions_list| the policy-allowed plugins,
+  // and |enabled_list| the policy-enabled plugins.
+  void UpdatePluginsStateFromPolicy(const ListValue* disabled_list,
+                                    const ListValue* exceptions_list,
+                                    const ListValue* enabled_list);
+
+  void ListValueToStringSet(const ListValue* src, std::set<string16>* dest);
 
   // Needed to allow singleton instantiation using private constructor.
   friend struct DefaultSingletonTraits<PluginUpdater>;

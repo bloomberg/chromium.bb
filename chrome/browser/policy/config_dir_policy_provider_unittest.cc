@@ -300,6 +300,12 @@ INSTANTIATE_TEST_CASE_P(
         ValueTestParams::ForListPolicy(
             kPolicyDisabledPlugins,
             key::kDisabledPlugins),
+        ValueTestParams::ForListPolicy(
+            kPolicyDisabledPluginsExceptions,
+            key::kDisabledPluginsExceptions),
+        ValueTestParams::ForListPolicy(
+            kPolicyEnabledPlugins,
+            key::kEnabledPlugins),
         ValueTestParams::ForBooleanPolicy(
             kPolicyAutoFillEnabled,
             key::kAutoFillEnabled),

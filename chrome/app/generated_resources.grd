@@ -3901,6 +3901,12 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_PLUGINS_CANNOT_ENABLE_DUE_TO_POLICY" desc="Text that indicates a plug-in cannot be enabled because it has been disabled by enterprise policy.">
         Cannot enable plug-ins that are disabled by enterprise policy
       </message>
+      <message name="IDS_PLUGINS_ENABLED_BY_POLICY_PLUGIN" desc="Text that signifies that the plug-in is currently enabled by enterprise policy.">
+        (Enabled by enterprise policy)
+      </message>
+      <message name="IDS_PLUGINS_CANNOT_DISABLE_DUE_TO_POLICY" desc="Text that indicates a plug-in cannot be disabled because it has been enabled by enterprise policy.">
+        Cannot disable plug-ins that are enabled by enterprise policy
+      </message>
       <message name="IDS_PLUGINS_VERSION" desc="The label in front of a plug-in version number.">
         Version:
       </message>
@@ -3933,6 +3939,9 @@ Keep your key file in a safe place. You will need it to create new versions of y
       </message>
       <message name="IDS_PLUGINS_NAME" desc="The label for the name of this plug-in">
         Name:
+      </message>
+      <message name="IDS_PLUGINS_NO_PLUGINS" desc="Text that indicates that no plugins are installed">
+        No plugins are installed
       </message>
 
       <!-- about:flags -->

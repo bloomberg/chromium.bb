@@ -26,30 +26,79 @@ const char* PluginGroup::kShockwaveGroupName = "Shockwave";
 
 /*static*/
 std::set<string16>* PluginGroup::policy_disabled_plugin_patterns_;
+/*static*/
+std::set<string16>* PluginGroup::policy_disabled_plugin_exception_patterns_;
+/*static*/
+std::set<string16>* PluginGroup::policy_enabled_plugin_patterns_;
 
 /*static*/
-void PluginGroup::SetPolicyDisabledPluginPatterns(
-    const std::set<string16>& set) {
+void PluginGroup::SetPolicyEnforcedPluginPatterns(
+    const std::set<string16>& plugins_disabled,
+    const std::set<string16>& plugins_disabled_exceptions,
+    const std::set<string16>& plugins_enabled) {
   if (!policy_disabled_plugin_patterns_)
-    policy_disabled_plugin_patterns_ = new std::set<string16>(set);
+    policy_disabled_plugin_patterns_ = new std::set<string16>(plugins_disabled);
   else
-    *policy_disabled_plugin_patterns_ = set;
+    *policy_disabled_plugin_patterns_ = plugins_disabled;
+
+  if (!policy_disabled_plugin_exception_patterns_)
+    policy_disabled_plugin_exception_patterns_ =
+        new std::set<string16>(plugins_disabled_exceptions);
+  else
+    *policy_disabled_plugin_exception_patterns_ = plugins_disabled_exceptions;
+
+  if (!policy_enabled_plugin_patterns_)
+    policy_enabled_plugin_patterns_ = new std::set<string16>(plugins_enabled);
+  else
+    *policy_enabled_plugin_patterns_ = plugins_enabled;
 }
 
 /*static*/
-bool PluginGroup::IsPluginNameDisabledByPolicy(const string16& plugin_name) {
-  if (!policy_disabled_plugin_patterns_)
+bool PluginGroup::IsStringMatchedInSet(const string16& name,
+                                       const std::set<string16>* pattern_set) {
+  if (!pattern_set)
     return false;
 
-  std::set<string16>::const_iterator pattern(
-      policy_disabled_plugin_patterns_->begin());
-  while (pattern != policy_disabled_plugin_patterns_->end()) {
-    if (MatchPattern(plugin_name, *pattern))
+  std::set<string16>::const_iterator pattern(pattern_set->begin());
+  while (pattern != pattern_set->end()) {
+    if (MatchPattern(name, *pattern))
       return true;
     ++pattern;
   }
 
   return false;
+}
+
+/*static*/
+bool PluginGroup::IsPluginNameDisabledByPolicy(const string16& plugin_name) {
+  // A plugin that matches some "disabled" pattern but also matches an "enabled"
+  // pattern will be enabled. Example: disable "*", enable "Flash, Java".
+  // Same for matching an "exception" pattern.
+  return IsStringMatchedInSet(plugin_name, policy_disabled_plugin_patterns_) &&
+        !IsStringMatchedInSet(plugin_name, policy_enabled_plugin_patterns_) &&
+        !IsStringMatchedInSet(plugin_name,
+                              policy_disabled_plugin_exception_patterns_);
+}
+
+/*static*/
+bool PluginGroup::IsPluginFileNameDisabledByPolicy(const string16& plugin_name,
+                                                   const string16& group_name) {
+  // This handles a specific plugin within a group that is allowed,
+  // but whose name matches a disabled pattern.
+  // Example: disable "*", exception "Java".
+  bool group_has_exception = IsStringMatchedInSet(
+      group_name,
+      policy_disabled_plugin_exception_patterns_);
+
+  return !IsPluginNameEnabledByPolicy(plugin_name) &&
+         !group_has_exception &&
+          IsPluginNameDisabledByPolicy(plugin_name);
+}
+
+/*static*/
+bool PluginGroup::IsPluginNameEnabledByPolicy(const string16& plugin_name) {
+  // There are no exceptions to enabled plugins.
+  return IsStringMatchedInSet(plugin_name, policy_enabled_plugin_patterns_);
 }
 
 VersionRange::VersionRange(VersionRangeDefinition definition)
@@ -262,8 +311,13 @@ bool PluginGroup::EnablePlugin(const FilePath& filename) {
   bool did_enable = false;
   ResetGroupState();
   for (size_t i = 0; i < web_plugin_infos_.size(); ++i) {
-    if (web_plugin_infos_[i].path == filename)
-      did_enable = Enable(&web_plugin_infos_[i], WebPluginInfo::USER_ENABLED);
+    if (web_plugin_infos_[i].path == filename) {
+      did_enable = Enable(
+          &web_plugin_infos_[i],
+          IsPluginNameEnabledByPolicy(web_plugin_infos_[i].name) ?
+              WebPluginInfo::USER_ENABLED_POLICY_ENABLED :
+              WebPluginInfo::USER_ENABLED);
+    }
     UpdateActivePlugin(web_plugin_infos_[i]);
   }
   return did_enable;
@@ -326,23 +380,35 @@ DictionaryValue* PluginGroup::GetDataForUI() const {
   result->SetBoolean("critical", IsVulnerable());
 
   bool group_disabled_by_policy = IsPluginNameDisabledByPolicy(name);
+  bool group_enabled_by_policy = IsPluginNameEnabledByPolicy(name);
   ListValue* plugin_files = new ListValue();
   bool all_plugins_disabled_by_policy = true;
+  bool all_plugins_enabled_by_policy = true;
   for (size_t i = 0; i < web_plugin_infos_.size(); ++i) {
     DictionaryValue* plugin_file = new DictionaryValue();
     plugin_file->SetString("name", web_plugin_infos_[i].name);
     plugin_file->SetString("description", web_plugin_infos_[i].desc);
     plugin_file->SetString("path", web_plugin_infos_[i].path.value());
     plugin_file->SetString("version", web_plugin_infos_[i].version);
+
     bool plugin_disabled_by_policy = group_disabled_by_policy ||
         ((web_plugin_infos_[i].enabled & WebPluginInfo::POLICY_DISABLED) != 0);
+    bool plugin_enabled_by_policy = group_enabled_by_policy ||
+        ((web_plugin_infos_[i].enabled & WebPluginInfo::POLICY_ENABLED) != 0);
+
+    if (!plugin_disabled_by_policy)
+      all_plugins_disabled_by_policy = false;
+    if (!plugin_enabled_by_policy)
+      all_plugins_enabled_by_policy = false;
+
     if (plugin_disabled_by_policy) {
       plugin_file->SetString("enabledMode", "disabledByPolicy");
+    } else if (plugin_enabled_by_policy) {
+        plugin_file->SetString("enabledMode", "enabledByPolicy");
     } else {
-      all_plugins_disabled_by_policy = false;
       plugin_file->SetString(
           "enabledMode", IsPluginEnabled(web_plugin_infos_[i]) ?
-              "enabled" : "disabledByUser");
+              "enabledByUser" : "disabledByUser");
     }
 
     ListValue* mime_types = new ListValue();
@@ -369,8 +435,12 @@ DictionaryValue* PluginGroup::GetDataForUI() const {
 
   if (group_disabled_by_policy || all_plugins_disabled_by_policy) {
     result->SetString("enabledMode", "disabledByPolicy");
+  } else if (group_enabled_by_policy || all_plugins_enabled_by_policy) {
+    result->SetString("enabledMode", "enabledByPolicy");
   } else {
-    result->SetString("enabledMode", enabled_ ? "enabled" : "disabledByUser");
+    result->SetString("enabledMode", enabled_ ?
+                              "enabledByUser" :
+                              "disabledByUser");
   }
   result->Set("plugin_files", plugin_files);
 
@@ -440,21 +510,28 @@ void PluginGroup::DisableOutdatedPlugins() {
 
 bool PluginGroup::EnableGroup(bool enable) {
   bool group_disabled_by_policy = IsPluginNameDisabledByPolicy(group_name_);
-  // We can't enable groups disabled by policy
-  if (group_disabled_by_policy && enable)
+  bool group_enabled_by_policy = IsPluginNameEnabledByPolicy(group_name_);
+
+  // We can't enable nor disable groups controlled by policy.
+  if ((group_disabled_by_policy && enable) ||
+      (group_enabled_by_policy && !enable))
     return false;
 
   ResetGroupState();
   for (size_t i = 0; i < web_plugin_infos_.size(); ++i) {
+    bool policy_enabled =
+        IsPluginNameEnabledByPolicy(web_plugin_infos_[i].name);
     bool policy_disabled =
-        IsPluginNameDisabledByPolicy(web_plugin_infos_[i].name);
-    if (enable && !policy_disabled) {
+        IsPluginFileNameDisabledByPolicy(web_plugin_infos_[i].name,
+                                         group_name_);
+    if (policy_disabled) {
+      Disable(&web_plugin_infos_[i], WebPluginInfo::POLICY_DISABLED);
+    } else if (policy_enabled) {
+      Enable(&web_plugin_infos_[i], WebPluginInfo::POLICY_ENABLED);
+    } else if (enable) {
       Enable(&web_plugin_infos_[i], WebPluginInfo::USER_ENABLED);
     } else {
-      Disable(&web_plugin_infos_[i],
-              policy_disabled || group_disabled_by_policy ?
-                  WebPluginInfo::POLICY_DISABLED :
-                  WebPluginInfo::USER_DISABLED);
+      Disable(&web_plugin_infos_[i], WebPluginInfo::USER_DISABLED);
     }
     UpdateActivePlugin(web_plugin_infos_[i]);
   }
@@ -463,19 +540,30 @@ bool PluginGroup::EnableGroup(bool enable) {
 
 void PluginGroup::EnforceGroupPolicy() {
   bool group_disabled_by_policy = IsPluginNameDisabledByPolicy(group_name_);
+  bool group_enabled_by_policy = IsPluginNameEnabledByPolicy(group_name_);
 
   ResetGroupState();
   for (size_t i = 0; i < web_plugin_infos_.size(); ++i) {
+    bool policy_enabled =
+        group_enabled_by_policy ||
+        IsPluginNameEnabledByPolicy(web_plugin_infos_[i].name);
     bool policy_disabled =
-        IsPluginNameDisabledByPolicy(web_plugin_infos_[i].name) |
-        group_disabled_by_policy;
-
-    // TODO(pastarmovj): Add the code for enforcing enabled by policy...
+        !policy_enabled &&
+        (group_disabled_by_policy ||
+         IsPluginFileNameDisabledByPolicy(web_plugin_infos_[i].name,
+                                          group_name_));
     if (policy_disabled) {
       Disable(&web_plugin_infos_[i], WebPluginInfo::POLICY_DISABLED);
-    // ...here would a else if (policy_enabled) { ... } be then.
+    } else if (policy_enabled) {
+      Enable(&web_plugin_infos_[i], WebPluginInfo::POLICY_ENABLED);
     } else {
-      Enable(&web_plugin_infos_[i], WebPluginInfo::POLICY_UNMANAGED);
+      // If not managed, use the user's preference.
+      if ((web_plugin_infos_[i].enabled & WebPluginInfo::USER_MASK) ==
+          WebPluginInfo::USER_ENABLED) {
+        Enable(&web_plugin_infos_[i], WebPluginInfo::POLICY_UNMANAGED);
+      } else {
+        Disable(&web_plugin_infos_[i], WebPluginInfo::POLICY_UNMANAGED);
+      }
     }
     UpdateActivePlugin(web_plugin_infos_[i]);
   }
@@ -487,45 +575,46 @@ void PluginGroup::ResetGroupState() {
   version_.reset(Version::GetVersionFromString("0"));
 }
 
-bool PluginGroup::Enable(WebPluginInfo* plugin,
-                         int new_reason) {
-  DCHECK(new_reason == WebPluginInfo::USER_ENABLED ||
-         new_reason == WebPluginInfo::POLICY_UNMANAGED ||
-         new_reason == WebPluginInfo::POLICY_ENABLED);
+/*static*/
+bool PluginGroup::SetPluginState(WebPluginInfo* plugin,
+                                 int new_reason,
+                                 bool state_changes) {
   // If we are only stripping the policy then mask the policy bits.
   if (new_reason == WebPluginInfo::POLICY_UNMANAGED) {
     plugin->enabled &= WebPluginInfo::USER_MASK;
     return true;
   }
-  // If already enabled just upgrade the reason.
-  if (IsPluginEnabled(*plugin)) {
-    plugin->enabled |= new_reason;
-    return true;
+  if (new_reason & WebPluginInfo::MANAGED_MASK) {
+    // Policy-enforced change: preserve the user's preference, and override
+    // a possible previous policy flag.
+    plugin->enabled = (plugin->enabled & WebPluginInfo::USER_MASK) | new_reason;
+  } else if (state_changes && (plugin->enabled & WebPluginInfo::MANAGED_MASK)) {
+    // Refuse change when managed.
+    return false;
   } else {
-    // Only changeable if not managed.
-    if (plugin->enabled & WebPluginInfo::MANAGED_MASK)
-      return false;
-    plugin->enabled = new_reason;
+    // Accept the user update, but keep the policy flag if present.
+    plugin->enabled = (plugin->enabled & WebPluginInfo::MANAGED_MASK) |
+        new_reason;
   }
   return true;
 }
 
-bool PluginGroup::Disable(WebPluginInfo* plugin,
-                          int new_reason) {
+/*static*/
+bool PluginGroup::Enable(WebPluginInfo* plugin, int new_reason) {
+  DCHECK(new_reason == WebPluginInfo::USER_ENABLED ||
+         new_reason == WebPluginInfo::POLICY_ENABLED ||
+         new_reason == WebPluginInfo::USER_ENABLED_POLICY_ENABLED ||
+         new_reason == WebPluginInfo::POLICY_UNMANAGED);
+  return SetPluginState(plugin, new_reason, !IsPluginEnabled(*plugin));
+}
+
+/*static*/
+bool PluginGroup::Disable(WebPluginInfo* plugin, int new_reason) {
   DCHECK(new_reason == WebPluginInfo::USER_DISABLED ||
          new_reason == WebPluginInfo::POLICY_DISABLED ||
-         new_reason == WebPluginInfo::USER_DISABLED_POLICY_DISABLED);
-  // If already disabled just upgrade the reason.
-  if (!IsPluginEnabled(*plugin)) {
-    plugin->enabled |= new_reason;
-    return true;
-  } else {
-    // Only changeable if not managed.
-    if (plugin->enabled & WebPluginInfo::MANAGED_MASK)
-      return false;
-    plugin->enabled = new_reason;
-  }
-  return true;
+         new_reason == WebPluginInfo::USER_DISABLED_POLICY_DISABLED ||
+         new_reason == WebPluginInfo::POLICY_UNMANAGED);
+  return SetPluginState(plugin, new_reason, IsPluginEnabled(*plugin));
 }
 
 }  // namespace npapi

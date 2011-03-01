@@ -753,9 +753,15 @@ void BrowserProcessImpl::CreateLocalState() {
   pref_change_registrar_.Init(local_state_.get());
 
   // Make sure the the plugin updater gets notifications of changes
-  // in the plugin blacklist.
-  local_state_->RegisterListPref(prefs::kPluginsPluginsBlacklist);
-  pref_change_registrar_.Add(prefs::kPluginsPluginsBlacklist,
+  // in the plugin policy lists.
+  local_state_->RegisterListPref(prefs::kPluginsDisabledPlugins);
+  pref_change_registrar_.Add(prefs::kPluginsDisabledPlugins,
+                             PluginUpdater::GetInstance());
+  local_state_->RegisterListPref(prefs::kPluginsDisabledPluginsExceptions);
+  pref_change_registrar_.Add(prefs::kPluginsDisabledPluginsExceptions,
+                             PluginUpdater::GetInstance());
+  local_state_->RegisterListPref(prefs::kPluginsEnabledPlugins);
+  pref_change_registrar_.Add(prefs::kPluginsEnabledPlugins,
                              PluginUpdater::GetInstance());
 
   // Initialize and set up notifications for the printing enabled

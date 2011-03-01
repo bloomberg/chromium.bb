@@ -562,7 +562,14 @@ const char kPluginsLastInternalDirectory[] = "plugins.last_internal_directory";
 const char kPluginsPluginsList[] = "plugins.plugins_list";
 
 // List pref containing names of plugins that are disabled by policy.
-const char kPluginsPluginsBlacklist[] = "plugins.plugins_blacklist";
+const char kPluginsDisabledPlugins[] = "plugins.plugins_disabled";
+
+// List pref containing exceptions to the list of plugins disabled by policy.
+const char kPluginsDisabledPluginsExceptions[] =
+    "plugins.plugins_disabled_exceptions";
+
+// List pref containing names of plugins that are enabled by policy.
+const char kPluginsEnabledPlugins[] = "plugins.plugins_enabled";
 
 // When first shipped, the pdf plugin will be disabled by default.  When we
 // enable it by default, we'll want to do so only once.
