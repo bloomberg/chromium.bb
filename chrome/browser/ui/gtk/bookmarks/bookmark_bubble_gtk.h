@@ -9,8 +9,8 @@
 // lifetimes, destroying everything and possibly committing any changes when
 // the bubble is closed.
 
-#ifndef CHROME_BROWSER_UI_GTK_BOOKMARK_BUBBLE_GTK_H_
-#define CHROME_BROWSER_UI_GTK_BOOKMARK_BUBBLE_GTK_H_
+#ifndef CHROME_BROWSER_UI_GTK_BOOKMARKS_BOOKMARK_BUBBLE_GTK_H_
+#define CHROME_BROWSER_UI_GTK_BOOKMARKS_BOOKMARK_BUBBLE_GTK_H_
 #pragma once
 
 #include <string>
@@ -126,4 +126,4 @@ class BookmarkBubbleGtk : public InfoBubbleGtkDelegate,
   DISALLOW_COPY_AND_ASSIGN(BookmarkBubbleGtk);
 };
 
-#endif  // CHROME_BROWSER_UI_GTK_BOOKMARK_BUBBLE_GTK_H_
+#endif  // CHROME_BROWSER_UI_GTK_BOOKMARKS_BOOKMARK_BUBBLE_GTK_H_

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/gtk/bookmark_editor_gtk.h"
+#include "chrome/browser/ui/gtk/bookmarks/bookmark_editor_gtk.h"
 
 #include <gtk/gtk.h>
 
@@ -15,8 +15,8 @@
 #include "chrome/browser/history/history.h"
 #include "chrome/browser/net/url_fixer_upper.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/ui/gtk/bookmark_tree_model.h"
-#include "chrome/browser/ui/gtk/bookmark_utils_gtk.h"
+#include "chrome/browser/ui/gtk/bookmarks/bookmark_tree_model.h"
+#include "chrome/browser/ui/gtk/bookmarks/bookmark_utils_gtk.h"
 #include "chrome/browser/ui/gtk/gtk_theme_provider.h"
 #include "chrome/browser/ui/gtk/gtk_util.h"
 #include "googleurl/src/gurl.h"

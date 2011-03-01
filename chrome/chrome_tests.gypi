@@ -379,7 +379,7 @@
         'browser/browser_keyevents_browsertest.cc',
         'browser/collected_cookies_uitest.cc',
         'browser/debugger/devtools_sanity_unittest.cc',
-        'browser/ui/gtk/bookmark_bar_gtk_interactive_uitest.cc',
+        'browser/ui/gtk/bookmarks/bookmark_bar_gtk_interactive_uitest.cc',
         'browser/instant/instant_browsertest.cc',
         'browser/notifications/notifications_interactive_uitest.cc',
         'browser/ui/views/bookmark_bar_view_test.cc',
@@ -417,7 +417,7 @@
         }],
         ['OS=="linux" and toolkit_views==1', {
           'sources!': [
-            'browser/ui/gtk/bookmark_bar_gtk_interactive_uitest.cc',
+            'browser/ui/gtk/bookmarks/bookmark_bar_gtk_interactive_uitest.cc',
             # TODO(port)
             'test/interactive_ui/npapi_interactive_test.cc',
           ],
@@ -1307,9 +1307,9 @@
         'browser/global_keyboard_shortcuts_mac_unittest.mm',
         'browser/google/google_update_settings_unittest.cc',
         'browser/google/google_url_tracker_unittest.cc',
-        'browser/ui/gtk/bookmark_bar_gtk_unittest.cc',
-        'browser/ui/gtk/bookmark_editor_gtk_unittest.cc',
-        'browser/ui/gtk/bookmark_utils_gtk_unittest.cc',
+        'browser/ui/gtk/bookmarks/bookmark_bar_gtk_unittest.cc',
+        'browser/ui/gtk/bookmarks/bookmark_editor_gtk_unittest.cc',
+        'browser/ui/gtk/bookmarks/bookmark_utils_gtk_unittest.cc',
         'browser/ui/gtk/gtk_chrome_shrinkable_hbox_unittest.cc',
         'browser/ui/gtk/gtk_expanded_container_unittest.cc',
         'browser/ui/gtk/gtk_theme_provider_unittest.cc',
@@ -1905,8 +1905,8 @@
             ['toolkit_views==1', {
               'sources!': [
                  'browser/autocomplete/autocomplete_popup_view_gtk_unittest.cc',
-                 'browser/ui/gtk/bookmark_bar_gtk_unittest.cc',
-                 'browser/ui/gtk/bookmark_editor_gtk_unittest.cc',
+                 'browser/ui/gtk/bookmarks/bookmark_bar_gtk_unittest.cc',
+                 'browser/ui/gtk/bookmarks/bookmark_editor_gtk_unittest.cc',
                  'browser/ui/gtk/gtk_chrome_shrinkable_hbox_unittest.cc',
                  'browser/ui/gtk/gtk_expanded_container_unittest.cc',
                  'browser/ui/gtk/gtk_theme_provider_unittest.cc',

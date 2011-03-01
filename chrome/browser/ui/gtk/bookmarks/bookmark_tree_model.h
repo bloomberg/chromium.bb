@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_GTK_BOOKMARK_TREE_MODEL_H_
-#define CHROME_BROWSER_UI_GTK_BOOKMARK_TREE_MODEL_H_
+#ifndef CHROME_BROWSER_UI_GTK_BOOKMARKS_BOOKMARK_TREE_MODEL_H_
+#define CHROME_BROWSER_UI_GTK_BOOKMARKS_BOOKMARK_TREE_MODEL_H_
 #pragma once
 
 #include "base/basictypes.h"
@@ -74,4 +74,4 @@ string16 GetTitleFromTreeIter(GtkTreeModel* model, GtkTreeIter* iter);
 
 }  // namespace bookmark_utils
 
-#endif  // CHROME_BROWSER_UI_GTK_BOOKMARK_TREE_MODEL_H_
+#endif  // CHROME_BROWSER_UI_GTK_BOOKMARKS_BOOKMARK_TREE_MODEL_H_

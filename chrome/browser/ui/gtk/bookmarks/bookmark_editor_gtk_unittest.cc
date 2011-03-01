@@ -10,8 +10,8 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
 #include "chrome/browser/browser_thread.h"
-#include "chrome/browser/ui/gtk/bookmark_editor_gtk.h"
-#include "chrome/browser/ui/gtk/bookmark_tree_model.h"
+#include "chrome/browser/ui/gtk/bookmarks/bookmark_editor_gtk.h"
+#include "chrome/browser/ui/gtk/bookmarks/bookmark_tree_model.h"
 #include "chrome/test/testing_profile.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

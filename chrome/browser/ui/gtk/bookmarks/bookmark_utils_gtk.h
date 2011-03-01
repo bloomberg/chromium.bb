@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_GTK_BOOKMARK_UTILS_GTK_H_
-#define CHROME_BROWSER_UI_GTK_BOOKMARK_UTILS_GTK_H_
+#ifndef CHROME_BROWSER_UI_GTK_BOOKMARKS_BOOKMARK_UTILS_GTK_H_
+#define CHROME_BROWSER_UI_GTK_BOOKMARKS_BOOKMARK_UTILS_GTK_H_
 #pragma once
 
-#include <vector>
 #include <string>
+#include <vector>
 
 #include "base/string16.h"
 #include "ui/base/gtk/gtk_integers.h"
@@ -107,4 +107,4 @@ bool CreateNewBookmarkFromNetscapeURL(
 
 }  // namespace bookmark_utils
 
-#endif  // CHROME_BROWSER_UI_GTK_BOOKMARK_UTILS_GTK_H_
+#endif  // CHROME_BROWSER_UI_GTK_BOOKMARKS_BOOKMARK_UTILS_GTK_H_

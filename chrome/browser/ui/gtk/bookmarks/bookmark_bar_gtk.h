@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_GTK_BOOKMARK_BAR_GTK_H_
-#define CHROME_BROWSER_UI_GTK_BOOKMARK_BAR_GTK_H_
+#ifndef CHROME_BROWSER_UI_GTK_BOOKMARKS_BOOKMARK_BAR_GTK_H_
+#define CHROME_BROWSER_UI_GTK_BOOKMARKS_BOOKMARK_BAR_GTK_H_
 #pragma once
 
 #include <gtk/gtk.h>
@@ -15,7 +15,7 @@
 #include "chrome/browser/bookmarks/bookmark_context_menu_controller.h"
 #include "chrome/browser/bookmarks/bookmark_model_observer.h"
 #include "chrome/browser/sync/profile_sync_service.h"
-#include "chrome/browser/ui/gtk/bookmark_bar_instructions_gtk.h"
+#include "chrome/browser/ui/gtk/bookmarks/bookmark_bar_instructions_gtk.h"
 #include "chrome/browser/ui/gtk/menu_bar_helper.h"
 #include "chrome/browser/ui/gtk/owned_widget_gtk.h"
 #include "chrome/browser/ui/gtk/view_id_util.h"
@@ -407,4 +407,4 @@ class BookmarkBarGtk : public ui::AnimationDelegate,
   ScopedRunnableMethodFactory<BookmarkBarGtk> method_factory_;
 };
 
-#endif  // CHROME_BROWSER_UI_GTK_BOOKMARK_BAR_GTK_H_
+#endif  // CHROME_BROWSER_UI_GTK_BOOKMARKS_BOOKMARK_BAR_GTK_H_

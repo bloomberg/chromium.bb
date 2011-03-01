@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_GTK_BOOKMARK_EDITOR_GTK_H_
-#define CHROME_BROWSER_UI_GTK_BOOKMARK_EDITOR_GTK_H_
+#ifndef CHROME_BROWSER_UI_GTK_BOOKMARKS_BOOKMARK_EDITOR_GTK_H_
+#define CHROME_BROWSER_UI_GTK_BOOKMARKS_BOOKMARK_EDITOR_GTK_H_
 #pragma once
 
 #include "base/gtest_prod_util.h"
@@ -162,4 +162,4 @@ class BookmarkEditorGtk : public BookmarkEditor,
   DISALLOW_COPY_AND_ASSIGN(BookmarkEditorGtk);
 };
 
-#endif  // CHROME_BROWSER_UI_GTK_BOOKMARK_EDITOR_GTK_H_
+#endif  // CHROME_BROWSER_UI_GTK_BOOKMARKS_BOOKMARK_EDITOR_GTK_H_
