@@ -579,6 +579,12 @@ DictionaryValue* CreateDownloadItemValue(DownloadItem* download, int id) {
   if (download->state() == DownloadItem::IN_PROGRESS) {
     if (download->safety_state() == DownloadItem::DANGEROUS) {
       file_value->SetString("state", "DANGEROUS");
+      DCHECK(download->danger_type() == DownloadItem::DANGEROUS_FILE ||
+             download->danger_type() == DownloadItem::DANGEROUS_URL);
+      const char* danger_type_value =
+          download->danger_type() == DownloadItem::DANGEROUS_FILE ?
+          "DANGEROUS_FILE" : "DANGEROUS_URL";
+      file_value->SetString("danger_type", danger_type_value);
     } else if (download->is_paused()) {
       file_value->SetString("state", "PAUSED");
     } else {

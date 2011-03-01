@@ -78,8 +78,10 @@ void DownloadsUIHTMLSource::StartDataRequest(const std::string& path,
       l10n_util::GetStringUTF16(IDS_DOWNLOAD_PROGRESS_PAUSED));
 
   // Dangerous file.
-  localized_strings.SetString("danger_desc",
+  localized_strings.SetString("danger_file_desc",
       l10n_util::GetStringUTF16(IDS_PROMPT_DANGEROUS_DOWNLOAD));
+  localized_strings.SetString("danger_url_desc",
+      l10n_util::GetStringUTF16(IDS_PROMPT_UNSAFE_DOWNLOAD_URL));
   localized_strings.SetString("danger_save",
       l10n_util::GetStringUTF16(IDS_SAVE_DOWNLOAD));
   localized_strings.SetString("danger_discard",

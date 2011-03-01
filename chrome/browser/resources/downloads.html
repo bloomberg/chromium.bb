@@ -468,6 +468,15 @@ Download.States = {
 }
 
 /**
+ * Explains why a download is in DANGEROUS state.
+ */
+Download.DangerType = {
+  NOT_DANGEROUS: "NOT_DANGEROUS",
+  DANGEROUS_FILE: "DANGEROUS_FILE",
+  DANGEROUS_URL: "DANGEROUS_URL",
+}
+
+/**
  * Constants for the progress meter.
  */
 Download.Progress = {
@@ -490,6 +499,7 @@ Download.prototype.update = function(download) {
   this.fileName_ = download.file_name;
   this.url_ = download.url;
   this.state_ = download.state;
+  this.dangerType_ = download.danger_type;
 
   this.since_ = download.since_string;
   this.date_ = download.date_string;
@@ -500,8 +510,12 @@ Download.prototype.update = function(download) {
   this.received_ = download.received;
 
   if (this.state_ == Download.States.DANGEROUS) {
-    this.dangerDesc_.innerHTML = localStrings.getStringF('danger_desc',
-                                                         this.fileName_);
+    if (this.dangerType_ == Download.DangerType.DANGEROUS_FILE) {
+      this.dangerDesc_.innerHTML = localStrings.getStringF('danger_file_desc',
+                                                           this.fileName_);
+    } else {
+      this.dangerDesc_.innerHTML = localStrings.getString('danger_url_desc');
+    }
     this.danger_.style.display = 'block';
     this.safe_.style.display = 'none';
   } else {
@@ -605,7 +619,9 @@ Download.prototype.getStatusText_ = function() {
     case Download.States.PAUSED:
       return localStrings.getString('status_paused');
     case Download.States.DANGEROUS:
-      return localStrings.getString('danger_desc');
+      var desc = this.dangerType_ == Download.DangerType.DANGEROUS_FILE ?
+          'danger_file_desc' : 'danger_url_desc';
+      return localStrings.getString(desc);
     case Download.States.COMPLETE:
       return '';
   }
