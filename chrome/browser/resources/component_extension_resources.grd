@@ -16,6 +16,11 @@
       <include name="IDR_BOOKMARK_MANAGER_BOOKMARK_MANAGER_SEARCH" file="bookmark_manager/images/bookmark_manager_search.png" type="BINDATA" />
       <include name="IDR_BOOKMARK_MANAGER_MAIN" file="bookmark_manager/main.html" flattenhtml="true" type="BINDATA" />
 
+      <if expr="pp_ifdef('file_manager_extension')">
+        <include name="IDR_FILE_MANAGER_MAIN" file="file_manager/main.html" flattenhtml="true" type="BINDATA" />
+        <include name="IDR_FILE_MANAGER_ICON16" file="file_manager/images/icon16.png" type="BINDATA" />
+      </if>
+
       <if expr="pp_ifdef('touchui')">
         <include name="IDR_KEYBOARD_INDEX" file="keyboard/index.html" flattenhtml="true" type="BINDATA" />
       </if>

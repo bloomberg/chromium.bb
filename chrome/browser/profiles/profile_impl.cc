@@ -406,6 +406,12 @@ void ProfileImpl::RegisterComponentExtensions() {
       FILE_PATH_LITERAL("bookmark_manager"),
       IDR_BOOKMARKS_MANIFEST));
 
+#if defined(FILE_MANAGER_EXTENSION)
+  component_extensions.push_back(std::make_pair(
+      FILE_PATH_LITERAL("file_manager"),
+      IDR_FILEMANAGER_MANIFEST));
+#endif
+
 #if defined(TOUCH_UI)
   component_extensions.push_back(std::make_pair(
       FILE_PATH_LITERAL("keyboard"),
