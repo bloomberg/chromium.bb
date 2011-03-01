@@ -85,7 +85,6 @@ const char* const kMethodWindow = "windowLocation";
 const char* const kMethodHelloWorld = "helloWorld";
 
 const char* const kHelloWorld = "hello, world";
-const uint32_t kHelloWorldLength = static_cast<uint32_t>(sizeof(kHelloWorld));
 
 bool IsIntegral(PP_Var var) {
   // JavaScript sometimes passes doubles for integers.
@@ -590,7 +589,7 @@ PP_Var TestObject::window_location(uint32_t argc,
 PP_Var TestObject::hello_world(uint32_t argc, PP_Var* argv, PP_Var* exception) {
   return g_var_interface->VarFromUtf8(g_module_id,
                                       kHelloWorld,
-                                      kHelloWorldLength);
+                                      strlen(kHelloWorld));
 }
 
 // PPP_Class_Deprecated

@@ -108,16 +108,11 @@ function EnqueueTests(naclModule, suffix) {
   });
   */
 
-  // Broken, returns "hell"
-  // TODO(ncbray) fix or remove.
-  // http://code.google.com/p/nativeclient/issues/detail?id=1456
-  /*
   // Call a method with 0 args (tests issue:
   // http://code.google.com/p/nativeclient/issues/detail?id=891)
   tester.addTest('browser_nacl_0_argret' + suffix, function() {
     assertEqual(naclModule.helloWorld(), 'hello, world');
   });
-  */
 
   tester.addTest('nacl_browser_window_location_prop', function() {
     assertEqual(naclModule.windowLocation(window), true);
