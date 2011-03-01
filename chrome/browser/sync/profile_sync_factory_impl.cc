@@ -114,9 +114,13 @@ ProfileSyncService* ProfileSyncFactoryImpl::CreateProfileSyncService(
         new ExtensionDataTypeController(this, profile_, pss));
   }
 
-  // Password sync is disabled by default.  Register only if
-  // explicitly enabled.
+#if defined(OS_POSIX) && !defined(OS_MACOSX) && !defined(OS_CHROMEOS)
+  if (command_line_->HasSwitch(switches::kEnableSyncPasswords)) {
+#else
+  // Password sync is enabled by default.  Register unless explicitly
+  // disabled.
   if (!command_line_->HasSwitch(switches::kDisableSyncPasswords)) {
+#endif
     pss->RegisterDataTypeController(
         new PasswordDataTypeController(this, profile_, pss));
   }
