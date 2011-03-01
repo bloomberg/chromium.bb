@@ -339,7 +339,6 @@ extern const char kMaxSpdySessionsPerDomain[];
 extern const char kMaxSpdyConcurrentStreams[];
 extern const char kUnlimitedQuotaForFiles[];
 extern const char kUnlimitedQuotaForIndexedDB[];
-extern const char kUseLowFragHeapCrt[];
 extern const char kUserAgent[];
 extern const char kUserDataDir[];
 extern const char kUserScriptsDir[];

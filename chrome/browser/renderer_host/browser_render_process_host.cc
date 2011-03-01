@@ -740,7 +740,6 @@ void BrowserRenderProcessHost::PropagateBrowserCommandLineToRenderer(
     // This flag needs to be propagated to the renderer process for
     // --in-process-webgl.
     switches::kUseGL,
-    switches::kUseLowFragHeapCrt,
     switches::kUserAgent,
     switches::kV,
     switches::kVideoThreads,

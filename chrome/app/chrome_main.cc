@@ -206,18 +206,6 @@ void SetupCRT(const CommandLine& command_line) {
     _CrtSetReportMode(_CRT_ASSERT, 0);
   }
 #endif
-
-  // Enable the low fragmentation heap for the CRT heap. The heap is not changed
-  // if the process is run under the debugger is enabled or if certain gflags
-  // are set.
-  if (command_line.HasSwitch(switches::kUseLowFragHeapCrt) &&
-      (command_line.GetSwitchValueASCII(switches::kUseLowFragHeapCrt)
-       != "false")) {
-    void* crt_heap = reinterpret_cast<void*>(_get_heap_handle());
-    ULONG enable_lfh = 2;
-    HeapSetInformation(crt_heap, HeapCompatibilityInformation,
-                       &enable_lfh, sizeof(enable_lfh));
-  }
 #endif
 }
 

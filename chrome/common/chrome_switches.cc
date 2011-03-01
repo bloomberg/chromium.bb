@@ -1227,9 +1227,6 @@ const char kUnlimitedQuotaForFiles[]        = "unlimited-quota-for-files";
 // browsing. It is ignored in single process mode.
 const char kUnlimitedQuotaForIndexedDB[]    = "unlimited-quota-for-indexeddb";
 
-// Use the low fragmentation heap for the CRT.
-const char kUseLowFragHeapCrt[]             = "use-lf-heap";
-
 // A string used to override the default user agent with a custom one.
 const char kUserAgent[]                     = "user-agent";
 
