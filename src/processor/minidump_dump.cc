@@ -77,7 +77,10 @@ static void DumpRawStream(Minidump *minidump,
   size_t current_offset = 0;
   while (current_offset < length) {
     size_t remaining = length - current_offset;
-    printf("%.*s", remaining, &contents[current_offset]);
+    // Printf requires an int and direct casting from size_t results
+    // in compatibility warnings.
+    u_int32_t int_remaining = remaining;
+    printf("%.*s", int_remaining, &contents[current_offset]);
     char *next_null = reinterpret_cast<char *>(
         memchr(&contents[current_offset], 0, remaining));
     if (next_null == NULL)
