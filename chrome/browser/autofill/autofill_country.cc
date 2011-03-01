@@ -13,12 +13,12 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
 #include "grit/generated_resources.h"
-#include "third_party/icu/public/common/unicode/locid.h"
-#include "third_party/icu/public/common/unicode/uloc.h"
-#include "third_party/icu/public/i18n/unicode/coll.h"
-#include "third_party/icu/public/i18n/unicode/ucol.h"
 #include "ui/base/l10n/l10n_util_collator.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "unicode/coll.h"
+#include "unicode/locid.h"
+#include "unicode/ucol.h"
+#include "unicode/uloc.h"
 
 namespace {
 
