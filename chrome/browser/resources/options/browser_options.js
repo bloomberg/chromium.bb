@@ -272,7 +272,8 @@ cr.define('options', function() {
     updateHomepageControlStates_: function() {
       var homepageField = $('homepageURL');
       homepageField.disabled = !this.isHomepageURLFieldEnabled_();
-      homepageField.value = this.homepage_pref_.value;
+      if (homepageField.value != this.homepage_pref_.value)
+        homepageField.value = this.homepage_pref_.value;
       homepageField.style.backgroundImage = url('chrome://favicon/' +
                                                 this.homepage_pref_.value);
       var disableChoice = !this.isHomepageChoiceEnabled_();
