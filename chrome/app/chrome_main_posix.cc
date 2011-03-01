@@ -39,7 +39,7 @@ void SetupSignalHandlers() {
 
 namespace chrome_main {
 
-void LowLevelInit() {
+void LowLevelInit(void* instance) {
 #if defined(OS_MACOSX)
   // TODO(mark): Some of these things ought to be handled in
   // chrome_exe_main_mac.mm.  Under the current architecture, nothing
@@ -64,6 +64,13 @@ void LowLevelInit() {
   g_fds->Set(kCrashDumpSignal,
              kCrashDumpSignal + base::GlobalDescriptors::kBaseDescriptor);
 #endif
+}
+
+void LowLevelShutdown() {
+#if defined(OS_MACOSX) && defined(GOOGLE_CHROME_BUILD)
+  // TODO(mark): See the TODO(mark) at InitCrashReporter.
+  DestructCrashReporter();
+#endif  // OS_MACOSX && GOOGLE_CHROME_BUILD
 }
 
 #if !defined(OS_MACOSX)

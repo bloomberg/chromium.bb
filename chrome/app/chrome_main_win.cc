@@ -4,6 +4,8 @@
 
 #include "chrome/app/chrome_main.h"
 
+#include <atlbase.h>
+#include <atlapp.h>
 #include <malloc.h>
 #include <new.h>
 #include <shlobj.h>
@@ -20,6 +22,8 @@
 #endif
 
 namespace {
+
+CAppModule _Module;
 
 #pragma optimize("", off)
 // Handlers for invalid parameter and pure call. They generate a breakpoint to
@@ -90,8 +94,18 @@ bool LoadUserDataDirPolicyFromRegistry(HKEY hive, FilePath* user_data_dir) {
 
 namespace chrome_main {
 
-void LowLevelInit() {
+void LowLevelInit(void* instance) {
   RegisterInvalidParamHandler();
+
+  _Module.Init(NULL, static_cast<HINSTANCE>(instance));
+}
+
+void LowLevelShutdown() {
+#ifdef _CRTDBG_MAP_ALLOC
+  _CrtDumpMemoryLeaks();
+#endif  // _CRTDBG_MAP_ALLOC
+
+  _Module.Term();
 }
 
 void CheckUserDataDirPolicy(FilePath* user_data_dir) {

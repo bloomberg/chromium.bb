@@ -43,8 +43,7 @@
 
 #if defined(OS_WIN)
 #include <algorithm>
-#include <atlbase.h>
-#include <atlapp.h>
+#include <malloc.h>
 #include "base/win/registry.h"
 #include "sandbox/src/sandbox.h"
 #include "tools/memory_watcher/memory_watcher.h"
@@ -124,8 +123,6 @@ bool LoadMemoryProfiler() {
   return prof_module != NULL;
 }
 
-CAppModule _Module;
-
 #pragma optimize("", off)
 
 // Handlers to silently dump the current process when there is an assert in
@@ -155,24 +152,6 @@ bool HasDeprecatedArguments(const std::wstring& command_line) {
 }
 
 #endif  // defined(OS_WIN)
-
-// Perform last-second shutdown work.  Partner of LowLevelInit().
-void LowLevelShutdown() {
-#if defined(OS_WIN)
-#ifdef _CRTDBG_MAP_ALLOC
-  _CrtDumpMemoryLeaks();
-#endif  // _CRTDBG_MAP_ALLOC
-
-  _Module.Term();
-#endif
-
-  logging::CleanupChromeLogging();
-
-#if defined(OS_MACOSX) && defined(GOOGLE_CHROME_BUILD)
-  // TODO(mark): See the TODO(mark) at InitCrashReporter.
-  DestructCrashReporter();
-#endif  // OS_MACOSX && GOOGLE_CHROME_BUILD
-}
 
 #if defined(OS_LINUX)
 static void AdjustLinuxOOMScore(const std::string& process_type) {
@@ -513,10 +492,12 @@ DLLEXPORT int __cdecl ChromeMain(HINSTANCE instance,
   char** argv = NULL;
 #elif defined(OS_POSIX)
 int ChromeMain(int argc, char** argv) {
+  // There is no HINSTANCE on non-Windows.
+  void* instance = NULL;
 #endif
   // LowLevelInit performs startup initialization before we
   // e.g. allocate any memory.  It must be the first call on startup.
-  chrome_main::LowLevelInit();
+  chrome_main::LowLevelInit(instance);
 
   // The exit manager is in charge of calling the dtors of singleton objects.
   base::AtExitManager exit_manager;
@@ -701,10 +682,6 @@ int ChromeMain(int argc, char** argv) {
   if (command_line.HasSwitch(switches::kMessageLoopHistogrammer))
     MessageLoop::EnableHistogrammer(true);
 
-#if defined(OS_WIN)
-  _Module.Init(NULL, instance);
-#endif
-
   bool single_process =
 #if defined (GOOGLE_CHROME_BUILD)
     // This is an unsupported and not fully tested mode, so don't enable it for
@@ -827,7 +804,9 @@ int ChromeMain(int argc, char** argv) {
   if (SubprocessNeedsResourceBundle(process_type))
     ResourceBundle::CleanupSharedInstance();
 
-  LowLevelShutdown();
+  logging::CleanupChromeLogging();
+
+  chrome_main::LowLevelShutdown();
 
   return exit_code;
 }

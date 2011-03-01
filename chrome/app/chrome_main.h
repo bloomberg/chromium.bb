@@ -21,7 +21,11 @@ namespace chrome_main {
 // Perform low-level initialization that occurs before we set up any
 // objects or even consider the command line; for example, make us
 // abort if we run out of memory.
-void LowLevelInit();
+// On Windows, hinstance is the instance parameter to ChromeMain (WinMain).
+void LowLevelInit(void* hinstance);
+
+// Perform last-second shutdown work.  Partner of LowLevelInit().
+void LowLevelShutdown();
 
 // Checks if the UserDataDir policy has been set and returns its value in the
 // |user_data_dir| parameter. If no policy is set the parameter is not changed.
