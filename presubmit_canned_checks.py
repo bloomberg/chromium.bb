@@ -626,8 +626,8 @@ def CheckBuildbotPendingBuilds(input_api, output_api, url, max_pendings,
   return []
 
 
-def CheckOwners(input_api, output_api):
-  affected_files = set(input_api.change.AffectedFiles())
+def CheckOwners(input_api, output_api, source_file_filter=None):
+  affected_files = set(input_api.change.AffectedFiles(source_file_filter))
   owners_db = input_api.owners_db
 
   if input_api.is_commiting:
