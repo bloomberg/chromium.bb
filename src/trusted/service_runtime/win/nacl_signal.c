@@ -15,8 +15,8 @@ static PVOID s_VEH = NULL;
 /*
  * Microsoft's compilers generate code which uses the Structured
  * Exception Handling mechanism, which will call through the
- * generic exceptiom system.  Microsoft uses magic numbers to
- * differenciate these cases from "real" exceptions.  For example
+ * generic exception system.  Microsoft uses magic numbers to
+ * differentiate these cases from "real" exceptions.  For example
  * the 'C/C++' exception code magic is the bytes 0xE0 + 'msc', while
  * the managed code (such as C#) is the bytes 0xE0 + 'COM'.
  * NOTE:  This can only happen in trusted code, since the untrusted
@@ -29,8 +29,8 @@ static PVOID s_VEH = NULL;
 #define CPP_EXCEPTION 0xE06D7363    /* C/C++ exception  */
 
 /*
- * On windows, we do not have an ALT stack availible, so we do not
- * allocate one.  This makes signal handling in windows unsafe.
+ * On Windows, we do not have an ALT stack available, so we do not
+ * allocate one.  This makes signal handling in Windows unsafe.
  */
 int NaClSignalStackAllocate(void **result) {
   UNREFERENCED_PARAMETER(result);
@@ -57,7 +57,7 @@ static int ExceptionToSignal(int ex) {
     case EXCEPTION_ACCESS_VIOLATION:
     case EXCEPTION_IN_PAGE_ERROR:
 
-      /* We treat a bad handle as if we acess unreachable data */
+    /* We treat a bad handle as if we access unreachable data */
     case EXCEPTION_INVALID_HANDLE:
       return SIGSEGV;
 
@@ -66,7 +66,7 @@ static int ExceptionToSignal(int ex) {
     case EXCEPTION_SINGLE_STEP:
       return SIGTRACE;
 
-    /* Map all int and float exceptions SIGFPE */
+    /* Map all int and float exceptions to SIGFPE */
     case EXCEPTION_FLT_DENORMAL_OPERAND:
     case EXCEPTION_FLT_DIVIDE_BY_ZERO:
     case EXCEPTION_FLT_INEXACT_RESULT:
@@ -101,7 +101,7 @@ static LONG NTAPI ExceptionCatch(PEXCEPTION_POINTERS ep) {
   int sig = ExceptionToSignal(ep->ExceptionRecord->ExceptionCode);
 
   /*
-   * We ignore exceptions which may be handle by the language's normal
+   * We ignore exceptions which may be handled by the language's normal
    * mechanism, allowing them to pass through to the OS which will
    * look for a matching "catch".  If one is not found, a new exception
    * will be raised with a different exception code, and we can process

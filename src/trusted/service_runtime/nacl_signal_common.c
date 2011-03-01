@@ -61,7 +61,7 @@ ssize_t NaClSignalErrorMessage(const char *msg) {
  */
 int NaClSignalContextIsUntrusted(const struct NaClSignalContext *sigCtx) {
   /*
-   * We can not be in untrusted code unless we have a loaded and
+   * We cannot be in untrusted code unless we have a loaded and
    * running NEXE, which means we must have a valid NaClApp object.
    */
   if (NULL == g_SignalNAP) return 0;
@@ -72,10 +72,10 @@ int NaClSignalContextIsUntrusted(const struct NaClSignalContext *sigCtx) {
 #else
   /* For all other architectures, check the prog_ctr vs untrusted range. */
 
-  /* If the program counter is bellow the untrusted memory start address...*/
+  /* If the program counter is below the untrusted memory start address... */
   if (g_SignalNAP->mem_start > sigCtx->prog_ctr) return 0;
 
-  /* If the program counter is above the untrusted start end address...*/
+  /* If the program counter is above the untrusted memory end address... */
   if ((g_SignalNAP->mem_start + ((uintptr_t) 1U << g_SignalNAP->addr_bits)) <
       sigCtx->prog_ctr) return 0;
 #endif

@@ -8,10 +8,10 @@
 #define NATIVE_CLIENT_SERVICE_RUNTIME_NACL_SIGNAL_H__ 1
 
 /*
- * The nacl_signal module is provides a platform independent mechanism for
+ * The nacl_signal module provides a platform independent mechanism for
  * trapping signals encountered while running a Native Client executable.
  * Signal handlers can be installed which will receive a POSIX signal number
- * and a platform dependant signal object.  Accessors are provided to convert
+ * and a platform dependent signal object.  Accessors are provided to convert
  * to and from architecture dependent CPU state structures.
  */
 
@@ -37,7 +37,7 @@ EXTERN_C_BEGIN
 extern struct NaClApp *g_SignalNAP;
 
 enum NaClSignalResult {
-  NACL_SIGNAL_SEARCH,   /* Try the our handler or OS */
+  NACL_SIGNAL_SEARCH,   /* Try our handler or OS */
   NACL_SIGNAL_SKIP,     /* Skip our handlers and try OS */
   NACL_SIGNAL_RETURN    /* Skip all other handlers and return */
 };
@@ -59,7 +59,7 @@ enum PosixSignals {
 
 /*
  * Prototype for a signal handler.  The handler will receive the POSIX
- * signal number and an opaque platform dependant signal object.
+ * signal number and an opaque platform dependent signal object.
  */
 typedef enum NaClSignalResult (*NaClSignalHandler)(int sig_num, void *ctx);
 
@@ -110,7 +110,7 @@ void NaClSignalRegisterApp(struct NaClApp *nap);
 
 /*
  * Add a signal handler to the front of the list.
- * Returns an id for the handler or return 0 on failure.
+ * Returns an id for the handler or returns 0 on failure.
  * This function is not thread-safe and should only be
  * called at startup.
  */
@@ -124,14 +124,14 @@ int NaClSignalHandlerAdd(NaClSignalHandler func);
 int NaClSignalHandlerRemove(int id);
 
 /*
- * Fill a signal context structure from the raw platform dependant
+ * Fill a signal context structure from the raw platform dependent
  * signal information.
  */
 void NaClSignalContextFromHandler(struct NaClSignalContext *sigCtx,
                                   const void *rawCtx);
 
 /*
- * Update the raw platform dependant signal information from the
+ * Update the raw platform dependent signal information from the
  * signal context structure.
  */
 void NaClSignalContextToHandler(void *rawCtx,
@@ -151,13 +151,13 @@ int NaClSignalContextIsUntrusted(const struct NaClSignalContext *sigCtx);
 enum NaClSignalResult NaClSignalHandleNone(int signal_number, void *ctx);
 
 /*
- * A basic hanlder which will exit with -signal_number when
+ * A basic handler which will exit with -signal_number when
  * a signal is encountered.
  */
 enum NaClSignalResult NaClSignalHandleAll(int signal_number, void *ctx);
 
 /*
- * A basic hanlder which will exit with -signal_number when
+ * A basic handler which will exit with -signal_number when
  * a signal is encountered in the untrusted code, otherwise
  * the signal is passed to the next handler.
  */

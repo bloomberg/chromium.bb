@@ -4,7 +4,7 @@
 # Use of this source code is governed by a BSD-style license that can
 # be found in the LICENSE file.
 
-"""Multipy - Runs multiple scripts with platform independant arguments.
+"""Multipy - Runs multiple scripts with platform independent arguments.
 
  The multipy module provides a mechanism for running multiple python
  scripts consecutively.  When run as:

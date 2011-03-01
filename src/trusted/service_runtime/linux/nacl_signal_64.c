@@ -15,7 +15,7 @@
  */
 
 /*
- * Fill a signal context structure from the raw platform dependant
+ * Fill a signal context structure from the raw platform dependent
  * signal information.
  */
 void NaClSignalContextFromHandler(struct NaClSignalContext *sigCtx,
@@ -58,7 +58,7 @@ void NaClSignalContextFromHandler(struct NaClSignalContext *sigCtx,
 
 
 /*
- * Update the raw platform dependant signal information from the
+ * Update the raw platform dependent signal information from the
  * signal context structure.
  */
 void NaClSignalContextToHandler(void *rawCtx,

@@ -27,7 +27,7 @@
 #define SIG_TRY_END   } __except (EXCEPTION_EXECUTE_HANDLER) {}
 #else
 /*
- * For Posix, we use sigsetjmp, and siglongjmp as a means to safely return
+ * For Posix, we use sigsetjmp and siglongjmp as a means to safely return
  * from the signal handler instead of re-executing the same code.
  */
 #include <sys/mman.h>

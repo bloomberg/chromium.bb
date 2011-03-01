@@ -10,7 +10,7 @@
 #include "native_client/src/trusted/service_runtime/nacl_signal.h"
 
 /*
- * Definition of the POSIX ucontext_t for Linux can be found in:
+ * Definition of the POSIX ucontext_t for Mac OS X can be found in:
  * /usr/include/mach/i386/_structs.h
  */
 
@@ -21,7 +21,7 @@
 #endif
 
 /*
- * Fill a signal context structure from the raw platform dependant
+ * Fill a signal context structure from the raw platform dependent
  * signal information.
  */
 void NaClSignalContextFromHandler(struct NaClSignalContext *sigCtx,
@@ -49,7 +49,7 @@ void NaClSignalContextFromHandler(struct NaClSignalContext *sigCtx,
 
 
 /*
- * Update the raw platform dependant signal information from the
+ * Update the raw platform dependent signal information from the
  * signal context structure.
  */
 void NaClSignalContextToHandler(void *rawCtx,

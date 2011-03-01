@@ -170,7 +170,7 @@ static void SignalCatch(int sig, siginfo_t *info, void *uc) {
      *
      * As a precaution we restore %es and %fs as well, since this
      * may be nessesary with other POSIX implementions or may become
-     * nessisary in the future.
+     * necessary in the future.
      */
     nacl_thread = nacl_sys[sigCtx.gs >> 3];
     NaClSetGs(nacl_thread->gs);
@@ -199,7 +199,7 @@ static void SignalCatch(int sig, siginfo_t *info, void *uc) {
           break;
         }
         /*
-         * We matched the signal, but didn't handle it, so we emualte
+         * We matched the signal, but didn't handle it, so we emulate
          * the default behavior which is to exit the app with the signal
          * number as the error code.
          */
@@ -209,7 +209,7 @@ static void SignalCatch(int sig, siginfo_t *info, void *uc) {
     }
   }
   /*
-   * Restore the handler's segment registerts prior to returning from the
+   * Restore the handler's segment registers prior to returning from the
    * signal handler, just in case we are in untrusted code and changed them.
    */
   NaClSetGs(gs);
@@ -239,7 +239,7 @@ static void SignalCatch(int sig, siginfo_t *info, void *uc) {
           break;
         }
         /*
-         * We matched the signal, but didn't handle it, so we emualte
+         * We matched the signal, but didn't handle it, so we emulate
          * the default behavior which is to exit the app with the signal
          * number as the error code.
          */
