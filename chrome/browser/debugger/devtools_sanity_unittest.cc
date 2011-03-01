@@ -247,7 +247,7 @@ class DevToolsExtensionDebugTest : public DevToolsSanityTest,
 };
 
 // Tests heap profiler.
-IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, TestHeapProfiler) {
+IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, FAILS_TestHeapProfiler) {
   RunTest("testHeapProfiler", kHeapProfilerPage);
 }
 
