@@ -277,13 +277,18 @@ bool ShouldSkipValidation(const FilePath& locales_path,
   // skipping any strings with '.'. This happens sometimes, for example with
   // '.svn' directories.
   FilePath relative_path;
-  if (!locales_path.AppendRelativePath(locale_path, &relative_path))
+  if (!locales_path.AppendRelativePath(locale_path, &relative_path)) {
     NOTREACHED();
-  std::wstring subdir(relative_path.ToWStringHack());
-  if (std::find(subdir.begin(), subdir.end(), L'.') != subdir.end())
+    return true;
+  }
+  std::string subdir = relative_path.MaybeAsASCII();
+  if (subdir.empty())
+    return true;  // Non-ASCII.
+
+  if (std::find(subdir.begin(), subdir.end(), '.') != subdir.end())
     return true;
 
-  if (all_locales.find(WideToASCII(subdir)) == all_locales.end())
+  if (all_locales.find(subdir) == all_locales.end())
     return true;
 
   return false;
