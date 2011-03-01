@@ -11,6 +11,10 @@
 #include "base/process_util.h"
 #include "chrome/common/chrome_descriptors.h"
 
+#if defined(OS_MACOSX)
+#include "chrome/app/breakpad_mac.h"
+#endif
+
 namespace {
 
 // Setup signal-handling state: resanitize most signals, ignore SIGPIPE.
