@@ -3,6 +3,6 @@
 # {u'name':'<Plugin Name>', u'enabled':<True/False>, u'version':u'<VERSION>'}
 # Used by: chrome/test/functional/plugins_check.py
 [
- {u'name':'Shockwave Flash', u'enabled':'True', u'version':u'10.2.154.17'},
+ {u'name':'Shockwave Flash', u'enabled':'True', u'version':u'10.2.154.18'},
  {u'name':'Chrome PDF Viewer', u'enabled':'True', u'version':u''},
 ]
