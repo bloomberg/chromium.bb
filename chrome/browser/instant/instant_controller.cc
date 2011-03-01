@@ -37,7 +37,7 @@ InstantController::InstantController(Profile* profile,
     : delegate_(delegate),
       tab_contents_(NULL),
       is_active_(false),
-      is_displayable_(false),
+      displayable_loader_(NULL),
       commit_on_mouse_up_(false),
       last_transition_type_(PageTransition::LINK),
       ALLOW_THIS_IN_INITIALIZER_LIST(destroy_factory_(this)) {
@@ -214,9 +214,11 @@ void InstantController::DestroyPreviewContents() {
 }
 
 void InstantController::DestroyPreviewContentsAndLeaveActive() {
-  is_displayable_ = false;
   commit_on_mouse_up_ = false;
-  delegate_->HideInstant();
+  if (displayable_loader_) {
+    displayable_loader_ = NULL;
+    delegate_->HideInstant();
+  }
 
   // TODO(sky): this shouldn't nuke the loader. It should just nuke non-instant
   // loaders and hide instant loaders.
@@ -318,7 +320,7 @@ TabContentsWrapper* InstantController::ReleasePreviewContents(
 
   ClearBlacklist();
   is_active_ = false;
-  is_displayable_ = false;
+  displayable_loader_ = NULL;
   commit_on_mouse_up_ = false;
   omnibox_bounds_ = gfx::Rect();
   loader_manager_.reset();
@@ -352,16 +354,16 @@ GURL InstantController::GetCurrentURL() {
 
 void InstantController::ShowInstantLoader(InstantLoader* loader) {
   DCHECK(loader_manager_.get());
-  if (loader_manager_->current_loader() == loader) {
-    is_displayable_ = true;
-    delegate_->ShowInstant(loader->preview_contents());
-  } else if (loader_manager_->pending_loader() == loader) {
-    scoped_ptr<InstantLoader> old_loader;
+  scoped_ptr<InstantLoader> old_loader;
+  if (loader == loader_manager_->pending_loader()) {
     loader_manager_->MakePendingCurrent(&old_loader);
-    delegate_->ShowInstant(loader->preview_contents());
-  } else {
-    // The loader supports instant but isn't active yet. Nothing to do.
+  } else if (loader != loader_manager_->current_loader()) {
+    // Notification from a loader that is no longer the current (either we have
+    // a pending, or its an instant loader). Ignore it.
+    return;
   }
+
+  UpdateDisplayableLoader();
 
   NotificationService::current()->Notify(
       NotificationType::INSTANT_CONTROLLER_SHOWN,
@@ -408,14 +410,9 @@ void InstantController::InstantLoaderDoesntSupportInstant(
     // The loader is active, hide all.
     DestroyPreviewContentsAndLeaveActive();
   } else {
-    if (loader_manager_->current_loader() == loader && is_displayable_) {
-      // There is a pending loader and we're active. Hide the preview. When then
-      // pending loader finishes loading we'll notify the delegate to show.
-      DCHECK(loader_manager_->pending_loader());
-      is_displayable_ = false;
-      delegate_->HideInstant();
-    }
-    loader_manager_->DestroyLoader(loader);
+    scoped_ptr<InstantLoader> owned_loader(
+        loader_manager_->ReleaseLoader(loader));
+    UpdateDisplayableLoader();
   }
 }
 
@@ -435,13 +432,31 @@ void InstantController::AddToBlacklist(InstantLoader* loader, const GURL& url) {
   ScheduleDestroy(loader);
 
   loader_manager_->ReleaseLoader(loader);
-  if (is_displayable_ &&
-      (!loader_manager_->active_loader() ||
-       !loader_manager_->current_loader()->ready())) {
-    // Hide instant. When the pending loader finishes loading we'll go active
-    // again.
-    is_displayable_ = false;
+
+  UpdateDisplayableLoader();
+}
+
+void InstantController::UpdateDisplayableLoader() {
+  InstantLoader* loader = NULL;
+  // As soon as the pending loader is displayable it becomes the current loader,
+  // so we need only concern ourselves with the current loader here.
+  if (loader_manager_.get() && loader_manager_->current_loader() &&
+      loader_manager_->current_loader()->ready()) {
+    loader = loader_manager_->current_loader();
+  }
+  if (loader == displayable_loader_)
+    return;
+
+  displayable_loader_ = loader;
+
+  if (!displayable_loader_) {
     delegate_->HideInstant();
+  } else {
+    delegate_->ShowInstant(displayable_loader_->preview_contents());
+    NotificationService::current()->Notify(
+        NotificationType::INSTANT_CONTROLLER_SHOWN,
+        Source<InstantController>(this),
+        NotificationService::NoDetails());
   }
 }
 
@@ -482,8 +497,7 @@ bool InstantController::ShouldUpdateNow(TemplateURLID instant_id,
 void InstantController::ScheduleUpdate(const GURL& url) {
   scheduled_url_ = url;
 
-  if (update_timer_.IsRunning())
-    update_timer_.Stop();
+  update_timer_.Stop();
   update_timer_.Start(base::TimeDelta::FromMilliseconds(kUpdateDelayMS),
                       this, &InstantController::ProcessScheduledUpdate);
 }
@@ -506,7 +520,6 @@ void InstantController::UpdateLoader(const TemplateURL* template_url,
                                      string16* suggested_text) {
   update_timer_.Stop();
 
-  InstantLoader* old_loader = loader_manager_->current_loader();
   scoped_ptr<InstantLoader> owned_loader;
   TemplateURLID template_url_id = template_url ? template_url->id() : 0;
   InstantLoader* new_loader =
@@ -515,8 +528,7 @@ void InstantController::UpdateLoader(const TemplateURL* template_url,
   new_loader->SetOmniboxBounds(omnibox_bounds_);
   new_loader->Update(tab_contents_, template_url, url, transition_type,
                      user_text, verbatim, suggested_text);
-  if (old_loader != new_loader && new_loader->ready())
-    delegate_->ShowInstant(new_loader->preview_contents());
+  UpdateDisplayableLoader();
 }
 
 bool InstantController::ShouldShowPreviewFor(const AutocompleteMatch& match,

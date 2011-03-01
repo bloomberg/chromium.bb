@@ -143,7 +143,7 @@ class InstantController : public InstantLoaderDelegate {
 
   // Returns true if the preview TabContents is ready to be displayed. In some
   // situations this may return false yet GetPreviewContents() returns non-NULL.
-  bool is_displayable() const { return is_displayable_; }
+  bool is_displayable() const { return displayable_loader_ != NULL; }
 
   // Returns the transition type of the last AutocompleteMatch passed to Update.
   PageTransition::Type last_transition_type() const {
@@ -187,6 +187,9 @@ class InstantController : public InstantLoaderDelegate {
   friend class InstantTest;
 
   typedef std::set<std::string> HostBlacklist;
+
+  // Updates |displayable_loader_| and if necessary notifies the delegate.
+  void UpdateDisplayableLoader();
 
   // Returns the TabContents of the pending loader (or NULL). This is only used
   // for testing.
@@ -247,9 +250,8 @@ class InstantController : public InstantLoaderDelegate {
   // See description above getter for details.
   bool is_active_;
 
-  // Has notification been sent out that the preview TabContents is ready to be
-  // shown?
-  bool is_displayable_;
+  // The loader that is ready to be displayed.
+  InstantLoader* displayable_loader_;
 
   // See description above setter.
   gfx::Rect omnibox_bounds_;
@@ -268,6 +270,7 @@ class InstantController : public InstantLoaderDelegate {
   // reset/commit.
   std::set<TemplateURLID> blacklisted_ids_;
 
+  // Timer used to delay calls to |UpdateLoader|.
   base::OneShotTimer<InstantController> update_timer_;
 
   // Used by ScheduleForDestroy; see it for details.
