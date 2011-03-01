@@ -25,8 +25,7 @@
 const wchar_t kChromeFrameDllName[] = L"npchrome_frame.dll";
 const wchar_t kChromeLauncherExeName[] = L"chrome_launcher.exe";
 
-// Statics
-FilePath ScopedChromeFrameRegistrar::GetChromeFrameBuildPath() {
+FilePath GetChromeFrameBuildPath() {
   FilePath build_path;
   PathService::Get(chrome::DIR_APP, &build_path);
 
@@ -46,11 +45,13 @@ FilePath ScopedChromeFrameRegistrar::GetChromeFrameBuildPath() {
   return dll_path;
 }
 
+// static
 void ScopedChromeFrameRegistrar::RegisterDefaults() {
   FilePath dll_path = GetChromeFrameBuildPath();
   RegisterAtPath(dll_path.value(), chrome_frame_test::GetTestBedType());
 }
 
+// static
 void ScopedChromeFrameRegistrar::RegisterAtPath(
     const std::wstring& path, RegistrationType registration_type) {
 
@@ -88,6 +89,7 @@ void ScopedChromeFrameRegistrar::RegisterAtPath(
   ASSERT_TRUE(FreeLibrary(dll_handle));
 }
 
+// static
 void ScopedChromeFrameRegistrar::UnregisterAtPath(
     const std::wstring& path, RegistrationType registration_type) {
 

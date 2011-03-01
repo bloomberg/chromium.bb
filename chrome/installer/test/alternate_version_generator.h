@@ -31,6 +31,13 @@ bool GenerateAlternateVersion(const FilePath& original_installer_path,
                               std::wstring* original_version,
                               std::wstring* new_version);
 
+// Given a path to a PEImage in |original_file|, copy that file to
+// |target_file|, modifying the version of the copy according to |direction|.
+// Any previous file at |target_file| is clobbered. Returns true on success.
+bool GenerateAlternatePEFileVersion(const FilePath& original_file,
+                                    const FilePath& target_file,
+                                    Direction direction);
+
 }  // namespace upgrade_test
 
 #endif  // CHROME_INSTALLER_TEST_ALTERNATE_VERSION_GENERATOR_H_

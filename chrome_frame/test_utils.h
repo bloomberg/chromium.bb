@@ -41,7 +41,6 @@ class ScopedChromeFrameRegistrar {
 
   std::wstring GetChromeFrameDllPath() const;
 
-  static FilePath GetChromeFrameBuildPath();
   static void RegisterAtPath(const std::wstring& path,
                              RegistrationType registration_type);
   static void UnregisterAtPath(const std::wstring& path,
@@ -59,6 +58,11 @@ class ScopedChromeFrameRegistrar {
   // Indicates whether per user or per machine registration is needed.
   RegistrationType registration_type_;
 };
+
+// Returns the path to the Chrome Frame DLL in the build directory. Assumes
+// that the test executable is running from the build folder or a similar
+// folder structure.
+FilePath GetChromeFrameBuildPath();
 
 // Callback description for onload, onloaderror, onmessage
 static _ATL_FUNC_INFO g_single_param = {CC_STDCALL, VT_EMPTY, 1, {VT_VARIANT}};

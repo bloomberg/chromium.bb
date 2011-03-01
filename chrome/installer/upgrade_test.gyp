@@ -9,35 +9,35 @@
   },
   'conditions': [
     ['OS=="win"', {
-      'target_defaults': {
-        'variables': {
-          'alternate_version_generator_target': 0,
-        },
-        'target_conditions': [
-          # This part is shared between the two targets.
-          ['alternate_version_generator_target==1', {
-            'sources': [
-              'test/alternate_version_generator.cc',
-              'test/alternate_version_generator.h',
-              'test/pe_image_resources.cc',
-              'test/pe_image_resources.h',
-              'test/resource_loader.cc',
-              'test/resource_loader.h',
-              'test/resource_updater.cc',
-              'test/resource_updater.h',
-            ],
-          }],
-        ],
-      },
       'targets': [
+        {
+          'target_name': 'alternate_version_generator_lib',
+          'msvs_guid': '66723D46-A641-4182-A321-923FD6335D9B',
+          'type': 'static_library',
+          'dependencies': [
+            '../chrome.gyp:common_constants',
+            '../chrome.gyp:installer_util',
+          ],
+          'include_dirs': [
+            '../..',
+          ],
+          'sources': [
+            'test/alternate_version_generator.cc',
+            'test/alternate_version_generator.h',
+            'test/pe_image_resources.cc',
+            'test/pe_image_resources.h',
+            'test/resource_loader.cc',
+            'test/resource_loader.h',
+            'test/resource_updater.cc',
+            'test/resource_updater.h',
+          ],
+        },
         {
           'target_name': 'upgrade_test',
           'msvs_guid': 'BC4D6130-FDAD-47FB-B4FD-FCAF78DCBC3C',
           'type': 'executable',
-          'variables': {
-            'alternate_version_generator_target': 1,
-          },
           'dependencies': [
+            'alternate_version_generator_lib',
             # This dependency, although correct, results in the mini installer
             # being rebuilt every time upgrade_test is built.  So disable it
             # for now.
@@ -62,10 +62,8 @@
           'target_name': 'alternate_version_generator',
           'msvs_guid': 'E6E6B339-AEC0-44C9-B9D0-E30138108379',
           'type': 'executable',
-          'variables': {
-            'alternate_version_generator_target': 1,
-          },
           'dependencies': [
+            'alternate_version_generator_lib',
             '../../base/base.gyp:test_support_base',
             '../../testing/gtest.gyp:gtest',
             '../chrome.gyp:common_constants',
