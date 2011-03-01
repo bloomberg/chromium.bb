@@ -174,7 +174,8 @@ TEST_F(DomStorageEmptyDatabaseTest, EmptyDirAfterGet) {
   EXPECT_TRUE(StorageDirIsEmpty());
 }
 
-TEST_F(DomStorageEmptyDatabaseTest, NonEmptyDirAfterSet) {
+// Flaky, see http://crbug.com/73776
+TEST_F(DomStorageEmptyDatabaseTest, FLAKY_NonEmptyDirAfterSet) {
   NavigateToURL(TestUrl());
   ASSERT_TRUE(StorageDirIsEmpty());
 
