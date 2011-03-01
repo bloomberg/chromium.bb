@@ -18,7 +18,7 @@
 #include "chrome/browser/autofill/form_structure.h"
 #include "chrome/common/net/url_fetcher.h"
 
-class AutoFillMetrics;
+class AutofillMetrics;
 class Profile;
 
 // Handles getting and updating Autofill heuristics.
@@ -64,7 +64,7 @@ class AutofillDownloadManager : public URLFetcher::Delegate {
   // list of the fields of all requested forms.
   // |forms| - array of forms aggregated in this request.
   bool StartQueryRequest(const ScopedVector<FormStructure>& forms,
-                         const AutoFillMetrics& metric_logger);
+                         const AutofillMetrics& metric_logger);
 
   // Start upload request if necessary. The probability of request going
   // over the wire are GetPositiveUploadRate() if it was matched by

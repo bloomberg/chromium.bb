@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -31,7 +31,7 @@ enum UploadRequired {
   USE_UPLOAD_RATES
 };
 
-class AutoFillMetrics;
+class AutofillMetrics;
 
 // FormStructure stores a single HTML form together with the values entered
 // in the fields along with additional information needed by AutoFill.
@@ -57,7 +57,7 @@ class FormStructure {
   static void ParseQueryResponse(const std::string& response_xml,
                                  const std::vector<FormStructure*>& forms,
                                  UploadRequired* upload_required,
-                                 const AutoFillMetrics& metric_logger);
+                                 const AutofillMetrics& metric_logger);
 
   // The unique signature for this form, composed of the target url domain,
   // the form name, and the form field names in a 64-bit hash.

@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -10,7 +10,7 @@
 
 #include "base/basictypes.h"
 
-class AutoFillMetrics {
+class AutofillMetrics {
  public:
   // Each of these is logged at most once per query to the server, which in turn
   // occurs at most once per page load.
@@ -57,15 +57,15 @@ class AutoFillMetrics {
     NUM_QUALITY_METRICS
   };
 
-  AutoFillMetrics();
-  virtual ~AutoFillMetrics();
+  AutofillMetrics();
+  virtual ~AutofillMetrics();
 
   virtual void Log(ServerQueryMetric metric) const;
   virtual void Log(QualityMetric metric,
                    const std::string& experiment_id) const;
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(AutoFillMetrics);
+  DISALLOW_COPY_AND_ASSIGN(AutofillMetrics);
 };
 
 #endif  // CHROME_BROWSER_AUTOFILL_AUTOFILL_METRICS_H_

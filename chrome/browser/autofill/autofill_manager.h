@@ -20,7 +20,7 @@
 
 class AutoFillCCInfoBarDelegate;
 class AutoFillProfile;
-class AutoFillMetrics;
+class AutofillMetrics;
 class CreditCard;
 class FormStructure;
 class PrefService;
@@ -42,7 +42,7 @@ class AutoFillManager : public TabContentsObserver,
   // Registers our browser prefs.
   static void RegisterBrowserPrefs(PrefService* prefs);
 
-  // Registers our Enable/Disable AutoFill pref.
+  // Registers our Enable/Disable Autofill pref.
   static void RegisterUserPrefs(PrefService* prefs);
 
   // TabContentsObserver implementation.
@@ -69,7 +69,7 @@ class AutoFillManager : public TabContentsObserver,
   // Imports the form data, submitted by the user, into |personal_data_|.
   void ImportFormData(const FormStructure& submitted_form);
 
-  // Uploads the form data to the AutoFill server.
+  // Uploads the form data to the Autofill server.
   void UploadFormData(const FormStructure& submitted_form);
 
   // Reset cache.
@@ -84,10 +84,10 @@ class AutoFillManager : public TabContentsObserver,
     personal_data_ = personal_data;
   }
 
-  const AutoFillMetrics* metric_logger() const {
+  const AutofillMetrics* metric_logger() const {
     return metric_logger_.get();
   }
-  void set_metric_logger(const AutoFillMetrics* metric_logger);
+  void set_metric_logger(const AutofillMetrics* metric_logger);
 
   ScopedVector<FormStructure>* form_structures() { return &form_structures_; }
 
@@ -116,7 +116,7 @@ class AutoFillManager : public TabContentsObserver,
   void OnDidShowAutoFillSuggestions();
 
   // Fills |host| with the RenderViewHost for this tab.
-  // Returns false if AutoFill is disabled or if the host is unavailable.
+  // Returns false if Autofill is disabled or if the host is unavailable.
   bool GetHost(const std::vector<AutoFillProfile*>& profiles,
                const std::vector<CreditCard*>& credit_cards,
                RenderViewHost** host) WARN_UNUSED_RESULT;
@@ -173,7 +173,7 @@ class AutoFillManager : public TabContentsObserver,
                             AutoFillType type,
                             webkit_glue::FormField* field);
 
-  // Parses the forms using heuristic matching and querying the AutoFill server.
+  // Parses the forms using heuristic matching and querying the Autofill server.
   void ParseForms(const std::vector<webkit_glue::FormData>& forms);
 
   // Uses existing personal data to determine possible field types for the
@@ -190,7 +190,7 @@ class AutoFillManager : public TabContentsObserver,
   PersonalDataManager* personal_data_;
 
   std::list<std::string> autofilled_forms_signatures_;
-  // Handles queries and uploads to AutoFill servers.
+  // Handles queries and uploads to Autofill servers.
   AutofillDownloadManager download_manager_;
 
   // Should be set to true in AutoFillManagerTest and other tests, false in
@@ -200,7 +200,7 @@ class AutoFillManager : public TabContentsObserver,
   bool disable_download_manager_requests_;
 
   // For logging UMA metrics. Overridden by metrics tests.
-  scoped_ptr<const AutoFillMetrics> metric_logger_;
+  scoped_ptr<const AutofillMetrics> metric_logger_;
 
   // Our copy of the form data.
   ScopedVector<FormStructure> form_structures_;
@@ -232,12 +232,12 @@ class AutoFillManager : public TabContentsObserver,
   FRIEND_TEST_ALL_PREFIXES(AutoFillManagerTest, FillPhoneNumber);
   FRIEND_TEST_ALL_PREFIXES(AutoFillManagerTest, FormChangesRemoveField);
   FRIEND_TEST_ALL_PREFIXES(AutoFillManagerTest, FormChangesAddField);
-  FRIEND_TEST_ALL_PREFIXES(AutoFillMetricsTest, QualityMetrics);
-  FRIEND_TEST_ALL_PREFIXES(AutoFillMetricsTest,
-                           NoQualityMetricsForNonAutoFillableForms);
-  FRIEND_TEST_ALL_PREFIXES(AutoFillMetricsTest, SaneMetricsWithCacheMismatch);
-  FRIEND_TEST_ALL_PREFIXES(AutoFillMetricsTest, QualityMetricsForFailure);
-  FRIEND_TEST_ALL_PREFIXES(AutoFillMetricsTest, QualityMetricsWithExperimentId);
+  FRIEND_TEST_ALL_PREFIXES(AutofillMetricsTest, QualityMetrics);
+  FRIEND_TEST_ALL_PREFIXES(AutofillMetricsTest,
+                           NoQualityMetricsForNonAutofillableForms);
+  FRIEND_TEST_ALL_PREFIXES(AutofillMetricsTest, SaneMetricsWithCacheMismatch);
+  FRIEND_TEST_ALL_PREFIXES(AutofillMetricsTest, QualityMetricsForFailure);
+  FRIEND_TEST_ALL_PREFIXES(AutofillMetricsTest, QualityMetricsWithExperimentId);
 
   DISALLOW_COPY_AND_ASSIGN(AutoFillManager);
 };

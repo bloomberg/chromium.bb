@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -168,8 +168,8 @@ bool FormStructure::EncodeQueryRequest(const ScopedVector<FormStructure>& forms,
 void FormStructure::ParseQueryResponse(const std::string& response_xml,
                                        const std::vector<FormStructure*>& forms,
                                        UploadRequired* upload_required,
-                                       const AutoFillMetrics& metric_logger) {
-  metric_logger.Log(AutoFillMetrics::QUERY_RESPONSE_RECEIVED);
+                                       const AutofillMetrics& metric_logger) {
+  metric_logger.Log(AutofillMetrics::QUERY_RESPONSE_RECEIVED);
 
   // Parse the field types from the server response to the query.
   std::vector<AutoFillFieldType> field_types;
@@ -181,7 +181,7 @@ void FormStructure::ParseQueryResponse(const std::string& response_xml,
   if (!parse_handler.succeeded())
     return;
 
-  metric_logger.Log(AutoFillMetrics::QUERY_RESPONSE_PARSED);
+  metric_logger.Log(AutofillMetrics::QUERY_RESPONSE_PARSED);
 
   bool heuristics_detected_fillable_field = false;
   bool query_response_overrode_heuristics = false;
@@ -228,15 +228,15 @@ void FormStructure::ParseQueryResponse(const std::string& response_xml,
     form->UpdateAutoFillCount();
   }
 
-  AutoFillMetrics::ServerQueryMetric metric;
+  AutofillMetrics::ServerQueryMetric metric;
   if (query_response_overrode_heuristics) {
     if (heuristics_detected_fillable_field) {
-      metric = AutoFillMetrics::QUERY_RESPONSE_OVERRODE_LOCAL_HEURISTICS;
+      metric = AutofillMetrics::QUERY_RESPONSE_OVERRODE_LOCAL_HEURISTICS;
     } else {
-      metric = AutoFillMetrics::QUERY_RESPONSE_WITH_NO_LOCAL_HEURISTICS;
+      metric = AutofillMetrics::QUERY_RESPONSE_WITH_NO_LOCAL_HEURISTICS;
     }
   } else {
-    metric = AutoFillMetrics::QUERY_RESPONSE_MATCHED_LOCAL_HEURISTICS;
+    metric = AutofillMetrics::QUERY_RESPONSE_MATCHED_LOCAL_HEURISTICS;
   }
   metric_logger.Log(metric);
 }

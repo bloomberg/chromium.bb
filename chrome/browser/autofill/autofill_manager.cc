@@ -215,7 +215,7 @@ AutoFillManager::AutoFillManager(TabContents* tab_contents)
       personal_data_(NULL),
       download_manager_(tab_contents->profile()),
       disable_download_manager_requests_(false),
-      metric_logger_(new AutoFillMetrics),
+      metric_logger_(new AutofillMetrics),
       cc_infobar_(NULL) {
   DCHECK(tab_contents);
 
@@ -615,13 +615,13 @@ void AutoFillManager::LogMetricsAboutSubmittedForm(
     }
 
     // Log various quality metrics.
-    metric_logger_->Log(AutoFillMetrics::FIELD_SUBMITTED, experiment_id);
+    metric_logger_->Log(AutofillMetrics::FIELD_SUBMITTED, experiment_id);
     if (field_types.find(EMPTY_TYPE) == field_types.end() &&
         field_types.find(UNKNOWN_TYPE) == field_types.end()) {
       if (field->is_autofilled()) {
-        metric_logger_->Log(AutoFillMetrics::FIELD_AUTOFILLED, experiment_id);
+        metric_logger_->Log(AutofillMetrics::FIELD_AUTOFILLED, experiment_id);
       } else {
-        metric_logger_->Log(AutoFillMetrics::FIELD_AUTOFILL_FAILED,
+        metric_logger_->Log(AutofillMetrics::FIELD_AUTOFILL_FAILED,
                             experiment_id);
 
         AutoFillFieldType heuristic_type = UNKNOWN_TYPE;
@@ -634,24 +634,24 @@ void AutoFillManager::LogMetricsAboutSubmittedForm(
         }
 
         if (heuristic_type == UNKNOWN_TYPE) {
-          metric_logger_->Log(AutoFillMetrics::FIELD_HEURISTIC_TYPE_UNKNOWN,
+          metric_logger_->Log(AutofillMetrics::FIELD_HEURISTIC_TYPE_UNKNOWN,
                               experiment_id);
         } else if (field_types.count(heuristic_type)) {
-          metric_logger_->Log(AutoFillMetrics::FIELD_HEURISTIC_TYPE_MATCH,
+          metric_logger_->Log(AutofillMetrics::FIELD_HEURISTIC_TYPE_MATCH,
                               experiment_id);
         } else {
-          metric_logger_->Log(AutoFillMetrics::FIELD_HEURISTIC_TYPE_MISMATCH,
+          metric_logger_->Log(AutofillMetrics::FIELD_HEURISTIC_TYPE_MISMATCH,
                               experiment_id);
         }
 
         if (server_type == NO_SERVER_DATA) {
-          metric_logger_->Log(AutoFillMetrics::FIELD_SERVER_TYPE_UNKNOWN,
+          metric_logger_->Log(AutofillMetrics::FIELD_SERVER_TYPE_UNKNOWN,
                               experiment_id);
         } else if (field_types.count(server_type)) {
-          metric_logger_->Log(AutoFillMetrics::FIELD_SERVER_TYPE_MATCH,
+          metric_logger_->Log(AutofillMetrics::FIELD_SERVER_TYPE_MATCH,
                               experiment_id);
         } else {
-          metric_logger_->Log(AutoFillMetrics::FIELD_SERVER_TYPE_MISMATCH,
+          metric_logger_->Log(AutofillMetrics::FIELD_SERVER_TYPE_MISMATCH,
                               experiment_id);
         }
       }
@@ -720,13 +720,13 @@ AutoFillManager::AutoFillManager(TabContents* tab_contents,
       personal_data_(personal_data),
       download_manager_(NULL),
       disable_download_manager_requests_(true),
-      metric_logger_(new AutoFillMetrics),
+      metric_logger_(new AutofillMetrics),
       cc_infobar_(NULL) {
   DCHECK(tab_contents);
 }
 
 void AutoFillManager::set_metric_logger(
-    const AutoFillMetrics* metric_logger) {
+    const AutofillMetrics* metric_logger) {
   metric_logger_.reset(metric_logger);
 }
 
