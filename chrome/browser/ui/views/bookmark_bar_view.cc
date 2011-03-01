@@ -1396,16 +1396,9 @@ int BookmarkBarView::CalculateDropOperation(const DropTargetEvent& event,
   *drop_on = false;
   *is_over_other = *is_over_overflow = false;
 
-  if (event.y() < other_bookmarked_button_->y() ||
-      event.y() >= other_bookmarked_button_->y() +
-                      other_bookmarked_button_->height()) {
-    // Mouse isn't over a button.
-    return ui::DragDropTypes::DRAG_NONE;
-  }
-
   bool found = false;
   const int other_delta_x = mirrored_x - other_bookmarked_button_->x();
-  if (other_delta_x >= 0 &&
+  if (other_bookmarked_button_->IsVisible() && other_delta_x >= 0 &&
       other_delta_x < other_bookmarked_button_->width()) {
     // Mouse is over 'other' folder.
     *is_over_other = true;
@@ -1463,7 +1456,8 @@ int BookmarkBarView::CalculateDropOperation(const DropTargetEvent& event,
       } else {
         return ui::DragDropTypes::DRAG_NONE;
       }
-    } else if (mirrored_x < other_bookmarked_button_->x()) {
+    } else if (!other_bookmarked_button_->IsVisible() ||
+               mirrored_x < other_bookmarked_button_->x()) {
       // Mouse is after the last visible button but before more recently
       // bookmarked; use the last visible index.
       *index = GetFirstHiddenNodeIndex();
