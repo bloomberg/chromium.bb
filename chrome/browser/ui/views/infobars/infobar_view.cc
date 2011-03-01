@@ -6,10 +6,10 @@
 
 #include "base/message_loop.h"
 #include "base/utf_string_conversions.h"
+#include "chrome/browser/tab_contents/infobar_delegate.h"
 #include "chrome/browser/ui/views/infobars/infobar_background.h"
 #include "chrome/browser/ui/views/infobars/infobar_button_border.h"
 #include "chrome/browser/ui/views/infobars/infobar_container.h"
-#include "chrome/browser/tab_contents/infobar_delegate.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
 #include "third_party/skia/include/effects/SkGradientShader.h"
@@ -45,8 +45,7 @@ InfoBarView::InfoBarView(InfoBarDelegate* delegate)
     : InfoBar(delegate),
       delegate_(delegate),
       icon_(NULL),
-      ALLOW_THIS_IN_INITIALIZER_LIST(
-          close_button_(new views::ImageButton(this))),
+      close_button_(NULL),
       ALLOW_THIS_IN_INITIALIZER_LIST(delete_factory_(this)),
       target_height_(kDefaultTargetHeight) {
   set_parent_owned(false);  // InfoBar deletes itself at the appropriate time.
@@ -56,25 +55,6 @@ InfoBarView::InfoBarView(InfoBarDelegate* delegate)
   SetAccessibleName(l10n_util::GetStringUTF16(
       (infobar_type == InfoBarDelegate::WARNING_TYPE) ?
       IDS_ACCNAME_INFOBAR_WARNING : IDS_ACCNAME_INFOBAR_PAGE_ACTION));
-
-  SkBitmap* image = delegate->GetIcon();
-  if (image) {
-    icon_ = new views::ImageView;
-    icon_->SetImage(image);
-    AddChildView(icon_);
-  }
-
-  ResourceBundle& rb = ResourceBundle::GetSharedInstance();
-  close_button_->SetImage(views::CustomButton::BS_NORMAL,
-                          rb.GetBitmapNamed(IDR_CLOSE_BAR));
-  close_button_->SetImage(views::CustomButton::BS_HOT,
-                          rb.GetBitmapNamed(IDR_CLOSE_BAR_H));
-  close_button_->SetImage(views::CustomButton::BS_PUSHED,
-                          rb.GetBitmapNamed(IDR_CLOSE_BAR_P));
-  close_button_->SetAccessibleName(
-      l10n_util::GetStringUTF16(IDS_ACCNAME_CLOSE));
-  close_button_->SetFocusable(true);
-  AddChildView(close_button_);
 
   animation_.reset(new ui::SlideAnimation(this));
   animation_->SetTweenType(ui::Tween::LINEAR);
@@ -89,7 +69,7 @@ void InfoBarView::Open() {
   // size.
   animation_->Reset(1.0);
   if (container_)
-    container_->InfoBarAnimated(false);
+    container_->InfoBarAnimated(true);
 }
 
 void InfoBarView::AnimateClose() {
@@ -107,6 +87,8 @@ void InfoBarView::AnimateClose() {
 
 void InfoBarView::Close() {
   parent()->RemoveChildView(this);
+  if (container_)
+    container_->InfoBarAnimated(true);
   // Note that we only tell the delegate we're closed here, and not when we're
   // simply destroyed (by virtue of a tab switch or being moved from window to
   // window), since this action can cause the delegate to destroy itself.
@@ -261,12 +243,13 @@ void InfoBarView::Layout() {
     gfx::Size icon_size = icon_->GetPreferredSize();
     icon_->SetBounds(start_x, OffsetY(this, icon_size), icon_size.width(),
                      icon_size.height());
+    start_x += icon_->bounds().right();
   }
 
   gfx::Size button_size = close_button_->GetPreferredSize();
-  close_button_->SetBounds(width() - kHorizontalPadding - button_size.width(),
-                           OffsetY(this, button_size), button_size.width(),
-                           button_size.height());
+  close_button_->SetBounds(std::max(start_x + ContentMinimumWidth(),
+      width() - kHorizontalPadding - button_size.width()),
+      OffsetY(this, button_size), button_size.width(), button_size.height());
 }
 
 void InfoBarView::ViewHierarchyChanged(bool is_add, View* parent, View* child) {
@@ -289,6 +272,28 @@ void InfoBarView::ViewHierarchyChanged(bool is_add, View* parent, View* child) {
       if (GetFocusManager())
         GetFocusManager()->AddFocusChangeListener(this);
       NotifyAccessibilityEvent(AccessibilityTypes::EVENT_ALERT);
+
+      if (close_button_ == NULL) {
+        SkBitmap* image = delegate_->GetIcon();
+        if (image) {
+          icon_ = new views::ImageView;
+          icon_->SetImage(image);
+          AddChildView(icon_);
+        }
+
+        close_button_ = new views::ImageButton(this);
+        ResourceBundle& rb = ResourceBundle::GetSharedInstance();
+        close_button_->SetImage(views::CustomButton::BS_NORMAL,
+                                rb.GetBitmapNamed(IDR_CLOSE_BAR));
+        close_button_->SetImage(views::CustomButton::BS_HOT,
+                                rb.GetBitmapNamed(IDR_CLOSE_BAR_H));
+        close_button_->SetImage(views::CustomButton::BS_PUSHED,
+                                rb.GetBitmapNamed(IDR_CLOSE_BAR_P));
+        close_button_->SetAccessibleName(
+            l10n_util::GetStringUTF16(IDS_ACCNAME_CLOSE));
+        close_button_->SetFocusable(true);
+        AddChildView(close_button_);
+      }
     } else {
       DestroyFocusTracker(false);
       // NULL our container_ pointer so that if Animation::Stop results in
@@ -305,7 +310,7 @@ void InfoBarView::ViewHierarchyChanged(bool is_add, View* parent, View* child) {
   }
 
   // For accessibility, ensure the close button is the last child view.
-  if ((parent == this) && (child != close_button_) &&
+  if ((close_button_ != NULL) && (parent == this) && (child != close_button_) &&
       (close_button_->parent() == this) &&
       (GetChildViewAt(child_count() - 1) != close_button_)) {
     RemoveChildView(close_button_);
@@ -324,12 +329,11 @@ void InfoBarView::ButtonPressed(views::Button* sender,
 
 void InfoBarView::AnimationProgressed(const ui::Animation* animation) {
   if (container_)
-    container_->InfoBarAnimated(true);
+    container_->InfoBarAnimated(false);
 }
 
-int InfoBarView::GetAvailableWidth() const {
-  const int kCloseButtonSpacing = 12;
-  return close_button_->x() - kCloseButtonSpacing - StartX();
+int InfoBarView::ContentMinimumWidth() const {
+  return 0;
 }
 
 void InfoBarView::RemoveInfoBar() const {
@@ -338,7 +342,16 @@ void InfoBarView::RemoveInfoBar() const {
 }
 
 int InfoBarView::StartX() const {
-  return ((icon_ != NULL) ? icon_->bounds().right() : 0) + kHorizontalPadding;
+  // Ensure we don't return a value greater than EndX(), so children can safely
+  // set something's width to "EndX() - StartX()" without risking that being
+  // negative.
+  return std::min(EndX(),
+      ((icon_ != NULL) ? icon_->bounds().right() : 0) + kHorizontalPadding);
+}
+
+int InfoBarView::EndX() const {
+  const int kCloseButtonSpacing = 12;
+  return close_button_->x() - kCloseButtonSpacing;
 }
 
 int InfoBarView::CenterY(const gfx::Size prefsize) const {
@@ -367,12 +380,8 @@ void InfoBarView::FocusWillChange(View* focused_before, View* focused_now) {
 }
 
 void InfoBarView::AnimationEnded(const ui::Animation* animation) {
-  if (container_) {
-    container_->InfoBarAnimated(false);
-
-    if (!animation_->IsShowing())
-      Close();
-  }
+  if (container_ && !animation_->IsShowing())
+    Close();
 }
 
 void InfoBarView::DestroyFocusTracker(bool restore_focus) {

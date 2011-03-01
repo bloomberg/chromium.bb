@@ -28,6 +28,9 @@ class TranslateInfoBarBase : public TranslateInfoBarView,
  protected:
   static const int kButtonInLabelSpacing;
 
+  // InfoBarView:
+  virtual void ViewHierarchyChanged(bool is_add, View* parent, View* child);
+
   // Sets the text of the provided language menu button to reflect the current
   // value from the delegate.
   void UpdateLanguageButtonText(views::MenuButton* button,

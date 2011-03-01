@@ -32,15 +32,12 @@ InfoBar* ExtensionInfoBarDelegate::CreateInfoBar() {
 namespace {
 // The horizontal margin between the menu and the Extension (HTML) view.
 static const int kMenuHorizontalMargin = 1;
-
-// The amount of space to the right of the Extension (HTML) view (to avoid
-// overlapping the close button for the InfoBar).
-static const int kFarRightMargin = 30;
 };
 
 ExtensionInfoBar::ExtensionInfoBar(ExtensionInfoBarDelegate* delegate)
     : InfoBarView(delegate),
       delegate_(delegate),
+      menu_(NULL),
       ALLOW_THIS_IN_INITIALIZER_LIST(tracker_(this)) {
   delegate->set_observer(this);
 
@@ -49,15 +46,8 @@ ExtensionInfoBar::ExtensionInfoBar(ExtensionInfoBarDelegate* delegate)
   set_target_height((height > 0) ?
       (height + InfoBarBackground::kSeparatorLineHeight) : height);
 
-  // Setup the extension icon and its associated drop down menu.
-  SetupIconAndMenu();
-
   // Get notified of resize events for the ExtensionView.
   extension_view->SetContainer(this);
-  // We show the ExtensionView, but we don't want it deleted when we get
-  // destroyed, which happens on tab switching (for example).
-  extension_view->set_parent_owned(false);
-  AddChildView(extension_view);
 }
 
 ExtensionInfoBar::~ExtensionInfoBar() {
@@ -71,12 +61,54 @@ void ExtensionInfoBar::Layout() {
   InfoBarView::Layout();
 
   gfx::Size menu_size = menu_->GetPreferredSize();
-  menu_->SetBounds(0, (height() - menu_size.height()) / 2, menu_size.width(),
+  menu_->SetBounds(StartX(), OffsetY(this, menu_size), menu_size.width(),
                    menu_size.height());
 
-  int x = menu_->bounds().right() + kMenuHorizontalMargin;
-  GetDelegate()->extension_host()->view()->SetBounds(x, 0,
-      width() - x - kFarRightMargin - 1, height() - 1);
+  GetDelegate()->extension_host()->view()->SetBounds(
+      menu_->bounds().right() + kMenuHorizontalMargin, 0,
+      std::max(0, EndX() - StartX() - ContentMinimumWidth()), height());
+}
+
+void ExtensionInfoBar::ViewHierarchyChanged(bool is_add,
+                                            View* parent,
+                                            View* child) {
+  if (!is_add || (child != this) || (menu_ != NULL)) {
+    InfoBarView::ViewHierarchyChanged(is_add, parent, child);
+    return;
+  }
+
+  menu_ = new views::MenuButton(NULL, std::wstring(), this, false);
+  menu_->SetVisible(false);
+  AddChildView(menu_);
+
+  ExtensionHost* extension_host = GetDelegate()->extension_host();
+  ExtensionView* extension_view = extension_host->view();
+  // We show the ExtensionView, but we don't want it deleted when we get
+  // destroyed, which happens on tab switching (for example).
+  extension_view->set_parent_owned(false);
+  AddChildView(extension_view);
+
+  // This must happen after adding all other children so InfoBarView can ensure
+  // the close button is the last child.
+  InfoBarView::ViewHierarchyChanged(is_add, parent, child);
+
+  // This must happen after adding all children because it can trigger layout,
+  // which assumes that particular children (e.g. the close button) have already
+  // been added.
+  const Extension* extension = extension_host->extension();
+  int image_size = Extension::EXTENSION_ICON_BITTY;
+  ExtensionResource icon_resource = extension->GetIconResource(
+      image_size, ExtensionIconSet::MATCH_EXACTLY);
+  if (!icon_resource.relative_path().empty()) {
+    tracker_.LoadImage(extension, icon_resource,
+        gfx::Size(image_size, image_size), ImageLoadingTracker::DONT_CACHE);
+  } else {
+    OnImageLoaded(NULL, icon_resource, 0);
+  }
+}
+
+int ExtensionInfoBar::ContentMinimumWidth() const {
+  return menu_->GetPreferredSize().width() + kMenuHorizontalMargin;
 }
 
 void ExtensionInfoBar::OnExtensionMouseMove(ExtensionView* view) {
@@ -158,23 +190,6 @@ void ExtensionInfoBar::RunMenu(View* source, const gfx::Point& pt) {
 
   options_menu_menu_.reset(new views::Menu2(options_menu_contents_.get()));
   options_menu_menu_->RunMenuAt(pt, views::Menu2::ALIGN_TOPLEFT);
-}
-
-void ExtensionInfoBar::SetupIconAndMenu() {
-  menu_ = new views::MenuButton(NULL, std::wstring(), this, false);
-  menu_->SetVisible(false);
-  AddChildView(menu_);
-
-  const Extension* extension = GetDelegate()->extension_host()->extension();
-  int image_size = Extension::EXTENSION_ICON_BITTY;
-  ExtensionResource icon_resource = extension->GetIconResource(
-      image_size, ExtensionIconSet::MATCH_EXACTLY);
-  if (!icon_resource.relative_path().empty()) {
-    tracker_.LoadImage(extension, icon_resource,
-        gfx::Size(image_size, image_size), ImageLoadingTracker::DONT_CACHE);
-  } else {
-    OnImageLoaded(NULL, icon_resource, 0);
-  }
 }
 
 ExtensionInfoBarDelegate* ExtensionInfoBar::GetDelegate() {

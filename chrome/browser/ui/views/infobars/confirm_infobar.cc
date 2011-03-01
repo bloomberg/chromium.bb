@@ -19,80 +19,73 @@ InfoBar* ConfirmInfoBarDelegate::CreateInfoBar() {
 
 ConfirmInfoBar::ConfirmInfoBar(ConfirmInfoBarDelegate* delegate)
     : InfoBarView(delegate),
-      initialized_(false) {
-  label_ = CreateLabel(delegate->GetMessageText());
-
-  ok_button_ = CreateTextButton(this,
-      (delegate->GetButtons() & ConfirmInfoBarDelegate::BUTTON_OK) ?
-          delegate->GetButtonLabel(ConfirmInfoBarDelegate::BUTTON_OK) :
-          string16(),
-      delegate->NeedElevation(ConfirmInfoBarDelegate::BUTTON_OK));
-  cancel_button_ = CreateTextButton(this,
-      (delegate->GetButtons() & ConfirmInfoBarDelegate::BUTTON_CANCEL) ?
-          delegate->GetButtonLabel(ConfirmInfoBarDelegate::BUTTON_CANCEL) :
-          string16(),
-      delegate->NeedElevation(ConfirmInfoBarDelegate::BUTTON_CANCEL));
-
-  link_ = CreateLink(delegate->GetLinkText(), this, background()->get_color());
+      label_(NULL),
+      ok_button_(NULL),
+      cancel_button_(NULL),
+      link_(NULL) {
 }
 
 ConfirmInfoBar::~ConfirmInfoBar() {
-  if (!initialized_) {
-    delete label_;
-    delete ok_button_;
-    delete cancel_button_;
-    delete link_;
-  }
 }
 
 void ConfirmInfoBar::Layout() {
   InfoBarView::Layout();
 
-  int available_width = InfoBarView::GetAvailableWidth();
-  int ok_button_width = 0;
-  int cancel_button_width = 0;
-  gfx::Size ok_size = ok_button_->GetPreferredSize();
-  gfx::Size cancel_size = cancel_button_->GetPreferredSize();
-
-  if (GetDelegate()->GetButtons() & ConfirmInfoBarDelegate::BUTTON_OK) {
-    ok_button_width = ok_size.width();
-  } else {
-    ok_button_->SetVisible(false);
-  }
-  if (GetDelegate()->GetButtons() & ConfirmInfoBarDelegate::BUTTON_CANCEL) {
-    cancel_button_width = cancel_size.width();
-  } else {
-    cancel_button_->SetVisible(false);
-  }
-
-  cancel_button_->SetBounds(available_width - cancel_button_width,
-      OffsetY(this, cancel_size), cancel_size.width(), cancel_size.height());
-  int spacing = cancel_button_width > 0 ? kButtonButtonSpacing : 0;
-  ok_button_->SetBounds(cancel_button_->x() - spacing - ok_button_width,
-      OffsetY(this, ok_size), ok_size.width(), ok_size.height());
-
+  int available_width = std::max(0, EndX() - StartX() - ContentMinimumWidth());
   gfx::Size label_size = label_->GetPreferredSize();
   label_->SetBounds(StartX(), OffsetY(this, label_size),
       std::min(label_size.width(), available_width), label_size.height());
+  available_width = std::max(0, available_width - label_size.width());
 
-  // Now append the link to the label's right edge.
-  link_->SetVisible(!link_->GetText().empty());
-  gfx::Size link_size = link_->GetPreferredSize();
-  int link_x = label_->bounds().right() + kEndOfLabelSpacing;
-  int link_w = std::min(GetAvailableWidth() - link_x, link_size.width());
-  link_->SetBounds(link_x, OffsetY(this, link_size), link_w,
-                   link_size.height());
+  int button_x = label_->bounds().right() + kEndOfLabelSpacing;
+  if (ok_button_ != NULL) {
+    gfx::Size ok_size = ok_button_->GetPreferredSize();
+    ok_button_->SetBounds(button_x, OffsetY(this, ok_size), ok_size.width(),
+                          ok_size.height());
+    button_x += ok_size.width() + kButtonButtonSpacing;
+  }
+
+  if (cancel_button_ != NULL) {
+    gfx::Size cancel_size = cancel_button_->GetPreferredSize();
+    cancel_button_->SetBounds(button_x, OffsetY(this, cancel_size),
+                              cancel_size.width(), cancel_size.height());
+  }
+
+  if (link_ != NULL) {
+    gfx::Size link_size = link_->GetPreferredSize();
+    int link_width = std::min(link_size.width(), available_width);
+    link_->SetBounds(EndX() - link_width, OffsetY(this, link_size), link_width,
+                     link_size.height());
+  }
 }
 
 void ConfirmInfoBar::ViewHierarchyChanged(bool is_add,
                                           View* parent,
                                           View* child) {
-  if (is_add && child == this && !initialized_) {
+  if (is_add && child == this && (label_ == NULL)) {
+    ConfirmInfoBarDelegate* delegate = GetDelegate();
+    label_ = CreateLabel(delegate->GetMessageText());
     AddChildView(label_);
-    AddChildView(ok_button_);
-    AddChildView(cancel_button_);
-    AddChildView(link_);
-    initialized_ = true;
+
+    if (delegate->GetButtons() & ConfirmInfoBarDelegate::BUTTON_OK) {
+      ok_button_ = CreateTextButton(this,
+          delegate->GetButtonLabel(ConfirmInfoBarDelegate::BUTTON_OK),
+          delegate->NeedElevation(ConfirmInfoBarDelegate::BUTTON_OK));
+      AddChildView(ok_button_);
+    }
+
+    if (delegate->GetButtons() & ConfirmInfoBarDelegate::BUTTON_CANCEL) {
+      cancel_button_ = CreateTextButton(this,
+          delegate->GetButtonLabel(ConfirmInfoBarDelegate::BUTTON_CANCEL),
+          delegate->NeedElevation(ConfirmInfoBarDelegate::BUTTON_CANCEL));
+      AddChildView(cancel_button_);
+    }
+
+    string16 link_text(delegate->GetLinkText());
+    if (!link_text.empty()) {
+      link_ = CreateLink(link_text, this, background()->get_color());
+      AddChildView(link_);
+    }
   }
 
   // This must happen after adding all other children so InfoBarView can ensure
@@ -100,17 +93,13 @@ void ConfirmInfoBar::ViewHierarchyChanged(bool is_add,
   InfoBarView::ViewHierarchyChanged(is_add, parent, child);
 }
 
-int ConfirmInfoBar::GetAvailableWidth() const {
-  return ok_button_->x() - kEndOfLabelSpacing;
-}
-
 void ConfirmInfoBar::ButtonPressed(views::Button* sender,
                                    const views::Event& event) {
   ConfirmInfoBarDelegate* delegate = GetDelegate();
-  if (sender == ok_button_) {
+  if ((ok_button_ != NULL) && sender == ok_button_) {
     if (delegate->Accept())
       RemoveInfoBar();
-  } else if (sender == cancel_button_) {
+  } else if ((cancel_button_ != NULL) && (sender == cancel_button_)) {
     if (delegate->Cancel())
       RemoveInfoBar();
   } else {
@@ -118,7 +107,19 @@ void ConfirmInfoBar::ButtonPressed(views::Button* sender,
   }
 }
 
+int ConfirmInfoBar::ContentMinimumWidth() const {
+  int width = (link_ == NULL) ? 0 : kEndOfLabelSpacing;  // Space before link
+  int before_cancel_spacing = kEndOfLabelSpacing;
+  if (ok_button_ != NULL) {
+    width += kEndOfLabelSpacing + ok_button_->GetPreferredSize().width();
+    before_cancel_spacing = kButtonButtonSpacing;
+  }
+  return width + ((cancel_button_ == NULL) ? 0 :
+      (before_cancel_spacing + cancel_button_->GetPreferredSize().width()));
+}
+
 void ConfirmInfoBar::LinkActivated(views::Link* source, int event_flags) {
+  DCHECK(link_ != NULL);
   DCHECK_EQ(link_, source);
   if (GetDelegate()->LinkClicked(
       event_utils::DispositionFromEventFlags(event_flags)))

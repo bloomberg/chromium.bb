@@ -116,9 +116,10 @@ class InfoBarView : public InfoBar,
   // ui::AnimationDelegate:
   virtual void AnimationProgressed(const ui::Animation* animation);
 
-  // Returns the available width of the View for use by child view layout,
-  // excluding the close button.
-  virtual int GetAvailableWidth() const;
+  // Returns the minimum width the content (that is, everything between the icon
+  // and the close button) can be shrunk to.  This is used to prevent the close
+  // button from overlapping views that cannot be shrunk any further.
+  virtual int ContentMinimumWidth() const;
 
   // Removes our associated InfoBarDelegate from the associated TabContents.
   // (Will lead to this InfoBar being closed).
@@ -128,9 +129,10 @@ class InfoBarView : public InfoBar,
 
   ui::SlideAnimation* animation() { return animation_.get(); }
 
-  // Returns the initial x coordinate of the usable area for subclasses to lay
+  // These return x coordinates delimiting the usable area for subclasses to lay
   // out their controls.
   int StartX() const;
+  int EndX() const;
 
   // Returns a centered y-position of a control of height specified in
   // |prefsize| within the standard InfoBar height. Stable during an animation.

@@ -90,18 +90,6 @@ AccessibilityTypes::Role InfoBarContainer::GetAccessibleRole() {
   return AccessibilityTypes::ROLE_GROUPING;
 }
 
-void InfoBarContainer::ViewHierarchyChanged(bool is_add,
-                                            View* parent,
-                                            View* child) {
-  if (parent == this && child->parent() == this) {
-    if (delegate_) {
-      // An InfoBar child was added or removed. Tell the delegate it needs to
-      // re-layout since our preferred size will have changed.
-      delegate_->InfoBarContainerSizeChanged(false);
-    }
-  }
-}
-
 void InfoBarContainer::Observe(NotificationType type,
                                const NotificationSource& source,
                                const NotificationDetails& details) {

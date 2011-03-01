@@ -48,21 +48,32 @@ TranslateInfoBarBase::TranslateInfoBarBase(TranslateInfoBarDelegate* delegate)
     : InfoBarView(delegate),
       normal_background_(InfoBarDelegate::PAGE_ACTION_TYPE),
       error_background_(InfoBarDelegate::WARNING_TYPE) {
-  background_color_animation_.reset(new ui::SlideAnimation(this));
-  background_color_animation_->SetTweenType(ui::Tween::LINEAR);
-  background_color_animation_->SetSlideDuration(500);
-  TranslateInfoBarDelegate::BackgroundAnimationType animation =
-      GetDelegate()->background_animation_type();
-  if (animation == TranslateInfoBarDelegate::NORMAL_TO_ERROR) {
-    background_color_animation_->Show();
-  } else if (animation == TranslateInfoBarDelegate::ERROR_TO_NORMAL) {
-    // Hide() runs the animation in reverse.
-    background_color_animation_->Reset(1.0);
-    background_color_animation_->Hide();
-  }
 }
 
 TranslateInfoBarBase::~TranslateInfoBarBase() {
+}
+
+void TranslateInfoBarBase::ViewHierarchyChanged(bool is_add,
+                                                View* parent,
+                                                View* child) {
+  if (is_add && (child == this) && (background_color_animation_ == NULL)) {
+    background_color_animation_.reset(new ui::SlideAnimation(this));
+    background_color_animation_->SetTweenType(ui::Tween::LINEAR);
+    background_color_animation_->SetSlideDuration(500);
+    TranslateInfoBarDelegate::BackgroundAnimationType animation =
+        GetDelegate()->background_animation_type();
+    if (animation == TranslateInfoBarDelegate::NORMAL_TO_ERROR) {
+      background_color_animation_->Show();
+    } else if (animation == TranslateInfoBarDelegate::ERROR_TO_NORMAL) {
+      // Hide() runs the animation in reverse.
+      background_color_animation_->Reset(1.0);
+      background_color_animation_->Hide();
+    }
+  }
+
+  // This must happen after adding all other children so InfoBarView can ensure
+  // the close button is the last child.
+  InfoBarView::ViewHierarchyChanged(is_add, parent, child);
 }
 
 void TranslateInfoBarBase::UpdateLanguageButtonText(

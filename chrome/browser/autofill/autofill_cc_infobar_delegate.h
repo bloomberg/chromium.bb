@@ -33,11 +33,6 @@ class AutoFillCCInfoBarDelegate : public ConfirmInfoBarDelegate {
   virtual string16 GetLinkText();
   virtual bool LinkClicked(WindowOpenDisposition disposition);
 
-#if defined(OS_WIN)
-  // Overridden from InfoBarDelegate:
-  virtual InfoBar* CreateInfoBar();
-#endif  // defined(OS_WIN)
-
   // The AutoFillManager that initiated this InfoBar.
   AutoFillManager* host_;
 

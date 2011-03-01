@@ -56,7 +56,6 @@ class InfoBarContainer : public AccessiblePaneView,
   virtual gfx::Size GetPreferredSize();
   virtual void Layout();
   virtual AccessibilityTypes::Role GetAccessibleRole();
-  virtual void ViewHierarchyChanged(bool is_add, View* parent, View* child);
 
   // NotificationObserver:
   virtual void Observe(NotificationType type,
