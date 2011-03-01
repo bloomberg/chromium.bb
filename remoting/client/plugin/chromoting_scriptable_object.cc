@@ -282,7 +282,7 @@ Var ChromotingScriptableObject::DoConnect(const std::vector<Var>& args,
     *exception = Var("The username must be a string.");
     return Var();
   }
-  config.username = args[0].DebugString();
+  config.username = args[0].AsString();
 
   if (!args[1].is_string()) {
     *exception = Var("The host_jid must be a string.");
