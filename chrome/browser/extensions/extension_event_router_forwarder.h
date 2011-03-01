@@ -11,9 +11,9 @@
 #include "base/basictypes.h"
 #include "base/ref_counted.h"
 #include "chrome/browser/browser_thread.h"
+#include "chrome/browser/profiles/profile.h"
 
 class GURL;
-class Profile;
 
 // This class forwards events to ExtensionEventRouters.
 // The advantages of this class over direct usage of ExtensionEventRouters are:
@@ -53,7 +53,7 @@ class ExtensionEventRouterForwarder
   // on |profile|'s ExtensionEventRouter. May be called on any thread.
   void DispatchEventToRenderers(const std::string& event_name,
                                 const std::string& event_args,
-                                Profile* profile,
+                                ProfileId profile_id,
                                 bool use_profile_to_restrict_events,
                                 const GURL& event_url);
 
@@ -64,7 +64,7 @@ class ExtensionEventRouterForwarder
   void DispatchEventToExtension(const std::string& extension_id,
                                 const std::string& event_name,
                                 const std::string& event_args,
-                                Profile* profile,
+                                ProfileId profile_id,
                                 bool use_profile_to_restrict_events,
                                 const GURL& event_url);
 
@@ -90,7 +90,7 @@ class ExtensionEventRouterForwarder
   void HandleEvent(const std::string& extension_id,
                    const std::string& event_name,
                    const std::string& event_args,
-                   Profile* profile,
+                   ProfileId profile_id,
                    bool use_profile_to_restrict_events,
                    const GURL& event_url);
 

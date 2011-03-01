@@ -10,7 +10,6 @@
 #include "base/string_number_conversions.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_thread.h"
-#include "chrome/browser/extensions/extension_io_event_router.h"
 #include "chrome/browser/io_thread.h"
 #include "chrome/browser/net/chrome_cookie_notification_details.h"
 #include "chrome/browser/net/pref_proxy_config_service.h"
@@ -168,11 +167,11 @@ void ProfileIOData::InitializeProfileParams(Profile* profile,
   params->blob_storage_context = profile->GetBlobStorageContext();
   params->file_system_context = profile->GetFileSystemContext();
   params->extension_info_map = profile->GetExtensionInfoMap();
-  params->extension_io_event_router = profile->GetExtensionIOEventRouter();
   params->prerender_manager = profile->GetPrerenderManager();
   params->protocol_handler_registry = profile->GetProtocolHandlerRegistry();
 
   params->proxy_config_service.reset(CreateProxyConfigService(profile));
+  params->profile_id = profile->GetRuntimeId();
 }
 
 ProfileIOData::RequestContext::RequestContext() {}

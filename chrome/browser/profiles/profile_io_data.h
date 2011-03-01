@@ -11,6 +11,7 @@
 #include "base/ref_counted.h"
 #include "base/scoped_ptr.h"
 #include "chrome/browser/net/chrome_url_request_context.h"
+#include "chrome/browser/profiles/profile.h"
 #include "net/base/cookie_monster.h"
 
 class CommandLine;
@@ -19,7 +20,6 @@ class ChromeBlobStorageContext;
 class ChromeURLRequestContext;
 class ChromeURLRequestContextGetter;
 class ExtensionInfoMap;
-class ExtensionIOEventRouter;
 namespace fileapi {
 class FileSystemContext;
 }
@@ -37,7 +37,6 @@ class TransportSecurityState;
 namespace prerender {
 class PrerenderManager;
 };  // namespace prerender
-class Profile;
 namespace webkit_database {
 class DatabaseTracker;
 }  // webkit_database
@@ -103,13 +102,14 @@ class ProfileIOData : public base::RefCountedThreadSafe<ProfileIOData> {
     scoped_refptr<ChromeBlobStorageContext> blob_storage_context;
     scoped_refptr<fileapi::FileSystemContext> file_system_context;
     scoped_refptr<ExtensionInfoMap> extension_info_map;
-    scoped_refptr<ExtensionIOEventRouter> extension_io_event_router;
     scoped_refptr<prerender::PrerenderManager> prerender_manager;
     scoped_refptr<ProtocolHandlerRegistry> protocol_handler_registry;
     // We need to initialize the ProxyConfigService from the UI thread
     // because on linux it relies on initializing things through gconf,
     // and needs to be on the main thread.
     scoped_ptr<net::ProxyConfigService> proxy_config_service;
+    // The profile this struct was populated from.
+    ProfileId profile_id;
   };
 
   explicit ProfileIOData(bool is_off_the_record);

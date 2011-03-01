@@ -432,10 +432,6 @@ ExtensionEventRouter* TestingProfile::GetExtensionEventRouter() {
   return NULL;
 }
 
-ExtensionIOEventRouter* TestingProfile::GetExtensionIOEventRouter() {
-  return NULL;
-}
-
 ExtensionSpecialStoragePolicy*
 TestingProfile::GetExtensionSpecialStoragePolicy() {
   if (!extension_special_storage_policy_)

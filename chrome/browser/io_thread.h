@@ -17,6 +17,7 @@
 
 class ChromeNetLog;
 class ChromeURLRequestContextGetter;
+class ExtensionEventRouterForwarder;
 class ListValue;
 class PrefService;
 
@@ -57,10 +58,14 @@ class IOThread : public BrowserProcessSubThread {
         proxy_script_fetcher_http_transaction_factory;
     scoped_ptr<net::URLSecurityManager> url_security_manager;
     scoped_refptr<net::URLRequestContext> proxy_script_fetcher_context;
+    scoped_refptr<ExtensionEventRouterForwarder>
+        extension_event_router_forwarder;
   };
 
   // |net_log| must either outlive the IOThread or be NULL.
-  IOThread(PrefService* local_state, ChromeNetLog* net_log);
+  IOThread(PrefService* local_state,
+           ChromeNetLog* net_log,
+           ExtensionEventRouterForwarder* extension_event_router_forwarder);
 
   virtual ~IOThread();
 
@@ -133,6 +138,10 @@ class IOThread : public BrowserProcessSubThread {
   // The NetLog is owned by the browser process, to allow logging from other
   // threads during shutdown, but is used most frequently on the IOThread.
   ChromeNetLog* net_log_;
+
+  // The ExtensionEventRouterForwarder allows for sending events to extensions
+  // from the IOThread.
+  ExtensionEventRouterForwarder* extension_event_router_forwarder_;
 
   // These member variables are basically global, but their lifetimes are tied
   // to the IOThread.  IOThread owns them all, despite not using scoped_ptr.

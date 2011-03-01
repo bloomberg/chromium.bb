@@ -8,7 +8,6 @@
 #include "base/logging.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_thread.h"
-#include "chrome/browser/extensions/extension_io_event_router.h"
 #include "chrome/browser/io_thread.h"
 #include "chrome/browser/net/chrome_cookie_policy.h"
 #include "chrome/browser/net/chrome_dns_cert_provenance_checker_factory.h"
@@ -143,9 +142,9 @@ void ProfileImplIOData::LazyInitializeInternal() const {
   media_request_context_->set_net_log(lazy_params_->io_thread->net_log());
   extensions_request_context_->set_net_log(lazy_params_->io_thread->net_log());
 
-  extension_io_event_router_ = profile_params.extension_io_event_router;
-  network_delegate_.reset(
-      new ChromeNetworkDelegate(extension_io_event_router_));
+  network_delegate_.reset(new ChromeNetworkDelegate(
+        io_thread_globals->extension_event_router_forwarder.get(),
+        profile_params.profile_id));
   main_request_context_->set_network_delegate(network_delegate_.get());
   media_request_context_->set_network_delegate(network_delegate_.get());
 

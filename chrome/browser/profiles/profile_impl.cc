@@ -31,7 +31,6 @@
 #include "chrome/browser/extensions/extension_error_reporter.h"
 #include "chrome/browser/extensions/extension_event_router.h"
 #include "chrome/browser/extensions/extension_info_map.h"
-#include "chrome/browser/extensions/extension_io_event_router.h"
 #include "chrome/browser/extensions/extension_message_service.h"
 #include "chrome/browser/extensions/extension_pref_store.h"
 #include "chrome/browser/extensions/extension_process_manager.h"
@@ -312,7 +311,6 @@ ProfileImpl::ProfileImpl(const FilePath& path)
   background_contents_service_.reset(
       new BackgroundContentsService(this, CommandLine::ForCurrentProcess()));
 
-  extension_io_event_router_ = new ExtensionIOEventRouter(this);
   extension_info_map_ = new ExtensionInfoMap();
 
   InitRegisteredProtocolHandlers();
@@ -363,7 +361,6 @@ void ProfileImpl::InitExtensions() {
 
   extension_process_manager_.reset(ExtensionProcessManager::Create(this));
   extension_event_router_.reset(new ExtensionEventRouter(this));
-  extension_io_event_router_ = new ExtensionIOEventRouter(this);
   extension_message_service_ = new ExtensionMessageService(this);
 
   ExtensionErrorReporter::Init(true);  // allow noisy errors.
@@ -585,9 +582,6 @@ ProfileImpl::~ProfileImpl() {
   // HistoryService first.
   favicon_service_ = NULL;
 
-  if (extension_io_event_router_)
-    extension_io_event_router_->DestroyingProfile();
-
   if (extension_message_service_)
     extension_message_service_->DestroyingProfile();
 
@@ -706,10 +700,6 @@ ExtensionMessageService* ProfileImpl::GetExtensionMessageService() {
 
 ExtensionEventRouter* ProfileImpl::GetExtensionEventRouter() {
   return extension_event_router_.get();
-}
-
-ExtensionIOEventRouter* ProfileImpl::GetExtensionIOEventRouter() {
-  return extension_io_event_router_.get();
 }
 
 ExtensionSpecialStoragePolicy*

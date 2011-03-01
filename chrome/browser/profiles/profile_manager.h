@@ -44,6 +44,10 @@ class ProfileManager : public base::NonThreadSafe,
   // otherwise it will create and manage it.
   Profile* GetProfile(const FilePath& profile_dir);
 
+  // Returns the profile with the given |profile_id| or NULL if no such profile
+  // exists.
+  Profile* GetProfileWithId(ProfileId profile_id);
+
   // Returns true if the profile pointer is known to point to an existing
   // profile.
   bool IsValidProfile(Profile* profile);

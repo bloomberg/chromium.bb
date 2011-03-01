@@ -14,8 +14,9 @@
 #include "base/singleton.h"
 #include "ipc/ipc_message.h"
 #include "chrome/browser/extensions/extension_function.h"
+#include "chrome/browser/profiles/profile.h"
 
-class ExtensionIOEventRouter;
+class ExtensionEventRouterForwarder;
 class GURL;
 
 // This class observes network events and routes them to the appropriate
@@ -36,7 +37,8 @@ class ExtensionWebRequestEventRouter {
 
   // TODO(mpcomplete): additional params
   void OnBeforeRequest(
-      const ExtensionIOEventRouter* event_router,
+      ExtensionEventRouterForwarder* event_router,
+      ProfileId profile_id,
       const GURL& url,
       const std::string& method);
 

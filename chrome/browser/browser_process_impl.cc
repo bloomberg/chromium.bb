@@ -24,6 +24,7 @@
 #include "chrome/browser/debugger/devtools_protocol_handler.h"
 #include "chrome/browser/download/download_file_manager.h"
 #include "chrome/browser/download/save_file_manager.h"
+#include "chrome/browser/extensions/extension_event_router_forwarder.h"
 #include "chrome/browser/first_run/first_run.h"
 #include "chrome/browser/google/google_url_tracker.h"
 #include "chrome/browser/icon_manager.h"
@@ -124,6 +125,8 @@ BrowserProcessImpl::BrowserProcessImpl(const CommandLine& command_line)
   shutdown_event_.reset(new base::WaitableEvent(true, false));
 
   net_log_.reset(new ChromeNetLog);
+
+  extension_event_router_forwarder_ = new ExtensionEventRouterForwarder;
 }
 
 BrowserProcessImpl::~BrowserProcessImpl() {
@@ -423,6 +426,11 @@ ui::Clipboard* BrowserProcessImpl::clipboard() {
   return clipboard_.get();
 }
 
+ExtensionEventRouterForwarder*
+BrowserProcessImpl::extension_event_router_forwarder() {
+  return extension_event_router_forwarder_.get();
+}
+
 NotificationUIManager* BrowserProcessImpl::notification_ui_manager() {
   DCHECK(CalledOnValidThread());
   if (!created_notification_ui_manager_)
@@ -663,7 +671,8 @@ void BrowserProcessImpl::CreateIOThread() {
   background_x11_thread_.swap(background_x11_thread);
 #endif
 
-  scoped_ptr<IOThread> thread(new IOThread(local_state(), net_log_.get()));
+  scoped_ptr<IOThread> thread(new IOThread(
+      local_state(), net_log_.get(), extension_event_router_forwarder_.get()));
   base::Thread::Options options;
   options.message_loop_type = MessageLoop::TYPE_IO;
   if (!thread->StartWithOptions(options))

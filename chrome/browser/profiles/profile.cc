@@ -87,7 +87,7 @@ Profile::Profile()
 const char* Profile::kProfileKey = "__PROFILE__";
 
 // static
-const ProfileId Profile::InvalidProfileId = static_cast<ProfileId>(0);
+const ProfileId Profile::kInvalidProfileId = static_cast<ProfileId>(0);
 
 // static
 void Profile::RegisterUserPrefs(PrefService* prefs) {
@@ -284,10 +284,6 @@ class OffTheRecordProfileImpl : public Profile,
 
   virtual ExtensionEventRouter* GetExtensionEventRouter() {
     return GetOriginalProfile()->GetExtensionEventRouter();
-  }
-
-  virtual ExtensionIOEventRouter* GetExtensionIOEventRouter() {
-    return GetOriginalProfile()->GetExtensionIOEventRouter();
   }
 
   virtual ExtensionSpecialStoragePolicy* GetExtensionSpecialStoragePolicy() {

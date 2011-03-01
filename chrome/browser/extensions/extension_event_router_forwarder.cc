@@ -6,7 +6,6 @@
 
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/extensions/extension_event_router.h"
-#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "googleurl/src/gurl.h"
 
@@ -19,15 +18,16 @@ ExtensionEventRouterForwarder::~ExtensionEventRouterForwarder() {
 void ExtensionEventRouterForwarder::BroadcastEventToRenderers(
     const std::string& event_name, const std::string& event_args,
     const GURL& event_url) {
-  HandleEvent("", event_name, event_args, NULL, true, event_url);
+  HandleEvent("", event_name, event_args, 0, true, event_url);
 }
 
 void ExtensionEventRouterForwarder::DispatchEventToRenderers(
     const std::string& event_name, const std::string& event_args,
-    Profile* profile, bool use_profile_to_restrict_events,
+    ProfileId profile_id, bool use_profile_to_restrict_events,
     const GURL& event_url) {
-  DCHECK(profile);
-  HandleEvent("", event_name, event_args, profile,
+  if (profile_id == Profile::kInvalidProfileId)
+    return;
+  HandleEvent("", event_name, event_args, profile_id,
               use_profile_to_restrict_events, event_url);
 }
 
@@ -35,23 +35,24 @@ void ExtensionEventRouterForwarder::BroadcastEventToExtension(
     const std::string& extension_id,
     const std::string& event_name, const std::string& event_args,
     const GURL& event_url) {
-  HandleEvent(extension_id, event_name, event_args, NULL, true, event_url);
+  HandleEvent(extension_id, event_name, event_args, 0, true, event_url);
 }
 
 void ExtensionEventRouterForwarder::DispatchEventToExtension(
     const std::string& extension_id,
     const std::string& event_name, const std::string& event_args,
-    Profile* profile, bool use_profile_to_restrict_events,
+    ProfileId profile_id, bool use_profile_to_restrict_events,
     const GURL& event_url) {
-  DCHECK(profile);
-  HandleEvent(extension_id, event_name, event_args, profile,
+  if (profile_id == Profile::kInvalidProfileId)
+    return;
+  HandleEvent(extension_id, event_name, event_args, profile_id,
               use_profile_to_restrict_events, event_url);
 }
 
 void ExtensionEventRouterForwarder::HandleEvent(
     const std::string& extension_id,
     const std::string& event_name, const std::string& event_args,
-    Profile* profile, bool use_profile_to_restrict_events,
+    ProfileId profile_id, bool use_profile_to_restrict_events,
     const GURL& event_url) {
   if (!BrowserThread::CurrentlyOn(BrowserThread::UI)) {
     BrowserThread::PostTask(
@@ -59,7 +60,7 @@ void ExtensionEventRouterForwarder::HandleEvent(
         NewRunnableMethod(
             this,
             &ExtensionEventRouterForwarder::HandleEvent,
-            extension_id, event_name, event_args, profile,
+            extension_id, event_name, event_args, profile_id,
             use_profile_to_restrict_events, event_url));
     return;
   }
@@ -68,9 +69,13 @@ void ExtensionEventRouterForwarder::HandleEvent(
     return;
 
   ProfileManager* profile_manager = g_browser_process->profile_manager();
-  if (profile) {
-    if (!profile_manager->IsValidProfile(profile))
+  Profile* profile = NULL;
+  if (profile_id != Profile::kInvalidProfileId) {
+    profile = profile_manager->GetProfileWithId(profile_id);
+    if (!profile)
       return;
+  }
+  if (profile) {
     CallExtensionEventRouter(
         profile, extension_id, event_name, event_args,
         use_profile_to_restrict_events ? profile : NULL, event_url);

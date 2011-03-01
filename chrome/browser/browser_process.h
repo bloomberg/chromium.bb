@@ -27,6 +27,7 @@ class ChromeNetLog;
 class DevToolsManager;
 class DownloadRequestLimiter;
 class DownloadStatusUpdater;
+class ExtensionEventRouterForwarder;
 class GoogleURLTracker;
 class IconManager;
 class IntranetRedirectDetector;
@@ -80,6 +81,8 @@ class BrowserProcess {
   virtual DevToolsManager* devtools_manager() = 0;
   virtual SidebarManager* sidebar_manager() = 0;
   virtual ui::Clipboard* clipboard() = 0;
+  virtual ExtensionEventRouterForwarder*
+      extension_event_router_forwarder() = 0;
 
   // Returns the manager for desktop notifications.
   virtual NotificationUIManager* notification_ui_manager() = 0;

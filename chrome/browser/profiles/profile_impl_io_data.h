@@ -10,7 +10,6 @@
 #include "base/ref_counted.h"
 #include "chrome/browser/profiles/profile_io_data.h"
 
-class ExtensionIOEventRouter;
 namespace net {
 class NetworkDelegate;
 class DnsCertProvenanceChecker;
@@ -111,7 +110,6 @@ class ProfileImplIOData : public ProfileIOData {
   mutable scoped_refptr<RequestContext> media_request_context_;
   mutable scoped_refptr<RequestContext> extensions_request_context_;
 
-  mutable scoped_refptr<ExtensionIOEventRouter> extension_io_event_router_;
   mutable scoped_ptr<net::NetworkDelegate> network_delegate_;
   mutable scoped_ptr<net::DnsCertProvenanceChecker> dns_cert_checker_;
   mutable scoped_ptr<net::HttpTransactionFactory> main_http_factory_;

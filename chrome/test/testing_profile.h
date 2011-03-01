@@ -153,7 +153,6 @@ class TestingProfile : public Profile {
   virtual ExtensionProcessManager* GetExtensionProcessManager();
   virtual ExtensionMessageService* GetExtensionMessageService();
   virtual ExtensionEventRouter* GetExtensionEventRouter();
-  virtual ExtensionIOEventRouter* GetExtensionIOEventRouter();
   virtual ExtensionSpecialStoragePolicy* GetExtensionSpecialStoragePolicy();
   virtual SSLHostState* GetSSLHostState();
   virtual net::TransportSecurityState* GetTransportSecurityState();

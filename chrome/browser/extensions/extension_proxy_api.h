@@ -10,10 +10,11 @@
 #include "base/singleton.h"
 #include "chrome/browser/extensions/extension_function.h"
 #include "chrome/browser/extensions/extension_preference_api.h"
+#include "chrome/browser/profiles/profile.h"
 #include "net/proxy/proxy_config.h"
 
 class DictionaryValue;
-class ExtensionIOEventRouter;
+class ExtensionEventRouterForwarder;
 
 // This class observes proxy error events and routes them to the appropriate
 // extensions listening to those events. All methods must be called on the IO
@@ -22,7 +23,8 @@ class ExtensionProxyEventRouter {
  public:
   static ExtensionProxyEventRouter* GetInstance();
 
-  void OnProxyError(const ExtensionIOEventRouter* event_router,
+  void OnProxyError(ExtensionEventRouterForwarder* event_router,
+                    ProfileId profile_id,
                     int error_code);
 
  private:

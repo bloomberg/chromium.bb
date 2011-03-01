@@ -117,6 +117,11 @@ ui::Clipboard* TestingBrowserProcess::clipboard() {
   return clipboard_.get();
 }
 
+ExtensionEventRouterForwarder*
+TestingBrowserProcess::extension_event_router_forwarder() {
+  return NULL;
+}
+
 NotificationUIManager* TestingBrowserProcess::notification_ui_manager() {
   return NULL;
 }

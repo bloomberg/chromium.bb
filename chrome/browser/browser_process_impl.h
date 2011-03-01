@@ -62,6 +62,7 @@ class BrowserProcessImpl : public BrowserProcess,
   virtual DevToolsManager* devtools_manager();
   virtual SidebarManager* sidebar_manager();
   virtual ui::Clipboard* clipboard();
+  virtual ExtensionEventRouterForwarder* extension_event_router_forwarder();
   virtual NotificationUIManager* notification_ui_manager();
   virtual policy::BrowserPolicyConnector* browser_policy_connector();
   virtual IconManager* icon_manager();
@@ -178,6 +179,9 @@ class BrowserProcessImpl : public BrowserProcess,
 
   bool created_icon_manager_;
   scoped_ptr<IconManager> icon_manager_;
+
+  scoped_refptr<ExtensionEventRouterForwarder>
+      extension_event_router_forwarder_;
 
   scoped_refptr<DevToolsHttpProtocolHandler> devtools_http_handler_;
 

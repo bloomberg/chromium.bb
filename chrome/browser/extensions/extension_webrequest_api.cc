@@ -9,7 +9,7 @@
 #include "base/json/json_writer.h"
 #include "base/values.h"
 #include "chrome/browser/browser_thread.h"
-#include "chrome/browser/extensions/extension_io_event_router.h"
+#include "chrome/browser/extensions/extension_event_router_forwarder.h"
 #include "chrome/browser/extensions/extension_webrequest_api_constants.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_extent.h"
@@ -209,9 +209,13 @@ void ExtensionWebRequestEventRouter::RemoveEventListenerOnUIThread(
 }
 
 void ExtensionWebRequestEventRouter::OnBeforeRequest(
-    const ExtensionIOEventRouter* event_router,
+    ExtensionEventRouterForwarder* event_router,
+    ProfileId profile_id,
     const GURL& url,
     const std::string& method) {
+  // TODO(jochen): Figure out what to do with events from the system context.
+  if (profile_id == Profile::kInvalidProfileId)
+    return;
   std::vector<const EventListener*> listeners =
       GetMatchingListeners(keys::kOnBeforeRequest, url);
   if (listeners.empty())
@@ -233,8 +237,10 @@ void ExtensionWebRequestEventRouter::OnBeforeRequest(
 
   for (std::vector<const EventListener*>::iterator it = listeners.begin();
        it != listeners.end(); ++it) {
+
     event_router->DispatchEventToExtension(
-        (*it)->extension_id, (*it)->sub_event_name, json_args);
+        (*it)->extension_id, (*it)->sub_event_name, json_args,
+        profile_id, true, GURL());
   }
 }
 

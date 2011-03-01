@@ -139,6 +139,19 @@ Profile* ProfileManager::GetProfile(const FilePath& profile_dir) {
   return GetProfile(profile_dir, true);
 }
 
+Profile* ProfileManager::GetProfileWithId(ProfileId profile_id) {
+  DCHECK_NE(Profile::kInvalidProfileId, profile_id);
+  for (iterator i = begin(); i != end(); ++i) {
+    if ((*i)->GetRuntimeId() == profile_id)
+      return *i;
+    if ((*i)->HasOffTheRecordProfile() &&
+        (*i)->GetOffTheRecordProfile()->GetRuntimeId() == profile_id) {
+      return (*i)->GetOffTheRecordProfile();
+    }
+  }
+  return NULL;
+}
+
 bool ProfileManager::IsValidProfile(Profile* profile) {
   for (iterator i = begin(); i != end(); ++i) {
     if (*i == profile)

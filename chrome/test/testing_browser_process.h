@@ -79,6 +79,8 @@ class TestingBrowserProcess : public BrowserProcess {
 
   virtual ui::Clipboard* clipboard();
 
+  virtual ExtensionEventRouterForwarder* extension_event_router_forwarder();
+
   virtual NotificationUIManager* notification_ui_manager();
 
   virtual GoogleURLTracker* google_url_tracker();

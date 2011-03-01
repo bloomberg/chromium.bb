@@ -63,7 +63,6 @@ class Extension;
 class ExtensionDevToolsManager;
 class ExtensionEventRouter;
 class ExtensionInfoMap;
-class ExtensionIOEventRouter;
 class ExtensionMessageService;
 class ExtensionPrefValueMap;
 class ExtensionProcessManager;
@@ -142,7 +141,7 @@ class Profile {
   static const char* kProfileKey;
 
   // Value that represents no profile Id.
-  static const ProfileId InvalidProfileId;
+  static const ProfileId kInvalidProfileId;
 
   Profile();
   virtual ~Profile() {}
@@ -226,9 +225,6 @@ class Profile {
 
   // Accessor. The instance is created at startup.
   virtual ExtensionEventRouter* GetExtensionEventRouter() = 0;
-
-  // Accessor. The instance is created at startup.
-  virtual ExtensionIOEventRouter* GetExtensionIOEventRouter() = 0;
 
   // Accessor. The instance is created upon first access.
   virtual ExtensionSpecialStoragePolicy*

@@ -11,8 +11,7 @@
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/prefs/proxy_config_dictionary.h"
-#include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/extensions/extension_io_event_router.h"
+#include "chrome/browser/extensions/extension_event_router_forwarder.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/common/extensions/extension_error_utils.h"
 #include "chrome/common/pref_names.h"
@@ -123,7 +122,8 @@ ExtensionProxyEventRouter::~ExtensionProxyEventRouter() {
 }
 
 void ExtensionProxyEventRouter::OnProxyError(
-    const ExtensionIOEventRouter* event_router,
+    ExtensionEventRouterForwarder* event_router,
+    ProfileId profile_id,
     int error_code) {
   ListValue args;
   DictionaryValue* dict = new DictionaryValue();
@@ -134,8 +134,14 @@ void ExtensionProxyEventRouter::OnProxyError(
 
   std::string json_args;
   base::JSONWriter::Write(&args, false, &json_args);
-  event_router->DispatchEventToRenderers(
-      kProxyEventOnProxyError, json_args, GURL());
+
+  if (profile_id != Profile::kInvalidProfileId) {
+    event_router->DispatchEventToRenderers(
+        kProxyEventOnProxyError, json_args, profile_id, true, GURL());
+  } else {
+    event_router->BroadcastEventToRenderers(
+        kProxyEventOnProxyError, json_args, GURL());
+  }
 }
 
 bool SetProxySettingsFunction::GetProxyServer(

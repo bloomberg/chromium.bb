@@ -968,8 +968,6 @@
         'browser/extensions/extension_input_api.h',
         'browser/extensions/extension_install_ui.cc',
         'browser/extensions/extension_install_ui.h',
-        'browser/extensions/extension_io_event_router.cc',
-        'browser/extensions/extension_io_event_router.h',
         'browser/extensions/extension_management_api.cc',
         'browser/extensions/extension_management_api.h',
         'browser/extensions/extension_menu_manager.cc',

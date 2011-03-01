@@ -43,7 +43,7 @@ class LocaleChangeGuard::Delegate : public NotificationDelegate {
 };
 
 LocaleChangeGuard::LocaleChangeGuard()
-    : profile_id_(Profile::InvalidProfileId),
+    : profile_id_(Profile::kInvalidProfileId),
       tab_contents_(NULL),
       note_(NULL),
       reverted_(false) {
