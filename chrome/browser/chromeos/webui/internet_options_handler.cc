@@ -933,16 +933,14 @@ ListValue* InternetOptionsHandler::GetWiredList() {
   if (cros->ethernet_enabled()) {
     const chromeos::EthernetNetwork* ethernet_network =
         cros->ethernet_network();
-    SkBitmap icon = *rb.GetBitmapNamed(IDR_STATUSBAR_WIRED_BLACK);
-    if (!ethernet_network || (!ethernet_network->connecting() &&
-        !ethernet_network->connected())) {
-      icon = chromeos::NetworkMenu::IconForDisplay(icon,
-          *rb.GetBitmapNamed(IDR_STATUSBAR_NETWORK_DISCONNECTED));
-    }
+    const SkBitmap* icon = rb.GetBitmapNamed(IDR_STATUSBAR_WIRED_BLACK);
+    const SkBitmap* badge = !ethernet_network ||
+        (!ethernet_network->connecting() && !ethernet_network->connected()) ?
+            rb.GetBitmapNamed(IDR_STATUSBAR_NETWORK_DISCONNECTED) : NULL;
     if (ethernet_network) {
       list->Append(GetNetwork(
           ethernet_network->service_path(),
-          icon,
+          chromeos::NetworkMenu::IconForDisplay(icon, badge),
           l10n_util::GetStringUTF8(IDS_STATUSBAR_NETWORK_DEVICE_ETHERNET),
           ethernet_network->connecting(),
           ethernet_network->connected(),
@@ -965,14 +963,13 @@ ListValue* InternetOptionsHandler::GetWirelessList() {
   const chromeos::WifiNetworkVector& wifi_networks = cros->wifi_networks();
   for (chromeos::WifiNetworkVector::const_iterator it =
       wifi_networks.begin(); it != wifi_networks.end(); ++it) {
-    SkBitmap icon = chromeos::NetworkMenu::IconForNetworkStrength(*it, true);
-    if ((*it)->encrypted()) {
-      icon = chromeos::NetworkMenu::IconForDisplay(icon,
-          *rb.GetBitmapNamed(IDR_STATUSBAR_NETWORK_SECURE));
-    }
+    const SkBitmap* icon =
+        chromeos::NetworkMenu::IconForNetworkStrength(*it, true);
+    const SkBitmap* badge = (*it)->encrypted() ?
+        rb.GetBitmapNamed(IDR_STATUSBAR_NETWORK_SECURE) : NULL;
     list->Append(GetNetwork(
         (*it)->service_path(),
-        icon,
+        chromeos::NetworkMenu::IconForDisplay(icon, badge),
         (*it)->name(),
         (*it)->connecting(),
         (*it)->connected(),
@@ -987,12 +984,13 @@ ListValue* InternetOptionsHandler::GetWirelessList() {
       cros->cellular_networks();
   for (chromeos::CellularNetworkVector::const_iterator it =
       cellular_networks.begin(); it != cellular_networks.end(); ++it) {
-    SkBitmap icon = chromeos::NetworkMenu::IconForNetworkStrength(*it, true);
-    SkBitmap badge = chromeos::NetworkMenu::BadgeForNetworkTechnology(*it);
-    icon = chromeos::NetworkMenu::IconForDisplay(icon, badge);
+    const SkBitmap* icon =
+        chromeos::NetworkMenu::IconForNetworkStrength(*it, true);
+    const SkBitmap* badge =
+        chromeos::NetworkMenu::BadgeForNetworkTechnology(*it);
     list->Append(GetNetwork(
         (*it)->service_path(),
-        icon,
+        chromeos::NetworkMenu::IconForDisplay(icon, badge),
         (*it)->name(),
         (*it)->connecting(),
         (*it)->connected(),
@@ -1058,21 +1056,17 @@ ListValue* InternetOptionsHandler::GetRememberedList() {
     // Don't show the active network in the remembered list.
     if (found && (it->second)->connected())
       continue;
-    SkBitmap icon;
-    if (found)
-      icon = chromeos::NetworkMenu::IconForNetworkStrength(it->second, true);
-    else
-      icon = *rb.GetBitmapNamed(IDR_STATUSBAR_NETWORK_BARS0_BLACK);
+    const SkBitmap* icon = found ?
+        chromeos::NetworkMenu::IconForNetworkStrength(it->second, true) :
+        rb.GetBitmapNamed(IDR_STATUSBAR_NETWORK_BARS0_BLACK);
     // Place the secure badge on the icon if the remembered network is
     // encrypted (the matching detected network, if any, will have the same
     // encrypted property by definition).
-    if (wifi->encrypted()) {
-      icon = chromeos::NetworkMenu::IconForDisplay(icon,
-          *rb.GetBitmapNamed(IDR_STATUSBAR_NETWORK_SECURE));
-    }
+    const SkBitmap* badge = wifi->encrypted() ?
+        rb.GetBitmapNamed(IDR_STATUSBAR_NETWORK_SECURE) : NULL;
     list->Append(GetNetwork(
         wifi->service_path(),
-        icon,
+        chromeos::NetworkMenu::IconForDisplay(icon, badge),
         wifi->name(),
         wifi->connecting(),
         wifi->connected(),

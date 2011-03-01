@@ -114,26 +114,37 @@ class NetworkMenu : public views::ViewMenuDelegate,
   // Cancels the active menu.
   void CancelMenu();
 
+  // The following methods returns pointer to a shared instance of the SkBitmap.
+  // This shared bitmap is owned by the resource bundle and should not be freed.
+
   // Returns the Icon for a network strength for a WifiNetwork |wifi|.
   // |black| is used to specify whether to return a black icon for display
   // on a light background or a white icon for display on a dark background.
-  static SkBitmap IconForNetworkStrength(const WifiNetwork* wifi, bool black);
+  // Expected to never return NULL.
+  static const SkBitmap* IconForNetworkStrength(const WifiNetwork* wifi,
+                                                bool black);
   // Returns the Icon for a network strength for CellularNetwork |cellular|.
   // |black| is used to specify whether to return a black icon for display
   // on a light background or a white icon for display on a dark background.
-  static SkBitmap IconForNetworkStrength(const CellularNetwork* cellular,
-                                         bool black);
+  // Expected to never return NULL.
+  static const SkBitmap* IconForNetworkStrength(const CellularNetwork* cellular,
+                                                bool black);
   // Returns the Icon for animating network connecting.
   // |animation_value| is the value from Animation.GetCurrentValue()
   // |black| is used to specify whether to return a black icon for display
   // on a light background or a white icon for display on a dark background.
-  static SkBitmap IconForNetworkConnecting(double animation_value, bool black);
+  // Expected to never return NULL.
+  static const SkBitmap* IconForNetworkConnecting(double animation_value,
+                                                  bool black);
   // Returns the Badge for a given network technology.
   // This returns different colored symbols depending on cellular data left.
-  static SkBitmap BadgeForNetworkTechnology(const CellularNetwork* cellular);
+  // Returns NULL if not badge is needed.
+  static const SkBitmap* BadgeForNetworkTechnology(
+      const CellularNetwork* cellular);
   // This method will convert the |icon| bitmap to the correct size for display.
-  // If the |badge| icon is not empty, it will draw that on top of the icon.
-  static SkBitmap IconForDisplay(SkBitmap icon, SkBitmap badge);
+  // |icon| must be non-NULL.
+  // If the |badge| icon is not NULL, it will draw that on top of the icon.
+  static SkBitmap IconForDisplay(const SkBitmap* icon, const SkBitmap* badge);
 
  protected:
   virtual bool IsBrowserMode() const = 0;
@@ -210,6 +221,12 @@ class NetworkMenu : public views::ViewMenuDelegate,
   // TODO(chocobo): Add these back when we decide to do colored bars again.
 //  static const int kBarsImagesLowData[];
 //  static const int kBarsImagesVLowData[];
+
+  // The number of animating images for network connecting.
+  static const int kNumAnimatingImages;
+  // Animation images. These are created lazily.
+  static SkBitmap kAnimatingImages[];
+  static SkBitmap kAnimatingImagesBlack[];
 
   // Our menu items.
   MenuItemVector menu_items_;

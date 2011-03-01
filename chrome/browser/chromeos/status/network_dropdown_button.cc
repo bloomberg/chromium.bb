@@ -50,8 +50,8 @@ NetworkDropdownButton::~NetworkDropdownButton() {
 void NetworkDropdownButton::AnimationProgressed(
     const ui::Animation* animation) {
   if (animation == &animation_connecting_) {
-    SetIcon(IconForNetworkConnecting(animation_connecting_.GetCurrentValue(),
-                                     true));
+    SetIcon(*IconForNetworkConnecting(animation_connecting_.GetCurrentValue(),
+                                      true));
     SchedulePaint();
   } else {
     MenuButton::AnimationProgressed(animation);
@@ -86,12 +86,12 @@ void NetworkDropdownButton::OnNetworkManagerChanged(NetworkLibrary* cros) {
       } else if (active_network->type() == TYPE_WIFI) {
         const WifiNetwork* wifi =
             static_cast<const WifiNetwork*>(active_network);
-        SetIcon(IconForNetworkStrength(wifi, true));
+        SetIcon(*IconForNetworkStrength(wifi, true));
         SetText(ASCIIToWide(wifi->name()));
       } else if (active_network->type() == TYPE_CELLULAR) {
         const CellularNetwork* cellular =
             static_cast<const CellularNetwork*>(active_network);
-        SetIcon(IconForNetworkStrength(cellular, true));
+        SetIcon(*IconForNetworkStrength(cellular, true));
         SetText(ASCIIToWide(cellular->name()));
       } else {
         NOTREACHED();
@@ -100,7 +100,7 @@ void NetworkDropdownButton::OnNetworkManagerChanged(NetworkLibrary* cros) {
       if (!animation_connecting_.is_animating()) {
         animation_connecting_.Reset();
         animation_connecting_.StartThrobbing(-1);
-        SetIcon(IconForNetworkConnecting(0, true));
+        SetIcon(*IconForNetworkConnecting(0, true));
       }
       if (cros->wifi_connecting())
         SetText(ASCIIToWide(cros->wifi_network()->name()));

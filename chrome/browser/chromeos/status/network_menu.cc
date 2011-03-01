@@ -80,6 +80,15 @@ const int NetworkMenu::kBarsImagesVLowData[kNumBarsImages] = {
 };
 */
 
+// static
+const int NetworkMenu::kNumAnimatingImages = 10;
+
+// static
+SkBitmap NetworkMenu::kAnimatingImages[kNumAnimatingImages];
+
+// static
+SkBitmap NetworkMenu::kAnimatingImagesBlack[kNumAnimatingImages];
+
 NetworkMenu::NetworkMenu()
     : min_width_(-1) {
   use_settings_ui_ = !CommandLine::ForCurrentProcess()->HasSwitch(
@@ -355,11 +364,11 @@ void NetworkMenu::UpdateMenu() {
 }
 
 // static
-SkBitmap NetworkMenu::IconForNetworkStrength(const WifiNetwork* wifi,
-                                             bool black) {
+const SkBitmap* NetworkMenu::IconForNetworkStrength(const WifiNetwork* wifi,
+                                                    bool black) {
   DCHECK(wifi);
   if (wifi->strength() == 0) {
-    return *ResourceBundle::GetSharedInstance().GetBitmapNamed(
+    return ResourceBundle::GetSharedInstance().GetBitmapNamed(
         black ? IDR_STATUSBAR_NETWORK_BARS0_BLACK :
                 IDR_STATUSBAR_NETWORK_BARS0);
   }
@@ -367,17 +376,17 @@ SkBitmap NetworkMenu::IconForNetworkStrength(const WifiNetwork* wifi,
       nextafter(static_cast<float>(kNumBarsImages), 0));
   index = std::max(std::min(index, kNumBarsImages - 1), 0);
   const int* images = black ? kBarsImagesBlack : kBarsImages;
-  return *ResourceBundle::GetSharedInstance().GetBitmapNamed(images[index]);
+  return ResourceBundle::GetSharedInstance().GetBitmapNamed(images[index]);
 }
 
 // static
-SkBitmap NetworkMenu::IconForNetworkStrength(const CellularNetwork* cellular,
-                                             bool black) {
+const SkBitmap* NetworkMenu::IconForNetworkStrength(
+    const CellularNetwork* cellular, bool black) {
   DCHECK(cellular);
   // If no data, then we show 0 bars.
   if (cellular->strength() == 0 ||
       cellular->data_left() == CellularNetwork::DATA_NONE) {
-    return *ResourceBundle::GetSharedInstance().GetBitmapNamed(
+    return ResourceBundle::GetSharedInstance().GetBitmapNamed(
         black ? IDR_STATUSBAR_NETWORK_BARS0_BLACK :
                 IDR_STATUSBAR_NETWORK_BARS0);
   }
@@ -385,30 +394,43 @@ SkBitmap NetworkMenu::IconForNetworkStrength(const CellularNetwork* cellular,
       nextafter(static_cast<float>(kNumBarsImages), 0));
   index = std::max(std::min(index, kNumBarsImages - 1), 0);
   const int* images = black ? kBarsImagesBlack : kBarsImages;
-  return *ResourceBundle::GetSharedInstance().GetBitmapNamed(images[index]);
+  return ResourceBundle::GetSharedInstance().GetBitmapNamed(images[index]);
 }
 
 // static
-SkBitmap NetworkMenu::IconForNetworkConnecting(double animation_value,
-                                               bool black) {
+const SkBitmap* NetworkMenu::IconForNetworkConnecting(double animation_value,
+                                                      bool black) {
   // Draw animation of bars icon fading in and out.
   // We are fading between 0 bars and a third of the opacity of 4 bars.
   // Use the current value of the animation to calculate the alpha value
   // of how transparent the icon is.
-  ResourceBundle& rb = ResourceBundle::GetSharedInstance();
-  return SkBitmapOperations::CreateBlendedBitmap(
-      *rb.GetBitmapNamed(black ? IDR_STATUSBAR_NETWORK_BARS0_BLACK :
-                                 IDR_STATUSBAR_NETWORK_BARS0),
-      *rb.GetBitmapNamed(black ? IDR_STATUSBAR_NETWORK_BARS4_BLACK :
-                                 IDR_STATUSBAR_NETWORK_BARS4),
-      animation_value / 3);
+
+  int index = static_cast<int>(animation_value *
+      nextafter(static_cast<float>(kNumAnimatingImages), 0));
+  index = std::max(std::min(index, kNumAnimatingImages - 1), 0);
+
+  SkBitmap* images = black ? kAnimatingImagesBlack : kAnimatingImages;
+  // Lazily cache images.
+  if (images[index].empty()) {
+    // Divide index (0-9) by 9 (assume kNumAnimatingImages==10) to get (0.0-1.0)
+    // Then we take a third of that for the alpha value.
+    double alpha = (static_cast<double>(index) / (kNumAnimatingImages - 1)) / 3;
+    ResourceBundle& rb = ResourceBundle::GetSharedInstance();
+    images[index] = SkBitmapOperations::CreateBlendedBitmap(
+        *rb.GetBitmapNamed(black ? IDR_STATUSBAR_NETWORK_BARS0_BLACK :
+                                   IDR_STATUSBAR_NETWORK_BARS0),
+        *rb.GetBitmapNamed(black ? IDR_STATUSBAR_NETWORK_BARS4_BLACK :
+                                   IDR_STATUSBAR_NETWORK_BARS4),
+        alpha);
+  }
+  return &images[index];
 }
 
 // static
-SkBitmap NetworkMenu::BadgeForNetworkTechnology(
+const SkBitmap* NetworkMenu::BadgeForNetworkTechnology(
     const CellularNetwork* cellular) {
   if (!cellular)
-    return SkBitmap();
+    return NULL;
 
   int id = -1;
   switch (cellular->network_technology()) {
@@ -471,21 +493,25 @@ SkBitmap NetworkMenu::BadgeForNetworkTechnology(
       break;
   }
   if (id == -1)
-    return SkBitmap();
+    return NULL;
   else
-    return *ResourceBundle::GetSharedInstance().GetBitmapNamed(id);
+    return ResourceBundle::GetSharedInstance().GetBitmapNamed(id);
 }
 
 // static
-SkBitmap NetworkMenu::IconForDisplay(SkBitmap icon, SkBitmap badge) {
+SkBitmap NetworkMenu::IconForDisplay(const SkBitmap* icon,
+                                     const SkBitmap* badge) {
+  DCHECK(icon);
+  if (badge == NULL)
+    return *icon;
+
   // Draw badge at (14,14).
   static const int kBadgeX = 14;
   static const int kBadgeY = 14;
 
-  gfx::CanvasSkia canvas(icon.width(), icon.height(), false);
-  canvas.DrawBitmapInt(icon, 0, 0);
-  if (!badge.empty())
-    canvas.DrawBitmapInt(badge, kBadgeX, kBadgeY);
+  gfx::CanvasSkia canvas(icon->width(), icon->height(), false);
+  canvas.DrawBitmapInt(*icon, 0, 0);
+  canvas.DrawBitmapInt(*badge, kBadgeX, kBadgeY);
   return canvas.ExtractBitmap();
 }
 
@@ -546,9 +572,9 @@ void NetworkMenu::InitMenuItems() {
     } else {
       label = l10n_util::GetStringUTF16(IDS_STATUSBAR_NETWORK_DEVICE_ETHERNET);
     }
-    SkBitmap icon = *rb.GetBitmapNamed(IDR_STATUSBAR_WIRED_BLACK);
-    SkBitmap badge = ethernet_connecting || ethernet_connected ?
-        SkBitmap() : *rb.GetBitmapNamed(IDR_STATUSBAR_NETWORK_DISCONNECTED);
+    const SkBitmap* icon = rb.GetBitmapNamed(IDR_STATUSBAR_WIRED_BLACK);
+    const SkBitmap* badge = ethernet_connecting || ethernet_connected ?
+        NULL : rb.GetBitmapNamed(IDR_STATUSBAR_NETWORK_DISCONNECTED);
     int flag = FLAG_ETHERNET;
     if (ethernet_connecting || ethernet_connected)
       flag |= FLAG_ASSOCIATED;
@@ -584,9 +610,9 @@ void NetworkMenu::InitMenuItems() {
         }
       }
 
-      SkBitmap icon = IconForNetworkStrength(wifi_networks[i], true);
-      SkBitmap badge = wifi_networks[i]->encrypted() ?
-          *rb.GetBitmapNamed(IDR_STATUSBAR_NETWORK_SECURE) : SkBitmap();
+      const SkBitmap* icon = IconForNetworkStrength(wifi_networks[i], true);
+      const SkBitmap* badge = wifi_networks[i]->encrypted() ?
+          rb.GetBitmapNamed(IDR_STATUSBAR_NETWORK_SECURE) : NULL;
       int flag = FLAG_WIFI;
       if (!wifi_networks[i]->connectable())
         flag |= FLAG_DISABLED;
@@ -644,8 +670,8 @@ void NetworkMenu::InitMenuItems() {
         }
       }
 
-      SkBitmap icon = IconForNetworkStrength(cell_networks[i], true);
-      SkBitmap badge = BadgeForNetworkTechnology(cell_networks[i]);
+      const SkBitmap* icon = IconForNetworkStrength(cell_networks[i], true);
+      const SkBitmap* badge = BadgeForNetworkTechnology(cell_networks[i]);
       int flag = FLAG_CELLULAR;
       if (!cell_networks[i]->connectable())
         flag |= FLAG_DISABLED;
@@ -692,8 +718,7 @@ void NetworkMenu::InitMenuItems() {
     menu_items_.push_back(MenuItem(
         ui::MenuModel::TYPE_COMMAND,
         l10n_util::GetStringUTF16(IDS_OPTIONS_SETTINGS_OTHER_NETWORKS),
-        IconForDisplay(*rb.GetBitmapNamed(IDR_STATUSBAR_NETWORK_BARS0_BLACK),
-                       SkBitmap()),
+        *rb.GetBitmapNamed(IDR_STATUSBAR_NETWORK_BARS0_BLACK),
         std::string(), FLAG_OTHER_NETWORK));
   }
 

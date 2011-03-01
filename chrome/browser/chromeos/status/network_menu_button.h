@@ -74,11 +74,11 @@ class NetworkMenuButton : public StatusAreaButton,
 
  private:
   // Sets the icon and the badge.
-  void SetIconAndBadge(const SkBitmap& icon, const SkBitmap& badge);
+  void SetIconAndBadge(const SkBitmap* icon, const SkBitmap* badge);
   // Sets the icon only. Keep the previous badge.
-  void SetIconOnly(const SkBitmap& icon);
+  void SetIconOnly(const SkBitmap* icon);
   // Sets the badge only. Keep the previous icon.
-  void SetBadgeOnly(const SkBitmap& badge);
+  void SetBadgeOnly(const SkBitmap* badge);
   // Set the network icon based on the status of the |network|
   void SetNetworkIcon(NetworkLibrary* cros, const Network* network);
 
@@ -90,9 +90,9 @@ class NetworkMenuButton : public StatusAreaButton,
   StatusAreaHost* host_;
 
   // The icon showing the network strength.
-  SkBitmap icon_;
+  const SkBitmap* icon_;
   // A badge icon displayed on top of the icon.
-  SkBitmap badge_;
+  const SkBitmap* badge_;
 
   // The throb animation that does the wifi connecting animation.
   ui::ThrobAnimation animation_connecting_;
