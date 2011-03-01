@@ -65,8 +65,9 @@ class SpeechRecognizer
 
     // Informs of a change in the captured audio level, useful if displaying
     // a microphone volume indicator while recording.
-    // The value of |volume| is in the [0.0, 1.0] range.
-    virtual void SetInputVolume(int caller_id, float volume) = 0;
+    // The value of |volume| and |noise_volume| is in the [0.0, 1.0] range.
+    virtual void SetInputVolume(int caller_id, float volume,
+                                float noise_volume) = 0;
 
    protected:
     virtual ~Delegate() {}

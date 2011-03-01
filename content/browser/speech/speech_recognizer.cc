@@ -17,11 +17,32 @@ namespace {
 // The following constants are related to the volume level indicator shown in
 // the UI for recorded audio.
 // Multiplier used when new volume is greater than previous level.
-const float kUpSmoothingFactor = 0.9f;
+const float kUpSmoothingFactor = 1.0f;
 // Multiplier used when new volume is lesser than previous level.
-const float kDownSmoothingFactor = 0.4f;
-const float kAudioMeterMinDb = 10.0f;  // Lower bar for volume meter.
-const float kAudioMeterDbRange = 25.0f;
+const float kDownSmoothingFactor = 0.7f;
+// RMS dB value of a maximum (unclipped) sine wave for int16 samples.
+const float kAudioMeterMaxDb = 90.31f;
+// This value corresponds to RMS dB for int16 with 6 most-significant-bits = 0.
+// Values lower than this will display as empty level-meter.
+const float kAudioMeterMinDb = 60.21f;
+const float kAudioMeterDbRange = kAudioMeterMaxDb - kAudioMeterMinDb;
+
+// Maximum level to draw to display unclipped meter. (1.0f displays clipping.)
+const float kAudioMeterRangeMaxUnclipped = 47.0f / 48.0f;
+
+// Returns true if more than 5% of the samples are at min or max value.
+bool Clipping(const int16* samples, int num_samples) {
+  int clipping_samples = 0;
+  const int kThreshold = num_samples / 20;
+  for (int i = 0; i < num_samples; ++i) {
+    if (samples[i] <= -32767 || samples[i] >= 32767) {
+      if (++clipping_samples > kThreshold)
+        return true;
+    }
+  }
+  return false;
+}
+
 }  // namespace
 
 namespace speech_input {
@@ -220,14 +241,22 @@ void SpeechRecognizer::HandleOnData(string* data) {
 
   // Calculate the input volume to display in the UI, smoothing towards the
   // new level.
-  float level = (rms - kAudioMeterMinDb) / kAudioMeterDbRange;
-  level = std::min(std::max(0.0f, level), 1.0f);
+  float level = (rms - kAudioMeterMinDb) /
+      (kAudioMeterDbRange / kAudioMeterRangeMaxUnclipped);
+  level = std::min(std::max(0.0f, level), kAudioMeterRangeMaxUnclipped);
   if (level > audio_level_) {
     audio_level_ += (level - audio_level_) * kUpSmoothingFactor;
   } else {
     audio_level_ += (level - audio_level_) * kDownSmoothingFactor;
   }
-  delegate_->SetInputVolume(caller_id_, audio_level_);
+
+  float noise_level = (endpointer_.NoiseLevelDb() - kAudioMeterMinDb) /
+      (kAudioMeterDbRange / kAudioMeterRangeMaxUnclipped);
+  noise_level = std::min(std::max(0.0f, noise_level),
+      kAudioMeterRangeMaxUnclipped);
+
+  delegate_->SetInputVolume(caller_id_,
+      Clipping(samples, num_samples) ? 1.0f : audio_level_, noise_level);
 
   if (endpointer_.speech_input_complete()) {
     StopRecording();

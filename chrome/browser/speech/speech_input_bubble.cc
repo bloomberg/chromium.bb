@@ -11,9 +11,10 @@
 #include "ui/gfx/rect.h"
 
 SpeechInputBubble::FactoryMethod SpeechInputBubble::factory_ = NULL;
-const int SpeechInputBubble::kBubbleTargetOffsetX = 5;
+const int SpeechInputBubble::kBubbleTargetOffsetX = 10;
 
 SkBitmap* SpeechInputBubbleBase::mic_empty_ = NULL;
+SkBitmap* SpeechInputBubbleBase::mic_noise_ = NULL;
 SkBitmap* SpeechInputBubbleBase::mic_full_ = NULL;
 SkBitmap* SpeechInputBubbleBase::mic_mask_ = NULL;
 SkBitmap* SpeechInputBubbleBase::spinner_ = NULL;
@@ -39,6 +40,8 @@ SpeechInputBubbleBase::SpeechInputBubbleBase(TabContents* tab_contents)
   if (!mic_empty_) {  // Static variables.
     mic_empty_ = ResourceBundle::GetSharedInstance().GetBitmapNamed(
         IDR_SPEECH_INPUT_MIC_EMPTY);
+    mic_noise_ = ResourceBundle::GetSharedInstance().GetBitmapNamed(
+        IDR_SPEECH_INPUT_MIC_NOISE);
     mic_full_ = ResourceBundle::GetSharedInstance().GetBitmapNamed(
         IDR_SPEECH_INPUT_MIC_FULL);
     mic_mask_ = ResourceBundle::GetSharedInstance().GetBitmapNamed(
@@ -93,14 +96,9 @@ void SpeechInputBubbleBase::SetRecordingMode() {
 
 void SpeechInputBubbleBase::SetRecognizingMode() {
   display_mode_ = DISPLAY_MODE_RECOGNIZING;
-  UpdateLayout();
-
   animation_step_ = 0;
-  MessageLoop::current()->PostDelayedTask(
-      FROM_HERE,
-      task_factory_.NewRunnableMethod(
-          &SpeechInputBubbleBase::DoRecognizingAnimationStep),
-      kRecognizingAnimationStepMs);
+  DoRecognizingAnimationStep();
+  UpdateLayout();
 }
 
 void SpeechInputBubbleBase::DoRecognizingAnimationStep() {
@@ -121,31 +119,39 @@ void SpeechInputBubbleBase::SetMessage(const string16& text) {
   UpdateLayout();
 }
 
-void SpeechInputBubbleBase::SetInputVolume(float volume) {
-  mic_image_->eraseARGB(0, 0, 0, 0);
+void SpeechInputBubbleBase::DrawVolumeOverlay(SkCanvas* canvas,
+                                              const SkBitmap& bitmap,
+                                              float volume) {
   buffer_image_->eraseARGB(0, 0, 0, 0);
 
   int width = mic_image_->width();
   int height = mic_image_->height();
-  SkCanvas canvas(*mic_image_);
   SkCanvas buffer_canvas(*buffer_image_);
 
-  // The 'full volume' mic image is drawn clipped to the current volume level,
-  // and a gradient mask is applied over it with the 'multiply' compositing
-  // operator to show soft edges at the top.
   buffer_canvas.save();
-  SkScalar clip_top = ((1.0f - volume) * height * 3) / 2.0f - height / 2.0f;
-  buffer_canvas.clipRect(SkRect::MakeLTRB(0, clip_top,
-      SkIntToScalar(width), SkIntToScalar(height)));
-  buffer_canvas.drawBitmap(*mic_full_, 0, 0);
+  const int kVolumeSteps = 12;
+  SkScalar clip_right =
+      (((1.0f - volume) * (width * (kVolumeSteps + 1))) - width) / kVolumeSteps;
+  buffer_canvas.clipRect(SkRect::MakeLTRB(0, 0,
+      SkIntToScalar(width) - clip_right, SkIntToScalar(height)));
+  buffer_canvas.drawBitmap(bitmap, 0, 0);
   buffer_canvas.restore();
   SkPaint multiply_paint;
   multiply_paint.setXfermode(SkXfermode::Create(SkXfermode::kMultiply_Mode));
-  buffer_canvas.drawBitmap(*mic_mask_, 0, clip_top, &multiply_paint);
+  buffer_canvas.drawBitmap(*mic_mask_, -clip_right, 0, &multiply_paint);
 
-  // Draw the empty volume image first and the current volume image on top.
+  canvas->drawBitmap(*buffer_image_.get(), 0, 0);
+}
+
+void SpeechInputBubbleBase::SetInputVolume(float volume, float noise_volume) {
+  mic_image_->eraseARGB(0, 0, 0, 0);
+  SkCanvas canvas(*mic_image_);
+
+  // Draw the empty volume image first and the current volume image on top,
+  // and then the noise volume image on top of both.
   canvas.drawBitmap(*mic_empty_, 0, 0);
-  canvas.drawBitmap(*buffer_image_.get(), 0, 0);
+  DrawVolumeOverlay(&canvas, *mic_full_, volume);
+  DrawVolumeOverlay(&canvas, *mic_noise_, noise_volume);
 
   SetImage(*mic_image_.get());
 }

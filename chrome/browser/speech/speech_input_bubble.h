@@ -13,9 +13,11 @@
 #include "base/task.h"
 
 namespace gfx {
+class Canvas;
 class Rect;
 }
 class SkBitmap;
+class SkCanvas;
 class TabContents;
 
 // SpeechInputBubble displays a popup info bubble during speech recognition,
@@ -96,8 +98,8 @@ class SpeechInputBubble {
   // |Delegate::InfoBubbleFocusChanged| as well.
   virtual void Hide() = 0;
 
-  // Updates the current captured audio volume displayed on screen.
-  virtual void SetInputVolume(float volume) = 0;
+  // Updates and draws the current captured audio volume displayed on screen.
+  virtual void SetInputVolume(float volume, float noise_volume) = 0;
 
   // Returns the TabContents for which this bubble gets displayed.
   virtual TabContents* tab_contents() = 0;
@@ -129,7 +131,7 @@ class SpeechInputBubbleBase : public SpeechInputBubble {
   virtual void SetRecordingMode();
   virtual void SetRecognizingMode();
   virtual void SetMessage(const string16& text);
-  virtual void SetInputVolume(float volume);
+  virtual void SetInputVolume(float volume, float noise_volume);
   virtual TabContents* tab_contents();
 
  protected:
@@ -152,6 +154,10 @@ class SpeechInputBubbleBase : public SpeechInputBubble {
  private:
   void DoRecognizingAnimationStep();
 
+  void DrawVolumeOverlay(SkCanvas* canvas,
+                         const SkBitmap& bitmap,
+                         float volume);
+
   // Task factory used for animation timer.
   ScopedRunnableMethodFactory<SpeechInputBubbleBase> task_factory_;
   int animation_step_;  // Current index/step of the animation.
@@ -167,6 +173,7 @@ class SpeechInputBubbleBase : public SpeechInputBubble {
   TabContents* tab_contents_;
 
   static SkBitmap* mic_full_;  // Mic image with full volume.
+  static SkBitmap* mic_noise_;  // Mic image with full noise volume.
   static SkBitmap* mic_empty_;  // Mic image with zero volume.
   static SkBitmap* mic_mask_;  // Gradient mask used by the volume indicator.
   static SkBitmap* spinner_;  // Spinner image for the progress animation.

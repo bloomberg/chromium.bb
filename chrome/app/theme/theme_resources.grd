@@ -367,6 +367,7 @@
       <include name="IDR_SETTINGS_FAVICON" file="settings_favicon.png" type="BINDATA" />
       <include name="IDR_SIDETABS_NEW_TAB" file="sidetabs_new_tab.png" type="BINDATA" />
       <include name="IDR_SPEECH_INPUT_MIC_EMPTY" file="speech_input_mic_empty.png" type="BINDATA" />
+      <include name="IDR_SPEECH_INPUT_MIC_NOISE" file="speech_input_mic_noise.png" type="BINDATA" />
       <include name="IDR_SPEECH_INPUT_MIC_FULL" file="speech_input_mic_full.png" type="BINDATA" />
       <include name="IDR_SPEECH_INPUT_MIC_MASK" file="speech_input_mic_mask.png" type="BINDATA" />
       <include name="IDR_SPEECH_INPUT_SPINNER" file="speech_input_spinner.png" type="BINDATA" />

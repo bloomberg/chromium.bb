@@ -35,6 +35,10 @@ class SpeechInputManager {
   // information and command line flags.
   static bool IsFeatureEnabled();
 
+  // Invokes the platform provided microphone settings UI in a non-blocking way,
+  // via the BrowserThread::PROCESS_LAUNCHER thread.
+  static void ShowAudioInputSettings();
+
   // Factory method to access the singleton. We have this method here instead of
   // using Singleton directly in the calling code to aid tests in injection
   // mocks.

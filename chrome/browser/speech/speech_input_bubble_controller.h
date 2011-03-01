@@ -68,7 +68,7 @@ class SpeechInputBubbleController
   void SetBubbleMessage(int caller_id, const string16& text);
 
   // Updates the current captured audio volume displayed on screen.
-  void SetBubbleInputVolume(int caller_id, float volume);
+  void SetBubbleInputVolume(int caller_id, float volume, float noise_volume);
 
   void CloseBubble(int caller_id);
 
@@ -102,7 +102,8 @@ class SpeechInputBubbleController
   void ProcessRequestInUiThread(int caller_id,
                                 RequestType type,
                                 const string16& text,
-                                float volume);
+                                float volume,
+                                float noise_volume);
 
   // Called whenever a bubble was added to or removed from the list. If the
   // bubble was being added, this method registers for close notifications with

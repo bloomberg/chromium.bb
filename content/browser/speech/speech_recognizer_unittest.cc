@@ -62,8 +62,9 @@ class SpeechRecognizerTest : public SpeechRecognizerDelegate,
     error_ = error;
   }
 
-  virtual void SetInputVolume(int caller_id, float volume) {
+  virtual void SetInputVolume(int caller_id, float volume, float noise_volume) {
     volume_ = volume;
+    noise_volume_ = noise_volume;
   }
 
   // testing::Test methods.
@@ -83,6 +84,15 @@ class SpeechRecognizerTest : public SpeechRecognizerDelegate,
       audio_packet_[i] = static_cast<uint8>(i);
   }
 
+  void FillPacketWithNoise() {
+    int value = 0;
+    int factor = 175;
+    for (size_t i = 0; i < audio_packet_.size(); ++i) {
+      value += factor;
+      audio_packet_[i] = value % 100;
+    }
+  }
+
  protected:
   MessageLoopForIO message_loop_;
   BrowserThread io_thread_;
@@ -95,6 +105,7 @@ class SpeechRecognizerTest : public SpeechRecognizerDelegate,
   TestAudioInputControllerFactory audio_input_controller_factory_;
   std::vector<uint8> audio_packet_;
   float volume_;
+  float noise_volume_;
 };
 
 TEST_F(SpeechRecognizerTest, StopNoData) {
@@ -272,6 +283,7 @@ TEST_F(SpeechRecognizerTest, SetInputVolumeCallback) {
   // Feed some samples to begin with for the endpointer to do noise estimation.
   int num_packets = SpeechRecognizer::kEndpointerEstimationTimeMs /
                     SpeechRecognizer::kAudioPacketIntervalMs;
+  FillPacketWithNoise();
   for (int i = 0; i < num_packets; ++i) {
     controller->event_handler()->OnData(controller, &audio_packet_[0],
                                         audio_packet_.size());
@@ -283,13 +295,14 @@ TEST_F(SpeechRecognizerTest, SetInputVolumeCallback) {
   controller->event_handler()->OnData(controller, &audio_packet_[0],
                                       audio_packet_.size());
   MessageLoop::current()->RunAllPending();
-  EXPECT_EQ(0, volume_);
+  EXPECT_FLOAT_EQ(0.51877826f, volume_);
 
   FillPacketWithTestWaveform();
   controller->event_handler()->OnData(controller, &audio_packet_[0],
                                       audio_packet_.size());
   MessageLoop::current()->RunAllPending();
-  EXPECT_FLOAT_EQ(0.9f, volume_);
+  EXPECT_FLOAT_EQ(0.81907868f, volume_);
+  EXPECT_FLOAT_EQ(0.52143687f, noise_volume_);
 
   EXPECT_EQ(SpeechRecognizer::RECOGNIZER_NO_ERROR, error_);
   EXPECT_FALSE(recording_complete_);

@@ -14,6 +14,7 @@
 #include "base/threading/thread_restrictions.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/browser_thread.h"
 #include "chrome/browser/platform_util.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/speech/speech_input_bubble_controller.h"
@@ -120,7 +121,7 @@ class SpeechInputManagerImpl : public SpeechInputManager,
   virtual void OnRecognizerError(int caller_id,
                                  SpeechRecognizer::ErrorCode error);
   virtual void DidCompleteEnvironmentEstimation(int caller_id);
-  virtual void SetInputVolume(int caller_id, float volume);
+  virtual void SetInputVolume(int caller_id, float volume, float noise_volume);
 
   // SpeechInputBubbleController::Delegate methods.
   virtual void InfoBubbleButtonClicked(int caller_id,
@@ -181,6 +182,22 @@ bool SpeechInputManager::IsFeatureEnabled() {
   }
 
   return enabled;
+}
+
+void SpeechInputManager::ShowAudioInputSettings() {
+  // Since AudioManager::ShowAudioInputSettings can potentially launch external
+  // processes, do that in the PROCESS_LAUNCHER thread to not block the calling
+  // threads.
+  if (!BrowserThread::CurrentlyOn(BrowserThread::PROCESS_LAUNCHER)) {
+    BrowserThread::PostTask(
+        BrowserThread::PROCESS_LAUNCHER, FROM_HERE,
+        NewRunnableFunction(&SpeechInputManager::ShowAudioInputSettings));
+    return;
+  }
+
+  DCHECK(AudioManager::GetAudioManager()->CanShowAudioInputSettings());
+  if (AudioManager::GetAudioManager()->CanShowAudioInputSettings())
+    AudioManager::GetAudioManager()->ShowAudioInputSettings();
 }
 
 SpeechInputManagerImpl::SpeechInputManagerImpl()
@@ -340,11 +357,12 @@ void SpeechInputManagerImpl::DidCompleteEnvironmentEstimation(int caller_id) {
   bubble_controller_->SetBubbleRecordingMode(caller_id);
 }
 
-void SpeechInputManagerImpl::SetInputVolume(int caller_id, float volume) {
+void SpeechInputManagerImpl::SetInputVolume(int caller_id, float volume,
+                                            float noise_volume) {
   DCHECK(HasPendingRequest(caller_id));
   DCHECK_EQ(recording_caller_id_, caller_id);
 
-  bubble_controller_->SetBubbleInputVolume(caller_id, volume);
+  bubble_controller_->SetBubbleInputVolume(caller_id, volume, noise_volume);
 }
 
 void SpeechInputManagerImpl::CancelRecognitionAndInformDelegate(int caller_id) {
