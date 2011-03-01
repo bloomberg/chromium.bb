@@ -3568,7 +3568,7 @@ TEST_F(SyncerTest, MergingExistingItems) {
   SyncRepeatedlyToTriggerConflictResolution(session_.get());
 }
 
-TEST_F(SyncerTest, OneBajillionUpdates) {
+TEST_F(SyncerTest, DISABLED_OneBajillionUpdates) {
   ScopedDirLookup dir(syncdb_.manager(), syncdb_.name());
   CHECK(dir.good());
   int one_bajillion = 4000;
