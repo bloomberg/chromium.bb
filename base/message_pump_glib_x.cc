@@ -32,6 +32,11 @@ gboolean GtkWidgetRealizeCallback(GSignalInvocationHint* hint, guint nparams,
 
   DCHECK(window);  // TODO(sad): Remove once determined if necessary.
 
+  if (GDK_WINDOW_TYPE(window) != GDK_WINDOW_TOPLEVEL &&
+      GDK_WINDOW_TYPE(window) != GDK_WINDOW_CHILD &&
+      GDK_WINDOW_TYPE(window) != GDK_WINDOW_DIALOG)
+    return true;
+
   // TODO(sad): Do we need to set a flag on |window| to make sure we don't
   // select for the same GdkWindow multiple times? Does it matter?
   msgpump->SetupXInput2ForXWindow(GDK_WINDOW_XID(window));
