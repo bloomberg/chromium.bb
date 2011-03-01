@@ -38,6 +38,8 @@ class PepperFileMessageFilter : public BrowserMessageFilter {
                                  bool* message_was_ok);
   virtual void OnDestruct() const;
 
+  int child_id() const { return child_id_; }
+
  private:
   friend class BrowserThread;
   friend class DeleteTask<PepperFileMessageFilter>;
@@ -62,6 +64,14 @@ class PepperFileMessageFilter : public BrowserMessageFilter {
   void OnGetDirContents(const webkit::ppapi::PepperFilePath& path,
                         webkit::ppapi::DirContents* contents,
                         base::PlatformFileError* error);
+
+  // Validate and convert the Pepper file path to a "real" |FilePath|. Returns
+  // an empty |FilePath| on error.
+  FilePath ValidateAndConvertPepperFilePath(
+      const webkit::ppapi::PepperFilePath& pepper_path, int flags);
+
+  // The ID of the child process.
+  const int child_id_;
 
   // The channel associated with the renderer connection. This pointer is not
   // owned by this class.

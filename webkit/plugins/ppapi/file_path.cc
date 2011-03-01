@@ -39,8 +39,8 @@ PepperFilePath::PepperFilePath(Domain domain, FilePath path)
 }
 
 // static
-PepperFilePath PepperFilePath::MakeAbsolute(const char* utf8_path) {
-  return PepperFilePath(DOMAIN_ABSOLUTE, GetFilePathFromUTF8(utf8_path));
+PepperFilePath PepperFilePath::MakeAbsolute(const FilePath& path) {
+  return PepperFilePath(DOMAIN_ABSOLUTE, path);
 }
 
 // static

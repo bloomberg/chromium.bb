@@ -222,5 +222,107 @@ const PPB_Flash_File_ModuleLocal*
   return &ppb_flash_file_modulelocal;
 }
 
+// PPB_Flash_File_FileRef_Impl -------------------------------------------------
+
+namespace {
+
+int32_t OpenFileRefFile(PP_Resource file_ref_id,
+                        int32_t mode,
+                        PP_FileHandle* file) {
+  int flags = 0;
+  if (!ConvertFromPPFileOpenFlags(mode, &flags) || !file)
+    return PP_ERROR_BADARGUMENT;
+
+  scoped_refptr<PPB_FileRef_Impl> file_ref(
+      Resource::GetAs<PPB_FileRef_Impl>(file_ref_id));
+  if (!file_ref)
+    return PP_ERROR_BADRESOURCE;
+
+  PluginInstance* instance = file_ref->instance();
+  if (!instance)
+    return PP_ERROR_FAILED;
+
+  base::PlatformFile base_file;
+  base::PlatformFileError result = instance->delegate()->OpenFile(
+      PepperFilePath::MakeAbsolute(file_ref->GetSystemPath()),
+      flags,
+      &base_file);
+  *file = base_file;
+  return PlatformFileErrorToPepperError(result);
+}
+
+int32_t RenameFileRefFile(PP_Resource from_file_ref_id,
+                          PP_Resource to_file_ref_id) {
+  // If it proves necessary, it's easy enough to implement.
+  NOTIMPLEMENTED();
+  return PP_ERROR_FAILED;
+}
+
+int32_t DeleteFileRefFileOrDir(PP_Resource file_ref_id,
+                               PP_Bool recursive) {
+  // If it proves necessary, it's easy enough to implement.
+  NOTIMPLEMENTED();
+  return PP_ERROR_FAILED;
+}
+
+int32_t CreateFileRefDir(PP_Resource file_ref_id) {
+  // If it proves necessary, it's easy enough to implement.
+  NOTIMPLEMENTED();
+  return PP_ERROR_FAILED;
+}
+
+int32_t QueryFileRefFile(PP_Resource file_ref_id,
+                         PP_FileInfo_Dev* info) {
+  scoped_refptr<PPB_FileRef_Impl> file_ref(
+      Resource::GetAs<PPB_FileRef_Impl>(file_ref_id));
+  if (!file_ref)
+    return PP_ERROR_BADRESOURCE;
+
+  PluginInstance* instance = file_ref->instance();
+  if (!instance)
+    return PP_ERROR_FAILED;
+
+  base::PlatformFileInfo file_info;
+  base::PlatformFileError result = instance->delegate()->QueryFile(
+      PepperFilePath::MakeAbsolute(file_ref->GetSystemPath()),
+      &file_info);
+  if (result == base::PLATFORM_FILE_OK) {
+    info->size = file_info.size;
+    info->creation_time = file_info.creation_time.ToDoubleT();
+    info->last_access_time = file_info.last_accessed.ToDoubleT();
+    info->last_modified_time = file_info.last_modified.ToDoubleT();
+    info->system_type = PP_FILESYSTEMTYPE_EXTERNAL;
+    if (file_info.is_directory)
+      info->type = PP_FILETYPE_DIRECTORY;
+    else
+      info->type = PP_FILETYPE_REGULAR;
+  }
+  return PlatformFileErrorToPepperError(result);
+}
+
+int32_t GetFileRefDirContents(PP_Resource file_ref_id,
+                              PP_DirContents_Dev** contents) {
+  // If it proves necessary, it's easy enough to implement.
+  NOTIMPLEMENTED();
+  return PP_ERROR_FAILED;
+}
+
+const PPB_Flash_File_FileRef ppb_flash_file_fileref = {
+  &OpenFileRefFile,
+  &RenameFileRefFile,
+  &DeleteFileRefFileOrDir,
+  &CreateFileRefDir,
+  &QueryFileRefFile,
+  &GetFileRefDirContents,
+  &FreeDirContents,
+};
+
+}  // namespace
+
+// static
+const PPB_Flash_File_FileRef* PPB_Flash_File_FileRef_Impl::GetInterface() {
+  return &ppb_flash_file_fileref;
+}
+
 }  // namespace ppapi
 }  // namespace webkit

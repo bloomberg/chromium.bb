@@ -250,6 +250,8 @@ const void* GetInterface(const char* name) {
     return PluginInstance::GetFindInterface();
   if (strcmp(name, PPB_FLASH_INTERFACE) == 0)
     return PPB_Flash_Impl::GetInterface();
+  if (strcmp(name, PPB_FLASH_FILE_FILEREF_INTERFACE) == 0)
+    return PPB_Flash_File_FileRef_Impl::GetInterface();
   if (strcmp(name, PPB_FLASH_FILE_MODULELOCAL_INTERFACE) == 0)
     return PPB_Flash_File_ModuleLocal_Impl::GetInterface();
   if (strcmp(name, PPB_FLASH_MENU_INTERFACE) == 0)

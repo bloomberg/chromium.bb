@@ -7,12 +7,13 @@
 #include "base/callback.h"
 #include "base/file_path.h"
 #include "base/file_util.h"
+#include "base/platform_file.h"
 #include "base/process_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/renderer_host/browser_render_process_host.h"
-#include "chrome/common/child_process_host.h"
 #include "chrome/common/pepper_file_messages.h"
 #include "content/browser/browser_thread.h"
+#include "content/browser/child_process_security_policy.h"
 #include "ipc/ipc_platform_file.h"
 #include "webkit/plugins/ppapi/file_path.h"
 
@@ -20,31 +21,23 @@
 #include "base/file_descriptor_posix.h"
 #endif
 
-namespace {
+// Used to check if the renderer has permission for the requested operation.
+// TODO(viettrungluu): Verify these. They don't necessarily quite make sense,
+// but it seems to be approximately what the file system code does.
+const int kReadPermissions = base::PLATFORM_FILE_OPEN |
+                             base::PLATFORM_FILE_READ |
+                             base::PLATFORM_FILE_EXCLUSIVE_READ;
+const int kWritePermissions = base::PLATFORM_FILE_OPEN |
+                              base::PLATFORM_FILE_CREATE |
+                              base::PLATFORM_FILE_CREATE_ALWAYS |
+                              base::PLATFORM_FILE_WRITE |
+                              base::PLATFORM_FILE_EXCLUSIVE_WRITE |
+                              base::PLATFORM_FILE_TRUNCATE |
+                              base::PLATFORM_FILE_WRITE_ATTRIBUTES;
 
-FilePath ConvertPepperFilePath(
-    const webkit::ppapi::PepperFilePath& pepper_path) {
-  FilePath file_path;
-  switch(pepper_path.domain()) {
-    case webkit::ppapi::PepperFilePath::DOMAIN_ABSOLUTE:
-      NOTIMPLEMENTED();
-      break;
-    case webkit::ppapi::PepperFilePath::DOMAIN_MODULE_LOCAL:
-      if (!pepper_path.path().IsAbsolute() &&
-          !pepper_path.path().ReferencesParent())
-        file_path = pepper_path.path();
-      break;
-    default:
-      NOTREACHED();
-      break;
-  }
-  return file_path;
-}
-
-}  // namespace
-
-PepperFileMessageFilter::PepperFileMessageFilter(
-    int child_id, Profile* profile) {
+PepperFileMessageFilter::PepperFileMessageFilter(int child_id,
+                                                 Profile* profile)
+    : child_id_(child_id) {
   pepper_path_ = profile->GetPath().Append(FILE_PATH_LITERAL("Pepper Data"));
 }
 
@@ -85,7 +78,7 @@ void PepperFileMessageFilter::OnOpenFile(
     int flags,
     base::PlatformFileError* error,
     IPC::PlatformFileForTransit* file) {
-  FilePath full_path = ConvertPepperFilePath(path);
+  FilePath full_path = ValidateAndConvertPepperFilePath(path, flags);
   if (full_path.empty()) {
     *error = base::PLATFORM_FILE_ERROR_ACCESS_DENIED;
     *file = IPC::InvalidPlatformFileForTransit();
@@ -128,8 +121,10 @@ void PepperFileMessageFilter::OnRenameFile(
     const webkit::ppapi::PepperFilePath& from_path,
     const webkit::ppapi::PepperFilePath& to_path,
     base::PlatformFileError* error) {
-  FilePath from_full_path = ConvertPepperFilePath(from_path);
-  FilePath to_full_path = ConvertPepperFilePath(to_path);
+  FilePath from_full_path = ValidateAndConvertPepperFilePath(from_path,
+                                                             kWritePermissions);
+  FilePath to_full_path = ValidateAndConvertPepperFilePath(to_path,
+                                                           kWritePermissions);
   if (from_full_path.empty() || to_full_path.empty()) {
     *error = base::PLATFORM_FILE_ERROR_ACCESS_DENIED;
     return;
@@ -144,7 +139,8 @@ void PepperFileMessageFilter::OnDeleteFileOrDir(
     const webkit::ppapi::PepperFilePath& path,
     bool recursive,
     base::PlatformFileError* error) {
-  FilePath full_path = ConvertPepperFilePath(path);
+  FilePath full_path = ValidateAndConvertPepperFilePath(path,
+                                                        kWritePermissions);
   if (full_path.empty()) {
     *error = base::PLATFORM_FILE_ERROR_ACCESS_DENIED;
     return;
@@ -158,7 +154,8 @@ void PepperFileMessageFilter::OnDeleteFileOrDir(
 void PepperFileMessageFilter::OnCreateDir(
     const webkit::ppapi::PepperFilePath& path,
     base::PlatformFileError* error) {
-  FilePath full_path = ConvertPepperFilePath(path);
+  FilePath full_path = ValidateAndConvertPepperFilePath(path,
+                                                        kWritePermissions);
   if (full_path.empty()) {
     *error = base::PLATFORM_FILE_ERROR_ACCESS_DENIED;
     return;
@@ -173,7 +170,7 @@ void PepperFileMessageFilter::OnQueryFile(
     const webkit::ppapi::PepperFilePath& path,
     base::PlatformFileInfo* info,
     base::PlatformFileError* error) {
-  FilePath full_path = ConvertPepperFilePath(path);
+  FilePath full_path = ValidateAndConvertPepperFilePath(path, kReadPermissions);
   if (full_path.empty()) {
     *error = base::PLATFORM_FILE_ERROR_ACCESS_DENIED;
     return;
@@ -188,7 +185,7 @@ void PepperFileMessageFilter::OnGetDirContents(
     const webkit::ppapi::PepperFilePath& path,
     webkit::ppapi::DirContents* contents,
     base::PlatformFileError* error) {
-  FilePath full_path = ConvertPepperFilePath(path);
+  FilePath full_path = ValidateAndConvertPepperFilePath(path, kReadPermissions);
   if (full_path.empty()) {
     *error = base::PLATFORM_FILE_ERROR_ACCESS_DENIED;
     return;
@@ -214,4 +211,32 @@ void PepperFileMessageFilter::OnGetDirContents(
   }
 
   *error = base::PLATFORM_FILE_OK;
+}
+
+FilePath PepperFileMessageFilter::ValidateAndConvertPepperFilePath(
+    const webkit::ppapi::PepperFilePath& pepper_path, int flags) {
+  FilePath file_path;  // Empty path returned on error.
+  switch(pepper_path.domain()) {
+    case webkit::ppapi::PepperFilePath::DOMAIN_ABSOLUTE:
+// TODO(viettrungluu): This could be dangerous if not 100% right, so let's be
+// conservative and only enable it when requested.
+#if defined(ENABLE_FLAPPER_HACKS)
+      if (pepper_path.path().IsAbsolute() &&
+          ChildProcessSecurityPolicy::GetInstance()->HasPermissionsForFile(
+              child_id(), pepper_path.path(), flags))
+        file_path = pepper_path.path();
+#else
+      NOTIMPLEMENTED();
+#endif  // ENABLE_FLAPPER_HACKS
+      break;
+    case webkit::ppapi::PepperFilePath::DOMAIN_MODULE_LOCAL:
+      if (!pepper_path.path().IsAbsolute() &&
+          !pepper_path.path().ReferencesParent())
+        file_path = pepper_path.path();
+      break;
+    default:
+      NOTREACHED();
+      break;
+  }
+  return file_path;
 }

@@ -278,6 +278,7 @@ WebURLRequest PPB_URLRequestInfo_Impl::ToWebURLRequest(WebFrame* frame) const {
   web_request.initialize();
   web_request.setURL(frame->document().completeURL(WebString::fromUTF8(url_)));
   web_request.setDownloadToFile(stream_to_file_);
+  web_request.setReportUploadProgress(record_upload_progress());
 
   if (!method_.empty())
     web_request.setHTTPMethod(WebString::fromUTF8(method_));

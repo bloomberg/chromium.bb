@@ -5,6 +5,7 @@
 #ifndef WEBKIT_PLUGINS_PPAPI_PPB_FLASH_FILE_IMPL_H_
 #define WEBKIT_PLUGINS_PPAPI_PPB_FLASH_FILE_IMPL_H_
 
+struct PPB_Flash_File_FileRef;
 struct PPB_Flash_File_ModuleLocal;
 
 namespace webkit {
@@ -13,6 +14,11 @@ namespace ppapi {
 class PPB_Flash_File_ModuleLocal_Impl {
  public:
   static const PPB_Flash_File_ModuleLocal* GetInterface();
+};
+
+class PPB_Flash_File_FileRef_Impl {
+ public:
+  static const PPB_Flash_File_FileRef* GetInterface();
 };
 
 }  // namespace ppapi

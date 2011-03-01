@@ -32,7 +32,7 @@ class PepperFilePath {
   PepperFilePath();
   PepperFilePath(Domain d, FilePath p);
 
-  static PepperFilePath MakeAbsolute(const char* utf8_path);
+  static PepperFilePath MakeAbsolute(const FilePath& path);
   static PepperFilePath MakeModuleLocal(PluginModule* module,
                                         const char* utf8_path);
 
