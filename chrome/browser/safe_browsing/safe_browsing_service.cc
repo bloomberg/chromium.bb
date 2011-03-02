@@ -1038,13 +1038,7 @@ void SafeBrowsingService::DoDisplayBlockingPage(
     return;
   }
 
-  // Report the malicious resource to the SafeBrowsing servers if the user has
-  // opted in to reporting statistics.
-  const MetricsService* metrics = g_browser_process->metrics_service();
-  DCHECK(metrics);
-  if (metrics && metrics->reporting_active() &&
-      (resource.threat_type == SafeBrowsingService::URL_MALWARE ||
-       resource.threat_type == SafeBrowsingService::URL_PHISHING)) {
+  if (resource.threat_type != SafeBrowsingService::SAFE && CanReportStats()) {
     GURL page_url = wc->GetURL();
     GURL referrer_url;
     NavigationEntry* entry = wc->controller().GetActiveEntry();
