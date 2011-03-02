@@ -14,7 +14,6 @@
 #include "base/task.h"
 #include "googleurl/src/gurl.h"
 #include "webkit/fileapi/file_system_path_manager.h"
-#include "webkit/fileapi/file_system_usage_cache.h"
 
 namespace fileapi {
 
@@ -53,24 +52,7 @@ class FileSystemUsageTracker::GetUsageTask
   void RunOnFileThread() {
     DCHECK(file_message_loop_->BelongsToCurrentThread());
 
-    if (!file_util::DirectoryExists(origin_base_path_))
-      fs_usage_ = 0;
-    else {
-      FilePath usage_file_path = origin_base_path_.AppendASCII(
-          FileSystemUsageCache::kUsageFileName);
-      fs_usage_ = FileSystemUsageCache::GetUsage(usage_file_path);
-
-      if (fs_usage_ < 0) {
-        FilePath content_file_path = origin_base_path_;
-        if (FileSystemUsageCache::Exists(usage_file_path))
-          FileSystemUsageCache::Delete(usage_file_path);
-        fs_usage_ = file_util::ComputeDirectorySize(content_file_path);
-        // fs_usage_ will include the size of .usage.
-        // The result of ComputeDirectorySize does not include it.
-        fs_usage_ += FileSystemUsageCache::kUsageFileSize;
-        FileSystemUsageCache::UpdateUsage(usage_file_path, fs_usage_);
-      }
-    }
+    // TODO(dmikurube): add the code that retrieves the origin usage here.
 
     original_message_loop_->PostTask(
         FROM_HERE, NewRunnableMethod(this, &GetUsageTask::Completed));

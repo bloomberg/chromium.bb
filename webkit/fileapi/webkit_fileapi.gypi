@@ -32,8 +32,6 @@
         'file_system_usage_tracker.h',
         'file_system_util.cc',
         'file_system_util.h',
-        'file_system_usage_cache.h',
-        'file_system_usage_cache.cc',
         'file_writer_delegate.cc',
         'file_writer_delegate.h',
         'webfilewriter_base.cc',
@@ -49,3 +47,4 @@
     },
   ],
 }
+
