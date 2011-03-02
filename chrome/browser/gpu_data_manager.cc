@@ -52,6 +52,9 @@ void GpuDataManager::UpdateGpuInfo(const GPUInfo& gpu_info) {
     return;
   gpu_info_ = gpu_info;
   child_process_logging::SetGpuInfo(gpu_info);
+  // Clear the flag to triger a re-computation of GpuFeatureFlags using the
+  // updated GPU info.
+  gpu_feature_flags_set_ = false;
   RunGpuInfoUpdateCallbacks();
 }
 

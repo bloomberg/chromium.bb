@@ -41,7 +41,7 @@
 {
   "name": "software rendering list",
   // Please update the version number whenever you change this file.
-  "version": "1.3",
+  "version": "1.4",
   "entries": [
     { // ATI Radeon X1900 on Mac, BUGWEBKIT=47028
       "id": "1",
@@ -142,20 +142,6 @@
         "accelerated_compositing"
       ]
     },
-    { // Windows XP, BUG=72975
-      "id": "9",
-      "os": {
-        "type": "win",
-        "version": {
-          "op": "=",
-          "number": "5"
-        }
-      },
-      "blacklist": [
-        "webgl",
-        "accelerated_compositing"
-      ]
-    },
     { // NVIDIA GeForce 7300 GT on Mac, BUG=73794
       "id": "10",
       "os": {
@@ -187,6 +173,60 @@
       "driver_date": {
         "op": "<",
         "number": "2009.1"
+      },
+      "blacklist": [
+        "all"
+      ]
+    },
+    { // ATI driver older than 10.6 on XP, BUG=74212
+      "id": "13",
+      "os": {
+        "type": "win",
+        "version": {
+          "op": "=",
+          "number": "5"
+        }
+      },
+      "vendor_id": "0x1002",
+      "driver_version": {
+        "op": "<",
+        "number": "8.741"
+      },
+      "blacklist": [
+        "all"
+      ]
+    },
+    { // NVidia driver older than 257.21 on XP, BUG=74212
+      "id": "14",
+      "os": {
+        "type": "win",
+        "version": {
+          "op": "=",
+          "number": "5"
+        }
+      },
+      "vendor_id": "0x10de",
+      "driver_version": {
+        "op": "<",
+        "number": "6.14.12.5721"
+      },
+      "blacklist": [
+        "all"
+      ]
+    },
+    { // Intel driver older than 14.42.7.5294 on XP, BUG=74212
+      "id": "15",
+      "os": {
+        "type": "win",
+        "version": {
+          "op": "=",
+          "number": "5"
+        }
+      },
+      "vendor_id": "0x8086",
+      "driver_version": {
+        "op": "<",
+        "number": "6.14.10.5294"
       },
       "blacklist": [
         "all"

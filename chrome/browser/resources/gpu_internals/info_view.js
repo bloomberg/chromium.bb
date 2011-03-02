@@ -93,7 +93,8 @@ cr.define('gpu', function() {
         this.setTable_('basic-info', gpuInfo.basic_info);
         if (gpuInfo.diagnostics) {
           this.setTable_('diagnostics', gpuInfo.diagnostics);
-        } else if (gpuInfo.level == 'partial' ||
+        } else if (gpuInfo.level == 'preliminary' ||
+                   gpuInfo.level == 'partial' ||
                    gpuInfo.level == 'completing') {
           this.setText_('diagnostics', '... loading ...');
         } else {

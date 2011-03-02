@@ -24,6 +24,7 @@ class GPUInfo {
 
   enum Level {
     kUninitialized,
+    kPreliminary,
     kPartial,
     kCompleting,
     kComplete,

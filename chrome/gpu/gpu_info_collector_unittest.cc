@@ -113,12 +113,15 @@ TEST_F(GPUInfoCollectorTest, DriverVendorGL) {
   EXPECT_EQ(test_values_.driver_vendor(), driver_vendor);
 }
 
+// Skip Windows because the driver version is obtained from bot registry.
+#if !defined(OS_WIN)
 TEST_F(GPUInfoCollectorTest, DriverVersionGL) {
   GPUInfo gpu_info;
   gpu_info_collector::CollectGraphicsInfoGL(&gpu_info);
   std::string driver_version = gpu_info.driver_version();
   EXPECT_EQ(test_values_.driver_version(), driver_version);
 }
+#endif
 
 TEST_F(GPUInfoCollectorTest, PixelShaderVersionGL) {
   GPUInfo gpu_info;

@@ -91,7 +91,7 @@ bool CollectGraphicsInfo(GPUInfo* gpu_info) {
 bool CollectPreliminaryGraphicsInfo(GPUInfo* gpu_info) {
   DCHECK(gpu_info);
 
-  gpu_info->SetLevel(GPUInfo::kPartial);
+  gpu_info->SetLevel(GPUInfo::kPreliminary);
 
   bool rt = true;
   if (!CollectVideoCardInfo(gpu_info))
@@ -155,10 +155,8 @@ bool CollectVideoCardInfo(GPUInfo* gpu_info) {
     base::HexStringToInt(WideToASCII(vendor_id_string), &vendor_id);
     base::HexStringToInt(WideToASCII(device_id_string), &device_id);
     gpu_info->SetVideoCardInfo(vendor_id, device_id);
-    // TODO(zmo): need a better way to identify if ANGLE is used.
-    if (gfx::GetGLImplementation() == gfx::kGLImplementationEGLGLES2)
-      return CollectDriverInfoD3D(id, gpu_info);
-    return true;
+    // TODO(zmo): we only need to call CollectDriverInfoD3D() if we use ANGLE.
+    return CollectDriverInfoD3D(id, gpu_info);
   }
   return false;
 }

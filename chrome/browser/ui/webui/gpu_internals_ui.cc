@@ -342,7 +342,9 @@ DictionaryValue* GpuInfoToDict(const GPUInfo& gpu_info) {
   DictionaryValue* info = new DictionaryValue();
   info->Set("basic_info", basic_info);
 
-  if (gpu_info.level() == GPUInfo::kPartial) {
+  if (gpu_info.level() == GPUInfo::kPreliminary) {
+    info->SetString("level", "preliminary");
+  } else if (gpu_info.level() == GPUInfo::kPartial) {
     info->SetString("level", "partial");
   } else if (gpu_info.level() == GPUInfo::kCompleting) {
     info->SetString("level", "completing");

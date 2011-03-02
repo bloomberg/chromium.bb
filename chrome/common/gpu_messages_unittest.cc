@@ -50,7 +50,7 @@ TEST(GPUIPCMessageTest, GPUInfo) {
 
   std::string log_message;
   IPC::LogParam(output, &log_message);
-  EXPECT_STREQ("<GPUInfo> 1 100 10de 658 NVIDIA "
+  EXPECT_STREQ("<GPUInfo> 2 100 10de 658 NVIDIA "
                "195.36.24 7-14-2009 162 162 302 0",
                log_message.c_str());
 }
