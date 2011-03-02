@@ -48,4 +48,3 @@ class AccountsOptionsHandler : public CrosOptionsPageUIHandler {
 }  // namespace chromeos
 
 #endif  // CHROME_BROWSER_CHROMEOS_WEBUI_ACCOUNTS_OPTIONS_HANDLER_H_
-

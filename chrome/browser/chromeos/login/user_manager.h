@@ -21,6 +21,7 @@ class FilePath;
 class PrefService;
 
 namespace chromeos {
+class RemoveUserDelegate;
 
 // This class provides a mechanism for discovering users who have logged
 // into this chromium os device before and updating that list.
@@ -71,8 +72,15 @@ class UserManager : public UserImageLoader::Delegate,
   // The persistent list will be updated accordingly.
   virtual void UserLoggedIn(const std::string& email);
 
-  // Remove user from persistent list. NOTE: user's data won't be removed.
-  virtual void RemoveUser(const std::string& email);
+  // Removes the user from the device. Note, it will verify that the given user
+  // isn't the owner, so calling this method for the owner will take no effect.
+  // Note, |delegate| can be NULL.
+  virtual void RemoveUser(const std::string& email,
+                          RemoveUserDelegate* delegate);
+
+  // Removes the user from the persistent list only. Also removes the user's
+  // picture.
+  virtual void RemoveUserFromList(const std::string& email);
 
   // Returns true if given user has logged into the device before.
   virtual bool IsKnownUser(const std::string& email);

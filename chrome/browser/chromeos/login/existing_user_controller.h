@@ -66,7 +66,6 @@ class ExistingUserController : public LoginDisplay::Delegate,
                      const std::string& password);
   virtual void LoginAsGuest();
   virtual void OnUserSelected(const std::string& username);
-  virtual void RemoveUser(const std::string& username);
 
   // NotificationObserver implementation.
   virtual void Observe(NotificationType type,

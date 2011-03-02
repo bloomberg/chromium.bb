@@ -11,7 +11,6 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/boot_times_loader.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
-#include "chrome/browser/chromeos/cros/cryptohome_library.h"
 #include "chrome/browser/chromeos/cros/login_library.h"
 #include "chrome/browser/chromeos/cros/network_library.h"
 #include "chrome/browser/chromeos/login/background_view.h"
@@ -52,30 +51,6 @@ const char kCreateAccountURL[] =
 
 // Landing URL when launching Guest mode to fix captive portal.
 const char kCaptivePortalLaunchURL[] = "http://www.google.com/";
-
-// Used to handle the asynchronous response of deleting a cryptohome directory.
-class RemoveAttempt : public CryptohomeLibrary::Delegate {
- public:
-  explicit RemoveAttempt(const std::string& user_email)
-      : user_email_(user_email) {
-    if (CrosLibrary::Get()->EnsureLoaded()) {
-      CrosLibrary::Get()->GetCryptohomeLibrary()->AsyncRemove(
-          user_email_, this);
-    }
-  }
-
-  void OnComplete(bool success, int return_code) {
-    // Log the error, but there's not much we can do.
-    if (!success) {
-      VLOG(1) << "Removal of cryptohome for " << user_email_
-              << " failed, return code: " << return_code;
-    }
-    delete this;
-  }
-
- private:
-  std::string user_email_;
-};
 
 }  // namespace
 
@@ -277,34 +252,6 @@ void ExistingUserController::LoginAsGuest() {
 void ExistingUserController::OnUserSelected(const std::string& username) {
   login_performer_.reset(NULL);
   num_login_attempts_ = 0;
-}
-
-void ExistingUserController::RemoveUser(const std::string& username) {
-  // Owner is not allowed to be removed from the device.
-  // Must not proceed without signature verification.
-  UserCrosSettingsProvider user_settings;
-  bool trusted_owner_available = user_settings.RequestTrustedOwner(
-      method_factory_.NewRunnableMethod(&ExistingUserController::RemoveUser,
-                                        username));
-  if (!trusted_owner_available) {
-    // Value of owner email is still not verified.
-    // Another attempt will be invoked after verification completion.
-    return;
-  }
-  if (username == UserCrosSettingsProvider::cached_owner()) {
-    // Owner is not allowed to be removed from the device.
-    return;
-  }
-
-  login_display_->OnBeforeUserRemoved(username);
-
-  // Delete user from user list.
-  UserManager::Get()->RemoveUser(username);
-
-  // Delete the encrypted user directory.
-  new RemoveAttempt(username);
-
-  login_display_->OnUserRemoved(username);
 }
 
 ////////////////////////////////////////////////////////////////////////////////

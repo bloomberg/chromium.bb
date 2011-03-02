@@ -87,6 +87,7 @@ void AccountsOptionsHandler::UnwhitelistUser(const ListValue* args) {
   }
 
   users_settings()->UnwhitelistUser(Authenticator::Canonicalize(email));
+  UserManager::Get()->RemoveUser(email, NULL);
 }
 
 void AccountsOptionsHandler::FetchUserPictures(const ListValue* args) {

@@ -142,7 +142,7 @@ void ViewsLoginDisplay::OnUserImageChanged(UserManager::User* user) {
 
 void ViewsLoginDisplay::OnUserRemoved(const std::string& username) {
   // We need to unmap entry windows, the windows will be unmapped in destructor.
-  delete controller_for_removal_;
+  MessageLoop::current()->DeleteSoon(FROM_HERE, controller_for_removal_);
   controller_for_removal_ = NULL;
 
   // Nothing to insert.
@@ -279,7 +279,7 @@ void ViewsLoginDisplay::OnUserSelected(UserController* source) {
 
 void ViewsLoginDisplay::RemoveUser(UserController* source) {
   ClearErrors();
-  delegate()->RemoveUser(source->user().email());
+  UserManager::Get()->RemoveUser(source->user().email(), this);
 }
 
 void ViewsLoginDisplay::SelectUser(int index) {
