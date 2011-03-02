@@ -144,13 +144,14 @@ void SearchEngineManagerHandler::OnItemsRemoved(int start, int length) {
 DictionaryValue* SearchEngineManagerHandler::CreateDictionaryForEngine(
     int index, bool is_default) {
   TemplateURLTableModel* table_model = list_controller_->table_model();
+  const TemplateURL* template_url = list_controller_->GetTemplateURL(index);
 
   DictionaryValue* dict = new DictionaryValue();
-  dict->SetString("name", table_model->GetText(
+  dict->SetString("name",  template_url->short_name());
+  dict->SetString("displayName", table_model->GetText(
     index, IDS_SEARCH_ENGINES_EDITOR_DESCRIPTION_COLUMN));
   dict->SetString("keyword", table_model->GetText(
     index, IDS_SEARCH_ENGINES_EDITOR_KEYWORD_COLUMN));
-  const TemplateURL* template_url = list_controller_->GetTemplateURL(index);
   dict->SetString("url", template_url->url()->DisplayURL());
   dict->SetBoolean("urlLocked", template_url->prepopulate_id() > 0);
   GURL icon_url = template_url->GetFavIconURL();

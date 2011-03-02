@@ -107,7 +107,7 @@ cr.define('options.search_engines', function() {
       faviconDivEl.appendChild(imgEl);
       nameColEl.appendChild(faviconDivEl);
 
-      var nameEl = this.createEditableTextCell(engine['name'],
+      var nameEl = this.createEditableTextCell(engine['displayName'],
                                                this.isPlaceholder_);
       nameColEl.appendChild(nameEl);
 
@@ -143,6 +143,8 @@ cr.define('options.search_engines', function() {
 
       // Do final adjustment to the input fields.
       this.nameField_ = nameEl.querySelector('input');
+      // The editable field uses the raw name, not the display name.
+      this.nameField_.value = engine['name'];
       this.keywordField_ = keywordEl.querySelector('input');
       this.urlField_ = urlEl.querySelector('input');
 
@@ -211,11 +213,15 @@ cr.define('options.search_engines', function() {
     onEditCancelled_: function() {
       chrome.send('searchEngineEditCancelled');
 
+      var engine = this.searchEngine_;
       if (this.isPlaceholder_) {
-        var engine = this.searchEngine_;
         this.nameField_.value = '';
         this.keywordField_.value = '';
         this.urlField_.value = '';
+      } else {
+        // The name field has been automatically set to match the display name,
+        // but it should use the raw name instead.
+        this.nameField_.value = engine['name'];
       }
       this.currentlyValid_ = !this.isPlaceholder_;
     },
