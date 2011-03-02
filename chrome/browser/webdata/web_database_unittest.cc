@@ -2104,7 +2104,7 @@ class WebDatabaseMigrationTest : public testing::Test {
   DISALLOW_COPY_AND_ASSIGN(WebDatabaseMigrationTest);
 };
 
-const int WebDatabaseMigrationTest::kCurrentTestedVersionNumber = 34;
+const int WebDatabaseMigrationTest::kCurrentTestedVersionNumber = 35;
 
 void WebDatabaseMigrationTest::LoadDatabase(const FilePath::StringType& file) {
   std::string contents;
@@ -3170,5 +3170,64 @@ TEST_F(WebDatabaseMigrationTest, MigrateVersion33ToCurrent) {
     ASSERT_TRUE(s.Step());
     std::string country_code = s.ColumnString(0);
     EXPECT_EQ("US", country_code);
+  }
+}
+
+// Cleans up bad country code "UK" in favor of good country code "GB".
+TEST_F(WebDatabaseMigrationTest, MigrateVersion34ToCurrent) {
+  // Initialize the database.
+  ASSERT_NO_FATAL_FAILURE(LoadDatabase(FILE_PATH_LITERAL("version_34.sql")));
+
+  // Verify pre-conditions. These are expectations for version 34 of the
+  // database.
+  {
+    sql::Connection connection;
+    ASSERT_TRUE(connection.Open(GetDatabasePath()));
+
+    EXPECT_TRUE(connection.DoesColumnExist("autofill_profiles",
+                                           "country_code"));
+
+    // Check that the country_code value is the one we expect.
+    sql::Statement s(
+        connection.GetUniqueStatement("SELECT country_code "
+                                      "FROM autofill_profiles"));
+
+    ASSERT_TRUE(s.Step());
+    std::string country_code = s.ColumnString(0);
+    EXPECT_EQ("UK", country_code);
+
+    // Should have only one.
+    ASSERT_FALSE(s.Step());
+  }
+
+  // Load the database via the WebDatabase class and migrate the database to
+  // the current version.
+  {
+    WebDatabase db;
+    ASSERT_EQ(sql::INIT_OK, db.Init(GetDatabasePath()));
+  }
+
+  // Verify post-conditions.  These are expectations for current version of the
+  // database.
+  {
+    sql::Connection connection;
+    ASSERT_TRUE(connection.Open(GetDatabasePath()));
+
+    // Check version.
+    EXPECT_EQ(kCurrentTestedVersionNumber, VersionFromConnection(&connection));
+
+    ASSERT_TRUE(connection.DoesColumnExist("autofill_profiles",
+                                           "country_code"));
+
+    // Check that the country_code code is properly converted.
+    sql::Statement s(connection.GetUniqueStatement(
+        "SELECT country_code FROM autofill_profiles"));
+
+    ASSERT_TRUE(s.Step());
+    std::string country_code = s.ColumnString(0);
+    EXPECT_EQ("GB", country_code);
+
+    // Should have only one.
+    ASSERT_FALSE(s.Step());
   }
 }

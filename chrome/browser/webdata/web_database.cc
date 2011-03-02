@@ -192,8 +192,8 @@ typedef std::vector<Tuple3<int64, string16, string16> > AutofillElementList;
 // Current version number.  Note: when changing the current version number,
 // corresponding changes must happen in the unit tests, and new migration test
 // added.  See |WebDatabaseMigrationTest::kCurrentTestedVersionNumber|.
-const int kCurrentVersionNumber = 34;
-const int kCompatibleVersionNumber = 34;
+const int kCurrentVersionNumber = 35;
+const int kCompatibleVersionNumber = 35;
 
 // ID of the url column in keywords.
 const int kUrlIdPosition = 16;
@@ -3067,6 +3067,28 @@ sql::InitStatus WebDatabase::MigrateOldVersionsAsNeeded(){
       meta_table_.SetVersionNumber(34);
       meta_table_.SetCompatibleVersionNumber(
           std::min(34, kCompatibleVersionNumber));
+
+      // FALL THROUGH
+
+    case 34:
+      // Correct all country codes with value "UK" to be "GB".  This data
+      // was mistakenly introduced in build 686.0.  This migration is to clean
+      // it up.  See http://crbug.com/74511 for details.
+      {
+        sql::Statement s(db_.GetUniqueStatement(
+            "UPDATE autofill_profiles SET country_code=\"GB\" "
+            "WHERE country_code=\"UK\""));
+
+        if (!s.Run()) {
+          LOG(WARNING) << "Unable to update web database to version 35.";
+          NOTREACHED();
+          return sql::INIT_FAILURE;
+        }
+      }
+
+      meta_table_.SetVersionNumber(35);
+      meta_table_.SetCompatibleVersionNumber(
+          std::min(35, kCompatibleVersionNumber));
 
       // FALL THROUGH
 
