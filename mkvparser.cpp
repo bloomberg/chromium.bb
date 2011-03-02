@@ -2429,7 +2429,7 @@ Cues::Cues(
 
 Cues::~Cues()
 {
-    const size_t n = m_count + m_preload_count;
+    const long n = m_count + m_preload_count;
 
     CuePoint** p = m_cue_points;
     CuePoint** const q = p + n;
@@ -2842,7 +2842,7 @@ const CuePoint* Cues::GetLast() const
     if (m_cue_points == NULL)
         return NULL;
 
-    if (m_count == 0)
+    if (m_count <= 0)
         return NULL;
 
 #if 0
@@ -2864,7 +2864,7 @@ const CuePoint* Cues::GetLast() const
     pCP->Load(m_pSegment->m_pReader);
     assert(pCP->GetTimeCode() >= 0);
 #else
-    const size_t index = m_count - 1;
+    const long index = m_count - 1;
 
     CuePoint* const* const pp = m_cue_points;
     assert(pp);
@@ -2907,7 +2907,7 @@ const CuePoint* Cues::GetNext(const CuePoint* pCurr) const
 
     pNext->Load(m_pSegment->m_pReader);
 #else
-    size_t index = pCurr->m_index;
+    long index = pCurr->m_index;
     assert(index < m_count);
 
     CuePoint* const* const pp = m_cue_points;
@@ -3061,7 +3061,7 @@ const Cluster* Segment::FindOrPreloadCluster(long long requested_pos)
 }
 
 
-CuePoint::CuePoint(size_t idx, long long pos) :
+CuePoint::CuePoint(long idx, long long pos) :
     m_element_start(0),
     m_element_size(0),
     m_index(idx),

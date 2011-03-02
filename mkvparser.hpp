@@ -436,7 +436,7 @@ class CuePoint
 {
     friend class Cues;
 
-    CuePoint(size_t, long long);
+    CuePoint(long, long long);
     ~CuePoint();
 
     CuePoint(const CuePoint&);
@@ -466,7 +466,7 @@ public:
     const TrackPosition* Find(const Track*) const;
 
 private:
-    const size_t m_index;
+    const long m_index;
     long long m_timecode;
     TrackPosition* m_track_positions;
     size_t m_track_positions_count;
@@ -528,8 +528,8 @@ private:
     void PreloadCuePoint(size_t&, long long) const;
 
     mutable CuePoint** m_cue_points;
-    mutable size_t m_count;
-    mutable size_t m_preload_count;
+    mutable long m_count;
+    mutable long m_preload_count;
     mutable long long m_pos;
 
 };
