@@ -88,9 +88,6 @@ fun_hist:*unibrow*
 # Histogram has tiny functions that can be called frequently
 fun_hist:*Histogram*
 
-# Debug-only, so we don't care (mostly) http://crbug/61179
-fun_r:*tracked_objects*
-
 # TODO(timurrrr): SKIA - needs separate testing?
 # SKIA unittest is single-threaded...
 # SKIA uses un-annotated atomic refcount and other sync stuff
