@@ -318,6 +318,25 @@ TEST_F(IPCChannelPosixTest, MultiConnection) {
   ASSERT_FALSE(channel.HasAcceptedConnection());
 }
 
+TEST_F(IPCChannelPosixTest, DoubleServer) {
+  // Test setting up two servers with the same name.
+  IPCChannelPosixTestListener listener(false);
+  IPCChannelPosixTestListener listener2(false);
+  IPC::ChannelHandle chan_handle(kConnectionSocketTestName);
+  IPC::Channel channel(chan_handle, IPC::Channel::MODE_SERVER, &listener);
+  IPC::Channel channel2(chan_handle, IPC::Channel::MODE_SERVER, &listener2);
+  ASSERT_TRUE(channel.Connect());
+  ASSERT_FALSE(channel2.Connect());
+}
+
+TEST_F(IPCChannelPosixTest, BadMode) {
+  // Test setting up two servers with a bad mode.
+  IPCChannelPosixTestListener listener(false);
+  IPC::ChannelHandle chan_handle(kConnectionSocketTestName);
+  IPC::Channel channel(chan_handle, IPC::Channel::MODE_NONE, &listener);
+  ASSERT_FALSE(channel.Connect());
+}
+
 // A long running process that connects to us
 MULTIPROCESS_TEST_MAIN(IPCChannelPosixTestConnectionProc) {
   MessageLoopForIO message_loop;

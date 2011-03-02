@@ -373,13 +373,14 @@ bool Channel::ChannelImpl::CreatePipe(
   //   4a) Client side: Pull the pipe out of the GlobalDescriptors set.
   //   4b) Server side: create the pipe.
 
+  int local_pipe = -1;
   if (channel_handle.socket.fd != -1) {
     // Case 1 from comment above.
-    pipe_ = channel_handle.socket.fd;
+    local_pipe = channel_handle.socket.fd;
 #if defined(IPC_USES_READWRITE)
     // Test the socket passed into us to make sure it is nonblocking.
     // We don't want to call read/write on a blocking socket.
-    int value = fcntl(pipe_, F_GETFL);
+    int value = fcntl(local_pipe, F_GETFL);
     if (value == -1) {
       PLOG(ERROR) << "fcntl(F_GETFL) " << pipe_name_;
       return false;
@@ -392,25 +393,25 @@ bool Channel::ChannelImpl::CreatePipe(
   } else if (mode_ & MODE_NAMED_FLAG) {
     // Case 2 from comment above.
     if (mode_ & MODE_SERVER_FLAG) {
-      if (!CreateServerUnixDomainSocket(pipe_name_, &pipe_)) {
+      if (!CreateServerUnixDomainSocket(pipe_name_, &local_pipe)) {
         return false;
       }
       must_unlink_ = true;
     } else if (mode_ & MODE_CLIENT_FLAG) {
-      if (!CreateClientUnixDomainSocket(pipe_name_, &pipe_)) {
+      if (!CreateClientUnixDomainSocket(pipe_name_, &local_pipe)) {
         return false;
       }
     } else {
-      NOTREACHED();
+      LOG(ERROR) << "Bad mode: " << mode_;
       return false;
     }
   } else {
-    pipe_ = PipeMap::GetInstance()->Lookup(pipe_name_);
+    local_pipe = PipeMap::GetInstance()->Lookup(pipe_name_);
     if (mode_ & MODE_CLIENT_FLAG) {
-      if (pipe_ != -1) {
+      if (local_pipe != -1) {
         // Case 3 from comment above.
         // We only allow one connection.
-        pipe_ = HANDLE_EINTR(dup(pipe_));
+        local_pipe = HANDLE_EINTR(dup(local_pipe));
         PipeMap::GetInstance()->RemoveAndClose(pipe_name_);
       } else {
         // Case 4a from comment above.
@@ -425,26 +426,22 @@ bool Channel::ChannelImpl::CreatePipe(
         }
         used_initial_channel = true;
 
-        pipe_ = base::GlobalDescriptors::GetInstance()->Get(kPrimaryIPCChannel);
+        local_pipe =
+            base::GlobalDescriptors::GetInstance()->Get(kPrimaryIPCChannel);
       }
     } else if (mode_ & MODE_SERVER_FLAG) {
       // Case 4b from comment above.
-      if (pipe_ != -1) {
+      if (local_pipe != -1) {
         LOG(ERROR) << "Server already exists for " << pipe_name_;
         return false;
       }
-      if (!SocketPair(&pipe_, &client_pipe_))
+      if (!SocketPair(&local_pipe, &client_pipe_))
         return false;
       PipeMap::GetInstance()->Insert(pipe_name_, client_pipe_);
     } else {
-      NOTREACHED();
+      LOG(ERROR) << "Bad mode: " << mode_;
       return false;
     }
-  }
-
-  if ((mode_ & MODE_SERVER_FLAG) && (mode_ & MODE_NAMED_FLAG)) {
-    server_listen_pipe_ = pipe_;
-    pipe_ = -1;
   }
 
 #if defined(IPC_USES_READWRITE)
@@ -457,12 +454,18 @@ bool Channel::ChannelImpl::CreatePipe(
   }
 #endif  // IPC_USES_READWRITE
 
+  if ((mode_ & MODE_SERVER_FLAG) && (mode_ & MODE_NAMED_FLAG)) {
+    server_listen_pipe_ = local_pipe;
+    local_pipe = -1;
+  }
+
+  pipe_ = local_pipe;
   return true;
 }
 
 bool Channel::ChannelImpl::Connect() {
   if (server_listen_pipe_ == -1 && pipe_ == -1) {
-    DLOG(INFO) << "Must call create on a channel before calling connect";
+    DLOG(INFO) << "Channel creation failed: " << pipe_name_;
     return false;
   }
 
