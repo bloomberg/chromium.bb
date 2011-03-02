@@ -7757,6 +7757,11 @@ This web page was killed, either because Chrome ran out of memory, or you chose 
         </message>
       </if>
 
+      <!-- Multiprofile -->
+      <message name="IDS_PROFILES_CREATE_NEW_PROFILE_OPTION" desc="Create new profile menu item and button title.">
+        Create a new profile...
+      </message>
+
       <!-- SafeBrowsing -->
       <message name="IDS_SAFE_BROWSING_MALWARE_TITLE" desc="SafeBrowsing Malware HTML title">
         Malware Detected!

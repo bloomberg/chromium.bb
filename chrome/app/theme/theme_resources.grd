@@ -287,6 +287,12 @@
       <!-- NOTE: product_logo_*.* files beyond what's listed above are
            referenced by installer code; don't remove them unless you know what
            you're doing! -->
+      <include name="IDR_PROFILE_TAG_CENTER" file="profile_tag_center.png" type="BINDATA" />
+      <include name="IDR_PROFILE_TAG_LEFT" file="profile_tag_left.png" type="BINDATA" />
+      <include name="IDR_PROFILE_TAG_RIGHT" file="profile_tag_right.png" type="BINDATA" />
+      <include name="IDR_PROFILE_TAG_INACTIVE_CENTER" file="profile_tag_inactive_center.png" type="BINDATA" />
+      <include name="IDR_PROFILE_TAG_INACTIVE_LEFT" file="profile_tag_inactive_left.png" type="BINDATA" />
+      <include name="IDR_PROFILE_TAG_INACTIVE_RIGHT" file="profile_tag_inactive_right.png" type="BINDATA" />
       <include name="IDR_RELOAD" file="reload.png" type="BINDATA" />
       <include name="IDR_RELOAD_H" file="reload_h.png" type="BINDATA" />
       <include name="IDR_RELOAD_P" file="reload_p.png" type="BINDATA" />
