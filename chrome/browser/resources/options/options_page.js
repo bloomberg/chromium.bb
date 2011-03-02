@@ -75,10 +75,21 @@ cr.define('options', function() {
    * @private
    */
   OptionsPage.showPageByName = function(pageName, updateHistory) {
+    // Find the currently visible root-level page.
+    var rootPage = null;
+    for (var name in this.registeredPages) {
+      var page = this.registeredPages[name];
+      if (page.visible && !page.parentPage) {
+        rootPage = page;
+        break;
+      }
+    }
+
+    // Find the target page.
     var targetPage = this.registeredPages[pageName];
     if (!targetPage || !targetPage.canShowPage()) {
       // If it's not a page, try it as an overlay.
-      if (!targetPage && this.showOverlay_(pageName)) {
+      if (!targetPage && this.showOverlay_(pageName, rootPage)) {
         if (updateHistory)
           this.updateHistoryState_();
         return;
@@ -92,14 +103,6 @@ cr.define('options', function() {
     // Determine if the root page is 'sticky', meaning that it
     // shouldn't change when showing a sub-page.  This can happen for special
     // pages like Search.
-    var rootPage = null;
-    for (var name in this.registeredPages) {
-      var page = this.registeredPages[name];
-      if (page.visible && !page.parentPage) {
-        rootPage = page;
-        break;
-      }
-    }
     var isRootPageLocked =
         rootPage && rootPage.sticky && targetPage.parentPage;
 
@@ -191,14 +194,15 @@ cr.define('options', function() {
   /**
    * Shows a registered Overlay page. Does not update history.
    * @param {string} overlayName Page name.
+   * @param {OptionPage} rootPage The currently visible root-level page.
    * @return {boolean} whether we showed an overlay.
    */
-  OptionsPage.showOverlay_ = function(overlayName) {
+  OptionsPage.showOverlay_ = function(overlayName, rootPage) {
     var overlay = this.registeredOverlayPages[overlayName];
     if (!overlay || !overlay.canShowPage())
       return false;
 
-    if (overlay.parentPage)
+    if ((!rootPage || !rootPage.sticky) && overlay.parentPage)
       this.showPageByName(overlay.parentPage.name, false);
 
     this.registeredOverlayPages[overlayName].visible = true;
