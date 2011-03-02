@@ -17,7 +17,6 @@ extern const char kRequestIdKey[];
 extern const char kSourceTabIdKey[];
 extern const char kSourceUrlKey[];
 extern const char kTabIdKey[];
-extern const char kTargetUrlKey[];
 extern const char kTimeStampKey[];
 extern const char kTransitionTypeKey[];
 extern const char kTransitionQualifiersKey[];

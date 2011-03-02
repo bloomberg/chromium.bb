@@ -3425,7 +3425,7 @@
             "properties": {
               "sourceTabId": {"type": "integer", "description": "The ID of the tab in which the navigation is triggered."},
               "sourceUrl": {"type": "string", "description": "The URL of the document that is opening the new window."},
-              "targetUrl": {"type": "string", "description": "The URL to be opened in the new window."},
+              "url": {"type": "string", "description": "The URL to be opened in the new window."},
               "timeStamp": {"type": "number", "description": "The time when the browser was about to create a new view, in milliseconds since the epoch."}
             }
           }

@@ -357,7 +357,7 @@ void ExtensionWebNavigationEventRouter::CreatingNewWindow(
   dict->SetInteger(keys::kSourceTabIdKey,
                    ExtensionTabUtil::GetTabId(tab_contents));
   dict->SetString(keys::kSourceUrlKey, details->opener_url.spec());
-  dict->SetString(keys::kTargetUrlKey,
+  dict->SetString(keys::kUrlKey,
                   details->target_url.possibly_invalid_spec());
   dict->SetDouble(keys::kTimeStampKey, MilliSecondsFromTime(base::Time::Now()));
   args.Append(dict);

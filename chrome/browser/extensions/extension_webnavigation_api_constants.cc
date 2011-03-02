@@ -12,7 +12,6 @@ const char kRequestIdKey[] = "requestId";
 const char kSourceTabIdKey[] = "sourceTabId";
 const char kSourceUrlKey[] = "sourceUrl";
 const char kTabIdKey[] = "tabId";
-const char kTargetUrlKey[] = "targetUrl";
 const char kTimeStampKey[] = "timeStamp";
 const char kTransitionTypeKey[] = "transitionType";
 const char kTransitionQualifiersKey[] = "transitionQualifiers";
