@@ -428,7 +428,8 @@ nacl_glibc_skiplist = set([
     'run_ppapi_example_2d_test',
     'run_ppapi_event_test',
     'run_srpc_ro_file_test',
-    'run_ppapi_geturl_test',
+    'run_ppapi_geturl_valid_test',
+    'run_ppapi_geturl_invalid_test',
     ])
 
 

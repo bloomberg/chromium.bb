@@ -11,13 +11,9 @@ set_variable JS_INT 4:2
 set_variable ARG_loadUrl ${JS_STR},4:7,"loadUrl",1:0
 set_variable ARG_ReportResult ${JS_STR},4:12,"ReportResult",4:0
 
-set_variable ARG_URL1 ${JS_STR},4:25,"ppapi_geturl_success.html",7:0
-set_variable ARG_URL1_FULL ${JS_STR},4:47,"http://localhost:5103/ppapi_geturl_success.html",1:0
-set_variable ARG_URL2 ${JS_STR},4:32,"http://www.google.com/robots.txt"
-set_variable ARG_URL3 ${JS_STR},4:39,"http://localhost:5103/non_existant.html",1:0
+set_variable ARG_URL ${JS_STR},4:25,"ppapi_geturl_success.html",7:0
+set_variable ARG_URL_FULL ${JS_STR},4:47,"http://localhost:5103/ppapi_geturl_success.html",1:0
 
-set_variable ARG_ERR1 ${JS_STR},4:38,"PPB_URLLoader::Open:\x20PP_ERROR_NOACCESS",2:0
-set_variable ARG_ERR2 ${JS_STR},4:34,"PPB_URLRequestInfo::Create:\x20failed",6:0
 set_variable ARG_GET  ${JS_STR},4:3,"GET",5:0
 
 set_variable ARG_SUCC ${JS_STR},4:12,"hello\x20world!",4:0
@@ -38,12 +34,6 @@ replay 99 PPB_GetInterface:s:i  s("PPB_Var(Deprecated);0.3") * i(1)
 rpc PPP_InitializeModule hide-results i(0) ${MODULE} h(pepper_desc) s("${service_string}") * i(0) i(0)
 
 echo
-echo "*** INIT INSTANCE"
-set_variable TAGS C(17,id\000name\000src\000type\000)
-set_variable VALUES C(63,naclModule\000naclModule\000ppapi.nexe\000application/x-ppapi-nacl-srpc\000)
-rpc PPP_Instance_DidCreate ${INSTANCE} i(4) ${TAGS} ${VALUES} * i(0)
-
-echo
 echo "*** TRIGGER REPAINT"
 rpc PPP_Instance_DidChangeView ${INSTANCE} I(4,8,79,400,400) I(4,0,0,400,400) *
 # leave time for flush of stdout
@@ -55,16 +45,12 @@ rpc PPP_Instance_GetInstanceObject hide-results ${INSTANCE} * C(16)
 set_variable OBJECT ${result0}
 nondeterministic ${result0} @THE_OBJECT
 
-echo
-echo "*** HAS PROPERTY/METHOD (loadUrl)"
-rpc HasProperty ${OBJECT} R(16,${ARG_loadUrl}) ${EXCEPTION} * i(0) C(8)
-rpc HasMethod ${OBJECT} R(16,${ARG_loadUrl}) ${EXCEPTION} * i(0) C(8)
+######################################################################
+## URL (buffer)
+######################################################################
 
-######################################################################
-## URL1
-######################################################################
 echo
-echo "*** CALL loadUrl(): url1 as buffer"
+echo "*** CALL loadUrl(): as buffer"
 replay 1 PPB_GetInterface:s:i  s("PPB_URLRequestInfo;0.2") * i(1)
 replay 1 PPB_GetInterface:s:i  s("PPB_URLResponseInfo;0.1") * i(1)
 replay 1 PPB_GetInterface:s:i  s("PPB_URLLoader;0.1") * i(1)
@@ -89,42 +75,46 @@ replay 1 PPB_URLResponseInfo_IsURLResponseInfo:i:i i(34) * i(0)
 replay 1 PPB_URLLoader_IsURLLoader:i:i i(34) * i(1)
 replay 1 PPB_FileIO_Dev_IsFileIO:i:i i(34) * i(0)
 
-replay 1 PPB_URLRequestInfo_SetProperty:iiC:i i(30) i(0) R(40,${ARG_URL1}) * i(1)
+replay 1 PPB_URLRequestInfo_SetProperty:iiC:i i(30) i(0) R(40,${ARG_URL}) * i(1)
 replay 1 PPB_URLRequestInfo_SetProperty:iiC:i i(30) i(1) R(16,${ARG_GET}) * i(1)
 replay 1 PPB_URLRequestInfo_SetProperty:iiC:i i(30) i(3) R(8,${ARG_0}) * i(1)
 
 replay 1 PPB_URLLoader_Open:iii:i i(34) i(30) i(1) * i(-1)
-rpc Call ${OBJECT} R(16,${ARG_loadUrl}) i(2) R(48,${ARG_URL1},${ARG_0}) ${NULL} * C(8) C(8)
+rpc Call ${OBJECT} R(16,${ARG_loadUrl}) i(2) R(48,${ARG_URL},${ARG_0}) ${NULL} * C(8) C(8)
 
 echo
-echo "*** async response for url1 part1"
+echo "*** async response part1"
 replay 1 PPB_URLLoader_GetResponseInfo:i:i i(34) * i(38)
 replay 1 PPB_FileIO_Dev_IsFileIO:i:i i(38) * i(0)
 replay 1 PPB_URLRequestInfo_IsURLRequestInfo:i:i i(38) * i(0)
 replay 1 PPB_URLResponseInfo_IsURLResponseInfo:i:i i(38) * i(1)
 replay 1 PPB_URLLoader_IsURLLoader:i:i i(38) * i(0)
-replay 1 PPB_URLResponseInfo_GetProperty:ii:C i(38) i(0) * R(56,${ARG_URL1_FULL})
+replay 1 PPB_URLResponseInfo_GetProperty:ii:C i(38) i(0) * R(56,${ARG_URL_FULL})
 replay 1 PPB_URLResponseInfo_GetProperty:ii:C i(38) i(3) * R(8,4:3,4:200)
 replay 1 PPB_URLLoader_ReadResponseBody:iii:Ci i(34) i(1024) i(2) * C(0,) i(-1)
 rpc RunCompletionCallback i(1) i(0) C(0,) *
 
 echo
-echo "*** async response for url1 part2"
+echo "*** async response part2"
 replay 1 PPB_URLLoader_ReadResponseBody:iii:Ci i(34) i(1024) i(3) * C(0,) i(-1)
 rpc RunCompletionCallback i(2) i(12) C(12,hello\x20world!) *
 
 echo
-echo "*** async response for url1 eof - report success"
+echo "*** async response eof - report success"
 replay 1 PPB_Instance_GetWindowObject:i:C ${INSTANCE} * ${WINDOW}
-replay 1 Call:CCiCC:CC R(16,8:0x9f,8:0x5f29) R(24,${ARG_ReportResult}) i(4) R(96,${ARG_URL1_FULL},${ARG_0},${ARG_SUCC},${ARG_1}) ${NULL} * ${NULL} ${NULL}
+replay 1 Call:CCiCC:CC R(16,8:0x9f,8:0x5f29) R(24,${ARG_ReportResult}) i(4) R(96,${ARG_URL_FULL},${ARG_0},${ARG_SUCC},${ARG_1}) ${NULL} * ${NULL} ${NULL}
 replay 1 PPB_Core_ReleaseResource:i: i(30) *
 replay 1 PPB_Core_ReleaseResource:i: i(34) *
 replay 1 PPB_Core_ReleaseResource:i: i(35) *
 replay 1 PPB_Core_ReleaseResource:i: i(38) *
 rpc RunCompletionCallback i(3) i(0) C(0,) *
 
+######################################################################
+## URL (file)
+######################################################################
+
 echo
-echo "*** CALL loadUrl(): url1 as file"
+echo "*** CALL loadUrl(): as file"
 replay 1 PPB_GetInterface:s:i  s("PPB_FileIO(Dev);0.3") * i(1)
 replay 1 PPB_GetInterface:s:i  s("PPB_URLRequestInfo;0.2") * i(1)
 replay 1 PPB_GetInterface:s:i  s("PPB_URLResponseInfo;0.1") * i(1)
@@ -151,7 +141,7 @@ replay 1 PPB_URLLoader_IsURLLoader:i:i i(34) * i(1)
 
 replay 1 PPB_Instance_GetWindowObject:i:C ${INSTANCE} * ${WINDOW}
 
-replay 1 PPB_URLRequestInfo_SetProperty:iiC:i i(30) i(0) R(40,${ARG_URL1}) * i(1)
+replay 1 PPB_URLRequestInfo_SetProperty:iiC:i i(30) i(0) R(40,${ARG_URL}) * i(1)
 replay 1 PPB_URLRequestInfo_SetProperty:iiC:i i(30) i(1) R(16,${ARG_GET}) * i(1)
 replay 1 PPB_URLRequestInfo_SetProperty:iiC:i i(30) i(3) R(8,${ARG_1}) * i(1)
 
@@ -161,51 +151,9 @@ replay 1 PPB_Core_ReleaseResource:i: i(30) *
 replay 1 PPB_Core_ReleaseResource:i: i(34) *
 replay 1 PPB_Core_ReleaseResource:i: i(66) *
 
-replay 1 Call:CCiCC:CC R(16,8:0x9f,8:0x5f29) R(24,${ARG_ReportResult}) i(4) R(80,${ARG_URL1},${ARG_1},${ARG_SUCC},${ARG_1}) ${NULL} * ${NULL} ${NULL}
+replay 1 Call:CCiCC:CC R(16,8:0x9f,8:0x5f29) R(24,${ARG_ReportResult}) i(4) R(80,${ARG_URL},${ARG_1},${ARG_SUCC},${ARG_1}) ${NULL} * ${NULL} ${NULL}
 
-rpc Call ${OBJECT} R(16,${ARG_loadUrl}) i(2) R(48,${ARG_URL1},${ARG_1}) ${NULL} * C(8) C(8)
-
-######################################################################
-## URL2
-######################################################################
-echo
-echo "*** CALL loadUrl(): url2 as buffer - expected to fail"
-replay 1 PPB_GetInterface:s:i  s("PPB_URLRequestInfo;0.2") * i(1)
-replay 1 PPB_Instance_GetWindowObject:i:C ${INSTANCE} * ${WINDOW}
-replay 1 Call:CCiCC:CC R(16,8:0x9f,8:0x5f29) R(24,${ARG_ReportResult}) i(4) R(104,${ARG_URL2},${ARG_0},${ARG_ERR2},${ARG_0}) ${NULL} * ${NULL} ${NULL}
-
-replay 1 PPB_FileIO_Dev_Create:i:i ${INSTANCE} * i(35)
-replay 1 PPB_URLRequestInfo_Create:i:i ${INSTANCE} * i(40)
-replay 1 PPB_URLLoader_Create:i:i  ${INSTANCE} * i(44)
-
-replay 1 PPB_FileIO_Dev_IsFileIO:i:i i(35) * i(1)
-replay 1 PPB_URLRequestInfo_IsURLRequestInfo:i:i i(35) * i(0)
-replay 1 PPB_URLResponseInfo_IsURLResponseInfo:i:i i(35) * i(0)
-replay 1 PPB_URLLoader_IsURLLoader:i:i i(35) * i(0)
-
-replay 1 PPB_FileIO_Dev_IsFileIO:i:i i(40) * i(0)
-replay 1 PPB_URLRequestInfo_IsURLRequestInfo:i:i i(40) * i(1)
-replay 1 PPB_URLResponseInfo_IsURLResponseInfo:i:i i(40) * i(0)
-replay 1 PPB_URLLoader_IsURLLoader:i:i i(40) * i(0)
-
-replay 1 PPB_FileIO_Dev_IsFileIO:i:i i(44) * i(0)
-replay 1 PPB_URLRequestInfo_IsURLRequestInfo:i:i i(44) * i(0)
-replay 1 PPB_URLResponseInfo_IsURLResponseInfo:i:i i(44) * i(0)
-replay 1 PPB_URLLoader_IsURLLoader:i:i i(44) * i(1)
-
-replay 1 PPB_URLRequestInfo_SetProperty:iiC:i i(40) i(0) R(40,${ARG_URL2}) * i(1)
-replay 1 PPB_URLRequestInfo_SetProperty:iiC:i i(40) i(1) R(16,${ARG_GET}) * i(1)
-replay 1 PPB_URLRequestInfo_SetProperty:iiC:i i(40) i(3) R(8,${ARG_0}) * i(1)
-
-replay 1 PPB_URLLoader_Open:iii:i i(44) i(40) i(5) * i(-7)
-
-replay 1 PPB_Instance_GetWindowObject:i:C ${INSTANCE} * ${WINDOW}
-replay 1 Call:CCiCC:CC R(16,8:0x9f,8:0x5f29) R(24,${ARG_ReportResult}) i(4) R(104,${ARG_URL2},${ARG_0},${ARG_ERR1},${ARG_0}) ${NULL} * ${NULL} ${NULL}
-
-replay 1 PPB_Core_ReleaseResource:i: i(35) *
-replay 1 PPB_Core_ReleaseResource:i: i(40) *
-replay 1 PPB_Core_ReleaseResource:i: i(44) *
-rpc Call ${OBJECT} R(16,${ARG_loadUrl}) i(2) R(48,${ARG_URL2},${ARG_0}) ${NULL} * C(8) C(8)
+rpc Call ${OBJECT} R(16,${ARG_loadUrl}) i(2) R(48,${ARG_URL},${ARG_1}) ${NULL} * C(8) C(8)
 
 ######################################################################
 ## EPILOG
