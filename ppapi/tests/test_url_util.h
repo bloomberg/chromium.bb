@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -8,9 +8,9 @@
 #include "ppapi/cpp/dev/url_util_dev.h"
 #include "ppapi/tests/test_case.h"
 
-class TestUrlUtil : public TestCase {
+class TestURLUtil : public TestCase {
  public:
-  TestUrlUtil(TestingInstance* instance) : TestCase(instance), util_(NULL) {}
+  TestURLUtil(TestingInstance* instance) : TestCase(instance), util_(NULL) {}
 
   // TestCase implementation.
   virtual bool Init();
@@ -22,8 +22,9 @@ class TestUrlUtil : public TestCase {
   std::string TestIsSameSecurityOrigin();
   std::string TestDocumentCanRequest();
   std::string TestDocumentCanAccessDocument();
+  std::string TestGetDocumentURL();
 
-  const pp::UrlUtil_Dev* util_;
+  const pp::URLUtil_Dev* util_;
 };
 
 #endif  // PPAPI_TESTS_TEST_URL_UTIL_H_

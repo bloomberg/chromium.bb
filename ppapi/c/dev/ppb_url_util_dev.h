@@ -1,4 +1,4 @@
-/* Copyright (c) 2010 The Chromium Authors. All rights reserved.
+/* Copyright (c) 2011 The Chromium Authors. All rights reserved.
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -11,7 +11,7 @@
 #include "ppapi/c/pp_stdint.h"
 #include "ppapi/c/pp_var.h"
 
-#define PPB_URLUTIL_DEV_INTERFACE "PPB_UrlUtil(Dev);0.4"
+#define PPB_URLUTIL_DEV_INTERFACE "PPB_URLUtil(Dev);0.5"
 
 // A component specifies the range of the part of the URL. The begin specifies
 // the index into the string of the first character of that component. The len
@@ -29,30 +29,30 @@
 // If the component is present but empty, the length will be 0 instead. Example:
 //   http://foo/search    -> query = (0, -1)
 //   http://foo/search?   -> query = (18, 0)
-struct PP_UrlComponent_Dev {
+struct PP_URLComponent_Dev {
   int32_t begin;
   int32_t len;
 };
-PP_COMPILE_ASSERT_STRUCT_SIZE_IN_BYTES(PP_UrlComponent_Dev, 8);
+PP_COMPILE_ASSERT_STRUCT_SIZE_IN_BYTES(PP_URLComponent_Dev, 8);
 
-struct PP_UrlComponents_Dev {
-  struct PP_UrlComponent_Dev scheme;
-  struct PP_UrlComponent_Dev username;
-  struct PP_UrlComponent_Dev password;
-  struct PP_UrlComponent_Dev host;
-  struct PP_UrlComponent_Dev port;
-  struct PP_UrlComponent_Dev path;
-  struct PP_UrlComponent_Dev query;
-  struct PP_UrlComponent_Dev ref;
+struct PP_URLComponents_Dev {
+  struct PP_URLComponent_Dev scheme;
+  struct PP_URLComponent_Dev username;
+  struct PP_URLComponent_Dev password;
+  struct PP_URLComponent_Dev host;
+  struct PP_URLComponent_Dev port;
+  struct PP_URLComponent_Dev path;
+  struct PP_URLComponent_Dev query;
+  struct PP_URLComponent_Dev ref;
 };
-PP_COMPILE_ASSERT_STRUCT_SIZE_IN_BYTES(PP_UrlComponents_Dev, 64);
+PP_COMPILE_ASSERT_STRUCT_SIZE_IN_BYTES(PP_URLComponents_Dev, 64);
 
 // URL encoding: URLs are supplied to this interface as NULL-terminated 8-bit
 // strings. You can pass non-ASCII characters which will be interpreted as
 // UTF-8. Canonicalized URL strings returned by these functions will be ASCII
 // except for the reference fragment (stuff after the '#') which will be
 // encoded as UTF-8.
-struct PPB_UrlUtil_Dev {
+struct PPB_URLUtil_Dev {
   // Canonicalizes the given URL string according to the rules of the host
   // browser. If the URL is invalid or the var is not a string, this will
   // return a Null var and the components structure will be unchanged.
@@ -61,14 +61,14 @@ struct PPB_UrlUtil_Dev {
   // will identify the components of the resulting URL. Components may be NULL
   // to specify that no component information is necessary.
   struct PP_Var (*Canonicalize)(struct PP_Var url,
-                                struct PP_UrlComponents_Dev* components);
+                                struct PP_URLComponents_Dev* components);
 
   // Resolves the given URL relative to the given base URL. The resulting URL
   // is returned as a string. If the resolution is invalid or either of the
   // inputs are not strings, a Null var will be returned. The resulting URL
   // will also be canonicalized according to the rules of the browser.
   //
-  // Note that the "relative" URL bay in fact be absolute, in which case it
+  // Note that the "relative" URL may in fact be absolute, in which case it
   // will be returned. This function is identical to resolving the full URL
   // for an <a href="..."> on a web page. Attempting to resolve a relative URL
   // on a base URL that doesn't support this (e.g. "data") will fail and will
@@ -77,12 +77,12 @@ struct PPB_UrlUtil_Dev {
   // The components pointer, if non-NULL and the canonicalized URL is valid,
   // will identify the components of the resulting URL. Components may be NULL
   // to specify that no component information is necessary.
-  struct PP_Var (*ResolveRelativeToUrl)(
+  struct PP_Var (*ResolveRelativeToURL)(
       struct PP_Var base_url,
       struct PP_Var relative_string,
-      struct PP_UrlComponents_Dev* components);
+      struct PP_URLComponents_Dev* components);
 
-  // Identical to ResolveRelativeToUrl except that the base URL is the base
+  // Identical to ResolveRelativeToURL except that the base URL is the base
   // URL of the document containing the given plugin instance.
   //
   // Danger: This will be identical to resolving a relative URL on the page,
@@ -92,7 +92,7 @@ struct PPB_UrlUtil_Dev {
   struct PP_Var (*ResolveRelativeToDocument)(
       PP_Instance instance,
       struct PP_Var relative_string,
-      struct PP_UrlComponents_Dev* components);
+      struct PP_URLComponents_Dev* components);
 
   // Checks whether the given two URLs are in the same security origin. Returns
   // FALSE if either of the URLs are invalid.
@@ -109,6 +109,14 @@ struct PPB_UrlUtil_Dev {
   // and any cross-origin capabilities enabled by the document. If either of
   // the plugin instances are invalid, returns PP_FALSE.
   PP_Bool (*DocumentCanAccessDocument)(PP_Instance active, PP_Instance target);
+
+  // Returns the URL for the document. This is a safe way to retrieve
+  // window.location.href.
+  // The components pointer, if non-NULL and the canonicalized URL is valid,
+  // will identify the components of the resulting URL. Components may be NULL
+  // to specify that no component information is necessary.
+  struct PP_Var (*GetDocumentURL)(PP_Instance instance,
+                                  struct PP_URLComponents_Dev* components);
 };
 
 #endif  /* PPAPI_C_DEV_PPB_URL_UTIL_DEV_H_ */

@@ -285,7 +285,7 @@ const void* GetInterface(const char* name) {
   if (strcmp(name, PPB_URLRESPONSEINFO_INTERFACE) == 0)
     return PPB_URLResponseInfo_Impl::GetInterface();
   if (strcmp(name, PPB_URLUTIL_DEV_INTERFACE) == 0)
-    return PPB_UrlUtil_Impl::GetInterface();
+    return PPB_URLUtil_Impl::GetInterface();
   if (strcmp(name, PPB_VAR_DEPRECATED_INTERFACE) == 0)
     return Var::GetDeprecatedInterface();
   if (strcmp(name, PPB_VAR_INTERFACE) == 0)

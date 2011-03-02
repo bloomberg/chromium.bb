@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -25,7 +25,7 @@ namespace ppapi {
 namespace {
 
 void ConvertComponent(const url_parse::Component& input,
-                      PP_UrlComponent_Dev* output) {
+                      PP_URLComponent_Dev* output) {
   output->begin = input.begin;
   output->len = input.len;
 }
@@ -33,7 +33,7 @@ void ConvertComponent(const url_parse::Component& input,
 // Output can be NULL to specify "do nothing." This rule is followed by all the
 // url util functions, so we implement it once here.
 void ConvertComponents(const url_parse::Parsed& input,
-                       PP_UrlComponents_Dev* output) {
+                       PP_URLComponents_Dev* output) {
   if (!output)
     return;
 
@@ -49,8 +49,8 @@ void ConvertComponents(const url_parse::Parsed& input,
 
 // Used for returning the given GURL from a PPAPI function, with an optional
 // out param indicating the components.
-PP_Var GenerateUrlReturn(PluginModule* module, const GURL& url,
-                         PP_UrlComponents_Dev* components) {
+PP_Var GenerateURLReturn(PluginModule* module, const GURL& url,
+                         PP_URLComponents_Dev* components) {
   if (!url.is_valid())
     return PP_MakeNull();
   ConvertComponents(url.parsed_for_possibly_invalid_spec(), components);
@@ -76,17 +76,17 @@ bool SecurityOriginForInstance(PP_Instance instance_id,
   return true;
 }
 
-PP_Var Canonicalize(PP_Var url, PP_UrlComponents_Dev* components) {
+PP_Var Canonicalize(PP_Var url, PP_URLComponents_Dev* components) {
   scoped_refptr<StringVar> url_string(StringVar::FromPPVar(url));
   if (!url_string)
     return PP_MakeNull();
-  return GenerateUrlReturn(url_string->module(),
+  return GenerateURLReturn(url_string->module(),
                            GURL(url_string->value()), components);
 }
 
-PP_Var ResolveRelativeToUrl(PP_Var base_url,
+PP_Var ResolveRelativeToURL(PP_Var base_url,
                             PP_Var relative,
-                            PP_UrlComponents_Dev* components) {
+                            PP_URLComponents_Dev* components) {
   scoped_refptr<StringVar> base_url_string(StringVar::FromPPVar(base_url));
   scoped_refptr<StringVar> relative_string(StringVar::FromPPVar(relative));
   if (!base_url_string || !relative_string)
@@ -95,14 +95,14 @@ PP_Var ResolveRelativeToUrl(PP_Var base_url,
   GURL base_gurl(base_url_string->value());
   if (!base_gurl.is_valid())
     return PP_MakeNull();
-  return GenerateUrlReturn(base_url_string->module(),
+  return GenerateURLReturn(base_url_string->module(),
                            base_gurl.Resolve(relative_string->value()),
                            components);
 }
 
 PP_Var ResolveRelativeToDocument(PP_Instance instance_id,
                                  PP_Var relative,
-                                 PP_UrlComponents_Dev* components) {
+                                 PP_URLComponents_Dev* components) {
   PluginInstance* instance = ResourceTracker::Get()->GetInstance(instance_id);
   if (!instance)
     return PP_MakeNull();
@@ -113,7 +113,7 @@ PP_Var ResolveRelativeToDocument(PP_Instance instance_id,
 
   WebKit::WebElement plugin_element = instance->container()->element();
   GURL document_url = plugin_element.document().baseURL();
-  return GenerateUrlReturn(instance->module(),
+  return GenerateURLReturn(instance->module(),
                            document_url.Resolve(relative_string->value()),
                            components);
 }
@@ -160,19 +160,33 @@ PP_Bool DocumentCanAccessDocument(PP_Instance active, PP_Instance target) {
   return BoolToPPBool(active_origin.canAccess(target_origin));
 }
 
-}  // namespace
+PP_Var GetDocumentURL(PP_Instance instance_id,
+                      PP_URLComponents_Dev* components) {
+  PluginInstance* instance = ResourceTracker::Get()->GetInstance(instance_id);
+  if (!instance)
+    return PP_MakeNull();
 
-const PPB_UrlUtil_Dev ppb_url_util = {
+  WebKit::WebFrame* frame = instance->container()->element().document().frame();
+  if (!frame)
+    return PP_MakeNull();
+
+  return GenerateURLReturn(instance->module(), frame->url(), components);
+}
+
+const PPB_URLUtil_Dev ppb_url_util = {
   &Canonicalize,
-  &ResolveRelativeToUrl,
+  &ResolveRelativeToURL,
   &ResolveRelativeToDocument,
   &IsSameSecurityOrigin,
   &DocumentCanRequest,
-  &DocumentCanAccessDocument
+  &DocumentCanAccessDocument,
+  &GetDocumentURL
 };
 
+}  // namespace
+
 // static
-const PPB_UrlUtil_Dev* PPB_UrlUtil_Impl::GetInterface() {
+const PPB_URLUtil_Dev* PPB_URLUtil_Impl::GetInterface() {
   return &ppb_url_util;
 }
 

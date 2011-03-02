@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -8,33 +8,34 @@
 #include "ppapi/cpp/dev/url_util_dev.h"
 #include "ppapi/tests/testing_instance.h"
 
-REGISTER_TEST_CASE(UrlUtil);
+REGISTER_TEST_CASE(URLUtil);
 
-static bool ComponentEquals(const PP_UrlComponent_Dev& component,
+static bool ComponentEquals(const PP_URLComponent_Dev& component,
                             int begin, int len) {
   return component.begin == begin && component.len == len;
 }
 
-bool TestUrlUtil::Init() {
-  util_ = pp::UrlUtil_Dev::Get();
+bool TestURLUtil::Init() {
+  util_ = pp::URLUtil_Dev::Get();
   return !!util_;
 }
 
-void TestUrlUtil::RunTest() {
+void TestURLUtil::RunTest() {
   RUN_TEST(Canonicalize);
   RUN_TEST(ResolveRelative);
   RUN_TEST(IsSameSecurityOrigin);
   RUN_TEST(DocumentCanRequest);
   RUN_TEST(DocumentCanAccessDocument);
+  RUN_TEST(GetDocumentURL);
 }
 
-std::string TestUrlUtil::TestCanonicalize() {
+std::string TestURLUtil::TestCanonicalize() {
   // Test no canonicalize output.
   pp::Var result = util_->Canonicalize("http://Google.com");
   ASSERT_TRUE(result.AsString() == "http://google.com/");
 
   // Test all the components
-  PP_UrlComponents_Dev c;
+  PP_URLComponents_Dev c;
   result = util_->Canonicalize(
       "http://me:pw@Google.com:1234/path?query#ref ",
       &c);
@@ -68,7 +69,7 @@ std::string TestUrlUtil::TestCanonicalize() {
   PASS();
 }
 
-std::string TestUrlUtil::TestResolveRelative() {
+std::string TestURLUtil::TestResolveRelative() {
   const int kTestCount = 6;
   struct TestCase {
     const char* base;
@@ -84,7 +85,7 @@ std::string TestUrlUtil::TestResolveRelative() {
   };
 
   for (int i = 0; i < kTestCount; i++) {
-    pp::Var result = util_->ResolveRelativeToUrl(test_cases[i].base,
+    pp::Var result = util_->ResolveRelativeToURL(test_cases[i].base,
                                                  test_cases[i].relative);
     if (test_cases[i].expected == NULL) {
       ASSERT_TRUE(result.is_null());
@@ -95,7 +96,7 @@ std::string TestUrlUtil::TestResolveRelative() {
   PASS();
 }
 
-std::string TestUrlUtil::TestIsSameSecurityOrigin() {
+std::string TestURLUtil::TestIsSameSecurityOrigin() {
   ASSERT_FALSE(util_->IsSameSecurityOrigin("http://google.com/",
                                            "http://example.com/"));
   ASSERT_TRUE(util_->IsSameSecurityOrigin("http://google.com/foo",
@@ -103,15 +104,26 @@ std::string TestUrlUtil::TestIsSameSecurityOrigin() {
   PASS();
 }
 
-std::string TestUrlUtil::TestDocumentCanRequest() {
+std::string TestURLUtil::TestDocumentCanRequest() {
   // This is hard to test, but we can at least verify we can't request
   // some random domain.
   ASSERT_FALSE(util_->DocumentCanRequest(*instance_, "http://evil.com/"));
   PASS();
 }
 
-std::string TestUrlUtil::TestDocumentCanAccessDocument() {
+std::string TestURLUtil::TestDocumentCanAccessDocument() {
   // This is hard to test, but we can at least verify we can access ourselves.
   ASSERT_TRUE(util_->DocumentCanAccessDocument(*instance_, *instance_));
+  PASS();
+}
+
+std::string TestURLUtil::TestGetDocumentURL() {
+  pp::Var url = util_->GetDocumentURL(*instance_);
+  ASSERT_TRUE(url.is_string());
+  pp::Var window = instance_->GetWindowObject();
+  pp::Var href = window.GetProperty("location").GetProperty("href");
+  ASSERT_TRUE(href.is_string());
+  // In the test framework, they should be the same.
+  ASSERT_EQ(url.AsString(), href.AsString());
   PASS();
 }
