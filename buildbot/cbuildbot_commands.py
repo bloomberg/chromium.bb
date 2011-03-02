@@ -210,20 +210,30 @@ def RunSmokeSuite(buildroot, results_dir):
                          ], cwd=cwd, error_ok=False)
 
 
-def RunAUTest(buildroot, board):
-  """Runs a basic update test from the au test harness."""
+def RunAUTestSuite(buildroot, board, full=True):
+  """Runs the au test harness suite."""
   cwd = os.path.join(buildroot, 'src', 'scripts')
   image_path = os.path.join(buildroot, 'src', 'build', 'images', board,
                             'latest', 'chromiumos_test_image.bin')
-  cros_lib.OldRunCommand(['bin/cros_au_test_harness',
-              '--no_graphics',
-              '--no_delta',
-              '--board=%s' % board,
-              '--test_prefix=SimpleTest',
-              '--verbose',
-              '--base_image=%s' % image_path,
-              '--target_image=%s' % image_path,
-              ], cwd=cwd, error_ok=False)
+  
+  if full:
+    cmd = ['bin/cros_au_test_harness',
+           '--board=%s' % board,
+           '--channel=dev-channel',
+           '--zipbase=http://chromeos-images.corp.google.com',
+           '--type=vm',
+           '--no_graphics']
+  else:
+    cmd = ['bin/cros_au_test_harness',
+           '--no_graphics',
+           '--no_delta',
+           '--board=%s' % board,
+           '--test_prefix=SimpleTest',
+           '--verbose',
+           '--base_image=%s' % image_path,
+           '--target_image=%s' % image_path]
+  
+  cros_lib.OldRunCommand(cmd, cwd=cwd, error_ok=False)
 
 
 def ArchiveTestResults(buildroot, test_results_dir):

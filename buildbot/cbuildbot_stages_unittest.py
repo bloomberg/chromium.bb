@@ -36,6 +36,7 @@ class BuilderStageTest(mox.MoxTestBase):
     self.options.tracking_branch = 'ooga_booga'
     self.options.clobber = False
     self.options.url = self.url
+    self.options.buildnumber = 1234
     self.overlay = os.path.join(self.build_root,
                                 'src/third_party/chromiumos-overlay')
     stages.BuilderStage.rev_overlays = [self.overlay]
@@ -205,6 +206,57 @@ class BuildBoardTest(BuilderStageTest):
     stage.Run()
     self.mox.VerifyAll()
 
+
+class BuildTestsTest(BuilderStageTest):
+
+  def setUp(self):
+    mox.MoxTestBase.setUp(self)
+    BuilderStageTest.setUp(self)
+
+  def testCTest(self):
+    """Tests if CTest is run correctly."""
+    self.bot_id = 'x86-generic-full'
+    self.build_config = config.config[self.bot_id].copy()
+    self.build_config['quick_vm'] = False
+
+    self.mox.StubOutWithMock(commands, 'RunUnitTests')
+    self.mox.StubOutWithMock(commands, 'RunSmokeSuite')
+    self.mox.StubOutWithMock(commands, 'RunAUTestSuite')
+    self.mox.StubOutWithMock(commands, 'ArchiveTestResults')
+
+    commands.RunUnitTests(self.build_root)
+    commands.RunSmokeSuite(self.build_root, '/tmp/run_remote_tests.1234')
+    commands.RunAUTestSuite(self.build_root,
+                            self.build_config['board'],
+                            full=True)
+    commands.ArchiveTestResults(self.build_root, '/tmp/run_remote_tests.1234')
+
+    self.mox.ReplayAll()
+    stage = stages.TestStage(self.bot_id, self.options, self.build_config)
+    stage.Run()
+    self.mox.VerifyAll()
+
+  def testAUTest(self):
+    """Tests if cros_au_test_harness quick test is run correctly."""
+    self.bot_id = 'x86-generic-full'
+    self.build_config = config.config[self.bot_id]
+
+    self.mox.StubOutWithMock(commands, 'RunUnitTests')
+    self.mox.StubOutWithMock(commands, 'RunSmokeSuite')
+    self.mox.StubOutWithMock(commands, 'RunAUTestSuite')
+    self.mox.StubOutWithMock(commands, 'ArchiveTestResults')
+
+    commands.RunUnitTests(self.build_root)
+    commands.RunSmokeSuite(self.build_root, '/tmp/run_remote_tests.1234')
+    commands.RunAUTestSuite(self.build_root,
+                            self.build_config['board'],
+                            full=False)
+    commands.ArchiveTestResults(self.build_root, '/tmp/run_remote_tests.1234')
+
+    self.mox.ReplayAll()
+    stage = stages.TestStage(self.bot_id, self.options, self.build_config)
+    stage.Run()
+    self.mox.VerifyAll()
 
 if __name__ == '__main__':
   unittest.main()

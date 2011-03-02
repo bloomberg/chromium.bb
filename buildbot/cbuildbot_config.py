@@ -29,6 +29,8 @@ push_overlays -- Select what overlays to push at. This should be a subset of
 unittests -- Runs unittests for packages.
 vm_tests -- Runs the smoke suite and au test harness in a qemu-based VM
             using KVM.
+quick_vm -- If vm_tests is true, run a minimal au test harness suite.            
+            
 
 usepkg -- Use binary packages to bootstrap, when possible. (emerge --usepkg)
 chroot_replace -- wipe and replace chroot, but not source.
@@ -56,6 +58,7 @@ default = {
 
   'unittests' : True,
   'vm_tests' : True,
+  'quick_vm' : True,
 
   'usepkg' : True,
   'chroot_replace' : False,

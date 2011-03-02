@@ -218,7 +218,9 @@ class TestStage(BuilderStage):
       test_results_dir = '/tmp/run_remote_tests.%s' % self._options.buildnumber
       try:
         commands.RunSmokeSuite(self._build_root, test_results_dir)
-        commands.RunAUTest(self._build_root, self._build_config['board'])
+        commands.RunAUTestSuite(self._build_root,
+                                self._build_config['board'],
+                                full=(not self._build_config['quick_vm']))
       finally:
         BuilderStage.test_tarball = commands.ArchiveTestResults(
             self._build_root, test_results_dir)
