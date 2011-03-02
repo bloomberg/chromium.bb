@@ -304,6 +304,8 @@
         'host/capturer_fake_ascii.cc',
         'host/capturer_fake_ascii.h',
         'host/simple_host_process.cc',
+        '../base/test/mock_chrome_application_mac.mm',
+        '../base/test/mock_chrome_application_mac.h',
       ],
     },  # end of target 'chromoting_simple_host'
 
@@ -477,6 +479,8 @@
       ],
       'sources': [
         'protocol/protocol_test_client.cc',
+        '../base/test/mock_chrome_application_mac.mm',
+        '../base/test/mock_chrome_application_mac.h',
       ],
     },  # end of target 'chromotocol_test_client'
 

@@ -16,6 +16,7 @@ extern "C" {
 #include "base/at_exit.h"
 #include "base/command_line.h"
 #include "base/nss_util.h"
+#include "base/test/mock_chrome_application_mac.h"
 #include "base/time.h"
 #include "net/base/completion_callback.h"
 #include "net/base/io_buffer.h"
@@ -353,6 +354,10 @@ int main(int argc, char** argv) {
 
   base::EnsureNSPRInit();
   base::EnsureNSSInit();
+
+#if defined(OS_MACOSX)
+  mock_cr_app::RegisterMockCrApp();
+#endif  // OS_MACOSX
 
   std::string host_jid(cmd_line->GetSwitchValueASCII("host_jid"));
 

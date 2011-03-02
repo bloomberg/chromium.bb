@@ -26,6 +26,7 @@
 #include "base/mac/scoped_nsautorelease_pool.h"
 #include "base/nss_util.h"
 #include "base/path_service.h"
+#include "base/test/mock_chrome_application_mac.h"
 #include "base/threading/thread.h"
 #include "media/base/media.h"
 #include "remoting/base/tracer.h"
@@ -163,6 +164,10 @@ int main(int argc, char** argv) {
         transport, remoting::protocol::kDefaultStreamVersion, codec));
     host->set_protocol_config(config.release());
   }
+
+#if defined(OS_MACOSX)
+  mock_cr_app::RegisterMockCrApp();
+#endif  // OS_MACOSX
 
   // Let the chromoting host run until the shutdown task is executed.
   host->Start(NewRunnableFunction(&ShutdownTask, &message_loop));
