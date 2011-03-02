@@ -167,9 +167,8 @@ TEST_F(ErrorPageTest, IFrameDNSError_GoBackAndForward) {
 
 // Checks that the Link Doctor is not loaded when we receive an actual 404 page.
 TEST_F(ErrorPageTest, Page404) {
-  NavigateToURLBlockUntilNavigationsComplete(
-      URLRequestMockHTTPJob::GetMockUrl(
-          FilePath(FILE_PATH_LITERAL("page404.html"))), 1);
+  NavigateToURL(URLRequestMockHTTPJob::GetMockUrl(
+                    FilePath(FILE_PATH_LITERAL("page404.html"))));
 
   EXPECT_TRUE(WaitForTitleMatching(L"SUCCESS"));
 }
