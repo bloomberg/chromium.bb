@@ -21,7 +21,6 @@ const bool kCanToggleSystemTitleBar = false;
 const bool kRestorePopups = true;
 const bool kShowImportOnBookmarkBar = false;
 const bool kShowExitMenuItem = true;
-const bool kShowAboutMenuItem = true;
 const bool kOSSupportsOtherBrowsers = false;
 const bool kDownloadPageHasShowInFolder = true;
 const bool kSizeTabButtonToTopOfTabStrip = true;
@@ -58,10 +57,8 @@ const bool kShowImportOnBookmarkBar = true;
 const bool kDownloadPageHasShowInFolder = true;
 #if defined(OS_MACOSX)
 const bool kShowExitMenuItem = false;
-const bool kShowAboutMenuItem = false;
 #else
 const bool kShowExitMenuItem = true;
-const bool kShowAboutMenuItem = true;
 #endif
 const bool kOSSupportsOtherBrowsers = true;
 const bool kSizeTabButtonToTopOfTabStrip = false;

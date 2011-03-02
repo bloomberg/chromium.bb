@@ -427,11 +427,7 @@ void WrenchMenuModel::Build() {
 #else
   const string16 product_name = l10n_util::GetStringUTF16(IDS_PRODUCT_NAME);
 #endif
-  // On Mac, there is no About item.
-  if (browser_defaults::kShowAboutMenuItem) {
-    AddItem(IDC_ABOUT, l10n_util::GetStringFUTF16(
-        IDS_ABOUT, product_name));
-  }
+  AddItem(IDC_ABOUT, l10n_util::GetStringFUTF16(IDS_ABOUT, product_name));
   string16 num_background_pages = base::FormatNumber(
       BackgroundPageTracker::GetInstance()->GetBackgroundPageCount());
   AddItem(IDC_VIEW_BACKGROUND_PAGES, l10n_util::GetStringFUTF16(

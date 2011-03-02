@@ -45,9 +45,6 @@ extern const bool kShowImportOnBookmarkBar;
 // Should the exit menu item be shown in the toolbar menu?
 extern const bool kShowExitMenuItem;
 
-// Should the about menu item be shown in the toolbar app menu?
-extern const bool kShowAboutMenuItem;
-
 // Does the OS support other browsers? If not, operations such as default
 // browser check are not done.
 extern const bool kOSSupportsOtherBrowsers;

@@ -305,7 +305,8 @@ void BrowserWindowCocoa::AddFindBar(
 }
 
 void BrowserWindowCocoa::ShowAboutChromeDialog() {
-  NOTIMPLEMENTED();
+  // Go through AppController's implementation to bring up the branded panel.
+  [[NSApp delegate] orderFrontStandardAboutPanel:nil];
 }
 
 void BrowserWindowCocoa::ShowUpdateChromeDialog() {
