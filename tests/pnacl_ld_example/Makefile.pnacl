@@ -13,11 +13,17 @@ ELF_PATCHER=../../tools/elf_patcher.py
 ARM_CC=../../toolchain/linux_arm-trusted/arm-2009q3/bin/arm-none-linux-gnueabi-gcc
 QEMU= ../../toolchain/linux_arm-trusted/qemu_tool.sh run
 
-
+NCVAL_X86_32=../../scons-out/opt-linux-x86-32/staging/ncval
+NCVAL_ARM=../../scons-out/opt-linux-x86-64-to-arm/staging/arm-ncval-core
 #DEBUG_FLAGS= --pnacl-driver-verbose --pnacl-driver-debug
 DEBUG_FLAGS=
 
-
+######################################################################
+# tools needed
+######################################################################
+preparation:
+	./scons MODE=opt-linux buildplatform=x86-64 targetplatform=arm arm-ncval-core
+	./scons MODE=opt-linux platform=x86-32 ncval
 ######################################################################
 # Platform neutral
 ######################################################################
@@ -32,11 +38,14 @@ fortytwo.bc:  fortytwo.c
 ######################################################################
 LLC_X86_ARGS= $(DEBUG_FLAGS) --add-llc-option -sfi-x86-jmp-mask=-1
 
+# mostly sandboxed
 libsimple.x86-32.so: hello.bc fortytwo.bc
 	$(PNACL_LD) -shared -fPIC  -arch x86-32 $(LLC_X86_ARGS) -o $@ $?
-	$(ELF_PATCHER) -l $@
+	# TODO(robertm): enable this once ncval has been fixed
+	# $(NCVAL_X86_32) $@
+	$(ELF_PATCHER) -l $@	
 
-
+# *not* sanboxed
 main.x86-32: main.c libsimple.x86-32.so
 	gcc -m32 -o $@ -L. -lsimple.x86-32 main.c
 
@@ -46,10 +55,13 @@ run.x86-32: main.x86-32
 ######################################################################
 LLC_ARM_ARGS= --add-llc-option -sfi-zero-mask
 
+# mostly sandboxed
 libsimple.arm.so: hello.bc fortytwo.bc
 	$(PNACL_LD) -shared -fPIC  -arch arm $(LLC_ARM_ARGS) -o $@ $?
+	$(NCVAL_ARM) --zero-masks $@
 	$(ELF_PATCHER) -l $@
 
+# *not* sanboxed
 main.arm: main.c libsimple.arm.so
 	$(ARM_CC)  -Wl,-Ttext-segment=20000 -o $@ -L. -lsimple.arm main.c
 

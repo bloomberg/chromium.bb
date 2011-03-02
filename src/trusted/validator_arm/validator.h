@@ -113,6 +113,15 @@ class SfiValidator {
   // Returns the Bundle containing a given address.
   const Bundle bundle_for_address(uint32_t) const;
 
+  /*
+   * Change masks: this is useful for debugging and cannot be completely
+   *               controlled with constructor arguments
+   */
+  void change_masks(uint32_t code_address_mask, uint32_t data_address_mask) {
+    code_address_mask_ = code_address_mask;
+    data_address_mask_ = data_address_mask;
+  }
+
  private:
   bool is_bundle_head(uint32_t address) const;
 

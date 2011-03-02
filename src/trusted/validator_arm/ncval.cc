@@ -9,6 +9,7 @@
 #include <errno.h>
 #include <string.h>
 
+#include <string>
 #include <vector>
 #include <algorithm>
 
@@ -20,6 +21,7 @@
 using nacl_arm_val::SfiValidator;
 using nacl_arm_val::CodeSegment;
 
+using std::string;
 using std::vector;
 
 /*
@@ -48,15 +50,22 @@ class CommandLineProblemSink : public nacl_arm_val::ProblemSink {
   }
 };
 
-int validate(const ncfile *ncf) {
+const uint32_t kOneGig = 1U * 1024 * 1024 * 1024;
+
+int validate(const ncfile *ncf, bool use_zero_masks) {
   SfiValidator validator(
       16,  // bytes per bundle
       // TODO(cbiffle): maybe check region sizes from ELF headers?
       //                verify that instructions are in right region
-      1U * 1024 * 1024 * 1024,  // code region size
-      1U * 1024 * 1024 * 1024,  // data region size
-      nacl_arm_dec::Register(9),  // read only register
+      kOneGig,  // code region size
+      kOneGig,  // data region size
+      nacl_arm_dec::Register(9),  // read only register (used for threading)
       nacl_arm_dec::Register(13));  // stack pointer
+
+  if (use_zero_masks) {
+    validator.change_masks(0, 0);
+  }
+
   CommandLineProblemSink sink;
 
   Elf_Shdr *shdr = ncf->sheaders;
@@ -80,12 +89,27 @@ int validate(const ncfile *ncf) {
 }
 
 int main(int argc, const char *argv[]) {
-  if (argc != 2) {
-    fprintf(stderr, "Usage: %s <filename>\n", argv[0]);
-    return 2;
+  bool use_zero_masks = false;
+  const char *filename = NULL;
+
+  for (int i = 1; i < argc; ++i) {
+    string o = argv[i];
+    if (o == "--zero-masks") {
+      use_zero_masks = true;
+    } else {
+      if (filename != NULL) {
+        // trigger error when filename is overwritten
+        filename = NULL;
+        break;
+      }
+      filename = argv[i];
+    }
   }
 
-  const char *filename = argv[1];
+  if (NULL == filename) {
+    fprintf(stderr, "Usage: %s [--zero-masks] <filename>\n", argv[0]);
+    return 2;
+  }
 
   ncfile *ncf = nc_loadfile(filename);
   if (!ncf) {
@@ -95,7 +119,7 @@ int main(int argc, const char *argv[]) {
 
   // TODO(cbiffle): check OS ABI, ABI version, align mask
 
-  int exit_code = validate(ncf);
+  int exit_code = validate(ncf, use_zero_masks);
   nc_freefile(ncf);
   return exit_code;
 }
