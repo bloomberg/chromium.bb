@@ -6,10 +6,8 @@
 
 #include "base/file_descriptor_posix.h"
 #include "base/logging.h"
-#include "base/scoped_ptr.h"
 #include "chrome/common/render_messages.h"
 #include "chrome/common/render_messages_params.h"
-#include "printing/native_metafile_factory.h"
 #include "printing/native_metafile.h"
 #include "skia/ext/vector_canvas.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFrame.h"
@@ -25,15 +23,14 @@ void PrintWebViewHelper::CreatePreviewDocument(
     const ViewMsg_PrintPages_Params& params, WebFrame* frame) {
   // We only can use PDF in the renderer because Cairo needs to create a
   // temporary file for a PostScript surface.
-  scoped_ptr<printing::NativeMetafile> metafile(
-      printing::NativeMetafileFactory::CreateMetafile());
+  printing::NativeMetafile metafile;
   int page_count = 0;
 
-  if (!RenderPages(params, frame, false, &page_count, metafile.get()))
+  if (!RenderPages(params, frame, false, &page_count, &metafile))
     return;
 
   // Get the size of the resulting metafile.
-  uint32 buf_size = metafile->GetDataSize();
+  uint32 buf_size = metafile.GetDataSize();
   DCHECK_GT(buf_size, 0u);
 
   ViewHostMsg_DidPreviewDocument_Params preview_params;
@@ -41,7 +38,7 @@ void PrintWebViewHelper::CreatePreviewDocument(
   preview_params.expected_pages_count = page_count;
   preview_params.data_size = buf_size;
 
-  if (!CopyMetafileDataToSharedMem(metafile.get(),
+  if (!CopyMetafileDataToSharedMem(&metafile,
                                    &(preview_params.metafile_data_handle))) {
     preview_params.expected_pages_count = 0;
     preview_params.data_size = 0;
@@ -54,8 +51,7 @@ void PrintWebViewHelper::PrintPages(const ViewMsg_PrintPages_Params& params,
                                     WebNode* node) {
   // We only can use PDF in the renderer because Cairo needs to create a
   // temporary file for a PostScript surface.
-  scoped_ptr<printing::NativeMetafile> metafile(
-      printing::NativeMetafileFactory::CreateMetafile());
+  printing::NativeMetafile metafile;
   int page_count = 0;
   bool send_expected_page_count =
 #if defined(OS_CHROMEOS)
@@ -65,12 +61,12 @@ void PrintWebViewHelper::PrintPages(const ViewMsg_PrintPages_Params& params,
 #endif  // defined(OS_CHROMEOS)
 
   if (!RenderPages(params, frame, send_expected_page_count, &page_count,
-                   metafile.get())) {
+                   &metafile)) {
     return;
   }
 
   // Get the size of the resulting metafile.
-  uint32 buf_size = metafile->GetDataSize();
+  uint32 buf_size = metafile.GetDataSize();
   DCHECK_GT(buf_size, 0u);
 
 #if defined(OS_CHROMEOS)
@@ -109,7 +105,7 @@ void PrintWebViewHelper::PrintPages(const ViewMsg_PrintPages_Params& params,
       NOTREACHED() << "Map failed";
       return;
     }
-    metafile->GetData(shared_buf.memory(), buf_size);
+    metafile.GetData(shared_buf.memory(), buf_size);
     printed_page_params.data_size = buf_size;
     shared_buf.GiveToProcess(base::GetCurrentProcessHandle(),
                              &(printed_page_params.metafile_data_handle));

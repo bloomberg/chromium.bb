@@ -8,8 +8,6 @@
 #include "base/process_util.h"
 #include "chrome/common/render_messages.h"
 #include "chrome/common/render_messages_params.h"
-#include "printing/native_metafile_factory.h"
-#include "printing/native_metafile.h"
 #include "printing/units.h"
 #include "skia/ext/vector_canvas.h"
 #include "skia/ext/vector_platform_device.h"
@@ -69,8 +67,7 @@ void PrintWebViewHelper::PrintPage(const ViewMsg_PrintPage_Params& params,
                                    WebFrame* frame) {
   // Generate a memory-based metafile. It will use the current screen's DPI.
   // Each metafile contains a single page.
-  scoped_ptr<printing::NativeMetafile> metafile(
-      printing::NativeMetafileFactory::CreateMetafile());
+  scoped_ptr<printing::NativeMetafile> metafile(new printing::NativeMetafile);
   metafile->CreateDc(NULL, NULL);
   DCHECK(metafile->hdc());
   skia::PlatformDevice::InitializeDC(metafile->hdc());
@@ -136,8 +133,7 @@ void PrintWebViewHelper::CreatePreviewDocument(
   // PDF backend" work is completed for windows, make changes to replace this
   // EMF with PDF metafile.
   // http://code.google.com/p/chromium/issues/detail?id=62889
-  scoped_ptr<printing::NativeMetafile> metafile(
-      printing::NativeMetafileFactory::CreateMetafile());
+  scoped_ptr<printing::NativeMetafile> metafile(new printing::NativeMetafile);
   metafile->CreateDc(NULL, NULL);
   DCHECK(metafile->hdc());
   skia::PlatformDevice::InitializeDC(metafile->hdc());
@@ -262,7 +258,7 @@ void PrintWebViewHelper::RenderPage(
       NOTREACHED();
 
     scoped_ptr<printing::NativeMetafile> metafile2(
-        printing::NativeMetafileFactory::CreateMetafile());
+        new printing::NativeMetafile);
     // Page used alpha blend, but printer doesn't support it.  Rewrite the
     // metafile and flatten out the transparency.
     HDC bitmap_dc = CreateCompatibleDC(GetDC(NULL));

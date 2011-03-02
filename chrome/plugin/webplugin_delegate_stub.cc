@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2009 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -14,6 +14,7 @@
 #include "chrome/plugin/plugin_channel.h"
 #include "chrome/plugin/plugin_thread.h"
 #include "chrome/plugin/webplugin_proxy.h"
+#include "printing/native_metafile.h"
 #include "third_party/npapi/bindings/npapi.h"
 #include "third_party/npapi/bindings/npruntime.h"
 #include "skia/ext/platform_device.h"
@@ -21,12 +22,6 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebCursorInfo.h"
 #include "webkit/plugins/npapi/webplugin_delegate_impl.h"
 #include "webkit/glue/webcursor.h"
-
-#if defined(OS_WIN)
-#include "base/scoped_ptr.h"
-#include "printing/native_metafile_factory.h"
-#include "printing/native_metafile.h"
-#endif  // defined(OS_WIN)
 
 #if defined(ENABLE_GPU)
 #include "app/gfx/gl/gl_context.h"
@@ -286,27 +281,26 @@ void WebPluginDelegateStub::OnDidPaint() {
 void WebPluginDelegateStub::OnPrint(base::SharedMemoryHandle* shared_memory,
                                     uint32* size) {
 #if defined(OS_WIN)
-  scoped_ptr<printing::NativeMetafile> metafile(
-      printing::NativeMetafileFactory::CreateMetafile());
-  if (!metafile->CreateDc(NULL, NULL)) {
+  printing::NativeMetafile metafile;
+  if (!metafile.CreateDc(NULL, NULL)) {
     NOTREACHED();
     return;
   }
-  HDC hdc = metafile->hdc();
+  HDC hdc = metafile.hdc();
   skia::PlatformDevice::InitializeDC(hdc);
   delegate_->Print(hdc);
-  if (!metafile->CloseDc()) {
+  if (!metafile.CloseDc()) {
     NOTREACHED();
     return;
   }
 
-  *size = metafile->GetDataSize();
+  *size = metafile.GetDataSize();
   DCHECK(*size);
   base::SharedMemory shared_buf;
   CreateSharedBuffer(*size, &shared_buf, shared_memory);
 
   // Retrieve a copy of the data.
-  bool success = metafile->GetData(shared_buf.memory(), *size);
+  bool success = metafile.GetData(shared_buf.memory(), *size);
   DCHECK(success);
 #else
   // TODO(port): plugin printing.

@@ -18,6 +18,7 @@
 #include "chrome/common/serialized_script_value.h"
 #include "chrome/common/utility_messages.h"
 #include "chrome/common/web_resource/web_resource_unpacker.h"
+#include "printing/native_metafile.h"
 #include "printing/page_range.h"
 #include "printing/units.h"
 #include "third_party/skia/include/core/SkBitmap.h"
@@ -28,10 +29,7 @@
 
 #if defined(OS_WIN)
 #include "app/win/iat_patch_function.h"
-#include "base/scoped_ptr.h"
 #include "base/win/scoped_handle.h"
-#include "printing/native_metafile_factory.h"
-#include "printing/native_metafile.h"
 #endif
 
 namespace {
@@ -137,15 +135,10 @@ void UtilityThread::OnRenderPDFPagesToMetafile(
     const std::vector<printing::PageRange>& page_ranges) {
   bool succeeded = false;
 #if defined(OS_WIN)
-  scoped_ptr<printing::NativeMetafile> metafile(
-      printing::NativeMetafileFactory::CreateMetafile());
+  printing::NativeMetafile metafile;
   int highest_rendered_page_number = 0;
-  succeeded = RenderPDFToWinMetafile(pdf_file,
-                                     metafile_path,
-                                     render_area,
-                                     render_dpi,
-                                     page_ranges,
-                                     metafile.get(),
+  succeeded = RenderPDFToWinMetafile(pdf_file, metafile_path, render_area,
+                                     render_dpi, page_ranges, &metafile,
                                      &highest_rendered_page_number);
   if (succeeded) {
     Send(new UtilityHostMsg_RenderPDFPagesToMetafile_Succeeded(

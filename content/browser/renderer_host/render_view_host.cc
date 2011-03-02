@@ -45,6 +45,7 @@
 #include "content/browser/renderer_host/render_widget_host_view.h"
 #include "content/browser/site_instance.h"
 #include "net/base/net_util.h"
+#include "printing/native_metafile.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFindOptions.h"
 #include "ui/gfx/native_widget_types.h"

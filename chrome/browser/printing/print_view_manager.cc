@@ -18,7 +18,6 @@
 #include "content/browser/tab_contents/navigation_entry.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "grit/generated_resources.h"
-#include "printing/native_metafile_factory.h"
 #include "printing/native_metafile.h"
 #include "printing/printed_document.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -131,7 +130,7 @@ void PrintViewManager::OnDidPrintPage(
     }
   }
 
-  scoped_ptr<NativeMetafile> metafile(NativeMetafileFactory::CreateMetafile());
+  scoped_ptr<NativeMetafile> metafile(new NativeMetafile());
   if (metafile_must_be_valid) {
     if (!metafile->Init(shared_buf.memory(), params.data_size)) {
       NOTREACHED() << "Invalid metafile header";

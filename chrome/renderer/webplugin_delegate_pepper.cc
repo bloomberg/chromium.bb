@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -15,12 +15,18 @@
 
 #include "base/file_path.h"
 #include "base/file_util.h"
+#if defined(OS_MACOSX)
+#include "base/mac/mac_util.h"
+#endif
 #include "base/md5.h"
 #include "base/message_loop.h"
 #include "base/metrics/histogram.h"
 #include "base/metrics/stats_counters.h"
 #include "base/path_service.h"
 #include "base/process_util.h"
+#if defined(OS_MACOSX)
+#include "base/mac/scoped_cftyperef.h"
+#endif
 #include "base/scoped_ptr.h"
 #include "base/string_number_conversions.h"
 #include "base/string_util.h"
@@ -33,9 +39,17 @@
 #include "chrome/renderer/pepper_widget.h"
 #include "chrome/renderer/render_thread.h"
 #include "chrome/renderer/render_view.h"
+#if defined(OS_LINUX)
+#include "chrome/renderer/renderer_sandbox_support_linux.h"
+#endif
 #include "chrome/renderer/webplugin_delegate_proxy.h"
 #include "ui/gfx/blit.h"
-#include "printing/native_metafile_factory.h"
+#if defined(OS_WIN)
+#include "printing/units.h"
+#include "skia/ext/vector_platform_device.h"
+#include "ui/gfx/codec/jpeg_codec.h"
+#include "ui/gfx/gdi_util.h"
+#endif
 #include "printing/native_metafile.h"
 #include "third_party/npapi/bindings/npapi_extensions.h"
 #include "third_party/npapi/bindings/npapi_extensions_private.h"
@@ -49,19 +63,6 @@
 #include "webkit/plugins/npapi/plugin_list.h"
 #include "webkit/plugins/npapi/plugin_host.h"
 #include "webkit/plugins/npapi/plugin_stream_url.h"
-
-#if defined(OS_MACOSX)
-#include "base/mac/mac_util.h"
-#include "base/mac/scoped_cftyperef.h"
-#elif defined(OS_LINUX)
-#include "chrome/renderer/renderer_sandbox_support_linux.h"
-#include "printing/pdf_ps_metafile_cairo.h"
-#elif defined(OS_WIN)
-#include "printing/units.h"
-#include "skia/ext/vector_platform_device.h"
-#include "ui/gfx/codec/jpeg_codec.h"
-#include "ui/gfx/gdi_util.h"
-#endif
 
 #if defined(ENABLE_GPU)
 #include "webkit/plugins/npapi/plugin_constants_win.h"
@@ -1221,7 +1222,7 @@ bool WebPluginDelegatePepper::VectorPrintPage(int page_number,
   // directly.
   cairo_t* context = canvas->beginPlatformPaint();
   printing::NativeMetafile* metafile =
-      printing::PdfPsMetafile::FromCairoContext(context);
+      printing::NativeMetafile::FromCairoContext(context);
   DCHECK(metafile);
   if (metafile) {
     ret = metafile->SetRawData(pdf_output, output_size);
@@ -1230,15 +1231,14 @@ bool WebPluginDelegatePepper::VectorPrintPage(int page_number,
   }
   canvas->endPlatformPaint();
 #elif defined(OS_MACOSX)
-  scoped_ptr<printing::NativeMetafile> metafile(
-      printing::NativeMetafileFactory::CreateMetafile());
+  printing::NativeMetafile metafile;
   // Create a PDF metafile and render from there into the passed in context.
-  if (metafile->Init(pdf_output, output_size)) {
+  if (metafile.Init(pdf_output, output_size)) {
     // Flip the transform.
     CGContextSaveGState(canvas);
     CGContextTranslateCTM(canvas, 0, current_printable_area_.height());
     CGContextScaleCTM(canvas, 1.0, -1.0);
-    ret = metafile->RenderPage(1, canvas, current_printable_area_.ToCGRect(),
+    ret = metafile.RenderPage(1, canvas, current_printable_area_.ToCGRect(),
                               true, false, true, true);
     CGContextRestoreGState(canvas);
   }

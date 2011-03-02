@@ -9,8 +9,6 @@
 #include "chrome/common/render_messages.h"
 #include "chrome/common/render_messages_params.h"
 #include "ipc/ipc_message_utils.h"
-#include "printing/native_metafile_factory.h"
-#include "printing/native_metafile.h"
 #include "printing/units.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -133,10 +131,9 @@ void MockPrinter::PrintPage(const ViewHostMsg_DidPrintPage_Params& params) {
   base::SharedMemory metafile_data(params.metafile_data_handle, true);
 #endif
   metafile_data.Map(params.data_size);
-  scoped_ptr<printing::NativeMetafile> metafile(
-      printing::NativeMetafileFactory::CreateMetafile());
-  metafile->Init(metafile_data.memory(), params.data_size);
-  printing::Image image(*metafile);
+  printing::NativeMetafile metafile;
+  metafile.Init(metafile_data.memory(), params.data_size);
+  printing::Image image(metafile);
   MockPrinterPage* page_data = new MockPrinterPage(metafile_data.memory(),
                                                    params.data_size,
                                                    image);
