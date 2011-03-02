@@ -15,6 +15,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/notification_service.h"
 #include "chrome/common/render_messages_params.h"
+#include "chrome/common/url_constants.h"
 #include "content/browser/tab_contents/navigation_controller.h"
 #include "content/browser/tab_contents/provisional_load_details.h"
 #include "content/browser/tab_contents/tab_contents.h"
@@ -23,6 +24,14 @@
 namespace keys = extension_webnavigation_api_constants;
 
 namespace {
+
+// URL schemes for which we'll send events.
+const char* kValidSchemes[] = {
+  chrome::kHttpScheme,
+  chrome::kHttpsScheme,
+  chrome::kFileScheme,
+  chrome::kFtpScheme,
+};
 
 // Returns 0 if the navigation happens in the main frame, or the frame ID
 // modulo 32 bits otherwise.
@@ -135,7 +144,8 @@ void DispatchOnCompleted(NavigationController* controller,
 }  // namespace
 
 
-FrameNavigationState::FrameNavigationState() {
+FrameNavigationState::FrameNavigationState()
+    : allow_extension_scheme_(false) {
 }
 
 FrameNavigationState::~FrameNavigationState() {
@@ -144,8 +154,18 @@ FrameNavigationState::~FrameNavigationState() {
 bool FrameNavigationState::CanSendEvents(int64 frame_id) const {
   FrameIdToStateMap::const_iterator frame_state =
       frame_state_map_.find(frame_id);
-  return frame_state != frame_state_map_.end() &&
-      !frame_state->second.error_occurred;
+  if (frame_state == frame_state_map_.end() ||
+      frame_state->second.error_occurred) {
+    return false;
+  }
+  const std::string& scheme = frame_state->second.url.scheme();
+  for (unsigned i = 0; i < arraysize(kValidSchemes); ++i) {
+    if (scheme == kValidSchemes[i])
+      return true;
+  }
+  if (allow_extension_scheme_ && scheme == chrome::kExtensionScheme)
+    return true;
+  return false;
 }
 
 void FrameNavigationState::TrackFrame(int64 frame_id,

@@ -99,3 +99,13 @@ TEST_F(FrameNavigationStateTest, ErrorStateFrame) {
   EXPECT_TRUE(navigation_state.CanSendEvents(frame_id1));
   EXPECT_TRUE(navigation_state.CanSendEvents(frame_id2));
 }
+
+// Tests that no events are send for a not web-safe scheme.
+TEST_F(FrameNavigationStateTest, WebSafeScheme) {
+  FrameNavigationState navigation_state;
+  const int64 frame_id = 23;
+  const GURL url("unsafe://www.google.com/");
+
+  navigation_state.TrackFrame(frame_id, url, true, false, contents());
+  EXPECT_FALSE(navigation_state.CanSendEvents(frame_id));
+}

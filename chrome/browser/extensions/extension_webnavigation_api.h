@@ -54,6 +54,8 @@ class FrameNavigationState {
   // Removes state associated with this tab contents and all of its frames.
   void RemoveTabContentsState(const TabContents* tab_contents);
 
+  void set_allow_extension_scheme() { allow_extension_scheme_ = true; }
+
  private:
   typedef std::multimap<const TabContents*, int64> TabContentsToFrameIdMap;
   struct FrameState {
@@ -69,6 +71,9 @@ class FrameNavigationState {
   // Tracks the state of known frames.
   FrameIdToStateMap frame_state_map_;
 
+  // If true, also allow events from chrome-extension:// URLs.
+  bool allow_extension_scheme_;
+
   DISALLOW_COPY_AND_ASSIGN(FrameNavigationState);
 };
 
@@ -83,6 +88,13 @@ class ExtensionWebNavigationEventRouter : public NotificationObserver {
   // Invoked by the extensions service once the extension system is fully set
   // up and can start dispatching events to extensions.
   void Init();
+
+#if defined(UNIT_TEST)
+  // Also send events for chrome-extension:// URLs.
+  void EnableExtensionScheme() {
+    navigation_state_.set_allow_extension_scheme();
+  }
+#endif
 
  private:
   friend struct DefaultSingletonTraits<ExtensionWebNavigationEventRouter>;
