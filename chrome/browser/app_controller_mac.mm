@@ -1135,7 +1135,7 @@ void RecordLastRunAppBundlePath() {
   if (!parsed_command_line.HasSwitch(switches::kDisableTabbedOptions)) {
     if (Browser* browser = ActivateBrowser([self defaultProfile])) {
       // Show options tab in the active browser window.
-      browser->ShowOptionsTab(chrome::kDefaultOptionsSubPage);
+      browser->OpenOptionsDialog();
     } else {
       // No browser window, so create one for the options tab.
       Browser::OpenOptionsWindow([self defaultProfile]);
