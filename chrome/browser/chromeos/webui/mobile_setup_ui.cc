@@ -671,8 +671,8 @@ bool MobileSetupHandler::ConnectToNetwork(
   connection_start_time_ = base::Time::Now();
   if (!network || !chromeos::CrosLibrary::Get()->GetNetworkLibrary()->
       ConnectToCellularNetwork(network)) {
-    LOG(WARNING) << "Connect failed: "
-                 << network ? network->service_path() : "no service";
+    LOG(WARNING) << "Connect failed."
+                 << (network ? network->service_path().c_str() : "no service");
     // If we coudn't connect during reconnection phase, try to reconnect
     // with a delay (and try to reconnect if needed).
     scoped_refptr<TaskProxy> task = new TaskProxy(AsWeakPtr(),
