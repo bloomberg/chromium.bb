@@ -837,6 +837,9 @@ const char kMetricsRecordingOnly[]          = "metrics-recording-only";
 // The minimum version of Flash that implements the NPP_ClearSiteData API.
 const char kMinClearSiteDataFlashVersion[]  = "min-clearsitedata-flash-version";
 
+// Enables multiprofile Chrome.
+const char kMultiProfiles[]                 = "multi-profiles";
+
 // Sets the default IP address (interface) for the stub (normally 127.0.0.1).
 const char kNaClDebugIP[]                   = "nacl-debug-ip";
 
