@@ -154,11 +154,13 @@ class ChromeTests:
         os.path.join(gtest_files_dir, name + ".gtest_%s.txt" % platform_suffix),
         os.path.join(gtest_files_dir, name + ".gtest-%s_%s.txt" % \
             (tool.ToolName(), platform_suffix))]
+    logging.info("Reading gtest exclude filter files:")
     for filename in gtest_filter_files:
+      readable_filename = filename.replace(self._source_dir + "/", "")
       if not os.path.exists(filename):
-        logging.info("gtest filter file %s not found - skipping" % filename)
+        logging.info("  \"%s\" - not found" % readable_filename)
         continue
-      logging.info("Reading gtest filters from %s" % filename)
+      logging.info("  \"%s\" - OK" % readable_filename)
       f = open(filename, 'r')
       for line in f.readlines():
         if line.startswith("#") or line.startswith("//") or line.isspace():
