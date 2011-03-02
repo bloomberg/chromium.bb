@@ -34,7 +34,7 @@
 
 EXTERN_C_BEGIN
 
-extern struct NaClApp *g_SignalNAP;
+struct NaClApp;
 
 enum NaClSignalResult {
   NACL_SIGNAL_SEARCH,   /* Try our handler or OS */

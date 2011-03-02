@@ -192,7 +192,7 @@ int NaClAppThreadAllocSegCtor(struct NaClAppThread  *natp,
         "tls_idx 0x%02"NACL_PRIx32"\n",
          usr_stack_ptr, tls_idx);
 
-  if (0 == tls_idx) {
+  if (NACL_TLS_INDEX_INVALID == tls_idx) {
     NaClLog(LOG_ERROR, "No tls for thread, num_thread %d\n", nap->num_threads);
     return 0;
   }

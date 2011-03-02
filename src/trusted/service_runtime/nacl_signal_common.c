@@ -11,7 +11,10 @@
 #include "native_client/src/include/portability_io.h"
 #include "native_client/src/shared/platform/nacl_check.h"
 #include "native_client/src/shared/platform/nacl_log.h"
+#include "native_client/src/trusted/service_runtime/nacl_app_thread.h"
+#include "native_client/src/trusted/service_runtime/nacl_globals.h"
 #include "native_client/src/trusted/service_runtime/nacl_signal.h"
+#include "native_client/src/trusted/service_runtime/nacl_tls.h"
 #include "native_client/src/trusted/service_runtime/sel_ldr.h"
 
 #ifdef WIN32
@@ -23,7 +26,17 @@
 
 #define MAX_NACL_HANDLERS 16
 
-struct NaClApp *g_SignalNAP;
+/*
+ * With our current ARM sandbox, we can only have one NaCl sandbox per
+ * host process, because the ARM sandbox is zero-address-based.  So on
+ * ARM it is OK to store the NaClApp in a global variable.
+ *
+ * On other platforms, we extract the NaClApp from the signal context
+ * and TLS in a sandbox-specific way.
+ */
+#if NACL_ARCH(NACL_BUILD_ARCH) == NACL_arm
+static struct NaClApp *g_SignalNAP;
+#endif
 
 struct NaClSignalNode {
   struct NaClSignalNode *next;
@@ -58,30 +71,40 @@ ssize_t NaClSignalErrorMessage(const char *msg) {
 /*
  * Return non-zero if the signal context is currently executing in an
  * untrusted environment.
+ *
+ * Note that this should only be called from the thread in which the
+ * signal occurred, because on x86-64 it reads a thread-local variable
+ * (nacl_thread_index).
  */
 int NaClSignalContextIsUntrusted(const struct NaClSignalContext *sigCtx) {
+#if NACL_ARCH(NACL_BUILD_ARCH) == NACL_x86 && NACL_BUILD_SUBARCH == 32
+  /* For x86-32, if %cs does not match, it is untrusted code. */
+  return NaClGetGlobalCs() != sigCtx->cs;
+#elif NACL_ARCH(NACL_BUILD_ARCH) == NACL_x86 && NACL_BUILD_SUBARCH == 64
+  uint32_t current_thread_index = NaClTlsGetIdx();
+  if (NACL_TLS_INDEX_INVALID == current_thread_index) {
+    return 0;
+  } else {
+    struct NaClAppThread *thread = nacl_thread[current_thread_index];
+    return NaClIsUserAddr(thread->nap, sigCtx->prog_ctr);
+  }
+#elif NACL_ARCH(NACL_BUILD_ARCH) == NACL_arm
   /*
-   * We cannot be in untrusted code unless we have a loaded and
-   * running NEXE, which means we must have a valid NaClApp object.
+   * In principle, on ARM we could extract the NaClApp pointer from
+   * the signal context's saved value of r9.  However, there is little
+   * benefit to doing this given that there can be only one zero-based
+   * ARM sandbox per process, so we use a global variable instead.
+   *
+   * If g_SignalNAP has not been set, no untrusted code has been run
+   * so far.
    */
   if (NULL == g_SignalNAP) return 0;
 
-#if NACL_ARCH(NACL_BUILD_ARCH) == NACL_x86 && NACL_BUILD_SUBARCH == 32
-  /* For 32b x86, if the CS doesn't match, it's untrusted code. */
-  if (NaClGetGlobalCs() == sigCtx->cs) return 0;
+  /* Check whether the program counter was within the untrusted range. */
+  return NaClIsUserAddr(g_SignalNAP, sigCtx->prog_ctr);
 #else
-  /* For all other architectures, check the prog_ctr vs untrusted range. */
-
-  /* If the program counter is below the untrusted memory start address... */
-  if (g_SignalNAP->mem_start > sigCtx->prog_ctr) return 0;
-
-  /* If the program counter is above the untrusted memory end address... */
-  if ((g_SignalNAP->mem_start + ((uintptr_t) 1U << g_SignalNAP->addr_bits)) <
-      sigCtx->prog_ctr) return 0;
+# error Unsupported architecture
 #endif
-
-  /* Otherwise the program counter points to untrusted memory. */
-  return 1;
 }
 
 
@@ -244,6 +267,10 @@ void NaClSignalHandlerFini() {
 }
 
 void NaClSignalRegisterApp(struct NaClApp *nap) {
+#if NACL_ARCH(NACL_BUILD_ARCH) == NACL_arm
   CHECK(g_SignalNAP == NULL);
   g_SignalNAP = nap;
+#else
+  UNREFERENCED_PARAMETER(nap);
+#endif
 }

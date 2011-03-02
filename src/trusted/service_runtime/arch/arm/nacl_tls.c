@@ -154,13 +154,13 @@ uint32_t NaClTlsAllocate(struct NaClAppThread *natp,
   if (-1 == idx) {
     NaClLog(LOG_FATAL,
             "NaClTlsAllocate: thread limit reached\n");
-    return 0;
+    return NACL_TLS_INDEX_INVALID;
   }
   if (CombinedDescriptorExtractIdx(idx) != (uint32_t) idx) {
     NaClLog(LOG_FATAL,
             "cannot allocate new thread idx tdb %x\n",
             (uint32_t)tdb);
-    return 0;
+    return NACL_TLS_INDEX_INVALID;
   }
 
   return MakeCombinedDescriptor((uint32_t) tdb, (uint32_t) idx);

@@ -177,7 +177,7 @@ uint32_t NaClTlsAllocate(struct NaClAppThread *natp,
 
   if (-1 == i) {
     NaClLog(LOG_ERROR, "NaClTlsAllocate: no more slots for a thread\n");
-    return 0;
+    return NACL_TLS_INDEX_INVALID;
   }
 
   natp->user.tls_base = base_addr;
