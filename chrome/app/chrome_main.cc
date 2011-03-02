@@ -523,16 +523,6 @@ int ChromeMain(int argc, char** argv) {
     singleton_command_line->AppendSwitch(switches::kEnableGPUPlugin);
   }
 
-#if defined(OS_CHROMEOS)
-  if (command_line.HasSwitch(switches::kGuestSession)) {
-    // Disable sync and extensions if we're in "browse without sign-in" mode.
-    CommandLine* singleton_command_line = CommandLine::ForCurrentProcess();
-    singleton_command_line->AppendSwitch(switches::kDisableSync);
-    singleton_command_line->AppendSwitch(switches::kDisableExtensions);
-    browser_defaults::bookmarks_enabled = false;
-  }
-#endif
-
   base::ProcessId browser_pid = base::GetCurrentProcId();
   if (SubprocessIsBrowserChild(process_type)) {
 #if defined(OS_WIN) || defined(OS_MACOSX)
