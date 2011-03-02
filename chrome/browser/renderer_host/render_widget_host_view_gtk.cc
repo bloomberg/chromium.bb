@@ -67,6 +67,24 @@ const float kDefaultScrollPixelsPerTick = 20;
 const float kDefaultScrollPixelsPerTick = 160.0f / 3.0f;
 #endif
 
+// Returns the spinning cursor used for loading state.
+GdkCursor* GetMozSpinningCursor() {
+  static GdkCursor* moz_spinning_cursor = NULL;
+  if (!moz_spinning_cursor) {
+    const GdkColor fg = { 0, 0, 0, 0 };
+    const GdkColor bg = { 65535, 65535, 65535, 65535 };
+    GdkPixmap* source =
+        gdk_bitmap_create_from_data(NULL, moz_spinning_bits, 32, 32);
+    GdkPixmap* mask =
+        gdk_bitmap_create_from_data(NULL, moz_spinning_mask_bits, 32, 32);
+    moz_spinning_cursor =
+        gdk_cursor_new_from_pixmap(source, mask, &fg, &bg, 2, 2);
+    g_object_unref(source);
+    g_object_unref(mask);
+  }
+  return moz_spinning_cursor;
+}
+
 }  // namespace
 
 using WebKit::WebInputEventFactory;
@@ -1021,31 +1039,14 @@ void RenderWidgetHostViewGtk::ShowCurrentCursor() {
   // that calling gdk_window_set_cursor repeatedly is expensive.  We should
   // avoid it here where possible.
   GdkCursor* gdk_cursor;
-  bool should_unref = false;
   if (current_cursor_.GetCursorType() == GDK_LAST_CURSOR) {
-    if (is_loading_) {
-      // Use MOZ_CURSOR_SPINNING if we are showing the default cursor and
-      // the page is loading.
-      static const GdkColor fg = { 0, 0, 0, 0 };
-      static const GdkColor bg = { 65535, 65535, 65535, 65535 };
-      GdkPixmap* source =
-        gdk_bitmap_create_from_data(NULL, moz_spinning_bits, 32, 32);
-      GdkPixmap* mask =
-        gdk_bitmap_create_from_data(NULL, moz_spinning_mask_bits, 32, 32);
-      gdk_cursor = gdk_cursor_new_from_pixmap(source, mask, &fg, &bg, 2, 2);
-      should_unref = true;
-      g_object_unref(source);
-      g_object_unref(mask);
-    } else {
-      gdk_cursor = NULL;
-    }
+    // Use MOZ_CURSOR_SPINNING if we are showing the default cursor and
+    // the page is loading.
+    gdk_cursor = is_loading_ ? GetMozSpinningCursor() : NULL;
   } else {
     gdk_cursor = current_cursor_.GetNativeCursor();
   }
   gdk_window_set_cursor(view_.get()->window, gdk_cursor);
-  // The window now owns the cursor.
-  if (should_unref && gdk_cursor)
-    gdk_cursor_unref(gdk_cursor);
 }
 
 void RenderWidgetHostViewGtk::CreatePluginContainer(
