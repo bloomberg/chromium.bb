@@ -26,8 +26,6 @@ RemotingOptionsHandler::~RemotingOptionsHandler() {
 }
 
 void RemotingOptionsHandler::Init(WebUI* web_ui) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-
   web_ui_ = web_ui;
 
   process_control_ =
