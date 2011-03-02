@@ -11,7 +11,7 @@
 namespace views {
 
 ThemeProvider* GetWidgetThemeProvider(const Widget* widget) {
-  Widget* root_widget = widget->GetRootWidget();
+  const Widget* root_widget = widget->GetTopLevelWidget();
   if (root_widget && root_widget != widget) {
     // Attempt to get the theme provider, and fall back to the default theme
     // provider if not found.

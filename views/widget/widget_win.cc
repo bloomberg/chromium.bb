@@ -94,32 +94,22 @@ bool ProcessChildWindowMessage(UINT message,
   return false;
 }
 
-BOOL CALLBACK EnumChildProc(HWND hwnd, LPARAM l_param) {
-  RootView* root_view = GetRootViewForHWND(hwnd);
-  if (root_view) {
-    *reinterpret_cast<RootView**>(l_param) = root_view;
-    return FALSE;  // Stop enumerating.
+// Enumeration callback for NativeWidget::GetAllNativeWidgets(). Called for each
+// child HWND beneath the original HWND.
+BOOL CALLBACK EnumerateChildWindowsForNativeWidgets(HWND hwnd, LPARAM l_param) {
+  NativeWidget* native_widget =
+      NativeWidget::GetNativeWidgetForNativeView(hwnd);
+  if (native_widget) {
+    NativeWidget::NativeWidgets* native_widgets =
+        reinterpret_cast<NativeWidget::NativeWidgets*>(l_param);
+    native_widgets->insert(native_widget);
   }
-  return TRUE;  // Keep enumerating.
+
+  return TRUE;
 }
 
-// Enumerate child windows as they could have RootView distinct from
-// the HWND's root view.
-BOOL CALLBACK EnumAllRootViewsChildProc(HWND hwnd, LPARAM l_param) {
-  RootView* root_view = GetRootViewForHWND(hwnd);
-  if (root_view) {
-    std::set<RootView*>* root_views_set =
-        reinterpret_cast<std::set<RootView*>*>(l_param);
-    root_views_set->insert(root_view);
-  }
-  return TRUE;  // Keep enumerating.
-}
-
-// Property used to link the HWND to its RootView.
-const char* const kRootViewWindowProperty = "__ROOT_VIEW__";
-
-// Links the HWND to it's Widget (as a Widget, not a WidgetWin).
-const char* const kWidgetKey = "__VIEWS_WIDGET__";
+// Links the HWND to its NativeWidget.
+const char* const kNativeWidgetKey = "__VIEWS_NATIVE_WIDGET__";
 
 // A custom MSAA object id used to determine if a screen reader is actively
 // listening for MSAA events.
@@ -129,11 +119,6 @@ const int kCustomObjectID = 1;
 
 // static
 bool WidgetWin::screen_reader_active_ = false;
-
-RootView* GetRootViewForHWND(HWND hwnd) {
-  return reinterpret_cast<RootView*>(
-      ViewProp::GetValue(hwnd, kRootViewWindowProperty));
-}
 
 ////////////////////////////////////////////////////////////////////////////////
 // WidgetWin, public:
@@ -160,41 +145,7 @@ WidgetWin::WidgetWin()
 
 WidgetWin::~WidgetWin() {
   DestroyRootView();
-}
-
-// static
-WidgetWin* WidgetWin::GetWidget(HWND hwnd) {
-  // TODO(jcivelli): http://crbug.com/44499 We need a way to test that hwnd is
-  //                 associated with a WidgetWin (it might be a pure
-  //                 WindowImpl).
-  if (!WindowImpl::IsWindowImpl(hwnd))
-    return NULL;
-  return reinterpret_cast<WidgetWin*>(ui::GetWindowUserData(hwnd));
-}
-
-// static
-WidgetWin* WidgetWin::GetRootWidget(HWND hwnd) {
-  // First, check if the top-level window is a Widget.
-  HWND root = ::GetAncestor(hwnd, GA_ROOT);
-  if (!root)
-    return NULL;
-
-  WidgetWin* widget = WidgetWin::GetWidget(root);
-  if (widget)
-    return widget;
-
-  // Second, try to locate the last Widget window in the parent hierarchy.
-  HWND parent_hwnd = hwnd;
-  WidgetWin* parent_widget;
-  do {
-    parent_widget = WidgetWin::GetWidget(parent_hwnd);
-    if (parent_widget) {
-      widget = parent_widget;
-      parent_hwnd = ::GetAncestor(parent_hwnd, GA_PARENT);
-    }
-  } while (parent_hwnd != NULL && parent_widget != NULL);
-
-  return widget;
+  CloseNow();
 }
 
 // static
@@ -252,17 +203,13 @@ void WidgetWin::Init(gfx::NativeView parent, const gfx::Rect& bounds) {
   drop_target_ = new DropTargetWin(GetRootView());
 
   if ((window_style() & WS_CHILD) == 0 ||
-      (WidgetWin::GetRootWidget(parent) == NULL &&
-          parent != GetDesktopWindow())) {
+      (!GetTopLevelNativeWidget(parent) && parent != GetDesktopWindow())) {
     // Top-level widgets and child widgets who do not have a top-level widget
     // ancestor get a FocusManager. Child widgets parented to the desktop do not
     // get a FocusManager because parenting to the desktop is the technique used
     // to intentionally exclude a widget from the FocusManager hierarchy.
     focus_manager_.reset(new FocusManager(this));
   }
-
-  // Sets the RootView as a property, so the automation can introspect windows.
-  SetNativeWindowProperty(kRootViewWindowProperty, GetRootView());
 
   // We need to add ourselves as a message loop observer so that we can repaint
   // aggressively if the contents of our window become invalid. Unfortunately
@@ -388,10 +335,6 @@ void WidgetWin::SetAlwaysOnTop(bool on_top) {
     set_window_ex_style(window_ex_style() & ~WS_EX_TOPMOST);
 }
 
-Widget* WidgetWin::GetRootWidget() const {
-  return GetRootWidget(hwnd());
-}
-
 bool WidgetWin::IsVisible() const {
   return !!::IsWindowVisible(hwnd());
 }
@@ -453,11 +396,11 @@ FocusManager* WidgetWin::GetFocusManager() {
   if (focus_manager_.get())
     return focus_manager_.get();
 
-  WidgetWin* widget = static_cast<WidgetWin*>(GetRootWidget());
-  if (widget && widget != this) {
+  NativeWidget* native_widget = GetTopLevelNativeWidget(hwnd());
+  if (native_widget && native_widget != this) {
     // WidgetWin subclasses may override GetFocusManager(), for example for
     // dealing with cases where the widget has been unparented.
-    return widget->GetFocusManager();
+    return native_widget->GetWidget()->GetFocusManager();
   }
   return NULL;
 }
@@ -548,6 +491,13 @@ void WidgetWin::SetCursor(gfx::NativeCursor cursor) {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+// WidgetWin, NativeWidget implementation:
+
+Widget* WidgetWin::GetWidget() {
+  return this;
+}
+
+////////////////////////////////////////////////////////////////////////////////
 // WidgetWin, MessageLoop::Observer implementation:
 
 void WidgetWin::WillProcessMessage(const MSG& msg) {
@@ -632,9 +582,7 @@ void WidgetWin::OnCommand(UINT notification_code, int command_id, HWND window) {
 }
 
 LRESULT WidgetWin::OnCreate(CREATESTRUCT* create_struct) {
-  // Widget::GetWidgetFromNativeView expects the contents of this property
-  // to be of type Widget, so the cast is necessary.
-  SetNativeWindowProperty(kWidgetKey, static_cast<Widget*>(this));
+  SetNativeWindowProperty(kNativeWidgetKey, this);
   use_layered_buffer_ = !!(window_ex_style() & WS_EX_LAYERED);
   LayoutRootView();
   return 0;
@@ -1293,50 +1241,68 @@ Widget* Widget::CreatePopupWidget(TransparencyParam transparent,
 }
 
 // static
-RootView* Widget::FindRootView(HWND hwnd) {
-  RootView* root_view = GetRootViewForHWND(hwnd);
-  if (root_view)
-    return root_view;
-
-  // Enumerate all children and check if they have a RootView.
-  EnumChildWindows(hwnd, EnumChildProc, reinterpret_cast<LPARAM>(&root_view));
-
-  return root_view;
-}
-
-// static
-void Widget::FindAllRootViews(HWND window,
-                              std::vector<RootView*>* root_views) {
-  RootView* root_view = GetRootViewForHWND(window);
-  std::set<RootView*> root_views_set;
-  if (root_view)
-    root_views_set.insert(root_view);
-  // Enumerate all children and check if they have a RootView.
-  EnumChildWindows(window, EnumAllRootViewsChildProc,
-      reinterpret_cast<LPARAM>(&root_views_set));
-  root_views->clear();
-  root_views->reserve(root_views_set.size());
-  for (std::set<RootView*>::iterator it = root_views_set.begin();
-      it != root_views_set.end();
-      ++it)
-    root_views->push_back(*it);
-}
-
-// static
-Widget* Widget::GetWidgetFromNativeView(gfx::NativeView native_view) {
-  return IsWindow(native_view) ?
-      reinterpret_cast<Widget*>(ViewProp::GetValue(native_view, kWidgetKey)) :
-      NULL;
-}
-
-// static
-Widget* Widget::GetWidgetFromNativeWindow(gfx::NativeWindow native_window) {
-  return Widget::GetWidgetFromNativeView(native_window);
-}
-
-// static
 void Widget::NotifyLocaleChanged() {
   NOTIMPLEMENTED();
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// NativeWidget, public:
+
+// static
+NativeWidget* NativeWidget::GetNativeWidgetForNativeView(
+    gfx::NativeView native_view) {
+  if (!ui::WindowImpl::IsWindowImpl(native_view))
+    return NULL;
+  return reinterpret_cast<WidgetWin*>(
+      ViewProp::GetValue(native_view, kNativeWidgetKey));
+}
+
+// static
+NativeWidget* NativeWidget::GetNativeWidgetForNativeWindow(
+    gfx::NativeWindow native_window) {
+  return GetNativeWidgetForNativeView(native_window);
+}
+
+// static
+NativeWidget* NativeWidget::GetTopLevelNativeWidget(
+    gfx::NativeView native_view) {
+  if (!native_view)
+    return NULL;
+
+  // First, check if the top-level window is a Widget.
+  HWND root = ::GetAncestor(native_view, GA_ROOT);
+  if (!root)
+    return NULL;
+
+  NativeWidget* widget = GetNativeWidgetForNativeView(root);
+  if (widget)
+    return widget;
+
+  // Second, try to locate the last Widget window in the parent hierarchy.
+  HWND parent_hwnd = native_view;
+  NativeWidget* parent_widget;
+  do {
+    parent_widget = GetNativeWidgetForNativeView(parent_hwnd);
+    if (parent_widget) {
+      widget = parent_widget;
+      parent_hwnd = ::GetAncestor(parent_hwnd, GA_PARENT);
+    }
+  } while (parent_hwnd != NULL && parent_widget != NULL);
+
+  return widget;
+}
+
+// static
+void NativeWidget::GetAllNativeWidgets(gfx::NativeView native_view,
+                                       NativeWidgets* children) {
+  if (!native_view)
+    return;
+
+  NativeWidget* native_widget = GetNativeWidgetForNativeView(native_view);
+  if (native_widget)
+    children->insert(native_widget);
+  EnumChildWindows(native_view, EnumerateChildWindowsForNativeWidgets,
+      reinterpret_cast<LPARAM>(children));
 }
 
 }  // namespace views

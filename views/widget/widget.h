@@ -29,15 +29,12 @@ using ui::ThemeProvider;
 namespace views {
 
 class DefaultThemeProvider;
+class NativeWidget;
 class RootView;
 class TooltipManager;
 class View;
 class WidgetDelegate;
 class Window;
-
-namespace internal {
-class NativeWidget;
-}
 
 ////////////////////////////////////////////////////////////////////////////////
 // Widget class
@@ -91,21 +88,6 @@ class Widget : public internal::NativeWidgetDelegate,
                                    DeleteParam delete_on_destroy,
                                    MirroringParam mirror_in_rtl);
 
-  // Returns the root view for |native_window|. If |native_window| does not have
-  // a rootview, this recurses through all of |native_window|'s children until
-  // one is found. If a root view isn't found, null is returned.
-  static RootView* FindRootView(gfx::NativeWindow native_window);
-
-  // Returns list of all root views for the native window and its
-  // children.
-  static void FindAllRootViews(gfx::NativeWindow native_window,
-                               std::vector<RootView*>* root_views);
-
-  // Retrieve the Widget corresponding to the specified native_view, or NULL
-  // if there is no such Widget.
-  static Widget* GetWidgetFromNativeView(gfx::NativeView native_view);
-  static Widget* GetWidgetFromNativeWindow(gfx::NativeWindow native_window);
-
   // Enumerates all windows pertaining to us and notifies their
   // view hierarchies that the locale has changed.
   static void NotifyLocaleChanged();
@@ -127,6 +109,11 @@ class Widget : public internal::NativeWidgetDelegate,
   // for each platform and the type of widget. Passing NULL to
   // |parent| is same as invoking |Init(NULL, bounds)|.
   virtual void InitWithWidget(Widget* parent, const gfx::Rect& bounds);
+
+  // Returns the topmost Widget in a hierarchy. Will return NULL if called
+  // before the underlying Native Widget has been initialized.
+  Widget* GetTopLevelWidget();
+  const Widget* GetTopLevelWidget() const;
 
   // Returns the WidgetDelegate for delegating certain events.
   virtual WidgetDelegate* GetWidgetDelegate();
@@ -182,9 +169,6 @@ class Widget : public internal::NativeWidgetDelegate,
 
   // Returns the RootView contained by this Widget.
   virtual RootView* GetRootView();
-
-  // Returns the Widget associated with the root ancestor.
-  virtual Widget* GetRootWidget() const;
 
   // Returns whether the Widget is visible to the user.
   virtual bool IsVisible() const;
@@ -280,7 +264,7 @@ class Widget : public internal::NativeWidgetDelegate,
 
   // TODO(beng): Temporarily provided as a way to associate the subclass'
   //             implementation of NativeWidget with this.
-  void set_native_widget(internal::NativeWidget* native_widget) {
+  void set_native_widget(NativeWidget* native_widget) {
     native_widget_ = native_widget;
   }
 
@@ -290,7 +274,7 @@ class Widget : public internal::NativeWidgetDelegate,
   virtual View* GetFocusTraversableParentView();
 
  private:
-  internal::NativeWidget* native_widget_;
+  NativeWidget* native_widget_;
 
   // Non-owned pointer to the Widget's delegate.  May be NULL if no delegate is
   // being used.

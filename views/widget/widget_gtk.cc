@@ -44,10 +44,12 @@ using ui::OSExchangeData;
 using ui::OSExchangeDataProviderGtk;
 using ui::ActiveWindowWatcherX;
 
+namespace views {
+
 namespace {
 
-// g_object data keys to associate a WidgetGtk object to a GtkWidget.
-const char* kWidgetKey = "__VIEWS_WIDGET__";
+// Links the GtkWidget to its NativeWidget.
+const char* const kNativeWidgetKey = "__VIEWS_NATIVE_WIDGET__";
 // A g_object data key to associate a CompositePainter object to a GtkWidget.
 const char* kCompositePainterKey = "__VIEWS_COMPOSITE_PAINTER__";
 // A g_object data key to associate the flag whether or not the widget
@@ -134,9 +136,25 @@ class CompositePainter {
   DISALLOW_COPY_AND_ASSIGN(CompositePainter);
 };
 
-}  // namespace
+void EnumerateChildWidgetsForNativeWidgets(GtkWidget* child_widget,
+                                           gpointer param) {
+  // Walk child widgets, if necessary.
+  if (GTK_IS_CONTAINER(child_widget)) {
+    gtk_container_foreach(GTK_CONTAINER(child_widget),
+                          EnumerateChildWidgetsForNativeWidgets,
+                          param);
+  }
 
-namespace views {
+  NativeWidget* native_widget =
+      NativeWidget::GetNativeWidgetForNativeView(child_widget);
+  if (native_widget) {
+    NativeWidget::NativeWidgets* widgets =
+        reinterpret_cast<NativeWidget::NativeWidgets*>(param);
+    widgets->insert(native_widget);
+  }
+}
+
+}  // namespace
 
 // During drag and drop GTK sends a drag-leave during a drop. This means we
 // have no way to tell the difference between a normal drag leave and a drop.
@@ -167,7 +185,8 @@ class WidgetGtk::DropObserver : public MessageLoopForUI::Observer {
     if (!gtk_widget)
       return NULL;
 
-    return WidgetGtk::GetViewForNative(gtk_widget);
+    return static_cast<WidgetGtk*>(
+        NativeWidget::GetNativeWidgetForNativeView(gtk_widget));
   }
 
   DISALLOW_COPY_AND_ASSIGN(DropObserver);
@@ -421,20 +440,9 @@ void WidgetGtk::IsActiveChanged() {
     GetWidgetDelegate()->IsActiveChanged(IsActive());
 }
 
-// static
-WidgetGtk* WidgetGtk::GetViewForNative(GtkWidget* widget) {
-  return static_cast<WidgetGtk*>(GetWidgetFromNativeView(widget));
-}
-
 void WidgetGtk::ResetDropTarget() {
   ignore_drag_leave_ = false;
   drop_target_.reset(NULL);
-}
-
-// static
-RootView* WidgetGtk::GetRootViewForWidget(GtkWidget* widget) {
-  gpointer user_data = g_object_get_data(G_OBJECT(widget), "root-view");
-  return static_cast<RootView*>(user_data);
 }
 
 void WidgetGtk::GetRequestedSize(gfx::Size* out) const {
@@ -517,7 +525,6 @@ void WidgetGtk::Init(GtkWidget* parent,
                         GDK_POINTER_MOTION_MASK |
                         GDK_KEY_PRESS_MASK |
                         GDK_KEY_RELEASE_MASK);
-  SetRootViewForWidget(widget_, GetRootView());
 
   g_signal_connect_after(G_OBJECT(window_contents_), "size_request",
                          G_CALLBACK(&OnSizeRequestThunk), this);
@@ -630,7 +637,8 @@ void WidgetGtk::SetBounds(const gfx::Rect& bounds) {
   if (type_ == TYPE_CHILD) {
     GtkWidget* parent = gtk_widget_get_parent(widget_);
     if (GTK_IS_VIEWS_FIXED(parent)) {
-      WidgetGtk* parent_widget = GetViewForNative(parent);
+      WidgetGtk* parent_widget = static_cast<WidgetGtk*>(
+          NativeWidget::GetNativeWidgetForNativeView(parent));
       parent_widget->PositionChild(widget_, bounds.x(), bounds.y(),
                                    bounds.width(), bounds.height());
     } else {
@@ -735,16 +743,6 @@ void WidgetGtk::SetAlwaysOnTop(bool on_top) {
     gtk_window_set_keep_above(GTK_WINDOW(widget_), on_top);
 }
 
-Widget* WidgetGtk::GetRootWidget() const {
-  GtkWidget* parent = widget_;
-  GtkWidget* last_parent = parent;
-  while (parent) {
-    last_parent = parent;
-    parent = gtk_widget_get_parent(parent);
-  }
-  return last_parent ? GetViewForNative(last_parent) : NULL;
-}
-
 bool WidgetGtk::IsVisible() const {
   return GTK_WIDGET_VISIBLE(widget_);
 }
@@ -796,11 +794,11 @@ FocusManager* WidgetGtk::GetFocusManager() {
   if (focus_manager_)
     return focus_manager_;
 
-  Widget* root = GetRootWidget();
-  if (root && root != this) {
-    // Widget subclasses may override GetFocusManager(), for example for
+  NativeWidget* native_widget = GetTopLevelNativeWidget(GetNativeView());
+  if (native_widget && native_widget != this) {
+    // WidgetGtk subclasses may override GetFocusManager(), for example for
     // dealing with cases where the widget has been unparented.
-    return root->GetFocusManager();
+    return native_widget->GetWidget()->GetFocusManager();
   }
   return NULL;
 }
@@ -933,6 +931,13 @@ int WidgetGtk::GetFlagsForEventButton(const GdkEventButton& event) {
 // static
 void WidgetGtk::EnableDebugPaint() {
   debug_paint_enabled_ = true;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// WidgetGtk, NativeWidget implementation:
+
+Widget* WidgetGtk::GetWidget() {
+  return this;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -1373,15 +1378,11 @@ bool WidgetGtk::ProcessScroll(GdkEventScroll* event) {
 }
 
 // static
-void WidgetGtk::SetRootViewForWidget(GtkWidget* widget, RootView* root_view) {
-  g_object_set_data(G_OBJECT(widget), "root-view", root_view);
-}
-
-// static
 Window* WidgetGtk::GetWindowImpl(GtkWidget* widget) {
   GtkWidget* parent = widget;
   while (parent) {
-    WidgetGtk* widget_gtk = GetViewForNative(parent);
+    WidgetGtk* widget_gtk = static_cast<WidgetGtk*>(
+        NativeWidget::GetNativeWidgetForNativeView(parent));
     if (widget_gtk && widget_gtk->is_window_)
       return static_cast<WindowGtk*>(widget_gtk);
     parent = gtk_widget_get_parent(parent);
@@ -1478,7 +1479,7 @@ void WidgetGtk::CreateGtkWidget(GtkWidget* parent, const gfx::Rect& bounds) {
     gtk_fixed_set_has_window(GTK_FIXED(window_contents_), true);
     gtk_container_add(GTK_CONTAINER(widget_), window_contents_);
     gtk_widget_show(window_contents_);
-    g_object_set_data(G_OBJECT(window_contents_), kWidgetKey,
+    g_object_set_data(G_OBJECT(window_contents_), kNativeWidgetKey,
                       static_cast<Widget*>(this));
 
     if (transparent_)
@@ -1492,9 +1493,7 @@ void WidgetGtk::CreateGtkWidget(GtkWidget* parent, const gfx::Rect& bounds) {
     // function properly.
     gtk_widget_realize(widget_);
   }
-  // Setting the WidgetKey property to widget_, which is used by
-  // GetWidgetFromNativeWindow.
-  SetNativeWindowProperty(kWidgetKey, this);
+  SetNativeWindowProperty(kNativeWidgetKey, this);
 }
 
 void WidgetGtk::ConfigureWidgetForTransparentBackground(GtkWidget* parent) {
@@ -1573,95 +1572,71 @@ Widget* Widget::CreatePopupWidget(TransparencyParam transparent,
   return popup;
 }
 
-// Callback from gtk_container_foreach. Locates the first root view of widget
-// or one of it's descendants.
-static void RootViewLocatorCallback(GtkWidget* widget,
-                                    gpointer root_view_p) {
-  RootView** root_view = static_cast<RootView**>(root_view_p);
-  if (!*root_view) {
-    *root_view = WidgetGtk::GetRootViewForWidget(widget);
-    if (!*root_view && GTK_IS_CONTAINER(widget)) {
-      // gtk_container_foreach only iterates over children, not all descendants,
-      // so we have to recurse here to get all descendants.
-      gtk_container_foreach(GTK_CONTAINER(widget), RootViewLocatorCallback,
-                            root_view_p);
-    }
-  }
-}
-
-// static
-RootView* Widget::FindRootView(GtkWindow* window) {
-  RootView* root_view = WidgetGtk::GetRootViewForWidget(GTK_WIDGET(window));
-  if (root_view)
-    return root_view;
-
-  // Enumerate all children and check if they have a RootView.
-  gtk_container_foreach(GTK_CONTAINER(window), RootViewLocatorCallback,
-                        static_cast<gpointer>(&root_view));
-  return root_view;
-}
-
-static void AllRootViewsLocatorCallback(GtkWidget* widget,
-                                        gpointer root_view_p) {
-  std::set<RootView*>* root_views_set =
-      reinterpret_cast<std::set<RootView*>*>(root_view_p);
-  RootView *root_view = WidgetGtk::GetRootViewForWidget(widget);
-  if (!root_view && GTK_IS_CONTAINER(widget)) {
-    // gtk_container_foreach only iterates over children, not all descendants,
-    // so we have to recurse here to get all descendants.
-    gtk_container_foreach(GTK_CONTAINER(widget), AllRootViewsLocatorCallback,
-        root_view_p);
-  } else {
-    if (root_view)
-      root_views_set->insert(root_view);
-  }
-}
-
-// static
-void Widget::FindAllRootViews(GtkWindow* window,
-                              std::vector<RootView*>* root_views) {
-  RootView* root_view = WidgetGtk::GetRootViewForWidget(GTK_WIDGET(window));
-  if (root_view)
-    root_views->push_back(root_view);
-
-  std::set<RootView*> root_views_set;
-
-  // Enumerate all children and check if they have a RootView.
-  gtk_container_foreach(GTK_CONTAINER(window), AllRootViewsLocatorCallback,
-      reinterpret_cast<gpointer>(&root_views_set));
-  root_views->clear();
-  root_views->reserve(root_views_set.size());
-  for (std::set<RootView*>::iterator it = root_views_set.begin();
-      it != root_views_set.end();
-      ++it)
-    root_views->push_back(*it);
-}
-
-// static
-Widget* Widget::GetWidgetFromNativeView(gfx::NativeView native_view) {
-  gpointer raw_widget = g_object_get_data(G_OBJECT(native_view), kWidgetKey);
-  if (raw_widget)
-    return reinterpret_cast<Widget*>(raw_widget);
-  return NULL;
-}
-
-// static
-Widget* Widget::GetWidgetFromNativeWindow(gfx::NativeWindow native_window) {
-  gpointer raw_widget = g_object_get_data(G_OBJECT(native_window), kWidgetKey);
-  if (raw_widget)
-    return reinterpret_cast<Widget*>(raw_widget);
-  return NULL;
-}
-
 // static
 void Widget::NotifyLocaleChanged() {
   GList *window_list = gtk_window_list_toplevels();
   for (GList* element = window_list; element; element = g_list_next(element)) {
-    Widget* widget = GetWidgetFromNativeWindow(GTK_WINDOW(element->data));
+    NativeWidget* widget =
+        NativeWidget::GetNativeWidgetForNativeWindow(GTK_WINDOW(element->data));
     if (widget)
-      widget->LocaleChanged();
+      widget->GetWidget()->LocaleChanged();
   }
   g_list_free(window_list);
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// NativeWidget, public:
+
+// static
+NativeWidget* NativeWidget::GetNativeWidgetForNativeView(
+    gfx::NativeView native_view) {
+  if (!native_view)
+    return NULL;
+  return reinterpret_cast<WidgetGtk*>(
+      g_object_get_data(G_OBJECT(native_view), kNativeWidgetKey));
+}
+
+// static
+NativeWidget* NativeWidget::GetNativeWidgetForNativeWindow(
+    gfx::NativeWindow native_window) {
+  if (!native_window)
+    return NULL;
+  return reinterpret_cast<WidgetGtk*>(
+      g_object_get_data(G_OBJECT(native_window), kNativeWidgetKey));
+}
+
+// static
+NativeWidget* NativeWidget::GetTopLevelNativeWidget(
+    gfx::NativeView native_view) {
+  if (!native_view)
+    return NULL;
+
+  NativeWidget* widget = NULL;
+
+  GtkWidget* parent_gtkwidget = native_view;
+  NativeWidget* parent_widget;
+  do {
+    parent_widget = GetNativeWidgetForNativeView(parent_gtkwidget);
+    if (parent_widget)
+      widget = parent_widget;
+    parent_gtkwidget = gtk_widget_get_parent(parent_gtkwidget);
+  } while (parent_gtkwidget);
+
+  return widget;
+}
+
+// static
+void NativeWidget::GetAllNativeWidgets(gfx::NativeView native_view,
+                                       NativeWidgets* children) {
+  if (!native_view)
+    return;
+
+  NativeWidget* native_widget = GetNativeWidgetForNativeView(native_view);
+  if (native_widget)
+    children->insert(native_widget);
+  gtk_container_foreach(GTK_CONTAINER(native_view),
+                        EnumerateChildWidgetsForNativeWidgets,
+                        reinterpret_cast<gpointer>(children));
 }
 
 }  // namespace views

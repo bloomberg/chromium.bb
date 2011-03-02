@@ -97,7 +97,8 @@ void Window::CloseAllSecondaryWindows() {
   for (GList* window = windows; window;
        window = g_list_next(window)) {
     Window::CloseSecondaryWidget(
-        WidgetGtk::GetViewForNative(GTK_WIDGET(window->data)));
+        NativeWidget::GetNativeWidgetForNativeView(
+            GTK_WIDGET(window->data))->GetWidget());
   }
   g_list_free(windows);
 }

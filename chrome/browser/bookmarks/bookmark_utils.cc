@@ -40,7 +40,7 @@
 #include "ui/base/dragdrop/os_exchange_data.h"
 #include "views/drag_utils.h"
 #include "views/events/event.h"
-#include "views/widget/root_view.h"
+#include "views/widget/native_widget.h"
 #include "views/widget/widget.h"
 #elif defined(TOOLKIT_GTK)
 #include "chrome/browser/ui/gtk/custom_drag.h"
@@ -335,10 +335,13 @@ void DragBookmarks(Profile* profile,
   bool was_nested = MessageLoop::current()->IsNested();
   MessageLoop::current()->SetNestableTasksAllowed(true);
 
-  views::Widget* widget = views::Widget::GetWidgetFromNativeView(view);
-  widget->StartDragForViewFromMouseEvent(NULL, data,
-      ui::DragDropTypes::DRAG_COPY | ui::DragDropTypes::DRAG_MOVE |
-      ui::DragDropTypes::DRAG_LINK);
+  views::NativeWidget* native_widget =
+      views::NativeWidget::GetNativeWidgetForNativeView(view);
+  if (native_widget) {
+    native_widget->GetWidget()->StartDragForViewFromMouseEvent(NULL, data,
+        ui::DragDropTypes::DRAG_COPY | ui::DragDropTypes::DRAG_MOVE |
+        ui::DragDropTypes::DRAG_LINK);
+  }
 
   MessageLoop::current()->SetNestableTasksAllowed(was_nested);
 #elif defined(OS_MACOSX)
