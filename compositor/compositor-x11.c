@@ -31,18 +31,11 @@
 #include <linux/input.h>
 
 #include <xcb/xcb.h>
-#include <xcb/dri2.h>
-#include <xcb/xfixes.h>
-
 #include <X11/Xlib.h>
 #include <X11/Xlib-xcb.h>
 
-#define GL_GLEXT_PROTOTYPES
-#define EGL_EGLEXT_PROTOTYPES
 #include <GLES2/gl2.h>
-#include <GLES2/gl2ext.h>
 #include <EGL/egl.h>
-#include <EGL/eglext.h>
 
 #include "compositor.h"
 
@@ -55,8 +48,6 @@ struct x11_compositor {
 	xcb_connection_t	*conn;
 	xcb_screen_t		*screen;
 	xcb_cursor_t		 null_cursor;
-	int			 dri2_major;
-	int			 dri2_minor;
 	struct wl_array		 keys;
 	struct wl_event_source	*xcb_source;
 	struct {
@@ -76,12 +67,8 @@ struct x11_compositor {
 struct x11_output {
 	struct wlsc_output	base;
 
-	xcb_xfixes_region_t	region;
 	xcb_window_t		window;
-	GLuint			rbo;
-	EGLImageKHR		image;
-	xcb_rectangle_t		damage[16];
-	int			damage_count;
+	EGLSurface		egl_surface;
 };
 
 struct x11_input {
@@ -107,97 +94,24 @@ x11_input_create(struct x11_compositor *c)
 }
 
 static int
-dri2_connect(struct x11_compositor *c)
-{
-	xcb_xfixes_query_version_reply_t *xfixes_query;
-	xcb_xfixes_query_version_cookie_t xfixes_query_cookie;
-	xcb_dri2_query_version_reply_t *dri2_query;
-	xcb_dri2_query_version_cookie_t dri2_query_cookie;
-	xcb_dri2_connect_reply_t *connect;
-	xcb_dri2_connect_cookie_t connect_cookie;
-	xcb_generic_error_t *error;
-	char path[256];
-
-	xcb_prefetch_extension_data (c->conn, &xcb_xfixes_id);
-	xcb_prefetch_extension_data (c->conn, &xcb_dri2_id);
-
-	xfixes_query_cookie =
-		xcb_xfixes_query_version(c->conn,
-					 XCB_XFIXES_MAJOR_VERSION,
-					 XCB_XFIXES_MINOR_VERSION);
-   
-	dri2_query_cookie =
-		xcb_dri2_query_version (c->conn,
-					XCB_DRI2_MAJOR_VERSION,
-					XCB_DRI2_MINOR_VERSION);
-
-	connect_cookie = xcb_dri2_connect_unchecked (c->conn,
-						     c->screen->root,
-						     XCB_DRI2_DRIVER_TYPE_DRI);
-   
-	xfixes_query =
-		xcb_xfixes_query_version_reply (c->conn,
-						xfixes_query_cookie, &error);
-	if (xfixes_query == NULL ||
-	    error != NULL || xfixes_query->major_version < 2) {
-		free(error);
-		return -1;
-	}
-	free(xfixes_query);
-
-	dri2_query =
-		xcb_dri2_query_version_reply (c->conn,
-					      dri2_query_cookie, &error);
-	if (dri2_query == NULL || error != NULL) {
-		fprintf(stderr, "DRI2: failed to query version\n");
-		free(error);
-		return EGL_FALSE;
-	}
-	c->dri2_major = dri2_query->major_version;
-	c->dri2_minor = dri2_query->minor_version;
-	free(dri2_query);
-
-	connect = xcb_dri2_connect_reply (c->conn,
-					  connect_cookie, NULL);
-	if (connect == NULL ||
-	    connect->driver_name_length + connect->device_name_length == 0) {
-		fprintf(stderr, "DRI2: failed to connect, DRI2 version: %u.%u\n",
-			c->dri2_major, c->dri2_minor);
-		return -1;
-	}
-
-#ifdef XCB_DRI2_CONNECT_DEVICE_NAME_BROKEN
-	{
-		char *driver_name, *device_name;
-
-		driver_name = xcb_dri2_connect_driver_name (connect);
-		device_name = driver_name +
-			((connect->driver_name_length + 3) & ~3);
-		snprintf(path, sizeof path, "%.*s",
-			 xcb_dri2_connect_device_name_length (connect),
-			 device_name);
-	}
-#else
-	snprintf(path, sizeof path, "%.*s",
-		 xcb_dri2_connect_device_name_length (connect),
-		 xcb_dri2_connect_device_name (connect));
-#endif
-	free(connect);
-	return 0;
-}
-
-static int
 x11_compositor_init_egl(struct x11_compositor *c)
 {
 	EGLint major, minor;
+	EGLint n;
 	const char *extensions;
+	EGLint config_attribs[] = {
+		EGL_SURFACE_TYPE, EGL_WINDOW_BIT,
+		EGL_RED_SIZE, 1,
+		EGL_GREEN_SIZE, 1,
+		EGL_BLUE_SIZE, 1,
+		EGL_DEPTH_SIZE, 1,
+		EGL_RENDERABLE_TYPE, EGL_OPENGL_ES2_BIT,
+		EGL_NONE
+	};
 	static const EGLint context_attribs[] = {
 		EGL_CONTEXT_CLIENT_VERSION, 2,
 		EGL_NONE
 	};
-
-	if (dri2_connect(c) < 0)
-		return -1;
 
 	c->base.display = eglGetDisplay(c->dpy);
 	if (c->base.display == NULL) {
@@ -220,8 +134,13 @@ x11_compositor_init_egl(struct x11_compositor *c)
 		fprintf(stderr, "failed to bind EGL_OPENGL_ES_API\n");
 		return -1;
 	}
+   	if (!eglChooseConfig(c->base.display, config_attribs,
+			     &c->base.config, 1, &n) || n == 0) {
+		fprintf(stderr, "failed to choose config: %d\n", n);
+		return -1;
+	}
 
-	c->base.context = eglCreateContext(c->base.display, NULL,
+	c->base.context = eglCreateContext(c->base.display, c->base.config,
 					   EGL_NO_CONTEXT, context_attribs);
 	if (c->base.context == NULL) {
 		fprintf(stderr, "failed to create context\n");
@@ -242,19 +161,16 @@ x11_compositor_present(struct wlsc_compositor *base)
 {
 	struct x11_compositor *c = (struct x11_compositor *) base;
 	struct x11_output *output;
-	xcb_dri2_copy_region_cookie_t cookie;
 	struct timeval tv;
 	uint32_t msec;
 
-	glFlush();
-
 	wl_list_for_each(output, &c->base.output_list, base.link) {
-		cookie = xcb_dri2_copy_region_unchecked(c->conn,
-							output->window,
-							output->region,
-							XCB_DRI2_ATTACHMENT_BUFFER_FRONT_LEFT,
-							XCB_DRI2_ATTACHMENT_BUFFER_BACK_LEFT);
-		free(xcb_dri2_copy_region_reply(c->conn, cookie, NULL));
+		if (!eglMakeCurrent(c->base.display, output->egl_surface,
+				    output->egl_surface, c->base.context)) {
+			fprintf(stderr, "failed to make current\n");
+			continue;
+		}
+		eglSwapBuffers(c->base.display, output->egl_surface);
 	}
 
 	gettimeofday(&tv, NULL);
@@ -326,14 +242,9 @@ x11_compositor_create_output(struct x11_compositor *c, int width, int height)
 	static const char name[] = "Wayland Compositor";
 	static const char class[] = "wayland-1\0Wayland Compositor";
 	struct x11_output *output;
-	xcb_dri2_dri2_buffer_t *buffers;
-	xcb_dri2_get_buffers_reply_t *reply;
-	xcb_dri2_get_buffers_cookie_t cookie;
 	xcb_screen_iterator_t iter;
 	xcb_rectangle_t rectangle;
 	struct wm_normal_hints normal_hints;
-	unsigned int attachments[] =
-		{ XCB_DRI2_ATTACHMENT_BUFFER_BACK_LEFT};
 	uint32_t mask = XCB_CW_EVENT_MASK | XCB_CW_CURSOR;
 	uint32_t values[2] = { 
 		XCB_EVENT_MASK_KEY_PRESS |
@@ -350,20 +261,13 @@ x11_compositor_create_output(struct x11_compositor *c, int width, int height)
 		0
 	};
 
-	EGLint attribs[] = {
-		EGL_WIDTH,		0,
-		EGL_HEIGHT,		0,
-		EGL_DRM_BUFFER_STRIDE_MESA,	0,
-		EGL_DRM_BUFFER_FORMAT_MESA,	EGL_DRM_BUFFER_FORMAT_ARGB32_MESA,
-		EGL_NONE
-	};
-
 	output = malloc(sizeof *output);
 	if (output == NULL)
 		return -1;
 
 	memset(output, 0, sizeof *output);
-	wlsc_output_init(&output->base, &c->base, 0, 0, width, height, 0);
+	wlsc_output_init(&output->base, &c->base, 0, 0, width, height,
+			 WL_OUTPUT_FLIPPED);
 
 	values[1] = c->null_cursor;
 	output->window = xcb_generate_id(c->conn);
@@ -410,84 +314,25 @@ x11_compositor_create_output(struct x11_compositor *c, int width, int height)
 	rectangle.y = 0;
 	rectangle.width = width;
 	rectangle.height = height;
-	output->region = xcb_generate_id(c->conn);
-	xcb_xfixes_create_region(c->conn, output->region, 1, &rectangle);
-
-	xcb_dri2_create_drawable (c->conn, output->window);
 
 	x11_output_set_wm_protocols(output);
 
-	cookie = xcb_dri2_get_buffers_unchecked (c->conn,
-						 output->window,
-						 1, 1, attachments);
-	reply = xcb_dri2_get_buffers_reply (c->conn, cookie, NULL);
-	if (reply == NULL)
-		return -1;
-	buffers = xcb_dri2_get_buffers_buffers (reply);
-	if (buffers == NULL)
-		return -1;
-
-	if (reply->count != 1) {
-		fprintf(stderr,
-			"got wrong number of buffers (%d)\n", reply->count);
+	output->egl_surface = 
+		eglCreateWindowSurface(c->base.display, c->base.config,
+				       output->window, NULL);
+	if (!output->egl_surface) {
+		fprintf(stderr, "failed to create window surface\n");
 		return -1;
 	}
-
-	attribs[1] = reply->width;
-	attribs[3] = reply->height;
-	attribs[5] = buffers[0].pitch / 4;
-	output->image =
-		eglCreateImageKHR(c->base.display,
-				  EGL_NO_CONTEXT,
-				  EGL_DRM_BUFFER_MESA,
-				  (EGLClientBuffer) buffers[0].name,
-				  attribs);
-	free(reply);
-
-	glGenRenderbuffers(1, &output->rbo);
-	glBindRenderbuffer(GL_RENDERBUFFER, output->rbo);
-
-	glEGLImageTargetRenderbufferStorageOES(GL_RENDERBUFFER,
-					       output->image);
-
-	glFramebufferRenderbuffer(GL_FRAMEBUFFER,
-				  GL_COLOR_ATTACHMENT0,
-				  GL_RENDERBUFFER,
-				  output->rbo);
+	if (!eglMakeCurrent(c->base.display, output->egl_surface,
+			    output->egl_surface, c->base.context)) {
+		fprintf(stderr, "failed to make surface current\n");
+		return -1;
+	}
 
 	wl_list_insert(c->base.output_list.prev, &output->base.link);
 
 	return 0;
-}
-
-static void
-idle_repaint(void *data)
-{
-	struct x11_output *output = data;
-	struct x11_compositor *c =
-		(struct x11_compositor *) output->base.compositor;
-	xcb_xfixes_region_t region;
-	xcb_dri2_copy_region_cookie_t cookie;
-	
-	if (output->damage_count <= ARRAY_SIZE(output->damage)) {
-		region = xcb_generate_id(c->conn);
-		xcb_xfixes_create_region(c->conn, region,
-					 output->damage_count, output->damage);
-	} else {
-		region = output->region;
-	}
-
-	cookie = xcb_dri2_copy_region_unchecked(c->conn,
-						output->window,
-						region,
-						XCB_DRI2_ATTACHMENT_BUFFER_FRONT_LEFT,
-						XCB_DRI2_ATTACHMENT_BUFFER_BACK_LEFT);
-
-	if (region != output->region)
-		xcb_xfixes_destroy_region(c->conn, region);
-
-	free(xcb_dri2_copy_region_reply(c->conn, cookie, NULL));
-	output->damage_count = 0;
 }
 
 static struct x11_output *
@@ -518,7 +363,6 @@ x11_compositor_handle_event(int fd, uint32_t mask, void *data)
 	xcb_keymap_notify_event_t *keymap_notify;
 	xcb_focus_in_event_t *focus_in;
 	xcb_expose_event_t *expose;
-	xcb_rectangle_t *r;
 	xcb_atom_t atom;
 	uint32_t *k;
 	int i, set;
@@ -560,18 +404,11 @@ x11_compositor_handle_event(int fd, uint32_t mask, void *data)
 
 		case XCB_EXPOSE:
 			expose = (xcb_expose_event_t *) event;
-			output = x11_compositor_find_output(c, expose->window);
-			if (output->damage_count == 0)
-				wl_event_loop_add_idle(loop,
-						       idle_repaint, output);
+			
+			/* FIXME: schedule output repaint */
+			/* output = x11_compositor_find_output(c, expose->window); */
 
-			r = &output->damage[output->damage_count++];
-			if (output->damage_count > 16)
-				break;
-			r->x = expose->x;
-			r->y = expose->y;
-			r->width = expose->width;
-			r->height = expose->height;
+			wlsc_compositor_schedule_repaint(&c->base);
 			break;
 
 		case XCB_ENTER_NOTIFY:
@@ -730,9 +567,6 @@ x11_compositor_create(struct wl_display *display, int width, int height)
 	c->base.destroy = x11_destroy;
 	c->base.present = x11_compositor_present;
 	c->base.create_buffer = wlsc_drm_buffer_create;
-
-	glGenFramebuffers(1, &c->base.fbo);
-	glBindFramebuffer(GL_FRAMEBUFFER, c->base.fbo);
 
 	/* Can't init base class until we have a current egl context */
 	if (wlsc_compositor_init(&c->base, display) < 0)
