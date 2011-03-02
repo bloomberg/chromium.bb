@@ -5,6 +5,7 @@
 #include "remoting/client/plugin/chromoting_scriptable_object.h"
 
 #include "base/logging.h"
+#include "base/stringprintf.h"
 #include "ppapi/cpp/var.h"
 #include "remoting/client/client_config.h"
 #include "remoting/client/plugin/chromoting_instance.h"
@@ -170,6 +171,9 @@ void ChromotingScriptableObject::SetConnectionInfo(ConnectionStatus status,
   int status_index = property_names_[kStatusAttribute];
   int quality_index = property_names_[kQualityAttribute];
 
+  LogDebugInfo(
+      base::StringPrintf("Connection status is updated: %d.", status));
+
   if (properties_[status_index].attribute.AsInt() != status ||
       properties_[quality_index].attribute.AsInt() != quality) {
     // Update the connection state properties..
@@ -204,6 +208,9 @@ void ChromotingScriptableObject::SetDesktopSize(int width, int height) {
     properties_[width_index].attribute = Var(width);
     properties_[height_index].attribute = Var(height);
   }
+
+  LogDebugInfo(base::StringPrintf("Update desktop size to: %d x %d.",
+                                  width, height));
 }
 
 void ChromotingScriptableObject::AddAttribute(const std::string& name,
@@ -226,10 +233,9 @@ void ChromotingScriptableObject::SignalConnectionInfoChange() {
   // a method in the object.
   cb.Call(Var(), 0, NULL, &exception);
 
-  if (!exception.is_undefined()) {
-    LOG(WARNING) << "Exception when invoking connectionInfoUpdate JS callback: "
-                 << exception.DebugString();
-  }
+  if (!exception.is_undefined())
+    LogDebugInfo(
+        "Exception when invoking connectionInfoUpdate JS callback.");
 }
 
 void ChromotingScriptableObject::SignalLoginChallenge() {
@@ -240,10 +246,8 @@ void ChromotingScriptableObject::SignalLoginChallenge() {
   // a method in the object.
   cb.Call(Var(), 0, NULL, &exception);
 
-  if (!exception.is_undefined()) {
-    LOG(WARNING) << "Exception when invoking loginChallenge JS callback: "
-                 << exception.DebugString();
-  }
+  if (!exception.is_undefined())
+    LogDebugInfo("Exception when invoking loginChallenge JS callback.");
 }
 
 Var ChromotingScriptableObject::DoConnect(const std::vector<Var>& args,
@@ -273,6 +277,7 @@ Var ChromotingScriptableObject::DoConnect(const std::vector<Var>& args,
   }
   config.auth_token = args[2].AsString();
 
+  LogDebugInfo("Connecting to host.");
   instance_->Connect(config);
 
   return Var();
@@ -280,6 +285,8 @@ Var ChromotingScriptableObject::DoConnect(const std::vector<Var>& args,
 
 Var ChromotingScriptableObject::DoDisconnect(const std::vector<Var>& args,
                                              Var* exception) {
+  LogDebugInfo("Disconnecting from host.");
+
   instance_->Disconnect();
   return Var();
 }
@@ -303,6 +310,7 @@ Var ChromotingScriptableObject::DoSubmitLogin(const std::vector<Var>& args,
   }
   std::string password = args[1].AsString();
 
+  LogDebugInfo("Submitting login info to host.");
   instance_->SubmitLoginInfo(username, password);
   return Var();
 }
