@@ -69,7 +69,7 @@ class HttpSM : public BalsaVisitorInterface,
   void AddToOutputOrder(const MemCacheIter& mci);
   void SendOKResponse(uint32 stream_id, std::string* output);
   BalsaFrame* spdy_framer() { return http_framer_; }
-  void set_is_request() {}
+  virtual void set_is_request() {}
 
   // SMInterface:
   virtual void InitSMInterface(SMInterface* sm_spdy_interface,
