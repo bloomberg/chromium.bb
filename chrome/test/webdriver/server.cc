@@ -16,13 +16,11 @@
 #include "base/command_line.h"
 #include "base/file_path.h"
 #include "base/file_util.h"
-#include "base/format_macros.h"
 #include "base/logging.h"
 #include "base/string_number_conversions.h"
 #include "base/scoped_ptr.h"
 #include "base/string_split.h"
 #include "base/string_util.h"
-#include "base/stringprintf.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/test/test_timeouts.h"
 #include "base/threading/platform_thread.h"
@@ -75,107 +73,66 @@ signal_handler(int sig_num) {
 
 namespace webdriver {
 
-void Shutdown(struct mg_connection* connection,
-              const struct mg_request_info* request_info,
-              void* user_data) {
-  base::WaitableEvent* shutdown_event =
-      reinterpret_cast<base::WaitableEvent*>(user_data);
-  mg_printf(connection, "HTTP/1.1 200 OK\r\n\r\n");
-  shutdown_event->Signal();
-}
-
-void SendNotImplementedError(struct mg_connection* connection,
-                             const struct mg_request_info* request_info,
-                             void* user_data) {
-  // Send a well-formed WebDriver JSON error response to ensure clients
-  // handle it correctly.
-  std::string body = base::StringPrintf(
-      "{\"status\":%d,\"value\":{\"message\":"
-      "\"Command has not been implemented yet: %s %s\"}}",
-      kUnknownCommand, request_info->request_method, request_info->uri);
-
-  std::string header = base::StringPrintf(
-      "HTTP/1.1 501 Not Implemented\r\n"
-      "Content-Type:application/json\r\n"
-      "Content-Length:%" PRIuS "\r\n"
-      "\r\n", body.length());
-
-  LOG(ERROR) << header << body;
-  mg_write(connection, header.data(), header.length());
-  mg_write(connection, body.data(), body.length());
-}
-
-
-template <typename CommandType>
-void SetCallback(struct mg_context* ctx, const char* pattern) {
-  mg_set_uri_callback(ctx, pattern, &Dispatch<CommandType>, NULL);
-}
-
-void SetNotImplemented(struct mg_context* ctx, const char* pattern) {
-  mg_set_uri_callback(ctx, pattern, &SendNotImplementedError, NULL);
-}
-
-void InitCallbacks(struct mg_context* ctx,
+void InitCallbacks(struct mg_context* ctx, Dispatcher* dispatcher,
                    base::WaitableEvent* shutdown_event) {
-  mg_set_uri_callback(ctx, "/shutdown", &Shutdown, shutdown_event);
+  dispatcher->AddShutdown("/shutdown", shutdown_event);
 
-  SetCallback<CreateSession>(ctx,        "/session");
-  SetCallback<BackCommand>(ctx,          "/session/*/back");
-  SetCallback<ExecuteCommand>(ctx,       "/session/*/execute");
-  SetCallback<ForwardCommand>(ctx,       "/session/*/forward");
-  SetCallback<SwitchFrameCommand>(ctx,   "/session/*/frame");
-  SetCallback<RefreshCommand>(ctx,       "/session/*/refresh");
-  SetCallback<SourceCommand>(ctx,        "/session/*/source");
-  SetCallback<SpeedCommand>(ctx,         "/session/*/speed");
-  SetCallback<TitleCommand>(ctx,         "/session/*/title");
-  SetCallback<URLCommand>(ctx,           "/session/*/url");
-  SetCallback<WindowCommand>(ctx,        "/session/*/window");
-  SetCallback<WindowHandleCommand>(ctx,  "/session/*/window_handle");
-  SetCallback<WindowHandlesCommand>(ctx, "/session/*/window_handles");
-  SetCallback<ImplicitWaitCommand>(ctx,  "/session/*/timeouts/implicit_wait");
+  dispatcher->Add<CreateSession>(       "/session");
+  dispatcher->Add<BackCommand>(         "/session/*/back");
+  dispatcher->Add<ExecuteCommand>(      "/session/*/execute");
+  dispatcher->Add<ForwardCommand>(      "/session/*/forward");
+  dispatcher->Add<SwitchFrameCommand>(  "/session/*/frame");
+  dispatcher->Add<RefreshCommand>(      "/session/*/refresh");
+  dispatcher->Add<SourceCommand>(       "/session/*/source");
+  dispatcher->Add<SpeedCommand>(        "/session/*/speed");
+  dispatcher->Add<TitleCommand>(        "/session/*/title");
+  dispatcher->Add<URLCommand>(          "/session/*/url");
+  dispatcher->Add<WindowCommand>(       "/session/*/window");
+  dispatcher->Add<WindowHandleCommand>( "/session/*/window_handle");
+  dispatcher->Add<WindowHandlesCommand>("/session/*/window_handles");
+  dispatcher->Add<ImplicitWaitCommand>( "/session/*/timeouts/implicit_wait");
 
   // Cookie functions.
-  SetCallback<CookieCommand>(ctx,      "/session/*/cookie");
-  SetCallback<NamedCookieCommand>(ctx, "/session/*/cookie/*");
+  dispatcher->Add<CookieCommand>(     "/session/*/cookie");
+  dispatcher->Add<NamedCookieCommand>("/session/*/cookie/*");
 
   // WebElement commands
-  SetCallback<FindOneElementCommand>(ctx,   "/session/*/element");
-  SetCallback<FindManyElementsCommand>(ctx, "/session/*/elements");
-  SetCallback<ActiveElementCommand>(ctx,    "/session/*/element/active");
-  SetCallback<FindOneElementCommand>(ctx,   "/session/*/element/*/element");
-  SetCallback<FindManyElementsCommand>(ctx, "/session/*/elements/*/elements");
-  SetCallback<ElementAttributeCommand>(ctx,
-      "/session/*/element/*/attribute/*");
-  SetCallback<ElementCssCommand>(ctx,       "/session/*/element/*/css/*");
-  SetCallback<ElementClearCommand>(ctx,     "/session/*/element/*/clear");
-  SetCallback<ElementDisplayedCommand>(ctx, "/session/*/element/*/displayed");
-  SetCallback<ElementEnabledCommand>(ctx,   "/session/*/element/*/enabled");
-  SetCallback<ElementEqualsCommand>(ctx,    "/session/*/element/*/equals/*");
-  SetCallback<ElementLocationCommand>(ctx, "/session/*/element/*/location");
-  SetCallback<ElementLocationInViewCommand>(ctx,
+  dispatcher->Add<FindOneElementCommand>(  "/session/*/element");
+  dispatcher->Add<FindManyElementsCommand>("/session/*/elements");
+  dispatcher->Add<ActiveElementCommand>(   "/session/*/element/active");
+  dispatcher->Add<FindOneElementCommand>(  "/session/*/element/*/element");
+  dispatcher->Add<FindManyElementsCommand>("/session/*/elements/*/elements");
+  dispatcher->Add<ElementAttributeCommand>("/session/*/element/*/attribute/*");
+  dispatcher->Add<ElementCssCommand>(      "/session/*/element/*/css/*");
+  dispatcher->Add<ElementClearCommand>(    "/session/*/element/*/clear");
+  dispatcher->Add<ElementDisplayedCommand>("/session/*/element/*/displayed");
+  dispatcher->Add<ElementEnabledCommand>(  "/session/*/element/*/enabled");
+  dispatcher->Add<ElementEqualsCommand>(   "/session/*/element/*/equals/*");
+  dispatcher->Add<ElementLocationCommand>( "/session/*/element/*/location");
+  dispatcher->Add<ElementLocationInViewCommand>(
       "/session/*/element/*/location_in_view");
-  SetCallback<ElementNameCommand>(ctx,      "/session/*/element/*/name");
-  SetCallback<ElementSelectedCommand>(ctx,  "/session/*/element/*/selected");
-  SetCallback<ElementSizeCommand>(ctx,      "/session/*/element/*/size");
-  SetCallback<ElementSubmitCommand>(ctx,    "/session/*/element/*/submit");
-  SetCallback<ElementTextCommand>(ctx,      "/session/*/element/*/text");
-  SetCallback<ElementToggleCommand>(ctx,    "/session/*/element/*/toggle");
-  SetCallback<ElementValueCommand>(ctx,     "/session/*/element/*/value");
+  dispatcher->Add<ElementNameCommand>(    "/session/*/element/*/name");
+  dispatcher->Add<ElementSelectedCommand>("/session/*/element/*/selected");
+  dispatcher->Add<ElementSizeCommand>(    "/session/*/element/*/size");
+  dispatcher->Add<ElementSubmitCommand>(  "/session/*/element/*/submit");
+  dispatcher->Add<ElementTextCommand>(    "/session/*/element/*/text");
+  dispatcher->Add<ElementToggleCommand>(  "/session/*/element/*/toggle");
+  dispatcher->Add<ElementValueCommand>(   "/session/*/element/*/value");
 
   // Mouse Commands
-  SetCallback<ClickCommand>(ctx, "/session/*/element/*/click");
-  SetCallback<DragCommand>(ctx, "/session/*/element/*/drag");
-  SetCallback<HoverCommand>(ctx, "/session/*/element/*/hover");
+  dispatcher->Add<ClickCommand>("/session/*/element/*/click");
+  dispatcher->Add<DragCommand>( "/session/*/element/*/drag");
+  dispatcher->Add<HoverCommand>("/session/*/element/*/hover");
 
   // Commands that have not been implemented yet. We list these out explicitly
   // so that tests that attempt to use them fail with a meaningful error.
-  SetNotImplemented(ctx, "/session/*/execute_async");
-  SetNotImplemented(ctx, "/session/*/timeouts/async_script");
-  SetNotImplemented(ctx, "/session/*/screenshot");
+  dispatcher->SetNotImplemented("/session/*/execute_async");
+  dispatcher->SetNotImplemented("/session/*/timeouts/async_script");
+  dispatcher->SetNotImplemented("/session/*/screenshot");
 
   // Since the /session/* is a wild card that would match the above URIs, this
   // line MUST be the last registered URI with the server.
-  SetCallback<SessionWithID>(ctx, "/session/*");
+  dispatcher->Add<SessionWithID>("/session/*");
 }
 
 }  // namespace webdriver
@@ -224,6 +181,7 @@ int main(int argc, char *argv[]) {
   std::string port = "9515";
   std::string root;
   FilePath chrome_dir;
+  std::string url_base;
   if (cmd_line->HasSwitch("port"))
     port = cmd_line->GetSwitchValueASCII("port");
   // By default, mongoose serves files from the current working directory. The
@@ -232,9 +190,12 @@ int main(int argc, char *argv[]) {
     root = cmd_line->GetSwitchValueASCII("root");
   if (cmd_line->HasSwitch("chrome-dir"))
     chrome_dir = cmd_line->GetSwitchValuePath("chrome-dir");
+  if (cmd_line->HasSwitch("url-base"))
+    url_base = cmd_line->GetSwitchValueASCII("url-base");
 
   webdriver::SessionManager* manager = webdriver::SessionManager::GetInstance();
   manager->set_port(port);
+  manager->set_url_base(url_base);
   if (!chrome_dir.empty()) {
     if (!file_util::DirectoryExists(chrome_dir)) {
       std::cout << "Given Chrome directory is inaccessible or does not exist: "
@@ -261,7 +222,8 @@ int main(int argc, char *argv[]) {
 #endif
   }
 
-  webdriver::InitCallbacks(ctx, &shutdown_event);
+  webdriver::Dispatcher dispatcher(ctx, url_base);
+  webdriver::InitCallbacks(ctx, &dispatcher, &shutdown_event);
 
   // The tests depend on parsing the first line ChromeDriver outputs,
   // so all other logging should happen after this.

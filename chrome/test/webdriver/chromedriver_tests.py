@@ -251,6 +251,34 @@ class MouseTest(unittest.TestCase):
     self.assertTrue(self._driver.execute_script('return window.success'))
 
 
+class UrlBaseTest(unittest.TestCase):
+  """Tests that the server can be configured for a different URL base."""
+
+  def setUp(self):
+    self._launcher = ChromeDriverLauncher(url_base='/wd/hub')
+
+  def tearDown(self):
+    self._launcher.Kill()
+
+  def testCreatingSessionShouldRedirectToCorrectURL(self):
+    request_url = self._launcher.GetURL() + '/session'
+    response = SendRequest(request_url, method='POST', data='{}')
+    self.assertEquals(200, response.code)
+    self.session_url = response.geturl()  # TODO(jleyba): verify this URL?
+
+    data = json.loads(response.read())
+    self.assertTrue(isinstance(data, dict))
+    self.assertEquals(0, data['status'])
+
+    url_parts = urlparse.urlparse(self.session_url)[2].split('/')
+    self.assertEquals(5, len(url_parts))
+    self.assertEquals('', url_parts[0])
+    self.assertEquals('wd', url_parts[1])
+    self.assertEquals('hub', url_parts[2])
+    self.assertEquals('session', url_parts[3])
+    self.assertEquals(data['sessionId'], url_parts[4])
+
+
 if __name__ == '__main__':
   unittest.main(module='chromedriver_tests',
                 testRunner=GTestTextTestRunner(verbosity=1))

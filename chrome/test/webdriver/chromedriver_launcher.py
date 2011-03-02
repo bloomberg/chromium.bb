@@ -22,17 +22,19 @@ import urllib2
 class ChromeDriverLauncher:
   """Launches and kills the ChromeDriver process."""
 
-  def __init__(self, exe_path=None, root_path=None, port=None):
+  def __init__(self, exe_path=None, root_path=None, port=None, url_base=None):
     """Initializes a new launcher.
 
     Args:
       exe_path:  path to the ChromeDriver executable
       root_path: base path from which ChromeDriver webserver will serve files
       port:      port that ChromeDriver will listen on
+      url_base:  base URL which ChromeDriver webserver will listen from
     """
     self._exe_path = exe_path
     self._root_path = root_path
     self._port = port
+    self._url_base = url_base
     if self._exe_path is None:
       self._exe_path = ChromeDriverLauncher.LocateExe()
       if self._exe_path is None:
@@ -129,6 +131,8 @@ class ChromeDriverLauncher:
     chromedriver_args = [self._exe_path, '--root=%s' % self._root_path]
     if self._port is not None:
       chromedriver_args += ['--port=%d' % self._port]
+    if self._url_base is not None:
+      chromedriver_args += ['--url-base=%s' % self._url_base]
     proc = subprocess.Popen(chromedriver_args,
                             stdout=subprocess.PIPE)
     if proc is None:
@@ -189,7 +193,10 @@ class ChromeDriverLauncher:
     self._process = None
 
   def GetURL(self):
-    return 'http://localhost:' + str(self._port)
+    url = 'http://localhost:' + str(self._port)
+    if self._url_base:
+      url += self._url_base
+    return url
 
   def GetPort(self):
     return self._port

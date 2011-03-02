@@ -27,7 +27,7 @@ std::string SessionManager::GetAddress() {
   if (hostname.empty()) {
     hostname = "localhost";
   }
-  return hostname + ":" + port_;
+  return hostname + ":" + port_ + url_base_;
 }
 
 void SessionManager::Add(Session* session) {
@@ -69,6 +69,14 @@ void SessionManager::set_port(const std::string& port) {
   port_ = port;
 }
 
+void SessionManager::set_url_base(const std::string& url_base) {
+  url_base_ = url_base;
+}
+
+std::string SessionManager::url_base() const {
+  return url_base_;
+}
+
 void SessionManager::set_chrome_dir(const FilePath& chrome_dir) {
   chrome_dir_ = chrome_dir;
 }
@@ -77,7 +85,7 @@ FilePath SessionManager::chrome_dir() const {
   return chrome_dir_;
 }
 
-SessionManager::SessionManager() : port_("") {}
+SessionManager::SessionManager() : port_(""), url_base_("") {}
 
 SessionManager::~SessionManager() {}
 

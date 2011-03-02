@@ -3,14 +3,16 @@
 // found in the LICENSE file.
 
 #include "base/format_macros.h"
+#include "base/json/json_reader.h"
 #include "base/scoped_ptr.h"
 #include "base/stringprintf.h"
 #include "base/values.h"
-#include "base/json/json_reader.h"
+#include "chrome/test/webdriver/commands/response.h"
 #include "chrome/test/webdriver/dispatch.h"
 #include "chrome/test/webdriver/http_response.h"
-#include "chrome/test/webdriver/commands/response.h"
+#include "chrome/test/webdriver/session_manager.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/mongoose/mongoose.h"
 
 namespace webdriver {
 
@@ -149,6 +151,68 @@ TEST(DispatchTest, ReturnsCommandResponseAsJson) {
   std::string value;
   EXPECT_TRUE(dict->GetStringASCII("value", &value));
   EXPECT_EQ("foobar", value);
+}
+
+class ParseRequestInfoTest : public testing::Test {
+ public:
+  static char kGet[];
+  static char kTestPath[];
+
+  ParseRequestInfoTest() {}
+  virtual ~ParseRequestInfoTest() {}
+
+  virtual void TearDown() {
+    SessionManager::GetInstance()->set_url_base("");
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(ParseRequestInfoTest);
+};
+
+char ParseRequestInfoTest::kGet[] = "GET";
+char ParseRequestInfoTest::kTestPath[] = "/foo/bar/baz";
+
+TEST_F(ParseRequestInfoTest, ParseRequestWithEmptyUrlBase) {
+  struct mg_request_info request_info;
+  request_info.request_method = kGet;
+  request_info.uri = kTestPath;
+
+  std::string method;
+  std::vector<std::string> path_segments;
+  DictionaryValue* parameters;
+  Response response;
+
+  SessionManager::GetInstance()->set_url_base("");
+  EXPECT_TRUE(internal::ParseRequestInfo(&request_info, &method,
+                                         &path_segments, &parameters,
+                                         &response));
+  EXPECT_EQ("GET", method);
+  ASSERT_EQ(4u, path_segments.size());
+  EXPECT_EQ("", path_segments[0]);
+  EXPECT_EQ("foo", path_segments[1]);
+  EXPECT_EQ("bar", path_segments[2]);
+  EXPECT_EQ("baz", path_segments[3]);
+}
+
+TEST_F(ParseRequestInfoTest, ParseRequestStripsNonEmptyUrlBaseFromPath) {
+  struct mg_request_info request_info;
+  request_info.request_method = kGet;
+  request_info.uri = kTestPath;
+
+  std::string method;
+  std::vector<std::string> path_segments;
+  DictionaryValue* parameters;
+  Response response;
+
+  SessionManager::GetInstance()->set_url_base("/foo");
+  EXPECT_TRUE(internal::ParseRequestInfo(&request_info, &method,
+                                         &path_segments, &parameters,
+                                         &response));
+  EXPECT_EQ("GET", method);
+  ASSERT_EQ(3u, path_segments.size());
+  EXPECT_EQ("", path_segments[0]);
+  EXPECT_EQ("bar", path_segments[1]);
+  EXPECT_EQ("baz", path_segments[2]);
 }
 
 }  // namespace webdriver

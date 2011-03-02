@@ -8,10 +8,12 @@
 #include <string>
 #include <vector>
 
+#include "base/format_macros.h"
 #include "base/logging.h"
 #include "base/message_loop_proxy.h"
 #include "base/string_split.h"
 #include "base/string_util.h"
+#include "base/stringprintf.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/threading/thread.h"
 #include "chrome/test/webdriver/http_response.h"
@@ -46,6 +48,36 @@ void DispatchCommand(Command* const command,
   } else {
     NOTREACHED();
   }
+}
+
+void Shutdown(struct mg_connection* connection,
+              const struct mg_request_info* request_info,
+              void* user_data) {
+  base::WaitableEvent* shutdown_event =
+      reinterpret_cast<base::WaitableEvent*>(user_data);
+  mg_printf(connection, "HTTP/1.1 200 OK\r\n\r\n");
+  shutdown_event->Signal();
+}
+
+void SendNotImplementedError(struct mg_connection* connection,
+                             const struct mg_request_info* request_info,
+                             void* user_data) {
+  // Send a well-formed WebDriver JSON error response to ensure clients
+  // handle it correctly.
+  std::string body = base::StringPrintf(
+      "{\"status\":%d,\"value\":{\"message\":"
+      "\"Command has not been implemented yet: %s %s\"}}",
+      kUnknownCommand, request_info->request_method, request_info->uri);
+
+  std::string header = base::StringPrintf(
+      "HTTP/1.1 501 Not Implemented\r\n"
+      "Content-Type:application/json\r\n"
+      "Content-Length:%" PRIuS "\r\n"
+      "\r\n", body.length());
+
+  LOG(ERROR) << header << body;
+  mg_write(connection, header.data(), header.length());
+  mg_write(connection, body.data(), body.length());
 }
 
 }  // namespace
@@ -163,6 +195,9 @@ bool ParseRequestInfo(const struct mg_request_info* const request_info,
     *method = "POST";
 
   std::string uri(request_info->uri);
+  SessionManager* manager = SessionManager::GetInstance();
+  uri = uri.substr(manager->url_base().length());
+
   base::SplitString(uri, '/', path_segments);
 
   if (*method == "POST" && request_info->post_data_len > 0) {
@@ -208,5 +243,20 @@ void DispatchHelper(Command* command_ptr,
 }
 
 }  // namespace internal
+
+Dispatcher::Dispatcher(struct mg_context* context, const std::string& root)
+    : context_(context), root_(root) {}
+
+Dispatcher::~Dispatcher() {}
+
+void Dispatcher::AddShutdown(const std::string& pattern,
+                             base::WaitableEvent* shutdown_event) {
+  mg_set_uri_callback(context_, (root_ + pattern).c_str(), &Shutdown, NULL);
+}
+
+void Dispatcher::SetNotImplemented(const std::string& pattern) {
+  mg_set_uri_callback(context_, (root_ + pattern).c_str(),
+                      &SendNotImplementedError, NULL);
+}
 
 }  // namespace webdriver

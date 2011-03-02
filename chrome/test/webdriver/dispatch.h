@@ -8,10 +8,15 @@
 #include <string>
 #include <vector>
 
+#include "base/basictypes.h"
 #include "chrome/test/webdriver/commands/response.h"
 #include "third_party/mongoose/mongoose.h"
 
 class DictionaryValue;
+
+namespace base {
+class WaitableEvent;
+}
 
 namespace webdriver {
 
@@ -72,6 +77,42 @@ void Dispatch(struct mg_connection* connection,
   internal::SendResponse(connection,
                          request_info->request_method,
                          response);
+}
+
+class Dispatcher {
+ public:
+  // Creates a new dispatcher that will register all URL callbacks with the
+  // given |context|. Each callback's pattern will be prefixed with the provided
+  // |root|.
+  Dispatcher(struct mg_context* context, const std::string& root);
+  ~Dispatcher();
+
+  // Registers a callback for a WebDriver command using the given URL |pattern|.
+  // The |CommandType| must be a subtype of |webdriver::Command|.
+  template<typename CommandType>
+  void Add(const std::string& pattern);
+
+  // Registers a callback that will shutdown the server.  When any HTTP request
+  // is received at this URL |pattern|, the |shutdown_event| will be signaled.
+  void AddShutdown(const std::string& pattern,
+                   base::WaitableEvent* shutdown_event);
+
+  // Registers a callback that will always respond with a
+  // "HTTP/1.1 501 Not Implemented" message.
+  void SetNotImplemented(const std::string& pattern);
+
+ private:
+  struct mg_context* context_;
+  const std::string root_;
+
+  DISALLOW_COPY_AND_ASSIGN(Dispatcher);
+};
+
+
+template <typename CommandType>
+void Dispatcher::Add(const std::string& pattern) {
+  mg_set_uri_callback(context_, (root_ + pattern).c_str(),
+                      &Dispatch<CommandType>, NULL);
 }
 
 }  // namespace webdriver

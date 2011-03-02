@@ -34,6 +34,10 @@ class SessionManager {
   Session* GetSession(const std::string& id) const;
 
   void set_port(const std::string& port);
+
+  void set_url_base(const std::string& url_base);
+  std::string url_base() const;
+
   void set_chrome_dir(const FilePath& chrome_dir);
   FilePath chrome_dir() const;
 
@@ -45,6 +49,7 @@ class SessionManager {
   std::map<std::string, Session*> map_;
   mutable base::Lock map_lock_;
   std::string port_;
+  std::string url_base_;
   FilePath chrome_dir_;
 
   DISALLOW_COPY_AND_ASSIGN(SessionManager);
