@@ -56,7 +56,8 @@ TEST_F(FileSystemUsageCacheTest, IncAndGetSizeTest) {
   FilePath usage_file_path = GetUsageFilePath();
   ASSERT_EQ(FileSystemUsageCache::kUsageFileSize,
             FileSystemUsageCache::UpdateUsage(usage_file_path, 98214));
-  ASSERT_TRUE(FileSystemUsageCache::IncrementDirty(usage_file_path));
+  ASSERT_EQ(true,
+            FileSystemUsageCache::IncrementDirty(usage_file_path));
   EXPECT_EQ(-1, FileSystemUsageCache::GetUsage(usage_file_path));
 }
 
@@ -66,7 +67,8 @@ TEST_F(FileSystemUsageCacheTest, DecAndGetSizeTest) {
   ASSERT_EQ(FileSystemUsageCache::kUsageFileSize,
             FileSystemUsageCache::UpdateUsage(usage_file_path, size));
   // DecrementDirty for dirty = 0 is invalid. It returns false.
-  ASSERT_FALSE(FileSystemUsageCache::DecrementDirty(usage_file_path));
+  ASSERT_EQ(false,
+            FileSystemUsageCache::DecrementDirty(usage_file_path));
   EXPECT_EQ(size, FileSystemUsageCache::GetUsage(usage_file_path));
 }
 
@@ -75,8 +77,10 @@ TEST_F(FileSystemUsageCacheTest, IncDecAndGetSizeTest) {
   FilePath usage_file_path = GetUsageFilePath();
   ASSERT_EQ(FileSystemUsageCache::kUsageFileSize,
             FileSystemUsageCache::UpdateUsage(usage_file_path, size));
-  ASSERT_TRUE(FileSystemUsageCache::IncrementDirty(usage_file_path));
-  ASSERT_TRUE(FileSystemUsageCache::DecrementDirty(usage_file_path));
+  ASSERT_EQ(true,
+            FileSystemUsageCache::IncrementDirty(usage_file_path));
+  ASSERT_EQ(true,
+            FileSystemUsageCache::DecrementDirty(usage_file_path));
   EXPECT_EQ(size, FileSystemUsageCache::GetUsage(usage_file_path));
 }
 
@@ -85,8 +89,10 @@ TEST_F(FileSystemUsageCacheTest, DecIncAndGetSizeTest) {
   ASSERT_EQ(FileSystemUsageCache::kUsageFileSize,
             FileSystemUsageCache::UpdateUsage(usage_file_path, 854238));
   // DecrementDirty for dirty = 0 is invalid. It returns false.
-  ASSERT_FALSE(FileSystemUsageCache::DecrementDirty(usage_file_path));
-  ASSERT_TRUE(FileSystemUsageCache::IncrementDirty(usage_file_path));
+  ASSERT_EQ(false,
+            FileSystemUsageCache::DecrementDirty(usage_file_path));
+  ASSERT_EQ(true,
+            FileSystemUsageCache::IncrementDirty(usage_file_path));
   // It tests DecrementDirty (which returns false) has no effect, i.e
   // does not make dirty = -1 after DecrementDirty.
   EXPECT_EQ(-1, FileSystemUsageCache::GetUsage(usage_file_path));
@@ -98,10 +104,12 @@ TEST_F(FileSystemUsageCacheTest, ManyIncsSameDecsAndGetSizeTest) {
   ASSERT_EQ(FileSystemUsageCache::kUsageFileSize,
             FileSystemUsageCache::UpdateUsage(usage_file_path, size));
   for (int i = 0; i < 20; i++) {
-    ASSERT_TRUE(FileSystemUsageCache::IncrementDirty(usage_file_path));
+    ASSERT_EQ(true,
+              FileSystemUsageCache::IncrementDirty(usage_file_path));
   }
   for (int i = 0; i < 20; i++) {
-    ASSERT_TRUE(FileSystemUsageCache::DecrementDirty(usage_file_path));
+    ASSERT_EQ(true,
+              FileSystemUsageCache::DecrementDirty(usage_file_path));
   }
   EXPECT_EQ(size, FileSystemUsageCache::GetUsage(usage_file_path));
 }
@@ -111,10 +119,12 @@ TEST_F(FileSystemUsageCacheTest, ManyIncsLessDecsAndGetSizeTest) {
   ASSERT_EQ(FileSystemUsageCache::kUsageFileSize,
             FileSystemUsageCache::UpdateUsage(usage_file_path, 19319));
   for (int i = 0; i < 20; i++) {
-    ASSERT_TRUE(FileSystemUsageCache::IncrementDirty(usage_file_path));
+    ASSERT_EQ(true,
+              FileSystemUsageCache::IncrementDirty(usage_file_path));
   }
   for (int i = 0; i < 19; i++) {
-    ASSERT_TRUE(FileSystemUsageCache::DecrementDirty(usage_file_path));
+    ASSERT_EQ(true,
+              FileSystemUsageCache::DecrementDirty(usage_file_path));
   }
   EXPECT_EQ(-1, FileSystemUsageCache::GetUsage(usage_file_path));
 }
@@ -126,10 +136,10 @@ TEST_F(FileSystemUsageCacheTest, GetSizeWithoutCacheFileTest) {
 
 TEST_F(FileSystemUsageCacheTest, IncrementDirtyWithoutCacheFileTest) {
   FilePath usage_file_path = GetUsageFilePath();
-  EXPECT_FALSE(FileSystemUsageCache::IncrementDirty(usage_file_path));
+  EXPECT_EQ(false, FileSystemUsageCache::IncrementDirty(usage_file_path));
 }
 
 TEST_F(FileSystemUsageCacheTest, DecrementDirtyWithoutCacheFileTest) {
   FilePath usage_file_path = GetUsageFilePath();
-  EXPECT_FALSE(FileSystemUsageCache::IncrementDirty(usage_file_path));
+  EXPECT_EQ(false, FileSystemUsageCache::IncrementDirty(usage_file_path));
 }
