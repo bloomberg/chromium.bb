@@ -439,6 +439,8 @@ void AutocompletePopupViewMac::UpdatePopupAppearance() {
 
     popup_.reset(nil);
 
+    targetPopupFrame_ = NSZeroRect;
+
     return;
   }
 
