@@ -24,10 +24,10 @@ Version* GetDateFromString(const std::string& date_string) {
   // format of "mm-dd-yyyy".
   std::vector<std::string> pieces;
   base::SplitString(date_string, '-', &pieces);
-  if (pieces.size() > 3 || pieces.size() == 0)
+  if (pieces.size() != 3)
     return NULL;
-  std::string date_as_version_string = pieces[0];
-  for (size_t i = 1; i < pieces.size(); ++i) {
+  std::string date_as_version_string = pieces[2];
+  for (size_t i = 0; i < 2; ++i) {
     date_as_version_string += ".";
     date_as_version_string += pieces[i];
   }
