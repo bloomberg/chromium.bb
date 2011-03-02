@@ -526,7 +526,7 @@ void DragDownload(const DownloadItem* download,
   // Add URL so that we can load supported files when dragged to TabContents.
   if (net::IsSupportedMimeType(mime_type)) {
     data.SetURL(GURL(WideToUTF8(full_path.ToWStringHack())),
-                     download->GetFileNameToReportUser().ToWStringHack());
+                     download->GetFileNameToReportUser().LossyDisplayName());
   }
 
 #if defined(OS_WIN)

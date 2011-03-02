@@ -313,13 +313,13 @@ TEST(OSExchangeDataTest, TestPickledData) {
 TEST(OSExchangeDataTest, FileContents) {
   OSExchangeData data;
   std::string file_contents("data\0with\0nulls", 15);
-  data.SetFileContents(L"filename.txt", file_contents);
+  data.SetFileContents(FilePath(L"filename.txt"), file_contents);
 
   OSExchangeData copy(CloneProvider(data));
-  std::wstring filename;
+  FilePath filename;
   std::string read_contents;
   EXPECT_TRUE(copy.GetFileContents(&filename, &read_contents));
-  EXPECT_EQ(L"filename.txt", filename);
+  EXPECT_EQ(L"filename.txt", filename.value());
   EXPECT_EQ(file_contents, read_contents);
 }
 

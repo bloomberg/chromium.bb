@@ -354,7 +354,7 @@ int TabStrip::OnPerformDrop(const DropTargetEvent& event) {
   SetDropIndex(-1, false);
 
   GURL url;
-  std::wstring title;
+  string16 title;
   if (!event.data().GetURLAndTitle(&url, &title) || !url.is_valid())
     return ui::DragDropTypes::DRAG_NONE;
 

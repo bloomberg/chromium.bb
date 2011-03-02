@@ -224,9 +224,9 @@ void BookmarkNodeData::Write(Profile* profile, ui::OSExchangeData* data) const {
   // clipboard.
   if (elements.size() == 1 && elements[0].is_url) {
     if (elements[0].url.SchemeIs(chrome::kJavaScriptScheme)) {
-      data->SetString(UTF8ToWide(elements[0].url.spec()));
+      data->SetString(UTF8ToUTF16(elements[0].url.spec()));
     } else {
-      data->SetURL(elements[0].url, UTF16ToWide(elements[0].title));
+      data->SetURL(elements[0].url, elements[0].title);
     }
   }
 
@@ -251,9 +251,9 @@ bool BookmarkNodeData::Read(const ui::OSExchangeData& data) {
     // See if there is a URL on the clipboard.
     Element element;
     GURL url;
-    std::wstring title;
+    string16 title;
     if (data.GetURLAndTitle(&url, &title))
-      ReadFromTuple(url, WideToUTF16(title));
+      ReadFromTuple(url, title);
   }
 
   return is_valid();

@@ -27,11 +27,11 @@ OSExchangeData::OSExchangeData(Provider* provider) : provider_(provider) {
 OSExchangeData::~OSExchangeData() {
 }
 
-void OSExchangeData::SetString(const std::wstring& data) {
+void OSExchangeData::SetString(const string16& data) {
   provider_->SetString(data);
 }
 
-void OSExchangeData::SetURL(const GURL& url, const std::wstring& title) {
+void OSExchangeData::SetURL(const GURL& url, const string16& title) {
   provider_->SetURL(url, title);
 }
 
@@ -43,11 +43,11 @@ void OSExchangeData::SetPickledData(CustomFormat format, const Pickle& data) {
   provider_->SetPickledData(format, data);
 }
 
-bool OSExchangeData::GetString(std::wstring* data) const {
+bool OSExchangeData::GetString(string16* data) const {
   return provider_->GetString(data);
 }
 
-bool OSExchangeData::GetURLAndTitle(GURL* url, std::wstring* title) const {
+bool OSExchangeData::GetURLAndTitle(GURL* url, string16* title) const {
   return provider_->GetURLAndTitle(url, title);
 }
 
@@ -122,21 +122,21 @@ bool OSExchangeData::HasAnyFormat(
 }
 
 #if defined(OS_WIN)
-void OSExchangeData::SetFileContents(const std::wstring& filename,
+void OSExchangeData::SetFileContents(const FilePath& filename,
                                      const std::string& file_contents) {
   provider_->SetFileContents(filename, file_contents);
 }
 
-void OSExchangeData::SetHtml(const std::wstring& html, const GURL& base_url) {
+void OSExchangeData::SetHtml(const string16& html, const GURL& base_url) {
   provider_->SetHtml(html, base_url);
 }
 
-bool OSExchangeData::GetFileContents(std::wstring* filename,
+bool OSExchangeData::GetFileContents(FilePath* filename,
                                      std::string* file_contents) const {
   return provider_->GetFileContents(filename, file_contents);
 }
 
-bool OSExchangeData::GetHtml(std::wstring* html, GURL* base_url) const {
+bool OSExchangeData::GetHtml(string16* html, GURL* base_url) const {
   return provider_->GetHtml(html, base_url);
 }
 

@@ -80,13 +80,13 @@ class OSExchangeData {
     Provider() {}
     virtual ~Provider() {}
 
-    virtual void SetString(const std::wstring& data) = 0;
-    virtual void SetURL(const GURL& url, const std::wstring& title) = 0;
+    virtual void SetString(const string16& data) = 0;
+    virtual void SetURL(const GURL& url, const string16& title) = 0;
     virtual void SetFilename(const FilePath& path) = 0;
     virtual void SetPickledData(CustomFormat format, const Pickle& data) = 0;
 
-    virtual bool GetString(std::wstring* data) const = 0;
-    virtual bool GetURLAndTitle(GURL* url, std::wstring* title) const = 0;
+    virtual bool GetString(string16* data) const = 0;
+    virtual bool GetURLAndTitle(GURL* url, string16* title) const = 0;
     virtual bool GetFilename(FilePath* path) const = 0;
     virtual bool GetPickledData(CustomFormat format, Pickle* data) const = 0;
 
@@ -97,12 +97,12 @@ class OSExchangeData {
         OSExchangeData::CustomFormat format) const = 0;
 
 #if defined(OS_WIN)
-    virtual void SetFileContents(const std::wstring& filename,
+    virtual void SetFileContents(const FilePath& filename,
                                  const std::string& file_contents) = 0;
-    virtual void SetHtml(const std::wstring& html, const GURL& base_url) = 0;
-    virtual bool GetFileContents(std::wstring* filename,
+    virtual void SetHtml(const string16& html, const GURL& base_url) = 0;
+    virtual bool GetFileContents(FilePath* filename,
                                  std::string* file_contents) const = 0;
-    virtual bool GetHtml(std::wstring* html, GURL* base_url) const = 0;
+    virtual bool GetHtml(string16* html, GURL* base_url) const = 0;
     virtual bool HasFileContents() const = 0;
     virtual bool HasHtml() const = 0;
     virtual void SetDownloadFileInfo(const DownloadFileInfo& download) = 0;
@@ -133,9 +133,9 @@ class OSExchangeData {
   //            the order of enumeration in our IEnumFORMATETC implementation!
   //            This comes into play when selecting the best (most preferable)
   //            data type for insertion into a DropTarget.
-  void SetString(const std::wstring& data);
+  void SetString(const string16& data);
   // A URL can have an optional title in some exchange formats.
-  void SetURL(const GURL& url, const std::wstring& title);
+  void SetURL(const GURL& url, const string16& title);
   // A full path to a file.
   void SetFilename(const FilePath& path);
   // Adds pickled data of the specified format.
@@ -145,8 +145,8 @@ class OSExchangeData {
   // functions return and the result is in the out parameter. If the data does
   // not exist, the out parameter is not touched. The out parameter cannot be
   // NULL.
-  bool GetString(std::wstring* data) const;
-  bool GetURLAndTitle(GURL* url, std::wstring* title) const;
+  bool GetString(string16* data) const;
+  bool GetURLAndTitle(GURL* url, string16* title) const;
   // Return the path of a file, if available.
   bool GetFilename(FilePath* path) const;
   bool GetPickledData(CustomFormat format, Pickle* data) const;
@@ -170,14 +170,14 @@ class OSExchangeData {
 
 #if defined(OS_WIN)
   // Adds the bytes of a file (CFSTR_FILECONTENTS and CFSTR_FILEDESCRIPTOR).
-  void SetFileContents(const std::wstring& filename,
+  void SetFileContents(const FilePath& filename,
                        const std::string& file_contents);
   // Adds a snippet of HTML.  |html| is just raw html but this sets both
   // text/html and CF_HTML.
-  void SetHtml(const std::wstring& html, const GURL& base_url);
-  bool GetFileContents(std::wstring* filename,
+  void SetHtml(const string16& html, const GURL& base_url);
+  bool GetFileContents(FilePath* filename,
                        std::string* file_contents) const;
-  bool GetHtml(std::wstring* html, GURL* base_url) const;
+  bool GetHtml(string16* html, GURL* base_url) const;
 
   // Adds a download file with full path (CF_HDROP).
   void SetDownloadFileInfo(const DownloadFileInfo& download);

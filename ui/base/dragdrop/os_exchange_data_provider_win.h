@@ -142,23 +142,23 @@ class OSExchangeDataProviderWin : public OSExchangeData::Provider {
   IAsyncOperation* async_operation() const { return data_.get(); }
 
   // OSExchangeData::Provider methods.
-  virtual void SetString(const std::wstring& data);
-  virtual void SetURL(const GURL& url, const std::wstring& title);
+  virtual void SetString(const string16& data);
+  virtual void SetURL(const GURL& url, const string16& title);
   virtual void SetFilename(const FilePath& path);
   virtual void SetPickledData(OSExchangeData::CustomFormat format,
                               const Pickle& data);
-  virtual void SetFileContents(const std::wstring& filename,
+  virtual void SetFileContents(const FilePath& filename,
                                const std::string& file_contents);
-  virtual void SetHtml(const std::wstring& html, const GURL& base_url);
+  virtual void SetHtml(const string16& html, const GURL& base_url);
 
-  virtual bool GetString(std::wstring* data) const;
-  virtual bool GetURLAndTitle(GURL* url, std::wstring* title) const;
+  virtual bool GetString(string16* data) const;
+  virtual bool GetURLAndTitle(GURL* url, string16* title) const;
   virtual bool GetFilename(FilePath* path) const;
   virtual bool GetPickledData(OSExchangeData::CustomFormat format,
                               Pickle* data) const;
-  virtual bool GetFileContents(std::wstring* filename,
+  virtual bool GetFileContents(FilePath* filename,
                                std::string* file_contents) const;
-  virtual bool GetHtml(std::wstring* html, GURL* base_url) const;
+  virtual bool GetHtml(string16* html, GURL* base_url) const;
   virtual bool HasString() const;
   virtual bool HasURL() const;
   virtual bool HasFile() const;

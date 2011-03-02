@@ -58,13 +58,13 @@ class OSExchangeDataProviderGtk : public OSExchangeData::Provider {
                               GtkSelectionData* selection) const;
 
   // Provider methods.
-  virtual void SetString(const std::wstring& data);
-  virtual void SetURL(const GURL& url, const std::wstring& title);
+  virtual void SetString(const string16& data);
+  virtual void SetURL(const GURL& url, const string16& title);
   virtual void SetFilename(const FilePath& path);
   virtual void SetPickledData(OSExchangeData::CustomFormat format,
                               const Pickle& data);
-  virtual bool GetString(std::wstring* data) const;
-  virtual bool GetURLAndTitle(GURL* url, std::wstring* title) const;
+  virtual bool GetString(string16* data) const;
+  virtual bool GetURLAndTitle(GURL* url, string16* title) const;
   virtual bool GetFilename(FilePath* path) const;
   virtual bool GetPickledData(OSExchangeData::CustomFormat format,
                               Pickle* data) const;

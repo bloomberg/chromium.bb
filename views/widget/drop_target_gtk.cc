@@ -104,7 +104,7 @@ void DropTargetGtk::OnDragDataReceived(GdkDragContext* context,
       UTF8ToUTF16(as_char, strlen(as_char), &result);
       g_free(text_data);
     }
-    data_provider().SetString(UTF16ToWideHack(result));
+    data_provider().SetString(result);
   } else if (requested_custom_formats_.find(data->type) !=
              requested_custom_formats_.end()) {
     Pickle result;
@@ -115,12 +115,12 @@ void DropTargetGtk::OnDragDataReceived(GdkDragContext* context,
     GURL url;
     string16 title;
     ui::ExtractNamedURL(data, &url, &title);
-    data_provider().SetURL(url, UTF16ToWideHack(title));
+    data_provider().SetURL(url, title);
   } else if (data->type == ui::GetAtomForTarget(ui::TEXT_URI_LIST)) {
     std::vector<GURL> urls;
     ui::ExtractURIList(data, &urls);
     if (urls.size() == 1 && urls[0].is_valid()) {
-      data_provider().SetURL(urls[0], std::wstring());
+      data_provider().SetURL(urls[0], string16());
 
       // TEXT_URI_LIST is used for files as well as urls.
       if (urls[0].SchemeIsFile()) {
@@ -132,7 +132,7 @@ void DropTargetGtk::OnDragDataReceived(GdkDragContext* context,
       // Consumers of OSExchangeData will see this as an invalid URL. That is,
       // when GetURL is invoked on the OSExchangeData this triggers false to
       // be returned.
-      data_provider().SetURL(GURL(), std::wstring());
+      data_provider().SetURL(GURL(), string16());
     }
   }
 

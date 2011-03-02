@@ -33,7 +33,7 @@ void SetURLAndDragImage(const GURL& url,
                         OSExchangeData* data) {
   DCHECK(url.is_valid() && data);
 
-  data->SetURL(url, title);
+  data->SetURL(url, WideToUTF16(title));
 
   // Create a button to render the drag image for us.
   views::TextButton button(NULL,

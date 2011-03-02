@@ -92,17 +92,17 @@ int BrowserRootView::OnPerformDrop(const views::DropTargetEvent& event) {
   // do this as the TabStrip doesn't know about the autocomplete edit and needs
   // to know about it to handle 'paste and go'.
   GURL url;
-  std::wstring title;
+  string16 title;
   ui::OSExchangeData mapped_data;
   if (!event.data().GetURLAndTitle(&url, &title) || !url.is_valid()) {
     // The url isn't valid. Use the paste and go url.
     if (GetPasteAndGoURL(event.data(), &url))
-      mapped_data.SetURL(url, std::wstring());
+      mapped_data.SetURL(url, string16());
     // else case: couldn't extract a url or 'paste and go' url. This ends up
     // passing through an ui::OSExchangeData with nothing in it. We need to do
     // this so that the tab strip cleans up properly.
   } else {
-    mapped_data.SetURL(url, std::wstring());
+    mapped_data.SetURL(url, string16());
   }
   forwarding_to_tab_strip_ = false;
   scoped_ptr<views::DropTargetEvent> mapped_event(
@@ -141,13 +141,13 @@ bool BrowserRootView::GetPasteAndGoURL(const ui::OSExchangeData& data,
   if (!data.HasString())
     return false;
 
-  std::wstring text;
+  string16 text;
   if (!data.GetString(&text) || text.empty())
     return false;
 
   AutocompleteMatch match;
   browser_view_->browser()->profile()->GetAutocompleteClassifier()->Classify(
-      WideToUTF16Hack(text), string16(), false, &match, NULL);
+      text, string16(), false, &match, NULL);
   if (!match.destination_url.is_valid())
     return false;
 

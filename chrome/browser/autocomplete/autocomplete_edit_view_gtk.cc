@@ -856,20 +856,20 @@ views::View* AutocompleteEditViewGtk::AddToView(views::View* parent) {
 
 int AutocompleteEditViewGtk::OnPerformDrop(
     const views::DropTargetEvent& event) {
-  std::wstring text;
+  string16 text;
   const ui::OSExchangeData& data = event.data();
   if (data.HasURL()) {
     GURL url;
-    std::wstring title;
+    string16 title;
     if (data.GetURLAndTitle(&url, &title))
-      text = UTF8ToWide(url.spec());
+      text = UTF8ToUTF16(url.spec());
   } else {
-    std::wstring data_string;
+    string16 data_string;
     if (data.GetString(&data_string))
       text = CollapseWhitespace(data_string, true);
   }
 
-  if (!text.empty() && OnPerformDropImpl(WideToUTF16(text)))
+  if (!text.empty() && OnPerformDropImpl(text))
     return CopyOrLinkDragOperation(event.source_operations());
 
   return ui::DragDropTypes::DRAG_NONE;

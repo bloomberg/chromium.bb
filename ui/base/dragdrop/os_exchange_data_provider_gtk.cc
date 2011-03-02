@@ -125,15 +125,14 @@ void OSExchangeDataProviderGtk::WriteFormatToSelection(
   }
 }
 
-void OSExchangeDataProviderGtk::SetString(const std::wstring& data) {
-  string_ = WideToUTF16Hack(data);
+void OSExchangeDataProviderGtk::SetString(const string16& data) {
+  string_ = data;
   formats_ |= OSExchangeData::STRING;
 }
 
-void OSExchangeDataProviderGtk::SetURL(const GURL& url,
-                                       const std::wstring& title) {
+void OSExchangeDataProviderGtk::SetURL(const GURL& url, const string16& title) {
   url_ = url;
-  title_ = WideToUTF16Hack(title);
+  title_ = title;
   formats_ |= OSExchangeData::URL;
 }
 
@@ -148,15 +147,15 @@ void OSExchangeDataProviderGtk::SetPickledData(GdkAtom format,
   formats_ |= OSExchangeData::PICKLED_DATA;
 }
 
-bool OSExchangeDataProviderGtk::GetString(std::wstring* data) const {
+bool OSExchangeDataProviderGtk::GetString(string16* data) const {
   if ((formats_ & OSExchangeData::STRING) == 0)
     return false;
-  *data = UTF16ToWideHack(string_);
+  *data = string_;
   return true;
 }
 
 bool OSExchangeDataProviderGtk::GetURLAndTitle(GURL* url,
-                                               std::wstring* title) const {
+                                               string16* title) const {
   if ((formats_ & OSExchangeData::URL) == 0) {
     title->clear();
     return GetPlainTextURL(url);
@@ -166,7 +165,7 @@ bool OSExchangeDataProviderGtk::GetURLAndTitle(GURL* url,
     return false;
 
   *url = url_;
-  *title = UTF16ToWideHack(title_);
+  *title = title_;
   return true;
 }
 
