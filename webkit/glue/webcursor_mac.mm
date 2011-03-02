@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -153,6 +153,10 @@ NSCursor* WebCursor::GetCursor() const {
       return LoadCursor("zoomInCursor", 7, 7);
     case WebCursorInfo::TypeZoomOut:
       return LoadCursor("zoomOutCursor", 7, 7);
+    case WebCursorInfo::TypeGrab:
+      return [NSCursor openHandCursor];
+    case WebCursorInfo::TypeGrabbing:
+      return [NSCursor closedHandCursor];
     case WebCursorInfo::TypeCustom:
       return CreateCustomCursor(custom_data_, custom_size_, hotspot_);
   }
@@ -192,7 +196,11 @@ void WebCursor::InitFromThemeCursor(ThemeCursor cursor) {
       cursor_info.type = WebCursorInfo::TypeWait;
       break;
     case kThemeClosedHandCursor:
+      cursor_info.type = WebCursorInfo::TypeGrabbing;
+      break;
     case kThemeOpenHandCursor:
+      cursor_info.type = WebCursorInfo::TypeGrab;
+      break;
     case kThemePointingHandCursor:
     case kThemeCountingUpHandCursor:
     case kThemeCountingDownHandCursor:
@@ -297,10 +305,13 @@ void WebCursor::InitFromNSCursor(NSCursor* cursor) {
     cursor_info.type = WebCursorInfo::TypeSouthResize;
   } else if ([cursor isEqual:[NSCursor resizeUpDownCursor]]) {
     cursor_info.type = WebCursorInfo::TypeNorthSouthResize;
+  } else if ([cursor isEqual:[NSCursor openHandCursor]]) {
+    cursor_info.type = WebCursorInfo::TypeGrab;
+  } else if ([cursor isEqual:[NSCursor closedHandCursor]]) {
+    cursor_info.type = WebCursorInfo::TypeGrabbing;
   } else {
-    // Also handles the [NSCursor closedHandCursor], [NSCursor openHandCursor],
-    // and [NSCursor disappearingItemCursor] cases. Quick-and-dirty image
-    // conversion; TODO(avi): do better.
+    // Also handles the [NSCursor disappearingItemCursor] case. Quick-and-dirty
+    // image conversion; TODO(avi): do better.
     CGImageRef cg_image = nil;
     NSImage* image = [cursor image];
     for (id rep in [image representations]) {

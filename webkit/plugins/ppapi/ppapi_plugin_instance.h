@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -321,7 +321,7 @@ class PluginInstance : public base::RefCounted<PluginInstance> {
   // The plugin 3D interface.
   const PPP_Graphics3D_Dev* plugin_graphics_3d_interface_;
 
-  // Containes the cursor if it's set by the plugin.
+  // Contains the cursor if it's set by the plugin.
   scoped_ptr<WebKit::WebCursorInfo> cursor_;
 
   // Set to true if this plugin thinks it will always be on top. This allows us

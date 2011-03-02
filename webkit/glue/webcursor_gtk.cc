@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -153,6 +153,8 @@ int WebCursor::GetCursorType() const {
       NOTIMPLEMENTED(); return GDK_LAST_CURSOR;
     case WebCursorInfo::TypeZoomIn:
     case WebCursorInfo::TypeZoomOut:
+    case WebCursorInfo::TypeGrab:
+    case WebCursorInfo::TypeGrabbing:
     case WebCursorInfo::TypeCustom:
       return GDK_CURSOR_IS_PIXMAP;
   }
@@ -178,6 +180,10 @@ GdkCursor* WebCursor::GetCustomCursor() {
       return GetInlineCustomCursor(CustomCursorZoomIn);
     case WebCursorInfo::TypeZoomOut:
       return GetInlineCustomCursor(CustomCursorZoomOut);
+    case WebCursorInfo::TypeGrab:
+      return GetInlineCustomCursor(CustomCursorGrab);
+    case WebCursorInfo::TypeGrabbing:
+      return GetInlineCustomCursor(CustomCursorGrabbing);
   }
 
   if (type_ != WebCursorInfo::TypeCustom) {
