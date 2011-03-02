@@ -3,36 +3,9 @@
 # be found in the LICENSE file.
 
 ##############################################################################
-#  Description: Main makefile for NativeClient toolchain.
+# Helper script for NaCl toolchain development workflow
 #
-#  Usage:
-#    Option 1: Build by unpacking the tarballs and applying patches:
-#      goto "Perform the actual build"
-#    Option 2: Build by copying the sources from the Git repository:
-#      git clone http://git.chromium.org/git/nacl-toolchain.git SRC
-#      make prepare-git-src
-#    Perform the actual build:
-#      make SDKLOC=/your/path clean build
-#
-#  Usage (building glibc, 32bit):
-#    Option 1: Build by unpacking the tarballs and applying patches:
-#      goto "Perform the actual build"
-#    Option 2: Build by copying the sources from Git repositories:
-#      git clone http://git.chromium.org/git/nacl-toolchain.git SRC
-#      make fetch-glibc-sources-readonly
-#      make prepare-git-src
-#    Option 3: Committer access:
-#      make fetch-git-rw-sources
-#    Perform the actual build:
-#      make build-with-glibc CROSSARCH=nacl MULTILIB=no SDKLOC=/your/path
-#    Run Native Client tests:
-#      make nacl-check CROSSARCH=nacl SDKLOC=/your/path
-#
-#  WARNING:
-#    This Makefile does *not* support incremental rebuilds of individial
-#  components (binutils, pregcc, gcc, newlib, gdb). Although you can force
-#  rebuilding one of the components by deleting their respective stamps, this
-#  does not always work. Use at your own risk.
+# TODO(eaeltsin): document usage!
 ##############################################################################
 
 default: build
@@ -161,51 +134,71 @@ GMP_VERSION=4.3.1
 MPFR_VERSION=2.4.1
 
 ##################################################################
-# Unpacking the sources, applying patches, etc.
+# Get or update the sources
 ##################################################################
 
-# Create the SRC subdirectory.
 SRC:
 	mkdir SRC
 
-# Unpack binutils, apply patches.
+
 SRC/binutils: | SRC
-	@echo "Unpacking binutils"
 	git clone $(GIT_BASE_URL)/nacl-binutils SRC/binutils
-	cd SRC/binutils && git checkout "$(NACL_BINUTILS_COMMIT)"
 
-# Unpack newlib, apply patches.
+.PHONY: pinned-src-binutils
+pinned-src-binutils: | SRC/binutils
+	cd SRC/binutils && git fetch && git checkout "$(NACL_BINUTILS_COMMIT)"
+
+
 SRC/newlib: | SRC
-	@echo "Unpacking newlib"
 	git clone $(GIT_BASE_URL)/nacl-newlib SRC/newlib
-	cd SRC/newlib && git checkout "$(NACL_NEWLIB_COMMIT)"
 
-# Unpack gcc, apply patches.
+.PHONY: pinned-src-newlib
+pinned-src-newlib: | SRC/newlib
+	cd SRC/newlib && git fetch && git checkout "$(NACL_NEWLIB_COMMIT)"
+
+
 SRC/gcc: | SRC
-	@echo "Unpacking gcc"
 	git clone $(GIT_BASE_URL)/nacl-gcc SRC/gcc
-	cd SRC/gcc && git checkout "$(NACL_GCC_COMMIT)"
+
+.PHONY: pinned-src-gcc
+pinned-src-gcc: | SRC/gcc
+	cd SRC/gcc && git fetch && git checkout "$(NACL_GCC_COMMIT)"
 	./use_gcc_extras.sh GMP_VERSION=$(GMP_VERSION) MPFR_VERSION=$(MPFR_VERSION)
 
-# Unpack glibc, apply patches.
-SRC/glibc: | SRC
-	@echo "Unpacking glibc"
-	git clone $(GIT_BASE_URL)/nacl-glibc.git SRC/glibc
-	cd SRC/glibc && git checkout "$(NACL_GLIBC_COMMIT)"
 
-# Unpack linux headers, apply patches.
+SRC/glibc: | SRC
+	git clone $(GIT_BASE_URL)/nacl-glibc.git SRC/glibc
+
+.PHONY: pinned-src-glibc
+pinned-src-glibc: | SRC/glibc
+	cd SRC/glibc && git fetch && git checkout "$(NACL_GLIBC_COMMIT)"
+
+
 SRC/linux-headers-for-nacl: | SRC
-	@echo "Unpacking linux headers for glibc."
 	git clone $(GIT_BASE_URL)/linux-headers-for-nacl.git \
 	  SRC/linux-headers-for-nacl
-	cd SRC/linux-headers-for-nacl && \
+
+.PHONY: pinned-src-linux-headers-for-nacl
+pinned-src-linux-headers-for-nacl: | SRC/linux-headers-for-nacl
+	cd SRC/linux-headers-for-nacl && git fetch && \
 	  git checkout "$(LINUX_HEADERS_FOR_NACL_COMMIT)"
 
-# Unpack gdb, apply patches.
+
 SRC/gdb: | SRC
-	@echo "Unpacking gdb"
 	git clone $(GIT_BASE_URL)/nacl-gdb SRC/gdb
-	cd SRC/gdb && git checkout "$(NACL_GDB_COMMIT)"
+
+.PHONY: pinned-src-gdb
+pinned-src-gdb: | SRC/gdb
+	cd SRC/gdb && git fetch && git checkout "$(NACL_GDB_COMMIT)"
+
+
+.PHONY: sync-pinned
+sync-pinned: | \
+  pinned-src-binutils \
+  pinned-src-gcc \
+  pinned-src-newlib \
+  pinned-src-gdb ;
+
 
 # Create the build directories for compiled binaries.
 BUILD:
@@ -754,7 +747,8 @@ endif
 # Build the entire toolchain.
 ##################################################################
 
-build-with-glibc: ALWAYS
+.PHONY: build-with-glibc
+build-with-glibc:
 	$(MAKE) -f $(THISMAKEFILE) sdkdirs
 	cp -f SRC/gcc/COPYING* $(DESTDIR)$(SDKROOT)
 	$(MAKE) -f $(THISMAKEFILE) BUILD/stamp-$(CROSSARCH)-binutils
@@ -764,14 +758,8 @@ build-with-glibc: ALWAYS
 	$(MAKE) -f $(THISMAKEFILE) BUILD/stamp-$(CROSSARCH)-libs-glibc
 	$(MAKE) -f $(THISMAKEFILE) BUILD/stamp-$(CROSSARCH)-stubout
 
-.PHONY: all-source
-all-source: | \
-	SRC/binutils \
-	SRC/gcc \
-	SRC/newlib \
-	SRC/gdb
-
-build: ALWAYS all-source
+.PHONY: build
+build: sync-pinned
 	$(MAKE) -f $(THISMAKEFILE) sdkdirs
 	cp -f SRC/gcc/COPYING* $(DESTDIR)$(SDKROOT)
 	$(MAKE) -f $(THISMAKEFILE) BUILD/stamp-$(CROSSARCH)-binutils
@@ -828,17 +816,8 @@ nacl-check: ALWAYS
 # Library builds are maintained by scons.
 ##################################################################
 
-# WARNING! WARNING! WARNING! WARNING! WARNING! WARNING! WARNING! WARNING!
-# Temporary change to keep buildbots happy!
-#
-# "clean" removes not only BUILD, but SRC as well.
-#
-# In fact, "clean" temporary takes old "build" -> "all-source" responsibility
-# to remove and re-checkout all sources. This is needed to keep old
-# "make clean build" behaviour that is expected by buildbots.
 .PHONY: clean
 clean:
 	rm -rf BUILD
-	rm -rf SRC
 
 .PHONY: ALWAYS
