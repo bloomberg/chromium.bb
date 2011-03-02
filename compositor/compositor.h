@@ -19,8 +19,6 @@
 #ifndef _WAYLAND_SYSTEM_COMPOSITOR_H_
 #define _WAYLAND_SYSTEM_COMPOSITOR_H_
 
-#include <xf86drm.h>
-#include <xf86drmMode.h>
 #include <libudev.h>
 #include <pixman.h>
 #include "wayland-server.h"
@@ -116,8 +114,8 @@ struct wlsc_compositor {
 	void (*present)(struct wlsc_compositor *c);
 	struct wl_buffer *(*create_buffer)(struct wlsc_compositor *c,
 					   int32_t width, int32_t height,
-					   struct wl_visual *visual,
-					   const void *data);
+					   int32_t stride, struct wl_visual *visual,
+					   void *data);
 };
 
 #define MODIFIER_CTRL	(1 << 8)
@@ -205,9 +203,10 @@ uint32_t
 get_time(void);
 
 struct wl_buffer *
-wlsc_drm_buffer_create(struct wlsc_compositor *ec,
-		       int width, int height,
-		       struct wl_visual *visual, const void *data);
+wlsc_shm_buffer_create(struct wlsc_compositor *ec,
+		       int32_t width, int32_t height,
+		       int32_t stride, struct wl_visual *visual,
+		       void *data);
 
 int
 wlsc_compositor_init(struct wlsc_compositor *ec, struct wl_display *display);
@@ -233,10 +232,6 @@ void
 shell_resize(struct wl_client *client, struct wl_shell *shell,
 	     struct wl_surface *surface,
 	     struct wl_input_device *device, uint32_t time, uint32_t edges);
-
-struct wl_buffer *
-wl_buffer_create_drm(struct wlsc_compositor *compositor,
-		     struct wl_visual *visual);
 
 struct wlsc_compositor *
 x11_compositor_create(struct wl_display *display, int width, int height);

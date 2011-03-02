@@ -464,7 +464,7 @@ wayland_compositor_create(struct wl_display *display, int width, int height)
 
 	c->base.destroy = wayland_destroy;
 	c->base.present = wayland_compositor_present;
-	c->base.create_buffer = wlsc_drm_buffer_create;
+	c->base.create_buffer = wlsc_shm_buffer_create;
 
 	/* Can't init base class until we have a current egl context */
 	if (wlsc_compositor_init(&c->base, display) < 0)

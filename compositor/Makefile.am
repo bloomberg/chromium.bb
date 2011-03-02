@@ -13,17 +13,14 @@ compositor_LDADD =				\
 
 if ENABLE_DRM_COMPOSITOR
 drm_compositor_sources = compositor-drm.c tty.c evdev.c
-drm_sources = drm.c
 endif
 
 if ENABLE_X11_COMPOSITOR
 x11_compositor_sources = compositor-x11.c
-drm_sources = drm.c
 endif
 
 if ENABLE_WAYLAND_COMPOSITOR
 wayland_compositor_sources = compositor-wayland.c
-drm_sources = drm.c
 endif
 
 compositor_SOURCES =				\
@@ -36,8 +33,7 @@ compositor_SOURCES =				\
 	shm.c					\
 	$(drm_compositor_sources)		\
 	$(x11_compositor_sources)		\
-	$(wayland_compositor_sources)		\
-	$(drm_sources)
+	$(wayland_compositor_sources)
 
 udevrulesddir = $(sysconfdir)/udev/rules.d
 

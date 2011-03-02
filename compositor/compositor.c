@@ -314,7 +314,7 @@ create_buffer_from_png(struct wlsc_compositor *ec,
 	if(pixels == NULL)
 	    return NULL;
 
-	buffer = ec->create_buffer(ec, width, height,
+	buffer = ec->create_buffer(ec, width, height, width * 4,
 				   &ec->compositor.premultiplied_argb_visual,
 				   pixels);
 

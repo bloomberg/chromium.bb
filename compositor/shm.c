@@ -28,6 +28,7 @@ struct wlsc_shm_buffer {
 	struct wl_buffer buffer;
 	int32_t stride;
 	void *data;
+	int mapped;
 };
 
 static void
@@ -36,7 +37,10 @@ destroy_buffer(struct wl_resource *resource, struct wl_client *client)
 	struct wlsc_shm_buffer *buffer =
 		container_of(resource, struct wlsc_shm_buffer, buffer.resource);
 
-	munmap(buffer->data, buffer->stride * buffer->buffer.height);
+	if (buffer->mapped)
+		munmap(buffer->data, buffer->stride * buffer->buffer.height);
+	else
+		free(buffer->data);
 	free(buffer);
 }
 
@@ -87,6 +91,30 @@ shm_buffer_damage(struct wl_buffer *buffer_base,
 	 * support any unpack attributes except GL_UNPACK_ALIGNMENT. */
 }
 
+static struct wlsc_shm_buffer *
+wlsc_shm_buffer_init(struct wlsc_compositor *compositor,
+		     int32_t width, int32_t height,
+		     int32_t stride, struct wl_visual *visual,
+		     void *data)
+{
+	struct wlsc_shm_buffer *buffer;
+
+	buffer = malloc(sizeof *buffer);
+	if (buffer == NULL)
+		return NULL;
+
+	buffer->buffer.compositor = &compositor->compositor;
+	buffer->buffer.width = width;
+	buffer->buffer.height = height;
+	buffer->buffer.visual = visual;
+	buffer->buffer.attach = shm_buffer_attach;
+	buffer->buffer.damage = shm_buffer_damage;
+	buffer->stride = stride;
+	buffer->data = data;
+
+	return buffer;
+}
+
 static void
 shm_create_buffer(struct wl_client *client, struct wl_shm *shm,
 		  uint32_t id, int fd, int32_t width, int32_t height,
@@ -96,6 +124,7 @@ shm_create_buffer(struct wl_client *client, struct wl_shm *shm,
 		container_of((struct wlsc_shm *) shm,
 			     struct wlsc_compositor, shm);
 	struct wlsc_shm_buffer *buffer;
+	void *data;
 
 	/* FIXME: Define a real exception event instead of abusing the
 	 * display.invalid_object error */
@@ -118,33 +147,27 @@ shm_create_buffer(struct wl_client *client, struct wl_shm *shm,
 		return;
 	}
 
-	buffer = malloc(sizeof *buffer);
-	if (buffer == NULL) {
-		close(fd);
-		wl_client_post_no_memory(client);
-		return;
-	}
+	data = mmap(NULL, stride * height, PROT_READ, MAP_SHARED, fd, 0);
 
-	buffer->buffer.compositor = (struct wl_compositor *) compositor;
-	buffer->buffer.width = width;
-	buffer->buffer.height = height;
-	buffer->buffer.visual = visual;
-	buffer->buffer.attach = shm_buffer_attach;
-	buffer->buffer.damage = shm_buffer_damage;
-	buffer->stride = stride;
-	buffer->data =
-		mmap(NULL, stride * height, PROT_READ, MAP_SHARED, fd, 0);
 	close(fd);
-	if (buffer->data == MAP_FAILED) {
+	if (data == MAP_FAILED) {
 		/* FIXME: Define a real exception event instead of
 		 * abusing this one */
-		free(buffer);
 		wl_client_post_event(client,
 				     (struct wl_object *) compositor->wl_display,
 				     WL_DISPLAY_INVALID_OBJECT, 0);
 		fprintf(stderr, "failed to create image for fd %d\n", fd);
 		return;
 	}
+
+	buffer = wlsc_shm_buffer_init(compositor, width, height,
+				      stride, visual, data);
+	if (buffer == NULL) {
+		munmap(data, stride * height);
+		wl_client_post_no_memory(client);
+		return;
+	}
+	buffer->mapped = 1;
 
 	buffer->buffer.resource.object.id = id;
 	buffer->buffer.resource.object.interface = &wl_buffer_interface;
@@ -171,4 +194,25 @@ wlsc_shm_init(struct wlsc_compositor *ec)
 	wl_display_add_global(ec->wl_display, &shm->object, NULL);
 
 	return 0;
+}
+
+struct wl_buffer *
+wlsc_shm_buffer_create(struct wlsc_compositor *ec, int width, int height,
+		       int stride, struct wl_visual *visual,
+		       void *data)
+{
+	struct wlsc_shm_buffer *buffer;
+	void *pixels;
+
+	pixels = malloc(stride * height);
+	if (!pixels)
+		return NULL;
+
+	memcpy(pixels, data, stride * height);
+
+	buffer = wlsc_shm_buffer_init(ec, width, height,
+				      stride, visual, pixels);
+	buffer->mapped = 0;
+
+	return &buffer->buffer;
 }

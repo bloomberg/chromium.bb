@@ -22,6 +22,9 @@
 #include <fcntl.h>
 #include <unistd.h>
 
+#include <xf86drm.h>
+#include <xf86drmMode.h>
+
 #define GL_GLEXT_PROTOTYPES
 #define EGL_EGLEXT_PROTOTYPES
 #include <GLES2/gl2.h>
@@ -352,7 +355,7 @@ drm_compositor_create(struct wl_display *display, int connector)
 
 	ec->base.destroy = drm_destroy;
 	ec->base.present = drm_compositor_present;
-	ec->base.create_buffer = wlsc_drm_buffer_create;
+	ec->base.create_buffer = wlsc_shm_buffer_create;
 	ec->base.focus = 1;
 
 	glGenFramebuffers(1, &ec->base.fbo);
