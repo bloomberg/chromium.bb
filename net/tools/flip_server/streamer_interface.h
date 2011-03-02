@@ -61,7 +61,7 @@ class StreamerSM : public BalsaVisitorInterface,
   virtual size_t SendSynReply(uint32 stream_id, const BalsaHeaders& headers);
   virtual void SendDataFrame(uint32 stream_id, const char* data, int64 len,
                              uint32 flags, bool compress) {}
-  void set_is_request();
+  virtual void set_is_request();
   static std::string forward_ip_header() { return forward_ip_header_; }
   static void set_forward_ip_header(std::string value) {
     forward_ip_header_ = value;
@@ -106,16 +106,10 @@ class StreamerSM : public BalsaVisitorInterface,
   virtual void ProcessChunkLength(size_t chunk_length) {}
   virtual void ProcessChunkExtensions(const char *input, size_t size) {}
   virtual void HeaderDone() {}
-  virtual void HandleHeaderError(BalsaFrame* framer) {
-    HandleError();
-  }
+  virtual void HandleHeaderError(BalsaFrame* framer);
   virtual void HandleHeaderWarning(BalsaFrame* framer) {}
-  virtual void HandleChunkingError(BalsaFrame* framer) {
-    HandleError();
-  }
-  virtual void HandleBodyError(BalsaFrame* framer) {
-    HandleError();
-  }
+  virtual void HandleChunkingError(BalsaFrame* framer);
+  virtual void HandleBodyError(BalsaFrame* framer);
   void HandleError();
 
   SMConnection* connection_;

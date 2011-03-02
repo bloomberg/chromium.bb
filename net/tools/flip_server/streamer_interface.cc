@@ -185,6 +185,18 @@ void StreamerSM::ProcessHeaders(const BalsaHeaders& headers) {
   sm_other_interface_->ProcessWriteInput(buffer, size);
 }
 
+void StreamerSM::HandleHeaderError(BalsaFrame* framer) {
+  HandleError();
+}
+
+void StreamerSM::HandleChunkingError(BalsaFrame* framer) {
+  HandleError();
+}
+
+void StreamerSM::HandleBodyError(BalsaFrame* framer) {
+  HandleError();
+}
+
 void StreamerSM::HandleError() {
   VLOG(1) << ACCEPTOR_CLIENT_IDENT << "Error detected";
 }
