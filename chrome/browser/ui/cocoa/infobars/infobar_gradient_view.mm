@@ -63,17 +63,15 @@ const double kBackgroundColorBottom[3] =
   const CGFloat curveDistance = 13.0;
   const CGFloat iconWidth = 29.0;
   const CGFloat tipPadding = 4.0;
-  const CGFloat pathJoinShift = 3.0;
+  const CGFloat pathJoinShift = 2.5;
 
   // Draw the tab bulge that acts as the anti-spoofing countermeasure.
   NSBezierPath* bulgePath = [NSBezierPath bezierPath];
   NSPoint startPoint = NSMakePoint(0, NSMaxY([self frame]) - tipHeight);
   [bulgePath moveToPoint:startPoint];
   [bulgePath relativeCurveToPoint:NSMakePoint(curveDistance, tipHeight)
-                    // Fuzz the points by 0.5 pixels to get perfect alignment.
-                    controlPoint1:NSMakePoint(curveDistance/2, 0.5)
-                    controlPoint2:NSMakePoint(curveDistance/2,
-                                              tipHeight - 0.5)];
+                    controlPoint1:NSMakePoint(curveDistance/2, 0)
+                    controlPoint2:NSMakePoint(curveDistance/2, tipHeight)];
 
   // The height is too small and the control points too close for the stroke
   // across this straight line to have enough definition. Save off the points
@@ -83,10 +81,8 @@ const double kBackgroundColorBottom[3] =
   NSPoint topStrokeEnd = [bulgePath currentPoint];
 
   [bulgePath relativeCurveToPoint:NSMakePoint(curveDistance, -tipHeight)
-                    // Fuzz the points by 0.5 pixels to get perfect alignment.
-                    controlPoint1:NSMakePoint(curveDistance/2, 0.5)
-                    controlPoint2:NSMakePoint(curveDistance/2,
-                                              -tipHeight + 0.5)];
+                    controlPoint1:NSMakePoint(curveDistance/2, 0)
+                    controlPoint2:NSMakePoint(curveDistance/2, -tipHeight)];
 
   // Around the bounds of the infobar, continue drawing the path into which the
   // gradient will be drawn.
