@@ -3818,17 +3818,6 @@
    fun:_Z16DispatchToMethodI13ThreadWatcherMS0_FvvEEvPT_T0_RK6Tuple0
    fun:_ZN27ScopedRunnableMethodFactoryI13ThreadWatcherE14RunnableMethodIMS0_FvvE6Tuple0E3RunEv
 }
-{
-   bug_74614
-   Memcheck:Addr2
-   ...
-   fun:_ZN12speech_input16SpeechRecognizer12HandleOnDataEPSs
-   fun:_Z16DispatchToMethodIN12speech_input16SpeechRecognizerEMS1_FvPSsES2_EvPT_T0_RK6Tuple1IT1_E
-   fun:_ZN14RunnableMethodIN12speech_input16SpeechRecognizerEMS1_FvPSsE6Tuple1IS2_EE3RunEv
-   fun:_ZN11MessageLoop7RunTaskEP4Task
-   ...
-   fun:_ZN12speech_input*SpeechRecognizerTest_NoSpeechCallback*_Test8TestBodyEv
-}
 
 #-----------------------------------------------------------------------
 # These only occur on our Google workstations

@@ -218,6 +218,7 @@ void SpeechRecognizer::HandleOnData(string* data) {
   encoder_->Encode(samples, num_samples);
   float rms;
   endpointer_.ProcessAudio(samples, num_samples, &rms);
+  bool did_clip = Clipping(samples, num_samples);
   delete data;
   num_samples_recorded_ += num_samples;
 
@@ -255,8 +256,8 @@ void SpeechRecognizer::HandleOnData(string* data) {
   noise_level = std::min(std::max(0.0f, noise_level),
       kAudioMeterRangeMaxUnclipped);
 
-  delegate_->SetInputVolume(caller_id_,
-      Clipping(samples, num_samples) ? 1.0f : audio_level_, noise_level);
+  delegate_->SetInputVolume(caller_id_, did_clip ? 1.0f : audio_level_,
+                            noise_level);
 
   if (endpointer_.speech_input_complete()) {
     StopRecording();
