@@ -8,6 +8,7 @@
 #include "base/ref_counted_memory.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/crash_upload_list.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
@@ -181,7 +182,7 @@ void CrashesDOMHandler::UpdateUI() {
 
 bool CrashesDOMHandler::CrashReportingEnabled() const {
 #if defined(GOOGLE_CHROME_BUILD)
-  PrefService* prefs = web_ui_->GetProfile()->GetPrefs();
+  PrefService* prefs = g_browser_process->local_state();
   return prefs->GetBoolean(prefs::kMetricsReportingEnabled);
 #else
   return false;
