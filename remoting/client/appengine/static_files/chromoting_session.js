@@ -23,7 +23,7 @@ function init() {
   // has changes and the UI needs to be updated. It needs to be an object with
   // a 'callback' property that contains the callback function.
   plugin.connectionInfoUpdate = connectionInfoUpdateCallback;
-  plugin.debugInfoUpdate = debugInfoUpdateCallback;
+  plugin.debugInfo = debugInfoCallback;
   plugin.loginChallenge = loginChallengeCallback;
 
   console.log('connect request received: ' + chromoting.hostname + ' by ' +
@@ -211,9 +211,8 @@ function fade(name, id, val, delta, delay) {
  * This is that callback that the plugin invokes to indicate that there
  * is additional debug log info to display.
  */
-function debugInfoUpdateCallback() {
-  var debugInfo = chromoting.plugin.debugInfo;
-  addToDebugLog(debugInfo);
+function debugInfoCallback(msg) {
+  addToDebugLog(msg);
 }
 
 /**

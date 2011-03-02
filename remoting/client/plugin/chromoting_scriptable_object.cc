@@ -14,8 +14,7 @@ using pp::Var;
 namespace remoting {
 
 const char kConnectionInfoUpdate[] = "connectionInfoUpdate";
-const char kDebugInfoUpdate[] = "debugInfoUpdate";
-const char kDebugInfoAttribute[] = "debugInfo";
+const char kDebugInfo[] = "debugInfo";
 const char kDesktopHeight[] = "desktopHeight";
 const char kDesktopWidth[] = "desktopWidth";
 const char kLoginChallenge[] = "loginChallenge";
@@ -54,10 +53,8 @@ void ChromotingScriptableObject::Init() {
   AddAttribute("QUALITY_BAD", Var(QUALITY_BAD));
 
   // Debug info to display.
-  AddAttribute(kDebugInfoAttribute, Var());
-
   AddAttribute(kConnectionInfoUpdate, Var());
-  AddAttribute(kDebugInfoUpdate, Var());
+  AddAttribute(kDebugInfo, Var());
   AddAttribute(kLoginChallenge, Var());
   AddAttribute(kDesktopWidth, Var(0));
   AddAttribute(kDesktopHeight, Var(0));
@@ -142,7 +139,7 @@ void ChromotingScriptableObject::SetProperty(const Var& name,
   // chromoting_scriptable_object.h for the object interface definition.
   std::string property_name = name.AsString();
   if (property_name != kConnectionInfoUpdate &&
-      property_name != kDebugInfoUpdate &&
+      property_name != kDebugInfo &&
       property_name != kLoginChallenge &&
       property_name != kDesktopWidth &&
       property_name != kDesktopHeight) {
@@ -185,14 +182,17 @@ void ChromotingScriptableObject::SetConnectionInfo(ConnectionStatus status,
 }
 
 void ChromotingScriptableObject::LogDebugInfo(const std::string& info) {
-  int debug_info_index = property_names_[kDebugInfoAttribute];
+  Var exception;
+  Var cb = GetProperty(Var(kDebugInfo), &exception);
 
-  // Update the debug info string.
-  // Note that this only stores the most recent debug string.
-  properties_[debug_info_index].attribute = Var(info);
+  // Var() means call the object directly as a function rather than calling
+  // a method in the object.
+  cb.Call(Var(), Var(info), &exception);
 
-  // Signal the client UI to get the updated debug info.
-  SignalDebugInfoChange();
+  if (!exception.is_undefined()) {
+    LOG(WARNING) << "Exception when invoking debugInfo JS callback: "
+                 << exception.DebugString();
+  }
 }
 
 void ChromotingScriptableObject::SetDesktopSize(int width, int height) {
@@ -220,9 +220,6 @@ void ChromotingScriptableObject::AddMethod(const std::string& name,
 
 void ChromotingScriptableObject::SignalConnectionInfoChange() {
   Var exception;
-
-  // The JavaScript callback function is the 'callback' property on the
-  // 'connectionInfoUpdate' object.
   Var cb = GetProperty(Var(kConnectionInfoUpdate), &exception);
 
   // Var() means call the object directly as a function rather than calling
@@ -235,28 +232,8 @@ void ChromotingScriptableObject::SignalConnectionInfoChange() {
   }
 }
 
-void ChromotingScriptableObject::SignalDebugInfoChange() {
-  Var exception;
-
-  // The JavaScript callback function is the 'callback' property on the
-  // 'debugInfoUpdate' object.
-  Var cb = GetProperty(Var(kDebugInfoUpdate), &exception);
-
-  // Var() means call the object directly as a function rather than calling
-  // a method in the object.
-  cb.Call(Var(), 0, NULL, &exception);
-
-  if (!exception.is_undefined()) {
-    LOG(WARNING) << "Exception when invoking debugInfoUpdate JS callback: "
-                 << exception.DebugString();
-  }
-}
-
 void ChromotingScriptableObject::SignalLoginChallenge() {
   Var exception;
-
-  // The JavaScript callback function is the 'callback' property on the
-  // 'loginChallenge' object.
   Var cb = GetProperty(Var(kLoginChallenge), &exception);
 
   // Var() means call the object directly as a function rather than calling

@@ -150,9 +150,6 @@ class ChromotingScriptableObject : public pp::deprecated::ScriptableObject {
   // changed.
   void SignalConnectionInfoChange();
 
-  // Call this to signal that there is new debug info to display.
-  void SignalDebugInfoChange();
-
   pp::Var DoConnect(const std::vector<pp::Var>& args, pp::Var* exception);
   pp::Var DoDisconnect(const std::vector<pp::Var>& args, pp::Var* exception);
 
