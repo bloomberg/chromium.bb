@@ -227,9 +227,7 @@ void PrerenderManager::RecordPerceivedPageLoadTime(base::TimeDelta pplt) {
 }
 
 void PrerenderManager::RecordTimeUntilUsed(base::TimeDelta time_until_used) {
-  if (mode_ == PRERENDER_MODE_EXPERIMENT_PRERENDER_GROUP) {
-    UMA_HISTOGRAM_TIMES("Prerender.TimeUntilUsed", time_until_used);
-  }
+  UMA_HISTOGRAM_TIMES("Prerender.TimeUntilUsed", time_until_used);
 }
 
 PrerenderContents* PrerenderManager::FindEntry(const GURL& url) {
