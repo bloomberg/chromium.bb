@@ -51,7 +51,7 @@ struct ProfileInfo {
   ~ProfileInfo();
 
   std::wstring description;
-  importer::ProfileType browser_type;
+  ProfileType browser_type;
   FilePath source_path;
   FilePath app_path;
   uint16 services_supported;  // Bitmask of ImportItem.
@@ -60,4 +60,3 @@ struct ProfileInfo {
 }  // namespace importer
 
 #endif  // CHROME_BROWSER_IMPORTER_IMPORTER_DATA_TYPES_H_
-

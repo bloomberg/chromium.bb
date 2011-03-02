@@ -28,11 +28,11 @@ class ImporterProgressView : public views::View,
   // |items| is a bitmask of ImportItems being imported.
   // |bookmark_import| is true if we're importing bookmarks from a
   // bookmarks.html file.
-  ImporterProgressView(const std::wstring& source_name,
+  ImporterProgressView(HWND parent_window,
                        uint16 items,
                        ImporterHost* importer_host,
-                       ImporterObserver* observer,
-                       HWND parent_window,
+                       ImporterObserver* importer_observer,
+                       const std::wstring& source_name,
                        bool bookmarks_import);
   virtual ~ImporterProgressView();
 

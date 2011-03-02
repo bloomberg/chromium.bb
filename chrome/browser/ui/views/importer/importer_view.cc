@@ -10,6 +10,7 @@
 #include "chrome/browser/browser_window.h"
 #include "chrome/browser/importer/importer_data_types.h"
 #include "chrome/browser/importer/importer_list.h"
+#include "chrome/browser/importer/importer_progress_dialog.h"
 #include "grit/generated_resources.h"
 #include "grit/locale_settings.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -25,9 +26,8 @@ using views::GridLayout;
 
 namespace browser {
 
-// Declared in browser_dialogs.h so caller's don't have to depend on our header.
-void ShowImporterView(views::Widget* parent,
-                      Profile* profile) {
+// Declared in browser_dialogs.h so callers don't have to depend on our header.
+void ShowImporterView(views::Widget* parent, Profile* profile) {
   views::Window::CreateChromeWindow(parent->GetNativeView(), gfx::Rect(),
       new ImporterView(profile, importer::ALL))->Show();
 }
@@ -99,13 +99,16 @@ bool ImporterView::Accept() {
   if (!IsDialogButtonEnabled(MessageBoxFlags::DIALOGBUTTON_OK))
     return false;
 
-  uint16 items = GetCheckedItems();
-
   int selected_index = profile_combobox_->selected_item();
-  StartImportingWithUI(GetWidget()->GetNativeView(), items,
-                       importer_host_.get(),
-                       importer_list_->GetSourceProfileInfoAt(selected_index),
-                       profile_, this, false);
+  importer::ShowImportProgressDialog(
+      GetWidget()->GetNativeView(),
+      GetCheckedItems(),
+      importer_host_.get(),
+      this,
+      importer_list_->GetSourceProfileInfoAt(selected_index),
+      profile_,
+      false);
+
   // We return false here to prevent the window from being closed. We will be
   // notified back by our implementation of ImporterObserver when the import is
   // complete so that we can close ourselves.

@@ -6,6 +6,7 @@
 
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/importer/importer_observer.h"
+#include "chrome/browser/importer/importer_progress_dialog.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "grit/locale_settings.h"
@@ -16,11 +17,11 @@
 #include "views/layout/layout_constants.h"
 #include "views/window/window.h"
 
-ImporterProgressView::ImporterProgressView(const std::wstring& source_name,
+ImporterProgressView::ImporterProgressView(HWND parent_window,
                                            uint16 items,
                                            ImporterHost* importer_host,
-                                           ImporterObserver* observer,
-                                           HWND parent_window,
+                                           ImporterObserver* importer_observer,
+                                           const std::wstring& source_name,
                                            bool bookmarks_import)
     : state_bookmarks_(new views::CheckmarkThrobber),
       state_searches_(new views::CheckmarkThrobber),
@@ -40,7 +41,7 @@ ImporterProgressView::ImporterProgressView(const std::wstring& source_name,
       parent_window_(parent_window),
       items_(items),
       importer_host_(importer_host),
-      importer_observer_(observer),
+      importer_observer_(importer_observer),
       importing_(true),
       bookmarks_import_(bookmarks_import) {
   std::wstring info_text = bookmarks_import ?
@@ -278,19 +279,26 @@ void ImporterProgressView::ImportEnded() {
     importer_observer_->ImportCompleted();
 }
 
-void StartImportingWithUI(HWND parent_window,
-                          uint16 items,
-                          ImporterHost* importer_host,
-                          const ProfileInfo& source_profile,
-                          Profile* target_profile,
-                          ImporterObserver* observer,
-                          bool first_run) {
+namespace importer {
+
+void ShowImportProgressDialog(HWND parent_window,
+                              uint16 items,
+                              ImporterHost* importer_host,
+                              ImporterObserver* importer_observer,
+                              const ProfileInfo& source_profile,
+                              Profile* target_profile,
+                              bool first_run) {
   DCHECK(items != 0);
-  ImporterProgressView* v = new ImporterProgressView(
-      source_profile.description, items, importer_host, observer, parent_window,
+  ImporterProgressView* progress_view = new ImporterProgressView(
+      parent_window,
+      items,
+      importer_host,
+      importer_observer,
+      source_profile.description,
       source_profile.browser_type == importer::BOOKMARKS_HTML);
-  views::Window* window =
-    views::Window::CreateChromeWindow(parent_window, gfx::Rect(), v);
+
+  views::Window* window = views::Window::CreateChromeWindow(
+      parent_window, gfx::Rect(), progress_view);
 
   if (!importer_host->is_headless() && !first_run)
     window->Show();
@@ -299,3 +307,5 @@ void StartImportingWithUI(HWND parent_window,
       source_profile, target_profile, items, new ProfileWriter(target_profile),
       first_run);
 }
+
+}  // namespace importer

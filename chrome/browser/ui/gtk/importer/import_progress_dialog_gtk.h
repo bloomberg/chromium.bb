@@ -24,17 +24,17 @@ class ImportProgressDialogGtk : public ImporterHost::Observer {
   static void StartImport(GtkWindow* parent,
                           uint16 items,
                           ImporterHost* importer_host,
-                          const ProfileInfo& browser_profile,
+                          ImporterObserver* importer_observer,
+                          const importer::ProfileInfo& browser_profile,
                           Profile* profile,
-                          ImporterObserver* observer,
                           bool first_run);
 
  private:
-  ImportProgressDialogGtk(const string16& source_profile,
+  ImportProgressDialogGtk(GtkWindow* parent,
                           uint16 items,
                           ImporterHost* importer_host,
-                          ImporterObserver* observer,
-                          GtkWindow* parent,
+                          ImporterObserver* importer_observer,
+                          const string16& source_profile,
                           bool bookmarks_import);
   virtual ~ImportProgressDialogGtk();
 

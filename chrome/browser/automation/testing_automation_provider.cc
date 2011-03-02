@@ -3258,7 +3258,7 @@ void TestingAutomationProvider::ImportSettings(Browser* browser,
                                                DictionaryValue* args,
                                                IPC::Message* reply_message) {
   // Map from the json string passed over to the import item masks.
-  std::map<std::string, ImportItem> string_to_import_item;
+  std::map<std::string, importer::ImportItem> string_to_import_item;
   string_to_import_item["HISTORY"] = importer::HISTORY;
   string_to_import_item["FAVORITES"] = importer::FAVORITES;
   string_to_import_item["COOKIES"] = importer::COOKIES;

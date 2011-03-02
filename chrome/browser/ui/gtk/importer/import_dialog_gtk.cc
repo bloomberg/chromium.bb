@@ -8,6 +8,7 @@
 
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/importer/importer_data_types.h"
+#include "chrome/browser/importer/importer_progress_dialog.h"
 #include "chrome/browser/ui/gtk/gtk_util.h"
 #include "grit/generated_resources.h"
 #include "grit/locale_settings.h"
@@ -144,11 +145,11 @@ void ImportDialogGtk::OnDialogResponse(GtkWidget* widget, int response) {
     if (items == 0) {
       ImportCompleted();
     } else {
-      const ProfileInfo& source_profile =
+      const importer::ProfileInfo& source_profile =
           importer_list_->GetSourceProfileInfoAt(
-          gtk_combo_box_get_active(GTK_COMBO_BOX(combo_)));
-      StartImportingWithUI(parent_, items, importer_host_,
-                           source_profile, profile_, this, false);
+              gtk_combo_box_get_active(GTK_COMBO_BOX(combo_)));
+      importer::ShowImportProgressDialog(parent_, items, importer_host_, this,
+                                         source_profile, profile_, false);
     }
   } else {
     ImportCanceled();

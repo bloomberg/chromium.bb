@@ -9,6 +9,7 @@
 #include "base/sys_string_conversions.h"
 #include "chrome/browser/importer/importer_data_types.h"
 #include "chrome/browser/importer/importer_list.h"
+#include "chrome/browser/importer/importer_progress_dialog.h"
 #include "chrome/browser/profiles/profile.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util_mac.h"
@@ -191,8 +192,9 @@ bool importSettingsDialogVisible = false;
       ImporterHost* importerHost = new ExternalProcessImporterHost;
       // Note that a side effect of the following call is to cause the
       // importerHost to be disposed once the import has completed.
-      StartImportingWithUI(nil, servicesToImport, importerHost,
-                           sourceProfile, profile_, nil, false);
+      importer::ShowImportProgressDialog(
+          nil, servicesToImport, importerHost, nil, sourceProfile, profile_,
+          false);
     }
   } else {
     LOG(WARNING) << "There were no settings to import from '"

@@ -4,20 +4,13 @@
 
 #include "chrome/browser/first_run/first_run.h"
 
-#include "build/build_config.h"
-
-// TODO(port): move more code in back from the first_run_win.cc module.
-
-#if defined(OS_WIN)
-#include "chrome/installer/util/google_update_settings.h"
-#include "chrome/installer/util/install_util.h"
-#endif
-
 #include "base/command_line.h"
 #include "base/file_util.h"
 #include "base/path_service.h"
 #include "base/utf_string_conversions.h"
+#include "build/build_config.h"
 #include "chrome/browser/importer/importer.h"
+#include "chrome/browser/importer/importer_progress_dialog.h"
 #include "chrome/browser/metrics/user_metrics.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/process_singleton.h"
@@ -30,6 +23,12 @@
 #include "chrome/installer/util/master_preferences.h"
 #include "chrome/installer/util/master_preferences_constants.h"
 #include "chrome/installer/util/util_constants.h"
+
+// TODO(port): move more code in back from the first_run_win.cc module.
+#if defined(OS_WIN)
+#include "chrome/installer/util/google_update_settings.h"
+#include "chrome/installer/util/install_util.h"
+#endif
 
 namespace {
 
@@ -426,25 +425,25 @@ int FirstRun::ImportFromFile(Profile* profile, const CommandLine& cmdline) {
     return false;
   }
   scoped_refptr<ImporterHost> importer_host(new ImporterHost);
-  FirstRunImportObserver observer;
+  FirstRunImportObserver importer_observer;
 
   importer_host->set_headless();
 
-  ProfileInfo profile_info;
+  importer::ProfileInfo profile_info;
   profile_info.browser_type = importer::BOOKMARKS_HTML;
   profile_info.source_path = file_path;
 
-  StartImportingWithUI(
+  importer::ShowImportProgressDialog(
       NULL,
       importer::FAVORITES,
       importer_host,
+      &importer_observer,
       profile_info,
       profile,
-      &observer,
       true);
 
-  observer.RunLoop();
-  return observer.import_result();
+  importer_observer.RunLoop();
+  return importer_observer.import_result();
 }
 
 // static
@@ -680,7 +679,8 @@ bool FirstRun::ImportSettings(Profile* profile,
                               scoped_refptr<ImporterHost> importer_host,
                               scoped_refptr<ImporterList> importer_list,
                               int items_to_import) {
-  const ProfileInfo& source_profile = importer_list->GetSourceProfileInfoAt(0);
+  const importer::ProfileInfo& source_profile =
+      importer_list->GetSourceProfileInfoAt(0);
 
   // Ensure that importers aren't requested to import items that they do not
   // support.

@@ -87,7 +87,7 @@ void ImportDataHandler::ImportData(const ListValue* args) {
     selected_items |= importer::SEARCH_ENGINES;
   }
 
-  const ProfileInfo& source_profile =
+  const importer::ProfileInfo& source_profile =
       importer_list_->GetSourceProfileInfoAt(browser_index);
   uint16 supported_items = source_profile.services_supported;
 

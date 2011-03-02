@@ -25,6 +25,7 @@
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_updater.h"
 #include "chrome/browser/importer/importer.h"
+#include "chrome/browser/importer/importer_progress_dialog.h"
 #include "chrome/browser/metrics/user_metrics.h"
 #include "chrome/browser/process_singleton.h"
 #include "chrome/browser/profiles/profile.h"
@@ -550,7 +551,7 @@ int FirstRun::ImportFromBrowser(Profile* profile,
     return false;
   }
   scoped_refptr<ImporterHost> importer_host(new ImporterHost);
-  FirstRunImportObserver observer;
+  FirstRunImportObserver importer_observer;
 
   scoped_refptr<ImporterList> importer_list(new ImporterList);
   importer_list->DetectSourceProfilesHack();
@@ -560,16 +561,16 @@ int FirstRun::ImportFromBrowser(Profile* profile,
   if (skip_first_run_ui > 0)
     importer_host->set_headless();
 
-  StartImportingWithUI(
+  importer::ShowImportProgressDialog(
       parent_window,
       static_cast<uint16>(items_to_import),
       importer_host,
+      &importer_observer,
       importer_list->GetSourceProfileInfoForBrowserType(browser_type),
       profile,
-      &observer,
       true);
-  observer.RunLoop();
-  return observer.import_result();
+  importer_observer.RunLoop();
+  return importer_observer.import_result();
 }
 
 // static

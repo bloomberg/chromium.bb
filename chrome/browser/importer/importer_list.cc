@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -32,7 +32,7 @@ namespace {
 #if defined(OS_WIN)
 void DetectIEProfiles(std::vector<importer::ProfileInfo*>* profiles) {
     // IE always exists and doesn't have multiple profiles.
-  ProfileInfo* ie = new ProfileInfo();
+  importer::ProfileInfo* ie = new importer::ProfileInfo();
   ie->description = UTF16ToWide(l10n_util::GetStringUTF16(IDS_IMPORT_FROM_IE));
   ie->browser_type = importer::MS_IE;
   ie->source_path.clear();

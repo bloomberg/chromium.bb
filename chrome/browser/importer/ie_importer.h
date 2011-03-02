@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -11,17 +11,17 @@
 
 class IEImporter : public Importer {
  public:
-  IEImporter() {}
+  IEImporter();
 
-  // Importer methods.
-  virtual void StartImport(const ProfileInfo& browser_info,
+  // Importer:
+  virtual void StartImport(const importer::ProfileInfo& browser_info,
                            uint16 items,
                            ImporterBridge* bridge);
 
  private:
   FRIEND_TEST_ALL_PREFIXES(ImporterTest, IEImporter);
 
-  virtual ~IEImporter() {}
+  virtual ~IEImporter();
 
   void ImportFavorites();
   void ImportHistory();

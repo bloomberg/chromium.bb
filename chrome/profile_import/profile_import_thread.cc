@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -49,7 +49,7 @@ bool ProfileImportThread::OnControlMessageReceived(const IPC::Message& msg) {
 }
 
 void ProfileImportThread::OnImportStart(
-    const ProfileInfo& profile_info,
+    const importer::ProfileInfo& profile_info,
     int items,
     const DictionaryValue& localized_strings,
     bool import_to_bookmark_bar) {
@@ -95,11 +95,11 @@ void ProfileImportThread::OnImportItemFinished(uint16 item) {
     NotifyEnded();
 }
 
-void ProfileImportThread::NotifyItemStarted(ImportItem item) {
+void ProfileImportThread::NotifyItemStarted(importer::ImportItem item) {
   Send(new ProfileImportProcessHostMsg_ImportItem_Started(item));
 }
 
-void ProfileImportThread::NotifyItemEnded(ImportItem item) {
+void ProfileImportThread::NotifyItemEnded(importer::ImportItem item) {
   Send(new ProfileImportProcessHostMsg_ImportItem_Finished(item));
 }
 

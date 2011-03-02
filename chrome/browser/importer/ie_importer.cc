@@ -71,7 +71,10 @@ const GUID IEImporter::kPStoreAutocompleteGUID = {0xe161255a, 0x37c3, 0x11d2,
 const GUID IEImporter::kUnittestGUID = { 0xa79029d6, 0x753e, 0x4e27,
     {0xb8, 0x7, 0x3d, 0x46, 0xab, 0x15, 0x45, 0xdf}};
 
-void IEImporter::StartImport(const ProfileInfo& profile_info,
+IEImporter::IEImporter() {
+}
+
+void IEImporter::StartImport(const importer::ProfileInfo& profile_info,
                              uint16 items,
                              ImporterBridge* bridge) {
   bridge_ = bridge;
@@ -110,6 +113,9 @@ void IEImporter::StartImport(const ProfileInfo& profile_info,
     bridge_->NotifyItemEnded(importer::PASSWORDS);
   }
   bridge_->NotifyEnded();
+}
+
+IEImporter::~IEImporter() {
 }
 
 void IEImporter::ImportFavorites() {
