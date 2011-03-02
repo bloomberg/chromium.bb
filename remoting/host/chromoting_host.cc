@@ -127,6 +127,11 @@ void ChromotingHost::Shutdown() {
     state_ = kStopped;
   }
 
+  // Make sure ScreenRecorder doesn't write to the connection.
+  if (recorder_.get()) {
+    recorder_->RemoveAllConnections();
+  }
+
   // Disconnect the client.
   if (connection_) {
     connection_->Disconnect();
@@ -148,9 +153,7 @@ void ChromotingHost::Shutdown() {
     jingle_client_->Close();
   }
 
-  // Tell the recorder to stop and then disconnect all clients.
   if (recorder_.get()) {
-    recorder_->RemoveAllConnections();
     recorder_->Stop(shutdown_task_.release());
   } else {
     shutdown_task_->Run();

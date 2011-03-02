@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -19,6 +19,7 @@
 #include "remoting/jingle_glue/jingle_thread.h"
 #include "remoting/jingle_glue/stream_socket_adapter.h"
 #include "remoting/protocol/jingle_session_manager.h"
+#include "remoting/protocol/socket_wrapper.h"
 #include "third_party/libjingle/source/talk/base/thread.h"
 #include "third_party/libjingle/source/talk/p2p/base/session.h"
 #include "third_party/libjingle/source/talk/session/tunnel/pseudotcpchannel.h"
@@ -125,7 +126,7 @@ void JingleSession::CloseInternal(int result, bool failed) {
     closing_ = true;
 
     if (control_ssl_socket_.get())
-      control_ssl_socket_.reset();
+      control_ssl_socket_->Disconnect();
 
     if (control_channel_adapter_.get())
       control_channel_adapter_->Close(result);
@@ -136,7 +137,7 @@ void JingleSession::CloseInternal(int result, bool failed) {
     }
 
     if (event_ssl_socket_.get())
-      event_ssl_socket_.reset();
+      event_ssl_socket_->Disconnect();
 
     if (event_channel_adapter_.get())
       event_channel_adapter_->Close(result);
@@ -147,7 +148,7 @@ void JingleSession::CloseInternal(int result, bool failed) {
     }
 
     if (video_ssl_socket_.get())
-      video_ssl_socket_.reset();
+      video_ssl_socket_->Disconnect();
 
     if (video_channel_adapter_.get())
       video_channel_adapter_->Close(result);
@@ -393,13 +394,13 @@ void JingleSession::OnInitiate() {
 }
 
 bool JingleSession::EstablishSSLConnection(
-    net::ClientSocket* adapter, scoped_ptr<net::Socket>* ssl_socket) {
+    net::ClientSocket* adapter, scoped_ptr<SocketWrapper>* ssl_socket) {
   if (cricket_session_->initiator()) {
     // Create client SSL socket.
     net::SSLClientSocket* socket = CreateSSLClientSocket(adapter,
                                                          server_cert_,
                                                          cert_verifier_.get());
-    ssl_socket->reset(socket);
+    ssl_socket->reset(new SocketWrapper(socket));
 
     int ret = socket->Connect(connect_callback_.get());
     if (ret == net::ERR_IO_PENDING) {
@@ -414,7 +415,7 @@ bool JingleSession::EstablishSSLConnection(
     net::SSLConfig ssl_config;
     net::SSLServerSocket* socket = net::CreateSSLServerSocket(
         adapter, server_cert_, key_.get(), ssl_config);
-    ssl_socket->reset(socket);
+    ssl_socket->reset(new SocketWrapper(socket));
 
     int ret = socket->Accept(connect_callback_.get());
     if (ret == net::ERR_IO_PENDING) {
@@ -422,7 +423,7 @@ bool JingleSession::EstablishSSLConnection(
     } else if (ret != net::OK) {
       LOG(ERROR) << "Failed to establish SSL connection";
       cricket_session_->Terminate();
-      return true;
+      return false;
     }
   }
   // Reach here if net::OK is received.
