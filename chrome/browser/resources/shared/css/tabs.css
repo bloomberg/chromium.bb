@@ -13,7 +13,7 @@ tabs {
 tabs > * {
   -webkit-margin-start: 5px;
   -webkit-transition: border-color .15s, background-color .15s;
-  background: rgba(255, 255, 255, .3);
+  background: rgba(160, 160, 160, .3);
   border: 1px solid rgba(160, 160, 160, .3);
   border-bottom: 0;
   border-top-left-radius: 3px;
@@ -25,18 +25,17 @@ tabs > * {
   text-align: center;
 }
 
+tabs > :not([selected]):hover {
+  background: rgba(200, 200, 200, .3);
+}
+
 tabs > [selected] {
   -webkit-transition: none;
-  font-weight: bold;
+  background: white;
+  border-color: rgb(160, 160, 160);
   margin-bottom: -1px;
   position: relative;
   z-index: 0;
-}
-
-tabs > [selected],
-tabs > :hover {
-  background: white;
-  border-color: rgb(160, 160, 160);
 }
 
 tabs:focus {
