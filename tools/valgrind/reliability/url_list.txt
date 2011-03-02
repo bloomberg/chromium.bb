@@ -1,3 +1,8 @@
 www.google.com
+maps.google.com
+news.google.com
 www.youtube.com
+build.chromium.org/p/chromium/waterfall
+build.chromium.org/p/chromium.memory/console
+build.chromium.org/f/chromium/perf/dashboard/overview.html
 www.slashdot.org
