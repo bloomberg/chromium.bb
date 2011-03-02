@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -116,6 +116,8 @@ class ServiceProcessControl : public IPC::Channel::Sender,
   bool DisableRemotingHost();
 
   // Send request for current status of the remoting service.
+  // MessageHandler::OnRemotingHostInfo() will be called when remoting host
+  // status is available.
   bool RequestRemotingHostStatus();
 
   // Add a message handler for receiving messages from the service

@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -55,17 +55,31 @@ void ServiceProcessControl::ConnectInternal() {
 }
 
 void ServiceProcessControl::RunConnectDoneTasks() {
-  RunAllTasksHelper(&connect_done_tasks_);
-  DCHECK(connect_done_tasks_.empty());
+  // The tasks executed here may add more tasks to the vector. So copy
+  // them to the stack before executing them. This way recursion is
+  // avoided.
+  TaskList tasks;
+  tasks.swap(connect_done_tasks_);
+  RunAllTasksHelper(&tasks);
+  DCHECK(tasks.empty());
+
   if (is_connected()) {
-    RunAllTasksHelper(&connect_success_tasks_);
-    DCHECK(connect_success_tasks_.empty());
+    tasks.swap(connect_success_tasks_);
+    RunAllTasksHelper(&tasks);
+    DCHECK(tasks.empty());
+
     STLDeleteElements(&connect_failure_tasks_);
   } else {
-    RunAllTasksHelper(&connect_failure_tasks_);
-    DCHECK(connect_failure_tasks_.empty());
+    tasks.swap(connect_failure_tasks_);
+    RunAllTasksHelper(&tasks);
+    DCHECK(tasks.empty());
+
     STLDeleteElements(&connect_success_tasks_);
   }
+
+  DCHECK(connect_done_tasks_.empty());
+  DCHECK(connect_success_tasks_.empty());
+  DCHECK(connect_failure_tasks_.empty());
 }
 
 // static
@@ -263,7 +277,18 @@ bool ServiceProcessControl::DisableRemotingHost() {
 }
 
 bool ServiceProcessControl::RequestRemotingHostStatus() {
-  return Send(new ServiceMsg_GetRemotingHostInfo);
+  if (CheckServiceProcessReady()) {
+    remoting::ChromotingHostInfo failure_host_info;
+    failure_host_info.enabled = false;
+
+    Launch(NewRunnableMethod(this, &ServiceProcessControl::Send,
+                             new ServiceMsg_GetRemotingHostInfo),
+           NewRunnableMethod(this,
+                             &ServiceProcessControl::OnRemotingHostInfo,
+                             failure_host_info));
+    return true;
+  }
+  return false;
 }
 
 void ServiceProcessControl::AddMessageHandler(
