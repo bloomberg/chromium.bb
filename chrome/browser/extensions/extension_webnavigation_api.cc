@@ -76,9 +76,14 @@ void DispatchOnCommitted(NavigationController* controller,
   dict->SetString(keys::kTransitionTypeKey,
                   PageTransition::CoreTransitionString(
                       details->transition_type()));
-  dict->SetString(keys::kTransitionQualifiersKey,
-                  PageTransition::QualifierString(
-                      details->transition_type()));
+  ListValue* qualifiers = new ListValue();
+  if (details->transition_type() & PageTransition::CLIENT_REDIRECT)
+    qualifiers->Append(Value::CreateStringValue("client_redirect"));
+  if (details->transition_type() & PageTransition::SERVER_REDIRECT)
+    qualifiers->Append(Value::CreateStringValue("server_redirect"));
+  if (details->transition_type() & PageTransition::FORWARD_BACK)
+    qualifiers->Append(Value::CreateStringValue("forward_back"));
+  dict->Set(keys::kTransitionQualifiersKey, qualifiers);
   dict->SetDouble(keys::kTimeStampKey, MilliSecondsFromTime(base::Time::Now()));
   args.Append(dict);
 

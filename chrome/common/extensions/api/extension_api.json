@@ -3356,7 +3356,7 @@
               "url": {"type": "string"},
               "frameId": {"type": "integer", "description": "0 indicates the navigation happens in the tab content window; positive value indicates navigation in a subframe."},
               "transitionType": {"type": "string", "enum": ["link", "typed", "auto_bookmark", "auto_subframe", "manual_subframe", "generated", "start_page", "form_submit", "reload", "keyword", "keyword_generated"], "description": "Cause of the navigation. The same transition types as defined in the history API are used."},
-              "transitionQualifiers": {"type": "string", "description": "Zero or more transition qualifiers delimited by \"|\". Possible qualifiers are \"client_redirect\", \"server_redirect\", and \"forward_back\"."},
+              "transitionQualifiers": {"type": "array", "description": "A list of transition qualifiers.", "items:": {"type": "string", "enum": ["client_redirect", "server_redirect", "forward_back"]}},
               "timeStamp": {"type": "number", "description": "The time when the navigation was committed, in milliseconds since the epoch."}
             }
           }

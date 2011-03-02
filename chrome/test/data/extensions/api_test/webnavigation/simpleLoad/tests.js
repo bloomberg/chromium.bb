@@ -17,7 +17,7 @@ function runTests() {
             { frameId: 0,
               tabId: 0,
               timeStamp: 0,
-              transitionQualifiers: "",
+              transitionQualifiers: [],
               transitionType: "link",
               url: getURL('a.html') }],
           [ "onDOMContentLoaded",

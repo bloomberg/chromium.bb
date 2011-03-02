@@ -160,9 +160,6 @@ class PageTransition {
 
   // Return a string version of the core type values.
   static const char* CoreTransitionString(Type type);
-
-  // Return a string version of the qualifier type values.
-  static const char* QualifierString(Type type);
 };
 
 #endif  // CHROME_COMMON_PAGE_TRANSITION_TYPES_H__
