@@ -104,7 +104,7 @@ wayland_compositor_init_egl(struct wayland_compositor *c)
 		EGL_GREEN_SIZE, 1,
 		EGL_BLUE_SIZE, 1,
 		EGL_DEPTH_SIZE, 1,
-		EGL_RENDERABLE_TYPE, EGL_OPENGL_ES_BIT,
+		EGL_RENDERABLE_TYPE, EGL_OPENGL_ES2_BIT,
 		EGL_NONE
 	};
 	static const EGLint context_attribs[] = {
