@@ -55,6 +55,7 @@
 #include "net/base/net_util.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/l10n/l10n_util_mac.h"
+#include "ui/base/models/accelerator_cocoa.h"
 
 // 10.6 adds a public API for the Spotlight-backed search menu item in the Help
 // menu.  Provide the declaration so it can be called below when building with
@@ -293,20 +294,25 @@ void RecordLastRunAppBundlePath() {
   const NSTimeInterval kWindowFadeAnimationDuration = 0.2;
 
   // This logic is only for keyboard-initiated quits.
-  if ([[app currentEvent] type] != NSKeyDown)
+  NSEvent* currentEvent = [app currentEvent];
+  if ([currentEvent type] != NSKeyDown)
+    return NSTerminateNow;
+  ui::AcceleratorCocoa currentEventAccelerator([currentEvent characters],
+      [currentEvent modifierFlags] & NSDeviceIndependentModifierFlagsMask);
+  if ([ConfirmQuitPanelController quitAccelerator] != currentEventAccelerator)
     return NSTerminateNow;
 
   // If this is the second of two such attempts to quit within a certain time
   // interval, then just quit.
   // Time of last quit attempt, if any.
-  static NSDate* lastQuitAttempt; // Initially nil, as it's static.
+  static NSDate* lastQuitAttempt;  // Initially nil, as it's static.
   NSDate* timeNow = [NSDate date];
   if (lastQuitAttempt &&
       [timeNow timeIntervalSinceDate:lastQuitAttempt] < kTimeDeltaFuzzFactor) {
     return NSTerminateNow;
   } else {
-    [lastQuitAttempt release]; // Harmless if already nil.
-    lastQuitAttempt = [timeNow retain]; // Record this attempt for next time.
+    [lastQuitAttempt release];  // Harmless if already nil.
+    lastQuitAttempt = [timeNow retain];  // Record this attempt for next time.
   }
 
   // Show the info panel that explains what the user must to do confirm quit.

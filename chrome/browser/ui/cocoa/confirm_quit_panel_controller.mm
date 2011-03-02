@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -90,25 +90,34 @@ ConfirmQuitPanelController* g_confirmQuitPanelController = nil;
 }
 
 // This looks at the Main Menu and determines what the user has set as the
-// key combination for quit. It then gets the modifiers and builds a string
-// to display them.
-- (NSString*)keyCommandString {
+// key combination for quit. It then gets the modifiers and builds an object
+// to hold the data.
++ (ui::AcceleratorCocoa)quitAccelerator {
   NSMenu* mainMenu = [NSApp mainMenu];
   // Get the application menu (i.e. Chromium).
   NSMenu* appMenu = [[mainMenu itemAtIndex:0] submenu];
   for (NSMenuItem* item in [appMenu itemArray]) {
     // Find the Quit item.
     if ([item action] == @selector(terminate:)) {
-      return [self keyCombinationForMenuItem:item];
+      return ui::AcceleratorCocoa([item keyEquivalent],
+                                  [item keyEquivalentModifierMask]);
     }
   }
   // Default to Cmd+Q.
-  return @"\u2318Q";
+  return ui::AcceleratorCocoa(@"q", NSCommandKeyMask);
 }
 
-- (NSString*)keyCombinationForMenuItem:(NSMenuItem*)item {
+// This looks at the Main Menu and determines what the user has set as the
+// key combination for quit. It then gets the modifiers and builds a string
+// to display them.
+- (NSString*)keyCommandString {
+  ui::AcceleratorCocoa accelerator = [[self class] quitAccelerator];
+  return [self keyCombinationForAccelerator:accelerator];
+}
+
+- (NSString*)keyCombinationForAccelerator:(const ui::AcceleratorCocoa&)item {
   NSMutableString* string = [NSMutableString string];
-  NSUInteger modifiers = [item keyEquivalentModifierMask];
+  NSUInteger modifiers = item.modifiers();
 
   if (modifiers & NSCommandKeyMask)
     [string appendString:@"\u2318"];
@@ -119,8 +128,7 @@ ConfirmQuitPanelController* g_confirmQuitPanelController = nil;
   if (modifiers & NSShiftKeyMask)
     [string appendString:@"\u21E7"];
 
-  [string appendString:[[item keyEquivalent] uppercaseString]];
-
+  [string appendString:[item.characters() uppercaseString]];
   return string;
 }
 

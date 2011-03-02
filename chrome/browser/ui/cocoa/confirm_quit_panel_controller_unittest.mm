@@ -1,23 +1,16 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #import "chrome/browser/ui/cocoa/cocoa_test_helper.h"
 #include "chrome/browser/ui/cocoa/confirm_quit_panel_controller.h"
 #include "testing/gtest_mac.h"
+#include "ui/base/models/accelerator_cocoa.h"
 
 namespace {
 
 class ConfirmQuitPanelControllerTest : public CocoaTest {
  public:
-  NSMenuItem* MakeMenuItem(NSString* keyEquivalent, NSUInteger modifiers) {
-    NSMenuItem* item = [[NSMenuItem alloc] initWithTitle:@"Test"
-                                                  action:NULL
-                                           keyEquivalent:keyEquivalent];
-    [item setKeyEquivalentModifierMask:modifiers];
-    return [item autorelease];
-  }
-
   NSString* TestString(NSString* str) {
     str = [str stringByReplacingOccurrencesOfString:@"{Cmd}"
                                          withString:@"\u2318"];
@@ -45,40 +38,40 @@ TEST_F(ConfirmQuitPanelControllerTest, ShowAndDismiss) {
   EXPECT_EQ(controller, [ConfirmQuitPanelController sharedController]);
 }
 
-TEST_F(ConfirmQuitPanelControllerTest, KeyCombinationForMenuItem) {
+TEST_F(ConfirmQuitPanelControllerTest, KeyCombinationForAccelerator) {
   ConfirmQuitPanelController* controller =
       [ConfirmQuitPanelController sharedController];
 
-  NSMenuItem* item = MakeMenuItem(@"q", NSCommandKeyMask);
+  ui::AcceleratorCocoa item = ui::AcceleratorCocoa(@"q", NSCommandKeyMask);
   EXPECT_NSEQ(TestString(@"{Cmd}Q"),
-              [controller keyCombinationForMenuItem:item]);
+              [controller keyCombinationForAccelerator:item]);
 
-  item = MakeMenuItem(@"c", NSCommandKeyMask | NSShiftKeyMask);
+  item = ui::AcceleratorCocoa(@"c", NSCommandKeyMask | NSShiftKeyMask);
   EXPECT_NSEQ(TestString(@"{Cmd}{Shift}C"),
-              [controller keyCombinationForMenuItem:item]);
+              [controller keyCombinationForAccelerator:item]);
 
-  item = MakeMenuItem(@"h",
+  item = ui::AcceleratorCocoa(@"h",
       NSCommandKeyMask | NSShiftKeyMask | NSAlternateKeyMask);
   EXPECT_NSEQ(TestString(@"{Cmd}{Opt}{Shift}H"),
-              [controller keyCombinationForMenuItem:item]);
+              [controller keyCombinationForAccelerator:item]);
 
-  item = MakeMenuItem(@"r",
+  item = ui::AcceleratorCocoa(@"r",
       NSCommandKeyMask | NSShiftKeyMask | NSAlternateKeyMask |
       NSControlKeyMask);
   EXPECT_NSEQ(TestString(@"{Cmd}{Ctrl}{Opt}{Shift}R"),
-              [controller keyCombinationForMenuItem:item]);
+              [controller keyCombinationForAccelerator:item]);
 
-  item = MakeMenuItem(@"o", NSControlKeyMask);
+  item = ui::AcceleratorCocoa(@"o", NSControlKeyMask);
   EXPECT_NSEQ(TestString(@"{Ctrl}O"),
-              [controller keyCombinationForMenuItem:item]);
+              [controller keyCombinationForAccelerator:item]);
 
-  item = MakeMenuItem(@"m", NSShiftKeyMask | NSControlKeyMask);
+  item = ui::AcceleratorCocoa(@"m", NSShiftKeyMask | NSControlKeyMask);
   EXPECT_NSEQ(TestString(@"{Ctrl}{Shift}M"),
-              [controller keyCombinationForMenuItem:item]);
+              [controller keyCombinationForAccelerator:item]);
 
-  item = MakeMenuItem(@"e", NSCommandKeyMask | NSAlternateKeyMask);
+  item = ui::AcceleratorCocoa(@"e", NSCommandKeyMask | NSAlternateKeyMask);
   EXPECT_NSEQ(TestString(@"{Cmd}{Opt}E"),
-              [controller keyCombinationForMenuItem:item]);
+              [controller keyCombinationForAccelerator:item]);
 }
 
 }  // namespace

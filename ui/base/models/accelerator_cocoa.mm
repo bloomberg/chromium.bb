@@ -34,4 +34,8 @@ bool AcceleratorCocoa::operator==(const AcceleratorCocoa& rhs) const {
   (modifiers_ == rhs.modifiers_);
 }
 
+bool AcceleratorCocoa::operator!=(const AcceleratorCocoa& rhs) const {
+  return !(*this == rhs);
+}
+
 }  // namespace ui

@@ -27,6 +27,7 @@ class AcceleratorCocoa : public Accelerator {
   AcceleratorCocoa& operator=(const AcceleratorCocoa& accelerator);
 
   bool operator==(const AcceleratorCocoa& rhs) const;
+  bool operator!=(const AcceleratorCocoa& rhs) const;
 
   NSString* characters() const {
     return characters_.get();

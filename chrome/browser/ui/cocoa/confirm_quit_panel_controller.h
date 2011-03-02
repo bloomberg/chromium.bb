@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -8,10 +8,12 @@
 #import <Cocoa/Cocoa.h>
 
 #import "base/mac/cocoa_protocols.h"
+#include "ui/base/models/accelerator_cocoa.h"
 
 // The ConfirmQuitPanelController manages the black HUD window that tells users
 // to "Hold Cmd+Q to Quit".
 @interface ConfirmQuitPanelController : NSWindowController<NSWindowDelegate> {
+ @private
   IBOutlet NSTextField* message_;
 }
 
@@ -26,10 +28,13 @@
 // instructions on how to quit.
 - (void)dismissPanel;
 
+// Returns the Accelerator for the Quit menu item.
++ (ui::AcceleratorCocoa)quitAccelerator;
+
 @end
 
 @interface ConfirmQuitPanelController (UnitTesting)
-- (NSString*)keyCombinationForMenuItem:(NSMenuItem*)item;
+- (NSString*)keyCombinationForAccelerator:(const ui::AcceleratorCocoa&)item;
 @end
 
 #endif  // CHROME_BROWSER_UI_COCOA_CONFIRM_QUIT_PANEL_CONTROLLER_H_
