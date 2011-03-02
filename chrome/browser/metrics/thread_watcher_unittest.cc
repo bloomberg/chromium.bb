@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#if 0
+
 #include "base/basictypes.h"
 #include "base/logging.h"
 #include "base/message_loop.h"
@@ -11,7 +13,6 @@
 #include "base/synchronization/lock.h"
 #include "base/threading/platform_thread.h"
 #include "base/time.h"
-#include "build/build_config.h"
 #include "chrome/browser/metrics/thread_watcher.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
@@ -51,8 +52,6 @@ class CustomThreadWatcher : public ThreadWatcher {
   uint64 pong_received_;
   uint64 success_response_;
   uint64 failed_response_;
-  base::TimeTicks saved_ping_time_;
-  uint64 saved_ping_sequence_number_;
 
   CustomThreadWatcher(const BrowserThread::ID thread_id,
                       const std::string thread_name,
@@ -66,9 +65,7 @@ class CustomThreadWatcher : public ThreadWatcher {
         ping_sent_(0),
         pong_received_(0),
         success_response_(0),
-        failed_response_(0),
-        saved_ping_time_(base::TimeTicks::Now()),
-        saved_ping_sequence_number_(0) {
+        failed_response_(0) {
   }
 
   State UpdateState(State new_state) {
@@ -78,12 +75,6 @@ class CustomThreadWatcher : public ThreadWatcher {
       old_state = thread_watcher_state_;
       if (old_state != DEACTIVATED)
         thread_watcher_state_ = new_state;
-      if (new_state == SENT_PING)
-        ++ping_sent_;
-      if (new_state == RECEIVED_PONG)
-        ++pong_received_;
-      saved_ping_time_ = ping_time();
-      saved_ping_sequence_number_ = ping_sequence_number();
     }
     state_changed_.Broadcast();
     // LOG(INFO) << "UpdateState: thread_name_: " << thread_name_ <<
@@ -121,9 +112,11 @@ class CustomThreadWatcher : public ThreadWatcher {
     State old_state = UpdateState(SENT_PING);
     EXPECT_TRUE(old_state == ACTIVATED || old_state == RECEIVED_PONG);
     ThreadWatcher::PostPingMessage();
+    ++ping_sent_;
   }
 
   void OnPongMessage(uint64 ping_sequence_number) {
+    ++pong_received_;
     State old_state = UpdateState(RECEIVED_PONG);
     EXPECT_TRUE(old_state == SENT_PING || old_state == DEACTIVATED);
     ThreadWatcher::OnPongMessage(ping_sequence_number);
@@ -153,7 +146,7 @@ class CustomThreadWatcher : public ThreadWatcher {
   }
 
   void VeryLongMethod(TimeDelta wait_time) {
-    DCHECK(!WatchDogThread::CurrentlyOnWatchDogThread());
+    DCHECK(!BrowserThread::CurrentlyOn(BrowserThread::WATCHDOG));
     TimeTicks end_time = TimeTicks::Now() + wait_time;
     {
       base::AutoLock auto_lock(custom_lock_);
@@ -168,7 +161,7 @@ class CustomThreadWatcher : public ThreadWatcher {
   }
 
   State WaitForStateChange(const TimeDelta& wait_time, State expected_state) {
-    DCHECK(!WatchDogThread::CurrentlyOnWatchDogThread());
+    DCHECK(!BrowserThread::CurrentlyOn(BrowserThread::WATCHDOG));
     UpdateWaitState(STARTED_WAITING);
 
     State exit_state;
@@ -203,7 +196,7 @@ class CustomThreadWatcher : public ThreadWatcher {
 
   CheckResponseState WaitForCheckResponse(const TimeDelta& wait_time,
                                           CheckResponseState expected_state) {
-    DCHECK(!WatchDogThread::CurrentlyOnWatchDogThread());
+    DCHECK(!BrowserThread::CurrentlyOn(BrowserThread::WATCHDOG));
     UpdateWaitState(STARTED_WAITING);
 
     CheckResponseState exit_state;
@@ -252,9 +245,13 @@ class ThreadWatcherTest : public ::testing::Test {
   CustomThreadWatcher* webkit_watcher_;
 
   ThreadWatcherTest() {
+  }
+
+ protected:
+  virtual void SetUp() {
     webkit_thread_.reset(new BrowserThread(BrowserThread::WEBKIT));
     io_thread_.reset(new BrowserThread(BrowserThread::IO));
-    watchdog_thread_.reset(new WatchDogThread());
+    watchdog_thread_.reset(new BrowserThread(BrowserThread::WATCHDOG));
     webkit_thread_->Start();
     io_thread_->Start();
     watchdog_thread_->Start();
@@ -271,10 +268,7 @@ class ThreadWatcherTest : public ::testing::Test {
         webkit_thread_id, webkit_thread_name, kSleepTime, kUnresponsiveTime);
   }
 
-  ~ThreadWatcherTest() {
-    ThreadWatcherList::StopWatchingAll();
-    io_watcher_ = NULL;
-    webkit_watcher_ = NULL;
+  virtual void TearDown() {
     // io_thread_->Stop();
     // webkit_thread_->Stop();
     // watchdog_thread_->Stop();
@@ -287,7 +281,7 @@ class ThreadWatcherTest : public ::testing::Test {
  private:
   scoped_ptr<BrowserThread> webkit_thread_;
   scoped_ptr<BrowserThread> io_thread_;
-  scoped_ptr<WatchDogThread> watchdog_thread_;
+  scoped_ptr<BrowserThread> watchdog_thread_;
   ThreadWatcherList* thread_watcher_list_;
 };
 
@@ -325,13 +319,14 @@ TEST_F(ThreadWatcherTest, Registration) {
 
 // Test ActivateThreadWatching and DeActivateThreadWatching of IO thread. This
 // method also checks that pong message was sent by the watched thread and pong
-// message was received by the WatchDogThread. It also checks that
+// message was received by the WATCHDOG thread. It also checks that
 // OnCheckResponsiveness has verified the ping-pong mechanism and the watched
 // thread is not hung.
 TEST_F(ThreadWatcherTest, ThreadResponding) {
   TimeTicks time_before_ping = TimeTicks::Now();
   // Activate watching IO thread.
-  WatchDogThread::PostTask(
+  BrowserThread::PostTask(
+      BrowserThread::WATCHDOG,
       FROM_HERE,
       NewRunnableMethod(io_watcher_, &ThreadWatcher::ActivateThreadWatching));
 
@@ -344,8 +339,8 @@ TEST_F(ThreadWatcherTest, ThreadResponding) {
   EXPECT_GT(io_watcher_->ping_sent_, static_cast<uint64>(0));
   EXPECT_GT(io_watcher_->pong_received_, static_cast<uint64>(0));
   EXPECT_TRUE(io_watcher_->active());
-  EXPECT_GE(io_watcher_->saved_ping_time_, time_before_ping);
-  EXPECT_GE(io_watcher_->saved_ping_sequence_number_, static_cast<uint64>(0));
+  EXPECT_GE(io_watcher_->ping_time_, time_before_ping);
+  EXPECT_GE(io_watcher_->ping_sequence_number_, static_cast<uint64>(0));
 
   // Verify watched thread is responding with ping/pong messaging.
   io_watcher_->WaitForCheckResponse(
@@ -354,7 +349,8 @@ TEST_F(ThreadWatcherTest, ThreadResponding) {
   EXPECT_EQ(io_watcher_->failed_response_, static_cast<uint64>(0));
 
   // DeActivate thread watching for shutdown.
-  WatchDogThread::PostTask(
+  BrowserThread::PostTask(
+      BrowserThread::WATCHDOG,
       FROM_HERE,
       NewRunnableMethod(io_watcher_, &ThreadWatcher::DeActivateThreadWatching));
 }
@@ -375,7 +371,8 @@ TEST_F(ThreadWatcherTest, ThreadNotResponding) {
           kUnresponsiveTime * 10));
 
   // Activate thread watching.
-  WatchDogThread::PostTask(
+  BrowserThread::PostTask(
+      BrowserThread::WATCHDOG,
       FROM_HERE,
       NewRunnableMethod(io_watcher_, &ThreadWatcher::ActivateThreadWatching));
 
@@ -386,7 +383,8 @@ TEST_F(ThreadWatcherTest, ThreadNotResponding) {
   EXPECT_GT(io_watcher_->failed_response_, static_cast<uint64>(0));
 
   // DeActivate thread watching for shutdown.
-  WatchDogThread::PostTask(
+  BrowserThread::PostTask(
+      BrowserThread::WATCHDOG,
       FROM_HERE,
       NewRunnableMethod(io_watcher_, &ThreadWatcher::DeActivateThreadWatching));
 }
@@ -394,13 +392,14 @@ TEST_F(ThreadWatcherTest, ThreadNotResponding) {
 // Test watching of multiple threads with all threads not responding.
 TEST_F(ThreadWatcherTest, MultipleThreadsResponding) {
   // Check for WEBKIT thread to perform ping/pong messaging.
-  WatchDogThread::PostTask(
+  BrowserThread::PostTask(
+      BrowserThread::WATCHDOG,
       FROM_HERE,
       NewRunnableMethod(
           webkit_watcher_, &ThreadWatcher::ActivateThreadWatching));
-
   // Check for IO thread to perform ping/pong messaging.
-  WatchDogThread::PostTask(
+  BrowserThread::PostTask(
+      BrowserThread::WATCHDOG,
       FROM_HERE,
       NewRunnableMethod(io_watcher_, &ThreadWatcher::ActivateThreadWatching));
 
@@ -423,11 +422,12 @@ TEST_F(ThreadWatcherTest, MultipleThreadsResponding) {
   EXPECT_EQ(io_watcher_->failed_response_, static_cast<uint64>(0));
 
   // DeActivate thread watching for shutdown.
-  WatchDogThread::PostTask(
+  BrowserThread::PostTask(
+      BrowserThread::WATCHDOG,
       FROM_HERE,
       NewRunnableMethod(io_watcher_, &ThreadWatcher::DeActivateThreadWatching));
-
-  WatchDogThread::PostTask(
+  BrowserThread::PostTask(
+      BrowserThread::WATCHDOG,
       FROM_HERE,
       NewRunnableMethod(
           webkit_watcher_, &ThreadWatcher::DeActivateThreadWatching));
@@ -446,13 +446,15 @@ TEST_F(ThreadWatcherTest, MultipleThreadsNotResponding) {
           kUnresponsiveTime * 10));
 
   // Activate watching of WEBKIT thread.
-  WatchDogThread::PostTask(
+  BrowserThread::PostTask(
+      BrowserThread::WATCHDOG,
       FROM_HERE,
       NewRunnableMethod(
           webkit_watcher_, &ThreadWatcher::ActivateThreadWatching));
 
   // Activate watching of IO thread.
-  WatchDogThread::PostTask(
+  BrowserThread::PostTask(
+      BrowserThread::WATCHDOG,
       FROM_HERE,
       NewRunnableMethod(io_watcher_, &ThreadWatcher::ActivateThreadWatching));
 
@@ -469,11 +471,15 @@ TEST_F(ThreadWatcherTest, MultipleThreadsNotResponding) {
   EXPECT_GT(io_watcher_->failed_response_, static_cast<uint64>(0));
 
   // DeActivate thread watching for shutdown.
-  WatchDogThread::PostTask(
+  BrowserThread::PostTask(
+      BrowserThread::WATCHDOG,
       FROM_HERE,
       NewRunnableMethod(io_watcher_, &ThreadWatcher::DeActivateThreadWatching));
-  WatchDogThread::PostTask(
+  BrowserThread::PostTask(
+      BrowserThread::WATCHDOG,
       FROM_HERE,
       NewRunnableMethod(
           webkit_watcher_, &ThreadWatcher::DeActivateThreadWatching));
 }
+
+#endif  // 0

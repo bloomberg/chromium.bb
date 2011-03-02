@@ -40,7 +40,6 @@ class ResourceDispatcherHost;
 class SidebarManager;
 class TabCloseableStateWatcher;
 class ThumbnailGenerator;
-class WatchDogThread;
 
 namespace base {
 class Thread;
@@ -118,9 +117,6 @@ class BrowserProcess {
   // This method is only included for uniformity.
   virtual base::Thread* background_x11_thread() = 0;
 #endif
-
-  // Returns the thread that is used for health check of all browser threads.
-  virtual WatchDogThread* watchdog_thread() = 0;
 
   virtual policy::BrowserPolicyConnector* browser_policy_connector() = 0;
 

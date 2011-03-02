@@ -1354,7 +1354,6 @@
         'browser/metrics/metrics_log_unittest.cc',
         'browser/metrics/metrics_response_unittest.cc',
         'browser/metrics/metrics_service_unittest.cc',
-        'browser/metrics/thread_watcher_unittest.cc',
         'browser/mock_plugin_exceptions_table_model.cc',
         'browser/mock_plugin_exceptions_table_model.h',
         'browser/net/connection_tester_unittest.cc',
