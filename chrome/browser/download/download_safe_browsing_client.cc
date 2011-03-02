@@ -5,12 +5,14 @@
 
 #include "chrome/browser/download/download_safe_browsing_client.h"
 
+#include "base/command_line.h"
 #include "base/logging.h"
 #include "base/metrics/histogram.h"
 #include "base/metrics/stats_counters.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/download/download_manager.h"
 #include "chrome/browser/history/download_create_info.h"
+#include "chrome/common/chrome_switches.h"
 #include "content/browser/browser_thread.h"
 #include "content/browser/renderer_host/resource_dispatcher_host.h"
 
@@ -24,6 +26,8 @@ DownloadSBClient::DownloadSBClient(DownloadCreateInfo* info) : info_(info) {
   if (rdh)
     sb_service_ = rdh->safe_browsing_service();
 }
+
+DownloadSBClient::~DownloadSBClient() {}
 
 void DownloadSBClient::CheckDownloadUrl(DoneCallback* callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
@@ -64,13 +68,20 @@ void DownloadSBClient::OnDownloadUrlCheckResult(
   Release();
 }
 
-DownloadSBClient::~DownloadSBClient() {}
-
 void DownloadSBClient::SafeBrowsingCheckUrlDone(
     SafeBrowsingService::UrlCheckResult result) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DVLOG(1) << "SafeBrowsingCheckUrlDone with result: " << result;
+
   bool is_dangerous = result != SafeBrowsingService::SAFE;
-  done_callback_->Run(info_, is_dangerous);
+  CommandLine* cmdline = CommandLine::ForCurrentProcess();
+  if (!cmdline->HasSwitch(switches::kSbEnableDownloadWarningUI)) {
+    // Always ignore the safebrowsing result without the flag.
+    done_callback_->Run(info_, false);
+  } else {
+    done_callback_->Run(info_, is_dangerous);
+  }
+
   UMA_HISTOGRAM_TIMES("SB2.DownloadUrlCheckDuration",
                       base::TimeTicks::Now() - start_time_);
   if (is_dangerous) {
