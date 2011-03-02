@@ -181,19 +181,18 @@ const char kGpuInternalsURL[] = "chrome://gpu-internals/";
 
 // Option sub pages.
 const char kAdvancedOptionsSubPage[] =  "advanced";
-const char kAutoFillSubPage[] = "autoFillOptions";
+const char kAutoFillSubPage[] = "autofill";
 const char kBrowserOptionsSubPage[] =  "browser";
-const char kClearBrowserDataSubPage[] = "clearBrowserDataOverlay";
+const char kClearBrowserDataSubPage[] = "clearBrowserData";
 const char kContentSettingsSubPage[] = "content";
 const char kContentSettingsExceptionsSubPage[] = "contentExceptions";
 const char kDefaultOptionsSubPage[] =  "";
-const char kImportDataSubPage[] = "importDataOverlay";
+const char kImportDataSubPage[] = "importData";
 const char kPersonalOptionsSubPage[] =  "personal";
-const char kSearchEnginesOptionsSubPage[] = "editSearchEngineOverlay";
 const char kSearchEnginesSubPage[] = "searchEngines";
 #if defined(OS_CHROMEOS)
 const char kInternetOptionsSubPage[] = "internet";
-const char kLanguageOptionsSubPage[] = "language";
+const char kLanguageOptionsSubPage[] = "languages";
 const char kSystemOptionsSubPage[] = "system";
 #endif
 

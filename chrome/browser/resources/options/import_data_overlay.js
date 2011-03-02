@@ -12,7 +12,7 @@ cr.define('options', function() {
    */
   function ImportDataOverlay() {
     OptionsPage.call(this,
-                     'importDataOverlay',
+                     'importData',
                      templateData.importDataOverlayTabTitle,
                      'import-data-overlay');
   }

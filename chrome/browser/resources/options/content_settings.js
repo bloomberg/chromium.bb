@@ -53,7 +53,7 @@ cr.define('options', function() {
 
       $('show-cookies-button').onclick = function(event) {
         chrome.send('coreOptionsUserMetricsAction', ['Options_ShowCookies']);
-        OptionsPage.navigateToPage('cookiesView');
+        OptionsPage.navigateToPage('cookies');
       };
 
       if (!templateData.enable_click_to_play)

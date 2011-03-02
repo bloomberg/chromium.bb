@@ -28,7 +28,7 @@ cr.define('options', function() {
    * @constructor
    */
   function LanguageOptions(model) {
-    OptionsPage.call(this, 'language', templateData.languagePageTabTitle,
+    OptionsPage.call(this, 'languages', templateData.languagePageTabTitle,
                      'languagePage');
   }
 
@@ -72,7 +72,7 @@ cr.define('options', function() {
           var addLanguageCode = match[1];
           $('language-options-list').addLanguage(addLanguageCode);
         } else {
-          OptionsPage.navigateToPage('addLanguageOverlay');
+          OptionsPage.navigateToPage('addLanguage');
         }
       };
       // Set up remove button.

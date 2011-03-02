@@ -13,7 +13,7 @@ cr.define('options', function() {
    * @class
    */
   function AddStartupPageOverlay() {
-    OptionsPage.call(this, 'addStartupPageOverlay',
+    OptionsPage.call(this, 'addStartupPage',
                      templateData.addStartupPageTabTitle,
                      'addStartupPageOverlay');
   }

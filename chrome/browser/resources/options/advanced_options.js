@@ -36,7 +36,7 @@ var OptionsPage = options.OptionsPage;
             ['Options_ContentSettings']);
       };
       $('privacyClearDataButton').onclick = function(event) {
-        OptionsPage.navigateToPage('clearBrowserDataOverlay');
+        OptionsPage.navigateToPage('clearBrowserData');
         chrome.send('coreOptionsUserMetricsAction', ['Options_ClearData']);
       };
 
@@ -56,7 +56,7 @@ var OptionsPage = options.OptionsPage;
       }
 
       $('fontSettingsCustomizeFontsButton').onclick = function(event) {
-        OptionsPage.navigateToPage('fontSettings');
+        OptionsPage.navigateToPage('fonts');
         chrome.send('coreOptionsUserMetricsAction', ['Options_FontSettings']);
       };
       $('defaultFontSize').onchange = function(event) {
@@ -64,7 +64,7 @@ var OptionsPage = options.OptionsPage;
             [String(event.target.options[event.target.selectedIndex].value)]);
       };
       $('language-button').onclick = function(event) {
-        OptionsPage.navigateToPage('language');
+        OptionsPage.navigateToPage('languages');
         chrome.send('coreOptionsUserMetricsAction',
             ['Options_LanuageAndSpellCheckSettings']);
       };
@@ -75,7 +75,7 @@ var OptionsPage = options.OptionsPage;
         };
       } else {
         $('certificatesManageButton').onclick = function(event) {
-          OptionsPage.navigateToPage('certificateManager');
+          OptionsPage.navigateToPage('certificates');
           OptionsPage.showTab($('personal-certs-nav-tab'));
           chrome.send('coreOptionsUserMetricsAction',
                       ['Options_ManageSSLCertificates']);

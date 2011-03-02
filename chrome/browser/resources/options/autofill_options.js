@@ -15,7 +15,7 @@ cr.define('options', function() {
    */
   function AutoFillOptions() {
     OptionsPage.call(this,
-                     'autoFillOptions',
+                     'autofill',
                      templateData.autoFillOptionsPageTabTitle,
                      'autofill-options');
   }
@@ -88,7 +88,7 @@ cr.define('options', function() {
       var title = localStrings.getString('addAddressTitle');
       AutoFillEditAddressOverlay.setTitle(title);
       AutoFillEditAddressOverlay.clearInputFields();
-      OptionsPage.navigateToPage('autoFillEditAddressOverlay');
+      OptionsPage.navigateToPage('autoFillEditAddress');
     },
 
     /**
@@ -101,7 +101,7 @@ cr.define('options', function() {
       var title = localStrings.getString('addCreditCardTitle');
       AutoFillEditCreditCardOverlay.setTitle(title);
       AutoFillEditCreditCardOverlay.clearInputFields();
-      OptionsPage.navigateToPage('autoFillEditCreditCardOverlay');
+      OptionsPage.navigateToPage('autoFillEditCreditCard');
     },
 
     /**
@@ -172,7 +172,7 @@ cr.define('options', function() {
       var title = localStrings.getString('editAddressTitle');
       AutoFillEditAddressOverlay.setTitle(title);
       AutoFillEditAddressOverlay.loadAddress(address);
-      OptionsPage.navigateToPage('autoFillEditAddressOverlay');
+      OptionsPage.navigateToPage('autoFillEditAddress');
     },
 
     /**
@@ -185,7 +185,7 @@ cr.define('options', function() {
       var title = localStrings.getString('editCreditCardTitle');
       AutoFillEditCreditCardOverlay.setTitle(title);
       AutoFillEditCreditCardOverlay.loadCreditCard(creditCard);
-      OptionsPage.navigateToPage('autoFillEditCreditCardOverlay');
+      OptionsPage.navigateToPage('autoFillEditCreditCard');
     },
   };
 

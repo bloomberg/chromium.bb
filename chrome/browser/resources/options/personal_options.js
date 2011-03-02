@@ -48,13 +48,13 @@ cr.define('options', function() {
         chrome.send('openPrivacyDashboardTabAndActivate');
       };
       $('manage-passwords').onclick = function(event) {
-        OptionsPage.navigateToPage('passwordManager');
+        OptionsPage.navigateToPage('passwords');
         OptionsPage.showTab($('passwords-nav-tab'));
         chrome.send('coreOptionsUserMetricsAction',
             ['Options_ShowPasswordManager']);
       };
       $('autofill-settings').onclick = function(event) {
-        OptionsPage.navigateToPage('autoFillOptions');
+        OptionsPage.navigateToPage('autofill');
         chrome.send('coreOptionsUserMetricsAction',
             ['Options_ShowAutoFillSettings']);
       };
@@ -64,7 +64,7 @@ cr.define('options', function() {
 
       if (!cr.isChromeOS) {
         $('import-data').onclick = function(event) {
-          OptionsPage.navigateToPage('importDataOverlay');
+          OptionsPage.navigateToPage('importData');
           chrome.send('coreOptionsUserMetricsAction', ['Import_ShowDlg']);
         };
 

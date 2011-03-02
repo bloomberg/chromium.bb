@@ -14,7 +14,7 @@ cr.define('options', function() {
    * @constructor
    */
   function CookiesView(model) {
-    OptionsPage.call(this, 'cookiesView',
+    OptionsPage.call(this, 'cookies',
                      templateData.cookiesViewPageTabTitle,
                      'cookiesViewPage');
   }
