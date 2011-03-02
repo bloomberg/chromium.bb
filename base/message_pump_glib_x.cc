@@ -49,15 +49,25 @@ gboolean GtkWidgetRealizeCallback(GSignalInvocationHint* hint, guint nparams,
 // signal for GTK+ widgets, so that whenever the signal triggers for any
 // GtkWidget, which means the GtkWidget should now have a GdkWindow, we can
 // setup XInput2 events for the GdkWindow.
+static guint realize_signal_id = 0;
+static guint realize_hook_id = 0;
+
 void SetupGtkWidgetRealizeNotifier(base::MessagePumpGlibX* msgpump) {
-  guint signal_id;
   gpointer klass = g_type_class_ref(GTK_TYPE_WIDGET);
 
-  g_signal_parse_name("realize", GTK_TYPE_WIDGET, &signal_id, NULL, FALSE);
-  g_signal_add_emission_hook(signal_id, 0, GtkWidgetRealizeCallback,
-      static_cast<gpointer>(msgpump), NULL);
+  g_signal_parse_name("realize", GTK_TYPE_WIDGET,
+                      &realize_signal_id, NULL, FALSE);
+  realize_hook_id = g_signal_add_emission_hook(realize_signal_id, 0,
+      GtkWidgetRealizeCallback, static_cast<gpointer>(msgpump), NULL);
 
   g_type_class_unref(klass);
+}
+
+void RemoveGtkWidgetRealizeNotifier() {
+  if (realize_signal_id != 0)
+    g_signal_remove_emission_hook(realize_signal_id, realize_hook_id);
+  realize_signal_id = 0;
+  realize_hook_id = 0;
 }
 
 #endif  // HAVE_XINPUT2
@@ -85,6 +95,9 @@ MessagePumpGlibX::MessagePumpGlibX() : base::MessagePumpForUI(),
 }
 
 MessagePumpGlibX::~MessagePumpGlibX() {
+#if defined(HAVE_XINPUT2)
+  RemoveGtkWidgetRealizeNotifier();
+#endif
 }
 
 #if defined(HAVE_XINPUT2)
@@ -124,7 +137,7 @@ void MessagePumpGlibX::SetupXInput2ForXWindow(Window xwindow) {
 
 bool MessagePumpGlibX::RunOnce(GMainContext* context, bool block) {
   GdkDisplay* gdisp = gdk_display_get_default();
-  if (!gdisp)
+  if (!gdisp || !GetDispatcher())
     return MessagePumpForUI::RunOnce(context, block);
 
   Display* display = GDK_DISPLAY_XDISPLAY(gdisp);
