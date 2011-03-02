@@ -9,9 +9,9 @@
 #include "chrome/browser/search_engines/template_url_fetcher.h"
 #include "chrome/browser/search_engines/template_url_model.h"
 #include "chrome/browser/ui/search_engines/template_url_fetcher_ui_callbacks.h"
-#include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/common/render_messages.h"
 #include "chrome/common/render_messages_params.h"
+#include "content/browser/tab_contents/tab_contents.h"
 
 namespace {
 

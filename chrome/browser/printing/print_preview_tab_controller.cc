@@ -5,7 +5,6 @@
 #include "chrome/browser/printing/print_preview_tab_controller.h"
 
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/browser/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
@@ -14,6 +13,7 @@
 #include "chrome/common/notification_details.h"
 #include "chrome/common/notification_source.h"
 #include "chrome/common/url_constants.h"
+#include "content/browser/tab_contents/tab_contents.h"
 
 namespace printing {
 

@@ -8,11 +8,10 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/browser_shutdown.h"
 #include "chrome/browser/extensions/extension_host.h"
-#include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/browser/ui/app_modal_dialogs/native_app_modal_dialog.h"
 #include "chrome/common/notification_service.h"
 #include "chrome/common/notification_type.h"
-#include "ipc/ipc_message.h"
+#include "content/browser/tab_contents/tab_contents.h"
 #include "ui/base/text/text_elider.h"
 
 namespace {

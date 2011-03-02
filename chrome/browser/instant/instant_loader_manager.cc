@@ -7,8 +7,8 @@
 #include "base/logging.h"
 #include "chrome/browser/instant/instant_loader.h"
 #include "chrome/browser/instant/instant_loader_delegate.h"
-#include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
+#include "content/browser/tab_contents/tab_contents.h"
 
 InstantLoaderManager::InstantLoaderManager(
     InstantLoaderDelegate* loader_delegate)

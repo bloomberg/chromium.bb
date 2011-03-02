@@ -5,7 +5,6 @@
 #include "base/logging.h"
 #include "base/mac/mac_util.h"
 #include "chrome/browser/tab_contents/infobar_delegate.h"
-#include "chrome/browser/tab_contents/tab_contents.h"
 #import "chrome/browser/ui/cocoa/animatable_view.h"
 #include "chrome/browser/ui/cocoa/infobars/infobar.h"
 #import "chrome/browser/ui/cocoa/infobars/infobar_container_controller.h"
@@ -13,6 +12,7 @@
 #import "chrome/browser/ui/cocoa/view_id_util.h"
 #include "chrome/common/notification_details.h"
 #include "chrome/common/notification_source.h"
+#include "content/browser/tab_contents/tab_contents.h"
 #include "skia/ext/skia_utils_mac.h"
 
 // C++ class that receives INFOBAR_ADDED and INFOBAR_REMOVED

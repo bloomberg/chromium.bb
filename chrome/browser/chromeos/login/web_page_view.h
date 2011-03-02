@@ -9,8 +9,8 @@
 #include <string>
 
 #include "base/timer.h"
-#include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/browser/ui/views/dom_view.h"
+#include "content/browser/tab_contents/tab_contents.h"
 #include "views/view.h"
 
 class Profile;

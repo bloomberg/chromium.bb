@@ -4,7 +4,7 @@
 
 #include "chrome/browser/download/download_request_infobar_delegate.h"
 
-#include "chrome/browser/tab_contents/tab_contents.h"
+#include "content/browser/tab_contents/tab_contents.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
 #include "ui/base/l10n/l10n_util.h"

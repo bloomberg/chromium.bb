@@ -7,8 +7,8 @@
 #import "chrome/browser/ui/cocoa/location_bar/location_icon_decoration.h"
 
 #include "base/sys_string_conversions.h"
-#include "chrome/browser/tab_contents/tab_contents.h"
 #import "chrome/browser/ui/cocoa/location_bar/location_bar_view_mac.h"
+#include "content/browser/tab_contents/tab_contents.h"
 #include "grit/generated_resources.h"
 #import "third_party/mozilla/NSPasteboard+Utils.h"
 #include "ui/base/l10n/l10n_util_mac.h"

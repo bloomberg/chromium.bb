@@ -9,7 +9,6 @@
 #include "chrome/browser/browser_window.h"
 #include "chrome/browser/extensions/extension_browsertest.h"
 #include "chrome/browser/sidebar/sidebar_manager.h"
-#include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/common/chrome_paths.h"
@@ -17,6 +16,7 @@
 #include "chrome/common/extensions/extension.h"
 #include "chrome/test/in_process_browser_test.h"
 #include "chrome/test/ui_test_utils.h"
+#include "content/browser/tab_contents/tab_contents.h"
 #include "net/test/test_server.h"
 
 #include "chrome/browser/extensions/extension_service.h"

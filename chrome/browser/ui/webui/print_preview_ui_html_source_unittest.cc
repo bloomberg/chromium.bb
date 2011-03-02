@@ -5,13 +5,13 @@
 #include "base/command_line.h"
 #include "base/shared_memory.h"
 #include "chrome/browser/printing/print_preview_tab_controller.h"
-#include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/webui/print_preview_ui.h"
 #include "chrome/browser/ui/webui/print_preview_ui_html_source.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/browser_with_test_window_test.h"
 #include "chrome/test/testing_profile.h"
+#include "content/browser/tab_contents/tab_contents.h"
 
 typedef BrowserWithTestWindowTest PrintPreviewUIHTMLSourceTest;
 

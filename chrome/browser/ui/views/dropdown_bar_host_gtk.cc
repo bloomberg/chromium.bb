@@ -6,8 +6,8 @@
 
 #include <gdk/gdkkeysyms.h>
 
-#include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
+#include "content/browser/tab_contents/tab_contents.h"
 #include "views/widget/widget_gtk.h"
 #include "views/controls/textfield/textfield.h"
 

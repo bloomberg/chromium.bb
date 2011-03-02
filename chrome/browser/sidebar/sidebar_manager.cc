@@ -10,10 +10,10 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/extensions/extension_sidebar_api.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/browser/sidebar/sidebar_container.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/notification_service.h"
+#include "content/browser/tab_contents/tab_contents.h"
 #include "googleurl/src/gurl.h"
 
 struct SidebarManager::SidebarStateForTab {

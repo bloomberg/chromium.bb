@@ -5,11 +5,11 @@
 #include "content/browser/webui/web_ui_browsertest.h"
 
 #include "base/path_service.h"
-#include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/test/ui_test_utils.h"
+#include "content/browser/tab_contents/tab_contents.h"
 #include "ui/base/resource/resource_bundle.h"
 
 static const FilePath::CharType* kWebUILibraryJS =

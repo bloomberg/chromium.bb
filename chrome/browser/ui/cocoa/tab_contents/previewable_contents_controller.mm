@@ -6,7 +6,7 @@
 
 #include "base/logging.h"
 #include "base/mac/mac_util.h"
-#include "chrome/browser/tab_contents/tab_contents.h"
+#include "content/browser/tab_contents/tab_contents.h"
 
 @implementation PreviewableContentsController
 

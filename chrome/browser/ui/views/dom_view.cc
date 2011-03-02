@@ -4,8 +4,7 @@
 
 #include "chrome/browser/ui/views/dom_view.h"
 
-#include "chrome/browser/tab_contents/tab_contents.h"
-#include "ipc/ipc_message.h"
+#include "content/browser/tab_contents/tab_contents.h"
 #include "views/focus/focus_manager.h"
 
 #if defined(TOUCH_UI)

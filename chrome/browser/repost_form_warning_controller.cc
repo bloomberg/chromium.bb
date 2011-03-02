@@ -4,8 +4,8 @@
 
 #include "chrome/browser/repost_form_warning_controller.h"
 
-#include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/common/notification_source.h"
+#include "content/browser/tab_contents/tab_contents.h"
 
 RepostFormWarningController::RepostFormWarningController(
     TabContents* tab_contents)

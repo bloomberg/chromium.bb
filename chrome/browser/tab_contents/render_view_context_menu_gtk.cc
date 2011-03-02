@@ -9,7 +9,7 @@
 #include "base/string_util.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/renderer_host/render_widget_host_view_gtk.h"
-#include "chrome/browser/tab_contents/tab_contents.h"
+#include "content/browser/tab_contents/tab_contents.h"
 #include "webkit/glue/context_menu.h"
 
 RenderViewContextMenuGtk::RenderViewContextMenuGtk(
