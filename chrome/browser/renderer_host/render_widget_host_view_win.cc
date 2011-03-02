@@ -268,6 +268,27 @@ void DrawDeemphasized(const SkColor& color,
                                           paint_rect.y(), NULL);
 }
 
+// The plugin wrapper window which lives in the browser process has this proc
+// as its window procedure. We only handle the WM_PARENTNOTIFY message sent by
+// windowed plugins for mouse input. This is forwarded off to the wrappers
+// parent which is typically the RVH window which turns on user gesture.
+LRESULT CALLBACK PluginWrapperWindowProc(HWND window, unsigned int message,
+                                         WPARAM wparam, LPARAM lparam) {
+  if (message == WM_PARENTNOTIFY) {
+    switch (LOWORD(wparam)) {
+      case WM_LBUTTONDOWN:
+      case WM_RBUTTONDOWN:
+      case WM_MBUTTONDOWN: {
+        ::SendMessage(GetParent(window), message, wparam, lparam);
+        return 0;
+      }
+      default:
+        break;
+    }
+  }
+  return ::DefWindowProc(window, message, wparam, lparam);
+}
+
 }  // namespace
 
 // RenderWidgetHostView --------------------------------------------------------
@@ -482,7 +503,7 @@ HWND RenderWidgetHostViewWin::ReparentWindow(HWND window) {
     WNDCLASSEX wcex;
     wcex.cbSize         = sizeof(WNDCLASSEX);
     wcex.style          = CS_DBLCLKS;
-    wcex.lpfnWndProc    = ::DefWindowProc;
+    wcex.lpfnWndProc    = PluginWrapperWindowProc;
     wcex.cbClsExtra     = 0;
     wcex.cbWndExtra     = 0;
     wcex.hInstance      = GetModuleHandle(NULL);
@@ -1702,6 +1723,26 @@ LRESULT RenderWidgetHostViewWin::OnGetObject(UINT message, WPARAM wparam,
 
   handled = false;
   return static_cast<LRESULT>(0L);
+}
+
+LRESULT RenderWidgetHostViewWin::OnParentNotify(UINT message, WPARAM wparam,
+                                                LPARAM lparam, BOOL& handled) {
+  handled = FALSE;
+
+  if (!render_widget_host_)
+    return 0;
+
+  switch (LOWORD(wparam)) {
+    case WM_LBUTTONDOWN:
+    case WM_RBUTTONDOWN:
+    case WM_MBUTTONDOWN: {
+      render_widget_host_->StartUserGesture();
+      break;
+    }
+    default:
+      break;
+  }
+  return 0;
 }
 
 void RenderWidgetHostViewWin::OnFinalMessage(HWND window) {

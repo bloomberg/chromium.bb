@@ -395,6 +395,10 @@ class RenderWidgetHost : public IPC::Channel::Listener,
 
   const gfx::Point& last_scroll_offset() const { return last_scroll_offset_; }
 
+  // Notification that the user has made some kind of input that could
+  // perform an action. See OnUserGesture for more details.
+  void StartUserGesture();
+
  protected:
   // Internal implementation of the public Forward*Event() methods.
   void ForwardInputEvent(const WebKit::WebInputEvent& input_event,

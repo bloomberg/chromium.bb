@@ -120,6 +120,7 @@ class RenderWidgetHostViewWin
     MESSAGE_HANDLER(WM_IME_CHAR, OnKeyEvent)
     MESSAGE_HANDLER(WM_MOUSEACTIVATE, OnMouseActivate)
     MESSAGE_HANDLER(WM_GETOBJECT, OnGetObject)
+    MESSAGE_HANDLER(WM_PARENTNOTIFY, OnParentNotify)
   END_MSG_MAP()
 
   // Implementation of RenderWidgetHostView:
@@ -216,6 +217,9 @@ class RenderWidgetHostViewWin
   LRESULT OnVScroll(int code, short position, HWND scrollbar_control);
   // Handle horizontal scrolling
   LRESULT OnHScroll(int code, short position, HWND scrollbar_control);
+
+  LRESULT OnParentNotify(UINT message, WPARAM wparam, LPARAM lparam,
+                         BOOL& handled);
 
   void OnFinalMessage(HWND window);
 

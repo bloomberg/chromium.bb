@@ -1285,3 +1285,8 @@ void RenderWidgetHost::ActivateDeferredPluginHandles() {
 
   deferred_plugin_handles_.clear();
 }
+
+void RenderWidgetHost::StartUserGesture() {
+  OnUserGesture();
+}
+
