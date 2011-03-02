@@ -377,6 +377,8 @@ class IncludeChecker(object):
       if seen_code:
         problem.append('line %d: [%s]' % (no, repr(line)))
       token = line.split()
+      if len(token) < 2:
+        continue
       path = token[1][1:]
       if '..' in path:
         problem.append('line %d: [%s]' % (no, repr(line)))
