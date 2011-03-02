@@ -82,11 +82,7 @@ void ExtensionInfoBar::ViewHierarchyChanged(bool is_add,
   AddChildView(menu_);
 
   ExtensionHost* extension_host = GetDelegate()->extension_host();
-  ExtensionView* extension_view = extension_host->view();
-  // We show the ExtensionView, but we don't want it deleted when we get
-  // destroyed, which happens on tab switching (for example).
-  extension_view->set_parent_owned(false);
-  AddChildView(extension_view);
+  AddChildView(extension_host->view());
 
   // This must happen after adding all other children so InfoBarView can ensure
   // the close button is the last child.

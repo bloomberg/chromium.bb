@@ -24,8 +24,10 @@ class InfoBarContainer : public AccessiblePaneView,
   // InfoBarContainer
   class Delegate {
    public:
-    virtual ~Delegate() {}
     virtual void InfoBarContainerSizeChanged(bool is_animating) = 0;
+
+   protected:
+    virtual ~Delegate();
   };
 
   explicit InfoBarContainer(Delegate* delegate);
@@ -35,9 +37,10 @@ class InfoBarContainer : public AccessiblePaneView,
   // be NULL.
   void ChangeTabContents(TabContents* contents);
 
-  // Called by child InfoBars as they animate. If |completed| is true, the
-  // animation has finished running.
-  void InfoBarAnimated(bool completed);
+  // Called when a contained infobar has animated.  The container is expected to
+  // do anything necessary to respond to the infobar's possible size change,
+  // e.g. re-layout.
+  void OnInfoBarAnimated(bool done);
 
   // Remove the specified InfoBarDelegate from the selected TabContents. This
   // will notify us back and cause us to close the View. This is called from
@@ -83,11 +86,7 @@ class InfoBarContainer : public AccessiblePaneView,
                       InfoBarDelegate* new_delegate);
 
   NotificationRegistrar registrar_;
-
-  // The Delegate which receives notifications from the InfoBarContainer.
   Delegate* delegate_;
-
-  // The TabContents for which we are currently showing InfoBars.
   TabContents* tab_contents_;
 
   DISALLOW_COPY_AND_ASSIGN(InfoBarContainer);

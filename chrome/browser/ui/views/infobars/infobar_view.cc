@@ -69,7 +69,7 @@ void InfoBarView::Open() {
   // size.
   animation_->Reset(1.0);
   if (container_)
-    container_->InfoBarAnimated(true);
+    container_->OnInfoBarAnimated(true);
 }
 
 void InfoBarView::AnimateClose() {
@@ -88,7 +88,7 @@ void InfoBarView::AnimateClose() {
 void InfoBarView::Close() {
   parent()->RemoveChildView(this);
   if (container_)
-    container_->InfoBarAnimated(true);
+    container_->OnInfoBarAnimated(true);
   // Note that we only tell the delegate we're closed here, and not when we're
   // simply destroyed (by virtue of a tab switch or being moved from window to
   // window), since this action can cause the delegate to destroy itself.
@@ -329,7 +329,7 @@ void InfoBarView::ButtonPressed(views::Button* sender,
 
 void InfoBarView::AnimationProgressed(const ui::Animation* animation) {
   if (container_)
-    container_->InfoBarAnimated(false);
+    container_->OnInfoBarAnimated(false);
 }
 
 int InfoBarView::ContentMinimumWidth() const {

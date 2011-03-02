@@ -14,18 +14,21 @@
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 
+InfoBarContainer::Delegate::~Delegate() {
+}
+
 InfoBarContainer::InfoBarContainer(Delegate* delegate)
     : delegate_(delegate),
       tab_contents_(NULL) {
   SetID(VIEW_ID_INFO_BAR_CONTAINER);
-  SetAccessibleName(
-      l10n_util::GetStringUTF16(IDS_ACCNAME_INFOBAR_CONTAINER));
+  SetAccessibleName(l10n_util::GetStringUTF16(IDS_ACCNAME_INFOBAR_CONTAINER));
 }
 
 InfoBarContainer::~InfoBarContainer() {
-  // We NULL this pointer before resetting the TabContents to prevent view
-  // hierarchy modifications from attempting to resize the delegate which
-  // could be in the process of shutting down.
+  // Before we remove any children, we reset |delegate_|, so that no removals
+  // will result in us trying to call delegate_->InfoBarContainerSizeChanged().
+  // This is important because at this point |delegate_| may be shutting down,
+  // and it's at best unimportant and at worst disastrous to call that.
   delegate_ = NULL;
   ChangeTabContents(NULL);
 }
@@ -48,9 +51,9 @@ void InfoBarContainer::ChangeTabContents(TabContents* contents) {
   }
 }
 
-void InfoBarContainer::InfoBarAnimated(bool completed) {
+void InfoBarContainer::OnInfoBarAnimated(bool done) {
   if (delegate_)
-    delegate_->InfoBarContainerSizeChanged(!completed);
+    delegate_->InfoBarContainerSizeChanged(!done);
 }
 
 void InfoBarContainer::RemoveDelegate(InfoBarDelegate* delegate) {
@@ -93,16 +96,25 @@ AccessibilityTypes::Role InfoBarContainer::GetAccessibleRole() {
 void InfoBarContainer::Observe(NotificationType type,
                                const NotificationSource& source,
                                const NotificationDetails& details) {
-  if (type == NotificationType::TAB_CONTENTS_INFOBAR_ADDED) {
-    AddInfoBar(Details<InfoBarDelegate>(details).ptr(), true);  // animated
-  } else if (type == NotificationType::TAB_CONTENTS_INFOBAR_REMOVED) {
-    RemoveInfoBar(Details<InfoBarDelegate>(details).ptr(), true);  // animated
-  } else if (type == NotificationType::TAB_CONTENTS_INFOBAR_REPLACED) {
-    std::pair<InfoBarDelegate*, InfoBarDelegate*>* delegates =
-        Details<std::pair<InfoBarDelegate*, InfoBarDelegate*> >(details).ptr();
-    ReplaceInfoBar(delegates->first, delegates->second);
-  } else {
-    NOTREACHED();
+  switch (type.value) {
+    case NotificationType::TAB_CONTENTS_INFOBAR_ADDED:
+      AddInfoBar(Details<InfoBarDelegate>(details).ptr(), true);  // animated
+      break;
+
+    case NotificationType::TAB_CONTENTS_INFOBAR_REMOVED:
+      RemoveInfoBar(Details<InfoBarDelegate>(details).ptr(), true);  // animated
+      break;
+
+    case NotificationType::TAB_CONTENTS_INFOBAR_REPLACED: {
+      typedef std::pair<InfoBarDelegate*, InfoBarDelegate*> InfoBarPair;
+      InfoBarPair* infobar_pair = Details<InfoBarPair>(details).ptr();
+      ReplaceInfoBar(infobar_pair->first, infobar_pair->second);
+      break;
+    }
+
+    default:
+      NOTREACHED();
+      break;
   }
 }
 

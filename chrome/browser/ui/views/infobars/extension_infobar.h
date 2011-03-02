@@ -18,7 +18,6 @@ class MenuButton;
 class Menu2;
 }
 
-// This class implements InfoBars for Extensions.
 class ExtensionInfoBar : public InfoBarView,
                          public ExtensionView::Container,
                          public ImageLoadingTracker::Observer,
@@ -52,8 +51,6 @@ class ExtensionInfoBar : public InfoBarView,
   virtual void RunMenu(View* source, const gfx::Point& pt);
 
   ExtensionInfoBarDelegate* GetDelegate();
-
-  NotificationRegistrar notification_registrar_;
 
   // TODO(pkasting): This shadows InfoBarView::delegate_.  Get rid of this once
   // InfoBars own their delegates (and thus we don't need the DelegateObserver
