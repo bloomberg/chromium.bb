@@ -6,7 +6,7 @@
 #define CHROME_BROWSER_UI_WEBUI_HTML_DIALOG_TAB_CONTENTS_DELEGATE_H_
 #pragma once
 
-#include "chrome/browser/tab_contents/tab_contents_delegate.h"
+#include "content/browser/tab_contents/tab_contents_delegate.h"
 
 class Browser;
 class Profile;

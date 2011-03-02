@@ -6,7 +6,7 @@
 
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ssl/ssl_host_state.h"
-#include "chrome/browser/tab_contents/navigation_controller.h"
+#include "content/browser/tab_contents/navigation_controller.h"
 
 SSLPolicyBackend::SSLPolicyBackend(NavigationController* controller)
     : ssl_host_state_(controller->profile()->GetSSLHostState()) {

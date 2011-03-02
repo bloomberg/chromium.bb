@@ -6,8 +6,8 @@
 #define CHROME_BROWSER_UI_BROWSER_WINDOW_H_
 #pragma once
 
-#include "chrome/browser/tab_contents/navigation_entry.h"
 #include "chrome/common/content_settings_types.h"
+#include "content/browser/tab_contents/navigation_entry.h"
 #include "ui/gfx/native_widget_types.h"
 
 class Browser;

@@ -8,7 +8,7 @@
 
 #import <Cocoa/Cocoa.h>
 
-#include "chrome/browser/tab_contents/constrained_window.h"
+#include "content/browser/tab_contents/constrained_window.h"
 
 #include "base/basictypes.h"
 #include "base/logging.h"

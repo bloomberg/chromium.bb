@@ -14,7 +14,7 @@
 #include "chrome/browser/chromeos/login/view_screen.h"
 #include "chrome/browser/chromeos/login/web_page_screen.h"
 #include "chrome/browser/chromeos/login/web_page_view.h"
-#include "chrome/browser/tab_contents/tab_contents_delegate.h"
+#include "content/browser/tab_contents/tab_contents_delegate.h"
 
 class GURL;
 class WizardScreenDelegate;

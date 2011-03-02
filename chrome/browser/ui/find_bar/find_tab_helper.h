@@ -6,9 +6,9 @@
 #define CHROME_BROWSER_UI_FIND_BAR_FIND_TAB_HELPER_H_
 #pragma once
 
-#include "chrome/browser/tab_contents/tab_contents_observer.h"
 #include "chrome/browser/ui/find_bar/find_bar_controller.h"
 #include "chrome/browser/ui/find_bar/find_notification_details.h"
+#include "content/browser/tab_contents/tab_contents_observer.h"
 
 // Per-tab find manager. Handles dealing with the life cycle of find sessions.
 class FindTabHelper : public TabContentsObserver {

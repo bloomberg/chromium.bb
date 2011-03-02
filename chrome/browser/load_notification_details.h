@@ -12,8 +12,8 @@
 
 #include "base/basictypes.h"
 #include "base/time.h"
-#include "chrome/browser/tab_contents/navigation_controller.h"
 #include "chrome/common/page_transition_types.h"
+#include "content/browser/tab_contents/navigation_controller.h"
 #include "googleurl/src/gurl.h"
 
 class LoadNotificationDetails {

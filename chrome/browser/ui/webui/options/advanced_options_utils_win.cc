@@ -13,8 +13,8 @@
 #include "base/path_service.h"
 #include "base/threading/thread.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/tab_contents/tab_contents.h"
-#include "chrome/browser/tab_contents/tab_contents_view.h"
+#include "content/browser/tab_contents/tab_contents.h"
+#include "content/browser/tab_contents/tab_contents_view.h"
 
 // A helper method that opens the Internet Options control panel dialog with
 // the Connections tab selected.

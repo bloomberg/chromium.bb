@@ -6,7 +6,7 @@
 #define CHROME_BROWSER_UI_VIEWS_REPOST_FORM_WARNING_VIEW_H_
 #pragma once
 
-#include "chrome/browser/tab_contents/constrained_window.h"
+#include "content/browser/tab_contents/constrained_window.h"
 #include "ui/gfx/native_widget_types.h"
 #include "views/window/dialog_delegate.h"
 

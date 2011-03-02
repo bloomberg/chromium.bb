@@ -8,13 +8,13 @@
 
 #include "base/i18n/rtl.h"
 #include "build/build_config.h"
-#include "chrome/browser/tab_contents/navigation_entry.h"
 #include "chrome/browser/ui/find_bar/find_bar.h"
 #include "chrome/browser/ui/find_bar/find_bar_state.h"
 #include "chrome/browser/ui/find_bar/find_tab_helper.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/common/notification_details.h"
 #include "chrome/common/notification_source.h"
+#include "content/browser/tab_contents/navigation_entry.h"
 #include "ui/gfx/rect.h"
 
 // The minimum space between the FindInPage window and the search result.

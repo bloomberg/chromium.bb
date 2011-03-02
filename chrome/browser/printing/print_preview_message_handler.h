@@ -6,7 +6,7 @@
 #define CHROME_BROWSER_PRINTING_PRINT_PREVIEW_MESSAGE_HANDLER_H_
 #pragma once
 
-#include "chrome/browser/tab_contents/tab_contents_observer.h"
+#include "content/browser/tab_contents/tab_contents_observer.h"
 
 struct ViewHostMsg_DidPreviewDocument_Params;
 

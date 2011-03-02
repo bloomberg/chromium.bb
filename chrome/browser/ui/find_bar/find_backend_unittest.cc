@@ -5,13 +5,13 @@
 #include "base/string16.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
-#include "chrome/browser/tab_contents/test_tab_contents.h"
 #include "chrome/browser/ui/find_bar/find_bar_state.h"
 #include "chrome/browser/ui/find_bar/find_tab_helper.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/browser/ui/tab_contents/test_tab_contents_wrapper.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/test/testing_profile.h"
+#include "content/browser/tab_contents/test_tab_contents.h"
 
 typedef TabContentsWrapperTestHarness FindBackendTest;
 

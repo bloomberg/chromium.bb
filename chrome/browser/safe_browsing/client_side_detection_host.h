@@ -10,7 +10,7 @@
 #include "base/ref_counted.h"
 #include "base/scoped_callback_factory.h"
 #include "chrome/browser/safe_browsing/safe_browsing_service.h"
-#include "chrome/browser/tab_contents/tab_contents_observer.h"
+#include "content/browser/tab_contents/tab_contents_observer.h"
 #include "googleurl/src/gurl.h"
 
 class TabContents;

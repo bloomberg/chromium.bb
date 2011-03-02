@@ -11,11 +11,11 @@
 #include <vector>
 
 #include "base/scoped_ptr.h"
-#include "chrome/browser/tab_contents/tab_contents_view.h"
 #include "chrome/browser/ui/gtk/focus_store_gtk.h"
 #include "chrome/browser/ui/gtk/owned_widget_gtk.h"
 #include "chrome/common/notification_observer.h"
 #include "chrome/common/notification_registrar.h"
+#include "content/browser/tab_contents/tab_contents_view.h"
 #include "ui/base/gtk/gtk_signal.h"
 
 class ConstrainedWindowGtk;

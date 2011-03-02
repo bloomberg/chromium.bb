@@ -11,7 +11,7 @@
 
 #include "base/scoped_ptr.h"
 #include "base/time.h"
-#include "chrome/browser/tab_contents/tab_contents_observer.h"
+#include "content/browser/tab_contents/tab_contents_observer.h"
 #include "googleurl/src/gurl.h"
 
 class PrerenderContents;

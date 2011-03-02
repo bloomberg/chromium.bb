@@ -5,9 +5,9 @@
 #include "chrome/browser/sessions/session_types.h"
 
 #include "base/string_util.h"
-#include "chrome/browser/tab_contents/navigation_controller.h"
-#include "chrome/browser/tab_contents/navigation_entry.h"
 #include "chrome/browser/ui/browser.h"
+#include "content/browser/tab_contents/navigation_controller.h"
+#include "content/browser/tab_contents/navigation_entry.h"
 
 // TabNavigation --------------------------------------------------------------
 

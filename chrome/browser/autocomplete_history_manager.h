@@ -9,8 +9,8 @@
 #include <vector>
 
 #include "chrome/browser/prefs/pref_member.h"
-#include "chrome/browser/tab_contents/tab_contents_observer.h"
 #include "chrome/browser/webdata/web_data_service.h"
+#include "content/browser/tab_contents/tab_contents_observer.h"
 
 namespace webkit_glue {
 struct FormData;

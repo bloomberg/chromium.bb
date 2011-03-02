@@ -27,8 +27,6 @@
 #include "chrome/browser/tabs/tab_handler.h"
 #include "chrome/browser/tabs/tab_strip_model_delegate.h"  // TODO(beng): remove
 #include "chrome/browser/tabs/tab_strip_model_observer.h"  // TODO(beng): remove
-#include "chrome/browser/tab_contents/page_navigator.h"
-#include "chrome/browser/tab_contents/tab_contents_delegate.h"
 #include "chrome/browser/ui/browser_navigator.h"
 #include "chrome/browser/ui/search_engines/search_engine_tab_helper_delegate.h"
 #include "chrome/browser/ui/shell_dialogs.h"
@@ -38,6 +36,8 @@
 #include "chrome/common/notification_registrar.h"
 #include "chrome/common/page_transition_types.h"
 #include "chrome/common/page_zoom.h"
+#include "content/browser/tab_contents/page_navigator.h"
+#include "content/browser/tab_contents/tab_contents_delegate.h"
 #include "ui/gfx/rect.h"
 
 class BrowserWindow;

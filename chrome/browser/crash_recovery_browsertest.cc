@@ -3,13 +3,13 @@
 // found in the LICENSE file.
 
 #include "base/file_path.h"
-#include "chrome/browser/tab_contents/navigation_entry.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/common/notification_type.h"
 #include "chrome/common/page_transition_types.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/test/in_process_browser_test.h"
 #include "chrome/test/ui_test_utils.h"
+#include "content/browser/tab_contents/navigation_entry.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace {

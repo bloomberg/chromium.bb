@@ -11,7 +11,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sessions/session_backend.h"
 #include "chrome/browser/sessions/session_types.h"
-#include "chrome/browser/tab_contents/navigation_entry.h"
+#include "content/browser/tab_contents/navigation_entry.h"
 #include "webkit/glue/webkit_glue.h"
 
 // InternalGetCommandsRequest -------------------------------------------------

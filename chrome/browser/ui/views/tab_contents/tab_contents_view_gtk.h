@@ -9,7 +9,7 @@
 #include <vector>
 
 #include "base/scoped_ptr.h"
-#include "chrome/browser/tab_contents/tab_contents_view.h"
+#include "content/browser/tab_contents/tab_contents_view.h"
 #include "ui/gfx/size.h"
 #include "views/widget/widget_gtk.h"
 

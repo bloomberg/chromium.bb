@@ -8,8 +8,8 @@
 
 #include <vector>
 
-#include "chrome/browser/tab_contents/constrained_window.h"
 #include "chrome/common/property_bag.h"
+#include "content/browser/tab_contents/constrained_window.h"
 #include "content/browser/webui/web_ui.h"
 
 class HtmlDialogUIDelegate;

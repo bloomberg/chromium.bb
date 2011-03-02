@@ -23,14 +23,14 @@
 #include "chrome/browser/sessions/session_command.h"
 #include "chrome/browser/sessions/session_restore.h"
 #include "chrome/browser/sessions/session_types.h"
-#include "chrome/browser/tab_contents/navigation_controller.h"
-#include "chrome/browser/tab_contents/navigation_entry.h"
-#include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/browser/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/browser_init.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/notification_details.h"
 #include "chrome/common/notification_service.h"
+#include "content/browser/tab_contents/navigation_controller.h"
+#include "content/browser/tab_contents/navigation_entry.h"
+#include "content/browser/tab_contents/tab_contents.h"
 
 #if defined(OS_MACOSX)
 #include "chrome/browser/app_controller_cppsafe_mac.h"

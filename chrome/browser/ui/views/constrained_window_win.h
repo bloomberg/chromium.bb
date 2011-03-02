@@ -6,8 +6,8 @@
 #define CHROME_BROWSER_UI_VIEWS_CONSTRAINED_WINDOW_WIN_H_
 #pragma once
 
-#include "chrome/browser/tab_contents/constrained_window.h"
-#include "chrome/browser/tab_contents/tab_contents_delegate.h"
+#include "content/browser/tab_contents/constrained_window.h"
+#include "content/browser/tab_contents/tab_contents_delegate.h"
 #include "ui/gfx/rect.h"
 #include "views/window/window_win.h"
 

@@ -8,7 +8,7 @@
 
 #include "base/timer.h"
 #include "chrome/browser/chromeos/login/screen_observer.h"
-#include "chrome/browser/tab_contents/tab_contents_delegate.h"
+#include "content/browser/tab_contents/tab_contents_delegate.h"
 
 class GURL;
 

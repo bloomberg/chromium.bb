@@ -11,7 +11,7 @@
 
 #include "base/string16.h"
 #include "chrome/browser/ssl/ssl_error_info.h"
-#include "chrome/browser/tab_contents/interstitial_page.h"
+#include "content/browser/tab_contents/interstitial_page.h"
 
 class DictionaryValue;
 class SSLCertErrorHandler;

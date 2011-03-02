@@ -9,7 +9,7 @@
 #include "base/basictypes.h"
 #include "base/scoped_ptr.h"
 #include "base/string16.h"
-#include "chrome/browser/tab_contents/constrained_window.h"
+#include "content/browser/tab_contents/constrained_window.h"
 #include "views/window/dialog_delegate.h"
 
 #if defined(TOOLKIT_USES_GTK)

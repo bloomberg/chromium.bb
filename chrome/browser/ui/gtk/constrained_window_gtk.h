@@ -10,8 +10,8 @@
 
 #include "base/basictypes.h"
 #include "base/task.h"
-#include "chrome/browser/tab_contents/constrained_window.h"
 #include "chrome/browser/ui/gtk/owned_widget_gtk.h"
+#include "content/browser/tab_contents/constrained_window.h"
 #include "ui/base/gtk/gtk_signal.h"
 
 class TabContents;

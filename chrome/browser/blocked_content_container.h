@@ -13,7 +13,7 @@
 
 #include <vector>
 
-#include "chrome/browser/tab_contents/tab_contents_delegate.h"
+#include "content/browser/tab_contents/tab_contents_delegate.h"
 
 // Takes ownership of TabContents that are unrequested popup windows.
 class BlockedContentContainer : public TabContentsDelegate {

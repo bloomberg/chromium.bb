@@ -10,7 +10,7 @@
 
 #include "base/task.h"
 #include "chrome/browser/chromeos/network_state_notifier.h"
-#include "chrome/browser/tab_contents/interstitial_page.h"
+#include "content/browser/tab_contents/interstitial_page.h"
 
 class DictionaryValue;
 class Extension;

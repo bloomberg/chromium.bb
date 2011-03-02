@@ -4,10 +4,10 @@
 
 #include "chrome/browser/ui/views/location_bar/click_handler.h"
 
-#include "chrome/browser/tab_contents/navigation_controller.h"
-#include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/browser/ui/views/location_bar/location_bar_view.h"
+#include "content/browser/tab_contents/navigation_controller.h"
+#include "content/browser/tab_contents/tab_contents.h"
 #include "views/view.h"
 
 ClickHandler::ClickHandler(const views::View* owner,

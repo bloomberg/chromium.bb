@@ -9,9 +9,9 @@
 #include "base/basictypes.h"
 #include "base/scoped_ptr.h"
 #include "base/compiler_specific.h"
-#include "chrome/browser/tab_contents/tab_contents.h"
-#include "chrome/browser/tab_contents/tab_contents_observer.h"
 #include "chrome/common/notification_registrar.h"
+#include "content/browser/tab_contents/tab_contents.h"
+#include "content/browser/tab_contents/tab_contents_observer.h"
 
 class Extension;
 class FindTabHelper;

@@ -6,7 +6,7 @@
 #define CHROME_BROWSER_PLUGIN_OBSERVER_H_
 #pragma once
 
-#include "chrome/browser/tab_contents/tab_contents_observer.h"
+#include "content/browser/tab_contents/tab_contents_observer.h"
 
 class FilePath;
 class GURL;

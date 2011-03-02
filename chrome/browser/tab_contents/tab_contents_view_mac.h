@@ -12,10 +12,10 @@
 #include <vector>
 
 #include "base/scoped_nsobject.h"
-#include "chrome/browser/tab_contents/tab_contents_view.h"
 #include "chrome/browser/ui/cocoa/base_view.h"
 #include "chrome/common/notification_observer.h"
 #include "chrome/common/notification_registrar.h"
+#include "content/browser/tab_contents/tab_contents_view.h"
 #include "ui/gfx/size.h"
 
 @class FocusTracker;

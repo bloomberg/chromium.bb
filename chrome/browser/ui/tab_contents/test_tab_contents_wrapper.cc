@@ -4,9 +4,9 @@
 
 #include "chrome/browser/ui/tab_contents/test_tab_contents_wrapper.h"
 
-#include "chrome/browser/tab_contents/test_tab_contents.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/test/testing_profile.h"
+#include "content/browser/tab_contents/test_tab_contents.h"
 
 TabContentsWrapperTestHarness::TabContentsWrapperTestHarness()
     : RenderViewHostTestHarness() {
