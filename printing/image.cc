@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,7 +6,9 @@
 
 #include "base/file_util.h"
 #include "base/md5.h"
+#include "base/scoped_ptr.h"
 #include "base/string_number_conversions.h"
+#include "printing/native_metafile_factory.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/gfx/codec/png_codec.h"
 
@@ -144,9 +146,10 @@ bool Image::LoadPng(const std::string& compressed) {
 
 bool Image::LoadMetafile(const std::string& data) {
   DCHECK(!data.empty());
-  NativeMetafile metafile;
-  metafile.Init(data.data(), data.size());
-  return LoadMetafile(metafile);
+  scoped_ptr<NativeMetafile> metafile(
+      printing::NativeMetafileFactory::CreateMetafile());
+  metafile->Init(data.data(), data.size());
+  return LoadMetafile(*metafile);
 }
 
 }  // namespace printing

@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -11,6 +11,8 @@
 
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/rect.h"
+
+namespace printing {
 
 TEST(PdfMetafileTest, Pdf) {
   // Test in-renderer constructor.
@@ -60,3 +62,5 @@ TEST(PdfMetafileTest, Pdf) {
   EXPECT_EQ(720, page_size.width());
   EXPECT_EQ(540, page_size.height());
 }
+
+}  // namespace printing

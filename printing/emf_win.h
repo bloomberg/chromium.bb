@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -9,6 +9,8 @@
 #include <vector>
 
 #include "base/basictypes.h"
+#include "base/gtest_prod_util.h"
+#include "printing/native_metafile_win.h"
 
 class FilePath;
 
@@ -19,30 +21,31 @@ class Rect;
 namespace printing {
 
 // Simple wrapper class that manage an EMF data stream and its virtual HDC.
-class Emf {
+class Emf : public NativeMetafile {
  public:
   class Record;
   class Enumerator;
   struct EnumerationContext;
 
-  Emf();
-  ~Emf();
+  virtual ~Emf();
 
   // Initializes the Emf with the data in |src_buffer|. Returns true on success.
-  bool Init(const void* src_buffer, uint32 src_buffer_size);
+  virtual bool Init(const void* src_buffer, uint32 src_buffer_size);
 
   // Generates a virtual HDC that will record every GDI commands and compile it
   // in a EMF data stream.
   // hdc is used to setup the default DPI and color settings. hdc is optional.
   // rect specifies the dimensions (in .01-millimeter units) of the EMF. rect is
   // optional.
-  bool CreateDc(HDC sibling, const RECT* rect);
+  virtual bool CreateDc(HDC sibling, const RECT* rect);
 
   // Similar to the above method but the metafile is backed by a file.
-  bool CreateFileBackedDc(HDC sibling, const RECT* rect, const FilePath& path);
+  virtual bool CreateFileBackedDc(HDC sibling,
+                                  const RECT* rect,
+                                  const FilePath& path);
 
     // Load an EMF file.
-  bool CreateFromFile(const FilePath& metafile_path);
+  virtual bool CreateFromFile(const FilePath& metafile_path);
 
   // TODO(maruel): CreateFromFile(). If ever used. Maybe users would like to
   // have the ability to save web pages to an EMF file? Afterward, it is easy to
@@ -50,10 +53,10 @@ class Emf {
 
   // Closes the HDC created by CreateDc() and generates the compiled EMF
   // data.
-  bool CloseDc();
+  virtual bool CloseDc();
 
   // Closes the EMF data handle when it is not needed anymore.
-  void CloseEmf();
+  virtual void CloseEmf();
 
   // "Plays" the EMF buffer in a HDC. It is the same effect as calling the
   // original GDI function that were called when recording the EMF. |rect| is in
@@ -63,47 +66,56 @@ class Emf {
   // functions, whether used directly or indirectly through precompiled EMF
   // data. We have to accept the risk here. Since it is used only for printing,
   // it requires user intervention.
-  bool Playback(HDC hdc, const RECT* rect) const;
+  virtual bool Playback(HDC hdc, const RECT* rect) const;
 
   // The slow version of Playback(). It enumerates all the records and play them
   // back in the HDC. The trick is that it skip over the records known to have
   // issue with some printers. See Emf::Record::SafePlayback implementation for
   // details.
-  bool SafePlayback(HDC hdc) const;
+  virtual bool SafePlayback(HDC hdc) const;
 
   // Retrieves the bounds of the painted area by this EMF buffer. This value
   // should be passed to Playback to keep the exact same size.
-  gfx::Rect GetBounds() const;
+  virtual gfx::Rect GetBounds() const;
 
   // Retrieves the EMF stream size.
-  uint32 GetDataSize() const;
+  virtual uint32 GetDataSize() const;
 
   // Retrieves the EMF stream.
-  bool GetData(void* buffer, uint32 size) const;
+  virtual bool GetData(void* buffer, uint32 size) const;
 
   // Retrieves the EMF stream. It is an helper function.
-  bool GetData(std::vector<uint8>* buffer) const;
+  virtual bool GetData(std::vector<uint8>* buffer) const;
 
-  HENHMETAFILE emf() const {
+  virtual HENHMETAFILE emf() const {
     return emf_;
   }
 
-  HDC hdc() const {
+  virtual HDC hdc() const {
     return hdc_;
   }
 
   // Inserts a custom GDICOMMENT records indicating StartPage/EndPage calls
   // (since StartPage and EndPage do not work in a metafile DC). Only valid
   // when hdc_ is non-NULL.
-  bool StartPage();
-  bool EndPage();
+  virtual bool StartPage();
+  virtual bool EndPage();
 
   // Saves the EMF data to a file as-is. It is recommended to use the .emf file
   // extension but it is not enforced. This function synchronously writes to the
   // file. For testing only.
-  bool SaveTo(const std::wstring& filename) const;
+  virtual bool SaveTo(const std::wstring& filename) const;
+
+ protected:
+  Emf();
 
  private:
+  friend class NativeMetafileFactory;
+  FRIEND_TEST_ALL_PREFIXES(EmfTest, DC);
+  FRIEND_TEST_ALL_PREFIXES(EmfTest, FileBackedDC);
+  FRIEND_TEST_ALL_PREFIXES(EmfPrintingTest, Enumerate);
+  FRIEND_TEST_ALL_PREFIXES(EmfPrintingTest, PageBreak);
+
   // Playbacks safely one EMF record.
   static int CALLBACK SafePlaybackProc(HDC hdc,
                                        HANDLETABLE* handle_table,

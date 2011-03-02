@@ -9,7 +9,9 @@
 
 #if defined(OS_CHROMEOS)
 #include <unicode/ulocdata.h>
-#include <printing/native_metafile.h>
+
+#include "printing/native_metafile.h"
+#include "printing/pdf_ps_metafile_cairo.h"
 #else
 #include <gtk/gtk.h>
 #include <gtk/gtkprintunixdialog.h>
@@ -119,12 +121,12 @@ PrintingContext::Result PrintingContextCairo::UseDefaultSettings() {
 
   physical_size_device_units.SetSize(width, height);
   printable_area_device_units.SetRect(
-      static_cast<int>(NativeMetafile::kLeftMarginInInch * dpi),
-      static_cast<int>(NativeMetafile::kTopMarginInInch * dpi),
-      width - (NativeMetafile::kLeftMarginInInch +
-          NativeMetafile::kRightMarginInInch) * dpi,
-      height - (NativeMetafile::kTopMarginInInch +
-          NativeMetafile::kBottomMarginInInch) * dpi);
+      static_cast<int>(PdfPsMetafile::kLeftMarginInInch * dpi),
+      static_cast<int>(PdfPsMetafile::kTopMarginInInch * dpi),
+      width - (PdfPsMetafile::kLeftMarginInInch +
+          PdfPsMetafile::kRightMarginInInch) * dpi,
+      height - (PdfPsMetafile::kTopMarginInInch +
+          PdfPsMetafile::kBottomMarginInInch) * dpi);
 
   settings_.set_dpi(dpi);
   settings_.SetPrinterPrintableArea(physical_size_device_units,

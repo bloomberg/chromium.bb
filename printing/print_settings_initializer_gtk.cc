@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -9,7 +9,7 @@
 
 #include "base/string_piece.h"
 #include "base/utf_string_conversions.h"
-#include "printing/native_metafile.h"
+#include "printing/pdf_ps_metafile_cairo.h"
 #include "printing/print_settings.h"
 #include "printing/units.h"
 
@@ -58,19 +58,19 @@ void PrintSettingsInitializerGtk::InitPrintSettings(
     double page_width_in_pixel = 8.5 * dpi;
     double page_height_in_pixel = 11.0 * dpi;
     physical_size_device_units.SetSize(
-      static_cast<int>(page_width_in_pixel),
-      static_cast<int>(page_height_in_pixel));
+        static_cast<int>(page_width_in_pixel),
+        static_cast<int>(page_height_in_pixel));
     printable_area_device_units.SetRect(
-      static_cast<int>(
-          NativeMetafile::kLeftMarginInInch * dpi),
-      static_cast<int>(
-          NativeMetafile::kTopMarginInInch * dpi),
-      page_width_in_pixel -
-      (NativeMetafile::kLeftMarginInInch +
-       NativeMetafile::kRightMarginInInch) * dpi,
-      page_height_in_pixel -
-      (NativeMetafile::kTopMarginInInch +
-       NativeMetafile::kBottomMarginInInch) * dpi);
+        static_cast<int>(
+            PdfPsMetafile::kLeftMarginInInch * dpi),
+        static_cast<int>(
+            PdfPsMetafile::kTopMarginInInch * dpi),
+        page_width_in_pixel -
+            (PdfPsMetafile::kLeftMarginInInch +
+             PdfPsMetafile::kRightMarginInInch) * dpi,
+        page_height_in_pixel -
+            (PdfPsMetafile::kTopMarginInInch +
+             PdfPsMetafile::kBottomMarginInInch) * dpi);
   }
 
   print_settings->set_dpi(dpi);

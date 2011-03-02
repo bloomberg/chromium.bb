@@ -15,12 +15,18 @@
 
 typedef struct _cairo cairo_t;
 
+namespace {
+
 class PdfPsTest : public testing::Test {
  protected:
   base::FileDescriptor DevNullFD() {
     return base::FileDescriptor(open("/dev/null", O_WRONLY), true);
   }
 };
+
+}  // namespace
+
+namespace printing {
 
 TEST_F(PdfPsTest, Pdf) {
   // Tests in-renderer constructor.
@@ -81,3 +87,5 @@ TEST_F(PdfPsTest, Pdf) {
   pdf3.GetData(WriteInto(&output, size + 1), size);
   EXPECT_EQ(test_raw_data, output);
 }
+
+}  // namespace printing

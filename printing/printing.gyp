@@ -1,4 +1,4 @@
-# Copyright (c) 2010 The Chromium Authors. All rights reserved.
+# Copyright (c) 2011 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -36,6 +36,11 @@
         'image_mac.cc',
         'image_win.cc',
         'image.h',
+        'native_metafile_factory.cc',
+        'native_metafile_factory.h',
+        'native_metafile_linux.h',
+        'native_metafile_mac.h',
+        'native_metafile_win.h',
         'native_metafile.h',
         'page_number.cc',
         'page_number.h',

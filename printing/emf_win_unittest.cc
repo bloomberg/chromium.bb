@@ -39,6 +39,8 @@ const uint32 EMF_HEADER_SIZE = 128;
 
 }  // namespace
 
+namespace printing {
+
 TEST(EmfTest, DC) {
   // Simplest use case.
   printing::Emf emf;
@@ -195,3 +197,4 @@ TEST(EmfTest, FileBackedDC) {
   emf.CloseEmf();
 }
 
+}  // namespace printing
