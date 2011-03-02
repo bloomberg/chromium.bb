@@ -72,6 +72,9 @@ const char kGuestModeLoggingLevel[] = "1";
 // Format of command line switch.
 const char kSwitchFormatString[] = " --%s=\"%s\"";
 
+// User name which is used in the Guest session.
+const char kGuestUserName[] = "";
+
 // Resets the proxy configuration service for the default request context.
 class ResetDefaultProxyConfigServiceTask : public Task {
  public:
@@ -423,6 +426,8 @@ std::string LoginUtilsImpl::GetOffTheRecordCommandLine(
   command_line->AppendSwitch(switches::kIncognito);
   command_line->AppendSwitchASCII(switches::kLoggingLevel,
                                  kGuestModeLoggingLevel);
+
+  command_line->AppendSwitchASCII(switches::kLoginUser, kGuestUserName);
 
   if (start_url.is_valid())
     command_line->AppendArg(start_url.spec());

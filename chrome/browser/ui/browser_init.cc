@@ -485,12 +485,8 @@ void RecordAppLaunches(
     Profile* profile,
     const std::vector<GURL>& cmd_line_urls,
     const std::vector<BrowserInit::LaunchWithProfile::Tab>& autolaunch_tabs) {
-  // TODO: the ExtensionService should never be NULL, but in some cases it is,
-  // see bug 73768. After it is resolved, the explicit test can go away.
   ExtensionService* extension_service = profile->GetExtensionService();
-  if (!extension_service)
-    return;
-
+  DCHECK(extension_service);
   for (size_t i = 0; i < cmd_line_urls.size(); ++i) {
     if (extension_service->IsInstalledApp(cmd_line_urls.at(i))) {
       UMA_HISTOGRAM_ENUMERATION(extension_misc::kAppLaunchHistogram,
@@ -498,7 +494,6 @@ void RecordAppLaunches(
                                 extension_misc::APP_LAUNCH_BUCKET_BOUNDARY);
     }
   }
-
   for (size_t i = 0; i < autolaunch_tabs.size(); ++i) {
     if (extension_service->IsInstalledApp(autolaunch_tabs.at(i).url)) {
       UMA_HISTOGRAM_ENUMERATION(extension_misc::kAppLaunchHistogram,

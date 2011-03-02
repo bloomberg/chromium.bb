@@ -132,8 +132,10 @@ bool AppLauncherHandler::HandlePing(Profile* profile, const std::string& path) {
 
   // At this point, the user must have used the app launcher, so we hide the
   // promo if its still displayed.
-  if (is_promo_active)
+  if (is_promo_active) {
+    DCHECK(profile->GetExtensionService());
     profile->GetExtensionService()->default_apps()->SetPromoHidden();
+  }
 
   if (is_web_store_ping) {
     RecordWebStoreLaunch(is_promo_active);
@@ -477,10 +479,8 @@ void AppLauncherHandler::RecordAppLaunchByURL(
   CHECK(bucket != extension_misc::APP_LAUNCH_BUCKET_INVALID);
 
   GURL url(UnescapeURLComponent(escaped_url, kUnescapeRules));
-  // TODO: the ExtensionService should never be NULL, but in some cases it is,
-  // see bug 73768. After it is resolved, the explicit test can go away.
-  ExtensionService* service = profile->GetExtensionService();
-  if (!service || !service->IsInstalledApp(url))
+  DCHECK(profile->GetExtensionService());
+  if (!profile->GetExtensionService()->IsInstalledApp(url))
     return;
 
   UMA_HISTOGRAM_ENUMERATION(extension_misc::kAppLaunchHistogram, bucket,

@@ -155,10 +155,8 @@ void RemoveEntryByID(SessionID::id_type id,
 void RecordAppLaunch(Browser* browser, const TabRestoreService::Tab& tab) {
   GURL url = tab.navigations.at(tab.current_navigation_index).virtual_url();
   Profile* profile = browser->profile();
-  // TODO: the ExtensionService should never be NULL, but in some cases it is,
-  // see bug 73768. After it is resolved, the explicit test can go away.
-  ExtensionService* service = profile->GetExtensionService();
-  if (!service || !service->IsInstalledApp(url))
+  DCHECK(profile->GetExtensionService());
+  if (!profile->GetExtensionService()->IsInstalledApp(url))
     return;
 
   UMA_HISTOGRAM_ENUMERATION(extension_misc::kAppLaunchHistogram,

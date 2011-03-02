@@ -109,10 +109,8 @@ void SetToolBarStyle() {
 }
 
 void RecordAppLaunch(Profile* profile, GURL url) {
-  // TODO: the ExtensionService should never be NULL, but in some cases it is,
-  // see bug 73768. After it is resolved, the explicit test can go away.
-  ExtensionService* service = profile->GetExtensionService();
-  if (!service || !service->IsInstalledApp(url))
+  DCHECK(profile->GetExtensionService());
+  if (!profile->GetExtensionService()->IsInstalledApp(url))
     return;
 
   UMA_HISTOGRAM_ENUMERATION(extension_misc::kAppLaunchHistogram,
