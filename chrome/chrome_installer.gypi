@@ -123,7 +123,11 @@
             {
               'rule_name': 'installer_util_strings',
               'extension': 'grd',
+              'variables': {
+                'create_string_rc_py' : 'installer/util/prebuild/create_string_rc.py',
+              },
               'inputs': [
+                '<(create_string_rc_py)',
                 '<(RULE_INPUT_PATH)',
               ],
               'outputs': [
@@ -134,7 +138,7 @@
                 '<(SHARED_INTERMEDIATE_DIR)/installer_util_strings/installer_util_strings.h',
               ],
               'action': ['python',
-                         'installer/util/prebuild/create_string_rc.py',
+                         '<(create_string_rc_py)',
                          '<(SHARED_INTERMEDIATE_DIR)/installer_util_strings',
                          '<(branding)',],
               'message': 'Generating resources from <(RULE_INPUT_PATH)',
