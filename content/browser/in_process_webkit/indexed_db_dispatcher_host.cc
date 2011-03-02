@@ -833,6 +833,7 @@ bool IndexedDBDispatcherHost::CursorDispatcherHost::OnMessageReceived(
                            message, *msg_is_ok)
     IPC_MESSAGE_HANDLER(IndexedDBHostMsg_CursorDirection, OnDirection)
     IPC_MESSAGE_HANDLER(IndexedDBHostMsg_CursorKey, OnKey)
+    IPC_MESSAGE_HANDLER(IndexedDBHostMsg_CursorPrimaryKey, OnPrimaryKey)
     IPC_MESSAGE_HANDLER(IndexedDBHostMsg_CursorValue, OnValue)
     IPC_MESSAGE_HANDLER(IndexedDBHostMsg_CursorUpdate, OnUpdate)
     IPC_MESSAGE_HANDLER(IndexedDBHostMsg_CursorContinue, OnContinue)
@@ -865,6 +866,15 @@ void IndexedDBDispatcherHost::CursorDispatcherHost::OnKey(
     return;
 
   *key = IndexedDBKey(idb_cursor->key());
+}
+
+void IndexedDBDispatcherHost::CursorDispatcherHost::OnPrimaryKey(
+    int32 object_id, IndexedDBKey* primary_key) {
+  WebIDBCursor* idb_cursor = parent_->GetOrTerminateProcess(&map_, object_id);
+  if (!idb_cursor)
+    return;
+
+  *primary_key = IndexedDBKey(idb_cursor->primaryKey());
 }
 
 void IndexedDBDispatcherHost::CursorDispatcherHost::OnValue(

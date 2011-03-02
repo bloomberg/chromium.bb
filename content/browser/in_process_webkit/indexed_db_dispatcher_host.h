@@ -215,6 +215,7 @@ class IndexedDBDispatcherHost : public BrowserMessageFilter {
 
     void OnDirection(int32 idb_object_store_id, int32* direction);
     void OnKey(int32 idb_object_store_id, IndexedDBKey* key);
+    void OnPrimaryKey(int32 idb_object_store_id, IndexedDBKey* primary_key);
     void OnValue(int32 idb_object_store_id,
                  SerializedScriptValue* script_value,
                  IndexedDBKey* key);

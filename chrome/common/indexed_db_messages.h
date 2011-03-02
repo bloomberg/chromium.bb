@@ -182,6 +182,11 @@ IPC_SYNC_MESSAGE_CONTROL1_1(IndexedDBHostMsg_CursorKey,
                             int32, /* idb_cursor_id */
                             IndexedDBKey /* key */)
 
+// WebIDBCursor::primaryKey() message.
+IPC_SYNC_MESSAGE_CONTROL1_1(IndexedDBHostMsg_CursorPrimaryKey,
+                            int32, /* idb_cursor_id */
+                            IndexedDBKey /* primary_key */)
+
 // WebIDBCursor::value() message.
 IPC_SYNC_MESSAGE_CONTROL1_2(IndexedDBHostMsg_CursorValue,
                             int32, /* idb_cursor_id */

@@ -40,6 +40,13 @@ WebIDBKey RendererWebIDBCursorImpl::key() const {
   return key;
 }
 
+WebIDBKey RendererWebIDBCursorImpl::primaryKey() const {
+  IndexedDBKey primaryKey;
+  RenderThread::current()->Send(
+      new IndexedDBHostMsg_CursorPrimaryKey(idb_cursor_id_, &primaryKey));
+  return primaryKey;
+}
+
 void RendererWebIDBCursorImpl::value(
     WebSerializedScriptValue& webScriptValue,
     WebIDBKey& webKey) const {
