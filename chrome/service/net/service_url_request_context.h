@@ -31,8 +31,7 @@ class MessageLoopProxy;
 //
 class ServiceURLRequestContext : public net::URLRequestContext {
  public:
-  explicit ServiceURLRequestContext(const std::string& user_agent,
-                                    net::ProxyService* net_proxy_service);
+  explicit ServiceURLRequestContext(const std::string& user_agent);
 
   // Overridden from net::URLRequestContext:
   virtual const std::string& GetUserAgent(const GURL& url) const;
@@ -46,6 +45,8 @@ class ServiceURLRequestContext : public net::URLRequestContext {
 
 class ServiceURLRequestContextGetter : public URLRequestContextGetter {
  public:
+  ServiceURLRequestContextGetter();
+
   virtual net::URLRequestContext* GetURLRequestContext();
   virtual scoped_refptr<base::MessageLoopProxy> GetIOMessageLoopProxy() const;
 
@@ -55,18 +56,12 @@ class ServiceURLRequestContextGetter : public URLRequestContextGetter {
   std::string user_agent() const {
     return user_agent_;
   }
-
  private:
-  friend class ServiceProcess;
-  ServiceURLRequestContextGetter();
   virtual ~ServiceURLRequestContextGetter();
-
-  void CreateProxyService();
 
   std::string user_agent_;
   scoped_refptr<net::URLRequestContext> url_request_context_;
   scoped_refptr<base::MessageLoopProxy> io_message_loop_proxy_;
-  scoped_refptr<net::ProxyService> proxy_service_;
 };
 
 #endif  // CHROME_SERVICE_NET_SERVICE_URL_REQUEST_CONTEXT_H_

@@ -6,7 +6,6 @@
 
 #include "base/message_loop_proxy.h"
 #include "chrome/service/net/service_url_request_context.h"
-#include "chrome/service/service_process.h"
 #include "googleurl/src/gurl.h"
 
 ServiceGaiaAuthenticator::ServiceGaiaAuthenticator(
@@ -64,8 +63,9 @@ void ServiceGaiaAuthenticator::DoPost(const GURL& post_url,
                                       const std::string& post_body) {
   DCHECK(io_message_loop_proxy_->BelongsToCurrentThread());
   URLFetcher* request = new URLFetcher(post_url, URLFetcher::POST, this);
-  request->set_request_context(
-      g_service_process->GetServiceURLRequestContextGetter());
+  ServiceURLRequestContextGetter* context_getter =
+      new ServiceURLRequestContextGetter();
+  request->set_request_context(context_getter);
   request->set_upload_data("application/x-www-form-urlencoded", post_body);
   request->Start();
 }
@@ -89,3 +89,4 @@ void ServiceGaiaAuthenticator::OnURLFetchComplete(
   http_post_completed_.Signal();
   // WARNING: DONT DO ANYTHING AFTER THIS CALL! |this| may be deleted!
 }
+

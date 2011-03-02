@@ -104,12 +104,20 @@ std::string MakeUserAgentForServiceProcess() {
 }  // namespace
 
 ServiceURLRequestContext::ServiceURLRequestContext(
-    const std::string& user_agent,
-    net::ProxyService* net_proxy_service) : user_agent_(user_agent) {
+    const std::string& user_agent) : user_agent_(user_agent) {
   set_host_resolver(
       net::CreateSystemHostResolver(net::HostResolver::kDefaultParallelism,
                                     NULL, NULL));
-  set_proxy_service(net_proxy_service);
+  DCHECK(g_service_process);
+  // TODO(sanjeevr): Change CreateSystemProxyConfigService to accept a
+  // MessageLoopProxy* instead of MessageLoop*.
+  // Also this needs to be created on the UI thread on Linux. Fix this.
+  net::ProxyConfigService * proxy_config_service =
+      net::ProxyService::CreateSystemProxyConfigService(
+          g_service_process->io_thread()->message_loop(),
+          g_service_process->file_thread()->message_loop());
+  set_proxy_service(net::ProxyService::CreateUsingSystemProxyResolver(
+      proxy_config_service, 0u, NULL));
   set_cert_verifier(new net::CertVerifier);
   set_dnsrr_resolver(new net::DnsRRResolver);
   set_ftp_transaction_factory(new net::FtpNetworkLayer(host_resolver()));
@@ -156,23 +164,12 @@ ServiceURLRequestContextGetter::ServiceURLRequestContextGetter()
           g_service_process->io_thread()->message_loop_proxy()) {
   // Build the default user agent.
   user_agent_ = MakeUserAgentForServiceProcess();
-
-#if !defined(OS_MACOSX)
-  // Create the proxy service now, at initialization time, on the main thread.
-  // The Mac needs it created later, on the I/O thread.
-  CreateProxyService();
-#endif
 }
 
 net::URLRequestContext*
 ServiceURLRequestContextGetter::GetURLRequestContext() {
-#if defined(OS_MACOSX)
-  if (!proxy_service_)
-    CreateProxyService();
-#endif
   if (!url_request_context_)
-    url_request_context_ = new ServiceURLRequestContext(user_agent_,
-                                                        proxy_service_);
+    url_request_context_ = new ServiceURLRequestContext(user_agent_);
   return url_request_context_;
 }
 
@@ -182,15 +179,3 @@ ServiceURLRequestContextGetter::GetIOMessageLoopProxy() const {
 }
 
 ServiceURLRequestContextGetter::~ServiceURLRequestContextGetter() {}
-
-void ServiceURLRequestContextGetter::CreateProxyService() {
-  // TODO(sanjeevr): Change CreateSystemProxyConfigService to accept a
-  // MessageLoopProxy* instead of MessageLoop*.
-  DCHECK(g_service_process);
-  net::ProxyConfigService * proxy_config_service =
-      net::ProxyService::CreateSystemProxyConfigService(
-          g_service_process->io_thread()->message_loop(),
-          g_service_process->file_thread()->message_loop());
-  proxy_service_ = net::ProxyService::CreateUsingSystemProxyResolver(
-      proxy_config_service, 0u, NULL);
-}

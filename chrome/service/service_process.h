@@ -19,7 +19,6 @@
 class ServiceProcessPrefs;
 class ServiceIPCServer;
 class CommandLine;
-class ServiceURLRequestContextGetter;
 
 namespace net {
 class NetworkChangeNotifier;
@@ -99,8 +98,6 @@ class ServiceProcess : public CloudPrintProxy::Client,
   }
 #endif
 
-  ServiceURLRequestContextGetter* GetServiceURLRequestContextGetter();
-
  private:
   // Schedule a call to ShutdownIfNeeded.
   void ScheduleShutdownCheck();
@@ -132,8 +129,6 @@ class ServiceProcess : public CloudPrintProxy::Client,
 
   // Speficies whether a product update is available.
   bool update_available_;
-
-  scoped_refptr<ServiceURLRequestContextGetter> request_context_getter_;
 
 #if defined(ENABLE_REMOTING)
   scoped_refptr<remoting::ChromotingHostManager> remoting_host_manager_;
