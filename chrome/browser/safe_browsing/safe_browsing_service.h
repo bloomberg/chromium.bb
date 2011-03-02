@@ -18,6 +18,7 @@
 #include "base/ref_counted.h"
 #include "base/scoped_ptr.h"
 #include "base/synchronization/lock.h"
+#include "base/task.h"
 #include "base/time.h"
 #include "chrome/browser/safe_browsing/safe_browsing_util.h"
 #include "googleurl/src/gurl.h"
@@ -82,6 +83,14 @@ class SafeBrowsingService
     std::vector<SBPrefix> prefix_hits;
     std::vector<SBFullHashResult> full_hits;
 
+    // Task to make the callback to safebrowsing clients in case
+    // safebrowsing check takes too long to finish. Not owned by
+    // this class.
+    // TODO(lzheng): We should consider to use this time out check
+    // for browsing too (instead of implementin in
+    // safe_browsing_resource_handler.cc).
+    CancelableTask* timeout_task;
+
    private:
     DISALLOW_COPY_AND_ASSIGN(SafeBrowsingCheck);
   };
@@ -120,10 +129,6 @@ class SafeBrowsingService
   // Create an instance of the safe browsing service.
   static SafeBrowsingService* CreateSafeBrowsingService();
 
-  // Called on UI thread to decide if safe browsing related stats
-  // could be reported.
-  bool CanReportStats() const;
-
   // Called on the UI thread to initialize the service.
   void Initialize();
 
@@ -132,6 +137,10 @@ class SafeBrowsingService
 
   // Returns true if the url's scheme can be checked.
   bool CanCheckUrl(const GURL& url) const;
+
+  // Called on UI thread to decide if safe browsing related stats
+  // could be reported.
+  bool CanReportStats() const;
 
   // Called on UI thread to decide if the download file's sha256 hash
   // should be calculated for safebrowsing.
@@ -353,11 +362,26 @@ class SafeBrowsingService
   // safe_browsing_thread_.
   void CheckDownloadUrlOnSBThread(SafeBrowsingCheck* check);
 
+  // The callback function when a safebrowsing check is timed out. Client will
+  // be notified that the safebrowsing check is SAFE when this happens.
+  void TimeoutCallback(SafeBrowsingCheck* check);
+
   // Calls the Client's callback on IO thread after CheckDownloadUrl finishes.
   void CheckDownloadUrlDone(SafeBrowsingCheck* check);
 
   // Calls the Client's callback on IO thread after CheckDownloadHash finishes.
   void CheckDownloadHashDone(SafeBrowsingCheck* check);
+
+  // Helper function that calls safe browsing client and cleans up |checks_|.
+  void SafeBrowsingCheckDone(SafeBrowsingCheck* check);
+
+  // Helper function to set |check| with default values and start a safe
+  // browsing check with timeout of |timeout_ms|. |task| will be called upon
+  // success, otherwise TimeoutCallback will be called.
+  void StartDownloadCheck(SafeBrowsingCheck* check,
+                          Client* client,
+                          CancelableTask* task,
+                          int64 timeout_ms);
 
   // The factory used to instanciate a SafeBrowsingService object.
   // Useful for tests, so they can provide their own implementation of
@@ -408,6 +432,13 @@ class SafeBrowsingService
   bool closing_database_;
 
   std::deque<QueuedCheck> queued_checks_;
+
+  // When download url check takes this long, client's callback will be called
+  // without waiting for the result.
+  int64 download_urlcheck_timeout_ms_;
+
+  // Similar to |download_urlcheck_timeout_ms_|, but for download hash checks.
+  int64 download_hashcheck_timeout_ms_;
 
   DISALLOW_COPY_AND_ASSIGN(SafeBrowsingService);
 };

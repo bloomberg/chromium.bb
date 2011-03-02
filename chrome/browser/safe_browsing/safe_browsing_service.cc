@@ -46,6 +46,13 @@ const char* const kSbDefaultInfoURLPrefix =
 const char* const kSbDefaultMacKeyURLPrefix =
     "https://sb-ssl.google.com/safebrowsing";
 
+// When download url check takes this long, client's callback will be called
+// without waiting for the result.
+const int64 kDownloadUrlCheckTimeoutMs = 10000;
+
+// Similar to kDownloadUrlCheckTimeoutMs, but for download hash checks.
+const int64 kDownloadHashCheckTimeoutMs = 10000;
+
 // TODO(lzheng): Replace this with Profile* ProfileManager::GetDefaultProfile().
 Profile* GetDefaultProfile() {
   FilePath user_data_dir;
@@ -118,7 +125,8 @@ SafeBrowsingService::SafeBrowsingCheck::SafeBrowsingCheck()
       client(NULL),
       need_get_hash(false),
       result(SAFE),
-      is_download(false) {
+      is_download(false),
+      timeout_task(NULL) {
 }
 
 SafeBrowsingService::SafeBrowsingCheck::~SafeBrowsingCheck() {}
@@ -150,7 +158,9 @@ SafeBrowsingService::SafeBrowsingService()
       enable_download_protection_(false),
       update_in_progress_(false),
       database_update_in_progress_(false),
-      closing_database_(false) {
+      closing_database_(false),
+      download_urlcheck_timeout_ms_(kDownloadUrlCheckTimeoutMs),
+      download_hashcheck_timeout_ms_(kDownloadHashCheckTimeoutMs) {
 }
 
 void SafeBrowsingService::Initialize() {
@@ -186,86 +196,6 @@ bool SafeBrowsingService::DownloadBinHashNeeded() const {
   return enable_download_protection_ && CanReportStats();
 }
 
-void SafeBrowsingService::CheckDownloadUrlDone(SafeBrowsingCheck* check) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  DCHECK(enable_download_protection_);
-  DCHECK(check);
-
-  if (!enabled_)
-    return;
-
-  VLOG(1) << "CheckDownloadUrlDone: " << check->result;
-  DCHECK(checks_.find(check) != checks_.end());
-  if (check->client)
-    check->client->OnSafeBrowsingResult(*check);
-  checks_.erase(check);
-  delete check;
-}
-
-void SafeBrowsingService::CheckDownloadUrlOnSBThread(SafeBrowsingCheck* check) {
-  DCHECK_EQ(MessageLoop::current(), safe_browsing_thread_->message_loop());
-  DCHECK(enable_download_protection_);
-
-  SBPrefix prefix_hit;
-
-  if (!database_->ContainsDownloadUrl(*(check->url), &prefix_hit)) {
-    // Good, we don't have hash for this url prefix.
-    check->result = SAFE;
-    BrowserThread::PostTask(
-        BrowserThread::IO, FROM_HERE,
-        NewRunnableMethod(this,
-                          &SafeBrowsingService::CheckDownloadUrlDone,
-                          check));
-    return;
-  }
-
-  check->need_get_hash = true;
-  check->prefix_hits.clear();
-  check->prefix_hits.push_back(prefix_hit);
-  BrowserThread::PostTask(
-      BrowserThread::IO, FROM_HERE,
-      NewRunnableMethod(this, &SafeBrowsingService::OnCheckDone, check));
-}
-
-void SafeBrowsingService::CheckDownloadHashDone(SafeBrowsingCheck* check) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  DCHECK(enable_download_protection_);
-  DCHECK(check);
-
-  if (!enabled_)
-    return;
-
-  VLOG(1) << "CheckDownloadHashDone: " << check->result;
-  DCHECK(checks_.find(check) != checks_.end());
-  if (check->client)
-    check->client->OnSafeBrowsingResult(*check);
-  checks_.erase(check);
-  delete check;
-}
-
-void SafeBrowsingService::CheckDownloadHashOnSBThread(
-    SafeBrowsingCheck* check) {
-  DCHECK_EQ(MessageLoop::current(), safe_browsing_thread_->message_loop());
-  DCHECK(enable_download_protection_);
-
-  if (!database_->ContainsDownloadHashPrefix(check->full_hash->prefix)) {
-    // Good, we don't have hash for this url prefix.
-    check->result = SAFE;
-    BrowserThread::PostTask(
-        BrowserThread::IO, FROM_HERE,
-        NewRunnableMethod(this,
-                          &SafeBrowsingService::CheckDownloadHashDone,
-                          check));
-    return;
-  }
-
-  check->need_get_hash = true;
-  check->prefix_hits.push_back(check->full_hash->prefix);
-  BrowserThread::PostTask(
-      BrowserThread::IO, FROM_HERE,
-      NewRunnableMethod(this, &SafeBrowsingService::OnCheckDone, check));
-}
-
 bool SafeBrowsingService::CheckDownloadUrl(const GURL& url,
                                            Client* client) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
@@ -275,15 +205,14 @@ bool SafeBrowsingService::CheckDownloadUrl(const GURL& url,
   // We need to check the database for url prefix, and later may fetch the url
   // from the safebrowsing backends. These need to be asynchronous.
   SafeBrowsingCheck* check = new SafeBrowsingCheck();
-
   check->url.reset(new GURL(url));
-  check->client = client;
-  check->result = SAFE;
-  check->is_download = true;
-  checks_.insert(check);
-  safe_browsing_thread_->message_loop()->PostTask(FROM_HERE, NewRunnableMethod(
-      this, &SafeBrowsingService::CheckDownloadUrlOnSBThread, check));
-
+  StartDownloadCheck(
+      check,
+      client,
+      NewRunnableMethod(this,
+                        &SafeBrowsingService::CheckDownloadUrlOnSBThread,
+                        check),
+      download_urlcheck_timeout_ms_);
   return false;
 }
 
@@ -296,16 +225,15 @@ bool SafeBrowsingService::CheckDownloadHash(const std::string& full_hash,
   // We need to check the database for url prefix, and later may fetch the url
   // from the safebrowsing backends. These need to be asynchronous.
   SafeBrowsingCheck* check = new SafeBrowsingCheck();
-
   check->full_hash.reset(new SBFullHash);
   safe_browsing_util::StringToSBFullHash(full_hash, check->full_hash.get());
-  check->client = client;
-  check->result = SAFE;
-  check->is_download = false;
-  checks_.insert(check);
-  safe_browsing_thread_->message_loop()->PostTask(FROM_HERE, NewRunnableMethod(
-      this, &SafeBrowsingService::CheckDownloadHashOnSBThread, check));
-
+  StartDownloadCheck(
+      check,
+      client,
+      NewRunnableMethod(this,
+                        &SafeBrowsingService::CheckDownloadHashOnSBThread,
+                        check),
+      download_hashcheck_timeout_ms_);
   return false;
 }
 
@@ -693,6 +621,8 @@ void SafeBrowsingService::OnIOShutdown() {
       check->result = SAFE;
       check->client->OnSafeBrowsingResult(*check);
     }
+    if (check->timeout_task)
+      check->timeout_task->Cancel();
   }
   STLDeleteElements(&checks_);
 
@@ -1008,14 +938,8 @@ bool SafeBrowsingService::HandleOneCheck(
     check->result = SAFE;
     if (index != -1)
       check->result = GetResultFromListname(full_hashes[index].list_name);
-
-    // Let the client continue handling the original request.
-    check->client->OnSafeBrowsingResult(*check);
   }
-
-  checks_.erase(check);
-  delete check;
-
+  SafeBrowsingCheckDone(check);
   return (index != -1);
 }
 
@@ -1117,4 +1041,113 @@ void SafeBrowsingService::ReportMalwareDetails(
     DVLOG(1) << "Sending serialized malware details.";
     protocol_manager_->ReportMalwareDetails(*serialized);
   }
+}
+
+void SafeBrowsingService::CheckDownloadHashOnSBThread(
+    SafeBrowsingCheck* check) {
+  DCHECK_EQ(MessageLoop::current(), safe_browsing_thread_->message_loop());
+  DCHECK(enable_download_protection_);
+
+  if (!database_->ContainsDownloadHashPrefix(check->full_hash->prefix)) {
+    // Good, we don't have hash for this url prefix.
+    check->result = SAFE;
+    BrowserThread::PostTask(
+        BrowserThread::IO, FROM_HERE,
+        NewRunnableMethod(this,
+                          &SafeBrowsingService::CheckDownloadHashDone,
+                          check));
+    return;
+  }
+
+  check->need_get_hash = true;
+  check->prefix_hits.push_back(check->full_hash->prefix);
+  BrowserThread::PostTask(
+      BrowserThread::IO, FROM_HERE,
+      NewRunnableMethod(this, &SafeBrowsingService::OnCheckDone, check));
+}
+
+void SafeBrowsingService::CheckDownloadUrlOnSBThread(SafeBrowsingCheck* check) {
+  DCHECK_EQ(MessageLoop::current(), safe_browsing_thread_->message_loop());
+  DCHECK(enable_download_protection_);
+
+  SBPrefix prefix_hit;
+
+  if (!database_->ContainsDownloadUrl(*(check->url), &prefix_hit)) {
+    // Good, we don't have hash for this url prefix.
+    check->result = SAFE;
+    BrowserThread::PostTask(
+        BrowserThread::IO, FROM_HERE,
+        NewRunnableMethod(this,
+                          &SafeBrowsingService::CheckDownloadUrlDone,
+                          check));
+    return;
+  }
+
+  check->need_get_hash = true;
+  check->prefix_hits.clear();
+  check->prefix_hits.push_back(prefix_hit);
+  BrowserThread::PostTask(
+      BrowserThread::IO, FROM_HERE,
+      NewRunnableMethod(this, &SafeBrowsingService::OnCheckDone, check));
+}
+
+void SafeBrowsingService::TimeoutCallback(SafeBrowsingCheck* check) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK(check);
+
+  if (!enabled_)
+    return;
+
+  DCHECK(checks_.find(check) != checks_.end());
+  DCHECK_EQ(check->result, SAFE);
+  if (check->client) {
+    check->client->OnSafeBrowsingResult(*check);
+    check->client = NULL;
+  }
+  check->timeout_task = NULL;
+}
+
+void SafeBrowsingService::CheckDownloadUrlDone(SafeBrowsingCheck* check) {
+  DCHECK(enable_download_protection_);
+  SafeBrowsingCheckDone(check);
+}
+
+void SafeBrowsingService::CheckDownloadHashDone(SafeBrowsingCheck* check) {
+  DCHECK(enable_download_protection_);
+  SafeBrowsingCheckDone(check);
+}
+
+void SafeBrowsingService::SafeBrowsingCheckDone(SafeBrowsingCheck* check) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK(check);
+
+  if (!enabled_)
+    return;
+
+  VLOG(1) << "SafeBrowsingCheckDone: " << check->result;
+  DCHECK(checks_.find(check) != checks_.end());
+  if (check->client)
+    check->client->OnSafeBrowsingResult(*check);
+  if (check->timeout_task)
+    check->timeout_task->Cancel();
+  checks_.erase(check);
+  delete check;
+}
+
+void SafeBrowsingService::StartDownloadCheck(SafeBrowsingCheck* check,
+                                             Client* client,
+                                             CancelableTask* task,
+                                             int64 timeout_ms) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  check->client = client;
+  check->result = SAFE;
+  check->is_download = true;
+  check->timeout_task =
+      NewRunnableMethod(this, &SafeBrowsingService::TimeoutCallback, check);
+  checks_.insert(check);
+
+  safe_browsing_thread_->message_loop()->PostTask(FROM_HERE, task);
+
+  MessageLoop::current()->PostDelayedTask(
+      FROM_HERE, check->timeout_task, timeout_ms);
 }

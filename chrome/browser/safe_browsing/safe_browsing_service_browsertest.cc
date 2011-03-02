@@ -27,8 +27,6 @@
 using base::Histogram;
 using base::StatisticsRecorder;
 
-namespace {
-
 // A SafeBrowingDatabase class that allows us to inject the malicious URLs.
 class TestSafeBrowsingDatabase :  public SafeBrowsingDatabase {
  public:
@@ -159,7 +157,6 @@ class TestSafeBrowsingDatabaseFactory : public SafeBrowsingDatabaseFactory {
   TestSafeBrowsingDatabase* db_;
 };
 
-
 // A TestProtocolManager that could return fixed responses from
 // safebrowsing server for testing purpose.
 class TestProtocolManager :  public SafeBrowsingProtocolManager {
@@ -176,22 +173,25 @@ class TestProtocolManager :  public SafeBrowsingProtocolManager {
                                     wrapped_key, request_context_getter,
                                     info_url_prefix, mackey_url_prefix,
                                     disable_auto_update),
-        sb_service_(sb_service) {
+        sb_service_(sb_service),
+        delay_ms_(0) {
   }
 
   // This function is called when there is a prefix hit in local safebrowsing
   // database and safebrowsing service issues a get hash request to backends.
   // We return a result from the prefilled full_hashes_ hash_map to simulate
-  // server's response.
+  // server's response. At the same time, latency is added to simulate real
+  // life network issues.
   virtual void GetFullHash(SafeBrowsingService::SafeBrowsingCheck* check,
                            const std::vector<SBPrefix>& prefixes) {
     // When we get a valid response, always cache the result.
     bool cancache = true;
-    BrowserThread::PostTask(
+    BrowserThread::PostDelayedTask(
         BrowserThread::IO, FROM_HERE,
         NewRunnableMethod(
             sb_service_, &SafeBrowsingService::HandleGetHashResults,
-            check, full_hashes_, cancache));
+            check, full_hashes_, cancache),
+        delay_ms_);
   }
 
   // Prepare the GetFullHash results for the next request.
@@ -200,9 +200,14 @@ class TestProtocolManager :  public SafeBrowsingProtocolManager {
     full_hashes_.push_back(full_hash_result);
   }
 
+  void IntroduceDelay(int64 ms) {
+    delay_ms_ = ms;
+  }
+
  private:
   std::vector<SBFullHashResult> full_hashes_;
   SafeBrowsingService* sb_service_;
+  int64 delay_ms_;
 };
 
 // Factory that creates TestProtocolManager instances.
@@ -267,7 +272,6 @@ class SafeBrowsingServiceTest : public InProcessBrowserTest {
     // RegisterFactory has to be called before SafeBrowsingService is created.
     SafeBrowsingDatabase::RegisterFactory(&db_factory_);
     SafeBrowsingProtocolManager::RegisterFactory(&pm_factory_);
-
     InProcessBrowserTest::SetUp();
   }
 
@@ -328,12 +332,34 @@ class SafeBrowsingServiceTest : public InProcessBrowserTest {
     return interstitial_page != NULL;
   }
 
+  void IntroduceGetHashDelay(int64 ms) {
+    pm_factory_.GetProtocolManager()->IntroduceDelay(ms);
+  }
+
+  int64 DownloadUrlCheckTimeout(SafeBrowsingService* sb_service) {
+    return sb_service->download_urlcheck_timeout_ms_;
+  }
+
+  int64 DownloadHashCheckTimeout(SafeBrowsingService* sb_service) {
+    return sb_service->download_hashcheck_timeout_ms_;
+  }
+
+  void SetDownloadUrlCheckTimeout(SafeBrowsingService* sb_service, int64 ms) {
+    sb_service->download_urlcheck_timeout_ms_ = ms;
+  }
+
+  void SetDownloadHashCheckTimeout(SafeBrowsingService* sb_service, int64 ms) {
+    sb_service->download_hashcheck_timeout_ms_ = ms;
+  }
+
  private:
   TestSafeBrowsingDatabaseFactory db_factory_;
   TestSBProtocolManagerFactory pm_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(SafeBrowsingServiceTest);
 };
+
+namespace {
 
 const char kEmptyPage[] = "files/empty.html";
 const char kMalwareFile[] = "files/downloads/dangerous/dangerous.exe";
@@ -355,8 +381,8 @@ IN_PROC_BROWSER_TEST_F(SafeBrowsingServiceTest, Malware) {
   EXPECT_TRUE(ShowingInterstitialPage());
 }
 
-// This test uses SafeBrowsingService::Client to directly interact with
-// SafeBrowsingService.
+}  // namespace
+
 class TestSBClient
     : public base::RefCountedThreadSafe<TestSBClient>,
       public SafeBrowsingService::Client {
@@ -424,6 +450,10 @@ class TestSBClient
   DISALLOW_COPY_AND_ASSIGN(TestSBClient);
 };
 
+// These tests use SafeBrowsingService::Client to directly interact with
+// SafeBrowsingService.
+namespace {
+
 IN_PROC_BROWSER_TEST_F(SafeBrowsingServiceTest, CheckDownloadUrl) {
   GURL badbin_url = test_server()->GetURL(kMalwareFile);
 
@@ -465,4 +495,71 @@ IN_PROC_BROWSER_TEST_F(SafeBrowsingServiceTest, CheckDownloadHash) {
   // Now, the badbin_url is not safe since it is added to download database.
   EXPECT_EQ(SafeBrowsingService::BINARY_MALWARE_HASH, client->GetResult());
 }
+
+IN_PROC_BROWSER_TEST_F(SafeBrowsingServiceTest, CheckDownloadUrlTimedOut) {
+  GURL badbin_url = test_server()->GetURL(kMalwareFile);
+
+  scoped_refptr<TestSBClient> client(new TestSBClient);
+  SBFullHashResult full_hash_result;
+  int chunk_id = 0;
+  GenUrlFullhashResult(badbin_url, safe_browsing_util::kBinUrlList,
+                       chunk_id, &full_hash_result);
+  SetupResponseForUrl(badbin_url, full_hash_result);
+  client->CheckDownloadUrl(badbin_url);
+
+  // badbin_url is not safe since it is added to download database.
+  EXPECT_EQ(SafeBrowsingService::BINARY_MALWARE_URL, client->GetResult());
+
+  //
+  // Now introducing delays and we should hit timeout.
+  //
+  SafeBrowsingService* sb_service =
+      g_browser_process->resource_dispatcher_host()->safe_browsing_service();
+  const int64 kOneSec = 1000;
+  const int64 kOneMs = 1;
+  int64 default_urlcheck_timeout = DownloadUrlCheckTimeout(sb_service);
+  IntroduceGetHashDelay(kOneSec);
+  SetDownloadUrlCheckTimeout(sb_service, kOneMs);
+  client->CheckDownloadUrl(badbin_url);
+
+  // There should be a timeout and the hash would be considered as safe.
+  EXPECT_EQ(SafeBrowsingService::SAFE, client->GetResult());
+
+  // Need to set the timeout back to the default value.
+  SetDownloadHashCheckTimeout(sb_service, default_urlcheck_timeout);
+}
+
+IN_PROC_BROWSER_TEST_F(SafeBrowsingServiceTest, CheckDownloadHashTimedOut) {
+  const std::string full_hash = "12345678902234567890323456789012";
+
+  scoped_refptr<TestSBClient> client(new TestSBClient);
+  SBFullHashResult full_hash_result;
+  int chunk_id = 0;
+  GenDigestFullhashResult(full_hash, safe_browsing_util::kBinHashList,
+                          chunk_id, &full_hash_result);
+  SetupResponseForDigest(full_hash, full_hash_result);
+  client->CheckDownloadHash(full_hash);
+
+  // The badbin_url is not safe since it is added to download database.
+  EXPECT_EQ(SafeBrowsingService::BINARY_MALWARE_HASH, client->GetResult());
+
+  //
+  // Now introducing delays and we should hit timeout.
+  //
+  SafeBrowsingService* sb_service =
+      g_browser_process->resource_dispatcher_host()->safe_browsing_service();
+  const int64 kOneSec = 1000;
+  const int64 kOneMs = 1;
+  int64 default_hashcheck_timeout = DownloadHashCheckTimeout(sb_service);
+  IntroduceGetHashDelay(kOneSec);
+  SetDownloadHashCheckTimeout(sb_service, kOneMs);
+  client->CheckDownloadHash(full_hash);
+
+  // There should be a timeout and the hash would be considered as safe.
+  EXPECT_EQ(SafeBrowsingService::SAFE, client->GetResult());
+
+  // Need to set the timeout back to the default value.
+  SetDownloadHashCheckTimeout(sb_service, default_hashcheck_timeout);
+}
+
 }  // namespace
