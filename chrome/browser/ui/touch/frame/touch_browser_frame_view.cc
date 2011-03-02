@@ -178,6 +178,9 @@ void TouchBrowserFrameView::TabSelectedAt(TabContentsWrapper* old_contents,
                                           TabContentsWrapper* new_contents,
                                           int index,
                                           bool user_gesture) {
+  if (new_contents == old_contents)
+    return;
+
   TabContents* contents = new_contents->tab_contents();
   bool* editable = GetFocusedStateAccessor()->GetProperty(
       contents->property_bag());

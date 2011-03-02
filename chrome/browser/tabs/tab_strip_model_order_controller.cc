@@ -111,6 +111,9 @@ void TabStripModelOrderController::TabSelectedAt(
     TabContentsWrapper* new_contents,
     int index,
     bool user_gesture) {
+  if (old_contents == new_contents)
+    return;
+
   NavigationController* old_opener = NULL;
   if (old_contents) {
     int index = tabstrip_->GetIndexOfTabContents(old_contents);

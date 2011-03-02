@@ -253,6 +253,9 @@ void BrowserListener::TabSelectedAt(TabContentsWrapper* old_contents,
                                     TabContentsWrapper* new_contents,
                                     int index,
                                     bool user_gesture) {
+  if (old_contents == new_contents)
+    return;
+
   UpdateSelectedIndex(index);
 }
 

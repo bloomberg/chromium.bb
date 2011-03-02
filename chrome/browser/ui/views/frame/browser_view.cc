@@ -1485,7 +1485,8 @@ void BrowserView::TabSelectedAt(TabContentsWrapper* old_contents,
                                 TabContentsWrapper* new_contents,
                                 int index,
                                 bool user_gesture) {
-  DCHECK(old_contents != new_contents);
+  if (old_contents == new_contents)
+    return;
 
   ProcessTabSelected(new_contents, true);
 }
