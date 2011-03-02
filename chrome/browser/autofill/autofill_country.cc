@@ -398,7 +398,7 @@ const std::string AutofillCountry::GetCountryCode(
     return "US";
   if (country == ASCIIToUTF16("Great Britain") ||
       country == ASCIIToUTF16("UK"))
-    return "UK";
+    return "GB";
   if (country == ASCIIToUTF16("Brasil"))
     return "BR";
   if (country == ASCIIToUTF16("Deutschland"))
