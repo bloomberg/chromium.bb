@@ -68,11 +68,11 @@ class CryptohomeLibraryImpl : public CryptohomeLibrary {
                   const bool create_if_missing,
                   Delegate* d) {
     return CacheCallback(
-        chromeos::CryptohomeAsyncMount(user_email.c_str(),
-                                       passhash.c_str(),
-                                       create_if_missing,
-                                       "",
-                                       std::vector<std::string>()),
+        chromeos::CryptohomeAsyncMountSafe(user_email.c_str(),
+                                           passhash.c_str(),
+                                           create_if_missing,
+                                           "",
+                                           NULL),
         d,
         "Couldn't initiate async mount of cryptohome.");
   }
@@ -107,7 +107,20 @@ class CryptohomeLibraryImpl : public CryptohomeLibrary {
   }
 
   CryptohomeBlob GetSystemSalt() {
-    return chromeos::CryptohomeGetSystemSalt();
+    CryptohomeBlob system_salt;
+    char* salt_buf;
+    int salt_len;
+    bool result = chromeos::CryptohomeGetSystemSaltSafe(&salt_buf, &salt_len);
+    if (result) {
+      system_salt.resize(salt_len);
+      if ((int)system_salt.size() == salt_len) {
+        memcpy(&system_salt[0], static_cast<const void*>(salt_buf),
+               salt_len);
+      } else {
+        system_salt.clear();
+      }
+    }
+    return system_salt;
   }
 
   bool TpmIsReady() {
@@ -127,7 +140,11 @@ class CryptohomeLibraryImpl : public CryptohomeLibrary {
   }
 
   bool TpmGetPassword(std::string* password) {
-    return chromeos::CryptohomeTpmGetPassword(password);
+    char *password_buf;
+    bool result = chromeos::CryptohomeTpmGetPasswordSafe(&password_buf);
+    *password = password_buf;
+    chromeos::CryptohomeFreeString(password_buf);
+    return result;
   }
 
   void TpmCanAttemptOwnership() {
