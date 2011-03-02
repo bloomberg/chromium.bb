@@ -13,11 +13,11 @@
 #include "base/time.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/prefs/pref_service.h"
-#include "chrome/browser/renderer_host/render_process_host.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/notification_service.h"
 #include "chrome/common/render_messages.h"
+#include "content/browser/renderer_host/render_process_host.h"
 
 using base::Time;
 using base::TimeDelta;

@@ -6,7 +6,7 @@
 #include <windows.h>
 #endif
 
-#include "chrome/browser/renderer_host/gpu_message_filter.h"
+#include "content/browser/renderer_host/gpu_message_filter.h"
 
 #include "base/callback.h"
 #include "chrome/browser/gpu_process_host_ui_shim.h"

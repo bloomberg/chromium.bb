@@ -5,10 +5,10 @@
 #include "chrome/browser/renderer_host/safe_browsing_resource_handler.h"
 
 #include "base/logging.h"
-#include "chrome/browser/renderer_host/global_request_id.h"
-#include "chrome/browser/renderer_host/resource_dispatcher_host.h"
-#include "chrome/browser/renderer_host/resource_message_filter.h"
 #include "chrome/common/resource_response.h"
+#include "content/browser/renderer_host/global_request_id.h"
+#include "content/browser/renderer_host/resource_dispatcher_host.h"
+#include "content/browser/renderer_host/resource_message_filter.h"
 #include "net/base/net_errors.h"
 #include "net/base/io_buffer.h"
 

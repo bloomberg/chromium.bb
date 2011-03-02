@@ -4,9 +4,9 @@
 
 #include "chrome/browser/tab_contents/tab_util.h"
 
-#include "chrome/browser/renderer_host/render_process_host.h"
-#include "chrome/browser/renderer_host/render_view_host.h"
-#include "chrome/browser/tab_contents/tab_contents.h"
+#include "content/browser/renderer_host/render_process_host.h"
+#include "content/browser/renderer_host/render_view_host.h"
+#include "content/browser/tab_contents/tab_contents.h"
 
 TabContents* tab_util::GetTabContentsByID(int render_process_id,
                                           int render_view_id) {

@@ -5,9 +5,9 @@
 #include "chrome/browser/ui/gtk/notifications/balloon_view_host_gtk.h"
 
 #include "chrome/browser/notifications/balloon.h"
-#include "chrome/browser/renderer_host/render_view_host.h"
-#include "chrome/browser/renderer_host/render_widget_host_view.h"
 #include "chrome/browser/renderer_host/render_widget_host_view_gtk.h"
+#include "content/browser/renderer_host/render_view_host.h"
+#include "content/browser/renderer_host/render_widget_host_view.h"
 
 BalloonViewHost::BalloonViewHost(Balloon* balloon)
     : BalloonHost(balloon),

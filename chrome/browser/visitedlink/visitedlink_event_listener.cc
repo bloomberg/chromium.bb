@@ -5,7 +5,7 @@
 #include "chrome/browser/visitedlink/visitedlink_event_listener.h"
 
 #include "base/shared_memory.h"
-#include "chrome/browser/renderer_host/render_process_host.h"
+#include "content/browser/renderer_host/render_process_host.h"
 
 using base::Time;
 using base::TimeDelta;

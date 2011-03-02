@@ -4,9 +4,9 @@
 
 #include "chrome/browser/ssl/ssl_cert_error_handler.h"
 
-#include "chrome/browser/renderer_host/resource_dispatcher_host.h"
 #include "chrome/browser/ssl/ssl_manager.h"
 #include "chrome/browser/ssl/ssl_policy.h"
+#include "content/browser/renderer_host/resource_dispatcher_host.h"
 #include "net/base/x509_certificate.h"
 
 SSLCertErrorHandler::SSLCertErrorHandler(

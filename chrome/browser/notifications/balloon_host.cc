@@ -9,8 +9,6 @@
 #include "chrome/browser/notifications/balloon.h"
 #include "chrome/browser/notifications/notification.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/renderer_host/render_view_host.h"
-#include "chrome/browser/renderer_host/site_instance.h"
 #include "chrome/browser/renderer_preferences_util.h"
 #include "chrome/common/bindings_policy.h"
 #include "chrome/common/notification_service.h"
@@ -20,6 +18,8 @@
 #include "chrome/common/render_messages_params.h"
 #include "chrome/common/renderer_preferences.h"
 #include "chrome/common/url_constants.h"
+#include "content/browser/renderer_host/render_view_host.h"
+#include "content/browser/site_instance.h"
 #include "webkit/glue/webpreferences.h"
 
 BalloonHost::BalloonHost(Balloon* balloon)

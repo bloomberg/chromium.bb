@@ -7,8 +7,8 @@
 #include "base/logging.h"
 #include "chrome/browser/download/download_util.h"
 #include "chrome/browser/renderer_host/download_resource_handler.h"
-#include "chrome/browser/renderer_host/resource_dispatcher_host.h"
 #include "chrome/common/resource_response.h"
+#include "content/browser/renderer_host/resource_dispatcher_host.h"
 #include "net/base/io_buffer.h"
 #include "net/base/mime_sniffer.h"
 

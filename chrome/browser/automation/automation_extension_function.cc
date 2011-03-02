@@ -12,10 +12,10 @@
 #include "chrome/browser/automation/extension_automation_constants.h"
 #include "chrome/browser/extensions/extension_function_dispatcher.h"
 #include "chrome/browser/extensions/extension_tabs_module.h"
-#include "chrome/browser/renderer_host/render_view_host.h"
-#include "chrome/browser/renderer_host/render_view_host_delegate.h"
-#include "chrome/browser/tab_contents/tab_contents.h"
-#include "chrome/browser/tab_contents/tab_contents_delegate.h"
+#include "content/browser/renderer_host/render_view_host.h"
+#include "content/browser/renderer_host/render_view_host_delegate.h"
+#include "content/browser/tab_contents/tab_contents.h"
+#include "content/browser/tab_contents/tab_contents_delegate.h"
 
 TabContents* AutomationExtensionFunction::api_handler_tab_ = NULL;
 AutomationExtensionFunction::PendingFunctionsMap

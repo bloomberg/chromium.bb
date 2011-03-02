@@ -9,9 +9,9 @@
 #include <list>
 
 #include "base/ref_counted.h"
-#include "chrome/browser/renderer_host/resource_queue.h"
 #include "chrome/common/notification_observer.h"
 #include "chrome/common/notification_registrar.h"
+#include "content/browser/renderer_host/resource_queue.h"
 
 namespace net {
 class URLRequest;

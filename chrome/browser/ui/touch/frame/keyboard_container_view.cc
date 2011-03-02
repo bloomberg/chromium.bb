@@ -5,9 +5,9 @@
 #include "chrome/browser/ui/touch/frame/keyboard_container_view.h"
 
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/renderer_host/site_instance.h"
 #include "chrome/browser/ui/views/dom_view.h"
 #include "chrome/common/url_constants.h"
+#include "content/browser/site_instance.h"
 
 namespace {
 

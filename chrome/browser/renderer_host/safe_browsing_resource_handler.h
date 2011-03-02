@@ -12,8 +12,8 @@
 #include "base/ref_counted.h"
 #include "base/time.h"
 #include "base/timer.h"
-#include "chrome/browser/renderer_host/resource_handler.h"
 #include "chrome/browser/safe_browsing/safe_browsing_service.h"
+#include "content/browser/renderer_host/resource_handler.h"
 
 class ResourceDispatcherHost;
 

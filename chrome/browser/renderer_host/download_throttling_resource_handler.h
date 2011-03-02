@@ -9,7 +9,7 @@
 #include <string>
 
 #include "chrome/browser/download/download_request_limiter.h"
-#include "chrome/browser/renderer_host/resource_handler.h"
+#include "content/browser/renderer_host/resource_handler.h"
 #include "googleurl/src/gurl.h"
 
 class DownloadResourceHandler;

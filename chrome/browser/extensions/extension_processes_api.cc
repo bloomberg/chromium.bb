@@ -17,12 +17,12 @@
 #include "chrome/browser/extensions/extension_tabs_module.h"
 #include "chrome/browser/extensions/extension_tabs_module_constants.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/renderer_host/render_process_host.h"
-#include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/browser/task_manager/task_manager.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/common/extensions/extension_error_utils.h"
 #include "chrome/common/notification_type.h"
+#include "content/browser/renderer_host/render_process_host.h"
+#include "content/browser/tab_contents/tab_contents.h"
 
 namespace keys = extension_processes_api_constants;
 

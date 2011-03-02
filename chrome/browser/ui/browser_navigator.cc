@@ -11,15 +11,15 @@
 #include "chrome/browser/browser_url_handler.h"
 #include "chrome/browser/browser_window.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/renderer_host/site_instance.h"
 #include "chrome/browser/tabs/tab_strip_model.h"
-#include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/status_bubble.h"
 #include "chrome/browser/ui/omnibox/location_bar.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/url_constants.h"
+#include "content/browser/site_instance.h"
+#include "content/browser/tab_contents/tab_contents.h"
 
 namespace {
 

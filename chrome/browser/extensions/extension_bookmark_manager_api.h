@@ -9,7 +9,7 @@
 #include "chrome/browser/bookmarks/bookmark_node_data.h"
 #include "chrome/browser/extensions/extension_bookmarks_module.h"
 #include "chrome/browser/extensions/extension_function.h"
-#include "chrome/browser/renderer_host/render_view_host_delegate.h"
+#include "content/browser/renderer_host/render_view_host_delegate.h"
 
 struct BookmarkNodeData;
 class ListValue;

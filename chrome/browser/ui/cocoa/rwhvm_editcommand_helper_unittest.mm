@@ -6,9 +6,9 @@
 
 #import <Cocoa/Cocoa.h>
 
-#include "chrome/browser/renderer_host/mock_render_process_host.h"
-#include "chrome/browser/renderer_host/render_widget_host.h"
 #include "chrome/test/testing_profile.h"
+#include "content/browser/renderer_host/mock_render_process_host.h"
+#include "content/browser/renderer_host/render_widget_host.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"

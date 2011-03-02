@@ -16,18 +16,19 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/ui/gtk/gtk_util.h"
-#if !defined(TOOLKIT_VIEWS)
-#include "chrome/browser/ui/gtk/menu_gtk.h"
-#endif
-#include "chrome/browser/renderer_host/render_widget_host.h"
 #include "chrome/browser/renderer_host/render_widget_host_view_gtk.h"
 #include "chrome/common/native_web_keyboard_event.h"
 #include "chrome/common/render_messages.h"
+#include "content/browser/renderer_host/render_widget_host.h"
 #include "grit/generated_resources.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/gtk_util.h"
 #include "ui/gfx/rect.h"
+
+#if !defined(TOOLKIT_VIEWS)
+#include "chrome/browser/ui/gtk/menu_gtk.h"
+#endif
 
 namespace {
 // Copied from third_party/WebKit/Source/WebCore/page/EventHandler.cpp

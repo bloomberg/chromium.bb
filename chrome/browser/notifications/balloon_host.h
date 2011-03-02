@@ -10,10 +10,10 @@
 #include <vector>
 
 #include "chrome/browser/extensions/extension_function_dispatcher.h"
-#include "chrome/browser/renderer_host/render_view_host_delegate.h"
 #include "chrome/browser/tab_contents/render_view_host_delegate_helper.h"
 #include "chrome/common/notification_observer.h"
 #include "chrome/common/notification_registrar.h"
+#include "content/browser/renderer_host/render_view_host_delegate.h"
 
 class Balloon;
 class Browser;

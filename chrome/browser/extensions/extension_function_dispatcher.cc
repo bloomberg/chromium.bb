@@ -49,8 +49,6 @@
 #include "chrome/browser/external_protocol_handler.h"
 #include "chrome/browser/metrics/user_metrics.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/renderer_host/render_process_host.h"
-#include "chrome/browser/renderer_host/render_view_host.h"
 #include "chrome/browser/ui/webui/chrome_url_data_manager.h"
 #include "chrome/browser/ui/webui/favicon_source.h"
 #include "chrome/common/notification_service.h"
@@ -58,6 +56,8 @@
 #include "chrome/common/render_messages_params.h"
 #include "chrome/common/result_codes.h"
 #include "chrome/common/url_constants.h"
+#include "content/browser/renderer_host/render_process_host.h"
+#include "content/browser/renderer_host/render_view_host.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 
 #if defined(TOOLKIT_VIEWS)

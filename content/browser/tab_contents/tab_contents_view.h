@@ -10,8 +10,8 @@
 #include <string>
 
 #include "base/basictypes.h"
-#include "chrome/browser/renderer_host/render_view_host_delegate.h"
 #include "chrome/browser/tab_contents/render_view_host_delegate_helper.h"
+#include "content/browser/renderer_host/render_view_host_delegate.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gfx/rect.h"
 #include "ui/gfx/size.h"

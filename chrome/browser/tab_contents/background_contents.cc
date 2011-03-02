@@ -7,8 +7,6 @@
 #include "chrome/browser/background_contents_service.h"
 #include "chrome/browser/desktop_notification_handler.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/renderer_host/render_view_host.h"
-#include "chrome/browser/renderer_host/site_instance.h"
 #include "chrome/browser/renderer_preferences_util.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/notification_service.h"
@@ -16,6 +14,8 @@
 #include "chrome/common/url_constants.h"
 #include "chrome/common/view_types.h"
 #include "content/browser/browsing_instance.h"
+#include "content/browser/renderer_host/render_view_host.h"
+#include "content/browser/site_instance.h"
 #include "ui/gfx/rect.h"
 
 ////////////////

@@ -15,10 +15,10 @@
 #include "base/time.h"
 #include "chrome/browser/accessibility/browser_accessibility_delegate_mac.h"
 #include "chrome/browser/accessibility/browser_accessibility_manager.h"
-#include "chrome/browser/renderer_host/accelerated_surface_container_manager_mac.h"
-#include "chrome/browser/renderer_host/render_widget_host_view.h"
 #include "chrome/browser/ui/cocoa/base_view.h"
 #include "chrome/common/edit_command.h"
+#include "content/browser/renderer_host/accelerated_surface_container_manager_mac.h"
+#include "content/browser/renderer_host/render_widget_host_view.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebCompositionUnderline.h"
 #include "webkit/glue/webcursor.h"
 

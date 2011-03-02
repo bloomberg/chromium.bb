@@ -10,7 +10,7 @@
 #include "base/ref_counted.h"
 #include "base/scoped_callback_factory.h"
 #include "base/scoped_ptr.h"
-#include "chrome/browser/renderer_host/resource_handler.h"
+#include "content/browser/renderer_host/resource_handler.h"
 #include "net/base/completion_callback.h"
 
 class RefCountedPlatformFile;

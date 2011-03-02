@@ -8,10 +8,10 @@
 
 #include "base/basictypes.h"
 #include "chrome/browser/geolocation/geolocation_settings_state.h"
-#include "chrome/browser/renderer_host/render_view_host_delegate.h"
-#include "chrome/browser/tab_contents/navigation_controller.h"
 #include "chrome/common/content_settings.h"
 #include "chrome/common/content_settings_types.h"
+#include "content/browser/renderer_host/render_view_host_delegate.h"
+#include "content/browser/tab_contents/navigation_controller.h"
 
 class CannedBrowsingDataAppCacheHelper;
 class CannedBrowsingDataDatabaseHelper;

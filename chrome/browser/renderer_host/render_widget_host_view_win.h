@@ -19,7 +19,7 @@
 #include "base/task.h"
 #include "chrome/browser/accessibility/browser_accessibility_manager.h"
 #include "chrome/browser/ime_input.h"
-#include "chrome/browser/renderer_host/render_widget_host_view.h"
+#include "content/browser/renderer_host/render_widget_host_view.h"
 #include "chrome/common/notification_observer.h"
 #include "chrome/common/notification_registrar.h"
 #include "ui/gfx/native_widget_types.h"

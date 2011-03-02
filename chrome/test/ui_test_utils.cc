@@ -24,11 +24,6 @@
 #include "chrome/browser/download/download_item.h"
 #include "chrome/browser/download/download_manager.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/renderer_host/render_process_host.h"
-#include "chrome/browser/renderer_host/render_view_host.h"
-#include "chrome/browser/tab_contents/navigation_controller.h"
-#include "chrome/browser/tab_contents/navigation_entry.h"
-#include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/browser/tab_contents/thumbnail_generator.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/find_bar/find_notification_details.h"
@@ -39,15 +34,21 @@
 #include "chrome/common/notification_type.h"
 #include "chrome/test/automation/javascript_execution_controller.h"
 #include "chrome/test/bookmark_load_observer.h"
-#if defined(TOOLKIT_VIEWS)
-#include "views/focus/accelerator_handler.h"
-#endif
+#include "content/browser/renderer_host/render_process_host.h"
+#include "content/browser/renderer_host/render_view_host.h"
+#include "content/browser/tab_contents/navigation_controller.h"
+#include "content/browser/tab_contents/navigation_entry.h"
+#include "content/browser/tab_contents/tab_contents.h"
 #include "googleurl/src/gurl.h"
 #include "net/base/net_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/gfx/size.h"
+
+#if defined(TOOLKIT_VIEWS)
+#include "views/focus/accelerator_handler.h"
+#endif
 
 namespace ui_test_utils {
 

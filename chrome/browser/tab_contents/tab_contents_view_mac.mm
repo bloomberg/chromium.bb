@@ -9,14 +9,9 @@
 #include <string>
 
 #include "chrome/browser/global_keyboard_shortcuts_mac.h"
-#include "chrome/browser/renderer_host/render_view_host.h"
-#include "chrome/browser/renderer_host/render_view_host_factory.h"
-#include "chrome/browser/renderer_host/render_widget_host.h"
 #include "chrome/browser/renderer_host/render_widget_host_view_mac.h"
 #include "chrome/browser/tab_contents/popup_menu_helper_mac.h"
 #include "chrome/browser/tab_contents/render_view_context_menu_mac.h"
-#include "chrome/browser/tab_contents/tab_contents.h"
-#include "chrome/browser/tab_contents/tab_contents_delegate.h"
 #import "chrome/browser/ui/cocoa/focus_tracker.h"
 #import "chrome/browser/ui/cocoa/browser_window_controller.h"
 #import "chrome/browser/ui/cocoa/tab_contents/sad_tab_controller.h"
@@ -28,6 +23,11 @@
 #include "chrome/common/notification_source.h"
 #include "chrome/common/notification_type.h"
 #include "chrome/common/render_messages.h"
+#include "content/browser/renderer_host/render_view_host.h"
+#include "content/browser/renderer_host/render_view_host_factory.h"
+#include "content/browser/renderer_host/render_widget_host.h"
+#include "content/browser/tab_contents/tab_contents.h"
+#include "content/browser/tab_contents/tab_contents_delegate.h"
 #include "skia/ext/skia_utils_mac.h"
 #import "third_party/mozilla/NSPasteboard+Utils.h"
 

@@ -13,12 +13,12 @@
 #include "base/command_line.h"
 #include "base/metrics/nacl_histogram.h"
 #include "base/utf_string_conversions.h"
-#include "chrome/browser/renderer_host/render_message_filter.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/logging_chrome.h"
 #include "chrome/common/nacl_cmd_line.h"
 #include "chrome/common/nacl_messages.h"
 #include "chrome/common/render_messages.h"
+#include "content/browser/renderer_host/render_message_filter.h"
 #include "ipc/ipc_switches.h"
 #include "native_client/src/shared/imc/nacl_imc.h"
 

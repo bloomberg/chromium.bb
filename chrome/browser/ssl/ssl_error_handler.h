@@ -10,8 +10,8 @@
 
 #include "base/basictypes.h"
 #include "base/ref_counted.h"
-#include "chrome/browser/renderer_host/global_request_id.h"
 #include "chrome/browser/ssl/ssl_manager.h"
+#include "content/browser/renderer_host/global_request_id.h"
 #include "googleurl/src/gurl.h"
 #include "webkit/glue/resource_type.h"
 

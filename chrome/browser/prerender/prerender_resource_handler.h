@@ -10,7 +10,7 @@
 
 #include "base/callback.h"
 #include "chrome/browser/prerender/prerender_manager.h"
-#include "chrome/browser/renderer_host/resource_handler.h"
+#include "content/browser/renderer_host/resource_handler.h"
 
 class ChromeURLRequestContext;
 namespace net {

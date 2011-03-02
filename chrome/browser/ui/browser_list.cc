@@ -12,11 +12,11 @@
 #include "chrome/browser/browser_shutdown.h"
 #include "chrome/browser/browser_window.h"
 #include "chrome/browser/profiles/profile_manager.h"
-#include "chrome/browser/renderer_host/render_process_host.h"
-#include "chrome/browser/tab_contents/navigation_controller.h"
 #include "chrome/common/notification_registrar.h"
 #include "chrome/common/notification_service.h"
 #include "chrome/common/result_codes.h"
+#include "content/browser/renderer_host/render_process_host.h"
+#include "content/browser/tab_contents/navigation_controller.h"
 
 #if defined(OS_MACOSX)
 #include "chrome/browser/chrome_browser_application_mac.h"

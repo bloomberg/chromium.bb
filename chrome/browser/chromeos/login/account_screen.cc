@@ -11,9 +11,9 @@
 #include "chrome/browser/chromeos/login/account_creation_view.h"
 #include "chrome/browser/chromeos/login/screen_observer.h"
 #include "chrome/browser/profiles/profile_manager.h"
-#include "chrome/browser/renderer_host/render_view_host.h"
-#include "chrome/browser/renderer_host/site_instance.h"
-#include "chrome/browser/tab_contents/tab_contents.h"
+#include "content/browser/renderer_host/render_view_host.h"
+#include "content/browser/site_instance.h"
+#include "content/browser/tab_contents/tab_contents.h"
 #include "googleurl/src/gurl.h"
 #include "views/widget/widget_gtk.h"
 

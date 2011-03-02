@@ -6,9 +6,9 @@
 #define CHROME_BROWSER_UI_VIEWS_FIND_BAR_HOST_H_
 #pragma once
 
-#include "chrome/browser/renderer_host/render_view_host_delegate.h"
 #include "chrome/browser/ui/find_bar/find_bar.h"
 #include "chrome/browser/ui/views/dropdown_bar_host.h"
+#include "content/browser/renderer_host/render_view_host_delegate.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gfx/rect.h"
 #include "views/controls/textfield/textfield.h"

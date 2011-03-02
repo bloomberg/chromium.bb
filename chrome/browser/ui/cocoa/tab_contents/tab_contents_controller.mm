@@ -5,16 +5,15 @@
 #import "chrome/browser/ui/cocoa/tab_contents/tab_contents_controller.h"
 
 #include "base/scoped_nsobject.h"
-#include "chrome/browser/renderer_host/render_view_host.h"
-#include "chrome/browser/renderer_host/render_widget_host_view.h"
-#include "chrome/browser/tab_contents/navigation_controller.h"
-#include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/common/notification_details.h"
 #include "chrome/common/notification_observer.h"
 #include "chrome/common/notification_registrar.h"
 #include "chrome/common/notification_source.h"
 #include "chrome/common/notification_type.h"
-
+#include "content/browser/renderer_host/render_view_host.h"
+#include "content/browser/renderer_host/render_widget_host_view.h"
+#include "content/browser/tab_contents/navigation_controller.h"
+#include "content/browser/tab_contents/tab_contents.h"
 
 @interface TabContentsController(Private)
 // Forwards frame update to |delegate_| (ResizeNotificationView calls it).

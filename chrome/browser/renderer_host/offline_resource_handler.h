@@ -10,7 +10,7 @@
 
 #include "base/ref_counted.h"
 #include "chrome/browser/chromeos/offline/offline_load_page.h"
-#include "chrome/browser/renderer_host/resource_handler.h"
+#include "content/browser/renderer_host/resource_handler.h"
 
 class MessageLoop;
 class ResourceDispatcherHost;

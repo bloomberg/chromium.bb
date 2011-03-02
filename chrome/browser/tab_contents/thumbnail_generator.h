@@ -14,9 +14,9 @@
 #include "base/callback.h"
 #include "base/linked_ptr.h"
 #include "base/timer.h"
-#include "chrome/browser/renderer_host/backing_store.h"
 #include "chrome/common/notification_observer.h"
 #include "chrome/common/notification_registrar.h"
+#include "content/browser/renderer_host/backing_store.h"
 
 class GURL;
 class Profile;

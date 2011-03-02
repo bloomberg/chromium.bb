@@ -6,8 +6,8 @@
 
 #import <objc/runtime.h>
 
-#include "chrome/browser/renderer_host/render_widget_host.h"
 #import "chrome/browser/renderer_host/render_widget_host_view_mac.h"
+#include "content/browser/renderer_host/render_widget_host.h"
 
 namespace {
 // The names of all the objc selectors w/o ':'s added to an object by

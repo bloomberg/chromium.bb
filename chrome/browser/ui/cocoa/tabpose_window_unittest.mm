@@ -5,12 +5,12 @@
 #import "chrome/browser/ui/cocoa/tabpose_window.h"
 
 #import "chrome/browser/browser_window.h"
-#include "chrome/browser/renderer_host/site_instance.h"
-#include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/browser/tabs/tab_strip_model.h"
 #import "chrome/browser/ui/cocoa/browser_test_helper.h"
 #import "chrome/browser/ui/cocoa/cocoa_test_helper.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
+#include "content/browser/site_instance.h"
+#include "content/browser/tab_contents/tab_contents.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 class TabposeWindowTest : public CocoaTest {

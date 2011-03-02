@@ -4,16 +4,16 @@
 
 #include "chrome/browser/ui/views/tab_contents/tab_contents_container.h"
 
-#include "chrome/browser/renderer_host/render_view_host.h"
-#include "chrome/browser/renderer_host/render_widget_host_view.h"
-#include "chrome/browser/tab_contents/interstitial_page.h"
-#include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/browser/ui/view_ids.h"
 #include "chrome/browser/ui/views/tab_contents/native_tab_contents_container_gtk.h"
 #include "chrome/browser/ui/views/tab_contents/native_tab_contents_container.h"
 #include "chrome/browser/ui/views/tab_contents/tab_contents_view_views.h"
 #include "chrome/common/notification_details.h"
 #include "chrome/common/notification_source.h"
+#include "content/browser/renderer_host/render_view_host.h"
+#include "content/browser/renderer_host/render_widget_host_view.h"
+#include "content/browser/tab_contents/interstitial_page.h"
+#include "content/browser/tab_contents/tab_contents.h"
 #include "views/layout/fill_layout.h"
 
 // Some of this class is implemented in tab_contents_container.cc, where

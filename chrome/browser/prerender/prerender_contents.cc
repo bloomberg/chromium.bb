@@ -10,8 +10,6 @@
 #include "chrome/browser/prerender/prerender_final_status.h"
 #include "chrome/browser/prerender/prerender_manager.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/renderer_host/render_view_host.h"
-#include "chrome/browser/renderer_host/site_instance.h"
 #include "chrome/browser/renderer_preferences_util.h"
 #include "chrome/browser/ui/login/login_prompt.h"
 #include "chrome/common/extensions/extension_constants.h"
@@ -21,6 +19,8 @@
 #include "chrome/common/url_constants.h"
 #include "chrome/common/view_types.h"
 #include "content/browser/browsing_instance.h"
+#include "content/browser/renderer_host/render_view_host.h"
+#include "content/browser/site_instance.h"
 #include "ui/gfx/rect.h"
 
 #if defined(OS_MACOSX)

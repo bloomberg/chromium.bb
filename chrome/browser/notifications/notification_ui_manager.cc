@@ -13,10 +13,10 @@
 #include "chrome/browser/notifications/balloon_collection.h"
 #include "chrome/browser/notifications/notification.h"
 #include "chrome/browser/prefs/pref_service.h"
-#include "chrome/browser/renderer_host/site_instance.h"
 #include "chrome/common/notification_service.h"
 #include "chrome/common/notification_type.h"
 #include "chrome/common/pref_names.h"
+#include "content/browser/site_instance.h"
 
 namespace {
 const int kUserStatePollingIntervalSeconds = 1;

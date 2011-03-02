@@ -10,8 +10,8 @@
 
 #include "base/timer.h"
 #include "chrome/browser/download/download_file.h"
-#include "chrome/browser/renderer_host/global_request_id.h"
-#include "chrome/browser/renderer_host/resource_handler.h"
+#include "content/browser/renderer_host/global_request_id.h"
+#include "content/browser/renderer_host/resource_handler.h"
 
 class DownloadFileManager;
 class ResourceDispatcherHost;

@@ -4,8 +4,8 @@
 
 #include "chrome/browser/extensions/extension_process_manager.h"
 #include "chrome/browser/extensions/extension_error_reporter.h"
-#include "chrome/browser/renderer_host/site_instance.h"
 #include "chrome/test/testing_profile.h"
+#include "content/browser/site_instance.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
 

@@ -4,7 +4,7 @@
 
 #include "chrome/browser/browser_process.h"
 
-#include "chrome/browser/renderer_host/resource_dispatcher_host.h"
+#include "content/browser/renderer_host/resource_dispatcher_host.h"
 
 BrowserProcess* g_browser_process = NULL;
 
