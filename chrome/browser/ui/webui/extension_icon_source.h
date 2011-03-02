@@ -53,7 +53,7 @@ class ExtensionIconSource : public ChromeURLDataManager::DataSource,
                             public ImageLoadingTracker::Observer {
  public:
   explicit ExtensionIconSource(Profile* profile);
-  ~ExtensionIconSource();
+  virtual ~ExtensionIconSource();
 
   // Gets the URL of the |extension| icon in the given |size|, falling back
   // based on the |match| type. If |grayscale|, the URL will be for the
@@ -106,9 +106,9 @@ class ExtensionIconSource : public ChromeURLDataManager::DataSource,
                               GURL icon_url);
 
   // ImageLoadingTracker::Observer
-  void OnImageLoaded(SkBitmap* image,
-                     ExtensionResource resource,
-                     int id);
+  virtual void OnImageLoaded(SkBitmap* image,
+                             ExtensionResource resource,
+                             int id);
 
   // Parses and savse an ExtensionIconRequest for the URL |path| for the
   // specified |request_id|.
