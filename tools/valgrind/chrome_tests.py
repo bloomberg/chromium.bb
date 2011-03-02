@@ -158,7 +158,8 @@ class ChromeTests:
     for filename in gtest_filter_files:
       # strip the leading absolute path (may be very long on the bot)
       # and the following / or \.
-      readable_filename = filename.replace(self._source_dir, "")[1:]
+      readable_filename = filename.replace("\\", "/")  # '\' on Windows
+      readable_filename = readable_filename.replace(self._source_dir, "")[1:]
       if not os.path.exists(filename):
         logging.info("  \"%s\" - not found" % readable_filename)
         continue
