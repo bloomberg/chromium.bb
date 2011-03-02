@@ -5501,7 +5501,7 @@ bool PPB_OpenGLES2_Proxy::OnMessageReceived(const IPC::Message& msg) {
       return_string = "return "
       if func.return_type == "void":
         return_string = ""
-      file.Write("  %sPluginResource::GetAs<PluginContext3D>(context)->impl()->"
+      file.Write("  %sPluginContext3D::implFromResource(context)->"
                  "%s(%s);\n" %
                  (return_string,
                   func.original_name,
