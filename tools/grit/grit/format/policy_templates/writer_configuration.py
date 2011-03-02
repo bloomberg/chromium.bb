@@ -43,7 +43,7 @@ def GetConfigurationForBuild(defines):
     }
   else:
     raise Exception('Unknown build')
-  config['win_group_policy_class'] = 'both'
+  config['win_group_policy_class'] = 'Both'
   config['win_supported_os'] = 'SUPPORTED_WINXPSP2'
   if 'mac_bundle_id' in defines:
     config['mac_bundle_id'] = defines['mac_bundle_id']
