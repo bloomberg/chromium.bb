@@ -61,7 +61,8 @@ void OffsetControlVertically(NSControl* control, CGFloat amount) {
                  extension:(const Extension*)extension
                   delegate:(ExtensionInstallUI::Delegate*)delegate
                       icon:(SkBitmap*)icon
-                  warnings:(const std::vector<string16>&)warnings {
+                  warnings:(const std::vector<string16>&)warnings
+                      type:(ExtensionInstallUI::PromptType)type {
   NSString* nibpath = nil;
 
   // We use a different XIB in the case of no warnings, that is a little bit
@@ -83,8 +84,13 @@ void OffsetControlVertically(NSControl* control, CGFloat amount) {
     delegate_ = delegate;
 
     title_.reset(
-        [l10n_util::GetNSStringF(IDS_EXTENSION_INSTALL_PROMPT_HEADING,
+        [l10n_util::GetNSStringF(ExtensionInstallUI::kHeadingIds[type],
                                  UTF8ToUTF16(extension->name())) retain]);
+    subtitle_.reset(
+         [l10n_util::GetNSString(ExtensionInstallUI::kWarningIds[type])
+          retain]);
+    button_.reset([l10n_util::GetNSString(ExtensionInstallUI::kButtonIds[type])
+                   retain]);
 
     // We display the warnings as a simple text string, separated by newlines.
     if (!warnings.empty()) {
@@ -123,6 +129,8 @@ void OffsetControlVertically(NSControl* control, CGFloat amount) {
 
 - (void)awakeFromNib {
   [titleField_ setStringValue:title_.get()];
+  [subtitleField_ setStringValue:subtitle_.get()];
+  [okButton_ setTitle:button_.get()];
 
   NSImage* image = gfx::SkBitmapToNSImage(icon_);
   [iconView_ setImage:image];
@@ -189,7 +197,8 @@ void ExtensionInstallUI::ShowExtensionInstallUIPrompt2Impl(
     Delegate* delegate,
     const Extension* extension,
     SkBitmap* icon,
-    const std::vector<string16>& warnings) {
+    const std::vector<string16>& warnings,
+    ExtensionInstallUI::PromptType type) {
   Browser* browser = BrowserList::GetLastActiveWithProfile(profile);
   if (!browser) {
     delegate->InstallUIAbort();
@@ -211,7 +220,8 @@ void ExtensionInstallUI::ShowExtensionInstallUIPrompt2Impl(
                    extension:extension
                     delegate:delegate
                         icon:icon
-                   warnings:warnings];
+                    warnings:warnings
+                        type:type];
 
   [controller runAsModalSheet];
 }

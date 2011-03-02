@@ -32,6 +32,7 @@ enough extra space in the small grid layout.
   position: absolute;
   height: 136px;
   width: 124px; /* 920 / 7 - margin * 2 */
+  visibility: hidden;
 }
 
 .app a {
@@ -99,6 +100,10 @@ enough extra space in the small grid layout.
 
 #apps-content[launcher-animations=true] .app {
   -webkit-transition: top .2s, left .2s, right .2s, opacity .2s;
+}
+
+#apps-content.visible .app {
+  visibility: visible;
 }
 
 @-webkit-keyframes bounce {

@@ -48,6 +48,12 @@ function getAppsCallback(data) {
     apps.data.push('web-store-entry');
 
   clearClosedMenu(apps.menu);
+
+  // We wait for the app icons to load before displaying them, but never wait
+  // longer than 200ms.
+  apps.loadedImages = 0;
+  apps.imageTimer = setTimeout(apps.showImages.bind(apps), 200);
+
   data.apps.forEach(function(app) {
     appsSectionContent.appendChild(apps.createElement(app));
   });
@@ -107,6 +113,16 @@ function appsPrefChangeCallback(data) {
     if (appLink)
       appLink.setAttribute('launch-type', app['launch_type']);
   });
+}
+
+// Launches the specified app using the APP_LAUNCH_NTP_APP_RE_ENABLE histogram.
+// This should only be invoked from the AppLauncherHandler.
+function launchAppAfterEnable(appId) {
+  // TODO(jstritar): We can simplify the args to
+  // [appId, APP_LAUNCH.NTP_APP_RE_ENABLE] once this CL
+  // lands: http://codereview.chromium.org/6573003/
+  chrome.send('launchApp', [appId, String(APP_LAUNCH.NTP_APP_RE_ENABLE), 0,
+                            0, 0, 0, false, false, false, false, 0]);
 }
 
 var apps = (function() {
@@ -610,6 +626,44 @@ var apps = (function() {
       return rects;
     },
 
+    get loadedImages() {
+      return this.loadedImages_;
+    },
+
+    set loadedImages(value) {
+      this.loadedImages_ = value;
+      if (this.loadedImages_ == 0)
+        return;
+
+      // Each application icon is loaded asynchronously. Here, we display
+      // the icons once they've all been loaded to make it look nicer.
+      if (this.loadedImages_ == this.data.length) {
+        this.showImages();
+        return;
+      }
+
+      // We won't actually have the visible height until the sections have
+      // been layed out.
+      if (!maxiviewVisibleHeight)
+        return;
+
+      // If we know the visible height of the maxiview, then we can don't need
+      // to wait for all the icons. Instead, we wait until the visible portion
+      // have been loaded.
+      var appsPerRow = MAX_APPS_PER_ROW[layoutMode];
+      var rows = Math.ceil(maxiviewVisibleHeight / this.dimensions.height);
+      var count = Math.min(appsPerRow * rows, this.data.length);
+      if (this.loadedImages_ == count) {
+        this.showImages();
+        return;
+      }
+    },
+
+    showImages: function() {
+      $('apps-content').classList.add('visible');
+      clearTimeout(this.imageTimer);
+    },
+
     createElement: function(app) {
       var div = createElement(app);
       var a = div.firstChild;
@@ -638,6 +692,11 @@ var apps = (function() {
                                                 "false");
         });
       }
+
+      // CSS background images don't fire 'load' events, so we use an Image.
+      var img = new Image();
+      img.onload = function() { this.loadedImages++; }.bind(this);
+      img.src = app['icon_big'];
 
       var settingsButton = div.appendChild(new cr.ui.ContextMenuButton);
       settingsButton.className = 'app-settings';

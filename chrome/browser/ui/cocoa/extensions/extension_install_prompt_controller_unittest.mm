@@ -116,7 +116,8 @@ TEST_F(ExtensionInstallPromptControllerTest, BasicsNormalCancel) {
                             extension:extension_.get()
                             delegate:delegate.get()
                                 icon:&icon_
-                            warnings:warnings]);
+                            warnings:warnings
+                                type:ExtensionInstallUI::INSTALL_PROMPT]);
 
   [controller window];  // force nib load
 
@@ -172,7 +173,8 @@ TEST_F(ExtensionInstallPromptControllerTest, BasicsNormalOK) {
               extension:extension_.get()
               delegate:delegate.get()
               icon:&icon_
-              warnings:warnings]);
+              warnings:warnings
+              type:ExtensionInstallUI::INSTALL_PROMPT]);
 
   [controller window];  // force nib load
   [controller ok:nil];
@@ -203,7 +205,8 @@ TEST_F(ExtensionInstallPromptControllerTest, MultipleWarnings) {
               extension:extension_.get()
               delegate:delegate1.get()
               icon:&icon_
-              warnings:one_warning]);
+              warnings:one_warning
+              type:ExtensionInstallUI::INSTALL_PROMPT]);
 
   [controller1 window];  // force nib load
 
@@ -214,7 +217,8 @@ TEST_F(ExtensionInstallPromptControllerTest, MultipleWarnings) {
                extension:extension_.get()
                delegate:delegate2.get()
                icon:&icon_
-               warnings:two_warnings]);
+               warnings:two_warnings
+               type:ExtensionInstallUI::INSTALL_PROMPT]);
 
   [controller2 window];  // force nib load
 
@@ -256,7 +260,8 @@ TEST_F(ExtensionInstallPromptControllerTest, BasicsSkinny) {
               extension:extension_.get()
               delegate:delegate.get()
               icon:&icon_
-              warnings:warnings]);
+              warnings:warnings
+              type:ExtensionInstallUI::INSTALL_PROMPT]);
 
   [controller window];  // force nib load
 

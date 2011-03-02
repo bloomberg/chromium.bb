@@ -28,5 +28,6 @@
     }
   ],
   "hasPopupAction": false,
-  "homepageUrl": ""
+  "homepageUrl": "",
+  "icon": "chrome://extension-icon/hpiknbiabeeppbpihjehijgoemciehgk/48/1"
 }

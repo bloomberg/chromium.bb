@@ -9,12 +9,12 @@
 #include "base/scoped_ptr.h"
 #include "chrome/browser/extensions/extension_install_ui.h"
 #include "chrome/browser/prefs/pref_change_registrar.h"
+#include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/notification_observer.h"
 #include "chrome/common/notification_registrar.h"
 #include "content/browser/webui/web_ui.h"
 
-class Extension;
 class ExtensionPrefs;
 class ExtensionService;
 class NotificationRegistrar;
@@ -91,6 +91,9 @@ class AppLauncherHandler
                                    std::string escaped_url,
                                    extension_misc::AppLaunchBucket bucket);
 
+  // Prompts the user to re-enable the app for |extension_id|.
+  void PromptToEnableApp(std::string extension_id);
+
   // ExtensionInstallUI::Delegate implementation, used for receiving
   // notification about uninstall confirmation dialog selections.
   virtual void InstallUIProceed();
@@ -119,6 +122,9 @@ class AppLauncherHandler
 
   // The id of the extension we are prompting the user about.
   std::string extension_id_prompting_;
+
+  // The type of prompt we are showing the user.
+  ExtensionInstallUI::PromptType extension_prompt_type_;
 
   // Whether the promo is currently being shown.
   bool promo_active_;

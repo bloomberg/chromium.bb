@@ -27,6 +27,7 @@ class ExtensionInstallUI : public ImageLoadingTracker::Observer {
   enum PromptType {
     INSTALL_PROMPT = 0,
     UNINSTALL_PROMPT,
+    RE_ENABLE_PROMPT,
     NUM_PROMPT_TYPES
   };
 
@@ -34,6 +35,7 @@ class ExtensionInstallUI : public ImageLoadingTracker::Observer {
   static const int kTitleIds[NUM_PROMPT_TYPES];
   static const int kHeadingIds[NUM_PROMPT_TYPES];
   static const int kButtonIds[NUM_PROMPT_TYPES];
+  static const int kWarningIds[NUM_PROMPT_TYPES];
 
   class Delegate {
    public:
@@ -66,6 +68,12 @@ class ExtensionInstallUI : public ImageLoadingTracker::Observer {
   // We *MUST* eventually call either Proceed() or Abort()
   // on |delegate|.
   virtual void ConfirmUninstall(Delegate* delegate, const Extension* extension);
+
+  // This is called by the app handler launcher to verify whether the app
+  // should be re-enabled. This is declared virtual for testing.
+  //
+  // We *MUST* eventually call either Proceed() or Abort() on |delegate|.
+  virtual void ConfirmReEnable(Delegate* delegate, const Extension* extension);
 
   // Installation was successful. This is declared virtual for testing.
   virtual void OnInstallSuccess(const Extension* extension, SkBitmap* icon);
@@ -113,7 +121,8 @@ class ExtensionInstallUI : public ImageLoadingTracker::Observer {
   // this function are platform-specific.
   static void ShowExtensionInstallUIPrompt2Impl(
       Profile* profile, Delegate* delegate, const Extension* extension,
-      SkBitmap* icon, const std::vector<string16>& permissions);
+      SkBitmap* icon, const std::vector<string16>& permissions,
+      PromptType type);
 
   Profile* profile_;
   MessageLoop* ui_loop_;

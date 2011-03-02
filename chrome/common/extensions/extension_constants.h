@@ -322,6 +322,9 @@ namespace extension_misc {
     // User clicked web store launcher on NTP.
     APP_LAUNCH_NTP_WEBSTORE,
 
+    // App launched after the user re-enabled it on the NTP.
+    APP_LAUNCH_NTP_APP_RE_ENABLE,
+
     APP_LAUNCH_BUCKET_BOUNDARY,
     APP_LAUNCH_BUCKET_INVALID
   };

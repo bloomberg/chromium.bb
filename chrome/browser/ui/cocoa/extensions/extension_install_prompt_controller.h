@@ -36,6 +36,8 @@ class Profile;
 
   scoped_nsobject<NSString> title_;
   scoped_nsobject<NSString> warnings_;
+  scoped_nsobject<NSString> button_;
+  scoped_nsobject<NSString> subtitle_;
   SkBitmap icon_;
 }
 
@@ -52,7 +54,8 @@ class Profile;
                  extension:(const Extension*)extension
                   delegate:(ExtensionInstallUI::Delegate*)delegate
                       icon:(SkBitmap*)bitmap
-                  warnings:(const std::vector<string16>&)warnings;
+                  warnings:(const std::vector<string16>&)warnings
+                      type:(ExtensionInstallUI::PromptType)type;
 - (void)runAsModalSheet;
 - (IBAction)cancel:(id)sender;
 - (IBAction)ok:(id)sender;

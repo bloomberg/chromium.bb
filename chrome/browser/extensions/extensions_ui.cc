@@ -30,6 +30,7 @@
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/tab_contents/background_contents.h"
+#include "chrome/browser/ui/webui/extension_icon_source.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_icon_set.h"
 #include "chrome/common/extensions/user_script.h"
@@ -44,6 +45,7 @@
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/browser/tab_contents/tab_contents_view.h"
+#include "googleurl/src/gurl.h"
 #include "grit/browser_resources.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
@@ -51,10 +53,6 @@
 #include "net/base/net_util.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
-#include "ui/gfx/codec/png_codec.h"
-#include "ui/gfx/color_utils.h"
-#include "ui/gfx/skbitmap_operations.h"
-#include "webkit/glue/image_decoder.h"
 
 namespace {
 
@@ -195,98 +193,6 @@ std::string ExtensionsUIHTMLSource::GetMimeType(const std::string&) const {
   return "text/html";
 }
 
-////////////////////////////////////////////////////////////////////////////////
-//
-// ExtensionsDOMHandler::IconLoader
-//
-////////////////////////////////////////////////////////////////////////////////
-
-ExtensionsDOMHandler::IconLoader::IconLoader(ExtensionsDOMHandler* handler)
-    : handler_(handler) {
-}
-
-void ExtensionsDOMHandler::IconLoader::LoadIcons(
-    std::vector<ExtensionResource>* icons, DictionaryValue* json) {
-  BrowserThread::PostTask(
-      BrowserThread::FILE, FROM_HERE,
-      NewRunnableMethod(this,
-          &IconLoader::LoadIconsOnFileThread, icons, json));
-}
-
-void ExtensionsDOMHandler::IconLoader::Cancel() {
-  handler_ = NULL;
-}
-
-void ExtensionsDOMHandler::IconLoader::LoadIconsOnFileThread(
-    std::vector<ExtensionResource>* icons, DictionaryValue* json) {
-  scoped_ptr<std::vector<ExtensionResource> > icons_deleter(icons);
-  scoped_ptr<DictionaryValue> json_deleter(json);
-
-  ListValue* extensions = NULL;
-  CHECK(json->GetList("extensions", &extensions));
-
-  for (size_t i = 0; i < icons->size(); ++i) {
-    DictionaryValue* extension = NULL;
-    CHECK(extensions->GetDictionary(static_cast<int>(i), &extension));
-
-    // Read the file.
-    std::string file_contents;
-    if (icons->at(i).relative_path().empty() ||
-        !file_util::ReadFileToString(icons->at(i).GetFilePath(),
-                                     &file_contents)) {
-      // If there's no icon, use the default icon. This is safe to do from
-      // the file thread.
-      // TODO(erikkay) Assuming we're going to keep showing apps in this list,
-      // then we need to figure out when we should use the app default icon.
-      file_contents = ResourceBundle::GetSharedInstance().GetRawDataResource(
-          IDR_EXTENSION_DEFAULT_ICON).as_string();
-    }
-
-    // If the extension is disabled, we desaturate the icon to add to the
-    // disabledness effect.
-    bool enabled = false;
-    CHECK(extension->GetBoolean("enabled", &enabled));
-    if (!enabled) {
-      const unsigned char* data =
-          reinterpret_cast<const unsigned char*>(file_contents.data());
-      webkit_glue::ImageDecoder decoder;
-      scoped_ptr<SkBitmap> decoded(new SkBitmap());
-      *decoded = decoder.Decode(data, file_contents.length());
-
-      // Desaturate the icon and lighten it a bit.
-      color_utils::HSL shift = {-1, 0, 0.6};
-      *decoded = SkBitmapOperations::CreateHSLShiftedBitmap(*decoded, shift);
-
-      std::vector<unsigned char> output;
-      gfx::PNGCodec::EncodeBGRASkBitmap(*decoded, false, &output);
-
-      // Lame, but we must make a copy of this now, because base64 doesn't take
-      // the same input type.
-      file_contents.assign(reinterpret_cast<char*>(&output.front()),
-                           output.size());
-    }
-
-    // Create a data URL (all icons are converted to PNGs during unpacking).
-    std::string base64_encoded;
-    base::Base64Encode(file_contents, &base64_encoded);
-    GURL icon_url("data:image/png;base64," + base64_encoded);
-
-    extension->SetString("icon", icon_url.spec());
-  }
-
-  BrowserThread::PostTask(
-      BrowserThread::UI, FROM_HERE,
-      NewRunnableMethod(this, &IconLoader::ReportResultOnUIThread,
-                        json_deleter.release()));
-}
-
-void ExtensionsDOMHandler::IconLoader::ReportResultOnUIThread(
-    DictionaryValue* json) {
-  if (handler_)
-    handler_->OnIconsLoaded(json);
-}
-
-
 ///////////////////////////////////////////////////////////////////////////////
 //
 // ExtensionsDOMHandler
@@ -297,6 +203,7 @@ ExtensionsDOMHandler::ExtensionsDOMHandler(ExtensionService* extension_service)
     : extensions_service_(extension_service),
       ignore_notifications_(false),
       deleting_rvh_(NULL) {
+  RegisterForNotifications();
 }
 
 void ExtensionsDOMHandler::RegisterMessages() {
@@ -331,16 +238,10 @@ void ExtensionsDOMHandler::RegisterMessages() {
 }
 
 void ExtensionsDOMHandler::HandleRequestExtensionsData(const ListValue* args) {
-  DictionaryValue* results = new DictionaryValue();
+  DictionaryValue results;
 
   // Add the extensions to the results structure.
-  ListValue *extensions_list = new ListValue();
-
-  // Stores the icon resource for each of the extensions in extensions_list. We
-  // build up a list of them here, then load them on the file thread in
-  // ::LoadIcons().
-  std::vector<ExtensionResource>* extension_icons =
-      new std::vector<ExtensionResource>();
+  ListValue* extensions_list = new ListValue();
 
   const ExtensionList* extensions = extensions_service_->extensions();
   for (ExtensionList::const_iterator extension = extensions->begin();
@@ -351,7 +252,6 @@ void ExtensionsDOMHandler::HandleRequestExtensionsData(const ListValue* args) {
           *extension,
           GetActivePagesForExtension(*extension),
           true, false));  // enabled, terminated
-      extension_icons->push_back(PickExtensionIcon(*extension));
     }
   }
   extensions = extensions_service_->disabled_extensions();
@@ -363,7 +263,6 @@ void ExtensionsDOMHandler::HandleRequestExtensionsData(const ListValue* args) {
           *extension,
           GetActivePagesForExtension(*extension),
           false, false));  // enabled, terminated
-      extension_icons->push_back(PickExtensionIcon(*extension));
     }
   }
   extensions = extensions_service_->terminated_extensions();
@@ -376,28 +275,19 @@ void ExtensionsDOMHandler::HandleRequestExtensionsData(const ListValue* args) {
           *extension,
           empty_pages,  // Terminated process has no active pages.
           false, true));  // enabled, terminated
-      extension_icons->push_back(PickExtensionIcon(*extension));
     }
   }
-  results->Set("extensions", extensions_list);
+  results.Set("extensions", extensions_list);
 
   bool developer_mode = web_ui_->GetProfile()->GetPrefs()
       ->GetBoolean(prefs::kExtensionsUIDeveloperMode);
-  results->SetBoolean("developerMode", developer_mode);
+  results.SetBoolean("developerMode", developer_mode);
 
-  if (icon_loader_.get())
-    icon_loader_->Cancel();
-
-  icon_loader_ = new IconLoader(this);
-  icon_loader_->LoadIcons(extension_icons, results);
+  web_ui_->CallJavascriptFunction(L"returnExtensionsData", results);
 }
 
-void ExtensionsDOMHandler::OnIconsLoaded(DictionaryValue* json) {
-  web_ui_->CallJavascriptFunction(L"returnExtensionsData", *json);
-  delete json;
-
+void ExtensionsDOMHandler::RegisterForNotifications() {
   // Register for notifications that we need to reload the page.
-  registrar_.RemoveAll();
   registrar_.Add(this, NotificationType::EXTENSION_LOADED,
       NotificationService::AllSources());
   registrar_.Add(this, NotificationType::EXTENSION_PROCESS_CREATED,
@@ -426,12 +316,6 @@ void ExtensionsDOMHandler::OnIconsLoaded(DictionaryValue* json) {
   registrar_.Add(this,
       NotificationType::EXTENSION_BROWSER_ACTION_VISIBILITY_CHANGED,
       NotificationService::AllSources());
-}
-
-ExtensionResource ExtensionsDOMHandler::PickExtensionIcon(
-    const Extension* extension) {
-  return extension->GetIconResource(Extension::EXTENSION_ICON_MEDIUM,
-                                    ExtensionIconSet::MATCH_BIGGER);
 }
 
 ExtensionInstallUI* ExtensionsDOMHandler::GetExtensionInstallUI() {
@@ -758,8 +642,11 @@ const Extension* ExtensionsDOMHandler::GetExtension(const ListValue* args) {
 }
 
 void ExtensionsDOMHandler::MaybeUpdateAfterNotification() {
-  if (!ignore_notifications_ && web_ui_->tab_contents())
+  if (!ignore_notifications_ &&
+      web_ui_->tab_contents() &&
+      web_ui_->tab_contents()->render_view_host()) {
     HandleRequestExtensionsData(NULL);
+  }
   deleting_rvh_ = NULL;
 }
 
@@ -822,11 +709,16 @@ DictionaryValue* ExtensionsDOMHandler::CreateExtensionDetailValue(
     ExtensionService* service, const Extension* extension,
     const std::vector<ExtensionPage>& pages, bool enabled, bool terminated) {
   DictionaryValue* extension_data = new DictionaryValue();
-
+  GURL icon =
+      ExtensionIconSource::GetIconURL(extension,
+                                      Extension::EXTENSION_ICON_MEDIUM,
+                                      ExtensionIconSet::MATCH_BIGGER,
+                                      !enabled);
   extension_data->SetString("id", extension->id());
   extension_data->SetString("name", extension->name());
   extension_data->SetString("description", extension->description());
   extension_data->SetString("version", extension->version()->GetString());
+  extension_data->SetString("icon", icon.spec());
   extension_data->SetBoolean("enabled", enabled);
   extension_data->SetBoolean("terminated", terminated);
   extension_data->SetBoolean("enabledIncognito",
@@ -958,8 +850,7 @@ ExtensionsDOMHandler::~ExtensionsDOMHandler() {
   if (pack_job_.get())
     pack_job_->ClearClient();
 
-  if (icon_loader_.get())
-    icon_loader_->Cancel();
+  registrar_.RemoveAll();
 }
 
 // ExtensionsDOMHandler, public: -----------------------------------------------

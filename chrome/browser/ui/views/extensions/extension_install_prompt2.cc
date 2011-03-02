@@ -67,7 +67,8 @@ class InstallDialogContent2
   InstallDialogContent2(ExtensionInstallUI::Delegate* delegate,
                         const Extension* extension,
                         SkBitmap* icon,
-                        const std::vector<string16>& permissions);
+                        const std::vector<string16>& permissions,
+                        ExtensionInstallUI::PromptType type);
 
  private:
   // DialogDelegate overrides.
@@ -111,19 +112,25 @@ class InstallDialogContent2
   // whether the extension requires any permissions.
   int right_column_width_;
 
+  // The type of install prompt, which must be INSTALL_PROMPT or
+  // RE_ENABLE_PROMPT.
+  ExtensionInstallUI::PromptType type_;
+
   DISALLOW_COPY_AND_ASSIGN(InstallDialogContent2);
 };
 
 
 InstallDialogContent2::InstallDialogContent2(
     ExtensionInstallUI::Delegate* delegate, const Extension* extension,
-    SkBitmap* icon, const std::vector<string16>& permissions)
+    SkBitmap* icon, const std::vector<string16>& permissions,
+    ExtensionInstallUI::PromptType type)
         : delegate_(delegate),
           icon_(NULL),
           heading_(NULL),
           will_have_access_to_(NULL),
           permission_box_(NULL),
-          right_column_width_(0) {
+          right_column_width_(0),
+          type_(type) {
   // Scale down to icon size, but allow smaller icons (don't scale up).
   gfx::Size size(icon->width(), icon->height());
   if (size.width() > kIconSize || size.height() > kIconSize)
@@ -136,7 +143,7 @@ InstallDialogContent2::InstallDialogContent2(
   AddChildView(icon_);
 
   heading_ = new views::Label(UTF16ToWide(
-      l10n_util::GetStringFUTF16(IDS_EXTENSION_INSTALL_PROMPT_HEADING,
+      l10n_util::GetStringFUTF16(ExtensionInstallUI::kHeadingIds[type_],
                                  UTF8ToUTF16(extension->name()))));
   heading_->SetFont(heading_->font().DeriveFont(kHeadingFontSizeDelta,
                                                 gfx::Font::BOLD));
@@ -149,7 +156,7 @@ InstallDialogContent2::InstallDialogContent2(
   } else {
     right_column_width_ = kPermissionBoxWidth;
     will_have_access_to_ = new views::Label(UTF16ToWide(
-        l10n_util::GetStringUTF16(IDS_EXTENSION_PROMPT_WILL_HAVE_ACCESS_TO)));
+        l10n_util::GetStringUTF16(ExtensionInstallUI::kWarningIds[type_])));
     will_have_access_to_->SetMultiLine(true);
     will_have_access_to_->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
     AddChildView(will_have_access_to_);
@@ -177,7 +184,7 @@ std::wstring InstallDialogContent2::GetDialogButtonLabel(
   switch (button) {
     case MessageBoxFlags::DIALOGBUTTON_OK:
       return UTF16ToWide(
-          l10n_util::GetStringUTF16(IDS_EXTENSION_PROMPT_INSTALL_BUTTON));
+          l10n_util::GetStringUTF16(ExtensionInstallUI::kButtonIds[type_]));
     case MessageBoxFlags::DIALOGBUTTON_CANCEL:
       return UTF16ToWide(l10n_util::GetStringUTF16(IDS_CANCEL));
     default:
@@ -206,7 +213,7 @@ bool InstallDialogContent2::IsModal() const {
 
 std::wstring InstallDialogContent2::GetWindowTitle() const {
   return UTF16ToWide(
-      l10n_util::GetStringUTF16(IDS_EXTENSION_INSTALL_PROMPT_TITLE));
+      l10n_util::GetStringUTF16(ExtensionInstallUI::kTitleIds[type_]));
 }
 
 views::View* InstallDialogContent2::GetContentsView() {
@@ -303,7 +310,8 @@ void InstallDialogContent2::Layout() {
 void ExtensionInstallUI::ShowExtensionInstallUIPrompt2Impl(
     Profile* profile, Delegate* delegate, const Extension* extension,
     SkBitmap* icon,
-    const std::vector<string16>& permissions) {
+    const std::vector<string16>& permissions,
+    ExtensionInstallUI::PromptType type) {
 #if defined(OS_CHROMEOS)
   // Use a normal browser window as parent on ChromeOS.
   Browser* browser = BrowserList::FindBrowserWithType(profile,
@@ -324,6 +332,6 @@ void ExtensionInstallUI::ShowExtensionInstallUIPrompt2Impl(
   }
 
   browser::CreateViewsWindow(window->GetNativeHandle(), gfx::Rect(),
-      new InstallDialogContent2(delegate, extension, icon, permissions))
+      new InstallDialogContent2(delegate, extension, icon, permissions, type))
           ->Show();
 }

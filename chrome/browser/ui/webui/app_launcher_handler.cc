@@ -21,6 +21,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_window.h"
+#include "chrome/browser/ui/webui/extension_icon_source.h"
 #include "chrome/browser/ui/webui/shown_sections_handler.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_constants.h"
@@ -31,6 +32,8 @@
 #include "chrome/common/url_constants.h"
 #include "content/browser/disposition_utils.h"
 #include "content/browser/tab_contents/tab_contents.h"
+#include "googleurl/src/gurl.h"
+#include "grit/browser_resources.h"
 #include "grit/generated_resources.h"
 #include "net/base/escape.h"
 #include "ui/base/animation/animation.h"
@@ -47,15 +50,6 @@ const char* kPingLaunchAppByURL = "record-app-launch-by-url";
 
 const UnescapeRule::Type kUnescapeRules =
     UnescapeRule::NORMAL | UnescapeRule::URL_SPECIAL_CHARS;
-
-std::string GetIconURL(const Extension* extension, Extension::Icons icon,
-                       const std::string& default_val) {
-  GURL url = extension->GetIconURL(icon, ExtensionIconSet::MATCH_EXACTLY);
-  if (!url.is_empty())
-    return url.spec();
-  else
-    return default_val;
-}
 
 extension_misc::AppLaunchBucket ParseLaunchSource(std::string launch_source) {
   int bucket_num = extension_misc::APP_LAUNCH_BUCKET_INVALID;
@@ -78,30 +72,39 @@ AppLauncherHandler::~AppLauncherHandler() {}
 
 // static
 void AppLauncherHandler::CreateAppInfo(const Extension* extension,
-                                       ExtensionPrefs* extension_prefs,
+                                       ExtensionPrefs* prefs,
                                        DictionaryValue* value) {
+  bool enabled =
+      prefs->GetExtensionState(extension->id()) != Extension::DISABLED;
+  GURL icon_big =
+      ExtensionIconSource::GetIconURL(extension,
+                                      Extension::EXTENSION_ICON_LARGE,
+                                      ExtensionIconSet::MATCH_EXACTLY,
+                                      !enabled);
+  GURL icon_small =
+      ExtensionIconSource::GetIconURL(extension,
+                                      Extension::EXTENSION_ICON_BITTY,
+                                      ExtensionIconSet::MATCH_BIGGER,
+                                      !enabled);
+
   value->Clear();
   value->SetString("id", extension->id());
   value->SetString("name", extension->name());
   value->SetString("description", extension->description());
   value->SetString("launch_url", extension->GetFullLaunchURL().spec());
   value->SetString("options_url", extension->options_url().spec());
-  value->SetString("icon_big", GetIconURL(
-      extension, Extension::EXTENSION_ICON_LARGE,
-      "chrome://theme/IDR_APP_DEFAULT_ICON"));
-  value->SetString("icon_small", GetIconURL(
-      extension, Extension::EXTENSION_ICON_BITTY,
-      std::string("chrome://favicon/") + extension->GetFullLaunchURL().spec()));
+  value->SetString("icon_big", icon_big.spec());
+  value->SetString("icon_small", icon_small.spec());
   value->SetInteger("launch_container", extension->launch_container());
   value->SetInteger("launch_type",
-      extension_prefs->GetLaunchType(extension->id(),
+      prefs->GetLaunchType(extension->id(),
                                      ExtensionPrefs::LAUNCH_DEFAULT));
 
-  int app_launch_index = extension_prefs->GetAppLaunchIndex(extension->id());
+  int app_launch_index = prefs->GetAppLaunchIndex(extension->id());
   if (app_launch_index == -1) {
     // Make sure every app has a launch index (some predate the launch index).
-    app_launch_index = extension_prefs->GetNextAppLaunchIndex();
-    extension_prefs->SetAppLaunchIndex(extension->id(), app_launch_index);
+    app_launch_index = prefs->GetNextAppLaunchIndex();
+    prefs->SetAppLaunchIndex(extension->id(), app_launch_index);
   }
   value->SetInteger("app_launch_index", app_launch_index);
 }
@@ -199,8 +202,8 @@ void AppLauncherHandler::Observe(NotificationType type,
 void AppLauncherHandler::FillAppDictionary(DictionaryValue* dictionary) {
   ListValue* list = new ListValue();
   const ExtensionList* extensions = extensions_service_->extensions();
-  for (ExtensionList::const_iterator it = extensions->begin();
-       it != extensions->end(); ++it) {
+  ExtensionList::const_iterator it;
+  for (it = extensions->begin(); it != extensions->end(); ++it) {
     // Don't include the WebStore and other component apps.
     // The WebStore launcher gets special treatment in ntp/apps.js.
     if ((*it)->is_app() && (*it)->location() != Extension::COMPONENT) {
@@ -209,6 +212,16 @@ void AppLauncherHandler::FillAppDictionary(DictionaryValue* dictionary) {
       list->Append(app_info);
     }
   }
+
+  extensions = extensions_service_->disabled_extensions();
+  for (it = extensions->begin(); it != extensions->end(); ++it) {
+    if ((*it)->is_app() && (*it)->location() != Extension::COMPONENT) {
+      DictionaryValue* app_info = new DictionaryValue();
+      CreateAppInfo(*it, extensions_service_->extension_prefs(), app_info);
+      list->Append(app_info);
+    }
+  }
+
   dictionary->Set("apps", list);
 
 #if defined(OS_MACOSX)
@@ -315,7 +328,13 @@ void AppLauncherHandler::HandleLaunchApp(const ListValue* args) {
 
   const Extension* extension =
       extensions_service_->GetExtensionById(extension_id, false);
-  DCHECK(extension);
+
+  // Prompt the user to re-enable the application if disabled.
+  if (!extension) {
+    PromptToEnableApp(extension_id);
+    return;
+  }
+
   Profile* profile = extensions_service_->profile();
 
   // If the user pressed special keys when clicking, override the saved
@@ -366,8 +385,8 @@ void AppLauncherHandler::HandleSetLaunchType(const ListValue* args) {
   CHECK(args->GetDouble(1, &launch_type));
 
   const Extension* extension =
-      extensions_service_->GetExtensionById(extension_id, false);
-  DCHECK(extension);
+      extensions_service_->GetExtensionById(extension_id, true);
+  CHECK(extension);
 
   extensions_service_->extension_prefs()->SetLaunchType(
       extension_id,
@@ -386,6 +405,7 @@ void AppLauncherHandler::HandleUninstallApp(const ListValue* args) {
     return;  // Only one prompt at a time.
 
   extension_id_prompting_ = extension_id;
+  extension_prompt_type_ = ExtensionInstallUI::UNINSTALL_PROMPT;
   GetExtensionInstallUI()->ConfirmUninstall(this, extension);
 }
 
@@ -414,7 +434,7 @@ void AppLauncherHandler::HandleCreateAppShortcut(const ListValue* args) {
   }
 
   const Extension* extension =
-      extensions_service_->GetExtensionById(extension_id, false);
+      extensions_service_->GetExtensionById(extension_id, true);
   CHECK(extension);
 
   Browser* browser = BrowserList::GetLastActive();
@@ -487,6 +507,19 @@ void AppLauncherHandler::RecordAppLaunchByURL(
                             extension_misc::APP_LAUNCH_BUCKET_BOUNDARY);
 }
 
+void AppLauncherHandler::PromptToEnableApp(std::string extension_id) {
+  const Extension* extension =
+      extensions_service_->GetExtensionById(extension_id, true);
+  CHECK(extension);
+
+  if (!extension_id_prompting_.empty())
+    return;  // Only one prompt at a time.
+
+  extension_id_prompting_ = extension_id;
+  extension_prompt_type_ = ExtensionInstallUI::RE_ENABLE_PROMPT;
+  GetExtensionInstallUI()->ConfirmReEnable(this, extension);
+}
+
 void AppLauncherHandler::InstallUIProceed() {
   DCHECK(!extension_id_prompting_.empty());
 
@@ -497,8 +530,27 @@ void AppLauncherHandler::InstallUIProceed() {
   if (!extension)
     return;
 
-  extensions_service_->UninstallExtension(extension_id_prompting_,
-                                          false /* external_uninstall */);
+  switch (extension_prompt_type_) {
+    case ExtensionInstallUI::UNINSTALL_PROMPT:
+      extensions_service_->UninstallExtension(extension_id_prompting_,
+                                              false /* external_uninstall */);
+      break;
+    case ExtensionInstallUI::RE_ENABLE_PROMPT: {
+      extensions_service_->GrantPermissionsAndEnableExtension(extension);
+
+      // We bounce this off the NTP so the browser can update the apps icon.
+      // If we don't launch the app asynchronously, then the app's disabled
+      // icon disappears but isn't replaced by the enabled icon, making a poor
+      // visual experience.
+      StringValue* app_id = Value::CreateStringValue(extension->id());
+      web_ui_->CallJavascriptFunction(L"launchAppAfterEnable", *app_id);
+      break;
+    }
+    default:
+      NOTREACHED();
+      break;
+  }
+
   extension_id_prompting_ = "";
 }
 

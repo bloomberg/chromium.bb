@@ -15,5 +15,6 @@
   "content_scripts": [],
   "views": [],
   "hasPopupAction": false,
-  "homepageUrl": ""
+  "homepageUrl": "",
+  "icon": "chrome://extension-icon/bjafgdebaacbbbecmhlhpofkepfkgcpa/48/1"
 }

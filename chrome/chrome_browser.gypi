@@ -3209,6 +3209,8 @@
         'browser/ui/webui/downloads_dom_handler.h',
         'browser/ui/webui/downloads_ui.cc',
         'browser/ui/webui/downloads_ui.h',
+        'browser/ui/webui/extension_icon_source.cc',
+        'browser/ui/webui/extension_icon_source.h',
         'browser/ui/webui/favicon_source.cc',
         'browser/ui/webui/favicon_source.h',
         'browser/ui/webui/fileicon_source.cc',

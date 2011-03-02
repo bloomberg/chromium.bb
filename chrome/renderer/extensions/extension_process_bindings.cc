@@ -571,6 +571,21 @@ void ExtensionProcessBindings::SetAPIPermissions(
   PermissionsList& permissions_list = *GetPermissionsList(extension_id);
   permissions_list.clear();
   permissions_list.insert(permissions.begin(), permissions.end());
+
+  // The RenderViewTests set API permissions without an |extension_id|. If
+  // there's no ID, there will be no extension URL and no need to proceed.
+  if (extension_id.empty()) return;
+
+  // Grant access to chrome://extension-icon resources if they have the
+  // 'management' permission.
+  if (permissions_list.find(Extension::kManagementPermission) !=
+      permissions_list.end()) {
+    WebSecurityPolicy::addOriginAccessWhitelistEntry(
+        Extension::GetBaseURLFromExtensionId(extension_id),
+        WebKit::WebString::fromUTF8(chrome::kChromeUIScheme),
+        WebKit::WebString::fromUTF8(chrome::kChromeUIExtensionIconHost),
+        false);
+  }
 }
 
 // static

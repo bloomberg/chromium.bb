@@ -2217,6 +2217,7 @@
         'browser/extensions/extension_geolocation_apitest.cc',
         'browser/extensions/extension_get_views_apitest.cc',
         'browser/extensions/extension_history_apitest.cc',
+        'browser/extensions/extension_icon_source_apitest.cc',
         'browser/extensions/extension_idle_apitest.cc',
         'browser/extensions/extension_i18n_apitest.cc',
         'browser/extensions/extension_incognito_apitest.cc',

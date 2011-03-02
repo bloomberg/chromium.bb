@@ -39,17 +39,26 @@
 // static
 const int ExtensionInstallUI::kTitleIds[NUM_PROMPT_TYPES] = {
   IDS_EXTENSION_INSTALL_PROMPT_TITLE,
-  IDS_EXTENSION_UNINSTALL_PROMPT_TITLE
+  IDS_EXTENSION_UNINSTALL_PROMPT_TITLE,
+  IDS_EXTENSION_RE_ENABLE_PROMPT_TITLE
 };
 // static
 const int ExtensionInstallUI::kHeadingIds[NUM_PROMPT_TYPES] = {
   IDS_EXTENSION_INSTALL_PROMPT_HEADING,
-  IDS_EXTENSION_UNINSTALL_PROMPT_HEADING
+  IDS_EXTENSION_UNINSTALL_PROMPT_HEADING,
+  IDS_EXTENSION_RE_ENABLE_PROMPT_HEADING
 };
 // static
 const int ExtensionInstallUI::kButtonIds[NUM_PROMPT_TYPES] = {
   IDS_EXTENSION_PROMPT_INSTALL_BUTTON,
-  IDS_EXTENSION_PROMPT_UNINSTALL_BUTTON
+  IDS_EXTENSION_PROMPT_UNINSTALL_BUTTON,
+  IDS_EXTENSION_PROMPT_RE_ENABLE_BUTTON
+};
+// static
+const int ExtensionInstallUI::kWarningIds[NUM_PROMPT_TYPES] = {
+  IDS_EXTENSION_PROMPT_WILL_HAVE_ACCESS_TO,
+  0,  // No warning label when uninstalling.
+  IDS_EXTENSION_PROMPT_WILL_NOW_HAVE_ACCESS_TO
 };
 
 namespace {
@@ -110,6 +119,15 @@ void ExtensionInstallUI::ConfirmUninstall(Delegate* delegate,
   delegate_ = delegate;
 
   ShowConfirmation(UNINSTALL_PROMPT);
+}
+
+void ExtensionInstallUI::ConfirmReEnable(Delegate* delegate,
+                                         const Extension* extension) {
+  DCHECK(ui_loop_ == MessageLoop::current());
+  extension_ = extension;
+  delegate_ = delegate;
+
+  ShowConfirmation(RE_ENABLE_PROMPT);
 }
 
 void ExtensionInstallUI::OnInstallSuccess(const Extension* extension,
@@ -177,6 +195,7 @@ void ExtensionInstallUI::OnImageLoaded(
   SetIcon(image);
 
   switch (prompt_type_) {
+    case RE_ENABLE_PROMPT:
     case INSTALL_PROMPT: {
       // TODO(jcivelli): http://crbug.com/44771 We should not show an install
       //                 dialog when installing an app from the gallery.
@@ -187,7 +206,7 @@ void ExtensionInstallUI::OnImageLoaded(
 
       std::vector<string16> warnings = extension_->GetPermissionMessages();
       ShowExtensionInstallUIPrompt2Impl(profile_, delegate_, extension_, &icon_,
-                                        warnings);
+                                        warnings, prompt_type_);
       break;
     }
     case UNINSTALL_PROMPT: {
