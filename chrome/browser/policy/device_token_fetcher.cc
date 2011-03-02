@@ -66,7 +66,11 @@ void DeviceTokenFetcher::FetchToken(
 
 void DeviceTokenFetcher::FetchTokenInternal() {
   DCHECK(state_ != STATE_TOKEN_AVAILABLE);
-  DCHECK(!auth_token_.empty() && !device_id_.empty());
+  if (auth_token_.empty() || device_id_.empty()) {
+    // Maybe this device is unmanaged, just exit. The CloudPolicyController
+    // will call FetchToken() again if something changes.
+    return;
+  }
   // Construct a new backend, which will discard any previous requests.
   backend_.reset(service_->CreateBackend());
   em::DeviceRegisterRequest request;
