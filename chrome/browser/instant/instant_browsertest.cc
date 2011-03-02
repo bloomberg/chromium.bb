@@ -17,6 +17,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/omnibox/location_bar.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
+#include "chrome/common/url_constants.h"
 #include "chrome/test/in_process_browser_test.h"
 #include "chrome/test/ui_test_utils.h"
 #include "content/browser/renderer_host/render_view_host.h"
@@ -114,9 +115,9 @@ class InstantTest : public InProcessBrowserTest {
               GetSearchStateAsString(preview_));
   }
 
-  void SetLocationBarText(const std::wstring& text) {
+  void SetLocationBarText(const std::string& text) {
     ASSERT_NO_FATAL_FAILURE(FindLocationBar());
-    location_bar_->location_entry()->SetUserText(WideToUTF16Hack(text));
+    location_bar_->location_entry()->SetUserText(UTF8ToUTF16(text));
     ui_test_utils::WaitForNotification(
         NotificationType::INSTANT_CONTROLLER_SHOWN);
   }
@@ -292,7 +293,7 @@ IN_PROC_BROWSER_TEST_F(InstantTest, OnChangeEvent) {
   ASSERT_NO_FATAL_FAILURE(SetupLocationBar());
   ASSERT_NO_FATAL_FAILURE(SetupPreview());
 
-  ASSERT_NO_FATAL_FAILURE(SetLocationBarText(L"def"));
+  ASSERT_NO_FATAL_FAILURE(SetLocationBarText("def"));
 
   ASSERT_EQ(ASCIIToUTF16("defghi"), location_bar_->location_entry()->GetText());
 
@@ -319,7 +320,7 @@ IN_PROC_BROWSER_TEST_F(InstantTest, SetSuggestionsArrayOfStrings) {
   ASSERT_NO_FATAL_FAILURE(SetupPreview());
 
   SetSuggestionsJavascriptArgument(preview_, "['defgh', 'unused']");
-  ASSERT_NO_FATAL_FAILURE(SetLocationBarText(L"def"));
+  ASSERT_NO_FATAL_FAILURE(SetLocationBarText("def"));
   EXPECT_STR_EQ("defgh", GetSuggestion());
 }
 
@@ -331,7 +332,7 @@ IN_PROC_BROWSER_TEST_F(InstantTest, SetSuggestionsEmptyArray) {
   ASSERT_NO_FATAL_FAILURE(SetupPreview());
 
   SetSuggestionsJavascriptArgument(preview_, "[]");
-  ASSERT_NO_FATAL_FAILURE(SetLocationBarText(L"def"));
+  ASSERT_NO_FATAL_FAILURE(SetLocationBarText("def"));
   EXPECT_STR_EQ("", GetSuggestion());
 }
 
@@ -345,7 +346,7 @@ IN_PROC_BROWSER_TEST_F(InstantTest, SetSuggestionsValidJson) {
   SetSuggestionsJavascriptArgument(
       preview_,
       "{suggestions:[{value:'defghij'},{value:'unused'}]}");
-  ASSERT_NO_FATAL_FAILURE(SetLocationBarText(L"def"));
+  ASSERT_NO_FATAL_FAILURE(SetLocationBarText("def"));
   EXPECT_STR_EQ("defghij", GetSuggestion());
 }
 
@@ -359,7 +360,7 @@ IN_PROC_BROWSER_TEST_F(InstantTest, SetSuggestionsInvalidSuggestions) {
   SetSuggestionsJavascriptArgument(
       preview_,
       "{suggestions:{value:'defghi'}}");
-  ASSERT_NO_FATAL_FAILURE(SetLocationBarText(L"def"));
+  ASSERT_NO_FATAL_FAILURE(SetLocationBarText("def"));
   EXPECT_STR_EQ("", GetSuggestion());
 }
 
@@ -371,7 +372,7 @@ IN_PROC_BROWSER_TEST_F(InstantTest, SetSuggestionsEmptyJson) {
   ASSERT_NO_FATAL_FAILURE(SetupPreview());
 
   SetSuggestionsJavascriptArgument(preview_, "{}");
-  ASSERT_NO_FATAL_FAILURE(SetLocationBarText(L"def"));
+  ASSERT_NO_FATAL_FAILURE(SetLocationBarText("def"));
   EXPECT_STR_EQ("", GetSuggestion());
 }
 
@@ -383,7 +384,7 @@ IN_PROC_BROWSER_TEST_F(InstantTest, SetSuggestionsEmptySuggestions) {
   ASSERT_NO_FATAL_FAILURE(SetupPreview());
 
   SetSuggestionsJavascriptArgument(preview_, "{suggestions:[]}");
-  ASSERT_NO_FATAL_FAILURE(SetLocationBarText(L"def"));
+  ASSERT_NO_FATAL_FAILURE(SetLocationBarText("def"));
   EXPECT_STR_EQ("", GetSuggestion());
 }
 
@@ -395,7 +396,7 @@ IN_PROC_BROWSER_TEST_F(InstantTest, SetSuggestionsEmptySuggestion) {
   ASSERT_NO_FATAL_FAILURE(SetupPreview());
 
   SetSuggestionsJavascriptArgument(preview_, "{suggestions:[{}]}");
-  ASSERT_NO_FATAL_FAILURE(SetLocationBarText(L"def"));
+  ASSERT_NO_FATAL_FAILURE(SetLocationBarText("def"));
   EXPECT_STR_EQ("", GetSuggestion());
 }
 
@@ -404,7 +405,7 @@ IN_PROC_BROWSER_TEST_F(InstantTest, ShowPreviewNonSearch) {
   ASSERT_TRUE(test_server()->Start());
   EnableInstant();
   GURL url(test_server()->GetURL("files/instant/empty.html"));
-  ASSERT_NO_FATAL_FAILURE(SetLocationBarText(UTF8ToWide(url.spec())));
+  ASSERT_NO_FATAL_FAILURE(SetLocationBarText(url.spec()));
   // The preview should be active and showing.
   ASSERT_TRUE(browser()->instant()->is_active());
   ASSERT_TRUE(browser()->instant()->is_displayable());
@@ -423,7 +424,7 @@ IN_PROC_BROWSER_TEST_F(InstantTest, NonSearchToSearch) {
   ASSERT_TRUE(test_server()->Start());
   EnableInstant();
   GURL url(test_server()->GetURL("files/instant/empty.html"));
-  ASSERT_NO_FATAL_FAILURE(SetLocationBarText(UTF8ToWide(url.spec())));
+  ASSERT_NO_FATAL_FAILURE(SetLocationBarText(url.spec()));
   // The preview should be active and showing.
   ASSERT_TRUE(browser()->instant()->is_active());
   ASSERT_TRUE(browser()->instant()->is_displayable());
@@ -543,7 +544,7 @@ IN_PROC_BROWSER_TEST_F(InstantTest,
   EnableInstant();
   ASSERT_NO_FATAL_FAILURE(SetupInstantProvider("empty.html"));
   GURL url(test_server()->GetURL("files/instant/empty.html"));
-  ASSERT_NO_FATAL_FAILURE(SetLocationBarText(UTF8ToWide(url.spec())));
+  ASSERT_NO_FATAL_FAILURE(SetLocationBarText(url.spec()));
   // The preview should be active and showing.
   ASSERT_TRUE(browser()->instant()->is_displayable());
   ASSERT_TRUE(browser()->instant()->is_active());
@@ -583,7 +584,7 @@ IN_PROC_BROWSER_TEST_F(InstantTest, ValidHeight) {
   ASSERT_NO_FATAL_FAILURE(SetupLocationBar());
   ASSERT_NO_FATAL_FAILURE(SetupPreview());
 
-  ASSERT_NO_FATAL_FAILURE(SetLocationBarText(L"def"));
+  ASSERT_NO_FATAL_FAILURE(SetLocationBarText("def"));
 
   int height;
 
@@ -638,7 +639,7 @@ IN_PROC_BROWSER_TEST_F(InstantTest, OnSubmitEvent) {
   ASSERT_NO_FATAL_FAILURE(SetupLocationBar());
   ASSERT_NO_FATAL_FAILURE(SetupPreview());
 
-  ASSERT_NO_FATAL_FAILURE(SetLocationBarText(L"def"));
+  ASSERT_NO_FATAL_FAILURE(SetLocationBarText("def"));
   ASSERT_NO_FATAL_FAILURE(SendKey(ui::VKEY_RETURN));
 
   // Check that the preview contents have been committed.
@@ -662,7 +663,7 @@ IN_PROC_BROWSER_TEST_F(InstantTest, OnCancelEvent) {
   ASSERT_NO_FATAL_FAILURE(SetupLocationBar());
   ASSERT_NO_FATAL_FAILURE(SetupPreview());
 
-  ASSERT_NO_FATAL_FAILURE(SetLocationBarText(L"def"));
+  ASSERT_NO_FATAL_FAILURE(SetLocationBarText("def"));
   ASSERT_NO_FATAL_FAILURE(ui_test_utils::ClickOnView(browser(),
                                                      VIEW_ID_TAB_CONTAINER));
 
@@ -675,4 +676,17 @@ IN_PROC_BROWSER_TEST_F(InstantTest, OnCancelEvent) {
   // Check that the value is reflected and oncancel is called.
   EXPECT_EQ("true 0 1 1 2 d false def false 3 3",
             GetSearchStateAsString(preview_));
+}
+
+// Make sure about:crash is shown.
+IN_PROC_BROWSER_TEST_F(InstantTest, ShowAboutCrash) {
+  ASSERT_TRUE(test_server()->Start());
+  EnableInstant();
+
+  ASSERT_TRUE(ui_test_utils::BringBrowserWindowToFront(browser()));
+
+  ASSERT_NO_FATAL_FAILURE(SetLocationBarText(chrome::kAboutCrashURL));
+
+  // If we get here it means the preview was shown. If we time out, it means the
+  // preview was never shown.
 }

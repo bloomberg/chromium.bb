@@ -395,6 +395,8 @@ void InstantLoader::TabContentsDelegateImpl::NavigationStateChanged(
     // preview after the first paint we would end up with a white rect.
     RegisterForPaintNotifications(
         source->GetRenderWidgetHostView()->GetRenderWidgetHost());
+  } else if (source->is_crashed()) {
+    PreviewPainted();
   }
 }
 
