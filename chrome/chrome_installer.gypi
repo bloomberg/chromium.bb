@@ -83,6 +83,7 @@
             'installer/util/create_dir_work_item_unittest.cc',
             'installer/util/create_reg_key_work_item_unittest.cc',
             'installer/util/delete_after_reboot_helper_unittest.cc',
+            'installer/util/delete_reg_key_work_item_unittest.cc',
             'installer/util/delete_reg_value_work_item_unittest.cc',
             'installer/util/delete_tree_work_item_unittest.cc',
             'installer/util/google_chrome_distribution_unittest.cc',

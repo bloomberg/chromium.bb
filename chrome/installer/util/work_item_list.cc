@@ -208,7 +208,8 @@ bool NoRollbackWorkItemList::Do() {
     executed_list_.push_front(work_item);
     work_item->set_ignore_failure(true);
     if (!work_item->Do()) {
-      LOG(ERROR) << "NoRollbackWorkItemList: item execution failed.";
+      LOG(ERROR) << "NoRollbackWorkItemList: item execution failed "
+                 << work_item->log_message();
       result = false;
     }
   }
@@ -223,4 +224,3 @@ bool NoRollbackWorkItemList::Do() {
 void NoRollbackWorkItemList::Rollback() {
   NOTREACHED() << "Can't rollback a NoRollbackWorkItemList";
 }
-
