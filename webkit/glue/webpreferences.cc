@@ -72,8 +72,7 @@ WebPreferences::WebPreferences()
       accelerated_2d_canvas_enabled(false),
       accelerated_plugins_enabled(false),
       memory_info_enabled(false),
-      interactive_form_validation_enabled(true),
-      fullscreen_enabled(false) {
+      interactive_form_validation_enabled(true) {
 }
 
 WebPreferences::~WebPreferences() {
@@ -206,6 +205,4 @@ void WebPreferences::Apply(WebView* web_view) const {
 
   settings->setInteractiveFormValidationEnabled(
       interactive_form_validation_enabled);
-
-  settings->setFullScreenEnabled(fullscreen_enabled);
 }
