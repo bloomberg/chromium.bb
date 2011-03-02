@@ -20,6 +20,8 @@ class Widget;
 //
 class NativeWidget {
  public:
+  typedef std::set<NativeWidget*> NativeWidgets;
+
   virtual ~NativeWidget() {}
 
   // Retrieves the NativeWidget implementation associated with the given
@@ -36,7 +38,6 @@ class NativeWidget {
 
   // Returns all NativeWidgets in |native_view|'s hierarchy, including itself if
   // it is one.
-  typedef std::set<NativeWidget*> NativeWidgets;
   static void GetAllNativeWidgets(gfx::NativeView native_view,
                                   NativeWidgets* children);
 
