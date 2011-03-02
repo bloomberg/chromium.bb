@@ -185,11 +185,10 @@ bool SpeechInputManager::IsFeatureEnabled() {
 
 void SpeechInputManager::ShowAudioInputSettings() {
   // Since AudioManager::ShowAudioInputSettings can potentially launch external
-  // processes, do that in the PROCESS_LAUNCHER thread to not block the calling
-  // threads.
-  if (!BrowserThread::CurrentlyOn(BrowserThread::PROCESS_LAUNCHER)) {
+  // processes, do that in the FILE thread to not block the calling threads.
+  if (!BrowserThread::CurrentlyOn(BrowserThread::FILE)) {
     BrowserThread::PostTask(
-        BrowserThread::PROCESS_LAUNCHER, FROM_HERE,
+        BrowserThread::FILE, FROM_HERE,
         NewRunnableFunction(&SpeechInputManager::ShowAudioInputSettings));
     return;
   }

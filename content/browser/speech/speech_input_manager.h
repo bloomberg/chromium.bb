@@ -36,7 +36,7 @@ class SpeechInputManager {
   static bool IsFeatureEnabled();
 
   // Invokes the platform provided microphone settings UI in a non-blocking way,
-  // via the BrowserThread::PROCESS_LAUNCHER thread.
+  // via the BrowserThread::FILE thread.
   static void ShowAudioInputSettings();
 
   // Factory method to access the singleton. We have this method here instead of
