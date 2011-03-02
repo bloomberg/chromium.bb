@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -15,6 +15,7 @@
 #include "base/file_util.h"
 #include "base/logging.h"
 #include "base/ref_counted.h"
+#include "base/scoped_ptr.h"
 #include "base/string_split.h"
 #include "base/string_util.h"
 #include "base/sys_info.h"
@@ -33,7 +34,6 @@
 #include "grit/renderer_resources.h"
 #include "ipc/ipc_channel_handle.h"
 #include "net/base/mime_util.h"
-#include "printing/native_metafile.h"
 #include "skia/ext/platform_canvas.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebBindings.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebCursorInfo.h"
@@ -52,6 +52,11 @@
 
 #if defined(OS_POSIX)
 #include "ipc/ipc_channel_posix.h"
+#endif
+
+#if defined(OS_WIN)
+#include "printing/native_metafile_factory.h"
+#include "printing/native_metafile.h"
 #endif
 
 using WebKit::WebBindings;
@@ -926,13 +931,14 @@ void WebPluginDelegateProxy::Print(gfx::NativeDrawingContext context) {
   }
 
 #if defined(OS_WIN)
-  printing::NativeMetafile metafile;
-  if (!metafile.Init(memory.memory(), size)) {
+  scoped_ptr<printing::NativeMetafile> metafile(
+      printing::NativeMetafileFactory::CreateMetafile());
+  if (!metafile->Init(memory.memory(), size)) {
     NOTREACHED();
     return;
   }
   // Playback the buffer.
-  metafile.Playback(context, NULL);
+  metafile->Playback(context, NULL);
 #else
   // TODO(port): plugin printing.
   NOTIMPLEMENTED();

@@ -22,7 +22,6 @@
 #include "ppapi/c/ppb_core.h"
 #include "ppapi/c/ppb_instance.h"
 #include "ppapi/c/ppp_instance.h"
-#include "printing/native_metafile.h"
 #include "printing/units.h"
 #include "skia/ext/vector_platform_device.h"
 #include "skia/ext/platform_canvas.h"
@@ -54,9 +53,18 @@
 #include "webkit/plugins/ppapi/string.h"
 #include "webkit/plugins/ppapi/var.h"
 
+#if defined(OS_POSIX)
+#include "printing/native_metafile.h"
+#endif
+
 #if defined(OS_MACOSX)
 #include "base/mac/mac_util.h"
 #include "base/mac/scoped_cftyperef.h"
+#include "printing/native_metafile_factory.h"
+#endif
+
+#if defined(OS_LINUX)
+#include "printing/pdf_ps_metafile_cairo.h"
 #endif
 
 #if defined(OS_WIN)
@@ -1035,15 +1043,16 @@ bool PluginInstance::PrintPDFOutput(PP_Resource print_output,
   // directly.
   cairo_t* context = canvas->beginPlatformPaint();
   printing::NativeMetafile* metafile =
-      printing::NativeMetafile::FromCairoContext(context);
+      printing::PdfPsMetafile::FromCairoContext(context);
   DCHECK(metafile);
   if (metafile)
     ret = metafile->SetRawData(buffer->mapped_buffer(), buffer->size());
   canvas->endPlatformPaint();
 #elif defined(OS_MACOSX)
-  printing::NativeMetafile metafile;
+  scoped_ptr<printing::NativeMetafile> metafile(
+      printing::NativeMetafileFactory::CreateMetafile());
   // Create a PDF metafile and render from there into the passed in context.
-  if (metafile.Init(buffer->mapped_buffer(), buffer->size())) {
+  if (metafile->Init(buffer->mapped_buffer(), buffer->size())) {
     // Flip the transform.
     CGContextSaveGState(canvas);
     CGContextTranslateCTM(canvas, 0,
@@ -1055,7 +1064,7 @@ bool PluginInstance::PrintPDFOutput(PP_Resource print_output,
     page_rect.size.width = current_print_settings_.printable_area.size.width;
     page_rect.size.height = current_print_settings_.printable_area.size.height;
 
-    ret = metafile.RenderPage(1, canvas, page_rect, true, false, true, true);
+    ret = metafile->RenderPage(1, canvas, page_rect, true, false, true, true);
     CGContextRestoreGState(canvas);
   }
 #elif defined(OS_WIN)

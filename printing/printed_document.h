@@ -13,7 +13,6 @@
 #include "base/synchronization/lock.h"
 #include "googleurl/src/gurl.h"
 #include "printing/print_settings.h"
-#include "printing/native_metafile.h"
 #include "ui/gfx/native_widget_types.h"
 
 class FilePath;
@@ -25,6 +24,7 @@ class Font;
 
 namespace printing {
 
+class NativeMetafile;
 class PrintedPage;
 class PrintedPagesSource;
 class PrintingContext;
