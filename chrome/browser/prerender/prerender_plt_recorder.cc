@@ -39,9 +39,10 @@ void PrerenderPLTRecorder::OnDidStartProvisionalLoadForFrame(int64 frame_id,
 
 void PrerenderPLTRecorder::DidStopLoading() {
   // Compute the PPLT metric and report it in a histogram, if needed.
-  PrerenderManager* pm = tab_contents()->profile()->GetPrerenderManager();
-  if (pm != NULL && !pplt_load_start_.is_null())
-    pm->RecordPerceivedPageLoadTime(base::TimeTicks::Now() - pplt_load_start_);
+  if (!pplt_load_start_.is_null()) {
+    PrerenderManager::RecordPerceivedPageLoadTime(
+        base::TimeTicks::Now() - pplt_load_start_);
+  }
 
   // Reset the PPLT metric.
   pplt_load_start_ = base::TimeTicks();

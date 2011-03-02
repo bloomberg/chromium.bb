@@ -203,6 +203,7 @@ PrerenderContents* PrerenderManager::CreatePrerenderContents(
       this, profile_, url, alias_urls, referrer);
 }
 
+// static
 void PrerenderManager::RecordPerceivedPageLoadTime(base::TimeDelta pplt) {
   bool record_windowed_pplt = ShouldRecordWindowedPPLT();
   switch (mode_) {
@@ -240,6 +241,7 @@ PrerenderContents* PrerenderManager::FindEntry(const GURL& url) {
   return NULL;
 }
 
+// static
 void PrerenderManager::RecordPrefetchTagObserved() {
   // Ensure that we are in the UI thread, and post to the UI thread if
   // necessary.
@@ -254,6 +256,7 @@ void PrerenderManager::RecordPrefetchTagObserved() {
   }
 }
 
+// static
 void PrerenderManager::RecordPrefetchTagObservedOnUIThread() {
   // Once we get here, we have to be on the UI thread.
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
@@ -264,7 +267,8 @@ void PrerenderManager::RecordPrefetchTagObservedOnUIThread() {
   last_prefetch_seen_time_ = base::TimeTicks::Now();
 }
 
-bool PrerenderManager::ShouldRecordWindowedPPLT() const {
+// static
+bool PrerenderManager::ShouldRecordWindowedPPLT() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   if (last_prefetch_seen_time_.is_null())
     return false;

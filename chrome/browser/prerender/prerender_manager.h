@@ -61,7 +61,7 @@ class PrerenderManager : public base::RefCounted<PrerenderManager> {
   PrerenderContents* GetEntry(const GURL& url);
 
   // The following two methods should only be called from the UI thread.
-  void RecordPerceivedPageLoadTime(base::TimeDelta pplt);
+  static void RecordPerceivedPageLoadTime(base::TimeDelta pplt);
   void RecordTimeUntilUsed(base::TimeDelta time_until_used);
 
   base::TimeDelta max_prerender_age() const { return max_prerender_age_; }
@@ -112,7 +112,7 @@ class PrerenderManager : public base::RefCounted<PrerenderManager> {
   // ownership of the PrerenderContents.
   PrerenderContents* FindEntry(const GURL& url);
 
-  bool ShouldRecordWindowedPPLT() const;
+  static bool ShouldRecordWindowedPPLT();
 
   static void RecordPrefetchTagObservedOnUIThread();
 
