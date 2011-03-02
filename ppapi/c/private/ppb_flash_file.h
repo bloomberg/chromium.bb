@@ -88,28 +88,20 @@ struct PPB_Flash_File_ModuleLocal {
 
 // PPB_Flash_File_FileRef ------------------------------------------------------
 
-#define PPB_FLASH_FILE_FILEREF_INTERFACE "PPB_Flash_File_FileRef;1"
+#define PPB_FLASH_FILE_FILEREF_INTERFACE "PPB_Flash_File_FileRef;2"
 
 // This interface provides (for Flash) synchronous access to files whose paths
 // are given by a Pepper FileRef. Such FileRefs are typically obtained via the
 // Pepper file chooser.
 struct PPB_Flash_File_FileRef {
-  // The functions below correspond exactly to the ones in the module-local file
-  // interface (except in taking FileRefs instead of paths, of course).
+  // The functions below correspond exactly to their module-local counterparts
+  // (except in taking FileRefs instead of paths, of course). We omit the
+  // functionality which we do not provide for FileRefs.
   int32_t (*OpenFile)(PP_Resource file_ref_id,
                       int32_t mode,
                       PP_FileHandle* file);
-  int32_t (*RenameFile)(PP_Resource from_file_ref_id,
-                        PP_Resource to_file_ref_id);
-  int32_t (*DeleteFileOrDir)(PP_Resource file_ref_id,
-                             PP_Bool recursive);
-  int32_t (*CreateDir)(PP_Resource file_ref_id);
   int32_t (*QueryFile)(PP_Resource file_ref_id,
                        struct PP_FileInfo_Dev* info);
-  int32_t (*GetDirContents)(PP_Resource file_ref_id,
-                            struct PP_DirContents_Dev** contents);
-  void (*FreeDirContents)(PP_Instance instance,
-                          struct PP_DirContents_Dev* contents);
 };
 
 #endif  // PPAPI_C_PRIVATE_PPB_FLASH_FILE_H_

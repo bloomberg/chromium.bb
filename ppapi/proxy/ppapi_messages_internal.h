@@ -356,6 +356,17 @@ IPC_SYNC_MESSAGE_ROUTED1_0(PpapiHostMsg_PPBFlash_RunMessageLoop,
 IPC_SYNC_MESSAGE_ROUTED1_0(PpapiHostMsg_PPBFlash_QuitMessageLoop,
                            PP_Instance /* instance */)
 
+// PPB_Flash_File_FileRef.
+IPC_SYNC_MESSAGE_ROUTED2_2(PpapiHostMsg_PPBFlashFile_FileRef_OpenFile,
+                           pp::proxy::HostResource /* file_ref */,
+                           int32_t /* mode */,
+                           IPC::PlatformFileForTransit /* file_handle */,
+                           int32_t /* result */)
+IPC_SYNC_MESSAGE_ROUTED1_2(PpapiHostMsg_PPBFlashFile_FileRef_QueryFile,
+                           pp::proxy::HostResource /* file_ref */,
+                           PP_FileInfo_Dev /* info */,
+                           int32_t /* result */)
+
 // PPB_Flash_File_ModuleLocal.
 IPC_SYNC_MESSAGE_ROUTED3_2(PpapiHostMsg_PPBFlashFile_ModuleLocal_OpenFile,
                            PP_Instance /* instance */,

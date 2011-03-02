@@ -13,11 +13,13 @@
 #include "ppapi/proxy/interface_proxy.h"
 
 struct PP_FileInfo_Dev;
+struct PPB_Flash_File_FileRef;
 struct PPB_Flash_File_ModuleLocal;
 
 namespace pp {
 namespace proxy {
 
+class HostResource;
 struct SerializedDirEntry;
 
 class PPB_Flash_File_ModuleLocal_Proxy : public InterfaceProxy {
@@ -61,6 +63,32 @@ class PPB_Flash_File_ModuleLocal_Proxy : public InterfaceProxy {
                            const std::string& path,
                            std::vector<pp::proxy::SerializedDirEntry>* entries,
                            int32_t* result);
+};
+
+class PPB_Flash_File_FileRef_Proxy : public InterfaceProxy {
+ public:
+  PPB_Flash_File_FileRef_Proxy(Dispatcher* dispatcher,
+                               const void* target_interface);
+  virtual ~PPB_Flash_File_FileRef_Proxy();
+
+  static const Info* GetInfo();
+
+  const PPB_Flash_File_FileRef* ppb_flash_file_module_local_target() const {
+    return static_cast<const PPB_Flash_File_FileRef*>(target_interface());
+  }
+
+  // InterfaceProxy implementation.
+  virtual bool OnMessageReceived(const IPC::Message& msg);
+
+ private:
+  // Message handlers.
+  void OnMsgOpenFile(const HostResource& host_resource,
+                     int32_t mode,
+                     IPC::PlatformFileForTransit* file_handle,
+                     int32_t* result);
+  void OnMsgQueryFile(const HostResource& host_resource,
+                      PP_FileInfo_Dev* info,
+                      int32_t* result);
 };
 
 }  // namespace proxy

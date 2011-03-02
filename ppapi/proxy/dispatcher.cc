@@ -109,6 +109,7 @@ InterfaceList::InterfaceList() {
   AddPPB(PPB_FileChooser_Proxy::GetInfo());
   AddPPB(PPB_FileRef_Proxy::GetInfo());
   AddPPB(PPB_FileSystem_Proxy::GetInfo());
+  AddPPB(PPB_Flash_File_FileRef_Proxy::GetInfo());
   AddPPB(PPB_Flash_File_ModuleLocal_Proxy::GetInfo());
   AddPPB(PPB_Flash_Proxy::GetInfo());
   AddPPB(PPB_Flash_Menu_Proxy::GetInfo());

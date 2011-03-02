@@ -251,26 +251,6 @@ int32_t OpenFileRefFile(PP_Resource file_ref_id,
   return PlatformFileErrorToPepperError(result);
 }
 
-int32_t RenameFileRefFile(PP_Resource from_file_ref_id,
-                          PP_Resource to_file_ref_id) {
-  // If it proves necessary, it's easy enough to implement.
-  NOTIMPLEMENTED();
-  return PP_ERROR_FAILED;
-}
-
-int32_t DeleteFileRefFileOrDir(PP_Resource file_ref_id,
-                               PP_Bool recursive) {
-  // If it proves necessary, it's easy enough to implement.
-  NOTIMPLEMENTED();
-  return PP_ERROR_FAILED;
-}
-
-int32_t CreateFileRefDir(PP_Resource file_ref_id) {
-  // If it proves necessary, it's easy enough to implement.
-  NOTIMPLEMENTED();
-  return PP_ERROR_FAILED;
-}
-
 int32_t QueryFileRefFile(PP_Resource file_ref_id,
                          PP_FileInfo_Dev* info) {
   scoped_refptr<PPB_FileRef_Impl> file_ref(
@@ -300,21 +280,9 @@ int32_t QueryFileRefFile(PP_Resource file_ref_id,
   return PlatformFileErrorToPepperError(result);
 }
 
-int32_t GetFileRefDirContents(PP_Resource file_ref_id,
-                              PP_DirContents_Dev** contents) {
-  // If it proves necessary, it's easy enough to implement.
-  NOTIMPLEMENTED();
-  return PP_ERROR_FAILED;
-}
-
 const PPB_Flash_File_FileRef ppb_flash_file_fileref = {
   &OpenFileRefFile,
-  &RenameFileRefFile,
-  &DeleteFileRefFileOrDir,
-  &CreateFileRefDir,
   &QueryFileRefFile,
-  &GetFileRefDirContents,
-  &FreeDirContents,
 };
 
 }  // namespace
