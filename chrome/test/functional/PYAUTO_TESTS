@@ -144,36 +144,76 @@
 
     # ChromeOS is linux, but note that this section does not include the
     # entries in the linux section above.
+    # These tests use the named automation interface to control the
+    # primary chrome on ChromeOS.
     'chromeos': [
-      # you cannot resize browser window on chromeos
-      '-browser.BrowserTest.testWindowResize',
-      # Importer tests are invalid on chromeos since chrome is the only browser
-      '-imports',
+      'chromeos_basic',
 
       # crbug.com/42823
       '-bookmark_bar.BookmarkBarTest.testBookmarkBarVisible',
-      # chrome/test/data/plugins dir missing in autotest pkg. crosbug.com/6855
-      '-browser.BrowserTest.testCanLoadFlash',
-      '-browser.BrowserTest.testFlashLoadsAfterKill',
-      '-browser.BrowserTest.testSingleFlashPluginProcess',
-      '-infobars.InfobarTest.testPluginCrashInfobar',
-      '-omnibox',  # http://crbug.com/44203
-      # crosbug.com/6856
-      '-prefs.PrefsTest.testNavigationStateOnSessionRestore',
-      '-prefs.PrefsTest.testSessionRestoreURLs',
-      '-prefs.PrefsTest.testSessionRestore',
-      '-downloads.DownloadsTest.testNoUnsafeDownloadsOnRestart',
-      '-downloads.DownloadsTest.testZip',
-      '-downloads.DownloadsTest.testZipInIncognito',
-      '-downloads.DownloadsTest.testCrazyFilenames',
-      '-downloads.DownloadsTest.testBigZip',
-      '-downloads.DownloadsTest.testCancelDownload',
-      '-downloads.DownloadsTest.testPauseAndResume',
+      # you cannot resize browser window on chromeos
+      '-browser.BrowserTest.testWindowResize',
       # crosbug.com/9499
       '-crash_reporter.CrashReporterTest.testRendererCrash',
+      # crbug.com/64664
+      '-databases.DatabasesTest.testReloadActiveTab',
+      '-databases.DatabasesTest.testModificationsPersistAfterRendererCrash',
+      # Need internal data dirs in autotest package. crosbug.com/6855
+      '-find_in_page.FindMatchTests.testSearchInPDF',
+      # Importer tests are invalid on chromeos since chrome is the only browser
+      '-imports',
+      '-infobars.InfobarTest.testPluginCrashInfobar',
       # crbug.com/70694
       '-passwords.PasswordTest.testInfoBarDisappearByReload',
       '-passwords.PasswordTest.testNeverSavePasswords',
+      # MakeSearchEngineDefault() automation broken
+      '-search_engines.SearchEnginesTest.testDefaultSearchEngines',
+
+      # Needs internal data files.  crosbug.com/6855
+      '-browser.BrowserTest.testCanLoadFlash',
+      '-browser.BrowserTest.testFlashLoadsAfterKill',
+      '-browser.BrowserTest.testSingleFlashPluginProcess',
+      '-ntp.NTPTest.testGetAppsWhenInstallApp',
+      '-ntp.NTPTest.testGetAppsWhenInstallNonApps',
+      '-pdf',
+      '-plugins',
+
+      # Local http server not working on chromeos.  crosbug.com/12641
+      '-test_basic.SimpleTest.testHTTP',
+
+      # Deal with i18n chars.  crosbug.com/12639
+      '-downloads.DownloadsTest.testCrazyFilenames',
+      '-omnibox.OmniboxTest.testCrazyFilenames',
+
+      # GetBrowserInfo() not working on chromeos.  crosbug.com/12642
+      '-browser',
+      '-codesign',
+      '-infobars',
+      '-notifications',
+      '-prefs.PrefsTest.testGeolocationPref',
+
+      # Download shelf visibility automation broken on ChromeOS.
+      # crosbug.com/12644
+      '-downloads.DownloadsTest.testZip',
+      '-downloads.DownloadsTest.testZipInIncognito',
+
+      # Setting theme automation broken.  crosbug.com/12655
+      '-downloads.DownloadsTest.testDownloadTheme',
+      '-themes',
+
+      # Session restore not working with PyAuto.  crosbug.com/12648
+      '-prefs.PrefsTest.testNavigationStateOnSessionRestore',
+      '-prefs.PrefsTest.testSessionRestoreURLs',
+      '-prefs.PrefsTest.testSessionRestore',
+
+      # Exclusions that have not been narrowed to other categories yet.
+      # crosbug.com/12653
+      '-autofill',
+      '-bookmark_bar',
+      '-crash_reporter',
+      '-instant',
+      '-omnibox.OmniboxTest.testContentHistory',
+      '-plugins_check',
     ],
   },
 
@@ -200,29 +240,9 @@
     ],
 
     'chromeos': [
-      # crosbug.com/6856
-      '-translate.TranslateTest.testSessionRestore',
-      '-translate.TranslateTest.testDownloadsNotTranslated',
-    ],
-  },
-
-  # The PRIMARY_CHROME suite uses named automation interface to control
-  # primary chrome on ChromeOS.
-  'PRIMARY_CHROME': {
-    'all': [
-    ],
-
-    'win': [
-    ],
-
-    'mac': [
-    ],
-
-    'linux': [
-    ],
-
-    'chromeos': [
-      'chromeos_basic',
+      # Exclusions that have not been narrowed to other categories yet.
+      # crosbug.com/12653
+      '-translate',
     ],
   },
 

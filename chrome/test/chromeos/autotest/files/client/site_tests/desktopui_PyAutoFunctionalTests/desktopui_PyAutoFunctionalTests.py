@@ -13,7 +13,7 @@ from autotest_lib.client.cros import constants, chrome_test, cros_ui
 class desktopui_PyAutoFunctionalTests(chrome_test.ChromeTestBase):
     """Wrapper for running Chrome's PyAuto-based functional tests.
 
-    Performs all setup and fires of PRIMARY_CHROME suite.
+    Performs all setup and fires off the FULL suite.
     """
     version = 1
 
@@ -52,9 +52,9 @@ class desktopui_PyAutoFunctionalTests(chrome_test.ChromeTestBase):
                 os.path.join(pyautolib_dir, 'chromeos', 'chromeos_utils.py'))
         utils.system(login_cmd)
 
-        # Run pyauto tests in "PRIMARY_CHROME" suite
+        # Run pyauto tests in the "FULL" suite
         functional_cmd = cros_ui.xcommand_as(
             '%s/chrome_test/test_src/chrome/test/functional/' \
-            'pyauto_functional.py --suite=PRIMARY_CHROME ' \
+            'pyauto_functional.py --suite=FULL ' \
             '-v --no-http-server' % deps_dir)
         utils.system(functional_cmd)

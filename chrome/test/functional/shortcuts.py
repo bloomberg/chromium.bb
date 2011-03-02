@@ -126,8 +126,11 @@ class ShortcutsTest(pyauto.PyUITest):
   def testHelpShortcut(self):
     """Verify help shortcut opens help page."""
     self.ApplyAccelerator(pyauto.IDC_HELP_PAGE)
+    help_page_title = 'Google Chrome Help'
+    if self.IsChromeOS():
+      help_page_title = 'Chrome OS Help'
     self.assertTrue(self.WaitUntil(lambda: self.GetActiveTabTitle(),
-                    expect_retval='Google Chrome Help'),
+                    expect_retval=help_page_title),
                     msg='Google Chrome help page has not opened.')
 
   def testSwitchingTabs(self):
