@@ -29,9 +29,9 @@ void InstallationValidator::ChromeRules::AddProductSwitchExpectations(
   const bool is_multi_install =
       product_state.uninstall_command().HasSwitch(switches::kMultiInstall);
 
-  // --chrome should be present iff --multi-install.
-  expectations->push_back(std::make_pair(std::string(switches::kChrome),
-                                         is_multi_install));
+  // --chrome should be present iff --multi-install.  This wasn't the case in
+  // Chrome 10 (between r68996 and r72497), though, so consider it optional.
+
   // --chrome-frame --ready-mode should be present iff CF in ready mode.
   const ProductState* cf_state =
       machine_state.GetProductState(system_install,
