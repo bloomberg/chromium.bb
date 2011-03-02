@@ -213,18 +213,21 @@ class BuildTestsTest(BuilderStageTest):
     mox.MoxTestBase.setUp(self)
     BuilderStageTest.setUp(self)
 
-  def testCTest(self):
-    """Tests if CTest is run correctly."""
+  def testFullTests(self):
+    """Tests if full unit and cros_au_test_harness tests are run correctly."""
     self.bot_id = 'x86-generic-full'
     self.build_config = config.config[self.bot_id].copy()
+    self.build_config['quick_unit'] = False
     self.build_config['quick_vm'] = False
+
+    self.mox.StubOutWithMock(cros_lib, 'OldRunCommand')
 
     self.mox.StubOutWithMock(commands, 'RunUnitTests')
     self.mox.StubOutWithMock(commands, 'RunSmokeSuite')
     self.mox.StubOutWithMock(commands, 'RunAUTestSuite')
     self.mox.StubOutWithMock(commands, 'ArchiveTestResults')
 
-    commands.RunUnitTests(self.build_root)
+    commands.RunUnitTests(self.build_root, full=True)
     commands.RunSmokeSuite(self.build_root, '/tmp/run_remote_tests.1234')
     commands.RunAUTestSuite(self.build_root,
                             self.build_config['board'],
@@ -236,17 +239,19 @@ class BuildTestsTest(BuilderStageTest):
     stage.Run()
     self.mox.VerifyAll()
 
-  def testAUTest(self):
-    """Tests if cros_au_test_harness quick test is run correctly."""
+  def testQuickTests(self):
+    """Tests if quick unit and cros_au_test_harness tests are run correctly."""
     self.bot_id = 'x86-generic-full'
-    self.build_config = config.config[self.bot_id]
+    self.build_config = config.config[self.bot_id].copy()
+    self.build_config['quick_unit'] = True
+    self.build_config['quick_vm'] = True
 
     self.mox.StubOutWithMock(commands, 'RunUnitTests')
     self.mox.StubOutWithMock(commands, 'RunSmokeSuite')
     self.mox.StubOutWithMock(commands, 'RunAUTestSuite')
     self.mox.StubOutWithMock(commands, 'ArchiveTestResults')
 
-    commands.RunUnitTests(self.build_root)
+    commands.RunUnitTests(self.build_root, full=False)
     commands.RunSmokeSuite(self.build_root, '/tmp/run_remote_tests.1234')
     commands.RunAUTestSuite(self.build_root,
                             self.build_config['board'],

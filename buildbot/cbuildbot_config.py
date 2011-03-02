@@ -27,10 +27,12 @@ push_overlays -- Select what overlays to push at. This should be a subset of
                  changes to each overlay per branch.
 
 unittests -- Runs unittests for packages.
+quick_unit -- If unittests is true, only run the unit tests for packages which
+              have changed since the previous build.
+
 vm_tests -- Runs the smoke suite and au test harness in a qemu-based VM
             using KVM.
 quick_vm -- If vm_tests is true, run a minimal au test harness suite.            
-            
 
 usepkg -- Use binary packages to bootstrap, when possible. (emerge --usepkg)
 chroot_replace -- wipe and replace chroot, but not source.
@@ -57,6 +59,8 @@ default = {
   'push_overlays': None,
 
   'unittests' : True,
+  'quick_unit' : True,
+
   'vm_tests' : True,
   'quick_vm' : True,
 
@@ -65,6 +69,7 @@ default = {
 
   'build_type' : False,
   'archive_build_debug' : False,
+
   'test_mod' : False,
   'factory_install_mod' : False,
   'factory_test_mod' : False,
@@ -85,6 +90,9 @@ full = {
   # so use settings to build from scratch, and archive the results.
   'usepkg' : False,
   'chroot_replace' : True,
+
+  'quick_unit' : False,
+  'quick_vm' : True,
 
   'build_type': 'full',
   'archive_build_debug' : True,

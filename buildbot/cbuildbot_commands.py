@@ -187,13 +187,19 @@ def BuildVMImageForTesting(buildroot):
                          ], cwd=cwd, enter_chroot=True)
 
 
-def RunUnitTests(buildroot):
+def RunUnitTests(buildroot, full):
   cwd = os.path.join(buildroot, 'src', 'scripts')
-  cros_lib.OldRunCommand(
-      ['./cros_run_unit_tests',
-       '--package_file=%s' % cros_lib.ReinterpretPathForChroot(_PACKAGE_FILE %
-           {'buildroot': buildroot}),
-      ], cwd=cwd, enter_chroot=True)
+
+  cmd = ['./cros_run_unit_tests']
+
+  # If we aren't running ALL tests, then restrict to just the packages
+  #   uprev noticed were changed.
+  if not full:
+    cmd += ['--package_file=%s' %
+            cros_lib.ReinterpretPathForChroot(_PACKAGE_FILE %
+                                              {'buildroot': buildroot})]
+
+  cros_lib.OldRunCommand(cmd, cwd=cwd, enter_chroot=True)
 
 
 def RunSmokeSuite(buildroot, results_dir):

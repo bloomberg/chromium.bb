@@ -212,7 +212,8 @@ class TestStage(BuilderStage):
   """Stage that performs testing steps."""
   def _PerformStage(self):
     if self._build_config['unittests']:
-      commands.RunUnitTests(self._build_root)
+      commands.RunUnitTests(self._build_root,
+                            full=(not self._build_config['quick_unit']))
 
     if self._build_config['vm_tests']:
       test_results_dir = '/tmp/run_remote_tests.%s' % self._options.buildnumber
