@@ -23,6 +23,7 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/common/service_process_util.h"
 #include "chrome/service/cloud_print/cloud_print_proxy.h"
+#include "chrome/service/net/service_url_request_context.h"
 #include "chrome/service/service_ipc_server.h"
 #include "chrome/service/service_process_prefs.h"
 #include "grit/chromium_strings.h"
@@ -140,6 +141,8 @@ bool ServiceProcess::Initialize(MessageLoopForUI* message_loop,
     Teardown();
     return false;
   }
+
+  request_context_getter_ = new ServiceURLRequestContextGetter();
 
   // See if we have been suppiled an LSID in the command line. This LSID will
   // override the credentials we use for Cloud Print.
@@ -304,6 +307,12 @@ void ServiceProcess::OnChromotingHostEnabled() {
 
 void ServiceProcess::OnChromotingHostDisabled() {
   OnServiceDisabled();
+}
+
+ServiceURLRequestContextGetter*
+ServiceProcess::GetServiceURLRequestContextGetter() {
+  DCHECK(request_context_getter_.get());
+  return request_context_getter_.get();
 }
 
 void ServiceProcess::OnServiceEnabled() {
