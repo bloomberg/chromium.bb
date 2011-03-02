@@ -21,6 +21,10 @@ BUG_ANTONM MAC : fast/blockflow/Kusa-Makura-background-canvas.html = IMAGE+TEXT 
 BUG_ANTONM MAC : fast/blockflow/japanese-ruby-vertical-lr.html = IMAGE
 BUG_ANTONM MAC : fast/blockflow/japanese-ruby-vertical-rl.html = IMAGE
 
+// Need a rebaseline.
+BUG_ANTONM MAC : http/tests/security/xss-DENIED-xml-external-entity.xhtml = TEXT
+BUG_ANTONM MAC : http/tests/security/xss-DENIED-xsl-external-entity.xml = TEXT
+
 // Until new baselines land in WebKit.
 BUG_MMALY : fast/js/mozilla/strict/15.10.7.html = PASS TEXT
 BUG_MMALY : fast/js/mozilla/strict/15.3.5.1.html = PASS TEXT
