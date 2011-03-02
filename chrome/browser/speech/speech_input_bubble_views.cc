@@ -12,24 +12,29 @@
 #include "content/browser/tab_contents/tab_contents_view.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
+#include "media/audio/audio_manager.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/canvas.h"
+#include "views/border.h"
 #include "views/controls/button/native_button.h"
 #include "views/controls/image_view.h"
 #include "views/controls/label.h"
+#include "views/controls/link.h"
 #include "views/layout/layout_constants.h"
 #include "views/view.h"
 
 namespace {
 
 const int kBubbleHorizMargin = 6;
-const int kBubbleVertMargin = 0;
+const int kBubbleVertMargin = 4;
+const int kBubbleHeadingVertMargin = 6;
 
 // This is the content view which is placed inside a SpeechInputBubble.
 class ContentView
     : public views::View,
-      public views::ButtonListener {
+      public views::ButtonListener,
+      public views::LinkController {
  public:
   explicit ContentView(SpeechInputBubbleDelegate* delegate);
 
@@ -39,6 +44,9 @@ class ContentView
 
   // views::ButtonListener methods.
   virtual void ButtonPressed(views::Button* source, const views::Event& event);
+
+  // views::LinkController methods.
+  virtual void LinkActivated(views::Link* source, int event_flags);
 
   // views::View overrides.
   virtual gfx::Size GetPreferredSize();
@@ -51,6 +59,7 @@ class ContentView
   views::Label* message_;
   views::NativeButton* try_again_;
   views::NativeButton* cancel_;
+  views::Link* mic_settings_;
 
   DISALLOW_COPY_AND_ASSIGN(ContentView);
 };
@@ -62,13 +71,17 @@ ContentView::ContentView(SpeechInputBubbleDelegate* delegate)
 
   heading_ = new views::Label(
       UTF16ToWide(l10n_util::GetStringUTF16(IDS_SPEECH_INPUT_BUBBLE_HEADING)));
+  heading_->set_border(views::Border::CreateEmptyBorder(
+      kBubbleHeadingVertMargin, 0, kBubbleHeadingVertMargin, 0));
   heading_->SetFont(font);
   heading_->SetHorizontalAlignment(views::Label::ALIGN_CENTER);
+  heading_->SetText(UTF16ToWide(
+      l10n_util::GetStringUTF16(IDS_SPEECH_INPUT_BUBBLE_HEADING)));
   AddChildView(heading_);
 
   message_ = new views::Label();
   message_->SetFont(font);
-  message_->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
+  message_->SetHorizontalAlignment(views::Label::ALIGN_CENTER);
   message_->SetMultiLine(true);
   AddChildView(message_);
 
@@ -87,27 +100,31 @@ ContentView::ContentView(SpeechInputBubbleDelegate* delegate)
       this,
       UTF16ToWide(l10n_util::GetStringUTF16(IDS_SPEECH_INPUT_TRY_AGAIN)));
   AddChildView(try_again_);
+
+  mic_settings_ = new views::Link(
+      UTF16ToWide(l10n_util::GetStringUTF16(IDS_SPEECH_INPUT_MIC_SETTINGS)));
+  mic_settings_->SetController(this);
+  AddChildView(mic_settings_);
 }
 
 void ContentView::UpdateLayout(SpeechInputBubbleBase::DisplayMode mode,
                                const string16& message_text) {
   bool is_message = (mode == SpeechInputBubbleBase::DISPLAY_MODE_MESSAGE);
-  heading_->SetVisible(!is_message);
   icon_->SetVisible(!is_message);
   message_->SetVisible(is_message);
+  mic_settings_->SetVisible(is_message);
   try_again_->SetVisible(is_message);
+  heading_->SetVisible(mode == SpeechInputBubbleBase::DISPLAY_MODE_RECORDING);
 
   if (mode == SpeechInputBubbleBase::DISPLAY_MODE_MESSAGE) {
     message_->SetText(UTF16ToWideHack(message_text));
   } else if (mode == SpeechInputBubbleBase::DISPLAY_MODE_RECORDING) {
-    heading_->SetText(UTF16ToWide(
-        l10n_util::GetStringUTF16(IDS_SPEECH_INPUT_BUBBLE_HEADING)));
     icon_->SetImage(*ResourceBundle::GetSharedInstance().GetBitmapNamed(
         IDR_SPEECH_INPUT_MIC_EMPTY));
-  } else {
-    heading_->SetText(UTF16ToWide(
-        l10n_util::GetStringUTF16(IDS_SPEECH_INPUT_BUBBLE_WORKING)));
   }
+
+  if (icon_->IsVisible())
+    icon_->ResetImageSize();
 }
 
 void ContentView::SetImage(const SkBitmap& image) {
@@ -125,25 +142,40 @@ void ContentView::ButtonPressed(views::Button* source,
   }
 }
 
+void ContentView::LinkActivated(views::Link* source, int event_flags) {
+  DCHECK_EQ(source, mic_settings_);
+  AudioManager::GetAudioManager()->ShowAudioInputSettings();
+}
+
 gfx::Size ContentView::GetPreferredSize() {
   int width = heading_->GetPreferredSize().width();
-  int control_width = cancel_->GetPreferredSize().width() +
-                      try_again_->GetPreferredSize().width() +
-                      views::kRelatedButtonHSpacing;
+  int control_width = cancel_->GetPreferredSize().width();
+  if (try_again_->IsVisible()) {
+    control_width += try_again_->GetPreferredSize().width() +
+                     views::kRelatedButtonHSpacing;
+  }
   if (control_width > width)
     width = control_width;
   control_width = icon_->GetPreferredSize().width();
   if (control_width > width)
     width = control_width;
+  if (mic_settings_->IsVisible()) {
+    control_width = mic_settings_->GetPreferredSize().width();
+    if (control_width > width)
+      width = control_width;
+  }
 
   int height = cancel_->GetPreferredSize().height();
   if (message_->IsVisible()) {
     height += message_->GetHeightForWidth(width) +
               views::kLabelToControlVerticalSpacing;
-  } else {
-    height += heading_->GetPreferredSize().height() +
-              icon_->GetImage().height();
   }
+  if (heading_->IsVisible())
+    height += heading_->GetPreferredSize().height();
+  if (icon_->IsVisible())
+    height += icon_->GetImage().height();
+  if (mic_settings_->IsVisible())
+    height += mic_settings_->GetPreferredSize().height();
   width += kBubbleHorizMargin * 2;
   height += kBubbleVertMargin * 2;
 
@@ -159,36 +191,41 @@ void ContentView::Layout() {
   if (message_->IsVisible()) {
     DCHECK(try_again_->IsVisible());
 
-    int height = try_again_->GetPreferredSize().height();
+    int control_height = try_again_->GetPreferredSize().height();
     int try_again_width = try_again_->GetPreferredSize().width();
     int cancel_width = cancel_->GetPreferredSize().width();
-    y += available_height - height;
+    y += available_height - control_height;
     x += (available_width - cancel_width - try_again_width -
           views::kRelatedButtonHSpacing) / 2;
-    try_again_->SetBounds(x, y, try_again_width, height);
+    try_again_->SetBounds(x, y, try_again_width, control_height);
     cancel_->SetBounds(x + try_again_width + views::kRelatedButtonHSpacing, y,
-                       cancel_width, height);
+                       cancel_width, control_height);
 
-    height = message_->GetHeightForWidth(available_width);
-    if (height > y - kBubbleVertMargin)
-      height = y - kBubbleVertMargin;
+    control_height = message_->GetHeightForWidth(available_width);
     message_->SetBounds(kBubbleHorizMargin, kBubbleVertMargin,
-                        available_width, height);
+                        available_width, control_height);
+    y = kBubbleVertMargin + control_height;
+
+    control_height = mic_settings_->GetPreferredSize().height();
+    mic_settings_->SetBounds(kBubbleHorizMargin, y, available_width,
+                             control_height);
   } else {
-    DCHECK(heading_->IsVisible());
     DCHECK(icon_->IsVisible());
 
-    int height = heading_->GetPreferredSize().height();
-    heading_->SetBounds(x, y, available_width, height);
-    y += height;
+    int control_height = icon_->GetImage().height();
+    icon_->SetBounds(x, y, available_width, control_height);
+    y += control_height;
 
-    height = icon_->GetImage().height();
-    icon_->SetBounds(x, y, available_width, height);
-    y += height;
+    if (heading_->IsVisible()) {
+      control_height = heading_->GetPreferredSize().height();
+      heading_->SetBounds(x, y, available_width, control_height);
+      y += control_height;
+    }
 
-    height = cancel_->GetPreferredSize().height();
+    control_height = cancel_->GetPreferredSize().height();
     int width = cancel_->GetPreferredSize().width();
-    cancel_->SetBounds(x + (available_width - width) / 2, y, width, height);
+    cancel_->SetBounds(x + (available_width - width) / 2, y, width,
+                       control_height);
   }
 }
 
@@ -254,7 +291,8 @@ gfx::Rect SpeechInputBubbleImpl::GetInfoBubbleTarget(
   gfx::Rect container_rect;
   tab_contents()->GetContainerBounds(&container_rect);
   return gfx::Rect(
-      container_rect.x() + element_rect.x() + kBubbleTargetOffsetX,
+      container_rect.x() + element_rect.x() + element_rect.width() -
+          kBubbleTargetOffsetX,
       container_rect.y() + element_rect.y() + element_rect.height(), 1, 1);
 }
 
