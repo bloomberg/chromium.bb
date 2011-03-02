@@ -13,6 +13,7 @@
 // Pair of IP address and port number.
 struct P2PSocketAddress {
   P2PSocketAddress();
+  ~P2PSocketAddress();
   net::IPAddressNumber address;
   int port;
 };

@@ -6,3 +6,6 @@
 
 P2PSocketAddress::P2PSocketAddress() : port(0) {
 }
+
+P2PSocketAddress::~P2PSocketAddress() {
+}
