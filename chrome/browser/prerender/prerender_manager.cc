@@ -153,6 +153,7 @@ bool PrerenderManager::MaybeUsePreloadedPage(TabContents* tc, const GURL& url) {
   pc->set_render_view_host(NULL);
   rvh->Send(new ViewMsg_DisplayPrerenderedPage(rvh->routing_id()));
   tc->SwapInRenderViewHost(rvh);
+  tc->set_was_prerendered(true);
 
   ViewHostMsg_FrameNavigate_Params* p = pc->navigate_params();
   if (p != NULL)
@@ -168,8 +169,6 @@ bool PrerenderManager::MaybeUsePreloadedPage(TabContents* tc, const GURL& url) {
 
   if (pc->has_stopped_loading())
     tc->DidStopLoading();
-
-  tc->set_was_prerendered(true);
 
   return true;
 }
