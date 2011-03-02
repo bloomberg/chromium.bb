@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -208,6 +208,9 @@ void WindowGtk::EnableClose(bool enable) {
 }
 
 void WindowGtk::UpdateWindowTitle() {
+  // ChromeOS doesn't use a window title, so don't update them.
+#if !defined(OS_CHROMEOS)
+
   // If the non-client view is rendering its own title, it'll need to relayout
   // now.
   non_client_view_->Layout();
@@ -218,6 +221,7 @@ void WindowGtk::UpdateWindowTitle() {
   base::i18n::AdjustStringForLocaleDirection(&window_title);
 
   gtk_window_set_title(GetNativeWindow(), WideToUTF8(window_title).c_str());
+#endif
 }
 
 void WindowGtk::UpdateWindowIcon() {
