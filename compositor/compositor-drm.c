@@ -37,6 +37,9 @@ struct drm_compositor {
 	struct udev *udev;
 	struct wl_event_source *drm_source;
 
+	struct {
+		int fd;
+	} drm;
 	struct tty *tty;
 };
 
@@ -67,7 +70,7 @@ drm_compositor_present(struct wlsc_compositor *ec)
 					  output->rbo[output->current]);
 		glFlush();
 
-		drmModePageFlip(c->base.drm.fd, output->crtc_id,
+		drmModePageFlip(c->drm.fd, output->crtc_id,
 				output->fb_id[output->current ^ 1],
 				DRM_MODE_PAGE_FLIP_EVENT, output);
 	}	
@@ -116,8 +119,8 @@ init_egl(struct drm_compositor *ec, struct udev_device *device)
 		return -1;
 	}
 
-	ec->base.drm.fd = fd;
-	ec->base.display = eglGetDRMDisplayMESA(ec->base.drm.fd);
+	ec->drm.fd = fd;
+	ec->base.display = eglGetDRMDisplayMESA(ec->drm.fd);
 	if (ec->base.display == NULL) {
 		fprintf(stderr, "failed to create display\n");
 		return -1;
@@ -191,7 +194,7 @@ create_output_for_connector(struct drm_compositor *ec,
 	else
 		mode = &builtin_1024x768;
 
-	encoder = drmModeGetEncoder(ec->base.drm.fd, connector->encoders[0]);
+	encoder = drmModeGetEncoder(ec->drm.fd, connector->encoders[0]);
 	if (encoder == NULL) {
 		fprintf(stderr, "No encoder for connector.\n");
 		return -1;
@@ -229,7 +232,7 @@ create_output_for_connector(struct drm_compositor *ec,
 		eglExportDRMImageMESA(ec->base.display, output->image[i],
 				      NULL, &handle, &stride);
 
-		ret = drmModeAddFB(ec->base.drm.fd,
+		ret = drmModeAddFB(ec->drm.fd,
 				   output->base.width, output->base.height,
 				   32, 32, stride, handle, &output->fb_id[i]);
 		if (ret) {
@@ -243,7 +246,7 @@ create_output_for_connector(struct drm_compositor *ec,
 				  GL_COLOR_ATTACHMENT0,
 				  GL_RENDERBUFFER,
 				  output->rbo[output->current]);
-	ret = drmModeSetCrtc(ec->base.drm.fd, output->crtc_id,
+	ret = drmModeSetCrtc(ec->drm.fd, output->crtc_id,
 			     output->fb_id[output->current ^ 1], 0, 0,
 			     &output->connector_id, 1, &output->mode);
 	if (ret) {
@@ -263,14 +266,14 @@ create_outputs(struct drm_compositor *ec, int option_connector)
 	drmModeRes *resources;
 	int i;
 
-	resources = drmModeGetResources(ec->base.drm.fd);
+	resources = drmModeGetResources(ec->drm.fd);
 	if (!resources) {
 		fprintf(stderr, "drmModeGetResources failed\n");
 		return -1;
 	}
 
 	for (i = 0; i < resources->count_connectors; i++) {
-		connector = drmModeGetConnector(ec->base.drm.fd, resources->connectors[i]);
+		connector = drmModeGetConnector(ec->drm.fd, resources->connectors[i]);
 		if (connector == NULL)
 			continue;
 
@@ -368,7 +371,7 @@ drm_compositor_create(struct wl_display *display, int connector)
 
 	loop = wl_display_get_event_loop(ec->base.wl_display);
 	ec->drm_source =
-		wl_event_loop_add_fd(loop, ec->base.drm.fd,
+		wl_event_loop_add_fd(loop, ec->drm.fd,
 				     WL_EVENT_READABLE, on_drm_input, ec);
 	ec->tty = tty_create(&ec->base);
 

@@ -74,12 +74,6 @@ struct wlsc_input_device {
 	struct wl_selection *selection;
 };
 
-struct wlsc_drm {
-	struct wl_object object;
-	int fd;
-	char *filename;
-};
-
 struct wlsc_shm {
 	struct wl_object object;
 };
@@ -87,7 +81,6 @@ struct wlsc_shm {
 struct wlsc_compositor {
 	struct wl_compositor compositor;
 
-	struct wlsc_drm drm;
 	struct wlsc_shm shm;
 	EGLDisplay display;
 	EGLContext context;
@@ -224,8 +217,6 @@ wlsc_output_init(struct wlsc_output *output, struct wlsc_compositor *c,
 void
 wlsc_input_device_init(struct wlsc_input_device *device,
 		       struct wlsc_compositor *ec);
-int
-wlsc_drm_init(struct wlsc_compositor *ec, int fd, const char *filename);
 
 int
 wlsc_shm_init(struct wlsc_compositor *ec);
