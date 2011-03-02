@@ -447,6 +447,19 @@ if (not env.Bit('coverage_enabled') and
   env.Requires(nacl_signal_exe, crt)
   env.AddNodeToTestSuite(node, ['small_tests'], 'run_nacl_signal_test')
 
+if env.Bit('posix'):
+  test_prog = env.ComponentProgram('nacl_signal_frame_test',
+                                   'nacl_signal_frame_test.c',
+                                   EXTRA_LIBS=['sel',
+                                               'gio_wrapped_desc',
+                                               'platform',
+                                               'gio',
+                                               ] + DEBUG_LIBS)
+  node = env.CommandTest('nacl_signal_frame_test.out',
+                         command=[test_prog],
+                         exit_status='trusted_segfault')
+  env.AddNodeToTestSuite(node, ['small_tests'], 'run_signal_frame_test')
+
 
 check_test_exe = env.ComponentProgram('nacl_check_test',
                                       ['nacl_check_test.c'],

@@ -1,0 +1,76 @@
+/*
+ * Copyright 2011 The Native Client Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can
+ * be found in the LICENSE file.
+ */
+
+#include <signal.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+#include "native_client/src/shared/platform/nacl_check.h"
+#include "native_client/src/shared/platform/nacl_log.h"
+#include "native_client/src/trusted/service_runtime/nacl_signal.h"
+#include "native_client/src/trusted/service_runtime/sel_ldr.h"
+#include "native_client/src/trusted/service_runtime/sel_rt.h"
+
+
+/*
+ * This test case checks for an obscure gotcha in the Linux kernel.
+ *
+ * Some kernels do not assign to the top 2 bytes of the REG_CS array
+ * entry when writing %cs to the stack.  If NaCl's signal handler does
+ * not disregard the top 16 bits of REG_CS, it will incorrectly treat
+ * a fault in trusted code as coming from untrusted code, and it will
+ * crash while attempting to restore %gs.
+ *
+ * Specifically, this happens in 32-bit processes on the 64-bit kernel
+ * from Ubuntu Hardy.
+ *
+ * See http://code.google.com/p/nativeclient/issues/detail?id=1486
+ */
+
+int main() {
+  size_t stack_size = 20 * 1024;
+  char *stack;
+  stack_t st;
+  int rc;
+  struct NaClApp nacl_app;
+
+  NaClLogModuleInit();
+  NaClInitGlobals();
+  NaClSignalHandlerInit();
+
+  /*
+   * Allocate and register a signal stack, and ensure that it is
+   * filled with non-zero bytes.
+   */
+  stack = malloc(stack_size);
+  CHECK(stack != NULL);
+  memset(stack, 0xff, stack_size);
+  st.ss_size = stack_size;
+  st.ss_sp = stack;
+  st.ss_flags = 0;
+  rc = sigaltstack(&st, NULL);
+  CHECK(rc == 0);
+
+  /*
+   * Register a non-NULL NaClApp pointer in order to exercise the %cs
+   * value check in NaClSignalContextIsUntrusted().  This is necessary
+   * because NaClSignalContextIsUntrusted() checks g_SignalNAP first.
+   * Admittedly this is incestuous knowledge of the software under
+   * test, but it is difficult to test otherwise.
+   */
+  memset(&nacl_app, 0, sizeof(nacl_app));
+  NaClSignalRegisterApp(&nacl_app);
+
+  /*
+   * Trigger a signal.  This should produce a "** Signal X from
+   * trusted code" message, which the test runner checks for.
+   */
+  *(volatile int *) 0 = 0;
+
+  printf("Should never reach here.\n");
+  return 1;
+}

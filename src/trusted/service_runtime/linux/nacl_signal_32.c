@@ -34,12 +34,25 @@ void NaClSignalContextFromHandler(struct NaClSignalContext *sigCtx,
   sigCtx->edi = mctx->gregs[REG_EDI];
   sigCtx->ebp = mctx->gregs[REG_EBP];
   sigCtx->flags = mctx->gregs[REG_EFL];
-  sigCtx->cs = mctx->gregs[REG_CS];
-  sigCtx->ss = mctx->gregs[REG_SS];
-  sigCtx->ds = mctx->gregs[REG_DS];
-  sigCtx->es = mctx->gregs[REG_ES];
-  sigCtx->fs = mctx->gregs[REG_FS];
-  sigCtx->gs = mctx->gregs[REG_GS];
+   /*
+    * We need to drop the top 16 bits with the casts below.  In some
+    * situations, Linux does not assign to the top 2 bytes of the
+    * REG_CS array entry when writing %cs to the stack (and similarly
+    * for the other segment registers).  Therefore we need to drop the
+    * undefined top 2 bytes.
+    *
+    * This happens in 32-bit processes running on the 64-bit kernel
+    * from Ubuntu Hardy, but not on 32-bit kernels.  The kernel
+    * version in Ubuntu Lucid also does not have this problem.
+    *
+    * See http://code.google.com/p/nativeclient/issues/detail?id=1486
+    */
+  sigCtx->cs = (uint16_t) mctx->gregs[REG_CS];
+  sigCtx->ss = (uint16_t) mctx->gregs[REG_SS];
+  sigCtx->ds = (uint16_t) mctx->gregs[REG_DS];
+  sigCtx->es = (uint16_t) mctx->gregs[REG_ES];
+  sigCtx->fs = (uint16_t) mctx->gregs[REG_FS];
+  sigCtx->gs = (uint16_t) mctx->gregs[REG_GS];
 }
 
 
