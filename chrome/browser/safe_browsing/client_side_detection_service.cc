@@ -19,13 +19,7 @@
 #include "chrome/common/net/http_return.h"
 #include "chrome/common/net/url_fetcher.h"
 #include "chrome/common/net/url_request_context_getter.h"
-#include "chrome/common/notification_service.h"
-#include "chrome/common/notification_type.h"
-#include "chrome/common/render_messages.h"
 #include "content/browser/browser_thread.h"
-#include "content/browser/renderer_host/render_view_host.h"
-#include "content/browser/tab_contents/provisional_load_details.h"
-#include "content/browser/tab_contents/tab_contents.h"
 #include "googleurl/src/gurl.h"
 #include "net/base/load_flags.h"
 #include "net/url_request/url_request_status.h"
@@ -55,73 +49,6 @@ ClientSideDetectionService::CacheState::CacheState(bool phish, base::Time time)
     : is_phishing(phish),
       timestamp(time) {}
 
-// ShouldClassifyUrlRequest tracks the pre-classification checks for a
-// toplevel URL that has started loading into a renderer.  When these
-// checks are complete, the renderer is notified if it should run
-// client-side phishing classification, then the ShouldClassifyUrlRequest
-// deletes itself.
-class ClientSideDetectionService::ShouldClassifyUrlRequest
-    : public NotificationObserver {
- public:
-  ShouldClassifyUrlRequest(const GURL& url, TabContents* tab_contents)
-      : url_(url),
-        tab_contents_(tab_contents),
-        ALLOW_THIS_IN_INITIALIZER_LIST(method_factory_(this)) {
-    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-    registrar_.Add(this,
-                   NotificationType::TAB_CONTENTS_DESTROYED,
-                   Source<TabContents>(tab_contents));
-  }
-
-  virtual void Observe(NotificationType type,
-                       const NotificationSource& source,
-                       const NotificationDetails& details) {
-    switch (type.value) {
-      case NotificationType::TAB_CONTENTS_DESTROYED:
-        Cancel();
-        break;
-      default:
-        NOTREACHED();
-    };
-  }
-
-  void Start() {
-    // TODO(bryner): add pre-classification checks here.
-    // For now we just call Finish() asynchronously for consistency,
-    // since the pre-classification checks are asynchronous.
-    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-    BrowserThread::PostTask(BrowserThread::UI,
-                            FROM_HERE,
-                            method_factory_.NewRunnableMethod(
-                                &ShouldClassifyUrlRequest::Finish));
-  }
-
- private:
-  // This object always deletes itself, so make the destructor private.
-  virtual ~ShouldClassifyUrlRequest() {}
-
-  void Cancel() {
-    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-    tab_contents_ = NULL;
-    Finish();
-  }
-
-  void Finish() {
-    if (tab_contents_) {
-      RenderViewHost* rvh = tab_contents_->render_view_host();
-      rvh->Send(new ViewMsg_StartPhishingDetection(rvh->routing_id(), url_));
-    }
-    delete this;
-  }
-
-  GURL url_;
-  TabContents* tab_contents_;
-  NotificationRegistrar registrar_;
-  ScopedRunnableMethodFactory<ShouldClassifyUrlRequest> method_factory_;
-
-  DISALLOW_COPY_AND_ASSIGN(ShouldClassifyUrlRequest);
-};
-
 ClientSideDetectionService::ClientSideDetectionService(
     const FilePath& model_path,
     URLRequestContextGetter* request_context_getter)
@@ -130,13 +57,7 @@ ClientSideDetectionService::ClientSideDetectionService(
       model_file_(base::kInvalidPlatformFileValue),
       ALLOW_THIS_IN_INITIALIZER_LIST(method_factory_(this)),
       ALLOW_THIS_IN_INITIALIZER_LIST(callback_factory_(this)),
-      request_context_getter_(request_context_getter) {
-  // Register to find out when pages begin loading into a renderer.
-  // When this happens, we'll start our pre-classificaton checks.
-  registrar_.Add(this,
-                 NotificationType::FRAME_PROVISIONAL_LOAD_COMMITTED,
-                 NotificationService::AllSources());
-}
+      request_context_getter_(request_context_getter) {}
 
 ClientSideDetectionService::~ClientSideDetectionService() {
   method_factory_.RevokeAll();
@@ -154,6 +75,11 @@ ClientSideDetectionService* ClientSideDetectionService::Create(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   scoped_ptr<ClientSideDetectionService> service(
       new ClientSideDetectionService(model_path, request_context_getter));
+  if (!service->InitializePrivateNetworks()) {
+    UMA_HISTOGRAM_COUNTS("SBClientPhishing.InitPrivateNetworksFailed", 1);
+    return NULL;
+  }
+
   // We try to open the model file right away and start fetching it if
   // it does not already exist on disk.
   base::FileUtilProxy::CreateOrOpenCallback* cb =
@@ -190,6 +116,25 @@ void ClientSideDetectionService::SendClientReportPhishingRequest(
           phishing_url, score, callback));
 }
 
+bool ClientSideDetectionService::IsPrivateIPAddress(
+    const std::string& ip_address) const {
+  net::IPAddressNumber ip_number;
+  if (!net::ParseIPLiteralToNumber(ip_address, &ip_number)) {
+    DLOG(WARNING) << "Unable to parse IP address: " << ip_address;
+    // Err on the side of safety and assume this might be private.
+    return true;
+  }
+
+  for (std::vector<AddressRange>::const_iterator it =
+           private_networks_.begin();
+       it != private_networks_.end(); ++it) {
+    if (net::IPNumberMatchesPrefix(ip_number, it->first, it->second)) {
+      return true;
+    }
+  }
+  return false;
+}
+
 void ClientSideDetectionService::OnURLFetchComplete(
     const URLFetcher* source,
     const GURL& url,
@@ -205,32 +150,6 @@ void ClientSideDetectionService::OnURLFetchComplete(
   } else {
     NOTREACHED();
   }
-}
-
-void ClientSideDetectionService::Observe(NotificationType type,
-                                         const NotificationSource& source,
-                                         const NotificationDetails& details) {
-  switch (type.value) {
-    case NotificationType::FRAME_PROVISIONAL_LOAD_COMMITTED: {
-      // Check whether the load should trigger a phishing classification.
-      // This is true if the navigation happened in the main frame and was
-      // not an in-page navigation.
-      ProvisionalLoadDetails* load_details =
-          Details<ProvisionalLoadDetails>(details).ptr();
-
-      if (load_details->main_frame() && !load_details->in_page_navigation()) {
-        NavigationController* controller =
-            Source<NavigationController>(source).ptr();
-        ShouldClassifyUrlRequest* request =
-            new ShouldClassifyUrlRequest(load_details->url(),
-                                         controller->tab_contents());
-        request->Start();  // the request will delete itself on completion
-      }
-      break;
-    }
-    default:
-      NOTREACHED();
-  };
 }
 
 void ClientSideDetectionService::SetModelStatus(ModelStatus status) {
@@ -507,6 +426,32 @@ int ClientSideDetectionService::GetNumReports() {
 
   // Return the number of elements that are above the cutoff.
   return phishing_report_times_.size();
+}
+
+bool ClientSideDetectionService::InitializePrivateNetworks() {
+  static const char* const kPrivateNetworks[] = {
+    "10.0.0.0/8",
+    "127.0.0.0/8",
+    "172.16.0.0/12",
+    "192.168.0.0/16",
+    // IPv6 address ranges
+    "fc00::/7",
+    "fec0::/10",
+    "::1/128",
+  };
+
+  for (size_t i = 0; i < arraysize(kPrivateNetworks); ++i) {
+    net::IPAddressNumber ip_number;
+    size_t prefix_length;
+    if (net::ParseCIDRBlock(kPrivateNetworks[i], &ip_number, &prefix_length)) {
+      private_networks_.push_back(std::make_pair(ip_number, prefix_length));
+    } else {
+      DLOG(FATAL) << "Unable to parse IP address range: "
+                  << kPrivateNetworks[i];
+      return false;
+    }
+  }
+  return true;
 }
 
 }  // namespace safe_browsing

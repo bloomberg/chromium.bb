@@ -35,13 +35,15 @@ class ClientSideDetectionHost : public TabContentsObserver {
   virtual bool OnMessageReceived(const IPC::Message& message);
 
   // From TabContentsObserver.  If we navigate away we cancel all pending
-  // callbacks that could show an interstitial.
+  // callbacks that could show an interstitial, and check to see whether
+  // we should classify the new URL.
   virtual void DidNavigateMainFramePostCommit(
       const NavigationController::LoadCommittedDetails& details,
       const ViewHostMsg_FrameNavigate_Params& params);
 
  private:
   friend class ClientSideDetectionHostTest;
+  class ShouldClassifyUrlRequest;
 
   void OnDetectedPhishingSite(const GURL& phishing_url, double phishing_score);
 

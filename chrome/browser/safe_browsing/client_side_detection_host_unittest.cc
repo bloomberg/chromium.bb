@@ -12,17 +12,20 @@
 #include "chrome/browser/safe_browsing/client_side_detection_service.h"
 #include "chrome/browser/safe_browsing/safe_browsing_service.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/common/render_messages.h"
 #include "chrome/test/ui_test_utils.h"
 #include "content/browser/browser_thread.h"
 #include "content/browser/renderer_host/test_render_view_host.h"
 #include "content/browser/tab_contents/test_tab_contents.h"
 #include "googleurl/src/gurl.h"
+#include "ipc/ipc_test_sink.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gmock/include/gmock/gmock-spec-builders.h"
 
 using ::testing::_;
 using ::testing::DoAll;
 using ::testing::Mock;
+using ::testing::Return;
 using ::testing::SaveArg;
 
 namespace safe_browsing {
@@ -35,6 +38,7 @@ class MockClientSideDetectionService : public ClientSideDetectionService {
 
   MOCK_METHOD3(SendClientReportPhishingRequest,
                void(const GURL&, double, ClientReportPhishingRequestCallback*));
+  MOCK_CONST_METHOD1(IsPrivateIPAddress, bool(const std::string&));
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockClientSideDetectionService);
@@ -242,8 +246,11 @@ TEST_F(ClientSideDetectionHostTest, OnDetectedPhishingSiteMultiplePings) {
   EXPECT_TRUE(Mock::VerifyAndClear(csd_service_.get()));
   ASSERT_TRUE(cb != NULL);
   GURL other_phishing_url("http://other_phishing_url.com/bla");
+  EXPECT_CALL(*csd_service_, IsPrivateIPAddress(_)).WillOnce(Return(false));
   // We navigate away.  The callback cb should be revoked.
   NavigateAndCommit(other_phishing_url);
+  // Wait for the pre-classification checks to finish for other_phishing_url.
+  FlushIOMessageLoop();
 
   ClientSideDetectionService::ClientReportPhishingRequestCallback* cb_other;
   EXPECT_CALL(*csd_service_,
@@ -291,6 +298,61 @@ TEST_F(ClientSideDetectionHostTest, OnDetectedPhishingSiteMultiplePings) {
   // to run the UI message loop.  Post a task to stop the UI message loop
   // after the client object destructor is called.
   FlushIOMessageLoop();
+}
+
+TEST_F(ClientSideDetectionHostTest, ShouldClassifyUrl) {
+  // Navigate the tab to a page.  We should see a StartPhishingDetection IPC.
+  EXPECT_CALL(*csd_service_, IsPrivateIPAddress(_)).WillOnce(Return(false));
+  NavigateAndCommit(GURL("http://host.com/"));
+  FlushIOMessageLoop();
+  const IPC::Message* msg = process()->sink().GetFirstMessageMatching(
+      ViewMsg_StartPhishingDetection::ID);
+  ASSERT_TRUE(msg);
+  Tuple1<GURL> url;
+  ViewMsg_StartPhishingDetection::Read(msg, &url);
+  EXPECT_EQ(GURL("http://host.com/"), url.a);
+  EXPECT_EQ(rvh()->routing_id(), msg->routing_id());
+  process()->sink().ClearMessages();
+
+  // Now try an in-page navigation.  This should not trigger an IPC.
+  EXPECT_CALL(*csd_service_, IsPrivateIPAddress(_)).Times(0);
+  NavigateAndCommit(GURL("http://host.com/#foo"));
+  FlushIOMessageLoop();
+  msg = process()->sink().GetFirstMessageMatching(
+      ViewMsg_StartPhishingDetection::ID);
+  ASSERT_FALSE(msg);
+
+  // Navigate to a new host, which should cause another IPC.
+  EXPECT_CALL(*csd_service_, IsPrivateIPAddress(_)).WillOnce(Return(false));
+  NavigateAndCommit(GURL("http://host2.com/"));
+  FlushIOMessageLoop();
+  msg = process()->sink().GetFirstMessageMatching(
+      ViewMsg_StartPhishingDetection::ID);
+  ASSERT_TRUE(msg);
+  ViewMsg_StartPhishingDetection::Read(msg, &url);
+  EXPECT_EQ(GURL("http://host2.com/"), url.a);
+  EXPECT_EQ(rvh()->routing_id(), msg->routing_id());
+  process()->sink().ClearMessages();
+
+  // If IsPrivateIPAddress returns true, no IPC should be triggered.
+  EXPECT_CALL(*csd_service_, IsPrivateIPAddress(_)).WillOnce(Return(true));
+  NavigateAndCommit(GURL("http://host3.com/"));
+  FlushIOMessageLoop();
+  msg = process()->sink().GetFirstMessageMatching(
+      ViewMsg_StartPhishingDetection::ID);
+  ASSERT_FALSE(msg);
+
+  // If the connection is proxied, no IPC should be triggered.
+  // Note: for this test to work correctly, the new URL must be on the
+  // same domain as the previous URL, otherwise it will create a new
+  // RenderViewHost that won't have simulate_fetch_via_proxy set.
+  rvh()->set_simulate_fetch_via_proxy(true);
+  EXPECT_CALL(*csd_service_, IsPrivateIPAddress(_)).Times(0);
+  NavigateAndCommit(GURL("http://host3.com/abc"));
+  FlushIOMessageLoop();
+  msg = process()->sink().GetFirstMessageMatching(
+      ViewMsg_StartPhishingDetection::ID);
+  ASSERT_FALSE(msg);
 }
 
 }  // namespace safe_browsing

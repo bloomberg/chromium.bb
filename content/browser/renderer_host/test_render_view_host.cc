@@ -45,7 +45,8 @@ TestRenderViewHost::TestRenderViewHost(SiteInstance* instance,
     : RenderViewHost(instance, delegate, routing_id,
                      kInvalidSessionStorageNamespaceId),
       render_view_created_(false),
-      delete_counter_(NULL) {
+      delete_counter_(NULL),
+      simulate_fetch_via_proxy_(false) {
   // For normal RenderViewHosts, this is freed when |Shutdown()| is called.
   // For TestRenderViewHost, the view is explicitly deleted in the destructor
   // below, because TestRenderWidgetHostView::Destroy() doesn't |delete this|.
@@ -101,10 +102,15 @@ void TestRenderViewHost::SendNavigateWithTransition(
   params.http_status_code = 0;
   params.socket_address.set_host("2001:db8::1");
   params.socket_address.set_port(80);
+  params.was_fetched_via_proxy = simulate_fetch_via_proxy_;
   params.content_state = webkit_glue::CreateHistoryStateForURL(GURL(url));
 
   ViewHostMsg_FrameNavigate msg(1, params);
   OnMsgNavigate(msg);
+}
+
+void TestRenderViewHost::set_simulate_fetch_via_proxy(bool proxy) {
+  simulate_fetch_via_proxy_ = proxy;
 }
 
 TestRenderWidgetHostView::TestRenderWidgetHostView(RenderWidgetHost* rwh)

@@ -19,6 +19,7 @@
 #include <map>
 #include <queue>
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "base/basictypes.h"
@@ -34,9 +35,8 @@
 #include "base/time.h"
 #include "chrome/browser/safe_browsing/csd.pb.h"
 #include "chrome/common/net/url_fetcher.h"
-#include "chrome/common/notification_observer.h"
-#include "chrome/common/notification_registrar.h"
 #include "googleurl/src/gurl.h"
+#include "net/base/net_util.h"
 
 class URLRequestContextGetter;
 
@@ -46,8 +46,7 @@ class URLRequestStatus;
 
 namespace safe_browsing {
 
-class ClientSideDetectionService : public URLFetcher::Delegate,
-                                   public NotificationObserver {
+class ClientSideDetectionService : public URLFetcher::Delegate {
  public:
   typedef Callback1<base::PlatformFile>::Type OpenModelDoneCallback;
 
@@ -71,11 +70,6 @@ class ClientSideDetectionService : public URLFetcher::Delegate,
                                   const ResponseCookies& cookies,
                                   const std::string& data);
 
-  // From the NotificationObserver interface.
-  virtual void Observe(NotificationType type,
-                       const NotificationSource& source,
-                       const NotificationDetails& details);
-
   // Gets the model file descriptor once the model is ready and stored
   // on disk.  If there was an error the callback is called and the
   // platform file is set to kInvalidPlatformFileValue. The
@@ -96,6 +90,16 @@ class ClientSideDetectionService : public URLFetcher::Delegate,
       double score,
       ClientReportPhishingRequestCallback* callback);
 
+  // Returns true if the given IP address string falls within a private
+  // (unroutable) network block.  Pages which are hosted on these IP addresses
+  // are exempt from client-side phishing detection.  This is called by the
+  // ClientSideDetectionHost prior to sending the renderer a
+  // ViewMsg_StartPhishingDetection IPC.
+  //
+  // ip_address should be a dotted IPv4 address, or an unbracketed IPv6
+  // address.
+  virtual bool IsPrivateIPAddress(const std::string& ip_address) const;
+
  protected:
   // Use Create() method to create an instance of this object.
   ClientSideDetectionService(const FilePath& model_path,
@@ -103,8 +107,6 @@ class ClientSideDetectionService : public URLFetcher::Delegate,
 
  private:
   friend class ClientSideDetectionServiceTest;
-  friend class ClientSideDetectionServiceHooksTest;
-  class ShouldClassifyUrlRequest;
 
   enum ModelStatus {
     // It's unclear whether or not the model was already fetched.
@@ -124,6 +126,10 @@ class ClientSideDetectionService : public URLFetcher::Delegate,
     CacheState(bool phish, base::Time time);
   };
   typedef std::map<GURL, linked_ptr<CacheState> > PhishingCache;
+
+  // A tuple of (IP address block, prefix size) representing a private
+  // IP address range.
+  typedef std::pair<net::IPAddressNumber, size_t> AddressRange;
 
   static const char kClientReportPhishingUrl[];
   static const char kClientModelUrl[];
@@ -199,6 +205,10 @@ class ClientSideDetectionService : public URLFetcher::Delegate,
   // Get the number of phishing reports that we have sent over kReportsInterval
   int GetNumReports();
 
+  // Initializes the |private_networks_| vector with the network blocks
+  // that we consider non-public IP addresses.  Returns true on success.
+  bool InitializePrivateNetworks();
+
   FilePath model_path_;
   ModelStatus model_status_;
   base::PlatformFile model_file_;
@@ -237,8 +247,8 @@ class ClientSideDetectionService : public URLFetcher::Delegate,
   // The context we use to issue network requests.
   scoped_refptr<URLRequestContextGetter> request_context_getter_;
 
-  // Used to register for page load notifications.
-  NotificationRegistrar registrar_;
+  // The network blocks that we consider private IP address ranges.
+  std::vector<AddressRange> private_networks_;
 
   DISALLOW_COPY_AND_ASSIGN(ClientSideDetectionService);
 };

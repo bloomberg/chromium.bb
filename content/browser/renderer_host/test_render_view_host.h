@@ -200,6 +200,11 @@ class TestRenderViewHost : public RenderViewHost {
     return is_waiting_for_beforeunload_ack_;
   }
 
+  // If set, navigations will appear to have loaded through a proxy
+  // (ViewHostMsg_FrameNavigte_Params::was_fetched_via_proxy).
+  // False by default.
+  void set_simulate_fetch_via_proxy(bool proxy);
+
   // RenderViewHost overrides --------------------------------------------------
 
   virtual bool CreateRenderView(const string16& frame_name);
@@ -214,6 +219,9 @@ class TestRenderViewHost : public RenderViewHost {
 
   // See set_delete_counter() above. May be NULL.
   int* delete_counter_;
+
+  // See set_simulate_fetch_via_proxy() above.
+  bool simulate_fetch_via_proxy_;
 
   DISALLOW_COPY_AND_ASSIGN(TestRenderViewHost);
 };
