@@ -7,7 +7,6 @@
 #include "base/logging.h"
 #include "views/widget/default_theme_provider.h"
 #include "views/widget/root_view.h"
-#include "views/widget/native_widget.h"
 
 namespace views {
 
@@ -27,17 +26,6 @@ void Widget::Init(gfx::NativeView parent, const gfx::Rect& bounds) {
 }
 
 void Widget::InitWithWidget(Widget* parent, const gfx::Rect& bounds) {
-}
-
-Widget* Widget::GetTopLevelWidget() {
-  return const_cast<Widget*>(
-      const_cast<const Widget*>(this)->GetTopLevelWidget());
-}
-
-const Widget* Widget::GetTopLevelWidget() const {
-  NativeWidget* native_widget =
-      NativeWidget::GetTopLevelNativeWidget(GetNativeView());
-  return native_widget ? native_widget->GetWidget() : NULL;
 }
 
 WidgetDelegate* Widget::GetWidgetDelegate() {
@@ -92,6 +80,10 @@ RootView* Widget::GetRootView() {
     root_view_.reset(CreateRootView());
   }
   return root_view_.get();
+}
+
+Widget* Widget::GetRootWidget() const {
+  return NULL;
 }
 
 bool Widget::IsVisible() const {

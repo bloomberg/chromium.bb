@@ -540,8 +540,7 @@ void DragDownload(const DownloadItem* download,
   GtkWidget* root = gtk_widget_get_toplevel(view);
   if (!root)
     return;
-  views::WidgetGtk* widget = static_cast<views::WidgetGtk*>(
-      views::NativeWidget::GetNativeWidgetForNativeView(root));
+  views::WidgetGtk* widget = views::WidgetGtk::GetViewForNative(root);
   if (!widget)
     return;
 

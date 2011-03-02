@@ -8,7 +8,7 @@
 #include "ui/gfx/canvas.h"
 #include "views/controls/native/native_view_host_wrapper.h"
 #include "views/controls/native/native_view_host_views.h"
-#include "views/widget/native_widget.h"
+#include "views/widget/root_view.h"
 #include "views/widget/widget.h"
 
 namespace views {
@@ -188,12 +188,12 @@ bool NativeViewHost::ContainsNativeView(gfx::NativeView native_view) const {
   if (!native_view_)
     return false;
 
-  views::NativeWidget* native_widget =
-      views::NativeWidget::GetNativeWidgetForNativeView(native_view_);
-  if (native_widget &&
-      native_widget->GetWidget()->ContainsNativeView(native_view)) {
+  views::Widget* native_widget =
+      views::Widget::GetWidgetFromNativeView(native_view_);
+  views::RootView* root_view =
+      native_widget ? native_widget->GetRootView() : NULL;
+  if (root_view && root_view->ContainsNativeView(native_view))
     return true;
-  }
 
   return View::ContainsNativeView(native_view);
 }

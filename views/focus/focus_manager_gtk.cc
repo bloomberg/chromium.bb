@@ -28,7 +28,7 @@ FocusManager* FocusManager::GetFocusManagerForNativeView(
   if (!root || !GTK_WIDGET_TOPLEVEL(root))
     return NULL;
 
-  NativeWidget* widget = NativeWidget::GetNativeWidgetForNativeView(root);
+  WidgetGtk* widget = WidgetGtk::GetViewForNative(root);
   if (!widget) {
     // TODO(jcampan): http://crbug.com/21378 Reenable this NOTREACHED() when the
     // options page is only based on views.
@@ -36,7 +36,7 @@ FocusManager* FocusManager::GetFocusManagerForNativeView(
     NOTIMPLEMENTED();
     return NULL;
   }
-  FocusManager* focus_manager = widget->GetWidget()->GetFocusManager();
+  FocusManager* focus_manager = widget->GetFocusManager();
   DCHECK(focus_manager) << "no FocusManager for top level Widget";
   return focus_manager;
 }

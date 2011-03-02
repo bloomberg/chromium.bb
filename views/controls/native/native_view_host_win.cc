@@ -8,7 +8,6 @@
 #include "ui/gfx/canvas.h"
 #include "views/controls/native/native_view_host.h"
 #include "views/focus/focus_manager.h"
-#include "views/widget/native_widget.h"
 #include "views/widget/root_view.h"
 #include "views/widget/widget.h"
 
@@ -38,13 +37,13 @@ void NativeViewHostWin::NativeViewAttached() {
   // Need to set the HWND's parent before changing its size to avoid flashing.
   SetParent(host_->native_view(), host_->GetWidget()->GetNativeView());
   host_->Layout();
-  // Notify children that parent changed, so they can adjust focus.
-  NativeWidget::NativeWidgets widgets;
-  NativeWidget::GetAllNativeWidgets(host_->native_view(), &widgets);
-  for (NativeWidget::NativeWidgets::iterator it = widgets.begin();
-       it != widgets.end(); ++it) {
-    (*it)->GetWidget()->GetRootView()->NotifyNativeViewHierarchyChanged(
-        true,
+  // Notify children that parent changed, so they could adjust the focus
+  std::vector<RootView*> root_views;
+  Widget::FindAllRootViews(host_->native_view(), &root_views);
+  for (std::vector<RootView*>::iterator it = root_views.begin();
+       it < root_views.end();
+       ++it) {
+    (*it)->NotifyNativeViewHierarchyChanged(true,
         host_->GetWidget()->GetNativeView());
   }
 }
@@ -53,13 +52,13 @@ void NativeViewHostWin::NativeViewDetaching(bool destroyed) {
   if (!destroyed && installed_clip_)
     UninstallClip();
   installed_clip_ = false;
-  // Notify children that parent is removed.
-  NativeWidget::NativeWidgets widgets;
-  NativeWidget::GetAllNativeWidgets(host_->native_view(), &widgets);
-  for (NativeWidget::NativeWidgets::iterator it = widgets.begin();
-       it != widgets.end(); ++it) {
-    (*it)->GetWidget()->GetRootView()->NotifyNativeViewHierarchyChanged(
-        false,
+  // Notify children that parent is removed
+  std::vector<RootView*> root_views;
+  Widget::FindAllRootViews(host_->native_view(), &root_views);
+  for (std::vector<RootView*>::iterator it = root_views.begin();
+       it < root_views.end();
+       ++it) {
+    (*it)->NotifyNativeViewHierarchyChanged(false,
         host_->GetWidget()->GetNativeView());
   }
 }

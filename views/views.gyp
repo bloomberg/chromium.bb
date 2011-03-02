@@ -489,10 +489,6 @@
         'run_all_unittests.cc',
         'test/test_views_delegate.h',
         'view_unittest.cc',
-        'widget/native_widget_test_utils.h',
-        'widget/native_widget_test_utils_gtk.cc',
-        'widget/native_widget_test_utils_win.cc',
-        'widget/native_widget_unittest.cc',
         'widget/widget_win_unittest.cc',
         'window/window_win_unittest.cc',
 

@@ -45,10 +45,14 @@ static views::Widget* GetToplevelWidget() {
   if (!browser)
     return NULL;
 
-  views::NativeWidget* native_widget =
-      views::NativeWidget::GetNativeWidgetForNativeWindow(
+  views::RootView* root =
+      views::Widget::FindRootView(
           GTK_WINDOW(browser->window()->GetNativeHandle()));
-  return native_widget->GetWidget();
+  DCHECK(root);
+  if (!root)
+    return NULL;
+
+  return root->GetWidget();
 }
 
 SettingLevelBubble::SettingLevelBubble(SkBitmap* increase_icon,

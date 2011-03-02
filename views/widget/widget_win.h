@@ -44,6 +44,8 @@ namespace internal {
 class NativeWidgetDelegate;
 }
 
+RootView* GetRootViewForHWND(HWND hwnd);
+
 // A Windows message reflected from other windows. This message is sent
 // with the following arguments:
 // hWnd - Target window
@@ -78,11 +80,17 @@ const int WM_NCUAHDRAWFRAME = 0xAF;
 ///////////////////////////////////////////////////////////////////////////////
 class WidgetWin : public ui::WindowImpl,
                   public Widget,
-                  public NativeWidget,
+                  public internal::NativeWidget,
                   public MessageLoopForUI::Observer {
  public:
   WidgetWin();
   virtual ~WidgetWin();
+
+  // Returns the Widget associated with the specified HWND (if any).
+  static WidgetWin* GetWidget(HWND hwnd);
+
+  // Returns the root Widget associated with the specified HWND (if any).
+  static WidgetWin* GetRootWidget(HWND hwnd);
 
   // Returns true if we are on Windows Vista or greater and composition is
   // enabled.
@@ -126,6 +134,7 @@ class WidgetWin : public ui::WindowImpl,
   virtual gfx::NativeView GetNativeView() const;
   virtual void SetOpacity(unsigned char opacity);
   virtual void SetAlwaysOnTop(bool on_top);
+  virtual Widget* GetRootWidget() const;
   virtual bool IsVisible() const;
   virtual bool IsActive() const;
   virtual bool IsAccessibleWidget() const;
@@ -219,9 +228,6 @@ class WidgetWin : public ui::WindowImpl,
   }
 
  protected:
-  // Overridden from NativeWidget:
-  virtual Widget* GetWidget();
-
   // Overridden from MessageLoop::Observer:
   void WillProcessMessage(const MSG& msg);
   virtual void DidProcessMessage(const MSG& msg);
