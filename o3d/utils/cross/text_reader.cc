@@ -48,7 +48,7 @@ TextReader::~TextReader() {
 }
 
 int TextReader::TestForEndOfLine(const std::string& eol) {
-  if (eol.size() == 0) {
+  if (eol.empty()) {
     return 0;
   }
   if (eol[0] == kLinefeed) {

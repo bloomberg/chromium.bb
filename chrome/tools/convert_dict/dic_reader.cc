@@ -71,7 +71,7 @@ bool PopulateWordSet(WordSet* word_set, FILE* file, AffReader* aff_reader,
 
     std::vector<std::string> split;
     SplitDicLine(line, &split);
-    if (split.size() == 0 || split.size() > 2) {
+    if (split.empty() || split.size() > 2) {
       printf("Line %d has extra slashes in the %s file\n", line_number,
              file_type);
       return false;

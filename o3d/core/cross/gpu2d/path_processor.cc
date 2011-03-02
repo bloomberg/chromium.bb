@@ -1105,7 +1105,7 @@ void PathProcessor::SubdivideCurves() {
   std::vector<SweepInterval> overlaps;
 
   for (int cur_iter = 0; cur_iter < kMaxIter; ++cur_iter) {
-    if (cur_segments.size() == 0) {
+    if (cur_segments.empty()) {
       // Done
       break;
     }
@@ -1224,7 +1224,7 @@ void PathProcessor::SubdivideCurvesSlow() {
   const int kMaxIter = 5;
 
   for (int cur_iter = 0; cur_iter < kMaxIter; ++cur_iter) {
-    if (cur_segments.size() == 0) {
+    if (cur_segments.empty()) {
       // Done
       break;
     }

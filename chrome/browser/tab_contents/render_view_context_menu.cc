@@ -362,7 +362,7 @@ void RenderViewContextMenu::RecursivelyAppendExtensionItems(
       ExtensionMenuItem::List children =
           GetRelevantExtensionItems(item->children(), params_,
                                     profile_, can_cross_incognito);
-      if (children.size() == 0) {
+      if (children.empty()) {
         menu_model->AddItem(menu_id, title);
       } else {
         ui::SimpleMenuModel* submenu = new ui::SimpleMenuModel(this);
@@ -720,7 +720,7 @@ void RenderViewContextMenu::AppendEditableItems() {
 
   // If word is misspelled, give option for "Add to dictionary"
   if (!params_.misspelled_word.empty()) {
-    if (params_.dictionary_suggestions.size() == 0) {
+    if (params_.dictionary_suggestions.empty()) {
       menu_model_.AddItem(0,
           l10n_util::GetStringUTF16(
               IDS_CONTENT_CONTEXT_NO_SPELLING_SUGGESTIONS));

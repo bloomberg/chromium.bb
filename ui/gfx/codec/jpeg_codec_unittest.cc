@@ -76,7 +76,7 @@ static double AveragePixelDelta(const std::vector<unsigned char>& a,
   // if the sizes are different, say the average difference is the maximum
   if (a.size() != b.size())
     return 255.0;
-  if (a.size() == 0)
+  if (a.empty())
     return 0;  // prevent divide by 0 below
 
   double acc = 0.0;

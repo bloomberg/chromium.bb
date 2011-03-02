@@ -872,7 +872,7 @@ void AboutMemoryHandler::OnDetailsAvailable() {
   // Aggregate per-process data into browser summary data.
   std::wstring log_string;
   for (size_t index = 0; index < browser_processes.size(); index++) {
-    if (browser_processes[index].processes.size() == 0)
+    if (browser_processes[index].processes.empty())
       continue;
 
     // Sum the information for the processes within this browser.

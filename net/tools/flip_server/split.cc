@@ -19,7 +19,7 @@ void SplitStringPieceToVector(const base::StringPiece& full,
                               std::vector<base::StringPiece>* vec,
                               bool omit_empty_strings) {
   vec->clear();
-  if (full.size() == 0 || delim[0] == '\0')
+  if (full.empty() || delim[0] == '\0')
     return;
 
   if (delim[1] == '\0') {

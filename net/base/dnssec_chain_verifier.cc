@@ -489,7 +489,7 @@ bool DNSSECChainVerifier::ReadDNSKEYs(std::vector<base::StringPiece>* out,
     base::StringPiece key;
     if (!VariableLength16(&key))
       return false;
-    if (key.size() == 0) {
+    if (key.empty()) {
       if (!is_root)
         return false;
       key = base::StringPiece(reinterpret_cast<const char*>(kRootKey),
@@ -597,7 +597,7 @@ DNSSECChainVerifier::Error DNSSECChainVerifier::EnterZone(
   if (!ReadAheadKey(&key, entry_key))
     return BAD_DATA;
 
-  if (zone.size() == 1 && key.size() == 0) {
+  if (zone.size() == 1 && key.empty()) {
     // If a key is omitted in the root zone then it's the root key.
     key = base::StringPiece(reinterpret_cast<const char*>(kRootKey),
                             sizeof(kRootKey));
@@ -609,7 +609,7 @@ DNSSECChainVerifier::Error DNSSECChainVerifier::EnterZone(
   if (!ReadDNSKEYs(&dnskeys, zone.size() == 1))
     return BAD_DATA;
 
-  if (sig.size() == 0) {
+  if (sig.empty()) {
     // An omitted signature on the keys means that only the entry key is used.
     if (dnskeys.size() > 1 || entry_key != 0)
       return BAD_DATA;

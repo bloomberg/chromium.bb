@@ -525,7 +525,7 @@ FilePath LookupIconInDefaultTheme(const std::string& icon_name, int size) {
   EnsureUpdated();
   MimeUtilConstants* constants = MimeUtilConstants::GetInstance();
   std::map<std::string, IconTheme*>* icon_themes = constants->icon_themes_;
-  if (icon_themes->size() == 0)
+  if (icon_themes->empty())
     InitDefaultThemes();
 
   FilePath icon_path;

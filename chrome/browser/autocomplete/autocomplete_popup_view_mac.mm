@@ -169,7 +169,7 @@ NSMutableAttributedString* AutocompletePopupViewMac::ElideString(
   }
 
   // If everything was elided away, clear the string.
-  if (elided.size() == 0) {
+  if (elided.empty()) {
     [aString deleteCharactersInRange:NSMakeRange(0, [aString length])];
     return aString;
   }

@@ -210,7 +210,7 @@ class VisitedLinkUpdater {
       return;
     }
 
-    if (pending_.size() == 0)
+    if (pending_.empty())
       return;
 
     sender->Send(new ViewMsg_VisitedLink_Add(pending_));

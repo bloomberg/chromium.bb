@@ -376,7 +376,7 @@ void HistoryBackend::AddPage(scoped_refptr<HistoryAddPageArgs> request) {
 
   // If a redirect chain is given, we expect the last item in that chain to be
   // the final URL.
-  DCHECK(request->redirects.size() == 0 ||
+  DCHECK(request->redirects.empty() ||
          request->redirects.back() == request->url);
 
   // Avoid duplicating times in the database, at least as long as pages are

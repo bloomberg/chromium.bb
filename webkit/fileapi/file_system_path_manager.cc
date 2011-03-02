@@ -290,7 +290,7 @@ bool FileSystemPathManager::IsAllowedScheme(const GURL& url) const {
 
 // static
 bool FileSystemPathManager::IsRestrictedFileName(const FilePath& filename) {
-  if (filename.value().size() == 0)
+  if (filename.value().empty())
     return false;
 
   if (IsWhitespace(filename.value()[filename.value().size() - 1]) ||

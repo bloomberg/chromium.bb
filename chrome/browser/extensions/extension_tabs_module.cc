@@ -478,7 +478,7 @@ bool CreateWindowFunction::RunImpl() {
     TabStripModel* target_tab_strip = new_window->tabstrip_model();
     target_tab_strip->InsertTabContentsAt(urls.size(), contents,
                                           TabStripModel::ADD_NONE);
-  } else if (urls.size() == 0) {
+  } else if (urls.empty()) {
     new_window->NewTab();
   }
   new_window->SelectNumberedTab(0);

@@ -249,7 +249,7 @@ static bool GetProcessMemoryInfoUsingTop(
       if (in.fail())
         break;
 
-      if (unit.size() == 0)
+      if (unit.empty())
         break;
 
       uint64_t scale;
@@ -346,7 +346,7 @@ bool ProcessInfoSnapshot::Sample(std::vector<base::ProcessId> pid_list) {
   Reset();
 
   // Nothing to do if no PIDs given.
-  if (pid_list.size() == 0)
+  if (pid_list.empty())
     return true;
   if (pid_list.size() > kMaxPidListSize) {
     // The spec says |pid_list| *must* not have more than this many entries.

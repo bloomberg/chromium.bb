@@ -144,7 +144,7 @@ InstallDialogContent2::InstallDialogContent2(
   heading_->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
   AddChildView(heading_);
 
-  if (permissions.size() == 0) {
+  if (permissions.empty()) {
     right_column_width_ = kNoPermissionsRightColumnWidth;
   } else {
     right_column_width_ = kPermissionBoxWidth;

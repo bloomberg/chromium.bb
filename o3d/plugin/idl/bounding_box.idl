@@ -135,7 +135,7 @@ class BoundingBox {
         void* plugin_data,
         o3d::BoundingBox* _this,
         const std::vector<std::vector<float> >& values) {
-      if (values.size() == 0) {
+      if (values.empty()) {
         *_this = o3d::BoundingBox();
       } else if (values.size() != 2) {
         o3d::ServiceLocator* service_locator =

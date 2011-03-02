@@ -188,7 +188,7 @@ void TestShell::PlatformShutdown() {
     [*it release];
   }
   // assert if we have anything left over, that would be bad.
-  DCHECK(window_map_.Get().size() == 0);
+  DCHECK(window_map_.Get().empty());
 
   // Dump the pasteboards we built up.
   [DumpRenderTreePasteboard releaseLocalPasteboards];

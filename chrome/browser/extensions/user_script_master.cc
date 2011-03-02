@@ -35,7 +35,7 @@ static bool GetDeclarationValue(const base::StringPiece& line,
   std::string temp(line.data() + index + prefix.length(),
                    line.length() - index - prefix.length());
 
-  if (temp.size() == 0 || !IsWhitespace(temp[0]))
+  if (temp.empty() || !IsWhitespace(temp[0]))
     return false;
 
   TrimWhitespaceASCII(temp, TRIM_ALL, value);
@@ -125,7 +125,7 @@ bool UserScriptMaster::ScriptReloader::ParseMetadataHeader(
 
   // If no patterns were specified, default to @include *. This is what
   // Greasemonkey does.
-  if (script->globs().size() == 0 && script->url_patterns().size() == 0)
+  if (script->globs().empty() && script->url_patterns().empty())
     script->add_glob("*");
 
   return true;

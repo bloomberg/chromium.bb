@@ -256,7 +256,7 @@ void WebCacheManager::AddToStrategy(const std::set<int>& renderers,
 
   // Nothing to do if there are no renderers.  It is common for there to be no
   // inactive renderers if there is a single active tab.
-  if (renderers.size() == 0)
+  if (renderers.empty())
     return;
 
   // Divide the extra memory evenly among the renderers.

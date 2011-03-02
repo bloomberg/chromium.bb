@@ -988,10 +988,10 @@ class AssignmentProblem {
     if (single_use_score > 0) {
       size_t n = single_use_pattern_queue_.erase(pattern);
       LOG_ASSERT(n == 1);
-    } else if (pattern->program_histogram_.size() == 0 &&
-               pattern->model_histogram_.size() == 0) {
+    } else if (pattern->program_histogram_.empty() &&
+               pattern->model_histogram_.empty()) {
       NOTREACHED();  // Should not come back to life.
-    } else if (pattern->program_histogram_.size() == 0) {
+    } else if (pattern->program_histogram_.empty()) {
       // Useless pattern.
     } else {
       active_non_single_use_patterns_.erase(pattern);
@@ -1003,9 +1003,9 @@ class AssignmentProblem {
     int single_use_score = SingleUseScore(pattern);
     if (single_use_score > 0) {
       single_use_pattern_queue_.insert(pattern);
-    } else if (pattern->program_histogram_.size() == 0 &&
-               pattern->model_histogram_.size() == 0) {
-    } else if (pattern->program_histogram_.size() == 0) {
+    } else if (pattern->program_histogram_.empty() &&
+               pattern->model_histogram_.empty()) {
+    } else if (pattern->program_histogram_.empty()) {
       // Useless pattern.
     } else {
       active_non_single_use_patterns_.insert(pattern);

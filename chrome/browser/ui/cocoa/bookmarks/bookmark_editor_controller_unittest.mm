@@ -288,7 +288,7 @@ class BookmarkEditorControllerTreeTest : public CocoaTest {
     std::vector<const BookmarkNode*> nodes;
     BookmarkModel* model = browser_helper_.profile()->GetBookmarkModel();
     model->GetNodesByURL(bb3_url_1_, &nodes);
-    if (nodes.size() == 0)
+    if (nodes.empty())
       model->GetNodesByURL(bb3_url_2_, &nodes);
     DCHECK(nodes.size());
     bookmark_bb_3_ = nodes[0];

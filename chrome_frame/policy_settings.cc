@@ -110,7 +110,7 @@ void PolicySettings::ReadContentTypeSetting(
   sub_key += ASCIIToWide(policy::key::kChromeFrameContentTypes);
 
   content_type_list->clear();
-  for (int i = 0; i < arraysize(kRootKeys) && content_type_list->size() == 0;
+  for (int i = 0; i < arraysize(kRootKeys) && content_type_list->empty();
        ++i) {
     EnumerateKeyValues(kRootKeys[i], sub_key.c_str(), content_type_list);
   }

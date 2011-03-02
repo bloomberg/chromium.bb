@@ -85,7 +85,7 @@ bool Encryptor::Encrypt(const std::string& plaintext, std::string* ciphertext) {
 }
 
 bool Encryptor::Decrypt(const std::string& ciphertext, std::string* plaintext) {
-  if (ciphertext.size() == 0)
+  if (ciphertext.empty())
     return false;
 
   ScopedPK11Context context(PK11_CreateContextBySymKey(CKM_AES_CBC_PAD,

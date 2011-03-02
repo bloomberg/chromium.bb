@@ -1248,7 +1248,7 @@ void UrlmonUrlRequestManager::AddPrivacyDataForUrl(
 
   bool fire_privacy_event = false;
 
-  if (privacy_info_.privacy_records.size() == 0)
+  if (privacy_info_.privacy_records.empty())
     flags |= PRIVACY_URLISTOPLEVEL;
 
   if (!privacy_info_.privacy_impacted) {

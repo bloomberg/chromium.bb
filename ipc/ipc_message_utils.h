@@ -413,7 +413,7 @@ template <>
 struct ParamTraits<std::vector<unsigned char> > {
   typedef std::vector<unsigned char> param_type;
   static void Write(Message* m, const param_type& p) {
-    if (p.size() == 0) {
+    if (p.empty()) {
       m->WriteData(NULL, 0);
     } else {
       m->WriteData(reinterpret_cast<const char*>(&p.front()),
@@ -439,7 +439,7 @@ template <>
 struct ParamTraits<std::vector<char> > {
   typedef std::vector<char> param_type;
   static void Write(Message* m, const param_type& p) {
-    if (p.size() == 0) {
+    if (p.empty()) {
       m->WriteData(NULL, 0);
     } else {
       m->WriteData(&p.front(), static_cast<int>(p.size()));

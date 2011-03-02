@@ -120,7 +120,7 @@ class SandboxIPCProcess  {
           << "Sandbox host message is larger than kMaxFontFamilyLength";
       return;
     }
-    if (fds.size() == 0)
+    if (fds.empty())
       return;
 
     Pickle pickle(buf, len);

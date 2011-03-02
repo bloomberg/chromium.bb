@@ -195,7 +195,7 @@ void StringArrayToMultiSZBytes(const std::vector<PendingMove>& strings,
   DCHECK(buffer);
   buffer->clear();
 
-  if (strings.size() == 0) {
+  if (strings.empty()) {
     // Leave buffer empty if we have no strings.
     return;
   }

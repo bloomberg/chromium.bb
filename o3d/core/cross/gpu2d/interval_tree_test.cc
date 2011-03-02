@@ -177,9 +177,9 @@ InsertionAndDeletionTest(unsigned seed, int tree_size) {
   // Now randomly add or remove elements.
   for (int i = 0; i < 2 * tree_size; i++) {
     bool add = false;
-    if (added_elements.size() == 0) {
+    if (added_elements.empty()) {
       add = true;
-    } else if (removed_elements.size() == 0) {
+    } else if (removed_elements.empty()) {
       add = false;
     } else {
       add = (NextRandom(2) == 1);

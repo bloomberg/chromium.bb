@@ -1239,7 +1239,7 @@ void RenderWidgetHost::AccessibilityNotificationsAck() {
 }
 
 void RenderWidgetHost::ProcessKeyboardEventAck(int type, bool processed) {
-  if (key_queue_.size() == 0) {
+  if (key_queue_.empty()) {
     LOG(ERROR) << "Got a KeyEvent back from the renderer but we "
                << "don't seem to have sent it to the renderer!";
   } else if (key_queue_.front().type != type) {

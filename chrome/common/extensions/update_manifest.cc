@@ -140,7 +140,7 @@ static bool ParseSingleAppTag(xmlNode* app_node, xmlNs* xml_namespace,
     *error_detail = "Too many updatecheck tags on app (expecting only 1).";
     return false;
   }
-  if (updates.size() == 0) {
+  if (updates.empty()) {
     *error_detail = "Missing updatecheck on app.";
     return false;
   }

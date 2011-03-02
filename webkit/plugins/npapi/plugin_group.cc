@@ -488,7 +488,7 @@ bool PluginGroup::RequiresAuthorization() const {
 }
 
 bool PluginGroup::IsEmpty() const {
-  return web_plugin_infos_.size() == 0;
+  return web_plugin_infos_.empty();
 }
 
 void PluginGroup::DisableOutdatedPlugins() {

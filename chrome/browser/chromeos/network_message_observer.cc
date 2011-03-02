@@ -230,7 +230,7 @@ void NetworkMessageObserver::OnCellularDataPlanChanged(NetworkLibrary* cros) {
       cros->GetDataPlans(cellular->service_path());
 
   // If no plans available, check to see if we need a new plan.
-  if (!plans || plans->size() == 0) {
+  if (!plans || plans->empty()) {
     // If previously, we had a low data notification, we know that a plan was
     // near expiring. In that case, because the plan has disappeared, we assume
     // that it expired.

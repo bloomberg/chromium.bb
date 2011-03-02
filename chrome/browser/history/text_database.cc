@@ -367,7 +367,7 @@ void TextDatabase::GetTextMatches(const std::string& query,
   // When we have returned all the results possible (or determined that there
   // are none), then we have searched all the time requested, so we can
   // set the first_time_searched to that value.
-  if (results->size() == 0 ||
+  if (results->empty() ||
       options.max_count == 0 ||  // Special case for wanting all the results.
       static_cast<int>(results->size()) < options.max_count) {
     *first_time_searched = options.begin_time;

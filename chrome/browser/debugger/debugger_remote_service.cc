@@ -79,7 +79,7 @@ void DebuggerRemoteService::HandleMessage(
   content->GetString(kCommandKey, &command);
   response.SetString(kCommandKey, command);
   bool send_response = true;
-  if (destination.size() == 0) {
+  if (destination.empty()) {
     // Unknown command (bad format?)
     NOTREACHED();
     response.SetInteger(kResultKey, RESULT_UNKNOWN_COMMAND);

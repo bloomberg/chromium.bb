@@ -21,7 +21,7 @@ SpeechInputBubbleController::SpeechInputBubbleController(Delegate* delegate)
 }
 
 SpeechInputBubbleController::~SpeechInputBubbleController() {
-  DCHECK(bubbles_.size() == 0);
+  DCHECK(bubbles_.empty());
 }
 
 void SpeechInputBubbleController::CreateBubble(int caller_id,

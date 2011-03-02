@@ -86,7 +86,7 @@ class PipeMap {
 
   ~PipeMap() {
     // Shouldn't have left over pipes.
-    DCHECK(map_.size() == 0);
+    DCHECK(map_.empty());
   }
 
   // Lookup a given channel id. Return -1 if not found.

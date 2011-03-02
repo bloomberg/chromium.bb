@@ -58,7 +58,7 @@ void DevToolsRemoteListenSocket::StartNextField() {
       state_ = HEADERS;
       break;
     case HEADERS:
-      if (protocol_field_.size() == 0) {  // empty line - end of headers
+      if (protocol_field_.empty()) {  // empty line - end of headers
         const std::string& payload_length_string = GetHeader(
             DevToolsRemoteMessageHeaders::kContentLength, "0");
         base::StringToInt(payload_length_string, &remaining_payload_length_);

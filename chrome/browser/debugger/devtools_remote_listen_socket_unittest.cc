@@ -176,7 +176,7 @@ bool DevToolsRemoteListenSocketTester::NextAction(int timeout) {
   if (ret != WAIT_OBJECT_0)
     return false;
   EnterCriticalSection(&lock_);
-  if (queue_.size() == 0) {
+  if (queue_.empty()) {
     LeaveCriticalSection(&lock_);
     return false;
   }
@@ -197,7 +197,7 @@ bool DevToolsRemoteListenSocketTester::NextAction(int timeout) {
       break;
   }
   pthread_mutex_lock(&lock_);
-  if (queue_.size() == 0) {
+  if (queue_.empty()) {
     pthread_mutex_unlock(&lock_);
     return false;
   }

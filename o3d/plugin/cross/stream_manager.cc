@@ -310,7 +310,7 @@ bool StreamManager::NPDownloadStream::URLNotify(NPReason reason) {
     // Note that the streaming case (NP_NORMAL) does not get a file
     // so we can't check its size
     if ((reason != NPRES_DONE) ||
-        (stream_type_ != NP_NORMAL && file_.size() == 0)) {
+        (stream_type_ != NP_NORMAL && file_.empty())) {
       // finished_callback should only be called once.
       finished_callback_->Run(this, false, "", "");
       finished_callback_.reset(NULL);

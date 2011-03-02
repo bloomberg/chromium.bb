@@ -122,7 +122,7 @@ void DataTypeManagerImpl2::Configure(const TypeSet& desired_types) {
             SortComparator(&start_order_));
 
   // If nothing changed, we're done.
-  if (needs_start_.size() == 0 && needs_stop_.size() == 0) {
+  if (needs_start_.empty() && needs_stop_.empty()) {
     state_ = CONFIGURED;
     NotifyStart();
     NotifyDone(OK);

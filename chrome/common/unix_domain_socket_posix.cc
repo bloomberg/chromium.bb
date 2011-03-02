@@ -139,7 +139,7 @@ ssize_t UnixDomainSocket::SendRecvMsg(int fd,
   }
 
   if (result_fd) {
-    if (fd_vector.size() == 0) {
+    if (fd_vector.empty()) {
       *result_fd = -1;
     } else {
       *result_fd = fd_vector[0];

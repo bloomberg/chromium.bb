@@ -378,7 +378,7 @@ ParamTexture* EffectGL::GetTextureParamFromCgSampler(
   DLOG_ASSERT(cgGetParameterType(cg_sampler) != CG_SAMPLER);
   String sampler_name = cgGetParameterName(cg_sampler);
   String param_name = GetTextureNameFromSamplerParamName(sampler_name);
-  if (param_name.size() == 0) {
+  if (param_name.empty()) {
     // Sampler has no texture associated with it.
     return NULL;
   }
