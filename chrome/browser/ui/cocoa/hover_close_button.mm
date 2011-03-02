@@ -76,6 +76,9 @@ const CGFloat kXShadowCircleAlpha = 0.1;
   [[self cell]
       accessibilitySetOverrideValue:description
                        forAttribute:NSAccessibilityDescriptionAttribute];
+
+  // Add a tooltip.
+  [self setToolTip:l10n_util::GetNSStringWithFixup(IDS_TOOLTIP_CLOSE_TAB)];
 }
 
 - (void)setUpDrawingPaths {
