@@ -26,7 +26,7 @@
 // instances of this class.
 
 class ProtocolHandlerRegistry
-    : public base::RefCounted<ProtocolHandlerRegistry> {
+    : public base::RefCountedThreadSafe<ProtocolHandlerRegistry> {
  public:
   explicit ProtocolHandlerRegistry(Profile* profile);
 
@@ -63,7 +63,7 @@ class ProtocolHandlerRegistry
  private:
   typedef std::map<std::string, ProtocolHandler*> ProtocolHandlerMap;
 
-  friend class base::RefCounted<ProtocolHandlerRegistry>;
+  friend class base::RefCountedThreadSafe<ProtocolHandlerRegistry>;
   ~ProtocolHandlerRegistry();
 
   // Returns a JSON dictionary of protocols to protocol handlers. The caller is
