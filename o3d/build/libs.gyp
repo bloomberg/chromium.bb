@@ -40,7 +40,19 @@
         ],
         [ 'OS=="win"',
           {
-            #TODO(fransiskusx): Link to Cairo on Win/Mac as a static library,
+            'all_dependent_settings': {
+              'defines': [
+                'CAIRO_WIN32_STATIC_BUILD'
+              ],
+              'include_dirs': [
+                '../../<(cairodir)/src',
+                '../build/misc'
+              ],
+            },
+            'dependencies': [
+              'cairo.gyp:cairo',
+              'pixman.gyp:pixman',
+            ],
           },
         ],
       ],
