@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/views/importer/importer_progress_view.h"
 
 #include "base/utf_string_conversions.h"
+#include "chrome/browser/importer/importer_observer.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "grit/locale_settings.h"
@@ -15,13 +16,10 @@
 #include "views/layout/layout_constants.h"
 #include "views/window/window.h"
 
-////////////////////////////////////////////////////////////////////////////////
-// ImporterProgressView, public:
-
 ImporterProgressView::ImporterProgressView(const std::wstring& source_name,
-                                           int16 items,
-                                           ImporterHost* coordinator,
-                                           ImportObserver* observer,
+                                           uint16 items,
+                                           ImporterHost* importer_host,
+                                           ImporterObserver* observer,
                                            HWND parent_window,
                                            bool bookmarks_import)
     : state_bookmarks_(new views::CheckmarkThrobber),
@@ -40,9 +38,9 @@ ImporterProgressView::ImporterProgressView(const std::wstring& source_name,
       label_cookies_(new views::Label(UTF16ToWide(
           l10n_util::GetStringUTF16(IDS_IMPORT_PROGRESS_STATUS_COOKIES)))),
       parent_window_(parent_window),
-      coordinator_(coordinator),
-      import_observer_(observer),
       items_(items),
+      importer_host_(importer_host),
+      importer_observer_(observer),
       importing_(true),
       bookmarks_import_(bookmarks_import) {
   std::wstring info_text = bookmarks_import ?
@@ -51,7 +49,7 @@ ImporterProgressView::ImporterProgressView(const std::wstring& source_name,
           IDS_IMPORT_PROGRESS_INFO,
           WideToUTF16(source_name)));
   label_info_ = new views::Label(info_text);
-  coordinator_->SetObserver(this);
+  importer_host_->SetObserver(this);
   label_info_->SetMultiLine(true);
   label_info_->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
   label_bookmarks_->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
@@ -90,83 +88,12 @@ ImporterProgressView::~ImporterProgressView() {
     // doesn't have a reference to us and cancel the import. We can get here
     // if our parent window is closed, which closes our window and deletes us.
     importing_ = false;
-    coordinator_->SetObserver(NULL);
-    coordinator_->Cancel();
-    if (import_observer_)
-      import_observer_->ImportComplete();
+    importer_host_->SetObserver(NULL);
+    importer_host_->Cancel();
+    if (importer_observer_)
+      importer_observer_->ImportCompleted();
   }
 }
-
-////////////////////////////////////////////////////////////////////////////////
-// ImporterProgressView, ImporterObserver implementation:
-
-void ImporterProgressView::ImportItemStarted(importer::ImportItem item) {
-  DCHECK(items_ & item);
-  switch (item) {
-    case importer::FAVORITES:
-      state_bookmarks_->Start();
-      break;
-    case importer::SEARCH_ENGINES:
-      state_searches_->Start();
-      break;
-    case importer::PASSWORDS:
-      state_passwords_->Start();
-      break;
-    case importer::HISTORY:
-      state_history_->Start();
-      break;
-    case importer::COOKIES:
-      state_cookies_->Start();
-      break;
-  }
-}
-
-void ImporterProgressView::ImportItemEnded(importer::ImportItem item) {
-  DCHECK(items_ & item);
-  switch (item) {
-    case importer::FAVORITES:
-      state_bookmarks_->Stop();
-      state_bookmarks_->SetChecked(true);
-      break;
-    case importer::SEARCH_ENGINES:
-      state_searches_->Stop();
-      state_searches_->SetChecked(true);
-      break;
-    case importer::PASSWORDS:
-      state_passwords_->Stop();
-      state_passwords_->SetChecked(true);
-      break;
-    case importer::HISTORY:
-      state_history_->Stop();
-      state_history_->SetChecked(true);
-      break;
-    case importer::COOKIES:
-      state_cookies_->Stop();
-      state_cookies_->SetChecked(true);
-      break;
-  }
-}
-
-void ImporterProgressView::ImportStarted() {
-  importing_ = true;
-}
-
-void ImporterProgressView::ImportEnded() {
-  // This can happen because:
-  // - the import completed successfully.
-  // - the import was canceled by the user.
-  // - the user chose to skip the import because they didn't want to shut down
-  //   Firefox.
-  // In every case, we need to close the UI now.
-  importing_ = false;
-  coordinator_->SetObserver(NULL);
-  window()->Close();
-  if (import_observer_)
-    import_observer_->ImportComplete();
-}
-
-////////////////////////////////////////////////////////////////////////////////
-// ImporterProgressView, views::View overrides:
 
 gfx::Size ImporterProgressView::GetPreferredSize() {
   return gfx::Size(views::Window::GetLocalizedContentsSize(
@@ -180,9 +107,6 @@ void ImporterProgressView::ViewHierarchyChanged(bool is_add,
   if (is_add && child == this)
     InitControlLayout();
 }
-
-////////////////////////////////////////////////////////////////////////////////
-// ImporterProgressView, views::DialogDelegate implementation:
 
 int ImporterProgressView::GetDialogButtons() const {
   return MessageBoxFlags::DIALOGBUTTON_CANCEL;
@@ -204,7 +128,7 @@ std::wstring ImporterProgressView::GetWindowTitle() const {
 }
 
 bool ImporterProgressView::Cancel() {
-  // When the user cancels the import, we need to tell the coordinator to stop
+  // When the user cancels the import, we need to tell the importer_host to stop
   // importing and return false so that the window lives long enough to receive
   // ImportEnded, which will close the window. Closing the window results in
   // another call to this function and at that point we must return true to
@@ -213,16 +137,13 @@ bool ImporterProgressView::Cancel() {
     return true;  // We have received ImportEnded, so we can close.
 
   // Cancel the import and wait for further instructions.
-  coordinator_->Cancel();
+  importer_host_->Cancel();
   return false;
 }
 
 views::View* ImporterProgressView::GetContentsView() {
   return this;
 }
-
-////////////////////////////////////////////////////////////////////////////////
-// ImporterProgressView, private:
 
 void ImporterProgressView::InitControlLayout() {
   using views::GridLayout;
@@ -292,27 +213,89 @@ void ImporterProgressView::InitControlLayout() {
   }
 }
 
-////////////////////////////////////////////////////////////////////////////////
-// StartImportingWithUI
+void ImporterProgressView::ImportItemStarted(importer::ImportItem item) {
+  DCHECK(items_ & item);
+  switch (item) {
+    case importer::FAVORITES:
+      state_bookmarks_->Start();
+      break;
+    case importer::SEARCH_ENGINES:
+      state_searches_->Start();
+      break;
+    case importer::PASSWORDS:
+      state_passwords_->Start();
+      break;
+    case importer::HISTORY:
+      state_history_->Start();
+      break;
+    case importer::COOKIES:
+      state_cookies_->Start();
+      break;
+  }
+}
+
+void ImporterProgressView::ImportItemEnded(importer::ImportItem item) {
+  DCHECK(items_ & item);
+  switch (item) {
+    case importer::FAVORITES:
+      state_bookmarks_->Stop();
+      state_bookmarks_->SetChecked(true);
+      break;
+    case importer::SEARCH_ENGINES:
+      state_searches_->Stop();
+      state_searches_->SetChecked(true);
+      break;
+    case importer::PASSWORDS:
+      state_passwords_->Stop();
+      state_passwords_->SetChecked(true);
+      break;
+    case importer::HISTORY:
+      state_history_->Stop();
+      state_history_->SetChecked(true);
+      break;
+    case importer::COOKIES:
+      state_cookies_->Stop();
+      state_cookies_->SetChecked(true);
+      break;
+  }
+}
+
+void ImporterProgressView::ImportStarted() {
+  importing_ = true;
+}
+
+void ImporterProgressView::ImportEnded() {
+  // This can happen because:
+  // - the import completed successfully.
+  // - the import was canceled by the user.
+  // - the user chose to skip the import because they didn't want to shut down
+  //   Firefox.
+  // In every case, we need to close the UI now.
+  importing_ = false;
+  importer_host_->SetObserver(NULL);
+  window()->Close();
+  if (importer_observer_)
+    importer_observer_->ImportCompleted();
+}
 
 void StartImportingWithUI(HWND parent_window,
                           uint16 items,
-                          ImporterHost* coordinator,
+                          ImporterHost* importer_host,
                           const ProfileInfo& source_profile,
                           Profile* target_profile,
-                          ImportObserver* observer,
+                          ImporterObserver* observer,
                           bool first_run) {
   DCHECK(items != 0);
   ImporterProgressView* v = new ImporterProgressView(
-      source_profile.description, items, coordinator, observer, parent_window,
+      source_profile.description, items, importer_host, observer, parent_window,
       source_profile.browser_type == importer::BOOKMARKS_HTML);
   views::Window* window =
     views::Window::CreateChromeWindow(parent_window, gfx::Rect(), v);
 
-  if (!coordinator->is_headless() && !first_run)
+  if (!importer_host->is_headless() && !first_run)
     window->Show();
 
-  coordinator->StartImportSettings(source_profile, target_profile, items,
-                                   new ProfileWriter(target_profile),
-                                   first_run);
+  importer_host->StartImportSettings(
+      source_profile, target_profile, items, new ProfileWriter(target_profile),
+      first_run);
 }

@@ -19,6 +19,8 @@ class CheckmarkThrobber;
 class Label;
 }
 
+class ImporterObserver;
+
 class ImporterProgressView : public views::View,
                              public views::DialogDelegate,
                              public ImporterHost::Observer {
@@ -27,21 +29,21 @@ class ImporterProgressView : public views::View,
   // |bookmark_import| is true if we're importing bookmarks from a
   // bookmarks.html file.
   ImporterProgressView(const std::wstring& source_name,
-                       int16 items,
-                       ImporterHost* coordinator,
-                       ImportObserver* observer,
+                       uint16 items,
+                       ImporterHost* importer_host,
+                       ImporterObserver* observer,
                        HWND parent_window,
                        bool bookmarks_import);
   virtual ~ImporterProgressView();
 
  protected:
-  // Overridden from ImporterHost::Observer:
-  virtual void ImportItemStarted(importer::ImportItem item) OVERRIDE;
-  virtual void ImportItemEnded(importer::ImportItem item) OVERRIDE;
-  virtual void ImportStarted() OVERRIDE;
-  virtual void ImportEnded() OVERRIDE;
+  // views::View:
+  virtual gfx::Size GetPreferredSize() OVERRIDE;
+  virtual void ViewHierarchyChanged(bool is_add,
+                                    views::View* parent,
+                                    views::View* child) OVERRIDE;
 
-  // Overridden from views::DialogDelegate:
+  // views::DialogDelegate:
   virtual int GetDialogButtons() const OVERRIDE;
   virtual std::wstring GetDialogButtonLabel(
       MessageBoxFlags::DialogButton button) const OVERRIDE;
@@ -50,15 +52,18 @@ class ImporterProgressView : public views::View,
   virtual bool Cancel() OVERRIDE;
   virtual views::View* GetContentsView() OVERRIDE;
 
-  // Overridden from views::View:
-  virtual gfx::Size GetPreferredSize() OVERRIDE;
-  virtual void ViewHierarchyChanged(bool is_add,
-                                    views::View* parent,
-                                    views::View* child) OVERRIDE;
-
  private:
   // Set up the control layout within this dialog.
   void InitControlLayout();
+
+  // ImporterHost::Observer:
+  virtual void ImportItemStarted(importer::ImportItem item) OVERRIDE;
+  virtual void ImportItemEnded(importer::ImportItem item) OVERRIDE;
+  virtual void ImportStarted() OVERRIDE;
+  virtual void ImportEnded() OVERRIDE;
+
+  // The native window that we are parented to. Can be NULL.
+  HWND parent_window_;
 
   // Various dialog controls.
   scoped_ptr<views::CheckmarkThrobber> state_bookmarks_;
@@ -73,17 +78,14 @@ class ImporterProgressView : public views::View,
   scoped_ptr<views::Label> label_history_;
   scoped_ptr<views::Label> label_cookies_;
 
-  // The native window that we are parented to. Can be NULL.
-  HWND parent_window_;
+  // Items to import from the other browser
+  uint16 items_;
 
-  // The importer host coordinating the import.
-  scoped_refptr<ImporterHost> coordinator_;
+  // Utility class that does the actual import.
+  scoped_refptr<ImporterHost> importer_host_;
 
-  // An object that wants to be notified when the import is complete.
-  ImportObserver* import_observer_;
-
-  // The ImportItems we are importing.
-  int16 items_;
+  // Observer that we need to notify about import events.
+  ImporterObserver* importer_observer_;
 
   // True if the import operation is in progress.
   bool importing_;

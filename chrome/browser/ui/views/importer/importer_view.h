@@ -8,6 +8,7 @@
 
 #include "base/string16.h"
 #include "chrome/browser/importer/importer.h"
+#include "chrome/browser/importer/importer_observer.h"
 #include "ui/base/models/combobox_model.h"
 #include "views/controls/button/native_button.h"
 #include "views/controls/combobox/combobox.h"
@@ -33,45 +34,39 @@ class ImporterView : public views::View,
                      public ui::ComboboxModel,
                      public views::Combobox::Listener,
                      public ImporterList::Observer,
-                     public ImportObserver {
+                     public ImporterObserver {
  public:
   // Creates a new ImporterView. |initial_state| is a bitmask of ImportItems.
   // Each checkbox for the bits in |initial_state| is checked.
-  ImporterView(Profile* profile, int initial_state);
+  ImporterView(Profile* profile, uint16 initial_state);
   virtual ~ImporterView();
 
-  // views::View implementation.
-  virtual gfx::Size GetPreferredSize();
-  virtual void Layout();
+  // views::View:
+  virtual gfx::Size GetPreferredSize() OVERRIDE;
+  virtual void Layout() OVERRIDE;
 
-  // views::DialogDelegate implementation.
+  // views::DialogDelegate:
   virtual std::wstring GetDialogButtonLabel(
-      MessageBoxFlags::DialogButton button) const;
+      MessageBoxFlags::DialogButton button) const OVERRIDE;
   virtual bool IsDialogButtonEnabled(
-      MessageBoxFlags::DialogButton button) const;
-  virtual bool IsModal() const;
-  virtual std::wstring GetWindowTitle() const;
-  virtual bool Accept();
-  virtual views::View* GetContentsView();
+      MessageBoxFlags::DialogButton button) const OVERRIDE;
+  virtual bool IsModal() const OVERRIDE;
+  virtual std::wstring GetWindowTitle() const OVERRIDE;
+  virtual bool Accept() OVERRIDE;
+  virtual views::View* GetContentsView() OVERRIDE;
 
-  // views::ButtonListener implementation.
-  virtual void ButtonPressed(views::Button* sender, const views::Event& event);
+  // views::ButtonListener:
+  virtual void ButtonPressed(views::Button* sender,
+                             const views::Event& event) OVERRIDE;
 
-  // ui::ComboboxModel implementation.
+  // ui::ComboboxModel:
   virtual int GetItemCount();
-  virtual string16 GetItemAt(int index);
+  virtual string16 GetItemAt(int index) OVERRIDE;
 
-  // ChromeViews::Combobox::Listener implementation.
+  // views::Combobox::Listener
   virtual void ItemChanged(views::Combobox* combobox,
                            int prev_index,
-                           int new_index);
-
-  // ImporterList::Observer implementation.
-  virtual void SourceProfilesLoaded();
-
-  // ImportObserver implementation.
-  virtual void ImportCanceled();
-  virtual void ImportComplete();
+                           int new_index) OVERRIDE;
 
  private:
   // Initializes the controls on the dialog.
@@ -89,6 +84,13 @@ class ImporterView : public views::View,
   // Sets all checked items in the given state.
   void SetCheckedItems(uint16 items);
 
+  // ImporterList::Observer:
+  virtual void SourceProfilesLoaded() OVERRIDE;
+
+  // ImporterObserver:
+  virtual void ImportCompleted() OVERRIDE;
+  virtual void ImportCanceled() OVERRIDE;
+
   views::Label* import_from_label_;
   views::Combobox* profile_combobox_;
   views::Label* import_items_label_;
@@ -97,7 +99,13 @@ class ImporterView : public views::View,
   views::Checkbox* passwords_checkbox_;
   views::Checkbox* search_engines_checkbox_;
 
+  // Our current profile.
+  Profile* profile_;
+
+  // Utility class that does the actual import.
   scoped_refptr<ImporterHost> importer_host_;
+
+  // Enumerates the source profiles.
   scoped_refptr<ImporterList> importer_list_;
 
   // Stores the state of the checked items associated with the position of the
@@ -106,8 +114,6 @@ class ImporterView : public views::View,
 
   // Initial state of the |checkbox_items_|.
   uint16 initial_state_;
-
-  Profile* profile_;
 
   DISALLOW_COPY_AND_ASSIGN(ImporterView);
 };

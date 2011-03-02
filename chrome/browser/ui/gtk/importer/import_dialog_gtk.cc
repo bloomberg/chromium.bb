@@ -24,23 +24,12 @@ gboolean IsChecked(GtkWidget* widget) {
 
 // static
 void ImportDialogGtk::Show(GtkWindow* parent, Profile* profile,
-                           int initial_state) {
+                           uint16 initial_state) {
   new ImportDialogGtk(parent, profile, initial_state);
 }
 
-////////////////////////////////////////////////////////////////////////////////
-// ImportObserver implementation:
-void ImportDialogGtk::ImportCanceled() {
-  ImportComplete();
-}
-
-void ImportDialogGtk::ImportComplete() {
-  gtk_widget_destroy(dialog_);
-  delete this;
-}
-
 ImportDialogGtk::ImportDialogGtk(GtkWindow* parent, Profile* profile,
-                                 int initial_state)
+                                 uint16 initial_state)
     : parent_(parent),
       profile_(profile),
       importer_host_(new ImporterHost),
@@ -148,32 +137,12 @@ ImportDialogGtk::~ImportDialogGtk() {
     importer_list_->SetObserver(NULL);
 }
 
-void ImportDialogGtk::SourceProfilesLoaded() {
-  // Detect any supported browsers that we can import from and fill
-  // up the combo box. If none found, disable all controls except cancel.
-  int profiles_count = importer_list_->GetAvailableProfileCount();
-  SetDialogControlsSensitive(profiles_count != 0);
-  gtk_combo_box_remove_text(GTK_COMBO_BOX(combo_), 0);
-  if (profiles_count > 0) {
-    for (int i = 0; i < profiles_count; i++) {
-      std::wstring profile = importer_list_->GetSourceProfileNameAt(i);
-      gtk_combo_box_append_text(GTK_COMBO_BOX(combo_),
-                                WideToUTF8(profile).c_str());
-    }
-    gtk_widget_grab_focus(import_button_);
-  } else {
-    gtk_combo_box_append_text(GTK_COMBO_BOX(combo_),
-      l10n_util::GetStringUTF8(IDS_IMPORT_NO_PROFILE_FOUND).c_str());
-  }
-  gtk_combo_box_set_active(GTK_COMBO_BOX(combo_), 0);
-}
-
 void ImportDialogGtk::OnDialogResponse(GtkWidget* widget, int response) {
   gtk_widget_hide_all(dialog_);
   if (response == GTK_RESPONSE_ACCEPT) {
     uint16 items = GetCheckedItems();
     if (items == 0) {
-      ImportComplete();
+      ImportCompleted();
     } else {
       const ProfileInfo& source_profile =
           importer_list_->GetSourceProfileInfoAt(
@@ -214,4 +183,33 @@ uint16 ImportDialogGtk::GetCheckedItems() {
   if (IsChecked(history_))
     items |= importer::HISTORY;
   return items;
+}
+
+void ImportDialogGtk::SourceProfilesLoaded() {
+  // Detect any supported browsers that we can import from and fill
+  // up the combo box. If none found, disable all controls except cancel.
+  int profiles_count = importer_list_->GetAvailableProfileCount();
+  SetDialogControlsSensitive(profiles_count != 0);
+  gtk_combo_box_remove_text(GTK_COMBO_BOX(combo_), 0);
+  if (profiles_count > 0) {
+    for (int i = 0; i < profiles_count; i++) {
+      std::wstring profile = importer_list_->GetSourceProfileNameAt(i);
+      gtk_combo_box_append_text(GTK_COMBO_BOX(combo_),
+                                WideToUTF8(profile).c_str());
+    }
+    gtk_widget_grab_focus(import_button_);
+  } else {
+    gtk_combo_box_append_text(GTK_COMBO_BOX(combo_),
+      l10n_util::GetStringUTF8(IDS_IMPORT_NO_PROFILE_FOUND).c_str());
+  }
+  gtk_combo_box_set_active(GTK_COMBO_BOX(combo_), 0);
+}
+
+void ImportDialogGtk::ImportCompleted() {
+  gtk_widget_destroy(dialog_);
+  delete this;
+}
+
+void ImportDialogGtk::ImportCanceled() {
+  ImportCompleted();
 }

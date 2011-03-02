@@ -6,6 +6,8 @@
 #define CHROME_BROWSER_UI_GTK_IMPORTER_IMPORT_PROGRESS_DIALOG_GTK_H_
 #pragma once
 
+#include "base/basictypes.h"
+#include "base/compiler_specific.h"
 #include "chrome/browser/importer/importer.h"
 #include "chrome/browser/importer/importer_data_types.h"
 #include "ui/base/gtk/gtk_signal.h"
@@ -14,29 +16,24 @@ typedef struct _GtkWindow GtkWindow;
 typedef struct _GtkWidget Widget;
 
 class Profile;
+class ImporterObserver;
 
 class ImportProgressDialogGtk : public ImporterHost::Observer {
  public:
   // Displays the import progress dialog box and starts the import.
   static void StartImport(GtkWindow* parent,
-                          int16 items,
+                          uint16 items,
                           ImporterHost* importer_host,
                           const ProfileInfo& browser_profile,
                           Profile* profile,
-                          ImportObserver* observer,
+                          ImporterObserver* observer,
                           bool first_run);
-
-  // Overridden from ImporterHost::Observer:
-  virtual void ImportItemStarted(importer::ImportItem item);
-  virtual void ImportItemEnded(importer::ImportItem item);
-  virtual void ImportStarted();
-  virtual void ImportEnded();
 
  private:
   ImportProgressDialogGtk(const string16& source_profile,
-                          int16 items,
+                          uint16 items,
                           ImporterHost* importer_host,
-                          ImportObserver* observer,
+                          ImporterObserver* observer,
                           GtkWindow* parent,
                           bool bookmarks_import);
   virtual ~ImportProgressDialogGtk();
@@ -47,35 +44,41 @@ class ImportProgressDialogGtk : public ImporterHost::Observer {
 
   void CloseDialog();
 
-  // Parent window
+  // ImporterHost::Observer:
+  virtual void ImportItemStarted(importer::ImportItem item) OVERRIDE;
+  virtual void ImportItemEnded(importer::ImportItem item) OVERRIDE;
+  virtual void ImportStarted() OVERRIDE;
+  virtual void ImportEnded() OVERRIDE;
+
+  // Parent window.
   GtkWindow* parent_;
 
-  // Import progress dialog
+  // Import progress dialog.
   GtkWidget* dialog_;
 
-  // Bookmarks/Favorites checkbox
+  // Bookmarks/Favorites checkbox.
   GtkWidget* bookmarks_;
 
-  // Search Engines checkbox
+  // Search Engines checkbox.
   GtkWidget* search_engines_;
 
-  // Passwords checkbox
+  // Passwords checkbox.
   GtkWidget* passwords_;
 
-  // History checkbox
+  // History checkbox.
   GtkWidget* history_;
 
-  // Boolean that tells whether we are currently in the mid of import process
-  bool importing_;
-
-  // Observer that we need to notify about import events
-  ImportObserver* observer_;
-
   // Items to import from the other browser.
-  int16 items_;
+  uint16 items_;
 
   // Utility class that does the actual import.
   scoped_refptr<ImporterHost> importer_host_;
+
+  // Observer that we need to notify about import events.
+  ImporterObserver* importer_observer_;
+
+  // True if the import operation is in progress.
+  bool importing_;
 
   DISALLOW_COPY_AND_ASSIGN(ImportProgressDialogGtk);
 };

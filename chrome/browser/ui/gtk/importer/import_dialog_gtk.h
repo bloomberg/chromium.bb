@@ -6,29 +6,25 @@
 #define CHROME_BROWSER_UI_GTK_IMPORTER_IMPORT_DIALOG_GTK_H_
 #pragma once
 
+#include "base/basictypes.h"
+#include "base/compiler_specific.h"
 #include "chrome/browser/importer/importer.h"
+#include "chrome/browser/importer/importer_observer.h"
 #include "ui/base/gtk/gtk_signal.h"
 
 class Profile;
 
-class ImportDialogGtk : public ImportObserver,
-                        public ImporterList::Observer {
+class ImportDialogGtk : public ImporterList::Observer,
+                        public ImporterObserver {
  public:
   // Displays the import box to import data from another browser into |profile|
   // |initial_state| is a bitmask of ImportItems. Each checkbox for the bits in
   // is checked.
-  static void Show(GtkWindow* parent, Profile* profile, int initial_state);
-
-  // ImportObserver implementation.
-  virtual void ImportCanceled();
-  virtual void ImportComplete();
+  static void Show(GtkWindow* parent, Profile* profile, uint16 initial_state);
 
  private:
-  ImportDialogGtk(GtkWindow* parent, Profile* profile, int initial_state);
-  ~ImportDialogGtk();
-
-  // ImporterList::Observer implementation.
-  virtual void SourceProfilesLoaded();
+  ImportDialogGtk(GtkWindow* parent, Profile* profile, uint16 initial_state);
+  virtual ~ImportDialogGtk();
 
   // Handler to respond to OK or Cancel responses from the dialog.
   CHROMEGTK_CALLBACK_1(ImportDialogGtk, void, OnDialogResponse, int);
@@ -46,6 +42,13 @@ class ImportDialogGtk : public ImportObserver,
 
   // Create a bitmask from the checkboxes of the dialog.
   uint16 GetCheckedItems();
+
+  // ImporterList::Observer:
+  virtual void SourceProfilesLoaded() OVERRIDE;
+
+  // ImporterObserver:
+  virtual void ImportCompleted() OVERRIDE;
+  virtual void ImportCanceled() OVERRIDE;
 
   // Parent window
   GtkWindow* parent_;
@@ -80,7 +83,8 @@ class ImportDialogGtk : public ImportObserver,
   // Enumerates the source profiles.
   scoped_refptr<ImporterList> importer_list_;
 
-  int initial_state_;
+  // Initial state of the |checkbox_items_|.
+  uint16 initial_state_;
 
   DISALLOW_COPY_AND_ASSIGN(ImportDialogGtk);
 };

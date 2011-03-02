@@ -34,7 +34,7 @@ void ShowImporterView(views::Widget* parent,
 
 }  // namespace browser
 
-ImporterView::ImporterView(Profile* profile, int initial_state)
+ImporterView::ImporterView(Profile* profile, uint16 initial_state)
     : import_from_label_(NULL),
       profile_combobox_(NULL),
       import_items_label_(NULL),
@@ -54,6 +54,115 @@ ImporterView::ImporterView(Profile* profile, int initial_state)
 ImporterView::~ImporterView() {
   if (importer_list_)
     importer_list_->SetObserver(NULL);
+}
+
+gfx::Size ImporterView::GetPreferredSize() {
+  return gfx::Size(views::Window::GetLocalizedContentsSize(
+      IDS_IMPORT_DIALOG_WIDTH_CHARS,
+      IDS_IMPORT_DIALOG_HEIGHT_LINES));
+}
+
+void ImporterView::Layout() {
+  GetLayoutManager()->Layout(this);
+}
+
+std::wstring ImporterView::GetDialogButtonLabel(
+    MessageBoxFlags::DialogButton button) const {
+  if (button == MessageBoxFlags::DIALOGBUTTON_OK) {
+    return UTF16ToWide(l10n_util::GetStringUTF16(IDS_IMPORT_COMMIT));
+  } else {
+    return std::wstring();
+  }
+}
+
+bool ImporterView::IsDialogButtonEnabled(
+    MessageBoxFlags::DialogButton button) const {
+  if (button == MessageBoxFlags::DIALOGBUTTON_OK) {
+    return history_checkbox_->checked() ||
+           favorites_checkbox_->checked() ||
+           passwords_checkbox_->checked() ||
+           search_engines_checkbox_->checked();
+  }
+
+  return true;
+}
+
+bool ImporterView::IsModal() const {
+  return true;
+}
+
+std::wstring ImporterView::GetWindowTitle() const {
+  return UTF16ToWide(l10n_util::GetStringUTF16(IDS_IMPORT_SETTINGS_TITLE));
+}
+
+bool ImporterView::Accept() {
+  if (!IsDialogButtonEnabled(MessageBoxFlags::DIALOGBUTTON_OK))
+    return false;
+
+  uint16 items = GetCheckedItems();
+
+  int selected_index = profile_combobox_->selected_item();
+  StartImportingWithUI(GetWidget()->GetNativeView(), items,
+                       importer_host_.get(),
+                       importer_list_->GetSourceProfileInfoAt(selected_index),
+                       profile_, this, false);
+  // We return false here to prevent the window from being closed. We will be
+  // notified back by our implementation of ImporterObserver when the import is
+  // complete so that we can close ourselves.
+  return false;
+}
+
+views::View* ImporterView::GetContentsView() {
+  return this;
+}
+
+void ImporterView::ButtonPressed(
+    views::Button* sender, const views::Event& event) {
+  // When no checkbox is checked we should disable the "Import" button.
+  // This forces the button to evaluate what state they should be in.
+  GetDialogClientView()->UpdateDialogButtons();
+}
+
+int ImporterView::GetItemCount() {
+  DCHECK(importer_host_.get());
+  return checkbox_items_.size();
+}
+
+string16 ImporterView::GetItemAt(int index) {
+  DCHECK(importer_host_.get());
+
+  if (!importer_list_->source_profiles_loaded())
+    return l10n_util::GetStringUTF16(IDS_IMPORT_LOADING_PROFILES);
+  else
+    return WideToUTF16Hack(importer_list_->GetSourceProfileNameAt(index));
+}
+
+void ImporterView::ItemChanged(views::Combobox* combobox,
+                               int prev_index, int new_index) {
+  DCHECK(combobox);
+  DCHECK(checkbox_items_.size() >=
+      static_cast<size_t>(importer_list_->GetAvailableProfileCount()));
+
+  if (prev_index == new_index)
+    return;
+
+  if (!importer_list_->source_profiles_loaded()) {
+    SetCheckedItemsState(0);
+    return;
+  }
+
+  // Save the current state
+  uint16 prev_items = GetCheckedItems();
+  checkbox_items_[prev_index] = prev_items;
+
+  // Enable/Disable the checkboxes for this Item
+  uint16 new_enabled_items = importer_list_->GetSourceProfileInfoAt(
+      new_index).services_supported;
+  SetCheckedItemsState(new_enabled_items);
+
+  // Set the checked items for this Item
+  uint16 new_items = checkbox_items_[new_index];
+  SetCheckedItems(new_items);
 }
 
 void ImporterView::SetupControl() {
@@ -113,133 +222,6 @@ void ImporterView::SetupControl() {
   layout->StartRow(0, column_set_id);
   layout->AddView(history_checkbox_, 3, 1);
   layout->AddPaddingRow(0, views::kRelatedControlVerticalSpacing);
-}
-
-gfx::Size ImporterView::GetPreferredSize() {
-  return gfx::Size(views::Window::GetLocalizedContentsSize(
-      IDS_IMPORT_DIALOG_WIDTH_CHARS,
-      IDS_IMPORT_DIALOG_HEIGHT_LINES));
-}
-
-void ImporterView::Layout() {
-  GetLayoutManager()->Layout(this);
-}
-
-std::wstring ImporterView::GetDialogButtonLabel(
-    MessageBoxFlags::DialogButton button) const {
-  if (button == MessageBoxFlags::DIALOGBUTTON_OK) {
-    return UTF16ToWide(l10n_util::GetStringUTF16(IDS_IMPORT_COMMIT));
-  } else {
-    return std::wstring();
-  }
-}
-
-bool ImporterView::IsDialogButtonEnabled(
-    MessageBoxFlags::DialogButton button) const {
-  if (button == MessageBoxFlags::DIALOGBUTTON_OK) {
-    return history_checkbox_->checked() ||
-           favorites_checkbox_->checked() ||
-           passwords_checkbox_->checked() ||
-           search_engines_checkbox_->checked();
-  }
-
-  return true;
-}
-
-bool ImporterView::IsModal() const {
-  return true;
-}
-
-std::wstring ImporterView::GetWindowTitle() const {
-  return UTF16ToWide(l10n_util::GetStringUTF16(IDS_IMPORT_SETTINGS_TITLE));
-}
-
-bool ImporterView::Accept() {
-  if (!IsDialogButtonEnabled(MessageBoxFlags::DIALOGBUTTON_OK))
-    return false;
-
-  uint16 items = GetCheckedItems();
-
-  int selected_index = profile_combobox_->selected_item();
-  StartImportingWithUI(GetWidget()->GetNativeView(), items,
-                       importer_host_.get(),
-                       importer_list_->GetSourceProfileInfoAt(selected_index),
-                       profile_, this, false);
-  // We return false here to prevent the window from being closed. We will be
-  // notified back by our implementation of ImportObserver when the import is
-  // complete so that we can close ourselves.
-  return false;
-}
-
-views::View* ImporterView::GetContentsView() {
-  return this;
-}
-
-void ImporterView::ButtonPressed(
-    views::Button* sender, const views::Event& event) {
-  // When no checkbox is checked we should disable the "Import" button.
-  // This forces the button to evaluate what state they should be in.
-  GetDialogClientView()->UpdateDialogButtons();
-}
-
-int ImporterView::GetItemCount() {
-  DCHECK(importer_host_.get());
-  return checkbox_items_.size();
-}
-
-string16 ImporterView::GetItemAt(int index) {
-  DCHECK(importer_host_.get());
-
-  if (!importer_list_->source_profiles_loaded())
-    return l10n_util::GetStringUTF16(IDS_IMPORT_LOADING_PROFILES);
-  else
-    return WideToUTF16Hack(importer_list_->GetSourceProfileNameAt(index));
-}
-
-void ImporterView::ItemChanged(views::Combobox* combobox,
-                               int prev_index, int new_index) {
-  DCHECK(combobox);
-  DCHECK(checkbox_items_.size() >=
-      static_cast<size_t>(importer_list_->GetAvailableProfileCount()));
-
-  if (prev_index == new_index)
-    return;
-
-  if (!importer_list_->source_profiles_loaded()) {
-    SetCheckedItemsState(0);
-    return;
-  }
-
-  // Save the current state
-  uint16 prev_items = GetCheckedItems();
-  checkbox_items_[prev_index] = prev_items;
-
-  // Enable/Disable the checkboxes for this Item
-  uint16 new_enabled_items = importer_list_->GetSourceProfileInfoAt(
-      new_index).services_supported;
-  SetCheckedItemsState(new_enabled_items);
-
-  // Set the checked items for this Item
-  uint16 new_items = checkbox_items_[new_index];
-  SetCheckedItems(new_items);
-}
-
-void ImporterView::SourceProfilesLoaded() {
-  DCHECK(importer_list_->source_profiles_loaded());
-  checkbox_items_.resize(
-      importer_list_->GetAvailableProfileCount(), initial_state_);
-
-  // Reload the profile combobox.
-  profile_combobox_->ModelChanged();
-}
-
-void ImporterView::ImportCanceled() {
-  ImportComplete();
-}
-
-void ImporterView::ImportComplete() {
-  // Now close this window since the import completed or was canceled.
-  window()->Close();
 }
 
 views::Checkbox* ImporterView::InitCheckbox(const std::wstring& text,
@@ -303,4 +285,22 @@ void ImporterView::SetCheckedItems(uint16 items) {
 
   if (search_engines_checkbox_->IsEnabled())
     search_engines_checkbox_->SetChecked(!!(items & importer::SEARCH_ENGINES));
+}
+
+void ImporterView::SourceProfilesLoaded() {
+  DCHECK(importer_list_->source_profiles_loaded());
+  checkbox_items_.resize(
+      importer_list_->GetAvailableProfileCount(), initial_state_);
+
+  // Reload the profile combobox.
+  profile_combobox_->ModelChanged();
+}
+
+void ImporterView::ImportCompleted() {
+  // Now close this window since the import completed or was canceled.
+  window()->Close();
+}
+
+void ImporterView::ImportCanceled() {
+  ImportCompleted();
 }

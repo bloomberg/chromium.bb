@@ -4,6 +4,7 @@
 
 #import "chrome/browser/ui/cocoa/importer/import_settings_dialog.h"
 
+#include "base/compiler_specific.h"
 #include "base/mac/mac_util.h"
 #include "base/sys_string_conversions.h"
 #include "chrome/browser/importer/importer_data_types.h"
@@ -19,9 +20,10 @@ class ImporterListObserverBridge : public ImporterList::Observer {
   explicit ImporterListObserverBridge(
       ImportSettingsDialogController *controller);
 
-  virtual void SourceProfilesLoaded();
-
  private:
+  // ImporterList::Observer:
+  virtual void SourceProfilesLoaded() OVERRIDE;
+
   ImportSettingsDialogController* window_controller_;  // weak, owns us.
 };
 

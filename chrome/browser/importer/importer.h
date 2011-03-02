@@ -473,19 +473,7 @@ class Importer : public base::RefCountedThreadSafe<Importer> {
   DISALLOW_COPY_AND_ASSIGN(Importer);
 };
 
-// An interface an object that calls StartImportingWithUI can call to be
-// notified about the state of the import operation.
-class ImportObserver {
- public:
-  virtual ~ImportObserver() {}
-  // The import operation was canceled by the user.
-  // TODO (4164): this is never invoked, either rip it out or invoke it.
-  virtual void ImportCanceled() = 0;
-
-  // The import operation was completed successfully.
-  virtual void ImportComplete() = 0;
-};
-
+class ImporterObserver;
 
 // Shows a UI for importing and begins importing the specified items from
 // source_profile to target_profile. observer is notified when the process is
@@ -497,7 +485,7 @@ void StartImportingWithUI(gfx::NativeWindow parent_window,
                           ImporterHost* coordinator,
                           const importer::ProfileInfo& source_profile,
                           Profile* target_profile,
-                          ImportObserver* observer,
+                          ImporterObserver* observer,
                           bool first_run);
 
 #endif  // CHROME_BROWSER_IMPORTER_IMPORTER_H_

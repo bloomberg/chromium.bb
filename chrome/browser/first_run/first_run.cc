@@ -51,6 +51,8 @@ FilePath GetDefaultPrefFilePath(bool create_profile_dir,
 
 }  // namespace
 
+// FirstRun -------------------------------------------------------------------
+
 FirstRun::FirstRunState FirstRun::first_run_ = FIRST_RUN_UNKNOWN;
 
 FirstRun::MasterPrefs::MasterPrefs()
@@ -483,47 +485,6 @@ void Upgrade::RelaunchChromeBrowserWithNewCommandLineIfNeeded() {
 }
 #endif  // (defined(OS_WIN) || defined(OS_LINUX)) && !defined(OS_CHROMEOS)
 
-FirstRunBrowserProcess::FirstRunBrowserProcess(const CommandLine& command_line)
-    : BrowserProcessImpl(command_line) {
-}
-
-FirstRunBrowserProcess::~FirstRunBrowserProcess() {}
-
-GoogleURLTracker* FirstRunBrowserProcess::google_url_tracker() {
-  return NULL;
-}
-
-IntranetRedirectDetector* FirstRunBrowserProcess::intranet_redirect_detector() {
-  return NULL;
-}
-
-FirstRunImportObserver::FirstRunImportObserver()
-    : loop_running_(false), import_result_(ResultCodes::NORMAL_EXIT) {
-}
-
-int FirstRunImportObserver::import_result() const {
-  return import_result_;
-}
-
-void FirstRunImportObserver::ImportCanceled() {
-  import_result_ = ResultCodes::IMPORTER_CANCEL;
-  Finish();
-}
-void FirstRunImportObserver::ImportComplete() {
-  import_result_ = ResultCodes::NORMAL_EXIT;
-  Finish();
-}
-
-void FirstRunImportObserver::RunLoop() {
-  loop_running_ = true;
-  MessageLoop::current()->Run();
-}
-
-void FirstRunImportObserver::Finish() {
-  if (loop_running_)
-    MessageLoop::current()->Quit();
-}
-
 // static
 void FirstRun::AutoImport(
     Profile* profile,
@@ -625,6 +586,52 @@ void FirstRun::AutoImport(
 
   process_singleton->Unlock();
   FirstRun::CreateSentinel();
+}
+
+// FirstRunBrowserProcess -----------------------------------------------------
+
+FirstRunBrowserProcess::FirstRunBrowserProcess(const CommandLine& command_line)
+    : BrowserProcessImpl(command_line) {
+}
+
+FirstRunBrowserProcess::~FirstRunBrowserProcess() {}
+
+GoogleURLTracker* FirstRunBrowserProcess::google_url_tracker() {
+  return NULL;
+}
+
+IntranetRedirectDetector* FirstRunBrowserProcess::intranet_redirect_detector() {
+  return NULL;
+}
+
+// FirstRunImportObserver -----------------------------------------------------
+
+FirstRunImportObserver::FirstRunImportObserver()
+    : loop_running_(false), import_result_(ResultCodes::NORMAL_EXIT) {
+}
+
+int FirstRunImportObserver::import_result() const {
+  return import_result_;
+}
+
+void FirstRunImportObserver::RunLoop() {
+  loop_running_ = true;
+  MessageLoop::current()->Run();
+}
+
+void FirstRunImportObserver::Finish() {
+  if (loop_running_)
+    MessageLoop::current()->Quit();
+}
+
+void FirstRunImportObserver::ImportCompleted() {
+  import_result_ = ResultCodes::NORMAL_EXIT;
+  Finish();
+}
+
+void FirstRunImportObserver::ImportCanceled() {
+  import_result_ = ResultCodes::IMPORTER_CANCEL;
+  Finish();
 }
 
 #if defined(OS_POSIX)

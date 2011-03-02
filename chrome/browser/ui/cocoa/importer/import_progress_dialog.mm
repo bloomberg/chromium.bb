@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -10,6 +10,7 @@
 #import "base/scoped_nsobject.h"
 #import "base/sys_string_conversions.h"
 #include "base/utf_string_conversions.h"
+#include "chrome/browser/importer/importer_observer.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -54,7 +55,7 @@ NSString* keyForImportItem(importer::ImportItem item) {
 
 - (id)initWithImporterHost:(ImporterHost*)host
                browserName:(string16)browserName
-                  observer:(ImportObserver*)observer
+                  observer:(ImporterObserver*)observer
               itemsEnabled:(int16)items {
   NSString* nib_path =
       [base::mac::MainAppBundle() pathForResource:@"ImportProgressDialog"
@@ -143,7 +144,7 @@ NSString* keyForImportItem(importer::ImportItem item) {
 - (void)ImportEnded {
   importer_host_->SetObserver(NULL);
   if (observer_)
-    observer_->ImportComplete();
+    observer_->ImportCompleted();
   [self closeDialog];
   [self release];
 
@@ -158,7 +159,7 @@ void StartImportingWithUI(gfx::NativeWindow parent_window,
                           ImporterHost* coordinator,
                           const importer::ProfileInfo& source_profile,
                           Profile* target_profile,
-                          ImportObserver* observer,
+                          ImporterObserver* observer,
                           bool first_run) {
   DCHECK(items != 0);
 

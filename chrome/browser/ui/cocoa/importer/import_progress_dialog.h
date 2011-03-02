@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -12,6 +12,7 @@
 #include "chrome/browser/importer/importer_data_types.h"
 
 class ImporterObserverBridge;
+class ImporterObserver;
 
 // Class that acts as a controller for the dialog that shows progress for an
 // import operation.
@@ -19,7 +20,7 @@ class ImporterObserverBridge;
 @interface ImportProgressDialogController : NSWindowController {
   scoped_ptr<ImporterObserverBridge> import_host_observer_bridge_;
   ImporterHost* importer_host_;  // (weak)
-  ImportObserver* observer_;  // (weak)
+  ImporterObserver* observer_;  // (weak)
 
   // Strings bound to static labels in the UI dialog.
   NSString* explanatory_text_;
