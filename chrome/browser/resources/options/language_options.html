@@ -34,8 +34,10 @@
       <div id="language-options-ui-notification-bar"
            class="language-options-notification">
         <div i18n-content="restart_required"></div>
+<if expr="pp_ifdef('chromeos')">
         <button id="language-options-ui-restart-button"
                 i18n-content="restart_button"></button>
+</if>
       </div>
 <if expr="pp_ifdef('chromeos')">
       <h3 i18n-content="input_method"></h3>
