@@ -4080,6 +4080,12 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_FLAGS_WEBGL_DESCRIPTION" desc="Description of the 'WebGL' lab.">
         Enables canvas elements to use 3D graphics via the WebGL API.
       </message>
+      <message name="IDS_FLAGS_P2P_API_NAME" desc="Name of the 'P2P API' lab.">
+        P2P API
+      </message>
+      <message name="IDS_FLAGS_P2P_API_DESCRIPTION" desc="Description of the 'P2P API' lab.">
+        Enables P2P Pepper API and P2P JavaScript API. The API is under development, and doesn't work yet.
+      </message>
       <message name="IDS_FLAGS_PRINT_PREVIEW_NAME" desc="Name of the 'Print Preview' lab.">
         Print Preview
       </message>

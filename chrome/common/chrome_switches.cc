@@ -577,6 +577,9 @@ const char kEnableRemoting[]                = "enable-remoting";
 const char kEnableResourceContentSettings[] =
     "enable-resource-content-settings";
 
+// Enable Pepper and JavaScript P2P API.
+const char kEnableP2PApi[]                  = "enable-p2papi";
+
 // Enable speculative TCP/IP preconnection.
 const char kEnablePreconnect[]              = "enable-preconnect";
 

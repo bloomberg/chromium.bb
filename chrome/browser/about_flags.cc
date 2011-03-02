@@ -254,6 +254,13 @@ const Experiment kExperiments[] = {
     kOsAll,
     SINGLE_VALUE_TYPE(switches::kEnableHistoryQuickProvider)
   },
+  {
+    "p2papi",
+    IDS_FLAGS_P2P_API_NAME,
+    IDS_FLAGS_P2P_API_DESCRIPTION,
+    kOsAll,
+    SINGLE_VALUE_TYPE(switches::kEnableP2PApi)
+  },
 };
 
 const Experiment* experiments = kExperiments;

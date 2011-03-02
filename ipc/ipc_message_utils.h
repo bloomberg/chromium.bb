@@ -69,6 +69,7 @@ enum IPCMessageStart {
   PepperMsgStart,
   AutoFillMsgStart,
   SafeBrowsingMsgStart,
+  P2PMsgStart,
 };
 
 class DictionaryValue;
