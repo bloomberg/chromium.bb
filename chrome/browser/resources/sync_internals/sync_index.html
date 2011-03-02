@@ -14,7 +14,15 @@ chrome/test/functional/special_tabs.py. -->
 </head>
 <body i18n-values=".style.fontFamily:fontfamily;.style.fontSize:fontsize">
 
-<tabbox>
+<style>
+#sync-page {
+  /* TODO(akalin): Figure out a better way to make the tab box the
+     same height no matter which tab is selected. */
+  min-height: 650px;
+}
+</style>
+
+<tabbox id="sync-page">
   <tabs>
     <tab>About</tab>
     <tab>Data</tab>
