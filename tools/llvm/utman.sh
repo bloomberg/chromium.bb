@@ -38,10 +38,6 @@ source tools/llvm/common-tools.sh
 # NOTE: gcc and llvm have to be synchronized
 #       we have chosen toolchains which both are based on gcc-4.2.1
 
-# SAFE_MODE: When off, gcc-stage1 is not rebuilt when only llvm is modified.
-#            This should be "ok" most of the time.
-readonly UTMAN_SAFE_MODE=${UTMAN_SAFE_MODE:-false}
-
 # For different levels of make parallelism change this in your env
 readonly UTMAN_CONCURRENCY=${UTMAN_CONCURRENCY:-8}
 
@@ -888,11 +884,10 @@ gcc-stage1() {
     SkipBanner "GCC-${target}" "configure"
   fi
 
-  if gcc-stage1-needs-make ${target}; then
-    gcc-stage1-make ${target}
-  else
-    SkipBanner "GCC-${target}" "make"
-  fi
+  # We must always make before we do make install, because
+  # the build must occur in a patched environment.
+  # http://code.google.com/p/nativeclient/issues/detail?id=1128
+  gcc-stage1-make ${target}
 
   gcc-stage1-install ${target}
 }
@@ -978,22 +973,6 @@ gcc-stage1-configure() {
                --with-sysroot="${NEWLIB_INSTALL_DIR}"
 
   spopd
-}
-
-gcc-stage1-needs-make() {
-  local srcdir="${TC_SRC_LLVM_GCC}"
-  local objdir="${TC_BUILD_LLVM_GCC1}-${target}"
-  local target=$1
-
-  # In safe mode, rebuild gcc-stage1 when LLVM is updated.
-  if ${UTMAN_SAFE_MODE}; then
-    speculative-check "llvm" && return 0
-    ts-newer-than "${TC_BUILD_LLVM}" \
-                  "${TC_BUILD_LLVM_GCC1}-${target}" && return 0
-  fi
-
-  ts-modified "$srcdir" "$objdir"
-  return $?
 }
 
 gcc-stage1-make() {
@@ -2778,7 +2757,6 @@ test-bot-base() {
 show-config() {
   Banner "Config Settings:"
   echo "UTMAN_CONCURRENCY: ${UTMAN_CONCURRENCY}"
-  echo "UTMAN_SAFE_MODE:   ${UTMAN_SAFE_MODE}"
   echo "UTMAN_DEBUG:       ${UTMAN_DEBUG}"
 
   Banner "Your Environment:"
