@@ -11,41 +11,75 @@ found in the LICENSE file.
     <link rel="stylesheet" type="text/css" href="static_files/main.css" />
     <title>Remote Access Host List</title>
   </head>
-  <body class="hostlist_body"
+  <body onload="init();">
+    <div class="header">
+    </div>
+    <div id="main-content">
+      <div id="navbar-container">
+        <h1 id="settings-title">Chromoting</h1>
+        <ul id="navbar">
+        </ul>
+      </div>
+      <div id="mainview">
+        <div id="mainview-content">
+          <div class="page">
+            <section>
+              <h3>Host List</h3>
+                <div class="hostlist">
+                  <list id="hostlist-div">
+                    <p class='message'>Initializing...</p>
+                  </list>
+                  <div id="host-options">
+                    <button class="float-left" onclick="populateHostList();">
+                      Reload Host List
+                    </button>
+                    <span class="float-right">
+                      <input type=checkbox id="show_offline"
+                          onClick="updateShowOfflineHosts(this);" />
+                      Show offline hosts
+                    </span>
+                  </div>
+                </div>
+            </section>
+            <section>
+              <h3>Chromoting Token</h3>
+              <div>
 {% ifnotequal chromoting_token None %}
-      onload="populateHostList();"
-{% endifnotequal %}
->
-
-    <h1>Remote Access</h1>
-
-    <div id="auth_status" class="authstatus">
-    <p>Chromoting Token:
-{% ifnotequal chromoting_token None %}
-      OK (<a href="/auth/clear_chromoting_token">clear token</a>)
+                <div>Token Authenticated</div>
+                <button id="subitem"
+                   onclick="window.location='/auth/clear_chromoting_token'">
+                  Clear Token
+                </button>
 {% else %}
-      <a href="/auth/chromoting_auth">Not Authenticated</a>
+                <div class="error-msg">Token Not Authenticated</div>
+                <button id="subitem"
+                   onclick="window.location='/auth/chromoting_auth'">
+                  Authenticate Token
+                </button>
 {% endifnotequal %}
-    <p>Xmpp Token:
+              </div>
+            </section>
+            <section>
+              <h3>Xmpp Token</h3>
+              <div>
 {% ifnotequal xmpp_token None %}
-      OK (<a href="/auth/clear_xmpp_token">clear token</a>)
+                <div>Token Authenticated</div>
+                <button id="subitem"
+                   onclick="window.location='/auth/clear_xmpp_token'">
+                   Clear Token
+                </button>
 {% else %}
-      <a href="/auth/xmpp_auth">Not Authenticated</a>
+                <div class="error-msg">Token Not Authenticated</div>
+                <button id="subitem"
+                   onclick="window.location='/auth/xmpp_auth'">
+                  Authenticate Token
+                </button>
 {% endifnotequal %}
+              </div>
+            </section>
+          </div>
+        </div>
+      </div>
     </div>
-    <hr />
-
-    <p class="reload">
-    <a href="javascript:populateHostList()">Reload host list</a>
-    </p>
-
-    <input type=checkbox name="show_offline" id="show_offline"
-      onClick="updateShowOfflineHosts(this)"/>Show offline hosts
-
-    <div id="hostlist_div" class="hostlist">
-      <p class='message'>Initializing...</p>
-    </div>
-
-    <br />
   </body>
 </html>

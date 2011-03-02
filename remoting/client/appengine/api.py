@@ -29,9 +29,6 @@ class GetXmppTokenHandler(webapp.RequestHandler):
     except auth.NotAuthenticated:
       self.response.out.write('User has not authenticated')
       self.set_status(400)
-      return
-  pass
-
 
 class GetHostListHandler(webapp.RequestHandler):
   """Proxies the host-list handlers on the Chromoting directory."""
@@ -50,8 +47,9 @@ class GetHostListHandler(webapp.RequestHandler):
     except auth.NotAuthenticated:
       self.response.out.write('User has not authenticated')
       self.response.set_status(400)
-      return
-
+    except (gdata.client.Unauthorized, gdata.client.RequestError), inst:
+      self.response.out.write(inst.reason)
+      self.response.set_status(inst.status)
 
 def main():
   application = webapp.WSGIApplication(
