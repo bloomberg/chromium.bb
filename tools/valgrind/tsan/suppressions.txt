@@ -152,13 +152,6 @@
   fun:base::RefCounted<ProtocolHandlerRegistry>::*
 }
 
-{
-  bug_73975
-  ThreadSanitizer:Race
-  ...
-  fun:base::WeakPtrFactory<ThreadWatcher>::*
-}
-
 ############################
 # Benign races
 {
@@ -381,20 +374,6 @@
    ThreadSanitizer:Race
    fun:base::subtle::NoBarrier_Store
    fun:base::ThreadCollisionWarner::Leave
-}
-
-{
-   bug_74029a
-   ThreadSanitzier:Race
-   ...
-   fun:CustomThreadWatcher::OnPongMessage*
-}
-
-{
-   bug_74029b
-   ThreadSanitzier:Race
-   ...
-   fun:ThreadWatcherTest_ThreadResponding_Test::TestBody*
 }
 
 ############################

@@ -8,14 +8,13 @@
 #define CHROME_BROWSER_METRICS_THREAD_WATCHER_H_
 #pragma once
 
-#if 0
-
 #include <map>
 #include <string>
 #include <vector>
 
 #include "base/basictypes.h"
 #include "base/gtest_prod_util.h"
+#include "base/message_loop.h"
 #include "base/metrics/histogram.h"
 #include "base/ref_counted.h"
 #include "base/scoped_ptr.h"
@@ -23,7 +22,6 @@
 #include "base/task.h"
 #include "base/threading/thread.h"
 #include "base/time.h"
-#include "chrome/browser/browser_process_sub_thread.h"
 #include "chrome/browser/browser_thread.h"
 #include "chrome/common/notification_observer.h"
 #include "chrome/common/notification_registrar.h"
@@ -81,6 +79,12 @@ class ThreadWatcher {
   // Returns true if we are montioring the thread.
   bool active() const { return active_; }
 
+  // Returns ping_time_ (used by unit tests).
+  base::TimeTicks ping_time() const { return ping_time_; }
+
+  // Returns ping_sequence_number_ (used by unit tests).
+  uint64 ping_sequence_number() const { return ping_sequence_number_; }
+
  protected:
   // Construct a ThreadWatcher for the given thread_id. sleep_time_ is the
   // wait time between ping messages. unresponsive_time_ is the wait time after
@@ -107,21 +111,21 @@ class ThreadWatcher {
   // OnPongMessage. It also posts a task (OnCheckResponsiveness) to check
   // responsiveness of monitored thread that would be called after waiting
   // unresponsive_time_.
-  // This method is accessible on WATCHDOG thread.
+  // This method is accessible on WatchDogThread.
   virtual void PostPingMessage();
 
   // This method handles a Pong Message from watched thread. It will track the
   // response time (pong time minus ping time) via histograms. It posts a
   // PostPingMessage task that would be called after waiting sleep_time_.  It
   // increments ping_sequence_number_ by 1.
-  // This method is accessible on WATCHDOG thread.
+  // This method is accessible on WatchDogThread.
   virtual void OnPongMessage(uint64 ping_sequence_number);
 
   // This method will determine if the watched thread is responsive or not. If
   // the latest ping_sequence_number_ is not same as the ping_sequence_number
   // that is passed in, then we can assume that watched thread has responded
   // with a pong message.
-  // This method is accessible on WATCHDOG thread.
+  // This method is accessible on WatchDogThread.
   virtual bool OnCheckResponsiveness(uint64 ping_sequence_number);
 
  private:
@@ -188,8 +192,9 @@ class ThreadWatcher {
 
 //------------------------------------------------------------------------------
 // Class with a list of all active thread watchers.  A thread watcher is active
-// if it has been registered, which includes determing the histogram name.
-// Only one instance of this class exists.
+// if it has been registered, which includes determing the histogram name. This
+// class provides utility functions to start and stop watching all browser
+// threads. Only one instance of this class exists.
 class ThreadWatcherList : public NotificationObserver {
  public:
   // A map from BrowserThread to the actual instances.
@@ -198,33 +203,46 @@ class ThreadWatcherList : public NotificationObserver {
   // This singleton holds the global list of registered ThreadWatchers.
   ThreadWatcherList();
   // Destructor deletes all registered ThreadWatcher instances.
-  ~ThreadWatcherList();
+  virtual ~ThreadWatcherList();
 
   // Register() stores a pointer to the given ThreadWatcher in a global map.
   static void Register(ThreadWatcher* watcher);
 
-  // This method posts a task on WATCHDOG thread to RevokeAll tasks and to
+  // This method posts a task on WatchDogThread to start watching all browser
+  // threads.
+  // This method is accessible on UI thread.
+  static void StartWatchingAll();
+
+  // This method posts a task on WatchDogThread to RevokeAll tasks and to
   // deactive thread watching of other threads and tell NotificationService to
   // stop calling Observe.
+  // This method is accessible on UI thread.
   static void StopWatchingAll();
 
   // RemoveAll NotificationTypes that are being observed.
+  // This method is accessible on UI thread.
   static void RemoveNotifications();
 
  private:
   // Allow tests to access our innards for testing purposes.
   FRIEND_TEST(ThreadWatcherTest, Registration);
 
+  // Delete all thread watcher objects and remove them from global map.
+  // This method is accessible on WatchDogThread.
+  void DeleteAll();
+
   // This will ensure that the watching is actively taking place. It will wakeup
   // all thread watchers every 2 seconds. This is the implementation of
   // NotificationObserver. When a matching notification is posted to the
   // notification service, this method is called.
+  // This method is accessible on UI thread.
   virtual void Observe(NotificationType type,
                        const NotificationSource& source,
                        const NotificationDetails& details);
 
   // This will ensure that the watching is actively taking place, and awaken
   // all thread watchers that are registered.
+  // This method is accessible on WatchDogThread.
   virtual void WakeUpAll();
 
   // The Find() method can be used to test to see if a given ThreadWatcher was
@@ -250,23 +268,50 @@ class ThreadWatcherList : public NotificationObserver {
 };
 
 //------------------------------------------------------------------------------
-// Class for WATCHDOG thread and in its Init method, we start watching UI, IO,
+// Class for WatchDogThread and in its Init method, we start watching UI, IO,
 // DB, FILE, CACHED threads.
-class WatchDogThread : public BrowserProcessSubThread {
+class WatchDogThread : public base::Thread {
  public:
+  // Constructor.
   WatchDogThread();
+
+  // Destroys the thread and stops the thread.
   virtual ~WatchDogThread();
+
+  // Callable on any thread.  Returns whether you're currently on a
+  // watchdog_thread_.
+  static bool CurrentlyOnWatchDogThread();
+
+  // These are the same methods in message_loop.h, but are guaranteed to either
+  // get posted to the MessageLoop if it's still alive, or be deleted otherwise.
+  // They return true iff the watchdog thread existed and the task was posted.
+  // Note that even if the task is posted, there's no guarantee that it will
+  // run, since the target thread may already have a Quit message in its queue.
+  static bool PostTask(const tracked_objects::Location& from_here, Task* task);
+  static bool PostDelayedTask(const tracked_objects::Location& from_here,
+                              Task* task,
+                              int64 delay_ms);
 
  protected:
   virtual void Init();
+  virtual void CleanUp();
+  virtual void CleanUpAfterMessageLoopDestruction();
+
+ private:
+  static bool PostTaskHelper(
+      const tracked_objects::Location& from_here,
+      Task* task,
+      int64 delay_ms);
+
+  // This lock protects watchdog_thread_.
+  static base::Lock lock_;
+
+  static WatchDogThread* watchdog_thread_;  // The singleton of this class.
 
   DISALLOW_COPY_AND_ASSIGN(WatchDogThread);
 };
 
-
 DISABLE_RUNNABLE_METHOD_REFCOUNT(ThreadWatcher);
 DISABLE_RUNNABLE_METHOD_REFCOUNT(ThreadWatcherList);
-
-#endif  // 0
 
 #endif  // CHROME_BROWSER_METRICS_THREAD_WATCHER_H_
