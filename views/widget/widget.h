@@ -29,15 +29,12 @@ using ui::ThemeProvider;
 namespace views {
 
 class DefaultThemeProvider;
+class NativeWidget;
 class RootView;
 class TooltipManager;
 class View;
 class WidgetDelegate;
 class Window;
-
-namespace internal {
-class NativeWidget;
-}
 
 ////////////////////////////////////////////////////////////////////////////////
 // Widget class
@@ -127,6 +124,11 @@ class Widget : public internal::NativeWidgetDelegate,
   // for each platform and the type of widget. Passing NULL to
   // |parent| is same as invoking |Init(NULL, bounds)|.
   virtual void InitWithWidget(Widget* parent, const gfx::Rect& bounds);
+
+  // Returns the topmost Widget in a hierarchy. Will return NULL if called
+  // before the underlying Native Widget has been initialized.
+  Widget* GetTopLevelWidget();
+  const Widget* GetTopLevelWidget() const;
 
   // Returns the WidgetDelegate for delegating certain events.
   virtual WidgetDelegate* GetWidgetDelegate();
@@ -280,7 +282,7 @@ class Widget : public internal::NativeWidgetDelegate,
 
   // TODO(beng): Temporarily provided as a way to associate the subclass'
   //             implementation of NativeWidget with this.
-  void set_native_widget(internal::NativeWidget* native_widget) {
+  void set_native_widget(NativeWidget* native_widget) {
     native_widget_ = native_widget;
   }
 
@@ -290,7 +292,7 @@ class Widget : public internal::NativeWidgetDelegate,
   virtual View* GetFocusTraversableParentView();
 
  private:
-  internal::NativeWidget* native_widget_;
+  NativeWidget* native_widget_;
 
   // Non-owned pointer to the Widget's delegate.  May be NULL if no delegate is
   // being used.

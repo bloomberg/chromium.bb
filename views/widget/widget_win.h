@@ -80,7 +80,7 @@ const int WM_NCUAHDRAWFRAME = 0xAF;
 ///////////////////////////////////////////////////////////////////////////////
 class WidgetWin : public ui::WindowImpl,
                   public Widget,
-                  public internal::NativeWidget,
+                  public NativeWidget,
                   public MessageLoopForUI::Observer {
  public:
   WidgetWin();
@@ -228,6 +228,9 @@ class WidgetWin : public ui::WindowImpl,
   }
 
  protected:
+  // Overridden from NativeWidget:
+  virtual Widget* GetWidget();
+
   // Overridden from MessageLoop::Observer:
   void WillProcessMessage(const MSG& msg);
   virtual void DidProcessMessage(const MSG& msg);

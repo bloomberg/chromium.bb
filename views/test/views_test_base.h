@@ -10,6 +10,10 @@
 
 #include "base/message_loop.h"
 
+#if defined(OS_WIN)
+#include <ole2.h>
+#endif
+
 namespace views {
 
 // A base class for views unit test. It creates a message loop necessary

@@ -44,10 +44,14 @@ using ui::OSExchangeData;
 using ui::OSExchangeDataProviderGtk;
 using ui::ActiveWindowWatcherX;
 
+namespace views {
+
 namespace {
 
 // g_object data keys to associate a WidgetGtk object to a GtkWidget.
 const char* kWidgetKey = "__VIEWS_WIDGET__";
+// Links the GtkWidget to its NativeWidget.
+const char* const kNativeWidgetKey = "__VIEWS_NATIVE_WIDGET__";
 // A g_object data key to associate a CompositePainter object to a GtkWidget.
 const char* kCompositePainterKey = "__VIEWS_COMPOSITE_PAINTER__";
 // A g_object data key to associate the flag whether or not the widget
@@ -134,9 +138,25 @@ class CompositePainter {
   DISALLOW_COPY_AND_ASSIGN(CompositePainter);
 };
 
-}  // namespace
+void EnumerateChildWidgetsForNativeWidgets(GtkWidget* child_widget,
+                                           gpointer param) {
+  // Walk child widgets, if necessary.
+  if (GTK_IS_CONTAINER(child_widget)) {
+    gtk_container_foreach(GTK_CONTAINER(child_widget),
+                          EnumerateChildWidgetsForNativeWidgets,
+                          param);
+  }
 
-namespace views {
+  NativeWidget* native_widget =
+      NativeWidget::GetNativeWidgetForNativeView(child_widget);
+  if (native_widget) {
+    NativeWidget::NativeWidgets* widgets =
+        reinterpret_cast<NativeWidget::NativeWidgets*>(param);
+    widgets->insert(native_widget);
+  }
+}
+
+}  // namespace
 
 // During drag and drop GTK sends a drag-leave during a drop. This means we
 // have no way to tell the difference between a normal drag leave and a drop.
@@ -936,6 +956,13 @@ void WidgetGtk::EnableDebugPaint() {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+// WidgetGtk, NativeWidget implementation:
+
+Widget* WidgetGtk::GetWidget() {
+  return this;
+}
+
+////////////////////////////////////////////////////////////////////////////////
 // WidgetGtk, protected:
 
 void WidgetGtk::OnSizeRequest(GtkWidget* widget, GtkRequisition* requisition) {
@@ -1480,7 +1507,8 @@ void WidgetGtk::CreateGtkWidget(GtkWidget* parent, const gfx::Rect& bounds) {
     gtk_widget_show(window_contents_);
     g_object_set_data(G_OBJECT(window_contents_), kWidgetKey,
                       static_cast<Widget*>(this));
-
+    g_object_set_data(G_OBJECT(window_contents_), kNativeWidgetKey,
+                       static_cast<Widget*>(this));
     if (transparent_)
       ConfigureWidgetForTransparentBackground(NULL);
 
@@ -1495,6 +1523,7 @@ void WidgetGtk::CreateGtkWidget(GtkWidget* parent, const gfx::Rect& bounds) {
   // Setting the WidgetKey property to widget_, which is used by
   // GetWidgetFromNativeWindow.
   SetNativeWindowProperty(kWidgetKey, this);
+  SetNativeWindowProperty(kNativeWidgetKey, this);
 }
 
 void WidgetGtk::ConfigureWidgetForTransparentBackground(GtkWidget* parent) {
@@ -1662,6 +1691,61 @@ void Widget::NotifyLocaleChanged() {
       widget->LocaleChanged();
   }
   g_list_free(window_list);
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// NativeWidget, public:
+
+// static
+NativeWidget* NativeWidget::GetNativeWidgetForNativeView(
+    gfx::NativeView native_view) {
+  if (!native_view)
+    return NULL;
+  return reinterpret_cast<WidgetGtk*>(
+      g_object_get_data(G_OBJECT(native_view), kNativeWidgetKey));
+}
+
+// static
+NativeWidget* NativeWidget::GetNativeWidgetForNativeWindow(
+    gfx::NativeWindow native_window) {
+  if (!native_window)
+    return NULL;
+  return reinterpret_cast<WidgetGtk*>(
+      g_object_get_data(G_OBJECT(native_window), kNativeWidgetKey));
+}
+
+// static
+NativeWidget* NativeWidget::GetTopLevelNativeWidget(
+    gfx::NativeView native_view) {
+  if (!native_view)
+    return NULL;
+
+  NativeWidget* widget = NULL;
+
+  GtkWidget* parent_gtkwidget = native_view;
+  NativeWidget* parent_widget;
+  do {
+    parent_widget = GetNativeWidgetForNativeView(parent_gtkwidget);
+    if (parent_widget)
+      widget = parent_widget;
+    parent_gtkwidget = gtk_widget_get_parent(parent_gtkwidget);
+  } while (parent_gtkwidget);
+
+  return widget;
+}
+
+// static
+void NativeWidget::GetAllNativeWidgets(gfx::NativeView native_view,
+                                       NativeWidgets* children) {
+  if (!native_view)
+    return;
+
+  NativeWidget* native_widget = GetNativeWidgetForNativeView(native_view);
+  if (native_widget)
+    children->insert(native_widget);
+  gtk_container_foreach(GTK_CONTAINER(native_view),
+                        EnumerateChildWidgetsForNativeWidgets,
+                        reinterpret_cast<gpointer>(children));
 }
 
 }  // namespace views

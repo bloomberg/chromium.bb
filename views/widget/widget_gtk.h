@@ -40,7 +40,7 @@ class NativeWidgetDelegate;
 
 // Widget implementation for GTK.
 class WidgetGtk : public Widget,
-                  public internal::NativeWidget,
+                  public NativeWidget,
                   public ui::ActiveWindowWatcherX::Observer {
  public:
   // Type of widget.
@@ -207,6 +207,9 @@ class WidgetGtk : public Widget,
   static void EnableDebugPaint();
 
  protected:
+  // Overridden from NativeWidget:
+  virtual Widget* GetWidget();
+
   // If widget contains another widget, translates event coordinates to the
   // contained widget's coordinates, else returns original event coordinates.
   template<class Event> bool GetContainedWidgetEventCoordinates(Event* event,
