@@ -50,6 +50,8 @@ without changes to the corresponding grd file. paaaae -->
                file="shared/js/cr/ui/context_menu_button.js" type="BINDATA" />
       <include name="IDR_SHARED_JS_CR_UI_CONTEXT_MENU_HANDLER"
                file="shared/js/cr/ui/context_menu_handler.js" type="BINDATA" />
+      <include name="IDR_SHARED_JS_CR_UI_FOCUS_OUTLINE_MANAGER"
+               file="shared/js/cr/ui/focus_outline_manager.js" type="BINDATA" />
       <include name="IDR_SHARED_JS_CR_UI_LIST"
                file="shared/js/cr/ui/list.js" type="BINDATA" />
       <include name="IDR_SHARED_JS_CR_UI_LIST_ITEM"

@@ -110,7 +110,51 @@ cr.define('cr.ui', function() {
   var Tabs = cr.ui.define('tabs');
   Tabs.prototype = {
     __proto__: HTMLElement.prototype,
-    decorate: decorateChildren
+    decorate: function() {
+      decorateChildren.call(this);
+
+      // Make the Tabs element fousable.
+      this.tabIndex = 0;
+      this.addEventListener('keydown', this.handleKeyDown_.bind(this));
+
+      // Get (and initializes a focus outline manager.
+      this.focusOutlineManager_ =
+          cr.ui.FocusOutlineManager.forDocument(this.ownerDocument);
+    },
+
+    /**
+     * Handle keydown to change the selected tab when the user presses the
+     * arrow keys.
+     * @param {Event} e The keyboard event.
+     * @private
+     */
+    handleKeyDown_: function(e) {
+      var delta = 0;
+      switch (e.keyIdentifier) {
+        case 'Left':
+        case 'Up':
+          delta = -1;
+          break;
+        case 'Right':
+        case 'Down':
+          delta = 1;
+          break;
+      }
+
+      if (!delta)
+        return;
+
+      var cs = this.ownerDocument.defaultView.getComputedStyle(this);
+      if (cs.direction == 'rtl')
+        delta *= -1;
+
+      var count = this.children.length;
+      var index = this.parentElement.selectedIndex;
+      this.parentElement.selectedIndex = (index + delta + count) % count;
+
+      // Show focus outline since we used the keyboard.
+      this.focusOutlineManager_.visible = true;
+    }
   };
 
   /**
