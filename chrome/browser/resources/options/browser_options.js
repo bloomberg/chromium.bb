@@ -34,6 +34,9 @@ cr.define('options', function() {
       'managed': false
     },
 
+    // The cached value of the instant.confirm_dialog_shown preference.
+    instantConfirmDialogShown_: false,
+
     /**
      * Initialize BrowserOptions page.
      */
@@ -53,17 +56,20 @@ cr.define('options', function() {
         chrome.send('coreOptionsUserMetricsAction',
             ['Options_ManageSearchEngines']);
       };
-      $('instantEnableCheckbox').onclick = function(event) {
-        var alreadyConfirmed = $('instantDialogShown').checked;
+      $('defaultSearchEngine').onchange = this.setDefaultSearchEngine;
 
-        if (this.checked && !alreadyConfirmed) {
+      var self = this;
+      $('instantEnableCheckbox').onclick = function(event) {
+        if (this.checked && !self.instantConfirmDialogShown_) {
           // Leave disabled for now. The PrefCheckbox handler already set it to
           // true so undo that.
           Preferences.setBooleanPref(this.pref, false, this.metric);
           OptionsPage.navigateToPage('instantConfirm');
         }
       };
-      $('defaultSearchEngine').onchange = this.setDefaultSearchEngine;
+
+      Preferences.getInstance().addEventListener('instant.confirm_dialog_shown',
+          this.onInstantConfirmDialogShownChanged_.bind(this));
 
       var homepageField = $('homepageURL');
       $('homepageUseNTPButton').onchange =
@@ -109,6 +115,16 @@ cr.define('options', function() {
 
         this.updateCustomStartupPageControlStates_();
       }
+    },
+
+    /**
+     * Called when the value of the instant.confirm_dialog_shown preference
+     * changes. Cache this value.
+     * @param {Event} event Change event.
+     * @private
+     */
+    onInstantConfirmDialogShownChanged_: function(event) {
+      this.instantConfirmDialogShown_ = event.value['value'];
     },
 
     /**

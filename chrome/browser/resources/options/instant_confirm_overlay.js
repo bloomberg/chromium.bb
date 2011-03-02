@@ -25,9 +25,7 @@ cr.define('options', function() {
       };
       $('instantConfirmOk').onclick = function() {
         OptionsPage.closeOverlay();
-        var instantDialogShown = $('instantDialogShown');
-        Preferences.setBooleanPref(instantDialogShown.pref, true,
-                                   instantDialogShown.metric);
+        Preferences.setBooleanPref('instant.confirm_dialog_shown', true);
         var instantEnabledCheckbox = $('instantEnableCheckbox');
         Preferences.setBooleanPref(instantEnableCheckbox.pref, true,
                                    instantEnableCheckbox.metric);
