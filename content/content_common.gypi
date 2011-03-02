@@ -16,6 +16,7 @@
       'sources': [
         "common/p2p_messages.cc",
         "common/p2p_messages.h",
+        "common/p2p_sockets.cc",
         "common/p2p_sockets.h",
       ],
       'conditions': [
