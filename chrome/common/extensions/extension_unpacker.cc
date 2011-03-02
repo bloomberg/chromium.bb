@@ -286,13 +286,14 @@ bool ExtensionUnpacker::ReadMessageCatalog(const FilePath& message_path) {
   scoped_ptr<DictionaryValue> root(
       static_cast<DictionaryValue*>(serializer.Deserialize(NULL, &error)));
   if (!root.get()) {
-    std::string messages_file = WideToASCII(message_path.ToWStringHack());
+    string16 messages_file = message_path.LossyDisplayName();
     if (error.empty()) {
       // If file is missing, Deserialize will fail with empty error.
       SetError(base::StringPrintf("%s %s", errors::kLocalesMessagesFileMissing,
-                                  messages_file.c_str()));
+                                  UTF16ToUTF8(messages_file).c_str()));
     } else {
-      SetError(base::StringPrintf("%s: %s", messages_file.c_str(),
+      SetError(base::StringPrintf("%s: %s",
+                                  UTF16ToUTF8(messages_file).c_str(),
                                   error.c_str()));
     }
     return false;
@@ -300,11 +301,17 @@ bool ExtensionUnpacker::ReadMessageCatalog(const FilePath& message_path) {
 
   FilePath relative_path;
   // message_path was created from temp_install_dir. This should never fail.
-  if (!temp_install_dir_.AppendRelativePath(message_path, &relative_path))
+  if (!temp_install_dir_.AppendRelativePath(message_path, &relative_path)) {
     NOTREACHED();
+    return false;
+  }
 
-  parsed_catalogs_->Set(WideToUTF8(relative_path.DirName().ToWStringHack()),
-                        root.release());
+  std::string dir_name = relative_path.DirName().MaybeAsASCII();
+  if (dir_name.empty()) {
+    NOTREACHED();
+    return false;
+  }
+  parsed_catalogs_->Set(dir_name, root.release());
 
   return true;
 }

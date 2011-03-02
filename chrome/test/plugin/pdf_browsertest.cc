@@ -271,7 +271,8 @@ IN_PROC_BROWSER_TEST_F(PDFBrowserTest, FLAKY_SLOW_Loading) {
   for (FilePath file_path = file_enumerator.Next();
        !file_path.empty();
        file_path = file_enumerator.Next()) {
-    std::string filename = WideToASCII(file_path.BaseName().ToWStringHack());
+    std::string filename = file_path.BaseName().MaybeAsASCII();
+    ASSERT_FALSE(filename.empty());
 
 #if defined(OS_MACOSX) || defined(OS_LINUX)
     if (filename == "sample.pdf")

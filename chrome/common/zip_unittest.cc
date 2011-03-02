@@ -71,7 +71,7 @@ class ZipTest : public PlatformTest {
     size_t expected_count = 0;
     for (std::set<FilePath>::iterator iter = zip_contents_.begin();
          iter != zip_contents_.end(); ++iter) {
-      if (expect_hidden_files || iter->BaseName().ToWStringHack()[0] != L'.')
+      if (expect_hidden_files || iter->BaseName().value()[0] != '.')
         ++expected_count;
     }
 

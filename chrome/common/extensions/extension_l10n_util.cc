@@ -199,8 +199,11 @@ bool GetValidLocales(const FilePath& locale_path,
                                     file_util::FileEnumerator::DIRECTORIES);
   FilePath locale_folder;
   while (!(locale_folder = locales.Next()).empty()) {
-    std::string locale_name =
-        WideToASCII(locale_folder.BaseName().ToWStringHack());
+    std::string locale_name = locale_folder.BaseName().MaybeAsASCII();
+    if (locale_name.empty()) {
+      NOTREACHED();
+      continue;  // Not ASCII.
+    }
     if (!AddLocale(chrome_locales,
                    locale_folder,
                    locale_name,

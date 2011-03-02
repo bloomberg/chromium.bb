@@ -715,9 +715,11 @@ void DatabaseTracker::ClearLocalState(const FilePath& profile_path) {
   for (FilePath file_path = file_enumerator.Next(); !file_path.empty();
        file_path = file_enumerator.Next()) {
     if (file_path.BaseName() != FilePath(kTrackerDatabaseFileName)) {
-      if (!StartsWith(file_path.BaseName().ToWStringHack(),
-                      ASCIIToWide(kExtensionOriginIdentifierPrefix), true))
+      std::string basename = file_path.BaseName().MaybeAsASCII();
+      if (!basename.empty() &&
+          !StartsWithASCII(basename, kExtensionOriginIdentifierPrefix, true)) {
         file_util::Delete(file_path, true);
+      }
     }
   }
 }

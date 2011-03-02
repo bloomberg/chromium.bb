@@ -83,8 +83,8 @@ void PackExtensionJob::ReportFailureOnClientThread(const std::string& error) {
 // static
 string16 PackExtensionJob::StandardSuccessMessage(const FilePath& crx_file,
                                                   const FilePath& key_file) {
-  string16 crx_file_string = WideToUTF16(crx_file.ToWStringHack());
-  string16 key_file_string = WideToUTF16(key_file.ToWStringHack());
+  string16 crx_file_string = crx_file.LossyDisplayName();
+  string16 key_file_string = key_file.LossyDisplayName();
   if (key_file_string.empty()) {
     return l10n_util::GetStringFUTF16(
         IDS_EXTENSION_PACK_DIALOG_SUCCESS_BODY_UPDATE,

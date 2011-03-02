@@ -211,7 +211,8 @@ DownloadItemView::DownloadItemView(DownloadItem* download,
   dangerous_mode_body_image_set_ = dangerous_mode_body_image_set;
 
   LoadIcon();
-  tooltip_text_ = download_->GetFileNameToReportUser().ToWStringHack();
+  tooltip_text_ =
+      UTF16ToWide(download_->GetFileNameToReportUser().LossyDisplayName());
 
   font_ = ResourceBundle::GetSharedInstance().GetFont(ResourceBundle::BaseFont);
   box_height_ = std::max<int>(2 * kVerticalPadding + font_.GetHeight() +
@@ -748,7 +749,8 @@ void DownloadItemView::ClearDangerousMode() {
 
   // We need to load the icon now that the download_ has the real path.
   LoadIcon();
-  tooltip_text_ = download_->GetFileNameToReportUser().ToWStringHack();
+  tooltip_text_ =
+      UTF16ToWide(download_->GetFileNameToReportUser().LossyDisplayName());
 
   // Force the shelf to layout again as our size has changed.
   parent_->Layout();
@@ -1079,7 +1081,7 @@ void DownloadItemView::UpdateAccessibleName() {
     new_name = WideToUTF16Hack(dangerous_download_label_->GetText());
   } else {
     new_name = WideToUTF16Hack(status_text_) + char16(' ') +
-        WideToUTF16Hack(download_->GetFileNameToReportUser().ToWStringHack());
+        download_->GetFileNameToReportUser().LossyDisplayName();
   }
 
   // If the name has changed, call SetAccessibleName and notify
