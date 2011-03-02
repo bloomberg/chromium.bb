@@ -185,10 +185,6 @@ bool BrowserTabStripController::IsValidIndex(int index) const {
   return model_->ContainsIndex(index);
 }
 
-int BrowserTabStripController::GetSelectedIndex() const {
-  return model_->selected_index();
-}
-
 bool BrowserTabStripController::IsTabSelected(int model_index) const {
   return model_->selected_index() == model_index;
 }

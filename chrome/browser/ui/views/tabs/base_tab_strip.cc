@@ -133,10 +133,6 @@ bool BaseTabStrip::IsAnimating() const {
   return bounds_animator_.IsAnimating();
 }
 
-BaseTab* BaseTabStrip::GetSelectedBaseTab() const {
-  return GetBaseTabAtModelIndex(controller_->GetSelectedIndex());
-}
-
 void BaseTabStrip::AddTabAt(int model_index,
                             bool foreground,
                             const TabRendererData& data) {

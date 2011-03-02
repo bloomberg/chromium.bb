@@ -26,9 +26,6 @@ class TabStripController {
   // Returns true if |index| is a valid model index.
   virtual bool IsValidIndex(int index) const = 0;
 
-  // Returns the selected index, in terms of the model.
-  virtual int GetSelectedIndex() const = 0;
-
   // Returns true if the selected index is selected.
   virtual bool IsTabSelected(int index) const = 0;
 

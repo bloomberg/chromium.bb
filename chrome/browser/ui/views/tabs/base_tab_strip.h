@@ -53,9 +53,6 @@ class BaseTabStrip : public views::View,
   // Stops all tab higlighting.
   virtual void StopAllHighlighting() = 0;
 
-  // Returns the selected tab.
-  virtual BaseTab* GetSelectedBaseTab() const;
-
   // Retrieves the ideal bounds for the Tab at the specified index.
   const gfx::Rect& ideal_bounds(int tab_data_index) {
     return tab_data_[tab_data_index].ideal_bounds;
