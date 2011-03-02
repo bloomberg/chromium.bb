@@ -22,6 +22,7 @@
 class IOThread;
 class GoogleURLTracker;
 class PrefService;
+class WatchDogThread;
 
 namespace base {
 class WaitableEvent;
@@ -57,6 +58,8 @@ class TestingBrowserProcess : public BrowserProcess {
   virtual base::Thread* db_thread();
 
   virtual base::Thread* cache_thread();
+
+  virtual WatchDogThread* watchdog_thread();
 
   virtual ProfileManager* profile_manager();
 
