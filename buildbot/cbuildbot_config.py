@@ -219,10 +219,3 @@ config['x86-pineview-full'].update(full)
 config['x86-pineview-full'].update({
   'board' : 'x86-pineview',
 })
-
-# TODO(dgarrett) delete when buildbot updated to use new names
-config['x86_agz_bin'] = config['x86-agz-bin']
-config['x86_dogfood_bin'] = config['x86-dogfood-bin']
-config['x86_pineview_bin'] = config['x86-pineview-bin']
-config['arm_tegra2_bin'] = config['arm-tegra2-bin']
-config['arm_generic_bin'] = config['arm-generic-bin']
