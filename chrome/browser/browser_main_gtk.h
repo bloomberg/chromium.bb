@@ -19,6 +19,7 @@ class BrowserMainPartsGtk : public BrowserMainPartsPosix {
   virtual void PreEarlyInitialization() OVERRIDE;
 
  private:
+  void DetectRunningAsRoot();
   void SetupSandbox();
 };
 

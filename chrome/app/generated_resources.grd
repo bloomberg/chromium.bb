@@ -8076,6 +8076,12 @@ This web page was killed, either because Chrome ran out of memory, or you chose 
       <message name="IDS_COULDNT_OPEN_PROFILE_ERROR" desc="Error displayed on startup when the profile can not be opened correctly due to problems reading or writing files in it">
         Your profile could not be opened correctly.\n\nSome features may be unavailable.  Please check that the profile exists and you have permission to read and write its contents.
       </message>
+      <message name="IDS_REFUSE_TO_RUN_AS_ROOT" desc="Short error message in displayed in an error dialog on startup if the user tries to run chrome as root">
+        <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> can not be run as root.
+      </message>
+      <message name="IDS_REFUSE_TO_RUN_AS_ROOT_2" desc="Detailed message in the error dialog when the user tries to start chrome as root">
+        Please start <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> as a normal user. If you have previously run <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> as root, you will need to change the ownership of your profile directory.
+      </message>
 
       <!-- Can't write to user data directory dialog -->
       <message name="IDS_CANT_WRITE_USER_DIRECTORY_TITLE" desc="Title of dialog that is displayed when we can't create a directory for this user.">
