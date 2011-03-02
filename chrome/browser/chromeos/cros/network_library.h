@@ -16,6 +16,7 @@
 #include "base/string16.h"
 #include "base/timer.h"
 #include "third_party/cros/chromeos_network.h"
+#include "third_party/cros/chromeos_network_deprecated.h"
 
 class DictionaryValue;
 class Value;
@@ -39,7 +40,6 @@ static const int kCellularDataVeryLowBytes = 50 * 1024 * 1024;
 class NetworkDevice {
  public:
   explicit NetworkDevice(const std::string& device_path);
-  void ParseInfo(const DictionaryValue* info);
 
   // Device info.
   const std::string& device_path() const { return device_path_; }
@@ -59,7 +59,10 @@ class NetworkDevice {
   const std::string& last_update() const { return last_update_; }
   const unsigned int prl_version() const { return PRL_version_; }
 
- protected:
+ private:
+  bool ParseValue(int index, const Value* value);
+  void ParseInfo(const DictionaryValue* info);
+
   // General device info.
   std::string device_path_;
   std::string name_;
@@ -79,6 +82,9 @@ class NetworkDevice {
   std::string hardware_revision_;
   std::string last_update_;
   int PRL_version_;
+
+  friend class NetworkLibraryImpl;
+  DISALLOW_COPY_AND_ASSIGN(NetworkDevice);
 };
 
 // Contains data common to all network service types.
@@ -105,7 +111,6 @@ class Network {
   }
   ConnectionError error() const { return error_; }
   ConnectionState state() const { return state_; }
-  ConnectionState prev_state() const { return prev_state_; }
   // Is this network connectable. Some networks are not yet ready to be
   // connected. For example, an 8021X network without certificates.
   bool connectable() const { return connectable_; }
@@ -113,9 +118,14 @@ class Network {
   // network traffic is being routed? A network can be connected,
   // but not be carrying traffic.
   bool is_active() const { return is_active_; }
+  bool favorite() const { return favorite_; }
+  bool auto_connect() const { return auto_connect_; }
+  ConnectivityState connectivity_state() const { return connectivity_state_; }
 
-  // Parse name/value pairs from libcros.
-  virtual void ParseInfo(const DictionaryValue* info);
+  // We don't have a setter for |favorite_| because to unfavorite a network is
+  // equivalent to forget a network, so we call forget network on cros for
+  // that.  See ForgetWifiNetwork().
+  void set_auto_connect(bool auto_connect) { auto_connect_ = auto_connect; }
 
   // Return a string representation of the state code.
   std::string GetStateString() const;
@@ -129,9 +139,15 @@ class Network {
         error_(ERROR_UNKNOWN),
         connectable_(true),
         is_active_(false),
+        favorite_(false),
+        auto_connect_(false),
+        connectivity_state_(CONN_STATE_UNKNOWN),
         service_path_(service_path),
-        type_(type),
-        prev_state_(STATE_UNKNOWN) {}
+        type_(type) {}
+
+  // Parse name/value pairs from libcros.
+  virtual bool ParseValue(int index, const Value* value);
+  void ParseInfo(const DictionaryValue* info);
 
   std::string device_path_;
   std::string name_;
@@ -141,17 +157,25 @@ class Network {
   ConnectionError error_;
   bool connectable_;
   bool is_active_;
+  bool favorite_;
+  bool auto_connect_;
+  ConnectivityState connectivity_state_;
 
  private:
-  void set_connecting(bool connecting) { state_ = (connecting ?
-      STATE_ASSOCIATION : STATE_IDLE); }
-  void set_connected(bool connected) { state_ = (connected ?
-      STATE_READY : STATE_IDLE); }
+  void set_name(const std::string& name) { name_ = name; }
+  void set_connecting(bool connecting) {
+    state_ = (connecting ? STATE_ASSOCIATION : STATE_IDLE);
+  }
+  void set_connected(bool connected) {
+    state_ = (connected ? STATE_READY : STATE_IDLE);
+  }
   void set_state(ConnectionState state) { state_ = state; }
-  void set_prev_state(ConnectionState state) { prev_state_ = state; }
   void set_connectable(bool connectable) { connectable_ = connectable; }
   void set_active(bool is_active) { is_active_ = is_active; }
   void set_error(ConnectionError error) { error_ = error; }
+  void set_connectivity_state(ConnectivityState connectivity_state) {
+    connectivity_state_ = connectivity_state;
+  }
 
   // Initialize the IP address field
   void InitIPAddress();
@@ -160,10 +184,9 @@ class Network {
   std::string service_path_;
   ConnectionType type_;
 
-  // Local state.
-  ConnectionState prev_state_;
-
   friend class NetworkLibraryImpl;
+  // ChangeAutoConnectSaveTest accesses |favorite_|.
+  FRIEND_TEST_ALL_PREFIXES(WifiConfigViewTest, ChangeAutoConnectSaveTest);
 };
 
 // Class for networks of TYPE_ETHERNET.
@@ -177,47 +200,18 @@ class EthernetNetwork : public Network {
 // Base class for networks of TYPE_WIFI or TYPE_CELLULAR.
 class WirelessNetwork : public Network {
  public:
-  // WirelessNetwork are sorted by name.
-  bool operator< (const WirelessNetwork& other) const {
-    return name_ < other.name();
-  }
-
-  // We frequently want to compare networks by service path.
-  struct ServicePathEq {
-    explicit ServicePathEq(const std::string& path_in) : path(path_in) {}
-    bool operator()(const WirelessNetwork* a) {
-      return a->service_path().compare(path) == 0;
-    }
-    const std::string& path;
-  };
-
   int strength() const { return strength_; }
-  bool auto_connect() const { return auto_connect_; }
-  bool favorite() const { return favorite_; }
-
-  void set_auto_connect(bool auto_connect) { auto_connect_ = auto_connect; }
-  // We don't have a setter for |favorite_| because to unfavorite a network is
-  // equivalent to forget a network, so we call forget network on cros for
-  // that.  See ForgetWifiNetwork().
-
-  // Network overrides.
-  virtual void ParseInfo(const DictionaryValue* info);
 
  protected:
   WirelessNetwork(const std::string& service_path, ConnectionType type)
       : Network(service_path, type),
-        strength_(0),
-        auto_connect_(false),
-        favorite_(false) {}
+        strength_(0) {}
   int strength_;
-  bool auto_connect_;
-  bool favorite_;
+
+  // Network overrides.
+  virtual bool ParseValue(int index, const Value* value);
 
  private:
-  // ChangeAutoConnectSaveTest accesses |favorite_|.
-  FRIEND_TEST_ALL_PREFIXES(WifiConfigViewTest, ChangeAutoConnectSaveTest);
-
-  void set_name(const std::string& name) { name_ = name; }
   void set_strength(int strength) { strength_ = strength; }
 
   friend class NetworkLibraryImpl;
@@ -242,7 +236,6 @@ class CellularNetwork : public WirelessNetwork {
         activation_state_(ACTIVATION_STATE_UNKNOWN),
         network_technology_(NETWORK_TECHNOLOGY_UNKNOWN),
         roaming_state_(ROAMING_STATE_UNKNOWN),
-        connectivity_state_(CONN_STATE_UNKNOWN),
         data_left_(DATA_UNKNOWN) {
   }
   // Starts device activation process. Returns false if the device state does
@@ -253,9 +246,6 @@ class CellularNetwork : public WirelessNetwork {
     return network_technology_;
   }
   const NetworkRoamingState roaming_state() const { return roaming_state_; }
-  const ConnectivityState connectivity_state() const {
-    return connectivity_state_;
-  }
   bool restricted_pool() const {
     return connectivity_state() == CONN_STATE_RESTRICTED;
   }
@@ -266,6 +256,7 @@ class CellularNetwork : public WirelessNetwork {
   const std::string& operator_name() const { return operator_name_; }
   const std::string& operator_code() const { return operator_code_; }
   const std::string& payment_url() const { return payment_url_; }
+  const std::string& usage_url() const { return usage_url_; }
   DataLeft data_left() const { return data_left_; }
 
   // Misc.
@@ -274,9 +265,6 @@ class CellularNetwork : public WirelessNetwork {
         network_technology_ != NETWORK_TECHNOLOGY_1XRTT &&
         network_technology_ != NETWORK_TECHNOLOGY_UNKNOWN;
   }
-
-  // WirelessNetwork overrides.
-  virtual void ParseInfo(const DictionaryValue* info);
 
   // Return a string representation of network technology.
   std::string GetNetworkTechnologyString() const;
@@ -291,15 +279,17 @@ class CellularNetwork : public WirelessNetwork {
   static std::string ActivationStateToString(ActivationState activation_state);
 
  protected:
+  // WirelessNetwork overrides.
+  virtual bool ParseValue(int index, const Value* value);
 
   ActivationState activation_state_;
   NetworkTechnology network_technology_;
   NetworkRoamingState roaming_state_;
-  ConnectivityState connectivity_state_;
   // Carrier Info
   std::string operator_name_;
   std::string operator_code_;
   std::string payment_url_;
+  std::string usage_url_;
   // Cached values
   DataLeft data_left_;  // Updated when data plans are updated.
 
@@ -308,13 +298,11 @@ class CellularNetwork : public WirelessNetwork {
     activation_state_ = state;
   }
   void set_payment_url(const std::string& url) { payment_url_ = url; }
+  void set_usage_url(const std::string& url) { usage_url_ = url; }
   void set_network_technology(NetworkTechnology technology) {
     network_technology_ = technology;
   }
   void set_roaming_state(NetworkRoamingState state) { roaming_state_ = state; }
-  void set_connectivity_state(ConnectivityState connectivity_state) {
-    connectivity_state_ = connectivity_state;
-  }
   void set_data_left(DataLeft data_left) { data_left_ = data_left; }
 
   friend class NetworkLibraryImpl;
@@ -348,9 +336,6 @@ class WifiNetwork : public WirelessNetwork {
     cert_path_ = cert_path;
   }
 
-  // WirelessNetwork overrides.
-  virtual void ParseInfo(const DictionaryValue* info);
-
   // Return a string representation of the encryption code.
   // This not translated and should be only used for debugging purposes.
   std::string GetEncryptionString();
@@ -362,6 +347,9 @@ class WifiNetwork : public WirelessNetwork {
   bool IsCertificateLoaded() const;
 
  protected:
+  // WirelessNetwork overrides.
+  virtual bool ParseValue(int index, const Value* value);
+
   ConnectionSecurity encryption_;
   std::string passphrase_;
   bool passphrase_required_;

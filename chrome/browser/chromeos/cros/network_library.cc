@@ -59,8 +59,15 @@
 //
 // TODO(stevenjb): Document cellular data plan handlers.
 //
-// TODO(stevenjb): Document UpdateNetworkStatus.
+// AddNetworkObserver: Adds an observer for a specific network.
+// NetworkObserverList: A monitor and list of observers of a network.
+// network_monitor_: a handle to the libcros network Service handler.
+// UpdateNetworkStatus: This handles changes to a monitored service, typically
+//     changes to transient states like Strength. (Note: also updates State).
+//
 ////////////////////////////////////////////////////////////////////////////////
+
+namespace chromeos {
 
 // Local constants.
 namespace {
@@ -99,6 +106,7 @@ const char* kRoamingStateProperty = "Cellular.RoamingState";
 const char* kOperatorNameProperty = "Cellular.OperatorName";
 const char* kOperatorCodeProperty = "Cellular.OperatorCode";
 const char* kPaymentURLProperty = "Cellular.OlpUrl";
+const char* kUsageURLProperty = "Cellular.UsageUrl";
 const char* kFavoriteProperty = "Favorite";
 const char* kConnectableProperty = "Connectable";
 const char* kAutoConnectProperty = "AutoConnect";
@@ -194,30 +202,165 @@ const char* kErrorNeedHomeNetwork = "need-home-network";
 const char* kErrorOtaspFailed = "otasp-failed";
 const char* kErrorAaaFailed = "aaa-failed";
 
-}  // namespace
+////////////////////////////////////////////////////////////////////////////
 
-namespace chromeos {
+// Helper class to cache maps of strings to enums.
+template <typename Type>
+class StringToEnum {
+ public:
+  struct Pair {
+    const char* key;
+    const Type value;
+  };
 
-// Local functions.
-namespace {
+  explicit StringToEnum(const Pair* list, size_t num_entries, Type unknown)
+      : unknown_value_(unknown) {
+    for (size_t i = 0; i < num_entries; ++i, ++list)
+      enum_map_[list->key] = list->value;
+  }
+
+  Type Get(const std::string& type) const {
+    EnumMapConstIter iter = enum_map_.find(type);
+    if (iter != enum_map_.end())
+      return iter->second;
+    return unknown_value_;
+  }
+
+ private:
+  typedef typename std::map<std::string, Type> EnumMap;
+  typedef typename std::map<std::string, Type>::const_iterator EnumMapConstIter;
+  EnumMap enum_map_;
+  Type unknown_value_;
+  DISALLOW_COPY_AND_ASSIGN(StringToEnum);
+};
+
+////////////////////////////////////////////////////////////////////////////
+
+enum PropertyIndex {
+  PROPERTY_INDEX_ACTIVATION_STATE,
+  PROPERTY_INDEX_ACTIVE_PROFILE,
+  PROPERTY_INDEX_AUTO_CONNECT,
+  PROPERTY_INDEX_AVAILABLE_TECHNOLOGIES,
+  PROPERTY_INDEX_CARRIER,
+  PROPERTY_INDEX_CERT_PATH,
+  PROPERTY_INDEX_CONNECTABLE,
+  PROPERTY_INDEX_CONNECTED_TECHNOLOGIES,
+  PROPERTY_INDEX_CONNECTIVITY_STATE,
+  PROPERTY_INDEX_DEFAULT_TECHNOLOGY,
+  PROPERTY_INDEX_DEVICE,
+  PROPERTY_INDEX_DEVICES,
+  PROPERTY_INDEX_ENABLED_TECHNOLOGIES,
+  PROPERTY_INDEX_ERROR,
+  PROPERTY_INDEX_ESN,
+  PROPERTY_INDEX_FAVORITE,
+  PROPERTY_INDEX_FIRMWARE_REVISION,
+  PROPERTY_INDEX_HARDWARE_REVISION,
+  PROPERTY_INDEX_IDENTITY,
+  PROPERTY_INDEX_IMEI,
+  PROPERTY_INDEX_IMSI,
+  PROPERTY_INDEX_IS_ACTIVE,
+  PROPERTY_INDEX_LAST_DEVICE_UPDATE,
+  PROPERTY_INDEX_MANUFACTURER,
+  PROPERTY_INDEX_MDN,
+  PROPERTY_INDEX_MEID,
+  PROPERTY_INDEX_MIN,
+  PROPERTY_INDEX_MODE,
+  PROPERTY_INDEX_MODEL_ID,
+  PROPERTY_INDEX_NAME,
+  PROPERTY_INDEX_NETWORK_TECHNOLOGY,
+  PROPERTY_INDEX_OFFLINE_MODE,
+  PROPERTY_INDEX_OPERATOR_CODE,
+  PROPERTY_INDEX_OPERATOR_NAME,
+  PROPERTY_INDEX_PASSPHRASE,
+  PROPERTY_INDEX_PASSPHRASE_REQUIRED,
+  PROPERTY_INDEX_PAYMENT_URL,
+  PROPERTY_INDEX_PRL_VERSION,
+  PROPERTY_INDEX_PROFILES,
+  PROPERTY_INDEX_ROAMING_STATE,
+  PROPERTY_INDEX_SCANNING,
+  PROPERTY_INDEX_SECURITY,
+  PROPERTY_INDEX_SERVICES,
+  PROPERTY_INDEX_SERVICE_WATCH_LIST,
+  PROPERTY_INDEX_SIGNAL_STRENGTH,
+  PROPERTY_INDEX_STATE,
+  PROPERTY_INDEX_TYPE,
+  PROPERTY_INDEX_UNKNOWN,
+  PROPERTY_INDEX_USAGE_URL,
+};
+
+StringToEnum<PropertyIndex>::Pair property_index_table[] = {
+  { kActivationStateProperty, PROPERTY_INDEX_ACTIVATION_STATE },
+  { kActiveProfileProperty, PROPERTY_INDEX_ACTIVE_PROFILE },
+  { kAutoConnectProperty, PROPERTY_INDEX_AUTO_CONNECT },
+  { kAvailableTechnologiesProperty, PROPERTY_INDEX_AVAILABLE_TECHNOLOGIES },
+  { kCarrierProperty, PROPERTY_INDEX_CARRIER },
+  { kCertPathProperty, PROPERTY_INDEX_CERT_PATH },
+  { kConnectableProperty, PROPERTY_INDEX_CONNECTABLE },
+  { kConnectedTechnologiesProperty, PROPERTY_INDEX_CONNECTED_TECHNOLOGIES },
+  { kConnectivityStateProperty, PROPERTY_INDEX_CONNECTIVITY_STATE },
+  { kDefaultTechnologyProperty, PROPERTY_INDEX_DEFAULT_TECHNOLOGY },
+  { kDeviceProperty, PROPERTY_INDEX_DEVICE },
+  { kDevicesProperty, PROPERTY_INDEX_DEVICES },
+  { kEnabledTechnologiesProperty, PROPERTY_INDEX_ENABLED_TECHNOLOGIES },
+  { kErrorProperty, PROPERTY_INDEX_ERROR },
+  { kEsnProperty, PROPERTY_INDEX_ESN },
+  { kFavoriteProperty, PROPERTY_INDEX_FAVORITE },
+  { kFirmwareRevisionProperty, PROPERTY_INDEX_FIRMWARE_REVISION },
+  { kHardwareRevisionProperty, PROPERTY_INDEX_HARDWARE_REVISION },
+  { kIdentityProperty, PROPERTY_INDEX_IDENTITY },
+  { kImeiProperty, PROPERTY_INDEX_IMEI },
+  { kImsiProperty, PROPERTY_INDEX_IMSI },
+  { kIsActiveProperty, PROPERTY_INDEX_IS_ACTIVE },
+  { kLastDeviceUpdateProperty, PROPERTY_INDEX_LAST_DEVICE_UPDATE },
+  { kManufacturerProperty, PROPERTY_INDEX_MANUFACTURER },
+  { kMdnProperty, PROPERTY_INDEX_MDN },
+  { kMeidProperty, PROPERTY_INDEX_MEID },
+  { kMinProperty, PROPERTY_INDEX_MIN },
+  { kModeProperty, PROPERTY_INDEX_MODE },
+  { kModelIDProperty, PROPERTY_INDEX_MODEL_ID },
+  { kNameProperty, PROPERTY_INDEX_NAME },
+  { kNetworkTechnologyProperty, PROPERTY_INDEX_NETWORK_TECHNOLOGY },
+  { kOfflineModeProperty, PROPERTY_INDEX_OFFLINE_MODE },
+  { kOperatorCodeProperty, PROPERTY_INDEX_OPERATOR_CODE },
+  { kOperatorNameProperty, PROPERTY_INDEX_OPERATOR_NAME },
+  { kPRLVersionProperty, PROPERTY_INDEX_PRL_VERSION },
+  { kPassphraseProperty, PROPERTY_INDEX_PASSPHRASE },
+  { kPassphraseRequiredProperty, PROPERTY_INDEX_PASSPHRASE_REQUIRED },
+  { kPaymentURLProperty, PROPERTY_INDEX_PAYMENT_URL },
+  { kProfilesProperty, PROPERTY_INDEX_PROFILES },
+  { kRoamingStateProperty, PROPERTY_INDEX_ROAMING_STATE },
+  { kScanningProperty, PROPERTY_INDEX_SCANNING },
+  { kSecurityProperty, PROPERTY_INDEX_SECURITY },
+  { kServiceWatchListProperty, PROPERTY_INDEX_SERVICE_WATCH_LIST },
+  { kServicesProperty, PROPERTY_INDEX_SERVICES },
+  { kSignalStrengthProperty, PROPERTY_INDEX_SIGNAL_STRENGTH },
+  { kStateProperty, PROPERTY_INDEX_STATE },
+  { kTypeProperty, PROPERTY_INDEX_TYPE },
+  { kUsageURLProperty, PROPERTY_INDEX_USAGE_URL },
+};
+
+StringToEnum<PropertyIndex>& property_index_parser() {
+  static StringToEnum<PropertyIndex> parser(property_index_table,
+                                            arraysize(property_index_table),
+                                            PROPERTY_INDEX_UNKNOWN);
+  return parser;
+}
 
 ////////////////////////////////////////////////////////////////////////////
 // Parse strings from libcros.
-// TODO(stevenjb): Use maps for faster string -> type conversions.
 
 // Network.
 static ConnectionType ParseType(const std::string& type) {
-  if (type == kTypeEthernet)
-    return TYPE_ETHERNET;
-  if (type == kTypeWifi)
-    return TYPE_WIFI;
-  if (type == kTypeWimax)
-    return TYPE_WIMAX;
-  if (type == kTypeBluetooth)
-    return TYPE_BLUETOOTH;
-  if (type == kTypeCellular)
-    return TYPE_CELLULAR;
-  return TYPE_UNKNOWN;
+  static StringToEnum<ConnectionType>::Pair table[] = {
+    { kTypeEthernet, TYPE_ETHERNET },
+    { kTypeWifi, TYPE_WIFI },
+    { kTypeWimax, TYPE_WIMAX },
+    { kTypeBluetooth, TYPE_BLUETOOTH },
+    { kTypeCellular, TYPE_CELLULAR },
+  };
+  static StringToEnum<ConnectionType> parser(
+      table, arraysize(table), TYPE_UNKNOWN);
+  return parser.Get(type);
 }
 
 ConnectionType ParseTypeFromDictionary(const DictionaryValue* info) {
@@ -227,132 +370,115 @@ ConnectionType ParseTypeFromDictionary(const DictionaryValue* info) {
 }
 
 static ConnectionMode ParseMode(const std::string& mode) {
-  if (mode == kModeManaged)
-    return MODE_MANAGED;
-  if (mode == kModeAdhoc)
-    return MODE_ADHOC;
-  return MODE_UNKNOWN;
+  static StringToEnum<ConnectionMode>::Pair table[] = {
+    { kModeManaged, MODE_MANAGED },
+    { kModeAdhoc, MODE_ADHOC },
+  };
+  static StringToEnum<ConnectionMode> parser(
+      table, arraysize(table), MODE_UNKNOWN);
+  return parser.Get(mode);
 }
 
 static ConnectionState ParseState(const std::string& state) {
-  if (state == kStateIdle)
-    return STATE_IDLE;
-  if (state == kStateCarrier)
-    return STATE_CARRIER;
-  if (state == kStateAssociation)
-    return STATE_ASSOCIATION;
-  if (state == kStateConfiguration)
-    return STATE_CONFIGURATION;
-  if (state == kStateReady)
-    return STATE_READY;
-  if (state == kStateDisconnect)
-    return STATE_DISCONNECT;
-  if (state == kStateFailure)
-    return STATE_FAILURE;
-  if (state == kStateActivationFailure)
-    return STATE_ACTIVATION_FAILURE;
-  return STATE_UNKNOWN;
+  static StringToEnum<ConnectionState>::Pair table[] = {
+    { kStateIdle, STATE_IDLE },
+    { kStateCarrier, STATE_CARRIER },
+    { kStateAssociation, STATE_ASSOCIATION },
+    { kStateConfiguration, STATE_CONFIGURATION },
+    { kStateReady, STATE_READY },
+    { kStateDisconnect, STATE_DISCONNECT },
+    { kStateFailure, STATE_FAILURE },
+    { kStateActivationFailure, STATE_ACTIVATION_FAILURE },
+  };
+  static StringToEnum<ConnectionState> parser(
+      table, arraysize(table), STATE_UNKNOWN);
+  return parser.Get(state);
 }
 
 static ConnectionError ParseError(const std::string& error) {
-  if (error == kErrorOutOfRange)
-    return ERROR_OUT_OF_RANGE;
-  if (error == kErrorPinMissing)
-    return ERROR_PIN_MISSING;
-  if (error == kErrorDhcpFailed)
-    return ERROR_DHCP_FAILED;
-  if (error == kErrorConnectFailed)
-    return ERROR_CONNECT_FAILED;
-  if (error == kErrorBadPassphrase)
-    return ERROR_BAD_PASSPHRASE;
-  if (error == kErrorBadWEPKey)
-    return ERROR_BAD_WEPKEY;
-  if (error == kErrorActivationFailed)
-    return ERROR_ACTIVATION_FAILED;
-  if (error == kErrorNeedEvdo)
-    return ERROR_NEED_EVDO;
-  if (error == kErrorNeedHomeNetwork)
-    return ERROR_NEED_HOME_NETWORK;
-  if (error == kErrorOtaspFailed)
-    return ERROR_OTASP_FAILED;
-  if (error == kErrorAaaFailed)
-    return ERROR_AAA_FAILED;
-  return ERROR_UNKNOWN;
+  static StringToEnum<ConnectionError>::Pair table[] = {
+    { kErrorOutOfRange, ERROR_OUT_OF_RANGE },
+    { kErrorPinMissing, ERROR_PIN_MISSING },
+    { kErrorDhcpFailed, ERROR_DHCP_FAILED },
+    { kErrorConnectFailed, ERROR_CONNECT_FAILED },
+    { kErrorBadPassphrase, ERROR_BAD_PASSPHRASE },
+    { kErrorBadWEPKey, ERROR_BAD_WEPKEY },
+    { kErrorActivationFailed, ERROR_ACTIVATION_FAILED },
+    { kErrorNeedEvdo, ERROR_NEED_EVDO },
+    { kErrorNeedHomeNetwork, ERROR_NEED_HOME_NETWORK },
+    { kErrorOtaspFailed, ERROR_OTASP_FAILED },
+    { kErrorAaaFailed, ERROR_AAA_FAILED },
+  };
+  static StringToEnum<ConnectionError> parser(
+      table, arraysize(table), ERROR_UNKNOWN);
+  return parser.Get(error);
 }
 
 // CellularNetwork.
-static ActivationState ParseActivationState(
-    const std::string& activation_state) {
-  if (activation_state == kActivationStateActivated)
-    return ACTIVATION_STATE_ACTIVATED;
-  if (activation_state == kActivationStateActivating)
-    return ACTIVATION_STATE_ACTIVATING;
-  if (activation_state == kActivationStateNotActivated)
-    return ACTIVATION_STATE_NOT_ACTIVATED;
-  if (activation_state == kActivationStateUnknown)
-    return ACTIVATION_STATE_UNKNOWN;
-  if (activation_state == kActivationStatePartiallyActivated)
-    return ACTIVATION_STATE_PARTIALLY_ACTIVATED;
-  return ACTIVATION_STATE_UNKNOWN;
+static ActivationState ParseActivationState(const std::string& state) {
+  static StringToEnum<ActivationState>::Pair table[] = {
+    { kActivationStateActivated, ACTIVATION_STATE_ACTIVATED },
+    { kActivationStateActivating, ACTIVATION_STATE_ACTIVATING },
+    { kActivationStateNotActivated, ACTIVATION_STATE_NOT_ACTIVATED },
+    { kActivationStatePartiallyActivated, ACTIVATION_STATE_PARTIALLY_ACTIVATED},
+    { kActivationStateUnknown, ACTIVATION_STATE_UNKNOWN},
+  };
+  static StringToEnum<ActivationState> parser(
+      table, arraysize(table), ACTIVATION_STATE_UNKNOWN);
+  return parser.Get(state);
 }
 
 static ConnectivityState ParseConnectivityState(const std::string& state) {
-  if (state == kConnStateUnrestricted)
-    return CONN_STATE_UNRESTRICTED;
-  if (state == kConnStateRestricted)
-    return CONN_STATE_RESTRICTED;
-  if (state == kConnStateNone)
-    return CONN_STATE_NONE;
-  return CONN_STATE_UNKNOWN;
+  static StringToEnum<ConnectivityState>::Pair table[] = {
+    { kConnStateUnrestricted, CONN_STATE_UNRESTRICTED },
+    { kConnStateRestricted, CONN_STATE_RESTRICTED },
+    { kConnStateNone, CONN_STATE_NONE },
+  };
+  static StringToEnum<ConnectivityState> parser(
+      table, arraysize(table), CONN_STATE_UNKNOWN);
+  return parser.Get(state);
 }
 
-static NetworkTechnology ParseNetworkTechnology(
-    const std::string& technology) {
-    if (technology == kNetworkTechnology1Xrtt)
-    return NETWORK_TECHNOLOGY_1XRTT;
-  if (technology == kNetworkTechnologyEvdo)
-    return NETWORK_TECHNOLOGY_EVDO;
-  if (technology == kNetworkTechnologyGprs)
-    return NETWORK_TECHNOLOGY_GPRS;
-  if (technology == kNetworkTechnologyEdge)
-    return NETWORK_TECHNOLOGY_EDGE;
-  if (technology == kNetworkTechnologyUmts)
-    return NETWORK_TECHNOLOGY_UMTS;
-  if (technology == kNetworkTechnologyHspa)
-    return NETWORK_TECHNOLOGY_HSPA;
-  if (technology == kNetworkTechnologyHspaPlus)
-    return NETWORK_TECHNOLOGY_HSPA_PLUS;
-  if (technology == kNetworkTechnologyLte)
-    return NETWORK_TECHNOLOGY_LTE;
-  if (technology == kNetworkTechnologyLteAdvanced)
-    return NETWORK_TECHNOLOGY_LTE_ADVANCED;
-  return NETWORK_TECHNOLOGY_UNKNOWN;
+static NetworkTechnology ParseNetworkTechnology(const std::string& technology) {
+  static StringToEnum<NetworkTechnology>::Pair table[] = {
+    { kNetworkTechnology1Xrtt, NETWORK_TECHNOLOGY_1XRTT },
+    { kNetworkTechnologyEvdo, NETWORK_TECHNOLOGY_EVDO },
+    { kNetworkTechnologyGprs, NETWORK_TECHNOLOGY_GPRS },
+    { kNetworkTechnologyEdge, NETWORK_TECHNOLOGY_EDGE },
+    { kNetworkTechnologyUmts, NETWORK_TECHNOLOGY_UMTS },
+    { kNetworkTechnologyHspa, NETWORK_TECHNOLOGY_HSPA },
+    { kNetworkTechnologyHspaPlus, NETWORK_TECHNOLOGY_HSPA_PLUS },
+    { kNetworkTechnologyLte, NETWORK_TECHNOLOGY_LTE },
+    { kNetworkTechnologyLteAdvanced, NETWORK_TECHNOLOGY_LTE_ADVANCED },
+  };
+  static StringToEnum<NetworkTechnology> parser(
+      table, arraysize(table), NETWORK_TECHNOLOGY_UNKNOWN);
+  return parser.Get(technology);
 }
 
-static NetworkRoamingState ParseRoamingState(
-    const std::string& roaming_state) {
-  if (roaming_state == kRoamingStateHome)
-    return ROAMING_STATE_HOME;
-  if (roaming_state == kRoamingStateRoaming)
-    return ROAMING_STATE_ROAMING;
-  if (roaming_state == kRoamingStateUnknown)
-    return ROAMING_STATE_UNKNOWN;
-  return ROAMING_STATE_UNKNOWN;
+static NetworkRoamingState ParseRoamingState(const std::string& roaming_state) {
+  static StringToEnum<NetworkRoamingState>::Pair table[] = {
+    { kRoamingStateHome, ROAMING_STATE_HOME },
+    { kRoamingStateRoaming, ROAMING_STATE_ROAMING },
+    { kRoamingStateUnknown, ROAMING_STATE_UNKNOWN },
+  };
+  static StringToEnum<NetworkRoamingState> parser(
+      table, arraysize(table), ROAMING_STATE_UNKNOWN);
+  return parser.Get(roaming_state);
 }
 
 // WifiNetwork
 static ConnectionSecurity ParseSecurity(const std::string& security) {
-  if (security == kSecurity8021x)
-    return SECURITY_8021X;
-  if (security == kSecurityRsn)
-    return SECURITY_RSN;
-  if (security == kSecurityWpa)
-    return SECURITY_WPA;
-  if (security == kSecurityWep)
-    return SECURITY_WEP;
-  if (security == kSecurityNone)
-    return SECURITY_NONE;
-  return SECURITY_UNKNOWN;
+  static StringToEnum<ConnectionSecurity>::Pair table[] = {
+    { kSecurity8021x, SECURITY_8021X },
+    { kSecurityRsn, SECURITY_RSN },
+    { kSecurityWpa, SECURITY_WPA },
+    { kSecurityWep, SECURITY_WEP },
+    { kSecurityNone, SECURITY_NONE },
+  };
+  static StringToEnum<ConnectionSecurity> parser(
+      table, arraysize(table), SECURITY_UNKNOWN);
+  return parser.Get(security);
 }
 
 ////////////////////////////////////////////////////////////////////////////
@@ -429,7 +555,7 @@ static bool EnsureCrosLoaded() {
   }
 }
 
-}  // namespacoe
+}  // namespace
 
 ////////////////////////////////////////////////////////////////////////////////
 // NetworkDevice
@@ -441,50 +567,152 @@ NetworkDevice::NetworkDevice(const std::string& device_path)
       PRL_version_(0) {
 }
 
+bool NetworkDevice::ParseValue(int index, const Value* value) {
+  switch(index) {
+    case PROPERTY_INDEX_TYPE: {
+      std::string type_string;
+      if (value->GetAsString(&type_string)) {
+        type_ = ParseType(type_string);
+        return true;
+      }
+      break;
+    }
+    case PROPERTY_INDEX_NAME:
+      return value->GetAsString(&name_);
+    case PROPERTY_INDEX_SCANNING:
+      return value->GetAsBoolean(&scanning_);
+    case PROPERTY_INDEX_CARRIER:
+      return value->GetAsString(&carrier_);
+    case PROPERTY_INDEX_MEID:
+      return value->GetAsString(&MEID_);
+    case PROPERTY_INDEX_IMEI:
+      return value->GetAsString(&IMEI_);
+    case PROPERTY_INDEX_IMSI:
+      return value->GetAsString(&IMSI_);
+    case PROPERTY_INDEX_ESN:
+      return value->GetAsString(&ESN_);
+    case PROPERTY_INDEX_MDN:
+      return value->GetAsString(&MDN_);
+    case PROPERTY_INDEX_MIN:
+      return value->GetAsString(&MIN_);
+    case PROPERTY_INDEX_MODEL_ID:
+      return value->GetAsString(&model_id_);
+    case PROPERTY_INDEX_MANUFACTURER:
+      return value->GetAsString(&manufacturer_);
+    case PROPERTY_INDEX_FIRMWARE_REVISION:
+      return value->GetAsString(&firmware_revision_);
+    case PROPERTY_INDEX_HARDWARE_REVISION:
+      return value->GetAsString(&hardware_revision_);
+    case PROPERTY_INDEX_LAST_DEVICE_UPDATE:
+      return value->GetAsString(&last_update_);
+    case PROPERTY_INDEX_PRL_VERSION:
+      return value->GetAsInteger(&PRL_version_);
+    default:
+      break;
+  }
+  return false;
+}
+
 void NetworkDevice::ParseInfo(const DictionaryValue* info) {
-  type_ = ParseTypeFromDictionary(info);
-  info->GetString(kNameProperty, &name_);
-  info->GetBoolean(kScanningProperty, &scanning_);
-  // Cellular device properties.
-  info->GetString(kCarrierProperty, &carrier_);
-  info->GetString(kMeidProperty, &MEID_);
-  info->GetString(kImeiProperty, &IMEI_);
-  info->GetString(kImsiProperty, &IMSI_);
-  info->GetString(kEsnProperty, &ESN_);
-  info->GetString(kMdnProperty, &MDN_);
-  info->GetString(kMinProperty, &MIN_);
-  info->GetString(kModelIDProperty, &model_id_);
-  info->GetString(kManufacturerProperty, &manufacturer_);
-  info->GetString(kFirmwareRevisionProperty, &firmware_revision_);
-  info->GetString(kHardwareRevisionProperty, &hardware_revision_);
-  info->GetString(kLastDeviceUpdateProperty, &last_update_);
-  info->GetInteger(kPRLVersionProperty, &PRL_version_);
-};
+  LOG(WARNING) << "Device: " << device_path_;
+  for (DictionaryValue::key_iterator iter = info->begin_keys();
+       iter != info->end_keys(); ++iter) {
+    const std::string& key = *iter;
+    Value* value;
+    bool res = info->GetWithoutPathExpansion(key, &value);
+    CHECK(res);
+    int index = property_index_parser().Get(key);
+    if (!ParseValue(index, value))
+      VLOG(1) << "NetworkDevice: Unhandled key: " << key;
+  }
+}
 
 ////////////////////////////////////////////////////////////////////////////////
 // Network
 
-void Network::ParseInfo(const DictionaryValue* info) {
-  ConnectionType type = ParseTypeFromDictionary(info);
-  if (type != type_) {
-    LOG(ERROR) << "Network with mismatched type: " << service_path_
-               << " " << type << " != " << type_;
+bool Network::ParseValue(int index, const Value* value) {
+  switch (index) {
+    case PROPERTY_INDEX_TYPE: {
+      std::string type_string;
+      if (value->GetAsString(&type_string)) {
+        ConnectionType type = ParseType(type_string);
+        LOG_IF(ERROR, type != type_)
+            << "Network with mismatched type: " << service_path_
+            << " " << type << " != " << type_;
+        return true;
+      }
+      break;
+    }
+    case PROPERTY_INDEX_DEVICE:
+      return value->GetAsString(&device_path_);
+    case PROPERTY_INDEX_NAME:
+      return value->GetAsString(&name_);
+    case PROPERTY_INDEX_STATE: {
+      std::string state_string;
+      if (value->GetAsString(&state_string)) {
+        ConnectionState prev_state = state_;
+        state_ = ParseState(state_string);
+        if (state_ != prev_state) {
+          // State changed, so refresh IP address.
+          // Note: blocking DBus call. TODO(stevenjb): refactor this.
+          InitIPAddress();
+          // If cellular state has just changed to connected request data plans.
+          if (type_ == TYPE_CELLULAR && connected())
+            RequestCellularDataPlanUpdate(service_path_.c_str());
+        }
+        return true;
+      }
+      break;
+    }
+    case PROPERTY_INDEX_MODE: {
+      std::string mode_string;
+      if (value->GetAsString(&mode_string)) {
+        mode_ = ParseMode(mode_string);
+        return true;
+      }
+      break;
+    }
+    case PROPERTY_INDEX_ERROR: {
+      std::string error_string;
+      if (value->GetAsString(&error_string)) {
+        error_ = ParseError(error_string);
+        return true;
+      }
+      break;
+    }
+    case PROPERTY_INDEX_CONNECTABLE:
+      return value->GetAsBoolean(&connectable_);
+    case PROPERTY_INDEX_IS_ACTIVE:
+      return value->GetAsBoolean(&is_active_);
+    case PROPERTY_INDEX_FAVORITE:
+      return value->GetAsBoolean(&favorite_);
+    case PROPERTY_INDEX_AUTO_CONNECT:
+      return value->GetAsBoolean(&auto_connect_);
+    case PROPERTY_INDEX_CONNECTIVITY_STATE: {
+      std::string connectivity_state_string;
+      if (value->GetAsString(&connectivity_state_string)) {
+        connectivity_state_ = ParseConnectivityState(connectivity_state_string);
+        return true;
+      }
+      break;
+    }
+    default:
+      break;
   }
-  info->GetString(kDeviceProperty, &device_path_);
-  info->GetString(kNameProperty, &name_);
-  std::string state_string;
-  info->GetString(kStateProperty, &state_string);
-  state_ = ParseState(state_string);
-  std::string mode_string;
-  info->GetString(kModeProperty, &mode_string);
-  mode_ = ParseMode(mode_string);
-  std::string error_string;
-  info->GetString(kErrorProperty, &error_string);
-  error_ = ParseError(error_string);
-  info->GetBoolean(kConnectableProperty, &connectable_);
-  info->GetBoolean(kIsActiveProperty, &is_active_);
-  // Note: blocking DBus call. TODO(stevenjb): refactor this.
-  InitIPAddress();
+  return false;
+}
+
+void Network::ParseInfo(const DictionaryValue* info) {
+  for (DictionaryValue::key_iterator iter = info->begin_keys();
+       iter != info->end_keys(); ++iter) {
+    const std::string& key = *iter;
+    Value* value;
+    bool res = info->GetWithoutPathExpansion(key, &value);
+    CHECK(res);
+    int index = property_index_parser().Get(key);
+    if (!ParseValue(index, value))  // virtual.
+      VLOG(1) << "Network: Type: " << type_ << " Unhandled key: " << key;
+  }
 }
 
 // Used by GetHtmlInfo() which is called from the about:network handler.
@@ -574,11 +802,15 @@ void Network::InitIPAddress() {
 ////////////////////////////////////////////////////////////////////////////////
 // WirelessNetwork
 
-void WirelessNetwork::ParseInfo(const DictionaryValue* info) {
-  Network::ParseInfo(info);
-  info->GetInteger(kSignalStrengthProperty, &strength_);
-  info->GetBoolean(kAutoConnectProperty, &auto_connect_);
-  info->GetBoolean(kFavoriteProperty, &favorite_);
+bool WirelessNetwork::ParseValue(int index, const Value* value) {
+  switch (index) {
+    case PROPERTY_INDEX_SIGNAL_STRENGTH:
+      return value->GetAsInteger(&strength_);
+    default:
+      return Network::ParseValue(index, value);
+      break;
+  }
+  return false;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -708,23 +940,44 @@ string16 CellularDataPlan::GetPlanExpiration() const {
 CellularNetwork::~CellularNetwork() {
 }
 
-void CellularNetwork::ParseInfo(const DictionaryValue* info) {
-  WirelessNetwork::ParseInfo(info);
-  std::string activation_state_string;
-  info->GetString(kActivationStateProperty, &activation_state_string);
-  activation_state_ = ParseActivationState(activation_state_string);
-  std::string network_technology_string;
-  info->GetString(kNetworkTechnologyProperty, &network_technology_string);
-  network_technology_ = ParseNetworkTechnology(network_technology_string);
-  std::string roaming_state_string;
-  info->GetString(kRoamingStateProperty, &roaming_state_string);
-  roaming_state_ = ParseRoamingState(roaming_state_string);
-  std::string connectivity_state_string;
-  info->GetString(kConnectivityStateProperty, &connectivity_state_string);
-  connectivity_state_ = ParseConnectivityState(connectivity_state_string);
-  info->GetString(kOperatorNameProperty, &operator_name_);
-  info->GetString(kOperatorCodeProperty, &operator_code_);
-  info->GetString(kOperatorCodeProperty, &payment_url_);
+bool CellularNetwork::ParseValue(int index, const Value* value) {
+  switch (index) {
+    case PROPERTY_INDEX_ACTIVATION_STATE: {
+      std::string activation_state_string;
+      if (value->GetAsString(&activation_state_string)) {
+        activation_state_ = ParseActivationState(activation_state_string);
+        return true;
+      }
+      break;
+    }
+    case PROPERTY_INDEX_NETWORK_TECHNOLOGY: {
+      std::string network_technology_string;
+      if (value->GetAsString(&network_technology_string)) {
+        network_technology_ = ParseNetworkTechnology(network_technology_string);
+        return true;
+      }
+      break;
+    }
+    case PROPERTY_INDEX_ROAMING_STATE: {
+      std::string roaming_state_string;
+      if (value->GetAsString(&roaming_state_string)) {
+        roaming_state_ = ParseRoamingState(roaming_state_string);
+        return true;
+      }
+      break;
+    }
+    case PROPERTY_INDEX_OPERATOR_NAME:
+      return value->GetAsString(&operator_name_);
+    case PROPERTY_INDEX_OPERATOR_CODE:
+      return value->GetAsString(&operator_code_);
+    case PROPERTY_INDEX_PAYMENT_URL:
+      return value->GetAsString(&payment_url_);
+    case PROPERTY_INDEX_USAGE_URL:
+      return value->GetAsString(&usage_url_);
+    default:
+      return WirelessNetwork::ParseValue(index, value);
+  }
+  return false;
 }
 
 bool CellularNetwork::StartActivation() const {
@@ -832,22 +1085,35 @@ std::string CellularNetwork::GetRoamingStateString() const {
       return l10n_util::GetStringUTF8(
           IDS_CHROMEOS_NETWORK_ROAMING_STATE_UNKNOWN);
       break;
-  };
+  }
 }
 
 
 ////////////////////////////////////////////////////////////////////////////////
 // WifiNetwork
 
-void WifiNetwork::ParseInfo(const DictionaryValue* info) {
-  WirelessNetwork::ParseInfo(info);
-  std::string security_string;
-  info->GetString(kSecurityProperty, &security_string);
-  encryption_ = ParseSecurity(security_string);
-  info->GetString(kPassphraseProperty, &passphrase_);
-  info->GetBoolean(kPassphraseRequiredProperty, &passphrase_required_);
-  info->GetString(kIdentityProperty, &identity_);
-  info->GetString(kCertPathProperty, &cert_path_);
+bool WifiNetwork::ParseValue(int index, const Value* value) {
+  switch (index) {
+    case PROPERTY_INDEX_SECURITY: {
+      std::string security_string;
+      if (value->GetAsString(&security_string)) {
+        encryption_ = ParseSecurity(security_string);
+        return true;
+      }
+      break;
+    }
+    case PROPERTY_INDEX_PASSPHRASE:
+      return value->GetAsString(&passphrase_);
+    case PROPERTY_INDEX_PASSPHRASE_REQUIRED:
+      return value->GetAsBoolean(&passphrase_required_);
+    case PROPERTY_INDEX_IDENTITY:
+      return value->GetAsString(&identity_);
+    case PROPERTY_INDEX_CERT_PATH:
+      return value->GetAsString(&cert_path_);
+    default:
+      return WirelessNetwork::ParseValue(index, value);
+  }
+  return false;
 }
 
 std::string WifiNetwork::GetEncryptionString() {
@@ -1098,6 +1364,7 @@ class NetworkLibraryImpl : public NetworkLibrary  {
     NetworkDeviceMap::const_iterator iter = device_map_.find(path);
     if (iter != device_map_.end())
       return iter->second;
+    LOG(WARNING) << "Device path not found: " << path;
     return NULL;
   }
 
@@ -1624,47 +1891,71 @@ class NetworkLibraryImpl : public NetworkLibrary  {
     CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
     base::TimeTicks start = base::TimeTicks::Now();
     VLOG(1) << "NetworkManagerStatusChanged: KEY=" << key;
-    // TODO(stevenjb): Use string/enum map and turn this into a switch.
-    if (strcmp(key, kStateProperty) == 0) {
-      // Currently we ignore the network manager state.
-    } else if (strcmp(key, kAvailableTechnologiesProperty) == 0) {
-      DCHECK_EQ(value->GetType(), Value::TYPE_LIST);
-      const ListValue* vlist = static_cast<const ListValue*>(value);
-      UpdateAvailableTechnologies(vlist);
-    } else if (strcmp(key, kEnabledTechnologiesProperty) == 0) {
-      DCHECK_EQ(value->GetType(), Value::TYPE_LIST);
-      const ListValue* vlist = static_cast<const ListValue*>(value);
-      UpdateEnabledTechnologies(vlist);
-    } else if (strcmp(key, kConnectedTechnologiesProperty) == 0) {
-      DCHECK_EQ(value->GetType(), Value::TYPE_LIST);
-      const ListValue* vlist = static_cast<const ListValue*>(value);
-      UpdateConnectedTechnologies(vlist);
-    } else if (strcmp(key, kDefaultTechnologyProperty) == 0) {
-      // Currently we ignore DefaultTechnology.
-    } else if (strcmp(key, kOfflineModeProperty) == 0) {
-      DCHECK_EQ(value->GetType(), Value::TYPE_BOOLEAN);
-      value->GetAsBoolean(&offline_mode_);
-      NotifyNetworkManagerChanged();
-    } else if (strcmp(key, kActiveProfileProperty) == 0) {
-      DCHECK_EQ(value->GetType(), Value::TYPE_STRING);
-      value->GetAsString(&active_profile_path_);
-      RequestRememberedNetworksUpdate();
-    } else if (strcmp(key, kProfilesProperty) == 0) {
-      // Currently we ignore Profiles (list of all profiles).
-    } else if (strcmp(key, kServicesProperty) == 0) {
-      DCHECK_EQ(value->GetType(), Value::TYPE_LIST);
-      const ListValue* vlist = static_cast<const ListValue*>(value);
-      UpdateNetworkServiceList(vlist);
-    } else if (strcmp(key, kServiceWatchListProperty) == 0) {
-      DCHECK_EQ(value->GetType(), Value::TYPE_LIST);
-      const ListValue* vlist = static_cast<const ListValue*>(value);
-      UpdateWatchedNetworkServiceList(vlist);
-    } else if (strcmp(key, kDevicesProperty) == 0) {
-      DCHECK_EQ(value->GetType(), Value::TYPE_LIST);
-      const ListValue* vlist = static_cast<const ListValue*>(value);
-      UpdateNetworkDeviceList(vlist);
-    } else {
-      LOG(WARNING) << "Unhandled key: " << key;
+    if (!key)
+      return;
+    int index = property_index_parser().Get(std::string(key));
+    switch(index) {
+      case PROPERTY_INDEX_STATE:
+        // Currently we ignore the network manager state.
+        break;
+      case PROPERTY_INDEX_AVAILABLE_TECHNOLOGIES: {
+        DCHECK_EQ(value->GetType(), Value::TYPE_LIST);
+        const ListValue* vlist = static_cast<const ListValue*>(value);
+        UpdateAvailableTechnologies(vlist);
+        break;
+      }
+      case PROPERTY_INDEX_ENABLED_TECHNOLOGIES: {
+        DCHECK_EQ(value->GetType(), Value::TYPE_LIST);
+        const ListValue* vlist = static_cast<const ListValue*>(value);
+        UpdateEnabledTechnologies(vlist);
+        break;
+      }
+      case PROPERTY_INDEX_CONNECTED_TECHNOLOGIES: {
+        DCHECK_EQ(value->GetType(), Value::TYPE_LIST);
+        const ListValue* vlist = static_cast<const ListValue*>(value);
+        UpdateConnectedTechnologies(vlist);
+        break;
+      }
+      case PROPERTY_INDEX_DEFAULT_TECHNOLOGY:
+        // Currently we ignore DefaultTechnology.
+        break;
+      case PROPERTY_INDEX_OFFLINE_MODE: {
+        DCHECK_EQ(value->GetType(), Value::TYPE_BOOLEAN);
+        value->GetAsBoolean(&offline_mode_);
+        NotifyNetworkManagerChanged();
+        break;
+      }
+      case PROPERTY_INDEX_ACTIVE_PROFILE: {
+        DCHECK_EQ(value->GetType(), Value::TYPE_STRING);
+        value->GetAsString(&active_profile_path_);
+        RequestRememberedNetworksUpdate();
+        break;
+      }
+      case PROPERTY_INDEX_PROFILES:
+        // Currently we ignore Profiles (list of all profiles).
+        break;
+      case PROPERTY_INDEX_SERVICES: {
+        DCHECK_EQ(value->GetType(), Value::TYPE_LIST);
+        const ListValue* vlist = static_cast<const ListValue*>(value);
+        UpdateNetworkServiceList(vlist);
+        break;
+      }
+      case PROPERTY_INDEX_SERVICE_WATCH_LIST: {
+        DCHECK_EQ(value->GetType(), Value::TYPE_LIST);
+        const ListValue* vlist = static_cast<const ListValue*>(value);
+        UpdateWatchedNetworkServiceList(vlist);
+        break;
+      }
+      case PROPERTY_INDEX_DEVICE:
+      case PROPERTY_INDEX_DEVICES: {
+        DCHECK_EQ(value->GetType(), Value::TYPE_LIST);
+        const ListValue* vlist = static_cast<const ListValue*>(value);
+        UpdateNetworkDeviceList(vlist);
+        break;
+      }
+      default:
+        LOG(WARNING) << "Unhandled key: " << key;
+        break;
     }
     base::TimeDelta delta = base::TimeTicks::Now() - start;
     VLOG(1) << "  time: " << delta.InMilliseconds() << " ms.";
@@ -1688,7 +1979,7 @@ class NetworkLibraryImpl : public NetworkLibrary  {
          iter != dict->end_keys(); ++iter) {
       const std::string& key = *iter;
       Value* value;
-      bool res = dict->Get(key, &value);
+      bool res = dict->GetWithoutPathExpansion(key, &value);
       CHECK(res);
       NetworkManagerStatusChanged(key.c_str(), value);
     }
@@ -1847,17 +2138,6 @@ class NetworkLibraryImpl : public NetworkLibrary  {
     }
   }
 
-  void UpdateNetworkState(Network* network) {
-    if (network->state() != network->prev_state()) {
-      if (network->type() == TYPE_CELLULAR) {
-        // If cellular state has just changed to connected request data plans.
-        if (network->connected())
-          RefreshCellularDataPlans(static_cast<CellularNetwork*>(network));
-      }
-      network->set_prev_state(network->state());
-    }
-  }
-
   void AddNetwork(Network* network) {
     std::pair<NetworkMap::iterator,bool> result =
         network_map_.insert(std::make_pair(network->service_path(), network));
@@ -1878,8 +2158,8 @@ class NetworkLibraryImpl : public NetworkLibrary  {
   void DeleteNetwork(const std::string& service_path) {
     NetworkMap::iterator found = network_map_.find(service_path);
     if (found == network_map_.end()) {
-      LOG(WARNING) << "Attempt to delete non-existant network: "
-                   << service_path;
+      // This occurs when we receive an update request followed by a disconnect
+      // which triggers another update. See UpdateNetworkServiceList.
       return;
     }
     Network* network = found->second;
@@ -1952,6 +2232,7 @@ class NetworkLibraryImpl : public NetworkLibrary  {
 
   // Update all network lists, and request associated service updates.
   void UpdateNetworkServiceList(const ListValue* services) {
+    // TODO(stevenjb): Wait for wifi_scanning_ to be false.
     // Copy the list of existing networks to "old" and clear the map and lists.
     NetworkMap old_network_map = network_map_;
     ClearNetworks(false /*don't delete*/);
@@ -2085,7 +2366,6 @@ class NetworkLibraryImpl : public NetworkLibrary  {
     network->ParseInfo(info);  // virtual.
 
     UpdateActiveNetwork(network);
-    UpdateNetworkState(network);
 
     VLOG(1) << "ParseNetwork:" << network->name();
     NotifyNetworkManagerChanged();
@@ -2135,6 +2415,7 @@ class NetworkLibraryImpl : public NetworkLibrary  {
   void UpdateNetworkDeviceList(const ListValue* devices) {
     NetworkDeviceMap old_device_map = device_map_;
     device_map_.clear();
+    VLOG(2) << "Updating Device List.";
     for (ListValue::const_iterator iter = devices->begin();
          iter != devices->end(); ++iter) {
       std::string device_path;
@@ -2142,6 +2423,7 @@ class NetworkLibraryImpl : public NetworkLibrary  {
       if (!device_path.empty()) {
         NetworkDeviceMap::iterator found = old_device_map.find(device_path);
         if (found != old_device_map.end()) {
+          VLOG(2) << " Adding device: " << device_path;
           device_map_[device_path] = found->second;
           old_device_map.erase(found);
         }
@@ -2163,6 +2445,7 @@ class NetworkLibraryImpl : public NetworkLibrary  {
                    << device_path;
       return;
     }
+    VLOG(2) << " Deleting device: " << device_path;
     NetworkDevice* device = found->second;
     device_map_.erase(found);
     delete device;
@@ -2176,6 +2459,7 @@ class NetworkLibraryImpl : public NetworkLibrary  {
       device = found->second;
     } else {
       device = new NetworkDevice(device_path);
+      VLOG(2) << " Adding device: " << device_path;
       device_map_[device_path] = device;
     }
     device->ParseInfo(info);
@@ -2184,97 +2468,6 @@ class NetworkLibraryImpl : public NetworkLibrary  {
   }
 
   ////////////////////////////////////////////////////////////////////////////
-
-  void Init() {
-    // First, get the currently available networks. This data is cached
-    // on the connman side, so the call should be quick.
-    if (EnsureCrosLoaded()) {
-      VLOG(1) << "Requesting initial network manager info from libcros.";
-      RequestNetworkManagerInfo(&NetworkManagerUpdate, this);
-    }
-  }
-
-  void InitTestData() {
-    is_locked_ = true;
-
-    // Devices
-    int devices =
-        (1 << TYPE_ETHERNET) | (1 << TYPE_WIFI) | (1 << TYPE_CELLULAR);
-    available_devices_ = devices;
-    enabled_devices_ = devices;
-    connected_devices_ = devices;
-
-    // Networks
-    ClearNetworks(true /*delete networks*/);
-
-    ethernet_ = new EthernetNetwork("eth1");
-    ethernet_->set_connected(true);
-    AddNetwork(ethernet_);
-
-    WifiNetwork* wifi1 = new WifiNetwork("fw1");
-    wifi1->set_name("Fake Wifi 1");
-    wifi1->set_strength(90);
-    wifi1->set_connected(false);
-    wifi1->set_encryption(SECURITY_NONE);
-    AddNetwork(wifi1);
-
-    WifiNetwork* wifi2 = new WifiNetwork("fw2");
-    wifi2->set_name("Fake Wifi 2");
-    wifi2->set_strength(70);
-    wifi2->set_connected(true);
-    wifi2->set_encryption(SECURITY_WEP);
-    AddNetwork(wifi2);
-
-    WifiNetwork* wifi3 = new WifiNetwork("fw3");
-    wifi3->set_name("Fake Wifi 3");
-    wifi3->set_strength(50);
-    wifi3->set_connected(false);
-    wifi3->set_encryption(SECURITY_8021X);
-    wifi3->set_identity("nobody@google.com");
-    wifi3->set_cert_path("SETTINGS:key_id=3,cert_id=3,pin=111111");
-    AddNetwork(wifi3);
-
-    wifi_ = wifi2;
-
-    CellularNetwork* cellular1 = new CellularNetwork("fc1");
-    cellular1->set_name("Fake Cellular 1");
-    cellular1->set_strength(70);
-    cellular1->set_connected(false);
-    cellular1->set_activation_state(ACTIVATION_STATE_ACTIVATED);
-    cellular1->set_payment_url(std::string("http://www.google.com"));
-    cellular1->set_network_technology(NETWORK_TECHNOLOGY_EVDO);
-
-    CellularDataPlan* base_plan = new CellularDataPlan();
-    base_plan->plan_name = "Base plan";
-    base_plan->plan_type = CELLULAR_DATA_PLAN_METERED_BASE;
-    base_plan->plan_data_bytes = 100ll * 1024 * 1024;
-    base_plan->data_bytes_used = 75ll * 1024 * 1024;
-    CellularDataPlanVector* data_plans = new CellularDataPlanVector();
-    data_plan_map_[cellular1->service_path()] = data_plans;
-    data_plans->push_back(base_plan);
-
-    CellularDataPlan* paid_plan = new CellularDataPlan();
-    paid_plan->plan_name = "Paid plan";
-    paid_plan->plan_type = CELLULAR_DATA_PLAN_METERED_PAID;
-    paid_plan->plan_data_bytes = 5ll * 1024 * 1024 * 1024;
-    paid_plan->data_bytes_used = 3ll * 1024 * 1024 * 1024;
-    data_plans->push_back(paid_plan);
-
-    AddNetwork(cellular1);
-    cellular_ = cellular1;
-
-    // Remembered Networks
-    ClearRememberedNetworks(true /*delete networks*/);
-    WifiNetwork* remembered_wifi2 = new WifiNetwork("fw2");
-    remembered_wifi2->set_name("Fake Wifi 2");
-    remembered_wifi2->set_strength(70);
-    remembered_wifi2->set_connected(true);
-    remembered_wifi2->set_encryption(SECURITY_WEP);
-    AddRememberedNetwork(remembered_wifi2);
-
-    wifi_scanning_ = false;
-    offline_mode_ = false;
-  }
 
   WirelessNetwork* GetWirelessNetworkByPath(const std::string& path) const {
     NetworkMap::const_iterator iter = network_map_.find(path);
@@ -2288,14 +2481,14 @@ class NetworkLibraryImpl : public NetworkLibrary  {
 
   WifiNetwork* GetWifiNetworkByPath(const std::string& path) const {
     WirelessNetwork* network = GetWirelessNetworkByPath(path);
-    if (network->type() == TYPE_WIFI)
+    if (network && network->type() == TYPE_WIFI)
       return static_cast<WifiNetwork*>(network);
     return NULL;
   }
 
   CellularNetwork* GetCellularNetworkByPath(const std::string& path) const {
     WirelessNetwork* network = GetWirelessNetworkByPath(path);
-    if (network->type() == TYPE_CELLULAR)
+    if (network && network->type() == TYPE_CELLULAR)
       return static_cast<CellularNetwork*>(network);
     return NULL;
   }
@@ -2376,71 +2569,21 @@ class NetworkLibraryImpl : public NetworkLibrary  {
   void UpdateNetworkStatus(const char* path,
                            const char* key,
                            const Value* value) {
+    CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
     if (key == NULL || value == NULL)
       return;
-    // Make sure we run on UI thread.
-    if (!BrowserThread::CurrentlyOn(BrowserThread::UI)) {
-      BrowserThread::PostTask(
-          BrowserThread::UI, FROM_HERE,
-          NewRunnableMethod(this,
-                            &NetworkLibraryImpl::UpdateNetworkStatus,
-                            path, key, value));
-      return;
-    }
-
-    bool boolval = false;
-    int intval = 0;
-    std::string stringval;
-    Network* network = NULL;
     NetworkMap::iterator iter = network_map_.find(path);
-    if (iter != network_map_.end())
-      network = iter->second;
-    if (!network)
-      return;
-
-    ConnectionType type(network->type());
-    // *TODO(stevenjb): Move this code into Network virtual functions,
-    // and use maps for faster lookups.
-    if (strcmp(key, kConnectableProperty) == 0) {
-      if (value->GetAsBoolean(&boolval))
-        network->set_connectable(boolval);
-    } else if (strcmp(key, kIsActiveProperty) == 0) {
-      if (value->GetAsBoolean(&boolval))
-        network->set_active(boolval);
-    } else if (strcmp(key, kStateProperty) == 0) {
-      if (value->GetAsString(&stringval)) {
-        network->set_state(ParseState(stringval));
-        // State changed, so refresh IP address.
-        network->InitIPAddress();
-        UpdateNetworkState(network);
+    if (iter != network_map_.end()) {
+      VLOG(1) << "UpdateNetworkStatus: " << path << "." << key;
+      Network* network = iter->second;
+      // Note: ParseValue is virtual.
+      int index = property_index_parser().Get(std::string(key));
+      if (!network->ParseValue(index, value)) {
+        LOG(WARNING) << "UpdateNetworkStatus: Error parsing: "
+                     << path << "." << key;
       }
-    } else if (type == TYPE_WIFI || type == TYPE_CELLULAR) {
-      WirelessNetwork* wireless = static_cast<WirelessNetwork*>(network);
-      if (strcmp(key, kSignalStrengthProperty) == 0) {
-        if (value->GetAsInteger(&intval))
-          wireless->set_strength(intval);
-      } else if (type == TYPE_CELLULAR) {
-        CellularNetwork* cellular = static_cast<CellularNetwork*>(network);
-        if (strcmp(key, kConnectivityStateProperty) == 0) {
-          if (value->GetAsString(&stringval))
-            cellular->set_connectivity_state(ParseConnectivityState(stringval));
-        } else if (strcmp(key, kActivationStateProperty) == 0) {
-          if (value->GetAsString(&stringval))
-            cellular->set_activation_state(ParseActivationState(stringval));
-        } else if (strcmp(key, kPaymentURLProperty) == 0) {
-          if (value->GetAsString(&stringval))
-            cellular->set_payment_url(stringval);
-        } else if (strcmp(key, kNetworkTechnologyProperty) == 0) {
-          if (value->GetAsString(&stringval))
-            cellular->set_network_technology(
-                ParseNetworkTechnology(stringval));
-        } else if (strcmp(key, kRoamingStateProperty) == 0) {
-          if (value->GetAsString(&stringval))
-            cellular->set_roaming_state(ParseRoamingState(stringval));
-        }
-      }
+      NotifyNetworkChanged(network);
     }
-    NotifyNetworkChanged(network);
   }
 
   ////////////////////////////////////////////////////////////////////////////
@@ -2520,6 +2663,98 @@ class NetworkLibraryImpl : public NetworkLibrary  {
   }
 
   ////////////////////////////////////////////////////////////////////////////
+
+  void Init() {
+    // First, get the currently available networks. This data is cached
+    // on the connman side, so the call should be quick.
+    if (EnsureCrosLoaded()) {
+      VLOG(1) << "Requesting initial network manager info from libcros.";
+      RequestNetworkManagerInfo(&NetworkManagerUpdate, this);
+    }
+  }
+
+  void InitTestData() {
+    is_locked_ = true;
+
+    // Devices
+    int devices =
+        (1 << TYPE_ETHERNET) | (1 << TYPE_WIFI) | (1 << TYPE_CELLULAR);
+    available_devices_ = devices;
+    enabled_devices_ = devices;
+    connected_devices_ = devices;
+
+    // Networks
+    ClearNetworks(true /*delete networks*/);
+
+    ethernet_ = new EthernetNetwork("eth1");
+    ethernet_->set_connected(true);
+    AddNetwork(ethernet_);
+
+    WifiNetwork* wifi1 = new WifiNetwork("fw1");
+    wifi1->set_name("Fake Wifi 1");
+    wifi1->set_strength(90);
+    wifi1->set_connected(false);
+    wifi1->set_encryption(SECURITY_NONE);
+    AddNetwork(wifi1);
+
+    WifiNetwork* wifi2 = new WifiNetwork("fw2");
+    wifi2->set_name("Fake Wifi 2");
+    wifi2->set_strength(70);
+    wifi2->set_connected(true);
+    wifi2->set_encryption(SECURITY_WEP);
+    AddNetwork(wifi2);
+
+    WifiNetwork* wifi3 = new WifiNetwork("fw3");
+    wifi3->set_name("Fake Wifi 3");
+    wifi3->set_strength(50);
+    wifi3->set_connected(false);
+    wifi3->set_encryption(SECURITY_8021X);
+    wifi3->set_identity("nobody@google.com");
+    wifi3->set_cert_path("SETTINGS:key_id=3,cert_id=3,pin=111111");
+    AddNetwork(wifi3);
+
+    wifi_ = wifi2;
+
+    CellularNetwork* cellular1 = new CellularNetwork("fc1");
+    cellular1->set_name("Fake Cellular 1");
+    cellular1->set_strength(70);
+    cellular1->set_connected(false);
+    cellular1->set_activation_state(ACTIVATION_STATE_ACTIVATED);
+    cellular1->set_payment_url(std::string("http://www.google.com"));
+    cellular1->set_usage_url(std::string("http://www.google.com"));
+    cellular1->set_network_technology(NETWORK_TECHNOLOGY_EVDO);
+
+    CellularDataPlan* base_plan = new CellularDataPlan();
+    base_plan->plan_name = "Base plan";
+    base_plan->plan_type = CELLULAR_DATA_PLAN_METERED_BASE;
+    base_plan->plan_data_bytes = 100ll * 1024 * 1024;
+    base_plan->data_bytes_used = 75ll * 1024 * 1024;
+    CellularDataPlanVector* data_plans = new CellularDataPlanVector();
+    data_plan_map_[cellular1->service_path()] = data_plans;
+    data_plans->push_back(base_plan);
+
+    CellularDataPlan* paid_plan = new CellularDataPlan();
+    paid_plan->plan_name = "Paid plan";
+    paid_plan->plan_type = CELLULAR_DATA_PLAN_METERED_PAID;
+    paid_plan->plan_data_bytes = 5ll * 1024 * 1024 * 1024;
+    paid_plan->data_bytes_used = 3ll * 1024 * 1024 * 1024;
+    data_plans->push_back(paid_plan);
+
+    AddNetwork(cellular1);
+    cellular_ = cellular1;
+
+    // Remembered Networks
+    ClearRememberedNetworks(true /*delete networks*/);
+    WifiNetwork* remembered_wifi2 = new WifiNetwork("fw2");
+    remembered_wifi2->set_name("Fake Wifi 2");
+    remembered_wifi2->set_strength(70);
+    remembered_wifi2->set_connected(true);
+    remembered_wifi2->set_encryption(SECURITY_WEP);
+    AddRememberedNetwork(remembered_wifi2);
+
+    wifi_scanning_ = false;
+    offline_mode_ = false;
+  }
 
   // Network manager observer list
   ObserverList<NetworkManagerObserver> network_manager_observers_;
