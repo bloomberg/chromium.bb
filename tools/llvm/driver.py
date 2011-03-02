@@ -1399,11 +1399,21 @@ class Log:
     for o in cls.ERROR_OUT:
       print >> o, m % args
 
-def StringifyCommand(a):
+def EscapeEcho(s):
+  """ Quick and dirty way of escaping characters that may otherwise be
+      interpreted by bash / the echo command (rather than preserved). """
+  return s.replace("\\", r"\\").replace("$", r"\$").replace('"', r"\"")
+
+def StringifyCommand(cmd, stdin_contents=None):
+  """ Return a string for reproducing the command "cmd", which will be
+      fed stdin_contents through stdin. """
+  stdin_str = ""
+  if stdin_contents:
+    stdin_str = "echo \"\"\"" + EscapeEcho(stdin_contents) + "\"\"\" | "
   if env.getbool('LOG_PRETTY_PRINT'):
-    return PrettyStringify(a)
+    return stdin_str + PrettyStringify(cmd)
   else:
-    return SimpleStringify(a)
+    return stdin_str + SimpleStringify(cmd)
 
 def SimpleStringify(args):
   return " ".join(args)
@@ -1433,7 +1443,7 @@ def RunWithLog(args, stdin = None, silent = False):
   if env.getbool('DRY_RUN'):
     return
 
-  Log.Info('\n' + StringifyCommand(args))
+  Log.Info('\n' + StringifyCommand(args, stdin))
   try:
     p = subprocess.Popen(args, stdin=subprocess.PIPE,
                                stdout=subprocess.PIPE,
@@ -1443,7 +1453,7 @@ def RunWithLog(args, stdin = None, silent = False):
   except Exception, e:
     buf_stdout = ''
     buf_stderr = ''
-    Log.Fatal('failed (%s) to run: ' % str(e) + StringifyCommand(args))
+    Log.Fatal('failed (%s) to run: ' % str(e) + StringifyCommand(args, stdin))
 
   if not silent:
     sys.stdout.write(buf_stdout)
@@ -1454,7 +1464,7 @@ def RunWithLog(args, stdin = None, silent = False):
                         'failed command: %s\n'
                         'stdout        : %s\n'
                         'stderr        : %s\n',
-                        StringifyCommand(args), buf_stdout, buf_stderr)
+                        StringifyCommand(args, stdin), buf_stdout, buf_stderr)
 
 def MakeSelUniversalScriptForLLC(infile, outfile, flags):
   script = []
