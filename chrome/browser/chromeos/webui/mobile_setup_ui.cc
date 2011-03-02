@@ -401,7 +401,7 @@ void MobileSetupUIHTMLSource::StartDataRequest(const std::string& path,
                                                 bool is_off_the_record,
                                                 int request_id) {
   const chromeos::CellularNetwork* network = GetCellularNetwork(service_path_);
-
+  DCHECK(network);
   DictionaryValue strings;
   strings.SetString("title", l10n_util::GetStringUTF16(IDS_MOBILE_SETUP_TITLE));
   strings.SetString("connecting_header",
@@ -622,8 +622,8 @@ void MobileSetupHandler::ReconnectTimerFired() {
 
 void MobileSetupHandler::DisconnectFromNetwork(
     const chromeos::CellularNetwork* network) {
-  LOG(INFO) << "Disconnecting from " <<
-      network->service_path().c_str();
+  DCHECK(network);
+  LOG(INFO) << "Disconnecting from: " << network->service_path();
   chromeos::CrosLibrary::Get()->GetNetworkLibrary()->
       DisconnectFromWirelessNetwork(network);
   // Disconnect will force networks to be reevaluated, so
@@ -635,6 +635,7 @@ bool MobileSetupHandler::NeedsReconnecting(
     const chromeos::CellularNetwork* network,
     PlanActivationState* new_state,
     std::string* error_description) {
+  DCHECK(network);
   if (!network->failed() && !ConnectionTimeout())
     return false;
 
@@ -664,16 +665,14 @@ bool MobileSetupHandler::ConnectToNetwork(
       state_ != PLAN_ACTIVATION_RECONNECTING &&
       state_ != PLAN_ACTIVATION_RECONNECTING_OTASP)
     return false;
-  if (network) {
-    LOG(INFO) << "Connecting to " <<
-        network->service_path().c_str();
-  }
+  if (network)
+    LOG(INFO) << "Connecting to: " << network->service_path();
   connection_retry_count_++;
   connection_start_time_ = base::Time::Now();
   if (!network || !chromeos::CrosLibrary::Get()->GetNetworkLibrary()->
-          ConnectToCellularNetwork(network)) {
-    LOG(WARNING) << "Connect failed"
-                 << network->service_path().c_str();
+      ConnectToCellularNetwork(network)) {
+    LOG(WARNING) << "Connect failed: "
+                 << network ? network->service_path() : "no service";
     // If we coudn't connect during reconnection phase, try to reconnect
     // with a delay (and try to reconnect if needed).
     scoped_refptr<TaskProxy> task = new TaskProxy(AsWeakPtr(),
@@ -695,8 +694,7 @@ void MobileSetupHandler::ForceReconnect(
   connection_retry_count_ = 0;
   connection_start_time_ = base::Time();
   // First, disconnect...
-  LOG(INFO) << "Disconnecting from " <<
-      network->service_path().c_str();
+  LOG(INFO) << "Disconnecting from " << network->service_path();
   chromeos::CrosLibrary::Get()->GetNetworkLibrary()->
       DisconnectFromWirelessNetwork(network);
   // Check the network state 3s after we disconnect to make sure.
@@ -1267,6 +1265,7 @@ bool MobileSetupHandler::GotActivationError(
 
 void MobileSetupHandler::GetDeviceInfo(const chromeos::CellularNetwork* network,
                                        DictionaryValue* value) {
+  DCHECK(network);
   chromeos::NetworkLibrary* cros =
       chromeos::CrosLibrary::Get()->GetNetworkLibrary();
   if (!cros)
