@@ -6,7 +6,6 @@
 
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
-#include "chrome/browser/browser_thread.h"
 #include "chrome/browser/service/service_process_control_manager.h"
 #include "chrome/common/remoting/chromoting_host_info.h"
 #include "content/browser/webui/web_ui.h"
