@@ -4,8 +4,8 @@
 
 #include "chrome/browser/ui/cocoa/notifications/balloon_view_host_mac.h"
 
-#include "chrome/browser/renderer_host/render_view_host.h"
 #include "chrome/browser/renderer_host/render_widget_host_view_mac.h"
+#include "content/browser/renderer_host/render_view_host.h"
 
 BalloonViewHost::BalloonViewHost(Balloon* balloon)
     : BalloonHost(balloon) {

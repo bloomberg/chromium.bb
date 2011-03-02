@@ -5,10 +5,10 @@
 #include "chrome/browser/ui/webui/constrained_html_ui.h"
 
 #include "base/lazy_instance.h"
-#include "chrome/browser/renderer_host/render_view_host.h"
-#include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/browser/ui/webui/html_dialog_ui.h"
 #include "chrome/common/bindings_policy.h"
+#include "content/browser/renderer_host/render_view_host.h"
+#include "content/browser/tab_contents/tab_contents.h"
 #include "content/browser/webui/web_ui_util.h"
 
 static base::LazyInstance<PropertyAccessor<ConstrainedHtmlUIDelegate*> >

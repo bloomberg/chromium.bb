@@ -5,8 +5,8 @@
 #include "content/browser/webui/web_ui_handler_browsertest.h"
 
 #include "base/utf_string_conversions.h"
-#include "chrome/browser/renderer_host/render_view_host.h"
 #include "chrome/test/ui_test_utils.h"
+#include "content/browser/renderer_host/render_view_host.h"
 
 bool WebUIHandlerBrowserTest::Execute(const std::string& js_test) {
   web_ui_->GetRenderViewHost()->ExecuteJavascriptInWebFrame(

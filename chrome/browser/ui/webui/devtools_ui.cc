@@ -4,8 +4,8 @@
 
 #include "chrome/browser/ui/webui/devtools_ui.h"
 
-#include "chrome/browser/renderer_host/render_view_host.h"
 #include "chrome/common/render_messages.h"
+#include "content/browser/renderer_host/render_view_host.h"
 
 DevToolsUI::DevToolsUI(TabContents* contents) : WebUI(contents) {
 }

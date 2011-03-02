@@ -7,10 +7,10 @@
 #include "base/string_number_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/extensions/extension_tabs_module.h"
-#include "chrome/browser/renderer_host/render_view_host.h"
-#include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/common/extensions/extension_error_utils.h"
+#include "content/browser/renderer_host/render_view_host.h"
+#include "content/browser/tab_contents/tab_contents.h"
 
 namespace {
 // Errors.

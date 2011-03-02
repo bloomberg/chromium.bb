@@ -19,8 +19,8 @@
 #include "chrome/browser/extensions/extension_idle_api_constants.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/renderer_host/render_view_host.h"
 #include "chrome/common/extensions/extension.h"
+#include "content/browser/renderer_host/render_view_host.h"
 
 namespace keys = extension_idle_api_constants;
 

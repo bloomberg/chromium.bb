@@ -5,9 +5,9 @@
 #include "chrome/browser/ui/gtk/extension_view_gtk.h"
 
 #include "chrome/browser/extensions/extension_host.h"
-#include "chrome/browser/renderer_host/render_view_host.h"
 #include "chrome/browser/renderer_host/render_widget_host_view_gtk.h"
 #include "chrome/browser/ui/gtk/extension_popup_gtk.h"
+#include "content/browser/renderer_host/render_view_host.h"
 
 ExtensionViewGtk::ExtensionViewGtk(ExtensionHost* extension_host,
                                    Browser* browser)

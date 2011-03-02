@@ -8,9 +8,9 @@
 #include <shlobj.h>
 
 #include "chrome/browser/bookmarks/bookmark_node_data.h"
-#include "chrome/browser/renderer_host/render_view_host.h"
-#include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/browser/tab_contents/web_drag_utils_win.h"
+#include "content/browser/renderer_host/render_view_host.h"
+#include "content/browser/tab_contents/tab_contents.h"
 #include "googleurl/src/gurl.h"
 #include "net/base/net_util.h"
 #include "ui/base/clipboard/clipboard_util_win.h"

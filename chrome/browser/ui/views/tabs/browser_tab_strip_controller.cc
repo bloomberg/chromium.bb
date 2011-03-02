@@ -8,8 +8,6 @@
 #include "base/command_line.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/metrics/user_metrics.h"
-#include "chrome/browser/renderer_host/render_view_host.h"
-#include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/browser/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
@@ -18,6 +16,8 @@
 #include "chrome/browser/ui/views/tabs/tab_renderer_data.h"
 #include "chrome/common/notification_service.h"
 #include "chrome/common/url_constants.h"
+#include "content/browser/renderer_host/render_view_host.h"
+#include "content/browser/tab_contents/tab_contents.h"
 #include "views/controls/menu/menu_2.h"
 #include "views/widget/widget.h"
 

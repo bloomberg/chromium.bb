@@ -15,12 +15,12 @@
 #include "chrome/browser/extensions/extension_host.h"
 #include "chrome/browser/extensions/extension_process_manager.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/renderer_host/render_view_host.h"
 #include "chrome/browser/renderer_host/render_widget_host_view_gtk.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/gtk/gtk_theme_provider.h"
 #include "chrome/common/notification_details.h"
 #include "chrome/common/notification_source.h"
+#include "content/browser/renderer_host/render_view_host.h"
 #include "googleurl/src/gurl.h"
 
 ExtensionPopupGtk* ExtensionPopupGtk::current_extension_popup_ = NULL;

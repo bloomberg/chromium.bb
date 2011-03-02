@@ -5,7 +5,7 @@
 #include "chrome/browser/ui/webui/print_preview_handler.h"
 
 #include "base/values.h"
-#include "chrome/browser/renderer_host/render_view_host.h"
+#include "content/browser/renderer_host/render_view_host.h"
 #include "printing/backend/print_backend.h"
 
 PrintPreviewHandler::PrintPreviewHandler()
