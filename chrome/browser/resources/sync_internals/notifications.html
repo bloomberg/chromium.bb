@@ -1,5 +1,10 @@
 <script>
 (function () {
+// Contains all notifications received since the page was loaded as a
+// map from each data type to the number of notifications received for
+// it.
+chrome.sync.notifications = {};
+
 function updateNotificationsEnabledInfo(notificationsEnabled) {
   var notificationsEnabledInfo =
     document.getElementById('notificationsEnabledInfo');
@@ -13,24 +18,27 @@ function onLoad() {
   chrome.sync.onSyncNotificationStateChange.addListener(
       updateNotificationsEnabledInfo);
 
-  var notificationCounts = {};
   chrome.sync.onSyncIncomingNotification.addListener(function(changedTypes) {
     for (var i = 0; i < changedTypes.length; ++i) {
       var changedType = changedTypes[i];
-      notificationCounts[changedType] = notificationCounts[changedType] || 0;
-      ++notificationCounts[changedType];
+      chrome.sync.notifications[changedType] =
+          chrome.sync.notifications[changedType] || 0;
+      ++chrome.sync.notifications[changedType];
     }
 
     var infos = [];
-    for (var k in notificationCounts) {
-      var info = { 'modelType': k, 'notificationCount': notificationCounts[k] };
+    for (var k in chrome.sync.notifications) {
+      var info = {
+        'modelType': k,
+        'notificationCount': chrome.sync.notifications[k]
+      };
       infos.push(info);
     }
 
-    var notificationCountsInfo =
-        document.getElementById('notificationCountsInfo');
-    jstProcess(new JsEvalContext({ 'notificationCounts': infos }),
-               notificationCountsInfo);
+    var notificationsInfo =
+        document.getElementById('notificationsInfo');
+    jstProcess(new JsEvalContext({ 'notifications': infos }),
+               notificationsInfo);
   });
 }
 
@@ -39,7 +47,7 @@ document.addEventListener("DOMContentLoaded", onLoad, false);
 </script>
 
 <style>
-table#notificationCountsInfo tr:nth-child(odd) {
+table#notificationsInfo tr:nth-child(odd) {
   background: #eff3ff;
 }
 </style>
@@ -47,8 +55,8 @@ table#notificationCountsInfo tr:nth-child(odd) {
 <p id='notificationsEnabledInfo'>
   Enabled: <span jscontent='notificationsEnabled'></span>
 </p>
-<table id='notificationCountsInfo'>
-  <tr jsselect='notificationCounts'>
+<table id='notificationsInfo'>
+  <tr jsselect='notifications'>
     <td jscontent='modelType'/>
     <td jscontent='notificationCount'/>
   </tr>

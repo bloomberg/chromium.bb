@@ -10,18 +10,23 @@ chrome/test/functional/special_tabs.py. -->
 <script src="chrome://resources/js/cr/ui/focus_outline_manager.js"></script>
 <script src="chrome://resources/js/cr/ui/tabs.js"></script>
 <script src="chrome_sync.js"></script>
+<script src="sync_log.js"></script>
 </head>
 <body i18n-values=".style.fontFamily:fontfamily;.style.fontSize:fontsize">
 
 <tabbox>
   <tabs>
     <tab>About</tab>
+    <tab>Data</tab>
     <tab>Notifications</tab>
     <tab>Sync Node Browser</tab>
   </tabs>
   <tabpanels>
     <tabpanel>
       <include src="about.html" />
+    </tabpanel>
+    <tabpanel>
+      <include src="data.html" />
     </tabpanel>
     <tabpanel>
       <include src="notifications.html" />
@@ -35,8 +40,6 @@ chrome/test/functional/special_tabs.py. -->
 <script>
 cr.ui.decorate('tabbox', cr.ui.TabBox);
 </script>
-
-<include src="sync_events.html" />
 
 </body>
 </html>

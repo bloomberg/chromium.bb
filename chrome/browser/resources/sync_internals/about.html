@@ -1,8 +1,12 @@
 <script>
 (function () {
+// Contains the latest snapshot of sync about info.
+chrome.sync.aboutInfo = {};
+
 // TODO(akalin): Make aboutInfo have key names likeThis and not
 // like_this.
 function refreshAboutInfo(aboutInfo) {
+  chrome.sync.aboutInfo = aboutInfo;
   var aboutInfoDiv = document.getElementById('aboutInfo');
   jstProcess(new JsEvalContext(aboutInfo), aboutInfoDiv);
 }

@@ -58,14 +58,14 @@ Event.prototype.dispatch_ = function() {
   }
 };
 
-// Sync service events.
+// Service events.
 chrome.sync.onSyncServiceStateChanged = new Event();
 
-// Notification events.
+// Notifier events.
 chrome.sync.onSyncNotificationStateChange = new Event();
 chrome.sync.onSyncIncomingNotification = new Event();
 
-// Sync manager events.
+// Manager events.
 chrome.sync.onChangesApplied = new Event();
 chrome.sync.onChangesComplete = new Event();
 chrome.sync.onSyncCycleCompleted = new Event();
