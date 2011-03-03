@@ -54,7 +54,7 @@ def Popen(cmd, **kwargs):
 
 
 def RunCommand(cmd, error_ok=False, error_message=None,
-               redirect_stdout=True, swallow_stderr=False):
+               redirect_stdout=True, swallow_stderr=False, **kwargs):
   if redirect_stdout:
     stdout = subprocess.PIPE
   else:
@@ -63,7 +63,7 @@ def RunCommand(cmd, error_ok=False, error_message=None,
     stderr = subprocess.PIPE
   else:
     stderr = None
-  proc = Popen(cmd, stdout=stdout, stderr=stderr)
+  proc = Popen(cmd, stdout=stdout, stderr=stderr, **kwargs)
   output = proc.communicate()[0]
   if not error_ok and proc.returncode != 0:
     DieWithError('Command "%s" failed.\n' % (' '.join(cmd)) +
@@ -808,7 +808,8 @@ def CMDupload(parser, args):
   # projects that have their source spread across multiple repos.
   remote_url = None
   if settings.GetIsGitSvn():
-    data = RunGit(['svn', 'info'])
+    # URL is dependent on the current directory.
+    data = RunGit(['svn', 'info'], cwd=settings.GetRoot())
     if data:
       keys = dict(line.split(': ', 1) for line in data.splitlines()
                   if ': ' in line)
