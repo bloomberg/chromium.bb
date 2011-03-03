@@ -222,12 +222,14 @@ NavigationNotificationObserver::NavigationNotificationObserver(
     AutomationProvider* automation,
     IPC::Message* reply_message,
     int number_of_navigations,
-    bool include_current_navigation)
+    bool include_current_navigation,
+    bool use_json_interface)
     : automation_(automation->AsWeakPtr()),
       reply_message_(reply_message),
       controller_(controller),
       navigations_remaining_(number_of_navigations),
-      navigation_started_(false) {
+      navigation_started_(false),
+      use_json_interface_(use_json_interface) {
   DCHECK_LT(0, navigations_remaining_);
   Source<NavigationController> source(controller_);
   registrar_.Add(this, NotificationType::NAV_ENTRY_COMMITTED, source);
@@ -295,9 +297,16 @@ void NavigationNotificationObserver::Observe(
 void NavigationNotificationObserver::ConditionMet(
     AutomationMsg_NavigationResponseValues navigation_result) {
   if (automation_) {
-    IPC::ParamTraits<AutomationMsg_NavigationResponseValues>::Write(
-        reply_message_.get(), navigation_result);
-    automation_->Send(reply_message_.release());
+    if (use_json_interface_) {
+      DictionaryValue dict;
+      dict.SetInteger("result", navigation_result);
+      AutomationJSONReply(automation_, reply_message_.release())
+          .SendSuccess(&dict);
+    } else {
+      IPC::ParamTraits<AutomationMsg_NavigationResponseValues>::Write(
+          reply_message_.get(), navigation_result);
+      automation_->Send(reply_message_.release());
+    }
   }
 
   delete this;
@@ -347,7 +356,7 @@ void TabAppendedNotificationObserver::ObserveTab(
 
   new NavigationNotificationObserver(controller, automation_,
                                      reply_message_.release(),
-                                     1, false);
+                                     1, false, false);
 }
 
 TabClosedNotificationObserver::TabClosedNotificationObserver(
@@ -852,7 +861,7 @@ bool ExecuteBrowserCommandObserver::CreateAndRegisterObserver(
     case IDC_RELOAD: {
       new NavigationNotificationObserver(
           &browser->GetSelectedTabContents()->controller(),
-          automation, reply_message, 1, false);
+          automation, reply_message, 1, false, false);
       break;
     }
     default: {
@@ -2045,7 +2054,7 @@ void NewTabObserver::Observe(NotificationType type,
                                                          true);
     new NavigationNotificationObserver(controller, automation_,
                                        reply_message_.release(),
-                                       1, false);
+                                       1, false, false);
   }
   delete this;
 }

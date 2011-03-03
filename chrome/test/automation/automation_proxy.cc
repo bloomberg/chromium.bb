@@ -17,6 +17,7 @@
 #include "chrome/common/automation_constants.h"
 #include "chrome/common/automation_messages.h"
 #include "chrome/common/chrome_version_info.h"
+#include "chrome/test/automation/automation_json_requests.h"
 #include "chrome/test/automation/browser_proxy.h"
 #include "chrome/test/automation/extension_proxy.h"
 #include "chrome/test/automation/tab_proxy.h"
@@ -555,8 +556,7 @@ bool AutomationProxy::ResetToDefaultTheme() {
 bool AutomationProxy::SendJSONRequest(const std::string& request,
                                       std::string* response) {
   bool result = false;
-  return Send(new AutomationMsg_SendJSONRequest(
-      -1, request, response, &result));
+  if (!SendAutomationJSONRequest(this, request, response, &result))
+    return false;
   return result;
 }
-

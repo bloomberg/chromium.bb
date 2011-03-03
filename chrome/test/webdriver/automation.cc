@@ -18,9 +18,11 @@
 #include "base/path_service.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
+#include "chrome/common/automation_constants.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/url_constants.h"
+#include "chrome/test/automation/automation_json_requests.h"
 #include "chrome/test/automation/automation_proxy.h"
 #include "chrome/test/automation/browser_proxy.h"
 #include "chrome/test/automation/proxy_launcher.h"
@@ -262,12 +264,19 @@ void Automation::SendWebKeyEvent(int tab_id,
 void Automation::NavigateToURL(int tab_id,
                                const std::string& url,
                                bool* success) {
-  TabProxy* tab = GetTabById(tab_id);
-  if (!tab) {
+  int browser_index = 0, tab_index = 0;
+  if (!GetIndicesForTab(tab_id, &browser_index, &tab_index)) {
     *success = false;
     return;
   }
-  *success = tab->NavigateToURL(GURL(url));
+
+  AutomationMsg_NavigationResponseValues navigate_response;
+  if (!SendNavigateToURLJSONRequest(automation(), browser_index, tab_index,
+                                    GURL(url), 1, &navigate_response)) {
+    *success = false;
+    return;
+  }
+  *success = navigate_response != AUTOMATION_MSG_NAVIGATION_ERROR;
 }
 
 void Automation::GoForward(int tab_id, bool* success) {
@@ -389,14 +398,14 @@ void Automation::GetTabIds(std::vector<int>* tab_ids,
                            bool* success) {
   *success = false;
   int browser_count = 0;
-  if (!launcher_->automation()->GetBrowserWindowCount(&browser_count)) {
+  if (!automation()->GetBrowserWindowCount(&browser_count)) {
     LOG(ERROR) << "Failed to get browser window count";
     return;
   }
   TabIdMap tab_id_map;
   for (int browser_index = 0; browser_index < browser_count; ++browser_index) {
     scoped_refptr<BrowserProxy> browser =
-        launcher_->automation()->GetBrowserWindow(browser_index);
+        automation()->GetBrowserWindow(browser_index);
     if (!browser.get())
       continue;
     int tab_count = 0;
@@ -431,7 +440,7 @@ void Automation::CloseTab(int tab_id, bool* success) {
 }
 
 void Automation::GetVersion(std::string* version) {
-  *version = launcher_->automation()->server_version();
+  *version = automation()->server_version();
 }
 
 void Automation::WaitForAllTabsToStopLoading(bool* success) {
@@ -439,7 +448,7 @@ void Automation::WaitForAllTabsToStopLoading(bool* success) {
   dict.SetString("command", "WaitForAllTabsToStopLoading");
   std::string request, reply;
   base::JSONWriter::Write(&dict, false, &request);
-  *success = launcher_->automation()->SendJSONRequest(request, &reply);
+  *success = automation()->SendJSONRequest(request, &reply);
 }
 
 TabProxy* Automation::GetTabById(int tab_id) {
@@ -448,6 +457,10 @@ TabProxy* Automation::GetTabById(int tab_id) {
     return iter->second.get();
   }
   return NULL;
+}
+
+AutomationProxy* Automation::automation() const {
+  return launcher_->automation();
 }
 
 bool Automation::SendJSONRequest(int tab_id,
@@ -480,6 +493,16 @@ bool Automation::SendJSONRequest(int tab_id,
   }
 
   return browser->SendJSONRequest(request, reply);
+}
+
+bool Automation::GetIndicesForTab(
+    int tab_id, int* browser_index, int* tab_index) {
+  if (!SendGetIndicesFromTabJSONRequest(automation(), tab_id,
+                                        browser_index, tab_index)) {
+    LOG(ERROR) << "Could not get browser and tab indices for WebDriver tab id";
+    return false;
+  }
+  return true;
 }
 
 }  // namespace webdriver

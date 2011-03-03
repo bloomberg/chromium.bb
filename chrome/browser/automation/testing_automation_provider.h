@@ -798,6 +798,22 @@ class TestingAutomationProvider : public AutomationProvider,
   void WaitForAllTabsToStopLoading(DictionaryValue* args,
                                    IPC::Message* reply_message);
 
+  // Gets the browser and tab index of the given tab. Uses the JSON interface.
+  // Example:
+  //   input: { "tab_handle": 3 }
+  //   output: { "browser_index": 1, "tab_index": 5 }
+  void GetIndicesFromTab(DictionaryValue* args, IPC::Message* reply_message);
+
+  // Navigates to the given URL. Uses the JSON interface.
+  // Example:
+  //   input: { "browser_index": 1,
+  //            "tab_index": 3,
+  //            "url": "http://www.google.com",
+  //            "navigation_count": 1  // number of navigations to wait for
+  //          }
+  //   output: { "result": AUTOMATION_MSG_NAVIGATION_SUCCESS }
+  void NavigateToURL(DictionaryValue* args, IPC::Message* reply_message);
+
 #if defined(OS_CHROMEOS)
   void LoginAsGuest(DictionaryValue* args, IPC::Message* reply_message);
 

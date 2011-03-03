@@ -151,6 +151,25 @@ class AutomationInterstitialPage : public InterstitialPage {
   DISALLOW_COPY_AND_ASSIGN(AutomationInterstitialPage);
 };
 
+Browser* GetBrowserAt(int index) {
+  if (index < 0)
+    return NULL;
+  BrowserList::const_iterator iter = BrowserList::begin();
+  for (; (iter != BrowserList::end()) && (index > 0); ++iter, --index) {}
+  if (iter == BrowserList::end())
+    return NULL;
+  return *iter;
+}
+
+TabContents* GetTabContentsAt(int browser_index, int tab_index) {
+  if (tab_index < 0)
+    return NULL;
+  Browser* browser = GetBrowserAt(browser_index);
+  if (!browser || tab_index >= browser->tab_count())
+    return NULL;
+  return browser->GetTabContentsAt(tab_index);
+}
+
 }  // namespace
 
 TestingAutomationProvider::TestingAutomationProvider(Profile* profile)
@@ -593,7 +612,7 @@ void TestingAutomationProvider::NavigateToURLBlockUntilNavigationsComplete(
 
     if (browser) {
       new NavigationNotificationObserver(tab, this, reply_message,
-                                         number_of_navigations, false);
+                                         number_of_navigations, false, false);
 
       // TODO(darin): avoid conversion to GURL.
       browser->OpenURL(url, GURL(), CURRENT_TAB, PageTransition::TYPED);
@@ -641,7 +660,8 @@ void TestingAutomationProvider::Reload(int handle,
     NavigationController* tab = tab_tracker_->GetResource(handle);
     Browser* browser = FindAndActivateTab(tab);
     if (browser && browser->command_updater()->IsCommandEnabled(IDC_RELOAD)) {
-      new NavigationNotificationObserver(tab, this, reply_message, 1, false);
+      new NavigationNotificationObserver(
+          tab, this, reply_message, 1, false, false);
       browser->Reload(CURRENT_TAB);
       return;
     }
@@ -665,7 +685,8 @@ void TestingAutomationProvider::SetAuth(int tab_handle,
       // not strictly correct, because a navigation can require both proxy and
       // server auth, but it should be OK for now.
       LoginHandler* handler = iter->second;
-      new NavigationNotificationObserver(tab, this, reply_message, 1, false);
+      new NavigationNotificationObserver(
+          tab, this, reply_message, 1, false, false);
       handler->SetAuth(WideToUTF16Hack(username), WideToUTF16Hack(password));
       return;
     }
@@ -685,7 +706,8 @@ void TestingAutomationProvider::CancelAuth(int tab_handle,
     if (iter != login_handler_map_.end()) {
       // If auth is needed again after this, something is screwy.
       LoginHandler* handler = iter->second;
-      new NavigationNotificationObserver(tab, this, reply_message, 1, false);
+      new NavigationNotificationObserver(
+          tab, this, reply_message, 1, false, false);
       handler->CancelAuth();
       return;
     }
@@ -753,13 +775,9 @@ void TestingAutomationProvider::GetNormalBrowserWindowCount(int* window_count) {
 
 void TestingAutomationProvider::GetBrowserWindow(int index, int* handle) {
   *handle = 0;
-  if (index >= 0) {
-    BrowserList::const_iterator iter = BrowserList::begin();
-    for (; (iter != BrowserList::end()) && (index > 0); ++iter, --index) {}
-    if (iter != BrowserList::end()) {
-      *handle = browser_tracker_->Add(*iter);
-    }
-  }
+  Browser* browser = GetBrowserAt(index);
+  if (browser)
+    *handle = browser_tracker_->Add(browser);
 }
 
 void TestingAutomationProvider::FindNormalBrowserWindow(int* handle) {
@@ -1348,7 +1366,7 @@ void TestingAutomationProvider::ShowInterstitialPage(
     TabContents* tab_contents = controller->tab_contents();
 
     new NavigationNotificationObserver(controller, this, reply_message, 1,
-                                       false);
+                                       false, false);
 
     AutomationInterstitialPage* interstitial =
         new AutomationInterstitialPage(tab_contents,
@@ -1448,7 +1466,7 @@ void TestingAutomationProvider::ActionOnSSLBlockingPage(
       if (ssl_blocking_page) {
         if (proceed) {
           new NavigationNotificationObserver(tab, this, reply_message, 1,
-                                             false);
+                                             false, false);
           ssl_blocking_page->Proceed();
           return;
         }
@@ -1815,7 +1833,7 @@ void TestingAutomationProvider::ClickInfoBarAccept(
       if (info_bar_index < nav_controller->tab_contents()->infobar_count()) {
         if (wait_for_navigation) {
           new NavigationNotificationObserver(nav_controller, this,
-                                             reply_message, 1, false);
+                                             reply_message, 1, false, false);
         }
         InfoBarDelegate* delegate =
             nav_controller->tab_contents()->GetInfoBarDelegateAt(
@@ -1858,7 +1876,8 @@ void TestingAutomationProvider::WaitForNavigation(int handle,
     return;
   }
 
-  new NavigationNotificationObserver(controller, this, reply_message, 1, true);
+  new NavigationNotificationObserver(
+      controller, this, reply_message, 1, true, false);
 }
 
 void TestingAutomationProvider::SetIntPreference(int handle,
@@ -1983,7 +2002,7 @@ void TestingAutomationProvider::GoBackBlockUntilNavigationsComplete(
     Browser* browser = FindAndActivateTab(tab);
     if (browser && browser->command_updater()->IsCommandEnabled(IDC_BACK)) {
       new NavigationNotificationObserver(tab, this, reply_message,
-                                         number_of_navigations, false);
+                                         number_of_navigations, false, false);
       browser->GoBack(CURRENT_TAB);
       return;
     }
@@ -2001,7 +2020,7 @@ void TestingAutomationProvider::GoForwardBlockUntilNavigationsComplete(
     Browser* browser = FindAndActivateTab(tab);
     if (browser && browser->command_updater()->IsCommandEnabled(IDC_FORWARD)) {
       new NavigationNotificationObserver(tab, this, reply_message,
-                                         number_of_navigations, false);
+                                         number_of_navigations, false, false);
       browser->GoForward(CURRENT_TAB);
       return;
     }
@@ -2095,6 +2114,10 @@ void TestingAutomationProvider::SendJSONRequest(int handle,
   std::map<std::string, JsonHandler> handler_map;
   handler_map["WaitForAllTabsToStopLoading"] =
       &TestingAutomationProvider::WaitForAllTabsToStopLoading;
+  handler_map["GetIndicesFromTab"] =
+      &TestingAutomationProvider::GetIndicesFromTab;
+  handler_map["NavigateToURL"] =
+      &TestingAutomationProvider::NavigateToURL;
 #if defined(OS_CHROMEOS)
   handler_map["LoginAsGuest"] = &TestingAutomationProvider::LoginAsGuest;
   handler_map["Login"] = &TestingAutomationProvider::Login;
@@ -4773,6 +4796,73 @@ void TestingAutomationProvider::WaitForAllTabsToStopLoading(
     DictionaryValue* args,
     IPC::Message* reply_message) {
   new AllTabsStoppedLoadingObserver(this, reply_message);
+}
+
+void TestingAutomationProvider::GetIndicesFromTab(
+    DictionaryValue* args,
+    IPC::Message* reply_message) {
+  AutomationJSONReply reply(this, reply_message);
+  int tab_handle = 0;
+  if (!args->GetInteger("tab_handle", &tab_handle) ||
+      !tab_tracker_->ContainsHandle(tab_handle)) {
+    reply.SendError("'tab_handle' missing or invalid");
+    return;
+  }
+  NavigationController* controller = tab_tracker_->GetResource(tab_handle);
+  BrowserList::const_iterator iter = BrowserList::begin();
+  int browser_index = 0;
+  for (; iter != BrowserList::end(); ++iter, ++browser_index) {
+    Browser* browser = *iter;
+    for (int tab_index = 0; tab_index < browser->tab_count(); ++tab_index) {
+      if (browser->GetTabContentsAt(tab_index) == controller->tab_contents()) {
+        DictionaryValue dict;
+        dict.SetInteger("windex", browser_index);
+        dict.SetInteger("tab_index", tab_index);
+        reply.SendSuccess(&dict);
+        return;
+      }
+    }
+  }
+  reply.SendError("Could not find tab among current browser windows");
+}
+
+void TestingAutomationProvider::NavigateToURL(
+    DictionaryValue* args,
+    IPC::Message* reply_message) {
+  int browser_index = 0, tab_index = 0, navigation_count = 0;
+  std::string url;
+  if (!args->GetInteger("windex", &browser_index)) {
+    AutomationJSONReply(this, reply_message)
+        .SendError("'windex' missing or invalid");
+    return;
+  }
+  if (!args->GetInteger("tab_index", &tab_index)) {
+    AutomationJSONReply(this, reply_message)
+        .SendError("'tab_index' missing or invalid");
+    return;
+  }
+  if (!args->GetString("url", &url)) {
+    AutomationJSONReply(this, reply_message)
+        .SendError("'url' missing or invalid");
+    return;
+  }
+  if (!args->GetInteger("navigation_count", &navigation_count)) {
+    AutomationJSONReply(this, reply_message)
+        .SendError("'navigation_count' missing or invalid");
+    return;
+  }
+  Browser* browser = GetBrowserAt(browser_index);
+  TabContents* tab_contents = GetTabContentsAt(browser_index, tab_index);
+  if (!browser || !tab_contents) {
+    AutomationJSONReply(this, reply_message)
+        .SendError("Cannot locate tab or browser to navigate");
+    return;
+  }
+  new NavigationNotificationObserver(
+      &tab_contents->controller(), this, reply_message,
+      navigation_count, false, true);
+  browser->OpenURLFromTab(
+      tab_contents, GURL(url), GURL(), CURRENT_TAB, PageTransition::TYPED);
 }
 
 void TestingAutomationProvider::WaitForTabCountToBecome(

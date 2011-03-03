@@ -133,7 +133,8 @@ class NavigationNotificationObserver : public NotificationObserver {
                                  AutomationProvider* automation,
                                  IPC::Message* reply_message,
                                  int number_of_navigations,
-                                 bool include_current_navigation);
+                                 bool include_current_navigation,
+                                 bool use_json_interface);
   virtual ~NavigationNotificationObserver();
 
   virtual void Observe(NotificationType type,
@@ -149,6 +150,7 @@ class NavigationNotificationObserver : public NotificationObserver {
   NavigationController* controller_;
   int navigations_remaining_;
   bool navigation_started_;
+  bool use_json_interface_;
 
   DISALLOW_COPY_AND_ASSIGN(NavigationNotificationObserver);
 };

@@ -15,6 +15,7 @@
 #include "chrome/common/automation_constants.h"
 #include "ui/base/keycodes/keyboard_codes.h"
 
+class AutomationProxy;
 class DictionaryValue;
 class FilePath;
 class GURL;
@@ -114,7 +115,9 @@ class Automation {
 
  private:
   typedef std::map<int, scoped_refptr<TabProxy> > TabIdMap;
+
   TabProxy* GetTabById(int tab_id);
+  AutomationProxy* automation() const;
 
   scoped_ptr<ProxyLauncher> launcher_;
   // Map from tab ID to |TabProxy|. The tab ID is simply the |AutomationHandle|
@@ -123,6 +126,8 @@ class Automation {
 
   bool SendJSONRequest(
       int tab_id, const DictionaryValue& dict, std::string* reply);
+
+  bool GetIndicesForTab(int tab_id, int* browser_index, int* tab_index);
 
   DISALLOW_COPY_AND_ASSIGN(Automation);
 };

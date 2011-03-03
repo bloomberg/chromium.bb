@@ -1788,6 +1788,8 @@
              'test/automation/autocomplete_edit_proxy.h',
              'test/automation/automation_handle_tracker.cc',
              'test/automation/automation_handle_tracker.h',
+             'test/automation/automation_json_requests.cc',
+             'test/automation/automation_json_requests.h',
              'test/automation/automation_proxy.cc',
              'test/automation/automation_proxy.h',
              'test/automation/browser_proxy.cc',
