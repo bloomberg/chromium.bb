@@ -2342,6 +2342,10 @@
             'browser/ui/webui/file_browse_browsertest.cc',
             'browser/ui/webui/mediaplayer_browsertest.cc',
           ],
+        }, { #else: OS == "chromeos"
+          'sources!': [
+            'browser/service/service_process_control_browsertest.cc',
+          ],
         }],
         ['toolkit_views==0', {
           'sources!': [
