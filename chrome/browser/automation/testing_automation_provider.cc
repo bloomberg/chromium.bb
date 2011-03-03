@@ -67,12 +67,14 @@
 #include "chrome/browser/ui/omnibox/location_bar.h"
 #include "chrome/browser/ui/search_engines/keyword_editor_controller.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
+#include "chrome/browser/ui/webui/shown_sections_handler.h"
 #include "chrome/common/automation_messages.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/net/url_request_context_getter.h"
 #include "chrome/common/notification_service.h"
+#include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "content/browser/renderer_host/render_process_host.h"
 #include "content/browser/renderer_host/render_view_host.h"
@@ -2237,6 +2239,15 @@ void TestingAutomationProvider::SendJSONRequest(int handle,
 
   browser_handler_map["SendKeyEventToActiveTab"] =
       &TestingAutomationProvider::SendKeyEventToActiveTab;
+
+  browser_handler_map["GetNTPThumbnailMode"] =
+      &TestingAutomationProvider::GetNTPThumbnailMode;
+  browser_handler_map["SetNTPThumbnailMode"] =
+      &TestingAutomationProvider::SetNTPThumbnailMode;
+  browser_handler_map["GetNTPMenuMode"] =
+      &TestingAutomationProvider::GetNTPMenuMode;
+  browser_handler_map["SetNTPMenuMode"] =
+      &TestingAutomationProvider::SetNTPMenuMode;
 
   browser_handler_map["WebkitMouseMove"] =
       &TestingAutomationProvider::WebkitMouseMove;
@@ -4624,6 +4635,138 @@ void TestingAutomationProvider::SendKeyEventToActiveTab(
   new InputEventAckNotificationObserver(this, reply_message, event.type);
   browser->GetSelectedTabContents()->render_view_host()->
     ForwardKeyboardEvent(event);
+}
+
+// Sample JSON input: { "command": "GetNTPThumbnailMode" }
+// For output, refer to GetNTPThumbnailMode() in
+// chrome/test/pyautolib/pyauto.py.
+void TestingAutomationProvider::GetNTPThumbnailMode(
+    Browser* browser,
+    DictionaryValue* args,
+    IPC::Message* reply_message) {
+  const int shown_sections = ShownSectionsHandler::GetShownSections(
+      browser->profile()->GetPrefs());
+
+  DictionaryValue* return_value = new DictionaryValue;
+  return_value->SetBoolean("apps", shown_sections & APPS ? true : false);
+  return_value->SetBoolean("most_visited",
+                           shown_sections & THUMB ? true : false);
+
+  AutomationJSONReply reply(this, reply_message);
+  reply.SendSuccess(return_value);
+}
+
+// Sample JSON input: { "command": "SetNTPThumbnailMode", "section": "apps",
+//                      "turn_on": true }
+// Refer to SetNTPThumbnailMode() in chrome/test/pyautolib/pyauto.py for
+// all possible input values.
+// Sample JSON output: {}
+void TestingAutomationProvider::SetNTPThumbnailMode(
+    Browser* browser,
+    DictionaryValue* args,
+    IPC::Message* reply_message) {
+  AutomationJSONReply reply(this, reply_message);
+  std::string section_name;
+  bool turn_on;
+  if (!args->GetString("section", &section_name) ||
+      !args->GetBoolean("turn_on", &turn_on)) {
+    reply.SendError("Invalid or missing args");
+    return;
+  }
+
+  PrefService* prefs = browser->profile()->GetPrefs();
+  Section section;
+  if (section_name.compare("apps") == 0) {
+    section = APPS;
+  } else if (section_name.compare("most_visited") == 0) {
+    section = THUMB;
+  } else if (section_name.compare("recently_closed") == 0) {
+    reply.SendError("Thumbnail mode does not apply to the recently closed "
+                    "section.");
+    return;
+  } else {
+    reply.SendError(StringPrintf("Unexpected section name: '%s'",
+                                 section_name.c_str()));
+    return;
+  }
+
+  if (turn_on) {
+    ShownSectionsHandler::SetShownSection(prefs, section);
+  } else {
+    int shown_sections = ShownSectionsHandler::GetShownSections(prefs);
+    // Change the bit for the relevant section in the bitmask to 0.
+    shown_sections &= ~(0xFFFFFFFF & section);
+    prefs->SetInteger(prefs::kNTPShownSections, shown_sections);
+  }
+
+  reply.SendSuccess(NULL);
+}
+
+// Sample JSON input: { "command": "GetNTPMenuMode" }
+// For output, refer to GetNTPMenuMode() in
+// chrome/test/pyautolib/pyauto.py.
+void TestingAutomationProvider::GetNTPMenuMode(
+    Browser* browser,
+    DictionaryValue* args,
+    IPC::Message* reply_message) {
+  const int shown_sections = ShownSectionsHandler::GetShownSections(
+      browser->profile()->GetPrefs());
+
+  DictionaryValue* return_value = new DictionaryValue;
+  return_value->SetBoolean("apps", shown_sections & MENU_APPS ? true : false);
+  return_value->SetBoolean("most_visited",
+                           shown_sections & MENU_THUMB ? true : false);
+  return_value->SetBoolean("recently_closed",
+                           shown_sections & MENU_RECENT ? true : false);
+
+  AutomationJSONReply reply(this, reply_message);
+  reply.SendSuccess(return_value);
+}
+
+// Sample JSON input: { "command": "SetNTPMenuMode", "section": "apps",
+//                      "turn_on": false }
+// Refer to SetNTPMenuMode() in chrome/test/pyautolib/pyauto.py for all possible
+// input values.
+// Sample JSON output: {}
+void TestingAutomationProvider::SetNTPMenuMode(
+    Browser* browser,
+    DictionaryValue* args,
+    IPC::Message* reply_message) {
+  AutomationJSONReply reply(this, reply_message);
+  std::string section_name;
+  bool turn_on;
+  if (!args->GetString("section", &section_name) ||
+      !args->GetBoolean("turn_on", &turn_on)) {
+    reply.SendError("Invalid or missing args");
+    return;
+  }
+
+  PrefService* prefs = browser->profile()->GetPrefs();
+  Section section;
+  if (section_name.compare("apps") == 0) {
+    section = MENU_APPS;
+  } else if (section_name.compare("most_visited") == 0) {
+    section = MENU_THUMB;
+  } else if (section_name.compare("recently_closed") == 0) {
+    section = MENU_RECENT;
+  }
+  else {
+    reply.SendError(StringPrintf("Unexpected section name: '%s'",
+                                 section_name.c_str()));
+    return;
+  }
+
+  int shown_sections = ShownSectionsHandler::GetShownSections(prefs);
+  if (turn_on) {
+    // Change the bit for the relevant section in the bitmask to 1.
+    shown_sections |= section;
+  } else {
+    // Change the bit for the relevant section in the bitmask to 0.
+    shown_sections &= ~(0xFFFFFFFF & section);
+  }
+  prefs->SetInteger(prefs::kNTPShownSections, shown_sections);
+
+  reply.SendSuccess(NULL);
 }
 
 void TestingAutomationProvider::WaitForAllTabsToStopLoading(

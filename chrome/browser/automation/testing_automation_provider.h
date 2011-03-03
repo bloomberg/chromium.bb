@@ -772,6 +772,28 @@ class TestingAutomationProvider : public AutomationProvider,
                                DictionaryValue* args,
                                IPC::Message* reply_message);
 
+  // Determines whether each relevant section of the NTP is in thumbnail mode.
+  void GetNTPThumbnailMode(Browser* browser,
+                           DictionaryValue* args,
+                           IPC::Message* reply_message);
+
+  // Puts or removes the specified section of the NTP into/from thumbnail mode.
+  // If the section is put into thumbnail mode, all other relevant sections are
+  // removed from thumbnail mode.
+  void SetNTPThumbnailMode(Browser* browser,
+                           DictionaryValue* args,
+                           IPC::Message* reply_message);
+
+  // Determines whether each relevant section of the NTP is in menu mode.
+  void GetNTPMenuMode(Browser* browser,
+                      DictionaryValue* args,
+                      IPC::Message* reply_message);
+
+  // Puts or removes the specified section of the NTP into/from menu mode.
+  void SetNTPMenuMode(Browser* browser,
+                      DictionaryValue* args,
+                      IPC::Message* reply_message);
+
   // Waits for all tabs to stop loading.
   void WaitForAllTabsToStopLoading(DictionaryValue* args,
                                    IPC::Message* reply_message);

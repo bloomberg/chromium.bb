@@ -2159,6 +2159,110 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
     }
     return self._GetResultFromJSONRequest(cmd_dict)
 
+  def GetNTPThumbnailMode(self):
+    """Identifies whether or not each relevant NTP section is in thumbnail mode.
+
+    Thumbnail mode applies to the Apps section and the Most Visited section.
+    When in thumbnail mode, large thumbnails appear for each item in the
+    section.  When not in thumbnail mode, small icons appear instead.  At any
+    given time, at most one section can be in thumbnail mode in the NTP.
+
+    SAMPLE OUTPUT:
+    {
+      u'apps': True,
+      u'most_visited': False
+    }
+
+    Returns:
+      A dictionary indicating whether or not each relevant section of the NTP
+      is in thumbnail mode.
+
+    Raises:
+      pyauto_errors.JSONInterfaceError if the automation call returns an error.
+    """
+    cmd_dict = {
+        'command': 'GetNTPThumbnailMode',
+    }
+    return self._GetResultFromJSONRequest(cmd_dict)
+
+  def SetNTPThumbnailMode(self, section, turn_on):
+    """Puts or removes a section of the NTP into/from thumbnail (expanded) mode.
+
+    Thumbnail mode applies to the Apps section and the Most Visited section.
+    At any given time, at most one section can be in thumbnail mode in the NTP;
+    when a specified section is put into thumbnail mode, the other section is
+    removed from thumbnail mode.
+
+    Args:
+      section: A string representing the NTP section to use.
+               Possible values:
+                 'apps': the "Apps" section.
+                 'most_visited': the "Most Visited" section.
+      turn_on: A boolean indicating whether to put the section into thumbnail
+               mode (True), or remove the section from thumbnail mode (False).
+
+    Raises:
+      pyauto_errors.JSONInterfaceError if the automation call returns an error.
+    """
+    cmd_dict = {
+        'command': 'SetNTPThumbnailMode',
+        'section': section,
+        'turn_on': turn_on
+    }
+    return self._GetResultFromJSONRequest(cmd_dict)
+
+  def GetNTPMenuMode(self):
+    """Identifies whether or not each relevant NTP section is in menu mode.
+
+    Menu mode applies to the Apps section, the Most Visited section, and the
+    Recently Closed section.  When in menu mode, the section is almost
+    completely hidden, appearing as a menu at the bottom of the NTP.  When not
+    in menu mode, the section appears with all information in the regular
+    location in the NTP.
+
+    SAMPLE OUTPUT:
+    {
+      u'apps': False,
+      u'most_visited': True,
+      u'recently_closed': True
+    }
+
+    Returns:
+      A dictionary indicating whether or not each relevant section of the NTP
+      is in menu mode.
+
+    Raises:
+      pyauto_errors.JSONInterfaceError if the automation call returns an error.
+    """
+    cmd_dict = {
+        'command': 'GetNTPMenuMode',
+    }
+    return self._GetResultFromJSONRequest(cmd_dict)
+
+  def SetNTPMenuMode(self, section, turn_on):
+    """Puts or removes the specified section of the NTP into/from menu mode.
+
+    Menu mode applies to the Apps section, the Most Visited section, and the
+    Recently Closed section.
+
+    Args:
+      section: A string representing the NTP section to use.
+               Possible values:
+                 'apps': the "Apps" section.
+                 'most_visited': the "Most Visited" section.
+                 'recently_closed': the "Recently Closed" section.
+      turn_on: A boolean indicating whether to put the section into menu mode
+               (True), or remove the section from menu mode (False).
+
+    Raises:
+      pyauto_errors.JSONInterfaceError if the automation call returns an error.
+    """
+    cmd_dict = {
+        'command': 'SetNTPMenuMode',
+        'section': section,
+        'turn_on': turn_on
+    }
+    return self._GetResultFromJSONRequest(cmd_dict)
 
   ## ChromeOS section
 
