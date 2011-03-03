@@ -2475,7 +2475,7 @@ void Cues::Init() const
     const long long stop = m_start + m_size;
     long long pos = m_start;
 
-    size_t cue_points_size = 0;
+    long cue_points_size = 0;
 
     while (pos < stop)
     {
@@ -2506,17 +2506,17 @@ void Cues::Init() const
 
 
 void Cues::PreloadCuePoint(
-    size_t& cue_points_size,
+    long& cue_points_size,
     long long pos) const
 {
     assert(m_count == 0);
 
     if (m_preload_count >= cue_points_size)
     {
-        size_t n;
+        long n;
 
         if (cue_points_size > 0)
-            n = static_cast<size_t>(2 * cue_points_size);
+            n = 2 * cue_points_size;
         else
         {
             const SegmentInfo* const pInfo = m_pSegment->GetInfo();
@@ -2532,7 +2532,7 @@ void Cues::PreloadCuePoint(
                 else
                 {
                     const long long sec = (ns + 999999999LL) / 1000000000LL;
-                    n = static_cast<size_t>(sec);
+                    n = static_cast<long>(sec);
                 }
             }
         }

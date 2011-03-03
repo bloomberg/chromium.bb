@@ -525,7 +525,7 @@ public:
 
 private:
     void Init() const;
-    void PreloadCuePoint(size_t&, long long) const;
+    void PreloadCuePoint(long&, long long) const;
 
     mutable CuePoint** m_cue_points;
     mutable long m_count;
