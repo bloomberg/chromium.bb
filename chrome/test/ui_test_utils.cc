@@ -384,7 +384,7 @@ bool GetCurrentTabTitle(const Browser* browser, string16* title) {
   NavigationEntry* last_entry = tab_contents->controller().GetActiveEntry();
   if (!last_entry)
     return false;
-  title->assign(last_entry->title());
+  title->assign(last_entry->GetTitleForDisplay(""));
   return true;
 }
 
