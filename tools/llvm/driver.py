@@ -43,17 +43,23 @@ import sys
 
 INITIAL_ENV = {
   # Internal settings
-  'EMIT_LL'     : '1',   # Produce an intermediate .ll file
-                         # Currently enabled for debugging.
-                         # TODO(pdox): Disable for SDK version
-  'USE_MC_ASM'  : '1',   # Use llvm-mc instead of nacl-as
-  'MC_DIRECT'   : '1',   # Use MC direct object emission instead of
-                         # producing an intermediate .s file
-  'CLEANUP'     : '0',   # Clean up temporary files
-                         # TODO(pdox): Enable for SDK version
-  'SANDBOXED'   : '0',   # Use sandboxed toolchain for this arch.
-  'SRPC'        : '1',   # Use SRPC sandboxed toolchain
-
+  'EMIT_LL'     : '1',    # Produce an intermediate .ll file
+                          # Currently enabled for debugging.
+                          # TODO(pdox): Disable for SDK version
+  'USE_MC_ASM'  : '1',    # Use llvm-mc instead of nacl-as
+  'MC_DIRECT'   : '1',    # Use MC direct object emission instead of
+                          # producing an intermediate .s file
+  'WHICH_LD'    : 'GOLD', # Which ld to use for native linking: GOLD or BFD
+  'CLEANUP'     : '0',    # Clean up temporary files
+                          # TODO(pdox): Enable for SDK version
+  'SANDBOXED'   : '0',    # Use sandboxed toolchain for this arch.
+  'SRPC'        : '1',    # Use SRPC sandboxed toolchain
+  'GOLD_FIX'    : '0',    # Use linker script instead of -Ttext for gold.
+                          # Needed for dynamic_code_loading tests which create
+                          # a gap between text and rodata.
+                          # TODO(pdox): Either eliminate gold native linking or
+                          #             figure out why this is broken in the
+                          #             first place.
   # Command-line options
   'GCC_MODE'    : '',     # '' (default), '-E', '-c', or '-S'
   'PIC'         : '0',    # -fPIC
@@ -67,6 +73,7 @@ INITIAL_ENV = {
   'INPUTS'      : '',    # Input files
   'OUTPUT'      : '',    # Output file
   'UNMATCHED'   : '',    # All unrecognized parameters
+  'ARGV'        : '',    # argv of the incarnation
 
   # Special settings needed to tweak behavior
   'SKIP_OPT'    : '0',  # Don't run OPT. This is used in cases where
@@ -144,11 +151,6 @@ INITIAL_ENV = {
   'AS_SB_X8664'   : '${SEL_LDR_X8664} -a -- ${BASE_SB_X8664}/nonsrpc/bin/as',
   'LD_SB_X8664'   : '${SEL_LDR_X8664} -a -- ${BASE_SB_X8664}/nonsrpc/bin/ld',
 
-  'LD_SCRIPT_X8632': '${BASE_SB_X8632}/script/ld_script',
-  'LD_SCRIPT_X8664': '${BASE_SB_X8664}/script/ld_script',
-
-  'LD_SB_FLAGS'   : '-nostdlib -T ${LD_SCRIPT_%arch%} -static',
-
   'LLVM_MC'       : '${BASE_ARM}/bin/llvm-mc',
   'LLVM_AS'       : '${BASE_ARM}/bin/llvm-as',
   'LLVM_DIS'      : '${BASE_ARM}/bin/llvm-dis',
@@ -174,11 +176,12 @@ INITIAL_ENV = {
   'OPT_FLAGS': '-std-compile-opts -O3 -strip',
   'OPT_LEVEL': '',
 
-  'OBJDUMP_ARM'   : '${BASE_ARM}/bin/arm-none-linux-gnueabi-objdump',
-  'OBJDUMP_X8632' : '${BASE_ARM}/bin/arm-none-linux-gnueabi-objdump',
-  'OBJDUMP_X8664' : '${BASE_ARM}/bin/arm-none-linux-gnueabi-objdump',
+  'BINUTILS_BASE' : '${BASE_ARM}/bin/arm-pc-nacl-',
+  'OBJDUMP_ARM'   : '${BINUTILS_BASE}objdump',
+  'OBJDUMP_X8632' : '${BINUTILS_BASE}objdump',
+  'OBJDUMP_X8664' : '${BINUTILS_BASE}objdump',
 
-  'AS_ARM'        : '${BASE_ARM}/bin/arm-none-linux-gnueabi-as',
+  'AS_ARM'        : '${BINUTILS_BASE}as',
   'AS_X8632'      : '${BASE_NACL}/toolchain/linux_x86/bin/nacl-as',
   'AS_X8664'      : '${BASE_NACL}/toolchain/linux_x86/bin/nacl64-as',
 
@@ -190,14 +193,31 @@ INITIAL_ENV = {
   'MC_FLAGS_X8632' : '-assemble -filetype=obj -arch=i686 -triple=i686-nacl',
   'MC_FLAGS_X8664' : '-assemble -filetype=obj -arch=x86_64 -triple=x86_64-nacl',
 
-  'LD'       : '${BASE_ARM}/bin/arm-none-linux-gnueabi-ld',
+  'NM'             : '${BINUTILS_BASE}nm',
+  'AR'             : '${BINUTILS_BASE}ar',
+  'RANLIB'         : '${BINUTILS_BASE}ranlib',
 
+  'LD'             : '${LD_%WHICH_LD%} ${LD_%WHICH_LD%_FLAGS}',
+
+  'LD_BFD'         : '${BINUTILS_BASE}ld.bfd',
+  'LD_BFD_FLAGS'   : '-m ${LD_EMUL_%arch%} -T ${LD_SCRIPT_%ARCH%}',
+
+  'LD_GOLD_FLAGS'  : '--native-client',
+  'LD_GOLD'        : '${BINUTILS_BASE}ld.gold',
+
+  'LD_FLAGS'       : '-nostdlib ${LD_SEARCH_DIRS}',
   'LD_SEARCH_DIRS' : '',
-  'LD_FLAGS_COMMON': '--native-client -nostdlib ${LD_SEARCH_DIRS}',
-  'LD_FLAGS_STATIC': '${LD_FLAGS_COMMON} -static -Ttext=0x00020000',
-  'LD_FLAGS_SHARED': '${LD_FLAGS_COMMON} -shared',
 
-  'BCLD'      : '${BASE_ARM}/bin/arm-none-linux-gnueabi-ld',
+  'LD_EMUL_ARM'    : 'armelf_nacl',
+  'LD_EMUL_X8632'  : 'elf_nacl',
+  'LD_EMUL_X8664'  : 'elf64_nacl',
+
+  'LDSCRIPTS_DIR'  : '${BASE}/ldscripts',
+  'LD_SCRIPT_ARM'  : '${LDSCRIPTS_DIR}/ld_script_arm_untrusted',
+  'LD_SCRIPT_X8632': '${LDSCRIPTS_DIR}/ld_script_x8632_untrusted',
+  'LD_SCRIPT_X8664': '${LDSCRIPTS_DIR}/ld_script_x8664_untrusted',
+
+  'BCLD'      : '${BINUTILS_BASE}ld.gold',
   'BCLD_FLAGS': '${GOLD_PLUGIN_ARGS} ${LD_SEARCH_DIRS}',
 
 
@@ -261,7 +281,7 @@ DriverPatterns = [
   ( '--pnacl-dis',                     "env.set('INCARNATION', 'dis')"),
   ( '--pnacl-as',                      "env.set('INCARNATION', 'as')"),
   ( '--pnacl-gcc',                     "env.set('INCARNATION', 'gcc')"),
-  ( '--pnacl-bcld',                    "env.set('INCARNATION', 'bcld')"),
+  ( '--pnacl-ld',                      "env.set('INCARNATION', 'ld')"),
   ( '--pnacl-translate',               "env.set('INCARNATION', 'translate')"),
   ( '-emit-llvm',                      ""), # TODO(pdox): Since this is now
   ( '--emit-llvm',                     ""), # the default, remove this flag
@@ -269,8 +289,11 @@ DriverPatterns = [
   ( ('--add-llc-option', '(.+)'),      "env.append('LLC_FLAGS_COMMON', $0)"),
   ( '--pnacl-sb',                      "env.set('SANDBOXED', '1')"),
   ( '--dry-run',                       "env.set('DRY_RUN', '1')"),
- ]
+  ( '--pnacl-gold-fix',                "env.set('GOLD_FIX', '1')"),
 
+  # Catch all pattern (must be last)
+  ( '(.*)',                            "env.append('ARGV', $0)"),
+ ]
 
 GCCPatterns = [
   ( '-o(.+)',          "env.set('OUTPUT', $0)"),
@@ -301,6 +324,7 @@ GCCPatterns = [
 
   ( '(-O.+)',          "env.set('OPT_LEVEL', $0)"),
 
+  ( '-Wl,(.*)',        "env.append('LD_FLAGS', *($0.split(',')))"),
   ( '(-W.*)',          "env.append('CC_FLAGS', $0)"),
   ( '(-std=.*)',       "env.append('CC_FLAGS', $0)"),
   ( '(-B.*)',          "env.append('CC_FLAGS', $0)"),
@@ -321,17 +345,35 @@ GCCPatterns = [
   ( '-L(.+)',                 "env.append('LD_SEARCH_DIRS', '-L' + $0);"
                               "env.append('SEARCH_DIRS', $0)"),
   ( '(-Wp,.*)',               "env.append('CC_FLAGS', $0)"),
+  ( '(-soname=.*)',           "env.append('LD_FLAGS', $0)"),
+
 
   # Ignore these gcc flags
   ( '(-msse)',                ""),
   ( '(-march=armv7-a)',       ""),
 
+  # These are actually linker flags, not gcc flags
+  # TODO(pdox): Move these into a separate linker patterns list
+  ( ('-e','(.*)'),            "env.append('LD_FLAGS', '-e', $0)"),
+  ( ('-Ttext','(.*)'),        "env.append('LD_FLAGS', '-Ttext', $0)"),
+  ( ('(--section-start)','(.*)'), "env.append('LD_FLAGS', $0, $1)"),
+  ( '-melf_nacl',             "env.set('ARCH', 'X8632')"),
+  ( ('-m','elf_nacl'),        "env.set('ARCH', 'X8632')"),
+  ( '-melf64_nacl',           "env.set('ARCH', 'X8664')"),
+  ( ('-m','elf64_nacl'),      "env.set('ARCH', 'X8664')"),
+  ( '-marmelf_nacl',          "env.set('ARCH', 'ARM')"),
+  ( ('-m','armelf_nacl'),     "env.set('ARCH', 'ARM')"),
+
   # Ignore these assembler flags
   ( '(-Qy)',                  ""),
   ( ('(--traditional-format)', '.*'), ""),
   ( '(-gstabs)',              ""),
+  ( '(--gstabs)',             ""),
   ( '(-gdwarf2)',             ""),
+  ( '(--gdwarf2)',             ""),
   ( '(--fatal-warnings)',     ""),
+  ( '(-meabi=.*)',            ""),
+  ( '(-mfpu=.*)',             ""),
 
   # GCC diagnostic mode triggers
   ( '(-print-.*)',            "env.set('DIAGNOSTIC', '1')"),
@@ -339,9 +381,8 @@ GCCPatterns = [
   ( '(-dumpspecs)',           "env.set('DIAGNOSTIC', '1')"),
   ( '(-v|--version|--v|-V)',  "env.set('DIAGNOSTIC', '1')"),
   ( '(-d.*)',                 "env.set('DIAGNOSTIC', '1')"),
-]
 
-CatchAllPattern = [
+  # Catch all pattern (must be last)
   ( '(.*)',                   "env.append('UNMATCHED', $0)"),
 ]
 
@@ -361,7 +402,20 @@ def FixArch(arch):
     Log.Fatal('Unrecognized arch "%s"!', arch)
   return archfix[arch]
 
+def ClearStandardLibs():
+  env.clear('STDLIB_NATIVE_PREFIX')
+  env.clear('STDLIB_NATIVE_SUFFIX')
+  env.clear('STDLIB_BC_PREFIX')
+  env.clear('STDLIB_BC_SUFFIX')
+
 def PrepareFlags():
+  ### TEMPORARY HACK
+  ### To deal with the old behavior of scons
+  if env.has('LD_FLAGS_STATIC'):
+    env.set('GOLD_FIX', '1')
+    env.append('LD_FLAGS', '--section-start', '.rodata=0x1000000')
+  ### END HACK
+
   if env.getbool('PIC'):
     env.append('LLC_FLAGS_COMMON', '-relocation-model=pic')
 
@@ -369,10 +423,7 @@ def PrepareFlags():
     env.clear('CC_STDINC')
 
   if env.getbool('NOSTDLIB'):
-    env.clear('STDLIB_NATIVE_PREFIX')
-    env.clear('STDLIB_NATIVE_SUFFIX')
-    env.clear('STDLIB_BC_PREFIX')
-    env.clear('STDLIB_BC_SUFFIX')
+    ClearStandardLibs()
 
   # Disable MC and sandboxing for ARM until we have it working
   arch = GetArch()
@@ -383,25 +434,24 @@ def PrepareFlags():
     env.set('SRPC', '0')
 
   if env.getbool('SHARED'):
-    env.set('LD_FLAGS', '${LD_FLAGS_SHARED}')
-    output = env.get('OUTPUT')
-    if output != '':
-      env.append('LD_FLAGS', '-soname=' + os.path.basename(output))
+    env.append('LD_FLAGS', '-shared')
     env.clear('STDLIB_BC_PREFIX')
     env.clear('STDLIB_BC_SUFFIX')
     env.clear('STDLIB_NATIVE_PREFIX')
     env.clear('STDLIB_NATIVE_SUFFIX')
     env.set('RUN_BCLD', '${RUN_LLVM_LINK}')
   else:
-    env.set('LD_FLAGS', '${LD_FLAGS_STATIC}')
-
+    # TODO(pdox): Figure out why this is needed.
+    if env.getbool('GOLD_FIX'):
+      env.append('LD_GOLD_FLAGS', '-static', '-T', '${LD_SCRIPT_%ARCH%}')
+    else:
+      env.append('LD_GOLD_FLAGS', '-static', '-Ttext=0x00020000')
+    env.append('LD_BFD_FLAGS', '-static')
 
   if env.getbool('SANDBOXED') and arch:
     env.set('LLC', '${LLC_SB_%s}' % arch)
     env.set('AS', '${AS_SB_%s}' % arch)
-    env.set('LD', '${LD_SB_%s}' % arch)
-    env.set('LD_FLAGS', '${LD_SB_FLAGS}')
-
+    env.set('LD', '${LD_SB_%s} ${LD_BFD_FLAGS}' % arch)
 
 ######################################################################
 # Chain Map
@@ -470,31 +520,24 @@ def main(argv):
   Log.reset()
   Log.Banner(argv)
 
-  ParseArgs(argv[1:], DriverPatterns + GCCPatterns + CatchAllPattern)
+  # Parse driver arguments
+  ParseArgs(argv[1:], DriverPatterns)
 
-  if env.getbool('DIAGNOSTIC'):
-    # "configure", especially when run as part of a toolchain bootstrap
-    # process, will invoke gcc with various diagnostic options and
-    # parse the output. In these cases we do not alter the incoming
-    # commandline. It is also important to not emit spurious messages.
-    env.reset()
-    ParseArgs(argv[1:], DriverPatterns + CatchAllPattern)
-    RunWithLog('${LLVM_GCC} ${UNMATCHED}')
-    return 0
-
-  unmatched = env.get('UNMATCHED').strip()
-  if len(unmatched) > 0:
-    Log.Fatal('Unrecognized parameters: ' + unmatched)
-
-  PrepareFlags()
-  PrepareChainMap()
-
+  # Pull the incarnation and/or arch from the filename
+  # Examples: driver.py      (gcc incarnation, no arch)
+  #           pnacl-ld       (ld incarnation, no arch)
+  #           pnacl-i686-as  (as incarnation, i686 arch)
   if argv[0].endswith('.py'):
     incarnation = "gcc"
+  else:
+    tokens = os.path.basename(argv[0]).split('-')
     if env.has('INCARNATION'):
       incarnation = env.get('INCARNATION')
-  else:
-    incarnation = argv[0].split('-')[-1]
+    else:
+      incarnation = tokens[-1]
+    if len(tokens) > 2:
+      arch = FixArch(tokens[-2])
+      env.set('ARCH', arch)
 
   if incarnation in ('sfigcc', 'sfig++', 'gcc', 'g++'):
     incarnation = 'gcc'
@@ -503,7 +546,17 @@ def main(argv):
   if not func:
     Log.Fatal('Unknown incarnation: ' + incarnation)
 
-  return func()
+  incarnation_argv = shell.split(env.get('ARGV'))
+  return func(incarnation_argv)
+
+def PrepareCompile():
+  PrepareFlags()
+  PrepareChainMap()
+
+def AssertParseComplete():
+  unmatched = env.get('UNMATCHED')
+  if len(unmatched) > 0:
+    Log.Fatal('Unrecognized parameters: ' + unmatched)
 
 def GetArch(required = False):
   arch = None
@@ -515,7 +568,11 @@ def GetArch(required = False):
 
   return arch
 
-def Incarnation_opt():
+def Incarnation_opt(argv):
+  ParseArgs(argv, GCCPatterns)
+  AssertParseComplete()
+  PrepareCompile()
+
   inputs = shell.split(env.get('INPUTS'))
   output = env.get('OUTPUT')
 
@@ -532,7 +589,20 @@ def Incarnation_opt():
   OptimizeBC(infile, output)
   return 0
 
-def Incarnation_gcc():
+def Incarnation_gcc(argv):
+  ParseArgs(argv, GCCPatterns)
+
+  # "configure", especially when run as part of a toolchain bootstrap
+  # process, will invoke gcc with various diagnostic options and
+  # parse the output. In these cases we do not alter the incoming
+  # commandline. It is also important to not emit spurious messages.
+  if env.getbool('DIAGNOSTIC'):
+    RunWithLog(shell.split(env.get('LLVM_GCC')) + argv)
+    return 0
+
+  AssertParseComplete()
+  PrepareCompile()
+
   inputs = shell.split(env.get('INPUTS'))
   output = env.get('OUTPUT')
   arch = GetArch()
@@ -557,10 +627,14 @@ def Incarnation_gcc():
   Compile(arch, inputs, output, output_type)
   return 0
 
-def Incarnation_ld():
-  return Incarnation_bcld()
+def Incarnation_bcld(argv):
+  return Incarnation_ld(argv)
 
-def Incarnation_bcld():
+def Incarnation_ld(argv):
+  ParseArgs(argv, GCCPatterns)
+  AssertParseComplete()
+  PrepareCompile()
+
   # TODO(pdox): Fix the optimization bug(s) that require this.
   # See: http://code.google.com/p/nativeclient/issues/detail?id=1225
   env.set('SKIP_OPT', '1')
@@ -569,17 +643,78 @@ def Incarnation_bcld():
   output = env.get('OUTPUT')
   arch = GetArch()
 
-  output_type = 'pexe'
-  if arch:
+  # The ld incarnation has three different uses which requires
+  # different behavior.
+  # A) Bitcode Link Only, output is Bitcode File. (-arch is not specified)
+  # B) Bitcode Link + Native Link. Output is native. (-arch is specified)
+  # C) Native Link Only. Output is native (-arch is specified, no bitcode given)
+  # We detect which mode is being invoked below.
+  has_native = False
+  has_bitcode = False
+  if len(inputs) == 0:
+    Log.Fatal("no input files")
+  for f in inputs:
+    intype = FileType(f)
+    if intype in ['o','nlib']:
+      has_native |= True
+    elif intype in ['bc','bclib']:
+      has_bitcode |= True
+    else:
+      Log.Fatal("Input file '%s' of unexpected type for linking" % f)
+
+  if has_bitcode:
+    if not arch:
+      mode = 'A'
+    else:
+      mode = 'B'
+  elif has_native:
+    mode = 'C'
+  else:
+    Log.Fatal("No input objects")
+
+  # The normal "ld" does not implicitly link in startup objects
+  # and standard libraries. However, our toolchain is currently
+  # being used with the expectation that when linking bitcode, 
+  # these will be linked in automatically.
+  #
+  # Our toolchain also needs to be able to do native-linking
+  # without including crt*, for example, to build
+  # dynamic shared libs.
+  #
+  # This is entirely due to the way that scons needs to use our toolchain.
+  #
+  # TODO(pdox): Clean this up.
+  if mode == 'A':
+    output_type = 'pexe'
+  elif mode == 'B':
+    output_type = 'nexe'
+  else:
+    if not arch:
+      Log.Fatal("Native object or library passed to ld without -arch")
+    ClearStandardLibs()
     output_type = 'nexe'
 
-  for i in inputs:
-    if FileType(i) not in ('bc','o','bclib','nlib'):
-      Log.Fatal('Expecting only bitcode files for bcld invocation')
+
   Compile(arch, inputs, output, output_type)
   return 0
 
-def Incarnation_translate():
+def Incarnation_nm(argv):
+  RunWithLog(shell.split(env.get('NM')) + argv, errexit = False)
+  return 0
+
+def Incarnation_ar(argv):
+  RunWithLog(shell.split(env.get('AR')) + argv, errexit = False)
+  return 0
+
+def Incarnation_ranlib(argv):
+  RunWithLog(shell.split(env.get('RANLIB')) + argv, errexit = False)
+  return 0
+
+def Incarnation_translate(argv):
+  ParseArgs(argv, GCCPatterns)
+  AssertParseComplete()
+  PrepareCompile()
+
   # TODO(pdox): Fix this by arranging for combined bitcode file
   #             to have extension .pexe instead of .bc or .o
   env.set('PRELINKED', '1')
@@ -599,15 +734,17 @@ def Incarnation_translate():
   Compile(arch, inputs, output, output_type)
   return 0
 
-def Incarnation_as_x86_32():
-  env.set('ARCH', 'X8632')
-  Incarnation_as()
+def Incarnation_as(argv):
+  ParseArgs(argv, GCCPatterns)
 
-def Incarnation_as_x86_64():
-  env.set('ARCH', 'X8664')
-  Incarnation_as()
+  if env.getbool('DIAGNOSTIC'):
+    arch = GetArch(required = True)
+    RunWithLog(shell.split(env.get('AS_'+arch)) + argv)
+    return 0
 
-def Incarnation_as():
+  AssertParseComplete()
+  PrepareCompile()
+
   inputs = shell.split(env.get('INPUTS'))
   output = env.get('OUTPUT')
   arch = GetArch()
@@ -624,7 +761,11 @@ def Incarnation_as():
   Compile(arch, inputs, output, output_type)
   return 0
 
-def Incarnation_bclink():
+def Incarnation_bclink(argv):
+  ParseArgs(argv, GCCPatterns)
+  AssertParseComplete()
+  PrepareCompile()
+
   inputs = shell.split(env.get('INPUTS'))
   output = env.get('OUTPUT')
   if output == '':
@@ -634,7 +775,11 @@ def Incarnation_bclink():
              output=output)
   return 0
 
-def Incarnation_bcopt():
+def Incarnation_bcopt(argv):
+  ParseArgs(argv, GCCPatterns)
+  AssertParseComplete()
+  PrepareCompile()
+
   inputs = shell.split(env.get('INPUTS'))
   output = env.get('OUTPUT')
   if len(inputs) != 1:
@@ -644,7 +789,11 @@ def Incarnation_bcopt():
   OptimizeBC(inputs[0], output)
   return 0
 
-def Incarnation_dis():
+def Incarnation_dis(argv):
+  ParseArgs(argv, GCCPatterns)
+  AssertParseComplete()
+  PrepareCompile()
+
   inputs = shell.split(env.get('INPUTS'))
   output = env.get('OUTPUT')
   if len(inputs) != 1:
@@ -661,10 +810,10 @@ def Incarnation_dis():
     Log.Fatal('Unknown file type')
   return 0
 
-def Incarnation_illegal():
+def Incarnation_illegal(argv):
   Log.Fatal('ILLEGAL COMMAND: ' + StringifyCommand(sys.argv))
 
-def Incarnation_nop():
+def Incarnation_nop(argv):
   Log.Info('IGNORING: ' + StringifyCommand(sys.argv))
   NiceExit(0)
 
@@ -1434,7 +1583,7 @@ def PrettyStringify(args):
     grouping -= 1
   return ret
 
-def RunWithLog(args, stdin = None, silent = False):
+def RunWithLog(args, stdin = None, silent = False, errexit = True):
   "Run the commandline give by the list args system()-style"
 
   if isinstance(args, str):
@@ -1459,12 +1608,15 @@ def RunWithLog(args, stdin = None, silent = False):
     sys.stdout.write(buf_stdout)
     sys.stderr.write(buf_stderr)
 
-  if ret:
+  if errexit and ret:
     Log.FatalWithResult(ret,
                         'failed command: %s\n'
                         'stdout        : %s\n'
                         'stderr        : %s\n',
                         StringifyCommand(args, stdin), buf_stdout, buf_stderr)
+  else:
+    Log.Info('Return Code: ' + str(ret))
+
 
 def MakeSelUniversalScriptForLLC(infile, outfile, flags):
   script = []

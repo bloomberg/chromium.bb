@@ -19,7 +19,7 @@
  *
  * Re-compile using:
  *
- *  tools/llvm/driver.py -emit-llvm -S tools/llvm/llvm-intrinsics.c \
+ *  tools/llvm/driver.py -S tools/llvm/llvm-intrinsics.c \
  *    -o tools/llvm/llvm-intrinsics.ll
  *
  * For now, avoid optimization, because the resulting bitcode may

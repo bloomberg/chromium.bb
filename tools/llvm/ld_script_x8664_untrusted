@@ -1,13 +1,12 @@
 /* Default linker script, for normal executables */
-OUTPUT_FORMAT("elf64-x86-64")    /* TODO(adonovan): revert to "elf64-nacl" 
-                                  * when we use "combined" binutils. */
+OUTPUT_FORMAT("elf64-nacl", "elf64-nacl",
+	      "elf64-nacl")
 OUTPUT_ARCH(i386:x86-64)
 ENTRY(_start)
-SEARCH_DIR("/b/slave/hardy32-toolchain_x86-32/build/native_client/tools/sdk/nacl-sdk/nacl64/lib");
+SEARCH_DIR("/mnt/data/build/slave/hardy32-toolchain_x86/build/native_client/tools/sdk/nacl-sdk/nacl64/lib");
 PHDRS
 {
-  headers PT_PHDR FILEHDR PHDRS FLAGS(4) ;  /* put the headers in a non-loadable
-                                               seg */
+  headers PT_PHDR FILEHDR PHDRS ;  /* put the headers in a non-loadable seg */
   text    PT_LOAD FLAGS(5) ;       /* read + execute */
   rodata  PT_LOAD FLAGS(4) ;       /* read */
   data    PT_LOAD FLAGS(6) ;       /* read + write */
@@ -70,8 +69,8 @@ SECTIONS
   PROVIDE (_etext = .);
   PROVIDE (etext = .);
   . = . + 32; /* reserve space for HLTs */
-  . = ALIGN(CONSTANT (MAXPAGESIZE)); /* nacl wants page alignment */
-  .rodata   ALIGN(0x10000)      : { *(.rodata .rodata.* .gnu.linkonce.r.*) } :rodata
+  . = ALIGN(CONSTANT (COMMONPAGESIZE)); /* nacl wants page alignment */
+  .rodata         : { *(.rodata .rodata.* .gnu.linkonce.r.*) } :rodata
   .rodata1        : { *(.rodata1) }
   .nacl_rpc_methods : { *(.nacl_rpc_methods) }
   .eh_frame_hdr : { *(.eh_frame_hdr) }
@@ -79,7 +78,7 @@ SECTIONS
   .gcc_except_table   : ONLY_IF_RO { *(.gcc_except_table .gcc_except_table.*) }
   /* Adjust the address for the data segment.  We want to adjust up to
      the same address within the page on the next page up.  */
-  . = ALIGN (CONSTANT (MAXPAGESIZE)) - ((CONSTANT (MAXPAGESIZE) - .) & (CONSTANT (MAXPAGESIZE) - 1)); . = DATA_SEGMENT_ALIGN (CONSTANT (MAXPAGESIZE), CONSTANT (COMMONPAGESIZE));
+  . = ALIGN (0x10000) - ((CONSTANT (COMMONPAGESIZE) - .) & (CONSTANT (COMMONPAGESIZE) - 1)); . = DATA_SEGMENT_ALIGN (CONSTANT (COMMONPAGESIZE), CONSTANT (COMMONPAGESIZE));
   /* Exception handling  */
   .eh_frame       : ONLY_IF_RW { KEEP (*(.eh_frame)) }
   .gcc_except_table   : ONLY_IF_RW { *(.gcc_except_table .gcc_except_table.*) }
@@ -87,12 +86,12 @@ SECTIONS
   /* The total size of the TLS template area must be a multiple of 0x20,
    * but it's size calculation is hardcoded in bfd_elf_final_link function
    * so the only thing we can do is align segments here properly */
-  .tdata ALIGN(0x10000)  : {
+  .tdata	ALIGN(0x20)  : {
     PROVIDE (__tls_template_start = .);
     *(.tdata .tdata.* .gnu.linkonce.td.*)
     . = ALIGN(0x20);
     PROVIDE (__tls_template_tdata_end = .);
-  } : rodata :tls
+  }
   .tbss		ALIGN(0x20)  : {
     *(.tbss .tbss.* .gnu.linkonce.tb.*) *(.tcommon)
     . = ALIGN(0x20);
@@ -104,7 +103,7 @@ SECTIONS
     PROVIDE_HIDDEN (__preinit_array_start = .);
     KEEP (*(.preinit_array))
     PROVIDE_HIDDEN (__preinit_array_end = .);
-  } : rodata
+  }
   .init_array     :
   {
      PROVIDE_HIDDEN (__init_array_start = .);
@@ -153,9 +152,9 @@ SECTIONS
   .dynamic        : { *(.dynamic) }
   .got            : { *(.got) *(.igot) }
   . = DATA_SEGMENT_RELRO_END (24, .);
-  .got.plt        : { *(.got.plt)  *(.igot.plt) }
-  . = ALIGN(CONSTANT (MAXPAGESIZE)); /* nacl wants page alignment */
-  .data   ALIGN(0x10000)        :
+  . = ALIGN(CONSTANT (COMMONPAGESIZE)); /* nacl wants page alignment */
+  .got.plt        : { *(.got.plt)  *(.igot.plt) } :data
+  .data           :
   {
     *(.data .data.* .gnu.linkonce.d.*)
     SORT(CONSTRUCTORS)
@@ -182,11 +181,11 @@ SECTIONS
     *(LARGE_COMMON)
   }
   . = ALIGN(64 / 8);
-  .lrodata   ALIGN(CONSTANT (MAXPAGESIZE)) + (. & (CONSTANT (MAXPAGESIZE) - 1)) :
+  .lrodata   ALIGN(CONSTANT (COMMONPAGESIZE)) + (. & (CONSTANT (COMMONPAGESIZE) - 1)) :
   {
     *(.lrodata .lrodata.* .gnu.linkonce.lr.*)
   }
-  .ldata   ALIGN(CONSTANT (MAXPAGESIZE)) + (. & (CONSTANT (MAXPAGESIZE) - 1)) :
+  .ldata   ALIGN(CONSTANT (COMMONPAGESIZE)) + (. & (CONSTANT (COMMONPAGESIZE) - 1)) :
   {
     *(.ldata .ldata.* .gnu.linkonce.l.*)
     . = ALIGN(. != 0 ? 64 / 8 : 1);

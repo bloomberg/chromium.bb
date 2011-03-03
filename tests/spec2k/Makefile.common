@@ -178,7 +178,7 @@ BC_GCC=$(PNACL_BIN)/pnacl-gcc
 BC_GPP=$(PNACL_BIN)/pnacl-g++
 BC_OPT=$(PNACL_BIN)/pnacl-bcopt -O3
 BC_LINK=$(PNACL_BIN)/pnacl-bclink
-BC_TRANSLATE=$(TIME_CMD) $(PNACL_BIN)/pnacl-bcld
+BC_TRANSLATE=$(TIME_CMD) $(PNACL_BIN)/pnacl-ld
 
 PNACL_FLAGS=--pnacl-driver-verbose
 
@@ -251,7 +251,7 @@ $(IT).pnacl.opt.x8664: $(IT).opt.bc
 # tools/llvm/utman.sh build-sandboxed-translators
 # tools/llvm/utman.sh install-translators
 ######################################################################
-BC_PRELINK=$(PNACL_BIN)/pnacl-bcld
+BC_PRELINK=$(PNACL_BIN)/pnacl-ld
 
 # optimized llvm bit code combined and interprocedurally optimized
 $(IT).opt.prelinked.bc: $(IT).opt.bc

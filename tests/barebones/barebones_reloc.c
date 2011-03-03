@@ -36,6 +36,7 @@ volatile double var_global_double = 1.0;
 /* dummy functions to make the linker happy (for ARM and x86-64) */
 void __aeabi_read_tp() {}
 void __nacl_read_tp() {}
+void __tls_get_addr() {}
 
 int main(int argc, char* argv[]) {
   if (argc == 555) {

@@ -45,6 +45,7 @@ readonly UTMAN_CONCURRENCY=${UTMAN_CONCURRENCY:-8}
 readonly CROSS_TARGET_ARM=arm-none-linux-gnueabi
 readonly CROSS_TARGET_X86_32=i686-none-linux-gnu
 readonly CROSS_TARGET_X86_64=x86_64-none-linux-gnu
+readonly BINUTILS_TARGET=arm-pc-nacl
 readonly REAL_CROSS_TARGET=pnacl
 
 readonly INSTALL_ROOT="$(pwd)/toolchain/linux_arm-untrusted"
@@ -52,6 +53,7 @@ readonly INSTALL_BIN="${INSTALL_ROOT}/bin"
 readonly ARM_ARCH=armv7-a
 readonly ARM_FPU=vfp
 readonly INSTALL_DIR="${INSTALL_ROOT}/${CROSS_TARGET_ARM}"
+readonly LDSCRIPTS_DIR="${INSTALL_ROOT}/ldscripts"
 readonly GCC_VER="4.2.1"
 
 # NOTE: NEWLIB_INSTALL_DIR also server as a SYSROOT
@@ -118,15 +120,16 @@ readonly PNACL_SB_X8664="${PNACL_SB_ROOT}/x8664"
 # Location of PNaCl gcc/g++/as
 readonly PNACL_GCC="${INSTALL_BIN}/pnacl-gcc"
 readonly PNACL_GPP="${INSTALL_BIN}/pnacl-g++"
-readonly PNACL_AS_X8632="${INSTALL_BIN}/pnacl-as_x86_32"
-readonly PNACL_AS_X8664="${INSTALL_BIN}/pnacl-as_x86_64"
+readonly PNACL_AS_ARM="${INSTALL_BIN}/pnacl-arm-as"
+readonly PNACL_AS_X8632="${INSTALL_BIN}/pnacl-i686-as"
+readonly PNACL_AS_X8664="${INSTALL_BIN}/pnacl-x86_64-as"
 
 # Current milestones in each repo
 # hg-update-stable  uses these
 readonly LLVM_REV=6ed4ada37f72
 readonly LLVM_GCC_REV=a24f3ae473c8
 readonly NEWLIB_REV=d0ac50acf303
-readonly BINUTILS_REV=efe91085ec97
+readonly BINUTILS_REV=ff48f58cb707
 
 # Repositories
 readonly REPO_LLVM_GCC="llvm-gcc.nacl-llvm-branches"
@@ -151,11 +154,11 @@ CC=${CC:-}
 # bug that brakes the build if we do that.
 CXX=${CXX:-g++}
 
-readonly CROSS_TARGET_AR=${INSTALL_DIR}/bin/${CROSS_TARGET_ARM}-ar
-readonly CROSS_TARGET_AS=${INSTALL_DIR}/bin/${CROSS_TARGET_ARM}-as
-readonly CROSS_TARGET_LD=${INSTALL_DIR}/bin/${CROSS_TARGET_ARM}-ld
-readonly CROSS_TARGET_NM=${INSTALL_DIR}/bin/${CROSS_TARGET_ARM}-nm
-readonly CROSS_TARGET_RANLIB=${INSTALL_DIR}/bin/${CROSS_TARGET_ARM}-ranlib
+readonly CROSS_TARGET_AR=${INSTALL_DIR}/bin/${BINUTILS_TARGET}-ar
+readonly CROSS_TARGET_AS=${INSTALL_DIR}/bin/${BINUTILS_TARGET}-as
+readonly CROSS_TARGET_LD=${INSTALL_DIR}/bin/${BINUTILS_TARGET}-ld
+readonly CROSS_TARGET_NM=${INSTALL_DIR}/bin/${BINUTILS_TARGET}-nm
+readonly CROSS_TARGET_RANLIB=${INSTALL_DIR}/bin/${BINUTILS_TARGET}-ranlib
 readonly ILLEGAL_TOOL=${INSTALL_DIR}/pnacl-illegal
 
 setup-tools-common() {
@@ -202,8 +205,10 @@ setup-tools-common() {
     CC_FOR_TARGET="${CC_FOR_SFI_TARGET}"
     GCC_FOR_TARGET="${CC_FOR_SFI_TARGET}"
     CXX_FOR_TARGET="${CXX_FOR_SFI_TARGET}"
+    AR="${AR_FOR_SFI_TARGET}"
     AR_FOR_TARGET="${AR_FOR_SFI_TARGET}"
     NM_FOR_TARGET="${NM_FOR_SFI_TARGET}"
+    RANLIB="${RANLIB_FOR_SFI_TARGET}"
     RANLIB_FOR_TARGET="${RANLIB_FOR_SFI_TARGET}"
     AS_FOR_TARGET="${ILLEGAL_TOOL}"
     LD_FOR_TARGET="${ILLEGAL_TOOL}"
@@ -238,8 +243,8 @@ setup-tools-arm() {
 }
 
 setup-tools-bitcode() {
-  CC_FOR_SFI_TARGET="${PNACL_GCC} -emit-llvm"
-  CXX_FOR_SFI_TARGET="${PNACL_GPP} -emit-llvm"
+  CC_FOR_SFI_TARGET="${PNACL_GCC}"
+  CXX_FOR_SFI_TARGET="${PNACL_GPP}"
   # NOTE: this should not be needed, since we do not really fully link anything
   LD_FOR_SFI_TARGET="${ILLEGAL_TOOL}"
   setup-tools-common
@@ -938,7 +943,9 @@ gcc-stage1-configure() {
   local config_opts=""
   case ${target} in
       arm-*)
-          config_opts="--with-arch=${ARM_ARCH} --with-fpu=${ARM_FPU}"
+          config_opts="--with-as=${PNACL_AS_ARM} \
+                       --with-arch=${ARM_ARCH} \
+                       --with-fpu=${ARM_FPU}"
           ;;
       i686-*)
           config_opts="--with-as=${PNACL_AS_X8632}"
@@ -1343,7 +1350,7 @@ binutils-arm-configure() {
   local objdir="${TC_BUILD_BINUTILS_ARM}"
 
   # enable multiple targets so that we can use the same ar with all .o files
-  local targ="${CROSS_TARGET_ARM},${CROSS_TARGET_X86_32},${CROSS_TARGET_X86_64}"
+  local targ="arm-pc-nacl,i686-pc-nacl,x86_64-pc-nacl"
   mkdir -p "${objdir}"
   spushd "${objdir}"
 
@@ -1351,16 +1358,21 @@ binutils-arm-configure() {
   #   tc-arm.c:2489: warning: empty body in an if-statement
   # The --enable-gold and --enable-plugins options are on so that we
   # can use gold's support for plugin to link PNaCl modules.
+
+  # TODO(pdox): Building binutils for nacl/nacl64 target currently requires
+  # providing NACL_ALIGN_* defines. This should really be defined inside
+  # binutils instead.
   RunWithLog binutils.arm.configure \
     env -i \
     PATH="/usr/bin:/bin" \
     CC=${CC} \
     CXX=${CXX} \
+    CFLAGS="-DNACL_ALIGN_BYTES=32 -DNACL_ALIGN_POW2=5" \
     ${srcdir}/binutils-2.20/configure --prefix=${INSTALL_DIR} \
-                                      --target=${CROSS_TARGET_ARM} \
+                                      --target=${BINUTILS_TARGET} \
                                       --enable-targets=${targ} \
                                       --enable-checking \
-                                      --enable-gold \
+                                      --enable-gold=both \
                                       --enable-plugins \
                                       --disable-werror \
                                       --with-sysroot=${NEWLIB_INSTALL_DIR}
@@ -2246,8 +2258,11 @@ prep-install-dir() {
 
 # We need to adjust the start address and aligment of nacl arm modules
 linker-install() {
-   StepBanner "DRIVER" "Installing untrusted ld script"
-   cp tools/llvm/ld_script_arm_untrusted ${INSTALL_DIR}
+   StepBanner "DRIVER" "Installing untrusted ld scripts"
+   mkdir -p "${LDSCRIPTS_DIR}"
+   cp tools/llvm/ld_script_arm_untrusted "${LDSCRIPTS_DIR}"
+   cp tools/llvm/ld_script_x8632_untrusted "${LDSCRIPTS_DIR}"
+   cp tools/llvm/ld_script_x8664_untrusted "${LDSCRIPTS_DIR}"
 }
 
 # the driver is a simple python script which changes its behavior
@@ -2259,13 +2274,36 @@ driver-install() {
   # TODO(robertm): move the driver to their own dir
   # rm -rf  ${INSTALL_DIR}
   mkdir -p "${INSTALL_BIN}"
+  rm -f "${INSTALL_BIN}/pnacl-*"
   cp tools/llvm/driver.py "${INSTALL_BIN}"
-  for s in gcc g++ as as_x86_32 as_x86_64 \
-           bclink bcopt dis ld bcld translate illegal nop ; do
+  for s in gcc g++ as arm-as i686-as x86_64-as \
+           bclink bcopt dis bcld ld translate illegal nop \
+           ar nm ranlib ; do
     local t="pnacl-$s"
-    rm -f "${INSTALL_BIN}/$t"
     ln -fs driver.py "${INSTALL_BIN}/$t"
   done
+
+  # TEMPORARY HACK
+  # Install aliases to make the old revision of the scons tests happy,
+  # because we can't update the scons tests until after updating DEPS.
+  local basedir="${INSTALL_DIR}/bin"
+  mkdir -p "${basedir}"
+  makefake "${basedir}/${CROSS_TARGET_ARM}-ar" "arm-pc-nacl-ar"
+  makefake "${basedir}/${CROSS_TARGET_ARM}-nm" "arm-pc-nacl-nm"
+  makefake "${basedir}/${CROSS_TARGET_ARM}-ranlib" "arm-pc-nacl-ranlib"
+  makefake "${basedir}/${CROSS_TARGET_ARM}-ld" "arm-pc-nacl-ld.gold"
+}
+
+makefake() {
+  local faketool=$1
+  local realtool=$2
+  cat > "${faketool}" <<EOF
+#!/bin/sh
+FAKE_TOOL="\$(readlink -m \${0})"
+TOOL_DIR="\$(dirname "\$FAKE_TOOL")"
+\${TOOL_DIR}/${realtool} "\$@"
+EOF
+  chmod 755 "${faketool}"
 }
 
 ######################################################################
@@ -2323,7 +2361,7 @@ organize-native-code() {
 
 readonly LLVM_DIS=${INSTALL_DIR}/bin/llvm-dis
 readonly LLVM_OPT=${INSTALL_DIR}/bin/opt
-readonly LLVM_AR=${INSTALL_DIR}/bin/${CROSS_TARGET_ARM}-ar
+readonly LLVM_AR=${CROSS_TARGET_AR}
 
 # Note: we could replace this with a modified version of tools/elf_checker.py
 #       if we do not want to depend on {NACL_TOOLCHAIN}

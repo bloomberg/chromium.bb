@@ -1,6 +1,6 @@
 /* Script for -z combreloc: combine and sort reloc sections */
-OUTPUT_FORMAT("elf32-littlearm", "elf32-bigarm",
-	      "elf32-littlearm")
+OUTPUT_FORMAT("elf32-littlearm-nacl", "elf32-bigarm-nacl",
+	      "elf32-littlearm-nacl")
 OUTPUT_ARCH(arm)
 ENTRY(_start)
 SEARCH_DIR("=/usr/local/lib"); SEARCH_DIR("=/lib"); SEARCH_DIR("=/usr/lib");
@@ -13,7 +13,7 @@ PHDRS
   text    PT_LOAD FLAGS(5) ;       /* read + execute */
   rodata  PT_LOAD FLAGS(4) ;       /* read */
   data    PT_LOAD FLAGS(6) ;       /* read + write */
-  tls     PT_TLS;
+  tls     PT_TLS  FLAGS(4) ;       /* read */
   /* TODO(sehr): do we need a stack? */
 }
 /* @LOCALMOD-END */
@@ -87,7 +87,7 @@ SECTIONS
   PROVIDE (_etext = .);
   PROVIDE (etext = .);
   /* @LOCALMOD-BEGIN */
-
+  . = . + 32; /* reserve space for HLTs */
   /* nacl wants 64k alignment */
   .rodata ALIGN(0x10000) : { *(.rodata .rodata.* .gnu.linkonce.r.*) } :rodata
   /* @LOCALMOD-END */
