@@ -71,6 +71,7 @@ class ListValue;
 class LoadProgressTracker;
 class NavigationState;
 class NotificationProvider;
+class P2PSocketDispatcher;
 class PepperDeviceTest;
 class PrintWebViewHelper;
 class RenderViewObserver;
@@ -1359,6 +1360,9 @@ class RenderView : public RenderWidget,
 
   // Responsible for sending page load related histograms.
   PageLoadHistograms page_load_histograms_;
+
+  // Dispatches all P2P socket used by the renderer.
+  P2PSocketDispatcher* p2p_socket_dispatcher_;
 
   // Misc ----------------------------------------------------------------------
 

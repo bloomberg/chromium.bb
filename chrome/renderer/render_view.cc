@@ -75,6 +75,7 @@
 #include "chrome/renderer/media/ipc_video_decoder.h"
 #include "chrome/renderer/navigation_state.h"
 #include "chrome/renderer/notification_provider.h"
+#include "chrome/renderer/p2p/socket_dispatcher.h"
 #include "chrome/renderer/page_click_tracker.h"
 #include "chrome/renderer/page_load_histograms.h"
 #include "chrome/renderer/plugin_channel_host.h"
@@ -589,6 +590,7 @@ RenderView::RenderView(RenderThreadBase* render_thread,
       searchbox_(NULL),
       spellcheck_provider_(NULL),
       accessibility_ack_pending_(false),
+      p2p_socket_dispatcher_(NULL),
       pending_app_icon_requests_(0),
       session_storage_namespace_id_(session_storage_namespace_id) {
 #if defined(OS_MACOSX)
@@ -669,6 +671,11 @@ RenderView::RenderView(RenderThreadBase* render_thread,
   RenderThread* current_thread = RenderThread::current();
   SpellCheck* spellcheck = current_thread ? current_thread->spellchecker() : 0;
   spellcheck_provider_ = new SpellCheckProvider(this, spellcheck);
+
+  if (CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnableP2PApi)) {
+    p2p_socket_dispatcher_ = new P2PSocketDispatcher(this);
+  }
 
   if (CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kEnableClientSidePhishingDetection)) {
