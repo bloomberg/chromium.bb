@@ -64,7 +64,8 @@ View* NativeTabbedPaneGtk::RemoveTabAtIndex(int index) {
 
   GtkWidget* page =
       gtk_notebook_get_nth_page(GTK_NOTEBOOK(native_view()), index);
-  WidgetGtk* widget = WidgetGtk::GetViewForNative(page);
+  WidgetGtk* widget =
+      static_cast<WidgetGtk*>(NativeWidget::GetNativeWidgetForNativeView(page));
 
   // detach the content view from widget so that we can delete widget
   // without destroying the content view.
@@ -194,7 +195,8 @@ WidgetGtk* NativeTabbedPaneGtk::GetWidgetAt(int index) {
   DCHECK(index <= GetTabCount());
   GtkWidget* page = gtk_notebook_get_nth_page(GTK_NOTEBOOK(native_view()),
                                               index);
-  WidgetGtk* widget = WidgetGtk::GetViewForNative(page);
+  WidgetGtk* widget =
+      static_cast<WidgetGtk*>(NativeWidget::GetNativeWidgetForNativeView(page));
   DCHECK(widget);
   return widget;
 }

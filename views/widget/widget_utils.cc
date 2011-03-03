@@ -11,7 +11,11 @@
 namespace views {
 
 ThemeProvider* GetWidgetThemeProvider(const Widget* widget) {
+#if defined(TOOLKIT_USES_GTK)
+  const Widget* root_widget = widget->GetTopLevelWidget();
+#else
   Widget* root_widget = widget->GetRootWidget();
+#endif
   if (root_widget && root_widget != widget) {
     // Attempt to get the theme provider, and fall back to the default theme
     // provider if not found.

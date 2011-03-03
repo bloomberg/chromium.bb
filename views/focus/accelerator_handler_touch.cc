@@ -31,13 +31,13 @@ RootView* FindRootViewForGdkWindow(GdkWindow* gdk_window) {
     DLOG(WARNING) << "no GtkWidget found for that GdkWindow";
     return NULL;
   }
-  WidgetGtk* widget_gtk = WidgetGtk::GetViewForNative(gtk_widget);
+  NativeWidget* widget = NativeWidget::GetNativeWidgetForNativeView(gtk_widget);
 
-  if (!widget_gtk) {
+  if (!widget) {
     DLOG(WARNING) << "no WidgetGtk found for that GtkWidget";
     return NULL;
   }
-  return widget_gtk->GetRootView();
+  return widget->GetWidget()->GetRootView();
 }
 
 #if defined(HAVE_XINPUT2)

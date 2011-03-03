@@ -137,15 +137,9 @@ class WidgetGtk : public Widget,
   // gets created. This will not be called on a TYPE_CHILD widget.
   virtual void SetInitialFocus() {}
 
-  // Gets the WidgetGtk in the userdata section of the widget.
-  static WidgetGtk* GetViewForNative(GtkWidget* widget);
-
   // Sets the drop target to NULL. This is invoked by DropTargetGTK when the
   // drop is done.
   void ResetDropTarget();
-
-  // Returns the RootView for |widget|.
-  static RootView* GetRootViewForWidget(GtkWidget* widget);
 
   // Gets the requested size of the widget.  This can be the size
   // stored in properties for a GtkViewsFixed, or in the requisitioned
@@ -169,7 +163,6 @@ class WidgetGtk : public Widget,
   virtual gfx::NativeView GetNativeView() const;
   virtual void SetOpacity(unsigned char opacity);
   virtual void SetAlwaysOnTop(bool on_top);
-  virtual Widget* GetRootWidget() const;
   virtual bool IsVisible() const;
   virtual bool IsActive() const;
   virtual bool IsAccessibleWidget() const;
@@ -308,8 +301,6 @@ class WidgetGtk : public Widget,
   void ProcessMouseReleased(GdkEventButton* event);
   // Process scroll event.
   bool ProcessScroll(GdkEventScroll* event);
-
-  static void SetRootViewForWidget(GtkWidget* widget, RootView* root_view);
 
   // Returns the first ancestor of |widget| that is a window.
   static Window* GetWindowImpl(GtkWidget* widget);
