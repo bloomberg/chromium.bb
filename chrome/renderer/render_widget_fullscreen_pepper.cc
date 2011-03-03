@@ -312,7 +312,7 @@ const char kVertexShader[] =
     "                     in_tex_coord.y * 2. - 1.,\n"
     "                     0.,\n"
     "                     1.);\n"
-    "  tex_coord = vec2(in_tex_coord.x, 1. - in_tex_coord.y);\n"
+    "  tex_coord = vec2(in_tex_coord.x, in_tex_coord.y);\n"
     "}\n";
 
 const char kFragmentShader[] =
