@@ -317,7 +317,7 @@ void AutocompletePopupContentsView::UpdatePopupAppearance() {
   } else {
     // Animate the popup shrinking, but don't animate growing larger since that
     // would make the popup feel less responsive.
-    GetWidget()->GetBounds(&start_bounds_, true);
+    start_bounds_ = GetWidget()->GetWindowScreenBounds();
     if (target_bounds_.height() < start_bounds_.height())
       size_animation_.Show();
     else

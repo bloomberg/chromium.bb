@@ -206,8 +206,7 @@ bool FindBarHost::GetFindBarWindowInfo(gfx::Point* position,
     return false;
   }
 
-  gfx::Rect window_rect;
-  host()->GetBounds(&window_rect, true);
+  gfx::Rect window_rect = host()->GetWindowScreenBounds();
   if (position)
     *position = window_rect.origin();
   if (fully_visible)

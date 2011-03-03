@@ -117,7 +117,7 @@ gfx::NativeWindow TabContentsViewWin::GetTopLevelNativeWindow() const {
 }
 
 void TabContentsViewWin::GetContainerBounds(gfx::Rect* out) const {
-  GetBounds(out, false);
+  *out = GetClientAreaScreenBounds();
 }
 
 void TabContentsViewWin::StartDragging(const WebDropData& drop_data,
@@ -282,7 +282,7 @@ void TabContentsViewWin::CancelDragAndCloseTab() {
 }
 
 void TabContentsViewWin::GetViewBounds(gfx::Rect* out) const {
-  GetBounds(out, true);
+  *out = GetWindowScreenBounds();
 }
 
 void TabContentsViewWin::UpdateDragCursor(WebDragOperation operation) {

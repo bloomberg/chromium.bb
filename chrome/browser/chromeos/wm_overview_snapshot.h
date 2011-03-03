@@ -29,9 +29,8 @@ class WmOverviewSnapshot : public views::WidgetGtk {
 
   // Returns the size of the snapshot widget.
   gfx::Size size() const {
-    gfx::Rect rect;
-    GetBounds(&rect, false);
-    return rect.size();
+    // TODO(beng): this should not be written as an accessor...
+    return GetClientAreaScreenBounds().size();
   }
 
   // Has the snapshot been configured? This is true after SetSnapshot

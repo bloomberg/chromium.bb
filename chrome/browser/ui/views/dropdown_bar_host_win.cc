@@ -35,8 +35,7 @@ views::Widget* DropdownBarHost::CreateHost() {
 
 void DropdownBarHost::SetWidgetPositionNative(const gfx::Rect& new_pos,
                                               bool no_redraw) {
-  gfx::Rect window_rect;
-  host_->GetBounds(&window_rect, true);
+  gfx::Rect window_rect = host_->GetWindowScreenBounds();
   DWORD swp_flags = SWP_NOOWNERZORDER;
   if (!window_rect.IsEmpty())
     swp_flags |= SWP_NOSIZE;

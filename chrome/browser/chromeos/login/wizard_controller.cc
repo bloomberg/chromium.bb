@@ -438,8 +438,7 @@ chromeos::ExistingUserController* WizardController::ShowLoginScreen() {
     users = chromeos::UserManager::Get()->GetUsers();
 
   // ExistingUserController deletes itself.
-  gfx::Rect screen_bounds;
-  background_widget_->GetBounds(&screen_bounds, true);
+  gfx::Rect screen_bounds = background_widget_->GetWindowScreenBounds();
   chromeos::ExistingUserController* controller =
       new chromeos::ExistingUserController(screen_bounds);
   controller->OwnBackground(background_widget_, background_view_);
@@ -712,7 +711,7 @@ void WizardController::ShowCurrentScreen() {
 
   gfx::Rect current_bounds;
   if (widget_)
-    widget_->GetBounds(&current_bounds, false);
+    current_bounds = widget_->GetClientAreaScreenBounds();
   gfx::Size new_screen_size = current_screen_->GetScreenSize();
   gfx::Rect new_bounds = GetWizardScreenBounds(new_screen_size.width(),
                                                new_screen_size.height());

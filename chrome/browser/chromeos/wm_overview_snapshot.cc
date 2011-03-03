@@ -59,12 +59,7 @@ void WmOverviewSnapshot::SetImage(const SkBitmap& image) {
   snapshot_view_->SetImage(image);
 
   // Reset the bounds to the size of the image.
-  gfx::Rect bounds;
-  GetBounds(&bounds, false);
-  bounds.set_width(image.width());
-  bounds.set_height(image.height());
-  SetBounds(bounds);
-
+  SetBounds(gfx::Rect(image.width(), image.height()));
   configured_snapshot_ = true;
 }
 

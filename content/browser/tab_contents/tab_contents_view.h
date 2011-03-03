@@ -155,6 +155,7 @@ class TabContentsView : public RenderViewHostDelegate::View {
   virtual void CloseTabAfterEventTracking() {}
 
   // Get the bounds of the View, relative to the parent.
+  // TODO(beng): Return a rect rather than using an out param.
   virtual void GetViewBounds(gfx::Rect* out) const = 0;
 
  protected:

@@ -127,8 +127,7 @@ class ViewportWidget : public views::WidgetGtk {
     // Leave notify can happen if the mouse moves into the child gdk window.
     // Make sure the mouse is outside of the panel.
     gfx::Point p(event->x_root, event->y_root);
-    gfx::Rect bounds;
-    GetBounds(&bounds, true);
+    gfx::Rect bounds = GetWindowScreenBounds();
     if (!bounds.Contains(p)) {
       panel_->OnMouseLeave();
       last_point_.reset();
@@ -699,8 +698,7 @@ void NotificationPanel::UpdatePanel(bool update_container_size) {
   switch (state_) {
     case KEEP_SIZE: {
       gfx::Rect min_bounds = GetPreferredBounds();
-      gfx::Rect panel_bounds;
-      panel_widget_->GetBounds(&panel_bounds, true);
+      gfx::Rect panel_bounds = panel_widget_->GetWindowScreenBounds();
       if (min_bounds.height() < panel_bounds.height())
         panel_widget_->SetBounds(min_bounds);
       else if (min_bounds.height() > panel_bounds.height()) {

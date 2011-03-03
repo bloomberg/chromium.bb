@@ -152,7 +152,6 @@ class WidgetGtk : public Widget,
   // Overridden from Widget:
   virtual void Init(gfx::NativeView parent, const gfx::Rect& bounds);
   virtual void InitWithWidget(Widget* parent, const gfx::Rect& bounds);
-  virtual void GetBounds(gfx::Rect* out, bool including_frame) const;
   virtual void SetBounds(const gfx::Rect& bounds);
   virtual void MoveAbove(Widget* other);
   virtual void SetShape(gfx::NativeRegion region);
@@ -172,8 +171,6 @@ class WidgetGtk : public Widget,
   virtual bool GetAccelerator(int cmd_id, ui::Accelerator* accelerator);
   virtual Window* GetWindow();
   virtual const Window* GetWindow() const;
-  virtual void SetNativeWindowProperty(const char* name, void* value);
-  virtual void* GetNativeWindowProperty(const char* name);
   virtual ThemeProvider* GetThemeProvider() const;
   virtual FocusManager* GetFocusManager();
   virtual void ViewHierarchyChanged(bool is_add, View *parent,
@@ -199,10 +196,14 @@ class WidgetGtk : public Widget,
   // Enables debug painting. See |debug_paint_enabled_| for details.
   static void EnableDebugPaint();
 
- protected:
   // Overridden from NativeWidget:
-  virtual Widget* GetWidget();
+  virtual Widget* GetWidget() OVERRIDE;
+  virtual void SetNativeWindowProperty(const char* name, void* value) OVERRIDE;
+  virtual void* GetNativeWindowProperty(const char* name) OVERRIDE;
+  virtual gfx::Rect GetWindowScreenBounds() const OVERRIDE;
+  virtual gfx::Rect GetClientAreaScreenBounds() const OVERRIDE;
 
+ protected:
   // If widget contains another widget, translates event coordinates to the
   // contained widget's coordinates, else returns original event coordinates.
   template<class Event> bool GetContainedWidgetEventCoordinates(Event* event,

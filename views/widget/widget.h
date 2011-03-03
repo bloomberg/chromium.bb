@@ -127,12 +127,11 @@ class Widget : public internal::NativeWidgetDelegate,
   // View, unless it is set as not being parent-owned.
   virtual void SetContentsView(View* view);
 
-  // Returns the bounds of this Widget in the screen coordinate system.
-  // If the receiving Widget is a frame which is larger than its client area,
-  // this method returns the client area if including_frame is false and the
-  // frame bounds otherwise. If the receiving Widget is not a frame,
-  // including_frame is ignored.
-  virtual void GetBounds(gfx::Rect* out, bool including_frame) const;
+  // Returns the bounds of the Widget in screen coordinates.
+  gfx::Rect GetWindowScreenBounds() const;
+
+  // Returns the bounds of the Widget's client area in screen coordinates.
+  gfx::Rect GetClientAreaScreenBounds() const;
 
   // Sizes and/or places the widget to the specified bounds, size or position.
   virtual void SetBounds(const gfx::Rect& bounds);
@@ -197,12 +196,6 @@ class Widget : public internal::NativeWidgetDelegate,
   virtual Window* GetWindow();
   virtual const Window* GetWindow() const;
 
-  // Sets/Gets a native window property on the underlying native window object.
-  // Returns NULL if the property does not exist. Setting the property value to
-  // NULL removes the property.
-  virtual void SetNativeWindowProperty(const char* name, void* value);
-  virtual void* GetNativeWindowProperty(const char* name);
-
   // Gets the theme provider.
   virtual ThemeProvider* GetThemeProvider() const;
 
@@ -250,6 +243,8 @@ class Widget : public internal::NativeWidgetDelegate,
 
   void SetFocusTraversableParent(FocusTraversable* parent);
   void SetFocusTraversableParentView(View* parent_view);
+
+  NativeWidget* native_widget() { return native_widget_; }
 
  protected:
   // Creates the RootView to be used within this Widget. Subclasses may override

@@ -551,8 +551,7 @@ void BitmapScrollBar::ShowContextMenu(View* source,
                                       const gfx::Point& p,
                                       bool is_mouse_gesture) {
   Widget* widget = GetWidget();
-  gfx::Rect widget_bounds;
-  widget->GetBounds(&widget_bounds, true);
+  gfx::Rect widget_bounds = widget->GetWindowScreenBounds();
   gfx::Point temp_pt(p.x() - widget_bounds.x(), p.y() - widget_bounds.y());
   View::ConvertPointFromWidget(this, &temp_pt);
   context_menu_mouse_position_ = IsHorizontal() ? temp_pt.x() : temp_pt.y();

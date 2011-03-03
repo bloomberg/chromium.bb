@@ -73,11 +73,7 @@ void WmOverviewFavIcon::SetFavIcon(const SkBitmap& image) {
   fav_icon_view_->SetImage(icon);
 
   // Reset the bounds to the size of the image.
-  gfx::Rect bounds;
-  GetBounds(&bounds, false);
-  bounds.set_width(icon.width());
-  bounds.set_height(icon.height());
-  SetBounds(bounds);
+  SetBounds(gfx::Rect(icon.width(), icon.height()));
 }
 
 }  // namespace chromeos

@@ -104,9 +104,7 @@ void Window::CloseAllSecondaryWindows() {
 }
 
 gfx::Rect WindowGtk::GetBounds() const {
-  gfx::Rect bounds;
-  WidgetGtk::GetBounds(&bounds, true);
-  return bounds;
+  return GetWindowScreenBounds();
 }
 
 gfx::Rect WindowGtk::GetNormalBounds() const {

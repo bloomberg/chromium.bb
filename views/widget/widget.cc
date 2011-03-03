@@ -52,7 +52,12 @@ void Widget::SetContentsView(View* view) {
   root_view_->SetContentsView(view);
 }
 
-void Widget::GetBounds(gfx::Rect* out, bool including_frame) const {
+gfx::Rect Widget::GetWindowScreenBounds() const {
+  return native_widget_->GetWindowScreenBounds();
+}
+
+gfx::Rect Widget::GetClientAreaScreenBounds() const {
+  return native_widget_->GetClientAreaScreenBounds();
 }
 
 void Widget::SetBounds(const gfx::Rect& bounds) {
@@ -122,13 +127,6 @@ Window* Widget::GetWindow() {
 }
 
 const Window* Widget::GetWindow() const {
-  return NULL;
-}
-
-void Widget::SetNativeWindowProperty(const char* name, void* value) {
-}
-
-void* Widget::GetNativeWindowProperty(const char* name) {
   return NULL;
 }
 

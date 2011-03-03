@@ -1869,12 +1869,12 @@ void BrowserView::Init() {
   SetLayoutManager(CreateLayoutManager());
   // Stow a pointer to this object onto the window handle so that we can get at
   // it later when all we have is a native view.
-  GetWidget()->SetNativeWindowProperty(kBrowserViewKey, this);
+  GetWidget()->native_widget()->SetNativeWindowProperty(kBrowserViewKey, this);
 
   // Stow a pointer to the browser's profile onto the window handle so that we
   // can get it later when all we have is a native view.
-  GetWindow()->SetNativeWindowProperty(Profile::kProfileKey,
-                                       browser_->profile());
+  GetWidget()->native_widget()->SetNativeWindowProperty(Profile::kProfileKey,
+                                                        browser_->profile());
 
   // Start a hung plugin window detector for this browser object (as long as
   // hang detection is not disabled).

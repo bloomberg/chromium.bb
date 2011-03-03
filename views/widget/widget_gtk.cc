@@ -611,28 +611,6 @@ void WidgetGtk::Init(GtkWidget* parent,
   }
 }
 
-void WidgetGtk::GetBounds(gfx::Rect* out, bool including_frame) const {
-  if (!widget_) {
-    // Due to timing we can get a request for the bounds after Close.
-    *out = gfx::Rect(gfx::Point(0, 0), size_);
-    return;
-  }
-
-  int x = 0, y = 0, w, h;
-  if (GTK_IS_WINDOW(widget_)) {
-    gtk_window_get_position(GTK_WINDOW(widget_), &x, &y);
-    // NOTE: this doesn't include frame decorations, but it should be good
-    // enough for our uses.
-    gtk_window_get_size(GTK_WINDOW(widget_), &w, &h);
-  } else {
-    GetWidgetPositionOnScreen(widget_, &x, &y);
-    w = widget_->allocation.width;
-    h = widget_->allocation.height;
-  }
-
-  return out->SetRect(x, y, w, h);
-}
-
 void WidgetGtk::SetBounds(const gfx::Rect& bounds) {
   if (type_ == TYPE_CHILD) {
     GtkWidget* parent = gtk_widget_get_parent(widget_);
@@ -776,14 +754,6 @@ Window* WidgetGtk::GetWindow() {
 
 const Window* WidgetGtk::GetWindow() const {
   return GetWindowImpl(widget_);
-}
-
-void WidgetGtk::SetNativeWindowProperty(const char* name, void* value) {
-  g_object_set_data(G_OBJECT(widget_), name, value);
-}
-
-void* WidgetGtk::GetNativeWindowProperty(const char* name) {
-  return g_object_get_data(G_OBJECT(widget_), name);
 }
 
 ThemeProvider* WidgetGtk::GetThemeProvider() const {
@@ -935,6 +905,39 @@ void WidgetGtk::EnableDebugPaint() {
 
 Widget* WidgetGtk::GetWidget() {
   return this;
+}
+
+void WidgetGtk::SetNativeWindowProperty(const char* name, void* value) {
+  g_object_set_data(G_OBJECT(widget_), name, value);
+}
+
+void* WidgetGtk::GetNativeWindowProperty(const char* name) {
+  return g_object_get_data(G_OBJECT(widget_), name);
+}
+
+gfx::Rect WidgetGtk::GetWindowScreenBounds() const {
+  // Client == Window bounds on Gtk.
+  return GetClientAreaScreenBounds();
+}
+
+gfx::Rect WidgetGtk::GetClientAreaScreenBounds() const {
+  // Due to timing we can get a request for bounds after Close().
+  // TODO(beng): Figure out if this is bogus.
+  if (!widget_)
+    return gfx::Rect(size_);
+
+  int x = 0, y = 0, w = 0, h = 0;
+  if (GTK_IS_WINDOW(widget_)) {
+    gtk_window_get_position(GTK_WINDOW(widget_), &x, &y);
+    // NOTE: this doesn't include frame decorations, but it should be good
+    // enough for our uses.
+    gtk_window_get_size(GTK_WINDOW(widget_), &w, &h);
+  } else {
+    GetWidgetPositionOnScreen(widget_, &x, &y);
+    w = widget_->allocation.width;
+    h = widget_->allocation.height;
+  }
+  return gfx::Rect(x, y, w, h);
 }
 
 ////////////////////////////////////////////////////////////////////////////////

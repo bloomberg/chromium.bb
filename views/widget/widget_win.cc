@@ -275,21 +275,6 @@ void WidgetWin::InitWithWidget(Widget* parent, const gfx::Rect& bounds) {
   Init(parent->GetNativeView(), bounds);
 }
 
-void WidgetWin::GetBounds(gfx::Rect* out, bool including_frame) const {
-  CRect crect;
-  if (including_frame) {
-    GetWindowRect(&crect);
-    *out = gfx::Rect(crect);
-    return;
-  }
-
-  GetClientRect(&crect);
-  POINT p = {0, 0};
-  ClientToScreen(hwnd(), &p);
-  out->SetRect(crect.left + p.x, crect.top + p.y,
-               crect.Width(), crect.Height());
-}
-
 void WidgetWin::SetBounds(const gfx::Rect& bounds) {
   LONG style = GetWindowLong(GWL_STYLE);
   if (style & WS_MAXIMIZE)
@@ -299,8 +284,7 @@ void WidgetWin::SetBounds(const gfx::Rect& bounds) {
 }
 
 void WidgetWin::MoveAbove(Widget* other) {
-  gfx::Rect bounds;
-  GetBounds(&bounds, false);
+  gfx::Rect bounds = GetClientAreaScreenBounds();
   SetWindowPos(other->GetNativeView(), bounds.x(), bounds.y(),
                bounds.width(), bounds.height(), SWP_NOACTIVATE);
 }
@@ -406,23 +390,6 @@ Window* WidgetWin::GetWindow() {
 
 const Window* WidgetWin::GetWindow() const {
   return GetWindowImpl(hwnd());
-}
-
-void WidgetWin::SetNativeWindowProperty(const char* name, void* value) {
-  // Remove the existing property (if any).
-  for (ViewProps::iterator i = props_.begin(); i != props_.end(); ++i) {
-    if ((*i)->Key() == name) {
-      props_.erase(i);
-      break;
-    }
-  }
-
-  if (value)
-    props_.push_back(new ViewProp(hwnd(), name, value));
-}
-
-void* WidgetWin::GetNativeWindowProperty(const char* name) {
-  return ViewProp::GetValue(hwnd(), name);
 }
 
 ThemeProvider* WidgetWin::GetThemeProvider() const {
@@ -532,6 +499,37 @@ void WidgetWin::SetCursor(gfx::NativeCursor cursor) {
 
 Widget* WidgetWin::GetWidget() {
   return this;
+}
+
+void WidgetWin::SetNativeWindowProperty(const char* name, void* value) {
+  // Remove the existing property (if any).
+  for (ViewProps::iterator i = props_.begin(); i != props_.end(); ++i) {
+    if ((*i)->Key() == name) {
+      props_.erase(i);
+      break;
+    }
+  }
+
+  if (value)
+    props_.push_back(new ViewProp(hwnd(), name, value));
+}
+
+void* WidgetWin::GetNativeWindowProperty(const char* name) {
+  return ViewProp::GetValue(hwnd(), name);
+}
+
+gfx::Rect WidgetWin::GetWindowScreenBounds() const {
+  RECT r;
+  GetWindowRect(&r);
+  return gfx::Rect(r);
+}
+
+gfx::Rect WidgetWin::GetClientAreaScreenBounds() const {
+  RECT r;
+  GetClientRect(&r);
+  POINT point = { r.left, r.top };
+  ClientToScreen(hwnd(), &point);
+  return gfx::Rect(point.x, point.y, r.right - r.left, r.bottom - r.top);
 }
 
 ////////////////////////////////////////////////////////////////////////////////

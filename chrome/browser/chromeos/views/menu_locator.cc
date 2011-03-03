@@ -22,9 +22,7 @@ const int kMenuCornerRadius = 0;  // crosbug.com/7718.
 const int kSubmenuOverlapPx = 1;
 
 gfx::Rect GetBoundsOf(const views::Widget* widget) {
-  gfx::Rect bounds;
-  widget->GetBounds(&bounds, false);
-  return bounds;
+  return widget->GetClientAreaScreenBounds();
 }
 
 // Returns the Rect of the screen that contains the point (x, y).
@@ -86,8 +84,7 @@ class DropDownMenuLocator : public chromeos::MenuLocator {
     // Dropdown Menu has to be shown above the button, which is not currently
     // possible with Menu2. I'll update Menu2 and this code
     // after beta.
-    gfx::Rect bounds;
-    widget->GetBounds(&bounds, false);
+    gfx::Rect bounds = widget->GetClientAreaScreenBounds();
     UpdateRootMenuBounds(widget, origin_, bounds.size(), !base::i18n::IsRTL());
   }
 
@@ -129,8 +126,7 @@ class ContextMenuLocator : public chromeos::MenuLocator {
   }
 
   virtual void Move(WebUIMenuWidget* widget) {
-    gfx::Rect bounds;
-    widget->GetBounds(&bounds, false);
+    gfx::Rect bounds = widget->GetClientAreaScreenBounds();
     UpdateRootMenuBounds(widget, origin_, bounds.size(), base::i18n::IsRTL());
   }
 
@@ -178,8 +174,7 @@ class SubMenuLocator : public chromeos::MenuLocator {
   }
 
   virtual void Move(WebUIMenuWidget* widget) {
-    gfx::Rect bounds;
-    widget->GetBounds(&bounds, false);
+    gfx::Rect bounds = widget->GetClientAreaScreenBounds();
     UpdateBounds(widget, bounds.size());
   }
 

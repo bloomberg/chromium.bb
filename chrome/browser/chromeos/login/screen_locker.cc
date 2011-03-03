@@ -1106,8 +1106,7 @@ void ScreenLocker::ShowErrorBubble(const std::wstring& message,
 
   gfx::Rect rect = screen_lock_view_->GetPasswordBoundsRelativeTo(
       lock_widget_->GetRootView());
-  gfx::Rect lock_widget_bounds;
-  lock_widget_->GetBounds(&lock_widget_bounds, false);
+  gfx::Rect lock_widget_bounds = lock_widget_->GetClientAreaScreenBounds();
   rect.Offset(lock_widget_bounds.x(), lock_widget_bounds.y());
   error_info_ = MessageBubble::ShowNoGrab(
       lock_window_,

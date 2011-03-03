@@ -216,7 +216,7 @@ gfx::NativeWindow TabContentsViewGtk::GetTopLevelNativeWindow() const {
 void TabContentsViewGtk::GetContainerBounds(gfx::Rect* out) const {
   // Callers expect the requested bounds not the actual bounds. For example,
   // during init callers expect 0x0, but Gtk layout enforces a min size of 1x1.
-  GetBounds(out, false);
+  *out = GetClientAreaScreenBounds();
 
   gfx::Size size;
   WidgetGtk::GetRequestedSize(&size);
@@ -329,7 +329,7 @@ void TabContentsViewGtk::RestoreFocus() {
 }
 
 void TabContentsViewGtk::GetViewBounds(gfx::Rect* out) const {
-  GetBounds(out, true);
+  *out = GetWindowScreenBounds();
 }
 
 void TabContentsViewGtk::UpdateDragCursor(WebDragOperation operation) {
@@ -410,8 +410,7 @@ gboolean TabContentsViewGtk::OnPaint(GtkWidget* widget, GdkEventExpose* event) {
         SadTabView::KILLED : SadTabView::CRASHED;
     sad_tab_ = new SadTabView(tab_contents(), kind);
     SetContentsView(sad_tab_);
-    gfx::Rect bounds;
-    GetBounds(&bounds, true);
+    gfx::Rect bounds = GetWindowScreenBounds();
     sad_tab_->SetBoundsRect(gfx::Rect(0, 0, bounds.width(), bounds.height()));
     gfx::CanvasSkiaPaint canvas(event);
     sad_tab_->Paint(&canvas);

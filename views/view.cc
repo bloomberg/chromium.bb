@@ -594,8 +594,7 @@ void View::ConvertPointToScreen(const View* src, gfx::Point* p) {
   const Widget* widget = src->GetWidget();
   if (widget) {
     ConvertPointToWidget(src, p);
-    gfx::Rect r;
-    widget->GetBounds(&r, false);
+    gfx::Rect r = widget->GetClientAreaScreenBounds();
     p->SetPoint(p->x() + r.x(), p->y() + r.y());
   }
 }
@@ -1403,8 +1402,7 @@ void View::ConvertPointToView(const View* src,
     if (!src) {
       const Widget* widget = dst->GetWidget();
       if (widget) {
-        gfx::Rect b;
-        widget->GetBounds(&b, false);
+        gfx::Rect b = widget->GetClientAreaScreenBounds();
         point->SetPoint(point->x() - b.x(), point->y() - b.y());
       }
     }

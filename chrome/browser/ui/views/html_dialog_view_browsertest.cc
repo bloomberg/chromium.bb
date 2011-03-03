@@ -138,8 +138,7 @@ IN_PROC_BROWSER_TEST_F(HtmlDialogBrowserTest, MAYBE_SizeWindow) {
   MessageLoopForUI::current()->AddObserver(
       WindowChangedObserver::GetInstance());
 
-  gfx::Rect bounds;
-  html_view->GetWidget()->GetBounds(&bounds, false);
+  gfx::Rect bounds = html_view->GetWidget()->GetClientAreaScreenBounds();
 
   gfx::Rect set_bounds = bounds;
   gfx::Rect actual_bounds, rwhv_bounds;
@@ -150,7 +149,7 @@ IN_PROC_BROWSER_TEST_F(HtmlDialogBrowserTest, MAYBE_SizeWindow) {
 
   html_view->MoveContents(tab_contents, set_bounds);
   ui_test_utils::RunMessageLoop();
-  html_view->GetWidget()->GetBounds(&actual_bounds, false);
+  actual_bounds = html_view->GetWidget()->GetClientAreaScreenBounds();
   EXPECT_EQ(set_bounds, actual_bounds);
 
   rwhv_bounds =
@@ -166,7 +165,7 @@ IN_PROC_BROWSER_TEST_F(HtmlDialogBrowserTest, MAYBE_SizeWindow) {
 
   html_view->MoveContents(tab_contents, set_bounds);
   ui_test_utils::RunMessageLoop();
-  html_view->GetWidget()->GetBounds(&actual_bounds, false);
+  actual_bounds = html_view->GetWidget()->GetClientAreaScreenBounds();
   EXPECT_EQ(set_bounds, actual_bounds);
 
   rwhv_bounds =
@@ -182,7 +181,7 @@ IN_PROC_BROWSER_TEST_F(HtmlDialogBrowserTest, MAYBE_SizeWindow) {
 
   html_view->MoveContents(tab_contents, set_bounds);
   ui_test_utils::RunMessageLoop();
-  html_view->GetWidget()->GetBounds(&actual_bounds, false);
+  actual_bounds = html_view->GetWidget()->GetClientAreaScreenBounds();
   EXPECT_EQ(set_bounds, actual_bounds);
 
   rwhv_bounds =
@@ -198,7 +197,7 @@ IN_PROC_BROWSER_TEST_F(HtmlDialogBrowserTest, MAYBE_SizeWindow) {
 
   html_view->MoveContents(tab_contents, set_bounds);
   ui_test_utils::RunMessageLoop();
-  html_view->GetWidget()->GetBounds(&actual_bounds, false);
+  actual_bounds = html_view->GetWidget()->GetClientAreaScreenBounds();
   EXPECT_LT(0, actual_bounds.width());
   EXPECT_LT(0, actual_bounds.height());
 

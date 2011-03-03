@@ -223,9 +223,7 @@ Window* Window::CreateChromeWindow(gfx::NativeWindow parent,
 }
 
 gfx::Rect WindowWin::GetBounds() const {
-  gfx::Rect bounds;
-  WidgetWin::GetBounds(&bounds, true);
-  return bounds;
+  return GetWindowScreenBounds();
 }
 
 gfx::Rect WindowWin::GetNormalBounds() const {

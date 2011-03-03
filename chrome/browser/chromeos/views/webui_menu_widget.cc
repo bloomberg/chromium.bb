@@ -190,8 +190,7 @@ void WebUIMenuWidget::OnSizeAllocate(GtkWidget* widget,
                                      GtkAllocation* allocation) {
   views::WidgetGtk::OnSizeAllocate(widget, allocation);
   // Adjust location when menu gets resized.
-  gfx::Rect bounds;
-  GetBounds(&bounds, false);
+  gfx::Rect bounds = GetClientAreaScreenBounds();
   // Don't move until the menu gets contents.
   if (bounds.height() > 1) {
     menu_locator_->Move(this);
@@ -298,8 +297,7 @@ void WebUIMenuWidget::SetSize(const gfx::Size& new_size) {
   gfx::Size real_size(std::max(new_size.width(), width),
                       new_size.height());
   // Ignore the size request with the same size.
-  gfx::Rect bounds;
-  GetBounds(&bounds, false);
+  gfx::Rect bounds = GetClientAreaScreenBounds();
   if (bounds.size() == real_size)
     return;
   menu_locator_->SetBounds(this, real_size);

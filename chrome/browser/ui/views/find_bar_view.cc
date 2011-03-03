@@ -273,8 +273,7 @@ void FindBarView::OnPaint(gfx::Canvas* canvas) {
 
   // Determine the find bar size as well as the offset from which to tile the
   // toolbar background image.  First, get the widget bounds.
-  gfx::Rect bounds;
-  GetWidget()->GetBounds(&bounds, true);
+  gfx::Rect bounds = GetWidget()->GetWindowScreenBounds();
   // Now convert from screen to parent coordinates.
   gfx::Point origin(bounds.origin());
   BrowserView* browser_view = host()->browser_view();

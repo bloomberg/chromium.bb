@@ -8,6 +8,10 @@
 
 #include <set>
 
+namespace gfx {
+class Rect;
+}
+
 namespace views {
 
 class Widget;
@@ -44,6 +48,20 @@ class NativeWidget {
   // Returns the Widget associated with this NativeWidget. This function is
   // guaranteed to return non-NULL for the lifetime of the NativeWidget.
   virtual Widget* GetWidget() = 0;
+
+  // Sets/Gets a native window property on the underlying native window object.
+  // Returns NULL if the property does not exist. Setting the property value to
+  // NULL removes the property.
+  virtual void SetNativeWindowProperty(const char* name, void* value) = 0;
+  virtual void* GetNativeWindowProperty(const char* name) = 0;
+
+  // Widget pass-thrus ---------------------------------------------------------
+  // TODO(beng): Investigate if we can move these to a NativeWidgetPrivate
+  //             interface.
+
+  // See method documentation in Widget:
+  virtual gfx::Rect GetWindowScreenBounds() const = 0;
+  virtual gfx::Rect GetClientAreaScreenBounds() const = 0;
 };
 
 }  // namespace views

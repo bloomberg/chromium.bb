@@ -394,8 +394,7 @@ NativeMenuWebUI* NativeMenuWebUI::FindMenuAt(const gfx::Point& point) {
     if (found)
       return found;
   }
-  gfx::Rect bounds;
-  menu_widget_->GetBounds(&bounds, false);
+  gfx::Rect bounds = menu_widget_->GetClientAreaScreenBounds();
   return bounds.Contains(point) ? this : NULL;
 }
 
