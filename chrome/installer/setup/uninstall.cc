@@ -29,6 +29,7 @@
 #include "chrome/installer/util/installation_state.h"
 #include "chrome/installer/util/installer_state.h"
 #include "chrome/installer/util/logging_installer.h"
+#include "chrome/installer/util/self_cleaning_temp_dir.h"
 #include "chrome/installer/util/shell_util.h"
 #include "chrome/installer/util/util_constants.h"
 
@@ -365,6 +366,18 @@ DeleteResult DeleteFilesAndFolders(const InstallerState& installer_state,
 
   DeleteResult result = DELETE_SUCCEEDED;
 
+  // Avoid leaving behind a Temp dir.  If one exists, ask SelfCleaningTempDir to
+  // clean it up for us.  This may involve scheduling it for deletion after
+  // reboot.  Don't report that a reboot is required in this case, however.
+  FilePath temp_path(
+      installer_state.target_path().DirName().Append(kInstallTempDir));
+  if (file_util::DirectoryExists(temp_path)) {
+    installer::SelfCleaningTempDir temp_dir;
+    if (!temp_dir.Initialize(installer_state.target_path().DirName(),
+                             kInstallTempDir) || !temp_dir.Delete())
+      LOG(ERROR) << "Failed to delete temp dir " << temp_path.value();
+  }
+
   VLOG(1) << "Deleting install path " << installer_state.target_path().value();
   if (!file_util::Delete(installer_state.target_path(), true)) {
     LOG(ERROR) << "Failed to delete folder (1st try): "
@@ -465,9 +478,11 @@ bool DeleteChromeRegistrationKeys(BrowserDistribution* dist, HKEY root,
     return true;
   }
 
-  RegKey key(root, L"", KEY_ALL_ACCESS);
-  if (!key.Valid()) {
-    PLOG(ERROR) << "DeleteChromeRegistrationKeys: failed to open root key";
+  RegKey key;
+  LONG result = key.Open(root, L"", KEY_ALL_ACCESS);
+  if (result != ERROR_SUCCESS) {
+    LOG(ERROR) << "DeleteChromeRegistrationKeys: failed to open root key, "
+                  "result: " << result;
   }
 
   // Delete Software\Classes\ChromeHTML,
@@ -679,10 +694,14 @@ InstallStatus UninstallProduct(const InstallationState& original_state,
       // Delete media player registry key that exists only in HKLM.
       // We don't delete this key in SxS uninstall or Chrome Frame uninstall
       // as we never set the key for those products.
-      RegKey hklm_key(HKEY_LOCAL_MACHINE, L"", KEY_ALL_ACCESS);
-      std::wstring reg_path(installer::kMediaPlayerRegPath);
-      file_util::AppendToPath(&reg_path, installer::kChromeExe);
-      InstallUtil::DeleteRegistryKey(hklm_key, reg_path);
+      RegKey hklm_key(HKEY_LOCAL_MACHINE, L"", KEY_QUERY_VALUE);
+      if (hklm_key.Valid()) {
+        std::wstring reg_path(installer::kMediaPlayerRegPath);
+        file_util::AppendToPath(&reg_path, installer::kChromeExe);
+        InstallUtil::DeleteRegistryKey(hklm_key, reg_path);
+      } else {
+        LOG(ERROR) << "Failed to open HKLM to remove media player registration";
+      }
     }
 
     // Unregister any dll servers that we may have registered for this
