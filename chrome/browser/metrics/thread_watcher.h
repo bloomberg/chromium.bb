@@ -132,11 +132,11 @@ class ThreadWatcher {
   friend class ThreadWatcherList;
 
   // Allow tests to access our innards for testing purposes.
-  FRIEND_TEST(ThreadWatcherTest, Registration);
-  FRIEND_TEST(ThreadWatcherTest, ThreadResponding);
-  FRIEND_TEST(ThreadWatcherTest, ThreadNotResponding);
-  FRIEND_TEST(ThreadWatcherTest, MultipleThreadsResponding);
-  FRIEND_TEST(ThreadWatcherTest, MultipleThreadsNotResponding);
+  FRIEND_TEST_ALL_PREFIXES(ThreadWatcherTest, Registration);
+  FRIEND_TEST_ALL_PREFIXES(ThreadWatcherTest, ThreadResponding);
+  FRIEND_TEST_ALL_PREFIXES(ThreadWatcherTest, ThreadNotResponding);
+  FRIEND_TEST_ALL_PREFIXES(ThreadWatcherTest, MultipleThreadsResponding);
+  FRIEND_TEST_ALL_PREFIXES(ThreadWatcherTest, MultipleThreadsNotResponding);
 
   // Post constructor initialization.
   void Initialize();
@@ -225,7 +225,7 @@ class ThreadWatcherList : public NotificationObserver {
 
  private:
   // Allow tests to access our innards for testing purposes.
-  FRIEND_TEST(ThreadWatcherTest, Registration);
+  FRIEND_TEST_ALL_PREFIXES(ThreadWatcherTest, Registration);
 
   // Delete all thread watcher objects and remove them from global map.
   // This method is accessible on WatchDogThread.
