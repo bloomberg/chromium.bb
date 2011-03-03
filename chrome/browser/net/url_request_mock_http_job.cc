@@ -42,7 +42,9 @@ GURL URLRequestMockHTTPJob::GetMockUrl(const FilePath& path) {
   std::string url = "http://";
   url.append(kMockHostname);
   url.append("/");
-  url.append(WideToUTF8(path.ToWStringHack()));
+  std::string path_str = path.MaybeAsASCII();
+  DCHECK(!path_str.empty());  // We only expect ASCII paths in tests.
+  url.append(path_str);
   return GURL(url);
 }
 
@@ -58,13 +60,14 @@ GURL URLRequestMockHTTPJob::GetMockViewSourceUrl(const FilePath& path) {
 FilePath URLRequestMockHTTPJob::GetOnDiskPath(const FilePath& base_path,
                                               net::URLRequest* request,
                                               const std::string& scheme) {
-  std::string file_url("file:///");
-  file_url += WideToUTF8(base_path.ToWStringHack());
-  file_url += request->url().path();
-
-  // Convert the file:/// URL to a path on disk.
+  // Conceptually we just want to "return base_path + request->url().path()".
+  // But path in the request URL is in URL space (i.e. %-encoded spaces).
+  // So first we convert base FilePath to a URL, then append the URL
+  // path to that, and convert the final URL back to a FilePath.
+  GURL file_url(net::FilePathToFileURL(base_path));
+  std::string url = file_url.spec() + request->url().path();
   FilePath file_path;
-  net::FileURLToFilePath(GURL(file_url), &file_path);
+  net::FileURLToFilePath(GURL(url), &file_path);
   return file_path;
 }
 

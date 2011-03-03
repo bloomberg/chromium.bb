@@ -39,7 +39,9 @@ GURL URLRequestSlowHTTPJob::GetMockUrl(const FilePath& path) {
   std::string url = "http://";
   url.append(kMockHostname);
   url.append("/");
-  url.append(WideToUTF8(path.ToWStringHack()));
+  std::string path_str = path.MaybeAsASCII();
+  DCHECK(!path_str.empty());  // We only expect ASCII paths in tests.
+  url.append(path_str);
   return GURL(url);
 }
 
