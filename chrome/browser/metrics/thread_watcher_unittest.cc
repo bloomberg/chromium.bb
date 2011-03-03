@@ -434,7 +434,8 @@ TEST_F(ThreadWatcherTest, MultipleThreadsResponding) {
 }
 
 // Test watching of multiple threads with one of the threads not responding.
-TEST_F(ThreadWatcherTest, MultipleThreadsNotResponding) {
+// Disabled, http://crbug.com/74727.
+TEST_F(ThreadWatcherTest, DISABLED_MultipleThreadsNotResponding) {
   // Simulate hanging of watched thread by making the watched thread wait for a
   // very long time by posting a task on watched thread that keeps it busy.
   BrowserThread::PostTask(
