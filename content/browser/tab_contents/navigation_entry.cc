@@ -94,6 +94,14 @@ const string16& NavigationEntry::GetTitleForDisplay(
   } else if (!url_.is_empty()) {
     title = net::FormatUrl(url_, languages);
   }
+
+  // For file:// URLs use the filename as the title, not the full path.
+  if (url_.SchemeIsFile()) {
+    string16::size_type slashpos = title.rfind('/');
+    if (slashpos != string16::npos)
+      title = title.substr(slashpos + 1);
+  }
+
   ui::ElideString(title, chrome::kMaxTitleChars, &cached_display_title_);
   return cached_display_title_;
 }
