@@ -146,6 +146,12 @@ class BrowserLauncher(object):
     return self.profile
 
   def Launch(self, cmd, env):
+    browser_path = cmd[0]
+    if not os.path.exists(browser_path):
+      raise LaunchFailure('Browser does not exist %r'% browser_path)
+    if not os.access(browser_path, os.X_OK):
+      raise LaunchFailure('Browser cannot be executed %r (Is this binary on an '
+                          'NFS volume?)' % browser_path)
     if self.sel_ldr:
       env['NACL_SEL_LDR'] = self.sel_ldr
     print 'ENV:', ' '.join(['='.join(pair) for pair in env.iteritems()])
