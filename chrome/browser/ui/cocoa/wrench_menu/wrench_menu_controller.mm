@@ -6,7 +6,6 @@
 
 #include "base/sys_string_conversions.h"
 #include "chrome/app/chrome_command_ids.h"
-#include "chrome/browser/background_page_tracker.h"
 #include "chrome/browser/metrics/user_metrics.h"
 #import "chrome/browser/ui/cocoa/toolbar/toolbar_controller.h"
 #import "chrome/browser/ui/cocoa/wrench_menu/menu_tracked_root_view.h"
@@ -122,12 +121,6 @@ class ZoomLevelObserver : public NotificationObserver {
       [NSImage imageNamed:NSImageNameExitFullScreenTemplate] :
           [NSImage imageNamed:NSImageNameEnterFullScreenTemplate];
   [zoomFullScreen_ setImage:icon];
-}
-
-- (void)menuDidClose:(NSMenu*)menu {
-  // When the menu is closed, acknowledge the background pages so the badges go
-  // away.
-  BackgroundPageTracker::GetInstance()->AcknowledgeBackgroundPages();
 }
 
 // Used to dispatch commands from the Wrench menu. The custom items within the

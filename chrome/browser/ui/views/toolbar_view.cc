@@ -8,7 +8,6 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/accessibility/browser_accessibility_state.h"
-#include "chrome/browser/background_page_tracker.h"
 #include "chrome/browser/metrics/user_metrics.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
@@ -119,9 +118,6 @@ ToolbarView::ToolbarView(Browser* browser)
   }
   registrar_.Add(this, NotificationType::MODULE_INCOMPATIBILITY_DETECTED,
                  NotificationService::AllSources());
-  registrar_.Add(this,
-                 NotificationType::BACKGROUND_PAGE_TRACKER_CHANGED,
-                 NotificationService::AllSources());
 }
 
 ToolbarView::~ToolbarView() {
@@ -211,8 +207,7 @@ void ToolbarView::Init(Profile* profile) {
   app_menu_->SetID(VIEW_ID_APP_MENU);
 
   // Add any necessary badges to the menu item based on the system state.
-  if (IsUpgradeRecommended() || ShouldShowIncompatibilityWarning() ||
-      ShouldShowBackgroundPageBadge()) {
+  if (IsUpgradeRecommended() || ShouldShowIncompatibilityWarning()) {
     UpdateAppMenuBadge();
   }
   LoadImages();
@@ -358,9 +353,6 @@ void ToolbarView::RunMenu(views::View* source, const gfx::Point& /* pt */) {
   if (destroyed_flag)
     return;
   destroyed_flag_ = NULL;
-
-  // Stop showing the background app badge also.
-  BackgroundPageTracker::GetInstance()->AcknowledgeBackgroundPages();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -438,10 +430,6 @@ void ToolbarView::Observe(NotificationType type,
     bool confirmed_bad = *Details<bool>(details).ptr();
     if (confirmed_bad)
       UpdateAppMenuBadge();
-  } else if (type ==
-      NotificationType::BACKGROUND_PAGE_TRACKER_CHANGED) {
-    // Force a repaint to add/remove the badge.
-    UpdateAppMenuBadge();
   }
 }
 
@@ -670,11 +658,6 @@ bool ToolbarView::IsUpgradeRecommended() {
 #endif
 }
 
-bool ToolbarView::ShouldShowBackgroundPageBadge() {
-  return BackgroundPageTracker::GetInstance()->
-      GetUnacknowledgedBackgroundPageCount() > 0;
-}
-
 bool ToolbarView::ShouldShowIncompatibilityWarning() {
 #if defined(OS_WIN)
   EnumerateModulesModel* loaded_modules = EnumerateModulesModel::GetInstance();
@@ -770,9 +753,7 @@ SkBitmap ToolbarView::GetAppMenuIcon(views::CustomButton::ButtonState state) {
   incompatibility_badge_showing = false;
 #endif
 
-  bool add_badge = IsUpgradeRecommended() ||
-                   ShouldShowIncompatibilityWarning() ||
-                   ShouldShowBackgroundPageBadge();
+  bool add_badge = IsUpgradeRecommended() || ShouldShowIncompatibilityWarning();
   if (!add_badge)
     return icon;
 
@@ -783,12 +764,9 @@ SkBitmap ToolbarView::GetAppMenuIcon(views::CustomButton::ButtonState state) {
 
   SkBitmap badge;
   // Only one badge can be active at any given time. The Upgrade notification
-  // is deemed most important, then the temporary background page badge,
-  // then the DLL conflict badge.
+  // is deemed most important, then the DLL conflict badge.
   if (IsUpgradeRecommended()) {
     badge = *tp->GetBitmapNamed(IDR_UPDATE_BADGE);
-  } else if (ShouldShowBackgroundPageBadge()) {
-    badge = *tp->GetBitmapNamed(IDR_BACKGROUND_BADGE);
   } else if (ShouldShowIncompatibilityWarning()) {
 #if defined(OS_WIN)
     if (!was_showing)

@@ -16,7 +16,6 @@
 #include "chrome/browser/autocomplete/autocomplete_classifier.h"
 #include "chrome/browser/autocomplete/autocomplete_edit_view.h"
 #include "chrome/browser/autocomplete/autocomplete_match.h"
-#include "chrome/browser/background_page_tracker.h"
 #include "chrome/browser/net/url_fixer_upper.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
@@ -130,9 +129,6 @@ class NotificationBridge : public NotificationObserver {
       : controller_(controller) {
     registrar_.Add(this, NotificationType::UPGRADE_RECOMMENDED,
                    NotificationService::AllSources());
-    registrar_.Add(this,
-                   NotificationType::BACKGROUND_PAGE_TRACKER_CHANGED,
-                   NotificationService::AllSources());
   }
 
   // Overridden from NotificationObserver:
@@ -143,8 +139,6 @@ class NotificationBridge : public NotificationObserver {
       case NotificationType::PREF_CHANGED:
         [controller_ prefChanged:Details<std::string>(details).ptr()];
         break;
-      case NotificationType::BACKGROUND_PAGE_TRACKER_CHANGED:
-        // fall-through
       case NotificationType::UPGRADE_RECOMMENDED:
         [controller_ badgeWrenchMenuIfNeeded];
         break;
@@ -547,9 +541,6 @@ class NotificationBridge : public NotificationObserver {
   int badgeResource = 0;
   if (UpgradeDetector::GetInstance()->notify_upgrade()) {
     badgeResource = IDR_UPDATE_BADGE;
-  } else if (BackgroundPageTracker::GetInstance()->
-             GetUnacknowledgedBackgroundPageCount() > 0) {
-    badgeResource = IDR_BACKGROUND_BADGE;
   } else {
     // No badge - clear the badge if one is already set.
     if ([[wrenchButton_ cell] overlayImage])
