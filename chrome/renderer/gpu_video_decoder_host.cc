@@ -5,8 +5,8 @@
 #include "chrome/renderer/gpu_video_decoder_host.h"
 
 #include "chrome/common/gpu_messages.h"
-#include "chrome/common/message_router.h"
 #include "media/base/pipeline.h"
+#include "content/common/message_router.h"
 #include "media/video/video_decode_context.h"
 
 GpuVideoDecoderHost::GpuVideoDecoderHost(MessageRouter* router,

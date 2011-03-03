@@ -8,8 +8,7 @@
 
 #include "base/basictypes.h"
 #include "base/scoped_ptr.h"
-#include "chrome/common/message_router.h"
-#include "ipc/ipc_message.h"
+#include "content/common/message_router.h"
 #include "webkit/glue/resource_loader_bridge.h"
 
 class FileSystemDispatcher;

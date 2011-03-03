@@ -16,6 +16,8 @@
       'sources': [
         "common/content_switches.cc",
         "common/content_switches.h",
+        'common/message_router.cc',
+        'common/message_router.h',
         "common/p2p_messages.cc",
         "common/p2p_messages.h",
         "common/p2p_sockets.cc",

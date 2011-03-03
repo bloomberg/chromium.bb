@@ -109,8 +109,6 @@
           'common/logging_chrome.cc',
           'common/logging_chrome.h',
           'common/main_function_params.h',
-          'common/message_router.cc',
-          'common/message_router.h',
           'common/metrics_helpers.cc',
           'common/metrics_helpers.h',
           'common/mime_registry_messages.h',
@@ -629,6 +627,9 @@
             'common/resource_dispatcher_dummy.cc',
             'common/socket_stream_dispatcher_dummy.cc',
             'common/url_constants.cc',
+            # TODO(jam): remove me once child_thread (which uses this) is moved
+            # out of chrome_common.
+            '../content/common/message_router.cc',
           ],
           'export_dependent_settings': [
             '../app/app.gyp:app_base_nacl_win64',

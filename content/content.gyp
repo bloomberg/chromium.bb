@@ -9,5 +9,6 @@
   'includes': [
     'content_browser.gypi',
     'content_common.gypi',
+    #'content_gpu.gypi',
   ],
 }
