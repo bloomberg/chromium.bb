@@ -27,6 +27,7 @@ class ProfileMenuModel : public ui::SimpleMenuModel,
                          public ui::SimpleMenuModel::Delegate {
  public:
   ProfileMenuModel();
+  virtual ~ProfileMenuModel();
 
   void RunMenuAt(const gfx::Point& point);
 
