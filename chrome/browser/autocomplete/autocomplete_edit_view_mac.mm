@@ -746,7 +746,9 @@ bool AutocompleteEditViewMac::IsImeComposing() const {
 void AutocompleteEditViewMac::OnDidBeginEditing() {
   // We should only arrive here when the field is focussed.
   DCHECK([field_ currentEditor]);
+}
 
+void AutocompleteEditViewMac::OnBeforeChange() {
   // Capture the current state.
   OnBeforePossibleChange();
 }
@@ -754,9 +756,6 @@ void AutocompleteEditViewMac::OnDidBeginEditing() {
 void AutocompleteEditViewMac::OnDidChange() {
   // Figure out what changed and notify the model_.
   OnAfterPossibleChange();
-
-  // Then capture the new state.
-  OnBeforePossibleChange();
 }
 
 void AutocompleteEditViewMac::OnDidEndEditing() {
@@ -887,10 +886,6 @@ bool AutocompleteEditViewMac::OnDoCommandBySelector(SEL cmd) {
     }
   }
 
-  // Capture the state before the operation changes the content.
-  // TODO(shess): Determine if this is always redundent WRT the call
-  // in -controlTextDidChange:.
-  OnBeforePossibleChange();
   return false;
 }
 

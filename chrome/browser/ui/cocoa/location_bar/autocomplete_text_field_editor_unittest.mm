@@ -206,6 +206,7 @@ TEST_F(AutocompleteTextFieldEditorObserverTest, Cut) {
   // Sets a string in the field.
   NSString* test_string = @"astring";
   EXPECT_CALL(field_observer_, OnDidBeginEditing());
+  EXPECT_CALL(field_observer_, OnBeforeChange());
   EXPECT_CALL(field_observer_, OnDidChange());
   EXPECT_CALL(field_observer_, SelectionRangeForProposedRange(A<NSRange>()))
       .WillRepeatedly(ReturnArg<0>());

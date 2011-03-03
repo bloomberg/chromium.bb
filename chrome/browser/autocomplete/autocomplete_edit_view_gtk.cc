@@ -1752,7 +1752,7 @@ void AutocompleteEditViewGtk::HandleCopyOrCutClipboard(bool copy) {
                            copy ? copy_signal_id : cut_signal_id,
                            0);
 
-    if (!copy)
+    if (!copy && gtk_text_view_get_editable(GTK_TEXT_VIEW(text_view_)))
       gtk_text_buffer_delete_selection(text_buffer_, true, true);
   }
 

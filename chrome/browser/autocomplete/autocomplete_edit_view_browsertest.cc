@@ -30,8 +30,8 @@
 #include "chrome/test/ui_test_utils.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "net/base/mock_host_resolver.h"
+#include "ui/base/events.h"
 #include "ui/base/keycodes/keyboard_codes.h"
-#include "views/events/event.h"
 
 #if defined(OS_LINUX)
 #include <gdk/gdk.h>
@@ -40,6 +40,7 @@
 
 #if defined(TOOLKIT_VIEWS)
 #include "views/controls/textfield/native_textfield_views.h"
+#include "views/events/event.h"
 #endif
 
 using base::Time;
@@ -131,6 +132,12 @@ void SetClipboardText(const char* text) {
 }
 #endif
 
+#if defined(OS_MACOSX)
+const int kCtrlOrCmdMask = ui::EF_COMMAND_DOWN;
+#else
+const int kCtrlOrCmdMask = ui::EF_CONTROL_DOWN;
+#endif
+
 }  // namespace
 
 class AutocompleteEditViewTest : public InProcessBrowserTest,
@@ -169,21 +176,36 @@ class AutocompleteEditViewTest : public InProcessBrowserTest,
 
   static void SendKeyForBrowser(const Browser* browser,
                                 ui::KeyboardCode key,
-                                bool control,
-                                bool shift,
-                                bool alt) {
+                                int modifiers) {
     ASSERT_TRUE(ui_test_utils::SendKeyPressSync(
-        browser, key, control, shift, alt, false /* command */));
+        browser, key,
+        (modifiers & ui::EF_CONTROL_DOWN) != 0,
+        (modifiers & ui::EF_SHIFT_DOWN) != 0,
+        (modifiers & ui::EF_ALT_DOWN) != 0,
+        (modifiers & ui::EF_COMMAND_DOWN) != 0));
   }
 
-  void SendKey(ui::KeyboardCode key, bool control, bool shift, bool alt) {
-    SendKeyForBrowser(browser(), key, control, shift, alt);
+  void SendKey(ui::KeyboardCode key, int modifiers) {
+    SendKeyForBrowser(browser(), key, modifiers);
   }
 
   void SendKeySequence(const wchar_t* keys) {
     for (; *keys; ++keys)
-      ASSERT_NO_FATAL_FAILURE(SendKey(static_cast<ui::KeyboardCode>(*keys),
-                                      false, false, false));
+      ASSERT_NO_FATAL_FAILURE(SendKey(static_cast<ui::KeyboardCode>(*keys), 0));
+  }
+
+  bool SendKeyAndWait(const Browser* browser,
+                      ui::KeyboardCode key,
+                      int modifiers,
+                      NotificationType type,
+                      const NotificationSource& source) WARN_UNUSED_RESULT {
+    return ui_test_utils::SendKeyPressAndWait(
+        browser, key,
+        (modifiers & ui::EF_CONTROL_DOWN) != 0,
+        (modifiers & ui::EF_SHIFT_DOWN) != 0,
+        (modifiers & ui::EF_ALT_DOWN) != 0,
+        (modifiers & ui::EF_COMMAND_DOWN) != 0,
+        type, source);
   }
 
   void WaitForTabOpenOrCloseForBrowser(const Browser* browser,
@@ -346,43 +368,50 @@ class AutocompleteEditViewTest : public InProcessBrowserTest,
     ASSERT_NO_FATAL_FAILURE(WaitForTabOpenOrClose(tab_count + 1));
 
     // Select the first Tab.
-    ASSERT_NO_FATAL_FAILURE(SendKey(ui::VKEY_1, true, false, false));
+    ASSERT_NO_FATAL_FAILURE(SendKey(ui::VKEY_1, kCtrlOrCmdMask));
     ASSERT_EQ(0, browser()->selected_index());
 
     browser()->FocusLocationBar();
 
     // Select the second Tab.
-    ASSERT_NO_FATAL_FAILURE(SendKey(ui::VKEY_2, true, false, false));
+    ASSERT_NO_FATAL_FAILURE(SendKey(ui::VKEY_2, kCtrlOrCmdMask));
     ASSERT_EQ(1, browser()->selected_index());
 
     browser()->FocusLocationBar();
 
     // Try ctrl-w to close a Tab.
-    ASSERT_NO_FATAL_FAILURE(SendKey(ui::VKEY_W, true, false, false));
+    ASSERT_NO_FATAL_FAILURE(SendKey(ui::VKEY_W, kCtrlOrCmdMask));
     ASSERT_NO_FATAL_FAILURE(WaitForTabOpenOrClose(tab_count));
 
     // Try ctrl-l to focus location bar.
     edit_view->SetUserText(ASCIIToUTF16("Hello world"));
     EXPECT_FALSE(edit_view->IsSelectAll());
-    ASSERT_NO_FATAL_FAILURE(SendKey(ui::VKEY_L, true, false, false));
+    ASSERT_NO_FATAL_FAILURE(SendKey(ui::VKEY_L, kCtrlOrCmdMask));
     EXPECT_TRUE(edit_view->IsSelectAll());
 
     // Try editing the location bar text.
-    ASSERT_NO_FATAL_FAILURE(SendKey(ui::VKEY_RIGHT, false, false, false));
+    ASSERT_NO_FATAL_FAILURE(SendKey(ui::VKEY_RIGHT, 0));
     EXPECT_FALSE(edit_view->IsSelectAll());
-    ASSERT_NO_FATAL_FAILURE(SendKey(ui::VKEY_S, false, false, false));
+    ASSERT_NO_FATAL_FAILURE(SendKey(ui::VKEY_S, 0));
     EXPECT_EQ(ASCIIToUTF16("Hello worlds"), edit_view->GetText());
 
     // Try ctrl-x to cut text.
-    ASSERT_NO_FATAL_FAILURE(SendKey(ui::VKEY_LEFT, true, true, false));
+#if defined(OS_MACOSX)
+    // Mac uses alt-left/right to select a word.
+    ASSERT_NO_FATAL_FAILURE(
+        SendKey(ui::VKEY_LEFT, ui::EF_SHIFT_DOWN | ui::EF_ALT_DOWN));
+#else
+    ASSERT_NO_FATAL_FAILURE(
+        SendKey(ui::VKEY_LEFT, ui::EF_SHIFT_DOWN | ui::EF_CONTROL_DOWN));
+#endif
     EXPECT_FALSE(edit_view->IsSelectAll());
-    ASSERT_NO_FATAL_FAILURE(SendKey(ui::VKEY_X, true, false, false));
+    ASSERT_NO_FATAL_FAILURE(SendKey(ui::VKEY_X, kCtrlOrCmdMask));
     EXPECT_EQ(ASCIIToUTF16("Hello "), edit_view->GetText());
 
-#if !defined(OS_CHROMEOS)
+#if !defined(OS_CHROMEOS) && !defined(OS_MACOSX)
     // Try alt-f4 to close the browser.
-    ASSERT_TRUE(ui_test_utils::SendKeyPressAndWait(
-        browser(), ui::VKEY_F4, false, false, true, false,
+    ASSERT_TRUE(SendKeyAndWait(
+        browser(), ui::VKEY_F4, ui::EF_ALT_DOWN,
         NotificationType::BROWSER_CLOSED, Source<Browser>(browser())));
 #endif
   }
@@ -390,48 +419,48 @@ class AutocompleteEditViewTest : public InProcessBrowserTest,
   void PopupAcceleratorsTest() {
     // Create a popup.
     Browser* popup = CreateBrowserForPopup(browser()->profile());
+    ASSERT_TRUE(ui_test_utils::BringBrowserWindowToFront(popup));
     AutocompleteEditView* edit_view = NULL;
     ASSERT_NO_FATAL_FAILURE(
         GetAutocompleteEditViewForBrowser(popup, &edit_view));
     popup->FocusLocationBar();
     EXPECT_TRUE(edit_view->IsSelectAll());
 
+#if !defined(OS_MACOSX)
     // Try ctrl-w to close the popup.
-    ASSERT_TRUE(ui_test_utils::SendKeyPressAndWait(
-        popup, ui::VKEY_W, true, false, false, false,
+    // This piece of code doesn't work on Mac, because the Browser object won't
+    // be destroyed before finishing the current message loop iteration, thus
+    // No BROWSER_CLOSED notification will be sent.
+    ASSERT_TRUE(SendKeyAndWait(
+        popup, ui::VKEY_W, ui::EF_CONTROL_DOWN,
         NotificationType::BROWSER_CLOSED, Source<Browser>(popup)));
 
     // Create another popup.
     popup = CreateBrowserForPopup(browser()->profile());
+    ASSERT_TRUE(ui_test_utils::BringBrowserWindowToFront(popup));
     ASSERT_NO_FATAL_FAILURE(
         GetAutocompleteEditViewForBrowser(popup, &edit_view));
+#endif
 
     // Set the edit text to "Hello world".
     edit_view->SetUserText(ASCIIToUTF16("Hello world"));
-    EXPECT_FALSE(edit_view->IsSelectAll());
     popup->FocusLocationBar();
     EXPECT_TRUE(edit_view->IsSelectAll());
 
     // Try editing the location bar text -- should be disallowed.
-    ASSERT_NO_FATAL_FAILURE(SendKeyForBrowser(popup, ui::VKEY_RIGHT, false,
-                                              false, false));
-    EXPECT_FALSE(edit_view->IsSelectAll());
-    ASSERT_NO_FATAL_FAILURE(SendKeyForBrowser(popup, ui::VKEY_S, false, false,
-                                              false));
+    ASSERT_NO_FATAL_FAILURE(SendKeyForBrowser(popup, ui::VKEY_S, 0));
     EXPECT_EQ(ASCIIToUTF16("Hello world"), edit_view->GetText());
+    EXPECT_TRUE(edit_view->IsSelectAll());
 
-    // Try ctrl-x to cut text -- should be disallowed.
-    ASSERT_NO_FATAL_FAILURE(SendKeyForBrowser(popup, ui::VKEY_LEFT, true, true,
-                                              false));
-    EXPECT_FALSE(edit_view->IsSelectAll());
-    ASSERT_NO_FATAL_FAILURE(SendKeyForBrowser(popup, ui::VKEY_X, true, false,
-                                              false));
+    ASSERT_NO_FATAL_FAILURE(
+        SendKeyForBrowser(popup, ui::VKEY_X, kCtrlOrCmdMask));
     EXPECT_EQ(ASCIIToUTF16("Hello world"), edit_view->GetText());
+    EXPECT_TRUE(edit_view->IsSelectAll());
 
-#if !defined(OS_CHROMEOS)
+#if !defined(OS_CHROMEOS) && !defined(OS_MACOSX)
     // Try alt-f4 to close the popup.
-    ASSERT_TRUE(ui_test_utils::SendKeyPressAndWait(
-        popup, ui::VKEY_F4, false, false, true, false,
+    ASSERT_TRUE(SendKeyAndWait(
+        popup, ui::VKEY_F4, ui::EF_ALT_DOWN,
         NotificationType::BROWSER_CLOSED, Source<Browser>(popup)));
 #endif
   }
@@ -446,17 +475,17 @@ class AutocompleteEditViewTest : public InProcessBrowserTest,
     ASSERT_EQ(kSearchKeyword, UTF16ToUTF8(edit_view->model()->keyword()));
 
     // Trigger keyword mode.
-    ASSERT_NO_FATAL_FAILURE(SendKey(ui::VKEY_TAB, false, false, false));
+    ASSERT_NO_FATAL_FAILURE(SendKey(ui::VKEY_TAB, 0));
     ASSERT_FALSE(edit_view->model()->is_keyword_hint());
     ASSERT_EQ(kSearchKeyword, UTF16ToUTF8(edit_view->model()->keyword()));
 
     // Backspace without search text should bring back keyword hint mode.
-    ASSERT_NO_FATAL_FAILURE(SendKey(ui::VKEY_BACK, false, false, false));
+    ASSERT_NO_FATAL_FAILURE(SendKey(ui::VKEY_BACK, 0));
     ASSERT_TRUE(edit_view->model()->is_keyword_hint());
     ASSERT_EQ(kSearchKeyword, UTF16ToUTF8(edit_view->model()->keyword()));
 
     // Trigger keyword mode again.
-    ASSERT_NO_FATAL_FAILURE(SendKey(ui::VKEY_TAB, false, false, false));
+    ASSERT_NO_FATAL_FAILURE(SendKey(ui::VKEY_TAB, 0));
     ASSERT_FALSE(edit_view->model()->is_keyword_hint());
     ASSERT_EQ(kSearchKeyword, UTF16ToUTF8(edit_view->model()->keyword()));
 
@@ -466,7 +495,7 @@ class AutocompleteEditViewTest : public InProcessBrowserTest,
     // Should stay in keyword mode while deleting search text by pressing
     // backspace.
     for (size_t i = 0; i < arraysize(kSearchText) - 1; ++i) {
-      ASSERT_NO_FATAL_FAILURE(SendKey(ui::VKEY_BACK, false, false, false));
+      ASSERT_NO_FATAL_FAILURE(SendKey(ui::VKEY_BACK, 0));
       ASSERT_FALSE(edit_view->model()->is_keyword_hint());
       ASSERT_EQ(kSearchKeyword, UTF16ToUTF8(edit_view->model()->keyword()));
     }
@@ -475,10 +504,15 @@ class AutocompleteEditViewTest : public InProcessBrowserTest,
     ASSERT_NO_FATAL_FAILURE(SendKeySequence(kSearchTextKeys));
 
     // Move cursor to the beginning of the search text.
-    ASSERT_NO_FATAL_FAILURE(SendKey(ui::VKEY_HOME, false, false, false));
+#if defined(OS_MACOSX)
+    // Home doesn't work on Mac trybot.
+    ASSERT_NO_FATAL_FAILURE(SendKey(ui::VKEY_A, ui::EF_CONTROL_DOWN));
+#else
+    ASSERT_NO_FATAL_FAILURE(SendKey(ui::VKEY_HOME, 0));
+#endif
     // Backspace at the beginning of the search text shall turn off
     // the keyword mode.
-    ASSERT_NO_FATAL_FAILURE(SendKey(ui::VKEY_BACK, false, false, false));
+    ASSERT_NO_FATAL_FAILURE(SendKey(ui::VKEY_BACK, 0));
     ASSERT_FALSE(edit_view->model()->is_keyword_hint());
     ASSERT_EQ(string16(), edit_view->model()->keyword());
     ASSERT_EQ(std::string(kSearchKeyword) + kSearchText,
@@ -497,11 +531,11 @@ class AutocompleteEditViewTest : public InProcessBrowserTest,
     EXPECT_TRUE(edit_view->IsSelectAll());
 
     // Delete all text in omnibox.
-    ASSERT_NO_FATAL_FAILURE(SendKey(ui::VKEY_BACK, false, false, false));
+    ASSERT_NO_FATAL_FAILURE(SendKey(ui::VKEY_BACK, 0));
     EXPECT_TRUE(edit_view->GetText().empty());
 
     // Escape shall revert the text in omnibox.
-    ASSERT_NO_FATAL_FAILURE(SendKey(ui::VKEY_ESCAPE, false, false, false));
+    ASSERT_NO_FATAL_FAILURE(SendKey(ui::VKEY_ESCAPE, 0));
     EXPECT_EQ(old_text, edit_view->GetText());
     EXPECT_TRUE(edit_view->IsSelectAll());
   }
@@ -518,7 +552,7 @@ class AutocompleteEditViewTest : public InProcessBrowserTest,
     ASSERT_TRUE(popup_model->IsOpen());
     // ctrl-Enter triggers desired_tld feature, thus www.bar.com shall be
     // opened.
-    ASSERT_NO_FATAL_FAILURE(SendKey(ui::VKEY_RETURN, true, false, false));
+    ASSERT_NO_FATAL_FAILURE(SendKey(ui::VKEY_RETURN, ui::EF_CONTROL_DOWN));
 
     GURL url = browser()->GetSelectedTabContents()->GetURL();
     EXPECT_STREQ(kDesiredTLDHostname, url.host().c_str());
@@ -531,7 +565,7 @@ class AutocompleteEditViewTest : public InProcessBrowserTest,
     edit_view->SetUserText(ASCIIToUTF16(chrome::kChromeUIHistoryURL));
     int tab_count = browser()->tab_count();
     // alt-Enter opens a new tab.
-    ASSERT_NO_FATAL_FAILURE(SendKey(ui::VKEY_RETURN, false, false, true));
+    ASSERT_NO_FATAL_FAILURE(SendKey(ui::VKEY_RETURN, ui::EF_ALT_DOWN));
     ASSERT_NO_FATAL_FAILURE(WaitForTabOpenOrClose(tab_count + 1));
   }
 
@@ -551,7 +585,7 @@ class AutocompleteEditViewTest : public InProcessBrowserTest,
               popup_model->result().default_match()->type);
 
     // Open the default match.
-    ASSERT_NO_FATAL_FAILURE(SendKey(ui::VKEY_RETURN, false, false, false));
+    ASSERT_NO_FATAL_FAILURE(SendKey(ui::VKEY_RETURN, 0));
     GURL url = browser()->GetSelectedTabContents()->GetURL();
     EXPECT_STREQ(kSearchTextURL, url.spec().c_str());
 
@@ -568,7 +602,7 @@ class AutocompleteEditViewTest : public InProcessBrowserTest,
               popup_model->result().default_match()->type);
 
     // Open the default match.
-    ASSERT_NO_FATAL_FAILURE(SendKey(ui::VKEY_RETURN, false, false, false));
+    ASSERT_NO_FATAL_FAILURE(SendKey(ui::VKEY_RETURN, 0));
     url = browser()->GetSelectedTabContents()->GetURL();
     EXPECT_STREQ(kSearchSingleCharURL, url.spec().c_str());
   }
@@ -595,7 +629,7 @@ class AutocompleteEditViewTest : public InProcessBrowserTest,
     // Move to another line with different text.
     size_t size = popup_model->result().size();
     while (popup_model->selected_line() < size - 1) {
-      ASSERT_NO_FATAL_FAILURE(SendKey(ui::VKEY_DOWN, false, false, false));
+      ASSERT_NO_FATAL_FAILURE(SendKey(ui::VKEY_DOWN, 0));
       ASSERT_NE(old_selected_line, popup_model->selected_line());
       if (old_text != edit_view->GetText())
         break;
@@ -604,7 +638,7 @@ class AutocompleteEditViewTest : public InProcessBrowserTest,
     EXPECT_NE(old_text, edit_view->GetText());
 
     // Escape shall revert back to the default match item.
-    ASSERT_NO_FATAL_FAILURE(SendKey(ui::VKEY_ESCAPE, false, false, false));
+    ASSERT_NO_FATAL_FAILURE(SendKey(ui::VKEY_ESCAPE, 0));
     EXPECT_EQ(old_text, edit_view->GetText());
     EXPECT_EQ(old_selected_line, popup_model->selected_line());
   }
@@ -626,7 +660,12 @@ class AutocompleteEditViewTest : public InProcessBrowserTest,
     EXPECT_EQ(old_text.size(), end);
 
     // Move the cursor to the end.
-    ASSERT_NO_FATAL_FAILURE(SendKey(ui::VKEY_END, false, false, false));
+#if defined(OS_MACOSX)
+    // End doesn't work on Mac trybot.
+    ASSERT_NO_FATAL_FAILURE(SendKey(ui::VKEY_E, ui::EF_CONTROL_DOWN));
+#else
+    ASSERT_NO_FATAL_FAILURE(SendKey(ui::VKEY_END, 0));
+#endif
     EXPECT_FALSE(edit_view->IsSelectAll());
 
     // Make sure the cursor is placed correctly.
@@ -636,12 +675,12 @@ class AutocompleteEditViewTest : public InProcessBrowserTest,
 
     // Insert one character at the end. Make sure we won't insert
     // anything after the special ZWS mark used in gtk implementation.
-    ASSERT_NO_FATAL_FAILURE(SendKey(ui::VKEY_A, false, false, false));
+    ASSERT_NO_FATAL_FAILURE(SendKey(ui::VKEY_A, 0));
     EXPECT_EQ(old_text + char16('a'), edit_view->GetText());
 
     // Delete one character from the end. Make sure we won't delete the special
     // ZWS mark used in gtk implementation.
-    ASSERT_NO_FATAL_FAILURE(SendKey(ui::VKEY_BACK, false, false, false));
+    ASSERT_NO_FATAL_FAILURE(SendKey(ui::VKEY_BACK, 0));
     EXPECT_EQ(old_text, edit_view->GetText());
 
     edit_view->SelectAll(true);
@@ -651,7 +690,7 @@ class AutocompleteEditViewTest : public InProcessBrowserTest,
     EXPECT_EQ(old_text.size(), end);
 
     // Delete the content
-    ASSERT_NO_FATAL_FAILURE(SendKey(ui::VKEY_DELETE, false, false, false));
+    ASSERT_NO_FATAL_FAILURE(SendKey(ui::VKEY_DELETE, 0));
     EXPECT_TRUE(edit_view->IsSelectAll());
     edit_view->GetSelectionBounds(&start, &end);
     EXPECT_EQ(0U, start);
@@ -680,7 +719,7 @@ class AutocompleteEditViewTest : public InProcessBrowserTest,
     ASSERT_EQ(text, edit_view->GetText());
 
     // Trigger keyword mode by space.
-    ASSERT_NO_FATAL_FAILURE(SendKey(ui::VKEY_SPACE, false, false, false));
+    ASSERT_NO_FATAL_FAILURE(SendKey(ui::VKEY_SPACE, 0));
     ASSERT_FALSE(edit_view->model()->is_keyword_hint());
     ASSERT_EQ(text, edit_view->model()->keyword());
     ASSERT_TRUE(edit_view->GetText().empty());
@@ -719,21 +758,21 @@ class AutocompleteEditViewTest : public InProcessBrowserTest,
 
     // Keyword shouldn't be accepted by pressing space with a trailing
     // whitespace.
-    ASSERT_NO_FATAL_FAILURE(SendKey(ui::VKEY_SPACE, false, false, false));
+    ASSERT_NO_FATAL_FAILURE(SendKey(ui::VKEY_SPACE, 0));
     ASSERT_TRUE(edit_view->model()->is_keyword_hint());
     ASSERT_EQ(text, edit_view->model()->keyword());
     ASSERT_EQ(text + ASCIIToUTF16("  "), edit_view->GetText());
 
     // Keyword shouldn't be accepted by deleting the trailing space.
-    ASSERT_NO_FATAL_FAILURE(SendKey(ui::VKEY_BACK, false, false, false));
+    ASSERT_NO_FATAL_FAILURE(SendKey(ui::VKEY_BACK, 0));
     ASSERT_TRUE(edit_view->model()->is_keyword_hint());
     ASSERT_EQ(text, edit_view->model()->keyword());
     ASSERT_EQ(text + char16(' '), edit_view->GetText());
 
     // Keyword shouldn't be accepted by pressing space in the middle
     // of content.
-    ASSERT_NO_FATAL_FAILURE(SendKey(ui::VKEY_LEFT, false, false, false));
-    ASSERT_NO_FATAL_FAILURE(SendKey(ui::VKEY_SPACE, false, false, false));
+    ASSERT_NO_FATAL_FAILURE(SendKey(ui::VKEY_LEFT, 0));
+    ASSERT_NO_FATAL_FAILURE(SendKey(ui::VKEY_SPACE, 0));
     ASSERT_TRUE(edit_view->model()->is_keyword_hint());
     ASSERT_EQ(text, edit_view->model()->keyword());
     ASSERT_EQ(text + ASCIIToUTF16("  "), edit_view->GetText());
@@ -765,7 +804,7 @@ class AutocompleteEditViewTest : public InProcessBrowserTest,
     string16::size_type start, end;
     edit_view->GetSelectionBounds(&start, &end);
     ASSERT_NE(start, end);
-    ASSERT_NO_FATAL_FAILURE(SendKey(ui::VKEY_SPACE, false, false, false));
+    ASSERT_NO_FATAL_FAILURE(SendKey(ui::VKEY_SPACE, 0));
     ASSERT_FALSE(edit_view->model()->is_keyword_hint());
     ASSERT_EQ(text, edit_view->model()->keyword());
     ASSERT_EQ(string16(), edit_view->GetText());
@@ -792,7 +831,7 @@ class AutocompleteEditViewTest : public InProcessBrowserTest,
     ASSERT_TRUE(edit_view->model()->keyword().empty());
 
     // Trigger keyword mode by space.
-    ASSERT_NO_FATAL_FAILURE(SendKey(ui::VKEY_SPACE, false, false, false));
+    ASSERT_NO_FATAL_FAILURE(SendKey(ui::VKEY_SPACE, 0));
     ASSERT_FALSE(edit_view->model()->is_keyword_hint());
     ASSERT_EQ(text, edit_view->model()->keyword());
     ASSERT_TRUE(edit_view->GetText().empty());
@@ -872,7 +911,7 @@ class AutocompleteEditViewTest : public InProcessBrowserTest,
     ASSERT_TRUE(popup_model->IsOpen());
 
     // Delete the inline autocomplete part.
-    ASSERT_NO_FATAL_FAILURE(SendKey(ui::VKEY_DELETE, false, false, false));
+    ASSERT_NO_FATAL_FAILURE(SendKey(ui::VKEY_DELETE, 0));
     ASSERT_NO_FATAL_FAILURE(WaitForAutocompleteControllerDone());
     ASSERT_TRUE(popup_model->IsOpen());
     ASSERT_GE(popup_model->result().size(), 3U);
@@ -955,7 +994,12 @@ class AutocompleteEditViewTest : public InProcessBrowserTest,
     edit_view->SetUserText(ASCIIToUTF16("Hello world"));
 
     // Move cursor to the beginning.
-    ASSERT_NO_FATAL_FAILURE(SendKey(ui::VKEY_HOME, false, false, false));
+#if defined(OS_MACOSX)
+    // Home doesn't work on Mac trybot.
+    ASSERT_NO_FATAL_FAILURE(SendKey(ui::VKEY_A, ui::EF_CONTROL_DOWN));
+#else
+    ASSERT_NO_FATAL_FAILURE(SendKey(ui::VKEY_HOME, 0));
+#endif
 
     string16::size_type start, end;
     edit_view->GetSelectionBounds(&start, &end);
@@ -963,7 +1007,7 @@ class AutocompleteEditViewTest : public InProcessBrowserTest,
     EXPECT_EQ(0U, end);
 
     // Pressing tab should move cursor to the end.
-    ASSERT_NO_FATAL_FAILURE(SendKey(ui::VKEY_TAB, false, false, false));
+    ASSERT_NO_FATAL_FAILURE(SendKey(ui::VKEY_TAB, 0));
 
     edit_view->GetSelectionBounds(&start, &end);
     EXPECT_EQ(edit_view->GetText().size(), start);
@@ -980,7 +1024,7 @@ class AutocompleteEditViewTest : public InProcessBrowserTest,
     EXPECT_EQ(edit_view->GetText().size(), end);
 
     // Pressing tab should move cursor to the end.
-    ASSERT_NO_FATAL_FAILURE(SendKey(ui::VKEY_TAB, false, false, false));
+    ASSERT_NO_FATAL_FAILURE(SendKey(ui::VKEY_TAB, 0));
 
     edit_view->GetSelectionBounds(&start, &end);
     EXPECT_EQ(edit_view->GetText().size(), start);
@@ -990,7 +1034,7 @@ class AutocompleteEditViewTest : public InProcessBrowserTest,
     ASSERT_TRUE(ui_test_utils::IsViewFocused(browser(), VIEW_ID_LOCATION_BAR));
 
     // Pressing tab when cursor is at the end should change focus.
-    ASSERT_NO_FATAL_FAILURE(SendKey(ui::VKEY_TAB, false, false, false));
+    ASSERT_NO_FATAL_FAILURE(SendKey(ui::VKEY_TAB, 0));
 
     ASSERT_FALSE(ui_test_utils::IsViewFocused(browser(), VIEW_ID_LOCATION_BAR));
   }
@@ -1005,7 +1049,7 @@ class AutocompleteEditViewTest : public InProcessBrowserTest,
     ASSERT_EQ(kSearchKeyword, UTF16ToUTF8(edit_view->model()->keyword()));
 
     // Trigger keyword mode.
-    ASSERT_NO_FATAL_FAILURE(SendKey(ui::VKEY_TAB, false, false, false));
+    ASSERT_NO_FATAL_FAILURE(SendKey(ui::VKEY_TAB, 0));
     ASSERT_FALSE(edit_view->model()->is_keyword_hint());
     ASSERT_EQ(kSearchKeyword, UTF16ToUTF8(edit_view->model()->keyword()));
 
@@ -1136,15 +1180,16 @@ IN_PROC_BROWSER_TEST_F(AutocompleteEditViewTest, UndoRedoLinux) {
   EXPECT_TRUE(edit_view->IsSelectAll());
 
   // Undo should clear the omnibox.
-  ASSERT_NO_FATAL_FAILURE(SendKey(ui::VKEY_Z, true, false, false));
+  ASSERT_NO_FATAL_FAILURE(SendKey(ui::VKEY_Z, ui::EF_CONTROL_DOWN));
   EXPECT_TRUE(edit_view->GetText().empty());
 
   // Nothing should happen if undo again.
-  ASSERT_NO_FATAL_FAILURE(SendKey(ui::VKEY_Z, true, false, false));
+  ASSERT_NO_FATAL_FAILURE(SendKey(ui::VKEY_Z, ui::EF_CONTROL_DOWN));
   EXPECT_TRUE(edit_view->GetText().empty());
 
   // Redo should restore the original text.
-  ASSERT_NO_FATAL_FAILURE(SendKey(ui::VKEY_Z, true, true, false));
+  ASSERT_NO_FATAL_FAILURE(
+      SendKey(ui::VKEY_Z, ui::EF_CONTROL_DOWN | ui::EF_SHIFT_DOWN));
   EXPECT_EQ(old_text, edit_view->GetText());
 
   // Looks like the undo manager doesn't support restoring selection.
@@ -1157,33 +1202,34 @@ IN_PROC_BROWSER_TEST_F(AutocompleteEditViewTest, UndoRedoLinux) {
   EXPECT_EQ(old_text.size(), end);
 
   // Delete two characters.
-  ASSERT_NO_FATAL_FAILURE(SendKey(ui::VKEY_BACK, false, false, false));
-  ASSERT_NO_FATAL_FAILURE(SendKey(ui::VKEY_BACK, false, false, false));
+  ASSERT_NO_FATAL_FAILURE(SendKey(ui::VKEY_BACK, 0));
+  ASSERT_NO_FATAL_FAILURE(SendKey(ui::VKEY_BACK, 0));
   EXPECT_EQ(old_text.substr(0, old_text.size() - 2), edit_view->GetText());
 
   // Undo delete.
-  ASSERT_NO_FATAL_FAILURE(SendKey(ui::VKEY_Z, true, false, false));
+  ASSERT_NO_FATAL_FAILURE(SendKey(ui::VKEY_Z, ui::EF_CONTROL_DOWN));
   EXPECT_EQ(old_text, edit_view->GetText());
 
   // Redo delete.
-  ASSERT_NO_FATAL_FAILURE(SendKey(ui::VKEY_Z, true, true, false));
+  ASSERT_NO_FATAL_FAILURE(
+      SendKey(ui::VKEY_Z, ui::EF_CONTROL_DOWN | ui::EF_SHIFT_DOWN));
   EXPECT_EQ(old_text.substr(0, old_text.size() - 2), edit_view->GetText());
 
   // Delete everything.
   edit_view->SelectAll(true);
-  ASSERT_NO_FATAL_FAILURE(SendKey(ui::VKEY_BACK, false, false, false));
+  ASSERT_NO_FATAL_FAILURE(SendKey(ui::VKEY_BACK, 0));
   EXPECT_TRUE(edit_view->GetText().empty());
 
   // Undo delete everything.
-  ASSERT_NO_FATAL_FAILURE(SendKey(ui::VKEY_Z, true, false, false));
+  ASSERT_NO_FATAL_FAILURE(SendKey(ui::VKEY_Z, ui::EF_CONTROL_DOWN));
   EXPECT_EQ(old_text.substr(0, old_text.size() - 2), edit_view->GetText());
 
   // Undo delete two characters.
-  ASSERT_NO_FATAL_FAILURE(SendKey(ui::VKEY_Z, true, false, false));
+  ASSERT_NO_FATAL_FAILURE(SendKey(ui::VKEY_Z, ui::EF_CONTROL_DOWN));
   EXPECT_EQ(old_text, edit_view->GetText());
 
   // Undo again.
-  ASSERT_NO_FATAL_FAILURE(SendKey(ui::VKEY_Z, true, false, false));
+  ASSERT_NO_FATAL_FAILURE(SendKey(ui::VKEY_Z, ui::EF_CONTROL_DOWN));
   EXPECT_TRUE(edit_view->GetText().empty());
 }
 
@@ -1195,17 +1241,17 @@ IN_PROC_BROWSER_TEST_F(AutocompleteEditViewTest, PrimarySelection) {
   EXPECT_FALSE(edit_view->IsSelectAll());
 
   // Move the cursor to the end.
-  ASSERT_NO_FATAL_FAILURE(SendKey(ui::VKEY_END, false, false, false));
+  ASSERT_NO_FATAL_FAILURE(SendKey(ui::VKEY_END, 0));
 
   // Select all text by pressing Shift+Home
-  ASSERT_NO_FATAL_FAILURE(SendKey(ui::VKEY_HOME, false, true, false));
+  ASSERT_NO_FATAL_FAILURE(SendKey(ui::VKEY_HOME, ui::EF_SHIFT_DOWN));
   EXPECT_TRUE(edit_view->IsSelectAll());
 
   // The selected content should be saved to the PRIMARY clipboard.
   EXPECT_EQ("Hello world", GetPrimarySelectionText());
 
   // Move the cursor to the end.
-  ASSERT_NO_FATAL_FAILURE(SendKey(ui::VKEY_END, false, false, false));
+  ASSERT_NO_FATAL_FAILURE(SendKey(ui::VKEY_END, 0));
   EXPECT_FALSE(edit_view->IsSelectAll());
 
   // The content in the PRIMARY clipboard should not be cleared.
@@ -1221,10 +1267,10 @@ IN_PROC_BROWSER_TEST_F(AutocompleteEditViewTest,
   edit_view->SetUserText(UTF8ToUTF16("\357\276\200\357\276\236"));
 
   // Move the cursor to the end.
-  ASSERT_NO_FATAL_FAILURE(SendKey(ui::VKEY_END, false, false, false));
+  ASSERT_NO_FATAL_FAILURE(SendKey(ui::VKEY_END, 0));
 
   // Backspace should delete one character.
-  ASSERT_NO_FATAL_FAILURE(SendKey(ui::VKEY_BACK, false, false, false));
+  ASSERT_NO_FATAL_FAILURE(SendKey(ui::VKEY_BACK, 0));
   EXPECT_EQ(UTF8ToUTF16("\357\276\200"), edit_view->GetText());
 }
 
@@ -1238,7 +1284,7 @@ IN_PROC_BROWSER_TEST_F(AutocompleteEditViewTest, PasteReplacingAll) {
   SetClipboardText(kSearchText);
 
   // Paste text.
-  ASSERT_NO_FATAL_FAILURE(SendKey(ui::VKEY_V, true, false, false));
+  ASSERT_NO_FATAL_FAILURE(SendKey(ui::VKEY_V, ui::EF_CONTROL_DOWN));
   ASSERT_NO_FATAL_FAILURE(WaitForAutocompleteControllerDone());
   ASSERT_TRUE(popup_model->IsOpen());
 

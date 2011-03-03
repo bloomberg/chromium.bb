@@ -308,14 +308,31 @@
   DCHECK(!interpretingKeyEvents_);
   interpretingKeyEvents_ = YES;
   textChangedByKeyEvents_ = NO;
+  AutocompleteTextFieldObserver* observer = [self observer];
+
+  if (observer)
+    observer->OnBeforeChange();
+
   [super interpretKeyEvents:eventArray];
 
-  AutocompleteTextFieldObserver* observer = [self observer];
   if (textChangedByKeyEvents_ && observer)
     observer->OnDidChange();
 
   DCHECK(interpretingKeyEvents_);
   interpretingKeyEvents_ = NO;
+}
+
+- (BOOL)shouldChangeTextInRange:(NSRange)affectedCharRange
+              replacementString:(NSString *)replacementString {
+  BOOL ret = [super shouldChangeTextInRange:affectedCharRange
+                          replacementString:replacementString];
+
+  if (ret && !interpretingKeyEvents_) {
+    AutocompleteTextFieldObserver* observer = [self observer];
+    if (observer)
+      observer->OnBeforeChange();
+  }
+  return ret;
 }
 
 - (void)didChangeText {

@@ -99,6 +99,7 @@ class AutocompleteEditViewMac : public AutocompleteEditView,
   virtual void OnPasteAndGo();
   virtual void OnFrameChanged();
   virtual void OnDidBeginEditing();
+  virtual void OnBeforeChange();
   virtual void OnDidChange();
   virtual void OnDidEndEditing();
   virtual bool OnDoCommandBySelector(SEL cmd);

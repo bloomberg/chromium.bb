@@ -47,6 +47,7 @@ class MockAutocompleteTextFieldObserver : public AutocompleteTextFieldObserver {
   MOCK_METHOD0(OnFrameChanged, void());
   MOCK_METHOD0(ClosePopup, void());
   MOCK_METHOD0(OnDidBeginEditing, void());
+  MOCK_METHOD0(OnBeforeChange, void());
   MOCK_METHOD0(OnDidChange, void());
   MOCK_METHOD0(OnDidEndEditing, void());
   MOCK_METHOD0(OnStartingIME, void());

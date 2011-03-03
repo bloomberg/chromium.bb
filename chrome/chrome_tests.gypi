@@ -431,7 +431,6 @@
         ['OS=="mac"', {
           'sources!': [
             # TODO(port)
-            'browser/autocomplete/autocomplete_edit_view_browsertest.cc',
             'browser/debugger/devtools_sanity_unittest.cc',
             'browser/ui/views/bookmarks/bookmark_bar_view_test.cc',
             'browser/ui/views/find_bar_host_interactive_uitest.cc',

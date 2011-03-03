@@ -717,7 +717,7 @@ static bool IsPreconnectable(AutocompleteMatch::Type type) {
 }
 
 void AutocompleteEditModel::OnResultChanged(bool default_match_changed) {
-  const bool was_open = popup_->view()->IsOpen();
+  const bool was_open = popup_->IsOpen();
   if (default_match_changed) {
     string16 inline_autocomplete_text;
     string16 keyword;
@@ -751,7 +751,7 @@ void AutocompleteEditModel::OnResultChanged(bool default_match_changed) {
     popup_->OnResultChanged();
   }
 
-  if (popup_->view()->IsOpen()) {
+  if (popup_->IsOpen()) {
     PopupBoundsChangedTo(popup_->view()->GetTargetBounds());
   } else if (was_open) {
     // Accepts the temporary text as the user text, because it makes little

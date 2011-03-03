@@ -74,6 +74,7 @@ class AutocompleteTextFieldObserver {
   // Called when the user begins editing the field, for every edit,
   // and when the user is done editing the field.
   virtual void OnDidBeginEditing() = 0;
+  virtual void OnBeforeChange() = 0;
   virtual void OnDidChange() = 0;
   virtual void OnDidEndEditing() = 0;
 

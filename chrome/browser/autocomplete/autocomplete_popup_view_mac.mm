@@ -319,7 +319,7 @@ AutocompleteMatrix* AutocompletePopupViewMac::GetAutocompleteMatrix() {
 }
 
 bool AutocompletePopupViewMac::IsOpen() const {
-  return [popup_ isVisible] ? true : false;
+  return popup_ != nil;
 }
 
 void AutocompletePopupViewMac::CreatePopupIfNeeded() {
@@ -409,7 +409,7 @@ void AutocompletePopupViewMac::PositionPopup(const CGFloat matrixHeight) {
     [popup_ setAnimations:savedAnimations];
   }
 
-  if (!IsOpen())
+  if (![popup_ isVisible])
     [[field_ window] addChildWindow:popup_ ordered:NSWindowAbove];
 }
 

@@ -331,6 +331,7 @@ TEST_F(AutocompleteTextFieldObserverTest, ResetFieldEditorContinuesEditing) {
 
   // This should begin editing and indicate a change.
   EXPECT_CALL(field_observer_, OnDidBeginEditing());
+  EXPECT_CALL(field_observer_, OnBeforeChange());
   EXPECT_CALL(field_observer_, OnDidChange());
   [editor shouldChangeTextInRange:NSMakeRange(0, 0) replacementString:@""];
   [editor didChangeText];
@@ -749,11 +750,13 @@ TEST_F(AutocompleteTextFieldObserverTest, SendsEditingMessages) {
 
   // This should begin editing and indicate a change.
   EXPECT_CALL(field_observer_, OnDidBeginEditing());
+  EXPECT_CALL(field_observer_, OnBeforeChange());
   EXPECT_CALL(field_observer_, OnDidChange());
   [editor shouldChangeTextInRange:NSMakeRange(0, 0) replacementString:@""];
   [editor didChangeText];
 
   // Further changes don't send the begin message.
+  EXPECT_CALL(field_observer_, OnBeforeChange());
   EXPECT_CALL(field_observer_, OnDidChange());
   [editor shouldChangeTextInRange:NSMakeRange(0, 0) replacementString:@""];
   [editor didChangeText];
