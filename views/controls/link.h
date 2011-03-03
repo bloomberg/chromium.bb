@@ -46,16 +46,16 @@ class Link : public Label {
   const LinkController* GetController();
 
   // Overridden from View:
-  virtual bool OnMousePressed(const MouseEvent& event);
-  virtual bool OnMouseDragged(const MouseEvent& event);
+  virtual bool OnMousePressed(const MouseEvent& event) OVERRIDE;
+  virtual bool OnMouseDragged(const MouseEvent& event) OVERRIDE;
   virtual void OnMouseReleased(const MouseEvent& event,
-                               bool canceled);
-  virtual bool OnKeyPressed(const KeyEvent& e);
-  virtual bool SkipDefaultKeyEventProcessing(const KeyEvent& e);
+                               bool canceled) OVERRIDE;
+  virtual bool OnKeyPressed(const KeyEvent& e) OVERRIDE;
+  virtual bool SkipDefaultKeyEventProcessing(const KeyEvent& e) OVERRIDE;
+  virtual void GetAccessibleState(ui::AccessibleViewState* state) OVERRIDE;
 
-  // Accessibility accessors, overridden from View:
-  virtual AccessibilityTypes::Role GetAccessibleRole();
-  virtual void SetFont(const gfx::Font& font);
+  // Overridden from Label:
+  virtual void SetFont(const gfx::Font& font) OVERRIDE;
 
   // Set whether the link is enabled.
   virtual void SetEnabled(bool f);

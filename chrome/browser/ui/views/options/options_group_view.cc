@@ -9,8 +9,9 @@
 
 #include "base/string_number_conversions.h"
 #include "base/utf_string_conversions.h"
-#include "grit/locale_settings.h"
 #include "grit/generated_resources.h"
+#include "grit/locale_settings.h"
+#include "ui/base/accessibility/accessible_view_state.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/canvas.h"
@@ -50,9 +51,6 @@ OptionsGroupView::OptionsGroupView(views::View* contents,
 
   description_label_->SetMultiLine(true);
   description_label_->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
-
-  SetAccessibleName(WideToUTF16Hack(title));
-  contents->SetAccessibleName(WideToUTF16Hack(title));
 }
 
 OptionsGroupView::~OptionsGroupView() {
@@ -70,8 +68,9 @@ int OptionsGroupView::GetContentsWidth() const {
 ///////////////////////////////////////////////////////////////////////////////
 // OptionsGroupView, views::View overrides:
 
-AccessibilityTypes::Role OptionsGroupView::GetAccessibleRole() {
-  return AccessibilityTypes::ROLE_GROUPING;
+void OptionsGroupView::GetAccessibleState(ui::AccessibleViewState* state) {
+  title_label_->GetAccessibleState(state);
+  state->role = ui::AccessibilityTypes::ROLE_GROUPING;
 }
 
 void OptionsGroupView::OnPaint(gfx::Canvas* canvas) {

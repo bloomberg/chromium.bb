@@ -414,14 +414,14 @@ class BrowserView : public BrowserBubbleHost,
   }
 
   // Overridden from views::View:
-  virtual std::string GetClassName() const;
-  virtual void Layout();
-  virtual void PaintChildren(gfx::Canvas* canvas);
+  virtual std::string GetClassName() const OVERRIDE;
+  virtual void Layout() OVERRIDE;
+  virtual void PaintChildren(gfx::Canvas* canvas) OVERRIDE;
   virtual void ViewHierarchyChanged(bool is_add,
                                     views::View* parent,
-                                    views::View* child);
-  virtual void ChildPreferredSizeChanged(View* child);
-  virtual AccessibilityTypes::Role GetAccessibleRole();
+                                    views::View* child) OVERRIDE;
+  virtual void ChildPreferredSizeChanged(View* child) OVERRIDE;
+  virtual void GetAccessibleState(ui::AccessibleViewState* state) OVERRIDE;
 
   // Factory Methods.
   // Returns a new LayoutManager for this browser view. A subclass may

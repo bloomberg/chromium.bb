@@ -5,6 +5,7 @@
 #include "views/controls/resize_area.h"
 
 #include "base/logging.h"
+#include "ui/base/accessibility/accessible_view_state.h"
 #include "ui/base/resource/resource_bundle.h"
 
 #if defined(OS_LINUX)
@@ -74,8 +75,8 @@ void ResizeArea::OnMouseReleased(const views::MouseEvent& event,
   ReportResizeAmount(canceled ? initial_position_ : event.x(), true);
 }
 
-AccessibilityTypes::Role ResizeArea::GetAccessibleRole() {
-  return AccessibilityTypes::ROLE_SEPARATOR;
+void ResizeArea::GetAccessibleState(ui::AccessibleViewState* state) {
+  state->role = ui::AccessibilityTypes::ROLE_SEPARATOR;
 }
 
 void ResizeArea::ReportResizeAmount(int resize_amount, bool last_update) {

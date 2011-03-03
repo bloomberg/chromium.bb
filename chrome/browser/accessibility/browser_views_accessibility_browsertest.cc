@@ -17,8 +17,9 @@
 #include "chrome/test/ui_test_utils.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
+#include "ui/base/accessibility/accessibility_types.h"
 #include "ui/base/l10n/l10n_util.h"
-#include "views/accessibility/view_accessibility.h"
+#include "views/accessibility/native_view_accessibility_win.h"
 #include "views/widget/root_view.h"
 #include "views/widget/widget_win.h"
 #include "views/window/window.h"
@@ -28,7 +29,7 @@ namespace {
 VARIANT id_self = {VT_I4, CHILDID_SELF};
 
 // Dummy class to force creation of ATL module, needed by COM to instantiate
-// ViewAccessibility.
+// NativeViewAccessibilityWin.
 class TestAtlModule : public CAtlDllModuleT<TestAtlModule> {};
 TestAtlModule test_atl_module_;
 
@@ -86,7 +87,9 @@ class BrowserViewsAccessibilityTest : public InProcessBrowserTest {
     ASSERT_TRUE(NULL != view);
 
     TestAccessibilityInfo(
-        ViewAccessibility::GetAccessibleForView(view), name, role);
+        views::NativeViewAccessibilityWin::GetAccessibleForView(view),
+        name,
+        role);
   }
 
 
@@ -253,8 +256,8 @@ IN_PROC_BROWSER_TEST_F(BrowserViewsAccessibilityTest,
   EXPECT_STREQ(
       aboutChromeWindow->GetDelegate()->GetWindowTitle().c_str(),
       UTF16ToWide(l10n_util::GetStringUTF16(IDS_ABOUT_CHROME_TITLE)).c_str());
-  EXPECT_EQ(aboutChromeWindow->GetDelegate()->accessible_role(),
-            AccessibilityTypes::ROLE_DIALOG);
+  EXPECT_EQ(aboutChromeWindow->GetDelegate()->GetAccessibleRole(),
+            ui::AccessibilityTypes::ROLE_DIALOG);
 
   // Also test the accessibility object directly.
   IAccessible* acc_obj = NULL;

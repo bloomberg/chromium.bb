@@ -5,6 +5,7 @@
 #include "views/controls/button/checkbox.h"
 
 #include "base/logging.h"
+#include "ui/base/accessibility/accessible_view_state.h"
 #include "ui/gfx/canvas.h"
 #include "views/controls/label.h"
 
@@ -158,12 +159,10 @@ void Checkbox::OnBlur() {
   label_->set_paint_as_focused(false);
 }
 
-AccessibilityTypes::Role Checkbox::GetAccessibleRole() {
-  return AccessibilityTypes::ROLE_CHECKBUTTON;
-}
-
-AccessibilityTypes::State Checkbox::GetAccessibleState() {
-  return checked() ? AccessibilityTypes::STATE_CHECKED : 0;
+void Checkbox::GetAccessibleState(ui::AccessibleViewState* state) {
+  Button::GetAccessibleState(state);
+  state->role = ui::AccessibilityTypes::ROLE_CHECKBUTTON;
+  state->state = checked() ? ui::AccessibilityTypes::STATE_CHECKED : 0;
 }
 
 std::string Checkbox::GetClassName() const {

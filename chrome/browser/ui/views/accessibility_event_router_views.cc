@@ -13,7 +13,7 @@
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/views/location_bar/location_bar_view.h"
 #include "chrome/common/notification_type.h"
-#include "views/accessibility/accessibility_types.h"
+#include "ui/base/accessibility/accessible_view_state.h"
 #include "views/controls/button/custom_button.h"
 #include "views/controls/button/menu_button.h"
 #include "views/controls/button/native_button.h"
@@ -43,38 +43,38 @@ AccessibilityEventRouterViews* AccessibilityEventRouterViews::GetInstance() {
 }
 
 void AccessibilityEventRouterViews::HandleAccessibilityEvent(
-    views::View* view, AccessibilityTypes::Event event_type) {
+    views::View* view, ui::AccessibilityTypes::Event event_type) {
   if (!ExtensionAccessibilityEventRouter::GetInstance()->
       IsAccessibilityEnabled()) {
     return;
   }
 
   switch (event_type) {
-    case AccessibilityTypes::EVENT_FOCUS:
+    case ui::AccessibilityTypes::EVENT_FOCUS:
       DispatchAccessibilityNotification(
           view, NotificationType::ACCESSIBILITY_CONTROL_FOCUSED);
       break;
-    case AccessibilityTypes::EVENT_MENUSTART:
-    case AccessibilityTypes::EVENT_MENUPOPUPSTART:
+    case ui::AccessibilityTypes::EVENT_MENUSTART:
+    case ui::AccessibilityTypes::EVENT_MENUPOPUPSTART:
       DispatchAccessibilityNotification(
           view, NotificationType::ACCESSIBILITY_MENU_OPENED);
       break;
-    case AccessibilityTypes::EVENT_MENUEND:
-    case AccessibilityTypes::EVENT_MENUPOPUPEND:
+    case ui::AccessibilityTypes::EVENT_MENUEND:
+    case ui::AccessibilityTypes::EVENT_MENUPOPUPEND:
       DispatchAccessibilityNotification(
           view, NotificationType::ACCESSIBILITY_MENU_CLOSED);
       break;
-    case AccessibilityTypes::EVENT_TEXT_CHANGED:
-    case AccessibilityTypes::EVENT_SELECTION_CHANGED:
+    case ui::AccessibilityTypes::EVENT_TEXT_CHANGED:
+    case ui::AccessibilityTypes::EVENT_SELECTION_CHANGED:
       DispatchAccessibilityNotification(
           view, NotificationType::ACCESSIBILITY_TEXT_CHANGED);
       break;
-    case AccessibilityTypes::EVENT_VALUE_CHANGED:
+    case ui::AccessibilityTypes::EVENT_VALUE_CHANGED:
       DispatchAccessibilityNotification(
           view, NotificationType::ACCESSIBILITY_CONTROL_ACTION);
       break;
-    case AccessibilityTypes::EVENT_ALERT:
-    case AccessibilityTypes::EVENT_NAME_CHANGED:
+    case ui::AccessibilityTypes::EVENT_ALERT:
+    case ui::AccessibilityTypes::EVENT_NAME_CHANGED:
       // TODO(dmazzoni): re-evaluate this list later and see
       // if supporting any of these would be useful feature requests or
       // they'd just be superfluous.
@@ -88,9 +88,9 @@ void AccessibilityEventRouterViews::HandleAccessibilityEvent(
 //
 
 std::string AccessibilityEventRouterViews::GetViewName(views::View* view) {
-  string16 wname;
-  view->GetAccessibleName(&wname);
-  return UTF16ToUTF8(wname);
+  ui::AccessibleViewState state;
+  view->GetAccessibleState(&state);
+  return UTF16ToUTF8(state.name);
 }
 
 void AccessibilityEventRouterViews::DispatchAccessibilityNotification(
@@ -202,9 +202,11 @@ bool AccessibilityEventRouterViews::IsMenuEvent(
     return true;
 
   while (view) {
-    AccessibilityTypes::Role role = view->GetAccessibleRole();
-    if (role == AccessibilityTypes::ROLE_MENUITEM ||
-        role == AccessibilityTypes::ROLE_MENUPOPUP) {
+    ui::AccessibleViewState state;
+    view->GetAccessibleState(&state);
+    ui::AccessibilityTypes::Role role = state.role;
+    if (role == ui::AccessibilityTypes::ROLE_MENUITEM ||
+        role == ui::AccessibilityTypes::ROLE_MENUPOPUP) {
       return true;
     }
     view = view->parent();

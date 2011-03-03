@@ -27,7 +27,6 @@
 #include "views/view.h"
 
 class Browser;
-class BrowserActionsContainer;
 class BrowserActionOverflowMenuController;
 class BrowserActionsContainer;
 class Extension;
@@ -163,7 +162,7 @@ class BrowserActionView : public views::View {
   gfx::Canvas* GetIconWithBadge();
 
   // Accessibility accessors, overridden from View.
-  virtual AccessibilityTypes::Role GetAccessibleRole();
+  virtual void GetAccessibleState(ui::AccessibleViewState* state) OVERRIDE;
 
  private:
   virtual void Layout();
@@ -331,7 +330,7 @@ class BrowserActionsContainer
   virtual void OnDragExited();
   virtual int OnPerformDrop(const views::DropTargetEvent& event);
   virtual void OnThemeChanged();
-  virtual AccessibilityTypes::Role GetAccessibleRole();
+  virtual void GetAccessibleState(ui::AccessibleViewState* state) OVERRIDE;
 
   // Overridden from views::ViewMenuDelegate:
   virtual void RunMenu(View* source, const gfx::Point& pt);

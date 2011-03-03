@@ -2,18 +2,20 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef VIEWS_ACCESSIBILITY_ACCESSIBILITY_TYPES_H_
-#define VIEWS_ACCESSIBILITY_ACCESSIBILITY_TYPES_H_
+#ifndef UI_BASE_ACCESSIBILITY_ACCESSIBILITY_TYPES_H_
+#define UI_BASE_ACCESSIBILITY_ACCESSIBILITY_TYPES_H_
 #pragma once
 
 #include "base/basictypes.h"
+
+namespace ui {
 
 ////////////////////////////////////////////////////////////////////////////////
 //
 // AccessibilityTypes
 //
-// Provides enumerations used to preserve platform-independence in accessibility
-// functions used in various Views, both in Browser\Views and Views.
+// Provides enumerations used to preserve platform-independence in
+// accessibility functions.
 //
 ////////////////////////////////////////////////////////////////////////////////
 class AccessibilityTypes {
@@ -101,4 +103,6 @@ class AccessibilityTypes {
   ~AccessibilityTypes() {}
 };
 
-#endif  // VIEWS_ACCESSIBILITY_ACCESSIBILITY_TYPES_H_
+}  // namespace ui
+
+#endif  // UI_BASE_ACCESSIBILITY_ACCESSIBILITY_TYPES_H_

@@ -58,20 +58,23 @@ class Combobox : public View {
   // Accessor for |model_|.
   ComboboxModel* model() const { return model_; }
 
+  // Set the accessible name of the combo box.
+  void SetAccessibleName(const string16& name);
+
   // Overridden from View:
-  virtual gfx::Size GetPreferredSize();
-  virtual void Layout();
-  virtual void SetEnabled(bool enabled);
-  virtual bool SkipDefaultKeyEventProcessing(const KeyEvent& e);
-  virtual void OnPaintFocusBorder(gfx::Canvas* canvas);
-  virtual AccessibilityTypes::Role GetAccessibleRole() OVERRIDE;
-  virtual string16 GetAccessibleValue() OVERRIDE;
+  virtual gfx::Size GetPreferredSize() OVERRIDE;
+  virtual void Layout() OVERRIDE;
+  virtual void SetEnabled(bool enabled) OVERRIDE;
+  virtual bool SkipDefaultKeyEventProcessing(const KeyEvent& e) OVERRIDE;
+  virtual void OnPaintFocusBorder(gfx::Canvas* canvas) OVERRIDE;
+  virtual void GetAccessibleState(ui::AccessibleViewState* state) OVERRIDE;
 
  protected:
-  virtual void OnFocus();
+  // Overridden from View:
+  virtual void OnFocus() OVERRIDE;
   virtual void ViewHierarchyChanged(bool is_add, View* parent,
-                                    View* child);
-  virtual std::string GetClassName() const;
+                                    View* child) OVERRIDE;
+  virtual std::string GetClassName() const OVERRIDE;
 
   // The object that actually implements the native combobox.
   NativeComboboxWrapper* native_wrapper_;
@@ -85,6 +88,9 @@ class Combobox : public View {
 
   // The current selection.
   int selected_item_;
+
+  // The accessible name of the text field.
+  string16 accessible_name_;
 
   DISALLOW_COPY_AND_ASSIGN(Combobox);
 };

@@ -16,6 +16,7 @@
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
+#include "ui/base/accessibility/accessible_view_state.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/theme_provider.h"
@@ -400,8 +401,9 @@ bool OpaqueBrowserFrameView::HitTest(const gfx::Point& l) const {
   return browser_view_->IsPositionInWindowCaption(browser_view_point);
 }
 
-AccessibilityTypes::Role OpaqueBrowserFrameView::GetAccessibleRole() {
-  return AccessibilityTypes::ROLE_TITLEBAR;
+void OpaqueBrowserFrameView::GetAccessibleState(
+    ui::AccessibleViewState* state) {
+  state->role = ui::AccessibilityTypes::ROLE_TITLEBAR;
 }
 
 ///////////////////////////////////////////////////////////////////////////////

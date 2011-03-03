@@ -11,6 +11,7 @@
 #include "base/scoped_ptr.h"
 #include "base/utf_string_conversions.h"
 #include "third_party/skia/include/core/SkRect.h"
+#include "ui/base/accessibility/accessibility_types.h"
 #include "ui/base/dragdrop/drag_drop_types.h"
 #include "ui/gfx/canvas_skia.h"
 #include "ui/gfx/path.h"
@@ -26,7 +27,7 @@
 
 #if defined(OS_WIN)
 #include "base/win/scoped_gdi_object.h"
-#include "views/accessibility/view_accessibility.h"
+#include "views/accessibility/native_view_accessibility_win.h"
 #endif
 #if defined(OS_LINUX)
 #include "ui/base/gtk/scoped_handle_gtk.h"
@@ -86,8 +87,8 @@ View::~View() {
   }
 
 #if defined(OS_WIN)
-  if (view_accessibility_.get())
-    view_accessibility_->set_view(NULL);
+  if (native_view_accessibility_win_.get())
+    native_view_accessibility_win_->set_view(NULL);
 #endif
 }
 
@@ -985,29 +986,6 @@ bool View::ExceededDragThreshold(int delta_x, int delta_y) {
           abs(delta_y) > GetVerticalDragThreshold());
 }
 
-// Accessibility ---------------------------------------------------------------
-
-void View::NotifyAccessibilityEvent(AccessibilityTypes::Event event_type) {
-  NotifyAccessibilityEvent(event_type, true);
-}
-
-bool View::GetAccessibleName(string16* name) {
-  DCHECK(name);
-
-  if (accessible_name_.empty())
-    return false;
-  *name = accessible_name_;
-  return true;
-}
-
-AccessibilityTypes::Role View::GetAccessibleRole() {
-  return AccessibilityTypes::ROLE_CLIENT;
-}
-
-void View::SetAccessibleName(const string16& name) {
-  accessible_name_ = name;
-}
-
 // Scrolling -------------------------------------------------------------------
 
 void View::ScrollRectToVisible(const gfx::Rect& rect) {
@@ -1136,7 +1114,8 @@ void View::OnFocus() {
   // TODO(beng): Investigate whether it's possible for us to move this to
   //             Focus().
   // Notify assistive technologies of the focus change.
-  NotifyAccessibilityEvent(AccessibilityTypes::EVENT_FOCUS);
+  GetWidget()->NotifyAccessibilityEvent(
+      this, ui::AccessibilityTypes::EVENT_FOCUS, true);
 }
 
 void View::OnBlur() {

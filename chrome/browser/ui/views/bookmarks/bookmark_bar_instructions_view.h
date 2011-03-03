@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_UI_VIEWS_BOOKMARKS_BOOKMARK_BAR_INSTRUCTIONS_VIEW_H_
 #pragma once
 
+#include "ui/base/accessibility/accessible_view_state.h"
 #include "views/controls/link.h"
 #include "views/view.h"
 
@@ -35,16 +36,16 @@ class BookmarkBarInstructionsView : public views::View,
   explicit BookmarkBarInstructionsView(Delegate* delegate);
 
   // View overrides.
-  virtual gfx::Size GetPreferredSize();
-  virtual void Layout();
-  virtual void OnThemeChanged();
+  virtual gfx::Size GetPreferredSize() OVERRIDE;
+  virtual void Layout() OVERRIDE;
+  virtual void OnThemeChanged() OVERRIDE;
   virtual void ViewHierarchyChanged(bool is_add,
                                     views::View* parent,
-                                    views::View* child);
-  virtual AccessibilityTypes::Role GetAccessibleRole();
+                                    views::View* child) OVERRIDE;
+  virtual void GetAccessibleState(ui::AccessibleViewState* state) OVERRIDE;
 
   // LinkController.
-  virtual void LinkActivated(views::Link* source, int event_flags);
+  virtual void LinkActivated(views::Link* source, int event_flags) OVERRIDE;
 
  private:
   void UpdateColors();

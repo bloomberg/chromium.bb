@@ -77,8 +77,7 @@ class DownloadItemView : public views::ButtonListener,
   virtual bool OnMouseDragged(const views::MouseEvent& event);
   virtual bool OnKeyPressed(const views::KeyEvent& e);
   virtual void ShowContextMenu(const gfx::Point& p, bool is_mouse_gesture);
-  virtual AccessibilityTypes::Role GetAccessibleRole();
-  virtual AccessibilityTypes::State GetAccessibleState();
+  virtual void GetAccessibleState(ui::AccessibleViewState* state) OVERRIDE;
 
   // ButtonListener implementation.
   virtual void ButtonPressed(views::Button* sender, const views::Event& event);
@@ -278,6 +277,9 @@ class DownloadItemView : public views::ButtonListener,
   // (Used when showing the context menu as it runs an inner message loop that
   // might delete us).
   bool* deleted_;
+
+  // The name of this view as reported to assistive technology.
+  string16 accessible_name_;
 
   DISALLOW_COPY_AND_ASSIGN(DownloadItemView);
 };

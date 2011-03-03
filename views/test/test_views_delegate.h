@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/scoped_ptr.h"
+#include "ui/base/accessibility/accessibility_types.h"
 #include "ui/base/clipboard/clipboard.h"
 #include "views/views_delegate.h"
 
@@ -16,7 +17,7 @@ class TestViewsDelegate : public views::ViewsDelegate {
   virtual ~TestViewsDelegate() {}
 
   // Overridden from views::ViewsDelegate:
-  virtual ui::Clipboard* GetClipboard() const {
+  virtual ui::Clipboard* GetClipboard() const OVERRIDE {
     if (!clipboard_.get()) {
       // Note that we need a MessageLoop for the next call to work.
       clipboard_.reset(new ui::Clipboard);
@@ -26,31 +27,32 @@ class TestViewsDelegate : public views::ViewsDelegate {
   virtual void SaveWindowPlacement(views::Window* window,
                                    const std::wstring& window_name,
                                    const gfx::Rect& bounds,
-                                   bool maximized) {
+                                   bool maximized) OVERRIDE {
   }
   virtual bool GetSavedWindowBounds(views::Window* window,
                                     const std::wstring& window_name,
-                                    gfx::Rect* bounds) const {
+                                    gfx::Rect* bounds) const OVERRIDE {
     return false;
   }
   virtual bool GetSavedMaximizedState(views::Window* window,
                                       const std::wstring& window_name,
-                                      bool* maximized) const {
+                                      bool* maximized) const OVERRIDE {
     return false;
   }
   virtual void NotifyAccessibilityEvent(
-      views::View* view, AccessibilityTypes::Event event_type) {}
+      views::View* view, ui::AccessibilityTypes::Event event_type) OVERRIDE {}
+
 #if defined(OS_WIN)
-  virtual HICON GetDefaultWindowIcon() const {
+  virtual HICON GetDefaultWindowIcon() const OVERRIDE {
     return NULL;
   }
 #endif
-  virtual void AddRef() {}
-  virtual void ReleaseRef() {}
+
+  virtual void AddRef() OVERRIDE {}
+  virtual void ReleaseRef() OVERRIDE {}
 
  private:
   mutable scoped_ptr<ui::Clipboard> clipboard_;
 
   DISALLOW_COPY_AND_ASSIGN(TestViewsDelegate);
 };
-

@@ -22,16 +22,18 @@ class RadioButton : public Checkbox {
   virtual ~RadioButton();
 
   // Overridden from Checkbox:
-  virtual void SetChecked(bool checked);
+  virtual void SetChecked(bool checked) OVERRIDE;
 
   // Overridden from View:
-  virtual AccessibilityTypes::Role GetAccessibleRole();
-  virtual View* GetSelectedViewForGroup(int group_id);
-  virtual bool IsGroupFocusTraversable() const;
-  virtual void OnMouseReleased(const MouseEvent& event, bool canceled);
+  virtual void GetAccessibleState(ui::AccessibleViewState* state) OVERRIDE;
+  virtual View* GetSelectedViewForGroup(int group_id) OVERRIDE;
+  virtual bool IsGroupFocusTraversable() const OVERRIDE;
+  virtual void OnMouseReleased(const MouseEvent& event, bool canceled)
+      OVERRIDE;
 
  protected:
-  virtual std::string GetClassName() const;
+  // Overridden from View:
+  virtual std::string GetClassName() const OVERRIDE;
 
   // Overridden from NativeButton:
   virtual NativeButtonWrapper* CreateWrapper();

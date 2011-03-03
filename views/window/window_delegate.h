@@ -9,7 +9,7 @@
 #include <string>
 
 #include "base/scoped_ptr.h"
-#include "views/accessibility/accessibility_types.h"
+#include "ui/base/accessibility/accessibility_types.h"
 
 class SkBitmap;
 
@@ -56,11 +56,11 @@ class WindowDelegate {
     return false;
   }
 
-  virtual AccessibilityTypes::Role accessible_role() const {
-    return AccessibilityTypes::ROLE_WINDOW;
+  virtual ui::AccessibilityTypes::Role GetAccessibleRole() const {
+    return ui::AccessibilityTypes::ROLE_WINDOW;
   }
 
-  virtual AccessibilityTypes::State accessible_state() const {
+  virtual ui::AccessibilityTypes::State GetAccessibleState() const {
     return 0;
   }
 

@@ -11,7 +11,7 @@
 #include <windows.h>
 #endif
 
-#include "views/accessibility/accessibility_types.h"
+#include "ui/base/accessibility/accessibility_types.h"
 
 namespace gfx {
 class Rect;
@@ -58,10 +58,8 @@ class ViewsDelegate {
                                       const std::wstring& window_name,
                                       bool* maximized) const = 0;
 
-  // Notify the delegate that an accessibility event has happened in
-  // a particular view.
   virtual void NotifyAccessibilityEvent(
-      views::View* view, AccessibilityTypes::Event event_type) = 0;
+      views::View* view, ui::AccessibilityTypes::Event event_type) = 0;
 
 #if defined(OS_WIN)
   // Retrieves the default window icon to use for windows if none is specified.

@@ -69,8 +69,8 @@ class NonClientFrameView : public View {
   virtual void ResetWindowControls() = 0;
 
   // Overridden from View:
-  virtual bool HitTest(const gfx::Point& l) const;
-  virtual AccessibilityTypes::Role GetAccessibleRole();
+  virtual bool HitTest(const gfx::Point& l) const OVERRIDE;
+  virtual void GetAccessibleState(ui::AccessibleViewState* state) OVERRIDE;
 
  protected:
   virtual void OnBoundsChanged();
@@ -205,16 +205,21 @@ class NonClientView : public View {
   // of a window resize message.
   void LayoutFrameView();
 
+  // Set the accessible name of this view.
+  void SetAccessibleName(const string16& name);
+
   // NonClientView, View overrides:
-  virtual gfx::Size GetPreferredSize();
-  virtual gfx::Size GetMinimumSize();
-  virtual void Layout();
-  virtual AccessibilityTypes::Role GetAccessibleRole();
+  virtual gfx::Size GetPreferredSize() OVERRIDE;
+  virtual gfx::Size GetMinimumSize() OVERRIDE;
+  virtual void Layout() OVERRIDE;
+  virtual void GetAccessibleState(ui::AccessibleViewState* state) OVERRIDE;
 
  protected:
   // NonClientView, View overrides:
-  virtual void ViewHierarchyChanged(bool is_add, View* parent, View* child);
-  virtual views::View* GetEventHandlerForPoint(const gfx::Point& point);
+  virtual void ViewHierarchyChanged(bool is_add, View* parent, View* child)
+      OVERRIDE;
+  virtual views::View* GetEventHandlerForPoint(const gfx::Point& point)
+      OVERRIDE;
 
  private:
   // The frame that hosts this NonClientView.
@@ -229,6 +234,9 @@ class NonClientView : public View {
   // This object is not owned by the view hierarchy because it can be replaced
   // dynamically as the system settings change.
   scoped_ptr<NonClientFrameView> frame_view_;
+
+  // The accessible name of this view.
+  string16 accessible_name_;
 
   DISALLOW_COPY_AND_ASSIGN(NonClientView);
 };

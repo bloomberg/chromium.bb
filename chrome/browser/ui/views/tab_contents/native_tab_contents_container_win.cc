@@ -10,7 +10,7 @@
 #include "content/browser/renderer_host/render_widget_host_view.h"
 #include "content/browser/tab_contents/interstitial_page.h"
 #include "content/browser/tab_contents/tab_contents.h"
-
+#include "ui/base/accessibility/accessible_view_state.h"
 #include "views/focus/focus_manager.h"
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -129,8 +129,9 @@ void NativeTabContentsContainerWin::AboutToRequestFocusFromTabTraversal(
   container_->tab_contents()->FocusThroughTabTraversal(reverse);
 }
 
-AccessibilityTypes::Role NativeTabContentsContainerWin::GetAccessibleRole() {
-  return AccessibilityTypes::ROLE_GROUPING;
+void NativeTabContentsContainerWin::GetAccessibleState(
+    ui::AccessibleViewState* state) {
+  state->role = ui::AccessibilityTypes::ROLE_GROUPING;
 }
 
 ////////////////////////////////////////////////////////////////////////////////

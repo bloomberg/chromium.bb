@@ -5,6 +5,7 @@
 #include "views/controls/button/radio_button.h"
 
 #include "base/logging.h"
+#include "ui/base/accessibility/accessible_view_state.h"
 #include "views/widget/root_view.h"
 
 namespace views {
@@ -60,8 +61,9 @@ void RadioButton::SetChecked(bool checked) {
 ////////////////////////////////////////////////////////////////////////////////
 // RadioButton, View overrides:
 
-AccessibilityTypes::Role RadioButton::GetAccessibleRole() {
-  return AccessibilityTypes::ROLE_RADIOBUTTON;
+void RadioButton::GetAccessibleState(ui::AccessibleViewState* state) {
+  Checkbox::GetAccessibleState(state);
+  state->role = ui::AccessibilityTypes::ROLE_RADIOBUTTON;
 }
 
 View* RadioButton::GetSelectedViewForGroup(int group_id) {

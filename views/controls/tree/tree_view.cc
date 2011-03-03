@@ -11,6 +11,7 @@
 #include "base/stl_util-inl.h"
 #include "base/win/win_util.h"
 #include "grit/app_resources.h"
+#include "ui/base/accessibility/accessible_view_state.h"
 #include "ui/base/keycodes/keyboard_codes.h"
 #include "ui/base/keycodes/keyboard_code_conversion_win.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -60,12 +61,9 @@ TreeView::~TreeView() {
     ImageList_Destroy(image_list_);
 }
 
-AccessibilityTypes::Role TreeView::GetAccessibleRole() {
-  return AccessibilityTypes::ROLE_OUTLINE;
-}
-
-AccessibilityTypes::State TreeView::GetAccessibleState() {
-  return AccessibilityTypes::STATE_READONLY;
+void TreeView::GetAccessibleState(ui::AccessibleViewState* state) {
+  state->role = ui::AccessibilityTypes::ROLE_OUTLINE;
+  state->state = ui::AccessibilityTypes::STATE_READONLY;
 }
 
 void TreeView::SetModel(TreeModel* model) {

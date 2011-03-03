@@ -6,6 +6,7 @@
 
 #include "base/logging.h"
 #include "base/utf_string_conversions.h"
+#include "ui/base/accessibility/accessible_view_state.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/insets.h"
 
@@ -126,8 +127,9 @@ void ImageView::OnPaint(gfx::Canvas* canvas) {
   }
 }
 
-AccessibilityTypes::Role ImageView::GetAccessibleRole() {
-  return AccessibilityTypes::ROLE_GRAPHIC;
+void ImageView::GetAccessibleState(ui::AccessibleViewState* state) {
+  state->role = ui::AccessibilityTypes::ROLE_GRAPHIC;
+  state->name = tooltip_text_;
 }
 
 void ImageView::SetHorizontalAlignment(Alignment ha) {
@@ -154,7 +156,6 @@ ImageView::Alignment ImageView::GetVerticalAlignment() {
 
 void ImageView::SetTooltipText(const std::wstring& tooltip) {
   tooltip_text_ = WideToUTF16Hack(tooltip);
-  SetAccessibleName(WideToUTF16Hack(tooltip));
 }
 
 std::wstring ImageView::GetTooltipText() {

@@ -39,8 +39,8 @@ class OptionsPageView : public views::View,
   // views::View overrides:
   virtual void ViewHierarchyChanged(bool is_add,
                                     views::View* parent,
-                                    views::View* child);
-  virtual AccessibilityTypes::Role GetAccessibleRole();
+                                    views::View* child) OVERRIDE;
+  virtual void GetAccessibleState(ui::AccessibleViewState* state) OVERRIDE;
 
  private:
   // Whether or not the control layout has been initialized for this page.

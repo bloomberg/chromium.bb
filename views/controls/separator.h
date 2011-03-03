@@ -24,14 +24,15 @@ class Separator : public View {
   virtual ~Separator();
 
   // Overridden from View:
-  virtual void Layout();
-  virtual gfx::Size GetPreferredSize();
-  virtual AccessibilityTypes::Role GetAccessibleRole();
+  virtual void Layout() OVERRIDE;
+  virtual gfx::Size GetPreferredSize() OVERRIDE;
+  virtual void GetAccessibleState(ui::AccessibleViewState* state) OVERRIDE;
 
  protected:
+  // Overridden from View:
   virtual void ViewHierarchyChanged(bool is_add, View* parent,
-                                    View* child);
-  virtual std::string GetClassName() const;
+                                    View* child) OVERRIDE;
+  virtual std::string GetClassName() const OVERRIDE;
 
  private:
   void CreateNativeWrapper();

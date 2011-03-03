@@ -12,6 +12,7 @@
 
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
+#include "ui/base/accessibility/accessible_view_state.h"
 #include "ui/base/keycodes/keyboard_codes.h"
 #include "ui/gfx/insets.h"
 #include "views/controls/native/native_view_host.h"
@@ -280,6 +281,10 @@ size_t Textfield::GetCursorPosition() const {
   return native_wrapper_ ? native_wrapper_->GetCursorPosition() : 0;
 }
 
+void Textfield::SetAccessibleName(const string16& name) {
+  accessible_name_ = name;
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // Textfield, View overrides:
 
@@ -360,23 +365,14 @@ void Textfield::OnBlur() {
     native_wrapper_->HandleBlur();
 }
 
-AccessibilityTypes::Role Textfield::GetAccessibleRole() {
-  return AccessibilityTypes::ROLE_TEXT;
-}
-
-AccessibilityTypes::State Textfield::GetAccessibleState() {
-  int state = 0;
+void Textfield::GetAccessibleState(ui::AccessibleViewState* state) {
+  state->role = ui::AccessibilityTypes::ROLE_TEXT;
+  state->name = accessible_name_;
   if (read_only())
-    state |= AccessibilityTypes::STATE_READONLY;
+    state->state |= ui::AccessibilityTypes::STATE_READONLY;
   if (IsPassword())
-    state |= AccessibilityTypes::STATE_PROTECTED;
-  return state;
-}
-
-string16 Textfield::GetAccessibleValue() {
-  if (!text_.empty())
-    return text_;
-  return string16();
+    state->state |= ui::AccessibilityTypes::STATE_PROTECTED;
+  state->value = text_;
 }
 
 void Textfield::SetEnabled(bool enabled) {

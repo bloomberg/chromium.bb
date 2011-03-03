@@ -50,15 +50,15 @@ class SubmenuView : public View {
 
   // Positions and sizes the child views. This tiles the views vertically,
   // giving each child the available width.
-  virtual void Layout();
-  virtual gfx::Size GetPreferredSize();
+  virtual void Layout() OVERRIDE;
+  virtual gfx::Size GetPreferredSize() OVERRIDE;
 
   // View method. Overridden to schedule a paint. We do this so that when
   // scrolling occurs, everything is repainted correctly.
-  virtual void OnBoundsChanged();
+  virtual void OnBoundsChanged() OVERRIDE;
 
   // Override from View.
-  virtual AccessibilityTypes::Role GetAccessibleRole();
+  virtual void GetAccessibleState(ui::AccessibleViewState* state) OVERRIDE;
 
   // Painting.
   void PaintChildren(gfx::Canvas* canvas);
@@ -66,16 +66,16 @@ class SubmenuView : public View {
   // Drag and drop methods. These are forwarded to the MenuController.
   virtual bool GetDropFormats(
       int* formats,
-      std::set<OSExchangeData::CustomFormat>* custom_formats);
-  virtual bool AreDropTypesRequired();
-  virtual bool CanDrop(const OSExchangeData& data);
-  virtual void OnDragEntered(const DropTargetEvent& event);
-  virtual int OnDragUpdated(const DropTargetEvent& event);
-  virtual void OnDragExited();
-  virtual int OnPerformDrop(const DropTargetEvent& event);
+      std::set<OSExchangeData::CustomFormat>* custom_formats) OVERRIDE;
+  virtual bool AreDropTypesRequired() OVERRIDE;
+  virtual bool CanDrop(const OSExchangeData& data) OVERRIDE;
+  virtual void OnDragEntered(const DropTargetEvent& event) OVERRIDE;
+  virtual int OnDragUpdated(const DropTargetEvent& event) OVERRIDE;
+  virtual void OnDragExited() OVERRIDE;
+  virtual int OnPerformDrop(const DropTargetEvent& event) OVERRIDE;
 
   // Scrolls on menu item boundaries.
-  virtual bool OnMouseWheel(const MouseWheelEvent& e);
+  virtual bool OnMouseWheel(const MouseWheelEvent& e) OVERRIDE;
 
   // Returns true if the menu is showing.
   bool IsShowing();

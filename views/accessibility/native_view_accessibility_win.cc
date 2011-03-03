@@ -1,28 +1,36 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "views/accessibility/view_accessibility.h"
+#include "views/accessibility/native_view_accessibility_win.h"
 
+#include "ui/base/accessibility/accessible_view_state.h"
 #include "ui/base/view_prop.h"
 #include "views/controls/button/native_button.h"
 #include "views/widget/widget.h"
 #include "views/widget/widget_win.h"
 
+using ui::AccessibilityTypes;
+
+namespace views {
+
 const char kViewsNativeHostPropForAccessibility[] =
     "Views_NativeViewHostHWNDForAccessibility";
 
 // static
-scoped_refptr<ViewAccessibility> ViewAccessibility::Create(views::View* view) {
-  CComObject<ViewAccessibility>* instance = NULL;
-  HRESULT hr = CComObject<ViewAccessibility>::CreateInstance(&instance);
+scoped_refptr<NativeViewAccessibilityWin> NativeViewAccessibilityWin::Create(
+    views::View* view) {
+  CComObject<NativeViewAccessibilityWin>* instance = NULL;
+  HRESULT hr = CComObject<NativeViewAccessibilityWin>::CreateInstance(
+      &instance);
   DCHECK(SUCCEEDED(hr));
   instance->set_view(view);
-  return scoped_refptr<ViewAccessibility>(instance);
+  return scoped_refptr<NativeViewAccessibilityWin>(instance);
 }
 
 // static
-IAccessible* ViewAccessibility::GetAccessibleForView(views::View* view) {
+IAccessible* NativeViewAccessibilityWin::GetAccessibleForView(
+    views::View* view) {
   IAccessible* accessible = NULL;
 
   // First, check to see if the view is a native view.
@@ -43,18 +51,18 @@ IAccessible* ViewAccessibility::GetAccessibleForView(views::View* view) {
     }
   }
 
-  // Finally, use our ViewAccessibility implementation.
-  return view->GetViewAccessibility();
+  // Finally, use our NativeViewAccessibilityWin implementation.
+  return view->GetNativeViewAccessibilityWin();
 }
 
-ViewAccessibility::ViewAccessibility() : view_(NULL) {
+NativeViewAccessibilityWin::NativeViewAccessibilityWin() : view_(NULL) {
 }
 
-ViewAccessibility::~ViewAccessibility() {
+NativeViewAccessibilityWin::~NativeViewAccessibilityWin() {
 }
 
 // TODO(ctguil): Handle case where child View is not contained by parent.
-STDMETHODIMP ViewAccessibility::accHitTest(
+STDMETHODIMP NativeViewAccessibilityWin::accHitTest(
     LONG x_left, LONG y_top, VARIANT* child) {
   if (!child)
     return E_INVALIDARG;
@@ -84,7 +92,7 @@ STDMETHODIMP ViewAccessibility::accHitTest(
   return S_OK;
 }
 
-HRESULT ViewAccessibility::accDoDefaultAction(VARIANT var_id) {
+HRESULT NativeViewAccessibilityWin::accDoDefaultAction(VARIANT var_id) {
   if (!IsValidId(var_id))
     return E_INVALIDARG;
 
@@ -100,7 +108,7 @@ HRESULT ViewAccessibility::accDoDefaultAction(VARIANT var_id) {
   return DISP_E_MEMBERNOTFOUND;
 }
 
-STDMETHODIMP ViewAccessibility::accLocation(
+STDMETHODIMP NativeViewAccessibilityWin::accLocation(
     LONG* x_left, LONG* y_top, LONG* width, LONG* height, VARIANT var_id) {
   if (!IsValidId(var_id) || !x_left || !y_top || !width || !height)
     return E_INVALIDARG;
@@ -112,8 +120,8 @@ STDMETHODIMP ViewAccessibility::accLocation(
     *width  = view_->width();
     *height = view_->height();
     gfx::Point topleft(view_->bounds().origin());
-    views::View::ConvertPointToScreen(view_->parent() ? view_->parent() : view_,
-                                      &topleft);
+    views::View::ConvertPointToScreen(
+        view_->parent() ? view_->parent() : view_, &topleft);
     *x_left = topleft.x();
     *y_top  = topleft.y();
   } else {
@@ -122,8 +130,8 @@ STDMETHODIMP ViewAccessibility::accLocation(
   return S_OK;
 }
 
-STDMETHODIMP ViewAccessibility::accNavigate(LONG nav_dir, VARIANT start,
-                                            VARIANT* end) {
+STDMETHODIMP NativeViewAccessibilityWin::accNavigate(
+    LONG nav_dir, VARIANT start, VARIANT* end) {
   if (start.vt != VT_I4 || !end)
     return E_INVALIDARG;
 
@@ -223,7 +231,7 @@ STDMETHODIMP ViewAccessibility::accNavigate(LONG nav_dir, VARIANT start,
   return S_OK;
 }
 
-STDMETHODIMP ViewAccessibility::get_accChild(VARIANT var_child,
+STDMETHODIMP NativeViewAccessibilityWin::get_accChild(VARIANT var_child,
                                              IDispatch** disp_child) {
   if (var_child.vt != VT_I4 || !disp_child)
     return E_INVALIDARG;
@@ -266,7 +274,7 @@ STDMETHODIMP ViewAccessibility::get_accChild(VARIANT var_child,
   return S_OK;
 }
 
-STDMETHODIMP ViewAccessibility::get_accChildCount(LONG* child_count) {
+STDMETHODIMP NativeViewAccessibilityWin::get_accChildCount(LONG* child_count) {
   if (!child_count || !view_)
     return E_INVALIDARG;
 
@@ -277,7 +285,7 @@ STDMETHODIMP ViewAccessibility::get_accChildCount(LONG* child_count) {
   return S_OK;
 }
 
-STDMETHODIMP ViewAccessibility::get_accDefaultAction(
+STDMETHODIMP NativeViewAccessibilityWin::get_accDefaultAction(
     VARIANT var_id, BSTR* def_action) {
   if (!IsValidId(var_id) || !def_action)
     return E_INVALIDARG;
@@ -285,7 +293,9 @@ STDMETHODIMP ViewAccessibility::get_accDefaultAction(
   if (!view_)
     return E_FAIL;
 
-  string16 temp_action = view_->GetAccessibleDefaultAction();
+  ui::AccessibleViewState state;
+  view_->GetAccessibleState(&state);
+  string16 temp_action = state.default_action;
 
   if (!temp_action.empty()) {
     *def_action = SysAllocString(temp_action.c_str());
@@ -296,7 +306,8 @@ STDMETHODIMP ViewAccessibility::get_accDefaultAction(
   return S_OK;
 }
 
-STDMETHODIMP ViewAccessibility::get_accDescription(VARIANT var_id, BSTR* desc) {
+STDMETHODIMP NativeViewAccessibilityWin::get_accDescription(
+    VARIANT var_id, BSTR* desc) {
   if (!IsValidId(var_id) || !desc)
     return E_INVALIDARG;
 
@@ -315,7 +326,7 @@ STDMETHODIMP ViewAccessibility::get_accDescription(VARIANT var_id, BSTR* desc) {
   return S_OK;
 }
 
-STDMETHODIMP ViewAccessibility::get_accFocus(VARIANT* focus_child) {
+STDMETHODIMP NativeViewAccessibilityWin::get_accFocus(VARIANT* focus_child) {
   if (!focus_child)
     return E_INVALIDARG;
 
@@ -342,7 +353,7 @@ STDMETHODIMP ViewAccessibility::get_accFocus(VARIANT* focus_child) {
   return S_OK;
 }
 
-STDMETHODIMP ViewAccessibility::get_accKeyboardShortcut(
+STDMETHODIMP NativeViewAccessibilityWin::get_accKeyboardShortcut(
     VARIANT var_id, BSTR* acc_key) {
   if (!IsValidId(var_id) || !acc_key)
     return E_INVALIDARG;
@@ -350,7 +361,9 @@ STDMETHODIMP ViewAccessibility::get_accKeyboardShortcut(
   if (!view_)
     return E_FAIL;
 
-  string16 temp_key = view_->GetAccessibleKeyboardShortcut();
+  ui::AccessibleViewState state;
+  view_->GetAccessibleState(&state);
+  string16 temp_key = state.keyboard_shortcut;
 
   if (!temp_key.empty()) {
     *acc_key = SysAllocString(temp_key.c_str());
@@ -361,17 +374,18 @@ STDMETHODIMP ViewAccessibility::get_accKeyboardShortcut(
   return S_OK;
 }
 
-STDMETHODIMP ViewAccessibility::get_accName(VARIANT var_id, BSTR* name) {
+STDMETHODIMP NativeViewAccessibilityWin::get_accName(
+    VARIANT var_id, BSTR* name) {
   if (!IsValidId(var_id) || !name)
     return E_INVALIDARG;
 
   if (!view_)
     return E_FAIL;
 
-  string16 temp_name;
-
   // Retrieve the current view's name.
-  view_->GetAccessibleName(&temp_name);
+  ui::AccessibleViewState state;
+  view_->GetAccessibleState(&state);
+  string16 temp_name = state.name;
   if (!temp_name.empty()) {
     // Return name retrieved.
     *name = SysAllocString(temp_name.c_str());
@@ -383,7 +397,8 @@ STDMETHODIMP ViewAccessibility::get_accName(VARIANT var_id, BSTR* name) {
   return S_OK;
 }
 
-STDMETHODIMP ViewAccessibility::get_accParent(IDispatch** disp_parent) {
+STDMETHODIMP NativeViewAccessibilityWin::get_accParent(
+    IDispatch** disp_parent) {
   if (!disp_parent)
     return E_INVALIDARG;
 
@@ -400,9 +415,9 @@ STDMETHODIMP ViewAccessibility::get_accParent(IDispatch** disp_parent) {
       return S_FALSE;
     }
 
-    // For a View that has no parent (e.g. root), point the accessible parent to
-    // the default implementation, to interface with Windows' hierarchy and to
-    // support calls from e.g. WindowFromAccessibleObject.
+    // For a View that has no parent (e.g. root), point the accessible parent
+    // to the default implementation, to interface with Windows' hierarchy
+    // and to support calls from e.g. WindowFromAccessibleObject.
     HRESULT hr =
         ::AccessibleObjectFromWindow(view_->GetWidget()->GetNativeView(),
                                      OBJID_WINDOW, IID_IAccessible,
@@ -421,19 +436,23 @@ STDMETHODIMP ViewAccessibility::get_accParent(IDispatch** disp_parent) {
   return S_OK;
 }
 
-STDMETHODIMP ViewAccessibility::get_accRole(VARIANT var_id, VARIANT* role) {
+STDMETHODIMP NativeViewAccessibilityWin::get_accRole(
+    VARIANT var_id, VARIANT* role) {
   if (!IsValidId(var_id) || !role)
     return E_INVALIDARG;
 
   if (!view_)
     return E_FAIL;
 
+  ui::AccessibleViewState state;
+  view_->GetAccessibleState(&state);
   role->vt = VT_I4;
-  role->lVal = MSAARole(view_->GetAccessibleRole());
+  role->lVal = MSAARole(state.role);
   return S_OK;
 }
 
-STDMETHODIMP ViewAccessibility::get_accState(VARIANT var_id, VARIANT* state) {
+STDMETHODIMP NativeViewAccessibilityWin::get_accState(
+    VARIANT var_id, VARIANT* state) {
   if (!IsValidId(var_id) || !state)
     return E_INVALIDARG;
 
@@ -452,7 +471,8 @@ STDMETHODIMP ViewAccessibility::get_accState(VARIANT var_id, VARIANT* state) {
   return S_OK;
 }
 
-STDMETHODIMP ViewAccessibility::get_accValue(VARIANT var_id, BSTR* value) {
+STDMETHODIMP NativeViewAccessibilityWin::get_accValue(
+    VARIANT var_id, BSTR* value) {
   if (!IsValidId(var_id) || !value)
     return E_INVALIDARG;
 
@@ -460,7 +480,9 @@ STDMETHODIMP ViewAccessibility::get_accValue(VARIANT var_id, BSTR* value) {
     return E_FAIL;
 
   // Retrieve the current view's value.
-  string16 temp_value = view_->GetAccessibleValue();
+  ui::AccessibleViewState state;
+  view_->GetAccessibleState(&state);
+  string16 temp_value = state.value;
 
   if (!temp_value.empty()) {
     // Return value retrieved.
@@ -476,7 +498,7 @@ STDMETHODIMP ViewAccessibility::get_accValue(VARIANT var_id, BSTR* value) {
 
 // Helper functions.
 
-bool ViewAccessibility::IsNavDirNext(int nav_dir) const {
+bool NativeViewAccessibilityWin::IsNavDirNext(int nav_dir) const {
   if (nav_dir == NAVDIR_RIGHT || nav_dir == NAVDIR_DOWN ||
       nav_dir == NAVDIR_NEXT) {
       return true;
@@ -484,8 +506,8 @@ bool ViewAccessibility::IsNavDirNext(int nav_dir) const {
   return false;
 }
 
-bool ViewAccessibility::IsValidNav(int nav_dir, int start_id, int lower_bound,
-                                   int upper_bound) const {
+bool NativeViewAccessibilityWin::IsValidNav(
+    int nav_dir, int start_id, int lower_bound, int upper_bound) const {
   if (IsNavDirNext(nav_dir)) {
     if ((start_id + 1) > upper_bound) {
       return false;
@@ -498,13 +520,14 @@ bool ViewAccessibility::IsValidNav(int nav_dir, int start_id, int lower_bound,
   return true;
 }
 
-bool ViewAccessibility::IsValidId(const VARIANT& child) const {
+bool NativeViewAccessibilityWin::IsValidId(const VARIANT& child) const {
   // View accessibility returns an IAccessible for each view so we only support
   // the CHILDID_SELF id.
   return (VT_I4 == child.vt) && (CHILDID_SELF == child.lVal);
 }
 
-void ViewAccessibility::SetState(VARIANT* msaa_state, views::View* view) {
+void NativeViewAccessibilityWin::SetState(
+    VARIANT* msaa_state, views::View* view) {
   // Ensure the output param is initialized to zero.
   msaa_state->lVal = 0;
 
@@ -524,28 +547,32 @@ void ViewAccessibility::SetState(VARIANT* msaa_state, views::View* view) {
     msaa_state->lVal |= STATE_SYSTEM_FOCUSED;
 
   // Add on any view-specific states.
-  msaa_state->lVal |= MSAAState(view->GetAccessibleState());
+  ui::AccessibleViewState view_state;
+  view->GetAccessibleState(&view_state);
+  msaa_state->lVal |= MSAAState(view_state.state);
 }
 
 // IAccessible functions not supported.
 
-STDMETHODIMP ViewAccessibility::get_accSelection(VARIANT* selected) {
+STDMETHODIMP NativeViewAccessibilityWin::get_accSelection(VARIANT* selected) {
   if (selected)
     selected->vt = VT_EMPTY;
   return E_NOTIMPL;
 }
 
-STDMETHODIMP ViewAccessibility::accSelect(LONG flagsSelect, VARIANT var_id) {
+STDMETHODIMP NativeViewAccessibilityWin::accSelect(
+    LONG flagsSelect, VARIANT var_id) {
   return E_NOTIMPL;
 }
 
-STDMETHODIMP ViewAccessibility::get_accHelp(VARIANT var_id, BSTR* help) {
+STDMETHODIMP NativeViewAccessibilityWin::get_accHelp(
+    VARIANT var_id, BSTR* help) {
   if (help)
     *help = NULL;
   return E_NOTIMPL;
 }
 
-STDMETHODIMP ViewAccessibility::get_accHelpTopic(
+STDMETHODIMP NativeViewAccessibilityWin::get_accHelpTopic(
     BSTR* help_file, VARIANT var_id, LONG* topic_id) {
   if (help_file) {
     *help_file = NULL;
@@ -556,17 +583,19 @@ STDMETHODIMP ViewAccessibility::get_accHelpTopic(
   return E_NOTIMPL;
 }
 
-STDMETHODIMP ViewAccessibility::put_accName(VARIANT var_id, BSTR put_name) {
+STDMETHODIMP NativeViewAccessibilityWin::put_accName(
+    VARIANT var_id, BSTR put_name) {
   // Deprecated.
   return E_NOTIMPL;
 }
 
-STDMETHODIMP ViewAccessibility::put_accValue(VARIANT var_id, BSTR put_val) {
+STDMETHODIMP NativeViewAccessibilityWin::put_accValue(
+    VARIANT var_id, BSTR put_val) {
   // Deprecated.
   return E_NOTIMPL;
 }
 
-int32 ViewAccessibility::MSAAEvent(AccessibilityTypes::Event event) {
+int32 NativeViewAccessibilityWin::MSAAEvent(AccessibilityTypes::Event event) {
   switch (event) {
     case AccessibilityTypes::EVENT_ALERT:
       return EVENT_SYSTEM_ALERT;
@@ -595,7 +624,7 @@ int32 ViewAccessibility::MSAAEvent(AccessibilityTypes::Event event) {
   }
 }
 
-int32 ViewAccessibility::MSAARole(AccessibilityTypes::Role role) {
+int32 NativeViewAccessibilityWin::MSAARole(AccessibilityTypes::Role role) {
   switch (role) {
     case AccessibilityTypes::ROLE_ALERT:
 return ROLE_SYSTEM_ALERT;
@@ -660,7 +689,7 @@ return ROLE_SYSTEM_ALERT;
   }
 }
 
-int32 ViewAccessibility::MSAAState(AccessibilityTypes::State state) {
+int32 NativeViewAccessibilityWin::MSAAState(AccessibilityTypes::State state) {
   int32 msaa_state = 0;
   if (state & AccessibilityTypes::STATE_CHECKED)
     msaa_state |= STATE_SYSTEM_CHECKED;
@@ -696,7 +725,7 @@ int32 ViewAccessibility::MSAAState(AccessibilityTypes::State state) {
 }
 
 // static
-HRESULT ViewAccessibility::GetNativeIAccessibleInterface(
+HRESULT NativeViewAccessibilityWin::GetNativeIAccessibleInterface(
     views::NativeViewHost* native_host, IAccessible** accessible) {
   if (!native_host || !accessible)
     return E_INVALIDARG;
@@ -712,7 +741,7 @@ HRESULT ViewAccessibility::GetNativeIAccessibleInterface(
 }
 
 // static
-HRESULT ViewAccessibility::GetNativeIAccessibleInterface(
+HRESULT NativeViewAccessibilityWin::GetNativeIAccessibleInterface(
     HWND native_view_window , IAccessible** accessible) {
   if (IsWindow(native_view_window)) {
     LRESULT ret = SendMessage(native_view_window, WM_GETOBJECT, 0,
@@ -723,3 +752,5 @@ HRESULT ViewAccessibility::GetNativeIAccessibleInterface(
 
   return E_FAIL;
 }
+
+}  // namespace views

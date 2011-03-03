@@ -12,6 +12,7 @@
 #include "chrome/common/notification_source.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "grit/generated_resources.h"
+#include "ui/base/accessibility/accessible_view_state.h"
 #include "ui/base/l10n/l10n_util.h"
 
 InfoBarContainer::Delegate::~Delegate() {
@@ -21,7 +22,6 @@ InfoBarContainer::InfoBarContainer(Delegate* delegate)
     : delegate_(delegate),
       tab_contents_(NULL) {
   SetID(VIEW_ID_INFO_BAR_CONTAINER);
-  SetAccessibleName(l10n_util::GetStringUTF16(IDS_ACCNAME_INFOBAR_CONTAINER));
 }
 
 InfoBarContainer::~InfoBarContainer() {
@@ -109,8 +109,9 @@ void InfoBarContainer::Layout() {
   }
 }
 
-AccessibilityTypes::Role InfoBarContainer::GetAccessibleRole() {
-  return AccessibilityTypes::ROLE_GROUPING;
+void InfoBarContainer::GetAccessibleState(ui::AccessibleViewState* state) {
+  state->role = ui::AccessibilityTypes::ROLE_GROUPING;
+  state->name = l10n_util::GetStringUTF16(IDS_ACCNAME_INFOBAR_CONTAINER);
 }
 
 void InfoBarContainer::Observe(NotificationType type,

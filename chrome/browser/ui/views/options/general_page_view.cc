@@ -35,6 +35,7 @@
 #include "chrome/installer/util/browser_distribution.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
+#include "ui/base/accessibility/accessible_view_state.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/models/combobox_model.h"
 #include "views/controls/button/radio_button.h"
@@ -66,8 +67,8 @@ class OptionsGroupContents : public views::View {
   OptionsGroupContents() { }
 
   // views::View overrides:
-  virtual AccessibilityTypes::Role GetAccessibleRole() {
-    return AccessibilityTypes::ROLE_GROUPING;
+  virtual void GetAccessibleState(ui::AccessibleViewState* state) OVERRIDE {
+    state->state = ui::AccessibilityTypes::ROLE_GROUPING;
   }
 
  private:

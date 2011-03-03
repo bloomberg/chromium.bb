@@ -46,7 +46,7 @@ class AccessibilityViewsDelegate : public views::ViewsDelegate {
     return false;
   }
   virtual void NotifyAccessibilityEvent(
-      views::View* view, AccessibilityTypes::Event event_type) {
+      views::View* view, ui::AccessibilityTypes::Event event_type) {
     AccessibilityEventRouterViews::GetInstance()->HandleAccessibilityEvent(
         view, event_type);
   }

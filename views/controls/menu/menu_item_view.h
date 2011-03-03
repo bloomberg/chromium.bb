@@ -93,9 +93,9 @@ class MenuItemView : public View {
   virtual ~MenuItemView();
 
   // Overridden from View:
-  virtual bool GetTooltipText(const gfx::Point& p, std::wstring* tooltip);
-  virtual AccessibilityTypes::Role GetAccessibleRole();
-  virtual AccessibilityTypes::State GetAccessibleState();
+  virtual bool GetTooltipText(const gfx::Point& p, std::wstring* tooltip)
+      OVERRIDE;
+  virtual void GetAccessibleState(ui::AccessibleViewState* state) OVERRIDE;
 
   // Returns the preferred height of menu items. This is only valid when the
   // menu is about to be shown.

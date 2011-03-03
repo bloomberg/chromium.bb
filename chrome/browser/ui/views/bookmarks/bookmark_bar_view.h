@@ -109,34 +109,36 @@ class BookmarkBarView : public DetachableToolbarView,
     infobar_visible_ = infobar_visible;
   }
 
-  // DetachableToolbarView methods:
-  virtual bool IsDetached() const;
   virtual bool IsOnTop() const;
-  virtual double GetAnimationValue() const;
-  virtual int GetToolbarOverlap() const {
+
+  // DetachableToolbarView methods:
+  virtual bool IsDetached() const OVERRIDE;
+  virtual double GetAnimationValue() const OVERRIDE;
+  virtual int GetToolbarOverlap() const OVERRIDE {
     return GetToolbarOverlap(false);
   }
 
   // View methods:
-  virtual gfx::Size GetPreferredSize();
-  virtual gfx::Size GetMinimumSize();
-  virtual void Layout();
-  virtual void ViewHierarchyChanged(bool is_add, View* parent, View* child);
-  virtual void PaintChildren(gfx::Canvas* canvas);
+  virtual gfx::Size GetPreferredSize() OVERRIDE;
+  virtual gfx::Size GetMinimumSize() OVERRIDE;
+  virtual void Layout() OVERRIDE;
+  virtual void ViewHierarchyChanged(bool is_add, View* parent, View* child)
+      OVERRIDE;
+  virtual void PaintChildren(gfx::Canvas* canvas) OVERRIDE;
   virtual bool GetDropFormats(
       int* formats,
-      std::set<ui::OSExchangeData::CustomFormat>* custom_formats);
-  virtual bool AreDropTypesRequired();
-  virtual bool CanDrop(const ui::OSExchangeData& data);
-  virtual void OnDragEntered(const views::DropTargetEvent& event);
-  virtual int OnDragUpdated(const views::DropTargetEvent& event);
-  virtual void OnDragExited();
-  virtual int OnPerformDrop(const views::DropTargetEvent& event);
-  virtual void ShowContextMenu(const gfx::Point& p, bool is_mouse_gesture);
+      std::set<ui::OSExchangeData::CustomFormat>* custom_formats) OVERRIDE;
+  virtual bool AreDropTypesRequired() OVERRIDE;
+  virtual bool CanDrop(const ui::OSExchangeData& data) OVERRIDE;
+  virtual void OnDragEntered(const views::DropTargetEvent& event) OVERRIDE;
+  virtual int OnDragUpdated(const views::DropTargetEvent& event) OVERRIDE;
+  virtual void OnDragExited() OVERRIDE;
+  virtual int OnPerformDrop(const views::DropTargetEvent& event) OVERRIDE;
+  virtual void ShowContextMenu(const gfx::Point& p, bool is_mouse_gesture)
+      OVERRIDE;
 
   // AccessiblePaneView methods:
-  virtual bool IsAccessibleViewTraversable(views::View* view);
-  virtual AccessibilityTypes::Role GetAccessibleRole();
+  virtual void GetAccessibleState(ui::AccessibleViewState* state) OVERRIDE;
 
   // ProfileSyncServiceObserver method.
   virtual void OnStateChanged();

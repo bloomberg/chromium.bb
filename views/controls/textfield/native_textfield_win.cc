@@ -12,6 +12,7 @@
 #include "base/win/windows_version.h"
 #include "grit/app_strings.h"
 #include "skia/ext/skia_utils_win.h"
+#include "ui/base/accessibility/accessible_view_state.h"
 #include "ui/base/clipboard/clipboard.h"
 #include "ui/base/clipboard/scoped_clipboard_writer.h"
 #include "ui/base/keycodes/keyboard_codes.h"
@@ -441,10 +442,11 @@ void NativeTextfieldWin::InitializeAccessibilityInfo() {
     // We expect it to be a Label preceeding this view (if it exists).
     string16 name;
     View* label_view = parent->GetChildViewAt(label_index);
-    if (label_view->GetClassName() == Label::kViewClassName &&
-        label_view->GetAccessibleName(&name)) {
+    if (label_view->GetClassName() == Label::kViewClassName) {
+      ui::AccessibleViewState state;
+      label_view->GetAccessibleState(&state);
       hr = pAccPropServices->SetHwndPropStr(m_hWnd, OBJID_CLIENT,
-          CHILDID_SELF, PROPID_ACC_NAME, name.c_str());
+          CHILDID_SELF, PROPID_ACC_NAME, state.name.c_str());
     }
   }
 }

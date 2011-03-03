@@ -4,9 +4,11 @@
 
 #include "views/controls/button/custom_button.h"
 
+#include "ui/base/accessibility/accessible_view_state.h"
 #include "ui/base/animation/throb_animation.h"
 #include "ui/base/keycodes/keyboard_codes.h"
 #include "views/screen.h"
+#include "views/widget/widget.h"
 
 namespace views {
 
@@ -57,24 +59,23 @@ void CustomButton::SetAnimationDuration(int duration) {
 ////////////////////////////////////////////////////////////////////////////////
 // CustomButton, View overrides:
 
-AccessibilityTypes::State CustomButton::GetAccessibleState() {
-  int state = 0;
+void CustomButton::GetAccessibleState(ui::AccessibleViewState* state) {
+  Button::GetAccessibleState(state);
   switch (state_) {
     case BS_HOT:
-      state = AccessibilityTypes::STATE_HOTTRACKED;
+      state->state = ui::AccessibilityTypes::STATE_HOTTRACKED;
       break;
     case BS_PUSHED:
-      state = AccessibilityTypes::STATE_PRESSED;
+      state->state = ui::AccessibilityTypes::STATE_PRESSED;
       break;
     case BS_DISABLED:
-      state = AccessibilityTypes::STATE_UNAVAILABLE;
+      state->state = ui::AccessibilityTypes::STATE_UNAVAILABLE;
       break;
     case BS_NORMAL:
     case BS_COUNT:
       // No additional accessibility state set for this button state.
       break;
   }
-  return state;
 }
 
 void CustomButton::SetEnabled(bool enabled) {
@@ -248,8 +249,10 @@ void CustomButton::SetHotTracked(bool flag) {
   if (state_ != BS_DISABLED)
     SetState(flag ? BS_HOT : BS_NORMAL);
 
-  if (flag)
-    NotifyAccessibilityEvent(AccessibilityTypes::EVENT_FOCUS);
+  if (flag) {
+    GetWidget()->NotifyAccessibilityEvent(
+        this, ui::AccessibilityTypes::EVENT_FOCUS, true);
+  }
 }
 
 bool CustomButton::IsHotTracked() const {

@@ -20,13 +20,11 @@
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gfx/rect.h"
 #include "views/accelerator.h"
-#include "views/accessibility/accessibility_types.h"
 #include "views/background.h"
 #include "views/border.h"
 
 using ui::OSExchangeData;
 
-class ViewAccessibility;
 
 namespace gfx {
 class Canvas;
@@ -35,6 +33,7 @@ class Path;
 }
 
 namespace ui {
+struct AccessibleViewState;
 class ThemeProvider;
 class Transform;
 }
@@ -51,6 +50,10 @@ class RootView;
 class ScrollView;
 class Widget;
 class Window;
+
+#if defined(OS_WIN)
+class NativeViewAccessibilityWin;
+#endif
 
 // ContextMenuController is responsible for showing the context menu for a
 // View. To use a ContextMenuController invoke SetContextMenuController on a
@@ -530,7 +533,7 @@ class View : public AcceleratorTarget {
   const Border* border() const { return border_.get(); }
 
   // Get the theme provider from the parent widget.
-  ThemeProvider* GetThemeProvider() const;
+  virtual ThemeProvider* GetThemeProvider() const;
 
   // RTL painting --------------------------------------------------------------
 
@@ -877,55 +880,15 @@ class View : public AcceleratorTarget {
   static bool ExceededDragThreshold(int delta_x, int delta_y);
 
   // Accessibility -------------------------------------------------------------
-  // TODO(ctguil): Move all this out to a AccessibleInfo wrapper class.
 
-  // Notify the platform specific accessibility client of changes in the user
-  // interface.  This will always raise native notifications.
-  virtual void NotifyAccessibilityEvent(AccessibilityTypes::Event event_type);
+  // Modifies |state| to reflect the current accessible state of this view.
+  virtual void GetAccessibleState(ui::AccessibleViewState* state) { }
 
-  // Raise an accessibility notification with an option to also raise a native
-  // notification.
-  virtual void NotifyAccessibilityEvent(AccessibilityTypes::Event event_type,
-      bool send_native_event);
-
-  // Returns the MSAA default action of the current view. The string returned
-  // describes the default action that will occur when executing
-  // IAccessible::DoDefaultAction. For instance, default action of a button is
-  // 'Press'.
-  virtual string16 GetAccessibleDefaultAction() { return string16(); }
-
-  // Returns a string containing the mnemonic, or the keyboard shortcut, for a
-  // given control.
-  virtual string16 GetAccessibleKeyboardShortcut() {
-    return string16();
-  }
-
-  // Returns a brief, identifying string, containing a unique, readable name of
-  // a given control. Sets the input string appropriately, and returns true if
-  // successful.
-  bool GetAccessibleName(string16* name);
-
-  // Returns the accessibility role of the current view. The role is what
-  // assistive technologies (ATs) use to determine what behavior to expect from
-  // a given control.
-  virtual AccessibilityTypes::Role GetAccessibleRole();
-
-  // Returns the accessibility state of the current view.
-  virtual AccessibilityTypes::State GetAccessibleState() {
-    return 0;
-  }
-
-  // Returns the current value associated with a view.
-  virtual string16 GetAccessibleValue() { return string16(); }
-
-  // Assigns a string name to the given control. Needed as a View does not know
-  // which name will be associated with it until it is created to be a
-  // certain type.
-  void SetAccessibleName(const string16& name);
-
-  // Returns an instance of the (platform-specific) accessibility interface for
-  // the View.
-  ViewAccessibility* GetViewAccessibility();
+#if defined(OS_WIN)
+  // Returns an instance of the Windows-specific accessibility interface
+  // for this View.
+  NativeViewAccessibilityWin* GetNativeViewAccessibilityWin();
+#endif
 
   // Scrolling -----------------------------------------------------------------
   // TODO(beng): Figure out if this can live somewhere other than View, i.e.
@@ -1408,12 +1371,9 @@ class View : public AcceleratorTarget {
 
   // Accessibility -------------------------------------------------------------
 
-  // Name for this view, which can be retrieved by accessibility APIs.
-  string16 accessible_name_;
-
 #if defined(OS_WIN)
-  // The accessibility implementation for this View.
-  scoped_refptr<ViewAccessibility> view_accessibility_;
+  // The Windows-specific accessibility implementation for this View.
+  scoped_refptr<NativeViewAccessibilityWin> native_view_accessibility_win_;
 #endif
 
   DISALLOW_COPY_AND_ASSIGN(View);
