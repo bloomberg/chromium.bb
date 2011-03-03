@@ -43,6 +43,7 @@ class CapturerMac : public Capturer {
   void ReleaseBuffers();
   CGLContextObj cgl_context_;
   scoped_array<uint8> buffers_[kNumBuffers];
+  scoped_array<uint8> flip_buffer_;
   DISALLOW_COPY_AND_ASSIGN(CapturerMac);
 };
 

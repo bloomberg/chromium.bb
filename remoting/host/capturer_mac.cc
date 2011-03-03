@@ -55,6 +55,7 @@ void CapturerMac::ScreenConfigurationChanged() {
   for (int i = 0; i < kNumBuffers; ++i) {
     buffers_[i].reset(new uint8[buffer_size]);
   }
+  flip_buffer_.reset(new uint8[buffer_size]);
   CGLPixelFormatAttribute attributes[] = {
     kCGLPFAFullScreen,
     kCGLPFADisplayMask,
@@ -92,18 +93,28 @@ void CapturerMac::CaptureRects(const InvalidRects& rects,
   glPixelStorei(GL_PACK_SKIP_PIXELS, 0);
 
   // Read a block of pixels from the frame buffer.
-  glReadPixels(0, 0, width(), height(), GL_BGRA, GL_UNSIGNED_BYTE,
-               buffers_[current_buffer_].get());
+  int h = height();
+  int w = width();
+  uint8* flip_buffer = flip_buffer_.get();
+  uint8* current_buffer = buffers_[current_buffer_].get();
+
+  glReadPixels(0, 0, w, h, GL_BGRA, GL_UNSIGNED_BYTE, flip_buffer);
   glPopClientAttrib();
+
+  // OpenGL reads with a vertical flip, and sadly there is no optimized
+  // way to get it flipped automatically.
+  for (int y = 0; y < h; ++y) {
+    uint8* flip_row = &(flip_buffer[y * bytes_per_row_]);
+    uint8* current_row = &(current_buffer[(h - (y + 1)) * bytes_per_row_]);
+    memcpy(current_row, flip_row, bytes_per_row_);
+  }
 
   DataPlanes planes;
   planes.data[0] = buffers_[current_buffer_].get();
   planes.strides[0] = bytes_per_row_;
 
-  scoped_refptr<CaptureData> data(new CaptureData(planes,
-                                                  width(),
-                                                  height(),
-                                                  pixel_format()));
+  scoped_refptr<CaptureData> data(
+      new CaptureData(planes, w, h, pixel_format()));
   data->mutable_dirty_rects() = rects;
   FinishCapture(data, callback);
 }
