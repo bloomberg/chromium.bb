@@ -417,6 +417,7 @@ nacl_glibc_skiplist = set([
     'run_life',
     'run_mandel_nav',
     'run_whole_archive_test',
+    'validate_ppapi_example_audio',
     # run_srpc_sysv_shm_test fails because:
     # 1) it uses fstat(), while we only have an fstat64() wrapper;
     # 2) the test needs an explicit fflush(stdout) call because the

@@ -9,16 +9,24 @@ Import('env')
 
 env.Prepend(CPPDEFINES=['XP_UNIX'])
 
-ppapi_example_2d_nexe = env.ComponentProgram('ppapi_example_audio.nexe',
-    [ 'audio.cc' ],
-    EXTRA_LIBS=['ppruntime',
-                'ppapi_cpp',
-                'imc',
-                'platform',
-                'gio',
-                'pthread',
-                'm',
-                'srpc'])
+node = env.ComponentProgram('ppapi_example_audio.nexe',
+                            [ 'audio.cc' ],
+                            EXTRA_LIBS=['ppruntime',
+                                        'ppapi_cpp',
+                                        'imc',
+                                        'platform',
+                                        'gio',
+                                        'pthread',
+                                        'm',
+                                        'srpc'])
+
+test = env.CommandValidatorTestNacl('ppapi_example_audio.out',
+                                    image=[node],
+                                    )
+# since we do not have an automated test - at validate the image
+env.AddNodeToTestSuite(test,
+                       ['validator_tests', 'small_tests'],
+                       'validate_ppapi_example_audio')
 
 # Note that the html is required to run this program.
 env.Publish('ppapi_example_audio.nexe', 'run',
