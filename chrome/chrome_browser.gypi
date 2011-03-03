@@ -1666,6 +1666,8 @@
         'browser/profiles/profile_io_data.h',
         'browser/profiles/profile_manager.cc',
         'browser/profiles/profile_manager.h',
+        'browser/profiles/profile_menu_model.cc',
+        'browser/profiles/profile_menu_model.h',
         'browser/remoting/directory_add_request.cc',
         'browser/remoting/directory_add_request.h',
         'browser/remoting/remoting_options_handler.cc',
