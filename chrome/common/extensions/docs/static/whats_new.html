@@ -7,12 +7,36 @@ made in recent releases.
 </p>
 
 <ul>
+  <li> <a href="#10">Google Chrome 10</a> </li>
   <li> <a href="#9">Google Chrome 9</a> </li>
   <li> <a href="#8">Google Chrome 8</a> </li>
   <li> <a href="#7">Google Chrome 7</a> </li>
   <li> <a href="#6">Google Chrome 6</a> </li>
 </ul>
 
+
+<h2 id="10"> Google Chrome 10 </h2>
+
+<h4> Manifest changes </h4>
+  <ul>
+    <li>The new <a href="manifest.html#bg">background</a> permission
+      extends the life of Chrome,
+      allowing your extension or app
+      to run even when Chrome has no windows open.
+      </li>
+  </ul>
+
+<h4> Additions to existing APIs </h4>
+  <ul>
+    <li> The <a href="windows.html#method-create">chrome.windows.create()</a>
+      method now has a <code>tabId</code> parameter.
+      You can use it to move a tab or panel into a new window.
+      <p class="note">
+      <b>Note:</b>
+      This change was incorrectly attributed to Chrome 9
+      in previous versions of this page.
+    </li>
+  </ul>
 
 <h2 id="9"> Google Chrome 9 </h2>
 
@@ -40,11 +64,8 @@ made in recent releases.
       you can <a href="tabs.html#method-create">create</a>
       a pinned tab. </li>
     <li> The <a href="windows.html#method-create">chrome.windows.create()</a>
-      method's first parameter can now be an array of strings,
-      letting you create an array of tabs. </li>
-    <li> The <a href="windows.html#method-create">chrome.windows.create()</a>
-      method now has a <code>tabId</code> parameter.
-      You can use it to move a tab or panel into a new window. </li>
+      method can now take a list of URLs,
+      letting you create multiple tabs in the new window. </li>
     <li> The new
       <a href="management.html#method-get">chrome.management.get()</a> method
       lets you get information about the specified extension or app. </li>
