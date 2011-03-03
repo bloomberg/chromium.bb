@@ -41,7 +41,7 @@ class PendingExtensionInfo {
   // If not, the extension is discarded. This allows creators of
   // PendingExtensionInfo objects to ensure that extensions meet some criteria
   // that can only be tested once the extension is unpacked.
-  const bool ShouldAllowInstall(const Extension& extension) const {
+  bool ShouldAllowInstall(const Extension& extension) const {
     return should_allow_install_(extension);
   }
   bool is_from_sync() const { return is_from_sync_; }
