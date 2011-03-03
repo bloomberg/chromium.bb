@@ -2,12 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "chrome/browser/download/download_util.h"
+
 #if defined(OS_POSIX) && !defined(OS_MACOSX)
 #include <locale.h>
 #endif
 
 #include "base/string_util.h"
-#include "chrome/browser/download/download_util.h"
+#include "base/test/test_file_util.h"
 #include "googleurl/src/gurl.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -457,7 +459,7 @@ TEST(DownloadUtilTest, GenerateFileName) {
                                     kGenerateFileNameTestCases[i].mime_type,
                                     &generated_name);
     EXPECT_EQ(kGenerateFileNameTestCases[i].expected_name,
-              generated_name.ToWStringHack()) << i;
+              file_util::FilePathAsWString(generated_name)) << i;
   }
 
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(kGenerateFileNameTestCases); ++i) {
@@ -468,7 +470,7 @@ TEST(DownloadUtilTest, GenerateFileName) {
                                     kGenerateFileNameTestCases[i].mime_type,
                                     &generated_name);
     EXPECT_EQ(kGenerateFileNameTestCases[i].expected_name,
-              generated_name.ToWStringHack()) << i;
+              file_util::FilePathAsWString(generated_name)) << i;
   }
 
   // A couple of cases with raw 8bit characters in C-D.
@@ -479,7 +481,7 @@ TEST(DownloadUtilTest, GenerateFileName) {
                                     "iso-8859-1",
                                     "image/png",
                                     &generated_name);
-    EXPECT_EQ(L"caf\u00e9.png", generated_name.ToWStringHack());
+    EXPECT_EQ(L"caf\u00e9.png", file_util::FilePathAsWString(generated_name));
   }
 
   {
@@ -489,7 +491,7 @@ TEST(DownloadUtilTest, GenerateFileName) {
                                     "windows-1253",
                                     "image/png",
                                     &generated_name);
-    EXPECT_EQ(L"caf\u03b5.png", generated_name.ToWStringHack());
+    EXPECT_EQ(L"caf\u03b5.png", file_util::FilePathAsWString(generated_name));
   }
 }
 
