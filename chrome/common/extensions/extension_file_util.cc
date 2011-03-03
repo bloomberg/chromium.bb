@@ -609,4 +609,8 @@ FilePath GetUserDataTempDir() {
   return FilePath();
 }
 
+void DeleteFile(const FilePath& path, bool recursive) {
+  file_util::Delete(path, recursive);
+}
+
 }  // namespace extension_file_util

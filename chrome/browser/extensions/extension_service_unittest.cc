@@ -548,10 +548,22 @@ class ExtensionServiceTest
       PackAndInstallExtension(dir_path, FilePath(), should_succeed);
   }
 
+  // Create a CrxInstaller and start installation. To allow the install
+  // to happen, use loop_.RunAllPending();. Most tests will not use this
+  // method directly.  Instead, use InstallExtension(), which waits for
+  // the crx to be installed and does extra error checking.
+  void StartCrxInstall(const FilePath& crx_path) {
+    ASSERT_TRUE(file_util::PathExists(crx_path));
+    scoped_refptr<CrxInstaller> installer(
+        new CrxInstaller(service_,  // frontend
+                         NULL));  // no client (silent install)
+    installer->InstallCrx(crx_path);
+  }
+
   void InstallExtension(const FilePath& path,
                         bool should_succeed) {
     ASSERT_TRUE(file_util::PathExists(path));
-    service_->InstallExtension(path);
+    StartCrxInstall(path);
     loop_.RunAllPending();
     std::vector<std::string> errors = GetErrors();
     if (should_succeed) {
@@ -1783,7 +1795,7 @@ TEST_F(ExtensionServiceTest, Reinstall) {
 
   // A simple extension that should install without error.
   FilePath path = extensions_path.AppendASCII("good.crx");
-  service_->InstallExtension(path);
+  StartCrxInstall(path);
   loop_.RunAllPending();
 
   ASSERT_TRUE(installed_);
@@ -1798,7 +1810,7 @@ TEST_F(ExtensionServiceTest, Reinstall) {
   ExtensionErrorReporter::GetInstance()->ClearErrors();
 
   // Reinstall the same version, it should overwrite the previous one.
-  service_->InstallExtension(path);
+  StartCrxInstall(path);
   loop_.RunAllPending();
 
   ASSERT_TRUE(installed_);
@@ -1817,7 +1829,7 @@ TEST_F(ExtensionServiceTest, UpgradeSignedGood) {
   extensions_path = extensions_path.AppendASCII("extensions");
 
   FilePath path = extensions_path.AppendASCII("good.crx");
-  service_->InstallExtension(path);
+  StartCrxInstall(path);
   loop_.RunAllPending();
 
   ASSERT_TRUE(installed_);
@@ -1827,7 +1839,7 @@ TEST_F(ExtensionServiceTest, UpgradeSignedGood) {
 
   // Upgrade to version 2.0
   path = extensions_path.AppendASCII("good2.crx");
-  service_->InstallExtension(path);
+  StartCrxInstall(path);
   loop_.RunAllPending();
 
   ASSERT_TRUE(installed_);
@@ -1844,7 +1856,7 @@ TEST_F(ExtensionServiceTest, UpgradeSignedBad) {
   extensions_path = extensions_path.AppendASCII("extensions");
 
   FilePath path = extensions_path.AppendASCII("good.crx");
-  service_->InstallExtension(path);
+  StartCrxInstall(path);
   loop_.RunAllPending();
 
   ASSERT_TRUE(installed_);
@@ -1854,8 +1866,8 @@ TEST_F(ExtensionServiceTest, UpgradeSignedBad) {
 
   // Try upgrading with a bad signature. This should fail during the unpack,
   // because the key will not match the signature.
-  path = extensions_path.AppendASCII("good2_bad_signature.crx");
-  service_->InstallExtension(path);
+  path = extensions_path.AppendASCII("bad_signature.crx");
+  StartCrxInstall(path);
   loop_.RunAllPending();
 
   ASSERT_FALSE(installed_);
@@ -2362,7 +2374,7 @@ TEST_F(ExtensionServiceTest, BlacklistedExtensionWillNotInstall) {
   ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &extensions_path));
   extensions_path = extensions_path.AppendASCII("extensions");
   FilePath path = extensions_path.AppendASCII("good.crx");
-  service_->InstallExtension(path);
+  StartCrxInstall(path);
   loop_.RunAllPending();
   EXPECT_EQ(0u, service_->extensions()->size());
   ValidateBooleanPref(good_crx, "blacklist", true);
@@ -2458,7 +2470,7 @@ TEST_F(ExtensionServiceTest, BlacklistedByPolicyWillNotInstall) {
   ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &extensions_path));
   extensions_path = extensions_path.AppendASCII("extensions");
   FilePath path = extensions_path.AppendASCII("good.crx");
-  service_->InstallExtension(path);
+  StartCrxInstall(path);
   loop_.RunAllPending();
   EXPECT_EQ(0u, service_->extensions()->size());
 
@@ -2466,7 +2478,7 @@ TEST_F(ExtensionServiceTest, BlacklistedByPolicyWillNotInstall) {
   whitelist->Append(Value::CreateStringValue(good_crx));
 
   // Ensure we can now install good_crx.
-  service_->InstallExtension(path);
+  StartCrxInstall(path);
   loop_.RunAllPending();
   EXPECT_EQ(1u, service_->extensions()->size());
 }
@@ -2480,7 +2492,7 @@ TEST_F(ExtensionServiceTest, BlacklistedByPolicyRemovedIfRunning) {
   ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &extensions_path));
   extensions_path = extensions_path.AppendASCII("extensions");
   FilePath path = extensions_path.AppendASCII("good.crx");
-  service_->InstallExtension(path);
+  StartCrxInstall(path);
   loop_.RunAllPending();
   EXPECT_EQ(1u, service_->extensions()->size());
 

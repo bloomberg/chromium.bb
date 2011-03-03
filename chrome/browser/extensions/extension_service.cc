@@ -508,22 +508,6 @@ void ExtensionService::Init() {
   GarbageCollectExtensions();
 }
 
-void ExtensionService::InstallExtension(const FilePath& extension_path) {
-  scoped_refptr<CrxInstaller> installer(
-      new CrxInstaller(this,  // frontend
-                       NULL));  // no client (silent install)
-  installer->InstallCrx(extension_path);
-}
-
-namespace {
-  // TODO(akalin): Put this somewhere where both crx_installer.cc and
-  // this file can use it.
-  void DeleteFileHelper(const FilePath& path, bool recursive) {
-    CHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
-    file_util::Delete(path, recursive);
-  }
-}  // namespace
-
 void ExtensionService::UpdateExtension(const std::string& id,
                                        const FilePath& extension_path,
                                        const GURL& download_url) {
@@ -540,7 +524,8 @@ void ExtensionService::UpdateExtension(const std::string& id,
     // that would do it for us.
     BrowserThread::PostTask(
         BrowserThread::FILE, FROM_HERE,
-        NewRunnableFunction(&DeleteFileHelper, extension_path, false));
+        NewRunnableFunction(
+            extension_file_util::DeleteFile, extension_path, false));
     return;
   }
 
@@ -1560,7 +1545,7 @@ void ExtensionService::OnExtensionInstalled(const Extension* extension) {
       // load it.
       BrowserThread::PostTask(
           BrowserThread::FILE, FROM_HERE,
-          NewRunnableFunction(&DeleteFileHelper, extension->path(), true));
+          NewRunnableFunction(&extension_file_util::DeleteFile, extension->path(), true));
       return;
     }
 

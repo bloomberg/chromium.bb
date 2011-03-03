@@ -82,6 +82,11 @@ FilePath ExtensionURLToRelativeFilePath(const GURL& url);
 // Return an empty file path on failure.
 FilePath GetUserDataTempDir();
 
+// Helper function to delete files. This is used to avoid ugly casts which
+// would be necessary with PostMessage since file_util::Delete is overloaded.
+// TODO(skerner): Make a version of Delete that is not overloaded in file_util.
+void DeleteFile(const FilePath& path, bool recursive);
+
 }  // namespace extension_file_util
 
 #endif  // CHROME_COMMON_EXTENSIONS_EXTENSION_FILE_UTIL_H_

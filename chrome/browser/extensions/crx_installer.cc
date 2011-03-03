@@ -39,12 +39,6 @@
 
 namespace {
 
-// Helper function to delete files. This is used to avoid ugly casts which
-// would be necessary with PostMessage since file_util::Delete is overloaded.
-static void DeleteFileHelper(const FilePath& path, bool recursive) {
-  file_util::Delete(path, recursive);
-}
-
 struct WhitelistedInstallData {
   WhitelistedInstallData() {}
   std::set<std::string> ids;
@@ -100,13 +94,15 @@ CrxInstaller::~CrxInstaller() {
   if (!temp_dir_.value().empty()) {
     BrowserThread::PostTask(
         BrowserThread::FILE, FROM_HERE,
-        NewRunnableFunction(&DeleteFileHelper, temp_dir_, true));
+        NewRunnableFunction(
+            &extension_file_util::DeleteFile, temp_dir_, true));
   }
 
   if (delete_source_) {
     BrowserThread::PostTask(
         BrowserThread::FILE, FROM_HERE,
-        NewRunnableFunction(&DeleteFileHelper, source_file_, false));
+        NewRunnableFunction(
+            &extension_file_util::DeleteFile, source_file_, false));
   }
 
   // Make sure the UI is deleted on the ui thread.
