@@ -7,6 +7,7 @@
 
 #include <string>
 
+#include "base/gtest_prod_util.h"
 #include "base/ref_counted.h"
 #include "base/synchronization/lock.h"
 #include "third_party/libjingle/source/talk/xmpp/xmppclient.h"
@@ -35,16 +36,90 @@ namespace remoting {
 class IqRequest;
 class JingleThread;
 
-class JingleClient : public base::RefCountedThreadSafe<JingleClient>,
-                     public sigslot::has_slots<> {
+// TODO(ajwong): The SignalStrategy stuff needs to be separated out to separate
+// files.
+class SignalStrategy {
  public:
-  enum State {
-    START,  // Initial state.
-    CONNECTING,
-    CONNECTED,
-    CLOSED,
+  class StatusObserver {
+   public:
+    enum State {
+      START,
+      CONNECTING,
+      CONNECTED,
+      CLOSED,
+    };
+
+    // Called when state of the connection is changed.
+    virtual void OnStateChange(State state) = 0;
+    virtual void OnJidChange(const std::string& full_jid) = 0;
   };
 
+  SignalStrategy() {}
+  virtual ~SignalStrategy() {}
+  virtual void Init(StatusObserver* observer) = 0;
+  virtual cricket::BasicPortAllocator* port_allocator() = 0;
+  virtual void StartSession(cricket::SessionManager* session_manager) = 0;
+  virtual void EndSession() = 0;
+  virtual IqRequest* CreateIqRequest() = 0;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(SignalStrategy);
+};
+
+class XmppSignalStrategy : public SignalStrategy, public sigslot::has_slots<> {
+ public:
+  XmppSignalStrategy(JingleThread* thread,
+                     const std::string& username,
+                     const std::string& auth_token,
+                     const std::string& auth_token_service);
+  virtual ~XmppSignalStrategy();
+
+  virtual void Init(StatusObserver* observer);
+  virtual cricket::BasicPortAllocator* port_allocator();
+  virtual void StartSession(cricket::SessionManager* session_manager);
+  virtual void EndSession();
+  virtual IqRequest* CreateIqRequest();
+
+ private:
+  void OnConnectionStateChanged(buzz::XmppEngine::State state);
+  static buzz::PreXmppAuth* CreatePreXmppAuth(
+      const buzz::XmppClientSettings& settings);
+
+  JingleThread* thread_;
+
+  std::string username_;
+  std::string auth_token_;
+  std::string auth_token_service_;
+  buzz::XmppClient* xmpp_client_;
+  StatusObserver* observer_;
+  scoped_ptr<talk_base::NetworkManager> network_manager_;
+  scoped_ptr<cricket::BasicPortAllocator> port_allocator_;
+
+ private:
+  friend class JingleClientTest;
+
+  DISALLOW_COPY_AND_ASSIGN(XmppSignalStrategy);
+};
+
+class JavascriptSignalStrategy : public SignalStrategy {
+ public:
+  JavascriptSignalStrategy();
+  virtual ~JavascriptSignalStrategy();
+
+  virtual void Init(StatusObserver* observer);
+  virtual cricket::BasicPortAllocator* port_allocator();
+  virtual void StartSession(cricket::SessionManager* session_manager);
+  virtual void EndSession();
+  virtual IqRequest* CreateIqRequest();
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(JavascriptSignalStrategy);
+};
+
+
+class JingleClient : public base::RefCountedThreadSafe<JingleClient>,
+                     public SignalStrategy::StatusObserver {
+ public:
   class Callback {
    public:
     virtual ~Callback() {}
@@ -53,17 +128,13 @@ class JingleClient : public base::RefCountedThreadSafe<JingleClient>,
     virtual void OnStateChange(JingleClient* client, State state) = 0;
   };
 
-  // Creates a JingleClient object that executes on |thread|.  This does not
-  // take ownership of |thread| and expects that the thread is started before
-  // the constructor is called, and only stopped after the JingleClient object
-  // has been destructed.
-  explicit JingleClient(JingleThread* thread);
-  virtual ~JingleClient();
+  JingleClient(JingleThread* thread, SignalStrategy* signal_strategy,
+               Callback* callback);
+  ~JingleClient();
 
   // Starts the XMPP connection initialization. Must be called only once.
   // |callback| specifies callback object for the client and must not be NULL.
-  void Init(const std::string& username, const std::string& auth_token,
-            const std::string& auth_token_service, Callback* callback);
+  void Init();
 
   // Closes XMPP connection and stops the thread. Must be called before the
   // object is destroyed. If specified, |closed_task| is executed after the
@@ -77,64 +148,52 @@ class JingleClient : public base::RefCountedThreadSafe<JingleClient>,
 
   // Creates new IqRequest for this client. Ownership for of the created object
   // is transfered to the caller.
-  virtual IqRequest* CreateIqRequest();
-
-  // Current connection state of the client.
-  State state() { return state_; }
-
-  // Returns XmppClient object for the xmpp connection or NULL if not connected.
-  buzz::XmppClient* xmpp_client() { return client_; }
-
-  // Message loop used by this object to execute tasks.
-  MessageLoop* message_loop();
+  IqRequest* CreateIqRequest();
 
   // The session manager used by this client. Must be called from the
   // jingle thread only. Returns NULL if the client is not active.
   cricket::SessionManager* session_manager();
 
+  // Message loop used by this object to execute tasks.
+  MessageLoop* message_loop();
+
  private:
   friend class HeartbeatSenderTest;
   friend class JingleClientTest;
 
-  void OnConnectionStateChanged(buzz::XmppEngine::State state);
-
-  void DoInitialize(const std::string& username,
-                    const std::string& auth_token,
-                    const std::string& auth_token_service);
-
-  // Used by Close().
+  void DoInitialize();
   void DoClose();
-
-  void SetFullJid(const std::string& full_jid);
 
   // Updates current state of the connection. Must be called only in
   // the jingle thread.
   void UpdateState(State new_state);
 
-  buzz::PreXmppAuth* CreatePreXmppAuth(
-      const buzz::XmppClientSettings& settings);
+  virtual void OnStateChange(State state);
+  virtual void OnJidChange(const std::string& full_jid);
 
   // JingleThread used for the connection. Set in the constructor.
   JingleThread* thread_;
 
-  // Callback for this object. Callback must not be called if closed_ == true.
-  Callback* callback_;
-
-  // The XmppClient and its state and jid.
-  buzz::XmppClient* client_;
-  State state_;
-  base::Lock full_jid_lock_;
-  std::string full_jid_;
-
   // Current state of the object.
   // Must be locked when accessing initialized_ or closed_.
   base::Lock state_lock_;
+  State state_;
   bool initialized_;
   bool closed_;
   scoped_ptr<Task> closed_task_;
 
-  scoped_ptr<talk_base::NetworkManager> network_manager_;
-  scoped_ptr<cricket::BasicPortAllocator> port_allocator_;
+  // We need a separate lock for the jid since the |state_lock_| may be held
+  // over a callback which can end up having a double lock.
+  //
+  // TODO(ajwong): Can we avoid holding the |state_lock_| over a callback and
+  // remove this extra lock?
+  base::Lock jid_lock_;
+  std::string full_jid_;
+
+  // Callback for this object. Callback must not be called if closed_ == true.
+  Callback* callback_;
+
+  SignalStrategy* signal_strategy_;
   scoped_ptr<cricket::SessionManager> session_manager_;
 
   DISALLOW_COPY_AND_ASSIGN(JingleClient);

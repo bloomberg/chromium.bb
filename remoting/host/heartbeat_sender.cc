@@ -33,29 +33,32 @@ const char kSetIntervalTag[] = "set-interval";
 const int64 kDefaultHeartbeatIntervalMs = 5 * 60 * 1000;  // 5 minutes.
 }
 
-HeartbeatSender::HeartbeatSender()
+HeartbeatSender::HeartbeatSender(MessageLoop* message_loop,
+                                 JingleClient* jingle_client,
+                                 MutableHostConfig* config)
+
     : state_(CREATED),
+      message_loop_(message_loop),
+      jingle_client_(jingle_client),
+      config_(config),
       interval_ms_(kDefaultHeartbeatIntervalMs) {
+  DCHECK(jingle_client_);
+  DCHECK(config_);
 }
 
 HeartbeatSender::~HeartbeatSender() {
   DCHECK(state_ == CREATED || state_ == INITIALIZED || state_ == STOPPED);
 }
 
-bool HeartbeatSender::Init(MutableHostConfig* config,
-                           JingleClient* jingle_client) {
-  DCHECK(jingle_client);
+bool HeartbeatSender::Init() {
   DCHECK(state_ == CREATED);
-
-  jingle_client_ = jingle_client;
-  config_ = config;
 
   if (!config_->GetString(kHostIdConfigPath, &host_id_)) {
     LOG(ERROR) << "host_id is not defined in the config.";
     return false;
   }
 
-  if (!key_pair_.Load(config)) {
+  if (!key_pair_.Load(config_)) {
     return false;
   }
 
@@ -65,8 +68,8 @@ bool HeartbeatSender::Init(MutableHostConfig* config,
 }
 
 void HeartbeatSender::Start() {
-  if (MessageLoop::current() != jingle_client_->message_loop()) {
-    jingle_client_->message_loop()->PostTask(
+  if (MessageLoop::current() != message_loop_) {
+    message_loop_->PostTask(
         FROM_HERE, NewRunnableMethod(this, &HeartbeatSender::Start));
     return;
   }
@@ -77,13 +80,13 @@ void HeartbeatSender::Start() {
   request_.reset(jingle_client_->CreateIqRequest());
   request_->set_callback(NewCallback(this, &HeartbeatSender::ProcessResponse));
 
-  jingle_client_->message_loop()->PostTask(
+  message_loop_->PostTask(
       FROM_HERE, NewRunnableMethod(this, &HeartbeatSender::DoSendStanza));
 }
 
 void HeartbeatSender::Stop() {
-  if (MessageLoop::current() != jingle_client_->message_loop()) {
-    jingle_client_->message_loop()->PostTask(
+  if (MessageLoop::current() != message_loop_) {
+    message_loop_->PostTask(
         FROM_HERE, NewRunnableMethod(this, &HeartbeatSender::Stop));
     return;
   }
@@ -99,7 +102,7 @@ void HeartbeatSender::DoSendStanza() {
   if (state_ == STARTED) {
     // |jingle_client_| may be already destroyed if |state_| is set to
     // |STOPPED|, so don't touch it here unless we are in |STARTED| state.
-    DCHECK(MessageLoop::current() == jingle_client_->message_loop());
+    DCHECK(MessageLoop::current() == message_loop_);
 
     VLOG(1) << "Sending heartbeat stanza to " << kChromotingBotJid;
 
@@ -107,7 +110,7 @@ void HeartbeatSender::DoSendStanza() {
                      CreateHeartbeatMessage());
 
     // Schedule next heartbeat.
-    jingle_client_->message_loop()->PostDelayedTask(
+    message_loop_->PostDelayedTask(
         FROM_HERE, NewRunnableMethod(this, &HeartbeatSender::DoSendStanza),
         interval_ms_);
   }

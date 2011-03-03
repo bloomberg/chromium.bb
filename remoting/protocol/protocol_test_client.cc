@@ -112,6 +112,7 @@ class ProtocolTestClient
   void DestroyConnection(scoped_refptr<ProtocolTestConnection> connection);
 
   std::string host_jid_;
+  scoped_ptr<SignalStrategy> signal_strategy_;
   scoped_refptr<JingleClient> client_;
   scoped_refptr<JingleSessionManager> session_manager_;
   ConnectionsList connections_;
@@ -225,8 +226,11 @@ void ProtocolTestClient::Run(const std::string& username,
                              const std::string& host_jid) {
   remoting::JingleThread jingle_thread;
   jingle_thread.Start();
-  client_ = new JingleClient(&jingle_thread);
-  client_->Init(username, auth_token, kChromotingTokenServiceName, this);
+  signal_strategy_.reset(
+      new XmppSignalStrategy(&jingle_thread, username, auth_token,
+                             kChromotingTokenServiceName));
+  client_ = new JingleClient(&jingle_thread, signal_strategy_.get(), this);
+  client_->Init();
 
   session_manager_ = new JingleSessionManager(&jingle_thread);
 

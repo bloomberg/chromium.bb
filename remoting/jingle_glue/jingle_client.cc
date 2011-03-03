@@ -22,13 +22,149 @@
 
 namespace remoting {
 
-JingleClient::JingleClient(JingleThread* thread)
+// The XmppSignalStrategy encapsulates all the logic to perform the signaling
+// STUN/ICE for jingle via a direct XMPP connection.
+//
+// This class is not threadsafe.
+XmppSignalStrategy::XmppSignalStrategy(JingleThread* jingle_thread,
+                                       const std::string& username,
+                                       const std::string& auth_token,
+                                       const std::string& auth_token_service)
+   : thread_(jingle_thread),
+     username_(username),
+     auth_token_(auth_token),
+     auth_token_service_(auth_token_service),
+     xmpp_client_(NULL),
+     observer_(NULL) {
+}
+
+XmppSignalStrategy::~XmppSignalStrategy() {
+}
+
+void XmppSignalStrategy::Init(StatusObserver* observer) {
+  observer_ = observer;
+
+  buzz::Jid login_jid(username_);
+
+  buzz::XmppClientSettings settings;
+  settings.set_user(login_jid.node());
+  settings.set_host(login_jid.domain());
+  settings.set_resource("chromoting");
+  settings.set_use_tls(true);
+  settings.set_token_service(auth_token_service_);
+  settings.set_auth_cookie(auth_token_);
+  settings.set_server(talk_base::SocketAddress("talk.google.com", 5222));
+
+  buzz::AsyncSocket* socket = new XmppSocketAdapter(settings, false);
+
+  xmpp_client_ = new buzz::XmppClient(thread_->task_pump());
+  xmpp_client_->Connect(settings, "", socket, CreatePreXmppAuth(settings));
+  xmpp_client_->SignalStateChange.connect(
+      this, &XmppSignalStrategy::OnConnectionStateChanged);
+  xmpp_client_->Start();
+
+  // Setup the port allocation based on jingle connections.
+  network_manager_.reset(new talk_base::NetworkManager());
+  RelayPortAllocator* port_allocator =
+      new RelayPortAllocator(network_manager_.get(), "transp2");
+  port_allocator->SetJingleInfo(xmpp_client_);
+  port_allocator_.reset(port_allocator);
+}
+
+cricket::BasicPortAllocator* XmppSignalStrategy::port_allocator() {
+  return port_allocator_.get();
+}
+
+void XmppSignalStrategy::StartSession(
+    cricket::SessionManager* session_manager) {
+  cricket::SessionManagerTask* receiver =
+      new cricket::SessionManagerTask(xmpp_client_, session_manager);
+  receiver->EnableOutgoingMessages();
+  receiver->Start();
+}
+
+void XmppSignalStrategy::EndSession() {
+  if (xmpp_client_) {
+    xmpp_client_->Disconnect();
+    // Client is deleted by TaskRunner.
+    xmpp_client_ = NULL;
+  }
+}
+
+IqRequest* XmppSignalStrategy::CreateIqRequest() {
+  return new XmppIqRequest(thread_->message_loop(), xmpp_client_);
+}
+
+void XmppSignalStrategy::OnConnectionStateChanged(
+    buzz::XmppEngine::State state) {
+  switch (state) {
+    case buzz::XmppEngine::STATE_START:
+      observer_->OnStateChange(StatusObserver::START);
+      break;
+    case buzz::XmppEngine::STATE_OPENING:
+      observer_->OnStateChange(StatusObserver::CONNECTING);
+      break;
+    case buzz::XmppEngine::STATE_OPEN:
+      observer_->OnJidChange(xmpp_client_->jid().Str());
+      observer_->OnStateChange(StatusObserver::CONNECTED);
+      break;
+    case buzz::XmppEngine::STATE_CLOSED:
+      observer_->OnStateChange(StatusObserver::CLOSED);
+      // Client is destroyed by the TaskRunner after the client is
+      // closed. Reset the pointer so we don't try to use it later.
+      xmpp_client_ = NULL;
+      break;
+    default:
+      NOTREACHED();
+      break;
+  }
+}
+
+buzz::PreXmppAuth* XmppSignalStrategy::CreatePreXmppAuth(
+    const buzz::XmppClientSettings& settings) {
+  buzz::Jid jid(settings.user(), settings.host(), buzz::STR_EMPTY);
+  return new notifier::GaiaTokenPreXmppAuth(jid.Str(), settings.auth_cookie(),
+                                            settings.token_service());
+}
+
+
+JavascriptSignalStrategy::JavascriptSignalStrategy() {
+}
+
+JavascriptSignalStrategy::~JavascriptSignalStrategy() {
+}
+
+void JavascriptSignalStrategy::Init(StatusObserver* observer) {
+  NOTIMPLEMENTED();
+}
+
+cricket::BasicPortAllocator* JavascriptSignalStrategy::port_allocator() {
+  NOTIMPLEMENTED();
+  return NULL;
+}
+
+void JavascriptSignalStrategy::StartSession(
+    cricket::SessionManager* session_manager) {
+  NOTIMPLEMENTED();
+}
+
+void JavascriptSignalStrategy::EndSession() {
+  NOTIMPLEMENTED();
+}
+
+IqRequest* JavascriptSignalStrategy::CreateIqRequest() {
+  return new JavascriptIqRequest();
+}
+
+JingleClient::JingleClient(JingleThread* thread,
+                           SignalStrategy* signal_strategy,
+                           Callback* callback)
     : thread_(thread),
-      callback_(NULL),
-      client_(NULL),
       state_(START),
       initialized_(false),
-      closed_(false) {
+      closed_(false),
+      callback_(callback),
+      signal_strategy_(signal_strategy) {
 }
 
 JingleClient::~JingleClient() {
@@ -36,63 +172,26 @@ JingleClient::~JingleClient() {
   DCHECK(!initialized_ || closed_);
 }
 
-void JingleClient::Init(
-    const std::string& username, const std::string& auth_token,
-    const std::string& auth_token_service, Callback* callback) {
-  DCHECK_NE(username, "");
-
+void JingleClient::Init() {
   {
     base::AutoLock auto_lock(state_lock_);
     DCHECK(!initialized_ && !closed_);
     initialized_ = true;
-
-    DCHECK(callback != NULL);
-    callback_ = callback;
   }
 
   message_loop()->PostTask(
-      FROM_HERE, NewRunnableMethod(this, &JingleClient::DoInitialize,
-                                   username, auth_token, auth_token_service));
+      FROM_HERE, NewRunnableMethod(this, &JingleClient::DoInitialize));
 }
 
-void JingleClient::DoInitialize(const std::string& username,
-                                const std::string& auth_token,
-                                const std::string& auth_token_service) {
+void JingleClient::DoInitialize() {
   DCHECK_EQ(message_loop(), MessageLoop::current());
 
-  buzz::Jid login_jid(username);
+  signal_strategy_->Init(this);
 
-  buzz::XmppClientSettings settings;
-  settings.set_user(login_jid.node());
-  settings.set_host(login_jid.domain());
-  settings.set_resource("chromoting");
-  settings.set_use_tls(true);
-  settings.set_token_service(auth_token_service);
-  settings.set_auth_cookie(auth_token);
-  settings.set_server(talk_base::SocketAddress("talk.google.com", 5222));
+  session_manager_.reset(
+      new cricket::SessionManager(signal_strategy_->port_allocator()));
 
-  client_ = new buzz::XmppClient(thread_->task_pump());
-  client_->SignalStateChange.connect(
-      this, &JingleClient::OnConnectionStateChanged);
-
-  buzz::AsyncSocket* socket = new XmppSocketAdapter(settings, false);
-
-  client_->Connect(settings, "", socket, CreatePreXmppAuth(settings));
-  client_->Start();
-
-  network_manager_.reset(new talk_base::NetworkManager());
-
-  RelayPortAllocator* port_allocator =
-      new RelayPortAllocator(network_manager_.get(), "transp2");
-  port_allocator_.reset(port_allocator);
-  port_allocator->SetJingleInfo(client_);
-
-  session_manager_.reset(new cricket::SessionManager(port_allocator_.get()));
-
-  cricket::SessionManagerTask* receiver =
-      new cricket::SessionManagerTask(client_, session_manager_.get());
-  receiver->EnableOutgoingMessages();
-  receiver->Start();
+  signal_strategy_->StartSession(session_manager_.get());
 }
 
 void JingleClient::Close() {
@@ -121,14 +220,9 @@ void JingleClient::DoClose() {
   DCHECK(closed_);
 
   session_manager_.reset();
-  port_allocator_.reset();
-  network_manager_.reset();
-
-  if (client_) {
-    client_->Disconnect();
-    // Client is deleted by TaskRunner.
-    client_ = NULL;
-  }
+  signal_strategy_->EndSession();
+  // TODO(ajwong): SignalStrategy should drop all resources at EndSession().
+  signal_strategy_ = NULL;
 
   if (closed_task_.get()) {
     closed_task_->Run();
@@ -137,12 +231,12 @@ void JingleClient::DoClose() {
 }
 
 std::string JingleClient::GetFullJid() {
-  base::AutoLock auto_lock(full_jid_lock_);
+  base::AutoLock auto_lock(jid_lock_);
   return full_jid_;
 }
 
 IqRequest* JingleClient::CreateIqRequest() {
-  return new IqRequest(this);
+  return signal_strategy_->CreateIqRequest();
 }
 
 MessageLoop* JingleClient::message_loop() {
@@ -154,36 +248,7 @@ cricket::SessionManager* JingleClient::session_manager() {
   return session_manager_.get();
 }
 
-void JingleClient::OnConnectionStateChanged(buzz::XmppEngine::State state) {
-  switch (state) {
-    case buzz::XmppEngine::STATE_START:
-      UpdateState(START);
-      break;
-    case buzz::XmppEngine::STATE_OPENING:
-      UpdateState(CONNECTING);
-      break;
-    case buzz::XmppEngine::STATE_OPEN:
-      SetFullJid(client_->jid().Str());
-      UpdateState(CONNECTED);
-      break;
-    case buzz::XmppEngine::STATE_CLOSED:
-      UpdateState(CLOSED);
-      // Client is destroyed by the TaskRunner after the client is
-      // closed. Reset the pointer so we don't try to use it later.
-      client_ = NULL;
-      break;
-    default:
-      NOTREACHED();
-      break;
-  }
-}
-
-void JingleClient::SetFullJid(const std::string& full_jid) {
-  base::AutoLock auto_lock(full_jid_lock_);
-  full_jid_ = full_jid;
-}
-
-void JingleClient::UpdateState(State new_state) {
+void JingleClient::OnStateChange(State new_state) {
   if (new_state != state_) {
     state_ = new_state;
     {
@@ -196,11 +261,9 @@ void JingleClient::UpdateState(State new_state) {
   }
 }
 
-buzz::PreXmppAuth* JingleClient::CreatePreXmppAuth(
-    const buzz::XmppClientSettings& settings) {
-  buzz::Jid jid(settings.user(), settings.host(), buzz::STR_EMPTY);
-  return new notifier::GaiaTokenPreXmppAuth(jid.Str(), settings.auth_cookie(),
-                                            settings.token_service());
+void JingleClient::OnJidChange(const std::string& full_jid) {
+  base::AutoLock auto_lock(jid_lock_);
+  full_jid_ = full_jid;
 }
 
 }  // namespace remoting

@@ -18,6 +18,7 @@ namespace remoting {
 class IqRequest;
 class HostKeyPair;
 class JingleClient;
+class JingleThread;
 class MutableHostConfig;
 
 // HeartbeatSender periodically sends heartbeat stanzas to the Chromoting Bot.
@@ -56,13 +57,14 @@ class MutableHostConfig;
 // TODO(sergeyu): Is it enough to sign JID and nothing else?
 class HeartbeatSender : public base::RefCountedThreadSafe<HeartbeatSender> {
  public:
-  HeartbeatSender();
+  HeartbeatSender(MessageLoop* main_loop,
+                  JingleClient* jingle_client,
+                  MutableHostConfig* config);
   virtual ~HeartbeatSender();
 
-  // Initializes heart-beating for |jingle_client| with the specified
-  // config. Returns false if the config is invalid (e.g. private key
-  // cannot be parsed).
-  bool Init(MutableHostConfig* config, JingleClient* jingle_client);
+  // Initializes heart-beating for |jingle_client_| with |config_|. Returns
+  // false if the config is invalid (e.g. private key cannot be parsed).
+  bool Init();
 
   // Starts heart-beating. Must be called after init.
   void Start();
@@ -96,8 +98,9 @@ class HeartbeatSender : public base::RefCountedThreadSafe<HeartbeatSender> {
   void ProcessResponse(const buzz::XmlElement* response);
 
   State state_;
-  scoped_refptr<MutableHostConfig> config_;
+  MessageLoop* message_loop_;
   JingleClient* jingle_client_;
+  scoped_refptr<MutableHostConfig> config_;
   scoped_ptr<IqRequest> request_;
   std::string host_id_;
   HostKeyPair key_pair_;

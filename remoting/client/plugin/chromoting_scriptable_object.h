@@ -65,12 +65,15 @@
 #include <string>
 #include <vector>
 
+#include "base/weak_ptr.h"
+
 #include "ppapi/cpp/dev/scriptable_object_deprecated.h"
 #include "ppapi/cpp/var.h"
 
 namespace remoting {
 
 class ChromotingInstance;
+class XmppProxy;
 
 extern const char kStatusAttribute[];
 
@@ -91,7 +94,9 @@ enum ConnectionQuality {
   QUALITY_BAD,
 };
 
-class ChromotingScriptableObject : public pp::deprecated::ScriptableObject {
+class ChromotingScriptableObject
+    : public pp::deprecated::ScriptableObject,
+      public base::SupportsWeakPtr<ChromotingScriptableObject> {
  public:
   explicit ChromotingScriptableObject(ChromotingInstance* instance);
   virtual ~ChromotingScriptableObject();
@@ -118,6 +123,12 @@ class ChromotingScriptableObject : public pp::deprecated::ScriptableObject {
   // This should be called to signal JS code to provide login information.
   void SignalLoginChallenge();
 
+  // Handles a Request/Response for a Javascript IQ stanza used to initiate a
+  // jingle connection.
+  void AttachXmppProxy(XmppProxy* xmpp_proxy);
+  void SendIq(const std::string& iq_request_xml);
+  void ReceiveIq(const std::string& iq_response_xml);
+
  private:
   typedef std::map<std::string, int> PropertyNameMap;
   typedef pp::Var (ChromotingScriptableObject::*MethodHandler)(
@@ -141,7 +152,6 @@ class ChromotingScriptableObject : public pp::deprecated::ScriptableObject {
     MethodHandler method;
   };
 
-
   // Routines to add new attribute, method properties.
   void AddAttribute(const std::string& name, pp::Var attribute);
   void AddMethod(const std::string& name, MethodHandler handler);
@@ -158,6 +168,7 @@ class ChromotingScriptableObject : public pp::deprecated::ScriptableObject {
 
   PropertyNameMap property_names_;
   std::vector<PropertyDescriptor> properties_;
+  scoped_refptr<XmppProxy> xmpp_proxy_;
 
   ChromotingInstance* instance_;
 };

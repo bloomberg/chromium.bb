@@ -154,6 +154,8 @@ class ChromotingHost : public base::RefCountedThreadSafe<ChromotingHost>,
 
   scoped_ptr<DesktopEnvironment> desktop_environment_;
 
+  scoped_ptr<SignalStrategy> signal_strategy_;
+
   // The libjingle client. This is used to connect to the talk network to
   // receive connection requests from chromoting client.
   scoped_refptr<JingleClient> jingle_client_;

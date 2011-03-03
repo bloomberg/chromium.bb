@@ -98,6 +98,7 @@ class ConnectionToHost : public JingleClient::Callback {
 
   JingleThread* thread_;
 
+  scoped_ptr<SignalStrategy> signal_strategy_;
   scoped_refptr<JingleClient> jingle_client_;
   scoped_refptr<SessionManager> session_manager_;
   scoped_refptr<Session> session_;

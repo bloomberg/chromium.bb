@@ -9,6 +9,7 @@
 #include "ppapi/cpp/var.h"
 #include "remoting/client/client_config.h"
 #include "remoting/client/plugin/chromoting_instance.h"
+#include "remoting/client/plugin/pepper_xmpp_proxy.h"
 
 using pp::Var;
 
@@ -248,6 +249,19 @@ void ChromotingScriptableObject::SignalLoginChallenge() {
 
   if (!exception.is_undefined())
     LogDebugInfo("Exception when invoking loginChallenge JS callback.");
+}
+
+void ChromotingScriptableObject::AttachXmppProxy(XmppProxy* xmpp_proxy) {
+  xmpp_proxy_ = xmpp_proxy;
+}
+
+void ChromotingScriptableObject::SendIq(const std::string& iq_request_xml) {
+  // TODO(ajwong): Do something smart here.
+  NOTIMPLEMENTED();
+}
+
+void ChromotingScriptableObject::ReceiveIq(const std::string& iq_response_xml) {
+  xmpp_proxy_->ReceiveIq(iq_response_xml);
 }
 
 Var ChromotingScriptableObject::DoConnect(const std::vector<Var>& args,

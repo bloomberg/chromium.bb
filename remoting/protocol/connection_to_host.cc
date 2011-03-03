@@ -53,9 +53,16 @@ void ConnectionToHost::Connect(const std::string& username,
   video_stub_ = video_stub;
 
   // Initialize |jingle_client_|.
-  jingle_client_ = new JingleClient(thread_);
-  jingle_client_->Init(username, auth_token,
-                       kChromotingTokenServiceName, this);
+  if (1 == 0) {
+    signal_strategy_.reset(new JavascriptSignalStrategy());
+  } else {
+    signal_strategy_.reset(
+        new XmppSignalStrategy(thread_, username, auth_token,
+                               kChromotingTokenServiceName));
+  }
+
+  jingle_client_ = new JingleClient(thread_, signal_strategy_.get(), this);
+  jingle_client_->Init();
 
   // Save jid of the host. The actual connection is created later after
   // |jingle_client_| is connected.

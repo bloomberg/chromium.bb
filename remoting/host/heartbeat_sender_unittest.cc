@@ -36,20 +36,21 @@ const char kTestJid[] = "user@gmail.com/chromoting123";
 const int64 kTestTime = 123123123;
 }  // namespace
 
-class MockJingleClient : public JingleClient {
+class MockSignalStrategy : public SignalStrategy {
  public:
-  explicit MockJingleClient(JingleThread* thread) : JingleClient(thread) { }
+  MOCK_METHOD1(Init, void(StatusObserver* observer));
+  MOCK_METHOD0(port_allocator, cricket::BasicPortAllocator*());
+  MOCK_METHOD1(StartSession, void(cricket::SessionManager* session_manager));
+  MOCK_METHOD0(EndSession, void());
   MOCK_METHOD0(CreateIqRequest, IqRequest*());
 };
 
 class MockIqRequest : public IqRequest {
  public:
-  explicit MockIqRequest(JingleClient* jingle_client)
-      : IqRequest(jingle_client) {
-  }
   MOCK_METHOD3(SendIq, void(const std::string& type,
                             const std::string& addressee,
                             XmlElement* iq_body));
+  MOCK_METHOD1(set_callback, void(IqRequest::ReplyCallback*));
 };
 
 class HeartbeatSenderTest : public testing::Test {
@@ -61,12 +62,15 @@ class HeartbeatSenderTest : public testing::Test {
 
     jingle_thread_.message_loop_ = &message_loop_;
 
-    jingle_client_ = new MockJingleClient(&jingle_thread_);
+    signal_strategy_.reset(new MockSignalStrategy());
+    jingle_client_ =
+        new JingleClient(&jingle_thread_, signal_strategy_.get(), NULL);
     jingle_client_->full_jid_ = kTestJid;
   }
 
   JingleThread jingle_thread_;
-  scoped_refptr<MockJingleClient> jingle_client_;
+  scoped_ptr<MockSignalStrategy> signal_strategy_;
+  scoped_refptr<JingleClient> jingle_client_;
   MessageLoop message_loop_;
   scoped_refptr<InMemoryHostConfig> config_;
 };
@@ -75,12 +79,14 @@ class HeartbeatSenderTest : public testing::Test {
 // being send.
 TEST_F(HeartbeatSenderTest, DoSendStanza) {
   // |iq_request| is freed by HeartbeatSender.
-  MockIqRequest* iq_request = new MockIqRequest(jingle_client_);
+  MockIqRequest* iq_request = new MockIqRequest();
+  EXPECT_CALL(*iq_request, set_callback(_)).Times(1);
 
-  scoped_refptr<HeartbeatSender> heartbeat_sender(new HeartbeatSender());
-  ASSERT_TRUE(heartbeat_sender->Init(config_, jingle_client_));
+  scoped_refptr<HeartbeatSender> heartbeat_sender(
+      new HeartbeatSender(&message_loop_, jingle_client_.get(), config_));
+  ASSERT_TRUE(heartbeat_sender->Init());
 
-  EXPECT_CALL(*jingle_client_, CreateIqRequest())
+  EXPECT_CALL(*signal_strategy_, CreateIqRequest())
       .WillOnce(Return(iq_request));
 
   EXPECT_CALL(*iq_request, SendIq(buzz::STR_SET, kChromotingBotJid, NotNull()))
@@ -95,8 +101,9 @@ TEST_F(HeartbeatSenderTest, DoSendStanza) {
 
 // Validate format of the heartbeat stanza.
 TEST_F(HeartbeatSenderTest, CreateHeartbeatMessage) {
-  scoped_refptr<HeartbeatSender> heartbeat_sender(new HeartbeatSender());
-  ASSERT_TRUE(heartbeat_sender->Init(config_, jingle_client_));
+  scoped_refptr<HeartbeatSender> heartbeat_sender(
+      new HeartbeatSender(&message_loop_, jingle_client_.get(), config_));
+  ASSERT_TRUE(heartbeat_sender->Init());
 
   int64 start_time = static_cast<int64>(base::Time::Now().ToDoubleT());
 
@@ -145,7 +152,8 @@ TEST_F(HeartbeatSenderTest, ProcessResponse) {
   const int kTestInterval = 123;
   set_interval->AddText(base::IntToString(kTestInterval));
 
-  scoped_refptr<HeartbeatSender> heartbeat_sender(new HeartbeatSender());
+  scoped_refptr<HeartbeatSender> heartbeat_sender(
+      new HeartbeatSender(&message_loop_, jingle_client_.get(), config_));
   heartbeat_sender->ProcessResponse(response.get());
 
   EXPECT_EQ(kTestInterval * 1000, heartbeat_sender->interval_ms_);

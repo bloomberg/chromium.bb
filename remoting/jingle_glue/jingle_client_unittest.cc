@@ -29,22 +29,25 @@ class JingleClientTest : public testing::Test {
 
   // A helper that calls OnConnectionStateChanged(). Need this because we want
   // to call it on the jingle thread.
-  static void ChangeState(JingleClient* client, buzz::XmppEngine::State state,
+  static void ChangeState(XmppSignalStrategy* strategy,
+                          buzz::XmppEngine::State state,
                           base::WaitableEvent* done_event) {
-    client->OnConnectionStateChanged(state);
+    strategy->OnConnectionStateChanged(state);
     if (done_event)
       done_event->Signal();
   }
 
  protected:
   virtual void SetUp() {
-    client_ = new JingleClient(&thread_);
+    signal_strategy_.reset(new XmppSignalStrategy(&thread_, "", "", ""));
+    client_ = new JingleClient(&thread_, signal_strategy_.get(), &callback_);
     // Fake initialization
     client_->initialized_ = true;
-    client_->callback_ = &callback_;
+    signal_strategy_->observer_ = client_;
   }
 
   JingleThread thread_;
+  scoped_ptr<XmppSignalStrategy> signal_strategy_;
   scoped_refptr<JingleClient> client_;
   MockJingleClientCallback callback_;
 };
@@ -57,7 +60,7 @@ TEST_F(JingleClientTest, OnStateChanged) {
 
   base::WaitableEvent state_changed_event(true, false);
   thread_.message_loop()->PostTask(FROM_HERE, NewRunnableFunction(
-      &JingleClientTest::ChangeState, client_,
+      &JingleClientTest::ChangeState, signal_strategy_.get(),
       buzz::XmppEngine::STATE_OPENING, &state_changed_event));
   state_changed_event.Wait();
 
@@ -73,7 +76,7 @@ TEST_F(JingleClientTest, Close) {
   client_->Close();
   // Verify that the channel doesn't call callback anymore.
   thread_.message_loop()->PostTask(FROM_HERE, NewRunnableFunction(
-      &JingleClientTest::ChangeState, client_,
+      &JingleClientTest::ChangeState, signal_strategy_.get(),
       buzz::XmppEngine::STATE_OPENING,
       static_cast<base::WaitableEvent*>(NULL)));
   thread_.Stop();

@@ -97,12 +97,19 @@ void ChromotingHost::Start(Task* shutdown_task) {
     return;
 
   // Connect to the talk network with a JingleClient.
-  jingle_client_ = new JingleClient(context_->jingle_thread());
-  jingle_client_->Init(xmpp_login, xmpp_auth_token,
-                       kChromotingTokenServiceName, this);
+  signal_strategy_.reset(
+      new XmppSignalStrategy(context_->jingle_thread(), xmpp_login,
+                             xmpp_auth_token,
+                             kChromotingTokenServiceName));
+  jingle_client_ = new JingleClient(context_->jingle_thread(),
+                                    signal_strategy_.get(),
+                                    this);
+  jingle_client_->Init();
 
-  heartbeat_sender_ = new HeartbeatSender();
-  if (!heartbeat_sender_->Init(config_, jingle_client_.get())) {
+  heartbeat_sender_ =
+      new HeartbeatSender(context_->jingle_thread()->message_loop(),
+                          jingle_client_.get(), config_);
+  if (!heartbeat_sender_->Init()) {
     LOG(ERROR) << "Failed to initialize HeartbeatSender.";
     return;
   }
