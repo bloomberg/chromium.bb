@@ -43,9 +43,11 @@ const int InfoBarView::kHorizontalPadding = 6;
 
 InfoBarView::InfoBarView(InfoBarDelegate* delegate)
     : InfoBar(delegate),
+      container_(NULL),
       delegate_(delegate),
       icon_(NULL),
       close_button_(NULL),
+      ALLOW_THIS_IN_INITIALIZER_LIST(animation_(new ui::SlideAnimation(this))),
       ALLOW_THIS_IN_INITIALIZER_LIST(delete_factory_(this)),
       target_height_(kDefaultTargetHeight) {
   set_parent_owned(false);  // InfoBar deletes itself at the appropriate time.
@@ -56,33 +58,35 @@ InfoBarView::InfoBarView(InfoBarDelegate* delegate)
       (infobar_type == InfoBarDelegate::WARNING_TYPE) ?
       IDS_ACCNAME_INFOBAR_WARNING : IDS_ACCNAME_INFOBAR_PAGE_ACTION));
 
-  animation_.reset(new ui::SlideAnimation(this));
   animation_->SetTweenType(ui::Tween::LINEAR);
 }
 
-void InfoBarView::AnimateOpen() {
-  animation_->Show();
+void InfoBarView::Show(bool animate) {
+  if (animate) {
+    animation_->Show();
+  } else {
+    animation_->Reset(1.0);
+    if (container_)
+      container_->OnInfoBarAnimated(true);
+  }
 }
 
-void InfoBarView::Open() {
-  // Set the animation value to 1.0 so that GetPreferredSize() returns the right
-  // size.
-  animation_->Reset(1.0);
-  if (container_)
-    container_->OnInfoBarAnimated(true);
-}
-
-void InfoBarView::AnimateClose() {
-  bool restore_focus = true;
-#if defined(OS_WIN)
-  // Do not restore focus (and active state with it) on Windows if some other
-  // top-level window became active.
-  if (GetWidget() &&
-      !ui::DoesWindowBelongToActiveWindow(GetWidget()->GetNativeView()))
-    restore_focus = false;
-#endif  // defined(OS_WIN)
-  DestroyFocusTracker(restore_focus);
-  animation_->Hide();
+void InfoBarView::Hide(bool animate) {
+  if (animate) {
+    bool restore_focus = true;
+  #if defined(OS_WIN)
+    // Do not restore focus (and active state with it) on Windows if some other
+    // top-level window became active.
+    if (GetWidget() &&
+        !ui::DoesWindowBelongToActiveWindow(GetWidget()->GetNativeView()))
+      restore_focus = false;
+  #endif  // defined(OS_WIN)
+    DestroyFocusTracker(restore_focus);
+    animation_->Hide();
+  } else {
+    animation_->Reset(0.0);
+    Close();
+  }
 }
 
 void InfoBarView::Close() {
@@ -257,8 +261,6 @@ void InfoBarView::ViewHierarchyChanged(bool is_add, View* parent, View* child) {
 
   if (child == this) {
     if (is_add) {
-      // The container_ pointer must be set before adding to the view hierarchy.
-      DCHECK(container_);
 #if defined(OS_WIN)
       // When we're added to a view hierarchy within a widget, we create an
       // external focus tracker to track what was focused in case we obtain
