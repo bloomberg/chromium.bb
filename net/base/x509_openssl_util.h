@@ -33,13 +33,6 @@ bool ParsePrincipalValueByNID(X509_NAME* name, int nid, std::string* value);
 
 bool ParseDate(ASN1_TIME* x509_time, base::Time* time);
 
-// Verifies that |hostname| matches one of the names in |cert_names|, based on
-// TLS name matching rules, specifically following http://tools.ietf.org/html/draft-saintandre-tls-server-id-check-09#section-4.4.3
-// The members of |cert_names| must have been extracted from the Subject CN or
-// SAN fields of a certificate.
-bool VerifyHostname(const std::string& hostname,
-                    const std::vector<std::string>& cert_names);
-
 } // namespace x509_openssl_util
 
 } // namespace net
