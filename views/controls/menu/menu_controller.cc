@@ -463,7 +463,7 @@ void MenuController::OnMouseDragged(SubmenuView* source,
       StopScrolling();
       int drag_ops = item->GetDelegate()->GetDragOperations(item);
       drag_in_progress_ = true;
-      item->GetWidget()->StartDragForViewFromMouseEvent(NULL, data, drag_ops);
+      item->GetWidget()->RunShellDrag(NULL, data, drag_ops);
       drag_in_progress_ = false;
 
       if (GetActiveInstance() == this) {

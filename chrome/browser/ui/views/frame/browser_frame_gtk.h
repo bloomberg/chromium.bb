@@ -40,7 +40,6 @@ class BrowserFrameGtk : public BrowserFrame,
 
   // Overridden from views::Widget:
   virtual ui::ThemeProvider* GetThemeProvider() const;
-  virtual ui::ThemeProvider* GetDefaultThemeProvider() const;
   virtual void IsActiveChanged();
   virtual void SetInitialFocus();
 

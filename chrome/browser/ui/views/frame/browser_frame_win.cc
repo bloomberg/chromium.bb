@@ -233,10 +233,6 @@ ThemeProvider* BrowserFrameWin::GetThemeProvider() const {
   return profile_->GetThemeProvider();
 }
 
-ThemeProvider* BrowserFrameWin::GetDefaultThemeProvider() const {
-  return profile_->GetThemeProvider();
-}
-
 void BrowserFrameWin::OnScreenReaderDetected() {
   BrowserAccessibilityState::GetInstance()->OnScreenReaderDetected();
   WindowWin::OnScreenReaderDetected();

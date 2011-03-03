@@ -333,7 +333,7 @@ void BalloonViewImpl::Show(Balloon* balloon) {
                                                Widget::AcceptEvents,
                                                Widget::DeleteOnDestroy,
                                                Widget::DontMirrorOriginInRTL);
-  frame_container_->SetWidgetDelegate(this);
+  frame_container_->set_widget_delegate(this);
   frame_container_->SetAlwaysOnTop(true);
   frame_container_->Init(NULL, balloon_rect);
   frame_container_->SetContentsView(this);

@@ -101,10 +101,6 @@ ThemeProvider* BrowserFrameGtk::GetThemeProvider() const {
   return profile_->GetThemeProvider();
 }
 
-ThemeProvider* BrowserFrameGtk::GetDefaultThemeProvider() const {
-  return profile_->GetThemeProvider();
-}
-
 views::RootView* BrowserFrameGtk::CreateRootView() {
   root_view_ = new BrowserRootView(browser_view_, this);
   return root_view_;

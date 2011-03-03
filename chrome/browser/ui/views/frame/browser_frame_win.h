@@ -64,7 +64,6 @@ class BrowserFrameWin : public BrowserFrame, public views::WindowWin {
   virtual LRESULT OnNCHitTest(const CPoint& pt);
   virtual void OnWindowPosChanged(WINDOWPOS* window_pos);
   virtual ui::ThemeProvider* GetThemeProvider() const;
-  virtual ui::ThemeProvider* GetDefaultThemeProvider() const;
   virtual void OnScreenReaderDetected();
 
   // Overridden from views::Window:

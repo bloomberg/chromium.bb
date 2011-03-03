@@ -18,6 +18,7 @@
 #include "views/background.h"
 #include "views/layout/layout_manager.h"
 #include "views/views_delegate.h"
+#include "views/widget/native_widget.h"
 #include "views/widget/root_view.h"
 #include "views/widget/tooltip_manager.h"
 #include "views/widget/widget.h"
@@ -1155,8 +1156,8 @@ void View::Blur() {
 
 void View::TooltipTextChanged() {
   Widget* widget = GetWidget();
-  if (widget && widget->GetTooltipManager())
-    widget->GetTooltipManager()->TooltipTextChanged(this);
+  if (widget)
+    widget->native_widget()->GetTooltipManager()->TooltipTextChanged(this);
 }
 
 // Context menus ---------------------------------------------------------------
@@ -1184,7 +1185,7 @@ void View::WriteDragData(const gfx::Point& press_pt, OSExchangeData* data) {
 
 bool View::InDrag() {
   Widget* widget = GetWidget();
-  return widget ? widget->GetDraggedView() == this : false;
+  return widget ? widget->dragged_view() == this : false;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -1604,8 +1605,11 @@ void View::PropagateLocaleChanged() {
 
 void View::UpdateTooltip() {
   Widget* widget = GetWidget();
-  if (widget && widget->GetTooltipManager())
-    widget->GetTooltipManager()->UpdateTooltip();
+  // TODO(beng): The TooltipManager NULL check can be removed when we
+  //             consolidate Init() methods and make views_unittests Init() all
+  //             Widgets that it uses.
+  if (widget && widget->native_widget()->GetTooltipManager())
+    widget->native_widget()->GetTooltipManager()->UpdateTooltip();
 }
 
 // Drag and drop ---------------------------------------------------------------
@@ -1620,7 +1624,7 @@ void View::DoDrag(const MouseEvent& e, const gfx::Point& press_pt) {
 
   // Message the RootView to do the drag and drop. That way if we're removed
   // the RootView can detect it and avoid calling us back.
-  GetWidget()->StartDragForViewFromMouseEvent(this, data, drag_operations);
+  GetWidget()->RunShellDrag(this, data, drag_operations);
 }
 
 }  // namespace views

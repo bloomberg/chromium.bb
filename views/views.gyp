@@ -352,8 +352,6 @@
         'widget/widget.h',
         'widget/widget_gtk.cc',
         'widget/widget_gtk.h',
-        'widget/widget_utils.cc',
-        'widget/widget_utils.h',
         'widget/widget_win.cc',
         'widget/widget_win.h',
         'window/client_view.cc',

@@ -115,17 +115,17 @@ class Widget : public internal::NativeWidgetDelegate,
   Widget* GetTopLevelWidget();
   const Widget* GetTopLevelWidget() const;
 
-  // Returns the WidgetDelegate for delegating certain events.
-  virtual WidgetDelegate* GetWidgetDelegate();
-
-  // Sets the WidgetDelegate.
-  virtual void SetWidgetDelegate(WidgetDelegate* delegate);
+  // Gets/Sets the WidgetDelegate.
+  WidgetDelegate* widget_delegate() const { return widget_delegate_; }
+  void set_widget_delegate(WidgetDelegate* widget_delegate) {
+    widget_delegate_ = widget_delegate;
+  }
 
   // Sets the specified view as the contents of this Widget. There can only
   // be one contents view child of this Widget's RootView. This view is sized to
   // fit the entire size of the RootView. The RootView takes ownership of this
   // View, unless it is set as not being parent-owned.
-  virtual void SetContentsView(View* view);
+  void SetContentsView(View* view);
 
   // Returns the bounds of the Widget in screen coordinates.
   gfx::Rect GetWindowScreenBounds() const;
@@ -183,10 +183,6 @@ class Widget : public internal::NativeWidgetDelegate,
   virtual void GenerateMousePressedForView(View* view,
                                            const gfx::Point& point);
 
-  // Returns the TooltipManager for this Widget. If this Widget does not support
-  // tooltips, NULL is returned.
-  virtual TooltipManager* GetTooltipManager();
-
   // Returns the accelerator given a command id. Returns false if there is
   // no accelerator associated with a given id, which is a common condition.
   virtual bool GetAccelerator(int cmd_id, ui::Accelerator* accelerator);
@@ -196,13 +192,8 @@ class Widget : public internal::NativeWidgetDelegate,
   virtual Window* GetWindow();
   virtual const Window* GetWindow() const;
 
-  // Gets the theme provider.
+  // Returns the ThemeProvider that provides theme resources for this Widget.
   virtual ThemeProvider* GetThemeProvider() const;
-
-  // Gets the default theme provider; this is necessary for when a widget has
-  // no profile (and ThemeProvider) associated with it. The default theme
-  // provider provides a default set of bitmaps that such widgets can use.
-  virtual ThemeProvider* GetDefaultThemeProvider() const;
 
   // Returns the FocusManager for this widget.
   // Note that all widgets in a widget hierarchy share the same focus manager.
@@ -213,38 +204,48 @@ class Widget : public internal::NativeWidgetDelegate,
 
   // Returns true if the native view |native_view| is contained in the
   // views::View hierarchy rooted at this widget.
-  virtual bool ContainsNativeView(gfx::NativeView native_view);
+  // TODO(beng): const.
+  bool ContainsNativeView(gfx::NativeView native_view);
 
-  // Starts a drag operation for the specified view. This blocks until done.
-  // If the view has not been deleted during the drag, OnDragDone is invoked
-  // on the view.
-  // NOTE: |view| may be NULL.
-  virtual void StartDragForViewFromMouseEvent(View* view,
-                                              const ui::OSExchangeData& data,
-                                              int operation);
+  // Starts a drag operation for the specified view. This blocks until the drag
+  // operation completes. |view| can be NULL.
+  // If the view is non-NULL it can be accessed during the drag by calling
+  // dragged_view(). If the view has not been deleted during the drag,
+  // OnDragDone() is called on it.
+  void RunShellDrag(View* view, const ui::OSExchangeData& data, int operation);
 
-  // If a view is dragging, this returns it. Otherwise returns NULL.
-  virtual View* GetDraggedView();
+  // Returns the view that requested the current drag operation via
+  // RunShellDrag(), or NULL if there is no such view or drag operation.
+  View* dragged_view() { return dragged_view_; }
 
-  virtual void SchedulePaintInRect(const gfx::Rect& rect);
+  // Adds the specified |rect| in client area coordinates to the rectangle to be
+  // redrawn.
+  void SchedulePaintInRect(const gfx::Rect& rect);
 
-  virtual void SetCursor(gfx::NativeCursor cursor);
+  // Sets the currently visible cursor. If |cursor| is NULL, the cursor used
+  // before the current is restored.
+  void SetCursor(gfx::NativeCursor cursor);
 
   // Retrieves the focus traversable for this widget.
   virtual FocusTraversable* GetFocusTraversable();
 
   // Notifies the view hierarchy contained in this widget that theme resources
   // changed.
-  virtual void ThemeChanged();
+  void ThemeChanged();
 
   // Notifies the view hierarchy contained in this widget that locale resources
   // changed.
-  virtual void LocaleChanged();
+  void LocaleChanged();
 
   void SetFocusTraversableParent(FocusTraversable* parent);
   void SetFocusTraversableParentView(View* parent_view);
 
   NativeWidget* native_widget() { return native_widget_; }
+
+  // Overridden from FocusTraversable:
+  virtual FocusSearch* GetFocusSearch();
+  virtual FocusTraversable* GetFocusTraversableParent();
+  virtual View* GetFocusTraversableParentView();
 
  protected:
   // Creates the RootView to be used within this Widget. Subclasses may override
@@ -263,17 +264,12 @@ class Widget : public internal::NativeWidgetDelegate,
     native_widget_ = native_widget;
   }
 
-  // Overridden from FocusTraversable:
-  virtual FocusSearch* GetFocusSearch();
-  virtual FocusTraversable* GetFocusTraversableParent();
-  virtual View* GetFocusTraversableParentView();
-
  private:
   NativeWidget* native_widget_;
 
   // Non-owned pointer to the Widget's delegate.  May be NULL if no delegate is
   // being used.
-  WidgetDelegate* delegate_;
+  WidgetDelegate* widget_delegate_;
 
   // The root of the View hierarchy attached to this window.
   // WARNING: see warning in tooltip_manager_ for ordering dependencies with
@@ -282,6 +278,10 @@ class Widget : public internal::NativeWidgetDelegate,
 
   // A theme provider to use when no other theme provider is specified.
   scoped_ptr<DefaultThemeProvider> default_theme_provider_;
+
+  // Valid for the lifetime of RunShellDrag(), indicates the view the drag
+  // started from.
+  View* dragged_view_;
 
   DISALLOW_COPY_AND_ASSIGN(Widget);
 };

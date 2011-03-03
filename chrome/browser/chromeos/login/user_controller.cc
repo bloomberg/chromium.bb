@@ -101,7 +101,7 @@ class ClickNotifyingWidget : public views::WidgetGtk {
 void CloseWindow(views::WidgetGtk* window) {
   if (!window)
     return;
-  window->SetWidgetDelegate(NULL);
+  window->set_widget_delegate(NULL);
   window->Close();
 }
 
@@ -333,7 +333,7 @@ void UserController::ConfigureLoginWindow(WidgetGtk* window,
   window->MakeTransparent();
   window->Init(NULL, bounds);
   window->SetContentsView(contents_view);
-  window->SetWidgetDelegate(this);
+  window->set_widget_delegate(this);
 
   std::vector<int> params;
   params.push_back(index);

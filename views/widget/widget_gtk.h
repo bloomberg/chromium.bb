@@ -167,21 +167,12 @@ class WidgetGtk : public Widget,
   virtual bool IsAccessibleWidget() const;
   virtual void GenerateMousePressedForView(View* view,
                                            const gfx::Point& point);
-  virtual TooltipManager* GetTooltipManager();
   virtual bool GetAccelerator(int cmd_id, ui::Accelerator* accelerator);
   virtual Window* GetWindow();
   virtual const Window* GetWindow() const;
-  virtual ThemeProvider* GetThemeProvider() const;
   virtual FocusManager* GetFocusManager();
   virtual void ViewHierarchyChanged(bool is_add, View *parent,
                                     View *child);
-  virtual bool ContainsNativeView(gfx::NativeView native_view);
-  virtual void StartDragForViewFromMouseEvent(View* view,
-                                              const OSExchangeData& data,
-                                              int operation);
-  virtual View* GetDraggedView();
-  virtual void SchedulePaintInRect(const gfx::Rect& rect);
-  virtual void SetCursor(gfx::NativeCursor cursor);
 
   // Clears the focus on the native widget having the focus.
   virtual void ClearNativeFocus();
@@ -200,8 +191,15 @@ class WidgetGtk : public Widget,
   virtual Widget* GetWidget() OVERRIDE;
   virtual void SetNativeWindowProperty(const char* name, void* value) OVERRIDE;
   virtual void* GetNativeWindowProperty(const char* name) OVERRIDE;
+  virtual TooltipManager* GetTooltipManager() const OVERRIDE;
   virtual gfx::Rect GetWindowScreenBounds() const OVERRIDE;
   virtual gfx::Rect GetClientAreaScreenBounds() const OVERRIDE;
+  virtual bool ContainsNativeView(gfx::NativeView native_view) const OVERRIDE;
+  virtual void RunShellDrag(View* view,
+                            const ui::OSExchangeData& data,
+                            int operation) OVERRIDE;
+  virtual void SchedulePaintInRect(const gfx::Rect& rect) OVERRIDE;
+  virtual void SetCursor(gfx::NativeCursor cursor) OVERRIDE;
 
  protected:
   // If widget contains another widget, translates event coordinates to the

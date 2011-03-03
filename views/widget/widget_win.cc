@@ -32,7 +32,6 @@
 #include "views/widget/drop_target_win.h"
 #include "views/widget/root_view.h"
 #include "views/widget/widget_delegate.h"
-#include "views/widget/widget_utils.h"
 #include "views/window/window_win.h"
 
 #pragma comment(lib, "dwmapi.lib")
@@ -137,7 +136,6 @@ WidgetWin::WidgetWin()
       restore_focus_when_enabled_(false),
       accessibility_view_events_index_(-1),
       accessibility_view_events_(kMaxAccessibilityViewEvents),
-      dragged_view_(NULL),
       previous_cursor_(NULL) {
   set_native_widget(this);
 }
@@ -368,10 +366,6 @@ bool WidgetWin::IsAccessibleWidget() const {
   return screen_reader_active_;
 }
 
-TooltipManager* WidgetWin::GetTooltipManager() {
-  return tooltip_manager_.get();
-}
-
 void WidgetWin::GenerateMousePressedForView(View* view,
                                             const gfx::Point& point) {
   gfx::Point point_in_widget(point);
@@ -392,10 +386,6 @@ const Window* WidgetWin::GetWindow() const {
   return GetWindowImpl(hwnd());
 }
 
-ThemeProvider* WidgetWin::GetThemeProvider() const {
-  return GetWidgetThemeProvider(this);
-}
-
 FocusManager* WidgetWin::GetFocusManager() {
   if (focus_manager_.get())
     return focus_manager_.get();
@@ -411,14 +401,12 @@ FocusManager* WidgetWin::GetFocusManager() {
 
 void WidgetWin::ViewHierarchyChanged(bool is_add, View* parent,
                                      View* child) {
+  Widget::ViewHierarchyChanged(is_add, parent, child);
   if (drop_target_.get())
     drop_target_->ResetTargetViewIfEquals(child);
 
   if (!is_add) {
     ClearAccessibilityViewEvent(child);
-
-    if (child == dragged_view_)
-      dragged_view_ = NULL;
 
     FocusManager* focus_manager = GetFocusManager();
     if (focus_manager) {
@@ -427,70 +415,6 @@ void WidgetWin::ViewHierarchyChanged(bool is_add, View* parent,
       focus_manager->ViewRemoved(parent, child);
     }
     ViewStorage::GetInstance()->ViewRemoved(parent, child);
-  }
-}
-
-bool WidgetWin::ContainsNativeView(gfx::NativeView native_view) {
-  if (hwnd() == native_view)
-    return true;
-
-  // Traverse the set of parents of the given view to determine if native_view
-  // is a descendant of this window.
-  HWND parent_window = ::GetParent(native_view);
-  HWND previous_child = native_view;
-  while (parent_window && parent_window != previous_child) {
-    if (hwnd() == parent_window)
-      return true;
-    previous_child = parent_window;
-    parent_window = ::GetParent(parent_window);
-  }
-
-  // A views::NativeViewHost may contain the given native view, without it being
-  // an ancestor of hwnd(), so traverse the views::View hierarchy looking for
-  // such views.
-  return GetRootView()->ContainsNativeView(native_view);
-}
-
-void WidgetWin::StartDragForViewFromMouseEvent(
-    View* view,
-    const ui::OSExchangeData& data,
-    int operation) {
-  // NOTE: view may be null.
-  dragged_view_ = view;
-  scoped_refptr<ui::DragSource> drag_source(new ui::DragSource);
-  DWORD effects;
-  DoDragDrop(ui::OSExchangeDataProviderWin::GetIDataObject(data), drag_source,
-             ui::DragDropTypes::DragOperationToDropEffect(operation), &effects);
-  // If the view is removed during the drag operation, dragged_view_ is set to
-  // NULL.
-  if (view && dragged_view_ == view) {
-    dragged_view_ = NULL;
-    view->OnDragDone();
-  }
-}
-
-View* WidgetWin::GetDraggedView() {
-  return dragged_view_;
-}
-
-void WidgetWin::SchedulePaintInRect(const gfx::Rect& rect) {
-  if (use_layered_buffer_) {
-    // We must update the back-buffer immediately, since Windows' handling of
-    // invalid rects is somewhat mysterious.
-    layered_window_invalid_rect_ = layered_window_invalid_rect_.Union(rect);
-  } else {
-    // InvalidateRect() expects client coordinates.
-    RECT r = rect.ToRECT();
-    InvalidateRect(hwnd(), &r, FALSE);
-  }
-}
-
-void WidgetWin::SetCursor(gfx::NativeCursor cursor) {
-  if (cursor) {
-    previous_cursor_ = ::SetCursor(cursor);
-  } else if (previous_cursor_) {
-    ::SetCursor(previous_cursor_);
-    previous_cursor_ = NULL;
   }
 }
 
@@ -518,6 +442,10 @@ void* WidgetWin::GetNativeWindowProperty(const char* name) {
   return ViewProp::GetValue(hwnd(), name);
 }
 
+TooltipManager* WidgetWin::GetTooltipManager() const {
+  return tooltip_manager_.get();
+}
+
 gfx::Rect WidgetWin::GetWindowScreenBounds() const {
   RECT r;
   GetWindowRect(&r);
@@ -530,6 +458,53 @@ gfx::Rect WidgetWin::GetClientAreaScreenBounds() const {
   POINT point = { r.left, r.top };
   ClientToScreen(hwnd(), &point);
   return gfx::Rect(point.x, point.y, r.right - r.left, r.bottom - r.top);
+}
+
+bool WidgetWin::ContainsNativeView(gfx::NativeView native_view) const {
+  if (hwnd() == native_view)
+    return true;
+
+  // Traverse the set of parents of the given view to determine if native_view
+  // is a descendant of this window.
+  HWND parent_window = ::GetParent(native_view);
+  HWND previous_child = native_view;
+  while (parent_window && parent_window != previous_child) {
+    if (hwnd() == parent_window)
+      return true;
+    previous_child = parent_window;
+    parent_window = ::GetParent(parent_window);
+  }
+  return false;
+}
+
+void WidgetWin::RunShellDrag(View* view,
+                             const ui::OSExchangeData& data,
+                             int operation) {
+  scoped_refptr<ui::DragSource> drag_source(new ui::DragSource);
+  DWORD effects;
+  DoDragDrop(ui::OSExchangeDataProviderWin::GetIDataObject(data), drag_source,
+             ui::DragDropTypes::DragOperationToDropEffect(operation), &effects);
+}
+
+void WidgetWin::SchedulePaintInRect(const gfx::Rect& rect) {
+  if (use_layered_buffer_) {
+    // We must update the back-buffer immediately, since Windows' handling of
+    // invalid rects is somewhat mysterious.
+    layered_window_invalid_rect_ = layered_window_invalid_rect_.Union(rect);
+  } else {
+    // InvalidateRect() expects client coordinates.
+    RECT r = rect.ToRECT();
+    InvalidateRect(hwnd(), &r, FALSE);
+  }
+}
+
+void WidgetWin::SetCursor(gfx::NativeCursor cursor) {
+  if (cursor) {
+    previous_cursor_ = ::SetCursor(cursor);
+  } else if (previous_cursor_) {
+    ::SetCursor(previous_cursor_);
+    previous_cursor_ = NULL;
+  }
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -635,8 +610,8 @@ void WidgetWin::OnDestroy() {
 }
 
 void WidgetWin::OnDisplayChange(UINT bits_per_pixel, CSize screen_size) {
-  if (GetWidgetDelegate())
-    GetWidgetDelegate()->DisplayChanged();
+  if (widget_delegate())
+    widget_delegate()->DisplayChanged();
 }
 
 LRESULT WidgetWin::OnDwmCompositionChanged(UINT msg,
@@ -962,8 +937,8 @@ LRESULT WidgetWin::OnSetText(const wchar_t* text) {
 }
 
 void WidgetWin::OnSettingChange(UINT flags, const wchar_t* section) {
-  if (flags == SPI_SETWORKAREA && GetWidgetDelegate())
-    GetWidgetDelegate()->WorkAreaChanged();
+  if (flags == SPI_SETWORKAREA && widget_delegate())
+    widget_delegate()->WorkAreaChanged();
   SetMsgHandled(FALSE);
 }
 

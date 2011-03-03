@@ -28,7 +28,6 @@
 #include "views/widget/root_view.h"
 #include "views/widget/tooltip_manager_gtk.h"
 #include "views/widget/widget_delegate.h"
-#include "views/widget/widget_utils.h"
 #include "views/window/window_gtk.h"
 
 #if defined(TOUCH_UI)
@@ -436,8 +435,8 @@ void WidgetGtk::DoDrag(const OSExchangeData& data, int operation) {
 }
 
 void WidgetGtk::IsActiveChanged() {
-  if (GetWidgetDelegate())
-    GetWidgetDelegate()->IsActiveChanged(IsActive());
+  if (widget_delegate())
+    widget_delegate()->IsActiveChanged(IsActive());
 }
 
 void WidgetGtk::ResetDropTarget() {
@@ -739,10 +738,6 @@ void WidgetGtk::GenerateMousePressedForView(View* view,
   NOTIMPLEMENTED();
 }
 
-TooltipManager* WidgetGtk::GetTooltipManager() {
-  return tooltip_manager_.get();
-}
-
 bool WidgetGtk::GetAccelerator(int cmd_id, ui::Accelerator* accelerator) {
   NOTIMPLEMENTED();
   return false;
@@ -754,10 +749,6 @@ Window* WidgetGtk::GetWindow() {
 
 const Window* WidgetGtk::GetWindow() const {
   return GetWindowImpl(widget_);
-}
-
-ThemeProvider* WidgetGtk::GetThemeProvider() const {
-  return GetWidgetThemeProvider(this);
 }
 
 FocusManager* WidgetGtk::GetFocusManager() {
@@ -786,49 +777,6 @@ void WidgetGtk::ViewHierarchyChanged(bool is_add, View* parent, View* child) {
     }
     ViewStorage::GetInstance()->ViewRemoved(parent, child);
   }
-}
-
-bool WidgetGtk::ContainsNativeView(gfx::NativeView native_view) {
-  // TODO(port)  See implementation in WidgetWin::ContainsNativeView.
-  NOTREACHED() << "WidgetGtk::ContainsNativeView is not implemented.";
-  return false;
-}
-
-void WidgetGtk::StartDragForViewFromMouseEvent(
-    View* view,
-    const OSExchangeData& data,
-    int operation) {
-  // NOTE: view may be null.
-  dragged_view_ = view;
-  DoDrag(data, operation);
-  // If the view is removed during the drag operation, dragged_view_ is set to
-  // NULL.
-  if (view && dragged_view_ == view) {
-    dragged_view_ = NULL;
-    view->OnDragDone();
-  }
-}
-
-View* WidgetGtk::GetDraggedView() {
-  return dragged_view_;
-}
-
-void WidgetGtk::SchedulePaintInRect(const gfx::Rect& rect) {
-  if (widget_ && GTK_WIDGET_DRAWABLE(widget_)) {
-    gtk_widget_queue_draw_area(widget_, rect.x(), rect.y(), rect.width(),
-                               rect.height());
-  }
-}
-
-void WidgetGtk::SetCursor(gfx::NativeCursor cursor) {
-#if defined(TOUCH_UI) && defined(HAVE_XINPUT2)
-  if (!TouchFactory::GetInstance()->is_cursor_visible())
-    cursor = gfx::GetCursor(GDK_BLANK_CURSOR);
-#endif
-  // |window_contents_| is placed on top of |widget_|. So the cursor needs to be
-  // set on |window_contents_| instead of |widget_|.
-  if (window_contents_)
-    gdk_window_set_cursor(window_contents_->window, cursor);
 }
 
 void WidgetGtk::ClearNativeFocus() {
@@ -915,6 +863,10 @@ void* WidgetGtk::GetNativeWindowProperty(const char* name) {
   return g_object_get_data(G_OBJECT(widget_), name);
 }
 
+TooltipManager* WidgetGtk::GetTooltipManager() const {
+  return tooltip_manager_.get();
+}
+
 gfx::Rect WidgetGtk::GetWindowScreenBounds() const {
   // Client == Window bounds on Gtk.
   return GetClientAreaScreenBounds();
@@ -938,6 +890,36 @@ gfx::Rect WidgetGtk::GetClientAreaScreenBounds() const {
     h = widget_->allocation.height;
   }
   return gfx::Rect(x, y, w, h);
+}
+
+bool WidgetGtk::ContainsNativeView(gfx::NativeView native_view) const {
+  // TODO(port)  See implementation in WidgetWin::ContainsNativeView.
+  NOTREACHED() << "WidgetGtk::ContainsNativeView is not implemented.";
+  return false;
+}
+
+void WidgetGtk::RunShellDrag(View* view,
+                             const ui::OSExchangeData& data,
+                             int operation) {
+  DoDrag(data, operation);
+}
+
+void WidgetGtk::SchedulePaintInRect(const gfx::Rect& rect) {
+  if (widget_ && GTK_WIDGET_DRAWABLE(widget_)) {
+    gtk_widget_queue_draw_area(widget_, rect.x(), rect.y(), rect.width(),
+                               rect.height());
+  }
+}
+
+void WidgetGtk::SetCursor(gfx::NativeCursor cursor) {
+#if defined(TOUCH_UI) && defined(HAVE_XINPUT2)
+  if (!TouchFactory::GetInstance()->is_cursor_visible())
+    cursor = gfx::GetCursor(GDK_BLANK_CURSOR);
+#endif
+  // |window_contents_| is placed on top of |widget_|. So the cursor needs to be
+  // set on |window_contents_| instead of |widget_|.
+  if (window_contents_)
+    gdk_window_set_cursor(window_contents_->window, cursor);
 }
 
 ////////////////////////////////////////////////////////////////////////////////

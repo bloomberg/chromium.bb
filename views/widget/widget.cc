@@ -14,7 +14,10 @@ namespace views {
 ////////////////////////////////////////////////////////////////////////////////
 // Widget, public:
 
-Widget::Widget() : native_widget_(NULL), delegate_(NULL) {
+Widget::Widget()
+    : native_widget_(NULL),
+      widget_delegate_(NULL),
+      dragged_view_(NULL) {
 }
 
 Widget::~Widget() {
@@ -38,14 +41,6 @@ const Widget* Widget::GetTopLevelWidget() const {
   NativeWidget* native_widget =
       NativeWidget::GetTopLevelNativeWidget(GetNativeView());
   return native_widget ? native_widget->GetWidget() : NULL;
-}
-
-WidgetDelegate* Widget::GetWidgetDelegate() {
-  return delegate_;
-}
-
-void Widget::SetWidgetDelegate(WidgetDelegate* delegate) {
-  delegate_ = delegate;
 }
 
 void Widget::SetContentsView(View* view) {
@@ -114,10 +109,6 @@ bool Widget::IsAccessibleWidget() const {
 void Widget::GenerateMousePressedForView(View* view, const gfx::Point& point) {
 }
 
-TooltipManager* Widget::GetTooltipManager() {
-  return NULL;
-}
-
 bool Widget::GetAccelerator(int cmd_id, ui::Accelerator* accelerator) {
   return false;
 }
@@ -131,10 +122,18 @@ const Window* Widget::GetWindow() const {
 }
 
 ThemeProvider* Widget::GetThemeProvider() const {
-  return NULL;
-}
+  const Widget* root_widget = GetTopLevelWidget();
+  if (root_widget && root_widget != this) {
+    // Attempt to get the theme provider, and fall back to the default theme
+    // provider if not found.
+    ThemeProvider* provider = root_widget->GetThemeProvider();
+    if (provider)
+      return provider;
 
-ThemeProvider* Widget::GetDefaultThemeProvider() const {
+    provider = root_widget->default_theme_provider_.get();
+    if (provider)
+      return provider;
+  }
   return default_theme_provider_.get();
 }
 
@@ -143,25 +142,38 @@ FocusManager* Widget::GetFocusManager() {
 }
 
 void Widget::ViewHierarchyChanged(bool is_add, View* parent, View* child) {
+  if (!is_add && child == dragged_view_)
+    dragged_view_ = NULL;
 }
 
 bool Widget::ContainsNativeView(gfx::NativeView native_view) {
-  return false;
+  if (native_widget_->ContainsNativeView(native_view))
+    return true;
+
+  // A views::NativeViewHost may contain the given native view, without it being
+  // an ancestor of hwnd(), so traverse the views::View hierarchy looking for
+  // such views.
+  return GetRootView()->ContainsNativeView(native_view);
 }
 
-void Widget::StartDragForViewFromMouseEvent(View* view,
-                                            const ui::OSExchangeData& data,
-                                            int operation) {
-}
-
-View* Widget::GetDraggedView() {
-  return NULL;
+void Widget::RunShellDrag(View* view, const ui::OSExchangeData& data,
+                          int operation) {
+  dragged_view_ = view;
+  native_widget_->RunShellDrag(view, data, operation);
+  // If the view is removed during the drag operation, dragged_view_ is set to
+  // NULL.
+  if (view && dragged_view_ == view) {
+    dragged_view_ = NULL;
+    view->OnDragDone();
+  }
 }
 
 void Widget::SchedulePaintInRect(const gfx::Rect& rect) {
+  native_widget_->SchedulePaintInRect(rect);
 }
 
 void Widget::SetCursor(gfx::NativeCursor cursor) {
+  native_widget_->SetCursor(cursor);
 }
 
 FocusTraversable* Widget::GetFocusTraversable() {
@@ -185,17 +197,6 @@ void Widget::SetFocusTraversableParentView(View* parent_view) {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// Widget, protected:
-
-RootView* Widget::CreateRootView() {
-  return new RootView(this);
-}
-
-void Widget::DestroyRootView() {
-  root_view_.reset();
-}
-
-////////////////////////////////////////////////////////////////////////////////
 // Widget, FocusTraversable implementation:
 
 FocusSearch* Widget::GetFocusSearch() {
@@ -214,6 +215,17 @@ View* Widget::GetFocusTraversableParentView() {
   // up and as a result this should not be called.
   NOTREACHED();
   return NULL;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// Widget, protected:
+
+RootView* Widget::CreateRootView() {
+  return new RootView(this);
+}
+
+void Widget::DestroyRootView() {
+  root_view_.reset();
 }
 
 }  // namespace views

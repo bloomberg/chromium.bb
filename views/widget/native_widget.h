@@ -14,6 +14,7 @@ class Rect;
 
 namespace views {
 
+class TooltipManager;
 class Widget;
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -55,6 +56,10 @@ class NativeWidget {
   virtual void SetNativeWindowProperty(const char* name, void* value) = 0;
   virtual void* GetNativeWindowProperty(const char* name) = 0;
 
+  // Returns the native widget's tooltip manager. Called from the View hierarchy
+  // to update tooltips.
+  virtual TooltipManager* GetTooltipManager() const = 0;
+
   // Widget pass-thrus ---------------------------------------------------------
   // TODO(beng): Investigate if we can move these to a NativeWidgetPrivate
   //             interface.
@@ -62,6 +67,12 @@ class NativeWidget {
   // See method documentation in Widget:
   virtual gfx::Rect GetWindowScreenBounds() const = 0;
   virtual gfx::Rect GetClientAreaScreenBounds() const = 0;
+  virtual bool ContainsNativeView(gfx::NativeView native_view) const = 0;
+  virtual void RunShellDrag(View* view,
+                            const ui::OSExchangeData& data,
+                            int operation) = 0;
+  virtual void SchedulePaintInRect(const gfx::Rect& rect) = 0;
+  virtual void SetCursor(gfx::NativeCursor cursor) = 0;
 };
 
 }  // namespace views
