@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -12,7 +12,7 @@
 
 // A C++ wrapper around an Objective-C InfoBarController.  This class
 // exists solely to be the return value for InfoBarDelegate::CreateInfoBar(),
-// as defined in chrome/browser/tab_contents/infobar_delegate.h.  This
+// as defined in chrome/browser/tab_contents/confirm_infobar_delegate.h.  This
 // class would be analogous to the various bridge classes we already
 // have, but since there is no pre-defined InfoBar interface, it is
 // easier to simply throw away this object and deal with the

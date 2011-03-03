@@ -6,7 +6,7 @@
 
 #include "base/message_loop.h"
 #include "base/utf_string_conversions.h"
-#include "chrome/browser/tab_contents/infobar_delegate.h"
+#include "chrome/browser/tab_contents/confirm_infobar_delegate.h"
 #include "chrome/browser/ui/views/infobars/infobar_background.h"
 #include "chrome/browser/ui/views/infobars/infobar_button_border.h"
 #include "chrome/browser/ui/views/infobars/infobar_container.h"
@@ -31,8 +31,8 @@
 
 #include "base/win/win_util.h"
 #include "base/win/windows_version.h"
-#include "ui/gfx/icon_util.h"
 #include "ui/base/win/hwnd_util.h"
+#include "ui/gfx/icon_util.h"
 #endif
 
 // static

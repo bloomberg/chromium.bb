@@ -4,7 +4,7 @@
 
 #include "chrome/browser/ui/gtk/infobars/link_infobar_gtk.h"
 
-#include "chrome/browser/tab_contents/infobar_delegate.h"
+#include "chrome/browser/tab_contents/link_infobar_delegate.h"
 #include "chrome/browser/ui/gtk/gtk_util.h"
 
 // LinkInfoBarDelegate ---------------------------------------------------------

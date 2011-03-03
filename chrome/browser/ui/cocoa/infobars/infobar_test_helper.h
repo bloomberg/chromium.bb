@@ -6,8 +6,8 @@
 #define CHROME_BROWSER_UI_COCOA_INFOBARS_INFOBAR_TEST_HELPER_H_
 #pragma once
 
-#include "chrome/browser/tab_contents/infobar_delegate.h"
-
+#include "chrome/browser/tab_contents/confirm_infobar_delegate.h"
+#include "chrome/browser/tab_contents/link_infobar_delegate.h"
 
 // MockLinkInfoBarDelegate ----------------------------------------------------
 

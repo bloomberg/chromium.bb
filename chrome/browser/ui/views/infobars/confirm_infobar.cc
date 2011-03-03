@@ -4,7 +4,7 @@
 
 #include "chrome/browser/ui/views/infobars/confirm_infobar.h"
 
-#include "chrome/browser/tab_contents/infobar_delegate.h"
+#include "chrome/browser/tab_contents/confirm_infobar_delegate.h"
 #include "chrome/browser/ui/views/event_utils.h"
 #include "views/controls/button/text_button.h"
 #include "views/controls/label.h"

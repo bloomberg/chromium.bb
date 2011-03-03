@@ -7,7 +7,7 @@
 #pragma once
 
 #include "base/string16.h"
-#include "chrome/browser/tab_contents/infobar_delegate.h"
+#include "chrome/browser/tab_contents/confirm_infobar_delegate.h"
 
 class SkBitmap;
 class ProtocolHandler;

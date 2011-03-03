@@ -5,7 +5,7 @@
 #include "chrome/browser/ui/views/infobars/infobar_container.h"
 
 #include "base/utf_string_conversions.h"
-#include "chrome/browser/tab_contents/infobar_delegate.h"
+#include "chrome/browser/tab_contents/confirm_infobar_delegate.h"
 #include "chrome/browser/ui/view_ids.h"
 #include "chrome/browser/ui/views/infobars/infobar_view.h"
 #include "chrome/common/notification_details.h"

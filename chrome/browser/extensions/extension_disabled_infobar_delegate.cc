@@ -7,10 +7,10 @@
 #include <string>
 
 #include "base/utf_string_conversions.h"
+#include "chrome/browser/browser_list.h"
 #include "chrome/browser/extensions/extension_install_ui.h"
 #include "chrome/browser/extensions/extension_service.h"
-#include "chrome/browser/tab_contents/infobar_delegate.h"
-#include "chrome/browser/browser_list.h"
+#include "chrome/browser/tab_contents/confirm_infobar_delegate.h"
 #include "chrome/common/extensions/extension_file_util.h"
 #include "chrome/common/extensions/extension_resource.h"
 #include "chrome/common/notification_details.h"
