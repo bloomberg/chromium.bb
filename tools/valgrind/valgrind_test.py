@@ -39,7 +39,8 @@ class BaseTool(object):
   """
 
   def __init__(self):
-    self.temp_dir = tempfile.mkdtemp()
+    self.temp_dir = tempfile.mkdtemp(prefix="vg_logs_")  # Generated every time
+    self.log_dir = self.temp_dir  # overridable by --keep_logs
     self.option_parser_hooks = []
 
   def ToolName(self):
@@ -75,9 +76,13 @@ class BaseTool(object):
                             default=False,
                             help="ignore exit code of the test "
                                  "(e.g. test failures)")
-    self._parser.add_option("", "--nocleanup_on_exit", action="store_true",
+    self._parser.add_option("", "--keep_logs", action="store_true",
                             default=False,
-                            help="don't delete directory with logs on exit")
+                            help="store memory tool logs in the <tool>.logs "
+                                 "directory instead of /tmp.\nThis can be "
+                                 "useful for tool developers/maintainers.\n"
+                                 "Please note that the <tool>.logs directory "
+                                 "will be clobbered on tool startup.")
 
     # To add framework- or tool-specific flags, please add a hook using
     # RegisterOptionParserHook in the corresponding subclass.
@@ -114,7 +119,12 @@ class BaseTool(object):
 
     self._timeout = int(self._options.timeout)
     self._source_dir = self._options.source_dir
-    self._nocleanup_on_exit = self._options.nocleanup_on_exit
+    if self._options.keep_logs:
+      self.log_dir = "%s.logs" % self.ToolName()
+      if os.path.exists(self.log_dir):
+        shutil.rmtree(self.log_dir)
+      os.mkdir(self.log_dir)
+
     self._ignore_exit_code = self._options.ignore_exit_code
     if self._options.gtest_filter != "":
       self._args.append("--gtest_filter=%s" % self._options.gtest_filter)
@@ -183,8 +193,7 @@ class BaseTool(object):
     retcode = -1
     if self.Setup(args):
       retcode = self.RunTestsAndAnalyze(check_sanity)
-      if not self._nocleanup_on_exit:
-        shutil.rmtree(self.temp_dir, ignore_errors=True)
+      shutil.rmtree(self.temp_dir, ignore_errors=True)
       self.Cleanup()
     else:
       logging.error("Setup failed")
@@ -343,7 +352,7 @@ class ValgrindTool(BaseTool):
     if not suppression_count:
       logging.warning("WARNING: NOT USING SUPPRESSIONS!")
 
-    logfilename = self.temp_dir + ("/%s." % tool_name) + "%p"
+    logfilename = self.log_dir + ("/%s." % tool_name) + "%p"
     if self.UseXML():
       proc += ["--xml=yes", "--xml-file=" + logfilename]
     else:
@@ -368,7 +377,7 @@ class ValgrindTool(BaseTool):
     tell the program to prefix the Chrome commandline
     with a magic wrapper.  Build the magic wrapper here.
     """
-    (fd, indirect_fname) = tempfile.mkstemp(dir=self.temp_dir,
+    (fd, indirect_fname) = tempfile.mkstemp(dir=self.log_dir,
                                             prefix="browser_wrapper.",
                                             text=True)
     f = os.fdopen(fd, "w")
@@ -389,7 +398,7 @@ class ValgrindTool(BaseTool):
 
   def GetAnalyzeResults(self, check_sanity=False):
     # Glob all the files in the "testing.tmp" directory
-    filenames = glob.glob(self.temp_dir + "/" + self.ToolName() + ".*")
+    filenames = glob.glob(self.log_dir + "/" + self.ToolName() + ".*")
 
     # If we have browser wrapper, the logfiles are named as
     # "toolname.wrapper_PID.valgrind_PID".
@@ -651,7 +660,7 @@ class ThreadSanitizerWindows(ThreadSanitizerBase, PinTool):
     if not suppression_count:
       logging.warning("WARNING: NOT USING SUPPRESSIONS!")
 
-    logfilename = self.temp_dir + "/tsan.%p"
+    logfilename = self.log_dir + "/tsan.%p"
     proc += ["--log-file=" + logfilename]
 
     # TODO(timurrrr): Add flags for Valgrind trace children analog when we
@@ -660,7 +669,7 @@ class ThreadSanitizerWindows(ThreadSanitizerBase, PinTool):
     return proc
 
   def Analyze(self, check_sanity=False):
-    filenames = glob.glob(self.temp_dir + "/tsan.*")
+    filenames = glob.glob(self.log_dir + "/tsan.*")
     analyzer = tsan_analyze.TsanAnalyzer(self._source_dir)
     ret = analyzer.Report(filenames, check_sanity)
     if ret != 0:
@@ -712,7 +721,7 @@ class DrMemory(BaseTool):
     # Un-comment to dump Dr.Memory events on error
     #proc += ["-dr_ops", "-dumpcore_mask 0x8bff"]
 
-    proc += ["-logdir", self.temp_dir]
+    proc += ["-logdir", self.log_dir]
     proc += ["-batch", "-quiet"]
     proc += ["-callstack_max_frames", "30"]
     #proc += ["-no_check_leaks", "-no_count_leaks"]
@@ -726,7 +735,7 @@ class DrMemory(BaseTool):
 
   def Analyze(self, check_sanity=False):
     # Glob all the results files in the "testing.tmp" directory
-    filenames = glob.glob(self.temp_dir + "/*/results.txt")
+    filenames = glob.glob(self.log_dir + "/*/results.txt")
 
     analyzer = drmemory_analyze.DrMemoryAnalyze(self._source_dir, filenames)
     ret = analyzer.Report(check_sanity)
