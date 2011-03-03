@@ -33,6 +33,9 @@ PrintViewManager::PrintViewManager(TabContents* tab_contents)
       waiting_to_print_(false),
       printing_succeeded_(false),
       inside_inner_message_loop_(false) {
+#if defined(OS_POSIX) && !defined(OS_MACOSX)
+  expecting_first_page_ = true;
+#endif
 }
 
 PrintViewManager::~PrintViewManager() {
@@ -115,11 +118,11 @@ void PrintViewManager::OnDidPrintPage(
   }
 #endif
 
-  const bool metafile_must_be_valid =
 #if defined(OS_WIN) || defined(OS_MACOSX)
-      true;
+  const bool metafile_must_be_valid = true;
 #elif defined(OS_POSIX)
-      (params.page_number == 0);
+  const bool metafile_must_be_valid = expecting_first_page_;
+  expecting_first_page_ = false;
 #endif
 
   base::SharedMemory shared_buf(params.metafile_data_handle, true);
@@ -321,6 +324,9 @@ void PrintViewManager::DisconnectFromCurrentPrintJob() {
     // DO NOT wait for the job to finish.
     ReleasePrintJob();
   }
+#if defined(OS_POSIX) && !defined(OS_MACOSX)
+  expecting_first_page_ = true;
+#endif
 }
 
 void PrintViewManager::PrintingDone(bool success) {

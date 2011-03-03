@@ -139,6 +139,11 @@ class PrintedDocument : public base::RefCountedThreadSafe<PrintedDocument> {
 
     // Shrink done in comparison to desired_dpi.
     double shrink_factor;
+
+#if defined(OS_POSIX) && !defined(OS_MACOSX)
+    // Page number of the first page.
+    int first_page;
+#endif
   };
 
   // Contains all the immutable stuff. All this stuff can be accessed without

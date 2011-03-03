@@ -80,6 +80,12 @@ void PrintedDocument::SetPage(int page_number,
   {
     base::AutoLock lock(lock_);
     mutable_.pages_[page_number] = page;
+
+#if defined(OS_POSIX) && !defined(OS_MACOSX)
+    if (page_number < mutable_.first_page)
+      mutable_.first_page = page_number;
+#endif
+
     if (mutable_.shrink_factor == 0) {
       mutable_.shrink_factor = shrink;
     } else {
@@ -111,11 +117,10 @@ bool PrintedDocument::IsComplete() const {
     return false;
 
   for (; page != PageNumber::npos(); ++page) {
-    bool metafile_must_be_valid =
-#if defined(OS_WIN) || defined(OS_MAC)
-        true;
+#if defined(OS_WIN) || defined(OS_MACOSX)
+    const bool metafile_must_be_valid = true;
 #elif defined(OS_POSIX)
-        (page.ToInt() == 0);
+    const bool metafile_must_be_valid = (page.ToInt() == mutable_.first_page);
 #endif
     PrintedPages::const_iterator itr = mutable_.pages_.find(page.ToInt());
     if (itr == mutable_.pages_.end() || !itr->second.get())
@@ -279,6 +284,9 @@ PrintedDocument::Mutable::Mutable(PrintedPagesSource* source)
       expected_page_count_(0),
       page_count_(0),
       shrink_factor(0) {
+#if defined(OS_POSIX) && !defined(OS_MACOSX)
+  first_page = INT_MAX;
+#endif
 }
 
 PrintedDocument::Mutable::~Mutable() {

@@ -24,9 +24,12 @@ void PrintedDocument::RenderPrintedPage(
   DCHECK(context);
 
 #if !defined(OS_CHROMEOS)
-  if (page.page_number() == 1) {
-    reinterpret_cast<PrintingContextCairo*>(context)->PrintDocument(
-        page.native_metafile());
+  {
+    base::AutoLock lock(lock_);
+    if (page.page_number() - 1 == mutable_.first_page) {
+      reinterpret_cast<PrintingContextCairo*>(context)->PrintDocument(
+          page.native_metafile());
+    }
   }
 #endif  // !defined(OS_CHROMEOS)
 }

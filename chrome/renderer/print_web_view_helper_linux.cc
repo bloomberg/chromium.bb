@@ -115,18 +115,24 @@ void PrintWebViewHelper::PrintPages(const ViewMsg_PrintPages_Params& params,
                              &(printed_page_params.metafile_data_handle));
   }
 
-  // Send the first page with a valid handle.
-  printed_page_params.page_number = 0;
-  Send(new ViewHostMsg_DidPrintPage(routing_id(), printed_page_params));
-
-  // Send the rest of the pages with an invalid metafile handle.
-  printed_page_params.metafile_data_handle.fd = -1;
   if (params.pages.empty()) {
+    // Send the first page with a valid handle.
+    printed_page_params.page_number = 0;
+    Send(new ViewHostMsg_DidPrintPage(routing_id(), printed_page_params));
+
+    // Send the rest of the pages with an invalid metafile handle.
+    printed_page_params.metafile_data_handle.fd = -1;
     for (int i = 1; i < page_count; ++i) {
       printed_page_params.page_number = i;
       Send(new ViewHostMsg_DidPrintPage(routing_id(), printed_page_params));
     }
   } else {
+    // Send the first page with a valid handle.
+    printed_page_params.page_number = params.pages[0];
+    Send(new ViewHostMsg_DidPrintPage(routing_id(), printed_page_params));
+
+    // Send the rest of the pages with an invalid metafile handle.
+    printed_page_params.metafile_data_handle.fd = -1;
     for (size_t i = 1; i < params.pages.size(); ++i) {
       printed_page_params.page_number = params.pages[i];
       Send(new ViewHostMsg_DidPrintPage(routing_id(), printed_page_params));
