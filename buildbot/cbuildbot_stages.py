@@ -130,14 +130,14 @@ class BuilderStage():
 class SyncStage(BuilderStage):
   """Stage that performs syncing for the builder."""
   def _PerformStage(self):
-    commands.PreFlightRinse(self._build_root, self._build_config['board'],
-                            self._options.tracking_branch,
-                            BuilderStage.rev_overlays)
     if self._options.clobber or not os.path.isdir(os.path.join(self._build_root,
                                                                '.repo')):
       commands.FullCheckout(self._build_root, self._options.tracking_branch,
                             url=self._options.url)
     else:
+      commands.PreFlightRinse(self._build_root, self._build_config['board'],
+                              self._options.tracking_branch,
+                              BuilderStage.rev_overlays)
       BuilderStage.old_binhost = self._GetPortageEnvVar(_FULL_BINHOST)
       commands.IncrementalCheckout(self._build_root)
 
