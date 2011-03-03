@@ -156,10 +156,11 @@ bool WebWorkerClientProxy::allowDatabase(WebFrame* frame,
 void WebWorkerClientProxy::openFileSystem(
     WebKit::WebFileSystem::Type type,
     long long size,
+    bool create,
     WebKit::WebFileSystemCallbacks* callbacks) {
   ChildThread::current()->file_system_dispatcher()->OpenFileSystem(
       stub_->url().GetOrigin(), static_cast<fileapi::FileSystemType>(type),
-      size, true /* create */, new WebFileSystemCallbackDispatcher(callbacks));
+      size, create, new WebFileSystemCallbackDispatcher(callbacks));
 }
 
 bool WebWorkerClientProxy::Send(IPC::Message* message) {
