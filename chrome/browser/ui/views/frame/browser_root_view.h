@@ -9,8 +9,11 @@
 #include "views/widget/root_view.h"
 
 class BrowserView;
-class OSExchangeData;
 class BaseTabStrip;
+
+namespace ui {
+class OSExchangeData;
+}
 
 // RootView implementation used by BrowserFrame. This forwards drop events to
 // the TabStrip. Visually the tabstrip extends to the top of the frame, but in
@@ -24,9 +27,9 @@ class BrowserRootView : public views::RootView {
 
   virtual bool GetDropFormats(
       int* formats,
-      std::set<OSExchangeData::CustomFormat>* custom_formats);
+      std::set<ui::OSExchangeData::CustomFormat>* custom_formats);
   virtual bool AreDropTypesRequired();
-  virtual bool CanDrop(const OSExchangeData& data);
+  virtual bool CanDrop(const ui::OSExchangeData& data);
   virtual void OnDragEntered(const views::DropTargetEvent& event);
   virtual int OnDragUpdated(const views::DropTargetEvent& event);
   virtual void OnDragExited();
@@ -40,14 +43,14 @@ class BrowserRootView : public views::RootView {
   // coordinate system.
   views::DropTargetEvent* MapEventToTabStrip(
       const views::DropTargetEvent& event,
-      const OSExchangeData& data);
+      const ui::OSExchangeData& data);
 
   inline BaseTabStrip* tabstrip() const;
 
   // Returns true if |data| has string contents and the user can "paste and go".
   // If |url| is non-NULL and the user can "paste and go", |url| is set to the
   // desired destination.
-  bool GetPasteAndGoURL(const OSExchangeData& data, GURL* url);
+  bool GetPasteAndGoURL(const ui::OSExchangeData& data, GURL* url);
 
   // The BrowserView.
   BrowserView* browser_view_;
