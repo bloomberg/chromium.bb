@@ -4,6 +4,7 @@
 # found in the LICENSE file.
 
 import os
+import re
 
 import pyauto_functional
 import pyauto
@@ -83,6 +84,20 @@ class ShortcutsTest(pyauto.PyUITest):
 
   # TODO: Task Manager Shortcut. crbug.com/73454
 
+  def testClearBrowsingDataShortcut(self):
+    """Verify clear browsing data shortcut."""
+    self.ApplyAccelerator(pyauto.IDC_CLEAR_BROWSING_DATA)
+    self.assertEquals(2, self.GetTabCount())
+    self.assertTrue(re.search('clearBrowserDataOverlay',
+        self.GetActiveTabURL().spec()), 'Clear browsing data url is wrong.')
+    # Wait until the clear browsing data DOM UI window opens.
+    self.assertTrue(self.WaitUntil(lambda:
+        self.ExecuteJavascript(
+        'var element = document.getElementById("clearBrowserDataOverlay");'
+        'if(element) window.domAutomationController.send(element.nodeName);'
+        'else window.domAutomationController.send(0)', 0, 1),
+        expect_retval='DIV'), msg='Could not find the DOM UI window element.')
+
   def testViewSourceShortcut(self):
     """Verify view source shortcut."""
     self.ApplyAccelerator(pyauto.IDC_VIEW_SOURCE)
@@ -133,8 +148,8 @@ class ShortcutsTest(pyauto.PyUITest):
                     expect_retval=help_page_title),
                     msg='Google Chrome help page has not opened.')
 
-  def testSwitchingTabs(self):
-    """Verify switching tabs shortcut."""
+  def testSwitchingTabsShortcuts(self):
+    """Verify switching tabs shortcuts."""
     url1 = self.GetFileURLForDataPath('title1.html')
     url2 = self.GetFileURLForDataPath('title2.html')
     url3 = self.GetFileURLForDataPath('title3.html')
@@ -160,6 +175,21 @@ class ShortcutsTest(pyauto.PyUITest):
     for x in range(0, len(titles)):
       self.RunCommand(pyauto.IDC_SELECT_NEXT_TAB)
       self.assertEquals(titles[x], self.GetActiveTabTitle())
+
+  def testNavigationShortcuts(self):
+    """Verify back and forward navigation shortcuts from browsing history."""
+    url1 = self.GetFileURLForDataPath('title2.html')
+    url2 = self.GetFileURLForDataPath('title3.html')
+    for url in [url1, url2]:
+        self.NavigateToURL(url)
+    # Verify backward navigation.
+    self.RunCommand(pyauto.IDC_BACK)
+    self.assertEquals('Title Of Awesomeness', self.GetActiveTabTitle())
+    # Verify forward navigation.
+    self.RunCommand(pyauto.IDC_FORWARD)
+    self.assertEquals('Title Of More Awesomeness', self.GetActiveTabTitle())
+
+  # TODO: Open homepage shortcut. crbug.com/74103
 
 
 if __name__ == '__main__':
