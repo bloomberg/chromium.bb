@@ -31,6 +31,8 @@ _intermediate_var = 'INTERMEDIATE_DIR'
 # targets that share the same BUILT_PRODUCTS_DIR.
 _shared_intermediate_var = 'SHARED_INTERMEDIATE_DIR'
 
+_library_search_paths_var = 'LIBRARY_SEARCH_PATHS'
+
 generator_default_variables = {
   'EXECUTABLE_PREFIX': '',
   'EXECUTABLE_SUFFIX': '',
@@ -80,6 +82,12 @@ generator_extra_sources_for_rules = [
   'mac_framework_private_headers',
 ]
 
+# Xcode's standard set of library directories, which don't need to be duplicated
+# in LIBRARY_SEARCH_PATHS. This list is not exhaustive, but that's okay.
+xcode_standard_library_dirs = frozenset([
+  '$(SDKROOT)/usr/lib',
+  '$(SDKROOT)/usr/local/lib',
+])
 
 def CreateXCConfigurationList(configuration_names):
   xccl = gyp.xcodeproj_file.XCConfigurationList({'buildConfigurations': []})
@@ -1152,15 +1160,11 @@ exit 1
         xct.FrameworksPhase().AddFile(library)
         # Add the library's directory to LIBRARY_SEARCH_PATHS if necessary.
         # I wish Xcode handled this automatically.
-        # TODO(mark): this logic isn't right.  There are certain directories
-        # that are always searched, we should check to see if the library is
-        # in one of those directories, and if not, we should do the
-        # AppendBuildSetting thing.
-        if not posixpath.isabs(library) and not library.startswith('$'):
-          # TODO(mark): Need to check to see if library_dir is already in
-          # LIBRARY_SEARCH_PATHS.
-          library_dir = posixpath.dirname(library)
-          xct.AppendBuildSetting('LIBRARY_SEARCH_PATHS', library_dir)
+        library_dir = posixpath.dirname(library)
+        if library_dir not in xcode_standard_library_dirs and (
+            not xct.HasBuildSetting(_library_search_paths_var) or
+            library_dir not in xct.GetBuildSetting(_library_search_paths_var)):
+          xct.AppendBuildSetting(_library_search_paths_var, library_dir)
 
     for configuration_name in configuration_names:
       configuration = spec['configurations'][configuration_name]
