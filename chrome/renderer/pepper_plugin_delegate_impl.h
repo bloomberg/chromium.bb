@@ -174,6 +174,7 @@ class PepperPluginDelegateImpl
   virtual void DidStopLoading();
   virtual void SetContentRestriction(int restrictions);
   virtual void HasUnsupportedFeature();
+  virtual P2PSocketDispatcher* GetP2PSocketDispatcher();
 
  private:
   // Pointer to the RenderView that owns us.

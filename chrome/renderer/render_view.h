@@ -250,6 +250,11 @@ class RenderView : public RenderWidget,
 
   const WebKit::WebNode& context_menu_node() { return context_menu_node_; }
 
+  // Current P2PSocketDispatcher. Set to NULL if P2P API is disabled.
+  P2PSocketDispatcher* p2p_socket_dispatcher() {
+    return p2p_socket_dispatcher_;
+  }
+
   // Functions to add and remove observers for this object.
   void AddObserver(RenderViewObserver* observer);
   void RemoveObserver(RenderViewObserver* observer);

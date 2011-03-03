@@ -23,6 +23,7 @@
 
 class AudioMessageFilter;
 class GURL;
+class P2PSocketDispatcher;
 
 namespace base {
 class MessageLoopProxy;
@@ -327,6 +328,13 @@ class PluginDelegate {
 
   // Tells the browser that the PDF has an unsupported feature.
   virtual void HasUnsupportedFeature() = 0;
+
+  // Socket dispatcher for P2P connections. Returns to NULL if P2P API
+  // is disabled.
+  //
+  // TODO(sergeyu): Replace this with a higher-level P2P API
+  // implementation.
+  virtual P2PSocketDispatcher* GetP2PSocketDispatcher() = 0;
 };
 
 }  // namespace ppapi

@@ -202,6 +202,9 @@ void MockPluginDelegate::SetContentRestriction(int restrictions) {
 void MockPluginDelegate::HasUnsupportedFeature() {
 }
 
+P2PSocketDispatcher* MockPluginDelegate::GetP2PSocketDispatcher() {
+  return NULL;
+}
+
 }  // namespace ppapi
 }  // namespace webkit
-

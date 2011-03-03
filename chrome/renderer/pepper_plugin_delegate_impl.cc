@@ -906,3 +906,7 @@ void PepperPluginDelegateImpl::HasUnsupportedFeature() {
   render_view_->Send(new ViewHostMsg_PDFHasUnsupportedFeature(
       render_view_->routing_id()));
 }
+
+P2PSocketDispatcher* PepperPluginDelegateImpl::GetP2PSocketDispatcher() {
+  return render_view_->p2p_socket_dispatcher();
+}
