@@ -226,7 +226,8 @@ bool PrintViewManager::RenderAllMissingPagesNow() {
   }
 
   // We can't print if there is no renderer.
-  if (!tab_contents()->render_view_host() ||
+  if (!tab_contents() ||
+      !tab_contents()->render_view_host() ||
       !tab_contents()->render_view_host()->IsRenderViewLive()) {
     waiting_to_print_ = false;
     return false;
@@ -323,9 +324,9 @@ void PrintViewManager::DisconnectFromCurrentPrintJob() {
 }
 
 void PrintViewManager::PrintingDone(bool success) {
-  if (print_job_.get()) {
-    tab_contents()->PrintingDone(print_job_->cookie(), success);
-  }
+  if (!print_job_.get() || !tab_contents())
+    return;
+  tab_contents()->PrintingDone(print_job_->cookie(), success);
 }
 
 void PrintViewManager::TerminatePrintJob(bool cancel) {
