@@ -427,8 +427,9 @@ void BrowserListener::InsertSnapshot(int index) {
   node.fav_icon->SetFavIcon(browser_->GetTabContentsAt(index)->GetFavIcon());
 
   node.title = new WmOverviewTitle;
-  node.title->Init(gfx::Size(cell_size.width() -
-                             WmOverviewFavIcon::kIconSize - kFavIconPadding,
+  node.title->Init(gfx::Size(std::max(0, cell_size.width() -
+                                      WmOverviewFavIcon::kIconSize -
+                                      kFavIconPadding),
                              kTitleHeight), node.snapshot);
   node.title->SetTitle(browser_->GetTabContentsAt(index)->GetTitle());
 

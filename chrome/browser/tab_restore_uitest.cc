@@ -24,19 +24,6 @@
 #define MAYBE_BasicRestoreFromClosedWindow BasicRestoreFromClosedWindow
 #endif
 
-// http://crbug.com/48911
-#if defined(OS_CHROMEOS) && !defined(NDEBUG)
-#define MAYBE_RestoreWindowAndTab DISABLED_RestoreWindowAndTab
-#define MAYBE_RestoreWindow DISABLED_RestoreWindow
-#define MAYBE_RestoreToDifferentWindow DISABLED_RestoreToDifferentWindow
-#define MAYBE_RestoreIntoSameWindow DISABLED_RestoreIntoSameWindow
-#else
-#define MAYBE_RestoreWindowAndTab RestoreWindowAndTab
-#define MAYBE_RestoreWindow RestoreWindow
-#define MAYBE_RestoreToDifferentWindow RestoreToDifferentWindow
-#define MAYBE_RestoreIntoSameWindow RestoreIntoSameWindow
-#endif
-
 class TabRestoreUITest : public UITest {
  public:
   TabRestoreUITest() : UITest() {
@@ -211,7 +198,7 @@ TEST_F(TabRestoreUITest, MiddleTab) {
 
 // Close a tab, switch windows, then restore the tab. The tab should be in its
 // original window and position, and active.
-TEST_F(TabRestoreUITest, MAYBE_RestoreToDifferentWindow) {
+TEST_F(TabRestoreUITest, RestoreToDifferentWindow) {
   scoped_refptr<BrowserProxy> browser_proxy(automation()->GetBrowserWindow(0));
   ASSERT_TRUE(browser_proxy.get());
 
@@ -342,7 +329,7 @@ TEST_F(TabRestoreUITest, DontLoadRestoredTab) {
 
 // Open a window with multiple tabs, close a tab, then close the window.
 // Restore both and make sure the tab goes back into the window.
-TEST_F(TabRestoreUITest, MAYBE_RestoreWindowAndTab) {
+TEST_F(TabRestoreUITest, RestoreWindowAndTab) {
   scoped_refptr<BrowserProxy> browser_proxy(automation()->GetBrowserWindow(0));
   ASSERT_TRUE(browser_proxy.get());
   CheckActiveWindow(browser_proxy.get());
@@ -399,7 +386,7 @@ TEST_F(TabRestoreUITest, MAYBE_RestoreWindowAndTab) {
 
 // Open a window with two tabs, close both (closing the window), then restore
 // both. Make sure both restored tabs are in the same window.
-TEST_F(TabRestoreUITest, MAYBE_RestoreIntoSameWindow) {
+TEST_F(TabRestoreUITest, RestoreIntoSameWindow) {
   scoped_refptr<BrowserProxy> browser_proxy(automation()->GetBrowserWindow(0));
   ASSERT_TRUE(browser_proxy.get());
   CheckActiveWindow(browser_proxy.get());
@@ -554,7 +541,7 @@ TEST_F(TabRestoreUITest, RestoreCrossSiteWithExistingSiteInstance) {
   EXPECT_EQ(http_url2, GetActiveTabURL());
 }
 
-TEST_F(TabRestoreUITest, MAYBE_RestoreWindow) {
+TEST_F(TabRestoreUITest, RestoreWindow) {
   // Create a new window.
   int window_count;
   ASSERT_TRUE(automation()->GetBrowserWindowCount(&window_count));
