@@ -182,9 +182,11 @@ void gtk_preserve_window_size_allocate(GtkWidget* widget,
   GtkPreserveWindowPrivate* priv = GTK_PRESERVE_WINDOW_GET_PRIVATE(widget);
 
   if (priv->delegate_resize) {
-    // Just update the state. Someone else will gdk_window_resize the
-    // associated GdkWindow.
     widget->allocation = *allocation;
+    // Only update the position. Someone else will call gdk_window_resize.
+    if (GTK_WIDGET_REALIZED(widget)) {
+      gdk_window_move(widget->window, allocation->x, allocation->y);
+    }
   } else {
     GTK_WIDGET_CLASS(gtk_preserve_window_parent_class)->size_allocate(
         widget, allocation);
