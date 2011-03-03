@@ -24,6 +24,8 @@
 #if defined(OS_MACOSX)
 #include "chrome/common/sandbox_init_wrapper.h"
 #include "chrome/common/sandbox_mac.h"
+#elif defined(OS_WIN)
+#include "sandbox/src/sandbox.h"
 #endif
 
 const int kGpuTimeout = 10000;
@@ -37,19 +39,29 @@ bool InitializeGpuSandbox() {
   return sandbox_wrapper.InitializeSandbox(*parsed_command_line,
                                            switches::kGpuProcess);
 #else
-  // TODO(port): Create GPU sandbox for linux and windows.
+  // TODO(port): Create GPU sandbox for linux.
   return true;
 #endif
 }
 
 }  // namespace
 
+#if defined(OS_WIN)
+GpuThread::GpuThread(sandbox::TargetServices* target_services)
+    : target_services_(target_services) {
+}
+#else
 GpuThread::GpuThread() {
 }
+#endif
 
 GpuThread::GpuThread(const std::string& channel_id)
     : ChildThread(channel_id) {
+#if defined(OS_WIN)
+  target_services_ = NULL;
+#endif
 }
+
 
 GpuThread::~GpuThread() {
   logging::SetLogMessageHandler(NULL);
@@ -144,6 +156,7 @@ void GpuThread::OnInitialize() {
   // take a significant amount of time.
   gpu_info_.SetInitializationTime(base::Time::Now() - process_start_time_);
 
+#if defined (OS_MACOSX)
   // Note that kNoSandbox will also disable the GPU sandbox.
   bool no_gpu_sandbox = CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kNoGpuSandbox);
@@ -156,6 +169,13 @@ void GpuThread::OnInitialize() {
   } else {
     LOG(ERROR) << "Running without GPU sandbox";
   }
+#elif defined(OS_WIN)
+  // For windows, if the target_services interface is not zero, the process
+  // is sandboxed and we must call LowerToken() before rendering untrusted
+  // content.
+  if (target_services_)
+    target_services_->LowerToken();
+#endif
 
   // In addition to disabling the watchdog if the command line switch is
   // present, disable it in two other cases. OSMesa is expected to run very

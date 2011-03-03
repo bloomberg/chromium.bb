@@ -461,6 +461,28 @@ bool AddPolicyForPlugin(CommandLine* cmd_line,
   return false;
 }
 
+// For the GPU process we gotten as far as USER_LIMITED. The next level
+// which is USER_RESTRICTED breaks both the DirectX backend and the OpenGL
+// backend. Note that the GPU process is connected to the interactive
+// desktop.
+// TODO(cpu): Lock down the sandbox more if possible.
+// TODO(apatrick): Use D3D9Ex to render windowless.
+bool AddPolicyForGPU(CommandLine*, sandbox::TargetPolicy* policy) {
+  policy->SetJobLevel(sandbox::JOB_UNPROTECTED, 0);
+
+  if (base::win::GetVersion() > base::win::VERSION_XP) {
+    policy->SetTokenLevel(sandbox::USER_RESTRICTED_SAME_ACCESS,
+                          sandbox::USER_LIMITED);
+    policy->SetDelayedIntegrityLevel(sandbox::INTEGRITY_LEVEL_LOW);
+  } else {
+    policy->SetTokenLevel(sandbox::USER_UNPROTECTED,
+                          sandbox::USER_LIMITED);
+  }
+
+  AddDllEvictionPolicy(policy);
+  return true;
+}
+
 void AddPolicyForRenderer(sandbox::TargetPolicy* policy,
                           bool* on_sandbox_desktop) {
   policy->SetJobLevel(sandbox::JOB_LOCKDOWN, 0);
@@ -534,11 +556,10 @@ base::ProcessHandle StartProcessWithAccess(CommandLine* cmd_line,
   TRACE_EVENT_BEGIN("StartProcessWithAccess", 0, type_str);
 
   // To decide if the process is going to be sandboxed we have two cases.
-  // First case: all process types except the nacl broker, gpu process and
-  // the plugin process are sandboxed by default.
+  // First case: all process types except the nacl broker, and the plugin
+  // process are sandboxed by default.
   bool in_sandbox =
       (type != ChildProcessInfo::NACL_BROKER_PROCESS) &&
-      (type != ChildProcessInfo::GPU_PROCESS) &&
       (type != ChildProcessInfo::PLUGIN_PROCESS);
 
   // Second case: If it is the plugin process then it depends on it being
@@ -549,6 +570,14 @@ base::ProcessHandle StartProcessWithAccess(CommandLine* cmd_line,
           (IsBuiltInFlash(cmd_line, NULL) &&
            (base::win::GetVersion() > base::win::VERSION_XP) &&
            !browser_command_line.HasSwitch(switches::kDisableFlashSandbox));
+  }
+
+  // Third case: If it is the GPU process then it can be disabled by a
+  // command line flag.
+  if ((type == ChildProcessInfo::GPU_PROCESS) &&
+      (browser_command_line.HasSwitch(switches::kDisableGpuSandbox))) {
+    in_sandbox = false;
+    VLOG(1) << "GPU sandbox is disabled";
   }
 
   if (browser_command_line.HasSwitch(switches::kNoSandbox)) {
@@ -596,6 +625,9 @@ base::ProcessHandle StartProcessWithAccess(CommandLine* cmd_line,
   bool on_sandbox_desktop = false;
   if (type == ChildProcessInfo::PLUGIN_PROCESS) {
     if (!AddPolicyForPlugin(cmd_line, policy))
+      return 0;
+  } else if (type == ChildProcessInfo::GPU_PROCESS) {
+    if (!AddPolicyForGPU(cmd_line, policy))
       return 0;
   } else {
     AddPolicyForRenderer(policy, &on_sandbox_desktop);
