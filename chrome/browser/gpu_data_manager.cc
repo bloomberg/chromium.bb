@@ -63,6 +63,22 @@ const GPUInfo& GpuDataManager::gpu_info() const {
   return gpu_info_;
 }
 
+Value* GpuDataManager::GetBlacklistingReasons() const {
+  if (gpu_feature_flags_.flags() != 0 && gpu_blacklist_.get())
+    return gpu_blacklist_->GetBlacklistingReasons();
+  return NULL;
+}
+
+void GpuDataManager::AddLogMessage(Value* msg) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  log_messages_.Append(msg);
+}
+
+const ListValue& GpuDataManager::log_messages() const {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  return log_messages_;
+}
+
 GpuFeatureFlags GpuDataManager::GetGpuFeatureFlags() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   UpdateGpuFeatureFlags();
@@ -161,6 +177,10 @@ void GpuDataManager::UpdateGpuFeatureFlags() {
     if (gpu_feature_flags_.flags() != 0) {
       // If gpu is blacklisted, no further GPUInfo will be collected.
       gpu_info_.SetLevel(GPUInfo::kComplete);
+
+      // Notify clients that GpuInfo state has changed
+      RunGpuInfoUpdateCallbacks();
+
       // TODO(zmo): move histograming to GpuBlacklist::DetermineGpuFeatureFlags.
       std::vector<uint32> flag_entries;
       gpu_blacklist->GetGpuFeatureFlagEntries(

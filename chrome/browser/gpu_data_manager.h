@@ -11,6 +11,7 @@
 #include "base/callback.h"
 #include "base/scoped_ptr.h"
 #include "base/singleton.h"
+#include "base/values.h"
 #include "chrome/browser/web_resource/gpu_blacklist_updater.h"
 #include "chrome/common/gpu_feature_flags.h"
 #include "chrome/common/gpu_info.h"
@@ -28,6 +29,14 @@ class GpuDataManager {
   void UpdateGpuInfo(const GPUInfo& gpu_info);
 
   const GPUInfo& gpu_info() const;
+
+  // Returns blacklisting reasons structure from gpu_blacklist or NULL
+  // if not blacklisted. Caller is responsible for deleting returned value.
+  Value* GetBlacklistingReasons() const;
+
+  void AddLogMessage(Value* msg);
+
+  const ListValue& log_messages() const;
 
   // If necessary, compute the flags before returning them.
   GpuFeatureFlags GetGpuFeatureFlags();
@@ -77,6 +86,8 @@ class GpuDataManager {
 
   // Map of callbacks.
   std::set<Callback0::Type*> gpu_info_update_callbacks_;
+
+  ListValue log_messages_;
 
   DISALLOW_COPY_AND_ASSIGN(GpuDataManager);
 };

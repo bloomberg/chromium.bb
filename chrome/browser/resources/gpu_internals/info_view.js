@@ -22,7 +22,7 @@ cr.define('gpu', function() {
   InfoView.prototype = {
     __proto__: gpu.Tab.prototype,
 
-    decorate : function() {
+    decorate: function() {
       gpu.Tab.prototype.decorate.apply(this);
 
       this.beginRequestClientInfo();
@@ -38,7 +38,7 @@ cr.define('gpu', function() {
      * This function begins a request for the ClientInfo. If it comes back
      * as undefined, then we will issue the request again in 250ms.
      */
-    beginRequestClientInfo : function() {
+    beginRequestClientInfo: function() {
       browserBridge.callAsync('requestClientInfo', undefined, (function(data) {
         this.clientInfo_ = data;
         this.refresh();
@@ -52,7 +52,7 @@ cr.define('gpu', function() {
      * This function checks for new GPU_LOG messages.
      * If any are found, a refresh is triggered.
      */
-    beginRequestLogMessages : function() {
+    beginRequestLogMessages: function() {
       browserBridge.callAsync('requestLogMessages', undefined,
         (function(messages) {
            if(messages.length != this.logMessages_.length) {
@@ -88,21 +88,85 @@ cr.define('gpu', function() {
       }
 
       // GPU info, basic
+      var diagnostics = this.querySelector('.diagnostics');
+      var blacklistedIndicator = this.querySelector('.blacklisted-indicator');
       var gpuInfo = browserBridge.gpuInfo;
       if (gpuInfo) {
-        this.setTable_('basic-info', gpuInfo.basic_info);
-        if (gpuInfo.diagnostics) {
-          this.setTable_('diagnostics', gpuInfo.diagnostics);
-        } else if (gpuInfo.level == 'preliminary' ||
-                   gpuInfo.level == 'partial' ||
-                   gpuInfo.level == 'completing') {
-          this.setText_('diagnostics', '... loading ...');
+        if (gpuInfo.blacklistingReasons) {
+          blacklistedIndicator.style.display = 'block';
+          // Not using jstemplate here because we need to manipulate
+          // href on the fly
+          var reasonsEl = blacklistedIndicator.querySelector(
+              '.blacklisted-reasons');
+          reasonsEl.textContent = "";
+          for (var i = 0; i < gpuInfo.blacklistingReasons.length; ++i) {
+            var reason = gpuInfo.blacklistingReasons[i];
+
+            var reasonEl = document.createElement('li');
+
+            // Description of issue
+            var desc = document.createElement('a');
+            desc.textContent = reason.description;
+            reasonEl.appendChild(desc);
+
+            // Spacing ':' element
+            if(reason.cr_bugs.length + reason.webkit_bugs.length > 0) {
+              var tmp = document.createElement('span');
+              tmp.textContent = '  ';
+              reasonEl.appendChild(tmp);
+            }
+
+            var nreasons = 0;
+            var j;
+            // cr_bugs
+            for (j =  0; j < reason.cr_bugs.length; ++j) {
+              if (nreasons > 0) {
+                var tmp = document.createElement('span');
+                tmp.textContent = ', ';
+                reasonEl.appendChild(tmp);
+              }
+
+              var lnk = document.createElement('a');
+              var bugid = parseInt(reason.cr_bugs[j]);
+              lnk.textContent = bugid;
+              lnk.href = 'http://crbug.com/' + bugid;
+              reasonEl.appendChild(lnk);
+              nreasons += 1;
+            }
+
+            for (j =  0; j < reason.webkit_bugs.length; ++j) {
+              if (nreasons > 0) {
+                var tmp = document.createElement('span');
+                tmp.textContent = ', ';
+                reasonEl.appendChild(tmp);
+              }
+
+              var lnk = document.createElement('a');
+              var bugid = parseInt(reason.webkit_bugs[j]);
+              lnk.textContent = bugid;
+
+              lnk.href = 'https://bugs.webkit.org/show_bug.cgi?id=' + bugid;
+              reasonEl.appendChild(lnk);
+              nreasons += 1;
+            }
+
+            reasonsEl.appendChild(reasonEl);
+          }
         } else {
-          this.setText_('diagnostics', 'None');
+          blacklistedIndicator.style.display = 'none';
+        }
+        this.setTable_('basic-info', gpuInfo.basic_info);
+
+        if (gpuInfo.diagnostics) {
+          diagnostics.style.display = 'block';
+          this.setTable_('diagnostics-table', gpuInfo.diagnostics);
+        } else {
+          diagnostics.style.display = 'none';
         }
       } else {
+        blacklistedIndicator.style.display = 'none';
         this.setText_('basic-info', '... loading ...');
-        this.setText_('diagnostics', '... loading ...');
+        diagnostics.style.display = 'none';
       }
 
       // Log messages

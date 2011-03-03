@@ -29,6 +29,9 @@
 //    "accelerated_2d_canvas", "accelerated_compositing", "webgl", and "all".
 //    Currently whatever feature is selected, the effect is the same as "all",
 //    i.e., it's not supported to turn off one GPU feature and not the others.
+// 8. "description" has the description of the entry
+// 9. "webkit_bugs" is an array of associated webkit bug numbers
+// 10."cr_bugs" is an array of associated webkit bug numbers
 //
 // VERSION includes "op" "number", and "number2".  "op" can be any of the
 // following values: "=", "<", "<=", ">", ">=", "any", "between".  "number2" is
@@ -43,8 +46,10 @@
   // Please update the version number whenever you change this file.
   "version": "1.4",
   "entries": [
-    { // ATI Radeon X1900 on Mac, BUGWEBKIT=47028
+    {
       "id": "1",
+      "description" : "ATI Radeon X1900 is not compatible with WebGL on the Mac.",
+      "webkit_bugs" : [47028],
       "os": {
         "type": "macosx"
       },
@@ -54,8 +59,10 @@
         "webgl"
       ]
     },
-    { // Intel cards with Mesa driver earlier than 7.9, BUG=66718,67345,67939
+    {
       "id": "2",
+      "description" : "Intel GPUs with Mesa driver earlier than 7.9 do not support WebGL.",
+      "cr_bugs" : [66718,67345,67939],
       "os": {
         "type": "linux"
       },
@@ -72,8 +79,10 @@
         "webgl"
       ]
     },
-    { // In linux, don't allow GPU compositing if it's software rendering, BUG=59302
+    {
       "id": "3",
+      "description": "GL driver is software rendered. Accelerated compositing is disabled.",
+      "cr_bugs": [59302],
       "os": {
         "type": "linux"
       },
@@ -85,8 +94,9 @@
         "accelerated_compositing"
       ]
     },
-    { // Intel Mobile 945 Express Chipset Family
+    {
       "id": "4",
+      "description": "The Intel Mobile 945 Express family of chipsets is not compatible with WebGL.",
       "os": {
         "type": "any"
       },
@@ -96,8 +106,10 @@
         "webgl"
       ]
     },
-    { // All ATI cards in linux, BUG=71381
+    {
       "id": "5",
+      "description": "ATI cards in Linux do not support WebGL.",
+      "cr_bugs": [71381],
       "os": {
         "type": "linux"
       },
@@ -106,8 +118,10 @@
         "webgl"
       ]
     },
-    { // ATI Radeon HD2600 on Mac, BUG=68859
+    {
       "id": "6",
+      "description": "ATI Radeon HD2600 on Mac do not support WebGL or accelerated compositing.",
+      "cr_bugs": [68859],
       "os": {
         "type": "macosx"
       },
@@ -118,8 +132,10 @@
         "accelerated_compositing"
       ]
     },
-    { // ATI Radeon HD2400 on Mac, BUG=68859
+    {
       "id": "7",
+      "description": "ATI Radeon HD2400 on Mac do not support WebGL or accelerated compositing.",
+      "cr_bugs": [68859],
       "os": {
         "type": "macosx"
       },
@@ -130,8 +146,10 @@
         "accelerated_compositing"
       ]
     },
-    { // NVIDIA GeForce FX Go5200, BUG=72938
+    {
       "id": "8",
+      "description": "NVIDIA GeForce FX Go5200 does not support WebGL or accelerated compositing.",
+      "cr_bugs": [72938],
       "os": {
         "type": "any"
       },
@@ -144,6 +162,8 @@
     },
     { // NVIDIA GeForce 7300 GT on Mac, BUG=73794
       "id": "10",
+      "description": "NVIDIA GeForce 7300 GT on Mac does not support WebGL.",
+      "cr_bugs": [73794],
       "os": {
         "type": "macosx"
       },
@@ -153,8 +173,10 @@
         "webgl"
       ]
     },
-    { // ATI Radeon HD2600 XT on Mac, BUG=68859
+    {
       "id": "11",
+      "description": "ATI Radeon HD2600 XT on Mac does not support WebGL or accelerated compositing.",
+      "cr_bugs": [68859],
       "os": {
         "type": "macosx"
       },
@@ -165,8 +187,10 @@
         "accelerated_compositing"
       ]
     },
-    { // Drivers older than 2009-01 on Windows, BUG=72979
+    {
       "id": "12",
+      "description": "Drivers older than 2009-01 on Windows are assumed to be buggy.",
+      "cr_bugs": [72979],
       "os": {
         "type": "win"
       },
@@ -178,8 +202,10 @@
         "all"
       ]
     },
-    { // ATI driver older than 10.6 on XP, BUG=74212
+    {
       "id": "13",
+      "description": "ATI drivers older thn 10.6 on Windows XP are assumed to be buggy.",
+      "cr_bugs": [74212],
       "os": {
         "type": "win",
         "version": {
@@ -196,8 +222,10 @@
         "all"
       ]
     },
-    { // NVidia driver older than 257.21 on XP, BUG=74212
+    {
       "id": "14",
+      "description": "NVIDIA drivers older thn 257.21 on Windows XP are assumed to be buggy.",
+      "cr_bugs": [74212],
       "os": {
         "type": "win",
         "version": {
@@ -214,8 +242,10 @@
         "all"
       ]
     },
-    { // Intel driver older than 14.42.7.5294 on XP, BUG=74212
+    {
       "id": "15",
+      "description": "Intel drivers older thn 14.42.7.5294 on Windows XP are assumed to be buggy.",
+      "cr_bugs": [74212],
       "os": {
         "type": "win",
         "version": {

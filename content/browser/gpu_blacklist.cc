@@ -212,6 +212,35 @@ GpuBlacklist::GpuBlacklistEntry::GetGpuBlacklistEntryFromValue(
     }
   }
 
+  std::string description;
+  if (value->GetString("description", &description)) {
+    entry->description_ = description;
+  } else {
+    entry->description_ = "The GPU is unavailable for an unexplained reason.";
+  }
+
+  ListValue* cr_bugs;
+  if (value->GetList("cr_bugs", &cr_bugs)) {
+    for(size_t i = 0; i < cr_bugs->GetSize(); ++i) {
+      int bug_id;
+      if (cr_bugs->GetInteger(i, &bug_id))
+        entry->cr_bugs_.push_back(bug_id);
+      else
+        LOG(WARNING) << "Malformed cr_bugs entry " << entry->id();
+    }
+  }
+
+  ListValue* webkit_bugs;
+  if (value->GetList("webkit_bugs", &webkit_bugs)) {
+    for(size_t i = 0; i < webkit_bugs->GetSize(); ++i) {
+      int bug_id;
+      if (webkit_bugs->GetInteger(i, &bug_id))
+        entry->webkit_bugs_.push_back(bug_id);
+      else
+        LOG(WARNING) << "Malformed webkit_bugs entry " << entry->id();
+    }
+  }
+
   DictionaryValue* os_value = NULL;
   if (value->GetDictionary("os", &os_value)) {
     std::string os_type;
@@ -626,6 +655,29 @@ void GpuBlacklist::GetGpuFeatureFlagEntries(
     if ((feature & active_entries_[i]->GetGpuFeatureFlags().flags()) != 0)
       entry_ids.push_back(active_entries_[i]->id());
   }
+}
+
+Value* GpuBlacklist::GetBlacklistingReasons() const {
+  ListValue* reasons = new ListValue();
+  for (size_t i = 0; i < active_entries_.size(); ++i) {
+    DictionaryValue* reason = new DictionaryValue();
+    reason->SetString("description", active_entries_[i]->description());
+
+    ListValue* cr_bugs = new ListValue();
+    for (size_t j = 0; j < active_entries_[i]->cr_bugs().size(); ++j)
+      cr_bugs->Append(Value::CreateIntegerValue(
+          active_entries_[i]->cr_bugs()[j]));
+    reason->Set("cr_bugs", cr_bugs);
+
+    ListValue* webkit_bugs = new ListValue();
+    for (size_t j = 0; j < active_entries_[i]->webkit_bugs().size(); ++j)
+      webkit_bugs->Append(Value::CreateIntegerValue(
+          active_entries_[i]->webkit_bugs()[j]));
+    reason->Set("webkit_bugs", webkit_bugs);
+
+    reasons->Append(reason);
+  }
+  return reasons;
 }
 
 uint32 GpuBlacklist::max_entry_id() const {

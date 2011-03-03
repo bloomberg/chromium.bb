@@ -65,7 +65,7 @@ cr.define('gpu', function() {
     /**
      * Called from gpu c++ code when GPU Info is updated.
      */
-    onGpuInfoUpdated : function(gpuInfo) {
+    onGpuInfoUpdate: function(gpuInfo) {
       this.gpuInfo_ = gpuInfo;
       cr.dispatchSimpleEvent(this, 'gpuInfoUpdate');
     }

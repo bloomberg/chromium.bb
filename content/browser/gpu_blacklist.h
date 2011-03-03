@@ -11,6 +11,7 @@
 
 #include "base/basictypes.h"
 #include "base/scoped_ptr.h"
+#include "base/values.h"
 #include "chrome/common/gpu_feature_flags.h"
 
 class DictionaryValue;
@@ -57,6 +58,17 @@ class GpuBlacklist {
   //   kGpuFeatureWebgl | kGpuFeatureAcceleratedCompositing - two features.
   void GetGpuFeatureFlagEntries(GpuFeatureFlags::GpuFeatureType feature,
                                 std::vector<uint32>& entry_ids) const;
+
+
+  // Returns an array of entries, each entry of which has
+  // description, cr_bugs, and webkit_bugs explaining reason for
+  // blacklisting, e.g.:
+  // [{
+  //    "description": "Your GPU is too old",
+  //    "cr_bugs": [1234],
+  //    "webkit_bugs": []
+  // }]
+  Value* GetBlacklistingReasons() const;
 
   // Return the largest entry id.  This is used for histogramming.
   uint32 max_entry_id() const;
@@ -172,6 +184,13 @@ class GpuBlacklist {
     // Returns the entry's unique id.  0 is reserved.
     uint32 id() const;
 
+    // Returns the description of the entry
+    const std::string& description() const { return description_; }
+
+    // Returs a list of Chromium and Webkit bugs applicable to this entry
+    const std::vector<int>& cr_bugs() const { return cr_bugs_; }
+    const std::vector<int>& webkit_bugs() const { return webkit_bugs_; }
+
     // Returns the GpuFeatureFlags.
     GpuFeatureFlags GetGpuFeatureFlags() const;
 
@@ -211,6 +230,9 @@ class GpuBlacklist {
     void AddException(GpuBlacklistEntry* exception);
 
     uint32 id_;
+    std::string description_;
+    std::vector<int> cr_bugs_;
+    std::vector<int> webkit_bugs_;
     scoped_ptr<OsInfo> os_info_;
     uint32 vendor_id_;
     uint32 device_id_;

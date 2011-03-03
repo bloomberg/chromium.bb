@@ -6,11 +6,20 @@ found in the LICENSE file.
 <div id=info-view label="GPU Info">
   <h3>Chrome Version</h3>
   <div id="client-info"></div>
+
+  <div class="blacklisted-indicator">
+    <h3>Hardware Acceleration Unavailable</h3>
+    <ul class="blacklisted-reasons">
+    </ul>
+  </div>
+
   <h3>Driver Information</h3>
   <div id="basic-info"></div>
 
-  <h3>Diagnostics</h3>
-  <div id="diagnostics">None</div>
+  <div class="diagnostics">
+    <h3>Diagnostics</h3>
+    <div id="diagnostics-table">None</div>
+  </div>
 
   <div id="log-messages" jsdisplay="values.length">
     <h3>Log Messages</h3>

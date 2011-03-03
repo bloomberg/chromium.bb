@@ -83,8 +83,7 @@ class GpuMessageHandler
   Value* OnRequestClientInfo(const ListValue* list);
   Value* OnRequestLogMessages(const ListValue* list);
 
-  // GPUInfo collected callback.
-  void OnGpuInfoCollected();
+  void OnGpuInfoUpdate();
 
   // Executes the javascript function |function_name| in the renderer, passing
   // it the argument |value|.
@@ -224,13 +223,13 @@ void GpuMessageHandler::OnRequestGpuInfo(const ListValue* args) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   if (gpu_info_update_callback_ == NULL) {
-    // Add us to be called when GPUInfo changes and ask for updated GPUInfo.
+    // Add us to be called when GPUInfo changes
     gpu_info_update_callback_ =
-        NewCallback(this, &GpuMessageHandler::OnGpuInfoCollected);
+        NewCallback(this, &GpuMessageHandler::OnGpuInfoUpdate);
     gpu_data_manager_->AddGpuInfoUpdateCallback(gpu_info_update_callback_);
     // Run callback immediately in case the info is ready and no update in the
     // future.
-    OnGpuInfoCollected();
+    OnGpuInfoUpdate();
   }
   GpuProcessHostUIShim* ui_shim = GpuProcessHostUIShim::GetForRenderer(0);
   if (ui_shim)
@@ -342,19 +341,6 @@ DictionaryValue* GpuInfoToDict(const GPUInfo& gpu_info) {
   DictionaryValue* info = new DictionaryValue();
   info->Set("basic_info", basic_info);
 
-  if (gpu_info.level() == GPUInfo::kPreliminary) {
-    info->SetString("level", "preliminary");
-  } else if (gpu_info.level() == GPUInfo::kPartial) {
-    info->SetString("level", "partial");
-  } else if (gpu_info.level() == GPUInfo::kCompleting) {
-    info->SetString("level", "completing");
-  } else if (gpu_info.level() == GPUInfo::kComplete) {
-    info->SetString("level", "complete");
-  } else {
-    DCHECK(false) << "Unrecognized GPUInfo::Level value";
-    info->SetString("level", "");
-  }
-
 #if defined(OS_WIN)
   if (gpu_info.level() == GPUInfo::kComplete) {
     ListValue* dx_info = DxDiagNodeToList(gpu_info.dx_diagnostics());
@@ -367,26 +353,29 @@ DictionaryValue* GpuInfoToDict(const GPUInfo& gpu_info) {
 
 Value* GpuMessageHandler::OnRequestLogMessages(const ListValue*) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  GpuProcessHostUIShim* ui_shim = GpuProcessHostUIShim::GetForRenderer(0);
-  if (!ui_shim)
-    return NULL;
 
-  return ui_shim->log_messages();
+  return gpu_data_manager_->log_messages().DeepCopy();
 }
 
-void GpuMessageHandler::OnGpuInfoCollected() {
-  // Get GPU Info.
+void GpuMessageHandler::OnGpuInfoUpdate() {
   const GPUInfo& gpu_info = gpu_data_manager_->gpu_info();
-
   if (gpu_info.level() == GPUInfo::kUninitialized)
     return;
 
-  // Send GPU Info to javascript.
-  Value* gpuInfoVal = GpuInfoToDict(gpu_info);
-  web_ui_->CallJavascriptFunction(L"browserBridge.onGpuInfoUpdated",
-      *gpuInfoVal);
+  // Get GPU Info.
+  DictionaryValue* gpu_info_val = GpuInfoToDict(gpu_info);
 
-  delete gpuInfoVal;
+  // Add in blacklisting reasons
+  Value* blacklisting_reasons = gpu_data_manager_->GetBlacklistingReasons();
+  if (blacklisting_reasons)
+    gpu_info_val->Set("blacklistingReasons", blacklisting_reasons);
+
+
+  // Send GPU Info to javascript.
+  web_ui_->CallJavascriptFunction(L"browserBridge.onGpuInfoUpdate",
+      *gpu_info_val);
+
+  delete gpu_info_val;
 }
 
 }  // namespace

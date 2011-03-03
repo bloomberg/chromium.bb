@@ -19,7 +19,6 @@
 #include "base/process.h"
 #include "base/scoped_ptr.h"
 #include "base/singleton.h"
-#include "base/values.h"
 #include "base/threading/non_thread_safe.h"
 #include "chrome/common/gpu_feature_flags.h"
 #include "chrome/common/gpu_info.h"
@@ -128,8 +127,6 @@ class GpuProcessHostUIShim
   // Return all known information about the GPU.
   const GPUInfo& gpu_info() const;
 
-  ListValue* log_messages() const { return log_messages_.DeepCopy(); }
-
   // Can be called directly from the UI thread to log a message.
   void AddCustomLogMessage(int level, const std::string& header,
       const std::string& message);
@@ -168,8 +165,6 @@ class GpuProcessHostUIShim
 
   // The handle for the GPU process or null if it is not known to be launched.
   base::ProcessHandle gpu_process_;
-
-  ListValue log_messages_;
 
   // Cached pointer to the singleton for efficiency purpose.
   GpuDataManager* gpu_data_manager_;

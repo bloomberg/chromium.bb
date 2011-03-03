@@ -423,7 +423,8 @@ void GpuProcessHostUIShim::OnChannelEstablished(
                           IPC::ChannelHandle(),
                           NULL,
                           gpu_info);
-    AddCustomLogMessage(logging::LOG_WARNING, "WARNING", "GPU is blacklisted.");
+    AddCustomLogMessage(logging::LOG_WARNING, "WARNING",
+        "Hardware acceleration is unavailable.");
     return;
   }
 
@@ -479,7 +480,7 @@ void GpuProcessHostUIShim::OnLogMessage(int level,
   dict->SetInteger("level", level);
   dict->SetString("header", header);
   dict->SetString("message", message);
-  log_messages_.Append(dict);
+  gpu_data_manager_->AddLogMessage(dict);
 }
 
 #if defined(OS_LINUX) && !defined(TOUCH_UI)
