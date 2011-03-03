@@ -122,8 +122,7 @@ void WidgetExample::CreateChild(
   // Compute where to place the child widget.
   // We'll place it at the center of the root widget.
   views::Widget* parent_widget = parent->GetWidget();
-  gfx::Rect bounds;
-  parent_widget->GetBounds(&bounds, false);
+  gfx::Rect bounds = parent_widget->GetClientAreaScreenBounds();
   // Child widget is 200x200 square.
   bounds.SetRect((bounds.width() - 200) / 2, (bounds.height() - 200) / 2,
       200, 200);
