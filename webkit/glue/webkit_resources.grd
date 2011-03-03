@@ -76,6 +76,16 @@
       <include name="IDR_PDF_THUMBNAIL_8" file="resources\pdf_thumbnail_8.png" type="BINDATA" />
       <include name="IDR_PDF_THUMBNAIL_9" file="resources\pdf_thumbnail_9.png" type="BINDATA" />
       <include name="IDR_PDF_THUMBNAIL_NUM_BACKGROUND" file="resources\pdf_thumbnail_num_background.png" type="BINDATA" />
+      <include name="IDR_PDF_PROGRESS_BAR_0" file="resources\pdf_progress_0.png" type="BINDATA" />
+      <include name="IDR_PDF_PROGRESS_BAR_1" file="resources\pdf_progress_1.png" type="BINDATA" />
+      <include name="IDR_PDF_PROGRESS_BAR_2" file="resources\pdf_progress_2.png" type="BINDATA" />
+      <include name="IDR_PDF_PROGRESS_BAR_3" file="resources\pdf_progress_3.png" type="BINDATA" />
+      <include name="IDR_PDF_PROGRESS_BAR_4" file="resources\pdf_progress_4.png" type="BINDATA" />
+      <include name="IDR_PDF_PROGRESS_BAR_5" file="resources\pdf_progress_5.png" type="BINDATA" />
+      <include name="IDR_PDF_PROGRESS_BAR_6" file="resources\pdf_progress_6.png" type="BINDATA" />
+      <include name="IDR_PDF_PROGRESS_BAR_7" file="resources\pdf_progress_7.png" type="BINDATA" />
+      <include name="IDR_PDF_PROGRESS_BAR_8" file="resources\pdf_progress_8.png" type="BINDATA" />
+      <include name="IDR_PDF_PROGRESS_BAR_BACKGROUND" file="resources\pdf_progress_background.png" type="BINDATA" />
     </includes>
   </release>
 </grit>

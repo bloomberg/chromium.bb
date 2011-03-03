@@ -489,6 +489,10 @@ below:
         Failed to load PDF document
       </message>
 
+      <message name="IDS_PDF_PROGRESS_LOADING" desc="A message displayed on the progress control over PDF page during document loading.">
+        Loading
+      </message>
+      
     </messages>
   </release>
 </grit>
