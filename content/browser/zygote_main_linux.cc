@@ -674,7 +674,8 @@ static bool EnterSandbox() {
         return false;
       }
     }
-  } else if (switches::SeccompSandboxEnabled()) {
+  } else if (CommandLine::ForCurrentProcess()->HasSwitch(
+        switches::kEnableSeccompSandbox)) {
     PreSandboxInit();
     SkiaFontConfigSetImplementation(
         new FontConfigIPC(kMagicSandboxIPCDescriptor));
@@ -703,7 +704,8 @@ bool ZygoteMain(const MainFunctionParams& params) {
   // The seccomp sandbox needs access to files in /proc, which might be denied
   // after one of the other sandboxes have been started. So, obtain a suitable
   // file handle in advance.
-  if (switches::SeccompSandboxEnabled()) {
+  if (CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnableSeccompSandbox)) {
     g_proc_fd = open("/proc", O_DIRECTORY | O_RDONLY);
     if (g_proc_fd < 0) {
       LOG(ERROR) << "WARNING! Cannot access \"/proc\". Disabling seccomp "
@@ -731,7 +733,8 @@ bool ZygoteMain(const MainFunctionParams& params) {
   // The seccomp sandbox will be turned on when the renderers start. But we can
   // already check if sufficient support is available so that we only need to
   // print one error message for the entire browser session.
-  if (g_proc_fd >= 0 && switches::SeccompSandboxEnabled()) {
+  if (g_proc_fd >= 0 && CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnableSeccompSandbox)) {
     if (!SupportsSeccompSandbox(g_proc_fd)) {
       // There are a good number of users who cannot use the seccomp sandbox
       // (e.g. because their distribution does not enable seccomp mode by

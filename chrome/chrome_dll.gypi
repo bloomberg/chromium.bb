@@ -604,6 +604,14 @@
             # Stub entry points for process types that are not supported
             # by NaCl Win64 executable
             'app/dummy_main_functions.cc',
+
+            # TODO(bradnelson): once automatic generation of 64 bit targets on
+            # Windows is ready, take this out and add a dependency on
+            # content_common.gypi and common.gypi in nacl_win64_dependencies
+            # and get rid of the common_constants.gypi which was added as a hack
+            # to avoid making common compile on 64 bit on Windows.
+            '../content/common/content_switches.cc',
+            '../content/common/content_switches.h',
           ],
           'msvs_settings': {
             'VCLinkerTool': {

@@ -24,6 +24,11 @@
           'app/hard_error_handler_win.cc',
           'app/hard_error_handler_win.h',
           'app/scoped_ole_initializer.h',
+          # TODO(bradnelson): once automatic generation of 64 bit targets on
+          # Windows is ready, take this out and add a dependency on
+          # content_common.gypi.
+          '../content/common/content_switches.cc',
+          '../content/common/content_switches.h',
         ],
         'mac_bundle_resources': [
           'app/app-Info.plist',
