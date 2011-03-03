@@ -251,9 +251,8 @@
             'host/capturer_mac.h',
             'host/event_executor_mac.cc',
             'host/event_executor_mac.h',
-            'host/user_authenticator_fake.cc',
-            'host/user_authenticator_fake.h',
             'host/user_authenticator_mac.cc',
+            'host/user_authenticator_mac.h',
           ],
           'link_settings': {
             'libraries': [
