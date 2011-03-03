@@ -340,6 +340,12 @@ Each match pattern has 3 parts:</p>
   <li> <em>scheme</em> —
     for example, <code>http</code> or <code>file</code>
     or <code>*</code>
+    <p class="note">
+    <b>Note:</b>
+    Access to <code>file</code> URLs isn't automatic.
+    The user must visit the extensions management page
+    and opt in to <code>file</code> access for each extension that requests it.
+    </p>
   </li>
   <li> <em>host</em> —
     for example, <code>www.google.com</code>
@@ -449,7 +455,8 @@ The following table shows some valid patterns.
     <code>file:///foo*</code>
   </td>
 
-  <td>Matches any local file whose path starts with <code>/foo</code></td>
+  <td>Matches any local file whose path starts with <code>/foo</code>
+  </td>
 
   <td>
     file:///foo/bar.html<br>
