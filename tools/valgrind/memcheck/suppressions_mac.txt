@@ -434,6 +434,21 @@
    fun:_ZN12_GLOBAL__N_127HistoryContentsProviderTest5SetUpEv
 }
 {
+   bug_36605b
+   Memcheck:Leak
+   fun:malloc
+   fun:realloc
+   fun:new_sem_from_pool
+   fun:_pthread_cond_wait
+   fun:pthread_cond_timedwait$UNIX2003
+   fun:_ZN4base17ConditionVariable9TimedWaitERKNS_9TimeDeltaE
+   fun:_ZN4base22PosixDynamicThreadPool11WaitForTaskEv
+   fun:_ZN4base12_GLOBAL__N_112WorkerThread10ThreadMainEv
+   fun:_ZN4base12_GLOBAL__N_110ThreadFuncEPv
+   fun:_pthread_start
+   fun:thread_start
+}
+{
    bug_40429
    Memcheck:Leak
    fun:calloc
