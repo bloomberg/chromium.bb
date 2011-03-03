@@ -20,7 +20,6 @@
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/gpu_data_manager.h"
-#include "chrome/browser/gpu_process_host_ui_shim.h"
 #include "chrome/browser/io_thread.h"
 #include "chrome/browser/net/chrome_net_log.h"
 #include "chrome/browser/net/connection_tester.h"
@@ -76,8 +75,8 @@ class GpuMessageHandler
   virtual void RegisterMessages();
 
   // Mesages
+  void OnBrowserBridgeInitialized(const ListValue* list);
   void OnCallAsync(const ListValue* list);
-  void OnRequestGpuInfo(const ListValue* list);
 
   // Submessages dispatched from OnCallAsync
   Value* OnRequestClientInfo(const ListValue* list);
@@ -165,11 +164,11 @@ void GpuMessageHandler::RegisterMessages() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   web_ui_->RegisterMessageCallback(
+      "browserBridgeInitialized",
+      NewCallback(this, &GpuMessageHandler::OnBrowserBridgeInitialized));
+  web_ui_->RegisterMessageCallback(
       "callAsync",
       NewCallback(this, &GpuMessageHandler::OnCallAsync));
-  web_ui_->RegisterMessageCallback(
-      "requestGpuInfo",
-      NewCallback(this, &GpuMessageHandler::OnRequestGpuInfo));
 }
 
 void GpuMessageHandler::OnCallAsync(const ListValue* args) {
@@ -219,21 +218,23 @@ void GpuMessageHandler::OnCallAsync(const ListValue* args) {
   }
 }
 
-void GpuMessageHandler::OnRequestGpuInfo(const ListValue* args) {
+void GpuMessageHandler::OnBrowserBridgeInitialized(const ListValue* args) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  if (gpu_info_update_callback_ == NULL) {
-    // Add us to be called when GPUInfo changes
-    gpu_info_update_callback_ =
-        NewCallback(this, &GpuMessageHandler::OnGpuInfoUpdate);
-    gpu_data_manager_->AddGpuInfoUpdateCallback(gpu_info_update_callback_);
-    // Run callback immediately in case the info is ready and no update in the
-    // future.
-    OnGpuInfoUpdate();
-  }
-  GpuProcessHostUIShim* ui_shim = GpuProcessHostUIShim::GetForRenderer(0);
-  if (ui_shim)
-    ui_shim->CollectGpuInfoAsynchronously(GPUInfo::kComplete);
+  DCHECK(!gpu_info_update_callback_);
+
+  // Watch for changes in GPUInfo
+  gpu_info_update_callback_ =
+    NewCallback(this, &GpuMessageHandler::OnGpuInfoUpdate);
+  gpu_data_manager_->AddGpuInfoUpdateCallback(gpu_info_update_callback_);
+
+  // Tell GpuDataManager it should have full GpuInfo. If the
+  // Gpu process has not run yet, this will trigger its launch.
+  gpu_data_manager_->RequestCompleteGpuInfoIfNeeded();
+
+  // Run callback immediately in case the info is ready and no update in the
+  // future.
+  OnGpuInfoUpdate();
 }
 
 Value* GpuMessageHandler::OnRequestClientInfo(const ListValue* list) {

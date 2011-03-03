@@ -21,7 +21,7 @@ cr.define('gpu', function() {
     this.pendingCallbacks_ = [];
 
     // Tell c++ code that we are ready to receive GPU Info.
-    chrome.send('requestGpuInfo');
+    chrome.send('browserBridgeInitialized');
   }
 
   BrowserBridge.prototype = {

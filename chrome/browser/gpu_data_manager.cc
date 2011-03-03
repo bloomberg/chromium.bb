@@ -9,6 +9,7 @@
 #include "base/command_line.h"
 #include "base/metrics/histogram.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/gpu_process_host_ui_shim.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/common/child_process_logging.h"
 #include "chrome/common/chrome_switches.h"
@@ -18,8 +19,9 @@
 #include "ui/base/resource/resource_bundle.h"
 
 GpuDataManager::GpuDataManager()
-        : gpu_feature_flags_set_(false),
-          gpu_blacklist_cache_(NULL) {
+    : complete_gpu_info_already_requested_(false)
+    , gpu_feature_flags_set_(false)
+    , gpu_blacklist_cache_(NULL) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(g_browser_process);
   PrefService* prefs = g_browser_process->local_state();
@@ -44,6 +46,17 @@ GpuDataManager::~GpuDataManager() { }
 GpuDataManager* GpuDataManager::GetInstance() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   return Singleton<GpuDataManager>::get();
+}
+
+void GpuDataManager::RequestCompleteGpuInfoIfNeeded() {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  if (complete_gpu_info_already_requested_)
+    return;
+  complete_gpu_info_already_requested_ = true;
+
+  GpuProcessHostUIShim* ui_shim = GpuProcessHostUIShim::GetForRenderer(0);
+  if (ui_shim)
+    ui_shim->CollectGpuInfoAsynchronously(GPUInfo::kComplete);
 }
 
 void GpuDataManager::UpdateGpuInfo(const GPUInfo& gpu_info) {

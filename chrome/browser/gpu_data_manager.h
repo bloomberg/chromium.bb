@@ -25,6 +25,9 @@ class GpuDataManager {
   // Getter for the singleton. This will return NULL on failure.
   static GpuDataManager* GetInstance();
 
+  // Requests complete GPUinfo if it has not already been requested
+  void RequestCompleteGpuInfoIfNeeded();
+
   // Only update if the level is higher than the cached GPUInfo level.
   void UpdateGpuInfo(const GPUInfo& gpu_info);
 
@@ -71,6 +74,8 @@ class GpuDataManager {
 
   // Call all callbacks.
   void RunGpuInfoUpdateCallbacks();
+
+  bool complete_gpu_info_already_requested_;
 
   bool gpu_feature_flags_set_;
   GpuFeatureFlags gpu_feature_flags_;
