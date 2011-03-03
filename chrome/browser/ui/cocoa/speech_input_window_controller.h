@@ -22,6 +22,7 @@
   IBOutlet NSTextField* instructionLabel_;
   IBOutlet NSButton* cancelButton_;
   IBOutlet NSButton* tryAgainButton_;
+  IBOutlet NSButton* micSettingsButton_;
 }
 
 // Initialize the window. |anchoredAt| is in screen coordinates.
@@ -34,6 +35,9 @@
 
 // Handler for the try again button.
 - (IBAction)tryAgain:(id)sender;
+
+// Handler for the mic settings button.
+- (IBAction)micSettings:(id)sender;
 
 // Updates the UI with data related to the given display mode.
 - (void)updateLayout:(SpeechInputBubbleBase::DisplayMode)mode

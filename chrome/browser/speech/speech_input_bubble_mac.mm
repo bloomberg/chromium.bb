@@ -63,10 +63,11 @@ void SpeechInputBubbleImpl::Show() {
   // input element rect.
   gfx::NativeView view = tab_contents()->view()->GetNativeView();
   NSRect tab_bounds = [view bounds];
-  NSPoint anchor = NSMakePoint(
-      tab_bounds.origin.x + element_rect_.x() + kBubbleTargetOffsetX,
-      tab_bounds.origin.y + tab_bounds.size.height - element_rect_.y() -
-      element_rect_.height());
+  int anchor_x = tab_bounds.origin.x + element_rect_.x() +
+                 element_rect_.width() - kBubbleTargetOffsetX;
+  int anchor_y = tab_bounds.origin.y + tab_bounds.size.height -
+                 element_rect_.y() - element_rect_.height();
+  NSPoint anchor = NSMakePoint(anchor_x, anchor_y);
   anchor = [view convertPoint:anchor toView:nil];
   anchor = [[view window] convertBaseToScreen:anchor];
 

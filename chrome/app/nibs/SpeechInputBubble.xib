@@ -2,17 +2,17 @@
 <archive type="com.apple.InterfaceBuilder3.Cocoa.XIB" version="7.10">
 	<data>
 		<int key="IBDocument.SystemTarget">1050</int>
-		<string key="IBDocument.SystemVersion">10F2108</string>
-		<string key="IBDocument.InterfaceBuilderVersion">823</string>
+		<string key="IBDocument.SystemVersion">10F569</string>
+		<string key="IBDocument.InterfaceBuilderVersion">762</string>
 		<string key="IBDocument.AppKitVersion">1038.29</string>
 		<string key="IBDocument.HIToolboxVersion">461.00</string>
 		<object class="NSMutableDictionary" key="IBDocument.PluginVersions">
 			<string key="NS.key.0">com.apple.InterfaceBuilder.CocoaPlugin</string>
-			<string key="NS.object.0">823</string>
+			<string key="NS.object.0">762</string>
 		</object>
 		<object class="NSMutableArray" key="IBDocument.EditedObjectIDs">
 			<bool key="EncodedWithXMLCoder">YES</bool>
-			<integer value="825"/>
+			<integer value="367"/>
 		</object>
 		<object class="NSArray" key="IBDocument.PluginDependencies">
 			<bool key="EncodedWithXMLCoder">YES</bool>
@@ -57,6 +57,30 @@
 							<int key="NSvFlags">301</int>
 							<object class="NSMutableArray" key="NSSubviews">
 								<bool key="EncodedWithXMLCoder">YES</bool>
+								<object class="NSButton" id="476113060">
+									<reference key="NSNextResponder" ref="926910107"/>
+									<int key="NSvFlags">268</int>
+									<string key="NSFrame">{{7, 113}, {96, 32}}</string>
+									<reference key="NSSuperview" ref="926910107"/>
+									<bool key="NSEnabled">YES</bool>
+									<object class="NSButtonCell" key="NSCell" id="607686812">
+										<int key="NSCellFlags">67239424</int>
+										<int key="NSCellFlags2">134217728</int>
+										<string key="NSContents">^IDS_SPEECH_INPUT_MIC_SETTINGS</string>
+										<object class="NSFont" key="NSSupport" id="487155245">
+											<string key="NSName">LucidaGrande</string>
+											<double key="NSSize">13</double>
+											<int key="NSfFlags">1044</int>
+										</object>
+										<reference key="NSControlView" ref="476113060"/>
+										<int key="NSButtonFlags">-2046672641</int>
+										<int key="NSButtonFlags2">134</int>
+										<string key="NSAlternateContents"/>
+										<string key="NSKeyEquivalent"/>
+										<int key="NSPeriodicDelay">200</int>
+										<int key="NSPeriodicInterval">25</int>
+									</object>
+								</object>
 								<object class="NSButton" id="1038338233">
 									<reference key="NSNextResponder" ref="926910107"/>
 									<int key="NSvFlags">268</int>
@@ -67,11 +91,7 @@
 										<int key="NSCellFlags">67239424</int>
 										<int key="NSCellFlags2">134217728</int>
 										<string key="NSContents">^IDS_SPEECH_INPUT_TRY_AGAIN</string>
-										<object class="NSFont" key="NSSupport" id="487155245">
-											<string key="NSName">LucidaGrande</string>
-											<double key="NSSize">13</double>
-											<int key="NSfFlags">1044</int>
-										</object>
+										<reference key="NSSupport" ref="487155245"/>
 										<reference key="NSControlView" ref="1038338233"/>
 										<int key="NSButtonFlags">-2038284033</int>
 										<int key="NSButtonFlags2">129</int>
@@ -272,6 +292,22 @@
 					</object>
 					<int key="connectionID">841</int>
 				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBActionConnection" key="connection">
+						<string key="label">micSettings:</string>
+						<reference key="source" ref="1021"/>
+						<reference key="destination" ref="476113060"/>
+					</object>
+					<int key="connectionID">844</int>
+				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBOutletConnection" key="connection">
+						<string key="label">micSettingsButton_</string>
+						<reference key="source" ref="1021"/>
+						<reference key="destination" ref="476113060"/>
+					</object>
+					<int key="connectionID">845</int>
+				</object>
 			</object>
 			<object class="IBMutableOrderedSet" key="objectRecords">
 				<object class="NSArray" key="orderedObjects">
@@ -337,6 +373,7 @@
 							<reference ref="793691203"/>
 							<reference ref="789820196"/>
 							<reference ref="1038338233"/>
+							<reference ref="476113060"/>
 						</object>
 						<reference key="parent" ref="414427165"/>
 					</object>
@@ -396,6 +433,20 @@
 						<reference key="object" ref="84459405"/>
 						<reference key="parent" ref="1038338233"/>
 					</object>
+					<object class="IBObjectRecord">
+						<int key="objectID">842</int>
+						<reference key="object" ref="476113060"/>
+						<object class="NSMutableArray" key="children">
+							<bool key="EncodedWithXMLCoder">YES</bool>
+							<reference ref="607686812"/>
+						</object>
+						<reference key="parent" ref="926910107"/>
+					</object>
+					<object class="IBObjectRecord">
+						<int key="objectID">843</int>
+						<reference key="object" ref="607686812"/>
+						<reference key="parent" ref="476113060"/>
+					</object>
 				</object>
 			</object>
 			<object class="NSMutableDictionary" key="flattenedProperties">
@@ -419,13 +470,16 @@
 					<string>825.IBPluginDependency</string>
 					<string>838.IBPluginDependency</string>
 					<string>839.IBPluginDependency</string>
+					<string>842.IBPluginDependency</string>
+					<string>843.CustomClassName</string>
+					<string>843.IBPluginDependency</string>
 				</object>
 				<object class="NSMutableArray" key="dict.values">
 					<bool key="EncodedWithXMLCoder">YES</bool>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
-					<string>{{593, 566}, {190, 190}}</string>
+					<string>{{541, 417}, {190, 190}}</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
-					<string>{{593, 566}, {190, 190}}</string>
+					<string>{{541, 417}, {190, 190}}</string>
 					<boolean value="NO"/>
 					<string>{{11, 666}, {480, 270}}</string>
 					<string>{3.40282e+38, 3.40282e+38}</string>
@@ -438,6 +492,9 @@
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
+					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
+					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
+					<string>HyperlinkButtonCell</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 				</object>
 			</object>
@@ -457,7 +514,7 @@
 				</object>
 			</object>
 			<nil key="sourceID"/>
-			<int key="maxID">841</int>
+			<int key="maxID">845</int>
 		</object>
 		<object class="IBClassDescriber" key="IBDocument.Classes">
 			<object class="NSMutableArray" key="referencedPartialClassDescriptions">
@@ -468,13 +525,6 @@
 					<object class="NSMutableDictionary" key="outlets">
 						<string key="NS.key.0">bubble_</string>
 						<string key="NS.object.0">InfoBubbleView</string>
-					</object>
-					<object class="NSMutableDictionary" key="toOneOutletInfosByName">
-						<string key="NS.key.0">bubble_</string>
-						<object class="IBToOneOutletInfo" key="NS.object.0">
-							<string key="name">bubble_</string>
-							<string key="candidateClassName">InfoBubbleView</string>
-						</object>
 					</object>
 					<object class="IBClassDescriptionSource" key="sourceIdentifier">
 						<string key="majorKey">IBProjectSource</string>
@@ -515,30 +565,6 @@
 							<string>id</string>
 						</object>
 					</object>
-					<object class="NSMutableDictionary" key="toOneOutletInfosByName">
-						<bool key="EncodedWithXMLCoder">YES</bool>
-						<object class="NSArray" key="dict.sortedKeys">
-							<bool key="EncodedWithXMLCoder">YES</bool>
-							<string>otherObjectToLocalize_</string>
-							<string>owner_</string>
-							<string>yetAnotherObjectToLocalize_</string>
-						</object>
-						<object class="NSMutableArray" key="dict.values">
-							<bool key="EncodedWithXMLCoder">YES</bool>
-							<object class="IBToOneOutletInfo">
-								<string key="name">otherObjectToLocalize_</string>
-								<string key="candidateClassName">id</string>
-							</object>
-							<object class="IBToOneOutletInfo">
-								<string key="name">owner_</string>
-								<string key="candidateClassName">id</string>
-							</object>
-							<object class="IBToOneOutletInfo">
-								<string key="name">yetAnotherObjectToLocalize_</string>
-								<string key="candidateClassName">id</string>
-							</object>
-						</object>
-					</object>
 					<object class="IBClassDescriptionSource" key="sourceIdentifier">
 						<string key="majorKey">IBProjectSource</string>
 						<string key="minorKey">../third_party/GTM/AppKit/GTMUILocalizer.h</string>
@@ -562,33 +588,17 @@
 							<string>id</string>
 						</object>
 					</object>
-					<object class="NSMutableDictionary" key="toOneOutletInfosByName">
-						<bool key="EncodedWithXMLCoder">YES</bool>
-						<object class="NSArray" key="dict.sortedKeys">
-							<bool key="EncodedWithXMLCoder">YES</bool>
-							<string>localizerOwner_</string>
-							<string>localizer_</string>
-							<string>uiObject_</string>
-						</object>
-						<object class="NSMutableArray" key="dict.values">
-							<bool key="EncodedWithXMLCoder">YES</bool>
-							<object class="IBToOneOutletInfo">
-								<string key="name">localizerOwner_</string>
-								<string key="candidateClassName">id</string>
-							</object>
-							<object class="IBToOneOutletInfo">
-								<string key="name">localizer_</string>
-								<string key="candidateClassName">GTMUILocalizer</string>
-							</object>
-							<object class="IBToOneOutletInfo">
-								<string key="name">uiObject_</string>
-								<string key="candidateClassName">id</string>
-							</object>
-						</object>
-					</object>
 					<object class="IBClassDescriptionSource" key="sourceIdentifier">
 						<string key="majorKey">IBProjectSource</string>
 						<string key="minorKey">../third_party/GTM/AppKit/GTMUILocalizerAndLayoutTweaker.h</string>
+					</object>
+				</object>
+				<object class="IBPartialClassDescription">
+					<string key="className">HyperlinkButtonCell</string>
+					<string key="superclassName">NSButtonCell</string>
+					<object class="IBClassDescriptionSource" key="sourceIdentifier">
+						<string key="majorKey">IBProjectSource</string>
+						<string key="minorKey">browser/ui/cocoa/hyperlink_button_cell.h</string>
 					</object>
 				</object>
 				<object class="IBPartialClassDescription">
@@ -671,31 +681,14 @@
 						<object class="NSArray" key="dict.sortedKeys">
 							<bool key="EncodedWithXMLCoder">YES</bool>
 							<string>cancel:</string>
+							<string>micSettings:</string>
 							<string>tryAgain:</string>
 						</object>
 						<object class="NSMutableArray" key="dict.values">
 							<bool key="EncodedWithXMLCoder">YES</bool>
 							<string>id</string>
 							<string>id</string>
-						</object>
-					</object>
-					<object class="NSMutableDictionary" key="actionInfosByName">
-						<bool key="EncodedWithXMLCoder">YES</bool>
-						<object class="NSArray" key="dict.sortedKeys">
-							<bool key="EncodedWithXMLCoder">YES</bool>
-							<string>cancel:</string>
-							<string>tryAgain:</string>
-						</object>
-						<object class="NSMutableArray" key="dict.values">
-							<bool key="EncodedWithXMLCoder">YES</bool>
-							<object class="IBActionInfo">
-								<string key="name">cancel:</string>
-								<string key="candidateClassName">id</string>
-							</object>
-							<object class="IBActionInfo">
-								<string key="name">tryAgain:</string>
-								<string key="candidateClassName">id</string>
-							</object>
+							<string>id</string>
 						</object>
 					</object>
 					<object class="NSMutableDictionary" key="outlets">
@@ -705,6 +698,7 @@
 							<string>cancelButton_</string>
 							<string>iconImage_</string>
 							<string>instructionLabel_</string>
+							<string>micSettingsButton_</string>
 							<string>tryAgainButton_</string>
 						</object>
 						<object class="NSMutableArray" key="dict.values">
@@ -713,35 +707,7 @@
 							<string>NSImageView</string>
 							<string>NSTextField</string>
 							<string>NSButton</string>
-						</object>
-					</object>
-					<object class="NSMutableDictionary" key="toOneOutletInfosByName">
-						<bool key="EncodedWithXMLCoder">YES</bool>
-						<object class="NSArray" key="dict.sortedKeys">
-							<bool key="EncodedWithXMLCoder">YES</bool>
-							<string>cancelButton_</string>
-							<string>iconImage_</string>
-							<string>instructionLabel_</string>
-							<string>tryAgainButton_</string>
-						</object>
-						<object class="NSMutableArray" key="dict.values">
-							<bool key="EncodedWithXMLCoder">YES</bool>
-							<object class="IBToOneOutletInfo">
-								<string key="name">cancelButton_</string>
-								<string key="candidateClassName">NSButton</string>
-							</object>
-							<object class="IBToOneOutletInfo">
-								<string key="name">iconImage_</string>
-								<string key="candidateClassName">NSImageView</string>
-							</object>
-							<object class="IBToOneOutletInfo">
-								<string key="name">instructionLabel_</string>
-								<string key="candidateClassName">NSTextField</string>
-							</object>
-							<object class="IBToOneOutletInfo">
-								<string key="name">tryAgainButton_</string>
-								<string key="candidateClassName">NSButton</string>
-							</object>
+							<string>NSButton</string>
 						</object>
 					</object>
 					<object class="IBClassDescriptionSource" key="sourceIdentifier">
@@ -752,6 +718,10 @@
 				<object class="IBPartialClassDescription">
 					<string key="className">SpeechInputWindowController</string>
 					<string key="superclassName">BaseBubbleController</string>
+					<object class="NSMutableDictionary" key="outlets">
+						<string key="NS.key.0">myOutlet1</string>
+						<string key="NS.object.0">id</string>
+					</object>
 					<object class="IBClassDescriptionSource" key="sourceIdentifier">
 						<string key="majorKey">IBUserSource</string>
 						<string key="minorKey"/>
@@ -1444,13 +1414,6 @@
 						<string key="NS.key.0">showWindow:</string>
 						<string key="NS.object.0">id</string>
 					</object>
-					<object class="NSMutableDictionary" key="actionInfosByName">
-						<string key="NS.key.0">showWindow:</string>
-						<object class="IBActionInfo" key="NS.object.0">
-							<string key="name">showWindow:</string>
-							<string key="candidateClassName">id</string>
-						</object>
-					</object>
 					<object class="IBClassDescriptionSource" key="sourceIdentifier">
 						<string key="majorKey">IBFrameworkSource</string>
 						<string key="minorKey">AppKit.framework/Headers/NSWindowController.h</string>
@@ -1473,7 +1436,7 @@
 		<int key="IBDocument.defaultPropertyAccessControl">3</int>
 		<object class="NSMutableDictionary" key="IBDocument.LastKnownImageSizes">
 			<string key="NS.key.0">speech_input_recording</string>
-			<string key="NS.object.0">{51, 51}</string>
+			<string key="NS.object.0">{128, 128}</string>
 		</object>
 	</data>
 </archive>

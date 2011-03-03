@@ -9,6 +9,7 @@
 #include "chrome/browser/ui/cocoa/info_bubble_view.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
+#include "media/audio/audio_manager.h"
 #import "skia/ext/skia_utils_mac.h"
 #import "third_party/GTM/AppKit/GTMUILocalizerAndLayoutTweaker.h"
 #include "ui/base/l10n/l10n_util_mac.h"
@@ -45,6 +46,9 @@ const int kBubbleHorizontalMargin = 5;  // Space on either sides of controls.
 
   NSWindow* window = [self window];
   [[self bubble] setArrowLocation:info_bubble::kTopLeft];
+  NSImage* icon = ResourceBundle::GetSharedInstance().GetNativeImageNamed(
+      IDR_SPEECH_INPUT_MIC_EMPTY);
+  [iconImage_ setImage:icon];
 
   NSSize newSize = [self calculateContentSize];
   [[self bubble] setFrameSize:newSize];
@@ -68,37 +72,45 @@ const int kBubbleHorizontalMargin = 5;  // Space on either sides of controls.
   delegate_->InfoBubbleButtonClicked(SpeechInputBubble::BUTTON_TRY_AGAIN);
 }
 
+- (IBAction)micSettings:(id)sender {
+  [[NSWorkspace sharedWorkspace] openFile:
+       @"/System/Library/PreferencePanes/Sound.prefPane"];
+}
+
 // Calculate the window dimensions to reflect the sum height and max width of
 // all controls, with appropriate spacing between and around them. The returned
 // size is in view coordinates.
 - (NSSize)calculateContentSize {
   [GTMUILocalizerAndLayoutTweaker sizeToFitView:cancelButton_];
   [GTMUILocalizerAndLayoutTweaker sizeToFitView:tryAgainButton_];
+  [GTMUILocalizerAndLayoutTweaker sizeToFitView:micSettingsButton_];
   NSSize cancelSize = [cancelButton_ bounds].size;
   NSSize tryAgainSize = [tryAgainButton_ bounds].size;
-  int newHeight = cancelSize.height + kBubbleControlVerticalSpacing;
-  int newWidth = cancelSize.width + tryAgainSize.width;
+  CGFloat newHeight = cancelSize.height + kBubbleControlVerticalSpacing;
+  CGFloat newWidth = cancelSize.width + tryAgainSize.width;
 
   if (![iconImage_ isHidden]) {
-    NSImage* icon = ResourceBundle::GetSharedInstance().GetNativeImageNamed(
-        IDR_SPEECH_INPUT_MIC_EMPTY);
-    NSSize size = [icon size];
-    newHeight += size.height + kBubbleControlVerticalSpacing;
-    if (newWidth < size.width)
-      newWidth = size.width;
-  } else {
-    newHeight += kBubbleControlVerticalSpacing;
+    NSSize size = [[iconImage_ image] size];
+    newHeight += size.height;
+    newWidth = std::max(newWidth, size.width);
   }
 
-  [GTMUILocalizerAndLayoutTweaker sizeToFitFixedWidthTextField:
-      instructionLabel_];
-  NSSize size = [instructionLabel_ bounds].size;
-  newHeight += size.height;
-  if (newWidth < size.width)
-    newWidth = size.width;
+  if (![instructionLabel_ isHidden]) {
+    [GTMUILocalizerAndLayoutTweaker sizeToFitFixedWidthTextField:
+        instructionLabel_];
+    NSSize size = [instructionLabel_ bounds].size;
+    newHeight += size.height + kBubbleControlVerticalSpacing;
+    newWidth = std::max(newWidth, size.width);
+  }
+
+  if (![micSettingsButton_ isHidden]) {
+    NSSize size = [micSettingsButton_ bounds].size;
+    newHeight += size.height + kBubbleControlVerticalSpacing;
+    newWidth = std::max(newWidth, size.width);
+  }
 
   return NSMakeSize(newWidth + 2 * kBubbleHorizontalMargin,
-                    newHeight + 2 * kBubbleControlVerticalSpacing);
+                    newHeight + 3 * kBubbleControlVerticalSpacing);
 }
 
 // Position the controls within the given content area bounds.
@@ -123,18 +135,29 @@ const int kBubbleHorizontalMargin = 5;  // Space on either sides of controls.
   y += NSHeight(cancelRect) + kBubbleControlVerticalSpacing;
 
   NSRect rect;
-  if (![iconImage_ isHidden]) {
-    rect = [iconImage_ bounds];
+  if (![micSettingsButton_ isHidden]) {
+    rect = [micSettingsButton_ bounds];
     rect.origin.x = (size.width - NSWidth(rect)) / 2;
     rect.origin.y = y;
-    [iconImage_ setFrame:rect];
+    [micSettingsButton_ setFrame:rect];
     y += rect.size.height + kBubbleControlVerticalSpacing;
   }
 
-  rect = [instructionLabel_ bounds];
-  rect.origin.x = (size.width - NSWidth(rect)) / 2;
-  rect.origin.y = y;
-  [instructionLabel_ setFrame:rect];
+  if (![instructionLabel_ isHidden]) {
+    rect = [instructionLabel_ bounds];
+    rect.origin.x = (size.width - NSWidth(rect)) / 2;
+    rect.origin.y = y;
+    [instructionLabel_ setFrame:rect];
+    y += rect.size.height + kBubbleControlVerticalSpacing;
+  }
+
+  if (![iconImage_ isHidden]) {
+    rect.size = [[iconImage_ image] size];
+    rect.origin.x = (size.width - NSWidth(rect)) / 2;
+    rect.origin.y = y;
+    [iconImage_ setFrame:rect];
+  }
+
 }
 
 - (void)updateLayout:(SpeechInputBubbleBase::DisplayMode)mode
@@ -144,20 +167,23 @@ const int kBubbleHorizontalMargin = 5;  // Space on either sides of controls.
     [instructionLabel_ setStringValue:base::SysUTF16ToNSString(messageText)];
     [iconImage_ setHidden:YES];
     [tryAgainButton_ setHidden:NO];
+    [instructionLabel_ setHidden:NO];
+    [micSettingsButton_ setHidden:NO];
   } else {
     if (mode == SpeechInputBubbleBase::DISPLAY_MODE_RECORDING) {
       [instructionLabel_ setStringValue:l10n_util::GetNSString(
           IDS_SPEECH_INPUT_BUBBLE_HEADING)];
+      [instructionLabel_ setHidden:NO];
       NSImage* icon = ResourceBundle::GetSharedInstance().GetNativeImageNamed(
           IDR_SPEECH_INPUT_MIC_EMPTY);
       [iconImage_ setImage:icon];
     } else {
-      [instructionLabel_ setStringValue:l10n_util::GetNSString(
-          IDS_SPEECH_INPUT_BUBBLE_WORKING)];
+      [instructionLabel_ setHidden:YES];
     }
     [iconImage_ setHidden:NO];
     [iconImage_ setNeedsDisplay:YES];
     [tryAgainButton_ setHidden:YES];
+    [micSettingsButton_ setHidden:YES];
   }
 
   NSSize newSize = [self calculateContentSize];
