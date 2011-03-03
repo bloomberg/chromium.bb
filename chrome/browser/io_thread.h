@@ -112,7 +112,6 @@ class IOThread : public BrowserProcessSubThread {
  protected:
   virtual void Init();
   virtual void CleanUp();
-  virtual void CleanUpAfterMessageLoopDestruction();
 
  private:
   static void RegisterPrefs(PrefService* local_state);
@@ -176,7 +175,7 @@ class IOThread : public BrowserProcessSubThread {
 
   // Keeps track of all live ChromeURLRequestContextGetters, so the
   // ChromeURLRequestContexts can be released during
-  // IOThread::CleanUpAfterMessageLoopDestruction().
+  // IOThread::CleanUp().
   std::list<ChromeURLRequestContextGetter*> url_request_context_getters_;
 
   DISALLOW_COPY_AND_ASSIGN(IOThread);

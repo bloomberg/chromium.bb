@@ -28,7 +28,7 @@ void BrowserProcessSubThread::Init() {
   notification_service_ = new NotificationService;
 }
 
-void BrowserProcessSubThread::CleanUpAfterMessageLoopDestruction() {
+void BrowserProcessSubThread::CleanUp() {
   delete notification_service_;
   notification_service_ = NULL;
 

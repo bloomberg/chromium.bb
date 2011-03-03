@@ -430,20 +430,12 @@ void IOThread::CleanUp() {
   delete globals_;
   globals_ = NULL;
 
-  BrowserProcessSubThread::CleanUp();
-}
+  // net::URLRequest instances must NOT outlive the IO thread.
+  base::debug::LeakTracker<net::URLRequest>::CheckForLeaks();
 
-void IOThread::CleanUpAfterMessageLoopDestruction() {
   // This will delete the |notification_service_|.  Make sure it's done after
   // anything else can reference it.
-  BrowserProcessSubThread::CleanUpAfterMessageLoopDestruction();
-
-  // net::URLRequest instances must NOT outlive the IO thread.
-  //
-  // To allow for URLRequests to be deleted from
-  // MessageLoop::DestructionObserver this check has to happen after CleanUp
-  // (which runs before DestructionObservers).
-  base::debug::LeakTracker<net::URLRequest>::CheckForLeaks();
+  BrowserProcessSubThread::CleanUp();
 }
 
 // static
