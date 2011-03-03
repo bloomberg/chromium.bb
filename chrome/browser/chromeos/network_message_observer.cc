@@ -148,10 +148,14 @@ void NetworkMessageObserver::ShowNoDataNotification(
 
 void NetworkMessageObserver::ShowLowDataNotification(
     const CellularDataPlan* plan) {
-  string16 message = plan->plan_type == CELLULAR_DATA_PLAN_UNLIMITED ?
-      plan->GetPlanExpiration() :
-      l10n_util::GetStringFUTF16(IDS_NETWORK_DATA_REMAINING_MESSAGE,
-           UTF8ToUTF16(base::Int64ToString(plan->remaining_mbytes())));
+  string16 message;
+  if (plan->plan_type == CELLULAR_DATA_PLAN_UNLIMITED) {
+    message = plan->GetPlanExpiration();
+  } else {
+    int64 remaining_mbytes = plan->remaining_data() / (1024 * 1024);
+    message = l10n_util::GetStringFUTF16(IDS_NETWORK_DATA_REMAINING_MESSAGE,
+        UTF8ToUTF16(base::Int64ToString(remaining_mbytes)));
+  }
   notification_low_data_.Show(message,
       l10n_util::GetStringUTF16(IDS_NETWORK_MORE_INFO_MESSAGE),
       NewCallback(this, &NetworkMessageObserver::OpenMoreInfoPage),

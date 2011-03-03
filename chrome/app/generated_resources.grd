@@ -9379,8 +9379,14 @@ This web page was killed, either because Chrome ran out of memory, or you chose 
       <message name="IDS_NETWORK_DATA_REMAINING_MESSAGE" desc="Message for network data remaining notification">
         <ph name="megabytes">$1<ex>50</ex></ph> MB remaining
       </message>
-      <message name="IDS_NETWORK_DATA_AVAILABLE_MESSAGE" desc="Message for network data available menu item">
+      <message name="IDS_NETWORK_DATA_MB_AVAILABLE_MESSAGE" desc="Message for network data available menu item in megabytes">
         <ph name="megabytes">$1<ex>50</ex></ph> MB available
+      </message>
+      <message name="IDS_NETWORK_DATA_LESS_THAN_ONE_MB_AVAILABLE_MESSAGE" desc="Message for network data available menu item when less than 1 MB available">
+        Less than 1 MB available
+      </message>
+      <message name="IDS_NETWORK_DATA_NONE_AVAILABLE_MESSAGE" desc="Message for network data available menu item when none available">
+        No data available
       </message>
       <message name="IDS_NETWORK_NO_DATA_PLAN_MESSAGE" desc="Message for network data remaining notification">
         No active <ph name="network">$1<ex>YBH</ex></ph> data plan

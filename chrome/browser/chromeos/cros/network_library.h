@@ -219,6 +219,7 @@ class WirelessNetwork : public Network {
 
 // Class for networks of TYPE_CELLULAR.
 class CellularDataPlan;
+
 class CellularNetwork : public WirelessNetwork {
  public:
   enum DataLeft {
@@ -389,8 +390,8 @@ class CellularDataPlan {
   std::string GetUniqueIdentifier() const;
   base::TimeDelta remaining_time() const;
   int64 remaining_minutes() const;
+  // Returns plan data remaining in bytes.
   int64 remaining_data() const;
-  int64 remaining_mbytes() const;
   // TODO(stevenjb): Make these private with accessors and properly named.
   std::string plan_name;
   CellularDataPlanType plan_type;

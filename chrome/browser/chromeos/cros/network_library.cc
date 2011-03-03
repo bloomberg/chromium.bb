@@ -568,7 +568,7 @@ NetworkDevice::NetworkDevice(const std::string& device_path)
 }
 
 bool NetworkDevice::ParseValue(int index, const Value* value) {
-  switch(index) {
+  switch (index) {
     case PROPERTY_INDEX_TYPE: {
       std::string type_string;
       if (value->GetAsString(&type_string)) {
@@ -856,9 +856,10 @@ string16 CellularDataPlan::GetRemainingWarning() const {
              plan_type == chromeos::CELLULAR_DATA_PLAN_METERED_BASE) {
     // Metered plan. Show low data and out of data.
     if (remaining_data() <= chromeos::kCellularDataVeryLowBytes) {
+      int64 remaining_mbytes = remaining_data() / (1024 * 1024);
       return l10n_util::GetStringFUTF16(
           IDS_NETWORK_DATA_REMAINING_MESSAGE,
-          UTF8ToUTF16(base::Int64ToString(remaining_mbytes())));
+          UTF8ToUTF16(base::Int64ToString(remaining_mbytes)));
     }
   }
   return string16();
@@ -894,9 +895,19 @@ string16 CellularDataPlan::GetUsageInfo() const {
   } else if (plan_type == chromeos::CELLULAR_DATA_PLAN_METERED_PAID ||
              plan_type == chromeos::CELLULAR_DATA_PLAN_METERED_BASE) {
     // Metered plan. Show low data and out of data.
-    return l10n_util::GetStringFUTF16(
-        IDS_NETWORK_DATA_AVAILABLE_MESSAGE,
-        UTF8ToUTF16(base::Int64ToString(remaining_mbytes())));
+    int64 remaining_bytes = remaining_data();
+    if (remaining_bytes == 0) {
+      return l10n_util::GetStringUTF16(
+          IDS_NETWORK_DATA_NONE_AVAILABLE_MESSAGE);
+    } else if (remaining_bytes < 1024 * 1024) {
+      return l10n_util::GetStringUTF16(
+          IDS_NETWORK_DATA_LESS_THAN_ONE_MB_AVAILABLE_MESSAGE);
+    } else {
+      int64 remaining_mb = remaining_bytes / (1024 * 1024);
+      return l10n_util::GetStringFUTF16(
+          IDS_NETWORK_DATA_MB_AVAILABLE_MESSAGE,
+          UTF8ToUTF16(base::Int64ToString(remaining_mb)));
+    }
   }
   return string16();
 }
@@ -924,10 +935,6 @@ int64 CellularDataPlan::remaining_minutes() const {
 int64 CellularDataPlan::remaining_data() const {
   int64 data = plan_data_bytes - data_bytes_used;
   return data < 0 ? 0 : data;
-}
-
-int64 CellularDataPlan::remaining_mbytes() const {
-  return remaining_data() / (1024 * 1024);
 }
 
 string16 CellularDataPlan::GetPlanExpiration() const {
@@ -1894,7 +1901,7 @@ class NetworkLibraryImpl : public NetworkLibrary  {
     if (!key)
       return;
     int index = property_index_parser().Get(std::string(key));
-    switch(index) {
+    switch (index) {
       case PROPERTY_INDEX_STATE:
         // Currently we ignore the network manager state.
         break;
