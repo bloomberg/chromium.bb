@@ -29,9 +29,6 @@ class CapturerFake : public Capturer {
   // Generates an image in the front buffer.
   void GenerateImage();
 
-  int width_;
-  int height_;
-  int bytes_per_row_;
   int box_pos_x_;
   int box_pos_y_;
   int box_speed_x_;

@@ -9,8 +9,8 @@
 #include "base/task.h"
 #include "media/base/video_frame.h"
 #include "remoting/base/decoder.h"  // For UpdatedRects
-#include "remoting/client/chromoting_view.h"
 #include "remoting/client/frame_consumer.h"
+#include "remoting/client/chromoting_view.h"
 
 typedef unsigned long XID;
 typedef struct _XDisplay Display;

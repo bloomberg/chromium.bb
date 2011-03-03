@@ -26,31 +26,6 @@ class CapturerGdi : public Capturer {
   virtual void ScreenConfigurationChanged();
 
  private:
-  struct VideoFrameBuffer {
-    VideoFrameBuffer(void* data, const gfx::Size& size, int bytes_per_pixel,
-                     int bytes_per_row)
-      : data(data), size(size), bytes_per_pixel(bytes_per_pixel),
-        bytes_per_row(bytes_per_row) {
-    }
-    VideoFrameBuffer() {
-      data = 0;
-      size = gfx::Size(0, 0);
-      bytes_per_pixel = 0;
-      bytes_per_row = 0;
-    }
-    void* data;
-    gfx::Size size;
-    int bytes_per_pixel;
-    int bytes_per_row;
-  };
-
-  // Make sure that the current buffer has the same size as the screen.
-  void UpdateBufferCapture(const gfx::Size& size);
-
-  // Allocate memory for a buffer of a given size, freeing any memory previously
-  // allocated for that buffer.
-  void ReallocateBuffer(int buffer_index, const gfx::Size& size);
-
   virtual void CalculateInvalidRects();
   virtual void CaptureRects(const InvalidRects& rects,
                             CaptureCompletedCallback* callback);
@@ -59,24 +34,13 @@ class CapturerGdi : public Capturer {
   // Generates an image in the current buffer.
   void CaptureImage();
 
-  // Gets the current screen size and calls ScreenConfigurationChanged
-  // if the screen size has changed.
-  void MaybeChangeScreenConfiguration();
-
-  // Gets the screen size.
-  gfx::Size GetScreenSize();
-
   // Gdi specific information about screen.
   HDC desktop_dc_;
   HDC memory_dc_;
   HBITMAP target_bitmap_[kNumBuffers];
 
-  // The screen size attached to the device contexts through which the screen
-  // is captured.
-  gfx::Size dc_size_;
-
   // We have two buffers for the screen images as required by Capturer.
-  VideoFrameBuffer buffers_[kNumBuffers];
+  void* buffers_[kNumBuffers];
 
   // Class to calculate the difference between two screen bitmaps.
   scoped_ptr<Differ> differ_;

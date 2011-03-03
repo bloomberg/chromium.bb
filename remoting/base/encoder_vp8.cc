@@ -34,9 +34,7 @@ EncoderVp8::EncoderVp8()
       image_(NULL),
       active_map_width_(0),
       active_map_height_(0),
-      last_timestamp_(0),
-      width_(0),
-      height_(0) {
+      last_timestamp_(0) {
 }
 
 EncoderVp8::~EncoderVp8() {
@@ -47,8 +45,6 @@ EncoderVp8::~EncoderVp8() {
 }
 
 bool EncoderVp8::Init(int width, int height) {
-  width_ = width;
-  height_ = height;
   codec_.reset(new vpx_codec_ctx_t());
   image_.reset(new vpx_image_t());
   memset(image_.get(), 0, sizeof(vpx_image_t));
@@ -60,30 +56,6 @@ bool EncoderVp8::Init(int width, int height) {
   image_->w = width;
   image_->d_h = height;
   image_->h = height;
-
-  // YUV image size is 1.5 times of a plane. Multiplication is performed first
-  // to avoid rounding error.
-  const int plane_size = width * height;
-  const int size = plane_size * 3 / 2;
-
-  yuv_image_.reset(new uint8[size]);
-
-  // Reset image value to 128 so we just need to fill in the y plane.
-  memset(yuv_image_.get(), 128, size);
-
-  // Fill in the information for |image_|.
-  unsigned char* image = reinterpret_cast<unsigned char*>(yuv_image_.get());
-  image_->planes[0] = image;
-  image_->planes[1] = image + plane_size;
-
-  // The V plane starts from 1.25 of the plane size.
-  image_->planes[2] = image + plane_size + plane_size / 4;
-
-  // In YV12 Y plane has full width, UV plane has half width because of
-  // subsampling.
-  image_->stride[0] = image_->w;
-  image_->stride[1] = image_->w / 2;
-  image_->stride[2] = image_->w / 2;
 
   vpx_codec_enc_cfg_t config;
   const vpx_codec_iface_t* algo = vpx_codec_vp8_cx();
@@ -140,6 +112,34 @@ static gfx::Rect AlignRect(const gfx::Rect& rect, int width, int height) {
 
 bool EncoderVp8::PrepareImage(scoped_refptr<CaptureData> capture_data,
                               std::vector<gfx::Rect>* updated_rects) {
+  const int plane_size = capture_data->width() * capture_data->height();
+
+  if (!yuv_image_.get()) {
+
+    // YUV image size is 1.5 times of a plane. Multiplication is performed first
+    // to avoid rounding error.
+    const int size = plane_size * 3 / 2;
+
+    yuv_image_.reset(new uint8[size]);
+
+    // Reset image value to 128 so we just need to fill in the y plane.
+    memset(yuv_image_.get(), 128, size);
+
+    // Fill in the information for |image_|.
+    unsigned char* image = reinterpret_cast<unsigned char*>(yuv_image_.get());
+    image_->planes[0] = image;
+    image_->planes[1] = image + plane_size;
+
+    // The V plane starts from 1.25 of the plane size.
+    image_->planes[2] = image + plane_size + plane_size / 4;
+
+    // In YV12 Y plane has full width, UV plane has half width because of
+    // subsampling.
+    image_->stride[0] = image_->w;
+    image_->stride[1] = image_->w / 2;
+    image_->stride[2] = image_->w / 2;
+  }
+
   // Perform RGB->YUV conversion.
   if (capture_data->pixel_format() != media::VideoFrame::RGB32) {
     LOG(ERROR) << "Only RGB32 is supported";
@@ -149,7 +149,6 @@ bool EncoderVp8::PrepareImage(scoped_refptr<CaptureData> capture_data,
   const InvalidRects& rects = capture_data->dirty_rects();
   const uint8* in = capture_data->data_planes().data[0];
   const int in_stride = capture_data->data_planes().strides[0];
-  const int plane_size = capture_data->width() * capture_data->height();
   uint8* y_out = yuv_image_.get();
   uint8* u_out = yuv_image_.get() + plane_size;
   uint8* v_out = yuv_image_.get() + plane_size + plane_size / 4;
@@ -206,8 +205,7 @@ void EncoderVp8::PrepareActiveMap(
 void EncoderVp8::Encode(scoped_refptr<CaptureData> capture_data,
                         bool key_frame,
                         DataAvailableCallback* data_available_callback) {
-  if (!initialized_ || (capture_data->width() != width_) ||
-      (capture_data->height() != height_)) {
+  if (!initialized_) {
     bool ret = Init(capture_data->width(), capture_data->height());
     // TODO(hclam): Handle error better.
     DCHECK(ret) << "Initialization of encoder failed";
@@ -271,8 +269,6 @@ void EncoderVp8::Encode(scoped_refptr<CaptureData> capture_data,
   message->mutable_format()->set_encoding(VideoPacketFormat::ENCODING_VP8);
   message->set_flags(VideoPacket::FIRST_PACKET | VideoPacket::LAST_PACKET |
                      VideoPacket::LAST_PARTITION);
-  message->mutable_format()->set_screen_width(capture_data->width());
-  message->mutable_format()->set_screen_height(capture_data->height());
   for (size_t i = 0; i < updated_rects.size(); ++i) {
     Rect* rect = message->add_dirty_rects();
     rect->set_x(updated_rects[i].x());

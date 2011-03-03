@@ -24,7 +24,6 @@ function init() {
   // a 'callback' property that contains the callback function.
   plugin.connectionInfoUpdate = connectionInfoUpdateCallback;
   plugin.debugInfo = debugInfoCallback;
-  plugin.desktopSizeUpdate = desktopSizeChanged;
   plugin.loginChallenge = loginChallengeCallback;
 
   console.log('connect request received: ' + chromoting.hostname + ' by ' +

@@ -52,6 +52,12 @@ class Capturer {
   // Called when the screen configuration is changed.
   virtual void ScreenConfigurationChanged() = 0;
 
+  // Return the width of the screen.
+  virtual int width() const;
+
+  // Return the height of the screen.
+  virtual int height() const;
+
   // Return the pixel format of the screen.
   virtual media::VideoFrame::Format pixel_format() const;
 
@@ -61,11 +67,7 @@ class Capturer {
   // Invalidate the specified screen rects.
   void InvalidateRects(const InvalidRects& inval_rects);
 
-  // Invalidate the entire screen, of a given size.
-  void InvalidateFullScreen(int width, int height);
-
-  // Invalidate the entire screen, using the size of the most recently
-  // captured screen.
+  // Invalidate the entire screen.
   virtual void InvalidateFullScreen();
 
   // Capture the screen data associated with each of the accumulated
@@ -82,10 +84,6 @@ class Capturer {
   // There can be at most one concurrent read going on when this
   // method is called.
   virtual void CaptureInvalidRects(CaptureCompletedCallback* callback);
-
-  // Get the width/height of the most recently captured screen.
-  int width_most_recent() { return width_most_recent_; }
-  int height_most_recent() { return height_most_recent_; }
 
  protected:
   explicit Capturer(MessageLoop* message_loop);
@@ -118,13 +116,18 @@ class Capturer {
 
   // Called by subclasses' CalculateInvalidRects() method to check if
   // InvalidateFullScreen() was called by user.
-  bool IsCaptureFullScreen(int width, int height);
+  bool IsCaptureFullScreen();
 
   // Number of screen buffers.
   static const int kNumBuffers = 2;
 
+  // Capture screen dimensions.
+  int width_;
+  int height_;
+
   // Format of pixels returned in buffer.
   media::VideoFrame::Format pixel_format_;
+  int bytes_per_row_;
 
   // The current buffer with valid data for reading.
   int current_buffer_;
@@ -140,10 +143,6 @@ class Capturer {
 
   // A lock protecting |inval_rects_| across threads.
   base::Lock inval_rects_lock_;
-
-  // The width and height of the most recently captured screen.
-  int width_most_recent_;
-  int height_most_recent_;
 };
 
 }  // namespace remoting

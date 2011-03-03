@@ -97,14 +97,10 @@ void EventExecutorWin::HandleMouse(const MouseEvent* event) {
     INPUT input;
     input.type = INPUT_MOUSE;
     input.mi.time = 0;
-    int screen_width = capturer_->width_most_recent();
-    int screen_height = capturer_->height_most_recent();
-    if ((screen_width > 0) && (screen_height > 0)) {
-      input.mi.dx = static_cast<int>((x * 65535) / screen_width);
-      input.mi.dy = static_cast<int>((y * 65535) / screen_height);
-      input.mi.dwFlags = MOUSEEVENTF_MOVE | MOUSEEVENTF_ABSOLUTE;
-      SendInput(1, &input, sizeof(INPUT));
-    }
+    input.mi.dx = static_cast<int>((x * 65535) / capturer_->width());
+    input.mi.dy = static_cast<int>((y * 65535) / capturer_->height());
+    input.mi.dwFlags = MOUSEEVENTF_MOVE | MOUSEEVENTF_ABSOLUTE;
+    SendInput(1, &input, sizeof(INPUT));
   }
 
   if (event->has_wheel_offset_x() && event->has_wheel_offset_y()) {

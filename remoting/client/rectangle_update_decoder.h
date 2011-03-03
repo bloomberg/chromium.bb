@@ -8,13 +8,13 @@
 #include "base/scoped_ptr.h"
 #include "base/task.h"
 #include "media/base/video_frame.h"
-#include "remoting/base/decoder.h"
 #include "ui/gfx/size.h"
 
 class MessageLoop;
 
 namespace remoting {
 
+class Decoder;
 class FrameConsumer;
 class VideoPacketFormat;
 class VideoPacket;
@@ -26,11 +26,11 @@ class SessionConfig;
 // TODO(ajwong): Re-examine this API, especially with regards to how error
 // conditions on each step are reported.  Should they be CHECKs? Logs? Other?
 // TODO(sergeyu): Rename this class.
-class RectangleUpdateDecoder :
-    public base::RefCountedThreadSafe<RectangleUpdateDecoder> {
+class RectangleUpdateDecoder {
  public:
   RectangleUpdateDecoder(MessageLoop* message_loop,
                          FrameConsumer* consumer);
+  ~RectangleUpdateDecoder();
 
   // Initializes decoder with the infromation from the protocol config.
   void Initialize(const protocol::SessionConfig* config);
@@ -45,23 +45,20 @@ class RectangleUpdateDecoder :
   void DecodePacket(const VideoPacket* packet, Task* done);
 
  private:
-   friend class base::RefCountedThreadSafe<RectangleUpdateDecoder>;
-  ~RectangleUpdateDecoder();
+  void InitializeDecoder(Task* done);
 
-  void AllocateFrame(const VideoPacket* packet, Task* done);
   void ProcessPacketData(const VideoPacket* packet, Task* done);
 
   // Pointers to infrastructure objects.  Not owned.
   MessageLoop* message_loop_;
   FrameConsumer* consumer_;
 
-  gfx::Size initial_screen_size_;
+  gfx::Size screen_size_;
 
   scoped_ptr<Decoder> decoder_;
 
-  // The video frame that the decoder writes to.
+  // Framebuffer for the decoder.
   scoped_refptr<media::VideoFrame> frame_;
-  bool frame_is_new_;
 };
 
 }  // namespace remoting

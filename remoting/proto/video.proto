@@ -30,10 +30,6 @@ message VideoPacketFormat {
 
   // The encoding used for this image update.
   optional Encoding encoding = 5 [default = ENCODING_INVALID];
-  
-  // Width and height of the whole screen.
-  optional int32 screen_width = 6;
-  optional int32 screen_height = 7;
 }
 
 // TODO(hclam): Remove this message once we can obtain dirty rects from libvpx.

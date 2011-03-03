@@ -26,7 +26,6 @@ static const int kBytesPerPixel = 4;  // 32 bit RGB is 4 bytes per pixel.
 
 CapturerFake::CapturerFake(MessageLoop* message_loop)
     : Capturer(message_loop),
-      bytes_per_row_(0),
       box_pos_x_(0),
       box_pos_y_(0),
       box_speed_x_(kSpeed),
@@ -40,8 +39,8 @@ CapturerFake::~CapturerFake() {
 void CapturerFake::ScreenConfigurationChanged() {
   width_ = kWidth;
   height_ = kHeight;
-  bytes_per_row_ = width_ * kBytesPerPixel;
   pixel_format_ = media::VideoFrame::RGB32;
+  bytes_per_row_ = width_ * kBytesPerPixel;
 
   // Create memory for the buffers.
   int buffer_size = height_ * bytes_per_row_;
@@ -52,7 +51,7 @@ void CapturerFake::ScreenConfigurationChanged() {
 
 void CapturerFake::CalculateInvalidRects() {
   GenerateImage();
-  InvalidateFullScreen(width_, height_);
+  InvalidateFullScreen();
 }
 
 void CapturerFake::CaptureRects(const InvalidRects& rects,

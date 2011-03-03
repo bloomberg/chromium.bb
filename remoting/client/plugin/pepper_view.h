@@ -16,6 +16,7 @@
 #include "ppapi/cpp/graphics_2d.h"
 #include "remoting/client/chromoting_view.h"
 #include "remoting/client/frame_consumer.h"
+#include "remoting/client/rectangle_update_decoder.h"
 
 namespace remoting {
 
@@ -67,6 +68,8 @@ class PepperView : public ChromotingView,
 
   pp::Graphics2D graphics2d_;
 
+  int viewport_x_;
+  int viewport_y_;
   int viewport_width_;
   int viewport_height_;
 

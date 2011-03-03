@@ -160,9 +160,6 @@ class ChromotingScriptableObject
   // changed.
   void SignalConnectionInfoChange();
 
-  // Signal the JS code that the desktop size has changed.
-  void SignalDesktopSizeChange();
-
   pp::Var DoConnect(const std::vector<pp::Var>& args, pp::Var* exception);
   pp::Var DoDisconnect(const std::vector<pp::Var>& args, pp::Var* exception);
 

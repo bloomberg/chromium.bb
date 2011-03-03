@@ -22,8 +22,8 @@ CapturerFakeAscii::~CapturerFakeAscii() {
 void CapturerFakeAscii::ScreenConfigurationChanged() {
   width_ = kWidth;
   height_ = kHeight;
-  bytes_per_row_ = width_ * kBytesPerPixel;
   pixel_format_ = media::VideoFrame::ASCII;
+  bytes_per_row_ = width_ * kBytesPerPixel;
 
   // Create memory for the buffers.
   int buffer_size = height_ * bytes_per_row_;
