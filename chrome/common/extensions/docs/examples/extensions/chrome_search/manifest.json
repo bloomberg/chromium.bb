@@ -4,6 +4,6 @@
   "name": "Chromium Search",
   "omnibox": { "keyword" : "src" },
   "permissions": [ "tabs", "http://www.google.com/" ],
-  "version": "5",
+  "version": "6",
   "minimum_chrome_version": "9"
 }

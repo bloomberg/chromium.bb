@@ -116,7 +116,7 @@ function search(query, callback) {
     query = '"' + query + '"';
 
   var url = "http://www.google.com/codesearch/feeds/search?" +
-      "q=package:src.chromium.org/git/chromium.git+" + query;
+      "vert=chromium&as_q=" + query;
 
   var req = new XMLHttpRequest();
   req.open("GET", url, true);
@@ -131,7 +131,8 @@ function search(query, callback) {
 }
 
 function getUrl(path, line) {
-  var url = "http://www.google.com/codesearch/p#hfE6470xZHk/" + path;
+  var url = "http://www.google.com/codesearch/p#OAMlx_jo-ck/" + path
+      "&exact_package=chromium";
   if (line)
     url += "&l=" + line;
   return url;
@@ -161,8 +162,8 @@ chrome.omnibox.onInputEntered.addListener(function(text) {
   } else if (text == 'halp') {
     // TODO(aa)
   } else {
-    navigate("http://codesearch.google.com/codesearch?q=" +
-             "package:src.chromium.org/git/chromium.git " + text);
+    navigate("http://codesearch.google.com/codesearch?" +
+             "vert=chromium&as_q=" + text);
   }
 });
 </script>
