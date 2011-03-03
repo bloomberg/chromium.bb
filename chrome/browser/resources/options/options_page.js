@@ -158,9 +158,9 @@ cr.define('options', function() {
       var container = $('subpage-sheet-container-' + nestingLevel);
       subpageBackdrop.style.zIndex =
           parseInt(window.getComputedStyle(container).zIndex) - 1;
-      subpageBackdrop.classList.remove('hidden');
+      subpageBackdrop.hidden = false;
     } else {
-      subpageBackdrop.classList.add('hidden');
+      subpageBackdrop.hidden = true;
     }
   };
 
@@ -472,7 +472,7 @@ cr.define('options', function() {
       container.style.right = '';
       container.style.width = '';
       // Restore the scroll position.
-      if (!container.classList.contains('hidden'))
+      if (!container.hidden)
         window.scroll(document.body.scrollLeft, scrollPosition);
     }
   };
@@ -772,11 +772,11 @@ cr.define('options', function() {
         }
       }
       if (hasManaged) {
-        bannerDiv.classList.remove('hidden');
+        bannerDiv.hidden = false;
         var height = window.getComputedStyle($('managed-prefs-banner')).height;
         $('subpage-backdrop').style.top = height;
       } else {
-        bannerDiv.classList.add('hidden');
+        bannerDiv.hidden = true;
         $('subpage-backdrop').style.top = '0';
       }
     },
@@ -797,32 +797,14 @@ cr.define('options', function() {
       if ((this.visible && visible) || (!this.visible && !visible))
         return;
 
+      this.setContainerVisibility_(visible);
       if (visible) {
-        var overlayWasVisible = OptionsPage.isOverlayVisible_();
         this.pageDiv.classList.remove('hidden');
-        if (this.isOverlay) {
-          $('overlay').classList.remove('hidden');
-        } else {
-          var nestingLevel = this.nestingLevel;
-          if (nestingLevel > 0) {
-            var containerId = 'subpage-sheet-container-' + nestingLevel;
-            $(containerId).classList.remove('hidden');
-          }
-        }
 
         if (this.tab)
           this.tab.classList.add('navbar-item-selected');
       } else {
         this.pageDiv.classList.add('hidden');
-        if (this.isOverlay) {
-          $('overlay').classList.add('hidden');
-        } else {
-          var nestingLevel = this.nestingLevel;
-          if (nestingLevel > 0) {
-            var containerId = 'subpage-sheet-container-' + nestingLevel;
-            $(containerId).classList.add('hidden');
-          }
-        }
 
         if (this.tab)
           this.tab.classList.remove('navbar-item-selected');
@@ -845,6 +827,60 @@ cr.define('options', function() {
       OptionsPage.updateManagedBannerVisibility();
 
       cr.dispatchPropertyChange(this, 'visible', visible, !visible);
+    },
+
+    /**
+     * Shows or hides this page's container.
+     * @param {boolean} visible Whether the container should be visible or not.
+     * @private
+     */
+    setContainerVisibility_: function(visible) {
+      var container = null;
+      if (this.isOverlay) {
+        container = $('overlay');
+      } else {
+        var nestingLevel = this.nestingLevel;
+        if (nestingLevel > 0)
+          container = $('subpage-sheet-container-' + nestingLevel);
+      }
+      var isSubpage = !this.isOverlay;
+
+      if (!container || container.hidden != visible)
+        return;
+
+      if (visible) {
+        container.hidden = false;
+        if (isSubpage) {
+          var computedStyle = window.getComputedStyle(container);
+          container.style.WebkitMarginStart =
+              parseInt(computedStyle.WebkitMarginStart, 10) + 100 + 'px';
+        }
+        // Separate animating changes from the removal of display:none.
+        window.setTimeout(function() {
+          container.classList.remove('transparent');
+          if (isSubpage)
+            container.style.WebkitMarginStart = '';
+        });
+      } else {
+        var self = this;
+        container.addEventListener('webkitTransitionEnd', function f(e) {
+          if (e.propertyName != 'opacity')
+            return;
+          container.removeEventListener('webkitTransitionEnd', f);
+          self.fadeCompleted_(container);
+        });
+        container.classList.add('transparent');
+      }
+    },
+
+    /**
+     * Called when a container opacity transition finishes.
+     * @param {HTMLElement} container The container element.
+     * @private
+     */
+    fadeCompleted_: function(container) {
+      if (container.classList.contains('transparent'))
+        container.hidden = true;
     },
 
     /**

@@ -46,6 +46,7 @@ a:active {
 .overlay {
   -webkit-box-align: center;
   -webkit-box-pack: center;
+  -webkit-transition: 0.25s opacity;
   background: -webkit-radial-gradient(rgba(127, 127, 127, 0.5),
                                       rgba(127, 127, 127, 0.5) 35%,
                                       rgba(0, 0, 0, 0.7));
@@ -238,6 +239,7 @@ html.hide-menu #mainview {
 }
 
 #subpage-backdrop {
+  -webkit-transition: 0.25s opacity;
   background-color: rgba(233, 238, 242, .5);
   height: 100%;
   left: 266px;
@@ -249,6 +251,7 @@ html.hide-menu #mainview {
 
 .subpage-sheet-container {
   -webkit-margin-start: 60px;
+  -webkit-transition: 0.25s opacity, 0.1s margin-left, 0.1s margin-right;
   box-sizing: border-box;
   min-height: 100%;
   padding: 8px;
@@ -380,8 +383,14 @@ div.radio {
   margin: 5px 0;
 }
 
-.hidden {
+/* [hidden] does display:none, but its priority is too low in some cases. */
+.hidden,
+[hidden] {
   display: none !important;
+}
+
+.transparent {
+  opacity: 0;
 }
 
 div.disabled {

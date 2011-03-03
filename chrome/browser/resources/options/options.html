@@ -131,7 +131,7 @@
 <body i18n-values=".style.fontFamily:fontfamily;">
 <div class="header">
 </div>
-<div id="overlay" class="overlay hidden">
+<div id="overlay" class="overlay transparent" hidden>
   <include src="add_startup_page_overlay.html">
   <include src="alert_overlay.html">
   <include src="autofill_edit_address_overlay.html">
@@ -159,12 +159,12 @@
      </ul>
   </div>
   <div id="mainview">
-     <div id="managed-prefs-banner" class="hidden">
+     <div id="managed-prefs-banner" hidden>
        <span id="managed-prefs-icon"></span>
        <span id="managed-prefs-text"
              i18n-content="managedPrefsBannerText"></span>
      </div>
-     <div id="subpage-backdrop" class="hidden"></div>
+     <div id="subpage-backdrop" hidden></div>
      <div id="mainview-content">
        <div id="toplevel-page-container">
          <!-- Please keep the main pages in desired order of display.  This will
@@ -180,7 +180,7 @@
          <include src="advanced_options.html">
        </div>
        <div id="subpage-sheet-container-1"
-           class="subpage-sheet-container hidden">
+           class="subpage-sheet-container transparent" hidden>
          <div id="subpage-sheet-1" class="subpage-sheet">
            <button class="raw-button close-subpage"></button>
            <if expr="pp_ifdef('chromeos')">
@@ -199,7 +199,7 @@
          </div>
        </div>
        <div id="subpage-sheet-container-2"
-           class="subpage-sheet-container hidden">
+           class="subpage-sheet-container transparent" hidden>
          <div id="subpage-sheet-2" class="subpage-sheet">
            <button class="raw-button close-subpage"></button>
            <if expr="pp_ifdef('chromeos')">
