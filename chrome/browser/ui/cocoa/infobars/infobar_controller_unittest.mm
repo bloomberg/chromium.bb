@@ -11,7 +11,8 @@
 #import "chrome/browser/ui/cocoa/cocoa_test_helper.h"
 #import "chrome/browser/ui/cocoa/infobars/infobar_container_controller.h"
 #import "chrome/browser/ui/cocoa/infobars/infobar_controller.h"
-#include "chrome/browser/ui/cocoa/infobars/infobar_test_helper.h"
+#include "chrome/browser/ui/cocoa/infobars/mock_confirm_infobar_delegate.h"
+#include "chrome/browser/ui/cocoa/infobars/mock_link_infobar_delegate.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
 
