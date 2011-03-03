@@ -1,8 +1,8 @@
 <script>
 (function() {
 function onLoad() {
-  var dumpToTextButton = document.getElementById('dumpToText');
-  var dataDump = document.getElementById('dataDump');
+  var dumpToTextButton = document.getElementById('dump-to-text');
+  var dataDump = document.getElementById('data-dump');
   dumpToTextButton.addEventListener('click', function(event) {
     // TODO(akalin): Add info like Chrome version, OS, date dumped, etc.
 
@@ -27,7 +27,7 @@ function onLoad() {
     data += JSON.stringify(chrome.sync.log.entries, null, 2);
     data += '\n';
 
-    dataDump.innerHTML = data;
+    dataDump.textContent = data;
   });
 }
 
@@ -41,6 +41,6 @@ careful about posting data dumps on bug reports.</strong></p>
 
 <!-- TODO(akalin): Add option to redact sensitive info. -->
 
-<button id="dumpToText">Dump to text</button>
+<button id="dump-to-text">Dump to text</button>
 
-<pre id="dataDump"></pre>
+<pre id="data-dump"></pre>
