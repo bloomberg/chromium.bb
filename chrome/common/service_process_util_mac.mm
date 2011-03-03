@@ -116,37 +116,40 @@ bool GetServiceProcessData(std::string* version, base::ProcessId* pid) {
   if (!launchd_conf.get()) {
     return false;
   }
-
+  // Anything past here will return true in that there does appear
+  // to be a service process of some sort registered with launchd.
   if (version) {
+    *version = "0";
     NSString *exe_path = [launchd_conf objectForKey:@ LAUNCH_JOBKEY_PROGRAM];
-    if (!exe_path) {
-      NOTREACHED() << "Failed to get exe path";
-      return false;
-    }
-    NSString *bundle_path = [[[exe_path stringByDeletingLastPathComponent]
-                              stringByDeletingLastPathComponent]
-                             stringByDeletingLastPathComponent];
-    NSBundle *bundle = [NSBundle bundleWithPath:bundle_path];
-    if (!bundle) {
-      NOTREACHED() << "Unable to get bundle at: "
+    if (exe_path) {
+      NSString *bundle_path = [[[exe_path stringByDeletingLastPathComponent]
+                                stringByDeletingLastPathComponent]
+                               stringByDeletingLastPathComponent];
+      NSBundle *bundle = [NSBundle bundleWithPath:bundle_path];
+      if (bundle) {
+        NSString *ns_version =
+            [bundle objectForInfoDictionaryKey:@"CFBundleShortVersionString"];
+        if (ns_version) {
+          *version = base::SysNSStringToUTF8(ns_version);
+        } else {
+          LOG(ERROR) << "Unable to get version at: "
+                     << reinterpret_cast<CFStringRef>(bundle_path);
+        }
+      } else {
+        // The bundle has been deleted out from underneath the registered
+        // job.
+        LOG(ERROR) << "Unable to get bundle at: "
                    << reinterpret_cast<CFStringRef>(bundle_path);
-      return false;
+      }
+    } else {
+      LOG(ERROR) << "Unable to get executable path for service process";
     }
-    NSString *ns_version =
-        [bundle objectForInfoDictionaryKey:@"CFBundleShortVersionString"];
-    if (!ns_version) {
-      NOTREACHED() << "Unable to get version at: "
-                   << reinterpret_cast<CFStringRef>(bundle_path);
-      return false;
-    }
-    *version = base::SysNSStringToUTF8(ns_version);
   }
   if (pid) {
+    *pid = -1;
     NSNumber* ns_pid = [launchd_conf objectForKey:@ LAUNCH_JOBKEY_PID];
     if (ns_pid) {
      *pid = [ns_pid intValue];
-    } else {
-     *pid = 0;
     }
   }
   return true;
