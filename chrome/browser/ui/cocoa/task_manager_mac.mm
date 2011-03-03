@@ -394,8 +394,13 @@ class SortHelper {
   if ([cell respondsToSelector:@selector(setBackgroundColor:)]) {
     NSColor* color = nil;
     if (taskManagerObserver_->IsBackgroundRow(viewToModelMap_[row]) &&
-        ![tableView isRowSelected:row])
+        ![tableView isRowSelected:row]) {
       color = backgroundResourceColor_.get();
+      if ((row % 2) == 1 && [tableView usesAlternatingRowBackgroundColors]) {
+        color = [color blendedColorWithFraction:0.05
+                                        ofColor:[NSColor blackColor]];
+      }
+    }
     [cell setBackgroundColor:color];
 
     // The icon at the left is an |NSButtonCell|, which does not
