@@ -14,7 +14,7 @@ TEST(AutofillCountryTest, AutofillCountry) {
   AutofillCountry united_states_en("US", "en_US");
   EXPECT_EQ("US", united_states_en.country_code());
   EXPECT_EQ(ASCIIToUTF16("United States"), united_states_en.name());
-  EXPECT_EQ(ASCIIToUTF16("Zip code"), united_states_en.postal_code_label());
+  EXPECT_EQ(ASCIIToUTF16("ZIP code"), united_states_en.postal_code_label());
   EXPECT_EQ(ASCIIToUTF16("State"), united_states_en.state_label());
 
   AutofillCountry united_states_es("US", "es");

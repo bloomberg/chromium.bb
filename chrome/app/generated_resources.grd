@@ -7227,8 +7227,8 @@ This web page was killed, either because Chrome ran out of memory, or you chose 
         Province
       </message>
       <!-- End state variants. -->
-      <message name="IDS_AUTOFILL_DIALOG_ZIP_CODE" desc="The label of the Zip code entry.">
-        Zip code
+      <message name="IDS_AUTOFILL_DIALOG_ZIP_CODE" desc="The label of the ZIP code entry.">
+        ZIP code
       </message>
       <message name="IDS_AUTOFILL_DIALOG_POSTAL_CODE" desc="The label of the Postal code entry.">
         Postal code
