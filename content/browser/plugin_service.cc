@@ -547,6 +547,11 @@ void PluginService::OverridePluginForTab(OverriddenPlugin plugin) {
 
 void PluginService::RegisterPepperPlugins() {
   PepperPluginRegistry::ComputeList(&ppapi_plugins_);
+
+  // Get the file path of the Native Client Plugin.
+  FilePath naclPath;
+  PathService::Get(chrome::FILE_NACL_PLUGIN, &naclPath);
+
   for (size_t i = 0; i < ppapi_plugins_.size(); ++i) {
     webkit::npapi::WebPluginInfo info;
     info.path = ppapi_plugins_[i].path;
@@ -555,7 +560,19 @@ void PluginService::RegisterPepperPlugins() {
         ASCIIToUTF16(ppapi_plugins_[i].name);
     info.desc = ASCIIToUTF16(ppapi_plugins_[i].description);
     info.version = ASCIIToUTF16(ppapi_plugins_[i].version);
-    info.enabled = webkit::npapi::WebPluginInfo::USER_ENABLED_POLICY_UNMANAGED;
+
+    webkit::npapi::WebPluginInfo::EnabledStates enabled_state =
+        webkit::npapi::WebPluginInfo::USER_ENABLED_POLICY_UNMANAGED;
+
+    // Enable the Native Client Plugin based on the command line.
+    if (ppapi_plugins_[i].path == naclPath) {
+      bool nacl_enabled =
+          CommandLine::ForCurrentProcess()->HasSwitch(switches::kEnableNaCl);
+      enabled_state = nacl_enabled ?
+          webkit::npapi::WebPluginInfo::USER_ENABLED_POLICY_UNMANAGED :
+          webkit::npapi::WebPluginInfo::USER_DISABLED_POLICY_UNMANAGED;
+    }
+    info.enabled = enabled_state;
 
     // TODO(evan): Pepper shouldn't require us to parse strings to get
     // the list of mime types out.

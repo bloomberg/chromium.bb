@@ -59,25 +59,20 @@ void ComputeBuiltInPlugins(std::vector<PepperPluginInfo>* plugins) {
     }
   }
 
-  // Native client.
-  //
-  // Verify that we enable nacl on the command line. The name of the switch
-  // varies between the browser and renderer process.
-  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kEnableNaCl) &&
-      PathService::Get(chrome::FILE_NACL_PLUGIN, &path) &&
-      file_util::PathExists(path)) {
-    PepperPluginInfo nacl;
-    nacl.path = path;
-    nacl.name = kNaClPluginName;
-    nacl.mime_types.push_back(kNaClPluginMimeType);
+  // Handle the Native Client plugin just like the PDF plugin.
+  static bool skip_nacl_file_check = false;
+  if (PathService::Get(chrome::FILE_NACL_PLUGIN, &path)) {
+    if (skip_nacl_file_check || file_util::PathExists(path)) {
+      PepperPluginInfo nacl;
+      nacl.path = path;
+      nacl.name = kNaClPluginName;
+      nacl.mime_types.push_back(kNaClPluginMimeType);
+      nacl.file_extensions = kNaClPluginExtension;
+      nacl.type_descriptions = kNaClPluginDescription;
+      plugins->push_back(nacl);
 
-    // TODO(bbudge) Remove this mime type after NaCl tree has been updated.
-    const char* kNaClPluginOldMimeType = "application/x-ppapi-nacl-srpc";
-    nacl.mime_types.push_back(kNaClPluginOldMimeType);
-
-    nacl.file_extensions = kNaClPluginExtension;
-    nacl.type_descriptions = kNaClPluginDescription;
-    plugins->push_back(nacl);
+      skip_nacl_file_check = true;
+    }
   }
 
   // Remoting.
