@@ -486,9 +486,7 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, DownloadMimeType) {
 #if defined(OS_WIN)
 // Download a file and confirm that the zone identifier (on windows)
 // is set to internet.
-// This is flaky due to http://crbug.com/20809.  It's marked as
-// DISABLED because when the test fails it fails via a timeout.
-IN_PROC_BROWSER_TEST_F(DownloadTest, DISABLED_CheckInternetZone) {
+IN_PROC_BROWSER_TEST_F(DownloadTest, CheckInternetZone) {
   ASSERT_TRUE(InitialSetup(false));
   FilePath file(FILE_PATH_LITERAL("download-test1.lib"));
   GURL url(URLRequestMockHTTPJob::GetMockUrl(file));
