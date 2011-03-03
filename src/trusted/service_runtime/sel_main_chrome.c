@@ -118,10 +118,14 @@ int NaClMainForChromium(int handle_count, const NaClHandle *handles,
        * while holding locks.
        */
       NaClSecureCommandChannel(nap);
+
+      NaClLog(4, "NaClSecureCommandChannel has spawned channel\n");
     }
   }
+  NaClLog(4, "secure service = %"NACL_PRIxPTR"\n",
+          (uintptr_t) nap->secure_service);
 
-  if (NULL != nap->secure_channel && LOAD_OK == errcode) {
+  if (NULL != nap->secure_service && LOAD_OK == errcode) {
     /*
      * wait for start_module RPC call on secure channel thread.
      */
@@ -134,7 +138,6 @@ int NaClMainForChromium(int handle_count, const NaClHandle *handles,
   if (LOAD_OK != errcode) {
     goto done;
   }
-
 
   /*
    * Enable debugging if requested.

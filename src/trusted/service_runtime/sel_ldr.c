@@ -94,7 +94,7 @@ int NaClAppCtor(struct NaClApp  *nap) {
 
   nap->service_port = NULL;
   nap->service_address = NULL;
-  nap->secure_channel = NULL;
+  nap->secure_service = NULL;
 
   nap->name_service = (struct NaClNameService *) malloc(
       sizeof *nap->name_service);
@@ -119,7 +119,7 @@ int NaClAppCtor(struct NaClApp  *nap) {
   }
 
   nap->module_load_status = LOAD_STATUS_UNKNOWN;
-  nap->module_may_start = 0;  /* only when secure_channel != NULL */
+  nap->module_may_start = 0;  /* only when secure_service != NULL */
 
   nap->ignore_validator_result = 0;
   nap->validator_stub_out_mode = 0;
@@ -1126,58 +1126,10 @@ NaClErrorCode NaClWaitForStartModuleCommand(struct NaClApp *nap) {
   return status;
 }
 
-void WINAPI NaClSecureChannelThread(void *state) {
-  struct NaClApp                    *nap = (struct NaClApp *) state;
-
-  static struct NaClSrpcHandlerDesc secure_handlers[] = {
-    { "hard_shutdown::", NaClSecureChannelShutdownRpc, },
-    { "start_module::i", NaClSecureChannelStartModuleRpc, },
-    { "log:is:", NaClSecureChannelLog, },
-    { "load_module:hs:", NaClLoadModuleRpc, },
-#if NACL_WINDOWS && !defined(NACL_STANDALONE)
-    { "init_handle_passing:hii:", NaClInitHandlePassingRpc, },
-#endif
-    /* add additional calls here.  upcall set up?  start module signal? */
-    { (char const *) NULL, (NaClSrpcMethod) NULL, },
-  };
-
-  NaClLog(4, "NaClSecureChannelThread started\n");
-
-  (void) NaClSrpcServerLoop(nap->secure_channel, secure_handlers, nap);
-  NaClLog(4, "NaClSecureChannelThread: channel closed, exiting.\n");
-  _exit(0);
-}
-
-void NaClSecureCommandChannelOld(struct NaClApp  *nap) {
-  int                         status;
-
-  NaClLog(4, "Waiting for secure command channel connect\n");
-  /*
-   * this block until the plugin connects
-   */
-  status = (*NACL_VTBL(NaClDesc, nap->service_port)->
-            AcceptConn)(nap->service_port, &nap->secure_channel);
-  if (status != 0) {
-    NaClLog(LOG_FATAL,
-            "NaClSecureCommandChannel: unable to establish channel\n");
-  }
-
-  /*
-   * Spawn secure channel thread.
-   */
-  NaClThreadCtor(&nap->secure_channel_thr,
-                 NaClSecureChannelThread,
-                 nap,
-                 NACL_KERN_STACK_SIZE);
-  NaClLog(4, "NaClSecureCommandChannel: thread spawned, continuing\n");
-}
-
 
 struct NaClSecureService {
   struct NaClSimpleService  base;
-  struct NaClMutex          mu;
-  struct NaClCondVar        cv;
-  int                       connected;
+  struct NaClApp            *nap;
 };
 
 struct NaClSecureServiceVtbl {
@@ -1188,15 +1140,9 @@ struct NaclSecureServiceConnection;
 
 struct NaClSecureServiceVtbl const kNaClSecureServiceVtbl;
 
-int NaClSecureServiceCtor(struct NaClSecureService          *self,
+int NaClSecureServiceCtor(struct NaClSecureService        *self,
                          struct NaClSrpcHandlerDesc const *srpc_handlers,
                          struct NaClApp                   *nap) {
-  if (!NaClMutexCtor(&self->mu)) {
-    goto failure_mu;
-  }
-  if (!NaClCondVarCtor(&self->cv)) {
-    goto failure_cv;
-  }
   if (!NaClSimpleServiceWithSocketCtor(&self->base,
                                        srpc_handlers,
                                        nap,
@@ -1204,15 +1150,11 @@ int NaClSecureServiceCtor(struct NaClSecureService          *self,
                                        nap->service_address)) {
     goto failure_simple_ctor;
   }
-  self->connected = 0;
+  self->nap = nap;
   NACL_VTBL(NaClRefCount, self) =
       (struct NaClRefCountVtbl *) &kNaClSecureServiceVtbl;
   return 1;
  failure_simple_ctor:
-  NaClCondVarDtor(&self->cv);
- failure_cv:
-  NaClMutexDtor(&self->mu);
- failure_mu:
   return 0;
 }
 
@@ -1247,10 +1189,6 @@ int NaClSecureServiceAcceptConnection(
   NaClLog(4,
           "NaClSecureServiceAcceptConnection: *conn_out is 0x%"NACL_PRIxPTR"\n",
           (uintptr_t) *conn_out);
-  NaClXMutexLock(&self->mu);
-  self->connected = 1;
-  NaClXCondVarSignal(&self->cv);
-  NaClXMutexUnlock(&self->mu);
   NaClLog(4, "Leaving NaClSecureServiceAcceptConnection, retval %d\n", retval);
   return retval;
 }
@@ -1308,6 +1246,7 @@ void NaClSecureCommandChannel(struct NaClApp *nap) {
   if (!NaClSecureServiceCtor(secure_command_server, secure_handlers, nap)) {
     NaClLog(LOG_FATAL, "NaClSecureServiceCtor failed\n");
   }
+  nap->secure_service = secure_command_server;
 
   NaClLog(4, "NaClSecureCommandChannel: starting service thread\n");
   if (!NaClSimpleServiceStartServiceThread((struct NaClSimpleService *)
@@ -1315,12 +1254,7 @@ void NaClSecureCommandChannel(struct NaClApp *nap) {
     NaClLog(LOG_FATAL,
             "Could not start secure command channel service thread\n");
   }
-  NaClLog(4, "NaClSecureCommandChannel: waiting for connection\n");
-  NaClXMutexLock(&secure_command_server->mu);
-  while (!secure_command_server->connected) {
-    NaClXCondVarWait(&secure_command_server->cv, &secure_command_server->mu);
-  }
-  NaClXMutexUnlock(&secure_command_server->mu);
+
   NaClLog(4, "Leaving NaClSecureCommandChannel\n");
 }
 

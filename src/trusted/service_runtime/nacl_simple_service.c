@@ -261,10 +261,17 @@ int NaClSimpleServiceAcceptAndSpawnHandler(
   NaClLog(4, "NaClSimpleServiceAcceptAndSpawnHandler: spawning thread\n");
   conn->thread_spawned = 1;
   /* ownership of |conn| reference is passed to the thread */
-  NaClThreadCtor(&conn->thr,
-                 RpcHandlerBase,
-                 conn,
-                 NACL_KERN_STACK_SIZE);
+  if (!NaClThreadCtor(&conn->thr,
+                      RpcHandlerBase,
+                      conn,
+                      NACL_KERN_STACK_SIZE)) {
+    NaClLog(LOG_WARNING,
+            "NaClSimpleServiceAcceptAndSpawnHandler: could not spawn thread\n");
+    NaClRefCountUnref((struct NaClRefCount *) conn);
+    conn = NULL;
+    status = -NACL_ABI_EAGAIN;
+    goto abort;
+  }
   status = 0;
 abort:
   NaClLog(4,
@@ -301,13 +308,15 @@ static void WINAPI AcceptThread(void *thread_state) {
 }
 
 int NaClSimpleServiceStartServiceThread(struct NaClSimpleService *server) {
-
+  NaClLog(4, "NaClSimpleServiceStartServiceThread: spawning thread\n");
   if (NaClThreadCtor(&server->acceptor,
                      AcceptThread,
                      server,
                      NACL_KERN_STACK_SIZE)) {
     server->acceptor_spawned = 1;
+    NaClLog(4, "NaClSimpleServiceStartServiceThread: success\n");
     return 1;
   }
+  NaClLog(4, "NaClSimpleServiceStartServiceThread: failed\n");
   return 0;
 }

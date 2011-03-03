@@ -679,7 +679,7 @@ int main(int  argc,
    */
   fflush((FILE *) NULL);
 
-  if (NULL != nap->secure_channel && LOAD_OK == errcode) {
+  if (NULL != nap->secure_service && LOAD_OK == errcode) {
     /*
      * wait for start_module RPC call on secure channel thread.
      */

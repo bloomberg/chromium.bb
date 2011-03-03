@@ -73,6 +73,7 @@ EXTERN_C_BEGIN
 struct NaClAppThread;
 struct NaClDesc;  /* see native_client/src/trusted/desc/nacl_desc_base.h */
 struct NaClDynamicRegion;
+struct NaClSecureService;
 
 struct NaClApp {
   /*
@@ -171,14 +172,14 @@ struct NaClApp {
   struct NaClDesc           *service_port;
   struct NaClDesc           *service_address;
 
-  struct NaClDesc           *secure_channel;
-  struct NaClThread         secure_channel_thr;  /* valid iff secure_channel */
-
   struct NaClNameService    *name_service;  /* default name server */
   struct NaClDesc           *name_service_conn_cap;
 
   struct NaClMutex          mu;
   struct NaClCondVar        cv;
+
+  struct NaClSecureService  *secure_service;
+
   NaClErrorCode             module_load_status;
   int                       module_may_start;
 

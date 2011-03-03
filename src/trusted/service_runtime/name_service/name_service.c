@@ -363,7 +363,6 @@ void NaClNameServiceLaunch(struct NaClNameService *self) {
 
   NaClLog(4, "NaClNameServiceThread: starting service\n");
   NaClSimpleServiceStartServiceThread((struct NaClSimpleService *) self);
-  NaClLog(4, "NaClNameServiceThread: channel closed, thread exiting\n");
 }
 
 struct NaClNameServiceVtbl kNaClNameServiceVtbl = {
