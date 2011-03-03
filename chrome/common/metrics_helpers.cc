@@ -531,18 +531,6 @@ void HistogramSender::TransmitHistogram(const Histogram& histogram) {
   const std::string& histogram_name = histogram.histogram_name();
 
   int corruption = histogram.FindCorruption(snapshot);
-
-  // Crash if we detect that our histograms have been overwritten.  This may be
-  // a fair distance from the memory smasher, but we hope to correlate these
-  // crashes with other events, such as plugins, or usage patterns, etc.
-  if (Histogram::BUCKET_ORDER_ERROR & corruption) {
-    // The checksum should have caught this, so crash separately if it didn't.
-    CHECK_NE(0, Histogram::RANGE_CHECKSUM_ERROR & corruption);
-    CHECK(false);  // Crash for the bucket order corruption.
-  }
-  // Checksum corruption might not have caused order corruption.
-  CHECK_EQ(0, Histogram::RANGE_CHECKSUM_ERROR & corruption);
-
   if (corruption) {
     NOTREACHED();
     InconsistencyDetected(corruption);
