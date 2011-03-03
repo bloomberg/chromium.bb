@@ -24,3 +24,7 @@ input.form {
   width: 90%;
   max-width: 151px;
 }
+
+#country {
+  max-width: 450px;
+}
