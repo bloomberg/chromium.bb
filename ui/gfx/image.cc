@@ -4,6 +4,8 @@
 
 #include "ui/gfx/image.h"
 
+#include <algorithm>
+
 #include "base/logging.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 
@@ -204,6 +206,11 @@ Image::operator NSImage*() {
 
 bool Image::HasRepresentation(RepresentationType type) {
   return representations_.count(type) != 0;
+}
+
+void Image::SwapRepresentations(gfx::Image* other) {
+  representations_.swap(other->representations_);
+  std::swap(default_representation_, other->default_representation_);
 }
 
 internal::ImageRep* Image::DefaultRepresentation() {

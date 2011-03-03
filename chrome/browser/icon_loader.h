@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -13,7 +13,8 @@
 #include "base/basictypes.h"
 #include "base/message_loop_proxy.h"
 #include "base/ref_counted.h"
-#include "ui/gfx/scoped_image.h"
+#include "base/scoped_ptr.h"
+#include "ui/gfx/image.h"
 
 #if defined(TOOLKIT_USES_GTK)
 #include "base/file_path.h"
@@ -27,9 +28,6 @@ typedef std::wstring IconGroupID;
 // On POSIX, we group files by MIME type.
 typedef std::string IconGroupID;
 #endif
-
-class MessageLoop;
-class SkBitmap;
 
 ////////////////////////////////////////////////////////////////////////////////
 //
@@ -50,7 +48,7 @@ class IconLoader : public base::RefCountedThreadSafe<IconLoader> {
     // Invoked when an icon has been read. |source| is the IconLoader. If the
     // icon has been successfully loaded, result is non-null. This method must
     // return true if it is taking ownership of the returned bitmap.
-    virtual bool OnBitmapLoaded(IconLoader* source, SkBitmap* result) = 0;
+    virtual bool OnImageLoaded(IconLoader* source, gfx::Image* result) = 0;
 
    protected:
     virtual ~Delegate() {}
@@ -77,7 +75,7 @@ class IconLoader : public base::RefCountedThreadSafe<IconLoader> {
 
   IconSize icon_size_;
 
-  gfx::ScopedImage<SkBitmap> bitmap_;
+  scoped_ptr<gfx::Image> image_;
 
   Delegate* delegate_;
 

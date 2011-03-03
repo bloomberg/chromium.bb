@@ -12,6 +12,7 @@
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/base/dragdrop/gtk_dnd_util.h"
 #include "ui/gfx/gtk_util.h"
+#include "ui/gfx/image.h"
 
 namespace {
 
@@ -40,9 +41,9 @@ void OnDragDataGetStandalone(GtkWidget* widget, GdkDragContext* context,
 
 // CustomDrag ------------------------------------------------------------------
 
-CustomDrag::CustomDrag(SkBitmap* icon, int code_mask, GdkDragAction action)
+CustomDrag::CustomDrag(gfx::Image* icon, int code_mask, GdkDragAction action)
     : drag_widget_(gtk_invisible_new()),
-      pixbuf_(icon ? gfx::GdkPixbufFromSkBitmap(icon) : NULL) {
+      image_(icon) {
   g_signal_connect(drag_widget_, "drag-data-get",
                    G_CALLBACK(OnDragDataGetThunk), this);
   g_signal_connect(drag_widget_, "drag-begin",
@@ -59,14 +60,12 @@ CustomDrag::CustomDrag(SkBitmap* icon, int code_mask, GdkDragAction action)
 }
 
 CustomDrag::~CustomDrag() {
-  if (pixbuf_)
-    g_object_unref(pixbuf_);
   gtk_widget_destroy(drag_widget_);
 }
 
 void CustomDrag::OnDragBegin(GtkWidget* widget, GdkDragContext* drag_context) {
-  if (pixbuf_)
-    gtk_drag_set_icon_pixbuf(drag_context, pixbuf_, 0, 0);
+  if (image_)
+    gtk_drag_set_icon_pixbuf(drag_context, *image_, 0, 0);
 }
 
 void CustomDrag::OnDragEnd(GtkWidget* widget, GdkDragContext* drag_context) {
@@ -76,7 +75,7 @@ void CustomDrag::OnDragEnd(GtkWidget* widget, GdkDragContext* drag_context) {
 // DownloadItemDrag ------------------------------------------------------------
 
 DownloadItemDrag::DownloadItemDrag(const DownloadItem* item,
-                                   SkBitmap* icon)
+                                   gfx::Image* icon)
     : CustomDrag(icon, kDownloadItemCodeMask, kDownloadItemDragAction),
       download_item_(item) {
 }
@@ -94,7 +93,7 @@ void DownloadItemDrag::OnDragDataGet(
 // static
 void DownloadItemDrag::SetSource(GtkWidget* widget,
                                  DownloadItem* item,
-                                 SkBitmap* icon) {
+                                 gfx::Image* icon) {
   gtk_drag_source_set(widget, GDK_BUTTON1_MASK, NULL, 0,
                       kDownloadItemDragAction);
   ui::SetSourceTargetListFromCodeMask(widget, kDownloadItemCodeMask);
@@ -108,15 +107,12 @@ void DownloadItemDrag::SetSource(GtkWidget* widget,
   g_signal_connect(widget, "drag-data-get",
                    G_CALLBACK(OnDragDataGetStandalone), item);
 
-  GdkPixbuf* pixbuf = icon ? gfx::GdkPixbufFromSkBitmap(icon) : NULL;
-  if (pixbuf) {
-    gtk_drag_source_set_icon_pixbuf(widget, pixbuf);
-    g_object_unref(pixbuf);
-  }
+  if (icon)
+    gtk_drag_source_set_icon_pixbuf(widget, *icon);
 }
 
 // static
-void DownloadItemDrag::BeginDrag(const DownloadItem* item, SkBitmap* icon) {
+void DownloadItemDrag::BeginDrag(const DownloadItem* item, gfx::Image* icon) {
   new DownloadItemDrag(item, icon);
 }
 

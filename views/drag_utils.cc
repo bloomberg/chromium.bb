@@ -56,7 +56,7 @@ void SetURLAndDragImage(const GURL& url,
 }
 
 void CreateDragImageForFile(const FilePath& file_name,
-                            SkBitmap* icon,
+                            const SkBitmap* icon,
                             OSExchangeData* data_object) {
   DCHECK(icon);
   DCHECK(data_object);

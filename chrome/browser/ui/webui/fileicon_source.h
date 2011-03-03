@@ -14,6 +14,10 @@
 class GURL;
 class RefCountedBytes;
 
+namespace gfx {
+class Image;
+}
+
 // FileIconSource is the gateway between network-level chrome:
 // requests for favicons and the history backend that serves these.
 class FileIconSource : public ChromeURLDataManager::DataSource {
@@ -31,7 +35,7 @@ class FileIconSource : public ChromeURLDataManager::DataSource {
   // Called when favicon data is available from the history backend.
   void OnFileIconDataAvailable(
       IconManager::Handle request_handle,
-      SkBitmap* icon);
+      gfx::Image* icon);
 
  private:
   virtual ~FileIconSource();

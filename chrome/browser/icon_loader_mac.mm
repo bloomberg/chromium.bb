@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -17,15 +17,9 @@ void IconLoader::ReadIcon() {
   NSWorkspace* workspace = [NSWorkspace sharedWorkspace];
   NSImage* icon = [workspace iconForFileType:group];
 
-  NSSize size;
-  if (icon_size_ == NORMAL)
-    size = NSMakeSize(32, 32);
-  else if (icon_size_ == SMALL)
-    size = NSMakeSize(16, 16);
-  else
-    return;
-
-  bitmap_.Set(new SkBitmap(gfx::NSImageToSkBitmap(icon, size, false)));
+  // Mac will ignore the size because icons have multiple size representations
+  // and NSImage choses the best at draw-time.
+  image_.reset(new gfx::Image([icon retain]));
 
   target_message_loop_->PostTask(FROM_HERE,
       NewRunnableMethod(this, &IconLoader::NotifyDelegate));

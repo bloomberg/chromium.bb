@@ -34,6 +34,7 @@
 #include "ui/gfx/canvas_skia_paint.h"
 #include "ui/gfx/color_utils.h"
 #include "ui/gfx/font.h"
+#include "ui/gfx/image.h"
 #include "ui/gfx/skia_utils_gtk.h"
 
 namespace {
@@ -495,14 +496,14 @@ void DownloadItemGtk::StopDownloadProgress() {
 // Icon loading functions.
 
 void DownloadItemGtk::OnLoadSmallIconComplete(IconManager::Handle handle,
-                                              SkBitmap* icon_bitmap) {
-  icon_small_ = icon_bitmap;
+                                              gfx::Image* image) {
+  icon_small_ = image;
   gtk_widget_queue_draw(progress_area_.get());
 }
 
 void DownloadItemGtk::OnLoadLargeIconComplete(IconManager::Handle handle,
-                                              SkBitmap* icon_bitmap) {
-  icon_large_ = icon_bitmap;
+                                              gfx::Image* image) {
+  icon_large_ = image;
   DownloadItemDrag::SetSource(body_.get(), get_download(), icon_large_);
 }
 

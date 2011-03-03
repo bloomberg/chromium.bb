@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -17,6 +17,10 @@
 
 class BaseDownloadItemModel;
 @class DownloadItemController;
+
+namespace gfx{
+class Image;
+}
 
 // A class that bridges the visible mac download items to chromium's download
 // model. The owning object (DownloadItemController) must explicitly call
@@ -43,7 +47,8 @@ class DownloadItemMac : DownloadItem::Observer {
 
  private:
   // Callback for asynchronous icon loading.
-  void OnExtractIconComplete(IconManager::Handle handle, SkBitmap* icon_bitmap);
+  void OnExtractIconComplete(IconManager::Handle handle,
+                             gfx::Image* icon_bitmap);
 
   // The download item model we represent.
   scoped_ptr<BaseDownloadItemModel> download_model_;

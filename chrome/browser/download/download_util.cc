@@ -53,6 +53,7 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/canvas_skia.h"
+#include "ui/gfx/image.h"
 #include "ui/gfx/rect.h"
 
 #if defined(TOOLKIT_VIEWS)
@@ -504,7 +505,7 @@ int GetBigProgressIconOffset() {
 #if defined(TOOLKIT_VIEWS)
 // Download dragging
 void DragDownload(const DownloadItem* download,
-                  SkBitmap* icon,
+                  gfx::Image* icon,
                   gfx::NativeView view) {
   DCHECK(download);
 
@@ -513,7 +514,7 @@ void DragDownload(const DownloadItem* download,
 
   if (icon) {
     drag_utils::CreateDragImageForFile(
-        download->GetFileNameToReportUser(), icon, &data);
+        download->GetFileNameToReportUser(), *icon, &data);
   }
 
   const FilePath full_path = download->full_path();
@@ -552,7 +553,7 @@ void DragDownload(const DownloadItem* download,
 }
 #elif defined(USE_X11)
 void DragDownload(const DownloadItem* download,
-                  SkBitmap* icon,
+                  gfx::Image* icon,
                   gfx::NativeView view) {
   DownloadItemDrag::BeginDrag(download, icon);
 }

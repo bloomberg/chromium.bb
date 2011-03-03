@@ -129,6 +129,27 @@ TEST_F(ImageTest, CheckSkiaColor) {
   EXPECT_EQ(SK_ColorRED, *pixel);
 }
 
+TEST_F(ImageTest, SwapRepresentations) {
+  const size_t kRepCount = kUsesSkiaNatively ? 1U : 2U;
+
+  gfx::Image image1(CreateBitmap());
+  const SkBitmap* bitmap1 = image1;
+  EXPECT_EQ(1U, GetRepCount(image1));
+
+  gfx::Image image2(CreatePlatformImage());
+  const SkBitmap* bitmap2 = image2;
+  PlatformImage platform_image = static_cast<PlatformImage>(image2);
+  EXPECT_EQ(kRepCount, GetRepCount(image2));
+
+  image1.SwapRepresentations(&image2);
+
+  EXPECT_EQ(bitmap2, static_cast<const SkBitmap*>(image1));
+  EXPECT_EQ(platform_image, static_cast<PlatformImage>(image1));
+  EXPECT_EQ(bitmap1, static_cast<const SkBitmap*>(image2));
+  EXPECT_EQ(kRepCount, GetRepCount(image1));
+  EXPECT_EQ(1U, GetRepCount(image2));
+}
+
 // Integration tests with UI toolkit frameworks require linking against the
 // Views library and cannot be here (gfx_unittests doesn't include it). They
 // instead live in /chrome/browser/ui/tests/ui_gfx_image_unittest.cc.

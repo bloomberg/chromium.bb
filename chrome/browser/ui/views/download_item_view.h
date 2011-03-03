@@ -38,6 +38,10 @@ class DownloadShelfView;
 class SkBitmap;
 class DownloadShelfContextMenuWin;
 
+namespace gfx {
+class Image;
+}
+
 namespace ui {
 class SlideAnimation;
 }
@@ -88,7 +92,7 @@ class DownloadItemView : public views::ButtonListener,
   void StopDownloadProgress();
 
   // IconManager::Client interface.
-  void OnExtractIconComplete(IconManager::Handle handle, SkBitmap* icon_bitmap);
+  void OnExtractIconComplete(IconManager::Handle handle, gfx::Image* icon);
 
   // Returns the DownloadItem model object belonging to this item.
   DownloadItem* download() const { return download_; }
@@ -179,7 +183,7 @@ class DownloadItemView : public views::ButtonListener,
   DropDownImageSet pushed_drop_down_image_set_;
 
   // The warning icon showns for dangerous downloads.
-  SkBitmap* warning_icon_;
+  const SkBitmap* warning_icon_;
 
   // The model we query for display information
   DownloadItem* download_;

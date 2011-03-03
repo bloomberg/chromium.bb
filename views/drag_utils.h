@@ -38,7 +38,7 @@ void SetURLAndDragImage(const GURL& url,
 // the supplied data_object. 'file_name' can be a full path, but the directory
 // portion will be truncated in the drag image.
 void CreateDragImageForFile(const FilePath& file_name,
-                            SkBitmap* icon,
+                            const SkBitmap* icon,
                             OSExchangeData* data_object);
 
 // Sets the drag image on data_object from the supplied canvas. width/height

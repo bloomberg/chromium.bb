@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
@@ -52,9 +52,9 @@
 #include "base/hash_tables.h"
 #include "chrome/browser/icon_loader.h"
 #include "content/browser/cancelable_request.h"
+#include "ui/gfx/image.h"
 
 class FilePath;
-class SkBitmap;
 
 class IconManager : public IconLoader::Delegate,
                     public CancelableRequestProvider {
@@ -67,11 +67,11 @@ class IconManager : public IconLoader::Delegate,
   // it via 'LoadIcon'. The returned bitmap is owned by the IconManager and must
   // not be free'd by the caller. If the caller needs to modify the icon, it
   // must make a copy and modify the copy.
-  SkBitmap* LookupIcon(const FilePath& file_name,
-                       IconLoader::IconSize size);
+  gfx::Image* LookupIcon(const FilePath& file_name,
+                         IconLoader::IconSize size);
 
   typedef CancelableRequestProvider::Handle Handle;
-  typedef Callback2<Handle, SkBitmap*>::Type IconRequestCallback;
+  typedef Callback2<Handle, gfx::Image*>::Type IconRequestCallback;
 
   // Asynchronous call to lookup and return the icon associated with file. The
   // work is done on the file thread, with the callbacks running on the UI
@@ -85,7 +85,7 @@ class IconManager : public IconLoader::Delegate,
                   IconRequestCallback* callback);
 
   // IconLoader::Delegate interface.
-  virtual bool OnBitmapLoaded(IconLoader* source, SkBitmap* result);
+  virtual bool OnImageLoaded(IconLoader* source, gfx::Image* result);
 
   // Get the identifying string for the given file. The implementation
   // is in icon_manager_[platform].cc.
@@ -102,7 +102,7 @@ class IconManager : public IconLoader::Delegate,
     IconLoader::IconSize size;
   };
 
-  typedef std::map<CacheKey, SkBitmap*> IconMap;
+  typedef std::map<CacheKey, gfx::Image*> IconMap;
   IconMap icon_cache_;
 
   typedef CancelableRequest<IconRequestCallback> IconRequest;

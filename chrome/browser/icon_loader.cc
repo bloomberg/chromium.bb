@@ -1,9 +1,10 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "chrome/browser/icon_loader.h"
 
+#include "base/basictypes.h"
 #include "content/browser/browser_thread.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 
@@ -16,7 +17,7 @@ IconLoader::IconLoader(const IconGroupID& group, IconSize size,
     : target_message_loop_(NULL),
       group_(group),
       icon_size_(size),
-      bitmap_(NULL),
+      image_(NULL),
       delegate_(delegate) {
 }
 
@@ -36,6 +37,8 @@ void IconLoader::Start() {
 }
 
 void IconLoader::NotifyDelegate() {
-  if (delegate_->OnBitmapLoaded(this, bitmap_.Get()))
-    bitmap_.Release();
+  // If the delegate takes ownership of the Image, release it from the scoped
+  // pointer.
+  if (delegate_->OnImageLoaded(this, image_.get()))
+    ignore_result(image_.release());  // Can't ignore return value.
 }

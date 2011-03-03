@@ -27,6 +27,7 @@
 #include "content/browser/browser_thread.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "grit/generated_resources.h"
+#include "ui/gfx/image.h"
 
 namespace {
 
@@ -157,8 +158,8 @@ void DownloadsDOMHandler::HandleDrag(const ListValue* args) {
   DownloadItem* file = GetDownloadByValue(args);
   if (file) {
     IconManager* im = g_browser_process->icon_manager();
-    SkBitmap* icon = im->LookupIcon(file->GetUserVerifiedFilePath(),
-                                    IconLoader::NORMAL);
+    gfx::Image* icon = im->LookupIcon(file->GetUserVerifiedFilePath(),
+                                      IconLoader::NORMAL);
     gfx::NativeView view = web_ui_->tab_contents()->GetNativeView();
     download_util::DragDownload(file, icon, view);
   }

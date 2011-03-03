@@ -12,7 +12,9 @@
 #include "chrome/common/time_format.h"
 #include "grit/generated_resources.h"
 #include "net/base/escape.h"
+#include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/gfx/codec/png_codec.h"
+#include "ui/gfx/image.h"
 
 // The path used in internal URLs to file icon data.
 static const char kFileIconPath[] = "fileicon";
@@ -27,10 +29,7 @@ FileIconSource::~FileIconSource() {
 void FileIconSource::StartDataRequest(const std::string& path,
                                       bool is_off_the_record,
                                       int request_id) {
-  IconManager* im = g_browser_process->icon_manager();
-
   std::string escaped_path = UnescapeURLComponent(path, UnescapeRule::SPACES);
-
 #if defined(OS_WIN)
   // The path we receive has the wrong slashes and escaping for what we need;
   // this only appears to matter for getting icons from .exe files.
@@ -40,7 +39,9 @@ void FileIconSource::StartDataRequest(const std::string& path,
   // The correct encoding on Linux may not actually be UTF8.
   FilePath escaped_filepath(escaped_path);
 #endif
-  SkBitmap* icon = im->LookupIcon(escaped_filepath, IconLoader::NORMAL);
+
+  IconManager* im = g_browser_process->icon_manager();
+  gfx::Image* icon = im->LookupIcon(escaped_filepath, IconLoader::NORMAL);
 
   if (icon) {
     scoped_refptr<RefCountedBytes> icon_data(new RefCountedBytes);
@@ -65,7 +66,7 @@ std::string FileIconSource::GetMimeType(const std::string&) const {
 }
 
 void FileIconSource::OnFileIconDataAvailable(IconManager::Handle handle,
-                                             SkBitmap* icon) {
+                                             gfx::Image* icon) {
   IconManager* im = g_browser_process->icon_manager();
   int request_id = cancelable_consumer_.GetClientData(im, handle);
 

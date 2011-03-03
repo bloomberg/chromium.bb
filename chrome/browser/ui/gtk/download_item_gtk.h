@@ -27,6 +27,10 @@ class GtkThemeProvider;
 class NineBox;
 class SkBitmap;
 
+namespace gfx {
+class Image;
+}
+
 namespace ui {
 class SlideAnimation;
 }
@@ -58,9 +62,9 @@ class DownloadItemGtk : public DownloadItem::Observer,
   // Called when the icon manager has finished loading the icon. We take
   // ownership of |icon_bitmap|.
   void OnLoadSmallIconComplete(IconManager::Handle handle,
-                               SkBitmap* icon_bitmap);
+                               gfx::Image* image);
   void OnLoadLargeIconComplete(IconManager::Handle handle,
-                               SkBitmap* icon_bitmap);
+                               gfx::Image* image);
 
   // Returns the DownloadItem model object belonging to this item.
   DownloadItem* get_download();
@@ -205,8 +209,9 @@ class DownloadItemGtk : public DownloadItem::Observer,
 
   // The file icon for the download. May be null. The small version is used
   // for display in the shelf; the large version is for use as a drag icon.
-  SkBitmap* icon_small_;
-  SkBitmap* icon_large_;
+  // These icons are owned by the IconManager (owned by the BrowserProcess).
+  gfx::Image* icon_small_;
+  gfx::Image* icon_large_;
 
   // The last download file path for which we requested an icon.
   FilePath icon_filepath_;

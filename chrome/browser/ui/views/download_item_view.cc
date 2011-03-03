@@ -26,6 +26,7 @@
 #include "ui/base/text/text_elider.h"
 #include "ui/gfx/canvas_skia.h"
 #include "ui/gfx/color_utils.h"
+#include "ui/gfx/image.h"
 #include "views/controls/button/native_button.h"
 #include "views/controls/menu/menu_2.h"
 #include "views/widget/root_view.h"
@@ -652,10 +653,15 @@ void DownloadItemView::OnPaint(gfx::Canvas* canvas) {
                           mirrored_x, y, kTextWidth, font_.GetHeight());
   }
 
-  // Paint the icon.
+  // Load the icon.
   IconManager* im = g_browser_process->icon_manager();
-  SkBitmap* icon = IsDangerousMode() ? warning_icon_ :
-      im->LookupIcon(download_->GetUserVerifiedFilePath(), IconLoader::SMALL);
+  gfx::Image* image = im->LookupIcon(download_->GetUserVerifiedFilePath(),
+                                     IconLoader::SMALL);
+  const SkBitmap* icon = NULL;
+  if (IsDangerousMode())
+    icon = warning_icon_;
+  else if (image)
+    icon = *image;
 
   // We count on the fact that the icon manager will cache the icons and if one
   // is available, it will be cached here. We *don't* want to request the icon
@@ -868,8 +874,8 @@ bool DownloadItemView::OnMouseDragged(const views::MouseEvent& event) {
   if (dragging_) {
     if (download_->state() == DownloadItem::COMPLETE) {
       IconManager* im = g_browser_process->icon_manager();
-      SkBitmap* icon = im->LookupIcon(download_->GetUserVerifiedFilePath(),
-                                      IconLoader::SMALL);
+      gfx::Image* icon = im->LookupIcon(download_->GetUserVerifiedFilePath(),
+                                        IconLoader::SMALL);
       if (icon) {
         views::Widget* widget = GetWidget();
         download_util::DragDownload(download_, icon,
@@ -971,7 +977,7 @@ void DownloadItemView::OpenDownload() {
 }
 
 void DownloadItemView::OnExtractIconComplete(IconManager::Handle handle,
-                                             SkBitmap* icon_bitmap) {
+                                             gfx::Image* icon_bitmap) {
   if (icon_bitmap)
     parent()->SchedulePaint();
 }

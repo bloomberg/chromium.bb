@@ -15,12 +15,15 @@
 class BookmarkNode;
 class DownloadItem;
 class Profile;
-class SkBitmap;
+
+namespace gfx {
+class Image;
+}
 
 // Base class for programatically generated drags.
 class CustomDrag {
  protected:
-  explicit CustomDrag(SkBitmap* icon, int code_mask, GdkDragAction action);
+  explicit CustomDrag(gfx::Image* icon, int code_mask, GdkDragAction action);
   virtual ~CustomDrag();
 
   virtual void OnDragDataGet(GtkWidget* widget, GdkDragContext* context,
@@ -44,7 +47,9 @@ class CustomDrag {
   // sinks the reference.
   GtkWidget* drag_widget_;
 
-  GdkPixbuf* pixbuf_;
+  // The image for the drag. The lifetime of the image should be managed outside
+  // this object. Most icons are owned by the IconManager.
+  gfx::Image* image_;
 
   DISALLOW_COPY_AND_ASSIGN(CustomDrag);
 };
@@ -55,14 +60,16 @@ class DownloadItemDrag : public CustomDrag {
   // Sets |widget| as a source for drags pertaining to |item|. No
   // DownloadItemDrag object is created.
   // It is safe to call this multiple times with different values of |icon|.
-  static void SetSource(GtkWidget* widget, DownloadItem* item, SkBitmap* icon);
+  static void SetSource(GtkWidget* widget,
+                        DownloadItem* item,
+                        gfx::Image* icon);
 
   // Creates a new DownloadItemDrag, the lifetime of which is tied to the
   // system drag.
-  static void BeginDrag(const DownloadItem* item, SkBitmap* icon);
+  static void BeginDrag(const DownloadItem* item, gfx::Image* icon);
 
  private:
-  DownloadItemDrag(const DownloadItem* item, SkBitmap* icon);
+  DownloadItemDrag(const DownloadItem* item, gfx::Image* icon);
   virtual ~DownloadItemDrag();
 
   virtual void OnDragDataGet(GtkWidget* widget, GdkDragContext* context,

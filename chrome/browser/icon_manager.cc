@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -23,8 +23,8 @@ IconManager::~IconManager() {
   STLDeleteValues(&icon_cache_);
 }
 
-SkBitmap* IconManager::LookupIcon(const FilePath& file_name,
-                                  IconLoader::IconSize size) {
+gfx::Image* IconManager::LookupIcon(const FilePath& file_name,
+                                    IconLoader::IconSize size) {
   IconGroupID group = GetGroupIDFromFilepath(file_name);
   IconMap::iterator it = icon_cache_.find(CacheKey(group, size));
   if (it != icon_cache_.end())
@@ -52,7 +52,7 @@ IconManager::Handle IconManager::LoadIcon(
 
 // IconLoader::Delegate implementation -----------------------------------------
 
-bool IconManager::OnBitmapLoaded(IconLoader* source, SkBitmap* result) {
+bool IconManager::OnImageLoaded(IconLoader* source, gfx::Image* result) {
   ClientRequests::iterator rit = requests_.find(source);
   // Balances the AddRef() in LoadIcon().
   source->Release();
@@ -74,7 +74,7 @@ bool IconManager::OnBitmapLoaded(IconLoader* source, SkBitmap* result) {
   CacheKey key(client_request.group, client_request.size);
   IconMap::iterator it = icon_cache_.find(key);
   if (it != icon_cache_.end() && result && it->second) {
-    it->second->swap(*result);
+    it->second->SwapRepresentations(result);
     delete result;
     result = it->second;
   } else {

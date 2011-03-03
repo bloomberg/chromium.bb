@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
@@ -10,7 +10,7 @@
 #include "chrome/browser/download/download_item.h"
 #include "chrome/browser/download/download_manager.h"
 #import "chrome/browser/ui/cocoa/dock_icon.h"
-#include "skia/ext/skia_utils_mac.h"
+#include "ui/gfx/image.h"
 #include "ui/gfx/native_widget_types.h"
 
 namespace download_util {
@@ -38,13 +38,10 @@ void NotifySystemOfDownloadComplete(const FilePath& path) {
 }
 
 void DragDownload(const DownloadItem* download,
-                  SkBitmap* icon,
+                  gfx::Image* icon,
                   gfx::NativeView view) {
   NSPasteboard* pasteboard = [NSPasteboard pasteboardWithName:NSDragPboard];
   AddFileToPasteboard(pasteboard, download->full_path());
-
-  // Convert to an NSImage.
-  NSImage* dragImage = gfx::SkBitmapToNSImage(*icon);
 
   // Synthesize a drag event, since we don't have access to the actual event
   // that initiated a drag (possibly consumed by the Web UI, for example).
@@ -61,7 +58,7 @@ void DragDownload(const DownloadItem* download,
                                           pressure:1.0];
 
   // Run the drag operation.
-  [[view window] dragImage:dragImage
+  [[view window] dragImage:*icon
                         at:position
                     offset:NSZeroSize
                      event:dragEvent

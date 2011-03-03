@@ -66,6 +66,9 @@ class Image {
   // Inspects the representations map to see if the given type exists.
   bool HasRepresentation(RepresentationType type);
 
+  // Swaps this image's internal representations with |other|.
+  void SwapRepresentations(gfx::Image* other);
+
  private:
   friend class ::ImageTest;
 
