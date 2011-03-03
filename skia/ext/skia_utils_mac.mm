@@ -167,14 +167,12 @@ SkBitmap NSImageToSkBitmap(NSImage* image, NSSize size, bool is_opaque) {
   return bitmap;
 }
 
-NSImage* SkBitmapToNSImageWithColorSpace(const SkBitmap& skiaBitmap,
-                                         CGColorSpaceRef colorSpace) {
+NSImage* SkBitmapToNSImage(const SkBitmap& skiaBitmap) {
   if (skiaBitmap.isNull())
     return nil;
 
   // First convert SkBitmap to CGImageRef.
-  CGImageRef cgimage =
-    SkCreateCGImageRefWithColorspace(skiaBitmap, colorSpace);
+  CGImageRef cgimage = SkCreateCGImageRef(skiaBitmap);
 
   // Now convert to NSImage.
   NSBitmapImageRep* bitmap = [[[NSBitmapImageRep alloc]
@@ -184,12 +182,6 @@ NSImage* SkBitmapToNSImageWithColorSpace(const SkBitmap& skiaBitmap,
   [image addRepresentation:bitmap];
   [image setSize:NSMakeSize(skiaBitmap.width(), skiaBitmap.height())];
   return image;
-}
-
-NSImage* SkBitmapToNSImage(const SkBitmap& skiaBitmap) {
-  base::mac::ScopedCFTypeRef<CGColorSpaceRef> colorSpace(
-      CGColorSpaceCreateWithName(kCGColorSpaceGenericRGB));
-  return SkBitmapToNSImageWithColorSpace(skiaBitmap, colorSpace.get());
 }
 
 SkBitmap AppplicationIconAtSize(int size) {

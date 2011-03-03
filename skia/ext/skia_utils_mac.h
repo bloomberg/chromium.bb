@@ -64,13 +64,7 @@ SkBitmap CGImageToSkBitmap(CGImageRef image);
 // Draws an NSImage with a given size into a SkBitmap.
 SkBitmap NSImageToSkBitmap(NSImage* image, NSSize size, bool is_opaque);
 
-// Given an SkBitmap and a color space, return an autoreleased NSImage.
-NSImage* SkBitmapToNSImageWithColorSpace(const SkBitmap& icon,
-                                         CGColorSpaceRef colorSpace);
-
-// Given an SkBitmap, return an autoreleased NSImage in the generic color space.
-// DEPRECATED, use SkBitmapToNSImageWithColorSpace() instead.
-// TODO(thakis): Remove this -- http://crbug.com/69432
+// Given an SkBitmap, return an autoreleased NSImage.
 NSImage* SkBitmapToNSImage(const SkBitmap& icon);
 
 // Returns |[NSImage imageNamed:@"NSApplicationIcon"]| as SkBitmap.
