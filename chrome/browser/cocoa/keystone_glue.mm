@@ -757,7 +757,7 @@ NSString* const kBrandKey = @"KSBrandID";
       l10n_util::GetStringUTF16(IDS_PRODUCT_NAME));
   scoped_AuthorizationRef authorization(
       authorization_util::AuthorizationCreateToRunAsRoot(
-          reinterpret_cast<CFStringRef>(prompt)));
+          base::mac::NSToCFCast(prompt)));
   if (!authorization.get()) {
     return;
   }

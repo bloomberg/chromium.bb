@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "base/file_util.h"
+#include "base/mac/mac_util.h"
 #include "base/message_loop.h"
 #include "base/scoped_nsobject.h"
 #include "base/string16.h"
@@ -326,7 +327,7 @@ double SafariImporter::HistoryTimeToEpochTime(NSString* history_time) {
   // Add Difference between Unix epoch and CFAbsoluteTime epoch in seconds.
   // Unix epoch is 1970-01-01 00:00:00.0 UTC,
   // CF epoch is 2001-01-01 00:00:00.0 UTC.
-  return CFStringGetDoubleValue(reinterpret_cast<CFStringRef>(history_time)) +
+  return CFStringGetDoubleValue(base::mac::NSToCFCast(history_time)) +
       kCFAbsoluteTimeIntervalSince1970;
 }
 

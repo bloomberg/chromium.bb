@@ -6,6 +6,7 @@
 
 #include "ui/gfx/canvas_skia.h"
 
+#include "base/mac/mac_util.h"
 #include "base/mac/scoped_cftyperef.h"
 #include "base/sys_string_conversions.h"
 #include "third_party/skia/include/core/SkShader.h"
@@ -72,7 +73,7 @@ void CanvasSkia::DrawStringInt(const string16& text,
                                        attributes:attributes] autorelease];
   base::mac::ScopedCFTypeRef<CTFramesetterRef> framesetter(
       CTFramesetterCreateWithAttributedString(
-      reinterpret_cast<CFAttributedStringRef>(ns_string)));
+          base::mac::NSToCFCast(ns_string)));
 
   CGRect text_bounds = CGRectMake(x, y, w, h);
   CGMutablePathRef path = CGPathCreateMutable();

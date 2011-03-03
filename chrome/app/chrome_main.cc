@@ -268,7 +268,7 @@ void SetMacProcessName(const std::string& process_type) {
   }
   if (name_id) {
     NSString* app_name = l10n_util::GetNSString(name_id);
-    base::mac::SetProcessName(reinterpret_cast<CFStringRef>(app_name));
+    base::mac::SetProcessName(base::mac::NSToCFCast(app_name));
   }
 }
 

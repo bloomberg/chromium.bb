@@ -70,7 +70,7 @@ void AddOriginMetadataToFile(const FilePath& file, const GURL& source,
     return;
 
   base::mac::ScopedCFTypeRef<MDItemRef> md_item(
-      MDItemCreate(NULL, reinterpret_cast<CFStringRef>(file_path)));
+      MDItemCreate(NULL, base::mac::NSToCFCast(file_path)));
   if (!md_item)
     return;
 
@@ -88,7 +88,7 @@ void AddOriginMetadataToFile(const FilePath& file, const GURL& source,
     [list addObject:referrer_url];
 
   md_item_set_attribute_func(md_item, kMDItemWhereFroms,
-                             reinterpret_cast<CFArrayRef>(list));
+                             base::mac::NSToCFCast(list));
 }
 
 // The OS will automatically quarantine files due to the

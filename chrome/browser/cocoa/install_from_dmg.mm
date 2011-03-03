@@ -239,7 +239,7 @@ AuthorizationRef MaybeShowAuthorizationDialog(NSString* application_directory) {
       IDS_INSTALL_FROM_DMG_AUTHENTICATION_PROMPT,
       l10n_util::GetStringUTF16(IDS_PRODUCT_NAME));
   return authorization_util::AuthorizationCreateToRunAsRoot(
-      reinterpret_cast<CFStringRef>(prompt));
+      base::mac::NSToCFCast(prompt));
 }
 
 // Invokes the installer program at installer_path to copy source_path to
@@ -339,7 +339,7 @@ bool LaunchInstalledApp(NSString* app_path) {
   struct LSApplicationParameters parameters = {0};
   parameters.flags = kLSLaunchDefaults;
   parameters.application = &app_fsref;
-  parameters.argv = reinterpret_cast<CFArrayRef>(arguments);
+  parameters.argv = base::mac::NSToCFCast(arguments);
 
   err = LSOpenApplication(&parameters, NULL);
   if (err != noErr) {
