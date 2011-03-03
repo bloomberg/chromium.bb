@@ -168,37 +168,6 @@ class SVNWrapperTestCase(BaseTestCase):
     file_list = []
     scm.revert(options, self.args, file_list)
 
-  def testRevert2Files(self):
-    options = self.Options(verbose=True)
-    gclient_scm.os.path.isdir(self.base_path).AndReturn(True)
-    items = [
-      ('M      ', 'a'),
-      ('A      ', 'b'),
-    ]
-    file_path1 = join(self.base_path, 'a')
-    file_path2 = join(self.base_path, 'b')
-    gclient_scm.scm.SVN.CaptureStatus(self.base_path).AndReturn(items)
-    gclient_scm.os.path.exists(file_path1).AndReturn(True)
-    gclient_scm.os.path.isfile(file_path1).AndReturn(True)
-    gclient_scm.os.remove(file_path1)
-    gclient_scm.os.path.exists(file_path2).AndReturn(True)
-    gclient_scm.os.path.isfile(file_path2).AndReturn(True)
-    gclient_scm.os.remove(file_path2)
-    gclient_scm.scm.SVN.RunAndGetFileList(
-        options.verbose,
-        ['update', '--revision', 'BASE', '--ignore-externals'],
-        cwd=self.base_path,
-        file_list=mox.IgnoreArg())
-
-    self.mox.ReplayAll()
-    scm = self._scm_wrapper(url=self.url, root_dir=self.root_dir,
-                            relpath=self.relpath)
-    file_list = []
-    scm.revert(options, self.args, file_list)
-    self.checkstdout(
-        ('%s\n%s\n' % (join(self.base_path, 'a'),
-            join(self.base_path, 'b'))))
-
   def testRevertDirectory(self):
     options = self.Options(verbose=True)
     gclient_scm.os.path.isdir(self.base_path).AndReturn(True)

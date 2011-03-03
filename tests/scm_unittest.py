@@ -10,6 +10,7 @@
 # Fixes include path.
 from super_mox import SuperMoxTestBase
 
+import fake_repos
 import scm
 
 
@@ -238,6 +239,54 @@ class SVNTestCase(BaseSCMTestCase):
     self.mox.ReplayAll()
     info = scm.SVN.CaptureStatus(None)
     self.assertEquals(info, [])
+
+
+class RealSvnTest(fake_repos.FakeReposTestBase):
+  # Tests that work with a checkout.
+  def setUp(self):
+    super(RealSvnTest, self).setUp()
+    self.FAKE_REPOS.setUpSVN()
+    self.svn_root = scm.os.path.join(self.root_dir, 'base')
+    scm.SVN.Capture(
+        ['checkout', self.svn_base + 'trunk/third_party', 'base'],
+        cwd=self.root_dir)
+    self.tree = self.mangle_svn_tree(('trunk/third_party@-1', ''),)
+
+  def _capture(self, cmd, **kwargs):
+    kwargs.setdefault('cwd', self.svn_root)
+    return scm.SVN.Capture(cmd, **kwargs)
+
+  def testCheckout(self):
+    # Checkout and verify the tree.
+    self.assertTree(self.tree, self.svn_root)
+
+  def testRevert(self):
+    # Mess around and make sure revert works for all corner cases.
+    # - svn add a file
+    # - svn add a file and delete it
+    # - Delete a file
+    # - svn delete a file
+    # - svn move a directory and svn rename files in it
+    self._capture(['move', 'foo', 'foo2'])
+    self._capture(
+        ['move',
+         scm.os.path.join('foo2', 'origin'),
+         scm.os.path.join('foo2', 'o')])
+    scm.os.remove(scm.os.path.join(self.svn_root, 'origin'))
+    self._capture(
+        ['propset', 'foo', 'bar',
+         scm.os.path.join(self.svn_root, 'prout', 'origin')])
+    fake_repos.rmtree(scm.os.path.join(self.svn_root, 'prout'))
+    with open(scm.os.path.join(self.svn_root, 'faa'), 'w') as f:
+      f.write('eh')
+    with open(scm.os.path.join(self.svn_root, 'faala'), 'w') as f:
+      f.write('oh')
+    self._capture(['add', scm.os.path.join(self.svn_root, 'faala')])
+
+    scm.SVN.Revert(self.svn_root)
+    self._capture(['update', '--revision', 'base'])
+
+    self.assertTree(self.tree, self.svn_root)
 
 
 if __name__ == '__main__':
