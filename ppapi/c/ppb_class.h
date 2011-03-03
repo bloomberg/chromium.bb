@@ -15,7 +15,8 @@
 
 /**
  * @file
- * Defines the PPB_Class struct.
+ * This file defines the PPB_Class struct which is an interface for
+ * implementing JavaScript-accessible objects.
  *
  */
 

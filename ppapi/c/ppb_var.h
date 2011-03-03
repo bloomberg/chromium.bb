@@ -17,7 +17,7 @@
 
 /**
  * @file
- * Defines the API ...
+ * This file defines the PPB_Var struct.
  */
 
 /**
@@ -27,11 +27,10 @@
  */
 
 /**
- * Defines the PPB_Var struct.
  * See http://code.google.com/p/ppapi/wiki/InterfacingWithJavaScript
  * for general information on using this interface.
- * {PENDING: Should the generated doc really be pointing to methods?}
  */
+// PENDING: Should the generated doc really be pointing to methods?
 enum PP_ObjectProperty_Modifier {
   PP_OBJECTPROPERTY_MODIFIER_NONE       = 0,
   PP_OBJECTPROPERTY_MODIFIER_READONLY   = 1 << 0,
@@ -100,10 +99,11 @@ PP_COMPILE_ASSERT_STRUCT_SIZE_IN_BYTES(PP_ObjectProperty, 72);
  * parameter errors - passing an invalid PP_Var value, for example, will always
  * result in an PP_VARTYPE_STRING exception. Exceptions will not be of any other
  * type.
- * TODO(neb): Specify the exception for ill-formed PP_Vars, invalid module,
- * instance, resource, string and object ids.
  *
  */
+
+// TODO(neb): Specify the exception for ill-formed PP_Vars, invalid module,
+// instance, resource, string and object ids.
 struct PPB_Var {
   /**
    * Adds a reference to the given var. If this is not a refcounted object,
@@ -170,8 +170,6 @@ struct PPB_Var {
    * Sets a property on the object, similar to Object.prototype.defineProperty.
    *
    * First, if object is not PP_VARTYPE_OBJECT, throw an exception.
-   * TODO(neb): Specify the exception. Ideally, it would be a TypeError, but
-   * don't have the JS context to create new objects, we might throw a string.
    * Then, the property's 'name' field is converted to string using
    * ConvertType (ToString [9.8]).
    * After that, defineOwnProperty [8.12.9, 15.4.5.1] is called with the
@@ -180,6 +178,9 @@ struct PPB_Var {
    * (Writable|Enumerable|Configurable|HasValue), see [8.12.15] and
    * function PPB_MakeSimpleProperty.
    */
+
+// TODO(neb): Specify the exception. Ideally, it would be a TypeError, but
+// don't have the JS context to create new objects, we might throw a string.
   void (*DefineProperty)(struct PP_Var object,
                          struct PP_ObjectProperty property,
                          struct PP_Var* exception);
@@ -188,11 +189,12 @@ struct PPB_Var {
    * Tests whether an object has a property with a given name.
    *
    * First, if object is not PP_VARTYPE_OBJECT, throw an exception.
-   * TODO(neb): Specify the exception. Ideally, it would be a TypeError, but
-   * don't have the JS context to create new objects, we might throw a string.
    * Then, convert 'property' to string using ConvertType (ToString [9.8]).
    * Then return true if the given property exists on the object [8.12.6].
    */
+
+// TODO(neb): Specify the exception. Ideally, it would be a TypeError, but
+// don't have the JS context to create new objects, we might throw a string.
   PP_Bool (*HasProperty)(struct PP_Var object,
                          struct PP_Var property,
                          struct PP_Var* exception);
@@ -201,11 +203,12 @@ struct PPB_Var {
    * Returns a given property of the object.
    *
    * First, if object is not PP_VARTYPE_OBJECT, throw an exception.
-   * TODO(neb): Specify the exception. Ideally, it would be a TypeError, but
-   * don't have the JS context to create new objects, we might throw a string.
    * Then, convert 'property' to string using ConvertType (ToString [9.8]).
    * Then return the given property of the object [8.12.2].
    */
+
+// TODO(neb): Specify the exception. Ideally, it would be a TypeError, but
+// don't have the JS context to create new objects, we might throw a string.
   struct PP_Var (*GetProperty)(struct PP_Var object,
                                struct PP_Var property,
                                struct PP_Var* exception);
@@ -216,11 +219,12 @@ struct PPB_Var {
    * True is returned if the property didn't exist in the first place.
    *
    * First, if object is not PP_VARTYPE_OBJECT, throw an exception.
-   * TODO(neb): Specify the exception. Ideally, it would be a TypeError, but
-   * don't have the JS context to create new objects, we might throw a string.
    * Then, convert 'property' to string using ConvertType (ToString [9.8]).
    * Then delete the given property of the object [8.12.7].
    */
+
+// TODO(neb): Specify the exception. Ideally, it would be a TypeError, but
+// don't have the JS context to create new objects, we might throw a string.
   PP_Bool (*DeleteProperty)(struct PP_Var object,
                             struct PP_Var property,
                             struct PP_Var* exception);
@@ -230,8 +234,6 @@ struct PPB_Var {
    * methods.
    *
    * If object is not PP_VARTYPE_OBJECT, throw an exception.
-   * TODO(neb): Specify the exception. Ideally, it would be a TypeError, but
-   * don't have the JS context to create new objects, we might throw a string.
    *
    * If there is a failure, the given exception will be set (if it is non-NULL).
    * On failure, |*properties| will be set to NULL and |*property_count| will be
@@ -258,6 +260,9 @@ struct PPB_Var {
    *     ppb_var.Release(properties[i]);
    *   ppb_core.MemFree(properties); </pre>
    */
+
+// TODO(neb): Specify the exception. Ideally, it would be a TypeError, but
+// don't have the JS context to create new objects, we might throw a string.
   void (*EnumerateProperties)(struct PP_Var object,
                               uint32_t* property_count,
                               struct PP_Var** properties,

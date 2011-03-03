@@ -17,8 +17,9 @@ struct PP_CompletionCallback;
 
 /**
  * @file
- * Defines the API ...
- *
+ * This file defines the PPB_Core interface defined by the browser and
+ * and containing pointers to functions related to memory management,
+ * time, and threads.
  */
 
 /**
@@ -26,65 +27,104 @@ struct PP_CompletionCallback;
  * @{
  */
 
-/** {PENDING: describe PPB_CORE} */
+/**
+ * The PPB_Core interface contains pointers to functions related to memory
+ * management, time, and threads on the browser.
+ *
+ */
 struct PPB_Core {
-  /** Same as AddRefVar for Resources. */
+  /**
+   * Same as AddRefVar for Resources.
+   * AddRefResource is a pointer to a function that adds a reference to
+   * a resource.
+   *
+   * @param[in] config A PP_Resource containing the resource.
+   */
   void (*AddRefResource)(PP_Resource resource);
 
-  /** Same as ReleaseVar for Resources. */
+  /**
+   * ReleaseResource is a pointer to a function that removes a reference
+   * from a resource.
+   *
+   * @param[in] config A PP_Resource containing the resource.
+   */
+/*Same as ReleaseVar for Resources. */
   void (*ReleaseResource)(PP_Resource resource);
 
   /**
-   * Allocate memory.
+   * MemAlloc is a pointer to a function that allocate memory.
    *
-   * @return NULL If the allocation fails.
+   * @param[in] num_bytes A size_t number of bytes to allocate.
+   * @return A pointer to the memory if successful, NULL If the
+   * allocation fails.
    */
   void* (*MemAlloc)(size_t num_bytes);
 
-  /** Free memory; it's safe to pass NULL. */
+  /**
+   * MemFree is a pointer to a function that deallocates memory.
+   *
+   * @param[in] ptr A pointer to the memory to deallocate. It is safe to
+   * pass NULL to this function.
+   */
   void (*MemFree)(void* ptr);
 
   /**
-   * Returns the "wall clock time" according to the browser.
+   * GetTime is a pointer to a function that returns the "wall clock
+   * time" according to the browser.
    *
-   * See the definition of PP_Time.
+   * @return A PP_Time containing the "wall clock time" according to the
+   * browser.
    */
   PP_Time (*GetTime)();
 
   /**
-   * Returns the "tick time" according to the browser. This clock is used by
-   * the browser when passing some event times to the plugin (e.g., via the
+   * GetTimeTicks is a pointer to a function that returns the "tick time"
+   * according to the browser. This clock is used by the browser when passing
+   * some event times to the plugin (e.g., via the
    * PP_InputEvent::time_stamp_seconds field). It is not correlated to any
    * actual wall clock time (like GetTime()). Because of this, it will not run
    * change if the user changes their computer clock.
    *
-   * TODO(brettw) http://code.google.com/p/chromium/issues/detail?id=57448
-   * This currently does change with wall clock time, but will be fixed in
-   * a future release.
+   * @return A PP_TimeTicks containing the "tick time" according to the
+   * browser.
    */
+
+// TODO(brettw) http://code.google.com/p/chromium/issues/detail?id=57448
+// This currently does change with wall clock time, but will be fixed in
+// a future release.
   PP_TimeTicks (*GetTimeTicks)();
 
   /**
-   * Schedules work to be executed on the main plugin thread after the
-   * specified delay. The delay may be 0 to specify a call back as soon as
-   * possible.
+   * CallOnMainThread is a pointer to a function that schedules work to be
+   * executed on the main module thread after the specified delay. The delay
+   * may be 0 to specify a call back as soon as possible.
    *
-   * The |result| parameter will just be passed as the second argument as the
+   * The |result| parameter will just be passed as the second argument to the
    * callback. Many applications won't need this, but it allows a plugin to
    * emulate calls of some callbacks which do use this value.
    *
    * NOTE: If the browser is shutting down or if the plugin has no instances,
    * then the callback function may not be called.
+   *
+   * @param[in] delay_in_milliseconds An int32_t delay in milliseconds.
+   * @param[in] callback A PP_CompletionCallback callback function that the
+   * browser will call after the specified delay.
+   * @param[in] result An int32_t that the browser will pass to the given
+   * PP_CompletionCallback.
    */
   void (*CallOnMainThread)(int32_t delay_in_milliseconds,
                            struct PP_CompletionCallback callback,
                            int32_t result);
 
   /**
-   * Returns true if the current thread is the main pepper thread.
+   * IsMainThread is a pointer to a function that returns true if the
+   * current thread is the main pepper thread.
    *
-   * This is useful for implementing sanity checks, and deciding if dispatching
-   * via CallOnMainThread() is required.
+   * This function is useful for implementing sanity checks, and deciding if
+   * dispatching using CallOnMainThread() is required.
+   *
+   * @return A PP_BOOL containing PP_TRUE if the current thread is the main
+   * pepper thread, otherwise PP_FALSE.
    */
   PP_Bool (*IsMainThread)();
 };

@@ -19,9 +19,10 @@
  * @file
  * This file defines three functions that your module must
  * implement to interact with the browser.
- *
- * {PENDING: undefine PP_EXPORT?}
  */
+
+// {PENDING: undefine PP_EXPORT?}
+
 
 /* We don't want name mangling for these external functions.  We only need
  * 'extern "C"' if we're compiling with a C++ compiler.

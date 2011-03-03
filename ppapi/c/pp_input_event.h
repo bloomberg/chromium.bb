@@ -115,9 +115,9 @@ struct PP_InputEvent_Key {
 
   /**
    * The key code.
-   *
-   * TODO(brettw) define what these actually are.
    */
+
+// TODO(brettw) define what these actually are.
   uint32_t key_code;
 };
 PP_COMPILE_ASSERT_STRUCT_SIZE_IN_BYTES(PP_InputEvent_Key, 8);
@@ -208,7 +208,7 @@ struct PP_InputEvent_Mouse {
    */
   float y;
 
-  /** TODO(brettw) figure out exactly what this means. */
+  // TODO(brettw) figure out exactly what this means.
   int32_t click_count;
 };
 PP_COMPILE_ASSERT_STRUCT_SIZE_IN_BYTES(PP_InputEvent_Mouse, 20);
