@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/webui/constrained_html_ui.h"
 
 #include "base/lazy_instance.h"
+#include "base/values.h"
 #include "chrome/browser/ui/webui/html_dialog_ui.h"
 #include "chrome/common/bindings_policy.h"
 #include "content/browser/renderer_host/render_view_host.h"
@@ -48,8 +49,10 @@ void ConstrainedHtmlUI::OnDialogClose(const ListValue* args) {
   if (!delegate)
     return;
 
-  delegate->GetHtmlDialogUIDelegate()->OnDialogClosed(
-      web_ui_util::GetJsonResponseFromFirstArgumentInList(args));
+  std::string json_retval;
+  if (!args->GetString(0, &json_retval))
+    NOTREACHED() << "Could not read JSON argument";
+  delegate->GetHtmlDialogUIDelegate()->OnDialogClosed(json_retval);
   delegate->OnDialogClose();
 }
 

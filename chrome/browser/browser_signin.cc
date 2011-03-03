@@ -29,7 +29,6 @@
 #include "content/browser/browser_thread.h"
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/tab_contents/tab_contents.h"
-#include "content/browser/webui/web_ui_util.h"
 #include "grit/browser_resources.h"
 #include "ui/base/resource/resource_bundle.h"
 
@@ -194,7 +193,10 @@ void BrowserSigninHtml::HandleSigninInit(const ListValue* args) {
 }
 
 void BrowserSigninHtml::HandleSubmitAuth(const ListValue* args) {
-  std::string json(web_ui_util::GetJsonResponseFromFirstArgumentInList(args));
+  std::string json;
+  if (!args->GetString(0, &json))
+    NOTREACHED() << "Could not read JSON argument";
+
   scoped_ptr<DictionaryValue> result(static_cast<DictionaryValue*>(
       base::JSONReader::Read(json, false)));
   std::string username;

@@ -27,7 +27,6 @@
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/browser/tab_contents/tab_contents_view.h"
 #include "content/browser/webui/web_ui.h"
-#include "content/browser/webui/web_ui_util.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "webkit/glue/webpreferences.h"
 
@@ -341,9 +340,12 @@ void CloudPrintFlowHandler::HandleSendPrintData(const ListValue* args) {
 }
 
 void CloudPrintFlowHandler::HandleSetPageParameters(const ListValue* args) {
-  std::string json(web_ui_util::GetJsonResponseFromFirstArgumentInList(args));
-  if (json.empty())
+  std::string json;
+  args->GetString(0, &json);
+  if (json.empty()) {
+    NOTREACHED() << "Empty json string";
     return;
+  }
 
   // These are backstop default values - 72 dpi to match the screen,
   // 8.5x11 inch paper with margins subtracted (1/4 inch top, left,

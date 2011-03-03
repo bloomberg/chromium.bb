@@ -66,8 +66,11 @@ void HtmlDialogUI::OnDialogClosed(const ListValue* args) {
   HtmlDialogUIDelegate** delegate = GetPropertyAccessor().GetProperty(
       tab_contents()->property_bag());
   if (delegate) {
-    (*delegate)->OnDialogClosed(
-        web_ui_util::GetJsonResponseFromFirstArgumentInList(args));
+    std::string json_retval;
+    if (!args->GetString(0, &json_retval))
+      NOTREACHED() << "Could not read JSON arguments";
+
+    (*delegate)->OnDialogClosed(json_retval);
   }
 }
 

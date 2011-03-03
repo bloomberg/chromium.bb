@@ -8,29 +8,9 @@
 
 #include <string>
 
-class ListValue;
 class SkBitmap;
 
 namespace web_ui_util {
-
-// Convenience routine to get the response string from an argument
-// list.  Typically used when supporting a WebUI and getting calls
-// from the hosted code.  Content must be a ListValue with at least
-// one entry in it, and that first entry must be a string, which is
-// returned.  The parameter is a Value for convenience.  Returns an
-// empty string on error or if the parameter is not a ListValue.
-std::string GetJsonResponseFromFirstArgumentInList(const ListValue* args);
-
-// Convenience routine to get one of the response strings from an
-// argument list.  content must be a ListValue, with at least
-// (list_index+1) entries in it.  list_index is the 0-based index of
-// the entry to pull from that list, and that entry must be a string,
-// which is returned.  The parameter is a Value for convenience.
-// Returns an empty string on error or if the parameter is not a
-// ListValue.
-std::string GetJsonResponseFromArgumentList(const ListValue* args,
-                                            size_t list_index);
-
 
 // Convenience routine to convert SkBitmap object to data url
 // so that it can be used in WebUI.

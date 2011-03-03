@@ -181,11 +181,15 @@ static void DisablePasswordSync(ProfileSyncService* service) {
 }
 
 void FlowHandler::HandleSubmitAuth(const ListValue* args) {
-  std::string json(web_ui_util::GetJsonResponseFromFirstArgumentInList(args));
-  std::string username, password, captcha, access_code;
+  std::string json;
+  if (!args->GetString(0, &json)) {
+    NOTREACHED() << "Could not read JSON argument";
+    return;
+  }
   if (json.empty())
     return;
 
+  std::string username, password, captcha, access_code;
   if (!GetAuthData(json, &username, &password, &captcha, &access_code)) {
     // The page sent us something that we didn't understand.
     // This probably indicates a programming error.
@@ -198,12 +202,15 @@ void FlowHandler::HandleSubmitAuth(const ListValue* args) {
 }
 
 void FlowHandler::HandleConfigure(const ListValue* args) {
-  std::string json(web_ui_util::GetJsonResponseFromFirstArgumentInList(args));
-  SyncConfiguration configuration;
-
+  std::string json;
+  if (!args->GetString(0, &json)) {
+    NOTREACHED() << "Could not read JSON argument";
+    return;
+  }
   if (json.empty())
     return;
 
+  SyncConfiguration configuration;
   if (!GetConfiguration(json, &configuration)) {
     // The page sent us something that we didn't understand.
     // This probably indicates a programming error.
@@ -218,8 +225,11 @@ void FlowHandler::HandleConfigure(const ListValue* args) {
 }
 
 void FlowHandler::HandlePassphraseEntry(const ListValue* args) {
-  std::string json(web_ui_util::GetJsonResponseFromFirstArgumentInList(args));
-
+  std::string json;
+  if (!args->GetString(0, &json)) {
+    NOTREACHED() << "Could not read JSON argument";
+    return;
+  }
   if (json.empty())
     return;
 
@@ -240,8 +250,11 @@ void FlowHandler::HandlePassphraseCancel(const ListValue* args) {
 }
 
 void FlowHandler::HandleFirstPassphrase(const ListValue* args) {
-  std::string json(web_ui_util::GetJsonResponseFromFirstArgumentInList(args));
-
+  std::string json;
+  if (!args->GetString(0, &json)) {
+    NOTREACHED() << "Could not read JSON argument";
+    return;
+  }
   if (json.empty())
     return;
 
