@@ -54,6 +54,7 @@
 #include <sys/sysctl.h>
 
 #include "base/logging.h"
+#include "base/mac/scoped_cftyperef.h"
 #include "base/scoped_ptr.h"
 #include "content/browser/device_orientation/orientation.h"
 
@@ -92,6 +93,9 @@ struct AccelerometerMac::SensorDescriptor {
   // Prefix of model to be tested.
   const char* model_name;
 
+  // Board id of model, or NULL if it doesn't matter.
+  const char* board_id;
+
   // Axis-specific data (x,y,z order).
   AxisData axis[3];
 };
@@ -105,95 +109,98 @@ const AccelerometerMac::GenericMacbookSensor
 };
 
 // Supported sensor descriptors. Add entries here to enhance compatibility.
-// All non-tested entries from SMSLib have been removed.
+// Tested in order; place more specific entries before more general ones. (All
+// non-tested entries from SMSLib have been removed.)
 const AccelerometerMac::SensorDescriptor
     AccelerometerMac::kSupportedSensors[] = {
   // Tested by tommyw on a 13" MacBook.
-  { "MacBook1,1",    { { 0, true  }, { 2, true  }, { 4, false } } },
+  { "MacBook1,1",    NULL, { { 0, true  }, { 2, true  }, { 4, false } } },
 
   // Tested by S.Selz. (via avi) on a 13" MacBook.
-  { "MacBook2,1",    { { 0, true  }, { 2, false }, { 4, true  } } },
+  { "MacBook2,1",    NULL, { { 0, true  }, { 2, false }, { 4, true  } } },
 
   // Tested by verhees on a 13" MacBook.
-  { "MacBook3,1",    { { 0, true  }, { 2, true  }, { 4, false } } },
+  { "MacBook3,1",    NULL, { { 0, true  }, { 2, true  }, { 4, false } } },
 
   // Tested by adlr on a 13" MacBook.
-  { "MacBook4,1",    { { 0, true  }, { 2, true  }, { 4, false } } },
+  { "MacBook4,1",    NULL, { { 0, true  }, { 2, true  }, { 4, false } } },
 
   // Tested by tommyw on a 13" MacBook.
-  { "MacBook6,1",    { { 0, true  }, { 2, true  }, { 4, false } } },
+  { "MacBook6,1",    NULL, { { 0, true  }, { 2, true  }, { 4, false } } },
 
   // Tested by avi on a 13" MacBook.
-  { "MacBook7,1",    { { 0, true  }, { 2, true  }, { 4, false } } },
+  { "MacBook7,1",    NULL, { { 0, true  }, { 2, true  }, { 4, false } } },
 
   // Tested by crc on a 13" MacBook Air.
-  { "MacBookAir1,1", { { 0, true  }, { 2, true  }, { 4, false } } },
+  { "MacBookAir1,1", NULL, { { 0, true  }, { 2, true  }, { 4, false } } },
 
   // Tested by sfiera, pjw on a 13" MacBook Air.
-  { "MacBookAir2,1", { { 0, true  }, { 2, true  }, { 4, false } } },
+  { "MacBookAir2,1", NULL, { { 0, true  }, { 2, true  }, { 4, false } } },
 
   // Note: MacBookAir3,1 (11" MacBook Air) and MacBookAir3,2 (13" MacBook Air)
   // have no accelerometer sensors.
 
   // Tested by crc on a 15" MacBook Pro.
-  { "MacBookPro1,1", { { 0, true  }, { 2, true  }, { 4, false } } },
+  { "MacBookPro1,1", NULL, { { 0, true  }, { 2, true  }, { 4, false } } },
 
   // Tested by L.V. (via avi) on a 17" MacBook Pro.
-  { "MacBookPro2,1", { { 0, true  }, { 2, false }, { 4, true  } } },
+  { "MacBookPro2,1", NULL, { { 0, true  }, { 2, false }, { 4, true  } } },
 
   // Tested by leandrogracia on a 15" MacBook Pro.
-  { "MacBookPro2,2", { { 0, true  }, { 2, true  }, { 4, false } } },
+  { "MacBookPro2,2", NULL, { { 0, true  }, { 2, true  }, { 4, false } } },
+
+  // Tested by S.Som. (via avi) on a 17" MacBook Pro.
+  { "MacBookPro3,1", "Mac-F42388C8",
+                           { { 0, true  }, { 2, false }, { 4, true  } } },
 
   // Tested by leandrogracia on a 15" MacBook Pro.
-  { "MacBookPro3,1", { { 0, false }, { 2, true  }, { 4, true  } } },
-  // Data from S.Som. (via avi) on a 17" MacBook Pro.
-  //{ "MacBookPro3,1", { { 0, true  }, { 2, false }, { 4, true  } } },
+  { "MacBookPro3,1", NULL, { { 0, false }, { 2, true  }, { 4, true  } } },
 
   // Tested by leandrogracia on a 15" MacBook Pro.
   // Tested by Eric Shapiro (via avi) on a 17" MacBook Pro.
-  { "MacBookPro4,1", { { 0, true  }, { 2, true  }, { 4, false } } },
+  { "MacBookPro4,1", NULL, { { 0, true  }, { 2, true  }, { 4, false } } },
 
   // Tested by leandrogracia on a 15" MacBook Pro.
-  { "MacBookPro5,1", { { 0, false }, { 2, false }, { 4, false } } },
+  { "MacBookPro5,1", NULL, { { 0, false }, { 2, false }, { 4, false } } },
 
   // Tested by S.Selz. (via avi) on a 17" MacBook Pro.
-  { "MacBookPro5,2", { { 0, false }, { 2, false }, { 4, false } } },
+  { "MacBookPro5,2", NULL, { { 0, false }, { 2, false }, { 4, false } } },
 
   // Tested by dmaclach on a 15" MacBook Pro.
-  { "MacBookPro5,3", { { 2, false }, { 0, false }, { 4, true  } } },
+  { "MacBookPro5,3", NULL, { { 2, false }, { 0, false }, { 4, true  } } },
 
   // Tested by leandrogracia on a 15" MacBook Pro.
-  { "MacBookPro5,4", { { 0, false }, { 2, false }, { 4, false } } },
+  { "MacBookPro5,4", NULL, { { 0, false }, { 2, false }, { 4, false } } },
 
   // Tested by leandrogracia on a 13" MacBook Pro.
-  { "MacBookPro5,5", { { 0, true  }, { 2, true  }, { 4, false } } },
+  { "MacBookPro5,5", NULL, { { 0, true  }, { 2, true  }, { 4, false } } },
 
   // Tested by khom, leadpipe on a 17" MacBook Pro.
-  { "MacBookPro6,1", { { 0, false }, { 2, false }, { 4, false } } },
+  { "MacBookPro6,1", NULL, { { 0, false }, { 2, false }, { 4, false } } },
 
   // Tested by leandrogracia on a 15" MacBook Pro.
-  { "MacBookPro6,2", { { 0, true  }, { 2, false }, { 4, true  } } },
+  { "MacBookPro6,2", NULL, { { 0, true  }, { 2, false }, { 4, true  } } },
 
   // Tested by leandrogracia on a 13" MacBook Pro.
-  { "MacBookPro7,1", { { 0, true  }, { 2, true  }, { 4, false } } },
+  { "MacBookPro7,1", NULL, { { 0, true  }, { 2, true  }, { 4, false } } },
 
   // Tested by avi on a 13" MacBook Pro.
-  { "MacBookPro8,1", { { 0, false }, { 2, false }, { 4, false } } },
+  { "MacBookPro8,1", NULL, { { 0, false }, { 2, false }, { 4, false } } },
 
   // Tested by avi on a 15" MacBook Pro.
-  { "MacBookPro8,2", { { 0, false }, { 2, false }, { 4, false } } },
+  { "MacBookPro8,2", NULL, { { 0, false }, { 2, false }, { 4, false } } },
 
   // Tested by avi on a 17" MacBook Pro.
-  { "MacBookPro8,3", { { 0, false }, { 2, false }, { 4, false } } },
+  { "MacBookPro8,3", NULL, { { 0, false }, { 2, false }, { 4, false } } },
 
-  // Generic MacBook accelerometer sensor data, used for for both future models
+  // Generic MacBook accelerometer sensor data, used for both future models
   // and past models for which there has been no testing. Note that this generic
   // configuration may well have problems with inverted axes.
   // TODO(avi): Find these past models and test on them; test on future models.
   //  MacBook5,1
   //  MacBook5,2
   //  MacBookPro1,2
-  { "", { { 0, true  }, { 2, true  }, { 4, false } } }
+  { "",              NULL, { { 0, true  }, { 2, true  }, { 4, false } } }
 };
 
 // Create a AccelerometerMac object and return NULL if no valid sensor found.
@@ -322,19 +329,17 @@ bool AccelerometerMac::GetOrientation(Orientation* orientation) {
 // Probe the local hardware looking for a supported sensor device
 // and initialize an I/O connection to it.
 bool AccelerometerMac::Init() {
-  // Allocate local variables for model name string (size from SMSLib).
-  static const int kNameSize = 32;
-  char local_model[kNameSize];
-
-  // Request model name to the kernel.
-  size_t name_size = kNameSize;
+  // Request model name from the kernel.
+  char local_model[32];  // size from SMSLib
+  size_t local_model_size = sizeof(local_model);
   int params[2] = { CTL_HW, HW_MODEL };
-  if (sysctl(params, 2, local_model, &name_size, NULL, 0) != 0)
+  if (sysctl(params, 2, local_model, &local_model_size, NULL, 0) != 0)
     return NULL;
 
   const SensorDescriptor* sensor_candidate = NULL;
 
   // Look for the current model in the supported sensor list.
+  base::mac::ScopedCFTypeRef<CFDataRef> board_id_data;
   const int kNumSensors = arraysize(kSupportedSensors);
 
   for (int i = 0; i < kNumSensors; ++i) {
@@ -346,26 +351,48 @@ bool AccelerometerMac::Init() {
     if (*p1 != '\0')
       continue;
 
+    // Check the board id.
+    if (kSupportedSensors[i].board_id) {
+      if (!board_id_data.get()) {
+        CFMutableDictionaryRef dict =
+            IOServiceMatching("IOPlatformExpertDevice");
+        if (!dict)
+          continue;
+
+        io_service_t platform_expert =
+            IOServiceGetMatchingService(kIOMasterPortDefault, dict);
+        if (!platform_expert)
+          continue;
+
+        board_id_data.reset((CFDataRef)
+            IORegistryEntryCreateCFProperty(platform_expert,
+                                            CFSTR("board-id"),
+                                            kCFAllocatorDefault,
+                                            0));
+        IOObjectRelease(platform_expert);
+        if (!board_id_data.get())
+          continue;
+      }
+
+      if (strcmp(kSupportedSensors[i].board_id,
+                 (const char*)CFDataGetBytePtr(board_id_data)) != 0) {
+        continue;
+      }
+    }
+
     // Local hardware found in the supported sensor list.
     sensor_candidate = &kSupportedSensors[i];
 
     // Get a dictionary of the services matching to the one in the sensor.
     CFMutableDictionaryRef dict =
         IOServiceMatching(kGenericSensor.service_name);
-    if (dict == NULL)
+    if (!dict)
       continue;
 
-    // Get an iterator for the matching services.
-    io_iterator_t device_iterator;
-    if (IOServiceGetMatchingServices(kIOMasterPortDefault, dict,
-        &device_iterator) != KERN_SUCCESS) {
-      continue;
-    }
-
-    // Get the first device in the list.
-    io_object_t device = IOIteratorNext(device_iterator);
-    IOObjectRelease(device_iterator);
-    if (device == 0)
+    // Get the first matching service.
+    io_service_t device = IOServiceGetMatchingService(kIOMasterPortDefault,
+                                                      dict);
+    if (!device)
       continue;
 
     // Try to open device.
