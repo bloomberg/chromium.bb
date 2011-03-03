@@ -941,6 +941,8 @@
         'browser/sync/engine/syncer_end_command.h',
         'browser/sync/engine/syncer_proto_util.cc',
         'browser/sync/engine/syncer_proto_util.h',
+        'browser/sync/engine/syncer_thread_adapter.cc',
+        'browser/sync/engine/syncer_thread_adapter.h',
         'browser/sync/engine/syncer_thread2.cc',
         'browser/sync/engine/syncer_thread2.h',
         'browser/sync/engine/syncer_thread.cc',

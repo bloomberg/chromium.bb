@@ -889,6 +889,8 @@ class SyncManager {
   void UpdateEnabledTypes(const syncable::ModelTypeSet& types);
 
   // Start the SyncerThread.
+  // TODO(tim): With the new impl, this would mean starting "NORMAL" operation.
+  // Rename this when switched over or at least update comment.
   void StartSyncing();
 
   // Attempt to set the passphrase. If the passphrase is valid,
@@ -913,13 +915,20 @@ class SyncManager {
   // method will be called when the syncer thread is paused.  Returns
   // false if the syncer thread can not be paused (e.g. if it is not
   // started).
+  // TODO(tim): Deprecated.
   bool RequestPause();
 
   // Requests the syncer thread to resume.  The observer's OnResume
   // method will be called when the syncer thread is resumed.  Returns
   // false if the syncer thread can not be resumed (e.g. if it is not
   // paused).
+  // TODO(tim): Deprecated.
   bool RequestResume();
+
+  // For the new SyncerThread impl, this switches the mode of operation to
+  // CONFIGURATION_MODE and schedules a config task to fetch updates for
+  // |types|. It is an error to call this with legacy SyncerThread in use.
+  void RequestConfig(const syncable::ModelTypeBitSet& types);
 
   // Request a nudge of the syncer, which will cause the syncer thread
   // to run at the next available opportunity.

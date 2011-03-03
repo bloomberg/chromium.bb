@@ -685,7 +685,6 @@ void SyncerThread::CreateSyncer(const std::string& dirname) {
   // The underlying database structure is ready, and we should create
   // the syncer.
   CHECK(vault_.syncer_ == NULL);
-  session_context_->set_account_name(dirname);
   vault_.syncer_ = new Syncer();
   vault_field_changed_.Broadcast();
 }

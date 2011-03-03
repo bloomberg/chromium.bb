@@ -13,6 +13,7 @@
 #include <vector>
 
 #include "base/base64.h"
+#include "base/command_line.h"
 #include "base/logging.h"
 #include "base/message_loop.h"
 #include "base/observer_list.h"
@@ -32,6 +33,8 @@
 #include "chrome/browser/sync/engine/net/syncapi_server_connection_manager.h"
 #include "chrome/browser/sync/engine/syncer.h"
 #include "chrome/browser/sync/engine/syncer_thread.h"
+#include "chrome/browser/sync/engine/syncer_thread2.h"
+#include "chrome/browser/sync/engine/syncer_thread_adapter.h"
 #include "chrome/browser/sync/js_arg_list.h"
 #include "chrome/browser/sync/js_backend.h"
 #include "chrome/browser/sync/js_event_router.h"
@@ -56,6 +59,7 @@
 #include "chrome/browser/sync/syncable/nigori_util.h"
 #include "chrome/browser/sync/syncable/syncable.h"
 #include "chrome/browser/sync/util/crypto_helpers.h"
+#include "chrome/common/chrome_switches.h"
 #include "chrome/common/deprecated/event_sys.h"
 #include "chrome/common/net/gaia/gaia_authenticator.h"
 #include "content/browser/browser_thread.h"
@@ -76,6 +80,7 @@ using browser_sync::SyncEngineEvent;
 using browser_sync::SyncEngineEventListener;
 using browser_sync::Syncer;
 using browser_sync::SyncerThread;
+using browser_sync::SyncerThreadAdapter;
 using browser_sync::kNigoriTag;
 using browser_sync::sessions::SyncSessionContext;
 using notifier::TalkMediator;
@@ -1220,7 +1225,7 @@ class SyncManager::SyncInternal
   SyncAPIServerConnectionManager* connection_manager() {
     return connection_manager_.get();
   }
-  SyncerThread* syncer_thread() { return syncer_thread_.get(); }
+  SyncerThreadAdapter* syncer_thread() { return syncer_thread_.get(); }
   TalkMediator* talk_mediator() { return talk_mediator_.get(); }
   UserShare* GetUserShare() { return &share_; }
 
@@ -1460,7 +1465,7 @@ class SyncManager::SyncInternal
   scoped_ptr<SyncAPIServerConnectionManager> connection_manager_;
 
   // The thread that runs the Syncer. Needs to be explicitly Start()ed.
-  scoped_refptr<SyncerThread> syncer_thread_;
+  scoped_ptr<SyncerThreadAdapter> syncer_thread_;
 
   // Notification (xmpp) handler.
   scoped_ptr<TalkMediator> talk_mediator_;
@@ -1632,6 +1637,15 @@ void SyncManager::RequestClearServerData() {
     data_->syncer_thread()->NudgeSyncer(0, SyncerThread::kClearPrivateData);
 }
 
+void SyncManager::RequestConfig(const syncable::ModelTypeBitSet& types) {
+  if (!data_->syncer_thread())
+    return;
+  // It is an error for this to be called if new_impl is null.
+  data_->syncer_thread()->new_impl()->Start(
+      browser_sync::s3::SyncerThread::CONFIGURATION_MODE);
+  data_->syncer_thread()->new_impl()->ScheduleConfig(types);
+}
+
 const std::string& SyncManager::GetAuthenticatedUsername() {
   DCHECK(data_);
   return data_->username_for_share();
@@ -1685,9 +1699,11 @@ bool SyncManager::SyncInternal::Init(
         dir_manager(),
         model_safe_worker_registrar,
         listeners);
-
+    context->set_account_name(credentials.email);
     // The SyncerThread takes ownership of |context|.
-    syncer_thread_ = new SyncerThread(context);
+    syncer_thread_.reset(new SyncerThreadAdapter(context,
+        CommandLine::ForCurrentProcess()->HasSwitch(
+            switches::kNewSyncerThread)));
   }
 
   bool signed_in = SignIn(credentials);
@@ -1852,6 +1868,9 @@ void SyncManager::SyncInternal::UpdateCredentials(
   connection_manager()->set_auth_token(credentials.sync_token);
   TalkMediatorLogin(credentials.email, credentials.sync_token);
   CheckServerReachable();
+  // TODO(tim): Why is this nudge necessary? Possibly just to realize that
+  // our credentials are invalid (may have been cached, etc), rather than
+  // wait until a sync needs to happen.  Not sure that justifies it...
   sync_manager_->RequestNudge();
 }
 
@@ -2131,7 +2150,7 @@ void SyncManager::SyncInternal::Shutdown() {
     if (!syncer_thread()->Stop(kThreadExitTimeoutMsec)) {
       LOG(FATAL) << "Unable to stop the syncer, it won't be happy...";
     }
-    syncer_thread_ = NULL;
+    syncer_thread_.reset();
   }
 
   // Shutdown the xmpp buzz connection.

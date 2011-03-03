@@ -328,6 +328,7 @@ extern const char kSyncNotificationMethod[];
 extern const char kSyncNotificationHost[];
 extern const char kSyncServiceURL[];
 extern const char kSyncTrySsltcpFirstForXmpp[];
+extern const char kNewSyncerThread[];
 extern const char kTestNaClSandbox[];
 extern const char kTestName[];
 extern const char kTestSandbox[];

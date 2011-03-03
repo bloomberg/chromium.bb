@@ -1235,6 +1235,10 @@ void ProfileSyncService::Observe(NotificationType type,
         wizard_.Step(SyncSetupWizard::DONE);
       NotifyObservers();
 
+      // In the old world, this would be a no-op.  With new syncer thread,
+      // this is the point where it is safe to switch from config-mode to
+      // normal operation.
+      backend_->StartSyncingWithServer();
       break;
     }
     case NotificationType::SYNC_DATA_TYPES_UPDATED: {

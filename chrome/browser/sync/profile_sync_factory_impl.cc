@@ -15,6 +15,7 @@
 #include "chrome/browser/sync/glue/bookmark_data_type_controller.h"
 #include "chrome/browser/sync/glue/bookmark_model_associator.h"
 #include "chrome/browser/sync/glue/data_type_manager_impl.h"
+#include "chrome/browser/sync/glue/data_type_manager_impl2.h"
 #include "chrome/browser/sync/glue/extension_change_processor.h"
 #include "chrome/browser/sync/glue/extension_data_type_controller.h"
 #include "chrome/browser/sync/glue/extension_model_associator.h"
@@ -53,6 +54,7 @@ using browser_sync::BookmarkModelAssociator;
 using browser_sync::DataTypeController;
 using browser_sync::DataTypeManager;
 using browser_sync::DataTypeManagerImpl;
+using browser_sync::DataTypeManagerImpl2;
 using browser_sync::ExtensionChangeProcessor;
 using browser_sync::ExtensionDataTypeController;
 using browser_sync::ExtensionModelAssociator;
@@ -162,7 +164,10 @@ ProfileSyncService* ProfileSyncFactoryImpl::CreateProfileSyncService(
 DataTypeManager* ProfileSyncFactoryImpl::CreateDataTypeManager(
     SyncBackendHost* backend,
     const DataTypeController::TypeMap& controllers) {
-  return new DataTypeManagerImpl(backend, controllers);
+  if (command_line_->HasSwitch(switches::kNewSyncerThread))
+    return new DataTypeManagerImpl2(backend, controllers);
+  else
+    return new DataTypeManagerImpl(backend, controllers);
 }
 
 ProfileSyncFactory::SyncComponents

@@ -62,6 +62,9 @@ SyncBackendHost::SyncBackendHost(Profile* profile)
       sync_data_folder_path_(
           profile_->GetPath().Append(kSyncDataFolderName)),
       last_auth_error_(AuthError::None()),
+      using_new_syncer_thread_(
+          CommandLine::ForCurrentProcess()->HasSwitch(
+              switches::kNewSyncerThread)),
       syncapi_initialized_(false) {
 }
 
@@ -71,6 +74,9 @@ SyncBackendHost::SyncBackendHost()
       profile_(NULL),
       frontend_(NULL),
       last_auth_error_(AuthError::None()),
+      using_new_syncer_thread_(
+          CommandLine::ForCurrentProcess()->HasSwitch(
+              switches::kNewSyncerThread)),
       syncapi_initialized_(false) {
 }
 
@@ -360,6 +366,7 @@ void SyncBackendHost::ConfigureDataTypes(
   }
 
   bool deleted_type = false;
+  syncable::ModelTypeBitSet added_types;
 
   {
     base::AutoLock lock(registrar_lock_);
@@ -377,6 +384,7 @@ void SyncBackendHost::ConfigureDataTypes(
         // routing_info, if it does not already exist.
         if (registrar_.routing_info.count(type) == 0) {
           registrar_.routing_info[type] = GROUP_PASSIVE;
+          added_types.set(type);
         }
       }
     }
@@ -406,9 +414,26 @@ void SyncBackendHost::ConfigureDataTypes(
   // downloading updates for newly added data types.  Once this is
   // complete, the configure_ready_task_ is run via an
   // OnInitializationComplete notification.
-  if (deleted_type || !core_->syncapi()->InitialSyncEndedForAllEnabledTypes()) {
-    // We can only nudge when we've either deleted a dataype or added one, else
-    // we break all the profile sync unit tests.
+  ScheduleSyncEventForConfigChange(deleted_type, added_types);
+}
+
+void SyncBackendHost::ScheduleSyncEventForConfigChange(bool deleted_type,
+    const syncable::ModelTypeBitSet& added_types) {
+  // We can only nudge when we've either deleted a dataype or added one, else
+  // we can cause unnecessary syncs. Unit tests cover this.
+  if (using_new_syncer_thread_) {
+    if (added_types.size() > 0) {
+      RequestConfig(added_types);
+     // TODO(tim): If we've added and deleted types, because we don't want to
+     // nudge until association finishes, circumstances of bug 56416 exist. We
+     // may need a way to nudge only for data type cleanup. Alternatively, we
+     // can chain configure_ready_task_ by appending a task to nudge in this
+     // case.
+    } else if (deleted_type) {
+      RequestNudge();
+    }
+  } else if (deleted_type ||
+             !core_->syncapi()->InitialSyncEndedForAllEnabledTypes()) {
     RequestNudge();
   }
 }
@@ -424,6 +449,12 @@ void SyncBackendHost::EncryptDataTypes(
 void SyncBackendHost::RequestNudge() {
   core_thread_.message_loop()->PostTask(FROM_HERE,
       NewRunnableMethod(core_.get(), &SyncBackendHost::Core::DoRequestNudge));
+}
+
+void SyncBackendHost::RequestConfig(
+    const syncable::ModelTypeBitSet& added_types) {
+  DCHECK(core_->syncapi());
+  core_->syncapi()->RequestConfig(added_types);
 }
 
 void SyncBackendHost::ActivateDataType(
@@ -461,12 +492,14 @@ void SyncBackendHost::DeactivateDataType(
 }
 
 bool SyncBackendHost::RequestPause() {
+  DCHECK(!using_new_syncer_thread_);
   core_thread_.message_loop()->PostTask(FROM_HERE,
      NewRunnableMethod(core_.get(), &SyncBackendHost::Core::DoRequestPause));
   return true;
 }
 
 bool SyncBackendHost::RequestResume() {
+  DCHECK(!using_new_syncer_thread_);
   core_thread_.message_loop()->PostTask(FROM_HERE,
      NewRunnableMethod(core_.get(), &SyncBackendHost::Core::DoRequestResume));
   return true;
@@ -483,12 +516,14 @@ SyncBackendHost::Core::~Core() {
 }
 
 void SyncBackendHost::Core::NotifyPaused() {
+  DCHECK(!host_->using_new_syncer_thread_);
   NotificationService::current()->Notify(NotificationType::SYNC_PAUSED,
                                          NotificationService::AllSources(),
                                          NotificationService::NoDetails());
 }
 
 void SyncBackendHost::Core::NotifyResumed() {
+  DCHECK(!host_->using_new_syncer_thread_);
   NotificationService::current()->Notify(NotificationType::SYNC_RESUMED,
                                          NotificationService::AllSources(),
                                          NotificationService::NoDetails());

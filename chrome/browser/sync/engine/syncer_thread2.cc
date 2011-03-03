@@ -148,7 +148,6 @@ bool SyncerThread::ShouldRunJob(SyncSessionJobPurpose purpose,
   return server_connection_ok_;
 }
 
-namespace {
 GetUpdatesCallerInfo::GetUpdatesSource GetUpdatesFromNudgeSource(
     NudgeSource source) {
   switch (source) {
@@ -167,14 +166,13 @@ GetUpdatesCallerInfo::GetUpdatesSource GetUpdatesFromNudgeSource(
 }
 
 // Functor for std::find_if to search by ModelSafeGroup.
-struct WorkerGroupIs {
-  explicit WorkerGroupIs(ModelSafeGroup group) : group(group) {}
+struct ModelSafeWorkerGroupIs {
+  explicit ModelSafeWorkerGroupIs(ModelSafeGroup group) : group(group) {}
   bool operator()(ModelSafeWorker* w) {
     return group == w->GetModelSafeGroup();
   }
   ModelSafeGroup group;
 };
-}  // namespace
 
 void SyncerThread::ScheduleClearUserData() {
   if (!thread_.IsRunning()) {
@@ -272,7 +270,8 @@ void GetModelSafeParamsForTypes(const ModelTypeBitSet& types,
     syncable::ModelType t = syncable::ModelTypeFromInt(i);
     DCHECK_EQ(1U, r_tmp.count(t));
     (*routes)[t] = r_tmp[t];
-    iter it = std::find_if(w_tmp.begin(), w_tmp.end(), WorkerGroupIs(r_tmp[t]));
+    iter it = std::find_if(w_tmp.begin(), w_tmp.end(),
+                           ModelSafeWorkerGroupIs(r_tmp[t]));
     if (it != w_tmp.end())
       workers->push_back(*it);
     else
@@ -280,7 +279,7 @@ void GetModelSafeParamsForTypes(const ModelTypeBitSet& types,
   }
 
   iter it = std::find_if(w_tmp.begin(), w_tmp.end(),
-                         WorkerGroupIs(GROUP_PASSIVE));
+                         ModelSafeWorkerGroupIs(GROUP_PASSIVE));
   if (it != w_tmp.end())
     workers->push_back(*it);
   else

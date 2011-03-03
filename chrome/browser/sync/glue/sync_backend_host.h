@@ -523,6 +523,9 @@ class SyncBackendHost : public browser_sync::ModelSafeWorkerRegistrar {
   // Posts a nudge request on the core thread.
   virtual void RequestNudge();
 
+  // Posts a config request on the core thread.
+  virtual void RequestConfig(const syncable::ModelTypeBitSet& added_types);
+
   // Allows tests to perform alternate core initialization work.
   virtual void InitCore(const Core::DoInitializeOptions& options);
 
@@ -548,6 +551,12 @@ class SyncBackendHost : public browser_sync::ModelSafeWorkerRegistrar {
   UIModelWorker* ui_worker();
 
   void ConfigureAutofillMigration();
+
+  // Depending on switches::kUseNewSyncerThread, kicks the syncapi to respond
+  // to a change in the set of enabled data types.
+  void ScheduleSyncEventForConfigChange(
+      bool deleted_type,
+      const syncable::ModelTypeBitSet& added_types);
 
   // A thread we dedicate for use by our Core to perform initialization,
   // authentication, handle messages from the syncapi, and periodically tell
@@ -608,6 +617,9 @@ class SyncBackendHost : public browser_sync::ModelSafeWorkerRegistrar {
 
   // UI-thread cache of the last SyncSessionSnapshot received from syncapi.
   scoped_ptr<sessions::SyncSessionSnapshot> last_snapshot_;
+
+  // While two impls are in flight, using this for sanity checking. Bug 26339.
+  const bool using_new_syncer_thread_;
 
   // Whether we've processed the initialization complete callback.
   bool syncapi_initialized_;
