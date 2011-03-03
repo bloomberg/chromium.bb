@@ -10,11 +10,14 @@
 #import "base/mac/cocoa_protocols.h"
 #include "ui/base/models/accelerator_cocoa.h"
 
+@class ConfirmQuitFrameView;
+
 // The ConfirmQuitPanelController manages the black HUD window that tells users
 // to "Hold Cmd+Q to Quit".
 @interface ConfirmQuitPanelController : NSWindowController<NSWindowDelegate> {
  @private
-  IBOutlet NSTextField* message_;
+  // The content view of the window that this controller manages.
+  ConfirmQuitFrameView* contentView_;  // Weak, owned by the window.
 }
 
 // Returns a singleton instance of the Controller. This will create one if it

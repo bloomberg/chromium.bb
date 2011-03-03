@@ -3656,7 +3656,6 @@
                   'app/nibs/BookmarkNameFolder.xib',
                   'app/nibs/ClearBrowsingData.xib',
                   'app/nibs/CollectedCookies.xib',
-                  'app/nibs/ConfirmQuitPanel.xib',
                   'app/nibs/ContentBlockedCookies.xib',
                   'app/nibs/ContentBlockedImages.xib',
                   'app/nibs/ContentBlockedJavaScript.xib',
