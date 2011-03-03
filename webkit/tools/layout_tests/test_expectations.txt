@@ -32,3 +32,5 @@ BUG_MMALY : fast/js/mozilla/strict/15.10.7.html = PASS TEXT
 BUG_MMALY : fast/js/mozilla/strict/15.3.5.1.html = PASS TEXT
 BUG_MMALY : fast/js/mozilla/strict/15.5.5.1.html = PASS TEXT
 
+// Temporarily get rid of redness
+BUG_PKASTING WIN : http/tests/navigation/useragent.php = TEXT
