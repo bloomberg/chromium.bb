@@ -14,6 +14,8 @@
 #include "chrome/common/indexed_db_messages.h"
 #include "content/browser/browser_thread.h"
 #include "content/browser/in_process_webkit/indexed_db_callbacks.h"
+#include "content/browser/in_process_webkit/indexed_db_database_callbacks.h"
+#include "content/browser/in_process_webkit/indexed_db_transaction_callbacks.h"
 #include "content/browser/renderer_host/render_message_filter.h"
 #include "content/browser/renderer_host/render_view_host_notification_task.h"
 #include "chrome/common/result_codes.h"
@@ -323,6 +325,7 @@ bool IndexedDBDispatcherHost::DatabaseDispatcherHost::OnMessageReceived(
     IPC_MESSAGE_HANDLER(IndexedDBHostMsg_DatabaseSetVersion, OnSetVersion)
     IPC_MESSAGE_HANDLER(IndexedDBHostMsg_DatabaseTransaction, OnTransaction)
     IPC_MESSAGE_HANDLER(IndexedDBHostMsg_DatabaseClose, OnClose)
+    IPC_MESSAGE_HANDLER(IndexedDBHostMsg_DatabaseOpen, OnOpen)
     IPC_MESSAGE_HANDLER(IndexedDBHostMsg_DatabaseDestroyed, OnDestroyed)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
@@ -436,6 +439,13 @@ void IndexedDBDispatcherHost::DatabaseDispatcherHost::OnTransaction(
   *idb_transaction_id = *ec ? 0 : parent_->Add(transaction);
 }
 
+void IndexedDBDispatcherHost::DatabaseDispatcherHost::OnOpen(
+    int32 idb_database_id, int32 response_id) {
+  WebIDBDatabase* database = parent_->GetOrTerminateProcess(
+      &map_, idb_database_id);
+  database->open(new IndexedDBDatabaseCallbacks(parent_, response_id));
+}
+
 void IndexedDBDispatcherHost::DatabaseDispatcherHost::OnClose(
     int32 idb_database_id) {
   WebIDBDatabase* database = parent_->GetOrTerminateProcess(
@@ -443,7 +453,7 @@ void IndexedDBDispatcherHost::DatabaseDispatcherHost::OnClose(
   database->close();
 }
 
- void IndexedDBDispatcherHost::DatabaseDispatcherHost::OnDestroyed(
+void IndexedDBDispatcherHost::DatabaseDispatcherHost::OnDestroyed(
     int32 object_id) {
   parent_->DestroyObject(&map_, object_id);
 }

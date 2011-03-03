@@ -7,12 +7,12 @@
 #pragma once
 
 #include "base/basictypes.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebIDBCallbacks.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebIDBDatabase.h"
 
 namespace WebKit {
 class WebFrame;
 class WebIDBCallbacks;
+class WebIDBDatabaseCallbacks;
 class WebString;
 class WebIDBTransaction;
 }
@@ -44,6 +44,7 @@ class RendererWebIDBDatabaseImpl : public WebKit::WebIDBDatabase {
       unsigned short mode, unsigned long timeout,
       WebKit::WebExceptionCode& ec);
   virtual void close();
+  virtual void open(WebKit::WebIDBDatabaseCallbacks*);
 
  private:
   int32 idb_database_id_;

@@ -116,6 +116,7 @@ class IndexedDBDispatcherHost : public BrowserMessageFilter {
                        int32 mode, int32 timeout,
                        int32* idb_transaction_id,
                        WebKit::WebExceptionCode* ec);
+    void OnOpen(int32 idb_database_id, int32 response_id);
     void OnClose(int32 idb_database_id);
     void OnDestroyed(int32 idb_database_id);
 

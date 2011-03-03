@@ -16,6 +16,7 @@ using WebKit::WebDOMStringList;
 using WebKit::WebExceptionCode;
 using WebKit::WebFrame;
 using WebKit::WebIDBCallbacks;
+using WebKit::WebIDBDatabaseCallbacks;
 using WebKit::WebIDBTransaction;
 using WebKit::WebString;
 using WebKit::WebVector;
@@ -122,6 +123,13 @@ WebKit::WebIDBTransaction* RendererWebIDBDatabaseImpl::transaction(
 }
 
 void RendererWebIDBDatabaseImpl::close() {
-  RenderThread::current()->Send(
-      new IndexedDBHostMsg_DatabaseClose(idb_database_id_));
+  IndexedDBDispatcher* dispatcher =
+      RenderThread::current()->indexed_db_dispatcher();
+  dispatcher->RequestIDBDatabaseClose(idb_database_id_);
+}
+
+void RendererWebIDBDatabaseImpl::open(WebIDBDatabaseCallbacks* callbacks) {
+  IndexedDBDispatcher* dispatcher =
+      RenderThread::current()->indexed_db_dispatcher();
+  dispatcher->RequestIDBDatabaseOpen(callbacks, idb_database_id_);
 }

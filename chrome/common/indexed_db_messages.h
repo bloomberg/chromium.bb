@@ -169,6 +169,9 @@ IPC_MESSAGE_CONTROL1(IndexedDBMsg_TransactionCallbacksComplete,
 IPC_MESSAGE_CONTROL1(IndexedDBMsg_TransactionCallbacksTimeout,
                      int32 /* transaction_id */)
 
+IPC_MESSAGE_CONTROL2(IndexedDBMsg_DatabaseCallbacksVersionChange,
+                     int32, /* database_id */
+                     string16) /* new_version */
 
 // Indexed DB messages sent from the renderer to the browser.
 
@@ -269,9 +272,10 @@ IPC_SYNC_MESSAGE_CONTROL4_2(IndexedDBHostMsg_DatabaseTransaction,
                             int32, /* idb_transaction_id */
                             WebKit::WebExceptionCode /* ec */)
 
-// WebIDBDatabase::close() message.
-IPC_MESSAGE_CONTROL1(IndexedDBHostMsg_DatabaseOpen,
-                     int32 /* idb_database_id */)
+// WebIDBDatabase::open() message.
+IPC_MESSAGE_CONTROL2(IndexedDBHostMsg_DatabaseOpen,
+                     int32, /* idb_database_id */
+                     int32 /* response_id */)
 
 // WebIDBDatabase::close() message.
 IPC_MESSAGE_CONTROL1(IndexedDBHostMsg_DatabaseClose,
@@ -430,4 +434,3 @@ IPC_MESSAGE_CONTROL1(IndexedDBHostMsg_TransactionDidCompleteTaskEvents,
 // WebIDBTransaction::~WebIDBTransaction() message.
 IPC_MESSAGE_CONTROL1(IndexedDBHostMsg_TransactionDestroyed,
                      int32 /* idb_transaction_id */)
-

@@ -15,15 +15,6 @@ IndexedDBCallbacksBase::IndexedDBCallbacksBase(
 
 IndexedDBCallbacksBase::~IndexedDBCallbacksBase() {}
 
-IndexedDBTransactionCallbacks::IndexedDBTransactionCallbacks(
-    IndexedDBDispatcherHost* dispatcher_host,
-    int transaction_id)
-    : dispatcher_host_(dispatcher_host),
-      transaction_id_(transaction_id) {
-}
-
-IndexedDBTransactionCallbacks::~IndexedDBTransactionCallbacks() {}
-
 void IndexedDBCallbacksBase::onError(const WebKit::WebIDBDatabaseError& error) {
   dispatcher_host_->Send(new IndexedDBMsg_CallbacksError(
       response_id_, error.code(), error.message()));
@@ -31,21 +22,6 @@ void IndexedDBCallbacksBase::onError(const WebKit::WebIDBDatabaseError& error) {
 
 void IndexedDBCallbacksBase::onBlocked() {
   dispatcher_host_->Send(new IndexedDBMsg_CallbacksBlocked(response_id_));
-}
-
-void IndexedDBTransactionCallbacks::onAbort() {
-  dispatcher_host_->Send(
-      new IndexedDBMsg_TransactionCallbacksAbort(transaction_id_));
-}
-
-void IndexedDBTransactionCallbacks::onComplete() {
-  dispatcher_host_->Send(
-      new IndexedDBMsg_TransactionCallbacksComplete(transaction_id_));
-}
-
-void IndexedDBTransactionCallbacks::onTimeout() {
-  dispatcher_host_->Send(
-      new IndexedDBMsg_TransactionCallbacksTimeout(transaction_id_));
 }
 
 void IndexedDBCallbacks<WebKit::WebIDBCursor>::onSuccess(

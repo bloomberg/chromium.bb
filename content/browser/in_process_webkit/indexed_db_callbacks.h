@@ -13,7 +13,7 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebIDBCursor.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebIDBDatabaseError.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebIDBTransaction.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebIDBTransactionCallbacks.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebString.h"
 
 class IndexedDBMsg_CallbacksSuccessIDBDatabase;
 class IndexedDBMsg_CallbacksSuccessIDBIndex;
@@ -129,25 +129,6 @@ class IndexedDBCallbacks<WebKit::WebSerializedScriptValue>
 
  private:
   DISALLOW_IMPLICIT_CONSTRUCTORS(IndexedDBCallbacks);
-};
-
-class IndexedDBTransactionCallbacks
-    : public WebKit::WebIDBTransactionCallbacks {
- public:
-  IndexedDBTransactionCallbacks(IndexedDBDispatcherHost* dispatcher_host,
-                                int transaction_id);
-
-  virtual ~IndexedDBTransactionCallbacks();
-
-  virtual void onAbort();
-
-  virtual void onComplete();
-
-  virtual void onTimeout();
-
- private:
-  scoped_refptr<IndexedDBDispatcherHost> dispatcher_host_;
-  int transaction_id_;
 };
 
 #endif  // CONTENT_BROWSER_IN_PROCESS_WEBKIT_INDEXED_DB_CALLBACKS_H_

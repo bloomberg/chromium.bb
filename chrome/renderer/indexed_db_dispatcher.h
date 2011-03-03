@@ -63,6 +63,13 @@ class IndexedDBDispatcher : public IPC::Channel::Listener {
       int32 idb_cursor_id,
       WebKit::WebExceptionCode* ec);
 
+  void RequestIDBDatabaseClose(
+      int32 idb_database_id);
+
+  void RequestIDBDatabaseOpen(
+      WebKit::WebIDBDatabaseCallbacks* callbacks_ptr,
+      int32 idb_database_id);
+
   void RequestIDBDatabaseSetVersion(
       const string16& version,
       WebKit::WebIDBCallbacks* callbacks,
@@ -154,12 +161,15 @@ class IndexedDBDispatcher : public IPC::Channel::Listener {
   void OnAbort(int32 transaction_id);
   void OnComplete(int32 transaction_id);
   void OnTimeout(int32 transaction_id);
+  void OnVersionChange(int32 database_id, const string16& newVersion);
 
   // Careful! WebIDBCallbacks wraps non-threadsafe data types. It must be
   // destroyed and used on the same thread it was created on.
   IDMap<WebKit::WebIDBCallbacks, IDMapOwnPointer> pending_callbacks_;
   IDMap<WebKit::WebIDBTransactionCallbacks, IDMapOwnPointer>
       pending_transaction_callbacks_;
+  IDMap<WebKit::WebIDBDatabaseCallbacks, IDMapOwnPointer>
+      pending_database_callbacks_;
 
   DISALLOW_COPY_AND_ASSIGN(IndexedDBDispatcher);
 };
