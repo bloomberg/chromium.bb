@@ -299,9 +299,10 @@ void ChromotingHost::OnNewClientSession(
     return;
   }
 
+  // TODO(simonmorris): The resolution is set in the video stream now,
+  // so it doesn't need to be set here.
   *protocol_config_->mutable_initial_resolution() =
-      protocol::ScreenResolution(desktop_environment_->capturer()->width(),
-                                 desktop_environment_->capturer()->height());
+      protocol::ScreenResolution(2048, 2048);
   // TODO(sergeyu): Respect resolution requested by the client if supported.
   protocol::SessionConfig* config = protocol_config_->Select(
       session->candidate_config(), true /* force_host_resolution */);

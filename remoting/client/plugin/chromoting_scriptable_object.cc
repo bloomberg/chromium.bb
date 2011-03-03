@@ -19,6 +19,7 @@ const char kConnectionInfoUpdate[] = "connectionInfoUpdate";
 const char kDebugInfo[] = "debugInfo";
 const char kDesktopHeight[] = "desktopHeight";
 const char kDesktopWidth[] = "desktopWidth";
+const char kDesktopSizeUpdate[] = "desktopSizeUpdate";
 const char kLoginChallenge[] = "loginChallenge";
 const char kQualityAttribute[] = "quality";
 const char kStatusAttribute[] = "status";
@@ -57,6 +58,7 @@ void ChromotingScriptableObject::Init() {
   // Debug info to display.
   AddAttribute(kConnectionInfoUpdate, Var());
   AddAttribute(kDebugInfo, Var());
+  AddAttribute(kDesktopSizeUpdate, Var());
   AddAttribute(kLoginChallenge, Var());
   AddAttribute(kDesktopWidth, Var(0));
   AddAttribute(kDesktopHeight, Var(0));
@@ -142,6 +144,7 @@ void ChromotingScriptableObject::SetProperty(const Var& name,
   std::string property_name = name.AsString();
   if (property_name != kConnectionInfoUpdate &&
       property_name != kDebugInfo &&
+      property_name != kDesktopSizeUpdate &&
       property_name != kLoginChallenge &&
       property_name != kDesktopWidth &&
       property_name != kDesktopHeight) {
@@ -208,6 +211,7 @@ void ChromotingScriptableObject::SetDesktopSize(int width, int height) {
       properties_[height_index].attribute.AsInt() != height) {
     properties_[width_index].attribute = Var(width);
     properties_[height_index].attribute = Var(height);
+    SignalDesktopSizeChange();
   }
 
   LogDebugInfo(base::StringPrintf("Update desktop size to: %d x %d.",
@@ -237,6 +241,23 @@ void ChromotingScriptableObject::SignalConnectionInfoChange() {
   if (!exception.is_undefined())
     LogDebugInfo(
         "Exception when invoking connectionInfoUpdate JS callback.");
+}
+
+void ChromotingScriptableObject::SignalDesktopSizeChange() {
+  Var exception;
+
+  // The JavaScript callback function is the 'callback' property on the
+  // 'desktopSizeUpdate' object.
+  Var cb = GetProperty(Var(kDesktopSizeUpdate), &exception);
+
+  // Var() means call the object directly as a function rather than calling
+  // a method in the object.
+  cb.Call(Var(), 0, NULL, &exception);
+
+  if (!exception.is_undefined()) {
+    LOG(WARNING) << "Exception when invoking JS callback"
+                 << exception.AsString();
+  }
 }
 
 void ChromotingScriptableObject::SignalLoginChallenge() {

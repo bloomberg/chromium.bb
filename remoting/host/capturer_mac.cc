@@ -12,7 +12,10 @@ namespace remoting {
 
 CapturerMac::CapturerMac(MessageLoop* message_loop)
     : Capturer(message_loop),
-      cgl_context_(NULL) {
+      cgl_context_(NULL),
+      width_(0),
+      height_(0),
+      bytes_per_row_(0) {
   // TODO(dmaclach): move this initialization out into session_manager,
   // or at least have session_manager call into here to initialize it.
   CGError err =
@@ -51,7 +54,7 @@ void CapturerMac::ScreenConfigurationChanged() {
   height_ = CGDisplayPixelsHigh(mainDevice);
   pixel_format_ = media::VideoFrame::RGB32;
   bytes_per_row_ = width_ * sizeof(uint32_t);
-  size_t buffer_size = height() * bytes_per_row_;
+  size_t buffer_size = height_ * bytes_per_row_;
   for (int i = 0; i < kNumBuffers; ++i) {
     buffers_[i].reset(new uint8[buffer_size]);
   }
@@ -93,19 +96,17 @@ void CapturerMac::CaptureRects(const InvalidRects& rects,
   glPixelStorei(GL_PACK_SKIP_PIXELS, 0);
 
   // Read a block of pixels from the frame buffer.
-  int h = height();
-  int w = width();
   uint8* flip_buffer = flip_buffer_.get();
   uint8* current_buffer = buffers_[current_buffer_].get();
-
-  glReadPixels(0, 0, w, h, GL_BGRA, GL_UNSIGNED_BYTE, flip_buffer);
+  glReadPixels(0, 0, width_, height_, GL_BGRA, GL_UNSIGNED_BYTE, flip_buffer);
   glPopClientAttrib();
 
   // OpenGL reads with a vertical flip, and sadly there is no optimized
   // way to get it flipped automatically.
-  for (int y = 0; y < h; ++y) {
+  for (int y = 0; y < height_; ++y) {
     uint8* flip_row = &(flip_buffer[y * bytes_per_row_]);
-    uint8* current_row = &(current_buffer[(h - (y + 1)) * bytes_per_row_]);
+    uint8* current_row =
+        &(current_buffer[(height_ - (y + 1)) * bytes_per_row_]);
     memcpy(current_row, flip_row, bytes_per_row_);
   }
 
@@ -114,7 +115,7 @@ void CapturerMac::CaptureRects(const InvalidRects& rects,
   planes.strides[0] = bytes_per_row_;
 
   scoped_refptr<CaptureData> data(
-      new CaptureData(planes, w, h, pixel_format()));
+      new CaptureData(planes, width_, height_, pixel_format()));
   data->mutable_dirty_rects() = rects;
   FinishCapture(data, callback);
 }
@@ -123,7 +124,7 @@ void CapturerMac::ScreenRefresh(CGRectCount count, const CGRect *rect_array) {
   InvalidRects rects;
   for (CGRectCount i = 0; i < count; ++i) {
     CGRect rect = rect_array[i];
-    rect.origin.y = height() - rect.size.height;
+    rect.origin.y = height_ - rect.size.height;
     rects.insert(gfx::Rect(rect));
   }
   InvalidateRects(rects);
@@ -135,7 +136,7 @@ void CapturerMac::ScreenUpdateMove(CGScreenUpdateMoveDelta delta,
   InvalidRects rects;
   for (CGRectCount i = 0; i < count; ++i) {
     CGRect rect = rect_array[i];
-    rect.origin.y = height() - rect.size.height;
+    rect.origin.y = height_ - rect.size.height;
     rects.insert(gfx::Rect(rect));
     rect = CGRectOffset(rect, delta.dX, delta.dY);
     rects.insert(gfx::Rect(rect));

@@ -101,7 +101,7 @@ class ChromotingInstance : public pp::Instance {
   // both ChromotingInstance and PepperView are destroyed and there will be
   // outstanding tasks on the pepper message loo.
   scoped_refptr<PepperViewProxy> view_proxy_;
-  scoped_ptr<RectangleUpdateDecoder> rectangle_decoder_;
+  scoped_refptr<RectangleUpdateDecoder> rectangle_decoder_;
   scoped_ptr<InputHandler> input_handler_;
   scoped_ptr<ChromotingClient> client_;
 

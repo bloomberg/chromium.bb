@@ -73,9 +73,8 @@ bool ChromotingInstance::Init(uint32_t argc,
       context_.jingle_thread()));
   view_.reset(new PepperView(this, &context_));
   view_proxy_ = new PepperViewProxy(this, view_.get());
-  rectangle_decoder_.reset(
-      new RectangleUpdateDecoder(context_.decode_message_loop(),
-                                 view_proxy_));
+  rectangle_decoder_ = new RectangleUpdateDecoder(
+      context_.decode_message_loop(), view_proxy_);
   input_handler_.reset(new PepperInputHandler(&context_,
                                               host_connection_.get(),
                                               view_proxy_));

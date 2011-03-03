@@ -44,15 +44,16 @@ class PartialFrameCleanup : public Task {
 RectangleUpdateDecoder::RectangleUpdateDecoder(MessageLoop* message_loop,
                                                FrameConsumer* consumer)
     : message_loop_(message_loop),
-      consumer_(consumer) {
+      consumer_(consumer),
+      frame_is_new_(false) {
 }
 
 RectangleUpdateDecoder::~RectangleUpdateDecoder() {
 }
 
 void RectangleUpdateDecoder::Initialize(const SessionConfig* config) {
-  screen_size_ = gfx::Size(config->initial_resolution().width,
-                           config->initial_resolution().height);
+  initial_screen_size_ = gfx::Size(config->initial_resolution().width,
+                                   config->initial_resolution().height);
 
   // Initialize decoder based on the selected codec.
   ChannelConfig::Codec codec = config->video_config().codec;
@@ -87,19 +88,75 @@ void RectangleUpdateDecoder::DecodePacket(const VideoPacket* packet,
 
   TraceContext::tracer()->PrintString("Decode Packet called.");
 
-  if (!decoder_->IsReadyForData()) {
-    InitializeDecoder(
+  AllocateFrame(packet, done_runner.release());
+}
+
+void RectangleUpdateDecoder::AllocateFrame(const VideoPacket* packet,
+                                           Task* done) {
+  if (message_loop_ != MessageLoop::current()) {
+    message_loop_->PostTask(
+        FROM_HERE,
         NewTracedMethod(this,
-                        &RectangleUpdateDecoder::ProcessPacketData,
-                        packet, done_runner.release()));
-  } else {
-    ProcessPacketData(packet, done_runner.release());
+                        &RectangleUpdateDecoder::AllocateFrame, packet, done));
+    return;
   }
+  AutoTaskRunner done_runner(done);
+
+  TraceContext::tracer()->PrintString("AllocateFrame called.");
+
+  // Find the required frame size.
+  bool has_screen_size = packet->format().has_screen_width() &&
+                         packet->format().has_screen_height();
+  gfx::Size screen_size(packet->format().screen_width(),
+                        packet->format().screen_height());
+  if (!has_screen_size)
+    screen_size = initial_screen_size_;
+
+  // Find the current frame size.
+  gfx::Size frame_size(0, 0);
+  if (frame_)
+    frame_size = gfx::Size(static_cast<int>(frame_->width()),
+                           static_cast<int>(frame_->height()));
+
+  // Allocate a new frame, if necessary.
+  if ((!frame_) || (has_screen_size && (screen_size != frame_size))) {
+    if (frame_) {
+      TraceContext::tracer()->PrintString("Releasing old frame.");
+      consumer_->ReleaseFrame(frame_);
+      frame_ = NULL;
+    }
+    TraceContext::tracer()->PrintString("Requesting new frame.");
+
+    consumer_->AllocateFrame(media::VideoFrame::RGB32,
+                             screen_size.width(), screen_size.height(),
+                             base::TimeDelta(), base::TimeDelta(),
+                             &frame_,
+                             NewRunnableMethod(this,
+                                 &RectangleUpdateDecoder::ProcessPacketData,
+                                 packet, done_runner.release()));
+    frame_is_new_ = true;
+    return;
+  }
+  ProcessPacketData(packet, done_runner.release());
 }
 
 void RectangleUpdateDecoder::ProcessPacketData(
     const VideoPacket* packet, Task* done) {
+  if (message_loop_ != MessageLoop::current()) {
+    message_loop_->PostTask(
+        FROM_HERE,
+        NewTracedMethod(this,
+                        &RectangleUpdateDecoder::ProcessPacketData, packet,
+                        done));
+    return;
+  }
   AutoTaskRunner done_runner(done);
+
+  if (frame_is_new_) {
+    decoder_->Reset();
+    decoder_->Initialize(frame_);
+    frame_is_new_ = false;
+  }
 
   if (!decoder_->IsReadyForData()) {
     // TODO(ajwong): This whole thing should move into an invalid state.
@@ -109,55 +166,12 @@ void RectangleUpdateDecoder::ProcessPacketData(
 
   TraceContext::tracer()->PrintString("Executing Decode.");
 
-  Decoder::DecodeResult result = decoder_->DecodePacket(packet);
-
-  if (result == Decoder::DECODE_DONE) {
+  if (decoder_->DecodePacket(packet) == Decoder::DECODE_DONE) {
     UpdatedRects* rects = new UpdatedRects();
     decoder_->GetUpdatedRects(rects);
     consumer_->OnPartialFrameOutput(frame_, rects,
                                     new PartialFrameCleanup(frame_, rects));
   }
-}
-
-void RectangleUpdateDecoder::InitializeDecoder(Task* done) {
-  if (message_loop_ != MessageLoop::current()) {
-    message_loop_->PostTask(
-        FROM_HERE,
-        NewTracedMethod(this,
-                        &RectangleUpdateDecoder::InitializeDecoder, done));
-    return;
-  }
-  AutoTaskRunner done_runner(done);
-
-  // Check if we need to request a new frame.
-  if (!frame_ ||
-      frame_->width() != static_cast<size_t>(screen_size_.width()) ||
-      frame_->height() != static_cast<size_t>(screen_size_.height())) {
-    if (frame_) {
-      TraceContext::tracer()->PrintString("Releasing old frame.");
-      consumer_->ReleaseFrame(frame_);
-      frame_ = NULL;
-    }
-    TraceContext::tracer()->PrintString("Requesting new frame.");
-    consumer_->AllocateFrame(media::VideoFrame::RGB32,
-                             screen_size_.width(), screen_size_.height(),
-                             base::TimeDelta(), base::TimeDelta(),
-                             &frame_,
-                             NewTracedMethod(
-                                 this,
-                                 &RectangleUpdateDecoder::InitializeDecoder,
-                                 done_runner.release()));
-    return;
-  }
-
-  // TODO(ajwong): We need to handle the allocator failing to create a frame
-  // and properly disable this class.
-  CHECK(frame_);
-
-  decoder_->Reset();
-  decoder_->Initialize(frame_);
-
-  TraceContext::tracer()->PrintString("Decoder is Initialized");
 }
 
 }  // namespace remoting
