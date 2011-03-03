@@ -50,6 +50,10 @@
         -->
         <button id="personalCertsTab-import" i18n-content="import_certificate"
           ></button>
+        <if expr="pp_ifdef('chromeos')">
+          <button id="personalCertsTab-import-and-bind"
+            i18n-content="importAndBindCertificate" disabled></button>
+        </if>
         <button id="personalCertsTab-backup" i18n-content="export_certificate"
           disabled></button>
         <button id="personalCertsTab-delete" i18n-content="delete_certificate"

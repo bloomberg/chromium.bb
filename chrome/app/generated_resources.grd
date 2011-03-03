@@ -3309,6 +3309,17 @@ Other platform defines such as use_titlecase are declared in build/common.gypi.
       <message name="IDS_CERT_MANAGER_EDIT_CA_TRUST_BUTTON" desc="Label of button in the dialog for editing server certificate trust flags, which allows you to open the dialog for editing the trust of the issuing Certification Authority.">
         Edit Issuer Trust...
       </message>
+      <if expr="pp_ifdef('chromeos')">
+        <message name="IDS_CERT_MANAGER_IMPORT_AND_BIND_BUTTON" desc="Label for the button in the certificate manager which allows you to import certificates and bind to your device.">
+          Import and Bind to Device...
+        </message>
+        <message name="IDS_CERT_MANAGER_HARDWARE_BACKED_KEY_FORMAT" desc="A format used to create label for hardware-backed keys.">
+          <ph name="KEY_NAME">$1<ex>John Doe</ex></ph> (<ph name="DEVICE">$2<ex>hardware-backed</ex></ph>)
+        </message>
+        <message name="IDS_CERT_MANAGER_HARDWARE_BACKED" desc="A device name to be used for ChromeOS device backed keys.">
+          hardware-backed
+        </message>
+      </if>
 
       <!-- Add Client Certificate Dialog -->
       <message name="IDS_ADD_CERT_DIALOG_ADD" desc="Title of the button that adds the certificate in the Add Client Certificate dialog">
