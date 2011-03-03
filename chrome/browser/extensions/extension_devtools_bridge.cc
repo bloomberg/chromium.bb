@@ -71,40 +71,18 @@ bool ExtensionDevToolsBridge::RegisterAsDevToolsClientHost() {
     // Following messages depend on inspector protocol that is not yet
     // finalized.
 
-    // 1. Set injected script content.
-    DictionaryValue* arguments = new DictionaryValue();
-    arguments->SetString("scriptSource", "'{}'");
-    devtools_manager->ForwardToDevToolsAgent(
-        this,
-        DevToolsAgentMsg_DispatchOnInspectorBackend(
-            FormatDevToolsMessage(0,
-                                  "Inspector",
-                                  "setInjectedScriptSource",
-                                  arguments)));
-
-    // 2. Report front-end is loaded.
+    // 1. Report front-end is loaded.
     devtools_manager->ForwardToDevToolsAgent(
         this,
         DevToolsAgentMsg_FrontendLoaded());
 
-    // 3. Do not break on exceptions.
-    arguments = new DictionaryValue();
-    arguments->SetInteger("pauseOnExceptionsState", 0);
-    devtools_manager->ForwardToDevToolsAgent(
-        this,
-        DevToolsAgentMsg_DispatchOnInspectorBackend(
-            FormatDevToolsMessage(1,
-                                  "Debugger",
-                                  "setPauseOnExceptionsState",
-                                  arguments)));
-
-    // 4. Start timeline profiler.
+    // 2. Start timeline profiler.
     devtools_manager->ForwardToDevToolsAgent(
         this,
         DevToolsAgentMsg_DispatchOnInspectorBackend(
             FormatDevToolsMessage(2,
-                                  "Inspector",
-                                  "startTimelineProfiler",
+                                  "Timeline",
+                                  "start",
                                   new DictionaryValue())));
     return true;
   }
