@@ -7517,6 +7517,15 @@ This web page was killed, either because Chrome ran out of memory, or you chose 
       <message name="IDS_COOKIES_DOMAIN_COLUMN_HEADER" desc="The label of the Domain header in the Cookies table">
         Site
       </message>
+      <message name="IDS_COOKIES_DATA_COLUMN_HEADER" desc="The label of the Locally Stored Data header in the Cookies table">
+        Locally Stored Data
+      </message>
+      <message name="IDS_COOKIES_SINGLE_COOKIE" desc="The text displayed when there is one cookie in the Cookies table">
+        1 cookie
+      </message>
+      <message name="IDS_COOKIES_PLURAL_COOKIES" desc="The text displayed when there are two or more cookies in the Cookies table">
+        <ph name="COOKIES">$1<ex>42</ex></ph> cookies
+      </message>
       <message name="IDS_COOKIES_WEB_DATABASE_DESCRIPTION_LABEL" desc="The Database Description label">
         Description:
       </message>
@@ -7550,6 +7559,9 @@ This web page was killed, either because Chrome ran out of memory, or you chose 
       <message name="IDS_COOKIES_SIZE_LABEL" desc="The Size label, to indicate how much space is taken by a database or application cache">
         Size:
       </message>
+      <message name="IDS_COOKIES_DATABASE_STORAGE" desc="The text shown when there is either Web Database or Indexed Database Storage (names of HTML standards) in the Cookies table">
+        Database Storage
+      </message>
       <message name="IDS_COOKIES_WEB_DATABASES" desc="Label for the folder under which a list of web databases (name of a HTML standard) are displayed">
         Web Databases
       </message>
@@ -7562,7 +7574,10 @@ This web page was killed, either because Chrome ran out of memory, or you chose 
       <message name="IDS_COOKIES_SESSION_STORAGE" desc="Label for session storage (name of a HTML standard)">
         Session Storage
       </message>
-      <message name="IDS_COOKIES_INDEXED_DB" desc="Label for Indexed Databases (name of a HTML standard)">
+      <message name="IDS_COOKIES_INDEXED_DB" desc="Label for a single Indexed Database (name of a HTML standard)">
+        Indexed Database
+      </message>
+      <message name="IDS_COOKIES_INDEXED_DBS" desc="Label for Indexed Databases (name of a HTML standard)">
         Indexed Databases
       </message>
       <message name="IDS_COOKIES_LAST_ACCESSED_LABEL" desc="The last access date label">

@@ -217,9 +217,6 @@ void CookiesViewHandler::GetLocalizedValues(
   RegisterTitle(localized_strings, "cookiesViewPage",
                 IDS_COOKIES_WEBSITE_PERMISSIONS_WINDOW_TITLE);
 
-  localized_strings->SetString("label_cookie_search",
-      l10n_util::GetStringUTF16(IDS_COOKIES_SEARCH_LABEL));
-
   localized_strings->SetString("label_cookie_name",
       l10n_util::GetStringUTF16(IDS_COOKIES_COOKIE_NAME_LABEL));
   localized_strings->SetString("label_cookie_content",
@@ -255,13 +252,23 @@ void CookiesViewHandler::GetLocalizedValues(
   localized_strings->SetString("label_cookie_last_accessed",
       l10n_util::GetStringUTF16(IDS_COOKIES_LAST_ACCESSED_LABEL));
 
-  localized_strings->SetString("no_cookie",
-      l10n_util::GetStringUTF16(IDS_COOKIES_COOKIE_NONESELECTED));
-  localized_strings->SetString("unnamed",
-      l10n_util::GetStringUTF16(IDS_COOKIES_WEB_DATABASE_UNNAMED_NAME));
+  localized_strings->SetString("cookie_domain",
+      l10n_util::GetStringUTF16(IDS_COOKIES_DOMAIN_COLUMN_HEADER));
+  localized_strings->SetString("cookie_local_data",
+      l10n_util::GetStringUTF16(IDS_COOKIES_DATA_COLUMN_HEADER));
+  localized_strings->SetString("cookie_singular",
+      l10n_util::GetStringUTF16(IDS_COOKIES_SINGLE_COOKIE));
+  localized_strings->SetString("cookie_plural",
+      l10n_util::GetStringUTF16(IDS_COOKIES_PLURAL_COOKIES));
+  localized_strings->SetString("cookie_database_storage",
+      l10n_util::GetStringUTF16(IDS_COOKIES_DATABASE_STORAGE));
+  localized_strings->SetString("cookie_indexed_db",
+      l10n_util::GetStringUTF16(IDS_COOKIES_INDEXED_DB));
+  localized_strings->SetString("cookie_local_storage",
+      l10n_util::GetStringUTF16(IDS_COOKIES_LOCAL_STORAGE));
+  localized_strings->SetString("cookie_session_storage",
+      l10n_util::GetStringUTF16(IDS_COOKIES_SESSION_STORAGE));
 
-  localized_strings->SetString("label_cookie_clear_search", CleanButtonLabel(
-      l10n_util::GetStringUTF16(IDS_COOKIES_CLEAR_SEARCH_LABEL)));
   localized_strings->SetString("remove_cookie", CleanButtonLabel(
       l10n_util::GetStringUTF16(IDS_COOKIES_REMOVE_LABEL)));
   localized_strings->SetString("remove_all_cookie", CleanButtonLabel(

@@ -1,0 +1,776 @@
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+cr.define('options', function() {
+  const DeletableItemList = options.DeletableItemList;
+  const DeletableItem = options.DeletableItem;
+  const ArrayDataModel = cr.ui.ArrayDataModel;
+  const ListSingleSelectionModel = cr.ui.ListSingleSelectionModel;
+
+  // This structure maps the various cookie type names from C++ (hence the
+  // underscores) to arrays of the different types of data each has, along with
+  // the i18n name for the description of that data type.
+  const cookieInfo = {
+    'cookie': [ ['name', 'label_cookie_name'],
+                ['content', 'label_cookie_content'],
+                ['domain', 'label_cookie_domain'],
+                ['path', 'label_cookie_path'],
+                ['sendfor', 'label_cookie_send_for'],
+                ['accessibleToScript', 'label_cookie_accessible_to_script'],
+                ['created', 'label_cookie_created'],
+                ['expires', 'label_cookie_expires'] ],
+    'app_cache': [ ['manifest', 'label_app_cache_manifest'],
+                   ['size', 'label_local_storage_size'],
+                   ['created', 'label_cookie_created'],
+                   ['accessed', 'label_cookie_last_accessed'] ],
+    'database': [ ['name', 'label_cookie_name'],
+                  ['desc', 'label_webdb_desc'],
+                  ['webdbSize', 'label_local_storage_size'],
+                  ['modified', 'label_local_storage_last_modified'] ],
+    'local_storage': [ ['origin', 'label_local_storage_origin'],
+                       ['size', 'label_local_storage_size'],
+                       ['modified', 'label_local_storage_last_modified'] ],
+    'indexed_db': [ ['origin', 'label_indexed_db_origin'],
+                    ['size', 'label_indexed_db_size'],
+                    ['modified', 'label_indexed_db_last_modified'] ],
+  };
+
+  const localStrings = new LocalStrings();
+
+  /**
+   * Returns the item's height, like offsetHeight but such that it works better
+   * when the page is zoomed. See the similar calculation in @{code cr.ui.List}.
+   * @param {Element} item The item to get the height of.
+   * @return {number} The height of the item, calculated with zooming in mind.
+   */
+  function getItemHeight(item) {
+    return item.getBoundingClientRect().height;
+  }
+
+  var parentLookup = {};
+  var lookupRequests = {};
+
+  /**
+   * Creates a new list item for sites data. Note that these are created and
+   * destroyed lazily as they scroll into and out of view, so they must be
+   * stateless. We cache the expanded item in @{code CookiesList} though, so it
+   * can keep state. (Mostly just which item is selected.)
+   * @param {Object} origin Data used to create a cookie list item.
+   * @param {CookiesList} list The list that will contain this item.
+   * @constructor
+   * @extends {DeletableItem}
+   */
+  function CookieListItem(origin, list) {
+    var listItem = new DeletableItem(null);
+    listItem.__proto__ = CookieListItem.prototype;
+
+    listItem.origin = origin;
+    listItem.list = list;
+    listItem.decorate();
+
+    // This hooks up updateOrigin() to the list item, makes the top-level
+    // tree nodes (i.e., origins) register their IDs in parentLookup, and
+    // causes them to request their children if they have none. Note that we
+    // have special logic in the setter for the parent property to make sure
+    // that we can still garbage collect list items when they scroll out of
+    // view, even though it appears that we keep a direct reference.
+    if (origin) {
+      origin.parent = listItem;
+      origin.updateOrigin();
+    }
+
+    return listItem;
+  }
+
+  CookieListItem.prototype = {
+    __proto__: DeletableItem.prototype,
+
+    /** @inheritDoc */
+    decorate: function() {
+      this.siteChild = this.ownerDocument.createElement('div');
+      this.siteChild.className = 'cookie-site';
+      this.dataChild = this.ownerDocument.createElement('div');
+      this.dataChild.className = 'cookie-data';
+      this.itemsChild = this.ownerDocument.createElement('div');
+      this.itemsChild.className = 'cookie-items';
+      this.infoChild = this.ownerDocument.createElement('div');
+      this.infoChild.className = 'cookie-details hidden';
+      var remove = this.ownerDocument.createElement('button');
+      remove.textContent = localStrings.getString('remove_cookie');
+      remove.onclick = this.removeCookie_.bind(this);
+      this.infoChild.appendChild(remove);
+      var content = this.contentElement;
+      content.appendChild(this.siteChild);
+      content.appendChild(this.dataChild);
+      content.appendChild(this.itemsChild);
+      this.itemsChild.appendChild(this.infoChild);
+      if (this.origin && this.origin.data)
+        this.siteChild.textContent = this.origin.data.title;
+      this.itemList_ = [];
+    },
+
+    /** @type {boolean} */
+    get expanded() {
+      return this.expanded_;
+    },
+    set expanded(expanded) {
+      if (this.expanded_ == expanded)
+        return;
+      this.expanded_ = expanded;
+      if (expanded) {
+        this.list.expandedItem = this;
+        this.updateItems_();
+        this.classList.add('show-items');
+      } else {
+        if (this.list.expandedItem == this) {
+          this.list.leadItemHeight = 0;
+          this.list.expandedItem = null;
+        }
+        this.style.height = '';
+        this.itemsChild.style.height = '';
+        this.classList.remove('show-items');
+      }
+    },
+
+    /**
+     * The callback for the "remove" button shown when an item is selected.
+     * Requests that the currently selected cookie be removed.
+     * @private
+     */
+    removeCookie_: function() {
+      if (this.selectedIndex_ >= 0) {
+        var item = this.itemList_[this.selectedIndex_];
+        if (item && item.node)
+          chrome.send('removeCookie', [item.node.pathId]);
+      }
+    },
+
+    /**
+     * Disable animation within this cookie list item, in preparation for making
+     * changes that will need to be animated. Makes it possible to measure the
+     * contents without displaying them, to set animation targets.
+     * @private
+     */
+    disableAnimation_: function() {
+      this.itemsHeight_ = getItemHeight(this.itemsChild);
+      this.classList.add('measure-items');
+    },
+
+    /**
+     * Enable animation after changing the contents of this cookie list item.
+     * See @{code disableAnimation_}.
+     * @private
+     */
+    enableAnimation_: function() {
+      if (!this.classList.contains('measure-items'))
+        this.disableAnimation_();
+      this.itemsChild.style.height = '';
+      // This will force relayout in order to calculate the new heights.
+      var itemsHeight = getItemHeight(this.itemsChild);
+      var fixedHeight = getItemHeight(this) + itemsHeight - this.itemsHeight_;
+      this.itemsChild.style.height = this.itemsHeight_ + 'px';
+      // Force relayout before enabling animation, so that if we have
+      // changed things since the last layout, they will not be animated
+      // during subsequent layouts.
+      this.itemsChild.offsetHeight;
+      this.classList.remove('measure-items');
+      this.itemsChild.style.height = itemsHeight + 'px';
+      this.style.height = fixedHeight + 'px';
+      if (this.selected)
+        this.list.leadItemHeight = fixedHeight;
+    },
+
+    /**
+     * Updates the origin summary to reflect changes in its items.
+     * Both CookieListItem and CookieTreeNode implement this API.
+     * This implementation scans the descendants to update the text.
+     */
+    updateOrigin: function() {
+      var info = {
+        cookies: 0,
+        database: false,
+        localStorage: false,
+        appCache: false,
+        indexedDb: false
+      };
+      if (this.origin)
+        this.origin.collectSummaryInfo(info);
+      var list = [];
+      if (info.cookies > 1)
+        list.push(localStrings.getStringF('cookie_plural', info.cookies));
+      else if (info.cookies > 0)
+        list.push(localStrings.getString('cookie_singular'));
+      if (info.database || info.indexedDb)
+        list.push(localStrings.getString('cookie_database_storage'));
+      if (info.localStorage)
+        list.push(localStrings.getString('cookie_local_storage'));
+      if (info.appCache)
+        list.push(localStrings.getString('cookie_session_storage'));
+      var text = '';
+      for (var i = 0; i < list.length; ++i)
+        if (text.length > 0)
+          text += ', ' + list[i];
+        else
+          text = list[i];
+      this.dataChild.textContent = text;
+      if (this.selected)
+        this.updateItems_();
+    },
+
+    /**
+     * Updates the items section to reflect changes, animating to the new state.
+     * Removes existing contents and calls @{code CookieTreeNode.createItems}.
+     * @private
+     */
+    updateItems_: function() {
+      this.disableAnimation_();
+      this.itemsChild.textContent = '';
+      this.infoChild.classList.add('hidden');
+      this.selectedIndex_ = -1;
+      this.itemList_ = [];
+      if (this.origin)
+        this.origin.createItems(this);
+      this.itemsChild.appendChild(this.infoChild);
+      this.enableAnimation_();
+    },
+
+    /**
+     * Append a new cookie node "bubble" to this list item.
+     * @param {CookieTreeNode} node The cookie node to add a bubble for.
+     * @param {Element} div The DOM element for the bubble itself.
+     * @return {number} The index the bubble was added at.
+     */
+    appendItem: function(node, div) {
+      this.itemList_.push({node: node, div: div});
+      this.itemsChild.appendChild(div);
+      return this.itemList_.length - 1;
+    },
+
+    /**
+     * The currently selected cookie node ("cookie bubble") index.
+     * @type {number}
+     * @private
+     */
+    selectedIndex_: -1,
+
+    /**
+     * Get the currently selected cookie node ("cookie bubble") index.
+     * @type {number}
+     */
+    get selectedIndex() {
+      return this.selectedIndex_;
+    },
+
+    /**
+     * Set the currently selected cookie node ("cookie bubble") index to
+     * @{code itemIndex}, unselecting any previously selected node first.
+     * @param {number} itemIndex The index to set as the selected index.
+     */
+    set selectedIndex(itemIndex) {
+      if (itemIndex < 0 || itemIndex >= this.itemList_.length)
+        return;
+      var index = this.list.getIndexOfListItem(this);
+      if (this.selectedIndex_ >= 0) {
+        var item = this.itemList_[this.selectedIndex_];
+        if (item && item.div)
+          item.div.removeAttribute('selected');
+      }
+      this.selectedIndex_ = itemIndex;
+      this.itemList_[itemIndex].div.setAttribute('selected', '');
+      this.disableAnimation_();
+      this.itemList_[itemIndex].node.setDetailText(this.infoChild,
+                                                   this.list.infoNodes);
+      this.infoChild.classList.remove('hidden');
+      this.enableAnimation_();
+      // If we're near the bottom of the list this may cause the list item to go
+      // beyond the end of the visible area. Fix it after the animation is done.
+      var list = this.list;
+      window.setTimeout(function() { list.scrollIndexIntoView(index); }, 150);
+    },
+  };
+
+  /**
+   * {@code CookieTreeNode}s mirror the structure of the cookie tree lazily, and
+   * contain all the actual data used to generate the {@code CookieListItem}s.
+   * @param {Object} data The data object for this node.
+   * @constructor
+   */
+  function CookieTreeNode(data) {
+    this.data = data;
+    this.children = [];
+  }
+
+  CookieTreeNode.prototype = {
+    /**
+     * Insert a cookie tree node at the given index.
+     * Both CookiesList and CookieTreeNode implement this API.
+     * @param {Object} data The data object for the node to add.
+     * @param {number} index The index at which to insert the node.
+     */
+    insertAt: function(data, index) {
+      var child = new CookieTreeNode(data);
+      this.children.splice(index, 0, child);
+      child.parent = this;
+      this.updateOrigin();
+    },
+
+    /**
+     * Remove a cookie tree node from the given index.
+     * Both CookiesList and CookieTreeNode implement this API.
+     * @param {number} index The index of the tree node to remove.
+     */
+    remove: function(index) {
+      if (index < this.children.length) {
+        this.children.splice(index, 1);
+        this.updateOrigin();
+      }
+    },
+
+    /**
+     * Clears all children.
+     * Both CookiesList and CookieTreeNode implement this API.
+     * It is used by CookiesList.loadChildren().
+     */
+    clear: function() {
+      // We might leave some garbage in parentLookup for removed children.
+      // But that should be OK because parentLookup is cleared when we
+      // reload the tree.
+      this.children = [];
+      this.updateOrigin();
+    },
+
+    /**
+     * The counter used by startBatchUpdates() and endBatchUpdates().
+     * @type {number}
+     */
+    batchCount_: 0,
+
+    /**
+     * See cr.ui.List.startBatchUpdates().
+     * Both CookiesList (via List) and CookieTreeNode implement this API.
+     */
+    startBatchUpdates: function() {
+      this.batchCount_++;
+    },
+
+    /**
+     * See cr.ui.List.endBatchUpdates().
+     * Both CookiesList (via List) and CookieTreeNode implement this API.
+     */
+    endBatchUpdates: function() {
+      if (!--this.batchCount_)
+        this.updateOrigin();
+    },
+
+    /**
+     * Requests updating the origin summary to reflect changes in this item.
+     * Both CookieListItem and CookieTreeNode implement this API.
+     */
+    updateOrigin: function() {
+      if (!this.batchCount_ && this.parent)
+        this.parent.updateOrigin();
+    },
+
+    /**
+     * Summarize the information in this node and update @{code info}.
+     * This will recurse into child nodes to summarize all descendants.
+     * @param {Object} info The info object from @{code updateOrigin}.
+     */
+    collectSummaryInfo: function(info) {
+      if (this.children.length > 0) {
+        for (var i = 0; i < this.children.length; ++i)
+          this.children[i].collectSummaryInfo(info);
+      } else if (this.data && !this.data.hasChildren) {
+        if (this.data.type == 'cookie')
+          info.cookies++;
+        else if (this.data.type == 'database')
+          info.database = true;
+        else if (this.data.type == 'local_storage')
+          info.localStorage = true;
+        else if (this.data.type == 'app_cache')
+          info.appCache = true;
+        else if (this.data.type == 'indexed_db')
+          info.indexedDb = true;
+      }
+    },
+
+    /**
+     * Create the cookie "bubbles" for this node, recursing into children
+     * if there are any. Append the cookie bubbles to @{code item}.
+     * @param {CookieListItem} item The cookie list item to create items in.
+     */
+    createItems: function(item) {
+      if (this.children.length > 0) {
+        for (var i = 0; i < this.children.length; ++i)
+          this.children[i].createItems(item);
+      } else if (this.data && !this.data.hasChildren) {
+        var text = '';
+        switch (this.data.type) {
+          case 'cookie':
+          case 'database':
+            text = this.data.name;
+            break;
+          case 'local_storage':
+            text = localStrings.getString('cookie_local_storage');
+            break;
+          case 'app_cache':
+            text = localStrings.getString('cookie_session_storage');
+            break;
+          case 'indexed_db':
+            text = localStrings.getString('cookie_indexed_db');
+            break;
+        }
+        var div = item.ownerDocument.createElement('div');
+        div.className = 'cookie-item';
+        // Help out screen readers and such: this is a clickable thing.
+        div.setAttribute('role', 'button');
+        div.textContent = text;
+        var index = item.appendItem(this, div);
+        div.onclick = function() { item.selectedIndex = index; };
+      }
+    },
+
+    /**
+     * Set the detail text to be displayed to that of this cookie tree node.
+     * Uses preallocated DOM elements for each cookie node type from @{code
+     * infoNodes}, and inserts the appropriate elements to @{code element}.
+     * @param {Element} element The DOM element to insert elements to.
+     * @param {Object.<string, {table: Element, info: Object.<string,
+     *     Element>}>} infoNodes The map from cookie node types to maps from
+     *     cookie attribute names to DOM elements to display cookie attribute
+     *     values, created by @{code CookiesList.decorate}.
+     */
+    setDetailText: function(element, infoNodes) {
+      var table;
+      if (this.data && !this.data.hasChildren) {
+        if (cookieInfo[this.data.type]) {
+          var info = cookieInfo[this.data.type];
+          var nodes = infoNodes[this.data.type].info;
+          for (var i = 0; i < info.length; ++i) {
+            var name = info[i][0];
+            if (name != 'id' && this.data[name])
+              nodes[name].textContent = this.data[name];
+          }
+          table = infoNodes[this.data.type].table;
+        }
+      }
+      while (element.childNodes.length > 1)
+        element.removeChild(element.firstChild);
+      if (table)
+        element.insertBefore(table, element.firstChild);
+    },
+
+    /**
+     * The parent of this cookie tree node.
+     * @type {?CookieTreeNode|CookieListItem}
+     */
+    get parent(parent) {
+      // See below for an explanation of this special case.
+      if (typeof this.parent_ == 'number')
+        return this.list_.getListItemByIndex(this.parent_);
+      return this.parent_;
+    },
+    set parent(parent) {
+      if (parent == this.parent)
+        return;
+      if (parent instanceof CookieListItem) {
+        // If the parent is to be a CookieListItem, then we keep the reference
+        // to it by its containing list and list index, rather than directly.
+        // This allows the list items to be garbage collected when they scroll
+        // out of view (except the expanded item, which we cache). This is
+        // transparent except in the setter and getter, where we handle it.
+        this.parent_ = parent.listIndex;
+        this.list_ = parent.list;
+        parent.addEventListener('listIndexChange',
+                                this.parentIndexChanged_.bind(this));
+      } else {
+        this.parent_ = parent;
+      }
+      if (this.data && this.data.id) {
+        if (parent)
+          parentLookup[this.data.id] = this;
+        else
+          delete parentLookup[this.data.id];
+      }
+      if (this.data && this.data.hasChildren &&
+          !this.children.length && !lookupRequests[this.data.id]) {
+        lookupRequests[this.data.id] = true;
+        chrome.send('loadCookie', [this.pathId]);
+      }
+    },
+
+    /**
+     * Called when the parent is a CookieListItem whose index has changed.
+     * See the code above that avoids keeping a direct reference to
+     * CookieListItem parents, to allow them to be garbage collected.
+     * @private
+     */
+    parentIndexChanged_: function(event) {
+      if (typeof this.parent_ == 'number') {
+        this.parent_ = event.newValue;
+        // We set a timeout to update the origin, rather than doing it right
+        // away, because this callback may occur while the list items are
+        // being repopulated following a scroll event. Calling updateOrigin()
+        // immediately could trigger relayout that would reset the scroll
+        // position within the list, among other things.
+        window.setTimeout(this.updateOrigin.bind(this), 0);
+      }
+    },
+
+    /**
+     * The cookie tree path id.
+     * @type {string}
+     */
+    get pathId() {
+      var parent = this.parent;
+      if (parent && parent instanceof CookieTreeNode)
+        return parent.pathId + ',' + this.data.id;
+      return this.data.id;
+    },
+  };
+
+  /**
+   * Creates a new cookies list.
+   * @param {Object=} opt_propertyBag Optional properties.
+   * @constructor
+   * @extends {DeletableItemList}
+   */
+  var CookiesList = cr.ui.define('list');
+
+  CookiesList.prototype = {
+    __proto__: DeletableItemList.prototype,
+
+    /** @inheritDoc */
+    decorate: function() {
+      DeletableItemList.prototype.decorate.call(this);
+      this.classList.add('cookie-list');
+      this.data_ = [];
+      this.dataModel = new ArrayDataModel(this.data_);
+      this.addEventListener('keydown', this.handleKeyLeftRight_.bind(this));
+      var sm = new ListSingleSelectionModel();
+      sm.addEventListener('change', this.cookieSelectionChange_.bind(this));
+      sm.addEventListener('leadIndexChange', this.cookieLeadChange_.bind(this));
+      this.selectionModel = sm;
+      this.infoNodes = {};
+      var doc = this.ownerDocument;
+      // Create a table for each type of site data (e.g. cookies, databases,
+      // etc.) and save it so that we can reuse it for all origins.
+      for (var type in cookieInfo) {
+        var table = doc.createElement('table');
+        table.className = 'cookie-details-table';
+        var tbody = doc.createElement('tbody');
+        table.appendChild(tbody);
+        var info = {};
+        for (var i = 0; i < cookieInfo[type].length; i++) {
+          var tr = doc.createElement('tr');
+          var name = doc.createElement('td');
+          var data = doc.createElement('td');
+          var pair = cookieInfo[type][i];
+          name.className = 'cookie-details-label';
+          name.textContent = localStrings.getString(pair[1]);
+          data.className = 'cookie-details-value';
+          data.textContent = '';
+          tr.appendChild(name);
+          tr.appendChild(data);
+          tbody.appendChild(tr);
+          info[pair[0]] = data;
+        }
+        this.infoNodes[type] = {table: table, info: info};
+      }
+    },
+
+    /**
+     * Handles key down events and looks for left and right arrows, then
+     * dispatches to the currently expanded item, if any.
+     * @param {Event} e The keydown event.
+     * @private
+     */
+    handleKeyLeftRight_: function(e) {
+      var id = e.keyIdentifier;
+      if ((id == 'Left' || id == 'Right') && this.expandedItem) {
+        var cs = this.ownerDocument.defaultView.getComputedStyle(this);
+        var rtl = cs.direction == 'rtl';
+        if ((!rtl && id == 'Left') || (rtl && id == 'Right'))
+          this.expandedItem.selectedIndex--;
+        else
+          this.expandedItem.selectedIndex++;
+        this.scrollIndexIntoView(this.expandedItem.listIndex);
+        // Prevent the page itself from scrolling.
+        e.preventDefault();
+      }
+    },
+
+    /**
+     * Called on selection model selection changes.
+     * @param {Event} ce The selection change event.
+     * @private
+     */
+    cookieSelectionChange_: function(ce) {
+      ce.changes.forEach(function(change) {
+          var listItem = this.getListItemByIndex(change.index);
+          if (listItem) {
+            if (!change.selected)
+              listItem.expanded = false;
+            else if (listItem.lead)
+              listItem.expanded = true;
+          }
+        }, this);
+    },
+
+    /**
+     * Called on selection model lead changes.
+     * @param {Event} pe The lead change event.
+     * @private
+     */
+    cookieLeadChange_: function(pe) {
+      if (pe.oldValue != -1) {
+        var listItem = this.getListItemByIndex(pe.oldValue);
+        if (listItem)
+          listItem.expanded = false;
+      }
+      if (pe.newValue != -1) {
+        var listItem = this.getListItemByIndex(pe.newValue);
+        if (listItem && listItem.selected)
+          listItem.expanded = true;
+      }
+    },
+
+    /**
+     * The currently expanded item. Used by CookieListItem above.
+     * @type {?CookieListItem}
+     */
+    expandedItem: null,
+
+    // from cr.ui.List
+    /** @inheritDoc */
+    createItem: function(data) {
+      // We use the cached expanded item in order to allow it to maintain some
+      // state (like its fixed height, and which bubble is selected).
+      if (this.expandedItem && this.expandedItem.origin == data)
+        return this.expandedItem;
+      return new CookieListItem(data, this);
+    },
+
+    // from options.DeletableItemList
+    /** @inheritDoc */
+    deleteItemAtIndex: function(index) {
+      var item = this.data_[index];
+      if (item) {
+        var pathId = item.pathId;
+        if (pathId)
+          chrome.send('removeCookie', [pathId]);
+      }
+    },
+
+    /**
+     * Insert a cookie tree node at the given index.
+     * Both CookiesList and CookieTreeNode implement this API.
+     * @param {Object} data The data object for the node to add.
+     * @param {number} index The index at which to insert the node.
+     */
+    insertAt: function(data, index) {
+      this.dataModel.splice(index, 0, new CookieTreeNode(data));
+    },
+
+    /**
+     * Remove a cookie tree node from the given index.
+     * Both CookiesList and CookieTreeNode implement this API.
+     * @param {number} index The index of the tree node to remove.
+     */
+    remove: function(index) {
+      if (index < this.data_.length)
+        this.dataModel.splice(index, 1);
+    },
+
+    /**
+     * Clears the list.
+     * Both CookiesList and CookieTreeNode implement this API.
+     * It is used by CookiesList.loadChildren().
+     */
+    clear: function() {
+      parentLookup = {};
+      this.data_ = [];
+      this.dataModel = new ArrayDataModel(this.data_);
+      this.redraw();
+    },
+
+    /**
+     * Add tree nodes by given parent.
+     * Note: this method will be O(n^2) in the general case. Use it only to
+     * populate an empty parent or to insert single nodes to avoid this.
+     * @param {Object} parent The parent node.
+     * @param {number} start Start index of where to insert nodes.
+     * @param {Array} nodesData Nodes data array.
+     * @private
+     */
+    addByParent_: function(parent, start, nodesData) {
+      if (!parent)
+        return;
+
+      parent.startBatchUpdates();
+      for (var i = 0; i < nodesData.length; ++i)
+        parent.insertAt(nodesData[i], start + i);
+      parent.endBatchUpdates();
+
+      cr.dispatchSimpleEvent(this, 'change');
+    },
+
+    /**
+     * Add tree nodes by parent id.
+     * This is used by cookies_view.js.
+     * Note: this method will be O(n^2) in the general case. Use it only to
+     * populate an empty parent or to insert single nodes to avoid this.
+     * @param {string} parentId Id of the parent node.
+     * @param {number} start Start index of where to insert nodes.
+     * @param {Array} nodesData Nodes data array.
+     */
+    addByParentId: function(parentId, start, nodesData) {
+      var parent = parentId ? parentLookup[parentId] : this;
+      this.addByParent_(parent, start, nodesData);
+    },
+
+    /**
+     * Removes tree nodes by parent id.
+     * This is used by cookies_view.js.
+     * @param {string} parentId Id of the parent node.
+     * @param {number} start Start index of nodes to remove.
+     * @param {number} count Number of nodes to remove.
+     */
+    removeByParentId: function(parentId, start, count) {
+      var parent = parentId ? parentLookup[parentId] : this;
+      if (!parent)
+        return;
+
+      parent.startBatchUpdates();
+      while (count-- > 0)
+        parent.remove(start);
+      parent.endBatchUpdates();
+
+      cr.dispatchSimpleEvent(this, 'change');
+    },
+
+    /**
+     * Loads the immediate children of given parent node.
+     * This is used by cookies_view.js.
+     * @param {string} parentId Id of the parent node.
+     * @param {Array} children The immediate children of parent node.
+     */
+    loadChildren: function(parentId, children) {
+      if (parentId)
+        delete lookupRequests[parentId];
+      var parent = parentId ? parentLookup[parentId] : this;
+      if (!parent)
+        return;
+
+      parent.startBatchUpdates();
+      parent.clear();
+      this.addByParent_(parent, 0, children);
+      parent.endBatchUpdates();
+    },
+  };
+
+  return {
+    CookiesList: CookiesList
+  };
+});

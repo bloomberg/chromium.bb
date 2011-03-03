@@ -30,7 +30,7 @@ cr.define('cr.ui', function() {
      * This item's index in the containing list.
      * @type {number}
      */
-    listIndex: -1,
+    listIndex_: -1,
 
     /**
      * Called when an element is decorated as a list item.
@@ -61,6 +61,12 @@ cr.define('cr.ui', function() {
    * @type {boolean}
    */
   cr.defineProperty(ListItem, 'lead', cr.PropertyKind.BOOL_ATTR);
+
+  /**
+   * This item's index in the containing list.
+   * @type {number}
+   */
+  cr.defineProperty(ListItem, 'listIndex');
 
   return {
     ListItem: ListItem

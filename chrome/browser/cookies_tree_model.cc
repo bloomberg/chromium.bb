@@ -462,7 +462,7 @@ CookieTreeSessionStoragesNode::GetDetailedInfo() const {
 // CookieTreeIndexedDBsNode, public:
 
 CookieTreeIndexedDBsNode::CookieTreeIndexedDBsNode()
-    : CookieTreeNode(l10n_util::GetStringUTF16(IDS_COOKIES_INDEXED_DB)) {
+    : CookieTreeNode(l10n_util::GetStringUTF16(IDS_COOKIES_INDEXED_DBS)) {
 }
 
 CookieTreeIndexedDBsNode::~CookieTreeIndexedDBsNode() {}
