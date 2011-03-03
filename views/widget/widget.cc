@@ -94,10 +94,6 @@ RootView* Widget::GetRootView() {
   return root_view_.get();
 }
 
-Widget* Widget::GetRootWidget() const {
-  return NULL;
-}
-
 bool Widget::IsVisible() const {
   return false;
 }

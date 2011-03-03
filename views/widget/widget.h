@@ -88,21 +88,6 @@ class Widget : public internal::NativeWidgetDelegate,
                                    DeleteParam delete_on_destroy,
                                    MirroringParam mirror_in_rtl);
 
-  // Returns the root view for |native_window|. If |native_window| does not have
-  // a rootview, this recurses through all of |native_window|'s children until
-  // one is found. If a root view isn't found, null is returned.
-  static RootView* FindRootView(gfx::NativeWindow native_window);
-
-  // Returns list of all root views for the native window and its
-  // children.
-  static void FindAllRootViews(gfx::NativeWindow native_window,
-                               std::vector<RootView*>* root_views);
-
-  // Retrieve the Widget corresponding to the specified native_view, or NULL
-  // if there is no such Widget.
-  static Widget* GetWidgetFromNativeView(gfx::NativeView native_view);
-  static Widget* GetWidgetFromNativeWindow(gfx::NativeWindow native_window);
-
   // Enumerates all windows pertaining to us and notifies their
   // view hierarchies that the locale has changed.
   static void NotifyLocaleChanged();
@@ -184,9 +169,6 @@ class Widget : public internal::NativeWidgetDelegate,
 
   // Returns the RootView contained by this Widget.
   virtual RootView* GetRootView();
-
-  // Returns the Widget associated with the root ancestor.
-  virtual Widget* GetRootWidget() const;
 
   // Returns whether the Widget is visible to the user.
   virtual bool IsVisible() const;
