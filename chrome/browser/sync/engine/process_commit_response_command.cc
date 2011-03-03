@@ -135,7 +135,7 @@ void ProcessCommitResponseCommand::ProcessCommitResponse(
   set<syncable::Id> deleted_folders;
   ConflictProgress* conflict_progress = status->mutable_conflict_progress();
   OrderedCommitSet::Projection proj = status->commit_id_projection();
-  { // Scope for WriteTransaction.
+  if (!proj.empty()) { // Scope for WriteTransaction.
     WriteTransaction trans(dir, SYNCER, __FILE__, __LINE__);
     for (size_t i = 0; i < proj.size(); i++) {
       CommitResponse::ResponseType response_type =
@@ -435,8 +435,7 @@ void ProcessCommitResponseCommand::OverrideClientFieldsAfterCommit(
 
     // We just committed successfully, so we assume that the position
     // value we got applies to the PARENT_ID we submitted.
-    syncable::Id new_prev = SyncerUtil::ComputePrevIdFromServerPosition(
-        local_entry->write_transaction(), local_entry,
+    syncable::Id new_prev = local_entry->ComputePrevIdFromServerPosition(
         local_entry->Get(PARENT_ID));
     if (!local_entry->PutPredecessor(new_prev))
       LOG(WARNING) << "PutPredecessor failed after successful commit";

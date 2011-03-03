@@ -79,7 +79,6 @@ class Id {
   inline int compare(const Id& that) const {
     return s_.compare(that.s_);
   }
-  // Must never allow id == 0 or id < 0 to compile.
   inline bool operator == (const Id& that) const {
     return s_ == that.s_;
   }
@@ -92,6 +91,10 @@ class Id {
   inline bool operator > (const Id& that) const {
     return s_ > that.s_;
   }
+  // Return the next highest ID in the lexicographic ordering.  This is
+  // useful for computing upper bounds on std::sets that are ordered
+  // by operator<.
+  Id GetLexicographicSuccessor() const;
 
   // Three functions are used to work with our proto buffers.
   std::string GetServerId() const;
@@ -100,7 +103,12 @@ class Id {
   // id from the server. Returns a client only opaque id.
   static Id CreateFromClientString(const std::string& local_id);
 
- protected:
+  // This method returns an ID that will compare less than any valid ID.
+  // The returned ID is not a valid ID itself.  This is useful for
+  // computing lower bounds on std::sets that are ordered by operator<.
+  static Id GetLeastIdForLexicographicComparison();
+
+ private:
   std::string s_;
 };
 

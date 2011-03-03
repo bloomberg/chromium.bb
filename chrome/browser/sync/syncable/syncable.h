@@ -416,6 +416,12 @@ class Entry {
     return *kernel_;
   }
 
+  // Compute a local predecessor position for |update_item|, based on its
+  // absolute server position.  The returned ID will be a valid predecessor
+  // under SERVER_PARENT_ID that is consistent with the
+  // SERVER_POSITION_IN_PARENT ordering.
+  Id ComputePrevIdFromServerPosition(const Id& parent_id) const;
+
  protected:  // Don't allow creation on heap, except by sync API wrappers.
   friend class sync_api::ReadNode;
   void* operator new(size_t size) { return (::operator new)(size); }
@@ -602,7 +608,11 @@ struct ClientTagIndexer {
 struct ParentIdAndHandleIndexer {
   // This index is of the parent ID and metahandle.  We use a custom
   // comparator.
-  class Comparator;
+  class Comparator {
+   public:
+    bool operator() (const syncable::EntryKernel* a,
+                     const syncable::EntryKernel* b) const;
+  };
 
   // This index does not include deleted items.
   static bool ShouldInclude(const EntryKernel* a);
@@ -683,7 +693,6 @@ struct DirectoryChangeEvent {
 class ScopedKernelLock;
 class IdFilter;
 class DirectoryManager;
-struct PathMatcher;
 
 class Directory {
   friend class BaseTransaction;
@@ -865,16 +874,20 @@ class Directory {
 
   // Returns the child meta handles for given parent id.
   void GetChildHandles(BaseTransaction*, const Id& parent_id,
-      const std::string& path_spec, ChildHandles* result);
-  void GetChildHandles(BaseTransaction*, const Id& parent_id,
       ChildHandles* result);
-  void GetChildHandlesImpl(BaseTransaction* trans, const Id& parent_id,
-                           PathMatcher* matcher, ChildHandles* result);
 
   // Find the first or last child in the positional ordering under a parent,
   // and return its id.  Returns a root Id if parent has no children.
   virtual Id GetFirstChildId(BaseTransaction* trans, const Id& parent_id);
   Id GetLastChildId(BaseTransaction* trans, const Id& parent_id);
+
+  // Compute a local predecessor position for |update_item|.  The position
+  // is determined by the SERVER_POSITION_IN_PARENT value of |update_item|,
+  // as well as the SERVER_POSITION_IN_PARENT values of any up-to-date
+  // children of |parent_id|.
+  Id ComputePrevIdFromServerPosition(
+      const EntryKernel* update_item,
+      const syncable::Id& parent_id);
 
   // SaveChanges works by taking a consistent snapshot of the current Directory
   // state and indices (by deep copy) under a ReadTransaction, passing this
@@ -957,11 +970,6 @@ class Directory {
   // Used by CheckTreeInvariants
   void GetAllMetaHandles(BaseTransaction* trans, MetahandleSet* result);
   bool SafeToPurgeFromMemory(const EntryKernel* const entry) const;
-
-  // Helper method used to implement GetFirstChildId/GetLastChildId.
-  Id GetChildWithNullIdField(IdField field,
-                             BaseTransaction* trans,
-                             const Id& parent_id);
 
   // Internal setters that do not acquire a lock internally.  These are unsafe
   // on their own; caller must guarantee exclusive access manually by holding
@@ -1072,6 +1080,25 @@ class Directory {
     // purposes.  Protected by the save_changes_mutex.
     DebugQueue<int64, 1000> flushed_metahandles;
   };
+
+  // Helper method used to do searches on |parent_id_child_index|.
+  ParentIdChildIndex::iterator LocateInParentChildIndex(
+      const ScopedKernelLock& lock,
+      const Id& parent_id,
+      int64 position_in_parent,
+      const Id& item_id_for_tiebreaking);
+
+  // Return an iterator to the beginning of the range of the children of
+  // |parent_id| in the kernel's parent_id_child_index.
+  ParentIdChildIndex::iterator GetParentChildIndexLowerBound(
+      const ScopedKernelLock& lock,
+      const Id& parent_id);
+
+  // Return an iterator to just past the end of the range of the
+  // children of |parent_id| in the kernel's parent_id_child_index.
+  ParentIdChildIndex::iterator GetParentChildIndexUpperBound(
+      const ScopedKernelLock& lock,
+      const Id& parent_id);
 
   Kernel* kernel_;
 

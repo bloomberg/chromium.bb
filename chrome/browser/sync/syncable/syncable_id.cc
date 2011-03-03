@@ -45,4 +45,19 @@ Id Id::CreateFromClientString(const string& local_id) {
   return id;
 }
 
+Id Id::GetLexicographicSuccessor() const {
+  // The successor of a string is given by appending the least
+  // character in the alphabet.
+  Id id = *this;
+  id.s_.push_back(0);
+  return id;
+}
+
+// static
+Id Id::GetLeastIdForLexicographicComparison() {
+  Id id;
+  id.s_.clear();
+  return id;
+}
+
 }  // namespace syncable

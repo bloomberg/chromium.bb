@@ -475,8 +475,7 @@ bool SyncerUtil::ServerAndLocalOrdersMatch(syncable::Entry* entry) {
 
   // Now find the closest up-to-date sibling in the server order.
   syncable::Id server_up_to_date_predecessor =
-      ComputePrevIdFromServerPosition(entry->trans(), entry,
-                                      entry->Get(SERVER_PARENT_ID));
+      entry->ComputePrevIdFromServerPosition(entry->Get(SERVER_PARENT_ID));
   return server_up_to_date_predecessor == local_up_to_date_predecessor;
 }
 
@@ -563,8 +562,8 @@ void SyncerUtil::UpdateLocalDataFromServerData(
     entry->Put(NON_UNIQUE_NAME, entry->Get(SERVER_NON_UNIQUE_NAME));
     entry->Put(PARENT_ID, entry->Get(SERVER_PARENT_ID));
     CHECK(entry->Put(IS_DEL, false));
-    Id new_predecessor = ComputePrevIdFromServerPosition(trans, entry,
-        entry->Get(SERVER_PARENT_ID));
+    Id new_predecessor =
+        entry->ComputePrevIdFromServerPosition(entry->Get(SERVER_PARENT_ID));
     CHECK(entry->PutPredecessor(new_predecessor))
         << " Illegal predecessor after converting from server position.";
   }
@@ -842,64 +841,6 @@ VerifyResult SyncerUtil::VerifyUndelete(syncable::WriteTransaction* trans,
     return VERIFY_SUCCESS;  // Expected in new sync protocol.
   }
   return VERIFY_UNDECIDED;
-}
-
-// static
-syncable::Id SyncerUtil::ComputePrevIdFromServerPosition(
-    syncable::BaseTransaction* trans,
-    syncable::Entry* update_item,
-    const syncable::Id& parent_id) {
-  const int64 position_in_parent = update_item->Get(SERVER_POSITION_IN_PARENT);
-
-  // TODO(ncarter): This computation is linear in the number of children, but
-  // we could make it logarithmic if we kept an index on server position.
-  syncable::Id closest_sibling;
-  syncable::Id next_id = trans->directory()->GetFirstChildId(trans, parent_id);
-  while (!next_id.IsRoot()) {
-    syncable::Entry candidate(trans, GET_BY_ID, next_id);
-    if (!candidate.good()) {
-      LOG(WARNING) << "Should not happen";
-      return closest_sibling;
-    }
-    next_id = candidate.Get(NEXT_ID);
-
-    // Defensively prevent self-comparison.
-    if (candidate.Get(META_HANDLE) == update_item->Get(META_HANDLE)) {
-      continue;
-    }
-
-    // Ignore unapplied updates -- they might not even be server-siblings.
-    if (candidate.Get(IS_UNAPPLIED_UPDATE)) {
-      continue;
-    }
-
-    // Unsynced items don't have a valid server position.
-    if (!candidate.Get(IS_UNSYNCED)) {
-      // If |candidate| is after |update_entry| according to the server
-      // ordering, then we're done.  ID is the tiebreaker.
-      if ((candidate.Get(SERVER_POSITION_IN_PARENT) > position_in_parent) ||
-          ((candidate.Get(SERVER_POSITION_IN_PARENT) == position_in_parent) &&
-           (candidate.Get(ID) > update_item->Get(ID)))) {
-          return closest_sibling;
-      }
-    }
-
-    // We can't trust the SERVER_ fields of unsynced items, but they are
-    // potentially legitimate local predecessors.  In the case where
-    // |update_item| and an unsynced item wind up in the same insertion
-    // position, we need to choose how to order them.  The following check puts
-    // the unapplied update first; removing it would put the unsynced item(s)
-    // first.
-    if (candidate.Get(IS_UNSYNCED)) {
-      continue;
-    }
-
-    // |update_entry| is considered to be somewhere after |candidate|, so store
-    // it as the upper bound.
-    closest_sibling = candidate.Get(ID);
-  }
-
-  return closest_sibling;
 }
 
 }  // namespace browser_sync

@@ -1082,7 +1082,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientLiveBookmarksSyncTest,
     const BookmarkNode* folder = AddGroup(0, i, title);
     ASSERT_TRUE(folder != NULL);
     for (int j = 0; j < 10; ++j) {
-      std::wstring title = IndexedURLTitle(j);
+      std::wstring title = IndexedURLTitle(1000 * i + j);
       GURL url = GURL(IndexedURL(j));
       ASSERT_TRUE(AddURL(0, folder, j, title, url) != NULL);
     }

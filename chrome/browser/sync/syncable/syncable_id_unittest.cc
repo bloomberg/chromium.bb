@@ -41,4 +41,44 @@ TEST(SyncableIdTest, TestIDCreation) {
   }
 }
 
+TEST(SyncableIdTest, GetLeastIdForLexicographicComparison) {
+  vector<Id> v;
+  v.push_back(Id::CreateFromServerId("z5"));
+  v.push_back(Id::CreateFromServerId("z55"));
+  v.push_back(Id::CreateFromServerId("z6"));
+  v.push_back(Id::CreateFromClientString("zA-"));
+  v.push_back(Id::CreateFromClientString("zA--"));
+  v.push_back(Id::CreateFromServerId("zA--"));
+
+  for (int i = 0; i <= 255; ++i) {
+    std::string one_character_id;
+    one_character_id.push_back(i);
+    v.push_back(Id::CreateFromClientString(one_character_id));
+  }
+
+  for (vector<Id>::iterator i = v.begin(); i != v.end(); ++i) {
+    // The following looks redundant, but we're testing a custom operator<.
+    ASSERT_LT(Id::GetLeastIdForLexicographicComparison(), *i);
+    ASSERT_NE(*i, i->GetLexicographicSuccessor());
+    ASSERT_NE(i->GetLexicographicSuccessor(), *i);
+    ASSERT_LT(*i, i->GetLexicographicSuccessor());
+    ASSERT_GT(i->GetLexicographicSuccessor(), *i);
+    for (vector<Id>::iterator j = v.begin(); j != v.end(); ++j) {
+      if (j == i)
+        continue;
+      if (*j < *i) {
+        ASSERT_LT(j->GetLexicographicSuccessor(), *i);
+        ASSERT_LT(j->GetLexicographicSuccessor(),
+            i->GetLexicographicSuccessor());
+        ASSERT_LT(*j, i->GetLexicographicSuccessor());
+      } else {
+        ASSERT_GT(j->GetLexicographicSuccessor(), *i);
+        ASSERT_GT(j->GetLexicographicSuccessor(),
+            i->GetLexicographicSuccessor());
+        ASSERT_GT(*j, i->GetLexicographicSuccessor());
+      }
+    }
+  }
+}
+
 }  // namespace syncable

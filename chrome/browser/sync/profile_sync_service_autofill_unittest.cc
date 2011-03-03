@@ -21,7 +21,6 @@
 #include "chrome/browser/sync/abstract_profile_sync_service_test.h"
 #include "chrome/browser/sync/engine/model_changing_syncer_command.h"
 #include "chrome/browser/sync/engine/syncapi.h"
-#include "chrome/browser/sync/engine/syncer_util.h"
 #include "chrome/browser/sync/glue/autofill_change_processor.h"
 #include "chrome/browser/sync/glue/autofill_data_type_controller.h"
 #include "chrome/browser/sync/glue/autofill_model_associator.h"
@@ -61,7 +60,6 @@ using browser_sync::DataTypeController;
 using browser_sync::GROUP_DB;
 using browser_sync::kAutofillTag;
 using browser_sync::SyncBackendHostForProfileSyncTest;
-using browser_sync::SyncerUtil;
 using browser_sync::UnrecoverableErrorHandler;
 using syncable::CREATE_NEW_UPDATE_ITEM;
 using syncable::AUTOFILL;
@@ -551,11 +549,9 @@ class FakeServerUpdater: public base::RefCountedThreadSafe<FakeServerUpdater> {
       item.Put(SPECIFICS, entity_specifics);
       item.Put(SERVER_SPECIFICS, entity_specifics);
       item.Put(BASE_VERSION, 1);
-      syncable::Id server_parent_id = service_->id_factory()->NewServerId();
-      item.Put(syncable::ID, server_parent_id);
-      syncable::Id new_predecessor =
-          SyncerUtil::ComputePrevIdFromServerPosition(&trans, &item,
-          server_parent_id);
+      syncable::Id server_item_id = service_->id_factory()->NewServerId();
+      item.Put(syncable::ID, server_item_id);
+      syncable::Id new_predecessor;
       ASSERT_TRUE(item.PutPredecessor(new_predecessor));
     }
     VLOG(1) << "FakeServerUpdater finishing.";

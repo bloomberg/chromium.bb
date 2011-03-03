@@ -126,6 +126,15 @@ class ScopedIndexUpdater {
   typename Index<Indexer>::Set* const index_;
 };
 
+// Helper function to add an item to the index, if it ought to be added.
+template<typename Indexer>
+void InitializeIndexEntry(EntryKernel* entry,
+                          typename Index<Indexer>::Set* index) {
+  if (Indexer::ShouldInclude(entry)) {
+    index->insert(entry);
+  }
+}
+
 }  // namespace
 
 ///////////////////////////////////////////////////////////////////////////
@@ -136,22 +145,27 @@ bool ClientTagIndexer::ShouldInclude(const EntryKernel* a) {
   return !a->ref(UNIQUE_CLIENT_TAG).empty();
 }
 
-class ParentIdAndHandleIndexer::Comparator {
- public:
-  bool operator() (const syncable::EntryKernel* a,
-                   const syncable::EntryKernel* b) const {
-    int cmp = a->ref(PARENT_ID).compare(b->ref(PARENT_ID));
-    if (cmp != 0)
-      return cmp < 0;
+bool ParentIdAndHandleIndexer::Comparator::operator() (
+    const syncable::EntryKernel* a,
+    const syncable::EntryKernel* b) const {
+  int cmp = a->ref(PARENT_ID).compare(b->ref(PARENT_ID));
+  if (cmp != 0)
+    return cmp < 0;
 
-    // Meta handles are immutable per entry so this is ideal.
-    return a->ref(META_HANDLE) < b->ref(META_HANDLE);
-  }
-};
+  int64 a_position = a->ref(SERVER_POSITION_IN_PARENT);
+  int64 b_position = b->ref(SERVER_POSITION_IN_PARENT);
+  if (a_position != b_position)
+    return a_position < b_position;
+
+  cmp = a->ref(ID).compare(b->ref(ID));
+  return cmp < 0;
+}
 
 // static
 bool ParentIdAndHandleIndexer::ShouldInclude(const EntryKernel* a) {
-  return !a->ref(IS_DEL);
+  // This index excludes deleted items and the root item.  The root
+  // item is excluded so that it doesn't show up as a child of itself.
+  return !a->ref(IS_DEL) && !a->ref(ID).IsRoot();
 }
 
 ///////////////////////////////////////////////////////////////////////////
@@ -263,12 +277,10 @@ void Directory::InitializeIndices() {
   MetahandlesIndex::iterator it = kernel_->metahandles_index->begin();
   for (; it != kernel_->metahandles_index->end(); ++it) {
     EntryKernel* entry = *it;
-    if (!entry->ref(IS_DEL))
-      kernel_->parent_id_child_index->insert(entry);
-    kernel_->ids_index->insert(entry);
-    if (!entry->ref(UNIQUE_CLIENT_TAG).empty()) {
-      kernel_->client_tag_index->insert(entry);
-    }
+    InitializeIndexEntry<ParentIdAndHandleIndexer>(entry,
+        kernel_->parent_id_child_index);
+    InitializeIndexEntry<IdIndexer>(entry, kernel_->ids_index);
+    InitializeIndexEntry<ClientTagIndexer>(entry, kernel_->client_tag_index);
     if (entry->ref(IS_UNSYNCED))
       kernel_->unsynced_metahandles->insert(entry->ref(META_HANDLE));
     if (entry->ref(IS_UNAPPLIED_UPDATE))
@@ -381,62 +393,18 @@ EntryKernel* Directory::GetEntryByHandle(int64 metahandle,
   return NULL;
 }
 
-// An interface to specify the details of which children
-// GetChildHandles() is looking for.
-// TODO(chron): Clean this up into one function to get child handles
-struct PathMatcher {
-  explicit PathMatcher(const Id& parent_id) : parent_id_(parent_id) { }
-  virtual ~PathMatcher() { }
-
-  typedef Directory::ParentIdChildIndex Index;
-  virtual Index::iterator lower_bound(Index* index) = 0;
-  virtual Index::iterator upper_bound(Index* index) = 0;
-  const Id parent_id_;
-  EntryKernel needle_;
-};
-
-// Matches all children.
-// TODO(chron): Unit test this by itself
-struct AllPathsMatcher : public PathMatcher {
-  explicit AllPathsMatcher(const Id& parent_id) : PathMatcher(parent_id) {
-  }
-
-  virtual Index::iterator lower_bound(Index* index) {
-    needle_.put(PARENT_ID, parent_id_);
-    needle_.put(META_HANDLE, std::numeric_limits<int64>::min());
-    return index->lower_bound(&needle_);
-  }
-
-  virtual Index::iterator upper_bound(Index* index) {
-    needle_.put(PARENT_ID, parent_id_);
-    needle_.put(META_HANDLE, std::numeric_limits<int64>::max());
-    return index->upper_bound(&needle_);
-  }
-};
-
 void Directory::GetChildHandles(BaseTransaction* trans, const Id& parent_id,
                                 Directory::ChildHandles* result) {
-  AllPathsMatcher matcher(parent_id);
-  return GetChildHandlesImpl(trans, parent_id, &matcher, result);
-}
-
-void Directory::GetChildHandlesImpl(BaseTransaction* trans, const Id& parent_id,
-                                    PathMatcher* matcher,
-                                    Directory::ChildHandles* result) {
   CHECK(this == trans->directory());
   result->clear();
   {
     ScopedKernelLock lock(this);
 
-    // This index is sorted by parent id and metahandle.
-    ParentIdChildIndex* const index = kernel_->parent_id_child_index;
     typedef ParentIdChildIndex::iterator iterator;
-    for (iterator i = matcher->lower_bound(index),
-           end = matcher->upper_bound(index); i != end; ++i) {
-      // root's parent_id is NULL in the db but 0 in memory, so
-      // have avoid listing the root as its own child.
-      if ((*i)->ref(ID) == (*i)->ref(PARENT_ID))
-        continue;
+    for (iterator i = GetParentChildIndexLowerBound(lock, parent_id),
+                end = GetParentChildIndexUpperBound(lock, parent_id);
+         i != end; ++i) {
+      DCHECK_EQ(parent_id, (*i)->ref(PARENT_ID));
       result->push_back((*i)->ref(META_HANDLE));
     }
   }
@@ -489,6 +457,8 @@ bool Directory::ReindexId(EntryKernel* const entry, const Id& new_id) {
   {
     // Update the indices that depend on the ID field.
     ScopedIndexUpdater<IdIndexer> updater_a(lock, entry, kernel_->ids_index);
+    ScopedIndexUpdater<ParentIdAndHandleIndexer> updater_b(lock, entry,
+        kernel_->parent_id_child_index);
     entry->put(ID, new_id);
   }
   return true;
@@ -1234,6 +1204,10 @@ Directory* Entry::dir() const {
   return basetrans_->directory();
 }
 
+Id Entry::ComputePrevIdFromServerPosition(const Id& parent_id) const {
+  return dir()->ComputePrevIdFromServerPosition(kernel_, parent_id);
+}
+
 const string& Entry::Get(StringField field) const {
   DCHECK(kernel_);
   return kernel_->ref(field);
@@ -1372,13 +1346,21 @@ bool MutableEntry::PutIsDel(bool is_del) {
 
   if (!is_del)
     PutPredecessor(Id());  // Restores position to the 0th index.
+
   return true;
 }
 
 bool MutableEntry::Put(Int64Field field, const int64& value) {
   DCHECK(kernel_);
   if (kernel_->ref(field) != value) {
-    kernel_->put(field, value);
+    ScopedKernelLock lock(dir());
+    if (SERVER_POSITION_IN_PARENT == field) {
+      ScopedIndexUpdater<ParentIdAndHandleIndexer> updater(lock, kernel_,
+          dir()->kernel_->parent_id_child_index);
+      kernel_->put(field, value);
+    } else {
+      kernel_->put(field, value);
+    }
     kernel_->mark_dirty(dir()->kernel_->dirty_metahandles);
   }
   return true;
@@ -1606,34 +1588,109 @@ Id Directory::NextId() {
   return Id::CreateFromClientString(base::Int64ToString(result));
 }
 
-Id Directory::GetChildWithNullIdField(IdField field,
-                                      BaseTransaction* trans,
-                                      const Id& parent_id) {
-  // This query is O(number of children), which should be acceptable
-  // when this method is used as the first step in enumerating the children of
-  // a node.  But careless use otherwise could potentially result in
-  // O((number of children)^2) performance.
-  ChildHandles child_handles;
-  GetChildHandles(trans, parent_id, &child_handles);
-  ChildHandles::const_iterator it;
-  for (it = child_handles.begin(); it != child_handles.end(); ++it) {
-    Entry e(trans, GET_BY_HANDLE, *it);
-    CHECK(e.good());
-    if (e.Get(field).IsRoot())
-      return e.Get(ID);
-  }
-
-  return Id();
-}
-
 Id Directory::GetFirstChildId(BaseTransaction* trans,
                               const Id& parent_id) {
-  return GetChildWithNullIdField(PREV_ID, trans, parent_id);
+  ScopedKernelLock lock(this);
+  // We can use the server positional ordering as a hint because it's generally
+  // in sync with the local (linked-list) positional ordering, and we have an
+  // index on it.
+  ParentIdChildIndex::iterator candidate =
+      GetParentChildIndexLowerBound(lock, parent_id);
+  ParentIdChildIndex::iterator end_range =
+      GetParentChildIndexUpperBound(lock, parent_id);
+  for (; candidate != end_range; ++candidate) {
+    EntryKernel* entry = *candidate;
+    // Filter out self-looped items, which are temporarily not in the child
+    // ordering.
+    if (entry->ref(PREV_ID).IsRoot() ||
+        entry->ref(PREV_ID) != entry->ref(NEXT_ID)) {
+      // Walk to the front of the list; the server position ordering
+      // is commonly identical to the linked-list ordering, but pending
+      // unsynced or unapplied items may diverge.
+      while (!entry->ref(PREV_ID).IsRoot()) {
+        entry = GetEntryById(entry->ref(PREV_ID), &lock);
+      }
+      return entry->ref(ID);
+    }
+  }
+  // There were no children in the linked list.
+  return Id();
 }
 
 Id Directory::GetLastChildId(BaseTransaction* trans,
                              const Id& parent_id) {
-  return GetChildWithNullIdField(NEXT_ID, trans, parent_id);
+  ScopedKernelLock lock(this);
+  // We can use the server positional ordering as a hint because it's generally
+  // in sync with the local (linked-list) positional ordering, and we have an
+  // index on it.
+  ParentIdChildIndex::iterator begin_range =
+      GetParentChildIndexLowerBound(lock, parent_id);
+  ParentIdChildIndex::iterator candidate =
+      GetParentChildIndexUpperBound(lock, parent_id);
+
+  while (begin_range != candidate) {
+    --candidate;
+    EntryKernel* entry = *candidate;
+
+    // Filter out self-looped items, which are temporarily not in the child
+    // ordering.
+    if (entry->ref(NEXT_ID).IsRoot() ||
+        entry->ref(NEXT_ID) != entry->ref(PREV_ID)) {
+      // Walk to the back of the list; the server position ordering
+      // is commonly identical to the linked-list ordering, but pending
+      // unsynced or unapplied items may diverge.
+      while (!entry->ref(NEXT_ID).IsRoot())
+        entry = GetEntryById(entry->ref(NEXT_ID), &lock);
+      return entry->ref(ID);
+    }
+  }
+  // There were no children in the linked list.
+  return Id();
+}
+
+Id Directory::ComputePrevIdFromServerPosition(
+    const EntryKernel* entry,
+    const syncable::Id& parent_id) {
+  ScopedKernelLock lock(this);
+
+  // Find the natural insertion point in the parent_id_child_index, and
+  // work back from there, filtering out ineligible candidates.
+  ParentIdChildIndex::iterator sibling = LocateInParentChildIndex(lock,
+      parent_id, entry->ref(SERVER_POSITION_IN_PARENT), entry->ref(ID));
+  ParentIdChildIndex::iterator first_sibling =
+      GetParentChildIndexLowerBound(lock, parent_id);
+
+  while (sibling != first_sibling) {
+    --sibling;
+    EntryKernel* candidate = *sibling;
+
+    // The item itself should never be in the range under consideration.
+    DCHECK_NE(candidate->ref(META_HANDLE), entry->ref(META_HANDLE));
+
+    // Ignore unapplied updates -- they might not even be server-siblings.
+    if (candidate->ref(IS_UNAPPLIED_UPDATE))
+      continue;
+
+    // We can't trust the SERVER_ fields of unsynced items, but they are
+    // potentially legitimate local predecessors.  In the case where
+    // |update_item| and an unsynced item wind up in the same insertion
+    // position, we need to choose how to order them.  The following check puts
+    // the unapplied update first; removing it would put the unsynced item(s)
+    // first.
+    if (candidate->ref(IS_UNSYNCED))
+      continue;
+
+    // Skip over self-looped items, which are not valid predecessors.  This
+    // shouldn't happen in practice, but is worth defending against.
+    if (candidate->ref(PREV_ID) == candidate->ref(NEXT_ID) &&
+        !candidate->ref(PREV_ID).IsRoot()) {
+      NOTREACHED();
+      continue;
+    }
+    return candidate->ref(ID);
+  }
+  // This item will be the first in the sibling order.
+  return Id();
 }
 
 bool IsLegalNewParent(BaseTransaction* trans, const Id& entry_id,
@@ -1699,6 +1756,37 @@ std::ostream& operator<<(std::ostream& s, const Blob& blob) {
     s << std::hex << std::setw(2)
       << std::setfill('0') << static_cast<unsigned int>(*i);
   return s << std::dec;
+}
+
+Directory::ParentIdChildIndex::iterator Directory::LocateInParentChildIndex(
+    const ScopedKernelLock& lock,
+    const Id& parent_id,
+    int64 position_in_parent,
+    const Id& item_id_for_tiebreaking) {
+  kernel_->needle.put(PARENT_ID, parent_id);
+  kernel_->needle.put(SERVER_POSITION_IN_PARENT, position_in_parent);
+  kernel_->needle.put(ID, item_id_for_tiebreaking);
+  return kernel_->parent_id_child_index->lower_bound(&kernel_->needle);
+}
+
+Directory::ParentIdChildIndex::iterator
+Directory::GetParentChildIndexLowerBound(const ScopedKernelLock& lock,
+                                         const Id& parent_id) {
+  // Peg the parent ID, and use the least values for the remaining
+  // index variables.
+  return LocateInParentChildIndex(lock, parent_id,
+      std::numeric_limits<int64>::min(),
+      Id::GetLeastIdForLexicographicComparison());
+}
+
+
+Directory::ParentIdChildIndex::iterator
+Directory::GetParentChildIndexUpperBound(const ScopedKernelLock& lock,
+                                         const Id& parent_id) {
+  // The upper bound of |parent_id|'s range is the lower
+  // bound of |++parent_id|'s range.
+  return GetParentChildIndexLowerBound(lock,
+      parent_id.GetLexicographicSuccessor());
 }
 
 }  // namespace syncable
