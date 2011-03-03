@@ -122,10 +122,10 @@ TEST_F(FileSystemUsageCacheTest, GetSizeWithoutCacheFileTest) {
 
 TEST_F(FileSystemUsageCacheTest, IncrementDirtyWithoutCacheFileTest) {
   FilePath usage_file_path = GetUsageFilePath();
-  EXPECT_EQ(false, FileSystemUsageCache::IncrementDirty(usage_file_path));
+  EXPECT_FALSE(FileSystemUsageCache::IncrementDirty(usage_file_path));
 }
 
 TEST_F(FileSystemUsageCacheTest, DecrementDirtyWithoutCacheFileTest) {
   FilePath usage_file_path = GetUsageFilePath();
-  EXPECT_EQ(false, FileSystemUsageCache::IncrementDirty(usage_file_path));
+  EXPECT_FALSE(FileSystemUsageCache::IncrementDirty(usage_file_path));
 }
