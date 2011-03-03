@@ -183,33 +183,37 @@
            class="subpage-sheet-container transparent" hidden>
          <div id="subpage-sheet-1" class="subpage-sheet">
            <button class="raw-button close-subpage"></button>
-           <if expr="pp_ifdef('chromeos')">
-             <include src="about_page.html">
-             <include src="chromeos_proxy.html">
-           </if>
-           <if expr="not pp_ifdef('win32') and not pp_ifdef('darwin')">
-             <include src="certificate_manager.html">
-           </if>
-           <include src="autofill_options.html">
-           <include src="content_settings.html">
-           <include src="font_settings.html">
-           <include src="language_options.html">
-           <include src="password_manager.html">
-           <include src="search_engine_manager.html">
+           <div class="subpage-sheet-contents">
+             <if expr="pp_ifdef('chromeos')">
+               <include src="about_page.html">
+               <include src="chromeos_proxy.html">
+             </if>
+             <if expr="not pp_ifdef('win32') and not pp_ifdef('darwin')">
+               <include src="certificate_manager.html">
+             </if>
+             <include src="autofill_options.html">
+             <include src="content_settings.html">
+             <include src="font_settings.html">
+             <include src="language_options.html">
+             <include src="password_manager.html">
+             <include src="search_engine_manager.html">
+           </div>
          </div>
        </div>
        <div id="subpage-sheet-container-2"
            class="subpage-sheet-container transparent" hidden>
          <div id="subpage-sheet-2" class="subpage-sheet">
            <button class="raw-button close-subpage"></button>
-           <if expr="pp_ifdef('chromeos')">
-             <include src="chromeos_language_chewing_options.html">
-             <include src="chromeos_language_hangul_options.html">
-             <include src="chromeos_language_mozc_options.html">
-             <include src="chromeos_language_pinyin_options.html">
-           </if>
-           <include src="cookies_view.html">
-           <include src="content_settings_exceptions_area.html">
+           <div class="subpage-sheet-contents">
+             <if expr="pp_ifdef('chromeos')">
+               <include src="chromeos_language_chewing_options.html">
+               <include src="chromeos_language_hangul_options.html">
+               <include src="chromeos_language_mozc_options.html">
+               <include src="chromeos_language_pinyin_options.html">
+             </if>
+             <include src="cookies_view.html">
+             <include src="content_settings_exceptions_area.html">
+           </div>
          </div>
        </div>
      </div>

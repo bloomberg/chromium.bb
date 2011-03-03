@@ -77,7 +77,7 @@ a:active {
   height: 16px;
   min-width: 0;
   position: relative;
-  top: 12px;
+  top: 16px;
   width: 16px;
 }
 
@@ -91,12 +91,12 @@ a:active {
 
 html[dir='ltr'] .close-subpage {
   float: right;
-  right: 0;
+  right: 20px;
 }
 
 html[dir='rtl'] .close-subpage {
   float: left;
-  left: 0;
+  left: 20px;
 }
 
 html.hide-menu .close-subpage {
@@ -230,12 +230,15 @@ html.hide-menu #mainview {
 }
 
 #mainview-content {
+  min-height: 100%;
+  position: relative;
+}
+
+#toplevel-page-container {
   box-sizing: border-box;
   max-width: 888px;
-  min-height: 100%;
   min-width: 600px;
   padding: 0 24px;
-  position: relative;
 }
 
 #subpage-backdrop {
@@ -250,40 +253,41 @@ html.hide-menu #mainview {
 }
 
 .subpage-sheet-container {
-  -webkit-margin-start: 40px;
   -webkit-transition: 0.25s opacity, 0.1s margin-left, 0.1s margin-right;
   box-sizing: border-box;
   min-height: 100%;
-  padding: 8px;
-  /* Must come after padding. */
-  -webkit-padding-start: 0;
   position: absolute;
   /* We set both left and right for the sake of RTL. */
   left: 0;
   right: 0;
   top: 0;
-  width: 656px;
+  width: 100%;
 }
 
 #subpage-sheet-container-1 {
+  -webkit-padding-start: 40px;
   z-index: 5;
 }
 
 #subpage-sheet-container-2 {
-  -webkit-padding-start: 40px;
+  -webkit-padding-start: 80px;
   z-index: 10;
 }
 
 .subpage-sheet {
   -webkit-box-shadow: #666 0px 2px 5px;
   background-color: white;
-  border: 1px solid #b8b8b8;
-  border-radius: 2px;
+  border-left: 1px solid #b8b8b8;
   box-sizing: border-box;
   min-height: 100%;
-  padding: 0px 20px 20px 20px;
-  position: relative;
   width: 100%;
+  min-width: 651px;
+}
+
+.subpage-sheet-contents {
+  box-sizing: border-box;
+  padding: 0px 20px 20px 20px;
+  width: 650px;
 }
 
 #managed-prefs-banner {
@@ -327,7 +331,6 @@ html.hide-menu #mainview {
 }
 
 .subpage-sheet .page h1 {
-  padding-top: 4px;
   margin-bottom: 10px;
 }
 
