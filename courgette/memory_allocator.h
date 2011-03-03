@@ -8,6 +8,7 @@
 #include <memory>
 
 #include "base/basictypes.h"
+#include "base/file_path.h"
 #include "base/logging.h"
 #include "base/platform_file.h"
 
@@ -24,9 +25,9 @@ class TempFile {
   TempFile();
   ~TempFile();
 
-  bool Create();
+  __declspec(noinline) void Create();
   void Close();
-  bool SetSize(size_t size);
+  __declspec(noinline) void SetSize(size_t size);
 
   // Returns true iff the temp file is currently open.
   bool valid() const;
@@ -40,6 +41,8 @@ class TempFile {
   size_t size() const;
 
  protected:
+  __declspec(noinline) FilePath PrepareTempFile();
+
   base::PlatformFile file_;
   size_t size_;
 };
@@ -51,7 +54,7 @@ class FileMapping {
   ~FileMapping();
 
   // Map a file from beginning to |size|.
-  bool Create(HANDLE file, size_t size);
+  __declspec(noinline) void Create(HANDLE file, size_t size);
   void Close();
 
   // Returns true iff a mapping has been created.
@@ -62,6 +65,8 @@ class FileMapping {
   void* view() const;
 
  protected:
+  __declspec(noinline) void InitializeView(size_t size);
+
   HANDLE mapping_;
   void* view_;
 };
@@ -77,7 +82,7 @@ class TempMapping {
 
   // Creates a temporary file of size |size| and maps it into the current
   // process' address space.
-  bool Initialize(size_t size);
+  __declspec(noinline) void Initialize(size_t size);
 
   // Returns a writable pointer to the reserved memory.
   void* memory() const;
@@ -179,10 +184,7 @@ class MemoryAllocator {
       // If either the heap allocation failed or the request exceeds the
       // max heap allocation threshold, we back the allocation with a temp file.
       TempMapping* mapping = new TempMapping();
-      if (!mapping->Initialize(bytes)) {
-        delete mapping;
-        throw std::bad_alloc("TempMapping::Initialize");
-      }
+      mapping->Initialize(bytes);
       mem = reinterpret_cast<uint8*>(mapping->memory());
       mem[0] = static_cast<uint8>(FILE_ALLOCATION);
     }

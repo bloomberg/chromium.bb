@@ -289,6 +289,9 @@ void AssemblyProgram::AssignRemainingIndexes(RVAToLabel* labels) {
 
 typedef void (EncodedProgram::*DefineLabelMethod)(int index, RVA value);
 
+#if defined(OS_WIN)
+__declspec(noinline)
+#endif
 static void DefineLabels(const RVAToLabel& labels,
                          EncodedProgram* encoded_format,
                          DefineLabelMethod define_label) {
