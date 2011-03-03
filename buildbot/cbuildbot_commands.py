@@ -123,6 +123,7 @@ def FullCheckout(buildroot, tracking_branch,
                  retries=_DEFAULT_RETRIES,
                  url='http://git.chromium.org/git/manifest'):
   """Performs a full checkout and clobbers any previous checkouts."""
+  _CleanUpMountPoints(buildroot)
   cros_lib.OldRunCommand(['sudo', 'rm', '-rf', buildroot])
   os.makedirs(buildroot)
   branch = tracking_branch.split('/');
