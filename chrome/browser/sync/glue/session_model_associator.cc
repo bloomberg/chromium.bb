@@ -227,15 +227,20 @@ void SessionModelAssociator::ReassociateTab(const TabContents& tab) {
 void SessionModelAssociator::Associate(const TabContents* tab, int64 sync_id) {
   DCHECK(CalledOnValidThread());
   SessionID::id_type session_id = tab->controller().session_id().id();
+  Browser* browser = BrowserList::FindBrowserWithID(
+      tab->controller().window_id().id());
+  if (!browser)  // Can happen for weird things like developer console.
+    return;
 
   TabLinks t(sync_id, tab);
   tab_map_[session_id] = t;
 
   sync_api::WriteTransaction trans(sync_service_->GetUserShare());
-  WriteTabContentsToSyncModel(*tab, sync_id, &trans);
+  WriteTabContentsToSyncModel(*browser, *tab, sync_id, &trans);
 }
 
 bool SessionModelAssociator::WriteTabContentsToSyncModel(
+    const Browser& browser,
     const TabContents& tab,
     int64 sync_id,
     sync_api::WriteTransaction* trans) {
@@ -259,12 +264,9 @@ bool SessionModelAssociator::WriteTabContentsToSyncModel(
   const int max_index = std::min(current_index + max_sync_navigation_count,
                                  tab.controller().entry_count());
   const int pending_index = tab.controller().pending_entry_index();
-  Browser* browser = BrowserList::FindBrowserWithID(
-      tab.controller().window_id().id());
-  DCHECK(browser);
-  int index_in_window = browser->tabstrip_model()->GetWrapperIndex(&tab);
+  int index_in_window = browser.tabstrip_model()->GetWrapperIndex(&tab);
   DCHECK(index_in_window != TabStripModel::kNoTab);
-  tab_s->set_pinned(browser->tabstrip_model()->IsTabPinned(index_in_window));
+  tab_s->set_pinned(browser.tabstrip_model()->IsTabPinned(index_in_window));
   if (tab.extension_app())
     tab_s->set_extension_app_id(tab.extension_app()->id());
   for (int i = min_index; i < max_index; ++i) {

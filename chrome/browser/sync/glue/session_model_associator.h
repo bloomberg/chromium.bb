@@ -323,7 +323,8 @@ class SessionModelAssociator
 
   // Fills a tab sync node with data from a TabContents object.
   // (from a local navigation event)
-  bool WriteTabContentsToSyncModel(const TabContents& tab,
+  bool WriteTabContentsToSyncModel(const Browser& browser,
+                                   const TabContents& tab,
                                    const int64 sync_id,
                                    sync_api::WriteTransaction* trans);
 

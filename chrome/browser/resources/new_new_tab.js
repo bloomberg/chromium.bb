@@ -188,8 +188,10 @@ function layoutForeignSessions() {
 
   if (parentSessEl.hasChildNodes()) {
     sessionElement.classList.remove('disabled');
+    sessionElement.classList.remove('opaque');
   } else {
     sessionElement.classList.add('disabled');
+    sessionElement.classList.add('opaque');
   }
 }
 
