@@ -17,9 +17,6 @@ ProfileMenuModel::ProfileMenuModel()
   menu_.reset(new views::Menu2(this));
 }
 
-ProfileMenuModel::~ProfileMenuModel() {
-}
-
 void ProfileMenuModel::RunMenuAt(const gfx::Point& point) {
   menu_->RunMenuAt(point, views::Menu2::ALIGN_TOPRIGHT);
 }
