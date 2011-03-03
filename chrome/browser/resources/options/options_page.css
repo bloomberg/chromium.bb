@@ -170,7 +170,7 @@ html[toolkit=views] .button-strip {
   left: 0;
   right: 0;
   top: 0;
-  width: 266px;
+  width: 216px;
   z-index: 2;
 }
 
@@ -215,7 +215,7 @@ html.hide-menu #navbar-container {
 
 #mainview {
   -webkit-box-align: stretch;
-  -webkit-padding-start: 266px;
+  -webkit-padding-start: 216px;
   margin: 0;
   position: absolute;
   left: 0;
@@ -242,15 +242,15 @@ html.hide-menu #mainview {
   -webkit-transition: 0.25s opacity;
   background-color: rgba(233, 238, 242, .5);
   height: 100%;
-  left: 266px;
-  right: 266px;
+  left: 216px;
+  right: 216px;
   position: fixed;
   top: 0;
   width: 100%;
 }
 
 .subpage-sheet-container {
-  -webkit-margin-start: 60px;
+  -webkit-margin-start: 40px;
   -webkit-transition: 0.25s opacity, 0.1s margin-left, 0.1s margin-right;
   box-sizing: border-box;
   min-height: 100%;
@@ -262,7 +262,7 @@ html.hide-menu #mainview {
   left: 0;
   right: 0;
   top: 0;
-  width: 688px;
+  width: 656px;
 }
 
 #subpage-sheet-container-1 {
@@ -270,7 +270,7 @@ html.hide-menu #mainview {
 }
 
 #subpage-sheet-container-2 {
-  -webkit-padding-start: 60px;
+  -webkit-padding-start: 40px;
   z-index: 10;
 }
 
