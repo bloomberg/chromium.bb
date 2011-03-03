@@ -142,7 +142,7 @@ class InfoBarView : public InfoBar,
   // |prefsize| within the standard InfoBar height, adjusted according to the
   // current amount of animation offset the |parent| InfoBar currently has.
   // Changes during an animation.
-  int OffsetY(View* parent, const gfx::Size prefsize) const;
+  int OffsetY(const gfx::Size prefsize) const;
 
  private:
   static const int kHorizontalPadding;

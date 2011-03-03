@@ -61,7 +61,7 @@ void ExtensionInfoBar::Layout() {
   InfoBarView::Layout();
 
   gfx::Size menu_size = menu_->GetPreferredSize();
-  menu_->SetBounds(StartX(), OffsetY(this, menu_size), menu_size.width(),
+  menu_->SetBounds(StartX(), OffsetY(menu_size), menu_size.width(),
                    menu_size.height());
 
   GetDelegate()->extension_host()->view()->SetBounds(

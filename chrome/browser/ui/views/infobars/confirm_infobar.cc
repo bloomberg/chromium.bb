@@ -33,28 +33,28 @@ void ConfirmInfoBar::Layout() {
 
   int available_width = std::max(0, EndX() - StartX() - ContentMinimumWidth());
   gfx::Size label_size = label_->GetPreferredSize();
-  label_->SetBounds(StartX(), OffsetY(this, label_size),
+  label_->SetBounds(StartX(), OffsetY(label_size),
       std::min(label_size.width(), available_width), label_size.height());
   available_width = std::max(0, available_width - label_size.width());
 
   int button_x = label_->bounds().right() + kEndOfLabelSpacing;
   if (ok_button_ != NULL) {
     gfx::Size ok_size = ok_button_->GetPreferredSize();
-    ok_button_->SetBounds(button_x, OffsetY(this, ok_size), ok_size.width(),
+    ok_button_->SetBounds(button_x, OffsetY(ok_size), ok_size.width(),
                           ok_size.height());
     button_x += ok_size.width() + kButtonButtonSpacing;
   }
 
   if (cancel_button_ != NULL) {
     gfx::Size cancel_size = cancel_button_->GetPreferredSize();
-    cancel_button_->SetBounds(button_x, OffsetY(this, cancel_size),
+    cancel_button_->SetBounds(button_x, OffsetY(cancel_size),
                               cancel_size.width(), cancel_size.height());
   }
 
   if (link_ != NULL) {
     gfx::Size link_size = link_->GetPreferredSize();
     int link_width = std::min(link_size.width(), available_width);
-    link_->SetBounds(EndX() - link_width, OffsetY(this, link_size), link_width,
+    link_->SetBounds(EndX() - link_width, OffsetY(link_size), link_width,
                      link_size.height());
   }
 }

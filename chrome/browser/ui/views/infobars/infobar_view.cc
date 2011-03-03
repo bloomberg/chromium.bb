@@ -241,7 +241,7 @@ void InfoBarView::Layout() {
   int start_x = kHorizontalPadding;
   if (icon_ != NULL) {
     gfx::Size icon_size = icon_->GetPreferredSize();
-    icon_->SetBounds(start_x, OffsetY(this, icon_size), icon_size.width(),
+    icon_->SetBounds(start_x, OffsetY(icon_size), icon_size.width(),
                      icon_size.height());
     start_x += icon_->bounds().right();
   }
@@ -249,7 +249,7 @@ void InfoBarView::Layout() {
   gfx::Size button_size = close_button_->GetPreferredSize();
   close_button_->SetBounds(std::max(start_x + ContentMinimumWidth(),
       width() - kHorizontalPadding - button_size.width()),
-      OffsetY(this, button_size), button_size.width(), button_size.height());
+      OffsetY(button_size), button_size.width(), button_size.height());
 }
 
 void InfoBarView::ViewHierarchyChanged(bool is_add, View* parent, View* child) {
@@ -358,8 +358,8 @@ int InfoBarView::CenterY(const gfx::Size prefsize) const {
   return std::max((target_height_ - prefsize.height()) / 2, 0);
 }
 
-int InfoBarView::OffsetY(View* parent, const gfx::Size prefsize) const {
-  return CenterY(prefsize) - (target_height_ - parent->height());
+int InfoBarView::OffsetY(const gfx::Size prefsize) const {
+  return CenterY(prefsize) - (target_height_ - height());
 }
 
 AccessibilityTypes::Role InfoBarView::GetAccessibleRole() {

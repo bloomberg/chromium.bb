@@ -32,17 +32,17 @@ void LinkInfoBar::Layout() {
   // view because its subsequent view will be too small to show an ellipsis.
   gfx::Size label_1_size = label_1_->GetPreferredSize();
   int available_width = EndX() - StartX();
-  label_1_->SetBounds(StartX(), OffsetY(this, label_1_size),
+  label_1_->SetBounds(StartX(), OffsetY(label_1_size),
       std::min(label_1_size.width(), available_width), label_1_size.height());
   available_width = std::max(0, available_width - label_1_size.width());
 
   gfx::Size link_size = link_->GetPreferredSize();
-  link_->SetBounds(label_1_->bounds().right(), OffsetY(this, link_size),
+  link_->SetBounds(label_1_->bounds().right(), OffsetY(link_size),
       std::min(link_size.width(), available_width), link_size.height());
   available_width = std::max(0, available_width - link_size.width());
 
   gfx::Size label_2_size = label_2_->GetPreferredSize();
-  label_2_->SetBounds(link_->bounds().right(), OffsetY(this, label_2_size),
+  label_2_->SetBounds(link_->bounds().right(), OffsetY(label_2_size),
       std::min(label_2_size.width(), available_width), label_2_size.height());
 }
 

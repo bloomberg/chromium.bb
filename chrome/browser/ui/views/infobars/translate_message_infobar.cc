@@ -22,7 +22,7 @@ void TranslateMessageInfoBar::Layout() {
   TranslateInfoBarBase::Layout();
 
   gfx::Size label_size = label_->GetPreferredSize();
-  label_->SetBounds(StartX(), OffsetY(this, label_size),
+  label_->SetBounds(StartX(), OffsetY(label_size),
       std::min(label_size.width(),
                std::max(0, EndX() - StartX() - ContentMinimumWidth())),
       label_size.height());
@@ -30,7 +30,7 @@ void TranslateMessageInfoBar::Layout() {
   if (button_) {
     gfx::Size button_size = button_->GetPreferredSize();
     button_->SetBounds(label_->bounds().right() + kButtonInLabelSpacing,
-        OffsetY(this, button_size), button_size.width(), button_size.height());
+        OffsetY(button_size), button_size.width(), button_size.height());
   }
 }
 
