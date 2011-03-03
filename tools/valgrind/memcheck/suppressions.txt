@@ -819,8 +819,6 @@
    Memcheck:Leak
    fun:_Znw*
    ...
-   fun:_ZN30ChromeURLRequestContextFactoryC2EP7Profile
-   ...
    fun:_ZN19RenderMessageFilterC1EP22ResourceDispatcherHostiP13PluginServicePN8printing15PrintJobManagerEP7ProfileP18RenderWidgetHelper
    fun:_ZN24BrowserRenderProcessHost20CreateMessageFiltersEv
    fun:_ZN24BrowserRenderProcessHost4InitEbb
