@@ -203,8 +203,8 @@ bool InstallUtil::DeleteRegistryKey(RegKey& root_key,
   VLOG(1) << "Deleting registry key " << key_path;
   LONG result = root_key.DeleteKey(key_path.c_str());
   if (result != ERROR_SUCCESS && result != ERROR_FILE_NOT_FOUND) {
-    PLOG(ERROR) << "Failed to delete registry key: " << key_path
-                << " error: " << result;
+    LOG(ERROR) << "Failed to delete registry key: " << key_path
+               << " error: " << result;
     return false;
   }
   return true;

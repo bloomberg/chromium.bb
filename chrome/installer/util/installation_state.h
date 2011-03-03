@@ -12,10 +12,17 @@
 #include "base/command_line.h"
 #include "base/file_path.h"
 #include "base/scoped_ptr.h"
+#include "chrome/installer/util/app_commands.h"
 #include "chrome/installer/util/browser_distribution.h"
 #include "chrome/installer/util/channel_info.h"
 
 class Version;
+
+namespace base {
+namespace win {
+class RegKey;
+}
+}
 
 namespace installer {
 
@@ -64,15 +71,22 @@ class ProductState {
   // True if |uninstall_command| contains --multi-install.
   bool is_multi_install() const { return multi_install_; }
 
+  // Returns the set of Google Update commands.
+  const AppCommands& commands() const { return commands_; }
+
   // Returns this object a la operator=().
   ProductState& CopyFrom(const ProductState& other);
 
  protected:
+  static bool InitializeCommands(const base::win::RegKey& version_key,
+                                 AppCommands* commands);
+
   ChannelInfo channel_;
   scoped_ptr<Version> version_;
   scoped_ptr<Version> old_version_;
   std::wstring rename_cmd_;
   CommandLine uninstall_command_;
+  AppCommands commands_;
   bool msi_;
   bool multi_install_;
 

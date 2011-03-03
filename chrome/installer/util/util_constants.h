@@ -135,6 +135,7 @@ extern const wchar_t kChromeLauncherExe[];
 extern const wchar_t kChromeNaCl64Dll[];
 extern const wchar_t kChromeOldExe[];
 extern const wchar_t kChromeNewExe[];
+extern const wchar_t kCmdQuickEnableCf[];
 extern const wchar_t kGoogleChromeInstallSubDir1[];
 extern const wchar_t kGoogleChromeInstallSubDir2[];
 extern const wchar_t kInstallBinaryDir[];

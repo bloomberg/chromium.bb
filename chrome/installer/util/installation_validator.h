@@ -6,6 +6,7 @@
 #define CHROME_INSTALLER_UTIL_INSTALLATION_VALIDATOR_H_
 #pragma once
 
+#include <map>
 #include <string>
 #include <utility>
 #include <vector>
@@ -23,6 +24,7 @@ class Version;
 namespace installer {
 
 class InstallationState;
+class AppCommand;
 class ProductState;
 
 // A class that validates the state of an installation.  Violations are logged
@@ -76,7 +78,12 @@ class InstallationValidator {
                                        InstallationType* type);
 
  protected:
+  struct ProductContext;
   typedef std::vector<std::pair<std::string, bool> > SwitchExpectations;
+  typedef void (*CommandValidatorFn)(const ProductContext& ctx,
+                                     const AppCommand& command,
+                                     bool* is_valid);
+  typedef std::map<std::wstring, CommandValidatorFn> CommandExpectations;
 
   // An interface to product-specific validation rules.
   class ProductRules {
@@ -112,6 +119,17 @@ class InstallationValidator {
         SwitchExpectations* expectations) const OVERRIDE;
   };
 
+  // Validation rules for the multi-install Chrome binaries.
+  class ChromeBinariesRules : public ProductRules {
+   public:
+    virtual BrowserDistribution::Type distribution_type() const OVERRIDE;
+    virtual void AddProductSwitchExpectations(
+        const InstallationState& machine_state,
+        bool system_install,
+        const ProductState& product_state,
+        SwitchExpectations* expectations) const OVERRIDE;
+  };
+
   struct ProductContext {
     const InstallationState& machine_state;
     bool system_install;
@@ -120,6 +138,15 @@ class InstallationValidator {
     const ProductRules& rules;
   };
 
+  static void ValidateQuickEnableCfCommand(const ProductContext& ctx,
+                                           const AppCommand& command,
+                                           bool* is_valid);
+  static void ValidateAppCommandExpectations(
+      const ProductContext& ctx,
+      const CommandExpectations& expectations,
+      bool* is_valid);
+  static void ValidateBinariesCommands(const ProductContext& ctx,
+                                       bool* is_valid);
   static void ValidateBinaries(const InstallationState& machine_state,
                                bool system_install,
                                const ProductState& binaries_state,
@@ -143,6 +170,8 @@ class InstallationValidator {
                                        bool* is_valid);
   static void ValidateMultiInstallProduct(const ProductContext& ctx,
                                           bool* is_valid);
+  static void ValidateAppCommands(const ProductContext& ctx,
+                                  bool* is_valid);
   static void ValidateProduct(const InstallationState& machine_state,
                               bool system_install,
                               const ProductState& product_state,

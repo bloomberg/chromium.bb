@@ -615,6 +615,9 @@ void AddInstallWorkItems(const InstallationState& original_state,
 
   AddGoogleUpdateWorkItems(installer_state, install_list);
 
+  AddQuickEnableWorkItems(installer_state, original_state, &setup_path,
+                          &new_version, install_list);
+
   // Append the tasks that run after the installation.
   AppendPostInstallTasks(installer_state,
                          setup_path,
@@ -898,6 +901,141 @@ void RefreshElevationPolicy() {
     FreeLibrary(ieframe);
   } else {
     VLOG(1) << "Cannot load " << kIEFrameDll;
+  }
+}
+
+void AddQuickEnableWorkItems(const InstallerState& installer_state,
+                             const InstallationState& machine_state,
+                             const FilePath* setup_path,
+                             const Version* new_version,
+                             WorkItemList* work_item_list) {
+  DCHECK(setup_path ||
+         installer_state.operation() == InstallerState::UNINSTALL);
+  DCHECK(new_version ||
+         installer_state.operation() == InstallerState::UNINSTALL);
+  DCHECK(work_item_list);
+
+  const bool system_install = installer_state.system_install();
+  bool have_multi_chrome = false;
+  bool have_chrome_frame = false;
+
+  // STEP 1: Figure out the state of the machine before the operation.
+  const ProductState* product_state = NULL;
+
+  // Is multi-install Chrome already on the machine?
+  product_state =
+      machine_state.GetProductState(system_install,
+                                    BrowserDistribution::CHROME_BROWSER);
+  if (product_state != NULL && product_state->is_multi_install())
+    have_multi_chrome = true;
+
+  // Is Chrome Frame !ready-mode already on the machine?
+  product_state =
+      machine_state.GetProductState(system_install,
+                                    BrowserDistribution::CHROME_FRAME);
+  if (product_state != NULL &&
+      !product_state->uninstall_command().HasSwitch(
+          switches::kChromeFrameReadyMode))
+    have_chrome_frame = true;
+
+  // STEP 2: Now take into account the current operation.
+  const Product* product = NULL;
+
+  if (installer_state.operation() == InstallerState::UNINSTALL) {
+    // Forget about multi-install Chrome if it is being uninstalled.
+    product =
+        installer_state.FindProduct(BrowserDistribution::CHROME_BROWSER);
+    if (product != NULL && installer_state.is_multi_install())
+      have_multi_chrome = false;
+
+    // Forget about Chrome Frame if it is being uninstalled.  Note that we don't
+    // bother to check !HasOption(kOptionReadyMode) since have_chrome_frame
+    // should have been false for that case in the first place.  It's odd if it
+    // wasn't, but the right thing to do in that case is to proceed with the
+    // thought that CF will not be installed in any sense when we reach the
+    // finish line.
+    if (installer_state.FindProduct(BrowserDistribution::CHROME_FRAME) != NULL)
+      have_chrome_frame = false;
+  } else {
+    // Check if we're installing multi-install Chrome.
+    product =
+        installer_state.FindProduct(BrowserDistribution::CHROME_BROWSER);
+    if (product != NULL && installer_state.is_multi_install())
+      have_multi_chrome = true;
+
+    // Check if we're installing Chrome Frame !ready-mode.
+    product = installer_state.FindProduct(BrowserDistribution::CHROME_FRAME);
+    if (product != NULL && !product->HasOption(kOptionReadyMode))
+      have_chrome_frame = true;
+  }
+
+  // STEP 3: Decide what to do based on the final state of things.
+  enum QuickEnableOperation {
+    DO_NOTHING,
+    ADD_COMMAND,
+    REMOVE_COMMAND
+  } operation = DO_NOTHING;
+  FilePath binaries_setup_path;
+
+  if (have_chrome_frame) {
+    // Chrome Frame !ready-mode is or will be installed.  Unconditionally remove
+    // the quick-enable-cf command from the binaries.  We do this even if
+    // multi-install Chrome isn't installed since we don't want them left
+    // behind in any case.
+    operation = REMOVE_COMMAND;
+  } else if (have_multi_chrome) {
+    // Chrome Frame isn't (to be) installed or is (to be) installed only in
+    // ready-mode, while multi-install Chrome is (to be) installed.  Add the
+    // quick-enable-cf command to the binaries.
+    operation = ADD_COMMAND;
+    // The path to setup.exe contains the version of the Chrome binaries, so it
+    // takes a little work to get it right.
+    if (installer_state.operation() == InstallerState::UNINSTALL) {
+      // Chrome Frame is being uninstalled.  Use the path to the currently
+      // installed Chrome setup.exe.
+      product_state =
+          machine_state.GetProductState(system_install,
+                                        BrowserDistribution::CHROME_BROWSER);
+      DCHECK(product_state);
+      binaries_setup_path = product_state->uninstall_command().GetProgram();
+    } else {
+      // Chrome is being installed, updated, or otherwise being operated on.
+      // Use the path to the given |setup_path| in the normal location of
+      // multi-install Chrome of the given |version|.
+      DCHECK(installer_state.is_multi_install());
+      binaries_setup_path =
+          installer_state.GetInstallerDirectory(*new_version).Append(
+              setup_path->BaseName());
+    }
+  }
+
+  // STEP 4: Take action.
+  if (operation != DO_NOTHING) {
+    // Get the path to the quick-enable-cf command for the binaries.
+    BrowserDistribution* binaries =
+        BrowserDistribution::GetSpecificDistribution(
+            BrowserDistribution::CHROME_BINARIES);
+    std::wstring cmd_key(binaries->GetVersionKey());
+    cmd_key.append(1, L'\\').append(google_update::kRegCommandsKey)
+        .append(1, L'\\').append(kCmdQuickEnableCf);
+
+    if (operation == ADD_COMMAND) {
+      DCHECK(!binaries_setup_path.empty());
+      CommandLine cmd_line(binaries_setup_path);
+      cmd_line.AppendSwitch(switches::kMultiInstall);
+      if (installer_state.system_install())
+        cmd_line.AppendSwitch(switches::kSystemLevel);
+      if (installer_state.verbose_logging())
+        cmd_line.AppendSwitch(switches::kVerboseLogging);
+      cmd_line.AppendSwitch(switches::kChromeFrameQuickEnable);
+      AppCommand cmd(cmd_line.command_line_string(), true, true);
+      cmd.AddWorkItems(installer_state.root_key(), cmd_key, work_item_list);
+    } else {
+      DCHECK(operation == REMOVE_COMMAND);
+      work_item_list->AddDeleteRegKeyWorkItem(installer_state.root_key(),
+                                              cmd_key)->set_log_message(
+          "removing quick-enable-cf command");
+    }
   }
 }
 

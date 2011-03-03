@@ -42,7 +42,7 @@ InstallStatus CheckQuickEnablePreconditions(
     return NON_MULTI_INSTALLATION_EXISTS;
   }
 
-  // Chrome Frame must not be installed.
+  // Chrome Frame must not be installed (ready-mode doesn't count).
   const ProductState* cf_state =
       machine_state.GetProductState(installer_state.system_install(),
                                     BrowserDistribution::CHROME_FRAME);
@@ -52,7 +52,9 @@ InstallStatus CheckQuickEnablePreconditions(
                                              BrowserDistribution::CHROME_FRAME);
   }
 
-  if (cf_state != NULL) {
+  if (cf_state != NULL &&
+      !cf_state->uninstall_command().HasSwitch(
+          switches::kChromeFrameReadyMode)) {
     LOG(ERROR) << "Chrome Frame already installed.";
     return installer_state.system_install() ?
         SYSTEM_LEVEL_INSTALL_EXISTS : USER_LEVEL_INSTALL_EXISTS;
@@ -119,6 +121,12 @@ InstallStatus ChromeFrameQuickEnable(const InstallationState& machine_state,
       installer_state->AddProductFromState(BrowserDistribution::CHROME_BROWSER,
                                            *chrome_state);
       AddGoogleUpdateWorkItems(*installer_state, item_list.get());
+
+      // Add the items to remove the quick-enable-cf command from the registry.
+      AddQuickEnableWorkItems(*installer_state, machine_state,
+                              &chrome_state->uninstall_command().GetProgram(),
+                              &chrome_state->version(),
+                              item_list.get());
 
       if (!item_list->Do()) {
         item_list->Rollback();

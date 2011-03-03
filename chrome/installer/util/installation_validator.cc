@@ -7,6 +7,7 @@
 #include "chrome/installer/util/installation_validator.h"
 
 #include <algorithm>
+#include <set>
 
 #include "base/logging.h"
 #include "base/version.h"
@@ -63,6 +64,19 @@ void InstallationValidator::ChromeFrameRules::AddProductSwitchExpectations(
                                          false));
 }
 
+BrowserDistribution::Type
+    InstallationValidator::ChromeBinariesRules::distribution_type() const {
+  return BrowserDistribution::CHROME_BINARIES;
+}
+
+void InstallationValidator::ChromeBinariesRules::AddProductSwitchExpectations(
+    const InstallationState& machine_state,
+    bool system_install,
+    const ProductState& product_state,
+    SwitchExpectations* expectations) const {
+  NOTREACHED();
+}
+
 // static
 const InstallationValidator::InstallationType
     InstallationValidator::kInstallationTypes[] = {
@@ -76,6 +90,102 @@ const InstallationValidator::InstallationType
   CHROME_FRAME_MULTI_CHROME_MULTI,
   CHROME_FRAME_READY_MODE_CHROME_MULTI
 };
+
+// Validates the "quick-enable-cf" Google Update product command.
+void InstallationValidator::ValidateQuickEnableCfCommand(
+    const ProductContext& ctx,
+    const AppCommand& command,
+    bool* is_valid) {
+  DCHECK(is_valid);
+
+  CommandLine the_command(CommandLine::FromString(command.command_line()));
+
+  ValidateSetupPath(ctx, the_command.GetProgram(), "quick enable cf", is_valid);
+
+  SwitchExpectations expected;
+
+  expected.push_back(
+      std::make_pair(std::string(switches::kChromeFrameQuickEnable), true));
+  expected.push_back(std::make_pair(std::string(switches::kSystemLevel),
+                                    ctx.system_install));
+  expected.push_back(std::make_pair(std::string(switches::kMultiInstall),
+                                    ctx.state.is_multi_install()));
+
+  ValidateCommandExpectations(ctx, the_command, expected, "quick enable cf",
+                              is_valid);
+
+  if (!command.sends_pings()) {
+    *is_valid = false;
+    LOG(ERROR) << "Quick-enable-cf command is not configured to send pings.";
+  }
+
+  if (!command.is_web_accessible()) {
+    *is_valid = false;
+    LOG(ERROR) << "Quick-enable-cf command is not web accessible.";
+  }
+}
+
+// Validates a product's set of Google Update product commands against a
+// collection of expectations.
+void InstallationValidator::ValidateAppCommandExpectations(
+    const ProductContext& ctx,
+    const CommandExpectations& expectations,
+    bool* is_valid) {
+  DCHECK(is_valid);
+
+  CommandExpectations the_expectations(expectations);
+
+  AppCommands::CommandMapRange cmd_iterators(
+      ctx.state.commands().GetIterators());
+  CommandExpectations::iterator expectation;
+  for (; cmd_iterators.first != cmd_iterators.second; ++cmd_iterators.first) {
+    const std::wstring& cmd_id = cmd_iterators.first->first;
+    // Do we have an expectation for this command?
+    expectation = the_expectations.find(cmd_id);
+    if (expectation != the_expectations.end()) {
+      (expectation->second)(ctx, cmd_iterators.first->second, is_valid);
+      // Remove this command from the set of expectations since we found it.
+      the_expectations.erase(expectation);
+    } else {
+      *is_valid = false;
+      LOG(ERROR) << ctx.dist->GetAppShortCutName()
+                 << " has an unexpected Google Update product command named \""
+                 << cmd_id << "\".";
+    }
+  }
+
+  // Report on any expected commands that weren't present.
+  CommandExpectations::const_iterator scan(the_expectations.begin());
+  CommandExpectations::const_iterator end(the_expectations.end());
+  for (; scan != end; ++scan) {
+    *is_valid = false;
+    LOG(ERROR) << ctx.dist->GetAppShortCutName()
+               << " is missing the Google Update product command named \""
+               << scan->first << "\".";
+  }
+}
+
+// Validates the multi-install binaries' Google Update commands.
+void InstallationValidator::ValidateBinariesCommands(
+    const ProductContext& ctx,
+    bool* is_valid) {
+  DCHECK(is_valid);
+
+  // The quick-enable-cf command must be present if Chrome is installed either
+  // alone or with CF in ready-mode.
+  const ChannelInfo& channel = ctx.state.channel();
+  const ProductState* chrome_state = ctx.machine_state.GetProductState(
+      ctx.system_install, BrowserDistribution::CHROME_BROWSER);
+  const ProductState* cf_state = ctx.machine_state.GetProductState(
+      ctx.system_install, BrowserDistribution::CHROME_FRAME);
+
+  CommandExpectations expectations;
+
+  if (chrome_state != NULL && (cf_state == NULL || channel.IsReadyMode()))
+    expectations[kCmdQuickEnableCf] = &ValidateQuickEnableCfCommand;
+
+  ValidateAppCommandExpectations(ctx, expectations, is_valid);
+}
 
 // Validates the multi-install binaries at level |system_level|.
 void InstallationValidator::ValidateBinaries(
@@ -159,6 +269,17 @@ void InstallationValidator::ValidateBinaries(
     LOG(ERROR) << "Chrome Binaries are present without Chrome yet Chrome Frame "
                   "is not multi-install.";
   }
+
+  ChromeBinariesRules binaries_rules;
+  ProductContext ctx = {
+    machine_state,
+    system_install,
+    BrowserDistribution::GetSpecificDistribution(
+        BrowserDistribution::CHROME_BINARIES),
+    binaries_state,
+    binaries_rules
+  };
+  ValidateBinariesCommands(ctx, is_valid);
 }
 
 // Validates the path to |setup_exe| for the product described by |ctx|.
@@ -183,7 +304,7 @@ void InstallationValidator::ValidateSetupPath(const ProductContext& ctx,
   if (!FilePath::CompareEqualIgnoreCase(expected_path.value(),
                                         setup_exe.value())) {
     *is_valid = false;
-    LOG(ERROR) << ctx.dist->GetApplicationName() << " path to " << purpose
+    LOG(ERROR) << ctx.dist->GetAppShortCutName() << " path to " << purpose
                << " is not " << expected_path.value() << ": "
                << setup_exe.value();
   }
@@ -201,7 +322,7 @@ void InstallationValidator::ValidateCommandExpectations(
     const SwitchExpectations::value_type& expectation = expected[i];
     if (command.HasSwitch(expectation.first) != expectation.second) {
       *is_valid = false;
-      LOG(ERROR) << ctx.dist->GetApplicationName() << " " << source
+      LOG(ERROR) << ctx.dist->GetAppShortCutName() << " " << source
                  << (expectation.second ? " is missing" : " has") << " \""
                  << expectation.first << "\""
                  << (expectation.second ? "" : " but shouldn't") << ": "
@@ -271,14 +392,14 @@ void InstallationValidator::ValidateOldVersionValues(
   if (ctx.state.old_version() == NULL) {
     if (!ctx.state.rename_cmd().empty()) {
       *is_valid = false;
-      LOG(ERROR) << ctx.dist->GetApplicationName()
+      LOG(ERROR) << ctx.dist->GetAppShortCutName()
                  << " has a rename command but no opv: "
                  << ctx.state.rename_cmd();
     }
   } else {
     if (ctx.state.rename_cmd().empty()) {
       *is_valid = false;
-      LOG(ERROR) << ctx.dist->GetApplicationName()
+      LOG(ERROR) << ctx.dist->GetAppShortCutName()
                  << " has an opv but no rename command: "
                  << ctx.state.old_version()->GetString();
     } else {
@@ -301,7 +422,7 @@ void InstallationValidator::ValidateMultiInstallProduct(
   // Version must match that of binaries.
   if (ctx.state.version().CompareTo(binaries->version()) != 0) {
     *is_valid = false;
-    LOG(ERROR) << "Version of " << ctx.dist->GetApplicationName()
+    LOG(ERROR) << "Version of " << ctx.dist->GetAppShortCutName()
                << " (" << ctx.state.version().GetString() << ") does not "
                   "match that of Chrome Binaries ("
                << binaries->version().GetString() << ").";
@@ -310,11 +431,21 @@ void InstallationValidator::ValidateMultiInstallProduct(
   // Channel value must match that of binaries.
   if (!ctx.state.channel().Equals(binaries->channel())) {
     *is_valid = false;
-    LOG(ERROR) << "Channel name of " << ctx.dist->GetApplicationName()
+    LOG(ERROR) << "Channel name of " << ctx.dist->GetAppShortCutName()
                << " (" << ctx.state.channel().value()
                << ") does not match that of Chrome Binaries ("
                << binaries->channel().value() << ").";
   }
+}
+
+// Validates the Google Update commands for the product described in |ctx|.
+void InstallationValidator::ValidateAppCommands(
+    const ProductContext& ctx,
+    bool* is_valid) {
+  DCHECK(is_valid);
+
+  // Products are not expected to have any commands.
+  ValidateAppCommandExpectations(ctx, CommandExpectations(), is_valid);
 }
 
 // Validates the product described in |product_state| according to |rules|.
@@ -340,6 +471,8 @@ void InstallationValidator::ValidateProduct(
 
   if (product_state.is_multi_install())
     ValidateMultiInstallProduct(ctx, is_valid);
+
+  ValidateAppCommands(ctx, is_valid);
 }
 
 // static

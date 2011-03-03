@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <map>
+
 #include "base/command_line.h"
 #include "base/file_path.h"
 #include "base/logging.h"
@@ -18,9 +20,11 @@
 using installer::ChannelInfo;
 using installer::InstallationValidator;
 using installer::InstallationState;
+using installer::AppCommand;
 using installer::ProductState;
 using testing::_;
 using testing::StrictMock;
+using testing::Values;
 
 namespace {
 
@@ -75,15 +79,27 @@ class FakeProductState : public ProductState {
                            const char* version,
                            int channel_modifiers,
                            Vehicle vehicle);
+  void AddQuickEnableCfCommand(BrowserDistribution::Type dist_type,
+                               Level install_level,
+                               const char* version,
+                               int channel_modifiers);
+  void RemoveQuickEnableCfCommand(BrowserDistribution::Type dist_type);
   void set_multi_install(bool is_multi_install) {
     multi_install_ = is_multi_install;
   }
+  installer::AppCommands& commands() { return commands_; }
 
  protected:
   struct ChannelMethodForModifier {
     ChannelModifier modifier;
     bool (ChannelInfo::*method)(bool value);
   };
+
+  static FilePath GetSetupExePath(
+      BrowserDistribution::Type dist_type,
+      Level install_level,
+      const char* version,
+      int channel_modifiers);
 
   static const ChannelMethodForModifier kChannelMethods[];
 };
@@ -112,12 +128,29 @@ const FakeProductState::ChannelMethodForModifier
   { CM_FULL,         &ChannelInfo::SetFullSuffix }
 };
 
+// static
+FilePath FakeProductState::GetSetupExePath(BrowserDistribution::Type dist_type,
+                                           Level install_level,
+                                           const char* version,
+                                           int channel_modifiers) {
+  const bool is_multi_install = (channel_modifiers & CM_MULTI) != 0;
+  FilePath setup_path = installer::GetChromeInstallPath(
+      install_level == SYSTEM_LEVEL,
+      BrowserDistribution::GetSpecificDistribution(is_multi_install ?
+              BrowserDistribution::CHROME_BINARIES : dist_type));
+  return setup_path
+      .AppendASCII(version)
+      .Append(installer::kInstallerDir)
+      .Append(installer::kSetupExe);
+}
+
 void FakeProductState::Clear() {
   channel_.set_value(std::wstring());
   version_.reset();
   old_version_.reset();
   rename_cmd_.clear();
   uninstall_command_ = CommandLine(CommandLine::NO_PROGRAM);
+  commands_.Clear();
   msi_ = false;
   multi_install_ = false;
 }
@@ -146,15 +179,8 @@ void FakeProductState::SetUninstallCommand(BrowserDistribution::Type dist_type,
   DCHECK(version);
 
   const bool is_multi_install = (channel_modifiers & CM_MULTI) != 0;
-  FilePath setup_path = installer::GetChromeInstallPath(
-      install_level == SYSTEM_LEVEL,
-      BrowserDistribution::GetSpecificDistribution(is_multi_install ?
-              BrowserDistribution::CHROME_BINARIES : dist_type));
-  setup_path = setup_path
-      .AppendASCII(version)
-      .Append(installer::kInstallerDir)
-      .Append(installer::kSetupExe);
-  uninstall_command_ = CommandLine(setup_path);
+  uninstall_command_ = CommandLine(GetSetupExePath(dist_type, install_level,
+                                                   version, channel_modifiers));
   uninstall_command_.AppendSwitch(installer::switches::kUninstall);
   if (install_level == SYSTEM_LEVEL)
     uninstall_command_.AppendSwitch(installer::switches::kSystemLevel);
@@ -167,6 +193,12 @@ void FakeProductState::SetUninstallCommand(BrowserDistribution::Type dist_type,
         uninstall_command_.AppendSwitch(
             installer::switches::kChromeFrameReadyMode);
       }
+    } else if (dist_type == BrowserDistribution::CHROME_FRAME) {
+      uninstall_command_.AppendSwitch(installer::switches::kChromeFrame);
+      if ((channel_modifiers & CM_READY_MODE) != 0) {
+        uninstall_command_.AppendSwitch(
+            installer::switches::kChromeFrameReadyMode);
+      }
     }
   } else if (dist_type == BrowserDistribution::CHROME_FRAME) {
     uninstall_command_.AppendSwitch(installer::switches::kChromeFrame);
@@ -175,22 +207,31 @@ void FakeProductState::SetUninstallCommand(BrowserDistribution::Type dist_type,
     uninstall_command_.AppendSwitch(installer::switches::kMsi);
 }
 
-// Populates |chrome_state| with the state of a valid Chrome browser
-// installation.  |channel_modifiers|, a field of bits defined by enum
-// ChannelModifier, dictate properties of the installation (multi-install,
-// ready-mode, etc).
-void MakeChromeState(Level install_level,
-                     Channel channel,
-                     int channel_modifiers,
-                     Vehicle vehicle,
-                     FakeProductState* chrome_state) {
-  chrome_state->Clear();
-  chrome_state->SetChannel(kChromeChannels[channel], channel_modifiers);
-  chrome_state->SetVersion(chrome::kChromeVersion);
-  chrome_state->SetUninstallCommand(BrowserDistribution::CHROME_BROWSER,
-                                    install_level, chrome::kChromeVersion,
-                                    channel_modifiers, vehicle);
-  chrome_state->set_multi_install((channel_modifiers & CM_MULTI) != 0);
+// Adds the "quick-enable-cf" Google Update product command.
+void FakeProductState::AddQuickEnableCfCommand(
+    BrowserDistribution::Type dist_type,
+    Level install_level,
+    const char* version,
+    int channel_modifiers) {
+  DCHECK_EQ(dist_type, BrowserDistribution::CHROME_BINARIES);
+  DCHECK_NE(channel_modifiers & CM_MULTI, 0);
+
+  CommandLine cmd_line(GetSetupExePath(dist_type, install_level, version,
+                                       channel_modifiers));
+  cmd_line.AppendSwitch(installer::switches::kMultiInstall);
+  if (install_level == SYSTEM_LEVEL)
+    cmd_line.AppendSwitch(installer::switches::kSystemLevel);
+  cmd_line.AppendSwitch(installer::switches::kChromeFrameQuickEnable);
+  commands_.Set(installer::kCmdQuickEnableCf,
+                AppCommand(cmd_line.command_line_string(), true, true));
+}
+
+// Removes the "quick-enable-cf" Google Update product command.
+void FakeProductState::RemoveQuickEnableCfCommand(
+    BrowserDistribution::Type dist_type) {
+  DCHECK_EQ(dist_type, BrowserDistribution::CHROME_BINARIES);
+
+  commands_.Remove(installer::kCmdQuickEnableCf);
 }
 
 }  // namespace
@@ -198,8 +239,22 @@ void MakeChromeState(Level install_level,
 // Fixture for testing the InstallationValidator.  Errors logged by the
 // validator are sent to an optional mock recipient (see
 // set_validation_error_recipient) upon which expectations can be placed.
-class InstallationValidatorTest : public testing::Test {
+class InstallationValidatorTest
+    : public testing::TestWithParam<InstallationValidator::InstallationType> {
+ public:
+
+  // These shouldn't need to be public, but there seems to be some interaction
+  // with parameterized tests that requires it.
+  static void SetUpTestCase();
+  static void TearDownTestCase();
+
+  // Returns the multi channel modifiers for a given installation type.
+  static int GetChannelModifiers(InstallationValidator::InstallationType type);
+
  protected:
+  typedef std::map<InstallationValidator::InstallationType, int>
+      InstallationTypeToModifiers;
+
   class ValidationErrorRecipient {
    public:
     virtual ~ValidationErrorRecipient() { }
@@ -214,8 +269,7 @@ class InstallationValidatorTest : public testing::Test {
                                               const char* message));
   };
 
-  static void SetUpTestCase();
-  static void TearDownTestCase();
+ protected:
   static bool HandleLogMessage(int severity,
                                const char* file,
                                int line,
@@ -223,11 +277,24 @@ class InstallationValidatorTest : public testing::Test {
                                const std::string& str);
   static void set_validation_error_recipient(
       ValidationErrorRecipient* recipient);
-
+  static void MakeProductState(
+      BrowserDistribution::Type prod_type,
+      InstallationValidator::InstallationType inst_type,
+      Level install_level,
+      Channel channel,
+      Vehicle vehicle,
+      FakeProductState* state);
+  static void MakeMachineState(
+      InstallationValidator::InstallationType inst_type,
+      Level install_level,
+      Channel channel,
+      Vehicle vehicle,
+      FakeInstallationState* state);
   virtual void TearDown();
 
   static logging::LogMessageHandlerFunction old_log_message_handler_;
   static ValidationErrorRecipient* validation_error_recipient_;
+  static InstallationTypeToModifiers* type_to_modifiers_;
 };
 
 // static
@@ -239,15 +306,47 @@ InstallationValidatorTest::ValidationErrorRecipient*
     InstallationValidatorTest::validation_error_recipient_ = NULL;
 
 // static
+InstallationValidatorTest::InstallationTypeToModifiers*
+    InstallationValidatorTest::type_to_modifiers_ = NULL;
+
+// static
+int InstallationValidatorTest::GetChannelModifiers(
+    InstallationValidator::InstallationType type) {
+  DCHECK(type_to_modifiers_);
+  DCHECK(type_to_modifiers_->find(type) != type_to_modifiers_->end());
+
+  return (*type_to_modifiers_)[type];
+}
+
+// static
 void InstallationValidatorTest::SetUpTestCase() {
+  DCHECK(type_to_modifiers_ == NULL);
   old_log_message_handler_ = logging::GetLogMessageHandler();
   logging::SetLogMessageHandler(&HandleLogMessage);
+
+  type_to_modifiers_ = new InstallationTypeToModifiers();
+  InstallationTypeToModifiers& ttm = *type_to_modifiers_;
+  ttm[InstallationValidator::NO_PRODUCTS] = 0;
+  ttm[InstallationValidator::CHROME_SINGLE] = 0;
+  ttm[InstallationValidator::CHROME_MULTI] = CM_MULTI | CM_CHROME;
+  ttm[InstallationValidator::CHROME_FRAME_SINGLE] = 0;
+  ttm[InstallationValidator::CHROME_FRAME_SINGLE_CHROME_SINGLE] = 0;
+  ttm[InstallationValidator::CHROME_FRAME_SINGLE_CHROME_MULTI] =
+      CM_MULTI | CM_CHROME;
+  ttm[InstallationValidator::CHROME_FRAME_MULTI] = CM_MULTI | CM_CHROME_FRAME;
+  ttm[InstallationValidator::CHROME_FRAME_MULTI_CHROME_MULTI] =
+      CM_MULTI | CM_CHROME_FRAME | CM_CHROME;
+  ttm[InstallationValidator::CHROME_FRAME_READY_MODE_CHROME_MULTI] =
+      CM_MULTI | CM_CHROME_FRAME | CM_CHROME | CM_READY_MODE;
 }
 
 // static
 void InstallationValidatorTest::TearDownTestCase() {
   logging::SetLogMessageHandler(old_log_message_handler_);
   old_log_message_handler_ = NULL;
+
+  delete type_to_modifiers_;
+  type_to_modifiers_ = NULL;
 }
 
 // static
@@ -257,13 +356,18 @@ bool InstallationValidatorTest::HandleLogMessage(int severity,
                                                  size_t message_start,
                                                  const std::string& str) {
   // All validation failures result in LOG(ERROR)
-  if (severity == logging::LOG_ERROR) {
+  if (severity == logging::LOG_ERROR && !str.empty()) {
+    // Remove the trailing newline, if present.
+    std::streamsize message_length = str.size() - message_start;
+    if (*str.rbegin() == '\n')
+      --message_length;
     if (validation_error_recipient_ != NULL) {
       validation_error_recipient_->ReceiveValidationError(
-          file, line, str.c_str() + message_start);
+          file, line, str.substr(message_start, message_length).c_str());
     } else {
       // Fail the test if an error wasn't handled.
-      ADD_FAILURE_AT(file, line) << (str.c_str() + message_start);
+      ADD_FAILURE_AT(file, line)
+          << base::StringPiece(str.c_str() + message_start, message_length);
     }
     return true;
   }
@@ -280,36 +384,125 @@ void InstallationValidatorTest::set_validation_error_recipient(
   validation_error_recipient_ = recipient;
 }
 
+// static
+// Populates |state| with the state of a valid installation of product
+// |prod_type|.  |inst_type| dictates properties of the installation
+// (multi-install, ready-mode, etc).
+void InstallationValidatorTest::MakeProductState(
+    BrowserDistribution::Type prod_type,
+    InstallationValidator::InstallationType inst_type,
+    Level install_level,
+    Channel channel,
+    Vehicle vehicle,
+    FakeProductState* state) {
+  DCHECK(state);
+
+  const bool is_multi_install =
+      prod_type == BrowserDistribution::CHROME_BINARIES ||
+      (prod_type == BrowserDistribution::CHROME_BROWSER &&
+       (inst_type & InstallationValidator::ProductBits::CHROME_MULTI) != 0) ||
+      (prod_type == BrowserDistribution::CHROME_FRAME &&
+       (inst_type &
+           (InstallationValidator::ProductBits::CHROME_FRAME_MULTI |
+            InstallationValidator::ProductBits::CHROME_FRAME_READY_MODE)) != 0);
+
+  const wchar_t* const* channels = &kChromeChannels[0];
+  if (prod_type == BrowserDistribution::CHROME_FRAME && !is_multi_install)
+    channels = &kChromeFrameChannels[0];  // SxS GCF has its own channel names.
+  const int channel_modifiers =
+      is_multi_install ? GetChannelModifiers(inst_type) : 0;
+
+  state->Clear();
+  state->SetChannel(channels[channel], channel_modifiers);
+  state->SetVersion(chrome::kChromeVersion);
+  state->SetUninstallCommand(prod_type, install_level, chrome::kChromeVersion,
+                             channel_modifiers, vehicle);
+  state->set_multi_install(is_multi_install);
+  if (prod_type == BrowserDistribution::CHROME_BINARIES &&
+      (inst_type == InstallationValidator::CHROME_MULTI ||
+       inst_type ==
+           InstallationValidator::CHROME_FRAME_READY_MODE_CHROME_MULTI)) {
+    state->AddQuickEnableCfCommand(prod_type, install_level,
+                                   chrome::kChromeVersion, channel_modifiers);
+  }
+}
+
+// static
+// Populates |state| with the state of a valid installation of |inst_type|.
+void InstallationValidatorTest::MakeMachineState(
+    InstallationValidator::InstallationType inst_type,
+    Level install_level,
+    Channel channel,
+    Vehicle vehicle,
+    FakeInstallationState* state) {
+  DCHECK(state);
+
+  static const int kChromeMask =
+      (InstallationValidator::ProductBits::CHROME_SINGLE |
+       InstallationValidator::ProductBits::CHROME_MULTI);
+  static const int kChromeFrameMask =
+      (InstallationValidator::ProductBits::CHROME_FRAME_SINGLE |
+       InstallationValidator::ProductBits::CHROME_FRAME_MULTI |
+       InstallationValidator::ProductBits::CHROME_FRAME_READY_MODE);
+  static const int kBinariesMask =
+      (InstallationValidator::ProductBits::CHROME_MULTI |
+       InstallationValidator::ProductBits::CHROME_FRAME_MULTI |
+       InstallationValidator::ProductBits::CHROME_FRAME_READY_MODE);
+
+  FakeProductState prod_state;
+
+  if ((inst_type & kChromeMask) != 0) {
+    MakeProductState(BrowserDistribution::CHROME_BROWSER, inst_type,
+                     install_level, channel, vehicle, &prod_state);
+    state->SetProductState(BrowserDistribution::CHROME_BROWSER, install_level,
+                           prod_state);
+  }
+
+  if ((inst_type & kChromeFrameMask) != 0) {
+    MakeProductState(BrowserDistribution::CHROME_FRAME, inst_type,
+                     install_level, channel, vehicle, &prod_state);
+    state->SetProductState(BrowserDistribution::CHROME_FRAME, install_level,
+                           prod_state);
+  }
+
+  if ((inst_type & kBinariesMask) != 0) {
+    MakeProductState(BrowserDistribution::CHROME_BINARIES, inst_type,
+                     install_level, channel, vehicle, &prod_state);
+    state->SetProductState(BrowserDistribution::CHROME_BINARIES, install_level,
+                           prod_state);
+  }
+}
+
 void InstallationValidatorTest::TearDown() {
   validation_error_recipient_ = NULL;
 }
 
-// Test that NO_PRODUCTS is returned.
-TEST_F(InstallationValidatorTest, NoProducts) {
-  InstallationState empty_state;
-  InstallationValidator::InstallationType type =
-      static_cast<InstallationValidator::InstallationType>(-1);
-  StrictMock<MockValidationErrorRecipient> recipient;
-  set_validation_error_recipient(&recipient);
-
-  EXPECT_TRUE(InstallationValidator::ValidateInstallationTypeForState(
-                  empty_state, true, &type));
-  EXPECT_EQ(InstallationValidator::NO_PRODUCTS, type);
-}
-
-// Test valid single Chrome.
-TEST_F(InstallationValidatorTest, ChromeVersion) {
-  FakeProductState chrome_state;
+// Builds a proper machine state for a given InstallationType, then validates
+// it.
+TEST_P(InstallationValidatorTest, TestValidInstallation) {
+  const InstallationValidator::InstallationType inst_type = GetParam();
   FakeInstallationState machine_state;
   InstallationValidator::InstallationType type;
   StrictMock<MockValidationErrorRecipient> recipient;
   set_validation_error_recipient(&recipient);
 
-  MakeChromeState(SYSTEM_LEVEL, STABLE_CHANNEL, 0, GOOGLE_UPDATE,
-                  &chrome_state);
-  machine_state.SetProductState(BrowserDistribution::CHROME_BROWSER,
-                                SYSTEM_LEVEL, chrome_state);
+  MakeMachineState(inst_type, SYSTEM_LEVEL, STABLE_CHANNEL, GOOGLE_UPDATE,
+                   &machine_state);
   EXPECT_TRUE(InstallationValidator::ValidateInstallationTypeForState(
                   machine_state, true, &type));
-  EXPECT_EQ(InstallationValidator::CHROME_SINGLE, type);
+  EXPECT_EQ(inst_type, type);
 }
+
+// Run the test for all installation types.
+INSTANTIATE_TEST_CASE_P(
+    AllValidInstallations,
+    InstallationValidatorTest,
+    Values(InstallationValidator::NO_PRODUCTS,
+           InstallationValidator::CHROME_SINGLE,
+           InstallationValidator::CHROME_MULTI,
+           InstallationValidator::CHROME_FRAME_SINGLE,
+           InstallationValidator::CHROME_FRAME_SINGLE_CHROME_SINGLE,
+           InstallationValidator::CHROME_FRAME_SINGLE_CHROME_MULTI,
+           InstallationValidator::CHROME_FRAME_MULTI,
+           InstallationValidator::CHROME_FRAME_MULTI_CHROME_MULTI,
+           InstallationValidator::CHROME_FRAME_READY_MODE_CHROME_MULTI));

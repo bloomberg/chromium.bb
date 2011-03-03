@@ -1083,7 +1083,8 @@ int WINAPI wWinMain(HINSTANCE instance, HINSTANCE prev_instance,
         cmd_line.HasSwitch(
             installer::switches::kRemoveChromeRegistration) ||
         cmd_line.HasSwitch(installer::switches::kInactiveUserToast) ||
-        cmd_line.HasSwitch(installer::switches::kSystemLevelToast)) {
+        cmd_line.HasSwitch(installer::switches::kSystemLevelToast) ||
+        cmd_line.HasSwitch(installer::switches::kChromeFrameQuickEnable)) {
       return installer::SXS_OPTION_NOT_SUPPORTED;
     }
   }

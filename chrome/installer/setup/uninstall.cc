@@ -102,6 +102,20 @@ void ProcessGoogleUpdateItems(
   }
 }
 
+// Adds or removes the quick-enable-cf command to the binaries' version key in
+// the registry as needed.
+void ProcessQuickEnableWorkItems(
+    const installer::InstallerState& installer_state,
+    const installer::InstallationState& machine_state) {
+  scoped_ptr<WorkItemList> work_item_list(
+      WorkItem::CreateNoRollbackWorkItemList());
+
+  AddQuickEnableWorkItems(installer_state, machine_state, NULL, NULL,
+                          work_item_list.get());
+  if (!work_item_list->Do())
+    LOG(ERROR) << "Failed to update quick-enable-cf command.";
+}
+
 }  // namespace
 
 namespace installer {
@@ -358,9 +372,9 @@ bool MoveSetupOutOfInstallFolder(const InstallerState& installer_state,
 
 DeleteResult DeleteFilesAndFolders(const InstallerState& installer_state,
                                    const Version& installed_version) {
-  VLOG(1) << "DeleteFilesAndFolders: " << installer_state.target_path().value();
-  if (installer_state.target_path().empty()) {
-    LOG(ERROR) << "Could not get installation destination path.";
+  const FilePath& target_path = installer_state.target_path();
+  if (target_path.empty()) {
+    LOG(ERROR) << "DeleteFilesAndFolders: no installation destination path.";
     return DELETE_FAILED;  // Nothing else we can do to uninstall, so we return.
   }
 
@@ -369,32 +383,30 @@ DeleteResult DeleteFilesAndFolders(const InstallerState& installer_state,
   // Avoid leaving behind a Temp dir.  If one exists, ask SelfCleaningTempDir to
   // clean it up for us.  This may involve scheduling it for deletion after
   // reboot.  Don't report that a reboot is required in this case, however.
-  FilePath temp_path(
-      installer_state.target_path().DirName().Append(kInstallTempDir));
+  FilePath temp_path(target_path.DirName().Append(kInstallTempDir));
   if (file_util::DirectoryExists(temp_path)) {
     installer::SelfCleaningTempDir temp_dir;
-    if (!temp_dir.Initialize(installer_state.target_path().DirName(),
-                             kInstallTempDir) || !temp_dir.Delete())
+    if (!temp_dir.Initialize(target_path.DirName(), kInstallTempDir) ||
+        !temp_dir.Delete()) {
       LOG(ERROR) << "Failed to delete temp dir " << temp_path.value();
+    }
   }
 
-  VLOG(1) << "Deleting install path " << installer_state.target_path().value();
-  if (!file_util::Delete(installer_state.target_path(), true)) {
-    LOG(ERROR) << "Failed to delete folder (1st try): "
-               << installer_state.target_path().value();
+  VLOG(1) << "Deleting install path " << target_path.value();
+  if (!file_util::Delete(target_path, true)) {
+    LOG(ERROR) << "Failed to delete folder (1st try): " << target_path.value();
     if (installer_state.FindProduct(BrowserDistribution::CHROME_FRAME)) {
       // We don't try killing Chrome processes for Chrome Frame builds since
       // that is unlikely to help. Instead, schedule files for deletion and
       // return a value that will trigger a reboot prompt.
-      ScheduleDirectoryForDeletion(
-          installer_state.target_path().value().c_str());
+      ScheduleDirectoryForDeletion(target_path.value().c_str());
       result = DELETE_REQUIRES_REBOOT;
     } else {
       // Try closing any running chrome processes and deleting files once again.
       CloseAllChromeProcesses();
-      if (!file_util::Delete(installer_state.target_path(), true)) {
+      if (!file_util::Delete(target_path, true)) {
         LOG(ERROR) << "Failed to delete folder (2nd try): "
-                   << installer_state.target_path().value();
+                   << target_path.value();
         result = DELETE_FAILED;
       }
     }
@@ -404,11 +416,11 @@ DeleteResult DeleteFilesAndFolders(const InstallerState& installer_state,
     // If we need a reboot to continue, schedule the parent directories for
     // deletion unconditionally. If they are not empty, the session manager
     // will not delete them on reboot.
-    ScheduleParentAndGrandparentForDeletion(installer_state.target_path());
+    ScheduleParentAndGrandparentForDeletion(target_path);
   } else {
     // Now check and delete if the parent directories are empty
     // For example Google\Chrome or Chromium
-    DeleteEmptyParentDir(installer_state.target_path());
+    DeleteEmptyParentDir(target_path);
   }
   return result;
 }
@@ -681,6 +693,8 @@ InstallStatus UninstallProduct(const InstallationState& original_state,
     DeleteChromeRegistrationKeys(product.distribution(), HKEY_LOCAL_MACHINE,
                                  suffix, ret);
   }
+
+  ProcessQuickEnableWorkItems(installer_state, original_state);
 
   // Get the state of the installed product (if any)
   const ProductState* product_state =

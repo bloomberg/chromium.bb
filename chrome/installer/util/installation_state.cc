@@ -25,6 +25,20 @@ bool ProductState::Initialize(bool system_install,
                     BrowserDistribution::GetSpecificDistribution(type));
 }
 
+// Initializes |commands| from the "Commands" subkey of |version_key|.
+// Returns false if there is no "Commands" subkey or on error.
+// static
+bool ProductState::InitializeCommands(const base::win::RegKey& version_key,
+                                      AppCommands* commands) {
+  static const DWORD kAccess = KEY_ENUMERATE_SUB_KEYS | KEY_QUERY_VALUE;
+  base::win::RegKey commands_key;
+
+  if (commands_key.Open(version_key.Handle(), google_update::kRegCommandsKey,
+                        kAccess) == ERROR_SUCCESS)
+    return commands->Initialize(commands_key);
+  return false;
+}
+
 bool ProductState::Initialize(bool system_install,
                               BrowserDistribution* distribution) {
   const std::wstring version_key(distribution->GetVersionKey());
@@ -47,6 +61,8 @@ bool ProductState::Initialize(bool system_install,
       if (key.ReadValue(google_update::kRegRenameCmdField,
                         &rename_cmd_) != ERROR_SUCCESS)
         rename_cmd_.clear();
+      if (!InitializeCommands(key, &commands_))
+        commands_.Clear();
       // Read from the ClientState key.
       channel_.set_value(std::wstring());
       uninstall_command_ = CommandLine(CommandLine::NO_PROGRAM);
@@ -99,6 +115,7 @@ ProductState& ProductState::CopyFrom(const ProductState& other) {
       other.old_version_.get() == NULL ? NULL : other.old_version_->Clone());
   rename_cmd_ = other.rename_cmd_;
   uninstall_command_ = other.uninstall_command_;
+  commands_.CopyFrom(other.commands_);
   msi_ = other.msi_;
   multi_install_ = other.multi_install_;
 

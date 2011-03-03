@@ -25,27 +25,34 @@ extern const wchar_t kRegPathClients[];
 extern const wchar_t kRegPathClientState[];
 extern const wchar_t kRegPathClientStateMedium[];
 
+// The name of the "Commands" key that lives in an app's Clients key
+// (a.k.a. "Version" key).
+extern const wchar_t kRegCommandsKey[];
+
 extern const wchar_t kRegApField[];
 extern const wchar_t kRegBrowserField[];
+extern const wchar_t kRegCFEndTempOptOutCmdField[];
+extern const wchar_t kRegCFOptInCmdField[];
+extern const wchar_t kRegCFOptOutCmdField[];
+extern const wchar_t kRegCFTempOptOutCmdField[];
 extern const wchar_t kRegClientField[];
+extern const wchar_t kRegCommandLineField[];
 extern const wchar_t kRegDidRunField[];
+extern const wchar_t kRegEULAAceptedField[];
 extern const wchar_t kRegLangField[];
 extern const wchar_t kRegLastCheckedField[];
 extern const wchar_t kRegMetricsId[];
 extern const wchar_t kRegMSIField[];
 extern const wchar_t kRegNameField[];
-extern const wchar_t kRegOopcrashesField[];
 extern const wchar_t kRegOldVersionField[];
-extern const wchar_t kRegRenameCmdField[];
+extern const wchar_t kRegOopcrashesField[];
 extern const wchar_t kRegRLZBrandField[];
+extern const wchar_t kRegReferralField[];
+extern const wchar_t kRegRenameCmdField[];
+extern const wchar_t kRegSendsPingsField[];
 extern const wchar_t kRegUsageStatsField[];
 extern const wchar_t kRegVersionField[];
-extern const wchar_t kRegReferralField[];
-extern const wchar_t kRegEULAAceptedField[];
-extern const wchar_t kRegCFTempOptOutCmdField[];
-extern const wchar_t kRegCFEndTempOptOutCmdField[];
-extern const wchar_t kRegCFOptOutCmdField[];
-extern const wchar_t kRegCFOptInCmdField[];
+extern const wchar_t kRegWebAccessibleField[];
 
 // last time that chrome ran in the Time internal format.
 extern const wchar_t kRegLastRunTimeField[];

@@ -136,6 +136,19 @@ void AppendUninstallCommandLineFlags(const InstallerState& installer_state,
 // Refreshes the elevation policy on platforms where it is supported.
 void RefreshElevationPolicy();
 
+// Add work items to add or remove the "quick-enable-cf" to the multi-installer
+// binaries' version key on the basis of the current operation (represented in
+// |installer_state|) and the pre-existing machine configuration (represented in
+// |machine_state|).  |setup_path| (the path to the executable currently being
+// run) and |new_version| (the version of the product(s) currently being
+// installed) are required when processing product installation; they are unused
+// (and may therefore be NULL) when uninstalling.
+void AddQuickEnableWorkItems(const InstallerState& installer_state,
+                             const InstallationState& machine_state,
+                             const FilePath* setup_path,
+                             const Version* new_version,
+                             WorkItemList* work_item_list);
+
 }  // namespace installer
 
 #endif  // CHROME_INSTALLER_SETUP_INSTALL_WORKER_H_
