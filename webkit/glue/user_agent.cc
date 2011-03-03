@@ -71,7 +71,7 @@ std::string BuildOSCpuInfo() {
       os_bugfix_version
 #elif defined(OS_CHROMEOS)
       "CrOS %s %d.%d.%d",
-      cputype.c_str(),  // e.g. i686
+      cputype.c_str(),   // e.g. i686
       os_major_version,
       os_minor_version,
       os_bugfix_version
@@ -88,13 +88,13 @@ std::string BuildOSCpuInfo() {
 void BuildUserAgent(bool mimic_windows, std::string* result) {
   const char kUserAgentPlatform[] =
 #if defined(OS_WIN)
-      "Windows";
+      "";
 #elif defined(OS_MACOSX)
-      "Macintosh";
+      "Macintosh; ";
 #elif defined(USE_X11)
-      "X11";              // strange, but that's what Firefox uses
+      "X11; ";           // strange, but that's what Firefox uses
 #else
-      "?";
+      "Unknown; ";
 #endif
 
   // Get the product name and version, and replace Safari's Version/X string
@@ -105,10 +105,10 @@ void BuildUserAgent(bool mimic_windows, std::string* result) {
   // Derived from Safari's UA string.
   base::StringAppendF(
       result,
-      "Mozilla/5.0 (%s; %s) AppleWebKit/%d.%d"
+      "Mozilla/5.0 (%s%s) AppleWebKit/%d.%d"
       " (KHTML, like Gecko) %s Safari/%d.%d",
-      mimic_windows ? "Windows" : kUserAgentPlatform,
-      ((mimic_windows ? "Windows " : "") + BuildOSCpuInfo()).c_str(),
+      mimic_windows ? "Windows " : kUserAgentPlatform,
+      BuildOSCpuInfo().c_str(),
       WEBKIT_VERSION_MAJOR,
       WEBKIT_VERSION_MINOR,
       product.c_str(),
