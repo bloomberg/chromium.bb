@@ -204,8 +204,8 @@ void ManifestFetchesBuilder::AddPendingExtension(
       Version::GetVersionFromString("0.0.0.0"));
 
   AddExtensionData(
-      info.install_source, id, *version,
-      Extension::TYPE_UNKNOWN, info.update_url, "");
+      info.install_source(), id, *version,
+      Extension::TYPE_UNKNOWN, info.update_url(), "");
 }
 
 void ManifestFetchesBuilder::ReportStats() const {
@@ -768,7 +768,7 @@ void ExtensionUpdater::CheckNow() {
       service_->pending_extensions();
   for (PendingExtensionMap::const_iterator iter = pending_extensions.begin();
        iter != pending_extensions.end(); ++iter) {
-    Extension::Location location = iter->second.install_source;
+    Extension::Location location = iter->second.install_source();
     if (location != Extension::EXTERNAL_PREF &&
         location != Extension::EXTERNAL_REGISTRY)
       fetches_builder.AddPendingExtension(iter->first, iter->second);

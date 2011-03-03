@@ -2066,9 +2066,9 @@ TEST_F(ExtensionServiceTest, AddPendingExtensionFromSync) {
   PendingExtensionMap::const_iterator it =
       service_->pending_extensions().find(kFakeId);
   ASSERT_TRUE(it != service_->pending_extensions().end());
-  EXPECT_EQ(kFakeUpdateURL, it->second.update_url);
-  EXPECT_EQ(&IsExtension, it->second.should_install_extension);
-  EXPECT_EQ(kFakeInstallSilently, it->second.install_silently);
+  EXPECT_EQ(kFakeUpdateURL, it->second.update_url());
+  EXPECT_EQ(&IsExtension, it->second.should_allow_install_);
+  EXPECT_EQ(kFakeInstallSilently, it->second.install_silently());
 }
 
 namespace {
@@ -2182,7 +2182,7 @@ TEST_F(ExtensionServiceTest, UpdatePendingExternalCrxWinsOverSync) {
   PendingExtensionMap::const_iterator it;
   it = service_->pending_extensions().find(kGoodId);
   ASSERT_TRUE(it != service_->pending_extensions().end());
-  EXPECT_TRUE(it->second.is_from_sync);
+  EXPECT_TRUE(it->second.is_from_sync());
 
   // Add a crx to be updated, with the same ID, from a non-sync source.
   service_->AddPendingExtensionFromExternalUpdateUrl(
@@ -2191,7 +2191,8 @@ TEST_F(ExtensionServiceTest, UpdatePendingExternalCrxWinsOverSync) {
   // Check that there is a pending crx, with is_from_sync set to false.
   it = service_->pending_extensions().find(kGoodId);
   ASSERT_TRUE(it != service_->pending_extensions().end());
-  EXPECT_FALSE(it->second.is_from_sync);
+  EXPECT_FALSE(it->second.is_from_sync());
+  EXPECT_EQ(Extension::EXTERNAL_PREF_DOWNLOAD, it->second.install_source());
 
   // Add a crx to be installed from the update mechanism.
   service_->AddPendingExtensionFromSync(
@@ -2202,7 +2203,8 @@ TEST_F(ExtensionServiceTest, UpdatePendingExternalCrxWinsOverSync) {
   // Check that the external, non-sync update was not overridden.
   it = service_->pending_extensions().find(kGoodId);
   ASSERT_TRUE(it != service_->pending_extensions().end());
-  EXPECT_FALSE(it->second.is_from_sync);
+  EXPECT_FALSE(it->second.is_from_sync());
+  EXPECT_EQ(Extension::EXTERNAL_PREF_DOWNLOAD, it->second.install_source());
 }
 
 // Updating a theme should fail if the updater is explicitly told that

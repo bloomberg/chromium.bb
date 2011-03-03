@@ -27,6 +27,7 @@
 #include "chrome/browser/extensions/extension_toolbar_model.h"
 #include "chrome/browser/extensions/extensions_quota_service.h"
 #include "chrome/browser/extensions/external_extension_provider_interface.h"
+#include "chrome/browser/extensions/pending_extension_info.h"
 #include "chrome/browser/extensions/sandboxed_extension_unpacker.h"
 #include "chrome/browser/prefs/pref_change_registrar.h"
 #include "chrome/common/notification_observer.h"
@@ -42,40 +43,6 @@ class ExtensionUpdater;
 class GURL;
 class Profile;
 class Version;
-
-typedef bool (*ShouldInstallExtensionPredicate)(const Extension&);
-
-// A pending extension is an extension that hasn't been installed yet
-// and is intended to be installed in the next auto-update cycle.  The
-// update URL of a pending extension may be blank, in which case a
-// default one is assumed.
-struct PendingExtensionInfo {
-  PendingExtensionInfo(
-      const GURL& update_url,
-      ShouldInstallExtensionPredicate should_install_extension,
-      bool is_from_sync,
-      bool install_silently,
-      bool enable_on_install,
-      bool enable_incognito_on_install,
-      Extension::Location install_source);
-
-  PendingExtensionInfo();
-
-  GURL update_url;
-  // When the extension is about to be installed, this function is
-  // called.  If this function returns true, the install proceeds.  If
-  // this function returns false, the install is aborted.
-  ShouldInstallExtensionPredicate should_install_extension;
-  bool is_from_sync;  // This update check was initiated from sync.
-  bool install_silently;
-  bool enable_on_install;
-  bool enable_incognito_on_install;
-  Extension::Location install_source;
-};
-
-// A PendingExtensionMap is a map from IDs of pending extensions to
-// their info.
-typedef std::map<std::string, PendingExtensionInfo> PendingExtensionMap;
 
 // This is an interface class to encapsulate the dependencies that
 // ExtensionUpdater has on ExtensionService. This allows easy mocking.
@@ -239,7 +206,7 @@ class ExtensionService
   // pre-enabled permissions.
   void AddPendingExtensionFromSync(
       const std::string& id, const GURL& update_url,
-      ShouldInstallExtensionPredicate should_install_extension,
+      PendingExtensionInfo::ShouldAllowInstallPredicate should_allow_install,
       bool install_silently, bool enable_on_install,
       bool enable_incognito_on_install);
 
@@ -486,7 +453,7 @@ class ExtensionService
   // extension with the same id is not already installed.
   void AddPendingExtensionInternal(
       const std::string& id, const GURL& update_url,
-      ShouldInstallExtensionPredicate should_install_extension,
+      PendingExtensionInfo::ShouldAllowInstallPredicate should_allow_install,
       bool is_from_sync, bool install_silently,
       bool enable_on_install, bool enable_incognito_on_install,
       Extension::Location install_source);

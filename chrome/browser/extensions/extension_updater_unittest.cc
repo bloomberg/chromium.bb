@@ -147,16 +147,15 @@ bool ShouldAlwaysInstall(const Extension& extension) {
 void CreateTestPendingExtensions(int count, const GURL& update_url,
                                  PendingExtensionMap* pending_extensions) {
   for (int i = 1; i <= count; i++) {
-    ShouldInstallExtensionPredicate should_install_extension =
-        (i % 2 == 0) ? &ShouldInstallThemesOnly :
-        &ShouldInstallExtensionsOnly;
+    PendingExtensionInfo::ShouldAllowInstallPredicate should_allow_install =
+        (i % 2 == 0) ? &ShouldInstallThemesOnly : &ShouldInstallExtensionsOnly;
     const bool kIsFromSync = true;
     const bool kInstallSilently = true;
     const Extension::State kInitialState = Extension::ENABLED;
     const bool kInitialIncognitoEnabled = false;
     std::string id = GenerateId(base::StringPrintf("extension%i", i));
     (*pending_extensions)[id] =
-        PendingExtensionInfo(update_url, should_install_extension,
+        PendingExtensionInfo(update_url, should_allow_install,
                              kIsFromSync, kInstallSilently, kInitialState,
                              kInitialIncognitoEnabled, Extension::INTERNAL);
   }
