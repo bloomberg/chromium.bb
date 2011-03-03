@@ -854,6 +854,22 @@ int DownloadManager::RemoveAllDownloads() {
   return RemoveDownloadsBetween(base::Time(), base::Time());
 }
 
+void DownloadManager::AddDownloadItemToHistory(DownloadItem* item,
+                                               int64 db_handle) {
+  // It's not immediately obvious, but HistoryBackend::CreateDownload() can
+  // call this function with an invalid |db_handle|.  For instance, this can
+  // happen when the history database is offline. We cannot have multiple
+  // DownloadItems with the same invalid db_handle, so we need to assign a
+  // unique |db_handle| here.
+  if (db_handle == DownloadHistory::kUninitializedHandle)
+    db_handle = download_history_->GetNextFakeDbHandle();
+
+  DCHECK(item->db_handle() == DownloadHistory::kUninitializedHandle);
+  item->set_db_handle(db_handle);
+  DCHECK(!ContainsKey(history_downloads_, db_handle));
+  history_downloads_[db_handle] = item;
+}
+
 void DownloadManager::SavePageAsDownloadStarted(DownloadItem* download_item) {
 #if !defined(NDEBUG)
   save_page_as_downloads_.insert(download_item);
@@ -1005,20 +1021,7 @@ void DownloadManager::OnCreateDownloadEntryComplete(
            << " download_id = " << info.download_id
            << " download = " << download->DebugString(true);
 
-  // It's not immediately obvious, but HistoryBackend::CreateDownload() can
-  // call this function with an invalid |db_handle|. For instance, this can
-  // happen when the history database is offline. We cannot have multiple
-  // DownloadItems with the same invalid db_handle, so we need to assign a
-  // unique |db_handle| here.
-  if (db_handle == DownloadHistory::kUninitializedHandle)
-    db_handle = download_history_->GetNextFakeDbHandle();
-
-  DCHECK(download->db_handle() == DownloadHistory::kUninitializedHandle);
-  download->set_db_handle(db_handle);
-
-  // Insert into our full map.
-  DCHECK(!ContainsKey(history_downloads_, download->db_handle()));
-  history_downloads_[download->db_handle()] = download;
+  AddDownloadItemToHistory(download, db_handle);
 
   // Show in the appropriate browser UI.
   // This includes buttons to save or cancel, for a dangerous download.

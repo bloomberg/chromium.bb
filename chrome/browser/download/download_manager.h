@@ -153,6 +153,10 @@ class DownloadManager
   // Remove the download with id |download_id| from |active_downloads_|.
   void RemoveFromActiveList(int32 download_id);
 
+  // Add DownloadItem to history, validate |db_handle| and store
+  // it in the DownloadItem.
+  void AddDownloadItemToHistory(DownloadItem* item, int64 db_handle);
+
   // Called when a Save Page As download is started. Transfers ownership
   // of |download_item| to the DownloadManager.
   void SavePageAsDownloadStarted(DownloadItem* download_item);

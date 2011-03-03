@@ -19,6 +19,7 @@
 #include "base/task.h"
 #include "base/threading/thread.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/download/download_history.h"
 #include "chrome/browser/download/download_item.h"
 #include "chrome/browser/download/download_item_model.h"
 #include "chrome/browser/download/download_manager.h"
@@ -313,17 +314,10 @@ bool SavePackage::Init() {
 
   request_context_getter_ = profile->GetRequestContext();
 
-  // Create the fake DownloadItem and display the view.
-  DownloadManager* download_manager =
-      tab_contents()->profile()->GetDownloadManager();
-  download_ = new DownloadItem(download_manager,
-                               saved_main_file_path_,
-                               page_url_,
-                               profile->IsOffTheRecord());
-
-  // Transfer the ownership to the download manager. We need the DownloadItem
-  // to be alive as long as the Profile is alive.
-  download_manager->SavePageAsDownloadStarted(download_);
+  // Create the fake DownloadItem and add it to the download history.
+  CreateDownloadItem(saved_main_file_path_,
+                     page_url_,
+                     profile->IsOffTheRecord());
 
   tab_contents()->OnStartDownload(download_);
 
@@ -350,6 +344,41 @@ bool SavePackage::Init() {
   }
 
   return true;
+}
+
+void SavePackage::OnDownloadEntryAdded(DownloadCreateInfo info,
+                                       int64 db_handle) {
+  DownloadManager* download_manager =
+      tab_contents()->profile()->GetDownloadManager();
+
+  download_manager->AddDownloadItemToHistory(download_, db_handle);
+}
+
+void SavePackage::CreateDownloadItem(const FilePath& path,
+                                     const GURL& url,
+                                     bool is_otr) {
+  DownloadManager* download_manager =
+      tab_contents()->profile()->GetDownloadManager();
+
+  download_ = new DownloadItem(download_manager, path, url, is_otr);
+
+  // Transfer the ownership to the download manager. We need the DownloadItem
+  // to be alive as long as the Profile is alive.
+  download_manager->SavePageAsDownloadStarted(download_);
+
+  // Copy over the fields used by the history service.
+  DownloadCreateInfo info(download_->full_path(),
+                          download_->url(),
+                          download_->start_time(),
+                          0, 0,
+                          download_->state(),
+                          download_->id(),
+                          false);
+
+  // Add entry to the history service.
+  DownloadHistory* download_history = download_manager->download_history();
+  download_history->AddEntry(info, download_,
+      NewCallback(this, &SavePackage::OnDownloadEntryAdded));
 }
 
 // On POSIX, the length of |pure_file_name| + |file_name_ext| is further
@@ -690,6 +719,9 @@ void SavePackage::Stop() {
 
   // Inform the DownloadItem we have canceled whole save page job.
   download_->Cancel(false);
+  DownloadManager* download_manager =
+      tab_contents()->profile()->GetDownloadManager();
+  download_manager->download_history()->UpdateEntry(download_);
 }
 
 void SavePackage::CheckFinish() {
@@ -744,9 +776,15 @@ void SavePackage::Finish() {
 
   download_->OnAllDataSaved(all_save_items_count_);
   download_->MarkAsComplete();
+
   // Notify download observers that we are complete (the call
   // to OnReadyToFinish() set the state to complete but did not notify).
   download_->UpdateObservers();
+
+  // Update the download history.
+  DownloadManager* download_manager =
+      tab_contents()->profile()->GetDownloadManager();
+  download_manager->download_history()->UpdateEntry(download_);
 
   NotificationService::current()->Notify(
       NotificationType::SAVE_PACKAGE_SUCCESSFULLY_FINISHED,
