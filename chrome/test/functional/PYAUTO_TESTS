@@ -27,12 +27,6 @@
   'CONTINUOUS': {
     'all': [
       'autofill',
-      # Not part of the continous build.
-      # Used for testing Autofill crowdsourcing.
-      '-autofill.AutoFillTest.testAutofillCrowdsourcing',
-      # Not part of the continous build.
-      # Used for testing Autofill duplicate profile merging.
-      '-autofill.AutoFillTest.testMergeDuplicateProfilesInAutofill',
       # crbug.com/73439
       '-autofill.AutoFillTest.testFilterMalformedEmailAddresses',
       'bookmark_bar',

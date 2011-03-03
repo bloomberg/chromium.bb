@@ -147,7 +147,7 @@ class AutoFillTest(pyauto.PyUITest):
     if 'EMAIL_ADDRESS' in self.GetAutoFillProfile()['profiles'][0]:
       raise KeyError('TEST FAIL: Malformed email address is saved in profiles.')
 
-  def testAutofillCrowdsourcing(self):
+  def AutofillCrowdsourcing(self):
     """Test able to send POST request of web form to Autofill server.
 
     The Autofill server processes the data offline, so it can take a few days
@@ -183,7 +183,7 @@ class AutoFillTest(pyauto.PyUITest):
                              'window.domAutomationController.send("done");',
                              0, 0)
 
-  def testMergeDuplicateProfilesInAutofill(self):
+  def MergeDuplicateProfilesInAutofill(self):
     """Test Autofill ability to merge duplicate profiles and throw away junk."""
     # HTML file needs to be run from a http:// url.
     url = self.GetHttpURLForDataPath(
