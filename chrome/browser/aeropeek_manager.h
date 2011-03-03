@@ -110,9 +110,6 @@ class AeroPeekManager : public TabStripModelObserver,
   virtual void TabInsertedAt(TabContentsWrapper* contents,
                              int index,
                              bool foreground);
-  virtual void TabClosingAt(TabStripModel* tab_strip_model,
-                            TabContentsWrapper* contents,
-                            int index);
   virtual void TabDetachedAt(TabContentsWrapper* contents, int index);
   virtual void TabSelectedAt(TabContentsWrapper* old_contents,
                              TabContentsWrapper* new_contents,
@@ -125,6 +122,10 @@ class AeroPeekManager : public TabStripModelObserver,
   virtual void TabChangedAt(TabContentsWrapper* contents,
                             int index,
                             TabChangeType change_type);
+  virtual void TabReplacedAt(TabStripModel* tab_strip_model,
+                             TabContentsWrapper* old_contents,
+                             TabContentsWrapper* new_contents,
+                             int index);
 
   // Overriden from TabThumbnailWindowDelegate:
   virtual void CloseTab(int tab_id);
@@ -138,9 +139,18 @@ class AeroPeekManager : public TabStripModelObserver,
   // Tab ID.
   void DeleteAeroPeekWindow(int tab_id);
 
+  // If there is an AeroPeekWindow associated with |tab| it is removed and
+  // deleted.
+  void DeleteAeroPeekWindowForTab(TabContentsWrapper* tab);
+
   // Retrieves the AeroPeekWindow object associated with the specified
   // Tab ID.
   AeroPeekWindow* GetAeroPeekWindow(int tab_id) const;
+
+  // If an AeroPeekWindow hasn't been created for |tab| yet, one is created.
+  // |foreground| is true if the tab is selected.
+  void CreateAeroPeekWindowIfNecessary(TabContentsWrapper* tab,
+                                       bool foreground);
 
   // Returns a rectangle that fits into the destination rectangle and keeps
   // the pixel-aspect ratio of the source one.
