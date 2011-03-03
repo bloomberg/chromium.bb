@@ -222,12 +222,13 @@ bool BrowserThread::PostTaskHelper(
     } else {
       message_loop->PostNonNestableDelayedTask(from_here, task, delay_ms);
     }
-  } else {
-    delete task;
   }
 
   if (!guaranteed_to_outlive_target_thread)
     lock_.Release();
+
+  if (!message_loop)
+    delete task;
 
   return !!message_loop;
 }
