@@ -2,10 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_COMMON_SAFEBROWSING_MESSAGES_H_
-#define CHROME_COMMON_SAFEBROWSING_MESSAGES_H_
-#pragma once
+// Multiply-included message file, so no include guard.
 
+#include "chrome/common/common_param_traits.h"
 #include "googleurl/src/gurl.h"
 #include "ipc/ipc_message_macros.h"
 
@@ -23,4 +22,3 @@ IPC_MESSAGE_ROUTED2(SafeBrowsingDetectionHostMsg_DetectedPhishingSite,
 // SafeBrowsing client-side detection messages sent from the browser to the
 // renderer.  TODO(noelutz): move other IPC messages here.
 
-#endif  // CHROME_COMMON_SAFEBROWSING_MESSAGES_H_

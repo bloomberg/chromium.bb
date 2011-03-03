@@ -2,11 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_COMMON_MIME_REGISTRY_MESSAGES_H_
-#define CHROME_COMMON_MIME_REGISTRY_MESSAGES_H_
-#pragma once
+// Multiply-included message file, so no include guard.
 
 #include "base/file_path.h"
+#include "chrome/common/common_param_traits.h"
 #include "ipc/ipc_message_macros.h"
 #include "ipc/ipc_param_traits.h"
 
@@ -25,4 +24,3 @@ IPC_SYNC_MESSAGE_CONTROL1_1(MimeRegistryMsg_GetPreferredExtensionForMimeType,
                             std::string /* mime_type */,
                             FilePath::StringType /* extension */)
 
-#endif  // CHROME_COMMON_MIME_REGISTRY_MESSAGES_H_

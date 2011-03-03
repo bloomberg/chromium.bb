@@ -2,11 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_COMMON_FILE_UTILITIES_MESSAGES_H_
-#define CHROME_COMMON_FILE_UTILITIES_MESSAGES_H_
-#pragma once
+// Multiply-included message file, so no include guard.
 
 #include "base/time.h"
+#include "chrome/common/common_param_traits.h"
 #include "ipc/ipc_message_macros.h"
 #include "ipc/ipc_param_traits.h"
 #include "ipc/ipc_platform_file.h"
@@ -32,4 +31,3 @@ IPC_SYNC_MESSAGE_CONTROL2_1(FileUtilitiesMsg_OpenFile,
                             int /* mode */,
                             IPC::PlatformFileForTransit /* result */)
 
-#endif  // CHROME_COMMON_FILE_UTILITIES_MESSAGES_H_
