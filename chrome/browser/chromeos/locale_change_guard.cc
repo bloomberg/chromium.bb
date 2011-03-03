@@ -7,23 +7,18 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/chromeos/notifications/system_notification.h"
 #include "chrome/browser/metrics/user_metrics.h"
 #include "chrome/browser/notifications/notification_delegate.h"
 #include "chrome/browser/prefs/pref_service.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/common/notification_service.h"
+#include "chrome/common/notification_source.h"
 #include "chrome/common/pref_names.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "grit/app_resources.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
-
-namespace {
-
-base::LazyInstance<chromeos::LocaleChangeGuard> g_locale_change_guard(
-    base::LINKER_INITIALIZED);
-
-}  // namespace
 
 namespace chromeos {
 
@@ -42,16 +37,18 @@ class LocaleChangeGuard::Delegate : public NotificationDelegate {
   DISALLOW_COPY_AND_ASSIGN(Delegate);
 };
 
-LocaleChangeGuard::LocaleChangeGuard()
-    : profile_id_(Profile::kInvalidProfileId),
-      tab_contents_(NULL),
+LocaleChangeGuard::LocaleChangeGuard(Profile* profile)
+    : profile_(profile),
       note_(NULL),
       reverted_(false) {
+  DCHECK(profile_);
+  registrar_.Add(this, NotificationType::LOAD_COMPLETED_MAIN_FRAME,
+                 NotificationService::AllSources());
 }
 
 void LocaleChangeGuard::RevertLocaleChange(const ListValue* list) {
   if (note_ == NULL ||
-      tab_contents_ == NULL ||
+      profile_ == NULL ||
       from_locale_.empty() ||
       to_locale_.empty()) {
     NOTREACHED();
@@ -60,35 +57,40 @@ void LocaleChangeGuard::RevertLocaleChange(const ListValue* list) {
   if (reverted_)
     return;
 
-  PrefService* prefs = tab_contents_->profile()->GetPrefs();
+  PrefService* prefs = profile_->GetPrefs();
   if (prefs == NULL)
     return;
 
   reverted_ = true;
   UserMetrics::RecordAction(UserMetricsAction("LanguageChange_Revert"));
-  tab_contents_->profile()->ChangeAppLocale(
+  profile_->ChangeAppLocale(
       from_locale_, Profile::APP_LOCALE_CHANGED_VIA_REVERT);
 
-  Browser* browser = Browser::GetBrowserForController(
-      &tab_contents_->controller(), NULL);
+  Browser* browser = Browser::GetTabbedBrowser(profile_, false);
   if (browser)
     browser->ExecuteCommand(IDC_EXIT);
 }
 
-void LocaleChangeGuard::CheckLocaleChange(TabContents* tab_contents) {
-  // We want notification to be shown no more than once per session.
-  if (note_ != NULL)
+void LocaleChangeGuard::Observe(NotificationType type,
+                                const NotificationSource& source,
+                                const NotificationDetails& details) {
+  if (type != NotificationType::LOAD_COMPLETED_MAIN_FRAME) {
+    NOTREACHED();
     return;
-  DCHECK(note_ == NULL && tab_contents_ == NULL);
-  DCHECK(from_locale_.empty() && to_locale_.empty());
+  }
+  if (profile_ == NULL) {
+    NOTREACHED();
+    return;
+  }
 
-  // We check profile Id because:
-  // (1) we want to exit fast in common case when nothing should be done.
-  // (2) on ChromeOS this guard may be invoked for a dummy profile first time.
-  ProfileId cur_profile_id = tab_contents->profile()->GetRuntimeId();
-  if (cur_profile_id == profile_id_)
-    return;  // We have already checked this profile, exiting fast.
-  profile_id_ = cur_profile_id;
+  // We need to perform locale change check only once: so we want to
+  // unsubscribe from notifications in any case.
+  registrar_.RemoveAll();
+
+  if (note_ != NULL || !from_locale_.empty() || !to_locale_.empty()) {
+    // Somehow we are notified more than once. Once is enough.
+    return;
+  }
 
   std::string cur_locale = g_browser_process->GetApplicationLocale();
   if (cur_locale.empty()) {
@@ -96,7 +98,7 @@ void LocaleChangeGuard::CheckLocaleChange(TabContents* tab_contents) {
     return;
   }
 
-  PrefService* prefs = tab_contents->profile()->GetPrefs();
+  PrefService* prefs = profile_->GetPrefs();
   if (prefs == NULL)
     return;
 
@@ -118,9 +120,8 @@ void LocaleChangeGuard::CheckLocaleChange(TabContents* tab_contents) {
   // Locale change detected, showing notification.
   from_locale_ = from_locale;
   to_locale_ = to_locale;
-  tab_contents_ = tab_contents;
   note_.reset(new chromeos::SystemNotification(
-      tab_contents->profile(),
+      profile_,
       new Delegate(this),
       IDR_DEFAULT_FAVICON,
       l10n_util::GetStringUTF16(
@@ -138,7 +139,7 @@ void LocaleChangeGuard::CheckLocaleChange(TabContents* tab_contents) {
 
 void LocaleChangeGuard::AcceptLocaleChange() {
   if (note_ == NULL ||
-      tab_contents_ == NULL ||
+      profile_ == NULL ||
       from_locale_.empty() ||
       to_locale_.empty()) {
     NOTREACHED();
@@ -149,7 +150,7 @@ void LocaleChangeGuard::AcceptLocaleChange() {
   // If not: mark current locale as accepted.
   if (reverted_)
     return;
-  PrefService* prefs = tab_contents_->profile()->GetPrefs();
+  PrefService* prefs = profile_->GetPrefs();
   if (prefs == NULL)
     return;
   if (prefs->GetString(prefs::kApplicationLocale) != to_locale_)
@@ -158,11 +159,6 @@ void LocaleChangeGuard::AcceptLocaleChange() {
   prefs->SetString(prefs::kApplicationLocaleBackup, to_locale_);
   prefs->SetString(prefs::kApplicationLocaleAccepted, to_locale_);
   prefs->ScheduleSavePersistentPrefs();
-}
-
-// static
-void LocaleChangeGuard::Check(TabContents* tab_contents) {
-  g_locale_change_guard.Get().CheckLocaleChange(tab_contents);
 }
 
 void LocaleChangeGuard::Delegate::Close(bool by_user) {

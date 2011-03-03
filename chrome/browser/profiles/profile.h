@@ -528,6 +528,9 @@ class Profile {
   virtual void ChangeAppLocale(
       const std::string& locale, AppLocaleChangedVia via) = 0;
 
+  // Called after login.
+  virtual void OnLogin() {}
+
   // Returns ChromeOS's ProxyConfigServiceImpl, creating if not yet created.
   virtual chromeos::ProxyConfigServiceImpl*
       GetChromeOSProxyConfigServiceImpl() = 0;

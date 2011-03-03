@@ -334,6 +334,7 @@ void LoginUtilsImpl::CompleteLogin(
     pref_service->SetBoolean(prefs::kEnableScreenLock, true);
   }
 
+  profile->OnLogin();
   DoBrowserLaunch(profile);
 }
 

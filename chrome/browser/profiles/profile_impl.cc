@@ -124,6 +124,7 @@
 #endif
 
 #if defined(OS_CHROMEOS)
+#include "chrome/browser/chromeos/locale_change_guard.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/chromeos/preferences.h"
 #endif
@@ -1499,6 +1500,10 @@ void ProfileImpl::ChangeAppLocale(
 
   GetPrefs()->ScheduleSavePersistentPrefs();
   local_state->ScheduleSavePersistentPrefs();
+}
+
+void ProfileImpl::OnLogin() {
+  locale_change_guard_.reset(new chromeos::LocaleChangeGuard(this));
 }
 
 chromeos::ProxyConfigServiceImpl*

@@ -319,7 +319,7 @@ TabContents::TabContents(Profile* profile,
   registrar_.Add(this, NotificationType::EXTENSION_UNLOADED,
                  NotificationService::AllSources());
 
-  // Listen for Google URL changes
+  // Listen for Google URL changes.
   registrar_.Add(this, NotificationType::GOOGLE_URL_UPDATED,
                  NotificationService::AllSources());
 
@@ -658,9 +658,6 @@ void TabContents::DidBecomeSelected() {
 
   WebCacheManager::GetInstance()->ObserveActivity(GetRenderProcessHost()->id());
   last_selected_time_ = base::TimeTicks::Now();
-#if defined(OS_CHROMEOS)
-  chromeos::LocaleChangeGuard::Check(this);
-#endif
 }
 
 void TabContents::FadeForInstant(bool animate) {
