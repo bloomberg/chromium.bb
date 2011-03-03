@@ -25,21 +25,23 @@ replay 0 Construct:CiCC:CC *
 replay 0 Deallocate:C: *
 replay 0 PPB_GetInterface:s:i *
 
-replay 0 PPB_Audio_Dev_Create:ii:i *
-replay 0 PPB_Audio_Dev_IsAudio:i:i *
-replay 0 PPB_Audio_Dev_GetCurrentConfig:i:i *
-replay 0 PPB_Audio_Dev_StopPlayback:i:i *
-replay 0 PPB_Audio_Dev_StartPlayback:i:i *
+replay 0 PPB_Audio_Create:ii:i *
+replay 0 PPB_Audio_IsAudio:i:i *
+replay 0 PPB_Audio_GetCurrentConfig:i:i *
+replay 0 PPB_Audio_StopPlayback:i:i *
+replay 0 PPB_Audio_StartPlayback:i:i *
 
-replay 0 PPB_AudioConfig_Dev_CreateStereo16Bit:lii:l *
-replay 0 PPB_AudioConfig_Dev_IsAudioConfig:l:i *
-replay 0 PPB_AudioConfig_Dev_RecommendSampleFrameCount:i:i *
-replay 0 PPB_AudioConfig_Dev_GetSampleRate:l:i *
-replay 0 PPB_AudioConfig_Dev_GetSampleFrameCount:l:i *
+replay 0 PPB_AudioConfig_CreateStereo16Bit:iii:i *
+replay 0 PPB_AudioConfig_IsAudioConfig:i:i *
+replay 0 PPB_AudioConfig_RecommendSampleFrameCount:ii:i *
+replay 0 PPB_AudioConfig_GetSampleRate:i:i *
+replay 0 PPB_AudioConfig_GetSampleFrameCount:i:i *
 
 replay 0 PPB_Core_AddRefResource:i: *
 replay 0 PPB_Core_ReleaseResource:i: *
 replay 0 PPB_Core_GetTime::d *
+replay 0 PPB_Core_CallOnMainThread:iii: *
+
 replay 0 ReleaseResourceMultipleTimes:ii: *
 
 replay 0 PPB_FileIO_Dev_Create:i:i *
