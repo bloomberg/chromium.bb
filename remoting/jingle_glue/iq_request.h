@@ -112,9 +112,7 @@ class XmppIqRequest : public IqRequest, private buzz::XmppIqHandler {
 
   virtual void SendIq(const std::string& type, const std::string& addressee,
                       buzz::XmlElement* iq_body);
-  virtual void set_callback(ReplyCallback* callback) {
-    callback_.reset(callback);
-  }
+  virtual void set_callback(ReplyCallback* callback);
 
  private:
   FRIEND_TEST_ALL_PREFIXES(IqRequestTest, MakeIqStanza);

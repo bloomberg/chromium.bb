@@ -56,6 +56,10 @@ void XmppIqRequest::SendIq(const std::string& type,
   xmpp_client_->engine()->SendIq(stanza.get(), this, &cookie_);
 }
 
+void XmppIqRequest::set_callback(ReplyCallback* callback) {
+  callback_.reset(callback);
+}
+
 void XmppIqRequest::Unregister() {
   if (cookie_) {
     // No need to unregister the handler if the client has been destroyed.

@@ -16,13 +16,15 @@ class PepperXmppProxy : public XmppProxy {
                   MessageLoop* pepper_message_loop);
 
   // Must be run on pepper thread.
-  void AttachScriptableObject(ChromotingScriptableObject* scriptable_object);
+  virtual void AttachScriptableObject(
+      ChromotingScriptableObject* scriptable_object);
 
   // Must be run on jingle thread.
-  void AttachJavascriptIqRequest(JavascriptIqRequest* javascript_iq_request);
+  virtual void AttachJavascriptIqRequest(
+      JavascriptIqRequest* javascript_iq_request);
 
-  void SendIq(const std::string& iq_request_xml);
-  void ReceiveIq(const std::string& iq_response_xml);
+  virtual void SendIq(const std::string& iq_request_xml);
+  virtual void ReceiveIq(const std::string& iq_response_xml);
 
  private:
   ~PepperXmppProxy();
