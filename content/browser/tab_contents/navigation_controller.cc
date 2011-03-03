@@ -243,6 +243,17 @@ NavigationEntry* NavigationController::CreateNavigationEntry(
   entry->set_virtual_url(url);
   entry->set_user_typed_url(url);
   entry->set_update_virtual_url_with_url(reverse_on_redirect);
+  if (url.SchemeIsFile()) {
+    // Use the filename as the title, not the full path.
+    // We need to call FormatUrl() to perform URL de-escaping;
+    // it's a bit ugly to grab the filename out of the resulting string.
+    std::string languages =
+        profile->GetPrefs()->GetString(prefs::kAcceptLanguages);
+    std::wstring formatted = UTF16ToWideHack(net::FormatUrl(url, languages));
+    std::wstring filename =
+        FilePath::FromWStringHack(formatted).BaseName().ToWStringHack();
+    entry->set_title(WideToUTF16Hack(filename));
+  }
   return entry;
 }
 

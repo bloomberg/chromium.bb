@@ -62,11 +62,6 @@ TEST_F(NavigationEntryTest, NavigationEntryURLs) {
   EXPECT_EQ(ASCIIToUTF16("www.google.com"),
             entry1_.get()->GetTitleForDisplay(""));
 
-  // file:/// URLs should only show the filename.
-  entry1_.get()->set_url(GURL("file:///foo/bar baz.txt"));
-  EXPECT_EQ(ASCIIToUTF16("bar baz.txt"),
-            entry1_.get()->GetTitleForDisplay(""));
-
   // Title affects GetTitleForDisplay
   entry1_.get()->set_title(ASCIIToUTF16("Google"));
   EXPECT_EQ(ASCIIToUTF16("Google"), entry1_.get()->GetTitleForDisplay(""));
