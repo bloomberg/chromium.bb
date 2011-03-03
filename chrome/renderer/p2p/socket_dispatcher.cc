@@ -32,14 +32,6 @@ bool P2PSocketDispatcher::OnMessageReceived(const IPC::Message& message) {
   return handled;
 }
 
-P2PSocketClient* P2PSocketDispatcher::CreateSocket(
-    P2PSocketType type, P2PSocketAddress address,
-    P2PSocketClient::Delegate* delegate) {
-  P2PSocketClient* socket = new P2PSocketClient(this);
-  socket->Init(type, address, delegate);
-  return socket;
-}
-
 int P2PSocketDispatcher::RegisterClient(P2PSocketClient* client) {
   return clients_.Add(client);
 }

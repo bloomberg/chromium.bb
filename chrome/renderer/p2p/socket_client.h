@@ -15,20 +15,23 @@ class MessageLoopProxy;
 }  // namespace base
 
 class P2PSocketDispatcher;
-class Task;
 
-// P2P socket that rountes all calls over IPC. It can be created and
-// used from any thread.
+// P2P socket that rountes all calls over IPC.
+//
+// The object runs on two threads: IPC thread and delegate thread. The
+// IPC thread is used to interact with P2PSocketDispatcher. All
+// callbacks to the user of this class are called on the delegate
+// thread which is specified in Init().
 class P2PSocketClient : public base::RefCountedThreadSafe<P2PSocketClient> {
  public:
-  // Delegate is called on the IPC thread.
+  // Delegate is called on the the same thread on the delegate thread.
   class Delegate {
    public:
     virtual ~Delegate() { }
 
-    virtual void OnOpen(P2PSocketAddress address) = 0;
+    virtual void OnOpen(const P2PSocketAddress& address) = 0;
     virtual void OnError() = 0;
-    virtual void OnDataReceived(P2PSocketAddress address,
+    virtual void OnDataReceived(const P2PSocketAddress& address,
                                 const std::vector<char>& data) = 0;
   };
 
@@ -37,14 +40,16 @@ class P2PSocketClient : public base::RefCountedThreadSafe<P2PSocketClient> {
   // Initialize socket of the specified |type| and connected to the
   // specified |address|. |address| matters only when |type| is set to
   // P2P_SOCKET_TCP_CLIENT.
-  void Init(P2PSocketType type, P2PSocketAddress address, Delegate* delegate);
+  void Init(P2PSocketType type, const P2PSocketAddress& address,
+            Delegate* delegate,
+            scoped_refptr<base::MessageLoopProxy> delegate_loop);
 
   // Send the |data| to the |address|.
-  void Send(P2PSocketAddress address, const std::vector<char>& data);
+  void Send(const P2PSocketAddress& address, const std::vector<char>& data);
 
   // Must be called before the socket is destroyed. The delegate may
   // not be called after |closed_task| is executed.
-  void Close(Task* closed_task);
+  void Close();
 
   int socket_id() const { return socket_id_; }
 
@@ -64,16 +69,28 @@ class P2PSocketClient : public base::RefCountedThreadSafe<P2PSocketClient> {
 
   virtual ~P2PSocketClient();
 
-  void OnSocketCreated(P2PSocketAddress address);
+  // Message handlers that run on IPC thread.
+  void OnSocketCreated(const P2PSocketAddress& address);
   void OnError();
-  void OnDataReceived(P2PSocketAddress address,
+  void OnDataReceived(const P2PSocketAddress& address,
                       const std::vector<char>& data);
+
+  // Proxy methods that deliver messages to the delegate thread.
+  void DeliverOnSocketCreated(const P2PSocketAddress& address);
+  void DeliverOnError();
+  void DeliverOnDataReceived(const P2PSocketAddress& address,
+                             const std::vector<char>& data);
+
+  // Scheduled on the IPC thread to finish closing the connection.
+  void DoClose();
+
 
   // Called by the dispatcher when it is destroyed.
   void Detach();
 
   P2PSocketDispatcher* dispatcher_;
-  scoped_refptr<base::MessageLoopProxy> message_loop_;
+  scoped_refptr<base::MessageLoopProxy> ipc_message_loop_;
+  scoped_refptr<base::MessageLoopProxy> delegate_message_loop_;
   int socket_id_;
   Delegate* delegate_;
   State state_;
