@@ -43,6 +43,7 @@ function getAppsCallback(data) {
   apps.detachWebstoreEntry =
       !apps.showPromo && data.apps.length >= MAX_APPS_PER_ROW[layoutMode];
 
+  markNewApps(data.apps);
   apps.data = data.apps;
   if (!apps.detachWebstoreEntry)
     apps.data.push('web-store-entry');
@@ -104,6 +105,21 @@ function getAppsCallback(data) {
     updateMiniviewClipping(appsMiniview);
     layoutSections();
   }
+}
+
+function markNewApps(data) {
+  var oldData = apps.data;
+  data.forEach(function(app) {
+    if (hashParams['app-id'] == app['id']) {
+      delete hashParams['app-id'];
+      app.isNew = true;
+    } else if (oldData &&
+        !oldData.some(function(id) { return id == app.id; })) {
+      app.isNew = true;
+    } else {
+      app.isNew = false;
+    }
+  });
 }
 
 function appsPrefChangeCallback(data) {
@@ -672,7 +688,7 @@ var apps = (function() {
       a.setAttribute('ping',
           getAppPingUrl('PING_BY_ID', this.showPromo, 'NTP_APPS_MAXIMIZED'));
       a.style.backgroundImage = url(app['icon_big']);
-      if (hashParams['app-id'] == app['id']) {
+      if (app.isNew) {
         div.setAttribute('new', 'new');
         // Delay changing the attribute a bit to let the page settle down a bit.
         setTimeout(function() {
@@ -684,12 +700,6 @@ var apps = (function() {
         }, 500);
         div.addEventListener('webkitAnimationEnd', function(e) {
           div.removeAttribute('new');
-
-          // If we get new data (eg because something installs in another tab,
-          // or because we uninstall something here), don't run the install
-          // animation again.
-          document.documentElement.setAttribute("install-animation-enabled",
-                                                "false");
         });
       }
 

@@ -10,6 +10,7 @@
 #include "base/file_util.h"
 #include "base/string_number_conversions.h"
 #include "base/string_util.h"
+#include "base/stringprintf.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/browser_list.h"
 #include "chrome/browser/browser_window.h"
@@ -17,6 +18,7 @@
 #include "chrome/browser/platform_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/tabs/tab_strip_model.h"
+#include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_icon_set.h"
@@ -65,6 +67,28 @@ namespace {
 
 // Size of extension icon in top left of dialog.
 const int kIconSize = 69;
+
+// Shows the application install animation on the new tab page for the app
+// with |app_id|. If a NTP already exists on the active |browser|, this will
+// select that tab and show the animation there. Otherwise, it will create
+// a new NTP.
+void ShowAppInstalledAnimation(Browser* browser, const std::string& app_id) {
+  // Select an already open NTP, if there is one. Existing NTPs will
+  // automatically show the install animation for any new apps.
+  for (int i = 0; i < browser->tab_count(); ++i) {
+    TabContents* tab_contents = browser->GetTabContentsAt(i);
+    GURL url = tab_contents->GetURL();
+    if (StartsWithASCII(url.spec(), chrome::kChromeUINewTabURL, false)) {
+      browser->SelectTabContentsAt(i, false);
+      return;
+    }
+  }
+
+  // If there isn't an NTP, open one and pass it the ID of the installed app.
+  std::string url = base::StringPrintf(
+      "%s/#app-id=%s", chrome::kChromeUINewTabURL, app_id.c_str());
+  browser->AddSelectedTabWithURL(GURL(url), PageTransition::TYPED);
+}
 
 }  // namespace
 
@@ -150,14 +174,7 @@ void ExtensionInstallUI::OnInstallSuccess(const Extension* extension,
   browser->window()->Show();
 
   if (extension->GetFullLaunchURL().is_valid()) {
-    std::string hash_params = "app-id=";
-    hash_params += extension->id();
-
-    std::string url(chrome::kChromeUINewTabURL);
-    url += "/#";
-    url += hash_params;
-    browser->AddSelectedTabWithURL(GURL(url), PageTransition::TYPED);
-
+    ShowAppInstalledAnimation(browser, extension->id());
     return;
   }
 
