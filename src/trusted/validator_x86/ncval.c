@@ -23,6 +23,7 @@
 #include <errno.h>
 #include <sys/timeb.h>
 #include <time.h>
+#include "native_client/src/include/nacl_macros.h"
 #include "native_client/src/shared/platform/nacl_log.h"
 #include "native_client/src/shared/utils/flags.h"
 #include "native_client/src/trusted/validator_x86/nacl_cpuid.h"
@@ -39,7 +40,7 @@
 
 /* Flag defining the name of a hex text to be used as the code segment.
  */
-static char* NACL_FLAGS_hex_text = "";
+static char *NACL_FLAGS_hex_text = "";
 
 /* Define if we should process segments (rather than sections) when applying SFI
  * validator.
@@ -50,6 +51,9 @@ static Bool NACL_FLAGS_analyze_segments = FALSE;
  * Note: Values, other than 1, is only used for profiling.
  */
 static int NACL_FLAGS_validate_attempts = 1;
+
+/* Define the set of CPU features to use while validating. */
+static CPUFeatures ncval_cpu_features;
 
 /***************************************
  * Code to run segment based validator.*
@@ -90,7 +94,7 @@ static void SegmentFatal(const char *fmt, ...) {
  * command line.
  */
 static void NaClMaybeDecodeDataSegment(
-    uint8_t* mbase, NaClPcAddress vbase, NaClMemorySize size) {
+    uint8_t *mbase, NaClPcAddress vbase, NaClMemorySize size) {
   if (NACL_FLAGS_stubout_memory) {
     /* Disassemble data segment to see how halts were inserted. */
     if (!NACL_FLAGS_use_iter) {
@@ -103,7 +107,7 @@ static void NaClMaybeDecodeDataSegment(
 int AnalyzeSegmentSections(ncfile *ncf, struct NCValidatorState *vstate) {
   int badsections = 0;
   int ii;
-  const Elf_Phdr* phdr = ncf->pheaders;
+  const Elf_Phdr *phdr = ncf->pheaders;
 
   for (ii = 0; ii < ncf->phnum; ii++) {
     SegmentDebug(
@@ -127,7 +131,7 @@ int AnalyzeSegmentSections(ncfile *ncf, struct NCValidatorState *vstate) {
   return -badsections;
 }
 
-static void NCValidateResults(int result, const char* fname) {
+static void NCValidateResults(int result, const char *fname) {
   if (result == 0) {
     SegmentDebug("***module %s is safe***\n", fname);
   } else {
@@ -172,7 +176,7 @@ static void NaClReportSafety(Bool success) {
  */
 static void AnalyzeSfiSections(ncfile *ncf, struct NaClValidatorState *vstate) {
   int ii;
-  const Elf_Phdr* phdr = ncf->pheaders;
+  const Elf_Phdr *phdr = ncf->pheaders;
 
   for (ii = 0; ii < ncf->phnum; ii++) {
     /* TODO(karl) fix types for this? */
@@ -201,9 +205,9 @@ static void AnalyzeSfiSections(ncfile *ncf, struct NaClValidatorState *vstate) {
   }
 }
 
-static void AnalyzeSfiSegments(ncfile* ncf, NaClValidatorState* state) {
+static void AnalyzeSfiSegments(ncfile *ncf, NaClValidatorState *state) {
   int ii;
-  const Elf_Shdr* shdr = ncf->sheaders;
+  const Elf_Shdr *shdr = ncf->sheaders;
 
   for (ii = 0; ii < ncf->shnum; ii++) {
     NaClValidatorMessage(
@@ -254,16 +258,16 @@ static Bool AnalyzeSfiCodeSegments(ncfile *ncf, const char *fname) {
 /* Local data to validator run. */
 typedef struct ValidateData {
   /* The name of the elf file to validate. */
-  const char* fname;
+  const char *fname;
   /* The elf file to validate. */
-  ncfile* ncf;
+  ncfile *ncf;
 } ValidateData;
 
 /* Prints out appropriate error message during call to ValidateSfiLoad. */
-static void ValidateSfiLoadPrintError(const char* format,
+static void ValidateSfiLoadPrintError(const char *format,
                                    ...) ATTRIBUTE_FORMAT_PRINTF(1,2);
 
-static void ValidateSfiLoadPrintError(const char* format, ...) {
+static void ValidateSfiLoadPrintError(const char *format, ...) {
   va_list ap;
   va_start(ap, format);
   NaClValidatorVarargMessage(LOG_ERROR, NULL, format, ap);
@@ -271,12 +275,12 @@ static void ValidateSfiLoadPrintError(const char* format, ...) {
 }
 
 /* Loads the elf file defined by fname. For use within ValidateSfiLoad. */
-static ncfile* ValidateSfiLoadFile(const char* fname) {
+static ncfile *ValidateSfiLoadFile(const char *fname) {
   return nc_loadfile_with_error_fn(fname, ValidateSfiLoadPrintError);
 }
 
 /* Load the elf file and return the loaded elf file. */
-static Bool ValidateSfiLoad(int argc, const char* argv[], ValidateData* data) {
+static Bool ValidateSfiLoad(int argc, const char *argv[], ValidateData *data) {
   if (argc != 2) {
     NaClValidatorMessage(LOG_FATAL, NULL, "expected: %s file\n", argv[0]);
   }
@@ -296,7 +300,7 @@ static Bool ValidateSfiLoad(int argc, const char* argv[], ValidateData* data) {
 }
 
 /* Analyze the code segments of the elf file. */
-static Bool ValidateAnalyze(ValidateData* data) {
+static Bool ValidateAnalyze(ValidateData *data) {
   int i;
   Bool results = TRUE;
   for (i = 0; i < NACL_FLAGS_validate_attempts; ++i) {
@@ -324,9 +328,9 @@ typedef struct NaClValidatorByteArray {
   NaClMemorySize num_bytes;
 } NaClValidatorByteArray;
 
-static void SfiHexFatal(const char* format, ...) ATTRIBUTE_FORMAT_PRINTF(1, 2);
+static void SfiHexFatal(const char *format, ...) ATTRIBUTE_FORMAT_PRINTF(1, 2);
 
-static void SfiHexFatal(const char* format, ...) {
+static void SfiHexFatal(const char *format, ...) {
   va_list ap;
   va_start(ap, format);
   NaClLogV(LOG_FATAL, format, ap);
@@ -335,8 +339,8 @@ static void SfiHexFatal(const char* format, ...) {
   exit(0);
 }
 
-static int ValidateSfiHexLoad(int argc, const char* argv[],
-                              NaClValidatorByteArray* data) {
+static int ValidateSfiHexLoad(int argc, const char *argv[],
+                              NaClValidatorByteArray *data) {
   if (argc != 1) {
     SfiHexFatal("expected: %s <options>\n", argv[0]);
   }
@@ -345,7 +349,7 @@ static int ValidateSfiHexLoad(int argc, const char* argv[],
         NaClReadHexTextWithPc(stdin, &data->base, data->bytes,
                               NACL_MAX_INPUT_LINE);
   } else {
-    FILE* input = fopen(NACL_FLAGS_hex_text, "r");
+    FILE *input = fopen(NACL_FLAGS_hex_text, "r");
     if (NULL == input) {
       SfiHexFatal("Can't open hex text file: %s\n", NACL_FLAGS_hex_text);
     }
@@ -370,25 +374,73 @@ static void usage() {
       "\n"
       "Options (general):\n"
       "\n"
+      "--alignment=N\n"
+      "\tSet block alignment to N bytes (only 16 or 32 allowed).\n"
+      "--CLFLUSH\n"
+      "\tModel a CPU that supports the clflush instruction.\n"
+      "--CMOV\n"
+      "\tModel a CPU that supports the cmov instructions.\n"
+      "--cpuid-all\n"
+      "\tModel a CPU that supports all available features.\n"
+      "--cpuid-none\n"
+      "\tModel a CPU that supports no avaliable features.\n"
+      "--CX8\n"
+      "\tModel a CPU that supports the cmpxchg8b instruction.\n"
+      "--FXSR\n"
+      "\tModel a CPU that supports the sfence instructions.\n"
       "--help\n"
       "\tPrint this message, and then exit.\n"
       "--hex_text=<file>\n"
       "\tRead text file of hex bytes, and use that\n"
       "\tas the definition of the code segment. Note: -hex_text=- will\n"
       "\tread from stdin instead of a file.\n"
-      "-t\n"
-      "\tTime the validator and print out results.\n"
-      "--use_iter\n"
-      "\tUse the iterator model. Currently, the x86-64 bit\n"
-      "\tvalidator uses the iterator model while the x86-32 bit model\n"
-      "\tdoes not.\n"
-      "--alignment=N\n"
-      "\tSet block alignment to N bytes (only 16 or 32 allowed).\n"
+      "--local_cpuid\n"
+      "\tSet cpuid to values defined by local host this command is run on.\n"
+      "--LZCNT\n"
+      "\tModel a CPU that supports the lzcnt instruction.\n"
+      "--MMX\n"
+      "\tModel a CPU that supports MMX instructions.\n"
+      "--MOVBE\n"
+      "\tModel a CPU that supports the movbe instruction.\n"
+      "--MSR\n"
+      "\tModel a CPU that supports the rdmsr and wrmsr instructions.\n"
+      "--POPCNT\n"
+      "\tModel a CPU that supports the popcnt instruction.\n"
+      "--SSE\n"
+      "\tModel a CPU that supports SSE instructions.\n"
+      "--SSE2\n"
+      "\tModel a CPU that supports SSE 2 instructions.\n"
+      "--SSE3\n"
+      "\tModel a CPU that supports SSE 3 instructions.\n"
+      "--SSSE3\n"
+      "\tModel a CPU that supports SSSE 3 instructions.\n"
+      "--SSE41\n"
+      "\tModel a CPU that supports SSE 4.1 instructions.\n"
+      "--SSE42\n"
+      "\tModel a CPU that supports SSE 4.2 instructions.\n"
+      "--SSE4A\n"
+      "\tModel a CPU that supports SSE 4A instructions.\n"
       "--stubout\n"
       "\tRun using stubout mode, replacing bad instructions with halts.\n"
       "\tStubbed out disassembly will be printed after validator\n"
       "\terror messages. Note: Only applied if --hex_text option is\n"
       "\talso specified\n"
+      "-t\n"
+      "\tTime the validator and print out results.\n"
+      "--TSC\n"
+      "\tModel a CPU that supports the rdtsc instruction.\n"
+      "--use_iter\n"
+      "\tUse the iterator model. Currently, the x86-64 bit\n"
+      "\tvalidator uses the iterator model while the x86-32 bit model\n"
+      "\tdoes not.\n"
+      "--x87\n"
+      "\tModel a CPU that supports x87 instructions.\n"
+      "--VMX\n"
+      "\tModel a CPU that supports VMX instructions.\n"
+      "--3DNOW\n"
+      "\tModel a CPU that supports 3DNOW instructions.\n"
+      "--E3DNOW\n"
+      "\tModel a CPU that supports E3DNOW instructions.\n"
       "\n"
       "Options (iterator model):\n"
       "--errors\n"
@@ -408,6 +460,8 @@ static void usage() {
       "\tCheck for memory read and write software fault isolation.\n"
       "--segments\n"
       "\tAnalyze code in segments in elf file, instead of headers.\n"
+      "--SVM\n"
+      "\tModel a the CPU supports SVM instrutions.\n"
       "--time\n"
       "\tTime the validator and print out results. Same as option -t.\n"
       "--trace_insts\n"
@@ -427,7 +481,82 @@ static void usage() {
   exit(0);
 }
 
-static int GrokFlags(int argc, const char* argv[]) {
+/* Checks if arg is one of the expected "bool" flags, and if so, sets
+ * the corresponding flag and returns true.
+ * Note: This only works on bool type. To grok Bool type, call GrokABoolFlag.
+ */
+static Bool GrokAboolFlag(const char *arg) {
+  /* A set of boolean flags to be checked */
+  static struct {
+    const char *flag_name;
+    bool *flag_ptr;
+  } flags[] = {
+    { "--x87"    , &ncval_cpu_features.f_x87 },
+    { "--MMX"    , &ncval_cpu_features.f_MMX },
+    { "--SSE"    , &ncval_cpu_features.f_SSE },
+    { "--SSE2"   , &ncval_cpu_features.f_SSE2 },
+    { "--SSE3"   , &ncval_cpu_features.f_SSE3 },
+    { "--SSSE3"  , &ncval_cpu_features.f_SSSE3 },
+    { "--SSE41"  , &ncval_cpu_features.f_SSE41 },
+    { "--SSE42"  , &ncval_cpu_features.f_SSE42 },
+    { "--MOVBE"  , &ncval_cpu_features.f_MOVBE },
+    { "--POPCNT" , &ncval_cpu_features.f_POPCNT },
+    { "--CX8"    , &ncval_cpu_features.f_CX8 },
+    { "--CX16"   , &ncval_cpu_features.f_CX16 },
+    { "--CMOV"   , &ncval_cpu_features.f_CMOV },
+    { "--MON"    , &ncval_cpu_features.f_MON },
+    { "--FXSR"   , &ncval_cpu_features.f_FXSR },
+    { "--CLFLUSH", &ncval_cpu_features.f_CLFLUSH },
+    { "--TSC"    , &ncval_cpu_features.f_TSC },
+    { "--MSR"    , &ncval_cpu_features.f_MSR },
+    { "--VME"    , &ncval_cpu_features.f_VME },
+    { "--PSN"    , &ncval_cpu_features.f_PSN },
+    { "--VMX"    , &ncval_cpu_features.f_VMX },
+    { "--3DNOW"  , &ncval_cpu_features.f_3DNOW },
+    { "--EMMX"   , &ncval_cpu_features.f_EMMX },
+    { "--E3DNOW" , &ncval_cpu_features.f_E3DNOW },
+    { "--LZCNT"  , &ncval_cpu_features.f_LZCNT },
+    { "--SSE4A"  , &ncval_cpu_features.f_SSE4A },
+    { "--LM"     , &ncval_cpu_features.f_LM },
+    { "--SVM"    , &ncval_cpu_features.f_SVM },
+  };
+  Bool flag;
+  int i;
+  for (i = 0; i < NACL_ARRAY_SIZE(flags); ++i) {
+    if (GrokBoolFlag(flags[i].flag_name, arg, &flag)) {
+      *flags[i].flag_ptr = flag;
+      return TRUE;
+    }
+  }
+  return FALSE;
+}
+
+/* Checks if arg is one of the expected "Bool" flags, and if so, sets
+ * the corresponding flag and returns true.
+ * Note: This only works on Bool type. To grok bool type, call GrokAboolFlag.
+ */
+static Bool GrokABoolFlag(const char *arg) {
+  /* A set of boolean flags to be checked */
+  static struct {
+    const char *flag_name;
+    Bool *flag_ptr;
+  } flags[] = {
+    { "--segments" , &NACL_FLAGS_analyze_segments },
+    { "--stubout", &NACL_FLAGS_stubout_memory },
+    { "--trace_insts", &NACL_FLAGS_validator_trace_instructions },
+    { "-t", &NACL_FLAGS_print_timing },
+    { "--use_iter", &NACL_FLAGS_use_iter },
+  };
+  int i;
+  for (i = 0; i < NACL_ARRAY_SIZE(flags); ++i) {
+    if (GrokBoolFlag(flags[i].flag_name, arg, flags[i].flag_ptr)) {
+      return TRUE;
+    }
+  }
+  return FALSE;
+}
+
+static int GrokFlags(int argc, const char *argv[]) {
   int i;
   int new_argc;
   Bool help = FALSE;
@@ -435,29 +564,32 @@ static int GrokFlags(int argc, const char* argv[]) {
   if (argc == 0) return 0;
   new_argc = 1;
   for (i = 1; i < argc; ++i) {
-    const char* arg = argv[i];
-    if (GrokCstringFlag("--hex_text", arg, &NACL_FLAGS_hex_text) ||
-        GrokBoolFlag("--segments", arg, &NACL_FLAGS_analyze_segments) ||
-        GrokBoolFlag("--trace_insts",
-                     arg, &NACL_FLAGS_validator_trace_instructions) ||
-        GrokBoolFlag("--use_iter", arg, &NACL_FLAGS_use_iter) ||
+    Bool flag;
+    const char *arg = argv[i];
+    if (GrokAboolFlag(arg) ||
+        GrokABoolFlag(arg) || /* Note: two calls needed for different types:
+                               * bool and Bool.
+                               */
+        GrokCstringFlag("--hex_text", arg, &NACL_FLAGS_hex_text) ||
         GrokIntFlag("--alignment", arg, &NACL_FLAGS_block_alignment) ||
-        GrokBoolFlag("-t", arg, &NACL_FLAGS_print_timing) ||
         GrokIntFlag("--max_errors", arg, &NACL_FLAGS_max_reported_errors) ||
-        GrokIntFlag("--attempts", arg, &NACL_FLAGS_validate_attempts) ||
-        GrokBoolFlag("--stubout", arg, &NACL_FLAGS_stubout_memory) ||
-        GrokBoolFlag("--help", arg, &help)) {
-      if (help) {
+        GrokIntFlag("--attempts", arg, &NACL_FLAGS_validate_attempts)) {
+      /* Valid processed flag, continue to next flag. */
+    } else if (GrokBoolFlag("--help", arg, &help)) {
         usage();
-      }
     } else if (0 == strcmp("--trace_verbose", arg)) {
       NaClValidatorFlagsSetTraceVerbose();
     } else if (GrokBoolFlag("--write_sfi", arg, &write_sandbox)) {
       NACL_FLAGS_read_sandbox = !write_sandbox;
-      continue;
     } else if (GrokBoolFlag("--readwrite_sfi", arg, &NACL_FLAGS_read_sandbox)) {
       write_sandbox = !NACL_FLAGS_read_sandbox;
       continue;
+    } else if (0 == strcmp("--cpuid-all", arg)) {
+      NaClSetAllCPUFeatures(&ncval_cpu_features);
+    } else if (0 == strcmp("--cpuid-none", arg)) {
+      NaClClearCPUFeatures(&ncval_cpu_features);
+    } else if (GrokBoolFlag("--local_cpuid", arg, &flag)) {
+      GetCPUFeatures(&ncval_cpu_features);
     } else {
       argv[new_argc++] = argv[i];
     }
@@ -468,18 +600,21 @@ static int GrokFlags(int argc, const char* argv[]) {
 int main(int argc, const char *argv[]) {
   int result = 0;
   struct GioFile gio_out_stream;
-  struct Gio* gout = (struct Gio*) &gio_out_stream;
+  struct Gio *gout = (struct Gio*) &gio_out_stream;
   if (!GioFileRefCtor(&gio_out_stream, stdout)) {
     fprintf(stderr, "Unable to create gio file for stdout!\n");
     return 1;
   }
   NaClLogModuleInitExtended(LOG_INFO, gout);
+  /* By default, assume no local cpu features are available. */
+  NaClClearCPUFeatures(&ncval_cpu_features);
 
   argc = GrokFlags(argc, argv);
   NCValidatorSetMaxDiagnostics(NACL_FLAGS_max_reported_errors);
 
   if (NACL_FLAGS_use_iter) {
     Bool success = FALSE;
+    NaClValidateSetCPUFeatures(&ncval_cpu_features);
     argc = NaClRunValidatorGrokFlags(argc, argv);
     if (0 == strcmp(NACL_FLAGS_hex_text, "")) {
       /* Run SFI validator on elf file. */
@@ -543,6 +678,7 @@ int main(int argc, const char *argv[]) {
   } else {
     NaClValidatorByteArray data;
     struct NCValidatorState *vstate;
+    NCValidateSetCPUFeatures(&ncval_cpu_features);
     argc = ValidateSfiHexLoad(argc, argv, &data);
     vstate = NCValidateInit(data.base, data.num_bytes,
                             (uint8_t) NACL_FLAGS_block_alignment);

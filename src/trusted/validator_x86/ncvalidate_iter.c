@@ -40,6 +40,19 @@ Bool NACL_FLAGS_validator_trace_instructions = FALSE;
 
 Bool NACL_FLAGS_validator_trace_inst_internals = FALSE;
 
+/* The set of cpu features to use, if non-NULL.
+ * NOTE: This global is used to allow the injection of
+ * a command-line override of CPU features, from that of the local
+ * CPU id, for the tool ncval. As such, when this global is non-null,
+ * it uses the injected value this pointer points to as the corresponding
+ * CPU id results to use.
+ */
+static CPUFeatures *nacl_validator_features = NULL;
+
+void NaClValidateSetCPUFeatures(CPUFeatures *new_features) {
+  nacl_validator_features = new_features;
+}
+
 /* Define the stop instruction. */
 const uint8_t kNaClFullStop = 0xf4;   /* x86 HALT opcode */
 
@@ -48,66 +61,66 @@ void NaClValidatorFlagsSetTraceVerbose() {
   NACL_FLAGS_validator_trace_inst_internals = TRUE;
 }
 
-int NaClValidatorStateGetMaxReportedErrors(NaClValidatorState* state) {
+int NaClValidatorStateGetMaxReportedErrors(NaClValidatorState *state) {
   return state->quit_after_error_count;
 }
 
-void NaClValidatorStateSetMaxReportedErrors(NaClValidatorState* state,
+void NaClValidatorStateSetMaxReportedErrors(NaClValidatorState *state,
                                             int new_value) {
   state->quit_after_error_count = new_value;
   state->quit = NaClValidatorQuit(state);
 }
 
-Bool NaClValidatorStateGetPrintOpcodeHistogram(NaClValidatorState* state) {
+Bool NaClValidatorStateGetPrintOpcodeHistogram(NaClValidatorState *state) {
   return state->print_opcode_histogram;
 }
 
-void NaClValidatorStateSetPrintOpcodeHistogram(NaClValidatorState* state,
+void NaClValidatorStateSetPrintOpcodeHistogram(NaClValidatorState *state,
                                                Bool new_value) {
   state->print_opcode_histogram = new_value;
 }
 
-Bool NaClValidatorStateGetTraceInstructions(NaClValidatorState* state) {
+Bool NaClValidatorStateGetTraceInstructions(NaClValidatorState *state) {
   return state->trace_instructions;
 }
 
-void NaClValidatorStateSetTraceInstructions(NaClValidatorState* state,
+void NaClValidatorStateSetTraceInstructions(NaClValidatorState *state,
                                             Bool new_value) {
   state->trace_instructions = new_value;
 }
 
-Bool NaClValidatorStateGetTraceInstInternals(NaClValidatorState* state) {
+Bool NaClValidatorStateGetTraceInstInternals(NaClValidatorState *state) {
   return state->trace_inst_internals;
 }
 
-void NaClValidatorStateSetTraceInstInternals(NaClValidatorState* state,
+void NaClValidatorStateSetTraceInstInternals(NaClValidatorState *state,
                                              Bool new_value) {
   state->trace_inst_internals = new_value;
 }
 
-Bool NaClValidatorStateTrace(NaClValidatorState* state) {
+Bool NaClValidatorStateTrace(NaClValidatorState *state) {
   return state->trace_instructions || state->trace_inst_internals;
 }
 
-void NaClValidatorStateSetTraceVerbose(NaClValidatorState* state) {
+void NaClValidatorStateSetTraceVerbose(NaClValidatorState *state) {
   state->trace_instructions = TRUE;
   state->trace_inst_internals = TRUE;
 }
 
-int NaClValidatorStateGetLogVerbosity(NaClValidatorState* state) {
+int NaClValidatorStateGetLogVerbosity(NaClValidatorState *state) {
   return state->log_verbosity;
 }
 
-void NaClValidatorStateSetLogVerbosity(NaClValidatorState* state,
+void NaClValidatorStateSetLogVerbosity(NaClValidatorState *state,
                                        Bool new_value) {
   state->log_verbosity = new_value;
 }
 
-Bool NaClValidatorStateGetDoStubOut(NaClValidatorState* state) {
+Bool NaClValidatorStateGetDoStubOut(NaClValidatorState *state) {
   return state->do_stub_out;
 }
 
-void NaClValidatorStateSetDoStubOut(NaClValidatorState* state,
+void NaClValidatorStateSetDoStubOut(NaClValidatorState *state,
                                     Bool new_value) {
   state->do_stub_out = new_value;
 }
@@ -118,7 +131,7 @@ void NaClValidatorStateSetDoStubOut(NaClValidatorState* state,
  *   state - The validator state (may be NULL).
  *   level - The log level of the validator message.
  */
-static Bool NaClPrintValidatorMessages(NaClValidatorState* state, int level) {
+static Bool NaClPrintValidatorMessages(NaClValidatorState *state, int level) {
   if (NULL == state) {
     /* Validator not defined yet, only used log verbosity to decide if message
      * should be printed.
@@ -149,7 +162,7 @@ static const char *NaClLogLevelLabel(int level) {
  *   state - The validator state (may be NULL).
  *   level - The log level of the validator message.
  */
-static void NaClRecordErrorReported(NaClValidatorState* state, int level) {
+static void NaClRecordErrorReported(NaClValidatorState *state, int level) {
   if ((state != NULL) && ((level == LOG_ERROR) || (level == LOG_FATAL)) &&
       (state->quit_after_error_count > 0) &&
       !state->do_stub_out) {
@@ -169,7 +182,7 @@ static void NaClRecordErrorReported(NaClValidatorState* state, int level) {
  *   level - The log level of the validator message.
  * Returns - Updated error level, based on state.
  */
-static int NaClRecordIfValidatorError(NaClValidatorState* state,
+static int NaClRecordIfValidatorError(NaClValidatorState *state,
                                              int level) {
   if (((level == LOG_ERROR) || (level == LOG_FATAL)) &&
       (NULL != state)) {
@@ -180,8 +193,8 @@ static int NaClRecordIfValidatorError(NaClValidatorState* state,
 }
 
 void NaClValidatorMessage(int level,
-                          NaClValidatorState* state,
-                          const char* format,
+                          NaClValidatorState *state,
+                          const char *format,
                           ...) {
   level = NaClRecordIfValidatorError(state, level);
   if (NaClPrintValidatorMessages(state, level)) {
@@ -197,8 +210,8 @@ void NaClValidatorMessage(int level,
 }
 
 void NaClValidatorVarargMessage(int level,
-                                NaClValidatorState* state,
-                                const char* format,
+                                NaClValidatorState *state,
+                                const char *format,
                                 va_list ap) {
   level = NaClRecordIfValidatorError(state, level);
   if (NaClPrintValidatorMessages(state, level)) {
@@ -211,9 +224,9 @@ void NaClValidatorVarargMessage(int level,
 }
 
 void NaClValidatorPcAddressMessage(int level,
-                                   NaClValidatorState* state,
+                                   NaClValidatorState *state,
                                    NaClPcAddress addr,
-                                   const char* format,
+                                   const char *format,
                                    ...) {
   level = NaClRecordIfValidatorError(state, level);
   if (NaClPrintValidatorMessages(state, level)) {
@@ -233,14 +246,14 @@ void NaClValidatorPcAddressMessage(int level,
 }
 
 void NaClValidatorInstMessage(int level,
-                              NaClValidatorState* state,
-                              NaClInstState* inst,
-                              const char* format,
+                              NaClValidatorState *state,
+                              NaClInstState *inst,
+                              const char *format,
                               ...) {
   level = NaClRecordIfValidatorError(state, level);
   if (NaClPrintValidatorMessages(state, level)) {
     va_list ap;
-    struct Gio* g = NaClLogGetGio();
+    struct Gio *g = NaClLogGetGio();
 
     NaClLogLock();
     /* TODO(karl): empty fmt strings not allowed */
@@ -261,15 +274,15 @@ void NaClValidatorInstMessage(int level,
 }
 
 void NaClValidatorTwoInstMessage(int level,
-                                 NaClValidatorState* state,
-                                 NaClInstState* inst1,
-                                 NaClInstState* inst2,
-                                 const char* format,
+                                 NaClValidatorState *state,
+                                 NaClInstState *inst1,
+                                 NaClInstState *inst2,
+                                 const char *format,
                                  ...) {
   level = NaClRecordIfValidatorError(state, level);
   if (NaClPrintValidatorMessages(state, level)) {
     va_list ap;
-    struct Gio* g = NaClLogGetGio();
+    struct Gio *g = NaClLogGetGio();
 
     NaClLogLock();
     /* TODO(karl) - Make printing of instruction state possible via format. */
@@ -294,18 +307,18 @@ void NaClValidatorTwoInstMessage(int level,
   }
 }
 
-Bool NaClValidatorQuit(NaClValidatorState* state) {
+Bool NaClValidatorQuit(NaClValidatorState *state) {
   return !state->validates_ok && (state->quit_after_error_count == 0);
 }
 
 void NaClRegisterValidator(
-    NaClValidatorState* state,
+    NaClValidatorState *state,
     NaClValidator validator,
     NaClValidatorPostValidate post_validate,
     NaClValidatorPrintStats print_stats,
     NaClValidatorMemoryCreate create_memory,
     NaClValidatorMemoryDestroy destroy_memory) {
-  NaClValidatorDefinition* defn;
+  NaClValidatorDefinition *defn;
   assert(NULL != validator);
   if (state->number_validators >= NACL_MAX_NCVALIDATORS) {
     NaClValidatorMessage(
@@ -320,12 +333,12 @@ void NaClRegisterValidator(
   defn->destroy_memory = destroy_memory;
 }
 
-NaClValidatorState* NaClValidatorStateCreate(const NaClPcAddress vbase,
+NaClValidatorState *NaClValidatorStateCreate(const NaClPcAddress vbase,
                                              const NaClMemorySize sz,
                                              const uint8_t alignment,
                                              const NaClOpKind base_register) {
-  NaClValidatorState* state;
-  NaClValidatorState* return_value = NULL;
+  NaClValidatorState *state;
+  NaClValidatorState *return_value = NULL;
   NaClPcAddress vlimit = vbase + sz;
   DEBUG(NaClLog(LOG_INFO,
                 "Validator Create: vbase = %"NACL_PRIxNaClPcAddress", "
@@ -342,7 +355,11 @@ NaClValidatorState* NaClValidatorStateCreate(const NaClPcAddress vbase,
     state->alignment = alignment;
     state->vlimit = vlimit;
     state->alignment_mask = alignment - 1;
-    GetCPUFeatures(&(state->cpu_features));
+    if (NULL == nacl_validator_features) {
+      GetCPUFeatures(&(state->cpu_features));
+    } else {
+      state->cpu_features = *nacl_validator_features;
+    }
     state->base_register = base_register;
     state->validates_ok = TRUE;
     state->number_validators = 0;
@@ -363,7 +380,7 @@ NaClValidatorState* NaClValidatorStateCreate(const NaClPcAddress vbase,
 /* Add validators to validator state if missing. Assumed to be called just
  * before analyzing a code segment.
  */
-void NaClValidatorStateInitializeValidators(NaClValidatorState* state) {
+void NaClValidatorStateInitializeValidators(NaClValidatorState *state) {
   /* Note: Need to lazy initialize validators until after the call to
    * NaClValidateSegment, so that the user of the API can change flags.
    * Also, we must lazy initialize so that we don't break all callers,
@@ -373,11 +390,11 @@ void NaClValidatorStateInitializeValidators(NaClValidatorState* state) {
     int i;
     NaClValidatorRulesInit(state);
     for (i = 0; i < state->number_validators; ++i) {
-      NaClValidatorDefinition* defn = &state->validators[i];
+      NaClValidatorDefinition *defn = &state->validators[i];
       if (defn->create_memory == NULL) {
         state->local_memory[i] = NULL;
       } else {
-        void* defn_memory = defn->create_memory(state);
+        void *defn_memory = defn->create_memory(state);
         if (defn_memory == NULL) {
           NaClValidatorMessage(
               LOG_FATAL, state,
@@ -394,7 +411,7 @@ void NaClValidatorStateInitializeValidators(NaClValidatorState* state) {
 /* Given we are at the instruction defined by the instruction iterator, for
  * a segment, apply all applicable validator functions.
  */
-static void NaClApplyValidators(NaClValidatorState* state, NaClInstIter* iter) {
+static void NaClApplyValidators(NaClValidatorState *state, NaClInstIter *iter) {
   int i;
   DEBUG(NaClLog(LOG_INFO, "iter state:\n");
         NaClInstStateInstPrint(NaClLogGetGio(), NaClInstIterGetState(iter)));
@@ -405,8 +422,8 @@ static void NaClApplyValidators(NaClValidatorState* state, NaClInstIter* iter) {
   }
 }
 
-static void NaClRememberIpOnly(NaClValidatorState* state, NaClInstIter* iter) {
-  void* local_memory;
+static void NaClRememberIpOnly(NaClValidatorState *state, NaClInstIter *iter) {
+  void *local_memory;
   DEBUG(NaClLog(LOG_INFO, "iter state:\n");
         NaClInstStateInstPrint(NaClLogGetGio(), NaClInstIterGetState(iter)));
   if (state->quit) return;
@@ -418,8 +435,8 @@ static void NaClRememberIpOnly(NaClValidatorState* state, NaClInstIter* iter) {
 /* Given that we have just iterated through all instructions in a segment,
  * apply post validators rules (before we collect the iterator).
  */
-static void NaClApplyPostValidators(NaClValidatorState* state,
-                                    NaClInstIter* iter) {
+static void NaClApplyPostValidators(NaClValidatorState *state,
+                                    NaClInstIter *iter) {
   int i;
   DEBUG(NaClLog(LOG_INFO, "applying post validators...\n"));
   if (state->quit) return;
@@ -431,15 +448,15 @@ static void NaClApplyPostValidators(NaClValidatorState* state,
   }
 }
 
-static void NaClValidatorStatePrintStats(NaClValidatorState* state);
+static void NaClValidatorStatePrintStats(NaClValidatorState *state);
 
 /* The maximum lookback for the instruction iterator of the segment. */
 static const size_t kLookbackSize = 4;
 
-void NaClValidateSegment(uint8_t* mbase, NaClPcAddress vbase,
-                         NaClMemorySize size, NaClValidatorState* state) {
+void NaClValidateSegment(uint8_t *mbase, NaClPcAddress vbase,
+                         NaClMemorySize size, NaClValidatorState *state) {
   NaClSegment segment;
-  NaClInstIter* iter;
+  NaClInstIter *iter;
   NaClValidatorStateInitializeValidators(state);
   NaClSegmentInitialize(mbase, vbase, size, &segment);
   for (iter = NaClInstIterCreateWithLookback(&segment, kLookbackSize);
@@ -459,25 +476,25 @@ void NaClValidateSegment(uint8_t* mbase, NaClPcAddress vbase,
   NaClValidatorStatePrintStats(state);
 }
 
-Bool NaClValidatesOk(NaClValidatorState* state) {
+Bool NaClValidatesOk(NaClValidatorState *state) {
   return state->validates_ok;
 }
 
-static void NaClValidatorStatePrintStats(NaClValidatorState* state) {
+static void NaClValidatorStatePrintStats(NaClValidatorState *state) {
   int i;
   for (i = 0; i < state->number_validators; i++) {
-    NaClValidatorDefinition* defn = &state->validators[i];
+    NaClValidatorDefinition *defn = &state->validators[i];
     if (defn->print_stats != NULL) {
       defn->print_stats(state, state->local_memory[i]);
     }
   }
 }
 
-void NaClValidatorStateDestroy(NaClValidatorState* state) {
+void NaClValidatorStateDestroy(NaClValidatorState *state) {
   int i;
   for (i = 0; i < state->number_validators; ++i) {
-    NaClValidatorDefinition* defn = &state->validators[i];
-    void* defn_memory = state->local_memory[i];
+    NaClValidatorDefinition *defn = &state->validators[i];
+    void *defn_memory = state->local_memory[i];
     if (defn->destroy_memory != NULL && defn_memory != NULL) {
       defn->destroy_memory(state, defn_memory);
     }
@@ -485,8 +502,8 @@ void NaClValidatorStateDestroy(NaClValidatorState* state) {
   free(state);
 }
 
-void* NaClGetValidatorLocalMemory(NaClValidator validator,
-                                  const NaClValidatorState* state) {
+void *NaClGetValidatorLocalMemory(NaClValidator validator,
+                                  const NaClValidatorState *state) {
   int i;
   for (i = 0; i < state->number_validators; ++i) {
     if (state->validators[i].validator == validator) {
@@ -503,9 +520,9 @@ void* NaClGetValidatorLocalMemory(NaClValidator validator,
  * function.
  * Return value: TRUE if the instruction was changed, FALSE if it's identical.
  */
-static Bool NaClValidateInstReplacement(NaClInstIter* iter_old,
-                                        NaClInstIter* iter_new,
-                                        struct NaClValidatorState* state) {
+static Bool NaClValidateInstReplacement(NaClInstIter *iter_old,
+                                        NaClInstIter *iter_new,
+                                        struct NaClValidatorState *state) {
   NaClInstState *istate_old, *istate_new;
   NaClExpVector *exp_old, *exp_new;
   uint32_t i;
@@ -633,9 +650,9 @@ error_exit:
  * NaClValidateCodeReplacement).This is to ensure all NaCl psuedo-instructions
  * and guard sequences are properly inspected and maintained.
  */
-void NaClValidateSegmentPair(uint8_t* mbase_old, uint8_t* mbase_new,
+void NaClValidateSegmentPair(uint8_t *mbase_old, uint8_t *mbase_new,
                            NaClPcAddress vbase, size_t size,
-                           struct NaClValidatorState* state) {
+                           struct NaClValidatorState *state) {
   NaClSegment segment_old, segment_new;
   NaClInstIter *iter_old, *iter_new;
 
@@ -674,4 +691,3 @@ void NaClValidateSegmentPair(uint8_t* mbase_old, uint8_t* mbase_new,
   NaClInstIterDestroy(iter_new);
   NaClValidatorStatePrintStats(state);
 }
-

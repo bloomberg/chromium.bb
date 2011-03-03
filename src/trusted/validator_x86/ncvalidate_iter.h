@@ -30,6 +30,7 @@
  */
 
 #include "native_client/src/include/portability.h"
+#include "native_client/src/trusted/validator_x86/nacl_cpuid.h"
 #include "native_client/src/trusted/validator_x86/nc_inst_iter.h"
 #include "native_client/src/trusted/validator_x86/nc_inst_state.h"
 
@@ -64,6 +65,20 @@ void NaClValidatorFlagsSetTraceVerbose();
 
 /* The model of a validator state. */
 typedef struct NaClValidatorState NaClValidatorState;
+
+/* NaClValidateSetCPUFeatures: Define the set of CPU features to use.
+ * Parameters:
+ *    features: A pointer to a CPUFeatures to use, or NULL
+ *       if the features set should be calculated using GetCPUFeatures.
+ * Note: Assumes that given struct persists till the next call to
+ *    this function. The main purpose of this function is to allow the
+ *    injection of a command-line override of CPU features, from that of the
+ *    local CPU id, for the tool ncval. As such, it uses a global variable to
+ *    hold the command line specification in ncval. Also, we assume that this
+ *    function is not called during validation (i.e. between
+ *    NaClValidatorStateCreate and NaClValidatorStateDestroy).
+ */
+void NaClValidateSetCPUFeatures(CPUFeatures *features);
 
 /* Create a validator state to validate the ELF file with the given parameters.
  * Note: Messages (if any) produced by the validator are sent to the stream

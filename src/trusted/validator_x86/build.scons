@@ -252,7 +252,7 @@ def __GoldenFiles(ext):
 # all test data input files.
 def __FilterOutTestFileBaseGen(files, ext):
   for f in files:
-    yield os.path.basename(f.path).replace('.' + ext, "")
+    yield os.path.basename(f.path).replace('.' + ext, '')
 
 # Generates the set of golden bases for the given extension.
 def __GoldenBases(ext):
@@ -268,7 +268,7 @@ def __BaseTestName(test, base, ext):
 
 # Generates the corresponding output file from the given base.
 def __OutTestFile(test, base, ext):
-  return test + "_" + base + '.' + ext + '.out'
+  return test + '_' + base + '.' + ext + '.out'
 
 def __AddTest(test, base, ext, command, groups):
   test_env.AddNodeToTestSuite(command, groups, __BaseTestName(test, base, ext))
@@ -327,8 +327,8 @@ ncdis_iter_internal_golden = test_env.File(TESTDATA_DIR +
                                            'ncdis_iter_test.internal')
 
 ncdis_internal_test = test_env.CommandTest(
-    NCDIS_ITER_TEST_NAME + "_int.out",
-    [ncdis, "--use_iter", "--internal", "--commands=-"],
+    NCDIS_ITER_TEST_NAME + '_int.out',
+    [ncdis, '--use_iter', '--internal', '--commands=-'],
     stdin=ncdis_iter_input_golden,
     stdout_golden=ncdis_iter_internal_golden)
 
@@ -377,9 +377,9 @@ if env.Bit('target_x86_32'):
 def __AddNcDisTests(use_iter):
   test = 'ncdis_hex'
   if use_iter:
-    ext = "dis"
+    ext = 'dis'
   else:
-    ext = "ndis"
+    ext = 'ndis'
   options = ['--hex_text=-']
   if use_iter:
     options.append('--use_iter');
@@ -397,21 +397,27 @@ def __AddNcDisTests(use_iter):
 __AddNcDisTests(True)
 __AddNcDisTests(False)
 
-# Run tests using ncval --use_iter, on test files. Assume that write sandbox tests
-# use extension 'val' while read/write sandbox tests use extention 'rval'.
-def __AddNcvalSfiTests(test_readwrite):
+# Run tests using ncval --use_iter, on test files. Assume that write sandbox
+# tests use extension 'val' while read/write sandbox tests use extension
+# 'rval'. Assumes that a suffix of 0 on the extension implies no CPUID flags
+# set. Otherwise, assume that test is run with all CPUID flags set.
+def __AddNcvalSfiTests(test_readwrite, test_cpuid_all):
   if env.Bit('target_x86_64'):
     test = 'ncval64_hex'
+    options = ['--use_iter', '--hex_text=-', '--max_errors=-1']
     if test_readwrite:
       ext = 'rval'
+      options.append('--readwrite_sfi')
     else:
       ext = 'val'
+      options.append('--write_sfi')
+    if test_cpuid_all:
+      options.append('--cpuid-all')
+    else:
+      ext = ext + '0'
+      options.append('--cpuid-none')
     for base in __GoldenBases(ext):
-      command = [ncval, '--use_iter', '--hex_text=-', '--max_errors=1000']
-      if test_readwrite:
-        command.append('--readwrite_sfi')
-      else:
-        command.append("--write_sfi")
+      command = [ncval] + options
       node_val = test_env.CommandTest(
           __OutTestFile(test, base, ext),
           command,
@@ -419,19 +425,25 @@ def __AddNcvalSfiTests(test_readwrite):
           stdout_golden = __BaseTestFile(base, ext))
       __AddTest(test, base, ext, node_val, ['small_tests', 'validator_tests'])
 
-__AddNcvalSfiTests(True)
-__AddNcvalSfiTests(False)
+for read_write in [False, True]:
+  for cpu_features_all in [False, True]:
+   __AddNcvalSfiTests(read_write, cpu_features_all)
 
 # Run tests using ncval --use_iter=false on test files.
-def __AddNcvalSegmentTests():
+def __AddNcvalSegmentTests(test_cpuid_all):
   if env.Bit('target_x86_32'):
-    test = 'ncval32_hex'
     ext = 'nval'
+    options = ['--use_iter=false',
+               '--hex_text=-',
+               '--max_errors=-1']
+    if test_cpuid_all:
+      options.append('--cpuid-all')
+    else:
+      ext += '0'
+      options.append('--cpuid-none')
+    test = 'ncval32_hex'
     for base in __GoldenBases(ext):
-      command = [ncval,
-                 '--use_iter=false',
-                 '--hex_text=-',
-                 '--max_errors=1000']
+      command = [ncval] + options
       node_val = test_env.CommandTest(
           __OutTestFile(test, base, ext),
           command,
@@ -440,7 +452,8 @@ def __AddNcvalSegmentTests():
       __AddTest(test, base, ext, node_val,
                 ['small_tests', 'validator_tests'])
 
-__AddNcvalSegmentTests()
+for cpu_features_all in [False, True]:
+  __AddNcvalSegmentTests(cpu_features_all)
 
 # Run tests for stubout on test files. Assumes that the extension
 # sval implies to use the SFI model, while snval implies use of the

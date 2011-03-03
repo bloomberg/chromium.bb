@@ -1,0 +1,3 @@
+# Sample x87 instruction
+# dc c1                                        fadd %st1, %st0
+dc c1

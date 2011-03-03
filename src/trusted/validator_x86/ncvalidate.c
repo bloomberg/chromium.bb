@@ -75,6 +75,19 @@ static void BadInstructionError(const struct NCDecoderState *mstate,
   }
 }
 
+/* The set of cpu features to use, if non-NULL.
+ * NOTE: This global is used to allow the injection of
+ * a command-line override of CPU features, from that of the local
+ * CPU id, for the tool ncval. As such, when this global is non-null,
+ * it uses the injected value this pointer points to as the corresponding
+ * CPU id results to use.
+ */
+static CPUFeatures *nc_validator_features = NULL;
+
+void NCValidateSetCPUFeatures(CPUFeatures *new_features) {
+  nc_validator_features = new_features;
+}
+
 /* opcode histogram */
 #if VERBOSE == 1
 static void OpcodeHisto(const uint8_t byte1, struct NCValidatorState *vstate) {
@@ -315,7 +328,11 @@ struct NCValidatorState *NCValidateInit(const uint32_t vbase,
     Stats_Init(vstate);
     NCDecodeRegisterCallbacks(ValidateInst, Stats_NewSegment,
                               Stats_SegFault, Stats_InternalError);
-    GetCPUFeatures(&(vstate->cpufeatures));
+    if (NULL == nc_validator_features) {
+      GetCPUFeatures(&(vstate->cpufeatures));
+    } else {
+      vstate->cpufeatures = *nc_validator_features;
+    }
     return vstate;
   } while (0);
   /* Failure. Clean up memory before returning. */

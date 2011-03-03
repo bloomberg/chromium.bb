@@ -63,6 +63,12 @@ typedef struct cpu_feature_struct {
  */
 #define /* static const int */ kCPUIDStringLength 21
 
+/* Set cpu check state fields to all true. */
+void NaClSetAllCPUFeatures(CPUFeatures *features);
+
+/* Clear cpu check state fields (i.e. set all fields to false). */
+void NaClClearCPUFeatures(CPUFeatures *features);
+
 /* Fills in cpuf with feature vector for this CPU. */
 extern void GetCPUFeatures(CPUFeatures *cpuf);
 

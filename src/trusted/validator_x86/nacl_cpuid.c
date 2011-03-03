@@ -385,6 +385,14 @@ bool NaClArchSupported() {
   return features.f_cpuid_supported && features.f_cpu_supported;
 }
 
+void NaClSetAllCPUFeatures(CPUFeatures *features) {
+  memset(features, 1, sizeof(features));
+}
+
+void NaClClearCPUFeatures(CPUFeatures *features) {
+  memset(features, 0, sizeof(features));
+}
+
 /* WARNING: This routine and subroutines it uses are not threadsafe.
  * However, if races occur, they are short lived, and at worst, will
  * result in defining fewer features than are actually supported by
@@ -392,7 +400,7 @@ bool NaClArchSupported() {
  * some features that should not be rejected.
  */
 void GetCPUFeatures(CPUFeatures *cpuf) {
-  memset(cpuf, 0, sizeof(*cpuf));
+  NaClClearCPUFeatures(cpuf);
   CheckNaClArchFeatures(&cpuf->arch_features);
   if (!cpuf->arch_features.f_cpuid_supported) return;
   cpuf->f_x87 = CheckCPUFeature(CPUFeature_x87);

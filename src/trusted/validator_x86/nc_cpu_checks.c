@@ -32,7 +32,12 @@ typedef struct NaClCpuCheckState {
 } NaClCpuCheckState;
 
 NaClCpuCheckState* NaClCpuCheckMemoryCreate(NaClValidatorState* state) {
-  return (NaClCpuCheckState*) calloc(1, sizeof(NaClCpuCheckState));
+  NaClCpuCheckState* check_state =
+      (NaClCpuCheckState*) calloc(1, sizeof(NaClCpuCheckState));
+  NaClClearCPUFeatures(&check_state->cpu_features);
+  check_state->f_CMOV_and_x87 = FALSE;
+  check_state->f_MMX_or_SSE2 = FALSE;
+  return check_state;
 }
 
 void NaClCpuCheckMemoryDestroy(NaClValidatorState* state,
@@ -46,7 +51,7 @@ void NaClCpuCheckMemoryDestroy(NaClValidatorState* state,
     if (!checked_features->cpu_features.feature) { \
       NaClValidatorInstMessage( \
           LOG_WARNING, state, inst_state, \
-          "Does not support " feature_name "feature, removing usage(s).\n"); \
+          "Does not support " feature_name " feature, removing usage(s).\n"); \
       checked_features->cpu_features.feature = TRUE; \
     } \
     squash_me = TRUE; \
@@ -112,7 +117,7 @@ void NaClCpuCheck(struct NaClValidatorState* state,
       NACL_CHECK_FEATURE(f_SSE, "SSE");
       break;
     case NACLi_SSE2:
-      NACL_CHECK_FEATURE(f_SSE2, "SSE");
+      NACL_CHECK_FEATURE(f_SSE2, "SSE2");
       break;
     case NACLi_SSE3:
       NACL_CHECK_FEATURE(f_SSE3, "SSE3");

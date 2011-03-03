@@ -7,6 +7,7 @@
 #ifndef NATIVE_CLIENT_SRC_TRUSTED_VALIDATOR_X86_NCVALIDATE_H_
 #define NATIVE_CLIENT_SRC_TRUSTED_VALIDATOR_X86_NCVALIDATE_H_
 
+#include "native_client/src/trusted/validator_x86/nacl_cpuid.h"
 #include "native_client/src/trusted/validator_x86/types_memory_model.h"
 
 /*
@@ -28,6 +29,20 @@
  * structure of the validator.
  */
 struct NCValidatorState;
+
+/* NCValidateSetCPUFeatures: Define the set of CPU features to use.
+ * Parameters:
+ *    features: A pointer to a CPUFeatures to use, or NULL
+ *       if the features set should be calculated using GetCPUFeatures.
+ * Note: Assumes that given struct persists till the next call to
+ *    this function. The main purpose of this function is to allow the injection
+ *    of a command-line override of CPU features, from that of the local CPU id,
+ *    for the tool ncval. As such, it uses a global variable to hold the command
+ *    line specification in ncval. Also, we assume that this function is not
+ *    called during a validation (i.e. between NCValidateInit and
+ *    NCValidateFinish).
+ */
+void NCValidateSetCPUFeatures(CPUFeatures *features);
 
 /*
  * NCValidateInit: Initialize NaCl validator internal state.
