@@ -828,6 +828,8 @@ cr.define('options', function() {
           this.tab.classList.remove('navbar-item-selected');
       }
 
+      OptionsPage.updatePageFreezeStates();
+
       // A subpage was shown or hidden.
       if (!this.isOverlay && this.nestingLevel > 0) {
         OptionsPage.updateSubpageBackdrop_();
@@ -837,7 +839,6 @@ cr.define('options', function() {
         }
       }
 
-      OptionsPage.updatePageFreezeStates();
       // The managed prefs banner is global, so after any visibility change
       // update it based on the topmost page, not necessarily this page
       // (e.g., if an ancestor is made visible after a child).
