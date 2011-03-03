@@ -26,7 +26,6 @@
 #include "base/linked_ptr.h"
 #endif
 
-class CommandBufferProxy;
 struct NPObject;
 class NPObjectStub;
 struct NPVariant_Param;
@@ -120,9 +119,6 @@ class WebPluginDelegateProxy
       unsigned long resource_id, const GURL& url, int notify_id);
   virtual webkit::npapi::WebPluginResourceClient* CreateSeekableResourceClient(
       unsigned long resource_id, int range_request_id);
-
-  CommandBufferProxy* CreateCommandBuffer();
-  void DestroyCommandBuffer(CommandBufferProxy* command_buffer);
 
   gfx::PluginWindowHandle GetPluginWindowHandle();
 

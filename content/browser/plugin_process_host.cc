@@ -221,7 +221,6 @@ bool PluginProcessHost::Init(const webkit::npapi::WebPluginInfo& info,
     switches::kSilentDumpOnDCHECK,
     switches::kMemoryProfiling,
     switches::kEnableStatsTable,
-    switches::kEnableGPUPlugin,
     switches::kUseGL,
 #if defined(OS_CHROMEOS)
     switches::kLoginProfile,

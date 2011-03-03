@@ -510,11 +510,6 @@
             '../plugins/ppapi/ppb_open_gl_es_impl.cc',
           ],
         }],
-        ['enable_gpu==1', {
-          'dependencies': [
-            '<(DEPTH)/gpu/gpu.gyp:gpu_plugin',
-          ],
-        }],
         ['OS!="win"', {
           'sources/': [['exclude', '_win\\.cc$']],
           'sources!': [
