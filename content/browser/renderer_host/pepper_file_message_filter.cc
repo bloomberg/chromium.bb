@@ -232,7 +232,7 @@ FilePath PepperFileMessageFilter::ValidateAndConvertPepperFilePath(
     case webkit::ppapi::PepperFilePath::DOMAIN_MODULE_LOCAL:
       if (!pepper_path.path().IsAbsolute() &&
           !pepper_path.path().ReferencesParent())
-        file_path = pepper_path.path();
+        file_path = pepper_path_.Append(pepper_path.path());
       break;
     default:
       NOTREACHED();
