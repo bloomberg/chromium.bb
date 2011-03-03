@@ -1531,15 +1531,11 @@ void WindowWin::InitClass() {
 }
 
 namespace {
-// static
-static BOOL CALLBACK WindowCallbackProc(HWND hwnd, LPARAM lParam) {
-  // This is safer than calling GetWindowUserData, since it looks specifically
-  // for the RootView window property which should be unique.
-  RootView* root_view = GetRootViewForHWND(hwnd);
-  if (!root_view)
-    return TRUE;
-
-  Window::CloseSecondaryWidget(root_view->GetWidget());
+BOOL CALLBACK WindowCallbackProc(HWND hwnd, LPARAM lParam) {
+  NativeWidget* native_widget =
+      NativeWidget::GetNativeWidgetForNativeView(hwnd);
+  if (native_widget)
+    Window::CloseSecondaryWidget(native_widget->GetWidget());
   return TRUE;
 }
 }  // namespace
