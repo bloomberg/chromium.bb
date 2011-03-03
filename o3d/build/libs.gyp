@@ -21,24 +21,54 @@
       'target_name': 'cairo_libs',
       'type': 'none',
       'conditions': [
-        [ 'OS=="linux"',
+        ['OS=="linux"',
           {
             'all_dependent_settings': {
               'cflags': [
                 '<!@(pkg-config --cflags cairo)',
               ],
+              'ldflags': [
+                '<!@(pkg-config --libs-only-L --libs-only-other cairo)',
+              ],
               'libraries': [
-                '-lcairo',
+                '<!@(pkg-config --libs-only-l cairo)',
               ],
             },
           },
         ],
-        [ 'OS=="mac"',
+        ['OS=="mac"',
           {
-            #TODO(fransiskusx): Link to Cairo on Win/Mac as a static library
+            'dependencies': [
+              'pixman.gyp:pixman',
+              'cairo.gyp:cairo',
+            ],
+            # Ideally we would just call our pkg-config build here to query the
+            # right settings, but there are multiple problems with GYP/Xcode
+            # that prevent that from working, so we hard-code the values.
+            'all_dependent_settings': {
+              'include_dirs': [
+                '<(pkgconfigroot)/usr/include/cairo',
+                '<(pkgconfigroot)/usr/include/pixman-1',
+              ],
+              # GYP/Xcode also has problems with adding libraries to all
+              # dependents, so we have to put them in this target_conditions
+              # section to restrict them to just the target types that we care
+              # about.
+              'target_conditions': [
+                ['_type=="executable" or _type=="shared_library" '
+                     'or _type=="loadable_module"',
+                  {
+                    'libraries': [
+                      '<(pkgconfigroot)/usr/lib/libcairo.a',
+                      '<(pkgconfigroot)/usr/lib/libpixman-1.a',
+                    ]
+                  },
+                ],
+              ],
+            },
           },
         ],
-        [ 'OS=="win"',
+        ['OS=="win"',
           {
             'all_dependent_settings': {
               'defines': [
@@ -66,14 +96,14 @@
         ],
       },
       'conditions': [
-        [ 'OS=="linux"',
+        ['OS=="linux"',
           {
             'all_dependent_settings': {
               'defines': [
                 'GL_GLEXT_PROTOTYPES',
               ],
               'conditions': [
-                [ 'target_arch=="x64"',
+                ['target_arch=="x64"',
                   {
                     'variables': { 'libdir': 'lib64' }
                   }, {
@@ -93,7 +123,7 @@
             },
           },
         ],
-        [ 'OS=="mac"',
+        ['OS=="mac"',
           {
             'direct_dependent_settings': {
               'libraries': [
@@ -102,7 +132,7 @@
             },
           },
         ],
-        [ 'OS=="win"',
+        ['OS=="win"',
           {
             'all_dependent_settings': {
               'libraries': [
@@ -134,14 +164,14 @@
               ],
             },
             'conditions': [
-              [ 'OS=="linux"',
+              ['OS=="linux"',
                 {
                   'all_dependent_settings': {
                     'defines': [
                       'GL_GLEXT_PROTOTYPES',
                     ],
                     'conditions': [
-                      [ 'target_arch=="x64"',
+                      ['target_arch=="x64"',
                         {
                           'variables': { 'libdir': 'lib64' }
                         }, {
@@ -161,7 +191,7 @@
                   },
                 },
               ],
-              [ 'OS=="mac"',
+              ['OS=="mac"',
                 {
                   'direct_dependent_settings': {
                     'libraries': [
@@ -170,7 +200,7 @@
                   },
                 },
               ],
-              [ 'OS=="win"',
+              ['OS=="win"',
                 {
                   'all_dependent_settings': {
                     'libraries': [
@@ -217,7 +247,7 @@
         ],
       },
       'conditions': [
-        [ 'OS=="linux"',
+        ['OS=="linux"',
           {
             'all_dependent_settings': {
               'ldflags': [
@@ -230,7 +260,7 @@
             },
           },
         ],
-        [ 'OS=="win"',
+        ['OS=="win"',
           {
             'all_dependent_settings': {
               'libraries': [
@@ -242,7 +272,7 @@
             },
           },
         ],
-        [ 'OS=="mac"',
+        ['OS=="mac"',
           {
             'direct_dependent_settings': {
               'mac_framework_dirs': [
@@ -258,11 +288,11 @@
       'copies': [
         {
           'conditions' : [
-            [ 'OS=="linux"',
+            ['OS=="linux"',
               {
                 'destination': '<(PRODUCT_DIR)',
                 'conditions': [
-                  [ 'target_arch=="x64"',
+                  ['target_arch=="x64"',
                     {
                       'variables': { 'libdir': 'lib64' }
                     }, {
@@ -277,7 +307,7 @@
                 ],
               },
             ],
-            [ 'OS=="win"',
+            ['OS=="win"',
               {
                 'destination': '<(PRODUCT_DIR)',
                 'files': [
@@ -289,7 +319,7 @@
                 ],
               },
             ],
-            [ 'OS=="mac"',
+            ['OS=="mac"',
               {
                 'destination': '<(PRODUCT_DIR)/Library/Frameworks',
                 'files': [
@@ -301,7 +331,7 @@
         },
         {
           'conditions' : [
-            [ 'OS=="linux"',
+            ['OS=="linux"',
               {
                 'destination': '<(SHARED_LIB_DIR)',
                 'files': [
@@ -310,7 +340,7 @@
                 ],
               },
             ],
-            [ 'OS=="mac"',
+            ['OS=="mac"',
               {
                 # Dummy copy, because the xcode generator in gyp fails when it
                 # has an empty copy entry.
@@ -365,7 +395,7 @@
             ],
           },
         ],
-      }
+      },
     ],
   ],
 }

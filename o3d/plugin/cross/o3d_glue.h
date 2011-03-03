@@ -38,6 +38,7 @@
 #ifdef OS_MACOSX
 #include <OpenGL/OpenGL.h>
 #include <AGL/agl.h>
+#include <CoreGraphics/CGContext.h>
 #endif
 
 #ifdef OS_LINUX
@@ -285,9 +286,8 @@ class PluginObject: public NPObject {
   // end of Safari tab detection vars
   GLint last_buffer_rect_[4];
   Point last_plugin_loc_;
-  // can be a CGrafPtr, a CGContextRef or NULL depending on drawing_model
-  void* mac_2d_context_;
-  // either can be NULL depending on drawing_model
+  // each of these three can be NULL depending on drawing_model
+  CGContextRef mac_cg_context_ref_;
   AGLContext mac_agl_context_;
   CGLContextObj mac_cgl_context_;
   void *gl_layer_;

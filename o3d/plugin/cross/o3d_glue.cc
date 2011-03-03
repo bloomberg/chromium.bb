@@ -133,7 +133,7 @@ PluginObject::PluginObject(NPP npp)
       mac_window_selected_tab_(0),
       mac_cocoa_window_(0),
       mac_surface_hidden_(0),
-      mac_2d_context_(0),
+      mac_cg_context_ref_(0),
       mac_agl_context_(0),
       mac_cgl_context_(0),
       mac_cgl_pbuffer_(0),

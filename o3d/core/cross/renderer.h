@@ -158,7 +158,6 @@ class Renderer {
   // needed by the application.
   static Renderer* Create2DRenderer(ServiceLocator* service_locator);
 
-
   // Gets whether or not the renderer should attempt to use the software
   // renderer.
   static bool IsForceSoftwareRenderer();
@@ -166,9 +165,9 @@ class Renderer {
   // Initialises the renderer for use, claiming hardware resources.
   InitStatus Init(const DisplayWindow& display, bool off_screen);
 
-  // The platform specific part of initalization.
-  virtual InitStatus InitPlatformSpecific(const DisplayWindow& display,
-                                          bool off_screen) = 0;
+  // Switch rendering to a different window after initialization (if supported
+  // by the implementation).
+  virtual bool ChangeDisplayWindow(const DisplayWindow& display);
 
   // Initializes stuff that has to happen after Init
   virtual void InitCommon();
@@ -405,6 +404,10 @@ class Renderer {
   virtual RenderDepthStencilSurface::Ref CreateDepthStencilSurface(
       int width,
       int height) = 0;
+
+#ifdef OS_MACOSX
+  virtual bool SupportsCoreGraphics() const { return false; }
+#endif
 
   ServiceLocator* service_locator() const { return service_locator_; }
 
@@ -677,6 +680,10 @@ class Renderer {
   }
 
  private:
+  // The platform specific part of initalization.
+  virtual InitStatus InitPlatformSpecific(const DisplayWindow& display,
+                                          bool off_screen) = 0;
+
   // Adds the default states to their respective stacks.
   void AddDefaultStates();
 

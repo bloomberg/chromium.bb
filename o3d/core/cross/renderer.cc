@@ -150,6 +150,10 @@ Renderer::InitStatus Renderer::Init(
   return InitPlatformSpecific(display, off_screen);
 }
 
+bool Renderer::ChangeDisplayWindow(const DisplayWindow& display) {
+  return false;
+}
+
 void Renderer::InitCommon() {
   AddDefaultStates();
   SetInitialStates();

@@ -38,8 +38,8 @@
                   # Go there!
                   'cd <(pixmanbuilddir) && '
                   # Configure it.
-                  './configure --prefix=<(pkgconfigroot)/usr --disable-shared '
-                      '&& '
+                  'CFLAGS="-arch <(mac_gcc_arch)" ./configure '
+                      '--prefix=<(pkgconfigroot)/usr --disable-shared && '
                   # Build.
                   'make && '
                   # "Install" to pkgconfigroot.

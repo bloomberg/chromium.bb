@@ -35,6 +35,7 @@
 
 #include <OpenGL/OpenGL.h>
 #include <AGL/agl.h>
+#include <CoreGraphics/CGContext.h>
 
 #include "core/cross/display_window.h"
 
@@ -48,11 +49,17 @@ namespace o3d {
 
 class DisplayWindowMac : public DisplayWindow {
  public:
-  DisplayWindowMac() : agl_context_(NULL), cgl_context_(NULL) {}
+  DisplayWindowMac()
+      : agl_context_(NULL),
+        cgl_context_(NULL),
+        cg_context_ref_(NULL) {
+  }
+
   virtual ~DisplayWindowMac() {}
 
   AGLContext agl_context() const { return agl_context_; }
   CGLContextObj cgl_context() const { return cgl_context_; }
+  CGContextRef cg_context_ref() const { return cg_context_ref_; }
 
   void set_agl_context(const AGLContext& agl_context) {
     agl_context_ = agl_context;
@@ -61,9 +68,15 @@ class DisplayWindowMac : public DisplayWindow {
   void set_cgl_context(const CGLContextObj& cgl_context) {
     cgl_context_ = cgl_context;
   }
+
+  void set_cg_context_ref(const CGContextRef& cg_context_ref) {
+    cg_context_ref_ = cg_context_ref;
+  }
+
  private:
   AGLContext agl_context_;
   CGLContextObj cgl_context_;
+  CGContextRef cg_context_ref_;
 
   DISALLOW_COPY_AND_ASSIGN(DisplayWindowMac);
 };

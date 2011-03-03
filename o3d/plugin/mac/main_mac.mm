@@ -691,9 +691,7 @@ bool HandleMacEvent(EventRecord* the_event, NPP instance) {
       GLUE_PROFILE_STOP(instance, "forceredraw");
 #elif defined(CFTIMER)
 #else
-      DrawPlugin(obj, true,
-                 (obj->drawing_model_ == NPDrawingModelCoreGraphics) ?
-                 reinterpret_cast<CGContextRef>(obj->mac_2d_context_) : NULL);
+      DrawPlugin(obj, true, obj->mac_cg_context_ref_);
 #endif
       // Safari tab switching recovery code.
       if (obj->mac_surface_hidden_) {
@@ -718,9 +716,7 @@ bool HandleMacEvent(EventRecord* the_event, NPP instance) {
       handled = true;
       break;
     case updateEvt:
-      DrawPlugin(obj, false,
-                 (obj->drawing_model_ == NPDrawingModelCoreGraphics) ?
-                 reinterpret_cast<CGContextRef>(obj->mac_2d_context_) : NULL);
+      DrawPlugin(obj, false, obj->mac_cg_context_ref_);
       handled = true;
       break;
     case osEvt:
@@ -780,17 +776,26 @@ bool HandleCocoaEvent(NPP instance, NPCocoaEvent* the_event,
   obj->MacEventReceived(!lostFocus);
   switch (the_event->type) {
     case NPCocoaEventDrawRect:
-      // We need to call the render callback from here if we are rendering
-      // off-screen because it doesn't get called anywhere else.
       if (obj->drawing_model_ == NPDrawingModelCoreAnimation) {
         O3DLayer* layer = ObjO3DLayer(obj);
         if (layer) {
           [layer setNeedsDisplay];
         }
       } else {
-        DrawPlugin(obj,
-                   obj->IsOffscreenRenderingEnabled(),
-                   the_event->data.draw.context);
+        // We need to call the render callback from here if we are using
+        // Core Graphics because it doesn't get called anywhere else.
+        CGContextRef new_mac_cg_context_ref = the_event->data.draw.context;
+        if (new_mac_cg_context_ref != obj->mac_cg_context_ref_) {
+          obj->mac_cg_context_ref_ = new_mac_cg_context_ref;
+          // Update the Renderer's CGContextRef (only RendererCairo actually
+          // uses it).
+          o3d::DisplayWindowMac display;
+          display.set_agl_context(obj->mac_agl_context_);
+          display.set_cgl_context(obj->mac_cgl_context_);
+          display.set_cg_context_ref(obj->mac_cg_context_ref_);
+          obj->renderer()->ChangeDisplayWindow(display);
+        }
+        DrawPlugin(obj, true, obj->mac_cg_context_ref_);
       }
       handled = true;
       break;
@@ -931,7 +936,7 @@ NPError PlatformNPPSetWindow(NPP instance,
 
   if (window->window == NULL &&
       obj->drawing_model_ != NPDrawingModelCoreGraphics &&
-      obj->drawing_model_!= NPDrawingModelCoreAnimation) {
+      obj->drawing_model_ != NPDrawingModelCoreAnimation) {
     return NPERR_NO_ERROR;
   }
 
@@ -945,7 +950,9 @@ NPError PlatformNPPSetWindow(NPP instance,
       return NPERR_NO_ERROR;
     }
     case NPDrawingModelCoreGraphics: {
-      // Safari 4 sets window->window to NULL when in Cocoa event mode.
+      // In some browsers (Safari 4 on 10.5, Chrome on 10.5), window->window is
+      // NULL when using the Cocoa event model. In that situation we get our
+      // CGContextRef in HandleCocoaEvent() instead.
       if (window->window != NULL) {
         NP_CGContext* np_cg = reinterpret_cast<NP_CGContext*>(window->window);
         if (obj->event_model_ == NPEventModelCocoa) {
@@ -954,13 +961,12 @@ NPError PlatformNPPSetWindow(NPP instance,
         } else {
           new_window = static_cast<OpaqueWindowPtr*>(np_cg->window);
         }
-        obj->mac_2d_context_ = np_cg->context;
+        obj->mac_cg_context_ref_ = np_cg->context;
       }
       break;
     }
     case NPDrawingModelQuickDraw: {
       NP_Port* np_qd = reinterpret_cast<NP_Port*>(window->window);
-      obj->mac_2d_context_ = np_qd->port;
       if (np_qd->port)
         new_window = GetWindowFromPort(np_qd->port);
       // Safari 4 on Snow Leopard is sending us a spurious
@@ -982,9 +988,6 @@ NPError PlatformNPPSetWindow(NPP instance,
   // Whether we already had a window before this call.
   bool had_a_window = obj->mac_window_ != NULL;
 
-  // Whether we already had a pbuffer before this call.
-  bool had_a_pbuffer = obj->mac_cgl_pbuffer_ != NULL;
-
   obj->mac_window_ = new_window;
 
   if (obj->drawing_model_ == NPDrawingModelCoreAnimation) {
@@ -992,6 +995,8 @@ NPError PlatformNPPSetWindow(NPP instance,
       CGLSetCurrentContext(obj->mac_cgl_context_);
     }
   } else if (obj->drawing_model_ == NPDrawingModelCoreGraphics) {
+    // TODO(tschmelcher): We could skip this when RenderMode is 2D (though it's
+    // harmless).
     if (obj->mac_cgl_pbuffer_ == NULL) {
       // We initialize things with a CGL context rendering to a 1x1
       // pbuffer. Later we use the O3D RenderSurface APIs to set up the
@@ -1195,31 +1200,28 @@ NPError PlatformNPPSetWindow(NPP instance,
     aglEnable(obj->mac_agl_context_, AGL_BUFFER_RECT);
   }
 
-  if (had_a_pbuffer) {
-    // CoreGraphics drawing model when we have no on-screen window (Chrome,
-    // specifically).
-    obj->EnableOffscreenRendering();
-    obj->Resize(window->width, window->height);
-    return NPERR_NO_ERROR;
-  }
-
-  // Renderer is already initialized from a previous call to this function,
-  // just update size and position and return.
-  if (had_a_window) {
-    if (obj->renderer()) {
+  if (obj->renderer()) {
+    // Renderer is already initialized from a previous call to this function,
+    // just update size and position and return.
+    if (obj->drawing_model_ == NPDrawingModelCoreGraphics) {
+      if (!obj->renderer()->SupportsCoreGraphics()) {
+        obj->EnableOffscreenRendering();
+      }
+      obj->Resize(window->width, window->height);
+    } else if (had_a_window) {
       obj->renderer()->SetClientOriginOffset(gl_x_origin, gl_y_origin);
       obj->Resize(window->width, window->height);
     }
     return NPERR_NO_ERROR;
   }
 
-  if (obj->renderer())
-    return NPERR_NO_ERROR;
+  // Else this is the first call.
 
   // Create and assign the graphics context.
   o3d::DisplayWindowMac default_display;
   default_display.set_agl_context(obj->mac_agl_context_);
   default_display.set_cgl_context(obj->mac_cgl_context_);
+  default_display.set_cg_context_ref(obj->mac_cg_context_ref_);
 
   obj->CreateRenderer(default_display);
 
@@ -1235,15 +1237,20 @@ NPError PlatformNPPSetWindow(NPP instance,
   obj->client()->Init();
 
   if (obj->renderer()) {
-    if (obj->mac_cgl_pbuffer_) {
-      obj->EnableOffscreenRendering();
+    if (obj->drawing_model_ == NPDrawingModelCoreGraphics) {
+      if (!obj->renderer()->SupportsCoreGraphics()) {
+        // Browser is using Core Graphics but renderer doesn't support it, so we
+        // must render off-screen and then read back into software to re-render
+        // with Core Graphics.
+        obj->EnableOffscreenRendering();
+      }
     } else {
       obj->renderer()->SetClientOriginOffset(gl_x_origin, gl_y_origin);
     }
 
     obj->Resize(window->width, window->height);
 #ifdef CFTIMER
-    // now that the grahics context is setup, add this instance to the timer
+    // now that the graphics context is setup, add this instance to the timer
     // list so it gets drawn repeatedly
     gRenderTimer.AddInstance(instance);
 #endif  // CFTIMER

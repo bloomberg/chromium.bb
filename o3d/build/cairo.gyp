@@ -58,11 +58,12 @@
                   # Put our pkg-config binary into the PATH so cairo's build can
                   # find it.
                   'PATH=<(pkgconfigroot)/usr/bin:$PATH && '
-                  # Configure it. We disable png and svg because we don't need
-                  # them and they require additional external dependencies to
-                  # build.
-                  './configure --prefix=<(pkgconfigroot)/usr --disable-shared '
-                      '--disable-png --disable-svg && '
+                  # Configure it.
+                  'CFLAGS="-arch <(mac_gcc_arch)" ./configure '
+                      '--prefix=<(pkgconfigroot)/usr --disable-shared '
+                      # Disable things we don't need that have additional
+                      # external dependencies.
+                      '--disable-png --disable-svg --disable-ft && '
                   # Build.
                   'make && '
                   # "Install" to pkgconfigroot.

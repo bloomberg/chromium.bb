@@ -51,7 +51,7 @@
             'cgdir': 'third_party/cg/files/mac',
             'renderer%': 'gl',
             'swiftshaderdir': '',
-            'support_cairo%' : 0,
+            'support_cairo%' : 1,
           },
         ],
         ['OS == "linux"',
@@ -189,6 +189,22 @@
     ],
     ['OS == "mac"',
       {
+        'conditions': [
+          ['target_arch == "ia32"',
+            {
+              'variables': {
+                'mac_gcc_arch': 'i386',
+              },
+            }
+          ],
+          ['target_arch == "x64"',
+            {
+              'variables': {
+                'mac_gcc_arch': 'x86_64',
+              },
+            }
+          ],  
+        ], 
         'target_defaults': {
           'defines': [
             'OS_MACOSX',

@@ -62,6 +62,12 @@ class RendererCairo : public Renderer {
   virtual InitStatus InitPlatformSpecific(const DisplayWindow& display,
                                           bool off_screen);
 
+#ifdef OS_MACOSX
+  virtual bool ChangeDisplayWindow(const DisplayWindow& display);
+
+  virtual bool SupportsCoreGraphics() const { return true; }
+#endif
+
   // Released all hardware resources.
   virtual void Destroy();
 
@@ -221,10 +227,18 @@ class RendererCairo : public Renderer {
   // Clip the area of the current layer that will collide with other images.
   void ClipArea(cairo_t* cr, LayerList::iterator it);
 
+ private:
+  void CreateCairoSurface();
+  void DestroyCairoSurface();
+
+#if defined(OS_LINUX)
   // Linux Client Display
   Display* display_;
   // Linux Client Window
   Window window_;
+#elif defined(OS_MACOSX)
+  CGContextRef mac_cg_context_ref_;
+#endif
 
   // Main surface to render cairo
   cairo_surface_t* main_surface_;

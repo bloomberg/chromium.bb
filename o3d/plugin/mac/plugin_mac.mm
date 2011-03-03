@@ -270,22 +270,22 @@ void RenderTimer::TimerCallback(CFRunLoopTimerRef timer, void* info) {
       obj->GetFullscreenMacWindow()->IdleCallback();
     }
 
-    // We're visible if (a) we are in fullscreen mode, (b) our cliprect
-    // height and width are both a sensible size, ie > 1 pixel, or (c) if
-    // we are rendering to render surfaces (CoreGraphics drawing model,
-    // essentially offscreen rendering).
+    // We're visible if (a) we are in fullscreen mode, (b) we are using
+    // QuickDraw and our cliprect height and width are both a sensible size, ie
+    // > 1 pixel, or (c) we are using Core Graphics.
     //
     // We don't check for 0 as we have to size to 1 x 1 on occasion rather than
     // 0 x 0 to avoid crashing the Apple software renderer, but do not want to
     // actually draw to a 1 x 1 pixel area.
     bool plugin_visible = in_fullscreen ||
-        (obj->last_buffer_rect_[2] > 1 && obj->last_buffer_rect_[3] > 1) ||
-        obj->IsOffscreenRenderingEnabled();
+        (obj->drawing_model_ == NPDrawingModelQuickDraw &&
+             obj->last_buffer_rect_[2] > 1 && obj->last_buffer_rect_[3] > 1) ||
+        obj->drawing_model_ == NPDrawingModelCoreGraphics;
 
     if (plugin_visible && obj->renderer()) {
       if (obj->client()->NeedsRender()) {
         // Force a sync to the VBL (once per timer callback)
-        // to avoid tearing
+        // to avoid tearing, if using GL.
         GLint sync = (i == 0);
         if (obj->mac_cgl_context_) {
           CGLSetParameter(obj->mac_cgl_context_, kCGLCPSwapInterval, &sync);
@@ -293,7 +293,7 @@ void RenderTimer::TimerCallback(CFRunLoopTimerRef timer, void* info) {
           aglSetInteger(obj->mac_agl_context_, AGL_SWAP_INTERVAL, &sync);
         }
 
-        if (obj->IsOffscreenRenderingEnabled()) {
+        if (obj->drawing_model_ == NPDrawingModelCoreGraphics) {
           NPRect rect = { 0 };
           rect.bottom = obj->height();
           rect.right = obj->width();

@@ -32,10 +32,16 @@
 // Renderer that is using 2D Library Cairo.
 
 #include "core/cross/cairo/renderer_cairo.h"
+
+#if defined(OS_LINUX)
 #include <cairo-xlib.h>
+#elif defined(OS_MACOSX)
+#include <cairo-quartz.h>
+#endif
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+
 #include "core/cross/cairo/layer.h"
 #include "core/cross/cairo/texture_cairo.h"
 
@@ -49,7 +55,14 @@ Renderer* Renderer::Create2DRenderer(ServiceLocator* service_locator) {
 namespace o2d {
 
 RendererCairo::RendererCairo(ServiceLocator* service_locator)
-    : Renderer(service_locator), display_(NULL), main_surface_(NULL) {
+    : Renderer(service_locator),
+#if defined(OS_LINUX)
+      display_(NULL),
+      window_(0),
+#elif defined(OS_MACOSX)
+      mac_cg_context_ref_(0),
+#endif
+      main_surface_(NULL) {
   // Don't need to do anything.
 }
 
@@ -65,12 +78,14 @@ RendererCairo* RendererCairo::CreateDefault(ServiceLocator* service_locator) {
 void RendererCairo::Destroy() {
   DLOG(INFO) << "To Destroy";
 
-  if (main_surface_ != NULL) {
-    cairo_surface_destroy(main_surface_);
-    main_surface_= NULL;
-  }
+  DestroyCairoSurface();
 
+#if defined(OS_LINUX)
   display_ = NULL;
+  window_ = 0;
+#elif defined(OS_MACOSX)
+  mac_cg_context_ref_ = 0;
+#endif
 }
 
 // Comparison predicate for STL sort.
@@ -79,6 +94,11 @@ bool LayerZValueLessThan(const Layer* first, const Layer* second) {
 }
 
 void RendererCairo::Paint() {
+  if (!main_surface_) {
+    DLOG(INFO) << "No target surface, cannot paint";
+    return;
+  }
+
   // TODO(tschmelcher): Don't keep creating and destroying the drawing context.
   cairo_t* current_drawing = cairo_create(main_surface_);
 
@@ -201,9 +221,48 @@ void RendererCairo::RemoveLayer(Layer* image) {
 }
 
 void RendererCairo::InitCommon() {
-  main_surface_ = cairo_xlib_surface_create(display_, window_,
+  CreateCairoSurface();
+}
+
+void RendererCairo::CreateCairoSurface() {
+#if defined(OS_LINUX)
+  main_surface_ = cairo_xlib_surface_create(display_,
+                                            window_,
                                             XDefaultVisual(display_, 0),
-                                            display_width(), display_height());
+                                            display_width(),
+                                            display_height());
+#elif defined(OS_MACOSX)
+  if (!mac_cg_context_ref_) {
+    // Can't create the surface until we get a valid CGContextRef. If we don't
+    // have one it may be because we haven't yet gotten one from
+    // HandleCocoaEvent() in main_mac.mm, or we may have initialized with a
+    // drawing model other than Core Graphics (in which case we are never going
+    // to get one and rendering won't work).
+    // TODO(tschmelcher): Support the other drawing models too.
+    DLOG(INFO) << "No CGContextRef, cannot initialize yet";
+    return;
+  }
+  // Save a pristine CG graphics state.
+  CGContextSaveGState(mac_cg_context_ref_);
+  // Transform the coordinate space to match Cairo's conventions.
+  CGContextTranslateCTM(mac_cg_context_ref_, 0.0, display_height());
+  CGContextScaleCTM(mac_cg_context_ref_, 1.0, -1.0);
+  main_surface_ = cairo_quartz_surface_create_for_cg_context(
+      mac_cg_context_ref_,
+      display_width(),
+      display_height());
+#endif
+}
+
+void RendererCairo::DestroyCairoSurface() {
+  if (main_surface_ != NULL) {
+    cairo_surface_destroy(main_surface_);
+    main_surface_= NULL;
+#ifdef OS_MACOSX
+    // Get back the pristine CG state.
+    CGContextRestoreGState(mac_cg_context_ref_);
+#endif
+  }
 }
 
 void RendererCairo::UninitCommon() {
@@ -213,21 +272,41 @@ void RendererCairo::UninitCommon() {
 Renderer::InitStatus RendererCairo::InitPlatformSpecific(
     const DisplayWindow& display_window,
     bool off_screen) {
+#if defined(OS_LINUX)
   const DisplayWindowLinux &display_platform =
       static_cast<const DisplayWindowLinux&>(display_window);
   display_ = display_platform.display();
   window_ = display_platform.window();
-
+#elif defined(OS_MACOSX)
+  const DisplayWindowMac &display_platform =
+      static_cast<const DisplayWindowMac&>(display_window);
+  mac_cg_context_ref_ = display_platform.cg_context_ref();
+#endif
   return SUCCESS;
 }
+
+#ifdef OS_MACOSX
+bool RendererCairo::ChangeDisplayWindow(const DisplayWindow& display_window) {
+  const DisplayWindowMac &display_platform =
+      static_cast<const DisplayWindowMac&>(display_window);
+  DestroyCairoSurface();
+  mac_cg_context_ref_ = display_platform.cg_context_ref();
+  CreateCairoSurface();
+}
+#endif
 
 // Handles the plugin resize event.
 void RendererCairo::Resize(int width, int height) {
   DLOG(INFO) << "To Resize " << width << " x " << height;
   SetClientSize(width, height);
 
+#if defined(OS_LINUX)
   // Resize the mainSurface and buffer
   cairo_xlib_surface_set_size(main_surface_, width, height);
+#elif defined(OS_MACOSX)
+  DestroyCairoSurface();
+  CreateCairoSurface();
+#endif
 }
 
 // The platform specific part of BeginDraw.
