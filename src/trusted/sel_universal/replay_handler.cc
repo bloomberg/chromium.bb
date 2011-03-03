@@ -37,22 +37,28 @@ struct ReplayItem {
   vector<string> args_out;
 };
 
+// terminated if we cannot find a replay
+bool GlobalReplayStrict = true;
+
 // List of all "canned" rpcs, order is important
 vector<ReplayItem*> GlobalReplayList;
 
 // ugly hack to have access to the NaClCommandLoop even when processing an rpc
 NaClCommandLoop* GlobalCommandLoop;
 
+// Match a signature and a given set of input args against a replay time.
+// Return true if this item is a match that could be replayed
 bool RpcMatchesReplayItem(string signature,
                           NaClSrpcArg** inputs,
                           ReplayItem* ri) {
   UNREFERENCED_PARAMETER(inputs);
+  // first check cound and signature
   if (ri->signature != signature) return false;
   if (ri->count == 0 ) return false;
 
   NaClLog(2, "found potential match for %s\n", signature.c_str());
 
-  // now for the more costly parameter comparsion
+  // now for the more costly parameter comparison
   // Build the input parameter values.
   const size_t n = ri->args_in.size();
   NaClSrpcArg  in[NACL_SRPC_MAX_ARGS];
@@ -130,10 +136,15 @@ void ReplayRpc(NaClSrpcRpc* rpc,
   // if we exit the for loop here we have an error
   rpc->result = NACL_SRPC_RESULT_APP_ERROR;
   done->Run(done);
+
+  if (GlobalReplayStrict) {
+    exit(-1);
+  }
 }
 }  // end namespace
 
 
+// Register a new replay item
 bool HandlerReplay(NaClCommandLoop* ncl, const vector<string>& args) {
   UNREFERENCED_PARAMETER(ncl);
   // we need three args at start and the "*" in out separator
@@ -170,7 +181,7 @@ bool HandlerReplay(NaClCommandLoop* ncl, const vector<string>& args) {
   return true;
 }
 
-
+// Add srpc upcall for all replay signatures registered so far
 bool HandlerReplayActivate(NaClCommandLoop* ncl, const vector<string>& args) {
   if (args.size() != 1) {
     NaClLog(LOG_ERROR, "not the right number of args for this command\n");
@@ -187,5 +198,25 @@ bool HandlerReplayActivate(NaClCommandLoop* ncl, const vector<string>& args) {
   }
   // ugly hack
   GlobalCommandLoop = ncl;
+  return true;
+}
+
+// Report all unused replays - add the end of a tests there should be none
+bool HandlerUnusedReplays(NaClCommandLoop* ncl, const vector<string>& args) {
+  UNREFERENCED_PARAMETER(ncl);
+  UNREFERENCED_PARAMETER(args);
+  // we need three args at start and the "*" in out separator
+  for (size_t i = 0; i < GlobalReplayList.size(); ++i) {
+    ReplayItem* ri = GlobalReplayList[i];
+    if (ri->count == 0) continue;
+
+    printf("%d %s\n", ri->count, ri->signature.c_str());
+    for (size_t j = 0; j < ri->args_in.size(); ++j) {
+      printf("in  %d %s\n", static_cast<int>(j), ri->args_in[j].c_str());
+    }
+    for (size_t j = 0; j < ri->args_out.size(); ++j) {
+      printf("out %d %s\n", static_cast<int>(j), ri->args_out[j].c_str());
+    }
+  }
   return true;
 }

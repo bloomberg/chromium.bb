@@ -181,6 +181,7 @@ int main(int argc, char* argv[]) {
 
   loop.AddHandler("replay_activate", HandlerReplayActivate);
   loop.AddHandler("replay", HandlerReplay);
+  loop.AddHandler("replay_unused", HandlerUnusedReplays);
 
   // possible platform specific stuff
   loop.AddHandler("shmem", HandlerShmem);

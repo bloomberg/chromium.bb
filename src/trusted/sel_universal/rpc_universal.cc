@@ -128,8 +128,6 @@ void NaClCommandLoop::DumpArgsAndResults(NaClSrpcArg* inv[],
     string value = DumpArg(inv[j], this);
     if (nondeterministic_.find(value) != nondeterministic_.end()) {
       value = nondeterministic_.find(value)->second;
-      NaClLog(LOG_INFO, "suppressing nondeterministic input: %s\n",
-              value.c_str());
     }
     printf("input %d:  %s\n", (int) j, value.c_str());
   }
@@ -138,8 +136,6 @@ void NaClCommandLoop::DumpArgsAndResults(NaClSrpcArg* inv[],
     string value = DumpArg(outv[j], this);
     if (nondeterministic_.find(value) != nondeterministic_.end()) {
       value = nondeterministic_.find(value)->second;
-      NaClLog(LOG_INFO, "suppressing nondeterministic output: %s\n\n",
-              value.c_str());
     }
     printf("output %d:  %s\n", (int) j, value.c_str());
   }
@@ -281,7 +277,8 @@ static bool HandleStrcpy(NaClCommandLoop* ncl, const vector<string>& args) {
   string payload = args[3].substr(1, args[3].size() - 2);
   char* dst = reinterpret_cast<char*>(start + offset);
   NaClLog(1, "copy [%s] to %p\n", args[3].c_str(), dst);
-  strcpy(dst, payload.c_str());
+  // prevent sanity warning
+  strncpy(dst, payload.c_str(), payload.size() + 1);
   return true;
 }
 

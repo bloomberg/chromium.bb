@@ -16,5 +16,6 @@ class NaClCommandLoop;
 
 bool HandlerReplay(NaClCommandLoop* ncl, const vector<string>& args);
 bool HandlerReplayActivate(NaClCommandLoop* ncl, const vector<string>& args);
+bool HandlerUnusedReplays(NaClCommandLoop* ncl, const vector<string>& args);
 
 #endif  /* NATIVE_CLIENT_SRC_TRUSTED_SEL_UNIVERSAL_REPLAY_HANDLER_H_ */
