@@ -13,6 +13,7 @@
 #include "ui/gfx/canvas_skia.h"
 #include "views/controls/button/button.h"
 #include "views/events/event.h"
+#include "views/widget/widget.h"
 #include "grit/app_resources.h"
 
 namespace views {
@@ -194,6 +195,9 @@ TextButton::TextButton(ButtonListener* listener, const std::wstring& text)
       color_hover_(kHoverColor),
       text_halo_color_(0),
       has_text_halo_(false),
+      active_text_shadow_color_(0),
+      inactive_text_shadow_color_(0),
+      has_shadow_(false),
       has_hover_icon_(false),
       has_pushed_icon_(false),
       max_width_(0),
@@ -255,6 +259,13 @@ void TextButton::SetHoverColor(SkColor color) {
 void TextButton::SetTextHaloColor(SkColor color) {
   text_halo_color_ = color;
   has_text_halo_ = true;
+}
+
+void TextButton::SetTextShadowColors(SkColor active_color,
+                                     SkColor inactive_color) {
+  active_text_shadow_color_ = active_color;
+  inactive_text_shadow_color_ = inactive_color;
+  has_shadow_ = true;
 }
 
 void TextButton::ClearMaxTextSize() {
@@ -338,7 +349,7 @@ void TextButton::Paint(gfx::Canvas* canvas, bool for_drag) {
     // canvas, we can not mirror the button by simply flipping the canvas as
     // doing this will mirror the text itself. Flipping the canvas will also
     // make the icons look wrong because icons are almost always represented as
-    // direction insentisive bitmaps and such bitmaps should never be flipped
+    // direction-insensitive bitmaps and such bitmaps should never be flipped
     // horizontally.
     //
     // Due to the above, we must perform the flipping manually for RTL UIs.
@@ -374,6 +385,26 @@ void TextButton::Paint(gfx::Canvas* canvas, bool for_drag) {
           text_, font_, text_color, text_halo_color_,
           text_bounds.x(), text_bounds.y(), text_bounds.width(),
           text_bounds.height(), draw_string_flags);
+    } else if (has_shadow_) {
+      SkColor shadow_color =
+          GetWidget()->IsActive() ? active_text_shadow_color_ :
+                                    inactive_text_shadow_color_;
+      canvas->DrawStringInt(text_,
+                            font_,
+                            shadow_color,
+                            text_bounds.x() + 1,
+                            text_bounds.y() + 1,
+                            text_bounds.width(),
+                            text_bounds.height(),
+                            draw_string_flags);
+      canvas->DrawStringInt(text_,
+                            font_,
+                            text_color,
+                            text_bounds.x(),
+                            text_bounds.y(),
+                            text_bounds.width(),
+                            text_bounds.height(),
+                            draw_string_flags);
     } else {
       canvas->DrawStringInt(text_,
                             font_,

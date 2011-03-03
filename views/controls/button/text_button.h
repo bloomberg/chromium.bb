@@ -148,6 +148,10 @@ class TextButton : public CustomButton {
   void SetHighlightColor(SkColor color);
   void SetHoverColor(SkColor color);
   void SetTextHaloColor(SkColor color);
+  // The shadow color used is determined by whether the widget is active or
+  // inactive. Both possible colors are set in this method, and the
+  // appropriate one is chosen during Paint.
+  void SetTextShadowColors(SkColor active_color, SkColor inactive_color);
   void SetNormalHasBorder(bool normal_has_border);
   // Sets whether or not to show the hot and pushed states for the button icon
   // (if present) in addition to the normal state.  Defaults to true.
@@ -216,6 +220,11 @@ class TextButton : public CustomButton {
   // An optional halo around text.
   SkColor text_halo_color_;
   bool has_text_halo_;
+
+  // Optional shadow text colors for active and inactive widget states.
+  SkColor active_text_shadow_color_;
+  SkColor inactive_text_shadow_color_;
+  bool has_shadow_;
 
   // An icon displayed with the text.
   SkBitmap icon_;
