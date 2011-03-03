@@ -24,7 +24,11 @@ const AcceleratorMapping kAcceleratorMap[] = {
 #endif
   { ui::VKEY_D,              false, true,  false, IDC_BOOKMARK_PAGE },
   { ui::VKEY_D,              true,  true,  false, IDC_BOOKMARK_ALL_TABS },
+#if !defined(OS_CHROMEOS)
   { ui::VKEY_DELETE,         true,  true,  false, IDC_CLEAR_BROWSING_DATA },
+#else
+  { ui::VKEY_BACK,           true,  true,  false, IDC_CLEAR_BROWSING_DATA },
+#endif
 #if !defined(OS_CHROMEOS)
   { ui::VKEY_F4,             false, true,  false, IDC_CLOSE_TAB },
 #endif
@@ -54,14 +58,12 @@ const AcceleratorMapping kAcceleratorMap[] = {
   { ui::VKEY_MENU,           false, false, false, IDC_FOCUS_MENU_BAR },
 #if !defined(OS_CHROMEOS)
   { ui::VKEY_F6,             false, false, false, IDC_FOCUS_NEXT_PANE },
-#endif
-#if defined(OS_CHROMEOS)
+#else
   { ui::VKEY_F2,             false, true,  false, IDC_FOCUS_NEXT_PANE },
 #endif
 #if !defined(OS_CHROMEOS)
   { ui::VKEY_F6,             true,  false, false, IDC_FOCUS_PREVIOUS_PANE },
-#endif
-#if defined(OS_CHROMEOS)
+#else
   { ui::VKEY_F1,             false, true,  false, IDC_FOCUS_PREVIOUS_PANE },
 #endif
   { ui::VKEY_K,              false, true,  false, IDC_FOCUS_SEARCH },
@@ -76,14 +78,12 @@ const AcceleratorMapping kAcceleratorMap[] = {
 #endif
 #if !defined(OS_CHROMEOS)
   { ui::VKEY_F11,            false, false, false, IDC_FULLSCREEN },
-#endif
-#if defined(OS_CHROMEOS)
+#else
   { ui::VKEY_F4,             false, false, false, IDC_FULLSCREEN },
 #endif
 #if !defined(OS_CHROMEOS)
   { ui::VKEY_F1,             false, false, false, IDC_HELP_PAGE },
-#endif
-#if defined(OS_CHROMEOS)
+#else
   { ui::VKEY_OEM_2,          false, true,  false, IDC_HELP_PAGE },
   { ui::VKEY_OEM_2,          true,  true,  false, IDC_HELP_PAGE },
 #endif
@@ -101,8 +101,7 @@ const AcceleratorMapping kAcceleratorMap[] = {
   { ui::VKEY_F5,             false, false, false, IDC_RELOAD },
   { ui::VKEY_F5,             false, true,  false, IDC_RELOAD_IGNORING_CACHE },
   { ui::VKEY_F5,             true,  false, false, IDC_RELOAD_IGNORING_CACHE },
-#endif
-#if defined(OS_CHROMEOS)
+#else
   { ui::VKEY_F3,             false, false, false, IDC_RELOAD },
   { ui::VKEY_F3,             false, true,  false, IDC_RELOAD_IGNORING_CACHE },
   { ui::VKEY_F3,             true,  false, false, IDC_RELOAD_IGNORING_CACHE },
