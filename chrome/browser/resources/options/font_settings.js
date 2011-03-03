@@ -38,8 +38,8 @@ cr.define('options', function() {
       standardFontRange.notifyChange = this.rangeChanged_.bind(this);
 
       var minimumFontRange = $('minimum-font-size');
-      minimumFontRange.valueMap = [9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 20,
-          22, 24];
+      minimumFontRange.valueMap = [6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17,
+          18, 20, 22, 24];
       minimumFontRange.continuous = false;
       minimumFontRange.fontSampleEl = $('minimum-font-sample');
       minimumFontRange.notifyChange = this.rangeChanged_.bind(this);
@@ -99,8 +99,8 @@ cr.define('options', function() {
      */
     setupFontSample_: function(el, size, font) {
       el.textContent =
-          size + "pt: " + localStrings.getString('fontSettingsLoremIpsum');
-      el.style.fontSize = size + "pt";
+          size + ": " + localStrings.getString('fontSettingsLoremIpsum');
+      el.style.fontSize = size + "px";
       if (font)
         el.style.fontFamily = font;
     },

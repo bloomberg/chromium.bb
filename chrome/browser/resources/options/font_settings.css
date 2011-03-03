@@ -15,7 +15,7 @@
 }
 
 #font-settings > section > .font-sample-div {
-  height: 90px;
+  height: 70px;
   overflow: hidden;
   width: 300px;
 }
@@ -25,5 +25,11 @@
 }
 
 #minimum-font-sample {
-  height: 60px;
+  height: 35px;
+  overflow: hidden;
+  width: 300px;
+}
+
+#font-settings input[type="range"] {
+  width: 100%;
 }
