@@ -820,10 +820,9 @@ class MinidumpWriter {
 
   // Fill the MDRawModule |mod| with information about the provided
   // |mapping|. If |identifier| is non-NULL, use it instead of calculating
-  // a file ID from the mapping. |mapping_id| can be -1 if this mapping
-  // is not from the LinuxDumper.
+  // a file ID from the mapping. |mapping_id| can be -1.
   bool FillRawModule(const MappingInfo& mapping,
-                     unsigned int mapping_id,
+                     int mapping_id,
                      MDRawModule& mod,
                      const u_int8_t* identifier) {
     my_memset(&mod, 0, MD_MODULE_SIZE);

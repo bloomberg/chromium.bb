@@ -204,7 +204,7 @@ LinuxDumper::BuildProcPath(char* path, pid_t pid, const char* node) const {
 
 bool
 LinuxDumper::ElfFileIdentifierForMapping(const MappingInfo& mapping,
-                                         unsigned int mapping_id,
+                                         int mapping_id,
                                          uint8_t identifier[sizeof(MDGUID)])
 {
   assert(mapping_id == -1 || mapping_id < mappings_.size());

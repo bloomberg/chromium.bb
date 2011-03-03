@@ -154,7 +154,7 @@ class LinuxDumper {
   // Generate a File ID from the .text section of a mapped entry.
   // mapping_id may be -1 if this is not a member of mappings_.
   bool ElfFileIdentifierForMapping(const MappingInfo& mapping,
-                                   unsigned int mapping_id,
+                                   int mapping_id,
                                    uint8_t identifier[sizeof(MDGUID)]);
 
   // Utility method to find the location of where the kernel has
