@@ -546,7 +546,6 @@
       'sources': [
         'app/chrome_main_uitest.cc',
         'browser/browser_encoding_uitest.cc',
-        'browser/download/download_uitest.cc',
         'browser/download/save_page_uitest.cc',
         'browser/errorpage_uitest.cc',
         'browser/default_plugin_uitest.cc',
@@ -614,11 +613,6 @@
         }, { # else: OS != "linux"
           'sources!': [
             'browser/process_singleton_linux_uitest.cc',
-          ],
-        }],
-        ['OS=="linux" and toolkit_views==1', {
-          'sources!': [
-            'browser/download/download_uitest.cc',
           ],
         }],
         ['toolkit_views==1', {
