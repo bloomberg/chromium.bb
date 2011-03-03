@@ -197,21 +197,18 @@ def _SetEnvForPnacl(env, arch):
   #TODO(robertm): remove NACL_SDK_INCLUDE ASAP
   pnacl_sdk_include = (pnacl_sdk_root +
                        '/arm-newlib/arm-none-linux-gnueabi/include')
-  pnacl_sdk_ar = (pnacl_sdk_root + '/arm-none-linux-gnueabi' +
-                  '/bin/arm-none-linux-gnueabi-ar')
-  pnacl_sdk_nm = (pnacl_sdk_root + '/arm-none-linux-gnueabi' +
-                  '/bin/arm-none-linux-gnueabi-nm')
-  pnacl_sdk_ranlib = (pnacl_sdk_root + '/arm-none-linux-gnueabi' +
-                      '/bin/arm-none-linux-gnueabi-ranlib')
+  pnacl_sdk_ar = (pnacl_sdk_root + '/bin/pnacl-ar')
+  pnacl_sdk_nm = (pnacl_sdk_root + '/bin/pnacl-nm')
+  pnacl_sdk_ranlib = (pnacl_sdk_root + '/bin/pnacl-ranlib')
 
   pnacl_sdk_cc = (pnacl_sdk_root + '/bin/pnacl-gcc')
   pnacl_sdk_cxx = (pnacl_sdk_root + '/bin/pnacl-g++')
-  pnacl_sdk_ld =  (pnacl_sdk_root + '/bin/pnacl-bcld')
+  pnacl_sdk_ld =  (pnacl_sdk_root + '/bin/pnacl-ld')
   pnacl_sdk_disass = (pnacl_sdk_root + '/arm-none-linux-gnueabi' +
                   '/bin/llvm-dis')
   # NOTE: XXX_flags start with space for easy concatenation
-  pnacl_sdk_cxx_flags = ' -emit-llvm'
-  pnacl_sdk_cc_flags = ' -emit-llvm  -std=gnu99'
+  pnacl_sdk_cxx_flags = ''
+  pnacl_sdk_cc_flags = ' -std=gnu99'
   pnacl_sdk_cc_native_flags = ' -std=gnu99 -arch %s' % arch
   pnacl_sdk_ld_flags = ' -arch %s' % arch
   pnacl_sdk_ld_flags += ' ' + ' '.join(env['PNACL_BCLDFLAGS'])
@@ -222,14 +219,14 @@ def _SetEnvForPnacl(env, arch):
     #       does more than linking
     pnacl_sdk_ld_flags += ' -fPIC'
 
+  # TODO(pdox): Remove the dependency on the gcc toolchain here.
   cc_other_map = {
       'arm':    pnacl_sdk_cc + pnacl_sdk_cc_native_flags,
       'x86-32': '${MAIN_DIR}/toolchain/linux_x86/bin/nacl-gcc',
       'x86-64': '${MAIN_DIR}/toolchain/linux_x86/bin/nacl64-gcc'
       }
   ld_map = {
-      'arm':    (pnacl_sdk_root + '/arm-none-linux-gnueabi/bin/' +
-                 'arm-none-linux-gnueabi-ld'),
+      'arm':    pnacl_sdk_root + '/bin/pnacl-ld',
       'x86-32': '${MAIN_DIR}/toolchain/linux_x86/bin/nacl-ld',
       'x86-64': '${MAIN_DIR}/toolchain/linux_x86/bin/nacl64-ld'
         }

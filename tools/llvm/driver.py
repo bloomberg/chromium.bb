@@ -283,9 +283,6 @@ DriverPatterns = [
   ( '--pnacl-gcc',                     "env.set('INCARNATION', 'gcc')"),
   ( '--pnacl-ld',                      "env.set('INCARNATION', 'ld')"),
   ( '--pnacl-translate',               "env.set('INCARNATION', 'translate')"),
-  ( '-emit-llvm',                      ""), # TODO(pdox): Since this is now
-  ( '--emit-llvm',                     ""), # the default, remove this flag
-                                            # from scons and spec2k.
   ( ('--add-llc-option', '(.+)'),      "env.append('LLC_FLAGS_COMMON', $0)"),
   ( '--pnacl-sb',                      "env.set('SANDBOXED', '1')"),
   ( '--dry-run',                       "env.set('DRY_RUN', '1')"),
@@ -409,13 +406,6 @@ def ClearStandardLibs():
   env.clear('STDLIB_BC_SUFFIX')
 
 def PrepareFlags():
-  ### TEMPORARY HACK
-  ### To deal with the old behavior of scons
-  if env.has('LD_FLAGS_STATIC'):
-    env.set('GOLD_FIX', '1')
-    env.append('LD_FLAGS', '--section-start', '.rodata=0x1000000')
-  ### END HACK
-
   if env.getbool('PIC'):
     env.append('LLC_FLAGS_COMMON', '-relocation-model=pic')
 
@@ -627,9 +617,6 @@ def Incarnation_gcc(argv):
   Compile(arch, inputs, output, output_type)
   return 0
 
-def Incarnation_bcld(argv):
-  return Incarnation_ld(argv)
-
 def Incarnation_ld(argv):
   ParseArgs(argv, GCCPatterns)
   AssertParseComplete()
@@ -674,7 +661,7 @@ def Incarnation_ld(argv):
 
   # The normal "ld" does not implicitly link in startup objects
   # and standard libraries. However, our toolchain is currently
-  # being used with the expectation that when linking bitcode, 
+  # being used with the expectation that when linking bitcode,
   # these will be linked in automatically.
   #
   # Our toolchain also needs to be able to do native-linking

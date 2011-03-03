@@ -2277,33 +2277,11 @@ driver-install() {
   rm -f "${INSTALL_BIN}/pnacl-*"
   cp tools/llvm/driver.py "${INSTALL_BIN}"
   for s in gcc g++ as arm-as i686-as x86_64-as \
-           bclink bcopt dis bcld ld translate illegal nop \
+           bclink bcopt dis ld translate illegal nop \
            ar nm ranlib ; do
     local t="pnacl-$s"
     ln -fs driver.py "${INSTALL_BIN}/$t"
   done
-
-  # TEMPORARY HACK
-  # Install aliases to make the old revision of the scons tests happy,
-  # because we can't update the scons tests until after updating DEPS.
-  local basedir="${INSTALL_DIR}/bin"
-  mkdir -p "${basedir}"
-  makefake "${basedir}/${CROSS_TARGET_ARM}-ar" "arm-pc-nacl-ar"
-  makefake "${basedir}/${CROSS_TARGET_ARM}-nm" "arm-pc-nacl-nm"
-  makefake "${basedir}/${CROSS_TARGET_ARM}-ranlib" "arm-pc-nacl-ranlib"
-  makefake "${basedir}/${CROSS_TARGET_ARM}-ld" "arm-pc-nacl-ld.gold"
-}
-
-makefake() {
-  local faketool=$1
-  local realtool=$2
-  cat > "${faketool}" <<EOF
-#!/bin/sh
-FAKE_TOOL="\$(readlink -m \${0})"
-TOOL_DIR="\$(dirname "\$FAKE_TOOL")"
-\${TOOL_DIR}/${realtool} "\$@"
-EOF
-  chmod 755 "${faketool}"
 }
 
 ######################################################################

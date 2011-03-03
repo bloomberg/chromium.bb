@@ -20,12 +20,6 @@ if env.IsRunningUnderValgrind():
 if env.Bit('nacl_glibc'):
   Return()
 
-# PNaCl toolchain with x86 fails.  Comment out the following to expose
-# the issues.
-
-# if env.Bit('bitcode') and env.Bit('target_x86'):
-#   Return()
-
 # ----------------------------------------------------------
 # Tests that require a NaCl module
 # ----------------------------------------------------------
@@ -64,9 +58,9 @@ def NewAsmEnv(env, *alist, **kwarg):
                           ' -o ${TARGET} ${SOURCES}' +
                           elf_patcher_addenda)
   elif env.Bit('target_arm'):
-    asm_env['LINKCOM'] = ('${LD} --native-client -e _start -Ttext 0x20000' +
-                          ' -nostdlib -static' +
-                          ' ${RO_START} ${RW_START} -o ${TARGET} ${SOURCES}' +
+    asm_env['LINKCOM'] = ('${LD} -marmelf_nacl -e _start -Ttext 0x20000' +
+                          ' ${RO_START} ${RW_START}' +
+                          ' -o ${TARGET} ${SOURCES}' +
                           elf_patcher_addenda)
   else:
     raise Exception('unknown architecture')
