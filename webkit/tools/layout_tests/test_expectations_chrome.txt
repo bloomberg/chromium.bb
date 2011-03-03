@@ -1063,4 +1063,26 @@ BUG_OFFICALGOGREEN LINUX : platform/chromium-linux/fast/text/international/compl
 BUG_OFFICALGOGREEN LINUX : svg/custom/svg-fonts-with-no-element-reference.html = IMAGE+TEXT
 BUG_OFFICALGOGREEN LINUX : svg/hixie/links/001.xml = IMAGE+TEXT
 BUG_OFFICALGOGREEN LINUX : svg/hixie/viewbox/preserveAspectRatio/001.xml = IMAGE+TEXT
-
+BUG_OFFICALGOGREEN LINUX : svg/text/font-size-below-point-five.svg
+BUG_OFFICALGOGREEN LINUX : canvas/philip/tests/size.attributes.parse.trailingjunk.html = TIMEOUT
+BUG_OFFICALGOGREEN LINUX : canvas/philip/tests/size.attributes.setAttribute.zero.html = TIMEOUT
+BUG_OFFICALGOGREEN LINUX : fast/dom/script-clone-rerun-src.xhtml = TIMEOUT
+BUG_OFFICALGOGREEN LINUX : fast/forms/implicit-submission.html = TIMEOUT
+BUG_OFFICALGOGREEN LINUX : fast/frames/sandboxed-iframe-storage.html = TIMEOUT
+BUG_OFFICALGOGREEN LINUX : fast/js/function-declarations-in-switch-statement.html = TIMEOUT
+BUG_OFFICALGOGREEN LINUX : http/tests/appcache/online-fallback-layering.html = TIMEOUT
+BUG_OFFICALGOGREEN LINUX : http/tests/appcache/progress-counter.html = TIMEOUT
+BUG_OFFICALGOGREEN LINUX : http/tests/appcache/reload.html = TIMEOUT
+BUG_OFFICALGOGREEN LINUX : http/tests/appcache/remove-cache.html = TIMEOUT
+BUG_OFFICALGOGREEN LINUX : http/tests/appcache/simple.html = TIMEOUT
+BUG_OFFICALGOGREEN LINUX : http/tests/appcache/top-frame-1.html = TIMEOUT
+BUG_OFFICALGOGREEN LINUX : http/tests/appcache/top-frame-3.html = TIMEOUT
+BUG_OFFICALGOGREEN LINUX : ietestcenter/Javascript/15.5.4.20-4-24.html = TIMEOUT
+BUG_OFFICALGOGREEN LINUX : svg/W3C-SVG-1.1/paths-data-05-t.svg = TIMEOUT
+BUG_OFFICALGOGREEN LINUX : svg/custom/use-css-events.svg = TIMEOUT
+BUG_OFFICALGOGREEN LINUX : svg/dynamic-updates/SVGFEColorMatrixElement-dom-type-attr.html = TIMEOUT
+BUG_OFFICALGOGREEN LINUX : svg/dynamic-updates/SVGFECompositeElement-svgdom-in2-prop.html = TIMEOUT
+BUG_OFFICALGOGREEN LINUX : svg/dynamic-updates/SVGFETurbulenceElement-dom-numOctaves-attr.html = TIMEOUT
+BUG_OFFICALGOGREEN LINUX : tables/mozilla/bugs/bug1188.html = TIMEOUT
+BUG_OFFICALGOGREEN MAC : fast/table/table-and-parts-outline.html
+BUG_OFFICALGOGREEN MAC : svg/css/path-gradient-stroke-shadow.svg
