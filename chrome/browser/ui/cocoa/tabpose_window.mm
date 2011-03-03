@@ -177,8 +177,9 @@ void ThumbnailLoader::LoadThumbnail() {
 
 - (void)setThumbnail:(const SkBitmap&)bitmap {
   // SkCreateCGImageRef() holds on to |bitmaps|'s memory, so this doesn't
-  // create a copy.
-  thumbnail_.reset(SkCreateCGImageRef(bitmap));
+  // create a copy. The renderer always draws data in the system colorspace.
+  thumbnail_.reset(SkCreateCGImageRefWithColorspace(
+      bitmap, base::mac::GetSystemColorSpace()));
   loader_ = NULL;
   [self setNeedsDisplay];
 }
