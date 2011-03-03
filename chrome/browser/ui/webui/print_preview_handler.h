@@ -10,6 +10,8 @@
 #include "base/weak_ptr.h"
 #include "content/browser/webui/web_ui.h"
 
+class EnumeratePrintersTaskProxy;
+
 namespace printing {
 class PrintBackend;
 }
@@ -25,11 +27,16 @@ class PrintPreviewHandler : public WebUIMessageHandler,
   virtual void RegisterMessages();
 
  private:
-  // Get the list of printers and send it to the Web UI. |args| is unused.
+  friend class EnumeratePrintersTaskProxy;
+
+  // Get the list of printers. |args| is unused.
   void HandleGetPrinters(const ListValue* args);
 
   // Print the preview PDF. |args| is unused.
   void HandlePrint(const ListValue* args);
+
+  // Send the list of printers to the Web UI.
+  void SendPrinterList(const ListValue& printers);
 
   // Pointer to current print system.
   scoped_refptr<printing::PrintBackend> print_backend_;
