@@ -22,10 +22,16 @@ class String16Printer(webkit.StringPrinter):
     def to_string(self):
         return webkit.ustring_to_string(self.val['_M_dataplus']['_M_p'])
 
+class GURLPrinter(webkit.StringPrinter):
+    def to_string(self):
+        return self.val['spec_']
 
 def lookup_function(val):
-    if str(val.type) == 'string16':
+    typ = str(val.type)
+    if typ == 'string16':
         return String16Printer(val)
+    elif typ == 'GURL':
+        return GURLPrinter(val)
     return None
 
 gdb.pretty_printers.append(lookup_function)
