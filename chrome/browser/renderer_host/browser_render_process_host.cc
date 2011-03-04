@@ -33,6 +33,7 @@
 #include "chrome/browser/extensions/extension_message_service.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/user_script_master.h"
+#include "chrome/browser/gpu_data_manager.h"
 #include "chrome/browser/history/history.h"
 #include "chrome/browser/io_thread.h"
 #include "chrome/browser/metrics/user_metrics.h"
@@ -636,6 +637,11 @@ void BrowserRenderProcessHost::AppendRendererCommandLine(
     // Turn this policy into a command line switch.
     command_line->AppendSwitch(switches::kDisable3DAPIs);
   }
+
+  // Appending disable-gpu-feature switches due to software rendering list.
+  GpuDataManager* gpu_data_manager = GpuDataManager::GetInstance();
+  DCHECK(gpu_data_manager);
+  gpu_data_manager->AppendRendererCommandLine(command_line);
 }
 
 void BrowserRenderProcessHost::PropagateBrowserCommandLineToRenderer(

@@ -380,8 +380,6 @@ bool GpuProcessHostUIShim::OnControlMessageReceived(
                         OnDestroyCommandBuffer)
     IPC_MESSAGE_HANDLER(GpuHostMsg_GraphicsInfoCollected,
                         OnGraphicsInfoCollected)
-    IPC_MESSAGE_HANDLER_DELAY_REPLY(GpuHostMsg_PreliminaryGraphicsInfoCollected,
-                                    OnPreliminaryGraphicsInfoCollected)
     IPC_MESSAGE_HANDLER(GpuHostMsg_OnLogMessage,
                         OnLogMessage)
     IPC_MESSAGE_HANDLER(GpuHostMsg_SynchronizeReply,
@@ -461,16 +459,6 @@ void GpuProcessHostUIShim::OnDestroyCommandBuffer(
 
 void GpuProcessHostUIShim::OnGraphicsInfoCollected(const GPUInfo& gpu_info) {
   gpu_data_manager_->UpdateGpuInfo(gpu_info);
-}
-
-void GpuProcessHostUIShim::OnPreliminaryGraphicsInfoCollected(
-    const GPUInfo& gpu_info, IPC::Message* reply_msg) {
-  gpu_data_manager_->UpdateGpuInfo(gpu_info);
-  GpuFeatureFlags flags = gpu_data_manager_->GetGpuFeatureFlags();
-
-  GpuHostMsg_PreliminaryGraphicsInfoCollected::WriteReplyParams(
-      reply_msg, flags.flags() != 0);
-  Send(reply_msg);
 }
 
 void GpuProcessHostUIShim::OnLogMessage(int level,

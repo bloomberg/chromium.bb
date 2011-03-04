@@ -1742,8 +1742,9 @@ int BrowserMain(const MainFunctionParams& parameters) {
   // might have shutdown because an update was available.
   profile->GetCloudPrintProxyService();
 
-  // Need to initialize GpuDataManager to load the current GPU blacklist
-  // and schedule a GPU blacklist auto update.
+  // Need to initialize GpuDataManager to load the current GPU blacklist,
+  // collect preliminary GPU info, run through GPU blacklist, and schedule
+  // a GPU blacklist auto update.
   GpuDataManager* gpu_data_manager = GpuDataManager::GetInstance();
   DCHECK(gpu_data_manager);
 

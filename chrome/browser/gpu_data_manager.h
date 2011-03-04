@@ -16,6 +16,7 @@
 #include "chrome/common/gpu_feature_flags.h"
 #include "chrome/common/gpu_info.h"
 
+class CommandLine;
 class DictionaryValue;
 class GpuBlacklist;
 class GPUInfo;
@@ -51,6 +52,10 @@ class GpuDataManager {
   // Returns true if removed, or false if it was not found.
   bool RemoveGpuInfoUpdateCallback(Callback0::Type* callback);
 
+  // Inserting disable-feature switches into renderer process command-line
+  // in correspondance to preliminary gpu feature flags.
+  void AppendRendererCommandLine(CommandLine* command_line);
+
  private:
   friend struct DefaultSingletonTraits<GpuDataManager>;
 
@@ -79,6 +84,7 @@ class GpuDataManager {
 
   bool gpu_feature_flags_set_;
   GpuFeatureFlags gpu_feature_flags_;
+  GpuFeatureFlags preliminary_gpu_feature_flags_;
 
   GPUInfo gpu_info_;
 

@@ -15,22 +15,24 @@
 #include "chrome/common/child_process_logging.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
+#include "chrome/gpu/gpu_info_collector.h"
 #include "content/browser/gpu_blacklist.h"
 #include "grit/browser_resources.h"
 #include "ui/base/resource/resource_bundle.h"
 
 GpuDataManager::GpuDataManager()
-    : complete_gpu_info_already_requested_(false)
-    , gpu_feature_flags_set_(false)
-    , gpu_blacklist_cache_(NULL) {
+    : complete_gpu_info_already_requested_(false),
+      gpu_feature_flags_set_(false),
+      gpu_blacklist_cache_(NULL) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(g_browser_process);
-  PrefService* prefs = g_browser_process->local_state();
+  PrefService* local_state = g_browser_process->local_state();
   // If we bring up chrome normally, prefs should never be NULL; however, we
-  // we handle the case where prefs == NULL for certain tests.
-  if (prefs) {
-    prefs->RegisterDictionaryPref(prefs::kGpuBlacklist);
-    gpu_blacklist_cache_ = prefs->GetMutableDictionary(prefs::kGpuBlacklist);
+  // we handle the case where local_state == NULL for certain tests.
+  if (local_state) {
+    local_state->RegisterDictionaryPref(prefs::kGpuBlacklist);
+    gpu_blacklist_cache_ =
+        local_state->GetMutableDictionary(prefs::kGpuBlacklist);
     DCHECK(gpu_blacklist_cache_);
 
     gpu_blacklist_updater_ = new GpuBlacklistUpdater();
@@ -40,6 +42,13 @@ GpuDataManager::GpuDataManager()
 
   LoadGpuBlacklist();
   UpdateGpuBlacklist();
+
+  GPUInfo gpu_info;
+  gpu_info_collector::CollectPreliminaryGraphicsInfo(&gpu_info);
+  UpdateGpuInfo(gpu_info);
+  UpdateGpuFeatureFlags();
+
+  preliminary_gpu_feature_flags_ = gpu_feature_flags_;
 }
 
 GpuDataManager::~GpuDataManager() { }
@@ -96,7 +105,13 @@ const ListValue& GpuDataManager::log_messages() const {
 GpuFeatureFlags GpuDataManager::GetGpuFeatureFlags() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   UpdateGpuFeatureFlags();
-  return gpu_feature_flags_;
+  // We only need to return the bits that are not in the preliminary
+  // gpu feature flags because the latter work through renderer
+  // commandline switches.
+  uint32 mask = ~(preliminary_gpu_feature_flags_.flags());
+  GpuFeatureFlags masked_flags;
+  masked_flags.set_flags(gpu_feature_flags_.flags() & mask);
+  return masked_flags;
 }
 
 void GpuDataManager::AddGpuInfoUpdateCallback(Callback0::Type* callback) {
@@ -113,6 +128,32 @@ bool GpuDataManager::RemoveGpuInfoUpdateCallback(Callback0::Type* callback) {
     return true;
   }
   return false;
+}
+
+void GpuDataManager::AppendRendererCommandLine(
+    CommandLine* command_line) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(command_line);
+
+  uint32 flags = preliminary_gpu_feature_flags_.flags();
+  if ((flags & GpuFeatureFlags::kGpuFeatureWebgl) &&
+      !command_line->HasSwitch(switches::kDisableExperimentalWebGL))
+    command_line->AppendSwitch(switches::kDisableExperimentalWebGL);
+  if ((flags & GpuFeatureFlags::kGpuFeatureMultisampling) &&
+      !command_line->HasSwitch(switches::kDisableGLMultisampling))
+    command_line->AppendSwitch(switches::kDisableGLMultisampling);
+  // If we have kGpuFeatureAcceleratedCompositing, we disable all GPU features.
+  if (flags & GpuFeatureFlags::kGpuFeatureAcceleratedCompositing) {
+    const char* switches[] = {
+        switches::kDisableAcceleratedCompositing,
+        switches::kDisableExperimentalWebGL
+    };
+    const int switch_count = sizeof(switches) / sizeof(char*);
+    for (int i = 0; i < switch_count; ++i) {
+      if (!command_line->HasSwitch(switches[i]))
+        command_line->AppendSwitch(switches[i]);
+    }
+  }
 }
 
 void GpuDataManager::RunGpuInfoUpdateCallbacks() {

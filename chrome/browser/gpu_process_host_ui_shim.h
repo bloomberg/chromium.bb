@@ -143,8 +143,6 @@ class GpuProcessHostUIShim
   void OnDestroyCommandBuffer(gfx::PluginWindowHandle window,
                               int32 renderer_id, int32 render_view_id);
   void OnGraphicsInfoCollected(const GPUInfo& gpu_info);
-  void OnPreliminaryGraphicsInfoCollected(
-      const GPUInfo& gpu_info, IPC::Message* reply_msg);
   void OnLogMessage(int level, const std::string& header,
       const std::string& message);
   void OnSynchronizeReply();
