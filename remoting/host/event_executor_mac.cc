@@ -40,8 +40,8 @@ void EventExecutorMac::InjectMouseEvent(const MouseEvent* event, Task* done) {
     // TODO(wez): This code assumes that MouseEvent(0,0) (top-left of client view)
     // corresponds to local (0,0) (top-left of primary monitor).  That won't in
     // general be true on multi-monitor systems, though.
-    int width = capturer_->width();
-    int height = capturer_->height();
+    int width = capturer_->width_most_recent();
+    int height = capturer_->height_most_recent();
     if (event->x() >= 0 || event->y() >= 0 ||
         event->x() < width || event->y() < height) {
 

@@ -34,11 +34,12 @@ int main(int argc, char** argv) {
   remoting::ClientContext context;
   remoting::protocol::ConnectionToHost connection(context.jingle_thread());
   remoting::X11View view;
-  remoting::RectangleUpdateDecoder rectangle_decoder(
-      context.decode_message_loop(), &view);
+  scoped_refptr<remoting::RectangleUpdateDecoder> rectangle_decoder =
+      new remoting::RectangleUpdateDecoder(context.decode_message_loop(),
+                                           &view);
   remoting::X11InputHandler input_handler(&context, &connection, &view);
   remoting::ChromotingClient client(
-      config, &context, &connection, &view, &rectangle_decoder, &input_handler,
+      config, &context, &connection, &view, rectangle_decoder, &input_handler,
       NewRunnableFunction(&ClientQuit, &ui_loop));
 
   // Run the client on a new MessageLoop until

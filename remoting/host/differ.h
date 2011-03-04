@@ -27,6 +27,11 @@ class Differ {
   Differ(int width, int height, int bytes_per_pixel, int stride);
   ~Differ();
 
+  int width() { return width_; }
+  int height() { return height_; }
+  int bytes_per_pixel() { return bytes_per_pixel_; }
+  int bytes_per_row() { return bytes_per_row_; }
+
   // Given the previous and current screen buffer, calculate the set of
   // rectangles that enclose all the changed pixels in the new screen.
   void CalcDirtyRects(const void* prev_buffer, const void* curr_buffer,

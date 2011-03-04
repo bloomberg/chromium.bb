@@ -38,6 +38,10 @@ class CaptureData : public base::RefCountedThreadSafe<CaptureData> {
   // written into |rects|.
   const InvalidRects& dirty_rects() const { return dirty_rects_; }
 
+  // TODO(simonmorris): The next two methods should be replaced by a
+  // gfx::Size size(), and objects that store that size should also
+  // use a gfx::Size to do so.
+
   // Get the width of the image captured.
   int width() const { return width_; }
 

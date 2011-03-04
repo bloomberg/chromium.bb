@@ -30,6 +30,11 @@ class CapturerFakeAscii : public Capturer {
   // Generates an image in the front buffer.
   void GenerateImage();
 
+  // The screen dimensions.
+  int width_;
+  int height_;
+  int bytes_per_row_;
+
   // We have two buffers for the screen images as required by Capturer.
   scoped_array<uint8> buffers_[kNumBuffers];
 

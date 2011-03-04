@@ -11,25 +11,14 @@
 namespace remoting {
 
 Capturer::Capturer(MessageLoop* message_loop)
-    : width_(0),
-      height_(0),
-      pixel_format_(media::VideoFrame::INVALID),
-      bytes_per_row_(0),
+    : pixel_format_(media::VideoFrame::INVALID),
       current_buffer_(0),
-      message_loop_(message_loop) {
+      message_loop_(message_loop),
+      width_most_recent_(0),
+      height_most_recent_(0) {
 }
 
 Capturer::~Capturer() {
-}
-
-// Return the width of the screen.
-int Capturer::width() const {
-  return width_;
-}
-
-// Return the height of the screen.
-int Capturer::height() const {
-  return height_;
 }
 
 // Return the pixel format of the screen.
@@ -53,10 +42,14 @@ void Capturer::InvalidateRects(const InvalidRects& inval_rects) {
   }
 }
 
-void Capturer::InvalidateFullScreen() {
+void Capturer::InvalidateFullScreen(int width, int height) {
   base::AutoLock auto_inval_rects_lock(inval_rects_lock_);
   inval_rects_.clear();
-  inval_rects_.insert(gfx::Rect(0, 0, width_, height_));
+  inval_rects_.insert(gfx::Rect(0, 0, width, height));
+}
+
+void Capturer::InvalidateFullScreen() {
+  InvalidateFullScreen(width_most_recent_, height_most_recent_);
 }
 
 void Capturer::CaptureInvalidRects(CaptureCompletedCallback* callback) {
@@ -81,16 +74,19 @@ void Capturer::FinishCapture(scoped_refptr<CaptureData> data,
   // Select the next buffer to be the current buffer.
   current_buffer_ = (current_buffer_ + 1) % kNumBuffers;
 
+  width_most_recent_ = data->width();
+  height_most_recent_ = data->height();
+
   callback->Run(data);
   delete callback;
 }
 
-bool Capturer::IsCaptureFullScreen() {
+bool Capturer::IsCaptureFullScreen(int width, int height) {
   base::AutoLock auto_inval_rects_lock(inval_rects_lock_);
   return inval_rects_.size() == 1u &&
       inval_rects_.begin()->x() == 0 && inval_rects_.begin()->y() == 0 &&
-      inval_rects_.begin()->width() == width_ &&
-      inval_rects_.begin()->height() == height_;
+      inval_rects_.begin()->width() == width &&
+      inval_rects_.begin()->height() == height;
 }
 
 }  // namespace remoting

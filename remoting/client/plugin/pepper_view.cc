@@ -20,8 +20,6 @@ namespace remoting {
 PepperView::PepperView(ChromotingInstance* instance, ClientContext* context)
   : instance_(instance),
     context_(context),
-    viewport_x_(0),
-    viewport_y_(0),
     viewport_width_(0),
     viewport_height_(0),
     is_static_fill_(false),
@@ -82,6 +80,8 @@ void PepperView::PaintFrame(media::VideoFrame* frame, UpdatedRects* rects) {
   DCHECK(instance_->CurrentlyOnPluginThread());
 
   TraceContext::tracer()->PrintString("Start Paint Frame.");
+
+  SetViewport(0, 0, frame->width(), frame->height());
 
   uint8* frame_data = frame->data(media::VideoFrame::kRGBPlane);
   const int kFrameStride = frame->stride(media::VideoFrame::kRGBPlane);
@@ -178,11 +178,9 @@ void PepperView::UpdateLoginStatus(bool success, const std::string& info) {
 void PepperView::SetViewport(int x, int y, int width, int height) {
   DCHECK(instance_->CurrentlyOnPluginThread());
 
-  // TODO(ajwong): Should we ignore x & y updates?  What do those even mean?
+  if ((width == viewport_width_) && (height == viewport_height_))
+    return;
 
-  // TODO(ajwong): What does viewport x, y mean to a plugin anyways?
-  viewport_x_ = x;
-  viewport_y_ = y;
   viewport_width_ = width;
   viewport_height_ = height;
 

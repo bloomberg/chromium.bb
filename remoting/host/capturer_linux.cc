@@ -68,6 +68,8 @@ class CapturerLinuxPimpl {
   Display* display_;
   GC gc_;
   Window root_window_;
+  int width_;
+  int height_;
 
   // XDamage information.
   Damage damage_handle_;
@@ -117,6 +119,8 @@ CapturerLinuxPimpl::CapturerLinuxPimpl(CapturerLinux* capturer)
       display_(NULL),
       gc_(NULL),
       root_window_(BadValue),
+      width_(0),
+      height_(0),
       damage_handle_(BadValue),
       damage_event_base_(-1),
       damage_error_base_(-1),
@@ -182,23 +186,21 @@ bool CapturerLinuxPimpl::Init() {
   // Set up the dimensions of the catpure framebuffer.
   XWindowAttributes root_attr;
   XGetWindowAttributes(display_, root_window_, &root_attr);
-  capturer_->width_ = root_attr.width;
-  capturer_->height_ = root_attr.height;
-  stride_ = capturer_->width() * kBytesPerPixel;
-  VLOG(1) << "Initialized with Geometry: " << capturer_->width()
-          << "x" << capturer_->height();
+  width_ = root_attr.width;
+  height_ = root_attr.height;
+  stride_ = width_ * kBytesPerPixel;
+  VLOG(1) << "Initialized with Geometry: " << width_ << "x" << height_;
 
   // Allocate the screen buffers.
   for (int i = 0; i < CapturerLinux::kNumBuffers; i++) {
-    buffers_[i] =
-        new uint8[capturer_->width() * capturer_->height() * kBytesPerPixel];
+    buffers_[i] = new uint8[width_ * height_ * kBytesPerPixel];
   }
 
   return true;
 }
 
 void CapturerLinuxPimpl::CalculateInvalidRects() {
-  if (capturer_->IsCaptureFullScreen())
+  if (capturer_->IsCaptureFullScreen(width_, height_))
     capture_fullscreen_ = true;
 
   // TODO(ajwong): The capture_fullscreen_ logic here is very ugly. Refactor.
@@ -243,8 +245,7 @@ void CapturerLinuxPimpl::CaptureRects(
   planes.strides[0] = stride_;
 
   scoped_refptr<CaptureData> capture_data(
-      new CaptureData(planes, capturer_->width(), capturer_->height(),
-                      media::VideoFrame::RGB32));
+      new CaptureData(planes, width_, height_, media::VideoFrame::RGB32));
 
   // Synchronize the current buffer with the last one since we do not capture
   // the entire desktop. Note that encoder may be reading from the previous
@@ -259,7 +260,7 @@ void CapturerLinuxPimpl::CaptureRects(
     for (int i = 0; i < it->height(); ++i) {
       memcpy(buffer + offset, last_buffer_ + offset,
              it->width() * kBytesPerPixel);
-      offset += capturer_->width() * kBytesPerPixel;
+      offset += width_ * kBytesPerPixel;
     }
   }
 
@@ -343,7 +344,7 @@ void CapturerLinuxPimpl::SlowBlit(XImage* image, int dest_x, int dest_y,
   unsigned int max_green = image->green_mask >> green_shift;
 
   // Produce an upside-down image.
-  uint8* dst_pos = dst_buffer + dst_stride * (capturer_->height() - dest_y - 1);
+  uint8* dst_pos = dst_buffer + dst_stride * (height_ - dest_y - 1);
   dst_pos += dest_x * kBytesPerPixel;
   // TODO(jamiewalch): Optimize, perhaps using MMX code or by converting to
   // YUV directly
