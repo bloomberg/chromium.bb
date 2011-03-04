@@ -88,7 +88,7 @@ class ShortcutsTest(pyauto.PyUITest):
     """Verify clear browsing data shortcut."""
     self.ApplyAccelerator(pyauto.IDC_CLEAR_BROWSING_DATA)
     self.assertEquals(2, self.GetTabCount())
-    self.assertTrue(re.search('clearBrowserDataOverlay',
+    self.assertTrue(re.search('clearBrowserData',
         self.GetActiveTabURL().spec()), 'Clear browsing data url is wrong.')
     # Wait until the clear browsing data DOM UI window opens.
     self.assertTrue(self.WaitUntil(lambda:
