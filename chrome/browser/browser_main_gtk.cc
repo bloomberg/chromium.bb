@@ -12,7 +12,6 @@
 #include "base/command_line.h"
 #include "base/debug/debugger.h"
 #include "chrome/browser/browser_list.h"
-#include "chrome/browser/browser_main_gtk.h"
 #include "chrome/browser/browser_main_win.h"
 #include "chrome/browser/metrics/metrics_service.h"
 #include "chrome/common/chrome_switches.h"
@@ -42,7 +41,9 @@ bool g_in_x11_io_error_handler = false;
 
 int BrowserX11ErrorHandler(Display* d, XErrorEvent* error) {
   if (!g_in_x11_io_error_handler)
-    LOG(ERROR) << ui::GetErrorEventDescription(d, error);
+    MessageLoop::current()->PostTask(
+        FROM_HERE,
+        NewRunnableFunction(ui::LogErrorEventDescription, d, *error));
   return 0;
 }
 

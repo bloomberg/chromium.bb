@@ -40,8 +40,11 @@ namespace ui {
   void SetX11ErrorHandlers(XErrorHandler error_handler,
                            XIOErrorHandler io_error_handler);
 
-  // Returns a string suitable for logging the error event.
-  std::string GetErrorEventDescription(Display* dpy, XErrorEvent* error_event);
+  // NOTE: This function should not be called directly from the
+  // X11 Error handler because it queries the server to decode the
+  // error message, which may trigger other errors. A suitable workaround
+  // is to post a task in the error handler to call this function.
+  void LogErrorEventDescription(Display* dpy, XErrorEvent error_event);
 
 }  // namespace ui
 
