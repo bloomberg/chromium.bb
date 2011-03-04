@@ -13,8 +13,8 @@ import chromite.lib.cros_build_lib as cros_lib
 
 _FULL_BINHOST = 'FULL_BINHOST'
 PUBLIC_OVERLAY = '%(buildroot)s/src/third_party/chromiumos-overlay'
-PRIVATE_OVERLAY = '%(buildroot)s/src/private-overlays/chromeos-overlay'
 _CROS_ARCHIVE_URL = 'CROS_ARCHIVE_URL'
+OVERLAY_LIST_CMD = '%(buildroot)s/src/platform/dev/host/cros_overlay_list'
 
 
 class BuilderStage():
@@ -67,14 +67,22 @@ class BuilderStage():
                 'public': Just the public overlay.
                 'both': Both the public and private overlays.
     """
-    public_overlay = PUBLIC_OVERLAY % {'buildroot': self._build_root}
-    private_overlay = PRIVATE_OVERLAY % {'buildroot': self._build_root}
+    cmd = OVERLAY_LIST_CMD % {'buildroot': self._build_root}
+    public_overlays = cros_lib.RunCommand([cmd, '--all_boards', '--noprivate'],
+                                          redirect_stdout=True).output.split()
+    private_overlays = cros_lib.RunCommand([cmd, '--all_boards', '--nopublic'],
+                                           redirect_stdout=True).output.split()
+
+    # TODO(davidjames): cros_overlay_list should include chromiumos-overlay in
+    #                   its list of public overlays. But it doesn't yet...
+    public_overlays.append(PUBLIC_OVERLAY % {'buildroot': self._build_root})
+
     if overlays == 'private':
-      paths = [private_overlay]
+      paths = private_overlays
     elif overlays == 'public':
-      paths = [public_overlay]
+      paths = public_overlays
     elif overlays == 'both':
-      paths = [public_overlay, private_overlay]
+      paths = public_overlays + private_overlays
     else:
       cros_lib.Info('No overlays found.')
       paths = []
