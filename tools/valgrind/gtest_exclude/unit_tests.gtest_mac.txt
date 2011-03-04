@@ -31,8 +31,3 @@ MultiProcessNotificationTest.PostSystemNotification
 MultiProcessNotificationTest.ProfileCrossDomainPosting
 MultiProcessNotificationTest.UserCrossDomainPosting
 MultiProcessNotificationTest.SystemCrossDomainPosting
-
-# The following tests crash on the valgrind bot.
-# See http://crbug.com/74727.
-ThreadWatcherTest.ThreadNotResponding
-ThreadWatcherTest.MultipleThreadsNotResponding

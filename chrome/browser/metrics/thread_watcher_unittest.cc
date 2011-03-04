@@ -24,7 +24,6 @@ enum State {
   ACTIVATED,          // Thread watching activated.
   SENT_PING,          // Sent ping message to watched thread.
   RECEIVED_PONG,      // Received Pong message.
-  CHECK_RESPONSE_OK,  // CheckResponse verified ping/pong.
   DEACTIVATED,        // Thread watching de-activated.
 };
 
@@ -32,6 +31,7 @@ enum WaitState {
   UNINITIALIZED,
   STARTED_WAITING,    // Start waiting for state_ to change to expected_state.
   STOPPED_WAITING,    // Done with the waiting.
+  ALL_DONE,           // Done with waiting for STOPPED_WAITING.
 };
 
 enum CheckResponseState {
@@ -152,19 +152,20 @@ class CustomThreadWatcher : public ThreadWatcher {
     return responsive;
   }
 
-  void VeryLongMethod(TimeDelta wait_time) {
+  void WaitForWaitStateChange(TimeDelta wait_time, WaitState expected_state) {
     DCHECK(!WatchDogThread::CurrentlyOnWatchDogThread());
     TimeTicks end_time = TimeTicks::Now() + wait_time;
     {
       base::AutoLock auto_lock(custom_lock_);
-      while (wait_state_ != STOPPED_WAITING && TimeTicks::Now() < end_time) {
-        TimeDelta state_change_wait_time = end_time - TimeTicks::Now();
-        // LOG(INFO) << "In VeryLongMethod: thread_name_: " << thread_name_ <<
-        //     " wait:" << state_change_wait_time.InMilliseconds() <<
-        //     " wait_state_:" << wait_state_;
-        state_changed_.TimedWait(state_change_wait_time);
-      }
+      while (wait_state_ != expected_state && TimeTicks::Now() < end_time)
+        state_changed_.TimedWait(end_time - TimeTicks::Now());
     }
+  }
+
+  void VeryLongMethod(TimeDelta wait_time) {
+    DCHECK(!WatchDogThread::CurrentlyOnWatchDogThread());
+    WaitForWaitStateChange(wait_time, STOPPED_WAITING);
+    UpdateWaitState(ALL_DONE);
   }
 
   State WaitForStateChange(const TimeDelta& wait_time, State expected_state) {
@@ -389,6 +390,9 @@ TEST_F(ThreadWatcherTest, ThreadNotResponding) {
   WatchDogThread::PostTask(
       FROM_HERE,
       NewRunnableMethod(io_watcher_, &ThreadWatcher::DeActivateThreadWatching));
+
+  // Wait for the io_watcher_'s VeryLongMethod to finish.
+  io_watcher_->WaitForWaitStateChange(kUnresponsiveTime * 10, ALL_DONE);
 }
 
 // Test watching of multiple threads with all threads not responding.
@@ -434,8 +438,7 @@ TEST_F(ThreadWatcherTest, MultipleThreadsResponding) {
 }
 
 // Test watching of multiple threads with one of the threads not responding.
-// Disabled, http://crbug.com/74727.
-TEST_F(ThreadWatcherTest, DISABLED_MultipleThreadsNotResponding) {
+TEST_F(ThreadWatcherTest, MultipleThreadsNotResponding) {
   // Simulate hanging of watched thread by making the watched thread wait for a
   // very long time by posting a task on watched thread that keeps it busy.
   BrowserThread::PostTask(
@@ -477,4 +480,7 @@ TEST_F(ThreadWatcherTest, DISABLED_MultipleThreadsNotResponding) {
       FROM_HERE,
       NewRunnableMethod(
           webkit_watcher_, &ThreadWatcher::DeActivateThreadWatching));
+
+  // Wait for the io_watcher_'s VeryLongMethod to finish.
+  io_watcher_->WaitForWaitStateChange(kUnresponsiveTime * 10, ALL_DONE);
 }
