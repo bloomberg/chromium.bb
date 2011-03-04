@@ -4,7 +4,7 @@ vars = {
   # When updating the chromium rev, you must also update the nss and sqlite
   # revs to match the version pulled-in by Chromium's own DEPS in the new rev.
   "chromium_rev": "51794",
-  "chromium_breakpad_rev": "47985",
+  "chromium_breakpad_rev": "72364",
   "o3d_code_rev": "232",
   "skia_rev": "586",
   "gyp_rev": "899",
