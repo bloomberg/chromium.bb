@@ -36,8 +36,7 @@ GpuDataManager::GpuDataManager()
     DCHECK(gpu_blacklist_cache_);
 
     gpu_blacklist_updater_ = new GpuBlacklistUpdater();
-    // TODO(zmo): uncomment the following line to turn on auto-updating.
-    // gpu_blacklist_updater_->StartAfterDelay();
+    gpu_blacklist_updater_->StartAfterDelay();
   }
 
   LoadGpuBlacklist();

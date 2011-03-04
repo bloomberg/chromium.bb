@@ -24,8 +24,7 @@ static const int kCacheUpdateDelay = 48 * 60 * 60 * 1000;
 }  // namespace
 
 const char* GpuBlacklistUpdater::kDefaultGpuBlacklistURL =
-    "http://cache.pack.google.com/edgedl/chrome/gpu/"
-    "software_rendering_list.json";
+    "https://dl.google.com/dl/edgedl/chrome/gpu/software_rendering_list.json";
 
 GpuBlacklistUpdater::GpuBlacklistUpdater()
     : WebResourceService(ProfileManager::GetDefaultProfile(),
