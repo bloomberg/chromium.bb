@@ -290,7 +290,8 @@ IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, TestPauseWhenLoadingDevTools) {
 
 // Tests that pressing 'Pause' will pause script execution if the script
 // is already running.
-IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, TestPauseWhenScriptIsRunning) {
+// Marked as DISABLED due to http://crbug.com/74923
+IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, DISABLED_TestPauseWhenScriptIsRunning) {
   RunTest("testPauseWhenScriptIsRunning", kPauseWhenScriptIsRunning);
 }
 
