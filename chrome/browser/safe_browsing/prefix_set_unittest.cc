@@ -26,11 +26,19 @@ TEST(PrefixSetTest, Baseline) {
     prefixes.push_back(GenPrefix());
   }
 
+  std::sort(prefixes.begin(), prefixes.end());
   safe_browsing::PrefixSet prefix_set(prefixes);
+
+  // Check that |GetPrefixes()| returns exactly the same set of
+  // prefixes as was passed in.
+  std::set<SBPrefix> check(prefixes.begin(), prefixes.end());
+  std::vector<SBPrefix> prefixes_copy;
+  prefix_set.GetPrefixes(&prefixes_copy);
+  EXPECT_EQ(prefixes_copy.size(), check.size());
+  EXPECT_TRUE(std::equal(check.begin(), check.end(), prefixes_copy.begin()));
 
   // Check that the set flags all of the inputs, and also check items
   // just above and below the inputs to make sure they aren't there.
-  std::set<SBPrefix> check(prefixes.begin(), prefixes.end());
   for (size_t i = 0; i < prefixes.size(); ++i) {
     EXPECT_TRUE(prefix_set.Exists(prefixes[i]));
 
@@ -45,7 +53,7 @@ TEST(PrefixSetTest, Baseline) {
 }
 
 // Test that the empty set doesn't appear to have anything in it.
-TEST(PrefixSetTest, xEmpty) {
+TEST(PrefixSetTest, Empty) {
   std::vector<SBPrefix> prefixes;
   safe_browsing::PrefixSet prefix_set(prefixes);
   for (size_t i = 0; i < 500; ++i) {
@@ -97,10 +105,17 @@ TEST(PrefixSetTest, EdgeCases) {
     delta--;
   }
 
-  // Shuffle things up for giggles.
-  std::random_shuffle(prefixes.begin(), prefixes.end());
-
+  std::sort(prefixes.begin(), prefixes.end());
   safe_browsing::PrefixSet prefix_set(prefixes);
+
+  // Check that |GetPrefixes()| returns the same set of prefixes as
+  // was passed in.
+  std::vector<SBPrefix> prefixes_copy;
+  prefix_set.GetPrefixes(&prefixes_copy);
+  prefixes.erase(std::unique(prefixes.begin(), prefixes.end()), prefixes.end());
+  EXPECT_EQ(prefixes_copy.size(), prefixes.size());
+  EXPECT_TRUE(std::equal(prefixes.begin(), prefixes.end(),
+                         prefixes_copy.begin()));
 
   // Items before and after the set are not present, and don't crash.
   EXPECT_FALSE(prefix_set.Exists(kVeryNegative - 100));

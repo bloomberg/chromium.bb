@@ -59,11 +59,15 @@ namespace safe_browsing {
 
 class PrefixSet {
  public:
-  explicit PrefixSet(const std::vector<SBPrefix>& prefixes);
+  explicit PrefixSet(const std::vector<SBPrefix>& sorted_prefixes);
   ~PrefixSet();
 
   // |true| if |prefix| was in |prefixes| passed to the constructor.
   bool Exists(SBPrefix prefix) const;
+
+  // Regenerate the vector of prefixes passed to the constructor into
+  // |prefixes|.  Prefixes will be added in sorted order.
+  void GetPrefixes(std::vector<SBPrefix>* prefixes);
 
  private:
   // Maximum delta that can be encoded in a 16-bit unsigned.

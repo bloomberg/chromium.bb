@@ -22,30 +22,28 @@ bool PrefixLess(const std::pair<SBPrefix,size_t>& a,
 
 namespace safe_browsing {
 
-PrefixSet::PrefixSet(const std::vector<SBPrefix>& prefixes) {
-  if (prefixes.size()) {
-    std::vector<SBPrefix> sorted(prefixes.begin(), prefixes.end());
-    std::sort(sorted.begin(), sorted.end());
-
+PrefixSet::PrefixSet(const std::vector<SBPrefix>& sorted_prefixes) {
+  if (sorted_prefixes.size()) {
     // Lead with the first prefix.
-    SBPrefix prev_prefix = sorted[0];
+    SBPrefix prev_prefix = sorted_prefixes[0];
     size_t run_length = 0;
     index_.push_back(std::make_pair(prev_prefix, deltas_.size()));
 
-    for (size_t i = 1; i < sorted.size(); ++i) {
-      // Don't encode zero deltas.
-      if (sorted[i] == prev_prefix)
+    for (size_t i = 1; i < sorted_prefixes.size(); ++i) {
+      // Skip duplicates.
+      if (sorted_prefixes[i] == prev_prefix)
         continue;
 
       // Calculate the delta.  |unsigned| is mandatory, because the
-      // prefixes could be more than INT_MAX apart.
-      unsigned delta = sorted[i] - prev_prefix;
+      // sorted_prefixes could be more than INT_MAX apart.
+      DCHECK_GT(sorted_prefixes[i], prev_prefix);
+      unsigned delta = sorted_prefixes[i] - prev_prefix;
 
       // New index ref if the delta is too wide, or if too many
       // consecutive deltas have been encoded.  Note that
       // |kMaxDelta| cannot itself be encoded.
       if (delta >= kMaxDelta || run_length >= kMaxRun) {
-        index_.push_back(std::make_pair(sorted[i], deltas_.size()));
+        index_.push_back(std::make_pair(sorted_prefixes[i], deltas_.size()));
         run_length = 0;
       } else {
         // Continue the run of deltas.
@@ -53,7 +51,7 @@ PrefixSet::PrefixSet(const std::vector<SBPrefix>& prefixes) {
         ++run_length;
       }
 
-      prev_prefix = sorted[i];
+      prev_prefix = sorted_prefixes[i];
     }
 
     // Send up some memory-usage stats.  Bits because fractional bytes
@@ -101,6 +99,22 @@ bool PrefixSet::Exists(SBPrefix prefix) const {
   }
 
   return current == prefix;
+}
+
+void PrefixSet::GetPrefixes(std::vector<SBPrefix>* prefixes) {
+  for (size_t ii = 0; ii < index_.size(); ++ii) {
+    // The deltas for this |index_| entry run to the next index entry,
+    // or the end of the deltas.
+    const size_t deltas_end =
+        (ii + 1 < index_.size()) ? index_[ii + 1].second : deltas_.size();
+
+    SBPrefix current = index_[ii].first;
+    prefixes->push_back(current);
+    for (size_t di = index_[ii].second; di < deltas_end; ++di) {
+      current += deltas_[di];
+      prefixes->push_back(current);
+    }
+  }
 }
 
 }  // namespace safe_browsing
