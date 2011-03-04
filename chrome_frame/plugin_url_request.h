@@ -12,7 +12,6 @@
 #include "base/scoped_comptr_win.h"
 #include "base/time.h"
 #include "chrome_frame/chrome_frame_delegate.h"
-#include "chrome_frame/urlmon_upload_data_stream.h"
 #include "ipc/ipc_message.h"
 #include "net/base/host_port_pair.h"
 #include "net/base/upload_data.h"
@@ -156,22 +155,8 @@ class PluginUrlRequest {
   }
 
  protected:
-  HRESULT get_upload_data(IStream** ret) {
-    DCHECK(ret);
-    if (!upload_data_.get())
-      return S_FALSE;
-    *ret = upload_data_.get();
-    (*ret)->AddRef();
-    return S_OK;
-  }
-
   void set_url(const std::string& url) {
     url_ = url;
-  }
-
-  void ClearPostData() {
-    upload_data_.Release();
-    post_data_len_ = 0;
   }
 
   void SendData();
@@ -186,7 +171,7 @@ class PluginUrlRequest {
   std::string extra_headers_;
   ResourceType::Type resource_type_;
   int load_flags_;
-  ScopedComPtr<IStream> upload_data_;
+  std::vector<uint8> upload_data_;
   bool is_chunked_upload_;
   // Contains the ip address and port of the destination host.
   net::HostPortPair socket_address_;

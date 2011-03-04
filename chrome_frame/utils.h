@@ -301,9 +301,13 @@ HRESULT DoQueryService(const IID& service_id, IUnknown* unk, T** service) {
 
 // Navigates an IWebBrowser2 object to a moniker.
 // |headers| can be NULL.
-HRESULT NavigateBrowserToMoniker(IUnknown* browser, IMoniker* moniker,
-                                 const wchar_t* headers, IBindCtx* bind_ctx,
-                                 const wchar_t* fragment, IStream* post_data);
+HRESULT NavigateBrowserToMoniker(IUnknown* browser,
+                                 IMoniker* moniker,
+                                 const wchar_t* headers,
+                                 IBindCtx* bind_ctx,
+                                 const wchar_t* fragment,
+                                 const uint8* post_data,
+                                 int post_data_len);
 
 // Raises a flag on the current thread (using TLS) to indicate that an
 // in-progress navigation should be rendered in chrome frame.
@@ -463,7 +467,8 @@ extern base::Lock g_ChromeFrameHistogramLock;
 struct DownloadInHostParams {
   IBindCtx* bind_ctx;
   IMoniker* moniker;
-  IStream* post_data;
+  uint8* post_data;
+  int post_data_len;
   std::string request_headers;
 };
 

@@ -19,7 +19,6 @@
 #include "chrome_frame/extra_system_apis.h"
 #include "chrome_frame/html_utils.h"
 #include "chrome_frame/urlmon_url_request_private.h"
-#include "chrome_frame/urlmon_upload_data_stream.h"
 #include "chrome_frame/utils.h"
 #include "chrome/common/automation_messages.h"
 #include "net/base/load_flags.h"
@@ -166,8 +165,20 @@ void UrlmonUrlRequest::TerminateBind(TerminateBindCallback* callback) {
   DVLOG(1) << __FUNCTION__ << me();
   cleanup_transaction_ = false;
   if (status_.get_state() == Status::DONE) {
+    // We may receive a top level POST with no data. We stil need to reissue
+    // the navigation as a POST request. To achieve this we add a dummy value
+    // to the data being uploaded.
+    // May not work as expected with some web sites.
+    if (upload_data_.size() == 0 && LowerCaseEqualsASCII(method(), "post")) {
+      DLOG(WARNING) << "Reissuing navigation with empty POST data. May not"
+                    << " work as expected";
+      upload_data_.push_back(0);
+    }
     // Binding is stopped. Note result could be an error.
-    callback->Run(moniker_, bind_context_, upload_data_,
+    callback->Run(moniker_,
+                  bind_context_,
+                  (upload_data_.size() > 0 ? &upload_data_[0] : NULL),
+                  upload_data_.size(),
                   request_headers_.c_str());
     delete callback;
   } else {
@@ -368,8 +379,21 @@ STDMETHODIMP UrlmonUrlRequest::OnStopBinding(HRESULT result, LPCWSTR error) {
 
   if (result == INET_E_TERMINATED_BIND) {
     if (terminate_requested()) {
-      terminate_bind_callback_->Run(moniker_, bind_context_, upload_data_,
-                                    request_headers_.c_str());
+      // We may receive a top level POST with no data. We stil need to reissue
+      // the navigation as a POST request. To achieve this we add a dummy value
+      // to the data being uploaded.
+      // May not work as expected with some web sites.
+      if (upload_data_.size() == 0 && LowerCaseEqualsASCII(method(), "post")) {
+        DLOG(WARNING) << "Reissuing navigation with empty POST data. May not"
+                      << " work as expected";
+        upload_data_.push_back(0);
+      }
+      terminate_bind_callback_->Run(
+          moniker_,
+          bind_context_,
+          (upload_data_.size() > 0 ? &upload_data_[0] : NULL),
+          upload_data_.size(),
+          request_headers_.c_str());
     } else {
       cleanup_transaction_ = true;
     }
@@ -482,16 +506,16 @@ STDMETHODIMP UrlmonUrlRequest::GetBindInfo(DWORD* bind_flags,
     if (bind_info->dwBindVerb != BINDVERB_CUSTOM)
       bind_info->szCustomVerb = NULL;
 
-    if (get_upload_data(&bind_info->stgmedData.pstm) == S_OK) {
-      bind_info->stgmedData.tymed = TYMED_ISTREAM;
-      DVLOG(1) << __FUNCTION__ << me() << method()
-               << " request with " << base::Int64ToString(post_data_len())
-               << " bytes. url=" << url();
-    } else {
-      DVLOG(1) << __FUNCTION__ << me() << "POST request with no data!";
-    }
+    bind_info->stgmedData.tymed = TYMED_HGLOBAL;
+#pragma warning(disable:4244)
+    bind_info->stgmedData.hGlobal = ::GlobalAlloc(GMEM_FIXED, post_data_len());
+    memcpy(bind_info->stgmedData.hGlobal, &upload_data_[0], post_data_len());
+    bind_info->cbstgmedData = post_data_len();
+#pragma warning(default:4244)
+    DVLOG(1) << __FUNCTION__ << me() << method()
+             << " request with " << base::Int64ToString(post_data_len())
+             << " bytes. url=" << url();
   }
-
   return S_OK;
 }
 
@@ -1074,12 +1098,14 @@ void UrlmonUrlRequestManager::DownloadRequestInHost(int request_id) {
 
 void UrlmonUrlRequestManager::BindTerminated(IMoniker* moniker,
                                              IBindCtx* bind_ctx,
-                                             IStream* post_data,
+                                             uint8* post_data,
+                                             int post_data_len,
                                              const char* request_headers) {
   DownloadInHostParams download_params;
   download_params.bind_ctx = bind_ctx;
   download_params.moniker = moniker;
   download_params.post_data = post_data;
+  download_params.post_data_len = post_data_len;
   if (request_headers) {
     download_params.request_headers = request_headers;
   }

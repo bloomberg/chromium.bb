@@ -14,7 +14,8 @@ PluginUrlRequest::PluginUrlRequest()
       enable_frame_busting_(false),
       resource_type_(ResourceType::MAIN_FRAME),
       load_flags_(0),
-      is_chunked_upload_(false) {
+      is_chunked_upload_(false),
+      upload_data_(NULL) {
 }
 
 PluginUrlRequest::~PluginUrlRequest() {
@@ -34,25 +35,22 @@ bool PluginUrlRequest::Initialize(PluginUrlRequestDelegate* delegate,
   resource_type_ = resource_type;
   load_flags_ = load_flags;
 
-  if (upload_data) {
-    // We store a pointer to UrlmonUploadDataStream and not net::UploadData
-    // since UrlmonUploadDataStream implements thread safe ref counting and
-    // UploadData does not.
-    CComObject<UrlmonUploadDataStream>* upload_stream = NULL;
-    HRESULT hr = CComObject<UrlmonUploadDataStream>::CreateInstance(
-        &upload_stream);
-    if (FAILED(hr)) {
-      NOTREACHED();
-    } else {
-      post_data_len_ = upload_data->GetContentLength();
-      upload_stream->AddRef();
-      upload_stream->Initialize(upload_data);
-      upload_data_.Attach(upload_stream);
-      is_chunked_upload_ = upload_data->is_chunked();
+  if (upload_data && upload_data->GetContentLength()) {
+    post_data_len_ = upload_data->GetContentLength();
+    is_chunked_upload_ = upload_data->is_chunked();
+
+#pragma warning(disable:4244)
+    upload_data_.reserve(post_data_len_);
+#pragma warning(default:4244)
+
+    std::vector<net::UploadData::Element>::iterator element_index;
+    for (element_index = upload_data->elements()->begin();
+         element_index != upload_data->elements()->end();
+         ++element_index) {
+      std::copy(element_index->bytes().begin(), element_index->bytes().end(),
+                std::back_inserter(upload_data_));
     }
   }
-
   enable_frame_busting_ = enable_frame_busting;
-
   return true;
 }

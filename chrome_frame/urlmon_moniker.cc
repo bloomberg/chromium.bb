@@ -63,7 +63,7 @@ HRESULT NavigationManager::NavigateToCurrentUrlInCF(IBrowserService* browser) {
       }
 
       hr = NavigateBrowserToMoniker(browser, moniker, headers.c_str(),
-          bind_context, fragment.c_str(), NULL);
+          bind_context, fragment.c_str(), NULL, 0);
       DVLOG(1) << base::StringPrintf("NavigateBrowserToMoniker: 0x%08X", hr);
     }
   }

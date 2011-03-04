@@ -107,7 +107,8 @@ class UrlmonUrlRequestManager
   // We simply forward moniker and bind_ctx to host ActiveX/ActiveDocument,
   // so it may start NavigateWithBindContext.
   void BindTerminated(IMoniker* moniker, IBindCtx* bind_ctx,
-                      IStream* post_data, const char* request_headers);
+                      uint8* post_data, int post_data_len,
+                      const char* request_headers);
 
   // Map for (request_id <-> UrlmonUrlRequest)
   typedef std::map<int, scoped_refptr<UrlmonUrlRequest> > RequestMap;
