@@ -9649,8 +9649,53 @@ This web page was killed, either because Chrome ran out of memory, or you chose 
       <message name="IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_NETWORK_ID" desc="In settings Internet options, the label for the network id.">
         SSID:
       </message>
+      <message name="IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_EAP_METHOD" desc="In settings Internet options, the label for the EAP method.">
+        EAP Method:
+      </message>
+      <message name="IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_EAP_METHOD_NONE" desc="In settings Internet options, a string specifying EAP method none.">
+        Choose...
+      </message>
+      <message name="IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_EAP_METHOD_PEAP" desc="In settings Internet options, a string specifying EAP method PEAP.">
+        PEAP
+      </message>
+      <message name="IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_EAP_METHOD_TLS" desc="In settings Internet options, a string specifying EAP method TLS.">
+        EAP-TLS
+      </message>
+      <message name="IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_EAP_METHOD_TTLS" desc="In settings Internet options, a string specifying EAP method TTLS.">
+        EAP-TTLS
+      </message>
+      <message name="IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_EAP_METHOD_LEAP" desc="In settings Internet options, a string specifying EAP method LEAP.">
+        LEAP
+      </message>
+      <message name="IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_PHASE_2_AUTH" desc="In settings Internet options, the label for the phase 2 authentication.">
+        Phase 2 Authentication:
+      </message>
+      <message name="IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_PHASE_2_AUTH_AUTO" desc="In settings Internet options, a string specifying phase 2 authentication auto.">
+        Automatic
+      </message>
+      <message name="IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_PHASE_2_AUTH_MD5" desc="In settings Internet options, a string specifying phase 2 authentication EAP-MD5.">
+        EAP-MD5
+      </message>
+      <message name="IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_PHASE_2_AUTH_MSCHAPV2" desc="In settings Internet options, a string specifying phase 2 authentication MSCHAPv2.">
+        MSCHAPv2
+      </message>
+      <message name="IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_PHASE_2_AUTH_MSCHAP" desc="In settings Internet options, a string specifying phase 2 authentication MSCHAP.">
+        MSCHAP
+      </message>
+      <message name="IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_PHASE_2_AUTH_PAP" desc="In settings Internet options, a string specifying phase 2 authentication PAP.">
+        PAP
+      </message>
+      <message name="IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_PHASE_2_AUTH_CHAP" desc="In settings Internet options, a string specifying phase 2 authentication CHAP.">
+        CHAP
+      </message>
       <message name="IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_CERT_IDENTITY" desc="In settings Internet options, the user identity for authentication.">
         Identity:
+      </message>
+      <message name="IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_CERT_IDENTITY_ANONYMOUS" desc="In settings Internet options, the anonymous identity for authentication.">
+        Anonymous Identity:
+      </message>
+      <message name="IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_CERT_SERVER" desc="In settings Internet options, the server certificate to use.">
+        Server Certificate:
       </message>
       <message name="IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_CERT" desc="In settings Internet options, the x509 certificate to use.">
         Certificate:

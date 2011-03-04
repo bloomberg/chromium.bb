@@ -24,45 +24,153 @@
 
 namespace chromeos {
 
+namespace {
+
 // The width of the password field.
 const int kPasswordWidth = 150;
 
 enum SecurityComboboxIndex {
-  INDEX_NONE  = 0,
-  INDEX_WEP   = 1,
-  INDEX_WPA   = 2,
-  INDEX_RSN   = 3,
-  INDEX_COUNT = 4
+  SECURITY_INDEX_NONE  = 0,
+  SECURITY_INDEX_WEP   = 1,
+  SECURITY_INDEX_WPA   = 2,
+  SECURITY_INDEX_RSN   = 3,
+  SECURITY_INDEX_COUNT = 4
 };
 
-int WifiConfigView::SecurityComboboxModel::GetItemCount() {
-  return INDEX_COUNT;
-}
+class SecurityComboboxModel : public ui::ComboboxModel {
+ public:
+  SecurityComboboxModel() {}
+  virtual ~SecurityComboboxModel() {}
+  virtual int GetItemCount() {
+    return SECURITY_INDEX_COUNT;
+  }
+  virtual string16 GetItemAt(int index) {
+    if (index == SECURITY_INDEX_NONE)
+      return l10n_util::GetStringUTF16(
+          IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_SECURITY_NONE);
+    else if (index == SECURITY_INDEX_WEP)
+      return l10n_util::GetStringUTF16(
+          IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_SECURITY_WEP);
+    else if (index == SECURITY_INDEX_WPA)
+      return l10n_util::GetStringUTF16(
+          IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_SECURITY_WPA);
+    else if (index == SECURITY_INDEX_RSN)
+      return l10n_util::GetStringUTF16(
+          IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_SECURITY_RSN);
+    NOTREACHED();
+    return string16();
+  }
+ private:
+  DISALLOW_COPY_AND_ASSIGN(SecurityComboboxModel);
+};
 
-string16 WifiConfigView::SecurityComboboxModel::GetItemAt(int index) {
-  if (index == INDEX_NONE)
-    return l10n_util::GetStringUTF16(
-        IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_SECURITY_NONE);
-  else if (index == INDEX_WEP)
-    return l10n_util::GetStringUTF16(
-        IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_SECURITY_WEP);
-  else if (index == INDEX_WPA)
-    return l10n_util::GetStringUTF16(
-        IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_SECURITY_WPA);
-  else if (index == INDEX_RSN)
-    return l10n_util::GetStringUTF16(
-        IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_SECURITY_RSN);
-  NOTREACHED();
-  return string16();
-}
+enum EAPMethodComboboxIndex {
+  EAP_METHOD_INDEX_NONE  = 0,
+  EAP_METHOD_INDEX_PEAP  = 1,
+  EAP_METHOD_INDEX_TLS   = 2,
+  EAP_METHOD_INDEX_TTLS  = 3,
+  EAP_METHOD_INDEX_LEAP  = 4,
+  EAP_METHOD_INDEX_COUNT = 5
+};
+
+class EAPMethodComboboxModel : public ui::ComboboxModel {
+ public:
+  EAPMethodComboboxModel() {}
+  virtual ~EAPMethodComboboxModel() {}
+  virtual int GetItemCount() {
+    return EAP_METHOD_INDEX_COUNT;
+  }
+  virtual string16 GetItemAt(int index) {
+    if (index == EAP_METHOD_INDEX_NONE)
+      return l10n_util::GetStringUTF16(
+          IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_EAP_METHOD_NONE);
+    else if (index == EAP_METHOD_INDEX_PEAP)
+      return l10n_util::GetStringUTF16(
+          IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_EAP_METHOD_PEAP);
+    else if (index == EAP_METHOD_INDEX_TLS)
+      return l10n_util::GetStringUTF16(
+          IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_EAP_METHOD_TLS);
+    else if (index == EAP_METHOD_INDEX_TTLS)
+      return l10n_util::GetStringUTF16(
+          IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_EAP_METHOD_TTLS);
+    else if (index == EAP_METHOD_INDEX_LEAP)
+      return l10n_util::GetStringUTF16(
+          IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_EAP_METHOD_LEAP);
+    NOTREACHED();
+    return string16();
+  }
+ private:
+  DISALLOW_COPY_AND_ASSIGN(EAPMethodComboboxModel);
+};
+
+enum Phase2AuthComboboxIndex {
+  PHASE_2_AUTH_INDEX_AUTO     = 0, // LEAP, EAP-TLS have only this auth.
+  PHASE_2_AUTH_INDEX_MD5      = 1,
+  PHASE_2_AUTH_INDEX_MSCHAPV2 = 2, // PEAP has up to this auth.
+  PHASE_2_AUTH_INDEX_MSCHAP   = 3,
+  PHASE_2_AUTH_INDEX_PAP      = 4,
+  PHASE_2_AUTH_INDEX_CHAP     = 5, // EAP-TTLS has up to this auth.
+  PHASE_2_AUTH_INDEX_COUNT    = 6
+};
+
+class Phase2AuthComboboxModel : public ui::ComboboxModel {
+ public:
+  explicit Phase2AuthComboboxModel(views::Combobox* eap_method_combobox)
+      : eap_method_combobox_(eap_method_combobox) {}
+  virtual ~Phase2AuthComboboxModel() {}
+  virtual int GetItemCount() {
+    switch (eap_method_combobox_->selected_item()) {
+      case EAP_METHOD_INDEX_NONE:
+      case EAP_METHOD_INDEX_TLS:
+      case EAP_METHOD_INDEX_LEAP:
+        return PHASE_2_AUTH_INDEX_AUTO + 1;
+      case EAP_METHOD_INDEX_PEAP:
+        return PHASE_2_AUTH_INDEX_MSCHAPV2 + 1;
+      case EAP_METHOD_INDEX_TTLS:
+        return PHASE_2_AUTH_INDEX_CHAP + 1;
+    }
+    NOTREACHED();
+    return 0;
+  }
+  virtual string16 GetItemAt(int index) {
+    if (index == PHASE_2_AUTH_INDEX_AUTO)
+      return l10n_util::GetStringUTF16(
+          IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_PHASE_2_AUTH_AUTO);
+    else if (index == PHASE_2_AUTH_INDEX_MD5)
+      return l10n_util::GetStringUTF16(
+          IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_PHASE_2_AUTH_MD5);
+    else if (index == PHASE_2_AUTH_INDEX_MSCHAPV2)
+      return l10n_util::GetStringUTF16(
+          IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_PHASE_2_AUTH_MSCHAPV2);
+    else if (index == PHASE_2_AUTH_INDEX_MSCHAP)
+      return l10n_util::GetStringUTF16(
+          IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_PHASE_2_AUTH_MSCHAP);
+    else if (index == PHASE_2_AUTH_INDEX_PAP)
+      return l10n_util::GetStringUTF16(
+          IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_PHASE_2_AUTH_PAP);
+    else if (index == PHASE_2_AUTH_INDEX_CHAP)
+      return l10n_util::GetStringUTF16(
+          IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_PHASE_2_AUTH_CHAP);
+    NOTREACHED();
+    return string16();
+  }
+ private:
+  views::Combobox* eap_method_combobox_;
+  DISALLOW_COPY_AND_ASSIGN(Phase2AuthComboboxModel);
+};
+
+}  // namespace
 
 WifiConfigView::WifiConfigView(NetworkConfigView* parent,
                                const WifiNetwork* wifi)
     : parent_(parent),
-      can_login_(false),
+      is_8021x_(false),
       wifi_(new WifiNetwork(*wifi)),
       ssid_textfield_(NULL),
+      eap_method_combobox_(NULL),
+      phase_2_auth_combobox_(NULL),
       identity_textfield_(NULL),
+      identity_anonymous_textfield_(NULL),
       certificate_browse_button_(NULL),
       certificate_path_(),
       security_combobox_(NULL),
@@ -74,9 +182,12 @@ WifiConfigView::WifiConfigView(NetworkConfigView* parent,
 
 WifiConfigView::WifiConfigView(NetworkConfigView* parent)
     : parent_(parent),
-      can_login_(false),
+      is_8021x_(false),
       ssid_textfield_(NULL),
+      eap_method_combobox_(NULL),
+      phase_2_auth_combobox_(NULL),
       identity_textfield_(NULL),
+      identity_anonymous_textfield_(NULL),
       certificate_browse_button_(NULL),
       certificate_path_(),
       security_combobox_(NULL),
@@ -89,36 +200,41 @@ WifiConfigView::WifiConfigView(NetworkConfigView* parent)
 WifiConfigView::~WifiConfigView() {
 }
 
-void WifiConfigView::UpdateCanLogin(void) {
+bool WifiConfigView::CanLogin() {
   static const size_t kMinWirelessPasswordLen = 5;
 
-  bool can_login = true;
   if (!wifi_.get()) {
     // Enforce ssid is non empty.
+    if (GetSSID().empty())
+      return false;
+
     // If security is not none, also enforce passphrase is non empty.
-    can_login = !GetSSID().empty() &&
-        (security_combobox_->selected_item() == INDEX_NONE ||
-            passphrase_textfield_->text().length() >= kMinWirelessPasswordLen);
+    if (security_combobox_->selected_item() != SECURITY_INDEX_NONE &&
+        passphrase_textfield_->text().length() < kMinWirelessPasswordLen)
+      return false;
   } else {
-    // Connecting to an encrypted network
-    if (passphrase_textfield_ != NULL) {
-      // if the network requires a passphrase, make sure it is non empty.
-      can_login &=
-          passphrase_textfield_->text().length() >= kMinWirelessPasswordLen;
-    }
-    if (identity_textfield_ != NULL) {
+    if (is_8021x_) {
+      // Make sure the EAP method is set
+      if (eap_method_combobox_->selected_item() == EAP_METHOD_INDEX_NONE)
+        return false;
+
       // If we have an identity field, we can login if we have a non empty
       // identity and a certificate path
-      can_login &= !identity_textfield_->text().empty() &&
-          !certificate_path_.empty();
+      if (identity_textfield_ != NULL &&
+          (identity_textfield_->text().empty() || certificate_path_.empty()))
+        return false;
     }
-  }
 
-  // Update the login button enable/disable state if can_login_ changes.
-  if (can_login != can_login_) {
-    can_login_ = can_login;
-    parent_->GetDialogClientView()->UpdateDialogButtons();
+    // if the network requires a passphrase, make sure it is the right length.
+    if (passphrase_textfield_ != NULL &&
+        passphrase_textfield_->text().length() < kMinWirelessPasswordLen)
+      return false;
   }
+  return true;
+}
+
+void WifiConfigView::UpdateCanLogin() {
+  parent_->GetDialogClientView()->UpdateDialogButtons();
 }
 
 void WifiConfigView::UpdateErrorLabel(bool failed) {
@@ -180,13 +296,43 @@ void WifiConfigView::ButtonPressed(views::Button* sender,
 
 void WifiConfigView::ItemChanged(views::Combobox* combo_box,
                                  int prev_index, int new_index) {
-  // If changed to no security, then disable combobox and clear it.
-  // Otherwise, enable it. Also, update can login.
-  if (new_index == INDEX_NONE) {
-    passphrase_textfield_->SetEnabled(false);
-    passphrase_textfield_->SetText(string16());
-  } else {
-    passphrase_textfield_->SetEnabled(true);
+  if (new_index == prev_index)
+    return;
+  if (combo_box == security_combobox_) {
+    // If changed to no security, then disable combobox and clear it.
+    // Otherwise, enable it. Also, update can login.
+    if (new_index == SECURITY_INDEX_NONE) {
+      passphrase_textfield_->SetEnabled(false);
+      passphrase_textfield_->SetText(string16());
+    } else {
+      passphrase_textfield_->SetEnabled(true);
+    }
+  } else if (combo_box == eap_method_combobox_) {
+    // If EAP method changes, the phase 2 auth choices may have changed also.
+    phase_2_auth_combobox_->ModelChanged();
+    phase_2_auth_combobox_->SetSelectedItem(0);
+    phase_2_auth_combobox_->SetEnabled(
+        phase_2_auth_combobox_->model()->GetItemCount() > 1);
+
+    // No password for EAP-TLS
+    if (eap_method_combobox_->selected_item() == EAP_METHOD_INDEX_TLS) {
+      passphrase_textfield_->SetEnabled(false);
+      passphrase_textfield_->SetText(string16());
+    } else {
+      passphrase_textfield_->SetEnabled(true);
+    }
+
+    // No client certs for EAP-TTLS, PEAP, or LEAP
+
+    // No server certs for LEAP
+
+    // No anonymous identity if no phase 2 auth.
+    if (phase_2_auth_combobox_->model()->GetItemCount() > 1) {
+      identity_anonymous_textfield_->SetEnabled(true);
+    } else {
+      identity_anonymous_textfield_->SetEnabled(false);
+      identity_anonymous_textfield_->SetText(string16());
+    }
   }
   UpdateCanLogin();
 }
@@ -211,13 +357,13 @@ bool WifiConfigView::Login() {
   if (!wifi_.get()) {
     ConnectionSecurity sec = SECURITY_UNKNOWN;
     int index = security_combobox_->selected_item();
-    if (index == INDEX_NONE)
+    if (index == SECURITY_INDEX_NONE)
       sec = SECURITY_NONE;
-    else if (index == INDEX_WEP)
+    else if (index == SECURITY_INDEX_WEP)
       sec = SECURITY_WEP;
-    else if (index == INDEX_WPA)
+    else if (index == SECURITY_INDEX_WPA)
       sec = SECURITY_WPA;
-    else if (index == INDEX_RSN)
+    else if (index == SECURITY_INDEX_RSN)
       sec = SECURITY_RSN;
     connected =  cros->ConnectToWifiNetwork(
         sec, GetSSID(), GetPassphrase(),
@@ -283,6 +429,12 @@ const std::string WifiConfigView::GetPassphrase() const {
   return result;
 }
 
+// This will initialize the view depending on if we have a wifi network or not.
+// And if we are doing simple password encyption or the more complicated
+// 802.1x encryption.
+// If we are creating the "Join other network..." dialog, we will allow user
+// to enter the data. And if they select the 802.1x encryption, we will show
+// the 802.1x fields.
 void WifiConfigView::Init() {
   views::GridLayout* layout = views::GridLayout::CreatePanel(this);
   SetLayoutManager(layout);
@@ -314,6 +466,17 @@ void WifiConfigView::Init() {
   }
   layout->AddPaddingRow(0, views::kRelatedControlVerticalSpacing);
 
+  // Security select
+  if (!wifi_.get()) {
+    layout->StartRow(0, column_view_set_id);
+    layout->AddView(new views::Label(UTF16ToWide(l10n_util::GetStringUTF16(
+          IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_SECURITY))));
+    security_combobox_ = new views::Combobox(new SecurityComboboxModel());
+    security_combobox_->set_listener(this);
+    layout->AddView(security_combobox_);
+    layout->AddPaddingRow(0, views::kRelatedControlVerticalSpacing);
+  }
+
   // Certificate input
   // Loaded certificates (i.e. stored in a pkcs11 device) do not require
   // a passphrase.
@@ -324,18 +487,30 @@ void WifiConfigView::Init() {
   // in general, but very common. WPA Supplicant doesn't report the
   // EAP type because it's unknown until the process begins, and we'd
   // need some kind of callback.
-  if (wifi_.get() && wifi_->encrypted() &&
-      wifi_->encryption() == SECURITY_8021X) {
+  is_8021x_ = wifi_.get() && wifi_->encrypted() &&
+      wifi_->encryption() == SECURITY_8021X;
+  if (is_8021x_) {
+    // EAP Method
     layout->StartRow(0, column_view_set_id);
     layout->AddView(new views::Label(UTF16ToWide(l10n_util::GetStringUTF16(
-        IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_CERT_IDENTITY))));
-    identity_textfield_ = new views::Textfield(
-        views::Textfield::STYLE_DEFAULT);
-    identity_textfield_->SetController(this);
-    if (!wifi_->identity().empty())
-      identity_textfield_->SetText(UTF8ToUTF16(wifi_->identity()));
-    layout->AddView(identity_textfield_);
+        IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_EAP_METHOD))));
+    eap_method_combobox_ = new views::Combobox(new EAPMethodComboboxModel());
+    eap_method_combobox_->set_listener(this);
+    layout->AddView(eap_method_combobox_);
     layout->AddPaddingRow(0, views::kRelatedControlVerticalSpacing);
+
+    // Phase 2 Authentication
+    layout->StartRow(0, column_view_set_id);
+    layout->AddView(new views::Label(UTF16ToWide(l10n_util::GetStringUTF16(
+        IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_PHASE_2_AUTH))));
+    phase_2_auth_combobox_ = new views::Combobox(
+        new Phase2AuthComboboxModel(eap_method_combobox_));
+    phase_2_auth_combobox_->SetEnabled(false);
+    phase_2_auth_combobox_->set_listener(this);
+    layout->AddView(phase_2_auth_combobox_);
+    layout->AddPaddingRow(0, views::kRelatedControlVerticalSpacing);
+
+    // Certificate
     layout->StartRow(0, column_view_set_id);
     layout->AddView(new views::Label(UTF16ToWide(l10n_util::GetStringUTF16(
         IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_CERT))));
@@ -360,28 +535,38 @@ void WifiConfigView::Init() {
       layout->AddView(certificate_browse_button_);
     }
     layout->AddPaddingRow(0, views::kRelatedControlVerticalSpacing);
-  }
 
-  // Security select
-  if (!wifi_.get()) {
+    // Identity
     layout->StartRow(0, column_view_set_id);
     layout->AddView(new views::Label(UTF16ToWide(l10n_util::GetStringUTF16(
-          IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_SECURITY))));
-    security_combobox_ = new views::Combobox(new SecurityComboboxModel());
-    security_combobox_->set_listener(this);
-    layout->AddView(security_combobox_);
+        IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_CERT_IDENTITY))));
+    identity_textfield_ = new views::Textfield(
+        views::Textfield::STYLE_DEFAULT);
+    identity_textfield_->SetController(this);
+    if (!wifi_->identity().empty())
+      identity_textfield_->SetText(UTF8ToUTF16(wifi_->identity()));
+    layout->AddView(identity_textfield_);
+    layout->AddPaddingRow(0, views::kRelatedControlVerticalSpacing);
+
+    // Anonymous Identity
+    layout->StartRow(0, column_view_set_id);
+    layout->AddView(new views::Label(UTF16ToWide(l10n_util::GetStringUTF16(
+        IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_CERT_IDENTITY_ANONYMOUS))));
+    identity_anonymous_textfield_ = new views::Textfield(
+        views::Textfield::STYLE_DEFAULT);
+    identity_anonymous_textfield_->SetEnabled(false);
+    identity_anonymous_textfield_->SetController(this);
+    layout->AddView(identity_anonymous_textfield_);
     layout->AddPaddingRow(0, views::kRelatedControlVerticalSpacing);
   }
 
   // Passphrase input
   layout->StartRow(0, column_view_set_id);
   int label_text_id;
-  if (wifi_.get() && wifi_->encryption() == SECURITY_8021X) {
-    label_text_id =
-        IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_PRIVATE_KEY_PASSWORD;
-  } else {
+  if (is_8021x_)
+    label_text_id = IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_PRIVATE_KEY_PASSWORD;
+  else
     label_text_id = IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_PASSPHRASE;
-  }
   layout->AddView(new views::Label(
       UTF16ToWide(l10n_util::GetStringUTF16(label_text_id))));
   passphrase_textfield_ = new views::Textfield(
@@ -411,7 +596,7 @@ void WifiConfigView::Init() {
   error_label_->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
   error_label_->SetColor(SK_ColorRED);
   layout->AddView(error_label_);
-  layout->AddPaddingRow(0, views::kRelatedControlVerticalSpacing);
+
   // Set or hide the error text.
   UpdateErrorLabel(false);
 }
