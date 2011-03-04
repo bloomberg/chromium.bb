@@ -772,7 +772,6 @@ NPError PlatformNPPSetWindow(NPP instance,
     }
     return NPERR_NO_ERROR;
   }
-
   if (obj->GetPluginHWnd() == hWnd) {
     // May need to resize the content window.
     DCHECK(obj->GetContentHWnd());
@@ -824,16 +823,17 @@ NPError PlatformNPPSetWindow(NPP instance,
                  NULL,
                  g_module_instance,
                  NULL);
-  obj->Resize(window->width, window->height);
   obj->SetContentHWnd(content_window);
   PluginObject::StorePluginProperty(content_window, obj);
   ::ShowWindow(content_window, SW_SHOW);
+  ::ShowWindow(hWnd, SW_SHOW);
 
   // create and assign the graphics context
   DisplayWindowWindows default_display;
   default_display.set_hwnd(obj->GetHWnd());
   obj->CreateRenderer(default_display);
   obj->client()->Init();
+  obj->Resize(window->width, window->height);
 
   // we set the timer to 10ms or 100fps. At the time of this comment
   // the renderer does a vsync the max fps it will run will be the refresh

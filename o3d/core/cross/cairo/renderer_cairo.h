@@ -238,6 +238,8 @@ class RendererCairo : public Renderer {
   Window window_;
 #elif defined(OS_MACOSX)
   CGContextRef mac_cg_context_ref_;
+#elif defined(OS_WIN)
+  HWND hwnd_;
 #endif
 
   // Main surface to render cairo

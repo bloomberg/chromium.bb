@@ -37,7 +37,10 @@
 #include <cairo-xlib.h>
 #elif defined(OS_MACOSX)
 #include <cairo-quartz.h>
+#elif defined(OS_WIN)
+#include <cairo-win32.h>
 #endif
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -61,6 +64,8 @@ RendererCairo::RendererCairo(ServiceLocator* service_locator)
       window_(0),
 #elif defined(OS_MACOSX)
       mac_cg_context_ref_(0),
+#elif defined(OS_WIN)
+      hwnd_(NULL),
 #endif
       main_surface_(NULL) {
   // Don't need to do anything.
@@ -85,6 +90,8 @@ void RendererCairo::Destroy() {
   window_ = 0;
 #elif defined(OS_MACOSX)
   mac_cg_context_ref_ = 0;
+#elif defined(OS_WIN)
+  hwnd_ = NULL;
 #endif
 }
 
@@ -251,6 +258,33 @@ void RendererCairo::CreateCairoSurface() {
       mac_cg_context_ref_,
       display_width(),
       display_height());
+#elif defined(OS_WIN)
+  HDC hdc = GetDC(hwnd_);
+  if (display_width() > 0 && display_height() > 0) {
+    RECT rect;
+    GetClipBox(hdc, &rect);
+    if (rect.right - rect.left != display_width() ||
+        rect.bottom - rect.top != display_height()) {
+      // The hdc doesn't have the right clip box.
+      // Need to reset the clip box on hdc.
+      DLOG(WARNING) << "CreateCairoSurface clip box (" << rect.left << ","
+                    << rect.top << "," << rect.right << "," << rect.bottom
+                    << ") doesn't match the image size " << display_width()
+                    << "x" << display_height();
+      HRGN hRegion = CreateRectRgn(0, 0, display_width(), display_height());
+      int result = SelectClipRgn(hdc, hRegion);
+      if (result == ERROR) {
+        LOG(ERROR) << "CreateCairoSurface SelectClipRgn returns ERROR";
+      } else if (result == NULLREGION) {
+        // This should not happen since the ShowWindow is called.
+        LOG(ERROR) << "CreateCairoSurface SelectClipRgn returns NULLREGION";
+      }
+      DeleteObject(hRegion);
+    }
+  }
+
+  main_surface_ = cairo_win32_surface_create(hdc);
+  ReleaseDC(hwnd_, hdc);
 #endif
 }
 
@@ -281,7 +315,15 @@ Renderer::InitStatus RendererCairo::InitPlatformSpecific(
   const DisplayWindowMac &display_platform =
       static_cast<const DisplayWindowMac&>(display_window);
   mac_cg_context_ref_ = display_platform.cg_context_ref();
+#elif defined(OS_WIN)
+  const DisplayWindowWindows &display_platform =
+      static_cast<const DisplayWindowWindows&>(display_window);
+  hwnd_ = display_platform.hwnd();
+  if (NULL == hwnd_) {
+    return INITIALIZATION_ERROR;
+  }
 #endif
+
   return SUCCESS;
 }
 
@@ -303,7 +345,7 @@ void RendererCairo::Resize(int width, int height) {
 #if defined(OS_LINUX)
   // Resize the mainSurface and buffer
   cairo_xlib_surface_set_size(main_surface_, width, height);
-#elif defined(OS_MACOSX)
+#elif defined(OS_MACOSX) || defined(OS_WIN)
   DestroyCairoSurface();
   CreateCairoSurface();
 #endif

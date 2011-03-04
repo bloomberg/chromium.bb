@@ -43,7 +43,7 @@
             'cgdir': 'third_party/cg/files/win',
             'renderer%': 'd3d9',
             'swiftshaderdir': 'o3d-internal/third_party/swiftshader/files',
-            'support_cairo%' : 0,
+            'support_cairo%' : 1,
           },
         ],
         ['OS == "mac"',

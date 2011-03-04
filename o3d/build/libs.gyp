@@ -76,7 +76,7 @@
               ],
               'include_dirs': [
                 '../../<(cairodir)/src',
-                '../build/misc'
+                '../build/misc',
               ],
             },
             'dependencies': [
