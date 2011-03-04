@@ -1,0 +1,121 @@
+
+"*** REPLAY PROLOG"
+
+"*** REGISTER REPLAY METHODS"
+
+"*** INITIALIZE PEPPER"
+
+"*** CREATE UPCALL SERVICE"
+
+"*** INIT MODULE"
+rpc call intiated PPP_InitializeModule:iihs:ii
+input 0:  i(0)
+input 1:  i(4444)
+input 2:  h(pepper_desc)
+input 3:  @LENGTHY_SERIVE_STRING
+replaying PPB_GetInterface:s:i:
+input 0:  s("PPB_Core;0.3")
+output 0:  i(1)
+rpc call complete PPP_InitializeModule:iihs:ii
+
+
+"*** INIT INSTANCE"
+rpc call intiated PPP_Instance_DidCreate:iiCC:i
+input 0:  i(5555)
+input 1:  i(5)
+input 2:  C(23,id\x00name\x00src\x00style\x00type\x00)
+input 3:  C(74,naclModule\x00naclModule\x00ppapi.nexe\x00background-color:gray\x00application/x-nacl\x00)
+replaying PPB_GetInterface:s:i:
+input 0:  s("PPB_AudioConfig;0.5")
+output 0:  i(1)
+replaying PPB_AudioConfig_RecommendSampleFrameCount:ii:i:
+input 0:  i(44100)
+input 1:  i(4096)
+output 0:  i(4096)
+replaying PPB_AudioConfig_CreateStereo16Bit:iii:i:
+input 0:  i(5555)
+input 1:  i(44100)
+input 2:  i(4096)
+output 0:  i(30)
+replaying PPB_Core_AddRefResource:i::
+input 0:  i(30)
+replaying PPB_GetInterface:s:i:
+input 0:  s("PPB_Audio;0.5")
+output 0:  i(1)
+replaying PPB_Audio_Create:ii:i:
+input 0:  i(5555)
+input 1:  i(30)
+output 0:  i(34)
+replaying PPB_Core_AddRefResource:i::
+input 0:  i(30)
+replaying PPB_Core_ReleaseResource:i::
+input 0:  i(30)
+replaying PPB_AudioConfig_IsAudioConfig:i:i:
+input 0:  i(30)
+output 0:  i(1)
+replaying PPB_Audio_IsAudio:i:i:
+input 0:  i(34)
+output 0:  i(1)
+replaying PPB_AudioConfig_GetSampleRate:i:i:
+input 0:  i(30)
+output 0:  i(44100)
+replaying PPB_AudioConfig_GetSampleFrameCount:i:i:
+input 0:  i(30)
+output 0:  i(4096)
+replaying PPB_Audio_StartPlayback:i:i:
+input 0:  i(34)
+output 0:  i(1)
+replaying PPB_Core_CallOnMainThread:iii::
+input 0:  i(10000)
+input 1:  i(1)
+input 2:  i(0)
+replaying PPB_Core_ReleaseResource:i::
+input 0:  i(30)
+rpc call complete PPP_Instance_DidCreate:iiCC:i
+output 0:  i(1)
+
+
+"*** TRIGGER REPAINT"
+rpc call intiated PPP_Instance_DidChangeView:iII:
+input 0:  i(5555)
+input 1:  I(4,8,79,400,400)
+input 2:  I(4,0,0,400,400)
+rpc call complete PPP_Instance_DidChangeView:iII:
+
+
+"*** SETTING UP AUDIO SHARED MEMORY"
+CHECKSUM: 0x00000000
+
+"*** SETTING UP AUDIO SYNC SOCKET"
+
+"*** AUDIO STREAM"
+rpc call intiated PPP_Audio_StreamCreated:ihih:
+input 0:  i(34)
+input 1:  h(audio_handle)
+input 2:  i(16384)
+input 3:  h(sync_out)
+rpc call complete PPP_Audio_StreamCreated:ihih:
+
+
+"*** AUDIO STREAM SYNC"
+CHECKSUM: 0x135c1578
+CHECKSUM: 0x00000000
+
+"*** AUDIO STREAM SYNC"
+CHECKSUM: 0xa3e58b17
+CHECKSUM: 0x00000000
+
+"*** AUDIO STREAM SYNC"
+CHECKSUM: 0x2656e8e4
+CHECKSUM: 0x00000000
+
+"*** AUDIO STREAM SYNC"
+CHECKSUM: 0xae00cf8c
+CHECKSUM: 0x00000000
+
+"*** TERMINATE AUDIO STREAM"
+CHECKSUM: 0xae00cf8c
+CHECKSUM: 0x00000000
+rpc call intiated PPP_ShutdownModule::
+rpc call complete PPP_ShutdownModule::
+
