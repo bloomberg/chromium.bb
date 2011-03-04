@@ -11,6 +11,7 @@
 #include "base/ref_counted.h"
 #include "chrome/browser/chromeos/offline/offline_load_page.h"
 #include "content/browser/renderer_host/resource_handler.h"
+#include "net/base/completion_callback.h"
 
 class MessageLoop;
 class ResourceDispatcherHost;
@@ -28,7 +29,7 @@ class OfflineResourceHandler : public ResourceHandler,
                          int render_view_id,
                          ResourceDispatcherHost* rdh,
                          net::URLRequest* request);
-  ~OfflineResourceHandler() {}
+  virtual ~OfflineResourceHandler();
 
   // ResourceHandler implementation:
   virtual bool OnUploadProgress(int request_id, uint64 position, uint64 size);
@@ -61,6 +62,9 @@ class OfflineResourceHandler : public ResourceHandler,
   // Shows the offline interstitinal page in UI thread.
   void ShowOfflinePage();
 
+  // A callback to tell if an appcache exists.
+  void OnCanHandleOfflineComplete(int rv);
+
   scoped_refptr<ResourceHandler> next_handler_;
 
   int process_host_id_;
@@ -71,6 +75,12 @@ class OfflineResourceHandler : public ResourceHandler,
   // The state for deferred load quest.
   int deferred_request_id_;
   GURL deferred_url_;
+
+  // If the offline page has been requested to show.
+  bool offline_page_shown_;
+
+  scoped_refptr<net::CancelableCompletionCallback<OfflineResourceHandler> >
+      appcache_completion_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(OfflineResourceHandler);
 };

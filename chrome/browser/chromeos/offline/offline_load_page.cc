@@ -53,7 +53,10 @@ void OfflineLoadPage::Show(int process_host_id, int render_view_id,
   } else {
     TabContents* tab_contents =
         tab_util::GetTabContentsByID(process_host_id, render_view_id);
-    DCHECK(tab_contents);
+    // There is a chance that the tab is closed after we decided to show
+    // offline and before we actually show the offline page.
+    if (!tab_contents)
+      return;
     (new OfflineLoadPage(tab_contents, url, delegate))->Show();
   }
 }

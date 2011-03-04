@@ -621,8 +621,6 @@
         'browser/chromeos/notifications/system_notification_factory.h',
         'browser/chromeos/offline/offline_load_page.cc',
         'browser/chromeos/offline/offline_load_page.h',
-        'browser/chromeos/offline/offline_load_service.cc',
-        'browser/chromeos/offline/offline_load_service.h',
         'browser/chromeos/options/network_config_view.cc',
         'browser/chromeos/options/network_config_view.h',
         'browser/chromeos/options/wifi_config_view.cc',
