@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -10,6 +10,7 @@
 
 #include "base/scoped_nsobject.h"
 #import "chrome/browser/ui/cocoa/bookmarks/bookmark_button.h"
+#import "chrome/browser/ui/cocoa/tracking_area.h"
 
 @class BookmarkBarController;
 @class BookmarkBarFolderView;
@@ -118,7 +119,7 @@
   BookmarkBarFolderController* folderController_;
 
   // Implement basic menu scrolling through this tracking area.
-  scoped_nsobject<NSTrackingArea> scrollTrackingArea_;
+  ScopedCrTrackingArea scrollTrackingArea_;
 
   // Timer to continue scrolling as needed.  We own the timer but
   // don't release it when done (we invalidate it).

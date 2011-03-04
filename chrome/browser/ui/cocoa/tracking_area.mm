@@ -92,6 +92,7 @@
 }
 
 - (void)dealloc {
+  [self clearOwner];
   [[NSNotificationCenter defaultCenter] removeObserver:self];
   [super dealloc];
 }
@@ -114,3 +115,21 @@
 }
 
 @end
+
+// Scoper //////////////////////////////////////////////////////////////////////
+
+ScopedCrTrackingArea::ScopedCrTrackingArea(CrTrackingArea* tracking_area)
+    : tracking_area_(tracking_area) {
+}
+
+ScopedCrTrackingArea::~ScopedCrTrackingArea() {
+  [tracking_area_ clearOwner];
+}
+
+void ScopedCrTrackingArea::reset(CrTrackingArea* tracking_area) {
+  tracking_area_.reset(tracking_area);
+}
+
+CrTrackingArea* ScopedCrTrackingArea::get() const {
+  return tracking_area_.get();
+}

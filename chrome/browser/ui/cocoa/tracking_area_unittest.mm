@@ -84,3 +84,31 @@ TEST_F(CrTrackingAreaTest, ZombieOwner) {
 
   ObjcEvilDoers::ZombieDisable();
 }
+
+TEST_F(CrTrackingAreaTest, ScoperInit) {
+  {
+    ScopedCrTrackingArea scoper([trackingArea_ retain]);
+    [[scoper.get() owner] performMessage];
+    EXPECT_EQ(1U, [owner_ messageCount]);
+  }
+
+  [[trackingArea_ owner] performMessage];
+  EXPECT_EQ(1U, [owner_ messageCount]);
+}
+
+TEST_F(CrTrackingAreaTest, ScoperReset) {
+  {
+    ScopedCrTrackingArea scoper;
+    EXPECT_FALSE(scoper.get());
+
+    scoper.reset([trackingArea_ retain]);
+    [[scoper.get() owner] performMessage];
+    EXPECT_EQ(1U, [owner_ messageCount]);
+
+    [[scoper.get() owner] performMessage];
+    EXPECT_EQ(2U, [owner_ messageCount]);
+  }
+
+  [[trackingArea_ owner] performMessage];
+  EXPECT_EQ(2U, [owner_ messageCount]);
+}

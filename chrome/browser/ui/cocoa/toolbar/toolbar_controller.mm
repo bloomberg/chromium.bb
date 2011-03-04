@@ -286,12 +286,12 @@ class NotificationBridge : public NotificationObserver {
   // helps us remember to release it.
   locationBarRetainer_.reset([locationBar_ retain]);
   trackingArea_.reset(
-      [[NSTrackingArea alloc] initWithRect:NSZeroRect // Ignored
+      [[CrTrackingArea alloc] initWithRect:NSZeroRect // Ignored
                                    options:NSTrackingMouseMoved |
                                            NSTrackingInVisibleRect |
                                            NSTrackingMouseEnteredAndExited |
                                            NSTrackingActiveAlways
-                                     owner:self
+                              proxiedOwner:self
                                   userInfo:nil]);
   NSView* toolbarView = [self view];
   [toolbarView addTrackingArea:trackingArea_.get()];

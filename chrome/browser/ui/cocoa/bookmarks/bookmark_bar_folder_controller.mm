@@ -959,20 +959,20 @@ struct LayoutMetrics {
 - (void)addOrUpdateScrollTracking {
   [self removeScrollTracking];
   NSView* view = [[self window] contentView];
-  scrollTrackingArea_.reset([[NSTrackingArea alloc]
+  scrollTrackingArea_.reset([[CrTrackingArea alloc]
                               initWithRect:[view bounds]
                                    options:(NSTrackingMouseMoved |
                                             NSTrackingMouseEnteredAndExited |
                                             NSTrackingActiveAlways)
-                                     owner:self
+                              proxiedOwner:self
                                   userInfo:nil]);
-    [view addTrackingArea:scrollTrackingArea_];
+  [view addTrackingArea:scrollTrackingArea_.get()];
 }
 
 // Remove the tracking area associated with scrolling.
 - (void)removeScrollTracking {
   if (scrollTrackingArea_.get()) {
-    [[[self window] contentView] removeTrackingArea:scrollTrackingArea_];
+    [[[self window] contentView] removeTrackingArea:scrollTrackingArea_.get()];
   }
   scrollTrackingArea_.reset();
 }

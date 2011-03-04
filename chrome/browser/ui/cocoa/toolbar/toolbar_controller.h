@@ -11,6 +11,7 @@
 #include "base/scoped_ptr.h"
 #include "base/scoped_nsobject.h"
 #import "chrome/browser/ui/cocoa/command_observer_bridge.h"
+#import "chrome/browser/ui/cocoa/tracking_area.h"
 #import "chrome/browser/ui/cocoa/url_drop_target.h"
 #import "chrome/browser/ui/cocoa/view_resizer.h"
 #include "chrome/browser/prefs/pref_member.h"
@@ -89,7 +90,7 @@ class WrenchMenuModel;
   scoped_nsobject<AutocompleteTextField> locationBarRetainer_;
 
   // Tracking area for mouse enter/exit/moved in the toolbar.
-  scoped_nsobject<NSTrackingArea> trackingArea_;
+  ScopedCrTrackingArea trackingArea_;
 
   // We retain/release the hover button since interaction with the
   // button may make it go away (e.g. delete menu option over a
