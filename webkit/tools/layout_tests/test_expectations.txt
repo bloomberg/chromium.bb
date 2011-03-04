@@ -10,9 +10,6 @@ BUGCR69594 SKIP : http/tests/appcache/different-https-origin-resource-main.html 
 
 BUGV8_1203 DEBUG : fast/canvas/webgl/gl-get-calls.html = PASS CRASH
 
-// Potential broken test found by r75985.
-BUGCR74092 : http/tests/media/video-play-suspend.html = TIMEOUT
-
 // WebKit fix is at r79797, but since we had to revert the WebKit roll adding the failing expectation back.
 BUGJAMESR : fast/filesystem/op-get-entry.html = PASS TEXT
 
@@ -21,3 +18,6 @@ BUG_ANTONM MAC : http/tests/security/xss-DENIED-xml-external-entity.xhtml = TEXT
 BUG_ANTONM MAC : http/tests/security/xss-DENIED-xsl-external-entity.xml = TEXT
 
 BUG_TONYG MAC : svg/text/font-size-below-point-five.svg = TEXT
+
+// Skip these tests until the test_expecitations can be updated after this Chromium patch lands.
+BUGWK44797 SKIP : fullscreen = PASS FAIL TIMEOUT
