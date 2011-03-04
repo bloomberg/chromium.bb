@@ -222,8 +222,8 @@ void NaClTlsSetIdx(uint32_t tls_idx) {
  * this for x86-32 on OSX, since that's handled by NaCl "Classic"
  * where %gs gets swapped, and we use %gs >> 3 in the asm code.)
  */
-int NaClTlsGetIdx(void) {
-  return (int) (intptr_t) pthread_getspecific(nacl_thread_info_key);
+uint32_t NaClTlsGetIdx(void) {
+  return (intptr_t) pthread_getspecific(nacl_thread_info_key);
 }
 
 
