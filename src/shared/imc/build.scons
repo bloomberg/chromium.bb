@@ -47,7 +47,7 @@ env.ComponentProgram('server',
 sigpipe_test_exe = env.ComponentProgram(
     'sigpipe_test',
     'sigpipe_test.cc',
-    EXTRA_LIBS=['platform', 'gio', 'imc'])
+    EXTRA_LIBS=['imc', 'platform', 'gio'])
 node = env.CommandTest(
     'sigpipe_test.out',
     command=[sigpipe_test_exe])

@@ -31,6 +31,7 @@
 #include "native_client/src/include/atomic_ops.h"
 
 #include "native_client/src/shared/imc/nacl_imc.h"
+#include "native_client/src/shared/platform/nacl_check.h"
 
 namespace nacl {
 
@@ -87,7 +88,13 @@ static int TryShmOrTempOpen(size_t length, bool use_temp) {
       m = shm_open(name, O_RDWR | O_CREAT | O_EXCL, 0);
     }
     if (0 <= m) {
-      (void) shm_unlink(name);
+      if (use_temp) {
+        int rc = unlink(name);
+        DCHECK(rc == 0);
+      } else {
+        int rc = shm_unlink(name);
+        DCHECK(rc == 0);
+      }
       if (ftruncate(m, length) == -1) {
         close(m);
         m = -1;
