@@ -245,7 +245,7 @@ class RealSvnTest(fake_repos.FakeReposTestBase):
   # Tests that work with a checkout.
   def setUp(self):
     super(RealSvnTest, self).setUp()
-    self.FAKE_REPOS.setUpSVN()
+    self.FAKE_REPOS.set_up_svn()
     self.svn_root = scm.os.path.join(self.root_dir, 'base')
     scm.SVN.Capture(
         ['checkout', self.svn_base + 'trunk/third_party', 'base'],

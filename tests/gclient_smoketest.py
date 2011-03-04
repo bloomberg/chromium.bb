@@ -257,7 +257,7 @@ class GClientSmoke(GClientSmokeBase):
 class GClientSmokeSVN(GClientSmokeBase):
   def setUp(self):
     super(GClientSmokeSVN, self).setUp()
-    self.enabled = self.FAKE_REPOS.setUpSVN()
+    self.enabled = self.FAKE_REPOS.set_up_svn()
 
   def testSync(self):
     # TODO(maruel): safesync.
@@ -690,7 +690,7 @@ class GClientSmokeSVN(GClientSmokeBase):
 class GClientSmokeGIT(GClientSmokeBase):
   def setUp(self):
     super(GClientSmokeGIT, self).setUp()
-    self.enabled = self.FAKE_REPOS.setUpGIT()
+    self.enabled = self.FAKE_REPOS.set_up_git()
 
   def testSync(self):
     if not self.enabled:
@@ -907,7 +907,7 @@ class GClientSmokeGIT(GClientSmokeBase):
 class GClientSmokeBoth(GClientSmokeBase):
   def setUp(self):
     super(GClientSmokeBoth, self).setUp()
-    self.enabled = self.FAKE_REPOS.setUpSVN() and self.FAKE_REPOS.setUpGIT()
+    self.enabled = self.FAKE_REPOS.set_up_svn() and self.FAKE_REPOS.set_up_git()
 
   def testMultiSolutions(self):
     if not self.enabled:
@@ -1070,7 +1070,7 @@ class GClientSmokeFromCheckout(GClientSmokeBase):
   # WebKit abuses this. It has a .gclient and a DEPS from a checkout.
   def setUp(self):
     super(GClientSmokeFromCheckout, self).setUp()
-    self.enabled = self.FAKE_REPOS.setUpSVN()
+    self.enabled = self.FAKE_REPOS.set_up_svn()
     os.rmdir(self.root_dir)
     if self.enabled:
       usr, pwd = self.FAKE_REPOS.USERS[0]

@@ -6,14 +6,17 @@
 """Generate fake repositories for testing."""
 
 import atexit
+import datetime
 import errno
 import logging
 import os
 import pprint
 import re
+import socket
 import stat
 import subprocess
 import sys
+import tempfile
 import time
 import unittest
 
@@ -24,23 +27,43 @@ import scm
 ## Utility functions
 
 
-def addKill():
-  """Add kill() method to subprocess.Popen for python <2.6"""
-  if getattr(subprocess.Popen, 'kill', None):
+def kill_pid(pid):
+  """Kills a process by its process id."""
+  try:
+    # Unable to import 'module'
+    # pylint: disable=F0401
+    import signal
+    return os.kill(pid, signal.SIGKILL)
+  except ImportError:
+    pass
+
+
+def kill_win(process):
+  """Kills a process with its windows handle.
+
+  Has no effect on other platforms.
+  """
+  try:
+    # Unable to import 'module'
+    # pylint: disable=F0401
+    import win32process
+    # Access to a protected member _handle of a client class
+    # pylint: disable=W0212
+    return win32process.TerminateProcess(process._handle, -1)
+  except ImportError:
+    pass
+
+
+def add_kill():
+  """Adds kill() method to subprocess.Popen for python <2.6"""
+  if hasattr(subprocess.Popen, 'kill'):
     return
-  # Unable to import 'module'
-  # pylint: disable=F0401
+
   if sys.platform == 'win32':
-    def kill_win(process):
-      import win32process
-      # Access to a protected member _handle of a client class
-      # pylint: disable=W0212
-      return win32process.TerminateProcess(process._handle, -1)
     subprocess.Popen.kill = kill_win
   else:
     def kill_nix(process):
-      import signal
-      return os.kill(process.pid, signal.SIGKILL)
+      return kill_pid(process.pid)
     subprocess.Popen.kill = kill_nix
 
 
@@ -250,11 +273,14 @@ class FakeReposBase(object):
     self.gitdaemon = None
     self.common_init = False
     self.repos_dir = None
+    self.git_pid_file = None
     self.git_root = None
     self.svn_checkout = None
     self.svn_repo = None
     self.git_dirty = False
     self.svn_dirty = False
+    self.svn_port = 3690
+    self.git_port = 9418
 
   def trial_dir(self):
     if not self.TRIAL_DIR:
@@ -262,7 +288,7 @@ class FakeReposBase(object):
           os.path.dirname(os.path.abspath(__file__)), '_trial')
     return self.TRIAL_DIR
 
-  def setUp(self):
+  def set_up(self):
     """All late initialization comes here.
 
     Note that it deletes all trial_dir() and not only repos_dir.
@@ -274,46 +300,59 @@ class FakeReposBase(object):
       self.git_root = join(self.repos_dir, 'git')
       self.svn_checkout = join(self.repos_dir, 'svn_checkout')
       self.svn_repo = join(self.repos_dir, 'svn')
-      addKill()
+      add_kill()
       rmtree(self.trial_dir())
       os.makedirs(self.repos_dir)
-      atexit.register(self.tearDown)
+      atexit.register(self.tear_down)
 
   def cleanup_dirt(self):
     """For each dirty repository, regenerate it."""
-    if self.svnserve and self.svn_dirty:
-      logging.debug('Killing svnserve pid %s' % self.svnserve.pid)
-      self.svnserve.kill()
-      self.svnserve = None
-      if not self.SHOULD_LEAK:
-        logging.debug('Removing dirty %s' % self.svn_repo)
-        rmtree(self.svn_repo)
-        logging.debug('Removing dirty %s' % self.svn_checkout)
-        rmtree(self.svn_checkout)
-      else:
-        logging.warning('Using both leaking checkout and dirty checkout')
-    if self.gitdaemon and self.git_dirty:
-      logging.debug('Killing git-daemon pid %s' % self.gitdaemon.pid)
-      self.gitdaemon.kill()
-      self.gitdaemon = None
-      if not self.SHOULD_LEAK:
-        logging.debug('Removing dirty %s' % self.git_root)
-        rmtree(self.git_root)
-      else:
-        logging.warning('Using both leaking checkout and dirty checkout')
+    if self.svn_dirty:
+      if not self.tear_down_svn():
+        logging.warning('Using both leaking checkout and svn dirty checkout')
+    if self.git_dirty:
+      if not self.tear_down_git():
+        logging.warning('Using both leaking checkout and git dirty checkout')
 
-  def tearDown(self):
+  def tear_down(self):
+    self.tear_down_svn()
+    self.tear_down_git()
+    if not self.SHOULD_LEAK:
+      logging.debug('Removing %s' % self.trial_dir())
+      rmtree(self.trial_dir())
+
+  def tear_down_svn(self):
     if self.svnserve:
       logging.debug('Killing svnserve pid %s' % self.svnserve.pid)
       self.svnserve.kill()
+      self.wait_for_port_to_free(self.svn_port)
       self.svnserve = None
+      if not self.SHOULD_LEAK:
+        logging.debug('Removing %s' % self.svn_repo)
+        rmtree(self.svn_repo)
+        logging.debug('Removing %s' % self.svn_checkout)
+        rmtree(self.svn_checkout)
+      else:
+        return False
+    return True
+
+  def tear_down_git(self):
     if self.gitdaemon:
       logging.debug('Killing git-daemon pid %s' % self.gitdaemon.pid)
       self.gitdaemon.kill()
       self.gitdaemon = None
-    if not self.SHOULD_LEAK:
-      logging.debug('Removing %s' % self.trial_dir())
-      rmtree(self.trial_dir())
+      if self.git_pid_file:
+        pid = int(self.git_pid_file.read())
+        self.git_pid_file.close()
+        kill_pid(pid)
+        self.git_pid_file = None
+      self.wait_for_port_to_free(self.git_port)
+      if not self.SHOULD_LEAK:
+        logging.debug('Removing %s' % self.git_root)
+        rmtree(self.git_root)
+      else:
+        return False
+    return True
 
   @staticmethod
   def _genTree(root, tree_dict):
@@ -332,9 +371,9 @@ class FakeReposBase(object):
       else:
         write(join(root, k), v)
 
-  def setUpSVN(self):
+  def set_up_svn(self):
     """Creates subversion repositories and start the servers."""
-    self.setUp()
+    self.set_up()
     if self.svnserve:
       return True
     try:
@@ -354,28 +393,38 @@ class FakeReposBase(object):
     cmd = ['svnserve', '-d', '--foreground', '-r', self.repos_dir]
     if self.HOST == '127.0.0.1':
       cmd.append('--listen-host=127.0.0.1')
+    self.check_port_is_free(self.svn_port)
     self.svnserve = Popen(cmd, cwd=self.svn_repo)
+    self.wait_for_port_to_bind(self.svn_port, self.svnserve)
     self.populateSvn()
     self.svn_dirty = False
     return True
 
-  def setUpGIT(self):
+  def set_up_git(self):
     """Creates git repositories and start the servers."""
-    self.setUp()
+    self.set_up()
     if self.gitdaemon:
       return True
     if sys.platform == 'win32':
       return False
+    assert self.git_pid_file == None
     for repo in ['repo_%d' % r for r in range(1, self.NB_GIT_REPOS + 1)]:
       check_call(['git', 'init', '-q', join(self.git_root, repo)])
       self.git_hashes[repo] = [None]
+    # Unlike svn, populate git before starting the server.
     self.populateGit()
     # Start the daemon.
-    cmd = ['git', 'daemon', '--export-all', '--base-path=' + self.repos_dir]
+    self.git_pid_file = tempfile.NamedTemporaryFile()
+    cmd = ['git', 'daemon',
+        '--export-all',
+        '--reuseaddr',
+        '--base-path=' + self.repos_dir,
+        '--pid-file=' + self.git_pid_file.name]
     if self.HOST == '127.0.0.1':
       cmd.append('--listen=127.0.0.1')
-    logging.debug(cmd)
+    self.check_port_is_free(self.git_port)
     self.gitdaemon = Popen(cmd, cwd=self.repos_dir)
+    self.wait_for_port_to_bind(self.git_port, self.gitdaemon)
     self.git_dirty = False
     return True
 
@@ -399,6 +448,52 @@ class FakeReposBase(object):
     else:
       new_tree = tree.copy()
     self.git_hashes[repo].append((commit_hash, new_tree))
+
+  def check_port_is_free(self, port):
+    sock = socket.socket()
+    try:
+      sock.connect((self.HOST, port))
+      # It worked, throw.
+      assert False, '%d shouldn\'t be bound' % port
+    except EnvironmentError:
+      pass
+    finally:
+      sock.close()
+
+  def wait_for_port_to_bind(self, port, process):
+    sock = socket.socket()
+    try:
+      start = datetime.datetime.utcnow()
+      maxdelay = datetime.timedelta(seconds=30)
+      while (datetime.datetime.utcnow() - start) < maxdelay:
+        try:
+          sock.connect((self.HOST, port))
+          logging.debug('%d is now bound' % port)
+          return
+        except EnvironmentError:
+          pass
+        logging.debug('%d is still not bound' % port)
+    finally:
+      sock.close()
+    # The process failed to bind. Kill it and dump its ouput.
+    process.kill()
+    logging.error('%s' % process.communicate()[0])
+    assert False, '%d is still not bound' % port
+
+  def wait_for_port_to_free(self, port):
+    start = datetime.datetime.utcnow()
+    maxdelay = datetime.timedelta(seconds=30)
+    while (datetime.datetime.utcnow() - start) < maxdelay:
+      try:
+        sock = socket.socket()
+        sock.connect((self.HOST, port))
+        logging.debug('%d was bound, waiting to free' % port)
+      except EnvironmentError:
+        logging.debug('%d now free' % port)
+        return
+      finally:
+        sock.close()
+    assert False, '%d is still bound' % port
 
   def populateSvn(self):
     raise NotImplementedError()
@@ -635,7 +730,7 @@ class FakeReposTestBase(unittest.TestCase):
 
   def setUp(self):
     unittest.TestCase.setUp(self)
-    self.FAKE_REPOS.setUp()
+    self.FAKE_REPOS.set_up()
 
     # Remove left overs and start fresh.
     if not self.CLASS_ROOT_DIR:
@@ -720,7 +815,8 @@ def main(argv):
   fake = FakeRepos()
   print 'Using %s' % fake.trial_dir()
   try:
-    fake.setUp()
+    fake.set_up_svn()
+    fake.set_up_git()
     print('Fake setup, press enter to quit or Ctrl-C to keep the checkouts.')
     sys.stdin.readline()
   except KeyboardInterrupt:
