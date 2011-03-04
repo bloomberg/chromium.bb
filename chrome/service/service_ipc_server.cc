@@ -24,6 +24,7 @@ bool ServiceIPCServer::Init() {
 }
 
 void ServiceIPCServer::CreateChannel() {
+  channel_.reset(NULL); // Tear down the existing channel, if any.
   channel_.reset(new IPC::SyncChannel(channel_handle_,
       IPC::Channel::MODE_NAMED_SERVER, this,
       g_service_process->io_thread()->message_loop(), true,
