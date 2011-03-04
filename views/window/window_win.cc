@@ -237,8 +237,8 @@ gfx::Rect WindowWin::GetNormalBounds() const {
   return bounds;
 }
 
-void WindowWin::SetBounds(const gfx::Rect& bounds,
-                          gfx::NativeWindow other_window) {
+void WindowWin::SetWindowBounds(const gfx::Rect& bounds,
+                                gfx::NativeWindow other_window) {
   SetChildBounds(GetNativeView(), GetParent(), other_window, bounds,
                  kMonitorEdgePadding, 0);
 }
@@ -1315,7 +1315,7 @@ void WindowWin::SetInitialBounds(const gfx::Rect& create_bounds) {
       SizeWindowToDefault();
     } else {
       // Use the supplied initial bounds.
-      SetBounds(create_bounds, NULL);
+      SetWindowBounds(create_bounds, NULL);
     }
   }
 }

@@ -66,8 +66,8 @@ class WindowWin : public WidgetWin,
   // Overridden from Window:
   virtual gfx::Rect GetBounds() const;
   virtual gfx::Rect GetNormalBounds() const;
-  virtual void SetBounds(const gfx::Rect& bounds,
-                         gfx::NativeWindow other_window);
+  virtual void SetWindowBounds(const gfx::Rect& bounds,
+                               gfx::NativeWindow other_window);
   virtual void Show();
   virtual void HideWindow();
   virtual void SetNativeWindowProperty(const char* name, void* value);

@@ -64,8 +64,8 @@ class Window {
   // the window Z-order. If this window is not yet visible, other_window's
   // monitor is used as the constraining rectangle, rather than this window's
   // monitor.
-  virtual void SetBounds(const gfx::Rect& bounds,
-                         gfx::NativeWindow other_window) = 0;
+  virtual void SetWindowBounds(const gfx::Rect& bounds,
+                               gfx::NativeWindow other_window) = 0;
 
   // Makes the window visible.
   virtual void Show() = 0;

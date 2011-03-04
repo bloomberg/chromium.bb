@@ -112,8 +112,8 @@ gfx::Rect WindowGtk::GetNormalBounds() const {
   return GetBounds();
 }
 
-void WindowGtk::SetBounds(const gfx::Rect& bounds,
-                          gfx::NativeWindow other_window) {
+void WindowGtk::SetWindowBounds(const gfx::Rect& bounds,
+                                gfx::NativeWindow other_window) {
   // TODO: need to deal with other_window.
   WidgetGtk::SetBounds(bounds);
 }
@@ -468,7 +468,7 @@ void WindowGtk::SetInitialBounds(GtkWindow* parent,
     if (create_bounds.IsEmpty()) {
       SizeWindowToDefault(parent);
     } else {
-      SetBounds(create_bounds, NULL);
+      SetWindowBounds(create_bounds, NULL);
     }
   }
 }
@@ -493,7 +493,7 @@ void WindowGtk::SizeWindowToDefault(GtkWindow* parent) {
   gfx::Rect bounds(center_rect.x() + (center_rect.width() - size.width()) / 2,
                    center_rect.y() + (center_rect.height() - size.height()) / 2,
                    size.width(), size.height());
-  SetBounds(bounds, NULL);
+  SetWindowBounds(bounds, NULL);
 }
 
 void WindowGtk::OnDestroy(GtkWidget* widget) {

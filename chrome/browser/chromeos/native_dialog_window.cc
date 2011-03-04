@@ -147,7 +147,7 @@ void NativeDialogHost::OnCheckResize(GtkWidget* widget) {
       gfx::Rect window_bounds = window()->GetBounds();
       window_bounds.set_width(window_size.width());
       window_bounds.set_height(window_size.height());
-      window()->SetBounds(window_bounds, NULL);
+      window()->SetWindowBounds(window_bounds, NULL);
     }
   }
 }
