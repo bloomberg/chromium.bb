@@ -404,8 +404,10 @@ function Tester() {
     this.initRPC();
     this.reportExternalErrors('#setup#');
 
-    // Wait up to a second.
-    this.retries = 100;
+    // Wait for three seconds.
+    // TODO(ncbray) use error handling mechanisms (when they are implemented)
+    // rather than a timeout.
+    this.retries = 300;
     this.retryWait = 10;
     setTimeout(function() { this_.waitForPlugins(); }, 0);
   }
