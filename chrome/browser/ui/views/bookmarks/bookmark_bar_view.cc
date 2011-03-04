@@ -1091,7 +1091,7 @@ void BookmarkBarView::WriteDragDataForView(View* sender,
       button->Paint(&canvas, true);
       drag_utils::SetDragImageOnDataObject(canvas, button->size(), press_pt,
                                            data);
-      WriteDragData(model_->GetBookmarkBarNode()->GetChild(i), data);
+      WriteBookmarkDragData(model_->GetBookmarkBarNode()->GetChild(i), data);
       return;
     }
   }
@@ -1143,8 +1143,8 @@ bool BookmarkBarView::CanStartDragForView(views::View* sender,
   return true;
 }
 
-void BookmarkBarView::WriteDragData(const BookmarkNode* node,
-                                    ui::OSExchangeData* data) {
+void BookmarkBarView::WriteBookmarkDragData(const BookmarkNode* node,
+                                            ui::OSExchangeData* data) {
   DCHECK(node && data);
   BookmarkNodeData drag_data(node);
   drag_data.Write(profile_, data);

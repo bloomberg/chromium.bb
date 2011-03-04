@@ -367,7 +367,8 @@ class BookmarkBarView : public DetachableToolbarView,
                                    const gfx::Point& p) OVERRIDE;
 
   // Writes a BookmarkNodeData for node to data.
-  void WriteDragData(const BookmarkNode* node, ui::OSExchangeData* data);
+  void WriteBookmarkDragData(const BookmarkNode* node,
+                             ui::OSExchangeData* data);
 
   // ViewMenuDelegate method. Ends up creating a BookmarkMenuController to
   // show the menu.
