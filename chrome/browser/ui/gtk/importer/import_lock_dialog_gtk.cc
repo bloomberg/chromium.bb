@@ -27,7 +27,8 @@ void ImportLockDialogGtk::Show(GtkWindow* parent, ImporterHost* importer_host) {
 }
 
 ImportLockDialogGtk::ImportLockDialogGtk(GtkWindow* parent,
-    ImporterHost* importer_host) : importer_host_(importer_host) {
+                                         ImporterHost* importer_host)
+    : importer_host_(importer_host) {
   // Build the dialog.
   dialog_ = gtk_dialog_new_with_buttons(
       l10n_util::GetStringUTF8(IDS_IMPORTER_LOCK_TITLE).c_str(),

@@ -51,9 +51,8 @@ void ShowBugReportView(views::Window* parent,
 void ShowClearBrowsingDataView(gfx::NativeWindow parent,
                                Profile* profile);
 
-// Shows the "Importer" dialog. See ImporterView.
-void ShowImporterView(views::Widget* parent,
-                      Profile* profile);
+// Shows the "Importer" dialog. See ImportDialogView.
+void ShowImportDialogView(views::Widget* parent, Profile* profile);
 
 // Shows or hides the global bookmark bubble for the star button.
 void ShowBookmarkBubbleView(views::Window* parent,

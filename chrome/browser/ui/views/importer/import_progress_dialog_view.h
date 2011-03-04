@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_VIEWS_IMPORTER_IMPORTER_PROGRESS_VIEW_H_
-#define CHROME_BROWSER_UI_VIEWS_IMPORTER_IMPORTER_PROGRESS_VIEW_H_
+#ifndef CHROME_BROWSER_UI_VIEWS_IMPORTER_IMPORT_PROGRESS_DIALOG_VIEW_H_
+#define CHROME_BROWSER_UI_VIEWS_IMPORTER_IMPORT_PROGRESS_DIALOG_VIEW_H_
 #pragma once
 
 #include "base/basictypes.h"
@@ -21,20 +21,20 @@ class Label;
 
 class ImporterObserver;
 
-class ImporterProgressView : public views::View,
-                             public views::DialogDelegate,
-                             public ImporterHost::Observer {
+class ImportProgressDialogView : public views::View,
+                                 public views::DialogDelegate,
+                                 public ImporterHost::Observer {
  public:
-  // |items| is a bitmask of ImportItems being imported.
+  // |items| is a bitmask of importer::ImportItem being imported.
   // |bookmark_import| is true if we're importing bookmarks from a
   // bookmarks.html file.
-  ImporterProgressView(HWND parent_window,
-                       uint16 items,
-                       ImporterHost* importer_host,
-                       ImporterObserver* importer_observer,
-                       const std::wstring& source_name,
-                       bool bookmarks_import);
-  virtual ~ImporterProgressView();
+  ImportProgressDialogView(HWND parent_window,
+                           uint16 items,
+                           ImporterHost* importer_host,
+                           ImporterObserver* importer_observer,
+                           const std::wstring& source_name,
+                           bool bookmarks_import);
+  virtual ~ImportProgressDialogView();
 
  protected:
   // views::View:
@@ -93,7 +93,7 @@ class ImporterProgressView : public views::View,
   // Are we importing a bookmarks.html file?
   bool bookmarks_import_;
 
-  DISALLOW_COPY_AND_ASSIGN(ImporterProgressView);
+  DISALLOW_COPY_AND_ASSIGN(ImportProgressDialogView);
 };
 
-#endif  // CHROME_BROWSER_UI_VIEWS_IMPORTER_IMPORTER_PROGRESS_VIEW_H_
+#endif  // CHROME_BROWSER_UI_VIEWS_IMPORTER_IMPORT_PROGRESS_DIALOG_VIEW_H_

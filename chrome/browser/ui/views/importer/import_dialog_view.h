@@ -2,10 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_VIEWS_IMPORTER_IMPORTER_VIEW_H_
-#define CHROME_BROWSER_UI_VIEWS_IMPORTER_IMPORTER_VIEW_H_
+#ifndef CHROME_BROWSER_UI_VIEWS_IMPORTER_IMPORT_DIALOG_VIEW_H_
+#define CHROME_BROWSER_UI_VIEWS_IMPORTER_IMPORT_DIALOG_VIEW_H_
 #pragma once
 
+#include <vector>
+
+#include "base/basictypes.h"
+#include "base/compiler_specific.h"
+#include "base/ref_counted.h"
 #include "base/string16.h"
 #include "chrome/browser/importer/importer.h"
 #include "chrome/browser/importer/importer_observer.h"
@@ -24,23 +29,22 @@ class Window;
 class ImporterList;
 class Profile;
 
-// ImporterView draws the dialog that allows the user to select what to
+// ImportDialogView draws the dialog that allows the user to select what to
 // import from other browsers.
-// Note: The UI team hasn't defined yet how the import UI will look like.
-//       So now use dialog as a placeholder.
-class ImporterView : public views::View,
-                     public views::DialogDelegate,
-                     public views::ButtonListener,
-                     public ui::ComboboxModel,
-                     public views::Combobox::Listener,
-                     public ImporterList::Observer,
-                     public ImporterObserver {
+class ImportDialogView : public views::View,
+                         public views::DialogDelegate,
+                         public views::ButtonListener,
+                         public ui::ComboboxModel,
+                         public views::Combobox::Listener,
+                         public ImporterList::Observer,
+                         public ImporterObserver {
  public:
-  // Creates a new ImporterView. |initial_state| is a bitmask of ImportItems.
+  // |initial_state| is a bitmask of importer::ImportItem.
   // Each checkbox for the bits in |initial_state| is checked.
-  ImporterView(Profile* profile, uint16 initial_state);
-  virtual ~ImporterView();
+  ImportDialogView(Profile* profile, uint16 initial_state);
+  virtual ~ImportDialogView();
 
+ protected:
   // views::View:
   virtual gfx::Size GetPreferredSize() OVERRIDE;
   virtual void Layout() OVERRIDE;
@@ -115,7 +119,7 @@ class ImporterView : public views::View,
   // Initial state of the |checkbox_items_|.
   uint16 initial_state_;
 
-  DISALLOW_COPY_AND_ASSIGN(ImporterView);
+  DISALLOW_COPY_AND_ASSIGN(ImportDialogView);
 };
 
-#endif  // CHROME_BROWSER_UI_VIEWS_IMPORTER_IMPORTER_VIEW_H_
+#endif  // CHROME_BROWSER_UI_VIEWS_IMPORTER_IMPORT_DIALOG_VIEW_H_

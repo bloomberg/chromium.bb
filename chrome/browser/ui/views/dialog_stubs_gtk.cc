@@ -31,7 +31,7 @@ void ShowClearBrowsingDataView(views::Widget* parent,
                                    profile);
 }
 
-void ShowImporterView(views::Widget* parent, Profile* profile) {
+void ShowImportDialogView(views::Widget* parent, Profile* profile) {
   // Import currently doesn't matter.
   NOTIMPLEMENTED();
 }

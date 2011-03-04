@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/views/importer/importer_view.h"
+#include "chrome/browser/ui/views/importer/import_dialog_view.h"
 
 #include "base/compiler_specific.h"
 #include "base/utf_string_conversions.h"
@@ -27,14 +27,14 @@ using views::GridLayout;
 namespace browser {
 
 // Declared in browser_dialogs.h so callers don't have to depend on our header.
-void ShowImporterView(views::Widget* parent, Profile* profile) {
+void ShowImportDialogView(views::Widget* parent, Profile* profile) {
   views::Window::CreateChromeWindow(parent->GetNativeView(), gfx::Rect(),
-      new ImporterView(profile, importer::ALL))->Show();
+      new ImportDialogView(profile, importer::ALL))->Show();
 }
 
 }  // namespace browser
 
-ImporterView::ImporterView(Profile* profile, uint16 initial_state)
+ImportDialogView::ImportDialogView(Profile* profile, uint16 initial_state)
     : import_from_label_(NULL),
       profile_combobox_(NULL),
       import_items_label_(NULL),
@@ -51,22 +51,22 @@ ImporterView::ImporterView(Profile* profile, uint16 initial_state)
   SetupControl();
 }
 
-ImporterView::~ImporterView() {
+ImportDialogView::~ImportDialogView() {
   if (importer_list_)
     importer_list_->SetObserver(NULL);
 }
 
-gfx::Size ImporterView::GetPreferredSize() {
+gfx::Size ImportDialogView::GetPreferredSize() {
   return gfx::Size(views::Window::GetLocalizedContentsSize(
       IDS_IMPORT_DIALOG_WIDTH_CHARS,
       IDS_IMPORT_DIALOG_HEIGHT_LINES));
 }
 
-void ImporterView::Layout() {
+void ImportDialogView::Layout() {
   GetLayoutManager()->Layout(this);
 }
 
-std::wstring ImporterView::GetDialogButtonLabel(
+std::wstring ImportDialogView::GetDialogButtonLabel(
     MessageBoxFlags::DialogButton button) const {
   if (button == MessageBoxFlags::DIALOGBUTTON_OK) {
     return UTF16ToWide(l10n_util::GetStringUTF16(IDS_IMPORT_COMMIT));
@@ -75,7 +75,7 @@ std::wstring ImporterView::GetDialogButtonLabel(
   }
 }
 
-bool ImporterView::IsDialogButtonEnabled(
+bool ImportDialogView::IsDialogButtonEnabled(
     MessageBoxFlags::DialogButton button) const {
   if (button == MessageBoxFlags::DIALOGBUTTON_OK) {
     return history_checkbox_->checked() ||
@@ -87,15 +87,15 @@ bool ImporterView::IsDialogButtonEnabled(
   return true;
 }
 
-bool ImporterView::IsModal() const {
+bool ImportDialogView::IsModal() const {
   return true;
 }
 
-std::wstring ImporterView::GetWindowTitle() const {
+std::wstring ImportDialogView::GetWindowTitle() const {
   return UTF16ToWide(l10n_util::GetStringUTF16(IDS_IMPORT_SETTINGS_TITLE));
 }
 
-bool ImporterView::Accept() {
+bool ImportDialogView::Accept() {
   if (!IsDialogButtonEnabled(MessageBoxFlags::DIALOGBUTTON_OK))
     return false;
 
@@ -115,23 +115,23 @@ bool ImporterView::Accept() {
   return false;
 }
 
-views::View* ImporterView::GetContentsView() {
+views::View* ImportDialogView::GetContentsView() {
   return this;
 }
 
-void ImporterView::ButtonPressed(
+void ImportDialogView::ButtonPressed(
     views::Button* sender, const views::Event& event) {
   // When no checkbox is checked we should disable the "Import" button.
   // This forces the button to evaluate what state they should be in.
   GetDialogClientView()->UpdateDialogButtons();
 }
 
-int ImporterView::GetItemCount() {
+int ImportDialogView::GetItemCount() {
   DCHECK(importer_host_.get());
   return checkbox_items_.size();
 }
 
-string16 ImporterView::GetItemAt(int index) {
+string16 ImportDialogView::GetItemAt(int index) {
   DCHECK(importer_host_.get());
 
   if (!importer_list_->source_profiles_loaded())
@@ -140,7 +140,7 @@ string16 ImporterView::GetItemAt(int index) {
     return WideToUTF16Hack(importer_list_->GetSourceProfileNameAt(index));
 }
 
-void ImporterView::ItemChanged(views::Combobox* combobox,
+void ImportDialogView::ItemChanged(views::Combobox* combobox,
                                int prev_index, int new_index) {
   DCHECK(combobox);
   DCHECK(checkbox_items_.size() >=
@@ -168,7 +168,7 @@ void ImporterView::ItemChanged(views::Combobox* combobox,
   SetCheckedItems(new_items);
 }
 
-void ImporterView::SetupControl() {
+void ImportDialogView::SetupControl() {
   // Adds all controls.
   import_from_label_ = new views::Label(UTF16ToWide(
       l10n_util::GetStringUTF16(IDS_IMPORT_FROM_LABEL)));
@@ -227,15 +227,15 @@ void ImporterView::SetupControl() {
   layout->AddPaddingRow(0, views::kRelatedControlVerticalSpacing);
 }
 
-views::Checkbox* ImporterView::InitCheckbox(const std::wstring& text,
-                                            bool checked) {
+views::Checkbox* ImportDialogView::InitCheckbox(const std::wstring& text,
+                                                bool checked) {
   views::Checkbox* checkbox = new views::Checkbox(text);
   checkbox->SetChecked(checked);
   checkbox->set_listener(this);
   return checkbox;
 }
 
-uint16 ImporterView::GetCheckedItems() {
+uint16 ImportDialogView::GetCheckedItems() {
   uint16 items = importer::NONE;
   if (history_checkbox_->IsEnabled() && history_checkbox_->checked())
     items |= importer::HISTORY;
@@ -249,7 +249,7 @@ uint16 ImporterView::GetCheckedItems() {
   return items;
 }
 
-void ImporterView::SetCheckedItemsState(uint16 items) {
+void ImportDialogView::SetCheckedItemsState(uint16 items) {
   if (items & importer::HISTORY) {
     history_checkbox_->SetEnabled(true);
   } else {
@@ -276,7 +276,7 @@ void ImporterView::SetCheckedItemsState(uint16 items) {
   }
 }
 
-void ImporterView::SetCheckedItems(uint16 items) {
+void ImportDialogView::SetCheckedItems(uint16 items) {
   if (history_checkbox_->IsEnabled())
     history_checkbox_->SetChecked(!!(items & importer::HISTORY));
 
@@ -290,7 +290,7 @@ void ImporterView::SetCheckedItems(uint16 items) {
     search_engines_checkbox_->SetChecked(!!(items & importer::SEARCH_ENGINES));
 }
 
-void ImporterView::SourceProfilesLoaded() {
+void ImportDialogView::SourceProfilesLoaded() {
   DCHECK(importer_list_->source_profiles_loaded());
   checkbox_items_.resize(
       importer_list_->GetAvailableProfileCount(), initial_state_);
@@ -299,11 +299,11 @@ void ImporterView::SourceProfilesLoaded() {
   profile_combobox_->ModelChanged();
 }
 
-void ImporterView::ImportCompleted() {
+void ImportDialogView::ImportCompleted() {
   // Now close this window since the import completed or was canceled.
   window()->Close();
 }
 
-void ImporterView::ImportCanceled() {
+void ImportDialogView::ImportCanceled() {
   ImportCompleted();
 }

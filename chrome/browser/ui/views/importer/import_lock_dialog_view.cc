@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/views/importer/importer_lock_view.h"
+#include "chrome/browser/ui/views/importer/import_lock_dialog_view.h"
 
 #include "base/message_loop.h"
 #include "base/utf_string_conversions.h"
@@ -23,22 +23,22 @@ namespace browser {
 
 void ShowImportLockDialog(gfx::NativeWindow parent,
                           ImporterHost* importer_host) {
-  ImporterLockView::Show(parent, importer_host);
+  ImportLockDialogView::Show(parent, importer_host);
 }
 
 }  // namespace browser
 
 // static
-void ImporterLockView::Show(gfx::NativeWindow parent,
-                            ImporterHost* importer_host) {
+void ImportLockDialogView::Show(gfx::NativeWindow parent,
+                                ImporterHost* importer_host) {
   views::Window::CreateChromeWindow(
       NULL, gfx::Rect(),
-      new ImporterLockView(importer_host))->Show();
+      new ImportLockDialogView(importer_host))->Show();
 }
 
-ImporterLockView::ImporterLockView(ImporterHost* host)
+ImportLockDialogView::ImportLockDialogView(ImporterHost* importer_host)
     : description_label_(NULL),
-      importer_host_(host) {
+      importer_host_(importer_host) {
   description_label_ = new views::Label(
       UTF16ToWide(l10n_util::GetStringUTF16(IDS_IMPORTER_LOCK_TEXT)));
   description_label_->SetMultiLine(true);
@@ -46,16 +46,16 @@ ImporterLockView::ImporterLockView(ImporterHost* host)
   AddChildView(description_label_);
 }
 
-ImporterLockView::~ImporterLockView() {
+ImportLockDialogView::~ImportLockDialogView() {
 }
 
-gfx::Size ImporterLockView::GetPreferredSize() {
+gfx::Size ImportLockDialogView::GetPreferredSize() {
   return gfx::Size(views::Window::GetLocalizedContentsSize(
       IDS_IMPORTLOCK_DIALOG_WIDTH_CHARS,
       IDS_IMPORTLOCK_DIALOG_HEIGHT_LINES));
 }
 
-void ImporterLockView::Layout() {
+void ImportLockDialogView::Layout() {
   description_label_->SetBounds(
       views::kPanelHorizMargin,
       views::kPanelVertMargin,
@@ -63,7 +63,7 @@ void ImporterLockView::Layout() {
       height() - 2 * views::kPanelVertMargin);
 }
 
-std::wstring ImporterLockView::GetDialogButtonLabel(
+std::wstring ImportLockDialogView::GetDialogButtonLabel(
     MessageBoxFlags::DialogButton button) const {
   if (button == MessageBoxFlags::DIALOGBUTTON_OK) {
     return UTF16ToWide(l10n_util::GetStringUTF16(IDS_IMPORTER_LOCK_OK));
@@ -73,26 +73,26 @@ std::wstring ImporterLockView::GetDialogButtonLabel(
   return std::wstring();
 }
 
-bool ImporterLockView::IsModal() const {
+bool ImportLockDialogView::IsModal() const {
   return false;
 }
 
-std::wstring ImporterLockView::GetWindowTitle() const {
+std::wstring ImportLockDialogView::GetWindowTitle() const {
   return UTF16ToWide(l10n_util::GetStringUTF16(IDS_IMPORTER_LOCK_TITLE));
 }
 
-bool ImporterLockView::Accept() {
+bool ImportLockDialogView::Accept() {
   MessageLoop::current()->PostTask(FROM_HERE, NewRunnableMethod(
-      importer_host_, &ImporterHost::OnLockViewEnd, true));
+      importer_host_.get(), &ImporterHost::OnLockViewEnd, true));
   return true;
 }
 
-bool ImporterLockView::Cancel() {
+bool ImportLockDialogView::Cancel() {
   MessageLoop::current()->PostTask(FROM_HERE, NewRunnableMethod(
-      importer_host_, &ImporterHost::OnLockViewEnd, false));
+      importer_host_.get(), &ImporterHost::OnLockViewEnd, false));
   return true;
 }
 
-views::View* ImporterLockView::GetContentsView() {
+views::View* ImportLockDialogView::GetContentsView() {
   return this;
 }

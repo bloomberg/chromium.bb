@@ -57,7 +57,7 @@
 #include "views/window/window.h"
 
 #if defined(OS_WIN)
-#include "chrome/browser/ui/views/importer/importer_view.h"
+#include "chrome/browser/ui/views/importer/import_dialog_view.h"
 #endif
 
 using views::CustomButton;
@@ -854,7 +854,7 @@ void BookmarkBarView::ShowImportDialog() {
   views::Window::CreateChromeWindow(
       GetWindow()->GetNativeWindow(),
       gfx::Rect(),
-      new ImporterView(profile_, importer::FAVORITES))->Show();
+      new ImportDialogView(profile_, importer::FAVORITES))->Show();
 #endif
 }
 

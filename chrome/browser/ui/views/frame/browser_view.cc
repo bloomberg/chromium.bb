@@ -1132,7 +1132,7 @@ void BrowserView::ShowClearBrowsingDataDialog() {
 }
 
 void BrowserView::ShowImportDialog() {
-  browser::ShowImporterView(GetWidget(), browser_->profile());
+  browser::ShowImportDialogView(GetWidget(), browser_->profile());
 }
 
 void BrowserView::ShowSearchEnginesDialog() {

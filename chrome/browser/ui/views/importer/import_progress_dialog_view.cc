@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/views/importer/importer_progress_view.h"
+#include "chrome/browser/ui/views/importer/import_progress_dialog_view.h"
 
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/importer/importer_observer.h"
@@ -17,12 +17,13 @@
 #include "views/layout/layout_constants.h"
 #include "views/window/window.h"
 
-ImporterProgressView::ImporterProgressView(HWND parent_window,
-                                           uint16 items,
-                                           ImporterHost* importer_host,
-                                           ImporterObserver* importer_observer,
-                                           const std::wstring& source_name,
-                                           bool bookmarks_import)
+ImportProgressDialogView::ImportProgressDialogView(
+    HWND parent_window,
+    uint16 items,
+    ImporterHost* importer_host,
+    ImporterObserver* importer_observer,
+    const std::wstring& source_name,
+    bool bookmarks_import)
     : state_bookmarks_(new views::CheckmarkThrobber),
       state_searches_(new views::CheckmarkThrobber),
       state_passwords_(new views::CheckmarkThrobber),
@@ -72,7 +73,7 @@ ImporterProgressView::ImporterProgressView(HWND parent_window,
   label_cookies_->set_parent_owned(false);
 }
 
-ImporterProgressView::~ImporterProgressView() {
+ImportProgressDialogView::~ImportProgressDialogView() {
   RemoveChildView(state_bookmarks_.get());
   RemoveChildView(state_searches_.get());
   RemoveChildView(state_passwords_.get());
@@ -96,39 +97,39 @@ ImporterProgressView::~ImporterProgressView() {
   }
 }
 
-gfx::Size ImporterProgressView::GetPreferredSize() {
+gfx::Size ImportProgressDialogView::GetPreferredSize() {
   return gfx::Size(views::Window::GetLocalizedContentsSize(
       IDS_IMPORTPROGRESS_DIALOG_WIDTH_CHARS,
       IDS_IMPORTPROGRESS_DIALOG_HEIGHT_LINES));
 }
 
-void ImporterProgressView::ViewHierarchyChanged(bool is_add,
-                                                views::View* parent,
-                                                views::View* child) {
+void ImportProgressDialogView::ViewHierarchyChanged(bool is_add,
+                                                    views::View* parent,
+                                                    views::View* child) {
   if (is_add && child == this)
     InitControlLayout();
 }
 
-int ImporterProgressView::GetDialogButtons() const {
+int ImportProgressDialogView::GetDialogButtons() const {
   return MessageBoxFlags::DIALOGBUTTON_CANCEL;
 }
 
-std::wstring ImporterProgressView::GetDialogButtonLabel(
+std::wstring ImportProgressDialogView::GetDialogButtonLabel(
     MessageBoxFlags::DialogButton button) const {
   DCHECK(button == MessageBoxFlags::DIALOGBUTTON_CANCEL);
   return UTF16ToWide(
       l10n_util::GetStringUTF16(IDS_IMPORT_PROGRESS_STATUS_CANCEL));
 }
 
-bool ImporterProgressView::IsModal() const {
+bool ImportProgressDialogView::IsModal() const {
   return parent_window_ != NULL;
 }
 
-std::wstring ImporterProgressView::GetWindowTitle() const {
+std::wstring ImportProgressDialogView::GetWindowTitle() const {
   return UTF16ToWide(l10n_util::GetStringUTF16(IDS_IMPORT_PROGRESS_TITLE));
 }
 
-bool ImporterProgressView::Cancel() {
+bool ImportProgressDialogView::Cancel() {
   // When the user cancels the import, we need to tell the importer_host to stop
   // importing and return false so that the window lives long enough to receive
   // ImportEnded, which will close the window. Closing the window results in
@@ -142,11 +143,11 @@ bool ImporterProgressView::Cancel() {
   return false;
 }
 
-views::View* ImporterProgressView::GetContentsView() {
+views::View* ImportProgressDialogView::GetContentsView() {
   return this;
 }
 
-void ImporterProgressView::InitControlLayout() {
+void ImportProgressDialogView::InitControlLayout() {
   using views::GridLayout;
   using views::ColumnSet;
 
@@ -214,7 +215,7 @@ void ImporterProgressView::InitControlLayout() {
   }
 }
 
-void ImporterProgressView::ImportItemStarted(importer::ImportItem item) {
+void ImportProgressDialogView::ImportItemStarted(importer::ImportItem item) {
   DCHECK(items_ & item);
   switch (item) {
     case importer::FAVORITES:
@@ -235,7 +236,7 @@ void ImporterProgressView::ImportItemStarted(importer::ImportItem item) {
   }
 }
 
-void ImporterProgressView::ImportItemEnded(importer::ImportItem item) {
+void ImportProgressDialogView::ImportItemEnded(importer::ImportItem item) {
   DCHECK(items_ & item);
   switch (item) {
     case importer::FAVORITES:
@@ -261,11 +262,11 @@ void ImporterProgressView::ImportItemEnded(importer::ImportItem item) {
   }
 }
 
-void ImporterProgressView::ImportStarted() {
+void ImportProgressDialogView::ImportStarted() {
   importing_ = true;
 }
 
-void ImporterProgressView::ImportEnded() {
+void ImportProgressDialogView::ImportEnded() {
   // This can happen because:
   // - the import completed successfully.
   // - the import was canceled by the user.
@@ -289,7 +290,7 @@ void ShowImportProgressDialog(HWND parent_window,
                               Profile* target_profile,
                               bool first_run) {
   DCHECK(items != 0);
-  ImporterProgressView* progress_view = new ImporterProgressView(
+  ImportProgressDialogView* progress_view = new ImportProgressDialogView(
       parent_window,
       items,
       importer_host,

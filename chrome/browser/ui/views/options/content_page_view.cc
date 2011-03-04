@@ -21,7 +21,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sync/sync_setup_wizard.h"
 #include "chrome/browser/sync/sync_ui_util.h"
-#include "chrome/browser/ui/views/importer/importer_view.h"
+#include "chrome/browser/ui/views/importer/import_dialog_view.h"
 #include "chrome/browser/ui/views/options/managed_prefs_banner_view.h"
 #include "chrome/browser/ui/views/options/options_group_view.h"
 #include "chrome/browser/ui/views/options/passwords_exceptions_window_view.h"
@@ -120,7 +120,7 @@ void ContentPageView::ButtonPressed(
     views::Window::CreateChromeWindow(
       GetWindow()->GetNativeWindow(),
       gfx::Rect(),
-      new ImporterView(profile(), importer::ALL))->Show();
+      new ImportDialogView(profile(), importer::ALL))->Show();
   } else if (sender == sync_start_stop_button_) {
     DCHECK(sync_service_ && !sync_service_->IsManaged());
 
