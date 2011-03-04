@@ -16,9 +16,6 @@ if HAVE_LIBKMS
 SUBDIRS += kmstest
 endif
 
-if HAVE_INTEL
-endif
-
 if HAVE_LIBUDEV
 
 check_LTLIBRARIES = libdrmtest.la
@@ -50,9 +47,13 @@ TESTS =						\
 SUBDIRS += vbltest $(NULL)
 
 if HAVE_INTEL
+if HAVE_LIBKMS
+SUBDIRS += \
+	modetest
+endif
+
 SUBDIRS += \
 	modeprint				\
-	modetest				\
 	$(NULL)
 
 TESTS +=					\
