@@ -138,7 +138,7 @@ void SafeBrowsingService::Client::OnSafeBrowsingResult(
     OnBrowseUrlCheckResult(*(check.url), check.result);
     OnDownloadUrlCheckResult(*(check.url), check.result);
   } else if (check.full_hash.get()) {
-    OnDownloadHashCheckResult(*(check.full_hash), check.result);
+    OnDownloadHashCheckResult(check.full_hash->full_hash, check.result);
   } else {
     NOTREACHED();
   }
@@ -219,7 +219,8 @@ bool SafeBrowsingService::CheckDownloadUrl(const GURL& url,
 bool SafeBrowsingService::CheckDownloadHash(const std::string& full_hash,
                                             Client* client) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  if (!enabled_ || !enable_download_protection_)
+  DCHECK(!full_hash.empty());
+  if (!enabled_ || !enable_download_protection_ || full_hash.empty())
     return true;
 
   // We need to check the database for url prefix, and later may fetch the url

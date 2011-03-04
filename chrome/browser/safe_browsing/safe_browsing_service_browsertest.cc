@@ -433,7 +433,7 @@ class TestSBClient
   }
 
   // Called when the result of checking a download hash is known.
-  void OnDownloadHashCheckResult(const SBFullHash& hash,
+  void OnDownloadHashCheckResult(const std::string& hash,
                                  SafeBrowsingService::UrlCheckResult result) {
     result_ = result;
     BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,

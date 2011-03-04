@@ -115,7 +115,7 @@ class SafeBrowsingService
                                           UrlCheckResult result) {}
 
     // Called when the result of checking a download binary hash is known.
-    virtual void OnDownloadHashCheckResult(const SBFullHash& hash,
+    virtual void OnDownloadHashCheckResult(const std::string& hash,
                                            UrlCheckResult result) {}
   };
 
