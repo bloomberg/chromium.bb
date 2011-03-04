@@ -1131,7 +1131,17 @@ class WaitForProcessLauncherThreadToGoIdleObserver
 
   virtual ~WaitForProcessLauncherThreadToGoIdleObserver();
 
+  // Schedules a task on the PROCESS_LAUNCHER thread to execute
+  // |RunOnProcessLauncherThread2|. By the time the task is executed the
+  // PROCESS_LAUNCHER thread should be some what idle.
   void RunOnProcessLauncherThread();
+
+  // When executed the PROCESS_LAUNCHER thread should have processed any pending
+  // tasks.  Schedules a task on the UI thread that sends the message saying
+  // we're done.
+  void RunOnProcessLauncherThread2();
+
+  // Sends the |reply_message_| to |automation_| indicating we're done.
   void RunOnUIThread();
 
   base::WeakPtr<AutomationProvider> automation_;

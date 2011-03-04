@@ -2083,14 +2083,27 @@ WaitForProcessLauncherThreadToGoIdleObserver::
 
 void WaitForProcessLauncherThreadToGoIdleObserver::
 RunOnProcessLauncherThread() {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::PROCESS_LAUNCHER));
   BrowserThread::PostTask(
       BrowserThread::PROCESS_LAUNCHER, FROM_HERE,
+      NewRunnableMethod(
+          this,
+          &WaitForProcessLauncherThreadToGoIdleObserver::
+          RunOnProcessLauncherThread2));
+}
+
+void WaitForProcessLauncherThreadToGoIdleObserver::
+RunOnProcessLauncherThread2() {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::PROCESS_LAUNCHER));
+  BrowserThread::PostTask(
+      BrowserThread::UI, FROM_HERE,
       NewRunnableMethod(
           this,
           &WaitForProcessLauncherThreadToGoIdleObserver::RunOnUIThread));
 }
 
 void WaitForProcessLauncherThreadToGoIdleObserver::RunOnUIThread() {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   if (automation_)
     automation_->Send(reply_message_.release());
   Release();
