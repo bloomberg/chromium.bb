@@ -22,7 +22,5 @@ BUG_ANTONM MAC : http/tests/security/xss-DENIED-xsl-external-entity.xml = TEXT
 
 BUG_TONYG MAC : svg/text/font-size-below-point-five.svg = TEXT
 
-// Temporarily get rid of redness
-BUG_PKASTING WIN : http/tests/navigation/useragent.php = TEXT
-
+// Fixed upstream by r80364
 BUG_PFELDMAN : inspector/timeline/timeline-network-resource.html = PASS TEXT
