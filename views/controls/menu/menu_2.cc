@@ -16,9 +16,6 @@ Menu2::Menu2(ui::MenuModel* model)
   Rebuild();
 }
 
-Menu2::~Menu2() {
-}
-
 gfx::NativeMenu Menu2::GetNativeMenu() const {
   return wrapper_->GetNativeMenu();
 }
