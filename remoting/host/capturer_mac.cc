@@ -123,9 +123,7 @@ void CapturerMac::CaptureRects(const InvalidRects& rects,
 void CapturerMac::ScreenRefresh(CGRectCount count, const CGRect *rect_array) {
   InvalidRects rects;
   for (CGRectCount i = 0; i < count; ++i) {
-    CGRect rect = rect_array[i];
-    rect.origin.y = height_ - rect.size.height;
-    rects.insert(gfx::Rect(rect));
+    rects.insert(gfx::Rect(rect_array[i]));
   }
   InvalidateRects(rects);
 }
@@ -136,7 +134,6 @@ void CapturerMac::ScreenUpdateMove(CGScreenUpdateMoveDelta delta,
   InvalidRects rects;
   for (CGRectCount i = 0; i < count; ++i) {
     CGRect rect = rect_array[i];
-    rect.origin.y = height_ - rect.size.height;
     rects.insert(gfx::Rect(rect));
     rect = CGRectOffset(rect, delta.dX, delta.dY);
     rects.insert(gfx::Rect(rect));
