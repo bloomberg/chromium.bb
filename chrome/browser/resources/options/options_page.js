@@ -852,14 +852,14 @@ cr.define('options', function() {
         container.hidden = false;
         if (isSubpage) {
           var computedStyle = window.getComputedStyle(container);
-          container.style.WebkitMarginStart =
-              parseInt(computedStyle.WebkitMarginStart, 10) + 100 + 'px';
+          container.style.WebkitPaddingStart =
+              parseInt(computedStyle.WebkitPaddingStart, 10) + 100 + 'px';
         }
         // Separate animating changes from the removal of display:none.
         window.setTimeout(function() {
           container.classList.remove('transparent');
           if (isSubpage)
-            container.style.WebkitMarginStart = '';
+            container.style.WebkitPaddingStart = '';
         });
       } else {
         var self = this;

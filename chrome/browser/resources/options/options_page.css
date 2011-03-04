@@ -253,7 +253,7 @@ html.hide-menu #mainview {
 }
 
 .subpage-sheet-container {
-  -webkit-transition: 0.25s opacity, 0.1s margin-left, 0.1s margin-right;
+  -webkit-transition: 0.25s opacity, 0.1s padding-left, 0.1s padding-right;
   box-sizing: border-box;
   min-height: 100%;
   position: absolute;
