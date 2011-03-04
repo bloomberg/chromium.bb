@@ -3,7 +3,6 @@
 // found in the LICENSE file.
 
 #include "base/logging.h"
-#include "ui/base/accessibility/accessible_view_state.h"
 #include "views/window/client_view.h"
 #if defined(OS_LINUX)
 #include "views/window/hit_test.h"
@@ -63,8 +62,8 @@ void ClientView::OnBoundsChanged() {
   // NonClientView::Layout.
 }
 
-void ClientView::GetAccessibleState(ui::AccessibleViewState* state) {
-  state->role = ui::AccessibilityTypes::ROLE_CLIENT;
+AccessibilityTypes::Role ClientView::GetAccessibleRole() {
+  return AccessibilityTypes::ROLE_CLIENT;
 }
 
 }  // namespace views

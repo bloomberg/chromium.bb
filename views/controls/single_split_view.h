@@ -42,7 +42,7 @@ class SingleSplitView : public views::View {
   virtual void OnBoundsChanged();
   virtual void Layout();
 
-  virtual void GetAccessibleState(ui::AccessibleViewState* state) OVERRIDE;
+  virtual AccessibilityTypes::Role GetAccessibleRole();
 
   // SingleSplitView's preferred size is the sum of the preferred widths
   // and the max of the heights.
@@ -74,8 +74,6 @@ class SingleSplitView : public views::View {
   void CalculateChildrenBounds(const gfx::Rect& bounds,
                                gfx::Rect* leading_bounds,
                                gfx::Rect* trailing_bounds) const;
-
-  void SetAccessibleName(const string16& name);
 
  protected:
   virtual bool OnMousePressed(const MouseEvent& event);
@@ -133,9 +131,6 @@ class SingleSplitView : public views::View {
 
   // Observer to notify about user initiated handle movements. Not own by us.
   Observer* observer_;
-
-  // The accessible name of this view.
-  string16 accessible_name_;
 
   DISALLOW_COPY_AND_ASSIGN(SingleSplitView);
 };

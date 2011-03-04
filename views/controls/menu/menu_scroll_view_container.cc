@@ -10,7 +10,6 @@
 #include <Vssym32.h>
 #endif
 
-#include "ui/base/accessibility/accessible_view_state.h"
 #include "ui/gfx/canvas_skia.h"
 #include "ui/gfx/color_utils.h"
 #include "views/border.h"
@@ -163,8 +162,7 @@ class MenuScrollViewContainer::MenuScrollView : public View {
 
 // MenuScrollViewContainer ----------------------------------------------------
 
-MenuScrollViewContainer::MenuScrollViewContainer(SubmenuView* content_view)
-    : content_view_(content_view) {
+MenuScrollViewContainer::MenuScrollViewContainer(SubmenuView* content_view) {
   scroll_up_button_ = new MenuScrollButton(content_view, true);
   scroll_down_button_ = new MenuScrollButton(content_view, false);
   AddChildView(scroll_up_button_);
@@ -268,16 +266,14 @@ gfx::Size MenuScrollViewContainer::GetPreferredSize() {
   return prefsize;
 }
 
-void MenuScrollViewContainer::GetAccessibleState(
-    ui::AccessibleViewState* state) {
-  // Get the name from the submenu view.
-  content_view_->GetAccessibleState(state);
+AccessibilityTypes::Role MenuScrollViewContainer::GetAccessibleRole() {
+  return AccessibilityTypes::ROLE_MENUBAR;
+}
 
-  // Now change the role.
-  state->role = ui::AccessibilityTypes::ROLE_MENUBAR;
+AccessibilityTypes::State MenuScrollViewContainer::GetAccessibleState() {
   // Some AT (like NVDA) will not process focus events on menu item children
   // unless a parent claims to be focused.
-  state->state = ui::AccessibilityTypes::STATE_FOCUSED;
+  return AccessibilityTypes::STATE_FOCUSED;
 }
 
 }  // namespace views

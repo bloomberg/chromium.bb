@@ -9,7 +9,6 @@
 #include "content/browser/renderer_host/render_widget_host_view.h"
 #include "content/browser/tab_contents/interstitial_page.h"
 #include "content/browser/tab_contents/tab_contents.h"
-#include "ui/base/accessibility/accessible_view_state.h"
 #include "views/focus/focus_manager.h"
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -131,9 +130,8 @@ void NativeTabContentsContainerGtk::AboutToRequestFocusFromTabTraversal(
   container_->tab_contents()->FocusThroughTabTraversal(reverse);
 }
 
-void NativeTabContentsContainerGtk::GetAccessibleState(
-    ui::AccessibleViewState* state) {
-  state->role = ui::AccessibilityTypes::ROLE_GROUPING;
+AccessibilityTypes::Role NativeTabContentsContainerGtk::GetAccessibleRole() {
+  return AccessibilityTypes::ROLE_GROUPING;
 }
 
 ////////////////////////////////////////////////////////////////////////////////

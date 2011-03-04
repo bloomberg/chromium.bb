@@ -37,7 +37,6 @@
 #include "content/browser/renderer_host/render_widget_host_view.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
-#include "ui/base/accessibility/accessible_view_state.h"
 #include "ui/base/dragdrop/drag_drop_types.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -173,6 +172,8 @@ void LocationBarView::Init() {
 
   location_entry_view_ = location_entry_->AddToView(this);
   location_entry_view_->SetID(VIEW_ID_AUTOCOMPLETE);
+  location_entry_view_->SetAccessibleName(
+      l10n_util::GetStringUTF16(IDS_ACCNAME_LOCATION));
 
   selected_keyword_view_ = new SelectedKeywordView(
       kSelectedKeywordBackgroundImages, IDR_KEYWORD_SEARCH_MAGNIFIER,
@@ -203,6 +204,8 @@ void LocationBarView::Init() {
     AddChildView(star_view_);
     star_view_->SetVisible(true);
   }
+
+  SetAccessibleName(l10n_util::GetStringUTF16(IDS_ACCNAME_LOCATION));
 
   // Initialize the location entry. We do this to avoid a black flash which is
   // visible when the location entry has just been initialized.
@@ -1052,9 +1055,8 @@ bool LocationBarView::SkipDefaultKeyEventProcessing(const views::KeyEvent& e) {
 #endif
 }
 
-void LocationBarView::GetAccessibleState(ui::AccessibleViewState* state) {
-  state->role = ui::AccessibilityTypes::ROLE_GROUPING;
-  state->name = l10n_util::GetStringUTF16(IDS_ACCNAME_LOCATION);
+AccessibilityTypes::Role LocationBarView::GetAccessibleRole() {
+  return AccessibilityTypes::ROLE_GROUPING;
 }
 
 void LocationBarView::WriteDragData(views::View* sender,

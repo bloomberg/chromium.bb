@@ -5,7 +5,6 @@
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "ui/base/accessibility/accessible_view_state.h"
 #include "views/controls/progress_bar.h"
 
 namespace views {
@@ -49,11 +48,17 @@ TEST(ProgressBarTest, Accessibility) {
   ProgressBar bar;
   bar.SetProgress(62);
 
-  ui::AccessibleViewState state;
-  bar.GetAccessibleState(&state);
-  EXPECT_EQ(ui::AccessibilityTypes::ROLE_PROGRESSBAR, state.role);
-  EXPECT_EQ(string16(), state.name);
-  EXPECT_TRUE(ui::AccessibilityTypes::STATE_READONLY & state.state);
+  EXPECT_EQ(AccessibilityTypes::ROLE_PROGRESSBAR, bar.GetAccessibleRole());
+
+  string16 name;
+  EXPECT_FALSE(bar.GetAccessibleName(&name));
+  EXPECT_EQ(string16(), name);
+  string16 accessible_name = ASCIIToUTF16("My progress bar");
+  bar.SetAccessibleName(accessible_name);
+  EXPECT_TRUE(bar.GetAccessibleName(&name));
+  EXPECT_EQ(accessible_name, name);
+
+  EXPECT_TRUE(AccessibilityTypes::STATE_READONLY & bar.GetAccessibleState());
 }
 
 }  // namespace views

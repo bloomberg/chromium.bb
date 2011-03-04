@@ -41,23 +41,21 @@ class PageActionImageView : public views::ImageView,
   }
 
   // Overridden from view.
-  virtual void GetAccessibleState(ui::AccessibleViewState* state) OVERRIDE;
-  virtual bool OnMousePressed(const views::MouseEvent& event) OVERRIDE;
-  virtual void OnMouseReleased(const views::MouseEvent& event, bool canceled)
-      OVERRIDE;
-  virtual bool OnKeyPressed(const views::KeyEvent& e) OVERRIDE;
-  virtual void ShowContextMenu(const gfx::Point& p, bool is_mouse_gesture)
-      OVERRIDE;
+  virtual AccessibilityTypes::Role GetAccessibleRole();
+  virtual bool OnMousePressed(const views::MouseEvent& event);
+  virtual void OnMouseReleased(const views::MouseEvent& event, bool canceled);
+  virtual bool OnKeyPressed(const views::KeyEvent& e);
+  virtual void ShowContextMenu(const gfx::Point& p, bool is_mouse_gesture);
 
   // Overridden from ImageLoadingTracker.
   virtual void OnImageLoaded(
-      SkBitmap* image, ExtensionResource resource, int index) OVERRIDE;
+      SkBitmap* image, ExtensionResource resource, int index);
 
   // Overridden from ExtensionContextMenuModelModel::Delegate
-  virtual void InspectPopup(ExtensionAction* action) OVERRIDE;
+  virtual void InspectPopup(ExtensionAction* action);
 
   // Overridden from ExtensionPopup::Observer
-  virtual void ExtensionPopupIsClosing(ExtensionPopup* popup) OVERRIDE;
+  virtual void ExtensionPopupIsClosing(ExtensionPopup* popup);
 
   // Called to notify the PageAction that it should determine whether to be
   // visible or hidden. |contents| is the TabContents that is active, |url| is

@@ -21,7 +21,7 @@
 #include "ui/gfx/canvas_skia.h"
 #include "ui/gfx/native_theme_win.h"
 #include "ui/gfx/path.h"
-#include "views/accessibility/native_view_accessibility_win.h"
+#include "views/accessibility/view_accessibility.h"
 #include "views/controls/native_control_win.h"
 #include "views/focus/accelerator_handler.h"
 #include "views/focus/focus_util_win.h"
@@ -507,26 +507,6 @@ void WidgetWin::SetCursor(gfx::NativeCursor cursor) {
   }
 }
 
-void WidgetWin::NotifyAccessibilityEvent(
-    View* view,
-    ui::AccessibilityTypes::Event event_type,
-    bool send_native_event) {
-  // Send the notification to the delegate.
-  if (ViewsDelegate::views_delegate)
-    ViewsDelegate::views_delegate->NotifyAccessibilityEvent(view, event_type);
-
-  // Now call the Windows-specific method to notify MSAA clients of this
-  // event.  The widget gives us a temporary unique child ID to associate
-  // with this view so that clients can call get_accChild in
-  // NativeViewAccessibilityWin to retrieve the IAccessible associated
-  // with this view.
-  if (send_native_event) {
-    int child_id = AddAccessibilityViewEvent(view);
-    ::NotifyWinEvent(NativeViewAccessibilityWin::MSAAEvent(event_type),
-                     GetNativeView(), OBJID_CLIENT, child_id);
-  }
-}
-
 ////////////////////////////////////////////////////////////////////////////////
 // WidgetWin, MessageLoop::Observer implementation:
 
@@ -669,7 +649,7 @@ LRESULT WidgetWin::OnGetObject(UINT uMsg, WPARAM w_param, LPARAM l_param) {
   if (OBJID_CLIENT == l_param) {
     // Retrieve MSAA dispatch object for the root view.
     base::win::ScopedComPtr<IAccessible> root(
-        NativeViewAccessibilityWin::GetAccessibleForView(GetRootView()));
+        ViewAccessibility::GetAccessibleForView(GetRootView()));
 
     // Create a reference that MSAA will marshall to the client.
     reference_result = LresultFromObject(IID_IAccessible, w_param,

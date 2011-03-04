@@ -6,7 +6,6 @@
 
 #include "base/utf_string_conversions.h"
 #include "grit/app_strings.h"
-#include "ui/base/accessibility/accessible_view_state.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/models/menu_model.h"
 #include "ui/gfx/canvas.h"
@@ -117,23 +116,27 @@ bool MenuItemView::GetTooltipText(const gfx::Point& p, std::wstring* tooltip) {
   return false;
 }
 
-void MenuItemView::GetAccessibleState(ui::AccessibleViewState* state) {
-  state->role = ui::AccessibilityTypes::ROLE_MENUITEM;
-  state->name = GetAccessibleNameForMenuItem(title_, GetAcceleratorText());
+AccessibilityTypes::Role MenuItemView::GetAccessibleRole() {
+  return AccessibilityTypes::ROLE_MENUITEM;
+}
+
+AccessibilityTypes::State MenuItemView::GetAccessibleState() {
+  int state = 0;
   switch (GetType()) {
     case SUBMENU:
-      state->state |= ui::AccessibilityTypes::STATE_HASPOPUP;
+      state |= AccessibilityTypes::STATE_HASPOPUP;
       break;
     case CHECKBOX:
     case RADIO:
-      state->state |= GetDelegate()->IsItemChecked(GetCommand()) ?
-          ui::AccessibilityTypes::STATE_CHECKED : 0;
+      state |= GetDelegate()->IsItemChecked(GetCommand()) ?
+          AccessibilityTypes::STATE_CHECKED : 0;
       break;
     case NORMAL:
     case SEPARATOR:
       // No additional accessibility states currently for these menu states.
       break;
   }
+  return state;
 }
 
 // static
@@ -317,6 +320,7 @@ SubmenuView* MenuItemView::CreateSubmenu() {
 
 void MenuItemView::SetTitle(const std::wstring& title) {
   title_ = WideToUTF16Hack(title);
+  SetAccessibleName(GetAccessibleNameForMenuItem(title_, GetAcceleratorText()));
   pref_size_.SetSize(0, 0);  // Triggers preferred size recalculation.
 }
 

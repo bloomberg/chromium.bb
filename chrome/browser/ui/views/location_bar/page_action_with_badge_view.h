@@ -20,9 +20,8 @@ class PageActionWithBadgeView : public views::View {
 
   PageActionImageView* image_view() { return image_view_; }
 
-  // View overrides:
-  virtual void GetAccessibleState(ui::AccessibleViewState* state) OVERRIDE;
-  virtual gfx::Size GetPreferredSize() OVERRIDE;
+  virtual AccessibilityTypes::Role GetAccessibleRole();
+  virtual gfx::Size GetPreferredSize();
 
   void UpdateVisibility(TabContents* contents, const GURL& url);
 

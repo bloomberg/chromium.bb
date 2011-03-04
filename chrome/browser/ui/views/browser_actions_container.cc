@@ -33,7 +33,6 @@
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/core/SkTypeface.h"
 #include "third_party/skia/include/effects/SkGradientShader.h"
-#include "ui/base/accessibility/accessible_view_state.h"
 #include "ui/base/animation/slide_animation.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -171,6 +170,7 @@ void BrowserActionButton::UpdateState() {
   if (name.empty())
     name = UTF8ToUTF16(extension()->name());
   SetTooltipText(UTF16ToWideHack(name));
+  SetAccessibleName(name);
   parent()->SchedulePaint();
 }
 
@@ -292,6 +292,8 @@ BrowserActionView::BrowserActionView(const Extension* extension,
   button_->SetDragController(panel_);
   AddChildView(button_);
   button_->UpdateState();
+  SetAccessibleName(
+      l10n_util::GetStringUTF16(IDS_ACCNAME_EXTENSIONS_BROWSER_ACTION));
 }
 
 BrowserActionView::~BrowserActionView() {
@@ -317,10 +319,8 @@ gfx::Canvas* BrowserActionView::GetIconWithBadge() {
   return canvas;
 }
 
-void BrowserActionView::GetAccessibleState(ui::AccessibleViewState* state) {
-  state->name = l10n_util::GetStringUTF16(
-      IDS_ACCNAME_EXTENSIONS_BROWSER_ACTION);
-  state->role = ui::AccessibilityTypes::ROLE_GROUPING;
+AccessibilityTypes::Role BrowserActionView::GetAccessibleRole() {
+  return AccessibilityTypes::ROLE_GROUPING;
 }
 
 void BrowserActionView::Layout() {
@@ -372,6 +372,8 @@ BrowserActionsContainer::BrowserActionsContainer(Browser* browser,
 
   resize_animation_.reset(new ui::SlideAnimation(this));
   resize_area_ = new views::ResizeArea(this);
+  resize_area_->SetAccessibleName(
+      l10n_util::GetStringUTF16(IDS_ACCNAME_SEPARATOR));
   AddChildView(resize_area_);
 
   chevron_ = new views::MenuButton(NULL, std::wstring(), this, false);
@@ -381,6 +383,8 @@ BrowserActionsContainer::BrowserActionsContainer(Browser* browser,
       l10n_util::GetStringUTF16(IDS_ACCNAME_EXTENSIONS_CHEVRON));
   chevron_->SetVisible(false);
   AddChildView(chevron_);
+
+  SetAccessibleName(l10n_util::GetStringUTF16(IDS_ACCNAME_EXTENSIONS));
 }
 
 BrowserActionsContainer::~BrowserActionsContainer() {
@@ -737,10 +741,8 @@ void BrowserActionsContainer::OnThemeChanged() {
   LoadImages();
 }
 
-void BrowserActionsContainer::GetAccessibleState(
-    ui::AccessibleViewState* state) {
-  state->role = ui::AccessibilityTypes::ROLE_GROUPING;
-  state->name = l10n_util::GetStringUTF16(IDS_ACCNAME_EXTENSIONS);
+AccessibilityTypes::Role BrowserActionsContainer::GetAccessibleRole() {
+  return AccessibilityTypes::ROLE_GROUPING;
 }
 
 void BrowserActionsContainer::RunMenu(View* source, const gfx::Point& pt) {

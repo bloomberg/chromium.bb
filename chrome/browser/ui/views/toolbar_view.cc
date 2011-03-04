@@ -25,7 +25,6 @@
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
-#include "ui/base/accessibility/accessible_view_state.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/canvas.h"
@@ -307,9 +306,8 @@ bool ToolbarView::SetPaneFocus(
   return true;
 }
 
-void ToolbarView::GetAccessibleState(ui::AccessibleViewState* state) {
-  state->role = ui::AccessibilityTypes::ROLE_TOOLBAR;
-  state->name = l10n_util::GetStringUTF16(IDS_ACCNAME_TOOLBAR);
+AccessibilityTypes::Role ToolbarView::GetAccessibleRole() {
+  return AccessibilityTypes::ROLE_TOOLBAR;
 }
 
 ////////////////////////////////////////////////////////////////////////////////

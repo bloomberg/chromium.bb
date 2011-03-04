@@ -9,7 +9,6 @@
 #include <vector>
 
 #include "base/scoped_ptr.h"
-#include "ui/base/accessibility/accessibility_types.h"
 #include "ui/gfx/native_widget_types.h"
 #include "views/focus/focus_manager.h"
 #include "views/widget/native_widget_delegate.h"
@@ -240,17 +239,6 @@ class Widget : public internal::NativeWidgetDelegate,
 
   void SetFocusTraversableParent(FocusTraversable* parent);
   void SetFocusTraversableParentView(View* parent_view);
-
-  // Notifies assistive technology that an accessibility event has
-  // occurred on |view|, such as when the view is focused or when its
-  // value changes. Pass true for |send_native_event| except for rare
-  // cases where the view is a native control that's already sending a
-  // native accessibility event and the duplicate event would cause
-  // problems.
-  virtual void NotifyAccessibilityEvent(
-      View* view,
-      ui::AccessibilityTypes::Event event_type,
-      bool send_native_event) = 0;
 
   NativeWidget* native_widget() { return native_widget_; }
 

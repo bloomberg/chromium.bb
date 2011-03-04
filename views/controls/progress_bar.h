@@ -52,14 +52,14 @@ class ProgressBar : public View {
   virtual void SetTooltipText(const std::wstring& tooltip_text);
 
   // Gets the tooltip text if has been specified with SetTooltipText().
-  virtual bool GetTooltipText(const gfx::Point& p, std::wstring* tooltip)
-      OVERRIDE;
+  virtual bool GetTooltipText(const gfx::Point& p, std::wstring* tooltip);
 
   // Sets the enabled state.
-  virtual void SetEnabled(bool enabled) OVERRIDE;
+  virtual void SetEnabled(bool enabled);
 
   // Accessibility accessors, overridden from View.
-  virtual void GetAccessibleState(ui::AccessibleViewState* state) OVERRIDE;
+  virtual AccessibilityTypes::Role GetAccessibleRole();
+  virtual AccessibilityTypes::State GetAccessibleState();
 
   // Maximum value of progress.
   static const int kMaxProgress;

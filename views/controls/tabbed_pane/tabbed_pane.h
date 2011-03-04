@@ -14,6 +14,7 @@ class NativeTabbedPaneWrapper;
 
 // The TabbedPane class is a view that shows tabs.  When the user clicks on a
 // tab, the associated view is displayed.
+
 class TabbedPane : public View {
  public:
   TabbedPane();
@@ -62,20 +63,16 @@ class TabbedPane : public View {
 
   Listener* listener() const { return listener_; }
 
-  void SetAccessibleName(const string16& name);
-
   // View overrides:
-  virtual void ViewHierarchyChanged(bool is_add, View* parent, View* child)
-      OVERRIDE;
+  virtual void ViewHierarchyChanged(bool is_add, View* parent, View* child);
   // Handles Ctrl+Tab and Ctrl+Shift+Tab navigation of pages.
-  virtual bool AcceleratorPressed(const views::Accelerator& accelerator)
-      OVERRIDE;
-  virtual std::string GetClassName() const OVERRIDE;
-  virtual void Layout() OVERRIDE;
-  virtual void OnFocus() OVERRIDE;
-  virtual void OnPaintFocusBorder(gfx::Canvas* canvas) OVERRIDE;
-  virtual void GetAccessibleState(ui::AccessibleViewState* state) OVERRIDE;
-  virtual gfx::Size GetPreferredSize() OVERRIDE;
+  virtual bool AcceleratorPressed(const views::Accelerator& accelerator);
+  virtual std::string GetClassName() const;
+  virtual void Layout();
+  virtual void OnFocus();
+  virtual void OnPaintFocusBorder(gfx::Canvas* canvas);
+  virtual AccessibilityTypes::Role GetAccessibleRole();
+  virtual gfx::Size GetPreferredSize();
 
   NativeTabbedPaneWrapper* native_wrapper() const {
     return native_tabbed_pane_;
@@ -98,9 +95,6 @@ class TabbedPane : public View {
 
   // The listener we notify about tab selection changes.
   Listener* listener_;
-
-  // The accessible name of this view.
-  string16 accessible_name_;
 
   DISALLOW_COPY_AND_ASSIGN(TabbedPane);
 };

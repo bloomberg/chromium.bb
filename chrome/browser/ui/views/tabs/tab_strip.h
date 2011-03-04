@@ -56,30 +56,29 @@ class TabStrip : public BaseTabStrip,
   virtual void MouseMovedOutOfView();
 
   // BaseTabStrip implementation:
-  virtual void SetBackgroundOffset(const gfx::Point& offset) OVERRIDE;
-  virtual bool IsPositionInWindowCaption(const gfx::Point& point) OVERRIDE;
-  virtual void PrepareForCloseAt(int model_index) OVERRIDE;
-  virtual void RemoveTabAt(int model_index) OVERRIDE;
-  virtual void SelectTabAt(int old_model_index, int new_model_index) OVERRIDE;
-  virtual void TabTitleChangedNotLoading(int model_index) OVERRIDE;
-  virtual void StartHighlight(int model_index) OVERRIDE;
-  virtual void StopAllHighlighting() OVERRIDE;
-  virtual BaseTab* CreateTabForDragging() OVERRIDE;
+  virtual void SetBackgroundOffset(const gfx::Point& offset);
+  virtual bool IsPositionInWindowCaption(const gfx::Point& point);
+  virtual void PrepareForCloseAt(int model_index);
+  virtual void RemoveTabAt(int model_index);
+  virtual void SelectTabAt(int old_model_index, int new_model_index);
+  virtual void TabTitleChangedNotLoading(int model_index);
+  virtual void StartHighlight(int model_index);
+  virtual void StopAllHighlighting();
+  virtual BaseTab* CreateTabForDragging();
 
   // views::View overrides:
-  virtual void PaintChildren(gfx::Canvas* canvas) OVERRIDE;
-  virtual const views::View* GetViewByID(int id) const OVERRIDE;
-  virtual gfx::Size GetPreferredSize() OVERRIDE;
+  virtual void PaintChildren(gfx::Canvas* canvas);
+  virtual const views::View* GetViewByID(int id) const;
+  virtual gfx::Size GetPreferredSize();
   // NOTE: the drag and drop methods are invoked from FrameView. This is done to
   // allow for a drop region that extends outside the bounds of the TabStrip.
-  virtual void OnDragEntered(const views::DropTargetEvent& event) OVERRIDE;
-  virtual int OnDragUpdated(const views::DropTargetEvent& event) OVERRIDE;
-  virtual void OnDragExited() OVERRIDE;
-  virtual int OnPerformDrop(const views::DropTargetEvent& event) OVERRIDE;
-  virtual void GetAccessibleState(ui::AccessibleViewState* state) OVERRIDE;
-  virtual views::View* GetEventHandlerForPoint(const gfx::Point& point)
-      OVERRIDE;
-  virtual void OnThemeChanged() OVERRIDE;
+  virtual void OnDragEntered(const views::DropTargetEvent& event);
+  virtual int OnDragUpdated(const views::DropTargetEvent& event);
+  virtual void OnDragExited();
+  virtual int OnPerformDrop(const views::DropTargetEvent& event);
+  virtual AccessibilityTypes::Role GetAccessibleRole();
+  virtual views::View* GetEventHandlerForPoint(const gfx::Point& point);
+  virtual void OnThemeChanged();
 
  protected:
   // BaseTabStrip overrides:

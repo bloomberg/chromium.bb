@@ -6,7 +6,6 @@
 
 #include "base/logging.h"
 #include "base/utf_string_conversions.h"
-#include "ui/base/accessibility/accessible_view_state.h"
 #include "ui/base/keycodes/keyboard_codes.h"
 #include "ui/base/models/combobox_model.h"
 #include "views/controls/combobox/native_combobox_wrapper.h"
@@ -53,10 +52,6 @@ void Combobox::SelectionChanged() {
     listener_->ItemChanged(this, prev_selected_item, selected_item_);
 }
 
-void Combobox::SetAccessibleName(const string16& name) {
-  accessible_name_ = name;
-}
-
 ////////////////////////////////////////////////////////////////////////////////
 // Combobox, View overrides:
 
@@ -94,10 +89,12 @@ void Combobox::OnPaintFocusBorder(gfx::Canvas* canvas) {
     View::OnPaintFocusBorder(canvas);
 }
 
-void Combobox::GetAccessibleState(ui::AccessibleViewState* state) {
-  state->role = ui::AccessibilityTypes::ROLE_COMBOBOX;
-  state->name = accessible_name_;
-  state->value = model_->GetItemAt(selected_item_);
+AccessibilityTypes::Role Combobox::GetAccessibleRole() {
+  return AccessibilityTypes::ROLE_COMBOBOX;
+}
+
+string16 Combobox::GetAccessibleValue() {
+  return model_->GetItemAt(selected_item_);
 }
 
 void Combobox::OnFocus() {

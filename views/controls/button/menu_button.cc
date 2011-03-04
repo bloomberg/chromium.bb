@@ -7,7 +7,6 @@
 #include "base/utf_string_conversions.h"
 #include "grit/app_strings.h"
 #include "grit/app_resources.h"
-#include "ui/base/accessibility/accessible_view_state.h"
 #include "ui/base/dragdrop/drag_drop_types.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -261,11 +260,16 @@ void MenuButton::OnMouseExited(const MouseEvent& event) {
 //
 ////////////////////////////////////////////////////////////////////////////////
 
-void MenuButton::GetAccessibleState(ui::AccessibleViewState* state) {
-  CustomButton::GetAccessibleState(state);
-  state->role = ui::AccessibilityTypes::ROLE_BUTTONMENU;
-  state->default_action = l10n_util::GetStringUTF16(IDS_APP_ACCACTION_PRESS);
-  state->state = ui::AccessibilityTypes::STATE_HASPOPUP;
+string16 MenuButton::GetAccessibleDefaultAction() {
+  return l10n_util::GetStringUTF16(IDS_APP_ACCACTION_PRESS);
+}
+
+AccessibilityTypes::Role MenuButton::GetAccessibleRole() {
+  return AccessibilityTypes::ROLE_BUTTONMENU;
+}
+
+AccessibilityTypes::State MenuButton::GetAccessibleState() {
+  return AccessibilityTypes::STATE_HASPOPUP;
 }
 
 std::string MenuButton::GetClassName() const {

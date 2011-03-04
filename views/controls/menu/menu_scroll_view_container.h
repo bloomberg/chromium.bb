@@ -24,11 +24,12 @@ class MenuScrollViewContainer : public View {
   View* scroll_up_button() const { return scroll_up_button_; }
 
   // View overrides.
-  virtual void OnPaintBackground(gfx::Canvas* canvas) OVERRIDE;
-  virtual void Layout() OVERRIDE;
-  virtual void OnBoundsChanged() OVERRIDE;
-  virtual gfx::Size GetPreferredSize() OVERRIDE;
-  virtual void GetAccessibleState(ui::AccessibleViewState* state) OVERRIDE;
+  virtual void OnPaintBackground(gfx::Canvas* canvas);
+  virtual void Layout();
+  virtual void OnBoundsChanged();
+  virtual gfx::Size GetPreferredSize();
+  virtual AccessibilityTypes::Role GetAccessibleRole();
+  virtual AccessibilityTypes::State GetAccessibleState();
 
  private:
   class MenuScrollView;
@@ -39,9 +40,6 @@ class MenuScrollViewContainer : public View {
 
   // The scroll view.
   MenuScrollView* scroll_view_;
-
-  // The content view.
-  SubmenuView* content_view_;
 
   DISALLOW_COPY_AND_ASSIGN(MenuScrollViewContainer);
 };

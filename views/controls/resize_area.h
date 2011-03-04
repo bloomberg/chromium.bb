@@ -41,14 +41,13 @@ class ResizeArea : public View {
   virtual ~ResizeArea();
 
   // Overridden from views::View:
-  virtual std::string GetClassName() const OVERRIDE;
+  virtual std::string GetClassName() const;
   virtual gfx::NativeCursor GetCursorForPoint(ui::EventType event_type,
-                                              const gfx::Point& p) OVERRIDE;
-  virtual bool OnMousePressed(const views::MouseEvent& event) OVERRIDE;
-  virtual bool OnMouseDragged(const views::MouseEvent& event) OVERRIDE;
-  virtual void OnMouseReleased(const views::MouseEvent& event, bool canceled)
-      OVERRIDE;
-  virtual void GetAccessibleState(ui::AccessibleViewState* state) OVERRIDE;
+                                              const gfx::Point& p);
+  virtual bool OnMousePressed(const views::MouseEvent& event);
+  virtual bool OnMouseDragged(const views::MouseEvent& event);
+  virtual void OnMouseReleased(const views::MouseEvent& event, bool canceled);
+  virtual AccessibilityTypes::Role GetAccessibleRole();
 
  private:
   // Report the amount the user resized by to the delegate, accounting for

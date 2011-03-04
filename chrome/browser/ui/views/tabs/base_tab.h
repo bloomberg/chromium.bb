@@ -83,16 +83,15 @@ class BaseTab : public ui::AnimationDelegate,
   bool IsCloseable() const;
 
   // views::View overrides:
-  virtual void OnMouseEntered(const views::MouseEvent& event) OVERRIDE;
-  virtual void OnMouseExited(const views::MouseEvent& event) OVERRIDE;
-  virtual bool OnMousePressed(const views::MouseEvent& event) OVERRIDE;
-  virtual bool OnMouseDragged(const views::MouseEvent& event) OVERRIDE;
+  virtual void OnMouseEntered(const views::MouseEvent& event);
+  virtual void OnMouseExited(const views::MouseEvent& event);
+  virtual bool OnMousePressed(const views::MouseEvent& event);
+  virtual bool OnMouseDragged(const views::MouseEvent& event);
   virtual void OnMouseReleased(const views::MouseEvent& event,
-                               bool canceled) OVERRIDE;
-  virtual bool GetTooltipText(const gfx::Point& p, std::wstring* tooltip)
-      OVERRIDE;
-  virtual void GetAccessibleState(ui::AccessibleViewState* state) OVERRIDE;
-  virtual ThemeProvider* GetThemeProvider() const OVERRIDE;
+                               bool canceled);
+  virtual bool GetTooltipText(const gfx::Point& p, std::wstring* tooltip);
+  virtual AccessibilityTypes::Role GetAccessibleRole();
+  virtual ThemeProvider* GetThemeProvider();
 
  protected:
   // Invoked from SetData after |data_| has been updated to the new data.
@@ -120,18 +119,18 @@ class BaseTab : public ui::AnimationDelegate,
   void PaintTitle(gfx::Canvas* canvas, SkColor title_color);
 
   // Overridden from AnimationDelegate:
-  virtual void AnimationProgressed(const ui::Animation* animation) OVERRIDE;
-  virtual void AnimationCanceled(const ui::Animation* animation) OVERRIDE;
-  virtual void AnimationEnded(const ui::Animation* animation) OVERRIDE;
+  virtual void AnimationProgressed(const ui::Animation* animation);
+  virtual void AnimationCanceled(const ui::Animation* animation);
+  virtual void AnimationEnded(const ui::Animation* animation);
 
   // views::ButtonListener overrides:
   virtual void ButtonPressed(views::Button* sender,
-                             const views::Event& event) OVERRIDE;
+                             const views::Event& event);
 
   // views::ContextMenuController overrides:
   virtual void ShowContextMenu(views::View* source,
                                const gfx::Point& p,
-                               bool is_mouse_gesture) OVERRIDE;
+                               bool is_mouse_gesture);
 
   // Returns the bounds of the title and icon.
   virtual const gfx::Rect& GetTitleBounds() const = 0;

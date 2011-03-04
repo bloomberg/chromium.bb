@@ -9,7 +9,6 @@
 #endif
 
 #include "base/logging.h"
-#include "ui/base/accessibility/accessible_view_state.h"
 #include "ui/base/keycodes/keyboard_codes.h"
 #include "ui/gfx/color_utils.h"
 #include "ui/gfx/font.h"
@@ -149,9 +148,8 @@ bool Link::SkipDefaultKeyEventProcessing(const KeyEvent& e) {
       (e.key_code() == ui::VKEY_RETURN);
 }
 
-void Link::GetAccessibleState(ui::AccessibleViewState* state) {
-  Label::GetAccessibleState(state);
-  state->role = ui::AccessibilityTypes::ROLE_LINK;
+AccessibilityTypes::Role Link::GetAccessibleRole() {
+  return AccessibilityTypes::ROLE_LINK;
 }
 
 void Link::SetFont(const gfx::Font& font) {

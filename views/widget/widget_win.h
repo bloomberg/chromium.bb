@@ -106,9 +106,8 @@ class WidgetWin : public ui::WindowImpl,
   }
 
   // Obtain the view event with the given MSAA child id.  Used in
-  // NativeViewAccessibilityWin::get_accChild to support requests for
-  // children of windowless controls.  May return NULL
-  // (see ViewHierarchyChanged).
+  // ViewAccessibility::get_accChild to support requests for children of
+  // windowless controls.  May return NULL (see ViewHierarchyChanged).
   View* GetAccessibilityViewEventAt(int id);
 
   // Add a view that has recently fired an accessibility event.  Returns a MSAA
@@ -146,10 +145,6 @@ class WidgetWin : public ui::WindowImpl,
   virtual FocusManager* GetFocusManager();
   virtual void ViewHierarchyChanged(bool is_add, View *parent,
                                     View *child);
-  virtual void NotifyAccessibilityEvent(
-      View* view,
-      ui::AccessibilityTypes::Event event_type,
-      bool send_native_event);
 
   BOOL IsWindow() const {
     return ::IsWindow(GetNativeView());

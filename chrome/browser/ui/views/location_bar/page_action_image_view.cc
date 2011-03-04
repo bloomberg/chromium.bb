@@ -8,13 +8,12 @@
 #include "chrome/browser/browser_list.h"
 #include "chrome/browser/extensions/extension_browser_event_router.h"
 #include "chrome/browser/extensions/extension_service.h"
-#include "chrome/browser/platform_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/location_bar/location_bar_view.h"
+#include "chrome/browser/platform_util.h"
 #include "chrome/common/extensions/extension_action.h"
 #include "chrome/common/extensions/extension_resource.h"
-#include "ui/base/accessibility/accessible_view_state.h"
 #include "views/controls/menu/menu_2.h"
 
 PageActionImageView::PageActionImageView(LocationBarView* owner,
@@ -102,8 +101,8 @@ void PageActionImageView::ExecuteAction(int button,
   }
 }
 
-void PageActionImageView::GetAccessibleState(ui::AccessibleViewState* state) {
-  state->role = ui::AccessibilityTypes::ROLE_PUSHBUTTON;
+AccessibilityTypes::Role PageActionImageView::GetAccessibleRole() {
+  return AccessibilityTypes::ROLE_PUSHBUTTON;
 }
 
 bool PageActionImageView::OnMousePressed(const views::MouseEvent& event) {

@@ -36,13 +36,13 @@ class Button : public View {
 
   int mouse_event_flags() const { return mouse_event_flags_; }
 
-  void SetAccessibleName(const string16& name);
-  void SetAccessibleKeyboardShortcut(const string16& shortcut);
+  void SetAccessibleKeyboardShortcut(const std::wstring& shortcut);
 
   // Overridden from View:
   virtual bool GetTooltipText(const gfx::Point& p,
                               std::wstring* tooltip) OVERRIDE;
-  virtual void GetAccessibleState(ui::AccessibleViewState* state) OVERRIDE;
+  virtual string16 GetAccessibleKeyboardShortcut() OVERRIDE;
+  virtual AccessibilityTypes::Role GetAccessibleRole() OVERRIDE;
 
  protected:
   // Construct the Button with a Listener. The listener can be NULL. This can be
@@ -61,7 +61,6 @@ class Button : public View {
   string16 tooltip_text_;
 
   // Accessibility data.
-  string16 accessible_name_;
   string16 accessible_shortcut_;
 
   // The id tag associated with this button. Used to disambiguate buttons in

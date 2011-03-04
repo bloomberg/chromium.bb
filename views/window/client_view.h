@@ -60,10 +60,9 @@ class ClientView : public View {
 
  protected:
   // Overridden from View:
-  virtual void ViewHierarchyChanged(bool is_add, View* parent, View* child)
-      OVERRIDE;
-  virtual void OnBoundsChanged() OVERRIDE;
-  virtual void GetAccessibleState(ui::AccessibleViewState* state) OVERRIDE;
+  virtual void ViewHierarchyChanged(bool is_add, View* parent, View* child);
+  virtual void OnBoundsChanged();
+  virtual AccessibilityTypes::Role GetAccessibleRole();
 
   // Accessors for private data members.
   Window* window() const { return window_; }

@@ -8,7 +8,6 @@
 #include "base/message_loop.h"
 #include "base/utf_string_conversions.h"
 #include "grit/app_strings.h"
-#include "ui/base/accessibility/accessible_view_state.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "views/controls/menu/view_menu_delegate.h"
 #include "views/widget/widget.h"
@@ -166,11 +165,16 @@ void ButtonDropDown::ShowDropDownMenu(gfx::NativeView window) {
 //
 ////////////////////////////////////////////////////////////////////////////////
 
-void ButtonDropDown::GetAccessibleState(ui::AccessibleViewState* state) {
-  CustomButton::GetAccessibleState(state);
-  state->role = ui::AccessibilityTypes::ROLE_BUTTONDROPDOWN;
-  state->default_action = l10n_util::GetStringUTF16(IDS_APP_ACCACTION_PRESS);
-  state->state = ui::AccessibilityTypes::STATE_HASPOPUP;
+string16 ButtonDropDown::GetAccessibleDefaultAction() {
+  return l10n_util::GetStringUTF16(IDS_APP_ACCACTION_PRESS);
+}
+
+AccessibilityTypes::Role ButtonDropDown::GetAccessibleRole() {
+  return AccessibilityTypes::ROLE_BUTTONDROPDOWN;
+}
+
+AccessibilityTypes::State ButtonDropDown::GetAccessibleState() {
+  return AccessibilityTypes::STATE_HASPOPUP;
 }
 
 }  // namespace views

@@ -33,7 +33,7 @@ class NativeTabContentsContainerGtk : public NativeTabContentsContainer,
   virtual void OnFocus() OVERRIDE;
   virtual void RequestFocus() OVERRIDE;
   virtual void AboutToRequestFocusFromTabTraversal(bool reverse) OVERRIDE;
-  virtual void GetAccessibleState(ui::AccessibleViewState* state) OVERRIDE;
+  virtual AccessibilityTypes::Role GetAccessibleRole() OVERRIDE;
 
  private:
   TabContentsContainer* container_;

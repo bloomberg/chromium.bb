@@ -20,7 +20,6 @@
 #include "chrome/browser/ui/views/download_shelf_view.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
-#include "ui/base/accessibility/accessible_view_state.h"
 #include "ui/base/animation/slide_animation.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -950,13 +949,15 @@ void DownloadItemView::ShowContextMenu(const gfx::Point& p,
   }
 }
 
-void DownloadItemView::GetAccessibleState(ui::AccessibleViewState* state) {
-  state->name = accessible_name_;
-  state->role = ui::AccessibilityTypes::ROLE_PUSHBUTTON;
+AccessibilityTypes::Role DownloadItemView::GetAccessibleRole() {
+  return AccessibilityTypes::ROLE_PUSHBUTTON;
+}
+
+AccessibilityTypes::State DownloadItemView::GetAccessibleState() {
   if (download_->safety_state() == DownloadItem::DANGEROUS) {
-    state->state = ui::AccessibilityTypes::STATE_UNAVAILABLE;
+    return AccessibilityTypes::STATE_UNAVAILABLE;
   } else {
-    state->state = ui::AccessibilityTypes::STATE_HASPOPUP;
+    return AccessibilityTypes::STATE_HASPOPUP;
   }
 }
 
@@ -1078,6 +1079,9 @@ bool DownloadItemView::InDropDownButtonXCoordinateRange(int x) {
 }
 
 void DownloadItemView::UpdateAccessibleName() {
+  string16 current_name;
+  GetAccessibleName(&current_name);
+
   string16 new_name;
   if (download_->safety_state() == DownloadItem::DANGEROUS) {
     new_name = WideToUTF16Hack(dangerous_download_label_->GetText());
@@ -1086,13 +1090,12 @@ void DownloadItemView::UpdateAccessibleName() {
         download_->GetFileNameToReportUser().LossyDisplayName();
   }
 
-  // If the name has changed, notify assistive technology that the name
-  // has changed so they can announce it immediately.
-  if (new_name != accessible_name_) {
-    accessible_name_ = new_name;
-    if (GetWidget()) {
-      GetWidget()->NotifyAccessibilityEvent(
-          this, ui::AccessibilityTypes::EVENT_NAME_CHANGED, true);
-    }
+  // If the name has changed, call SetAccessibleName and notify
+  // assistive technology that the name has changed so they can
+  // announce it immediately.
+  if (new_name != current_name) {
+    SetAccessibleName(new_name);
+    if (GetWidget())
+      NotifyAccessibilityEvent(AccessibilityTypes::EVENT_NAME_CHANGED);
   }
 }

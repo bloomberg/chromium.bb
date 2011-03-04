@@ -106,16 +106,14 @@ class InfoBarView : public InfoBar,
                                              bool needs_elevation);
 
   // views::View:
-  virtual void Layout() OVERRIDE;
-  virtual void ViewHierarchyChanged(bool is_add, View* parent, View* child)
-      OVERRIDE;
+  virtual void Layout();
+  virtual void ViewHierarchyChanged(bool is_add, View* parent, View* child);
 
   // views::ButtonListener:
-  virtual void ButtonPressed(views::Button* sender, const views::Event& event)
-      OVERRIDE;
+  virtual void ButtonPressed(views::Button* sender, const views::Event& event);
 
   // ui::AnimationDelegate:
-  virtual void AnimationProgressed(const ui::Animation* animation) OVERRIDE;
+  virtual void AnimationProgressed(const ui::Animation* animation);
 
   // Returns the minimum width the content (that is, everything between the icon
   // and the close button) can be shrunk to.  This is used to prevent the close
@@ -149,15 +147,14 @@ class InfoBarView : public InfoBar,
   static const int kHorizontalPadding;
 
   // views::View:
-  virtual void GetAccessibleState(ui::AccessibleViewState* state) OVERRIDE;
-  virtual gfx::Size GetPreferredSize() OVERRIDE;
+  virtual AccessibilityTypes::Role GetAccessibleRole();
+  virtual gfx::Size GetPreferredSize();
 
   // views::FocusChangeListener:
-  virtual void FocusWillChange(View* focused_before, View* focused_now)
-      OVERRIDE;
+  virtual void FocusWillChange(View* focused_before, View* focused_now);
 
   // ui::AnimationDelegate:
-  virtual void AnimationEnded(const ui::Animation* animation) OVERRIDE;
+  virtual void AnimationEnded(const ui::Animation* animation);
 
   // Destroys the external focus tracker, if present. If |restore_focus| is
   // true, restores focus to the view tracked by the focus tracker before doing

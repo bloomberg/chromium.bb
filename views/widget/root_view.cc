@@ -8,7 +8,6 @@
 
 #include "base/logging.h"
 #include "base/message_loop.h"
-#include "ui/base/accessibility/accessible_view_state.h"
 #include "ui/base/dragdrop/drag_drop_types.h"
 #include "ui/base/keycodes/keyboard_codes.h"
 #include "ui/gfx/canvas_skia.h"
@@ -420,8 +419,8 @@ std::string RootView::GetClassName() const {
   return kViewClassName;
 }
 
-void RootView::GetAccessibleState(ui::AccessibleViewState* state) {
-  state->role = ui::AccessibilityTypes::ROLE_APPLICATION;
+AccessibilityTypes::Role RootView::GetAccessibleRole() {
+  return AccessibilityTypes::ROLE_APPLICATION;
 }
 
 void RootView::OnPaint(gfx::Canvas* canvas) {

@@ -48,7 +48,7 @@ class CustomButton : public Button,
   void SetAnimationDuration(int duration);
 
   // Overridden from View:
-  virtual void GetAccessibleState(ui::AccessibleViewState* state) OVERRIDE;
+  virtual AccessibilityTypes::State GetAccessibleState() OVERRIDE;
   virtual void SetEnabled(bool enabled) OVERRIDE;
   virtual bool IsEnabled() const OVERRIDE;
   virtual bool IsFocusable() const OVERRIDE;

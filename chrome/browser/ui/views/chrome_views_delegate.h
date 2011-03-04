@@ -8,7 +8,6 @@
 
 #include "base/basictypes.h"
 #include "build/build_config.h"
-#include "ui/base/accessibility/accessibility_types.h"
 #include "views/views_delegate.h"
 
 namespace views {
@@ -33,7 +32,7 @@ class ChromeViewsDelegate : public views::ViewsDelegate {
                                       const std::wstring& window_name,
                                       bool* maximized) const;
   virtual void NotifyAccessibilityEvent(
-      views::View* view, ui::AccessibilityTypes::Event event_type);
+      views::View* view, AccessibilityTypes::Event event_type);
 #if defined(OS_WIN)
   virtual HICON GetDefaultWindowIcon() const;
 #endif

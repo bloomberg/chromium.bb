@@ -88,31 +88,29 @@ class FirstRunSearchEngineView
 
   virtual ~FirstRunSearchEngineView();
 
+  // Overridden from views::View:
+  virtual gfx::Size GetPreferredSize();
+  virtual void Layout();
+  virtual AccessibilityTypes::Role GetAccessibleRole();
+
+  // Overridden from views::WindowDelegate:
+  virtual std::wstring GetWindowTitle() const;
+  views::View* GetContentsView() { return this; }
+  bool CanResize() const { return false; }
+  bool CanMaximize() const { return false; }
   bool IsAlwaysOnTop() const { return true; }
   bool HasAlwaysOnTopMenu() const { return false; }
 
-  // Overridden from views::View:
-  virtual gfx::Size GetPreferredSize() OVERRIDE;
-  virtual void Layout() OVERRIDE;
-  virtual void GetAccessibleState(ui::AccessibleViewState* state) OVERRIDE;
-
-  // Overridden from views::WindowDelegate:
-  virtual std::wstring GetWindowTitle() const OVERRIDE;
-  views::View* GetContentsView() OVERRIDE { return this; }
-  bool CanResize() const OVERRIDE{ return false; }
-  bool CanMaximize() const OVERRIDE { return false; }
-
   // Overridden from views::ButtonListener:
-  virtual void ButtonPressed(views::Button* sender, const views::Event& event)
-      OVERRIDE;
+  virtual void ButtonPressed(views::Button* sender, const views::Event& event);
 
   // Override from View so we can draw the gray background at dialog top.
-  virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE;
+  virtual void OnPaint(gfx::Canvas* canvas);
 
   // Overridden from TemplateURLModelObserver. When the search engines have
   // loaded from the profile, we can populate the logos in the dialog box
   // to present to the user.
-  virtual void OnTemplateURLModelChanged() OVERRIDE;
+  virtual void OnTemplateURLModelChanged();
 
  private:
   // Initializes the labels and controls in the view.
@@ -143,3 +141,4 @@ class FirstRunSearchEngineView
 };
 
 #endif  // CHROME_BROWSER_UI_VIEWS_FIRST_RUN_SEARCH_ENGINE_VIEW_H_
+

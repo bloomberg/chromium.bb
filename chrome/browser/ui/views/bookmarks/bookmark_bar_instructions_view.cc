@@ -86,9 +86,8 @@ void BookmarkBarInstructionsView::ViewHierarchyChanged(bool is_add,
     UpdateColors();
 }
 
-void BookmarkBarInstructionsView::GetAccessibleState(
-    ui::AccessibleViewState* state) {
-  state->role = ui::AccessibilityTypes::ROLE_GROUPING;
+AccessibilityTypes::Role BookmarkBarInstructionsView::GetAccessibleRole() {
+  return AccessibilityTypes::ROLE_GROUPING;
 }
 
 void BookmarkBarInstructionsView::LinkActivated(views::Link* source,

@@ -3,9 +3,7 @@
 // found in the LICENSE file.
 
 #include "views/controls/button/button.h"
-
 #include "base/utf_string_conversions.h"
-#include "ui/base/accessibility/accessible_view_state.h"
 
 namespace views {
 
@@ -20,12 +18,8 @@ void Button::SetTooltipText(const std::wstring& tooltip_text) {
   TooltipTextChanged();
 }
 
-void Button::SetAccessibleName(const string16& name) {
-  accessible_name_ = name;
-}
-
-void Button::SetAccessibleKeyboardShortcut(const string16& shortcut) {
-  accessible_shortcut_ = shortcut;
+void Button::SetAccessibleKeyboardShortcut(const std::wstring& shortcut) {
+  accessible_shortcut_ = WideToUTF16Hack(shortcut);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -39,10 +33,12 @@ bool Button::GetTooltipText(const gfx::Point& p, std::wstring* tooltip) {
   return true;
 }
 
-void Button::GetAccessibleState(ui::AccessibleViewState* state) {
-  state->role = ui::AccessibilityTypes::ROLE_PUSHBUTTON;
-  state->name = accessible_name_;
-  state->keyboard_shortcut = accessible_shortcut_;
+string16 Button::GetAccessibleKeyboardShortcut() {
+  return accessible_shortcut_;
+}
+
+AccessibilityTypes::Role Button::GetAccessibleRole() {
+  return AccessibilityTypes::ROLE_PUSHBUTTON;
 }
 
 ////////////////////////////////////////////////////////////////////////////////

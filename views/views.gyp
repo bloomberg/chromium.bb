@@ -74,8 +74,9 @@
         # All .cc, .h under views, except unittests
         'accelerator.cc',
         'accelerator.h',
-        'accessibility/native_view_accessibility_win.cc',
-        'accessibility/native_view_accessibility_win.h',
+        'accessibility/accessibility_types.h',
+        'accessibility/view_accessibility.cc',
+        'accessibility/view_accessibility.h',
         'animation/bounds_animator.cc',
         'animation/bounds_animator.h',
         'background.cc',
@@ -388,7 +389,9 @@
             '../build/linux/system.gyp:xext',
           ],
           'sources!': [
-            'accessibility/native_view_accessibility_win.cc',
+            'accessibility/accessible_wrapper.cc',
+            'accessibility/view_accessibility.cc',
+            'accessibility/view_accessibility_wrapper.cc',
             'controls/scrollbar/bitmap_scroll_bar.cc',
             'controls/combo_box.cc',
             'controls/hwnd_view.cc',

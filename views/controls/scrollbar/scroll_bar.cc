@@ -5,7 +5,6 @@
 #include "views/controls/scrollbar/scroll_bar.h"
 
 #include "base/logging.h"
-#include "ui/base/accessibility/accessible_view_state.h"
 
 namespace views {
 
@@ -23,8 +22,8 @@ ScrollBar::ScrollBar(bool is_horiz) : is_horiz_(is_horiz),
 ScrollBar::~ScrollBar() {
 }
 
-void ScrollBar::GetAccessibleState(ui::AccessibleViewState* state) {
-  state->role = ui::AccessibilityTypes::ROLE_SCROLLBAR;
+AccessibilityTypes::Role ScrollBar::GetAccessibleRole() {
+  return AccessibilityTypes::ROLE_SCROLLBAR;
 }
 
 bool ScrollBar::IsHorizontal() const {

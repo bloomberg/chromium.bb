@@ -11,7 +11,6 @@
 #include "base/utf_string_conversions.h"
 #include "third_party/skia/include/effects/SkGradientShader.h"
 #include "third_party/skia/include/effects/SkBlurMaskFilter.h"
-#include "ui/base/accessibility/accessible_view_state.h"
 #include "ui/gfx/canvas_skia.h"
 #include "ui/gfx/color_utils.h"
 #include "ui/gfx/font.h"
@@ -311,9 +310,12 @@ void ProgressBar::SetEnabled(bool enabled) {
   // TODO(denisromanov): Need to switch progress bar color here?
 }
 
-void ProgressBar::GetAccessibleState(ui::AccessibleViewState* state) {
-  state->role = ui::AccessibilityTypes::ROLE_PROGRESSBAR;
-  state->state = ui::AccessibilityTypes::STATE_READONLY;
+AccessibilityTypes::Role ProgressBar::GetAccessibleRole() {
+  return AccessibilityTypes::ROLE_PROGRESSBAR;
+}
+
+AccessibilityTypes::State ProgressBar::GetAccessibleState() {
+  return AccessibilityTypes::STATE_READONLY;
 }
 
 }  // namespace views

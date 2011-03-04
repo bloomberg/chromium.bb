@@ -79,7 +79,8 @@ class TreeView : public NativeControl, ui::TreeModelObserver {
   }
 
   // Overridden from View:
-  virtual void GetAccessibleState(ui::AccessibleViewState* state) OVERRIDE;
+  virtual AccessibilityTypes::Role GetAccessibleRole();
+  virtual AccessibilityTypes::State GetAccessibleState();
 
   // Edits the specified node. This cancels the current edit and expands
   // all parents of node.

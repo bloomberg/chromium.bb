@@ -20,7 +20,6 @@
 #include "googleurl/src/gurl.h"
 #include "grit/generated_resources.h"
 #include "net/base/escape.h"
-#include "ui/base/accessibility/accessible_view_state.h"
 #include "ui/base/dragdrop/drag_drop_types.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/font.h"
@@ -270,11 +269,6 @@ void AutocompleteEditViewViews::Layout() {
   textfield_->SetBounds(insets.left(), insets.top(),
                         width() - insets.width(),
                         height() - insets.height());
-}
-
-void AutocompleteEditViewViews::GetAccessibleState(
-    ui::AccessibleViewState* state) {
-  state->name = l10n_util::GetStringUTF16(IDS_ACCNAME_LOCATION);
 }
 
 ////////////////////////////////////////////////////////////////////////////////

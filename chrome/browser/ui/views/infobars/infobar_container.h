@@ -68,14 +68,14 @@ class InfoBarContainer : public AccessiblePaneView,
   typedef std::set<InfoBarView*> InfoBars;
 
   // AccessiblePaneView:
-  virtual gfx::Size GetPreferredSize() OVERRIDE;
-  virtual void Layout() OVERRIDE;
-  virtual void GetAccessibleState(ui::AccessibleViewState* state) OVERRIDE;
+  virtual gfx::Size GetPreferredSize();
+  virtual void Layout();
+  virtual AccessibilityTypes::Role GetAccessibleRole();
 
   // NotificationObserver:
   virtual void Observe(NotificationType type,
                        const NotificationSource& source,
-                       const NotificationDetails& details) OVERRIDE;
+                       const NotificationDetails& details);
 
   // Removes an InfoBar for the specified delegate, in response to a
   // notification from the selected TabContents. The InfoBar's disappearance

@@ -18,11 +18,10 @@
 #include "chrome/browser/search_engines/template_url_model.h"
 #include "chrome/browser/ui/options/options_window.h"
 #include "grit/chromium_strings.h"
-#include "grit/generated_resources.h"
 #include "grit/google_chrome_strings.h"
+#include "grit/generated_resources.h"
 #include "grit/locale_settings.h"
 #include "grit/theme_resources.h"
-#include "ui/base/accessibility/accessible_view_state.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/canvas.h"
@@ -266,8 +265,7 @@ void FirstRunSearchEngineView::OnTemplateURLModelChanged() {
   // This will tell screenreaders that they should read the full text
   // of this dialog to the user now (rather than waiting for the user
   // to explore it).
-  GetWidget()->NotifyAccessibilityEvent(
-      this, ui::AccessibilityTypes::EVENT_ALERT, true);
+  NotifyAccessibilityEvent(AccessibilityTypes::EVENT_ALERT);
 }
 
 gfx::Size FirstRunSearchEngineView::GetPreferredSize() {
@@ -429,9 +427,8 @@ void FirstRunSearchEngineView::Layout() {
   }  // if (search_engine_choices.size() > 0)
 }
 
-void FirstRunSearchEngineView::GetAccessibleState(
-    ui::AccessibleViewState* state) {
-  state->role = ui::AccessibilityTypes::ROLE_ALERT;
+AccessibilityTypes::Role FirstRunSearchEngineView::GetAccessibleRole() {
+  return AccessibilityTypes::ROLE_ALERT;
 }
 
 std::wstring FirstRunSearchEngineView::GetWindowTitle() const {

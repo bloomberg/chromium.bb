@@ -13,7 +13,6 @@
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
 #include "third_party/skia/include/effects/SkGradientShader.h"
-#include "ui/base/accessibility/accessible_view_state.h"
 #include "ui/base/animation/slide_animation.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -55,6 +54,9 @@ InfoBarView::InfoBarView(InfoBarDelegate* delegate)
 
   InfoBarDelegate::Type infobar_type = delegate->GetInfoBarType();
   set_background(new InfoBarBackground(infobar_type));
+  SetAccessibleName(l10n_util::GetStringUTF16(
+      (infobar_type == InfoBarDelegate::WARNING_TYPE) ?
+      IDS_ACCNAME_INFOBAR_WARNING : IDS_ACCNAME_INFOBAR_PAGE_ACTION));
 
   animation_->SetTweenType(ui::Tween::LINEAR);
 }
@@ -271,8 +273,7 @@ void InfoBarView::ViewHierarchyChanged(bool is_add, View* parent, View* child) {
 #endif
       if (GetFocusManager())
         GetFocusManager()->AddFocusChangeListener(this);
-      GetWidget()->NotifyAccessibilityEvent(
-          this, ui::AccessibilityTypes::EVENT_ALERT, true);
+      NotifyAccessibilityEvent(AccessibilityTypes::EVENT_ALERT);
 
       if (close_button_ == NULL) {
         SkBitmap* image = delegate_->GetIcon();
@@ -363,11 +364,8 @@ int InfoBarView::OffsetY(const gfx::Size prefsize) const {
   return CenterY(prefsize) - (target_height_ - height());
 }
 
-void InfoBarView::GetAccessibleState(ui::AccessibleViewState* state) {
-  state->name = l10n_util::GetStringUTF16(
-      (delegate_->GetInfoBarType() == InfoBarDelegate::WARNING_TYPE) ?
-      IDS_ACCNAME_INFOBAR_WARNING : IDS_ACCNAME_INFOBAR_PAGE_ACTION);
-  state->role = ui::AccessibilityTypes::ROLE_ALERT;
+AccessibilityTypes::Role InfoBarView::GetAccessibleRole() {
+  return AccessibilityTypes::ROLE_ALERT;
 }
 
 gfx::Size InfoBarView::GetPreferredSize() {
@@ -379,10 +377,8 @@ void InfoBarView::FocusWillChange(View* focused_before, View* focused_now) {
   // This will trigger some screen readers to read the entire contents of this
   // infobar.
   if (focused_before && focused_now && !this->Contains(focused_before) &&
-      this->Contains(focused_now)) {
-    GetWidget()->NotifyAccessibilityEvent(
-        this, ui::AccessibilityTypes::EVENT_ALERT, true);
-  }
+      this->Contains(focused_now))
+    NotifyAccessibilityEvent(AccessibilityTypes::EVENT_ALERT);
 }
 
 void InfoBarView::AnimationEnded(const ui::Animation* animation) {

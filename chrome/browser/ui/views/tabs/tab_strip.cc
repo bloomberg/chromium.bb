@@ -16,7 +16,6 @@
 #include "chrome/browser/ui/views/tabs/tab_strip_controller.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
-#include "ui/base/accessibility/accessible_view_state.h"
 #include "ui/base/animation/animation_container.h"
 #include "ui/base/dragdrop/drag_drop_types.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -364,9 +363,8 @@ int TabStrip::OnPerformDrop(const DropTargetEvent& event) {
   return GetDropEffect(event);
 }
 
-void TabStrip::GetAccessibleState(ui::AccessibleViewState* state) {
-  state->name = l10n_util::GetStringUTF16(IDS_ACCNAME_TABSTRIP);
-  state->role = ui::AccessibilityTypes::ROLE_PAGETABLIST;
+AccessibilityTypes::Role TabStrip::GetAccessibleRole() {
+  return AccessibilityTypes::ROLE_PAGETABLIST;
 }
 
 views::View* TabStrip::GetEventHandlerForPoint(const gfx::Point& point) {

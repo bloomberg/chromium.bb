@@ -5,7 +5,6 @@
 #include "views/controls/separator.h"
 
 #include "base/logging.h"
-#include "ui/base/accessibility/accessible_view_state.h"
 #if defined(OS_LINUX)
 #include "views/controls/native_control_gtk.h"
 #elif defined(OS_WIN)
@@ -93,8 +92,8 @@ std::string Separator::GetClassName() const {
   return kViewClassName;
 }
 
-void Separator::GetAccessibleState(ui::AccessibleViewState* state) {
-  state->role = ui::AccessibilityTypes::ROLE_SEPARATOR;
+AccessibilityTypes::Role Separator::GetAccessibleRole() {
+  return AccessibilityTypes::ROLE_SEPARATOR;
 }
 
 ////////////////////////////////////////////////////////////////////////////////

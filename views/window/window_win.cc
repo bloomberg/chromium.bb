@@ -11,7 +11,6 @@
 #include "base/win/scoped_gdi_object.h"
 #include "base/win/win_util.h"
 #include "base/win/windows_version.h"
-#include "ui/base/accessibility/accessibility_types.h"
 #include "ui/base/keycodes/keyboard_code_conversion_win.h"
 #include "ui/base/l10n/l10n_util_win.h"
 #include "ui/base/theme_provider.h"
@@ -20,7 +19,7 @@
 #include "ui/gfx/font.h"
 #include "ui/gfx/icon_util.h"
 #include "ui/gfx/path.h"
-#include "views/accessibility/native_view_accessibility_win.h"
+#include "views/accessibility/view_accessibility.h"
 #include "views/widget/root_view.h"
 #include "views/window/client_view.h"
 #include "views/window/custom_frame_view.h"
@@ -1449,10 +1448,10 @@ void WindowWin::UpdateAccessibleRole() {
     IID_IAccPropServices, reinterpret_cast<void**>(&pAccPropServices));
   if (SUCCEEDED(hr)) {
     VARIANT var;
-    ui::AccessibilityTypes::Role role = window_delegate_->GetAccessibleRole();
+    AccessibilityTypes::Role role = window_delegate_->accessible_role();
     if (role) {
       var.vt = VT_I4;
-      var.lVal = NativeViewAccessibilityWin::MSAARole(role);
+      var.lVal = ViewAccessibility::MSAARole(role);
       hr = pAccPropServices->SetHwndProp(GetNativeView(), OBJID_CLIENT,
         CHILDID_SELF, PROPID_ACC_ROLE, var);
     }
@@ -1465,10 +1464,9 @@ void WindowWin::UpdateAccessibleState() {
     IID_IAccPropServices, reinterpret_cast<void**>(&pAccPropServices));
   if (SUCCEEDED(hr)) {
     VARIANT var;
-    ui::AccessibilityTypes::State state =
-        window_delegate_->GetAccessibleState();
+    AccessibilityTypes::State state = window_delegate_->accessible_state();
     if (state) {
-      var.lVal = NativeViewAccessibilityWin::MSAAState(state);
+      var.lVal = ViewAccessibility::MSAAState(state);
       hr = pAccPropServices->SetHwndProp(GetNativeView(), OBJID_CLIENT,
         CHILDID_SELF, PROPID_ACC_STATE, var);
     }

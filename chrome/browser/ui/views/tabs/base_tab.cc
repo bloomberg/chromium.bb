@@ -9,15 +9,14 @@
 #include "base/command_line.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/ui/browser.h"
-#include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/browser/ui/view_ids.h"
 #include "chrome/browser/ui/views/tabs/tab_controller.h"
+#include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/common/chrome_switches.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "grit/app_resources.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
-#include "ui/base/accessibility/accessible_view_state.h"
 #include "ui/base/animation/slide_animation.h"
 #include "ui/base/animation/throb_animation.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -213,6 +212,9 @@ void BaseTab::SetData(const TabRendererData& data) {
     ResetCrashedFavIcon();
   }
 
+  // Sets the accessible name for the tab.
+  SetAccessibleName(data_.title);
+
   DataChanged(old);
 
   Layout();
@@ -346,12 +348,11 @@ bool BaseTab::GetTooltipText(const gfx::Point& p, std::wstring* tooltip) {
   return false;
 }
 
-void BaseTab::GetAccessibleState(ui::AccessibleViewState* state) {
-  state->role = ui::AccessibilityTypes::ROLE_PAGETAB;
-  state->name = data_.title;
+AccessibilityTypes::Role BaseTab::GetAccessibleRole() {
+  return AccessibilityTypes::ROLE_PAGETAB;
 }
 
-ui::ThemeProvider* BaseTab::GetThemeProvider() const {
+ui::ThemeProvider* BaseTab::GetThemeProvider() {
   ui::ThemeProvider* tp = View::GetThemeProvider();
   return tp ? tp : theme_provider_;
 }

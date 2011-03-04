@@ -35,11 +35,11 @@ class OptionsGroupView : public views::View {
 
  protected:
   // views::View overrides:
-  virtual void GetAccessibleState(ui::AccessibleViewState* state) OVERRIDE;
-  virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE;
+  virtual AccessibilityTypes::Role GetAccessibleRole();
+  virtual void OnPaint(gfx::Canvas* canvas);
   virtual void ViewHierarchyChanged(bool is_add,
                                     views::View* parent,
-                                    views::View* child) OVERRIDE;
+                                    views::View* child);
 
  private:
   void Init();

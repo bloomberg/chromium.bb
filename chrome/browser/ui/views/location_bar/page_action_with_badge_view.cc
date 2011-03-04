@@ -6,7 +6,6 @@
 
 #include "chrome/browser/ui/views/location_bar/page_action_image_view.h"
 #include "chrome/common/extensions/extension.h"
-#include "ui/base/accessibility/accessible_view_state.h"
 
 PageActionWithBadgeView::PageActionWithBadgeView(
     PageActionImageView* image_view) {
@@ -14,9 +13,8 @@ PageActionWithBadgeView::PageActionWithBadgeView(
   AddChildView(image_view_);
 }
 
-void PageActionWithBadgeView::GetAccessibleState(
-    ui::AccessibleViewState* state) {
-  state->role = ui::AccessibilityTypes::ROLE_GROUPING;
+AccessibilityTypes::Role PageActionWithBadgeView::GetAccessibleRole() {
+  return AccessibilityTypes::ROLE_GROUPING;
 }
 
 gfx::Size PageActionWithBadgeView::GetPreferredSize() {

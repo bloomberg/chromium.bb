@@ -17,7 +17,6 @@
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "grit/locale_settings.h"
-#include "ui/base/accessibility/accessible_view_state.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "views/controls/tabbed_pane/tabbed_pane.h"
 #include "views/widget/root_view.h"
@@ -40,29 +39,29 @@ class OptionsWindowView : public views::View,
   void ShowOptionsPage(OptionsPage page, OptionsGroup highlight_group);
 
   // views::DialogDelegate implementation:
-  virtual int GetDialogButtons() const OVERRIDE {
+  virtual int GetDialogButtons() const {
     return MessageBoxFlags::DIALOGBUTTON_CANCEL;
   }
-  virtual std::wstring GetWindowTitle() const OVERRIDE;
-  virtual std::wstring GetWindowName() const OVERRIDE;
-  virtual void WindowClosing() OVERRIDE;
-  virtual bool Cancel() OVERRIDE;
-  virtual views::View* GetContentsView() OVERRIDE;
-  virtual bool ShouldRestoreWindowSize() const OVERRIDE;
+  virtual std::wstring GetWindowTitle() const;
+  virtual std::wstring GetWindowName() const;
+  virtual void WindowClosing();
+  virtual bool Cancel();
+  virtual views::View* GetContentsView();
+  virtual bool ShouldRestoreWindowSize() const;
 
   // views::TabbedPane::Listener implementation:
-  virtual void TabSelectedAt(int index) OVERRIDE;
+  virtual void TabSelectedAt(int index);
 
   // views::View overrides:
-  virtual void GetAccessibleState(ui::AccessibleViewState* state) OVERRIDE;
-  virtual void Layout() OVERRIDE;
-  virtual gfx::Size GetPreferredSize() OVERRIDE;
+  virtual AccessibilityTypes::Role GetAccessibleRole();
+  virtual void Layout();
+  virtual gfx::Size GetPreferredSize();
 
  protected:
   // views::View overrides:
   virtual void ViewHierarchyChanged(bool is_add,
                                     views::View* parent,
-                                    views::View* child) OVERRIDE;
+                                    views::View* child);
  private:
   // Init the assorted Tabbed pages
   void Init();
@@ -167,8 +166,8 @@ void OptionsWindowView::TabSelectedAt(int index) {
 ///////////////////////////////////////////////////////////////////////////////
 // OptionsWindowView, views::View overrides:
 
-void OptionsWindowView::GetAccessibleState(ui::AccessibleViewState* state) {
-  state->role = ui::AccessibilityTypes::ROLE_CLIENT;
+AccessibilityTypes::Role OptionsWindowView::GetAccessibleRole() {
+  return AccessibilityTypes::ROLE_CLIENT;
 }
 
 void OptionsWindowView::Layout() {

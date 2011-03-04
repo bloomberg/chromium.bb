@@ -12,7 +12,6 @@
 #include "content/browser/renderer_host/render_widget_host_view.h"
 #include "content/browser/tab_contents/interstitial_page.h"
 #include "content/browser/tab_contents/tab_contents.h"
-#include "ui/base/accessibility/accessible_view_state.h"
 
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -44,8 +43,8 @@ void TabContentsContainer::Observe(NotificationType type,
 ////////////////////////////////////////////////////////////////////////////////
 // TabContentsContainer, View overrides:
 
-void TabContentsContainer::GetAccessibleState(ui::AccessibleViewState* state) {
-  state->role = ui::AccessibilityTypes::ROLE_WINDOW;
+AccessibilityTypes::Role TabContentsContainer::GetAccessibleRole() {
+  return AccessibilityTypes::ROLE_WINDOW;
 }
 
 ////////////////////////////////////////////////////////////////////////////////

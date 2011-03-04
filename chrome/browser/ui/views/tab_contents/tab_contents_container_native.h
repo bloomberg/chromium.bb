@@ -44,16 +44,16 @@ class TabContentsContainer : public views::View,
   // Overridden from NotificationObserver:
   virtual void Observe(NotificationType type,
                        const NotificationSource& source,
-                       const NotificationDetails& details) OVERRIDE;
+                       const NotificationDetails& details);
 
   // Overridden from views::View:
-  virtual void Layout() OVERRIDE;
-  virtual void GetAccessibleState(ui::AccessibleViewState* state) OVERRIDE;
+  virtual void Layout();
+  virtual AccessibilityTypes::Role GetAccessibleRole();
 
  protected:
   // Overridden from views::View:
   virtual void ViewHierarchyChanged(bool is_add, views::View* parent,
-                                    views::View* child) OVERRIDE;
+                                    views::View* child);
 
  private:
   // Add or remove observers for events that we care about.

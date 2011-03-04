@@ -5,7 +5,6 @@
 #include "chrome/browser/ui/views/options/options_page_view.h"
 
 #include "chrome/browser/metrics/user_metrics.h"
-#include "ui/base/accessibility/accessible_view_state.h"
 #include "views/widget/widget.h"
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -34,6 +33,6 @@ void OptionsPageView::ViewHierarchyChanged(bool is_add,
   }
 }
 
-void OptionsPageView::GetAccessibleState(ui::AccessibleViewState* state) {
-  state->role = ui::AccessibilityTypes::ROLE_PAGETAB;
+AccessibilityTypes::Role OptionsPageView::GetAccessibleRole() {
+  return AccessibilityTypes::ROLE_PAGETAB;
 }

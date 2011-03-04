@@ -42,7 +42,7 @@
 #include "ui/gfx/canvas_skia.h"
 #include "ui/gfx/gdi_util.h"
 #include "ui/gfx/rect.h"
-#include "views/accessibility/native_view_accessibility_win.h"
+#include "views/accessibility/view_accessibility.h"
 #include "views/focus/focus_manager.h"
 #include "views/focus/focus_util_win.h"
 // Included for views::kReflectedMessage - TODO(beng): move this to win_util.h!
@@ -587,10 +587,9 @@ void RenderWidgetHostViewWin::Show() {
 
   // Save away our HWND in the parent window as a property so that the
   // accessibility code can find it.
-  accessibility_prop_.reset(new ViewProp(
-      GetParent(),
-      views::kViewsNativeHostPropForAccessibility,
-      m_hWnd));
+  accessibility_prop_.reset(new ViewProp(GetParent(),
+                                         kViewsNativeHostPropForAccessibility,
+                                         m_hWnd));
 
   DidBecomeSelected();
 }
@@ -865,10 +864,9 @@ LRESULT RenderWidgetHostViewWin::OnCreate(CREATESTRUCT* create_struct) {
                                 static_cast<RenderWidgetHostView*>(this)));
   // Save away our HWND in the parent window as a property so that the
   // accessibility code can find it.
-  accessibility_prop_.reset(new ViewProp(
-      GetParent(),
-      views::kViewsNativeHostPropForAccessibility,
-      m_hWnd));
+  accessibility_prop_.reset(new ViewProp(GetParent(),
+                                         kViewsNativeHostPropForAccessibility,
+                                         m_hWnd));
 
   return 0;
 }

@@ -388,8 +388,8 @@ class DownloadTest : public InProcessBrowserTest {
     //  - Add a member function to the |DownloadShelf| interface class, that
     //    indicates how many members it has.
     //  - Add a member function to |DownloadShelf| to get the status text
-    //    of a given member (for example, via the name in |DownloadItemView|'s
-    //    GetAccessibleState() member function), by index.
+    //    of a given member (for example, via |DownloadItemView|'s
+    //    GetAccessibleName() member function), by index.
     //  - Iterate over browser->window()->GetDownloadShelf()'s members
     //    to see if any match the status text we want.  Start with the last one.
 

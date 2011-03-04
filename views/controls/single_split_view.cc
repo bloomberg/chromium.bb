@@ -9,7 +9,6 @@
 #endif
 
 #include "skia/ext/skia_utils_win.h"
-#include "ui/base/accessibility/accessible_view_state.h"
 #include "ui/gfx/canvas.h"
 #include "views/background.h"
 
@@ -66,9 +65,8 @@ void SingleSplitView::Layout() {
   View::Layout();
 }
 
-void SingleSplitView::GetAccessibleState(ui::AccessibleViewState* state) {
-  state->role = ui::AccessibilityTypes::ROLE_GROUPING;
-  state->name = accessible_name_;
+AccessibilityTypes::Role SingleSplitView::GetAccessibleRole() {
+  return AccessibilityTypes::ROLE_GROUPING;
 }
 
 gfx::Size SingleSplitView::GetPreferredSize() {
@@ -150,10 +148,6 @@ void SingleSplitView::CalculateChildrenBounds(
         gfx::Rect(0, divider_at + divider_size, bounds.width(),
                   std::max(0, bounds.height() - divider_at - divider_size));
   }
-}
-
-void SingleSplitView::SetAccessibleName(const string16& name) {
-  accessible_name_ = name;
 }
 
 bool SingleSplitView::OnMousePressed(const MouseEvent& event) {
