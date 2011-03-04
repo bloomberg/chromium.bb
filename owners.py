@@ -7,16 +7,39 @@
 class Assertion(AssertionError):
   pass
 
-class Database(object):
-  def __init__(self, root, fopen, os_path):
-    """Initializes the database of owners for a repository.
 
-    Args:
+class SyntaxErrorInOwnersFile(Exception):
+  def __init__(self, path, line, msg):
+    super(SyntaxErrorInOwnersFile, self).__init__((path, line, msg))
+    self.path = path
+    self.line = line
+    self.msg = msg
+
+  def __str__(self):
+    if self.msg:
+      return "%s:%d syntax error: %s" % (self.path, self.line, self.msg)
+    else:
+      return "%s:%d syntax error" % (self.path, self.line)
+
+
+# Wildcard email-address in the OWNERS file.
+ANYONE = '*'
+
+
+class Database(object):
+  """A database of OWNERS files for a repository.
+
+  This class allows you to find a suggested set of reviewers for a list
+  of changed files, and see if a list of changed files is covered by a
+  list of reviewers."""
+
+  def __init__(self, root, fopen, os_path):
+    """Args:
       root: the path to the root of the Repository
       all_owners: the list of every owner in the system
       open: function callback to open a text file for reading
       os_path: module/object callback with fields for 'exists',
-      'dirname', and 'join'
+        'dirname', and 'join'
     """
     self.root = root
     self.fopen = fopen
@@ -34,8 +57,8 @@ class Database(object):
     # In-memory cache of OWNERS files and their contents
     self.owners_files = {}
 
-  def OwnersFor(self, files):
-    """Returns a sets of reviewers that will cover the set of files.
+  def ReviewersFor(self, files):
+    """Returns a suggested set of reviewers that will cover the set of files.
 
     The set of files are paths relative to (and under) self.root."""
     self._LoadDataNeededFor(files)
