@@ -9,7 +9,7 @@
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/string16.h"
-#include "content/browser/tab_contents/infobar_delegate.h"
+#include "chrome/browser/tab_contents/infobar_delegate.h"
 
 // An interface derived from InfoBarDelegate implemented by objects wishing to
 // control a ConfirmInfoBar.

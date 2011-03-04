@@ -7,7 +7,7 @@
 #pragma once
 
 #include "base/scoped_ptr.h"
-#include "content/browser/tab_contents/infobar_delegate.h"
+#include "chrome/browser/tab_contents/infobar_delegate.h"
 #include "views/background.h"
 
 class InfoBarBackground : public views::Background {

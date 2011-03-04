@@ -1967,6 +1967,8 @@
         'browser/tab_contents/background_contents.h',
         'browser/tab_contents/confirm_infobar_delegate.cc',
         'browser/tab_contents/confirm_infobar_delegate.h',
+        'browser/tab_contents/infobar_delegate.cc',
+        'browser/tab_contents/infobar_delegate.h',
         'browser/tab_contents/link_infobar_delegate.cc',
         'browser/tab_contents/link_infobar_delegate.h',
         'browser/tab_contents/simple_alert_infobar_delegate.cc',

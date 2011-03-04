@@ -279,8 +279,6 @@
         'browser/speech/speech_recognizer.cc',
         'browser/speech/speech_recognizer.h',
         'browser/tab_contents/constrained_window.h',
-        'browser/tab_contents/infobar_delegate.cc',
-        'browser/tab_contents/infobar_delegate.h',
         'browser/tab_contents/interstitial_page.cc',
         'browser/tab_contents/interstitial_page.h',
         'browser/tab_contents/language_state.cc',

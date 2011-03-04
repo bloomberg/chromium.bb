@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/tab_contents/infobar_delegate.h"
+#include "chrome/browser/tab_contents/infobar_delegate.h"
 
 #include "base/logging.h"
 #include "build/build_config.h"
-#include "content/browser/tab_contents/navigation_entry.h"
 #include "content/browser/tab_contents/navigation_controller.h"
+#include "content/browser/tab_contents/navigation_entry.h"
 #include "content/browser/tab_contents/tab_contents.h"
 
 // InfoBarDelegate ------------------------------------------------------------
