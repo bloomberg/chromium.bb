@@ -20,6 +20,9 @@ TestURLFetcher::TestURLFetcher(int id,
       did_receive_last_chunk_(false) {
 }
 
+TestURLFetcher::~TestURLFetcher() {
+}
+
 void TestURLFetcher::AppendChunkToUpload(const std::string& data,
                                          bool is_last_chunk) {
   DCHECK(!did_receive_last_chunk_);

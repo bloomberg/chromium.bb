@@ -48,6 +48,7 @@ class TestURLFetcher : public URLFetcher {
                  const GURL& url,
                  RequestType request_type,
                  Delegate* d);
+  ~TestURLFetcher();
 
   // Overriden to do nothing. It is assumed the caller will notify the delegate.
   virtual void Start() {}
