@@ -9,7 +9,6 @@
 #include "webkit/fileapi/file_system_callback_dispatcher.h"
 #include "webkit/fileapi/file_system_context.h"
 #include "webkit/fileapi/file_system_path_manager.h"
-#include "webkit/fileapi/file_system_quota_manager.h"
 #include "webkit/fileapi/file_writer_delegate.h"
 
 namespace fileapi {
@@ -54,7 +53,7 @@ void FileSystemOperation::CreateFile(const FilePath& path,
   pending_operation_ = kOperationCreateFile;
 #endif
 
-  if (!VerifyFileSystemPathForWrite(path, true /* create */, 0)) {
+  if (!VerifyFileSystemPathForWrite(path, true /* create */)) {
     delete this;
     return;
   }
@@ -72,7 +71,7 @@ void FileSystemOperation::CreateDirectory(const FilePath& path,
   pending_operation_ = kOperationCreateDirectory;
 #endif
 
-  if (!VerifyFileSystemPathForWrite(path, true /* create */, 0)) {
+  if (!VerifyFileSystemPathForWrite(path, true /* create */)) {
     delete this;
     return;
   }
@@ -89,8 +88,7 @@ void FileSystemOperation::Copy(const FilePath& src_path,
 #endif
 
   if (!VerifyFileSystemPathForRead(src_path) ||
-      !VerifyFileSystemPathForWrite(dest_path, true /* create */,
-                                    FileSystemQuotaManager::kUnknownSize)) {
+      !VerifyFileSystemPathForWrite(dest_path, true /* create */)) {
     delete this;
     return;
   }
@@ -107,8 +105,7 @@ void FileSystemOperation::Move(const FilePath& src_path,
 #endif
 
   if (!VerifyFileSystemPathForRead(src_path) ||
-      !VerifyFileSystemPathForWrite(dest_path, true /* create */,
-                                    FileSystemQuotaManager::kUnknownSize)) {
+      !VerifyFileSystemPathForWrite(dest_path, true /* create */)) {
     delete this;
     return;
   }
@@ -180,7 +177,7 @@ void FileSystemOperation::Remove(const FilePath& path, bool recursive) {
   pending_operation_ = kOperationRemove;
 #endif
 
-  if (!VerifyFileSystemPathForWrite(path, false /* create */, 0)) {
+  if (!VerifyFileSystemPathForWrite(path, false /* create */)) {
     delete this;
     return;
   }
@@ -198,8 +195,7 @@ void FileSystemOperation::Write(
   DCHECK(kOperationNone == pending_operation_);
   pending_operation_ = kOperationWrite;
 #endif
-  if (!VerifyFileSystemPathForWrite(path, true /* create */,
-                                    FileSystemQuotaManager::kUnknownSize)) {
+  if (!VerifyFileSystemPathForWrite(path, true /* create */)) {
     delete this;
     return;
   }
@@ -222,7 +218,7 @@ void FileSystemOperation::Truncate(const FilePath& path, int64 length) {
   DCHECK(kOperationNone == pending_operation_);
   pending_operation_ = kOperationTruncate;
 #endif
-  if (!VerifyFileSystemPathForWrite(path, false /* create */, 0)) {
+  if (!VerifyFileSystemPathForWrite(path, false /* create */)) {
     delete this;
     return;
   }
@@ -239,7 +235,7 @@ void FileSystemOperation::TouchFile(const FilePath& path,
   pending_operation_ = kOperationTouchFile;
 #endif
 
-  if (!VerifyFileSystemPathForWrite(path, true /* create */, 0)) {
+  if (!VerifyFileSystemPathForWrite(path, true /* create */)) {
     delete this;
     return;
   }
@@ -416,7 +412,7 @@ bool FileSystemOperation::VerifyFileSystemPathForRead(
 }
 
 bool FileSystemOperation::VerifyFileSystemPathForWrite(
-    const FilePath& path, bool create, int64 growth) {
+    const FilePath& path, bool create) {
   GURL origin_url;
   FilePath virtual_path;
 
@@ -440,10 +436,8 @@ bool FileSystemOperation::VerifyFileSystemPathForWrite(
     dispatcher_->DidFail(base::PLATFORM_FILE_ERROR_SECURITY);
     return false;
   }
-  // TODO(kinuko): For operations with kUnknownSize we'll eventually
-  // need to resolve what amount of size it's going to write.
-  if (!file_system_context_->quota_manager()->CheckOriginQuota(
-          origin_url, growth)) {
+  // TODO(kinuko): the check must be moved to QuotaFileSystemFileUtil.
+  if (!file_system_context_->IsStorageUnlimited(origin_url)) {
     dispatcher_->DidFail(base::PLATFORM_FILE_ERROR_NO_SPACE);
     return false;
   }

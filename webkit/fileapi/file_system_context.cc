@@ -6,8 +6,8 @@
 
 #include "base/file_util.h"
 #include "base/message_loop_proxy.h"
+#include "googleurl/src/gurl.h"
 #include "webkit/fileapi/file_system_path_manager.h"
-#include "webkit/fileapi/file_system_quota_manager.h"
 #include "webkit/fileapi/file_system_usage_tracker.h"
 
 namespace fileapi {
@@ -22,15 +22,26 @@ FileSystemContext::FileSystemContext(
     bool unlimited_quota)
     : file_message_loop_(file_message_loop),
       io_message_loop_(io_message_loop),
+      special_storage_policy_(special_storage_policy),
+      allow_file_access_from_files_(allow_file_access),
+      unlimited_quota_(unlimited_quota),
       path_manager_(new FileSystemPathManager(
           file_message_loop, profile_path, is_incognito, allow_file_access)),
-      quota_manager_(new FileSystemQuotaManager(
-          allow_file_access, unlimited_quota, special_storage_policy)),
       usage_tracker_(new FileSystemUsageTracker(
           file_message_loop, profile_path, is_incognito)) {
 }
 
 FileSystemContext::~FileSystemContext() {
+}
+
+bool FileSystemContext::IsStorageUnlimited(const GURL& origin) {
+  // If allow-file-access-from-files flag is explicitly given and the scheme
+  // is file, or if unlimited quota for this process was explicitly requested,
+  // return true.
+  return unlimited_quota_ ||
+      (allow_file_access_from_files_ && origin.SchemeIsFile()) ||
+      (special_storage_policy_.get() &&
+          special_storage_policy_->IsStorageUnlimited(origin));
 }
 
 void FileSystemContext::DeleteDataForOriginOnFileThread(

@@ -127,12 +127,11 @@ class FileSystemOperation {
 
   // Checks the validity of a given |path| for writing.
   // Returns true if the given |path| is a valid FileSystem path, and
-  // its origin embedded in the path has the right to write as much as
-  // the given |growth|.
+  // its origin embedded in the path has the right to write.
   // Otherwise it fires dispatcher's DidFail method with
   // PLATFORM_FILE_ERROR_SECURITY if the path is not valid for writing,
   // or with PLATFORM_FILE_ERROR_NO_SPACE if the origin is not allowed to
-  // increase the usage by |growth|.
+  // write to the storage.
   // In either case it returns false after firing DidFail.
   // If |create| flag is true this also checks if the |path| contains
   // any restricted names and chars. If it does, the call fires dispatcher's
@@ -140,8 +139,7 @@ class FileSystemOperation {
   // (Note: this doesn't delete this when it calls DidFail and returns false;
   // it's the caller's responsibility.)
   bool VerifyFileSystemPathForWrite(const FilePath& path,
-                                    bool create,
-                                    int64 growth);
+                                    bool create);
 
 #ifndef NDEBUG
   enum OperationType {

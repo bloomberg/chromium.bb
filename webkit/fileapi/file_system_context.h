@@ -16,10 +16,13 @@ namespace base {
 class MessageLoopProxy;
 }
 
+namespace quota {
+class SpecialStoragePolicy;
+}
+
 namespace fileapi {
 
 class FileSystemPathManager;
-class FileSystemQuotaManager;
 class FileSystemUsageTracker;
 class FileSystemContext;
 
@@ -40,10 +43,12 @@ class FileSystemContext
       bool unlimited_quota);
   ~FileSystemContext();
 
+  // This method can be called on any thread.
+  bool IsStorageUnlimited(const GURL& origin);
+
   void DeleteDataForOriginOnFileThread(const GURL& origin_url);
 
   FileSystemPathManager* path_manager() { return path_manager_.get(); }
-  FileSystemQuotaManager* quota_manager() { return quota_manager_.get(); }
   FileSystemUsageTracker* usage_tracker() { return usage_tracker_.get(); }
 
  private:
@@ -52,8 +57,12 @@ class FileSystemContext
 
   scoped_refptr<base::MessageLoopProxy> file_message_loop_;
   scoped_refptr<base::MessageLoopProxy> io_message_loop_;
+
+  scoped_refptr<quota::SpecialStoragePolicy> special_storage_policy_;
+  const bool allow_file_access_from_files_;
+  const bool unlimited_quota_;
+
   scoped_ptr<FileSystemPathManager> path_manager_;
-  scoped_ptr<FileSystemQuotaManager> quota_manager_;
   scoped_ptr<FileSystemUsageTracker> usage_tracker_;
 
   DISALLOW_IMPLICIT_CONSTRUCTORS(FileSystemContext);

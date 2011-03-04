@@ -24,11 +24,9 @@
 #include "webkit/fileapi/file_system_operation.h"
 #include "webkit/fileapi/file_system_operation.h"
 #include "webkit/fileapi/file_system_path_manager.h"
-#include "webkit/fileapi/file_system_quota_manager.h"
 
 using fileapi::FileSystemCallbackDispatcher;
 using fileapi::FileSystemOperation;
-using fileapi::FileSystemQuotaManager;
 
 class BrowserFileSystemCallbackDispatcher
     : public FileSystemCallbackDispatcher {

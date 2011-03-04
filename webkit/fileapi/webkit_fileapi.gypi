@@ -23,8 +23,6 @@
         'file_system_operation.h',
         'file_system_path_manager.cc',
         'file_system_path_manager.h',
-        'file_system_quota_manager.cc',
-        'file_system_quota_manager.h',
         'file_system_types.h',
         'file_system_url_request_job.cc',
         'file_system_url_request_job.h',
