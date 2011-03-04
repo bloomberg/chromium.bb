@@ -86,14 +86,18 @@ class ExistingUserControllerTest : public WizardInProcessBrowserTest {
         .Times(1);
     EXPECT_CALL(*mock_login_library_, RetrieveProperty(_, _, _))
         .Times(AnyNumber())
-        .WillRepeatedly((Return(true)));
+        .WillRepeatedly(Return(true));
     cros_mock_->test_api()->SetLoginLibrary(mock_login_library_, true);
 
     cros_mock_->InitMockCryptohomeLibrary();
     mock_cryptohome_library_ = cros_mock_->mock_cryptohome_library();
     EXPECT_CALL(*mock_cryptohome_library_, IsMounted())
         .Times(AnyNumber())
-        .WillRepeatedly((Return(true)));
+        .WillRepeatedly(Return(true));
+    EXPECT_CALL(*mock_cryptohome_library_,
+                AsyncDoAutomaticFreeDiskSpaceControl(_))
+        .Times(1)
+        .WillOnce(Return(true));
     LoginUtils::Set(new MockLoginUtils(kUsername, kPassword));
   }
 

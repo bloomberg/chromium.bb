@@ -103,6 +103,9 @@ class CryptohomeLibrary {
   // Asks cryptohomed for the system salt.
   virtual CryptohomeBlob GetSystemSalt() = 0;
 
+  // Checks free disk space and if it falls below some minimum
+  // (cryptohome::kMinFreeSpace), performs cleanup.
+  virtual bool AsyncDoAutomaticFreeDiskSpaceControl(Delegate* callback) = 0;
 
   // Wrappers of the functions for working with Tpm.
 

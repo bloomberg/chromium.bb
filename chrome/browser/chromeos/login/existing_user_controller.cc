@@ -11,6 +11,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/boot_times_loader.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
+#include "chrome/browser/chromeos/cros/cryptohome_library.h"
 #include "chrome/browser/chromeos/cros/login_library.h"
 #include "chrome/browser/chromeos/cros/network_library.h"
 #include "chrome/browser/chromeos/login/background_view.h"
@@ -132,8 +133,11 @@ void ExistingUserController::Init(const UserVector& users) {
   login_display_->Init(filtered_users, show_guest, show_new_user);
 
   LoginUtils::Get()->PrewarmAuthentication();
-  if (CrosLibrary::Get()->EnsureLoaded())
+  if (CrosLibrary::Get()->EnsureLoaded()) {
     CrosLibrary::Get()->GetLoginLibrary()->EmitLoginPromptReady();
+    CrosLibrary::Get()->GetCryptohomeLibrary()->
+        AsyncDoAutomaticFreeDiskSpaceControl(NULL);
+  }
 }
 
 void ExistingUserController::OwnBackground(
