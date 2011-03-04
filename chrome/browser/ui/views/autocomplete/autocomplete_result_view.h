@@ -80,28 +80,10 @@ class AutocompleteResultView : public views::View {
   int text_vertical_padding_;
 
  private:
-  // Precalculated data used to draw the portion of a match classification that
-  // fits entirely within one run.
-  struct ClassificationData {
-    string16 text;
-    const gfx::Font* font;
-    SkColor color;
-    int pixel_width;
-  };
+  struct ClassificationData;
   typedef std::vector<ClassificationData> Classifications;
 
-  // Precalculated data used to draw a complete visual run within the match.
-  // This will include all or part of at leasdt one, and possibly several,
-  // classifications.
-  struct RunData {
-    size_t run_start;  // Offset within the match text where this run begins.
-    int visual_order;  // Where this run occurs in visual order.  The earliest
-                       // run drawn is run 0.
-    bool is_rtl;
-    int pixel_width;
-    Classifications classifications;  // Classification pieces within this run,
-                                      // in logical order.
-  };
+  struct RunData;
   typedef std::vector<RunData> Runs;
 
   // Predicate functions for use when sorting the runs.

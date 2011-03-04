@@ -34,6 +34,28 @@ const int kMinimumTextVerticalPadding = 3;
 ////////////////////////////////////////////////////////////////////////////////
 // AutocompleteResultView, public:
 
+// Precalculated data used to draw the portion of a match classification that
+// fits entirely within one run.
+struct AutocompleteResultView::ClassificationData {
+  string16 text;
+  const gfx::Font* font;
+  SkColor color;
+  int pixel_width;
+};
+
+// Precalculated data used to draw a complete visual run within the match.
+// This will include all or part of at leasdt one, and possibly several,
+// classifications.
+struct AutocompleteResultView::RunData {
+  size_t run_start;  // Offset within the match text where this run begins.
+  int visual_order;  // Where this run occurs in visual order.  The earliest
+  // run drawn is run 0.
+  bool is_rtl;
+  int pixel_width;
+  Classifications classifications;  // Classification pieces within this run,
+                                    // in logical order.
+};
+
 // This class is a utility class for calculations affected by whether the result
 // view is horizontally mirrored.  The drawing functions can be written as if
 // all drawing occurs left-to-right, and then use this class to get the actual

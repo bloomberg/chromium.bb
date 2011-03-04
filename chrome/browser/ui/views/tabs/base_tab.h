@@ -136,13 +136,9 @@ class BaseTab : public ui::AnimationDelegate,
   virtual const gfx::Rect& GetTitleBounds() const = 0;
   virtual const gfx::Rect& GetIconBounds() const = 0;
 
-  virtual int loading_animation_frame() const {
-    return loading_animation_frame_;
-  }
-  virtual bool should_display_crashed_favicon() const {
-    return should_display_crashed_favicon_;
-  }
-  virtual int fav_icon_hiding_offset() const { return fav_icon_hiding_offset_; }
+  virtual int loading_animation_frame() const;
+  virtual bool should_display_crashed_favicon() const;
+  virtual int fav_icon_hiding_offset() const;
 
   static gfx::Font* font() { return font_; }
   static int font_height() { return font_height_; }

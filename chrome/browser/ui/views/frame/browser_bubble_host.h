@@ -17,7 +17,8 @@ class BrowserBubble;
 // close events.
 class BrowserBubbleHost {
  public:
-  BrowserBubbleHost() {}
+  BrowserBubbleHost();
+  ~BrowserBubbleHost();
 
   // Invoked when the window containing the attached browser-bubbles is moved.
   // Calls BrowserBubble::BrowserWindowMoved on all attached bubbles.

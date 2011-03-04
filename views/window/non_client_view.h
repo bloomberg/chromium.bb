@@ -48,12 +48,12 @@ class NonClientFrameView : public View {
   // Returns true if this FrameView should always use the custom frame,
   // regardless of the system settings. An example is the Constrained Window,
   // which is a child window and must always provide its own frame.
-  virtual bool AlwaysUseCustomFrame() const { return false; }
+  virtual bool AlwaysUseCustomFrame() const;
 
   // Like AlwaysUseCustomFrame, returns true if this FrameView should always use
   // the native frame, regardless of theme settings. An example is popup/app
   // windows, which we do not ever want to show themed.
-  virtual bool AlwaysUseNativeFrame() const { return false; }
+  virtual bool AlwaysUseNativeFrame() const;
 
   virtual gfx::Rect GetWindowBoundsForClientBounds(
       const gfx::Rect& client_bounds) const = 0;

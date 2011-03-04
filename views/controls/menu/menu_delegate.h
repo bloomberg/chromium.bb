@@ -47,27 +47,19 @@ class MenuDelegate {
 
   // Whether or not an item should be shown as checked. This is invoked for
   // radio buttons and check buttons.
-  virtual bool IsItemChecked(int id) const {
-    return false;
-  }
+  virtual bool IsItemChecked(int id) const;
 
   // The string shown for the menu item. This is only invoked when an item is
   // added with an empty label.
-  virtual std::wstring GetLabel(int id) const {
-    return std::wstring();
-  }
+  virtual std::wstring GetLabel(int id) const;
 
   // The tooltip shown for the menu item. This is invoked when the user
   // hovers over the item, and no tooltip text has been set for that item.
-  virtual std::wstring GetTooltipText(int id, const gfx::Point& screen_loc) {
-    return std::wstring();
-  }
+  virtual std::wstring GetTooltipText(int id, const gfx::Point& screen_loc);
 
   // If there is an accelerator for the menu item with id |id| it is set in
   // |accelerator| and true is returned.
-  virtual bool GetAccelerator(int id, Accelerator* accelerator) {
-    return false;
-  }
+  virtual bool GetAccelerator(int id, Accelerator* accelerator);
 
   // Shows the context menu with the specified id. This is invoked when the
   // user does the appropriate gesture to show a context menu. The id
@@ -80,20 +72,12 @@ class MenuDelegate {
   virtual bool ShowContextMenu(MenuItemView* source,
                                int id,
                                const gfx::Point& p,
-                               bool is_mouse_gesture) {
-    return false;
-  }
+                               bool is_mouse_gesture);
 
   // Controller
-  virtual bool SupportsCommand(int id) const {
-    return true;
-  }
-  virtual bool IsCommandEnabled(int id) const {
-    return true;
-  }
-  virtual bool GetContextualLabel(int id, std::wstring* out) const {
-    return false;
-  }
+  virtual bool SupportsCommand(int id) const;
+  virtual bool IsCommandEnabled(int id) const;
+  virtual bool GetContextualLabel(int id, std::wstring* out) const;
   virtual void ExecuteCommand(int id) {
   }
 
@@ -102,23 +86,17 @@ class MenuDelegate {
   // the user selects the menu with the command |id|. This returns true to
   // indicate that all menus should be closed. Return false if only the
   // context menu should be closed.
-  virtual bool ShouldCloseAllMenusOnExecute(int id) {
-    return true;
-  }
+  virtual bool ShouldCloseAllMenusOnExecute(int id);
 
   // Executes the specified command. mouse_event_flags give the flags of the
   // mouse event that triggered this to be invoked (views::MouseEvent
   // flags). mouse_event_flags is 0 if this is triggered by a user gesture
   // other than a mouse event.
-  virtual void ExecuteCommand(int id, int mouse_event_flags) {
-    ExecuteCommand(id);
-  }
+  virtual void ExecuteCommand(int id, int mouse_event_flags);
 
   // Returns true if the specified mouse event is one the user can use
   // to trigger, or accept, the mouse. Defaults to left or right mouse buttons.
-  virtual bool IsTriggerableEvent(const MouseEvent& e) {
-    return e.IsLeftMouseButton() || e.IsRightMouseButton();
-  }
+  virtual bool IsTriggerableEvent(const MouseEvent& e);
 
   // Invoked to determine if drops can be accepted for a submenu. This is
   // ONLY invoked for menus that have submenus and indicates whether or not
@@ -134,22 +112,16 @@ class MenuDelegate {
   //
 
   // To restrict which children can be dropped on override GetDropOperation.
-  virtual bool CanDrop(MenuItemView* menu, const OSExchangeData& data) {
-    return false;
-  }
+  virtual bool CanDrop(MenuItemView* menu, const OSExchangeData& data);
 
   // See view for a description of this method.
   virtual bool GetDropFormats(
       MenuItemView* menu,
       int* formats,
-      std::set<OSExchangeData::CustomFormat>* custom_formats) {
-    return false;
-  }
+      std::set<OSExchangeData::CustomFormat>* custom_formats);
 
   // See view for a description of this method.
-  virtual bool AreDropTypesRequired(MenuItemView* menu) {
-    return false;
-  }
+  virtual bool AreDropTypesRequired(MenuItemView* menu);
 
   // Returns the drop operation for the specified target menu item. This is
   // only invoked if CanDrop returned true for the parent menu. position
@@ -159,10 +131,7 @@ class MenuDelegate {
   // If a drop should not be allowed, returned ui::DragDropTypes::DRAG_NONE.
   virtual int GetDropOperation(MenuItemView* item,
                                const DropTargetEvent& event,
-                               DropPosition* position) {
-    NOTREACHED() << "If you override CanDrop, you need to override this too";
-    return ui::DragDropTypes::DRAG_NONE;
-  }
+                               DropPosition* position);
 
   // Invoked to perform the drop operation. This is ONLY invoked if
   // canDrop returned true for the parent menu item, and GetDropOperation
@@ -171,29 +140,19 @@ class MenuDelegate {
   // menu indicates the menu the drop occurred on.
   virtual int OnPerformDrop(MenuItemView* menu,
                             DropPosition position,
-                            const DropTargetEvent& event) {
-    NOTREACHED() << "If you override CanDrop, you need to override this too";
-    return ui::DragDropTypes::DRAG_NONE;
-  }
+                            const DropTargetEvent& event);
 
   // Invoked to determine if it is possible for the user to drag the specified
   // menu item.
-  virtual bool CanDrag(MenuItemView* menu) {
-    return false;
-  }
+  virtual bool CanDrag(MenuItemView* menu);
 
   // Invoked to write the data for a drag operation to data. sender is the
   // MenuItemView being dragged.
-  virtual void WriteDragData(MenuItemView* sender, OSExchangeData* data) {
-    NOTREACHED() << "If you override CanDrag, you must override this too.";
-  }
+  virtual void WriteDragData(MenuItemView* sender, OSExchangeData* data);
 
   // Invoked to determine the drag operations for a drag session of sender.
   // See DragDropTypes for possible values.
-  virtual int GetDragOperations(MenuItemView* sender) {
-    NOTREACHED() << "If you override CanDrag, you must override this too.";
-    return 0;
-  }
+  virtual int GetDragOperations(MenuItemView* sender);
 
   // Notification the menu has closed. This is only sent when running the
   // menu for a drop.
@@ -213,16 +172,10 @@ class MenuDelegate {
                                        const gfx::Point& screen_point,
                                        MenuItemView::AnchorPosition* anchor,
                                        bool* has_mnemonics,
-                                       MenuButton** button) {
-      return NULL;
-  }
+                                       MenuButton** button);
 
   // Returns the max width menus can grow to be.
-  virtual int GetMaxWidthForMenu() {
-    // NOTE: this needs to be large enough to accommodate the wrench menu with
-    // big fonts.
-    return 800;
-  }
+  virtual int GetMaxWidthForMenu();
 };
 
 }  // namespace views

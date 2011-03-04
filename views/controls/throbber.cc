@@ -104,6 +104,8 @@ SmoothedThrobber::SmoothedThrobber(int frame_time_ms)
       stop_delay_ms_(kStopDelay) {
 }
 
+SmoothedThrobber::~SmoothedThrobber() {}
+
 void SmoothedThrobber::Start() {
   stop_timer_.Stop();
 

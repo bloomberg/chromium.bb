@@ -60,8 +60,8 @@ class WindowGtk : public WidgetGtk, public Window {
   virtual bool ShouldUseNativeFrame() const;
   virtual void FrameTypeChanged();
 
-  virtual Window* AsWindow() { return this; }
-  virtual const Window* AsWindow() const { return this; }
+  virtual Window* AsWindow();
+  virtual const Window* AsWindow() const;
 
   // Overridden from WidgetGtk:
   virtual gboolean OnButtonPress(GtkWidget* widget, GdkEventButton* event);

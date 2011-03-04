@@ -154,13 +154,13 @@ class View : public AcceleratorTarget {
 
   // TODO(beng): delete
   // Returns whether the view is hot-tracked.
-  virtual bool IsHotTracked() const { return false; }
+  virtual bool IsHotTracked() const;
 
   // FATE TBD ------------------------------------------------------------------
   // TODO(beng): Figure out what these methods are for and delete them.
 
   // TODO(beng): this one isn't even google3-style. wth.
-  virtual Widget* child_widget() { return NULL; }
+  virtual Widget* child_widget();
 
   // Creation and lifetime -----------------------------------------------------
 
@@ -309,7 +309,7 @@ class View : public AcceleratorTarget {
   virtual void SetVisible(bool flag);
 
   // Return whether a view is visible
-  virtual bool IsVisible() const { return is_visible_; }
+  virtual bool IsVisible() const;
 
   // Return whether a view and its ancestors are visible. Returns true if the
   // path from this view to the root view is visible.
@@ -459,7 +459,7 @@ class View : public AcceleratorTarget {
   // when moving focus with the Tab/Shift-Tab key.  If this returns false,
   // only the selected view from the group (obtained with
   // GetSelectedViewForGroup()) is focused.
-  virtual bool IsGroupFocusTraversable() const { return true; }
+  virtual bool IsGroupFocusTraversable() const;
 
   // Fills the provided vector with all the available views which belong to the
   // provided group.
@@ -693,9 +693,7 @@ class View : public AcceleratorTarget {
   // Called when a keyboard accelerator is pressed.
   // Derived classes should implement desired behavior and return true if they
   // handled the accelerator.
-  virtual bool AcceleratorPressed(const Accelerator& accelerator) {
-    return false;
-  }
+  virtual bool AcceleratorPressed(const Accelerator& accelerator);
 
   // Focus ---------------------------------------------------------------------
 
@@ -732,9 +730,7 @@ class View : public AcceleratorTarget {
   // Set whether this view can be made focusable if the user requires
   // full keyboard access, even though it's not normally focusable.
   // Note that this is false by default.
-  virtual void set_accessibility_focusable(bool accessibility_focusable) {
-    accessibility_focusable_ = accessibility_focusable;
-  }
+  virtual void set_accessibility_focusable(bool accessibility_focusable);
 
   // Convenience method to retrieve the FocusManager associated with the
   // Widget that contains this view.  This can return NULL if this view is not
@@ -759,21 +755,19 @@ class View : public AcceleratorTarget {
   // have it processed as an accelerator (if any) or as a tab traversal (if the
   // key event is for the TAB key).  In that case, OnKeyPressed will
   // subsequently be invoked for that event.
-  virtual bool SkipDefaultKeyEventProcessing(const KeyEvent& e) {
-    return false;
-  }
+  virtual bool SkipDefaultKeyEventProcessing(const KeyEvent& e);
 
   // Subclasses that contain traversable children that are not directly
   // accessible through the children hierarchy should return the associated
   // FocusTraversable for the focus traversal to work properly.
-  virtual FocusTraversable* GetFocusTraversable() { return NULL; }
+  virtual FocusTraversable* GetFocusTraversable();
 
   // Subclasses that can act as a "pane" must implement their own
   // FocusTraversable to keep the focus trapped within the pane.
   // If this method returns an object, any view that's a direct or
   // indirect child of this view will always use this FocusTraversable
   // rather than the one from the widget.
-  virtual FocusTraversable* GetPaneFocusTraversable() { return NULL; }
+  virtual FocusTraversable* GetPaneFocusTraversable();
 
   // Tooltips ------------------------------------------------------------------
 
@@ -893,13 +887,11 @@ class View : public AcceleratorTarget {
   // describes the default action that will occur when executing
   // IAccessible::DoDefaultAction. For instance, default action of a button is
   // 'Press'.
-  virtual string16 GetAccessibleDefaultAction() { return string16(); }
+  virtual string16 GetAccessibleDefaultAction();
 
   // Returns a string containing the mnemonic, or the keyboard shortcut, for a
   // given control.
-  virtual string16 GetAccessibleKeyboardShortcut() {
-    return string16();
-  }
+  virtual string16 GetAccessibleKeyboardShortcut();
 
   // Returns a brief, identifying string, containing a unique, readable name of
   // a given control. Sets the input string appropriately, and returns true if
@@ -912,12 +904,10 @@ class View : public AcceleratorTarget {
   virtual AccessibilityTypes::Role GetAccessibleRole();
 
   // Returns the accessibility state of the current view.
-  virtual AccessibilityTypes::State GetAccessibleState() {
-    return 0;
-  }
+  virtual AccessibilityTypes::State GetAccessibleState();
 
   // Returns the current value associated with a view.
-  virtual string16 GetAccessibleValue() { return string16(); }
+  virtual string16 GetAccessibleValue();
 
   // Assigns a string name to the given control. Needed as a View does not know
   // which name will be associated with it until it is created to be a

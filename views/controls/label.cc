@@ -77,6 +77,10 @@ void Label::OnBoundsChanged() {
   text_size_valid_ &= !is_multi_line_;
 }
 
+std::string Label::GetClassName() const {
+  return kViewClassName;
+}
+
 void Label::OnPaint(gfx::Canvas* canvas) {
   OnPaintBackground(canvas);
 
@@ -126,6 +130,14 @@ void Label::SetURL(const GURL& url) {
 
 const GURL Label::GetURL() const {
   return url_set_ ? url_ : GURL(UTF16ToUTF8(text_));
+}
+
+void Label::SetColor(const SkColor& color) {
+  color_ = color;
+}
+
+SkColor Label::GetColor() const {
+  return color_;
 }
 
 void Label::SetHorizontalAlignment(Alignment alignment) {

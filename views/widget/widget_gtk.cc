@@ -1224,6 +1224,10 @@ void WidgetGtk::OnShow(GtkWidget* widget) {
 void WidgetGtk::OnHide(GtkWidget* widget) {
 }
 
+bool WidgetGtk::ReleaseCaptureOnMouseReleased() {
+  return true;
+}
+
 void WidgetGtk::DoGrab() {
   has_capture_ = true;
   gtk_grab_add(window_contents_);

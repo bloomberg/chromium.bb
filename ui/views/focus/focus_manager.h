@@ -150,7 +150,8 @@ class FocusManager {
     void DisableNotifications() { enabled_ = false; }
 
    private:
-    WidgetFocusManager() : enabled_(true) {}
+    WidgetFocusManager();
+    ~WidgetFocusManager();
 
     typedef std::vector<WidgetFocusChangeListener*>
       WidgetFocusChangeListenerList;

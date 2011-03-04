@@ -37,7 +37,7 @@ class StarView : public views::ImageView, public InfoBubbleDelegate {
   virtual void InfoBubbleClosing(InfoBubble* info_bubble,
                                  bool closed_by_escape);
   virtual bool CloseOnEscape();
-  virtual bool FadeInOnShow() { return false; }
+  virtual bool FadeInOnShow();
 
   // The CommandUpdater for the Browser object that owns the location bar.
   CommandUpdater* command_updater_;

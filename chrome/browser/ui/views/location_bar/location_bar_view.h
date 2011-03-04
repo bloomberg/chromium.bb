@@ -235,18 +235,12 @@ class LocationBarView : public LocationBar,
   virtual void InvalidatePageActions() OVERRIDE;
   virtual void SaveStateToContents(TabContents* contents) OVERRIDE;
   virtual void Revert() OVERRIDE;
-  virtual const AutocompleteEditView* location_entry() const OVERRIDE {
-    return location_entry_.get();
-  }
-  virtual AutocompleteEditView* location_entry() OVERRIDE {
-    return location_entry_.get();
-  }
-  virtual LocationBarTesting* GetLocationBarForTesting() OVERRIDE {
-    return this;
-  }
+  virtual const AutocompleteEditView* location_entry() const OVERRIDE;
+  virtual AutocompleteEditView* location_entry() OVERRIDE;
+  virtual LocationBarTesting* GetLocationBarForTesting() OVERRIDE;
 
   // Overridden from LocationBarTesting:
-  virtual int PageActionCount() OVERRIDE { return page_action_views_.size(); }
+  virtual int PageActionCount() OVERRIDE;
   virtual int PageActionVisibleCount() OVERRIDE;
   virtual ExtensionAction* GetPageAction(size_t index) OVERRIDE;
   virtual ExtensionAction* GetVisiblePageAction(size_t index) OVERRIDE;

@@ -58,7 +58,7 @@ class AccessiblePaneView : public views::View,
  protected:
   // A subclass can override this to provide a default focusable child
   // other than the first focusable child.
-  virtual views::View* GetDefaultFocusableChild() { return NULL; }
+  virtual views::View* GetDefaultFocusableChild();
 
   // Remove pane focus.
   virtual void RemovePaneFocus();

@@ -7,6 +7,10 @@
 #include "base/logging.h"
 #include "chrome/browser/ui/views/browser_bubble.h"
 
+BrowserBubbleHost::BrowserBubbleHost() {}
+
+BrowserBubbleHost::~BrowserBubbleHost() {}
+
 void BrowserBubbleHost::WindowMoved() {
   // Do safe iteration in case the bubble winds up closing as a result of this
   // message.

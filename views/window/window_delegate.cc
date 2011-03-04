@@ -16,6 +16,50 @@ WindowDelegate::WindowDelegate() : window_(NULL) {
 WindowDelegate::~WindowDelegate() {
 }
 
+DialogDelegate* WindowDelegate::AsDialogDelegate() {
+  return NULL;
+}
+
+bool WindowDelegate::CanResize() const {
+  return false;
+}
+
+bool WindowDelegate::CanMaximize() const {
+  return false;
+}
+
+bool WindowDelegate::IsModal() const {
+  return false;
+}
+
+AccessibilityTypes::Role WindowDelegate::accessible_role() const {
+  return AccessibilityTypes::ROLE_WINDOW;
+}
+
+AccessibilityTypes::State WindowDelegate::accessible_state() const {
+  return 0;
+}
+
+std::wstring WindowDelegate::GetAccessibleWindowTitle() const {
+  return GetWindowTitle();
+}
+
+std::wstring WindowDelegate::GetWindowTitle() const {
+  return L"";
+}
+
+View* WindowDelegate::GetInitiallyFocusedView() {
+  return NULL;
+}
+
+bool WindowDelegate::ShouldShowWindowTitle() const {
+  return true;
+}
+
+bool WindowDelegate::ShouldShowClientEdge() const {
+  return true;
+}
+
 SkBitmap WindowDelegate::GetWindowAppIcon() {
   // Use the window icon as app icon by default.
   return GetWindowIcon();
@@ -24,6 +68,18 @@ SkBitmap WindowDelegate::GetWindowAppIcon() {
 // Returns the icon to be displayed in the window.
 SkBitmap WindowDelegate::GetWindowIcon() {
   return SkBitmap();
+}
+
+bool WindowDelegate::ShouldShowWindowIcon() const {
+  return false;
+}
+
+bool WindowDelegate::ExecuteWindowsCommand(int command_id) {
+  return false;
+}
+
+std::wstring WindowDelegate::GetWindowName() const {
+  return std::wstring();
 }
 
 void WindowDelegate::SaveWindowPlacement(const gfx::Rect& bounds,
@@ -56,6 +112,10 @@ bool WindowDelegate::GetSavedMaximizedState(bool* maximized) const {
 
 bool WindowDelegate::ShouldRestoreWindowSize() const {
   return true;
+}
+
+View* WindowDelegate::GetContentsView() {
+  return NULL;
 }
 
 ClientView* WindowDelegate::CreateClientView(Window* window) {

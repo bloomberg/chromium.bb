@@ -32,6 +32,8 @@ class MessageBoxView : public views::View {
                  const std::wstring& message,
                  const std::wstring& default_prompt);
 
+  virtual ~MessageBoxView();
+
   // Returns the text box.
   views::Textfield* text_box() { return prompt_field_; }
 

@@ -138,7 +138,7 @@ class Window {
   // Returns true if the Window is considered to be an "app window" - i.e.
   // any window which when it is the last of its type closed causes the
   // application to exit.
-  virtual bool IsAppWindow() const { return false; }
+  virtual bool IsAppWindow() const;
 
   // Toggles the enable state for the Close button (and the Close menu item in
   // the system menu).

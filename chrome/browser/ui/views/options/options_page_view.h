@@ -26,7 +26,7 @@ class OptionsPageView : public views::View,
   // Returns true if the window containing this view can be closed, given the
   // current state of this view. This can be used to prevent the window from
   // being closed when a modal dialog box is showing, for example.
-  virtual bool CanClose() const { return true; }
+  virtual bool CanClose() const;
 
  protected:
   // This class cannot be instantiated directly, but its constructor must be

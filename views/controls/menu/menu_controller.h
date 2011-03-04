@@ -131,7 +131,8 @@ class MenuController : public MessageLoopForUI::Dispatcher {
 
   // Tracks selection information.
   struct State {
-    State() : item(NULL), submenu_open(false) {}
+    State();
+    ~State();
 
     // The selected menu item.
     MenuItemView* item;

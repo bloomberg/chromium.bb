@@ -68,7 +68,7 @@ class DialogClientView : public ClientView,
   virtual bool CanClose();
   virtual void WindowClosing();
   virtual int NonClientHitTest(const gfx::Point& point);
-  virtual DialogClientView* AsDialogClientView() { return this; }
+  virtual DialogClientView* AsDialogClientView();
 
   // FocusChangeListener implementation:
   virtual void FocusWillChange(View* focused_before, View* focused_now);

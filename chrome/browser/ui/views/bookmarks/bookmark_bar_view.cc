@@ -716,6 +716,10 @@ double BookmarkBarView::GetAnimationValue() const {
   return size_animation_->GetCurrentValue();
 }
 
+int BookmarkBarView::GetToolbarOverlap() const {
+  return GetToolbarOverlap(false);
+}
+
 bool BookmarkBarView::IsAlwaysShown() const {
   return profile_->GetPrefs()->GetBoolean(prefs::kShowBookmarkBar);
 }

@@ -31,7 +31,7 @@ class SadTabView : public views::View,
   };
 
   explicit SadTabView(TabContents* tab_contents, Kind kind);
-  virtual ~SadTabView() {}
+  virtual ~SadTabView();
 
   // Overridden from views::View:
   virtual void OnPaint(gfx::Canvas* canvas);

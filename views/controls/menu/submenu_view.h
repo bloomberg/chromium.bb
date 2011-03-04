@@ -61,7 +61,7 @@ class SubmenuView : public View {
   virtual AccessibilityTypes::Role GetAccessibleRole();
 
   // Painting.
-  void PaintChildren(gfx::Canvas* canvas);
+  virtual void PaintChildren(gfx::Canvas* canvas);
 
   // Drag and drop methods. These are forwarded to the MenuController.
   virtual bool GetDropFormats(

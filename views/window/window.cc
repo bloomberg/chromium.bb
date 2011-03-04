@@ -49,4 +49,8 @@ void Window::CloseSecondaryWidget(Widget* widget) {
   }
 }
 
+bool Window::IsAppWindow() const {
+  return false;
+}
+
 }  // namespace views

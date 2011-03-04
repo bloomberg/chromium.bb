@@ -171,7 +171,7 @@ class InfoBubbleDelegate {
   virtual bool FadeInOnShow() = 0;
 
   // The name of the window to which this delegate belongs.
-  virtual std::wstring accessible_name() { return L""; }
+  virtual std::wstring accessible_name();
 };
 
 // TODO(sky): this code is ifdef-tastic. It might be cleaner to refactor the

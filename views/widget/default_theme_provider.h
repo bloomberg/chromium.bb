@@ -22,20 +22,17 @@ namespace views {
 
 class DefaultThemeProvider : public ui::ThemeProvider {
  public:
-  DefaultThemeProvider() { };
-  virtual ~DefaultThemeProvider() { };
+  DefaultThemeProvider();
+  virtual ~DefaultThemeProvider();
 
   // Overridden from ui::ThemeProvider.
-  virtual void Init(Profile* profile) { }
+  virtual void Init(Profile* profile);
   virtual SkBitmap* GetBitmapNamed(int id) const;
-  virtual SkColor GetColor(int id) const {
-    // Return debugging-blue.
-    return 0xff0000ff;
-  }
-  virtual bool GetDisplayProperty(int id, int* result) const { return false; }
+  virtual SkColor GetColor(int id) const;
+  virtual bool GetDisplayProperty(int id, int* result) const;
   virtual bool ShouldUseNativeFrame() const;
-  virtual bool HasCustomImage(int id) const { return false; }
-  virtual RefCountedMemory* GetRawData(int id) const { return NULL; }
+  virtual bool HasCustomImage(int id) const;
+  virtual RefCountedMemory* GetRawData(int id) const;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(DefaultThemeProvider);

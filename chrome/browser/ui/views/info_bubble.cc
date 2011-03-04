@@ -239,6 +239,12 @@ LRESULT BorderWidget::OnMouseActivate(HWND window,
 }
 #endif
 
+// InfoBubbleDelegate ---------------------------------------------------------
+
+std::wstring InfoBubbleDelegate::accessible_name() {
+  return L"";
+}
+
 // InfoBubble -----------------------------------------------------------------
 
 // static

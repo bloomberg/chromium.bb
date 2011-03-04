@@ -87,6 +87,10 @@ bool AccessiblePaneView::SetPaneFocusAndFocusDefault(
   return SetPaneFocus(view_storage_id, GetDefaultFocusableChild());
 }
 
+views::View* AccessiblePaneView::GetDefaultFocusableChild() {
+  return NULL;
+}
+
 void AccessiblePaneView::RemovePaneFocus() {
   focus_manager_->RemoveFocusChangeListener(this);
   pane_has_focus_ = false;

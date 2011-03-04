@@ -38,55 +38,37 @@ class WindowDelegate {
   WindowDelegate();
   virtual ~WindowDelegate();
 
-  virtual DialogDelegate* AsDialogDelegate() { return NULL; }
+  virtual DialogDelegate* AsDialogDelegate();
 
   // Returns true if the window can ever be resized.
-  virtual bool CanResize() const {
-    return false;
-  }
+  virtual bool CanResize() const;
 
   // Returns true if the window can ever be maximized.
-  virtual bool CanMaximize() const {
-    return false;
-  }
+  virtual bool CanMaximize() const;
 
   // Returns true if the dialog should be displayed modally to the window that
   // opened it. Only windows with WindowType == DIALOG can be modal.
-  virtual bool IsModal() const {
-    return false;
-  }
+  virtual bool IsModal() const;
 
-  virtual AccessibilityTypes::Role accessible_role() const {
-    return AccessibilityTypes::ROLE_WINDOW;
-  }
+  virtual AccessibilityTypes::Role accessible_role() const;
 
-  virtual AccessibilityTypes::State accessible_state() const {
-    return 0;
-  }
+  virtual AccessibilityTypes::State accessible_state() const;
 
   // Returns the title to be read with screen readers.
-  virtual std::wstring GetAccessibleWindowTitle() const {
-    return GetWindowTitle();
-  }
+  virtual std::wstring GetAccessibleWindowTitle() const;
 
   // Returns the text to be displayed in the window title.
-  virtual std::wstring GetWindowTitle() const {
-    return L"";
-  }
+  virtual std::wstring GetWindowTitle() const;
 
   // Returns the view that should have the focus when the dialog is opened.  If
   // NULL no view is focused.
-  virtual View* GetInitiallyFocusedView() { return NULL; }
+  virtual View* GetInitiallyFocusedView();
 
   // Returns true if the window should show a title in the title bar.
-  virtual bool ShouldShowWindowTitle() const {
-    return true;
-  }
+  virtual bool ShouldShowWindowTitle() const;
 
   // Returns true if the window's client view wants a client edge.
-  virtual bool ShouldShowClientEdge() const {
-    return true;
-  }
+  virtual bool ShouldShowClientEdge() const;
 
   // Returns the app icon for the window. On Windows, this is the ICON_BIG used
   // in Alt-Tab list and Win7's taskbar.
@@ -96,19 +78,15 @@ class WindowDelegate {
   virtual SkBitmap GetWindowIcon();
 
   // Returns true if a window icon should be shown.
-  virtual bool ShouldShowWindowIcon() const {
-    return false;
-  }
+  virtual bool ShouldShowWindowIcon() const;
 
   // Execute a command in the window's controller. Returns true if the command
   // was handled, false if it was not.
-  virtual bool ExecuteWindowsCommand(int command_id) { return false; }
+  virtual bool ExecuteWindowsCommand(int command_id);
 
   // Returns the window's name identifier. Used to identify this window for
   // state restoration.
-  virtual std::wstring GetWindowName() const {
-    return std::wstring();
-  }
+  virtual std::wstring GetWindowName() const;
 
   // Saves the window's bounds and maximized states. By default this uses the
   // process' local state keyed by window name (See GetWindowName above). This
@@ -135,9 +113,7 @@ class WindowDelegate {
   virtual void DeleteDelegate() {}
 
   // Returns the View that is contained within this Window.
-  virtual View* GetContentsView() {
-    return NULL;
-  }
+  virtual View* GetContentsView();
 
   // Called by the Window to create the Client View used to host the contents
   // of the window.

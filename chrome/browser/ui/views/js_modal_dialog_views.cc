@@ -133,6 +133,10 @@ std::wstring JSModalDialogViews::GetDialogButtonLabel(
 ///////////////////////////////////////////////////////////////////////////////
 // JSModalDialogViews, views::WindowDelegate implementation:
 
+bool JSModalDialogViews::IsModal() const {
+  return true;
+}
+
 views::View* JSModalDialogViews::GetContentsView() {
   return message_box_view_;
 }

@@ -265,7 +265,7 @@ class WidgetGtk : public Widget,
 
   // Returns whether capture should be released on mouse release. The default
   // is true.
-  virtual bool ReleaseCaptureOnMouseReleased() { return true; }
+  virtual bool ReleaseCaptureOnMouseReleased();
 
   // Does a mouse grab on this widget.
   virtual void DoGrab();

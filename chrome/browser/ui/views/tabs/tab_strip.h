@@ -209,13 +209,13 @@ class TabStrip : public BaseTabStrip,
   // animating to their desired position/bounds. This is used by the standard
   // Layout method and other callers like the DraggedTabController that need
   // stable representations of Tab positions.
-  void GenerateIdealBounds();
+  virtual void GenerateIdealBounds();
 
   // Starts various types of TabStrip animations.
   void StartResizeLayoutAnimation();
   void StartMoveTabAnimation(int from_model_index,
                              int to_model_index);
-  void StartMiniTabAnimation();
+  virtual void StartMiniTabAnimation();
   void StartMouseInitiatedRemoveTabAnimation(int model_index);
 
   // Calculates the available width for tabs, assuming a Tab is to be closed.

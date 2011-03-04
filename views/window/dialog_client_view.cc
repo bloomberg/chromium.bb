@@ -297,6 +297,10 @@ int DialogClientView::NonClientHitTest(const gfx::Point& point) {
   return ClientView::NonClientHitTest(point);
 }
 
+DialogClientView* DialogClientView::AsDialogClientView() {
+  return this;
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // DialogClientView, View overrides:
 

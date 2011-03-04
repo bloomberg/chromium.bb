@@ -390,6 +390,10 @@ void BaseTabStrip::StartMiniTabAnimation() {
   AnimateToIdealBounds();
 }
 
+bool BaseTabStrip::ShouldHighlightCloseButtonAfterRemove() {
+  return true;
+}
+
 void BaseTabStrip::RemoveAndDeleteTab(BaseTab* tab) {
   int tab_data_index = TabIndexOfTab(tab);
 

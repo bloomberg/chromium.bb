@@ -66,7 +66,7 @@ class Tab : public BaseTab {
   virtual void OnPaint(gfx::Canvas* canvas);
   virtual void Layout();
   virtual void OnThemeChanged();
-  virtual std::string GetClassName() const { return kViewClassName; }
+  virtual std::string GetClassName() const;
   virtual bool HasHitTestMask() const;
   virtual void GetHitTestMask(gfx::Path* path) const;
   virtual bool GetTooltipTextOrigin(const gfx::Point& p, gfx::Point* origin);

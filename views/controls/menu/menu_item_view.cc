@@ -318,6 +318,14 @@ SubmenuView* MenuItemView::CreateSubmenu() {
   return submenu_;
 }
 
+bool MenuItemView::HasSubmenu() const {
+  return (submenu_ != NULL);
+}
+
+SubmenuView* MenuItemView::GetSubmenu() const {
+  return submenu_;
+}
+
 void MenuItemView::SetTitle(const std::wstring& title) {
   title_ = WideToUTF16Hack(title);
   SetAccessibleName(GetAccessibleNameForMenuItem(title_, GetAcceleratorText()));

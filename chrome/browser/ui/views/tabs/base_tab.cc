@@ -480,6 +480,18 @@ void BaseTab::ShowContextMenuForView(views::View* source,
     controller()->ShowContextMenuForTab(this, p);
 }
 
+int BaseTab::loading_animation_frame() const {
+  return loading_animation_frame_;
+}
+
+bool BaseTab::should_display_crashed_favicon() const {
+  return should_display_crashed_favicon_;
+}
+
+int BaseTab::fav_icon_hiding_offset() const {
+  return fav_icon_hiding_offset_;
+}
+
 void BaseTab::SetFavIconHidingOffset(int offset) {
   fav_icon_hiding_offset_ = offset;
   ScheduleIconPaint();

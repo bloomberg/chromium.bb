@@ -227,6 +227,10 @@ bool ContentSettingImageView::CloseOnEscape() {
   return true;
 }
 
+bool ContentSettingImageView::FadeInOnShow() {
+  return false;
+}
+
 void ContentSettingImageView::AnimateToState(double state) {
   if (state >= 1.0) {
     // Animaton is over, clear the variables.

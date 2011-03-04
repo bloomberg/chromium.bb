@@ -12,12 +12,62 @@ namespace views {
 
 // Overridden from WindowDelegate:
 
+DialogDelegate* DialogDelegate::AsDialogDelegate() { return this; }
+
+int DialogDelegate::GetDialogButtons() const {
+  return ui::MessageBoxFlags::DIALOGBUTTON_OK |
+      ui::MessageBoxFlags::DIALOGBUTTON_CANCEL;
+}
+
+bool DialogDelegate::AreAcceleratorsEnabled(
+    ui::MessageBoxFlags::DialogButton button) {
+  return true;
+}
+
+std::wstring DialogDelegate::GetDialogButtonLabel(
+    ui::MessageBoxFlags::DialogButton button) const {
+  // empty string results in defaults for
+  // ui::MessageBoxFlags::DIALOGBUTTON_OK,
+  // ui::MessageBoxFlags::DIALOGBUTTON_CANCEL.
+  return L"";
+}
+
+View* DialogDelegate::GetExtraView() {
+  return NULL;
+}
+
+bool DialogDelegate::GetSizeExtraViewHeightToButtons() {
+  return false;
+}
+
 int DialogDelegate::GetDefaultDialogButton() const {
   if (GetDialogButtons() & MessageBoxFlags::DIALOGBUTTON_OK)
     return MessageBoxFlags::DIALOGBUTTON_OK;
   if (GetDialogButtons() & MessageBoxFlags::DIALOGBUTTON_CANCEL)
     return MessageBoxFlags::DIALOGBUTTON_CANCEL;
   return MessageBoxFlags::DIALOGBUTTON_NONE;
+}
+
+bool DialogDelegate::IsDialogButtonEnabled(
+    ui::MessageBoxFlags::DialogButton button) const {
+  return true;
+}
+
+bool DialogDelegate::IsDialogButtonVisible(
+    ui::MessageBoxFlags::DialogButton button) const {
+  return true;
+}
+
+bool DialogDelegate::Cancel() {
+  return true;
+}
+
+bool DialogDelegate::Accept(bool window_closiang) {
+  return Accept();
+}
+
+bool DialogDelegate::Accept() {
+  return true;
 }
 
 View* DialogDelegate::GetInitiallyFocusedView() {
@@ -49,6 +99,10 @@ DialogClientView* DialogDelegate::GetDialogClientView() const {
   DialogClientView* dialog_client_view = client_view->AsDialogClientView();
   DCHECK(dialog_client_view);
   return dialog_client_view;
+}
+
+AccessibilityTypes::Role DialogDelegate::accessible_role() const {
+  return AccessibilityTypes::ROLE_DIALOG;
 }
 
 }  // namespace views

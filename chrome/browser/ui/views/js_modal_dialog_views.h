@@ -42,7 +42,7 @@ class JSModalDialogViews : public NativeAppModalDialog,
       ui::MessageBoxFlags::DialogButton button) const;
 
   // Overridden from views::WindowDelegate:
-  virtual bool IsModal() const { return true; }
+  virtual bool IsModal() const;
   virtual views::View* GetContentsView();
   virtual views::View* GetInitiallyFocusedView();
   virtual void OnClose();

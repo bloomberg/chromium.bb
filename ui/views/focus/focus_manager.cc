@@ -101,6 +101,10 @@ FocusManager::WidgetFocusManager::GetInstance() {
   return Singleton<WidgetFocusManager>::get();
 }
 
+FocusManager::WidgetFocusManager::WidgetFocusManager() : enabled_(true) {}
+
+FocusManager::WidgetFocusManager::~WidgetFocusManager() {}
+
 ////////////////////////////////////////////////////////////////////////////////
 // FocusManager, public:
 

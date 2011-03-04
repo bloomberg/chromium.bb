@@ -44,9 +44,9 @@ class PageInfoBubbleView : public views::View,
   // InfoBubbleDelegate methods:
   virtual void InfoBubbleClosing(InfoBubble* info_bubble,
                                  bool closed_by_escape) {}
-  virtual bool CloseOnEscape() { return true; }
-  virtual bool FadeInOnShow() { return false; }
-  virtual std::wstring accessible_name() { return L"PageInfoBubble"; }
+  virtual bool CloseOnEscape();
+  virtual bool FadeInOnShow();
+  virtual std::wstring accessible_name();
 
   // LinkController methods:
   virtual void LinkActivated(views::Link* source, int event_flags);

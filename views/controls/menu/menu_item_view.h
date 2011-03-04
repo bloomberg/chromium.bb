@@ -199,10 +199,10 @@ class MenuItemView : public View {
   virtual SubmenuView* CreateSubmenu();
 
   // Returns true if this menu item has a submenu.
-  virtual bool HasSubmenu() const { return (submenu_ != NULL); }
+  virtual bool HasSubmenu() const;
 
   // Returns the view containing child menu items.
-  virtual SubmenuView* GetSubmenu() const { return submenu_; }
+  virtual SubmenuView* GetSubmenu() const;
 
   // Returns the parent menu item.
   MenuItemView* GetParentMenuItem() const { return parent_menu_item_; }

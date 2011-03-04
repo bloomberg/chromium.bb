@@ -207,6 +207,18 @@ void PageInfoBubbleView::ModelChanged() {
   resize_animation_.Show();
 }
 
+bool PageInfoBubbleView::CloseOnEscape() {
+  return true;
+}
+
+bool PageInfoBubbleView::FadeInOnShow() {
+  return false;
+}
+
+std::wstring PageInfoBubbleView::accessible_name() {
+  return L"PageInfoBubble";
+}
+
 void PageInfoBubbleView::LinkActivated(views::Link* source, int event_flags) {
   // We want to make sure the info bubble closes once the link is activated.  So
   // we close it explicitly rather than relying on a side-effect of opening a

@@ -63,6 +63,10 @@ void FocusManager::WidgetFocusManager::OnWidgetFocusEvent(
   }
 }
 
+FocusManager::WidgetFocusManager::WidgetFocusManager() : enabled_(true) {}
+
+FocusManager::WidgetFocusManager::~WidgetFocusManager() {}
+
 // static
 FocusManager::WidgetFocusManager*
 FocusManager::WidgetFocusManager::GetInstance() {

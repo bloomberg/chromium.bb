@@ -64,9 +64,9 @@ class ClearBrowsingDataView : public views::View,
   virtual std::wstring GetWindowTitle() const;
   virtual bool Accept();
   virtual views::View* GetContentsView();
-  views::ClientView* CreateClientView(views::Window* window);
-  virtual views::View* GetExtraView() { return throbber_view_; }
-  virtual bool GetSizeExtraViewHeightToButtons() { return true; }
+  virtual views::ClientView* CreateClientView(views::Window* window);
+  virtual views::View* GetExtraView();
+  virtual bool GetSizeExtraViewHeightToButtons();
   virtual views::View* GetInitiallyFocusedView();
 
   // Overridden from ui::ComboboxModel:

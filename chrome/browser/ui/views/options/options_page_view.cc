@@ -21,6 +21,10 @@ OptionsPageView::~OptionsPageView() {
 ///////////////////////////////////////////////////////////////////////////////
 // OptionsPageView, views::View overrides:
 
+bool OptionsPageView::CanClose() const {
+  return true;
+}
+
 void OptionsPageView::ViewHierarchyChanged(bool is_add,
                                            views::View* parent,
                                            views::View* child) {

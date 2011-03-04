@@ -54,7 +54,7 @@ class ExtensionInstalledBubble
   ExtensionInstalledBubble(const Extension* extension, Browser *browser,
                            SkBitmap icon);
 
-  ~ExtensionInstalledBubble() {}
+  virtual ~ExtensionInstalledBubble();
 
   // Shows the bubble. Called internally via PostTask.
   void ShowInternal();
@@ -67,8 +67,8 @@ class ExtensionInstalledBubble
   // InfoBubbleDelegate
   virtual void InfoBubbleClosing(InfoBubble* info_bubble,
                                  bool closed_by_escape);
-  virtual bool CloseOnEscape() { return true; }
-  virtual bool FadeInOnShow() { return true; }
+  virtual bool CloseOnEscape();
+  virtual bool FadeInOnShow();
 
   const Extension* extension_;
   Browser* browser_;

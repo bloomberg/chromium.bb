@@ -1149,6 +1149,22 @@ void LocationBarView::Revert() {
   location_entry_->RevertAll();
 }
 
+const AutocompleteEditView* LocationBarView::location_entry() const {
+  return location_entry_.get();
+}
+
+AutocompleteEditView* LocationBarView::location_entry() {
+  return location_entry_.get();
+}
+
+LocationBarTesting* LocationBarView::GetLocationBarForTesting() {
+  return this;
+}
+
+int LocationBarView::PageActionCount() {
+  return page_action_views_.size();
+}
+
 int LocationBarView::PageActionVisibleCount() {
   int result = 0;
   for (size_t i = 0; i < page_action_views_.size(); i++) {

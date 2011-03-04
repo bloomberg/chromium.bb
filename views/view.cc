@@ -48,6 +48,15 @@ char View::kViewClassName[] = "views/View";
 void View::SetHotTracked(bool flag) {
 }
 
+bool View::IsHotTracked() const {
+  return false;
+}
+
+// FATE TBD --------------------------------------------------------------------
+
+Widget* View::child_widget() {
+  return NULL;
+}
 
 // Creation and lifetime -------------------------------------------------------
 
@@ -340,6 +349,10 @@ void View::SetVisible(bool flag) {
   }
 }
 
+bool View::IsVisible() const {
+  return is_visible_;
+}
+
 bool View::IsVisibleInRootView() const {
   return IsVisible() && parent() ? parent()->IsVisibleInRootView() : false;
 }
@@ -542,6 +555,10 @@ void View::SetGroup(int gid) {
 
 int View::GetGroup() const {
   return group_;
+}
+
+bool View::IsGroupFocusTraversable() const {
+  return true;
 }
 
 void View::GetViewsWithGroup(int group_id, std::vector<View*>* out) {
@@ -861,6 +878,10 @@ void View::ResetAccelerators() {
     UnregisterAccelerators(false);
 }
 
+bool View::AcceleratorPressed(const Accelerator& accelerator) {
+  return false;
+}
+
 // Focus -----------------------------------------------------------------------
 
 bool View::HasFocus() {
@@ -900,6 +921,10 @@ bool View::IsAccessibilityFocusableInRootView() const {
     IsVisibleInRootView();
 }
 
+void View::set_accessibility_focusable(bool accessibility_focusable) {
+  accessibility_focusable_ = accessibility_focusable;
+}
+
 FocusManager* View::GetFocusManager() {
   Widget* widget = GetWidget();
   return widget ? widget->GetFocusManager() : NULL;
@@ -909,6 +934,18 @@ void View::RequestFocus() {
   FocusManager* focus_manager = GetFocusManager();
   if (focus_manager && IsFocusableInRootView())
     focus_manager->SetFocusedView(this);
+}
+
+bool View::SkipDefaultKeyEventProcessing(const KeyEvent& e) {
+  return false;
+}
+
+FocusTraversable* View::GetFocusTraversable() {
+  return NULL;
+}
+
+FocusTraversable* View::GetPaneFocusTraversable() {
+  return NULL;
 }
 
 // Tooltips --------------------------------------------------------------------
@@ -988,6 +1025,14 @@ void View::NotifyAccessibilityEvent(AccessibilityTypes::Event event_type) {
   NotifyAccessibilityEvent(event_type, true);
 }
 
+string16 View::GetAccessibleDefaultAction() {
+  return string16();
+}
+
+string16 View::GetAccessibleKeyboardShortcut() {
+  return string16();
+}
+
 bool View::GetAccessibleName(string16* name) {
   DCHECK(name);
 
@@ -999,6 +1044,14 @@ bool View::GetAccessibleName(string16* name) {
 
 AccessibilityTypes::Role View::GetAccessibleRole() {
   return AccessibilityTypes::ROLE_CLIENT;
+}
+
+AccessibilityTypes::State View::GetAccessibleState() {
+  return 0;
+}
+
+string16 View::GetAccessibleValue() {
+  return string16();
 }
 
 void View::SetAccessibleName(const string16& name) {

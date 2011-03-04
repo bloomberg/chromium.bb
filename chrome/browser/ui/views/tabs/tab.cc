@@ -310,6 +310,10 @@ void Tab::OnThemeChanged() {
   LoadTabImages();
 }
 
+std::string Tab::GetClassName() const {
+  return kViewClassName;
+}
+
 bool Tab::HasHitTestMask() const {
   return true;
 }

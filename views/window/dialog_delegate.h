@@ -29,7 +29,7 @@ class View;
 ///////////////////////////////////////////////////////////////////////////////
 class DialogDelegate : public WindowDelegate {
  public:
-  virtual DialogDelegate* AsDialogDelegate() { return this; }
+  virtual DialogDelegate* AsDialogDelegate();
 
   // Returns a mask specifying which of the available DialogButtons are visible
   // for the dialog. Note: If an OK button is provided, you should provide a
@@ -38,38 +38,28 @@ class DialogDelegate : public WindowDelegate {
   // you should reconsider, or beng says there will be stabbings.
   //
   // To use the extra button you need to override GetDialogButtons()
-  virtual int GetDialogButtons() const {
-    return ui::MessageBoxFlags::DIALOGBUTTON_OK |
-        ui::MessageBoxFlags::DIALOGBUTTON_CANCEL;
-  }
+  virtual int GetDialogButtons() const;
 
   // Returns whether accelerators are enabled on the button. This is invoked
   // when an accelerator is pressed, not at construction time. This
   // returns true.
   virtual bool AreAcceleratorsEnabled(
-      ui::MessageBoxFlags::DialogButton button) {
-    return true;
-  }
+      ui::MessageBoxFlags::DialogButton button);
 
   // Returns the label of the specified DialogButton.
   virtual std::wstring GetDialogButtonLabel(
-      ui::MessageBoxFlags::DialogButton button) const {
-    // empty string results in defaults for
-    // ui::MessageBoxFlags::DIALOGBUTTON_OK,
-    // ui::MessageBoxFlags::DIALOGBUTTON_CANCEL.
-    return L"";
-  }
+      ui::MessageBoxFlags::DialogButton button) const;
 
   // Override this function if with a view which will be shown in the same
   // row as the OK and CANCEL buttons but flush to the left and extending
   // up to the buttons.
-  virtual View* GetExtraView() { return NULL; }
+  virtual View* GetExtraView();
 
   // Returns whether the height of the extra view should be at least as tall as
   // the buttons. The default (false) is to give the extra view it's preferred
   // height. By returning true the height becomes
   // max(extra_view preferred height, buttons preferred height).
-  virtual bool GetSizeExtraViewHeightToButtons() { return false; }
+  virtual bool GetSizeExtraViewHeightToButtons();
 
   // Returns the default dialog button. This should not be a mask as only
   // one button should ever be the default button.  Return
@@ -81,22 +71,18 @@ class DialogDelegate : public WindowDelegate {
 
   // Returns whether the specified dialog button is enabled.
   virtual bool IsDialogButtonEnabled(
-      ui::MessageBoxFlags::DialogButton button) const {
-    return true;
-  }
+      ui::MessageBoxFlags::DialogButton button) const;
 
   // Returns whether the specified dialog button is visible.
   virtual bool IsDialogButtonVisible(
-      ui::MessageBoxFlags::DialogButton button) const {
-    return true;
-  }
+      ui::MessageBoxFlags::DialogButton button) const;
 
   // For Dialog boxes, if there is a "Cancel" button, this is called when the
   // user presses the "Cancel" button or the Close button on the window or
   // in the system menu, or presses the Esc key. This function should return
   // true if the window can be closed after it returns, or false if it must
   // remain open.
-  virtual bool Cancel() { return true; }
+  virtual bool Cancel();
 
   // For Dialog boxes, this is called when the user presses the "OK" button,
   // or the Enter key.  Can also be called on Esc key or close button
@@ -106,8 +92,8 @@ class DialogDelegate : public WindowDelegate {
   // true, it means that this handler is being called because the window is
   // being closed (e.g.  by Window::Close) and there is no Cancel handler,
   // so Accept is being called instead.
-  virtual bool Accept(bool window_closing) { return Accept(); }
-  virtual bool Accept() { return true; }
+  virtual bool Accept(bool window_closing);
+  virtual bool Accept();
 
   // Overridden from WindowDelegate:
   virtual View* GetInitiallyFocusedView();
@@ -124,9 +110,7 @@ class DialogDelegate : public WindowDelegate {
 
  private:
   // Overridden from WindowDelegate:
-  AccessibilityTypes::Role accessible_role() const {
-    return AccessibilityTypes::ROLE_DIALOG;
-  }
+  virtual AccessibilityTypes::Role accessible_role() const;
 };
 
 }  // namespace views

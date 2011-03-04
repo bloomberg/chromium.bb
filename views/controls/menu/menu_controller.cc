@@ -243,6 +243,12 @@ struct MenuController::SelectByCharDetails {
   int next_match;
 };
 
+// MenuController:State ------------------------------------------------------
+
+MenuController::State::State() : item(NULL), submenu_open(false) {}
+
+MenuController::State::~State() {}
+
 // MenuController ------------------------------------------------------------
 
 // static

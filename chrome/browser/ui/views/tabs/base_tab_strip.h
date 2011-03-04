@@ -173,7 +173,7 @@ class BaseTabStrip : public views::View,
   virtual void StartMiniTabAnimation();
 
   // Returns whether the highlight button should be highlighted after a remove.
-  virtual bool ShouldHighlightCloseButtonAfterRemove() { return true; }
+  virtual bool ShouldHighlightCloseButtonAfterRemove();
 
   // Animates all the views to their ideal bounds.
   // NOTE: this does *not* invoke GenerateIdealBounds, it uses the bounds

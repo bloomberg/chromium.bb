@@ -46,6 +46,8 @@ MessageBoxView::MessageBoxView(int dialog_flags,
   Init(dialog_flags, default_prompt);
 }
 
+MessageBoxView::~MessageBoxView() {}
+
 std::wstring MessageBoxView::GetInputText() {
   if (prompt_field_)
     return UTF16ToWideHack(prompt_field_->text());

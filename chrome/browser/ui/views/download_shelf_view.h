@@ -70,7 +70,7 @@ class DownloadShelfView : public AccessiblePaneView,
   virtual bool IsClosing() const;
   virtual void Show();
   virtual void Close();
-  virtual Browser* browser() const { return browser_; }
+  virtual Browser* browser() const;
 
   // Implementation of MouseWatcherDelegate.
   virtual void MouseMovedOutOfView();
@@ -96,7 +96,7 @@ class DownloadShelfView : public AccessiblePaneView,
   void AddDownloadView(DownloadItemView* view);
 
   // Paints the border.
-  void OnPaintBorder(gfx::Canvas* canvas);
+  virtual void OnPaintBorder(gfx::Canvas* canvas);
 
   // Returns true if the shelf is wide enough to show the first download item.
   bool CanFitFirstDownloadItem();

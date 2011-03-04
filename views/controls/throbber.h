@@ -63,6 +63,7 @@ class SmoothedThrobber : public Throbber {
  public:
   SmoothedThrobber(int frame_delay_ms);
   SmoothedThrobber(int frame_delay_ms, SkBitmap* frames);
+  virtual ~SmoothedThrobber();
 
   virtual void Start();
   virtual void Stop();

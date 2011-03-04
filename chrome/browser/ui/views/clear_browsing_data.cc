@@ -358,6 +358,14 @@ views::ClientView* ClearBrowsingDataView::CreateClientView(
   return client_view;
 }
 
+views::View* ClearBrowsingDataView::GetExtraView() {
+  return throbber_view_;
+}
+
+bool ClearBrowsingDataView::GetSizeExtraViewHeightToButtons() {
+  return true;
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // ClearBrowsingDataView, ComboboxModel implementation:
 

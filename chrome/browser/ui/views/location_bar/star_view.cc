@@ -73,3 +73,7 @@ void StarView::InfoBubbleClosing(InfoBubble* info_bubble,
 bool StarView::CloseOnEscape() {
   return true;
 }
+
+bool StarView::FadeInOnShow() {
+  return false;
+}

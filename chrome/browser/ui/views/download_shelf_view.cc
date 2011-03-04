@@ -385,6 +385,10 @@ void DownloadShelfView::Close() {
   shelf_animation_->Hide();
 }
 
+Browser* DownloadShelfView::browser() const {
+  return browser_;
+}
+
 void DownloadShelfView::Closed() {
   // When the close animation is complete, remove all completed downloads.
   size_t i = 0;

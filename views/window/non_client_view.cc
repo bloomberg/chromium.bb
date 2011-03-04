@@ -181,6 +181,14 @@ AccessibilityTypes::Role NonClientView::GetAccessibleRole() {
 ////////////////////////////////////////////////////////////////////////////////
 // NonClientFrameView, View overrides:
 
+bool NonClientFrameView::AlwaysUseCustomFrame() const {
+  return false;
+}
+
+bool NonClientFrameView::AlwaysUseNativeFrame() const {
+  return false;
+}
+
 bool NonClientFrameView::HitTest(const gfx::Point& l) const {
   // For the default case, we assume the non-client frame view never overlaps
   // the client view.

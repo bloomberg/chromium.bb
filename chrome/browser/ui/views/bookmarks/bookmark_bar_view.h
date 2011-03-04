@@ -114,9 +114,7 @@ class BookmarkBarView : public DetachableToolbarView,
   virtual bool IsDetached() const;
   virtual bool IsOnTop() const;
   virtual double GetAnimationValue() const;
-  virtual int GetToolbarOverlap() const {
-    return GetToolbarOverlap(false);
-  }
+  virtual int GetToolbarOverlap() const;
 
   // View methods:
   virtual gfx::Size GetPreferredSize();
@@ -182,8 +180,8 @@ class BookmarkBarView : public DetachableToolbarView,
   bool is_animating();
 
   // SlideAnimationDelegate implementation.
-  void AnimationProgressed(const ui::Animation* animation);
-  void AnimationEnded(const ui::Animation* animation);
+  virtual void AnimationProgressed(const ui::Animation* animation);
+  virtual void AnimationEnded(const ui::Animation* animation);
 
   // BookmarkMenuController::Observer
   virtual void BookmarkMenuDeleted(BookmarkMenuController* controller);

@@ -269,6 +269,14 @@ void WindowGtk::FrameTypeChanged() {
   ThemeChanged();
 }
 
+Window* WindowGtk::AsWindow() {
+  return this;
+}
+
+const Window* WindowGtk::AsWindow() const {
+  return this;
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // WindowGtk, WidgetGtk overrides:
 

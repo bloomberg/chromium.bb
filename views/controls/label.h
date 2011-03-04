@@ -69,7 +69,7 @@ class Label : public View {
   virtual void OnBoundsChanged();
 
   // Returns views/Label.
-  virtual std::string GetClassName() const { return kViewClassName; }
+  virtual std::string GetClassName() const;
 
   // Overridden to paint
   virtual void OnPaint(gfx::Canvas* canvas);
@@ -97,10 +97,10 @@ class Label : public View {
   const GURL GetURL() const;
 
   // Set the color
-  virtual void SetColor(const SkColor& color) { color_ = color; }
+  virtual void SetColor(const SkColor& color);
 
   // Return a reference to the currently used color.
-  virtual SkColor GetColor() const { return color_; }
+  virtual SkColor GetColor() const;
 
   // Set horizontal alignment. If the locale is RTL, and the RTL alignment
   // setting is set as USE_UI_ALIGNMENT, the alignment is flipped around.

@@ -52,7 +52,7 @@ class ContentSettingImageView : public views::ImageView,
   virtual void InfoBubbleClosing(InfoBubble* info_bubble,
                                  bool closed_by_escape);
   virtual bool CloseOnEscape();
-  virtual bool FadeInOnShow() { return false; }
+  virtual bool FadeInOnShow();
 
   // ui::LinearAnimation override:
   virtual void AnimateToState(double state);

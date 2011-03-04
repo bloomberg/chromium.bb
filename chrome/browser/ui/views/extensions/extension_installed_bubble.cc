@@ -270,6 +270,8 @@ ExtensionInstalledBubble::ExtensionInstalledBubble(const Extension* extension,
       Source<Profile>(browser->profile()));
 }
 
+ExtensionInstalledBubble::~ExtensionInstalledBubble() {}
+
 void ExtensionInstalledBubble::Observe(NotificationType type,
                                        const NotificationSource& source,
                                        const NotificationDetails& details) {
@@ -369,4 +371,12 @@ void ExtensionInstalledBubble::InfoBubbleClosing(InfoBubble* info_bubble,
   }
 
   Release();  // Balanced in ctor.
+}
+
+bool ExtensionInstalledBubble::CloseOnEscape() {
+  return true;
+}
+
+bool ExtensionInstalledBubble::FadeInOnShow() {
+  return true;
 }

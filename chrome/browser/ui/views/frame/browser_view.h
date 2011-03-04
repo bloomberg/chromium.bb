@@ -171,7 +171,7 @@ class BrowserView : public BrowserBubbleHost,
   bool ShouldShowOffTheRecordAvatar() const;
 
   // Handle the specified |accelerator| being pressed.
-  bool AcceleratorPressed(const views::Accelerator& accelerator);
+  virtual bool AcceleratorPressed(const views::Accelerator& accelerator);
 
   // Provides the containing frame with the accelerator for the specified
   // command id. This can be used to provide menu item shortcut hints etc.
@@ -228,7 +228,7 @@ class BrowserView : public BrowserBubbleHost,
   bool IsPositionInWindowCaption(const gfx::Point& point);
 
   // Returns whether the fullscreen bubble is visible or not.
-  bool IsFullscreenBubbleVisible() const;
+  virtual bool IsFullscreenBubbleVisible() const;
 
   // Invoked from the frame when the full screen state changes. This is only
   // used on Linux.
