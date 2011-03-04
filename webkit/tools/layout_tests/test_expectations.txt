@@ -27,10 +27,5 @@ BUG_ANTONM MAC : http/tests/security/xss-DENIED-xsl-external-entity.xml = TEXT
 
 BUG_TONYG MAC : svg/text/font-size-below-point-five.svg = TEXT
 
-// Until new baselines land in WebKit.
-BUG_MMALY : fast/js/mozilla/strict/15.10.7.html = PASS TEXT
-BUG_MMALY : fast/js/mozilla/strict/15.3.5.1.html = PASS TEXT
-BUG_MMALY : fast/js/mozilla/strict/15.5.5.1.html = PASS TEXT
-
 // Temporarily get rid of redness
 BUG_PKASTING WIN : http/tests/navigation/useragent.php = TEXT
