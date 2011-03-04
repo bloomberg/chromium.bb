@@ -37,6 +37,8 @@ TEST_F(ChildProcessSecurityPolicyTest, IsWebSafeSchemeTest) {
   EXPECT_TRUE(p->IsWebSafeScheme(chrome::kDataScheme));
   EXPECT_TRUE(p->IsWebSafeScheme("feed"));
   EXPECT_TRUE(p->IsWebSafeScheme(chrome::kExtensionScheme));
+  EXPECT_TRUE(p->IsWebSafeScheme(chrome::kBlobScheme));
+  EXPECT_TRUE(p->IsWebSafeScheme(chrome::kFileSystemScheme));
 
   EXPECT_FALSE(p->IsWebSafeScheme("registered-web-safe-scheme"));
   p->RegisterWebSafeScheme("registered-web-safe-scheme");
@@ -68,6 +70,8 @@ TEST_F(ChildProcessSecurityPolicyTest, StandardSchemesTest) {
   EXPECT_TRUE(p->CanRequestURL(kRendererID,
                                GURL("view-source:http://www.google.com/")));
   EXPECT_TRUE(p->CanRequestURL(kRendererID, GURL("chrome-extension://xy/z")));
+  EXPECT_TRUE(p->CanRequestURL(
+      kRendererID, GURL("filesystem:http://localhost/temporary/a.gif")));
 
   // Dangerous
   EXPECT_FALSE(p->CanRequestURL(kRendererID,
