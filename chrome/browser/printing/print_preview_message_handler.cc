@@ -39,31 +39,8 @@ TabContents* PrintPreviewMessageHandler::GetPrintPreviewTab() {
 
 void PrintPreviewMessageHandler::OnPagesReadyForPreview(
     const ViewHostMsg_DidPreviewDocument_Params& params) {
-#if defined(OS_POSIX)
-  base::SharedMemory* shared_buf =
-      new base::SharedMemory(params.metafile_data_handle, true);
-  if (!shared_buf->Map(params.data_size)) {
-    NOTREACHED();
-    return;
-  }
-#endif
-
-  // Get the print preview tab.
-  TabContents* print_preview_tab = GetPrintPreviewTab();
-  DCHECK(print_preview_tab);
-
-#if defined(OS_POSIX)
-  PrintPreviewUI* print_preview_ui =
-      static_cast<PrintPreviewUI*>(print_preview_tab->web_ui());
-  PrintPreviewUIHTMLSource* html_source = print_preview_ui->html_source();
-  CHECK(html_source);
-  html_source->SetPrintPreviewData(
-      std::make_pair(shared_buf, params.data_size));
-  print_preview_ui->PreviewDataIsAvailable(params.expected_pages_count);
-#endif
-
+  // Always need to stop the worker and send ViewMsg_PrintingDone.
   PrintJobManager* print_job_manager = g_browser_process->print_job_manager();
-  CHECK(print_job_manager);
   scoped_refptr<printing::PrinterQuery> printer_query;
   print_job_manager->PopPrinterQuery(params.document_cookie, &printer_query);
   if (printer_query.get()) {
@@ -77,6 +54,28 @@ void PrintPreviewMessageHandler::OnPagesReadyForPreview(
   rvh->Send(new ViewMsg_PrintingDone(rvh->routing_id(),
                                      params.document_cookie,
                                      true));
+
+  // Get the print preview tab.
+  TabContents* print_preview_tab = GetPrintPreviewTab();
+  // User might have closed it already.
+  if (!print_preview_tab)
+    return;
+
+#if defined(OS_POSIX)
+  base::SharedMemory* shared_buf =
+      new base::SharedMemory(params.metafile_data_handle, true);
+  if (!shared_buf->Map(params.data_size)) {
+    NOTREACHED();
+    return;
+  }
+
+  PrintPreviewUI* print_preview_ui =
+      static_cast<PrintPreviewUI*>(print_preview_tab->web_ui());
+  PrintPreviewUIHTMLSource* html_source = print_preview_ui->html_source();
+  html_source->SetPrintPreviewData(
+      std::make_pair(shared_buf, params.data_size));
+  print_preview_ui->PreviewDataIsAvailable(params.expected_pages_count);
+#endif  // defined(OS_POSIX)
 }
 
 bool PrintPreviewMessageHandler::OnMessageReceived(
