@@ -8,7 +8,7 @@ vars = {
   "chromium_git": "http://git.chromium.org/git",
   "swig_revision": "69281",
   "nacl_revision": "4382",
-  "libjingle_revision": "50",
+  "libjingle_revision": "54",
   "libvpx_revision": "76510",
   "ffmpeg_revision": "76547",
   "skia_revision": "876",
@@ -180,7 +180,7 @@ deps = {
     Var("ffmpeg_revision"),
 
   "src/third_party/libjingle/source":
-    (Var("googlecode_url") % "libjingle") + "/trunk@" +
+    (Var("googlecode_url") % "libjingle") + "/branches/chrome-sandbox@" +
     Var("libjingle_revision"),
 
   "src/third_party/speex":

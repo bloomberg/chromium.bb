@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -49,5 +49,15 @@ template<class T> inline T _max(T a, T b) { return (a < b) ? b : a; }
 // unlimited time.
 const int kForever = -1;
 }
+
+#ifdef WIN32
+#define alignof(t) __alignof(t)
+#else  // !WIN32
+#define alignof(t) __alignof__(t)
+#endif  // !WIN32
+#define IS_ALIGNED(p, a) (0==(reinterpret_cast<uintptr_t>(p) & ((a)-1)))
+#define ALIGNP(p, t) \
+  (reinterpret_cast<uint8*>(((reinterpret_cast<uintptr_t>(p) + \
+  ((t)-1)) & ~((t)-1))))
 
 #endif // OVERRIDES_TALK_BASE_BASICTYPES_H__

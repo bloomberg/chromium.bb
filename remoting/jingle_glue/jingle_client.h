@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -17,6 +17,7 @@ class Task;
 
 namespace talk_base {
 class NetworkManager;
+class PacketSocketFactory;
 }  // namespace talk_base
 
 namespace buzz {
@@ -103,7 +104,6 @@ class XmppSignalStrategy : public SignalStrategy, public sigslot::has_slots<> {
   std::string auth_token_service_;
   buzz::XmppClient* xmpp_client_;
   StatusObserver* observer_;
-  scoped_ptr<talk_base::NetworkManager> network_manager_;
 
   cricket::HttpPortAllocator* port_allocator_;
   scoped_ptr<Task> allocator_config_cb_;
@@ -210,6 +210,7 @@ class JingleClient : public base::RefCountedThreadSafe<JingleClient>,
 
   SignalStrategy* signal_strategy_;
   scoped_ptr<talk_base::NetworkManager> network_manager_;
+  scoped_ptr<talk_base::PacketSocketFactory> socket_factory_;
   scoped_ptr<cricket::HttpPortAllocator> port_allocator_;
   scoped_ptr<cricket::SessionManager> session_manager_;
 

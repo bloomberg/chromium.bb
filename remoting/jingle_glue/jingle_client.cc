@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -12,6 +12,7 @@
 #include "remoting/jingle_glue/jingle_thread.h"
 #include "remoting/jingle_glue/xmpp_socket_adapter.h"
 #include "third_party/libjingle/source/talk/base/asyncsocket.h"
+#include "third_party/libjingle/source/talk/base/basicpacketsocketfactory.h"
 #include "third_party/libjingle/source/talk/base/ssladapter.h"
 #include "third_party/libjingle/source/talk/p2p/base/sessionmanager.h"
 #include "third_party/libjingle/source/talk/p2p/base/transport.h"
@@ -211,8 +212,14 @@ void JingleClient::DoInitialize() {
   DCHECK_EQ(message_loop(), MessageLoop::current());
 
   network_manager_.reset(new talk_base::NetworkManager());
+  // TODO(sergeyu): Use IpcPacketSocketFactory here when it is
+  // implemented.
+  socket_factory_.reset(new talk_base::BasicPacketSocketFactory(
+      talk_base::Thread::Current()));
+
   port_allocator_.reset(
-      new cricket::HttpPortAllocator(network_manager_.get(), "transp2"));
+      new cricket::HttpPortAllocator(network_manager_.get(),
+                                     socket_factory_.get(), "transp2"));
   // TODO(ajwong): The strategy needs a "start" command or something.  Right
   // now, Init() implicitly starts processing events.  Thus, we must have the
   // other fields of JingleClient initialized first, otherwise the state-change

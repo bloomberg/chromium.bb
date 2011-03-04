@@ -15,6 +15,7 @@
 
 namespace talk_base {
 class NetworkManager;
+class PacketSocketFactory;
 }  // namespace talk_base
 
 namespace cricket {
@@ -58,6 +59,7 @@ class PPB_Transport_Impl : public Resource, public sigslot::has_slots<> {
   bool Deserialize(PP_Var address, cricket::Candidate* candidate);
 
   scoped_ptr<talk_base::NetworkManager> network_manager_;
+  scoped_ptr<talk_base::PacketSocketFactory> socket_factory_;
   scoped_ptr<cricket::HttpPortAllocator> allocator_;
   scoped_ptr<cricket::P2PTransportChannel> channel_;
   std::list<cricket::Candidate> local_candidates_;

@@ -7,6 +7,7 @@
 #include "ppapi/c/dev/ppb_transport_dev.h"
 #include "ppapi/c/pp_completion_callback.h"
 #include "ppapi/c/pp_errors.h"
+#include "third_party/libjingle/source/talk/base/basicpacketsocketfactory.h"
 #include "third_party/libjingle/source/talk/p2p/base/p2ptransportchannel.h"
 #include "third_party/libjingle/source/talk/p2p/client/httpportallocator.h"
 #include "webkit/plugins/ppapi/common.h"
@@ -99,7 +100,13 @@ const PPB_Transport_Dev ppb_transport = {
 PPB_Transport_Impl::PPB_Transport_Impl(PluginInstance* instance)
     : Resource(instance),
       network_manager_(new talk_base::NetworkManager()),
-      allocator_(new cricket::HttpPortAllocator(network_manager_.get(), "")) {
+      // TODO(sergeyu): Use IpcPacketSocketFactory here when it is
+      // implemented, and when we have talk_base::Thread wrapper for
+      // Chromium threads.
+      socket_factory_(new talk_base::BasicPacketSocketFactory(
+          talk_base::Thread::Current())),
+      allocator_(new cricket::HttpPortAllocator(
+          network_manager_.get(), socket_factory_.get(), "")) {
   std::vector<talk_base::SocketAddress> stun_hosts;
   stun_hosts.push_back(talk_base::SocketAddress("stun.l.google.com", 19302));
   allocator_->SetStunHosts(stun_hosts);

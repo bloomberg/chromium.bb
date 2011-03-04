@@ -7,6 +7,7 @@
 #include "base/logging.h"
 #include "remoting/jingle_glue/jingle_thread.h"
 #include "third_party/libjingle/source/talk/base/network.h"
+#include "third_party/libjingle/source/talk/base/basicpacketsocketfactory.h"
 #include "third_party/libjingle/source/talk/p2p/base/sessionmanager.h"
 #include "third_party/libjingle/source/talk/p2p/client/basicportallocator.h"
 #include "third_party/libjingle/source/talk/xmllite/xmlelement.h"
@@ -26,9 +27,12 @@ void SessionManagerPair::Init() {
   DCHECK_EQ(message_loop_, MessageLoop::current());
 
   network_manager_.reset(new talk_base::NetworkManager());
+  socket_factory_.reset(new talk_base::BasicPacketSocketFactory(
+      talk_base::Thread::Current()));
 
   cricket::BasicPortAllocator* port_allocator =
-      new cricket::BasicPortAllocator(network_manager_.get());
+      new cricket::BasicPortAllocator(network_manager_.get(),
+                                      socket_factory_.get());
   port_allocator_.reset(port_allocator);
 
   host_session_manager_.reset(new cricket::SessionManager(port_allocator));

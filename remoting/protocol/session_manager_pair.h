@@ -28,6 +28,7 @@ class SessionManager;
 
 namespace talk_base {
 class NetworkManager;
+class PacketSocketFactory;
 }  // namespace talk_base
 
 namespace remoting {
@@ -61,6 +62,7 @@ class SessionManagerPair
 
   MessageLoop* message_loop_;
   scoped_ptr<talk_base::NetworkManager> network_manager_;
+  scoped_ptr<talk_base::PacketSocketFactory> socket_factory_;
   scoped_ptr<cricket::BasicPortAllocator> port_allocator_;
   scoped_ptr<cricket::SessionManager> host_session_manager_;
   scoped_ptr<cricket::SessionManager> client_session_manager_;
