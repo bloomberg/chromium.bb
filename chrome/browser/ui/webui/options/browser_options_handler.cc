@@ -57,7 +57,7 @@ void BrowserOptionsHandler::GetLocalizedValues(
     { "startupShowPages", IDS_OPTIONS_STARTUP_SHOW_PAGES },
     { "startupAddButton", IDS_OPTIONS_STARTUP_ADD_BUTTON },
     { "startupUseCurrent", IDS_OPTIONS_STARTUP_USE_CURRENT },
-    { "homepageGroupName", IDS_OPTIONS_HOMEPAGE_GROUP_NAME },
+    { "homepageGroupName", IDS_OPTIONS_HOMEPAGE_GROUP_NAME, true },
     { "homepageUseNewTab", IDS_OPTIONS_HOMEPAGE_USE_NEWTAB },
     { "homepageUseURL", IDS_OPTIONS_HOMEPAGE_USE_URL },
     { "toolbarGroupName", IDS_OPTIONS_TOOLBAR_GROUP_NAME, true },
