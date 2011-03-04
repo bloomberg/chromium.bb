@@ -662,6 +662,8 @@ class OffTheRecordProfileImpl : public Profile,
 #if defined(OS_CHROMEOS)
   virtual void ChangeAppLocale(const std::string& locale, AppLocaleChangedVia) {
   }
+  virtual void OnLogin() {
+  }
 #endif  // defined(OS_CHROMEOS)
 
   virtual PrefProxyConfigTracker* GetProxyConfigTracker() {

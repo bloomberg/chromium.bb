@@ -265,6 +265,8 @@ class TestingProfile : public Profile {
   }
   virtual void ChangeAppLocale(const std::string&, AppLocaleChangedVia) {
   }
+  virtual void OnLogin() {
+  }
 #endif  // defined(OS_CHROMEOS)
 
   virtual PrefProxyConfigTracker* GetProxyConfigTracker();
