@@ -439,7 +439,7 @@ IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest, TargetContents_ForegroundTab) {
 
 #if defined(OS_WIN)
 // This tests adding a popup with a predefined TabContents.
-IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest, TargetContents_Popup) {
+IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest, DISABLED_TargetContents_Popup) {
   browser::NavigateParams p(MakeNavigateParams());
   p.disposition = NEW_POPUP;
   p.target_contents = CreateTabContents();
