@@ -33,7 +33,7 @@ class Menu2 {
   //   MyClass : menu_(this) {}
   // is likely to have problems.
   explicit Menu2(ui::MenuModel* model);
-  virtual ~Menu2() {}
+  virtual ~Menu2();
 
   // How the menu is aligned relative to the point it is shown at.
   // The alignment is reversed by menu if text direction is right to left.
