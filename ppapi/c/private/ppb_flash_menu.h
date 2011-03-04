@@ -10,8 +10,6 @@
 #include "ppapi/c/pp_point.h"
 #include "ppapi/c/pp_resource.h"
 
-// PPB_Flash -------------------------------------------------------------------
-
 #define PPB_FLASH_MENU_INTERFACE "PPB_Flash_Menu;1"
 
 struct PP_CompletionCallback;

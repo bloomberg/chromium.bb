@@ -82,6 +82,8 @@
 
         # Private interfaces.
         'c/private/ppb_flash.h',
+        'c/private/ppb_flash_clipboard.h',
+        'c/private/ppb_flash_file.h',
         'c/private/ppb_flash_menu.h',
         'c/private/ppb_flash_net_connector.h',
         'c/private/ppb_nacl_private.h',
