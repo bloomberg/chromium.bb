@@ -19,16 +19,17 @@ import subprocess
 import sys
 import unittest
 
-from fake_repos import check_call, join, write, FakeReposTestBase
+ROOT_DIR = os.path.dirname(os.path.abspath(__file__))
+sys.path.insert(0, os.path.dirname(ROOT_DIR))
+from tests.fake_repos import check_call, join, write, FakeReposTestBase
 
-GCLIENT_PATH = join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
-                    'gclient')
+GCLIENT_PATH = os.path.join(os.path.dirname(ROOT_DIR), 'gclient')
 COVERAGE = False
 
 
 class GClientSmokeBase(FakeReposTestBase):
   def setUp(self):
-    FakeReposTestBase.setUp(self)
+    super(GClientSmokeBase, self).setUp()
     # Make sure it doesn't try to auto update when testing!
     self.env = os.environ.copy()
     self.env['DEPOT_TOOLS_UPDATE'] = '0'
@@ -255,7 +256,7 @@ class GClientSmoke(GClientSmokeBase):
 
 class GClientSmokeSVN(GClientSmokeBase):
   def setUp(self):
-    GClientSmokeBase.setUp(self)
+    super(GClientSmokeSVN, self).setUp()
     self.enabled = self.FAKE_REPOS.setUpSVN()
 
   def testSync(self):
@@ -688,7 +689,7 @@ class GClientSmokeSVN(GClientSmokeBase):
 
 class GClientSmokeGIT(GClientSmokeBase):
   def setUp(self):
-    GClientSmokeBase.setUp(self)
+    super(GClientSmokeGIT, self).setUp()
     self.enabled = self.FAKE_REPOS.setUpGIT()
 
   def testSync(self):
@@ -905,7 +906,7 @@ class GClientSmokeGIT(GClientSmokeBase):
 
 class GClientSmokeBoth(GClientSmokeBase):
   def setUp(self):
-    GClientSmokeBase.setUp(self)
+    super(GClientSmokeBoth, self).setUp()
     self.enabled = self.FAKE_REPOS.setUpSVN() and self.FAKE_REPOS.setUpGIT()
 
   def testMultiSolutions(self):
@@ -1068,7 +1069,7 @@ class GClientSmokeBoth(GClientSmokeBase):
 class GClientSmokeFromCheckout(GClientSmokeBase):
   # WebKit abuses this. It has a .gclient and a DEPS from a checkout.
   def setUp(self):
-    GClientSmokeBase.setUp(self)
+    super(GClientSmokeFromCheckout, self).setUp()
     self.enabled = self.FAKE_REPOS.setUpSVN()
     os.rmdir(self.root_dir)
     if self.enabled:
@@ -1160,6 +1161,9 @@ class GClientSmokeFromCheckout(GClientSmokeBase):
 
 
 if __name__ == '__main__':
+  if '-v' in sys.argv:
+    logging.basicConfig(level=logging.DEBUG)
+
   if '-c' in sys.argv:
     COVERAGE = True
     sys.argv.remove('-c')
