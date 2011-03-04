@@ -88,7 +88,7 @@ rpc call complete PPP_Instance_DidChangeView:iII:
 
 
 "*** CHECKING MEMORY"
-CHECKSUM: 0xffffff67
+CHECKSUM: 0x184dd100
 rpc call intiated PPP_ShutdownModule::
 rpc call complete PPP_ShutdownModule::
 

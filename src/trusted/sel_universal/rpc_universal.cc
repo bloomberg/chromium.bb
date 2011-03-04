@@ -13,7 +13,6 @@
 #include <sstream>
 
 #include "native_client/src/include/nacl_base.h"
-#include "native_client/src/include/portability_string.h"
 
 #include "native_client/src/trusted/desc/nacl_desc_io.h"
 #include "native_client/src/trusted/desc/nacl_desc_base.h"
@@ -271,8 +270,8 @@ static bool HandleStrcpy(NaClCommandLoop* ncl, const vector<string>& args) {
     return false;
   }
 
-  const uintptr_t start = (uintptr_t) STRTOLL(args[1].c_str(), 0, 0);
-  const uintptr_t offset = (uintptr_t) STRTOLL(args[2].c_str(), 0, 0);
+  const uintptr_t start = (uintptr_t) ExtractInt64(args[1]);
+  const uintptr_t offset = (uintptr_t) ExtractInt64(args[2]);
   // skip leading and trailing double quote
   string payload = args[3].substr(1, args[3].size() - 2);
   char* dst = reinterpret_cast<char*>(start + offset);
@@ -290,10 +289,10 @@ static bool HandleMemset(NaClCommandLoop* ncl, const vector<string>& args) {
     return false;
   }
 
-  const uintptr_t start = (uintptr_t) STRTOLL(args[1].c_str(), 0, 0);
-  const uintptr_t offset = (uintptr_t) STRTOLL(args[2].c_str(), 0, 0);
-  const uintptr_t length = (uintptr_t) STRTOLL(args[3].c_str(), 0, 0);
-  const int pattern = (int) strtol(args[4].c_str(), 0, 0);
+  const uintptr_t start = (uintptr_t) ExtractInt64(args[1]);
+  const uintptr_t offset = (uintptr_t) ExtractInt64(args[2]);
+  const uintptr_t length = (uintptr_t) ExtractInt64(args[3]);
+  const int pattern = (int)  ExtractInt32(args[4]);
 
   char* dst = reinterpret_cast<char*>(start + offset);
   NaClLog(1, "setting [%p, %p] to 0x%02x\n", dst, dst + length, pattern);
@@ -309,13 +308,14 @@ static bool HandleChecksum(NaClCommandLoop* ncl, const vector<string>& args) {
     return false;
   }
 
-  const uintptr_t start = (uintptr_t) STRTOLL(args[1].c_str(), 0, 0);
-  const uintptr_t offset = (uintptr_t) STRTOLL(args[2].c_str(), 0, 0);
-  const size_t length = (size_t) STRTOLL(args[3].c_str(), 0, 0);
+  const uintptr_t start = (uintptr_t) ExtractInt64(args[1]);
+  const uintptr_t offset = (uintptr_t) ExtractInt64(args[2]);
+  const size_t length = (size_t) ExtractInt64(args[3]);
   unsigned int sum = 0;
   unsigned char* src = reinterpret_cast<unsigned char*>(start + offset);
   for (size_t i = 0; i < length; ++i) {
-    sum = (sum << 1) + src[i];
+    sum += sum << 1;
+    sum ^= src[i];
   }
 
   printf("CHECKSUM: 0x%08x\n", sum);

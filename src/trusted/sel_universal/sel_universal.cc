@@ -191,6 +191,8 @@ int main(int argc, char* argv[]) {
   loop.AddHandler("save_to_file", HandlerSaveToFile);
   loop.AddHandler("load_from_file", HandlerLoadFromFile);
   loop.AddHandler("file_size", HandlerFileSize);
+  loop.AddHandler("sync_socket_create", HandlerSyncSocketCreate);
+  loop.AddHandler("sync_socket_write", HandlerSyncSocketWrite);
 
   NaClLog(1, "populating initial vars\n");
   for (map<string, string>::iterator it = initial_vars.begin();

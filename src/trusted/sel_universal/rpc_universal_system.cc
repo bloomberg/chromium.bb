@@ -7,9 +7,12 @@
 #include <fcntl.h>
 #include <string.h>
 #if (NACL_LINUX)
+// for shmem
 #include <sys/ipc.h>
 #include <sys/shm.h>
 #include "native_client/src/trusted/desc/linux/nacl_desc_sysv_shm.h"
+// for sync_sockets
+#include <sys/socket.h>
 #endif
 
 #include <map>
@@ -17,9 +20,10 @@
 #include <sstream>
 
 using std::stringstream;
-
+#include "native_client/src/shared/imc/nacl_imc.h"
 #include "native_client/src/shared/platform/nacl_log.h"
 #include "native_client/src/trusted/desc/nacl_desc_base.h"
+#include "native_client/src/trusted/desc/nacl_desc_sync_socket.h"
 #include "native_client/src/trusted/desc/nacl_desc_wrapper.h"
 #include "native_client/src/trusted/sel_universal/parsing.h"
 #include "native_client/src/trusted/sel_universal/rpc_universal.h"
@@ -76,6 +80,54 @@ uintptr_t MapShmem(nacl::DescWrapper* desc) {
 }
 
 }  // namespace
+
+bool HandlerSyncSocketCreate(NaClCommandLoop* ncl,
+                             const vector<string>& args) {
+  if (args.size() < 3) {
+    NaClLog(LOG_ERROR, "not enough args\n");
+    return false;
+  }
+#if (NACL_WINDOWS || NACL_OSX)
+  // TODO(robertm): make this work on mac - it might already
+  UNREFERENCED_PARAMETER(ncl);
+  NaClLog(LOG_ERROR, "HandlerSyncSocketCreate NYI for windows/mac\n");
+  return false;
+#else
+  nacl::Handle handles[2] = {nacl::kInvalidHandle, nacl::kInvalidHandle};
+  if (socketpair(AF_UNIX, SOCK_STREAM, 0, handles) != 0) {
+    return false;
+  }
+
+  nacl::DescWrapperFactory factory;
+  nacl::DescWrapper* desc1 = factory.ImportSyncSocketHandle(handles[0]);
+  ncl->AddDesc(desc1->desc(), args[1]);
+
+  nacl::DescWrapper* desc2 = factory.ImportSyncSocketHandle(handles[1]);
+  ncl->AddDesc(desc2->desc(), args[2]);
+  return true;
+#endif
+}
+
+bool HandlerSyncSocketWrite(NaClCommandLoop* ncl,
+                            const vector<string>& args) {
+  if (args.size() < 3) {
+    NaClLog(LOG_ERROR, "not enough args\n");
+    return false;
+  }
+
+  NaClDesc* raw_desc = ExtractDesc(args[1], ncl);
+  if (raw_desc == NULL) {
+    NaClLog(LOG_ERROR, "cannot find desciptor %s\n", args[1].c_str());
+    return false;
+  }
+
+  const int value = ExtractInt32(args[2]);
+  nacl::DescWrapperFactory factory;
+  // TODO(robertm): eliminate use of NaClDesc in sel_universal and standardize
+  //       on DescWrapper to eliminate the memory leak here
+  factory.MakeGeneric(raw_desc)->Write(&value, sizeof value);
+  return true;
+}
 
 bool HandlerShmem(NaClCommandLoop* ncl, const vector<string>& args) {
   if (args.size() < 4) {
@@ -158,6 +210,7 @@ bool HandlerSaveToFile(NaClCommandLoop* ncl, const vector<string>& args) {
      NaClLog(LOG_ERROR, "cannot open %s\n", filename);
      return false;
   }
+
 
   NaClLog(1, "writing %d bytes from %p\n", (int) size, start + offset);
   const size_t n = fwrite(start + offset, 1, size, fp);
@@ -243,8 +296,8 @@ bool HandlerFileSize(NaClCommandLoop* ncl, const vector<string>& args) {
   const char* filename = args[1].c_str();
   FILE* fp = fopen(filename, "rb");
   if (fp == NULL) {
-     NaClLog(LOG_ERROR, "cannot open %s\n", filename);
-     return false;
+    NaClLog(LOG_ERROR, "cannot open %s\n", filename);
+    return false;
   }
   fseek(fp, 0, SEEK_END);
   int size = static_cast<int>(ftell(fp));
