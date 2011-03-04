@@ -820,7 +820,7 @@ int drmGetCap(int fd, uint64_t capability, uint64_t *value)
 		return ret;
 
 	*value = cap.value;
-	return cap.value;
+	return 0;
 }
 
 /**
