@@ -1,9 +1,9 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "base/logging.h"
-#include "media/base/clock_impl.h"
+#include "media/base/clock.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
 using ::testing::DefaultValue;
@@ -55,7 +55,7 @@ TEST(ClockTest, Created) {
   StrictMock<MockTimeProvider> mock_time;
   const base::TimeDelta kExpected = base::TimeDelta::FromSeconds(0);
 
-  ClockImpl clock(&MockTimeProvider::StaticNow);
+  Clock clock(&MockTimeProvider::StaticNow);
   EXPECT_EQ(kExpected, clock.Elapsed());
 }
 
@@ -69,7 +69,7 @@ TEST(ClockTest, Play_NormalSpeed) {
   const base::TimeDelta kZero;
   const base::TimeDelta kExpected = base::TimeDelta::FromSeconds(2);
 
-  ClockImpl clock(&MockTimeProvider::StaticNow);
+  Clock clock(&MockTimeProvider::StaticNow);
   EXPECT_EQ(kZero, clock.Play());
   EXPECT_EQ(kExpected, clock.Elapsed());
 }
@@ -84,7 +84,7 @@ TEST(ClockTest, Play_DoubleSpeed) {
   const base::TimeDelta kZero;
   const base::TimeDelta kExpected = base::TimeDelta::FromSeconds(10);
 
-  ClockImpl clock(&MockTimeProvider::StaticNow);
+  Clock clock(&MockTimeProvider::StaticNow);
   clock.SetPlaybackRate(2.0f);
   EXPECT_EQ(kZero, clock.Play());
   EXPECT_EQ(kExpected, clock.Elapsed());
@@ -100,7 +100,7 @@ TEST(ClockTest, Play_HalfSpeed) {
   const base::TimeDelta kZero;
   const base::TimeDelta kExpected = base::TimeDelta::FromSeconds(2);
 
-  ClockImpl clock(&MockTimeProvider::StaticNow);
+  Clock clock(&MockTimeProvider::StaticNow);
   clock.SetPlaybackRate(0.5f);
   EXPECT_EQ(kZero, clock.Play());
   EXPECT_EQ(kExpected, clock.Elapsed());
@@ -123,7 +123,7 @@ TEST(ClockTest, Play_ZeroSpeed) {
   const base::TimeDelta kZero;
   const base::TimeDelta kExpected = base::TimeDelta::FromSeconds(10);
 
-  ClockImpl clock(&MockTimeProvider::StaticNow);
+  Clock clock(&MockTimeProvider::StaticNow);
   EXPECT_EQ(kZero, clock.Play());
   clock.SetPlaybackRate(0.0f);
   clock.SetPlaybackRate(1.0f);
@@ -147,7 +147,7 @@ TEST(ClockTest, Play_MultiSpeed) {
   const base::TimeDelta kZero;
   const base::TimeDelta kExpected = base::TimeDelta::FromSeconds(21);
 
-  ClockImpl clock(&MockTimeProvider::StaticNow);
+  Clock clock(&MockTimeProvider::StaticNow);
   clock.SetPlaybackRate(0.5f);
   EXPECT_EQ(kZero, clock.Play());
   clock.SetPlaybackRate(1.0f);
@@ -170,7 +170,7 @@ TEST(ClockTest, Pause) {
   const base::TimeDelta kFirstPause = base::TimeDelta::FromSeconds(4);
   const base::TimeDelta kSecondPause = base::TimeDelta::FromSeconds(8);
 
-  ClockImpl clock(&MockTimeProvider::StaticNow);
+  Clock clock(&MockTimeProvider::StaticNow);
   EXPECT_EQ(kZero, clock.Play());
   EXPECT_EQ(kFirstPause, clock.Pause());
   EXPECT_EQ(kFirstPause, clock.Elapsed());
@@ -187,7 +187,7 @@ TEST(ClockTest, SetTime_Paused) {
   const base::TimeDelta kFirstTime = base::TimeDelta::FromSeconds(4);
   const base::TimeDelta kSecondTime = base::TimeDelta::FromSeconds(16);
 
-  ClockImpl clock(&MockTimeProvider::StaticNow);
+  Clock clock(&MockTimeProvider::StaticNow);
   clock.SetTime(kFirstTime);
   EXPECT_EQ(kFirstTime, clock.Elapsed());
   clock.SetTime(kSecondTime);
@@ -208,7 +208,7 @@ TEST(ClockTest, SetTime_Playing) {
   const base::TimeDelta kZero;
   const base::TimeDelta kExepected = base::TimeDelta::FromSeconds(16);
 
-  ClockImpl clock(&MockTimeProvider::StaticNow);
+  Clock clock(&MockTimeProvider::StaticNow);
   EXPECT_EQ(kZero, clock.Play());
   clock.SetTime(base::TimeDelta::FromSeconds(12));
   EXPECT_EQ(kExepected, clock.Elapsed());
