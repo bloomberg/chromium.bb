@@ -83,9 +83,8 @@ static base::LazyInstance<ProfileControllerMap> g_profile_controller_map(
   if (it == map->end()) {
     // Since we don't currently support multiple profiles, this class
     // has not been tested against this case.
-    if (map->size() != 0) {
+    if (!map->empty())
       return nil;
-    }
 
     ClearBrowsingDataController* controller =
         [[self alloc] initWithProfile:profile];

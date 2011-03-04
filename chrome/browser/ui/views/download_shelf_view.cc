@@ -211,7 +211,7 @@ gfx::Size DownloadShelfView::GetPreferredSize() {
   AdjustSize(close_button_, &prefsize);
   AdjustSize(show_all_view_, &prefsize);
   // Add one download view to the preferred size.
-  if (download_views_.size() > 0) {
+  if (!download_views_.empty()) {
     AdjustSize(*download_views_.begin(), &prefsize);
     prefsize.Enlarge(kDownloadPadding, 0);
   }

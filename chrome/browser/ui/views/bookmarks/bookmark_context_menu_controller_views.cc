@@ -256,7 +256,7 @@ bool BookmarkContextMenuControllerViews::IsCommandEnabled(int id) const {
 
     case IDC_COPY:
     case IDC_CUT:
-      return selection_.size() > 0 && !is_root_node;
+      return !selection_.empty() && !is_root_node;
 
     case IDC_PASTE:
       // Paste to selection from the Bookmark Bar, to parent_ everywhere else

@@ -137,7 +137,7 @@ class PluginExceptionsTableModelTest : public testing::Test {
         last_plugin = it->plugin_id;
       }
     }
-    if (row_counts.size() > 0)
+    if (!row_counts.empty())
       EXPECT_EQ(count, row_counts[last_plugin]);
   }
 

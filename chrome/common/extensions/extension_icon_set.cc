@@ -15,7 +15,7 @@ void ExtensionIconSet::Clear() {
 }
 
 void ExtensionIconSet::Add(int size, const std::string& path) {
-  CHECK(path.size() > 0 && path[0] != '/');
+  CHECK(!path.empty() && path[0] != '/');
   map_[size] = path;
 }
 

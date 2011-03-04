@@ -1599,7 +1599,7 @@ void RenderViewHost::OnAccessibilityNotifications(
   if (view())
     view()->OnAccessibilityNotifications(params);
 
-  if (params.size() > 0) {
+  if (!params.empty()) {
     for (unsigned i = 0; i < params.size(); i++) {
       const ViewHostMsg_AccessibilityNotification_Params& param = params[i];
 

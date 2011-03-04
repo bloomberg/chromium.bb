@@ -278,7 +278,7 @@ static void ExtractParameters(const std::string& params,
   for (size_t i = 0; i < pairs.size(); i++) {
     std::vector<std::string> key_val;
     base::SplitString(pairs[i], '=', &key_val);
-    if (key_val.size() > 0) {
+    if (!key_val.empty()) {
       std::string key = key_val[0];
       EXPECT_TRUE(result->find(key) == result->end());
       (*result)[key] = (key_val.size() == 2) ? key_val[1] : "";

@@ -177,13 +177,13 @@ TEST_F(UrlFetchTest, UrlFetch) {
   // Write out the cookie if requested
   FilePath cookie_output_path =
       cmd_line->GetSwitchValuePath("wait_cookie_output");
-  if (cookie_output_path.value().size() > 0) {
+  if (!cookie_output_path.value().empty()) {
     ASSERT_TRUE(WriteValueToFile(result.cookie_value, cookie_output_path));
   }
 
   // Write out the JS Variable if requested
   FilePath jsvar_output_path = cmd_line->GetSwitchValuePath("jsvar_output");
-  if (jsvar_output_path.value().size() > 0) {
+  if (!jsvar_output_path.value().empty()) {
     ASSERT_TRUE(WriteValueToFile(result.javascript_variable,
                                  jsvar_output_path));
   }

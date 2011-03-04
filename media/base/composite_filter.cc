@@ -234,7 +234,7 @@ void CompositeFilter::StartSerialCallSequence() {
   DCHECK_EQ(message_loop_, MessageLoop::current());
   error_ = PIPELINE_OK;
 
-  if (filters_.size() > 0) {
+  if (!filters_.empty()) {
     sequence_index_ = 0;
     CallFilter(filters_[sequence_index_],
                NewThreadSafeCallback(&CompositeFilter::SerialCallback));
@@ -248,7 +248,7 @@ void CompositeFilter::StartParallelCallSequence() {
   DCHECK_EQ(message_loop_, MessageLoop::current());
   error_ = PIPELINE_OK;
 
-  if (filters_.size() > 0) {
+  if (!filters_.empty()) {
     sequence_index_ = 0;
     for (size_t i = 0; i < filters_.size(); i++) {
       CallFilter(filters_[i],
@@ -340,7 +340,7 @@ void CompositeFilter::SerialCallback() {
     return;
   }
 
-  if (filters_.size() > 0)
+  if (!filters_.empty())
     sequence_index_++;
 
   if (sequence_index_ == filters_.size()) {
@@ -360,7 +360,7 @@ void CompositeFilter::SerialCallback() {
 void CompositeFilter::ParallelCallback() {
   DCHECK_EQ(message_loop_, MessageLoop::current());
 
-  if (filters_.size() > 0)
+  if (!filters_.empty())
     sequence_index_++;
 
   if (sequence_index_ == filters_.size()) {

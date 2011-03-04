@@ -310,7 +310,7 @@ void NativeTabbedPaneWin::CreateNativeControl() {
   NativeControlCreated(tab_control);
 
   // Add tabs that are already added if any.
-  if (tab_views_.size() > 0) {
+  if (!tab_views_.empty()) {
     InitializeTabs();
     if (selected_index_ >= 0)
       DoSelectTabAt(selected_index_, false);

@@ -732,12 +732,9 @@ DNSSECChainVerifier::Error DNSSECChainVerifier::ReadDSSet(
     }
 
     digest_types[i] = digest_type;
-    if (digest.size() > 0) {
+    lookahead[i] = digest.empty();
+    if (!digest.empty())
       (*rrdatas)[i] = digest;
-      lookahead[i] = false;
-    } else {
-      lookahead[i] = true;
-    }
   }
 
   base::StringPiece next_entry_key;

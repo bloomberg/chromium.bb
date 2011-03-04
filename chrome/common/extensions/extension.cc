@@ -349,7 +349,7 @@ bool Extension::IsElevatedHostList(
                       old_hosts_set.begin(), old_hosts_set.end(),
                       std::inserter(new_hosts_only, new_hosts_only.begin()));
 
-  return new_hosts_only.size() > 0;
+  return !new_hosts_only.empty();
 }
 
 // static
@@ -1434,7 +1434,7 @@ bool Extension::InitFromValue(const DictionaryValue& source, bool require_key,
           return false;
         }
 
-        if (icon_path.size() > 0 && icon_path[0] == '/')
+        if (!icon_path.empty() && icon_path[0] == '/')
           icon_path = icon_path.substr(1);
 
         if (icon_path.empty()) {
@@ -2318,7 +2318,7 @@ bool Extension::HasEffectiveAccessToAllHosts() const {
 }
 
 bool Extension::HasFullPermissions() const {
-  return plugins().size() > 0;
+  return !plugins().empty();
 }
 
 bool Extension::ShowConfigureContextMenus() const {

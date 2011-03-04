@@ -403,7 +403,7 @@ PP_Var* SerializedVarVectorReceiveInput::Get(Dispatcher* dispatcher,
   }
 
   *array_size = static_cast<uint32_t>(serialized_.size());
-  return deserialized_.size() > 0 ? &deserialized_[0] : NULL;
+  return deserialized_.empty() ? NULL : &deserialized_[0];
 }
 
 // SerializedVarReturnValue ----------------------------------------------------

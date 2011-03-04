@@ -226,7 +226,7 @@ void DataTypeManagerImpl::DownloadReady() {
 void DataTypeManagerImpl::StartNextType() {
   // If there are any data types left to start, start the one at the
   // front of the list.
-  if (needs_start_.size() > 0) {
+  if (!needs_start_.empty()) {
     current_dtc_ = needs_start_[0];
     VLOG(1) << "Starting " << current_dtc_->name();
     current_dtc_->Start(

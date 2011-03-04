@@ -149,7 +149,7 @@ struct Node {
   std::list<Node*> edges_in_frequency_order;
 
   bool in_queue_;
-  bool Extended() const { return edges_.size() > 0; }
+  bool Extended() const { return !edges_.empty(); }
 
   uint32 Weight() const {
     return  edges_in_frequency_order.front()->count_;

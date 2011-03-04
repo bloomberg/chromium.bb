@@ -555,10 +555,7 @@ void View::GetViewsWithGroup(int group_id, std::vector<View*>* out) {
 View* View::GetSelectedViewForGroup(int group_id) {
   std::vector<View*> views;
   GetWidget()->GetRootView()->GetViewsWithGroup(group_id, &views);
-  if (views.size() > 0)
-    return views[0];
-  else
-    return NULL;
+  return views.empty() ? NULL : views[0];
 }
 
 // Coordinate conversion -------------------------------------------------------

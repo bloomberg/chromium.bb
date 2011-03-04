@@ -40,7 +40,7 @@ bool CustomInfoToMap(const google_breakpad::ClientInfo* client_info,
 
   (*map)[L"rept"] = reporter_tag;
 
-  return (map->size() > 0);
+  return !map->empty();
 }
 
 bool WriteCustomInfoToFile(const std::wstring& dump_path, const CrashMap& map) {

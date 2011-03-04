@@ -241,7 +241,7 @@ int main(int argc, char* argv[]) {
   starting_url = net::FilePathToFileURL(path);
 
   const std::vector<CommandLine::StringType>& args = parsed_command_line.args();
-  if (args.size() > 0) {
+  if (!args.empty()) {
     GURL url(args[0]);
     if (url.is_valid()) {
       starting_url = url;

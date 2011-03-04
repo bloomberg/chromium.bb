@@ -636,7 +636,7 @@ void ExtensionTestResultNotificationObserver::MaybeSendResult() {
   if (!automation_)
     return;
 
-  if (results_.size() > 0) {
+  if (!results_.empty()) {
     // This release method should return the automation's current
     // reply message, or NULL if there is no current one. If it is not
     // NULL, we are stating that we will handle this reply message.

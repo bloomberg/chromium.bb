@@ -1579,7 +1579,7 @@ CookieMonster::ParsedCookie::ParsedCookie(const std::string& cookie_line)
   }
 
   ParseTokenValuePairs(cookie_line);
-  if (pairs_.size() > 0) {
+  if (!pairs_.empty()) {
     is_valid_ = true;
     SetupAttributes();
   }

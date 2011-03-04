@@ -127,7 +127,7 @@ ssize_t UnixDomainSocket::SendRecvMsg(int fd,
   if (reply_len == -1)
     return -1;
 
-  if ((fd_vector.size() > 0 && result_fd == NULL) || fd_vector.size() > 1) {
+  if ((!fd_vector.empty() && result_fd == NULL) || fd_vector.size() > 1) {
     for (std::vector<int>::const_iterator
          i = fd_vector.begin(); i != fd_vector.end(); ++i) {
       close(*i);
@@ -138,13 +138,8 @@ ssize_t UnixDomainSocket::SendRecvMsg(int fd,
     return -1;
   }
 
-  if (result_fd) {
-    if (fd_vector.empty()) {
-      *result_fd = -1;
-    } else {
-      *result_fd = fd_vector[0];
-    }
-  }
+  if (result_fd)
+    *result_fd = fd_vector.empty() ? -1 : fd_vector[0];
 
   return reply_len;
 }

@@ -242,7 +242,7 @@ bool UpdateManifest::Parse(const std::string& manifest_xml) {
 
   // Parse the first <daystart> if it's present.
   std::vector<xmlNode*> daystarts = GetChildren(root, gupdate_ns, "daystart");
-  if (daystarts.size() > 0) {
+  if (!daystarts.empty()) {
     xmlNode* first = daystarts[0];
     std::string elapsed_seconds = GetAttribute(first, "elapsed_seconds");
     int parsed_elapsed = kNoDaystart;

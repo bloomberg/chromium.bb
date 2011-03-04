@@ -532,7 +532,7 @@ void IEImporter::ParseFavoritesFolder(const FavoritesInfo& info,
     //   C:\Users\Foo\Favorites\Links\Bar\Baz.url -> "Links\Bar"
     FilePath::StringType relative_string =
         shortcut.DirName().value().substr(favorites_path_len);
-    if (relative_string.size() > 0 && FilePath::IsSeparator(relative_string[0]))
+    if (!relative_string.empty() && FilePath::IsSeparator(relative_string[0]))
       relative_string = relative_string.substr(1);
     FilePath relative_path(relative_string);
 
@@ -547,7 +547,7 @@ void IEImporter::ParseFavoritesFolder(const FavoritesInfo& info,
     // Flatten the bookmarks in Link folder onto bookmark toolbar. Otherwise,
     // put it into "Other bookmarks".
     if (import_to_bookmark_bar() &&
-        (entry.path.size() > 0 && entry.path[0] == info.links_folder)) {
+        (!entry.path.empty() && entry.path[0] == info.links_folder)) {
       entry.in_toolbar = true;
       entry.path.erase(entry.path.begin());
       toolbar_bookmarks.push_back(entry);

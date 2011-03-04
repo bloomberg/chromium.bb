@@ -91,7 +91,7 @@ bool CompareAutofillEntries(const AutofillEntry& a, const AutofillEntry& b) {
     timestamps2.erase(*it);
   }
 
-  return timestamps2.size() != 0U;
+  return !timestamps2.empty();
 }
 
 void AutoFillProfile31FromStatement(const sql::Statement& s,

@@ -53,7 +53,7 @@ class WebWorkerBase : public IPC::Channel::Listener {
   bool Send(IPC::Message*);
 
   // Returns true if there are queued messages.
-  bool HasQueuedMessages() { return queued_messages_.size() != 0; }
+  bool HasQueuedMessages() { return !queued_messages_.empty(); }
 
   // Sends any messages currently in the queue.
   void SendQueuedMessages();

@@ -166,7 +166,7 @@ void AutocompleteMatch::ValidateClassifications(
   }
 
   // The classifications should always cover the whole string.
-  DCHECK(classifications.size() > 0) << "No classification for text";
+  DCHECK(!classifications.empty()) << "No classification for text";
   DCHECK(classifications[0].offset == 0) << "Classification misses beginning";
   if (classifications.size() == 1)
     return;

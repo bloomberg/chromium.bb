@@ -178,7 +178,7 @@ TEST(WebAppInfo, ParseIconSizes) {
     if (result) {
       ASSERT_EQ(data[i].is_any, is_any);
       ASSERT_EQ(data[i].expected_size_count, sizes.size());
-      if (sizes.size() > 0) {
+      if (!sizes.empty()) {
         ASSERT_EQ(data[i].width1, sizes[0].width());
         ASSERT_EQ(data[i].height1, sizes[0].height());
       }

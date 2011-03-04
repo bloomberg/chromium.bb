@@ -1341,7 +1341,7 @@ void WebPluginDelegateProxy::CopyFromTransportToBacking(const gfx::Rect& rect) {
                        rect.y() * stride + 4 * rect.x();
   // The two bitmaps are flipped relative to each other.
   int dest_starting_row = plugin_rect_.height() - rect.y() - 1;
-  DCHECK(backing_store_.size() > 0);
+  DCHECK(!backing_store_.empty());
   uint8* target_data = &(backing_store_[0]) + dest_starting_row * stride +
                        4 * rect.x();
   for (int row = 0; row < rect.height(); ++row) {

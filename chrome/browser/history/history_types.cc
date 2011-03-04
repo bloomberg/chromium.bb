@@ -174,7 +174,7 @@ const size_t* QueryResults::MatchesForURL(const GURL& url,
 
   // All entries in the map should have at least one index, otherwise it
   // shouldn't be in the map.
-  DCHECK(found->second->size() > 0);
+  DCHECK(!found->second->empty());
   if (num_matches)
     *num_matches = found->second->size();
   return &found->second->front();

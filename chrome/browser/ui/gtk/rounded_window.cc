@@ -232,7 +232,7 @@ gboolean OnRoundedWindowExpose(GtkWidget* widget,
     // If we want to have borders everywhere, we need to draw a polygon instead
     // of a set of lines.
     gdk_draw_polygon(drawable, gc, FALSE, &points[0], points.size());
-  } else if (points.size() > 0) {
+  } else if (!points.empty()) {
     gdk_draw_lines(drawable, gc, &points[0], points.size());
   }
 

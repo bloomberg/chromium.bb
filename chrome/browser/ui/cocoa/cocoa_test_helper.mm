@@ -111,7 +111,7 @@ void CocoaTest::TearDown() {
   // started.
   std::set<NSWindow*> windows_left(WindowsLeft());
 
-  while (windows_left.size() > 0) {
+  while (!windows_left.empty()) {
     // Cover delayed actions by spinning the loop at least once after
     // this timeout.
     const NSTimeInterval kCloseTimeoutSeconds =

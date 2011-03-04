@@ -205,7 +205,7 @@ void Firefox2Importer::ImportBookmarksFile(
         post_data.empty() &&
         CanImportURL(GURL(url)) &&
         default_urls.find(url) == default_urls.end()) {
-      if (toolbar_folder > path.size() && path.size() > 0) {
+      if (toolbar_folder > path.size() && !path.empty()) {
         NOTREACHED();  // error in parsing.
         break;
       }

@@ -99,11 +99,11 @@ void CompoundBuffer::CropFront(int bytes) {
   }
 
   total_bytes_ -= bytes;
-  while (chunks_.size() > 0 && chunks_.front().size <= bytes) {
+  while (!chunks_.empty() && chunks_.front().size <= bytes) {
     bytes -= chunks_.front().size;
     chunks_.pop_front();
   }
-  if (chunks_.size() > 0 && bytes > 0) {
+  if (!chunks_.empty() && bytes > 0) {
     chunks_.front().start += bytes;
     chunks_.front().size -= bytes;
     DCHECK_GT(chunks_.front().size, 0);
@@ -121,11 +121,11 @@ void CompoundBuffer::CropBack(int bytes) {
   }
 
   total_bytes_ -= bytes;
-  while (chunks_.size() > 0 && chunks_.back().size <= bytes) {
+  while (!chunks_.empty() && chunks_.back().size <= bytes) {
     bytes -= chunks_.back().size;
     chunks_.pop_back();
   }
-  if (chunks_.size() > 0 && bytes > 0) {
+  if (!chunks_.empty() && bytes > 0) {
     chunks_.back().size -= bytes;
     DCHECK_GT(chunks_.back().size, 0);
     bytes = 0;

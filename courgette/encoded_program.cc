@@ -195,7 +195,7 @@ void EncodedProgram::AddCopy(uint32 count, const void* bytes) {
   // For compression of files with large differences this makes a small (4%)
   // improvement in size.  For files with small differences this degrades the
   // compressed size by 1.3%
-  if (ops_.size() > 0) {
+  if (!ops_.empty()) {
     if (ops_.back() == COPY1) {
       ops_.back() = COPY;
       copy_counts_.push_back(1);

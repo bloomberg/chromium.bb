@@ -52,7 +52,7 @@ TEST_F(EncodingMenuControllerTest, ListEncodingMenuItems) {
   controller.GetEncodingMenuItems(&profile_en, &english_items);
 
   // Make sure there are items in the lists.
-  ASSERT_TRUE(english_items.size() > 0);
+  ASSERT_FALSE(english_items.empty());
   // Make sure that autodetect is the first item on both menus
   ASSERT_EQ(english_items[0].first, IDC_ENCODING_AUTO_DETECT);
 }

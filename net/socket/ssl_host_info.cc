@@ -115,7 +115,7 @@ bool SSLHostInfo::ParseInner(const std::string& data) {
     state->npn_status = static_cast<SSLClientSocket::NextProtoStatus>(status);
   }
 
-  if (state->certs.size() > 0) {
+  if (!state->certs.empty()) {
     std::vector<base::StringPiece> der_certs(state->certs.size());
     for (size_t i = 0; i < state->certs.size(); i++)
       der_certs[i] = state->certs[i];

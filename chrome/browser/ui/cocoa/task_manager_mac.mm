@@ -161,7 +161,7 @@ class SortHelper {
   // Use the model indices to get the new view indices of the selection, and
   // set selection to that. This assumes that no rows were added or removed
   // (in that case, the selection is cleared before -reloadData is called).
-  if (modelSelection.size() > 0)
+  if (!modelSelection.empty())
     DCHECK_EQ([tableView_ numberOfRows], model_->ResourceCount());
   NSMutableIndexSet* indexSet = [NSMutableIndexSet indexSet];
   for (size_t i = 0; i < modelSelection.size(); ++i)

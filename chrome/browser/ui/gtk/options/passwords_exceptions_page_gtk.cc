@@ -122,7 +122,7 @@ void PasswordsExceptionsPageGtk::SetExceptionList(
         COL_SITE,
         UTF16ToUTF8(net::FormatUrl(result[i]->origin, languages)).c_str(), -1);
   }
-  gtk_widget_set_sensitive(remove_all_button_, result.size() > 0);
+  gtk_widget_set_sensitive(remove_all_button_, !result.empty());
 }
 
 void PasswordsExceptionsPageGtk::OnRemoveButtonClicked(GtkWidget* widget) {
@@ -149,7 +149,7 @@ void PasswordsExceptionsPageGtk::OnRemoveButtonClicked(GtkWidget* widget) {
   delete exception_list_[index];
   exception_list_.erase(exception_list_.begin() + index);
 
-  gtk_widget_set_sensitive(remove_all_button_, exception_list_.size() > 0);
+  gtk_widget_set_sensitive(remove_all_button_, !exception_list_.empty());
 }
 
 void PasswordsExceptionsPageGtk::OnRemoveAllButtonClicked(GtkWidget* widget) {

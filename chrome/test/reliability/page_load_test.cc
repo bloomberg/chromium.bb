@@ -291,7 +291,7 @@ class PageLoadTest : public UITest {
     bool do_log = log_file.is_open() &&
                   (!log_only_error ||
                    metrics.result != NAVIGATION_SUCCESS ||
-                   new_crash_dumps.size() > 0);
+                   !new_crash_dumps.empty());
     if (do_log) {
       log_file << url_string;
       switch (metrics.result) {

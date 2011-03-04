@@ -219,7 +219,7 @@ bool ReadSTRPluginInfo(const FilePath& filename, CFBundleRef bundle,
   info->path = filename;
   if (plugin_vers)
     info->version = base::SysNSStringToUTF16(plugin_vers);
-  if (have_plugin_descs && plugin_descs.size() > 0)
+  if (have_plugin_descs && !plugin_descs.empty())
     info->desc = UTF8ToUTF16(plugin_descs[0]);
   else
     info->desc = UTF8ToUTF16(filename.BaseName().value());

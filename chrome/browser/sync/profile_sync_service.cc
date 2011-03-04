@@ -433,7 +433,7 @@ void ProfileSyncService::CreateBackend() {
 }
 
 bool ProfileSyncService::IsEncryptedDatatypeEnabled() const {
-  return encrypted_types_.size() > 0;
+  return !encrypted_types_.empty();
 }
 
 void ProfileSyncService::StartUp() {

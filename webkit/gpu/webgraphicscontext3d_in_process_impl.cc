@@ -1012,7 +1012,7 @@ WebGraphicsContext3D::Attributes WebGraphicsContext3DInProcessImpl::
 
 WGC3Denum WebGraphicsContext3DInProcessImpl::getError() {
   DCHECK(synthetic_errors_list_.size() == synthetic_errors_set_.size());
-  if (synthetic_errors_set_.size() > 0) {
+  if (!synthetic_errors_set_.empty()) {
     WGC3Denum error = synthetic_errors_list_.front();
     synthetic_errors_list_.pop_front();
     synthetic_errors_set_.erase(error);

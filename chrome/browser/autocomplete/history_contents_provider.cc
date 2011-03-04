@@ -113,7 +113,7 @@ void HistoryContentsProvider::Start(const AutocompleteInput& input,
     return;
   }
 
-  if (results_.size() != 0) {
+  if (!results_.empty()) {
     // Clear the results. We swap in an empty one as the easy way to clear it.
     history::QueryResults empty_results;
     results_.Swap(&empty_results);

@@ -35,7 +35,7 @@ gfx::Rect GrabWindowSnapshot(gfx::NativeWindow window,
     return gfx::Rect();
 
   png_representation->assign(buf, buf + length);
-  DCHECK(png_representation->size() > 0);
+  DCHECK(!png_representation->empty());
 
   return gfx::Rect(static_cast<int>([rep pixelsWide]),
                    static_cast<int>([rep pixelsHigh]));

@@ -245,7 +245,7 @@ QueryParser::QueryParser() {
 
 // static
 bool QueryParser::IsWordLongEnoughForPrefixSearch(const string16& word) {
-  DCHECK(word.size() > 0);
+  DCHECK(!word.empty());
   size_t minimum_length = 3;
   // We intentionally exclude Hangul Jamos (both Conjoining and compatibility)
   // because they 'behave like' Latin letters. Moreover, we should

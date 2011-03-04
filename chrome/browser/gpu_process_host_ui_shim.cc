@@ -416,7 +416,7 @@ void GpuProcessHostUIShim::OnChannelEstablished(
 
   // Currently if any of the GPU features are blacklisted, we don't establish a
   // GPU channel.
-  if (channel_handle.name.size() != 0 &&
+  if (!channel_handle.name.empty() &&
       gpu_data_manager_->GetGpuFeatureFlags().flags() != 0) {
     Send(new GpuMsg_CloseChannel(channel_handle));
     EstablishChannelError(callback.release(),
@@ -433,7 +433,7 @@ void GpuProcessHostUIShim::OnChannelEstablished(
 
 void GpuProcessHostUIShim::OnSynchronizeReply() {
   // Guard against race conditions in abrupt GPU process termination.
-  if (synchronize_requests_.size() > 0) {
+  if (!synchronize_requests_.empty()) {
     linked_ptr<SynchronizeCallback> callback(synchronize_requests_.front());
     synchronize_requests_.pop();
     callback->Run();
@@ -441,7 +441,7 @@ void GpuProcessHostUIShim::OnSynchronizeReply() {
 }
 
 void GpuProcessHostUIShim::OnCommandBufferCreated(const int32 route_id) {
-  if (create_command_buffer_requests_.size() > 0) {
+  if (!create_command_buffer_requests_.empty()) {
     linked_ptr<CreateCommandBufferCallback> callback =
         create_command_buffer_requests_.front();
     create_command_buffer_requests_.pop();

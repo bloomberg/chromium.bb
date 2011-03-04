@@ -23,17 +23,14 @@ bool ForeignSessionTracker::LookupAllForeignSessions(
     foreign_session_map_.begin(); i != foreign_session_map_.end(); ++i) {
     // Only include sessions with open tabs.
     ForeignSession* foreign_session = i->second;
-    if (foreign_session->windows.size() > 0 &&
+    if (!foreign_session->windows.empty() &&
         !SessionModelAssociator::SessionWindowHasNoTabsToSync(
             *foreign_session->windows[0])) {
       sessions->push_back(foreign_session);
     }
   }
 
-  if (sessions->size() > 0)
-    return true;
-  else
-    return false;
+  return !sessions->empty();
 }
 
 bool ForeignSessionTracker::LookupSessionWindows(

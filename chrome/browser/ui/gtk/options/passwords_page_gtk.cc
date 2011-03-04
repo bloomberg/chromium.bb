@@ -165,7 +165,7 @@ void PasswordsPageGtk::SetPasswordList(
         UTF16ToUTF8(net::FormatUrl(result[i]->origin, languages)).c_str(),
         COL_USERNAME, UTF16ToUTF8(result[i]->username_value).c_str(), -1);
   }
-  gtk_widget_set_sensitive(remove_all_button_, result.size() > 0);
+  gtk_widget_set_sensitive(remove_all_button_, !result.empty());
 }
 
 void PasswordsPageGtk::HidePassword() {
@@ -222,7 +222,7 @@ void PasswordsPageGtk::OnRemoveButtonClicked(GtkWidget* widget) {
   delete password_list_[index];
   password_list_.erase(password_list_.begin() + index);
 
-  gtk_widget_set_sensitive(remove_all_button_, password_list_.size() > 0);
+  gtk_widget_set_sensitive(remove_all_button_, !password_list_.empty());
 }
 
 void PasswordsPageGtk::OnRemoveAllButtonClicked(GtkWidget* widget) {

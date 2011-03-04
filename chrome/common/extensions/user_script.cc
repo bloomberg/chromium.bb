@@ -79,17 +79,17 @@ void UserScript::add_url_pattern(const URLPattern& pattern) {
 void UserScript::clear_url_patterns() { url_patterns_.clear(); }
 
 bool UserScript::MatchesUrl(const GURL& url) const {
-  if (url_patterns_.size() > 0) {
+  if (!url_patterns_.empty()) {
     if (!UrlMatchesPatterns(&url_patterns_, url))
       return false;
   }
 
-  if (globs_.size() > 0) {
+  if (!globs_.empty()) {
     if (!UrlMatchesGlobs(&globs_, url))
       return false;
   }
 
-  if (exclude_globs_.size() > 0) {
+  if (!exclude_globs_.empty()) {
     if (UrlMatchesGlobs(&exclude_globs_, url))
       return false;
   }

@@ -816,7 +816,7 @@ class BalsaHeaders {
                                       const base::StringPiece& value) {
     // if the key is empty, we don't want to write the rest because it
     // will not be a well-formed header line.
-    if (key.size() > 0) {
+    if (!key.empty()) {
       buffer->Write(key.data(), key.size());
       buffer->Write(": ", 2);
       buffer->Write(value.data(), value.size());

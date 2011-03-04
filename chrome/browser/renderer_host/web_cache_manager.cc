@@ -232,7 +232,7 @@ bool WebCacheManager::AttemptTactic(
   // The inactive renderers get one share of the extra memory to be divided
   // among themselves.
   size_t inactive_extra = 0;
-  if (inactive_renderers_.size() > 0) {
+  if (!inactive_renderers_.empty()) {
     ++shares;
     inactive_extra = total_extra / shares;
   }

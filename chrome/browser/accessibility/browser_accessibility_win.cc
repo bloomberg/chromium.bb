@@ -66,8 +66,9 @@ HRESULT BrowserAccessibilityWin::accDoDefaultAction(VARIANT var_id) {
   return S_OK;
 }
 
-STDMETHODIMP BrowserAccessibilityWin::accHitTest(
-    LONG x_left, LONG y_top, VARIANT* child) {
+STDMETHODIMP BrowserAccessibilityWin::accHitTest(LONG x_left,
+                                                 LONG y_top,
+                                                 VARIANT* child) {
   if (!instance_active_)
     return E_FAIL;
 
@@ -136,12 +137,12 @@ STDMETHODIMP BrowserAccessibilityWin::accNavigate(
       // These directions are not implemented, matching Mozilla and IE.
       return E_NOTIMPL;
     case NAVDIR_FIRSTCHILD:
-      if (target->children_.size() > 0)
-        result = target->children_[0];
+      if (!target->children_.empty())
+        result = target->children_.front();
       break;
     case NAVDIR_LASTCHILD:
-      if (target->children_.size() > 0)
-        result = target->children_[target->children_.size() - 1];
+      if (!target->children_.empty())
+        result = target->children_.back();
       break;
     case NAVDIR_NEXT:
       result = target->GetNextSibling();
@@ -162,7 +163,7 @@ STDMETHODIMP BrowserAccessibilityWin::accNavigate(
 }
 
 STDMETHODIMP BrowserAccessibilityWin::get_accChild(VARIANT var_child,
-                                                IDispatch** disp_child) {
+                                                   IDispatch** disp_child) {
   if (!instance_active_)
     return E_FAIL;
 
@@ -191,7 +192,7 @@ STDMETHODIMP BrowserAccessibilityWin::get_accChildCount(LONG* child_count) {
 }
 
 STDMETHODIMP BrowserAccessibilityWin::get_accDefaultAction(VARIANT var_id,
-                                                        BSTR* def_action) {
+                                                           BSTR* def_action) {
   if (!instance_active_)
     return E_FAIL;
 
@@ -207,7 +208,7 @@ STDMETHODIMP BrowserAccessibilityWin::get_accDefaultAction(VARIANT var_id,
 }
 
 STDMETHODIMP BrowserAccessibilityWin::get_accDescription(VARIANT var_id,
-                                                      BSTR* desc) {
+                                                         BSTR* desc) {
   if (!instance_active_)
     return E_FAIL;
 
@@ -258,7 +259,7 @@ STDMETHODIMP BrowserAccessibilityWin::get_accHelp(VARIANT var_id, BSTR* help) {
 }
 
 STDMETHODIMP BrowserAccessibilityWin::get_accKeyboardShortcut(VARIANT var_id,
-                                                           BSTR* acc_key) {
+                                                              BSTR* acc_key) {
   if (!instance_active_)
     return E_FAIL;
 
@@ -304,7 +305,7 @@ STDMETHODIMP BrowserAccessibilityWin::get_accParent(IDispatch** disp_parent) {
     // This happens if we're the root of the tree;
     // return the IAccessible for the window.
     parent = manager_->toBrowserAccessibilityManagerWin()->
-        GetParentWindowIAccessible();
+             GetParentWindowIAccessible();
   }
 
   parent->AddRef();
@@ -335,7 +336,7 @@ STDMETHODIMP BrowserAccessibilityWin::get_accRole(
 }
 
 STDMETHODIMP BrowserAccessibilityWin::get_accState(VARIANT var_id,
-                                                VARIANT* state) {
+                                                   VARIANT* state) {
   if (!instance_active_)
     return E_FAIL;
 

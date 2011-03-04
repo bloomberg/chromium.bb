@@ -142,7 +142,7 @@ void DrawTextStartingFrom(gfx::Canvas* canvas,
     canvas->DrawStringInt(word, font, text_color, x, y, w, font.GetHeight(),
                           flags);
 
-    if (word.size() > 0 && word[word.size() - 1] == '\x0a') {
+    if (!word.empty() && word[word.size() - 1] == '\x0a') {
       // When we come across '\n', we move to the beginning of the next line.
       position->set_width(0);
       position->Enlarge(0, font.GetHeight());

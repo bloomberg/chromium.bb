@@ -299,7 +299,7 @@ void SelectFileDialogImpl::AddFilters(GtkFileChooser* chooser) {
 
   // Add the *.* filter, but only if we have added other filters (otherwise it
   // is implied).
-  if (file_types_.include_all_files && file_types_.extensions.size() > 0) {
+  if (file_types_.include_all_files && !file_types_.extensions.empty()) {
     GtkFileFilter* filter = gtk_file_filter_new();
     gtk_file_filter_add_pattern(filter, "*");
     gtk_file_filter_set_name(filter,

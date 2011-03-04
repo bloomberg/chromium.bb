@@ -62,7 +62,7 @@ PrerenderManager::PrerenderManager(Profile* profile)
 }
 
 PrerenderManager::~PrerenderManager() {
-  while (prerender_list_.size() > 0) {
+  while (!prerender_list_.empty()) {
     PrerenderContentsData data = prerender_list_.front();
     prerender_list_.pop_front();
     data.contents_->set_final_status(FINAL_STATUS_MANAGER_SHUTDOWN);
@@ -108,7 +108,7 @@ bool PrerenderManager::AddPreload(const GURL& url,
 }
 
 void PrerenderManager::DeleteOldEntries() {
-  while (prerender_list_.size() > 0) {
+  while (!prerender_list_.empty()) {
     PrerenderContentsData data = prerender_list_.front();
     if (IsPrerenderElementFresh(data.start_time_))
       return;

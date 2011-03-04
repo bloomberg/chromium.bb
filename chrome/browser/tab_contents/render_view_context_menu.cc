@@ -715,7 +715,7 @@ void RenderViewContextMenu::AppendEditableItems() {
     menu_model_.AddItem(IDC_SPELLCHECK_SUGGESTION_0 + static_cast<int>(i),
                         params_.dictionary_suggestions[i]);
   }
-  if (params_.dictionary_suggestions.size() > 0)
+  if (!params_.dictionary_suggestions.empty())
     menu_model_.AddSeparator();
 
   // If word is misspelled, give option for "Add to dictionary"

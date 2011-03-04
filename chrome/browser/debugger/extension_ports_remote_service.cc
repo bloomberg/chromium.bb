@@ -174,7 +174,7 @@ void ExtensionPortsRemoteService::HandleMessage(
   }
 
   int destination = -1;
-  if (destinationString.size() != 0)
+  if (!destinationString.empty())
     base::StringToInt(destinationString, &destination);
 
   if (command == kConnect) {

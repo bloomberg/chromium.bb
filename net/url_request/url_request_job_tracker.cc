@@ -17,7 +17,7 @@ URLRequestJobTracker::URLRequestJobTracker() {
 }
 
 URLRequestJobTracker::~URLRequestJobTracker() {
-  DLOG_IF(WARNING, active_jobs_.size() != 0) <<
+  DLOG_IF(WARNING, !active_jobs_.empty()) <<
     "Leaking " << active_jobs_.size() << " URLRequestJob object(s), this "
     "could be because the URLRequest forgot to free it (bad), or if the "
     "program was terminated while a request was active (normal).";

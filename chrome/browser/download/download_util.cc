@@ -114,8 +114,8 @@ bool IsShellIntegratedExtension(const string16& extension) {
   // See <http://www.juniper.net/security/auto/vulnerabilities/vuln2612.html>.
   // That vulnerability report is not exactly on point, but files become magical
   // if their end in a CLSID.  Here we block extensions that look like CLSIDs.
-  if (extension_lower.size() > 0 && extension_lower.at(0) == L'{' &&
-      extension_lower.at(extension_lower.length() - 1) == L'}')
+  if (!extension_lower.empty() && extension_lower[0] == L'{' &&
+      extension_lower[extension_lower.length() - 1] == L'}')
     return true;
 
   return false;

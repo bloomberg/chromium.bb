@@ -633,9 +633,8 @@ void BugReportHandler::HandleSendReport(const ListValue* list_value) {
 
   // Get the image to send in the report.
   std::vector<unsigned char> image;
-  if (screenshot_path.size() > 0) {
+  if (!screenshot_path.empty())
     image = screenshot_source_->GetScreenshot(screenshot_path);
-  }
 
 #if defined(OS_CHROMEOS)
   if (++i == list_value->end()) {

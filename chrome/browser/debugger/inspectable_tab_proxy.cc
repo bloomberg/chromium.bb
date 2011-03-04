@@ -105,7 +105,7 @@ DevToolsClientHost* InspectableTabProxy::NewClientHost(
 }
 
 void InspectableTabProxy::OnRemoteDebuggerDetached() {
-  while (id_to_client_host_map_.size() > 0) {
+  while (!id_to_client_host_map_.empty()) {
     IdToClientHostMap::iterator it = id_to_client_host_map_.begin();
     it->second->debugger_remote_service()->DetachFromTab(
         base::IntToString(it->first), NULL);

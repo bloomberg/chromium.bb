@@ -163,7 +163,7 @@ void JingleThread::OnMessage(talk_base::Message* msg) {
 
   // Stop the thread only if there are no more messages left in the queue,
   // otherwise post another task to try again later.
-  if (msgq_.size() > 0 || fPeekKeep_) {
+  if (!msgq_.empty() || fPeekKeep_) {
     Post(this, kStopMessageId);
   } else {
     MessageQueue::Quit();

@@ -121,7 +121,7 @@ bool ManifestFetchData::AddExtension(std::string id, std::string version,
 
   // Check against our max url size, exempting the first extension added.
   int new_size = full_url_.possibly_invalid_spec().size() + extra.size();
-  if (extension_ids_.size() > 0 && new_size > kExtensionsManifestMaxURLSize) {
+  if (!extension_ids_.empty() && new_size > kExtensionsManifestMaxURLSize) {
     UMA_HISTOGRAM_PERCENTAGE("Extensions.UpdateCheckHitUrlSizeLimit", 1);
     return false;
   }
@@ -690,7 +690,7 @@ void ExtensionUpdater::OnCRXFetchComplete(const GURL& url,
   current_extension_fetch_ = ExtensionFetch();
 
   // If there are any pending downloads left, start one.
-  if (extensions_pending_.size() > 0) {
+  if (!extensions_pending_.empty()) {
     ExtensionFetch next = extensions_pending_.front();
     extensions_pending_.pop_front();
     FetchUpdatedExtension(next.id, next.url, next.package_hash, next.version);

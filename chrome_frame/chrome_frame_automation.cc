@@ -1010,9 +1010,8 @@ void ChromeFrameAutomationClient::SetEnableExtensionAutomation(
   // automation, only to set it.  Also, we want to avoid resetting extension
   // automation that some other automation client has set up.  Therefore only
   // send the message if we are going to enable automation of some functions.
-  if (functions_enabled.size() > 0) {
+  if (!functions_enabled.empty())
     tab_->SetEnableExtensionAutomation(functions_enabled);
-  }
 }
 
 // Invoked in launch background thread.

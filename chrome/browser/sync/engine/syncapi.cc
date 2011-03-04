@@ -2458,7 +2458,7 @@ void SyncManager::SyncInternal::OnSyncEngineEvent(
       // If passwords are enabled, they're automatically considered encrypted.
       if (enabled_types.count(syncable::PASSWORDS) > 0)
         encrypted_types.insert(syncable::PASSWORDS);
-      if (encrypted_types.size() > 0) {
+      if (!encrypted_types.empty()) {
         Cryptographer* cryptographer =
             GetUserShare()->dir_manager->cryptographer();
         if (!cryptographer->is_ready() && !cryptographer->has_pending_keys()) {

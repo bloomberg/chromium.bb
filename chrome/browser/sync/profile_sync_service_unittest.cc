@@ -271,7 +271,7 @@ class FakeServerChange {
   // of the changelist.
   void SetModified(int64 id) {
     // Coalesce multi-property edits.
-    if (changes_.size() > 0 && changes_.back().id == id &&
+    if (!changes_.empty() && changes_.back().id == id &&
         changes_.back().action ==
         sync_api::SyncManager::ChangeRecord::ACTION_UPDATE)
       return;

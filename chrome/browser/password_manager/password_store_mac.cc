@@ -516,7 +516,7 @@ bool MacKeychainPasswordFormAdapter::HasPasswordsMergeableWithForm(
     keychain_->Free(*i);
   }
 
-  return matches.size() != 0;
+  return !matches.empty();
 }
 
 std::vector<PasswordForm*>

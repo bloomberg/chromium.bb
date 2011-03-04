@@ -105,7 +105,7 @@ bool HistoryPublisher::ReadRegisteredIndexersFromRegistry() {
                         kRegKeyRegisteredIndexersInfo, &indexers_);
   AddRegisteredIndexers(HKEY_LOCAL_MACHINE,
                         kRegKeyRegisteredIndexersInfo, &indexers_);
-  return indexers_.size() > 0;
+  return !indexers_.empty();
 }
 
 void HistoryPublisher::PublishDataToIndexers(const PageData& page_data)

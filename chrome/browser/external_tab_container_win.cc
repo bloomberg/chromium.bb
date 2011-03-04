@@ -916,7 +916,7 @@ scoped_refptr<ExternalTabContainer> ExternalTabContainer::RemovePendingTab(
 
 void ExternalTabContainer::SetEnableExtensionAutomation(
     const std::vector<std::string>& functions_enabled) {
-  if (functions_enabled.size() > 0) {
+  if (!functions_enabled.empty()) {
     if (!tab_contents_.get()) {
       NOTREACHED() << "Being invoked via tab so should have TabContents";
       return;

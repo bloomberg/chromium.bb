@@ -78,7 +78,7 @@ void ConnectionSettingsList::AddPermutations(const std::string& hostname,
   }
 
   // Add this list to the instance list
-  while (list_temp.size() != 0) {
+  while (!list_temp.empty()) {
     list_.push_back(list_temp[0]);
     list_temp.pop_front();
   }
