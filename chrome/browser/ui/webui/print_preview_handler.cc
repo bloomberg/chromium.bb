@@ -11,7 +11,8 @@
 #include "printing/backend/print_backend.h"
 
 class EnumeratePrintersTaskProxy
-    : public base::RefCountedThreadSafe<EnumeratePrintersTaskProxy> {
+    : public base::RefCountedThreadSafe<EnumeratePrintersTaskProxy,
+                                        BrowserThread::DeleteOnUIThread> {
  public:
   EnumeratePrintersTaskProxy(const base::WeakPtr<PrintPreviewHandler>& handler,
                              printing::PrintBackend* print_backend)
@@ -43,6 +44,11 @@ class EnumeratePrintersTaskProxy
   }
 
  private:
+  friend struct BrowserThread::DeleteOnThread<BrowserThread::UI>;
+  friend class DeleteTask<EnumeratePrintersTaskProxy>;
+
+  ~EnumeratePrintersTaskProxy() {}
+
   base::WeakPtr<PrintPreviewHandler> handler_;
 
   scoped_refptr<printing::PrintBackend> print_backend_;
