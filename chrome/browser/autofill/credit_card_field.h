@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -10,7 +10,7 @@
 
 #include "chrome/browser/autofill/form_field.h"
 
-class AutoFillField;
+class AutofillField;
 
 class CreditCardField : public FormField {
  public:
@@ -19,13 +19,13 @@ class CreditCardField : public FormField {
   virtual FormFieldType GetFormFieldType() const;
 
   static CreditCardField* Parse(
-      std::vector<AutoFillField*>::const_iterator* iter,
+      std::vector<AutofillField*>::const_iterator* iter,
       bool is_ecml);
 
  private:
   CreditCardField();
 
-  AutoFillField* cardholder_;  // Optional.
+  AutofillField* cardholder_;  // Optional.
 
   // Occasionally pages have separate fields for the cardholder's first and
   // last names; for such pages cardholder_ holds the first name field and
@@ -34,17 +34,17 @@ class CreditCardField : public FormField {
   // because the text patterns for matching a cardholder name are different
   // than for ordinary names, and because cardholder names never have titles,
   // middle names or suffixes.)
-  AutoFillField* cardholder_last_;
+  AutofillField* cardholder_last_;
 
-  AutoFillField* type_;  // Optional.  TODO(jhawkins): Parse the select control.
-  AutoFillField* number_;  // Required.
+  AutofillField* type_;  // Optional.  TODO(jhawkins): Parse the select control.
+  AutofillField* number_;  // Required.
 
   // The 3-digit card verification number; we don't currently fill this.
-  AutoFillField* verification_;
+  AutofillField* verification_;
 
   // Both required.  TODO(jhawkins): Parse the select control.
-  AutoFillField* expiration_month_;
-  AutoFillField* expiration_year_;
+  AutofillField* expiration_month_;
+  AutofillField* expiration_year_;
 
   DISALLOW_COPY_AND_ASSIGN(CreditCardField);
 };

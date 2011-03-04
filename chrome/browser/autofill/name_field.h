@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -14,7 +14,7 @@
 // A form field that can parse either a FullNameField or a FirstLastNameField.
 class NameField : public FormField {
  public:
-  static NameField* Parse(std::vector<AutoFillField*>::const_iterator* iter,
+  static NameField* Parse(std::vector<AutofillField*>::const_iterator* iter,
                           bool is_ecml);
 
  protected:
@@ -30,12 +30,12 @@ class FullNameField : public NameField {
   virtual bool GetFieldInfo(FieldTypeMap* field_type_map) const;
 
   static FullNameField* Parse(
-      std::vector<AutoFillField*>::const_iterator* iter);
+      std::vector<AutofillField*>::const_iterator* iter);
 
  private:
-  explicit FullNameField(AutoFillField* field);
+  explicit FullNameField(AutofillField* field);
 
-  AutoFillField* field_;
+  AutofillField* field_;
   DISALLOW_COPY_AND_ASSIGN(FullNameField);
 };
 
@@ -43,22 +43,22 @@ class FullNameField : public NameField {
 class FirstLastNameField : public NameField {
  public:
   static FirstLastNameField* Parse1(
-      std::vector<AutoFillField*>::const_iterator* iter);
+      std::vector<AutofillField*>::const_iterator* iter);
   static FirstLastNameField* Parse2(
-      std::vector<AutoFillField*>::const_iterator* iter);
+      std::vector<AutofillField*>::const_iterator* iter);
   static FirstLastNameField* ParseEcmlName(
-      std::vector<AutoFillField*>::const_iterator* iter);
+      std::vector<AutofillField*>::const_iterator* iter);
   static FirstLastNameField* Parse(
-      std::vector<AutoFillField*>::const_iterator* iter, bool is_ecml);
+      std::vector<AutofillField*>::const_iterator* iter, bool is_ecml);
 
   virtual bool GetFieldInfo(FieldTypeMap* field_type_map) const;
 
  private:
   FirstLastNameField();
 
-  AutoFillField* first_name_;
-  AutoFillField* middle_name_;  // Optional.
-  AutoFillField* last_name_;
+  AutofillField* first_name_;
+  AutofillField* middle_name_;  // Optional.
+  AutofillField* last_name_;
   bool middle_initial_;  // True if middle_name_ is a middle initial.
 
   DISALLOW_COPY_AND_ASSIGN(FirstLastNameField);

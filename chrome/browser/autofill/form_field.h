@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -61,7 +61,7 @@ enum FormFieldType {
   kOtherFieldType
 };
 
-class AutoFillField;
+class AutofillField;
 
 // Represents a logical form field in a web form.  Classes that implement this
 // interface can identify themselves as a particular type of form field, e.g.
@@ -79,43 +79,43 @@ class FormField {
 
   // Returns true if |field| contains the regexp |pattern| in the name or label.
   // If |match_label_only| is true, then only the field's label is considered.
-  static bool Match(AutoFillField* field,
+  static bool Match(AutofillField* field,
                     const string16& pattern,
                     bool match_label_only);
 
   // Parses a field using the different field views we know about.  |is_ecml|
   // should be true when the field conforms to the ECML specification.
   static FormField* ParseFormField(
-      std::vector<AutoFillField*>::const_iterator* field,
+      std::vector<AutofillField*>::const_iterator* field,
       bool is_ecml);
 
   // Attempts to parse a text field with the given pattern; returns true on
   // success, but doesn't return the actual text field itself.
-  static bool ParseText(std::vector<AutoFillField*>::const_iterator* iter,
+  static bool ParseText(std::vector<AutofillField*>::const_iterator* iter,
                         const string16& pattern);
 
   // Attempts to parse a text field with the given pattern.  Returns true on
   // success and fills |dest| with a pointer to the field.
-  static bool ParseText(std::vector<AutoFillField*>::const_iterator* iter,
+  static bool ParseText(std::vector<AutofillField*>::const_iterator* iter,
                         const string16& pattern,
-                        AutoFillField** dest);
+                        AutofillField** dest);
 
   // Attempts to parse a text field with an empty name or label.  Returns true
   // on success and fills |dest| with a pointer to the field.
-  static bool ParseEmptyText(std::vector<AutoFillField*>::const_iterator* iter,
-                             AutoFillField** dest);
+  static bool ParseEmptyText(std::vector<AutofillField*>::const_iterator* iter,
+                             AutofillField** dest);
 
   // Attempts to parse a text field label with the given pattern.  Returns true
   // on success and fills |dest| with a pointer to the field.
-  static bool ParseLabelText(std::vector<AutoFillField*>::const_iterator* iter,
+  static bool ParseLabelText(std::vector<AutofillField*>::const_iterator* iter,
                              const string16& pattern,
-                             AutoFillField** dest);
+                             AutofillField** dest);
 
   // Attempts to parse a control with an empty label.
-  static bool ParseEmpty(std::vector<AutoFillField*>::const_iterator* iter);
+  static bool ParseEmpty(std::vector<AutofillField*>::const_iterator* iter);
 
   // Adds an association between a field and a type to |field_type_map|.
-  static bool Add(FieldTypeMap* field_type_map, AutoFillField* field,
+  static bool Add(FieldTypeMap* field_type_map, AutofillField* field,
                   const AutoFillType& type);
 
  protected:
@@ -135,18 +135,18 @@ class FormField {
                                  char pattern_operator);
 
  private:
-  static bool ParseText(std::vector<AutoFillField*>::const_iterator* iter,
+  static bool ParseText(std::vector<AutofillField*>::const_iterator* iter,
                         const string16& pattern,
-                        AutoFillField** dest,
+                        AutofillField** dest,
                         bool match_label_only);
 
   // For empty strings we need to test that both label and name are empty.
   static bool ParseLabelAndName(
-      std::vector<AutoFillField*>::const_iterator* iter,
+      std::vector<AutofillField*>::const_iterator* iter,
       const string16& pattern,
-      AutoFillField** dest);
-  static bool MatchName(AutoFillField* field, const string16& pattern);
-  static bool MatchLabel(AutoFillField* field, const string16& pattern);
+      AutofillField** dest);
+  static bool MatchName(AutofillField* field, const string16& pattern);
+  static bool MatchLabel(AutofillField* field, const string16& pattern);
 
   DISALLOW_COPY_AND_ASSIGN(FormField);
 };

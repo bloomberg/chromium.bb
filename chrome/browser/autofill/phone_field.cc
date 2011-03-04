@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -97,7 +97,7 @@ PhoneField::Parser PhoneField::phone_field_grammars_[] = {
 PhoneField::~PhoneField() {}
 
 // static
-PhoneField* PhoneField::Parse(std::vector<AutoFillField*>::const_iterator* iter,
+PhoneField* PhoneField::Parse(std::vector<AutofillField*>::const_iterator* iter,
                               bool is_ecml) {
   DCHECK(iter);
   if (!iter)
@@ -122,10 +122,10 @@ PhoneField* PhoneField::Parse(std::vector<AutoFillField*>::const_iterator* iter,
 
 // static
 PhoneField* PhoneField::ParseECML(
-    std::vector<AutoFillField*>::const_iterator* iter) {
+    std::vector<AutofillField*>::const_iterator* iter) {
   string16 pattern(GetEcmlPattern(kEcmlShipToPhone, kEcmlBillToPhone, '|'));
 
-  AutoFillField* field;
+  AutofillField* field;
   if (ParseText(iter, pattern, &field)) {
     PhoneField* phone_field = new PhoneField();
     phone_field->parsed_phone_fields_[FIELD_PHONE] = field;
@@ -258,7 +258,7 @@ string16 PhoneField::GetRegExp(RegexType regex_id) const {
 // static
 bool PhoneField::ParseInternal(
     PhoneField *phone_field,
-    std::vector<AutoFillField*>::const_iterator* iter,
+    std::vector<AutofillField*>::const_iterator* iter,
     bool regular_phone) {
   DCHECK(iter);
 
@@ -266,10 +266,10 @@ bool PhoneField::ParseInternal(
   if (!phone_field)
     return false;
 
-  std::vector<AutoFillField*>::const_iterator q = *iter;
+  std::vector<AutofillField*>::const_iterator q = *iter;
 
   // The form owns the following variables, so they should not be deleted.
-  AutoFillField* parsed_fields[FIELD_MAX];
+  AutofillField* parsed_fields[FIELD_MAX];
 
   for (size_t i = 0; i < arraysize(phone_field_grammars_); ++i) {
     memset(parsed_fields, 0, sizeof(parsed_fields));

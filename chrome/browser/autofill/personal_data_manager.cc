@@ -10,14 +10,14 @@
 #include "base/logging.h"
 #include "base/string_number_conversions.h"
 #include "base/utf_string_conversions.h"
-#include "chrome/browser/autofill/autofill_field.h"
 #include "chrome/browser/autofill/autofill-inl.h"
+#include "chrome/browser/autofill/autofill_field.h"
 #include "chrome/browser/autofill/autofill_metrics.h"
 #include "chrome/browser/autofill/form_structure.h"
 #include "chrome/browser/autofill/phone_number.h"
+#include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/webdata/web_data_service.h"
-#include "chrome/browser/prefs/pref_service.h"
 #include "chrome/common/pref_names.h"
 #include "content/browser/browser_thread.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebRegularExpression.h"
@@ -181,7 +181,7 @@ bool PersonalDataManager::ImportFormData(
   for (iter = form_structures.begin(); iter != form_structures.end(); ++iter) {
     const FormStructure* form = *iter;
     for (size_t i = 0; i < form->field_count(); ++i) {
-      const AutoFillField* field = form->field(i);
+      const AutofillField* field = form->field(i);
       string16 value = CollapseWhitespace(field->value(), false);
 
       // If we don't know the type of the field, or the user hasn't entered any

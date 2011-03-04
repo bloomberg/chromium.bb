@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -12,7 +12,7 @@
 #include "grit/autofill_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 
-NameField* NameField::Parse(std::vector<AutoFillField*>::const_iterator* iter,
+NameField* NameField::Parse(std::vector<AutofillField*>::const_iterator* iter,
                             bool is_ecml) {
   // Try FirstLastNameField first since it's more specific.
   NameField* field = FirstLastNameField::Parse(iter, is_ecml);
@@ -28,10 +28,10 @@ bool FullNameField::GetFieldInfo(FieldTypeMap* field_type_map) const {
 }
 
 FullNameField* FullNameField::Parse(
-    std::vector<AutoFillField*>::const_iterator* iter) {
+    std::vector<AutofillField*>::const_iterator* iter) {
   // Exclude labels containing the string "username", which typically
   // denotes a login ID rather than the user's actual name.
-  AutoFillField* field = **iter;
+  AutofillField* field = **iter;
   if (Match(field, l10n_util::GetStringUTF16(IDS_AUTOFILL_USERNAME_RE), false))
     return NULL;
 
@@ -45,18 +45,18 @@ FullNameField* FullNameField::Parse(
   return NULL;
 }
 
-FullNameField::FullNameField(AutoFillField* field)
+FullNameField::FullNameField(AutofillField* field)
     : field_(field) {
 }
 
 FirstLastNameField* FirstLastNameField::Parse1(
-    std::vector<AutoFillField*>::const_iterator* iter) {
+    std::vector<AutofillField*>::const_iterator* iter) {
   // Some pages (e.g. Overstock_comBilling.html, SmithsonianCheckout.html)
   // have the label "Name" followed by two or three text fields.
   scoped_ptr<FirstLastNameField> v(new FirstLastNameField);
-  std::vector<AutoFillField*>::const_iterator q = *iter;
+  std::vector<AutofillField*>::const_iterator q = *iter;
 
-  AutoFillField* next;
+  AutofillField* next;
   if (ParseText(&q,
                 l10n_util::GetStringUTF16(IDS_AUTOFILL_NAME_SPECIFIC_RE),
                 &v->first_name_) &&
@@ -78,9 +78,9 @@ FirstLastNameField* FirstLastNameField::Parse1(
 }
 
 FirstLastNameField* FirstLastNameField::Parse2(
-    std::vector<AutoFillField*>::const_iterator* iter) {
+    std::vector<AutofillField*>::const_iterator* iter) {
   scoped_ptr<FirstLastNameField> v(new FirstLastNameField);
-  std::vector<AutoFillField*>::const_iterator q = *iter;
+  std::vector<AutofillField*>::const_iterator q = *iter;
 
   // A fair number of pages use the names "fname" and "lname" for naming
   // first and last name fields (examples from the test suite:
@@ -117,9 +117,9 @@ FirstLastNameField* FirstLastNameField::Parse2(
 }
 
 FirstLastNameField* FirstLastNameField::ParseEcmlName(
-    std::vector<AutoFillField*>::const_iterator* iter) {
+    std::vector<AutofillField*>::const_iterator* iter) {
   scoped_ptr<FirstLastNameField> field(new FirstLastNameField);
-  std::vector<AutoFillField*>::const_iterator q = *iter;
+  std::vector<AutofillField*>::const_iterator q = *iter;
 
   string16 pattern = GetEcmlPattern(kEcmlShipToFirstName,
                                     kEcmlBillToFirstName, '|');
@@ -139,7 +139,7 @@ FirstLastNameField* FirstLastNameField::ParseEcmlName(
 }
 
 FirstLastNameField* FirstLastNameField::Parse(
-    std::vector<AutoFillField*>::const_iterator* iter,
+    std::vector<AutofillField*>::const_iterator* iter,
     bool is_ecml) {
   if (is_ecml) {
     return ParseEcmlName(iter);

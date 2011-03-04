@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -11,14 +11,14 @@
 #include "chrome/browser/autofill/autofill_type.h"
 #include "chrome/browser/autofill/form_field.h"
 
-class AutoFillField;
+class AutofillField;
 
 class AddressField : public FormField {
  public:
   virtual bool GetFieldInfo(FieldTypeMap* field_type_map) const;
   virtual FormFieldType GetFormFieldType() const;
 
-  static AddressField* Parse(std::vector<AutoFillField*>::const_iterator* iter,
+  static AddressField* Parse(std::vector<AutofillField*>::const_iterator* iter,
                              bool is_ecml);
 
   // Tries to determine the billing/shipping type of this address.
@@ -33,32 +33,32 @@ class AddressField : public FormField {
  private:
   AddressField();
 
-  static bool ParseCompany(std::vector<AutoFillField*>::const_iterator* iter,
+  static bool ParseCompany(std::vector<AutofillField*>::const_iterator* iter,
                            bool is_ecml, AddressField* address_field);
   static bool ParseAddressLines(
-      std::vector<AutoFillField*>::const_iterator* iter,
+      std::vector<AutofillField*>::const_iterator* iter,
       bool is_ecml, AddressField* address_field);
-  static bool ParseCountry(std::vector<AutoFillField*>::const_iterator* iter,
+  static bool ParseCountry(std::vector<AutofillField*>::const_iterator* iter,
                            bool is_ecml, AddressField* address_field);
-  static bool ParseZipCode(std::vector<AutoFillField*>::const_iterator* iter,
+  static bool ParseZipCode(std::vector<AutofillField*>::const_iterator* iter,
                            bool is_ecml, AddressField* address_field);
-  static bool ParseCity(std::vector<AutoFillField*>::const_iterator* iter,
+  static bool ParseCity(std::vector<AutofillField*>::const_iterator* iter,
                         bool is_ecml, AddressField* address_field);
-  static bool ParseState(std::vector<AutoFillField*>::const_iterator* iter,
+  static bool ParseState(std::vector<AutofillField*>::const_iterator* iter,
                          bool is_ecml, AddressField* address_field);
 
   // Looks for an address type in the given text, which the caller must
   // convert to lowercase.
   static AddressType AddressTypeFromText(const string16& text);
 
-  AutoFillField* company_;   // optional
-  AutoFillField* address1_;
-  AutoFillField* address2_;  // optional
-  AutoFillField* city_;
-  AutoFillField* state_;     // optional
-  AutoFillField* zip_;
-  AutoFillField* zip4_;      // optional ZIP+4; we don't fill this yet
-  AutoFillField* country_;   // optional
+  AutofillField* company_;   // optional
+  AutofillField* address1_;
+  AutofillField* address2_;  // optional
+  AutofillField* city_;
+  AutofillField* state_;     // optional
+  AutofillField* zip_;
+  AutofillField* zip4_;      // optional ZIP+4; we don't fill this yet
+  AutofillField* country_;   // optional
 
   AddressType type_;
   bool is_ecml_;

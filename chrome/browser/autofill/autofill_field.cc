@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -25,12 +25,12 @@ static std::string Hash32Bit(const std::string& str) {
 
 }  // namespace
 
-AutoFillField::AutoFillField()
+AutofillField::AutofillField()
     : server_type_(NO_SERVER_DATA),
       heuristic_type_(UNKNOWN_TYPE) {
 }
 
-AutoFillField::AutoFillField(const webkit_glue::FormField& field,
+AutofillField::AutofillField(const webkit_glue::FormField& field,
                              const string16& unique_name)
     : webkit_glue::FormField(field),
       unique_name_(unique_name),
@@ -38,9 +38,9 @@ AutoFillField::AutoFillField(const webkit_glue::FormField& field,
       heuristic_type_(UNKNOWN_TYPE) {
 }
 
-AutoFillField::~AutoFillField() {}
+AutofillField::~AutofillField() {}
 
-void AutoFillField::set_heuristic_type(const AutofillFieldType& type) {
+void AutofillField::set_heuristic_type(const AutofillFieldType& type) {
   if (type >= 0 && type < MAX_VALID_FIELD_TYPE) {
     heuristic_type_ = type;
   } else {
@@ -51,24 +51,24 @@ void AutoFillField::set_heuristic_type(const AutofillFieldType& type) {
   }
 }
 
-AutofillFieldType AutoFillField::type() const {
+AutofillFieldType AutofillField::type() const {
   if (server_type_ != NO_SERVER_DATA)
     return server_type_;
 
   return heuristic_type_;
 }
 
-bool AutoFillField::IsEmpty() const {
+bool AutofillField::IsEmpty() const {
   return value().empty();
 }
 
-std::string AutoFillField::FieldSignature() const {
+std::string AutofillField::FieldSignature() const {
   std::string field_name = UTF16ToUTF8(name());
   std::string type = UTF16ToUTF8(form_control_type());
   std::string field_string = field_name + "&" + type;
   return Hash32Bit(field_string);
 }
 
-bool AutoFillField::IsFieldFillable() const {
+bool AutofillField::IsFieldFillable() const {
   return type() != UNKNOWN_TYPE;
 }

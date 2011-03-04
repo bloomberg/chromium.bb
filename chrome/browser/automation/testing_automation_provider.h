@@ -705,7 +705,7 @@ class TestingAutomationProvider : public AutomationProvider,
   // Return the map from the internal data representation to the string value
   // of auto fill fields and credit card fields.
   static std::map<AutofillFieldType, std::string>
-      GetAutoFillFieldToStringMap();
+      GetAutofillFieldToStringMap();
   static std::map<AutofillFieldType, std::string>
       GetCreditCardFieldToStringMap();
 

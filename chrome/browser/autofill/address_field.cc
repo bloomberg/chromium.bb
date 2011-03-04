@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -74,14 +74,14 @@ FormFieldType AddressField::GetFormFieldType() const {
 }
 
 AddressField* AddressField::Parse(
-    std::vector<AutoFillField*>::const_iterator* iter,
+    std::vector<AutofillField*>::const_iterator* iter,
     bool is_ecml) {
   DCHECK(iter);
   if (!iter)
     return NULL;
 
   scoped_ptr<AddressField> address_field(new AddressField);
-  std::vector<AutoFillField*>::const_iterator q = *iter;
+  std::vector<AutofillField*>::const_iterator q = *iter;
   string16 pattern;
 
   // The ECML standard uses 2 letter country codes.  So we will
@@ -167,7 +167,7 @@ AddressField::AddressField()
 
 // static
 bool AddressField::ParseCompany(
-    std::vector<AutoFillField*>::const_iterator* iter,
+    std::vector<AutofillField*>::const_iterator* iter,
     bool is_ecml, AddressField* address_field) {
   if (address_field->company_ && !address_field->company_->IsEmpty())
     return false;
@@ -187,7 +187,7 @@ bool AddressField::ParseCompany(
 
 // static
 bool AddressField::ParseAddressLines(
-    std::vector<AutoFillField*>::const_iterator* iter,
+    std::vector<AutofillField*>::const_iterator* iter,
     bool is_ecml, AddressField* address_field) {
   // We only match the string "address" in page text, not in element names,
   // because sometimes every element in a group of address fields will have
@@ -248,7 +248,7 @@ bool AddressField::ParseAddressLines(
 
 // static
 bool AddressField::ParseCountry(
-    std::vector<AutoFillField*>::const_iterator* iter,
+    std::vector<AutofillField*>::const_iterator* iter,
     bool is_ecml, AddressField* address_field) {
   // Parse a country.  The occasional page (e.g.
   // Travelocity_New Member Information1.html) calls this a "location".
@@ -270,7 +270,7 @@ bool AddressField::ParseCountry(
 
 // static
 bool AddressField::ParseZipCode(
-    std::vector<AutoFillField*>::const_iterator* iter,
+    std::vector<AutofillField*>::const_iterator* iter,
     bool is_ecml, AddressField* address_field) {
   // Parse a zip code.  On some UK pages (e.g. The China Shop2.html) this
   // is called a "post code".
@@ -325,7 +325,7 @@ bool AddressField::ParseZipCode(
 
 // static
 bool AddressField::ParseCity(
-    std::vector<AutoFillField*>::const_iterator* iter,
+    std::vector<AutofillField*>::const_iterator* iter,
     bool is_ecml, AddressField* address_field) {
   // Parse a city name.  Some UK pages (e.g. The China Shop2.html) use
   // the term "town".
@@ -346,7 +346,7 @@ bool AddressField::ParseCity(
 
 // static
 bool AddressField::ParseState(
-    std::vector<AutoFillField*>::const_iterator* iter,
+    std::vector<AutofillField*>::const_iterator* iter,
     bool is_ecml, AddressField* address_field) {
   if (address_field->state_)
     return false;

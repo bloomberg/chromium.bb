@@ -4237,7 +4237,7 @@ ListValue* TestingAutomationProvider::GetListFromAutoFillProfiles(
   ListValue* profiles = new ListValue;
 
   std::map<AutofillFieldType, std::string> autofill_type_to_string
-      = GetAutoFillFieldToStringMap();
+      = GetAutofillFieldToStringMap();
 
   // For each AutoFillProfile, transform it to a dictionary object to return.
   for (std::vector<AutoFillProfile*>::const_iterator it =
@@ -4297,7 +4297,7 @@ TestingAutomationProvider::GetAutoFillProfilesFromList(
   string16 current_value;
 
   std::map<AutofillFieldType, std::string> autofill_type_to_string =
-      GetAutoFillFieldToStringMap();
+      GetAutofillFieldToStringMap();
 
   int num_profiles = profiles.GetSize();
   for (int i = 0; i < num_profiles; i++) {
@@ -4356,7 +4356,7 @@ std::vector<CreditCard> TestingAutomationProvider::GetCreditCardsFromList(
 
 /* static */
 std::map<AutofillFieldType, std::string>
-    TestingAutomationProvider::GetAutoFillFieldToStringMap() {
+    TestingAutomationProvider::GetAutofillFieldToStringMap() {
   std::map<AutofillFieldType, std::string> autofill_type_to_string;
   autofill_type_to_string[NAME_FIRST] = "NAME_FIRST";
   autofill_type_to_string[NAME_MIDDLE] = "NAME_MIDDLE";
@@ -4772,8 +4772,7 @@ void TestingAutomationProvider::SetNTPMenuMode(
     section = MENU_THUMB;
   } else if (section_name.compare("recently_closed") == 0) {
     section = MENU_RECENT;
-  }
-  else {
+  } else {
     reply.SendError(StringPrintf("Unexpected section name: '%s'",
                                  section_name.c_str()));
     return;

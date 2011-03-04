@@ -94,7 +94,7 @@ void RemoveDuplicateSuggestions(std::vector<string16>* values,
 //  2. A logical section should not include multiple fields of the same autofill
 //     type (except for phone/fax numbers, as described below).
 void FindSectionBounds(const FormStructure& form,
-                       const AutoFillField& field,
+                       const AutofillField& field,
                        bool is_filling_credit_card,
                        size_t* section_start,
                        size_t* section_end) {
@@ -108,7 +108,7 @@ void FindSectionBounds(const FormStructure& form,
   std::set<AutofillFieldType> seen_types;
   bool initiating_field_is_in_current_section = false;
   for (size_t i = 0; i < form.field_count(); ++i) {
-    const AutoFillField* current_field = form.field(i);
+    const AutofillField* current_field = form.field(i);
     const AutofillFieldType current_type =
         AutoFillType::GetEquivalentFieldType(current_field->type());
 
@@ -325,7 +325,7 @@ void AutoFillManager::OnQueryFormFieldAutoFill(
 
   RenderViewHost* host = NULL;
   FormStructure* form_structure = NULL;
-  AutoFillField* autofill_field = NULL;
+  AutofillField* autofill_field = NULL;
   if (GetHost(
           personal_data_->profiles(), personal_data_->credit_cards(), &host) &&
       FindCachedFormAndField(form, field, &form_structure, &autofill_field) &&
@@ -393,7 +393,7 @@ void AutoFillManager::OnFillAutoFillFormData(int query_id,
   const std::vector<CreditCard*>& credit_cards = personal_data_->credit_cards();
   RenderViewHost* host = NULL;
   FormStructure* form_structure = NULL;
-  AutoFillField* autofill_field = NULL;
+  AutofillField* autofill_field = NULL;
   if (!GetHost(profiles, credit_cards, &host) ||
       !FindCachedFormAndField(form, field, &form_structure, &autofill_field))
     return;
@@ -575,7 +575,7 @@ bool AutoFillManager::IsAutoFillEnabled() const {
 void AutoFillManager::DeterminePossibleFieldTypesForUpload(
     FormStructure* submitted_form) {
   for (size_t i = 0; i < submitted_form->field_count(); i++) {
-    const AutoFillField* field = submitted_form->field(i);
+    const AutofillField* field = submitted_form->field(i);
     FieldTypeSet field_types;
     personal_data_->GetPossibleFieldTypes(field->value(), &field_types);
 
@@ -594,15 +594,15 @@ void AutoFillManager::LogMetricsAboutSubmittedForm(
   }
 
   // Map from field signatures to cached fields.
-  std::map<std::string, const AutoFillField*> cached_fields;
+  std::map<std::string, const AutofillField*> cached_fields;
   for (size_t i = 0; i < cached_submitted_form->field_count(); ++i) {
-    const AutoFillField* field = cached_submitted_form->field(i);
+    const AutofillField* field = cached_submitted_form->field(i);
     cached_fields[field->FieldSignature()] = field;
   }
 
   std::string experiment_id = cached_submitted_form->server_experiment_id();
   for (size_t i = 0; i < submitted_form->field_count(); ++i) {
-    const AutoFillField* field = submitted_form->field(i);
+    const AutofillField* field = submitted_form->field(i);
     FieldTypeSet field_types;
     personal_data_->GetPossibleFieldTypes(field->value(), &field_types);
     DCHECK(!field_types.empty());
@@ -626,7 +626,7 @@ void AutoFillManager::LogMetricsAboutSubmittedForm(
 
         AutofillFieldType heuristic_type = UNKNOWN_TYPE;
         AutofillFieldType server_type = NO_SERVER_DATA;
-        std::map<std::string, const AutoFillField*>::const_iterator
+        std::map<std::string, const AutofillField*>::const_iterator
             cached_field = cached_fields.find(field->FieldSignature());
         if (cached_field != cached_fields.end()) {
           heuristic_type = cached_field->second->heuristic_type();
@@ -769,7 +769,7 @@ bool AutoFillManager::FindCachedForm(const FormData& form,
 bool AutoFillManager::FindCachedFormAndField(const FormData& form,
                                              const FormField& field,
                                              FormStructure** form_structure,
-                                             AutoFillField** autofill_field) {
+                                             AutofillField** autofill_field) {
   // Find the FormStructure that corresponds to |form|.
   if (!FindCachedForm(form, form_structure))
     return false;
@@ -778,12 +778,12 @@ bool AutoFillManager::FindCachedFormAndField(const FormData& form,
   if (!(*form_structure)->autofill_count())
     return false;
 
-  // Find the AutoFillField that corresponds to |field|.
+  // Find the AutofillField that corresponds to |field|.
   *autofill_field = NULL;
-  for (std::vector<AutoFillField*>::const_iterator iter =
+  for (std::vector<AutofillField*>::const_iterator iter =
            (*form_structure)->begin();
        iter != (*form_structure)->end(); ++iter) {
-    // The field list is terminated with a NULL AutoFillField, so don't try to
+    // The field list is terminated with a NULL AutofillField, so don't try to
     // dereference it.
     if (!*iter)
       break;
@@ -826,9 +826,9 @@ void AutoFillManager::GetProfileSuggestions(FormStructure* form,
 
   std::vector<AutofillFieldType> form_fields;
   form_fields.reserve(form->field_count());
-  for (std::vector<AutoFillField*>::const_iterator iter = form->begin();
+  for (std::vector<AutofillField*>::const_iterator iter = form->begin();
        iter != form->end(); ++iter) {
-    // The field list is terminated with a NULL AutoFillField, so don't try to
+    // The field list is terminated with a NULL AutofillField, so don't try to
     // dereference it.
     if (!*iter)
       break;

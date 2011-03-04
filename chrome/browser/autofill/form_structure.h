@@ -86,17 +86,17 @@ class FormStructure {
   // Sets the possible types for the field at |index|.
   void set_possible_types(int index, const FieldTypeSet& types);
 
-  const AutoFillField* field(int index) const;
+  const AutofillField* field(int index) const;
   size_t field_count() const;
 
   // Returns the number of fields that are able to be autofilled.
   size_t autofill_count() const { return autofill_count_; }
 
   // Used for iterating over the fields.
-  std::vector<AutoFillField*>::const_iterator begin() const {
+  std::vector<AutofillField*>::const_iterator begin() const {
     return fields_.begin();
   }
-  std::vector<AutoFillField*>::const_iterator end() const {
+  std::vector<AutofillField*>::const_iterator end() const {
     return fields_.end();
   }
 
@@ -109,7 +109,7 @@ class FormStructure {
 
  protected:
   // For tests.
-  ScopedVector<AutoFillField>* fields() { return &fields_; }
+  ScopedVector<AutofillField>* fields() { return &fields_; }
 
  private:
   friend class FormStructureTest;
@@ -155,7 +155,7 @@ class FormStructure {
 
   // A vector of all the input fields in the form.  The vector is terminated by
   // a NULL entry.
-  ScopedVector<AutoFillField> fields_;
+  ScopedVector<AutofillField> fields_;
 
   // The names of the form input elements, that are part of the form signature.
   // The string starts with "&" and the names are also separated by the "&"

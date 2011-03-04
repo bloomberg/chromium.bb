@@ -133,7 +133,7 @@ class AutoFillManager : public TabContentsObserver,
       const webkit_glue::FormData& form,
       const webkit_glue::FormField& field,
       FormStructure** form_structure,
-      AutoFillField** autofill_field) WARN_UNUSED_RESULT;
+      AutofillField** autofill_field) WARN_UNUSED_RESULT;
 
   // Returns a list of values from the stored profiles that match |type| and the
   // value of |field| and returns the labels of the matching profiles. |labels|

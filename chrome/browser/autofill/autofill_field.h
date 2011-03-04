@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -12,12 +12,12 @@
 #include "chrome/browser/autofill/field_types.h"
 #include "webkit/glue/form_field.h"
 
-class AutoFillField : public webkit_glue::FormField {
+class AutofillField : public webkit_glue::FormField {
  public:
-  AutoFillField();
-  AutoFillField(const webkit_glue::FormField& field,
+  AutofillField();
+  AutofillField(const webkit_glue::FormField& field,
                 const string16& unique_name);
-  virtual ~AutoFillField();
+  virtual ~AutofillField();
 
   const string16& unique_name() const { return unique_name_; }
 
@@ -60,7 +60,7 @@ class AutoFillField : public webkit_glue::FormField {
   // The set of possible types for this field.
   FieldTypeSet possible_types_;
 
-  DISALLOW_COPY_AND_ASSIGN(AutoFillField);
+  DISALLOW_COPY_AND_ASSIGN(AutofillField);
 };
 
 #endif  // CHROME_BROWSER_AUTOFILL_AUTOFILL_FIELD_H_

@@ -73,7 +73,7 @@ std::string FormStructureBrowserTest::FormStructuresToString(
        iter != forms.end();
        ++iter) {
 
-    for (std::vector<AutoFillField*>::const_iterator field_iter =
+    for (std::vector<AutofillField*>::const_iterator field_iter =
             (*iter)->begin();
          field_iter != (*iter)->end();
          ++field_iter) {

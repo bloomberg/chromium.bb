@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -13,7 +13,7 @@
 #include "chrome/browser/autofill/form_field.h"
 #include "chrome/browser/autofill/phone_number.h"
 
-class AutoFillField;
+class AutofillField;
 
 // A phone number in one of the following formats:
 // - area code, prefix, suffix
@@ -23,10 +23,10 @@ class PhoneField : public FormField {
  public:
   virtual ~PhoneField();
 
-  static PhoneField* Parse(std::vector<AutoFillField*>::const_iterator* iter,
+  static PhoneField* Parse(std::vector<AutofillField*>::const_iterator* iter,
                            bool is_ecml);
   static PhoneField* ParseECML(
-      std::vector<AutoFillField*>::const_iterator* iter);
+      std::vector<AutofillField*>::const_iterator* iter);
 
   virtual bool GetFieldInfo(FieldTypeMap* field_type_map) const;
 
@@ -83,7 +83,7 @@ class PhoneField : public FormField {
   // |regular_phone| - true if the parsed phone is a HOME phone, false
   //   otherwise.
   static bool ParseInternal(PhoneField* field,
-                            std::vector<AutoFillField*>::const_iterator* iter,
+                            std::vector<AutofillField*>::const_iterator* iter,
                             bool regular_phone);
 
   void SetPhoneType(PhoneType phone_type);
@@ -108,7 +108,7 @@ class PhoneField : public FormField {
 
   // FIELD_PHONE is always present; holds suffix if prefix is present.
   // The rest could be NULL.
-  AutoFillField* parsed_phone_fields_[FIELD_MAX];
+  AutofillField* parsed_phone_fields_[FIELD_MAX];
 
   static struct Parser {
     RegexType regex;       // Field matching reg-ex.

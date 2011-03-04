@@ -63,7 +63,7 @@ FormStructure::FormStructure(const FormData& form)
     // Generate a unique name for this field by appending a counter to the name.
     string16 unique_name = field->name() +
         base::IntToString16(fields_.size() + 1);
-    fields_.push_back(new AutoFillField(*field, unique_name));
+    fields_.push_back(new AutofillField(*field, unique_name));
   }
 
   // Terminate the vector with a NULL item.
@@ -199,9 +199,9 @@ void FormStructure::ParseQueryResponse(const std::string& response_xml,
     form->has_credit_card_field_ = false;
     form->has_autofillable_field_ = false;
 
-    for (std::vector<AutoFillField*>::iterator field = form->fields_.begin();
+    for (std::vector<AutofillField*>::iterator field = form->fields_.begin();
          field != form->fields_.end(); ++field, ++current_type) {
-      // The field list is terminated by a NULL AutoFillField.
+      // The field list is terminated by a NULL AutofillField.
       if (!*field)
         break;
 
@@ -270,9 +270,9 @@ bool FormStructure::HasAutoFillableValues() const {
   if (autofill_count_ == 0)
     return false;
 
-  for (std::vector<AutoFillField*>::const_iterator iter = begin();
+  for (std::vector<AutofillField*>::const_iterator iter = begin();
        iter != end(); ++iter) {
-    AutoFillField* field = *iter;
+    AutofillField* field = *iter;
     if (field && !field->IsEmpty() && field->IsFieldFillable())
       return true;
   }
@@ -282,9 +282,9 @@ bool FormStructure::HasAutoFillableValues() const {
 
 void FormStructure::UpdateAutoFillCount() {
   autofill_count_ = 0;
-  for (std::vector<AutoFillField*>::const_iterator iter = begin();
+  for (std::vector<AutofillField*>::const_iterator iter = begin();
        iter != end(); ++iter) {
-    AutoFillField* field = *iter;
+    AutofillField* field = *iter;
     if (field && field->IsFieldFillable())
       ++autofill_count_;
   }
@@ -310,7 +310,7 @@ void FormStructure::set_possible_types(int index, const FieldTypeSet& types) {
     fields_[index]->set_possible_types(types);
 }
 
-const AutoFillField* FormStructure::field(int index) const {
+const AutofillField* FormStructure::field(int index) const {
   return fields_[index];
 }
 
@@ -366,7 +366,7 @@ void FormStructure::GetHeuristicAutoFillTypes() {
   GetHeuristicFieldInfo(&field_type_map);
 
   for (size_t index = 0; index < field_count(); index++) {
-    AutoFillField* field = fields_[index];
+    AutofillField* field = fields_[index];
     DCHECK(field);
     FieldTypeMap::iterator iter = field_type_map.find(field->unique_name());
 
@@ -414,7 +414,7 @@ bool FormStructure::EncodeFormRequest(
 
   // Add the child nodes for the form fields.
   for (size_t index = 0; index < field_count(); ++index) {
-    const AutoFillField* field = fields_[index];
+    const AutofillField* field = fields_[index];
     if (request_type == FormStructure::UPLOAD) {
       FieldTypeSet types = field->possible_types();
       // |types| could be empty in unit-tests only.
@@ -450,7 +450,7 @@ std::string FormStructure::ConvertPresenceBitsToString() const {
     presence_bitfield[i] = 0;
 
   for (size_t i = 0; i < field_count(); ++i) {
-    const AutoFillField* field = fields_[i];
+    const AutofillField* field = fields_[i];
     FieldTypeSet types = field->possible_types();
     // |types| could be empty in unit-tests only.
     for (FieldTypeSet::iterator field_type = types.begin();

@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -10,8 +10,8 @@
 
 namespace {
 
-TEST(AutoFillFieldTest, Type) {
-  AutoFillField field;
+TEST(AutofillFieldTest, Type) {
+  AutofillField field;
   ASSERT_EQ(NO_SERVER_DATA, field.server_type());
   ASSERT_EQ(UNKNOWN_TYPE, field.heuristic_type());
 
@@ -31,8 +31,8 @@ TEST(AutoFillFieldTest, Type) {
   EXPECT_EQ(NAME_FIRST, field.type());
 }
 
-TEST(AutoFillFieldTest, IsEmpty) {
-  AutoFillField field;
+TEST(AutofillFieldTest, IsEmpty) {
+  AutofillField field;
   ASSERT_EQ(string16(), field.value());
 
   // Field value is empty.
@@ -43,8 +43,8 @@ TEST(AutoFillFieldTest, IsEmpty) {
   EXPECT_FALSE(field.IsEmpty());
 }
 
-TEST(AutoFillFieldTest, FieldSignature) {
-  AutoFillField field;
+TEST(AutofillFieldTest, FieldSignature) {
+  AutofillField field;
   ASSERT_EQ(string16(), field.name());
   ASSERT_EQ(string16(), field.form_control_type());
 
@@ -68,8 +68,8 @@ TEST(AutoFillFieldTest, FieldSignature) {
   EXPECT_EQ("4246049809", field.FieldSignature());
 }
 
-TEST(AutoFillFieldTest, IsFieldFillable) {
-  AutoFillField field;
+TEST(AutofillFieldTest, IsFieldFillable) {
+  AutofillField field;
   ASSERT_EQ(UNKNOWN_TYPE, field.type());
 
   // Type is unknown.
