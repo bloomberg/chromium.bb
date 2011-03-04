@@ -290,11 +290,8 @@ class ResourceLoaderBridge {
                                     GURL* new_first_party_for_cookies) = 0;
 
     // Called when response headers are available (after all redirects have
-    // been followed).  |content_filtered| is set to true if the contents is
-    // altered or replaced (usually for security reasons when the resource is
-    // deemed unsafe).
-    virtual void OnReceivedResponse(const ResourceResponseInfo& info,
-                                    bool content_filtered) = 0;
+    // been followed).
+    virtual void OnReceivedResponse(const ResourceResponseInfo& info) = 0;
 
     // Called when a chunk of response data is downloaded.  This method may be
     // called multiple times or not at all if an error occurs.  This method is

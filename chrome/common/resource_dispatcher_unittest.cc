@@ -51,9 +51,7 @@ class TestRequestCallback : public ResourceLoaderBridge::Peer {
     return true;
   }
 
-  virtual void OnReceivedResponse(
-      const ResourceResponseInfo& info,
-      bool content_filtered) {
+  virtual void OnReceivedResponse(const ResourceResponseInfo& info) {
   }
 
   virtual void OnDownloadedData(int len) {
@@ -267,9 +265,7 @@ class DeferredResourceLoadingTest : public ResourceDispatcherTest,
     return true;
   }
 
-  virtual void OnReceivedResponse(
-      const ResourceResponseInfo& info,
-      bool content_filtered) {
+  virtual void OnReceivedResponse(const ResourceResponseInfo& info) {
     EXPECT_EQ(defer_loading_, false);
     set_defer_loading(true);
   }

@@ -97,7 +97,6 @@ void TestRenderViewHost::SendNavigateWithTransition(
   params.gesture = NavigationGestureUser;
   params.contents_mime_type = std::string();
   params.is_post = false;
-  params.is_content_filtered = false;
   params.was_within_same_page = false;
   params.http_status_code = 0;
   params.socket_address.set_host("2001:db8::1");

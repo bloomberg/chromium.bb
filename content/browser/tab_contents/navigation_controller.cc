@@ -585,7 +585,6 @@ bool NavigationController::RendererDidNavigate(
   details->entry = active_entry;
   details->is_main_frame = PageTransition::IsMainFrame(params.transition);
   details->serialized_security_info = params.security_info;
-  details->is_content_filtered = params.is_content_filtered;
   details->http_status_code = params.http_status_code;
   NotifyNavigationEntryCommitted(details, extra_invalidate_flags);
 

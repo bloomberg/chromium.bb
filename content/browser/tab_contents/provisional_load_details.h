@@ -27,7 +27,6 @@ class ProvisionalLoadDetails {
                          bool in_page_navigation,
                          const GURL& url,
                          const std::string& security_info,
-                         bool is_filtered,
                          bool is_error_page,
                          int64 frame_id);
   virtual ~ProvisionalLoadDetails() { }
@@ -56,8 +55,6 @@ class ProvisionalLoadDetails {
 
   int ssl_connection_status() const { return ssl_connection_status_; }
 
-  bool is_content_filtered() const { return is_content_filtered_; }
-
   bool is_error_page() const { return is_error_page_; }
 
   int64 frame_id() const { return frame_id_; }
@@ -72,7 +69,6 @@ class ProvisionalLoadDetails {
   int ssl_cert_status_;
   int ssl_security_bits_;
   int ssl_connection_status_;
-  bool is_content_filtered_;
   bool is_error_page_;
   int64 frame_id_;
 

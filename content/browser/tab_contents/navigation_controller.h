@@ -59,7 +59,6 @@ class NavigationController {
           did_replace_entry(false),
           is_in_page(false),
           is_main_frame(true),
-          is_content_filtered(false),
           http_status_code(0) {
     }
 
@@ -97,10 +96,6 @@ class NavigationController {
     // True when the main frame was navigated. False means the navigation was a
     // sub-frame.
     bool is_main_frame;
-
-    // Whether the content of this frame has been altered/blocked because it was
-    // unsafe.
-    bool is_content_filtered;
 
     // When the committed load is a web page from the renderer, this string
     // specifies the security state if the page is secure.

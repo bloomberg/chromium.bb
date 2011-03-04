@@ -250,10 +250,9 @@ class RequestProxy : public net::URLRequest::Delegate,
     }
   }
 
-  void NotifyReceivedResponse(const ResourceResponseInfo& info,
-                              bool content_filtered) {
+  void NotifyReceivedResponse(const ResourceResponseInfo& info) {
     if (peer_)
-      peer_->OnReceivedResponse(info, content_filtered);
+      peer_->OnReceivedResponse(info);
   }
 
   void NotifyReceivedData(int bytes_read) {
@@ -402,10 +401,9 @@ class RequestProxy : public net::URLRequest::Delegate,
   }
 
   virtual void OnReceivedResponse(
-      const ResourceResponseInfo& info,
-      bool content_filtered) {
+      const ResourceResponseInfo& info) {
     owner_loop_->PostTask(FROM_HERE, NewRunnableMethod(
-        this, &RequestProxy::NotifyReceivedResponse, info, content_filtered));
+        this, &RequestProxy::NotifyReceivedResponse, info));
   }
 
   virtual void OnReceivedData(int bytes_read) {
@@ -449,7 +447,7 @@ class RequestProxy : public net::URLRequest::Delegate,
     if (request->status().is_success()) {
       ResourceResponseInfo info;
       PopulateResponseInfo(request, &info);
-      OnReceivedResponse(info, false);
+      OnReceivedResponse(info);
       AsyncReadData();  // start reading
     } else {
       Done();
@@ -594,9 +592,7 @@ class SyncRequestProxy : public RequestProxy {
     result_->url = new_url;
   }
 
-  virtual void OnReceivedResponse(
-      const ResourceResponseInfo& info,
-      bool content_filtered) {
+  virtual void OnReceivedResponse(const ResourceResponseInfo& info) {
     *static_cast<ResourceResponseInfo*>(result_) = info;
   }
 

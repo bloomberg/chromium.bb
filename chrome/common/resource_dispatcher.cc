@@ -336,7 +336,7 @@ void ResourceDispatcher::OnReceivedResponse(
       request_info->peer = new_peer;
   }
 
-  request_info->peer->OnReceivedResponse(response_head, false);
+  request_info->peer->OnReceivedResponse(response_head);
 }
 
 void ResourceDispatcher::OnReceivedCachedMetadata(

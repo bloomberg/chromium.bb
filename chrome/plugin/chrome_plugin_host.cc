@@ -87,9 +87,7 @@ class PluginRequestHandlerProxy
     return true;
   }
 
-  virtual void OnReceivedResponse(
-      const ResourceResponseInfo& info,
-      bool content_filtered) {
+  virtual void OnReceivedResponse(const ResourceResponseInfo& info) {
     response_headers_ = info.headers;
     plugin_->functions().response_funcs->start_completed(
         cprequest_.get(), CPERR_SUCCESS);

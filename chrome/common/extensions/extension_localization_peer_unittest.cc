@@ -63,9 +63,8 @@ class MockResourceLoaderBridgePeer
       const webkit_glue::ResourceResponseInfo& info,
       bool* has_new_first_party_for_cookies,
       GURL* new_first_party_for_cookies));
-  MOCK_METHOD2(OnReceivedResponse, void(
-      const webkit_glue::ResourceResponseInfo& info,
-      bool content_filtered));
+  MOCK_METHOD1(OnReceivedResponse, void(
+      const webkit_glue::ResourceResponseInfo& info));
   MOCK_METHOD1(OnDownloadedData, void(int len));
   MOCK_METHOD2(OnReceivedData, void(const char* data, int len));
   MOCK_METHOD3(OnCompletedRequest, void(
@@ -139,7 +138,7 @@ TEST_F(ExtensionLocalizationPeerTest, OnCompletedRequestBadURLRequestStatus) {
   // It will self-delete once it exits OnCompletedRequest.
   ExtensionLocalizationPeer* filter_peer = filter_peer_.release();
 
-  EXPECT_CALL(*original_peer_, OnReceivedResponse(_, true));
+  EXPECT_CALL(*original_peer_, OnReceivedResponse(_));
   EXPECT_CALL(*original_peer_, OnCompletedRequest(
     IsURLRequestEqual(net::URLRequestStatus::CANCELED), "", base::Time()));
 
@@ -155,7 +154,7 @@ TEST_F(ExtensionLocalizationPeerTest, OnCompletedRequestEmptyData) {
   EXPECT_CALL(*original_peer_, OnReceivedData(_, _)).Times(0);
   EXPECT_CALL(*sender_, Send(_)).Times(0);
 
-  EXPECT_CALL(*original_peer_, OnReceivedResponse(_, true));
+  EXPECT_CALL(*original_peer_, OnReceivedResponse(_));
   EXPECT_CALL(*original_peer_, OnCompletedRequest(
       IsURLRequestEqual(net::URLRequestStatus::SUCCESS), "", base::Time()));
 
@@ -176,7 +175,7 @@ TEST_F(ExtensionLocalizationPeerTest, OnCompletedRequestNoCatalogs) {
   EXPECT_CALL(*original_peer_,
               OnReceivedData(StrEq(data.data()), data.length())).Times(2);
 
-  EXPECT_CALL(*original_peer_, OnReceivedResponse(_, true)).Times(2);
+  EXPECT_CALL(*original_peer_, OnReceivedResponse(_)).Times(2);
   EXPECT_CALL(*original_peer_, OnCompletedRequest(
       IsURLRequestEqual(
           net::URLRequestStatus::SUCCESS), "", base::Time())).Times(2);
@@ -214,7 +213,7 @@ TEST_F(ExtensionLocalizationPeerTest, OnCompletedRequestWithCatalogs) {
   EXPECT_CALL(*original_peer_,
               OnReceivedData(StrEq(data.data()), data.length()));
 
-  EXPECT_CALL(*original_peer_, OnReceivedResponse(_, true));
+  EXPECT_CALL(*original_peer_, OnReceivedResponse(_));
   EXPECT_CALL(*original_peer_, OnCompletedRequest(
       IsURLRequestEqual(net::URLRequestStatus::SUCCESS), "", base::Time()));
 
@@ -244,7 +243,7 @@ TEST_F(ExtensionLocalizationPeerTest, OnCompletedRequestReplaceMessagesFails) {
   EXPECT_CALL(*original_peer_,
               OnReceivedData(StrEq(message.data()), message.length()));
 
-  EXPECT_CALL(*original_peer_, OnReceivedResponse(_, true));
+  EXPECT_CALL(*original_peer_, OnReceivedResponse(_));
   EXPECT_CALL(*original_peer_, OnCompletedRequest(
       IsURLRequestEqual(net::URLRequestStatus::SUCCESS), "", base::Time()));
 
