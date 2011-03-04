@@ -26,12 +26,24 @@ class GURLPrinter(webkit.StringPrinter):
     def to_string(self):
         return self.val['spec_']
 
+class FilePathPrinter(object):
+    def __init__(self, val):
+        self.val = val
+
+    def to_string(self):
+        return self.val['path_']['_M_dataplus']['_M_p']
+
+
 def lookup_function(val):
-    typ = str(val.type)
-    if typ == 'string16':
-        return String16Printer(val)
-    elif typ == 'GURL':
-        return GURLPrinter(val)
+    type_to_printer = {
+        'string16': String16Printer,
+        'GURL': GURLPrinter,
+        'FilePath': FilePathPrinter,
+    }
+
+    printer = type_to_printer.get(str(val.type), None)
+    if printer:
+        return printer(val)
     return None
 
 gdb.pretty_printers.append(lookup_function)
