@@ -52,7 +52,7 @@ class ChromeURLDataManager {
   // asynchronously. DataSources are collectively owned with refcounting smart
   // pointers and should never be deleted on the IO thread, since their calls
   // are handled almost always on the UI thread and there's a possibility of a
-  // data race.  The |DeleteOnUIThread| trait is used to enforce this.
+  // data race.  The |DeleteDataSource| trait above is used to enforce this.
   //
   // An implementation of DataSource should handle calls to
   // StartDataRequest() by starting its (implementation-specific) asynchronous
