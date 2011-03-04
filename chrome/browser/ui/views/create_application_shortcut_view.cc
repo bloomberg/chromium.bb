@@ -475,7 +475,7 @@ CreateChromeApplicationShortcutView::CreateChromeApplicationShortcutView(
       app_(app),
       ALLOW_THIS_IN_INITIALIZER_LIST(tracker_(this)) {
 
-  shortcut_info_.extension_id = UTF8ToUTF16(app_->id());
+  shortcut_info_.extension_id = app_->id();
   shortcut_info_.url = GURL(app_->launch_web_url());
   shortcut_info_.title = UTF8ToUTF16(app_->name());
   shortcut_info_.description = UTF8ToUTF16(app_->description());

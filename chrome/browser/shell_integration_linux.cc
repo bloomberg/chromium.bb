@@ -316,7 +316,7 @@ FilePath ShellIntegration::GetDesktopShortcutFilename(const GURL& url) {
 // static
 std::string ShellIntegration::GetDesktopFileContents(
     const std::string& template_contents, const GURL& url,
-    const string16& extension_id, const string16& title,
+    const std::string& extension_id, const string16& title,
     const std::string& icon_name) {
   // See http://standards.freedesktop.org/desktop-entry-spec/latest/
   // Although not required by the spec, Nautilus on Ubuntu Karmic creates its

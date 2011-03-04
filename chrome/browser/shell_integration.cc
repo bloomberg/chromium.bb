@@ -25,7 +25,7 @@ ShellIntegration::ShortcutInfo::~ShortcutInfo() {}
 
 std::string ShellIntegration::GetCommandLineArgumentsCommon(
     const GURL& url,
-    const string16& extension_app_id) {
+    const std::string& extension_app_id) {
   const CommandLine cmd = *CommandLine::ForCurrentProcess();
   std::wstring arguments_w;
 
@@ -55,7 +55,7 @@ std::string ShellIntegration::GetCommandLineArgumentsCommon(
   // during launch.
   if (!extension_app_id.empty()) {
     arguments_w += std::wstring(L"--") + ASCIIToWide(switches::kAppId) +
-        L"=\"" + ASCIIToWide(UTF16ToASCII(extension_app_id)) + L"\"";
+        L"=\"" + ASCIIToWide(extension_app_id) + L"\"";
   } else {
     // Use '--app=url' instead of just 'url' to launch the browser with minimal
     // chrome.

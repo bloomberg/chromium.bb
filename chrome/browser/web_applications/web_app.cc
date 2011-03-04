@@ -94,7 +94,7 @@ FilePath GetSanitizedFileName(const string16& name) {
 FilePath GetWebAppDir(const ShellIntegration::ShortcutInfo& info) {
   if (!info.extension_id.empty()) {
     std::string app_name = web_app::GenerateApplicationNameFromExtensionId(
-        UTF16ToUTF8(info.extension_id));
+        info.extension_id);
 #if defined(OS_WIN)
     return FilePath(UTF8ToWide(app_name));
 #elif defined(OS_POSIX)
@@ -391,7 +391,7 @@ bool CreateShortcutTask::CreateShortcut() {
   std::string app_name;
   if (!shortcut_info_.extension_id.empty()) {
     app_name = web_app::GenerateApplicationNameFromExtensionId(
-        UTF16ToUTF8(shortcut_info_.extension_id));
+        shortcut_info_.extension_id);
   } else {
     app_name = web_app::GenerateApplicationNameFromURL(
         shortcut_info_.url);

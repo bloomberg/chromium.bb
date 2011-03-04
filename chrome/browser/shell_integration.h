@@ -57,7 +57,7 @@ class ShellIntegration {
     // If |extension_id| is non-empty, this is short cut is to an extension-app
     // and the launch url will be detected at start-up. In this case, |url|
     // is still used to generate the app id (windows app id, not chrome app id).
-    string16 extension_id;
+    std::string extension_id;
     string16 title;
     string16 description;
     SkBitmap favicon;
@@ -79,8 +79,9 @@ class ShellIntegration {
   // NOTE: This function is dangerous, do not use!  You cannot treat
   // command lines as plain strings as there are metacharacters.
   // TODO(evanm): remove it.
-  static std::string GetCommandLineArgumentsCommon(const GURL& url,
-      const string16& extension_app_id);
+  static std::string GetCommandLineArgumentsCommon(
+      const GURL& url,
+      const std::string& extension_app_id);
 
 #if defined(USE_X11)
   // Returns filename of the desktop shortcut used to launch the browser.
@@ -97,7 +98,7 @@ class ShellIntegration {
   // used to launch Chrome.
   static std::string GetDesktopFileContents(
       const std::string& template_contents, const GURL& url,
-      const string16& extension_id, const string16& title,
+      const std::string& extension_id, const string16& title,
       const std::string& icon_name);
 
   static void CreateDesktopShortcut(const ShortcutInfo& shortcut_info,

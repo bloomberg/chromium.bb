@@ -287,7 +287,7 @@ TEST(ShellIntegrationTest, GetDesktopFileContents) {
               ShellIntegration::GetDesktopFileContents(
                   test_cases[i].template_contents,
                   GURL(test_cases[i].url),
-                  EmptyString16(),
+                  "",
                   ASCIIToUTF16(test_cases[i].title),
                   test_cases[i].icon_name));
   }
