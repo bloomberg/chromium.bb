@@ -46,7 +46,8 @@ class DescWrapperFactory {
   // We will doubtless want more specific factory methods.  For now,
   // we provide a wide-open method.
   DescWrapper* MakeGeneric(struct NaClDesc* desc);
-
+  // Same as above but unrefs desc in case of failure
+  DescWrapper* MakeGenericCleanup(struct NaClDesc* desc);
   // Utility routine for importing sync socket
   DescWrapper* ImportSyncSocketHandle(NaClHandle handle);
   // Utility routine for importing Linux/Mac (posix) and Windows shared memory.

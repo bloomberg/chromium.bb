@@ -134,10 +134,8 @@ DescWrapperFactory::~DescWrapperFactory() {
 }
 
 int DescWrapperFactory::MakeBoundSock(DescWrapper* pair[2]) {
-  // Return an error if the factory wasn't properly initialized.
-  if (!common_data_->is_initialized()) {
-    return -1;
-  }
+  CHECK(common_data_->is_initialized());
+
   struct NaClDesc* descs[2] = { NULL, NULL };
   DescWrapper* tmp_pair[2] = { NULL, NULL };
 
@@ -168,41 +166,21 @@ int DescWrapperFactory::MakeBoundSock(DescWrapper* pair[2]) {
 }
 
 DescWrapper* DescWrapperFactory::MakeImcSock(NaClHandle handle) {
-  // Return an error if the factory wasn't properly initialized.
-  if (!common_data_->is_initialized()) {
+  struct NaClDescImcDesc* desc =
+    reinterpret_cast<NaClDescImcDesc*>(calloc(1, sizeof *desc));
+  if (NULL == desc) {
     return NULL;
   }
-  struct NaClDescImcDesc* imc_desc = NULL;
-  DescWrapper* wrapper = NULL;
+  if (!NaClDescImcDescCtor(desc, handle)) {
+    free(desc);
+    return NULL;
+  }
 
-  imc_desc = reinterpret_cast<NaClDescImcDesc*>(
-      calloc(1, sizeof(*imc_desc)));
-  if (NULL == imc_desc) {
-    goto cleanup;
-  }
-  if (!NaClDescImcDescCtor(imc_desc, handle)) {
-    free(imc_desc);
-    imc_desc = NULL;
-    goto cleanup;
-  }
-  wrapper = new(std::nothrow)
-      DescWrapper(common_data_, reinterpret_cast<struct NaClDesc*>(imc_desc));
-  if (NULL == wrapper) {
-    goto cleanup;
-  }
-  imc_desc = NULL;  // DescWrapper takes ownership of imc_desc.
-  return wrapper;
-
- cleanup:
-  NaClDescSafeUnref(reinterpret_cast<struct NaClDesc*>(imc_desc));
-  return NULL;
+  return MakeGenericCleanup(reinterpret_cast<struct NaClDesc*>(desc));
 }
 
 DescWrapper* DescWrapperFactory::MakeShm(size_t size) {
-  // Return an error if the factory wasn't properly initialized.
-  if (!common_data_->is_initialized()) {
-    return NULL;
-  }
+  CHECK(common_data_->is_initialized());
   // HACK: there's an inlining issue with this.
   // size_t rounded_size = NaClRoundAllocPage(size);
   size_t rounded_size =
@@ -218,99 +196,61 @@ DescWrapper* DescWrapperFactory::MakeShm(size_t size) {
 
 DescWrapper* DescWrapperFactory::ImportShmHandle(NaClHandle handle,
                                                  size_t size) {
-  struct NaClDescImcShm* imc_desc = NULL;
-  DescWrapper* wrapper = NULL;
+  struct NaClDescImcShm* desc =
+    reinterpret_cast<NaClDescImcShm*>(calloc(1, sizeof *desc));
+  if (NULL == desc) {
+    return NULL;
+  }
+  if (!NaClDescImcShmCtor(desc, handle, size)) {
+    free(desc);
+    return NULL;
+  }
 
-  imc_desc = reinterpret_cast<NaClDescImcShm*>(
-      calloc(1, sizeof(*imc_desc)));
-  if (NULL == imc_desc) {
-    goto cleanup;
-  }
-  if (!NaClDescImcShmCtor(imc_desc, handle, size)) {
-    free(imc_desc);
-    imc_desc = NULL;
-    goto cleanup;
-  }
-  wrapper = new(std::nothrow)
-      DescWrapper(common_data_, reinterpret_cast<struct NaClDesc*>(imc_desc));
-  if (NULL == wrapper) {
-    goto cleanup;
-  }
-  imc_desc = NULL;  // DescWrapper takes ownership of imc_desc.
-  return wrapper;
-
- cleanup:
-  NaClDescSafeUnref(reinterpret_cast<struct NaClDesc*>(imc_desc));
-  return NULL;
+  return MakeGenericCleanup(reinterpret_cast<struct NaClDesc*>(desc));
 }
 
 DescWrapper* DescWrapperFactory::ImportSyncSocketHandle(NaClHandle handle) {
-  struct NaClDescSyncSocket* ss_desc = NULL;
-  DescWrapper* wrapper = NULL;
+  struct NaClDescSyncSocket* desc =
+    static_cast<NaClDescSyncSocket*>(calloc(1, sizeof *desc));
+  if (NULL == desc) {
+    return NULL;
+  }
+  if (!NaClDescSyncSocketCtor(desc, handle)) {
+    free(desc);
+    return NULL;
+  }
 
-  ss_desc = static_cast<NaClDescSyncSocket*>(
-      calloc(1, sizeof(*ss_desc)));
-  if (NULL == ss_desc) {
-    // TODO(sehr): Gotos are awful.  Add a scoped_ptr variant that
-    // invokes NaClDescSafeUnref.
-    goto cleanup;
-  }
-  if (!NaClDescSyncSocketCtor(ss_desc, handle)) {
-    free(ss_desc);
-    ss_desc = NULL;
-    goto cleanup;
-  }
-  wrapper = new DescWrapper(common_data_, &ss_desc->base);
-  if (NULL == wrapper) {
-    goto cleanup;
-  }
-  ss_desc = NULL;  // DescWrapper takes ownership of ss_desc.
-  return wrapper;
-
- cleanup:
-  NaClDescSafeUnref(&ss_desc->base);
-  return NULL;
+  return MakeGenericCleanup(reinterpret_cast<struct NaClDesc*>(desc));
 }
 
 #if NACL_LINUX
 DescWrapper* DescWrapperFactory::ImportSysvShm(int key, size_t size) {
-  struct NaClDescSysvShm* sysv_desc = NULL;
-  DescWrapper* wrapper = NULL;
-  size_t rounded_size = 0;
-
   if (kSizeTMax - NACL_PAGESIZE + 1 <= size) {
     // Avoid overflow when rounding to the nearest 4K and casting to
     // nacl_off64_t by preventing negative size.
-    goto cleanup;
+    return NULL;
   }
   // HACK: there's an inlining issue with using NaClRoundPage. (See above.)
   // rounded_size = NaClRoundPage(size);
-  rounded_size =
+  size_t rounded_size =
       (size + NACL_PAGESIZE - 1) & ~static_cast<size_t>(NACL_PAGESIZE - 1);
-  sysv_desc = reinterpret_cast<NaClDescSysvShm*>(
-      calloc(1, sizeof(*sysv_desc)));
-  if (NULL == sysv_desc) {
-    goto cleanup;
+  struct NaClDescSysvShm* desc =
+    reinterpret_cast<NaClDescSysvShm*>(calloc(1, sizeof *desc));
+  if (NULL == desc) {
+    return NULL;
   }
-  if (!NaClDescSysvShmImportCtor(sysv_desc,
+
+  if (!NaClDescSysvShmImportCtor(desc,
                                  key,
                                  static_cast<nacl_off64_t>(rounded_size))) {
     // If rounded_size is negative due to overflow from rounding, it will be
     // rejected here by NaClDescSysvShmImportCtor.
-    free(sysv_desc);
-    sysv_desc = NULL;
-    goto cleanup;
+    free(desc);
+    return NULL;
   }
-  wrapper = new(std::nothrow)
-      DescWrapper(common_data_, reinterpret_cast<struct NaClDesc*>(sysv_desc));
-  if (NULL == wrapper) {
-    goto cleanup;
-  }
-  return wrapper;
 
- cleanup:
-  NaClDescSafeUnref(reinterpret_cast<struct NaClDesc*>(sysv_desc));
-  return NULL;
+  return
+    MakeGenericCleanup(reinterpret_cast<struct NaClDesc*>(desc));
 }
 #endif  // NACL_LINUX
 
@@ -365,18 +305,23 @@ DescWrapper* DescWrapperFactory::ImportPepperSync(intptr_t sync_int) {
 #endif  // NACL_STANDALONE
 
 DescWrapper* DescWrapperFactory::MakeGeneric(struct NaClDesc* desc) {
-  // Return an error if the factory wasn't properly initialized.
-  if (!common_data_->is_initialized()) {
-    return NULL;
-  }
+  CHECK(common_data_->is_initialized());
   return new(std::nothrow) DescWrapper(common_data_, desc);
 }
 
-int DescWrapperFactory::MakeSocketPair(DescWrapper* pair[2]) {
-  // Return an error if the factory wasn't properly initialized.
-  if (!common_data_->is_initialized()) {
-    return -1;
+
+DescWrapper* DescWrapperFactory::MakeGenericCleanup(struct NaClDesc* desc) {
+  CHECK(common_data_->is_initialized());
+  DescWrapper* wrapper = new(std::nothrow) DescWrapper(common_data_, desc);
+  if (NULL != wrapper) {
+      return wrapper;
   }
+  NaClDescSafeUnref(desc);
+  return NULL;
+}
+
+int DescWrapperFactory::MakeSocketPair(DescWrapper* pair[2]) {
+  CHECK(common_data_->is_initialized());
   struct NaClDesc* descs[2] = { NULL, NULL };
   DescWrapper* tmp_pair[2] = { NULL, NULL };
 
@@ -415,64 +360,39 @@ DescWrapper* DescWrapperFactory::MakeFileDesc(int host_os_desc, int mode) {
 
   // The wrapper takes ownership of NaClDesc and hence NaClDescIoDesc,
   // which already took ownership of NaClHostDesc.
-  DescWrapper* wrapper = MakeGeneric(desc);
-  if (wrapper == NULL) {
-    NaClDescUnref(desc);  // This will unref the underlying structs.
-  }
-  return wrapper;
+  return MakeGenericCleanup(desc);
 }
 
 DescWrapper* DescWrapperFactory::OpenHostFile(const char* fname,
                                               int flags,
                                               int mode) {
-  struct NaClHostDesc *nhdp = NULL;
-  struct NaClDescIoDesc *ndiodp = NULL;
-  DescWrapper* wrapper = NULL;
-
-  nhdp = reinterpret_cast<struct NaClHostDesc*>(
-      calloc(1, sizeof(*nhdp)));
+  struct NaClHostDesc* nhdp =
+    reinterpret_cast<struct NaClHostDesc*>(calloc(1, sizeof(*nhdp)));
   if (NULL == nhdp) {
-    goto cleanup;
+    return NULL;
   }
   if (0 != NaClHostDescOpen(nhdp, fname, flags, mode)) {
-    goto cleanup;
+    free(nhdp);
+    return NULL;
   }
-  ndiodp = NaClDescIoDescMake(nhdp);
+  struct NaClDescIoDesc* ndiodp = NaClDescIoDescMake(nhdp);
   if (NULL == ndiodp) {
     NaClHostDescClose(nhdp);
     free(nhdp);
-    nhdp = NULL;
-    goto cleanup;
+    return NULL;
   }
-  nhdp = NULL;  // IoDesc took ownership of nhd
-  wrapper = MakeGeneric(reinterpret_cast<struct NaClDesc*>(ndiodp));
-  if (NULL == wrapper) {
-    goto cleanup;
-  }
-  return wrapper;
 
- cleanup:
-  NaClDescSafeUnref(reinterpret_cast<struct NaClDesc*>(ndiodp));
-  free(nhdp);
-  return NULL;
+  return MakeGenericCleanup(reinterpret_cast<struct NaClDesc*>(ndiodp));
 }
 
 DescWrapper* DescWrapperFactory::MakeInvalid() {
-  DescWrapper* wrapper = NULL;
   struct NaClDescInvalid *desc =
       const_cast<NaClDescInvalid*>(NaClDescInvalidMake());
   if (NULL == desc) {
-    goto cleanup;
+    return NULL;
   }
-  wrapper = MakeGeneric(reinterpret_cast<struct NaClDesc*>(desc));
-  if (NULL == wrapper) {
-    goto cleanup;
-  }
-  return wrapper;
 
- cleanup:
-  NaClDescSafeUnref(reinterpret_cast<struct NaClDesc*>(desc));
-  return NULL;
+  return MakeGenericCleanup(reinterpret_cast<struct NaClDesc*>(desc));
 }
 
 DescWrapper::DescWrapper(DescWrapperCommon* common_data,
