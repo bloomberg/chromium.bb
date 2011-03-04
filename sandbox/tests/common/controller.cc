@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,9 +6,9 @@
 
 #include <string>
 
+#include "base/win/windows_version.h"
 #include "sandbox/src/sandbox_factory.h"
 #include "sandbox/src/sandbox_utils.h"
-#include "sandbox/src/wow64.h"
 
 namespace {
 
@@ -55,11 +55,9 @@ std::wstring MakePathToSysWow64(const wchar_t* name, bool is_obj_man_path) {
 namespace sandbox {
 
 std::wstring MakePathToSys(const wchar_t* name, bool is_obj_man_path) {
-  Wow64 current_proc(NULL, NULL);
-  if (current_proc.IsWow64())
+  if (base::win::GetWOW64Status() == base::win::WOW64_ENABLED)
     return MakePathToSysWow64(name, is_obj_man_path);
-  else
-    return MakePathToSys32(name, is_obj_man_path);
+  return MakePathToSys32(name, is_obj_man_path);
 }
 
 BrokerServices* GetBroker() {
@@ -140,8 +138,7 @@ bool TestRunner::AddRuleSys32(TargetPolicy::Semantics semantics,
   if (!AddRule(TargetPolicy::SUBSYS_FILES, semantics, win32_path.c_str()))
     return false;
 
-  Wow64 current_proc(NULL, NULL);
-  if (!current_proc.IsWow64())
+  if (base::win::GetWOW64Status() != base::win::WOW64_ENABLED)
     return true;
 
   win32_path = MakePathToSysWow64(pattern, false);

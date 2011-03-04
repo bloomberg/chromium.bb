@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -424,9 +424,9 @@ bool InterceptionManager::PatchClientFunctions(DllInterceptionData* thunks,
       return false;
   }
 
-  Wow64 WowHelper(child_, ntdll_base);
   if (base::win::GetVersion() <= base::win::VERSION_VISTA) {
-    if (!WowHelper.WaitForNtdll(INFINITE))
+    Wow64 WowHelper(child_, ntdll_base);
+    if (!WowHelper.WaitForNtdll())
       return false;
   }
 
@@ -438,7 +438,7 @@ bool InterceptionManager::PatchClientFunctions(DllInterceptionData* thunks,
 #endif
 
   ServiceResolverThunk* thunk;
-  if (WowHelper.IsWow64())
+  if (base::win::GetWOW64Status() == base::win::WOW64_ENABLED)
     thunk = new Wow64ResolverThunk(child_->Process(), relaxed_);
   else if (!IsXPSP2OrLater())
     thunk = new Win2kResolverThunk(child_->Process(), relaxed_);

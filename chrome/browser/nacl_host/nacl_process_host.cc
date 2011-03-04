@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -13,6 +13,7 @@
 #include "base/command_line.h"
 #include "base/metrics/nacl_histogram.h"
 #include "base/utf_string_conversions.h"
+#include "base/win/windows_version.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/logging_chrome.h"
 #include "chrome/common/nacl_cmd_line.h"
@@ -58,7 +59,7 @@ NaClProcessHost::NaClProcessHost(
       running_on_wow64_(false) {
   set_name(url);
 #if defined(OS_WIN)
-  CheckIsWow64();
+  running_on_wow64_ = (base::win::GetWOW64Status() == base::win::WOW64_ENABLED);
 #endif
 }
 
@@ -301,24 +302,3 @@ bool NaClProcessHost::OnMessageReceived(const IPC::Message& msg) {
 bool NaClProcessHost::CanShutdown() {
   return true;
 }
-
-#if defined(OS_WIN)
-// TODO(gregoryd): invoke CheckIsWow64 only once, not for each NaClProcessHost
-typedef BOOL (WINAPI *LPFN_ISWOW64PROCESS) (HANDLE, PBOOL);
-void NaClProcessHost::CheckIsWow64() {
-  LPFN_ISWOW64PROCESS fnIsWow64Process;
-
-  fnIsWow64Process = (LPFN_ISWOW64PROCESS) GetProcAddress(
-      GetModuleHandle(TEXT("kernel32")),
-      "IsWow64Process");
-
-  if (fnIsWow64Process != NULL) {
-    BOOL bIsWow64 = FALSE;
-    if (fnIsWow64Process(GetCurrentProcess(),&bIsWow64)) {
-      if (bIsWow64) {
-        running_on_wow64_ = true;
-      }
-    }
-  }
-}
-#endif

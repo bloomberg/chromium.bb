@@ -19,6 +19,7 @@
 #include "base/utf_string_conversions.h"
 #include "base/version.h"
 #include "base/win/registry.h"
+#include "base/win/windows_version.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/installer/setup/install.h"
 #include "chrome/installer/setup/setup_constants.h"
@@ -38,24 +39,6 @@
 #include "chrome_tab.h"  // NOLINT
 
 using base::win::RegKey;
-
-namespace {
-
-// This method tells if we are running on 64 bit platform so that we can copy
-// one extra exe. If the API call to determine 64 bit fails, we play it safe
-// and return true anyway so that the executable can be copied.
-bool Is64bit() {
-  typedef BOOL (WINAPI* WOW_FUNC)(HANDLE, BOOL*);
-  BOOL is_64 = FALSE;
-
-  HMODULE module = GetModuleHandle(L"kernel32.dll");
-  WOW_FUNC is_wow64 = reinterpret_cast<WOW_FUNC>(
-      GetProcAddress(module, "IsWow64Process"));
-  return (is_wow64 != NULL) &&
-           (!(is_wow64)(GetCurrentProcess(), &is_64) || (is_64 != FALSE));
-}
-
-}  // namespace
 
 namespace installer {
 
@@ -556,7 +539,9 @@ void AddInstallWorkItems(const InstallationState& original_state,
       temp_path.value(), WorkItem::NEW_NAME_IF_IN_USE, new_chrome_exe.value());
 
   // Extra executable for 64 bit systems.
-  if (Is64bit()) {
+  // NOTE: We check for "not disabled" so that if the API call fails, we play it
+  // safe and copy the executable anyway.
+  if (base::win::GetWOW64Status() != base::win::WOW64_DISABLED) {
     install_list->AddMoveTreeWorkItem(
         src_path.Append(installer::kWowHelperExe).value(),
         target_path.Append(installer::kWowHelperExe).value(),

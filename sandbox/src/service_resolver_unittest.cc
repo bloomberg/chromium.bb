@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,10 +6,10 @@
 
 #include "base/basictypes.h"
 #include "base/scoped_ptr.h"
+#include "base/win/windows_version.h"
 #include "sandbox/src/resolver.h"
 #include "sandbox/src/sandbox_utils.h"
 #include "sandbox/src/service_resolver.h"
-#include "sandbox/src/wow64.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace {
@@ -120,18 +120,11 @@ NTSTATUS PatchNtdllWithResolver(const char* function, bool relaxed,
 }
 
 sandbox::ServiceResolverThunk* GetTestResolver(bool relaxed) {
-  HMODULE ntdll_base = ::GetModuleHandle(L"ntdll.dll");
-  EXPECT_TRUE(NULL != ntdll_base);
-  sandbox::Wow64 WowHelper(NULL, ntdll_base);
-
-  sandbox::ServiceResolverThunk* resolver;
-  if (WowHelper.IsWow64())
-    resolver = new Wow64ResolverTest(relaxed);
-  else if (!sandbox::IsXPSP2OrLater())
-    resolver = new Win2kResolverTest(relaxed);
-  else
-    resolver = new WinXpResolverTest(relaxed);
-  return resolver;
+  if (base::win::GetWOW64Status() == base::win::WOW64_ENABLED)
+    return new Wow64ResolverTest(relaxed);
+  if (!sandbox::IsXPSP2OrLater())
+    return new Win2kResolverTest(relaxed);
+  return new WinXpResolverTest(relaxed);
 }
 
 NTSTATUS PatchNtdll(const char* function, bool relaxed) {

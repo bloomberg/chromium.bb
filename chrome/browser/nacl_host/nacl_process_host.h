@@ -54,11 +54,6 @@ class NaClProcessHost : public BrowserChildProcessHost {
 
   virtual bool CanShutdown();
 
-#if defined(OS_WIN)
-  // Check whether the browser process is running on WOW64 - Windows only
-  void CheckIsWow64();
-#endif
-
  private:
   ResourceDispatcherHost* resource_dispatcher_host_;
 

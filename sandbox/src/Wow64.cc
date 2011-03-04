@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -8,7 +8,7 @@
 
 #include "base/logging.h"
 #include "base/scoped_ptr.h"
-#include "sandbox/src/sandbox.h"
+#include "base/win/windows_version.h"
 #include "sandbox/src/target_process.h"
 
 namespace {
@@ -80,33 +80,6 @@ Wow64::~Wow64() {
     ::CloseHandle(continue_load_);
 }
 
-bool Wow64::IsWow64() {
-  if (init_)
-    return is_wow64_;
-
-  is_wow64_ = false;
-
-  HMODULE kernel32 = ::GetModuleHandle(sandbox::kKerneldllName);
-  if (!kernel32)
-    return false;
-
-  IsWow64ProcessFunction is_wow64_process = reinterpret_cast<
-      IsWow64ProcessFunction>(::GetProcAddress(kernel32, "IsWow64Process"));
-
-  init_ = true;
-  if (!is_wow64_process)
-    return false;
-
-  BOOL wow64;
-  if (!is_wow64_process(::GetCurrentProcess(), &wow64))
-    return false;
-
-  if (wow64)
-    is_wow64_ = true;
-
-  return is_wow64_;
-}
-
 // The basic idea is to allocate one page of memory on the child, and initialize
 // the first part of it with our version of PatchInfo32. Then launch the helper
 // process passing it that address on the child. The helper process will patch
@@ -114,9 +87,8 @@ bool Wow64::IsWow64() {
 // first event on the buffer. We'll be waiting on that event and after the 32
 // bit version of ntdll is loaded, we'll remove the interception and return to
 // our caller.
-bool Wow64::WaitForNtdll(DWORD timeout_ms) {
-  DCHECK(!init_);
-  if (!IsWow64())
+bool Wow64::WaitForNtdll() {
+  if (base::win::GetWOW64Status() != base::win::WOW64_ENABLED)
     return true;
 
   const size_t page_size = 4096;
@@ -151,19 +123,19 @@ bool Wow64::WaitForNtdll(DWORD timeout_ms) {
   if (offsetof(PatchInfo32, section) != written)
     return false;
 
-  if (!RunWowHelper(buffer, timeout_ms))
+  if (!RunWowHelper(buffer))
     return false;
 
   // The child is intercepted on 64 bit, go on and wait for our event.
-  if (!DllMapped(timeout_ms))
+  if (!DllMapped())
     return false;
 
   // The 32 bit version is available, cleanup the child.
   return Restore64Code(child_->Process(), patch_info);
 }
 
-bool Wow64::RunWowHelper(void* buffer, DWORD timeout_ms) {
-  COMPILE_ASSERT(sizeof(buffer) <= sizeof(timeout_ms), unsupported_64_bits);
+bool Wow64::RunWowHelper(void* buffer) {
+  COMPILE_ASSERT(sizeof(buffer) <= sizeof DWORD, unsupported_64_bits);
 
   // Get the path to the helper (beside the exe).
   wchar_t prog_name[MAX_PATH];
@@ -188,7 +160,7 @@ bool Wow64::RunWowHelper(void* buffer, DWORD timeout_ms) {
                        NULL, &startup_info, &process_info))
     return false;
 
-  DWORD reason = ::WaitForSingleObject(process_info.hProcess, timeout_ms);
+  DWORD reason = ::WaitForSingleObject(process_info.hProcess, INFINITE);
 
   DWORD code;
   bool ok = ::GetExitCodeProcess(process_info.hProcess, &code) ? true : false;
@@ -204,14 +176,14 @@ bool Wow64::RunWowHelper(void* buffer, DWORD timeout_ms) {
 
 // First we must wake up the child, then wait for dll loads on the child until
 // the one we care is loaded; at that point we must suspend the child again.
-bool Wow64::DllMapped(DWORD timeout_ms) {
+bool Wow64::DllMapped() {
   if (1 != ::ResumeThread(child_->MainThread())) {
     NOTREACHED();
     return false;
   }
 
   for (;;) {
-    DWORD reason = ::WaitForSingleObject(dll_load_, timeout_ms);
+    DWORD reason = ::WaitForSingleObject(dll_load_, INFINITE);
     if (WAIT_TIMEOUT == reason || WAIT_ABANDONED == reason)
       return false;
 
