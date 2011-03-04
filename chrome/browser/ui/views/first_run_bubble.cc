@@ -474,27 +474,28 @@ FirstRunBubble* FirstRunBubble::Show(Profile* profile,
                                      const gfx::Rect& position_relative_to,
                                      BubbleBorder::ArrowLocation arrow_location,
                                      FirstRun::BubbleType bubble_type) {
-  FirstRunBubble* window = new FirstRunBubble();
+  FirstRunBubble* bubble = new FirstRunBubble();
   FirstRunBubbleViewBase* view = NULL;
 
   switch (bubble_type) {
     case FirstRun::OEM_BUBBLE:
-      view = new FirstRunOEMBubbleView(window, profile);
+      view = new FirstRunOEMBubbleView(bubble, profile);
       break;
     case FirstRun::LARGE_BUBBLE:
-      view = new FirstRunBubbleView(window, profile);
+      view = new FirstRunBubbleView(bubble, profile);
       break;
     case FirstRun::MINIMAL_BUBBLE:
-      view = new FirstRunMinimalBubbleView(window, profile);
+      view = new FirstRunMinimalBubbleView(bubble, profile);
       break;
     default:
       NOTREACHED();
   }
-  window->set_view(view);
-  window->Init(parent, position_relative_to, arrow_location, view, window);
-  window->GetFocusManager()->AddFocusChangeListener(view);
+  bubble->set_view(view);
+  bubble->InitBubble(
+      parent, position_relative_to, arrow_location, view, bubble);
+  bubble->GetFocusManager()->AddFocusChangeListener(view);
   view->BubbleShown();
-  return window;
+  return bubble;
 }
 
 FirstRunBubble::FirstRunBubble()
