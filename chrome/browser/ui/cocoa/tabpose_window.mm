@@ -191,13 +191,15 @@ void ThumbnailLoader::LoadThumbnail() {
   // means I need to create InfoBarControllers here.
   NSWindow* window = [contents_->GetNativeView() window];
   NSWindowController* windowController = [window windowController];
-  DCHECK(windowController);
   if ([windowController isKindOfClass:[BrowserWindowController class]]) {
     BrowserWindowController* bwc =
         static_cast<BrowserWindowController*>(windowController);
     InfoBarContainerController* infoBarContainer =
         [bwc infoBarContainerController];
-    topOffset += NSHeight([[infoBarContainer view] frame]);
+    // TODO(thakis|rsesek): This is not correct for background tabs with
+    // infobars as the aspect ratio will be wrong. Fix that.
+    topOffset += NSHeight([[infoBarContainer view] frame]) -
+        [infoBarContainer antiSpoofHeight];
   }
 
   bool always_show_bookmark_bar =
