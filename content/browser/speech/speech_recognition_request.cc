@@ -120,12 +120,11 @@ SpeechRecognitionRequest::SpeechRecognitionRequest(
 
 SpeechRecognitionRequest::~SpeechRecognitionRequest() {}
 
-bool SpeechRecognitionRequest::Send(const std::string& language,
-                                    const std::string& grammar,
-                                    const std::string& hardware_info,
-                                    const std::string& origin_url,
-                                    const std::string& content_type,
-                                    const std::string& audio_data) {
+void SpeechRecognitionRequest::Start(const std::string& language,
+                                     const std::string& grammar,
+                                     const std::string& hardware_info,
+                                     const std::string& origin_url,
+                                     const std::string& content_type) {
   DCHECK(!url_fetcher_.get());
 
   std::vector<std::string> parts;
@@ -160,7 +159,7 @@ bool SpeechRecognitionRequest::Send(const std::string& language,
                                         url,
                                         URLFetcher::POST,
                                         this));
-  url_fetcher_->set_upload_data(content_type, audio_data);
+  url_fetcher_->set_chunked_upload(content_type);
   url_fetcher_->set_request_context(url_context_);
   url_fetcher_->set_referrer(origin_url);
 
@@ -172,7 +171,12 @@ bool SpeechRecognitionRequest::Send(const std::string& language,
       net::LOAD_DO_NOT_SAVE_COOKIES | net::LOAD_DO_NOT_SEND_COOKIES |
       net::LOAD_DO_NOT_SEND_AUTH_DATA);
   url_fetcher_->Start();
-  return true;
+}
+
+void SpeechRecognitionRequest::UploadAudioChunk(const std::string& audio_data,
+                                                bool is_last_chunk) {
+  DCHECK(url_fetcher_.get());
+  url_fetcher_->AppendChunkToUpload(audio_data, is_last_chunk);
 }
 
 void SpeechRecognitionRequest::OnURLFetchComplete(

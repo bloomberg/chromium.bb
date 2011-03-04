@@ -138,9 +138,21 @@ TEST_F(SpeechRecognizerTest, StopWithData) {
   ASSERT_TRUE(controller);
   controller = audio_input_controller_factory_.controller();
   ASSERT_TRUE(controller);
-  controller->event_handler()->OnData(controller, &audio_packet_[0],
-                                      audio_packet_.size());
-  MessageLoop::current()->RunAllPending();
+
+  // Try sending 5 chunks of mock audio data and verify that each of them
+  // resulted immediately in a packet sent out via the network. This verifies
+  // that we are streaming out encoded data as chunks without waiting for the
+  // full recording to complete.
+  const size_t kNumChunks = 5;
+  for (size_t i = 0; i < kNumChunks; ++i) {
+    controller->event_handler()->OnData(controller, &audio_packet_[0],
+                                        audio_packet_.size());
+    MessageLoop::current()->RunAllPending();
+    TestURLFetcher* fetcher = url_fetcher_factory_.GetFetcherByID(0);
+    ASSERT_TRUE(fetcher);
+    EXPECT_EQ(i + 1, fetcher->upload_chunks().size());
+  }
+
   recognizer_->StopRecording();
   EXPECT_TRUE(recording_complete_);
   EXPECT_FALSE(recognition_complete_);
@@ -161,8 +173,8 @@ TEST_F(SpeechRecognizerTest, StopWithData) {
 }
 
 TEST_F(SpeechRecognizerTest, CancelWithData) {
-  // Start recording, give some data and then cancel. This should not create
-  // a network request and finish immediately.
+  // Start recording, give some data and then cancel. This should create
+  // a network request but give no callbacks.
   EXPECT_TRUE(recognizer_->StartRecording());
   TestAudioInputController* controller =
       audio_input_controller_factory_.controller();
@@ -171,7 +183,7 @@ TEST_F(SpeechRecognizerTest, CancelWithData) {
                                       audio_packet_.size());
   MessageLoop::current()->RunAllPending();
   recognizer_->CancelRecognition();
-  EXPECT_EQ(NULL, url_fetcher_factory_.GetFetcherByID(0));
+  ASSERT_TRUE(url_fetcher_factory_.GetFetcherByID(0));
   EXPECT_FALSE(recording_complete_);
   EXPECT_FALSE(recognition_complete_);
   EXPECT_FALSE(result_received_);
@@ -203,7 +215,7 @@ TEST_F(SpeechRecognizerTest, AudioControllerErrorWithData) {
                                       audio_packet_.size());
   controller->event_handler()->OnError(controller, 0);
   MessageLoop::current()->RunAllPending();
-  EXPECT_EQ(NULL, url_fetcher_factory_.GetFetcherByID(0));
+  ASSERT_TRUE(url_fetcher_factory_.GetFetcherByID(0));
   EXPECT_FALSE(recording_complete_);
   EXPECT_FALSE(recognition_complete_);
   EXPECT_FALSE(result_received_);

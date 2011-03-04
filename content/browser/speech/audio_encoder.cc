@@ -181,7 +181,7 @@ AudioEncoder::~AudioEncoder() {
   STLDeleteElements(&audio_buffers_);
 }
 
-bool AudioEncoder::GetEncodedData(std::string* encoded_data) {
+bool AudioEncoder::GetEncodedDataAndClear(std::string* encoded_data) {
   if (!audio_buffers_.size())
     return false;
 
@@ -195,6 +195,8 @@ bool AudioEncoder::GetEncodedData(std::string* encoded_data) {
        it != audio_buffers_.end(); ++it) {
     encoded_data->append(*(*it));
   }
+
+  STLDeleteElements(&audio_buffers_);
 
   return true;
 }

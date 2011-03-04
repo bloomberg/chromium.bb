@@ -46,8 +46,9 @@ class SpeechRecognitionRequestTest : public SpeechRecognitionRequestDelegate,
 void SpeechRecognitionRequestTest::CreateAndTestRequest(
     bool success, const std::string& http_response) {
   SpeechRecognitionRequest request(NULL, this);
-  request.Send(std::string(), std::string(), std::string(), std::string(),
-               std::string(), std::string());
+  request.Start(std::string(), std::string(), std::string(), std::string(),
+                std::string());
+  request.UploadAudioChunk(std::string(" "), true);
   TestURLFetcher* fetcher = url_fetcher_factory_.GetFetcherByID(0);
   ASSERT_TRUE(fetcher);
   net::URLRequestStatus status;

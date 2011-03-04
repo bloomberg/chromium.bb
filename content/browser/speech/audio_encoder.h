@@ -37,7 +37,7 @@ class AudioEncoder {
 
   // Copies the encoded audio to the given string. Returns true if the output
   // is not empty.
-  bool GetEncodedData(std::string* encoded_data);
+  bool GetEncodedDataAndClear(std::string* encoded_data);
 
   const std::string& mime_type() { return mime_type_; }
 

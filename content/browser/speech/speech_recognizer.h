@@ -114,7 +114,6 @@ class SpeechRecognizer
   static const int kEndpointerEstimationTimeMs;
 
  private:
-  void ReleaseAudioBuffers();
   void InformErrorAndCancelRecognition(ErrorCode error);
   void SendRecordedAudioToServer();
 

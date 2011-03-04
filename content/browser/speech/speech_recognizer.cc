@@ -141,32 +141,28 @@ void SpeechRecognizer::StopRecording() {
   VLOG(1) << "SpeechRecognizer stopping record.";
   audio_controller_->Close();
   audio_controller_ = NULL;  // Releases the ref ptr.
-  encoder_->Flush();
 
   delegate_->DidCompleteRecording(caller_id_);
 
-  // Since the http request takes a single string as POST data, allocate
-  // one and copy over bytes from the audio buffers to the string.
-  // And If we haven't got any audio yet end the recognition sequence here.
-  string mime_type = encoder_->mime_type();
-  string data;
-  encoder_->GetEncodedData(&data);
+  // UploadAudioChunk requires a non-empty final buffer. So we encode a packet
+  // of silence in case encoder had no data already.
+  std::vector<short> samples((kAudioSampleRate * kAudioPacketIntervalMs) /
+                             1000);
+  encoder_->Encode(&samples[0], samples.size());
+  encoder_->Flush();
+  string encoded_data;
+  encoder_->GetEncodedDataAndClear(&encoded_data);
+  DCHECK(!encoded_data.empty());
   encoder_.reset();
 
-  if (data.empty()) {
+  // If we haven't got any audio yet end the recognition sequence here.
+  if (request_ == NULL) {
     // Guard against the delegate freeing us until we finish our job.
     scoped_refptr<SpeechRecognizer> me(this);
     delegate_->DidCompleteRecognition(caller_id_);
   } else {
-    DCHECK(!request_.get());
-    request_.reset(new SpeechRecognitionRequest(
-        Profile::GetDefaultRequestContext(), this));
-    request_->Send(language_, grammar_, hardware_info_, origin_url_,
-                   mime_type, data);
+    request_->UploadAudioChunk(encoded_data, true /* is_last_chunk */);
   }
-}
-
-void SpeechRecognizer::ReleaseAudioBuffers() {
 }
 
 // Invoked in the audio thread.
@@ -214,13 +210,26 @@ void SpeechRecognizer::HandleOnData(string* data) {
   const short* samples = reinterpret_cast<const short*>(data->data());
   DCHECK((data->length() % sizeof(short)) == 0);
   int num_samples = data->length() / sizeof(short);
-
   encoder_->Encode(samples, num_samples);
   float rms;
   endpointer_.ProcessAudio(samples, num_samples, &rms);
   bool did_clip = Clipping(samples, num_samples);
   delete data;
   num_samples_recorded_ += num_samples;
+
+  if (request_ == NULL) {
+    // This was the first audio packet recorded, so start a request to the
+    // server to send the data.
+    request_.reset(new SpeechRecognitionRequest(
+        Profile::GetDefaultRequestContext(), this));
+    request_->Start(language_, grammar_, hardware_info_, origin_url_,
+                    encoder_->mime_type());
+  }
+
+  string encoded_data;
+  encoder_->GetEncodedDataAndClear(&encoded_data);
+  DCHECK(!encoded_data.empty());
+  request_->UploadAudioChunk(encoded_data, false /* is_last_chunk */);
 
   if (endpointer_.IsEstimatingEnvironment()) {
     // Check if we have gathered enough audio for the endpointer to do

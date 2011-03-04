@@ -6,6 +6,7 @@
 #define CHROME_COMMON_NET_TEST_URL_FETCHER_FACTORY_H_
 #pragma once
 
+#include <list>
 #include <map>
 #include <string>
 #include <utility>
@@ -51,6 +52,10 @@ class TestURLFetcher : public URLFetcher {
   // Overriden to do nothing. It is assumed the caller will notify the delegate.
   virtual void Start() {}
 
+  // Overriden to cache the chunks uploaded. Caller can read back the uploaded
+  // chunks with the upload_data() accessor.
+  virtual void AppendChunkToUpload(const std::string& data, bool is_last_chunk);
+
   // Unique ID in our factory.
   int id() const { return id_; }
 
@@ -62,12 +67,17 @@ class TestURLFetcher : public URLFetcher {
   // Returns the data uploaded on this URLFetcher.
   const std::string& upload_data() const { return URLFetcher::upload_data(); }
 
+  // Returns the chunks of data uploaded on this URLFetcher.
+  const std::list<std::string>& upload_chunks() const { return chunks_; }
+
   // Returns the delegate installed on the URLFetcher.
   Delegate* delegate() const { return URLFetcher::delegate(); }
 
  private:
   const int id_;
   const GURL original_url_;
+  std::list<std::string> chunks_;
+  bool did_receive_last_chunk_;
 
   DISALLOW_COPY_AND_ASSIGN(TestURLFetcher);
 };
