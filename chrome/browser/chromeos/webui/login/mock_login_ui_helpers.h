@@ -18,10 +18,8 @@ class MockProfileOperationsInterface
  public:
   MockProfileOperationsInterface() {}
 
-  MOCK_METHOD0(GetDefaultProfile,
-               Profile*());
-  MOCK_METHOD0(GetDefaultProfileByPath,
-               Profile*());
+  MOCK_METHOD0(GetDefaultProfile, Profile*());
+  MOCK_METHOD0(GetDefaultProfileByPath, Profile*());
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockProfileOperationsInterface);
@@ -32,10 +30,8 @@ class MockBrowserOperationsInterface
  public:
   MockBrowserOperationsInterface() {}
 
-  MOCK_METHOD1(CreateBrowser,
-               Browser*(Profile* profile));
-  MOCK_METHOD1(GetLoginBrowser,
-               Browser*(Profile* profile));
+  MOCK_METHOD1(CreateBrowser, Browser*(Profile* profile));
+  MOCK_METHOD1(GetLoginBrowser, Browser*(Profile* profile));
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockBrowserOperationsInterface);
@@ -46,8 +42,8 @@ class MockHTMLOperationsInterface
  public:
   MockHTMLOperationsInterface() {}
 
-  MOCK_METHOD0(GetLoginHTML,
-               base::StringPiece());
+  MOCK_METHOD0(GetLoginHTML, base::StringPiece());
+  MOCK_METHOD0(GetLoginContainerHTML, base::StringPiece());
   MOCK_METHOD2(GetFullHTML,
                std::string(base::StringPiece login_html,
                            DictionaryValue* localized_strings));

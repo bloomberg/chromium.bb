@@ -8,15 +8,13 @@
 
 #include <string>
 
+#include "base/string_piece.h"
+
 class Browser;
 class DictionaryValue;
 class FilePath;
 class Profile;
 class RefCountedBytes;
-
-namespace base {
-class StringPiece;
-};  // namespace base
 
 namespace chromeos {
 
@@ -65,6 +63,7 @@ class HTMLOperationsInterface {
   virtual ~HTMLOperationsInterface() {}
 
   virtual base::StringPiece GetLoginHTML();
+  virtual base::StringPiece GetLoginContainerHTML();
   virtual std::string GetFullHTML(base::StringPiece login_html,
                                   DictionaryValue* localized_strings);
   virtual RefCountedBytes* CreateHTMLBytes(std::string full_html);

@@ -121,7 +121,6 @@ extern const char kChromeUIGpuInternalsHost[];
 extern const char kChromeUIHistory2Host[];
 extern const char kChromeUIHistoryHost[];
 extern const char kChromeUIKeyboardHost[];
-extern const char kChromeUILoginHost[];
 extern const char kChromeUINetInternalsHost[];
 extern const char kChromeUINewTabHost[];
 extern const char kChromeUIPluginsHost[];
@@ -151,6 +150,11 @@ extern const char kChromeUIMenu[];
 extern const char kChromeUIWrenchMenu[];
 extern const char kChromeUINetworkMenu[];
 extern const char kChromeUIUserImageHost[];
+#endif
+
+#if defined(OS_CHROMEOS) && defined(TOUCH_UI)
+extern const char kChromeUILoginContainerHost[];
+extern const char kChromeUILoginHost[];
 #endif
 
 // Special URL used to start a navigation to an error page.

@@ -10,7 +10,6 @@
 #include "chrome/browser/chromeos/cros/power_library.h"
 #include "chrome/browser/chromeos/webui/login/authenticator_facade.h"
 #include "chrome/browser/chromeos/webui/login/authenticator_facade_cros.h"
-#include "chrome/browser/chromeos/webui/login/authenticator_facade_cros.h"
 #include "chrome/browser/chromeos/webui/login/login_ui.h"
 #include "chrome/browser/chromeos/webui/login/login_ui_helpers.h"
 #include "chrome/browser/profiles/profile.h"

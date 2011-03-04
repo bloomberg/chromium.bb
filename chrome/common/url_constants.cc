@@ -129,7 +129,6 @@ const char kChromeUIHistoryHost[] = "history";
 const char kChromeUIHistory2Host[] = "history2";
 const char kChromeUIInspectorHost[] = "inspector";
 const char kChromeUIKeyboardHost[] = "keyboard";
-const char kChromeUILoginHost[] = "login";
 const char kChromeUINetInternalsHost[] = "net-internals";
 const char kChromeUINewTabHost[] = "newtab";
 const char kChromeUIPluginsHost[] = "plugins";
@@ -159,6 +158,11 @@ const char kChromeUIMenu[] = "menu";
 const char kChromeUIWrenchMenu[] = "wrench-menu";
 const char kChromeUINetworkMenu[] = "network-menu";
 const char kChromeUIUserImageHost[] = "userimage";
+#endif
+
+#if defined(OS_CHROMEOS) && defined(TOUCH_UI)
+const char kChromeUILoginContainerHost[] = "login-container";
+const char kChromeUILoginHost[] = "login";
 #endif
 
 const char kUnreachableWebDataURL[] = "chrome://chromewebdata/";

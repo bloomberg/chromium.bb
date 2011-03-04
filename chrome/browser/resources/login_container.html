@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html>
+<head>
+<link rel="stylesheet" href="login_ui.css" >
+</head>
+
+<body>
+  <div id="sign-in-div">
+    <div id="sign-in-body">
+      <button type="button" id="open-login-screen-button"
+              onclick="callOpenLoginScreen();">
+        Open Login Screen
+      </button>
+    </div>
+  </div>
+</body>
+
+<script>
+function callOpenLoginScreen() {
+  chrome.send('OpenLoginScreen', []);
+}
+</script>
+</html>

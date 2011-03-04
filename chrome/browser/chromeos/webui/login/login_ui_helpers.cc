@@ -73,6 +73,13 @@ base::StringPiece HTMLOperationsInterface::GetLoginHTML() {
   return login_html;
 }
 
+base::StringPiece HTMLOperationsInterface::GetLoginContainerHTML() {
+  base::StringPiece login_html(
+      ResourceBundle::GetSharedInstance().GetRawDataResource(
+          IDR_LOGIN_CONTAINER_HTML));
+  return login_html;
+}
+
 std::string HTMLOperationsInterface::GetFullHTML(
     base::StringPiece login_html,
     DictionaryValue* localized_strings) {

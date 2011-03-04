@@ -726,6 +726,8 @@
         'browser/chromeos/webui/login/authenticator_facade_cros_helpers.h',
         'browser/chromeos/webui/login/login_ui.cc',
         'browser/chromeos/webui/login/login_ui.h',
+        'browser/chromeos/webui/login/login_container_ui.cc',
+        'browser/chromeos/webui/login/login_container_ui.h',
         'browser/chromeos/webui/login/login_ui_helpers.cc',
         'browser/chromeos/webui/login/login_ui_helpers.h',
         'browser/chromeos/webui/menu_ui.cc',
@@ -3449,6 +3451,7 @@
         ['touchui==1', {
           'sources/': [
             ['include', '^browser/ui/touch/*'],
+            ['include', '^browser/chromeos/dom_ui/login/'],
             ['exclude', '^browser/chromeos/frame/browser_non_client_frame_view_factory_chromeos.cc'],
             ['exclude', '^browser/renderer_host/gtk_im_context_wrapper.cc'],
             ['exclude', '^browser/renderer_host/gtk_im_context_wrapper.h'],

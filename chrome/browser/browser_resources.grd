@@ -45,6 +45,7 @@ without changes to the corresponding grd file. etaa -->
       <include name="IDR_INCOGNITO_TAB_HTML" file="resources\incognito_tab.html" flattenhtml="true" type="BINDATA" />
       <include name="IDR_KEYBOARD_MANIFEST" file="resources\keyboard\manifest.json" type="BINDATA" />
       <include name="IDR_LOGIN_HTML" file="resources\login.html" flattenhtml="true" type="BINDATA" />
+      <include name="IDR_LOGIN_CONTAINER_HTML" file="resources\login_container.html" flattenhtml="true" type="BINDATA" />
       <include name="IDR_GPU_BLACKLIST" file="resources\software_rendering_list.json" type="BINDATA" />
       <include name="IDR_NEW_INCOGNITO_TAB_THEME_CSS" file="resources\new_incognito_tab_theme.css" flattenhtml="true" type="BINDATA" />
       <include name="IDR_NEW_NEW_TAB_HTML" file="resources\new_new_tab.html" flattenhtml="true" type="BINDATA" />
