@@ -7,7 +7,6 @@
 #include <map>
 #include <string>
 
-#include "base/command_line.h"
 #include "base/lazy_instance.h"
 #include "base/ref_counted.h"
 #include "base/synchronization/lock.h"
@@ -161,26 +160,6 @@ base::LazyInstance<SpeechInputManagerImpl> g_speech_input_manager_impl(
 
 SpeechInputManager* SpeechInputManager::Get() {
   return g_speech_input_manager_impl.Pointer();
-}
-
-bool SpeechInputManager::IsFeatureEnabled() {
-  bool enabled = true;
-  const CommandLine& command_line = *CommandLine::ForCurrentProcess();
-
-  if (command_line.HasSwitch(switches::kDisableSpeechInput)) {
-    enabled = false;
-#if defined(GOOGLE_CHROME_BUILD)
-  } else if (!command_line.HasSwitch(switches::kEnableSpeechInput)) {
-    // We need to evaluate whether IO is OK here. http://crbug.com/63335.
-    base::ThreadRestrictions::ScopedAllowIO allow_io;
-    // Official Chrome builds have speech input enabled by default only in the
-    // dev channel.
-    std::string channel = platform_util::GetVersionStringModifier();
-    enabled = (channel == "dev");
-#endif
-  }
-
-  return enabled;
 }
 
 void SpeechInputManager::ShowAudioInputSettings() {

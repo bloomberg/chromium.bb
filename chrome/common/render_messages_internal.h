@@ -1068,10 +1068,6 @@ IPC_MESSAGE_ROUTED1(ViewMsg_StartPhishingDetection, GURL)
 IPC_MESSAGE_ROUTED1(ViewMsg_SelectPopupMenuItem,
                     int /* selected index, -1 means no selection */)
 
-// Indicate whether speech input API is enabled or not.
-IPC_MESSAGE_CONTROL1(ViewMsg_SpeechInput_SetFeatureEnabled,
-                     bool /* enabled */)
-
 // Sent in response to a ViewHostMsg_ContextMenu to let the renderer know that
 // the menu has been closed.
 IPC_MESSAGE_ROUTED1(ViewMsg_ContextMenuClosed,

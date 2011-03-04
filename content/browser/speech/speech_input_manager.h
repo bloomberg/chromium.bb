@@ -31,10 +31,6 @@ class SpeechInputManager {
     virtual ~Delegate() {}
   };
 
-  // Whether the speech input feature is enabled, based on the browser channel
-  // information and command line flags.
-  static bool IsFeatureEnabled();
-
   // Invokes the platform provided microphone settings UI in a non-blocking way,
   // via the BrowserThread::FILE thread.
   static void ShowAudioInputSettings();

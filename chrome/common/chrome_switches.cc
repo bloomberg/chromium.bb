@@ -543,9 +543,6 @@ const char kEnableSearchProviderApiV2[]     = "enable-search-provider-api-v2";
 // Enables 0-RTT HTTPS handshakes.
 const char kEnableSnapStart[]               = "enable-snap-start";
 
-// Enables speech input.
-const char kEnableSpeechInput[]             = "enable-speech-input";
-
 // Enable syncing browser data to a Google Account.
 const char kEnableSync[]                    = "enable-sync";
 

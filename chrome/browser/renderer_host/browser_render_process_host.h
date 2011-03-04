@@ -116,10 +116,6 @@ class BrowserRenderProcessHost : public RenderProcessHost,
   // functions to thre renderer process.
   void InitExtensions();
 
-  // Initialize support for speech input API. Informs the renderer if the API
-  // is enabled or not.
-  void InitSpeechInput();
-
   // Sends the renderer process a new set of user scripts.
   void SendUserScriptsUpdate(base::SharedMemory* shared_memory);
 

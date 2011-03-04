@@ -246,7 +246,6 @@ void RenderThread::Init() {
   is_extension_process_ = type_str == switches::kExtensionProcess ||
       CommandLine::ForCurrentProcess()->HasSwitch(switches::kSingleProcess);
   is_incognito_process_ = false;
-  is_speech_input_enabled_ = false;
   suspend_webkit_shared_timer_ = true;
   notify_webkit_of_modal_loop_ = true;
   plugin_refresh_allowed_ = true;
@@ -645,16 +644,9 @@ bool RenderThread::OnControlMessageReceived(const IPC::Message& msg) {
                         OnSpellCheckEnableAutoSpellCorrect)
     IPC_MESSAGE_HANDLER(ViewMsg_GpuChannelEstablished, OnGpuChannelEstablished)
     IPC_MESSAGE_HANDLER(ViewMsg_SetPhishingModel, OnSetPhishingModel)
-    IPC_MESSAGE_HANDLER(ViewMsg_SpeechInput_SetFeatureEnabled,
-                        OnSetSpeechInputEnabled)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
-}
-
-void RenderThread::OnSetSpeechInputEnabled(bool enabled) {
-  DCHECK(!webkit_client_.get());
-  is_speech_input_enabled_ = enabled;
 }
 
 void RenderThread::OnSetNextPageID(int32 next_page_id) {
@@ -959,7 +951,8 @@ void RenderThread::EnsureWebKitInitialized() {
   WebRuntimeFeatures::enableDeviceOrientation(
       !command_line.HasSwitch(switches::kDisableDeviceOrientation));
 
-  WebRuntimeFeatures::enableSpeechInput(is_speech_input_enabled_);
+  WebRuntimeFeatures::enableSpeechInput(
+      !command_line.HasSwitch(switches::kDisableSpeechInput));
 
   WebRuntimeFeatures::enableFileSystem(
       !command_line.HasSwitch(switches::kDisableFileSystem));

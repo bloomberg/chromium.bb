@@ -89,7 +89,6 @@
 #include "content/browser/renderer_host/resource_message_filter.h"
 #include "content/browser/renderer_host/socket_stream_dispatcher_host.h"
 #include "content/browser/speech/speech_input_dispatcher_host.h"
-#include "content/browser/speech/speech_input_manager.h"
 #include "content/browser/worker_host/worker_message_filter.h"
 #include "grit/generated_resources.h"
 #include "ipc/ipc_logging.h"
@@ -824,11 +823,6 @@ void BrowserRenderProcessHost::InitExtensions() {
   }
 }
 
-void BrowserRenderProcessHost::InitSpeechInput() {
-  Send(new ViewMsg_SpeechInput_SetFeatureEnabled(
-      speech_input::SpeechInputManager::IsFeatureEnabled()));
-}
-
 void BrowserRenderProcessHost::SendUserScriptsUpdate(
     base::SharedMemory *shared_memory) {
   // Process is being started asynchronously.  We'll end up calling
@@ -1162,7 +1156,6 @@ void BrowserRenderProcessHost::OnProcessLaunched() {
 
   Send(new ViewMsg_SetIsIncognitoProcess(profile()->IsOffTheRecord()));
 
-  InitSpeechInput();
   InitVisitedLinks();
   InitUserScripts();
   InitExtensions();
