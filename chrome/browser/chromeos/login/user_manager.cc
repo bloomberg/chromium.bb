@@ -256,6 +256,8 @@ std::string UserManager::User::GetNameTooltip() const {
 
 // static
 UserManager* UserManager::Get() {
+  // Not thread-safe.
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   if (!user_manager_)
     user_manager_ = new UserManager();
   return user_manager_;

@@ -188,7 +188,7 @@ class FilebrowseHandler : public net::DirectoryLister::DirectoryListerDelegate,
   void ReadInFile();
   void FireUploadComplete();
 
-  void SendPicasawebRequest();
+  void SendPicasawebRequest(URLRequestContextGetter* request_context);
 
   // Callback for the "validateSavePath" message.
   void HandleValidateSavePath(const ListValue* args);
@@ -269,9 +269,9 @@ class TaskProxy : public base::RefCountedThreadSafe<TaskProxy> {
     delete fetch;
   }
 
-  void SendPicasawebRequestProxy() {
+  void SendPicasawebRequestProxy(URLRequestContextGetter* request_context) {
     if (handler_)
-      handler_->SendPicasawebRequest();
+      handler_->SendPicasawebRequest(request_context);
     DeleteOnUIThread();
   }
 
@@ -455,15 +455,18 @@ void FilebrowseHandler::Init() {
   download_manager_ = profile_->GetDownloadManager();
   download_manager_->AddObserver(this);
   static bool sent_request = false;
-  if (!sent_request) {
+  if (!sent_request &&
+      !chromeos::UserManager::Get()->logged_in_user().email().empty()) {
     // If we have not sent a request before, we should do one in order to
     // ensure that we have the correct cookies. This is for uploads.
-    scoped_refptr<TaskProxy> task = new TaskProxy(AsWeakPtr(), currentpath_);
+    scoped_refptr<TaskProxy> task =
+        new TaskProxy(AsWeakPtr(), currentpath_);
     current_task_ = task;
     BrowserThread::PostTask(
         BrowserThread::FILE, FROM_HERE,
-        NewRunnableMethod(
-            task.get(), &TaskProxy::SendPicasawebRequestProxy));
+        NewRunnableMethod(task.get(),
+                          &TaskProxy::SendPicasawebRequestProxy,
+                          profile_->GetRequestContext()));
     sent_request = true;
   }
 }
@@ -756,21 +759,14 @@ void FilebrowseHandler::OpenNewWindow(const ListValue* args, bool popup) {
   params.browser->window()->Show();
 }
 
-void FilebrowseHandler::SendPicasawebRequest() {
+void FilebrowseHandler::SendPicasawebRequest(
+    URLRequestContextGetter* request_context) {
 #if defined(OS_CHROMEOS)
-  chromeos::UserManager* user_man = chromeos::UserManager::Get();
-  std::string username = user_man->logged_in_user().email();
-
-  if (username.empty()) {
-    LOG(ERROR) << "Unable to get username";
-    return;
-  }
-
   fetch_.reset(URLFetcher::Create(0,
                                   GURL(kPicasawebBaseUrl),
                                   URLFetcher::GET,
                                   this));
-  fetch_->set_request_context(profile_->GetRequestContext());
+  fetch_->set_request_context(request_context);
   fetch_->Start();
 #endif
 }
