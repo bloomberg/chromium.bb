@@ -2,10 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_COMMON_SPEECH_INPUT_MESSAGES_H_
-#define CHROME_COMMON_SPEECH_INPUT_MESSAGES_H_
-#pragma once
+// Multiply-included message file, hence no include guard.
 
+#include <string>
+
+#include "chrome/common/common_param_traits.h"
 #include "chrome/common/speech_input_result.h"
 #include "ipc/ipc_message_macros.h"
 #include "ipc/ipc_param_traits.h"
@@ -13,42 +14,26 @@
 
 #define IPC_MESSAGE_START SpeechInputMsgStart
 
-namespace speech_input {
-struct SpeechInputResultItem;
-}
-
 // Used to start a speech recognition session.
-struct SpeechInputHostMsg_StartRecognition_Params {
-  SpeechInputHostMsg_StartRecognition_Params();
-  ~SpeechInputHostMsg_StartRecognition_Params();
+IPC_STRUCT_BEGIN(SpeechInputHostMsg_StartRecognition_Params)
+  // The render view requesting speech recognition.
+  IPC_STRUCT_MEMBER(int, render_view_id)
+  // Request ID used within the render view.
+  IPC_STRUCT_MEMBER(int, request_id)
+  // Position of the UI element in page coordinates.
+  IPC_STRUCT_MEMBER(gfx::Rect, element_rect)
+  // Language to use for speech recognition.
+  IPC_STRUCT_MEMBER(std::string, language)
+  // Speech grammar given by the speech input element.
+  IPC_STRUCT_MEMBER(std::string, grammar)
+  // URL of the page (or iframe if applicable).
+  IPC_STRUCT_MEMBER(std::string, origin_url)
+IPC_STRUCT_END()
 
-  int render_view_id;  // The render view requesting speech recognition.
-  int request_id;  // Request ID used within the render view.
-  gfx::Rect element_rect;  // Position of the UI element in page coordinates.
-  std::string language;  // Language to use for speech recognition.
-  std::string grammar;  // Speech grammar given by the speech input element.
-  std::string origin_url;  // URL of the page (or iframe if applicable).
-};
-
-namespace IPC {
-
-template <>
-struct ParamTraits<speech_input::SpeechInputResultItem> {
-  typedef speech_input::SpeechInputResultItem param_type;
-  static void Write(Message* m, const param_type& p);
-  static bool Read(const Message* m, void** iter, param_type* p);
-  static void Log(const param_type& p, std::string* l);
-};
-
-template <>
-struct ParamTraits<SpeechInputHostMsg_StartRecognition_Params> {
-  typedef SpeechInputHostMsg_StartRecognition_Params param_type;
-  static void Write(Message* m, const param_type& p);
-  static bool Read(const Message* m, void** iter, param_type* p);
-  static void Log(const param_type& p, std::string* l);
-};
-
-}  // namespace IPC
+IPC_STRUCT_TRAITS_BEGIN(speech_input::SpeechInputResultItem)
+  IPC_STRUCT_TRAITS_MEMBER(utterance)
+  IPC_STRUCT_TRAITS_MEMBER(confidence)
+IPC_STRUCT_TRAITS_END()
 
 // Speech input messages sent from the renderer to the browser.
 
@@ -90,4 +75,3 @@ IPC_MESSAGE_ROUTED1(SpeechInputMsg_RecordingComplete,
 IPC_MESSAGE_ROUTED1(SpeechInputMsg_RecognitionComplete,
                     int /* request_id */)
 
-#endif  // CHROME_COMMON_SPEECH_INPUT_MESSAGES_H_

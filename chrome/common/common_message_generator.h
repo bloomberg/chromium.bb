@@ -9,6 +9,9 @@
 #include "chrome/common/indexed_db_messages.h"
 #include "chrome/common/mime_registry_messages.h"
 #include "chrome/common/safebrowsing_messages.h"
+#include "chrome/common/speech_input_messages.h"
+#include "chrome/common/utility_messages.h"
+#include "chrome/common/worker_messages.h"
 
 #if 0  // This feature is not yet enabled for these files.
 
@@ -23,8 +26,5 @@
 #include "chrome/common/plugin_messages.h"
 #include "chrome/common/render_messages.h"
 #include "chrome/common/service_messages.h"
-#include "chrome/common/speech_input_messages.h"
-#include "chrome/common/utility_messages.h"
-#include "chrome/common/worker_messages.h"
 
 #endif
