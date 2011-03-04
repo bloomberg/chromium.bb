@@ -672,6 +672,35 @@ spdy::SpdyFrame* ConstructSpdyPost(int64 content_length,
                                    arraysize(post_headers));
 }
 
+// Constructs a chunked transfer SPDY POST SYN packet.
+// |extra_headers| are the extra header-value pairs, which typically
+// will vary the most between calls.
+// Returns a SpdyFrame.
+spdy::SpdyFrame* ConstructChunkedSpdyPost(const char* const extra_headers[],
+                                          int extra_header_count) {
+  const char* post_headers[] = {
+    "method",
+    "POST",
+    "url",
+    "/",
+    "host",
+    "www.google.com",
+    "scheme",
+    "http",
+    "version",
+    "HTTP/1.1"
+  };
+  return ConstructSpdyControlFrame(extra_headers,
+                                   extra_header_count,
+                                   false,
+                                   1,
+                                   LOWEST,
+                                   spdy::SYN_STREAM,
+                                   spdy::CONTROL_FLAG_NONE,
+                                   post_headers,
+                                   arraysize(post_headers));
+}
+
 // Constructs a standard SPDY SYN_REPLY packet to match the SPDY POST.
 // |extra_headers| are the extra header-value pairs, which typically
 // will vary the most between calls.

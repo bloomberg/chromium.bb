@@ -280,6 +280,13 @@ spdy::SpdyFrame* ConstructSpdyPost(int64 content_length,
                                    const char* const extra_headers[],
                                    int extra_header_count);
 
+// Constructs a chunked transfer SPDY POST SYN packet.
+// |extra_headers| are the extra header-value pairs, which typically
+// will vary the most between calls.
+// Returns a SpdyFrame.
+spdy::SpdyFrame* ConstructChunkedSpdyPost(const char* const extra_headers[],
+                                          int extra_header_count);
+
 // Constructs a standard SPDY SYN_REPLY packet to match the SPDY POST.
 // |extra_headers| are the extra header-value pairs, which typically
 // will vary the most between calls.
