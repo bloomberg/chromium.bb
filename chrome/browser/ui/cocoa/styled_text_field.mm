@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2009 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -58,10 +58,4 @@
   const NSRect bounds([self bounds]);
   return NSWidth(bounds) - size.width;
 }
-
-- (NSFocusRingType)focusRingType {
-  // This is taken care of by the custom drawing code in the cell.
-  return NSFocusRingTypeNone;
-}
-
 @end
