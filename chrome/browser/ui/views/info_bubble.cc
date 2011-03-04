@@ -247,10 +247,10 @@ InfoBubble* InfoBubble::Show(views::Widget* parent,
                              BubbleBorder::ArrowLocation arrow_location,
                              views::View* contents,
                              InfoBubbleDelegate* delegate) {
-  InfoBubble* window = new InfoBubble;
-  window->Init(parent, position_relative_to, arrow_location,
-               contents, delegate);
-  return window;
+  InfoBubble* bubble = new InfoBubble;
+  bubble->InitBubble(parent, position_relative_to, arrow_location,
+                     contents, delegate);
+  return bubble;
 }
 
 #if defined(OS_CHROMEOS)
@@ -262,11 +262,11 @@ InfoBubble* InfoBubble::ShowFocusless(
     views::View* contents,
     InfoBubbleDelegate* delegate,
     bool show_while_screen_is_locked) {
-  InfoBubble* window = new InfoBubble(views::WidgetGtk::TYPE_POPUP,
+  InfoBubble* bubble = new InfoBubble(views::WidgetGtk::TYPE_POPUP,
                                       show_while_screen_is_locked);
-  window->Init(parent, position_relative_to, arrow_location,
-               contents, delegate);
-  return window;
+  bubble->InitBubble(parent, position_relative_to, arrow_location,
+                     contents, delegate);
+  return bubble;
 }
 #endif
 
@@ -347,11 +347,11 @@ InfoBubble::InfoBubble(views::WidgetGtk::Type type,
 InfoBubble::~InfoBubble() {
 }
 
-void InfoBubble::Init(views::Widget* parent,
-                      const gfx::Rect& position_relative_to,
-                      BubbleBorder::ArrowLocation arrow_location,
-                      views::View* contents,
-                      InfoBubbleDelegate* delegate) {
+void InfoBubble::InitBubble(views::Widget* parent,
+                            const gfx::Rect& position_relative_to,
+                            BubbleBorder::ArrowLocation arrow_location,
+                            views::View* contents,
+                            InfoBubbleDelegate* delegate) {
   delegate_ = delegate;
   position_relative_to_ = position_relative_to;
   arrow_location_ = arrow_location;

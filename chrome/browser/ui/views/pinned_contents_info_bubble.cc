@@ -41,11 +41,11 @@ PinnedContentsInfoBubble* PinnedContentsInfoBubble::Show(
     const gfx::Point& bubble_anchor,
     views::View* contents,
     InfoBubbleDelegate* delegate) {
-  PinnedContentsInfoBubble* window =
+  PinnedContentsInfoBubble* bubble =
       new PinnedContentsInfoBubble(bubble_anchor);
-  window->Init(parent, position_relative_to, arrow_location,
-               contents, delegate);
-  return window;
+  bubble->InitBubble(parent, position_relative_to, arrow_location,
+                     contents, delegate);
+  return bubble;
 }
 
 BorderContents* PinnedContentsInfoBubble::CreateBorderContents() {

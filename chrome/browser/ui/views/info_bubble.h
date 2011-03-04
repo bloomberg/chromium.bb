@@ -245,11 +245,11 @@ class InfoBubble
   virtual ~InfoBubble();
 
   // Creates the InfoBubble.
-  virtual void Init(views::Widget* parent,
-                    const gfx::Rect& position_relative_to,
-                    BubbleBorder::ArrowLocation arrow_location,
-                    views::View* contents,
-                    InfoBubbleDelegate* delegate);
+  virtual void InitBubble(views::Widget* parent,
+                          const gfx::Rect& position_relative_to,
+                          BubbleBorder::ArrowLocation arrow_location,
+                          views::View* contents,
+                          InfoBubbleDelegate* delegate);
 
   // Instantiates and returns the BorderContents this InfoBubble should use.
   // Subclasses can return their own BorderContents implementation.
