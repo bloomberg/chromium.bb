@@ -239,7 +239,6 @@ class FakeReposBase(object):
   # Override if unhappy.
   TRIAL_DIR = None
   # Hostname
-  HOST = '127.0.0.1'
   NB_GIT_REPOS = 1
   USERS = [
       ('user1@example.com', 'foo'),
@@ -256,8 +255,7 @@ class FakeReposBase(object):
       logging.basicConfig(level=logging.DEBUG)
     elif leak is not None:
       self.SHOULD_LEAK = leak
-    if host:
-      self.HOST = host
+    self.host = host or '127.0.0.1'
     if trial_dir:
       self.TRIAL_DIR = trial_dir
 
@@ -279,6 +277,8 @@ class FakeReposBase(object):
     self.svn_repo = None
     self.git_dirty = False
     self.svn_dirty = False
+    self.svn_base = 'svn://%s/svn/' % self.host
+    self.git_base = 'git://%s/git/' % self.host
     self.svn_port = 3690
     self.git_port = 9418
 
@@ -306,15 +306,16 @@ class FakeReposBase(object):
       atexit.register(self.tear_down)
 
   def cleanup_dirt(self):
-    """For each dirty repository, regenerate it."""
+    """For each dirty repository, destroy it."""
     if self.svn_dirty:
       if not self.tear_down_svn():
-        logging.warning('Using both leaking checkout and svn dirty checkout')
+        logging.error('Using both leaking checkout and svn dirty checkout')
     if self.git_dirty:
       if not self.tear_down_git():
-        logging.warning('Using both leaking checkout and git dirty checkout')
+        logging.error('Using both leaking checkout and git dirty checkout')
 
   def tear_down(self):
+    """Kills the servers and delete the directories."""
     self.tear_down_svn()
     self.tear_down_git()
     if not self.SHOULD_LEAK:
@@ -344,6 +345,7 @@ class FakeReposBase(object):
       if self.git_pid_file:
         pid = int(self.git_pid_file.read())
         self.git_pid_file.close()
+        logging.debug('Killing git daemon pid %s' % pid)
         kill_pid(pid)
         self.git_pid_file = None
       self.wait_for_port_to_free(self.git_port)
@@ -391,8 +393,8 @@ class FakeReposBase(object):
 
     # Start the daemon.
     cmd = ['svnserve', '-d', '--foreground', '-r', self.repos_dir]
-    if self.HOST == '127.0.0.1':
-      cmd.append('--listen-host=127.0.0.1')
+    if self.host == '127.0.0.1':
+      cmd.append('--listen-host=' + self.host)
     self.check_port_is_free(self.svn_port)
     self.svnserve = Popen(cmd, cwd=self.svn_repo)
     self.wait_for_port_to_bind(self.svn_port, self.svnserve)
@@ -420,8 +422,8 @@ class FakeReposBase(object):
         '--reuseaddr',
         '--base-path=' + self.repos_dir,
         '--pid-file=' + self.git_pid_file.name]
-    if self.HOST == '127.0.0.1':
-      cmd.append('--listen=127.0.0.1')
+    if self.host == '127.0.0.1':
+      cmd.append('--listen=' + self.host)
     self.check_port_is_free(self.git_port)
     self.gitdaemon = Popen(cmd, cwd=self.repos_dir)
     self.wait_for_port_to_bind(self.git_port, self.gitdaemon)
@@ -452,7 +454,7 @@ class FakeReposBase(object):
   def check_port_is_free(self, port):
     sock = socket.socket()
     try:
-      sock.connect((self.HOST, port))
+      sock.connect((self.host, port))
       # It worked, throw.
       assert False, '%d shouldn\'t be bound' % port
     except EnvironmentError:
@@ -467,7 +469,7 @@ class FakeReposBase(object):
       maxdelay = datetime.timedelta(seconds=30)
       while (datetime.datetime.utcnow() - start) < maxdelay:
         try:
-          sock.connect((self.HOST, port))
+          sock.connect((self.host, port))
           logging.debug('%d is now bound' % port)
           return
         except EnvironmentError:
@@ -486,7 +488,7 @@ class FakeReposBase(object):
     while (datetime.datetime.utcnow() - start) < maxdelay:
       try:
         sock = socket.socket()
-        sock.connect((self.HOST, port))
+        sock.connect((self.host, port))
         logging.debug('%d was bound, waiting to free' % port)
       except EnvironmentError:
         logging.debug('%d now free' % port)
@@ -509,7 +511,7 @@ class FakeRepos(FakeReposBase):
   def populateSvn(self):
     """Creates a few revisions of changes including DEPS files."""
     # Repos
-    check_call(['svn', 'checkout', 'svn://127.0.0.1/svn', self.svn_checkout,
+    check_call(['svn', 'checkout', self.svn_base, self.svn_checkout,
                 '-q', '--non-interactive', '--no-auth-cache',
                 '--username', self.USERS[0][0], '--password', self.USERS[0][1]])
     assert os.path.isdir(join(self.svn_checkout, '.svn'))
@@ -547,23 +549,23 @@ vars = {
   'DummyVariable': 'third_party',
 }
 deps = {
-  'src/other': 'svn://%(host)s/svn/trunk/other@1',
+  'src/other': '%(svn_base)strunk/other@1',
   'src/third_party/fpp': '/trunk/' + Var('DummyVariable') + '/foo',
 }
 deps_os = {
   'mac': {
     'src/third_party/prout': '/trunk/third_party/prout',
   },
-}""" % { 'host': self.HOST })
+}""" % { 'svn_base': self.svn_base })
     self._commit_svn(fs)
 
     fs = file_system(2, """
 deps = {
-  'src/other': 'svn://%(host)s/svn/trunk/other',
+  'src/other': '%(svn_base)strunk/other',
   # Load another DEPS and load a dependency from it. That's an example of
   # WebKit's chromium checkout flow. Verify it works out of order.
   'src/third_party/foo': From('src/file/other', 'foo/bar'),
-  'src/file/other': File('svn://%(host)s/svn/trunk/other/DEPS'),
+  'src/file/other': File('%(svn_base)strunk/other/DEPS'),
 }
 # I think this is wrong to have the hooks run from the base of the gclient
 # checkout. It's maybe a bit too late to change that behavior.
@@ -580,7 +582,7 @@ hooks = [
                'open(\\'src/svn_hooked2\\', \\'w\\').write(\\'svn_hooked2\\')'],
   },
 ]
-""" % { 'host': self.HOST })
+""" % { 'svn_base': self.svn_base })
     fs['trunk/other/DEPS'] = """
 deps = {
   'foo/bar': '/trunk/third_party/foo@1',
@@ -599,7 +601,7 @@ solutions = [
 """
     fs['trunk/webkit/DEPS'] = """
 deps = {
-  'foo/bar': 'svn://%(host)s/svn/trunk/third_party/foo@1'
+  'foo/bar': '%(svn_base)strunk/third_party/foo@1'
 }
 
 hooks = [
@@ -608,7 +610,7 @@ hooks = [
     'action': ['echo', 'foo'],
   },
 ]
-""" % { 'host': self.HOST }
+""" % { 'svn_base': self.svn_base }
     self._commit_svn(fs)
 
   def populateGit(self):
@@ -640,7 +642,7 @@ vars = {
   'DummyVariable': 'repo',
 }
 deps = {
-  'src/repo2': 'git://%(host)s/git/repo_2',
+  'src/repo2': '%(git_base)srepo_2',
   'src/repo2/repo3': '/' + Var('DummyVariable') + '_3@%(hash3)s',
 }
 deps_os = {
@@ -648,7 +650,7 @@ deps_os = {
     'src/repo4': '/repo_4',
   },
 }""" % {
-            'host': self.HOST,
+            'git_base': self.git_base,
             # See self.__init__() for the format. Grab's the hash of the first
             # commit in repo_2. Only keep the first 7 character because of:
             # TODO(maruel): http://crosbug.com/3591 We need to strip the hash..
@@ -682,7 +684,7 @@ deps = {
     self._commit_git('repo_1', {
       'DEPS': """
 deps = {
-  'src/repo2': 'git://%(host)s/git/repo_2@%(hash)s',
+  'src/repo2': '%(git_base)srepo_2@%(hash)s',
   #'src/repo2/repo_renamed': '/repo_3',
   'src/repo2/repo_renamed': From('src/repo2', 'foo/bar'),
 }
@@ -702,7 +704,7 @@ hooks = [
   },
 ]
 """ % {
-        'host': self.HOST,
+        'git_base': self.git_base,
         # See self.__init__() for the format. Grab's the hash of the first
         # commit in repo_2. Only keep the first 7 character because of:
         # TODO(maruel): http://crosbug.com/3591 We need to strip the hash.. duh.
@@ -726,6 +728,7 @@ class FakeReposTestBase(unittest.TestCase):
   def __init__(self, *args, **kwargs):
     unittest.TestCase.__init__(self, *args, **kwargs)
     if not FakeReposTestBase.FAKE_REPOS:
+      # Lazy create the global instance.
       FakeReposTestBase.FAKE_REPOS = self.FAKE_REPOS_CLASS()
 
   def setUp(self):
@@ -738,12 +741,20 @@ class FakeReposTestBase(unittest.TestCase):
     self.root_dir = join(self.CLASS_ROOT_DIR, self.id())
     rmtree(self.root_dir)
     os.makedirs(self.root_dir)
-    self.svn_base = 'svn://%s/svn/' % self.FAKE_REPOS.HOST
-    self.git_base = 'git://%s/git/' % self.FAKE_REPOS.HOST
 
   def tearDown(self):
     if not self.FAKE_REPOS.SHOULD_LEAK:
       rmtree(self.root_dir)
+
+  @property
+  def svn_base(self):
+    """Shortcut."""
+    return self.FAKE_REPOS.svn_base
+
+  @property
+  def git_base(self):
+    """Shortcut."""
+    return self.FAKE_REPOS.git_base
 
   def checkString(self, expected, result, msg=None):
     """Prints the diffs to ease debugging."""
