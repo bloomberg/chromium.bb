@@ -1584,9 +1584,7 @@ int BrowserMain(const MainFunctionParams& parameters) {
   RegisterExtensionProtocols();
   RegisterMetadataURLRequestHandler();
   RegisterBlobURLRequestJobFactory();
-
-  if (parsed_command_line.HasSwitch(switches::kEnableFileSystemURLScheme))
-    RegisterFileSystemURLRequestJobFactory();
+  RegisterFileSystemURLRequestJobFactory();
 
   // In unittest mode, this will do nothing.  In normal mode, this will create
   // the global GoogleURLTracker and IntranetRedirectDetector instances, which

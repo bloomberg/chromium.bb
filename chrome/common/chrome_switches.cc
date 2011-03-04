@@ -492,9 +492,6 @@ const char kEnableFileCookies[]             = "enable-file-cookies";
 // Enable the use of the HistoryQuickProvider for autocomplete results.
 const char kEnableHistoryQuickProvider[]    = "enable-history-quick-provider";
 
-// Enable FileSystem API URLs.
-const char kEnableFileSystemURLScheme[]     = "enable-filesystem-url-scheme";
-
 // Enable the in-browser thumbnailing, which is more efficient than the
 // in-renderer thumbnailing, as we can use more information to determine
 // if we need to update thumbnails.
