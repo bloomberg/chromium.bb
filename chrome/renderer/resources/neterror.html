@@ -5,75 +5,103 @@
 </title>
 <style>
 body {
+  background-color: white;
   font-family: Helvetica, Arial, sans-serif;
   margin: 0;
+}
+
+html[main-frame] body {
   background-color: #CCC;
 }
-html[high-color-depth] body {
+
+html[main-frame][high-color-depth] body {
   background: -webkit-linear-gradient(#CCC, #AAA);
   background-attachment: fixed;
 }
-#cell {
+
+html[main-frame] #cell {
   padding: 40px;
 }
+
 #box {
-  width: 80%;
-  min-width: 200px;
-  max-width: 750px;
   background-color: white;
   color: black;
   font-size: 10pt;
   line-height: 18px;
-  -webkit-box-shadow: 2px 5px 12px #555;
-  border-radius: 5px;
   margin: auto;
-  padding: 20px;
+  max-width: 750px;
+  min-width: 200px;
+  padding: 5px;
 }
+
+html[main-frame] #box {
+  border-radius: 5px;
+  -webkit-box-shadow: 2px 5px 12px #555;
+  padding: 20px;
+  width: 80%;
+}
+
 ul {
   margin: 0;
   padding-bottom: 0;
 }
+
 li {
   padding-top: 2px;
 }
+
 h1 {
-  font-size: 18pt;
-  line-height: 30px;
+  font-size: 12pt;
+  line-height: 20px;
   margin: 0;
 }
-h1 img {
-  float: right;
-  border: 0;
-  margin-top: -4px;
-  -webkit-margin-start: 20px;
+
+html[main-frame] h1 {
+  font-size: 18pt;
+  line-height: 30px;
 }
+
+h1 img {
+  border: 0;
+  float: right;
+  -webkit-margin-start: 20px;
+  margin-top: -4px;
+}
+
 html[dir=rtl] h1 img {
   float: left;
 }
+
 h2 {
   font-size: 10pt;
   font-weight: bold;
   margin: 0;
   padding: 0;
 }
+
 a {
   color: #00c;
 }
+
 a:active {
   color: #f00;
 }
+
 a:visited {
   color: #551a8b;
 }
+
 #errorSummary, #suggestions, #search {
   -webkit-margin-start: 3px;
   margin-top: 15px;
 }
+
 #errorDetails {
   color: #777;
   -webkit-margin-start: 3px;
   margin-top: 30px;
 }
+
 .failedUrl {
   word-wrap: break-word;
 }
@@ -100,6 +128,12 @@ document.addEventListener('DOMContentLoaded',
                           setJsContentElementClasses,
                           false);
 
+// A grey border and larger font is used when the error page is
+// in the main frame.
+if (window.top.location == window.location)
+  document.documentElement.setAttribute('main-frame', '');
+
+// The border only uses a gradient when using at least 24-bit color.
 if (window.screen.colorDepth >= 24)
   document.documentElement.setAttribute('high-color-depth', '');
 </script>
