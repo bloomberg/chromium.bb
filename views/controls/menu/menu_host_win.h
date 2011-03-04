@@ -21,10 +21,10 @@ class MenuHostWin : public WidgetWin, public MenuHost {
   virtual ~MenuHostWin();
 
   // MenuHost overrides:
-  virtual void Init(HWND parent,
-                    const gfx::Rect& bounds,
-                    View* contents_view,
-                    bool do_capture);
+  virtual void InitMenuHost(HWND parent,
+                            const gfx::Rect& bounds,
+                            View* contents_view,
+                            bool do_capture);
   virtual bool IsMenuHostVisible();
   virtual void ShowMenuHost(bool do_capture);
   virtual void HideMenuHost();

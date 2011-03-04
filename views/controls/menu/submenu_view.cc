@@ -245,7 +245,7 @@ void SubmenuView::ShowAt(gfx::NativeWindow parent,
   GetScrollViewContainer();
   // Make sure the first row is visible.
   ScrollRectToVisible(gfx::Rect(gfx::Point(), gfx::Size(1, 1)));
-  host_->Init(parent, bounds, scroll_view_container_, do_capture);
+  host_->InitMenuHost(parent, bounds, scroll_view_container_, do_capture);
 
   GetScrollViewContainer()->NotifyAccessibilityEvent(
       AccessibilityTypes::EVENT_MENUSTART);

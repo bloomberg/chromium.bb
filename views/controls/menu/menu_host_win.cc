@@ -38,10 +38,10 @@ MenuHostWin::MenuHostWin(SubmenuView* submenu)
 MenuHostWin::~MenuHostWin() {
 }
 
-void MenuHostWin::Init(HWND parent,
-                       const gfx::Rect& bounds,
-                       View* contents_view,
-                       bool do_capture) {
+void MenuHostWin::InitMenuHost(HWND parent,
+                               const gfx::Rect& bounds,
+                               View* contents_view,
+                               bool do_capture) {
   WidgetWin::Init(parent, bounds);
   SetContentsView(contents_view);
   ShowMenuHost(do_capture);

@@ -45,10 +45,10 @@ MenuHostGtk::MenuHostGtk(SubmenuView* submenu)
 MenuHostGtk::~MenuHostGtk() {
 }
 
-void MenuHostGtk::Init(gfx::NativeWindow parent,
-                    const gfx::Rect& bounds,
-                    View* contents_view,
-                    bool do_capture) {
+void MenuHostGtk::InitMenuHost(gfx::NativeWindow parent,
+                               const gfx::Rect& bounds,
+                               View* contents_view,
+                               bool do_capture) {
   make_transient_to_parent();
   WidgetGtk::Init(GTK_WIDGET(parent), bounds);
   // Make sure we get destroyed when the parent is destroyed.
