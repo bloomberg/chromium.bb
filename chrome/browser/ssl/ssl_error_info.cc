@@ -153,9 +153,15 @@ SSLErrorInfo SSLErrorInfo::CreateError(ErrorType error_type,
       break;
     case CERT_INVALID:
       title = l10n_util::GetStringUTF16(IDS_CERT_ERROR_INVALID_CERT_TITLE);
-      details = l10n_util::GetStringUTF16(IDS_CERT_ERROR_INVALID_CERT_DETAILS);
+      details = l10n_util::GetStringFUTF16(
+          IDS_CERT_ERROR_INVALID_CERT_DETAILS,
+          UTF8ToUTF16(request_url.host()));
       short_description =
           l10n_util::GetStringUTF16(IDS_CERT_ERROR_INVALID_CERT_DESCRIPTION);
+      extra_info.push_back(
+          l10n_util::GetStringUTF16(IDS_CERT_ERROR_EXTRA_INFO_1));
+      extra_info.push_back(l10n_util::GetStringUTF16(
+          IDS_CERT_ERROR_INVALID_CERT_EXTRA_INFO_2));
       break;
     case CERT_WEAK_SIGNATURE_ALGORITHM:
       title = l10n_util::GetStringUTF16(

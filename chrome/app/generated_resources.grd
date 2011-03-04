@@ -2547,7 +2547,10 @@ Other platform defines such as use_titlecase are declared in build/common.gypi.
         Invalid Server Certificate
       </message>
       <message name="IDS_CERT_ERROR_INVALID_CERT_DETAILS" desc="Details of the error page for an X509 certificate that is invalid">
-        A request failed because the server's certificate was invalid.
+        You attempted to reach <ph name="DOMAIN">&lt;strong&gt;$1<ex>paypal.com</ex>&lt;/strong&gt;</ph>, but the server presented an invalid certificate.
+      </message>
+      <message name="IDS_CERT_ERROR_INVALID_CERT_EXTRA_INFO_2" desc="2nd paragraph of extra information for an X509 certificate that is invalid">
+        In this case, the server certificate or an intermediate CA certificate presented to your browser is invalid. This may mean that the certificate is malformed, contains invalid fields, or is not supported.
       </message>
       <message name="IDS_CERT_ERROR_INVALID_CERT_DESCRIPTION" desc="Description of the error page for an X509 certificate that is invalid">
         Server's certificate is invalid.
