@@ -41,7 +41,7 @@ class BubbleWindow : public views::WindowGtk {
   explicit BubbleWindow(views::WindowDelegate* window_delegate);
 
   // Overidden from views::WindowGtk:
-  virtual void Init(GtkWindow* parent, const gfx::Rect& bounds);
+  virtual void InitWindow(GtkWindow* parent, const gfx::Rect& bounds);
 
   // Trims the window margins and rounds off the corners.
   void TrimMargins(int margin_left, int margin_right, int margin_top,

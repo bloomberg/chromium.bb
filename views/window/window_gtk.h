@@ -82,7 +82,7 @@ class WindowGtk : public WidgetGtk, public Window {
   explicit WindowGtk(WindowDelegate* window_delegate);
 
   // Initializes the window to the passed in bounds.
-  virtual void Init(GtkWindow* parent, const gfx::Rect& bounds);
+  virtual void InitWindow(GtkWindow* parent, const gfx::Rect& bounds);
 
   virtual void OnDestroy(GtkWidget* widget);
 

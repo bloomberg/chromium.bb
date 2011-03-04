@@ -87,7 +87,7 @@ Window* Window::CreateChromeWindow(gfx::NativeWindow parent,
                                    WindowDelegate* window_delegate) {
   WindowGtk* window = new WindowGtk(window_delegate);
   window->GetNonClientView()->SetFrameView(window->CreateFrameViewForWindow());
-  window->Init(parent, bounds);
+  window->InitWindow(parent, bounds);
   return window;
 }
 
@@ -397,7 +397,7 @@ WindowGtk::WindowGtk(WindowDelegate* window_delegate)
   window_delegate_->window_ = this;
 }
 
-void WindowGtk::Init(GtkWindow* parent, const gfx::Rect& bounds) {
+void WindowGtk::InitWindow(GtkWindow* parent, const gfx::Rect& bounds) {
   if (parent)
     make_transient_to_parent();
   WidgetGtk::Init(GTK_WIDGET(parent), bounds);

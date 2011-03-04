@@ -31,8 +31,8 @@ BubbleWindow::BubbleWindow(views::WindowDelegate* window_delegate)
   MakeTransparent();
 }
 
-void BubbleWindow::Init(GtkWindow* parent, const gfx::Rect& bounds) {
-  views::WindowGtk::Init(parent, bounds);
+void BubbleWindow::InitWindow(GtkWindow* parent, const gfx::Rect& bounds) {
+  views::WindowGtk::InitWindow(parent, bounds);
 
   // Turn on double buffering so that the hosted GtkWidgets does not
   // flash as in http://crosbug.com/9065.
