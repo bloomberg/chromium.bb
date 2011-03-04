@@ -140,12 +140,7 @@ class URLFetcher {
   // Adds the given bytes to a request's POST data transmitted using chunked
   // transfer encoding.
   // This method should be called ONLY after calling Start().
-  void AppendChunkToUpload(const std::string& data);
-
-  // Signals the end of a chunked transfer encoded data stream. This method
-  // should be called ONLY after calling Start(), set_chunked_upload() and
-  // typically one or more calls to AppendChunkToUpload.
-  void MarkEndOfChunks();
+  void AppendChunkToUpload(const std::string& data, bool is_last_chunk);
 
   // Set one or more load flags as defined in net/base/load_flags.h.  Must be
   // called before the request is started.
