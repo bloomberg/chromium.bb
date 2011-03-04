@@ -112,7 +112,7 @@ views::Window* BubbleWindow::Create(
     views::WindowDelegate* window_delegate) {
   BubbleWindow* window = new BubbleWindow(window_delegate);
   window->GetNonClientView()->SetFrameView(new BubbleFrameView(window, style));
-  window->Init(parent, bounds);
+  window->InitWindow(parent, bounds);
 
   if (style == STYLE_XSHAPE) {
     const int kMarginLeft = 14;
