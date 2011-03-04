@@ -17,7 +17,7 @@ html[dir=rtl] #remove-all-cookies-search-column {
 }
 
 #cookies-column-headers {
-  margin-bottom: 2px;
+  margin-bottom: 10px;
   position: relative;
   width: 100%;
 }
