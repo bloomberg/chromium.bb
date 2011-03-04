@@ -61,6 +61,10 @@ void ThreadWatcher::StartWatching(const BrowserThread::ID thread_id,
   ThreadWatcher* watcher =
       new ThreadWatcher(thread_id, thread_name, sleep_time, unresponsive_time);
   DCHECK(watcher);
+  // If we couldn't register the thread watcher object, we are shutting down,
+  // then don't activate thread watching.
+  if (!ThreadWatcherList::IsRegistered(thread_id))
+    return;
   watcher->ActivateThreadWatching();
 }
 
@@ -207,10 +211,16 @@ ThreadWatcherList::~ThreadWatcherList() {
 
 // static
 void ThreadWatcherList::Register(ThreadWatcher* watcher) {
-  DCHECK(global_);
+  if (!global_)
+    return;
   base::AutoLock auto_lock(global_->lock_);
   DCHECK(!global_->PreLockedFind(watcher->thread_id()));
   global_->registered_[watcher->thread_id()] = watcher;
+}
+
+// static
+bool ThreadWatcherList::IsRegistered(const BrowserThread::ID thread_id) {
+  return NULL != ThreadWatcherList::Find(thread_id);
 }
 
 // static
@@ -219,10 +229,9 @@ void ThreadWatcherList::StartWatchingAll() {
     WatchDogThread::PostDelayedTask(
         FROM_HERE,
         NewRunnableFunction(&ThreadWatcherList::StartWatchingAll),
-        base::TimeDelta::FromSeconds(10).InMilliseconds());
+        base::TimeDelta::FromSeconds(5).InMilliseconds());
     return;
   }
-
   DCHECK(WatchDogThread::CurrentlyOnWatchDogThread());
   const base::TimeDelta kSleepTime = base::TimeDelta::FromSeconds(5);
   const base::TimeDelta kUnresponsiveTime = base::TimeDelta::FromSeconds(10);
@@ -309,6 +318,8 @@ void ThreadWatcherList::Observe(NotificationType type,
 
 void ThreadWatcherList::WakeUpAll() {
   DCHECK(WatchDogThread::CurrentlyOnWatchDogThread());
+  if (!global_)
+    return;
   base::AutoLock auto_lock(lock_);
   for (RegistrationList::iterator it = global_->registered_.begin();
        global_->registered_.end() != it;
@@ -318,7 +329,8 @@ void ThreadWatcherList::WakeUpAll() {
 
 // static
 ThreadWatcher* ThreadWatcherList::Find(const BrowserThread::ID thread_id) {
-  DCHECK(global_);
+  if (!global_)
+    return NULL;
   base::AutoLock auto_lock(global_->lock_);
   return global_->PreLockedFind(thread_id);
 }

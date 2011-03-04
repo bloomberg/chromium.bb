@@ -208,6 +208,9 @@ class ThreadWatcherList : public NotificationObserver {
   // Register() stores a pointer to the given ThreadWatcher in a global map.
   static void Register(ThreadWatcher* watcher);
 
+  // This method returns true if the ThreadWatcher object is registerd.
+  static bool IsRegistered(const BrowserThread::ID thread_id);
+
   // This method posts a task on WatchDogThread to start watching all browser
   // threads.
   // This method is accessible on UI thread.

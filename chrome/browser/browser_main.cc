@@ -1318,9 +1318,6 @@ int BrowserMain(const MainFunctionParams& parameters) {
 
   CreateChildThreads(browser_process.get());
 
-  // Start watching all browser threads for responsiveness.
-  ThreadWatcherList::StartWatchingAll();
-
 #if defined(OS_CHROMEOS)
   // Now that the file thread exists we can record our stats.
   chromeos::BootTimesLoader::Get()->RecordChromeMainStats();
@@ -1751,6 +1748,9 @@ int BrowserMain(const MainFunctionParams& parameters) {
   // and schedule a GPU blacklist auto update.
   GpuDataManager* gpu_data_manager = GpuDataManager::GetInstance();
   DCHECK(gpu_data_manager);
+
+  // Start watching all browser threads for responsiveness.
+  ThreadWatcherList::StartWatchingAll();
 
   int result_code = ResultCodes::NORMAL_EXIT;
   if (parameters.ui_task) {
