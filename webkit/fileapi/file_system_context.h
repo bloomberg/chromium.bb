@@ -22,9 +22,9 @@ class SpecialStoragePolicy;
 
 namespace fileapi {
 
+class FileSystemContext;
 class FileSystemPathManager;
 class FileSystemUsageTracker;
-class FileSystemContext;
 
 struct DefaultContextDeleter;
 

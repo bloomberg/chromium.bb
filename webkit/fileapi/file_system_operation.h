@@ -16,6 +16,7 @@
 #include "base/scoped_ptr.h"
 #include "googleurl/src/gurl.h"
 #include "webkit/fileapi/file_system_types.h"
+#include "webkit/fileapi/file_system_operation_context.h"
 
 namespace base {
 class Time;
@@ -55,7 +56,7 @@ class FileSystemOperation {
                   bool exclusive);
   void CreateDirectory(const FilePath& path,
                        bool exclusive,
-                       bool recursive);
+                       bool unused);
   void Copy(const FilePath& src_path,
             const FilePath& dest_path);
   void Move(const FilePath& src_path,
@@ -170,6 +171,7 @@ class FileSystemOperation {
   scoped_ptr<FileSystemCallbackDispatcher> dispatcher_;
 
   scoped_refptr<FileSystemContext> file_system_context_;
+  FileSystemOperationContext file_system_operation_context_;
 
   base::ScopedCallbackFactory<FileSystemOperation> callback_factory_;
 
