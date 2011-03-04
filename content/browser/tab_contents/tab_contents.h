@@ -35,6 +35,7 @@
 #include "content/browser/tab_contents/render_view_host_manager.h"
 #include "content/browser/webui/web_ui_factory.h"
 #include "net/base/load_states.h"
+#include "net/base/network_change_notifier.h"
 #include "ui/gfx/native_widget_types.h"
 
 #if defined(OS_WIN)
@@ -101,7 +102,8 @@ class TabContents : public PageNavigator,
                     public RenderViewHostManager::Delegate,
                     public JavaScriptAppModalDialogDelegate,
                     public ImageLoadingTracker::Observer,
-                    public TabSpecificContentSettings::Delegate {
+                    public TabSpecificContentSettings::Delegate,
+                    public net::NetworkChangeNotifier::OnlineStateObserver {
  public:
   // Flags passed to the TabContentsDelegate.NavigationStateChanged to tell it
   // what has changed. Combine them to update more than one thing.
@@ -1025,6 +1027,9 @@ class TabContents : public PageNavigator,
   // ImageLoadingTracker::Observer.
   virtual void OnImageLoaded(SkBitmap* image, ExtensionResource resource,
                              int index);
+
+  // NetworkChangeNotifier::OnlineStateObserver:
+  virtual void OnOnlineStateChanged(bool online);
 
   // Checks with the PrerenderManager if the specified URL has been preloaded,
   // and if so, swap the RenderViewHost with the preload into this TabContents

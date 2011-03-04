@@ -153,7 +153,8 @@ class IOThread : public BrowserProcessSubThread {
   Globals* globals_;
 
   // Observer that logs network changes to the ChromeNetLog.
-  scoped_ptr<net::NetworkChangeNotifier::Observer> network_change_observer_;
+  scoped_ptr<net::NetworkChangeNotifier::IPAddressObserver>
+      network_change_observer_;
 
   // Store HTTP Auth-related policies in this thread.
   std::string auth_schemes_;

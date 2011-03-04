@@ -153,16 +153,16 @@ net::HostResolver* CreateGlobalHostResolver(net::NetLog* net_log) {
 }
 
 class LoggingNetworkChangeObserver
-    : public net::NetworkChangeNotifier::Observer {
+    : public net::NetworkChangeNotifier::IPAddressObserver {
  public:
   // |net_log| must remain valid throughout our lifetime.
   explicit LoggingNetworkChangeObserver(net::NetLog* net_log)
       : net_log_(net_log) {
-    net::NetworkChangeNotifier::AddObserver(this);
+    net::NetworkChangeNotifier::AddIPAddressObserver(this);
   }
 
   ~LoggingNetworkChangeObserver() {
-    net::NetworkChangeNotifier::RemoveObserver(this);
+    net::NetworkChangeNotifier::RemoveIPAddressObserver(this);
   }
 
   virtual void OnIPAddressChanged() {

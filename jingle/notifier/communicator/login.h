@@ -44,7 +44,7 @@ typedef SingleLoginAttempt::Delegate SingleLoginAttemptDelegate;
 // Does the login, keeps it alive (with refreshing cookies and reattempting
 // login when disconnected), figures out what actions to take on the various
 // errors that may occur.
-class Login : public net::NetworkChangeNotifier::Observer,
+class Login : public net::NetworkChangeNotifier::IPAddressObserver,
               public SingleLoginAttemptDelegate {
  public:
   class Delegate {
@@ -69,7 +69,7 @@ class Login : public net::NetworkChangeNotifier::Observer,
 
   void StartConnection();
 
-  // net::NetworkChangeNotifier::Observer implementation.
+  // net::NetworkChangeNotifier::IPAddressObserver implementation.
   virtual void OnIPAddressChanged();
 
   // SingleLoginAttempt::Delegate implementation.

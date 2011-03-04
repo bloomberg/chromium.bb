@@ -42,11 +42,11 @@ IntranetRedirectDetector::IntranetRedirectDetector()
           &IntranetRedirectDetector::FinishSleep),
       kStartFetchDelayMS);
 
-  net::NetworkChangeNotifier::AddObserver(this);
+  net::NetworkChangeNotifier::AddIPAddressObserver(this);
 }
 
 IntranetRedirectDetector::~IntranetRedirectDetector() {
-  net::NetworkChangeNotifier::RemoveObserver(this);
+  net::NetworkChangeNotifier::RemoveIPAddressObserver(this);
   STLDeleteElements(&fetchers_);
 }
 

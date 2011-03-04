@@ -135,6 +135,7 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebHistoryItem.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebImage.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebInputElement.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebNetworkStateNotifier.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebNode.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebNodeList.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebPageSerializer.h"
@@ -248,6 +249,7 @@ using WebKit::WebMediaPlayerAction;
 using WebKit::WebMediaPlayerClient;
 using WebKit::WebNavigationPolicy;
 using WebKit::WebNavigationType;
+using WebKit::WebNetworkStateNotifier;
 using WebKit::WebNode;
 using WebKit::WebPageSerializer;
 using WebKit::WebPageSerializerClient;
@@ -1118,6 +1120,7 @@ bool RenderView::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(ViewMsg_JavaScriptStressTestControl,
                         OnJavaScriptStressTestControl)
     IPC_MESSAGE_HANDLER(ViewMsg_ContextMenuClosed, OnContextMenuClosed)
+    IPC_MESSAGE_HANDLER(ViewMsg_NetworkStateChanged, OnNetworkStateChanged)
 
     // TODO(viettrungluu): Move to a separate message filter.
 #if defined(ENABLE_FLAPPER_HACKS)
@@ -5709,4 +5712,8 @@ void RenderView::OnContextMenuClosed(
     pepper_delegate_.OnContextMenuClosed(custom_context);
   else
     context_menu_node_.reset();
+}
+
+void RenderView::OnNetworkStateChanged(bool online) {
+  WebNetworkStateNotifier::setOnLine(online);
 }

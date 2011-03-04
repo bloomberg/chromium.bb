@@ -105,7 +105,7 @@ GoogleURLTracker::GoogleURLTracker()
   registrar_.Add(this, NotificationType::DEFAULT_REQUEST_CONTEXT_AVAILABLE,
                  NotificationService::AllSources());
 
-  net::NetworkChangeNotifier::AddObserver(this);
+  net::NetworkChangeNotifier::AddIPAddressObserver(this);
 
   MessageLoop::current()->PostTask(FROM_HERE,
                                    runnable_method_factory_.NewRunnableMethod(
@@ -114,7 +114,7 @@ GoogleURLTracker::GoogleURLTracker()
 
 GoogleURLTracker::~GoogleURLTracker() {
   runnable_method_factory_.RevokeAll();
-  net::NetworkChangeNotifier::RemoveObserver(this);
+  net::NetworkChangeNotifier::RemoveIPAddressObserver(this);
 }
 
 // static

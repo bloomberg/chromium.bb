@@ -392,6 +392,8 @@ TabContents::~TabContents() {
   }
 
   FOR_EACH_OBSERVER(TabContentsObserver, observers_, set_tab_contents(NULL));
+
+  net::NetworkChangeNotifier::RemoveOnlineStateObserver(this);
 }
 
 void TabContents::AddObservers() {
@@ -406,6 +408,7 @@ void TabContents::AddObservers() {
   plugin_observer_.reset(new PluginObserver(this));
   safebrowsing_detection_host_.reset(new safe_browsing::ClientSideDetectionHost(
       this));
+  net::NetworkChangeNotifier::AddOnlineStateObserver(this);
 }
 
 bool TabContents::OnMessageReceived(const IPC::Message& message) {
@@ -2844,6 +2847,11 @@ void TabContents::SwapInRenderViewHost(RenderViewHost* rvh) {
 void TabContents::CreateViewAndSetSizeForRVH(RenderViewHost* rvh) {
   RenderWidgetHostView* rwh_view = view()->CreateViewForWidget(rvh);
   rwh_view->SetSize(view()->GetContainerSize());
+}
+
+void TabContents::OnOnlineStateChanged(bool online) {
+  render_view_host()->Send(new ViewMsg_NetworkStateChanged(
+      render_view_host()->routing_id(), online));
 }
 
 bool TabContents::MaybeUsePreloadedPage(const GURL& url) {

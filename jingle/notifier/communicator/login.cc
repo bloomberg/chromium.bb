@@ -47,12 +47,12 @@ Login::Login(Delegate* delegate,
                                         server_count,
                                         try_ssltcp_first)),
       redirect_port_(0) {
-  net::NetworkChangeNotifier::AddObserver(this);
+  net::NetworkChangeNotifier::AddIPAddressObserver(this);
   ResetReconnectState();
 }
 
 Login::~Login() {
-  net::NetworkChangeNotifier::RemoveObserver(this);
+  net::NetworkChangeNotifier::RemoveIPAddressObserver(this);
 }
 
 void Login::StartConnection() {

@@ -35,9 +35,10 @@ class PrefService;
 // Consumers should call RedirectOrigin(), which is guaranteed to synchronously
 // return a value at all times (even during startup or in unittest mode).  If no
 // redirection is in place, the returned GURL will be empty.
-class IntranetRedirectDetector : public URLFetcher::Delegate,
-                                 public NotificationObserver,
-                                 public net::NetworkChangeNotifier::Observer {
+class IntranetRedirectDetector
+    : public URLFetcher::Delegate,
+      public NotificationObserver,
+      public net::NetworkChangeNotifier::IPAddressObserver {
  public:
   // Only the main browser process loop should call this, when setting up
   // g_browser_process->intranet_redirect_detector_.  No code other than the
@@ -81,7 +82,7 @@ class IntranetRedirectDetector : public URLFetcher::Delegate,
                        const NotificationSource& source,
                        const NotificationDetails& details);
 
-  // NetworkChangeNotifier::Observer
+  // NetworkChangeNotifier::IPAddressObserver
   virtual void OnIPAddressChanged();
 
   NotificationRegistrar registrar_;

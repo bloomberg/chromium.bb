@@ -884,6 +884,7 @@ class RenderView : public RenderWidget,
                              const WebKit::WebMediaPlayerAction& action);
   void OnMoveOrResizeStarted();
   void OnNavigate(const ViewMsg_Navigate_Params& params);
+  void OnNetworkStateChanged(bool online);
   void OnNotifyRendererViewType(ViewType::Type view_type);
   void OnPaste();
 #if defined(OS_MACOSX)

@@ -1073,6 +1073,11 @@ IPC_MESSAGE_ROUTED1(ViewMsg_SelectPopupMenuItem,
 IPC_MESSAGE_ROUTED1(ViewMsg_ContextMenuClosed,
                     webkit_glue::CustomContextMenuContext /* custom_context */)
 
+// Tells the renderer that the network state has changed and that
+// window.navigator.onLine should be updated for all WebViews.
+IPC_MESSAGE_ROUTED1(ViewMsg_NetworkStateChanged,
+                    bool /* online */)
+
 //-----------------------------------------------------------------------------
 // TabContents messages
 // These are messages sent from the renderer to the browser process.

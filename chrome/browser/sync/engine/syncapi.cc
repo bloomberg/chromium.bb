@@ -1112,7 +1112,7 @@ const sync_pb::PasswordSpecificsData&
 //////////////////////////////////////////////////////////////////////////
 // SyncManager's implementation: SyncManager::SyncInternal
 class SyncManager::SyncInternal
-    : public net::NetworkChangeNotifier::Observer,
+    : public net::NetworkChangeNotifier::IPAddressObserver,
       public TalkMediator::Delegate,
       public sync_notifier::StateWriter,
       public browser_sync::ChannelEventHandler<syncable::DirectoryChangeEvent>,
@@ -1681,7 +1681,7 @@ bool SyncManager::SyncInternal::Init(
       NewEventListenerHookup(connection_manager()->channel(), this,
           &SyncManager::SyncInternal::HandleServerConnectionEvent));
 
-  net::NetworkChangeNotifier::AddObserver(this);
+  net::NetworkChangeNotifier::AddIPAddressObserver(this);
   // TODO(akalin): CheckServerReachable() can block, which may cause jank if we
   // try to shut down sync.  Fix this.
   core_message_loop_->PostTask(FROM_HERE,
@@ -2178,7 +2178,7 @@ void SyncManager::SyncInternal::Shutdown() {
     core_message_loop_->SetNestableTasksAllowed(old_state);
   }
 
-  net::NetworkChangeNotifier::RemoveObserver(this);
+  net::NetworkChangeNotifier::RemoveIPAddressObserver(this);
 
   connection_manager_hookup_.reset();
 

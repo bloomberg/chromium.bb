@@ -37,7 +37,7 @@ class TemplateURL;
 // RequestServerCheck().
 class GoogleURLTracker : public URLFetcher::Delegate,
                          public NotificationObserver,
-                         public net::NetworkChangeNotifier::Observer {
+                         public net::NetworkChangeNotifier::IPAddressObserver {
  public:
   // Only the main browser process loop should call this, when setting up
   // g_browser_process->google_url_tracker_.  No code other than the
@@ -118,7 +118,7 @@ class GoogleURLTracker : public URLFetcher::Delegate,
                        const NotificationSource& source,
                        const NotificationDetails& details);
 
-  // NetworkChangeNotifier::Observer
+  // NetworkChangeNotifier::IPAddressObserver
   virtual void OnIPAddressChanged();
 
   void SearchCommitted();
