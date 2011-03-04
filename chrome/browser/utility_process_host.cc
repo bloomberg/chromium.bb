@@ -132,6 +132,8 @@ bool UtilityProcessHost::StartProcess(const FilePath& exposed_dir) {
   const CommandLine& browser_command_line = *CommandLine::ForCurrentProcess();
   if (browser_command_line.HasSwitch(switches::kChromeFrame))
     cmd_line->AppendSwitch(switches::kChromeFrame);
+  if (browser_command_line.HasSwitch(switches::kNoSandbox))
+    cmd_line->AppendSwitch(switches::kNoSandbox);
 
   if (browser_command_line.HasSwitch(
       switches::kEnableExperimentalExtensionApis)) {
