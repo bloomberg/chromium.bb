@@ -1404,19 +1404,15 @@ void WebPluginDelegateImpl::HandleCaptureForMessage(HWND window,
   switch (message) {
     case WM_LBUTTONDOWN:
     case WM_MBUTTONDOWN:
-    case WM_RBUTTONDOWN: {
+    case WM_RBUTTONDOWN:
       ::SetCapture(window);
       // As per documentation the WM_PARENTNOTIFY message is sent to the parent
       // window chain if mouse input is received by the child window. However
       // the parent receives the WM_PARENTNOTIFY message only if we doubleclick
       // on the window. We send the WM_PARENTNOTIFY message for mouse input
       // messages to the parent to indicate that user action is expected.
-      HWND parent = GetParent(window);
-      if (IsWindow(parent)) {
-        ::SendMessage(parent, WM_PARENTNOTIFY, message, 0);
-      }
+      ::SendMessage(::GetParent(window), WM_PARENTNOTIFY, message, 0);
       break;
-    }
 
     case WM_LBUTTONUP:
     case WM_MBUTTONUP:

@@ -278,10 +278,9 @@ LRESULT CALLBACK PluginWrapperWindowProc(HWND window, unsigned int message,
     switch (LOWORD(wparam)) {
       case WM_LBUTTONDOWN:
       case WM_RBUTTONDOWN:
-      case WM_MBUTTONDOWN: {
+      case WM_MBUTTONDOWN:
         ::SendMessage(GetParent(window), message, wparam, lparam);
         return 0;
-      }
       default:
         break;
     }
@@ -1735,10 +1734,9 @@ LRESULT RenderWidgetHostViewWin::OnParentNotify(UINT message, WPARAM wparam,
   switch (LOWORD(wparam)) {
     case WM_LBUTTONDOWN:
     case WM_RBUTTONDOWN:
-    case WM_MBUTTONDOWN: {
+    case WM_MBUTTONDOWN:
       render_widget_host_->StartUserGesture();
       break;
-    }
     default:
       break;
   }
