@@ -106,7 +106,7 @@ function RPCWrapper() {
   }
 
   this.shutdown = function() {
-    var full_message = '\n[SHUTDOWN] ';
+    var full_message = '[SHUTDOWN] ';
     full_message += this.num_passed + ' passed';
     full_message += ', ' + this.num_failed + ' failed';
     if (this.num_errors > 0) {
@@ -135,7 +135,7 @@ function RPCWrapper() {
   }
 
   this.begin = function(test_name) {
-    var full_message = '\n[' + test_name + ' BEGIN]'
+    var full_message = '[' + test_name + ' BEGIN]'
     this._log(full_message, 'blue');
   }
 
@@ -149,10 +149,16 @@ function RPCWrapper() {
   }
 
   this.log = function(test_name, message) {
-    if (typeof(message) != 'string') {
-      message = toString(message);
+    if (message == undefined) {
+      // This is a log message that is not assosiated with a test.
+      // What we though was the test name is actually the message.
+      this._log(test_name);
+    } else {
+      if (typeof(message) != 'string') {
+        message = toString(message);
+      }
+      this._log('[' + test_name + ' LOG] ' + message);
     }
-    this._log('[' + test_name + ' LOG] ' + message);
   }
 
   this.fail = function(test_name, message) {
@@ -162,9 +168,10 @@ function RPCWrapper() {
     this._log(full_message, 'red');
   }
 
-  this.exception = function(test_name, message) {
+  this.exception = function(test_name, err) {
     this.num_errors += 1;
     this.visualError();
+    var message = exceptionToLogText(err);
     var full_message = '[' + test_name + ' EXCEPTION] ' + message;
     this._log(full_message, 'purple');
   }
@@ -175,6 +182,10 @@ function RPCWrapper() {
     this._log(full_message, 'green');
   }
 
+  this.blankLine = function() {
+    this._log('');
+  }
+  
   this.visualError = function() {
     // Changing the color is defered until testing is done
     this.ever_failed = true;
@@ -460,10 +471,12 @@ function Tester() {
       // Setup for the next test.
       var test = tests[this.testIndex];
       this.currentTest = test.name;
+      this.rpc.blankLine();
       this.rpc.begin(this.currentTest);
       this.setNextStep(0, test.callback);
     } else {
       // There are no more test suites.
+      this.rpc.blankLine();
       this.reportExternalErrors('#shutdown#');
       this.rpc.shutdown();
     }
@@ -526,7 +539,7 @@ function Tester() {
       }
       if (!exceptionHandled) {
         // This is not a special type of exception, it is an error.
-        this.rpc.exception(this.currentTest, exceptionToLogText(err));
+        this.rpc.exception(this.currentTest, err);
         exceptionHandled = true
       }
     }

@@ -31,7 +31,6 @@ var rpc = new RPCWrapper();
 
 function log(message) {
   log_text += message + '\n';
-  rpc.log('test_runner.html', message);
 }
 
 // Returns a unique identifier.
@@ -71,14 +70,25 @@ function startProcess(url, callback) {
 }
 
 function runTest(url, callback) {
+  rpc.begin(url);
   log(url + ': running...');
   startProcess(url, function(plugin) {
+    rpc.log(url, 'process has started...');
     log(url + ': process has started...');
     try {
       var result = plugin.run_tests();
+      rpc.log(url, result);
       log(url + ': ' + result);
-      callback(result == "passed");
+      if (result == 'passed') {
+        rpc.pass(url);
+        log(url + ': passed');
+      } else {
+        rpc.fail(url, result);
+        log(url + ': failed: ' + result);
+      }
+      callback(result == 'passed');
     } catch(e) {
+      rpc.exception(url, e);
       log(url + ': failed with exception: ' + result);
       callback(false);
     }
@@ -99,17 +109,17 @@ function runAllTests() {
     if (!passed) {
       failed_count++;
     }
+
     if (finished_count == test_count) {
       log('Ran ' + test_count + ' tests');
       if (failed_count == 0) {
         log('PASSED');
         selenium_status = 'SUCCESS';
-        rpc.pass('test_runner.html');
       } else {
         log(failed_count + ' FAILURE(S)');
         selenium_status = 'FAILED';
-        rpc.fail('test_runner.html', 'Test suite failed');
       }
+      rpc.blankLine();
       rpc.shutdown();
     }
   }
@@ -119,6 +129,7 @@ function runAllTests() {
   }
 
   rpc.startup();
+  rpc.blankLine();
   addTest('dynamic_load_test.nexe');
   addTest('dynamic_modify_test.nexe');
   addTest('imc_shm_mmap_test.nexe');
