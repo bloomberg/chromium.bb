@@ -31,7 +31,7 @@ TEST_F(AutomatedUITestBase, Home) {
 
   std::wstring title;
   ASSERT_TRUE(active_browser()->GetActiveTab()->GetTabTitle(&title));
-  EXPECT_EQ(L"", title);
+  EXPECT_EQ(L"about:blank", title);
 }
 
 TEST_F(AutomatedUITestBase, OpenNewTab) {

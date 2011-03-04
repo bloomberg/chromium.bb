@@ -41,7 +41,7 @@ TEST_F(LayoutPluginTester, UnloadNoCrash) {
 
   ASSERT_TRUE(tab->GoBack());
   EXPECT_TRUE(tab->GetTabTitle(&title));
-  EXPECT_EQ(L"", title);
+  EXPECT_NE(L"Layout Test Plugin Test", title);
 }
 
 // Tests if a plugin executing a self deleting script using NPN_GetURL

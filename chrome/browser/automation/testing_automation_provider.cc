@@ -1069,7 +1069,7 @@ void TestingAutomationProvider::GetTabTitle(int handle,
     NavigationController* tab = tab_tracker_->GetResource(handle);
     NavigationEntry* entry = tab->GetActiveEntry();
     if (entry != NULL) {
-      *title = UTF16ToWideHack(entry->title());
+      *title = UTF16ToWideHack(entry->GetTitleForDisplay(""));
     } else {
       *title = std::wstring();
     }

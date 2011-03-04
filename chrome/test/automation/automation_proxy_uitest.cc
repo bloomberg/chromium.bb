@@ -290,8 +290,7 @@ TEST_F(AutomationProxyTest, GetTab) {
     ASSERT_TRUE(tab.get());
     std::wstring title;
     ASSERT_TRUE(tab->GetTabTitle(&title));
-    // BUG [634097] : expected title should be "about:blank"
-    ASSERT_STREQ(L"", title.c_str());
+    ASSERT_STREQ(L"about:blank", title.c_str());
   }
 
   {
@@ -312,8 +311,7 @@ TEST_F(AutomationProxyTest, NavigateToURL) {
 
   std::wstring title;
   ASSERT_TRUE(tab->GetTabTitle(&title));
-  // BUG [634097] : expected title should be "about:blank"
-  ASSERT_STREQ(L"", title.c_str());
+  ASSERT_STREQ(L"about:blank", title.c_str());
 
   FilePath filename(test_data_directory_);
   filename = filename.AppendASCII("title2.html");
@@ -334,12 +332,11 @@ TEST_F(AutomationProxyTest, GoBackForward) {
 
   std::wstring title;
   ASSERT_TRUE(tab->GetTabTitle(&title));
-  // BUG [634097] : expected title should be "about:blank"
-  ASSERT_STREQ(L"", title.c_str());
+  ASSERT_STREQ(L"about:blank", title.c_str());
 
   ASSERT_FALSE(tab->GoBack());
   ASSERT_TRUE(tab->GetTabTitle(&title));
-  ASSERT_STREQ(L"", title.c_str());
+  ASSERT_STREQ(L"about:blank", title.c_str());
 
   FilePath filename(test_data_directory_);
   filename = filename.AppendASCII("title2.html");
@@ -349,8 +346,7 @@ TEST_F(AutomationProxyTest, GoBackForward) {
 
   ASSERT_TRUE(tab->GoBack());
   ASSERT_TRUE(tab->GetTabTitle(&title));
-  // BUG [634097] : expected title should be "about:blank"
-  ASSERT_STREQ(L"", title.c_str());
+  ASSERT_STREQ(L"about:blank", title.c_str());
 
   ASSERT_TRUE(tab->GoForward());
   ASSERT_TRUE(tab->GetTabTitle(&title));
