@@ -35,8 +35,8 @@
 // STABS debugging information from a parser and adds it to a Breakpad
 // symbol file.
 
-#ifndef COMMON_LINUX_DUMP_STABS_H__
-#define COMMON_LINUX_DUMP_STABS_H__
+#ifndef BREAKPAD_COMMON_STABS_TO_MODULE_H_
+#define BREAKPAD_COMMON_STABS_TO_MODULE_H_
 
 #include <stdint.h>
 
@@ -51,12 +51,14 @@ namespace google_breakpad {
 using std::string;
 using std::vector;
 
-// A StabsToModule is a handler that receives parsed STABS
-// debugging information from a StabsReader, and uses that to populate
+// A StabsToModule is a handler that receives parsed STABS debugging 
+// information from a StabsReader, and uses that to populate
 // a Module. (All classes are in the google_breakpad namespace.) A
 // Module represents the contents of a Breakpad symbol file, and knows
 // how to write itself out as such. A StabsToModule thus acts as
 // the bridge between STABS and Breakpad data.
+// When processing Darwin Mach-O files, this also receives public linker
+// symbols, like those found in system libraries.
 class StabsToModule: public google_breakpad::StabsHandler {
  public:
   // Receive parsed debugging information from a StabsReader, and
@@ -77,6 +79,7 @@ class StabsToModule: public google_breakpad::StabsHandler {
   bool StartFunction(const string &name, uint64_t address);
   bool EndFunction(uint64_t address);
   bool Line(uint64_t address, const char *name, int number);
+  bool Extern(const string &name, uint64_t address);
   void Warning(const char *format, ...);
 
   // Do any final processing necessary to make module_ contain all the
@@ -135,6 +138,6 @@ class StabsToModule: public google_breakpad::StabsHandler {
   const char *current_source_file_name_;
 };
 
-} // namespace google_breakpad
+}  // namespace google_breakpad
 
-#endif // COMMON_LINUX_DUMP_STABS_H__
+#endif  // BREAKPAD_COMMON_STABS_TO_MODULE_H_

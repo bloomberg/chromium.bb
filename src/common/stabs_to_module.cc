@@ -132,6 +132,22 @@ bool StabsToModule::Line(uint64_t address, const char *name, int number) {
   return true;
 }
 
+bool StabsToModule::Extern(const string &name, uint64_t address) {
+  Module::Extern *ext = new Module::Extern;
+  // Older libstdc++ demangle implementations can crash on unexpected
+  // input, so be careful about what gets passed in.
+  if (name.compare(0, 3, "__Z") == 0) {
+    ext->name = Demangle(name.substr(1));
+  } else if (name[0] == '_') {
+    ext->name = name.substr(1);
+  } else {
+    ext->name = name;
+  }
+  ext->address = address;
+  module_->AddExtern(ext);
+  return true;
+}
+
 void StabsToModule::Warning(const char *format, ...) {
   va_list args;
   va_start(args, format);

@@ -55,6 +55,9 @@ Module::~Module() {
   for (vector<StackFrameEntry *>::iterator it = stack_frame_entries_.begin();
        it != stack_frame_entries_.end(); it++)
     delete *it;
+  for (ExternSet::iterator it = externs_.begin();
+       it != externs_.end(); it++)
+    delete *it;
 }
 
 void Module::SetLoadAddress(Address address) {
@@ -64,7 +67,8 @@ void Module::SetLoadAddress(Address address) {
 void Module::AddFunction(Function *function) {
   std::pair<FunctionSet::iterator,bool> ret = functions_.insert(function);
   if (!ret.second) {
-    // Free the duplicate we failed to insert because we own it.
+    // Free the duplicate that was not inserted because this Module
+    // now owns it.
     delete function;
   }
 }
@@ -79,9 +83,23 @@ void Module::AddStackFrameEntry(StackFrameEntry *stack_frame_entry) {
   stack_frame_entries_.push_back(stack_frame_entry);
 }
 
+void Module::AddExtern(Extern *ext) {
+  std::pair<ExternSet::iterator,bool> ret = externs_.insert(ext);
+  if (!ret.second) {
+    // Free the duplicate that was not inserted because this Module
+    // now owns it.
+    delete ext;
+  }
+}
+
 void Module::GetFunctions(vector<Function *> *vec,
                           vector<Function *>::iterator i) {
   vec->insert(i, functions_.begin(), functions_.end());
+}
+
+void Module::GetExterns(vector<Extern *> *vec,
+                        vector<Extern *>::iterator i) {
+  vec->insert(i, externs_.begin(), externs_.end());
 }
 
 Module::File *Module::FindFile(const string &name) {
@@ -209,6 +227,16 @@ bool Module::Write(FILE *stream) {
                       line_it->number,
                       line_it->file->source_id))
         return ReportError();
+  }
+
+  // Write out 'PUBLIC' records.
+  for (ExternSet::const_iterator extern_it = externs_.begin();
+       extern_it != externs_.end(); extern_it++) {
+    Extern *ext = *extern_it;
+    if (0 > fprintf(stream, "PUBLIC %llx 0 %s\n",
+                    (unsigned long long) (ext->address - load_address_),
+                    ext->name.c_str()))
+      return ReportError();
   }
 
   // Write out 'STACK CFI INIT' and 'STACK CFI' records.

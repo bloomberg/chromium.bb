@@ -455,3 +455,62 @@ TEST(Construct, FunctionsWithSameAddress) {
                " _without_form\n",
                contents.c_str());
 }
+
+// Externs should be written out as PUBLIC records, sorted by
+// address.
+TEST(Construct, Externs) {
+  FILE *f = checked_tmpfile();
+  Module m(MODULE_NAME, MODULE_OS, MODULE_ARCH, MODULE_ID);
+
+  // Two externs.
+  Module::Extern *extern1 = new(Module::Extern);
+  extern1->address = 0xffff;
+  extern1->name = "_abc";
+  Module::Extern *extern2 = new(Module::Extern);
+  extern2->address = 0xaaaa;
+  extern2->name = "_xyz";
+
+  m.AddExtern(extern1);
+  m.AddExtern(extern2);
+
+  m.Write(f);
+  checked_fflush(f);
+  rewind(f);
+  string contents = checked_read(f);
+  checked_fclose(f);
+
+  EXPECT_STREQ("MODULE " MODULE_OS " " MODULE_ARCH " "
+               MODULE_ID " " MODULE_NAME "\n"
+               "PUBLIC aaaa 0 _xyz\n"
+               "PUBLIC ffff 0 _abc\n",
+               contents.c_str());
+}
+
+// Externs with the same address should only keep the first entry
+// added.
+TEST(Construct, DuplicateExterns) {
+  FILE *f = checked_tmpfile();
+  Module m(MODULE_NAME, MODULE_OS, MODULE_ARCH, MODULE_ID);
+
+  // Two externs.
+  Module::Extern *extern1 = new(Module::Extern);
+  extern1->address = 0xffff;
+  extern1->name = "_xyz";
+  Module::Extern *extern2 = new(Module::Extern);
+  extern2->address = 0xffff;
+  extern2->name = "_abc";
+
+  m.AddExtern(extern1);
+  m.AddExtern(extern2);
+
+  m.Write(f);
+  checked_fflush(f);
+  rewind(f);
+  string contents = checked_read(f);
+  checked_fclose(f);
+
+  EXPECT_STREQ("MODULE " MODULE_OS " " MODULE_ARCH " "
+               MODULE_ID " " MODULE_NAME "\n"
+               "PUBLIC ffff 0 _xyz\n",
+               contents.c_str());
+}

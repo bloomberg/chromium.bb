@@ -221,6 +221,7 @@ class MockStabsReaderHandler: public StabsHandler {
   MOCK_METHOD2(StartFunction, bool(const std::string &, uint64_t));
   MOCK_METHOD1(EndFunction, bool(uint64_t));
   MOCK_METHOD3(Line, bool(uint64_t, const char *, int));
+  MOCK_METHOD2(Extern, bool(const std::string &, uint64_t));
   void Warning(const char *format, ...) { MockWarning(format); }
   MOCK_METHOD1(MockWarning, void(const char *));
 };
@@ -555,6 +556,55 @@ TEST_F(Stabs, LeadingLine) {
   ASSERT_TRUE(ApplyHandlerToMockStabsData());
 }
 
-// name duplication
+
+#if defined(HAVE_MACH_O_NLIST_H)
+// These tests have no meaning on non-Mach-O-based systems, as
+// only Mach-O uses N_SECT to represent public symbols.
+TEST_F(Stabs, OnePublicSymbol) {
+  stabs.set_endianness(kLittleEndian);
+  stabs.set_value_size(4);
+
+  const u_int32_t kExpectedAddress = 0x9000;
+  const string kExpectedFunctionName("public_function");
+  stabs
+    .Stab(N_SECT, 1, 0, kExpectedAddress, kExpectedFunctionName);
+
+  {
+    InSequence s;
+    EXPECT_CALL(mock_handler,
+                Extern(StrEq(kExpectedFunctionName),
+                       kExpectedAddress))
+        .WillOnce(Return(true));
+  }
+  ASSERT_TRUE(ApplyHandlerToMockStabsData());
+}
+
+TEST_F(Stabs, TwoPublicSymbols) {
+  stabs.set_endianness(kLittleEndian);
+  stabs.set_value_size(4);
+
+  const u_int32_t kExpectedAddress1 = 0xB0B0B0B0;
+  const string kExpectedFunctionName1("public_function");
+  const u_int32_t kExpectedAddress2 = 0xF0F0F0F0;
+  const string kExpectedFunctionName2("something else");
+  stabs
+    .Stab(N_SECT, 1, 0, kExpectedAddress1, kExpectedFunctionName1)
+    .Stab(N_SECT, 1, 0, kExpectedAddress2, kExpectedFunctionName2);
+
+  {
+    InSequence s;
+    EXPECT_CALL(mock_handler,
+                Extern(StrEq(kExpectedFunctionName1),
+                       kExpectedAddress1))
+        .WillOnce(Return(true));
+    EXPECT_CALL(mock_handler,
+                Extern(StrEq(kExpectedFunctionName2),
+                       kExpectedAddress2))
+        .WillOnce(Return(true));
+  }
+  ASSERT_TRUE(ApplyHandlerToMockStabsData());
+}
+
+#endif
 
 } // anonymous namespace

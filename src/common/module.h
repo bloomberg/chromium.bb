@@ -65,6 +65,7 @@ class Module {
   struct File;
   struct Function;
   struct Line;
+  struct Extern;
 
   // Addresses appearing in File, Function, and Line structures are
   // absolute, not relative to the the module's load address.  That
@@ -117,6 +118,12 @@ class Module {
     int number;                // The source line number.
   };
 
+  // An exported symbol.
+  struct Extern {
+    Address address;
+    string name;
+  };
+
   // A map from register names to postfix expressions that recover
   // their their values. This can represent a complete set of rules to
   // follow at some address, or a set of changes to be applied to an
@@ -155,6 +162,13 @@ class Module {
     }
   };
 
+  struct ExternCompare {
+    bool operator() (const Extern *lhs,
+                     const Extern *rhs) const {
+      return lhs->address < rhs->address;
+    }
+  };
+
   // Create a new module with the given name, operating system,
   // architecture, and ID string.
   Module(const string &name, const string &os, const string &architecture,
@@ -187,10 +201,14 @@ class Module {
                     vector<Function *>::iterator end);
 
   // Add STACK_FRAME_ENTRY to the module.
-  //
   // This module owns all StackFrameEntry objects added with this
   // function: destroying the module destroys them as well.
   void AddStackFrameEntry(StackFrameEntry *stack_frame_entry);
+
+  // Add PUBLIC to the module.
+  // This module owns all Extern objects added with this function:
+  // destroying the module destroys them as well.
+  void AddExtern(Extern *ext);
 
   // If this module has a file named NAME, return a pointer to it. If
   // it has none, then create one and return a pointer to the new
@@ -209,6 +227,13 @@ class Module {
   // mostly useful for testing; other uses should probably get a more
   // appropriate interface.)
   void GetFunctions(vector<Function *> *vec, vector<Function *>::iterator i);
+
+  // Insert pointers to the externs added to this module at I in
+  // VEC. The pointed-to Externs are still owned by this module.
+  // (Since this is effectively a copy of the extern list, this is
+  // mostly useful for testing; other uses should probably get a more
+  // appropriate interface.)
+  void GetExterns(vector<Extern *> *vec, vector<Extern *>::iterator i);
 
   // Clear VEC and fill it with pointers to the Files added to this
   // module, sorted by name. The pointed-to Files are still owned by
@@ -269,7 +294,12 @@ class Module {
   // A map from filenames to File structures.  The map's keys are
   // pointers to the Files' names.
   typedef map<const string *, File *, CompareStringPtrs> FileByNameMap;
+
+  // A set containing Function structures, sorted by address.
   typedef set<Function *, FunctionCompare> FunctionSet;
+
+  // A set containing Extern structures, sorted by address.
+  typedef set<Extern *, ExternCompare> ExternSet;
 
   // The module owns all the files and functions that have been added
   // to it; destroying the module frees the Files and Functions these
@@ -280,6 +310,10 @@ class Module {
   // The module owns all the call frame info entries that have been
   // added to it.
   vector<StackFrameEntry *> stack_frame_entries_;
+
+  // The module owns all the externs that have been added to it;
+  // destroying the module frees the Externs these point to.
+  ExternSet externs_;
 };
 
 } // namespace google_breakpad

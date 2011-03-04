@@ -107,8 +107,19 @@ bool StabsReader::Process() {
       string_offset_ = next_cu_string_offset_;
       next_cu_string_offset_ = iterator_->value;
       ++iterator_;
-    } else
+    }
+#if defined(HAVE_MACH_O_NLIST_H)
+    // Export symbols in Mach-O binaries look like this.
+    // This is necessary in order to be able to dump symbols
+    // from OS X system libraries.
+    else if ((iterator_->type & N_STAB) == 0 &&
+               (iterator_->type & N_TYPE) == N_SECT) {
+      ProcessExtern();
+    }
+#endif
+    else {
       ++iterator_;
+    }
   }
   return true;
 }
@@ -279,6 +290,21 @@ bool StabsReader::ProcessFunction() {
   if (! handler_->EndFunction(ending_address))
     return false;
 
+  return true;
+}
+
+bool StabsReader::ProcessExtern() {
+#if defined(HAVE_MACH_O_NLIST_H)
+  assert(!iterator_->at_end &&
+         (iterator_->type & N_STAB) == 0 &&
+         (iterator_->type & N_TYPE) == N_SECT);
+#endif
+
+  // TODO(mark): only do symbols in the text section?
+  if (!handler_->Extern(SymbolString(), iterator_->value))
+    return false;
+
+  ++iterator_;
   return true;
 }
 

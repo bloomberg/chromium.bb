@@ -193,7 +193,11 @@ class StabsReader {
   // Return true to continue processing, or false to abort.
   bool ProcessFunction();
 
-  // The STABS entries we're parsing.
+  // Process an exported function symbol.
+  // Return true to continue processing, or false to abort.
+  bool ProcessExtern();
+
+  // The STABS entries being parsed.
   ByteBuffer entries_;
 
   // The string section to which the entries refer.
@@ -302,6 +306,12 @@ class StabsHandler {
   // the source file named FILENAME.  The caller must infer the ending
   // address of the line.
   virtual bool Line(uint64_t address, const char *filename, int number) {
+    return true;
+  }
+
+  // Report that an exported function NAME is present at ADDRESS.
+  // The size of the function is unknown.
+  virtual bool Extern(const std::string &name, uint64_t address) {
     return true;
   }
 
