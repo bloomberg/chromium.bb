@@ -1174,13 +1174,13 @@ gfx::Point View::GetKeyboardContextMenuLocation() {
 
 int View::GetDragOperations(const gfx::Point& press_pt) {
   return drag_controller_ ?
-      drag_controller_->GetDragOperations(this, press_pt) :
+      drag_controller_->GetDragOperationsForView(this, press_pt) :
       ui::DragDropTypes::DRAG_NONE;
 }
 
 void View::WriteDragData(const gfx::Point& press_pt, OSExchangeData* data) {
   DCHECK(drag_controller_);
-  drag_controller_->WriteDragData(this, press_pt, data);
+  drag_controller_->WriteDragDataForView(this, press_pt, data);
 }
 
 bool View::InDrag() {
@@ -1448,7 +1448,8 @@ bool View::ProcessMouseDragged(const MouseEvent& e, DragInfo* drag_info) {
   if (possible_drag && ExceededDragThreshold(drag_info->start_pt.x() - e.x(),
                                              drag_info->start_pt.y() - e.y())) {
     if (!drag_controller_ ||
-        drag_controller_->CanStartDrag(this, drag_info->start_pt, e.location()))
+        drag_controller_->CanStartDragForView(
+            this, drag_info->start_pt, e.location()))
       DoDrag(e, drag_info->start_pt);
   } else {
     if (OnMouseDragged(e))

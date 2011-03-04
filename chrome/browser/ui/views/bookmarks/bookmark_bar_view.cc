@@ -1078,9 +1078,9 @@ void BookmarkBarView::BookmarkNodeFavIconLoaded(BookmarkModel* model,
   BookmarkNodeChangedImpl(model, node);
 }
 
-void BookmarkBarView::WriteDragData(View* sender,
-                                    const gfx::Point& press_pt,
-                                    ui::OSExchangeData* data) {
+void BookmarkBarView::WriteDragDataForView(View* sender,
+                                           const gfx::Point& press_pt,
+                                           ui::OSExchangeData* data) {
   UserMetrics::RecordAction(UserMetricsAction("BookmarkBar_DragButton"),
                             profile_);
 
@@ -1098,7 +1098,8 @@ void BookmarkBarView::WriteDragData(View* sender,
   NOTREACHED();
 }
 
-int BookmarkBarView::GetDragOperations(View* sender, const gfx::Point& p) {
+int BookmarkBarView::GetDragOperationsForView(View* sender,
+                                              const gfx::Point& p) {
   if (size_animation_->is_animating() ||
       (size_animation_->GetCurrentValue() == 0 && !OnNewTabPage())) {
     // Don't let the user drag while animating open or we're closed (and not on
@@ -1118,9 +1119,9 @@ int BookmarkBarView::GetDragOperations(View* sender, const gfx::Point& p) {
   return ui::DragDropTypes::DRAG_NONE;
 }
 
-bool BookmarkBarView::CanStartDrag(views::View* sender,
-                                   const gfx::Point& press_pt,
-                                   const gfx::Point& p) {
+bool BookmarkBarView::CanStartDragForView(views::View* sender,
+                                          const gfx::Point& press_pt,
+                                          const gfx::Point& p) {
   // Check if we have not moved enough horizontally but we have moved downward
   // vertically - downward drag.
   if (!View::ExceededDragThreshold(press_pt.x() - p.x(), 0) &&

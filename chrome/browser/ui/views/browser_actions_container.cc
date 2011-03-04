@@ -754,9 +754,9 @@ void BrowserActionsContainer::RunMenu(View* source, const gfx::Point& pt) {
   }
 }
 
-void BrowserActionsContainer::WriteDragData(View* sender,
-                                            const gfx::Point& press_pt,
-                                            OSExchangeData* data) {
+void BrowserActionsContainer::WriteDragDataForView(View* sender,
+                                                   const gfx::Point& press_pt,
+                                                   OSExchangeData* data) {
   DCHECK(data);
 
   for (size_t i = 0; i < browser_action_views_.size(); ++i) {
@@ -777,14 +777,14 @@ void BrowserActionsContainer::WriteDragData(View* sender,
   }
 }
 
-int BrowserActionsContainer::GetDragOperations(View* sender,
-                                               const gfx::Point& p) {
+int BrowserActionsContainer::GetDragOperationsForView(View* sender,
+                                                      const gfx::Point& p) {
   return ui::DragDropTypes::DRAG_MOVE;
 }
 
-bool BrowserActionsContainer::CanStartDrag(View* sender,
-                                           const gfx::Point& press_pt,
-                                           const gfx::Point& p) {
+bool BrowserActionsContainer::CanStartDragForView(View* sender,
+                                                  const gfx::Point& press_pt,
+                                                  const gfx::Point& p) {
   return true;
 }
 

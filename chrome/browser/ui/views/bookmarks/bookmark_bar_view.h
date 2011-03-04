@@ -8,6 +8,7 @@
 
 #include <set>
 
+#include "base/compiler_specific.h"
 #include "chrome/browser/bookmarks/bookmark_model_observer.h"
 #include "chrome/browser/bookmarks/bookmark_node_data.h"
 #include "chrome/browser/sync/profile_sync_service.h"
@@ -354,15 +355,16 @@ class BookmarkBarView : public DetachableToolbarView,
 
   // DragController method. Determines the node representing sender and invokes
   // WriteDragData to write the actual data.
-  virtual void WriteDragData(views::View* sender,
-                             const gfx::Point& press_pt,
-                             ui::OSExchangeData* data);
+  virtual void WriteDragDataForView(views::View* sender,
+                                    const gfx::Point& press_pt,
+                                    ui::OSExchangeData* data) OVERRIDE;
 
-  virtual int GetDragOperations(views::View* sender, const gfx::Point& p);
+  virtual int GetDragOperationsForView(views::View* sender,
+                                       const gfx::Point& p) OVERRIDE;
 
-  virtual bool CanStartDrag(views::View* sender,
-                            const gfx::Point& press_pt,
-                            const gfx::Point& p);
+  virtual bool CanStartDragForView(views::View* sender,
+                                   const gfx::Point& press_pt,
+                                   const gfx::Point& p) OVERRIDE;
 
   // Writes a BookmarkNodeData for node to data.
   void WriteDragData(const BookmarkNode* node, ui::OSExchangeData* data);

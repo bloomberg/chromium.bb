@@ -10,6 +10,7 @@
 #include <string>
 #include <vector>
 
+#include "base/compiler_specific.h"
 #include "base/task.h"
 #include "chrome/browser/extensions/extension_context_menu_model.h"
 #include "chrome/browser/extensions/extension_toolbar_model.h"
@@ -337,13 +338,14 @@ class BrowserActionsContainer
   virtual void RunMenu(View* source, const gfx::Point& pt);
 
   // Overridden from views::DragController:
-  virtual void WriteDragData(View* sender,
-                             const gfx::Point& press_pt,
-                             ui::OSExchangeData* data);
-  virtual int GetDragOperations(View* sender, const gfx::Point& p);
-  virtual bool CanStartDrag(View* sender,
-                            const gfx::Point& press_pt,
-                            const gfx::Point& p);
+  virtual void WriteDragDataForView(View* sender,
+                                    const gfx::Point& press_pt,
+                                    ui::OSExchangeData* data) OVERRIDE;
+  virtual int GetDragOperationsForView(View* sender,
+                                       const gfx::Point& p) OVERRIDE;
+  virtual bool CanStartDragForView(View* sender,
+                                   const gfx::Point& press_pt,
+                                   const gfx::Point& p) OVERRIDE;
 
   // Overridden from ResizeArea::ResizeAreaDelegate:
   virtual void OnResize(int resize_amount, bool done_resizing);

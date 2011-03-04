@@ -1059,10 +1059,11 @@ AccessibilityTypes::Role LocationBarView::GetAccessibleRole() {
   return AccessibilityTypes::ROLE_GROUPING;
 }
 
-void LocationBarView::WriteDragData(views::View* sender,
-                                    const gfx::Point& press_pt,
-                                    OSExchangeData* data) {
-  DCHECK(GetDragOperations(sender, press_pt) != ui::DragDropTypes::DRAG_NONE);
+void LocationBarView::WriteDragDataForView(views::View* sender,
+                                           const gfx::Point& press_pt,
+                                           OSExchangeData* data) {
+  DCHECK_NE(GetDragOperationsForView(sender, press_pt),
+            ui::DragDropTypes::DRAG_NONE);
 
   TabContents* tab_contents = GetTabContentsFromDelegate(delegate_);
   DCHECK(tab_contents);
@@ -1071,8 +1072,8 @@ void LocationBarView::WriteDragData(views::View* sender,
                                  tab_contents->GetFavIcon(), data);
 }
 
-int LocationBarView::GetDragOperations(views::View* sender,
-                                       const gfx::Point& p) {
+int LocationBarView::GetDragOperationsForView(views::View* sender,
+                                              const gfx::Point& p) {
   DCHECK((sender == location_icon_view_) || (sender == ev_bubble_view_));
   TabContents* tab_contents = GetTabContentsFromDelegate(delegate_);
   return (tab_contents && tab_contents->GetURL().is_valid() &&
@@ -1081,9 +1082,9 @@ int LocationBarView::GetDragOperations(views::View* sender,
       ui::DragDropTypes::DRAG_NONE;
 }
 
-bool LocationBarView::CanStartDrag(View* sender,
-                                   const gfx::Point& press_pt,
-                                   const gfx::Point& p) {
+bool LocationBarView::CanStartDragForView(View* sender,
+                                          const gfx::Point& press_pt,
+                                          const gfx::Point& p) {
   return true;
 }
 

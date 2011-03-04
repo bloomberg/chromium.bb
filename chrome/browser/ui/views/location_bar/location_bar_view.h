@@ -9,6 +9,7 @@
 #include <string>
 #include <vector>
 
+#include "base/compiler_specific.h"
 #include "base/task.h"
 #include "chrome/browser/autocomplete/autocomplete_edit.h"
 #include "chrome/browser/extensions/extension_context_menu_model.h"
@@ -211,13 +212,14 @@ class LocationBarView : public LocationBar,
   virtual AccessibilityTypes::Role GetAccessibleRole() OVERRIDE;
 
   // Overridden from views::DragController:
-  virtual void WriteDragData(View* sender,
-                             const gfx::Point& press_pt,
-                             OSExchangeData* data) OVERRIDE;
-  virtual int GetDragOperations(View* sender, const gfx::Point& p) OVERRIDE;
-  virtual bool CanStartDrag(View* sender,
-                            const gfx::Point& press_pt,
-                            const gfx::Point& p) OVERRIDE;
+  virtual void WriteDragDataForView(View* sender,
+                                    const gfx::Point& press_pt,
+                                    OSExchangeData* data) OVERRIDE;
+  virtual int GetDragOperationsForView(View* sender,
+                                       const gfx::Point& p) OVERRIDE;
+  virtual bool CanStartDragForView(View* sender,
+                                   const gfx::Point& press_pt,
+                                   const gfx::Point& p) OVERRIDE;
 
   // Overridden from LocationBar:
   virtual void ShowFirstRunBubble(FirstRun::BubbleType bubble_type) OVERRIDE;

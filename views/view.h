@@ -87,20 +87,21 @@ class ContextMenuController {
 class DragController {
  public:
   // Writes the data for the drag.
-  virtual void WriteDragData(View* sender,
-                             const gfx::Point& press_pt,
-                             OSExchangeData* data) = 0;
+  virtual void WriteDragDataForView(View* sender,
+                                    const gfx::Point& press_pt,
+                                    OSExchangeData* data) = 0;
 
   // Returns the supported drag operations (see DragDropTypes for possible
   // values). A drag is only started if this returns a non-zero value.
-  virtual int GetDragOperations(View* sender, const gfx::Point& p) = 0;
+  virtual int GetDragOperationsForView(View* sender,
+                                       const gfx::Point& p) = 0;
 
   // Returns true if a drag operation can be started.
   // |press_pt| represents the coordinates where the mouse was initially
   // pressed down. |p| is the current mouse coordinates.
-  virtual bool CanStartDrag(View* sender,
-                            const gfx::Point& press_pt,
-                            const gfx::Point& p) = 0;
+  virtual bool CanStartDragForView(View* sender,
+                                   const gfx::Point& press_pt,
+                                   const gfx::Point& p) = 0;
 
  protected:
   virtual ~DragController() {}
