@@ -4192,7 +4192,7 @@
         "type": "object",
         "properties": {
           "size": { "type": "integer", "description": "A number representing the width and height of the icon. Likely values include (but are not limited to) 128, 48, 24, and 16."  },
-          "url": { "type": "string", "description": "The url for this icon image." }
+          "url": { "type": "string", "description": "The URL for this icon image. To display a grayscale version of the icon (to indicate that an extension is disabled, for example), append <code>?grayscale=true</code> to the URL." }
         }
       },
       {

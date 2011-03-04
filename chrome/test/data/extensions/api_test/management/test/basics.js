@@ -7,7 +7,8 @@ function checkIcon(item, size, path) {
   for (var i = 0; i < icons.length; i++) {
     var icon = icons[i];
     if (icon.size == size) {
-      var expected_url = "chrome-extension://" + item.id + "/" + path;
+      var expected_url =
+          "chrome://extension-icon/" + item.id + "/" + size + "/0";
       assertEq(expected_url, icon.url);
       return;
     }

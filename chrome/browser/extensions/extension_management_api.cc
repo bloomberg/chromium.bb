@@ -18,6 +18,7 @@
 #include "chrome/browser/extensions/extension_updater.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/webui/extension_icon_source.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/extensions/extension_error_utils.h"
 #include "chrome/common/extensions/extension.h"
@@ -76,9 +77,11 @@ static DictionaryValue* CreateExtensionInfo(const Extension& extension,
     std::map<int, std::string>::const_iterator icon_iter;
     for (icon_iter = icons.begin(); icon_iter != icons.end(); ++icon_iter) {
       DictionaryValue* icon_info = new DictionaryValue();
-      GURL url = extension.GetResourceURL(icon_iter->second);
+      Extension::Icons size = static_cast<Extension::Icons>(icon_iter->first);
+      GURL url = ExtensionIconSource::GetIconURL(
+          &extension, size, ExtensionIconSet::MATCH_EXACTLY, false);
       icon_info->SetInteger(kSizeKey, icon_iter->first);
-      icon_info->SetString(kUrlKey, url.possibly_invalid_spec());
+      icon_info->SetString(kUrlKey, url.spec());
       icon_list->Append(icon_info);
     }
     info->Set("icons", icon_list);
