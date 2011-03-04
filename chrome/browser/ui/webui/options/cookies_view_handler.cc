@@ -214,61 +214,45 @@ void CookiesViewHandler::GetLocalizedValues(
     DictionaryValue* localized_strings) {
   DCHECK(localized_strings);
 
+  static OptionsStringResource resources[] = {
+    { "label_cookie_name", IDS_COOKIES_COOKIE_NAME_LABEL },
+    { "label_cookie_content", IDS_COOKIES_COOKIE_CONTENT_LABEL },
+    { "label_cookie_domain", IDS_COOKIES_COOKIE_DOMAIN_LABEL },
+    { "label_cookie_path", IDS_COOKIES_COOKIE_PATH_LABEL },
+    { "label_cookie_send_for", IDS_COOKIES_COOKIE_SENDFOR_LABEL },
+    { "label_cookie_accessible_to_script",
+      IDS_COOKIES_COOKIE_ACCESSIBLE_TO_SCRIPT_LABEL },
+    { "label_cookie_created", IDS_COOKIES_COOKIE_CREATED_LABEL },
+    { "label_cookie_expires", IDS_COOKIES_COOKIE_EXPIRES_LABEL },
+    { "label_webdb_desc", IDS_COOKIES_WEB_DATABASE_DESCRIPTION_LABEL },
+    { "label_local_storage_size",
+      IDS_COOKIES_LOCAL_STORAGE_SIZE_ON_DISK_LABEL },
+    { "label_local_storage_last_modified",
+      IDS_COOKIES_LOCAL_STORAGE_LAST_MODIFIED_LABEL },
+    { "label_local_storage_origin", IDS_COOKIES_LOCAL_STORAGE_ORIGIN_LABEL },
+    { "label_indexed_db_size", IDS_COOKIES_LOCAL_STORAGE_SIZE_ON_DISK_LABEL },
+    { "label_indexed_db_last_modified",
+      IDS_COOKIES_LOCAL_STORAGE_LAST_MODIFIED_LABEL },
+    { "label_indexed_db_origin", IDS_COOKIES_LOCAL_STORAGE_ORIGIN_LABEL },
+    { "label_app_cache_manifest",
+      IDS_COOKIES_APPLICATION_CACHE_MANIFEST_LABEL },
+    { "label_cookie_last_accessed", IDS_COOKIES_LAST_ACCESSED_LABEL },
+    { "cookie_domain", IDS_COOKIES_DOMAIN_COLUMN_HEADER },
+    { "cookie_local_data", IDS_COOKIES_DATA_COLUMN_HEADER },
+    { "cookie_singular", IDS_COOKIES_SINGLE_COOKIE },
+    { "cookie_plural", IDS_COOKIES_PLURAL_COOKIES },
+    { "cookie_database_storage", IDS_COOKIES_DATABASE_STORAGE },
+    { "cookie_indexed_db", IDS_COOKIES_INDEXED_DB },
+    { "cookie_local_storage", IDS_COOKIES_LOCAL_STORAGE },
+    { "cookie_session_storage", IDS_COOKIES_SESSION_STORAGE },
+  };
+
+  RegisterStrings(localized_strings, resources, arraysize(resources));
   RegisterTitle(localized_strings, "cookiesViewPage",
                 IDS_COOKIES_WEBSITE_PERMISSIONS_WINDOW_TITLE);
 
-  localized_strings->SetString("label_cookie_name",
-      l10n_util::GetStringUTF16(IDS_COOKIES_COOKIE_NAME_LABEL));
-  localized_strings->SetString("label_cookie_content",
-      l10n_util::GetStringUTF16(IDS_COOKIES_COOKIE_CONTENT_LABEL));
-  localized_strings->SetString("label_cookie_domain",
-      l10n_util::GetStringUTF16(IDS_COOKIES_COOKIE_DOMAIN_LABEL));
-  localized_strings->SetString("label_cookie_path",
-      l10n_util::GetStringUTF16(IDS_COOKIES_COOKIE_PATH_LABEL));
-  localized_strings->SetString("label_cookie_send_for",
-      l10n_util::GetStringUTF16(IDS_COOKIES_COOKIE_SENDFOR_LABEL));
-  localized_strings->SetString("label_cookie_accessible_to_script",
-      l10n_util::GetStringUTF16(IDS_COOKIES_COOKIE_ACCESSIBLE_TO_SCRIPT_LABEL));
-  localized_strings->SetString("label_cookie_created",
-      l10n_util::GetStringUTF16(IDS_COOKIES_COOKIE_CREATED_LABEL));
-  localized_strings->SetString("label_cookie_expires",
-      l10n_util::GetStringUTF16(IDS_COOKIES_COOKIE_EXPIRES_LABEL));
-  localized_strings->SetString("label_webdb_desc",
-      l10n_util::GetStringUTF16(IDS_COOKIES_WEB_DATABASE_DESCRIPTION_LABEL));
-  localized_strings->SetString("label_local_storage_size",
-      l10n_util::GetStringUTF16(IDS_COOKIES_LOCAL_STORAGE_SIZE_ON_DISK_LABEL));
-  localized_strings->SetString("label_local_storage_last_modified",
-      l10n_util::GetStringUTF16(IDS_COOKIES_LOCAL_STORAGE_LAST_MODIFIED_LABEL));
-  localized_strings->SetString("label_local_storage_origin",
-      l10n_util::GetStringUTF16(IDS_COOKIES_LOCAL_STORAGE_ORIGIN_LABEL));
-  localized_strings->SetString("label_indexed_db_size",
-      l10n_util::GetStringUTF16(IDS_COOKIES_LOCAL_STORAGE_SIZE_ON_DISK_LABEL));
-  localized_strings->SetString("label_indexed_db_last_modified",
-      l10n_util::GetStringUTF16(IDS_COOKIES_LOCAL_STORAGE_LAST_MODIFIED_LABEL));
-  localized_strings->SetString("label_indexed_db_origin",
-      l10n_util::GetStringUTF16(IDS_COOKIES_LOCAL_STORAGE_ORIGIN_LABEL));
-  localized_strings->SetString("label_app_cache_manifest",
-      l10n_util::GetStringUTF16(IDS_COOKIES_APPLICATION_CACHE_MANIFEST_LABEL));
-  localized_strings->SetString("label_cookie_last_accessed",
-      l10n_util::GetStringUTF16(IDS_COOKIES_LAST_ACCESSED_LABEL));
-
-  localized_strings->SetString("cookie_domain",
-      l10n_util::GetStringUTF16(IDS_COOKIES_DOMAIN_COLUMN_HEADER));
-  localized_strings->SetString("cookie_local_data",
-      l10n_util::GetStringUTF16(IDS_COOKIES_DATA_COLUMN_HEADER));
-  localized_strings->SetString("cookie_singular",
-      l10n_util::GetStringUTF16(IDS_COOKIES_SINGLE_COOKIE));
-  localized_strings->SetString("cookie_plural",
-      l10n_util::GetStringUTF16(IDS_COOKIES_PLURAL_COOKIES));
-  localized_strings->SetString("cookie_database_storage",
-      l10n_util::GetStringUTF16(IDS_COOKIES_DATABASE_STORAGE));
-  localized_strings->SetString("cookie_indexed_db",
-      l10n_util::GetStringUTF16(IDS_COOKIES_INDEXED_DB));
-  localized_strings->SetString("cookie_local_storage",
-      l10n_util::GetStringUTF16(IDS_COOKIES_LOCAL_STORAGE));
-  localized_strings->SetString("cookie_session_storage",
-      l10n_util::GetStringUTF16(IDS_COOKIES_SESSION_STORAGE));
-
+  // TODO(mdm): add these to the array above when we can get rid of
+  // the calls to CleanButtonLabel().
   localized_strings->SetString("remove_cookie", CleanButtonLabel(
       l10n_util::GetStringUTF16(IDS_COOKIES_REMOVE_LABEL)));
   localized_strings->SetString("remove_all_cookie", CleanButtonLabel(
