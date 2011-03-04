@@ -37,10 +37,14 @@ class PasswordAutoFillManager : public RenderViewObserver,
   bool TextDidChangeInTextField(const WebKit::WebInputElement& element);
   bool TextFieldHandlingKeyDown(const WebKit::WebInputElement& element,
                                 const WebKit::WebKeyboardEvent& event);
+
   // Fills the password associated with user name |value|. Returns true if the
   // username and password fields were filled, false otherwise.
-  bool DidSelectAutoFillSuggestion(const WebKit::WebNode& node,
+  bool DidAcceptAutoFillSuggestion(const WebKit::WebNode& node,
                                    const WebKit::WebString& value);
+  // A no-op.  No filling happens for selection.  But this method returns
+  // true when |node| is fillable by password Autofill.
+  bool DidSelectAutoFillSuggestion(const WebKit::WebNode& node);
 
  private:
   friend class PasswordAutoFillManagerTest;
@@ -96,6 +100,11 @@ class PasswordAutoFillManager : public RenderViewObserver,
   // Invoked when the passed frame is closing.  Gives us a chance to clear any
   // reference we may have to elements in that frame.
   void FrameClosing(const WebKit::WebFrame* frame);
+
+  // Finds login information for a |node| that was previously filled.
+  bool FindLoginInfo(const WebKit::WebNode& node,
+                     WebKit::WebInputElement* found_input,
+                     PasswordInfo* found_password);
 
   // The logins we have filled so far with their associated info.
   LoginToPasswordInfoMap login_to_password_info_;

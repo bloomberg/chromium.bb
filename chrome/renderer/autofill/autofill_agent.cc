@@ -99,6 +99,9 @@ void AutoFillAgent::didAcceptAutoFillSuggestion(const WebKit::WebNode& node,
                                                 const WebKit::WebString& label,
                                                 int unique_id,
                                                 unsigned index) {
+  if (password_autofill_manager_->DidAcceptAutoFillSuggestion(node, value))
+    return;
+
   if (suggestions_options_index_ != -1 &&
       index == static_cast<unsigned>(suggestions_options_index_)) {
     // User selected 'AutoFill Options'.
@@ -132,7 +135,7 @@ void AutoFillAgent::didSelectAutoFillSuggestion(const WebKit::WebNode& node,
                                                 const WebKit::WebString& label,
                                                 int unique_id) {
   DCHECK_GE(unique_id, 0);
-  if (password_autofill_manager_->DidSelectAutoFillSuggestion(node, value))
+  if (password_autofill_manager_->DidSelectAutoFillSuggestion(node))
     return;
 
   didClearAutoFillSelection(node);

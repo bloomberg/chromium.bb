@@ -281,12 +281,12 @@ TEST_F(PasswordAutoFillManagerTest, InlineAutocomplete) {
   // Simulate the browser sending back the login info.
   SimulateOnFillPasswordForm(fill_data_);
 
-  // Clear the textfields to start fresh.
+  // Clear the text fields to start fresh.
   ClearUsernameAndPasswordFields();
 
   // Simulate the user typing in the first letter of 'alice', a stored username.
   SimulateUsernameChange("a", true);
-  // Both the username and password textfields should reflect selection of the
+  // Both the username and password text fields should reflect selection of the
   // stored login.
   CheckTextFieldsState(kAliceUsername, true, kAlicePassword, true);
   // And the selection should have been set to 'lice', the last 4 letters.
@@ -334,22 +334,41 @@ TEST_F(PasswordAutoFillManagerTest, InlineAutocomplete) {
   CheckUsernameSelection(1, 1);
 }
 
-// Tests that selecting and item in the suggestion drop-down works.
+// Tests that accepting an item in the suggestion drop-down works.
+TEST_F(PasswordAutoFillManagerTest, SuggestionAccept) {
+  // Simulate the browser sending back the login info.
+  SimulateOnFillPasswordForm(fill_data_);
+
+  // Clear the text fields to start fresh.
+  ClearUsernameAndPasswordFields();
+
+  // To simulate accepting an item in the suggestion drop-down we just mimic
+  // what the WebView does: it sets the element value then calls
+  // didAcceptAutoFillSuggestion on the renderer.
+  autofill_agent_->didAcceptAutoFillSuggestion(username_element_,
+                                               ASCIIToUTF16(kAliceUsername),
+                                               WebKit::WebString(),
+                                               0,
+                                               0);
+  // Autocomplete should have kicked in.
+  CheckTextFieldsState(kAliceUsername, true, kAlicePassword, true);
+}
+
+// Tests that selecting an item in the suggestion drop-down no-ops.
 TEST_F(PasswordAutoFillManagerTest, SuggestionSelect) {
   // Simulate the browser sending back the login info.
   SimulateOnFillPasswordForm(fill_data_);
 
-  // Clear the textfields to start fresh.
+  // Clear the text fields to start fresh.
   ClearUsernameAndPasswordFields();
 
-  // To simulate a selection in the suggestion drop-down we just mimick what the
-  // WebView does: it sets the element value then calls
+  // To simulate accepting an item in the suggestion drop-down we just mimic
+  // what the WebView does: it sets the element value then calls
   // didSelectAutoFillSuggestion on the renderer.
   autofill_agent_->didSelectAutoFillSuggestion(username_element_,
                                                ASCIIToUTF16(kAliceUsername),
                                                WebKit::WebString(),
                                                0);
-
-  // Autocomplete should have kicked in.
-  CheckTextFieldsState(kAliceUsername, true, kAlicePassword, true);
+  // Autocomplete should not have kicked in.
+  CheckTextFieldsState("", false, "", false);
 }

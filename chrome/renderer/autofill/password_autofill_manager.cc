@@ -297,28 +297,26 @@ bool PasswordAutoFillManager::TextFieldHandlingKeyDown(
   return true;
 }
 
-bool PasswordAutoFillManager::DidSelectAutoFillSuggestion(
+bool PasswordAutoFillManager::DidAcceptAutoFillSuggestion(
     const WebKit::WebNode& node,
     const WebKit::WebString& value) {
-  if (!node.isElementNode())
-    return false;
-
-  WebKit::WebElement element(static_cast<const WebKit::WebElement&>(node));
-  if (!element.hasTagName("input"))
-    return false;
-
-  WebKit::WebInputElement user_input = element.to<WebKit::WebInputElement>();
-  LoginToPasswordInfoMap::iterator iter =
-      login_to_password_info_.find(user_input);
-  if (iter == login_to_password_info_.end())
+  WebKit::WebInputElement input;
+  PasswordInfo password;
+  if (!FindLoginInfo(node, &input, &password))
     return false;
 
   // Set the incoming |value| in the text field and |FillUserNameAndPassword|
   // will do the rest.
-  user_input.setValue(value);
-  const webkit_glue::PasswordFormFillData& fill_data = iter->second.fill_data;
-  WebKit::WebInputElement password = iter->second.password_field;
-  return FillUserNameAndPassword(&user_input, &password, fill_data, true, true);
+  input.setValue(value);
+  return FillUserNameAndPassword(&input, &password.password_field,
+                                 password.fill_data, true, true);
+}
+
+bool PasswordAutoFillManager::DidSelectAutoFillSuggestion(
+    const WebKit::WebNode& node) {
+  WebKit::WebInputElement input;
+  PasswordInfo password;
+  return FindLoginInfo(node, &input, &password);
 }
 
 void PasswordAutoFillManager::SendPasswordForms(WebKit::WebFrame* frame,
@@ -546,6 +544,27 @@ void PasswordAutoFillManager::FrameClosing(const WebKit::WebFrame* frame) {
     else
       ++iter;
   }
+}
+
+bool PasswordAutoFillManager::FindLoginInfo(
+    const WebKit::WebNode& node,
+    WebKit::WebInputElement* found_input,
+    PasswordInfo* found_password) {
+  if (!node.isElementNode())
+    return false;
+
+  WebKit::WebElement element = node.toConst<WebKit::WebElement>();
+  if (!element.hasTagName("input"))
+    return false;
+
+  WebKit::WebInputElement input = element.to<WebKit::WebInputElement>();
+  LoginToPasswordInfoMap::iterator iter = login_to_password_info_.find(input);
+  if (iter == login_to_password_info_.end())
+    return false;
+
+  *found_input = input;
+  *found_password = iter->second;
+  return true;
 }
 
 }  // namespace autofill
