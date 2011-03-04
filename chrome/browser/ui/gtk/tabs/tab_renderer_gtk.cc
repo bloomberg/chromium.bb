@@ -967,9 +967,14 @@ void TabRendererGtk::PaintLoadingAnimation(gfx::Canvas* canvas) {
   DCHECK(image_size == favicon_bounds_.height());
   DCHECK(image_size == favicon_bounds_.width());
 
+  // NOTE: the clipping is a work around for 69528, it shouldn't be necessary.
+  canvas->Save();
+  canvas->ClipRectInt(
+      favicon_bounds_.x(), favicon_bounds_.y(), image_size, image_size);
   canvas->DrawBitmapInt(*frames, image_offset, 0, image_size, image_size,
       favicon_bounds_.x(), favicon_bounds_.y(), image_size, image_size,
       false);
+  canvas->Restore();
 }
 
 int TabRendererGtk::IconCapacity() const {
