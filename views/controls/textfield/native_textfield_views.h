@@ -61,9 +61,9 @@ class NativeTextfieldViews : public views::View,
                                               const gfx::Point& p) OVERRIDE;
 
   // views::ContextMenuController overrides:
-  virtual void ShowContextMenu(View* source,
-                               const gfx::Point& p,
-                               bool is_mouse_gesture) OVERRIDE;
+  virtual void ShowContextMenuForView(View* source,
+                                      const gfx::Point& p,
+                                      bool is_mouse_gesture) OVERRIDE;
 
   // NativeTextfieldWrapper overrides:
   virtual string16 GetText() const OVERRIDE;

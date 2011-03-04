@@ -34,9 +34,9 @@ class ContextMenuController {
   // recommended location to show the menu at.
   //
   // |point| is in screen coordinates.
-  virtual void ShowContextMenu(View* source,
-                               const gfx::Point& point,
-                               bool is_mouse_gesture) = 0;
+  virtual void ShowContextMenuForView(View* source,
+                                      const gfx::Point& point,
+                                      bool is_mouse_gesture) = 0;
 
  protected:
   virtual ~ContextMenuController() {}

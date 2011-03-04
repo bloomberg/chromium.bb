@@ -215,8 +215,8 @@ void BrowserTabStripController::CloseTab(int model_index) {
                              TabStripModel::CLOSE_CREATE_HISTORICAL_TAB);
 }
 
-void BrowserTabStripController::ShowContextMenu(BaseTab* tab,
-                                                const gfx::Point& p) {
+void BrowserTabStripController::ShowContextMenuForTab(BaseTab* tab,
+                                                      const gfx::Point& p) {
   context_menu_contents_.reset(new TabContextMenuContents(tab, this));
   context_menu_contents_->RunMenuAt(p);
 }

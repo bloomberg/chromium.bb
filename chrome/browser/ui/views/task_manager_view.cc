@@ -300,9 +300,9 @@ class TaskManagerView : public views::View,
   void UpdateStatsCounters();
 
   // Menu::Delegate
-  virtual void ShowContextMenu(views::View* source,
-                               const gfx::Point& p,
-                               bool is_mouse_gesture);
+  virtual void ShowContextMenuForView(views::View* source,
+                                      const gfx::Point& p,
+                                      bool is_mouse_gesture);
   virtual bool IsItemChecked(int id) const;
   virtual void ExecuteCommand(int id);
 
@@ -683,9 +683,9 @@ void TaskManagerView::LinkActivated(views::Link* source, int event_flags) {
   task_manager_->OpenAboutMemory();
 }
 
-void TaskManagerView::ShowContextMenu(views::View* source,
-                                      const gfx::Point& p,
-                                      bool is_mouse_gesture) {
+void TaskManagerView::ShowContextMenuForView(views::View* source,
+                                             const gfx::Point& p,
+                                             bool is_mouse_gesture) {
   UpdateStatsCounters();
   scoped_ptr<views::Menu> menu(views::Menu::Create(
       this, views::Menu::TOPLEFT, source->GetWidget()->GetNativeView()));

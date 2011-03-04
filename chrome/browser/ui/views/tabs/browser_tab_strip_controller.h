@@ -48,7 +48,7 @@ class BrowserTabStripController : public TabStripController,
   virtual bool IsNewTabPage(int model_index) const;
   virtual void SelectTab(int model_index);
   virtual void CloseTab(int model_index);
-  virtual void ShowContextMenu(BaseTab* tab, const gfx::Point& p);
+  virtual void ShowContextMenuForTab(BaseTab* tab, const gfx::Point& p);
   virtual void UpdateLoadingAnimations();
   virtual int HasAvailableDragActions() const;
   virtual void PerformDrop(bool drop_before, int index, const GURL& url);

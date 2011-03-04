@@ -25,7 +25,7 @@ class TabController {
   virtual void CloseTab(BaseTab* tab) = 0;
 
   // Shows a context menu for the tab at the specified point in screen coords.
-  virtual void ShowContextMenu(BaseTab* tab, const gfx::Point& p) = 0;
+  virtual void ShowContextMenuForTab(BaseTab* tab, const gfx::Point& p) = 0;
 
   // Returns true if the specified Tab is selected.
   virtual bool IsTabSelected(const BaseTab* tab) const = 0;

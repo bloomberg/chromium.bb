@@ -128,9 +128,9 @@ class BaseTab : public ui::AnimationDelegate,
                              const views::Event& event);
 
   // views::ContextMenuController overrides:
-  virtual void ShowContextMenu(views::View* source,
-                               const gfx::Point& p,
-                               bool is_mouse_gesture);
+  virtual void ShowContextMenuForView(views::View* source,
+                                      const gfx::Point& p,
+                                      bool is_mouse_gesture);
 
   // Returns the bounds of the title and icon.
   virtual const gfx::Rect& GetTitleBounds() const = 0;

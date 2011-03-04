@@ -380,9 +380,9 @@ class BookmarkBarView : public DetachableToolbarView,
 
   // Invoked for this View, one of the buttons or the 'other' button. Shows the
   // appropriate context menu.
-  virtual void ShowContextMenu(views::View* source,
-                               const gfx::Point& p,
-                               bool is_mouse_gesture);
+  virtual void ShowContextMenuForView(views::View* source,
+                                      const gfx::Point& p,
+                                      bool is_mouse_gesture);
 
   // Creates the button for rendering the specified bookmark node.
   views::View* CreateBookmarkButton(const BookmarkNode* node);

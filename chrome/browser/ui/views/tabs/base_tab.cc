@@ -473,11 +473,11 @@ void BaseTab::ButtonPressed(views::Button* sender, const views::Event& event) {
   controller()->CloseTab(this);
 }
 
-void BaseTab::ShowContextMenu(views::View* source,
-                              const gfx::Point& p,
-                              bool is_mouse_gesture) {
+void BaseTab::ShowContextMenuForView(views::View* source,
+                                     const gfx::Point& p,
+                                     bool is_mouse_gesture) {
   if (controller())
-    controller()->ShowContextMenu(this, p);
+    controller()->ShowContextMenuForTab(this, p);
 }
 
 void BaseTab::SetFavIconHidingOffset(int offset) {

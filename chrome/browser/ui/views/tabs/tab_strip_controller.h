@@ -45,7 +45,7 @@ class TabStripController {
   virtual void CloseTab(int index) = 0;
 
   // Shows a context menu for the tab at the specified point in screen coords.
-  virtual void ShowContextMenu(BaseTab* tab, const gfx::Point& p) = 0;
+  virtual void ShowContextMenuForTab(BaseTab* tab, const gfx::Point& p) = 0;
 
   // Updates the loading animations of all the tabs.
   virtual void UpdateLoadingAnimations() = 0;

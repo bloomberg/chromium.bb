@@ -122,9 +122,9 @@ class BookmarkEditorView : public BookmarkEditor,
   void Close();
 
   // Shows the context menu.
-  virtual void ShowContextMenu(View* source,
-                               const gfx::Point& p,
-                               bool is_mouse_gesture);
+  virtual void ShowContextMenuForView(View* source,
+                                      const gfx::Point& p,
+                                      bool is_mouse_gesture);
 
  private:
   friend class BookmarkEditorViewTest;

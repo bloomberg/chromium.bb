@@ -147,9 +147,9 @@ gfx::NativeCursor NativeTextfieldViews::GetCursorForPoint(
 
 /////////////////////////////////////////////////////////////////
 // NativeTextfieldViews, views::ContextMenuController overrides:
-void NativeTextfieldViews::ShowContextMenu(View* source,
-                                           const gfx::Point& p,
-                                           bool is_mouse_gesture) {
+void NativeTextfieldViews::ShowContextMenuForView(View* source,
+                                                  const gfx::Point& p,
+                                                  bool is_mouse_gesture) {
   InitContextMenuIfRequired();
   context_menu_menu_->RunContextMenuAt(p);
 }

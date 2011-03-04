@@ -239,9 +239,9 @@ void BookmarkEditorView::Close() {
   window()->Close();
 }
 
-void BookmarkEditorView::ShowContextMenu(View* source,
-                                         const gfx::Point& p,
-                                         bool is_mouse_gesture) {
+void BookmarkEditorView::ShowContextMenuForView(View* source,
+                                                const gfx::Point& p,
+                                                bool is_mouse_gesture) {
   DCHECK(source == tree_view_);
   if (!tree_view_->GetSelectedNode())
     return;

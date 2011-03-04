@@ -129,7 +129,7 @@ class BaseTabStrip : public views::View,
   // TabController overrides:
   virtual void SelectTab(BaseTab* tab);
   virtual void CloseTab(BaseTab* tab);
-  virtual void ShowContextMenu(BaseTab* tab, const gfx::Point& p);
+  virtual void ShowContextMenuForTab(BaseTab* tab, const gfx::Point& p);
   virtual bool IsTabSelected(const BaseTab* tab) const;
   virtual bool IsTabPinned(const BaseTab* tab) const;
   virtual bool IsTabCloseable(const BaseTab* tab) const;

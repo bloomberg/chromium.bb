@@ -251,8 +251,8 @@ void BaseTabStrip::CloseTab(BaseTab* tab) {
     controller_->CloseTab(model_index);
 }
 
-void BaseTabStrip::ShowContextMenu(BaseTab* tab, const gfx::Point& p) {
-  controller_->ShowContextMenu(tab, p);
+void BaseTabStrip::ShowContextMenuForTab(BaseTab* tab, const gfx::Point& p) {
+  controller_->ShowContextMenuForTab(tab, p);
 }
 
 bool BaseTabStrip::IsTabSelected(const BaseTab* tab) const {
