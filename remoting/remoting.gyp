@@ -345,8 +345,6 @@
         'jingle_glue/jingle_info_task.h',
         'jingle_glue/jingle_thread.cc',
         'jingle_glue/jingle_thread.h',
-        'jingle_glue/relay_port_allocator.cc',
-        'jingle_glue/relay_port_allocator.h',
         'jingle_glue/stream_socket_adapter.cc',
         'jingle_glue/stream_socket_adapter.h',
         'jingle_glue/ssl_adapter.h',

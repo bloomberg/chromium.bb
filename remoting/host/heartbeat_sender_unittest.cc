@@ -38,9 +38,10 @@ const int64 kTestTime = 123123123;
 
 class MockSignalStrategy : public SignalStrategy {
  public:
-  MOCK_METHOD1(Init, void(StatusObserver* observer));
+  MOCK_METHOD1(Init, void(StatusObserver*));
   MOCK_METHOD0(port_allocator, cricket::BasicPortAllocator*());
-  MOCK_METHOD1(StartSession, void(cricket::SessionManager* session_manager));
+  MOCK_METHOD2(ConfigureAllocator, void(cricket::HttpPortAllocator*, Task*));
+  MOCK_METHOD1(StartSession, void(cricket::SessionManager*));
   MOCK_METHOD0(EndSession, void());
   MOCK_METHOD0(CreateIqRequest, IqRequest*());
 };

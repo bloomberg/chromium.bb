@@ -24,6 +24,10 @@ class PreXmppAuth;
 }  // namespace buzz
 
 namespace cricket {
+class HttpPortAllocator;
+}  // namespace cricket
+
+namespace cricket {
 class BasicPortAllocator;
 class SessionManager;
 class TunnelSessionClient;
@@ -57,7 +61,8 @@ class SignalStrategy {
   SignalStrategy() {}
   virtual ~SignalStrategy() {}
   virtual void Init(StatusObserver* observer) = 0;
-  virtual cricket::BasicPortAllocator* port_allocator() = 0;
+  virtual void ConfigureAllocator(
+      cricket::HttpPortAllocator* port_allocator, Task* done) = 0;
   virtual void StartSession(cricket::SessionManager* session_manager) = 0;
   virtual void EndSession() = 0;
   virtual IqRequest* CreateIqRequest() = 0;
@@ -75,13 +80,19 @@ class XmppSignalStrategy : public SignalStrategy, public sigslot::has_slots<> {
   virtual ~XmppSignalStrategy();
 
   virtual void Init(StatusObserver* observer);
-  virtual cricket::BasicPortAllocator* port_allocator();
+  virtual void ConfigureAllocator(
+      cricket::HttpPortAllocator* port_allocator, Task* done);
   virtual void StartSession(cricket::SessionManager* session_manager);
   virtual void EndSession();
   virtual IqRequest* CreateIqRequest();
 
  private:
+  friend class JingleClientTest;
+
   void OnConnectionStateChanged(buzz::XmppEngine::State state);
+  void OnJingleInfo(const std::string& token,
+                    const std::vector<std::string>& relay_hosts,
+                    const std::vector<talk_base::SocketAddress>& stun_hosts);
   static buzz::PreXmppAuth* CreatePreXmppAuth(
       const buzz::XmppClientSettings& settings);
 
@@ -93,10 +104,9 @@ class XmppSignalStrategy : public SignalStrategy, public sigslot::has_slots<> {
   buzz::XmppClient* xmpp_client_;
   StatusObserver* observer_;
   scoped_ptr<talk_base::NetworkManager> network_manager_;
-  scoped_ptr<cricket::BasicPortAllocator> port_allocator_;
 
- private:
-  friend class JingleClientTest;
+  cricket::HttpPortAllocator* port_allocator_;
+  scoped_ptr<Task> allocator_config_cb_;
 
   DISALLOW_COPY_AND_ASSIGN(XmppSignalStrategy);
 };
@@ -107,7 +117,8 @@ class JavascriptSignalStrategy : public SignalStrategy {
   virtual ~JavascriptSignalStrategy();
 
   virtual void Init(StatusObserver* observer);
-  virtual cricket::BasicPortAllocator* port_allocator();
+  virtual void ConfigureAllocator(
+      cricket::HttpPortAllocator* port_allocator, Task* done);
   virtual void StartSession(cricket::SessionManager* session_manager);
   virtual void EndSession();
   virtual IqRequest* CreateIqRequest();
@@ -162,6 +173,7 @@ class JingleClient : public base::RefCountedThreadSafe<JingleClient>,
   friend class JingleClientTest;
 
   void DoInitialize();
+  void DoStartSession();
   void DoClose();
 
   // Updates current state of the connection. Must be called only in
@@ -182,6 +194,9 @@ class JingleClient : public base::RefCountedThreadSafe<JingleClient>,
   bool closed_;
   scoped_ptr<Task> closed_task_;
 
+  // TODO(ajwong): HACK! remove this.  See DoStartSession() for details.
+  bool initialized_finished_;
+
   // We need a separate lock for the jid since the |state_lock_| may be held
   // over a callback which can end up having a double lock.
   //
@@ -194,6 +209,8 @@ class JingleClient : public base::RefCountedThreadSafe<JingleClient>,
   Callback* callback_;
 
   SignalStrategy* signal_strategy_;
+  scoped_ptr<talk_base::NetworkManager> network_manager_;
+  scoped_ptr<cricket::HttpPortAllocator> port_allocator_;
   scoped_ptr<cricket::SessionManager> session_manager_;
 
   DISALLOW_COPY_AND_ASSIGN(JingleClient);

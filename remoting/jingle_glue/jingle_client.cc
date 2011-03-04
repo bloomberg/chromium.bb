@@ -8,13 +8,14 @@
 #include "base/message_loop.h"
 #include "jingle/notifier/communicator/gaia_token_pre_xmpp_auth.h"
 #include "remoting/jingle_glue/iq_request.h"
+#include "remoting/jingle_glue/jingle_info_task.h"
 #include "remoting/jingle_glue/jingle_thread.h"
-#include "remoting/jingle_glue/relay_port_allocator.h"
 #include "remoting/jingle_glue/xmpp_socket_adapter.h"
 #include "third_party/libjingle/source/talk/base/asyncsocket.h"
 #include "third_party/libjingle/source/talk/base/ssladapter.h"
 #include "third_party/libjingle/source/talk/p2p/base/sessionmanager.h"
 #include "third_party/libjingle/source/talk/p2p/base/transport.h"
+#include "third_party/libjingle/source/talk/p2p/client/httpportallocator.h"
 #include "third_party/libjingle/source/talk/p2p/client/sessionmanagertask.h"
 #include "third_party/libjingle/source/talk/session/tunnel/tunnelsessionclient.h"
 #include "third_party/libjingle/source/talk/xmpp/prexmppauth.h"
@@ -35,7 +36,8 @@ XmppSignalStrategy::XmppSignalStrategy(JingleThread* jingle_thread,
      auth_token_(auth_token),
      auth_token_service_(auth_token_service),
      xmpp_client_(NULL),
-     observer_(NULL) {
+     observer_(NULL),
+     port_allocator_(NULL) {
 }
 
 XmppSignalStrategy::~XmppSignalStrategy() {
@@ -62,17 +64,20 @@ void XmppSignalStrategy::Init(StatusObserver* observer) {
   xmpp_client_->SignalStateChange.connect(
       this, &XmppSignalStrategy::OnConnectionStateChanged);
   xmpp_client_->Start();
-
-  // Setup the port allocation based on jingle connections.
-  network_manager_.reset(new talk_base::NetworkManager());
-  RelayPortAllocator* port_allocator =
-      new RelayPortAllocator(network_manager_.get(), "transp2");
-  port_allocator->SetJingleInfo(xmpp_client_);
-  port_allocator_.reset(port_allocator);
 }
 
-cricket::BasicPortAllocator* XmppSignalStrategy::port_allocator() {
-  return port_allocator_.get();
+void XmppSignalStrategy::ConfigureAllocator(
+    cricket::HttpPortAllocator* port_allocator, Task* done) {
+  // TODO(ajwong): There are 2 races on destruction here. First, port_allocator
+  // by be destroyed before the OnJingleInfo is run.  Second,
+  // XmppSignalStrategy itself may be destroyed.  Fix later.
+  port_allocator_ = port_allocator;
+  allocator_config_cb_.reset(done);
+
+  JingleInfoTask* jit = new JingleInfoTask(xmpp_client_);
+  jit->SignalJingleInfo.connect(this, &XmppSignalStrategy::OnJingleInfo);
+  jit->Start();
+  jit->RefreshJingleInfoNow();
 }
 
 void XmppSignalStrategy::StartSession(
@@ -120,6 +125,23 @@ void XmppSignalStrategy::OnConnectionStateChanged(
   }
 }
 
+void XmppSignalStrategy::OnJingleInfo(
+    const std::string& token,
+    const std::vector<std::string>& relay_hosts,
+    const std::vector<talk_base::SocketAddress>& stun_hosts) {
+  // TODO(ajwong): Log that we found the stun/turn servers.
+  if (port_allocator_) {
+    port_allocator_->SetRelayToken(token);
+    port_allocator_->SetStunHosts(stun_hosts);
+    port_allocator_->SetRelayHosts(relay_hosts);
+  }
+
+  if (allocator_config_cb_.get()) {
+    allocator_config_cb_->Run();
+    allocator_config_cb_.reset();
+  }
+}
+
 buzz::PreXmppAuth* XmppSignalStrategy::CreatePreXmppAuth(
     const buzz::XmppClientSettings& settings) {
   buzz::Jid jid(settings.user(), settings.host(), buzz::STR_EMPTY);
@@ -138,9 +160,11 @@ void JavascriptSignalStrategy::Init(StatusObserver* observer) {
   NOTIMPLEMENTED();
 }
 
-cricket::BasicPortAllocator* JavascriptSignalStrategy::port_allocator() {
+void JavascriptSignalStrategy::ConfigureAllocator(
+    cricket::HttpPortAllocator* port_allocator, Task* done) {
   NOTIMPLEMENTED();
-  return NULL;
+  done->Run();
+  delete done;
 }
 
 void JavascriptSignalStrategy::StartSession(
@@ -186,12 +210,33 @@ void JingleClient::Init() {
 void JingleClient::DoInitialize() {
   DCHECK_EQ(message_loop(), MessageLoop::current());
 
+  network_manager_.reset(new talk_base::NetworkManager());
+  port_allocator_.reset(
+      new cricket::HttpPortAllocator(network_manager_.get(), "transp2"));
+  // TODO(ajwong): The strategy needs a "start" command or something.  Right
+  // now, Init() implicitly starts processing events.  Thus, we must have the
+  // other fields of JingleClient initialized first, otherwise the state-change
+  // may occur and callback into class before we're done initializing.
   signal_strategy_->Init(this);
+  signal_strategy_->ConfigureAllocator(
+      port_allocator_.get(),
+      NewRunnableMethod(this, &JingleClient::DoStartSession));
+}
 
+void JingleClient::DoStartSession() {
   session_manager_.reset(
-      new cricket::SessionManager(signal_strategy_->port_allocator()));
-
+      new cricket::SessionManager(port_allocator_.get()));
   signal_strategy_->StartSession(session_manager_.get());
+
+  // TODO(ajwong): Major hack to synchronize state change logic.  Since the Xmpp
+  // connection starts first, it move the state to CONNECTED before we've gotten
+  // the jingle stun and relay information. Thus, we have to delay signaling
+  // until now.  There is a parallel if to disable signaling in the
+  // OnStateChange logic.
+  initialized_finished_ = true;
+  if (!closed_ && state_ == CONNECTED) {
+    callback_->OnStateChange(this, state_);
+  }
 }
 
 void JingleClient::Close() {
@@ -255,8 +300,15 @@ void JingleClient::OnStateChange(State new_state) {
       // We have to have the lock held, otherwise we cannot be sure that
       // the client hasn't been closed when we call the callback.
       base::AutoLock auto_lock(state_lock_);
-      if (!closed_)
-        callback_->OnStateChange(this, new_state);
+      if (!closed_) {
+        // TODO(ajwong): HACK! remove this.  See DoStartSession() for details.
+        //
+        // If state is connected, only signal if initialized_finished_ is also
+        // finished.
+        if (state_ != CONNECTED || initialized_finished_) {
+          callback_->OnStateChange(this, new_state);
+        }
+      }
     }
   }
 }
