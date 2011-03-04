@@ -1,4 +1,5 @@
 include_rules = [
+  "+rlz",
   "+third_party/bspatch",
   "+third_party/lzma_sdk",
 ]
