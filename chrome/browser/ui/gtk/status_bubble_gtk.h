@@ -123,7 +123,7 @@ class StatusBubbleGtk : public StatusBubble,
   GtkWidget* padding_;
 
   // The GtkLabel holding the text.
-  GtkWidget* label_;
+  OwnedWidgetGtk label_;
 
   // The status text we want to display when there are no URLs to display.
   std::string status_text_;

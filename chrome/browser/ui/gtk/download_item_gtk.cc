@@ -256,26 +256,26 @@ DownloadItemGtk::DownloadItemGtk(DownloadShelfGtk* parent_shelf,
     gtk_widget_hide(menu_button_);
 
     // Create an hbox to hold it all.
-    dangerous_hbox_ = gtk_hbox_new(FALSE, kDangerousElementPadding);
+    dangerous_hbox_.Own(gtk_hbox_new(FALSE, kDangerousElementPadding));
 
     // Add padding at the beginning and end. The hbox will add padding between
     // the empty labels and the other elements.
     GtkWidget* empty_label_a = gtk_label_new(NULL);
     GtkWidget* empty_label_b = gtk_label_new(NULL);
-    gtk_box_pack_start(GTK_BOX(dangerous_hbox_), empty_label_a,
+    gtk_box_pack_start(GTK_BOX(dangerous_hbox_.get()), empty_label_a,
                        FALSE, FALSE, 0);
-    gtk_box_pack_end(GTK_BOX(dangerous_hbox_), empty_label_b,
+    gtk_box_pack_end(GTK_BOX(dangerous_hbox_.get()), empty_label_b,
                      FALSE, FALSE, 0);
 
     // Create the warning icon.
     dangerous_image_ = gtk_image_new();
-    gtk_box_pack_start(GTK_BOX(dangerous_hbox_), dangerous_image_,
+    gtk_box_pack_start(GTK_BOX(dangerous_hbox_.get()), dangerous_image_,
                        FALSE, FALSE, 0);
 
     dangerous_label_ = gtk_label_new(NULL);
     // We pass TRUE, TRUE so that the label will condense to less than its
     // request when the animation is going on.
-    gtk_box_pack_start(GTK_BOX(dangerous_hbox_), dangerous_label_,
+    gtk_box_pack_start(GTK_BOX(dangerous_hbox_.get()), dangerous_label_,
                        TRUE, TRUE, 0);
 
     // Create the nevermind button.
@@ -283,7 +283,8 @@ DownloadItemGtk::DownloadItemGtk(DownloadShelfGtk* parent_shelf,
         l10n_util::GetStringUTF8(IDS_DISCARD_DOWNLOAD).c_str());
     g_signal_connect(dangerous_decline, "clicked",
                      G_CALLBACK(OnDangerousDeclineThunk), this);
-    gtk_util::CenterWidgetInHBox(dangerous_hbox_, dangerous_decline, false, 0);
+    gtk_util::CenterWidgetInHBox(dangerous_hbox_.get(), dangerous_decline,
+                                 false, 0);
 
     // Create the ok button.
     GtkWidget* dangerous_accept = gtk_button_new_with_label(
@@ -292,14 +293,15 @@ DownloadItemGtk::DownloadItemGtk(DownloadShelfGtk* parent_shelf,
                 IDS_CONTINUE_EXTENSION_DOWNLOAD : IDS_SAVE_DOWNLOAD).c_str());
     g_signal_connect(dangerous_accept, "clicked",
                      G_CALLBACK(OnDangerousAcceptThunk), this);
-    gtk_util::CenterWidgetInHBox(dangerous_hbox_, dangerous_accept, false, 0);
+    gtk_util::CenterWidgetInHBox(dangerous_hbox_.get(), dangerous_accept, false,
+                                 0);
 
     // Put it in an alignment so that padding will be added on the left and
     // right.
     dangerous_prompt_ = gtk_alignment_new(0.0, 0.0, 1.0, 1.0);
     gtk_alignment_set_padding(GTK_ALIGNMENT(dangerous_prompt_),
         0, 0, kDangerousElementPadding, kDangerousElementPadding);
-    gtk_container_add(GTK_CONTAINER(dangerous_prompt_), dangerous_hbox_);
+    gtk_container_add(GTK_CONTAINER(dangerous_prompt_), dangerous_hbox_.get());
     gtk_box_pack_start(GTK_BOX(hbox_.get()), dangerous_prompt_, FALSE, FALSE,
                        0);
     gtk_widget_set_app_paintable(dangerous_prompt_, TRUE);
@@ -315,7 +317,7 @@ DownloadItemGtk::DownloadItemGtk(DownloadShelfGtk* parent_shelf,
 
   // Set the initial width of the widget to be animated.
   if (IsDangerous()) {
-    gtk_widget_set_size_request(dangerous_hbox_,
+    gtk_widget_set_size_request(dangerous_hbox_.get(),
                                 dangerous_hbox_start_width_, -1);
   } else {
     gtk_widget_set_size_request(body_.get(), kMinDownloadItemWidth, -1);
@@ -335,6 +337,7 @@ DownloadItemGtk::~DownloadItemGtk() {
   hbox_.Destroy();
   progress_area_.Destroy();
   body_.Destroy();
+  dangerous_hbox_.Destroy();
 
   // Make sure this widget has been destroyed and the pointer we hold to it
   // NULLed.
@@ -421,7 +424,7 @@ void DownloadItemGtk::AnimationProgressed(const ui::Animation* animation) {
                                        dangerous_hbox_start_width_) *
                                       new_item_animation_->GetCurrentValue());
       int showing_width = dangerous_hbox_start_width_ + progress;
-      gtk_widget_set_size_request(dangerous_hbox_, showing_width, -1);
+      gtk_widget_set_size_request(dangerous_hbox_.get(), showing_width, -1);
     } else {
       DCHECK(animation == new_item_animation_.get());
       int showing_width = std::max(kMinDownloadItemWidth,
@@ -630,7 +633,7 @@ void DownloadItemGtk::UpdateDangerWarning() {
 
     // The width will depend on the text. We must do this each time we possibly
     // change the label above.
-    gtk_widget_size_request(dangerous_hbox_, &req);
+    gtk_widget_size_request(dangerous_hbox_.get(), &req);
     dangerous_hbox_full_width_ = req.width;
     dangerous_hbox_start_width_ = dangerous_hbox_full_width_ - label_width;
   }

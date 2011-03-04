@@ -194,7 +194,7 @@ class DownloadItemGtk : public DownloadItem::Observer,
   GtkWidget* dangerous_label_;
 
   // An hbox for holding components of the dangerous download dialog.
-  GtkWidget* dangerous_hbox_;
+  OwnedWidgetGtk dangerous_hbox_;
   int dangerous_hbox_start_width_;
   int dangerous_hbox_full_width_;
 

@@ -40,7 +40,6 @@ const int kMousePadding = 20;
 StatusBubbleGtk::StatusBubbleGtk(Profile* profile)
     : theme_provider_(GtkThemeProvider::GetFrom(profile)),
       padding_(NULL),
-      label_(NULL),
       flip_horizontally_(false),
       y_offset_(0),
       download_shelf_is_visible_(false),
@@ -55,6 +54,7 @@ StatusBubbleGtk::StatusBubbleGtk(Profile* profile)
 }
 
 StatusBubbleGtk::~StatusBubbleGtk() {
+  label_.Destroy();
   container_.Destroy();
 }
 
@@ -134,9 +134,9 @@ void StatusBubbleGtk::SetStatusTextTo(const std::string& status_utf8) {
     hide_timer_.Start(base::TimeDelta::FromMilliseconds(kHideDelay),
                       this, &StatusBubbleGtk::Hide);
   } else {
-    gtk_label_set_text(GTK_LABEL(label_), status_utf8.c_str());
+    gtk_label_set_text(GTK_LABEL(label_.get()), status_utf8.c_str());
     GtkRequisition req;
-    gtk_widget_size_request(label_, &req);
+    gtk_widget_size_request(label_.get(), &req);
     desired_width_ = req.width;
 
     UpdateLabelSizeRequest();
@@ -245,14 +245,14 @@ void StatusBubbleGtk::Observe(NotificationType type,
 void StatusBubbleGtk::InitWidgets() {
   bool ltr = !base::i18n::IsRTL();
 
-  label_ = gtk_label_new(NULL);
+  label_.Own(gtk_label_new(NULL));
 
   padding_ = gtk_alignment_new(0, 0, 1, 1);
   gtk_alignment_set_padding(GTK_ALIGNMENT(padding_),
       kInternalTopBottomPadding, kInternalTopBottomPadding,
       kInternalLeftRightPadding + (ltr ? 0 : kCornerSize),
       kInternalLeftRightPadding + (ltr ? kCornerSize : 0));
-  gtk_container_add(GTK_CONTAINER(padding_), label_);
+  gtk_container_add(GTK_CONTAINER(padding_), label_.get());
   gtk_widget_show_all(padding_);
 
   container_.Own(gtk_event_box_new());
@@ -279,7 +279,7 @@ void StatusBubbleGtk::InitWidgets() {
 
 void StatusBubbleGtk::UserChangedTheme() {
   if (theme_provider_->UseGtkTheme()) {
-    gtk_widget_modify_fg(label_, GTK_STATE_NORMAL, NULL);
+    gtk_widget_modify_fg(label_.get(), GTK_STATE_NORMAL, NULL);
     gtk_widget_modify_bg(container_.get(), GTK_STATE_NORMAL, NULL);
   } else {
     // TODO(erg): This is the closest to "text that will look good on a
@@ -287,7 +287,7 @@ void StatusBubbleGtk::UserChangedTheme() {
     // there will be a better color to pick.
     GdkColor bookmark_text =
         theme_provider_->GetGdkColor(BrowserThemeProvider::COLOR_BOOKMARK_TEXT);
-    gtk_widget_modify_fg(label_, GTK_STATE_NORMAL, &bookmark_text);
+    gtk_widget_modify_fg(label_.get(), GTK_STATE_NORMAL, &bookmark_text);
 
     GdkColor toolbar_color =
         theme_provider_->GetGdkColor(BrowserThemeProvider::COLOR_TOOLBAR);
@@ -324,7 +324,7 @@ void StatusBubbleGtk::SetFlipHorizontally(bool flip_horizontally) {
 }
 
 void StatusBubbleGtk::ExpandURL() {
-  start_width_ = label_->allocation.width;
+  start_width_ = label_.get()->allocation.width;
   expand_animation_.reset(new ui::SlideAnimation(this));
   expand_animation_->SetTweenType(ui::Tween::LINEAR);
   expand_animation_->Show();
@@ -334,13 +334,13 @@ void StatusBubbleGtk::ExpandURL() {
 
 void StatusBubbleGtk::UpdateLabelSizeRequest() {
   if (!expanded() || !expand_animation_->is_animating()) {
-    gtk_widget_set_size_request(label_, -1, -1);
+    gtk_widget_set_size_request(label_.get(), -1, -1);
     return;
   }
 
   int new_width = start_width_ +
       (desired_width_ - start_width_) * expand_animation_->GetCurrentValue();
-  gtk_widget_set_size_request(label_, new_width, -1);
+  gtk_widget_set_size_request(label_.get(), new_width, -1);
 }
 
 // See http://crbug.com/68897 for why we have to handle this event.
