@@ -75,7 +75,7 @@ TEST_F(GpuBlacklistTest, DetailedEntryAndInvalidJson) {
       "  \"version\": \"0.1\",\n"
       "  \"entries\": [\n"
       "    {\n"
-      "      \"id\": \"5\",\n"
+      "      \"id\": 5,\n"
       "      \"os\": {\n"
       "        \"type\": \"macosx\",\n"
       "        \"version\": {\n"
@@ -84,7 +84,7 @@ TEST_F(GpuBlacklistTest, DetailedEntryAndInvalidJson) {
       "        }\n"
       "      },\n"
       "      \"vendor_id\": \"0x10de\",\n"
-      "      \"device_id\": \"0x0640\",\n"
+      "      \"device_id\": [\"0x0640\"],\n"
       "      \"driver_version\": {\n"
       "        \"op\": \"=\",\n"
       "        \"number\": \"1.6.18\"\n"
@@ -134,7 +134,7 @@ TEST_F(GpuBlacklistTest, VendorOnAllOsEntry) {
       "  \"version\": \"0.1\",\n"
       "  \"entries\": [\n"
       "    {\n"
-      "      \"id\": \"1\",\n"
+      "      \"id\": 1,\n"
       "      \"vendor_id\": \"0x10de\",\n"
       "      \"blacklist\": [\n"
       "        \"webgl\"\n"
@@ -185,7 +185,7 @@ TEST_F(GpuBlacklistTest, VendorOnLinuxEntry) {
       "  \"version\": \"0.1\",\n"
       "  \"entries\": [\n"
       "    {\n"
-      "      \"id\": \"1\",\n"
+      "      \"id\": 1,\n"
       "      \"os\": {\n"
       "        \"type\": \"linux\"\n"
       "      },\n"
@@ -221,7 +221,7 @@ TEST_F(GpuBlacklistTest, AllExceptNVidiaOnLinuxEntry) {
       "  \"version\": \"0.1\",\n"
       "  \"entries\": [\n"
       "    {\n"
-      "      \"id\": \"1\",\n"
+      "      \"id\": 1,\n"
       "      \"os\": {\n"
       "        \"type\": \"linux\"\n"
       "      },\n"
@@ -259,7 +259,7 @@ TEST_F(GpuBlacklistTest, AllExceptIntelOnLinuxEntry) {
       "  \"version\": \"0.1\",\n"
       "  \"entries\": [\n"
       "    {\n"
-      "      \"id\": \"1\",\n"
+      "      \"id\": 1,\n"
       "      \"os\": {\n"
       "        \"type\": \"linux\"\n"
       "      },\n"
@@ -299,7 +299,7 @@ TEST_F(GpuBlacklistTest, DateOnWindowsEntry) {
       "  \"version\": \"0.1\",\n"
       "  \"entries\": [\n"
       "    {\n"
-      "      \"id\": \"1\",\n"
+      "      \"id\": 1,\n"
       "      \"os\": {\n"
       "        \"type\": \"win\"\n"
       "      },\n"
@@ -328,5 +328,39 @@ TEST_F(GpuBlacklistTest, DateOnWindowsEntry) {
   EXPECT_EQ(
       flags.flags(),
       static_cast<uint32>(GpuFeatureFlags::kGpuFeatureAccelerated2dCanvas));
+}
+
+TEST_F(GpuBlacklistTest, MultipleDevicesEntry) {
+  const std::string devices_json =
+      "{\n"
+      "  \"name\": \"gpu blacklist\",\n"
+      "  \"version\": \"0.1\",\n"
+      "  \"entries\": [\n"
+      "    {\n"
+      "      \"id\": 1,\n"
+      "      \"vendor_id\": \"0x10de\",\n"
+      "      \"device_id\": [\"0x1023\", \"0x0640\"],\n"
+      "      \"blacklist\": [\n"
+      "        \"multisampling\"\n"
+      "      ]\n"
+      "    }\n"
+      "  ]\n"
+      "}";
+  scoped_ptr<Version> os_version(Version::GetVersionFromString("10.6.4"));
+  GpuBlacklist blacklist;
+
+  EXPECT_TRUE(blacklist.LoadGpuBlacklist(devices_json, false));
+  GpuFeatureFlags flags = blacklist.DetermineGpuFeatureFlags(
+      GpuBlacklist::kOsMacosx, os_version.get(), gpu_info());
+  EXPECT_EQ(flags.flags(),
+            static_cast<uint32>(GpuFeatureFlags::kGpuFeatureMultisampling));
+  flags = blacklist.DetermineGpuFeatureFlags(
+      GpuBlacklist::kOsWin, os_version.get(), gpu_info());
+  EXPECT_EQ(flags.flags(),
+            static_cast<uint32>(GpuFeatureFlags::kGpuFeatureMultisampling));
+  flags = blacklist.DetermineGpuFeatureFlags(
+      GpuBlacklist::kOsLinux, os_version.get(), gpu_info());
+  EXPECT_EQ(flags.flags(),
+            static_cast<uint32>(GpuFeatureFlags::kGpuFeatureMultisampling));
 }
 

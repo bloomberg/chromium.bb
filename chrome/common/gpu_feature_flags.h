@@ -19,9 +19,11 @@ class GpuFeatureFlags {
     kGpuFeatureAccelerated2dCanvas = 1 << 0,
     kGpuFeatureAcceleratedCompositing = 1 << 1,
     kGpuFeatureWebgl = 1 << 2,
+    kGpuFeatureMultisampling = 1 << 3,
     kGpuFeatureAll = kGpuFeatureAccelerated2dCanvas |
                      kGpuFeatureAcceleratedCompositing |
-                     kGpuFeatureWebgl,
+                     kGpuFeatureWebgl |
+                     kGpuFeatureMultisampling,
     kGpuFeatureUnknown = 0
   };
 
@@ -41,6 +43,7 @@ class GpuFeatureFlags {
   //   "accelerated_2d_canvas"
   //   "accelerated_compositing"
   //   "webgl"
+  //   "multisampling"
   static GpuFeatureType StringToGpuFeatureType(
       const std::string& feature_string);
 
@@ -48,6 +51,7 @@ class GpuFeatureFlags {
   static const char kGpuFeatureNameAccelerated2dCanvas[];
   static const char kGpuFeatureNameAcceleratedCompositing[];
   static const char kGpuFeatureNameWebgl[];
+  static const char kGpuFeatureNameMultisampling[];
   static const char kGpuFeatureNameAll[];
 
   // If a bit is set to 1, corresponding feature is blacklisted.

@@ -199,7 +199,7 @@ class GpuBlacklist {
    private:
     GpuBlacklistEntry();
 
-    bool SetId(const std::string& id_string);
+    bool SetId(uint32 id);
 
     bool SetOsInfo(const std::string& os,
                    const std::string& version_op,
@@ -208,7 +208,7 @@ class GpuBlacklist {
 
     bool SetVendorId(const std::string& vendor_id_string);
 
-    bool SetDeviceId(const std::string& device_id_string);
+    bool AddDeviceId(const std::string& device_id_string);
 
     bool SetDriverVendorInfo(const std::string& vendor_op,
                              const std::string& vendor_value);
@@ -235,7 +235,7 @@ class GpuBlacklist {
     std::vector<int> webkit_bugs_;
     scoped_ptr<OsInfo> os_info_;
     uint32 vendor_id_;
-    uint32 device_id_;
+    std::vector<uint32> device_id_list_;
     scoped_ptr<StringInfo> driver_vendor_info_;
     scoped_ptr<VersionInfo> driver_version_info_;
     scoped_ptr<VersionInfo> driver_date_info_;

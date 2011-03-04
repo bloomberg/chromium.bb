@@ -7,6 +7,7 @@
 #include "app/app_switches.h"
 #include "app/gfx/gl/gl_implementation.h"
 #include "base/command_line.h"
+#include "base/logging.h"
 #include "base/metrics/histogram.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/gpu_process_host_ui_shim.h"
@@ -130,8 +131,15 @@ bool GpuDataManager::LoadGpuBlacklist() {
       ResourceBundle::GetSharedInstance().GetRawDataResource(
           IDR_GPU_BLACKLIST));
   gpu_blacklist_.reset(new GpuBlacklist());
-  if (gpu_blacklist_->LoadGpuBlacklist(gpu_blacklist_json.as_string(), true))
+  if (gpu_blacklist_->LoadGpuBlacklist(gpu_blacklist_json.as_string(), true)) {
+    uint16 version_major, version_minor;
+    bool succeed = gpu_blacklist_->GetVersion(&version_major,
+                                              &version_minor);
+    DCHECK(succeed);
+    LOG(INFO) << "Using software rendering list version "
+              << version_major << "." << version_minor;
     return true;
+  }
   gpu_blacklist_.reset(NULL);
   return false;
 }
@@ -160,6 +168,8 @@ bool GpuDataManager::UpdateGpuBlacklist() {
     return false;
   }
   gpu_blacklist_.reset(updated_list);
+  LOG(INFO) << "Using software rendering list version "
+            << cached_version_major << "." << cached_version_minor;
   // Clear the flag to triger a re-computation of GpuFeatureFlags using the
   // updated GPU blacklist.
   gpu_feature_flags_set_ = false;

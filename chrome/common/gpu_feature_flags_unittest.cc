@@ -34,7 +34,8 @@ TEST(GpuFeatureFlagsTest, GpuFeatureFlagsBasic) {
             static_cast<uint32>(
                 GpuFeatureFlags::kGpuFeatureAccelerated2dCanvas |
                 GpuFeatureFlags::kGpuFeatureAcceleratedCompositing |
-                GpuFeatureFlags::kGpuFeatureWebgl));
+                GpuFeatureFlags::kGpuFeatureWebgl |
+                GpuFeatureFlags::kGpuFeatureMultisampling));
 
   // Test StringToGpuFeatureType.
   EXPECT_EQ(GpuFeatureFlags::StringToGpuFeatureType("accelerated_2d_canvas"),
@@ -43,6 +44,8 @@ TEST(GpuFeatureFlagsTest, GpuFeatureFlagsBasic) {
             GpuFeatureFlags::kGpuFeatureAcceleratedCompositing);
   EXPECT_EQ(GpuFeatureFlags::StringToGpuFeatureType("webgl"),
             GpuFeatureFlags::kGpuFeatureWebgl);
+  EXPECT_EQ(GpuFeatureFlags::StringToGpuFeatureType("multisampling"),
+            GpuFeatureFlags::kGpuFeatureMultisampling);
   EXPECT_EQ(GpuFeatureFlags::StringToGpuFeatureType("all"),
             GpuFeatureFlags::kGpuFeatureAll);
   EXPECT_EQ(GpuFeatureFlags::StringToGpuFeatureType("xxx"),

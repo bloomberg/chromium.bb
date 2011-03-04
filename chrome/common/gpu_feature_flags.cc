@@ -11,6 +11,7 @@ const char GpuFeatureFlags::kGpuFeatureNameAccelerated2dCanvas[] =
 const char GpuFeatureFlags::kGpuFeatureNameAcceleratedCompositing[] =
     "accelerated_compositing";
 const char GpuFeatureFlags::kGpuFeatureNameWebgl[] = "webgl";
+const char GpuFeatureFlags::kGpuFeatureNameMultisampling[] = "multisampling";
 const char GpuFeatureFlags::kGpuFeatureNameAll[] = "all";
 
 GpuFeatureFlags::GpuFeatureFlags()
@@ -38,6 +39,8 @@ GpuFeatureFlags::GpuFeatureType GpuFeatureFlags::StringToGpuFeatureType(
     return kGpuFeatureAcceleratedCompositing;
   else if (feature_string == kGpuFeatureNameWebgl)
     return kGpuFeatureWebgl;
+  else if (feature_string == kGpuFeatureNameMultisampling)
+    return kGpuFeatureMultisampling;
   else if (feature_string == kGpuFeatureNameAll)
     return kGpuFeatureAll;
   return kGpuFeatureUnknown;

@@ -12,31 +12,30 @@
 // }
 //
 // Each entry contains the following fields:
-// "os", "vendor_id", "device_id", "driver_version", and "blacklist".
-// Only "blacklist" is mandatory.
-// 1. "os" contains "type" and an optional "version". "type" could be "macosx",
+// 1. "id" is an integer.  0 is reserved.  This field is mandatory.
+// 2. "os" contains "type" and an optional "version". "type" could be "macosx",
 //    "linux", "win", or "any".  "any" is the same as not specifying "os".
 //    "version" is a VERSION structure (defined below).
-// 2. "vendor_id" has the value of a string.
-// 3. "device_id" has the value of a string.
-// 4. "driver_vendor" is a STRING structure (defined below).
-// 5. "driver_version" is a VERSION structure (defined below).
-// 6. "driver_date" is a VERSION structure (defined below).
+// 3. "vendor_id" is a string.  0 is reserved.
+// 4. "device_id" is an array of strings.  0 is reserved.
+// 5. "driver_vendor" is a STRING structure (defined below).
+// 6. "driver_version" is a VERSION structure (defined below).
+// 7. "driver_date" is a VERSION structure (defined below).
 //    The version is interpreted as "year.month.day".
-// 7. "gl_renderer" is a STRING structure (defined below).
-// 8: "Exceptions" is a list of entries.
-// 9. "blacklist" is a list of gpu feature strings, valid values include
-//    "accelerated_2d_canvas", "accelerated_compositing", "webgl", and "all".
-//    Currently whatever feature is selected, the effect is the same as "all",
-//    i.e., it's not supported to turn off one GPU feature and not the others.
-// 8. "description" has the description of the entry
-// 9. "webkit_bugs" is an array of associated webkit bug numbers
-// 10."cr_bugs" is an array of associated webkit bug numbers
+// 8. "gl_renderer" is a STRING structure (defined below).
+// 9: "Exceptions" is a list of entries.
+// 10. "blacklist" is a list of gpu feature strings, valid values include
+//     "accelerated_2d_canvas", "accelerated_compositing", "webgl",
+//     "multisampling", and "all".
+//     This field is mandatory.
+// 11. "description" has the description of the entry.
+// 12. "webkit_bugs" is an array of associated webkit bug numbers.
+// 13. "cr_bugs" is an array of associated webkit bug numbers.
 //
 // VERSION includes "op" "number", and "number2".  "op" can be any of the
 // following values: "=", "<", "<=", ">", ">=", "any", "between".  "number2" is
 // only used if "op" is "between".  "number" is used for all "op" values except
-// "any". "number" and "number2" are in the format of x, x.x, x.x.x, ect.
+// "any". "number" and "number2" are in the format of x, x.x, x.x.x, etc.
 //
 // STRING includes "op" and "value".  "op" can be any of the following values:
 // "contains", "beginwith", "endwith", "=".  "value" is a string.
@@ -44,25 +43,25 @@
 {
   "name": "software rendering list",
   // Please update the version number whenever you change this file.
-  "version": "1.4",
+  "version": "1.5",
   "entries": [
     {
-      "id": "1",
-      "description" : "ATI Radeon X1900 is not compatible with WebGL on the Mac.",
-      "webkit_bugs" : [47028],
+      "id": 1,
+      "description": "ATI Radeon X1900 is not compatible with WebGL on the Mac.",
+      "webkit_bugs": [47028],
       "os": {
         "type": "macosx"
       },
       "vendor_id": "0x1002",
-      "device_id": "0x7249",
+      "device_id": ["0x7249"],
       "blacklist": [
         "webgl"
       ]
     },
     {
-      "id": "2",
-      "description" : "Intel GPUs with Mesa driver earlier than 7.9 do not support WebGL.",
-      "cr_bugs" : [66718,67345,67939],
+      "id": 2,
+      "description": "Intel GPUs with Mesa driver earlier than 7.9 do not support WebGL.",
+      "cr_bugs": [66718,67345,67939],
       "os": {
         "type": "linux"
       },
@@ -80,7 +79,7 @@
       ]
     },
     {
-      "id": "3",
+      "id": 3,
       "description": "GL driver is software rendered. Accelerated compositing is disabled.",
       "cr_bugs": [59302],
       "os": {
@@ -95,19 +94,19 @@
       ]
     },
     {
-      "id": "4",
+      "id": 4,
       "description": "The Intel Mobile 945 Express family of chipsets is not compatible with WebGL.",
       "os": {
         "type": "any"
       },
       "vendor_id": "0x8086",
-      "device_id": "0x27AE",
+      "device_id": ["0x27AE"],
       "blacklist": [
         "webgl"
       ]
     },
     {
-      "id": "5",
+      "id": 5,
       "description": "ATI cards in Linux do not support WebGL.",
       "cr_bugs": [71381],
       "os": {
@@ -119,76 +118,76 @@
       ]
     },
     {
-      "id": "6",
+      "id": 6,
       "description": "ATI Radeon HD2600 on Mac do not support WebGL or accelerated compositing.",
       "cr_bugs": [68859],
       "os": {
         "type": "macosx"
       },
       "vendor_id": "0x1002",
-      "device_id": "0x9583",
+      "device_id": ["0x9583"],
       "blacklist": [
         "webgl",
         "accelerated_compositing"
       ]
     },
     {
-      "id": "7",
+      "id": 7,
       "description": "ATI Radeon HD2400 on Mac do not support WebGL or accelerated compositing.",
       "cr_bugs": [68859],
       "os": {
         "type": "macosx"
       },
       "vendor_id": "0x1002",
-      "device_id": "0x94c8",
+      "device_id": ["0x94c8"],
       "blacklist": [
         "webgl",
         "accelerated_compositing"
       ]
     },
     {
-      "id": "8",
+      "id": 8,
       "description": "NVIDIA GeForce FX Go5200 does not support WebGL or accelerated compositing.",
       "cr_bugs": [72938],
       "os": {
         "type": "any"
       },
       "vendor_id": "0x10de",
-      "device_id": "0x0324",
+      "device_id": ["0x0324"],
       "blacklist": [
         "webgl",
         "accelerated_compositing"
       ]
     },
     { // NVIDIA GeForce 7300 GT on Mac, BUG=73794
-      "id": "10",
+      "id": 10,
       "description": "NVIDIA GeForce 7300 GT on Mac does not support WebGL.",
       "cr_bugs": [73794],
       "os": {
         "type": "macosx"
       },
       "vendor_id": "0x10de",
-      "device_id": "0x0393",
+      "device_id": ["0x0393"],
       "blacklist": [
         "webgl"
       ]
     },
     {
-      "id": "11",
+      "id": 11,
       "description": "ATI Radeon HD2600 XT on Mac does not support WebGL or accelerated compositing.",
       "cr_bugs": [68859],
       "os": {
         "type": "macosx"
       },
       "vendor_id": "0x1002",
-      "device_id": "0x9588",
+      "device_id": ["0x9588"],
       "blacklist": [
         "webgl",
         "accelerated_compositing"
       ]
     },
     {
-      "id": "12",
+      "id": 12,
       "description": "Drivers older than 2009-01 on Windows are assumed to be buggy.",
       "cr_bugs": [72979],
       "os": {
@@ -203,7 +202,7 @@
       ]
     },
     {
-      "id": "13",
+      "id": 13,
       "description": "ATI drivers older thn 10.6 on Windows XP are assumed to be buggy.",
       "cr_bugs": [74212],
       "os": {
@@ -223,7 +222,7 @@
       ]
     },
     {
-      "id": "14",
+      "id": 14,
       "description": "NVIDIA drivers older thn 257.21 on Windows XP are assumed to be buggy.",
       "cr_bugs": [74212],
       "os": {
@@ -243,7 +242,7 @@
       ]
     },
     {
-      "id": "15",
+      "id": 15,
       "description": "Intel drivers older thn 14.42.7.5294 on Windows XP are assumed to be buggy.",
       "cr_bugs": [74212],
       "os": {

@@ -202,12 +202,13 @@ GpuBlacklist::GpuBlacklistEntry::GetGpuBlacklistEntryFromValue(
   if (value == NULL)
     return NULL;
 
-  GpuBlacklistEntry* entry = new GpuBlacklistEntry();
+  scoped_ptr<GpuBlacklistEntry> entry(new GpuBlacklistEntry());
 
   if (top_level) {
-    std::string id;
-    if (!value->GetString("id", &id) || !entry->SetId(id)) {
-      delete entry;
+    uint32 id;
+    if (!value->GetInteger("id", reinterpret_cast<int*>(&id)) ||
+        !entry->SetId(id)) {
+      LOG(WARNING) << "Malformed id entry " << entry->id();
       return NULL;
     }
   }
@@ -221,23 +222,27 @@ GpuBlacklist::GpuBlacklistEntry::GetGpuBlacklistEntryFromValue(
 
   ListValue* cr_bugs;
   if (value->GetList("cr_bugs", &cr_bugs)) {
-    for(size_t i = 0; i < cr_bugs->GetSize(); ++i) {
+    for (size_t i = 0; i < cr_bugs->GetSize(); ++i) {
       int bug_id;
-      if (cr_bugs->GetInteger(i, &bug_id))
+      if (cr_bugs->GetInteger(i, &bug_id)) {
         entry->cr_bugs_.push_back(bug_id);
-      else
+      } else {
         LOG(WARNING) << "Malformed cr_bugs entry " << entry->id();
+        return NULL;
+      }
     }
   }
 
   ListValue* webkit_bugs;
   if (value->GetList("webkit_bugs", &webkit_bugs)) {
-    for(size_t i = 0; i < webkit_bugs->GetSize(); ++i) {
+    for (size_t i = 0; i < webkit_bugs->GetSize(); ++i) {
       int bug_id;
-      if (webkit_bugs->GetInteger(i, &bug_id))
+      if (webkit_bugs->GetInteger(i, &bug_id)) {
         entry->webkit_bugs_.push_back(bug_id);
-      else
+      } else {
         LOG(WARNING) << "Malformed webkit_bugs entry " << entry->id();
+        return NULL;
+      }
     }
   }
 
@@ -256,7 +261,7 @@ GpuBlacklist::GpuBlacklistEntry::GetGpuBlacklistEntryFromValue(
     }
     if (!entry->SetOsInfo(os_type, os_version_op, os_version_string,
                           os_version_string2)) {
-      delete entry;
+      LOG(WARNING) << "Malformed os entry " << entry->id();
       return NULL;
     }
   }
@@ -264,16 +269,20 @@ GpuBlacklist::GpuBlacklistEntry::GetGpuBlacklistEntryFromValue(
   std::string vendor_id;
   if (value->GetString("vendor_id", &vendor_id)) {
     if (!entry->SetVendorId(vendor_id)) {
-      delete entry;
+      LOG(WARNING) << "Malformed vendor_id entry " << entry->id();
       return NULL;
     }
   }
 
-  std::string device_id;
-  if (value->GetString("device_id", &device_id)) {
-    if (!entry->SetDeviceId(device_id)) {
-      delete entry;
-      return NULL;
+  ListValue* device_id_list;
+  if (value->GetList("device_id", &device_id_list)) {
+    for (size_t i = 0; i < device_id_list->GetSize(); ++i) {
+        std::string device_id;
+      if (!device_id_list->GetString(i, &device_id) ||
+          !entry->AddDeviceId(device_id)) {
+        LOG(WARNING) << "Malformed device_id entry " << entry->id();
+        return NULL;
+      }
     }
   }
 
@@ -284,7 +293,7 @@ GpuBlacklist::GpuBlacklistEntry::GetGpuBlacklistEntryFromValue(
     driver_vendor_value->GetString("op", &vendor_op);
     driver_vendor_value->GetString("value", &vendor_value);
     if (!entry->SetDriverVendorInfo(vendor_op, vendor_value)) {
-      delete entry;
+      LOG(WARNING) << "Malformed device_vendor entry " << entry->id();
       return NULL;
     }
   }
@@ -299,7 +308,7 @@ GpuBlacklist::GpuBlacklistEntry::GetGpuBlacklistEntryFromValue(
     driver_version_value->GetString("number2", &driver_version_string2);
     if (!entry->SetDriverVersionInfo(driver_version_op, driver_version_string,
                                      driver_version_string2)) {
-      delete entry;
+      LOG(WARNING) << "Malformed device_version entry " << entry->id();
       return NULL;
     }
   }
@@ -314,7 +323,7 @@ GpuBlacklist::GpuBlacklistEntry::GetGpuBlacklistEntryFromValue(
     driver_date_value->GetString("number2", &driver_date_string2);
     if (!entry->SetDriverDateInfo(driver_date_op, driver_date_string,
                                   driver_date_string2)) {
-      delete entry;
+      LOG(WARNING) << "Malformed device_date entry " << entry->id();
       return NULL;
     }
   }
@@ -326,7 +335,7 @@ GpuBlacklist::GpuBlacklistEntry::GetGpuBlacklistEntryFromValue(
     gl_renderer_value->GetString("op", &renderer_op);
     gl_renderer_value->GetString("value", &renderer_value);
     if (!entry->SetGLRendererInfo(renderer_op, renderer_value)) {
-      delete entry;
+      LOG(WARNING) << "Malformed gl_renderer entry " << entry->id();
       return NULL;
     }
   }
@@ -334,7 +343,7 @@ GpuBlacklist::GpuBlacklistEntry::GetGpuBlacklistEntryFromValue(
   if (top_level) {
     ListValue* blacklist_value = NULL;
     if (!value->GetList("blacklist", &blacklist_value)) {
-      delete entry;
+      LOG(WARNING) << "Malformed blacklist entry " << entry->id();
       return NULL;
     }
     std::vector<std::string> blacklist;
@@ -343,12 +352,12 @@ GpuBlacklist::GpuBlacklistEntry::GetGpuBlacklistEntryFromValue(
       if (blacklist_value->GetString(i, &feature)) {
         blacklist.push_back(feature);
       } else {
-        delete entry;
+        LOG(WARNING) << "Malformed blacklist entry " << entry->id();
         return NULL;
       }
     }
     if (!entry->SetBlacklistedFeatures(blacklist)) {
-      delete entry;
+      LOG(WARNING) << "Malformed blacklist entry " << entry->id();
       return NULL;
     }
   }
@@ -358,17 +367,22 @@ GpuBlacklist::GpuBlacklistEntry::GetGpuBlacklistEntryFromValue(
     if (value->GetList("exceptions", &exception_list_value)) {
       for (size_t i = 0; i < exception_list_value->GetSize(); ++i) {
         DictionaryValue* exception_value = NULL;
-        if (!exception_list_value->GetDictionary(i, &exception_value))
-          continue;
+        if (!exception_list_value->GetDictionary(i, &exception_value)) {
+          LOG(WARNING) << "Malformed exceptions entry " << entry->id();
+          return NULL;
+        }
         GpuBlacklistEntry* exception = GetGpuBlacklistEntryFromValue(
             exception_value, false);
-        if (exception)
-          entry->AddException(exception);
+        if (exception == NULL) {
+          LOG(WARNING) << "Malformed exceptions entry " << entry->id();
+          return NULL;
+        }
+        entry->AddException(exception);
       }
     }
   }
 
-  return entry;
+  return entry.release();
 }
 
 GpuBlacklist::GpuBlacklistEntry::~GpuBlacklistEntry() {
@@ -378,15 +392,12 @@ GpuBlacklist::GpuBlacklistEntry::~GpuBlacklistEntry() {
 
 GpuBlacklist::GpuBlacklistEntry::GpuBlacklistEntry()
     : id_(0),
-      vendor_id_(0),
-      device_id_(0) {
+      vendor_id_(0) {
 }
 
-bool GpuBlacklist::GpuBlacklistEntry::SetId(
-    const std::string& id_string) {
-  int my_id;
-  if (base::HexStringToInt(id_string, &my_id) && my_id != 0) {
-    id_ = static_cast<uint32>(my_id);
+bool GpuBlacklist::GpuBlacklistEntry::SetId(uint32 id) {
+  if (id != 0) {
+    id_ = id;
     return true;
   }
   return false;
@@ -408,11 +419,15 @@ bool GpuBlacklist::GpuBlacklistEntry::SetVendorId(
                               reinterpret_cast<int*>(&vendor_id_));
 }
 
-bool GpuBlacklist::GpuBlacklistEntry::SetDeviceId(
+bool GpuBlacklist::GpuBlacklistEntry::AddDeviceId(
     const std::string& device_id_string) {
-  device_id_ = 0;
-  return base::HexStringToInt(device_id_string,
-                              reinterpret_cast<int*>(&device_id_));
+  uint32 device_id = 0;
+  if (base::HexStringToInt(device_id_string,
+                           reinterpret_cast<int*>(&device_id))) {
+    device_id_list_.push_back(device_id);
+    return true;
+  }
+  return false;
 }
 
 bool GpuBlacklist::GpuBlacklistEntry::SetDriverVendorInfo(
@@ -462,6 +477,7 @@ bool GpuBlacklist::GpuBlacklistEntry::SetBlacklistedFeatures(
       case GpuFeatureFlags::kGpuFeatureAccelerated2dCanvas:
       case GpuFeatureFlags::kGpuFeatureAcceleratedCompositing:
       case GpuFeatureFlags::kGpuFeatureWebgl:
+      case GpuFeatureFlags::kGpuFeatureMultisampling:
       case GpuFeatureFlags::kGpuFeatureAll:
         flags |= type;
         break;
@@ -486,8 +502,17 @@ bool GpuBlacklist::GpuBlacklistEntry::Contains(
     return false;
   if (vendor_id_ != 0 && vendor_id_ != gpu_info.vendor_id())
     return false;
-  if (device_id_ != 0 && device_id_ != gpu_info.device_id())
-    return false;
+  if (device_id_list_.size() > 0) {
+    bool found = false;
+    for (size_t i = 0; i < device_id_list_.size(); ++i) {
+      if (device_id_list_[i] == gpu_info.device_id()) {
+        found = true;
+        break;
+      }
+    }
+    if (!found)
+      return false;
+  }
   if (driver_vendor_info_.get() != NULL &&
       !driver_vendor_info_->Contains(gpu_info.driver_vendor()))
     return false;
