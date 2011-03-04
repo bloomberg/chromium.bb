@@ -202,6 +202,49 @@ const char* kErrorNeedHomeNetwork = "need-home-network";
 const char* kErrorOtaspFailed = "otasp-failed";
 const char* kErrorAaaFailed = "aaa-failed";
 
+const char* kUnknownString = "UNKNOWN";
+
+////////////////////////////////////////////////////////////////////////////
+
+static const char* ConnectionTypeToString(ConnectionType type) {
+  switch (type) {
+    case TYPE_UNKNOWN:
+      break;
+    case TYPE_ETHERNET:
+      return kTypeEthernet;
+    case TYPE_WIFI:
+      return kTypeWifi;
+    case TYPE_WIMAX:
+      return kTypeWimax;
+    case TYPE_BLUETOOTH:
+      return kTypeBluetooth;
+    case TYPE_CELLULAR:
+      return kTypeCellular;
+  }
+  LOG(ERROR) << "ConnectionTypeToString called with unknown type: " << type;
+  return kUnknownString;
+}
+
+// TODO(stevenjb/njw): Deprecate in favor of setting EAP properties.
+static const char* SecurityToString(ConnectionSecurity security) {
+  switch (security) {
+    case SECURITY_UNKNOWN:
+      break;
+    case SECURITY_8021X:
+      return kSecurity8021x;
+    case SECURITY_RSN:
+      return kSecurityRsn;
+    case SECURITY_WPA:
+      return kSecurityWpa;
+    case SECURITY_WEP:
+      return kSecurityWep;
+    case SECURITY_NONE:
+      return kSecurityNone;
+  }
+  LOG(ERROR) << "SecurityToString called with unknown type: " << security;
+  return kUnknownString;
+}
+
 ////////////////////////////////////////////////////////////////////////////
 
 // Helper class to cache maps of strings to enums.
@@ -1404,7 +1447,7 @@ class NetworkLibraryImpl : public NetworkLibrary  {
   virtual void RequestWifiScan() {
     if (EnsureCrosLoaded() && wifi_enabled()) {
       wifi_scanning_ = true;  // Cleared when updates are received.
-      RequestScan(TYPE_WIFI);
+      RequestNetworkScan(kTypeWifi);
       RequestRememberedNetworksUpdate();
     }
   }
@@ -1412,6 +1455,7 @@ class NetworkLibraryImpl : public NetworkLibrary  {
   virtual bool GetWifiAccessPoints(WifiAccessPointVector* result) {
     if (!EnsureCrosLoaded())
       return false;
+    CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
     DeviceNetworkList* network_list = GetDeviceNetworkList();
     if (network_list == NULL)
       return false;
@@ -1516,10 +1560,10 @@ class NetworkLibraryImpl : public NetworkLibrary  {
                                     bool auto_connect) {
     if (!EnsureCrosLoaded())
       return true;  // No library loaded, don't trigger a retry attempt.
-    RequestWifiServicePath(ssid.c_str(),
-                           security,
-                           WifiServiceUpdateAndConnect,
-                           this);
+    RequestHiddenWifiNetwork(ssid.c_str(),
+                             SecurityToString(security),
+                             WifiServiceUpdateAndConnect,
+                             this);
     // Store the connection data to be used by the callback.
     connect_data_.SetData(ssid, password, identity, certpath, auto_connect);
     return true;  // No immediate failure mode
@@ -2516,7 +2560,7 @@ class NetworkLibraryImpl : public NetworkLibrary  {
       return;
     }
 
-    EnableNetworkDevice(device, enable);
+    RequestNetworkDeviceEnable(ConnectionTypeToString(device), enable);
   }
 
   ////////////////////////////////////////////////////////////////////////////
