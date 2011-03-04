@@ -442,9 +442,10 @@ void ExistingUserController::ActivateWizard(const std::string& screen_name) {
   controller->OwnBackground(background_window_, background_view_);
   background_window_ = NULL;
 
-  controller->Init(screen_name, background_bounds_);
   if (chromeos::UserManager::Get()->IsLoggedInAsGuest())
     controller->set_start_url(guest_mode_url_);
+
+  controller->Init(screen_name, background_bounds_);
 
   login_display_->OnFadeOut();
 
