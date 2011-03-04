@@ -86,6 +86,7 @@
       <include name="IDR_PDF_PROGRESS_BAR_7" file="resources\pdf_progress_7.png" type="BINDATA" />
       <include name="IDR_PDF_PROGRESS_BAR_8" file="resources\pdf_progress_8.png" type="BINDATA" />
       <include name="IDR_PDF_PROGRESS_BAR_BACKGROUND" file="resources\pdf_progress_background.png" type="BINDATA" />
+      <include name="IDR_PDF_PAGE_DROPSHADOW" file="resources\pdf_dropshadow.png" type="BINDATA" />
     </includes>
   </release>
 </grit>
