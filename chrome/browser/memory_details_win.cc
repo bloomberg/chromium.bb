@@ -11,7 +11,6 @@
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "base/win/scoped_handle.h"
-#include "base/win/win_util.h"
 #include "base/win/windows_version.h"
 #include "chrome/common/chrome_version_info.h"
 #include "chrome/common/url_constants.h"
