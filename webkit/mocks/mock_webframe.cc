@@ -158,6 +158,11 @@ v8::Handle<v8::Value> MockWebFrame::executeScriptAndReturnValue(
 v8::Local<v8::Context> MockWebFrame::mainWorldScriptContext() const {
   return v8::Local<v8::Context>();
 }
+
+v8::Handle<v8::Value> MockWebFrame::createFileSystem(
+    int type, const WebString& name, const WebString& path) {
+  return v8::Handle<v8::Value>();
+}
 #endif
 
 
