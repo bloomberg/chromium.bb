@@ -35,7 +35,7 @@ static const int kDWMFrameTopOffset = 3;
 BrowserFrame* BrowserFrame::Create(BrowserView* browser_view,
                                    Profile* profile) {
   BrowserFrameWin* frame = new BrowserFrameWin(browser_view, profile);
-  frame->Init();
+  frame->InitBrowserFrame();
   return frame;
 }
 
@@ -61,7 +61,7 @@ BrowserFrameWin::BrowserFrameWin(BrowserView* browser_view, Profile* profile)
   set_focus_on_creation(false);
 }
 
-void BrowserFrameWin::Init() {
+void BrowserFrameWin::InitBrowserFrame() {
   WindowWin::Init(NULL, gfx::Rect());
 }
 

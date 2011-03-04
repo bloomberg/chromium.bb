@@ -14,7 +14,7 @@ BrowserFrame* BrowserFrame::Create(BrowserView* browser_view,
                                    Profile* profile) {
   chromeos::BrowserFrameChromeos* frame =
       new chromeos::BrowserFrameChromeos(browser_view, profile);
-  frame->Init();
+  frame->InitBrowserFrame();
   return frame;
 }
 
@@ -28,13 +28,13 @@ BrowserFrameChromeos::BrowserFrameChromeos(
 BrowserFrameChromeos::~BrowserFrameChromeos() {
 }
 
-void BrowserFrameChromeos::Init() {
+void BrowserFrameChromeos::InitBrowserFrame() {
   // NOTE: This logic supersedes the logic in BrowserFrameGtk::Init()
   // by always setting browser_frame_view_.
   set_browser_frame_view(
       browser::CreateBrowserNonClientFrameView(this, browser_view()));
 
-  BrowserFrameGtk::Init();
+  BrowserFrameGtk::InitBrowserFrame();
 
   if (!browser_view()->IsBrowserTypePopup()) {
     // On chromeos we want windows to always render as active.

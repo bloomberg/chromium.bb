@@ -21,7 +21,7 @@
 BrowserFrame* BrowserFrame::Create(BrowserView* browser_view,
                                    Profile* profile) {
   BrowserFrameGtk* frame = new BrowserFrameGtk(browser_view, profile);
-  frame->Init();
+  frame->InitBrowserFrame();
   return frame;
 }
 #endif
@@ -44,7 +44,7 @@ BrowserFrameGtk::BrowserFrameGtk(BrowserView* browser_view, Profile* profile)
 BrowserFrameGtk::~BrowserFrameGtk() {
 }
 
-void BrowserFrameGtk::Init() {
+void BrowserFrameGtk::InitBrowserFrame() {
   if (browser_frame_view_ == NULL)
     browser_frame_view_ =
         browser::CreateBrowserNonClientFrameView(this, browser_view_);

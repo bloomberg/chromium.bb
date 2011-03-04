@@ -16,7 +16,7 @@ class BrowserFrameChromeos : public BrowserFrameGtk {
   virtual ~BrowserFrameChromeos();
 
   // BrowserFrameGtk overrides.
-  virtual void Init();
+  virtual void InitBrowserFrame();
 
   // views::WindowGtk overrides.
   virtual bool IsMaximized() const;
