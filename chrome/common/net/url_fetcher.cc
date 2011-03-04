@@ -101,12 +101,11 @@ class URLFetcher::Core
   // |original_url_| and |url_|.
   base::TimeTicks GetBackoffReleaseTime();
 
-  void CompleteAddingUploadDataChunk(const std::string& data,
-                                     bool is_last_chunk);
+  void CompleteAddingUploadDataChunk(const std::string& data);
 
   // Adds a block of data to be uploaded in a POST body. This can only be called
   // after Start().
-  void AppendChunkToUpload(const std::string& data, bool is_last_chunk);
+  void AppendChunkToUpload(const std::string& data);
 
   URLFetcher* fetcher_;              // Corresponding fetcher object
   GURL original_url_;                // The URL we were asked to fetch
@@ -292,23 +291,23 @@ void URLFetcher::Core::OnResponseStarted(net::URLRequest* request) {
 }
 
 void URLFetcher::Core::CompleteAddingUploadDataChunk(
-    const std::string& content, bool is_last_chunk) {
+    const std::string& content) {
   DCHECK(is_chunked_upload_);
   DCHECK(request_.get());
-  DCHECK(!content.empty());
-  request_->AppendChunkToUpload(content.data(),
-                                static_cast<int>(content.length()),
-                                is_last_chunk);
+  if (content.length()) {
+    request_->AppendChunkToUpload(content.data(),
+                                  static_cast<int>(content.length()));
+  } else {
+    request_->MarkEndOfChunks();
+  }
 }
 
-void URLFetcher::Core::AppendChunkToUpload(const std::string& content,
-                                           bool is_last_chunk) {
+void URLFetcher::Core::AppendChunkToUpload(const std::string& content) {
   DCHECK(delegate_loop_proxy_);
   CHECK(io_message_loop_proxy_.get());
   io_message_loop_proxy_->PostTask(
       FROM_HERE,
-      NewRunnableMethod(this, &Core::CompleteAddingUploadDataChunk, content,
-                        is_last_chunk));
+      NewRunnableMethod(this, &Core::CompleteAddingUploadDataChunk, content));
 }
 
 void URLFetcher::Core::OnReadCompleted(net::URLRequest* request,
@@ -521,10 +520,13 @@ void URLFetcher::set_chunked_upload(const std::string& content_type) {
   core_->is_chunked_upload_ = true;
 }
 
-void URLFetcher::AppendChunkToUpload(const std::string& data,
-                                     bool is_last_chunk) {
+void URLFetcher::AppendChunkToUpload(const std::string& data) {
   DCHECK(data.length());
-  core_->AppendChunkToUpload(data, is_last_chunk);
+  core_->AppendChunkToUpload(data);
+}
+
+void URLFetcher::MarkEndOfChunks() {
+  core_->AppendChunkToUpload(std::string());
 }
 
 const std::string& URLFetcher::upload_data() const {
