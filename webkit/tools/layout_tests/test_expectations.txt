@@ -16,11 +16,6 @@ BUGCR74092 : http/tests/media/video-play-suspend.html = TIMEOUT
 // WebKit fix is at r79797, but since we had to revert the WebKit roll adding the failing expectation back.
 BUGJAMESR : fast/filesystem/op-get-entry.html = PASS TEXT
 
-// To get rid of redness.
-BUG_ANTONM MAC : fast/blockflow/Kusa-Makura-background-canvas.html = IMAGE+TEXT IMAGE
-BUG_ANTONM MAC : fast/blockflow/japanese-ruby-vertical-lr.html = IMAGE
-BUG_ANTONM MAC : fast/blockflow/japanese-ruby-vertical-rl.html = IMAGE
-
 // Need a rebaseline.
 BUG_ANTONM MAC : http/tests/security/xss-DENIED-xml-external-entity.xhtml = TEXT
 BUG_ANTONM MAC : http/tests/security/xss-DENIED-xsl-external-entity.xml = TEXT
