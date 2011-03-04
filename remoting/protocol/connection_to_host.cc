@@ -21,8 +21,13 @@
 namespace remoting {
 namespace protocol {
 
-ConnectionToHost::ConnectionToHost(JingleThread* thread)
+ConnectionToHost::ConnectionToHost(
+    JingleThread* thread,
+    talk_base::NetworkManager* network_manager,
+    talk_base::PacketSocketFactory* socket_factory)
     : thread_(thread),
+      network_manager_(network_manager),
+      socket_factory_(socket_factory),
       event_callback_(NULL),
       dispatcher_(new ClientMessageDispatcher()) {
 }
@@ -61,7 +66,9 @@ void ConnectionToHost::Connect(const std::string& username,
                                kChromotingTokenServiceName));
   }
 
-  jingle_client_ = new JingleClient(thread_, signal_strategy_.get(), this);
+  jingle_client_ = new JingleClient(thread_, signal_strategy_.get(),
+                                    network_manager_.release(),
+                                    socket_factory_.release(), this);
   jingle_client_->Init();
 
   // Save jid of the host. The actual connection is created later after
@@ -72,8 +79,7 @@ void ConnectionToHost::Connect(const std::string& username,
 void ConnectionToHost::Disconnect() {
   if (MessageLoop::current() != message_loop()) {
     message_loop()->PostTask(
-        FROM_HERE, NewRunnableMethod(this,
-                                     &ConnectionToHost::Disconnect));
+        FROM_HERE, NewRunnableMethod(this, &ConnectionToHost::Disconnect));
     return;
   }
 

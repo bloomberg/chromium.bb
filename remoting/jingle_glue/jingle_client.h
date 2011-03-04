@@ -139,7 +139,16 @@ class JingleClient : public base::RefCountedThreadSafe<JingleClient>,
     virtual void OnStateChange(JingleClient* client, State state) = 0;
   };
 
-  JingleClient(JingleThread* thread, SignalStrategy* signal_strategy,
+  // Physical sockets are used if |network_manager| and
+  // |socket_factory| are not specified. Otherwise ownership of these
+  // objects is given to JingleClient.
+  JingleClient(JingleThread* thread,
+               SignalStrategy* signal_strategy,
+               Callback* callback);
+  JingleClient(JingleThread* thread,
+               SignalStrategy* signal_strategy,
+               talk_base::NetworkManager* network_manager,
+               talk_base::PacketSocketFactory* socket_factory,
                Callback* callback);
   ~JingleClient();
 

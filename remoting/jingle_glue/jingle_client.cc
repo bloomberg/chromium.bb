@@ -192,6 +192,21 @@ JingleClient::JingleClient(JingleThread* thread,
       signal_strategy_(signal_strategy) {
 }
 
+JingleClient::JingleClient(JingleThread* thread,
+                           SignalStrategy* signal_strategy,
+                           talk_base::NetworkManager* network_manager,
+                           talk_base::PacketSocketFactory* socket_factory,
+                           Callback* callback)
+    : thread_(thread),
+      state_(START),
+      initialized_(false),
+      closed_(false),
+      callback_(callback),
+      signal_strategy_(signal_strategy),
+      network_manager_(network_manager),
+      socket_factory_(socket_factory) {
+}
+
 JingleClient::~JingleClient() {
   base::AutoLock auto_lock(state_lock_);
   DCHECK(!initialized_ || closed_);
@@ -211,11 +226,15 @@ void JingleClient::Init() {
 void JingleClient::DoInitialize() {
   DCHECK_EQ(message_loop(), MessageLoop::current());
 
-  network_manager_.reset(new talk_base::NetworkManager());
-  // TODO(sergeyu): Use IpcPacketSocketFactory here when it is
-  // implemented.
-  socket_factory_.reset(new talk_base::BasicPacketSocketFactory(
-      talk_base::Thread::Current()));
+  if (!network_manager_.get()) {
+    VLOG(1) << "Creating talk_base::NetworkManager.";
+    network_manager_.reset(new talk_base::NetworkManager());
+  }
+  if (!socket_factory_.get()) {
+    VLOG(1) << "Creating talk_base::BasicPacketSocketFactory.";
+    socket_factory_.reset(new talk_base::BasicPacketSocketFactory(
+        talk_base::Thread::Current()));
+  }
 
   port_allocator_.reset(
       new cricket::HttpPortAllocator(network_manager_.get(),

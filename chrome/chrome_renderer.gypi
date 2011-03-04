@@ -131,6 +131,8 @@
         'renderer/notification_provider.cc',
         'renderer/notification_provider.h',
         'renderer/paint_aggregator.cc',
+        'renderer/p2p/ipc_network_manager.cc',
+        'renderer/p2p/ipc_network_manager.h',
         'renderer/p2p/ipc_socket_factory.cc',
         'renderer/p2p/ipc_socket_factory.h',
         'renderer/p2p/socket_client.cc',

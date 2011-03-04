@@ -73,7 +73,14 @@
         'chromoting_base',
         'chromoting_client',
         'chromoting_jingle_glue',
-        '../ppapi/ppapi.gyp:ppapi_cpp_objects',
+        '<(DEPTH)/ppapi/ppapi.gyp:ppapi_cpp_objects',
+
+        # TODO(sergeyu): This is a hack: plugin should not depend on
+        # webkit glue. Skia is needed here to add include path webkit glue
+        # depends on. See comments in chromoting_instance.cc for details.
+        # crbug.com/74951
+        '<(DEPTH)/webkit/support/webkit_support.gyp:glue',
+        '<(DEPTH)/skia/skia.gyp:skia',
       ],
       'sources': [
         'client/plugin/chromoting_instance.cc',

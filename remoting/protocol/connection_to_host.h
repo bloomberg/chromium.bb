@@ -50,8 +50,13 @@ class ConnectionToHost : public JingleClient::Callback {
     virtual void OnConnectionFailed(ConnectionToHost* conn) = 0;
   };
 
+  // Takes ownership of |network_manager| and |socket_factory|. Both
+  // |network_manager| and |socket_factory| may be set to NULL.
+  //
   // TODO(sergeyu): Constructor shouldn't need thread here.
-  explicit ConnectionToHost(JingleThread* thread);
+  ConnectionToHost(JingleThread* thread,
+                   talk_base::NetworkManager* network_manager,
+                   talk_base::PacketSocketFactory* socket_factory);
   virtual ~ConnectionToHost();
 
   // TODO(ajwong): We need to generalize this API.
@@ -97,6 +102,9 @@ class ConnectionToHost : public JingleClient::Callback {
   void OnServerClosed();
 
   JingleThread* thread_;
+
+  scoped_ptr<talk_base::NetworkManager> network_manager_;
+  scoped_ptr<talk_base::PacketSocketFactory> socket_factory_;
 
   scoped_ptr<SignalStrategy> signal_strategy_;
   scoped_refptr<JingleClient> jingle_client_;

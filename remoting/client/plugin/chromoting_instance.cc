@@ -11,6 +11,11 @@
 #include "base/string_util.h"
 #include "base/task.h"
 #include "base/threading/thread.h"
+// TODO(sergeyu): We should not depend on renderer here. Instead P2P
+// Pepper API should be used. Remove this dependency.
+// crbug.com/74951
+#include "chrome/renderer/p2p/ipc_network_manager.h"
+#include "chrome/renderer/p2p/ipc_socket_factory.h"
 #include "ppapi/c/pp_input_event.h"
 #include "ppapi/cpp/completion_callback.h"
 #include "ppapi/cpp/rect.h"
@@ -25,6 +30,13 @@
 #include "remoting/jingle_glue/jingle_thread.h"
 #include "remoting/proto/auth.pb.h"
 #include "remoting/protocol/connection_to_host.h"
+// TODO(sergeyu): This is a hack: plugin should not depend on webkit
+// glue. It is used here to get P2PPacketDispatcher corresponding to
+// the current RenderView. Use P2P Pepper API for connection and
+// remove these includes.
+// crbug.com/74951
+#include "webkit/plugins/ppapi/ppapi_plugin_instance.h"
+#include "webkit/plugins/ppapi/resource_tracker.h"
 
 namespace remoting {
 
@@ -68,9 +80,25 @@ bool ChromotingInstance::Init(uint32_t argc,
   // Start all the threads.
   context_.Start();
 
+  webkit::ppapi::PluginInstance* plugin_instance =
+      webkit::ppapi::ResourceTracker::Get()->GetInstance(pp_instance());
+
+  P2PSocketDispatcher* socket_dispatcher =
+      plugin_instance->delegate()->GetP2PSocketDispatcher();
+  IpcNetworkManager* network_manager = NULL;
+  IpcPacketSocketFactory* socket_factory = NULL;
+
+  // If we don't have socket dispatcher for IPC (e.g. P2P API is
+  // disabled), then JingleClient will try to use physical sockets.
+  if (socket_dispatcher) {
+    VLOG(1) << "Creating IpcNetworkManager and IpcPacketSocketFactory.";
+    network_manager = new IpcNetworkManager(socket_dispatcher);
+    socket_factory = new IpcPacketSocketFactory(socket_dispatcher);
+  }
+
   // Create the chromoting objects.
   host_connection_.reset(new protocol::ConnectionToHost(
-      context_.jingle_thread()));
+      context_.jingle_thread(), network_manager, socket_factory));
   view_.reset(new PepperView(this, &context_));
   view_proxy_ = new PepperViewProxy(this, view_.get());
   rectangle_decoder_ = new RectangleUpdateDecoder(
