@@ -21,7 +21,10 @@ class ChromotocolConnection;
 
 class MockConnectionToClient : public ConnectionToClient {
  public:
-  MockConnectionToClient();
+  MockConnectionToClient(MessageLoop* message_loop,
+                         EventHandler* handler,
+                         HostStub* host_stub,
+                         InputStub* input_stub);
   virtual ~MockConnectionToClient();
 
   MOCK_METHOD1(Init, void(Session* session));

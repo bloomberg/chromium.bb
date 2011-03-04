@@ -4,7 +4,7 @@
 
 // Interface of a host that receives commands from a Chromoting client.
 //
-// This interterface handles control messages defined in contro.proto.
+// This interface handles control messages defined in contro.proto.
 
 #ifndef REMOTING_PROTOCOL_HOST_STUB_H_
 #define REMOTING_PROTOCOL_HOST_STUB_H_
@@ -21,15 +21,29 @@ class LocalLoginCredentials;
 
 class HostStub {
  public:
-  HostStub() {}
-  virtual ~HostStub() {};
+  HostStub();
+  virtual ~HostStub();
 
   virtual void SuggestResolution(
       const SuggestResolutionRequest* msg, Task* done) = 0;
   virtual void BeginSessionRequest(
       const LocalLoginCredentials* credentials, Task* done) = 0;
 
+  // Called when the client has authenticated with the host to enable the
+  // client->host control channel.
+  // Before this is called, only a limited set of control messages will be
+  // processed.
+  void OnAuthenticated();
+
+  // Has the client successfully authenticated with the host?
+  // I.e., should we be processing control events?
+  bool authenticated();
+
  private:
+  // Initially false, this records whether the client has authenticated with
+  // the host.
+  bool authenticated_;
+
   DISALLOW_COPY_AND_ASSIGN(HostStub);
 };
 

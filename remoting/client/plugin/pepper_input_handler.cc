@@ -33,7 +33,8 @@ void PepperInputHandler::HandleCharacterEvent(
   // TODO(garykac): Coordinate key and char events.
 }
 
-void PepperInputHandler::HandleMouseMoveEvent(const PP_InputEvent_Mouse& event) {
+void PepperInputHandler::HandleMouseMoveEvent(
+    const PP_InputEvent_Mouse& event) {
   SendMouseMoveEvent(static_cast<int>(event.x),
                      static_cast<int>(event.y));
 }

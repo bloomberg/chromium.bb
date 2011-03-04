@@ -233,6 +233,12 @@ void ChromotingClient::BeginSessionResponse(
     return;
   }
 
+  // Inform the connection that the client has been authenticated. This will
+  // enable the communication channels.
+  if (msg->success()) {
+    connection_->OnClientAuthenticated();
+  }
+
   view_->UpdateLoginStatus(msg->success(), msg->error_info());
   done->Run();
   delete done;

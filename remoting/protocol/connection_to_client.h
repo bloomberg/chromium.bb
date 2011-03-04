@@ -72,9 +72,8 @@ class ConnectionToClient :
   // Return pointer to ClientStub.
   virtual ClientStub* client_stub();
 
- protected:
-  // Protected constructor used by unit test.
-  ConnectionToClient();
+  // Called when the host accepts the client authentication.
+  void OnClientAuthenticated();
 
  private:
   // Callback for protocol Session.
@@ -84,6 +83,11 @@ class ConnectionToClient :
   void StateChangeTask(Session::State state);
 
   void OnClosed();
+
+  // Initially false, this is set to true once the client has authenticated
+  // properly. When this is false, many client messages (like input events)
+  // will be ignored.
+  bool client_authenticated_;
 
   // The libjingle channel used to send and receive data from the remote client.
   scoped_refptr<Session> session_;

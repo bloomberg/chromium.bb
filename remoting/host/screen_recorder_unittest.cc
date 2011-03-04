@@ -13,6 +13,9 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 using ::remoting::protocol::MockConnectionToClient;
+using ::remoting::protocol::MockConnectionToClientEventHandler;
+using ::remoting::protocol::MockHostStub;
+using ::remoting::protocol::MockInputStub;
 using ::remoting::protocol::MockVideoStub;
 
 using ::testing::_;
@@ -77,7 +80,10 @@ class ScreenRecorderTest : public testing::Test {
   virtual void SetUp() {
     // Capturer and Encoder are owned by ScreenRecorder.
     encoder_ = new MockEncoder();
-    connection_ = new MockConnectionToClient();
+
+    connection_ = new MockConnectionToClient(&message_loop_, &handler_,
+                                             &host_stub_, &input_stub_);
+
     record_ = new ScreenRecorder(
         &message_loop_, &message_loop_, &message_loop_,
         &capturer_, encoder_);
@@ -85,6 +91,10 @@ class ScreenRecorderTest : public testing::Test {
 
  protected:
   scoped_refptr<ScreenRecorder> record_;
+
+  MockConnectionToClientEventHandler handler_;
+  MockHostStub host_stub_;
+  MockInputStub input_stub_;
   scoped_refptr<MockConnectionToClient> connection_;
 
   // The following mock objects are owned by ScreenRecorder.

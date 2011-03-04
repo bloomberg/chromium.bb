@@ -383,6 +383,7 @@ void ChromotingHost::LocalLoginSucceeded() {
   connection_->client_stub()->BeginSessionResponse(
       status, new DeleteTask<protocol::LocalLoginStatus>(status));
 
+  connection_->OnClientAuthenticated();
   recorder_->Start();
 }
 

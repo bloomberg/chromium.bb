@@ -85,6 +85,9 @@ class ConnectionToHost : public JingleClient::Callback {
   // Callback for chromotocol Session.
   void OnSessionStateChange(Session::State state);
 
+  // Called when the host accepts the client authentication.
+  void OnClientAuthenticated();
+
  private:
   // The message loop for the jingle thread this object works on.
   MessageLoop* message_loop();
@@ -100,6 +103,11 @@ class ConnectionToHost : public JingleClient::Callback {
   // server, and then disconnect XMPP connection.
   void OnDisconnected();
   void OnServerClosed();
+
+  // Initially false, this is set to true once the client has authenticated
+  // properly. When this is false, many messages to the host (like input events)
+  // will be suppressed.
+  bool client_authenticated_;
 
   JingleThread* thread_;
 

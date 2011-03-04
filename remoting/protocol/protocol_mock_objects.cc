@@ -7,7 +7,12 @@
 namespace remoting {
 namespace protocol {
 
-MockConnectionToClient::MockConnectionToClient() {}
+MockConnectionToClient::MockConnectionToClient(MessageLoop* message_loop,
+                                               EventHandler* handler,
+                                               HostStub* host_stub,
+                                               InputStub* input_stub)
+    : ConnectionToClient(message_loop, handler, host_stub, input_stub) {
+}
 
 MockConnectionToClient::~MockConnectionToClient() {}
 

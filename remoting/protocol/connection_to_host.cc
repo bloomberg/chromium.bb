@@ -25,7 +25,8 @@ ConnectionToHost::ConnectionToHost(
     JingleThread* thread,
     talk_base::NetworkManager* network_manager,
     talk_base::PacketSocketFactory* socket_factory)
-    : thread_(thread),
+    : client_authenticated_(false),
+      thread_(thread),
       network_manager_(network_manager),
       socket_factory_(socket_factory),
       event_callback_(NULL),
@@ -190,7 +191,6 @@ void ConnectionToHost::OnSessionStateChange(
       // Initialize reader and writer.
       video_reader_.reset(VideoReader::Create(session_->config()));
       video_reader_->Init(session_, video_stub_);
-      input_stub_.reset(new InputSender(session_->event_channel()));
       host_stub_.reset(new HostControlSender(session_->control_channel()));
       dispatcher_->Initialize(session_.get(), client_stub_);
       event_callback_->OnConnectionOpened(this);
@@ -200,6 +200,20 @@ void ConnectionToHost::OnSessionStateChange(
       // Ignore the other states by default.
       break;
   }
+}
+
+void ConnectionToHost::OnClientAuthenticated() {
+  client_authenticated_ = true;
+
+  // Create and enable the input stub now that we're authenticated.
+  input_stub_.reset(new InputSender(session_->event_channel()));
+  input_stub_->OnAuthenticated();
+
+  // Enable control channel stubs.
+  if (host_stub_.get())
+    host_stub_->OnAuthenticated();
+  if (client_stub_)
+    client_stub_->OnAuthenticated();
 }
 
 }  // namespace protocol

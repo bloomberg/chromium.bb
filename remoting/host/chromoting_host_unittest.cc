@@ -15,6 +15,16 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+using ::remoting::protocol::LocalLoginCredentials;
+using ::remoting::protocol::MockClientStub;
+using ::remoting::protocol::MockConnectionToClient;
+using ::remoting::protocol::MockConnectionToClientEventHandler;
+using ::remoting::protocol::MockHostStub;
+using ::remoting::protocol::MockInputStub;
+using ::remoting::protocol::MockSession;
+using ::remoting::protocol::MockVideoStub;
+using ::remoting::protocol::SessionConfig;
+
 using testing::_;
 using testing::AnyNumber;
 using testing::DeleteArg;
@@ -32,8 +42,8 @@ void PostQuitTask(MessageLoop* message_loop) {
 }
 
 void BeginSessionRequest(protocol::HostStub* host_stub) {
-  protocol::LocalLoginCredentials* credentials =
-      new protocol::LocalLoginCredentials();
+  LocalLoginCredentials* credentials =
+      new LocalLoginCredentials();
   credentials->set_type(protocol::PASSWORD);
   credentials->set_username("hello");
 
@@ -42,7 +52,7 @@ void BeginSessionRequest(protocol::HostStub* host_stub) {
 
   host_stub->BeginSessionRequest(
       credentials,
-      new DeleteTask<protocol::LocalLoginCredentials>(credentials));
+      new DeleteTask<LocalLoginCredentials>(credentials));
 }
 
 // Run the task and delete it afterwards. This action is used to deal with
@@ -79,13 +89,15 @@ class ChromotingHostTest : public testing::Test {
         .Times(AnyNumber());
 
     Capturer* capturer = new CapturerFake(context_.main_message_loop());
-    input_stub_ = new protocol::MockInputStub();
+    host_stub_ = new MockHostStub();
+    input_stub_ = new MockInputStub();
     DesktopEnvironment* desktop =
         new DesktopEnvironmentFake(capturer, input_stub_);
     host_ = ChromotingHost::Create(&context_, config_, desktop);
-    connection_ = new protocol::MockConnectionToClient();
-    session_ = new protocol::MockSession();
-    session_config_.reset(protocol::SessionConfig::CreateDefault());
+    connection_ = new MockConnectionToClient(
+        &message_loop_, &handler_, host_stub_, input_stub_);
+    session_ = new MockSession();
+    session_config_.reset(SessionConfig::CreateDefault());
 
     ON_CALL(video_stub_, ProcessVideoPacket(_, _))
         .WillByDefault(
@@ -139,15 +151,17 @@ class ChromotingHostTest : public testing::Test {
 
  protected:
   MessageLoop message_loop_;
+  MockConnectionToClientEventHandler handler_;
   scoped_refptr<ChromotingHost> host_;
   scoped_refptr<InMemoryHostConfig> config_;
   MockChromotingHostContext context_;
-  scoped_refptr<protocol::MockConnectionToClient> connection_;
-  scoped_refptr<protocol::MockSession> session_;
-  scoped_ptr<protocol::SessionConfig> session_config_;
-  protocol::MockVideoStub video_stub_;
-  protocol::MockClientStub client_stub_;
-  protocol::MockInputStub* input_stub_;
+  scoped_refptr<MockConnectionToClient> connection_;
+  scoped_refptr<MockSession> session_;
+  scoped_ptr<SessionConfig> session_config_;
+  MockVideoStub video_stub_;
+  MockClientStub client_stub_;
+  MockHostStub* host_stub_;
+  MockInputStub* input_stub_;
 };
 
 TEST_F(ChromotingHostTest, StartAndShutdown) {

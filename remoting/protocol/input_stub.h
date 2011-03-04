@@ -8,6 +8,8 @@
 #ifndef REMOTING_PROTOCOL_INPUT_STUB_H_
 #define REMOTING_PROTOCOL_INPUT_STUB_H_
 
+#include "base/basictypes.h"
+
 class Task;
 
 namespace remoting {
@@ -18,13 +20,26 @@ class MouseEvent;
 
 class InputStub {
  public:
-  InputStub() {}
-  virtual ~InputStub() {}
+  InputStub();
+  virtual ~InputStub();
 
   virtual void InjectKeyEvent(const KeyEvent* event, Task* done) = 0;
   virtual void InjectMouseEvent(const MouseEvent* event, Task* done) = 0;
 
+  // Called when the client has authenticated with the host to enable the
+  // input event channel.
+  // Before this is called, all input event will be ignored.
+  void OnAuthenticated();
+
+  // Has the client successfully authenticated with the host?
+  // I.e., should we be processing input events?
+  bool authenticated();
+
  private:
+  // Initially false, this records whether the client has authenticated with
+  // the host.
+  bool authenticated_;
+
   DISALLOW_COPY_AND_ASSIGN(InputStub);
 };
 

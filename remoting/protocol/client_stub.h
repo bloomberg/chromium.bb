@@ -22,15 +22,29 @@ class NotifyResolutionRequest;
 
 class ClientStub {
  public:
-  ClientStub() {}
-  virtual ~ClientStub() {}
+  ClientStub();
+  virtual ~ClientStub();
 
   virtual void NotifyResolution(const NotifyResolutionRequest* msg,
                                 Task* done) = 0;
   virtual void BeginSessionResponse(const LocalLoginStatus* msg,
                                     Task* done) = 0;
 
+  // Called when the client has authenticated with the host to enable the
+  // host->client control channel.
+  // Before this is called, only a limited set of control messages will be
+  // processed.
+  void OnAuthenticated();
+
+  // Has the client successfully authenticated with the host?
+  // I.e., should we be processing control events?
+  bool authenticated();
+
  private:
+  // Initially false, this records whether the client has authenticated with
+  // the host.
+  bool authenticated_;
+
   DISALLOW_COPY_AND_ASSIGN(ClientStub);
 };
 

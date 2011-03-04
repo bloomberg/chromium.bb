@@ -8,6 +8,8 @@
 #include "net/base/io_buffer.h"
 #include "remoting/protocol/client_control_sender.h"
 #include "remoting/protocol/host_message_dispatcher.h"
+#include "remoting/protocol/host_stub.h"
+#include "remoting/protocol/input_stub.h"
 
 // TODO(hclam): Remove this header once MessageDispatcher is used.
 #include "remoting/base/compound_buffer.h"
@@ -23,7 +25,8 @@ ConnectionToClient::ConnectionToClient(MessageLoop* message_loop,
                                        EventHandler* handler,
                                        HostStub* host_stub,
                                        InputStub* input_stub)
-    : loop_(message_loop),
+    : client_authenticated_(false),
+      loop_(message_loop),
       handler_(handler),
       host_stub_(host_stub),
       input_stub_(input_stub) {
@@ -73,9 +76,6 @@ ClientStub* ConnectionToClient::client_stub() {
   return client_stub_.get();
 }
 
-ConnectionToClient::ConnectionToClient() {
-}
-
 void ConnectionToClient::OnSessionStateChange(protocol::Session::State state) {
   if (state == protocol::Session::CONNECTED) {
     client_stub_.reset(new ClientControlSender(session_->control_channel()));
@@ -121,6 +121,18 @@ void ConnectionToClient::StateChangeTask(protocol::Session::State state) {
 
 // OnClosed() is used as a callback for protocol::Session::Close().
 void ConnectionToClient::OnClosed() {
+}
+
+void ConnectionToClient::OnClientAuthenticated() {
+  client_authenticated_ = true;
+
+  // Enable/disable each of the channels.
+  if (input_stub_)
+    input_stub_->OnAuthenticated();
+  if (host_stub_)
+    host_stub_->OnAuthenticated();
+  if (client_stub_.get())
+    client_stub_->OnAuthenticated();
 }
 
 }  // namespace protocol
