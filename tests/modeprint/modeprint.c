@@ -36,6 +36,7 @@
 #include <stdint.h>
 #include <unistd.h>
 #include <string.h>
+#include <inttypes.h>
 
 #include "xf86drm.h"
 #include "xf86drmMode.h"
@@ -101,7 +102,7 @@ int printProperty(int fd, drmModeResPtr res, drmModePropertyPtr props, uint64_t 
 	if (props->count_values) {
 		printf("\tvalues       :");
 		for (j = 0; j < props->count_values; j++)
-			printf(" %llu", props->values[j]);
+			printf(" %" PRIu64, props->values[j]);
 		printf("\n");
 	}
 
@@ -116,7 +117,7 @@ int printProperty(int fd, drmModeResPtr res, drmModePropertyPtr props, uint64_t 
 			printf("blob is %d length, %08X\n", blob->length, *(uint32_t *)blob->data);
 			drmModeFreePropertyBlob(blob);
 		} else {
-			printf("error getting blob %llu\n", value);
+			printf("error getting blob %" PRIu64 "\n", value);
 		}
 
 	} else {
@@ -132,7 +133,7 @@ int printProperty(int fd, drmModeResPtr res, drmModePropertyPtr props, uint64_t 
 		if (props->count_enums && name) {
 			printf("\tcon_value    : %s\n", name);
 		} else {
-			printf("\tcon_value    : %lld\n", value);
+			printf("\tcon_value    : %" PRIu64 "\n", value);
 		}
 	}
 
