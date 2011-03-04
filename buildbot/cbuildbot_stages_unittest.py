@@ -56,27 +56,6 @@ class BuilderStageTest(mox.MoxTestBase):
     self.mox.VerifyAll()
     self.assertEqual(result, 'RESULT')
 
-  def testResolveOverlays(self):
-    self.mox.StubOutWithMock(cros_lib, 'RunCommand')
-    for _ in range(3):
-      output_obj = cros_lib.CommandResult()
-      output_obj.output = 'public1 public2\n'
-      cros_lib.RunCommand(mox.And(mox.IsA(list), mox.In('--noprivate')),
-                          redirect_stdout=True).AndReturn(output_obj)
-      output_obj = cros_lib.CommandResult()
-      output_obj.output = 'private1 private2\n'
-      cros_lib.RunCommand(mox.And(mox.IsA(list), mox.In('--nopublic')),\
-                          redirect_stdout=True).AndReturn(output_obj)
-    self.mox.ReplayAll()
-    stage = stages.BuilderStage(self.bot_id, self.options, self.build_config)
-    public_overlays = ['public1', 'public2', self.overlay]
-    private_overlays = ['private1', 'private2']
-    self.assertEqual(stage._ResolveOverlays('public'), public_overlays)
-    self.assertEqual(stage._ResolveOverlays('private'), private_overlays)
-    self.assertEqual(stage._ResolveOverlays('both'),
-                     public_overlays + private_overlays)
-    self.mox.VerifyAll()
-
 
 class SyncStageTest(BuilderStageTest):
 
@@ -90,6 +69,8 @@ class SyncStageTest(BuilderStageTest):
     """Tests whether we can perform a full sync with a missing .repo folder."""
     self.mox.StubOutWithMock(commands, 'FullCheckout')
 
+    commands.PreFlightRinse(self.build_root, self.build_config['board'],
+                            self.options.tracking_branch, [self.overlay])
     os.path.isdir(self.build_root + '/.repo').AndReturn(False)
     commands.FullCheckout(self.build_root, self.options.tracking_branch,
                           url=self.url)
