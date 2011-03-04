@@ -50,7 +50,7 @@ void BrowserFrameGtk::Init() {
         browser::CreateBrowserNonClientFrameView(this, browser_view_);
 
   GetNonClientView()->SetFrameView(browser_frame_view_);
-  WindowGtk::Init(NULL, gfx::Rect());
+  WindowGtk::InitWindow(NULL, gfx::Rect());
   // Don't focus anything on creation, selecting a tab will set the focus.
 }
 
