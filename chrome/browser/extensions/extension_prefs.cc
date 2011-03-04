@@ -488,6 +488,26 @@ void ExtensionPrefs::SetLastPingDayImpl(const Time& time,
   SavePrefsAndNotify();
 }
 
+Time ExtensionPrefs::LastPingDay(const std::string& extension_id) const {
+  DCHECK(Extension::IdIsValid(extension_id));
+  return LastPingDayImpl(GetExtensionPref(extension_id));
+}
+
+Time ExtensionPrefs::BlacklistLastPingDay() const {
+  return LastPingDayImpl(prefs_->GetDictionary(kExtensionsBlacklistUpdate));
+}
+
+void ExtensionPrefs::SetLastPingDay(const std::string& extension_id,
+                                    const Time& time) {
+  DCHECK(Extension::IdIsValid(extension_id));
+  SetLastPingDayImpl(time, GetExtensionPref(extension_id));
+}
+
+void ExtensionPrefs::SetBlacklistLastPingDay(const Time& time) {
+  SetLastPingDayImpl(time,
+                     prefs_->GetMutableDictionary(kExtensionsBlacklistUpdate));
+}
+
 bool ExtensionPrefs::GetGrantedPermissions(
     const std::string& extension_id,
     bool* full_access,
@@ -552,26 +572,6 @@ void ExtensionPrefs::AddGrantedPermissions(
   }
 
   SavePrefsAndNotify();
-}
-
-Time ExtensionPrefs::LastPingDay(const std::string& extension_id) const {
-  DCHECK(Extension::IdIsValid(extension_id));
-  return LastPingDayImpl(GetExtensionPref(extension_id));
-}
-
-Time ExtensionPrefs::BlacklistLastPingDay() const {
-  return LastPingDayImpl(prefs_->GetDictionary(kExtensionsBlacklistUpdate));
-}
-
-void ExtensionPrefs::SetLastPingDay(const std::string& extension_id,
-                                    const Time& time) {
-  DCHECK(Extension::IdIsValid(extension_id));
-  SetLastPingDayImpl(time, GetExtensionPref(extension_id));
-}
-
-void ExtensionPrefs::SetBlacklistLastPingDay(const Time& time) {
-  SetLastPingDayImpl(time,
-                     prefs_->GetMutableDictionary(kExtensionsBlacklistUpdate));
 }
 
 bool ExtensionPrefs::IsIncognitoEnabled(const std::string& extension_id) {

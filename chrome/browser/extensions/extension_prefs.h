@@ -155,11 +155,15 @@ class ExtensionPrefs {
   // the client's.
   void SetLastPingDay(const std::string& extension_id, const base::Time& time);
 
+  // Similar to the 2 above, but for the extensions blacklist.
+  base::Time BlacklistLastPingDay() const;
+  void SetBlacklistLastPingDay(const base::Time& time);
+
   // Gets the permissions (|api_permissions|, |host_extent| and |full_access|)
   // granted to the extension with |extension_id|. |full_access| will be true
   // if the extension has all effective permissions (like from an NPAPI plugin).
   // Returns false if the granted permissions haven't been initialized yet.
-  // TODO(jstritar): Refractor the permissions into a class that encapsulates
+  // TODO(jstritar): Refactor the permissions into a class that encapsulates
   // all granted permissions, can be initialized from preferences or
   // a manifest file, and can be compared to each other.
   bool GetGrantedPermissions(const std::string& extension_id,
@@ -175,10 +179,6 @@ class ExtensionPrefs {
                              const bool full_access,
                              const std::set<std::string>& api_permissions,
                              const ExtensionExtent& host_extent);
-
-  // Similar to the 2 above, but for the extensions blacklist.
-  base::Time BlacklistLastPingDay() const;
-  void SetBlacklistLastPingDay(const base::Time& time);
 
   // Returns true if the user enabled this extension to be loaded in incognito
   // mode.
