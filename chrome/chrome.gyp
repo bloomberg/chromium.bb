@@ -601,6 +601,16 @@
             '<(DEPTH)/third_party/wtl/include',
           ],
         }],
+        ['enable_gpu==1', {
+          'dependencies': [
+            '../gpu/gpu.gyp:command_buffer_service',
+          ],
+          'sources': [
+            'plugin/command_buffer_stub.cc',
+            'plugin/command_buffer_stub.h',
+            'plugin/command_buffer_stub_win.cc',
+           ],
+        },],
         ['OS=="linux" or OS=="freebsd" or OS=="openbsd" or OS=="solaris"', {
           'dependencies': [
             '../build/linux/system.gyp:gtk',

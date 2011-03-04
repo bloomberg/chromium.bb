@@ -28,6 +28,10 @@
 #include "printing/native_metafile.h"
 #endif  // defined(OS_WIN)
 
+#if defined(ENABLE_GPU)
+#include "app/gfx/gl/gl_context.h"
+#endif
+
 using WebKit::WebBindings;
 using WebKit::WebCursorInfo;
 using webkit::npapi::WebPlugin;
@@ -67,6 +71,13 @@ WebPluginDelegateStub::WebPluginDelegateStub(
 WebPluginDelegateStub::~WebPluginDelegateStub() {
   in_destructor_ = true;
   child_process_logging::SetActiveURL(page_url_);
+
+#if defined(ENABLE_GPU)
+  // Make sure there is no command buffer before destroying the window handle.
+  // The GPU service code might otherwise asynchronously perform an operation
+  // using the window handle.
+  command_buffer_stub_.reset();
+#endif
 
   if (channel_->in_send()) {
     // The delegate or an npobject is in the callstack, so don't delete it
@@ -133,6 +144,10 @@ bool WebPluginDelegateStub::OnMessageReceived(const IPC::Message& msg) {
                         OnHandleURLRequestReply)
     IPC_MESSAGE_HANDLER(PluginMsg_HTTPRangeRequestReply,
                         OnHTTPRangeRequestReply)
+    IPC_MESSAGE_HANDLER(PluginMsg_CreateCommandBuffer,
+                        OnCreateCommandBuffer)
+    IPC_MESSAGE_HANDLER(PluginMsg_DestroyCommandBuffer,
+                        OnDestroyCommandBuffer)
 #if defined(OS_MACOSX)
     IPC_MESSAGE_HANDLER(PluginMsg_SetFakeAcceleratedSurfaceWindowHandle,
                         OnSetFakeAcceleratedSurfaceWindowHandle)
@@ -399,6 +414,29 @@ void WebPluginDelegateStub::OnDidManualLoadFail() {
 
 void WebPluginDelegateStub::OnInstallMissingPlugin() {
   delegate_->InstallMissingPlugin();
+}
+
+void WebPluginDelegateStub::OnCreateCommandBuffer(int* route_id) {
+  *route_id = 0;
+#if defined(ENABLE_GPU)
+  // Fail to create the command buffer if some GL implementation cannot be
+  // initialized.
+  if (!gfx::GLContext::InitializeOneOff())
+    return;
+
+  command_buffer_stub_.reset(new CommandBufferStub(
+      channel_,
+      instance_id_,
+      delegate_->windowed_handle()));
+
+  *route_id = command_buffer_stub_->route_id();
+#endif  // ENABLE_GPU
+}
+
+void WebPluginDelegateStub::OnDestroyCommandBuffer() {
+#if defined(ENABLE_GPU)
+  command_buffer_stub_.reset();
+#endif
 }
 
 void WebPluginDelegateStub::CreateSharedBuffer(

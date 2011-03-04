@@ -591,6 +591,7 @@
         'test/ui/named_interface_uitest.cc',
         'test/ui/npapi_uitest.cc',
         'test/ui/omnibox_uitest.cc',
+        'test/ui/pepper_uitest.cc',
         'test/ui/ppapi_uitest.cc',
         'test/ui/sandbox_uitests.cc',
         'test/ui/sunspider_uitest.cc',

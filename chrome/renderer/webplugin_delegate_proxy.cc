@@ -1450,6 +1450,37 @@ bool WebPluginDelegateProxy::BindFakePluginWindowHandle(bool opaque) {
 }
 #endif
 
+CommandBufferProxy* WebPluginDelegateProxy::CreateCommandBuffer() {
+#if defined(ENABLE_GPU)
+#if defined(OS_MACOSX)
+  if (!BindFakePluginWindowHandle(true))
+    return NULL;
+#endif
+  int command_buffer_id;
+  if (!Send(new PluginMsg_CreateCommandBuffer(instance_id_,
+                                              &command_buffer_id))) {
+    return NULL;
+  }
+
+  CommandBufferProxy* command_buffer =
+      new CommandBufferProxy(channel_host_, command_buffer_id);
+  channel_host_->AddRoute(command_buffer_id, command_buffer, NULL);
+  return command_buffer;
+#else
+  return NULL;
+#endif  // ENABLE_GPU
+}
+
+void WebPluginDelegateProxy::DestroyCommandBuffer(
+    CommandBufferProxy* command_buffer) {
+  DCHECK(command_buffer);
+#if defined(ENABLE_GPU)
+  Send(new PluginMsg_DestroyCommandBuffer(instance_id_));
+  channel_host_->RemoveRoute(command_buffer->route_id());
+  delete command_buffer;
+#endif
+}
+
 gfx::PluginWindowHandle WebPluginDelegateProxy::GetPluginWindowHandle() {
   return window_;
 }

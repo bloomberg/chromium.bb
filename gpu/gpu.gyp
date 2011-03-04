@@ -221,6 +221,26 @@
       ],
     },
     {
+      'target_name': 'gpu_plugin',
+      'type': 'static_library',
+      'dependencies': [
+        '../base/base.gyp:base',
+        'command_buffer_service',
+      ],
+      'include_dirs': [
+        '..',
+      ],
+      'all_dependent_settings': {
+        'include_dirs': [
+          '..',
+        ],
+      },
+      'sources': [
+        'gpu_plugin/gpu_plugin.cc',
+        'gpu_plugin/gpu_plugin.h',
+      ],
+    },
+    {
       'target_name': 'gpu_unittests',
       'type': 'executable',
       'dependencies': [
