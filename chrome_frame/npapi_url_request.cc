@@ -91,8 +91,14 @@ bool NPAPIUrlRequest::Start() {
       buffer += base::IntToString(data_len);
       buffer += "\r\n\r\n";
     }
-    buffer.append(reinterpret_cast<char*>(&upload_data_[0]),
-                                          upload_data_.size());
+
+    std::string data;
+    data.resize(data_len);
+    uint32 bytes_read;
+    upload_data_->Read(&data[0], data_len,
+                       reinterpret_cast<ULONG*>(&bytes_read));
+    DCHECK_EQ(data_len, bytes_read);
+    buffer += data;
 
     result = npapi::PostURLNotify(instance_, url().c_str(), NULL,
         buffer.length(), buffer.c_str(), false, this);

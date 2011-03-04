@@ -791,13 +791,9 @@ RendererType RendererTypeForUrl(const std::wstring& url) {
   return renderer_type;
 }
 
-HRESULT NavigateBrowserToMoniker(IUnknown* browser,
-                                 IMoniker* moniker,
-                                 const wchar_t* headers,
-                                 IBindCtx* bind_ctx,
-                                 const wchar_t* fragment,
-                                 const uint8* post_data,
-                                 int post_data_len) {
+HRESULT NavigateBrowserToMoniker(IUnknown* browser, IMoniker* moniker,
+                                 const wchar_t* headers, IBindCtx* bind_ctx,
+                                 const wchar_t* fragment, IStream* post_data) {
   DCHECK(browser);
   DCHECK(moniker);
   DCHECK(bind_ctx);
@@ -821,9 +817,34 @@ HRESULT NavigateBrowserToMoniker(IUnknown* browser,
   // If the data to be downloaded was received in response to a post request
   // then we need to reissue the post request.
   base::win::ScopedVariant post_data_variant;
-  if (post_data && post_data_len > 0) {
+  if (post_data) {
+    RewindStream(post_data);
+
     CComSafeArray<uint8> safe_array_post;
-    safe_array_post.Add(post_data_len, post_data);
+
+    STATSTG stat;
+    post_data->Stat(&stat, STATFLAG_NONAME);
+
+    if (stat.cbSize.LowPart > 0) {
+      std::string data;
+
+      HRESULT hr = E_FAIL;
+      while ((hr = ReadStream(post_data, 0xffff, &data)) == S_OK) {
+        safe_array_post.Add(
+            data.size(),
+            reinterpret_cast<unsigned char*>(const_cast<char*>(data.data())));
+        data.clear();
+      }
+    } else {
+      // If we get here it means that the navigation is being reissued for a
+      // POST request with no data. To ensure that the new window used as a
+      // target to handle the new navigation issues a POST request
+      // we need valid POST data. In this case we create a dummy 1 byte array.
+      // May not work as expected with some web sites.
+      DLOG(WARNING) << "Reissuing navigation with empty POST data. May not"
+                    << " work as expected";
+      safe_array_post.Create(1);
+    }
     post_data_variant.Set(safe_array_post.Detach());
   }
   // Create a new bind context that's not associated with our callback.

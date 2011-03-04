@@ -147,6 +147,8 @@
         'test/win_event_receiver.cc',
         'unittest_precompile.h',
         'unittest_precompile.cc',
+        'urlmon_upload_data_stream.cc',
+        'urlmon_upload_data_stream_unittest.cc',
         'vtable_patch_manager_unittest.cc',
       ],
       'include_dirs': [
@@ -848,6 +850,8 @@
         'urlmon_url_request.cc',
         'urlmon_url_request.h',
         'urlmon_url_request_private.h',
+        'urlmon_upload_data_stream.cc',
+        'urlmon_upload_data_stream.h',
         'utils.h',
         'utils.cc',
         'vtable_patch_manager.cc',

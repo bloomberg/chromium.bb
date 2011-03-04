@@ -39,7 +39,7 @@ class UrlmonUrlRequest
   // Used from "DownloadRequestInHost".
   // Callback will be invoked either right away (if operation is finished) or
   // from inside ::OnStopBinding() when it is safe to reuse the bind_context.
-  typedef Callback5<IMoniker*, IBindCtx*, uint8*, int, const char*>::Type
+  typedef Callback4<IMoniker*, IBindCtx*, IStream*, const char*>::Type
       TerminateBindCallback;
   void TerminateBind(TerminateBindCallback* callback);
 
