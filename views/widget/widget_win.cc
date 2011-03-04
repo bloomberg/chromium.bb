@@ -30,6 +30,7 @@
 #include "views/widget/aero_tooltip_manager.h"
 #include "views/widget/child_window_message_processor.h"
 #include "views/widget/drop_target_win.h"
+#include "views/widget/native_widget_delegate.h"
 #include "views/widget/root_view.h"
 #include "views/widget/widget_delegate.h"
 #include "views/window/window_win.h"
@@ -106,6 +107,14 @@ BOOL CALLBACK EnumerateChildWindowsForNativeWidgets(HWND hwnd, LPARAM l_param) {
   return TRUE;
 }
 
+// Returns true if the WINDOWPOS data provided indicates the client area of
+// the window may have changed size. This can be caused by the window being
+// resized or its frame changing.
+bool DidClientAreaSizeChange(const WINDOWPOS* window_pos) {
+  return !(window_pos->flags & SWP_NOSIZE) ||
+         window_pos->flags & SWP_FRAMECHANGED;
+}
+
 // Links the HWND to its NativeWidget.
 const char* const kNativeWidgetKey = "__VIEWS_NATIVE_WIDGET__";
 
@@ -155,31 +164,6 @@ WidgetWin* WidgetWin::GetWidget(HWND hwnd) {
 }
 
 // static
-WidgetWin* WidgetWin::GetRootWidget(HWND hwnd) {
-  // First, check if the top-level window is a Widget.
-  HWND root = ::GetAncestor(hwnd, GA_ROOT);
-  if (!root)
-    return NULL;
-
-  WidgetWin* widget = WidgetWin::GetWidget(root);
-  if (widget)
-    return widget;
-
-  // Second, try to locate the last Widget window in the parent hierarchy.
-  HWND parent_hwnd = hwnd;
-  WidgetWin* parent_widget;
-  do {
-    parent_widget = WidgetWin::GetWidget(parent_hwnd);
-    if (parent_widget) {
-      widget = parent_widget;
-      parent_hwnd = ::GetAncestor(parent_hwnd, GA_PARENT);
-    }
-  } while (parent_hwnd != NULL && parent_widget != NULL);
-
-  return widget;
-}
-
-// static
 bool WidgetWin::IsAeroGlassEnabled() {
   if (base::win::GetVersion() < base::win::VERSION_VISTA)
     return false;
@@ -218,55 +202,9 @@ void WidgetWin::ClearAccessibilityViewEvent(View* view) {
 
 void WidgetWin::Init(gfx::NativeView parent, const gfx::Rect& bounds) {
   Widget::Init(parent, bounds);
-  // Force creation of the RootView; otherwise, we may get a WM_SIZE after the
-  // window is created and before the root view is set up.
-  GetRootView();
 
   // Create the window.
   WindowImpl::Init(parent, bounds);
-
-  // Attempt to detect screen readers by sending an event with our custom id.
-  if (!IsAccessibleWidget())
-    NotifyWinEvent(EVENT_SYSTEM_ALERT, hwnd(), kCustomObjectID, CHILDID_SELF);
-
-  props_.push_back(SetWindowSupportsRerouteMouseWheel(hwnd()));
-
-  drop_target_ = new DropTargetWin(GetRootView());
-
-  if ((window_style() & WS_CHILD) == 0 ||
-      (!GetTopLevelNativeWidget(parent) && parent != GetDesktopWindow())) {
-    // Top-level widgets and child widgets who do not have a top-level widget
-    // ancestor get a FocusManager. Child widgets parented to the desktop do not
-    // get a FocusManager because parenting to the desktop is the technique used
-    // to intentionally exclude a widget from the FocusManager hierarchy.
-    focus_manager_.reset(new FocusManager(this));
-  }
-
-  // We need to add ourselves as a message loop observer so that we can repaint
-  // aggressively if the contents of our window become invalid. Unfortunately
-  // WM_PAINT messages are starved and we get flickery redrawing when resizing
-  // if we do not do this.
-  MessageLoopForUI::current()->AddObserver(this);
-
-  // Windows special DWM window frame requires a special tooltip manager so
-  // that window controls in Chrome windows don't flicker when you move your
-  // mouse over them. See comment in aero_tooltip_manager.h.
-  if (GetThemeProvider()->ShouldUseNativeFrame()) {
-    tooltip_manager_.reset(new AeroTooltipManager(this));
-  } else {
-    tooltip_manager_.reset(new TooltipManagerWin(this));
-  }
-
-  // This message initializes the window so that focus border are shown for
-  // windows.
-  SendMessage(hwnd(),
-              WM_CHANGEUISTATE,
-              MAKELPARAM(UIS_CLEAR, UISF_HIDEFOCUS),
-              0);
-
-  // Bug 964884: detach the IME attached to this window.
-  // We should attach IMEs only when we need to input CJK strings.
-  ImmAssociateContextEx(hwnd(), NULL, 0);
 }
 
 void WidgetWin::InitWithWidget(Widget* parent, const gfx::Rect& bounds) {
@@ -350,10 +288,6 @@ void WidgetWin::SetAlwaysOnTop(bool on_top) {
     set_window_ex_style(window_ex_style() & ~WS_EX_TOPMOST);
 }
 
-Widget* WidgetWin::GetRootWidget() const {
-  return GetRootWidget(hwnd());
-}
-
 bool WidgetWin::IsVisible() const {
   return !!::IsWindowVisible(hwnd());
 }
@@ -386,36 +320,14 @@ const Window* WidgetWin::GetWindow() const {
   return GetWindowImpl(hwnd());
 }
 
-FocusManager* WidgetWin::GetFocusManager() {
-  if (focus_manager_.get())
-    return focus_manager_.get();
-
-  NativeWidget* native_widget = GetTopLevelNativeWidget(hwnd());
-  if (native_widget && native_widget != this) {
-    // WidgetWin subclasses may override GetFocusManager(), for example for
-    // dealing with cases where the widget has been un-parented.
-    return native_widget->GetWidget()->GetFocusManager();
-  }
-  return NULL;
-}
-
 void WidgetWin::ViewHierarchyChanged(bool is_add, View* parent,
                                      View* child) {
   Widget::ViewHierarchyChanged(is_add, parent, child);
   if (drop_target_.get())
     drop_target_->ResetTargetViewIfEquals(child);
 
-  if (!is_add) {
+  if (!is_add)
     ClearAccessibilityViewEvent(child);
-
-    FocusManager* focus_manager = GetFocusManager();
-    if (focus_manager) {
-      if (focus_manager->GetFocusedView() == child)
-        focus_manager->SetFocusedView(NULL);
-      focus_manager->ViewRemoved(parent, child);
-    }
-    ViewStorage::GetInstance()->ViewRemoved(parent, child);
-  }
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -547,7 +459,7 @@ LRESULT WidgetWin::OnWndProc(UINT message, WPARAM w_param, LPARAM l_param) {
     PostProcessActivateMessage(this, LOWORD(w_param));
   if (message == WM_ENABLE && restore_focus_when_enabled_) {
     restore_focus_when_enabled_ = false;
-    focus_manager_->RestoreFocusedView();
+    GetFocusManager()->RestoreFocusedView();
   }
   return result;
 }
@@ -595,8 +507,47 @@ LRESULT WidgetWin::OnCreate(CREATESTRUCT* create_struct) {
   // Widget::GetWidgetFromNativeView expects the contents of this property
   // to be of type Widget, so the cast is necessary.
   SetNativeWindowProperty(kNativeWidgetKey, this);
+
   use_layered_buffer_ = !!(window_ex_style() & WS_EX_LAYERED);
-  LayoutRootView();
+
+  // Attempt to detect screen readers by sending an event with our custom id.
+  if (!IsAccessibleWidget())
+    NotifyWinEvent(EVENT_SYSTEM_ALERT, hwnd(), kCustomObjectID, CHILDID_SELF);
+
+  props_.push_back(SetWindowSupportsRerouteMouseWheel(hwnd()));
+
+  drop_target_ = new DropTargetWin(GetRootView());
+
+  // We need to add ourselves as a message loop observer so that we can repaint
+  // aggressively if the contents of our window become invalid. Unfortunately
+  // WM_PAINT messages are starved and we get flickery redrawing when resizing
+  // if we do not do this.
+  MessageLoopForUI::current()->AddObserver(this);
+
+  // Windows special DWM window frame requires a special tooltip manager so
+  // that window controls in Chrome windows don't flicker when you move your
+  // mouse over them. See comment in aero_tooltip_manager.h.
+  if (GetThemeProvider()->ShouldUseNativeFrame()) {
+    tooltip_manager_.reset(new AeroTooltipManager(this));
+  } else {
+    tooltip_manager_.reset(new TooltipManagerWin(this));
+  }
+
+  // This message initializes the window so that focus border are shown for
+  // windows.
+  SendMessage(
+      hwnd(), WM_CHANGEUISTATE, MAKELPARAM(UIS_CLEAR, UISF_HIDEFOCUS), 0);
+
+  // Bug 964884: detach the IME attached to this window.
+  // We should attach IMEs only when we need to input CJK strings.
+  ImmAssociateContextEx(hwnd(), NULL, 0);
+
+  // We need to allow the delegate to size its contents since the window may not
+  // receive a size notification when its initial bounds are specified at window
+  // creation time.
+  ClientAreaSizeChanged();
+
+  delegate_->OnNativeWidgetCreated();
   return 0;
 }
 
@@ -709,9 +660,7 @@ LRESULT WidgetWin::OnKeyUp(UINT message, WPARAM w_param, LPARAM l_param) {
 }
 
 void WidgetWin::OnKillFocus(HWND focused_window) {
-  GetFocusManager()->GetWidgetFocusManager()->OnWidgetFocusEvent(
-      this->GetNativeView(),
-      focused_window);
+  delegate_->OnNativeBlur(focused_window);
   SetMsgHandled(FALSE);
 }
 
@@ -920,9 +869,7 @@ LRESULT WidgetWin::OnReflectedMessage(UINT msg,
 }
 
 void WidgetWin::OnSetFocus(HWND focused_window) {
-  GetFocusManager()->GetWidgetFocusManager()->OnWidgetFocusEvent(
-      focused_window,
-      this->GetNativeView());
+  delegate_->OnNativeFocus(focused_window);
   SetMsgHandled(FALSE);
 }
 
@@ -943,7 +890,7 @@ void WidgetWin::OnSettingChange(UINT flags, const wchar_t* section) {
 }
 
 void WidgetWin::OnSize(UINT param, const CSize& size) {
-  LayoutRootView();
+  SetMsgHandled(FALSE);
 }
 
 void WidgetWin::OnSysCommand(UINT notification_code, CPoint click) {
@@ -963,6 +910,8 @@ void WidgetWin::OnWindowPosChanging(WINDOWPOS* window_pos) {
 }
 
 void WidgetWin::OnWindowPosChanged(WINDOWPOS* window_pos) {
+  if (DidClientAreaSizeChange(window_pos))
+    ClientAreaSizeChanged();
   SetMsgHandled(FALSE);
 }
 
@@ -973,16 +922,6 @@ void WidgetWin::OnFinalMessage(HWND window) {
 
 ////////////////////////////////////////////////////////////////////////////////
 // WidgetWin, protected:
-
-gfx::Size WidgetWin::GetRootViewSize() const {
-  CRect rect;
-  if (use_layered_buffer_)
-    GetWindowRect(&rect);
-  else
-    GetClientRect(&rect);
-
-  return gfx::Size(rect.Width(), rect.Height());
-}
 
 void WidgetWin::TrackMouseEvents(DWORD mouse_tracking_flags) {
   // Begin tracking mouse events for this HWND so that we get WM_MOUSELEAVE
@@ -1096,18 +1035,6 @@ void WidgetWin::ProcessMouseExited() {
   active_mouse_tracking_flags_ = 0;
 }
 
-void WidgetWin::LayoutRootView() {
-  gfx::Size size(GetRootViewSize());
-
-  if (use_layered_buffer_)
-    SizeContents(size);
-
-  // Resizing changes the size of the view hierarchy and thus forces a
-  // complete relayout.
-  GetRootView()->SetBounds(0, 0, size.width(), size.height());
-  GetRootView()->SchedulePaint();
-}
-
 void WidgetWin::OnScreenReaderDetected() {
   screen_reader_active_ = true;
 }
@@ -1134,13 +1061,8 @@ Window* WidgetWin::GetWindowImpl(HWND hwnd) {
   return NULL;
 }
 
-void WidgetWin::SizeContents(const gfx::Size& window_size) {
-  layered_window_contents_.reset(new gfx::CanvasSkia(window_size.width(),
-                                                     window_size.height(),
-                                                     false));
-}
-
 RootView* WidgetWin::GetFocusedViewRootView() {
+  // TODO(beng): get rid of this
   FocusManager* focus_manager = GetFocusManager();
   if (!focus_manager) {
     NOTREACHED();
@@ -1155,15 +1077,16 @@ RootView* WidgetWin::GetFocusedViewRootView() {
 // static
 void WidgetWin::PostProcessActivateMessage(WidgetWin* widget,
                                            int activation_state) {
-  if (!widget->focus_manager_.get()) {
+  if (!widget->delegate_->HasFocusManager()) {
     NOTREACHED();
     return;
   }
+  FocusManager* focus_manager = widget->GetWidget()->GetFocusManager();
   if (WA_INACTIVE == activation_state) {
     // We might get activated/inactivated without being enabled, so we need to
     // clear restore_focus_when_enabled_.
     widget->restore_focus_when_enabled_ = false;
-    widget->focus_manager_->StoreFocusedView();
+    focus_manager->StoreFocusedView();
   } else {
     // We must restore the focus after the message has been DefProc'ed as it
     // does set the focus to the last focused HWND.
@@ -1178,7 +1101,7 @@ void WidgetWin::PostProcessActivateMessage(WidgetWin* widget,
       widget->restore_focus_when_enabled_ = true;
       return;
     }
-    widget->focus_manager_->RestoreFocusedView();
+    focus_manager->RestoreFocusedView();
   }
 }
 
@@ -1228,6 +1151,17 @@ void WidgetWin::RedrawLayeredWindowContents() {
   UpdateLayeredWindow(hwnd(), NULL, &position, &size, dib_dc, &zero,
                       RGB(0xFF, 0xFF, 0xFF), &blend, ULW_ALPHA);
   layered_window_invalid_rect_.SetRect(0, 0, 0, 0);
+}
+
+void WidgetWin::ClientAreaSizeChanged() {
+  RECT r;
+  GetClientRect(&r);
+  gfx::Size s(r.right - r.left, r.bottom - r.top);
+  delegate_->OnSizeChanged(s);
+  if (use_layered_buffer_) {
+    layered_window_contents_.reset(
+        new gfx::CanvasSkia(s.width(), s.height(), false));
+  }
 }
 
 ////////////////////////////////////////////////////////////////////////////////

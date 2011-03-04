@@ -596,11 +596,6 @@ void WindowWin::FrameTypeChanged() {
                SWP_FRAMECHANGED | SWP_NOSIZE | SWP_NOMOVE | SWP_NOZORDER |
                    SWP_NOOWNERZORDER | SWP_NOACTIVATE);
 
-  // The frame type change results in the client rect changing size, but this
-  // does not explicitly send a WM_SIZE, so we need to force the root view to
-  // be resized now.
-  LayoutRootView();
-
   // Update the non-client view with the correct frame view for the active frame
   // type.
   non_client_view_->UpdateFrame();
@@ -717,7 +712,7 @@ gfx::Insets WindowWin::GetClientAreaInsets() const {
   // something else. If the client area is not the window rect in both
   // modes, the blackness doesn't occur. Because of this, we need to tell
   // the RootView to lay out to fit the window rect, rather than the client
-  // rect when using the opaque frame. See GetRootViewSize.
+  // rect when using the opaque frame.
   // Note: this is only required for non-fullscreen windows. Note that
   // fullscreen windows are in restored state, not maximized.
   return gfx::Insets(0, 0, IsFullscreen() ? 0 : 1, 0);
@@ -1101,7 +1096,6 @@ void WindowWin::OnSize(UINT size_param, const CSize& new_size) {
   // and maximized bounds are the same, then we need to layout (because we
   // layout differently when maximized).
   SaveWindowPosition();
-  LayoutRootView();
   RedrawWindow(GetNativeView(), NULL, NULL, RDW_INVALIDATE | RDW_ALLCHILDREN);
 
   // ResetWindowRegion is going to trigger WM_NCPAINT. By doing it after we've
@@ -1226,20 +1220,6 @@ void WindowWin::OnWindowPosChanging(WINDOWPOS* window_pos) {
   }
 
   WidgetWin::OnWindowPosChanging(window_pos);
-}
-
-gfx::Size WindowWin::GetRootViewSize() const {
-  // The native frame and maximized modes need to supply the client rect as
-  // determined by the relevant WM_NCCALCSIZE handling, so we just use the
-  // default handling which does this.
-  if (GetNonClientView()->UseNativeFrame() || IsMaximized())
-    return WidgetWin::GetRootViewSize();
-
-  // When using an opaque frame, we consider the entire window rect to be client
-  // area visually.
-  CRect rect;
-  GetWindowRect(&rect);
-  return gfx::Size(rect.Width(), rect.Height());
 }
 
 ////////////////////////////////////////////////////////////////////////////////

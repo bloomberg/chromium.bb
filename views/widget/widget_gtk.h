@@ -146,7 +146,7 @@ class WidgetGtk : public Widget,
   // size of other kinds of widgets.
   void GetRequestedSize(gfx::Size* out) const;
 
-  // Overriden from ui::ActiveWindowWatcherX::Observer.
+  // Overridden from ui::ActiveWindowWatcherX::Observer.
   virtual void ActiveWindowChanged(GdkWindow* active_window);
 
   // Overridden from Widget:
@@ -170,7 +170,6 @@ class WidgetGtk : public Widget,
   virtual bool GetAccelerator(int cmd_id, ui::Accelerator* accelerator);
   virtual Window* GetWindow();
   virtual const Window* GetWindow() const;
-  virtual FocusManager* GetFocusManager();
   virtual void ViewHierarchyChanged(bool is_add, View *parent,
                                     View *child);
 
@@ -281,12 +280,6 @@ class WidgetGtk : public Widget,
   // Are we a subclass of WindowGtk?
   bool is_window_;
 
-  // For test code to provide a customized focus manager.
-  void set_focus_manager(FocusManager* focus_manager) {
-    delete focus_manager_;
-    focus_manager_ = focus_manager;
-  }
-
  private:
   class DropObserver;
   friend class DropObserver;
@@ -343,12 +336,6 @@ class WidgetGtk : public Widget,
   scoped_ptr<TooltipManagerGtk> tooltip_manager_;
 
   scoped_ptr<DropTargetGtk> drop_target_;
-
-  // The focus manager keeping track of focus for this Widget and any of its
-  // children.  NULL for non top-level widgets.
-  // WARNING: RootView's destructor calls into the FocusManager. As such, this
-  // must be destroyed AFTER root_view_.
-  FocusManager* focus_manager_;
 
   // If true, the mouse is currently down.
   bool is_mouse_down_;

@@ -102,12 +102,6 @@ class Widget : public internal::NativeWidgetDelegate,
   // the caller is responsible for populating the RootView, and sizing its
   // contents as the window is sized.
   virtual void Init(gfx::NativeView parent, const gfx::Rect& bounds);
-
-  // Initialize the widget with a views::Widget parent and an initial
-  // desired size.  This internally invokes |Init(gfx::NativeView,
-  // const gfx::Rect&)| but it determines the correct native view
-  // for each platform and the type of widget. Passing NULL to
-  // |parent| is same as invoking |Init(NULL, bounds)|.
   virtual void InitWithWidget(Widget* parent, const gfx::Rect& bounds);
 
   // Returns the topmost Widget in a hierarchy. Will return NULL if called
@@ -242,10 +236,17 @@ class Widget : public internal::NativeWidgetDelegate,
 
   NativeWidget* native_widget() { return native_widget_; }
 
+  // Overridden from NativeWidgetDelegate:
+  virtual void OnNativeFocus(gfx::NativeView focused_view) OVERRIDE;
+  virtual void OnNativeBlur(gfx::NativeView focused_view) OVERRIDE;
+  virtual void OnNativeWidgetCreated() OVERRIDE;
+  virtual void OnSizeChanged(const gfx::Size& new_size) OVERRIDE;
+  virtual bool HasFocusManager() const OVERRIDE;
+
   // Overridden from FocusTraversable:
-  virtual FocusSearch* GetFocusSearch();
-  virtual FocusTraversable* GetFocusTraversableParent();
-  virtual View* GetFocusTraversableParentView();
+  virtual FocusSearch* GetFocusSearch() OVERRIDE;
+  virtual FocusTraversable* GetFocusTraversableParent() OVERRIDE;
+  virtual View* GetFocusTraversableParentView() OVERRIDE;
 
  protected:
   // Creates the RootView to be used within this Widget. Subclasses may override
@@ -264,6 +265,9 @@ class Widget : public internal::NativeWidgetDelegate,
     native_widget_ = native_widget;
   }
 
+  // Used for testing.
+  void ReplaceFocusManager(FocusManager* focus_manager);
+
  private:
   NativeWidget* native_widget_;
 
@@ -275,6 +279,12 @@ class Widget : public internal::NativeWidgetDelegate,
   // WARNING: see warning in tooltip_manager_ for ordering dependencies with
   // this and tooltip_manager_.
   scoped_ptr<RootView> root_view_;
+
+  // The focus manager keeping track of focus for this Widget and any of its
+  // children.  NULL for non top-level widgets.
+  // WARNING: RootView's destructor calls into the FocusManager. As such, this
+  // must be destroyed AFTER root_view_. This is enforced in DestroyRootView().
+  scoped_ptr<FocusManager> focus_manager_;
 
   // A theme provider to use when no other theme provider is specified.
   scoped_ptr<DefaultThemeProvider> default_theme_provider_;

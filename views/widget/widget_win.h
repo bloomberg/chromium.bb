@@ -89,9 +89,6 @@ class WidgetWin : public ui::WindowImpl,
   // Returns the Widget associated with the specified HWND (if any).
   static WidgetWin* GetWidget(HWND hwnd);
 
-  // Returns the root Widget associated with the specified HWND (if any).
-  static WidgetWin* GetRootWidget(HWND hwnd);
-
   // Returns true if we are on Windows Vista or greater and composition is
   // enabled.
   static bool IsAeroGlassEnabled();
@@ -121,30 +118,29 @@ class WidgetWin : public ui::WindowImpl,
   void ClearAccessibilityViewEvent(View* view);
 
   // Overridden from Widget:
-  virtual void Init(gfx::NativeView parent, const gfx::Rect& bounds);
-  virtual void InitWithWidget(Widget* parent, const gfx::Rect& bounds);
-  virtual void SetBounds(const gfx::Rect& bounds);
-  virtual void MoveAbove(Widget* other);
-  virtual void SetShape(gfx::NativeRegion region);
-  virtual void Close();
-  virtual void CloseNow();
-  virtual void Show();
-  virtual void Hide();
-  virtual gfx::NativeView GetNativeView() const;
-  virtual void SetOpacity(unsigned char opacity);
-  virtual void SetAlwaysOnTop(bool on_top);
-  virtual Widget* GetRootWidget() const;
-  virtual bool IsVisible() const;
-  virtual bool IsActive() const;
-  virtual bool IsAccessibleWidget() const;
+  virtual void Init(gfx::NativeView parent, const gfx::Rect& bounds) OVERRIDE;
+  virtual void InitWithWidget(Widget* parent, const gfx::Rect& bounds) OVERRIDE;
+  virtual void SetBounds(const gfx::Rect& bounds) OVERRIDE;
+  virtual void MoveAbove(Widget* other) OVERRIDE;
+  virtual void SetShape(gfx::NativeRegion region) OVERRIDE;
+  virtual void Close() OVERRIDE;
+  virtual void CloseNow() OVERRIDE;
+  virtual void Show() OVERRIDE;
+  virtual void Hide() OVERRIDE;
+  virtual gfx::NativeView GetNativeView() const OVERRIDE;
+  virtual void SetOpacity(unsigned char opacity) OVERRIDE;
+  virtual void SetAlwaysOnTop(bool on_top) OVERRIDE;
+  virtual bool IsVisible() const OVERRIDE;
+  virtual bool IsActive() const OVERRIDE;
+  virtual bool IsAccessibleWidget() const OVERRIDE;
   virtual void GenerateMousePressedForView(View* view,
-                                           const gfx::Point& point);
-  virtual bool GetAccelerator(int cmd_id, ui::Accelerator* accelerator);
-  virtual Window* GetWindow();
-  virtual const Window* GetWindow() const;
-  virtual FocusManager* GetFocusManager();
+                                           const gfx::Point& point) OVERRIDE;
+  virtual bool GetAccelerator(int cmd_id,
+                              ui::Accelerator* accelerator) OVERRIDE;
+  virtual Window* GetWindow() OVERRIDE;
+  virtual const Window* GetWindow() const OVERRIDE;
   virtual void ViewHierarchyChanged(bool is_add, View *parent,
-                                    View *child);
+                                    View *child) OVERRIDE;
 
   BOOL IsWindow() const {
     return ::IsWindow(GetNativeView());
@@ -422,9 +418,6 @@ class WidgetWin : public ui::WindowImpl,
   // behavior.
   virtual void OnFinalMessage(HWND window);
 
-  // Returns the size that the RootView should be set to in LayoutRootView().
-  virtual gfx::Size GetRootViewSize() const;
-
   // Start tracking all mouse events so that this window gets sent mouse leave
   // messages too.
   void TrackMouseEvents(DWORD mouse_tracking_flags);
@@ -441,10 +434,6 @@ class WidgetWin : public ui::WindowImpl,
   void ProcessMouseMoved(const CPoint& point, UINT flags, bool is_nonclient);
   void ProcessMouseExited();
 
-  // Lays out the root view to fit the appropriate area within the widget.
-  // Called when the window size or non client metrics change.
-  void LayoutRootView();
-
   // Called when a MSAA screen reader client is detected.
   virtual void OnScreenReaderDetected();
 
@@ -458,12 +447,6 @@ class WidgetWin : public ui::WindowImpl,
   scoped_ptr<TooltipManagerWin> tooltip_manager_;
 
   scoped_refptr<DropTargetWin> drop_target_;
-
-  // The focus manager keeping track of focus for this Widget and any of its
-  // children.  NULL for non top-level widgets.
-  // WARNING: RootView's destructor calls into the FocusManager. As such, this
-  // must be destroyed AFTER root_view_.
-  scoped_ptr<FocusManager> focus_manager_;
 
   // Whether or not we have capture the mouse.
   bool has_capture_;
@@ -480,14 +463,6 @@ class WidgetWin : public ui::WindowImpl,
   // Implementation of GetWindow. Ascends the parents of |hwnd| returning the
   // first ancestor that is a Window.
   static Window* GetWindowImpl(HWND hwnd);
-
-  // Resize the bitmap used to contain the contents of the layered window. This
-  // recreates the entire bitmap.
-  void SizeContents(const gfx::Size& window_size);
-
-  // Invoked from WM_DESTROY. Does appropriate cleanup and invokes OnDestroy
-  // so that subclasses can do any cleanup they need to.
-  // void OnDestroyImpl();
 
   // Returns the RootView that contains the focused view, or NULL if there is no
   // focused view.
@@ -508,6 +483,10 @@ class WidgetWin : public ui::WindowImpl,
   // Synchronously updates the invalid contents of the Widget. Valid for
   // layered windows only.
   void RedrawLayeredWindowContents();
+
+  // Responds to the client area changing size, either at window creation time
+  // or subsequently.
+  void ClientAreaSizeChanged();
 
   // A delegate implementation that handles events received here.
   internal::NativeWidgetDelegate* delegate_;

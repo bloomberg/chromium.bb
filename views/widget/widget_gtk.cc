@@ -263,7 +263,6 @@ WidgetGtk::WidgetGtk(Type type)
       type_(type),
       widget_(NULL),
       window_contents_(NULL),
-      focus_manager_(NULL),
       is_mouse_down_(false),
       has_capture_(false),
       last_mouse_event_was_move_(false),
@@ -290,9 +289,6 @@ WidgetGtk::WidgetGtk(Type type)
     if (loop)
       loop->AddObserver(DropObserver::GetInstance());
   }
-
-  if (type_ != TYPE_CHILD)
-    focus_manager_ = new FocusManager(this);
 }
 
 WidgetGtk::~WidgetGtk() {
@@ -300,16 +296,6 @@ WidgetGtk::~WidgetGtk() {
   DCHECK(delete_on_destroy_ || widget_ == NULL);
   if (type_ != TYPE_CHILD)
     ActiveWindowWatcherX::RemoveObserver(this);
-
-  // Defer focus manager's destruction. This is for the case when the
-  // focus manager is referenced by a child WidgetGtk (e.g. TabbedPane in a
-  // dialog). When gtk_widget_destroy is called on the parent, the destroy
-  // signal reaches parent first and then the child. Thus causing the parent
-  // WidgetGtk's dtor executed before the child's. If child's view hierarchy
-  // references this focus manager, it crashes. This will defer focus manager's
-  // destruction after child WidgetGtk's dtor.
-  if (focus_manager_)
-    MessageLoop::current()->DeleteSoon(FROM_HERE, focus_manager_);
 }
 
 GtkWindow* WidgetGtk::GetTransientParent() const {
@@ -506,6 +492,7 @@ void WidgetGtk::Init(GtkWidget* parent,
 
   // Make container here.
   CreateGtkWidget(parent, bounds);
+  delegate_->OnNativeWidgetCreated();
 
   if (opacity_ != 255)
     SetOpacity(opacity_);
@@ -751,32 +738,10 @@ const Window* WidgetGtk::GetWindow() const {
   return GetWindowImpl(widget_);
 }
 
-FocusManager* WidgetGtk::GetFocusManager() {
-  if (focus_manager_)
-    return focus_manager_;
-
-  Widget* widget = GetTopLevelWidget();
-  if (widget && widget != this)
-    return widget->GetFocusManager();
-  return NULL;
-}
-
 void WidgetGtk::ViewHierarchyChanged(bool is_add, View* parent, View* child) {
+  Widget::ViewHierarchyChanged(is_add, parent, child);
   if (drop_target_.get())
     drop_target_->ResetTargetViewIfEquals(child);
-
-  if (!is_add) {
-    if (child == dragged_view_)
-      dragged_view_ = NULL;
-
-    FocusManager* focus_manager = GetFocusManager();
-    if (focus_manager) {
-      if (focus_manager->GetFocusedView() == child)
-        focus_manager->SetFocusedView(NULL);
-      focus_manager->ViewRemoved(parent, child);
-    }
-    ViewStorage::GetInstance()->ViewRemoved(parent, child);
-  }
 }
 
 void WidgetGtk::ClearNativeFocus() {
@@ -789,7 +754,7 @@ void WidgetGtk::ClearNativeFocus() {
 }
 
 bool WidgetGtk::HandleKeyboardEvent(GdkEventKey* event) {
-  if (!focus_manager_)
+  if (!GetFocusManager())
     return false;
 
   KeyEvent key(reinterpret_cast<NativeEvent>(event));
@@ -799,7 +764,7 @@ bool WidgetGtk::HandleKeyboardEvent(GdkEventKey* event) {
   // Always reset |should_handle_menu_key_release_| unless we are handling a
   // VKEY_MENU key release event. It ensures that VKEY_MENU accelerator can only
   // be activated when handling a VKEY_MENU key release event which is preceded
-  // by an unhandled VKEY_MENU key press event.
+  // by an un-handled VKEY_MENU key press event.
   if (key_code != ui::VKEY_MENU || event->type != GDK_KEY_RELEASE)
     should_handle_menu_key_release_ = false;
 
@@ -807,7 +772,7 @@ bool WidgetGtk::HandleKeyboardEvent(GdkEventKey* event) {
     // VKEY_MENU is triggered by key release event.
     // FocusManager::OnKeyEvent() returns false when the key has been consumed.
     if (key_code != ui::VKEY_MENU)
-      handled = !focus_manager_->OnKeyEvent(key);
+      handled = !GetFocusManager()->OnKeyEvent(key);
     else
       should_handle_menu_key_release_ = true;
   } else if (key_code == ui::VKEY_MENU && should_handle_menu_key_release_ &&
@@ -815,7 +780,7 @@ bool WidgetGtk::HandleKeyboardEvent(GdkEventKey* event) {
     // Trigger VKEY_MENU when only this key is pressed and released, and both
     // press and release events are not handled by others.
     Accelerator accelerator(ui::VKEY_MENU, false, false, false);
-    handled = focus_manager_->ProcessAccelerator(accelerator);
+    handled = GetFocusManager()->ProcessAccelerator(accelerator);
   }
 
   return handled;
@@ -946,8 +911,7 @@ void WidgetGtk::OnSizeAllocate(GtkWidget* widget, GtkAllocation* allocation) {
   if (new_size == size_)
     return;
   size_ = new_size;
-  GetRootView()->SetBounds(0, 0, allocation->width, allocation->height);
-  GetRootView()->SchedulePaint();
+  delegate_->OnSizeChanged(size_);
 }
 
 gboolean WidgetGtk::OnPaint(GtkWidget* widget, GdkEventExpose* event) {
@@ -1157,7 +1121,7 @@ gboolean WidgetGtk::OnFocusIn(GtkWidget* widget, GdkEventFocus* event) {
     got_initial_focus_in_ = true;
     SetInitialFocus();
   } else {
-    focus_manager_->RestoreFocusedView();
+    GetFocusManager()->RestoreFocusedView();
   }
   return false;
 }
@@ -1171,7 +1135,7 @@ gboolean WidgetGtk::OnFocusOut(GtkWidget* widget, GdkEventFocus* event) {
     return false;
 
   // The top-level window lost focus, store the focused view.
-  focus_manager_->StoreFocusedView();
+  GetFocusManager()->StoreFocusedView();
   return false;
 }
 

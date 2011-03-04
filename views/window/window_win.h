@@ -154,7 +154,6 @@ class WindowWin : public WidgetWin,
   virtual void OnWindowPosChanging(WINDOWPOS* window_pos);
   virtual Window* GetWindow() { return this; }
   virtual const Window* GetWindow() const { return this; }
-  virtual gfx::Size GetRootViewSize() const;
 
   // Accessor for disable_inactive_rendering_.
   bool disable_inactive_rendering() const {
