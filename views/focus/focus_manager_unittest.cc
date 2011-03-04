@@ -1681,7 +1681,7 @@ class FocusManagerDtorTest : public FocusManagerTest {
       set_focus_manager(tracked_focus_manager_);
 
       GetNonClientView()->SetFrameView(CreateFrameViewForWindow());
-      Init(NULL, gfx::Rect(0, 0, 100, 100));
+      InitWindow(NULL, gfx::Rect(0, 0, 100, 100));
     }
 
     virtual ~WindowGtkDtorTracked() {
