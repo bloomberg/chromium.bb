@@ -37,7 +37,6 @@
 #include "grit/generated_resources.h"
 #include "net/base/escape.h"
 #include "ui/base/animation/animation.h"
-#include "ui/gfx/rect.h"
 #include "webkit/glue/window_open_disposition.h"
 
 namespace {
@@ -301,38 +300,28 @@ void AppLauncherHandler::HandleGetApps(const ListValue* args) {
 
 void AppLauncherHandler::HandleLaunchApp(const ListValue* args) {
   std::string extension_id;
-  std::string source;
-  double left;
-  double top;
-  double width;
-  double height;
-  bool alt_key;
-  bool ctrl_key;
-  bool meta_key;
-  bool shift_key;
-  double button;
+  double source = -1.0;
+  bool alt_key = false;
+  bool ctrl_key = false;
+  bool meta_key = false;
+  bool shift_key = false;
+  double button = 0.0;
 
   CHECK(args->GetString(0, &extension_id));
-  CHECK(args->GetString(1, &source));
-  CHECK(args->GetDouble(2, &left));
-  CHECK(args->GetDouble(3, &top));
-  CHECK(args->GetDouble(4, &width));
-  CHECK(args->GetDouble(5, &height));
-  CHECK(args->GetBoolean(6, &alt_key));
-  CHECK(args->GetBoolean(7, &ctrl_key));
-  CHECK(args->GetBoolean(8, &meta_key));
-  CHECK(args->GetBoolean(9, &shift_key));
-  CHECK(args->GetDouble(10, &button));
+  CHECK(args->GetDouble(1, &source));
+  if (args->GetSize() > 2) {
+      CHECK(args->GetBoolean(2, &alt_key));
+      CHECK(args->GetBoolean(3, &ctrl_key));
+      CHECK(args->GetBoolean(4, &meta_key));
+      CHECK(args->GetBoolean(5, &shift_key));
+      CHECK(args->GetDouble(6, &button));
+  }
 
-  extension_misc::AppLaunchBucket launch_bucket = ParseLaunchSource(source);
-
-  // The rect we get from the client is relative to the browser client viewport.
-  // Offset the rect by the tab contents bounds.
-  gfx::Rect rect(static_cast<int>(left), static_cast<int>(top),
-                 static_cast<int>(width), static_cast<int>(height));
-  gfx::Rect tab_contents_bounds;
-  web_ui_->tab_contents()->GetContainerBounds(&tab_contents_bounds);
-  rect.Offset(tab_contents_bounds.origin());
+  extension_misc::AppLaunchBucket launch_bucket =
+      static_cast<extension_misc::AppLaunchBucket>(
+          static_cast<int>(source));
+  CHECK(launch_bucket >= 0 &&
+        launch_bucket < extension_misc::APP_LAUNCH_BUCKET_BOUNDARY);
 
   const Extension* extension =
       extensions_service_->GetExtensionById(extension_id, false);

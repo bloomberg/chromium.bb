@@ -134,11 +134,7 @@ function appsPrefChangeCallback(data) {
 // Launches the specified app using the APP_LAUNCH_NTP_APP_RE_ENABLE histogram.
 // This should only be invoked from the AppLauncherHandler.
 function launchAppAfterEnable(appId) {
-  // TODO(jstritar): We can simplify the args to
-  // [appId, APP_LAUNCH.NTP_APP_RE_ENABLE] once this CL
-  // lands: http://codereview.chromium.org/6573003/
-  chrome.send('launchApp', [appId, String(APP_LAUNCH.NTP_APP_RE_ENABLE), 0,
-                            0, 0, 0, false, false, false, false, 0]);
+  chrome.send('launchApp', [appId, APP_LAUNCH.NTP_APP_RE_ENABLE]);
 }
 
 var apps = (function() {
@@ -165,50 +161,15 @@ var apps = (function() {
    *     the tab's disposition.
    */
   function launchApp(appId, opt_mouseEvent) {
-    var appsSection = $('apps');
-    var expanded = !appsSection.classList.contains('collapsed');
-    var element = document.querySelector(
-        (expanded ? '.maxiview' : '.miniview') + ' a[app-id=' + appId + ']');
-
-    // TODO(arv): Handle zoom?
-    var rect = element.getBoundingClientRect();
-    var cs = getComputedStyle(element);
-    var size = cs.backgroundSize.split(/\s+/);  // background-size has the
-                                                // format '123px 456px'.
-
-    var width = parseInt(size[0], 10);
-    var height = parseInt(size[1], 10);
-
-    var top, left;
-    if (expanded) {
-      // We are using background-position-x 50%.
-      top = rect.top + parseInt(cs.backgroundPositionY, 10);
-      left = rect.left + ((rect.width - width) >> 1);  // Integer divide by 2.
-
-    } else {
-      // We are using background-position-y 50%.
-      top = rect.top + ((rect.height - width) >> 1);  // Integer divide by 2.
-      if (getComputedStyle(element).direction == 'rtl')
-        left = rect.left + rect.width - width;
-      else
-        left = rect.left;
-    }
-
+    var args = [appId, getAppLaunchType()];
     if (opt_mouseEvent) {
-      // Launch came from a click.
-      chrome.send('launchApp', [appId, String(getAppLaunchType()),
-                                left, top, width, height,
-                                opt_mouseEvent.altKey, opt_mouseEvent.ctrlKey,
-                                opt_mouseEvent.metaKey, opt_mouseEvent.shiftKey,
-                                opt_mouseEvent.button]);
-    } else {
-      // Launch came from 'command' event from elsewhere in UI.
-      chrome.send('launchApp', [appId, String(getAppLaunchType()),
-                                left, top, width, height,
-                                false /* altKey */, false /* ctrlKey */,
-                                false /* metaKey */, false /* shiftKey */,
-                                0 /* button */]);
+      // Launch came from a click - add details of the click
+      // Otherwise it came from a 'command' event from elsewhere in the UI.
+      args.push(opt_mouseEvent.altKey, opt_mouseEvent.ctrlKey,
+                opt_mouseEvent.metaKey, opt_mouseEvent.shiftKey,
+                opt_mouseEvent.button);
     }
+    chrome.send('launchApp', args);
   }
 
   function isAppsMenu(node) {
