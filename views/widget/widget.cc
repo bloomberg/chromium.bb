@@ -25,6 +25,8 @@ Widget::Widget()
 Widget::~Widget() {
 }
 
+// Unconverted methods (see header) --------------------------------------------
+
 void Widget::Init(gfx::NativeView parent, const gfx::Rect& bounds) {
   GetRootView();
   default_theme_provider_.reset(new DefaultThemeProvider);
@@ -32,6 +34,42 @@ void Widget::Init(gfx::NativeView parent, const gfx::Rect& bounds) {
 
 void Widget::InitWithWidget(Widget* parent, const gfx::Rect& bounds) {
 }
+
+gfx::NativeView Widget::GetNativeView() const {
+  return NULL;
+}
+
+void Widget::GenerateMousePressedForView(View* view, const gfx::Point& point) {
+}
+
+bool Widget::GetAccelerator(int cmd_id, ui::Accelerator* accelerator) {
+  return false;
+}
+
+Window* Widget::GetWindow() {
+  return NULL;
+}
+
+const Window* Widget::GetWindow() const {
+  return NULL;
+}
+
+void Widget::ViewHierarchyChanged(bool is_add, View* parent, View* child) {
+  if (!is_add) {
+    if (child == dragged_view_)
+      dragged_view_ = NULL;
+
+    FocusManager* focus_manager = GetFocusManager();
+    if (focus_manager) {
+      if (focus_manager->GetFocusedView() == child)
+        focus_manager->SetFocusedView(NULL);
+      focus_manager->ViewRemoved(parent, child);
+    }
+    ViewStorage::GetInstance()->ViewRemoved(parent, child);
+  }
+}
+
+// Converted methods (see header) ----------------------------------------------
 
 Widget* Widget::GetTopLevelWidget() {
   return const_cast<Widget*>(
@@ -57,34 +95,39 @@ gfx::Rect Widget::GetClientAreaScreenBounds() const {
 }
 
 void Widget::SetBounds(const gfx::Rect& bounds) {
+  native_widget_->SetBounds(bounds);
 }
 
 void Widget::MoveAbove(Widget* widget) {
+  native_widget_->MoveAbove(widget);
 }
 
 void Widget::SetShape(gfx::NativeRegion shape) {
+  native_widget_->SetShape(shape);
 }
 
 void Widget::Close() {
+  native_widget_->Close();
 }
 
 void Widget::CloseNow() {
+  native_widget_->CloseNow();
 }
 
 void Widget::Show() {
+  native_widget_->Show();
 }
 
 void Widget::Hide() {
-}
-
-gfx::NativeView Widget::GetNativeView() const {
-  return NULL;
+  native_widget_->Hide();
 }
 
 void Widget::SetOpacity(unsigned char opacity) {
+  native_widget_->SetOpacity(opacity);
 }
 
 void Widget::SetAlwaysOnTop(bool on_top) {
+  native_widget_->SetAlwaysOnTop(on_top);
 }
 
 RootView* Widget::GetRootView() {
@@ -96,30 +139,15 @@ RootView* Widget::GetRootView() {
 }
 
 bool Widget::IsVisible() const {
-  return false;
+  return native_widget_->IsVisible();
 }
 
 bool Widget::IsActive() const {
-  return false;
+  return native_widget_->IsActive();
 }
 
 bool Widget::IsAccessibleWidget() const {
-  return false;
-}
-
-void Widget::GenerateMousePressedForView(View* view, const gfx::Point& point) {
-}
-
-bool Widget::GetAccelerator(int cmd_id, ui::Accelerator* accelerator) {
-  return false;
-}
-
-Window* Widget::GetWindow() {
-  return NULL;
-}
-
-const Window* Widget::GetWindow() const {
-  return NULL;
+  return native_widget_->IsAccessibleWidget();
 }
 
 ThemeProvider* Widget::GetThemeProvider() const {
@@ -144,21 +172,6 @@ FocusManager* Widget::GetFocusManager() {
     return toplevel_widget->focus_manager_.get();
 
   return focus_manager_.get();
-}
-
-void Widget::ViewHierarchyChanged(bool is_add, View* parent, View* child) {
-  if (!is_add) {
-    if (child == dragged_view_)
-      dragged_view_ = NULL;
-
-    FocusManager* focus_manager = GetFocusManager();
-    if (focus_manager) {
-      if (focus_manager->GetFocusedView() == child)
-        focus_manager->SetFocusedView(NULL);
-      focus_manager->ViewRemoved(parent, child);
-    }
-    ViewStorage::GetInstance()->ViewRemoved(parent, child);
-  }
 }
 
 bool Widget::ContainsNativeView(gfx::NativeView native_view) {

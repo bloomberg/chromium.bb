@@ -152,19 +152,7 @@ class WidgetGtk : public Widget,
   // Overridden from Widget:
   virtual void Init(gfx::NativeView parent, const gfx::Rect& bounds);
   virtual void InitWithWidget(Widget* parent, const gfx::Rect& bounds);
-  virtual void SetBounds(const gfx::Rect& bounds);
-  virtual void MoveAbove(Widget* other);
-  virtual void SetShape(gfx::NativeRegion region);
-  virtual void Close();
-  virtual void CloseNow();
-  virtual void Show();
-  virtual void Hide();
   virtual gfx::NativeView GetNativeView() const;
-  virtual void SetOpacity(unsigned char opacity);
-  virtual void SetAlwaysOnTop(bool on_top);
-  virtual bool IsVisible() const;
-  virtual bool IsActive() const;
-  virtual bool IsAccessibleWidget() const;
   virtual void GenerateMousePressedForView(View* view,
                                            const gfx::Point& point);
   virtual bool GetAccelerator(int cmd_id, ui::Accelerator* accelerator);
@@ -193,6 +181,18 @@ class WidgetGtk : public Widget,
   virtual TooltipManager* GetTooltipManager() const OVERRIDE;
   virtual gfx::Rect GetWindowScreenBounds() const OVERRIDE;
   virtual gfx::Rect GetClientAreaScreenBounds() const OVERRIDE;
+  virtual void SetBounds(const gfx::Rect& bounds) OVERRIDE;
+  virtual void MoveAbove(Widget* widget) OVERRIDE;
+  virtual void SetShape(gfx::NativeRegion shape) OVERRIDE;
+  virtual void Close() OVERRIDE;
+  virtual void CloseNow() OVERRIDE;
+  virtual void Show() OVERRIDE;
+  virtual void Hide() OVERRIDE;
+  virtual void SetOpacity(unsigned char opacity) OVERRIDE;
+  virtual void SetAlwaysOnTop(bool on_top) OVERRIDE;
+  virtual bool IsVisible() const OVERRIDE;
+  virtual bool IsActive() const OVERRIDE;
+  virtual bool IsAccessibleWidget() const OVERRIDE;
   virtual bool ContainsNativeView(gfx::NativeView native_view) const OVERRIDE;
   virtual void RunShellDrag(View* view,
                             const ui::OSExchangeData& data,

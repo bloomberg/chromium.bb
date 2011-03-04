@@ -120,19 +120,7 @@ class WidgetWin : public ui::WindowImpl,
   // Overridden from Widget:
   virtual void Init(gfx::NativeView parent, const gfx::Rect& bounds) OVERRIDE;
   virtual void InitWithWidget(Widget* parent, const gfx::Rect& bounds) OVERRIDE;
-  virtual void SetBounds(const gfx::Rect& bounds) OVERRIDE;
-  virtual void MoveAbove(Widget* other) OVERRIDE;
-  virtual void SetShape(gfx::NativeRegion region) OVERRIDE;
-  virtual void Close() OVERRIDE;
-  virtual void CloseNow() OVERRIDE;
-  virtual void Show() OVERRIDE;
-  virtual void Hide() OVERRIDE;
   virtual gfx::NativeView GetNativeView() const OVERRIDE;
-  virtual void SetOpacity(unsigned char opacity) OVERRIDE;
-  virtual void SetAlwaysOnTop(bool on_top) OVERRIDE;
-  virtual bool IsVisible() const OVERRIDE;
-  virtual bool IsActive() const OVERRIDE;
-  virtual bool IsAccessibleWidget() const OVERRIDE;
   virtual void GenerateMousePressedForView(View* view,
                                            const gfx::Point& point) OVERRIDE;
   virtual bool GetAccelerator(int cmd_id,
@@ -218,6 +206,18 @@ class WidgetWin : public ui::WindowImpl,
   virtual TooltipManager* GetTooltipManager() const OVERRIDE;
   virtual gfx::Rect GetWindowScreenBounds() const OVERRIDE;
   virtual gfx::Rect GetClientAreaScreenBounds() const OVERRIDE;
+  virtual void SetBounds(const gfx::Rect& bounds) OVERRIDE;
+  virtual void MoveAbove(Widget* widget) OVERRIDE;
+  virtual void SetShape(gfx::NativeRegion shape) OVERRIDE;
+  virtual void Close() OVERRIDE;
+  virtual void CloseNow() OVERRIDE;
+  virtual void Show() OVERRIDE;
+  virtual void Hide() OVERRIDE;
+  virtual void SetOpacity(unsigned char opacity) OVERRIDE;
+  virtual void SetAlwaysOnTop(bool on_top) OVERRIDE;
+  virtual bool IsVisible() const OVERRIDE;
+  virtual bool IsActive() const OVERRIDE;
+  virtual bool IsAccessibleWidget() const OVERRIDE;
   virtual bool ContainsNativeView(gfx::NativeView native_view) const OVERRIDE;
   virtual void RunShellDrag(View* view,
                             const ui::OSExchangeData& data,

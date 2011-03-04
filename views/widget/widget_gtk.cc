@@ -597,127 +597,8 @@ void WidgetGtk::Init(GtkWidget* parent,
   }
 }
 
-void WidgetGtk::SetBounds(const gfx::Rect& bounds) {
-  if (type_ == TYPE_CHILD) {
-    GtkWidget* parent = gtk_widget_get_parent(widget_);
-    if (GTK_IS_VIEWS_FIXED(parent)) {
-      WidgetGtk* parent_widget = static_cast<WidgetGtk*>(
-          NativeWidget::GetNativeWidgetForNativeView(parent));
-      parent_widget->PositionChild(widget_, bounds.x(), bounds.y(),
-                                   bounds.width(), bounds.height());
-    } else {
-      DCHECK(GTK_IS_FIXED(parent))
-          << "Parent of WidgetGtk has to be Fixed or ViewsFixed";
-      // Just request the size if the parent is not WidgetGtk but plain
-      // GtkFixed. WidgetGtk does not know the minimum size so we assume
-      // the caller of the SetBounds knows exactly how big it wants to be.
-      gtk_widget_set_size_request(widget_, bounds.width(), bounds.height());
-      if (parent != null_parent_)
-        gtk_fixed_move(GTK_FIXED(parent), widget_, bounds.x(), bounds.y());
-    }
-  } else {
-    if (GTK_WIDGET_MAPPED(widget_)) {
-      // If the widget is mapped (on screen), we can move and resize with one
-      // call, which avoids two separate window manager steps.
-      gdk_window_move_resize(widget_->window, bounds.x(), bounds.y(),
-                             bounds.width(), bounds.height());
-    }
-
-    // Always call gtk_window_move and gtk_window_resize so that GtkWindow's
-    // geometry info is up-to-date.
-    GtkWindow* gtk_window = GTK_WINDOW(widget_);
-    // TODO: this may need to set an initial size if not showing.
-    // TODO: need to constrain based on screen size.
-    if (!bounds.IsEmpty()) {
-      gtk_window_resize(gtk_window, bounds.width(), bounds.height());
-    }
-    gtk_window_move(gtk_window, bounds.x(), bounds.y());
-  }
-}
-
-void WidgetGtk::MoveAbove(Widget* widget) {
-  DCHECK(widget_);
-  DCHECK(widget_->window);
-  // TODO(oshima): gdk_window_restack is not available in gtk2.0, so
-  // we're simply raising the window to the top. We should switch to
-  // gdk_window_restack when we upgrade gtk to 2.18 or up.
-  gdk_window_raise(widget_->window);
-}
-
-void WidgetGtk::SetShape(gfx::NativeRegion region) {
-  DCHECK(widget_);
-  DCHECK(widget_->window);
-  gdk_window_shape_combine_region(widget_->window, region, 0, 0);
-  gdk_region_destroy(region);
-}
-
-void WidgetGtk::Close() {
-  if (!widget_)
-    return;  // No need to do anything.
-
-  // Hide first.
-  Hide();
-  if (close_widget_factory_.empty()) {
-    // And we delay the close just in case we're on the stack.
-    MessageLoop::current()->PostTask(FROM_HERE,
-        close_widget_factory_.NewRunnableMethod(
-            &WidgetGtk::CloseNow));
-  }
-}
-
-void WidgetGtk::CloseNow() {
-  if (widget_) {
-    gtk_widget_destroy(widget_);  // Triggers OnDestroy().
-  }
-}
-
-void WidgetGtk::Show() {
-  if (widget_) {
-    gtk_widget_show(widget_);
-    if (widget_->window)
-      gdk_window_raise(widget_->window);
-  }
-}
-
-void WidgetGtk::Hide() {
-  if (widget_) {
-    gtk_widget_hide(widget_);
-    if (widget_->window)
-      gdk_window_lower(widget_->window);
-  }
-}
-
 gfx::NativeView WidgetGtk::GetNativeView() const {
   return widget_;
-}
-
-void WidgetGtk::SetOpacity(unsigned char opacity) {
-  opacity_ = opacity;
-  if (widget_) {
-    // We can only set the opacity when the widget has been realized.
-    gdk_window_set_opacity(widget_->window, static_cast<gdouble>(opacity) /
-                           static_cast<gdouble>(255));
-  }
-}
-
-void WidgetGtk::SetAlwaysOnTop(bool on_top) {
-  DCHECK(type_ != TYPE_CHILD);
-  always_on_top_ = on_top;
-  if (widget_)
-    gtk_window_set_keep_above(GTK_WINDOW(widget_), on_top);
-}
-
-bool WidgetGtk::IsVisible() const {
-  return GTK_WIDGET_VISIBLE(widget_);
-}
-
-bool WidgetGtk::IsActive() const {
-  DCHECK(type_ != TYPE_CHILD);
-  return is_active_;
-}
-
-bool WidgetGtk::IsAccessibleWidget() const {
-  return false;
 }
 
 void WidgetGtk::GenerateMousePressedForView(View* view,
@@ -855,6 +736,125 @@ gfx::Rect WidgetGtk::GetClientAreaScreenBounds() const {
     h = widget_->allocation.height;
   }
   return gfx::Rect(x, y, w, h);
+}
+
+void WidgetGtk::SetBounds(const gfx::Rect& bounds) {
+  if (type_ == TYPE_CHILD) {
+    GtkWidget* parent = gtk_widget_get_parent(widget_);
+    if (GTK_IS_VIEWS_FIXED(parent)) {
+      WidgetGtk* parent_widget = static_cast<WidgetGtk*>(
+          NativeWidget::GetNativeWidgetForNativeView(parent));
+      parent_widget->PositionChild(widget_, bounds.x(), bounds.y(),
+                                   bounds.width(), bounds.height());
+    } else {
+      DCHECK(GTK_IS_FIXED(parent))
+          << "Parent of WidgetGtk has to be Fixed or ViewsFixed";
+      // Just request the size if the parent is not WidgetGtk but plain
+      // GtkFixed. WidgetGtk does not know the minimum size so we assume
+      // the caller of the SetBounds knows exactly how big it wants to be.
+      gtk_widget_set_size_request(widget_, bounds.width(), bounds.height());
+      if (parent != null_parent_)
+        gtk_fixed_move(GTK_FIXED(parent), widget_, bounds.x(), bounds.y());
+    }
+  } else {
+    if (GTK_WIDGET_MAPPED(widget_)) {
+      // If the widget is mapped (on screen), we can move and resize with one
+      // call, which avoids two separate window manager steps.
+      gdk_window_move_resize(widget_->window, bounds.x(), bounds.y(),
+                             bounds.width(), bounds.height());
+    }
+
+    // Always call gtk_window_move and gtk_window_resize so that GtkWindow's
+    // geometry info is up-to-date.
+    GtkWindow* gtk_window = GTK_WINDOW(widget_);
+    // TODO: this may need to set an initial size if not showing.
+    // TODO: need to constrain based on screen size.
+    if (!bounds.IsEmpty()) {
+      gtk_window_resize(gtk_window, bounds.width(), bounds.height());
+    }
+    gtk_window_move(gtk_window, bounds.x(), bounds.y());
+  }
+}
+
+void WidgetGtk::MoveAbove(Widget* widget) {
+  DCHECK(widget_);
+  DCHECK(widget_->window);
+  // TODO(oshima): gdk_window_restack is not available in gtk2.0, so
+  // we're simply raising the window to the top. We should switch to
+  // gdk_window_restack when we upgrade gtk to 2.18 or up.
+  gdk_window_raise(widget_->window);
+}
+
+void WidgetGtk::SetShape(gfx::NativeRegion region) {
+  DCHECK(widget_);
+  DCHECK(widget_->window);
+  gdk_window_shape_combine_region(widget_->window, region, 0, 0);
+  gdk_region_destroy(region);
+}
+
+void WidgetGtk::Close() {
+  if (!widget_)
+    return;  // No need to do anything.
+
+  // Hide first.
+  Hide();
+  if (close_widget_factory_.empty()) {
+    // And we delay the close just in case we're on the stack.
+    MessageLoop::current()->PostTask(FROM_HERE,
+        close_widget_factory_.NewRunnableMethod(
+            &WidgetGtk::CloseNow));
+  }
+}
+
+void WidgetGtk::CloseNow() {
+  if (widget_) {
+    gtk_widget_destroy(widget_);  // Triggers OnDestroy().
+  }
+}
+
+void WidgetGtk::Show() {
+  if (widget_) {
+    gtk_widget_show(widget_);
+    if (widget_->window)
+      gdk_window_raise(widget_->window);
+  }
+}
+
+void WidgetGtk::Hide() {
+  if (widget_) {
+    gtk_widget_hide(widget_);
+    if (widget_->window)
+      gdk_window_lower(widget_->window);
+  }
+}
+
+void WidgetGtk::SetOpacity(unsigned char opacity) {
+  opacity_ = opacity;
+  if (widget_) {
+    // We can only set the opacity when the widget has been realized.
+    gdk_window_set_opacity(widget_->window, static_cast<gdouble>(opacity) /
+      static_cast<gdouble>(255));
+  }
+}
+
+void WidgetGtk::SetAlwaysOnTop(bool on_top) {
+  DCHECK(type_ != TYPE_CHILD);
+  always_on_top_ = on_top;
+  if (widget_)
+    gtk_window_set_keep_above(GTK_WINDOW(widget_), on_top);
+}
+
+bool WidgetGtk::IsVisible() const {
+  return GTK_WIDGET_VISIBLE(widget_);
+}
+
+bool WidgetGtk::IsActive() const {
+  DCHECK(type_ != TYPE_CHILD);
+  return is_active_;
+}
+
+bool WidgetGtk::IsAccessibleWidget() const {
+  return false;
 }
 
 bool WidgetGtk::ContainsNativeView(gfx::NativeView native_view) const {

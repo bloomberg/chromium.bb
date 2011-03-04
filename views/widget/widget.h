@@ -94,6 +94,12 @@ class Widget : public internal::NativeWidgetDelegate,
 
   Widget();
 
+  // Unconverted methods -------------------------------------------------------
+
+  // TODO(beng):
+  // Widget subclasses are still implementing these methods by overriding from
+  // here rather than by implementing NativeWidget.
+
   // Initialize the Widget with a parent and an initial desired size.
   // |contents_view| is the view that will be the single child of RootView
   // within this Widget. As contents_view is inserted into RootView's tree,
@@ -103,6 +109,32 @@ class Widget : public internal::NativeWidgetDelegate,
   // contents as the window is sized.
   virtual void Init(gfx::NativeView parent, const gfx::Rect& bounds);
   virtual void InitWithWidget(Widget* parent, const gfx::Rect& bounds);
+
+  // Returns the gfx::NativeView associated with this Widget.
+  virtual gfx::NativeView GetNativeView() const;
+
+  // Starts a drag operation for the specified view. |point| is a position in
+  // |view| coordinates that the drag was initiated from.
+  virtual void GenerateMousePressedForView(View* view,
+                                           const gfx::Point& point);
+
+  // Returns the accelerator given a command id. Returns false if there is
+  // no accelerator associated with a given id, which is a common condition.
+  virtual bool GetAccelerator(int cmd_id, ui::Accelerator* accelerator);
+
+  // Returns the Window containing this Widget, or NULL if not contained in a
+  // window.
+  virtual Window* GetWindow();
+  virtual const Window* GetWindow() const;
+
+  // Forwarded from the RootView so that the widget can do any cleanup.
+  virtual void ViewHierarchyChanged(bool is_add, View* parent, View* child);
+
+  // Converted methods ---------------------------------------------------------
+
+  // TODO(beng):
+  // Widget subclasses are implementing these methods by implementing
+  // NativeWidget. Remove this comment once complete.
 
   // Returns the topmost Widget in a hierarchy. Will return NULL if called
   // before the underlying Native Widget has been initialized.
@@ -128,73 +160,55 @@ class Widget : public internal::NativeWidgetDelegate,
   gfx::Rect GetClientAreaScreenBounds() const;
 
   // Sizes and/or places the widget to the specified bounds, size or position.
-  virtual void SetBounds(const gfx::Rect& bounds);
+  void SetBounds(const gfx::Rect& bounds);
 
   // Places the widget in front of the specified widget in z-order.
-  virtual void MoveAbove(Widget* widget);
+  void MoveAbove(Widget* widget);
 
   // Sets a shape on the widget. This takes ownership of shape.
-  virtual void SetShape(gfx::NativeRegion shape);
+  void SetShape(gfx::NativeRegion shape);
 
   // Hides the widget then closes it after a return to the message loop.
-  virtual void Close();
+  void Close();
 
+  // TODO(beng): Move off public API.
   // Closes the widget immediately. Compare to |Close|. This will destroy the
   // window handle associated with this Widget, so should not be called from
   // any code that expects it to be valid beyond this call.
-  virtual void CloseNow();
+  void CloseNow();
 
   // Shows or hides the widget, without changing activation state.
-  virtual void Show();
-  virtual void Hide();
-
-  // Returns the gfx::NativeView associated with this Widget.
-  virtual gfx::NativeView GetNativeView() const;
+  void Show();
+  void Hide();
 
   // Sets the opacity of the widget. This may allow widgets behind the widget
   // in the Z-order to become visible, depending on the capabilities of the
   // underlying windowing system. Note that the caller must then schedule a
   // repaint to allow this change to take effect.
-  virtual void SetOpacity(unsigned char opacity);
+  void SetOpacity(unsigned char opacity);
 
   // Sets the widget to be on top of all other widgets in the windowing system.
-  virtual void SetAlwaysOnTop(bool on_top);
+  void SetAlwaysOnTop(bool on_top);
 
   // Returns the RootView contained by this Widget.
-  virtual RootView* GetRootView();
+  RootView* GetRootView();
 
   // Returns whether the Widget is visible to the user.
-  virtual bool IsVisible() const;
+  bool IsVisible() const;
 
   // Returns whether the Widget is the currently active window.
-  virtual bool IsActive() const;
+  bool IsActive() const;
 
   // Returns whether the Widget is customized for accessibility.
-  virtual bool IsAccessibleWidget() const;
-
-  // Starts a drag operation for the specified view. |point| is a position in
-  // |view| coordinates that the drag was initiated from.
-  virtual void GenerateMousePressedForView(View* view,
-                                           const gfx::Point& point);
-
-  // Returns the accelerator given a command id. Returns false if there is
-  // no accelerator associated with a given id, which is a common condition.
-  virtual bool GetAccelerator(int cmd_id, ui::Accelerator* accelerator);
-
-  // Returns the Window containing this Widget, or NULL if not contained in a
-  // window.
-  virtual Window* GetWindow();
-  virtual const Window* GetWindow() const;
+  bool IsAccessibleWidget() const;
 
   // Returns the ThemeProvider that provides theme resources for this Widget.
   virtual ThemeProvider* GetThemeProvider() const;
 
   // Returns the FocusManager for this widget.
   // Note that all widgets in a widget hierarchy share the same focus manager.
+  // TODO(beng): remove virtual.
   virtual FocusManager* GetFocusManager();
-
-  // Forwarded from the RootView so that the widget can do any cleanup.
-  virtual void ViewHierarchyChanged(bool is_add, View* parent, View* child);
 
   // Returns true if the native view |native_view| is contained in the
   // views::View hierarchy rooted at this widget.
@@ -221,7 +235,7 @@ class Widget : public internal::NativeWidgetDelegate,
   void SetCursor(gfx::NativeCursor cursor);
 
   // Retrieves the focus traversable for this widget.
-  virtual FocusTraversable* GetFocusTraversable();
+  FocusTraversable* GetFocusTraversable();
 
   // Notifies the view hierarchy contained in this widget that theme resources
   // changed.

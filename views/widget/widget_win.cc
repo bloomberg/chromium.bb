@@ -211,93 +211,8 @@ void WidgetWin::InitWithWidget(Widget* parent, const gfx::Rect& bounds) {
   Init(parent->GetNativeView(), bounds);
 }
 
-void WidgetWin::SetBounds(const gfx::Rect& bounds) {
-  LONG style = GetWindowLong(GWL_STYLE);
-  if (style & WS_MAXIMIZE)
-    SetWindowLong(GWL_STYLE, style & ~WS_MAXIMIZE);
-  SetWindowPos(NULL, bounds.x(), bounds.y(), bounds.width(), bounds.height(),
-               SWP_NOACTIVATE | SWP_NOZORDER);
-}
-
-void WidgetWin::MoveAbove(Widget* other) {
-  gfx::Rect bounds = GetClientAreaScreenBounds();
-  SetWindowPos(other->GetNativeView(), bounds.x(), bounds.y(),
-               bounds.width(), bounds.height(), SWP_NOACTIVATE);
-}
-
-void WidgetWin::SetShape(gfx::NativeRegion region) {
-  SetWindowRgn(region, TRUE);
-}
-
-void WidgetWin::Close() {
-  if (!IsWindow())
-    return;  // No need to do anything.
-
-  // Let's hide ourselves right away.
-  Hide();
-
-  if (close_widget_factory_.empty()) {
-    // And we delay the close so that if we are called from an ATL callback,
-    // we don't destroy the window before the callback returned (as the caller
-    // may delete ourselves on destroy and the ATL callback would still
-    // dereference us when the callback returns).
-    MessageLoop::current()->PostTask(FROM_HERE,
-        close_widget_factory_.NewRunnableMethod(
-            &WidgetWin::CloseNow));
-  }
-}
-
-void WidgetWin::CloseNow() {
-  // We may already have been destroyed if the selection resulted in a tab
-  // switch which will have reactivated the browser window and closed us, so
-  // we need to check to see if we're still a window before trying to destroy
-  // ourself.
-  if (IsWindow())
-    DestroyWindow(hwnd());
-}
-
-void WidgetWin::Show() {
-  if (IsWindow())
-    ShowWindow(SW_SHOWNOACTIVATE);
-}
-
-void WidgetWin::Hide() {
-  if (IsWindow()) {
-    // NOTE: Be careful not to activate any windows here (for example, calling
-    // ShowWindow(SW_HIDE) will automatically activate another window).  This
-    // code can be called while a window is being deactivated, and activating
-    // another window will screw up the activation that is already in progress.
-    SetWindowPos(NULL, 0, 0, 0, 0,
-                 SWP_HIDEWINDOW | SWP_NOACTIVATE | SWP_NOMOVE |
-                 SWP_NOREPOSITION | SWP_NOSIZE | SWP_NOZORDER);
-  }
-}
-
 gfx::NativeView WidgetWin::GetNativeView() const {
   return WindowImpl::hwnd();
-}
-
-void WidgetWin::SetOpacity(unsigned char opacity) {
-  layered_alpha_ = static_cast<BYTE>(opacity);
-}
-
-void WidgetWin::SetAlwaysOnTop(bool on_top) {
-  if (on_top)
-    set_window_ex_style(window_ex_style() | WS_EX_TOPMOST);
-  else
-    set_window_ex_style(window_ex_style() & ~WS_EX_TOPMOST);
-}
-
-bool WidgetWin::IsVisible() const {
-  return !!::IsWindowVisible(hwnd());
-}
-
-bool WidgetWin::IsActive() const {
-  return IsWindowActive(hwnd());
-}
-
-bool WidgetWin::IsAccessibleWidget() const {
-  return screen_reader_active_;
 }
 
 void WidgetWin::GenerateMousePressedForView(View* view,
@@ -370,6 +285,90 @@ gfx::Rect WidgetWin::GetClientAreaScreenBounds() const {
   POINT point = { r.left, r.top };
   ClientToScreen(hwnd(), &point);
   return gfx::Rect(point.x, point.y, r.right - r.left, r.bottom - r.top);
+}
+
+void WidgetWin::SetBounds(const gfx::Rect& bounds) {
+  LONG style = GetWindowLong(GWL_STYLE);
+  if (style & WS_MAXIMIZE)
+    SetWindowLong(GWL_STYLE, style & ~WS_MAXIMIZE);
+  SetWindowPos(NULL, bounds.x(), bounds.y(), bounds.width(), bounds.height(),
+               SWP_NOACTIVATE | SWP_NOZORDER);
+}
+
+void WidgetWin::MoveAbove(Widget* other) {
+  SetWindowPos(other->GetNativeView(), 0, 0, 0, 0,
+               SWP_NOSIZE | SWP_NOMOVE | SWP_NOACTIVATE);
+}
+
+void WidgetWin::SetShape(gfx::NativeRegion region) {
+  SetWindowRgn(region, TRUE);
+}
+
+void WidgetWin::Close() {
+  if (!IsWindow())
+    return;  // No need to do anything.
+
+  // Let's hide ourselves right away.
+  Hide();
+
+  if (close_widget_factory_.empty()) {
+    // And we delay the close so that if we are called from an ATL callback,
+    // we don't destroy the window before the callback returned (as the caller
+    // may delete ourselves on destroy and the ATL callback would still
+    // dereference us when the callback returns).
+    MessageLoop::current()->PostTask(FROM_HERE,
+        close_widget_factory_.NewRunnableMethod(
+            &WidgetWin::CloseNow));
+  }
+}
+
+void WidgetWin::CloseNow() {
+  // We may already have been destroyed if the selection resulted in a tab
+  // switch which will have reactivated the browser window and closed us, so
+  // we need to check to see if we're still a window before trying to destroy
+  // ourself.
+  if (IsWindow())
+    DestroyWindow(hwnd());
+}
+
+void WidgetWin::Show() {
+  if (IsWindow())
+    ShowWindow(SW_SHOWNOACTIVATE);
+}
+
+void WidgetWin::Hide() {
+  if (IsWindow()) {
+    // NOTE: Be careful not to activate any windows here (for example, calling
+    // ShowWindow(SW_HIDE) will automatically activate another window).  This
+    // code can be called while a window is being deactivated, and activating
+    // another window will screw up the activation that is already in progress.
+    SetWindowPos(NULL, 0, 0, 0, 0,
+                 SWP_HIDEWINDOW | SWP_NOACTIVATE | SWP_NOMOVE |
+                 SWP_NOREPOSITION | SWP_NOSIZE | SWP_NOZORDER);
+  }
+}
+
+void WidgetWin::SetOpacity(unsigned char opacity) {
+  layered_alpha_ = static_cast<BYTE>(opacity);
+}
+
+void WidgetWin::SetAlwaysOnTop(bool on_top) {
+  if (on_top)
+    set_window_ex_style(window_ex_style() | WS_EX_TOPMOST);
+  else
+    set_window_ex_style(window_ex_style() & ~WS_EX_TOPMOST);
+}
+
+bool WidgetWin::IsVisible() const {
+  return !!::IsWindowVisible(hwnd());
+}
+
+bool WidgetWin::IsActive() const {
+  return IsWindowActive(hwnd());
+}
+
+bool WidgetWin::IsAccessibleWidget() const {
+  return screen_reader_active_;
 }
 
 bool WidgetWin::ContainsNativeView(gfx::NativeView native_view) const {
