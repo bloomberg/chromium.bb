@@ -58,9 +58,9 @@ class BrowserView : public ::BrowserView,
   virtual void Paste();
 
   // views::ContextMenuController overrides.
-  virtual void ShowContextMenu(views::View* source,
-                               const gfx::Point& p,
-                               bool is_mouse_gesture);
+  virtual void ShowContextMenuForView(views::View* source,
+                                      const gfx::Point& p,
+                                      bool is_mouse_gesture);
 
   // views::MenuListener implementation.
   virtual void OnMenuOpened();

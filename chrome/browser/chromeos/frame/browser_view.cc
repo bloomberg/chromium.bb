@@ -305,9 +305,9 @@ void BrowserView::Paste() {
 }
 
 // views::ContextMenuController overrides.
-void BrowserView::ShowContextMenu(views::View* source,
-                                  const gfx::Point& p,
-                                  bool is_mouse_gesture) {
+void BrowserView::ShowContextMenuForView(views::View* source,
+                                         const gfx::Point& p,
+                                         bool is_mouse_gesture) {
   // Only show context menu if point is in unobscured parts of browser, i.e.
   // if NonClientHitTest returns :
   // - HTCAPTION: in title bar or unobscured part of tabstrip
