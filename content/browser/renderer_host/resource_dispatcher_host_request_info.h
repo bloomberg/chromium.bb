@@ -107,16 +107,6 @@ class ResourceDispatcherHostRequestInfo : public net::URLRequest::UserData {
   // Identifies the type of resource, such as subframe, media, etc.
   ResourceType::Type resource_type() const { return resource_type_; }
 
-  // Whether we should apply a filter to this resource that replaces
-  // localization templates with the appropriate localized strings.  This is set
-  // for CSS resources used by extensions.
-  bool replace_extension_localization_templates() const {
-    return replace_extension_localization_templates_;
-  }
-  void set_replace_extension_localization_templates() {
-    replace_extension_localization_templates_ = true;
-  }
-
   // Returns the last updated state of the load. This is updated periodically
   // by the ResourceDispatcherHost and tracked here so we don't send out
   // unnecessary state change notifications.
@@ -211,7 +201,6 @@ class ResourceDispatcherHostRequestInfo : public net::URLRequest::UserData {
   bool has_user_gesture_;
   int pause_count_;
   ResourceType::Type resource_type_;
-  bool replace_extension_localization_templates_;
   net::LoadState last_load_state_;
   uint64 upload_size_;
   uint64 last_upload_position_;

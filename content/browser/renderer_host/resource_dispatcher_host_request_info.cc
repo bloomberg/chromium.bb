@@ -34,7 +34,6 @@ ResourceDispatcherHostRequestInfo::ResourceDispatcherHostRequestInfo(
       has_user_gesture_(has_user_gesture),
       pause_count_(0),
       resource_type_(resource_type),
-      replace_extension_localization_templates_(false),
       last_load_state_(net::LOAD_STATE_IDLE),
       upload_size_(upload_size),
       last_upload_position_(0),

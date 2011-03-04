@@ -165,15 +165,12 @@ bool ShouldServiceRequest(ChildProcessInfo::ProcessType process_type,
 }
 
 void PopulateResourceResponse(net::URLRequest* request,
-                              bool replace_extension_localization_templates,
                               ResourceResponse* response) {
   response->response_head.status = request->status();
   response->response_head.request_time = request->request_time();
   response->response_head.response_time = request->response_time();
   response->response_head.headers = request->response_headers();
   request->GetCharset(&response->response_head.charset);
-  response->response_head.replace_extension_localization_templates =
-      replace_extension_localization_templates;
   response->response_head.content_length = request->GetExpectedContentSize();
   request->GetMimeType(&response->response_head.mime_type);
   response->response_head.was_fetched_via_spdy =
@@ -521,8 +518,6 @@ void ResourceDispatcherHost::BeginRequest(
           request_data.has_user_gesture,
           request_data.host_renderer_id,
           request_data.host_render_view_id);
-  ApplyExtensionLocalizationFilter(request_data.url, request_data.resource_type,
-                                   extra_info);
   SetRequestInfo(request, extra_info);  // Request takes ownership.
   chrome_browser_net::SetOriginPIDForRequest(
       request_data.origin_pid, request);
@@ -1026,8 +1021,7 @@ void ResourceDispatcherHost::OnReceivedRedirect(net::URLRequest* request,
   }
 
   scoped_refptr<ResourceResponse> response(new ResourceResponse);
-  PopulateResourceResponse(request,
-      info->replace_extension_localization_templates(), response);
+  PopulateResourceResponse(request, response);
   if (!info->resource_handler()->OnRequestRedirected(info->request_id(),
                                                      new_url,
                                                      response, defer_redirect))
@@ -1152,8 +1146,7 @@ bool ResourceDispatcherHost::CompleteResponseStarted(net::URLRequest* request) {
   ResourceDispatcherHostRequestInfo* info = InfoForRequest(request);
 
   scoped_refptr<ResourceResponse> response(new ResourceResponse);
-  PopulateResourceResponse(request,
-      info->replace_extension_localization_templates(), response);
+  PopulateResourceResponse(request, response);
 
   if (request->ssl_info().cert) {
     int cert_id =
@@ -1872,17 +1865,6 @@ bool ResourceDispatcherHost::IsValidRequest(net::URLRequest* request) {
   return pending_requests_.find(
       GlobalRequestID(info->child_id(), info->request_id())) !=
       pending_requests_.end();
-}
-
-// static
-void ResourceDispatcherHost::ApplyExtensionLocalizationFilter(
-    const GURL& url,
-    const ResourceType::Type& resource_type,
-    ResourceDispatcherHostRequestInfo* request_info) {
-  // Apply filter to chrome extension CSS files.
-  if (url.SchemeIs(chrome::kExtensionScheme) &&
-      resource_type == ResourceType::STYLESHEET)
-    request_info->set_replace_extension_localization_templates();
 }
 
 // static

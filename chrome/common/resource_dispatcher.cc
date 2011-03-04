@@ -12,7 +12,6 @@
 #include "base/message_loop.h"
 #include "base/shared_memory.h"
 #include "base/string_util.h"
-#include "chrome/common/extensions/extension_localization_peer.h"
 #include "chrome/common/render_messages.h"
 #include "chrome/common/render_messages_params.h"
 #include "chrome/common/resource_response.h"
@@ -327,14 +326,10 @@ void ResourceDispatcher::OnReceivedResponse(
   if (!request_info)
     return;
 
-  if (response_head.replace_extension_localization_templates) {
-    webkit_glue::ResourceLoaderBridge::Peer* new_peer =
-        ExtensionLocalizationPeer::CreateExtensionLocalizationPeer(
-            request_info->peer, message_sender(), response_head.mime_type,
-            request_info->url);
-    if (new_peer)
-      request_info->peer = new_peer;
-  }
+  webkit_glue::ResourceLoaderBridge::Peer* new_peer = webkit_glue::ReplacePeer(
+      request_info->peer, response_head.mime_type, request_info->url);
+  if (new_peer)
+    request_info->peer = new_peer;
 
   request_info->peer->OnReceivedResponse(response_head);
 }

@@ -24,7 +24,6 @@
 #include "webkit/glue/webcursor.h"
 #include "webkit/glue/webdropdata.h"
 #include "webkit/glue/webpreferences.h"
-#include "webkit/glue/webkit_glue.h"
 #include "webkit/glue/window_open_disposition.h"
 #include "webkit/plugins/npapi/gtk_plugin_container_manager.h"
 #include "webkit/plugins/npapi/plugin_list.h"

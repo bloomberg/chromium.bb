@@ -414,13 +414,6 @@ class ResourceDispatcherHost : public net::URLRequest::Delegate {
   // Returns true if |request| is in |pending_requests_|.
   bool IsValidRequest(net::URLRequest* request);
 
-  // Sets replace_extension_localization_templates on all text/css requests that
-  // have "chrome-extension://" scheme.
-  static void ApplyExtensionLocalizationFilter(
-      const GURL& url,
-      const ResourceType::Type& resource_type,
-      ResourceDispatcherHostRequestInfo* request_info);
-
   // Determine request priority based on how critical this resource typically
   // is to user-perceived page load performance.
   static net::RequestPriority DetermineRequestPriority(ResourceType::Type type);

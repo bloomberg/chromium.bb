@@ -693,9 +693,7 @@ void RenderMessageFilter::OnGetPluginsOnFileThread(
   std::vector<webkit::npapi::WebPluginInfo> plugins;
   webkit::npapi::PluginList::Singleton()->GetEnabledPlugins(refresh, &plugins);
   ViewHostMsg_GetPlugins::WriteReplyParams(reply_msg, plugins);
-  BrowserThread::PostTask(
-      BrowserThread::IO, FROM_HERE,
-      NewRunnableMethod(this, &RenderMessageFilter::Send, reply_msg));
+  Send(reply_msg);
 }
 
 void RenderMessageFilter::OnGetPluginInfo(int routing_id,
@@ -1335,10 +1333,7 @@ void RenderMessageFilter::OnKeygenOnWorkerThread(
   ViewHostMsg_Keygen::WriteReplyParams(
       reply_msg,
       keygen_handler.GenKeyAndSignChallenge());
-
-  BrowserThread::PostTask(
-      BrowserThread::IO, FROM_HERE,
-      NewRunnableMethod(this, &RenderMessageFilter::Send, reply_msg));
+  Send(reply_msg);
 }
 
 #if defined(USE_TCMALLOC)
@@ -1393,10 +1388,7 @@ void RenderMessageFilter::OnGetExtensionMessageBundleOnFileThread(
 
   ViewHostMsg_GetExtensionMessageBundle::WriteReplyParams(
       reply_msg, dictionary_map);
-
-  BrowserThread::PostTask(
-      BrowserThread::IO, FROM_HERE,
-      NewRunnableMethod(this, &RenderMessageFilter::Send, reply_msg));
+  Send(reply_msg);
 }
 
 void RenderMessageFilter::OnAsyncOpenFile(const IPC::Message& msg,

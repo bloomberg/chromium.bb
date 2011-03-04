@@ -1001,26 +1001,3 @@ class ApplyExtensionLocalizationFilterTest : public testing::Test {
   scoped_ptr<DummyResourceHandler> resource_handler_;
   scoped_ptr<ResourceDispatcherHostRequestInfo> request_info_;
 };
-
-TEST_F(ApplyExtensionLocalizationFilterTest, WrongScheme) {
-  url_.reset(new GURL("html://behllobkkfkfnphdnhnkndlbkcpglgmj/popup.html"));
-  ResourceDispatcherHost::ApplyExtensionLocalizationFilter(*url_,
-      resource_type_, request_info_.get());
-
-  EXPECT_FALSE(request_info_->replace_extension_localization_templates());
-}
-
-TEST_F(ApplyExtensionLocalizationFilterTest, GoodScheme) {
-  ResourceDispatcherHost::ApplyExtensionLocalizationFilter(*url_,
-      resource_type_, request_info_.get());
-
-  EXPECT_TRUE(request_info_->replace_extension_localization_templates());
-}
-
-TEST_F(ApplyExtensionLocalizationFilterTest, GoodSchemeWrongResourceType) {
-  resource_type_ = ResourceType::MAIN_FRAME;
-  ResourceDispatcherHost::ApplyExtensionLocalizationFilter(*url_,
-      resource_type_, request_info_.get());
-
-  EXPECT_FALSE(request_info_->replace_extension_localization_templates());
-}

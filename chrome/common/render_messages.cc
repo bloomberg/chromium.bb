@@ -516,7 +516,6 @@ void ParamTraits<webkit_glue::ResourceResponseInfo>::Log(
 void ParamTraits<ResourceResponseHead>::Write(Message* m, const param_type& p) {
   ParamTraits<webkit_glue::ResourceResponseInfo>::Write(m, p);
   WriteParam(m, p.status);
-  WriteParam(m, p.replace_extension_localization_templates);
 }
 
 bool ParamTraits<ResourceResponseHead>::Read(const Message* m,
@@ -524,8 +523,7 @@ bool ParamTraits<ResourceResponseHead>::Read(const Message* m,
                                              param_type* r) {
   return ParamTraits<webkit_glue::ResourceResponseInfo>::Read(
       m, iter, r) &&
-      ReadParam(m, iter, &r->status) &&
-      ReadParam(m, iter, &r->replace_extension_localization_templates);
+      ReadParam(m, iter, &r->status);
 }
 
 void ParamTraits<ResourceResponseHead>::Log(const param_type& p,

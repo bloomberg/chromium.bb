@@ -20,7 +20,6 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebCursorInfo.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebInputEvent.h"
 #include "ui/gfx/blit.h"
-#include "webkit/glue/webkit_glue.h"
 #include "webkit/plugins/npapi/gtk_plugin_container.h"
 #include "webkit/plugins/npapi/plugin_constants_win.h"
 #include "webkit/plugins/npapi/plugin_instance.h"

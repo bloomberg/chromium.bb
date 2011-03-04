@@ -13,7 +13,6 @@
 #include "googleurl/src/gurl.h"
 #include "grit/webkit_strings.h"
 #include "unicode/locid.h"
-#include "webkit/glue/webkit_glue.h"
 #include "webkit/plugins/npapi/default_plugin_shared.h"
 
 // TODO(thakis): Most methods in this class are stubbed out an need to be

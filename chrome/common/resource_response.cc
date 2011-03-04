@@ -4,8 +4,7 @@
 
 #include "chrome/common/resource_response.h"
 
-ResourceResponseHead::ResourceResponseHead()
-    : replace_extension_localization_templates(false) {
+ResourceResponseHead::ResourceResponseHead() {
 }
 
 ResourceResponseHead::~ResourceResponseHead() {}

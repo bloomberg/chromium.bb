@@ -22,11 +22,6 @@ struct ResourceResponseHead : webkit_glue::ResourceResponseInfo {
 
   // The response status.
   net::URLRequestStatus status;
-
-  // Whether we should apply a filter to this resource that replaces
-  // localization templates with the appropriate localized strings.  This is set
-  // for CSS resources used by extensions.
-  bool replace_extension_localization_templates;
 };
 
 // Parameters for a synchronous resource response.
