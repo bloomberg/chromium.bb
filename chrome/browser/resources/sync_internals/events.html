@@ -1,0 +1,65 @@
+<style>
+#sync-events-table,
+#sync-events-table th,
+#sync-events-table td {
+  border: 1px black solid;
+}
+
+#sync-events-table {
+  width: 100%;
+}
+
+#sync-events > tr {
+  vertical-align: top;
+}
+</style>
+
+<table id="sync-events-table">
+  <thead>
+    <th>Time</th>
+    <th>Submodule</th>
+    <th>Event</th>
+    <th>Details</th>
+  </thead>
+  <tbody id="sync-events">
+  </tbody>
+</table>
+
+<script>
+(function() {
+function makeLogEntryNode(entry) {
+  var timeNode = document.createElement('td');
+  timeNode.innerText = entry.date;
+
+  var submoduleNode = document.createElement('td');
+  submoduleNode.innerText = entry.submodule;
+
+  var eventNode = document.createElement('td');
+  eventNode.innerText = entry.event;
+
+  var details = document.createElement('pre');
+  details.innerText = JSON.stringify(entry.details, null, 2);
+  var detailsNode = document.createElement('td');
+  detailsNode.appendChild(details);
+
+  var node = document.createElement('tr');
+  node.appendChild(timeNode);
+  node.appendChild(submoduleNode);
+  node.appendChild(eventNode);
+  node.appendChild(detailsNode);
+
+  return node;
+}
+
+var syncEvents = document.getElementById('sync-events');
+
+var entries = chrome.sync.log.entries;
+for (var i = 0; i < entries.length; ++i) {
+  syncEvents.appendChild(makeLogEntryNode(entries[i]));
+}
+
+chrome.sync.log.addEventListener('append', function(event) {
+  syncEvents.appendChild(makeLogEntryNode(event.detail));
+});
+})();
+</script>
