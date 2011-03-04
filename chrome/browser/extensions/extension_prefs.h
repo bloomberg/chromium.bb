@@ -260,6 +260,14 @@ class ExtensionPrefs {
   // Sets the order the apps should be displayed in the app launcher.
   void SetAppLauncherOrder(const std::vector<std::string>& extension_ids);
 
+  // Get the application page index for an extension with |extension_id|.  This
+  // determines which page an app will appear on in page-based NTPs.  If
+  // the app has no page specified, -1 is returned.
+  int GetPageIndex(const std::string& extension_id);
+
+  // Sets a specific page index for an extension with |extension_id|.
+  void SetPageIndex(const std::string& extension_id, int index);
+
   // Returns true if the user repositioned the app on the app launcher via drag
   // and drop.
   bool WasAppDraggedByUser(const std::string& extension_id);

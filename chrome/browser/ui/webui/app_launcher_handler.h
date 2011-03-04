@@ -72,8 +72,11 @@ class AppLauncherHandler
   // Callback for the "createAppShortcut" message.
   void HandleCreateAppShortcut(const ListValue* args);
 
-  // Callback for the 'reorderApps" message.
+  // Callback for the "reorderApps" message.
   void HandleReorderApps(const ListValue* args);
+
+  // Callback for the "setPageIndex" message.
+  void HandleSetPageIndex(const ListValue* args);
 
  private:
   // Records a web store launch in the appropriate histograms. |promo_active|

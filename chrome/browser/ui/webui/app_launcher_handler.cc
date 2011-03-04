@@ -107,6 +107,12 @@ void AppLauncherHandler::CreateAppInfo(const Extension* extension,
     prefs->SetAppLaunchIndex(extension->id(), app_launch_index);
   }
   value->SetInteger("app_launch_index", app_launch_index);
+
+  int page_index = prefs->GetPageIndex(extension->id());
+  if (page_index >= 0) {
+    // Only provide a value if one is stored
+    value->SetInteger("page_index", page_index);
+  }
 }
 
 // static
@@ -170,6 +176,8 @@ void AppLauncherHandler::RegisterMessages() {
       NewCallback(this, &AppLauncherHandler::HandleCreateAppShortcut));
   web_ui_->RegisterMessageCallback("reorderApps",
       NewCallback(this, &AppLauncherHandler::HandleReorderApps));
+  web_ui_->RegisterMessageCallback("setPageIndex",
+      NewCallback(this, &AppLauncherHandler::HandleSetPageIndex));
 }
 
 void AppLauncherHandler::Observe(NotificationType type,
@@ -461,6 +469,16 @@ void AppLauncherHandler::HandleReorderApps(const ListValue* args) {
 
   extensions_service_->extension_prefs()->SetAppDraggedByUser(dragged_app_id);
   extensions_service_->extension_prefs()->SetAppLauncherOrder(extension_ids);
+}
+
+void AppLauncherHandler::HandleSetPageIndex(const ListValue* args) {
+  std::string extension_id;
+  double page_index;
+  CHECK(args->GetString(0, &extension_id));
+  CHECK(args->GetDouble(1, &page_index));
+
+  extensions_service_->extension_prefs()->SetPageIndex(extension_id,
+      static_cast<int>(page_index));
 }
 
 // static

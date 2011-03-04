@@ -550,6 +550,33 @@ class ExtensionPrefsAppLaunchIndex : public ExtensionPrefsTest {
 };
 TEST_F(ExtensionPrefsAppLaunchIndex, ExtensionPrefsAppLaunchIndex) {}
 
+class ExtensionPrefsPageIndex : public ExtensionPrefsTest {
+ public:
+  virtual void Initialize() {
+    extension_id_ = prefs_.AddExtensionAndReturnId("page_index");
+
+    int page_index = prefs()->GetPageIndex(extension_id_);
+    // Extension should not have been assigned a page
+    EXPECT_EQ(page_index, -1);
+
+    // Set the page index
+    prefs()->SetPageIndex(extension_id_, 2);
+  }
+
+  virtual void Verify() {
+    // Verify the page index.
+    int page_index = prefs()->GetPageIndex(extension_id_);
+    EXPECT_EQ(page_index, 2);
+
+    // This extension doesn't exist, so it should return -1.
+    EXPECT_EQ(-1, prefs()->GetPageIndex("foo"));
+  }
+
+ private:
+  std::string extension_id_;
+};
+TEST_F(ExtensionPrefsPageIndex, ExtensionPrefsPageIndex) {}
+
 class ExtensionPrefsAppDraggedByUser : public ExtensionPrefsTest {
  public:
   virtual void Initialize() {

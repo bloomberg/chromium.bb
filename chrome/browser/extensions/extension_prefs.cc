@@ -79,6 +79,9 @@ const char kPrefLaunchType[] = "launchType";
 // A preference determining the order of which the apps appear on the NTP.
 const char kPrefAppLaunchIndex[] = "app_launcher_index";
 
+// A preference determining the page on which an app appears in the NTP.
+const char kPrefPageIndex[] = "page_index";
+
 // A preference specifying if the user dragged the app on the NTP.
 const char kPrefUserDraggedApp[] = "user_dragged_app_ntp";
 
@@ -1127,6 +1130,23 @@ void ExtensionPrefs::SetAppLauncherOrder(
       NotificationType::EXTENSION_LAUNCHER_REORDERED,
       Source<ExtensionPrefs>(this),
       NotificationService::NoDetails());
+}
+
+int ExtensionPrefs::GetPageIndex(const std::string& extension_id)
+{
+  int value;
+  if (ReadExtensionPrefInteger(extension_id, kPrefPageIndex, &value))
+    return value;
+
+  return -1;
+}
+
+void ExtensionPrefs::SetPageIndex(const std::string& extension_id, int index)
+{
+  CHECK_GE(index, 0);
+  UpdateExtensionPref(extension_id, kPrefPageIndex,
+                      Value::CreateIntegerValue(index));
+  SavePrefsAndNotify();
 }
 
 bool ExtensionPrefs::WasAppDraggedByUser(const std::string& extension_id) {
