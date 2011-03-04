@@ -6678,7 +6678,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
         He's Dead, Jim!
       </message>
       <message name="IDS_KILLED_TAB_MESSAGE" desc="The message displayed on the killed tab page.">
-This web page was killed, either because Chrome ran out of memory, or you chose to end the process. To continue, reload or go to another page.
+        Either Chrome ran out of memory or the process for the webpage was terminated for some other reason.  To continue, reload or go to another page.
       </message>
 
       <!-- Default Browser related messages -->
