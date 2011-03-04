@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -11,8 +11,8 @@
 #include "base/native_library.h"
 #include "base/string_util.h"
 #include "base/win/scoped_comptr.h"
-#include "base/win/windows_version.h"
 #include "base/win/win_util.h"
+#include "base/win/windows_version.h"
 
 namespace app {
 namespace win {

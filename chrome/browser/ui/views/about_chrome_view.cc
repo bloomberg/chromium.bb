@@ -534,11 +534,9 @@ void AboutChromeView::ViewHierarchyChanged(bool is_add,
       // for Vista is another option.
       int service_pack_major = 0, service_pack_minor = 0;
       base::win::GetServicePackLevel(&service_pack_major, &service_pack_minor);
-      if (base::win::UserAccountControlIsEnabled() ||
-          base::win::GetVersion() == base::win::VERSION_XP ||
-          (base::win::GetVersion() == base::win::VERSION_VISTA &&
-           service_pack_major >= 1) ||
-          base::win::GetVersion() > base::win::VERSION_VISTA) {
+      if (!(base::win::GetVersion() == base::win::VERSION_VISTA &&
+            (service_pack_major == 0) &&
+            !base::win::UserAccountControlIsEnabled())) {
         UpdateStatus(UPGRADE_CHECK_STARTED, GOOGLE_UPDATE_NO_ERROR);
         // CheckForUpdate(false, ...) means don't upgrade yet.
         google_updater_->CheckForUpdate(false, window());
