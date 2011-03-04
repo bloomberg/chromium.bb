@@ -11,10 +11,14 @@
 #include "googleurl/src/gurl.h"
 #include "googleurl/src/url_util.h"
 
+const char URLPattern::kAllUrlsPattern[] = "<all_urls>";
+
+namespace {
+
 // TODO(aa): Consider adding chrome-extension? What about more obscure ones
 // like data: and javascript: ?
 // Note: keep this array in sync with kValidSchemeMasks.
-static const char* kValidSchemes[] = {
+const char* kValidSchemes[] = {
   chrome::kHttpScheme,
   chrome::kHttpsScheme,
   chrome::kFileScheme,
@@ -22,7 +26,7 @@ static const char* kValidSchemes[] = {
   chrome::kChromeUIScheme,
 };
 
-static const int kValidSchemeMasks[] = {
+const int kValidSchemeMasks[] = {
   URLPattern::SCHEME_HTTP,
   URLPattern::SCHEME_HTTPS,
   URLPattern::SCHEME_FILE,
@@ -33,11 +37,34 @@ static const int kValidSchemeMasks[] = {
 COMPILE_ASSERT(arraysize(kValidSchemes) == arraysize(kValidSchemeMasks),
                must_keep_these_arrays_in_sync);
 
-static const char kPathSeparator[] = "/";
+const char* kParseSuccess = "Success.";
+const char* kParseErrorMissingSchemeSeparator = "Missing scheme separator.";
+const char* kParseErrorInvalidScheme = "Invalid scheme.";
+const char* kParseErrorWrongSchemeType = "Wrong scheme type.";
+const char* kParseErrorEmptyHost = "Host can not be empty.";
+const char* kParseErrorInvalidHostWildcard = "Invalid host wildcard.";
+const char* kParseErrorEmptyPath = "Empty path.";
+const char* kParseErrorHasColon =
+    "Ports are not supported in URL patterns. ':' may not be used in a host.";
 
-const char URLPattern::kAllUrlsPattern[] = "<all_urls>";
+// Message explaining each URLPattern::ParseResult.
+const char* kParseResultMessages[] = {
+  kParseSuccess,
+  kParseErrorMissingSchemeSeparator,
+  kParseErrorInvalidScheme,
+  kParseErrorWrongSchemeType,
+  kParseErrorEmptyHost,
+  kParseErrorInvalidHostWildcard,
+  kParseErrorEmptyPath,
+  kParseErrorHasColon
+};
 
-static bool IsStandardScheme(const std::string& scheme) {
+COMPILE_ASSERT(URLPattern::NUM_PARSE_RESULTS == arraysize(kParseResultMessages),
+               must_add_message_for_each_parse_result);
+
+const char kPathSeparator[] = "/";
+
+bool IsStandardScheme(const std::string& scheme) {
   // "*" gets the same treatment as a standard scheme.
   if (scheme == "*")
     return true;
@@ -45,6 +72,8 @@ static bool IsStandardScheme(const std::string& scheme) {
   return url_util::IsStandard(scheme.c_str(),
       url_parse::Component(0, static_cast<int>(scheme.length())));
 }
+
+}  // namespace
 
 URLPattern::URLPattern()
     : valid_schemes_(SCHEME_NONE),
@@ -58,14 +87,21 @@ URLPattern::URLPattern(int valid_schemes)
 URLPattern::URLPattern(int valid_schemes, const std::string& pattern)
     : valid_schemes_(valid_schemes), match_all_urls_(false),
       match_subdomains_(false) {
-  if (PARSE_SUCCESS != Parse(pattern))
+
+  // Strict error checking is used, because this constructor is only
+  // appropriate when we know |pattern| is valid.
+  if (PARSE_SUCCESS != Parse(pattern, PARSE_STRICT))
     NOTREACHED() << "URLPattern is invalid: " << pattern;
 }
 
 URLPattern::~URLPattern() {
 }
 
-URLPattern::ParseResult URLPattern::Parse(const std::string& pattern) {
+URLPattern::ParseResult URLPattern::Parse(const std::string& pattern,
+                                          ParseOption strictness) {
+  CHECK(strictness == PARSE_LENIENT ||
+        strictness == PARSE_STRICT);
+
   // Special case pattern to match every valid URL.
   if (pattern == kAllUrlsPattern) {
     match_all_urls_ = true;
@@ -141,6 +177,9 @@ URLPattern::ParseResult URLPattern::Parse(const std::string& pattern) {
   }
 
   SetPath(pattern.substr(path_start_pos));
+
+  if (strictness == PARSE_STRICT && host_.find(':') != std::string::npos)
+    return PARSE_ERROR_HAS_COLON;
 
   return PARSE_SUCCESS;
 }
@@ -309,4 +348,10 @@ std::vector<URLPattern> URLPattern::ConvertToExplicitSchemes() const {
   }
 
   return result;
+}
+
+// static
+const char* URLPattern::GetParseResultString(
+    URLPattern::ParseResult parse_result) {
+  return kParseResultMessages[parse_result];
 }

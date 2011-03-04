@@ -90,7 +90,7 @@ static scoped_refptr<Extension> CreateExtension(const std::string& name,
   std::string error;
   scoped_refptr<Extension> extension = Extension::Create(
       bogus_file_path().AppendASCII(name), Extension::INVALID, manifest, false,
-      &error);
+      true, &error);
   // Cannot ASSERT_* here because that attempts an illegitimate return.
   // Cannot EXPECT_NE here because that assumes non-pointers unlike EXPECT_EQ
   EXPECT_TRUE(extension.get() != NULL) << error;

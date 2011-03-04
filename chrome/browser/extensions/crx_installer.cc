@@ -374,7 +374,11 @@ void CrxInstaller::CompleteInstall() {
   // lazily and based on the Extension's root path at that moment.
   std::string error;
   extension_ = extension_file_util::LoadExtension(
-      version_dir, install_source_, true, &error);
+      version_dir,
+      install_source_,
+      true,  // Require key
+      false,  // Disable strict error checks
+      &error);
   CHECK(error.empty()) << error;
 
   ReportSuccessFromFileThread();

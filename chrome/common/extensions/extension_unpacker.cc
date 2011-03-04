@@ -177,7 +177,12 @@ bool ExtensionUnpacker::Run() {
   // EXTENSION.
   std::string error;
   scoped_refptr<Extension> extension(Extension::Create(
-      temp_install_dir_, Extension::INVALID, *parsed_manifest_, false, &error));
+      temp_install_dir_,
+      Extension::INVALID,
+      *parsed_manifest_,
+      false,  // Do not require a key
+      false,  // Do not enable strict error checks
+      &error));
   if (!extension.get()) {
     SetError(error);
     return false;

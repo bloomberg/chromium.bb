@@ -488,7 +488,6 @@ void ExtensionPrefs::SetLastPingDayImpl(const Time& time,
   SavePrefsAndNotify();
 }
 
-
 bool ExtensionPrefs::GetGrantedPermissions(
     const std::string& extension_id,
     bool* full_access,
@@ -511,11 +510,20 @@ bool ExtensionPrefs::GetGrantedPermissions(
   // "permissions" array and from the content script "matches" arrays,
   // so the URLPattern needs to accept valid schemes from both types.
   for (std::set<std::string>::iterator i = host_permissions.begin();
-       i != host_permissions.end(); ++i)
-    host_extent->AddPattern(URLPattern(
+       i != host_permissions.end(); ++i) {
+    URLPattern pattern(
         Extension::kValidHostPermissionSchemes |
-        UserScript::kValidUserScriptSchemes,
-        *i));
+        UserScript::kValidUserScriptSchemes);
+
+    // Parse without strict checks, so that new strict checks do not
+    // fail on a pattern in an installed extension.
+    if (URLPattern::PARSE_SUCCESS != pattern.Parse(
+            *i, URLPattern::PARSE_LENIENT)) {
+      NOTREACHED();  // Corrupt prefs?  Hand editing?
+    } else {
+      host_extent->AddPattern(pattern);
+    }
+  }
 
   return true;
 }

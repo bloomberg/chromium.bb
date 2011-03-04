@@ -105,7 +105,7 @@ TEST(ExtensionTest, InitFromValueInvalid) {
   EXPECT_EQ("", error);
   EXPECT_EQ(0, error_code);
   ASSERT_TRUE(valid_value.get());
-  ASSERT_TRUE(extension.InitFromValue(*valid_value, true, &error));
+  ASSERT_TRUE(extension.InitFromValue(*valid_value, true, false, &error));
   ASSERT_EQ("", error);
   EXPECT_EQ("en_US", extension.default_locale());
 
@@ -114,33 +114,33 @@ TEST(ExtensionTest, InitFromValueInvalid) {
   // Test missing and invalid versions
   input_value.reset(valid_value->DeepCopy());
   input_value->Remove(keys::kVersion, NULL);
-  EXPECT_FALSE(extension.InitFromValue(*input_value, true, &error));
+  EXPECT_FALSE(extension.InitFromValue(*input_value, true, false, &error));
   EXPECT_EQ(errors::kInvalidVersion, error);
 
   input_value->SetInteger(keys::kVersion, 42);
-  EXPECT_FALSE(extension.InitFromValue(*input_value, true, &error));
+  EXPECT_FALSE(extension.InitFromValue(*input_value, true, false, &error));
   EXPECT_EQ(errors::kInvalidVersion, error);
 
   // Test missing and invalid names.
   input_value.reset(valid_value->DeepCopy());
   input_value->Remove(keys::kName, NULL);
-  EXPECT_FALSE(extension.InitFromValue(*input_value, true, &error));
+  EXPECT_FALSE(extension.InitFromValue(*input_value, true, false, &error));
   EXPECT_EQ(errors::kInvalidName, error);
 
   input_value->SetInteger(keys::kName, 42);
-  EXPECT_FALSE(extension.InitFromValue(*input_value, true, &error));
+  EXPECT_FALSE(extension.InitFromValue(*input_value, true, false, &error));
   EXPECT_EQ(errors::kInvalidName, error);
 
   // Test invalid description
   input_value.reset(valid_value->DeepCopy());
   input_value->SetInteger(keys::kDescription, 42);
-  EXPECT_FALSE(extension.InitFromValue(*input_value, true, &error));
+  EXPECT_FALSE(extension.InitFromValue(*input_value, true, false, &error));
   EXPECT_EQ(errors::kInvalidDescription, error);
 
   // Test invalid icons
   input_value.reset(valid_value->DeepCopy());
   input_value->SetInteger(keys::kIcons, 42);
-  EXPECT_FALSE(extension.InitFromValue(*input_value, true, &error));
+  EXPECT_FALSE(extension.InitFromValue(*input_value, true, false, &error));
   EXPECT_EQ(errors::kInvalidIcons, error);
 
   // Test invalid icon paths
@@ -149,13 +149,13 @@ TEST(ExtensionTest, InitFromValueInvalid) {
   input_value->GetDictionary(keys::kIcons, &icons);
   ASSERT_FALSE(NULL == icons);
   icons->SetInteger(base::IntToString(128), 42);
-  EXPECT_FALSE(extension.InitFromValue(*input_value, true, &error));
+  EXPECT_FALSE(extension.InitFromValue(*input_value, true, false, &error));
   EXPECT_TRUE(MatchPattern(error, errors::kInvalidIconPath));
 
   // Test invalid user scripts list
   input_value.reset(valid_value->DeepCopy());
   input_value->SetInteger(keys::kContentScripts, 42);
-  EXPECT_FALSE(extension.InitFromValue(*input_value, true, &error));
+  EXPECT_FALSE(extension.InitFromValue(*input_value, true, false, &error));
   EXPECT_EQ(errors::kInvalidContentScriptsList, error);
 
   // Test invalid user script item
@@ -164,7 +164,7 @@ TEST(ExtensionTest, InitFromValueInvalid) {
   input_value->GetList(keys::kContentScripts, &content_scripts);
   ASSERT_FALSE(NULL == content_scripts);
   content_scripts->Set(0, Value::CreateIntegerValue(42));
-  EXPECT_FALSE(extension.InitFromValue(*input_value, true, &error));
+  EXPECT_FALSE(extension.InitFromValue(*input_value, true, false, &error));
   EXPECT_TRUE(MatchPattern(error, errors::kInvalidContentScript));
 
   // Test missing and invalid matches array
@@ -173,25 +173,25 @@ TEST(ExtensionTest, InitFromValueInvalid) {
   DictionaryValue* user_script = NULL;
   content_scripts->GetDictionary(0, &user_script);
   user_script->Remove(keys::kMatches, NULL);
-  EXPECT_FALSE(extension.InitFromValue(*input_value, true, &error));
+  EXPECT_FALSE(extension.InitFromValue(*input_value, true, false, &error));
   EXPECT_TRUE(MatchPattern(error, errors::kInvalidMatches));
 
   user_script->Set(keys::kMatches, Value::CreateIntegerValue(42));
-  EXPECT_FALSE(extension.InitFromValue(*input_value, true, &error));
+  EXPECT_FALSE(extension.InitFromValue(*input_value, true, false, &error));
   EXPECT_TRUE(MatchPattern(error, errors::kInvalidMatches));
 
   ListValue* matches = new ListValue;
   user_script->Set(keys::kMatches, matches);
-  EXPECT_FALSE(extension.InitFromValue(*input_value, true, &error));
+  EXPECT_FALSE(extension.InitFromValue(*input_value, true, false, &error));
   EXPECT_TRUE(MatchPattern(error, errors::kInvalidMatchCount));
 
   // Test invalid match element
   matches->Set(0, Value::CreateIntegerValue(42));
-  EXPECT_FALSE(extension.InitFromValue(*input_value, true, &error));
+  EXPECT_FALSE(extension.InitFromValue(*input_value, true, false, &error));
   EXPECT_TRUE(MatchPattern(error, errors::kInvalidMatch));
 
   matches->Set(0, Value::CreateStringValue("chrome://*/*"));
-  EXPECT_FALSE(extension.InitFromValue(*input_value, true, &error));
+  EXPECT_FALSE(extension.InitFromValue(*input_value, true, false, &error));
   EXPECT_TRUE(MatchPattern(error, errors::kInvalidMatch));
 
   // Test missing and invalid files array
@@ -200,67 +200,68 @@ TEST(ExtensionTest, InitFromValueInvalid) {
   content_scripts->GetDictionary(0, &user_script);
   user_script->Remove(keys::kJs, NULL);
   user_script->Remove(keys::kCss, NULL);
-  EXPECT_FALSE(extension.InitFromValue(*input_value, true, &error));
+  EXPECT_FALSE(extension.InitFromValue(*input_value, true, false, &error));
   EXPECT_TRUE(MatchPattern(error, errors::kMissingFile));
 
   user_script->Set(keys::kJs, Value::CreateIntegerValue(42));
-  EXPECT_FALSE(extension.InitFromValue(*input_value, true, &error));
+  EXPECT_FALSE(extension.InitFromValue(*input_value, true, false, &error));
   EXPECT_TRUE(MatchPattern(error, errors::kInvalidJsList));
 
   user_script->Set(keys::kCss, new ListValue);
   user_script->Set(keys::kJs, new ListValue);
-  EXPECT_FALSE(extension.InitFromValue(*input_value, true, &error));
+  EXPECT_FALSE(extension.InitFromValue(*input_value, true, false, &error));
   EXPECT_TRUE(MatchPattern(error, errors::kMissingFile));
   user_script->Remove(keys::kCss, NULL);
 
   ListValue* files = new ListValue;
   user_script->Set(keys::kJs, files);
-  EXPECT_FALSE(extension.InitFromValue(*input_value, true, &error));
+  EXPECT_FALSE(extension.InitFromValue(*input_value, true, false, &error));
   EXPECT_TRUE(MatchPattern(error, errors::kMissingFile));
 
   // Test invalid file element
   files->Set(0, Value::CreateIntegerValue(42));
-  EXPECT_FALSE(extension.InitFromValue(*input_value, true, &error));
+  EXPECT_FALSE(extension.InitFromValue(*input_value, true, false, &error));
   EXPECT_TRUE(MatchPattern(error, errors::kInvalidJs));
 
   user_script->Remove(keys::kJs, NULL);
   // Test the css element
   user_script->Set(keys::kCss, Value::CreateIntegerValue(42));
-  EXPECT_FALSE(extension.InitFromValue(*input_value, true, &error));
+  EXPECT_FALSE(extension.InitFromValue(*input_value, true, false, &error));
   EXPECT_TRUE(MatchPattern(error, errors::kInvalidCssList));
 
   // Test invalid file element
   ListValue* css_files = new ListValue;
   user_script->Set(keys::kCss, css_files);
   css_files->Set(0, Value::CreateIntegerValue(42));
-  EXPECT_FALSE(extension.InitFromValue(*input_value, true, &error));
+  EXPECT_FALSE(extension.InitFromValue(*input_value, true, false, &error));
   EXPECT_TRUE(MatchPattern(error, errors::kInvalidCss));
 
   // Test missing and invalid permissions array
   input_value.reset(valid_value->DeepCopy());
-  EXPECT_TRUE(extension.InitFromValue(*input_value, true, &error));
+  EXPECT_TRUE(extension.InitFromValue(*input_value, true, false, &error));
+
   ListValue* permissions = NULL;
   input_value->GetList(keys::kPermissions, &permissions);
   ASSERT_FALSE(NULL == permissions);
 
   permissions = new ListValue;
   input_value->Set(keys::kPermissions, permissions);
-  EXPECT_TRUE(extension.InitFromValue(*input_value, true, &error));
+  EXPECT_TRUE(extension.InitFromValue(*input_value, true, false, &error));
 
   input_value->Set(keys::kPermissions, Value::CreateIntegerValue(9));
-  EXPECT_FALSE(extension.InitFromValue(*input_value, true, &error));
+  EXPECT_FALSE(extension.InitFromValue(*input_value, true, false, &error));
   EXPECT_TRUE(MatchPattern(error, errors::kInvalidPermissions));
 
   input_value.reset(valid_value->DeepCopy());
   input_value->GetList(keys::kPermissions, &permissions);
   permissions->Set(0, Value::CreateIntegerValue(24));
-  EXPECT_FALSE(extension.InitFromValue(*input_value, true, &error));
+  EXPECT_FALSE(extension.InitFromValue(*input_value, true, false, &error));
   EXPECT_TRUE(MatchPattern(error, errors::kInvalidPermission));
 
   // We allow unknown API permissions, so this will be valid until we better
   // distinguish between API and host permissions.
   permissions->Set(0, Value::CreateStringValue("www.google.com"));
-  EXPECT_TRUE(extension.InitFromValue(*input_value, true, &error));
+  EXPECT_TRUE(extension.InitFromValue(*input_value, true, false, &error));
 
   // Multiple page actions are not allowed.
   input_value.reset(valid_value->DeepCopy());
@@ -271,36 +272,36 @@ TEST(ExtensionTest, InitFromValueInvalid) {
   action_list->Append(action->DeepCopy());
   action_list->Append(action);
   input_value->Set(keys::kPageActions, action_list);
-  EXPECT_FALSE(extension.InitFromValue(*input_value, true, &error));
+  EXPECT_FALSE(extension.InitFromValue(*input_value, true, false, &error));
   EXPECT_STREQ(errors::kInvalidPageActionsListSize, error.c_str());
 
   // Test invalid options page url.
   input_value.reset(valid_value->DeepCopy());
   input_value->Set(keys::kOptionsPage, Value::CreateNullValue());
-  EXPECT_FALSE(extension.InitFromValue(*input_value, true, &error));
+  EXPECT_FALSE(extension.InitFromValue(*input_value, true, false, &error));
   EXPECT_TRUE(MatchPattern(error, errors::kInvalidOptionsPage));
 
   // Test invalid/empty default locale.
   input_value.reset(valid_value->DeepCopy());
   input_value->Set(keys::kDefaultLocale, Value::CreateIntegerValue(5));
-  EXPECT_FALSE(extension.InitFromValue(*input_value, true, &error));
+  EXPECT_FALSE(extension.InitFromValue(*input_value, true, false, &error));
   EXPECT_TRUE(MatchPattern(error, errors::kInvalidDefaultLocale));
 
   input_value->Set(keys::kDefaultLocale, Value::CreateStringValue(""));
-  EXPECT_FALSE(extension.InitFromValue(*input_value, true, &error));
+  EXPECT_FALSE(extension.InitFromValue(*input_value, true, false, &error));
   EXPECT_TRUE(MatchPattern(error, errors::kInvalidDefaultLocale));
 
   // Test invalid minimum_chrome_version.
   input_value.reset(valid_value->DeepCopy());
   input_value->Set(keys::kMinimumChromeVersion, Value::CreateIntegerValue(42));
-  EXPECT_FALSE(extension.InitFromValue(*input_value, true, &error));
+  EXPECT_FALSE(extension.InitFromValue(*input_value, true, false, &error));
   EXPECT_TRUE(MatchPattern(error, errors::kInvalidMinimumChromeVersion));
 
 #if !defined(OS_MACOSX)
   // TODO(aa): The version isn't stamped into the unit test binary on mac.
   input_value->Set(keys::kMinimumChromeVersion,
                    Value::CreateStringValue("88.8"));
-  EXPECT_FALSE(extension.InitFromValue(*input_value, true, &error));
+  EXPECT_FALSE(extension.InitFromValue(*input_value, true, false, &error));
   EXPECT_TRUE(MatchPattern(error, errors::kChromeVersionTooLow));
 #endif
 }
@@ -321,7 +322,7 @@ TEST(ExtensionTest, InitFromValueValid) {
   input_value.SetString(keys::kVersion, "1.0.0.0");
   input_value.SetString(keys::kName, "my extension");
 
-  EXPECT_TRUE(extension.InitFromValue(input_value, false, &error));
+  EXPECT_TRUE(extension.InitFromValue(input_value, false, false, &error));
   EXPECT_EQ("", error);
   EXPECT_TRUE(Extension::IdIsValid(extension.id()));
   EXPECT_EQ("1.0.0.0", extension.VersionString());
@@ -336,12 +337,12 @@ TEST(ExtensionTest, InitFromValueValid) {
 
   // We allow unknown API permissions, so this will be valid until we better
   // distinguish between API and host permissions.
-  EXPECT_TRUE(extension.InitFromValue(input_value, false, &error));
+  EXPECT_TRUE(extension.InitFromValue(input_value, false, false, &error));
   input_value.Remove(keys::kPermissions, NULL);
 
   // Test with an options page.
   input_value.SetString(keys::kOptionsPage, "options.html");
-  EXPECT_TRUE(extension.InitFromValue(input_value, false, &error));
+  EXPECT_TRUE(extension.InitFromValue(input_value, false, false, &error));
   EXPECT_EQ("", error);
   EXPECT_EQ("chrome-extension", extension.options_url().scheme());
   EXPECT_EQ("/options.html", extension.options_url().path());
@@ -350,14 +351,14 @@ TEST(ExtensionTest, InitFromValueValid) {
   // from being loaded.
   ListValue* empty_list = new ListValue;
   input_value.Set(keys::kPageActions, empty_list);
-  EXPECT_TRUE(extension.InitFromValue(input_value, false, &error));
+  EXPECT_TRUE(extension.InitFromValue(input_value, false, false, &error));
   EXPECT_EQ("", error);
 
 #if !defined(OS_MACOSX)
   // TODO(aa): The version isn't stamped into the unit test binary on mac.
   // Test with a minimum_chrome_version.
   input_value.SetString(keys::kMinimumChromeVersion, "1.0");
-  EXPECT_TRUE(extension.InitFromValue(input_value, false, &error));
+  EXPECT_TRUE(extension.InitFromValue(input_value, false, false, &error));
   EXPECT_EQ("", error);
   // The minimum chrome version is not stored in the Extension object.
 #endif
@@ -387,7 +388,7 @@ TEST(ExtensionTest, InitFromValueValidNameInRTL) {
   // No strong RTL characters in name.
   std::wstring name(L"Dictionary (by Google)");
   input_value.SetString(keys::kName, WideToUTF16Hack(name));
-  EXPECT_TRUE(extension.InitFromValue(input_value, false, &error));
+  EXPECT_TRUE(extension.InitFromValue(input_value, false, false, &error));
   EXPECT_EQ("", error);
   std::wstring localized_name(name);
   base::i18n::AdjustStringForLocaleDirection(&localized_name);
@@ -396,7 +397,7 @@ TEST(ExtensionTest, InitFromValueValidNameInRTL) {
   // Strong RTL characters in name.
   name = L"Dictionary (\x05D1\x05D2"L" Google)";
   input_value.SetString(keys::kName, WideToUTF16Hack(name));
-  EXPECT_TRUE(extension.InitFromValue(input_value, false, &error));
+  EXPECT_TRUE(extension.InitFromValue(input_value, false, false, &error));
   EXPECT_EQ("", error);
   localized_name = name;
   base::i18n::AdjustStringForLocaleDirection(&localized_name);
@@ -420,7 +421,7 @@ TEST(ExtensionTest, GetResourceURLAndPath) {
   input_value.SetString(keys::kVersion, "1.0.0.0");
   input_value.SetString(keys::kName, "my extension");
   scoped_refptr<Extension> extension(Extension::Create(
-      path, Extension::INVALID, input_value, false, NULL));
+      path, Extension::INVALID, input_value, false, true, NULL));
   EXPECT_TRUE(extension.get());
 
   EXPECT_EQ(extension->url().spec() + "bar/baz.js",
@@ -679,7 +680,7 @@ TEST(ExtensionTest, UpdateUrls) {
     input_value.SetString(keys::kUpdateURL, url.spec());
 
     scoped_refptr<Extension> extension(Extension::Create(
-        path, Extension::INVALID, input_value, false, &error));
+        path, Extension::INVALID, input_value, false, true, &error));
     EXPECT_TRUE(extension.get()) << error;
   }
 
@@ -703,7 +704,7 @@ TEST(ExtensionTest, UpdateUrls) {
     input_value.SetString(keys::kUpdateURL, invalid[i]);
 
     scoped_refptr<Extension> extension(Extension::Create(
-        path, Extension::INVALID, input_value, false, &error));
+        path, Extension::INVALID, input_value, false, true, &error));
     EXPECT_FALSE(extension.get());
     EXPECT_TRUE(MatchPattern(error, errors::kInvalidUpdateURL));
   }
@@ -751,7 +752,7 @@ static scoped_refptr<Extension> LoadManifest(const std::string& dir,
 
   scoped_refptr<Extension> extension = Extension::Create(
       path.DirName(), Extension::INVALID,
-      *static_cast<DictionaryValue*>(result.get()), false, &error);
+      *static_cast<DictionaryValue*>(result.get()), false, true, &error);
   EXPECT_TRUE(extension) << error;
   return extension;
 }
@@ -972,7 +973,7 @@ TEST(ExtensionTest, ImageCaching) {
   values.SetString(keys::kName, "test");
   values.SetString(keys::kVersion, "0.1");
   scoped_refptr<Extension> extension(Extension::Create(
-      path, Extension::INVALID, values, false, &errors));
+      path, Extension::INVALID, values, false, true, &errors));
   ASSERT_TRUE(extension.get());
 
   // Create an ExtensionResource pointing at an icon.
@@ -1056,7 +1057,7 @@ TEST(ExtensionTest, OldUnlimitedStoragePermission) {
   // is present.
   std::string errors;
   scoped_refptr<Extension> extension(Extension::Create(
-      extension_path, Extension::INVALID, dictionary, false, &errors));
+      extension_path, Extension::INVALID, dictionary, false, true, &errors));
   EXPECT_TRUE(extension.get());
   EXPECT_TRUE(extension->HasApiPermission(
       Extension::kUnlimitedStoragePermission));

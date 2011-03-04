@@ -327,10 +327,15 @@ scoped_refptr<Extension>
     ViewMsg_ExtensionLoaded_Params::ConvertToExtension() const {
   // Extensions that are loaded unpacked won't have a key.
   const bool kRequireKey = false;
+
+  // The extension may have been loaded in a way that does not require
+  // strict error checks to pass.  Do not do strict checks here.
+  const bool kStrictErrorChecks = false;
   std::string error;
 
   scoped_refptr<Extension> extension(
-      Extension::Create(path, location, *manifest, kRequireKey, &error));
+      Extension::Create(path, location, *manifest, kRequireKey,
+                        kStrictErrorChecks, &error));
   if (!extension.get())
     LOG(ERROR) << "Error deserializing extension: " << error;
 

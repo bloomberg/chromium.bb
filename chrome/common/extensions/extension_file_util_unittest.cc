@@ -79,7 +79,7 @@ TEST(ExtensionFileUtil, LoadExtensionWithValidLocales) {
 
   std::string error;
   scoped_refptr<Extension> extension(extension_file_util::LoadExtension(
-      install_dir, Extension::LOAD, false, &error));
+      install_dir, Extension::LOAD, false, true, &error));
   ASSERT_TRUE(extension != NULL);
   EXPECT_EQ("The first extension that I made.", extension->description());
 }
@@ -95,7 +95,7 @@ TEST(ExtensionFileUtil, LoadExtensionWithoutLocalesFolder) {
 
   std::string error;
   scoped_refptr<Extension> extension(extension_file_util::LoadExtension(
-      install_dir, Extension::LOAD, false, &error));
+      install_dir, Extension::LOAD, false, true, &error));
   ASSERT_FALSE(extension == NULL);
   EXPECT_TRUE(error.empty());
 }
@@ -153,7 +153,7 @@ TEST(ExtensionFileUtil, LoadExtensionGivesHelpfullErrorOnMissingManifest) {
 
   std::string error;
   scoped_refptr<Extension> extension(extension_file_util::LoadExtension(
-      install_dir, Extension::LOAD, false, &error));
+      install_dir, Extension::LOAD, false, true, &error));
   ASSERT_TRUE(extension == NULL);
   ASSERT_FALSE(error.empty());
   ASSERT_STREQ("Manifest file is missing or unreadable.", error.c_str());
@@ -170,7 +170,7 @@ TEST(ExtensionFileUtil, LoadExtensionGivesHelpfullErrorOnBadManifest) {
 
   std::string error;
   scoped_refptr<Extension> extension(extension_file_util::LoadExtension(
-      install_dir, Extension::LOAD, false, &error));
+      install_dir, Extension::LOAD, false, true, &error));
   ASSERT_TRUE(extension == NULL);
   ASSERT_FALSE(error.empty());
   ASSERT_STREQ("Manifest is not valid JSON.  "
@@ -186,7 +186,7 @@ TEST(ExtensionFileUtil, FailLoadingNonUTF8Scripts) {
 
   std::string error;
   scoped_refptr<Extension> extension(extension_file_util::LoadExtension(
-      install_dir, Extension::LOAD, false, &error));
+      install_dir, Extension::LOAD, false, true, &error));
   ASSERT_TRUE(extension == NULL);
   ASSERT_STREQ("Could not load file 'bad_encoding.js' for content script. "
                "It isn't UTF-8 encoded.", error.c_str());

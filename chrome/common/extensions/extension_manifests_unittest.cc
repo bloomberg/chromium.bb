@@ -7,6 +7,7 @@
 #include "base/file_util.h"
 #include "base/path_service.h"
 #include "base/scoped_ptr.h"
+#include "base/string_number_conversions.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/common/chrome_paths.h"
@@ -42,36 +43,54 @@ class ExtensionManifestTest : public testing::Test {
   scoped_refptr<Extension> LoadExtensionWithLocation(
       DictionaryValue* value,
       Extension::Location location,
+      bool strict_error_checks,
       std::string* error) {
     FilePath path;
     PathService::Get(chrome::DIR_TEST_DATA, &path);
     path = path.AppendASCII("extensions").AppendASCII("manifest_tests");
-    return Extension::Create(path.DirName(), location, *value, false, error);
+    return Extension::Create(path.DirName(), location, *value, false,
+                             strict_error_checks, error);
   }
 
   scoped_refptr<Extension> LoadExtension(const std::string& name,
                                          std::string* error) {
-    return LoadExtensionWithLocation(name, Extension::INTERNAL, error);
+    return LoadExtensionWithLocation(name, Extension::INTERNAL, false, error);
+  }
+
+  scoped_refptr<Extension> LoadExtensionStrict(const std::string& name,
+                                               std::string* error) {
+    return LoadExtensionWithLocation(name, Extension::INTERNAL, true, error);
   }
 
   scoped_refptr<Extension> LoadExtension(DictionaryValue* value,
                                          std::string* error) {
-    return LoadExtensionWithLocation(value, Extension::INTERNAL, error);
+    // Loading as an installed extension disables strict error checks.
+    return LoadExtensionWithLocation(value, Extension::INTERNAL, false, error);
   }
 
   scoped_refptr<Extension> LoadExtensionWithLocation(
       const std::string& name,
       Extension::Location location,
+      bool strict_error_checks,
       std::string* error) {
     scoped_ptr<DictionaryValue> value(LoadManifestFile(name, error));
     if (!value.get())
       return NULL;
-    return LoadExtensionWithLocation(value.get(), location, error);
+    return LoadExtensionWithLocation(value.get(), location,
+                                     strict_error_checks, error);
   }
 
   scoped_refptr<Extension> LoadAndExpectSuccess(const std::string& name) {
     std::string error;
     scoped_refptr<Extension> extension = LoadExtension(name, &error);
+    EXPECT_TRUE(extension) << name;
+    EXPECT_EQ("", error) << name;
+    return extension;
+  }
+
+  scoped_refptr<Extension> LoadStrictAndExpectSuccess(const std::string& name) {
+    std::string error;
+    scoped_refptr<Extension> extension = LoadExtensionStrict(name, &error);
     EXPECT_TRUE(extension) << name;
     EXPECT_EQ("", error) << name;
     return extension;
@@ -104,6 +123,13 @@ class ExtensionManifestTest : public testing::Test {
     VerifyExpectedError(extension.get(), name, error, expected_error);
   }
 
+  void LoadAndExpectErrorStrict(const std::string& name,
+                                const std::string& expected_error) {
+    std::string error;
+    scoped_refptr<Extension> extension(LoadExtensionStrict(name, &error));
+    VerifyExpectedError(extension.get(), name, error, expected_error);
+  }
+
   void LoadAndExpectError(DictionaryValue* manifest,
                           const std::string& name,
                           const std::string& expected_error) {
@@ -129,18 +155,52 @@ TEST_F(ExtensionManifestTest, ValidApp) {
 TEST_F(ExtensionManifestTest, AppWebUrls) {
   LoadAndExpectError("web_urls_wrong_type.json",
                      errors::kInvalidWebURLs);
-  LoadAndExpectError("web_urls_invalid_1.json",
-                     ExtensionErrorUtils::FormatErrorMessage(
-                         errors::kInvalidWebURL, "0"));
-  LoadAndExpectError("web_urls_invalid_2.json",
-                     ExtensionErrorUtils::FormatErrorMessage(
-                         errors::kInvalidWebURL, "0"));
-  LoadAndExpectError("web_urls_invalid_3.json",
-                     ExtensionErrorUtils::FormatErrorMessage(
-                         errors::kInvalidWebURL, "0"));
-  LoadAndExpectError("web_urls_invalid_4.json",
-                     ExtensionErrorUtils::FormatErrorMessage(
-                         errors::kInvalidWebURL, "0"));
+  LoadAndExpectError(
+      "web_urls_invalid_1.json",
+      ExtensionErrorUtils::FormatErrorMessage(
+          errors::kInvalidWebURL,
+          base::IntToString(0),
+          errors::kExpectString));
+
+  LoadAndExpectError(
+      "web_urls_invalid_2.json",
+      ExtensionErrorUtils::FormatErrorMessage(
+          errors::kInvalidWebURL,
+          base::IntToString(0),
+          URLPattern::GetParseResultString(
+              URLPattern::PARSE_ERROR_MISSING_SCHEME_SEPARATOR)));
+
+  LoadAndExpectError(
+      "web_urls_invalid_3.json",
+      ExtensionErrorUtils::FormatErrorMessage(
+          errors::kInvalidWebURL,
+          base::IntToString(0),
+          errors::kNoWildCardsInPaths));
+
+  LoadAndExpectError(
+      "web_urls_invalid_4.json",
+      ExtensionErrorUtils::FormatErrorMessage(
+          errors::kInvalidWebURL,
+          base::IntToString(0),
+          errors::kCannotClaimAllURLsInExtent));
+
+  LoadAndExpectError(
+      "web_urls_invalid_5.json",
+      ExtensionErrorUtils::FormatErrorMessage(
+          errors::kInvalidWebURL,
+          base::IntToString(1),
+          errors::kCannotClaimAllHostsInExtent));
+
+  // Ports in app.urls only raise an error when loading as a
+  // developer would.
+  LoadAndExpectSuccess("web_urls_invalid_has_port.json");
+  LoadAndExpectErrorStrict(
+      "web_urls_invalid_has_port.json",
+      ExtensionErrorUtils::FormatErrorMessage(
+          errors::kInvalidWebURL,
+          base::IntToString(1),
+          URLPattern::GetParseResultString(URLPattern::PARSE_ERROR_HAS_COLON)));
+
 
   scoped_refptr<Extension> extension(
       LoadAndExpectSuccess("web_urls_default.json"));
@@ -238,13 +298,45 @@ TEST_F(ExtensionManifestTest, ChromeResourcesPermissionValidOnlyForComponents) {
   extension = LoadExtensionWithLocation(
       "permission_chrome_resources_url.json",
       Extension::COMPONENT,
+      true,  // Strict error checking
       &error);
   EXPECT_EQ("", error);
 }
 
-TEST_F(ExtensionManifestTest, ChromeURLContentScriptInvalid) {
-  LoadAndExpectError("content_script_chrome_url_invalid.json",
-      errors::kInvalidMatch);
+TEST_F(ExtensionManifestTest, InvalidContentScriptMatchPattern) {
+
+  // chrome:// urls are not allowed.
+  LoadAndExpectError(
+      "content_script_chrome_url_invalid.json",
+      ExtensionErrorUtils::FormatErrorMessage(
+          errors::kInvalidMatch,
+          base::IntToString(0),
+          base::IntToString(0),
+          URLPattern::GetParseResultString(
+              URLPattern::PARSE_ERROR_INVALID_SCHEME)));
+
+  // Match paterns must be strings.
+  LoadAndExpectError(
+      "content_script_match_pattern_not_string.json",
+      ExtensionErrorUtils::FormatErrorMessage(
+          errors::kInvalidMatch,
+          base::IntToString(0),
+          base::IntToString(0),
+          errors::kExpectString));
+
+  // Ports in match patterns cause an error, but only when loading
+  // in developer mode.
+  LoadAndExpectSuccess("forbid_ports_in_content_scripts.json");
+
+  // Loading as a developer would should give an error.
+  LoadAndExpectErrorStrict(
+      "forbid_ports_in_content_scripts.json",
+      ExtensionErrorUtils::FormatErrorMessage(
+          errors::kInvalidMatch,
+          base::IntToString(1),
+          base::IntToString(0),
+          URLPattern::GetParseResultString(
+              URLPattern::PARSE_ERROR_HAS_COLON)));
 }
 
 TEST_F(ExtensionManifestTest, ExperimentalPermission) {
@@ -443,4 +535,15 @@ TEST_F(ExtensionManifestTest, TtsProvider) {
   EXPECT_EQ("name", extension->tts_voices()[0].voice_name);
   EXPECT_EQ("en-US", extension->tts_voices()[0].locale);
   EXPECT_EQ("female", extension->tts_voices()[0].gender);
+}
+
+TEST_F(ExtensionManifestTest, ForbidPortsInPermissions) {
+  // Loading as a user would shoud not trigger an error.
+  LoadAndExpectSuccess("forbid_ports_in_permissions.json");
+
+  // Ideally, loading as a developer would give an error.
+  // To ensure that we do not error out on a valid permission
+  // in a future version of chrome, validation is to loose
+  // to flag this case.
+  LoadStrictAndExpectSuccess("forbid_ports_in_permissions.json");
 }

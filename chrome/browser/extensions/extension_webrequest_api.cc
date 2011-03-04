@@ -131,7 +131,8 @@ bool ExtensionWebRequestEventRouter::RequestFilter::InitFromValue(
         std::string url;
         URLPattern pattern(URLPattern::SCHEME_ALL);
         if (!urls_value->GetString(i, &url) ||
-            pattern.Parse(url) != URLPattern::PARSE_SUCCESS)
+            pattern.Parse(url, URLPattern::PARSE_STRICT) !=
+                URLPattern::PARSE_SUCCESS)
           return false;
         urls.AddPattern(pattern);
       }

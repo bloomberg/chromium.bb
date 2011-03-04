@@ -28,7 +28,7 @@ class ExtensionSpecialStoragePolicyTest : public testing::Test {
     manifest.Set(keys::kWebURLs, list);
     std::string error;
     scoped_refptr<Extension> protected_app = Extension::Create(
-        path, Extension::INVALID, manifest, false, &error);
+        path, Extension::INVALID, manifest, false, true, &error);
     EXPECT_TRUE(protected_app.get()) << error;
     return protected_app;
   }
@@ -52,7 +52,7 @@ class ExtensionSpecialStoragePolicyTest : public testing::Test {
     manifest.Set(keys::kWebURLs, list);
     std::string error;
     scoped_refptr<Extension> unlimited_app = Extension::Create(
-        path, Extension::INVALID, manifest, false, &error);
+        path, Extension::INVALID, manifest, false, true, &error);
     EXPECT_TRUE(unlimited_app.get()) << error;
     return unlimited_app;
   }

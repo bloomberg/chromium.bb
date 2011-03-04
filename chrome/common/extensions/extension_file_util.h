@@ -40,6 +40,7 @@ void UninstallExtension(const FilePath& extensions_dir,
 scoped_refptr<Extension> LoadExtension(const FilePath& extension_root,
                                        Extension::Location location,
                                        bool require_key,
+                                       bool strict_error_checks,
                                        std::string* error);
 
 // Returns true if the given extension object is valid and consistent.

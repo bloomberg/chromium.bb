@@ -111,7 +111,7 @@ TEST_F(ExtensionIconManagerTest, LoadRemoveLoad) {
 
   scoped_refptr<Extension> extension(Extension::Create(
       manifest_path.DirName(), Extension::INVALID, *manifest.get(),
-      false, NULL));
+      false, true, NULL));
   ASSERT_TRUE(extension.get());
   TestIconManager icon_manager(this);
 

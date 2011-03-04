@@ -195,7 +195,8 @@ void UserScript::Unpickle(const ::Pickle& pickle, void** iter) {
     std::string pattern_str;
     URLPattern pattern(valid_schemes);
     CHECK(pickle.ReadString(iter, &pattern_str));
-    CHECK(URLPattern::PARSE_SUCCESS == pattern.Parse(pattern_str));
+    CHECK(URLPattern::PARSE_SUCCESS ==
+          pattern.Parse(pattern_str, URLPattern::PARSE_LENIENT));
     url_patterns_.push_back(pattern);
   }
 

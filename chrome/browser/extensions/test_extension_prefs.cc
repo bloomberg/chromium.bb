@@ -98,7 +98,7 @@ scoped_refptr<Extension> TestExtensionPrefs::AddExtensionWithManifest(
   FilePath path =  extensions_dir_.AppendASCII(name);
   std::string errors;
   scoped_refptr<Extension> extension = Extension::Create(
-      path, location, manifest, false, &errors);
+      path, location, manifest, false, true, &errors);
   EXPECT_TRUE(extension);
   if (!extension)
     return NULL;

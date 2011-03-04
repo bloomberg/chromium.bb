@@ -37,10 +37,11 @@ scoped_refptr<Extension> CreateTestExtension(const std::string& name,
   }
 
   const bool kRequireKey = false;
+  const bool kStrictErrorChecks = true;
   std::string error;
   scoped_refptr<Extension> extension(
       Extension::Create(path, Extension::INTERNAL, manifest, kRequireKey,
-                        &error));
+                        kStrictErrorChecks, &error));
   EXPECT_TRUE(extension.get()) << error;
   return extension;
 }

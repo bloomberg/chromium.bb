@@ -147,7 +147,12 @@ scoped_refptr<Extension> ConvertUserScriptToExtension(
   }
 
   scoped_refptr<Extension> extension = Extension::Create(
-      temp_dir.path(), Extension::INTERNAL, *root, false, error);
+      temp_dir.path(),
+      Extension::INTERNAL,
+      *root,
+      false,  // Do not require key
+      false,  // Disable strict checks
+      error);
   if (!extension) {
     NOTREACHED() << "Could not init extension " << *error;
     return NULL;

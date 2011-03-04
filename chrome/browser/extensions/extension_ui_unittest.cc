@@ -42,7 +42,7 @@ namespace {
     EXPECT_EQ("", error);
 
     scoped_refptr<Extension> extension(Extension::Create(
-        path, Extension::INVALID, *extension_data, true, &error));
+        path, Extension::INVALID, *extension_data, true, true, &error));
     EXPECT_TRUE(extension.get());
     EXPECT_EQ("", error);
 

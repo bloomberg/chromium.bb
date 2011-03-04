@@ -114,10 +114,21 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
     const int message_id;
   };
 
+  // |strict_error_checks| enables extra error checking, such as
+  // checks that URL patterns do not contain ports.  This error
+  // checking may find an error that a previous version of
+  // chrome did not flag.  To avoid errors in installed extensions
+  // when chrome is upgraded, strict error checking is only enabled
+  // when loading extensions as a developer would (such as loading
+  // an unpacked extension), or when loading an extension that is
+  // tied to a specific version of chrome (such as a component
+  // extension).  Most callers will set |strict_error_checks| to
+  // Extension::ShouldDoStrictErrorChecking(location).
   static scoped_refptr<Extension> Create(const FilePath& path,
                                          Location location,
                                          const DictionaryValue& value,
                                          bool require_key,
+                                         bool strict_error_checks,
                                          std::string* error);
 
   // Return the update url used by gallery/webstore extensions.
@@ -234,6 +245,17 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
     // Only internal and external extensions can be autoupdated.
     return location == Extension::INTERNAL ||
            IsExternalLocation(location);
+  }
+
+  // Whether extensions with |location| should be loaded with strict
+  // error checking.  Strict error checks may flag errors older versions
+  // of chrome did not detect.  To avoid breaking installed extensions,
+  // strict checks are disabled unless the location indicates that the
+  // developer is loading the extension, or the extension is a component
+  // of chrome.
+  static inline bool ShouldDoStrictErrorChecking(Location location) {
+    return location == Extension::LOAD ||
+           location == Extension::COMPONENT;
   }
 
   // See Type definition above.
@@ -513,7 +535,7 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
   // its manifest, but if |require_key| is |false|, a temporary ID will be
   // generated based on the path.
   bool InitFromValue(const DictionaryValue& value, bool require_key,
-                     std::string* error);
+                     bool strict_error_checks, std::string* error);
 
   // Helper function for implementing HasCachedImage/GetCachedImage. A return
   // value of NULL means there is no matching image cached (we allow caching an
@@ -525,6 +547,7 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
   // dictionary in the content_script list of the manifest.
   bool LoadUserScriptHelper(const DictionaryValue* content_script,
                             int definition_index,
+                            URLPattern::ParseOption parse_strictness,
                             std::string* error,
                             UserScript* result);
 
@@ -539,9 +562,13 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
 
   // Helpers to load various chunks of the manifest.
   bool LoadIsApp(const DictionaryValue* manifest, std::string* error);
-  bool LoadExtent(const DictionaryValue* manifest, const char* key,
-                  ExtensionExtent* extent, const char* list_error,
-                  const char* value_error, std::string* error);
+  bool LoadExtent(const DictionaryValue* manifest,
+                  const char* key,
+                  ExtensionExtent* extent,
+                  const char* list_error,
+                  const char* value_error,
+                  URLPattern::ParseOption parse_strictness,
+                  std::string* error);
   bool LoadLaunchContainer(const DictionaryValue* manifest, std::string* error);
   bool LoadLaunchURL(const DictionaryValue* manifest, std::string* error);
   bool EnsureNotHybridApp(const DictionaryValue* manifest, std::string* error);

@@ -201,6 +201,7 @@ void ExtensionServiceBackend::LoadSingleExtension(
       extension_path,
       Extension::LOAD,
       false,  // Don't require id
+      Extension::ShouldDoStrictErrorChecking(Extension::LOAD),
       &error));
 
   if (!extension) {
@@ -833,7 +834,8 @@ void ExtensionService::LoadComponentExtensions() {
         it->root_directory,
         Extension::COMPONENT,
         *static_cast<DictionaryValue*>(manifest.get()),
-        true,  // require key
+        true,  // Require key
+        Extension::ShouldDoStrictErrorChecking(Extension::COMPONENT),
         &error));
     if (!extension.get()) {
       NOTREACHED() << error;
@@ -878,7 +880,11 @@ void ExtensionService::LoadAllExtensions() {
       std::string error;
       scoped_refptr<const Extension> extension(
           extension_file_util::LoadExtension(
-              info->extension_path, info->extension_location, false, &error));
+              info->extension_path,
+              info->extension_location,
+              false,  // Don't require key
+              Extension::ShouldDoStrictErrorChecking(info->extension_location),
+              &error));
 
       if (extension.get()) {
         extensions_info->at(i)->extension_manifest.reset(
@@ -985,7 +991,7 @@ void ExtensionService::LoadAllExtensions() {
 }
 
 void ExtensionService::LoadInstalledExtension(const ExtensionInfo& info,
-                                               bool write_to_prefs) {
+                                              bool write_to_prefs) {
   std::string error;
   scoped_refptr<const Extension> extension(NULL);
   if (!extension_prefs_->IsExtensionAllowedByPolicy(info.extension_id)) {
@@ -993,8 +999,12 @@ void ExtensionService::LoadInstalledExtension(const ExtensionInfo& info,
   } else if (info.extension_manifest.get()) {
     bool require_key = info.extension_location != Extension::LOAD;
     extension = Extension::Create(
-        info.extension_path, info.extension_location, *info.extension_manifest,
-        require_key, &error);
+        info.extension_path,
+        info.extension_location,
+        *info.extension_manifest,
+        require_key,
+        Extension::ShouldDoStrictErrorChecking(info.extension_location),
+        &error);
   } else {
     error = errors::kManifestUnreadable;
   }

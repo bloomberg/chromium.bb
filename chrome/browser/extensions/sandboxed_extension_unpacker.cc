@@ -181,7 +181,12 @@ void SandboxedExtensionUnpacker::OnUnpackExtensionSucceeded(
   }
 
   extension_ = Extension::Create(
-      extension_root_, Extension::INTERNAL, *final_manifest, true, &error);
+      extension_root_,
+      Extension::INTERNAL,
+      *final_manifest,
+      true,  // Require key
+      false,  // Disable strict error checks
+      &error);
 
   if (!extension_.get()) {
     ReportFailure(

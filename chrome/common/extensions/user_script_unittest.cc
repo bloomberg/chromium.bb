@@ -71,7 +71,8 @@ TEST(ExtensionUserScriptTest, Match5) {
 
 TEST(ExtensionUserScriptTest, Match6) {
   URLPattern pattern(kAllSchemes);
-  ASSERT_EQ(URLPattern::PARSE_SUCCESS, pattern.Parse("http://*/foo*"));
+  ASSERT_EQ(URLPattern::PARSE_SUCCESS,
+            pattern.Parse("http://*/foo*", URLPattern::PARSE_STRICT));
 
   UserScript script;
   script.add_url_pattern(pattern);
@@ -87,7 +88,8 @@ TEST(ExtensionUserScriptTest, UrlPatternGlobInteraction) {
 
   URLPattern pattern(kAllSchemes);
   ASSERT_EQ(URLPattern::PARSE_SUCCESS,
-            pattern.Parse("http://www.google.com/*"));
+            pattern.Parse("http://www.google.com/*",
+                          URLPattern::PARSE_STRICT));
   script.add_url_pattern(pattern);
 
   script.add_glob("*bar*");
@@ -115,8 +117,10 @@ TEST(ExtensionUserScriptTest, UrlPatternGlobInteraction) {
 TEST(ExtensionUserScriptTest, Pickle) {
   URLPattern pattern1(kAllSchemes);
   URLPattern pattern2(kAllSchemes);
-  ASSERT_EQ(URLPattern::PARSE_SUCCESS, pattern1.Parse("http://*/foo*"));
-  ASSERT_EQ(URLPattern::PARSE_SUCCESS, pattern2.Parse("http://bar/baz*"));
+  ASSERT_EQ(URLPattern::PARSE_SUCCESS,
+            pattern1.Parse("http://*/foo*", URLPattern::PARSE_STRICT));
+  ASSERT_EQ(URLPattern::PARSE_SUCCESS,
+            pattern2.Parse("http://bar/baz*", URLPattern::PARSE_STRICT));
 
   UserScript script1;
   script1.js_scripts().push_back(UserScript::File(

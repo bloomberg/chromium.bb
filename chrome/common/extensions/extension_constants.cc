@@ -100,6 +100,10 @@ const char* kAppsNotEnabled =
 const char* kCannotAccessPage =
     "Cannot access contents of url \"*\". "
     "Extension manifest must request permission to access this host.";
+const char* kCannotClaimAllHostsInExtent =
+    "Cannot claim all hosts ('*') in an extent.";
+const char* kCannotClaimAllURLsInExtent =
+    "Cannot claim all URLs in an extent.";
 const char* kCannotScriptGallery =
     "The extensions gallery cannot be scripted.";
 const char* kChromeVersionTooLow =
@@ -109,6 +113,7 @@ const char* kDisabledByPolicy =
 const char* kDevToolsExperimental =
     "You must request the 'experimental' permission in order to use the"
     " DevTools API.";
+const char* kExpectString = "Expect string value.";
 const char* kExperimentalFlagRequired =
     "Loading extensions with 'experimental' permission requires"
     " --enable-experimental-extension-apis command line flag.";
@@ -171,7 +176,7 @@ const char* kInvalidLaunchWidthContainer =
 const char* kInvalidManifest =
     "Manifest file is invalid.";
 const char* kInvalidMatch =
-    "Invalid value for 'content_scripts[*].matches[*]'.";
+    "Invalid value for 'content_scripts[*].matches[*]': *";
 const char* kInvalidMatchCount =
     "Invalid value for 'content_scripts[*].matches'. There must be at least"
     "one match specified.";
@@ -269,7 +274,7 @@ const char* kInvalidVersion =
     "Required value 'version' is missing or invalid. It must be between 1-4 "
     "dot-separated integers each between 0 and 65536.";
 const char* kInvalidWebURL =
-    "Invalid value for 'app.urls[*]'.";
+    "Invalid value for 'app.urls[*]': *";
 const char* kInvalidWebURLs =
     "Invalid value for 'app.urls'.";
 const char* kInvalidZipHash =
@@ -296,6 +301,8 @@ const char* kMissingFile =
     "At least one js or css file is required for 'content_scripts[*]'.";
 const char* kMultipleOverrides =
     "An extension cannot override more than one page.";
+const char* kNoWildCardsInPaths =
+  "Wildcards are not allowed in extent URL pattern paths.";
 const char* kOneUISurfaceOnly =
     "Only one of 'browser_action', 'page_action', and 'app' can be specified.";
 const char* kReservedMessageFound =

@@ -73,7 +73,8 @@ class BookmarkAPIEventGenerator {
     input.SetString(keys::kVersion, kTestExtensionVersion);
     input.SetString(keys::kName, kTestExtensionName);
     scoped_refptr<Extension> extension(Extension::Create(
-        FilePath(extension_path), Extension::INVALID, input, false, &error));
+        FilePath(extension_path), Extension::INVALID, input, false, true,
+        &error));
     bookmarks_function->set_name(T::function_name());
     base::WaitableEvent done_event(false, false);
     BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
@@ -131,7 +132,8 @@ class ExtensionsActivityMonitorTest : public testing::Test {
     input.SetString(keys::kVersion, kTestExtensionVersion);
     input.SetString(keys::kName, kTestExtensionName);
     scoped_refptr<Extension> extension(Extension::Create(
-        FilePath(extension_path), Extension::INVALID, input, false, &error));
+        FilePath(extension_path), Extension::INVALID, input, false, true,
+        &error));
     EXPECT_EQ("", error);
     return extension->id();
   }

@@ -168,7 +168,12 @@ scoped_refptr<Extension> ConvertWebAppToExtension(
   // Finally, create the extension object to represent the unpacked directory.
   std::string error;
   scoped_refptr<Extension> extension = Extension::Create(
-      temp_dir.path(), Extension::INTERNAL, *root, false, &error);
+      temp_dir.path(),
+      Extension::INTERNAL,
+      *root,
+      false,  // Don't require a key.
+      true,  // Enable strict error checks.
+      &error);
   if (!extension) {
     LOG(ERROR) << error;
     return NULL;

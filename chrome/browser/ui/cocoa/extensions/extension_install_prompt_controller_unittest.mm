@@ -61,7 +61,7 @@ public:
     }
 
     extension_ = Extension::Create(
-        path.DirName(), Extension::INVALID, *value, false, &error);
+        path.DirName(), Extension::INVALID, *value, false, true, &error);
     if (!extension_.get()) {
       LOG(ERROR) << error;
       return;

@@ -100,11 +100,14 @@ namespace extension_manifest_values {
 namespace extension_manifest_errors {
   extern const char* kAppsNotEnabled;
   extern const char* kCannotAccessPage;
+  extern const char* kCannotClaimAllHostsInExtent;
+  extern const char* kCannotClaimAllURLsInExtent;
   extern const char* kCannotScriptGallery;
   extern const char* kChromeVersionTooLow;
   extern const char* kDevToolsExperimental;
   extern const char* kDisabledByPolicy;
   extern const char* kExperimentalFlagRequired;
+  extern const char* kExpectString;
   extern const char* kHostedAppsCannotIncludeExtensionFeatures;
   extern const char* kInvalidAllFrames;
   extern const char* kInvalidBackground;
@@ -197,6 +200,7 @@ namespace extension_manifest_errors {
   extern const char* kManifestUnreadable;
   extern const char* kMissingFile;
   extern const char* kMultipleOverrides;
+  extern const char* kNoWildCardsInPaths;
   extern const char* kOneUISurfaceOnly;
   extern const char* kReservedMessageFound;
   extern const char* kSidebarExperimental;

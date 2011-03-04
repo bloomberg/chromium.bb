@@ -60,6 +60,7 @@ bool ExtensionCreator::InitializeInput(
       extension_file_util::LoadExtension(extension_dir,
                                          Extension::INTERNAL,
                                          false,  // key not required
+                                         true,  // enable strict error checks
                                          &error_message_));
   if (!extension.get())
     return false;  // LoadExtension already set error_message_.

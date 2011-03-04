@@ -48,7 +48,7 @@ scoped_refptr<Extension> CreateExtension(
   std::string error;
   scoped_refptr<Extension> extension =
       Extension::Create(extension_dir,
-                        Extension::INTERNAL, source, false, &error);
+                        Extension::INTERNAL, source, false, true, &error);
   if (!error.empty()) {
     LOG(WARNING) << error;
     return NULL;

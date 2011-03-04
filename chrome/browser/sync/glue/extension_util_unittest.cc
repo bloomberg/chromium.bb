@@ -71,7 +71,7 @@ scoped_refptr<Extension> MakeExtension(
 
   std::string error;
   scoped_refptr<Extension> extension = Extension::Create(
-      extension_path, location, source, false, &error);
+      extension_path, location, source, false, true, &error);
 #if defined(OS_CHROMEOS)
   if (num_plugins > 0) {  // plugins are illegal in extensions on chrome os.
     EXPECT_FALSE(extension);
@@ -386,7 +386,7 @@ scoped_refptr<Extension> MakeSyncableExtension(
   source.SetString(extension_manifest_keys::kName, name);
   std::string error;
   scoped_refptr<Extension> extension = Extension::Create(
-      extension_path, Extension::INTERNAL, source, false, &error);
+      extension_path, Extension::INTERNAL, source, false, true, &error);
   EXPECT_TRUE(extension);
   EXPECT_EQ("", error);
   return extension;

@@ -42,7 +42,8 @@ static scoped_refptr<Extension> CreateExtension(const std::string& name) {
 
   std::string error;
   scoped_refptr<Extension> extension = Extension::Create(
-      path.AppendASCII(name), Extension::INVALID, manifest, false, &error);
+      path.AppendASCII(name), Extension::INVALID, manifest, false, true,
+      &error);
   EXPECT_TRUE(extension) << error;
 
   return extension;
@@ -64,7 +65,7 @@ static scoped_refptr<Extension> LoadManifest(const std::string& dir,
   std::string error;
   scoped_refptr<Extension> extension = Extension::Create(
       path, Extension::INVALID, *static_cast<DictionaryValue*>(result.get()),
-      false, &error);
+      false, true, &error);
   EXPECT_TRUE(extension) << error;
 
   return extension;

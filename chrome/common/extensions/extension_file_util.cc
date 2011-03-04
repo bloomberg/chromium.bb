@@ -89,6 +89,7 @@ void UninstallExtension(const FilePath& extensions_dir,
 scoped_refptr<Extension> LoadExtension(const FilePath& extension_path,
                                        Extension::Location location,
                                        bool require_key,
+                                       bool strict_error_checks,
                                        std::string* error) {
   FilePath manifest_path =
       extension_path.Append(Extension::kManifestFilename);
@@ -124,7 +125,12 @@ scoped_refptr<Extension> LoadExtension(const FilePath& extension_path,
     return NULL;
 
   scoped_refptr<Extension> extension(Extension::Create(
-      extension_path, location, *manifest, require_key, error));
+      extension_path,
+      location,
+      *manifest,
+      require_key,
+      strict_error_checks,
+      error));
   if (!extension.get())
     return NULL;
 
