@@ -32,6 +32,9 @@ struct SyncLoadResult : ResourceResponseHead {
 
 // Simple wrapper that refcounts ResourceResponseHead.
 struct ResourceResponse : public base::RefCounted<ResourceResponse> {
+  ResourceResponse() {}
+  ~ResourceResponse() {}
+
   ResourceResponseHead response_head;
 
  private:
