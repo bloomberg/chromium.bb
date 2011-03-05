@@ -30,6 +30,7 @@ enum ConnectionType {
   TYPE_WIMAX     = 3,
   TYPE_BLUETOOTH = 4,
   TYPE_CELLULAR  = 5,
+  TYPE_VPN       = 6,
 };
 
 enum ConnectionMode {
@@ -229,6 +230,7 @@ class Network {
         favorite_(false),
         auto_connect_(false),
         connectivity_state_(CONN_STATE_UNKNOWN),
+        priority_(0),
         service_path_(service_path),
         type_(type) {}
 
@@ -267,6 +269,9 @@ class Network {
   // Initialize the IP address field
   void InitIPAddress();
 
+  // Priority value, corresponds to index in list from flimflam (0 = highest)
+  int priority_;
+
   // These must not be modified after construction.
   std::string service_path_;
   ConnectionType type_;
@@ -283,6 +288,15 @@ class EthernetNetwork : public Network {
       Network(service_path, TYPE_ETHERNET) {
   }
 };
+
+// Class for networks of TYPE_VPN.
+class VirtualNetwork : public Network {
+ public:
+  explicit VirtualNetwork(const std::string& service_path) :
+      Network(service_path, TYPE_VPN) {
+  }
+};
+typedef std::vector<VirtualNetwork*> VirtualNetworkVector;
 
 // Base class for networks of TYPE_WIFI or TYPE_CELLULAR.
 class WirelessNetwork : public Network {
@@ -612,20 +626,25 @@ class NetworkLibrary {
   virtual void AddUserActionObserver(UserActionObserver* observer) = 0;
   virtual void RemoveUserActionObserver(UserActionObserver* observer) = 0;
 
-  // Return the active Ethernet network (or a default structure if inactive).
+  // Return the active or default Ethernet network (or NULL if none).
   virtual const EthernetNetwork* ethernet_network() const = 0;
   virtual bool ethernet_connecting() const = 0;
   virtual bool ethernet_connected() const = 0;
 
-  // Return the active Wifi network (or a default structure if none active).
+  // Return the active Wifi network (or NULL if none active).
   virtual const WifiNetwork* wifi_network() const = 0;
   virtual bool wifi_connecting() const = 0;
   virtual bool wifi_connected() const = 0;
 
-  // Return the active Cellular network (or a default structure if none active).
+  // Return the active Cellular network (or NULL if none active).
   virtual const CellularNetwork* cellular_network() const = 0;
   virtual bool cellular_connecting() const = 0;
   virtual bool cellular_connected() const = 0;
+
+  // Return the active virtual network (or NULL if none active).
+  virtual const VirtualNetwork* virtual_network() const = 0;
+  virtual bool virtual_network_connecting() const = 0;
+  virtual bool virtual_network_connected() const = 0;
 
   // Return true if any network is currently connected.
   virtual bool Connected() const = 0;
@@ -644,6 +663,9 @@ class NetworkLibrary {
 
   // Returns the current list of cellular networks.
   virtual const CellularNetworkVector& cellular_networks() const = 0;
+
+  // Returns the current list of virtual networks.
+  virtual const VirtualNetworkVector& virtual_networks() const = 0;
 
   // Return a pointer to the device, if it exists, or NULL.
   virtual const NetworkDevice* FindNetworkDeviceByPath(

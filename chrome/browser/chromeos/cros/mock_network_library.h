@@ -42,6 +42,10 @@ class MockNetworkLibrary : public NetworkLibrary {
   MOCK_CONST_METHOD0(cellular_connecting, bool(void));
   MOCK_CONST_METHOD0(cellular_connected, bool(void));
 
+  MOCK_CONST_METHOD0(virtual_network, const VirtualNetwork*(void));
+  MOCK_CONST_METHOD0(virtual_network_connecting, bool(void));
+  MOCK_CONST_METHOD0(virtual_network_connected, bool(void));
+
   MOCK_CONST_METHOD0(Connected, bool(void));
   MOCK_CONST_METHOD0(Connecting, bool(void));
 
@@ -49,6 +53,7 @@ class MockNetworkLibrary : public NetworkLibrary {
   MOCK_CONST_METHOD0(wifi_networks, const WifiNetworkVector&(void));
   MOCK_CONST_METHOD0(remembered_wifi_networks, const WifiNetworkVector&(void));
   MOCK_CONST_METHOD0(cellular_networks, const CellularNetworkVector&(void));
+  MOCK_CONST_METHOD0(virtual_networks, const VirtualNetworkVector&(void));
 
   MOCK_CONST_METHOD1(FindNetworkDeviceByPath,
                      NetworkDevice*(const std::string&));

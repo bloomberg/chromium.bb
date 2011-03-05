@@ -111,6 +111,7 @@ class CrosMock {
   InputMethodDescriptor previous_input_method_;
   WifiNetworkVector wifi_networks_;
   CellularNetworkVector cellular_networks_;
+  VirtualNetworkVector virtual_networks_;
   std::string empty_string_;
 
   DISALLOW_COPY_AND_ASSIGN(CrosMock);

@@ -36,11 +36,11 @@
 //   ethernet_: EthernetNetwork* to the active ethernet network in network_map_.
 //  WirelessNetwork: a Wifi or Cellular Network.
 //  WifiNetwork
-//   wifi_: WifiNetwork* to the active wifi network in network_map_.
+//   active_wifi_: WifiNetwork* to the active wifi network in network_map_.
 //   wifi_networks_: ordered vector of WifiNetwork* entries in network_map_,
 //       in descending order of importance.
 //  CellularNetwork
-//   cellular_: Cellular version of wifi_.
+//   active_cellular_: Cellular version of wifi_.
 //   cellular_networks_: Cellular version of wifi_.
 // remembered_network_map_: a canonical map<name,Network*> for all networks
 //     remembered in the active Profile ("favorites").
@@ -139,6 +139,7 @@ const char* kTypeWifi = "wifi";
 const char* kTypeWimax = "wimax";
 const char* kTypeBluetooth = "bluetooth";
 const char* kTypeCellular = "cellular";
+const char* kTypeVPN = "vpn";
 
 // Flimflam mode options.
 const char* kModeManaged = "managed";
@@ -220,6 +221,8 @@ static const char* ConnectionTypeToString(ConnectionType type) {
       return kTypeBluetooth;
     case TYPE_CELLULAR:
       return kTypeCellular;
+    case TYPE_VPN:
+      return kTypeVPN;
   }
   LOG(ERROR) << "ConnectionTypeToString called with unknown type: " << type;
   return kUnknownString;
@@ -400,6 +403,7 @@ static ConnectionType ParseType(const std::string& type) {
     { kTypeWimax, TYPE_WIMAX },
     { kTypeBluetooth, TYPE_BLUETOOTH },
     { kTypeCellular, TYPE_CELLULAR },
+    { kTypeVPN, TYPE_VPN },
   };
   static StringToEnum<ConnectionType> parser(
       table, arraysize(table), TYPE_UNKNOWN);
@@ -657,7 +661,6 @@ bool NetworkDevice::ParseValue(int index, const Value* value) {
 }
 
 void NetworkDevice::ParseInfo(const DictionaryValue* info) {
-  LOG(WARNING) << "Device: " << device_path_;
   for (DictionaryValue::key_iterator iter = info->begin_keys();
        iter != info->end_keys(); ++iter) {
     const std::string& key = *iter;
@@ -1219,8 +1222,9 @@ class NetworkLibraryImpl : public NetworkLibrary  {
       : network_manager_monitor_(NULL),
         data_plan_monitor_(NULL),
         ethernet_(NULL),
-        wifi_(NULL),
-        cellular_(NULL),
+        active_wifi_(NULL),
+        active_cellular_(NULL),
+        active_virtual_(NULL),
         available_devices_(0),
         enabled_devices_(0),
         connected_devices_(0),
@@ -1360,20 +1364,32 @@ class NetworkLibraryImpl : public NetworkLibrary  {
     return ethernet_ ? ethernet_->connected() : false;
   }
 
-  virtual const WifiNetwork* wifi_network() const { return wifi_; }
+  virtual const WifiNetwork* wifi_network() const { return active_wifi_; }
   virtual bool wifi_connecting() const {
-    return wifi_ ? wifi_->connecting() : false;
+    return active_wifi_ ? active_wifi_->connecting() : false;
   }
   virtual bool wifi_connected() const {
-    return wifi_ ? wifi_->connected() : false;
+    return active_wifi_ ? active_wifi_->connected() : false;
   }
 
-  virtual const CellularNetwork* cellular_network() const { return cellular_; }
+  virtual const CellularNetwork* cellular_network() const {
+    return active_cellular_;
+  }
   virtual bool cellular_connecting() const {
-    return cellular_ ? cellular_->connecting() : false;
+    return active_cellular_ ? active_cellular_->connecting() : false;
   }
   virtual bool cellular_connected() const {
-    return cellular_ ? cellular_->connected() : false;
+    return active_cellular_ ? active_cellular_->connected() : false;
+  }
+
+  virtual const VirtualNetwork* virtual_network() const {
+    return active_virtual_;
+  }
+  virtual bool virtual_network_connecting() const {
+    return active_virtual_ ? active_virtual_->connecting() : false;
+  }
+  virtual bool virtual_network_connected() const {
+    return active_virtual_ ? active_virtual_->connected() : false;
   }
 
   bool Connected() const {
@@ -1386,11 +1402,14 @@ class NetworkLibraryImpl : public NetworkLibrary  {
 
   const std::string& IPAddress() const {
     // Returns IP address for the active network.
-    const Network* active = active_network();
-    if (active != NULL)
-      return active->ip_address();
-    if (ethernet_)
-      return ethernet_->ip_address();
+    const Network* result = active_network();
+    if (active_virtual_ && active_virtual_->is_active() &&
+        (!result || active_virtual_->priority_ > result->priority_))
+      result = active_virtual_;
+    if (!result)
+      result = ethernet_;  // Use non active ethernet addr if no active network.
+    if (result)
+      return result->ip_address();
     static std::string null_address("0.0.0.0");
     return null_address;
   }
@@ -1405,6 +1424,10 @@ class NetworkLibraryImpl : public NetworkLibrary  {
 
   virtual const CellularNetworkVector& cellular_networks() const {
     return cellular_networks_;
+  }
+
+  virtual const VirtualNetworkVector& virtual_networks() const {
+    return virtual_networks_;
   }
 
   /////////////////////////////////////////////////////////////////////////////
@@ -1495,7 +1518,7 @@ class NetworkLibraryImpl : public NetworkLibrary  {
         wifi->set_identity(identity);
         wifi->set_cert_path(certpath);
         wifi->set_connecting(true);
-        wifi_ = wifi;
+        active_wifi_ = wifi;
       }
       // If we succeed, this network will be remembered; request an update.
       // TODO(stevenjb): flimflam should do this automatically.
@@ -1621,7 +1644,7 @@ class NetworkLibraryImpl : public NetworkLibrary  {
           GetCellularNetworkByPath(network->service_path());
       if (cellular) {
         cellular->set_connecting(true);
-        cellular_ = cellular;
+        active_cellular_ = cellular;
       }
       NotifyNetworkManagerChanged();
       NotifyUserConnectionInitated(cellular);
@@ -1661,10 +1684,10 @@ class NetworkLibraryImpl : public NetworkLibrary  {
           GetWirelessNetworkByPath(network->service_path());
       if (wireless) {
         wireless->set_connected(false);
-        if (wireless == wifi_)
-          wifi_ = NULL;
-        else if (wireless == cellular_)
-          cellular_ = NULL;
+        if (wireless == active_wifi_)
+          active_wifi_ = NULL;
+        else if (wireless == active_cellular_)
+          active_cellular_ = NULL;
       }
       NotifyNetworkManagerChanged();
     }
@@ -1765,14 +1788,20 @@ class NetworkLibraryImpl : public NetworkLibrary  {
 
   virtual bool offline_mode() const { return offline_mode_; }
 
+  // Note: This does not include any virtual networks.
   virtual const Network* active_network() const {
+    // Use flimflam's ordering of the services to determine what the active
+    // network is (i.e. don't assume priority of network types).
+    Network* result = NULL;
     if (ethernet_ && ethernet_->is_active())
-      return ethernet_;
-    if (wifi_ && wifi_->is_active())
-      return wifi_;
-    if (cellular_ && cellular_->is_active())
-      return cellular_;
-    return NULL;
+      result = ethernet_;
+    if (active_wifi_ && active_wifi_->is_active() &&
+        (!result || active_wifi_->priority_ > result->priority_))
+      result = active_wifi_;
+    if (active_cellular_ && active_cellular_->is_active() &&
+        (!result || active_cellular_->priority_ > result->priority_))
+      result = active_cellular_;
+    return result;
   }
 
   virtual void EnableEthernetNetworkDevice(bool enable) {
@@ -1894,6 +1923,7 @@ class NetworkLibraryImpl : public NetworkLibrary  {
  private:
 
   typedef std::map<std::string, Network*> NetworkMap;
+  typedef std::map<std::string, int> PriorityMap;
   typedef std::map<std::string, NetworkDevice*> NetworkDeviceMap;
   typedef std::map<std::string, CellularDataPlanVector*> CellularDataPlanMap;
 
@@ -2142,11 +2172,11 @@ class NetworkLibraryImpl : public NetworkLibrary  {
     if (!ethernet_enabled())
       ethernet_ = NULL;
     if (!wifi_enabled()) {
-      wifi_ = NULL;
+      active_wifi_ = NULL;
       wifi_networks_.clear();
     }
     if (!cellular_enabled()) {
-      cellular_ = NULL;
+      active_cellular_ = NULL;
       cellular_networks_.clear();
     }
   }
@@ -2176,16 +2206,20 @@ class NetworkLibraryImpl : public NetworkLibrary  {
       }
     } else if (type == TYPE_WIFI) {
       if (wifi_enabled()) {
-        // Set wifi_ to the first connected or connecting wifi service.
-        if (wifi_ == NULL && network->connecting_or_connected())
-          wifi_ = static_cast<WifiNetwork*>(network);
+        // Set active_wifi_ to the first connected or connecting wifi service.
+        if (active_wifi_ == NULL && network->connecting_or_connected())
+          active_wifi_ = static_cast<WifiNetwork*>(network);
       }
     } else if (type == TYPE_CELLULAR) {
       if (cellular_enabled()) {
-        // Set cellular_ to the first connected or connecting celluar service.
-        if (cellular_ == NULL && network->connecting_or_connected())
-          cellular_ = static_cast<CellularNetwork*>(network);
+        // Set active_cellular_ to first connected/connecting celluar service.
+        if (active_cellular_ == NULL && network->connecting_or_connected())
+          active_cellular_ = static_cast<CellularNetwork*>(network);
       }
+    } else if (type == TYPE_VPN) {
+      // Set active_virtual_ to the first connected or connecting vpn service.
+      if (active_virtual_ == NULL && network->connecting_or_connected())
+        active_virtual_ = static_cast<VirtualNetwork*>(network);
     }
   }
 
@@ -2200,6 +2234,8 @@ class NetworkLibraryImpl : public NetworkLibrary  {
     } else if (type == TYPE_CELLULAR) {
       if (cellular_enabled())
         cellular_networks_.push_back(static_cast<CellularNetwork*>(network));
+    } else if (type == TYPE_VPN) {
+      virtual_networks_.push_back(static_cast<VirtualNetwork*>(network));
     }
     // Do not set the active network here. Wait until we parse the network.
   }
@@ -2227,20 +2263,20 @@ class NetworkLibraryImpl : public NetworkLibrary  {
           wifi_networks_.begin(), wifi_networks_.end(), network);
       if (iter != wifi_networks_.end())
         wifi_networks_.erase(iter);
-      if (network == wifi_) {
+      if (network == active_wifi_) {
         // This should never happen.
         LOG(ERROR) << "Deleting active wifi network: " << service_path;
-        wifi_ = NULL;
+        active_wifi_ = NULL;
       }
     } else if (type == TYPE_CELLULAR) {
       CellularNetworkVector::iterator iter = std::find(
           cellular_networks_.begin(), cellular_networks_.end(), network);
       if (iter != cellular_networks_.end())
         cellular_networks_.erase(iter);
-      if (network == cellular_) {
+      if (network == active_cellular_) {
         // This should never happen.
         LOG(ERROR) << "Deleting active cellular network: " << service_path;
-        cellular_ = NULL;
+        active_cellular_ = NULL;
       }
       // Find and delete any existing data plans associated with |service_path|.
       CellularDataPlanMap::iterator found =  data_plan_map_.find(service_path);
@@ -2248,6 +2284,16 @@ class NetworkLibraryImpl : public NetworkLibrary  {
         CellularDataPlanVector* data_plans = found->second;
         delete data_plans;
         data_plan_map_.erase(found);
+      }
+    } else if (type == TYPE_VPN) {
+      VirtualNetworkVector::iterator iter = std::find(
+          virtual_networks_.begin(), virtual_networks_.end(), network);
+      if (iter != virtual_networks_.end())
+        virtual_networks_.erase(iter);
+      if (network == active_virtual_) {
+        // This should never happen.
+        LOG(ERROR) << "Deleting active virtual network: " << service_path;
+        active_virtual_ = NULL;
       }
     }
     delete network;
@@ -2288,6 +2334,7 @@ class NetworkLibraryImpl : public NetworkLibrary  {
     NetworkMap old_network_map = network_map_;
     ClearNetworks(false /*don't delete*/);
     // Clear the list of update requests.
+    int network_priority = 0;
     network_update_requests_.clear();
     // wifi_scanning_ will remain false unless we request a network update.
     wifi_scanning_ = false;
@@ -2309,7 +2356,8 @@ class NetworkLibraryImpl : public NetworkLibrary  {
         // TODO(stevenjb): Investigate why we are missing updates then
         // rely on watched network updates and only request updates here for
         // new networks.
-        network_update_requests_.insert(service_path);
+        // Use update_request map to store network priority.
+        network_update_requests_[service_path] = network_priority++;
         wifi_scanning_ = true;
         RequestNetworkServiceInfo(service_path.c_str(),
                                   &NetworkServiceUpdate,
@@ -2382,18 +2430,27 @@ class NetworkLibraryImpl : public NetworkLibrary  {
 
   Network* CreateNewNetwork(ConnectionType type,
                             const std::string& service_path) {
-    if (type == TYPE_ETHERNET) {
-      EthernetNetwork* ethernet = new EthernetNetwork(service_path);
-      return ethernet;
-    } else if (type == TYPE_WIFI) {
-      WifiNetwork* wifi = new WifiNetwork(service_path);
-      return wifi;
-    } else if (type == TYPE_CELLULAR) {
-      CellularNetwork* cellular = new CellularNetwork(service_path);
-      return cellular;
-    } else {
-      LOG(WARNING) << "Unknown service type: " << type;
-      return new Network(service_path, type);
+    switch(type) {
+      case TYPE_ETHERNET: {
+        EthernetNetwork* ethernet = new EthernetNetwork(service_path);
+        return ethernet;
+      }
+      case TYPE_WIFI: {
+        WifiNetwork* wifi = new WifiNetwork(service_path);
+        return wifi;
+      }
+      case TYPE_CELLULAR: {
+        CellularNetwork* cellular = new CellularNetwork(service_path);
+        return cellular;
+      }
+      case TYPE_VPN: {
+        VirtualNetwork* vpn = new VirtualNetwork(service_path);
+        return vpn;
+      }
+      default: {
+        LOG(WARNING) << "Unknown service type: " << type;
+        return new Network(service_path, type);
+      }
     }
   }
 
@@ -2408,15 +2465,24 @@ class NetworkLibraryImpl : public NetworkLibrary  {
       network = CreateNewNetwork(type, service_path);
       AddNetwork(network);
     }
-    network_update_requests_.erase(service_path);
-    if (network_update_requests_.empty()) {
-      // Clear wifi_scanning_ when we have no pending requests.
-      wifi_scanning_ = false;
-    }
 
     network->ParseInfo(info);  // virtual.
 
     UpdateActiveNetwork(network);
+
+    // Find and erase entry in update_requests, and set network priority.
+    PriorityMap::iterator found2 = network_update_requests_.find(service_path);
+    if (found2 != network_update_requests_.end()) {
+      network->priority_ = found2->second;
+      network_update_requests_.erase(found2);
+      if (network_update_requests_.empty()) {
+        // Clear wifi_scanning_ when we have no pending requests.
+        wifi_scanning_ = false;
+      }
+    } else {
+      LOG(WARNING) << "ParseNetwork called with no update request entry: "
+                   << service_path;
+    }
 
     VLOG(1) << "ParseNetwork:" << network->name();
     NotifyNetworkManagerChanged();
@@ -2445,10 +2511,12 @@ class NetworkLibraryImpl : public NetworkLibrary  {
       STLDeleteValues(&network_map_);
     network_map_.clear();
     ethernet_ = NULL;
-    wifi_ = NULL;
-    cellular_ = NULL;
+    active_wifi_ = NULL;
+    active_cellular_ = NULL;
+    active_virtual_ = NULL;
     wifi_networks_.clear();
     cellular_networks_.clear();
+    virtual_networks_.clear();
   }
 
   void ClearRememberedNetworks(bool delete_networks) {
@@ -2764,7 +2832,7 @@ class NetworkLibraryImpl : public NetworkLibrary  {
     wifi3->set_cert_path("SETTINGS:key_id=3,cert_id=3,pin=111111");
     AddNetwork(wifi3);
 
-    wifi_ = wifi2;
+    active_wifi_ = wifi2;
 
     CellularNetwork* cellular1 = new CellularNetwork("fc1");
     cellular1->set_name("Fake Cellular 1");
@@ -2792,7 +2860,7 @@ class NetworkLibraryImpl : public NetworkLibrary  {
     data_plans->push_back(paid_plan);
 
     AddNetwork(cellular1);
-    cellular_ = cellular1;
+    active_cellular_ = cellular1;
 
     // Remembered Networks
     ClearRememberedNetworks(true /*delete networks*/);
@@ -2835,7 +2903,7 @@ class NetworkLibraryImpl : public NetworkLibrary  {
   NetworkMap remembered_network_map_;
 
   // A list of services that we are awaiting updates for.
-  std::set<std::string> network_update_requests_;
+  PriorityMap network_update_requests_;
 
   // A device path based map of all NetworkDevices.
   NetworkDeviceMap device_map_;
@@ -2850,7 +2918,7 @@ class NetworkLibraryImpl : public NetworkLibrary  {
   WifiNetworkVector wifi_networks_;
 
   // The current connected (or connecting) wifi network.
-  WifiNetwork* wifi_;
+  WifiNetwork* active_wifi_;
 
   // The remembered wifi networks.
   WifiNetworkVector remembered_wifi_networks_;
@@ -2859,7 +2927,13 @@ class NetworkLibraryImpl : public NetworkLibrary  {
   CellularNetworkVector cellular_networks_;
 
   // The current connected (or connecting) cellular network.
-  CellularNetwork* cellular_;
+  CellularNetwork* active_cellular_;
+
+  // The list of available virtual networks.
+  VirtualNetworkVector virtual_networks_;
+
+  // The current connected (or connecting) virtual network.
+  VirtualNetwork* active_virtual_;
 
   // The path of the active profile (for retrieving remembered services).
   std::string active_profile_path_;
@@ -2918,8 +2992,8 @@ class NetworkLibraryStubImpl : public NetworkLibrary {
   NetworkLibraryStubImpl()
       : ip_address_("1.1.1.1"),
         ethernet_(new EthernetNetwork("eth0")),
-        wifi_(NULL),
-        cellular_(NULL) {
+        active_wifi_(NULL),
+        active_cellular_(NULL) {
   }
   ~NetworkLibraryStubImpl() { if (ethernet_) delete ethernet_; }
   virtual void AddNetworkManagerObserver(NetworkManagerObserver* observer) {}
@@ -2938,21 +3012,30 @@ class NetworkLibraryStubImpl : public NetworkLibrary {
       CellularDataPlanObserver* observer) {}
   virtual void AddUserActionObserver(UserActionObserver* observer) {}
   virtual void RemoveUserActionObserver(UserActionObserver* observer) {}
+
   virtual const EthernetNetwork* ethernet_network() const {
     return ethernet_;
   }
   virtual bool ethernet_connecting() const { return false; }
   virtual bool ethernet_connected() const { return true; }
+
   virtual const WifiNetwork* wifi_network() const {
-    return wifi_;
+    return active_wifi_;
   }
   virtual bool wifi_connecting() const { return false; }
   virtual bool wifi_connected() const { return false; }
+
   virtual const CellularNetwork* cellular_network() const {
-    return cellular_;
+    return active_cellular_;
   }
   virtual bool cellular_connecting() const { return false; }
   virtual bool cellular_connected() const { return false; }
+
+  virtual const VirtualNetwork* virtual_network() const {
+    return active_virtual_;
+  }
+  virtual bool virtual_network_connecting() const { return false; }
+  virtual bool virtual_network_connected() const { return false; }
 
   bool Connected() const { return true; }
   bool Connecting() const { return false; }
@@ -2965,6 +3048,9 @@ class NetworkLibraryStubImpl : public NetworkLibrary {
   }
   virtual const CellularNetworkVector& cellular_networks() const {
     return cellular_networks_;
+  }
+  virtual const VirtualNetworkVector& virtual_networks() const {
+    return virtual_networks_;
   }
   virtual bool has_cellular_networks() const {
     return cellular_networks_.begin() != cellular_networks_.end();
@@ -3042,10 +3128,12 @@ class NetworkLibraryStubImpl : public NetworkLibrary {
  private:
   std::string ip_address_;
   EthernetNetwork* ethernet_;
-  WifiNetwork* wifi_;
-  CellularNetwork* cellular_;
+  WifiNetwork* active_wifi_;
+  CellularNetwork* active_cellular_;
+  VirtualNetwork* active_virtual_;
   WifiNetworkVector wifi_networks_;
   CellularNetworkVector cellular_networks_;
+  VirtualNetworkVector virtual_networks_;
 };
 
 // static

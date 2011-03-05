@@ -311,12 +311,18 @@ void CrosMock::SetNetworkLibraryStatusAreaExpectations() {
   EXPECT_CALL(*mock_network_library_, cellular_network())
       .Times(AnyNumber())
       .WillRepeatedly((Return((const CellularNetwork*)(NULL))));
+  EXPECT_CALL(*mock_network_library_, virtual_network())
+      .Times(AnyNumber())
+      .WillRepeatedly((Return((const VirtualNetwork*)(NULL))));
   EXPECT_CALL(*mock_network_library_, wifi_networks())
       .Times(AnyNumber())
       .WillRepeatedly((ReturnRef(wifi_networks_)));
   EXPECT_CALL(*mock_network_library_, cellular_networks())
       .Times(AnyNumber())
       .WillRepeatedly((ReturnRef(cellular_networks_)));
+  EXPECT_CALL(*mock_network_library_, virtual_networks())
+      .Times(AnyNumber())
+      .WillRepeatedly((ReturnRef(virtual_networks_)));
 
   // Set specific expectations for interesting functions:
 
