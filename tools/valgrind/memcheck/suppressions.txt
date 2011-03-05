@@ -822,7 +822,7 @@
    fun:_ZN19RenderMessageFilterC1EP22ResourceDispatcherHostiP13PluginServicePN8printing15PrintJobManagerEP7ProfileP18RenderWidgetHelper
    fun:_ZN24BrowserRenderProcessHost20CreateMessageFiltersEv
    fun:_ZN24BrowserRenderProcessHost4InitEbb
-   fun:_ZN14RenderViewHost16CreateRenderViewERKSbItN4base20string16_char_traitsESaItEE
+   fun:_ZN1}RenderViewHost16CreateRenderViewERKSbItN4base20string16_char_traitsESaItEE
    fun:_ZN11TabContents32CreateRenderViewForRenderManagerEP14RenderViewHost
    fun:_ZN21RenderViewHostManager14InitRenderViewEP14RenderViewHostRK15NavigationEntry
    fun:_ZN21RenderViewHostManager8NavigateERK15NavigationEntry
@@ -3751,7 +3751,7 @@
    fun:_ZN11BrowserInit18ProcessCmdLineImplERK11CommandLineRK8FilePathbP7ProfilePiPS_
    fun:_ZN11BrowserInit5StartERK11CommandLineRK8FilePathP7ProfilePi
    fun:_Z11BrowserMainRK18MainFunctionParams
-   fun:_ZN47_GLOBAL__N__Z22CheckUserDataDirPolicyP8FilePath23RunNamedProcessTypeMainERKSsRK18MainFunctionParams
+   fun:*RunNamedProcessTypeMainERKSsRK18MainFunctionParams
 }
 {
    bug_73358
@@ -3853,6 +3853,81 @@
    fun:_ZN7fileapi22FileSystemUsageTracker12GetUsageTask15RunOnFileThreadEv
    fun:_Z16DispatchToMethodIN7fileapi22FileSystemUsageTracker12GetUsageTaskEMS2_FvvEEvPT_T0_RK6Tuple0
    fun:_ZN14RunnableMethodIN7fileapi22FileSystemUsageTracker12GetUsageTaskEMS2_FvvE6Tuple0E3RunEv
+}
+{
+   bug_75019
+   Memcheck:Leak
+   fun:_Znw*
+   ...
+   fun:_ZN14GpuDataManagerC1Ev
+   fun:_ZN22DefaultSingletonTraitsI14GpuDataManagerE3NewEv
+   fun:_ZN9SingletonI14GpuDataManager22DefaultSingletonTraitsIS0_ES0_E3getEv
+   fun:_ZN14GpuDataManager11GetInstanceEv
+   fun:_Z11BrowserMainRK18MainFunctionParams
+   fun:_ZN20InProcessBrowserTest5SetUpEv
+}
+{
+   bug_75020
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN8remoting18ChromotingHostTest5SetUpEv
+}
+{
+   bug_75021a
+   Memcheck:Addr4
+   fun:_ZNK11InfoBarView8delegateEv
+   fun:_ZN16InfoBarContainer13RemoveInfoBarEP15InfoBarDelegateb
+   fun:_ZN16InfoBarContainer7ObserveE16NotificationTypeRK18NotificationSourceRK19NotificationDetails
+   fun:_ZN19NotificationService6NotifyE16NotificationTypeRK18NotificationSourceRK19NotificationDetails
+   fun:_ZN11TabContents13RemoveInfoBarEP15InfoBarDelegate
+   fun:_ZN11TabContents14ExpireInfoBarsERKN20NavigationController20LoadCommittedDetailsE
+   fun:_ZN11TabContents7ObserveE16NotificationTypeRK18NotificationSourceRK19NotificationDetails
+   fun:_ZN19NotificationService6NotifyE16NotificationTypeRK18NotificationSourceRK19NotificationDetails
+   fun:_ZN20NavigationController30NotifyNavigationEntryCommittedEPNS_20LoadCommittedDetailsEi
+   fun:_ZN20NavigationController19RendererDidNavigateERK32ViewHostMsg_FrameNavigate_ParamsiPNS_20LoadCommittedDetailsE
+   fun:_ZN11TabContents11DidNavigateEP14RenderViewHostRK32ViewHostMsg_FrameNavigate_Params
+   fun:_ZN14RenderViewHost13OnMsgNavigateERKN3IPC7MessageE
+   fun:_ZN14RenderViewHost17OnMessageReceivedERKN3IPC7MessageE
+   fun:_ZN24BrowserRenderProcessHost17OnMessageReceivedERKN3IPC7MessageE
+   fun:_ZN3IPC12ChannelProxy7Context17OnDispatchMessageERKNS_7MessageE
+}
+{
+   bug_75021b
+   Memcheck:Addr4
+   fun:_ZN11InfoBarView13set_containerEP16InfoBarContainer
+   fun:_ZN16InfoBarContainer17ChangeTabContentsEP11TabContents
+   fun:_ZN11BrowserView13TabDetachedAtEP18TabContentsWrapperi
+   fun:_ZN13TabStripModel19DetachTabContentsAtEi
+   fun:_ZN13TabStripModel7ObserveE16NotificationTypeRK18NotificationSourceRK19NotificationDetails
+   fun:_ZN19NotificationService6NotifyE16NotificationTypeRK18NotificationSourceRK19NotificationDetails
+   fun:_ZN11TabContentsD0Ev
+   fun:_ZN10scoped_ptrI11TabContentsED1Ev
+   fun:_ZN18TabContentsWrapperD0Ev
+   fun:_ZN13TabStripModel16InternalCloseTabEP18TabContentsWrapperib
+   fun:_ZN13TabStripModel17InternalCloseTabsERKSt6vectorIiSaIiEEj
+   fun:_ZN13TabStripModel12CloseAllTabsEv
+   fun:_ZN7Browser12CloseAllTabsEv
+   fun:_ZN7Browser15OnWindowClosingEv
+   fun:_ZN11BrowserView8CanCloseEv
+   fun:_ZN5views13NonClientView8CanCloseEv
+   fun:_ZN5views9WindowGtk5CloseEv
+   fun:_ZN11BrowserView5CloseEv
+   fun:_ZN7Browser11CloseWindowEv
+   fun:_ZN7Browser29ExecuteCommandWithDispositionEi21WindowOpenDisposition
+   fun:_ZN7Browser14ExecuteCommandEi
+}
+{
+   bug_75023
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN5views6Widget21OnNativeWidgetCreatedEv
+   fun:_ZN5views9WidgetGtk4InitEP10_GtkWidgetRKN3gfx4RectE
+   fun:_ZN18TabContentsViewGtk10CreateViewERKN3gfx4SizeE
+   fun:_ZN11TabContentsC2EP7ProfileP12SiteInstanceiPKS_P23SessionStorageNamespace
+   fun:_ZN15TestTabContentsC1EP7ProfileP12SiteInstance
+   fun:_ZN25RenderViewHostTestHarness21CreateTestTabContentsEv
+   fun:_ZN25RenderViewHostTestHarness5SetUpEv
+   fun:_ZN19PasswordManagerTest5SetUpEv
 }
 
 #-----------------------------------------------------------------------
