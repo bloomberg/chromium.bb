@@ -35,6 +35,7 @@ class ChromiteCmd(object):
     Please call this method after the constructor.
     """
     self.cros_env = cros_env
+    self._oper = cros_env.GetOperation()
 
   def Run(self, raw_argv, chroot_config=None):
     """Run the command.
@@ -62,10 +63,12 @@ class WrappedChrootCmd(ChromiteCmd):
     The usage string will be a little messed up, but hopefully that's OK.
   """
 
-  def __init__(self, target_cmd, host_cmd, need_args=False, env_whitelist=None):
+  def __init__(self, name, target_cmd, host_cmd, need_args=False,
+      env_whitelist=None):
     """WrappedChrootCmd constructor.
 
     Args:
+      name: This is a name for the command, displayed to the user.
       target_cmd: We'll put this at the start of argv when calling a target
           command.  We'll substiture %s with the target.
           Like - ['my_command-%s'] or ['my_command', '--board=%s']
@@ -86,6 +89,7 @@ class WrappedChrootCmd(ChromiteCmd):
     super(WrappedChrootCmd, self).__init__()
 
     # Save away params for use later in Run().
+    self._name = name
     self._target_cmd = target_cmd
     self._host_cmd = host_cmd
     self._need_args = need_args
@@ -123,6 +127,7 @@ class WrappedChrootCmd(ChromiteCmd):
 
     # Enter the chroot if needed...
     if not cros_lib.IsInsideChroot():
+      self._oper.Info('ENTERING THE CHROOT')
       utils.EnterChroot(chroot_config, (self, 'Run'), raw_argv, argv=argv,
                         build_config=build_config)
     else:
@@ -155,11 +160,4 @@ class WrappedChrootCmd(ChromiteCmd):
       env = os.environ.copy()
       env.update(self._env_to_add)
 
-      # Run ignoring errors (since some commands might return errors from
-      # things like --help).
-      #
-      # TODO(dianders): "cros_workon --help" used to return errors, but that
-      # has been fixed.  Are there any other places where errors should
-      # be ignored?  If not, we should remove the error_ok parameter.
-      cros_lib.RunCommand(argv, cwd=cwd, ignore_sigint=True, error_ok=True,
-                          env=env)
+      self.cros_env.RunScript(self._name, '', argv, env=env)

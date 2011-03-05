@@ -15,6 +15,7 @@ class EbuildCmd(subcmd.WrappedChrootCmd):
     """EbuildCmd constructor."""
     # Just call the WrappedChrootCmd superclass, which does most of the work.
     super(EbuildCmd, self).__init__(
+        'EBUILD',
         ['ebuild-%s'], ['ebuild'],
         need_args=True,
         env_whitelist=['CHROME_ORIGIN', 'FEATURES', 'USE']
@@ -28,6 +29,7 @@ class EmergeCmd(subcmd.WrappedChrootCmd):
     """EmergeCmd constructor."""
     # Just call the WrappedChrootCmd superclass, which does most of the work.
     super(EmergeCmd, self).__init__(
+        'EMERGE',
         ['emerge-%s'], ['sudo', 'emerge'],
         need_args=True,
         env_whitelist=['CHROME_ORIGIN', 'FEATURES', 'USE']
@@ -41,6 +43,7 @@ class EqueryCmd(subcmd.WrappedChrootCmd):
     """EqueryCmd constructor."""
     # Just call the WrappedChrootCmd superclass, which does most of the work.
     super(EqueryCmd, self).__init__(
+        'EQUERY',
         ['equery-%s'], ['equery'],
         need_args=True
     )
@@ -53,6 +56,7 @@ class PortageqCmd(subcmd.WrappedChrootCmd):
     """PortageqCmd constructor."""
     # Just call the WrappedChrootCmd superclass, which does most of the work.
     super(PortageqCmd, self).__init__(
+        'PORTAGEEQ',
         ['portageq-%s'], ['portageq'],
         need_args=True
     )

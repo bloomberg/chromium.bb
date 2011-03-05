@@ -117,6 +117,7 @@ def RunCommand(cmd, print_cmd=True, error_ok=False, error_message=None,
   return cmd_result
 
 
+#TODO(sjg): Remove this in favor of operation.Die
 def Die(message):
   """Emits a red error message and halts execution.
 
@@ -128,6 +129,7 @@ def Die(message):
   sys.exit(1)
 
 
+#TODO(sjg): Remove this in favor of operation.Warning
 # pylint: disable-msg=W0622
 def Warning(message):
   """Emits a yellow warning message and continues execution.
@@ -139,14 +141,18 @@ def Warning(message):
       Color(_STDOUT_IS_TTY).Color(Color.YELLOW, '\nWARNING: ' + message))
 
 
-def Info(message):
-  """Emits a blue informational message and continues execution.
-
-  Args:
-    message: The message to be emitted.
-  """
-  print >> sys.stderr, (
-      Color(_STDOUT_IS_TTY).Color(Color.BLUE, '\nINFO: ' + message))
+# This command is deprecated in favor of operation.Info()
+# It is left here for the moment so people are aware what happened.
+# The reason is that this is not aware of the terminal output restrictions such
+# as verbose, quiet and subprocess output. You should not be calling this.
+# def Info(message):
+#  """Emits a blue informational message and continues execution.
+#
+#  Args:
+#    message: The message to be emitted.
+#  """
+#  print >> sys.stderr, (
+#      Color(_STDOUT_IS_TTY).Color(Color.BLUE, '\nINFO: ' + message))
 
 
 def ListFiles(base_dir):

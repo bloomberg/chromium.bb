@@ -33,6 +33,18 @@ class Operation:
 
   Each operation has a name, and this class handles displaying this name
   as it reports progress.
+
+
+  Operation Objects
+  =================
+
+  verbose: True / False
+    In verbose mode all output from subprocesses is displayed, otherwise
+    this output is normally supressed, unless we think it indicates an error.
+
+  progress: True / False
+    The output from subprocesses can be analysed in a very basic manner to
+    try to present progress information to the user.
   """
   # Force color on/off, or use color only if stdout is a terminal.
   COLOR_OFF, COLOR_ON, COLOR_IF_TERMINAL = range(3)
@@ -48,8 +60,8 @@ class Operation:
         COLOR_IF_TERMINAL: send color if output apperas to be a terminal.
     """
     self._name = name   # Operation name.
-    self._verbose = False   # True to echo subprocess output.
-    self._progress = True   # True to report progress of the operation
+    self.verbose = False   # True to echo subprocess output.
+    self.progress = True   # True to report progress of the operation
     self._column = 0    # Current output column (always 0 unless verbose).
     self._update_len = 0    # Length of last progress update message.
     self._line = ''   # text of current line, so far
@@ -80,8 +92,8 @@ class Operation:
     This finishes any output line currently in progress and resets the color
     back to normal.
     """
-    self._FinishLine(self._verbose, final=True)
-    if self._column and self._verbose:
+    self._FinishLine(self.verbose, final=True)
+    if self._column and self.verbose:
       print self._color.Stop()
       self._column = 0
 
@@ -93,28 +105,6 @@ class Operation:
       False otherwise
     """
     return self._error_count > 0
-
-  def SetVerbose(self, verbose):
-    """Enable / disable verbose mode.
-
-    In verbose mode all output from subprocesses is displayed, otherwise
-    this output is normally supressed, unless we think it indicates an error.
-
-    Args:
-      verbose: True to display all subprocess output, False to supress.
-    """
-    self._verbose = verbose
-
-  def SetProgress(self, progress):
-    """Enable / disable progress display.
-
-    The output from subprocesses can be analysed in a very basic manner to
-    try to present progress information to the user.
-
-    Args:
-      progress: True to enable progress display, False to disable.
-    """
-    self._progress = progress
 
   def SetName(self, name):
     """Set the name of the operation as displayed to the user.
@@ -133,7 +123,7 @@ class Operation:
 
     Args:
       line: the output line to filter, as a string.
-      print_it: True to print the error, False to just record it.
+      print_error: True to print the error, False to just record it.
     """
     bad_things = ['Cannot GET', 'ERROR', '!!!', 'FAILED']
     for bad_thing in bad_things:
@@ -168,9 +158,9 @@ class Operation:
     if total > 0:
       update_str = '%s...%d%% (%d of %d)' % (self._name,
           upto * 100 // total, upto, total)
-      if self._progress:
+      if self.progress:
         # Finish the current line, print progress, and remember its length.
-        self._FinishLine(self._verbose)
+        self._FinishLine(self.verbose)
 
         # Sometimes the progress string shrinks and in this case we need to
         # blank out the characters at the end of the line that will not be
@@ -294,7 +284,7 @@ class Operation:
 
     # If we now have a whole line, check it for errors and progress.
     if newline:
-      self._FilterOutputForErrors(self._line, print_it=not display)
+      self._FilterOutputForErrors(self._line, print_error=not display)
       self._FilterOutputForProgress(self._line)
       self._line = ''
 
@@ -316,16 +306,17 @@ class Operation:
 
     #TODO(sjg): Just use a list as the input parameter to avoid the split.
     """
-    lines = data.splitlines()
+    # We cannot use splitlines() here as we need this exact behavior
+    lines = data.split('\r\n')
 
     # Output each full line, with a \n after it.
     for line in lines[:-1]:
-      self._Out(stream, line, display=self._verbose, newline=True)
+      self._Out(stream, line, display=self.verbose, newline=True)
 
     # If we have a partial line at the end, output what we have.
     # We will continue it later.
     if lines[-1]:
-      self._Out(stream, lines[-1], display=self._verbose)
+      self._Out(stream, lines[-1], display=self.verbose)
 
     # Flush so that the terminal will receive partial line output (now!)
     sys.stdout.flush()
@@ -341,4 +332,14 @@ class Operation:
       line: text to output (without \n on the end)
     """
     self._Out(None, line, display=True, newline=True)
+    self._FinishLine(display=True)
+
+  def Info(self, line):
+    """Output a line of information text to the display in verbose mode.
+
+    Args:
+      line: text to output (without \n on the end)
+    """
+    self._Out(None, self._color.Color(self._color.BLUE, line),
+        display=self.verbose, newline=True)
     self._FinishLine(display=True)
