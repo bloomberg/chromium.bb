@@ -251,7 +251,6 @@ IN_PROC_BROWSER_TEST_F(ExtensionManagementTest, AutoUpdate) {
   ASSERT_EQ("2.0", extensions->at(size_before)->VersionString());
 }
 
-// See http://crbug.com/57378 for flakiness details.
 IN_PROC_BROWSER_TEST_F(ExtensionManagementTest, ExternalUrlUpdate) {
   ExtensionService* service = browser()->profile()->GetExtensionService();
   const char* kExtensionId = "ogjcoiohnmldgjemafoockdghcjciccf";
