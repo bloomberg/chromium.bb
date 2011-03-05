@@ -12,19 +12,21 @@
 # module.h/cc - implementation of PPP_Instance interface
 # scriptable_object.h/cc - implementation of the scripting interface
 # url_load_request.h/cc - url loading helper
-
+# nacl_file_main.cc - uses main() to test NaClFile interface
 
 Import('env')
 
 env.Prepend(CPPDEFINES=['XP_UNIX'])
 
 ppapi_geturl_nexe = env.ComponentProgram('ppapi_geturl.nexe',
-                                         ['module.cc',
+                                         ['nacl_file_main.cc',
+                                          'module.cc',
                                           'ppapi_geturl.cc',
                                           'scriptable_object.cc',
                                           'url_load_request.cc',
                                           ],
-                                         EXTRA_LIBS=['ppruntime',
+                                         EXTRA_LIBS=['nacl_file',
+                                                     'ppruntime',
                                                      'imc',
                                                      'platform',
                                                      'gio',

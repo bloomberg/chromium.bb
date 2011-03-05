@@ -13,16 +13,25 @@
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/c/dev/ppp_class_deprecated.h"
 
+#if defined(__native_client__)
+#include "nacl/nacl_file.h"
+#else
+void LoadUrl(PP_Instance /*instance*/, const char* /*url*/) { /* noop */ }
+#endif
+
 namespace {
 PPP_Instance instance_interface;
 Module* singleton_ = NULL;
 }
 
-PP_Bool Instance_DidCreate(PP_Instance /*pp_instance*/,
+PP_Bool Instance_DidCreate(PP_Instance pp_instance,
                            uint32_t /*argc*/,
                            const char* /*argn*/[],
                            const char* /*argv*/[]) {
   printf("--- Instance_DidCreate\n");
+  LoadUrl(pp_instance, "ppapi_geturl_success.html");
+  LoadUrl(pp_instance, "http://www.google.com/robots.txt");
+  LoadUrl(pp_instance, "ppapi_nonexistent_url.html");
   return PP_TRUE;
 }
 
