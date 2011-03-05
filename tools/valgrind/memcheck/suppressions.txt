@@ -3927,6 +3927,18 @@
    fun:_ZN8remoting8Capturer19CaptureInvalidRectsEP14CallbackRunnerI6Tuple1I13scoped_refptrINS_11CaptureDataEEEE
    fun:_ZN8remoting28CapturerMacTest_Capture_Test8TestBodyEv
 }
+{
+   bug_75051
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN3net12CertVerifier6VerifyEPNS_15X509CertificateERKSsiPNS_16CertVerifyResultEP14CallbackRunnerI6Tuple1IiEEPPv
+   fun:_ZN3net25SingleRequestCertVerifier6VerifyEPNS_15X509CertificateERKSsiPNS_16CertVerifyResultEP14CallbackRunnerI6Tuple1IiEE
+   fun:_ZN3net18SSLClientSocketNSS12DoVerifyCertEi
+   fun:_ZN3net18SSLClientSocketNSS15DoHandshakeLoopEi
+   fun:_ZN3net18SSLClientSocketNSS21OnHandshakeIOCompleteEi
+   fun:_ZN3net18SSLClientSocketNSS14OnRecvCompleteEi
+   fun:_ZN3net18SSLClientSocketNSS18BufferRecvCompleteEi
+}
 
 #-----------------------------------------------------------------------
 # These only occur on our Google workstations
