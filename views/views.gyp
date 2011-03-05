@@ -365,6 +365,8 @@
         'window/dialog_delegate.h',
         'window/native_frame_view.cc',
         'window/native_frame_view.h',
+        'window/native_window.h',
+        'window/native_window_delegate.h',
         'window/non_client_view.cc',
         'window/non_client_view.h',
         'window/window.cc',

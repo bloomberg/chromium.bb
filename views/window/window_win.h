@@ -7,6 +7,7 @@
 #pragma once
 
 #include "views/widget/widget_win.h"
+#include "views/window/native_window.h"
 #include "views/window/window.h"
 
 namespace gfx {
@@ -16,10 +17,10 @@ class Size;
 };
 
 namespace views {
-
 namespace internal {
-// This is exposed only for testing
+class NativeWindowDelegate;
 
+// This is exposed only for testing
 // Adjusts the value of |child_rect| if necessary to ensure that it is
 // completely visible within |parent_rect|.
 void EnsureRectIsVisibleInRect(const gfx::Rect& parent_rect,
@@ -40,6 +41,7 @@ class WindowDelegate;
 //
 ///////////////////////////////////////////////////////////////////////////////
 class WindowWin : public WidgetWin,
+                  public NativeWindow,
                   public Window {
  public:
   virtual ~WindowWin();
@@ -234,6 +236,9 @@ class WindowWin : public WidgetWin,
     RC_NORMAL = 0, RC_VERTICAL, RC_HORIZONTAL, RC_NESW, RC_NWSE
   };
   static HCURSOR resize_cursors_[6];
+
+  // A delegate implementation that handles events received here.
+  internal::NativeWindowDelegate* delegate_;
 
   // Our window delegate (see Init method for documentation).
   WindowDelegate* window_delegate_;

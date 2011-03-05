@@ -23,6 +23,7 @@
 #include "views/widget/root_view.h"
 #include "views/window/client_view.h"
 #include "views/window/custom_frame_view.h"
+#include "views/window/native_window_delegate.h"
 #include "views/window/native_frame_view.h"
 #include "views/window/non_client_view.h"
 #include "views/window/window_delegate.h"
@@ -621,6 +622,7 @@ gfx::Font WindowWin::GetWindowTitleFont() {
 
 WindowWin::WindowWin(WindowDelegate* window_delegate)
     : WidgetWin(),
+      ALLOW_THIS_IN_INITIALIZER_LIST(delegate_(this)),
       focus_on_creation_(true),
       window_delegate_(window_delegate),
       non_client_view_(new NonClientView(this)),
@@ -640,6 +642,7 @@ WindowWin::WindowWin(WindowDelegate* window_delegate)
       force_hidden_count_(0),
       is_right_mouse_pressed_on_caption_(false),
       last_monitor_(NULL) {
+  set_native_window(this);
   is_window_ = true;
   InitClass();
   DCHECK(window_delegate_);

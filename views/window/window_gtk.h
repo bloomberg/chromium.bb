@@ -8,6 +8,7 @@
 
 #include "base/basictypes.h"
 #include "views/widget/widget_gtk.h"
+#include "views/window/native_window.h"
 #include "views/window/window.h"
 
 namespace gfx {
@@ -16,12 +17,15 @@ class Size;
 };
 
 namespace views {
+namespace internal {
+class NativeWindowDelegate;
+}
 
 class Client;
 class WindowDelegate;
 
 // Window implementation for GTK.
-class WindowGtk : public WidgetGtk, public Window {
+class WindowGtk : public WidgetGtk, public NativeWindow, public Window {
  public:
   virtual ~WindowGtk();
 
@@ -99,6 +103,9 @@ class WindowGtk : public WidgetGtk, public Window {
 
   void SetInitialBounds(GtkWindow* parent, const gfx::Rect& bounds);
   void SizeWindowToDefault(GtkWindow* parent);
+
+  // A delegate implementation that handles events received here.
+  internal::NativeWindowDelegate* delegate_;
 
   // Whether or not the window is modal. This comes from the delegate and is
   // cached at Init time to avoid calling back to the delegate from the

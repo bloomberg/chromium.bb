@@ -14,6 +14,7 @@
 #include "views/widget/root_view.h"
 #include "views/window/custom_frame_view.h"
 #include "views/window/hit_test.h"
+#include "views/window/native_window_delegate.h"
 #include "views/window/non_client_view.h"
 #include "views/window/window_delegate.h"
 
@@ -395,11 +396,13 @@ void WindowGtk::SetInitialFocus() {
 
 WindowGtk::WindowGtk(WindowDelegate* window_delegate)
     : WidgetGtk(TYPE_WINDOW),
+      ALLOW_THIS_IN_INITIALIZER_LIST(delegate_(this)),
       is_modal_(false),
       window_delegate_(window_delegate),
       non_client_view_(new NonClientView(this)),
       window_state_(GDK_WINDOW_STATE_WITHDRAWN),
       window_closed_(false) {
+  set_native_window(this);
   is_window_ = true;
   DCHECK(!window_delegate_->window_);
   window_delegate_->window_ = this;

@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -7,6 +7,7 @@
 #pragma once
 
 #include "ui/gfx/native_widget_types.h"
+#include "views/window/native_window_delegate.h"
 
 namespace gfx {
 class Font;
@@ -17,15 +18,30 @@ class Size;
 namespace views {
 
 class ClientView;
+class NativeWindow;
 class NonClientFrameView;
 class NonClientView;
 class Widget;
 class WindowDelegate;
 
-// An interface implemented by an object that provides a top level window.
-class Window {
+////////////////////////////////////////////////////////////////////////////////
+// Window class
+//
+// Encapsulates window-like behavior. See WindowDelegate.
+//
+//  TODO(beng): Subclass Widget as part of V2.
+//
+//  TODO(beng): Note that this class being non-abstract means that we have a
+//              violation of Google style in that we are using multiple
+//              inheritance. The intention is to split this into a separate
+//              object associated with but not equal to a NativeWidget
+//              implementation. Multiple inheritance is required for this
+//              transitional step.
+//
+class Window : public internal::NativeWindowDelegate {
  public:
-  virtual ~Window() {}
+  Window();
+  virtual ~Window();
 
   // Creates an instance of an object implementing this interface.
   // TODO(beng): create a version of this function that takes a NativeView, for
@@ -55,33 +71,35 @@ class Window {
   static void CloseSecondaryWidget(Widget* widget);
 
   // Retrieves the window's bounds, including its frame.
-  virtual gfx::Rect GetBounds() const = 0;
+  virtual gfx::Rect GetBounds() const;
 
   // Retrieves the restored bounds for the window.
-  virtual gfx::Rect GetNormalBounds() const = 0;
+  virtual gfx::Rect GetNormalBounds() const;
 
   // Sets the Window's bounds. The window is inserted after |other_window| in
   // the window Z-order. If this window is not yet visible, other_window's
   // monitor is used as the constraining rectangle, rather than this window's
   // monitor.
   virtual void SetWindowBounds(const gfx::Rect& bounds,
-                               gfx::NativeWindow other_window) = 0;
+                               gfx::NativeWindow other_window);
 
   // Makes the window visible.
-  virtual void Show() = 0;
+  virtual void Show();
 
   // Hides the window. This does not delete the window, it just hides it. This
   // always hides the window, it is separate from the stack maintained by
   // Push/PopForceHidden.
-  virtual void HideWindow() = 0;
+  virtual void HideWindow();
 
   // Sets/Gets a native window property on the underlying native window object.
   // Returns NULL if the property does not exist. Setting the property value to
   // NULL removes the property.
-  virtual void SetNativeWindowProperty(const char* name, void* value) = 0;
-  virtual void* GetNativeWindowProperty(const char* name) = 0;
+  virtual void SetNativeWindowProperty(const char* name, void* value);
+  virtual void* GetNativeWindowProperty(const char* name);
 
 #if defined(OS_WIN)
+  // TODO(beng): remove these platform-specific methods.
+
   // Hides the window if it hasn't already been force-hidden. The force hidden
   // count is tracked, so calling multiple times is allowed, you just have to
   // be sure to call PopForceHidden the same number of times.
@@ -100,40 +118,40 @@ class Window {
 #endif
 
   // Activates the window, assuming it already exists and is visible.
-  virtual void Activate() = 0;
+  virtual void Activate();
 
   // Deactivates the window, making the next window in the Z order the active
   // window.
-  virtual void Deactivate() = 0;
+  virtual void Deactivate();
 
   // Closes the window, ultimately destroying it. This isn't immediate (it
   // occurs after a return to the message loop. Implementors must also make sure
   // that invoking Close multiple times doesn't cause bad things to happen,
   // since it can happen.
-  virtual void Close() = 0;
+  virtual void Close();
 
   // Maximizes/minimizes/restores the window.
-  virtual void Maximize() = 0;
-  virtual void Minimize() = 0;
-  virtual void Restore() = 0;
+  virtual void Maximize();
+  virtual void Minimize();
+  virtual void Restore();
 
   // Whether or not the window is currently active.
-  virtual bool IsActive() const = 0;
+  virtual bool IsActive() const;
 
   // Whether or not the window is currently visible.
-  virtual bool IsVisible() const = 0;
+  virtual bool IsVisible() const;
 
   // Whether or not the window is maximized or minimized.
-  virtual bool IsMaximized() const = 0;
-  virtual bool IsMinimized() const = 0;
+  virtual bool IsMaximized() const;
+  virtual bool IsMinimized() const;
 
   // Accessors for fullscreen state.
-  virtual void SetFullscreen(bool fullscreen) = 0;
-  virtual bool IsFullscreen() const = 0;
+  virtual void SetFullscreen(bool fullscreen);
+  virtual bool IsFullscreen() const;
 
   // Sets whether or not the window should show its frame as a "transient drag
   // frame" - slightly transparent and without the standard window controls.
-  virtual void SetUseDragFrame(bool use_drag_frame) = 0;
+  virtual void SetUseDragFrame(bool use_drag_frame);
 
   // Returns true if the Window is considered to be an "app window" - i.e.
   // any window which when it is the last of its type closed causes the
@@ -142,40 +160,52 @@ class Window {
 
   // Toggles the enable state for the Close button (and the Close menu item in
   // the system menu).
-  virtual void EnableClose(bool enable) = 0;
+  virtual void EnableClose(bool enable);
 
   // Tell the window to update its title from the delegate.
-  virtual void UpdateWindowTitle() = 0;
+  virtual void UpdateWindowTitle();
 
   // Tell the window to update its icon from the delegate.
-  virtual void UpdateWindowIcon() = 0;
+  virtual void UpdateWindowIcon();
 
   // Sets whether or not the window is always-on-top.
-  virtual void SetIsAlwaysOnTop(bool always_on_top) = 0;
+  virtual void SetIsAlwaysOnTop(bool always_on_top);
 
   // Creates an appropriate NonClientFrameView for this window.
-  virtual NonClientFrameView* CreateFrameViewForWindow() = 0;
+  virtual NonClientFrameView* CreateFrameViewForWindow();
 
   // Updates the frame after an event caused it to be changed.
-  virtual void UpdateFrameAfterFrameChange() = 0;
+  virtual void UpdateFrameAfterFrameChange();
 
   // Retrieves the Window's delegate.
-  virtual WindowDelegate* GetDelegate() const = 0;
+  virtual WindowDelegate* GetDelegate() const;
 
   // Retrieves the Window's non-client view.
-  virtual NonClientView* GetNonClientView() const = 0;
+  virtual NonClientView* GetNonClientView() const;
 
   // Retrieves the Window's client view.
-  virtual ClientView* GetClientView() const = 0;
+  virtual ClientView* GetClientView() const;
 
   // Retrieves the Window's native window handle.
-  virtual gfx::NativeWindow GetNativeWindow() const = 0;
+  virtual gfx::NativeWindow GetNativeWindow() const;
 
   // Whether we should be using a native frame.
-  virtual bool ShouldUseNativeFrame() const = 0;
+  virtual bool ShouldUseNativeFrame() const;
 
   // Tell the window that something caused the frame type to change.
-  virtual void FrameTypeChanged() = 0;
+  virtual void FrameTypeChanged();
+
+ protected:
+  // TODO(beng): Temporarily provided as a way to associate the subclass'
+  //             implementation of NativeWidget with this.
+  void set_native_window(NativeWindow* native_window) {
+    native_window_ = native_window;
+  }
+
+ private:
+  NativeWindow* native_window_;
+
+  DISALLOW_COPY_AND_ASSIGN(Window);
 };
 
 }  // namespace views
