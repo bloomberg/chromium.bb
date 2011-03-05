@@ -10,13 +10,27 @@ GiveUp() {
   echo -n "*** "
 
   if [[ -n "$1" ]]; then
+    # Print repo, do not output the trailing newline.
+    echo -n "$1: "
+  fi
+
+  if [[ -n "$2" ]]; then
     # Print reason, do not output the trailing newline.
-    echo -n "$1 "
+    echo -n "$2 "
   fi
 
   echo "Please update manually! ***"
   exit 0
 }
+
+
+# Go to repository.
+
+my_repo="$@"
+
+if [[ -n "$my_repo" ]]; then
+  cd "$my_repo"
+fi
 
 
 # Determine working branch.
@@ -44,7 +58,7 @@ else
 
   if [[ -z "$my_commit" ]]; then
     # No branch master?
-    GiveUp "Failed to pick a branch to change from detached HEAD."
+    GiveUp "$my_repo" "Failed to pick a branch to change from detached HEAD."
   fi
 
   prev_commit=`git rev-parse HEAD`
@@ -52,7 +66,7 @@ else
 
   if [[ "$merge_base" != "$prev_commit" ]]; then
     # HEAD and master have diverged?
-    GiveUp "Failed to pick a branch to change from detached HEAD."
+    GiveUp "$my_repo" "Failed to pick a branch to change from detached HEAD."
   fi
 
   # Branch seems to fit, check it out.
@@ -66,7 +80,7 @@ fi
 upstream_branch_ref=`git for-each-ref --format='%(upstream)' $my_branch_ref`
 
 if [[ -z "$upstream_branch_ref" ]]; then
-  GiveUp "Failed to determine upstream branch."
+  GiveUp "$my_repo" "Failed to determine upstream branch."
 fi
 
 upstream_branch="${upstream_branch_ref#refs/remotes/}"
@@ -85,4 +99,4 @@ if [[ "$merge_base" = "$my_commit" ]]; then
 fi
 
 # Need to resolve manually.
-GiveUp "Working branch and upstream branch have diverged."
+GiveUp "$my_repo" "Working branch and upstream branch have diverged."

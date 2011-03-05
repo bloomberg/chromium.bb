@@ -5,7 +5,25 @@
 ##############################################################################
 # Helper script for NaCl toolchain development workflow
 #
-# TODO(eaeltsin): document usage!
+# Buildbots:
+# - Sync needed sources at pinned revision and build newlib-based toolchain:
+#     make build SDKLOC=<where-to-install-the-toolchain>
+#
+# Development:
+# - Sync all sources at pinned revision:
+#     make sync-pinned
+# - Sync all sources at most recent revision:
+#     make sync
+# - Build newlib-based toolchain from current sources:
+#     make dev-build SDKLOC=<where-to-install-the-toolchain>
+# - Build glibc-based toolchain from current sources:
+#     make dev-build-with-glibc SDKLOC=<where-to-install-the-toolchain>
+#
+# Gotchas:
+# - Multilib glibc-based toolchain is not supported. Add
+#     MULTILIB=no
+#   to make command line when building glibc-based toolchain
+#
 ##############################################################################
 
 default: build
@@ -144,52 +162,101 @@ SRC:
 SRC/binutils: | SRC
 	git clone $(GIT_BASE_URL)/nacl-binutils SRC/binutils
 
+.PHONY: fetched-src-binutils
+fetched-src-binutils: | SRC/binutils
+	cd SRC/binutils && git fetch
+
 .PHONY: pinned-src-binutils
-pinned-src-binutils: | SRC/binutils
-	cd SRC/binutils && git fetch && git checkout "$(NACL_BINUTILS_COMMIT)"
+pinned-src-binutils: fetched-src-binutils
+	cd SRC/binutils && git checkout "$(NACL_BINUTILS_COMMIT)"
+
+.PHONY: latest-src-binutils
+latest-src-binutils: fetched-src-binutils
+	./update_to_latest.sh SRC/binutils
 
 
 SRC/newlib: | SRC
 	git clone $(GIT_BASE_URL)/nacl-newlib SRC/newlib
 
+.PHONY: fetched-src-newlib
+fetched-src-newlib: | SRC/newlib
+	cd SRC/newlib && git fetch
+
 .PHONY: pinned-src-newlib
-pinned-src-newlib: | SRC/newlib
-	cd SRC/newlib && git fetch && git checkout "$(NACL_NEWLIB_COMMIT)"
+pinned-src-newlib: fetched-src-newlib
+	cd SRC/newlib && git checkout "$(NACL_NEWLIB_COMMIT)"
+
+.PHONY: latest-src-newlib
+latest-src-newlib: fetched-src-newlib
+	./update_to_latest.sh SRC/newlib
 
 
 SRC/gcc: | SRC
 	git clone $(GIT_BASE_URL)/nacl-gcc SRC/gcc
 
+.PHONY: fetched-src-gcc
+fetched-src-gcc: | SRC/gcc
+	cd SRC/gcc && git fetch
+
 .PHONY: pinned-src-gcc
-pinned-src-gcc: | SRC/gcc
-	cd SRC/gcc && git fetch && git checkout "$(NACL_GCC_COMMIT)"
+pinned-src-gcc: fetched-src-gcc
+	cd SRC/gcc && git checkout "$(NACL_GCC_COMMIT)"
+	./use_gcc_extras.sh GMP_VERSION=$(GMP_VERSION) MPFR_VERSION=$(MPFR_VERSION)
+
+.PHONY: latest-src-gcc
+latest-src-gcc: fetched-src-gcc
+	./update_to_latest.sh SRC/gcc
 	./use_gcc_extras.sh GMP_VERSION=$(GMP_VERSION) MPFR_VERSION=$(MPFR_VERSION)
 
 
 SRC/glibc: | SRC
 	git clone $(GIT_BASE_URL)/nacl-glibc.git SRC/glibc
 
+.PHONY: fetched-src-glibc
+fetched-src-glibc: | SRC/glibc
+	cd SRC/glibc && git fetch
+
 .PHONY: pinned-src-glibc
-pinned-src-glibc: | SRC/glibc
-	cd SRC/glibc && git fetch && git checkout "$(NACL_GLIBC_COMMIT)"
+pinned-src-glibc: fetched-src-glibc
+	cd SRC/glibc && git checkout "$(NACL_GLIBC_COMMIT)"
+
+.PHONY: latest-src-glibc
+latest-src-glibc: fetched-src-glibc
+	./update_to_latest.sh SRC/glibc
 
 
 SRC/linux-headers-for-nacl: | SRC
 	git clone $(GIT_BASE_URL)/linux-headers-for-nacl.git \
 	  SRC/linux-headers-for-nacl
 
+.PHONY: fetched-src-linux-headers-for-nacl
+fetched-src-linux-headers-for-nacl: | SRC/linux-headers-for-nacl
+	cd SRC/linux-headers-for-nacl && git fetch
+
 .PHONY: pinned-src-linux-headers-for-nacl
-pinned-src-linux-headers-for-nacl: | SRC/linux-headers-for-nacl
-	cd SRC/linux-headers-for-nacl && git fetch && \
+pinned-src-linux-headers-for-nacl: fetched-src-linux-headers-for-nacl
+	cd SRC/linux-headers-for-nacl && \
 	  git checkout "$(LINUX_HEADERS_FOR_NACL_COMMIT)"
+
+.PHONY: latest-src-linux-headers-for-nacl
+latest-src-linux-headers-for-nacl: fetched-src-linux-headers-for-nacl
+	./update_to_latest.sh SRC/linux-headers-for-nacl
 
 
 SRC/gdb: | SRC
 	git clone $(GIT_BASE_URL)/nacl-gdb SRC/gdb
 
+.PHONY: fetched-src-gdb
+fetched-src-gdb: | SRC/gdb
+	cd SRC/gdb && git fetch
+
 .PHONY: pinned-src-gdb
-pinned-src-gdb: | SRC/gdb
-	cd SRC/gdb && git fetch && git checkout "$(NACL_GDB_COMMIT)"
+pinned-src-gdb: fetched-src-gdb
+	cd SRC/gdb && git checkout "$(NACL_GDB_COMMIT)"
+
+.PHONY: latest-src-gdb
+latest-src-gdb: fetched-src-gdb
+	./update_to_latest.sh SRC/gdb
 
 
 .PHONY: sync-pinned
@@ -197,7 +264,18 @@ sync-pinned: | \
   pinned-src-binutils \
   pinned-src-gcc \
   pinned-src-newlib \
+  pinned-src-glibc \
+  pinned-src-linux-headers-for-nacl \
   pinned-src-gdb ;
+
+.PHONY: sync
+sync: | \
+  latest-src-binutils \
+  latest-src-gcc \
+  latest-src-newlib \
+  latest-src-glibc \
+  latest-src-linux-headers-for-nacl \
+  latest-src-gdb ;
 
 
 # Create the build directories for compiled binaries.
@@ -747,8 +825,8 @@ endif
 # Build the entire toolchain.
 ##################################################################
 
-.PHONY: build-with-glibc
-build-with-glibc:
+.PHONY: dev-build-with-glibc
+dev-build-with-glibc:
 	$(MAKE) -f $(THISMAKEFILE) sdkdirs
 	cp -f SRC/gcc/COPYING* $(DESTDIR)$(SDKROOT)
 	$(MAKE) -f $(THISMAKEFILE) BUILD/stamp-$(CROSSARCH)-binutils
@@ -758,8 +836,8 @@ build-with-glibc:
 	$(MAKE) -f $(THISMAKEFILE) BUILD/stamp-$(CROSSARCH)-libs-glibc
 	$(MAKE) -f $(THISMAKEFILE) BUILD/stamp-$(CROSSARCH)-stubout
 
-.PHONY: build
-build: sync-pinned
+.PHONY: dev-build
+dev-build:
 	$(MAKE) -f $(THISMAKEFILE) sdkdirs
 	cp -f SRC/gcc/COPYING* $(DESTDIR)$(SDKROOT)
 	$(MAKE) -f $(THISMAKEFILE) BUILD/stamp-$(CROSSARCH)-binutils
@@ -775,6 +853,15 @@ build: sync-pinned
 	$(MAKE) -f $(THISMAKEFILE) nacl_libraries
 	$(MAKE) -f $(THISMAKEFILE) sdk_minimal_test
 	$(MAKE) -f $(THISMAKEFILE) redirector
+
+# Newlib toolchain for buildbot
+.PHONY: build
+build: | \
+  pinned-src-binutils \
+  pinned-src-gcc \
+  pinned-src-newlib \
+  pinned-src-gdb
+	$(MAKE) -f $(THISMAKEFILE) dev-build
 
 ##################################################################
 # Run DejaGnu tests.
