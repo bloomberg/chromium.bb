@@ -29,7 +29,13 @@ void ConfigurePrefetchAndPrerender(const CommandLine& command_line) {
         command_line.GetSwitchValueASCII(switches::kPrerender);
 
     if (switch_value == switches::kPrerenderSwitchValueAuto) {
+#if defined(OS_CHROMEOS)
+      // Prerender is temporarily disabled on CrOS.
+      // http://crosbug.com/12483
+      prerender_option = PRERENDER_OPTION_DISABLED;
+#else
       prerender_option = PRERENDER_OPTION_AUTO;
+#endif
     } else if (switch_value == switches::kPrerenderSwitchValueDisabled) {
       prerender_option = PRERENDER_OPTION_DISABLED;
     } else if (switch_value.empty() ||
