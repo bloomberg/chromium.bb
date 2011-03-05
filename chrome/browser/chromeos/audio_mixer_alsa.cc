@@ -244,21 +244,6 @@ bool AudioMixerAlsa::InitializeAlsaMixer() {
   snd_mixer_t* handle = NULL;
   const char* card = "default";
 
-  // Verify PCM can be opened, which also instantiates the PCM mixer element
-  // which is needed for finer volume control and for muting by setting to zero.
-  // If it fails, we can still try to use the mixer as best we can.
-  snd_pcm_t* pcm_out_handle;
-  if ((err = snd_pcm_open(&pcm_out_handle,
-                          "default",
-                          SND_PCM_STREAM_PLAYBACK,
-                          0)) >= 0) {
-    snd_pcm_close(pcm_out_handle);
-  }
-  else
-  {
-    LOG(WARNING) << "ALSA PCM open: " << snd_strerror(err);
-  }
-
   if ((err = snd_mixer_open(&handle, 0)) < 0) {
     LOG(ERROR) << "ALSA mixer " << card << " open error: " << snd_strerror(err);
     return false;
@@ -269,6 +254,19 @@ bool AudioMixerAlsa::InitializeAlsaMixer() {
                << snd_strerror(err);
     snd_mixer_close(handle);
     return false;
+  }
+
+  // Verify PCM can be opened, which also instantiates the PCM mixer element
+  // which is needed for finer volume control and for muting by setting to zero.
+  // If it fails, we can still try to use the mixer as best we can.
+  snd_pcm_t* pcm_out_handle;
+  if ((err = snd_pcm_open(&pcm_out_handle,
+                          card,
+                          SND_PCM_STREAM_PLAYBACK,
+                          0)) >= 0) {
+    snd_pcm_close(pcm_out_handle);
+  } else {
+    LOG(WARNING) << "ALSA PCM open: " << snd_strerror(err);
   }
 
   if ((err = snd_mixer_selem_register(handle, NULL, NULL)) < 0) {
