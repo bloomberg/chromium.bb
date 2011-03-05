@@ -287,10 +287,12 @@ BUILD:
 ##################################################################
 SDKDIRS=\
     $(DESTDIR)$(SDKROOT)/bin \
+    $(DESTDIR)$(SDKROOT)/include \
     $(DESTDIR)$(SDKROOT)/lib \
     $(DESTDIR)$(SDKROOT)/libexec \
-    $(DESTDIR)$(SDKROOT)/$(CROSSARCH)/include \
-    $(DESTDIR)$(SDKROOT)/$(CROSSARCH)/lib \
+    $(DESTDIR)$(SDKROOT)/nacl \
+    $(DESTDIR)$(SDKROOT)/nacl64/lib \
+    $(DESTDIR)$(SDKROOT)/nacl64/lib32
 
 .PHONY: sdkdirs
 sdkdirs:
@@ -301,6 +303,15 @@ sdkdirs:
 	    install -m 755 -d $$d; \
 	  fi; \
 	done
+	# Make sure there is a single install location for all header files.
+	ln -sfn ../include $(DESTDIR)$(SDKROOT)/nacl/include
+	ln -sfn ../include $(DESTDIR)$(SDKROOT)/nacl64/include
+	# libgcc_s.so is installed to lib64
+	ln -sfn lib $(DESTDIR)$(SDKROOT)/nacl64/lib64
+	# GCC searches for 32bit libraries in nacl64/lib/32 and in nacl64/lib32
+	# at different times.
+	ln -sfn ../lib32 $(DESTDIR)$(SDKROOT)/nacl64/lib/32
+	ln -sfn ../nacl64/lib32 $(DESTDIR)$(SDKROOT)/nacl/lib
 
 ##################################################################
 # binutils:
@@ -431,14 +442,6 @@ BUILD/stamp-$(CROSSARCH)-pregcc-standalone: | SRC/gcc BUILD
 BUILD/stamp-$(CROSSARCH)-newlib: | SRC/newlib BUILD
 	rm -rf BUILD/build-newlib-$(CROSSARCH)
 	mkdir BUILD/build-newlib-$(CROSSARCH)
-	(cd $(DESTDIR)$(SDKROOT)/$(CROSSARCH) ; \
-	    ln -sfn lib/32 lib32 ; \
-	    ln -sfn lib lib64 ; \
-	    cd $(DESTDIR)$(SDKROOT); \
-	    rm -rf nacl; mkdir nacl; cd nacl; \
-	    mkdir bin; \
-	    ln -s ../nacl64/lib/32 lib; \
-	    ln -s ../nacl64/include; )
 	../src/trusted/service_runtime/export_header.py ../src/trusted/service_runtime/include \
 		SRC/newlib/newlib/libc/sys/nacl
 	if [ "x$(CROSSARCH)" = "xnacl64" ] ; then \
