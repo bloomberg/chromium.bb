@@ -3918,6 +3918,15 @@
    fun:_ZN25RenderViewHostTestHarness5SetUpEv
    fun:_ZN19PasswordManagerTest5SetUpEv
 }
+{
+   bug_75037
+   Memcheck:Cond
+   fun:gleUpdateLightPosition
+   fun:gleUpdateState
+   fun:_ZN8remoting11CapturerMac12CaptureRectsERKSt3setIN3gfx4RectESt4lessIS3_ESaIS3_EEP14CallbackRunnerI6Tuple1I13scoped_refptrINS_11CaptureDataEEEE
+   fun:_ZN8remoting8Capturer19CaptureInvalidRectsEP14CallbackRunnerI6Tuple1I13scoped_refptrINS_11CaptureDataEEEE
+   fun:_ZN8remoting28CapturerMacTest_Capture_Test8TestBodyEv
+}
 
 #-----------------------------------------------------------------------
 # These only occur on our Google workstations
