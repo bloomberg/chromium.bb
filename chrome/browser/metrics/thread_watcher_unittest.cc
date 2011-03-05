@@ -340,8 +340,6 @@ TEST_F(ThreadWatcherTest, ThreadResponding) {
   // ping/pong messaging sequence to happen.
   io_watcher_->WaitForStateChange(kSleepTime + TimeDelta::FromMinutes(1),
                                   RECEIVED_PONG);
-  io_watcher_->WaitForStateChange(kSleepTime + TimeDelta::FromMinutes(1),
-                                  SENT_PING);
   EXPECT_GT(io_watcher_->ping_sent_, static_cast<uint64>(0));
   EXPECT_GT(io_watcher_->pong_received_, static_cast<uint64>(0));
   EXPECT_TRUE(io_watcher_->active());
