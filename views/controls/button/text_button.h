@@ -157,9 +157,10 @@ class TextButton : public CustomButton {
   // (if present) in addition to the normal state.  Defaults to true.
   void SetShowMultipleIconStates(bool show_multiple_icon_states);
 
-  // Paint the button into the specified canvas. If |for_drag| is true, the
+  // Paint the button into the specified canvas. If |mode| is |PB_FOR_DRAG|, the
   // function paints a drag image representation into the canvas.
-  virtual void Paint(gfx::Canvas* canvas, bool for_drag);
+  enum PaintButtonMode { PB_NORMAL, PB_FOR_DRAG };
+  virtual void PaintButton(gfx::Canvas* canvas, PaintButtonMode mode);
 
   // Overridden from View:
   virtual gfx::Size GetPreferredSize();

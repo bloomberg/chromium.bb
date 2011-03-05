@@ -326,9 +326,10 @@ class MenuItemView : public View {
   // necessary.
   void AdjustBoundsForRTLUI(gfx::Rect* rect) const;
 
-  // Actual paint implementation. If for_drag is true, portions of the menu
+  // Actual paint implementation. If mode is PB_FOR_DRAG, portions of the menu
   // are not rendered.
-  void Paint(gfx::Canvas* canvas, bool for_drag);
+  enum PaintButtonMode { PB_NORMAL, PB_FOR_DRAG };
+  void PaintButton(gfx::Canvas* canvas, PaintButtonMode mode);
 
 #if defined(OS_WIN)
   // Paints the check/radio button indicator. |part_id| is the id passed to the

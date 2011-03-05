@@ -38,7 +38,11 @@ void StatusAreaButton::OnPaint(gfx::Canvas* canvas, bool for_drag) {
   }
 
   if (use_menu_button_paint_) {
-    views::MenuButton::Paint(canvas, for_drag);
+    views::MenuButton::PaintButton(
+        canvas,
+        for_drag ?
+            views::MenuButton::PB_FOR_DRAG :
+            views::MenuButton::PB_NORMAL);
   } else {
     canvas->DrawBitmapInt(icon(), horizontal_padding(), 0);
     OnPaintFocusBorder(canvas);

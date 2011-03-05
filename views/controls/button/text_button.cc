@@ -280,8 +280,8 @@ void TextButton::SetShowMultipleIconStates(bool show_multiple_icon_states) {
   show_multiple_icon_states_ = show_multiple_icon_states;
 }
 
-void TextButton::Paint(gfx::Canvas* canvas, bool for_drag) {
-  if (!for_drag) {
+void TextButton::PaintButton(gfx::Canvas* canvas, PaintButtonMode mode) {
+  if (mode == PB_NORMAL) {
     OnPaintBackground(canvas);
 
     if (show_multiple_icon_states_ && hover_animation_->is_animating()) {
@@ -362,7 +362,7 @@ void TextButton::Paint(gfx::Canvas* canvas, bool for_drag) {
     int draw_string_flags = gfx::CanvasSkia::DefaultCanvasTextAlignment() |
         PrefixTypeToCanvasType(prefix_type_);
 
-    if (for_drag) {
+    if (mode == PB_FOR_DRAG) {
 #if defined(OS_WIN)
       // TODO(erg): Either port DrawStringWithHalo to linux or find an
       // alternative here.
@@ -489,7 +489,7 @@ std::string TextButton::GetClassName() const {
 }
 
 void TextButton::OnPaint(gfx::Canvas* canvas) {
-  Paint(canvas, false);
+  PaintButton(canvas, PB_NORMAL);
 }
 
 }  // namespace views

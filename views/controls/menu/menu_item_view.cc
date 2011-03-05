@@ -355,7 +355,7 @@ void MenuItemView::SetIcon(const SkBitmap& icon) {
 }
 
 void MenuItemView::OnPaint(gfx::Canvas* canvas) {
-  Paint(canvas, false);
+  PaintButton(canvas, PB_NORMAL);
 }
 
 gfx::Size MenuItemView::GetPreferredSize() {

@@ -81,8 +81,8 @@ gfx::Size MenuButton::GetPreferredSize() {
   return prefsize;
 }
 
-void MenuButton::Paint(gfx::Canvas* canvas, bool for_drag) {
-  TextButton::Paint(canvas, for_drag);
+void MenuButton::PaintButton(gfx::Canvas* canvas, PaintButtonMode mode) {
+  TextButton::PaintButton(canvas, mode);
 
   if (show_menu_marker_) {
     gfx::Insets insets = GetInsets();

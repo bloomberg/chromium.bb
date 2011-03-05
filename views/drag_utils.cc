@@ -50,7 +50,7 @@ void SetURLAndDragImage(const GURL& url,
 
   // Render the image.
   gfx::CanvasSkia canvas(prefsize.width(), prefsize.height(), false);
-  button.Paint(&canvas, true);
+  button.PaintButton(&canvas, views::TextButton::PB_FOR_DRAG);
   SetDragImageOnDataObject(canvas, prefsize,
       gfx::Point(prefsize.width() / 2, prefsize.height() / 2), data);
 }

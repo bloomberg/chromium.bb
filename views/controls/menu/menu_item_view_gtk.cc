@@ -36,10 +36,10 @@ gfx::Size MenuItemView::CalculatePreferredSize() {
       content_height + GetBottomMargin() + GetTopMargin());
 }
 
-void MenuItemView::Paint(gfx::Canvas* canvas, bool for_drag) {
+void MenuItemView::PaintButton(gfx::Canvas* canvas, PaintButtonMode mode) {
   const MenuConfig& config = MenuConfig::instance();
   bool render_selection =
-      (!for_drag && IsSelected() &&
+      (mode == PB_NORMAL && IsSelected() &&
        parent_menu_item_->GetSubmenu()->GetShowSelection(this) &&
        !has_children());
 

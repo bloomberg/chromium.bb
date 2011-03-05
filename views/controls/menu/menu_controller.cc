@@ -460,7 +460,7 @@ void MenuController::OnMouseDragged(SubmenuView* source,
       View::ConvertPointToView(NULL, item, &press_loc);
       // TODO(beng): Convert to CanvasSkia
       gfx::CanvasSkia canvas(item->width(), item->height(), false);
-      item->Paint(&canvas, true);
+      item->PaintButton(&canvas, MenuItemView::PB_FOR_DRAG);
 
       OSExchangeData data;
       item->GetDelegate()->WriteDragData(item, &data);

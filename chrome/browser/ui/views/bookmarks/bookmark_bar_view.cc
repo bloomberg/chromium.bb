@@ -203,7 +203,7 @@ class BookmarkFolderButton : public views::MenuButton {
   }
 
   virtual void OnPaint(gfx::Canvas* canvas) {
-    views::MenuButton::Paint(canvas, false);
+    views::MenuButton::PaintButton(canvas, views::MenuButton::PB_NORMAL);
   }
 
  private:
@@ -1092,7 +1092,7 @@ void BookmarkBarView::WriteDragDataForView(View* sender,
     if (sender == GetBookmarkButton(i)) {
       views::TextButton* button = GetBookmarkButton(i);
       gfx::CanvasSkia canvas(button->width(), button->height(), false);
-      button->Paint(&canvas, true);
+      button->PaintButton(&canvas, views::TextButton::PB_FOR_DRAG);
       drag_utils::SetDragImageOnDataObject(canvas, button->size(), press_pt,
                                            data);
       WriteBookmarkDragData(model_->GetBookmarkBarNode()->GetChild(i), data);
