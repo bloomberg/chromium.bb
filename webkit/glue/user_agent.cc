@@ -12,6 +12,10 @@
 #include "base/stringprintf.h"
 #include "base/sys_info.h"
 
+#if defined(OS_WIN)
+#include "base/win/windows_version.h"
+#endif
+
 // Generated
 #include "webkit_version.h"  // NOLINT
 
@@ -58,12 +62,27 @@ std::string BuildOSCpuInfo() {
   }
 #endif
 
+#if defined(OS_WIN)
+  std::string architecture_token;
+  if (base::win::GetWOW64Status() == base::win::WOW64_ENABLED) {
+    architecture_token = "; WOW64";
+  } else {
+    base::win::WindowsArchitecture windows_architecture =
+        base::win::GetWindowsArchitecture();
+    if (windows_architecture == base::win::X64_ARCHITECTURE)
+      architecture_token = "; Win64; x64";
+    else if (windows_architecture == base::win::IA64_ARCHITECTURE)
+      architecture_token = "; Win64; IA64";
+  }
+#endif
+
   base::StringAppendF(
       &os_cpu,
 #if defined(OS_WIN)
-      "Windows NT %d.%d",
+      "Windows NT %d.%d%s",
       os_major_version,
-      os_minor_version
+      os_minor_version,
+      architecture_token.c_str()
 #elif defined(OS_MACOSX)
       "Intel Mac OS X %d_%d_%d",
       os_major_version,
