@@ -8,8 +8,10 @@
 
 #include "base/basictypes.h"
 #include "base/file_path.h"
+#include "base/ref_counted.h"
 #include "base/scoped_ptr.h"
 
+class GURL;
 class FilePath;
 class WebKitContext;
 
@@ -17,9 +19,14 @@ namespace WebKit {
 class WebIDBFactory;
 }
 
+namespace quota {
+class SpecialStoragePolicy;
+}
+
 class IndexedDBContext {
  public:
-  explicit IndexedDBContext(WebKitContext* webkit_context);
+  IndexedDBContext(WebKitContext* webkit_context,
+                   quota::SpecialStoragePolicy* special_storage_policy);
   ~IndexedDBContext();
 
   WebKit::WebIDBFactory* GetIDBFactory();
@@ -43,6 +50,9 @@ class IndexedDBContext {
   // Deletes all indexed db files for the given origin.
   void DeleteIndexedDBForOrigin(const string16& origin_id);
 
+  // Does a particular origin get unlimited storage?
+  bool IsUnlimitedStorageGranted(const GURL& origin) const;
+
 #ifdef UNIT_TEST
   // For unit tests allow to override the |data_path_|.
   void set_data_path(const FilePath& data_path) { data_path_ = data_path; }
@@ -56,6 +66,8 @@ class IndexedDBContext {
 
   // True if the destructor should delete its files.
   bool clear_local_state_on_exit_;
+
+  scoped_refptr<quota::SpecialStoragePolicy> special_storage_policy_;
 
   DISALLOW_COPY_AND_ASSIGN(IndexedDBContext);
 };

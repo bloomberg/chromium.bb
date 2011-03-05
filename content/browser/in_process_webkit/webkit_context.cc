@@ -17,7 +17,8 @@ WebKitContext::WebKitContext(Profile* profile, bool clear_local_state_on_exit)
           dom_storage_context_(new DOMStorageContext(
               this, profile->GetExtensionSpecialStoragePolicy()))),
       ALLOW_THIS_IN_INITIALIZER_LIST(
-          indexed_db_context_(new IndexedDBContext(this))) {
+          indexed_db_context_(new IndexedDBContext(
+              this, profile->GetExtensionSpecialStoragePolicy()))) {
 }
 
 WebKitContext::~WebKitContext() {

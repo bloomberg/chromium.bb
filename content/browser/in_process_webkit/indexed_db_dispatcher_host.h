@@ -64,7 +64,7 @@ class IndexedDBDispatcherHost : public BrowserMessageFilter {
 
   // True if the given |origin| can use databases according to the content
   // settings.
-  bool CheckContentSetting(const string16& origin,
+  bool CheckContentSetting(const GURL& origin,
                            const string16& description,
                            int routing_id,
                            int response_id);

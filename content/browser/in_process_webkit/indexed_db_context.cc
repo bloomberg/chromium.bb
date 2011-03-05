@@ -8,6 +8,7 @@
 #include "base/logging.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
+#include "chrome/browser/extensions/extension_special_storage_policy.h"
 #include "chrome/common/url_constants.h"
 #include "content/browser/browser_thread.h"
 #include "content/browser/in_process_webkit/webkit_context.h"
@@ -17,6 +18,7 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebSecurityOrigin.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebString.h"
 #include "webkit/glue/webkit_glue.h"
+#include "webkit/quota/special_storage_policy.h"
 
 using WebKit::WebIDBDatabase;
 using WebKit::WebIDBFactory;
@@ -25,7 +27,7 @@ using WebKit::WebSecurityOrigin;
 namespace {
 
 void ClearLocalState(const FilePath& indexeddb_path,
-                     const char* url_scheme_to_be_skipped) {
+                     quota::SpecialStoragePolicy* special_storage_policy) {
   file_util::FileEnumerator file_enumerator(
       indexeddb_path, false, file_util::FileEnumerator::FILES);
   // TODO(pastarmovj): We might need to consider exchanging this loop for
@@ -37,8 +39,9 @@ void ClearLocalState(const FilePath& indexeddb_path,
     WebSecurityOrigin origin =
         WebSecurityOrigin::createFromDatabaseIdentifier(
             webkit_glue::FilePathToWebString(file_path.BaseName()));
-    if (!EqualsASCII(origin.protocol(), url_scheme_to_be_skipped))
-      file_util::Delete(file_path, false);
+    if (special_storage_policy->IsStorageProtected(GURL(origin.toString())))
+      continue;
+    file_util::Delete(file_path, false);
   }
 }
 
@@ -50,8 +53,11 @@ const FilePath::CharType IndexedDBContext::kIndexedDBDirectory[] =
 const FilePath::CharType IndexedDBContext::kIndexedDBExtension[] =
     FILE_PATH_LITERAL(".indexeddb");
 
-IndexedDBContext::IndexedDBContext(WebKitContext* webkit_context)
-    : clear_local_state_on_exit_(false) {
+IndexedDBContext::IndexedDBContext(
+    WebKitContext* webkit_context,
+    quota::SpecialStoragePolicy* special_storage_policy)
+    : clear_local_state_on_exit_(false),
+      special_storage_policy_(special_storage_policy) {
   data_path_ = webkit_context->data_path().Append(kIndexedDBDirectory);
 }
 
@@ -60,7 +66,7 @@ IndexedDBContext::~IndexedDBContext() {
   // where no clean up is needed.
   if (clear_local_state_on_exit_ &&
       BrowserThread::CurrentlyOn(BrowserThread::WEBKIT)) {
-    ClearLocalState(data_path_, chrome::kExtensionScheme);
+    ClearLocalState(data_path_, special_storage_policy_);
   }
 }
 
@@ -90,4 +96,9 @@ void IndexedDBContext::DeleteIndexedDBForOrigin(const string16& origin_id) {
   DCHECK_EQ(idb_file.BaseName().value().substr(0, strlen("chrome-extension")),
             FILE_PATH_LITERAL("chrome-extension"));
   DeleteIndexedDBFile(GetIndexedDBFilePath(origin_id));
+}
+
+bool IndexedDBContext::IsUnlimitedStorageGranted(
+    const GURL& origin) const {
+  return special_storage_policy_->IsStorageUnlimited(origin);
 }

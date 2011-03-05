@@ -18,8 +18,8 @@
 #include "content/browser/in_process_webkit/webkit_context.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebSecurityOrigin.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebString.h"
-#include "webkit/quota/special_storage_policy.h"
 #include "webkit/glue/webkit_glue.h"
+#include "webkit/quota/special_storage_policy.h"
 
 using WebKit::WebSecurityOrigin;
 

@@ -180,21 +180,18 @@ int32 IndexedDBDispatcherHost::Add(WebIDBTransaction* idb_transaction) {
   return id;
 }
 
-bool IndexedDBDispatcherHost::CheckContentSetting(const string16& origin,
+bool IndexedDBDispatcherHost::CheckContentSetting(const GURL& origin,
                                                   const string16& description,
                                                   int routing_id,
                                                   int response_id) {
-  GURL host(string16(WebSecurityOrigin::createFromDatabaseIdentifier(
-      origin).toString()));
-
   ContentSetting content_setting =
       host_content_settings_map_->GetContentSetting(
-          host, CONTENT_SETTINGS_TYPE_COOKIES, "");
+          origin, CONTENT_SETTINGS_TYPE_COOKIES, "");
 
   CallRenderViewHostContentSettingsDelegate(
       process_id_, routing_id,
       &RenderViewHostDelegate::ContentSettings::OnIndexedDBAccessed,
-      host, description, content_setting == CONTENT_SETTING_BLOCK);
+      origin, description, content_setting == CONTENT_SETTING_BLOCK);
 
   if (content_setting == CONTENT_SETTING_BLOCK) {
     // TODO(jorlow): Change this to the proper error code once we figure out
@@ -218,8 +215,15 @@ void IndexedDBDispatcherHost::OnIDBFactoryOpen(
         IndexedDBContext::kIndexedDBDirectory);
   }
 
+  // TODO(jorlow): This doesn't support file:/// urls properly. We probably need
+  //               to add some toString method to WebSecurityOrigin that doesn't
+  //               return null for them.
+  WebSecurityOrigin origin(
+      WebSecurityOrigin::createFromDatabaseIdentifier(params.origin));
+  GURL url(origin.toString());
+
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::WEBKIT));
-  if (!CheckContentSetting(params.origin, params.name, params.routing_id,
+  if (!CheckContentSetting(url, params.name, params.routing_id,
                            params.response_id)) {
     return;
   }
@@ -227,16 +231,19 @@ void IndexedDBDispatcherHost::OnIDBFactoryOpen(
   DCHECK(kDefaultQuota == params.maximum_size);
 
   uint64 quota = kDefaultQuota;
-  if (CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kUnlimitedQuotaForIndexedDB)) {
+  if (Context()->IsUnlimitedStorageGranted(url) ||
+      CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kUnlimitedQuotaForIndexedDB)) {
+      // TODO(jorlow): For the IsUnlimitedStorageGranted case, we need some
+      //       way to revoke it.
+      // TODO(jorlow): Use kint64max once we think we can scale over 1GB.
       quota = 1024 * 1024 * 1024; // 1GB. More or less "unlimited".
   }
 
   Context()->GetIDBFactory()->open(
       params.name,
-      new IndexedDBCallbacks<WebIDBDatabase>(this, params.response_id),
-      WebSecurityOrigin::createFromDatabaseIdentifier(params.origin), NULL,
-      webkit_glue::FilePathToWebString(indexed_db_path), quota);
+      new IndexedDBCallbacks<WebIDBDatabase>(this, params.response_id), origin,
+      NULL, webkit_glue::FilePathToWebString(indexed_db_path), quota);
 }
 
 void IndexedDBDispatcherHost::OnIDBFactoryDeleteDatabase(
@@ -248,8 +255,12 @@ void IndexedDBDispatcherHost::OnIDBFactoryDeleteDatabase(
         IndexedDBContext::kIndexedDBDirectory);
   }
 
+  WebSecurityOrigin origin(
+      WebSecurityOrigin::createFromDatabaseIdentifier(params.origin));
+  GURL url(origin.toString());
+
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::WEBKIT));
-  if (!CheckContentSetting(params.origin, params.name, params.routing_id,
+  if (!CheckContentSetting(url, params.name, params.routing_id,
                            params.response_id)) {
     return;
   }
