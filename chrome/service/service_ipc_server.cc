@@ -66,7 +66,12 @@ void ServiceIPCServer::OnChannelError() {
   // define a Client interface that the ServiceProcess can implement.
   if (client_was_connected) {
     if (g_service_process->HandleClientDisconnect()) {
+#if defined(OS_WIN)
+      // On Windows, once an error on a named pipe occurs, the named pipe is no
+      // longer valid and must be re-created. This is not the case on Mac or
+      // Linux.
       CreateChannel();
+#endif
     }
   } else {
     // If the client was never even connected we had an error connecting.

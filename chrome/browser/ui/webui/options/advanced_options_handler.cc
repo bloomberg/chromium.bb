@@ -50,7 +50,7 @@
 #endif
 
 AdvancedOptionsHandler::AdvancedOptionsHandler() {
-#if defined(GOOGLE_CHROME_BUILD) && defined(OS_WIN)
+#if (defined(GOOGLE_CHROME_BUILD) && defined(OS_WIN)) || defined(OS_MACOSX)
   cloud_print_proxy_ui_enabled_ = true;
 #elif !defined(OS_CHROMEOS)
   cloud_print_proxy_ui_enabled_ =
