@@ -904,7 +904,9 @@ IN_PROC_BROWSER_TEST_F(TwoClientLiveBookmarksSyncTest, SC_HoistBMs10LevelUp) {
 }
 
 // Test Scribe ID - 371968.
-IN_PROC_BROWSER_TEST_F(TwoClientLiveBookmarksSyncTest, SC_SinkBMs10LevelDown) {
+// TODO(rsimha): Enable after http://crbug.com/74853 is fixed.
+IN_PROC_BROWSER_TEST_F(TwoClientLiveBookmarksSyncTest,
+                       FAILS_SC_SinkBMs10LevelDown) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
   ASSERT_TRUE(AllModelsMatchVerifier());
 
