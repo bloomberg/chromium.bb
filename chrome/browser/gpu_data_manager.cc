@@ -36,7 +36,11 @@ GpuDataManager::GpuDataManager()
     DCHECK(gpu_blacklist_cache_);
 
     gpu_blacklist_updater_ = new GpuBlacklistUpdater();
-    gpu_blacklist_updater_->StartAfterDelay();
+    // Don't start auto update in tests.
+    const CommandLine& browser_command_line = *CommandLine::ForCurrentProcess();
+    if (browser_command_line.GetSwitchValueASCII(
+            switches::kUseGL) != gfx::kGLImplementationOSMesaName)
+      gpu_blacklist_updater_->StartAfterDelay();
   }
 
   LoadGpuBlacklist();
