@@ -822,22 +822,18 @@ FilePath GetCrDownloadPath(const FilePath& suggested_path) {
 bool IsDangerous(DownloadCreateInfo* info, Profile* profile, bool auto_open) {
   DownloadDangerLevel danger_level = GetFileDangerLevel(
       info->suggested_path.BaseName());
-
-  bool ret = false;
-  if (danger_level == Dangerous) {
-    ret = !(auto_open && info->has_user_gesture);
-  } else if (danger_level == AllowOnUserGesture && !info->has_user_gesture) {
-    ret = true;
-  } else if (info->is_extension_install) {
+  if (danger_level == Dangerous)
+    return !(auto_open && info->has_user_gesture);
+  if (danger_level == AllowOnUserGesture && !info->has_user_gesture)
+    return true;
+  if (info->is_extension_install) {
+    // Extensions that are not from the gallery are considered dangerous.
     ExtensionService* service = profile->GetExtensionService();
     if (!service ||
-        !service->IsDownloadFromGallery(info->url, info->referrer_url)) {
-      // Extensions that are not from the gallery are considered dangerous.
-      ret = true;
-    }
+        !service->IsDownloadFromGallery(info->url, info->referrer_url))
+      return true;
   }
-
-  return ret;
+  return false;
 }
 
 }  // namespace download_util
