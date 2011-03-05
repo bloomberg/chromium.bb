@@ -65,7 +65,7 @@ class ClientSideDetectionHost;
 }
 
 class AutocompleteHistoryManager;
-class AutoFillManager;
+class AutofillManager;
 class BlockedContentContainer;
 class WebUI;
 class DesktopNotificationHandlerForTC;
@@ -711,7 +711,7 @@ class TabContents : public PageNavigator,
   AutocompleteHistoryManager* autocomplete_history_manager() {
     return autocomplete_history_manager_.get();
   }
-  AutoFillManager* autofill_manager() { return autofill_manager_.get(); }
+  AutofillManager* autofill_manager() { return autofill_manager_.get(); }
 
   safe_browsing::ClientSideDetectionHost* safebrowsing_detection_host() {
     return safebrowsing_detection_host_.get();
@@ -1077,8 +1077,8 @@ class TabContents : public PageNavigator,
   // AutocompleteHistoryManager.
   scoped_ptr<AutocompleteHistoryManager> autocomplete_history_manager_;
 
-  // AutoFillManager.
-  scoped_ptr<AutoFillManager> autofill_manager_;
+  // AutofillManager.
+  scoped_ptr<AutofillManager> autofill_manager_;
 
   // Handles plugin messages.
   scoped_ptr<PluginObserver> plugin_observer_;

@@ -210,7 +210,7 @@ bool FormIsHTTPS(FormStructure* form) {
 
 }  // namespace
 
-AutoFillManager::AutoFillManager(TabContents* tab_contents)
+AutofillManager::AutofillManager(TabContents* tab_contents)
     : TabContentsObserver(tab_contents),
       personal_data_(NULL),
       download_manager_(tab_contents->profile()),
@@ -225,17 +225,17 @@ AutoFillManager::AutoFillManager(TabContents* tab_contents)
   download_manager_.SetObserver(this);
 }
 
-AutoFillManager::~AutoFillManager() {
+AutofillManager::~AutofillManager() {
   download_manager_.SetObserver(NULL);
 }
 
 // static
-void AutoFillManager::RegisterBrowserPrefs(PrefService* prefs) {
+void AutofillManager::RegisterBrowserPrefs(PrefService* prefs) {
   prefs->RegisterDictionaryPref(prefs::kAutoFillDialogPlacement);
 }
 
 // static
-void AutoFillManager::RegisterUserPrefs(PrefService* prefs) {
+void AutofillManager::RegisterUserPrefs(PrefService* prefs) {
   prefs->RegisterBooleanPref(prefs::kAutoFillEnabled, true);
 #if defined(OS_MACOSX)
   prefs->RegisterBooleanPref(prefs::kAutoFillAuxiliaryProfilesEnabled, true);
@@ -248,15 +248,15 @@ void AutoFillManager::RegisterUserPrefs(PrefService* prefs) {
                             kAutoFillNegativeUploadRateDefaultValue);
 }
 
-void AutoFillManager::DidNavigateMainFramePostCommit(
+void AutofillManager::DidNavigateMainFramePostCommit(
     const NavigationController::LoadCommittedDetails& details,
     const ViewHostMsg_FrameNavigate_Params& params) {
   Reset();
 }
 
-bool AutoFillManager::OnMessageReceived(const IPC::Message& message) {
+bool AutofillManager::OnMessageReceived(const IPC::Message& message) {
   bool handled = true;
-  IPC_BEGIN_MESSAGE_MAP(AutoFillManager, message)
+  IPC_BEGIN_MESSAGE_MAP(AutofillManager, message)
     IPC_MESSAGE_HANDLER(AutoFillHostMsg_FormsSeen, OnFormsSeen)
     IPC_MESSAGE_HANDLER(AutoFillHostMsg_FormSubmitted, OnFormSubmitted)
     IPC_MESSAGE_HANDLER(AutoFillHostMsg_QueryFormFieldAutoFill,
@@ -275,7 +275,7 @@ bool AutoFillManager::OnMessageReceived(const IPC::Message& message) {
   return handled;
 }
 
-void AutoFillManager::OnFormSubmitted(const FormData& form) {
+void AutofillManager::OnFormSubmitted(const FormData& form) {
   // Let AutoComplete know as well.
   tab_contents()->autocomplete_history_manager()->OnFormSubmitted(form);
 
@@ -307,14 +307,14 @@ void AutoFillManager::OnFormSubmitted(const FormData& form) {
   ImportFormData(submitted_form);
 }
 
-void AutoFillManager::OnFormsSeen(const std::vector<FormData>& forms) {
+void AutofillManager::OnFormsSeen(const std::vector<FormData>& forms) {
   if (!IsAutoFillEnabled())
     return;
 
   ParseForms(forms);
 }
 
-void AutoFillManager::OnQueryFormFieldAutoFill(
+void AutofillManager::OnQueryFormFieldAutoFill(
     int query_id,
     const webkit_glue::FormData& form,
     const webkit_glue::FormField& field) {
@@ -385,7 +385,7 @@ void AutoFillManager::OnQueryFormFieldAutoFill(
       query_id, field.name(), field.value(), values, labels, icons, unique_ids);
 }
 
-void AutoFillManager::OnFillAutoFillFormData(int query_id,
+void AutofillManager::OnFillAutoFillFormData(int query_id,
                                              const FormData& form,
                                              const FormField& field,
                                              int unique_id) {
@@ -471,8 +471,8 @@ void AutoFillManager::OnFillAutoFillFormData(int query_id,
   // directly and we can fill these corresponding fields; however, when the
   // |form_structure| and |result.fields| do not match directly we search
   // ahead in the |form_structure| for the matching field.
-  // See unit tests: AutoFillManagerTest.FormChangesRemoveField and
-  // AutoFillManagerTest.FormChangesAddField for usage.
+  // See unit tests: AutofillManagerTest.FormChangesRemoveField and
+  // AutofillManagerTest.FormChangesAddField for usage.
   for (size_t i = section_start, j = 0;
        i < section_end && j < result.fields.size();
        j++) {
@@ -509,7 +509,7 @@ void AutoFillManager::OnFillAutoFillFormData(int query_id,
       host->routing_id(), query_id, result));
 }
 
-void AutoFillManager::OnShowAutoFillDialog() {
+void AutofillManager::OnShowAutoFillDialog() {
   if (!CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kDisableTabbedOptions)) {
     Browser* browser = BrowserList::GetLastActive();
@@ -523,23 +523,23 @@ void AutoFillManager::OnShowAutoFillDialog() {
                      tab_contents()->profile()->GetOriginalProfile());
 }
 
-void AutoFillManager::OnDidFillAutoFillFormData() {
+void AutofillManager::OnDidFillAutoFillFormData() {
   NotificationService::current()->Notify(
       NotificationType::AUTOFILL_DID_FILL_FORM_DATA,
       Source<RenderViewHost>(tab_contents()->render_view_host()),
       NotificationService::NoDetails());
 }
 
-void AutoFillManager::OnDidShowAutoFillSuggestions() {
+void AutofillManager::OnDidShowAutoFillSuggestions() {
   NotificationService::current()->Notify(
       NotificationType::AUTOFILL_DID_SHOW_SUGGESTIONS,
       Source<RenderViewHost>(tab_contents()->render_view_host()),
       NotificationService::NoDetails());
 }
 
-void AutoFillManager::OnLoadedAutofillHeuristics(
+void AutofillManager::OnLoadedAutofillHeuristics(
     const std::string& heuristic_xml) {
-  // TODO(jhawkins): Store |upload_required| in the AutoFillManager.
+  // TODO(jhawkins): Store |upload_required| in the AutofillManager.
   UploadRequired upload_required;
   FormStructure::ParseQueryResponse(heuristic_xml,
                                     form_structures_.get(),
@@ -547,19 +547,19 @@ void AutoFillManager::OnLoadedAutofillHeuristics(
                                     *metric_logger_);
 }
 
-void AutoFillManager::OnUploadedAutofillHeuristics(
+void AutofillManager::OnUploadedAutofillHeuristics(
     const std::string& form_signature) {
 }
 
-void AutoFillManager::OnHeuristicsRequestError(
+void AutofillManager::OnHeuristicsRequestError(
     const std::string& form_signature,
     AutofillDownloadManager::AutofillRequestType request_type,
     int http_error) {
 }
 
-bool AutoFillManager::IsAutoFillEnabled() const {
+bool AutofillManager::IsAutoFillEnabled() const {
   PrefService* prefs =
-      const_cast<AutoFillManager*>(this)->tab_contents()->profile()->GetPrefs();
+      const_cast<AutofillManager*>(this)->tab_contents()->profile()->GetPrefs();
 
   // Migrate obsolete AutoFill pref.
   if (prefs->FindPreference(prefs::kFormAutofillEnabled)) {
@@ -572,7 +572,7 @@ bool AutoFillManager::IsAutoFillEnabled() const {
   return prefs->GetBoolean(prefs::kAutoFillEnabled);
 }
 
-void AutoFillManager::DeterminePossibleFieldTypesForUpload(
+void AutofillManager::DeterminePossibleFieldTypesForUpload(
     FormStructure* submitted_form) {
   for (size_t i = 0; i < submitted_form->field_count(); i++) {
     const AutofillField* field = submitted_form->field(i);
@@ -584,7 +584,7 @@ void AutoFillManager::DeterminePossibleFieldTypesForUpload(
   }
 }
 
-void AutoFillManager::LogMetricsAboutSubmittedForm(
+void AutofillManager::LogMetricsAboutSubmittedForm(
     const FormData& form,
     const FormStructure* submitted_form) {
   FormStructure* cached_submitted_form;
@@ -666,7 +666,7 @@ void AutoFillManager::LogMetricsAboutSubmittedForm(
   }
 }
 
-void AutoFillManager::ImportFormData(const FormStructure& submitted_form) {
+void AutofillManager::ImportFormData(const FormStructure& submitted_form) {
   std::vector<const FormStructure*> import;
   import.push_back(&submitted_form);
 
@@ -683,7 +683,7 @@ void AutoFillManager::ImportFormData(const FormStructure& submitted_form) {
   }
 }
 
-void AutoFillManager::UploadFormData(const FormStructure& submitted_form) {
+void AutofillManager::UploadFormData(const FormStructure& submitted_form) {
   if (!disable_download_manager_requests_) {
     bool was_autofilled = false;
     // Check if the form among last 3 forms that were auto-filled.
@@ -705,16 +705,16 @@ void AutoFillManager::UploadFormData(const FormStructure& submitted_form) {
   }
 }
 
-void AutoFillManager::Reset() {
+void AutofillManager::Reset() {
   form_structures_.reset();
 }
 
-void AutoFillManager::OnInfoBarClosed(bool should_save) {
+void AutofillManager::OnInfoBarClosed(bool should_save) {
   if (should_save)
     personal_data_->SaveImportedCreditCard(*imported_credit_card_);
 }
 
-AutoFillManager::AutoFillManager(TabContents* tab_contents,
+AutofillManager::AutofillManager(TabContents* tab_contents,
                                  PersonalDataManager* personal_data)
     : TabContentsObserver(tab_contents),
       personal_data_(personal_data),
@@ -725,12 +725,12 @@ AutoFillManager::AutoFillManager(TabContents* tab_contents,
   DCHECK(tab_contents);
 }
 
-void AutoFillManager::set_metric_logger(
+void AutofillManager::set_metric_logger(
     const AutofillMetrics* metric_logger) {
   metric_logger_.reset(metric_logger);
 }
 
-bool AutoFillManager::GetHost(const std::vector<AutoFillProfile*>& profiles,
+bool AutofillManager::GetHost(const std::vector<AutoFillProfile*>& profiles,
                               const std::vector<CreditCard*>& credit_cards,
                               RenderViewHost** host) {
   if (!IsAutoFillEnabled())
@@ -747,7 +747,7 @@ bool AutoFillManager::GetHost(const std::vector<AutoFillProfile*>& profiles,
   return true;
 }
 
-bool AutoFillManager::FindCachedForm(const FormData& form,
+bool AutofillManager::FindCachedForm(const FormData& form,
                                      FormStructure** form_structure) {
   // Find the FormStructure that corresponds to |form|.
   *form_structure = NULL;
@@ -766,7 +766,7 @@ bool AutoFillManager::FindCachedForm(const FormData& form,
   return true;
 }
 
-bool AutoFillManager::FindCachedFormAndField(const FormData& form,
+bool AutofillManager::FindCachedFormAndField(const FormData& form,
                                              const FormField& field,
                                              FormStructure** form_structure,
                                              AutofillField** autofill_field) {
@@ -800,7 +800,7 @@ bool AutoFillManager::FindCachedFormAndField(const FormData& form,
   return true;
 }
 
-void AutoFillManager::GetProfileSuggestions(FormStructure* form,
+void AutofillManager::GetProfileSuggestions(FormStructure* form,
                                             const FormField& field,
                                             AutoFillType type,
                                             std::vector<string16>* values,
@@ -842,7 +842,7 @@ void AutoFillManager::GetProfileSuggestions(FormStructure* form,
   icons->resize(values->size());
 }
 
-void AutoFillManager::GetCreditCardSuggestions(FormStructure* form,
+void AutofillManager::GetCreditCardSuggestions(FormStructure* form,
                                                const FormField& field,
                                                AutoFillType type,
                                                std::vector<string16>* values,
@@ -869,7 +869,7 @@ void AutoFillManager::GetCreditCardSuggestions(FormStructure* form,
   }
 }
 
-void AutoFillManager::FillCreditCardFormField(const CreditCard* credit_card,
+void AutofillManager::FillCreditCardFormField(const CreditCard* credit_card,
                                               AutoFillType type,
                                               webkit_glue::FormField* field) {
   DCHECK(credit_card);
@@ -894,7 +894,7 @@ void AutoFillManager::FillCreditCardFormField(const CreditCard* credit_card,
   }
 }
 
-void AutoFillManager::FillFormField(const AutoFillProfile* profile,
+void AutofillManager::FillFormField(const AutoFillProfile* profile,
                                     AutoFillType type,
                                     webkit_glue::FormField* field) {
   DCHECK(profile);
@@ -911,7 +911,7 @@ void AutoFillManager::FillFormField(const AutoFillProfile* profile,
   }
 }
 
-void AutoFillManager::FillPhoneNumberField(const AutoFillProfile* profile,
+void AutofillManager::FillPhoneNumberField(const AutoFillProfile* profile,
                                            AutoFillType type,
                                            webkit_glue::FormField* field) {
   // If we are filling a phone number, check to see if the size field
@@ -935,7 +935,7 @@ void AutoFillManager::FillPhoneNumberField(const AutoFillProfile* profile,
   }
 }
 
-void AutoFillManager::ParseForms(const std::vector<FormData>& forms) {
+void AutofillManager::ParseForms(const std::vector<FormData>& forms) {
   std::vector<FormStructure*> non_queryable_forms;
   for (std::vector<FormData>::const_iterator iter = forms.begin();
        iter != forms.end(); ++iter) {
@@ -965,7 +965,7 @@ void AutoFillManager::ParseForms(const std::vector<FormData>& forms) {
 // When sending IDs (across processes) to the renderer we pack credit card and
 // profile IDs into a single integer.  Credit card IDs are sent in the high
 // word and profile IDs are sent in the low word.
-int AutoFillManager::PackGUIDs(const std::string& cc_guid,
+int AutofillManager::PackGUIDs(const std::string& cc_guid,
                                const std::string& profile_guid) {
   int cc_id = GUIDToID(cc_guid);
   int profile_id = GUIDToID(profile_guid);
@@ -979,7 +979,7 @@ int AutoFillManager::PackGUIDs(const std::string& cc_guid,
 // When receiving IDs (across processes) from the renderer we unpack credit card
 // and profile IDs from a single integer.  Credit card IDs are stored in the
 // high word and profile IDs are stored in the low word.
-void AutoFillManager::UnpackGUIDs(int id,
+void AutofillManager::UnpackGUIDs(int id,
                                   std::string* cc_guid,
                                   std::string* profile_guid) {
   int cc_id = id >> std::numeric_limits<unsigned short>::digits &
@@ -990,7 +990,7 @@ void AutoFillManager::UnpackGUIDs(int id,
   *profile_guid = IDToGUID(profile_id);
 }
 
-int AutoFillManager::GUIDToID(const std::string& guid) {
+int AutofillManager::GUIDToID(const std::string& guid) {
   static int last_id = 1;
 
   if (!guid::IsValidGUID(guid))
@@ -1006,7 +1006,7 @@ int AutoFillManager::GUIDToID(const std::string& guid) {
   }
 }
 
-const std::string AutoFillManager::IDToGUID(int id) {
+const std::string AutofillManager::IDToGUID(int id) {
   if (id == 0)
     return std::string();
 

@@ -122,11 +122,11 @@ class TestPersonalDataManager : public PersonalDataManager {
   DISALLOW_COPY_AND_ASSIGN(TestPersonalDataManager);
 };
 
-class TestAutofillManager : public AutoFillManager {
+class TestAutofillManager : public AutofillManager {
  public:
   TestAutofillManager(TabContents* tab_contents,
                       TestPersonalDataManager* personal_manager)
-      : AutoFillManager(tab_contents, personal_manager),
+      : AutofillManager(tab_contents, personal_manager),
         autofill_enabled_(true) {
     set_metric_logger(new MockAutofillMetrics);
   }
@@ -140,7 +140,7 @@ class TestAutofillManager : public AutoFillManager {
 
   const MockAutofillMetrics* metric_logger() const {
     return static_cast<const MockAutofillMetrics*>(
-        AutoFillManager::metric_logger());
+        AutofillManager::metric_logger());
   }
 
   void AddSeenForm(FormStructure* form) {
@@ -191,7 +191,7 @@ class AutofillMetricsTest : public RenderViewHostTestHarness {
  public:
   AutofillMetricsTest() {}
   virtual ~AutofillMetricsTest() {
-    // Order of destruction is important as AutoFillManager relies on
+    // Order of destruction is important as AutofillManager relies on
     // PersonalDataManager to be around when it gets destroyed.
     autofill_manager_.reset(NULL);
     test_personal_data_ = NULL;

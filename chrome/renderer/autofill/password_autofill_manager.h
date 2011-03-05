@@ -12,8 +12,8 @@
 #include "base/task.h"
 #include "chrome/renderer/page_click_listener.h"
 #include "chrome/renderer/render_view_observer.h"
-#include "webkit/glue/password_form_dom_manager.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebInputElement.h"
+#include "webkit/glue/password_form_dom_manager.h"
 
 namespace WebKit {
 class WebInputElement;
@@ -23,12 +23,12 @@ class WebKeyboardEvent;
 namespace autofill {
 
 // This class is responsible for filling password forms.
-// There is one PasswordAutoFillManager per RenderView.
-class PasswordAutoFillManager : public RenderViewObserver,
+// There is one PasswordAutofillManager per RenderView.
+class PasswordAutofillManager : public RenderViewObserver,
                                 public PageClickListener {
  public:
-  explicit PasswordAutoFillManager(RenderView* render_view);
-  virtual ~PasswordAutoFillManager();
+  explicit PasswordAutofillManager(RenderView* render_view);
+  virtual ~PasswordAutofillManager();
 
   // WebViewClient editor related calls forwarded by the RenderView.
   // If they return true, it indicates the event was consumed and should not
@@ -47,7 +47,7 @@ class PasswordAutoFillManager : public RenderViewObserver,
   bool DidSelectAutoFillSuggestion(const WebKit::WebNode& node);
 
  private:
-  friend class PasswordAutoFillManagerTest;
+  friend class PasswordAutofillManagerTest;
 
   struct PasswordInfo {
     WebKit::WebInputElement password_field;
@@ -109,9 +109,9 @@ class PasswordAutoFillManager : public RenderViewObserver,
   // The logins we have filled so far with their associated info.
   LoginToPasswordInfoMap login_to_password_info_;
 
-  ScopedRunnableMethodFactory<PasswordAutoFillManager> method_factory_;
+  ScopedRunnableMethodFactory<PasswordAutofillManager> method_factory_;
 
-  DISALLOW_COPY_AND_ASSIGN(PasswordAutoFillManager);
+  DISALLOW_COPY_AND_ASSIGN(PasswordAutofillManager);
 };
 
 }  // namespace autofill

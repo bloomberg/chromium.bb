@@ -400,7 +400,7 @@ void TabContents::AddObservers() {
   printing_.reset(new printing::PrintViewManager(this));
   print_preview_.reset(new printing::PrintPreviewMessageHandler(this));
   fav_icon_helper_.reset(new FavIconHelper(this));
-  autofill_manager_.reset(new AutoFillManager(this));
+  autofill_manager_.reset(new AutofillManager(this));
   autocomplete_history_manager_.reset(new AutocompleteHistoryManager(this));
   prerender_plt_recorder_.reset(new prerender::PrerenderPLTRecorder(this));
   desktop_notification_handler_.reset(

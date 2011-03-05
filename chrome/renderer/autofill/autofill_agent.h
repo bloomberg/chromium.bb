@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -19,7 +19,7 @@
 
 namespace autofill {
 
-class PasswordAutoFillManager;
+class PasswordAutofillManager;
 
 // AutoFillAgent deals with AutoFill related communications between WebKit and
 // the browser.  There is one AutoFillAgent per RenderView.
@@ -33,9 +33,9 @@ class AutoFillAgent : public RenderViewObserver,
                       public PageClickListener,
                       public WebKit::WebAutoFillClient {
  public:
-  // PasswordAutoFillManager is guaranteed to outlive AutoFillAgent.
+  // PasswordAutofillManager is guaranteed to outlive AutoFillAgent.
   AutoFillAgent(RenderView* render_view,
-                PasswordAutoFillManager* password_autofill_manager);
+                PasswordAutofillManager* password_autofill_manager);
   virtual ~AutoFillAgent();
 
   // WebKit::WebAutoFillClient implementation.  Public for tests.
@@ -108,10 +108,10 @@ class AutoFillAgent : public RenderViewObserver,
   void QueryAutoFillSuggestions(const WebKit::WebNode& node,
                                 bool display_warning_if_disabled);
 
-  // Queries the AutoFillManager for form data for the form containing |node|.
+  // Queries the AutofillManager for form data for the form containing |node|.
   // |value| is the current text in the field, and |unique_id| is the selected
   // profile's unique ID.  |action| specifies whether to Fill or Preview the
-  // values returned from the AutoFillManager.
+  // values returned from the AutofillManager.
   void FillAutoFillFormData(const WebKit::WebNode& node,
                             int unique_id,
                             AutoFillAction action);
@@ -128,7 +128,7 @@ class AutoFillAgent : public RenderViewObserver,
 
   FormManager form_manager_;
 
-  PasswordAutoFillManager* password_autofill_manager_;
+  PasswordAutofillManager* password_autofill_manager_;
 
   // The ID of the last request sent for form field AutoFill.  Used to ignore
   // out of date responses.
@@ -137,7 +137,7 @@ class AutoFillAgent : public RenderViewObserver,
   // The node corresponding to the last request sent for form field AutoFill.
   WebKit::WebNode autofill_query_node_;
 
-  // The action to take when receiving AutoFill data from the AutoFillManager.
+  // The action to take when receiving AutoFill data from the AutofillManager.
   AutoFillAction autofill_action_;
 
   // Should we display a warning if autofill is disabled?

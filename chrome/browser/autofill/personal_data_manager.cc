@@ -575,7 +575,7 @@ bool PersonalDataManager::IsDataLoaded() const {
 }
 
 const std::vector<AutoFillProfile*>& PersonalDataManager::profiles() {
-  // |profile_| is NULL in AutoFillManagerTest.
+  // |profile_| is NULL in AutofillManagerTest.
   bool auxiliary_profiles_enabled = profile_ ? profile_->GetPrefs()->GetBoolean(
       prefs::kAutoFillAuxiliaryProfilesEnabled) : false;
   if (!auxiliary_profiles_enabled)

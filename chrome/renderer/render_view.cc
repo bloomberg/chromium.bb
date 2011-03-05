@@ -22,8 +22,8 @@
 #include "base/time.h"
 #include "base/utf_string_conversions.h"
 #include "build/build_config.h"
-#include "chrome/common/autofill_messages.h"
 #include "chrome/common/appcache/appcache_dispatcher.h"
+#include "chrome/common/autofill_messages.h"
 #include "chrome/common/bindings_policy.h"
 #include "chrome/common/child_process_logging.h"
 #include "chrome/common/chrome_constants.h"
@@ -92,8 +92,8 @@
 #include "chrome/renderer/safe_browsing/phishing_classifier_delegate.h"
 #include "chrome/renderer/searchbox.h"
 #include "chrome/renderer/speech_input_dispatcher.h"
-#include "chrome/renderer/spellchecker/spellcheck_provider.h"
 #include "chrome/renderer/spellchecker/spellcheck.h"
+#include "chrome/renderer/spellchecker/spellcheck_provider.h"
 #include "chrome/renderer/translate_helper.h"
 #include "chrome/renderer/user_script_idle_scheduler.h"
 #include "chrome/renderer/user_script_slave.h"
@@ -165,8 +165,8 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebWindowFeatures.h"
 #include "third_party/cld/encodings/compact_lang_det/win/cld_unicodetext.h"
 #include "third_party/skia/include/core/SkBitmap.h"
-#include "ui/base/message_box_flags.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/message_box_flags.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/color_utils.h"
 #include "ui/gfx/favicon_size.h"
@@ -174,8 +174,8 @@
 #include "ui/gfx/point.h"
 #include "ui/gfx/rect.h"
 #include "ui/gfx/skbitmap_operations.h"
-#include "v8/include/v8.h"
 #include "v8/include/v8-testing.h"
+#include "v8/include/v8.h"
 #include "webkit/appcache/web_application_cache_host_impl.h"
 #include "webkit/glue/alt_error_page_resource_fetcher.h"
 #include "webkit/glue/context_menu.h"
@@ -286,7 +286,7 @@ using WebKit::WebWorkerClient;
 using appcache::WebApplicationCacheHostImpl;
 using autofill::AutoFillAgent;
 using autofill::FormManager;
-using autofill::PasswordAutoFillManager;
+using autofill::PasswordAutofillManager;
 using base::Time;
 using base::TimeDelta;
 using webkit_glue::AltErrorPageResourceFetcher;
@@ -621,8 +621,8 @@ RenderView::RenderView(RenderThreadBase* render_thread,
   notification_provider_ = new NotificationProvider(this);
 
   devtools_agent_ = new DevToolsAgent(this);
-  PasswordAutoFillManager* password_autofill_manager =
-      new PasswordAutoFillManager(this);
+  PasswordAutofillManager* password_autofill_manager =
+      new PasswordAutofillManager(this);
   AutoFillAgent* autofill_agent = new AutoFillAgent(this,
                                                     password_autofill_manager);
 

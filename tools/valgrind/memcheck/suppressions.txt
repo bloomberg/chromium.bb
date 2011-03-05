@@ -2774,7 +2774,7 @@
    fun:_ZN19PersonalDataManager12LoadProfilesEv
    fun:_ZN19PersonalDataManager4InitEP7Profile
    fun:_ZN11ProfileImpl22GetPersonalDataManagerEv
-   fun:_ZN15AutoFillManagerC1EP11TabContents
+   fun:_ZN15AutofillManagerC1EP11TabContents
    ...
    fun:_ZN11TabContentsC1EP7ProfileP12SiteInstanceiPKS_P23SessionStorageNamespace
    fun:_ZN7Browser18TabContentsFactoryEP7ProfileP12SiteInstanceiPK11TabContentsP23SessionStorageNamespace

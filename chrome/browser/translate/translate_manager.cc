@@ -518,7 +518,7 @@ void TranslateManager::DoTranslatePage(TabContents* tab,
 
   // Ideally we'd have a better way to uniquely identify form control elements,
   // but we don't have that yet.  So before start translation, we clear the
-  // current form and re-parse it in AutoFillManager first to get the new
+  // current form and re-parse it in AutofillManager first to get the new
   // labels.
   tab->autofill_manager()->Reset();
 }

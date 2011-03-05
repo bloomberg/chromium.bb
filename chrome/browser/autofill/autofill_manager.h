@@ -33,11 +33,11 @@ class FormField;
 
 // Manages saving and restoring the user's personal information entered into web
 // forms.
-class AutoFillManager : public TabContentsObserver,
+class AutofillManager : public TabContentsObserver,
                         public AutofillDownloadManager::Observer {
  public:
-  explicit AutoFillManager(TabContents* tab_contents);
-  virtual ~AutoFillManager();
+  explicit AutofillManager(TabContents* tab_contents);
+  virtual ~AutofillManager();
 
   // Registers our browser prefs.
   static void RegisterBrowserPrefs(PrefService* prefs);
@@ -77,7 +77,7 @@ class AutoFillManager : public TabContentsObserver,
 
  protected:
   // For tests.
-  AutoFillManager(TabContents* tab_contents,
+  AutofillManager(TabContents* tab_contents,
                   PersonalDataManager* personal_data);
 
   void set_personal_data_manager(PersonalDataManager* personal_data) {
@@ -184,7 +184,7 @@ class AutoFillManager : public TabContentsObserver,
                                     const FormStructure* submitted_form);
 
   // The personal data manager, used to save and load personal data to/from the
-  // web database.  This is overridden by the AutoFillManagerTest.
+  // web database.  This is overridden by the AutofillManagerTest.
   // Weak reference.
   // May be NULL.  NULL indicates OTR.
   PersonalDataManager* personal_data_;
@@ -193,7 +193,7 @@ class AutoFillManager : public TabContentsObserver,
   // Handles queries and uploads to Autofill servers.
   AutofillDownloadManager download_manager_;
 
-  // Should be set to true in AutoFillManagerTest and other tests, false in
+  // Should be set to true in AutofillManagerTest and other tests, false in
   // AutofillDownloadManagerTest and in non-test environment. Is false by
   // default for the public constructor, and true by default for the test-only
   // constructors.
@@ -217,21 +217,21 @@ class AutoFillManager : public TabContentsObserver,
   std::map<std::string, int> guid_id_map_;
   std::map<int, std::string> id_guid_map_;
 
-  friend class AutoFillManagerTest;
+  friend class AutofillManagerTest;
   friend class FormStructureBrowserTest;
-  FRIEND_TEST_ALL_PREFIXES(AutoFillManagerTest, FillCreditCardForm);
-  FRIEND_TEST_ALL_PREFIXES(AutoFillManagerTest,
+  FRIEND_TEST_ALL_PREFIXES(AutofillManagerTest, FillCreditCardForm);
+  FRIEND_TEST_ALL_PREFIXES(AutofillManagerTest,
                            FillCreditCardFormNoYearNoMonth);
-  FRIEND_TEST_ALL_PREFIXES(AutoFillManagerTest, FillCreditCardFormYearNoMonth);
-  FRIEND_TEST_ALL_PREFIXES(AutoFillManagerTest, FillCreditCardFormNoYearMonth);
-  FRIEND_TEST_ALL_PREFIXES(AutoFillManagerTest, FillCreditCardFormYearMonth);
-  FRIEND_TEST_ALL_PREFIXES(AutoFillManagerTest, FillAddressForm);
-  FRIEND_TEST_ALL_PREFIXES(AutoFillManagerTest, FillAddressAndCreditCardForm);
-  FRIEND_TEST_ALL_PREFIXES(AutoFillManagerTest, FillFormWithMultipleSections);
-  FRIEND_TEST_ALL_PREFIXES(AutoFillManagerTest, FillAutoFilledForm);
-  FRIEND_TEST_ALL_PREFIXES(AutoFillManagerTest, FillPhoneNumber);
-  FRIEND_TEST_ALL_PREFIXES(AutoFillManagerTest, FormChangesRemoveField);
-  FRIEND_TEST_ALL_PREFIXES(AutoFillManagerTest, FormChangesAddField);
+  FRIEND_TEST_ALL_PREFIXES(AutofillManagerTest, FillCreditCardFormYearNoMonth);
+  FRIEND_TEST_ALL_PREFIXES(AutofillManagerTest, FillCreditCardFormNoYearMonth);
+  FRIEND_TEST_ALL_PREFIXES(AutofillManagerTest, FillCreditCardFormYearMonth);
+  FRIEND_TEST_ALL_PREFIXES(AutofillManagerTest, FillAddressForm);
+  FRIEND_TEST_ALL_PREFIXES(AutofillManagerTest, FillAddressAndCreditCardForm);
+  FRIEND_TEST_ALL_PREFIXES(AutofillManagerTest, FillFormWithMultipleSections);
+  FRIEND_TEST_ALL_PREFIXES(AutofillManagerTest, FillAutoFilledForm);
+  FRIEND_TEST_ALL_PREFIXES(AutofillManagerTest, FillPhoneNumber);
+  FRIEND_TEST_ALL_PREFIXES(AutofillManagerTest, FormChangesRemoveField);
+  FRIEND_TEST_ALL_PREFIXES(AutofillManagerTest, FormChangesAddField);
   FRIEND_TEST_ALL_PREFIXES(AutofillMetricsTest, QualityMetrics);
   FRIEND_TEST_ALL_PREFIXES(AutofillMetricsTest,
                            NoQualityMetricsForNonAutofillableForms);
@@ -239,7 +239,7 @@ class AutoFillManager : public TabContentsObserver,
   FRIEND_TEST_ALL_PREFIXES(AutofillMetricsTest, QualityMetricsForFailure);
   FRIEND_TEST_ALL_PREFIXES(AutofillMetricsTest, QualityMetricsWithExperimentId);
 
-  DISALLOW_COPY_AND_ASSIGN(AutoFillManager);
+  DISALLOW_COPY_AND_ASSIGN(AutofillManager);
 };
 
 #endif  // CHROME_BROWSER_AUTOFILL_AUTOFILL_MANAGER_H_

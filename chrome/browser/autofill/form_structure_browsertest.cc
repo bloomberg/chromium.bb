@@ -59,9 +59,9 @@ void FormStructureBrowserTest::GenerateResults(const std::string& input,
   ASSERT_NO_FATAL_FAILURE(ui_test_utils::NavigateToURL(browser(),
                                                        HTMLToDataURI(input)));
 
-  AutoFillManager* autofill_manager =
+  AutofillManager* autofill_manager =
       browser()->GetSelectedTabContents()->autofill_manager();
-  ASSERT_NE(static_cast<AutoFillManager*>(NULL), autofill_manager);
+  ASSERT_NE(static_cast<AutofillManager*>(NULL), autofill_manager);
   std::vector<FormStructure*> forms = autofill_manager->form_structures_.get();
   *output = FormStructureBrowserTest::FormStructuresToString(forms);
 }

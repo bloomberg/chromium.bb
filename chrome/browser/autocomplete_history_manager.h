@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -34,7 +34,7 @@ class AutocompleteHistoryManager : public TabContentsObserver,
   virtual void OnWebDataServiceRequestDone(WebDataService::Handle h,
                                            const WDTypedResult* result);
 
-  // Pass-through functions that are called by AutoFillManager, after it has
+  // Pass-through functions that are called by AutofillManager, after it has
   // dispatched a message.
   void OnGetAutocompleteSuggestions(
       int query_id,
@@ -48,7 +48,7 @@ class AutocompleteHistoryManager : public TabContentsObserver,
 
  protected:
   friend class AutocompleteHistoryManagerTest;
-  friend class AutoFillManagerTest;
+  friend class AutofillManagerTest;
 
   // For tests.
   AutocompleteHistoryManager(TabContents* tab_contents,

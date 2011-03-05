@@ -40,7 +40,7 @@ using WebKit::WebScriptSource;
 using WebKit::WebString;
 using WebKit::WebURLRequest;
 using autofill::AutoFillAgent;
-using autofill::PasswordAutoFillManager;
+using autofill::PasswordAutofillManager;
 
 namespace {
 const int32 kRouteId = 5;
@@ -140,10 +140,10 @@ void RenderViewTest::SetUp() {
   // Attach a pseudo keyboard device to this object.
   mock_keyboard_.reset(new MockKeyboard());
 
-  // RenderView doesn't expose it's PasswordAutoFillManager or
+  // RenderView doesn't expose it's PasswordAutofillManager or
   // AutoFillHelper objects, because it has no need to store them directly
   // (they're stored as RenderViewObserver*).  So just create another set.
-  password_autofill_ = new PasswordAutoFillManager(view_);
+  password_autofill_ = new PasswordAutofillManager(view_);
   autofill_agent_ = new AutoFillAgent(view_, password_autofill_);
 }
 

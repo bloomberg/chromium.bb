@@ -20,7 +20,7 @@
 #include "chrome/browser/autofill/field_types.h"
 #include "chrome/browser/webdata/web_data_service.h"
 
-class AutoFillManager;
+class AutofillManager;
 class AutofillMetrics;
 class FormStructure;
 class Profile;

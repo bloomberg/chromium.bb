@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -23,7 +23,7 @@
 
 namespace autofill {
 class AutoFillAgent;
-class PasswordAutoFillManager;
+class PasswordAutofillManager;
 }
 class MockRenderProcess;
 
@@ -104,7 +104,7 @@ class RenderViewTest : public testing::Test {
   scoped_ptr<CommandLine> command_line_;
   scoped_ptr<SandboxInitWrapper> sandbox_init_wrapper_;
 
-  autofill::PasswordAutoFillManager* password_autofill_;
+  autofill::PasswordAutofillManager* password_autofill_;
   autofill::AutoFillAgent* autofill_agent_;
 };
 

@@ -75,7 +75,7 @@ IPC_MESSAGE_ROUTED1(AutoFillMsg_FillPasswordForm,
 // AutoFill messages sent from the renderer to the browser.
 
 // Notification that forms have been seen that are candidates for
-// filling/submitting by the AutoFillManager.
+// filling/submitting by the AutofillManager.
 IPC_MESSAGE_ROUTED1(AutoFillHostMsg_FormsSeen,
                     std::vector<webkit_glue::FormData> /* forms */)
 

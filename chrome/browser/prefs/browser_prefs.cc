@@ -98,7 +98,7 @@ void RegisterLocalState(PrefService* local_state) {
   UpgradeDetector::RegisterPrefs(local_state);
   TaskManager::RegisterPrefs(local_state);
   geolocation::RegisterPrefs(local_state);
-  AutoFillManager::RegisterBrowserPrefs(local_state);
+  AutofillManager::RegisterBrowserPrefs(local_state);
   BackgroundPageTracker::RegisterPrefs(local_state);
   NotificationUIManager::RegisterPrefs(local_state);
   PrefProxyConfigService::RegisterPrefs(local_state);
@@ -116,7 +116,7 @@ void RegisterLocalState(PrefService* local_state) {
 
 void RegisterUserPrefs(PrefService* user_prefs) {
   // User prefs
-  AutoFillManager::RegisterUserPrefs(user_prefs);
+  AutofillManager::RegisterUserPrefs(user_prefs);
   SessionStartupPref::RegisterUserPrefs(user_prefs);
   Browser::RegisterUserPrefs(user_prefs);
   PasswordManager::RegisterUserPrefs(user_prefs);

@@ -13,7 +13,7 @@
 #include "ui/base/resource/resource_bundle.h"
 
 AutoFillCCInfoBarDelegate::AutoFillCCInfoBarDelegate(TabContents* tab_contents,
-                                                     AutoFillManager* host)
+                                                     AutofillManager* host)
     : ConfirmInfoBarDelegate(tab_contents),
       host_(host) {
 }
