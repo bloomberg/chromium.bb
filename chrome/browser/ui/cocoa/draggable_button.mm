@@ -20,10 +20,14 @@ const CGFloat kDragExpirationTimeout = 1.0;
 @implementation DraggableButton
 
 @synthesize draggable = draggable_;
+@synthesize actsOnMouseDown = actsOnMouseDown_;
+@synthesize durationMouseWasDown = durationMouseWasDown_;
 
 - (id)initWithFrame:(NSRect)frame {
   if ((self = [super initWithFrame:frame])) {
     draggable_ = YES;
+    actsOnMouseDown_ = NO;
+    actionHasFired_ = NO;
   }
   return self;
 }
@@ -31,9 +35,26 @@ const CGFloat kDragExpirationTimeout = 1.0;
 - (id)initWithCoder:(NSCoder*)coder {
   if ((self = [super initWithCoder:coder])) {
     draggable_ = YES;
+    actsOnMouseDown_ = NO;
+    actionHasFired_ = NO;
   }
   return self;
 }
+
+- (BOOL)deltaIndicatesDragStartWithXDelta:(float)xDelta
+                                   yDelta:(float)yDelta
+                              xHysteresis:(float)xHysteresis
+                              yHysteresis:(float)yHysteresis {
+  return (ABS(xDelta) >= xHysteresis) || (ABS(yDelta) >= yHysteresis);
+}
+
+- (BOOL)deltaIndicatesConclusionReachedWithXDelta:(float)xDelta
+                                           yDelta:(float)yDelta
+                                      xHysteresis:(float)xHysteresis
+                                      yHysteresis:(float)yHysteresis {
+  return (ABS(xDelta) >= xHysteresis) || (ABS(yDelta) >= yHysteresis);
+}
+
 
 // Determine whether a mouse down should turn into a drag; started as copy of
 // NSTableView code.
@@ -60,17 +81,19 @@ const CGFloat kDragExpirationTimeout = 1.0;
       firstEvent = nextEvent;
     }
     if ([nextEvent type] == NSLeftMouseDragged) {
-      float deltax = ABS([nextEvent locationInWindow].x -
-          [mouseDownEvent locationInWindow].x);
-      float deltay = ABS([nextEvent locationInWindow].y -
-          [mouseDownEvent locationInWindow].y);
+      float deltax = [nextEvent locationInWindow].x -
+          [mouseDownEvent locationInWindow].x;
+      float deltay = [nextEvent locationInWindow].y -
+          [mouseDownEvent locationInWindow].y;
       dragEvent = nextEvent;
-      if (deltax >= xHysteresis) {
-        dragIt = YES;
-        break;
-      }
-      if (deltay >= yHysteresis) {
-        dragIt = YES;
+      if ([self deltaIndicatesConclusionReachedWithXDelta:deltax
+                                                   yDelta:deltay
+                                              xHysteresis:xHysteresis
+                                              yHysteresis:yHysteresis]) {
+        dragIt = [self deltaIndicatesDragStartWithXDelta:deltax
+                                                  yDelta:deltay
+                                             xHysteresis:xHysteresis
+                                             yHysteresis:yHysteresis];
         break;
       }
     } else if ([nextEvent type] == NSLeftMouseUp) {
@@ -105,6 +128,11 @@ const CGFloat kDragExpirationTimeout = 1.0;
 }
 
 - (void)mouseUp:(NSEvent*)theEvent {
+  durationMouseWasDown_ = [theEvent timestamp] - whenMouseDown_;
+
+  if (actionHasFired_)
+    return;
+
   if (!draggable_) {
     [super mouseUp:theEvent];
     return;
@@ -120,21 +148,97 @@ const CGFloat kDragExpirationTimeout = 1.0;
   }
 }
 
+- (void)secondaryMouseUpAction:(BOOL)wasInside {
+  // Override if you want to do any extra work on mouseUp, after a mouseDown
+  // action has already fired.
+}
+
+- (BOOL)acceptsTrackInFrom:(id)sender {
+  return (sender == self);
+}
+
+- (void)performMouseDownAction:(NSEvent*)theEvent {
+  int eventMask = NSLeftMouseUpMask | NSMouseEnteredMask | NSMouseExitedMask;
+
+  [[self target] performSelector:[self action] withObject:self];
+  actionHasFired_ = YES;
+
+  DraggableButton* insideBtn = nil;
+
+  while (1) {
+    theEvent = [[self window] nextEventMatchingMask:eventMask];
+    NSPoint mouseLoc = [self convertPoint:[theEvent locationInWindow]
+                                 fromView:nil];
+    BOOL isInside = [self mouse:mouseLoc inRect:[self bounds]];
+
+    switch ([theEvent type]) {
+      case NSMouseEntered:
+      case NSMouseExited: {
+        NSView* trackedView = (NSView*)[[theEvent trackingArea] owner];
+        if (trackedView && [trackedView isKindOfClass:[self class]]) {
+          DraggableButton *btn = static_cast<DraggableButton*>(trackedView);
+          if (![btn acceptsTrackInFrom:self])
+            break;
+          if ([theEvent type] == NSMouseEntered) {
+            [[NSCursor arrowCursor] set];
+            [[btn cell] mouseEntered:theEvent];
+            insideBtn = btn;
+          } else {
+            [[btn cell] mouseExited:theEvent];
+            if (insideBtn == btn)
+              insideBtn = nil;
+          }
+        }
+        break;
+      }
+      case NSLeftMouseUp: {
+        if (!isInside && insideBtn && insideBtn != self) {
+          // Has tracked onto another DraggableButton menu item, and released,
+          // so click it.
+          [insideBtn performClick:self];
+        }
+        durationMouseWasDown_ = [theEvent timestamp] - whenMouseDown_;
+        [self secondaryMouseUpAction:isInside];
+        [[self cell] mouseExited:theEvent];
+        [[insideBtn cell] mouseExited:theEvent];
+        return;
+        break;
+      }
+      default:
+        /* Ignore any other kind of event. */
+        break;
+    }
+  }
+}
+
 // Mimic "begin a click" operation visually.  Do NOT follow through
 // with normal button event handling.
 - (void)mouseDown:(NSEvent*)theEvent {
+  [[NSCursor arrowCursor] set];
+
+  whenMouseDown_ = [theEvent timestamp];
+  actionHasFired_ = NO;
+
   if (draggable_) {
-    [[self cell] setHighlighted:YES];
     NSDate* date = [NSDate dateWithTimeIntervalSinceNow:kDragExpirationTimeout];
     if ([self dragShouldBeginFromMouseDown:theEvent
                             withExpiration:date]) {
       [self beginDrag:theEvent];
       [self endDrag];
     } else {
-      [super mouseDown:theEvent];
+      if (actsOnMouseDown_) {
+        [self performMouseDownAction:theEvent];
+      } else {
+        [super mouseDown:theEvent];
+      }
+
     }
   } else {
-    [super mouseDown:theEvent];
+    if (actsOnMouseDown_) {
+      [self performMouseDownAction:theEvent];
+    } else {
+      [super mouseDown:theEvent];
+    }
   }
 }
 
@@ -144,7 +248,7 @@ const CGFloat kDragExpirationTimeout = 1.0;
 }
 
 - (void)endDrag {
-  [[self cell] setHighlighted:NO];
+  [self highlight:NO];
 }
 
 @end  // @interface DraggableButton

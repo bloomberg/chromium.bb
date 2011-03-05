@@ -332,6 +332,7 @@ void RecordAppLaunch(Profile* profile, GURL url) {
 
   // Complete init of the "off the side" button, as much as we can.
   [offTheSideButton_ setDraggable:NO];
+  [offTheSideButton_ setActsOnMouseDown:YES];
 
   // We are enabled by default.
   barIsEnabled_ = YES;
@@ -1139,6 +1140,7 @@ void RecordAppLaunch(Profile* profile, GURL url) {
   if (node->is_folder()) {
     [button setTarget:self];
     [button setAction:@selector(openBookmarkFolderFromButton:)];
+    [button setActsOnMouseDown:YES];
   } else {
     // Make the button do something
     [button setTarget:self];
@@ -1203,6 +1205,7 @@ void RecordAppLaunch(Profile* profile, GURL url) {
   frame.origin.x -= bookmarks::kBookmarkHorizontalPadding;
   BookmarkButton* button = [[BookmarkButton alloc] initWithFrame:frame];
   [button setDraggable:NO];
+  [button setActsOnMouseDown:YES];
   otherBookmarksButton_.reset(button);
   view_id_util::SetID(button, VIEW_ID_OTHER_BOOKMARKS);
 
@@ -1555,12 +1558,12 @@ void RecordAppLaunch(Profile* profile, GURL url) {
   CGFloat delta = desiredSize - frame.size.width;
   if (delta) {
     frame.size.width = desiredSize;
-    [button setFrame:frame];
+    [[button animator] setFrame:frame];
     for (NSButton* button in buttons_.get()) {
       NSRect buttonFrame = [button frame];
       if (buttonFrame.origin.x > frame.origin.x) {
         buttonFrame.origin.x += delta;
-        [button setFrame:buttonFrame];
+        [[button animator] setFrame:buttonFrame];
       }
     }
   }
@@ -1662,7 +1665,7 @@ void RecordAppLaunch(Profile* profile, GURL url) {
       // - right-click (and unclick) on it to open context menu
       // - move mouse to window titlebar then click-drag it by the titlebar
       // http://crbug.com/49333
-      return YES;
+      return NO;
     default:
       break;
   }
@@ -2325,7 +2328,7 @@ static BOOL ValueInRangeInclusive(CGFloat low, CGFloat value, CGFloat high) {
       BookmarkButton* button = [buttons_ objectAtIndex:i];
       NSPoint buttonOrigin = [button frame].origin;
       buttonOrigin.x += xOffset;
-      [button setFrameOrigin:buttonOrigin];
+      [[button animator] setFrameOrigin:buttonOrigin];
     }
     ++displayedButtonCount_;
     [buttons_ insertObject:newButton atIndex:buttonIndex];
@@ -2410,7 +2413,7 @@ static BOOL ValueInRangeInclusive(CGFloat low, CGFloat value, CGFloat high) {
           BookmarkButton* button = [buttons_ objectAtIndex:i];
           NSRect frame = [button frame];
           frame.origin.x -= xOffset;
-          [button setFrameOrigin:frame.origin];
+          [[button animator] setFrameOrigin:frame.origin];
         }
       } else {
         // Move the button from right to left within the bar.
@@ -2420,7 +2423,7 @@ static BOOL ValueInRangeInclusive(CGFloat low, CGFloat value, CGFloat high) {
           BookmarkButton* button = [buttons_ objectAtIndex:i];
           NSRect buttonFrame = [button frame];
           buttonFrame.origin.x += xOffset;
-          [button setFrameOrigin:buttonFrame.origin];
+          [[button animator] setFrameOrigin:buttonFrame.origin];
         }
       }
       [buttons_ insertObject:movedButton atIndex:toIndex];
@@ -2475,7 +2478,7 @@ static BOOL ValueInRangeInclusive(CGFloat low, CGFloat value, CGFloat high) {
       BookmarkButton* button = [buttons_ objectAtIndex:i];
       NSRect buttonFrame = [button frame];
       buttonFrame.origin.x -= xOffset;
-      [button setFrame:buttonFrame];
+      [[button animator] setFrame:buttonFrame];
       // If this button is showing its menu then we need to move the menu, too.
       if (button == [folderController_ parentButton])
         [folderController_ offsetFolderMenuWindow:NSMakeSize(xOffset, 0.0)];

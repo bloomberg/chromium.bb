@@ -184,7 +184,7 @@
   // TODO(port): This should probably return |YES| and the controller should
   // slide the existing bookmark buttons interactively to the side to make
   // room for the about-to-be-dropped bookmark.
-  return NO;
+  return YES;
 }
 
 - (NSDragOperation)draggingUpdated:(id<NSDraggingInfo>)info {

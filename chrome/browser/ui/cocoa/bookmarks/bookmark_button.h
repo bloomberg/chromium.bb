@@ -199,9 +199,12 @@ class ThemeProvider;
   NSPoint dragMouseOffset_;
   NSPoint dragEndScreenLocation_;
   BOOL dragPending_;
+  BOOL acceptsTrackIn_;
+  NSTrackingArea* area_;
 }
 
 @property(assign, nonatomic) NSObject<BookmarkButtonDelegate>* delegate;
+@property(assign, nonatomic) BOOL acceptsTrackIn;
 
 // Return the bookmark node associated with this button, or NULL.
 - (const BookmarkNode*)bookmarkNode;
@@ -227,6 +230,10 @@ class ThemeProvider;
 // Return the location in screen coordinates where the remove animation should
 // be displayed.
 - (NSPoint)screenLocationForRemoveAnimation;
+
+// The BookmarkButton which is currently being dragged, if any.
++ (BookmarkButton*)draggedButton;
+
 
 @end  // @interface BookmarkButton
 

@@ -25,10 +25,20 @@ NSString* const kBookmarkPulseFlagKey = @"BookmarkPulseFlagKey";
 
 };
 
+namespace {
+// We need a class variable to track the current dragged button to enable
+// proper live animated dragging behavior, and can't do it in the
+// delegate/controller since you can drag a button from one domain to the
+// other (from a "folder" menu, to the main bar, or vice versa).
+BookmarkButton* gDraggedButton = nil; // Weak
+};
+
 @interface BookmarkButton(Private)
 
 // Make a drag image for the button.
 - (NSImage*)dragImage;
+
+- (void)installCustomTrackingArea;
 
 @end  // @interface BookmarkButton(Private)
 
@@ -36,13 +46,16 @@ NSString* const kBookmarkPulseFlagKey = @"BookmarkPulseFlagKey";
 @implementation BookmarkButton
 
 @synthesize delegate = delegate_;
+@synthesize acceptsTrackIn = acceptsTrackIn_;
 
 - (id)initWithFrame:(NSRect)frameRect {
   // BookmarkButton's ViewID may be changed to VIEW_ID_OTHER_BOOKMARKS in
   // BookmarkBarController, so we can't just override -viewID method to return
   // it.
-  if ((self = [super initWithFrame:frameRect]))
+  if ((self = [super initWithFrame:frameRect])) {
     view_id_util::SetID(self, VIEW_ID_BOOKMARK_BAR_ELEMENT);
+    [self installCustomTrackingArea];
+  }
   return self;
 }
 
@@ -97,11 +110,42 @@ NSString* const kBookmarkPulseFlagKey = @"BookmarkPulseFlagKey";
   return point;
 }
 
+
+- (void)updateTrackingAreas {
+  [self installCustomTrackingArea];
+  [super updateTrackingAreas];
+}
+
+- (BOOL)deltaIndicatesDragStartWithXDelta:(float)xDelta
+                                   yDelta:(float)yDelta
+                              xHysteresis:(float)xHysteresis
+                              yHysteresis:(float)yHysteresis {
+  const float kDownProportion = 1.4142135f; // Square root of 2.
+
+  // We want to show a folder menu when you drag down on folder buttons,
+  // so don't classify this as a drag for that case.
+  if ([self isFolder] &&
+      (yDelta <= -yHysteresis) && // Bottom of hysteresis box was hit.
+      (ABS(yDelta)/ABS(xDelta)) >= kDownProportion)
+    return NO;
+
+  return [super deltaIndicatesDragStartWithXDelta:xDelta
+                                           yDelta:yDelta
+                                      xHysteresis:xHysteresis
+                                      yHysteresis:yHysteresis];
+}
+
+
 // By default, NSButton ignores middle-clicks.
 // But we want them.
 - (void)otherMouseUp:(NSEvent*)event {
   [self performClick:self];
 }
+
+- (BOOL)acceptsTrackInFrom:(id)sender {
+  return  [self isFolder] || [self acceptsTrackIn];
+}
+
 
 // Overridden from DraggableButton.
 - (void)beginDrag:(NSEvent*)event {
@@ -114,14 +158,15 @@ NSString* const kBookmarkPulseFlagKey = @"BookmarkPulseFlagKey";
     NOTREACHED();
     return;
   }
-  // Ask our delegate to fill the pasteboard for us.
-  NSPasteboard* pboard = [NSPasteboard pasteboardWithName:NSDragPboard];
-  [[self delegate] fillPasteboard:pboard forDragOfButton:self];
 
   // At the moment, moving bookmarks causes their buttons (like me!)
   // to be destroyed and rebuilt.  Make sure we don't go away while on
   // the stack.
   [self retain];
+
+  // Ask our delegate to fill the pasteboard for us.
+  NSPasteboard* pboard = [NSPasteboard pasteboardWithName:NSDragPboard];
+  [[self delegate] fillPasteboard:pboard forDragOfButton:self];
 
   // Lock bar visibility, forcing the overlay to stay visible if we are in
   // fullscreen mode.
@@ -144,19 +189,27 @@ NSString* const kBookmarkPulseFlagKey = @"BookmarkPulseFlagKey";
 
   dragMouseOffset_ = [self convertPointFromBase:[event locationInWindow]];
   dragPending_ = YES;
+  gDraggedButton = self;
+  [[self animator] setHidden:YES];
 
   CGFloat yAt = [self bounds].size.height;
   NSSize dragOffset = NSMakeSize(0.0, 0.0);
   [self dragImage:[self dragImage] at:NSMakePoint(0, yAt) offset:dragOffset
             event:event pasteboard:pboard source:self slideBack:YES];
 
+  [self setHidden:NO];
+
   // And we're done.
   dragPending_ = NO;
+  gDraggedButton = nil;
+
   [self autorelease];
 }
 
 // Overridden to release bar visibility.
 - (void)endDrag {
+  gDraggedButton = nil;
+
   // visibilityDelegate_ can be nil if we're detached, and that's fine.
   [visibilityDelegate_ releaseBarVisibilityForOwner:self
                                       withAnimation:YES
@@ -179,6 +232,7 @@ NSString* const kBookmarkPulseFlagKey = @"BookmarkPulseFlagKey";
 - (void)draggedImage:(NSImage *)anImage
              endedAt:(NSPoint)aPoint
            operation:(NSDragOperation)operation {
+  gDraggedButton = nil;
   // Inform delegate of drag source that we're finished dragging,
   // so it can close auto-opened bookmark folders etc.
   [delegate_ bookmarkDragDidEnd:self];
@@ -202,9 +256,42 @@ NSString* const kBookmarkPulseFlagKey = @"BookmarkPulseFlagKey";
   [delegate_ mouseExitedButton:self event:event];
 }
 
++ (BookmarkButton*)draggedButton {
+  return gDraggedButton;
+}
+
+// This only gets called after a click that wasn't a drag, and only on folders.
+- (void)secondaryMouseUpAction:(BOOL)wasInside {
+  const NSTimeInterval kShortClickLength = 0.5;
+  // Long clicks that end over the folder button result in the menu hiding.
+  if (wasInside && ([self durationMouseWasDown] > kShortClickLength)) {
+    [[self target] performSelector:[self action] withObject:self];
+  } else {
+    // Mouse tracked out of button during menu track. Hide menus.
+    if (!wasInside)
+      [delegate_ bookmarkDragDidEnd:self];
+  }
+}
+
 @end
 
 @implementation BookmarkButton(Private)
+
+- (void)installCustomTrackingArea {
+  if (area_)
+    return;
+
+  NSTrackingAreaOptions options = NSTrackingActiveInActiveApp |
+      NSTrackingMouseEnteredAndExited | NSTrackingEnabledDuringMouseDrag |
+      NSTrackingInVisibleRect;
+
+  area_ = [[NSTrackingArea alloc] initWithRect:[self bounds]
+                                       options:options
+                                         owner:self
+                                      userInfo:nil];
+  [self addTrackingArea:area_];
+}
+
 
 - (NSImage*)dragImage {
   NSRect bounds = [self bounds];
@@ -223,7 +310,7 @@ NSString* const kBookmarkPulseFlagKey = @"BookmarkPulseFlagKey";
   // Make an autoreleased |NSImage|, which will be returned, and draw into it.
   // By default, the |NSImage| will be completely transparent.
   NSImage* dragImage =
-      [[[NSImage alloc] initWithSize:[bitmap size]] autorelease];
+  [[[NSImage alloc] initWithSize:[bitmap size]] autorelease];
   [dragImage lockFocus];
 
   // Draw the image with the appropriate opacity, clipping it tightly.

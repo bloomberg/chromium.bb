@@ -12,6 +12,7 @@
 #include "base/sys_string_conversions.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
+#import "chrome/browser/ui/cocoa/animation_utils.h"
 #import "chrome/browser/ui/cocoa/bookmarks/bookmark_bar_constants.h"
 #import "chrome/browser/ui/cocoa/bookmarks/bookmark_bar_controller.h"
 #import "chrome/browser/ui/cocoa/bookmarks/bookmark_bar_folder_window.h"
@@ -877,6 +878,7 @@ TEST_F(BookmarkBarControllerTest, TestButtonMarch) {
 }
 
 TEST_F(BookmarkBarControllerTest, CheckForGrowth) {
+  WithNoAnimation at_all; // Turn off Cocoa auto animation in this scope.
   BookmarkModel* model = helper_.profile()->GetBookmarkModel();
   GURL gurl1("http://www.google.com");
   string16 title1(ASCIIToUTF16("x"));
@@ -1109,6 +1111,7 @@ TEST_F(BookmarkBarControllerTest, TestMenuNodeAndDisable) {
 }
 
 TEST_F(BookmarkBarControllerTest, TestDragButton) {
+  WithNoAnimation at_all;
   BookmarkModel* model = helper_.profile()->GetBookmarkModel();
 
   GURL gurls[] = { GURL("http://www.google.com/a"),

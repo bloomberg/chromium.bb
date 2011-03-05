@@ -393,6 +393,7 @@ struct LayoutMetrics {
       NSString* tooltip = [NSString stringWithFormat:@"%@\n%s", title,
                                     urlString.c_str()];
       [button setToolTip:tooltip];
+      [button setAcceptsTrackIn:YES];
     }
   } else {
     [button setEnabled:NO];
@@ -1203,6 +1204,10 @@ static BOOL ValueInRangeInclusive(CGFloat low, CGFloat value, CGFloat high) {
 #pragma mark NSWindowDelegate Functions
 
 - (void)windowWillClose:(NSNotification*)notification {
+  // Also done by the dealloc method, but also doing it here is quicker and
+  // more reliable.
+  [parentButton_ forceButtonBorderToStayOnAlways:NO];
+
   // If a "hover open" is pending when the bookmark bar folder is
   // closed, be sure it gets cancelled.
   [NSObject cancelPreviousPerformRequestsWithTarget:self];
@@ -1238,7 +1243,8 @@ static BOOL ValueInRangeInclusive(CGFloat low, CGFloat value, CGFloat high) {
 
   [self performSelector:@selector(openBookmarkFolderFromButtonAndCloseOldOne:)
              withObject:sender
-             afterDelay:bookmarks::kHoverOpenDelay];
+             afterDelay:bookmarks::kHoverOpenDelay
+                inModes:[NSArray arrayWithObject:NSRunLoopCommonModes]];
 }
 
 // Called from the BookmarkButton

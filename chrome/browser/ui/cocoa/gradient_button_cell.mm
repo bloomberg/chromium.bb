@@ -319,9 +319,6 @@ static const NSTimeInterval kAnimationContinuousCycleDuration = 0.4;
 - (void)setShowsBorderOnlyWhileMouseInside:(BOOL)showOnly {
   [super setShowsBorderOnlyWhileMouseInside:showOnly];
   if (showOnly) {
-    if (trackingArea_.get()) {
-      [self setShowsBorderOnlyWhileMouseInside:NO];
-    }
     [self updateTrackingAreas];
   } else {
     if (trackingArea_) {
