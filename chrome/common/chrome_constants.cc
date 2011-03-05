@@ -118,8 +118,6 @@ const int kStatsMaxThreads = 32;
 const int kStatsMaxCounters = 3000;
 
 const size_t kMaxTitleChars = 4 * 1024;
-const size_t kMaxURLChars = 2 * 1024 * 1024;
-const size_t kMaxURLDisplayChars = 32 * 1024;
 
 // We don't enable record mode in the released product because users could
 // potentially be tricked into running a product in record mode without

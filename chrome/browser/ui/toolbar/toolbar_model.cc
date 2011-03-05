@@ -18,6 +18,7 @@
 #include "content/browser/tab_contents/navigation_controller.h"
 #include "content/browser/tab_contents/navigation_entry.h"
 #include "content/browser/tab_contents/tab_contents.h"
+#include "content/common/content_constants.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
 #include "net/base/cert_status_flags.h"
@@ -48,7 +49,7 @@ std::wstring ToolbarModel::GetText() const {
       url = entry->virtual_url();
     }
   }
-  if (url.spec().length() > chrome::kMaxURLDisplayChars)
+  if (url.spec().length() > content::kMaxURLDisplayChars)
     url = url.IsStandard() ? url.GetOrigin() : GURL(url.scheme() + ":");
   // Note that we can't unescape spaces here, because if the user copies this
   // and pastes it into another program, that program may think the URL ends at

@@ -15,6 +15,7 @@
 #include "chrome/browser/importer/profile_writer.h"
 #include "chrome/browser/search_engines/template_url.h"
 #include "chrome/common/common_param_traits.h"
+#include "content/common/common_param_traits.h"
 #include "ipc/ipc_message_utils.h"
 
 namespace IPC {

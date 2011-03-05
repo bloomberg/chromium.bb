@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "chrome/common/common_param_traits.h"
+#include "content/common/common_param_traits.h"
 #include "webkit/glue/form_data.h"
 #include "webkit/glue/form_field.h"
 #include "webkit/glue/password_form.h"

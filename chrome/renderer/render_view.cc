@@ -104,6 +104,7 @@
 #include "chrome/renderer/webplugin_delegate_proxy.h"
 #include "chrome/renderer/websharedworker_proxy.h"
 #include "chrome/renderer/webworker_proxy.h"
+#include "content/common/content_constants.h"
 #include "grit/generated_resources.h"
 #include "grit/renderer_resources.h"
 #include "media/base/filter_collection.h"
@@ -2453,12 +2454,12 @@ void RenderView::showContextMenu(
     if (spelled_right)
       params.misspelled_word.clear();
   }
-  // Serializing a GURL longer than chrome::kMaxURLChars will fail, so don't do
+  // Serializing a GURL longer than content::kMaxURLChars will fail, so don't do
   // it.  We replace it with an empty GURL so the appropriate items are disabled
   // in the context menu.
   // TODO(jcivelli): http://crbug.com/45160 This prevents us from saving large
   //                 data encoded images.  We should have a way to save them.
-  if (params.src_url.spec().size() > chrome::kMaxURLChars)
+  if (params.src_url.spec().size() > content::kMaxURLChars)
     params.src_url = GURL();
   context_menu_node_ = data.node;
   Send(new ViewHostMsg_ContextMenu(routing_id_, params));

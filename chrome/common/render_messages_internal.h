@@ -917,33 +917,6 @@ IPC_MESSAGE_CONTROL1(ViewMsg_SetIPCLoggingEnabled,
                      bool /* on or off */)
 #endif
 
-// Socket Stream messages:
-// These are messages from the browser to the SocketStreamHandle on
-// a renderer.
-
-// A |socket_id| is assigned by ViewHostMsg_SocketStream_Connect.
-// The Socket Stream is connected. The SocketStreamHandle should keep track
-// of how much it has pending (how much it has requested to be sent) and
-// shouldn't go over |max_pending_send_allowed| bytes.
-IPC_MESSAGE_CONTROL2(ViewMsg_SocketStream_Connected,
-                     int /* socket_id */,
-                     int /* max_pending_send_allowed */)
-
-// |data| is received on the Socket Stream.
-IPC_MESSAGE_CONTROL2(ViewMsg_SocketStream_ReceivedData,
-                     int /* socket_id */,
-                     std::vector<char> /* data */)
-
-// |amount_sent| bytes of data requested by
-// ViewHostMsg_SocketStream_SendData has been sent on the Socket Stream.
-IPC_MESSAGE_CONTROL2(ViewMsg_SocketStream_SentData,
-                     int /* socket_id */,
-                     int /* amount_sent */)
-
-// The Socket Stream is closed.
-IPC_MESSAGE_CONTROL1(ViewMsg_SocketStream_Closed,
-                     int /* socket_id */)
-
 // SpellChecker messages.
 
 // Passes some initialization params to the renderer's spellchecker. This can
@@ -2305,39 +2278,6 @@ IPC_MESSAGE_ROUTED4(ViewHostMsg_PageTranslated,
                     std::string           /* the original language */,
                     std::string           /* the translated language */,
                     TranslateErrors::Type /* the error type if available */)
-
-//---------------------------------------------------------------------------
-// Socket Stream messages:
-// These are messages from the SocketStreamHandle to the browser.
-
-// Open new Socket Stream for the |socket_url| identified by |socket_id|
-// in the renderer process.
-// The browser starts connecting asynchronously.
-// Once Socket Stream connection is established, the browser will send
-// ViewMsg_SocketStream_Connected back.
-IPC_MESSAGE_CONTROL2(ViewHostMsg_SocketStream_Connect,
-                     GURL /* socket_url */,
-                     int /* socket_id */)
-
-// Request to send data on the Socket Stream.
-// SocketStreamHandle can send data at most |max_pending_send_allowed| bytes,
-// which is given by ViewMsg_SocketStream_Connected at any time.
-// The number of pending bytes can be tracked by size of |data| sent
-// and |amount_sent| parameter of ViewMsg_SocketStream_DataSent.
-// That is, the following constraints is applied:
-//  (accumulated total of |data|) - (accumulated total of |amount_sent|)
-// <= |max_pending_send_allowed|
-// If the SocketStreamHandle ever tries to exceed the
-// |max_pending_send_allowed|, the connection will be closed.
-IPC_MESSAGE_CONTROL2(ViewHostMsg_SocketStream_SendData,
-                     int /* socket_id */,
-                     std::vector<char> /* data */)
-
-// Request to close the Socket Stream.
-// The browser will send ViewMsg_SocketStream_Closed back when the Socket
-// Stream is completely closed.
-IPC_MESSAGE_CONTROL1(ViewHostMsg_SocketStream_Close,
-                     int /* socket_id */)
 
 //---------------------------------------------------------------------------
 // Request for cryptographic operation messages:

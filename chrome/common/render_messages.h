@@ -20,6 +20,7 @@
 #include "chrome/common/translate_errors.h"
 #include "chrome/common/view_types.h"
 #include "chrome/common/webkit_param_traits.h"
+#include "content/common/common_param_traits.h"
 #include "ipc/ipc_message_utils.h"
 #include "ipc/ipc_platform_file.h"                     // ifdefed typedef.
 #include "ui/base/clipboard/clipboard.h"                   // enum

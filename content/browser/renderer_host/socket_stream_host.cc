@@ -5,7 +5,7 @@
 #include "content/browser/renderer_host/socket_stream_host.h"
 
 #include "base/logging.h"
-#include "chrome/common/net/socket_stream.h"
+#include "content/common/socket_stream.h"
 #include "net/socket_stream/socket_stream_job.h"
 
 static const char* kSocketIdKey = "socketId";
@@ -25,7 +25,7 @@ SocketStreamHost::SocketStreamHost(
     int socket_id)
     : delegate_(delegate),
       socket_id_(socket_id) {
-  DCHECK_NE(socket_id_, chrome_common_net::kNoSocketId);
+  DCHECK_NE(socket_id_, content_common::kNoSocketId);
   VLOG(1) << "SocketStreamHost: socket_id=" << socket_id_;
 }
 
@@ -36,7 +36,7 @@ int SocketStreamHost::SocketIdFromSocketStream(net::SocketStream* socket) {
     SocketStreamId* socket_stream_id = static_cast<SocketStreamId*>(d);
     return socket_stream_id->socket_id();
   }
-  return chrome_common_net::kNoSocketId;
+  return content_common::kNoSocketId;
 }
 
 SocketStreamHost::~SocketStreamHost() {

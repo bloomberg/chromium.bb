@@ -11,10 +11,9 @@
 #include "base/ref_counted.h"
 #include "base/task.h"
 #include "chrome/common/child_thread.h"
-#include "chrome/common/render_messages.h"
-#include "chrome/common/net/socket_stream.h"
+#include "content/common/socket_stream.h"
+#include "content/common/socket_stream_messages.h"
 #include "googleurl/src/gurl.h"
-#include "ipc/ipc_message.h"
 #include "webkit/glue/websocketstreamhandle_bridge.h"
 #include "webkit/glue/websocketstreamhandle_delegate.h"
 
@@ -27,7 +26,7 @@ class IPCWebSocketStreamHandleBridge
       ChildThread* child_thread,
       WebKit::WebSocketStreamHandle* handle,
       webkit_glue::WebSocketStreamHandleDelegate* delegate)
-      : socket_id_(chrome_common_net::kNoSocketId),
+      : socket_id_(content_common::kNoSocketId),
         child_thread_(child_thread),
         handle_(handle),
         delegate_(delegate) {}
@@ -71,9 +70,9 @@ IPCWebSocketStreamHandleBridge* IPCWebSocketStreamHandleBridge::FromSocketId(
 IPCWebSocketStreamHandleBridge::~IPCWebSocketStreamHandleBridge() {
   DVLOG(1) << "IPCWebSocketStreamHandleBridge destructor socket_id="
            << socket_id_;
-  if (socket_id_ != chrome_common_net::kNoSocketId) {
-    child_thread_->Send(new ViewHostMsg_Close(socket_id_));
-    socket_id_ = chrome_common_net::kNoSocketId;
+  if (socket_id_ != content_common::kNoSocketId) {
+    child_thread_->Send(new SocketStreamHostMsg_Close(socket_id_));
+    socket_id_ = content_common::kNoSocketId;
   }
 }
 
@@ -90,7 +89,7 @@ bool IPCWebSocketStreamHandleBridge::Send(
     const std::vector<char>& data) {
   DVLOG(1) << "Send data.size=" << data.size();
   if (child_thread_->Send(
-      new ViewHostMsg_SocketStream_SendData(socket_id_, data))) {
+      new SocketStreamHostMsg_SendData(socket_id_, data))) {
     if (delegate_)
       delegate_->WillSendData(handle_, &data[0], data.size());
     return true;
@@ -100,7 +99,7 @@ bool IPCWebSocketStreamHandleBridge::Send(
 
 void IPCWebSocketStreamHandleBridge::Close() {
   DVLOG(1) << "Close socket_id" << socket_id_;
-  child_thread_->Send(new ViewHostMsg_SocketStream_Close(socket_id_));
+  child_thread_->Send(new SocketStreamHostMsg_Close(socket_id_));
 }
 
 void IPCWebSocketStreamHandleBridge::OnConnected(int max_pending_send_allowed) {
@@ -123,9 +122,9 @@ void IPCWebSocketStreamHandleBridge::OnReceivedData(
 
 void IPCWebSocketStreamHandleBridge::OnClosed() {
   DVLOG(1) << "IPCWebSocketStreamHandleBridge::OnClosed";
-  if (socket_id_ != chrome_common_net::kNoSocketId) {
+  if (socket_id_ != content_common::kNoSocketId) {
     all_bridges.Remove(socket_id_);
-    socket_id_ = chrome_common_net::kNoSocketId;
+    socket_id_ = content_common::kNoSocketId;
   }
   if (delegate_)
     delegate_->DidClose(handle_);
@@ -135,15 +134,14 @@ void IPCWebSocketStreamHandleBridge::OnClosed() {
 
 void IPCWebSocketStreamHandleBridge::DoConnect(const GURL& url) {
   DCHECK(child_thread_);
-  DCHECK_EQ(socket_id_, chrome_common_net::kNoSocketId);
+  DCHECK_EQ(socket_id_, content_common::kNoSocketId);
   if (delegate_)
     delegate_->WillOpenStream(handle_, url);
 
   socket_id_ = all_bridges.Add(this);
-  DCHECK_NE(socket_id_, chrome_common_net::kNoSocketId);
+  DCHECK_NE(socket_id_, content_common::kNoSocketId);
   AddRef();  // Released in OnClosed().
-  if (child_thread_->Send(
-      new ViewHostMsg_SocketStream_Connect(url, socket_id_))) {
+  if (child_thread_->Send(new SocketStreamHostMsg_Connect(url, socket_id_))) {
     DVLOG(1) << "Connect socket_id=" << socket_id_;
     // TODO(ukai): timeout to OnConnected.
   } else {
@@ -167,10 +165,10 @@ SocketStreamDispatcher::CreateBridge(
 bool SocketStreamDispatcher::OnMessageReceived(const IPC::Message& msg) {
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(SocketStreamDispatcher, msg)
-    IPC_MESSAGE_HANDLER(ViewMsg_SocketStream_Connected, OnConnected)
-    IPC_MESSAGE_HANDLER(ViewMsg_SocketStream_SentData, OnSentData)
-    IPC_MESSAGE_HANDLER(ViewMsg_SocketStream_ReceivedData, OnReceivedData)
-    IPC_MESSAGE_HANDLER(ViewMsg_SocketStream_Closed, OnClosed)
+    IPC_MESSAGE_HANDLER(SocketStreamMsg_Connected, OnConnected)
+    IPC_MESSAGE_HANDLER(SocketStreamMsg_SentData, OnSentData)
+    IPC_MESSAGE_HANDLER(SocketStreamMsg_ReceivedData, OnReceivedData)
+    IPC_MESSAGE_HANDLER(SocketStreamMsg_Closed, OnClosed)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;

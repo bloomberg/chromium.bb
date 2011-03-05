@@ -6,11 +6,11 @@
 
 #include "base/logging.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/common/render_messages.h"
-#include "chrome/common/render_messages_params.h"
-#include "chrome/common/net/socket_stream.h"
 #include "chrome/common/net/url_request_context_getter.h"
+#include "chrome/common/render_messages_params.h"
 #include "content/browser/renderer_host/socket_stream_host.h"
+#include "content/common/socket_stream.h"
+#include "content/common/socket_stream_messages.h"
 #include "net/websockets/websocket_job.h"
 #include "net/websockets/websocket_throttle.h"
 
@@ -34,9 +34,9 @@ bool SocketStreamDispatcherHost::OnMessageReceived(const IPC::Message& message,
                                                    bool* message_was_ok) {
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP_EX(SocketStreamDispatcherHost, message, *message_was_ok)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_SocketStream_Connect, OnConnect)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_SocketStream_SendData, OnSendData)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_SocketStream_Close, OnCloseReq)
+    IPC_MESSAGE_HANDLER(SocketStreamHostMsg_Connect, OnConnect)
+    IPC_MESSAGE_HANDLER(SocketStreamHostMsg_SendData, OnSendData)
+    IPC_MESSAGE_HANDLER(SocketStreamHostMsg_Close, OnCloseReq)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP_EX()
   return handled;
@@ -48,13 +48,13 @@ void SocketStreamDispatcherHost::OnConnected(net::SocketStream* socket,
   int socket_id = SocketStreamHost::SocketIdFromSocketStream(socket);
   DVLOG(1) << "SocketStreamDispatcherHost::OnConnected socket_id=" << socket_id
            << " max_pending_send_allowed=" << max_pending_send_allowed;
-  if (socket_id == chrome_common_net::kNoSocketId) {
+  if (socket_id == content_common::kNoSocketId) {
     LOG(ERROR) << "NoSocketId in OnConnected";
     return;
   }
-  if (!Send(new ViewMsg_SocketStream_Connected(
+  if (!Send(new SocketStreamMsg_Connected(
           socket_id, max_pending_send_allowed))) {
-    LOG(ERROR) << "ViewMsg_SocketStream_Connected failed.";
+    LOG(ERROR) << "SocketStreamMsg_Connected failed.";
     DeleteSocketStreamHost(socket_id);
   }
 }
@@ -64,12 +64,12 @@ void SocketStreamDispatcherHost::OnSentData(net::SocketStream* socket,
   int socket_id = SocketStreamHost::SocketIdFromSocketStream(socket);
   DVLOG(1) << "SocketStreamDispatcherHost::OnSentData socket_id=" << socket_id
            << " amount_sent=" << amount_sent;
-  if (socket_id == chrome_common_net::kNoSocketId) {
+  if (socket_id == content_common::kNoSocketId) {
     LOG(ERROR) << "NoSocketId in OnReceivedData";
     return;
   }
-  if (!Send(new ViewMsg_SocketStream_SentData(socket_id, amount_sent))) {
-    LOG(ERROR) << "ViewMsg_SocketStream_SentData failed.";
+  if (!Send(new SocketStreamMsg_SentData(socket_id, amount_sent))) {
+    LOG(ERROR) << "SocketStreamMsg_SentData failed.";
     DeleteSocketStreamHost(socket_id);
   }
 }
@@ -79,13 +79,13 @@ void SocketStreamDispatcherHost::OnReceivedData(
   int socket_id = SocketStreamHost::SocketIdFromSocketStream(socket);
   DVLOG(1) << "SocketStreamDispatcherHost::OnReceiveData socket_id="
            << socket_id;
-  if (socket_id == chrome_common_net::kNoSocketId) {
+  if (socket_id == content_common::kNoSocketId) {
     LOG(ERROR) << "NoSocketId in OnReceivedData";
     return;
   }
-  if (!Send(new ViewMsg_SocketStream_ReceivedData(
+  if (!Send(new SocketStreamMsg_ReceivedData(
           socket_id, std::vector<char>(data, data + len)))) {
-    LOG(ERROR) << "ViewMsg_SocketStream_ReceivedData failed.";
+    LOG(ERROR) << "SocketStreamMsg_ReceivedData failed.";
     DeleteSocketStreamHost(socket_id);
   }
 }
@@ -93,7 +93,7 @@ void SocketStreamDispatcherHost::OnReceivedData(
 void SocketStreamDispatcherHost::OnClose(net::SocketStream* socket) {
   int socket_id = SocketStreamHost::SocketIdFromSocketStream(socket);
   DVLOG(1) << "SocketStreamDispatcherHost::OnClosed socket_id=" << socket_id;
-  if (socket_id == chrome_common_net::kNoSocketId) {
+  if (socket_id == content_common::kNoSocketId) {
     LOG(ERROR) << "NoSocketId in OnClose";
     return;
   }
@@ -104,7 +104,7 @@ void SocketStreamDispatcherHost::OnClose(net::SocketStream* socket) {
 void SocketStreamDispatcherHost::OnConnect(const GURL& url, int socket_id) {
   DVLOG(1) << "SocketStreamDispatcherHost::OnConnect url=" << url
            << " socket_id=" << socket_id;
-  DCHECK_NE(chrome_common_net::kNoSocketId, socket_id);
+  DCHECK_NE(content_common::kNoSocketId, socket_id);
   if (hosts_.Lookup(socket_id)) {
     LOG(ERROR) << "socket_id=" << socket_id << " already registered.";
     return;
@@ -142,14 +142,18 @@ void SocketStreamDispatcherHost::DeleteSocketStreamHost(int socket_id) {
   DCHECK(socket_stream_host);
   delete socket_stream_host;
   hosts_.Remove(socket_id);
-  if (!Send(new ViewMsg_SocketStream_Closed(socket_id))) {
-    LOG(ERROR) << "ViewMsg_SocketStream_Closed failed.";
+  if (!Send(new SocketStreamMsg_Closed(socket_id))) {
+    LOG(ERROR) << "SocketStreamMsg_Closed failed.";
   }
 }
 
 net::URLRequestContext* SocketStreamDispatcherHost::GetURLRequestContext() {
   net::URLRequestContext* rv = NULL;
   if (url_request_context_override_.get()) {
+    // TODO(jam): temporary code until Gears is taken out, then
+    // GetRequestContext will take a different parameter and we can take out
+    // this struct and the #include "chrome/common/render_messages_params.h"
+    // above.
     ViewHostMsg_Resource_Request request;
     rv = url_request_context_override_->GetRequestContext(request);
   }

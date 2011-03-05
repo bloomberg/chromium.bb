@@ -70,6 +70,7 @@ enum IPCMessageStart {
   AutoFillMsgStart,
   SafeBrowsingMsgStart,
   P2PMsgStart,
+  SocketStreamMsgStart,
 };
 
 class DictionaryValue;

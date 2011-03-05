@@ -16,6 +16,7 @@
 #include "chrome/common/indexed_db_key.h"
 #include "chrome/common/indexed_db_param_traits.h"
 #include "chrome/common/serialized_script_value.h"
+#include "content/common/common_param_traits.h"
 #include "ipc/ipc_message_macros.h"
 #include "ipc/ipc_message_utils.h"
 #include "printing/backend/print_backend.h"

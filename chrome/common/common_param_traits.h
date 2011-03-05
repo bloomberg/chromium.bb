@@ -35,7 +35,6 @@
 
 // Forward declarations.
 struct Geoposition;
-class GURL;
 class SkBitmap;
 class DictionaryValue;
 class ListValue;
@@ -77,16 +76,6 @@ struct ParamTraits<SkBitmap> {
 
   static void Log(const param_type& p, std::string* l);
 };
-
-
-template <>
-struct ParamTraits<GURL> {
-  typedef GURL param_type;
-  static void Write(Message* m, const param_type& p);
-  static bool Read(const Message* m, void** iter, param_type* p);
-  static void Log(const param_type& p, std::string* l);
-};
-
 
 template <>
 struct ParamTraits<gfx::Point> {

@@ -10,6 +10,7 @@
 #include "chrome/common/geoposition.h"
 #include "chrome/common/thumbnail_score.h"
 #include "chrome/common/web_apps.h"
+#include "content/common/common_param_traits.h"
 #include "googleurl/src/gurl.h"
 #include "net/base/host_port_pair.h"
 #include "net/base/upload_data.h"
@@ -103,25 +104,6 @@ void ParamTraits<SkBitmap>::Log(const SkBitmap& p, std::string* l) {
 }
 
 #endif  // EXCLUDE_SKIA_DEPENDENCIES
-
-void ParamTraits<GURL>::Write(Message* m, const GURL& p) {
-  m->WriteString(p.possibly_invalid_spec());
-  // TODO(brettw) bug 684583: Add encoding for query params.
-}
-
-bool ParamTraits<GURL>::Read(const Message* m, void** iter, GURL* p) {
-  std::string s;
-  if (!m->ReadString(iter, &s) || s.length() > chrome::kMaxURLChars) {
-    *p = GURL();
-    return false;
-  }
-  *p = GURL(s);
-  return true;
-}
-
-void ParamTraits<GURL>::Log(const GURL& p, std::string* l) {
-  l->append(p.spec());
-}
 
 void ParamTraits<gfx::Point>::Write(Message* m, const gfx::Point& p) {
   m->WriteInt(p.x());

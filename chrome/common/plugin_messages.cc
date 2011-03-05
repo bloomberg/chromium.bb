@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/utf_string_conversions.h"
+#include "content/common/common_param_traits.h"
 #include "ipc/ipc_channel_handle.h"
 
 #define IPC_MESSAGE_IMPL

@@ -3,14 +3,19 @@
 // found in the LICENSE file.
 
 // IPC messages for the P2P Transport API.
-
-#ifndef CONTENT_COMMON_P2P_MESSAGES_H_
-#define CONTENT_COMMON_P2P_MESSAGES_H_
+// Multiply-included message file, hence no include guard.
 
 #include "content/common/p2p_sockets.h"
 #include "ipc/ipc_message_macros.h"
 
 #define IPC_MESSAGE_START P2PMsgStart
+
+IPC_STRUCT_TRAITS_BEGIN(P2PSocketAddress)
+  IPC_STRUCT_TRAITS_MEMBER(address)
+  IPC_STRUCT_TRAITS_MEMBER(port)
+IPC_STRUCT_TRAITS_END()
+
+IPC_ENUM_TRAITS(P2PSocketType)
 
 // P2P Socket messages sent from the browser to the renderer.
 
@@ -41,22 +46,3 @@ IPC_MESSAGE_ROUTED3(P2PHostMsg_Send,
 
 IPC_MESSAGE_ROUTED1(P2PHostMsg_DestroySocket,
                      int /* socket_id */)
-
-namespace IPC {
-
-template <>
-struct ParamTraits<P2PSocketAddress> {
-  typedef P2PSocketAddress param_type;
-  static void Write(Message* m, const param_type& p);
-  static bool Read(const Message* m, void** iter, param_type* p);
-  static void Log(const param_type& p, std::string* l);
-};
-
-template <>
-struct SimilarTypeTraits<P2PSocketType> {
-  typedef int Type;
-};
-
-}  // namespace IPC
-
-#endif  // CONTENT_COMMON_P2P_MESSAGES_H_

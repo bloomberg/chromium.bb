@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_COMMON_NET_SOCKET_STREAM_H_
-#define CHROME_COMMON_NET_SOCKET_STREAM_H_
+#ifndef CONTENT_COMMON_SOCKET_STREAM_H_
+#define CONTENT_COMMON_SOCKET_STREAM_H_
 #pragma once
 
-namespace chrome_common_net {
+namespace content_common {
 
 const int kNoSocketId = 0;
 
 }  // namespace chrome_common_net
 
-#endif  // CHROME_COMMON_NET_SOCKET_STREAM_H_
+#endif  // CONTENT_COMMON_SOCKET_STREAM_H_

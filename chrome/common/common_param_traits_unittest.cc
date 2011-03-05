@@ -9,6 +9,7 @@
 #include "base/values.h"
 #include "chrome/common/common_param_traits.h"
 #include "chrome/common/geoposition.h"
+#include "content/common/common_param_traits.h"
 #include "googleurl/src/gurl.h"
 #include "ipc/ipc_message.h"
 #include "ipc/ipc_message_utils.h"
