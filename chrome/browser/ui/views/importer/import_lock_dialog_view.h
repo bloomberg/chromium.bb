@@ -14,13 +14,12 @@
 
 namespace views {
 class Label;
-class Window;
 }
 
 class ImporterHost;
 
-// ImportLockDialogView draws the dialog, and asks the user to shut Firefox
-// down before starting the import.
+// ImportLockDialogView asks the user to shut down Firefox before starting the
+// profile import.
 class ImportLockDialogView : public views::View,
                              public views::DialogDelegate {
  public:
@@ -46,6 +45,7 @@ class ImportLockDialogView : public views::View,
  private:
   views::Label* description_label_;
 
+  // Utility class that does the actual import.
   scoped_refptr<ImporterHost> importer_host_;
 
   DISALLOW_COPY_AND_ASSIGN(ImportLockDialogView);

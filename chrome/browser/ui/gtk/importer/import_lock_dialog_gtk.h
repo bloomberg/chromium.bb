@@ -6,17 +6,19 @@
 #define CHROME_BROWSER_UI_GTK_IMPORTER_IMPORT_LOCK_DIALOG_GTK_H_
 #pragma once
 
-#include <gtk/gtk.h>
-
 #include "base/basictypes.h"
 #include "base/ref_counted.h"
 #include "ui/base/gtk/gtk_signal.h"
 
 class ImporterHost;
 
+typedef struct _GtkWindow GtkWindow;
+typedef struct _GtkWidget GtkWidget;
+
+// ImportLockDialogGtk presents the dialog which asks the user to shut down
+// Firefox before starting the profile import.
 class ImportLockDialogGtk {
  public:
-  // Displays the Firefox profile locked warning
   static void Show(GtkWindow* parent, ImporterHost* importer_host);
 
  private:
@@ -25,7 +27,7 @@ class ImportLockDialogGtk {
 
   CHROMEGTK_CALLBACK_1(ImportLockDialogGtk, void, OnDialogResponse, int);
 
-  // Dialog box
+  // Import lock dialog.
   GtkWidget* dialog_;
 
   // Utility class that does the actual import.

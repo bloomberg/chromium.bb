@@ -4,6 +4,8 @@
 
 #include "chrome/browser/ui/gtk/importer/import_lock_dialog_gtk.h"
 
+#include <gtk/gtk.h>
+
 #include "base/message_loop.h"
 #include "chrome/browser/importer/importer.h"
 #include "chrome/browser/ui/browser_dialogs.h"
