@@ -23,11 +23,6 @@ import sys
 import unittest
 
 
-# Import these here so the caller does not need to import subprocess also.
-PIPE = subprocess.PIPE
-STDOUT = subprocess.STDOUT
-PIPE_PTY = -3   # Pipe output through a pty
-
 
 class Popen(subprocess.Popen):
   """Like subprocess.Popen with ptys and incremental output
@@ -51,6 +46,7 @@ class Popen(subprocess.Popen):
   Use CommunicateFilter() to handle output from the subprocess.
 
   """
+  PIPE_PTY = -3
 
   def __init__(self, args, stdin=None, stdout=PIPE_PTY, stderr=PIPE_PTY,
       shell=False, cwd=None, env=None, **kwargs):
@@ -60,9 +56,9 @@ class Popen(subprocess.Popen):
       args: Program and arguments for subprocess to execute.
       stdin: See subprocess.Popen()
       stdout: See subprocess.Popen(), except that we support the sentinel
-          value of cros_subprocess.PIPE_PTY.
+          value of cros_subprocess.Popen.PIPE_PTY.
       stderr: See subprocess.Popen(), except that we support the sentinel
-          value of cros_subprocess.PIPE_PTY.
+          value of cros_subprocess.Popen.PIPE_PTY.
       shell: See subprocess.Popen()
       cwd: Working directory to change to for subprocess, or None if none.
       env: Environment to use for this subprocess, or None to inherit parent.
@@ -72,10 +68,10 @@ class Popen(subprocess.Popen):
     stdout_pty = None
     stderr_pty = None
 
-    if stdout == PIPE_PTY:
+    if stdout == Popen.PIPE_PTY:
       stdout_pty = pty.openpty()
       stdout = os.fdopen(stdout_pty[1])
-    if stderr == PIPE_PTY:
+    if stderr == Popen.PIPE_PTY:
       stderr_pty = pty.openpty()
       stderr = os.fdopen(stderr_pty[1])
 
@@ -87,9 +83,6 @@ class Popen(subprocess.Popen):
     # We want to use the master half on our end from now on.  Setting this here
     # does make some assumptions about the implementation of subprocess, but
     # those assumptions are pretty minor.
-
-    # Note that if stderr is STDOUT, then self.stderr will be set to None by
-    # this constructor.
     if stdout_pty is not None:
       self.stdout = os.fdopen(stdout_pty[0])
     if stderr_pty is not None:
@@ -99,16 +92,16 @@ class Popen(subprocess.Popen):
     if kwargs:
       raise ValueError("Unit tests do not test extra args - please add tests")
 
-  def CommunicateFilter(self, output):
+  def CommunicateFilter(self, operation):
     """Interact with process: Read data from stdout and stderr.
 
     This method runs until end-of-file is reached, then waits for the
     subprocess to terminate.
 
-    The output function is sent all output from the subprocess and must be
-    defined like this:
+    The operation object is send all output from the subprocess through its
+    Output() method which must be defined like this:
 
-      def Output([self,] stream, data)
+      def Output(self, stream, data)
       Args:
         stream: the stream the output was received on, which will be
             sys.stdout or sys.stderr.
@@ -118,26 +111,11 @@ class Popen(subprocess.Popen):
     method if the data size is large or unlimited.
 
     Args:
-      output: Function to call with each fragment of output.
+      operation: Operation to use for this subprocess.
 
     Returns:
       A tuple (stdout, stderr, combined) which is the data received on
       stdout, stderr and the combined data (interleaved stdout and stderr).
-
-      Note that the interleaved output will only be sensible if you have
-      set both stdout and stderr to PIPE or PIPE_PTY. Even then it depends on
-      the timing of the output in the subprocess. If a subprocess flips
-      between stdout and stderr quickly in succession, by the time we come to
-      read the output from each we may see several lines in each, and will read
-      all the stdout lines, then all the stderr lines. So the interleaving
-      may not be correct. In this case you might want to pass
-      stderr=cros_subprocess.STDOUT to the constructor.
-
-      This feature is still useful for subprocesses where stderr is
-      rarely used and indicates an error.
-
-      Note also that if you set stderr to STDOUT, then stderr will be empty
-      and the combined output will just be the same as stdout.
     """
 
     read_set = []
@@ -156,7 +134,7 @@ class Popen(subprocess.Popen):
     if self.stdout:
       read_set.append(self.stdout)
       stdout = []
-    if self.stderr and self.stderr != self.stdout:
+    if self.stderr:
       read_set.append(self.stderr)
       stderr = []
     combined = []
@@ -194,7 +172,7 @@ class Popen(subprocess.Popen):
         else:
           stdout.append(data)
           combined.append(data)
-          output(sys.stdout, data)
+          operation.Output(sys.stdout, data)
       if self.stderr in rlist:
         data = ""
         # We will get an error on read if the pty is closed
@@ -208,7 +186,7 @@ class Popen(subprocess.Popen):
         else:
           stderr.append(data)
           combined.append(data)
-          output(sys.stderr, data)
+          operation.Output(sys.stderr, data)
 
     # All data exchanged.  Translate lists into strings.
     if stdout is not None:
@@ -283,14 +261,14 @@ class TestSubprocess(unittest.TestCase):
   def test_simple(self):
     """Simple redirection: Get process list"""
     oper = TestSubprocess.MyOperation()
-    plist = Popen(['ps']).CommunicateFilter(oper.Output)
+    plist = Popen(['ps']).CommunicateFilter(oper)
     self._BasicCheck(plist, oper)
 
   def test_stderr(self):
     """Check stdout and stderr"""
     oper = TestSubprocess.MyOperation()
     cmd = 'echo fred >/dev/stderr && false || echo bad'
-    plist = Popen([cmd], shell=True).CommunicateFilter(oper.Output)
+    plist = Popen([cmd], shell=True).CommunicateFilter(oper)
     self._BasicCheck(plist, oper)
     self.assertEqual(plist [0], 'bad\r\n')
     self.assertEqual(plist [1], 'fred\r\n')
@@ -300,7 +278,7 @@ class TestSubprocess(unittest.TestCase):
     oper = TestSubprocess.MyOperation()
     cmd = 'echo test >/dev/stderr'
     self.assertRaises(OSError, Popen, [cmd], shell=False)
-    plist = Popen([cmd], shell=True).CommunicateFilter(oper.Output)
+    plist = Popen([cmd], shell=True).CommunicateFilter(oper)
     self._BasicCheck(plist, oper)
     self.assertEqual(len(plist [0]), 0)
     self.assertEqual(plist [1], 'test\r\n')
@@ -309,7 +287,7 @@ class TestSubprocess(unittest.TestCase):
     """Check with and without shell works using list arguments"""
     oper = TestSubprocess.MyOperation()
     cmd = ['echo', 'test', '>/dev/stderr']
-    plist = Popen(cmd, shell=False).CommunicateFilter(oper.Output)
+    plist = Popen(cmd, shell=False).CommunicateFilter(oper)
     self._BasicCheck(plist, oper)
     self.assertEqual(plist [0], ' '.join(cmd[1:]) + '\r\n')
     self.assertEqual(len(plist [1]), 0)
@@ -318,7 +296,7 @@ class TestSubprocess(unittest.TestCase):
 
     # this should be interpreted as 'echo' with the other args dropped
     cmd = ['echo', 'test', '>/dev/stderr']
-    plist = Popen(cmd, shell=True).CommunicateFilter(oper.Output)
+    plist = Popen(cmd, shell=True).CommunicateFilter(oper)
     self._BasicCheck(plist, oper)
     self.assertEqual(plist [0], '\r\n')
 
@@ -326,7 +304,7 @@ class TestSubprocess(unittest.TestCase):
     """Check we can change directory"""
     for shell in (False, True):
       oper = TestSubprocess.MyOperation()
-      plist = Popen('pwd', shell=shell, cwd='/tmp').CommunicateFilter(oper.Output)
+      plist = Popen('pwd', shell=shell, cwd='/tmp').CommunicateFilter(oper)
       self._BasicCheck(plist, oper)
       self.assertEqual(plist [0], '/tmp\r\n')
 
@@ -338,7 +316,7 @@ class TestSubprocess(unittest.TestCase):
       if add:
         env ['FRED'] = 'fred'
       cmd = 'echo $FRED'
-      plist = Popen(cmd, shell=True, env=env).CommunicateFilter(oper.Output)
+      plist = Popen(cmd, shell=True, env=env).CommunicateFilter(oper)
       self._BasicCheck(plist, oper)
       self.assertEqual(plist [0], add and 'fred\r\n' or '\r\n')
 
@@ -357,7 +335,7 @@ class TestSubprocess(unittest.TestCase):
     prompt = 'What is your name?: '
     cmd = 'echo -n "%s"; read name; echo Hello $name' % prompt
     plist = Popen([cmd], stdin=oper.stdin_read_pipe,
-        shell=True).CommunicateFilter(oper.Output)
+        shell=True).CommunicateFilter(oper)
     self._BasicCheck(plist, oper)
     self.assertEqual(len(plist [1]), 0)
     self.assertEqual(plist [0], prompt + 'Hello Flash\r\r\n')
@@ -373,7 +351,7 @@ class TestSubprocess(unittest.TestCase):
     both_cmds = ''
     for fd in (1, 2):
       both_cmds += cmd % (fd, fd, fd, fd, fd)
-    plist = Popen(both_cmds, shell=True).CommunicateFilter(oper.Output)
+    plist = Popen(both_cmds, shell=True).CommunicateFilter(oper)
     self._BasicCheck(plist, oper)
     self.assertEqual(plist [0], 'terminal 1\r\n')
     self.assertEqual(plist [1], 'terminal 2\r\n')
@@ -381,7 +359,7 @@ class TestSubprocess(unittest.TestCase):
     # Now try with PIPE and make sure it is not a terminal
     oper = TestSubprocess.MyOperation()
     plist = Popen(both_cmds, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
-        shell=True).CommunicateFilter(oper.Output)
+        shell=True).CommunicateFilter(oper)
     self._BasicCheck(plist, oper)
     self.assertEqual(plist [0], 'not 1\n')
     self.assertEqual(plist [1], 'not 2\n')

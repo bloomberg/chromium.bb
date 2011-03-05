@@ -51,6 +51,7 @@ class TestFindCommand(unittest.TestCase):
     # Create our mox and stub out function calls used by _FindCommand()...
     self.mox = mox.Mox()
     self.mox.StubOutWithMock(cros_lib, 'Die')
+    self.mox.StubOutWithMock(cros_lib, 'Info')
     self.mox.StubOutWithMock(text_menu, 'TextMenu')
 
   def tearDown(self):
@@ -148,6 +149,7 @@ class TestFindCommand(unittest.TestCase):
        shell.
     """
     # _FindCommand should give us a message that it has interpreted sh as shell.
+    cros_lib.Info(mox.IsA(basestring))
 
     # Run the command and verify proper mocks were called...
     self.mox.ReplayAll()
@@ -168,6 +170,7 @@ class TestFindSpec(unittest.TestCase):
     self.mox.StubOutWithMock(os, 'listdir')
     self.mox.StubOutWithMock(os.path, 'isfile')
     self.mox.StubOutWithMock(cros_lib, 'Die')
+    self.mox.StubOutWithMock(cros_lib, 'Info')
     self.mox.StubOutWithMock(text_menu, 'TextMenu')
 
   def tearDown(self):

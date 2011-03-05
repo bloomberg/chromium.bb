@@ -304,6 +304,8 @@ def EnterChroot(chroot_config, func, *args, **kwargs):
         'Chroot dir does not exist; try the "build host" command.\n  %s.' %
         chroot_dir)
 
+  cros_lib.Info('ENTERING THE CHROOT')
+
   # Save state to a temp file (inside the chroot!) using pickle.
   tmp_dir = os.path.join(chroot_dir, 'tmp')
   state_file = tempfile.NamedTemporaryFile(prefix='chromite', dir=tmp_dir)

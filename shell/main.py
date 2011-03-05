@@ -87,6 +87,7 @@ def _FindCommand(cmd_name):
     # Avoid showing the user a menu if the user's search string matched exactly
     # one item.
     choice = 0
+    cros_lib.Info("Running command '%s'." % possible_cmds[choice])
   else:
     choice = text_menu.TextMenu(possible_choices, 'Which chromite command',
                                 menu_width=0)
@@ -107,14 +108,9 @@ def main():
   sys.argv[0] = 'chromite'
 
   # Support EnterChroot().
-  # This may raise a ChromiteError if the child dies, so we must handle this.
-  try:
-    did_resume = utils.ResumeEnterChrootIfNeeded(sys.argv)
-    if did_resume:
-      return
-  except chromite_env.ChromiteError:
-    # The error has been reported, but we must exit indicating failure
-    sys.exit(1)
+  did_resume = utils.ResumeEnterChrootIfNeeded(sys.argv)
+  if did_resume:
+    return
 
   # TODO(dianders): Make help a little better.  Specifically:
   # 1. Add a command called 'help'
@@ -139,29 +135,12 @@ def main():
 
   # We don't use OptionParser here, since options for different subcommands are
   # so different.  We just look for the chromite options here...
-  # TODO(sjg): I think we should use OptionParser for two reasons:
-  #   1. It allows us to find out what options/paths are in the scripts
-  #   2. It prevents people from adding new options to underlying scripts
-  #         so that Chromite diverges through no fault of the authors.
   if sys.argv[1:2] == ['--help']:
     print help_str
     sys.exit(0)
   else:
     # Start by skipping argv[0]
     argv = sys.argv[1:]
-
-    # Set up the cros system.
-    cros_env = chromite_env.ChromiteEnv()
-
-    # Configure the operation setup.
-    oper = cros_env.GetOperation()
-    oper.verbose = True
-    oper.progress = True
-
-    # Do we want to be quiet? This is just a hack / demo
-    if argv and argv[0] == '-q':
-      oper.verbose = False
-      argv = argv[1:]
 
     # Look for special "--chroot" argument to allow for alternate chroots
     if not cros_lib.IsInsideChroot():
@@ -183,7 +162,7 @@ def main():
       chroot_spec_path = utils.FindSpec(chroot_name,
                                         spec_type=utils.CHROOT_SPEC_TYPE)
 
-      oper.Info('Using chroot "%s"' % os.path.relpath(chroot_spec_path))
+      cros_lib.Info('Using chroot "%s"' % os.path.relpath(chroot_spec_path))
 
       chroot_config = utils.ReadConfig(chroot_spec_path)
     else:
@@ -199,18 +178,21 @@ def main():
 
     # Validate the subcmd, popping a menu if needed.
     cmd_str = _FindCommand(cmd_str)
-    oper.Info("Running command '%s'." % cmd_str)
+
+    # Set up the cros system.
+    cros_env = chromite_env.ChromiteEnv()
+
+    # Configure the operation setup.
+    oper = cros_env.GetOperation()
+    oper.SetVerbose(True)
+    oper.SetProgress(True)
 
     # Finally, call the function w/ standard argv.
     cmd_cls = _COMMAND_HANDLERS[_COMMAND_STRS.index(cmd_str)]
     cmd_obj = cmd_cls()
     cmd_obj.SetChromiteEnv(cros_env)
-    try:
-      cmd_obj.Run([cmd_str] + argv, chroot_config=chroot_config)
+    cmd_obj.Run([cmd_str] + argv, chroot_config=chroot_config)
 
-    # Handle an error in one of the scripts: print a message and exit.
-    except chromite_env.ChromiteError, msg:
-      sys.exit(1)
 
 if __name__ == '__main__':
   main()

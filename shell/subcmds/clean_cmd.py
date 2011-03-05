@@ -16,11 +16,10 @@ from chromite.shell import utils
 from chromite.shell import subcmd
 
 
-def _DoClean(cros_env, chroot_config, build_config, want_force_yes):
+def _DoClean(chroot_config, build_config, want_force_yes):
   """Clean a target.
 
   Args:
-    cros_env: Chromite environment to use for this command.
     chroot_config: A SafeConfigParser representing the config for the chroot.
     build_config: A SafeConfigParser representing the build config.
     want_force_yes: If True, we won't ask any questions--we'll just assume
@@ -64,15 +63,15 @@ def _DoClean(cros_env, chroot_config, build_config, want_force_yes):
   assert build_config.get('DEFAULT', 'target') in board_dir, \
          'Target name better be in board dir'
 
-  arg_list = ['--', 'rm', '-rf', board_dir]
-  cros_env.RunScript('DELETING: %s' % board_dir, 'sudo', arg_list)
+  argv = ['sudo', '--', 'rm', '-rf', board_dir]
+  cros_lib.RunCommand(argv)
+  cros_lib.Info('Deleted: %s' % board_dir)
 
 
-def _DoDistClean(cros_env, chroot_config, want_force_yes):
+def _DoDistClean(chroot_config, want_force_yes):
   """Remove the whole chroot.
 
   Args:
-    cros_env: Chromite environment to use for this command.
     chroot_config: A SafeConfigParser representing the config for the chroot.
     want_force_yes: If True, we won't ask any questions--we'll just assume
         that the user really wants to kill the directory.  If False, we'll
@@ -92,10 +91,14 @@ def _DoDistClean(cros_env, chroot_config, want_force_yes):
       cros_lib.Die("You must answer 'yes' if you want to proceed.")
 
   # Can pass argv and not shell=True, since no user flags.  :)
-  arg_list = ['--chroot=%s' % chroot_dir, '--delete']
+  argv = ['./make_chroot', '--chroot=%s' % chroot_dir, '--delete']
+
+  # We'll put CWD as src/scripts when running the command.  Since everyone
+  # running by hand has their cwd there, it is probably the safest.
+  cwd = os.path.join(utils.SRCROOT_PATH, 'src', 'scripts')
 
   # Run it.  Pass any failures upward.
-  cros_env.RunScript('REMOVING CHROOT', './make_chroot', arg_list, cwd=cwd)
+  cros_lib.RunCommand(argv, cwd=cwd)
 
 
 class CleanCmd(subcmd.ChromiteCmd):
@@ -132,6 +135,6 @@ class CleanCmd(subcmd.ChromiteCmd):
 
     # If they do clean host, we'll delete the whole chroot
     if build_config is None:
-      _DoDistClean(self.cros_env, chroot_config, options.yes)
+      _DoDistClean(chroot_config, options.yes)
     else:
-      _DoClean(self.cros_env, chroot_config, build_config, options.yes)
+      _DoClean(chroot_config, build_config, options.yes)

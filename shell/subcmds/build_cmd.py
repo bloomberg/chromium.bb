@@ -14,14 +14,11 @@ import chromite.lib.cros_build_lib as cros_lib
 from chromite.shell import utils
 from chromite.shell import subcmd
 
-# TODO(sjg): I would prefer that these methods be inside the BuildCmd() class.
 
-
-def _DoMakeChroot(cros_env, chroot_config, clean_first):
+def _DoMakeChroot(chroot_config, clean_first):
   """Build the chroot, if needed.
 
   Args:
-    cros_env: Chromite environment to use for this command.
     chroot_config: A SafeConfigParser representing the config for the chroot.
     clean_first: Delete any old chroot first.
   """
@@ -31,71 +28,100 @@ def _DoMakeChroot(cros_env, chroot_config, clean_first):
   # anyway (I think), so this isn't that important.
   chroot_dir = utils.GetChrootAbsDir(chroot_config)
   if (not clean_first) and utils.DoesChrootExist(chroot_config):
-    cros_env.GetOperation().Info('%s already exists, skipping make_chroot.' %
-        chroot_dir)
+    cros_lib.Info('%s already exists, skipping make_chroot.' % chroot_dir)
     return
 
+  cros_lib.Info('MAKING THE CHROOT')
+
   # Put together command.
-  arg_list = [
+  cmd_list = [
+      './make_chroot',
       '--chroot="%s"' % chroot_dir,
       chroot_config.get('CHROOT', 'make_chroot_flags'),
   ]
   if clean_first:
-    arg_list.insert(0, '--replace')
+    cmd_list.insert(1, '--replace')
 
-  cros_env.RunScript('MAKING THE CHROOT', './make_chroot', arg_list)
+  # We're going convert to a string and force the shell to do all of the
+  # splitting of arguments, since we're throwing all of the flags from the
+  # config file in there.
+  cmd = ' '.join(cmd_list)
+
+  # We'll put CWD as src/scripts when running the command.  Since everyone
+  # running by hand has their cwd there, it is probably the safest.
+  cwd = os.path.join(utils.SRCROOT_PATH, 'src', 'scripts')
+
+  # Run it.  Exceptions will cause the program to exit.
+  cros_lib.RunCommand(cmd, shell=True, cwd=cwd, ignore_sigint=True)
 
 
-def _DoSetupBoard(cros_env, build_config, clean_first):
+def _DoSetupBoard(build_config, clean_first):
   """Setup the board, if needed.
 
   This just runs the setup_board command with the proper args, if needed.
 
   Args:
-    cros_env: Chromite environment to use for this command.
     build_config: A SafeConfigParser representing the build config.
     clean_first: Delete any old board config first.
   """
   # Skip this whole command if things already exist.
   board_dir = utils.GetBoardDir(build_config)
   if (not clean_first) and os.path.isdir(board_dir):
-    cros_env.GetOperation().Info('%s already exists, skipping setup_board.' %
-        board_dir)
+    cros_lib.Info('%s already exists, skipping setup_board.' % board_dir)
     return
+
+  cros_lib.Info('SETTING UP THE BOARD')
 
   # Put together command.
   cmd_list = [
+      './setup_board',
       '--board="%s"' % build_config.get('DEFAULT', 'target'),
       build_config.get('BUILD', 'setup_board_flags'),
   ]
   if clean_first:
-    arg_list.insert(0, '--force')
+    cmd_list.insert(1, '--force')
 
-  cros_env.RunScript('SETTING UP THE BOARD', './setup_board', arg_list)
+  # We're going convert to a string and force the shell to do all of the
+  # splitting of arguments, since we're throwing all of the flags from the
+  # config file in there.
+  cmd = ' '.join(cmd_list)
+
+  # We'll put CWD as src/scripts when running the command.  Since everyone
+  # running by hand has their cwd there, it is probably the safest.
+  cwd = os.path.join(utils.SRCROOT_PATH, 'src', 'scripts')
+
+  # Run it.  Exceptions will cause the program to exit.
+  cros_lib.RunCommand(cmd, shell=True, cwd=cwd, ignore_sigint=True)
 
 
-def _DoBuildPackages(cros_env, build_config):
+def _DoBuildPackages(build_config):
   """Build packages.
 
   This just runs the build_packages command with the proper args.
 
   Args:
-    cros_env: Chromite environment to use for this command.
     build_config: A SafeConfigParser representing the build config.
   """
+  cros_lib.Info('BUILDING PACKAGES')
 
   # Put together command.  We're going to force the shell to do all of the
   # splitting of arguments, since we're throwing all of the flags from the
   # config file in there.
-  arg_list = ['--board="%s"' % build_config.get('DEFAULT', 'target'),
+  cmd = '%s ./build_packages --board="%s" %s' % (
+      build_config.get('BUILD', 'build_packages_environ'),
+      build_config.get('DEFAULT', 'target'),
       build_config.get('BUILD', 'build_packages_flags')
-  ]
+  )
 
-  cros_env.RunScript('BUILDING PACKAGES', './build_packages', arg_list,
-      shell_vars=build_config.get('BUILD', 'build_packages_environ'))
+  # We'll put CWD as src/scripts when running the command.  Since everyone
+  # running by hand has their cwd there, it is probably the safest.
+  cwd = os.path.join(utils.SRCROOT_PATH, 'src', 'scripts')
+
+  # Run it.  Exceptions will cause the program to exit.
+  cros_lib.RunCommand(cmd, shell=True, cwd=cwd, ignore_sigint=True)
 
 
-def _DoBuildImage(cros_env, build_config):
+def _DoBuildImage(build_config):
   """Build an image.
 
   This just runs the build_image command with the proper args.
@@ -103,35 +129,49 @@ def _DoBuildImage(cros_env, build_config):
   Args:
     build_config: A SafeConfigParser representing the build config.
   """
+  cros_lib.Info('BUILDING THE IMAGE')
 
   # Put together command.  We're going to force the shell to do all of the
   # splitting of arguments, since we're throwing all of the flags from the
   # config file in there.
-  arg_list = ['--board="%s"' % build_config.get('DEFAULT', 'target'),
+  cmd = '%s ./build_image --board="%s" %s' % (
+      build_config.get('IMAGE', 'build_image_environ'),
+      build_config.get('DEFAULT', 'target'),
       build_config.get('IMAGE', 'build_image_flags')
-  ]
+  )
 
-  cros_env.RunScript('BUILDING THE IMAGE', './build_image', arg_list,
-      shell_vars=build_config.get('IMAGE', 'build_image_environ'))
+  # We'll put CWD as src/scripts when running the command.  Since everyone
+  # running by hand has their cwd there, it is probably the safest.
+  cwd = os.path.join(utils.SRCROOT_PATH, 'src', 'scripts')
+
+  # Run it.  Exceptions will cause the program to exit.
+  cros_lib.RunCommand(cmd, shell=True, cwd=cwd, ignore_sigint=True)
 
 
-def _DoImagePostProcessing(cros_env, build_config):
+def _DoImagePostProcessing(build_config):
   """Do post processing steps after the build image runs.
 
   Args:
     build_config: A SafeConfigParser representing the build config.
   """
+  # We'll put CWD as src/scripts when running the commands, since many of these
+  # legacy commands live in src/scripts.
+  # TODO(dianders): Don't set CWD once crosutils are properly installed.
+  cwd = os.path.join(utils.SRCROOT_PATH, 'src', 'scripts')
+
   # The user specifies a list of "steps" in this space-separated variable.
   # We'll use each step name to construct other variable names to look for
   # the actual commands.
   steps = build_config.get('IMAGE', 'post_process_steps')
   for step_name in steps.split():
+    cros_lib.Info('IMAGING POST-PROCESS: %s' % step_name)
+
     # Get the name of the variable that the user stored the cmd in.
     cmd_var_name = 'post_process_%s_cmd' % step_name
 
     # Run the command.  Exceptions will cause the program to exit.
     cmd = build_config.get('IMAGE', cmd_var_name)
-    cros_env.RunScript('IMAGING POST-PROCESS: %s' % step_name, '', [cmd])
+    cros_lib.RunCommand(cmd, shell=True, cwd=cwd, ignore_sigint=True)
 
 
 class BuildCmd(subcmd.ChromiteCmd):
@@ -172,19 +212,18 @@ class BuildCmd(subcmd.ChromiteCmd):
       # that they just want to clean the board...
       want_clean_chroot = options.clean and build_config is None
 
-      _DoMakeChroot(self.cros_env, chroot_config, want_clean_chroot)
+      _DoMakeChroot(chroot_config, want_clean_chroot)
 
       if build_config is not None:
-        self._oper.Info('ENTERING THE CHROOT')
         utils.EnterChroot(chroot_config, (self, 'Run'), raw_argv,
                           build_config=build_config, loaded_config=True)
 
-      self._oper.Info('Done building.')
+      cros_lib.Info('Done building.')
     else:
       if build_config is None:
         cros_lib.Die("You can't build the host chroot from within the chroot.")
 
-      _DoSetupBoard(self.cros_env, build_config, options.clean)
-      _DoBuildPackages(self.cros_env, build_config)
-      _DoBuildImage(self.cros_env, build_config)
-      _DoImagePostProcessing(self.cros_env, build_config)
+      _DoSetupBoard(build_config, options.clean)
+      _DoBuildPackages(build_config)
+      _DoBuildImage(build_config)
+      _DoImagePostProcessing(build_config)
