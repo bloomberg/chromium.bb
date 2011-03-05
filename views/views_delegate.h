@@ -63,6 +63,15 @@ class ViewsDelegate {
   virtual void NotifyAccessibilityEvent(
       views::View* view, AccessibilityTypes::Event event_type) = 0;
 
+  // For accessibility, notify the delegate that a menu item was focused
+  // so that alternate feedback (speech / magnified text) can be provided.
+  virtual void NotifyMenuItemFocused(
+      const std::wstring& menu_name,
+      const std::wstring& menu_item_name,
+      int item_index,
+      int item_count,
+      bool has_submenu) = 0;
+
 #if defined(OS_WIN)
   // Retrieves the default window icon to use for windows if none is specified.
   virtual HICON GetDefaultWindowIcon() const = 0;

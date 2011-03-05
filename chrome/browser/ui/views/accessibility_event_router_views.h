@@ -56,6 +56,15 @@ class AccessibilityEventRouterViews {
   void HandleAccessibilityEvent(
       views::View* view, AccessibilityTypes::Event event_type);
 
+  // Handle a menu item being focused (separate because a menu item is
+  // not necessarily its own view).
+  void HandleMenuItemFocused(
+      const std::wstring& menu_name,
+      const std::wstring& menu_item_name,
+      int item_index,
+      int item_count,
+      bool has_submenu);
+
  private:
   AccessibilityEventRouterViews();
   virtual ~AccessibilityEventRouterViews();

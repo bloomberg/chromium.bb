@@ -40,6 +40,12 @@ class TestViewsDelegate : public views::ViewsDelegate {
   }
   virtual void NotifyAccessibilityEvent(
       views::View* view, AccessibilityTypes::Event event_type) {}
+  virtual void NotifyMenuItemFocused(
+      const std::wstring& menu_name,
+      const std::wstring& menu_item_name,
+      int item_index,
+      int item_count,
+      bool has_submenu) {}
 #if defined(OS_WIN)
   virtual HICON GetDefaultWindowIcon() const {
     return NULL;

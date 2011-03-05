@@ -83,6 +83,30 @@ void AccessibilityEventRouterViews::HandleAccessibilityEvent(
   }
 }
 
+void AccessibilityEventRouterViews::HandleMenuItemFocused(
+    const std::wstring& menu_name,
+    const std::wstring& menu_item_name,
+    int item_index,
+    int item_count,
+    bool has_submenu) {
+  if (!ExtensionAccessibilityEventRouter::GetInstance()->
+      IsAccessibilityEnabled()) {
+    return;
+  }
+
+  if (!most_recent_profile_)
+    return;
+
+  AccessibilityMenuItemInfo info(
+      most_recent_profile_,
+      WideToUTF8(menu_item_name),
+      has_submenu,
+      item_index,
+      item_count);
+  SendAccessibilityNotification(
+      NotificationType::ACCESSIBILITY_CONTROL_FOCUSED, &info);
+}
+
 //
 // Private methods
 //
@@ -114,7 +138,6 @@ void AccessibilityEventRouterViews::DispatchAccessibilityNotification(
   }
 
   most_recent_profile_ = profile;
-
   std::string class_name = view->GetClassName();
   if (class_name == views::MenuButton::kViewClassName ||
       type == NotificationType::ACCESSIBILITY_MENU_OPENED ||

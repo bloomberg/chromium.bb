@@ -119,6 +119,16 @@ void ChromeViewsDelegate::NotifyAccessibilityEvent(
       view, event_type);
 }
 
+void ChromeViewsDelegate::NotifyMenuItemFocused(
+      const std::wstring& menu_name,
+      const std::wstring& menu_item_name,
+      int item_index,
+      int item_count,
+      bool has_submenu) {
+  AccessibilityEventRouterViews::GetInstance()->HandleMenuItemFocused(
+      menu_name, menu_item_name, item_index, item_count, has_submenu);
+}
+
 #if defined(OS_WIN)
 HICON ChromeViewsDelegate::GetDefaultWindowIcon() const {
   return GetAppIcon();
