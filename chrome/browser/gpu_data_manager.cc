@@ -180,8 +180,8 @@ bool GpuDataManager::LoadGpuBlacklist() {
     bool succeed = gpu_blacklist_->GetVersion(&version_major,
                                               &version_minor);
     DCHECK(succeed);
-    LOG(INFO) << "Using software rendering list version "
-              << version_major << "." << version_minor;
+    VLOG(1) << "Using software rendering list version "
+            << version_major << "." << version_minor;
     return true;
   }
   gpu_blacklist_.reset(NULL);
@@ -212,8 +212,8 @@ bool GpuDataManager::UpdateGpuBlacklist() {
     return false;
   }
   gpu_blacklist_.reset(updated_list);
-  LOG(INFO) << "Using software rendering list version "
-            << cached_version_major << "." << cached_version_minor;
+  VLOG(1) << "Using software rendering list version "
+          << cached_version_major << "." << cached_version_minor;
   // Clear the flag to triger a re-computation of GpuFeatureFlags using the
   // updated GPU blacklist.
   gpu_feature_flags_set_ = false;
