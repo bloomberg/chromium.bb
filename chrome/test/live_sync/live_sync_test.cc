@@ -8,7 +8,6 @@
 
 #include "base/basictypes.h"
 #include "base/command_line.h"
-#include "base/logging.h"
 #include "base/message_loop.h"
 #include "base/path_service.h"
 #include "base/string_util.h"
@@ -108,9 +107,6 @@ LiveSyncTest::LiveSyncTest(TestType test_type)
       num_clients_(-1),
       test_server_handle_(base::kNullProcessHandle) {
   InProcessBrowserTest::set_show_window(true);
-
-  // TODO(rsimha): Remove this after investigating failing sync tests.
-  logging::SetMinLogLevel(logging::LOG_VERBOSE);
 
   switch (test_type_) {
     case SINGLE_CLIENT: {
