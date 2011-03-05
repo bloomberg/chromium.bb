@@ -414,7 +414,7 @@ bool BufferedResourceHandler::ShouldDownload(bool* need_plugin_list) {
   }
 
   // Special-case user scripts to get downloaded instead of viewed.
-  if (UserScript::HasUserScriptFileExtension(request_->url()))
+  if (UserScript::IsURLUserScript(request_->url(), type))
     return true;
 
   // MIME type checking.

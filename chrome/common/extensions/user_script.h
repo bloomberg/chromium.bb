@@ -29,9 +29,9 @@ class UserScript {
   // The bitmask for valid user script injectable schemes used by URLPattern.
   static const int kValidUserScriptSchemes;
 
-  // Check if a file or URL has the user script file extension.
-  static bool HasUserScriptFileExtension(const GURL& url);
-  static bool HasUserScriptFileExtension(const FilePath& path);
+  // Check if a URL should be treated as a user script and converted to an
+  // extension.
+  static bool IsURLUserScript(const GURL& url, const std::string& mime_type);
 
   // Locations that user scripts can be run inside the document.
   enum RunLocation {

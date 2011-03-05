@@ -320,7 +320,8 @@ void OpenChromeExtension(Profile* profile,
       new CrxInstaller(service, new ExtensionInstallUI(profile)));
   installer->set_delete_source(true);
 
-  if (UserScript::HasUserScriptFileExtension(download_item.url())) {
+  if (UserScript::IsURLUserScript(download_item.url(),
+                                  download_item.mime_type())) {
     installer->InstallUserScript(download_item.full_path(),
                                  download_item.url());
     return;

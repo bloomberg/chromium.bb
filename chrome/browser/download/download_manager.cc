@@ -265,9 +265,10 @@ void DownloadManager::CheckDownloadUrlDone(DownloadCreateInfo* info,
   // Check whether this download is for an extension install or not.
   // Allow extensions to be explicitly saved.
   if (!info->prompt_user_for_save_location) {
-    if (UserScript::HasUserScriptFileExtension(info->url) ||
-        info->mime_type == Extension::kMimeType)
+    if (UserScript::IsURLUserScript(info->url, info->mime_type) ||
+        info->mime_type == Extension::kMimeType) {
       info->is_extension_install = true;
+    }
   }
 
   if (info->save_info.file_path.empty()) {

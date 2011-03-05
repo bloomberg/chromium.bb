@@ -41,15 +41,11 @@ const int UserScript::kValidUserScriptSchemes =
     URLPattern::SCHEME_HTTP | URLPattern::SCHEME_HTTPS |
     URLPattern::SCHEME_FILE | URLPattern::SCHEME_FTP;
 
-bool UserScript::HasUserScriptFileExtension(const GURL& url) {
-  return EndsWith(url.ExtractFileName(), kFileExtension, false);
+bool UserScript::IsURLUserScript(const GURL& url,
+                                 const std::string& mime_type) {
+  return EndsWith(url.ExtractFileName(), kFileExtension, false) &&
+      mime_type != "text/html";
 }
-
-bool UserScript::HasUserScriptFileExtension(const FilePath& path) {
-  static FilePath extension(FilePath().AppendASCII(kFileExtension));
-  return EndsWith(path.BaseName().value(), extension.value(), false);
-}
-
 
 UserScript::File::File(const FilePath& extension_root,
                        const FilePath& relative_path,
