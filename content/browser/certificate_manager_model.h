@@ -43,9 +43,10 @@ class CertificateManagerModel {
   // Accessor for read-only access to the underlying CertDatabase.
   const net::CertDatabase& cert_db() const { return cert_db_; }
 
-  // Refresh the list of certs.  Following this call, the observer
-  // CertificatesRefreshed method will be called so the view can call
-  // FilterAndBuildOrgGroupingMap as necessary to refresh its tree views.
+  // Trigger a refresh of the list of certs, unlock any slots if necessary.
+  // Following this call, the observer CertificatesRefreshed method will be
+  // called so the view can call FilterAndBuildOrgGroupingMap as necessary to
+  // refresh its tree views.
   void Refresh();
 
   // Fill |map| with the certificates matching |filter_type|.
@@ -98,6 +99,10 @@ class CertificateManagerModel {
   bool Delete(net::X509Certificate* cert);
 
  private:
+  // Callback used by Refresh() for when the cert slots have been unlocked.
+  // This method does the actual refreshing.
+  void RefreshSlotsUnlocked();
+
   net::CertDatabase cert_db_;
   net::CertificateList cert_list_;
 

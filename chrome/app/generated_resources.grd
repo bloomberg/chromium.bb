@@ -6436,6 +6436,9 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_CRYPTO_MODULE_AUTH_DIALOG_TEXT_CLIENT_AUTH" desc="The text in the dialog that prompts for security device password when doing key generation.">
        Please sign in to <ph name="TOKEN_NAME">$1<ex>Software Security Device</ex></ph> to authenticate to <ph name="HOST_NAME">$2<ex>www.google.com</ex></ph> with your certificate.
       </message>
+      <message name="IDS_CRYPTO_MODULE_AUTH_DIALOG_TEXT_LIST_CERTS" desc="The text in the dialog that prompts for security device password when using the certificate manager without taking a specific action (eg, just loading the cert manager).">
+       Please sign in to <ph name="TOKEN_NAME">$1<ex>Software Security Device</ex></ph>.
+      </message>
       <message name="IDS_CRYPTO_MODULE_AUTH_DIALOG_TEXT_CERT_IMPORT" desc="The text in the dialog that prompts for security device password when using the certificate manager to import a client certificate.">
        Please sign in to <ph name="TOKEN_NAME">$1<ex>Software Security Device</ex></ph> to import the client certificate.
       </message>

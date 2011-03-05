@@ -140,6 +140,10 @@ CryptoModulePasswordDialog::CryptoModulePasswordDialog(
       text = l10n_util::GetStringFUTF8(
           IDS_CRYPTO_MODULE_AUTH_DIALOG_TEXT_CLIENT_AUTH, slot16, server16);
       break;
+    case browser::kCryptoModulePasswordListCerts:
+      text = l10n_util::GetStringFUTF8(
+          IDS_CRYPTO_MODULE_AUTH_DIALOG_TEXT_LIST_CERTS, slot16);
+      break;
     case browser::kCryptoModulePasswordCertImport:
       text = l10n_util::GetStringFUTF8(
           IDS_CRYPTO_MODULE_AUTH_DIALOG_TEXT_CERT_IMPORT, slot16);

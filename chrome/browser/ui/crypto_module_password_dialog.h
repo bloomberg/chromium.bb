@@ -7,8 +7,10 @@
 #pragma once
 
 #include <string>
+#include <vector>
 
 #include "base/callback.h"
+#include "base/ref_counted.h"
 
 namespace base {
 class CryptoModuleBlockingPasswordDelegate;
@@ -16,6 +18,7 @@ class CryptoModuleBlockingPasswordDelegate;
 
 namespace net {
 class CryptoModule;
+typedef std::vector<scoped_refptr<CryptoModule> > CryptoModuleList;
 class X509Certificate;
 }
 
@@ -26,6 +29,7 @@ enum CryptoModulePasswordReason {
   kCryptoModulePasswordKeygen,
   kCryptoModulePasswordCertEnrollment,
   kCryptoModulePasswordClientAuth,
+  kCryptoModulePasswordListCerts,
   kCryptoModulePasswordCertImport,
   kCryptoModulePasswordCertExport,
 };
@@ -49,13 +53,13 @@ base::CryptoModuleBlockingPasswordDelegate*
         CryptoModulePasswordReason reason,
         const std::string& server);
 
-// Asynchronously unlock |module|, if necessary.  |callback| is called when done
-// (regardless if module was successfully unlocked or not).  Should only be
-// called on UI thread.
-void UnlockSlotIfNecessary(net::CryptoModule* module,
-                           browser::CryptoModulePasswordReason reason,
-                           const std::string& server,
-                           Callback0::Type* callback);
+// Asynchronously unlock |modules|, if necessary.  |callback| is called when
+// done (regardless if any modules were successfully unlocked or not).  Should
+// only be called on UI thread.
+void UnlockSlotsIfNecessary(const net::CryptoModuleList& modules,
+                            browser::CryptoModulePasswordReason reason,
+                            const std::string& server,
+                            Callback0::Type* callback);
 
 // Asynchronously unlock the |cert|'s module, if necessary.  |callback| is
 // called when done (regardless if module was successfully unlocked or not).

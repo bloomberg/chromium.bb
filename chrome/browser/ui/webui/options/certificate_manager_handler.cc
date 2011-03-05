@@ -540,7 +540,8 @@ void CertificateManagerHandler::ExportPersonalPasswordSelected(
   }
 
   // Currently, we don't support exporting more than one at a time.  If we do,
-  // this would need some cleanup to handle unlocking multiple slots.
+  // this would need to either change this to use UnlockSlotsIfNecessary or
+  // change UnlockCertSlotIfNecessary to take a CertificateList.
   DCHECK_EQ(selected_cert_list_.size(), 1U);
 
   // TODO(mattm): do something smarter about non-extractable keys
@@ -637,8 +638,10 @@ void CertificateManagerHandler::ImportPersonalFileRead(
   // TODO(mattm): allow user to choose a slot to import to.
   module_ = certificate_manager_model_->cert_db().GetDefaultModule();
 
-  browser::UnlockSlotIfNecessary(
-      module_.get(),
+  net::CryptoModuleList modules;
+  modules.push_back(module_);
+  browser::UnlockSlotsIfNecessary(
+      modules,
       browser::kCryptoModulePasswordCertImport,
       "",  // unused.
       NewCallback(this,

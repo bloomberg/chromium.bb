@@ -8,10 +8,10 @@
 
 namespace browser {
 
-void UnlockSlotIfNecessary(net::CryptoModule* module,
-                           browser::CryptoModulePasswordReason reason,
-                           const std::string& host,
-                           Callback0::Type* callback) {
+void UnlockSlotsIfNecessary(const net::CryptoModuleList& modules,
+                            browser::CryptoModulePasswordReason reason,
+                            const std::string& host,
+                            Callback0::Type* callback) {
   // TODO(bulach): implement me.
   NOTREACHED();
 }

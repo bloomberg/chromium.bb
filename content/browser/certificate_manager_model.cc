@@ -7,7 +7,9 @@
 #include "base/i18n/time_formatting.h"
 #include "base/logging.h"
 #include "base/utf_string_conversions.h"
+#include "chrome/browser/ui/crypto_module_password_dialog.h"
 #include "chrome/common/net/x509_certificate_model.h"
+#include "net/base/crypto_module.h"
 #include "net/base/net_errors.h"
 #include "net/base/x509_certificate.h"
 
@@ -20,6 +22,19 @@ CertificateManagerModel::~CertificateManagerModel() {
 
 void CertificateManagerModel::Refresh() {
   VLOG(1) << "refresh started";
+  net::CryptoModuleList modules;
+  cert_db_.ListModules(&modules, false);
+  VLOG(1) << "refresh waiting for unlocking...";
+  browser::UnlockSlotsIfNecessary(
+      modules,
+      browser::kCryptoModulePasswordListCerts,
+      "",  // unused.
+      NewCallback(this,
+                  &CertificateManagerModel::RefreshSlotsUnlocked));
+}
+
+void CertificateManagerModel::RefreshSlotsUnlocked() {
+  VLOG(1) << "refresh listing certs...";
   cert_db_.ListCerts(&cert_list_);
   observer_->CertificatesRefreshed();
   VLOG(1) << "refresh finished";
