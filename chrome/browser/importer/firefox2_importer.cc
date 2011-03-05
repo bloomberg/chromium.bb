@@ -13,9 +13,9 @@
 #include "base/message_loop.h"
 #include "base/path_service.h"
 #include "base/stl_util-inl.h"
+#include "base/string_number_conversions.h"
 #include "base/string_split.h"
 #include "base/string_util.h"
-#include "base/string_number_conversions.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/history/history_types.h"
@@ -31,18 +31,6 @@
 #include "grit/generated_resources.h"
 #include "net/base/data_url.h"
 #include "webkit/glue/password_form.h"
-
-using base::Time;
-using importer::BOOKMARKS_HTML;
-using importer::FAVORITES;
-using importer::HISTORY;
-using importer::HOME_PAGE;
-using importer::PASSWORDS;
-using importer::ProfileInfo;
-using importer::SEARCH_ENGINES;
-using webkit_glue::PasswordForm;
-
-// Firefox2Importer.
 
 Firefox2Importer::Firefox2Importer() : parsing_bookmarks_html_file_(false) {
 }
@@ -120,7 +108,7 @@ void Firefox2Importer::LoadDefaultBookmarks(const FilePath& app_path,
     std::wstring title;
     GURL url, favicon;
     std::wstring shortcut;
-    Time add_date;
+    base::Time add_date;
     std::wstring post_data;
     if (ParseBookmarkFromLine(line, charset, &title, &url,
                               &favicon, &shortcut, &add_date,
@@ -166,7 +154,7 @@ void Firefox2Importer::ImportBookmarksFile(
   std::wstring last_folder = first_folder_name;
   bool last_folder_on_toolbar = false;
   bool last_folder_is_empty = true;
-  Time last_folder_add_date;
+  base::Time last_folder_add_date;
   std::vector<std::wstring> path;
   size_t toolbar_folder = 0;
   std::string charset;
@@ -188,7 +176,7 @@ void Firefox2Importer::ImportBookmarksFile(
     // Get the bookmark entry.
     std::wstring title, shortcut;
     GURL url, favicon;
-    Time add_date;
+    base::Time add_date;
     std::wstring post_data;
     bool is_bookmark;
     // TODO(jcampan): http://b/issue?id=1196285 we do not support POST based
@@ -351,7 +339,7 @@ void Firefox2Importer::ImportPasswords() {
 
   std::string content;
   file_util::ReadFileToString(file, &content);
-  std::vector<PasswordForm> forms;
+  std::vector<webkit_glue::PasswordForm> forms;
   decryptor.ParseSignons(content, &forms);
 
   if (!cancelled()) {
@@ -421,7 +409,7 @@ bool Firefox2Importer::ParseFolderNameFromLine(const std::string& line,
                                                const std::string& charset,
                                                std::wstring* folder_name,
                                                bool* is_toolbar_folder,
-                                               Time* add_date) {
+                                               base::Time* add_date) {
   const char kFolderOpen[] = "<DT><H3";
   const char kFolderClose[] = "</H3>";
   const char kToolbarFolderAttribute[] = "PERSONAL_TOOLBAR_FOLDER";
@@ -450,7 +438,7 @@ bool Firefox2Importer::ParseFolderNameFromLine(const std::string& line,
     base::StringToInt64(value, &time);
     // Upper bound it at 32 bits.
     if (0 < time && time < (1LL << 32))
-      *add_date = Time::FromTimeT(time);
+      *add_date = base::Time::FromTimeT(time);
   }
 
   if (GetAttribute(attribute_list, kToolbarFolderAttribute, &value) &&
@@ -469,7 +457,7 @@ bool Firefox2Importer::ParseBookmarkFromLine(const std::string& line,
                                              GURL* url,
                                              GURL* favicon,
                                              std::wstring* shortcut,
-                                             Time* add_date,
+                                             base::Time* add_date,
                                              std::wstring* post_data) {
   const char kItemOpen[] = "<DT><A";
   const char kItemClose[] = "</A>";
@@ -485,7 +473,7 @@ bool Firefox2Importer::ParseBookmarkFromLine(const std::string& line,
   *favicon = GURL();
   shortcut->clear();
   post_data->clear();
-  *add_date = Time();
+  *add_date = base::Time();
 
   if (!StartsWithASCII(line, kItemOpen, true))
     return false;
@@ -539,7 +527,7 @@ bool Firefox2Importer::ParseBookmarkFromLine(const std::string& line,
     base::StringToInt64(value, &time);
     // Upper bound it at 32 bits.
     if (0 < time && time < (1LL << 32))
-      *add_date = Time::FromTimeT(time);
+      *add_date = base::Time::FromTimeT(time);
   }
 
   // Post data.

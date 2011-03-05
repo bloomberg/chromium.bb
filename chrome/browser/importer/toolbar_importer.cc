@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -7,9 +7,9 @@
 #include <limits>
 
 #include "base/rand_util.h"
+#include "base/string_number_conversions.h"
 #include "base/string_split.h"
 #include "base/string_util.h"
-#include "base/string_number_conversions.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/first_run/first_run.h"
@@ -23,10 +23,6 @@
 #include "net/base/cookie_monster.h"
 #include "net/base/data_url.h"
 #include "net/url_request/url_request_context.h"
-
-using importer::FAVORITES;
-using importer::NONE;
-using importer::ProfileInfo;
 
 //
 // ToolbarImporterUtils

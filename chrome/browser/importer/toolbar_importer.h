@@ -12,6 +12,8 @@
 #include <string>
 #include <vector>
 
+#include "base/basictypes.h"
+#include "base/compiler_specific.h"
 #include "base/gtest_prod_util.h"
 #include "base/string16.h"
 #include "chrome/browser/importer/importer.h"
@@ -38,13 +40,13 @@ class Toolbar5Importer : public URLFetcher::Delegate, public Importer {
  public:
   Toolbar5Importer();
 
-  // Importer view calls this method to begin the process.  The items parameter
-  // should only either be NONE or FAVORITES, since as of right now these are
-  // the only items this importer supports.  This method provides implementation
-  // of Importer::StartImport.
+  // Importer:
+  // ImportDialogView calls this method to begin the process. |items| should
+  // only either be NONE or FAVORITES, since as of right now these are the only
+  // items this importer supports.
   virtual void StartImport(const importer::ProfileInfo& profile_info,
                            uint16 items,
-                           ImporterBridge* bridge);
+                           ImporterBridge* bridge) OVERRIDE;
 
   // Importer view call this method when the user clicks the cancel button
   // in the ImportDialogView UI.  We need to post a message to our loop

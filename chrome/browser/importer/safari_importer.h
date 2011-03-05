@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,16 +6,17 @@
 #define CHROME_BROWSER_IMPORTER_SAFARI_IMPORTER_H_
 #pragma once
 
-#include "chrome/browser/importer/importer.h"
-
 #include <map>
 #include <set>
 #include <vector>
 
+#include "base/basictypes.h"
+#include "base/compiler_specific.h"
 #include "base/file_path.h"
 #include "base/gtest_prod_util.h"
-#include "chrome/common/sqlite_utils.h"
+#include "chrome/browser/importer/importer.h"
 #include "chrome/browser/importer/importer_data_types.h"
+#include "chrome/common/sqlite_utils.h"
 
 #if __OBJC__
 @class NSDictionary;
@@ -32,10 +33,10 @@ class SafariImporter : public Importer {
   // We pass it in as a parameter for testing purposes.
   explicit SafariImporter(const FilePath& library_dir);
 
-  // Importer methods.
+  // Importer:
   virtual void StartImport(const importer::ProfileInfo& profile_info,
                            uint16 items,
-                           ImporterBridge* bridge);
+                           ImporterBridge* bridge) OVERRIDE;
 
 
  // Does this user account have a Safari Profile and if so, what items

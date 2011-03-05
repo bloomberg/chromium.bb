@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -12,6 +12,7 @@
 #include <vector>
 
 #include "base/basictypes.h"
+#include "base/compiler_specific.h"
 #include "base/file_path.h"
 #include "chrome/browser/importer/importer.h"
 #include "chrome/browser/importer/importer_data_types.h"
@@ -26,10 +27,10 @@ class Firefox3Importer : public Importer {
  public:
   Firefox3Importer();
 
-  // Importer methods.
+  // Importer:
   virtual void StartImport(const importer::ProfileInfo& profile_info,
                            uint16 items,
-                           ImporterBridge* bridge);
+                           ImporterBridge* bridge) OVERRIDE;
 
  private:
   typedef std::map<int64, std::set<GURL> > FaviconMap;

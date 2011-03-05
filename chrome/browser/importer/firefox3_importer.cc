@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -20,20 +20,10 @@
 #include "chrome/browser/importer/importer_data_types.h"
 #include "chrome/browser/importer/nss_decryptor.h"
 #include "chrome/browser/search_engines/template_url.h"
-#include "chrome/common/time_format.h"
 #include "chrome/common/sqlite_utils.h"
+#include "chrome/common/time_format.h"
 #include "grit/generated_resources.h"
 #include "webkit/glue/password_form.h"
-
-using base::Time;
-using importer::BOOKMARKS_HTML;
-using importer::FAVORITES;
-using importer::HISTORY;
-using importer::HOME_PAGE;
-using importer::PASSWORDS;
-using importer::ProfileInfo;
-using importer::SEARCH_ENGINES;
-using webkit_glue::PasswordForm;
 
 // Original definition is in http://mxr.mozilla.org/firefox/source/toolkit/
 //  components/places/public/nsINavBookmarksService.idl
@@ -146,7 +136,7 @@ void Firefox3Importer::ImportHistory() {
     row.set_visit_count(s.column_int(2));
     row.set_hidden(s.column_int(3) == 1);
     row.set_typed_count(s.column_int(4));
-    row.set_last_visit(Time::FromTimeT(s.column_int64(5)/1000000));
+    row.set_last_visit(base::Time::FromTimeT(s.column_int64(5)/1000000));
 
     rows.push_back(row);
   }
@@ -322,7 +312,7 @@ void Firefox3Importer::ImportPasswords() {
     return;
   }
 
-  std::vector<PasswordForm> forms;
+  std::vector<webkit_glue::PasswordForm> forms;
   FilePath source_path = source_path_;
   FilePath file = source_path.AppendASCII("signons.sqlite");
   if (file_util::PathExists(file)) {
@@ -537,7 +527,7 @@ void Firefox3Importer::GetWholeBookmarkFolder(sqlite3* db, BookmarkList* list,
     item->title = s.column_wstring(2);
     item->type = static_cast<BookmarkItemType>(s.column_int(3));
     item->keyword = s.column_string(4);
-    item->date_added = Time::FromTimeT(s.column_int64(5)/1000000);
+    item->date_added = base::Time::FromTimeT(s.column_int64(5)/1000000);
     item->favicon = s.column_int64(6);
     item->empty_folder = true;
 

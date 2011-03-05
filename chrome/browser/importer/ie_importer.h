@@ -6,6 +6,11 @@
 #define CHROME_BROWSER_IMPORTER_IE_IMPORTER_H_
 #pragma once
 
+#include <string>
+#include <vector>
+
+#include "base/basictypes.h"
+#include "base/compiler_specific.h"
 #include "base/gtest_prod_util.h"
 #include "chrome/browser/importer/importer.h"
 
@@ -16,7 +21,7 @@ class IEImporter : public Importer {
   // Importer:
   virtual void StartImport(const importer::ProfileInfo& browser_info,
                            uint16 items,
-                           ImporterBridge* bridge);
+                           ImporterBridge* bridge) OVERRIDE;
 
  private:
   FRIEND_TEST_ALL_PREFIXES(ImporterTest, IEImporter);

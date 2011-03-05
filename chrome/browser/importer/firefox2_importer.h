@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -8,6 +8,8 @@
 
 #include <set>
 
+#include "base/basictypes.h"
+#include "base/compiler_specific.h"
 #include "base/file_path.h"
 #include "base/gtest_prod_util.h"
 #include "chrome/browser/importer/importer.h"
@@ -20,10 +22,10 @@ class Firefox2Importer : public Importer {
  public:
   Firefox2Importer();
 
-  // Importer methods.
+  // Importer:
   virtual void StartImport(const importer::ProfileInfo& profile_info,
                            uint16 items,
-                           ImporterBridge* bridge);
+                           ImporterBridge* bridge) OVERRIDE;
 
   // Loads the default bookmarks in the Firefox installed at |firefox_app_path|,
   // and stores their locations in |urls|.

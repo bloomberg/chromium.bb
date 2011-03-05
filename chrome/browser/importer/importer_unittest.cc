@@ -2,8 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "testing/gtest/include/gtest/gtest.h"
-
 #include "build/build_config.h"
 
 #if defined(OS_WIN)
@@ -32,6 +30,7 @@
 #include "chrome/browser/search_engines/template_url.h"
 #include "chrome/common/chrome_paths.h"
 #include "content/browser/browser_thread.h"
+#include "testing/gtest/include/gtest/gtest.h"
 #include "webkit/glue/password_form.h"
 
 #if defined(OS_WIN)
@@ -39,18 +38,6 @@
 #include "chrome/browser/importer/ie_importer.h"
 #include "chrome/browser/password_manager/ie7_password.h"
 #endif
-
-using importer::FAVORITES;
-using importer::FIREFOX2;
-using importer::FIREFOX3;
-using importer::HISTORY;
-using importer::ImportItem;
-#if defined(OS_WIN)
-using importer::MS_IE;
-#endif
-using importer::PASSWORDS;
-using importer::SEARCH_ENGINES;
-using webkit_glue::PasswordForm;
 
 // TODO(estade): some of these are disabled on mac. http://crbug.com/48007
 #if defined(OS_MACOSX)
@@ -111,14 +98,14 @@ class ImporterTest : public testing::Test {
 
     MessageLoop* loop = MessageLoop::current();
     importer::ProfileInfo profile_info;
-    profile_info.browser_type = FIREFOX3;
+    profile_info.browser_type = importer::FIREFOX3;
     profile_info.app_path = app_path_;
     profile_info.source_path = profile_path_;
     scoped_refptr<ImporterHost> host(new ImporterHost);
     host->SetObserver(observer);
-    int items = HISTORY | PASSWORDS | FAVORITES;
+    int items = importer::HISTORY | importer::PASSWORDS | importer::FAVORITES;
     if (import_search_plugins)
-      items = items | SEARCH_ENGINES;
+      items = items | importer::SEARCH_ENGINES;
     loop->PostTask(FROM_HERE, NewRunnableMethod(host.get(),
         &ImporterHost::StartImportSettings, profile_info,
         static_cast<Profile*>(NULL), items, make_scoped_refptr(writer), true));
@@ -246,7 +233,7 @@ class TestObserver : public ProfileWriter,
     return true;
   }
 
-  virtual void AddPasswordForm(const PasswordForm& form) {
+  virtual void AddPasswordForm(const webkit_glue::PasswordForm& form) {
     // Importer should obtain this password form only.
     EXPECT_EQ(GURL("http://localhost:8080/security/index.htm"), form.origin);
     EXPECT_EQ("http://localhost:8080/", form.signon_realm);
@@ -421,12 +408,15 @@ TEST_F(ImporterTest, IEImporter) {
   TestObserver* observer = new TestObserver();
   host->SetObserver(observer);
   importer::ProfileInfo profile_info;
-  profile_info.browser_type = MS_IE;
+  profile_info.browser_type = importer::MS_IE;
   profile_info.source_path = test_path_;
 
   loop->PostTask(FROM_HERE, NewRunnableMethod(host.get(),
-      &ImporterHost::StartImportSettings, profile_info,
-      static_cast<Profile*>(NULL), HISTORY | PASSWORDS | FAVORITES, observer,
+      &ImporterHost::StartImportSettings,
+      profile_info,
+      static_cast<Profile*>(NULL),
+      importer::HISTORY | importer::PASSWORDS | importer::FAVORITES,
+      observer,
       true));
   loop->Run();
 
@@ -598,7 +588,7 @@ class FirefoxObserver : public ProfileWriter,
     return true;
   }
 
-  virtual void AddPasswordForm(const PasswordForm& form) {
+  virtual void AddPasswordForm(const webkit_glue::PasswordForm& form) {
     PasswordList p = kFirefox2Passwords[password_count_];
     EXPECT_EQ(p.origin, form.origin.spec());
     EXPECT_EQ(p.realm, form.signon_realm);
@@ -700,7 +690,7 @@ TEST_F(ImporterTest, MAYBE(Firefox2Importer)) {
   FirefoxObserver* observer = new FirefoxObserver();
   host->SetObserver(observer);
   importer::ProfileInfo profile_info;
-  profile_info.browser_type = FIREFOX2;
+  profile_info.browser_type = importer::FIREFOX2;
   profile_info.app_path = app_path_;
   profile_info.source_path = profile_path_;
 
@@ -709,7 +699,8 @@ TEST_F(ImporterTest, MAYBE(Firefox2Importer)) {
       &ImporterHost::StartImportSettings,
       profile_info,
       static_cast<Profile*>(NULL),
-      HISTORY | PASSWORDS | FAVORITES | SEARCH_ENGINES,
+      importer::HISTORY | importer::PASSWORDS |
+      importer::FAVORITES | importer::SEARCH_ENGINES,
       make_scoped_refptr(observer),
       true));
   loop->Run();
@@ -801,7 +792,7 @@ class Firefox3Observer : public ProfileWriter,
     return true;
   }
 
-  virtual void AddPasswordForm(const PasswordForm& form) {
+  virtual void AddPasswordForm(const webkit_glue::PasswordForm& form) {
     PasswordList p = kFirefox3Passwords[password_count_];
     EXPECT_EQ(p.origin, form.origin.spec());
     EXPECT_EQ(p.realm, form.signon_realm);
