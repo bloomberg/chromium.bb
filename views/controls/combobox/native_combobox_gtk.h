@@ -36,11 +36,18 @@ class NativeComboboxGtk : public NativeControlGtk,
 
  private:
   void SelectionChanged();
+  void FocusedMenuItemChanged();
 
   CHROMEGTK_CALLBACK_0(NativeComboboxGtk, void, CallChanged);
+  CHROMEGTK_CALLBACK_0(NativeComboboxGtk, gboolean, CallPopUp);
+  CHROMEGTK_CALLBACK_1(NativeComboboxGtk, void, CallMenuMoveCurrent,
+                       GtkMenuDirectionType);
 
   // The combobox we are bound to.
   Combobox* combobox_;
+
+  // The combo box's pop-up menu.
+  GtkMenu* menu_;
 
   // The preferred size from the last size_request. See
   // NativeButtonGtk::preferred_size_ for more detail why we need this.

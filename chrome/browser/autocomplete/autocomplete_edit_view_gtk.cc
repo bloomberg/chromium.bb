@@ -157,7 +157,7 @@ AutocompleteEditViewGtk::AutocompleteEditViewGtk(
     CommandUpdater* command_updater,
     bool popup_window_mode,
 #if defined(TOOLKIT_VIEWS)
-    const views::View* location_bar)
+    views::View* location_bar)
 #else
     GtkWidget* location_bar)
 #endif
@@ -183,7 +183,9 @@ AutocompleteEditViewGtk::AutocompleteEditViewGtk(
       text_selected_during_click_(false),
       text_view_focused_before_button_press_(false),
 #endif
-#if !defined(TOOLKIT_VIEWS)
+#if defined(TOOLKIT_VIEWS)
+      location_bar_view_(location_bar),
+#else
       theme_provider_(GtkThemeProvider::GetFrom(profile)),
 #endif
       enter_was_pressed_(false),
@@ -882,7 +884,7 @@ AutocompleteEditView* AutocompleteEditViewGtk::Create(
     Profile* profile,
     CommandUpdater* command_updater,
     bool popup_window_mode,
-    const views::View* location_bar) {
+    views::View* location_bar) {
   if (views::NativeTextfieldViews::IsTextfieldViewsEnabled()) {
     AutocompleteEditViewViews* autocomplete =
         new AutocompleteEditViewViews(controller,
@@ -1221,6 +1223,11 @@ gboolean AutocompleteEditViewGtk::HandleKeyPress(GtkWidget* widget,
         g_signal_lookup("key-press-event", GTK_TYPE_WIDGET);
     g_signal_stop_emission(widget, signal_id, 0);
   }
+
+#if defined(TOOLKIT_VIEWS)
+  location_bar_view_->NotifyAccessibilityEvent(
+      AccessibilityTypes::EVENT_TEXT_CHANGED);
+#endif
 
   return result;
 }

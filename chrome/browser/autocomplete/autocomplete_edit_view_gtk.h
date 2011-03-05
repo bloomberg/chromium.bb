@@ -74,7 +74,7 @@ class AutocompleteEditViewGtk : public AutocompleteEditView,
                           CommandUpdater* command_updater,
                           bool popup_window_mode,
 #if defined(TOOLKIT_VIEWS)
-                          const views::View* location_bar
+                          views::View* location_bar
 #else
                           GtkWidget* location_bar
 #endif
@@ -157,7 +157,7 @@ class AutocompleteEditViewGtk : public AutocompleteEditView,
                                       Profile* profile,
                                       CommandUpdater* command_updater,
                                       bool popup_window_mode,
-                                      const views::View* location_bar);
+                                      views::View* location_bar);
 #endif
 
   // Overridden from NotificationObserver:
@@ -460,7 +460,9 @@ class AutocompleteEditViewGtk : public AutocompleteEditView,
   bool text_view_focused_before_button_press_;
 #endif
 
-#if !defined(TOOLKIT_VIEWS)
+#if defined(TOOLKIT_VIEWS)
+  views::View* location_bar_view_;
+#else
   // Supplies colors, et cetera.
   GtkThemeProvider* theme_provider_;
 

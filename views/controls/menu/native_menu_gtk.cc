@@ -21,6 +21,7 @@
 #include "views/accelerator.h"
 #include "views/controls/menu/menu_2.h"
 #include "views/controls/menu/nested_dispatcher_gtk.h"
+#include "views/views_delegate.h"
 
 namespace {
 
@@ -118,6 +119,9 @@ void NativeMenuGtk::RunMenuAt(const gfx::Point& point, int alignment) {
   gint move_handle_id =
       g_signal_connect(menu_, "move-current",
                        G_CALLBACK(OnMenuMoveCurrentThunk), this);
+  gint after_move_handle_id =
+      g_signal_connect_after(menu_, "move-current",
+                             G_CALLBACK(AfterMenuMoveCurrentThunk), this);
 
   // Block until menu is no longer shown by running a nested message loop.
   nested_dispatcher_ = new NestedDispatcherGtk(this, true);
@@ -137,6 +141,7 @@ void NativeMenuGtk::RunMenuAt(const gfx::Point& point, int alignment) {
 
   g_signal_handler_disconnect(G_OBJECT(menu_), hide_handle_id);
   g_signal_handler_disconnect(G_OBJECT(menu_), move_handle_id);
+  g_signal_handler_disconnect(G_OBJECT(menu_), after_move_handle_id);
 
   if (activated_menu_) {
     MessageLoop::current()->PostTask(FROM_HERE,
@@ -310,6 +315,11 @@ void NativeMenuGtk::OnMenuMoveCurrent(GtkWidget* menu_widget,
   }
 }
 
+void NativeMenuGtk::AfterMenuMoveCurrent(GtkWidget* menu_widget,
+                                         GtkMenuDirectionType focus_direction) {
+  SendAccessibilityEvent();
+}
+
 void NativeMenuGtk::AddSeparatorAt(int index) {
   GtkWidget* separator = gtk_separator_menu_item_new();
   gtk_widget_show(separator);
@@ -380,6 +390,8 @@ GtkWidget* NativeMenuGtk::AddMenuItemAt(int index,
     g_object_set_data(G_OBJECT(menu_item), "submenu", submenu);
     gtk_menu_item_set_submenu(GTK_MENU_ITEM(menu_item),
                               submenu->GetNativeMenu());
+    g_signal_connect(submenu->GetNativeMenu(), "move-current",
+                     G_CALLBACK(OnMenuMoveCurrentThunk), this);
   }
 
   views::Accelerator accelerator(ui::VKEY_UNKNOWN, false, false, false);
@@ -534,6 +546,51 @@ void NativeMenuGtk::Activate() {
   if (model_->IsEnabledAt(activated_index_) &&
       MenuTypeCanExecute(model_->GetTypeAt(activated_index_))) {
     model_->ActivatedAt(activated_index_);
+  }
+}
+
+void NativeMenuGtk::SendAccessibilityEvent() {
+  // Find the focused menu item, recursing into submenus as needed.
+  GtkWidget* menu = menu_;
+  GtkWidget* menu_item = GTK_MENU_SHELL(menu_)->active_menu_item;
+  if (!menu_item)
+    return;
+  GtkWidget* submenu = gtk_menu_item_get_submenu(GTK_MENU_ITEM(menu_item));
+  while (submenu && GTK_MENU_SHELL(submenu)->active_menu_item) {
+    menu = submenu;
+    menu_item = GTK_MENU_SHELL(menu)->active_menu_item;
+    if (!menu_item)
+      return;
+    submenu = gtk_menu_item_get_submenu(GTK_MENU_ITEM(menu_item));
+  }
+
+  // Figure out the item index and total number of items.
+  GList* items = gtk_container_get_children(GTK_CONTAINER(menu));
+  guint count = g_list_length(items);
+  int index = g_list_index(items, static_cast<gconstpointer>(menu_item));
+
+  // Get the menu item's label.
+  std::string name;
+#if GTK_CHECK_VERSION(2, 16, 0)
+  name = gtk_menu_item_get_label(GTK_MENU_ITEM(menu_item));
+#else
+  GList* children = gtk_container_get_children(GTK_CONTAINER(menu_item));
+  for (GList* l = g_list_first(children); l != NULL; l = g_list_next(l)) {
+    GtkWidget* child = static_cast<GtkWidget*>(l->data);
+    if (GTK_IS_LABEL(child)) {
+      name = gtk_label_get_label(GTK_LABEL(child));
+      break;
+    }
+  }
+#endif
+
+  if (ViewsDelegate::views_delegate) {
+    ViewsDelegate::views_delegate->NotifyMenuItemFocused(
+        L"",
+        UTF8ToWide(name),
+        index,
+        count,
+        submenu != NULL);
   }
 }
 

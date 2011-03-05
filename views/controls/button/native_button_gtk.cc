@@ -158,6 +158,8 @@ void NativeCheckboxGtk::OnClicked() {
   if (deliver_click_event_) {
     SyncCheckState();
     NativeButtonGtk::OnClicked();
+    checkbox()->NotifyAccessibilityEvent(
+        AccessibilityTypes::EVENT_VALUE_CHANGED);
   }
 }
 

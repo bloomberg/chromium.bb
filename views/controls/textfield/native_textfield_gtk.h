@@ -80,6 +80,18 @@ class NativeTextfieldGtk : public NativeControlGtk,
       GtkWidget* entry,
       NativeTextfieldGtk* textfield);
   gboolean OnChanged();
+  static gboolean OnMoveCursorHandler(
+      GtkWidget* entry,
+      GtkMovementStep step,
+      gint count,
+      gboolean extend_selection,
+      NativeTextfieldGtk* textfield);
+  gboolean OnMoveCursor();
+  static gboolean OnMouseUpHandler(
+      GtkWidget* entry,
+      GdkEvent* event,
+      NativeTextfieldGtk* textfield);
+  gboolean OnMouseUp();
 
   DISALLOW_COPY_AND_ASSIGN(NativeTextfieldGtk);
 };

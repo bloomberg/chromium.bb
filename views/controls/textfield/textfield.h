@@ -273,6 +273,10 @@ class Textfield : public View {
   virtual AccessibilityTypes::State GetAccessibleState() OVERRIDE;
   virtual string16 GetAccessibleValue() OVERRIDE;
 
+  // TODO(dmazzoni): Remove this when refactoring views accessibility code.
+  // http://crbug.com/74988
+  void GetSelectionBounds(int* start_index, int* end_index);
+
  protected:
   virtual void ViewHierarchyChanged(bool is_add, View* parent,
                                     View* child) OVERRIDE;

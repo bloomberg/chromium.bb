@@ -8,9 +8,11 @@
 
 #include <algorithm>
 
+#include "base/message_loop.h"
 #include "base/utf_string_conversions.h"
 #include "ui/base/models/combobox_model.h"
 #include "views/controls/combobox/combobox.h"
+#include "views/views_delegate.h"
 
 using ui::ComboboxModel;  // TODO(beng): remove
 
@@ -20,7 +22,8 @@ namespace views {
 // NativeComboboxGtk, public:
 
 NativeComboboxGtk::NativeComboboxGtk(Combobox* combobox)
-    : combobox_(combobox) {
+    : combobox_(combobox),
+      menu_(NULL) {
   set_focus_view(combobox);
 }
 
@@ -115,6 +118,16 @@ void NativeComboboxGtk::CreateNativeControl() {
       GTK_CELL_LAYOUT(widget), cell, "text", 0, NULL);
   g_signal_connect(widget, "changed",
                    G_CALLBACK(CallChangedThunk), this);
+  g_signal_connect_after(widget, "popup",
+                         G_CALLBACK(CallPopUpThunk), this);
+
+  // Get the menu associated with the combo box and listen to events on it.
+  GList* menu_list = gtk_menu_get_for_attach_widget(widget);
+  if (menu_list) {
+    menu_ = reinterpret_cast<GtkMenu*>(menu_list->data);
+    g_signal_connect_after(menu_, "move-current",
+                           G_CALLBACK(CallMenuMoveCurrentThunk), this);
+  }
 
   NativeControlCreated(widget);
 }
@@ -133,8 +146,63 @@ void NativeComboboxGtk::SelectionChanged() {
   combobox_->SelectionChanged();
 }
 
+void NativeComboboxGtk::FocusedMenuItemChanged() {
+  DCHECK(menu_);
+  GtkWidget* menu_item = GTK_MENU_SHELL(menu_)->active_menu_item;
+  if (!menu_item)
+    return;
+
+  // Figure out the item index and total number of items.
+  GList* items = gtk_container_get_children(GTK_CONTAINER(menu_));
+  guint count = g_list_length(items);
+  int index = g_list_index(items, static_cast<gconstpointer>(menu_item));
+
+  // Get the menu item's label.
+  std::string name;
+  GList* children = gtk_container_get_children(GTK_CONTAINER(menu_item));
+  for (GList* l = g_list_first(children); l != NULL; l = g_list_next(l)) {
+    GtkWidget* child = static_cast<GtkWidget*>(l->data);
+    if (GTK_IS_CELL_VIEW(child)) {
+      GtkCellView* cell_view = GTK_CELL_VIEW(child);
+      GtkTreePath* path = gtk_cell_view_get_displayed_row(cell_view);
+      GtkTreeModel* model = NULL;
+#if GTK_CHECK_VERSION(2, 16, 0)
+      model = gtk_cell_view_get_model(cell_view);
+#else
+      g_object_get(cell_view, "model", &model, NULL);
+#endif
+      GtkTreeIter iter;
+      if (model && gtk_tree_model_get_iter(model, &iter, path)) {
+        GValue value = { 0 };
+        gtk_tree_model_get_value(model, &iter, 0, &value);
+        name = g_value_get_string(&value);
+        break;
+      }
+    }
+  }
+
+  if (ViewsDelegate::views_delegate) {
+    ViewsDelegate::views_delegate->NotifyMenuItemFocused(
+        L"",
+        UTF8ToWide(name),
+        index,
+        count,
+        false);
+  }
+}
+
 void NativeComboboxGtk::CallChanged(GtkWidget* widget) {
   SelectionChanged();
+}
+
+gboolean NativeComboboxGtk::CallPopUp(GtkWidget* widget) {
+  FocusedMenuItemChanged();
+  return false;
+}
+
+void NativeComboboxGtk::CallMenuMoveCurrent(
+    GtkWidget* menu, GtkMenuDirectionType focus_direction) {
+  FocusedMenuItemChanged();
 }
 
 ////////////////////////////////////////////////////////////////////////////////

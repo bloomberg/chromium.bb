@@ -11,7 +11,6 @@
 #include <vector>
 
 #include "base/message_loop.h"
-#include "base/task.h"
 #include "ui/base/gtk/gtk_signal.h"
 #include "views/controls/menu/menu_wrapper.h"
 
@@ -56,6 +55,8 @@ class NativeMenuGtk : public MenuWrapper,
   CHROMEGTK_CALLBACK_0(NativeMenuGtk, void, OnMenuHidden);
   CHROMEGTK_CALLBACK_1(NativeMenuGtk, void, OnMenuMoveCurrent,
                        GtkMenuDirectionType);
+  CHROMEGTK_CALLBACK_1(NativeMenuGtk, void, AfterMenuMoveCurrent,
+                       GtkMenuDirectionType);
 
   void AddSeparatorAt(int index);
   GtkWidget* AddMenuItemAt(int index, GtkRadioMenuItem* radio_group,
@@ -90,6 +91,8 @@ class NativeMenuGtk : public MenuWrapper,
 
   // Notifies the model the user selected an item.
   void Activate();
+
+  void SendAccessibilityEvent();
 
   // A callback to delete menu2 object when the native widget is
   // destroyed first.

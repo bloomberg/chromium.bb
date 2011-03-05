@@ -344,7 +344,11 @@ bool NativeTextfieldGtk::IsIMEComposing() const {
 }
 
 void NativeTextfieldGtk::GetSelectedRange(TextRange* range) const {
-  NOTREACHED();
+  gint start_pos;
+  gint end_pos;
+  gtk_editable_get_selection_bounds(
+      GTK_EDITABLE(native_view()), &start_pos, &end_pos);
+  range->SetRange(start_pos, end_pos);
 }
 
 void NativeTextfieldGtk::SelectRange(const TextRange& range) {
@@ -427,6 +431,35 @@ gboolean NativeTextfieldGtk::OnChanged() {
   Textfield::Controller* controller = textfield_->GetController();
   if (controller)
     controller->ContentsChanged(textfield_, GetText());
+  textfield_->NotifyAccessibilityEvent(AccessibilityTypes::EVENT_TEXT_CHANGED);
+  return false;
+}
+
+// static
+gboolean NativeTextfieldGtk::OnMoveCursorHandler(
+    GtkWidget* widget,
+    GtkMovementStep step,
+    gint count,
+    gboolean extend_selection,
+    NativeTextfieldGtk* textfield) {
+  return textfield->OnMoveCursor();
+}
+
+gboolean NativeTextfieldGtk::OnMoveCursor() {
+  textfield_->NotifyAccessibilityEvent(AccessibilityTypes::EVENT_TEXT_CHANGED);
+  return false;
+}
+
+// static
+gboolean NativeTextfieldGtk::OnMouseUpHandler(
+    GtkWidget* widget,
+    GdkEvent* event,
+    NativeTextfieldGtk* textfield) {
+  return textfield->OnMouseUp();
+}
+
+gboolean NativeTextfieldGtk::OnMouseUp() {
+  textfield_->NotifyAccessibilityEvent(AccessibilityTypes::EVENT_TEXT_CHANGED);
   return false;
 }
 
@@ -462,6 +495,10 @@ void NativeTextfieldGtk::NativeControlCreated(GtkWidget* widget) {
     g_signal_connect(widget, "changed",
                      G_CALLBACK(OnChangedHandler), this);
   }
+  g_signal_connect_after(widget, "move-cursor",
+                         G_CALLBACK(OnMoveCursorHandler), this);
+  g_signal_connect_after(widget, "button-release-event",
+                         G_CALLBACK(OnMouseUpHandler), this);
   g_signal_connect_after(widget, "key-press-event",
                          G_CALLBACK(OnKeyPressEventHandler), this);
   // In order to properly trigger Accelerators bound to VKEY_RETURN, we need to

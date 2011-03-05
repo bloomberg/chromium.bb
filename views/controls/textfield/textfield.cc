@@ -265,19 +265,17 @@ bool Textfield::IsIMEComposing() const {
 
 void Textfield::GetSelectedRange(TextRange* range) const {
   DCHECK(native_wrapper_);
-  if (native_wrapper_)
-    native_wrapper_->GetSelectedRange(range);
+  native_wrapper_->GetSelectedRange(range);
 }
 
 void Textfield::SelectRange(const TextRange& range) {
   DCHECK(native_wrapper_);
-  if (native_wrapper_)
-    native_wrapper_->SelectRange(range);
+  native_wrapper_->SelectRange(range);
 }
 
 size_t Textfield::GetCursorPosition() const {
   DCHECK(native_wrapper_);
-  return native_wrapper_ ? native_wrapper_->GetCursorPosition() : 0;
+  return native_wrapper_->GetCursorPosition();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -371,6 +369,14 @@ AccessibilityTypes::State Textfield::GetAccessibleState() {
   if (IsPassword())
     state |= AccessibilityTypes::STATE_PROTECTED;
   return state;
+}
+
+void Textfield::GetSelectionBounds(int* start_index, int* end_index) {
+  DCHECK(native_wrapper_);
+  TextRange range;
+  native_wrapper_->GetSelectedRange(&range);
+  *start_index = range.start();
+  *end_index = range.end();
 }
 
 string16 Textfield::GetAccessibleValue() {

@@ -185,7 +185,6 @@ class TextButton : public CustomButton {
   // states change.
   virtual void UpdateColor();
 
- private:
   // Updates text_size_ and max_text_size_ from the current text/font. This is
   // invoked when the font or text changes.
   void UpdateTextSize();
@@ -193,6 +192,7 @@ class TextButton : public CustomButton {
   // The text string that is displayed in the button.
   string16 text_;
 
+ private:
   // The size of the text string.
   gfx::Size text_size_;
 

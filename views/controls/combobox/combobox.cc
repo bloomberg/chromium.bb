@@ -50,6 +50,7 @@ void Combobox::SelectionChanged() {
   selected_item_ = native_wrapper_->GetSelectedItem();
   if (listener_)
     listener_->ItemChanged(this, prev_selected_item, selected_item_);
+  NotifyAccessibilityEvent(AccessibilityTypes::EVENT_VALUE_CHANGED, false);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
