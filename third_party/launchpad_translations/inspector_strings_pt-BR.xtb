@@ -140,4 +140,28 @@
 <translation id="9162230117499798906"><ph name="COUNT"/> estilos mudados</translation>
 <translation id="9219103736887031265">Imagens</translation>
 <translation id="964811242908289581"><ph name="COUNT"/> erro</translation>
+<translation id="1015536732094484178"><ph name="EVENT"/> - Detalhes</translation>
+<translation id="1062798188241579840">Cores Hexadecimais</translation>
+<translation id="1169028494908542778">Reverter para esta revisão</translation>
+<translation id="1215014271600658849">Mostrar contas e tamanhos em porcentagens.</translation>
+<translation id="1272268244580491898">Habilitar ponto de parada</translation>
+<translation id="137671950541962857">Coletado</translation>
+<translation id="1436722359433789623">Nó Removido</translation>
+<translation id="1451049628911401385">Linha próxima/anterior</translation>
+<translation id="1507648903387903382">Nova regra de estilo</translation>
+<translation id="1521283072525575706">O sistema de arquivos está desabilitado</translation>
+<translation id="1639239467298939599">Carregando</translation>
+<translation id="1644861063548770358">Excluir Nó</translation>
+<translation id="1654944857563611006">Código de estado</translation>
+<translation id="2071167425364270751">&lt;fonte não disponível&gt;</translation>
+<translation id="643403007434239442">Limpar Timer</translation>
+<translation id="67190643267692835">Instalar Timer</translation>
+<translation id="681391154581908334">Pausado em um XMLHttpRequest</translation>
+<translation id="6970483822271783850">Incremento/decremento de valor</translation>
+<translation id="7040952127393951397">Estilo recalculado</translation>
+<translation id="7641927189292683247">Definir Timer</translation>
+<translation id="8493494744836938828">Encontrar próximo/anterior</translation>
+<translation id="8885335402904131721">Caminho raiz do sistema de arquivos não disponivel.</translation>
+<translation id="8988793062306956622">Carregando (<ph name="LOADED"/> de <ph name="TOTAL"/>)</translation>
+<translation id="9089819584697017929">PERFIS DE CPU</translation>
 </translationbundle>

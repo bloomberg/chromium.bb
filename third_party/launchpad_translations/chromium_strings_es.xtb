@@ -112,4 +112,9 @@
 <translation id="4330297532943865716">Se encontró una instalación conflictiva de Chromium o Chromium Frame en el sistema. Desinstálela e inténtelo de nuevo.</translation>
 <translation id="4649468518813464896">http://www.google.com/support/chrome/bin/answer.py?hl=[GRITLANGCODE]&amp;answer=161796</translation>
 <translation id="8046283042877435986">Este sitio recomienda Chromium Frame (ya instalado).</translation>
+<translation id="1929939181775079593">Chromium no responde ¿Relanzar ahora?</translation>
+<translation id="275588974610408078">El informe de cuelgues no está disponible en Chromium.</translation>
+<translation id="3190315855212034486">¡Vaya! Chromium se colgó. ¿Relanzar ahora?</translation>
+<translation id="4077262827416206768">Cierre todas las ventanas de Chromium y relance Chromium para que este cambio tenga efecto.</translation>
+<translation id="7278516633989165382">Chromium Frame se ha actualizado. Relance su navegador. Versión Chrome: <ph name="TODO_0001"/>, Versión Chromium Frame: <ph name="TODO_0002"/></translation>
 </translationbundle>

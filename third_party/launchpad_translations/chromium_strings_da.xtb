@@ -9,4 +9,11 @@
 <translation id="2484334055677766392">Chromium sprog:</translation>
 <translation id="2485422356828889247">Afinstallér</translation>
 <translation id="263863604136125912">Start Chromium</translation>
+<translation id="1018817853520605763"><!-- Vi bruger /n her for at separere linjer manuelt, da NativeCheckboxGtk ikke understøtter flerlinjers. -->
+        Valgfrit: Hjælp med at gøre Chromium bedre ved automatisk at sende brugsstatistik og\nrapporter om nedbrud til Google.</translation>
+<translation id="1105130903706696483">Chromium blev ikke afsluttet korrekt. Vælg Gendan for at genåbne de sider du havde åbne.</translation>
+<translation id="1221340462641866827">Chromium OS understøtter ikke start af eksterne applikationer til at håndtere <ph name="SCHEME"/>-links. Det ønskede link er <ph name="PROTOLINK"/>.</translation>
+<translation id="1929939181775079593">Chromium svarer ikke. Genstart nu?</translation>
+<translation id="1967743265616885482">Et modul med samme navn er kendt for at være i strid med Chromium.</translation>
+<translation id="2632329825580776666">Din indstillingsfil er beskadiget eller ugyldig.\n\nChromium kan ikke genskabe dine indstillinger.</translation>
 </translationbundle>

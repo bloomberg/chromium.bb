@@ -104,4 +104,9 @@
 <translation id="9191268552238695869">En administratör har installerat Chromium på detta system och det finns tillgängligt för alla användare. Chromium på systemnivå ersätter nu din installation på användarnivå.</translation>
 <translation id="980185455267101462">Denna dator har redan en senare version av Chromium Frame. Om programvaran inte fungerar så avinstallera Chromium Frame och hämta ner det igen.</translation>
 <translation id="985602178874221306">The Chromium Authors</translation>
+<translation id="1929939181775079593">Chromium svarar inte. Starta om nu?</translation>
+<translation id="275588974610408078">Kraschrapportering är inte tillgängligt i Chromium.</translation>
+<translation id="3190315855212034486">Hoppsan! Chromium har kraschat. Starta om nu?</translation>
+<translation id="4077262827416206768">Stäng alla Chromium-fönster och starta om Chromium för att denna ändring ska bli aktiv.</translation>
+<translation id="7278516633989165382">Chromium Frame har uppdaterats. Starta om din webbläsare. Chrome version: <ph name="TODO_0001"/>, Chromium Frame version: <ph name="TODO_0002"/></translation>
 </translationbundle>

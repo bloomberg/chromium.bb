@@ -172,6 +172,7 @@ need to be translated for each locale.-->
     <!-- The translation console uses 'iw' for Hebrew, but we use 'he'. -->
     <file path="app_strings_iw.xtb" lang="he" />
     <file path="app_strings_ja.xtb" lang="ja" />
+    <file path="../../third_party/launchpad_translations/app_strings_ka.xtb" lang="ka" />
     <file path="app_strings_kn.xtb" lang="kn" />
     <file path="app_strings_ko.xtb" lang="ko" />
     <file path="../../third_party/launchpad_translations/app_strings_ku.xtb" lang="ku" />

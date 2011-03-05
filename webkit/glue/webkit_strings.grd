@@ -203,6 +203,7 @@ below:
     <!-- The translation console uses 'iw' for Hebrew, but we use 'he'. -->
     <file path="resources/webkit_strings_iw.xtb" lang="he" />
     <file path="resources/webkit_strings_ja.xtb" lang="ja" />
+    <file path="../../third_party/launchpad_translations/webkit_strings_ka.xtb" lang="ka" />
     <file path="resources/webkit_strings_kn.xtb" lang="kn" />
     <file path="resources/webkit_strings_ko.xtb" lang="ko" />
     <file path="../../third_party/launchpad_translations/webkit_strings_ku.xtb" lang="ku" />

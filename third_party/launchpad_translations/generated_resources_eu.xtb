@@ -2827,4 +2827,94 @@ Gorde zure gako-fitxategia toki seguruan. Zure hedapenaren bertsio berriak sortz
           Giltza menua &gt; Aukerak &gt; Aurreratua &gt; Aldatu proxy-ezarpenak
           <ph name="END_BOLD"/>
           atalera eta segurtatu zure konfigurazioa &quot;proxy-rik ez&quot; edo &quot;zuzena&quot; dela.</translation>
+<translation id="1114901192629963971">Zure pasahitza ezin izan da egiaztatu sare honetan. Hautatu beste sare bat.</translation>
+<translation id="1116694919640316211">Honi buruz</translation>
+<translation id="1199232041627643649">Mantendu <ph name="KEY_EQUIVALENT"/> sakatuta irteteko.</translation>
+<translation id="1307041843857566458">Berretsi birgaitzea</translation>
+<translation id="1394630846966197578">Hizketa-zerbitzarien konexioak huts egin du.</translation>
+<translation id="1492188167929010410"><ph name="CRASH_ID"/> kraskadura IDa</translation>
+<translation id="1737968601308870607">Bete akats-txostena</translation>
+<translation id="1899708097738826574"><ph name="OPTIONS_TITLE"/> - <ph name="SUBPAGE_TITLE"/></translation>
+<translation id="2096368010154057602">Departamentua</translation>
+<translation id="2307719516243503680">Beharbada web-orria ostatatzen duen zerbitzariak gainkarga bat izan du edo errore bat aurkitu du. Trafiko gehiegi sortu eta egoera okerragoa izan ez dadin, <ph name="PRODUCT_NAME"/>-(e)k zerbitzariari egindako eskariak eten ditu behin-behinean.
+        <ph name="LINE_BREAK"/>
+        Portaera hau nahi ez baduzu, esaterako zure webgune propioa arazten ari bazara, desgaitu egin dezakezu <ph name="PRODUCT_NAME"/> komando-lerroko <ph name="COMMAND_LINE_FLAG"/> banderarekin berrabiaraziz.</translation>
+<translation id="2333340435262918287">Zure aldaketak <ph name="PRODUCT_NAME"/> berrabiarazi ondoren sartuko dira indarrean.</translation>
+<translation id="2476990193835943955">Mantendu Ktrl, Alt, edo Shift sakatuta aldatzaile horien&lt;br&gt;laster-teklak ikusteko.</translation>
+<translation id="2503458975635466059">Itxura batean <ph name="HOST_NAME"/> ostalariko <ph name="PROCESS_ID"/> prozesua profila erabiltzen ari da. Seguru bazaude profil hau erabiltzen ari den beste prozesurik ez dagoela, ezabatu <ph name="LOCK_FILE"/> fitxategia eta berrabiarazi <ph name="PRODUCT_NAME"/>.</translation>
+<translation id="2799223571221894425">Berrabiarazi</translation>
+<translation id="2900139581179749587">Hizketa ez da ezaguna.</translation>
+<translation id="3174168572213147020">Uhartea</translation>
+<translation id="3220586366024592812"><ph name="CLOUD_PRINT_NAME"/> prozesu konektorea kraskatu egin da. Berrabiarazi?</translation>
+<translation id="3423858849633684918">Berrabiarazi <ph name="PRODUCT_NAME"/></translation>
+<translation id="354211537509721945">Administratzaileak eguneraketak desgaitu ditu</translation>
+<translation id="3753317529742723206"><ph name="HANDLER_TITLE"/> (<ph name="HANDLER_HOSTNAME"/>) erabili nahi al duzu <ph name="PROTOCOL"/>:// estekak maneiatzeko oraindik aurrera, <ph name="REPLACED_HANDLER_TITLE"/> erabili ordez?</translation>
+<translation id="3759461132968374835">Azken aldian ez duzu kraskaduren berri eman. Kraskaduren jakinarazpena desgaituta dagoenean gertatutakoak ez dira hemen agertuko.</translation>
+<translation id="3824846808674205670">Fitxategia honek maltzurra dirudi. Seguru zaude jarraitu nahi duzula?</translation>
+<translation id="3885155851504623709">Parrokia</translation>
+<translation id="4051923669149193910"><ph name="HANDLER_TITLE"/> jadanik erabilia da <ph name="PROTOCOL"/>:// esteketan.</translation>
+<translation id="4088820693488683766">Bilaketa-aukerak</translation>
+<translation id="4094130554533891764">Orain hurrengoak atzi daitezke:</translation>
+<translation id="4535899795609763134"><ph name="PRODUCT_NAME"/>-(e)k detektatu du ESET produktu bat konexio seguruak mozten ari dela.
+        Hau normalean ez da segurtasun-arazoa, ESET softwarea ordenagailuan bertan
+        baitago. Hala ere, <ph name="PRODUCT_NAME"/>-(e)n
+        konexio seguruen zenbait ezaugarriekiko
+        tolerantziarik ezagatik, ESET produktuen konfigurazioa aldatu behar da mozketa hau
+        egin ez dezan. Egin klik &quot;Ikasi gehiago&quot; estekan argibide gehiago jasotzeko.</translation>
+<translation id="4740663705480958372">P2P Pepper APIa eta P2P JavaScript APIa gaitzen ditu. APIa garapen bidean dago, eta oraindik ez dabil.</translation>
+<translation id="4841055638263130507">Mikrofono-ezarpenak</translation>
+<translation id="4856408283021169561">Ez da mikrofonorik aurkitu.</translation>
+<translation id="4857138207355690859">P2P APIa</translation>
+<translation id="4922397891305598564"><ph name="PRODUCT_NAME"/> berrabiarazi behar da eguneraketa aplikatzeko.</translation>
+<translation id="5089810972385038852">Estatua</translation>
+<translation id="5095208057601539847">Probintzia</translation>
+<translation id="5141720258550370428"><ph name="HANDLER_TITLE"/> (<ph name="HANDLER_HOSTNAME"/>) erabili nahi al duzu <ph name="PROTOCOL"/>:// estekak maneiatzeko oraindik aurrera?</translation>
+<translation id="5185386675596372454">&quot;<ph name="EXTENSION_NAME"/>&quot; hedapenaren bertsio berriena desgaitu egin da baimen gehiago behar dituelako.</translation>
+<translation id="5308689395849655368">Kraskaduren jakinarazpena desgaituta dago.</translation>
+<translation id="539295039523818097">Arazo bat egon da zure mikrofonoarekin.</translation>
+<translation id="5441086706523683872">Sakatu Esc ezkutatzeko</translation>
+<translation id="5581211282705227543">Ez dago pluginik instalatuta</translation>
+<translation id="5586942249556966598">Ez egin ezer</translation>
+<translation id="5600599436595580114">Orri hau aurretiaz errendatu da.</translation>
+<translation id="572525680133754531">Ertza marrazten du errendatze-geruza konposatuen inguruan, geruzen konposaketa arazten eta aztertzen laguntzeko.</translation>
+<translation id="5926736929537538875">Beti desgaituta</translation>
+<translation id="5970231080121144965">Historian gordetako URLen kate-zatien eta zati anitzen bat etortzeak gaitzen ditu.</translation>
+<translation id="6014776969142880350">Berrabiarazi <ph name="PRODUCT_NAME"/> eguneraketa burutzeko</translation>
+<translation id="604124094241169006">Automatikoa</translation>
+<translation id="6099520380851856040"><ph name="CRASH_TIME"/> unean gertatu zen</translation>
+<translation id="6127884830679585004">Errendatze-geruza konposatuen ertzak.</translation>
+<translation id="6216679966696797604">Abiarazi saioa gonbidatu gisa</translation>
+<translation id="6282194474023008486">Posta-kodea</translation>
+<translation id="6423731501149634044">Adobe Reader erabili nahi duzu PDF ikustaile lehenetsi gisa?</translation>
+<translation id="6523841952727744497">Saioa hasi baino lehen, abiarazi saioa gonbidatu gisa <ph name="NETWORK_ID"/> sarea aktibatu dadin</translation>
+<translation id="6605626615172630358">Ez dizugu entzun.</translation>
+<translation id="6621440228032089700">Konposaketa gaitzen du pantailaz kanpoko testurarako, zuzenean bistaratu ordez.</translation>
+<translation id="6643595002576738836">Alemaniera (Neo 2)</translation>
+<translation id="6812349420832218321"><ph name="PRODUCT_NAME"/> ezin dira erro modura exekutatu.</translation>
+<translation id="6839929833149231406">Area</translation>
+<translation id="6916146760805488559">Sortu profil berria...</translation>
+<translation id="6928853950228839340">Konposaketatik testurara</translation>
+<translation id="6970216967273061347">Barrutia</translation>
+<translation id="6987977084204837193">Iragarpenen arabera aurre-errendatzen ditu web-orri osoak atzeko planoan, nabigatze-abiaduraren irudipena azkarragoa izan dadin. Ezarpen lehenetsiak (automatikoak) ezaugarri hau ausaz gaitu/desgaitu dadin eragin dezake, abiadura-probak gauza daitezen.\n</translation>
+<translation id="7087282848513945231">Eskualdea</translation>
+<translation id="7139724024395191329">Emirerria</translation>
+<translation id="7179921470347911571">Berrabiarazi orain</translation>
+<translation id="7199540622786492483"><ph name="PRODUCT_NAME"/> zaharkitua dago ez delako aspaldi berrabiarazi. Eguneraketa bat dago eta <ph name="PRODUCT_NAME"/> berrabiarazi bezain laster aplikatuko da.</translation>
+<translation id="7255289656011555258">Beti gaituta</translation>
+<translation id="7330933557557138066">Gaitu historiarekin bat etortze hobeak omnibox-en</translation>
+<translation id="7384913436093989340">Joan
+          <ph name="BEGIN_BOLD"/>
+          Giltza menua &gt; Aukerak &gt; Aurreratua &gt; Aldatu proxy-ezarpenak
+          <ph name="END_BOLD"/>
+          atalera eta segurtatu zure konfigurazioa &quot;proxy-rik ez&quot; edo &quot;zuzena&quot; dela.</translation>
+<translation id="7429235532957570505">Ezin dira desgaitu enpresa-politiken ondorioz gaitutako pluginak</translation>
+<translation id="7550830279652415241">bookmarks_<ph name="DATESTAMP"/>.html</translation>
+<translation id="7561196759112975576">Beti</translation>
+<translation id="777702478322588152">Prefektura</translation>
+<translation id="7931405184645203530">Abiarazi <ph name="PRODUCT_NAME"/> erabiltzaile normal modura. Aurretik <ph name="PRODUCT_NAME"/> erro modura abiarazi baduzu, zure profilaren direktorioaren jabegoa aldatu beharko duzu.</translation>
+<translation id="813082847718468539">Ikusi gunearen informazioa</translation>
+<translation id="8281596639154340028">Erabili <ph name="HANDLER_TITLE"/></translation>
+<translation id="8412145213513410671">Kraskadurak (<ph name="CRASH_COUNT"/>)</translation>
+<translation id="8630826211403662855">Bilaketa-hobespenak</translation>
+<translation id="8691686986795184760">(Enpresa-politiken ondorioz gaitua)</translation>
 </translationbundle>

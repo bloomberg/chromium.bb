@@ -58,4 +58,8 @@
 <translation id="8750798805984357768">Seleccione unha destas opcións.</translation>
 <translation id="8964020114565522021">Arrastrar ficheiro ata aqui</translation>
 <translation id="9186171386827445984">Cargando documento: <ph name="PAGE_NUMBER"/>/<ph name="NUMBER_OF_PAGES"/> páginas...</translation>
+<translation id="3851140433852960970">Non hai un complemento dispoñíbel para mostrar este contido.</translation>
+<translation id="5129723458012748440">O complemento <ph name="PLUGIN"/> non está instalado.</translation>
+<translation id="7335060848622232389">A instalación de complementos foi desactivada.</translation>
+<translation id="9198010615634362518">Non está instalado o complemento necesario.</translation>
 </translationbundle>

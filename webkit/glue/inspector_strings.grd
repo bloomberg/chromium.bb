@@ -118,6 +118,7 @@ so we include the original license below:
     <if expr="pp_ifdef('use_third_party_translations')">
       <file path="../../third_party/launchpad_translations/inspector_strings_ast.xtb" lang="ast" />
       <file path="../../third_party/launchpad_translations/inspector_strings_ca.xtb" lang="ca" />
+      <file path="../../third_party/launchpad_translations/inspector_strings_da.xtb" lang="da" />
       <file path="../../third_party/launchpad_translations/inspector_strings_de.xtb" lang="de" />
       <file path="../../third_party/launchpad_translations/inspector_strings_es.xtb" lang="es" />
       <file path="../../third_party/launchpad_translations/inspector_strings_eu.xtb" lang="eu" />

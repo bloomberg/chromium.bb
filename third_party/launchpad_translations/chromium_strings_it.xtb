@@ -1,0 +1,11 @@
+<?xml version="1.0" ?>
+<!DOCTYPE translationbundle>
+<translationbundle lang="it">
+<translation id="1018817853520605763"><!--È usato /n per separare le linee manualmente perché attualmente NativeCheckboxGtk non supporta linee multiple. -->
+        Facoltativo: Aiuta a migliorare Chromium inviando automaticamente statistiche d'uso e rapporti\ndei crash a Google</translation>
+<translation id="1105130903706696483">Chromium non è stato chiuso correttamente. Per riaprire le pagine aperte durante l'ultima sessione, fare clic su Ripristina.</translation>
+<translation id="1185134272377778587">Informazioni su Chromium</translation>
+<translation id="1221340462641866827">Chromium OS non supporta l'avvio di applicazioni esterne usando collegamenti <ph name="SCHEME"/>. Il collegamento richiesto è <ph name="PROTOLINK"/>.</translation>
+<translation id="1293235220023151515">È stata trovata nel sistema un'installazione di Chronium in conflitto. Disinstallarla e riprovare di nuovo l'installazione.</translation>
+<translation id="1708666629004767631">È disponibile una nuova e più sicura versione di Chromium.</translation>
+</translationbundle>

@@ -79,4 +79,6 @@
 <translation id="9013262824292842194">Chromium vyžaduje Windows Vista nebo Windows XP SP2 nebo vyšší.</translation>
 <translation id="911206726377975832">Smazat také data o prohlížení?</translation>
 <translation id="985602178874221306">Autoři Chromia</translation>
+<translation id="1293235220023151515">Byla nalezena konfliktní instalace Chromia. Prosím odinstalujte ho a zkuste to znovu.</translation>
+<translation id="2927042866129133279">Neplatné argumenty. Chromium rámeček nemůže být nainstalován v režimu jen pro čtení bez nainstalování Chromia.</translation>
 </translationbundle>

@@ -111,4 +111,9 @@
 <translation id="4330297532943865716">系统中发现已安装有冲突的 Chromium 或 Chromium Frame 版本。请先卸载该版本后再试。</translation>
 <translation id="4649468518813464896">http://www.google.com/support/chrome/bin/answer.py?hl=[GRITLANGCODE]&amp;answer=161796</translation>
 <translation id="8046283042877435986">该站点推荐使用 Chromium Frame (已安装)。</translation>
+<translation id="1929939181775079593">Chromium 无响应。是否立即重新启动?</translation>
+<translation id="275588974610408078">Chromium 崩溃报告不可用。</translation>
+<translation id="3190315855212034486">哇! Chromium 崩溃了。是否立即重新启动?</translation>
+<translation id="4077262827416206768">请关闭所有 Chromium 窗口并重新启动 Chromium 以使变更生效。</translation>
+<translation id="7278516633989165382">Chromium Frame 已更新。请重新启动您的浏览器。Chrome 版本: <ph name="TODO_0001"/>, Chromium Frame 版本: <ph name="TODO_0002"/></translation>
 </translationbundle>

@@ -58,4 +58,8 @@
 <translation id="8750798805984357768">Hautatu aukera hauetako bat.</translation>
 <translation id="8964020114565522021">Jaregin fitxategia hemen</translation>
 <translation id="9186171386827445984">Dokumentua kargatzen: <ph name="NUMBER_OF_PAGES"/>/<ph name="PAGE_NUMBER"/> orri...</translation>
+<translation id="3851140433852960970">Ez dago pluginik eskuragarri eduki hau erakusteko.</translation>
+<translation id="5129723458012748440"><ph name="PLUGIN"/> plugina ez dago instalatuta.</translation>
+<translation id="7335060848622232389">Pluginen instalazioa desgaituta dago.</translation>
+<translation id="9198010615634362518">Ez dago instalatuta behar den plugina.</translation>
 </translationbundle>
