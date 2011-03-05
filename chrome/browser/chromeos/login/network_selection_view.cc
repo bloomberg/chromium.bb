@@ -339,12 +339,20 @@ void NetworkSelectionView::UpdateLocalizedStrings() {
       UTF16ToWide(delegate_->keyboard_switch_menu()->GetCurrentKeyboardName()));
   welcome_label_->SetText(
       UTF16ToWide(l10n_util::GetStringUTF16(IDS_NETWORK_SELECTION_TITLE)));
+  this->SetAccessibleName(
+      l10n_util::GetStringUTF16(IDS_NETWORK_SELECTION_TITLE));
   select_language_label_->SetText(
       UTF16ToWide(l10n_util::GetStringUTF16(IDS_LANGUAGE_SELECTION_SELECT)));
+  languages_menubutton_->SetAccessibleName(
+      l10n_util::GetStringUTF16(IDS_LANGUAGE_SELECTION_SELECT));
   select_keyboard_label_->SetText(
       UTF16ToWide(l10n_util::GetStringUTF16(IDS_KEYBOARD_SELECTION_SELECT)));
+  keyboards_menubutton_->SetAccessibleName(
+      l10n_util::GetStringUTF16(IDS_KEYBOARD_SELECTION_SELECT));
   select_network_label_->SetText(
       UTF16ToWide(l10n_util::GetStringUTF16(IDS_NETWORK_SELECTION_SELECT)));
+  network_dropdown_->SetAccessibleName(
+      l10n_util::GetStringUTF16(IDS_NETWORK_SELECTION_SELECT));
   proxy_settings_link_->SetText(UTF16ToWide(
       l10n_util::GetStringUTF16(IDS_OPTIONS_PROXIES_CONFIGURE_BUTTON)));
   RecreateNativeControls();

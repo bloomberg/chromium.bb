@@ -35,6 +35,8 @@ NetworkConfigView::NetworkConfigView()
           l10n_util::GetStringUTF16(IDS_OPTIONS_SETTINGS_OTHER_NETWORKS))),
       wificonfig_view_(new WifiConfigView(this)),
       delegate_(NULL) {
+  SetAccessibleName(
+      l10n_util::GetStringUTF16(IDS_OPTIONS_SETTINGS_OTHER_NETWORKS));
 }
 
 gfx::NativeWindow NetworkConfigView::GetNativeWindow() const {

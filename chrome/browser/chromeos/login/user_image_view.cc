@@ -171,6 +171,8 @@ void UserImageView::Init() {
 
   title_label_ = new views::Label(
       UTF16ToWide(l10n_util::GetStringUTF16(IDS_USER_IMAGE_SCREEN_TITLE)));
+  this->SetAccessibleName(
+      l10n_util::GetStringUTF16(IDS_USER_IMAGE_SCREEN_TITLE));
   title_label_->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
   title_label_->SetMultiLine(true);
   CorrectLabelFontSize(title_label_);

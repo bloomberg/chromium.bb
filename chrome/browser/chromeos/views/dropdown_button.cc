@@ -70,4 +70,9 @@ void DropDownButton::OnPaintFocusBorder(gfx::Canvas* canvas) {
                           height() - kFocusFrameBottomOffset);
 }
 
+void DropDownButton::SetText(const std::wstring& text) {
+  text_ = WideToUTF16Hack(text);
+  UpdateTextSize();
+}
+
 }  // namespace chromeos

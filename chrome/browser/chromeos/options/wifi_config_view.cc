@@ -458,6 +458,8 @@ void WifiConfigView::Init() {
   if (!wifi_.get()) {
     ssid_textfield_ = new views::Textfield(views::Textfield::STYLE_DEFAULT);
     ssid_textfield_->SetController(this);
+    ssid_textfield_->SetAccessibleName(l10n_util::GetStringUTF16(
+        IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_NETWORK_ID));
     layout->AddView(ssid_textfield_);
   } else {
     views::Label* label = new views::Label(ASCIIToWide(wifi_->name()));
@@ -577,6 +579,8 @@ void WifiConfigView::Init() {
   // Disable passphrase input initially for other network.
   if (!wifi_.get())
     passphrase_textfield_->SetEnabled(false);
+  passphrase_textfield_->SetAccessibleName(l10n_util::GetStringUTF16(
+      label_text_id));
   layout->AddView(passphrase_textfield_);
   // Password visible button.
   passphrase_visible_button_ = new views::ImageButton(this);

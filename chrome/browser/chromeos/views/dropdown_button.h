@@ -24,6 +24,13 @@ class DropDownButton : public views::MenuButton {
 
   virtual void OnPaintFocusBorder(gfx::Canvas* canvas);
 
+  // Override SetText to set the accessible value, rather than the
+  // accessible name, since this acts more like a combo box than a
+  // menu.
+  virtual void SetText(const std::wstring& text);
+
+  virtual string16 GetAccessibleValue() { return text_; }
+
  private:
   DISALLOW_COPY_AND_ASSIGN(DropDownButton);
 };
