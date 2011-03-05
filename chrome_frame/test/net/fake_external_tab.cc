@@ -505,10 +505,7 @@ int main(int argc, char** argv) {
     return 0;
   }
 
-  return 0;
-
   // TODO(tommi): Stuff be broke. Needs a fixin'.
-#if 0
   // This is awkward: the TestSuite derived CFUrlRequestUnittestRunner contains
   // the instance of the AtExitManager that RegisterPathProvider() and others
   // below require. So we have to instantiate this first.
@@ -527,5 +524,4 @@ int main(int argc, char** argv) {
   PluginService::EnableChromePlugins(false);
   test_suite.RunMainUIThread();
   return 0;
-#endif
 }

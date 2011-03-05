@@ -378,7 +378,20 @@ struct ParamTraits<net::UploadData::Element> {
         break;
       }
       case net::UploadData::TYPE_CHUNK: {
-        m->WriteData(&p.bytes()[0], static_cast<int>(p.bytes().size()));
+        std::string chunk_length = StringPrintf("%X\r\n", p.bytes().size());
+        std::vector<char> bytes;
+        bytes.insert(bytes.end(), chunk_length.data(),
+                     chunk_length.data() + chunk_length.length());
+        const char* data = &p.bytes()[0];
+        bytes.insert(bytes.end(), data, data + p.bytes().size());
+        const char* crlf = "\r\n";
+        bytes.insert(bytes.end(), crlf, crlf + strlen(crlf));
+        if (p.is_last_chunk()) {
+          const char* end_of_data = "0\r\n\r\n";
+          bytes.insert(bytes.end(), end_of_data,
+                       end_of_data + strlen(end_of_data));
+        }
+        m->WriteData(&bytes[0], static_cast<int>(bytes.size()));
         // If this element is part of a chunk upload then send over information
         // indicating if this is the last chunk.
         WriteParam(m, p.is_last_chunk());
