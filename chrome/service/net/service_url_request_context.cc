@@ -157,16 +157,16 @@ ServiceURLRequestContextGetter::ServiceURLRequestContextGetter()
   // Build the default user agent.
   user_agent_ = MakeUserAgentForServiceProcess();
 
-#if !defined(OS_MACOSX)
-  // Create the proxy service now, at initialization time, on the main thread.
-  // The Mac needs it created later, on the I/O thread.
+#if defined(OS_LINUX)
+  // Create the proxy service now, at initialization time, on the main thread,
+  // only for Linux, which requires that.
   CreateProxyService();
 #endif
 }
 
 net::URLRequestContext*
 ServiceURLRequestContextGetter::GetURLRequestContext() {
-#if defined(OS_MACOSX)
+#if !defined(OS_LINUX)
   if (!proxy_service_)
     CreateProxyService();
 #endif
