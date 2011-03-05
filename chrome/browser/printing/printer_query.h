@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -11,6 +11,7 @@
 #include "ui/gfx/native_widget_types.h"
 
 class CancelableTask;
+class DictionaryValue;
 class MessageLoop;
 
 namespace base {
@@ -51,6 +52,10 @@ class PrinterQuery : public PrintJobWorkerOwner {
                    bool use_overlays,
                    CancelableTask* callback);
 
+  // Updates the current settings with |new_settings| dictionary values.
+  void SetSettings(const DictionaryValue& new_settings,
+                   CancelableTask* callback);
+
   // Stops the worker thread since the client is done with this object.
   void StopWorker();
 
@@ -64,6 +69,10 @@ class PrinterQuery : public PrintJobWorkerOwner {
 
  private:
   virtual ~PrinterQuery();
+
+  // Lazy create the worker thread. There is one worker thread per print job.
+  // Returns true, if worker thread exists or has been created.
+  bool StartWorker(CancelableTask* callback);
 
   // Main message loop reference. Used to send notifications in the right
   // thread.

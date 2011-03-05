@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,6 +6,7 @@
 
 #include "base/message_loop.h"
 #include "base/threading/thread_restrictions.h"
+#include "base/values.h"
 #include "chrome/browser/printing/print_job_worker.h"
 
 namespace printing {
@@ -78,23 +79,9 @@ void PrinterQuery::GetSettings(GetSettingsAskParam ask_user_for_settings,
                                CancelableTask* callback) {
   DCHECK_EQ(io_message_loop_, MessageLoop::current());
   DCHECK(!is_print_dialog_box_shown_);
-  DCHECK(!callback_.get());
-  DCHECK(worker_.get());
-  if (!worker_.get())
+  if (!StartWorker(callback))
     return;
-  // Lazy create the worker thread. There is one worker thread per print job.
-  if (!worker_->message_loop()) {
-    if (!worker_->Start()) {
-      if (callback) {
-        callback->Cancel();
-        delete callback;
-      }
-      NOTREACHED();
-      return;
-    }
-  }
 
-  callback_.reset(callback);
   // Real work is done in PrintJobWorker::Init().
   is_print_dialog_box_shown_ = ask_user_for_settings == ASK_USER;
   worker_->message_loop()->PostTask(FROM_HERE, NewRunnableMethod(
@@ -105,6 +92,38 @@ void PrinterQuery::GetSettings(GetSettingsAskParam ask_user_for_settings,
       expected_page_count,
       has_selection,
       use_overlays));
+}
+
+void PrinterQuery::SetSettings(const DictionaryValue& new_settings,
+                               CancelableTask* callback) {
+  if (!StartWorker(callback))
+    return;
+
+  worker_->message_loop()->PostTask(FROM_HERE, NewRunnableMethod(
+      worker_.get(),
+      &PrintJobWorker::SetSettings,
+      new_settings.DeepCopy()));
+}
+
+bool PrinterQuery::StartWorker(CancelableTask* callback) {
+  DCHECK(!callback_.get());
+  DCHECK(worker_.get());
+  if (!worker_.get())
+    return false;
+
+  // Lazy create the worker thread. There is one worker thread per print job.
+  if (!worker_->message_loop()) {
+    if (!worker_->Start()) {
+      if (callback) {
+        callback->Cancel();
+        delete callback;
+      }
+      NOTREACHED();
+      return false;
+    }
+  }
+  callback_.reset(callback);
+  return true;
 }
 
 void PrinterQuery::StopWorker() {

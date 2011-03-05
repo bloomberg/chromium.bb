@@ -151,6 +151,17 @@ PrintingContext::Result PrintingContextCairo::UseDefaultSettings() {
   return OK;
 }
 
+PrintingContext::Result PrintingContextCairo::UpdatePrintSettings(
+    const PageRanges& ranges) {
+  DCHECK(!in_print_job_);
+
+  settings_.ranges = ranges;
+
+  NOTIMPLEMENTED();
+
+  return FAILED;
+}
+
 PrintingContext::Result PrintingContextCairo::InitWithSettings(
     const PrintSettings& settings) {
   DCHECK(!in_print_job_);

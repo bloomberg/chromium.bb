@@ -1258,8 +1258,8 @@ void RenderViewHost::PrintNodeUnderContextMenu() {
   Send(new ViewMsg_PrintNodeUnderContextMenu(routing_id()));
 }
 
-void RenderViewHost::PrintForPrintPreview() {
-  Send(new ViewMsg_PrintForPrintPreview(routing_id()));
+void RenderViewHost::PrintForPrintPreview(const DictionaryValue& job_settings) {
+  Send(new ViewMsg_PrintForPrintPreview(routing_id(), job_settings));
 }
 
 void RenderViewHost::OnMsgStartDragging(

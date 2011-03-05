@@ -208,6 +208,17 @@ PrintingContext::Result PrintingContextWin::UseDefaultSettings() {
   return ParseDialogResult(dialog_options);
 }
 
+PrintingContext::Result PrintingContextWin::UpdatePrintSettings(
+    const PageRanges& ranges) {
+  DCHECK(!in_print_job_);
+
+  settings_.ranges = ranges;
+
+  NOTIMPLEMENTED();
+
+  return FAILED;
+}
+
 PrintingContext::Result PrintingContextWin::InitWithSettings(
     const PrintSettings& settings) {
   DCHECK(!in_print_job_);

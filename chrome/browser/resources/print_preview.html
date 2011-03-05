@@ -25,7 +25,7 @@
   <section>
     <h3>Pages</h3>
     <div>
-      <input id="pages" type="textbox"></input>
+      <input id="pages" type="text"></input>
       <label>
         <input id="all-pages" type="checkbox">
         <span i18n-content="optionAllPages"></span>
@@ -42,7 +42,7 @@
   <section>
     <h3>Copies</h3>
     <div>
-      <input id="copies" type="textbox"></input>
+      <input id="copies" type="text" value="1"></input>
       <div>
         <label>
           <input id="collate" type="checkbox">
@@ -56,8 +56,8 @@
     <h3>Layout</h3>
     <div>
       <select id="layout">
-        <option i18n-content="optionPortrait"></option>
-        <option i18n-content="optionLandscape"></option>
+        <option value="0" i18n-content="optionPortrait"></option>
+        <option value="1" i18n-content="optionLandscape"></option>
       </select>
     </div>
   </section>
@@ -66,8 +66,8 @@
     <h3>Color</h3>
     <div>
       <select id="color">
-        <option i18n-content="optionColor"></option>
-        <option i18n-content="optionBw"></option>
+        <option value="0" i18n-content="optionBw"></option>
+        <option value="1" i18n-content="optionColor"></option>
       </select>
     </div>
   </section>
@@ -79,8 +79,5 @@
   <p id="no-plugin" class="hidden" i18n-content="noPlugin"></p>
 </div>
 
-<script>
-console.log('in bottom script');
-</script>
 </body>
 </html>

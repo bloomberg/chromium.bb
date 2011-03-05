@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -46,6 +46,10 @@ class PrintingContext {
   // Selects the user's default printer and format. Updates the context with the
   // default device settings.
   virtual Result UseDefaultSettings() = 0;
+
+  // Update print settings. As of now we are updating the page range settings.
+  // In the future, update other print job settings.
+  virtual Result UpdatePrintSettings(const PageRanges& ranges) = 0;
 
   // Initializes with predefined settings.
   virtual Result InitWithSettings(const PrintSettings& settings) = 0;

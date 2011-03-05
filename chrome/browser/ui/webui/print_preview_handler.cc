@@ -4,10 +4,11 @@
 
 #include "chrome/browser/ui/webui/print_preview_handler.h"
 
+#include "base/json/json_reader.h"
 #include "base/threading/thread.h"
 #include "base/values.h"
-#include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/browser_thread.h"
+#include "content/browser/renderer_host/render_view_host.h"
 #include "printing/backend/print_backend.h"
 
 class EnumeratePrintersTaskProxy
@@ -79,8 +80,29 @@ void PrintPreviewHandler::HandleGetPrinters(const ListValue*) {
                         &EnumeratePrintersTaskProxy::EnumeratePrinters));
 }
 
-void PrintPreviewHandler::HandlePrint(const ListValue*) {
-  web_ui_->GetRenderViewHost()->PrintForPrintPreview();
+void PrintPreviewHandler::HandlePrint(const ListValue* args) {
+  std::string json_str;
+  if (!args->GetString(0, &json_str)) {
+    NOTREACHED() << "Could not read JSON argument";
+    return;
+  }
+
+  if (json_str.empty()) {
+    NOTREACHED() << "Empty print job settings";
+    return;
+  }
+  scoped_ptr<DictionaryValue> settings(static_cast<DictionaryValue*>(
+      base::JSONReader::Read(json_str, false)));
+  if (!settings.get() || !settings->IsType(Value::TYPE_DICTIONARY)) {
+    NOTREACHED() << "Print job settings must be a dictionary.";
+    return;
+  }
+
+  if (settings->empty()) {
+    NOTREACHED() << "Print job settings dictionary is empty";
+    return;
+  }
+  web_ui_->GetRenderViewHost()->PrintForPrintPreview(*settings);
 }
 
 void PrintPreviewHandler::SendPrinterList(const ListValue& printers) {

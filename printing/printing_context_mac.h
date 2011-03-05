@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -28,6 +28,7 @@ class PrintingContextMac : public PrintingContext {
                                   bool has_selection,
                                   PrintSettingsCallback* callback);
   virtual Result UseDefaultSettings();
+  virtual Result UpdatePrintSettings(const PageRanges& ranges);
   virtual Result InitWithSettings(const PrintSettings& settings);
   virtual Result NewDocument(const string16& document_name);
   virtual Result NewPage();

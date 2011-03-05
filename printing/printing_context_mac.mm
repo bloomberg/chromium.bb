@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -76,6 +76,19 @@ PrintingContext::Result PrintingContextMac::UseDefaultSettings() {
   DCHECK(!in_print_job_);
 
   ParsePrintInfo([NSPrintInfo sharedPrintInfo]);
+
+  return OK;
+}
+
+PrintingContext::Result PrintingContextMac::UpdatePrintSettings(
+    const PageRanges& ranges) {
+  DCHECK(!in_print_job_);
+
+  // TODO (kmadhusu): Update other print job settings such as number of copies,
+  // collate, etc.,
+
+  // Update the print range information.
+  settings_.ranges = ranges;
 
   return OK;
 }

@@ -99,6 +99,8 @@ bool PrintingMessageFilter::OnMessageReceived(const IPC::Message& message,
     IPC_MESSAGE_HANDLER_DELAY_REPLY(ViewHostMsg_GetDefaultPrintSettings,
                                     OnGetDefaultPrintSettings)
     IPC_MESSAGE_HANDLER_DELAY_REPLY(ViewHostMsg_ScriptedPrint, OnScriptedPrint)
+    IPC_MESSAGE_HANDLER_DELAY_REPLY(ViewHostMsg_UpdatePrintSettings,
+                                    OnUpdatePrintSettings)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
@@ -263,3 +265,43 @@ void PrintingMessageFilter::OnScriptedPrintReply(
     printer_query->StopWorker();
   }
 }
+
+void PrintingMessageFilter::OnUpdatePrintSettings(
+    int document_cookie, const DictionaryValue& job_settings,
+    IPC::Message* reply_msg) {
+  scoped_refptr<printing::PrinterQuery> printer_query;
+  print_job_manager_->PopPrinterQuery(document_cookie, &printer_query);
+  if (printer_query.get()) {
+    CancelableTask* task = NewRunnableMethod(
+        this,
+        &PrintingMessageFilter::OnUpdatePrintSettingsReply,
+        printer_query,
+        reply_msg);
+    printer_query->SetSettings(job_settings, task);
+  }
+}
+
+void PrintingMessageFilter::OnUpdatePrintSettingsReply(
+    scoped_refptr<printing::PrinterQuery> printer_query,
+    IPC::Message* reply_msg) {
+  ViewMsg_Print_Params params;
+  if (!printer_query.get() ||
+      printer_query->last_status() != printing::PrintingContext::OK) {
+    memset(&params, 0, sizeof(params));
+  } else {
+    RenderParamsFromPrintSettings(printer_query->settings(), &params);
+    params.document_cookie = printer_query->cookie();
+  }
+  ViewHostMsg_UpdatePrintSettings::WriteReplyParams(reply_msg, params);
+  Send(reply_msg);
+  // If printing was enabled.
+  if (printer_query.get()) {
+    // If user hasn't cancelled.
+    if (printer_query->cookie() && printer_query->settings().dpi()) {
+      print_job_manager_->QueuePrinterQuery(printer_query.get());
+    } else {
+      printer_query->StopWorker();
+    }
+  }
+}
+

@@ -5,6 +5,7 @@
 #include "chrome/browser/printing/print_job_worker.h"
 
 #include "base/message_loop.h"
+#include "base/values.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/printing/print_job.h"
 #include "chrome/common/notification_service.h"
@@ -96,6 +97,41 @@ void PrintJobWorker::GetSettings(bool ask_user_for_settings,
     BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
         NewRunnableMethod(this, &PrintJobWorker::UseDefaultSettings));
   }
+}
+
+void PrintJobWorker::SetSettings(const DictionaryValue* const new_settings) {
+  DCHECK_EQ(message_loop(), MessageLoop::current());
+
+  BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
+      NewRunnableMethod(this, &PrintJobWorker::UpdatePrintSettings,
+                        new_settings));
+}
+
+void PrintJobWorker::UpdatePrintSettings(
+    const DictionaryValue* const new_settings) {
+  // Create new PageRanges based on |new_settings|.
+  PageRanges new_ranges;
+  ListValue* page_range_array;
+  if (new_settings->GetList("pageRange", &page_range_array)) {
+    for (size_t index = 0; index < page_range_array->GetSize(); ++index) {
+      DictionaryValue* dict;
+      if (page_range_array->GetDictionary(index, &dict)) {
+        PageRange range;
+        if (dict->GetInteger("from", &range.from) &&
+            dict->GetInteger("to", &range.to)) {
+          // Page numbers are 0-based.
+          range.from--;
+          range.to--;
+          new_ranges.push_back(range);
+        }
+      }
+    }
+  }
+  // We don't update any other print job settings now, so delete |new_settings|.
+  delete new_settings;
+  PrintingContext::Result result =
+      printing_context_->UpdatePrintSettings(new_ranges);
+  GetSettingsDone(result);
 }
 
 void PrintJobWorker::GetSettingsDone(PrintingContext::Result result) {

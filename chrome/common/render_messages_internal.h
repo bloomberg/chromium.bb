@@ -131,7 +131,8 @@ IPC_MESSAGE_ROUTED0(ViewMsg_PrintNodeUnderContextMenu)
 
 // Tells the renderer to print the print preview tab's PDF plugin without
 // showing the print dialog.
-IPC_MESSAGE_ROUTED0(ViewMsg_PrintForPrintPreview)
+IPC_MESSAGE_ROUTED1(ViewMsg_PrintForPrintPreview,
+                    DictionaryValue /* settings*/)
 
 // Tells the render view to close.
 IPC_MESSAGE_ROUTED0(ViewMsg_Close)
@@ -1712,6 +1713,13 @@ IPC_MESSAGE_ROUTED1(ViewHostMsg_DidPrintPage,
 // The renderer wants to know the default print settings.
 IPC_SYNC_MESSAGE_ROUTED0_1(ViewHostMsg_GetDefaultPrintSettings,
                            ViewMsg_Print_Params /* default_settings */)
+
+// The renderer wants to update the current print settings with new
+// |job_settings|.
+IPC_SYNC_MESSAGE_ROUTED2_1(ViewHostMsg_UpdatePrintSettings,
+                           int /* document_cookie */,
+                           DictionaryValue /* job_settings */,
+                           ViewMsg_Print_Params /* current_settings */)
 
 // It's the renderer that controls the printing process when it is generated
 // by javascript. This step is about showing UI to the user to select the

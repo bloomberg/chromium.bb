@@ -28,6 +28,7 @@
 #include "webkit/glue/window_open_disposition.h"
 
 class ChildProcessSecurityPolicy;
+class DictionaryValue;
 class FilePath;
 class GURL;
 class ListValue;
@@ -328,8 +329,9 @@ class RenderViewHost : public RenderWidgetHost {
   // Prints the node that's under the context menu.
   void PrintNodeUnderContextMenu();
 
-  // Triggers printing of the preview PDF.
-  void PrintForPrintPreview();
+  // Triggers printing of the preview PDF. |job_settings| dictionary contains
+  // new print job settings information.
+  void PrintForPrintPreview(const DictionaryValue& job_settings);
 
   // Copies the image at the specified point.
   void CopyImageAt(int x, int y);

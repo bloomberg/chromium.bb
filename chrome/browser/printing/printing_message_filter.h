@@ -12,6 +12,7 @@
 #include "base/shared_memory.h"
 #endif
 
+class DictionaryValue;
 struct ViewHostMsg_ScriptedPrint_Params;
 
 namespace printing {
@@ -64,6 +65,13 @@ class PrintingMessageFilter : public BrowserMessageFilter {
   void OnScriptedPrintReply(
       scoped_refptr<printing::PrinterQuery> printer_query,
       int routing_id,
+      IPC::Message* reply_msg);
+
+  void OnUpdatePrintSettings(int document_cookie,
+                             const DictionaryValue& job_settings,
+                             IPC::Message* reply_msg);
+  void OnUpdatePrintSettingsReply(
+      scoped_refptr<printing::PrinterQuery> printer_query,
       IPC::Message* reply_msg);
 
   printing::PrintJobManager* print_job_manager_;

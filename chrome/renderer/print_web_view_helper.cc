@@ -139,7 +139,13 @@ bool PrintWebViewHelper::OnMessageReceived(const IPC::Message& message) {
   return handled;
 }
 
-void PrintWebViewHelper::OnPrintForPrintPreview() {
+void PrintWebViewHelper::OnPrintForPrintPreview(
+    const DictionaryValue& job_settings) {
+#if defined(OS_MACOSX)
+  // If still not finished with earlier print request simply ignore.
+  if (print_web_view_)
+    return;
+
   if (!render_view()->webview())
     return;
   WebFrame* main_frame = render_view()->webview()->mainFrame();
@@ -155,7 +161,20 @@ void PrintWebViewHelper::OnPrintForPrintPreview() {
     return;
   }
 
-  PrintNode(&element, false, false);
+  if (!InitPrintSettings(element.document().frame(), &element)) {
+    NOTREACHED() << "Failed to initialize print page settings";
+    return;
+  }
+
+  if (!UpdatePrintSettings(job_settings)) {
+    NOTREACHED() << "Failed to update print page settings";
+    DidFinishPrinting(true); // Release all printing resources.
+    return;
+  }
+
+  // Render Pages for printing.
+  RenderPagesForPrint(element.document().frame(), &element);
+#endif
 }
 
 void PrintWebViewHelper::OnPrint(bool is_preview) {
@@ -499,10 +518,23 @@ bool PrintWebViewHelper::InitPrintSettings(WebFrame* frame,
   return false;
 }
 
-bool PrintWebViewHelper::GetDefaultPrintSettings(
-    WebFrame* frame,
-    WebNode* node,
-    ViewMsg_Print_Params* params) {
+bool PrintWebViewHelper::UpdatePrintSettings(
+    const DictionaryValue& job_settings) {
+  ViewMsg_PrintPages_Params settings;
+  if (!render_view()->Send(new ViewHostMsg_UpdatePrintSettings(
+          render_view()->routing_id(),
+          print_pages_params_->params.document_cookie,
+          job_settings, &settings.params))) {
+    NOTREACHED();
+    return false;
+  }
+  print_pages_params_.reset(new ViewMsg_PrintPages_Params(settings));
+  return true;
+}
+
+bool PrintWebViewHelper::GetDefaultPrintSettings(WebFrame* frame,
+                                                 WebNode* node,
+                                                 ViewMsg_Print_Params* params) {
   if (!render_view()->Send(new ViewHostMsg_GetDefaultPrintSettings(
           render_view()->routing_id(), params))) {
     NOTREACHED();

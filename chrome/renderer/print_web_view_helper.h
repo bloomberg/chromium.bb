@@ -15,6 +15,8 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebViewClient.h"
 #include "ui/gfx/size.h"
 
+class DictionaryValue;
+
 namespace gfx {
 class Size;
 }
@@ -85,7 +87,11 @@ class PrintWebViewHelper : public RenderViewObserver ,
 
   // Message handlers.  Public for testing.
   void OnPrintingDone(int document_cookie, bool success);
-  void OnPrintForPrintPreview();
+
+  // Print the pages for print preview. Do not display the native print dialog
+  // for user settings. |job_settings| has new print job settings values.
+  void OnPrintForPrintPreview(const DictionaryValue& job_settings);
+
   void OnPrintPages();
   void OnPrintPreview();
   void OnPrintNodeUnderContextMenu();
@@ -152,6 +158,11 @@ class PrintWebViewHelper : public RenderViewObserver ,
   // Initialize print page settings with default settings.
   bool InitPrintSettings(WebKit::WebFrame* frame,
                          WebKit::WebNode* node);
+
+  // Update the current print settings with new |job_settings|. |job_settings|
+  // dictionary contains print job details such as printer name, number of
+  // copies, page range, etc.
+  bool UpdatePrintSettings(const DictionaryValue& job_settings);
 
   // Get the default printer settings.
   bool GetDefaultPrintSettings(WebKit::WebFrame* frame,
