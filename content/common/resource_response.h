@@ -4,8 +4,8 @@
 
 // See http://dev.chromium.org/developers/design-documents/multi-process-resource-loading
 
-#ifndef CHROME_COMMON_RESOURCE_RESPONSE_H_
-#define CHROME_COMMON_RESOURCE_RESPONSE_H_
+#ifndef CONTENT_COMMON_RESOURCE_RESPONSE_H_
+#define CONTENT_COMMON_RESOURCE_RESPONSE_H_
 #pragma once
 
 #include <string>
@@ -17,18 +17,12 @@
 
 // Parameters for a resource response header.
 struct ResourceResponseHead : webkit_glue::ResourceResponseInfo {
-  ResourceResponseHead();
-  ~ResourceResponseHead();
-
   // The response status.
   net::URLRequestStatus status;
 };
 
 // Parameters for a synchronous resource response.
 struct SyncLoadResult : ResourceResponseHead {
-  SyncLoadResult();
-  ~SyncLoadResult();
-
   // The final URL after any redirects.
   GURL final_url;
 
@@ -40,11 +34,8 @@ struct SyncLoadResult : ResourceResponseHead {
 struct ResourceResponse : public base::RefCounted<ResourceResponse> {
   ResourceResponseHead response_head;
 
-  ResourceResponse();
  private:
   friend class base::RefCounted<ResourceResponse>;
-
-  virtual ~ResourceResponse();
 };
 
-#endif  // CHROME_COMMON_RESOURCE_RESPONSE_H_
+#endif  // CONTENT_COMMON_RESOURCE_RESPONSE_H_

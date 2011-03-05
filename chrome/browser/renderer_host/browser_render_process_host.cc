@@ -91,9 +91,9 @@
 #include "content/browser/renderer_host/socket_stream_dispatcher_host.h"
 #include "content/browser/speech/speech_input_dispatcher_host.h"
 #include "content/browser/worker_host/worker_message_filter.h"
+#include "content/common/resource_messages.h"
 #include "grit/generated_resources.h"
 #include "ipc/ipc_logging.h"
-#include "ipc/ipc_message.h"
 #include "ipc/ipc_platform_file.h"
 #include "ipc/ipc_switches.h"
 #include "media/base/media_switches.h"
@@ -245,7 +245,7 @@ class RendererURLRequestContextOverride
   }
 
   virtual net::URLRequestContext* GetRequestContext(
-      const ViewHostMsg_Resource_Request& resource_request) {
+      const ResourceHostMsg_Request& resource_request) {
     URLRequestContextGetter* request_context = request_context_;
     // If the request has resource type of ResourceType::MEDIA, we use a request
     // context specific to media for handling it because these resources have

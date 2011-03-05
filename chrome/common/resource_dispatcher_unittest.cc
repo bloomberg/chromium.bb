@@ -12,7 +12,8 @@
 #include "chrome/common/render_messages.h"
 #include "chrome/common/render_messages_params.h"
 #include "chrome/common/resource_dispatcher.h"
-#include "chrome/common/resource_response.h"
+#include "content/common/resource_response.h"
+#include "content/common/resource_messages.h"
 #include "net/base/upload_data.h"
 #include "net/http/http_response_headers.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -99,8 +100,8 @@ class ResourceDispatcherTest : public testing::Test,
   void ProcessMessages() {
     while (!message_queue_.empty()) {
       int request_id;
-      ViewHostMsg_Resource_Request request;
-      ASSERT_TRUE(ViewHostMsg_RequestResource::Read(
+      ResourceHostMsg_Request request;
+      ASSERT_TRUE(ResourceHostMsg_RequestResource::Read(
           &message_queue_[0], &request_id, &request));
 
       // check values
@@ -130,7 +131,7 @@ class ResourceDispatcherTest : public testing::Test,
 
       // read the ack message.
       Tuple1<int> request_ack;
-      ASSERT_TRUE(ViewHostMsg_DataReceived_ACK::Read(
+      ASSERT_TRUE(ResourceHostMsg_DataReceived_ACK::Read(
           &message_queue_[0], &request_ack));
 
       ASSERT_EQ(request_ack.a, request_id);
@@ -230,7 +231,7 @@ class DeferredResourceLoadingTest : public ResourceDispatcherTest,
     response_head.status.set_status(net::URLRequestStatus::SUCCESS);
 
     IPC::Message* response_message =
-        new ViewMsg_Resource_ReceivedResponse(0, 0, response_head);
+        new ResourceMsg_ReceivedResponse(0, 0, response_head);
 
     dispatcher_->OnMessageReceived(*response_message);
 
@@ -243,7 +244,7 @@ class DeferredResourceLoadingTest : public ResourceDispatcherTest,
                                               &duplicated_handle));
 
     response_message =
-        new ViewMsg_Resource_DataReceived(0, 0, duplicated_handle, 100);
+        new ResourceMsg_DataReceived(0, 0, duplicated_handle, 100);
 
     dispatcher_->OnMessageReceived(*response_message);
 

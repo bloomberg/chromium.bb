@@ -19,10 +19,12 @@
 // Set up so next include will generate write methods.
 #undef IPC_STRUCT_TRAITS_BEGIN
 #undef IPC_STRUCT_TRAITS_MEMBER
+#undef IPC_STRUCT_TRAITS_PARENT
 #undef IPC_STRUCT_TRAITS_END
 #define IPC_STRUCT_TRAITS_BEGIN(struct_name) \
   void ParamTraits<struct_name>::Write(Message* m, const param_type& p) {
 #define IPC_STRUCT_TRAITS_MEMBER(name) WriteParam(m, p.name);
+#define IPC_STRUCT_TRAITS_PARENT(type) ParamTraits<type>::Write(m, p);
 #define IPC_STRUCT_TRAITS_END() }
 
 #undef IPC_ENUM_TRAITS

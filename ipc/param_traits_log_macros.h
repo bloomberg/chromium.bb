@@ -21,6 +21,7 @@
 // Set up so next include will generate log methods.
 #undef IPC_STRUCT_TRAITS_BEGIN
 #undef IPC_STRUCT_TRAITS_MEMBER
+#undef IPC_STRUCT_TRAITS_PARENT
 #undef IPC_STRUCT_TRAITS_END
 #define IPC_STRUCT_TRAITS_BEGIN(struct_name) \
   void ParamTraits<struct_name>::Log(const param_type& p, std::string* l) { \
@@ -31,6 +32,11 @@
       l->append(", "); \
     LogParam(p.name, l); \
     needs_comma = true;
+#define IPC_STRUCT_TRAITS_PARENT(type) \
+    if (needs_comma) \
+      l->append(", "); \
+      ParamTraits<type>::Log(p, l); \
+      needs_comma = true;
 #define IPC_STRUCT_TRAITS_END() \
     l->append(")"); \
   }

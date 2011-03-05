@@ -13,12 +13,13 @@
 #include "chrome/common/main_function_params.h"
 #include "chrome/common/render_messages.h"
 #include "chrome/common/render_messages_params.h"
-#include "chrome/common/resource_response.h"
 #include "chrome/common/sandbox_init_wrapper.h"
 #include "chrome/renderer/mock_render_process.h"
 #include "chrome/renderer/render_thread.h"
 #include "chrome/renderer/render_view.h"
 #include "chrome/renderer/renderer_main_platform_delegate.h"
+#include "content/common/resource_messages.h"
+#include "content/common/resource_response.h"
 #include "googleurl/src/gurl.h"
 #include "net/base/upload_data.h"
 #include "net/http/http_response_headers.h"
@@ -42,7 +43,7 @@ bool RenderViewFakeResourcesTest::OnMessageReceived(
   IPC_BEGIN_MESSAGE_MAP(RenderViewFakeResourcesTest, message)
     IPC_MESSAGE_HANDLER(ViewHostMsg_RenderViewReady, OnRenderViewReady)
     IPC_MESSAGE_HANDLER(ViewHostMsg_DidStopLoading, OnDidStopLoading)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_RequestResource, OnRequestResource)
+    IPC_MESSAGE_HANDLER(ResourceHostMsg_RequestResource, OnRequestResource)
   IPC_END_MESSAGE_MAP()
   return true;
 }
@@ -139,7 +140,7 @@ void RenderViewFakeResourcesTest::OnDidStopLoading() {
 void RenderViewFakeResourcesTest::OnRequestResource(
     const IPC::Message& message,
     int request_id,
-    const ViewHostMsg_Resource_Request& request_data) {
+    const ResourceHostMsg_Request& request_data) {
   std::string headers, body;
   std::map<std::string, std::string>::const_iterator it =
       responses_.find(request_data.url.spec());
@@ -154,7 +155,7 @@ void RenderViewFakeResourcesTest::OnRequestResource(
   ResourceResponseHead response_head;
   response_head.headers = new net::HttpResponseHeaders(headers);
   response_head.mime_type = "text/html";
-  ASSERT_TRUE(channel_->Send(new ViewMsg_Resource_ReceivedResponse(
+  ASSERT_TRUE(channel_->Send(new ResourceMsg_ReceivedResponse(
       message.routing_id(), request_id, response_head)));
 
   base::SharedMemory shared_memory;
@@ -164,10 +165,10 @@ void RenderViewFakeResourcesTest::OnRequestResource(
   base::SharedMemoryHandle handle;
   ASSERT_TRUE(shared_memory.GiveToProcess(base::Process::Current().handle(),
                                           &handle));
-  ASSERT_TRUE(channel_->Send(new ViewMsg_Resource_DataReceived(
+  ASSERT_TRUE(channel_->Send(new ResourceMsg_DataReceived(
       message.routing_id(), request_id, handle, body.size())));
 
-  ASSERT_TRUE(channel_->Send(new ViewMsg_Resource_RequestComplete(
+  ASSERT_TRUE(channel_->Send(new ResourceMsg_RequestComplete(
       message.routing_id(),
       request_id,
       net::URLRequestStatus(),

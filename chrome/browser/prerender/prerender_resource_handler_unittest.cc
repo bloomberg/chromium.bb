@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 #include "chrome/browser/prerender/prerender_resource_handler.h"
-#include "chrome/common/resource_response.h"
+#include "content/common/resource_response.h"
 #include "net/http/http_response_headers.h"
 #include "net/url_request/url_request_test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"

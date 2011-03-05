@@ -6,7 +6,7 @@
 
 #include "base/string_util.h"
 #include "chrome/browser/io_thread.h"
-#include "chrome/common/resource_response.h"
+#include "content/common/resource_response.h"
 #include "net/base/load_flags.h"
 #include "net/http/http_net_log_params.h"
 #include "net/http/http_response_headers.h"

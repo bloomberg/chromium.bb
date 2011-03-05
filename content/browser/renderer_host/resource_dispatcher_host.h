@@ -45,7 +45,7 @@ class UserScriptListener;
 class WebKitThread;
 struct DownloadSaveInfo;
 struct GlobalRequestID;
-struct ViewHostMsg_Resource_Request;
+struct ResourceHostMsg_Request;
 struct ViewMsg_ClosePage_Params;
 
 namespace net {
@@ -384,12 +384,12 @@ class ResourceDispatcherHost : public net::URLRequest::Delegate {
 
   void OnRequestResource(const IPC::Message& msg,
                          int request_id,
-                         const ViewHostMsg_Resource_Request& request_data);
+                         const ResourceHostMsg_Request& request_data);
   void OnSyncLoad(int request_id,
-                  const ViewHostMsg_Resource_Request& request_data,
+                  const ResourceHostMsg_Request& request_data,
                   IPC::Message* sync_result);
   void BeginRequest(int request_id,
-                    const ViewHostMsg_Resource_Request& request_data,
+                    const ResourceHostMsg_Request& request_data,
                     IPC::Message* sync_result,  // only valid for sync
                     int route_id);  // only valid for async
   void OnDataReceivedACK(int request_id);

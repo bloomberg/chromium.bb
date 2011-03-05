@@ -27,6 +27,8 @@
         'common/p2p_messages.h',
         'common/p2p_sockets.cc',
         'common/p2p_sockets.h',
+        'common/resource_messages.h',
+        'common/resource_response.h',
         'common/socket_stream.h',
         'common/socket_stream_messages.h',
       ],

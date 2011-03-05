@@ -19,7 +19,6 @@
 #include "chrome/common/content_settings.h"
 #include "chrome/common/page_zoom.h"
 #include "ipc/ipc_message_utils.h"
-#include "net/url_request/url_request_status.h"
 #include "printing/native_metafile.h"
 // !!! WARNING: DO NOT ADD NEW WEBKIT DEPENDENCIES !!!
 //
@@ -27,7 +26,7 @@
 // 'third_party/WebKit/'. Chrome Frame and NACL build parts of base/ and
 // chrome/common/ for a mini-library that doesn't depend on webkit.
 //
-// TODO(erg): The following two headers are historical and only work because
+// TODO(erg): The following headers are historical and only work because
 // their definitions are inlined, which also needs to be fixed.
 #include "ui/gfx/native_widget_types.h"
 #include "webkit/glue/webcursor.h"
@@ -47,12 +46,6 @@ class Point;
 class Rect;
 class Size;
 }  // namespace gfx
-
-namespace net {
-class HostPortPair;
-class UploadData;
-class URLRequestStatus;
-}
 
 namespace printing {
 struct PageRange;
@@ -252,33 +245,6 @@ struct ParamTraits<TransportDIB::Id> {
   }
 };
 #endif
-
-// Traits for HostPortPair
-template<>
-struct ParamTraits<net::HostPortPair> {
-  typedef net::HostPortPair param_type;
-  static void Write(Message* m, const param_type& p);
-  static bool Read(const Message* m, void** iter, param_type* r);
-  static void Log(const param_type& p, std::string* l);
-};
-
-// Traits for URLRequestStatus
-template <>
-struct ParamTraits<net::URLRequestStatus> {
-  typedef net::URLRequestStatus param_type;
-  static void Write(Message* m, const param_type& p);
-  static bool Read(const Message* m, void** iter, param_type* r);
-  static void Log(const param_type& p, std::string* l);
-};
-
-// Traits for net::UploadData.
-template <>
-struct ParamTraits<scoped_refptr<net::UploadData> > {
-  typedef scoped_refptr<net::UploadData> param_type;
-  static void Write(Message* m, const param_type& p);
-  static bool Read(const Message* m, void** iter, param_type* r);
-  static void Log(const param_type& p, std::string* l);
-};
 
 template<>
 struct ParamTraits<ThumbnailScore> {

@@ -61,6 +61,7 @@
 #include "content/browser/renderer_host/resource_request_details.h"
 #include "content/browser/renderer_host/sync_resource_handler.h"
 #include "content/browser/worker_host/worker_service.h"
+#include "content/common/resource_messages.h"
 #include "net/base/auth.h"
 #include "net/base/cert_status_flags.h"
 #include "net/base/cookie_monster.h"
@@ -126,7 +127,7 @@ const int kMaxOutstandingRequestsCostPerProcess = 26214400;
 // if the renderer is attempting to upload an unauthorized file.
 bool ShouldServiceRequest(ChildProcessInfo::ProcessType process_type,
                           int child_id,
-                          const ViewHostMsg_Resource_Request& request_data)  {
+                          const ResourceHostMsg_Request& request_data)  {
   if (process_type == ChildProcessInfo::PLUGIN_PROCESS)
     return true;
 
@@ -312,15 +313,15 @@ bool ResourceDispatcherHost::OnMessageReceived(const IPC::Message& message,
   filter_ = filter;
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP_EX(ResourceDispatcherHost, message, *message_was_ok)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_RequestResource, OnRequestResource)
-    IPC_MESSAGE_HANDLER_DELAY_REPLY(ViewHostMsg_SyncLoad, OnSyncLoad)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_ReleaseDownloadedFile,
+    IPC_MESSAGE_HANDLER(ResourceHostMsg_RequestResource, OnRequestResource)
+    IPC_MESSAGE_HANDLER_DELAY_REPLY(ResourceHostMsg_SyncLoad, OnSyncLoad)
+    IPC_MESSAGE_HANDLER(ResourceHostMsg_ReleaseDownloadedFile,
                         OnReleaseDownloadedFile)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_DataReceived_ACK, OnDataReceivedACK)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_DataDownloaded_ACK, OnDataDownloadedACK)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_UploadProgress_ACK, OnUploadProgressACK)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_CancelRequest, OnCancelRequest)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_FollowRedirect, OnFollowRedirect)
+    IPC_MESSAGE_HANDLER(ResourceHostMsg_DataReceived_ACK, OnDataReceivedACK)
+    IPC_MESSAGE_HANDLER(ResourceHostMsg_DataDownloaded_ACK, OnDataDownloadedACK)
+    IPC_MESSAGE_HANDLER(ResourceHostMsg_UploadProgress_ACK, OnUploadProgressACK)
+    IPC_MESSAGE_HANDLER(ResourceHostMsg_CancelRequest, OnCancelRequest)
+    IPC_MESSAGE_HANDLER(ResourceHostMsg_FollowRedirect, OnFollowRedirect)
     IPC_MESSAGE_HANDLER(ViewHostMsg_ClosePage_ACK, OnClosePageACK)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP_EX()
@@ -332,7 +333,7 @@ bool ResourceDispatcherHost::OnMessageReceived(const IPC::Message& message,
 void ResourceDispatcherHost::OnRequestResource(
     const IPC::Message& message,
     int request_id,
-    const ViewHostMsg_Resource_Request& request_data) {
+    const ResourceHostMsg_Request& request_data) {
   BeginRequest(request_id, request_data, NULL, message.routing_id());
 }
 
@@ -346,7 +347,7 @@ void ResourceDispatcherHost::OnRequestResource(
 // a normal asynchronous set of response messages will be generated.
 void ResourceDispatcherHost::OnSyncLoad(
     int request_id,
-    const ViewHostMsg_Resource_Request& request_data,
+    const ResourceHostMsg_Request& request_data,
     IPC::Message* sync_result) {
   BeginRequest(request_id, request_data, sync_result,
                sync_result->routing_id());
@@ -354,7 +355,7 @@ void ResourceDispatcherHost::OnSyncLoad(
 
 void ResourceDispatcherHost::BeginRequest(
     int request_id,
-    const ViewHostMsg_Resource_Request& request_data,
+    const ResourceHostMsg_Request& request_data,
     IPC::Message* sync_result,  // only valid for sync
     int route_id) {
   ChildProcessInfo::ProcessType process_type = filter_->process_type();
@@ -376,11 +377,11 @@ void ResourceDispatcherHost::BeginRequest(
     if (sync_result) {
       SyncLoadResult result;
       result.status = status;
-      ViewHostMsg_SyncLoad::WriteReplyParams(sync_result, result);
+      ResourceHostMsg_SyncLoad::WriteReplyParams(sync_result, result);
       filter_->Send(sync_result);
     } else {
       // Tell the renderer that this request was disallowed.
-      filter_->Send(new ViewMsg_Resource_RequestComplete(
+      filter_->Send(new ResourceMsg_RequestComplete(
           route_id,
           request_id,
           status,

@@ -38,13 +38,6 @@
 #include "chrome/common/url_constants.h"
 #include "chrome/common/web_database_observer_impl.h"
 #include "chrome/plugin/npobject_util.h"
-// TODO(port)
-#if defined(OS_WIN)
-#include "chrome/plugin/plugin_channel.h"
-#else
-#include "base/scoped_handle.h"
-#include "chrome/plugin/plugin_channel_base.h"
-#endif
 #include "chrome/renderer/automation/dom_automation_v8_extension.h"
 #include "chrome/renderer/cookie_message_filter.h"
 #include "chrome/renderer/devtools_agent_filter.h"
@@ -72,8 +65,8 @@
 #include "chrome/renderer/searchbox_extension.h"
 #include "chrome/renderer/spellchecker/spellcheck.h"
 #include "chrome/renderer/user_script_slave.h"
+#include "content/common/resource_messages.h"
 #include "ipc/ipc_channel_handle.h"
-#include "ipc/ipc_message.h"
 #include "ipc/ipc_platform_file.h"
 #include "net/base/net_util.h"
 #include "third_party/sqlite/sqlite3.h"
@@ -97,6 +90,14 @@
 #include "webkit/extensions/v8/playback_extension.h"
 #include "webkit/glue/webkit_glue.h"
 #include "v8/include/v8.h"
+
+// TODO(port)
+#if defined(OS_WIN)
+#include "chrome/plugin/plugin_channel.h"
+#else
+#include "base/scoped_handle.h"
+#include "chrome/plugin/plugin_channel_base.h"
+#endif
 
 #if defined(OS_WIN)
 #include <windows.h>
@@ -354,7 +355,7 @@ bool RenderThread::Send(IPC::Message* msg) {
         case ViewHostMsg_GetRawCookies::ID:
         case ViewHostMsg_CookiesEnabled::ID:
         case DOMStorageHostMsg_SetItem::ID:
-        case ViewHostMsg_SyncLoad::ID:
+        case ResourceHostMsg_SyncLoad::ID:
         case DatabaseHostMsg_Allow::ID:
           may_show_cookie_prompt = true;
           pumping_events = true;

@@ -11,7 +11,7 @@
 
 class ChromeURLRequestContext;
 class ResourceDispatcherHost;
-struct ViewHostMsg_Resource_Request;
+struct ResourceHostMsg_Request;
 
 namespace net {
 class URLRequestContext;
@@ -31,7 +31,7 @@ class ResourceMessageFilter : public BrowserMessageFilter {
     URLRequestContextOverride() {}
 
     virtual net::URLRequestContext* GetRequestContext(
-        const ViewHostMsg_Resource_Request& resource_request) = 0;
+        const ResourceHostMsg_Request& resource_request) = 0;
 
    protected:
     friend class base::RefCountedThreadSafe<URLRequestContextOverride>;
@@ -51,7 +51,7 @@ class ResourceMessageFilter : public BrowserMessageFilter {
 
   // Returns the net::URLRequestContext for the given request.
   ChromeURLRequestContext* GetURLRequestContext(
-      const ViewHostMsg_Resource_Request& resource_request);
+      const ResourceHostMsg_Request& resource_request);
 
   void set_url_request_context_override(URLRequestContextOverride* u) {
     url_request_context_override_ = u;

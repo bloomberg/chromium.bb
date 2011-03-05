@@ -11,6 +11,7 @@
 #include "content/browser/renderer_host/global_request_id.h"
 #include "content/browser/renderer_host/resource_dispatcher_host.h"
 #include "content/browser/renderer_host/resource_message_filter.h"
+#include "content/common/resource_messages.h"
 #include "net/base/io_buffer.h"
 #include "net/http/http_response_headers.h"
 
@@ -102,7 +103,7 @@ bool SyncResourceHandler::OnResponseCompleted(
     const std::string& security_info) {
   result_.status = status;
 
-  ViewHostMsg_SyncLoad::WriteReplyParams(result_message_, result_);
+  ResourceHostMsg_SyncLoad::WriteReplyParams(result_message_, result_);
   filter_->Send(result_message_);
   result_message_ = NULL;
   return true;

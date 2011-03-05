@@ -71,6 +71,7 @@ enum IPCMessageStart {
   SafeBrowsingMsgStart,
   P2PMsgStart,
   SocketStreamMsgStart,
+  ResourceMsgStart,
 };
 
 class DictionaryValue;

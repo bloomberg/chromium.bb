@@ -59,21 +59,6 @@ ViewMsg_ClosePage_Params::ViewMsg_ClosePage_Params()
 ViewMsg_ClosePage_Params::~ViewMsg_ClosePage_Params() {
 }
 
-ViewHostMsg_Resource_Request::ViewHostMsg_Resource_Request()
-    : load_flags(0),
-      origin_pid(0),
-      resource_type(ResourceType::MAIN_FRAME),
-      request_context(0),
-      appcache_host_id(0),
-      download_to_file(false),
-      has_user_gesture(false),
-      host_renderer_id(0),
-      host_render_view_id(0) {
-}
-
-ViewHostMsg_Resource_Request::~ViewHostMsg_Resource_Request() {
-}
-
 ViewMsg_Print_Params::ViewMsg_Print_Params()
     : margin_top(0),
       margin_left(0),
@@ -387,46 +372,6 @@ struct ParamTraits<ViewMsg_Navigate_Params::NavigationType> {
         break;
     }
     LogParam(event, l);
-  }
-};
-
-template <>
-struct ParamTraits<ResourceType::Type> {
-  typedef ResourceType::Type param_type;
-  static void Write(Message* m, const param_type& p) {
-    m->WriteInt(p);
-  }
-  static bool Read(const Message* m, void** iter, param_type* p) {
-    int type;
-    if (!m->ReadInt(iter, &type) || !ResourceType::ValidType(type))
-      return false;
-    *p = ResourceType::FromInt(type);
-    return true;
-  }
-  static void Log(const param_type& p, std::string* l) {
-    std::string type;
-    switch (p) {
-      case ResourceType::MAIN_FRAME:
-        type = "MAIN_FRAME";
-        break;
-      case ResourceType::SUB_FRAME:
-        type = "SUB_FRAME";
-        break;
-      case ResourceType::SUB_RESOURCE:
-        type = "SUB_RESOURCE";
-        break;
-      case ResourceType::OBJECT:
-        type = "OBJECT";
-        break;
-      case ResourceType::MEDIA:
-        type = "MEDIA";
-        break;
-      default:
-        type = "UNKNOWN";
-        break;
-    }
-
-    LogParam(type, l);
   }
 };
 
@@ -934,75 +879,6 @@ void ParamTraits<ViewMsg_ClosePage_Params>::Log(const param_type& p,
   LogParam(p.new_render_process_host_id, l);
   l->append(", ");
   LogParam(p.new_request_id, l);
-  l->append(")");
-}
-
-void ParamTraits<ViewHostMsg_Resource_Request>::Write(Message* m,
-                                                      const param_type& p) {
-  WriteParam(m, p.method);
-  WriteParam(m, p.url);
-  WriteParam(m, p.first_party_for_cookies);
-  WriteParam(m, p.referrer);
-  WriteParam(m, p.headers);
-  WriteParam(m, p.load_flags);
-  WriteParam(m, p.origin_pid);
-  WriteParam(m, p.resource_type);
-  WriteParam(m, p.request_context);
-  WriteParam(m, p.appcache_host_id);
-  WriteParam(m, p.upload_data);
-  WriteParam(m, p.download_to_file);
-  WriteParam(m, p.has_user_gesture);
-  WriteParam(m, p.host_renderer_id);
-  WriteParam(m, p.host_render_view_id);
-}
-
-bool ParamTraits<ViewHostMsg_Resource_Request>::Read(const Message* m,
-                                                     void** iter,
-                                                     param_type* r) {
-  return
-      ReadParam(m, iter, &r->method) &&
-      ReadParam(m, iter, &r->url) &&
-      ReadParam(m, iter, &r->first_party_for_cookies) &&
-      ReadParam(m, iter, &r->referrer) &&
-      ReadParam(m, iter, &r->headers) &&
-      ReadParam(m, iter, &r->load_flags) &&
-      ReadParam(m, iter, &r->origin_pid) &&
-      ReadParam(m, iter, &r->resource_type) &&
-      ReadParam(m, iter, &r->request_context) &&
-      ReadParam(m, iter, &r->appcache_host_id) &&
-      ReadParam(m, iter, &r->upload_data) &&
-      ReadParam(m, iter, &r->download_to_file) &&
-      ReadParam(m, iter, &r->has_user_gesture) &&
-      ReadParam(m, iter, &r->host_renderer_id) &&
-      ReadParam(m, iter, &r->host_render_view_id);
-}
-
-void ParamTraits<ViewHostMsg_Resource_Request>::Log(const param_type& p,
-                                                    std::string* l) {
-  l->append("(");
-  LogParam(p.method, l);
-  l->append(", ");
-  LogParam(p.url, l);
-  l->append(", ");
-  LogParam(p.referrer, l);
-  l->append(", ");
-  LogParam(p.load_flags, l);
-  l->append(", ");
-  LogParam(p.origin_pid, l);
-  l->append(", ");
-  LogParam(p.resource_type, l);
-  l->append(", ");
-  LogParam(p.request_context, l);
-  l->append(", ");
-  LogParam(p.appcache_host_id, l);
-  l->append(", ");
-  LogParam(p.download_to_file, l);
-  l->append(", ");
-  LogParam(p.has_user_gesture, l);
-  l->append(", ");
-  LogParam(p.host_renderer_id, l);
-  l->append(", ");
-  LogParam(p.host_render_view_id, l);
   l->append(")");
 }
 

@@ -130,9 +130,11 @@
 //
 // Externally-defined structs are registered with IPC_STRUCT_TRAITS_BEGIN(),
 // IPC_STRUCT_TRAITS_MEMBER(), and IPC_STRUCT_TRAITS_END() macros. These
-// cause registration of the types with message generation only.  Note that
-// IPC_STRUCT_TRAITS_MEMBER() is only permitted inside matching calls
-// to IPC_STRUCT_TRAITS_BEGIN() / IPC_STRUCT_TRAITS_END().
+// cause registration of the types with message generation only.
+// There's also IPC_STRUCT_TRAITS_PARENT, which is used to register a parent
+// class (whose own traits are already defined). Note that
+// IPC_STRUCT_TRAITS_MEMBER() and IPC_STRUCT_TRAITS_PARENT are only permitted
+// inside matching calls to IPC_STRUCT_TRAITS_BEGIN() / IPC_STRUCT_TRAITS_END().
 //
 // Enum types are registered with a single IPC_ENUM_TRAITS() macro.  There
 // is no need to enumerate each value to the IPC mechanism.

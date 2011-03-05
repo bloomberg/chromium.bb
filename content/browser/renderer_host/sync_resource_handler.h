@@ -9,7 +9,7 @@
 #include <string>
 
 #include "content/browser/renderer_host/resource_handler.h"
-#include "chrome/common/resource_response.h"
+#include "content/common/resource_response.h"
 
 class ResourceDispatcherHost;
 class ResourceMessageFilter;

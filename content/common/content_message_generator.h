@@ -5,4 +5,5 @@
 // Multiply-included file, hence no include guard.
 
 #include "content/common/p2p_messages.h"
+#include "content/common/resource_messages.h"
 #include "content/common/socket_stream_messages.h"

@@ -14,11 +14,12 @@
 #include "chrome/browser/net/chrome_url_request_context.h"
 #include "chrome/browser/net/load_timing_observer.h"
 #include "chrome/common/render_messages.h"
-#include "chrome/common/resource_response.h"
 #include "content/browser/renderer_host/global_request_id.h"
 #include "content/browser/renderer_host/resource_dispatcher_host.h"
 #include "content/browser/renderer_host/resource_dispatcher_host_request_info.h"
 #include "content/browser/renderer_host/resource_message_filter.h"
+#include "content/common/resource_response.h"
+#include "content/common/resource_messages.h"
 #include "net/base/io_buffer.h"
 #include "net/base/load_flags.h"
 #include "net/base/net_log.h"
@@ -91,9 +92,8 @@ AsyncResourceHandler::~AsyncResourceHandler() {
 bool AsyncResourceHandler::OnUploadProgress(int request_id,
                                             uint64 position,
                                             uint64 size) {
-  return filter_->Send(new ViewMsg_Resource_UploadProgress(routing_id_,
-                                                           request_id,
-                                                           position, size));
+  return filter_->Send(new ResourceMsg_UploadProgress(routing_id_, request_id,
+                                                      position, size));
 }
 
 bool AsyncResourceHandler::OnRequestRedirected(int request_id,
@@ -105,7 +105,7 @@ bool AsyncResourceHandler::OnRequestRedirected(int request_id,
       GlobalRequestID(filter_->child_id(), request_id));
   LoadTimingObserver::PopulateTimingInfo(request, response);
   DevToolsNetLogObserver::PopulateResponseInfo(request, response);
-  return filter_->Send(new ViewMsg_Resource_ReceivedRedirect(
+  return filter_->Send(new ResourceMsg_ReceivedRedirect(
       routing_id_, request_id, new_url, response->response_head));
 }
 
@@ -137,14 +137,14 @@ bool AsyncResourceHandler::OnResponseStarted(int request_id,
     }
   }
 
-  filter_->Send(new ViewMsg_Resource_ReceivedResponse(
+  filter_->Send(new ResourceMsg_ReceivedResponse(
       routing_id_, request_id, response->response_head));
 
   if (request->response_info().metadata) {
     std::vector<char> copy(request->response_info().metadata->data(),
                            request->response_info().metadata->data() +
                            request->response_info().metadata->size());
-    filter_->Send(new ViewMsg_Resource_ReceivedCachedMetadata(
+    filter_->Send(new ResourceMsg_ReceivedCachedMetadata(
         routing_id_, request_id, copy));
   }
 
@@ -215,7 +215,7 @@ bool AsyncResourceHandler::OnReadCompleted(int request_id, int* bytes_read) {
   // We just unmapped the memory.
   read_buffer_ = NULL;
 
-  filter_->Send(new ViewMsg_Resource_DataReceived(
+  filter_->Send(new ResourceMsg_DataReceived(
       routing_id_, request_id, handle, *bytes_read));
 
   return true;
@@ -223,7 +223,7 @@ bool AsyncResourceHandler::OnReadCompleted(int request_id, int* bytes_read) {
 
 void AsyncResourceHandler::OnDataDownloaded(
     int request_id, int bytes_downloaded) {
-  filter_->Send(new ViewMsg_Resource_DataDownloaded(
+  filter_->Send(new ResourceMsg_DataDownloaded(
       routing_id_, request_id, bytes_downloaded));
 }
 
@@ -232,11 +232,11 @@ bool AsyncResourceHandler::OnResponseCompleted(
     const net::URLRequestStatus& status,
     const std::string& security_info) {
   Time completion_time = Time::Now();
-  filter_->Send(new ViewMsg_Resource_RequestComplete(routing_id_,
-                                                     request_id,
-                                                     status,
-                                                     security_info,
-                                                     completion_time));
+  filter_->Send(new ResourceMsg_RequestComplete(routing_id_,
+                                                request_id,
+                                                status,
+                                                security_info,
+                                                completion_time));
 
   // If we still have a read buffer, then see about caching it for later...
   // Note that we have to make sure the buffer is not still being used, so we

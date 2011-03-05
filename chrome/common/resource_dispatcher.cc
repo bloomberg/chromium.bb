@@ -12,10 +12,9 @@
 #include "base/message_loop.h"
 #include "base/shared_memory.h"
 #include "base/string_util.h"
-#include "chrome/common/render_messages.h"
-#include "chrome/common/render_messages_params.h"
-#include "chrome/common/resource_response.h"
 #include "chrome/common/security_filter_peer.h"
+#include "content/common/resource_response.h"
+#include "content/common/resource_messages.h"
 #include "net/base/net_errors.h"
 #include "net/base/net_util.h"
 #include "net/base/upload_data.h"
@@ -67,7 +66,7 @@ class IPCResourceLoaderBridge : public ResourceLoaderBridge {
 
   // The request to send, created on initialization for modification and
   // appending data.
-  ViewHostMsg_Resource_Request request_;
+  ResourceHostMsg_Request request_;
 
   // ID for the request, valid once Start()ed, -1 if not valid yet.
   int request_id_;
@@ -123,7 +122,7 @@ IPCResourceLoaderBridge::~IPCResourceLoaderBridge() {
 
     if (request_.download_to_file) {
       dispatcher_->message_sender()->Send(
-          new ViewHostMsg_ReleaseDownloadedFile(request_id_));
+          new ResourceHostMsg_ReleaseDownloadedFile(request_id_));
     }
   }
 }
@@ -182,7 +181,7 @@ bool IPCResourceLoaderBridge::Start(Peer* peer) {
       peer_, request_.resource_type, request_.url);
 
   return dispatcher_->message_sender()->Send(
-      new ViewHostMsg_RequestResource(routing_id_, request_id_, request_));
+      new ResourceHostMsg_RequestResource(routing_id_, request_id_, request_));
 }
 
 void IPCResourceLoaderBridge::Cancel() {
@@ -217,8 +216,8 @@ void IPCResourceLoaderBridge::SyncLoad(SyncLoadResponse* response) {
   request_id_ = MakeRequestID();
 
   SyncLoadResult result;
-  IPC::SyncMessage* msg = new ViewHostMsg_SyncLoad(routing_id_, request_id_,
-                                                   request_, &result);
+  IPC::SyncMessage* msg = new ResourceHostMsg_SyncLoad(routing_id_, request_id_,
+                                                       request_, &result);
   // NOTE: This may pump events (see RenderThread::Send).
   if (!dispatcher_->message_sender()->Send(msg)) {
     response->status.set_status(net::URLRequestStatus::FAILED);
@@ -317,7 +316,7 @@ void ResourceDispatcher::OnUploadProgress(
 
   // Acknowledge receipt
   message_sender()->Send(
-      new ViewHostMsg_UploadProgress_ACK(message.routing_id(), request_id));
+      new ResourceHostMsg_UploadProgress_ACK(message.routing_id(), request_id));
 }
 
 void ResourceDispatcher::OnReceivedResponse(
@@ -350,7 +349,7 @@ void ResourceDispatcher::OnReceivedData(const IPC::Message& message,
                                         int data_len) {
   // Acknowledge the reception of this data.
   message_sender()->Send(
-      new ViewHostMsg_DataReceived_ACK(message.routing_id(), request_id));
+      new ResourceHostMsg_DataReceived_ACK(message.routing_id(), request_id));
 
   const bool shm_valid = base::SharedMemory::IsHandleValid(shm_handle);
   DCHECK((shm_valid && data_len > 0) || (!shm_valid && !data_len));
@@ -371,7 +370,7 @@ void ResourceDispatcher::OnDownloadedData(const IPC::Message& message,
                                           int data_len) {
   // Acknowledge the reception of this message.
   message_sender()->Send(
-      new ViewHostMsg_DataDownloaded_ACK(message.routing_id(), request_id));
+      new ResourceHostMsg_DataDownloaded_ACK(message.routing_id(), request_id));
 
   PendingRequestInfo* request_info = GetPendingRequestInfo(request_id);
   if (!request_info)
@@ -401,9 +400,9 @@ void ResourceDispatcher::OnReceivedRedirect(
     if (!request_info)
       return;
     request_info->pending_redirect_message.reset(
-        new ViewHostMsg_FollowRedirect(routing_id, request_id,
-                                       has_new_first_party_for_cookies,
-                                       new_first_party_for_cookies));
+        new ResourceHostMsg_FollowRedirect(routing_id, request_id,
+                                           has_new_first_party_for_cookies,
+                                           new_first_party_for_cookies));
     if (!request_info->is_deferred) {
       FollowPendingRedirect(request_id, *request_info);
     }
@@ -488,7 +487,7 @@ void ResourceDispatcher::CancelPendingRequest(int routing_id,
   pending_requests_.erase(it);
 
   message_sender()->Send(
-      new ViewHostMsg_CancelRequest(routing_id, request_id));
+      new ResourceHostMsg_CancelRequest(routing_id, request_id));
 }
 
 void ResourceDispatcher::SetDefersLoading(int request_id, bool value) {
@@ -513,14 +512,14 @@ void ResourceDispatcher::SetDefersLoading(int request_id, bool value) {
 
 void ResourceDispatcher::DispatchMessage(const IPC::Message& message) {
   IPC_BEGIN_MESSAGE_MAP(ResourceDispatcher, message)
-    IPC_MESSAGE_HANDLER(ViewMsg_Resource_UploadProgress, OnUploadProgress)
-    IPC_MESSAGE_HANDLER(ViewMsg_Resource_ReceivedResponse, OnReceivedResponse)
-    IPC_MESSAGE_HANDLER(
-        ViewMsg_Resource_ReceivedCachedMetadata, OnReceivedCachedMetadata)
-    IPC_MESSAGE_HANDLER(ViewMsg_Resource_ReceivedRedirect, OnReceivedRedirect)
-    IPC_MESSAGE_HANDLER(ViewMsg_Resource_DataReceived, OnReceivedData)
-    IPC_MESSAGE_HANDLER(ViewMsg_Resource_DataDownloaded, OnDownloadedData)
-    IPC_MESSAGE_HANDLER(ViewMsg_Resource_RequestComplete, OnRequestComplete)
+    IPC_MESSAGE_HANDLER(ResourceMsg_UploadProgress, OnUploadProgress)
+    IPC_MESSAGE_HANDLER(ResourceMsg_ReceivedResponse, OnReceivedResponse)
+    IPC_MESSAGE_HANDLER(ResourceMsg_ReceivedCachedMetadata,
+                        OnReceivedCachedMetadata)
+    IPC_MESSAGE_HANDLER(ResourceMsg_ReceivedRedirect, OnReceivedRedirect)
+    IPC_MESSAGE_HANDLER(ResourceMsg_DataReceived, OnReceivedData)
+    IPC_MESSAGE_HANDLER(ResourceMsg_DataDownloaded, OnDownloadedData)
+    IPC_MESSAGE_HANDLER(ResourceMsg_RequestComplete, OnRequestComplete)
   IPC_END_MESSAGE_MAP()
 }
 
@@ -567,13 +566,13 @@ webkit_glue::ResourceLoaderBridge* ResourceDispatcher::CreateBridge(
 bool ResourceDispatcher::IsResourceDispatcherMessage(
     const IPC::Message& message) {
   switch (message.type()) {
-    case ViewMsg_Resource_UploadProgress::ID:
-    case ViewMsg_Resource_ReceivedResponse::ID:
-    case ViewMsg_Resource_ReceivedCachedMetadata::ID:
-    case ViewMsg_Resource_ReceivedRedirect::ID:
-    case ViewMsg_Resource_DataReceived::ID:
-    case ViewMsg_Resource_DataDownloaded::ID:
-    case ViewMsg_Resource_RequestComplete::ID:
+    case ResourceMsg_UploadProgress::ID:
+    case ResourceMsg_ReceivedResponse::ID:
+    case ResourceMsg_ReceivedCachedMetadata::ID:
+    case ResourceMsg_ReceivedRedirect::ID:
+    case ResourceMsg_DataReceived::ID:
+    case ResourceMsg_DataDownloaded::ID:
+    case ResourceMsg_RequestComplete::ID:
       return true;
 
     default:
@@ -595,7 +594,7 @@ void ResourceDispatcher::ReleaseResourcesInDataMessage(
 
   // If the message contains a shared memory handle, we should close the
   // handle or there will be a memory leak.
-  if (message.type() == ViewMsg_Resource_DataReceived::ID) {
+  if (message.type() == ResourceMsg_DataReceived::ID) {
     base::SharedMemoryHandle shm_handle;
     if (IPC::ParamTraits<base::SharedMemoryHandle>::Read(&message,
                                                          &iter,

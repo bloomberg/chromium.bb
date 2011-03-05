@@ -55,7 +55,7 @@ class URLRequestContextOverride
   virtual ~URLRequestContextOverride() {}
 
   virtual net::URLRequestContext* GetRequestContext(
-      const ViewHostMsg_Resource_Request& resource_request) {
+      const ResourceHostMsg_Request& resource_request) {
     return url_request_context_;
   }
 

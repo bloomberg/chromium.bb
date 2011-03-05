@@ -5,7 +5,7 @@
 #include "chrome/browser/prerender/prerender_resource_handler.h"
 
 #include "chrome/browser/net/chrome_url_request_context.h"
-#include "chrome/common/resource_response.h"
+#include "content/common/resource_response.h"
 #include "net/base/load_flags.h"
 #include "net/http/http_response_headers.h"
 #include "net/url_request/url_request.h"

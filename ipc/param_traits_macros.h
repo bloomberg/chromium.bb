@@ -20,6 +20,7 @@
   }
 
 #define IPC_STRUCT_TRAITS_MEMBER(name)
+#define IPC_STRUCT_TRAITS_PARENT(type)
 #define IPC_STRUCT_TRAITS_END()
 
 // Traits generation for enums.

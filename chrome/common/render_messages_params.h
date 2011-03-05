@@ -33,7 +33,6 @@
 #include "ui/gfx/rect.h"
 #include "ui/gfx/size.h"
 #include "webkit/glue/password_form.h"
-#include "webkit/glue/resource_type.h"
 #include "webkit/glue/webaccessibility.h"
 #include "webkit/glue/webmenuitem.h"
 #include "webkit/glue/webpreferences.h"
@@ -426,66 +425,6 @@ struct ViewMsg_ClosePage_Params {
   // must be valid when for_cross_site_transition is set, and must be -1
   // otherwise.
   int new_request_id;
-};
-
-// Parameters for a resource request.
-struct ViewHostMsg_Resource_Request {
-  ViewHostMsg_Resource_Request();
-  ~ViewHostMsg_Resource_Request();
-
-  // The request method: GET, POST, etc.
-  std::string method;
-
-  // The requested URL.
-  GURL url;
-
-  // Usually the URL of the document in the top-level window, which may be
-  // checked by the third-party cookie blocking policy. Leaving it empty may
-  // lead to undesired cookie blocking. Third-party cookie blocking can be
-  // bypassed by setting first_party_for_cookies = url, but this should ideally
-  // only be done if there really is no way to determine the correct value.
-  GURL first_party_for_cookies;
-
-  // The referrer to use (may be empty).
-  GURL referrer;
-
-  // Additional HTTP request headers.
-  std::string headers;
-
-  // net::URLRequest load flags (0 by default).
-  int load_flags;
-
-  // Process ID from which this request originated, or zero if it originated
-  // in the renderer itself.
-  int origin_pid;
-
-  // What this resource load is for (main frame, sub-frame, sub-resource,
-  // object).
-  ResourceType::Type resource_type;
-
-  // Used by plugin->browser requests to get the correct net::URLRequestContext.
-  uint32 request_context;
-
-  // Indicates which frame (or worker context) the request is being loaded into,
-  // or kNoHostId.
-  int appcache_host_id;
-
-  // Optional upload data (may be null).
-  scoped_refptr<net::UploadData> upload_data;
-
-  bool download_to_file;
-
-  // True if the request was user initiated.
-  bool has_user_gesture;
-
-  // The following two members are specified if the request is initiated by
-  // a plugin like Gears.
-
-  // Contains the id of the host renderer.
-  int host_renderer_id;
-
-  // Contains the id of the host render view.
-  int host_render_view_id;
 };
 
 // Parameters for a render request.
@@ -1022,14 +961,6 @@ struct ParamTraits<ViewHostMsg_UpdateRect_Params> {
 template <>
 struct ParamTraits<ViewMsg_ClosePage_Params> {
   typedef ViewMsg_ClosePage_Params param_type;
-  static void Write(Message* m, const param_type& p);
-  static bool Read(const Message* m, void** iter, param_type* r);
-  static void Log(const param_type& p, std::string* l);
-};
-
-template <>
-struct ParamTraits<ViewHostMsg_Resource_Request> {
-  typedef ViewHostMsg_Resource_Request param_type;
   static void Write(Message* m, const param_type& p);
   static bool Read(const Message* m, void** iter, param_type* r);
   static void Log(const param_type& p, std::string* l);

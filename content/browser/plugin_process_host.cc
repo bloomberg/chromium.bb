@@ -38,6 +38,7 @@
 #include "content/browser/plugin_service.h"
 #include "content/browser/renderer_host/resource_dispatcher_host.h"
 #include "content/browser/renderer_host/resource_message_filter.h"
+#include "content/common/resource_messages.h"
 #include "ipc/ipc_switches.h"
 #include "net/base/cookie_store.h"
 #include "net/base/io_buffer.h"
@@ -70,7 +71,7 @@ class PluginURLRequestContextOverride
   }
 
   virtual net::URLRequestContext* GetRequestContext(
-      const ViewHostMsg_Resource_Request& resource_request) {
+      const ResourceHostMsg_Request& resource_request) {
     return CPBrowsingContextManager::GetInstance()->ToURLRequestContext(
         resource_request.request_context);
   }

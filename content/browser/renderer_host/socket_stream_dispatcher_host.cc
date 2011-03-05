@@ -11,6 +11,7 @@
 #include "content/browser/renderer_host/socket_stream_host.h"
 #include "content/common/socket_stream.h"
 #include "content/common/socket_stream_messages.h"
+#include "content/common/resource_messages.h"
 #include "net/websockets/websocket_job.h"
 #include "net/websockets/websocket_throttle.h"
 
@@ -154,7 +155,7 @@ net::URLRequestContext* SocketStreamDispatcherHost::GetURLRequestContext() {
     // GetRequestContext will take a different parameter and we can take out
     // this struct and the #include "chrome/common/render_messages_params.h"
     // above.
-    ViewHostMsg_Resource_Request request;
+    ResourceHostMsg_Request request;
     rv = url_request_context_override_->GetRequestContext(request);
   }
   if (!rv) {

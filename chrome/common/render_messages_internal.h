@@ -325,51 +325,6 @@ IPC_MESSAGE_ROUTED2(ViewMsg_ExecuteCodeFinished,
                     int, /* request id */
                     bool /* whether the script ran successfully */)
 
-// Sent when the headers are available for a resource request.
-IPC_MESSAGE_ROUTED2(ViewMsg_Resource_ReceivedResponse,
-                    int /* request_id */,
-                    ResourceResponseHead)
-
-// Sent when cached metadata from a resource request is ready.
-IPC_MESSAGE_ROUTED2(ViewMsg_Resource_ReceivedCachedMetadata,
-                    int /* request_id */,
-                    std::vector<char> /* data */)
-
-// Sent as upload progress is being made.
-IPC_MESSAGE_ROUTED3(ViewMsg_Resource_UploadProgress,
-                    int /* request_id */,
-                    int64 /* position */,
-                    int64 /* size */)
-
-// Sent when the request has been redirected.  The receiver is expected to
-// respond with either a FollowRedirect message (if the redirect is to be
-// followed) or a CancelRequest message (if it should not be followed).
-IPC_MESSAGE_ROUTED3(ViewMsg_Resource_ReceivedRedirect,
-                    int /* request_id */,
-                    GURL /* new_url */,
-                    ResourceResponseHead)
-
-// Sent when some data from a resource request is ready. The handle should
-// already be mapped into the process that receives this message.
-IPC_MESSAGE_ROUTED3(ViewMsg_Resource_DataReceived,
-                    int /* request_id */,
-                    base::SharedMemoryHandle /* data */,
-                    int /* data_len */)
-
-// Sent when some data from a resource request has been downloaded to
-// file. This is only called in the 'download_to_file' case and replaces
-// ViewMsg_Resource_DataReceived in the call sequence in that case.
-IPC_MESSAGE_ROUTED2(ViewMsg_Resource_DataDownloaded,
-                    int /* request_id */,
-                    int /* data_len */)
-
-// Sent when the request has been completed.
-IPC_MESSAGE_ROUTED4(ViewMsg_Resource_RequestComplete,
-                    int /* request_id */,
-                    net::URLRequestStatus /* status */,
-                    std::string /* security info */,
-                    base::Time /* completion_time */)
-
 // Sent when user prompting is required before a ViewHostMsg_GetCookies
 // message can complete.  This message indicates that the renderer should
 // pump messages while waiting for cookies.
@@ -1279,28 +1234,6 @@ IPC_MESSAGE_ROUTED5(ViewHostMsg_Find_Reply,
                     int /* active_match_ordinal */,
                     bool /* final_update */)
 
-// Makes a resource request via the browser.
-IPC_MESSAGE_ROUTED2(ViewHostMsg_RequestResource,
-                    int /* request_id */,
-                    ViewHostMsg_Resource_Request)
-
-// Cancels a resource request with the ID given as the parameter.
-IPC_MESSAGE_ROUTED1(ViewHostMsg_CancelRequest,
-                    int /* request_id */)
-
-// Follows a redirect that occured for the resource request with the ID given
-// as the parameter.
-IPC_MESSAGE_ROUTED3(ViewHostMsg_FollowRedirect,
-                    int /* request_id */,
-                    bool /* has_new_first_party_for_cookies */,
-                    GURL /* new_first_party_for_cookies */)
-
-// Makes a synchronous resource request via the browser.
-IPC_SYNC_MESSAGE_ROUTED2_1(ViewHostMsg_SyncLoad,
-                           int /* request_id */,
-                           ViewHostMsg_Resource_Request,
-                           SyncLoadResult)
-
 // Used to set a cookie. The cookie is set asynchronously, but will be
 // available to a subsequent ViewHostMsg_GetCookies request.
 IPC_MESSAGE_ROUTED3(ViewHostMsg_SetCookie,
@@ -1843,32 +1776,14 @@ IPC_MESSAGE_ROUTED4(ViewHostMsg_DidDownloadFavIcon,
 IPC_SYNC_MESSAGE_CONTROL0_1(ViewHostMsg_GetCPBrowsingContext,
                             uint32 /* context */)
 
-// Sent when the renderer process is done processing a DataReceived
-// message.
-IPC_MESSAGE_ROUTED1(ViewHostMsg_DataReceived_ACK,
-                    int /* request_id */)
-
 IPC_MESSAGE_CONTROL1(ViewHostMsg_RevealFolderInOS,
                      FilePath /* path */)
-
-// Sent when the renderer has processed a DataDownloaded message.
-IPC_MESSAGE_ROUTED1(ViewHostMsg_DataDownloaded_ACK,
-                    int /* request_id */)
-
-// Sent when the renderer process deletes a resource loader.
-IPC_MESSAGE_CONTROL1(ViewHostMsg_ReleaseDownloadedFile,
-                     int /* request_id */)
 
 // Sent when a provisional load on the main frame redirects.
 IPC_MESSAGE_ROUTED3(ViewHostMsg_DidRedirectProvisionalLoad,
                     int /* page_id */,
                     GURL /* last url */,
                     GURL /* url redirected to */)
-
-// Sent by the renderer process to acknowledge receipt of a
-// UploadProgress message.
-IPC_MESSAGE_ROUTED1(ViewHostMsg_UploadProgress_ACK,
-                    int /* request_id */)
 
 // Sent when the renderer changes the zoom level for a particular url, so the
 // browser can update its records.  If remember is true, then url is used to

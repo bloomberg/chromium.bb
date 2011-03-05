@@ -10,13 +10,14 @@
 #include "chrome/common/chrome_plugin_lib.h"
 #include "chrome/common/render_messages.h"
 #include "chrome/common/render_messages_params.h"
-#include "chrome/common/resource_response.h"
 #include "content/browser/browser_thread.h"
 #include "content/browser/child_process_security_policy.h"
 #include "content/browser/renderer_host/resource_dispatcher_host.h"
 #include "content/browser/renderer_host/resource_dispatcher_host_request_info.h"
 #include "content/browser/renderer_host/resource_handler.h"
 #include "content/browser/renderer_host/resource_message_filter.h"
+#include "content/common/resource_messages.h"
+#include "content/common/resource_response.h"
 #include "net/base/net_errors.h"
 #include "net/base/upload_data.h"
 #include "net/http/http_util.h"
@@ -37,7 +38,7 @@ void GetResponseHead(const std::vector<IPC::Message>& messages,
   ASSERT_GE(messages.size(), 2U);
 
   // The first messages should be received response.
-  ASSERT_EQ(ViewMsg_Resource_ReceivedResponse::ID, messages[0].type());
+  ASSERT_EQ(ResourceMsg_ReceivedResponse::ID, messages[0].type());
 
   void* iter = NULL;
   int request_id;
@@ -50,22 +51,22 @@ void GetResponseHead(const std::vector<IPC::Message>& messages,
 static int RequestIDForMessage(const IPC::Message& msg) {
   int request_id = -1;
   switch (msg.type()) {
-    case ViewMsg_Resource_UploadProgress::ID:
-    case ViewMsg_Resource_ReceivedResponse::ID:
-    case ViewMsg_Resource_ReceivedRedirect::ID:
-    case ViewMsg_Resource_DataReceived::ID:
-    case ViewMsg_Resource_RequestComplete::ID:
+    case ResourceMsg_UploadProgress::ID:
+    case ResourceMsg_ReceivedResponse::ID:
+    case ResourceMsg_ReceivedRedirect::ID:
+    case ResourceMsg_DataReceived::ID:
+    case ResourceMsg_RequestComplete::ID:
       request_id = IPC::MessageIterator(msg).NextInt();
       break;
   }
   return request_id;
 }
 
-static ViewHostMsg_Resource_Request CreateResourceRequest(
+static ResourceHostMsg_Request CreateResourceRequest(
     const char* method,
     ResourceType::Type type,
     const GURL& url) {
-  ViewHostMsg_Resource_Request request;
+  ResourceHostMsg_Request request;
   request.method = std::string(method);
   request.url = url;
   request.first_party_for_cookies = url;  // bypass third-party cookie blocking
@@ -285,9 +286,9 @@ void ResourceDispatcherHostTest::MakeTestRequest(
     int render_view_id,
     int request_id,
     const GURL& url) {
-  ViewHostMsg_Resource_Request request =
+  ResourceHostMsg_Request request =
       CreateResourceRequest("GET", resource_type_, url);
-  ViewHostMsg_RequestResource msg(render_view_id, request_id, request);
+  ResourceHostMsg_RequestResource msg(render_view_id, request_id, request);
   bool msg_was_ok;
   host_.OnMessageReceived(msg, filter, &msg_was_ok);
   KickOffRequest();
@@ -310,11 +311,11 @@ void CheckSuccessfulRequest(const std::vector<IPC::Message>& messages,
   ASSERT_EQ(3U, messages.size());
 
   // The first messages should be received response
-  ASSERT_EQ(ViewMsg_Resource_ReceivedResponse::ID, messages[0].type());
+  ASSERT_EQ(ResourceMsg_ReceivedResponse::ID, messages[0].type());
 
   // followed by the data, currently we only do the data in one chunk, but
   // should probably test multiple chunks later
-  ASSERT_EQ(ViewMsg_Resource_DataReceived::ID, messages[1].type());
+  ASSERT_EQ(ResourceMsg_DataReceived::ID, messages[1].type());
 
   void* iter = NULL;
   int request_id;
@@ -331,10 +332,10 @@ void CheckSuccessfulRequest(const std::vector<IPC::Message>& messages,
   ASSERT_EQ(0, memcmp(reference_data.c_str(), data, data_len));
 
   // followed by a 0-byte read
-  //ASSERT_EQ(ViewMsg_Resource_DataReceived::ID, messages[2].type());
+  //ASSERT_EQ(ResourceMsg_DataReceived::ID, messages[2].type());
 
   // the last message should be all data received
-  ASSERT_EQ(ViewMsg_Resource_RequestComplete::ID, messages[2].type());
+  ASSERT_EQ(ResourceMsg_RequestComplete::ID, messages[2].type());
 }
 
 // Tests whether many messages get dispatched properly.
@@ -389,8 +390,8 @@ TEST_F(ResourceDispatcherHostTest, Cancel) {
 
   // Check that request 2 got canceled.
   ASSERT_EQ(2U, msgs[1].size());
-  ASSERT_EQ(ViewMsg_Resource_ReceivedResponse::ID, msgs[1][0].type());
-  ASSERT_EQ(ViewMsg_Resource_RequestComplete::ID, msgs[1][1].type());
+  ASSERT_EQ(ResourceMsg_ReceivedResponse::ID, msgs[1][0].type());
+  ASSERT_EQ(ResourceMsg_RequestComplete::ID, msgs[1][1].type());
 
   int request_id;
   net::URLRequestStatus status;
@@ -429,7 +430,7 @@ TEST_F(ResourceDispatcherHostTest, TestProcessCancel) {
   scoped_refptr<TestFilter> test_filter = new TestFilter();
 
   // request 1 goes to the test delegate
-  ViewHostMsg_Resource_Request request = CreateResourceRequest(
+  ResourceHostMsg_Request request = CreateResourceRequest(
       "GET", ResourceType::SUB_RESOURCE, net::URLRequestTestJob::test_url_1());
 
   EXPECT_EQ(0, host_.GetOutstandingRequestsMemoryCost(0));
@@ -758,7 +759,7 @@ TEST_F(ResourceDispatcherHostTest, TooManyOutstandingRequests) {
     // Should have sent a single RequestComplete message.
     int index = kMaxRequests + i;
     EXPECT_EQ(1U, msgs[index].size());
-    EXPECT_EQ(ViewMsg_Resource_RequestComplete::ID, msgs[index][0].type());
+    EXPECT_EQ(ResourceMsg_RequestComplete::ID, msgs[index][0].type());
 
     // The RequestComplete message should have had status
     // (CANCELLED, ERR_INSUFFICIENT_RESOURCES).
@@ -922,7 +923,7 @@ TEST_F(ResourceDispatcherHostTest, ForbiddenDownload) {
 
   // We should have gotten one RequestComplete message.
   ASSERT_EQ(1U, msgs[0].size());
-  EXPECT_EQ(ViewMsg_Resource_RequestComplete::ID, msgs[0][0].type());
+  EXPECT_EQ(ResourceMsg_RequestComplete::ID, msgs[0][0].type());
 
   // The RequestComplete message should have had status
   // (CANCELED, ERR_FILE_NOT_FOUND).
