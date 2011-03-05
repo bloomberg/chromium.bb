@@ -213,8 +213,6 @@ class TabStrip : public BaseTabStrip,
 
   // Starts various types of TabStrip animations.
   void StartResizeLayoutAnimation();
-  void StartMoveTabAnimation(int from_model_index,
-                             int to_model_index);
   virtual void StartMiniTabAnimation();
   void StartMouseInitiatedRemoveTabAnimation(int model_index);
 
