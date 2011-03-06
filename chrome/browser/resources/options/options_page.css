@@ -204,6 +204,11 @@ html.hide-menu #navbar-container {
   -webkit-padding-end: 24px;
 }
 
+.navbar-item:focus {
+  border-bottom: 1px solid #8faad9;
+  border-top: 1px solid #8faad9;
+}
+
 .navbar-item-selected {
   -webkit-box-shadow: 0px 1px 0px #f7f7f7;
   background: -webkit-linear-gradient(left, #bbcee9, #bbcee9 97%, #aabedc);
