@@ -470,7 +470,7 @@ void MenuGtk::BuildSubmenuFromModel(ui::MenuModel* model, GtkWidget* menu) {
       case ui::MenuModel::TYPE_BUTTON_ITEM: {
         ui::ButtonMenuItemModel* button_menu_item_model =
             model->GetButtonMenuItemAt(i);
-        menu_item = BuildButtomMenuItem(button_menu_item_model, menu);
+        menu_item = BuildButtonMenuItem(button_menu_item_model, menu);
         connect_to_activate = false;
         break;
       }
@@ -514,7 +514,7 @@ void MenuGtk::BuildSubmenuFromModel(ui::MenuModel* model, GtkWidget* menu) {
   }
 }
 
-GtkWidget* MenuGtk::BuildButtomMenuItem(ui::ButtonMenuItemModel* model,
+GtkWidget* MenuGtk::BuildButtonMenuItem(ui::ButtonMenuItemModel* model,
                                         GtkWidget* menu) {
   GtkWidget* menu_item = gtk_custom_menu_item_new(
       gfx::RemoveWindowsStyleAccelerators(UTF16ToUTF8(model->label())).c_str());
