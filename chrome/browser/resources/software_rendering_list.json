@@ -43,7 +43,7 @@
 {
   "name": "software rendering list",
   // Please update the version number whenever you change this file.
-  "version": "1.5",
+  "version": "1.6",
   "entries": [
     {
       "id": 1,
@@ -259,6 +259,18 @@
       },
       "blacklist": [
         "all"
+      ]
+    },
+    {
+      "id": 16,
+      "description": "Multiampling is buggy in ATI Mac drivers.",
+      "cr_bugs": [67752],
+      "os": {
+        "type": "macosx"
+      },
+      "vendor_id": "0x1002",
+      "blacklist": [
+        "multisampling"
       ]
     }
   ]
