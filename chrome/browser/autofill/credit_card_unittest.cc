@@ -44,30 +44,30 @@ TEST(CreditCardTest, PreviewSummaryAndObfuscatedNumberStrings) {
   autofill_test::SetCreditCardInfo(&credit_card2,
       "John Dillinger", "123456789012", "", "2010");
   string16 summary2 = credit_card2.PreviewSummary();
-  EXPECT_EQ(string16(ASCIIToUTF16("************9012")), summary2);
+  EXPECT_EQ(ASCIIToUTF16("************9012"), summary2);
   string16 obfuscated2 = credit_card2.ObfuscatedNumber();
-  EXPECT_EQ(string16(ASCIIToUTF16("************9012")), obfuscated2);
+  EXPECT_EQ(ASCIIToUTF16("************9012"), obfuscated2);
 
   // Case 3: No year.
   CreditCard credit_card3;
   autofill_test::SetCreditCardInfo(&credit_card3,
       "John Dillinger", "123456789012", "01", "");
   string16 summary3 = credit_card3.PreviewSummary();
-  EXPECT_EQ(string16(ASCIIToUTF16("************9012")), summary3);
+  EXPECT_EQ(ASCIIToUTF16("************9012"), summary3);
   string16 obfuscated3 = credit_card3.ObfuscatedNumber();
-  EXPECT_EQ(string16(ASCIIToUTF16("************9012")), obfuscated3);
+  EXPECT_EQ(ASCIIToUTF16("************9012"), obfuscated3);
 
   // Case 4: Have everything.
   CreditCard credit_card4;
   autofill_test::SetCreditCardInfo(&credit_card4,
       "John Dillinger", "123456789012", "01", "2010");
   string16 summary4 = credit_card4.PreviewSummary();
-  EXPECT_EQ(string16(ASCIIToUTF16("************9012, Exp: 01/2010")), summary4);
+  EXPECT_EQ(ASCIIToUTF16("************9012, Exp: 01/2010"), summary4);
   string16 obfuscated4 = credit_card4.ObfuscatedNumber();
-  EXPECT_EQ(string16(ASCIIToUTF16("************9012")), obfuscated4);
+  EXPECT_EQ(ASCIIToUTF16("************9012"), obfuscated4);
 }
 
-TEST(CreditCardTest, AssignmentOperator){
+TEST(CreditCardTest, AssignmentOperator) {
   CreditCard a, b;
 
   // Result of assignment should be logically equal to the original profile.
@@ -79,6 +79,14 @@ TEST(CreditCardTest, AssignmentOperator){
   // Assignment to self should not change the profile value.
   a = a;
   EXPECT_TRUE(a == b);
+}
+
+TEST(CreditCardTest, InvalidMastercardNumber) {
+  CreditCard card;
+
+  autofill_test::SetCreditCardInfo(&card, "Baby Face Nelson",
+                                   "5200000000000004", "01", "2010");
+  EXPECT_EQ(ASCIIToUTF16("genericCC"), card.type());
 }
 
 }  // namespace

@@ -35,6 +35,10 @@ const AutofillFieldType kAutoFillCreditCardTypes[] = {
 const int kAutoFillCreditCardLength = arraysize(kAutoFillCreditCardTypes);
 
 std::string GetCreditCardType(const string16& number) {
+  // Don't check for a specific type if this is not a credit card number.
+  if (!CreditCard::IsCreditCardNumber(number))
+    return kGenericCard;
+
   // Credit card number specifications taken from:
   // http://en.wikipedia.org/wiki/Credit_card_numbers and
   // http://www.beachnet.com/~hstiles/cardtype.html

@@ -823,7 +823,7 @@ TEST_F(AutofillManagerTest, GetCreditCardSuggestionsEmptyValue) {
   string16 expected_labels[] = {ASCIIToUTF16("*3456"), ASCIIToUTF16("*8765")};
   string16 expected_icons[] = {
     ASCIIToUTF16("visaCC"),
-    ASCIIToUTF16("masterCardCC")
+    ASCIIToUTF16("genericCC")
   };
   int expected_unique_ids[] = {
     autofill_manager_->GetPackedCreditCardID(4),
@@ -902,7 +902,7 @@ TEST_F(AutofillManagerTest, GetCreditCardSuggestionsNonCCNumber) {
   string16 expected_labels[] = {ASCIIToUTF16("*3456"), ASCIIToUTF16("*8765")};
   string16 expected_icons[] = {
     ASCIIToUTF16("visaCC"),
-    ASCIIToUTF16("masterCardCC")
+    ASCIIToUTF16("genericCC")
   };
   int expected_unique_ids[] = {
     autofill_manager_->GetPackedCreditCardID(4),
@@ -1038,7 +1038,7 @@ TEST_F(AutofillManagerTest, GetAddressAndCreditCardSuggestions) {
   string16 expected_labels2[] = {ASCIIToUTF16("*3456"), ASCIIToUTF16("*8765")};
   string16 expected_icons2[] = {
     ASCIIToUTF16("visaCC"),
-    ASCIIToUTF16("masterCardCC")
+    ASCIIToUTF16("genericCC")
   };
   int expected_unique_ids2[] = {
     autofill_manager_->GetPackedCreditCardID(4),
