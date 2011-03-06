@@ -105,30 +105,28 @@ StatusBubbleMac::StatusBubbleMac(NSWindow* parent, id delegate)
       state_(kBubbleHidden),
       immediate_(false),
       is_expanded_(false) {
+  Create();
+  Attach();
 }
 
 StatusBubbleMac::~StatusBubbleMac() {
+  DCHECK(window_);
+
   Hide();
 
-  if (window_) {
-    [[[window_ animationForKey:kFadeAnimationKey] delegate] invalidate];
-    Detach();
-    [window_ release];
-    window_ = nil;
-  }
+  [[[window_ animationForKey:kFadeAnimationKey] delegate] invalidate];
+  Detach();
+  [window_ release];
+  window_ = nil;
 }
 
 void StatusBubbleMac::SetStatus(const string16& status) {
-  Create();
-
   SetText(status, false);
 }
 
 void StatusBubbleMac::SetURL(const GURL& url, const string16& languages) {
   url_ = url;
   languages_ = languages;
-
-  Create();
 
   NSRect frame = [window_ frame];
 
@@ -349,16 +347,9 @@ void StatusBubbleMac::UpdateDownloadShelfVisibility(bool visible) {
 }
 
 void StatusBubbleMac::Create() {
-  if (window_)
-    return;
+  DCHECK(!window_);
 
-  // TODO(avi):fix this for RTL
-  NSRect window_rect = CalculateWindowFrame(/*expand=*/false);
-  // initWithContentRect has origin in screen coords and size in scaled window
-  // coordinates.
-  window_rect.size =
-      [[parent_ contentView] convertSize:window_rect.size fromView:nil];
-  window_ = [[NSWindow alloc] initWithContentRect:window_rect
+  window_ = [[NSWindow alloc] initWithContentRect:NSZeroRect
                                         styleMask:NSBorderlessWindowMask
                                           backing:NSBackingStoreBuffered
                                             defer:YES];
@@ -393,31 +384,27 @@ void StatusBubbleMac::Create() {
   [animation_dictionary setObject:animation forKey:kFadeAnimationKey];
   [window_ setAnimations:animation_dictionary];
 
-  // Don't |Attach()| since we don't know the appropriate state; let the
-  // |SetState()| call do that.
-
   [view setCornerFlags:kRoundedTopRightCorner];
   MouseMoved(gfx::Point(), false);
 }
 
 void StatusBubbleMac::Attach() {
-  // This method may be called several times during the process of creating or
-  // showing a status bubble to attach the bubble to its parent window.
-  if (!is_attached()) {
-    [parent_ addChildWindow:window_ ordered:NSWindowAbove];
-    UpdateSizeAndPosition();
-  }
+  DCHECK(!is_attached());
+
+  [parent_ addChildWindow:window_ ordered:NSWindowAbove];
+
+  [[window_ contentView] setThemeProvider:parent_];
 }
 
 void StatusBubbleMac::Detach() {
-  // This method may be called several times in the process of hiding or
-  // destroying a status bubble.
-  if (is_attached()) {
-    // Magic setFrame: See crbug.com/58506, and codereview.chromium.org/3573014
-    [window_ setFrame:CalculateWindowFrame(/*expand=*/false) display:NO];
-    [parent_ removeChildWindow:window_];  // See crbug.com/28107 ...
-    [window_ orderOut:nil];               // ... and crbug.com/29054.
-  }
+  DCHECK(is_attached());
+
+  // Magic setFrame: See crbug.com/58506, and codereview.chromium.org/3564021
+  [window_ setFrame:CalculateWindowFrame(/*expand=*/false) display:NO];
+  [parent_ removeChildWindow:window_];  // See crbug.com/28107 ...
+  [window_ orderOut:nil];               // ... and crbug.com/29054.
+
+  [[window_ contentView] setThemeProvider:nil];
 }
 
 void StatusBubbleMac::AnimationDidStop(CAAnimation* animation, bool finished) {
@@ -441,16 +428,13 @@ void StatusBubbleMac::AnimationDidStop(CAAnimation* animation, bool finished) {
 }
 
 void StatusBubbleMac::SetState(StatusBubbleState state) {
-  // We must be hidden or attached, but not both.
-  DCHECK((state_ == kBubbleHidden) ^ is_attached());
-
   if (state == state_)
     return;
 
   if (state == kBubbleHidden)
-    Detach();
+    [window_ setFrame:NSZeroRect display:YES];
   else
-    Attach();
+    UpdateSizeAndPosition();
 
   if ([delegate_ respondsToSelector:@selector(statusBubbleWillEnterState:)])
     [delegate_ statusBubbleWillEnterState:state];
@@ -542,8 +526,6 @@ void StatusBubbleMac::TimerFired() {
 }
 
 void StatusBubbleMac::StartShowing() {
-  // Note that |SetState()| will |Attach()| or |Detach()| as required.
-
   if (state_ == kBubbleHidden) {
     // Arrange to begin fading in after a delay.
     SetState(kBubbleShowingTimer);
@@ -664,18 +646,10 @@ void StatusBubbleMac::UpdateSizeAndPosition() {
 
 void StatusBubbleMac::SwitchParentWindow(NSWindow* parent) {
   DCHECK(parent);
-
-  // If not attached, just update our member variable and position.
-  if (!is_attached()) {
-    parent_ = parent;
-    [[window_ contentView] setThemeProvider:parent];
-    UpdateSizeAndPosition();
-    return;
-  }
+  DCHECK(is_attached());
 
   Detach();
   parent_ = parent;
-  [[window_ contentView] setThemeProvider:parent];
   Attach();
   UpdateSizeAndPosition();
 }
