@@ -31,6 +31,34 @@ using WebKit::WebDragOperationNone;
 using WebKit::WebDragOperationsMask;
 using WebKit::WebInputEvent;
 
+// Tabs must be created as child widgets, otherwise they will be given
+// a FocusManager which will conflict with the FocusManager of the
+// window they eventually end up attached to.
+//
+// A tab will not have a parent HWND whenever it is not active in its
+// host window - for example at creation time and when it's in the
+// background, so we provide a default widget to host them.
+//
+// It may be tempting to use GetDesktopWindow() instead, but this is
+// problematic as the shell sends messages to children of the desktop
+// window that interact poorly with us.
+//
+// See: http://crbug.com/16476
+static HWND GetHiddenTabHostWindow() {
+  static views::WidgetWin* window = NULL;
+
+  if (!window) {
+    window = new views::WidgetWin();
+    // If a background window requests focus, the hidden tab host will
+    // be activated to focus the tab.  Use WS_DISABLED to prevent
+    // this.
+    window->set_window_style(WS_POPUP | WS_DISABLED);
+    window->Init(NULL, gfx::Rect());
+  }
+
+  return window->hwnd();
+}
+
 // static
 TabContentsView* TabContentsView::Create(TabContents* tab_contents) {
   return new TabContentsViewWin(tab_contents);
@@ -61,15 +89,15 @@ void TabContentsViewWin::Unparent() {
   focus_manager_ = views::WidgetWin::GetFocusManager();
   // Note that we do not DCHECK on focus_manager_ as it may be NULL when used
   // with an external tab container.
-  ::SetParent(GetNativeView(), NULL);
+  ::SetParent(GetNativeView(), GetHiddenTabHostWindow());
 }
 
 void TabContentsViewWin::CreateView(const gfx::Size& initial_size) {
   set_delete_on_destroy(false);
-  // Since we create these windows parented to the desktop window initially, we
-  // don't want to create them initially visible.
+  // These windows remain hidden until they are parented to the
+  // browser window.
   set_window_style(WS_CHILD | WS_CLIPCHILDREN | WS_CLIPSIBLINGS);
-  WidgetWin::Init(GetDesktopWindow(), gfx::Rect());
+  WidgetWin::Init(GetHiddenTabHostWindow(), gfx::Rect());
 
   // Remove the root view drop target so we can register our own.
   RevokeDragDrop(GetNativeView());
