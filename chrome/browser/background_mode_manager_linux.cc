@@ -78,6 +78,12 @@ void EnableLaunchOnStartupTask::Run() {
   }
 }
 
+void BackgroundModeManager::DisplayAppInstalledNotification(
+    const Extension* extension) {
+  // TODO(atwilson): Display a platform-appropriate notification here.
+  // http://crbug.com/74970
+}
+
 string16 BackgroundModeManager::GetPreferencesMenuLabel() {
   string16 result = gtk_util::GetStockPreferencesMenuLabel();
   if (!result.empty())

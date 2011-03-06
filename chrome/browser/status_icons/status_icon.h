@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -29,6 +29,10 @@ class StatusIcon {
 
   // Sets the hover text for this status icon.
   virtual void SetToolTip(const string16& tool_tip) = 0;
+
+  // Displays a notification balloon with the specified contents.
+  virtual void DisplayBalloon(const string16& title,
+                              const string16& contents) = 0;
 
   // Set the context menu for this icon. The icon takes ownership of the passed
   // context menu. Passing NULL results in no menu at all.

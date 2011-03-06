@@ -79,10 +79,18 @@ void StatusIconWin::SetToolTip(const string16& tool_tip) {
     LOG(WARNING) << "Unable to set tooltip for status tray icon";
 }
 
-void StatusIconWin::InitIconData(NOTIFYICONDATA* icon_data) {
-  icon_data->cbSize = sizeof(icon_data);
-  icon_data->hWnd = window_;
-  icon_data->uID = icon_id_;
+void StatusIconWin::DisplayBalloon(const string16& title,
+                                   const string16& contents) {
+  NOTIFYICONDATA icon_data;
+  InitIconData(&icon_data);
+  icon_data.uFlags = NIF_INFO;
+  icon_data.dwInfoFlags = NIIF_INFO;
+  wcscpy_s(icon_data.szInfoTitle, title.c_str());
+  wcscpy_s(icon_data.szInfo, contents.c_str());
+  icon_data.uTimeout = 0;
+  BOOL result = Shell_NotifyIcon(NIM_MODIFY, &icon_data);
+  if (!result)
+    LOG(WARNING) << "Unable to create status tray balloon.";
 }
 
 void StatusIconWin::UpdatePlatformContextMenu(ui::MenuModel* menu) {
@@ -110,4 +118,10 @@ void StatusIconWin::HandleClickEvent(int x, int y, bool left_mouse_click) {
     SetForegroundWindow(window_);
     context_menu_->RunContextMenuAt(gfx::Point(x, y));
   }
+}
+
+void StatusIconWin::InitIconData(NOTIFYICONDATA* icon_data) {
+  icon_data->cbSize = sizeof(NOTIFYICONDATA);
+  icon_data->hWnd = window_;
+  icon_data->uID = icon_id_;
 }

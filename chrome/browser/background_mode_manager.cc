@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -119,14 +119,15 @@ void BackgroundModeManager::Observe(NotificationType type,
       EnableLaunchOnStartup(background_app_count_ > 0);
 #endif
       break;
-    case NotificationType::EXTENSION_LOADED:
-      if (BackgroundApplicationListModel::IsBackgroundApp(
-              *Details<Extension>(details).ptr())) {
-        // Extensions loaded after the ExtensionsService is ready should be
-        // treated as new installs.
-        if (profile_->GetExtensionService()->is_ready())
-          OnBackgroundAppInstalled();
-        OnBackgroundAppLoaded();
+    case NotificationType::EXTENSION_LOADED: {
+        Extension* extension = Details<Extension>(details).ptr();
+        if (BackgroundApplicationListModel::IsBackgroundApp(*extension)) {
+          // Extensions loaded after the ExtensionsService is ready should be
+          // treated as new installs.
+          if (profile_->GetExtensionService()->is_ready())
+            OnBackgroundAppInstalled(extension);
+          OnBackgroundAppLoaded();
+        }
       }
       break;
     case NotificationType::EXTENSION_UNLOADED:
@@ -214,11 +215,16 @@ void BackgroundModeManager::EndBackgroundMode() {
   RemoveStatusTrayIcon();
 }
 
-void BackgroundModeManager::OnBackgroundAppInstalled() {
+void BackgroundModeManager::OnBackgroundAppInstalled(
+    const Extension* extension) {
   // We're installing a background app. If this is the first background app
   // being installed, make sure we are set to launch on startup.
   if (background_app_count_ == 0)
     EnableLaunchOnStartup(true);
+
+  // Notify the user that a background app has been installed.
+  if (extension)  // NULL when called by unit tests.
+    DisplayAppInstalledNotification(extension);
 }
 
 void BackgroundModeManager::OnBackgroundAppUninstalled() {

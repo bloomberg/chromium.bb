@@ -43,6 +43,12 @@ void StatusIconGtk::SetToolTip(const string16& tool_tip) {
   gtk_status_icon_set_tooltip(icon_, UTF16ToUTF8(tool_tip).c_str());
 }
 
+void StatusIconGtk::DisplayBalloon(const string16& title,
+                                   const string16& contents) {
+  // TODO(atwilson): Figure out the right thing to do here.
+  // http://crbug.com/74970
+}
+
 void StatusIconGtk::OnClick(GtkWidget* widget) {
   DispatchClickEvent();
 }

@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -71,6 +71,12 @@ void BackgroundModeManager::EnableLaunchOnStartup(bool should_launch) {
     BrowserThread::PostTask(BrowserThread::FILE, FROM_HERE,
                             new DisableLaunchOnStartupTask());
   }
+}
+
+void BackgroundModeManager::DisplayAppInstalledNotification(
+    const Extension* extension) {
+  // TODO(atwilson): Display a platform-appropriate notification here.
+  // http://crbug.com/74970
 }
 
 string16 BackgroundModeManager::GetPreferencesMenuLabel() {

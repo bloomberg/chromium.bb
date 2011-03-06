@@ -23,6 +23,7 @@ class StatusIconGtk : public StatusIcon {
   virtual void SetImage(const SkBitmap& image);
   virtual void SetPressedImage(const SkBitmap& image);
   virtual void SetToolTip(const string16& tool_tip);
+  virtual void DisplayBalloon(const string16& title, const string16& contents);
 
   // Exposed for testing.
   CHROMEGTK_CALLBACK_0(StatusIconGtk, void, OnClick);

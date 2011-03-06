@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -27,6 +27,7 @@ class StatusIconWin : public StatusIcon {
   virtual void SetImage(const SkBitmap& image);
   virtual void SetPressedImage(const SkBitmap& image);
   virtual void SetToolTip(const string16& tool_tip);
+  virtual void DisplayBalloon(const string16& title, const string16& contents);
 
   UINT icon_id() const { return icon_id_; }
 

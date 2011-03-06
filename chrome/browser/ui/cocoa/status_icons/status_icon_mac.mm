@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -74,6 +74,13 @@ void StatusIconMac::SetPressedImage(const SkBitmap& bitmap) {
 
 void StatusIconMac::SetToolTip(const string16& tool_tip) {
   [item() setToolTip:base::SysUTF16ToNSString(tool_tip)];
+}
+
+void StatusIconMac::DisplayBalloon(const string16& title,
+                                   const string16& contents) {
+  // TODO(atwilson): Figure out the right UI to display here when actually
+  // needed (not yet called).
+  // http://crbug.com/74970
 }
 
 void StatusIconMac::UpdatePlatformContextMenu(ui::MenuModel* menu) {
