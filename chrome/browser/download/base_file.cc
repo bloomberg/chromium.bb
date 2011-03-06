@@ -16,7 +16,7 @@
 #if defined(OS_WIN)
 #include "chrome/common/win_safe_util.h"
 #elif defined(OS_MACOSX)
-#include "chrome/browser/ui/cocoa/file_metadata.h"
+#include "chrome/browser/cocoa/file_metadata.h"
 #endif
 
 BaseFile::BaseFile(const FilePath& full_path,
