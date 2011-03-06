@@ -29,9 +29,9 @@ class URLUtil_Dev {
   Var ResolveRelativeToURL(const Var& base_url,
                            const Var& relative_string,
                            PP_URLComponents_Dev* components = NULL) const;
-  Var ResoveRelativeToDocument(const Instance& instance,
-                               const Var& relative_string,
-                               PP_URLComponents_Dev* components = NULL) const;
+  Var ResolveRelativeToDocument(const Instance& instance,
+                                const Var& relative_string,
+                                PP_URLComponents_Dev* components = NULL) const;
 
   bool IsSameSecurityOrigin(const Var& url_a, const Var& url_b) const;
   bool DocumentCanRequest(const Instance& instance, const Var& url) const;

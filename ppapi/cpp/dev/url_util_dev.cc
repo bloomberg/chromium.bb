@@ -41,7 +41,7 @@ Var URLUtil_Dev::ResolveRelativeToURL(const Var& base_url,
                                               components));
 }
 
-Var URLUtil_Dev::ResoveRelativeToDocument(
+Var URLUtil_Dev::ResolveRelativeToDocument(
     const Instance& instance,
     const Var& relative_string,
     PP_URLComponents_Dev* components) const {
