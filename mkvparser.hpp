@@ -548,9 +548,9 @@ public:
 public:
     static Cluster* Create(
         Segment*,
-        long index,     //index in segment
-        long long off,  //offset relative to segment
-        long long element_size);
+        long index,       //index in segment
+        long long off);   //offset relative to segment
+        //long long element_size);
 
     Cluster();  //EndOfStream
     ~Cluster();
@@ -593,9 +593,8 @@ protected:
     Cluster(
         Segment*,
         long index,
-        //long long off,
-        long long element_start,
-        long long element_size);
+        long long element_start);
+        //long long element_size);
 
 public:
     const long long m_element_start;
@@ -605,21 +604,24 @@ public:
     long long GetElementSize() const;
     //long long GetPayloadSize() const;
 
-    long long Unparsed() const;
+    //long long Unparsed() const;
 
 private:
     long m_index;
     mutable long long m_pos;
-    mutable long long m_size;
+    //mutable long long m_size;
     mutable long long m_element_size;
     mutable long long m_timecode;
     mutable BlockEntry** m_entries;
     mutable long m_entries_size;
     mutable long m_entries_count;
 
-    void ParseBlock(long long id, long long pos, long long size) const;
-    void ParseBlockGroup(long long, long long, BlockEntry**&) const;
-    void ParseSimpleBlock(long long, long long, BlockEntry**&) const;
+    long ParseSimpleBlock(long long, long long&, long&) const;
+    long ParseBlockGroup(long long, long long&, long&) const;
+
+    void CreateBlock(long long id, long long pos, long long size) const;
+    void CreateBlockGroup(long long, long long, BlockEntry**&) const;
+    void CreateSimpleBlock(long long, long long, BlockEntry**&) const;
 
 };
 
@@ -692,6 +694,7 @@ public:
 private:
 
     long long m_pos;  //absolute file posn; what has been consumed so far
+    Cluster* m_pUnknownSize;
 
     SeekHead* m_pSeekHead;
     SegmentInfo* m_pInfo;
@@ -701,6 +704,10 @@ private:
     long m_clusterCount;         //number of entries for which m_index >= 0
     long m_clusterPreloadCount;  //number of entries for which m_index < 0
     long m_clusterSize;          //array size
+
+    long DoLoadCluster(long long&, long&);
+    long DoLoadClusterUnknownSize(long long&, long&);
+    long DoParseNext(const Cluster*&, long long&, long&);
 
     void AppendCluster(Cluster*);
     void PreloadCluster(Cluster*, ptrdiff_t);
