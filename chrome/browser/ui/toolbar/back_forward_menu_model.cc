@@ -84,10 +84,13 @@ string16 BackForwardMenuModel::GetLabelAt(int index) const {
           GetString(prefs::kAcceptLanguages)));
   menu_text = ui::ElideText(menu_text, gfx::Font(), kMaxWidth, false);
 
+#if !defined(OS_MACOSX)
   for (size_t i = menu_text.find('&'); i != string16::npos;
        i = menu_text.find('&', i + 2)) {
     menu_text.insert(i, 1, '&');
   }
+#endif
+
   return menu_text;
 }
 
