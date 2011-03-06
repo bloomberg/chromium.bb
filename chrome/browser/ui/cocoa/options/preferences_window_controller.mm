@@ -6,7 +6,6 @@
 
 #include <algorithm>
 
-#include "ui/base/l10n/l10n_util.h"
 #include "base/logging.h"
 #include "base/mac/mac_util.h"
 #include "base/mac/scoped_aedesc.h"
@@ -37,7 +36,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
 #import "chrome/browser/ui/cocoa/clear_browsing_data_controller.h"
-#import "chrome/browser/ui/cocoa/importer/import_settings_dialog.h"
+#import "chrome/browser/ui/cocoa/importer/import_dialog_cocoa.h"
 #import "chrome/browser/ui/cocoa/l10n_util.h"
 #import "chrome/browser/ui/cocoa/options/content_settings_dialog_controller.h"
 #import "chrome/browser/ui/cocoa/options/custom_home_pages_model.h"
@@ -63,6 +62,7 @@
 #include "grit/theme_resources.h"
 #import "third_party/GTM/AppKit/GTMNSAnimation+Duration.h"
 #import "third_party/GTM/AppKit/GTMUILocalizerAndLayoutTweaker.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "ui/base/l10n/l10n_util_mac.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/image.h"
@@ -1360,7 +1360,7 @@ const int kDisabledIndex = 1;
 // Called to import data from other browsers (Safari, Firefox, etc).
 - (IBAction)importData:(id)sender {
   UserMetrics::RecordAction(UserMetricsAction("Import_ShowDlg"), profile_);
-  [ImportSettingsDialogController showImportSettingsDialogForProfile:profile_];
+  [ImportDialogController showImportSettingsDialogForProfile:profile_];
 }
 
 - (IBAction)resetThemeToDefault:(id)sender {

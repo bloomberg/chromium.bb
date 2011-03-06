@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "chrome/browser/ui/cocoa/importer/import_settings_dialog.h"
+#import "chrome/browser/ui/cocoa/importer/import_dialog_cocoa.h"
 
 #include "base/compiler_specific.h"
 #include "base/mac/mac_util.h"
@@ -15,21 +15,21 @@
 #include "ui/base/l10n/l10n_util_mac.h"
 
 // Bridge to receive observer messages from an ImporterList and relay
-// them to the ImportSettingsDialogController.
+// them to the ImportDialogController.
 class ImporterListObserverBridge : public ImporterList::Observer {
  public:
   explicit ImporterListObserverBridge(
-      ImportSettingsDialogController *controller);
+      ImportDialogController *controller);
 
  private:
   // ImporterList::Observer:
   virtual void SourceProfilesLoaded() OVERRIDE;
 
-  ImportSettingsDialogController* window_controller_;  // weak, owns us.
+  ImportDialogController* window_controller_;  // weak, owns us.
 };
 
 ImporterListObserverBridge::ImporterListObserverBridge(
-    ImportSettingsDialogController *controller)
+    ImportDialogController *controller)
   : window_controller_(controller) {
 }
 
@@ -43,7 +43,7 @@ bool importSettingsDialogVisible = false;
 
 }  // namespace
 
-@interface ImportSettingsDialogController ()
+@interface ImportDialogController ()
 
 @property(assign, readwrite, nonatomic) BOOL historyAvailable;
 @property(assign, readwrite, nonatomic) BOOL favoritesAvailable;
@@ -92,7 +92,7 @@ bool importSettingsDialogVisible = false;
 
 @end
 
-@interface ImportSettingsDialogController (Private)
+@interface ImportDialogController (Private)
 
 // Initialize the dialog controller with either the default profile or
 // the profile for the current browser.
@@ -106,7 +106,7 @@ bool importSettingsDialogVisible = false;
 
 @end
 
-@implementation ImportSettingsDialogController
+@implementation ImportDialogController
 
 @synthesize sourceBrowserIndex = sourceBrowserIndex_;
 @synthesize importHistory = importHistory_;
@@ -128,8 +128,8 @@ bool importSettingsDialogVisible = false;
   // Don't display if already visible.
   if (importSettingsDialogVisible)
     return;
-  ImportSettingsDialogController* controller =
-      [[ImportSettingsDialogController alloc] initWithProfile:profile];
+  ImportDialogController* controller =
+      [[ImportDialogController alloc] initWithProfile:profile];
   [controller runModalDialog];
 }
 

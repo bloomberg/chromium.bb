@@ -37,7 +37,7 @@
 #import "chrome/browser/ui/cocoa/confirm_quit_panel_controller.h"
 #import "chrome/browser/ui/cocoa/encoding_menu_controller_delegate_mac.h"
 #import "chrome/browser/ui/cocoa/history_menu_bridge.h"
-#import "chrome/browser/ui/cocoa/importer/import_settings_dialog.h"
+#import "chrome/browser/ui/cocoa/importer/import_dialog_cocoa.h"
 #import "chrome/browser/ui/cocoa/options/preferences_window_controller.h"
 #import "chrome/browser/ui/cocoa/tabs/tab_strip_controller.h"
 #import "chrome/browser/ui/cocoa/tabs/tab_window_controller.h"
@@ -867,7 +867,7 @@ void RecordLastRunAppBundlePath() {
               switches::kDisableTabbedOptions)) {
         UserMetrics::RecordAction(UserMetricsAction("Import_ShowDlg"),
                                   defaultProfile);
-        [ImportSettingsDialogController
+        [ImportDialogController
             showImportSettingsDialogForProfile:defaultProfile];
       } else {
         if (Browser* browser = ActivateBrowser(defaultProfile)) {

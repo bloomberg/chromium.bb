@@ -8,13 +8,13 @@
 #include "chrome/browser/importer/importer.h"
 #import "chrome/browser/ui/cocoa/browser_test_helper.h"
 #import "chrome/browser/ui/cocoa/cocoa_test_helper.h"
-#import "chrome/browser/ui/cocoa/importer/import_settings_dialog.h"
+#import "chrome/browser/ui/cocoa/importer/import_dialog_cocoa.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
 
 class ImportSettingsDialogTest : public CocoaTest {
  public:
-  ImportSettingsDialogController* controller_;
+  ImportDialogController* controller_;
 
   virtual void SetUp() {
     CocoaTest::SetUp();
@@ -39,7 +39,7 @@ class ImportSettingsDialogTest : public CocoaTest {
                                      services:caminoServices];
     NSArray* browsers = [NSArray arrayWithObjects:
                          mockSafari, mockFirefox, mockCamino, nil];
-    controller_ = [[ImportSettingsDialogController alloc]
+    controller_ = [[ImportDialogController alloc]
                    initWithSourceProfiles:browsers];
   }
 

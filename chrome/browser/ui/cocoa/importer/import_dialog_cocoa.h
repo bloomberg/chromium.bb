@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_COCOA_IMPORTER_IMPORT_SETTINGS_DIALOG_H_
-#define CHROME_BROWSER_UI_COCOA_IMPORTER_IMPORT_SETTINGS_DIALOG_H_
+#ifndef CHROME_BROWSER_UI_COCOA_IMPORTER_IMPORT_DIALOG_COCOA_H_
+#define CHROME_BROWSER_UI_COCOA_IMPORTER_IMPORT_DIALOG_COCOA_H_
 #pragma once
 
 #import <Cocoa/Cocoa.h>
@@ -16,7 +16,7 @@ class ImporterListObserverBridge;
 
 // Controller for the Import Bookmarks and Settings dialog.  This controller
 // automatically autoreleases itself when its associated dialog is dismissed.
-@interface ImportSettingsDialogController : NSWindowController {
+@interface ImportDialogController : NSWindowController {
  @private
   NSWindow* parentWindow_;  // weak
   Profile* profile_;  // weak
@@ -70,7 +70,7 @@ class ImporterListObserverBridge;
 
 @end
 
-@interface ImportSettingsDialogController (TestingAPI)
+@interface ImportDialogController (TestingAPI)
 
 // Initialize by providing an array of source profile dictionaries. Exposed for
 // unit testing but also called by -[initWithProfile:].
@@ -101,4 +101,4 @@ class ImporterListObserverBridge;
 
 @end
 
-#endif  // CHROME_BROWSER_UI_COCOA_IMPORTER_IMPORT_SETTINGS_DIALOG_H_
+#endif  // CHROME_BROWSER_UI_COCOA_IMPORTER_IMPORT_DIALOG_COCOA_H_

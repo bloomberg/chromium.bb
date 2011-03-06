@@ -1614,7 +1614,7 @@
         'browser/ui/cocoa/hung_renderer_controller_unittest.mm',
         'browser/ui/cocoa/hyperlink_button_cell_unittest.mm',
         'browser/ui/cocoa/image_utils_unittest.mm',
-        'browser/ui/cocoa/importer/import_settings_dialog_unittest.mm',
+        'browser/ui/cocoa/importer/import_dialog_cocoa_unittest.mm',
         'browser/ui/cocoa/info_bubble_view_unittest.mm',
         'browser/ui/cocoa/info_bubble_window_unittest.mm',
         'browser/ui/cocoa/infobars/infobar_container_controller_unittest.mm',
