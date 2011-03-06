@@ -20,8 +20,10 @@ class LoginModel;
 // for HTTP/FTP authentication.
 class LoginView : public views::View, public LoginModelObserver {
  public:
-  // |focus_view| indicates if the view can be focused.
-  LoginView(const std::wstring& explanation, bool focus_view);
+  // |model| is observed for the entire lifetime of the LoginView.
+  // Therefore |model| should not be destroyed before the LoginView
+  // object.
+  LoginView(const std::wstring& explanation, LoginModel* model);
   virtual ~LoginView();
 
   // Access the data in the username/password text fields.
@@ -30,28 +32,12 @@ class LoginView : public views::View, public LoginModelObserver {
 
   // LoginModelObserver implementation.
   virtual void OnAutofillDataAvailable(const std::wstring& username,
-                                       const std::wstring& password);
+                                       const std::wstring& password) OVERRIDE;
 
-  // Sets the model. This lets the observer notify the model
-  // when it has been closed / freed, so the model should no longer try and
-  // contact it. The view does not own the model, and it is the responsibility
-  // of the caller to inform this view if the model is deleted.
-  void SetModel(LoginModel* model);
-
-  virtual void RequestFocus();
-
- protected:
-  // views::View overrides:
-  virtual void ViewHierarchyChanged(bool is_add, views::View *parent,
-                                    views::View *child);
-
-  virtual void NativeViewHierarchyChanged(bool attached,
-                                          gfx::NativeView native_view,
-                                          views::RootView* root_view);
+  // Used by LoginHandlerWin to set the initial focus.
+  views::View* GetInitiallyFocusedView();
 
  private:
-  void FocusFirstField();
-
   // Non-owning refs to the input text fields.
   views::Textfield* username_field_;
   views::Textfield* password_field_;
@@ -66,15 +52,6 @@ class LoginView : public views::View, public LoginModelObserver {
   // If not null, points to a model we need to notify of our own destruction
   // so it doesn't try and access this when its too late.
   LoginModel* login_model_;
-
-  ScopedRunnableMethodFactory<LoginView> focus_grabber_factory_;
-
-  // See description above constructor.
-  const bool focus_view_;
-
-  // Indicates that this view was created when focus manager was unavailable
-  // (on the hidden tab, for example). This is only used if focus_view_ is true.
-  bool focus_delayed_;
 
   DISALLOW_COPY_AND_ASSIGN(LoginView);
 };

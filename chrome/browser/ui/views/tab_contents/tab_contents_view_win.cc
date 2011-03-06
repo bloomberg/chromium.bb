@@ -192,6 +192,13 @@ void TabContentsViewWin::Focus() {
     return;
   }
 
+  if (tab_contents()->constrained_window_count() > 0) {
+    ConstrainedWindow* window = *tab_contents()->constrained_window_begin();
+    DCHECK(window);
+    window->FocusConstrainedWindow();
+    return;
+  }
+
   RenderWidgetHostView* rwhv = tab_contents()->GetRenderWidgetHostView();
   if (rwhv) {
     ::SetFocus(rwhv->GetNativeView());

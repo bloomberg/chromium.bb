@@ -12,9 +12,7 @@
 #include "content/browser/renderer_host/render_process_host.h"
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/renderer_host/resource_dispatcher_host.h"
-#include "content/browser/tab_contents/navigation_controller.h"
 #include "content/browser/tab_contents/tab_contents.h"
-#include "content/browser/tab_contents/tab_contents_delegate.h"
 #include "grit/generated_resources.h"
 #include "net/url_request/url_request.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -38,27 +36,23 @@ class LoginHandlerWin : public LoginHandler,
 
   // LoginModelObserver implementation.
   virtual void OnAutofillDataAvailable(const std::wstring& username,
-                                       const std::wstring& password) {
+                                       const std::wstring& password) OVERRIDE {
     // Nothing to do here since LoginView takes care of autofil for win.
-  }
-
-  void set_login_view(LoginView* login_view) {
-    login_view_ = login_view;
   }
 
   // views::DialogDelegate methods:
   virtual std::wstring GetDialogButtonLabel(
-      MessageBoxFlags::DialogButton button) const {
+      MessageBoxFlags::DialogButton button) const OVERRIDE {
     if (button == MessageBoxFlags::DIALOGBUTTON_OK)
       return l10n_util::GetStringUTF16(IDS_LOGIN_DIALOG_OK_BUTTON_LABEL);
     return DialogDelegate::GetDialogButtonLabel(button);
   }
 
-  virtual std::wstring GetWindowTitle() const {
+  virtual std::wstring GetWindowTitle() const OVERRIDE {
     return l10n_util::GetStringUTF16(IDS_LOGIN_DIALOG_TITLE);
   }
 
-  virtual void WindowClosing() {
+  virtual void WindowClosing() OVERRIDE {
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
     TabContents* tab = GetTabContentsForLogin();
@@ -71,7 +65,7 @@ class LoginHandlerWin : public LoginHandler,
     CancelAuth();
   }
 
-  virtual void DeleteDelegate() {
+  virtual void DeleteDelegate() OVERRIDE {
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
     // The constrained window is going to delete itself; clear our pointer.
@@ -81,44 +75,41 @@ class LoginHandlerWin : public LoginHandler,
     ReleaseSoon();
   }
 
-  virtual bool Cancel() {
+  virtual bool Cancel() OVERRIDE {
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
     CancelAuth();
     return true;
   }
 
-  virtual bool Accept() {
+  virtual bool Accept() OVERRIDE {
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
     SetAuth(login_view_->GetUsername(), login_view_->GetPassword());
     return true;
   }
 
-  virtual views::View* GetContentsView() {
+  virtual views::View* GetInitiallyFocusedView() OVERRIDE {
+    return login_view_->GetInitiallyFocusedView();
+  }
+
+  virtual views::View* GetContentsView() OVERRIDE {
     return login_view_;
   }
 
   // LoginHandler:
 
-  virtual void BuildViewForPasswordManager(PasswordManager* manager,
-                                           const string16& explanation) {
+  virtual void BuildViewForPasswordManager(
+      PasswordManager* manager,
+      const string16& explanation) OVERRIDE {
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-    TabContents* tab_contents = GetTabContentsForLogin();
-    bool should_focus_view = !tab_contents->delegate() ||
-        tab_contents->delegate()->ShouldFocusConstrainedWindow();
-
-    LoginView* view = new LoginView(UTF16ToWideHack(explanation),
-                                    should_focus_view);
-
-    // Set the model for the login view. The model (password manager) is owned
-    // by the view's parent TabContents, so natural destruction order means we
-    // don't have to worry about calling SetModel(NULL), because the view will
+    // Create a new LoginView and set the model for it.  The model
+    // (password manager) is owned by the view's parent TabContents,
+    // so natural destruction order means we don't have to worry about
+    // disassociating the model from the view, because the view will
     // be deleted before the password manager.
-    view->SetModel(manager);
-
-    set_login_view(view);
+    login_view_ = new LoginView(UTF16ToWideHack(explanation), manager);
 
     // Scary thread safety note: This can potentially be called *after* SetAuth
     // or CancelAuth (say, if the request was cancelled before the UI thread got
