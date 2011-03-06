@@ -90,7 +90,7 @@ class StatusBubbleMacTest : public CocoaTest {
     // minimal loss of coverage and without any heinous rearchitecting.
     bubble_->immediate_ = true;
 
-    EXPECT_FALSE(bubble_->window_);  // lazily creates window
+    EXPECT_TRUE(bubble_->window_);  // immediately creates window
   }
 
   virtual void TearDown() {
@@ -446,9 +446,9 @@ TEST_F(StatusBubbleMacTest, Delete) {
 TEST_F(StatusBubbleMacTest, UpdateSizeAndPosition) {
   // Test |UpdateSizeAndPosition()| when status bubble does not exist (shouldn't
   // crash; shouldn't create window).
-  EXPECT_FALSE(GetWindow());
+  EXPECT_TRUE(GetWindow());
   bubble_->UpdateSizeAndPosition();
-  EXPECT_FALSE(GetWindow());
+  EXPECT_TRUE(GetWindow());
 
   // Create a status bubble (with contents) and call resize (without actually
   // resizing); the frame size shouldn't change.
