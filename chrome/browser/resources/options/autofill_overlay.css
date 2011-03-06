@@ -20,7 +20,7 @@ div.input {
   padding: 2px;
 }
 
-input.form {
+input.autofill-form {
   width: 90%;
   max-width: 151px;
 }
