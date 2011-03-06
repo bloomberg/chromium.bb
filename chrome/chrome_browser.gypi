@@ -27,7 +27,6 @@
         'theme_resources',
         'userfeedback_proto',
         '../app/app.gyp:app_resources',
-        '../app/app.gyp:app_strings',
         '../content/content.gyp:content_browser',
         '../media/media.gyp:media',
         '../ppapi/ppapi.gyp:ppapi_proxy',  # For PpapiMsg_LoadPlugin
@@ -41,6 +40,7 @@
         '../third_party/libjingle/libjingle.gyp:libjingle',
         '../third_party/libxml/libxml.gyp:libxml',
         '../third_party/npapi/npapi.gyp:npapi',
+        '../ui/base/strings/ui_strings.gyp:ui_strings',
         '../webkit/support/webkit_support.gyp:appcache',
         '../webkit/support/webkit_support.gyp:blob',
         '../webkit/support/webkit_support.gyp:database',
