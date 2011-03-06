@@ -4,14 +4,15 @@
 
 #include "chrome/browser/ui/views/location_bar/suggested_text_view.h"
 
+#include "chrome/browser/autocomplete/autocomplete_edit.h"
 #include "chrome/browser/instant/instant_controller.h"
 #include "chrome/browser/ui/views/location_bar/location_bar_view.h"
 #include "ui/base/animation/multi_animation.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/color_utils.h"
 
-SuggestedTextView::SuggestedTextView(LocationBarView* location_bar)
-    : location_bar_(location_bar),
+SuggestedTextView::SuggestedTextView(AutocompleteEditModel* edit_model)
+    : edit_model_(edit_model),
       bg_color_(0) {
 }
 
@@ -46,7 +47,7 @@ void SuggestedTextView::OnPaintBackground(gfx::Canvas* canvas) {
 }
 
 void SuggestedTextView::AnimationEnded(const ui::Animation* animation) {
-  location_bar_->OnCommitSuggestedText(false);
+  edit_model_->CommitSuggestedText(false);
 }
 
 void SuggestedTextView::AnimationProgressed(const ui::Animation* animation) {

@@ -11,7 +11,7 @@
 #include "views/view.h"
 
 ClickHandler::ClickHandler(const views::View* owner,
-                           const LocationBarView* location_bar)
+                           LocationBarView* location_bar)
     : owner_(owner),
       location_bar_(location_bar) {
 }

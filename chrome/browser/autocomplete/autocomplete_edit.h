@@ -21,8 +21,10 @@ class AutocompleteEditModel;
 class AutocompleteEditView;
 class AutocompletePopupModel;
 class AutocompleteResult;
+class InstantController;
 class Profile;
 class SkBitmap;
+class TabContentsWrapper;
 
 namespace gfx {
 class Rect;
@@ -35,32 +37,6 @@ class Rect;
 // Embedders of an AutocompleteEdit widget must implement this class.
 class AutocompleteEditController {
  public:
-  // Sent when the autocomplete popup is about to close.
-  virtual void OnAutocompleteWillClosePopup() = 0;
-
-  // Sent when the edit is losing focus. |view_gaining_focus| is the view
-  // gaining focus and may be null.
-  virtual void OnAutocompleteLosingFocus(
-      gfx::NativeView view_gaining_focus) = 0;
-
-  // Sent prior to OnAutoCompleteAccept and before the model has been reverted.
-  // This is only invoked if the popup is closed before invoking
-  // OnAutoCompleteAccept.
-  virtual void OnAutocompleteWillAccept() = 0;
-
-  // Commits the suggested text. If |skip_inline_autocomplete| is true then the
-  // suggested text will be committed as final text as if it's inputted by the
-  // user, rather than as inline autocomplete suggest.
-  // Returns true if the text was committed.
-  virtual bool OnCommitSuggestedText(bool skip_inline_autocomplete) = 0;
-
-  // Accepts the currently showing instant preview, if any, and returns true.
-  // Returns false if there is no instant preview showing.
-  virtual bool AcceptCurrentInstantPreview() = 0;
-
-  // Invoked when the popup is going to change its bounds to |bounds|.
-  virtual void OnPopupBoundsChanged(const gfx::Rect& bounds) = 0;
-
   // When the user presses enter or selects a line with the mouse, this
   // function will get called synchronously with the url to open and
   // disposition and transition to use when opening it.
@@ -97,6 +73,12 @@ class AutocompleteEditController {
 
   // Returns the title of the current page.
   virtual string16 GetTitle() const = 0;
+
+  // Returns the InstantController, or NULL if instant is not enabled.
+  virtual InstantController* GetInstant() = 0;
+
+  // Returns the TabContentsWrapper of the currently selected tab.
+  virtual TabContentsWrapper* GetTabContentsWrapper() = 0;
 
  protected:
   virtual ~AutocompleteEditController();
@@ -208,6 +190,24 @@ class AutocompleteEditModel : public AutocompleteControllerDelegate {
                             const string16& suggest_text,
                             bool skip_inline_autocomplete);
 
+  // Sets the suggestion text.
+  void SetSuggestedText(const string16& text);
+
+  // Commits the suggested text. If |skip_inline_autocomplete| is true then the
+  // suggested text will be committed as final text as if it's inputted by the
+  // user, rather than as inline autocomplete suggest.
+  // Returns true if the text was committed.
+  // TODO: can the return type be void?
+  bool CommitSuggestedText(bool skip_inline_autocomplete);
+
+  // Accepts the currently showing instant preview, if any, and returns true.
+  // Returns false if there is no instant preview showing.
+  bool AcceptCurrentInstantPreview();
+
+  // Invoked any time the text may have changed in the edit. Updates instant and
+  // notifies the controller.
+  void OnChanged();
+
   // Reverts the edit model back to its unedited state (permanent text showing,
   // no user input in progress).
   void Revert();
@@ -276,6 +276,9 @@ class AutocompleteEditModel : public AutocompleteControllerDelegate {
   // Called when the view is gaining focus.  |control_down| is whether the
   // control key is down (at the time we're gaining focus).
   void OnSetFocus(bool control_down);
+
+  // Sent before |OnKillFocus| and before the popup is closed.
+  void OnWillKillFocus(gfx::NativeView view_gaining_focus);
 
   // Called when the view is losing focus.  Resets some state.
   void OnKillFocus();
@@ -513,6 +516,12 @@ class AutocompleteEditModel : public AutocompleteControllerDelegate {
   mutable GURL paste_and_go_alternate_nav_url_;
 
   Profile* profile_;
+
+  // Should instant be updated? This is needed as prior to accepting the current
+  // text the model is reverted, which triggers resetting instant. We don't want
+  // to update instant in this case, so we use the flag to determine if this is
+  // happening.
+  bool update_instant_;
 
   DISALLOW_COPY_AND_ASSIGN(AutocompleteEditModel);
 };

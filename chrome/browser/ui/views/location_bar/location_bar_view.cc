@@ -114,8 +114,7 @@ LocationBarView::LocationBarView(Profile* profile,
       mode_(mode),
       show_focus_rect_(false),
       bubble_type_(FirstRun::MINIMAL_BUBBLE),
-      template_url_model_(NULL),
-      update_instant_(true) {
+      template_url_model_(NULL) {
   DCHECK(profile_);
   SetID(VIEW_ID_LOCATION_BAR);
   SetFocusable(true);
@@ -331,10 +330,6 @@ void LocationBarView::SetProfile(Profile* profile) {
   }
 }
 
-TabContentsWrapper* LocationBarView::GetTabContentsWrapper() const {
-  return delegate_->GetTabContentsWrapper();
-}
-
 void LocationBarView::SetPreviewEnabledPageAction(ExtensionAction* page_action,
                                                   bool preview_enabled) {
   if (mode_ != NORMAL)
@@ -393,6 +388,16 @@ gfx::Point LocationBarView::GetLocationEntryOrigin() const {
     origin.set_x(width() - origin.x());
   views::View::ConvertPointToScreen(this, &origin);
   return origin;
+}
+
+string16 LocationBarView::GetInstantSuggestion() const {
+#if defined(OS_WIN)
+  return HasValidSuggestText() ? suggested_text_view_->GetText() : string16();
+#else
+  // On linux the edit shows the suggested text.
+  NOTREACHED();
+  return string16();
+#endif
 }
 
 gfx::Size LocationBarView::GetPreferredSize() {
@@ -731,58 +736,6 @@ void LocationBarView::OnMouseReleased(const views::MouseEvent& event,
 }
 #endif
 
-void LocationBarView::OnAutocompleteWillClosePopup() {
-  if (!update_instant_)
-    return;
-
-  InstantController* instant = delegate_->GetInstant();
-  if (instant && !instant->commit_on_mouse_up())
-    instant->DestroyPreviewContents();
-}
-
-void LocationBarView::OnAutocompleteLosingFocus(
-    gfx::NativeView view_gaining_focus) {
-  SetSuggestedText(string16());
-
-  InstantController* instant = delegate_->GetInstant();
-  if (instant)
-    instant->OnAutocompleteLostFocus(view_gaining_focus);
-}
-
-void LocationBarView::OnAutocompleteWillAccept() {
-  update_instant_ = false;
-}
-
-bool LocationBarView::OnCommitSuggestedText(bool skip_inline_autocomplete) {
-  if (!delegate_->GetInstant())
-    return false;
-
-  string16 suggestion;
-#if defined(OS_WIN)
-  if (HasValidSuggestText())
-    suggestion = suggested_text_view_->GetText();
-#else
-  suggestion = location_entry_->GetInstantSuggestion();
-#endif
-
-  if (suggestion.empty())
-    return false;
-
-  location_entry_->model()->FinalizeInstantQuery(
-      location_entry_->GetText(), suggestion, skip_inline_autocomplete);
-  return true;
-}
-
-bool LocationBarView::AcceptCurrentInstantPreview() {
-  return InstantController::CommitIfCurrent(delegate_->GetInstant());
-}
-
-void LocationBarView::OnPopupBoundsChanged(const gfx::Rect& bounds) {
-  InstantController* instant = delegate_->GetInstant();
-  if (instant)
-    instant->SetOmniboxBounds(bounds);
-}
-
 void LocationBarView::OnAutocompleteAccept(
     const GURL& url,
     WindowOpenDisposition disposition,
@@ -816,12 +769,6 @@ void LocationBarView::OnAutocompleteAccept(
       }
     }
   }
-
-  if (delegate_->GetInstant() &&
-      !location_entry_->model()->popup_model()->IsOpen())
-    delegate_->GetInstant()->DestroyPreviewContents();
-
-  update_instant_ = true;
 }
 
 void LocationBarView::OnChanged() {
@@ -832,15 +779,6 @@ void LocationBarView::OnChanged() {
 
   Layout();
   SchedulePaint();
-
-  InstantController* instant = delegate_->GetInstant();
-  string16 suggested_text;
-  if (update_instant_ && instant && GetTabContentsWrapper()) {
-    UpdateInstant(instant, GetTabContentsWrapper(), location_entry_.get(),
-                  &suggested_text);
-  }
-
-  SetSuggestedText(suggested_text);
 }
 
 void LocationBarView::OnSelectionBoundsChanged() {
@@ -874,6 +812,14 @@ SkBitmap LocationBarView::GetFavIcon() const {
 
 string16 LocationBarView::GetTitle() const {
   return GetTabContentsFromDelegate(delegate_)->GetTitle();
+}
+
+InstantController* LocationBarView::GetInstant() {
+  return delegate_->GetInstant();
+}
+
+TabContentsWrapper* LocationBarView::GetTabContentsWrapper() {
+  return delegate_->GetTabContentsWrapper();
 }
 
 int LocationBarView::AvailableWidth(int location_bar_width) {
@@ -1043,7 +989,7 @@ bool LocationBarView::SkipDefaultKeyEventProcessing(const views::KeyEvent& e) {
     // Tab while showing instant commits instant immediately.
     // Return true so that focus traversal isn't attempted. The edit ends
     // up doing nothing in this case.
-    if (AcceptCurrentInstantPreview())
+    if (location_entry_->model()->AcceptCurrentInstantPreview())
       return true;
   }
 
@@ -1103,15 +1049,8 @@ void LocationBarView::ShowFirstRunBubble(FirstRun::BubbleType bubble_type) {
   ShowFirstRunBubbleInternal(bubble_type);
 }
 
-void LocationBarView::SetSuggestedText(const string16& input) {
-  // This method is internally invoked to reset suggest text, so we only do
-  // anything if the text isn't empty.
-  // TODO: if we keep autocomplete, make it so this isn't invoked with empty
-  // text.
-  if (!input.empty()) {
-    location_entry_->model()->FinalizeInstantQuery(location_entry_->GetText(),
-                                                   input, false);
-  }
+void LocationBarView::SetSuggestedText(const string16& text) {
+  location_entry_->model()->SetSuggestedText(text);
 }
 
 std::wstring LocationBarView::GetInputString() const {
@@ -1221,7 +1160,7 @@ void LocationBarView::OnTemplateURLModelChanged() {
 }
 
 #if defined(OS_WIN)
-bool LocationBarView::HasValidSuggestText() {
+bool LocationBarView::HasValidSuggestText() const {
   return suggested_text_view_ && !suggested_text_view_->size().IsEmpty() &&
       !suggested_text_view_->GetText().empty();
 }

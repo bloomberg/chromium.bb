@@ -400,7 +400,7 @@ AutocompleteEditViewWin::AutocompleteEditViewWin(
     const gfx::Font& font,
     AutocompleteEditController* controller,
     ToolbarModel* toolbar_model,
-    views::View* parent_view,
+    LocationBarView* parent_view,
     HWND hwnd,
     Profile* profile,
     CommandUpdater* command_updater,
@@ -504,6 +504,10 @@ AutocompleteEditViewWin::~AutocompleteEditViewWin() {
   // been destroyed.  This prevents us from relying on the AtExit or static
   // destructor sequence to do our unpatching, which is generally fragile.
   g_paint_patcher.Pointer()->DerefPatch();
+}
+
+views::View* AutocompleteEditViewWin::parent_view() const {
+  return parent_view_;
 }
 
 int AutocompleteEditViewWin::WidthOfTextAfterCursor() {
@@ -727,9 +731,6 @@ void AutocompleteEditViewWin::UpdatePopup() {
 }
 
 void AutocompleteEditViewWin::ClosePopup() {
-  if (model_->popup_model()->IsOpen())
-    controller_->OnAutocompleteWillClosePopup();
-
   model_->StopAutocomplete();
 }
 
@@ -913,7 +914,7 @@ bool AutocompleteEditViewWin::OnAfterPossibleChangeInternal(
     parent_view_->NotifyAccessibilityEvent(
         AccessibilityTypes::EVENT_SELECTION_CHANGED);
   } else if (delete_at_end_pressed_) {
-    controller_->OnChanged();
+    model_->OnChanged();
   }
 
   return something_changed;
@@ -932,14 +933,12 @@ void AutocompleteEditViewWin::SetInstantSuggestion(const string16& suggestion) {
   NOTREACHED();
 }
 
-string16 AutocompleteEditViewWin::GetInstantSuggestion() const {
-  // On Windows, we shows the suggestion in LocationBarView.
-  NOTREACHED();
-  return string16();
-}
-
 int AutocompleteEditViewWin::TextWidth() const {
   return WidthNeededToDisplay(GetText());
+}
+
+string16 AutocompleteEditViewWin::GetInstantSuggestion() const {
+  return parent_view_->GetInstantSuggestion();
 }
 
 bool AutocompleteEditViewWin::IsImeComposing() const {
@@ -1440,7 +1439,7 @@ void AutocompleteEditViewWin::OnKillFocus(HWND focus_wnd) {
   }
 
   // This must be invoked before ClosePopup.
-  controller_->OnAutocompleteLosingFocus(focus_wnd);
+  model_->OnWillKillFocus(focus_wnd);
 
   // Close the popup.
   ClosePopup();
@@ -1895,7 +1894,7 @@ bool AutocompleteEditViewWin::OnKeyDownOnlyWritable(TCHAR key,
         GetSel(selection);
         return (selection.cpMin == selection.cpMax) &&
             (selection.cpMin == GetTextLength()) &&
-            controller_->OnCommitSuggestedText(true);
+            model_->CommitSuggestedText(true);
       }
 
     case VK_RETURN:
@@ -2029,7 +2028,7 @@ bool AutocompleteEditViewWin::OnKeyDownOnlyWritable(TCHAR key,
         PlaceCaretAt(GetTextLength());
         OnAfterPossibleChange();
       } else {
-        controller_->OnCommitSuggestedText(true);
+        model_->CommitSuggestedText(true);
       }
       return true;
     }
@@ -2368,7 +2367,7 @@ void AutocompleteEditViewWin::DrawDropHighlight(HDC hdc,
 void AutocompleteEditViewWin::TextChanged() {
   ScopedFreeze freeze(this, GetTextObjectModel());
   EmphasizeURLComponents();
-  controller_->OnChanged();
+  model_->OnChanged();
 }
 
 string16 AutocompleteEditViewWin::GetClipboardText() const {

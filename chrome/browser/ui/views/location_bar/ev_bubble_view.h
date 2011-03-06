@@ -21,7 +21,7 @@ class EVBubbleView : public IconLabelBubbleView {
   EVBubbleView(const int background_images[],
                int contained_image,
                const SkColor& color,
-               const LocationBarView* location_bar);
+               LocationBarView* location_bar);
   virtual ~EVBubbleView();
 
   // Overridden from view.

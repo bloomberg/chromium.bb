@@ -19,7 +19,7 @@ class MouseEvent;
 // status on https pages, or a globe for other URLs.
 class LocationIconView : public views::ImageView {
  public:
-  explicit LocationIconView(const LocationBarView* location_bar);
+  explicit LocationIconView(LocationBarView* location_bar);
   virtual ~LocationIconView();
 
   // Overridden from views::ImageView:

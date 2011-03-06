@@ -249,6 +249,22 @@ bool InstantController::IsMouseDownFromActivate() {
   return loader_manager_->current_loader()->IsMouseDownFromActivate();
 }
 
+#if defined(OS_MACOSX)
+void InstantController::OnAutocompleteLostFocus(
+    gfx::NativeView view_gaining_focus) {
+  // If |IsMouseDownFromActivate()| returns false, the RenderWidgetHostView did
+  // not receive a mouseDown event.  Therefore, we should destroy the preview.
+  // Otherwise, the RWHV was clicked, so we commit the preview.
+  if (!is_displayable() || !GetPreviewContents() ||
+      !IsMouseDownFromActivate()) {
+    DestroyPreviewContents();
+  } else if (IsShowingInstant()) {
+    SetCommitOnMouseUp();
+  } else {
+    CommitCurrentPreview(INSTANT_COMMIT_FOCUS_LOST);
+  }
+}
+#else
 void InstantController::OnAutocompleteLostFocus(
     gfx::NativeView view_gaining_focus) {
   if (!is_active() || !GetPreviewContents()) {
@@ -305,6 +321,7 @@ void InstantController::OnAutocompleteLostFocus(
 
   DestroyPreviewContents();
 }
+#endif
 
 TabContentsWrapper* InstantController::ReleasePreviewContents(
     InstantCommitType type) {

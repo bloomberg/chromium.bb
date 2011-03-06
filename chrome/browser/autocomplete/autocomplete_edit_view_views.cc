@@ -242,7 +242,7 @@ void AutocompleteEditViewViews::HandleFocusIn() {
 void AutocompleteEditViewViews::HandleFocusOut() {
   // TODO(oshima): we don't have native view. This requires
   // further refactoring.
-  controller_->OnAutocompleteLosingFocus(NULL);
+  model_->OnWillKillFocus(NULL);
   // Close the popup.
   ClosePopup();
   // Tell the model to reset itself.
@@ -431,9 +431,6 @@ void AutocompleteEditViewViews::UpdatePopup() {
 }
 
 void AutocompleteEditViewViews::ClosePopup() {
-  if (model_->popup_model()->IsOpen())
-    controller_->OnAutocompleteWillClosePopup();
-
   model_->StopAutocomplete();
 }
 
@@ -511,7 +508,7 @@ bool AutocompleteEditViewViews::OnAfterPossibleChange() {
   bool something_changed = model_->OnAfterPossibleChange(new_text,
       selection_differs, text_changed_, just_deleted_text, at_end_of_edit);
 
-  // If only selection was changed, we don't need to call |controller_|'s
+  // If only selection was changed, we don't need to call |model_|'s
   // OnChanged() method, which is called in TextChanged().
   // But we still need to call EmphasizeURLComponents() to make sure the text
   // attributes are updated correctly.
@@ -521,7 +518,7 @@ bool AutocompleteEditViewViews::OnAfterPossibleChange() {
     EmphasizeURLComponents();
   } else if (delete_was_pressed_ && at_end_of_edit) {
     delete_at_end_pressed_ = true;
-    controller_->OnChanged();
+    model_->OnChanged();
   }
   delete_was_pressed_ = false;
 
@@ -628,7 +625,7 @@ void AutocompleteEditViewViews::EmphasizeURLComponents() {
 
 void AutocompleteEditViewViews::TextChanged() {
   EmphasizeURLComponents();
-  controller_->OnChanged();
+  model_->OnChanged();
 }
 
 void AutocompleteEditViewViews::SetTextAndSelectedRange(

@@ -2772,7 +2772,6 @@
         'browser/ui/login/login_prompt_mac.h',
         'browser/ui/login/login_prompt_mac.mm',
         'browser/ui/login/login_prompt_win.cc',
-        'browser/ui/omnibox/location_bar.cc',
         'browser/ui/omnibox/location_bar.h',
         'browser/ui/omnibox/location_bar_util.cc',
         'browser/ui/omnibox/location_bar_util.h',

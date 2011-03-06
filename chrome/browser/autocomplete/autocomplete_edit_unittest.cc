@@ -73,27 +73,21 @@ class TestingAutocompleteEditView : public AutocompleteEditView {
 class TestingAutocompleteEditController : public AutocompleteEditController {
  public:
   TestingAutocompleteEditController() {}
-  virtual void OnAutocompleteWillClosePopup() {}
-  virtual void OnAutocompleteLosingFocus(gfx::NativeView view_gaining_focus) {}
-  virtual void OnAutocompleteWillAccept() {}
-  virtual bool OnCommitSuggestedText(bool skip_inline_autocomplete) {
-    return false;
-  }
-  virtual bool AcceptCurrentInstantPreview() {
-    return false;
-  }
-  virtual void OnPopupBoundsChanged(const gfx::Rect& bounds) {}
   virtual void OnAutocompleteAccept(const GURL& url,
                                     WindowOpenDisposition disposition,
                                     PageTransition::Type transition,
-                                    const GURL& alternate_nav_url) {}
-  virtual void OnChanged() {}
-  virtual void OnSelectionBoundsChanged() {}
-  virtual void OnInputInProgress(bool in_progress) {}
-  virtual void OnKillFocus() {}
-  virtual void OnSetFocus() {}
-  virtual SkBitmap GetFavIcon() const { return SkBitmap(); }
-  virtual string16 GetTitle() const { return string16(); }
+                                    const GURL& alternate_nav_url) OVERRIDE {}
+  virtual void OnChanged() OVERRIDE {}
+  virtual void OnSelectionBoundsChanged() OVERRIDE {}
+  virtual void OnInputInProgress(bool in_progress) OVERRIDE {}
+  virtual void OnKillFocus() OVERRIDE {}
+  virtual void OnSetFocus() OVERRIDE {}
+  virtual SkBitmap GetFavIcon() const OVERRIDE { return SkBitmap(); }
+  virtual string16 GetTitle() const OVERRIDE { return string16(); }
+  virtual InstantController* GetInstant() OVERRIDE { return NULL; }
+  virtual TabContentsWrapper* GetTabContentsWrapper() OVERRIDE {
+    return NULL;
+  }
 
  private:
   DISALLOW_COPY_AND_ASSIGN(TestingAutocompleteEditController);

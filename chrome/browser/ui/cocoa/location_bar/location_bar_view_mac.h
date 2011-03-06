@@ -125,12 +125,6 @@ class LocationBarViewMac : public AutocompleteEditController,
   NSRect GetBlockedPopupRect() const;
 
   // AutocompleteEditController implementation.
-  virtual void OnAutocompleteWillClosePopup();
-  virtual void OnAutocompleteLosingFocus(gfx::NativeView unused);
-  virtual void OnAutocompleteWillAccept();
-  virtual bool OnCommitSuggestedText(bool skip_inline_autocomplete);
-  virtual bool AcceptCurrentInstantPreview();
-  virtual void OnPopupBoundsChanged(const gfx::Rect& bounds);
   virtual void OnAutocompleteAccept(const GURL& url,
       WindowOpenDisposition disposition,
       PageTransition::Type transition,
@@ -142,6 +136,8 @@ class LocationBarViewMac : public AutocompleteEditController,
   virtual void OnSetFocus();
   virtual SkBitmap GetFavIcon() const;
   virtual string16 GetTitle() const;
+  virtual InstantController* GetInstant();
+  virtual TabContentsWrapper* GetTabContentsWrapper();
 
   NSImage* GetKeywordImage(const string16& keyword);
 
@@ -214,9 +210,6 @@ class LocationBarViewMac : public AutocompleteEditController,
   Browser* browser_;
 
   ToolbarModel* toolbar_model_;  // Weak, owned by Browser.
-
-  // Whether or not to update the instant preview.
-  bool update_instant_;
 
   // The transition type to use for the navigation.
   PageTransition::Type transition_;

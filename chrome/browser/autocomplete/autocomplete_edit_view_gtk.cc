@@ -621,9 +621,6 @@ void AutocompleteEditViewGtk::UpdatePopup() {
 }
 
 void AutocompleteEditViewGtk::ClosePopup() {
-  if (model_->popup_model()->IsOpen())
-    controller_->OnAutocompleteWillClosePopup();
-
   model_->StopAutocomplete();
 }
 
@@ -749,7 +746,7 @@ bool AutocompleteEditViewGtk::OnAfterPossibleChange() {
     EmphasizeURLComponents();
   } else if (delete_was_pressed_ && at_end_of_edit) {
     delete_at_end_pressed_ = true;
-    controller_->OnChanged();
+    model_->OnChanged();
   }
   delete_was_pressed_ = false;
 
@@ -926,7 +923,7 @@ void AutocompleteEditViewGtk::Observe(NotificationType type,
 }
 
 void AutocompleteEditViewGtk::AnimationEnded(const ui::Animation* animation) {
-  controller_->OnCommitSuggestedText(false);
+  model_->CommitSuggestedText(false);
 }
 
 void AutocompleteEditViewGtk::AnimationProgressed(
@@ -1351,7 +1348,7 @@ gboolean AutocompleteEditViewGtk::HandleViewFocusOut(GtkWidget* sender,
     view_getting_focus = going_to_focus_;
 
   // This must be invoked before ClosePopup.
-  controller_->OnAutocompleteLosingFocus(view_getting_focus);
+  model_->OnWillKillFocus(view_getting_focus);
 
   // Close the popup.
   ClosePopup();
@@ -1402,7 +1399,7 @@ void AutocompleteEditViewGtk::HandleViewMoveCursor(
       OnAfterPossibleChange();
       handled = true;
     } else if (count == count_towards_end && !IsCaretAtEnd()) {
-      handled = controller_->OnCommitSuggestedText(true);
+      handled = model_->CommitSuggestedText(true);
     }
   } else if (step == GTK_MOVEMENT_PAGES) {  // Page up and down.
     // Multiply by count for the direction (if we move too much that's ok).
@@ -1695,7 +1692,7 @@ void AutocompleteEditViewGtk::HandleViewMoveFocus(GtkWidget* widget,
 #endif
 
   if (!handled && GTK_WIDGET_VISIBLE(instant_view_))
-    handled = controller_->OnCommitSuggestedText(true);
+    handled = model_->CommitSuggestedText(true);
 
   if (!handled) {
     if (!IsCaretAtEnd()) {
@@ -1707,7 +1704,7 @@ void AutocompleteEditViewGtk::HandleViewMoveFocus(GtkWidget* widget,
   }
 
   if (!handled)
-    handled = controller_->AcceptCurrentInstantPreview();
+    handled = model_->AcceptCurrentInstantPreview();
 
   if (handled) {
     static guint signal_id = g_signal_lookup("move-focus", GTK_TYPE_WIDGET);
@@ -2066,7 +2063,7 @@ void AutocompleteEditViewGtk::StopAnimation() {
 
 void AutocompleteEditViewGtk::TextChanged() {
   EmphasizeURLComponents();
-  controller_->OnChanged();
+  model_->OnChanged();
 }
 
 void AutocompleteEditViewGtk::SavePrimarySelection(

@@ -29,6 +29,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search_engines/template_url.h"
 #include "chrome/browser/search_engines/template_url_model.h"
+#include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/common/notification_service.h"
 #include "chrome/common/url_constants.h"
 #include "googleurl/src/gurl.h"
@@ -77,7 +78,8 @@ AutocompleteEditModel::AutocompleteEditModel(
       control_key_state_(UP),
       is_keyword_hint_(false),
       paste_and_go_transition_(PageTransition::TYPED),
-      profile_(profile) {
+      profile_(profile),
+      update_instant_(true) {
 }
 
 AutocompleteEditModel::~AutocompleteEditModel() {
@@ -168,6 +170,59 @@ void AutocompleteEditModel::FinalizeInstantQuery(
         autocomplete_controller_->search_provider();
     search_provider->FinalizeInstantQuery(input_text, suggest_text);
   }
+}
+
+void AutocompleteEditModel::SetSuggestedText(const string16& text) {
+  // This method is internally invoked to reset suggest text, so we only do
+  // anything if the text isn't empty.
+  // TODO: if we keep autocomplete, make it so this isn't invoked with empty
+  // text.
+  if (!text.empty())
+    FinalizeInstantQuery(view_->GetText(), text, false);
+}
+
+bool AutocompleteEditModel::CommitSuggestedText(bool skip_inline_autocomplete) {
+  if (!controller_->GetInstant())
+    return false;
+
+  const string16 suggestion = view_->GetInstantSuggestion();
+  if (suggestion.empty())
+    return false;
+
+  FinalizeInstantQuery(view_->GetText(), suggestion, skip_inline_autocomplete);
+  return true;
+}
+
+bool AutocompleteEditModel::AcceptCurrentInstantPreview() {
+  return InstantController::CommitIfCurrent(controller_->GetInstant());
+}
+
+void AutocompleteEditModel::OnChanged() {
+  InstantController* instant = controller_->GetInstant();
+  string16 suggested_text;
+  TabContentsWrapper* tab = controller_->GetTabContentsWrapper();
+  if (update_instant_ && instant && tab) {
+    if (user_input_in_progress() && popup_->IsOpen()) {
+      AutocompleteMatch current_match = CurrentMatch();
+      if (current_match.destination_url == PermanentURL()) {
+        // The destination is the same as the current url. This typically
+        // happens if the user presses the down error in the omnibox, in which
+        // case we don't want to load a preview.
+        instant->DestroyPreviewContentsAndLeaveActive();
+      } else {
+        instant->Update(tab, CurrentMatch(), view_->GetText(),
+                        UseVerbatimInstant(), &suggested_text);
+      }
+    } else {
+      instant->DestroyPreviewContents();
+    }
+    if (!instant->MightSupportInstant())
+      FinalizeInstantQuery(string16(), string16(), false);
+  }
+
+  SetSuggestedText(suggested_text);
+
+  controller_->OnChanged();
 }
 
 void AutocompleteEditModel::GetDataForURLExport(GURL* url,
@@ -323,6 +378,12 @@ void AutocompleteEditModel::StartAutocomplete(
 }
 
 void AutocompleteEditModel::StopAutocomplete() {
+  if (popup_->IsOpen() && update_instant_) {
+    InstantController* instant = controller_->GetInstant();
+    if (instant && !instant->commit_on_mouse_up())
+      instant->DestroyPreviewContents();
+  }
+
   autocomplete_controller_->Stop(true);
 }
 
@@ -453,11 +514,16 @@ void AutocompleteEditModel::OpenURL(const GURL& url,
   }
 
   if (disposition != NEW_BACKGROUND_TAB) {
-    controller_->OnAutocompleteWillAccept();
+    update_instant_ = false;
     view_->RevertAll();  // Revert the box to its unedited state
   }
   controller_->OnAutocompleteAccept(url, disposition, transition,
                                     alternate_nav_url);
+
+  InstantController* instant = controller_->GetInstant();
+  if (instant && !popup_->IsOpen())
+    instant->DestroyPreviewContents();
+  update_instant_ = true;
 }
 
 bool AutocompleteEditModel::AcceptKeyword() {
@@ -498,6 +564,15 @@ void AutocompleteEditModel::OnSetFocus(bool control_down) {
       NotificationType::AUTOCOMPLETE_EDIT_FOCUSED,
       Source<AutocompleteEditModel>(this),
       NotificationService::NoDetails());
+}
+
+void AutocompleteEditModel::OnWillKillFocus(
+    gfx::NativeView view_gaining_focus) {
+  SetSuggestedText(string16());
+
+  InstantController* instant = controller_->GetInstant();
+  if (instant)
+    instant->OnAutocompleteLostFocus(view_gaining_focus);
 }
 
 void AutocompleteEditModel::OnKillFocus() {
@@ -638,7 +713,7 @@ void AutocompleteEditModel::OnPopupDataChanged(
   // We need to invoke OnChanged in case the destination url changed (as could
   // happen when control is toggled).
   if (call_controller_onchanged)
-    controller_->OnChanged();
+    OnChanged();
 }
 
 bool AutocompleteEditModel::OnAfterPossibleChange(
@@ -694,7 +769,9 @@ bool AutocompleteEditModel::OnAfterPossibleChange(
 }
 
 void AutocompleteEditModel::PopupBoundsChangedTo(const gfx::Rect& bounds) {
-  controller_->OnPopupBoundsChanged(bounds);
+  InstantController* instant = controller_->GetInstant();
+  if (instant)
+    instant->SetOmniboxBounds(bounds);
 }
 
 // Return true if the suggestion type warrants a TCP/IP preconnection.

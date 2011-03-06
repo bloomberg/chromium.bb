@@ -82,12 +82,6 @@ class LocationBar {
 
  protected:
   virtual ~LocationBar() {}
-
-  // Updates instant in response to the text possibly changing in the edit.
-  static void UpdateInstant(InstantController* instant,
-                            TabContentsWrapper* tab,
-                            AutocompleteEditView* edit,
-                            string16* suggested_text);
 };
 
 class LocationBarTesting {

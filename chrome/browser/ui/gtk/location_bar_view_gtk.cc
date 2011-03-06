@@ -166,8 +166,7 @@ LocationBarViewGtk::LocationBarViewGtk(Browser* browser)
       hbox_width_(0),
       entry_box_width_(0),
       show_selected_keyword_(false),
-      show_keyword_hint_(false),
-      update_instant_(true) {
+      show_keyword_hint_(false) {
 }
 
 LocationBarViewGtk::~LocationBarViewGtk() {
@@ -460,51 +459,6 @@ void LocationBarViewGtk::Update(const TabContents* contents) {
   }
 }
 
-void LocationBarViewGtk::OnAutocompleteWillClosePopup() {
-  if (!update_instant_)
-    return;
-
-  InstantController* instant = browser_->instant();
-  if (instant && !instant->commit_on_mouse_up())
-    instant->DestroyPreviewContents();
-}
-
-void LocationBarViewGtk::OnAutocompleteLosingFocus(
-    gfx::NativeView view_gaining_focus) {
-  SetSuggestedText(string16());
-
-  InstantController* instant = browser_->instant();
-  if (instant)
-    instant->OnAutocompleteLostFocus(view_gaining_focus);
-}
-
-void LocationBarViewGtk::OnAutocompleteWillAccept() {
-  update_instant_ = false;
-}
-
-bool LocationBarViewGtk::OnCommitSuggestedText(bool skip_inline_autocomplete) {
-  if (!browser_->instant())
-    return false;
-
-  const string16 suggestion = location_entry_->GetInstantSuggestion();
-  if (suggestion.empty())
-    return false;
-
-  location_entry_->model()->FinalizeInstantQuery(
-      location_entry_->GetText(), suggestion, skip_inline_autocomplete);
-  return true;
-}
-
-bool LocationBarViewGtk::AcceptCurrentInstantPreview() {
-  return InstantController::CommitIfCurrent(browser_->instant());
-}
-
-void LocationBarViewGtk::OnPopupBoundsChanged(const gfx::Rect& bounds) {
-  InstantController* instant = browser_->instant();
-  if (instant)
-    instant->SetOmniboxBounds(bounds);
-}
-
 void LocationBarViewGtk::OnAutocompleteAccept(const GURL& url,
     WindowOpenDisposition disposition,
     PageTransition::Type transition,
@@ -535,11 +489,6 @@ void LocationBarViewGtk::OnAutocompleteAccept(const GURL& url,
       }
     }
   }
-
-  if (browser_->instant() && !location_entry_->model()->popup_model()->IsOpen())
-    browser_->instant()->DestroyPreviewContents();
-
-  update_instant_ = true;
 }
 
 void LocationBarViewGtk::OnChanged() {
@@ -557,15 +506,6 @@ void LocationBarViewGtk::OnChanged() {
     SetKeywordHintLabel(keyword);
 
   AdjustChildrenVisibility();
-
-  InstantController* instant = browser_->instant();
-  string16 suggested_text;
-  if (update_instant_ && instant && GetTabContents()) {
-    UpdateInstant(instant, browser_->GetSelectedTabContentsWrapper(),
-                  location_entry_.get(), &suggested_text);
-  }
-
-  SetSuggestedText(suggested_text);
 }
 
 void LocationBarViewGtk::OnSelectionBoundsChanged() {
@@ -627,6 +567,14 @@ string16 LocationBarViewGtk::GetTitle() const {
   return GetTabContents()->GetTitle();
 }
 
+InstantController* LocationBarViewGtk::GetInstant() {
+  return browser_->instant();
+}
+
+TabContentsWrapper* LocationBarViewGtk::GetTabContentsWrapper() {
+  return browser_->GetSelectedTabContentsWrapper();
+}
+
 void LocationBarViewGtk::ShowFirstRunBubble(FirstRun::BubbleType bubble_type) {
   // We need the browser window to be shown before we can show the bubble, but
   // we get called before that's happened.
@@ -636,14 +584,7 @@ void LocationBarViewGtk::ShowFirstRunBubble(FirstRun::BubbleType bubble_type) {
 }
 
 void LocationBarViewGtk::SetSuggestedText(const string16& text) {
-  // This method is internally invoked to reset suggest text, so we only do
-  // anything if the text isn't empty.
-  // TODO: if we keep autocomplete, make it so this isn't invoked with empty
-  // text.
-  if (!text.empty()) {
-    location_entry_->model()->FinalizeInstantQuery(
-        location_entry_->GetText(), text, false);
-  }
+  location_entry_->model()->SetSuggestedText(text);
 }
 
 std::wstring LocationBarViewGtk::GetInputString() const {

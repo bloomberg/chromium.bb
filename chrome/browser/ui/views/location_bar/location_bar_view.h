@@ -131,9 +131,6 @@ class LocationBarView : public LocationBar,
   void SetProfile(Profile* profile);
   Profile* profile() const { return profile_; }
 
-  // Returns the current TabContentsWrapper.
-  TabContentsWrapper* GetTabContentsWrapper() const;
-
   // Sets |preview_enabled| for the PageAction View associated with this
   // |page_action|. If |preview_enabled| is true, the view will display the
   // PageActions icon even though it has not been activated by the extension.
@@ -154,6 +151,9 @@ class LocationBarView : public LocationBar,
   // Returns the screen coordinates of the location entry (where the URL text
   // appears, not where the icons are shown).
   gfx::Point GetLocationEntryOrigin() const;
+
+  // Returns the current instant suggestion text.
+  string16 GetInstantSuggestion() const;
 
   // Sizing functions
   virtual gfx::Size GetPreferredSize() OVERRIDE;
@@ -187,13 +187,6 @@ class LocationBarView : public LocationBar,
   }
 
   // AutocompleteEditController
-  virtual void OnAutocompleteWillClosePopup() OVERRIDE;
-  virtual void OnAutocompleteLosingFocus(
-      gfx::NativeView view_gaining_focus) OVERRIDE;
-  virtual void OnAutocompleteWillAccept() OVERRIDE;
-  virtual bool OnCommitSuggestedText(bool skip_inline_autocomplete) OVERRIDE;
-  virtual bool AcceptCurrentInstantPreview() OVERRIDE;
-  virtual void OnPopupBoundsChanged(const gfx::Rect& bounds) OVERRIDE;
   virtual void OnAutocompleteAccept(const GURL& url,
                                     WindowOpenDisposition disposition,
                                     PageTransition::Type transition,
@@ -205,6 +198,8 @@ class LocationBarView : public LocationBar,
   virtual void OnSetFocus() OVERRIDE;
   virtual SkBitmap GetFavIcon() const OVERRIDE;
   virtual string16 GetTitle() const OVERRIDE;
+  virtual InstantController* GetInstant() OVERRIDE;
+  virtual TabContentsWrapper* GetTabContentsWrapper() OVERRIDE;
 
   // Overridden from views::View:
   virtual std::string GetClassName() const OVERRIDE;
@@ -223,7 +218,7 @@ class LocationBarView : public LocationBar,
 
   // Overridden from LocationBar:
   virtual void ShowFirstRunBubble(FirstRun::BubbleType bubble_type) OVERRIDE;
-  virtual void SetSuggestedText(const string16& input) OVERRIDE;
+  virtual void SetSuggestedText(const string16& text) OVERRIDE;
   virtual std::wstring GetInputString() const OVERRIDE;
   virtual WindowOpenDisposition GetWindowOpenDisposition() const OVERRIDE;
   virtual PageTransition::Type GetPageTransition() const OVERRIDE;
@@ -308,7 +303,7 @@ class LocationBarView : public LocationBar,
   void OnMouseEvent(const views::MouseEvent& event, UINT msg);
 
   // Returns true if the suggest text is valid.
-  bool HasValidSuggestText();
+  bool HasValidSuggestText() const;
 #endif
 
   // Helper to show the first run info bubble.
@@ -399,12 +394,6 @@ class LocationBarView : public LocationBar,
   // because calling profile_->GetTemplateURLModel() in the destructor causes a
   // crash.
   TemplateURLModel* template_url_model_;
-
-  // Should instant be updated? This is set to false in OnAutocompleteWillAccept
-  // and true in OnAutocompleteAccept. This is needed as prior to accepting an
-  // autocomplete suggestion the model is reverted which triggers resetting
-  // instant.
-  bool update_instant_;
 
   DISALLOW_IMPLICIT_CONSTRUCTORS(LocationBarView);
 };

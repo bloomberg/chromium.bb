@@ -92,24 +92,19 @@ class LocationBarViewGtk : public AutocompleteEditController,
   void SetStarred(bool starred);
 
   // Implement the AutocompleteEditController interface.
-  virtual void OnAutocompleteWillClosePopup();
-  virtual void OnAutocompleteLosingFocus(gfx::NativeView view_gaining_focus);
-  virtual void OnAutocompleteWillAccept();
-  // For this implementation, the parameter is ignored.
-  virtual bool OnCommitSuggestedText(bool skip_inline_autocomplete);
-  virtual bool AcceptCurrentInstantPreview();
-  virtual void OnPopupBoundsChanged(const gfx::Rect& bounds);
   virtual void OnAutocompleteAccept(const GURL& url,
-      WindowOpenDisposition disposition,
-      PageTransition::Type transition,
-      const GURL& alternate_nav_url);
-  virtual void OnChanged();
-  virtual void OnSelectionBoundsChanged();
-  virtual void OnKillFocus();
-  virtual void OnSetFocus();
-  virtual void OnInputInProgress(bool in_progress);
-  virtual SkBitmap GetFavIcon() const;
-  virtual string16 GetTitle() const;
+                                    WindowOpenDisposition disposition,
+                                    PageTransition::Type transition,
+                                    const GURL& alternate_nav_url) OVERRIDE;
+  virtual void OnChanged() OVERRIDE;
+  virtual void OnSelectionBoundsChanged() OVERRIDE;
+  virtual void OnKillFocus() OVERRIDE;
+  virtual void OnSetFocus() OVERRIDE;
+  virtual void OnInputInProgress(bool in_progress) OVERRIDE;
+  virtual SkBitmap GetFavIcon() const OVERRIDE;
+  virtual string16 GetTitle() const OVERRIDE;
+  virtual InstantController* GetInstant() OVERRIDE;
+  virtual TabContentsWrapper* GetTabContentsWrapper() OVERRIDE;
 
   // Implement the LocationBar interface.
   virtual void ShowFirstRunBubble(FirstRun::BubbleType bubble_type);
@@ -453,9 +448,6 @@ class LocationBarViewGtk : public AutocompleteEditController,
 
   // The last search keyword that was shown via the |tab_to_search_box_|.
   string16 last_keyword_;
-
-  // True if we should update the instant controller when the edit text changes.
-  bool update_instant_;
 
   DISALLOW_COPY_AND_ASSIGN(LocationBarViewGtk);
 };

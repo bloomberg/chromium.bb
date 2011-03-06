@@ -19,13 +19,13 @@ class View;
 // Info dialog on click, to encapsulate that logic in one place.
 class ClickHandler {
  public:
-  ClickHandler(const views::View* owner, const LocationBarView* location_bar);
+  ClickHandler(const views::View* owner, LocationBarView* location_bar);
 
   void OnMouseReleased(const views::MouseEvent& event, bool canceled);
 
  private:
   const views::View* owner_;
-  const LocationBarView* location_bar_;
+  LocationBarView* location_bar_;
 
   DISALLOW_IMPLICIT_CONSTRUCTORS(ClickHandler);
 };

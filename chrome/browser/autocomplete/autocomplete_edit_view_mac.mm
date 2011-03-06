@@ -329,7 +329,7 @@ void AutocompleteEditViewMac::SetUserText(const string16& text,
   if (update_popup) {
     UpdatePopup();
   }
-  controller_->OnChanged();
+  model_->OnChanged();
 }
 
 NSRange AutocompleteEditViewMac::GetSelectedRange() const {
@@ -415,7 +415,7 @@ void AutocompleteEditViewMac::SelectAll(bool reversed) {
 void AutocompleteEditViewMac::RevertAll() {
   ClosePopup();
   model_->Revert();
-  controller_->OnChanged();
+  model_->OnChanged();
   [field_ clearUndoChain];
 }
 
@@ -443,9 +443,6 @@ void AutocompleteEditViewMac::UpdatePopup() {
 }
 
 void AutocompleteEditViewMac::ClosePopup() {
-  if (model_->popup_model()->IsOpen())
-    controller_->OnAutocompleteWillClosePopup();
-
   model_->StopAutocomplete();
 }
 
@@ -469,7 +466,7 @@ void AutocompleteEditViewMac::SetTextInternal(
   [field_ setAttributedStringValue:as];
 
   // TODO(shess): This may be an appropriate place to call:
-  //   controller_->OnChanged();
+  //   model_->OnChanged();
   // In the current implementation, this tells LocationBarViewMac to
   // mess around with |model_| and update |field_|.  Unfortunately,
   // when I look at our peer implementations, it's not entirely clear
@@ -599,7 +596,7 @@ void AutocompleteEditViewMac::OnTemporaryTextMaybeChanged(
 
   suggest_text_length_ = 0;
   SetWindowTextAndCaretPos(display_text, display_text.size());
-  controller_->OnChanged();
+  model_->OnChanged();
   [field_ clearUndoChain];
 }
 
@@ -622,7 +619,7 @@ bool AutocompleteEditViewMac::OnInlineAutocompleteTextMaybeChanged(
   const NSRange range =
       NSMakeRange(user_text_length, display_text.size() - user_text_length);
   SetTextAndSelectedRange(display_text, range);
-  controller_->OnChanged();
+  model_->OnChanged();
   [field_ clearUndoChain];
 
   return true;
@@ -690,7 +687,7 @@ bool AutocompleteEditViewMac::OnAfterPossibleChange() {
   // fails for us in case you copy the URL and paste the identical URL
   // back (we'll lose the styling).
   EmphasizeURLComponents();
-  controller_->OnChanged();
+  model_->OnChanged();
 
   delete_was_pressed_ = false;
 
@@ -795,7 +792,7 @@ bool AutocompleteEditViewMac::OnDoCommandBySelector(SEL cmd) {
     // Only commit suggested text if the cursor is all the way to the right and
     // there is no selection.
     if (suggest_text_length_ > 0 && IsCaretAtEnd()) {
-      controller_->OnCommitSuggestedText(true);
+      model_->CommitSuggestedText(true);
       return true;
     }
   }
@@ -820,7 +817,7 @@ bool AutocompleteEditViewMac::OnDoCommandBySelector(SEL cmd) {
       return model_->AcceptKeyword();
 
     if (suggest_text_length_ > 0) {
-      controller_->OnCommitSuggestedText(true);
+      model_->CommitSuggestedText(true);
       return true;
     }
 
@@ -832,7 +829,7 @@ bool AutocompleteEditViewMac::OnDoCommandBySelector(SEL cmd) {
       return true;
     }
 
-    if (controller_->AcceptCurrentInstantPreview())
+    if (model_->AcceptCurrentInstantPreview())
       return true;
   }
 
@@ -896,7 +893,7 @@ void AutocompleteEditViewMac::OnSetFocus(bool control_down) {
 
 void AutocompleteEditViewMac::OnKillFocus() {
   // Tell the model to reset itself.
-  controller_->OnAutocompleteLosingFocus(NULL);
+  model_->OnWillKillFocus(NULL);
   model_->OnKillFocus();
   controller_->OnKillFocus();
 }
@@ -990,7 +987,7 @@ void AutocompleteEditViewMac::OnFrameChanged() {
   model_->PopupBoundsChangedTo(popup_view_->GetTargetBounds());
 
   // Give controller a chance to rearrange decorations.
-  controller_->OnChanged();
+  model_->OnChanged();
 }
 
 bool AutocompleteEditViewMac::OnBackspacePressed() {
