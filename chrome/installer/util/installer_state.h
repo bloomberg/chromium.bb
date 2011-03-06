@@ -122,6 +122,10 @@ class InstallerState {
   // The ClientState key by which we interact with Google Update.
   const std::wstring& state_key() const { return state_key_; }
 
+  // Convenience method to return the type of the BrowserDistribution associated
+  // with the ClientState key we will be interacting with.
+  BrowserDistribution::Type state_type() const { return state_type_; }
+
   // Returns the BrowserDistribution instance corresponding to the binaries for
   // this run if we're operating on a multi-package product.
   BrowserDistribution* multi_package_binaries_distribution() const {
@@ -176,6 +180,7 @@ class InstallerState {
   Operation operation_;
   FilePath target_path_;
   std::wstring state_key_;
+  BrowserDistribution::Type state_type_;
   ScopedVector<Product> products_;
   BrowserDistribution* multi_package_distribution_;
   Level level_;

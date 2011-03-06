@@ -69,6 +69,7 @@ InstallerState::InstallerState()
       multi_package_distribution_(NULL),
       level_(UNKNOWN_LEVEL),
       package_type_(UNKNOWN_PACKAGE_TYPE),
+      state_type_(BrowserDistribution::CHROME_BROWSER),
       root_key_(NULL),
       msi_(false),
       verbose_logging_(false) {
@@ -79,6 +80,7 @@ InstallerState::InstallerState(Level level)
       multi_package_distribution_(NULL),
       level_(UNKNOWN_LEVEL),
       package_type_(UNKNOWN_PACKAGE_TYPE),
+      state_type_(BrowserDistribution::CHROME_BROWSER),
       root_key_(NULL),
       msi_(false),
       verbose_logging_(false) {
@@ -149,6 +151,7 @@ void InstallerState::Initialize(const CommandLine& command_line,
   }
 
   state_key_ = operand->GetStateKey();
+  state_type_ = operand->GetType();
 }
 
 void InstallerState::set_level(Level level) {

@@ -94,7 +94,7 @@ WorkItem* WorkItemList::AddCreateDirWorkItem(const FilePath& path) {
 }
 
 WorkItem* WorkItemList::AddCreateRegKeyWorkItem(HKEY predefined_root,
-                                           const std::wstring& path) {
+                                                const std::wstring& path) {
   WorkItem* item = WorkItem::CreateCreateRegKeyWorkItem(predefined_root, path);
   AddWorkItem(item);
   return item;

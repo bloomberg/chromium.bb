@@ -254,7 +254,8 @@ void AddProductSpecificWorkItems(const InstallationState& original_state,
 // In the multi-install case, this value is used as the basis upon which the
 // package's channel value is built (by adding the ordered list of installed
 // products and their options).
-void AddGoogleUpdateWorkItems(const InstallerState& installer_state,
+void AddGoogleUpdateWorkItems(const InstallationState& original_state,
+                              const InstallerState& installer_state,
                               WorkItemList* install_list) {
   // Is a multi-install product being installed or over-installed?
   if (installer_state.operation() != InstallerState::MULTI_INSTALL &&
@@ -263,16 +264,16 @@ void AddGoogleUpdateWorkItems(const InstallerState& installer_state,
     return;
   }
 
-  const HKEY reg_root = installer_state.root_key();
-  const std::wstring key_path = installer_state.state_key();
-  ChannelInfo channel_info;
-
-  // Update the "ap" value for the product being installed/updated.
-  // It is completely acceptable for there to be no "ap" value or even no
-  // ClientState key.  Note that we check the registry rather than an
-  // InstallationState instance since on a fresh install the "ap" value will be
-  // present sans "pv" value.
-  channel_info.Initialize(RegKey(reg_root, key_path.c_str(), KEY_QUERY_VALUE));
+  // Update the "ap" value for the product being installed/updated. We get
+  // this via GetNonVersionedProductState since the product whose ap value
+  // we are querying may be in the process of being installed for the first
+  // time.
+  BrowserDistribution::Type client_state_distribution =
+      installer_state.state_type();
+  const ProductState* target_product_state =
+      original_state.GetNonVersionedProductState(
+          installer_state.system_install(), client_state_distribution);
+  ChannelInfo channel_info(target_product_state->channel());
 
   // This is a multi-install product.
   bool modified = channel_info.SetMultiInstall(true);
@@ -281,6 +282,9 @@ void AddGoogleUpdateWorkItems(const InstallerState& installer_state,
   modified |= installer_state.SetChannelFlags(true, &channel_info);
 
   VLOG(1) << "ap: " << channel_info.value();
+
+  const HKEY reg_root = installer_state.root_key();
+  const std::wstring& key_path(installer_state.state_key());
 
   // Write the results if needed.
   if (modified) {
@@ -292,26 +296,27 @@ void AddGoogleUpdateWorkItems(const InstallerState& installer_state,
   }
 
   // Synchronize the other products and the package with this one.
-  std::wstring other_key;
-  std::vector<std::wstring> keys;
+  std::vector<std::wstring> state_key_paths;
 
-  keys.reserve(installer_state.products().size());
-  other_key =
-      installer_state.multi_package_binaries_distribution()->GetStateKey();
-  if (other_key != key_path)
-    keys.push_back(other_key);
+  state_key_paths.reserve(installer_state.products().size());
+  std::wstring multi_key(
+      installer_state.multi_package_binaries_distribution()->GetStateKey());
+  if (multi_key != key_path)
+    state_key_paths.push_back(multi_key);
+
+  std::wstring other_key;
   Products::const_iterator scan = installer_state.products().begin();
   Products::const_iterator end = installer_state.products().end();
   for (; scan != end; ++scan) {
     other_key = (*scan)->distribution()->GetStateKey();
     if (other_key != key_path)
-      keys.push_back(other_key);
+      state_key_paths.push_back(other_key);
   }
 
   RegKey key;
   ChannelInfo other_info;
-  std::vector<std::wstring>::const_iterator kscan = keys.begin();
-  std::vector<std::wstring>::const_iterator kend = keys.end();
+  std::vector<std::wstring>::const_iterator kscan = state_key_paths.begin();
+  std::vector<std::wstring>::const_iterator kend = state_key_paths.end();
   for (; kscan != kend; ++kscan) {
     // Handle the case where the ClientState key doesn't exist by creating it.
     // This takes care of the multi-installer's package key, which is not
@@ -321,13 +326,36 @@ void AddGoogleUpdateWorkItems(const InstallerState& installer_state,
       other_info.set_value(std::wstring());
     }
     if (!other_info.Equals(channel_info)) {
-      if (!key.Valid())
+      if (!key.Valid()) {
         install_list->AddCreateRegKeyWorkItem(reg_root, *kscan);
+      }
       install_list->AddSetRegValueWorkItem(reg_root, *kscan,
                                            google_update::kRegApField,
                                            channel_info.value(), true);
     }
   }
+
+  // Creating the ClientState key for binaries, if we're migrating to multi then
+  // copy over Chrome's brand code if it has one. Chrome Frame currently never
+  // has a brand code.
+  if (multi_key != key_path) {
+    const ProductState* chrome_product_state =
+        original_state.GetNonVersionedProductState(
+            installer_state.system_install(),
+            BrowserDistribution::CHROME_BROWSER);
+
+    const std::wstring& brand(chrome_product_state->brand());
+    if (!brand.empty()) {
+      // Write Chrome's brand code to the multi key. Never overwrite the value
+      // if one is already present (although this shouldn't happen).
+      install_list->AddSetRegValueWorkItem(reg_root,
+                                           multi_key,
+                                           google_update::kRegBrandField,
+                                           brand,
+                                           false);
+    }
+  }
+
   // TODO(grt): check for other keys/values we should put in the package's
   // ClientState and/or Clients key.
 }
@@ -598,7 +626,7 @@ void AddInstallWorkItems(const InstallationState& original_state,
   AddProductSpecificWorkItems(original_state, installer_state, setup_path,
                               new_version, install_list);
 
-  AddGoogleUpdateWorkItems(installer_state, install_list);
+  AddGoogleUpdateWorkItems(original_state, installer_state, install_list);
 
   AddQuickEnableWorkItems(installer_state, original_state, &setup_path,
                           &new_version, install_list);

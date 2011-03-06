@@ -250,16 +250,17 @@ bool CheckMultiInstallConditions(const InstallationState& original_state,
           original_state.GetProductState(system_level,
                                          BrowserDistribution::CHROME_BROWSER);
       if (chrome_state != NULL) {
-        base::win::RegKey key;
-        installer::ChannelInfo cf_channel;
-        // Chrome Frame may not yet be installed, so peek into the registry
-        // directly to see what channel Google Update has specified.  There will
-        // be no value if we're not being managed by Google Update.
-        if (key.Open(installer_state->root_key(),
-                     chrome_frame->distribution()->GetStateKey().c_str(),
-                     KEY_QUERY_VALUE) == ERROR_SUCCESS) {
-          cf_channel.Initialize(key);
-        }
+        // Chrome Frame may not yet be installed if this is a first install, so
+        // use InstallationState's GetNonVersionedProductState() which will lets
+        // us access the ap value from the partially constructed product state.
+        // There will be no value if we're not being managed by Google Update.
+        const ProductState* cf_non_versioned_state =
+            original_state.GetNonVersionedProductState(
+                system_level, BrowserDistribution::CHROME_FRAME);
+        DCHECK(cf_non_versioned_state);
+        const installer::ChannelInfo& cf_channel(
+            cf_non_versioned_state->channel());
+
         // Fail if Chrome is already installed but is on a different update
         // channel.
         if (!cf_channel.EqualsBaseOf(chrome_state->channel())) {

@@ -58,6 +58,9 @@ class ProductState {
   // caller.
   const Version* old_version() const { return old_version_.get(); }
 
+  // Returns the brand code the product is currently installed with.
+  const std::wstring& brand() const { return brand_; }
+
   // Returns the command to be used to update to the new version that is
   // awaiting update; may be empty.
   const std::wstring& rename_cmd() const { return rename_cmd_; }
@@ -84,6 +87,7 @@ class ProductState {
   ChannelInfo channel_;
   scoped_ptr<Version> version_;
   scoped_ptr<Version> old_version_;
+  std::wstring brand_;
   std::wstring rename_cmd_;
   CommandLine uninstall_command_;
   AppCommands commands_;
@@ -109,6 +113,16 @@ class InstallationState {
   // Caller does NOT assume ownership of returned pointer.
   const ProductState* GetProductState(bool system_install,
                                       BrowserDistribution::Type type) const;
+
+  // Returns the state of a product, even one that has not yet been installed.
+  // This is useful during first install, when some but not all ProductState
+  // information has been written by Omaha. Notably absent from the
+  // ProductState returned here are the version numbers. Do NOT try to access
+  // the version numbers from a ProductState returned by this method.
+  // Caller does NOT assume ownership of returned pointer. This method will
+  // never return NULL.
+  const ProductState* GetNonVersionedProductState(
+      bool system_install, BrowserDistribution::Type type) const;
 
  protected:
   enum {

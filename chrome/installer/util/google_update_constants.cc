@@ -17,6 +17,7 @@ const wchar_t kRegPathClientStateMedium[]
 const wchar_t kRegCommandsKey[] = L"Commands";
 
 const wchar_t kRegApField[] = L"ap";
+const wchar_t kRegBrandField[] = L"brand";
 const wchar_t kRegBrowserField[] = L"browser";
 const wchar_t kRegCFEndTempOptOutCmdField[] = L"CFEndTempOptOutCmd";
 const wchar_t kRegCFOptInCmdField[] = L"CFOptInCmd";

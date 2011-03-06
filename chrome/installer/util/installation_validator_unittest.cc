@@ -148,6 +148,7 @@ void FakeProductState::Clear() {
   channel_.set_value(std::wstring());
   version_.reset();
   old_version_.reset();
+  brand_.clear();
   rename_cmd_.clear();
   uninstall_command_ = CommandLine(CommandLine::NO_PROGRAM);
   commands_.Clear();

@@ -120,7 +120,8 @@ InstallStatus ChromeFrameQuickEnable(const InstallationState& machine_state,
       // all multi-installed products' channel values get updated.
       installer_state->AddProductFromState(BrowserDistribution::CHROME_BROWSER,
                                            *chrome_state);
-      AddGoogleUpdateWorkItems(*installer_state, item_list.get());
+      AddGoogleUpdateWorkItems(machine_state, *installer_state,
+                               item_list.get());
 
       // Add the items to remove the quick-enable-cf command from the registry.
       AddQuickEnableWorkItems(*installer_state, machine_state,

@@ -34,7 +34,8 @@ class Product;
 // In the multi-install case, this value is used as the basis upon which the
 // package's channel value is built (by adding the ordered list of installed
 // products and their options).
-void AddGoogleUpdateWorkItems(const InstallerState& installer_state,
+void AddGoogleUpdateWorkItems(const InstallationState& original_state,
+                              const InstallerState& installer_state,
                               WorkItemList* install_list);
 
 // After a successful copying of all the files, this function is called to

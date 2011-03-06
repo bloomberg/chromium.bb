@@ -106,7 +106,7 @@ InstallStatus ChromeFrameReadyModeOptIn(
       kChromeFrameReadyModeField);
 
   // Update the Google Update channel ("ap") value.
-  AddGoogleUpdateWorkItems(opt_in_state, item_list.get());
+  AddGoogleUpdateWorkItems(machine_state, opt_in_state, item_list.get());
 
   // Delete the command elevation registry keys
   std::wstring version_key(cf->distribution()->GetVersionKey());

@@ -33,6 +33,12 @@ bool ProductState::InitializeCommands(const base::win::RegKey& version_key,
   static const DWORD kAccess = KEY_ENUMERATE_SUB_KEYS | KEY_QUERY_VALUE;
   base::win::RegKey commands_key;
 
+  if (!version_key.Valid()) {
+    // Version key may be invalid if we're not running under Google Update.
+    LOG(WARNING) << "Could not InitializeCommands, version_key is invalid.";
+    return false;
+  }
+
   if (commands_key.Open(version_key.Handle(), google_update::kRegCommandsKey,
                         kAccess) == ERROR_SUCCESS)
     return commands->Initialize(commands_key);
@@ -49,53 +55,60 @@ bool ProductState::Initialize(bool system_install,
   if (key.ReadValue(google_update::kRegVersionField,
                     &version_str) == ERROR_SUCCESS) {
     version_.reset(Version::GetVersionFromString(WideToASCII(version_str)));
-    if (version_.get() != NULL) {
-      // The product is installed.
-      if (key.ReadValue(google_update::kRegOldVersionField,
-                        &version_str) == ERROR_SUCCESS) {
-        old_version_.reset(
-            Version::GetVersionFromString(WideToASCII(version_str)));
-      } else {
-        old_version_.reset();
-      }
-      if (key.ReadValue(google_update::kRegRenameCmdField,
-                        &rename_cmd_) != ERROR_SUCCESS)
-        rename_cmd_.clear();
-      if (!InitializeCommands(key, &commands_))
-        commands_.Clear();
-      // Read from the ClientState key.
-      channel_.set_value(std::wstring());
-      uninstall_command_ = CommandLine(CommandLine::NO_PROGRAM);
-      msi_ = false;
-      multi_install_ = false;
-      if (key.Open(root_key, state_key.c_str(),
-                   KEY_QUERY_VALUE) == ERROR_SUCCESS) {
-        std::wstring setup_path;
-        std::wstring uninstall_arguments;
-        // "ap" will be absent if not managed by Google Update.
-        channel_.Initialize(key);
-        // "UninstallString" will be absent for the multi-installer package.
-        key.ReadValue(kUninstallStringField, &setup_path);
-        // "UninstallArguments" will be absent for the multi-installer package.
-        key.ReadValue(kUninstallArgumentsField, &uninstall_arguments);
-        InstallUtil::MakeUninstallCommand(setup_path, uninstall_arguments,
-                                          &uninstall_command_);
-        // "msi" may be absent, 0 or 1
-        DWORD dw_value = 0;
-        msi_ = (key.ReadValueDW(google_update::kRegMSIField,
-                                &dw_value) == ERROR_SUCCESS) && (dw_value != 0);
-        // Multi-install is implied or is derived from the command-line.
-        if (distribution->GetType() == BrowserDistribution::CHROME_BINARIES) {
-          multi_install_ = true;
-        } else {
-          multi_install_ = uninstall_command_.HasSwitch(
-              switches::kMultiInstall);
-        }
-      }
-    }
-  } else {
-    version_.reset();
   }
+
+  // Attempt to read the other values even if the "pv" version value was absent.
+  // Note that ProductState instances containing these values will only be
+  // accessible via InstallationState::GetNonVersionedProductState.
+  if (key.ReadValue(google_update::kRegOldVersionField,
+                    &version_str) == ERROR_SUCCESS) {
+    old_version_.reset(
+        Version::GetVersionFromString(WideToASCII(version_str)));
+  }
+
+  if (key.ReadValue(google_update::kRegRenameCmdField,
+                    &rename_cmd_) != ERROR_SUCCESS)
+    rename_cmd_.clear();
+
+  if (!InitializeCommands(key, &commands_))
+    commands_.Clear();
+
+  // Read from the ClientState key.
+  channel_.set_value(std::wstring());
+  uninstall_command_ = CommandLine(CommandLine::NO_PROGRAM);
+  brand_.clear();
+  msi_ = false;
+  multi_install_ = false;
+  if (key.Open(root_key, state_key.c_str(),
+               KEY_QUERY_VALUE) == ERROR_SUCCESS) {
+    std::wstring setup_path;
+    std::wstring uninstall_arguments;
+    // "ap" will be absent if not managed by Google Update.
+    channel_.Initialize(key);
+
+    // Read in the brand code, it may be absent
+    key.ReadValue(google_update::kRegBrandField, &brand_);
+
+    // "UninstallString" will be absent for the multi-installer package.
+    key.ReadValue(kUninstallStringField, &setup_path);
+    // "UninstallArguments" will be absent for the multi-installer package.
+    key.ReadValue(kUninstallArgumentsField, &uninstall_arguments);
+    InstallUtil::MakeUninstallCommand(setup_path, uninstall_arguments,
+                                      &uninstall_command_);
+
+    // "msi" may be absent, 0 or 1
+    DWORD dw_value = 0;
+    msi_ = (key.ReadValueDW(google_update::kRegMSIField,
+                            &dw_value) == ERROR_SUCCESS) && (dw_value != 0);
+    // Multi-install is implied or is derived from the command-line.
+    if (distribution->GetType() == BrowserDistribution::CHROME_BINARIES) {
+      multi_install_ = true;
+    } else {
+      multi_install_ = uninstall_command_.HasSwitch(
+          switches::kMultiInstall);
+    }
+  }
+
   return version_.get() != NULL;
 }
 
@@ -113,6 +126,7 @@ ProductState& ProductState::CopyFrom(const ProductState& other) {
   version_.reset(other.version_.get() == NULL ? NULL : other.version_->Clone());
   old_version_.reset(
       other.old_version_.get() == NULL ? NULL : other.old_version_->Clone());
+  brand_ = other.brand_;
   rename_cmd_ = other.rename_cmd_;
   uninstall_command_ = other.uninstall_command_;
   commands_.CopyFrom(other.commands_);
@@ -158,12 +172,19 @@ void InstallationState::Initialize() {
   system_products_[CHROME_BINARIES_INDEX].Initialize(true, distribution);
 }
 
-const ProductState* InstallationState::GetProductState(
+const ProductState* InstallationState::GetNonVersionedProductState(
     bool system_install,
     BrowserDistribution::Type type) const {
   const ProductState& product_state = (system_install ? system_products_ :
       user_products_)[IndexFromDistType(type)];
-  return product_state.version_.get() == NULL ? NULL : &product_state;
+  return &product_state;
 }
 
+const ProductState* InstallationState::GetProductState(
+    bool system_install,
+    BrowserDistribution::Type type) const {
+  const ProductState* product_state =
+      GetNonVersionedProductState(system_install, type);
+  return product_state->version_.get() == NULL ? NULL : product_state;
+}
 }  // namespace installer

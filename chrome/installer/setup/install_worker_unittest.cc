@@ -10,6 +10,7 @@
 #include "chrome/installer/util/delete_reg_key_work_item.h"
 #include "chrome/installer/util/create_reg_key_work_item.h"
 #include "chrome/installer/util/helper.h"
+#include "chrome/installer/util/google_update_constants.h"
 #include "chrome/installer/util/installation_state.h"
 #include "chrome/installer/util/installer_state.h"
 #include "chrome/installer/util/set_reg_value_work_item.h"
@@ -26,6 +27,7 @@ using installer::ProductState;
 
 using ::testing::_;
 using ::testing::AtLeast;
+using ::testing::HasSubstr;
 using ::testing::AtMost;
 using ::testing::Eq;
 using ::testing::Return;
@@ -91,6 +93,7 @@ class MockProductState : public ProductState {
   // Takes ownership of |version|.
   void set_version(Version* version) { version_.reset(version); }
   void set_multi_install(bool multi) { multi_install_ = multi; }
+  void set_brand(const std::wstring& brand) { brand_ = brand; }
   void SetUninstallProgram(const FilePath& setup_exe) {
     uninstall_command_ = CommandLine(setup_exe);
   }
@@ -123,6 +126,10 @@ class MockInstallerState : public InstallerState {
 
   void set_state_key(const std::wstring& state_key) {
     state_key_ = state_key;
+  }
+
+  void set_state_type(BrowserDistribution::Type state_type) {
+    state_type_ = state_type;
   }
 
   void set_package_type(PackageType type) {
@@ -163,6 +170,7 @@ class InstallWorkerTest : public testing::Test {
     MockProductState product_state;
     product_state.set_version(current_version_->Clone());
     product_state.set_multi_install(multi_install);
+    product_state.set_brand(L"TEST");
     BrowserDistribution* dist =
         BrowserDistribution::GetSpecificDistribution(
             BrowserDistribution::CHROME_BROWSER);
@@ -243,6 +251,7 @@ class InstallWorkerTest : public testing::Test {
     installer_state->set_operation(operation);
     // Hope this next one isn't checked for now.
     installer_state->set_state_key(L"PROBABLY_INVALID_REG_PATH");
+    installer_state->set_state_type(BrowserDistribution::CHROME_BROWSER);
     installer_state->set_package_type(multi_install ?
                                           InstallerState::MULTI_PACKAGE :
                                           InstallerState::SINGLE_PACKAGE);
@@ -349,7 +358,7 @@ TEST_F(InstallWorkerTest, TestInstallChromeSingleSystem) {
 
   // Set up some expectations.
   // TODO(robertshield): Set up some real expectations.
-  EXPECT_CALL(work_item_list, AddCopyTreeWorkItem(_,_,_,_,_))
+  EXPECT_CALL(work_item_list, AddCopyTreeWorkItem(_, _, _, _, _))
       .Times(AtLeast(1));
 
   AddInstallWorkItems(*installation_state.get(),
@@ -447,7 +456,6 @@ TEST_F(InstallWorkerTest, ElevationPolicyUninstall) {
 
 TEST_F(InstallWorkerTest, ElevationPolicySingleNoop) {
   const bool system_level = true;
-  const HKEY root = HKEY_LOCAL_MACHINE;
   const bool multi_install = false;  // nothing should be done for single.
   MockWorkItemList work_item_list;
 
@@ -474,7 +482,6 @@ TEST_F(InstallWorkerTest, ElevationPolicySingleNoop) {
 
 TEST_F(InstallWorkerTest, ElevationPolicyExistingSingleCFNoop) {
   const bool system_level = true;
-  const HKEY root = HKEY_LOCAL_MACHINE;
   const bool multi_install = true;
   MockWorkItemList work_item_list;
 
@@ -505,6 +512,55 @@ TEST_F(InstallWorkerTest, ElevationPolicyExistingSingleCFNoop) {
                               *new_version_.get(),
                               &work_item_list);
 }
+
+TEST_F(InstallWorkerTest, GoogleUpdateWorkItemsTest) {
+  const bool system_level = true;
+  const bool multi_install = true;
+  MockWorkItemList work_item_list;
+
+  scoped_ptr<MockInstallationState> installation_state(
+      BuildChromeInstallationState(system_level, multi_install));
+
+  MockProductState cf_state;
+  cf_state.set_version(current_version_->Clone());
+  cf_state.set_multi_install(false);
+
+  installation_state->SetProductState(system_level,
+      BrowserDistribution::CHROME_FRAME, cf_state);
+
+  scoped_ptr<MockInstallerState> installer_state(
+      BuildChromeInstallerState(system_level, multi_install,
+                                *installation_state,
+                                InstallerState::MULTI_INSTALL));
+
+  // Expect the multi Client State key to be created.
+  BrowserDistribution* multi_dist =
+      BrowserDistribution::GetSpecificDistribution(
+          BrowserDistribution::CHROME_BINARIES);
+  std::wstring multi_app_guid(multi_dist->GetAppGuid());
+  EXPECT_CALL(work_item_list,
+              AddCreateRegKeyWorkItem(_, HasSubstr(multi_app_guid))).Times(1);
+
+  // Expect to see a set value for the "TEST" brand code in the multi Client
+  // State key.
+  EXPECT_CALL(work_item_list,
+              AddSetRegStringValueWorkItem(_,
+                                           HasSubstr(multi_app_guid),
+                                           StrEq(google_update::kRegBrandField),
+                                           StrEq(L"TEST"),
+                                           _)).Times(1);
+
+  // There may also be some calls to set 'ap' values.
+  EXPECT_CALL(work_item_list,
+              AddSetRegStringValueWorkItem(_, _,
+                                           StrEq(google_update::kRegApField),
+                                           _, _)).Times(testing::AnyNumber());
+
+  AddGoogleUpdateWorkItems(*installation_state.get(),
+                           *installer_state.get(),
+                           &work_item_list);
+}
+
 
 // Test scenarios under which the quick-enable-cf command should not exist after
 // the run.  We're permissive in that we allow the DeleteRegKeyWorkItem even if

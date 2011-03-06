@@ -30,6 +30,7 @@ extern const wchar_t kRegPathClientStateMedium[];
 extern const wchar_t kRegCommandsKey[];
 
 extern const wchar_t kRegApField[];
+extern const wchar_t kRegBrandField[];
 extern const wchar_t kRegBrowserField[];
 extern const wchar_t kRegCFEndTempOptOutCmdField[];
 extern const wchar_t kRegCFOptInCmdField[];
