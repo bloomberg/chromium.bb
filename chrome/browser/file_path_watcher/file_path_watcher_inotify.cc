@@ -82,7 +82,6 @@ class InotifyReader {
 class FilePathWatcherImpl : public FilePathWatcher::PlatformDelegate {
  public:
   FilePathWatcherImpl();
-  virtual ~FilePathWatcherImpl() {}
 
   // Called for each event coming from the watch. |fired_watch| identifies the
   // watch that fired, |child| indicates what has changed, and is relative to
@@ -102,6 +101,8 @@ class FilePathWatcherImpl : public FilePathWatcher::PlatformDelegate {
   virtual void Cancel();
 
  private:
+  virtual ~FilePathWatcherImpl() {}
+
   // Inotify watches are installed for all directory components of |target_|. A
   // WatchEntry instance holds the watch descriptor for a component and the
   // subdirectory for that identifies the next component.

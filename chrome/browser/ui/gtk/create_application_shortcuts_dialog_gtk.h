@@ -67,7 +67,7 @@ class CreateApplicationShortcutsDialogGtk
   GtkWidget* error_dialog_;
 
  private:
-  friend class BrowserThread;
+  friend struct BrowserThread::DeleteOnThread<BrowserThread::UI>;
   friend class DeleteTask<CreateApplicationShortcutsDialogGtk>;
   DISALLOW_COPY_AND_ASSIGN(CreateApplicationShortcutsDialogGtk);
 };

@@ -7,6 +7,7 @@
 #pragma once
 
 #include <map>
+#include <string>
 #include <vector>
 
 #include "app/sql/init_status.h"
@@ -502,8 +503,7 @@ class WebDataService
   //
   //////////////////////////////////////////////////////////////////////////////
  private:
-  friend class base::RefCountedThreadSafe<WebDataService>;
-  friend class BrowserThread;
+  friend struct BrowserThread::DeleteOnThread<BrowserThread::UI>;
   friend class DeleteTask<WebDataService>;
   friend class ShutdownTask;
 

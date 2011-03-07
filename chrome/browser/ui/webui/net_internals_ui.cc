@@ -222,8 +222,6 @@ class NetInternalsMessageHandler::IOThreadImpl
       IOThread* io_thread,
       URLRequestContextGetter* context_getter);
 
-  ~IOThreadImpl();
-
   // Creates a callback that will run |method| on the IO thread.
   //
   // This can be used with WebUI::RegisterMessageCallback() to bind to a method
@@ -292,6 +290,11 @@ class NetInternalsMessageHandler::IOThreadImpl
   void CallJavascriptFunction(const std::wstring& function_name, Value* arg);
 
  private:
+  friend struct BrowserThread::DeleteOnThread<BrowserThread::UI>;
+  friend class DeleteTask<IOThreadImpl>;
+
+  ~IOThreadImpl();
+
   class CallbackHelper;
 
   // Helper that runs |method| with |arg|, and deletes |arg| on completion.
@@ -330,7 +333,6 @@ class NetInternalsMessageHandler::IOThreadImpl
 
   // True if we have attached an observer to the NetLog already.
   bool is_observing_log_;
-  friend class base::RefCountedThreadSafe<IOThreadImpl>;
 
   // Log entries that have yet to be passed along to Javascript page.  Non-NULL
   // when and only when there is a pending delayed task to call

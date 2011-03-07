@@ -413,7 +413,7 @@ class ExtensionService
   ExtensionIdSet GetAppIds() const;
 
  private:
-  friend class BrowserThread;
+  friend struct BrowserThread::DeleteOnThread<BrowserThread::UI>;
   friend class DeleteTask<ExtensionService>;
 
   // Contains Extension data that can change during the life of the process,

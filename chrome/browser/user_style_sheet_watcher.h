@@ -25,7 +25,6 @@ class UserStyleSheetWatcher
       public NotificationObserver {
  public:
   explicit UserStyleSheetWatcher(const FilePath& profile_path);
-  virtual ~UserStyleSheetWatcher();
 
   void Init();
 
@@ -37,6 +36,11 @@ class UserStyleSheetWatcher
                        const NotificationDetails& details);
 
  private:
+  friend struct BrowserThread::DeleteOnThread<BrowserThread::UI>;
+  friend class DeleteTask<UserStyleSheetWatcher>;
+
+  virtual ~UserStyleSheetWatcher();
+
   // The directory containing User StyleSheets/Custom.css.
   FilePath profile_path_;
 

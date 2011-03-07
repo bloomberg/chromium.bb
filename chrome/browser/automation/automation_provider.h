@@ -155,7 +155,7 @@ class AutomationProvider
   DictionaryValue* GetDictionaryFromDownloadItem(const DownloadItem* download);
 
  protected:
-  friend class BrowserThread;
+  friend struct BrowserThread::DeleteOnThread<BrowserThread::UI>;
   friend class DeleteTask<AutomationProvider>;
   virtual ~AutomationProvider();
 

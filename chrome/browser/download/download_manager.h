@@ -254,7 +254,7 @@ class DownloadManager
     DownloadManager* observed_download_manager_;
   };
 
-  friend class BrowserThread;
+  friend struct BrowserThread::DeleteOnThread<BrowserThread::UI>;
   friend class DeleteTask<DownloadManager>;
   friend class OtherDownloadManagerObserver;
 

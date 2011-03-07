@@ -4,6 +4,8 @@
 
 #include "chrome/browser/profiles/profile_io_data.h"
 
+#include <string>
+
 #include "base/basictypes.h"
 #include "base/command_line.h"
 #include "base/logging.h"
@@ -90,7 +92,7 @@ class ChromeCookieMonsterDelegate : public net::CookieMonster::Delegate {
     }
 
    private:
-    friend class ::BrowserThread;
+    friend struct BrowserThread::DeleteOnThread<BrowserThread::UI>;
     friend class DeleteTask<ProfileGetter>;
 
     virtual ~ProfileGetter() {}

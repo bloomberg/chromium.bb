@@ -45,7 +45,6 @@ class HostContentSettingsMap
   typedef std::vector<PatternSettingPair> SettingsForOneType;
 
   explicit HostContentSettingsMap(Profile* profile);
-  ~HostContentSettingsMap();
 
   static void RegisterUserPrefs(PrefService* prefs);
 
@@ -171,7 +170,10 @@ class HostContentSettingsMap
                        const NotificationDetails& details);
 
  private:
-  friend class base::RefCountedThreadSafe<HostContentSettingsMap>;
+  friend struct BrowserThread::DeleteOnThread<BrowserThread::UI>;
+  friend class DeleteTask<HostContentSettingsMap>;
+
+  ~HostContentSettingsMap();
 
   // Informs observers that content settings have changed. Make sure that
   // |lock_| is not held when calling this, as listeners will usually call one

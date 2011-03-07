@@ -44,8 +44,6 @@ class FilePathWatcher {
       : public base::RefCountedThreadSafe<PlatformDelegate,
                                           BrowserThread::DeleteOnFileThread> {
    public:
-    virtual ~PlatformDelegate() {}
-
     // Start watching for the given |path| and notify |delegate| about changes.
     virtual bool Watch(const FilePath& path, Delegate* delegate)
         WARN_UNUSED_RESULT = 0;
@@ -53,6 +51,12 @@ class FilePathWatcher {
     // Stop watching. This is called from FilePathWatcher's dtor in order to
     // allow to shut down properly while the object is still alive.
     virtual void Cancel() {}
+
+   protected:
+    friend struct BrowserThread::DeleteOnThread<BrowserThread::FILE>;
+    friend class DeleteTask<PlatformDelegate>;
+
+    virtual ~PlatformDelegate() {}
   };
 
  private:

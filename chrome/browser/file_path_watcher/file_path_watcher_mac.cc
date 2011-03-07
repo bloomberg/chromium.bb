@@ -23,7 +23,6 @@ const CFAbsoluteTime kEventLatencySeconds = 0.3;
 class FilePathWatcherImpl : public FilePathWatcher::PlatformDelegate {
  public:
   FilePathWatcherImpl();
-  virtual ~FilePathWatcherImpl() {}
 
   // Called from the FSEvents callback whenever there is a change to the paths
   void OnFilePathChanged();
@@ -37,6 +36,8 @@ class FilePathWatcherImpl : public FilePathWatcher::PlatformDelegate {
   virtual void Cancel();
 
  private:
+  virtual ~FilePathWatcherImpl() {}
+
   // Destroy the event stream.
   void DestroyEventStream();
 

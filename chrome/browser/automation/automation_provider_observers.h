@@ -9,6 +9,8 @@
 #include <deque>
 #include <map>
 #include <set>
+#include <string>
+#include <vector>
 
 #include "base/scoped_ptr.h"
 #include "base/weak_ptr.h"
@@ -1126,7 +1128,7 @@ class WaitForProcessLauncherThreadToGoIdleObserver
       AutomationProvider* automation, IPC::Message* reply_message);
 
  private:
-  friend class BrowserThread;
+  friend struct BrowserThread::DeleteOnThread<BrowserThread::UI>;
   friend class DeleteTask<WaitForProcessLauncherThreadToGoIdleObserver>;
 
   virtual ~WaitForProcessLauncherThreadToGoIdleObserver();
