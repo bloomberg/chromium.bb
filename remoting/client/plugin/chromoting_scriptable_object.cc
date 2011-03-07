@@ -15,14 +15,19 @@ using pp::Var;
 
 namespace remoting {
 
+namespace {
+
 const char kConnectionInfoUpdate[] = "connectionInfoUpdate";
 const char kDebugInfo[] = "debugInfo";
 const char kDesktopHeight[] = "desktopHeight";
 const char kDesktopWidth[] = "desktopWidth";
 const char kDesktopSizeUpdate[] = "desktopSizeUpdate";
 const char kLoginChallenge[] = "loginChallenge";
+const char kSendIq[] = "sendIq";
 const char kQualityAttribute[] = "quality";
 const char kStatusAttribute[] = "status";
+
+}  // namespace
 
 ChromotingScriptableObject::ChromotingScriptableObject(
     ChromotingInstance* instance)
@@ -60,12 +65,16 @@ void ChromotingScriptableObject::Init() {
   AddAttribute(kDebugInfo, Var());
   AddAttribute(kDesktopSizeUpdate, Var());
   AddAttribute(kLoginChallenge, Var());
+  AddAttribute(kSendIq, Var());
   AddAttribute(kDesktopWidth, Var(0));
   AddAttribute(kDesktopHeight, Var(0));
 
   AddMethod("connect", &ChromotingScriptableObject::DoConnect);
+  AddMethod("connectSandboxed",
+            &ChromotingScriptableObject::DoConnectSandboxed);
   AddMethod("disconnect", &ChromotingScriptableObject::DoDisconnect);
   AddMethod("submitLoginInfo", &ChromotingScriptableObject::DoSubmitLogin);
+  AddMethod("onIq", &ChromotingScriptableObject::DoOnIq);
 }
 
 bool ChromotingScriptableObject::HasProperty(const Var& name, Var* exception) {
@@ -146,6 +155,7 @@ void ChromotingScriptableObject::SetProperty(const Var& name,
       property_name != kDebugInfo &&
       property_name != kDesktopSizeUpdate &&
       property_name != kLoginChallenge &&
+      property_name != kSendIq &&
       property_name != kDesktopWidth &&
       property_name != kDesktopHeight) {
     *exception =
@@ -236,7 +246,7 @@ void ChromotingScriptableObject::SignalConnectionInfoChange() {
 
   // Var() means call the object directly as a function rather than calling
   // a method in the object.
-  cb.Call(Var(), 0, NULL, &exception);
+  cb.Call(Var(), &exception);
 
   if (!exception.is_undefined())
     LogDebugInfo(
@@ -266,23 +276,26 @@ void ChromotingScriptableObject::SignalLoginChallenge() {
 
   // Var() means call the object directly as a function rather than calling
   // a method in the object.
-  cb.Call(Var(), 0, NULL, &exception);
+  cb.Call(Var(), &exception);
 
   if (!exception.is_undefined())
     LogDebugInfo("Exception when invoking loginChallenge JS callback.");
 }
 
-void ChromotingScriptableObject::AttachXmppProxy(XmppProxy* xmpp_proxy) {
+void ChromotingScriptableObject::AttachXmppProxy(PepperXmppProxy* xmpp_proxy) {
   xmpp_proxy_ = xmpp_proxy;
 }
 
-void ChromotingScriptableObject::SendIq(const std::string& iq_request_xml) {
-  // TODO(ajwong): Do something smart here.
-  NOTIMPLEMENTED();
-}
+void ChromotingScriptableObject::SendIq(const std::string& message_xml) {
+  Var exception;
+  Var cb = GetProperty(Var(kSendIq), &exception);
 
-void ChromotingScriptableObject::ReceiveIq(const std::string& iq_response_xml) {
-  xmpp_proxy_->ReceiveIq(iq_response_xml);
+  // Var() means call the object directly as a function rather than calling
+  // a method in the object.
+  cb.Call(Var(), Var(message_xml), &exception);
+
+  if (!exception.is_undefined())
+    LogDebugInfo("Exception when invoking loginChallenge JS callback.");
 }
 
 Var ChromotingScriptableObject::DoConnect(const std::vector<Var>& args,
@@ -318,6 +331,33 @@ Var ChromotingScriptableObject::DoConnect(const std::vector<Var>& args,
   return Var();
 }
 
+Var ChromotingScriptableObject::DoConnectSandboxed(
+    const std::vector<Var>& args, Var* exception) {
+  if (args.size() != 2) {
+    *exception = Var("Usage: connectSandboxed(your_jid, host_jid)");
+    return Var();
+  }
+
+  std::string your_jid;
+  if (!args[0].is_string()) {
+    *exception = Var("your_jid must be a string.");
+    return Var();
+  }
+  your_jid = args[0].AsString();
+
+  std::string host_jid;
+  if (!args[1].is_string()) {
+    *exception = Var("host_jid must be a string.");
+    return Var();
+  }
+  host_jid = args[1].AsString();
+
+  VLOG(1) << "your_jid: " << your_jid << " and host_jid: " << host_jid;
+  instance_->ConnectSandboxed(your_jid, host_jid);
+
+  return Var();
+}
+
 Var ChromotingScriptableObject::DoDisconnect(const std::vector<Var>& args,
                                              Var* exception) {
   LogDebugInfo("Disconnecting from host.");
@@ -347,6 +387,23 @@ Var ChromotingScriptableObject::DoSubmitLogin(const std::vector<Var>& args,
 
   LogDebugInfo("Submitting login info to host.");
   instance_->SubmitLoginInfo(username, password);
+  return Var();
+}
+
+Var ChromotingScriptableObject::DoOnIq(const std::vector<Var>& args,
+                                       Var* exception) {
+  if (args.size() != 1) {
+    *exception = Var("Usage: onIq(response_xml)");
+    return Var();
+  }
+
+  if (!args[0].is_string()) {
+    *exception = Var("response_xml must be a string.");
+    return Var();
+  }
+
+  xmpp_proxy_->OnIq(args[0].AsString());
+
   return Var();
 }
 

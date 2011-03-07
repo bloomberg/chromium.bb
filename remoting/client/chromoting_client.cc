@@ -52,6 +52,27 @@ void ChromotingClient::Start() {
   }
 }
 
+void ChromotingClient::StartSandboxed(scoped_refptr<XmppProxy> xmpp_proxy,
+                                      const std::string& your_jid,
+                                      const std::string& host_jid) {
+  // TODO(ajwong): Merge this with Start(), and just change behavior based on
+  // ClientConfig.
+  if (message_loop() != MessageLoop::current()) {
+    message_loop()->PostTask(
+        FROM_HERE,
+        NewRunnableMethod(this, &ChromotingClient::StartSandboxed, xmpp_proxy,
+                          your_jid, host_jid));
+    return;
+  }
+
+  connection_->ConnectSandboxed(xmpp_proxy, your_jid, host_jid, this, this,
+                                this);
+
+  if (!view_->Initialize()) {
+    ClientDone();
+  }
+}
+
 void ChromotingClient::Stop() {
   if (message_loop() != MessageLoop::current()) {
     message_loop()->PostTask(

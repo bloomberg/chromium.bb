@@ -16,6 +16,7 @@
 #include "remoting/protocol/connection_to_host.h"
 #include "remoting/protocol/input_stub.h"
 #include "remoting/protocol/video_stub.h"
+#include "remoting/jingle_glue/xmpp_proxy.h"
 
 class MessageLoop;
 
@@ -46,6 +47,9 @@ class ChromotingClient : public protocol::ConnectionToHost::HostEventCallback,
   virtual ~ChromotingClient();
 
   void Start();
+  void StartSandboxed(scoped_refptr<XmppProxy> xmpp_proxy,
+                      const std::string& your_jid,
+                      const std::string& host_jid);
   void Stop();
   void ClientDone();
 

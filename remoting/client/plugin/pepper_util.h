@@ -27,6 +27,9 @@ pp::CompletionCallback TaskToCompletionCallback(Task* task);
 // |task|.
 void RunTaskOnPluginThread(Task* task);
 
+// Returns true if the current thread is the plugin main thread.
+bool CurrentlyOnPluginThread();
+
 }  // namespace remoting
 
 #endif  // REMOTING_CLIENT_PLUGIN_PLUGIN_UTIL_H_

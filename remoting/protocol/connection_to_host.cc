@@ -59,17 +59,32 @@ void ConnectionToHost::Connect(const std::string& username,
   video_stub_ = video_stub;
 
   // Initialize |jingle_client_|.
-  if (1 == 0) {
-    signal_strategy_.reset(new JavascriptSignalStrategy());
-  } else {
-    signal_strategy_.reset(
-        new XmppSignalStrategy(thread_, username, auth_token,
-                               kChromotingTokenServiceName));
-  }
+  signal_strategy_.reset(
+      new XmppSignalStrategy(thread_, username, auth_token,
+                             kChromotingTokenServiceName));
+  jingle_client_ = new JingleClient(thread_, signal_strategy_.get(), this);
+  jingle_client_->Init();
 
-  jingle_client_ = new JingleClient(thread_, signal_strategy_.get(),
-                                    network_manager_.release(),
-                                    socket_factory_.release(), this);
+  // Save jid of the host. The actual connection is created later after
+  // |jingle_client_| is connected.
+  host_jid_ = host_jid;
+}
+
+void ConnectionToHost::ConnectSandboxed(scoped_refptr<XmppProxy> xmpp_proxy,
+                                        const std::string& your_jid,
+                                        const std::string& host_jid,
+                                        HostEventCallback* event_callback,
+                                        ClientStub* client_stub,
+                                        VideoStub* video_stub) {
+  event_callback_ = event_callback;
+  client_stub_ = client_stub;
+  video_stub_ = video_stub;
+
+  // Initialize |jingle_client_|.
+  JavascriptSignalStrategy* strategy = new JavascriptSignalStrategy(your_jid);
+  strategy->AttachXmppProxy(xmpp_proxy);
+  signal_strategy_.reset(strategy);
+  jingle_client_ = new JingleClient(thread_, signal_strategy_.get(), this);
   jingle_client_->Init();
 
   // Save jid of the host. The actual connection is created later after

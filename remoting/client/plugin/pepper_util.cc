@@ -28,4 +28,8 @@ void RunTaskOnPluginThread(Task* task) {
       );
 }
 
+bool CurrentlyOnPluginThread() {
+  return pp::Module::Get()->core()->IsMainThread();
+}
+
 }  // namespace remoting

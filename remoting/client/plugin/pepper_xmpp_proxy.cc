@@ -2,55 +2,58 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+
+#include "base/message_loop.h"
+#include "remoting/client/plugin/chromoting_scriptable_object.h"
+#include "remoting/client/plugin/pepper_util.h"
 #include "remoting/client/plugin/pepper_xmpp_proxy.h"
 
 namespace remoting {
 
-PepperXmppProxy::PepperXmppProxy(MessageLoop* jingle_message_loop,
-                                 MessageLoop* pepper_message_loop)
-    : jingle_message_loop_(jingle_message_loop),
-      pepper_message_loop_(pepper_message_loop) {
+PepperXmppProxy::PepperXmppProxy(
+    base::WeakPtr<ChromotingScriptableObject> scriptable_object,
+    MessageLoop* callback_message_loop)
+    : scriptable_object_(scriptable_object),
+      callback_message_loop_(callback_message_loop) {
+  CHECK(CurrentlyOnPluginThread());
 }
 
-void PepperXmppProxy::AttachScriptableObject(
-    ChromotingScriptableObject* scriptable_object,
-    Task* done) {
-  DCHECK_EQ(jingle_message_loop_, MessageLoop::Current());
-  scriptable_object_ = scriptable_object;
-  scriptable_object_->AttachXmppProxy(this);
+PepperXmppProxy::~PepperXmppProxy() {
 }
 
-void PepperXmppProxy::AttachJavascriptIqRequest(
-    JavascriptIqRequest* javascript_iq_request) {
-  DCHECK_EQ(pepper_message_loop_, MessageLoop::Current());
-  javascript_iq_request_ = javascript_iq_request;
+void PepperXmppProxy::AttachCallback(base::WeakPtr<ResponseCallback> callback) {
+  CHECK_EQ(callback_message_loop_, MessageLoop::current());
+  callback_ = callback;
 }
 
-void PepperXmppProxy::SendIq(const std::string& iq_request_xml) {
-  if (MessageLoop::Current() != pepper_message_loop_) {
-    pepper_message_loop_->PostTask(
-        NewRunnableMethod(this,
-                          &PepperXmppProxy::SendIq,
-                          iq_request_xml));
+void PepperXmppProxy::DetachCallback() {
+  callback_.reset();
+}
+
+void PepperXmppProxy::SendIq(const std::string& request_xml) {
+  if (!CurrentlyOnPluginThread()) {
+    RunTaskOnPluginThread(NewRunnableMethod(this,
+                                            &PepperXmppProxy::SendIq,
+                                            request_xml));
     return;
   }
 
   if (scriptable_object_) {
-    scriptable_object_->SendIq(iq_request_xml, this);
+    scriptable_object_->SendIq(request_xml);
   }
 }
 
-void PepperXmppProxy::ReceiveIq(const std::string& iq_response_xml) {
-  if (MessageLoop::Current() != jingle_message_loop_) {
-    jingle_message_loop_->PostTask(
-        NewRunnableMethod(this,
-                          &PepperXmppProxy::ReceiveIq,
-                          iq_response_xml));
+void PepperXmppProxy::OnIq(const std::string& response_xml) {
+  if (MessageLoop::current() != callback_message_loop_) {
+    callback_message_loop_->PostTask(
+        FROM_HERE,NewRunnableMethod(this,
+                                    &PepperXmppProxy::OnIq,
+                                    response_xml));
     return;
   }
 
-  if (javascript_iq_request_) {
-    javascript_iq_request_->handleIqResponse(iq_response_xml);
+  if (callback_) {
+    callback_->OnIq(response_xml);
   }
 }
 

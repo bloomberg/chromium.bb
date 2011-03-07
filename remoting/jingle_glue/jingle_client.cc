@@ -6,10 +6,10 @@
 
 #include "base/logging.h"
 #include "base/message_loop.h"
+#include "base/string_util.h"
 #include "jingle/notifier/communicator/gaia_token_pre_xmpp_auth.h"
 #include "remoting/jingle_glue/http_port_allocator.h"
 #include "remoting/jingle_glue/iq_request.h"
-#include "remoting/jingle_glue/jingle_info_task.h"
 #include "remoting/jingle_glue/jingle_thread.h"
 #include "remoting/jingle_glue/xmpp_socket_adapter.h"
 #include "third_party/libjingle/source/talk/base/asyncsocket.h"
@@ -37,8 +37,7 @@ XmppSignalStrategy::XmppSignalStrategy(JingleThread* jingle_thread,
      auth_token_(auth_token),
      auth_token_service_(auth_token_service),
      xmpp_client_(NULL),
-     observer_(NULL),
-     port_allocator_(NULL) {
+     observer_(NULL) {
 }
 
 XmppSignalStrategy::~XmppSignalStrategy() {
@@ -65,20 +64,6 @@ void XmppSignalStrategy::Init(StatusObserver* observer) {
   xmpp_client_->SignalStateChange.connect(
       this, &XmppSignalStrategy::OnConnectionStateChanged);
   xmpp_client_->Start();
-}
-
-void XmppSignalStrategy::ConfigureAllocator(
-    cricket::HttpPortAllocator* port_allocator, Task* done) {
-  // TODO(ajwong): There are 2 races on destruction here. First, port_allocator
-  // by be destroyed before the OnJingleInfo is run.  Second,
-  // XmppSignalStrategy itself may be destroyed.  Fix later.
-  port_allocator_ = port_allocator;
-  allocator_config_cb_.reset(done);
-
-  JingleInfoTask* jit = new JingleInfoTask(xmpp_client_);
-  jit->SignalJingleInfo.connect(this, &XmppSignalStrategy::OnJingleInfo);
-  jit->Start();
-  jit->RefreshJingleInfoNow();
 }
 
 void XmppSignalStrategy::StartSession(
@@ -126,23 +111,6 @@ void XmppSignalStrategy::OnConnectionStateChanged(
   }
 }
 
-void XmppSignalStrategy::OnJingleInfo(
-    const std::string& token,
-    const std::vector<std::string>& relay_hosts,
-    const std::vector<talk_base::SocketAddress>& stun_hosts) {
-  // TODO(ajwong): Log that we found the stun/turn servers.
-  if (port_allocator_) {
-    port_allocator_->SetRelayToken(token);
-    port_allocator_->SetStunHosts(stun_hosts);
-    port_allocator_->SetRelayHosts(relay_hosts);
-  }
-
-  if (allocator_config_cb_.get()) {
-    allocator_config_cb_->Run();
-    allocator_config_cb_.reset();
-  }
-}
-
 buzz::PreXmppAuth* XmppSignalStrategy::CreatePreXmppAuth(
     const buzz::XmppClientSettings& settings) {
   buzz::Jid jid(settings.user(), settings.host(), buzz::STR_EMPTY);
@@ -151,34 +119,47 @@ buzz::PreXmppAuth* XmppSignalStrategy::CreatePreXmppAuth(
 }
 
 
-JavascriptSignalStrategy::JavascriptSignalStrategy() {
+JavascriptSignalStrategy::JavascriptSignalStrategy(const std::string& your_jid)
+    : your_jid_(your_jid) {
 }
 
 JavascriptSignalStrategy::~JavascriptSignalStrategy() {
 }
 
 void JavascriptSignalStrategy::Init(StatusObserver* observer) {
-  NOTIMPLEMENTED();
-}
-
-void JavascriptSignalStrategy::ConfigureAllocator(
-    cricket::HttpPortAllocator* port_allocator, Task* done) {
-  NOTIMPLEMENTED();
-  done->Run();
-  delete done;
+  // Blast through each state since for a JavascriptSignalStrategy, we're
+  // already connected.
+  //
+  // TODO(ajwong): Clarify the status API contract to see if we have to actually
+  // walk through each state.
+  observer->OnStateChange(StatusObserver::START);
+  observer->OnStateChange(StatusObserver::CONNECTING);
+  observer->OnJidChange(your_jid_);
+  observer->OnStateChange(StatusObserver::CONNECTED);
 }
 
 void JavascriptSignalStrategy::StartSession(
     cricket::SessionManager* session_manager) {
-  NOTIMPLEMENTED();
+  session_start_request_.reset(
+      new SessionStartRequest(CreateIqRequest(), session_manager));
+  session_start_request_->Run();
 }
 
 void JavascriptSignalStrategy::EndSession() {
-  NOTIMPLEMENTED();
+  if (xmpp_proxy_) {
+    xmpp_proxy_->DetachCallback();
+  }
+  xmpp_proxy_ = NULL;
 }
 
-IqRequest* JavascriptSignalStrategy::CreateIqRequest() {
-  return new JavascriptIqRequest();
+void JavascriptSignalStrategy::AttachXmppProxy(
+    scoped_refptr<XmppProxy> xmpp_proxy) {
+  xmpp_proxy_ = xmpp_proxy;
+  xmpp_proxy_->AttachCallback(iq_registry_.AsWeakPtr());
+}
+
+JavascriptIqRequest* JavascriptSignalStrategy::CreateIqRequest() {
+  return new JavascriptIqRequest(&iq_registry_, xmpp_proxy_);
 }
 
 JingleClient::JingleClient(JingleThread* thread,
@@ -246,8 +227,12 @@ void JingleClient::DoInitialize() {
   // other fields of JingleClient initialized first, otherwise the state-change
   // may occur and callback into class before we're done initializing.
   signal_strategy_->Init(this);
-  signal_strategy_->ConfigureAllocator(
-      port_allocator_.get(),
+
+  jingle_info_request_.reset(
+      new JingleInfoRequest(signal_strategy_->CreateIqRequest()));
+  jingle_info_request_->SetCallback(
+      NewCallback(this, &JingleClient::OnJingleInfo));
+  jingle_info_request_->Run(
       NewRunnableMethod(this, &JingleClient::DoStartSession));
 }
 
@@ -344,6 +329,27 @@ void JingleClient::OnStateChange(State new_state) {
 void JingleClient::OnJidChange(const std::string& full_jid) {
   base::AutoLock auto_lock(jid_lock_);
   full_jid_ = full_jid;
+}
+
+void JingleClient::OnJingleInfo(
+    const std::string& token,
+    const std::vector<std::string>& relay_hosts,
+    const std::vector<talk_base::SocketAddress>& stun_hosts) {
+  if (port_allocator_.get()) {
+    // TODO(ajwong): Avoid string processing if log-level is low.
+    std::string stun_servers;
+    for (size_t i = 0; i < stun_hosts.size(); ++i) {
+      stun_servers += stun_hosts[i].ToString() + "; ";
+    }
+    LOG(INFO) << "Configuring with relay token: " << token
+              << ", relays: " << JoinString(relay_hosts, ';')
+              << ", stun: " << stun_servers;
+    port_allocator_->SetRelayToken(token);
+    port_allocator_->SetStunHosts(stun_hosts);
+    port_allocator_->SetRelayHosts(relay_hosts);
+  } else {
+    LOG(INFO) << "Jingle info found but no port allocator.";
+  }
 }
 
 }  // namespace remoting

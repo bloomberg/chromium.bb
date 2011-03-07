@@ -24,6 +24,7 @@ class MessageLoop;
 namespace remoting {
 
 class JingleThread;
+class XmppProxy;
 class VideoPacket;
 
 namespace protocol {
@@ -66,6 +67,12 @@ class ConnectionToHost : public JingleClient::Callback {
                        HostEventCallback* event_callback,
                        ClientStub* client_stub,
                        VideoStub* video_stub);
+  virtual void ConnectSandboxed(scoped_refptr<XmppProxy> xmpp_proxy,
+                                const std::string& your_jid,
+                                const std::string& host_jid,
+                                HostEventCallback* event_callback,
+                                ClientStub* client_stub,
+                                VideoStub* video_stub);
   virtual void Disconnect();
 
   virtual const SessionConfig* config();

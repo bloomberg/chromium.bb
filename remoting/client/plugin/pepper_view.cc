@@ -35,13 +35,13 @@ bool PepperView::Initialize() {
 }
 
 void PepperView::TearDown() {
-  DCHECK(instance_->CurrentlyOnPluginThread());
+  DCHECK(CurrentlyOnPluginThread());
 
   task_factory_.RevokeAll();
 }
 
 void PepperView::Paint() {
-  DCHECK(instance_->CurrentlyOnPluginThread());
+  DCHECK(CurrentlyOnPluginThread());
 
   TraceContext::tracer()->PrintString("Start Paint.");
   // TODO(ajwong): We're assuming the native format is BGRA_PREMUL below. This
@@ -77,7 +77,7 @@ void PepperView::Paint() {
 }
 
 void PepperView::PaintFrame(media::VideoFrame* frame, UpdatedRects* rects) {
-  DCHECK(instance_->CurrentlyOnPluginThread());
+  DCHECK(CurrentlyOnPluginThread());
 
   TraceContext::tracer()->PrintString("Start Paint Frame.");
 
@@ -124,20 +124,20 @@ void PepperView::PaintFrame(media::VideoFrame* frame, UpdatedRects* rects) {
 }
 
 void PepperView::SetSolidFill(uint32 color) {
-  DCHECK(instance_->CurrentlyOnPluginThread());
+  DCHECK(CurrentlyOnPluginThread());
 
   is_static_fill_ = true;
   static_fill_color_ = color;
 }
 
 void PepperView::UnsetSolidFill() {
-  DCHECK(instance_->CurrentlyOnPluginThread());
+  DCHECK(CurrentlyOnPluginThread());
 
   is_static_fill_ = false;
 }
 
 void PepperView::SetConnectionState(ConnectionState state) {
-  DCHECK(instance_->CurrentlyOnPluginThread());
+  DCHECK(CurrentlyOnPluginThread());
 
   // TODO(hclam): Re-consider the way we communicate with Javascript.
   ChromotingScriptableObject* scriptable_obj = instance_->GetScriptableObject();
@@ -165,7 +165,7 @@ void PepperView::SetConnectionState(ConnectionState state) {
 }
 
 void PepperView::UpdateLoginStatus(bool success, const std::string& info) {
-  DCHECK(instance_->CurrentlyOnPluginThread());
+  DCHECK(CurrentlyOnPluginThread());
 
   // TODO(hclam): Re-consider the way we communicate with Javascript.
   ChromotingScriptableObject* scriptable_obj = instance_->GetScriptableObject();
@@ -176,7 +176,7 @@ void PepperView::UpdateLoginStatus(bool success, const std::string& info) {
 }
 
 void PepperView::SetViewport(int x, int y, int width, int height) {
-  DCHECK(instance_->CurrentlyOnPluginThread());
+  DCHECK(CurrentlyOnPluginThread());
 
   if ((width == viewport_width_) && (height == viewport_height_))
     return;
@@ -202,7 +202,7 @@ void PepperView::AllocateFrame(media::VideoFrame::Format format,
                                base::TimeDelta duration,
                                scoped_refptr<media::VideoFrame>* frame_out,
                                Task* done) {
-  DCHECK(instance_->CurrentlyOnPluginThread());
+  DCHECK(CurrentlyOnPluginThread());
 
   // TODO(ajwong): Implement this to be backed by an pp::ImageData rather than
   // generic memory.
@@ -218,7 +218,7 @@ void PepperView::AllocateFrame(media::VideoFrame::Format format,
 }
 
 void PepperView::ReleaseFrame(media::VideoFrame* frame) {
-  DCHECK(instance_->CurrentlyOnPluginThread());
+  DCHECK(CurrentlyOnPluginThread());
 
   if (frame) {
     LOG(WARNING) << "Frame released.";
@@ -229,7 +229,7 @@ void PepperView::ReleaseFrame(media::VideoFrame* frame) {
 void PepperView::OnPartialFrameOutput(media::VideoFrame* frame,
                                       UpdatedRects* rects,
                                       Task* done) {
-  DCHECK(instance_->CurrentlyOnPluginThread());
+  DCHECK(CurrentlyOnPluginThread());
 
   TraceContext::tracer()->PrintString("Calling PaintFrame");
   // TODO(ajwong): Clean up this API to be async so we don't need to use a
@@ -240,7 +240,7 @@ void PepperView::OnPartialFrameOutput(media::VideoFrame* frame,
 }
 
 void PepperView::OnPaintDone() {
-  DCHECK(instance_->CurrentlyOnPluginThread());
+  DCHECK(CurrentlyOnPluginThread());
 
   // TODO(ajwong):Probably should set some variable to allow repaints to
   // actually paint.

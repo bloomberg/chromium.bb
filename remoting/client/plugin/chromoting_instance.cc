@@ -27,6 +27,8 @@
 #include "remoting/client/plugin/pepper_input_handler.h"
 #include "remoting/client/plugin/pepper_view.h"
 #include "remoting/client/plugin/pepper_view_proxy.h"
+#include "remoting/client/plugin/pepper_util.h"
+#include "remoting/client/plugin/pepper_xmpp_proxy.h"
 #include "remoting/jingle_glue/jingle_thread.h"
 #include "remoting/proto/auth.pb.h"
 #include "remoting/protocol/connection_to_host.h"
@@ -44,7 +46,7 @@ const char* ChromotingInstance::kMimeType = "pepper-application/x-chromoting";
 
 ChromotingInstance::ChromotingInstance(PP_Instance pp_instance)
     : pp::Instance(pp_instance),
-      pepper_main_loop_dont_post_to_me_(NULL) {
+      initialized_(false) {
 }
 
 ChromotingInstance::~ChromotingInstance() {
@@ -62,19 +64,9 @@ ChromotingInstance::~ChromotingInstance() {
 bool ChromotingInstance::Init(uint32_t argc,
                               const char* argn[],
                               const char* argv[]) {
-  CHECK(pepper_main_loop_dont_post_to_me_ == NULL);
+  CHECK(!initialized_);
+  initialized_ = true;
 
-  // Record the current thread.  This function should only be invoked by the
-  // plugin thread, so we capture the current message loop and assume it is
-  // indeed the plugin thread.
-  //
-  // We're abusing the pepper API slightly here.  We know we're running as an
-  // internal plugin, and thus we are on the pepper main thread that uses a
-  // message loop.
-  //
-  // TODO(ajwong): See if there is a method for querying what thread we're on
-  // from inside the pepper API.
-  pepper_main_loop_dont_post_to_me_ = MessageLoop::current();
   VLOG(1) << "Started ChromotingInstance::Init";
 
   // Start all the threads.
@@ -133,6 +125,37 @@ void ChromotingInstance::Connect(const ClientConfig& config) {
                                            QUALITY_UNKNOWN);
 }
 
+void ChromotingInstance::ConnectSandboxed(const std::string& your_jid,
+                                          const std::string& host_jid) {
+  // TODO(ajwong): your_jid and host_jid should be moved into ClientConfig. In
+  // fact, this whole function should go away, and Connect() should just look at
+  // ClientConfig.
+  DCHECK(CurrentlyOnPluginThread());
+
+  LogDebugInfo("Attempting sandboxed connection");
+
+  // Setup the XMPP Proxy.
+  ChromotingScriptableObject* scriptable_object = GetScriptableObject();
+  scoped_refptr<PepperXmppProxy> xmpp_proxy =
+      new PepperXmppProxy(scriptable_object->AsWeakPtr(),
+                          context_.jingle_thread()->message_loop());
+  scriptable_object->AttachXmppProxy(xmpp_proxy);
+
+  client_.reset(new ChromotingClient(ClientConfig(),
+                                     &context_,
+                                     host_connection_.get(),
+                                     view_proxy_,
+                                     rectangle_decoder_.get(),
+                                     input_handler_.get(),
+                                     NULL));
+
+  // Kick off the connection.
+  client_->StartSandboxed(xmpp_proxy, your_jid, host_jid);
+
+  GetScriptableObject()->SetConnectionInfo(STATUS_INITIALIZING,
+                                           QUALITY_UNKNOWN);
+}
+
 void ChromotingInstance::Disconnect() {
   DCHECK(CurrentlyOnPluginThread());
 
@@ -156,10 +179,6 @@ void ChromotingInstance::ViewChanged(const pp::Rect& position,
   view_->SetViewport(position.x(), position.y(),
                      position.width(), position.height());
   view_->Paint();
-}
-
-bool ChromotingInstance::CurrentlyOnPluginThread() const {
-  return pepper_main_loop_dont_post_to_me_ == MessageLoop::current();
 }
 
 bool ChromotingInstance::HandleInputEvent(const PP_InputEvent& event) {

@@ -28,7 +28,7 @@ bool PepperViewProxy::Initialize() {
 }
 
 void PepperViewProxy::TearDown() {
-  if (instance_ && !instance_->CurrentlyOnPluginThread()) {
+  if (instance_ && !CurrentlyOnPluginThread()) {
     RunTaskOnPluginThread(NewTracedMethod(this, &PepperViewProxy::TearDown));
     return;
   }
@@ -38,7 +38,7 @@ void PepperViewProxy::TearDown() {
 }
 
 void PepperViewProxy::Paint() {
-  if (instance_ && !instance_->CurrentlyOnPluginThread()) {
+  if (instance_ && !CurrentlyOnPluginThread()) {
     RunTaskOnPluginThread(NewTracedMethod(this, &PepperViewProxy::Paint));
     return;
   }
@@ -48,7 +48,7 @@ void PepperViewProxy::Paint() {
 }
 
 void PepperViewProxy::SetSolidFill(uint32 color) {
-  if (instance_ && !instance_->CurrentlyOnPluginThread()) {
+  if (instance_ && !CurrentlyOnPluginThread()) {
     RunTaskOnPluginThread(
         NewTracedMethod(this, &PepperViewProxy::SetSolidFill, color));
     return;
@@ -59,7 +59,7 @@ void PepperViewProxy::SetSolidFill(uint32 color) {
 }
 
 void PepperViewProxy::UnsetSolidFill() {
-  if (instance_ && !instance_->CurrentlyOnPluginThread()) {
+  if (instance_ && !CurrentlyOnPluginThread()) {
     RunTaskOnPluginThread(
         NewTracedMethod(this, &PepperViewProxy::UnsetSolidFill));
     return;
@@ -70,7 +70,7 @@ void PepperViewProxy::UnsetSolidFill() {
 }
 
 void PepperViewProxy::SetConnectionState(ConnectionState state) {
-  if (instance_ && !instance_->CurrentlyOnPluginThread()) {
+  if (instance_ && !CurrentlyOnPluginThread()) {
     RunTaskOnPluginThread(
         NewRunnableMethod(this, &PepperViewProxy::SetConnectionState, state));
     return;
@@ -81,7 +81,7 @@ void PepperViewProxy::SetConnectionState(ConnectionState state) {
 }
 
 void PepperViewProxy::UpdateLoginStatus(bool success, const std::string& info) {
-  if (instance_ && !instance_->CurrentlyOnPluginThread()) {
+  if (instance_ && !CurrentlyOnPluginThread()) {
     RunTaskOnPluginThread(NewTracedMethod(this,
                                           &PepperViewProxy::UpdateLoginStatus,
                                           success, info));
@@ -93,7 +93,7 @@ void PepperViewProxy::UpdateLoginStatus(bool success, const std::string& info) {
 }
 
 void PepperViewProxy::SetViewport(int x, int y, int width, int height) {
-  if (instance_ && !instance_->CurrentlyOnPluginThread()) {
+  if (instance_ && !CurrentlyOnPluginThread()) {
     RunTaskOnPluginThread(NewTracedMethod(this, &PepperViewProxy::SetViewport,
                                           x, y, width, height));
     return;
@@ -111,7 +111,7 @@ void PepperViewProxy::AllocateFrame(
     base::TimeDelta duration,
     scoped_refptr<media::VideoFrame>* frame_out,
     Task* done) {
-  if (instance_ && !instance_->CurrentlyOnPluginThread()) {
+  if (instance_ && !CurrentlyOnPluginThread()) {
     RunTaskOnPluginThread(
         NewTracedMethod(this, &PepperViewProxy::AllocateFrame, format, width,
                         height, timestamp, duration, frame_out, done));
@@ -125,7 +125,7 @@ void PepperViewProxy::AllocateFrame(
 }
 
 void PepperViewProxy::ReleaseFrame(media::VideoFrame* frame) {
-  if (instance_ && !instance_->CurrentlyOnPluginThread()) {
+  if (instance_ && !CurrentlyOnPluginThread()) {
     RunTaskOnPluginThread(
         NewTracedMethod(this, &PepperViewProxy::ReleaseFrame,
                         make_scoped_refptr(frame)));
@@ -139,7 +139,7 @@ void PepperViewProxy::ReleaseFrame(media::VideoFrame* frame) {
 void PepperViewProxy::OnPartialFrameOutput(media::VideoFrame* frame,
                                            UpdatedRects* rects,
                                            Task* done) {
-  if (instance_ && !instance_->CurrentlyOnPluginThread()) {
+  if (instance_ && !CurrentlyOnPluginThread()) {
     RunTaskOnPluginThread(
         NewTracedMethod(this, &PepperViewProxy::OnPartialFrameOutput,
                         make_scoped_refptr(frame), rects, done));
@@ -151,7 +151,7 @@ void PepperViewProxy::OnPartialFrameOutput(media::VideoFrame* frame,
 }
 
 void PepperViewProxy::Detach() {
-  DCHECK(instance_->CurrentlyOnPluginThread());
+  DCHECK(CurrentlyOnPluginThread());
   instance_ = NULL;
   view_ = NULL;
 }

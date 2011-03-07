@@ -10,6 +10,8 @@
 #include "base/gtest_prod_util.h"
 #include "base/ref_counted.h"
 #include "base/synchronization/lock.h"
+#include "remoting/jingle_glue/iq_request.h"
+#include "remoting/jingle_glue/xmpp_proxy.h"
 #include "third_party/libjingle/source/talk/xmpp/xmppclient.h"
 
 class MessageLoop;
@@ -38,8 +40,8 @@ class Session;
 
 namespace remoting {
 
-class IqRequest;
 class JingleThread;
+class XmppProxy;
 
 // TODO(ajwong): The SignalStrategy stuff needs to be separated out to separate
 // files.
@@ -62,8 +64,6 @@ class SignalStrategy {
   SignalStrategy() {}
   virtual ~SignalStrategy() {}
   virtual void Init(StatusObserver* observer) = 0;
-  virtual void ConfigureAllocator(
-      cricket::HttpPortAllocator* port_allocator, Task* done) = 0;
   virtual void StartSession(cricket::SessionManager* session_manager) = 0;
   virtual void EndSession() = 0;
   virtual IqRequest* CreateIqRequest() = 0;
@@ -81,8 +81,6 @@ class XmppSignalStrategy : public SignalStrategy, public sigslot::has_slots<> {
   virtual ~XmppSignalStrategy();
 
   virtual void Init(StatusObserver* observer);
-  virtual void ConfigureAllocator(
-      cricket::HttpPortAllocator* port_allocator, Task* done);
   virtual void StartSession(cricket::SessionManager* session_manager);
   virtual void EndSession();
   virtual IqRequest* CreateIqRequest();
@@ -91,9 +89,6 @@ class XmppSignalStrategy : public SignalStrategy, public sigslot::has_slots<> {
   friend class JingleClientTest;
 
   void OnConnectionStateChanged(buzz::XmppEngine::State state);
-  void OnJingleInfo(const std::string& token,
-                    const std::vector<std::string>& relay_hosts,
-                    const std::vector<talk_base::SocketAddress>& stun_hosts);
   static buzz::PreXmppAuth* CreatePreXmppAuth(
       const buzz::XmppClientSettings& settings);
 
@@ -105,29 +100,29 @@ class XmppSignalStrategy : public SignalStrategy, public sigslot::has_slots<> {
   buzz::XmppClient* xmpp_client_;
   StatusObserver* observer_;
 
-  cricket::HttpPortAllocator* port_allocator_;
-  scoped_ptr<Task> allocator_config_cb_;
-
   DISALLOW_COPY_AND_ASSIGN(XmppSignalStrategy);
 };
 
 // TODO(hclam): Javascript implementation of this interface shouldn't be here.
 class JavascriptSignalStrategy : public SignalStrategy {
  public:
-  JavascriptSignalStrategy();
+  explicit JavascriptSignalStrategy(const std::string& your_jid);
   virtual ~JavascriptSignalStrategy();
 
   virtual void Init(StatusObserver* observer);
-  virtual void ConfigureAllocator(
-      cricket::HttpPortAllocator* port_allocator, Task* done);
   virtual void StartSession(cricket::SessionManager* session_manager);
   virtual void EndSession();
-  virtual IqRequest* CreateIqRequest();
+  virtual void AttachXmppProxy(scoped_refptr<XmppProxy> xmpp_proxy);
+  virtual JavascriptIqRequest* CreateIqRequest();
 
  private:
+  std::string your_jid_;
+  scoped_refptr<XmppProxy> xmpp_proxy_;
+  JavascriptIqRegistry iq_registry_;
+  scoped_ptr<SessionStartRequest> session_start_request_;
+
   DISALLOW_COPY_AND_ASSIGN(JavascriptSignalStrategy);
 };
-
 
 class JingleClient : public base::RefCountedThreadSafe<JingleClient>,
                      public SignalStrategy::StatusObserver {
@@ -190,8 +185,14 @@ class JingleClient : public base::RefCountedThreadSafe<JingleClient>,
   // the jingle thread.
   void UpdateState(State new_state);
 
+  // Virtual for mocking in a unittest.
+  //
+  // TODO(ajwong): Private virtual functions are odd. Can we remove this?
   virtual void OnStateChange(State state);
   virtual void OnJidChange(const std::string& full_jid);
+  void OnJingleInfo(const std::string& token,
+                    const std::vector<std::string>& relay_hosts,
+                    const std::vector<talk_base::SocketAddress>& stun_hosts);
 
   // JingleThread used for the connection. Set in the constructor.
   JingleThread* thread_;
@@ -223,6 +224,8 @@ class JingleClient : public base::RefCountedThreadSafe<JingleClient>,
   scoped_ptr<talk_base::PacketSocketFactory> socket_factory_;
   scoped_ptr<cricket::HttpPortAllocator> port_allocator_;
   scoped_ptr<cricket::SessionManager> session_manager_;
+
+  scoped_ptr<JingleInfoRequest> jingle_info_request_;
 
   DISALLOW_COPY_AND_ASSIGN(JingleClient);
 };

@@ -11,9 +11,6 @@
 //   readonly attribute int desktopWidth;
 //   readonly attribute int desktopHeight;
 //
-//   // Debug info.
-//   readonly attribute string debugInfo;
-//
 //   // Connection status.
 //   readonly attribute unsigned short status;
 //   // Constants for connection status.
@@ -37,7 +34,16 @@
 //
 //   // JS callback function to call when there is new debug info to display
 //   // in the client UI.
-//   attribute Function debugInfoUpdate;
+//   attribute Function debugInfo;
+//
+//   // JS callback function to send an XMPP IQ stanza for performing the
+//   // signaling in a jingle connection.  The callback function should be
+//   // of type void(string request_xml).
+//   attribute Function sendIq;
+//
+//   // Method for receiving an XMPP IQ stanza in response to a previous
+//   // sendIq() invocation. Other packets will be silently dropped.
+//   void onIq(string response_xml);
 //
 //   // This function is called when login information for the host machine is
 //   // needed.
@@ -50,8 +56,13 @@
 //   // later case |connection_status| is changed to STATUS_FAILED.
 //   attribute Function loginChallenge;
 //
-//   // Methods on the object.
+//   // Methods for establishing a Chromoting connection.
+//   //
+//   // Either use connect() or connectSandboxed(), not both. If using
+//   // connectSandboxed(), sendIq must be set, and responses to calls on
+//   // sendIq must be piped back into onIq().
 //   void connect(string username, string host_jid, string auth_token);
+//   void connectSandboxed();
 //   void disconnect();
 //
 //   // Method for submitting login information.
@@ -73,9 +84,7 @@
 namespace remoting {
 
 class ChromotingInstance;
-class XmppProxy;
-
-extern const char kStatusAttribute[];
+class PepperXmppProxy;
 
 enum ConnectionStatus {
   STATUS_UNKNOWN = 0,
@@ -85,8 +94,6 @@ enum ConnectionStatus {
   STATUS_CLOSED,
   STATUS_FAILED,
 };
-
-extern const char kQualityAttribute[];
 
 enum ConnectionQuality {
   QUALITY_UNKNOWN = 0,
@@ -123,11 +130,13 @@ class ChromotingScriptableObject
   // This should be called to signal JS code to provide login information.
   void SignalLoginChallenge();
 
-  // Handles a Request/Response for a Javascript IQ stanza used to initiate a
-  // jingle connection.
-  void AttachXmppProxy(XmppProxy* xmpp_proxy);
-  void SendIq(const std::string& iq_request_xml);
-  void ReceiveIq(const std::string& iq_response_xml);
+  // Attaches the XmppProxy used for issuing and receivng IQ stanzas for
+  // initiaing a jingle connection from within the sandbox.
+  void AttachXmppProxy(PepperXmppProxy* xmpp_proxy);
+
+  // Sends an IQ stanza, serialized as an xml string, into Javascript for
+  // handling.
+  void SendIq(const std::string& request_xml);
 
  private:
   typedef std::map<std::string, int> PropertyNameMap;
@@ -164,14 +173,20 @@ class ChromotingScriptableObject
   void SignalDesktopSizeChange();
 
   pp::Var DoConnect(const std::vector<pp::Var>& args, pp::Var* exception);
+  pp::Var DoConnectSandboxed(const std::vector<pp::Var>& args,
+                             pp::Var* exception);
   pp::Var DoDisconnect(const std::vector<pp::Var>& args, pp::Var* exception);
 
   // This method is called by JS to provide login information.
   pp::Var DoSubmitLogin(const std::vector<pp::Var>& args, pp::Var* exception);
 
+  // This method is caleld by Javascript to provide responses to sendIq()
+  // requests when establishing a sandboxed Chromoting connection.
+  pp::Var DoOnIq(const std::vector<pp::Var>& args, pp::Var* exception);
+
   PropertyNameMap property_names_;
   std::vector<PropertyDescriptor> properties_;
-  scoped_refptr<XmppProxy> xmpp_proxy_;
+  scoped_refptr<PepperXmppProxy> xmpp_proxy_;
 
   ChromotingInstance* instance_;
 };
