@@ -48,13 +48,13 @@ static int MouseButtonToX11ButtonNumber(
 // WebInputEventFactory does on Linux/GTK, and which respects the
 // host's keyboard layout (see http://crbug.com/74550 ).
 const int kUsVkeyToKeysym[256] = {
-   // 0x00 - 0x07
+  // 0x00 - 0x07
   -1, -1, -1, -1,
-   // 0x04 - 0x07
+  // 0x04 - 0x07
   -1, -1, -1, -1,
-   // 0x08 - 0x0B
+  // 0x08 - 0x0B
   XK_BackSpace, XK_Tab, -1, -1,
-   // 0x0C - 0x0F
+  // 0x0C - 0x0F
   XK_Clear, XK_Return, -1, -1,
 
   // 0x10 - 0x13
@@ -100,7 +100,7 @@ const int kUsVkeyToKeysym[256] = {
   // 0x58 - 0x5B
   XK_X, XK_Y, XK_Z, XK_Super_L,
   // 0x5C - 0x5F
-  XK_Super_R, XK_Menu, -1, /* VKEY_SLEEP */-1,
+  XK_Super_R, XK_Menu, -1, /* VKEY_SLEEP */ -1,
 
   // 0x60 - 0x63
   XK_KP_0, XK_KP_1, XK_KP_2, XK_KP_3,
@@ -160,16 +160,16 @@ const int kUsVkeyToKeysym[256] = {
   // 0xC0 - 0xC3
   XK_grave, -1, -1, -1,
   // 0xC4 - 0xC7
-  -1, -1, -1, -1
+  -1, -1, -1, -1,
   // 0xC8 - 0xCB
-  -1, -1, -1, -1
+  -1, -1, -1, -1,
   // 0xCC - 0xCF
-  -1, -1, -1, -1
+  -1, -1, -1, -1,
 
   // 0xD0 - 0xD3
-  -1, -1, -1, -1
+  -1, -1, -1, -1,
   // 0xD4 - 0xD7
-  -1, -1, -1, -1
+  -1, -1, -1, -1,
   // 0xD8 - 0xDB
   -1, -1, -1, XK_bracketleft,
   // 0xDC - 0xDF
@@ -177,23 +177,23 @@ const int kUsVkeyToKeysym[256] = {
   /* VKEY_OEM_8 */ -1,
 
   // 0xE0 - 0xE3
-  -1, -1, /* VKEY_OEM_102 */ -1, -1
+  -1, -1, /* VKEY_OEM_102 */ -1, -1,
   // 0xE4 - 0xE7
-  -1, /* VKEY_PROCESSKEY */ -1, -1, /* VKEY_PACKET */ -1
+  -1, /* VKEY_PROCESSKEY */ -1, -1, /* VKEY_PACKET */ -1,
   // 0xE8 - 0xEB
   -1, -1, -1, -1,
   // 0xEC - 0xEF
   -1, -1, -1, -1,
 
   // 0xF0 - 0xF3
-  -1, -1, -1, -1
+  -1, -1, -1, -1,
   // 0xF4 - 0xF7
-  -1, -1, /* VKEY_ATTN */ -1, /* VKEY_CRSEL */ -1
+  -1, -1, /* VKEY_ATTN */ -1, /* VKEY_CRSEL */ -1,
   // 0xF8 - 0xFB
   /* VKEY_EXSEL */ -1, /* VKEY_EREOF */ -1, /* VKEY_PLAY */ -1,
   /* VKEY_ZOOM */ -1,
   // 0xFC - 0xFF
-  /* VKEY_NONAME */ -1, /* VKEY_PA1 */ -1, /* VKEY_OEM_CLEAR */ -1, -1,
+  /* VKEY_NONAME */ -1, /* VKEY_PA1 */ -1, /* VKEY_OEM_CLEAR */ -1, -1
 };
 
 static int ChromotocolKeycodeToX11Keysym(int32_t keycode) {
