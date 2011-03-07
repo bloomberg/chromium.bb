@@ -654,7 +654,8 @@ InstallStatus UninstallProduct(const InstallationState& original_state,
   // in case of errors.
   if (is_chrome) {
     const rlz_lib::AccessPoint access_points[] = {rlz_lib::CHROME_OMNIBOX,
-                                                  rlz_lib::CHROME_HOME_PAGE};
+                                                  rlz_lib::CHROME_HOME_PAGE,
+                                                  rlz_lib::NO_ACCESS_POINT};
     rlz_lib::ClearProductState(rlz_lib::CHROME, access_points);
   }
 
