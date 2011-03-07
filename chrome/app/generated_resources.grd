@@ -11499,14 +11499,14 @@ Keep your key file in a safe place. You will need it to create new versions of y
     <message name="IDS_SPEECH_INPUT_BUBBLE_WORKING" desc="Message shown to the user while waiting for speech recognition results to arrive.">
       Working
     </message>
-    <message name="IDS_SPEECH_INPUT_ERROR" desc="Message shown when audio recording failed with an error during speech recognition.">
+    <message name="IDS_SPEECH_INPUT_MIC_ERROR" desc="Message shown when audio recording failed with an error during speech recognition.">
       There was a problem with your microphone.
     </message>
     <message name="IDS_SPEECH_INPUT_NO_MIC" desc="Message shown when speech recognizer could not find a suitable microphone or other audio input device.">
       No microphone found.
     </message>
     <message name="IDS_SPEECH_INPUT_NO_SPEECH" desc="Message shown when speech recognizer detected no speech in the recorded audio.">
-      We didn't hear you.
+      No speech heard.
     </message>
     <message name="IDS_SPEECH_INPUT_NO_RESULTS" desc="Message shown when speech recognizer returned zero results.">
       Speech not recognized.

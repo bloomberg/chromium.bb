@@ -8,6 +8,7 @@
 #include "content/browser/browser_thread.h"
 #include "content/browser/speech/speech_recognizer.h"
 #include "media/audio/test_audio_input_controller_factory.h"
+#include "net/base/net_errors.h"
 #include "net/url_request/url_request_status.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -136,8 +137,6 @@ TEST_F(SpeechRecognizerTest, StopWithData) {
   TestAudioInputController* controller =
       audio_input_controller_factory_.controller();
   ASSERT_TRUE(controller);
-  controller = audio_input_controller_factory_.controller();
-  ASSERT_TRUE(controller);
 
   // Try sending 5 chunks of mock audio data and verify that each of them
   // resulted immediately in a packet sent out via the network. This verifies
@@ -188,6 +187,66 @@ TEST_F(SpeechRecognizerTest, CancelWithData) {
   EXPECT_FALSE(recognition_complete_);
   EXPECT_FALSE(result_received_);
   EXPECT_EQ(SpeechRecognizer::RECOGNIZER_NO_ERROR, error_);
+}
+
+TEST_F(SpeechRecognizerTest, ConnectionError) {
+  // Start recording, give some data and then stop. Issue the network callback
+  // with a connection error and verify that the recognizer bubbles the error up
+  EXPECT_TRUE(recognizer_->StartRecording());
+  TestAudioInputController* controller =
+      audio_input_controller_factory_.controller();
+  ASSERT_TRUE(controller);
+  controller->event_handler()->OnData(controller, &audio_packet_[0],
+                                      audio_packet_.size());
+  MessageLoop::current()->RunAllPending();
+  TestURLFetcher* fetcher = url_fetcher_factory_.GetFetcherByID(0);
+  ASSERT_TRUE(fetcher);
+
+  recognizer_->StopRecording();
+  EXPECT_TRUE(recording_complete_);
+  EXPECT_FALSE(recognition_complete_);
+  EXPECT_FALSE(result_received_);
+  EXPECT_EQ(SpeechRecognizer::RECOGNIZER_NO_ERROR, error_);
+
+  // Issue the network callback to complete the process.
+  net::URLRequestStatus status;
+  status.set_status(net::URLRequestStatus::FAILED);
+  status.set_os_error(net::ERR_CONNECTION_REFUSED);
+  fetcher->delegate()->OnURLFetchComplete(fetcher, fetcher->original_url(),
+                                          status, 0, ResponseCookies(), "");
+  EXPECT_FALSE(recognition_complete_);
+  EXPECT_FALSE(result_received_);
+  EXPECT_EQ(SpeechRecognizer::RECOGNIZER_ERROR_NETWORK, error_);
+}
+
+TEST_F(SpeechRecognizerTest, ServerError) {
+  // Start recording, give some data and then stop. Issue the network callback
+  // with a 500 error and verify that the recognizer bubbles the error up
+  EXPECT_TRUE(recognizer_->StartRecording());
+  TestAudioInputController* controller =
+      audio_input_controller_factory_.controller();
+  ASSERT_TRUE(controller);
+  controller->event_handler()->OnData(controller, &audio_packet_[0],
+                                      audio_packet_.size());
+  MessageLoop::current()->RunAllPending();
+  TestURLFetcher* fetcher = url_fetcher_factory_.GetFetcherByID(0);
+  ASSERT_TRUE(fetcher);
+
+  recognizer_->StopRecording();
+  EXPECT_TRUE(recording_complete_);
+  EXPECT_FALSE(recognition_complete_);
+  EXPECT_FALSE(result_received_);
+  EXPECT_EQ(SpeechRecognizer::RECOGNIZER_NO_ERROR, error_);
+
+  // Issue the network callback to complete the process.
+  net::URLRequestStatus status;
+  status.set_status(net::URLRequestStatus::SUCCESS);
+  fetcher->delegate()->OnURLFetchComplete(fetcher, fetcher->original_url(),
+                                          status, 500, ResponseCookies(),
+                                          "Internal Server Error");
+  EXPECT_FALSE(recognition_complete_);
+  EXPECT_FALSE(result_received_);
+  EXPECT_EQ(SpeechRecognizer::RECOGNIZER_ERROR_NETWORK, error_);
 }
 
 TEST_F(SpeechRecognizerTest, AudioControllerErrorNoData) {

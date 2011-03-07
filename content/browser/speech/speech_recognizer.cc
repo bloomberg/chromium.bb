@@ -278,8 +278,9 @@ void SpeechRecognizer::HandleOnData(string* data) {
 
 void SpeechRecognizer::SetRecognitionResult(
     bool error, const SpeechInputResultArray& result) {
-  if (result.empty()) {
-    InformErrorAndCancelRecognition(RECOGNIZER_ERROR_NO_RESULTS);
+  if (error || result.empty()) {
+    InformErrorAndCancelRecognition(error ? RECOGNIZER_ERROR_NETWORK :
+                                            RECOGNIZER_ERROR_NO_RESULTS);
     return;
   }
 

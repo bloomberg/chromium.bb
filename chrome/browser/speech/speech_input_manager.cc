@@ -306,23 +306,31 @@ void SpeechInputManagerImpl::OnRecognizerError(
 
   requests_[caller_id].is_active = false;
 
-  int message_id;
-  switch (error) {
-    case SpeechRecognizer::RECOGNIZER_ERROR_CAPTURE:
-      message_id = IDS_SPEECH_INPUT_ERROR;
-      break;
-    case SpeechRecognizer::RECOGNIZER_ERROR_NO_SPEECH:
-      message_id = IDS_SPEECH_INPUT_NO_SPEECH;
-      break;
-    case SpeechRecognizer::RECOGNIZER_ERROR_NO_RESULTS:
-      message_id = IDS_SPEECH_INPUT_NO_RESULTS;
-      break;
-    default:
-      NOTREACHED() << "unknown error " << error;
+  struct ErrorMessageMapEntry {
+    SpeechRecognizer::ErrorCode error;
+    int message_id;
+  };
+  ErrorMessageMapEntry error_message_map[] = {
+    {
+      SpeechRecognizer::RECOGNIZER_ERROR_CAPTURE, IDS_SPEECH_INPUT_MIC_ERROR
+    }, {
+      SpeechRecognizer::RECOGNIZER_ERROR_NO_SPEECH, IDS_SPEECH_INPUT_NO_SPEECH
+    }, {
+      SpeechRecognizer::RECOGNIZER_ERROR_NO_RESULTS, IDS_SPEECH_INPUT_NO_RESULTS
+    }, {
+      SpeechRecognizer::RECOGNIZER_ERROR_NETWORK, IDS_SPEECH_INPUT_NET_ERROR
+    }
+  };
+  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(error_message_map); ++i) {
+    if (error_message_map[i].error == error) {
+      bubble_controller_->SetBubbleMessage(
+          caller_id,
+          l10n_util::GetStringUTF16(error_message_map[i].message_id));
       return;
+    }
   }
-  bubble_controller_->SetBubbleMessage(caller_id,
-                                       l10n_util::GetStringUTF16(message_id));
+
+  NOTREACHED() << "unknown error " << error;
 }
 
 void SpeechInputManagerImpl::DidCompleteEnvironmentEstimation(int caller_id) {

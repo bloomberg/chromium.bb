@@ -30,6 +30,7 @@ class SpeechRecognizer
     RECOGNIZER_ERROR_CAPTURE,
     RECOGNIZER_ERROR_NO_SPEECH,
     RECOGNIZER_ERROR_NO_RESULTS,
+    RECOGNIZER_ERROR_NETWORK,
   };
 
   // Implemented by the caller to receive recognition events.
