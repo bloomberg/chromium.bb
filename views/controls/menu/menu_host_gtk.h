@@ -44,7 +44,7 @@ class MenuHostGtk : public WidgetGtk, public MenuHost {
   virtual void ReleaseGrab();
 
   virtual void OnDestroy(GtkWidget* object);
-  virtual gboolean OnGrabBrokeEvent(GtkWidget* widget, GdkEvent* event);
+  virtual void HandleGrabBroke();
 
  private:
   void DoCapture();

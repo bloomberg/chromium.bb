@@ -174,7 +174,7 @@ ClearBrowsingDataDialogGtk::ClearBrowsingDataDialogGtk(GtkWindow* parent,
 
   UpdateDialogButtons();
 
-  gtk_util::ShowModalDialogWithMinLocalizedWidth(dialog_,
+  gtk_util::ShowDialogWithMinLocalizedWidth(dialog_,
       IDS_CLEARDATA_DIALOG_WIDTH_CHARS);
 }
 

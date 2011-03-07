@@ -163,7 +163,7 @@ int JSModalDialogGtk::GetAppModalDialogButtons() const {
 }
 
 void JSModalDialogGtk::ShowAppModalDialog() {
-  gtk_util::ShowModalDialogWithMinLocalizedWidth(GTK_WIDGET(gtk_dialog_),
+  gtk_util::ShowDialogWithMinLocalizedWidth(GTK_WIDGET(gtk_dialog_),
       IDS_ALERT_DIALOG_WIDTH_CHARS);
 }
 

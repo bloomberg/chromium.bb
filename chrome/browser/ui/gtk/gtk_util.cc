@@ -1039,6 +1039,17 @@ GtkWindow* GetLastActiveBrowserWindow() {
   return NULL;
 }
 
+int GetNativeDialogFlags(GtkWindow* dialog) {
+  int flags = chromeos::DIALOG_FLAG_DEFAULT;
+
+  if (gtk_window_get_resizable(dialog))
+    flags |= chromeos::DIALOG_FLAG_RESIZEABLE;
+  if (gtk_window_get_modal(dialog))
+    flags |= chromeos::DIALOG_FLAG_MODAL;
+
+  return flags;
+}
+
 GtkWindow* GetDialogTransientParent(GtkWindow* dialog) {
   GtkWindow* parent = gtk_window_get_transient_for(dialog);
   if (!parent)
@@ -1058,9 +1069,7 @@ void ShowDialog(GtkWidget* dialog) {
 
   chromeos::ShowNativeDialog(GetDialogTransientParent(GTK_WINDOW(dialog)),
       dialog,
-      gtk_window_get_resizable(GTK_WINDOW(dialog)) ?
-          chromeos::DIALOG_FLAG_RESIZEABLE :
-          chromeos::DIALOG_FLAG_DEFAULT,
+      GetNativeDialogFlags(GTK_WINDOW(dialog)),
       gfx::Size(width, height),
       gfx::Size());
 }
@@ -1082,14 +1091,14 @@ void ShowDialogWithLocalizedSize(GtkWidget* dialog,
       gfx::Size());
 }
 
-void ShowModalDialogWithMinLocalizedWidth(GtkWidget* dialog,
-                                          int width_id) {
+void ShowDialogWithMinLocalizedWidth(GtkWidget* dialog,
+                                     int width_id) {
   int width = (width_id == -1) ? 0 :
       views::Window::GetLocalizedContentsWidth(width_id);
 
   chromeos::ShowNativeDialog(GetDialogTransientParent(GTK_WINDOW(dialog)),
       dialog,
-      chromeos::DIALOG_FLAG_MODAL,
+      GetNativeDialogFlags(GTK_WINDOW(dialog)),
       gfx::Size(),
       gfx::Size(width, 0));
 }
@@ -1130,8 +1139,8 @@ void ShowDialogWithLocalizedSize(GtkWidget* dialog,
   gtk_widget_show_all(dialog);
 }
 
-void ShowModalDialogWithMinLocalizedWidth(GtkWidget* dialog,
-                                          int width_id) {
+void ShowDialogWithMinLocalizedWidth(GtkWidget* dialog,
+                                     int width_id) {
   gtk_widget_show_all(dialog);
 
   // Suggest a minimum size.

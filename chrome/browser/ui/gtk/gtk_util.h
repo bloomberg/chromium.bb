@@ -323,8 +323,8 @@ void ShowDialogWithLocalizedSize(GtkWidget* dialog,
                                  int width_id,
                                  int height_id,
                                  bool resizeable);
-void ShowModalDialogWithMinLocalizedWidth(GtkWidget* dialog,
-                                          int width_id);
+void ShowDialogWithMinLocalizedWidth(GtkWidget* dialog,
+                                     int width_id);
 
 // Wrapper to present a window. On Linux, it just calls gtk_window_present or
 // gtk_window_present_with_time for non-zero timestamp. For ChromeOS, it first

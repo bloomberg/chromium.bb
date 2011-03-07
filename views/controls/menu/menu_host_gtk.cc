@@ -130,14 +130,15 @@ void MenuHostGtk::OnDestroy(GtkWidget* object) {
   WidgetGtk::OnDestroy(object);
 }
 
-gboolean MenuHostGtk::OnGrabBrokeEvent(GtkWidget* widget, GdkEvent* event) {
+void MenuHostGtk::HandleGrabBroke() {
   did_input_grab_ = false;
   // Grab can be broken by drag & drop, other menu or screen locker.
   MenuController* menu_controller =
       submenu_->GetMenuItem()->GetMenuController();
-  if (!menu_controller->drag_in_progress())
+  if (menu_controller && !menu_controller->drag_in_progress())
     menu_controller->CancelAll();
-  return WidgetGtk::OnGrabBrokeEvent(widget, event);
+
+  WidgetGtk::HandleGrabBroke();
 }
 
 void MenuHostGtk::DoCapture() {
