@@ -164,10 +164,6 @@ void PrecacheUrl(const char16* url, int url_length);
 // This function is called to add a line to the application's log file.
 void AppendToLog(const char* filename, int line, const char* message);
 
-// Gather usage statistics from the in-memory cache and inform our host, if
-// applicable.
-void NotifyCacheStats();
-
 // Glue to get resources from the embedder.
 
 // Gets a localized string given a message id.  Returns an empty string if the

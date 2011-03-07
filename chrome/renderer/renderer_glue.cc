@@ -240,14 +240,6 @@ WebSocketStreamHandleBridge* WebSocketStreamHandleBridge::Create(
   return dispatcher->CreateBridge(handle, delegate);
 }
 
-void NotifyCacheStats() {
-  // Update the browser about our cache
-  // NOTE: Since this can be called from the plugin process, we might not have
-  // a RenderThread.  Do nothing in that case.
-  if (RenderThread::current())
-    RenderThread::current()->InformHostOfCacheStatsLater();
-}
-
 void CloseCurrentConnections() {
   RenderThread::current()->CloseCurrentConnections();
 }

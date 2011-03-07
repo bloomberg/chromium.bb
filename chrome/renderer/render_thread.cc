@@ -230,6 +230,9 @@ class RenderResourceObserver : public ResourceDispatcher::Observer {
       webkit_glue::ResourceLoaderBridge::Peer* current_peer,
       ResourceType::Type resource_type,
       const net::URLRequestStatus& status) {
+    // Update the browser about our cache.
+    RenderThread::current()->InformHostOfCacheStatsLater();
+
     if (status.status() != net::URLRequestStatus::CANCELED ||
         status.os_error() == net::ERR_ABORTED) {
       return NULL;

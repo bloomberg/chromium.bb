@@ -19,7 +19,6 @@
 #include "net/base/upload_data.h"
 #include "net/http/http_response_headers.h"
 #include "webkit/glue/resource_type.h"
-#include "webkit/glue/webkit_glue.h"
 
 // Each resource request is assigned an ID scoped to this process.
 static int MakeRequestID() {
@@ -449,8 +448,6 @@ void ResourceDispatcher::OnRequestComplete(int request_id,
   // Normally, dispatching this message causes the reference-counted request to
   // die immediately.
   peer->OnCompletedRequest(status, security_info, completion_time);
-
-  webkit_glue::NotifyCacheStats();
 }
 
 int ResourceDispatcher::AddPendingRequest(
