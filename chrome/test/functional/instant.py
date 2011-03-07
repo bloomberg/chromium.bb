@@ -169,28 +169,28 @@ class InstantTest(pyauto.PyUITest):
     """Test that instant preview is dismissed by find-in-page."""
     self._BringUpInstant()
     self.OpenFindInPage()
-    self.assertEqual(self.GetActiveTabTitle(), '')
+    self.assertEqual(self.GetActiveTabTitle(), 'about:blank')
 
   def testNTPCanDismissInstant(self):
     """Test that instant preview is dismissed by adding new tab page."""
     self._BringUpInstant()
     self.AppendTab(pyauto.GURL('chrome://newtab'))
     self.GetBrowserWindow(0).GetTab(1).Close(True)
-    self.assertEqual(self.GetActiveTabTitle(), '')
+    self.assertEqual(self.GetActiveTabTitle(), 'about:blank')
 
   def testExtnPageCanDismissInstant(self):
     """Test that instant preview is dismissed by extension page."""
     self._BringUpInstant()
     self.AppendTab(pyauto.GURL('chrome://extensions'))
     self.GetBrowserWindow(0).GetTab(1).Close(True)
-    self.assertEqual(self.GetActiveTabTitle(), '')
+    self.assertEqual(self.GetActiveTabTitle(), 'about:blank')
 
   def testNewWindowCanDismissInstant(self):
     """Test that instant preview is dismissed by New Window."""
     self._BringUpInstant()
     self.OpenNewBrowserWindow(True)
     self.CloseBrowserWindow(1)
-    self.assertEqual(self.GetActiveTabTitle(), '')
+    self.assertEqual(self.GetActiveTabTitle(), 'about:blank')
 
   def _AssertInstantDoesNotDownloadFile(self, path):
     """Asserts instant does not download the specified file.
