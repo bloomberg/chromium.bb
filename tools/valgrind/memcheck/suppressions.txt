@@ -3939,6 +3939,20 @@
    fun:_ZN3net18SSLClientSocketNSS14OnRecvCompleteEi
    fun:_ZN3net18SSLClientSocketNSS18BufferRecvCompleteEi
 }
+{
+   bug_75127a
+   Memcheck:Value4
+   ...
+   fun:png_process_data
+   fun:_ZN3gfx8PNGCodec6DecodeEPKhjP8SkBitmap
+}
+{
+   bug_75127b
+   Memcheck:Cond
+   ...
+   fun:png_process_data
+   fun:_ZN3gfx8PNGCodec6DecodeEPKhjP8SkBitmap
+}
 
 #-----------------------------------------------------------------------
 # These only occur on our Google workstations
