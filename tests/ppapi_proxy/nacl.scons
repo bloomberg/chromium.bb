@@ -51,16 +51,10 @@ node = env.PPAPIBrowserTester(
     url='basic_object.html',
     files=[basic_object_nexe, user_main_nexe, env.File('basic_object.html')])
 
-# Disabled for ARM because Chrome binaries for ARM are not available.
-# TODO(ncbray): Enable this on Windows.
-tester_is_broken = \
-    (env.Bit('target_arm') or
-     (env.Bit('host_windows') and
-      not env.Bit('disable_dynamic_plugin_loading')))
 env.AddNodeToTestSuite(node,
                        ['chrome_browser_tests'],
                        'run_ppapi_basic_object_browser_test',
-                       is_broken=tester_is_broken)
+                       is_broken=env.PPAPIBrowserTesterIsBroken())
 
 env.ComponentProgram('ppapi_event_example.nexe',
                      ['event_example.cc',],

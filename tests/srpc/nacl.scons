@@ -273,11 +273,7 @@ node = env.PPAPIBrowserTester(
     url='srpc_basic_port.html',
     files=[srpc_test_nexe, env.File('srpc_basic_port.html')])
 
-# Disabled for ARM because Chrome binaries for ARM are not available.
-# TODO(ncbray): Enable this on Windows.
-tester_is_broken = env.Bit('target_arm') or (
-    env.Bit('host_windows') and not env.Bit('disable_dynamic_plugin_loading'))
 env.AddNodeToTestSuite(node,
                        ['chrome_browser_tests'],
                        'run_srpc_basic_chrome_browser_test',
-                       is_broken=tester_is_broken)
+                       is_broken=env.PPAPIBrowserTesterIsBroken())

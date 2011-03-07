@@ -1099,6 +1099,18 @@ def PPAPIBrowserTester(env, target, url, files, log_verbosity=2, args=[]):
 pre_base_env.AddMethod(PPAPIBrowserTester)
 
 
+# Disabled for ARM because Chrome binaries for ARM are not available.
+# TODO(ncbray): Enable this on Windows 64 w/ dynamic plugin loading.
+# In this case, processes fail to terminate and windows thinks Chrome has hung.
+def PPAPIBrowserTesterIsBroken(env):
+  return (env.Bit('target_arm') or
+          (env.Bit('host_windows') and
+           env.Bit('target_x86_64') and
+           not env.Bit('disable_dynamic_plugin_loading')))
+
+pre_base_env.AddMethod(PPAPIBrowserTesterIsBroken)
+
+
 # ----------------------------------------------------------
 def DemoSelLdrNacl(env,
                    target,
