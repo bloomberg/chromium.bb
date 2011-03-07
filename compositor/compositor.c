@@ -853,8 +853,6 @@ surface_damage(struct wl_client *client,
 {
 	struct wlsc_surface *es = (struct wlsc_surface *) surface;
 
-	es->buffer->damage(es->buffer, surface, x, y, width, height);
-
 	wlsc_surface_damage_rectangle(es, x, y, width, height);
 }
 

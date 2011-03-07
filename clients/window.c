@@ -734,8 +734,21 @@ window_attach_surface(struct window *window)
 void
 window_flush(struct window *window)
 {
-       if (window->cairo_surface)
-	       window_attach_surface(window);
+	if (window->cairo_surface) {
+		switch (window->buffer_type) {
+		case WINDOW_BUFFER_TYPE_EGL_IMAGE:
+		case WINDOW_BUFFER_TYPE_SHM:
+			display_surface_damage(window->display,
+					       window->cairo_surface,
+					       0, 0,
+					       window->allocation.width,
+					       window->allocation.height);
+			break;
+		default:
+			break;
+		}
+		window_attach_surface(window);
+	}
 }
 
 void
@@ -1418,6 +1431,17 @@ const char *
 window_get_title(struct window *window)
 {
 	return window->title;
+}
+
+void
+display_surface_damage(struct display *display, cairo_surface_t *cairo_surface,
+		       int32_t x, int32_t y, int32_t width, int32_t height)
+{
+	struct wl_buffer *buffer;
+
+	buffer = display_get_buffer_for_surface(display, cairo_surface);
+
+	wl_buffer_damage(buffer, x, y, width, height);
 }
 
 void

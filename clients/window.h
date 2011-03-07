@@ -194,6 +194,10 @@ enum window_buffer_type {
 };
 
 void
+display_surface_damage(struct display *display, cairo_surface_t *cairo_surface,
+		       int32_t x, int32_t y, int32_t width, int32_t height);
+
+void
 window_set_buffer_type(struct window *window, enum window_buffer_type type);
 
 void

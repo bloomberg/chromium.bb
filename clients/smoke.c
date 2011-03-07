@@ -199,6 +199,8 @@ frame_callback(struct wl_surface *surface, void *data, uint32_t time)
 
 	render(smoke);
 
+	display_surface_damage(smoke->display, smoke->surface,
+			       0, 0, smoke->width, smoke->height);
 	window_damage(smoke->window, 0, 0, smoke->width, smoke->height);
 	wl_display_frame_callback(display_get_display(smoke->display),
 				  window_get_wl_surface(smoke->window),
