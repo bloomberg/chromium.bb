@@ -10,43 +10,34 @@ import unittest
 import owners
 from tests import filesystem_mock
 
+ben = 'ben@example.com'
+brett = 'brett@example.com'
+darin = 'darin@example.com'
+john = 'john@example.com'
+ken = 'ken@example.com'
+peter = 'peter@example.com'
+
+def owners_file(*email_addresses, **kwargs):
+  s = ''
+  if kwargs.get('noparent'):
+    s = 'set noparent\n'
+  return s + '\n'.join(email_addresses) + '\n'
+
 
 def test_repo():
   return filesystem_mock.MockFileSystem(files={
     '/DEPS' : '',
-    '/OWNERS':
-      ('# OWNERS'
-       '*\n'),
-    '/base/vlog.h':
-      '// vlog.h\n',
-    '/chrome/OWNERS':
-      ('ben@example.com\n'
-       'brettw@example.com\n'),
-    '/chrome/gpu/OWNERS':
-      ('kbr@example.com\n'),
-    '/chrome/gpu/gpu_channel.h':
-      '// gpu_channel.h\n',
-    '/chrome/renderer/OWNERS':
-      ('pkasting@example.com\n'),
-    '/chrome/renderer/gpu/gpu_channel_host.h':
-      '// gpu_channel_host.h\n',
-    '/chrome/renderer/safe_browsing/scorer.h':
-      '// scorer.h\n',
-    '/content/OWNERS':
-      ('set noparent\n'
-       'jam@example.com\n'
-       'darin@example.com\n'),
-    '/content/content.gyp':
-      '# content.gyp\n',
+    '/OWNERS': owners_file('*'),
+    '/base/vlog.h': '',
+    '/chrome/OWNERS': owners_file(ben, brett),
+    '/chrome/gpu/OWNERS': owners_file(ken),
+    '/chrome/gpu/gpu_channel.h': '',
+    '/chrome/renderer/OWNERS': owners_file(peter),
+    '/chrome/renderer/gpu/gpu_channel_host.h': '',
+    '/chrome/renderer/safe_browsing/scorer.h': '',
+    '/content/OWNERS': owners_file(john, darin, noparent=True),
+    '/content/content.gyp': '',
   })
-
-
-ben = 'ben@example.com'
-brett = 'brettw@example.com'
-darin = 'darin@example.com'
-jam = 'jam@example.com'
-kbr = 'kbr@example.com'
-pkasting = 'pkasting@example.com'
 
 
 class OwnersDatabaseTest(unittest.TestCase):
@@ -54,8 +45,6 @@ class OwnersDatabaseTest(unittest.TestCase):
     self.repo = test_repo()
     self.files = self.repo.files
     self.root = '/'
-
-    # pylint: disable=W0108
     self.fopen = self.repo.open_for_reading
 
   def db(self, root=None, fopen=None, os_path=None):
@@ -82,14 +71,14 @@ class OwnersDatabaseTest(unittest.TestCase):
 
   def test_owners_for(self):
     self.assertReviewersFor(['DEPS'], [owners.ANYONE])
-    self.assertReviewersFor(['content/content.gyp'], [jam, darin])
-    self.assertReviewersFor(['chrome/gpu/gpu_channel.h'], [kbr])
+    self.assertReviewersFor(['content/content.gyp'], [john, darin])
+    self.assertReviewersFor(['chrome/gpu/gpu_channel.h'], [ken])
 
   def test_covered_by(self):
-    self.assertCoveredBy(['DEPS'], [jam])
+    self.assertCoveredBy(['DEPS'], [john])
     self.assertCoveredBy(['DEPS'], [darin])
-    self.assertCoveredBy(['content/content.gyp'], [jam])
-    self.assertCoveredBy(['chrome/gpu/OWNERS'], [kbr])
+    self.assertCoveredBy(['content/content.gyp'], [john])
+    self.assertCoveredBy(['chrome/gpu/OWNERS'], [ken])
     self.assertCoveredBy(['chrome/gpu/OWNERS'], [ben])
 
   def test_not_covered_by(self):
@@ -98,7 +87,7 @@ class OwnersDatabaseTest(unittest.TestCase):
       ['content/content.gyp'])
     self.assertNotCoveredBy(
       ['chrome/gpu/gpu_channel.h', 'chrome/renderer/gpu/gpu_channel_host.h'],
-      [pkasting], ['chrome/gpu/gpu_channel.h'])
+      [peter], ['chrome/gpu/gpu_channel.h'])
     self.assertNotCoveredBy(
       ['chrome/gpu/gpu_channel.h', 'chrome/renderer/gpu/gpu_channel_host.h'],
       [ben], [])
@@ -123,11 +112,10 @@ class OwnersDatabaseTest(unittest.TestCase):
       '/bar/OWNERS', '/bar/DEPS')
 
   def test_owners_propagates_down(self):
-    self.assertCoveredBy(['/chrome/renderer/gpu/gpu_channel_host.h'],
-      [pkasting])
+    self.assertCoveredBy(['/chrome/renderer/gpu/gpu_channel_host.h'], [peter])
 
   def test_set_noparent(self):
-    self.assertNotCoveredBy(['/content/content.gyp'], [pkasting],
+    self.assertNotCoveredBy(['/content/content.gyp'], [peter],
       ['/content/content.gyp'])
 
 
