@@ -3953,6 +3953,12 @@
    fun:png_process_data
    fun:_ZN3gfx8PNGCodec6DecodeEPKhjP8SkBitmap
 }
+{
+   bug_75137
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN14NewTabObserver7ObserveE16NotificationTypeRK18NotificationSourceRK19NotificationDetails
+}
 
 #-----------------------------------------------------------------------
 # These only occur on our Google workstations
