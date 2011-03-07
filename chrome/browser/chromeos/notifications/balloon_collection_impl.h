@@ -13,7 +13,7 @@
 #include "chrome/browser/chromeos/notifications/balloon_view_host.h"
 #include "chrome/browser/notifications/balloon_collection.h"
 #include "chrome/browser/notifications/balloon_collection_base.h"
-#include "chrome/common/notification_registrar.h"
+#include "content/common/notification_registrar.h"
 #include "ui/gfx/point.h"
 #include "ui/gfx/rect.h"
 

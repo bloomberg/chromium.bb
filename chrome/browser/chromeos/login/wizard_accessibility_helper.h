@@ -9,7 +9,7 @@
 #include "base/scoped_ptr.h"
 #include "base/singleton.h"
 #include "chrome/browser/chromeos/login/wizard_accessibility_handler.h"
-#include "chrome/common/notification_registrar.h"
+#include "content/common/notification_registrar.h"
 #include "ui/base/keycodes/keyboard_codes.h"
 
 class Profile;

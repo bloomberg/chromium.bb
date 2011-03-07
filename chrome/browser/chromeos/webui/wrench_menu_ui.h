@@ -7,9 +7,9 @@
 #pragma once
 
 #include "chrome/browser/chromeos/webui/menu_ui.h"
-#include "chrome/common/notification_observer.h"
-#include "chrome/common/notification_registrar.h"
-#include "chrome/common/notification_type.h"
+#include "content/common/notification_observer.h"
+#include "content/common/notification_registrar.h"
+#include "content/common/notification_type.h"
 
 class NotificationSource;
 class NotificationDetails;

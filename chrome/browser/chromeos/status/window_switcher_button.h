@@ -9,7 +9,7 @@
 #include "base/scoped_ptr.h"
 #include "chrome/browser/chromeos/status/status_area_button.h"
 #include "chrome/browser/ui/browser_list.h"
-#include "chrome/common/notification_observer.h"
+#include "content/common/notification_observer.h"
 #include "views/controls/button/menu_button.h"
 #include "views/controls/menu/view_menu_delegate.h"
 

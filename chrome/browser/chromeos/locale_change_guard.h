@@ -11,9 +11,9 @@
 #include "base/lazy_instance.h"
 #include "base/scoped_ptr.h"
 #include "chrome/browser/chromeos/notifications/system_notification.h"
-#include "chrome/common/notification_registrar.h"
-#include "chrome/common/notification_observer.h"
-#include "chrome/common/notification_type.h"
+#include "content/common/notification_observer.h"
+#include "content/common/notification_registrar.h"
+#include "content/common/notification_type.h"
 
 class ListValue;
 class NotificationDetails;

@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -9,7 +9,7 @@
 #include "chrome/browser/chromeos/login/helper.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/views/html_dialog_view.h"
-#include "chrome/common/notification_service.h"
+#include "content/common/notification_service.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gfx/rect.h"
 #include "ui/gfx/size.h"

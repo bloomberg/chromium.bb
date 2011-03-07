@@ -17,9 +17,9 @@
 #include "chrome/browser/notifications/notification_test_util.h"
 #include "chrome/browser/notifications/notification_ui_manager.h"
 #include "chrome/browser/ui/browser.h"
-#include "chrome/common/notification_service.h"
 #include "chrome/test/in_process_browser_test.h"
 #include "chrome/test/ui_test_utils.h"
+#include "content/common/notification_service.h"
 #include "ui/base/x/x11_util.h"
 
 namespace {

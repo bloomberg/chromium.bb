@@ -9,8 +9,8 @@
 #include <string>
 
 #include "chrome/browser/ui/webui/html_dialog_ui.h"
-#include "chrome/common/notification_observer.h"
-#include "chrome/common/notification_registrar.h"
+#include "content/common/notification_observer.h"
+#include "content/common/notification_registrar.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gfx/size.h"
 
