@@ -6,7 +6,7 @@
 #define CHROME_COMMON_PEPPER_FILE_MESSAGES_H_
 #pragma once
 
-#include "chrome/common/common_param_traits.h"
+#include "content/common/common_param_traits.h"
 #include "ipc/ipc_message_macros.h"
 #include "ipc/ipc_param_traits.h"
 #include "ipc/ipc_platform_file.h"

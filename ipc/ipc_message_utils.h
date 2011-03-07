@@ -72,6 +72,7 @@ enum IPCMessageStart {
   P2PMsgStart,
   SocketStreamMsgStart,
   ResourceMsgStart,
+  FileSystemMsgStart,
 };
 
 class DictionaryValue;

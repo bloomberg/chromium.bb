@@ -14,6 +14,7 @@
 #define CONTENT_COMMON_COMMON_PARAM_TRAITS_H_
 #pragma once
 
+#include "base/platform_file.h"
 #include "base/ref_counted.h"
 #include "googleurl/src/gurl.h"
 #include "ipc/ipc_message_utils.h"
@@ -106,6 +107,19 @@ struct ParamTraits<scoped_refptr<webkit_glue::ResourceDevToolsInfo> > {
   static void Write(Message* m, const param_type& p);
   static bool Read(const Message* m, void** iter, param_type* r);
   static void Log(const param_type& p, std::string* l);
+};
+
+template <>
+struct ParamTraits<base::PlatformFileInfo> {
+  typedef base::PlatformFileInfo param_type;
+  static void Write(Message* m, const param_type& p);
+  static bool Read(const Message* m, void** iter, param_type* r);
+  static void Log(const param_type& p, std::string* l);
+};
+
+template <>
+struct SimilarTypeTraits<base::PlatformFileError> {
+  typedef int Type;
 };
 
 }  // namespace IPC

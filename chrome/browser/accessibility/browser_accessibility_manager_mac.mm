@@ -4,6 +4,7 @@
 
 #include "chrome/browser/accessibility/browser_accessibility_manager_mac.h"
 
+#import "base/logging.h"
 #import "chrome/browser/accessibility/browser_accessibility_cocoa.h"
 #include "chrome/common/render_messages_params.h"
 

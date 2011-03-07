@@ -15,8 +15,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/renderer_host/browser_render_process_host.h"
 #include "chrome/common/net/url_request_context_getter.h"
-#include "chrome/common/render_messages.h"
-#include "chrome/common/render_messages_params.h"
+#include "content/common/file_system_messages.h"
 #include "googleurl/src/gurl.h"
 #include "net/url_request/url_request_context.h"
 #include "webkit/fileapi/file_system_callback_dispatcher.h"
@@ -43,34 +42,32 @@ class BrowserFileSystemCallbackDispatcher
   }
 
   virtual void DidSucceed() {
-    dispatcher_host_->Send(new ViewMsg_FileSystem_DidSucceed(request_id_));
+    dispatcher_host_->Send(new FileSystemMsg_DidSucceed(request_id_));
   }
 
   virtual void DidReadMetadata(const base::PlatformFileInfo& info) {
-    dispatcher_host_->Send(new ViewMsg_FileSystem_DidReadMetadata(
+    dispatcher_host_->Send(new FileSystemMsg_DidReadMetadata(
         request_id_, info));
   }
 
   virtual void DidReadDirectory(
       const std::vector<base::FileUtilProxy::Entry>& entries, bool has_more) {
-    dispatcher_host_->Send(new ViewMsg_FileSystem_DidReadDirectory(
+    dispatcher_host_->Send(new FileSystemMsg_DidReadDirectory(
         request_id_, entries, has_more));
   }
 
   virtual void DidOpenFileSystem(const std::string& name,
                                  const FilePath& path) {
     dispatcher_host_->Send(
-        new ViewMsg_OpenFileSystemRequest_Complete(
-            request_id_, !path.empty(), name, path));
+        new FileSystemMsg_OpenComplete(request_id_, !path.empty(), name, path));
   }
 
   virtual void DidFail(base::PlatformFileError error_code) {
-    dispatcher_host_->Send(new ViewMsg_FileSystem_DidFail(
-        request_id_, error_code));
+    dispatcher_host_->Send(new FileSystemMsg_DidFail(request_id_, error_code));
   }
 
   virtual void DidWrite(int64 bytes, bool complete) {
-    dispatcher_host_->Send(new ViewMsg_FileSystem_DidWrite(
+    dispatcher_host_->Send(new FileSystemMsg_DidWrite(
         request_id_, bytes, complete));
   }
 
@@ -110,24 +107,24 @@ bool FileSystemDispatcherHost::OnMessageReceived(
   *message_was_ok = true;
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP_EX(FileSystemDispatcherHost, message, *message_was_ok)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_OpenFileSystemRequest, OnOpenFileSystem)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_FileSystem_Move, OnMove)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_FileSystem_Copy, OnCopy)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_FileSystem_Remove, OnRemove)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_FileSystem_ReadMetadata, OnReadMetadata)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_FileSystem_Create, OnCreate)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_FileSystem_Exists, OnExists)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_FileSystem_ReadDirectory, OnReadDirectory)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_FileSystem_Write, OnWrite)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_FileSystem_Truncate, OnTruncate)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_FileSystem_TouchFile, OnTouchFile)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_FileSystem_CancelWrite, OnCancel)
+    IPC_MESSAGE_HANDLER(FileSystemHostMsg_Open, OnOpen)
+    IPC_MESSAGE_HANDLER(FileSystemHostMsg_Move, OnMove)
+    IPC_MESSAGE_HANDLER(FileSystemHostMsg_Copy, OnCopy)
+    IPC_MESSAGE_HANDLER(FileSystemMsg_Remove, OnRemove)
+    IPC_MESSAGE_HANDLER(FileSystemHostMsg_ReadMetadata, OnReadMetadata)
+    IPC_MESSAGE_HANDLER(FileSystemHostMsg_Create, OnCreate)
+    IPC_MESSAGE_HANDLER(FileSystemHostMsg_Exists, OnExists)
+    IPC_MESSAGE_HANDLER(FileSystemHostMsg_ReadDirectory, OnReadDirectory)
+    IPC_MESSAGE_HANDLER(FileSystemHostMsg_Write, OnWrite)
+    IPC_MESSAGE_HANDLER(FileSystemHostMsg_Truncate, OnTruncate)
+    IPC_MESSAGE_HANDLER(FileSystemHostMsg_TouchFile, OnTouchFile)
+    IPC_MESSAGE_HANDLER(FileSystemHostMsg_CancelWrite, OnCancel)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP_EX()
   return handled;
 }
 
-void FileSystemDispatcherHost::OnOpenFileSystem(
+void FileSystemDispatcherHost::OnOpen(
     int request_id, const GURL& origin_url, fileapi::FileSystemType type,
     int64 requested_size, bool create) {
   ContentSetting content_setting =
@@ -139,7 +136,7 @@ void FileSystemDispatcherHost::OnOpenFileSystem(
   if (content_setting == CONTENT_SETTING_BLOCK) {
     // TODO(kinuko): Need to notify the UI thread to indicate that
     // there's a blocked content.
-    Send(new ViewMsg_OpenFileSystemRequest_Complete(
+    Send(new FileSystemMsg_OpenComplete(
         request_id, false, std::string(), FilePath()));
     return;
   }
@@ -225,7 +222,7 @@ void FileSystemDispatcherHost::OnCancel(
     write->Cancel(GetNewOperation(request_id));
   } else {
     // The write already finished; report that we failed to stop it.
-    Send(new ViewMsg_FileSystem_DidFail(
+    Send(new FileSystemMsg_DidFail(
         request_id, base::PLATFORM_FILE_ERROR_INVALID_OPERATION));
   }
 }

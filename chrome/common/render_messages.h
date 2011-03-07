@@ -25,7 +25,6 @@
 #include "ipc/ipc_platform_file.h"                     // ifdefed typedef.
 #include "ui/base/clipboard/clipboard.h"                   // enum
 #include "webkit/appcache/appcache_interfaces.h"  // enum appcache::Status
-#include "webkit/fileapi/file_system_types.h"  // enum fileapi::FileSystemType
 
 #if defined(OS_MACOSX)
 struct FontDescriptor;
@@ -454,11 +453,6 @@ struct ParamTraits<scoped_refptr<webkit_blob::BlobData> > {
   static void Write(Message* m, const param_type& p);
   static bool Read(const Message* m, void** iter, param_type* r);
   static void Log(const param_type& p, std::string* l);
-};
-
-template <>
-struct SimilarTypeTraits<fileapi::FileSystemType> {
-  typedef int Type;
 };
 
 // Traits for AudioBuffersState structure.

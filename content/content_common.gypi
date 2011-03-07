@@ -22,6 +22,7 @@
         'common/content_constants.h',
         'common/content_switches.cc',
         'common/content_switches.h',
+        'common/file_system_messages.h',
         'common/message_router.cc',
         'common/message_router.h',
         'common/notification_details.cc',

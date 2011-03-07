@@ -10,7 +10,6 @@
 #include "build/build_config.h"
 
 #include "base/file_path.h"
-#include "base/file_util_proxy.h"
 #include "base/nullable_string16.h"
 #include "base/platform_file.h"
 #include "base/sync_socket.h"
@@ -947,32 +946,6 @@ IPC_MESSAGE_ROUTED0(ViewMsg_AccessibilityNotifications_ACK)
 // Notification that the device's orientation has changed.
 IPC_MESSAGE_ROUTED1(ViewMsg_DeviceOrientationUpdated,
                     ViewMsg_DeviceOrientationUpdated_Params)
-
-// WebFrameClient::openFileSystem response messages.
-IPC_MESSAGE_CONTROL4(ViewMsg_OpenFileSystemRequest_Complete,
-                     int /* request_id */,
-                     bool /* accepted */,
-                     std::string /* name */,
-                     FilePath /* root_path */)
-
-// WebFileSystem response messages.
-IPC_MESSAGE_CONTROL1(ViewMsg_FileSystem_DidSucceed,
-                     int /* request_id */)
-IPC_MESSAGE_CONTROL2(ViewMsg_FileSystem_DidReadMetadata,
-                     int /* request_id */,
-                     base::PlatformFileInfo)
-IPC_MESSAGE_CONTROL3(ViewMsg_FileSystem_DidReadDirectory,
-                     int /* request_id */,
-                     std::vector<base::FileUtilProxy::Entry> /* entries */,
-                     bool /* has_more */)
-
-IPC_MESSAGE_CONTROL3(ViewMsg_FileSystem_DidWrite,
-                     int /* request_id */,
-                     int64 /* byte count */,
-                     bool /* complete */)
-IPC_MESSAGE_CONTROL2(ViewMsg_FileSystem_DidFail,
-                     int /* request_id */,
-                     base::PlatformFileError /* error_code */)
 
 // The response to ViewHostMsg_AsyncOpenFile.
 IPC_MESSAGE_ROUTED3(ViewMsg_AsyncOpenFile_ACK,
@@ -2281,85 +2254,6 @@ IPC_MESSAGE_CONTROL1(ViewHostMsg_DeviceOrientation_StartUpdating,
 // A RenderView requests to stop receiving device orientation updates.
 IPC_MESSAGE_CONTROL1(ViewHostMsg_DeviceOrientation_StopUpdating,
                      int /* render_view_id */)
-
-//---------------------------------------------------------------------------
-// FileSystem API messages
-// These are messages sent from the renderer to the browser process.
-
-// WebFrameClient::openFileSystem() message.
-IPC_MESSAGE_CONTROL5(ViewHostMsg_OpenFileSystemRequest,
-                     int /* request_id */,
-                     GURL /* origin_url */,
-                     fileapi::FileSystemType /* type */,
-                     int64 /* requested_size */,
-                     bool /* create */)
-
-// WebFileSystem::move() message.
-IPC_MESSAGE_CONTROL3(ViewHostMsg_FileSystem_Move,
-                     int /* request_id */,
-                     FilePath /* src path */,
-                     FilePath /* dest path */)
-
-// WebFileSystem::copy() message.
-IPC_MESSAGE_CONTROL3(ViewHostMsg_FileSystem_Copy,
-                     int /* request_id */,
-                     FilePath /* src path */,
-                     FilePath /* dest path */)
-
-// WebFileSystem::remove() message.
-IPC_MESSAGE_CONTROL3(ViewHostMsg_FileSystem_Remove,
-                     int /* request_id */,
-                     FilePath /* path */,
-                     bool /* recursive */)
-
-// WebFileSystem::readMetadata() message.
-IPC_MESSAGE_CONTROL2(ViewHostMsg_FileSystem_ReadMetadata,
-                     int /* request_id */,
-                     FilePath /* path */)
-
-// WebFileSystem::create() message.
-IPC_MESSAGE_CONTROL5(ViewHostMsg_FileSystem_Create,
-                     int /* request_id */,
-                     FilePath /* path */,
-                     bool /* exclusive */,
-                     bool /* is_directory */,
-                     bool /* recursive */)
-
-// WebFileSystem::exists() messages.
-IPC_MESSAGE_CONTROL3(ViewHostMsg_FileSystem_Exists,
-                     int /* request_id */,
-                     FilePath /* path */,
-                     bool /* is_directory */)
-
-// WebFileSystem::readDirectory() message.
-IPC_MESSAGE_CONTROL2(ViewHostMsg_FileSystem_ReadDirectory,
-                     int /* request_id */,
-                     FilePath /* path */)
-
-// WebFileWriter::write() message.
-IPC_MESSAGE_CONTROL4(ViewHostMsg_FileSystem_Write,
-                     int /* request id */,
-                     FilePath /* file path */,
-                     GURL /* blob URL */,
-                     int64 /* position */)
-
-// WebFileWriter::truncate() message.
-IPC_MESSAGE_CONTROL3(ViewHostMsg_FileSystem_Truncate,
-                     int /* request id */,
-                     FilePath /* file path */,
-                     int64 /* length */)
-
-// Pepper's Touch() message.
-IPC_MESSAGE_CONTROL4(ViewHostMsg_FileSystem_TouchFile,
-                     int /* request_id */,
-                     FilePath /* path */,
-                     base::Time /* last_access_time */,
-                     base::Time /* last_modified_time */)
-
-// WebFileWriter::cancel() message.
-IPC_MESSAGE_CONTROL2(ViewHostMsg_FileSystem_CancelWrite,
-                     int /* request id */,
-                     int /* id of request to cancel */)
 
 //---------------------------------------------------------------------------
 // Blob messages:

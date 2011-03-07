@@ -11,7 +11,6 @@
 
 #include "app/surface/transport_dib.h"
 #include "base/file_path.h"
-#include "base/file_util_proxy.h"
 #include "base/ref_counted.h"
 #include "base/shared_memory.h"
 #include "base/time.h"
@@ -1097,14 +1096,6 @@ struct ParamTraits<ViewMsg_DeviceOrientationUpdated_Params> {
 template <>
 struct ParamTraits<ViewHostMsg_DomMessage_Params> {
   typedef ViewHostMsg_DomMessage_Params param_type;
-  static void Write(Message* m, const param_type& p);
-  static bool Read(const Message* m, void** iter, param_type* p);
-  static void Log(const param_type& p, std::string* l);
-};
-
-template <>
-struct ParamTraits<base::FileUtilProxy::Entry> {
-  typedef base::FileUtilProxy::Entry param_type;
   static void Write(Message* m, const param_type& p);
   static bool Read(const Message* m, void** iter, param_type* p);
   static void Log(const param_type& p, std::string* l);

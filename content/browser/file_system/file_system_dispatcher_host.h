@@ -47,12 +47,14 @@ class FileSystemDispatcherHost : public BrowserMessageFilter {
   virtual bool OnMessageReceived(const IPC::Message& message,
                                  bool* message_was_ok);
 
+  void UnregisterOperation(int request_id);
 
-  void OnOpenFileSystem(int request_id,
-                        const GURL& origin_url,
-                        fileapi::FileSystemType type,
-                        int64 requested_size,
-                        bool create);
+ private:
+  void OnOpen(int request_id,
+              const GURL& origin_url,
+              fileapi::FileSystemType type,
+              int64 requested_size,
+              bool create);
   void OnMove(int request_id,
               const FilePath& src_path,
               const FilePath& dest_path);
@@ -78,9 +80,7 @@ class FileSystemDispatcherHost : public BrowserMessageFilter {
                    const base::Time& last_access_time,
                    const base::Time& last_modified_time);
   void OnCancel(int request_id, int request_to_cancel);
-  void UnregisterOperation(int request_id);
 
- private:
   // Creates a new FileSystemOperation.
   fileapi::FileSystemOperation* GetNewOperation(int request_id);
 

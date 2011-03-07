@@ -76,23 +76,21 @@ class FileSystemDispatcher : public IPC::Channel::Listener {
                  fileapi::FileSystemCallbackDispatcher* dispatcher);
 
  private:
-  // Message handler for OpenFileSystem.
-  void OnOpenFileSystemRequestComplete(
+  // Message handlers.
+  void OnOpenComplete(
       int request_id,
       bool accepted,
       const std::string& name,
       const FilePath& root_path);
-
-  // Message handlers for regular file system operations.
-  void DidSucceed(int request_id);
-  void DidReadMetadata(int request_id,
-                       const base::PlatformFileInfo& file_info);
-  void DidReadDirectory(
+  void OnDidSucceed(int request_id);
+  void OnDidReadMetadata(int request_id,
+                         const base::PlatformFileInfo& file_info);
+  void OnDidReadDirectory(
       int request_id,
       const std::vector<base::FileUtilProxy::Entry>& entries,
       bool has_more);
-  void DidFail(int request_id, base::PlatformFileError error_code);
-  void DidWrite(int request_id, int64 bytes, bool complete);
+  void OnDidFail(int request_id, base::PlatformFileError error_code);
+  void OnDidWrite(int request_id, int64 bytes, bool complete);
 
   IDMap<fileapi::FileSystemCallbackDispatcher, IDMapOwnPointer> dispatchers_;
 

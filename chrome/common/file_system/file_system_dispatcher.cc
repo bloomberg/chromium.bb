@@ -6,8 +6,7 @@
 
 #include "base/file_util.h"
 #include "chrome/common/child_thread.h"
-#include "chrome/common/render_messages.h"
-#include "chrome/common/render_messages_params.h"
+#include "content/common/file_system_messages.h"
 
 FileSystemDispatcher::FileSystemDispatcher() {
 }
@@ -27,13 +26,12 @@ FileSystemDispatcher::~FileSystemDispatcher() {
 bool FileSystemDispatcher::OnMessageReceived(const IPC::Message& msg) {
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(FileSystemDispatcher, msg)
-    IPC_MESSAGE_HANDLER(ViewMsg_OpenFileSystemRequest_Complete,
-                        OnOpenFileSystemRequestComplete)
-    IPC_MESSAGE_HANDLER(ViewMsg_FileSystem_DidSucceed, DidSucceed)
-    IPC_MESSAGE_HANDLER(ViewMsg_FileSystem_DidReadDirectory, DidReadDirectory)
-    IPC_MESSAGE_HANDLER(ViewMsg_FileSystem_DidReadMetadata, DidReadMetadata)
-    IPC_MESSAGE_HANDLER(ViewMsg_FileSystem_DidFail, DidFail)
-    IPC_MESSAGE_HANDLER(ViewMsg_FileSystem_DidWrite, DidWrite)
+    IPC_MESSAGE_HANDLER(FileSystemMsg_OpenComplete, OnOpenComplete)
+    IPC_MESSAGE_HANDLER(FileSystemMsg_DidSucceed, OnDidSucceed)
+    IPC_MESSAGE_HANDLER(FileSystemMsg_DidReadDirectory, OnDidReadDirectory)
+    IPC_MESSAGE_HANDLER(FileSystemMsg_DidReadMetadata, OnDidReadMetadata)
+    IPC_MESSAGE_HANDLER(FileSystemMsg_DidFail, OnDidFail)
+    IPC_MESSAGE_HANDLER(FileSystemMsg_DidWrite, OnDidWrite)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
@@ -44,7 +42,7 @@ bool FileSystemDispatcher::OpenFileSystem(
     long long size, bool create,
     fileapi::FileSystemCallbackDispatcher* dispatcher) {
   int request_id = dispatchers_.Add(dispatcher);
-  if (!ChildThread::current()->Send(new ViewHostMsg_OpenFileSystemRequest(
+  if (!ChildThread::current()->Send(new FileSystemHostMsg_Open(
           request_id, origin_url, type, size, create))) {
     dispatchers_.Remove(request_id);  // destroys |dispatcher|
     return false;
@@ -58,7 +56,7 @@ bool FileSystemDispatcher::Move(
     const FilePath& dest_path,
     fileapi::FileSystemCallbackDispatcher* dispatcher) {
   int request_id = dispatchers_.Add(dispatcher);
-  if (!ChildThread::current()->Send(new ViewHostMsg_FileSystem_Move(
+  if (!ChildThread::current()->Send(new FileSystemHostMsg_Move(
           request_id, src_path, dest_path))) {
     dispatchers_.Remove(request_id);  // destroys |dispatcher|
     return false;
@@ -72,7 +70,7 @@ bool FileSystemDispatcher::Copy(
     const FilePath& dest_path,
     fileapi::FileSystemCallbackDispatcher* dispatcher) {
   int request_id = dispatchers_.Add(dispatcher);
-  if (!ChildThread::current()->Send(new ViewHostMsg_FileSystem_Copy(
+  if (!ChildThread::current()->Send(new FileSystemHostMsg_Copy(
           request_id, src_path, dest_path))) {
     dispatchers_.Remove(request_id);  // destroys |dispatcher|
     return false;
@@ -87,7 +85,7 @@ bool FileSystemDispatcher::Remove(
     fileapi::FileSystemCallbackDispatcher* dispatcher) {
   int request_id = dispatchers_.Add(dispatcher);
   if (!ChildThread::current()->Send(
-          new ViewHostMsg_FileSystem_Remove(request_id, path, recursive))) {
+          new FileSystemMsg_Remove(request_id, path, recursive))) {
     dispatchers_.Remove(request_id);  // destroys |dispatcher|
     return false;
   }
@@ -100,7 +98,7 @@ bool FileSystemDispatcher::ReadMetadata(
     fileapi::FileSystemCallbackDispatcher* dispatcher) {
   int request_id = dispatchers_.Add(dispatcher);
   if (!ChildThread::current()->Send(
-          new ViewHostMsg_FileSystem_ReadMetadata(request_id, path))) {
+          new FileSystemHostMsg_ReadMetadata(request_id, path))) {
     dispatchers_.Remove(request_id);  // destroys |dispatcher|
     return false;
   }
@@ -115,7 +113,7 @@ bool FileSystemDispatcher::Create(
     bool recursive,
     fileapi::FileSystemCallbackDispatcher* dispatcher) {
   int request_id = dispatchers_.Add(dispatcher);
-  if (!ChildThread::current()->Send(new ViewHostMsg_FileSystem_Create(
+  if (!ChildThread::current()->Send(new FileSystemHostMsg_Create(
           request_id, path, exclusive, is_directory, recursive))) {
     dispatchers_.Remove(request_id);  // destroys |dispatcher|
     return false;
@@ -130,7 +128,7 @@ bool FileSystemDispatcher::Exists(
     fileapi::FileSystemCallbackDispatcher* dispatcher) {
   int request_id = dispatchers_.Add(dispatcher);
   if (!ChildThread::current()->Send(
-          new ViewHostMsg_FileSystem_Exists(request_id, path, is_directory))) {
+          new FileSystemHostMsg_Exists(request_id, path, is_directory))) {
     dispatchers_.Remove(request_id);  // destroys |dispatcher|
     return false;
   }
@@ -143,7 +141,7 @@ bool FileSystemDispatcher::ReadDirectory(
     fileapi::FileSystemCallbackDispatcher* dispatcher) {
   int request_id = dispatchers_.Add(dispatcher);
   if (!ChildThread::current()->Send(
-          new ViewHostMsg_FileSystem_ReadDirectory(request_id, path))) {
+          new FileSystemHostMsg_ReadDirectory(request_id, path))) {
     dispatchers_.Remove(request_id);  // destroys |dispatcher|
     return false;
   }
@@ -158,7 +156,7 @@ bool FileSystemDispatcher::Truncate(
     fileapi::FileSystemCallbackDispatcher* dispatcher) {
   int request_id = dispatchers_.Add(dispatcher);
   if (!ChildThread::current()->Send(
-          new ViewHostMsg_FileSystem_Truncate(request_id, path, offset))) {
+          new FileSystemHostMsg_Truncate(request_id, path, offset))) {
     dispatchers_.Remove(request_id);  // destroys |dispatcher|
     return false;
   }
@@ -176,8 +174,7 @@ bool FileSystemDispatcher::Write(
     fileapi::FileSystemCallbackDispatcher* dispatcher) {
   int request_id = dispatchers_.Add(dispatcher);
   if (!ChildThread::current()->Send(
-          new ViewHostMsg_FileSystem_Write(
-              request_id, path, blob_url, offset))) {
+          new FileSystemHostMsg_Write(request_id, path, blob_url, offset))) {
     dispatchers_.Remove(request_id);  // destroys |dispatcher|
     return false;
   }
@@ -191,7 +188,7 @@ bool FileSystemDispatcher::Cancel(
     int request_id_to_cancel,
     fileapi::FileSystemCallbackDispatcher* dispatcher) {
   int request_id = dispatchers_.Add(dispatcher);
-  if (!ChildThread::current()->Send(new ViewHostMsg_FileSystem_CancelWrite(
+  if (!ChildThread::current()->Send(new FileSystemHostMsg_CancelWrite(
           request_id, request_id_to_cancel))) {
     dispatchers_.Remove(request_id);  // destroys |dispatcher|
     return false;
@@ -207,7 +204,7 @@ bool FileSystemDispatcher::TouchFile(
     fileapi::FileSystemCallbackDispatcher* dispatcher) {
   int request_id = dispatchers_.Add(dispatcher);
   if (!ChildThread::current()->Send(
-          new ViewHostMsg_FileSystem_TouchFile(
+          new FileSystemHostMsg_TouchFile(
               request_id, path, last_access_time, last_modified_time))) {
     dispatchers_.Remove(request_id);  // destroys |dispatcher|
     return false;
@@ -216,7 +213,7 @@ bool FileSystemDispatcher::TouchFile(
   return true;
 }
 
-void FileSystemDispatcher::OnOpenFileSystemRequestComplete(
+void FileSystemDispatcher::OnOpenComplete(
     int request_id, bool accepted, const std::string& name,
     const FilePath& root_path) {
   fileapi::FileSystemCallbackDispatcher* dispatcher =
@@ -229,7 +226,7 @@ void FileSystemDispatcher::OnOpenFileSystemRequestComplete(
   dispatchers_.Remove(request_id);
 }
 
-void FileSystemDispatcher::DidSucceed(int request_id) {
+void FileSystemDispatcher::OnDidSucceed(int request_id) {
   fileapi::FileSystemCallbackDispatcher* dispatcher =
       dispatchers_.Lookup(request_id);
   DCHECK(dispatcher);
@@ -237,7 +234,7 @@ void FileSystemDispatcher::DidSucceed(int request_id) {
   dispatchers_.Remove(request_id);
 }
 
-void FileSystemDispatcher::DidReadMetadata(
+void FileSystemDispatcher::OnDidReadMetadata(
     int request_id, const base::PlatformFileInfo& file_info) {
   fileapi::FileSystemCallbackDispatcher* dispatcher =
       dispatchers_.Lookup(request_id);
@@ -246,7 +243,7 @@ void FileSystemDispatcher::DidReadMetadata(
   dispatchers_.Remove(request_id);
 }
 
-void FileSystemDispatcher::DidReadDirectory(
+void FileSystemDispatcher::OnDidReadDirectory(
     int request_id,
     const std::vector<base::FileUtilProxy::Entry>& entries,
     bool has_more) {
@@ -257,7 +254,7 @@ void FileSystemDispatcher::DidReadDirectory(
   dispatchers_.Remove(request_id);
 }
 
-void FileSystemDispatcher::DidFail(
+void FileSystemDispatcher::OnDidFail(
     int request_id, base::PlatformFileError error_code) {
   fileapi::FileSystemCallbackDispatcher* dispatcher =
       dispatchers_.Lookup(request_id);
@@ -266,7 +263,7 @@ void FileSystemDispatcher::DidFail(
   dispatchers_.Remove(request_id);
 }
 
-void FileSystemDispatcher::DidWrite(
+void FileSystemDispatcher::OnDidWrite(
     int request_id, int64 bytes, bool complete) {
   fileapi::FileSystemCallbackDispatcher* dispatcher =
       dispatchers_.Lookup(request_id);

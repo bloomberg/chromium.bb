@@ -1490,32 +1490,6 @@ void ParamTraits<ViewHostMsg_DomMessage_Params>::Log(const param_type& p,
   l->append(")");
 }
 
-void ParamTraits<base::FileUtilProxy::Entry>::Write(
-    Message* m,
-    const param_type& p) {
-  WriteParam(m, p.name);
-  WriteParam(m, p.is_directory);
-}
-
-bool ParamTraits<base::FileUtilProxy::Entry>::Read(
-    const Message* m,
-    void** iter,
-    param_type* p) {
-  return
-      ReadParam(m, iter, &p->name) &&
-      ReadParam(m, iter, &p->is_directory);
-}
-
-void ParamTraits<base::FileUtilProxy::Entry>::Log(
-    const param_type& p,
-    std::string* l) {
-  l->append("(");
-  LogParam(p.name, l);
-  l->append(", ");
-  LogParam(p.is_directory, l);
-  l->append(")");
-}
-
 void ParamTraits<ViewHostMsg_AccessibilityNotification_Params>::Write(
     Message* m,
     const param_type& p) {
