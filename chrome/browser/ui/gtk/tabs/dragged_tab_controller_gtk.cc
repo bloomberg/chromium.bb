@@ -15,8 +15,8 @@
 #include "chrome/browser/ui/gtk/tabs/dragged_tab_gtk.h"
 #include "chrome/browser/ui/gtk/tabs/tab_strip_gtk.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
-#include "chrome/common/notification_source.h"
 #include "content/browser/tab_contents/tab_contents.h"
+#include "content/common/notification_source.h"
 
 namespace {
 

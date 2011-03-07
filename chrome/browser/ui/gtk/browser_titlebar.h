@@ -14,8 +14,8 @@
 #include <gtk/gtk.h>
 
 #include "base/scoped_ptr.h"
-#include "chrome/common/notification_observer.h"
-#include "chrome/common/notification_registrar.h"
+#include "content/common/notification_observer.h"
+#include "content/common/notification_registrar.h"
 #include "ui/base/gtk/gtk_signal.h"
 #include "ui/base/models/simple_menu_model.h"
 #include "ui/base/x/active_window_watcher_x.h"

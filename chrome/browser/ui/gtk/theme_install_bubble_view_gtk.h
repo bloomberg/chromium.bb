@@ -9,8 +9,8 @@
 #include <gtk/gtk.h>
 
 #include "base/basictypes.h"
-#include "chrome/common/notification_observer.h"
-#include "chrome/common/notification_registrar.h"
+#include "content/common/notification_observer.h"
+#include "content/common/notification_registrar.h"
 #include "ui/base/gtk/gtk_signal.h"
 
 class ThemeInstallBubbleViewGtk : public NotificationObserver {

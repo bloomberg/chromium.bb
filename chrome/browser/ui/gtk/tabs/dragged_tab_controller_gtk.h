@@ -13,9 +13,9 @@
 #include "base/scoped_ptr.h"
 #include "base/timer.h"
 #include "chrome/browser/ui/tabs/dock_info.h"
-#include "chrome/common/notification_observer.h"
-#include "chrome/common/notification_registrar.h"
 #include "content/browser/tab_contents/tab_contents_delegate.h"
+#include "content/common/notification_observer.h"
+#include "content/common/notification_registrar.h"
 #include "ui/base/x/x11_util.h"
 
 class DraggedTabGtk;

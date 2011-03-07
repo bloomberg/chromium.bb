@@ -13,7 +13,7 @@
 #include "chrome/browser/prefs/pref_change_registrar.h"
 #include "chrome/browser/themes/browser_theme_provider.h"
 #include "chrome/browser/ui/gtk/owned_widget_gtk.h"
-#include "chrome/common/notification_observer.h"
+#include "content/common/notification_observer.h"
 #include "ui/base/gtk/gtk_integers.h"
 #include "ui/base/gtk/gtk_signal.h"
 #include "ui/gfx/color_utils.h"

@@ -18,9 +18,9 @@
 #include "chrome/browser/renderer_host/render_widget_host_view_gtk.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/gtk/gtk_theme_provider.h"
-#include "chrome/common/notification_details.h"
-#include "chrome/common/notification_source.h"
 #include "content/browser/renderer_host/render_view_host.h"
+#include "content/common/notification_details.h"
+#include "content/common/notification_source.h"
 #include "googleurl/src/gurl.h"
 
 ExtensionPopupGtk* ExtensionPopupGtk::current_extension_popup_ = NULL;

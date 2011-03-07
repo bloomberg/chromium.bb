@@ -10,14 +10,14 @@
 #include <vector>
 
 #include "base/basictypes.h"
-#include "base/task.h"
 #include "base/message_loop.h"
+#include "base/task.h"
 #include "chrome/browser/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/gtk/owned_widget_gtk.h"
 #include "chrome/browser/ui/gtk/tabs/tab_gtk.h"
 #include "chrome/browser/ui/gtk/tabstrip_origin_provider.h"
 #include "chrome/browser/ui/gtk/view_id_util.h"
-#include "chrome/common/notification_observer.h"
+#include "content/common/notification_observer.h"
 #include "ui/base/gtk/gtk_signal.h"
 #include "ui/gfx/rect.h"
 

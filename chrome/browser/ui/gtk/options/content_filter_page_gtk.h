@@ -12,7 +12,7 @@
 #include "chrome/browser/ui/options/options_page_base.h"
 #include "chrome/common/content_settings.h"
 #include "chrome/common/content_settings_types.h"
-#include "chrome/common/notification_registrar.h"
+#include "content/common/notification_registrar.h"
 #include "ui/base/gtk/gtk_signal.h"
 
 class ContentSettingsDetails;

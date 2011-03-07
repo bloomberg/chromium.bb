@@ -14,7 +14,7 @@
 #include "chrome/browser/ui/gtk/gtk_theme_provider.h"
 #include "chrome/browser/ui/gtk/gtk_util.h"
 #include "chrome/browser/ui/gtk/infobars/infobar_container_gtk.h"
-#include "chrome/common/notification_service.h"
+#include "content/common/notification_service.h"
 #include "ui/gfx/gtk_util.h"
 
 extern const int InfoBar::kInfoBarHeight = 37;

@@ -15,7 +15,7 @@
 #include "chrome/browser/ui/gtk/gtk_util.h"
 #include "chrome/browser/ui/gtk/rounded_window.h"
 #include "chrome/browser/ui/gtk/slide_animator_gtk.h"
-#include "chrome/common/notification_service.h"
+#include "content/common/notification_service.h"
 #include "ui/base/animation/slide_animation.h"
 #include "ui/base/text/text_elider.h"
 
