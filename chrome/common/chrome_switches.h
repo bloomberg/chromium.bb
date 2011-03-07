@@ -272,6 +272,8 @@ extern const char kSearchInOmniboxHint[];
 extern const char kServiceProcess[];
 extern const char kServiceAccountLsid[];
 extern const char kShowCompositedLayerBorders[];
+extern const char kShowCompositedLayerTree[];
+extern const char kShowFPSCounter[];
 extern const char kShowIcons[];
 extern const char kShowPaintRects[];
 extern const char kSilentDumpOnDCHECK[];

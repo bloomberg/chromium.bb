@@ -156,6 +156,13 @@ const Experiment kExperiments[] = {
     SINGLE_VALUE_TYPE(switches::kShowCompositedLayerBorders)
   },
   {
+    "show-fps-counter",
+    IDS_FLAGS_SHOW_FPS_COUNTER,
+    IDS_FLAGS_SHOW_FPS_COUNTER_DESCRIPTION,
+    kOsAll,
+    SINGLE_VALUE_TYPE(switches::kShowFPSCounter)
+  },
+  {
     "gpu-canvas-2d",  // FLAGS:RECORD_UMA
     IDS_FLAGS_ACCELERATED_CANVAS_2D_NAME,
     IDS_FLAGS_ACCELERATED_CANVAS_2D_DESCRIPTION,

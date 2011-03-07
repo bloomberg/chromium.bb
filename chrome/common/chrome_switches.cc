@@ -988,6 +988,13 @@ const char kShowIcons[]                     = "show-icons";
 // layer compositing.
 const char kShowCompositedLayerBorders[]    = "show-composited-layer-borders";
 
+// Draws a textual dump of the compositor layer tree to help debug and study
+// layer compositing.
+const char kShowCompositedLayerTree[]       = "show-composited-layer-tree";
+
+// Draws a FPS indicator
+const char kShowFPSCounter[]                = "show-fps-counter";
+
 // Visibly render a border around paint rects in the web page to help debug
 // and study painting behavior.
 const char kShowPaintRects[]                = "show-paint-rects";

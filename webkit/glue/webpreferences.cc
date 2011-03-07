@@ -64,6 +64,8 @@ WebPreferences::WebPreferences()
       experimental_webgl_enabled(false),
       gl_multisampling_enabled(true),
       show_composited_layer_borders(false),
+      show_composited_layer_tree(false),
+      show_fps_counter(false),
       asynchronous_spell_checking_enabled(true),
       accelerated_compositing_enabled(false),
       composite_to_texture_enabled(false),
@@ -162,6 +164,13 @@ void WebPreferences::Apply(WebView* web_view) const {
   // Display colored borders around composited render layers if requested
   // on command line.
   settings->setShowDebugBorders(show_composited_layer_borders);
+
+  // Display an FPS indicator if requested on the command line.
+  settings->setShowFPSCounter(show_fps_counter);
+
+  // Display the current compositor tree as overlay if requested on
+  // the command line
+  settings->setShowPlatformLayerTree(show_composited_layer_tree);
 
   // Enable gpu-accelerated compositing if requested on the command line.
   settings->setAcceleratedCompositingEnabled(accelerated_compositing_enabled);

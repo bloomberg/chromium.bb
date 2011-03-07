@@ -285,6 +285,10 @@ WebPreferences RenderViewHostDelegateHelper::GetWebkitPrefs(
         command_line.HasSwitch(switches::kAllowFileAccessFromFiles);
     web_prefs.show_composited_layer_borders =
         command_line.HasSwitch(switches::kShowCompositedLayerBorders);
+    web_prefs.show_composited_layer_tree =
+        command_line.HasSwitch(switches::kShowCompositedLayerTree);
+    web_prefs.show_fps_counter =
+        command_line.HasSwitch(switches::kShowFPSCounter);
     web_prefs.accelerated_compositing_enabled =
         gpu_enabled() &&
         !command_line.HasSwitch(switches::kDisableAcceleratedCompositing);

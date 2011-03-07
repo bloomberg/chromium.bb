@@ -403,6 +403,8 @@ void ParamTraits<WebPreferences>::Write(Message* m, const param_type& p) {
   WriteParam(m, p.experimental_webgl_enabled);
   WriteParam(m, p.gl_multisampling_enabled);
   WriteParam(m, p.show_composited_layer_borders);
+  WriteParam(m, p.show_composited_layer_tree);
+  WriteParam(m, p.show_fps_counter);
   WriteParam(m, p.accelerated_compositing_enabled);
   WriteParam(m, p.composite_to_texture_enabled);
   WriteParam(m, p.accelerated_2d_canvas_enabled);
@@ -461,6 +463,8 @@ bool ParamTraits<WebPreferences>::Read(const Message* m, void** iter,
       ReadParam(m, iter, &p->experimental_webgl_enabled) &&
       ReadParam(m, iter, &p->gl_multisampling_enabled) &&
       ReadParam(m, iter, &p->show_composited_layer_borders) &&
+      ReadParam(m, iter, &p->show_composited_layer_tree) &&
+      ReadParam(m, iter, &p->show_fps_counter) &&
       ReadParam(m, iter, &p->accelerated_compositing_enabled) &&
       ReadParam(m, iter, &p->composite_to_texture_enabled) &&
       ReadParam(m, iter, &p->accelerated_2d_canvas_enabled) &&
