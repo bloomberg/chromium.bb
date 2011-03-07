@@ -13,8 +13,6 @@
 #include "base/string16.h"
 #include "chrome/browser/autofill/form_group.h"
 
-typedef std::map<FieldTypeGroup, FormGroup*> FormGroupMap;
-
 // A collection of FormGroups stored in a profile.  AutoFillProfile also
 // implements the FormGroup interface so that owners of this object can request
 // form information from the profile, and the profile will delegate the request
@@ -95,14 +93,10 @@ class AutoFillProfile : public FormGroup {
   // or < 0, or > 0 if it is different.  The implied ordering can be used for
   // culling duplicates.  The ordering is based on collation order of the
   // textual contents of the fields.
-  // GUIDs, labels, and unique IDs are not compared, only the values of the
-  // profiles themselves.
+  // GUIDs are not compared, only the values of the contents themselves.
   int Compare(const AutoFillProfile& profile) const;
 
-  // TODO(dhollowa): These operators need to be made private and then the unit
-  // tests that use them made friends.  The public |Compare| method should be
-  // used by external clients (such as Sync).
-  // http://crbug.com/58813
+  // Equality operators compare GUIDs and the contents in the comparison.
   bool operator==(const AutoFillProfile& profile) const;
   virtual bool operator!=(const AutoFillProfile& profile) const;
 
@@ -112,6 +106,8 @@ class AutoFillProfile : public FormGroup {
   const string16 PrimaryValue() const;
 
  private:
+  typedef std::map<FieldTypeGroup, FormGroup*> FormGroupMap;
+
   // Builds inferred label from the first |num_fields_to_include| non-empty
   // fields in |label_fields|. Uses as many fields as possible if there are not
   // enough non-empty fields.
@@ -131,7 +127,8 @@ class AutoFillProfile : public FormGroup {
       size_t num_fields_to_include,
       std::vector<string16>* created_labels);
 
-  void set_label(const string16& label) { label_ = label; }
+  // Utility to initialize a |FormGroupMap|.
+  static void InitPersonalInfo(FormGroupMap* personal_info);
 
   // The label presented to the user when selecting a profile.
   string16 label_;

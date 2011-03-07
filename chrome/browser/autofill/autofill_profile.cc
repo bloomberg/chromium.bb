@@ -21,13 +21,6 @@
 
 namespace {
 
-void InitPersonalInfo(FormGroupMap* personal_info) {
-  (*personal_info)[AutofillType::CONTACT_INFO] = new ContactInfo();
-  (*personal_info)[AutofillType::PHONE_HOME] = new HomePhoneNumber();
-  (*personal_info)[AutofillType::PHONE_FAX] = new FaxNumber();
-  (*personal_info)[AutofillType::ADDRESS_HOME] = new Address();
-}
-
 // Like |AutofillType::GetEquivalentFieldType()|, but also returns |NAME_FULL|
 // for first, middle, and last name field types.
 AutofillFieldType GetEquivalentFieldTypeCollapsingNames(
@@ -230,7 +223,7 @@ bool AutoFillProfile::AdjustInferredLabels(
   for (size_t i = 0; i < profiles->size(); ++i) {
     if ((*profiles)[i]->Label() != created_labels[i]) {
       updated_labels = true;
-      (*profiles)[i]->set_label(created_labels[i]);
+      (*profiles)[i]->label_ = created_labels[i];
     }
   }
   return updated_labels;
@@ -332,10 +325,7 @@ int AutoFillProfile::Compare(const AutoFillProfile& profile) const {
 }
 
 bool AutoFillProfile::operator==(const AutoFillProfile& profile) const {
-  if (label_ != profile.label_ || guid_ != profile.guid_)
-    return false;
-
-  return Compare(profile) == 0;
+  return guid_ == profile.guid_ && Compare(profile) == 0;
 }
 
 bool AutoFillProfile::operator!=(const AutoFillProfile& profile) const {
@@ -454,6 +444,14 @@ void AutoFillProfile::CreateDifferentiatingLabels(
         profile->ConstructInferredLabel(label_fields,
                                         label_fields.size());
   }
+}
+
+// static
+void AutoFillProfile::InitPersonalInfo(FormGroupMap* personal_info) {
+  (*personal_info)[AutofillType::CONTACT_INFO] = new ContactInfo();
+  (*personal_info)[AutofillType::PHONE_HOME] = new HomePhoneNumber();
+  (*personal_info)[AutofillType::PHONE_FAX] = new FaxNumber();
+  (*personal_info)[AutofillType::ADDRESS_HOME] = new Address();
 }
 
 // So we can compare AutoFillProfiles with EXPECT_EQ().
