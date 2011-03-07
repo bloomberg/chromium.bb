@@ -610,7 +610,9 @@
             # and get rid of the common_constants.gypi which was added as a hack
             # to avoid making common compile on 64 bit on Windows.
             '../content/common/content_switches.cc',
-            '../content/common/content_switches.h',
+            '../content/common/notification_details.cc',
+            '../content/common/notification_service.cc',
+            '../content/common/notification_source.cc',
           ],
           'msvs_settings': {
             'VCLinkerTool': {
