@@ -472,14 +472,10 @@ void InternetOptionsHandler::SetDetailsCallback(const ListValue* args) {
 
   chromeos::NetworkLibrary* cros =
       chromeos::CrosLibrary::Get()->GetNetworkLibrary();
-  const chromeos::WifiNetwork* found_network =
-      cros->FindWifiNetworkByPath(service_path);
-  if (!found_network)
+  chromeos::WifiNetwork* network = cros->FindWifiNetworkByPath(service_path);
+  if (!network)
     return;
-  scoped_ptr<chromeos::WifiNetwork> network(
-      new chromeos::WifiNetwork(*found_network));
 
-  bool changed = false;
   if (network->encrypted()) {
     if (network->encrypted() &&
         network->encryption() == chromeos::SECURITY_8021X) {
@@ -488,32 +484,23 @@ void InternetOptionsHandler::SetDetailsCallback(const ListValue* args) {
         NOTREACHED();
         return;
       }
-      if (ident != network->identity()) {
-        network->set_identity(ident);
-        changed = true;
-      }
+      if (ident != network->identity())
+        network->SetIdentity(ident);
       if (!IsCertificateInPkcs11(network->cert_path())) {
         std::string certpath;
         if (!args->GetString(3, &certpath)) {
           NOTREACHED();
           return;
         }
-        if (certpath != network->cert_path()) {
-          network->set_cert_path(certpath);
-          changed = true;
-        }
+        if (certpath != network->cert_path())
+          network->SetCertPath(certpath);
       }
     }
   }
 
   bool auto_connect = auto_connect_str == "true";
-  if (auto_connect != network->auto_connect()) {
-    network->set_auto_connect(auto_connect);
-    changed = true;
-  }
-
-  if (changed)
-    cros->SaveWifiNetwork(network.get());
+  if (auto_connect != network->auto_connect())
+    network->SetAutoConnect(auto_connect);
 }
 
 bool InternetOptionsHandler::IsCertificateInPkcs11(const std::string& path) {
@@ -786,7 +773,7 @@ void InternetOptionsHandler::HandleWifiButtonClick(
     const std::string& command) {
   chromeos::NetworkLibrary* cros =
       chromeos::CrosLibrary::Get()->GetNetworkLibrary();
-  const chromeos::WifiNetwork* network = NULL;
+  chromeos::WifiNetwork* network = NULL;
   if (command == "forget") {
     if (!chromeos::UserManager::Get()->current_user_is_owner()) {
       LOG(WARNING) << "Non-owner tried to forget a network.";

@@ -35,7 +35,7 @@ class WifiConfigView : public views::View,
                        public SelectFileDialog::Listener {
  public:
   // Wifi login dialog for wifi network |wifi|
-  WifiConfigView(NetworkConfigView* parent, const WifiNetwork* wifi);
+  WifiConfigView(NetworkConfigView* parent, WifiNetwork* wifi);
   // Wifi login dialog for "Joining other network..."
   explicit WifiConfigView(NetworkConfigView* parent);
   virtual ~WifiConfigView();
@@ -59,9 +59,6 @@ class WifiConfigView : public views::View,
   // Login to network. Returns false if the dialog should remain open.
   virtual bool Login();
 
-  // Save network information.
-  virtual bool Save();
-
   // Cancel the dialog.
   virtual void Cancel();
 
@@ -78,7 +75,7 @@ class WifiConfigView : public views::View,
   void Init();
 
   // Updates state of the Login button.
-  void UpdateCanLogin();
+  void UpdateDialogButtons();
 
   // Updates the error text label.
   void UpdateErrorLabel(bool failed);
@@ -88,7 +85,7 @@ class WifiConfigView : public views::View,
   // Whether or not it is an 802.1x network.
   bool is_8021x_;
 
-  scoped_ptr<WifiNetwork> wifi_;
+  WifiNetwork* wifi_;
 
   views::Textfield* ssid_textfield_;
   views::Combobox* eap_method_combobox_;

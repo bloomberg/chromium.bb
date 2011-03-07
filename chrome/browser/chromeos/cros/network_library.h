@@ -213,7 +213,7 @@ class Network {
   // We don't have a setter for |favorite_| because to unfavorite a network is
   // equivalent to forget a network, so we call forget network on cros for
   // that.  See ForgetWifiNetwork().
-  void set_auto_connect(bool auto_connect) { auto_connect_ = auto_connect; }
+  void SetAutoConnect(bool auto_connect);
 
   // Return a string representation of the state code.
   std::string GetStateString() const;
@@ -237,6 +237,11 @@ class Network {
   // Parse name/value pairs from libcros.
   virtual bool ParseValue(int index, const Value* value);
   void ParseInfo(const DictionaryValue* info);
+
+  virtual void SetStringProperty(const char* prop, const std::string& str);
+  virtual void SetBooleanProperty(const char* prop, bool b);
+  virtual void SetIntegerProperty(const char* prop, int i);
+  virtual void SetValueProperty(const char* prop, Value* val);
 
   std::string device_path_;
   std::string name_;
@@ -416,7 +421,8 @@ class WifiNetwork : public WirelessNetwork {
  public:
   explicit WifiNetwork(const std::string& service_path)
       : WirelessNetwork(service_path, TYPE_WIFI),
-        encryption_(SECURITY_NONE) {
+        encryption_(SECURITY_NONE),
+        passphrase_required_(false) {
   }
 
   bool encrypted() const { return encryption_ != SECURITY_NONE; }
@@ -438,6 +444,10 @@ class WifiNetwork : public WirelessNetwork {
     cert_path_ = cert_path;
   }
 
+  void SetPassphrase(const std::string& passphrase);
+  void SetIdentity(const std::string& identity);
+  void SetCertPath(const std::string& cert_path);
+
   // Return a string representation of the encryption code.
   // This not translated and should be only used for debugging purposes.
   std::string GetEncryptionString();
@@ -452,11 +462,18 @@ class WifiNetwork : public WirelessNetwork {
   // WirelessNetwork overrides.
   virtual bool ParseValue(int index, const Value* value);
 
+ private:
+  void set_passphrase_required(bool passphrase_required) {
+    passphrase_required_ = passphrase_required;
+  }
+
   ConnectionSecurity encryption_;
   std::string passphrase_;
   bool passphrase_required_;
   std::string identity_;
   std::string cert_path_;
+
+  friend class NetworkLibraryImpl;
 };
 typedef std::vector<WifiNetwork*> WifiNetworkVector;
 
@@ -672,9 +689,9 @@ class NetworkLibrary {
       const std::string& path) const = 0;
 
   // Return a pointer to the network, if it exists, or NULL.
-  virtual const WifiNetwork* FindWifiNetworkByPath(
+  virtual WifiNetwork* FindWifiNetworkByPath(
       const std::string& path) const = 0;
-  virtual const CellularNetwork* FindCellularNetworkByPath(
+  virtual CellularNetwork* FindCellularNetworkByPath(
       const std::string& path) const = 0;
 
   // Retrieves the data plans associated with |path|, NULL if there are no
@@ -746,14 +763,6 @@ class NetworkLibrary {
   // Disconnect from the specified wireless (either cellular or wifi) network.
   virtual void DisconnectFromWirelessNetwork(
       const WirelessNetwork* network) = 0;
-
-  // Save network information including passwords (wifi) and auto-connect.
-  virtual void SaveCellularNetwork(const CellularNetwork* network) = 0;
-  virtual void SaveWifiNetwork(const WifiNetwork* network) = 0;
-
-  // Set the auto-connect property of a network.
-  virtual void SetNetworkAutoConnect(const std::string& service_path,
-                                     bool auto_connect) = 0;
 
   // Forget the wifi network corresponding to service_path.
   virtual void ForgetWifiNetwork(const std::string& service_path) = 0;

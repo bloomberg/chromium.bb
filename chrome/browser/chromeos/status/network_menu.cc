@@ -205,11 +205,11 @@ bool NetworkMenu::ConnectToNetworkAt(int index,
   NetworkLibrary* cros = CrosLibrary::Get()->GetNetworkLibrary();
   const std::string& service_path = menu_items_[index].wireless_path;
   if (flags & FLAG_WIFI) {
-    const WifiNetwork* wifi = cros->FindWifiNetworkByPath(service_path);
+    WifiNetwork* wifi = cros->FindWifiNetworkByPath(service_path);
     if (wifi) {
       // Connect or reconnect.
       if (auto_connect >= 0)
-        cros->SetNetworkAutoConnect(service_path, auto_connect ? true : false);
+        wifi->SetAutoConnect(auto_connect ? true : false);
       if (wifi->connecting_or_connected()) {
         // Show the config settings for the active network.
         ShowTabbedNetworkSettings(wifi);

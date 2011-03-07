@@ -37,7 +37,7 @@ class NetworkConfigView : public views::View,
   };
 
   // Login dialog for wifi.
-  explicit NetworkConfigView(const WifiNetwork* wifi);
+  explicit NetworkConfigView(WifiNetwork* wifi);
   // Login dialog for hidden networks.
   explicit NetworkConfigView();
   virtual ~NetworkConfigView() {}

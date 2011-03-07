@@ -88,9 +88,6 @@ class MockNetworkLibrary : public NetworkLibrary {
   MOCK_METHOD0(HasRecentCellularPlanPayment, bool(void));
 
   MOCK_METHOD1(DisconnectFromWirelessNetwork, void(const WirelessNetwork*));
-  MOCK_METHOD1(SaveCellularNetwork, void(const CellularNetwork*));
-  MOCK_METHOD1(SaveWifiNetwork, void(const WifiNetwork*));
-  MOCK_METHOD2(SetNetworkAutoConnect, void(const std::string&, bool));
   MOCK_METHOD1(ForgetWifiNetwork, void(const std::string&));
 
   MOCK_CONST_METHOD0(ethernet_available, bool(void));

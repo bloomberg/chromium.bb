@@ -49,7 +49,7 @@ cr.define('options', function() {
       $('rememberedSection').hidden = (templateData.rememberedList.length == 0);
       InternetOptions.setupAttributes(templateData);
       $('detailsInternetDismiss').addEventListener('click', function(event) {
-        OptionsPage.closeOverlay();
+        InternetOptions.setDetails();
       });
       $('detailsInternetLogin').addEventListener('click', function(event) {
         InternetOptions.loginFromDetails();
@@ -128,8 +128,19 @@ cr.define('options', function() {
     var servicePath = data.servicePath;
     if (data.type == options.internet.Constants.TYPE_CELLULAR) {
       chrome.send('buttonClickCallback', [String(data.type),
-                                          servicePath,
+                                          String(servicePath),
                                           'activate']);
+    }
+    OptionsPage.closeOverlay();
+  };
+
+  InternetOptions.setDetails = function () {
+    var data = $('inetAddress').data;
+    var servicePath = data.servicePath;
+    if (data.type == options.internet.Constants.TYPE_WIFI) {
+      chrome.send('setDetails',[String(servicePath),
+                                $('autoConnectNetwork').checked ?
+                                  "true" : "false"]);
     }
     OptionsPage.closeOverlay();
   };

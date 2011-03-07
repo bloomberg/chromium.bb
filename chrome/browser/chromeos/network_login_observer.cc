@@ -65,7 +65,7 @@ void NetworkLoginObserver::OnNetworkManagerChanged(NetworkLibrary* obj) {
   // Check to see if we have any newly failed wifi network.
   for (WifiNetworkVector::const_iterator it = wifi_networks.begin();
        it < wifi_networks.end(); it++) {
-    const WifiNetwork* wifi = *it;
+    WifiNetwork* wifi = *it;
     if (wifi->failed()) {
       WifiFailureMap::iterator iter =
           wifi_network_failures_.find(wifi->service_path());

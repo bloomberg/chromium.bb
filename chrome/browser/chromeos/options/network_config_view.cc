@@ -22,7 +22,7 @@ using views::WidgetGtk;
 
 namespace chromeos {
 
-NetworkConfigView::NetworkConfigView(const WifiNetwork* wifi)
+NetworkConfigView::NetworkConfigView(WifiNetwork* wifi)
     : browser_mode_(true),
       title_(ASCIIToWide(wifi->name())),
       wificonfig_view_(new WifiConfigView(this, wifi)),

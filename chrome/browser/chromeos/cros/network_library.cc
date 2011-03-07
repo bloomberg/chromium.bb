@@ -761,6 +761,34 @@ void Network::ParseInfo(const DictionaryValue* info) {
   }
 }
 
+void Network::SetAutoConnect(bool auto_connect) {
+  auto_connect_ = auto_connect;
+  SetBooleanProperty(kAutoConnectProperty, auto_connect);
+}
+
+void Network::SetStringProperty(const char* prop, const std::string& str) {
+  scoped_ptr<Value> value(Value::CreateStringValue(str));
+  SetValueProperty(prop, value.get());
+}
+
+void Network::SetBooleanProperty(const char* prop, bool b) {
+  scoped_ptr<Value> value(Value::CreateBooleanValue(b));
+  SetValueProperty(prop, value.get());
+}
+
+void Network::SetIntegerProperty(const char* prop, int i) {
+  scoped_ptr<Value> value(Value::CreateIntegerValue(i));
+  SetValueProperty(prop, value.get());
+}
+
+void Network::SetValueProperty(const char* prop, Value* val) {
+  DCHECK(prop);
+  DCHECK(val);
+  if (!EnsureCrosLoaded())
+    return;
+  SetNetworkServiceProperty(service_path_.c_str(), prop, val);
+}
+
 // Used by GetHtmlInfo() which is called from the about:network handler.
 std::string Network::GetStateString() const {
   switch (state_) {
@@ -1169,6 +1197,21 @@ bool WifiNetwork::ParseValue(int index, const Value* value) {
   return false;
 }
 
+void WifiNetwork::SetPassphrase(const std::string& passphrase) {
+  passphrase_ = passphrase;
+  SetStringProperty(kPassphraseProperty, passphrase);
+}
+
+void WifiNetwork::SetIdentity(const std::string& identity) {
+  identity_ = identity;
+  SetStringProperty(kIdentityProperty, identity);
+}
+
+void WifiNetwork::SetCertPath(const std::string& cert_path) {
+  cert_path_ = cert_path;
+  SetStringProperty(kCertPathProperty, cert_path);
+}
+
 std::string WifiNetwork::GetEncryptionString() {
   switch (encryption_) {
     case SECURITY_UNKNOWN:
@@ -1441,12 +1484,12 @@ class NetworkLibraryImpl : public NetworkLibrary  {
     return NULL;
   }
 
-  virtual const WifiNetwork* FindWifiNetworkByPath(
+  virtual WifiNetwork* FindWifiNetworkByPath(
       const std::string& path) const {
     return GetWifiNetworkByPath(path);
   }
 
-  virtual const CellularNetwork* FindCellularNetworkByPath(
+  virtual CellularNetwork* FindCellularNetworkByPath(
       const std::string& path) const {
     return GetCellularNetworkByPath(path);
   }
@@ -1691,60 +1734,6 @@ class NetworkLibraryImpl : public NetworkLibrary  {
       }
       NotifyNetworkManagerChanged();
     }
-  }
-
-  virtual void SaveCellularNetwork(const CellularNetwork* network) {
-    DCHECK(network);
-    if (!EnsureCrosLoaded() || !network)
-      return;
-    CellularNetwork* cellular =
-        GetCellularNetworkByPath(network->service_path());
-    if (!cellular) {
-      LOG(WARNING) << "Save to unknown network: " << network->service_path();
-      return;
-    }
-
-    // Immediately update properties in the cached structure.
-    cellular->set_auto_connect(network->auto_connect());
-    // Update libcros (synchronous).
-    SetAutoConnect(network->service_path().c_str(), network->auto_connect());
-  }
-
-  virtual void SaveWifiNetwork(const WifiNetwork* network) {
-    DCHECK(network);
-    if (!EnsureCrosLoaded() || !network)
-      return;
-    WifiNetwork* wifi = GetWifiNetworkByPath(network->service_path());
-    if (!wifi) {
-      LOG(WARNING) << "Save to unknown network: " << network->service_path();
-      return;
-    }
-    // Immediately update properties in the cached structure.
-    wifi->set_passphrase(network->passphrase());
-    wifi->set_identity(network->identity());
-    wifi->set_cert_path(network->cert_path());
-    wifi->set_auto_connect(network->auto_connect());
-    // Update libcros (synchronous methods).
-    const char* service_path = network->service_path().c_str();
-    SetPassphrase(service_path, network->passphrase().c_str());
-    SetIdentity(service_path, network->identity().c_str());
-    SetCertPath(service_path, network->cert_path().c_str());
-    SetAutoConnect(service_path, network->auto_connect());
-  }
-
-  virtual void SetNetworkAutoConnect(const std::string& service_path,
-                                     bool auto_connect) {
-    if (!EnsureCrosLoaded())
-      return;
-    WirelessNetwork* wireless = GetWirelessNetworkByPath(service_path);
-    if (!wireless) {
-      LOG(WARNING) << "Attempt to set autoconnect on network: " << service_path;
-      return;
-    }
-    // Update libcros (synchronous).
-    SetAutoConnect(service_path.c_str(), auto_connect);
-    // Immediately update properties in the cached structure.
-    wireless->set_auto_connect(auto_connect);
   }
 
   virtual void ForgetWifiNetwork(const std::string& service_path) {
@@ -2793,7 +2782,7 @@ class NetworkLibraryImpl : public NetworkLibrary  {
   }
 
   void InitTestData() {
-    is_locked_ = true;
+    is_locked_ = false;
 
     // Devices
     int devices =
@@ -2810,32 +2799,41 @@ class NetworkLibraryImpl : public NetworkLibrary  {
     AddNetwork(ethernet_);
 
     WifiNetwork* wifi1 = new WifiNetwork("fw1");
-    wifi1->set_name("Fake Wifi 1");
+    wifi1->set_name("Fake Wifi Connected");
     wifi1->set_strength(90);
-    wifi1->set_connected(false);
+    wifi1->set_connected(true);
     wifi1->set_encryption(SECURITY_NONE);
     AddNetwork(wifi1);
 
     WifiNetwork* wifi2 = new WifiNetwork("fw2");
-    wifi2->set_name("Fake Wifi 2");
+    wifi2->set_name("Fake Wifi");
     wifi2->set_strength(70);
-    wifi2->set_connected(true);
-    wifi2->set_encryption(SECURITY_WEP);
+    wifi2->set_connected(false);
+    wifi2->set_encryption(SECURITY_NONE);
     AddNetwork(wifi2);
 
     WifiNetwork* wifi3 = new WifiNetwork("fw3");
-    wifi3->set_name("Fake Wifi 3");
+    wifi3->set_name("Fake Wifi Encrypted");
+    wifi3->set_strength(60);
+    wifi3->set_connected(false);
+    wifi3->set_encryption(SECURITY_WEP);
+    wifi3->set_passphrase_required(true);
+    AddNetwork(wifi3);
+
+    WifiNetwork* wifi4 = new WifiNetwork("fw4");
+    wifi3->set_name("Fake Wifi 802.1x");
     wifi3->set_strength(50);
     wifi3->set_connected(false);
     wifi3->set_encryption(SECURITY_8021X);
     wifi3->set_identity("nobody@google.com");
     wifi3->set_cert_path("SETTINGS:key_id=3,cert_id=3,pin=111111");
-    AddNetwork(wifi3);
+    wifi3->set_passphrase_required(true);
+    AddNetwork(wifi4);
 
-    active_wifi_ = wifi2;
+    active_wifi_ = wifi1;
 
     CellularNetwork* cellular1 = new CellularNetwork("fc1");
-    cellular1->set_name("Fake Cellular 1");
+    cellular1->set_name("Fake Cellular");
     cellular1->set_strength(70);
     cellular1->set_connected(false);
     cellular1->set_activation_state(ACTIVATION_STATE_ACTIVATED);
@@ -3059,9 +3057,9 @@ class NetworkLibraryStubImpl : public NetworkLibrary {
 
   virtual const NetworkDevice* FindNetworkDeviceByPath(
       const std::string& path) const { return NULL; }
-  virtual const WifiNetwork* FindWifiNetworkByPath(
+  virtual WifiNetwork* FindWifiNetworkByPath(
       const std::string& path) const { return NULL; }
-  virtual const CellularNetwork* FindCellularNetworkByPath(
+  virtual CellularNetwork* FindCellularNetworkByPath(
       const std::string& path) const { return NULL; }
   virtual const CellularDataPlanVector* GetDataPlans(
       const std::string& path) const { return NULL; }
@@ -3100,10 +3098,6 @@ class NetworkLibraryStubImpl : public NetworkLibrary {
   virtual void SignalCellularPlanPayment() {}
   virtual bool HasRecentCellularPlanPayment() { return false; }
   virtual void DisconnectFromWirelessNetwork(const WirelessNetwork* network) {}
-  virtual void SaveCellularNetwork(const CellularNetwork* network) {}
-  virtual void SaveWifiNetwork(const WifiNetwork* network) {}
-  virtual void SetNetworkAutoConnect(const std::string& service_path,
-                                     bool auto_connect) {}
   virtual void ForgetWifiNetwork(const std::string& service_path) {}
   virtual bool ethernet_available() const { return true; }
   virtual bool wifi_available() const { return false; }
