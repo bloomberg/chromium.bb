@@ -14,6 +14,7 @@
 
 using WebKit::WebString;
 using WebKit::WebURL;
+using WebKit::WebVector;
 
 bool MockWebClipboardImpl::isFormatAvailable(Format format, Buffer buffer) {
   switch (format) {
@@ -84,4 +85,18 @@ void MockWebClipboardImpl::writeImage(const WebKit::WebImage& image,
     m_plainText = m_htmlText;
     m_writeSmartPaste = false;
   }
+}
+
+WebVector<WebString> MockWebClipboardImpl::readAvailableTypes(
+    Buffer buffer, bool* containsFilenames) {
+  *containsFilenames = false;
+  std::vector<WebString> results;
+  if (!m_plainText.isEmpty()) {
+    results.push_back(WebString("Text")); 
+    results.push_back(WebString("text/plain")); 
+  }
+  if (!m_htmlText.isEmpty()) {
+    results.push_back(WebString("text/html"));
+  }
+  return results;
 }

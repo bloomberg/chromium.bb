@@ -31,6 +31,9 @@ class MockWebClipboardImpl : public WebKit::WebClipboard {
       const WebKit::WebImage&, const WebKit::WebURL&,
       const WebKit::WebString& title);
 
+  virtual WebKit::WebVector<WebKit::WebString> readAvailableTypes(
+      WebKit::WebClipboard::Buffer, bool* containsFilenames);
+
  private:
   WebKit::WebString m_plainText;
   WebKit::WebString m_htmlText;
