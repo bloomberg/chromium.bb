@@ -145,10 +145,10 @@ installer::InstallStatus RenameChromeExecutables(
   const FilePath &target_path = installer_state.target_path();
   FilePath chrome_exe(target_path.Append(installer::kChromeExe));
   FilePath chrome_new_exe(target_path.Append(installer::kChromeNewExe));
+  FilePath chrome_old_exe(target_path.Append(installer::kChromeOldExe));
 
   // Create a temporary backup directory on the same volume as chrome.exe so
-  // that chrome.exe can be moved (rather than copied) to make room for
-  // new_chrome.exe.
+  // that moving in-use files doesn't lead to trouble.
   installer::SelfCleaningTempDir temp_path;
   if (!temp_path.Initialize(target_path.DirName(),
                             installer::kInstallTempDir)) {
@@ -158,12 +158,17 @@ installer::InstallStatus RenameChromeExecutables(
     return installer::RENAME_FAILED;
   }
   scoped_ptr<WorkItemList> install_list(WorkItem::CreateWorkItemList());
-  install_list->AddCopyTreeWorkItem(chrome_new_exe.value(),
+  // Move chrome.exe to old_chrome.exe, then move new_chrome.exe to chrome.exe.
+  install_list->AddMoveTreeWorkItem(chrome_exe.value(),
+                                    chrome_old_exe.value(),
+                                    temp_path.path().value());
+  install_list->AddMoveTreeWorkItem(chrome_new_exe.value(),
                                     chrome_exe.value(),
-                                    temp_path.path().value(),
-                                    WorkItem::IF_DIFFERENT,
-                                    std::wstring());
+                                    temp_path.path().value());
   install_list->AddDeleteTreeWorkItem(chrome_new_exe, temp_path.path());
+  // old_chrome.exe is still in use in most cases, so ignore failures here.
+  install_list->AddDeleteTreeWorkItem(chrome_old_exe, temp_path.path())
+      ->set_ignore_failure(true);
 
   HKEY reg_root = installer_state.root_key();
   const Products& products = installer_state.products();
