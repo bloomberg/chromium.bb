@@ -4,8 +4,8 @@
 
 // See http://dev.chromium.org/developers/design-documents/multi-process-resource-loading
 
-#ifndef CHROME_COMMON_RESOURCE_DISPATCHER_H_
-#define CHROME_COMMON_RESOURCE_DISPATCHER_H_
+#ifndef CONTENT_COMMON_RESOURCE_DISPATCHER_H_
+#define CONTENT_COMMON_RESOURCE_DISPATCHER_H_
 #pragma once
 
 #include <deque>
@@ -25,6 +25,24 @@ struct ResourceResponseHead;
 // the child process.  It can be used from any child process.
 class ResourceDispatcher : public IPC::Channel::Listener {
  public:
+  // Interface that allows observing request events and optionally replacing the
+  // peer.
+  class Observer {
+   public:
+    Observer();
+    virtual ~Observer();
+
+    virtual webkit_glue::ResourceLoaderBridge::Peer* OnRequestComplete(
+        webkit_glue::ResourceLoaderBridge::Peer* current_peer,
+        ResourceType::Type resource_type,
+        const net::URLRequestStatus& status) = 0;
+
+    virtual webkit_glue::ResourceLoaderBridge::Peer* OnReceivedResponse(
+        webkit_glue::ResourceLoaderBridge::Peer* current_peer,
+        const std::string& mime_type,
+        const GURL& url) = 0;
+  };
+
   explicit ResourceDispatcher(IPC::Message::Sender* sender);
   ~ResourceDispatcher();
 
@@ -58,6 +76,9 @@ class ResourceDispatcher : public IPC::Channel::Listener {
 
   // Toggles the is_deferred attribute for the specified request.
   void SetDefersLoading(int request_id, bool value);
+
+  // Takes ownership of the object.
+  void set_observer(Observer* observer) { observer_.reset(observer); }
 
  private:
   friend class ResourceDispatcherTest;
@@ -146,7 +167,9 @@ class ResourceDispatcher : public IPC::Channel::Listener {
 
   ScopedRunnableMethodFactory<ResourceDispatcher> method_factory_;
 
+  scoped_ptr<Observer> observer_;
+
   DISALLOW_COPY_AND_ASSIGN(ResourceDispatcher);
 };
 
-#endif  // CHROME_COMMON_RESOURCE_DISPATCHER_H_
+#endif  // CONTENT_COMMON_RESOURCE_DISPATCHER_H_

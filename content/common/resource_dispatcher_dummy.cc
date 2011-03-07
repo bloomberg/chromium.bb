@@ -4,7 +4,7 @@
 
 // See http://dev.chromium.org/developers/design-documents/multi-process-resource-loading
 
-#include "chrome/common/resource_dispatcher.h"
+#include "content/common/resource_dispatcher.h"
 
 #include "base/compiler_specific.h"
 

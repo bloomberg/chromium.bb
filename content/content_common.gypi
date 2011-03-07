@@ -37,6 +37,8 @@
         'common/p2p_messages.h',
         'common/p2p_sockets.cc',
         'common/p2p_sockets.h',
+        'common/resource_dispatcher.cc',
+        'common/resource_dispatcher.h',
         'common/resource_messages.h',
         'common/resource_response.cc',
         'common/resource_response.h',

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/common/security_filter_peer.h"
+#include "chrome/renderer/security_filter_peer.h"
 
 #include "grit/generated_resources.h"
 #include "net/base/net_errors.h"

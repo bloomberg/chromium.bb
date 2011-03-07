@@ -240,6 +240,8 @@
         'renderer/searchbox.h',
         'renderer/searchbox_extension.cc',
         'renderer/searchbox_extension.h',
+        'renderer/security_filter_peer.cc',
+        'renderer/security_filter_peer.h',
         'renderer/speech_input_dispatcher.cc',
         'renderer/speech_input_dispatcher.h',
         'renderer/spellchecker/spellcheck_provider.cc',

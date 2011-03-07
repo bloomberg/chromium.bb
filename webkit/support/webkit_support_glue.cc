@@ -99,13 +99,6 @@ void EnableSpdy(bool enable) {
 void UserMetricsRecordAction(const std::string& action) {
 }
 
-webkit_glue::ResourceLoaderBridge::Peer* ReplacePeer(
-    webkit_glue::ResourceLoaderBridge::Peer* current_peer,
-    const std::string& mime_type,
-    const GURL& url) {
-  return NULL;
-}
-
 #if defined(OS_LINUX)
 int MatchFontWithFallback(const std::string& face, bool bold,
                           bool italic, int charset) {

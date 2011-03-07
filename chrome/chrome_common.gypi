@@ -334,10 +334,6 @@
         'common/render_messages_params.h',
         'common/renderer_preferences.cc',
         'common/renderer_preferences.h',
-        'common/resource_dispatcher.cc',
-        'common/resource_dispatcher.h',
-        'common/security_filter_peer.cc',
-        'common/security_filter_peer.h',
         'common/security_style.h',
         'common/service_messages.cc',
         'common/service_messages.h',
@@ -607,12 +603,12 @@
           'sources': [
             '../webkit/glue/webkit_glue_dummy.cc',
             'common/file_system/file_system_dispatcher_dummy.cc',
-            'common/resource_dispatcher_dummy.cc',
             'common/socket_stream_dispatcher_dummy.cc',
             'common/url_constants.cc',
             # TODO(jam): remove me once child_thread (which uses this) is moved
             # out of chrome_common.
             '../content/common/message_router.cc',
+            '../content/common/resource_dispatcher_dummy.cc',
           ],
           'export_dependent_settings': [
             '../app/app.gyp:app_base_nacl_win64',

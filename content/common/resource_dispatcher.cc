@@ -4,7 +4,7 @@
 
 // See http://dev.chromium.org/developers/design-documents/multi-process-resource-loading
 
-#include "chrome/common/resource_dispatcher.h"
+#include "content/common/resource_dispatcher.h"
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
@@ -12,9 +12,8 @@
 #include "base/message_loop.h"
 #include "base/shared_memory.h"
 #include "base/string_util.h"
-#include "chrome/common/security_filter_peer.h"
-#include "content/common/resource_response.h"
 #include "content/common/resource_messages.h"
+#include "content/common/resource_response.h"
 #include "net/base/net_errors.h"
 #include "net/base/net_util.h"
 #include "net/base/upload_data.h"
@@ -243,6 +242,12 @@ void IPCResourceLoaderBridge::SyncLoad(SyncLoadResponse* response) {
 
 // ResourceDispatcher ---------------------------------------------------------
 
+ResourceDispatcher::Observer::Observer() {
+}
+
+ResourceDispatcher::Observer::~Observer() {
+}
+
 ResourceDispatcher::ResourceDispatcher(IPC::Message::Sender* sender)
     : message_sender_(sender),
       ALLOW_THIS_IN_INITIALIZER_LIST(method_factory_(this)) {
@@ -325,10 +330,13 @@ void ResourceDispatcher::OnReceivedResponse(
   if (!request_info)
     return;
 
-  webkit_glue::ResourceLoaderBridge::Peer* new_peer = webkit_glue::ReplacePeer(
-      request_info->peer, response_head.mime_type, request_info->url);
-  if (new_peer)
-    request_info->peer = new_peer;
+  if (observer_.get()) {
+    webkit_glue::ResourceLoaderBridge::Peer* new_peer =
+        observer_->OnReceivedResponse(
+            request_info->peer, response_head.mime_type, request_info->url);
+    if (new_peer)
+      request_info->peer = new_peer;
+  }
 
   request_info->peer->OnReceivedResponse(response_head);
 }
@@ -429,18 +437,12 @@ void ResourceDispatcher::OnRequestComplete(int request_id,
 
   webkit_glue::ResourceLoaderBridge::Peer* peer = request_info->peer;
 
-  if (status.status() == net::URLRequestStatus::CANCELED &&
-      status.os_error() != net::ERR_ABORTED) {
-    // Resource canceled with a specific error are filtered.
-    SecurityFilterPeer* new_peer =
-        SecurityFilterPeer::CreateSecurityFilterPeerForDeniedRequest(
-            request_info->resource_type,
-            request_info->peer,
-            status.os_error());
-    if (new_peer) {
+  if (observer_.get()) {
+    webkit_glue::ResourceLoaderBridge::Peer* new_peer =
+        observer_->OnRequestComplete(
+            request_info->peer, request_info->resource_type, status);
+    if (new_peer)
       request_info->peer = new_peer;
-      peer = new_peer;
-    }
   }
 
   // The request ID will be removed from our pending list in the destructor.

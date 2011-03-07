@@ -29,6 +29,7 @@
 #include "chrome/common/db_message_filter.h"
 #include "chrome/common/dom_storage_messages.h"
 #include "chrome/common/extensions/extension.h"
+#include "chrome/common/extensions/extension_localization_peer.h"
 #include "chrome/common/extensions/extension_set.h"
 #include "chrome/common/gpu_messages.h"
 #include "chrome/common/plugin_messages.h"
@@ -63,11 +64,14 @@
 #include "chrome/renderer/safe_browsing/phishing_classifier_delegate.h"
 #include "chrome/renderer/search_extension.h"
 #include "chrome/renderer/searchbox_extension.h"
+#include "chrome/renderer/security_filter_peer.h"
 #include "chrome/renderer/spellchecker/spellcheck.h"
 #include "chrome/renderer/user_script_slave.h"
+#include "content/common/resource_dispatcher.h"
 #include "content/common/resource_messages.h"
 #include "ipc/ipc_channel_handle.h"
 #include "ipc/ipc_platform_file.h"
+#include "net/base/net_errors.h"
 #include "net/base/net_util.h"
 #include "third_party/sqlite/sqlite3.h"
 #include "third_party/tcmalloc/chromium/src/google/malloc_extension.h"
@@ -217,6 +221,37 @@ class RenderViewZoomer : public RenderViewVisitor {
   DISALLOW_COPY_AND_ASSIGN(RenderViewZoomer);
 };
 
+class RenderResourceObserver : public ResourceDispatcher::Observer {
+ public:
+  RenderResourceObserver() {
+  }
+
+  virtual webkit_glue::ResourceLoaderBridge::Peer* OnRequestComplete(
+      webkit_glue::ResourceLoaderBridge::Peer* current_peer,
+      ResourceType::Type resource_type,
+      const net::URLRequestStatus& status) {
+    if (status.status() != net::URLRequestStatus::CANCELED ||
+        status.os_error() == net::ERR_ABORTED) {
+      return NULL;
+    }
+
+    // Resource canceled with a specific error are filtered.
+    return SecurityFilterPeer::CreateSecurityFilterPeerForDeniedRequest(
+        resource_type, current_peer, status.os_error());
+  }
+
+  virtual webkit_glue::ResourceLoaderBridge::Peer* OnReceivedResponse(
+      webkit_glue::ResourceLoaderBridge::Peer* current_peer,
+      const std::string& mime_type,
+      const GURL& url) {
+    return ExtensionLocalizationPeer::CreateExtensionLocalizationPeer(
+        current_peer, RenderThread::current(), mime_type, url);
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(RenderResourceObserver);
+};
+
 }  // namespace
 
 // When we run plugins in process, we actually run them on the render thread,
@@ -256,6 +291,8 @@ void RenderThread::Init() {
   idle_notification_delay_in_s_ = is_extension_process_ ?
       kInitialExtensionIdleHandlerDelayS : kInitialIdleHandlerDelayS;
   task_factory_.reset(new ScopedRunnableMethodFactory<RenderThread>(this));
+
+  resource_dispatcher()->set_observer(new RenderResourceObserver());
 
   visited_link_slave_.reset(new VisitedLinkSlave());
   user_script_slave_.reset(new UserScriptSlave(&extensions_));

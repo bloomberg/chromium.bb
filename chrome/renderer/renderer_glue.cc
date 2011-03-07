@@ -18,7 +18,6 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/chrome_version_info.h"
-#include "chrome/common/extensions/extension_localization_peer.h"
 #include "chrome/common/render_messages.h"
 #include "chrome/common/socket_stream_dispatcher.h"
 #include "chrome/common/url_constants.h"
@@ -280,14 +279,6 @@ void EnableSpdy(bool enable) {
 void UserMetricsRecordAction(const std::string& action) {
   RenderThread::current()->Send(
       new ViewHostMsg_UserMetricsRecordAction(action));
-}
-
-webkit_glue::ResourceLoaderBridge::Peer* ReplacePeer(
-    webkit_glue::ResourceLoaderBridge::Peer* current_peer,
-    const std::string& mime_type,
-    const GURL& url) {
-  return ExtensionLocalizationPeer::CreateExtensionLocalizationPeer(
-      current_peer, RenderThread::current(), mime_type, url);
 }
 
 #if !defined(DISABLE_NACL)

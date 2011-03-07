@@ -20,7 +20,6 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebCanvas.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFileError.h"
 #include "ui/base/clipboard/clipboard.h"
-#include "webkit/glue/resource_loader_bridge.h"
 
 class GURL;
 class SkBitmap;
@@ -281,13 +280,6 @@ void EnableSpdy(bool enable);
 
 // Notifies the browser that the given action has been performed.
 void UserMetricsRecordAction(const std::string& action);
-
-// Allows the embedder to swap the peer for a request through the resource
-// loader.  Return NULL to keep the existing peer.
-webkit_glue::ResourceLoaderBridge::Peer* ReplacePeer(
-    webkit_glue::ResourceLoaderBridge::Peer* current_peer,
-    const std::string& mime_type,
-    const GURL& url);
 
 #if !defined(DISABLE_NACL)
 // Launch NaCl's sel_ldr process.
