@@ -12,7 +12,7 @@
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_paths_internal.h"
 #include "chrome/common/chrome_switches.h"
-#include "chrome/common/plugin_messages.h"
+#include "content/common/child_process_messages.h"
 #include "ipc/ipc_logging.h"
 
 #if defined(OS_LINUX)
@@ -129,10 +129,10 @@ bool ChildProcessHost::CreateChannel() {
   // Make sure these messages get sent first.
 #if defined(IPC_MESSAGE_LOG_ENABLED)
   bool enabled = IPC::Logging::GetInstance()->Enabled();
-  Send(new PluginProcessMsg_SetIPCLoggingEnabled(enabled));
+  Send(new ChildProcessMsg_SetIPCLoggingEnabled(enabled));
 #endif
 
-  Send(new PluginProcessMsg_AskBeforeShutdown());
+  Send(new ChildProcessMsg_AskBeforeShutdown());
 
   opening_channel_ = true;
 
@@ -196,9 +196,9 @@ bool ChildProcessHost::ListenerHook::OnMessageReceived(
     }
   }
 
-  if (!handled && msg.type() == PluginProcessHostMsg_ShutdownRequest::ID) {
+  if (!handled && msg.type() == ChildProcessHostMsg_ShutdownRequest::ID) {
     if (host_->CanShutdown())
-      host_->Send(new PluginProcessMsg_Shutdown());
+      host_->Send(new ChildProcessMsg_Shutdown());
     handled = true;
   }
 
@@ -234,5 +234,5 @@ void ChildProcessHost::ListenerHook::OnChannelError() {
 }
 
 void ChildProcessHost::ForceShutdown() {
-  Send(new PluginProcessMsg_Shutdown());
+  Send(new ChildProcessMsg_Shutdown());
 }

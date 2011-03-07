@@ -673,10 +673,6 @@ bool RenderThread::OnControlMessageReceived(const IPC::Message& msg) {
                         OnExtensionSetHostPermissions)
     IPC_MESSAGE_HANDLER(DOMStorageMsg_Event,
                         OnDOMStorageEvent)
-#if defined(IPC_MESSAGE_LOG_ENABLED)
-    IPC_MESSAGE_HANDLER(ViewMsg_SetIPCLoggingEnabled,
-                        OnSetIPCLoggingEnabled)
-#endif
     IPC_MESSAGE_HANDLER(ViewMsg_SpellChecker_Init,
                         OnInitSpellChecker)
     IPC_MESSAGE_HANDLER(ViewMsg_SpellChecker_WordAdded,

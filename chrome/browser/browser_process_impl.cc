@@ -74,8 +74,7 @@
 #endif
 
 #if defined(IPC_MESSAGE_LOG_ENABLED)
-#include "chrome/common/plugin_messages.h"
-#include "chrome/common/render_messages.h"
+#include "content/common/child_process_messages.h"
 #endif
 
 #if (defined(OS_WIN) || defined(OS_LINUX)) && !defined(OS_CHROMEOS)
@@ -915,7 +914,7 @@ void BrowserProcessImpl::SetIPCLoggingEnabled(bool enable) {
   // Messages to the renderers must be done on the UI (main) thread.
   for (RenderProcessHost::iterator i(RenderProcessHost::AllHostsIterator());
        !i.IsAtEnd(); i.Advance())
-    i.GetCurrentValue()->Send(new ViewMsg_SetIPCLoggingEnabled(enable));
+    i.GetCurrentValue()->Send(new ChildProcessMsg_SetIPCLoggingEnabled(enable));
 }
 
 // Helper for SetIPCLoggingEnabled.
@@ -924,7 +923,7 @@ void BrowserProcessImpl::SetIPCLoggingEnabledForChildProcesses(bool enabled) {
 
   BrowserChildProcessHost::Iterator i;  // default constr references a singleton
   while (!i.Done()) {
-    i->Send(new PluginProcessMsg_SetIPCLoggingEnabled(enabled));
+    i->Send(new ChildProcessMsg_SetIPCLoggingEnabled(enabled));
     ++i;
   }
 }

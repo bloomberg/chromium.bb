@@ -91,6 +91,7 @@
 #include "content/browser/renderer_host/socket_stream_dispatcher_host.h"
 #include "content/browser/speech/speech_input_dispatcher_host.h"
 #include "content/browser/worker_host/worker_message_filter.h"
+#include "content/common/child_process_messages.h"
 #include "content/common/resource_messages.h"
 #include "grit/generated_resources.h"
 #include "ipc/ipc_logging.h"
@@ -1021,7 +1022,7 @@ bool BrowserRenderProcessHost::OnMessageReceived(const IPC::Message& msg) {
 
 void BrowserRenderProcessHost::OnChannelConnected(int32 peer_pid) {
 #if defined(IPC_MESSAGE_LOG_ENABLED)
-  Send(new ViewMsg_SetIPCLoggingEnabled(
+  Send(new ChildProcessMsg_SetIPCLoggingEnabled(
       IPC::Logging::GetInstance()->Enabled()));
 #endif
 }

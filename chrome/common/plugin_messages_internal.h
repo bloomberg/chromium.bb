@@ -36,22 +36,6 @@ IPC_MESSAGE_CONTROL1(PluginProcessMsg_PluginMessage,
 // shutdown, so we don't mistake it for a crash.
 IPC_MESSAGE_CONTROL0(PluginProcessMsg_NotifyRenderersOfPendingShutdown)
 
-// The following messages are used by all child processes, even though they
-// are listed under PluginProcess.  It seems overkill to define ChildProcess.
-// Tells the child process it should stop.
-IPC_MESSAGE_CONTROL0(PluginProcessMsg_AskBeforeShutdown)
-
-// Sent in response to PluginProcessHostMsg_ShutdownRequest to tell the child
-// process that it's safe to shutdown.
-IPC_MESSAGE_CONTROL0(PluginProcessMsg_Shutdown)
-
-#if defined(IPC_MESSAGE_LOG_ENABLED)
-// Tell the child process to begin or end IPC message logging.
-// Like above, this is used by all ChildProcesses.
-IPC_MESSAGE_CONTROL1(PluginProcessMsg_SetIPCLoggingEnabled,
-                     bool /* on or off */)
-#endif
-
 
 //-----------------------------------------------------------------------------
 // PluginProcessHost messages
@@ -62,8 +46,6 @@ IPC_MESSAGE_CONTROL1(PluginProcessHostMsg_ChannelCreated,
 
 IPC_SYNC_MESSAGE_CONTROL0_1(PluginProcessHostMsg_GetPluginFinderUrl,
                             std::string /* plugin finder URL */)
-
-IPC_MESSAGE_CONTROL0(PluginProcessHostMsg_ShutdownRequest)
 
 // Allows a chrome plugin loaded in a plugin process to send arbitrary
 // data to an instance of the same plugin loaded in the browser process.

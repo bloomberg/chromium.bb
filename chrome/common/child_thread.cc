@@ -10,12 +10,11 @@
 #include "chrome/common/child_process.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/file_system/file_system_dispatcher.h"
-#include "chrome/common/notification_service.h"
-#include "chrome/common/plugin_messages.h"
 #include "chrome/common/socket_stream_dispatcher.h"
+#include "content/common/child_process_messages.h"
+#include "content/common/notification_service.h"
 #include "content/common/resource_dispatcher.h"
 #include "ipc/ipc_logging.h"
-#include "ipc/ipc_message.h"
 #include "ipc/ipc_sync_channel.h"
 #include "ipc/ipc_sync_message_filter.h"
 #include "ipc/ipc_switches.h"
@@ -150,10 +149,10 @@ bool ChildThread::OnMessageReceived(const IPC::Message& msg) {
 
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(ChildThread, msg)
-    IPC_MESSAGE_HANDLER(PluginProcessMsg_AskBeforeShutdown, OnAskBeforeShutdown)
-    IPC_MESSAGE_HANDLER(PluginProcessMsg_Shutdown, OnShutdown)
+    IPC_MESSAGE_HANDLER(ChildProcessMsg_AskBeforeShutdown, OnAskBeforeShutdown)
+    IPC_MESSAGE_HANDLER(ChildProcessMsg_Shutdown, OnShutdown)
 #if defined(IPC_MESSAGE_LOG_ENABLED)
-    IPC_MESSAGE_HANDLER(PluginProcessMsg_SetIPCLoggingEnabled,
+    IPC_MESSAGE_HANDLER(ChildProcessMsg_SetIPCLoggingEnabled,
                         OnSetIPCLoggingEnabled)
 #endif
     IPC_MESSAGE_UNHANDLED(handled = false)
@@ -203,5 +202,5 @@ void ChildThread::OnProcessFinalRelease() {
   // where we send out an initial feeler request to the child process host
   // instance in the browser to verify if it's ok to shutdown the child process.
   // The browser then sends back a response if it's ok to shutdown.
-  Send(new PluginProcessHostMsg_ShutdownRequest);
+  Send(new ChildProcessHostMsg_ShutdownRequest);
 }

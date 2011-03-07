@@ -14,6 +14,7 @@
         '..',
       ],
       'sources': [
+        'common/child_process_messages.h',
         'common/common_param_traits.cc',
         'common/common_param_traits.h',
         'common/content_message_generator.cc',

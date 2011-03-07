@@ -865,12 +865,6 @@ IPC_MESSAGE_ROUTED1(ViewMsg_NotifyRenderViewType,
 IPC_MESSAGE_ROUTED1(ViewMsg_ExecuteCode,
                     ViewMsg_ExecuteCode_Params)
 
-#if defined(IPC_MESSAGE_LOG_ENABLED)
-// Tell the renderer process to begin or end IPC message logging.
-IPC_MESSAGE_CONTROL1(ViewMsg_SetIPCLoggingEnabled,
-                     bool /* on or off */)
-#endif
-
 // SpellChecker messages.
 
 // Passes some initialization params to the renderer's spellchecker. This can

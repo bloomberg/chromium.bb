@@ -73,6 +73,7 @@ enum IPCMessageStart {
   SocketStreamMsgStart,
   ResourceMsgStart,
   FileSystemMsgStart,
+  ChildProcessMsgStart,
 };
 
 class DictionaryValue;
