@@ -1139,6 +1139,20 @@ int BrowserMain(const MainFunctionParams& parameters) {
   const CommandLine& parsed_command_line = parameters.command_line_;
   base::mac::ScopedNSAutoreleasePool* pool = parameters.autorelease_pool_;
 
+
+#if defined(OS_WIN)
+  // TODO(jar): This really shouldn't be here... but it is a temporary test and
+  // I'll be deleting it ASAP.
+  const char* env_var_name = "CHROME_ALLOCATOR";
+  size_t space_needed = 0;
+  getenv_s(&space_needed, NULL, 0, env_var_name);
+  if (!space_needed) {  // Variable not found.
+    // Force render to use TCMALLOC, ignoring default.
+    int ret_val = _putenv_s(env_var_name, "TCMALLOC");
+    CHECK_EQ(0, ret_val);
+  }
+#endif  // OS_WIN
+
   FilePath user_data_dir;
 #if defined(OS_WIN)
   PathService::Get(chrome::DIR_USER_DATA, &user_data_dir);
