@@ -84,7 +84,10 @@
 # Annotations:
 #   Additional information is specified under keys 'features' and
 #   'example_value'. These are used in the generated documentation and example
-#   policy configuration files.
+#   policy configuration files. 'dynamic_refresh' controls if the generated
+#   documentation should state that the policy supports dynamic refresh or not.
+#   Supporting dynamic refresh means that Chrome respects the changes to the
+#   policy immediately, without the need for restart.
 #
 # IDs:
 #   Since a Protocol Buffer definition is generated from this file, unique and
@@ -105,7 +108,7 @@
         {
           'name': 'HomepageLocation',
           'type': 'string',
-          'supported_on': ['chrome.*:8-'],
+          'supported_on': ['chrome.*:8-', 'chrome_os:0.11-'],
           'features': {'dynamic_refresh': 1},
           'example_value': 'http://chromium.org',
           'id': 1,
@@ -122,7 +125,7 @@
         {
           'name': 'HomepageIsNewTabPage',
           'type': 'main',
-          'supported_on': ['chrome.*:8-'],
+          'supported_on': ['chrome.*:8-', 'chrome_os:0.11-'],
           'features': {'dynamic_refresh': 1},
           'example_value': True,
           'id': 2,
@@ -172,7 +175,7 @@
     {
       'name': 'AlternateErrorPagesEnabled',
       'type': 'main',
-      'supported_on': ['chrome.*:8-'],
+      'supported_on': ['chrome.*:8-', 'chrome_os:0.11-'],
       'features': {'dynamic_refresh': 1},
       'example_value': True,
       'id': 5,
@@ -188,7 +191,7 @@
     {
       'name': 'SearchSuggestEnabled',
       'type': 'main',
-      'supported_on': ['chrome.*:8-'],
+      'supported_on': ['chrome.*:8-', 'chrome_os:0.11-'],
       'features': {'dynamic_refresh': 1},
       'example_value': True,
       'id': 6,
@@ -204,7 +207,7 @@
     {
       'name': 'DnsPrefetchingEnabled',
       'type': 'main',
-      'supported_on': ['chrome.*:8-'],
+      'supported_on': ['chrome.*:8-', 'chrome_os:0.11-'],
       'features': {'dynamic_refresh': 1},
       'example_value': True,
       'id': 7,
@@ -216,7 +219,7 @@
     {
       'name': 'DisableSpdy',
       'type': 'main',
-      'supported_on': ['chrome.*:8-'],
+      'supported_on': ['chrome.*:8-', 'chrome_os:0.11-'],
       'features': {'dynamic_refresh': 1},
       'example_value': True,
       'id': 8,
@@ -226,7 +229,7 @@
     {
       'name': 'JavascriptEnabled',
       'type': 'main',
-      'supported_on': ['chrome.*:8-'],
+      'supported_on': ['chrome.*:8-', 'chrome_os:0.11-'],
       'features': {'dynamic_refresh': 0},
       'example_value': True,
       'id': 9,
@@ -240,7 +243,7 @@
     {
       'name': 'IncognitoEnabled',
       'type': 'main',
-      'supported_on': ['chrome.*:11-'],
+      'supported_on': ['chrome.*:11-', 'chrome_os:0.11-'],
       'features': {'dynamic_refresh': 1},
       'example_value': False,
       'id': 10,
@@ -254,7 +257,7 @@
     {
       'name': 'SavingBrowserHistoryDisabled',
       'type': 'main',
-      'supported_on': ['chrome.*:8-'],
+      'supported_on': ['chrome.*:8-', 'chrome_os:0.11-'],
       'features': {'dynamic_refresh': 1},
       'example_value': True,
       'id': 11,
@@ -268,7 +271,7 @@
     {
       'name': 'PrintingEnabled',
       'type': 'main',
-      'supported_on': ['chrome.*:8-'],
+      'supported_on': ['chrome.*:8-', 'chrome_os:0.11-'],
       'features': {'dynamic_refresh': 1},
       'example_value': True,
       'id': 12,
@@ -297,7 +300,7 @@
     {
       'name': 'SafeBrowsingEnabled',
       'type': 'main',
-      'supported_on': ['chrome.*:8-'],
+      'supported_on': ['chrome.*:8-', 'chrome_os:0.11-'],
       'features': {'dynamic_refresh': 0},
       'example_value': True,
       'id': 14,
@@ -313,7 +316,7 @@
     {
       'name': 'MetricsReportingEnabled',
       'type': 'main',
-      'supported_on': ['chrome.*:8-'],
+      'supported_on': ['chrome.*:8-', 'chrome_os:0.11-'],
       'features': {'dynamic_refresh': 0},
       'example_value': True,
       'id': 15,
@@ -335,7 +338,7 @@
         {
           'name': 'PasswordManagerEnabled',
           'type': 'main',
-          'supported_on': ['chrome.*:8-'],
+          'supported_on': ['chrome.*:8-', 'chrome_os:0.11-'],
           'features': {'dynamic_refresh': 1},
           'example_value': True,
           'id': 16,
@@ -351,7 +354,7 @@
         {
           'name': 'PasswordManagerAllowShowPasswords',
           'type': 'main',
-          'supported_on': ['chrome.*:8-'],
+          'supported_on': ['chrome.*:8-', 'chrome_os:0.11-'],
           'features': {'dynamic_refresh': 1},
           'example_value': False,
           'id': 17,
@@ -367,7 +370,7 @@
     {
       'name': 'AutoFillEnabled',
       'type': 'main',
-      'supported_on': ['chrome.*:8-'],
+      'supported_on': ['chrome.*:8-', 'chrome_os:0.11-'],
       'features': {'dynamic_refresh': 1},
       'example_value': False,
       'id': 18,
@@ -381,7 +384,7 @@
     {
       'name': 'DisabledPlugins',
       'type': 'list',
-      'supported_on': ['chrome.*:8-'],
+      'supported_on': ['chrome.*:8-', 'chrome_os:0.11-'],
       'features': {'dynamic_refresh': 1},
       'example_value': ['Java', 'Shockwave Flash', 'Chrome PDF Viewer'],
       'id': 19,
@@ -430,7 +433,7 @@
     {
       'name': 'DisablePluginFinder',
       'type': 'main',
-      'supported_on': ['chrome.*:11-'],
+      'supported_on': ['chrome.*:11-', 'chrome_os:0.11-'],
       'features': {'dynamic_refresh': 1},
       'example_value': True,
       'id': 66,
@@ -441,7 +444,7 @@
     {
       'name': 'SyncDisabled',
       'type': 'main',
-      'supported_on': ['chrome.*:8-'],
+      'supported_on': ['chrome.*:8-', 'chrome_os:0.11-'],
       'features': {'dynamic_refresh': 1},
       'example_value': True,
       'id': 20,
@@ -479,7 +482,7 @@
     {
       'name': 'ClearSiteDataOnExit',
       'type': 'main',
-      'supported_on': ['chrome.*:11-', 'chrome_os.*:1.0.0.0-'],
+      'supported_on': ['chrome.*:11-', 'chrome_os:1.0-'],
       'features': {'dynamic_refresh': 1},
       'example_value': True,
       'id': 65,
@@ -657,7 +660,7 @@
         {
           'name': 'AuthSchemes',
           'type': 'string',
-          'supported_on': ['chrome.*:9-'],
+          'supported_on': ['chrome.*:9-', 'chrome_os:0.11-'],
           'features': {'dynamic_refresh': 0},
           'example_value': 'basic,digest,ntlm,negotiate',
           'id': 26,
@@ -669,7 +672,7 @@
         {
           'name': 'DisableAuthNegotiateCnameLookup',
           'type': 'main',
-          'supported_on': ['chrome.*:9-'],
+          'supported_on': ['chrome.*:9-', 'chrome_os:0.11-'],
           'features': {'dynamic_refresh': 0},
           'example_value': False,
           'id': 27,
@@ -683,7 +686,7 @@
         {
           'name': 'EnableAuthNegotiatePort',
           'type': 'main',
-          'supported_on': ['chrome.*:9-'],
+          'supported_on': ['chrome.*:9-', 'chrome_os:0.11-'],
           'features': {'dynamic_refresh': 0},
           'example_value': False,
           'id': 28,
@@ -697,7 +700,7 @@
         {
           'name': 'AuthServerWhitelist',
           'type': 'string',
-          'supported_on': ['chrome.*:9-'],
+          'supported_on': ['chrome.*:9-', 'chrome_os:0.11-'],
           'features': {'dynamic_refresh': 0},
           'example_value': '*example.com,foobar.com,*baz',
           'id': 29,
@@ -709,7 +712,7 @@
         {
           'name': 'AuthNegotiateDelegateWhitelist',
           'type': 'string',
-          'supported_on': ['chrome.*:9-'],
+          'supported_on': ['chrome.*:9-', 'chrome_os:0.11-'],
           'features': {'dynamic_refresh': 0},
           'example_value': 'foobar.example.com',
           'id': 30,
@@ -737,7 +740,7 @@
         {
           'name': 'ExtensionInstallBlacklist',
           'type': 'list',
-          'supported_on': ['chrome.*:8-'],
+          'supported_on': ['chrome.*:8-', 'chrome_os:0.11-'],
           'features': {'dynamic_refresh': 1},
           'example_value': ['extension_id1', 'extension_id2'],
           'id': 32,
@@ -750,7 +753,7 @@
         {
           'name': 'ExtensionInstallWhitelist',
           'type': 'list',
-          'supported_on': ['chrome.*:8-'],
+          'supported_on': ['chrome.*:8-', 'chrome_os:0.11-'],
           'features': {'dynamic_refresh': 1},
           'example_value': ['extension_id1', 'extension_id2'],
           'id': 33,
@@ -765,7 +768,7 @@
         {
           'name': 'ExtensionInstallForcelist',
           'type': 'list',
-          'supported_on': ['chrome.*:9-'],
+          'supported_on': ['chrome.*:9-', 'chrome_os:0.11-'],
           'features': {'dynamic_refresh': 1},
           'example_value': ['lcncmkcnkcdbbanbjakcencbaoegdjlp;https://clients2.google.com/service/update2/crx'],
           'id': 34,
@@ -782,7 +785,7 @@
     {
       'name': 'ShowHomeButton',
       'type': 'main',
-      'supported_on': ['chrome.*:8-'],
+      'supported_on': ['chrome.*:8-', 'chrome_os:0.11-'],
       'features': {'dynamic_refresh': 1},
       'example_value': True,
       'id': 35,
@@ -798,7 +801,7 @@
     {
       'name': 'DeveloperToolsDisabled',
       'type': 'main',
-      'supported_on': ['chrome.*:9-'],
+      'supported_on': ['chrome.*:9-', 'chrome_os:0.11-'],
       'features': {'dynamic_refresh': 1},
       'example_value': False,
       'id': 36,
@@ -835,7 +838,7 @@
               'caption': '''Open a list of URLs'''
             },
           ],
-          'supported_on': ['chrome.*:8-'],
+          'supported_on': ['chrome.*:8-', 'chrome_os:0.11-'],
           'features': {'dynamic_refresh': 1},
           'example_value': 4,
           'id': 37,
@@ -853,7 +856,7 @@
         {
           'name': 'RestoreOnStartupURLs',
           'type': 'list',
-          'supported_on': ['chrome.*:8-'],
+          'supported_on': ['chrome.*:8-', 'chrome_os:0.11-'],
           'features': {'dynamic_refresh': 1},
           'example_value': ['http://example.com', 'http://chromium.org'],
           'id': 38,
@@ -865,7 +868,7 @@
     {
       'name': 'BlockThirdPartyCookies',
       'type': 'main',
-      'supported_on': ['chrome.*:10-'],
+      'supported_on': ['chrome.*:10-', 'chrome_os:0.11-'],
       'features': {'dynamic_refresh': 1},
       'example_value': False,
       'id': 39,
@@ -885,7 +888,7 @@
         {
           'name': 'DefaultSearchProviderEnabled',
           'type': 'main',
-          'supported_on': ['chrome.*:8-'],
+          'supported_on': ['chrome.*:8-', 'chrome_os:0.11-'],
           'features': {'dynamic_refresh': 1},
           'example_value': True,
           'id': 40,
@@ -905,7 +908,7 @@
         {
           'name': 'DefaultSearchProviderName',
           'type': 'string',
-          'supported_on': ['chrome.*:8-'],
+          'supported_on': ['chrome.*:8-', 'chrome_os:0.11-'],
           'features': {'dynamic_refresh': 1},
           'example_value': 'My Intranet Search',
           'id': 41,
@@ -915,7 +918,7 @@
         {
           'name': 'DefaultSearchProviderKeyword',
           'type': 'string',
-          'supported_on': ['chrome.*:8-'],
+          'supported_on': ['chrome.*:8-', 'chrome_os:0.11-'],
           'features': {'dynamic_refresh': 1},
           'example_value': 'mis',
           'id': 42,
@@ -925,7 +928,7 @@
         {
           'name': 'DefaultSearchProviderSearchURL',
           'type': 'string',
-          'supported_on': ['chrome.*:8-'],
+          'supported_on': ['chrome.*:8-', 'chrome_os:0.11-'],
           'features': {'dynamic_refresh': 1},
           'example_value': 'http://search.my.company/search?q={searchTerms}',
           'id': 43,
@@ -935,7 +938,7 @@
         {
           'name': 'DefaultSearchProviderSuggestURL',
           'type': 'string',
-          'supported_on': ['chrome.*:8-'],
+          'supported_on': ['chrome.*:8-', 'chrome_os:0.11-'],
           'features': {'dynamic_refresh': 1},
           'example_value': 'http://search.my.company/suggest?q={searchTerms}',
           'id': 44,
@@ -945,7 +948,7 @@
         {
           'name': 'DefaultSearchProviderInstantURL',
           'type': 'string',
-          'supported_on': ['chrome.*:10-'],
+          'supported_on': ['chrome.*:10-', 'chrome_os:0.11-'],
           'features': {'dynamic_refresh': 1},
           'example_value': 'http://search.my.company/suggest?q={searchTerms}',
           'id': 45,
@@ -955,7 +958,7 @@
         {
           'name': 'DefaultSearchProviderIconURL',
           'type': 'string',
-          'supported_on': ['chrome.*:8-'],
+          'supported_on': ['chrome.*:8-', 'chrome_os:0.11-'],
           'features': {'dynamic_refresh': 1},
           'example_value': 'http://search.my.company/favicon.ico',
           'id': 46,
@@ -965,7 +968,7 @@
         {
           'name': 'DefaultSearchProviderEncodings',
           'type': 'list',
-          'supported_on': ['chrome.*:8-'],
+          'supported_on': ['chrome.*:8-', 'chrome_os:0.11-'],
           'features': {'dynamic_refresh': 1},
           'example_value': ['UTF-8', 'UTF-16', 'GB2312', 'ISO-8859-1'],
           'id': 47,
@@ -995,7 +998,7 @@
               'caption': '''Do not allow any site to set local data'''
             },
           ],
-          'supported_on': ['chrome.*:10-'],
+          'supported_on': ['chrome.*:10-', 'chrome_os:0.11-'],
           'features': {'dynamic_refresh': 1},
           'example_value': 0,
           'id': 48,
@@ -1017,7 +1020,7 @@
               'caption': '''Do not allow any site to show images'''
             },
           ],
-          'supported_on': ['chrome.*:10-'],
+          'supported_on': ['chrome.*:10-', 'chrome_os:0.11-'],
           'features': {'dynamic_refresh': 1},
           'example_value': 0,
           'id': 49,
@@ -1039,7 +1042,7 @@
               'caption': '''Do not allow any site to run JavaScript'''
             },
           ],
-          'supported_on': ['chrome.*:10-'],
+          'supported_on': ['chrome.*:10-', 'chrome_os:0.11-'],
           'features': {'dynamic_refresh': 1},
           'example_value': 0,
           'id': 50,
@@ -1061,7 +1064,7 @@
               'caption': '''Block all plugins'''
             },
           ],
-          'supported_on': ['chrome.*:10-'],
+          'supported_on': ['chrome.*:10-', 'chrome_os:0.11-'],
           'features': {'dynamic_refresh': 1},
           'example_value': 0,
           'id': 51,
@@ -1083,7 +1086,7 @@
               'caption': '''Do not allow any site to show popups'''
             },
           ],
-          'supported_on': ['chrome.*:10-'],
+          'supported_on': ['chrome.*:10-', 'chrome_os:0.11-'],
           'features': {'dynamic_refresh': 1},
           'example_value': 1,
           'id': 52,
@@ -1137,7 +1140,7 @@
               'caption': '''Ask whenever a site wants to track the users' physical location'''
             },
           ],
-          'supported_on': ['chrome.*:10-'],
+          'supported_on': ['chrome.*:10-', 'chrome_os:0.11-'],
           'features': {'dynamic_refresh': 1},
           'example_value': 0,
           'id': 54,
@@ -1259,7 +1262,7 @@
     {
       'name': 'Disable3DAPIs',
       'type': 'main',
-      'supported_on': ['chrome.*:9-'],
+      'supported_on': ['chrome.*:9-', 'chrome_os:0.11-'],
       'features': {'dynamic_refresh': 0},
       'example_value': False,
       'id': 55,
@@ -1273,7 +1276,7 @@
     {
       'name': 'PolicyRefreshRate',
       'type': 'int',
-      'supported_on': ['chrome_os:1.0.0.0-'],
+      'supported_on': ['chrome_os:1.0-'],
       'features': {'dynamic_refresh': 1},
       'example_value': 3600000,
       'id': 56,
@@ -1364,7 +1367,7 @@
     {
       'name': 'ChromeOsLockOnIdleSuspend',
       'type': 'main',
-      'supported_on': ['chrome_os:0.9.79.0-'],
+      'supported_on': ['chrome_os:0.9-'],
       'features': {'dynamic_refresh': 1},
       'example_value': True,
       'id': 61,
@@ -1380,7 +1383,7 @@
     {
       'name': 'InstantEnabled',
       'type': 'main',
-      'supported_on': ['chrome.*:11-'],
+      'supported_on': ['chrome.*:11-', 'chrome_os:0.11-'],
       'features': {'dynamic_refresh': 1},
       'example_value': True,
       'id': 62,
