@@ -287,14 +287,15 @@ void FocusManager::SetFocusedViewWithReason(
   if (focused_view_ == view)
     return;
 
-  // Notified listeners that the focus will change.
+  // Update the reason for the focus change (since this is checked by
+  // some listeners), then notify all listeners.
+  focus_change_reason_ = reason;
   FocusChangeListenerList::const_iterator iter;
   for (iter = focus_change_listeners_.begin();
        iter != focus_change_listeners_.end(); ++iter) {
     (*iter)->FocusWillChange(focused_view_, view);
   }
 
-  focus_change_reason_ = reason;
   if (focused_view_)
     focused_view_->Blur();
   focused_view_ = view;
