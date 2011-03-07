@@ -1444,3 +1444,15 @@
    fun:-[NSApplication run]
    fun:_ZN4base24MessagePumpNSApplication5DoRunEPNS_11MessagePump8DelegateE
 }
+{
+   bug_75136a
+   Memcheck:Addr1
+   ...
+   fun:CFBundlePreflightExecutable
+}
+{
+   bug_75136b
+   Memcheck:Addr4
+   ...
+   fun:CFBundlePreflightExecutable
+}
