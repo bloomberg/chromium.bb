@@ -268,6 +268,9 @@ class ResourceDispatcherHost : public net::URLRequest::Delegate {
   static bool is_prefetch_enabled();
   static void set_is_prefetch_enabled(bool value);
 
+  void AddPrerenderChildRoutePair(int child_id, int route_id);
+  void RemovePrerenderChildRoutePair(int child_id, int route_id);
+
  private:
   FRIEND_TEST_ALL_PREFIXES(ResourceDispatcherHostTest,
                            TestBlockedRequestsProcessDies);
@@ -401,6 +404,8 @@ class ResourceDispatcherHost : public net::URLRequest::Delegate {
                         const GURL& new_first_party_for_cookies);
   void OnReleaseDownloadedFile(int request_id);
 
+  bool IsPrerenderingChildRoutePair(int child_id, int route_id) const;
+
   ResourceHandler* CreateSafeBrowsingResourceHandler(
       ResourceHandler* handler, int child_id, int route_id,
       ResourceType::Type resource_type);
@@ -502,6 +507,9 @@ class ResourceDispatcherHost : public net::URLRequest::Delegate {
   ResourceMessageFilter* filter_;
 
   static bool is_prefetch_enabled_;
+  typedef std::set<std::pair<int, int> > PrerenderChildRouteIdPairs;
+  PrerenderChildRouteIdPairs prerender_child_route_pairs_;
+
 
   DISALLOW_COPY_AND_ASSIGN(ResourceDispatcherHost);
 };

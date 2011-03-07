@@ -5,8 +5,10 @@
 #include "chrome/browser/prerender/prerender_contents.h"
 
 #include "base/process_util.h"
+#include "base/task.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/background_contents_service.h"
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/prerender/prerender_final_status.h"
 #include "chrome/browser/prerender/prerender_manager.h"
 #include "chrome/browser/profiles/profile.h"
@@ -19,6 +21,7 @@
 #include "chrome/common/url_constants.h"
 #include "chrome/common/view_types.h"
 #include "content/browser/browsing_instance.h"
+#include "content/browser/renderer_host/resource_dispatcher_host.h"
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/site_instance.h"
 #include "ui/gfx/rect.h"
@@ -28,6 +31,18 @@
 #endif
 
 namespace prerender {
+
+void AddChildRoutePair(ResourceDispatcherHost* rdh,
+                       int child_id, int route_id) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  rdh->AddPrerenderChildRoutePair(child_id, route_id);
+}
+
+void RemoveChildRoutePair(ResourceDispatcherHost* rdh,
+                          int child_id, int route_id) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  rdh->RemovePrerenderChildRoutePair(child_id, route_id);
+}
 
 class PrerenderContentsFactoryImpl : public PrerenderContents::Factory {
  public:
@@ -78,6 +93,18 @@ void PrerenderContents::StartPrerendering() {
   render_view_host_->WasHidden();
   render_view_host_->AllowScriptToClose(true);
 
+  // Register this with the ResourceDispatcherHost as a prerender
+  // RenderViewHost. This must be done before the Navigate message to catch all
+  // resource requests, but as it is on the same thread as the Navigate message
+  // (IO) there is no race condition.
+  int process_id = render_view_host_->process()->id();
+  int view_id = render_view_host_->routing_id();
+  ResourceDispatcherHost* rdh = g_browser_process->resource_dispatcher_host();
+  BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
+                          NewRunnableFunction(&AddChildRoutePair, rdh,
+                                              process_id, view_id));
+
+
   // Close ourselves when the application is shutting down.
   registrar_.Add(this, NotificationType::APP_TERMINATING,
                  NotificationService::AllSources());
@@ -109,6 +136,7 @@ void PrerenderContents::StartPrerendering() {
   params.transition = PageTransition::LINK;
   params.navigation_type = ViewMsg_Navigate_Params::PRERENDER;
   params.referrer = referrer_;
+
   render_view_host_->Navigate(params);
 }
 
@@ -130,6 +158,12 @@ PrerenderContents::~PrerenderContents() {
   if (!render_view_host_)   // Will be null for unit tests.
     return;
 
+  int process_id = render_view_host_->process()->id();
+  int view_id = render_view_host_->routing_id();
+  ResourceDispatcherHost* rdh = g_browser_process->resource_dispatcher_host();
+  BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
+                          NewRunnableFunction(&RemoveChildRoutePair, rdh,
+                                              process_id, view_id));
   render_view_host_->Shutdown();  // deletes render_view_host
 }
 

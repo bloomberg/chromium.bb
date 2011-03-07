@@ -440,6 +440,10 @@ void ResourceDispatcherHost::BeginRequest(
   } else if (request_data.resource_type == ResourceType::PREFETCH) {
     load_flags |= net::LOAD_PREFETCH;
   }
+
+  if (IsPrerenderingChildRoutePair(child_id, route_id))
+    load_flags |= net::LOAD_PRERENDER;
+
   // Raw headers are sensitive, as they inclide Cookie/Set-Cookie, so only
   // allow requesting them if requestor has ReadRawCookies permission.
   if ((load_flags & net::LOAD_REPORT_RAW_HEADERS)
@@ -1921,6 +1925,29 @@ net::RequestPriority ResourceDispatcherHost::DetermineRequestPriority(
       return net::LOW;
   }
 }
+
+void ResourceDispatcherHost::AddPrerenderChildRoutePair(int child_id,
+                                                        int route_id) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK(!IsPrerenderingChildRoutePair(child_id, route_id));
+  prerender_child_route_pairs_.insert(std::make_pair(child_id, route_id));
+}
+
+void ResourceDispatcherHost::RemovePrerenderChildRoutePair(int child_id,
+                                                           int route_id) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK(IsPrerenderingChildRoutePair(child_id, route_id));
+  prerender_child_route_pairs_.erase(std::make_pair(child_id, route_id));
+}
+
+bool ResourceDispatcherHost::IsPrerenderingChildRoutePair(int child_id,
+                                                          int route_id) const {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  std::pair<int, int> c_r_pair = std::make_pair(child_id, route_id);
+  return (prerender_child_route_pairs_.find(c_r_pair) !=
+            prerender_child_route_pairs_.end());
+}
+
 
 // static
 bool ResourceDispatcherHost::is_prefetch_enabled() {
