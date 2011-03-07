@@ -407,8 +407,9 @@ IN_PROC_BROWSER_TEST_F(ExtensionCrashRecoveryTest,
   CheckExtensionConsistency(size_before);
 }
 
+// Marked as flaky due to http://crbug.com/75134
 IN_PROC_BROWSER_TEST_F(ExtensionCrashRecoveryTest,
-                       TwoExtensionsReloadIndependently) {
+                       FLAKY_TwoExtensionsReloadIndependently) {
   const size_t size_before = GetExtensionService()->extensions()->size();
   LoadTestExtension();
   LoadSecondExtension();
