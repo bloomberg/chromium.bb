@@ -92,33 +92,33 @@ TEST(AutoFillAddressModelTest, CopyModelToProfile) {
   [model copyModelToProfile:&profile];
 
   EXPECT_EQ(ASCIIToUTF16("MarionX"),
-            profile.GetFieldText(AutoFillType(NAME_FIRST)));
+            profile.GetFieldText(AutofillType(NAME_FIRST)));
   EXPECT_EQ(ASCIIToUTF16("MitchellX"),
-            profile.GetFieldText(AutoFillType(NAME_MIDDLE)));
+            profile.GetFieldText(AutofillType(NAME_MIDDLE)));
   EXPECT_EQ(ASCIIToUTF16("MorrisonX"),
-            profile.GetFieldText(AutoFillType(NAME_LAST)));
+            profile.GetFieldText(AutofillType(NAME_LAST)));
   EXPECT_EQ(ASCIIToUTF16("MarionX MitchellX MorrisonX"),
-            profile.GetFieldText(AutoFillType(NAME_FULL)));
+            profile.GetFieldText(AutofillType(NAME_FULL)));
   EXPECT_EQ(ASCIIToUTF16("trigger@me.xyz"),
-            profile.GetFieldText(AutoFillType(EMAIL_ADDRESS)));
+            profile.GetFieldText(AutofillType(EMAIL_ADDRESS)));
   EXPECT_EQ(ASCIIToUTF16("FoxX"),
-            profile.GetFieldText(AutoFillType(COMPANY_NAME)));
+            profile.GetFieldText(AutofillType(COMPANY_NAME)));
   EXPECT_EQ(ASCIIToUTF16("123 Xoo St."),
-            profile.GetFieldText(AutoFillType(ADDRESS_HOME_LINE1)));
+            profile.GetFieldText(AutofillType(ADDRESS_HOME_LINE1)));
   EXPECT_EQ(ASCIIToUTF16("unit 5X"),
-            profile.GetFieldText(AutoFillType(ADDRESS_HOME_LINE2)));
+            profile.GetFieldText(AutofillType(ADDRESS_HOME_LINE2)));
   EXPECT_EQ(ASCIIToUTF16("Seattle"),
-            profile.GetFieldText(AutoFillType(ADDRESS_HOME_CITY)));
+            profile.GetFieldText(AutofillType(ADDRESS_HOME_CITY)));
   EXPECT_EQ(ASCIIToUTF16("WA"),
-            profile.GetFieldText(AutoFillType(ADDRESS_HOME_STATE)));
+            profile.GetFieldText(AutofillType(ADDRESS_HOME_STATE)));
   EXPECT_EQ(ASCIIToUTF16("81601"),
-            profile.GetFieldText(AutoFillType(ADDRESS_HOME_ZIP)));
+            profile.GetFieldText(AutofillType(ADDRESS_HOME_ZIP)));
   EXPECT_EQ(ASCIIToUTF16("Canada"),
-            profile.GetFieldText(AutoFillType(ADDRESS_HOME_COUNTRY)));
+            profile.GetFieldText(AutofillType(ADDRESS_HOME_COUNTRY)));
   EXPECT_EQ(ASCIIToUTF16("23346678910"),
-            profile.GetFieldText(AutoFillType(PHONE_HOME_WHOLE_NUMBER)));
+            profile.GetFieldText(AutofillType(PHONE_HOME_WHOLE_NUMBER)));
   EXPECT_EQ(ASCIIToUTF16("12988654321"),
-            profile.GetFieldText(AutoFillType(PHONE_FAX_WHOLE_NUMBER)));
+            profile.GetFieldText(AutofillType(PHONE_FAX_WHOLE_NUMBER)));
 }
 
 }  // namespace

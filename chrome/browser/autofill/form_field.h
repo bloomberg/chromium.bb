@@ -70,7 +70,7 @@ class FormField {
  public:
   virtual ~FormField() {}
 
-  // Associates the available AutoFillTypes of a FormField into
+  // Associates the available AutofillTypes of a FormField into
   // |field_type_map|.
   virtual bool GetFieldInfo(FieldTypeMap* field_type_map) const = 0;
 
@@ -116,7 +116,7 @@ class FormField {
 
   // Adds an association between a field and a type to |field_type_map|.
   static bool Add(FieldTypeMap* field_type_map, AutofillField* field,
-                  const AutoFillType& type);
+                  const AutofillType& type);
 
  protected:
   // Only derived classes may instantiate.

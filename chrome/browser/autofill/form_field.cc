@@ -66,7 +66,7 @@ const char kEcmlCardExpireYear[] = "ecom_payment_card_expdate_year";
 class EmailField : public FormField {
  public:
   virtual bool GetFieldInfo(FieldTypeMap* field_type_map) const {
-    bool ok = Add(field_type_map, field_, AutoFillType(EMAIL_ADDRESS));
+    bool ok = Add(field_type_map, field_, AutofillType(EMAIL_ADDRESS));
     DCHECK(ok);
     return true;
   }
@@ -238,7 +238,7 @@ bool FormField::ParseEmpty(std::vector<AutofillField*>::const_iterator* iter) {
 
 // static
 bool FormField::Add(FieldTypeMap* field_type_map, AutofillField* field,
-               const AutoFillType& type) {
+               const AutofillType& type) {
   // Several fields are optional.
   if (field)
     field_type_map->insert(make_pair(field->unique_name(), type.field_type()));

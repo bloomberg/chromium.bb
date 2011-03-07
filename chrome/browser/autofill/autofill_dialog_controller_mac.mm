@@ -1,28 +1,28 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "chrome/browser/autofill/autofill_dialog_controller_mac.h"
 #include "base/lazy_instance.h"
 #include "base/mac/mac_util.h"
 #include "base/sys_string_conversions.h"
+#import "chrome/browser/autofill/autofill-inl.h"
 #import "chrome/browser/autofill/autofill_address_model_mac.h"
 #import "chrome/browser/autofill/autofill_address_sheet_controller_mac.h"
 #import "chrome/browser/autofill/autofill_credit_card_model_mac.h"
 #import "chrome/browser/autofill/autofill_credit_card_sheet_controller_mac.h"
-#import "chrome/browser/autofill/autofill-inl.h"
+#import "chrome/browser/autofill/autofill_dialog_controller_mac.h"
 #import "chrome/browser/autofill/personal_data_manager.h"
 #include "chrome/browser/browser_process.h"
-#import "chrome/browser/ui/cocoa/window_size_autosaver.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
+#import "chrome/browser/ui/cocoa/window_size_autosaver.h"
 #include "chrome/common/notification_details.h"
 #include "chrome/common/notification_observer.h"
 #include "chrome/common/pref_names.h"
-#include "grit/generated_resources.h"
 #include "grit/app_resources.h"
+#include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -920,9 +920,9 @@ class PreferenceObserver : public NotificationObserver {
     // have explicit validation method.  More robust validation is needed as
     // well eventually.
     AutoFillProfile profile;
-    profile.SetInfo(AutoFillType(PHONE_HOME_WHOLE_NUMBER),
+    profile.SetInfo(AutofillType(PHONE_HOME_WHOLE_NUMBER),
                     base::SysNSStringToUTF16(string));
-    if (profile.GetFieldText(AutoFillType(PHONE_HOME_WHOLE_NUMBER)).empty()) {
+    if (profile.GetFieldText(AutofillType(PHONE_HOME_WHOLE_NUMBER)).empty()) {
       image = rb.GetNativeImageNamed(IDR_INPUT_ALERT);
       DCHECK(image);
       return image;

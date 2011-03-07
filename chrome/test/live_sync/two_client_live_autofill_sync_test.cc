@@ -126,7 +126,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientLiveAutofillSyncTest,
   ASSERT_EQ(1U, GetAllProfiles(0).size());
 
   // Client0 updates a profile.
-  UpdateProfile(0, GetAllProfiles(0)[0]->guid(), AutoFillType(NAME_FIRST),
+  UpdateProfile(0, GetAllProfiles(0)[0]->guid(), AutofillType(NAME_FIRST),
       ASCIIToUTF16("Bart"));
   ASSERT_TRUE(GetClient(0)->AwaitMutualSyncCycleCompletion(GetClient(1)));
   ASSERT_TRUE(ProfilesMatch(0,1));
@@ -158,7 +158,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientLiveAutofillSyncTest, SameProfileWithConflict) {
       CreateAutofillProfile(LiveAutofillSyncTest::PROFILE_HOMER);
   AutoFillProfile profile1 =
       CreateAutofillProfile(LiveAutofillSyncTest::PROFILE_HOMER);
-  profile1.SetInfo(AutoFillType(PHONE_FAX_WHOLE_NUMBER),
+  profile1.SetInfo(AutofillType(PHONE_FAX_WHOLE_NUMBER),
                    ASCIIToUTF16("1234567890"));
 
   AddProfile(0, profile0);
@@ -238,9 +238,9 @@ IN_PROC_BROWSER_TEST_F(TwoClientLiveAutofillSyncTest, UpdateFields) {
   ASSERT_TRUE(ProfilesMatch(0,1));
   ASSERT_EQ(1U, GetAllProfiles(0).size());
 
-  UpdateProfile(0, GetAllProfiles(0)[0]->guid(), AutoFillType(NAME_FIRST),
+  UpdateProfile(0, GetAllProfiles(0)[0]->guid(), AutofillType(NAME_FIRST),
       ASCIIToUTF16("Lisa"));
-  UpdateProfile(0, GetAllProfiles(0)[0]->guid(), AutoFillType(EMAIL_ADDRESS),
+  UpdateProfile(0, GetAllProfiles(0)[0]->guid(), AutofillType(EMAIL_ADDRESS),
       ASCIIToUTF16("grrrl@TV.com"));
   ASSERT_TRUE(GetClient(0)->AwaitMutualSyncCycleCompletion(GetClient(1)));
   ASSERT_TRUE(ProfilesMatch(0,1));
@@ -255,9 +255,9 @@ IN_PROC_BROWSER_TEST_F(TwoClientLiveAutofillSyncTest, ConflictingFields) {
   ASSERT_TRUE(GetClient(0)->AwaitMutualSyncCycleCompletion(GetClient(1)));
   ASSERT_TRUE(ProfilesMatch(0,1));
   ASSERT_EQ(1U, GetAllProfiles(0).size());
-  UpdateProfile(0, GetAllProfiles(0)[0]->guid(), AutoFillType(NAME_FIRST),
+  UpdateProfile(0, GetAllProfiles(0)[0]->guid(), AutofillType(NAME_FIRST),
       ASCIIToUTF16("Lisa"));
-  UpdateProfile(1, GetAllProfiles(1)[0]->guid(), AutoFillType(NAME_FIRST),
+  UpdateProfile(1, GetAllProfiles(1)[0]->guid(), AutofillType(NAME_FIRST),
       ASCIIToUTF16("Bart"));
   ASSERT_TRUE(AwaitQuiescence());
   ASSERT_TRUE(ProfilesMatch(0,1));

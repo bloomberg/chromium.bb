@@ -54,14 +54,14 @@ TEST(AutoFillCreditCardModelTest, CopyModelToCreditCard) {
   [model copyModelToCreditCard:&credit_card];
 
   EXPECT_EQ(ASCIIToUTF16("John DillingerX"),
-            credit_card.GetFieldText(AutoFillType(CREDIT_CARD_NAME)));
+            credit_card.GetFieldText(AutofillType(CREDIT_CARD_NAME)));
   EXPECT_EQ(ASCIIToUTF16("223456789012"),
-            credit_card.GetFieldText(AutoFillType(CREDIT_CARD_NUMBER)));
+            credit_card.GetFieldText(AutofillType(CREDIT_CARD_NUMBER)));
   EXPECT_EQ(ASCIIToUTF16("11"),
-            credit_card.GetFieldText(AutoFillType(CREDIT_CARD_EXP_MONTH)));
+            credit_card.GetFieldText(AutofillType(CREDIT_CARD_EXP_MONTH)));
   EXPECT_EQ(ASCIIToUTF16("2011"),
             credit_card.GetFieldText(
-                AutoFillType(CREDIT_CARD_EXP_4_DIGIT_YEAR)));
+                AutofillType(CREDIT_CARD_EXP_4_DIGIT_YEAR)));
 }
 
 }  // namespace

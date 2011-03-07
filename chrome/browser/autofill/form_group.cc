@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -8,7 +8,7 @@
 
 #include <iterator>
 
-string16 FormGroup::GetPreviewText(const AutoFillType& type) const {
+string16 FormGroup::GetPreviewText(const AutofillType& type) const {
   return GetFieldText(type);
 }
 
@@ -35,7 +35,7 @@ bool FormGroup::IsSubsetOf(const FormGroup& form_group) const {
 
   for (FieldTypeSet::const_iterator iter = types.begin(); iter != types.end();
        ++iter) {
-    AutoFillType type(*iter);
+    AutofillType type(*iter);
     if (GetFieldText(type) != form_group.GetFieldText(type))
       return false;
   }
@@ -58,7 +58,7 @@ bool FormGroup::IntersectionOfTypesHasEqualValues(
 
   for (FieldTypeSet::const_iterator iter = intersection.begin();
        iter != intersection.end(); ++iter) {
-    AutoFillType type(*iter);
+    AutofillType type(*iter);
     if (GetFieldText(type) != form_group.GetFieldText(type))
       return false;
   }
@@ -76,7 +76,7 @@ void FormGroup::MergeWith(const FormGroup& form_group) {
 
   for (FieldTypeSet::const_iterator iter = intersection.begin();
        iter != intersection.end(); ++iter) {
-    AutoFillType type(*iter);
+    AutofillType type(*iter);
     SetInfo(type, form_group.GetFieldText(type));
   }
 }
@@ -86,7 +86,7 @@ void FormGroup::OverwriteWith(const FormGroup& form_group) {
   form_group.GetAvailableFieldTypes(&a);
 
   for (FieldTypeSet::const_iterator iter = a.begin(); iter != a.end(); ++iter) {
-    AutoFillType type(*iter);
+    AutofillType type(*iter);
     SetInfo(type, form_group.GetFieldText(type));
   }
 }

@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -111,14 +111,14 @@ void AuxiliaryProfilesImpl::GetAddressBookNames(
   NSString* lastName = [me valueForProperty:kABLastNameProperty];
   NSString* companyName = [me valueForProperty:kABOrganizationProperty];
 
-  profile->SetInfo(AutoFillType(NAME_FIRST),
+  profile->SetInfo(AutofillType(NAME_FIRST),
                    base::SysNSStringToUTF16(firstName));
-  profile->SetInfo(AutoFillType(NAME_MIDDLE),
+  profile->SetInfo(AutofillType(NAME_MIDDLE),
                    base::SysNSStringToUTF16(middleName));
-  profile->SetInfo(AutoFillType(NAME_LAST),
+  profile->SetInfo(AutofillType(NAME_LAST),
                    base::SysNSStringToUTF16(lastName));
   if ([addressLabelRaw isEqualToString:kABAddressWorkLabel]) {
-    profile->SetInfo(AutoFillType(COMPANY_NAME),
+    profile->SetInfo(AutofillType(COMPANY_NAME),
                      base::SysNSStringToUTF16(companyName));
   }
 }
@@ -146,30 +146,30 @@ void AuxiliaryProfilesImpl::GetAddressBookAddresses(
       NSString* addressField2 =
           [[chunks subarrayWithRange:NSMakeRange(1, [chunks count] - 1)]
               componentsJoinedByString:separator];
-      profile->SetInfo(AutoFillType(ADDRESS_HOME_LINE1),
+      profile->SetInfo(AutofillType(ADDRESS_HOME_LINE1),
                        base::SysNSStringToUTF16(addressField1));
-      profile->SetInfo(AutoFillType(ADDRESS_HOME_LINE2),
+      profile->SetInfo(AutofillType(ADDRESS_HOME_LINE2),
                        base::SysNSStringToUTF16(addressField2));
     } else {
-      profile->SetInfo(AutoFillType(ADDRESS_HOME_LINE1),
+      profile->SetInfo(AutofillType(ADDRESS_HOME_LINE1),
                        base::SysNSStringToUTF16(addressField));
     }
   }
 
   if (NSString* city = [address objectForKey:kABAddressCityKey]) {
-    profile->SetInfo(AutoFillType(ADDRESS_HOME_CITY),
+    profile->SetInfo(AutofillType(ADDRESS_HOME_CITY),
                      base::SysNSStringToUTF16(city));
   }
   if (NSString* state = [address objectForKey:kABAddressStateKey]) {
-    profile->SetInfo(AutoFillType(ADDRESS_HOME_STATE),
+    profile->SetInfo(AutofillType(ADDRESS_HOME_STATE),
                      base::SysNSStringToUTF16(state));
   }
   if (NSString* zip = [address objectForKey:kABAddressZIPKey]) {
-    profile->SetInfo(AutoFillType(ADDRESS_HOME_ZIP),
+    profile->SetInfo(AutofillType(ADDRESS_HOME_ZIP),
                      base::SysNSStringToUTF16(zip));
   }
   if (NSString* country = [address objectForKey:kABAddressCountryKey]) {
-    profile->SetInfo(AutoFillType(ADDRESS_HOME_COUNTRY),
+    profile->SetInfo(AutofillType(ADDRESS_HOME_COUNTRY),
                      base::SysNSStringToUTF16(country));
   }
 }
@@ -191,7 +191,7 @@ void AuxiliaryProfilesImpl::GetAddressBookEmail(
       break;
     }
   }
-  profile->SetInfo(AutoFillType(EMAIL_ADDRESS),
+  profile->SetInfo(AutofillType(EMAIL_ADDRESS),
                    base::SysNSStringToUTF16(emailAddress));
 }
 
@@ -218,36 +218,36 @@ void AuxiliaryProfilesImpl::GetAddressBookPhoneNumbers(
           [phoneNumbers valueAtIndex:reverseK]);
       PhoneNumber::ParsePhoneNumber(
           homePhone, &number, &city_code, &country_code);
-      profile->SetInfo(AutoFillType(PHONE_HOME_NUMBER), number);
-      profile->SetInfo(AutoFillType(PHONE_HOME_CITY_CODE), city_code);
-      profile->SetInfo(AutoFillType(PHONE_HOME_COUNTRY_CODE), country_code);
+      profile->SetInfo(AutofillType(PHONE_HOME_NUMBER), number);
+      profile->SetInfo(AutofillType(PHONE_HOME_CITY_CODE), city_code);
+      profile->SetInfo(AutofillType(PHONE_HOME_COUNTRY_CODE), country_code);
     } else if ([addressLabelRaw isEqualToString:kABAddressHomeLabel] &&
                [phoneLabelRaw isEqualToString:kABPhoneHomeFAXLabel]) {
       string16 homeFax = base::SysNSStringToUTF16(
           [phoneNumbers valueAtIndex:reverseK]);
       PhoneNumber::ParsePhoneNumber(homeFax,
           &number, &city_code, &country_code);
-      profile->SetInfo(AutoFillType(PHONE_FAX_NUMBER), number);
-      profile->SetInfo(AutoFillType(PHONE_FAX_CITY_CODE), city_code);
-      profile->SetInfo(AutoFillType(PHONE_FAX_COUNTRY_CODE), country_code);
+      profile->SetInfo(AutofillType(PHONE_FAX_NUMBER), number);
+      profile->SetInfo(AutofillType(PHONE_FAX_CITY_CODE), city_code);
+      profile->SetInfo(AutofillType(PHONE_FAX_COUNTRY_CODE), country_code);
     } else if ([addressLabelRaw isEqualToString:kABAddressWorkLabel] &&
                [phoneLabelRaw isEqualToString:kABPhoneWorkLabel]) {
       string16 workPhone = base::SysNSStringToUTF16(
           [phoneNumbers valueAtIndex:reverseK]);
       PhoneNumber::ParsePhoneNumber(workPhone,
           &number, &city_code, &country_code);
-      profile->SetInfo(AutoFillType(PHONE_HOME_NUMBER), number);
-      profile->SetInfo(AutoFillType(PHONE_HOME_CITY_CODE), city_code);
-      profile->SetInfo(AutoFillType(PHONE_HOME_COUNTRY_CODE), country_code);
+      profile->SetInfo(AutofillType(PHONE_HOME_NUMBER), number);
+      profile->SetInfo(AutofillType(PHONE_HOME_CITY_CODE), city_code);
+      profile->SetInfo(AutofillType(PHONE_HOME_COUNTRY_CODE), country_code);
     } else if ([addressLabelRaw isEqualToString:kABAddressWorkLabel] &&
                [phoneLabelRaw isEqualToString:kABPhoneWorkFAXLabel]) {
       string16 workFax = base::SysNSStringToUTF16(
           [phoneNumbers valueAtIndex:reverseK]);
       PhoneNumber::ParsePhoneNumber(workFax,
           &number, &city_code, &country_code);
-      profile->SetInfo(AutoFillType(PHONE_FAX_NUMBER), number);
-      profile->SetInfo(AutoFillType(PHONE_FAX_CITY_CODE), city_code);
-      profile->SetInfo(AutoFillType(PHONE_FAX_COUNTRY_CODE), country_code);
+      profile->SetInfo(AutofillType(PHONE_FAX_NUMBER), number);
+      profile->SetInfo(AutofillType(PHONE_FAX_CITY_CODE), city_code);
+      profile->SetInfo(AutofillType(PHONE_FAX_COUNTRY_CODE), country_code);
     }
   }
 }

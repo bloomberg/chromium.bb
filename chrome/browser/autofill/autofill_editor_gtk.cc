@@ -7,15 +7,15 @@
 #include <gtk/gtk.h>
 
 #include "base/message_loop.h"
+#include "base/string_number_conversions.h"
 #include "base/string_util.h"
 #include "base/task.h"
 #include "base/time.h"
-#include "base/string_number_conversions.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/autofill/personal_data_manager.h"
 #include "chrome/browser/autofill/phone_number.h"
-#include "chrome/browser/ui/gtk/gtk_util.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/gtk/gtk_util.h"
 #include "grit/app_resources.h"
 #include "grit/generated_resources.h"
 #include "grit/locale_settings.h"
@@ -37,7 +37,7 @@ GtkWidget* CreateLabel(int label_id) {
 void SetEntryText(GtkWidget* entry, FormGroup* profile, _FieldType type) {
   gtk_entry_set_text(
       GTK_ENTRY(entry),
-      UTF16ToUTF8(profile->GetFieldText(AutoFillType(type))).c_str());
+      UTF16ToUTF8(profile->GetFieldText(AutofillType(type))).c_str());
 }
 
 // Returns the current value of |entry|.
@@ -47,7 +47,7 @@ string16 GetEntryText(GtkWidget* entry) {
 
 // Sets |form|'s field of type |type| to the text in |entry|.
 void SetFormValue(GtkWidget* entry, FormGroup* form, _FieldType type) {
-  form->SetInfo(AutoFillType(type), GetEntryText(entry));
+  form->SetInfo(AutofillType(type), GetEntryText(entry));
 }
 
 // Sets the number of characters to display in |combobox| to |width|.
@@ -428,15 +428,15 @@ void AutoFillProfileEditor::SetProfileValuesFromWidgets(
   string16 number, city_code, country_code;
   PhoneNumber::ParsePhoneNumber(
       GetEntryText(phone_), &number, &city_code, &country_code);
-  profile->SetInfo(AutoFillType(PHONE_HOME_COUNTRY_CODE), country_code);
-  profile->SetInfo(AutoFillType(PHONE_HOME_CITY_CODE), city_code);
-  profile->SetInfo(AutoFillType(PHONE_HOME_NUMBER), number);
+  profile->SetInfo(AutofillType(PHONE_HOME_COUNTRY_CODE), country_code);
+  profile->SetInfo(AutofillType(PHONE_HOME_CITY_CODE), city_code);
+  profile->SetInfo(AutofillType(PHONE_HOME_NUMBER), number);
 
   PhoneNumber::ParsePhoneNumber(
       GetEntryText(fax_), &number, &city_code, &country_code);
-  profile->SetInfo(AutoFillType(PHONE_FAX_COUNTRY_CODE), country_code);
-  profile->SetInfo(AutoFillType(PHONE_FAX_CITY_CODE), city_code);
-  profile->SetInfo(AutoFillType(PHONE_FAX_NUMBER), number);
+  profile->SetInfo(AutofillType(PHONE_FAX_COUNTRY_CODE), country_code);
+  profile->SetInfo(AutofillType(PHONE_FAX_CITY_CODE), city_code);
+  profile->SetInfo(AutofillType(PHONE_FAX_NUMBER), number);
 }
 
 void AutoFillProfileEditor::UpdatePhoneImage(GtkWidget* entry,
@@ -714,7 +714,7 @@ void AutoFillCreditCardEditor::SetWidgetValues(CreditCard* card) {
                      UTF16ToUTF8(card->ObfuscatedNumber()).c_str());
 
   int month;
-  base::StringToInt(card->GetFieldText(AutoFillType(CREDIT_CARD_EXP_MONTH)),
+  base::StringToInt(card->GetFieldText(AutofillType(CREDIT_CARD_EXP_MONTH)),
                     &month);
   if (month >= 1 && month <= 12) {
     gtk_combo_box_set_active(GTK_COMBO_BOX(month_), month - 1);
@@ -724,7 +724,7 @@ void AutoFillCreditCardEditor::SetWidgetValues(CreditCard* card) {
 
   int year;
   if (!base::StringToInt(
-          card->GetFieldText(AutoFillType(CREDIT_CARD_EXP_4_DIGIT_YEAR)),
+          card->GetFieldText(AutofillType(CREDIT_CARD_EXP_4_DIGIT_YEAR)),
           &year)) {
     NOTREACHED();
   }
@@ -782,14 +782,14 @@ void AutoFillCreditCardEditor::SetCreditCardValuesFromWidgets(
       gtk_combo_box_get_active(GTK_COMBO_BOX(month_));
   if (selected_month_index == -1)
     selected_month_index = 0;
-  card->SetInfo(AutoFillType(CREDIT_CARD_EXP_MONTH),
+  card->SetInfo(AutofillType(CREDIT_CARD_EXP_MONTH),
                 base::IntToString16(selected_month_index + 1));
 
   int selected_year_index =
       gtk_combo_box_get_active(GTK_COMBO_BOX(year_));
   if (selected_year_index == -1)
     selected_year_index = 0;
-  card->SetInfo(AutoFillType(CREDIT_CARD_EXP_4_DIGIT_YEAR),
+  card->SetInfo(AutofillType(CREDIT_CARD_EXP_4_DIGIT_YEAR),
                 base::IntToString16(selected_year_index + base_year_));
 }
 

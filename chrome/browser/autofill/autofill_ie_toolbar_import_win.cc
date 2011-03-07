@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -137,7 +137,7 @@ bool ImportSingleProfile(FormGroup* profile,
       if (it->second == CREDIT_CARD_NUMBER) {
         field_value = DecryptCCNumber(field_value);
       }
-      profile->SetInfo(AutoFillType(it->second), field_value);
+      profile->SetInfo(AutofillType(it->second), field_value);
     }
   }
   return has_non_empty_fields;
@@ -209,14 +209,14 @@ bool ImportCurrentUserProfiles(std::vector<AutoFillProfile>* profiles,
     if (ImportSingleProfile(&profile, &key, reg_to_field)) {
       // Combine phones into whole phone #.
       string16 phone;
-      phone = profile.GetFieldText(AutoFillType(PHONE_HOME_COUNTRY_CODE));
-      phone.append(profile.GetFieldText(AutoFillType(PHONE_HOME_CITY_CODE)));
-      phone.append(profile.GetFieldText(AutoFillType(PHONE_HOME_NUMBER)));
-      profile.SetInfo(AutoFillType(PHONE_HOME_WHOLE_NUMBER), phone);
-      phone = profile.GetFieldText(AutoFillType(PHONE_FAX_COUNTRY_CODE));
-      phone.append(profile.GetFieldText(AutoFillType(PHONE_FAX_CITY_CODE)));
-      phone.append(profile.GetFieldText(AutoFillType(PHONE_FAX_NUMBER)));
-      profile.SetInfo(AutoFillType(PHONE_FAX_WHOLE_NUMBER), phone);
+      phone = profile.GetFieldText(AutofillType(PHONE_HOME_COUNTRY_CODE));
+      phone.append(profile.GetFieldText(AutofillType(PHONE_HOME_CITY_CODE)));
+      phone.append(profile.GetFieldText(AutofillType(PHONE_HOME_NUMBER)));
+      profile.SetInfo(AutofillType(PHONE_HOME_WHOLE_NUMBER), phone);
+      phone = profile.GetFieldText(AutofillType(PHONE_FAX_COUNTRY_CODE));
+      phone.append(profile.GetFieldText(AutofillType(PHONE_FAX_CITY_CODE)));
+      phone.append(profile.GetFieldText(AutofillType(PHONE_FAX_NUMBER)));
+      profile.SetInfo(AutofillType(PHONE_FAX_WHOLE_NUMBER), phone);
       profiles->push_back(profile);
     }
   }
@@ -240,7 +240,7 @@ bool ImportCurrentUserProfiles(std::vector<AutoFillProfile>* profiles,
       CreditCard credit_card;
       if (ImportSingleProfile(&credit_card, &key, reg_to_field)) {
         string16 cc_number = credit_card.GetFieldText(
-            AutoFillType(CREDIT_CARD_NUMBER));
+            AutofillType(CREDIT_CARD_NUMBER));
         if (!cc_number.empty())
           credit_cards->push_back(credit_card);
       }

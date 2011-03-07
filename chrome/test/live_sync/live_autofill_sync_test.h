@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -66,7 +66,7 @@ class LiveAutofillSyncTest : public LiveSyncTest {
   // to |type| and |value|.
   void UpdateProfile(int profile,
                      const std::string& guid,
-                     const AutoFillType& type,
+                     const AutofillType& type,
                      const string16& value);
 
   // Gets all the Autofill profiles in the PersonalDataManager of sync profile

@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -255,7 +255,7 @@ TEST_F(AutofillProfileModelAssociatorTest, TestNeedToAddNativeProfile) {
 
   EXPECT_EQ(bundle.new_profiles.size(), (unsigned int)1);
   EXPECT_EQ(
-      bundle.new_profiles.front()->GetFieldText(AutoFillType(NAME_FIRST)),
+      bundle.new_profiles.front()->GetFieldText(AutofillType(NAME_FIRST)),
       UTF8ToUTF16(first_name));
 }
 

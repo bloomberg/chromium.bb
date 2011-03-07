@@ -851,7 +851,7 @@ void AutoFillProfilesView::EditableSetViewContents::ContentsChanged(
         if (!UpdateContentsPhoneViews(address_fields_[field].text_field,
                                       sender, new_contents)) {
           temporary_info_.address.SetInfo(
-              AutoFillType(address_fields_[field].type), new_contents);
+              AutofillType(address_fields_[field].type), new_contents);
         }
         UpdateButtons();
         return;
@@ -864,7 +864,7 @@ void AutoFillProfilesView::EditableSetViewContents::ContentsChanged(
         UpdateContentsPhoneViews(address_fields_[field].text_field,
                                  sender, new_contents);
         temporary_info_.credit_card.SetInfo(
-            AutoFillType(credit_card_fields_[field].type), new_contents);
+            AutofillType(credit_card_fields_[field].type), new_contents);
         UpdateButtons();
         return;
       }
@@ -893,7 +893,7 @@ void AutoFillProfilesView::EditableSetViewContents::ItemChanged(
       NOTREACHED();
     } else {
       temporary_info_.credit_card.SetInfo(
-          AutoFillType(CREDIT_CARD_EXP_MONTH),
+          AutofillType(CREDIT_CARD_EXP_MONTH),
           UTF16ToWideHack(combo_box_model_month_->GetItemAt(new_index)));
     }
   } else if (combo_box == combo_box_year_) {
@@ -901,7 +901,7 @@ void AutoFillProfilesView::EditableSetViewContents::ItemChanged(
       NOTREACHED();
     } else {
       temporary_info_.credit_card.SetInfo(
-          AutoFillType(CREDIT_CARD_EXP_4_DIGIT_YEAR),
+          AutofillType(CREDIT_CARD_EXP_4_DIGIT_YEAR),
           UTF16ToWideHack(combo_box_model_year_->GetItemAt(new_index)));
     }
   } else {
@@ -922,7 +922,7 @@ void AutoFillProfilesView::EditableSetViewContents::InitAddressFields(
     text_fields_[address_fields_[field].text_field]->SetController(this);
     text_fields_[address_fields_[field].text_field]->SetText(
         temporary_info_.address.GetFieldText(
-        AutoFillType(address_fields_[field].type)));
+        AutofillType(address_fields_[field].type)));
   }
 
   layout->AddPaddingRow(0, views::kRelatedControlVerticalSpacing);
@@ -1036,12 +1036,12 @@ void AutoFillProfilesView::EditableSetViewContents::InitCreditCardFields(
     string16 field_text;
     if (credit_card_fields_[field].text_field == TEXT_CC_NUMBER) {
       field_text = temporary_info_.credit_card.GetFieldText(
-          AutoFillType(credit_card_fields_[field].type));
+          AutofillType(credit_card_fields_[field].type));
       if (!field_text.empty())
         field_text = temporary_info_.credit_card.ObfuscatedNumber();
     } else {
       field_text = temporary_info_.credit_card.GetFieldText(
-          AutoFillType(credit_card_fields_[field].type));
+          AutofillType(credit_card_fields_[field].type));
     }
     text_fields_[credit_card_fields_[field].text_field]->SetText(field_text);
   }
@@ -1071,14 +1071,14 @@ void AutoFillProfilesView::EditableSetViewContents::InitCreditCardFields(
   combo_box_month_->set_listener(this);
   string16 field_text;
   field_text = temporary_info_.credit_card.GetFieldText(
-       AutoFillType(CREDIT_CARD_EXP_MONTH));
+       AutofillType(CREDIT_CARD_EXP_MONTH));
   combo_box_month_->SetSelectedItem(
       combo_box_model_month_->GetIndex(field_text));
 
   combo_box_year_ = new views::Combobox(combo_box_model_year_.get());
   combo_box_year_->set_listener(this);
   field_text = temporary_info_.credit_card.GetFieldText(
-      AutoFillType(CREDIT_CARD_EXP_4_DIGIT_YEAR));
+      AutofillType(CREDIT_CARD_EXP_4_DIGIT_YEAR));
   combo_box_year_->SetSelectedItem(combo_box_model_year_->GetIndex(field_text));
 
   layout->StartRow(0, double_column_ccexpiration_);
@@ -1193,13 +1193,13 @@ bool AutoFillProfilesView::EditableSetViewContents::UpdateContentsPhoneViews(
       string16 number, city, country;
       PhoneNumber::ParsePhoneNumber(new_contents, &number, &city, &country);
       temporary_info_.address.SetInfo(
-          AutoFillType(field == TEXT_PHONE_PHONE ? PHONE_HOME_COUNTRY_CODE :
+          AutofillType(field == TEXT_PHONE_PHONE ? PHONE_HOME_COUNTRY_CODE :
                        PHONE_FAX_COUNTRY_CODE), country);
       temporary_info_.address.SetInfo(
-          AutoFillType(field == TEXT_PHONE_PHONE ? PHONE_HOME_CITY_CODE :
+          AutofillType(field == TEXT_PHONE_PHONE ? PHONE_HOME_CITY_CODE :
                        PHONE_FAX_CITY_CODE), city);
       temporary_info_.address.SetInfo(
-          AutoFillType(field == TEXT_PHONE_PHONE ? PHONE_HOME_NUMBER :
+          AutofillType(field == TEXT_PHONE_PHONE ? PHONE_HOME_NUMBER :
                        PHONE_FAX_NUMBER), number);
       return true;
     }

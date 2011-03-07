@@ -268,29 +268,29 @@ void AutoFillOptionsHandler::LoadAddressEditor(const ListValue* args) {
   DictionaryValue address;
   address.SetString("guid", profile->guid());
   address.SetString("fullName",
-                    profile->GetFieldText(AutoFillType(NAME_FULL)));
+                    profile->GetFieldText(AutofillType(NAME_FULL)));
   address.SetString("companyName",
-                    profile->GetFieldText(AutoFillType(COMPANY_NAME)));
+                    profile->GetFieldText(AutofillType(COMPANY_NAME)));
   address.SetString("addrLine1",
-                    profile->GetFieldText(AutoFillType(ADDRESS_HOME_LINE1)));
+                    profile->GetFieldText(AutofillType(ADDRESS_HOME_LINE1)));
   address.SetString("addrLine2",
-                    profile->GetFieldText(AutoFillType(ADDRESS_HOME_LINE2)));
+                    profile->GetFieldText(AutofillType(ADDRESS_HOME_LINE2)));
   address.SetString("city",
-                    profile->GetFieldText(AutoFillType(ADDRESS_HOME_CITY)));
+                    profile->GetFieldText(AutofillType(ADDRESS_HOME_CITY)));
   address.SetString("state",
-                    profile->GetFieldText(AutoFillType(ADDRESS_HOME_STATE)));
+                    profile->GetFieldText(AutofillType(ADDRESS_HOME_STATE)));
   address.SetString("postalCode",
-                    profile->GetFieldText(AutoFillType(ADDRESS_HOME_ZIP)));
+                    profile->GetFieldText(AutofillType(ADDRESS_HOME_ZIP)));
   address.SetString("country",
                     profile->CountryCode());
   address.SetString(
       "phone",
-      profile->GetFieldText(AutoFillType(PHONE_HOME_WHOLE_NUMBER)));
+      profile->GetFieldText(AutofillType(PHONE_HOME_WHOLE_NUMBER)));
   address.SetString(
       "fax",
-      profile->GetFieldText(AutoFillType(PHONE_FAX_WHOLE_NUMBER)));
+      profile->GetFieldText(AutofillType(PHONE_FAX_WHOLE_NUMBER)));
   address.SetString("email",
-                     profile->GetFieldText(AutoFillType(EMAIL_ADDRESS)));
+                     profile->GetFieldText(AutofillType(EMAIL_ADDRESS)));
 
   web_ui_->CallJavascriptFunction(L"AutoFillOptions.editAddress", address);
 }
@@ -318,18 +318,18 @@ void AutoFillOptionsHandler::LoadCreditCardEditor(const ListValue* args) {
   credit_card_data.SetString("guid", credit_card->guid());
   credit_card_data.SetString(
       "nameOnCard",
-      credit_card->GetFieldText(AutoFillType(CREDIT_CARD_NAME)));
+      credit_card->GetFieldText(AutofillType(CREDIT_CARD_NAME)));
   credit_card_data.SetString(
       "creditCardNumber",
-      credit_card->GetFieldText(AutoFillType(CREDIT_CARD_NUMBER)));
+      credit_card->GetFieldText(AutofillType(CREDIT_CARD_NUMBER)));
   credit_card_data.SetString("obfuscatedCardNumber",
                              credit_card->ObfuscatedNumber());
   credit_card_data.SetString(
       "expirationMonth",
-      credit_card->GetFieldText(AutoFillType(CREDIT_CARD_EXP_MONTH)));
+      credit_card->GetFieldText(AutofillType(CREDIT_CARD_EXP_MONTH)));
   credit_card_data.SetString(
       "expirationYear",
-      credit_card->GetFieldText(AutoFillType(CREDIT_CARD_EXP_4_DIGIT_YEAR)));
+      credit_card->GetFieldText(AutofillType(CREDIT_CARD_EXP_4_DIGIT_YEAR)));
 
   web_ui_->CallJavascriptFunction(L"AutoFillOptions.editCreditCard",
                                   credit_card_data);
@@ -350,27 +350,27 @@ void AutoFillOptionsHandler::SetAddress(const ListValue* args) {
   std::string country_code;
   string16 value;
   if (args->GetString(1, &value))
-    profile.SetInfo(AutoFillType(NAME_FULL), value);
+    profile.SetInfo(AutofillType(NAME_FULL), value);
   if (args->GetString(2, &value))
-    profile.SetInfo(AutoFillType(COMPANY_NAME), value);
+    profile.SetInfo(AutofillType(COMPANY_NAME), value);
   if (args->GetString(3, &value))
-    profile.SetInfo(AutoFillType(ADDRESS_HOME_LINE1), value);
+    profile.SetInfo(AutofillType(ADDRESS_HOME_LINE1), value);
   if (args->GetString(4, &value))
-    profile.SetInfo(AutoFillType(ADDRESS_HOME_LINE2), value);
+    profile.SetInfo(AutofillType(ADDRESS_HOME_LINE2), value);
   if (args->GetString(5, &value))
-    profile.SetInfo(AutoFillType(ADDRESS_HOME_CITY), value);
+    profile.SetInfo(AutofillType(ADDRESS_HOME_CITY), value);
   if (args->GetString(6, &value))
-    profile.SetInfo(AutoFillType(ADDRESS_HOME_STATE), value);
+    profile.SetInfo(AutofillType(ADDRESS_HOME_STATE), value);
   if (args->GetString(7, &value))
-    profile.SetInfo(AutoFillType(ADDRESS_HOME_ZIP), value);
+    profile.SetInfo(AutofillType(ADDRESS_HOME_ZIP), value);
   if (args->GetString(8, &country_code))
     profile.SetCountryCode(country_code);
   if (args->GetString(9, &value))
-    profile.SetInfo(AutoFillType(PHONE_HOME_WHOLE_NUMBER), value);
+    profile.SetInfo(AutofillType(PHONE_HOME_WHOLE_NUMBER), value);
   if (args->GetString(10, &value))
-    profile.SetInfo(AutoFillType(PHONE_FAX_WHOLE_NUMBER), value);
+    profile.SetInfo(AutofillType(PHONE_FAX_WHOLE_NUMBER), value);
   if (args->GetString(11, &value))
-    profile.SetInfo(AutoFillType(EMAIL_ADDRESS), value);
+    profile.SetInfo(AutofillType(EMAIL_ADDRESS), value);
 
   if (!guid::IsValidGUID(profile.guid())) {
     profile.set_guid(guid::GenerateGUID());
@@ -394,13 +394,13 @@ void AutoFillOptionsHandler::SetCreditCard(const ListValue* args) {
 
   string16 value;
   if (args->GetString(1, &value))
-    credit_card.SetInfo(AutoFillType(CREDIT_CARD_NAME), value);
+    credit_card.SetInfo(AutofillType(CREDIT_CARD_NAME), value);
   if (args->GetString(2, &value))
-    credit_card.SetInfo(AutoFillType(CREDIT_CARD_NUMBER), value);
+    credit_card.SetInfo(AutofillType(CREDIT_CARD_NUMBER), value);
   if (args->GetString(3, &value))
-    credit_card.SetInfo(AutoFillType(CREDIT_CARD_EXP_MONTH), value);
+    credit_card.SetInfo(AutofillType(CREDIT_CARD_EXP_MONTH), value);
   if (args->GetString(4, &value))
-    credit_card.SetInfo(AutoFillType(CREDIT_CARD_EXP_4_DIGIT_YEAR), value);
+    credit_card.SetInfo(AutofillType(CREDIT_CARD_EXP_4_DIGIT_YEAR), value);
 
   if (!guid::IsValidGUID(credit_card.guid())) {
     credit_card.set_guid(guid::GenerateGUID());

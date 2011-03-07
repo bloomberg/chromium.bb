@@ -51,19 +51,19 @@ bool AddressField::GetFieldInfo(FieldTypeMap* field_type_map) const {
   }
 
   bool ok;
-  ok = Add(field_type_map, company_, AutoFillType(address_company));
+  ok = Add(field_type_map, company_, AutofillType(address_company));
   DCHECK(ok);
-  ok = ok && Add(field_type_map, address1_, AutoFillType(address_line1));
+  ok = ok && Add(field_type_map, address1_, AutofillType(address_line1));
   DCHECK(ok);
-  ok = ok && Add(field_type_map, address2_, AutoFillType(address_line2));
+  ok = ok && Add(field_type_map, address2_, AutofillType(address_line2));
   DCHECK(ok);
-  ok = ok && Add(field_type_map, city_, AutoFillType(address_city));
+  ok = ok && Add(field_type_map, city_, AutofillType(address_city));
   DCHECK(ok);
-  ok = ok && Add(field_type_map, state_, AutoFillType(address_state));
+  ok = ok && Add(field_type_map, state_, AutofillType(address_state));
   DCHECK(ok);
-  ok = ok && Add(field_type_map, zip_, AutoFillType(address_zip));
+  ok = ok && Add(field_type_map, zip_, AutofillType(address_zip));
   DCHECK(ok);
-  ok = ok && Add(field_type_map, country_, AutoFillType(address_country));
+  ok = ok && Add(field_type_map, country_, AutofillType(address_country));
   DCHECK(ok);
 
   return ok;

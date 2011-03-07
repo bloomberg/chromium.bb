@@ -4250,7 +4250,7 @@ ListValue* TestingAutomationProvider::GetListFromAutoFillProfiles(
     for (std::map<AutofillFieldType, std::string>::iterator
          type_it = autofill_type_to_string.begin();
          type_it != autofill_type_to_string.end(); ++type_it) {
-      string16 value = profile->GetFieldText(AutoFillType(type_it->first));
+      string16 value = profile->GetFieldText(AutofillType(type_it->first));
       if (value.length()) {  // If there was something stored for that value.
         profile_info->SetString(type_it->second, value);
       }
@@ -4278,7 +4278,7 @@ ListValue* TestingAutomationProvider::GetListFromCreditCards(
     for (std::map<AutofillFieldType, std::string>::iterator type_it =
         credit_card_type_to_string.begin();
         type_it != credit_card_type_to_string.end(); ++type_it) {
-      string16 value = card->GetFieldText(AutoFillType(type_it->first));
+      string16 value = card->GetFieldText(AutofillType(type_it->first));
       // If there was something stored for that value.
       if (value.length()) {
         card_info->SetString(type_it->second, value);
@@ -4311,7 +4311,7 @@ TestingAutomationProvider::GetAutoFillProfilesFromList(
       if (profile_info->HasKey(type_it->second)) {
         if (profile_info->GetString(type_it->second,
                                     &current_value)) {
-          profile.SetInfo(AutoFillType(type_it->first), current_value);
+          profile.SetInfo(AutofillType(type_it->first), current_value);
         } else {
           *error_message= "All values must be strings";
           break;
@@ -4343,7 +4343,7 @@ std::vector<CreditCard> TestingAutomationProvider::GetCreditCardsFromList(
         type_it != credit_card_type_to_string.end(); ++type_it) {
       if (card_info->HasKey(type_it->second)) {
         if (card_info->GetString(type_it->second, &current_value)) {
-          card.SetInfo(AutoFillType(type_it->first), current_value);
+          card.SetInfo(AutofillType(type_it->first), current_value);
         } else {
           *error_message= "All values must be strings";
           break;

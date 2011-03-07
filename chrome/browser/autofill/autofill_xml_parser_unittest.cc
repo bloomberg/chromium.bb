@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -186,7 +186,7 @@ TEST(AutoFillQueryXmlParserTest, ParseErrors) {
   EXPECT_TRUE(parse_handler->succeeded());
   EXPECT_EQ(USE_UPLOAD_RATES, upload_required);
   ASSERT_EQ(1U, field_types.size());
-  // AutoFillType was out of range and should be set to NO_SERVER_DATA.
+  // AutofillType was out of range and should be set to NO_SERVER_DATA.
   EXPECT_EQ(NO_SERVER_DATA, field_types[0]);
   EXPECT_EQ(std::string(), experiment_id);
 

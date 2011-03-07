@@ -32,14 +32,14 @@ class AutoFillProfile : public FormGroup {
   virtual void GetPossibleFieldTypes(const string16& text,
                                      FieldTypeSet* possible_types) const;
   virtual void GetAvailableFieldTypes(FieldTypeSet* available_types) const;
-  virtual string16 GetFieldText(const AutoFillType& type) const;
+  virtual string16 GetFieldText(const AutofillType& type) const;
   // Returns true if the info matches the profile data corresponding to type.
   // If the type is UNKNOWN_TYPE then info will be matched against all of the
   // profile data.
-  virtual void FindInfoMatches(const AutoFillType& type,
+  virtual void FindInfoMatches(const AutofillType& type,
                                const string16& info,
                                std::vector<string16>* matched_text) const;
-  virtual void SetInfo(const AutoFillType& type, const string16& value);
+  virtual void SetInfo(const AutofillType& type, const string16& value);
   // Returns a copy of the profile it is called on. The caller is responsible
   // for deleting profile when they are done with it.
   virtual FormGroup* Clone() const;

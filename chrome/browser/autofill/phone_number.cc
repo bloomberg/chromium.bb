@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -20,12 +20,12 @@ const size_t kPhoneNumberLength = 7;
 // The number of digits in an area code.
 const size_t kPhoneCityCodeLength = 3;
 
-const AutoFillType::FieldTypeSubGroup kAutoFillPhoneTypes[] = {
-  AutoFillType::PHONE_NUMBER,
-  AutoFillType::PHONE_CITY_CODE,
-  AutoFillType::PHONE_COUNTRY_CODE,
-  AutoFillType::PHONE_CITY_AND_NUMBER,
-  AutoFillType::PHONE_WHOLE_NUMBER,
+const AutofillType::FieldTypeSubGroup kAutoFillPhoneTypes[] = {
+  AutofillType::PHONE_NUMBER,
+  AutofillType::PHONE_CITY_CODE,
+  AutofillType::PHONE_COUNTRY_CODE,
+  AutofillType::PHONE_CITY_AND_NUMBER,
+  AutofillType::PHONE_WHOLE_NUMBER,
 };
 
 const int kAutoFillPhoneLength = arraysize(kAutoFillPhoneTypes);
@@ -78,7 +78,7 @@ void PhoneNumber::GetAvailableFieldTypes(FieldTypeSet* available_types) const {
     available_types->insert(GetWholeNumberType());
 }
 
-string16 PhoneNumber::GetFieldText(const AutoFillType& type) const {
+string16 PhoneNumber::GetFieldText(const AutofillType& type) const {
   AutofillFieldType field_type = type.field_type();
   if (field_type == GetNumberType())
     return number();
@@ -98,7 +98,7 @@ string16 PhoneNumber::GetFieldText(const AutoFillType& type) const {
   return string16();
 }
 
-void PhoneNumber::FindInfoMatches(const AutoFillType& type,
+void PhoneNumber::FindInfoMatches(const AutofillType& type,
                                   const string16& info,
                                   std::vector<string16>* matched_text) const {
   if (matched_text == NULL) {
@@ -123,21 +123,21 @@ void PhoneNumber::FindInfoMatches(const AutoFillType& type,
   }
 }
 
-void PhoneNumber::SetInfo(const AutoFillType& type, const string16& value) {
+void PhoneNumber::SetInfo(const AutofillType& type, const string16& value) {
   string16 number(value);
   StripPunctuation(&number);
   if (!Validate(number))
     return;
 
   FieldTypeSubGroup subgroup = type.subgroup();
-  if (subgroup == AutoFillType::PHONE_NUMBER)
+  if (subgroup == AutofillType::PHONE_NUMBER)
     set_number(number);
-  else if (subgroup == AutoFillType::PHONE_CITY_CODE)
+  else if (subgroup == AutofillType::PHONE_CITY_CODE)
     set_city_code(number);
-  else if (subgroup == AutoFillType::PHONE_COUNTRY_CODE)
+  else if (subgroup == AutofillType::PHONE_COUNTRY_CODE)
     set_country_code(number);
-  else if (subgroup == AutoFillType::PHONE_CITY_AND_NUMBER ||
-           subgroup == AutoFillType::PHONE_WHOLE_NUMBER)
+  else if (subgroup == AutofillType::PHONE_CITY_AND_NUMBER ||
+           subgroup == AutofillType::PHONE_WHOLE_NUMBER)
     set_whole_number(number);
   else
     NOTREACHED();
@@ -229,19 +229,19 @@ bool PhoneNumber::FindInfoMatchesHelper(const FieldTypeSubGroup& subgroup,
   }
 
   match->clear();
-  if (subgroup == AutoFillType::PHONE_NUMBER &&
+  if (subgroup == AutofillType::PHONE_NUMBER &&
       StartsWith(number(), info, true)) {
     *match = number();
-  } else if (subgroup == AutoFillType::PHONE_CITY_CODE &&
+  } else if (subgroup == AutofillType::PHONE_CITY_CODE &&
              StartsWith(city_code(), info, true)) {
     *match = city_code();
-  } else if (subgroup == AutoFillType::PHONE_COUNTRY_CODE &&
+  } else if (subgroup == AutofillType::PHONE_COUNTRY_CODE &&
              StartsWith(country_code(), info, true)) {
     *match = country_code();
-  } else if (subgroup == AutoFillType::PHONE_CITY_AND_NUMBER &&
+  } else if (subgroup == AutofillType::PHONE_CITY_AND_NUMBER &&
              StartsWith(CityAndNumber(), info, true)) {
     *match = CityAndNumber();
-  } else if (subgroup == AutoFillType::PHONE_WHOLE_NUMBER &&
+  } else if (subgroup == AutofillType::PHONE_WHOLE_NUMBER &&
              StartsWith(WholeNumber(), info, true)) {
     *match = WholeNumber();
   }

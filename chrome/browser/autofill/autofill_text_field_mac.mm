@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -35,7 +35,7 @@
     // Obfuscate the number.
     NSString* string = static_cast<NSString*>(object);
     CreditCard card;
-    card.SetInfo(AutoFillType(CREDIT_CARD_NUMBER),
+    card.SetInfo(AutofillType(CREDIT_CARD_NUMBER),
                  base::SysNSStringToUTF16(string));
     NSString* starredString = base::SysUTF16ToNSString(card.ObfuscatedNumber());
 

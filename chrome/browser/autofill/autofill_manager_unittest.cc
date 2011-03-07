@@ -1640,7 +1640,7 @@ TEST_F(AutofillManagerTest, FillPhoneNumber) {
   AutoFillProfile *work_profile = autofill_manager_->GetProfileWithGUID(
       "00000000-0000-0000-0000-000000000002");
   ASSERT_TRUE(work_profile != NULL);
-  const AutoFillType phone_type(PHONE_HOME_NUMBER);
+  const AutofillType phone_type(PHONE_HOME_NUMBER);
   string16 saved_phone = work_profile->GetFieldText(phone_type);
 
   char test_data[] = "1234567890123456";

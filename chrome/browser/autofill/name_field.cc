@@ -22,7 +22,7 @@ NameField* NameField::Parse(std::vector<AutofillField*>::const_iterator* iter,
 }
 
 bool FullNameField::GetFieldInfo(FieldTypeMap* field_type_map) const {
-  bool ok = Add(field_type_map, field_, AutoFillType(NAME_FULL));
+  bool ok = Add(field_type_map, field_, AutofillType(NAME_FULL));
   DCHECK(ok);
   return true;
 }
@@ -153,12 +153,12 @@ FirstLastNameField* FirstLastNameField::Parse(
 }
 
 bool FirstLastNameField::GetFieldInfo(FieldTypeMap* field_type_map) const {
-  bool ok = Add(field_type_map, first_name_, AutoFillType(NAME_FIRST));
+  bool ok = Add(field_type_map, first_name_, AutofillType(NAME_FIRST));
   DCHECK(ok);
-  ok = ok && Add(field_type_map, last_name_, AutoFillType(NAME_LAST));
+  ok = ok && Add(field_type_map, last_name_, AutofillType(NAME_LAST));
   DCHECK(ok);
-  AutoFillType type = middle_initial_ ?
-      AutoFillType(NAME_MIDDLE_INITIAL) : AutoFillType(NAME_MIDDLE);
+  AutofillType type = middle_initial_ ?
+      AutofillType(NAME_MIDDLE_INITIAL) : AutofillType(NAME_MIDDLE);
   ok = ok && Add(field_type_map, middle_name_, type);
   DCHECK(ok);
 

@@ -28,15 +28,15 @@ TEST(AddressTest, GetCountry) {
   EXPECT_EQ(std::string(), address.country_code());
 
   // Make sure that nothing breaks when the country code is missing.
-  string16 country = address.GetFieldText(AutoFillType(ADDRESS_HOME_COUNTRY));
+  string16 country = address.GetFieldText(AutofillType(ADDRESS_HOME_COUNTRY));
   EXPECT_EQ(string16(), country);
 
   address.set_country_code("US");
-  country = address.GetFieldText(AutoFillType(ADDRESS_HOME_COUNTRY));
+  country = address.GetFieldText(AutofillType(ADDRESS_HOME_COUNTRY));
   EXPECT_EQ(ASCIIToUTF16("United States"), country);
 
   address.set_country_code("CA");
-  country = address.GetFieldText(AutoFillType(ADDRESS_HOME_COUNTRY));
+  country = address.GetFieldText(AutofillType(ADDRESS_HOME_COUNTRY));
   EXPECT_EQ(ASCIIToUTF16("Canada"), country);
 }
 
@@ -46,33 +46,33 @@ TEST(AddressTest, SetCountry) {
   EXPECT_EQ(std::string(), address.country_code());
 
   // Test basic conversion.
-  address.SetInfo(AutoFillType(ADDRESS_HOME_COUNTRY),
+  address.SetInfo(AutofillType(ADDRESS_HOME_COUNTRY),
                                ASCIIToUTF16("United States"));
-  string16 country = address.GetFieldText(AutoFillType(ADDRESS_HOME_COUNTRY));
+  string16 country = address.GetFieldText(AutofillType(ADDRESS_HOME_COUNTRY));
   EXPECT_EQ("US", address.country_code());
   EXPECT_EQ(ASCIIToUTF16("United States"), country);
 
   // Test basic synonym detection.
-  address.SetInfo(AutoFillType(ADDRESS_HOME_COUNTRY), ASCIIToUTF16("USA"));
-  country = address.GetFieldText(AutoFillType(ADDRESS_HOME_COUNTRY));
+  address.SetInfo(AutofillType(ADDRESS_HOME_COUNTRY), ASCIIToUTF16("USA"));
+  country = address.GetFieldText(AutofillType(ADDRESS_HOME_COUNTRY));
   EXPECT_EQ("US", address.country_code());
   EXPECT_EQ(ASCIIToUTF16("United States"), country);
 
   // Test case-insensitivity.
-  address.SetInfo(AutoFillType(ADDRESS_HOME_COUNTRY), ASCIIToUTF16("canADA"));
-  country = address.GetFieldText(AutoFillType(ADDRESS_HOME_COUNTRY));
+  address.SetInfo(AutofillType(ADDRESS_HOME_COUNTRY), ASCIIToUTF16("canADA"));
+  country = address.GetFieldText(AutofillType(ADDRESS_HOME_COUNTRY));
   EXPECT_EQ("CA", address.country_code());
   EXPECT_EQ(ASCIIToUTF16("Canada"), country);
 
   // Test country code detection.
-  address.SetInfo(AutoFillType(ADDRESS_HOME_COUNTRY), ASCIIToUTF16("JP"));
-  country = address.GetFieldText(AutoFillType(ADDRESS_HOME_COUNTRY));
+  address.SetInfo(AutofillType(ADDRESS_HOME_COUNTRY), ASCIIToUTF16("JP"));
+  country = address.GetFieldText(AutofillType(ADDRESS_HOME_COUNTRY));
   EXPECT_EQ("JP", address.country_code());
   EXPECT_EQ(ASCIIToUTF16("Japan"), country);
 
   // Test that we ignore unknown countries.
-  address.SetInfo(AutoFillType(ADDRESS_HOME_COUNTRY), ASCIIToUTF16("Unknown"));
-  country = address.GetFieldText(AutoFillType(ADDRESS_HOME_COUNTRY));
+  address.SetInfo(AutofillType(ADDRESS_HOME_COUNTRY), ASCIIToUTF16("Unknown"));
+  country = address.GetFieldText(AutofillType(ADDRESS_HOME_COUNTRY));
   EXPECT_EQ(std::string(), address.country_code());
   EXPECT_EQ(string16(), country);
 }

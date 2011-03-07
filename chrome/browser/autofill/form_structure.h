@@ -123,7 +123,7 @@ class FormStructure {
 
   // Runs several heuristics against the form fields to determine their possible
   // types.
-  void GetHeuristicAutoFillTypes();
+  void GetHeuristicAutofillTypes();
 
   // Associates the field with the heuristic type for each of the field views.
   void GetHeuristicFieldInfo(FieldTypeMap* field_types_map);

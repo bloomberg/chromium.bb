@@ -51,9 +51,9 @@ std::string SerializeProfiles(const std::vector<AutoFillProfile*>& profiles) {
     result += "\n";
     for (size_t j = 0; j < arraysize(kProfileFieldTypes); ++j) {
       AutofillFieldType type = kProfileFieldTypes[j];
-      result += AutoFillType::FieldTypeToString(type);
+      result += AutofillType::FieldTypeToString(type);
       result += kFieldSeparator;
-      result += UTF16ToUTF8(profiles[i]->GetFieldText(AutoFillType(type)));
+      result += UTF16ToUTF8(profiles[i]->GetFieldText(AutofillType(type)));
       result += "\n";
     }
   }
@@ -198,7 +198,7 @@ void AutoFillMergeTest::MergeProfiles(const std::string& profiles,
         AutofillField* field =
             const_cast<AutofillField*>(form_structure.field(i));
         AutofillFieldType type =
-            AutoFillType::StringToFieldType(UTF16ToUTF8(field->name()));
+            AutofillType::StringToFieldType(UTF16ToUTF8(field->name()));
         field->set_heuristic_type(type);
       }
       std::vector<const FormStructure*> form_structures(1, &form_structure);

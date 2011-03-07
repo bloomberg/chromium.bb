@@ -213,7 +213,7 @@ void AutofillProfileChangeProcessor::ApplyAutofillProfileChange(
   DCHECK_NE(sync_api::SyncManager::ChangeRecord::ACTION_DELETE, action);
   switch (action) {
     case sync_api::SyncManager::ChangeRecord::ACTION_ADD: {
-      if(guid::IsValidGUID(profile_specifics.guid()) == false) {
+      if (guid::IsValidGUID(profile_specifics.guid()) == false) {
         NOTREACHED() << "Guid from the server is invalid " <<
             profile_specifics.guid();
         return;
@@ -282,7 +282,7 @@ void AutofillProfileChangeProcessor::AddAutofillProfileSyncNode(
 
   std::string guid = profile.guid();
 
-  if(guid::IsValidGUID(guid) == false) {
+  if (guid::IsValidGUID(guid) == false) {
     DCHECK(false) << "Guid set on the profile is invalid " << guid;
     return;
   }
@@ -327,31 +327,31 @@ void AutofillProfileChangeProcessor::WriteAutofillProfile(
 
   specifics.set_guid(profile.guid());
   specifics.set_name_first(UTF16ToUTF8(
-      profile.GetFieldText(AutoFillType(NAME_FIRST))));
+      profile.GetFieldText(AutofillType(NAME_FIRST))));
   specifics.set_name_middle(UTF16ToUTF8(
-      profile.GetFieldText(AutoFillType(NAME_MIDDLE))));
+      profile.GetFieldText(AutofillType(NAME_MIDDLE))));
   specifics.set_name_last(
-      UTF16ToUTF8(profile.GetFieldText(AutoFillType(NAME_LAST))));
+      UTF16ToUTF8(profile.GetFieldText(AutofillType(NAME_LAST))));
   specifics.set_address_home_line1(
-      UTF16ToUTF8(profile.GetFieldText(AutoFillType(ADDRESS_HOME_LINE1))));
+      UTF16ToUTF8(profile.GetFieldText(AutofillType(ADDRESS_HOME_LINE1))));
   specifics.set_address_home_line2(
-      UTF16ToUTF8(profile.GetFieldText(AutoFillType(ADDRESS_HOME_LINE2))));
+      UTF16ToUTF8(profile.GetFieldText(AutofillType(ADDRESS_HOME_LINE2))));
   specifics.set_address_home_city(UTF16ToUTF8(profile.GetFieldText(
-      AutoFillType(ADDRESS_HOME_CITY))));
+      AutofillType(ADDRESS_HOME_CITY))));
   specifics.set_address_home_state(UTF16ToUTF8(profile.GetFieldText(
-      AutoFillType(ADDRESS_HOME_STATE))));
+      AutofillType(ADDRESS_HOME_STATE))));
   specifics.set_address_home_country(UTF16ToUTF8(profile.GetFieldText(
-      AutoFillType(ADDRESS_HOME_COUNTRY))));
+      AutofillType(ADDRESS_HOME_COUNTRY))));
   specifics.set_address_home_zip(UTF16ToUTF8(profile.GetFieldText(
-      AutoFillType(ADDRESS_HOME_ZIP))));
+      AutofillType(ADDRESS_HOME_ZIP))));
   specifics.set_email_address(UTF16ToUTF8(profile.GetFieldText(
-      AutoFillType(EMAIL_ADDRESS))));
+      AutofillType(EMAIL_ADDRESS))));
   specifics.set_company_name(UTF16ToUTF8(profile.GetFieldText(
-      AutoFillType(COMPANY_NAME))));
+      AutofillType(COMPANY_NAME))));
   specifics.set_phone_fax_whole_number(UTF16ToUTF8(profile.GetFieldText(
-      AutoFillType(PHONE_FAX_WHOLE_NUMBER))));
+      AutofillType(PHONE_FAX_WHOLE_NUMBER))));
   specifics.set_phone_home_whole_number(UTF16ToUTF8(profile.GetFieldText(
-      AutoFillType(PHONE_HOME_WHOLE_NUMBER))));
+      AutofillType(PHONE_HOME_WHOLE_NUMBER))));
   node->SetAutofillProfileSpecifics(specifics);
 }
 

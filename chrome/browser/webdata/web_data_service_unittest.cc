@@ -15,9 +15,9 @@
 #include "base/stl_util-inl.h"
 #include "base/string16.h"
 #include "base/string_util.h"
+#include "base/synchronization/waitable_event.h"
 #include "base/time.h"
 #include "base/utf_string_conversions.h"
-#include "base/synchronization/waitable_event.h"
 #include "chrome/browser/autofill/autofill_profile.h"
 #include "chrome/browser/autofill/credit_card.h"
 #include "chrome/browser/webdata/autofill_change.h"
@@ -322,9 +322,9 @@ TEST_F(WebDataServiceAutofillTest, ProfileRemove) {
 
 TEST_F(WebDataServiceAutofillTest, ProfileUpdate) {
   AutoFillProfile profile1;
-  profile1.SetInfo(AutoFillType(NAME_FIRST), ASCIIToUTF16("Abe"));
+  profile1.SetInfo(AutofillType(NAME_FIRST), ASCIIToUTF16("Abe"));
   AutoFillProfile profile2;
-  profile2.SetInfo(AutoFillType(NAME_FIRST), ASCIIToUTF16("Alice"));
+  profile2.SetInfo(AutofillType(NAME_FIRST), ASCIIToUTF16("Alice"));
 
   EXPECT_CALL(*observer_helper_->observer(), Observe(_, _, _)).
       WillOnce(DoDefault()).
@@ -344,7 +344,7 @@ TEST_F(WebDataServiceAutofillTest, ProfileUpdate) {
   STLDeleteElements(&consumer.result());
 
   AutoFillProfile profile1_changed(profile1);
-  profile1_changed.SetInfo(AutoFillType(NAME_FIRST), ASCIIToUTF16("Bill"));
+  profile1_changed.SetInfo(AutofillType(NAME_FIRST), ASCIIToUTF16("Bill"));
   const AutofillProfileChange expected_change(
       AutofillProfileChange::UPDATE, profile1.guid(), &profile1_changed);
 
@@ -441,9 +441,9 @@ TEST_F(WebDataServiceAutofillTest, CreditCardRemove) {
 
 TEST_F(WebDataServiceAutofillTest, CreditUpdate) {
   CreditCard card1;
-  card1.SetInfo(AutoFillType(CREDIT_CARD_NAME), ASCIIToUTF16("Abe"));
+  card1.SetInfo(AutofillType(CREDIT_CARD_NAME), ASCIIToUTF16("Abe"));
   CreditCard card2;
-  card2.SetInfo(AutoFillType(CREDIT_CARD_NAME), ASCIIToUTF16("Alice"));
+  card2.SetInfo(AutofillType(CREDIT_CARD_NAME), ASCIIToUTF16("Alice"));
 
   EXPECT_CALL(*observer_helper_->observer(), Observe(_, _, _)).
       Times(2).
@@ -464,7 +464,7 @@ TEST_F(WebDataServiceAutofillTest, CreditUpdate) {
   STLDeleteElements(&consumer.result());
 
   CreditCard card1_changed(card1);
-  card1_changed.SetInfo(AutoFillType(CREDIT_CARD_NAME), ASCIIToUTF16("Bill"));
+  card1_changed.SetInfo(AutofillType(CREDIT_CARD_NAME), ASCIIToUTF16("Bill"));
   const AutofillCreditCardChange expected_change(
       AutofillCreditCardChange::UPDATE, card1.guid(), &card1_changed);
 

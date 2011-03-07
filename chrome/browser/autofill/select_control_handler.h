@@ -21,7 +21,7 @@ namespace autofill {
 // variations of a value, e.g., (tx, TX, Texas) or credit card expiration
 // months, e.g., (04, April).
 void FillSelectControl(const FormGroup& form_group,
-                       AutoFillType type,
+                       AutofillType type,
                        webkit_glue::FormField* field);
 
 }  // namespace autofill

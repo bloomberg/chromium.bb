@@ -25,7 +25,7 @@ const char kFormMethodPost[] = "post";
 // XML elements and attributes.
 const char kAttributeAcceptedFeatures[] = "accepts";
 const char kAttributeAutoFillUsed[] = "autofillused";
-const char kAttributeAutoFillType[] = "autofilltype";
+const char kAttributeAutofillType[] = "autofilltype";
 const char kAttributeClientVersion[] = "clientversion";
 const char kAttributeDataPresent[] = "datapresent";
 const char kAttributeFormSignature[] = "formsignature";
@@ -68,7 +68,7 @@ FormStructure::FormStructure(const FormData& form)
 
   // Terminate the vector with a NULL item.
   fields_.push_back(NULL);
-  GetHeuristicAutoFillTypes();
+  GetHeuristicAutofillTypes();
 
   std::string method = UTF16ToUTF8(form.method);
   if (StringToLowerASCII(method) == kFormMethodPost) {
@@ -218,8 +218,8 @@ void FormStructure::ParseQueryResponse(const std::string& response_xml,
       if (heuristic_type != (*field)->type())
         query_response_overrode_heuristics = true;
 
-      AutoFillType autofill_type((*field)->type());
-      if (autofill_type.group() == AutoFillType::CREDIT_CARD)
+      AutofillType autofill_type((*field)->type());
+      if (autofill_type.group() == AutofillType::CREDIT_CARD)
         form->has_credit_card_field_ = true;
       if (autofill_type.field_type() != UNKNOWN_TYPE)
         form->has_autofillable_field_ = true;
@@ -358,7 +358,7 @@ std::string FormStructure::Hash64Bit(const std::string& str) {
   return base::Uint64ToString(hash64);
 }
 
-void FormStructure::GetHeuristicAutoFillTypes() {
+void FormStructure::GetHeuristicAutofillTypes() {
   has_credit_card_field_ = false;
   has_autofillable_field_ = false;
 
@@ -380,8 +380,8 @@ void FormStructure::GetHeuristicAutoFillTypes() {
 
     field->set_heuristic_type(heuristic_auto_fill_type);
 
-    AutoFillType autofill_type(field->type());
-    if (autofill_type.group() == AutoFillType::CREDIT_CARD)
+    AutofillType autofill_type(field->type());
+    if (autofill_type.group() == AutofillType::CREDIT_CARD)
       has_credit_card_field_ = true;
     if (autofill_type.field_type() != UNKNOWN_TYPE)
       has_autofillable_field_ = true;
@@ -425,7 +425,7 @@ bool FormStructure::EncodeFormRequest(
 
         field_element->SetAttr(buzz::QName(kAttributeSignature),
                                field->FieldSignature());
-        field_element->SetAttr(buzz::QName(kAttributeAutoFillType),
+        field_element->SetAttr(buzz::QName(kAttributeAutofillType),
                                base::IntToString(*field_type));
         encompassing_xml_element->AddElement(field_element);
       }

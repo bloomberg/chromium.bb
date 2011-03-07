@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -163,51 +163,51 @@ TEST_F(AutofillIeToolbarImportTest, TestAutoFillImport) {
   EXPECT_TRUE(ImportCurrentUserProfiles(&profiles, &credit_cards));
   ASSERT_EQ(profiles.size(), 2);
   // The profiles are read in reverse order.
-  EXPECT_EQ(profiles[1].GetFieldText(AutoFillType(NAME_FIRST)),
+  EXPECT_EQ(profiles[1].GetFieldText(AutofillType(NAME_FIRST)),
             profile1[0].value);
-  EXPECT_EQ(profiles[1].GetFieldText(AutoFillType(NAME_MIDDLE)),
+  EXPECT_EQ(profiles[1].GetFieldText(AutofillType(NAME_MIDDLE)),
             profile1[1].value);
-  EXPECT_EQ(profiles[1].GetFieldText(AutoFillType(NAME_LAST)),
+  EXPECT_EQ(profiles[1].GetFieldText(AutofillType(NAME_LAST)),
             profile1[2].value);
-  EXPECT_EQ(profiles[1].GetFieldText(AutoFillType(EMAIL_ADDRESS)),
+  EXPECT_EQ(profiles[1].GetFieldText(AutofillType(EMAIL_ADDRESS)),
             profile1[3].value);
-  EXPECT_EQ(profiles[1].GetFieldText(AutoFillType(COMPANY_NAME)),
+  EXPECT_EQ(profiles[1].GetFieldText(AutofillType(COMPANY_NAME)),
             profile1[4].value);
-  EXPECT_EQ(profiles[1].GetFieldText(AutoFillType(PHONE_HOME_COUNTRY_CODE)),
+  EXPECT_EQ(profiles[1].GetFieldText(AutofillType(PHONE_HOME_COUNTRY_CODE)),
             profile1[7].value);
-  EXPECT_EQ(profiles[1].GetFieldText(AutoFillType(PHONE_HOME_CITY_CODE)),
+  EXPECT_EQ(profiles[1].GetFieldText(AutofillType(PHONE_HOME_CITY_CODE)),
             profile1[6].value);
-  EXPECT_EQ(profiles[1].GetFieldText(AutoFillType(PHONE_HOME_NUMBER)),
+  EXPECT_EQ(profiles[1].GetFieldText(AutofillType(PHONE_HOME_NUMBER)),
             L"5555555");
-  EXPECT_EQ(profiles[1].GetFieldText(AutoFillType(PHONE_HOME_WHOLE_NUMBER)),
+  EXPECT_EQ(profiles[1].GetFieldText(AutofillType(PHONE_HOME_WHOLE_NUMBER)),
             L"14445555555");
 
-  EXPECT_EQ(profiles[0].GetFieldText(AutoFillType(NAME_FIRST)),
+  EXPECT_EQ(profiles[0].GetFieldText(AutofillType(NAME_FIRST)),
             profile2[0].value);
-  EXPECT_EQ(profiles[0].GetFieldText(AutoFillType(NAME_LAST)),
+  EXPECT_EQ(profiles[0].GetFieldText(AutofillType(NAME_LAST)),
             profile2[1].value);
-  EXPECT_EQ(profiles[0].GetFieldText(AutoFillType(EMAIL_ADDRESS)),
+  EXPECT_EQ(profiles[0].GetFieldText(AutofillType(EMAIL_ADDRESS)),
             profile2[2].value);
-  EXPECT_EQ(profiles[0].GetFieldText(AutoFillType(COMPANY_NAME)),
+  EXPECT_EQ(profiles[0].GetFieldText(AutofillType(COMPANY_NAME)),
             profile2[3].value);
-  EXPECT_EQ(profiles[0].GetFieldText(AutoFillType(PHONE_FAX_COUNTRY_CODE)),
+  EXPECT_EQ(profiles[0].GetFieldText(AutofillType(PHONE_FAX_COUNTRY_CODE)),
             profile2[6].value);
-  EXPECT_EQ(profiles[0].GetFieldText(AutoFillType(PHONE_FAX_CITY_CODE)),
+  EXPECT_EQ(profiles[0].GetFieldText(AutofillType(PHONE_FAX_CITY_CODE)),
             profile2[5].value);
-  EXPECT_EQ(profiles[0].GetFieldText(AutoFillType(PHONE_FAX_NUMBER)),
+  EXPECT_EQ(profiles[0].GetFieldText(AutofillType(PHONE_FAX_NUMBER)),
             L"5556666");
-  EXPECT_EQ(profiles[0].GetFieldText(AutoFillType(PHONE_FAX_WHOLE_NUMBER)),
+  EXPECT_EQ(profiles[0].GetFieldText(AutofillType(PHONE_FAX_WHOLE_NUMBER)),
             L"27775556666");
 
   ASSERT_EQ(credit_cards.size(), 1);
-  EXPECT_EQ(credit_cards[0].GetFieldText(AutoFillType(CREDIT_CARD_NAME)),
+  EXPECT_EQ(credit_cards[0].GetFieldText(AutofillType(CREDIT_CARD_NAME)),
             credit_card[0].value);
-  EXPECT_EQ(credit_cards[0].GetFieldText(AutoFillType(CREDIT_CARD_NUMBER)),
+  EXPECT_EQ(credit_cards[0].GetFieldText(AutofillType(CREDIT_CARD_NUMBER)),
             L"4111111111111111");
-  EXPECT_EQ(credit_cards[0].GetFieldText(AutoFillType(CREDIT_CARD_EXP_MONTH)),
+  EXPECT_EQ(credit_cards[0].GetFieldText(AutofillType(CREDIT_CARD_EXP_MONTH)),
             credit_card[2].value);
   EXPECT_EQ(credit_cards[0].GetFieldText(
-            AutoFillType(CREDIT_CARD_EXP_4_DIGIT_YEAR)),
+            AutofillType(CREDIT_CARD_EXP_4_DIGIT_YEAR)),
             credit_card[3].value);
 
   // Mock password encrypted cc.

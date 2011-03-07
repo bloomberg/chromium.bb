@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -15,7 +15,7 @@
 
 // The high-level description of AutoFill types, used to categorize form fields
 // and for associating form fields with form values in the Web Database.
-class AutoFillType {
+class AutofillType {
  public:
   enum FieldTypeGroup {
     NO_GROUP,
@@ -46,14 +46,14 @@ class AutoFillType {
     PHONE_WHOLE_NUMBER
   };
 
-  struct AutoFillTypeDefinition {
+  struct AutofillTypeDefinition {
     FieldTypeGroup group;
     FieldTypeSubGroup subgroup;
   };
 
-  explicit AutoFillType(AutofillFieldType field_type);
-  AutoFillType(const AutoFillType& autofill_type);
-  AutoFillType& operator=(const AutoFillType& autofill_type);
+  explicit AutofillType(AutofillFieldType field_type);
+  AutofillType(const AutofillType& autofill_type);
+  AutofillType& operator=(const AutofillType& autofill_type);
 
   AutofillFieldType field_type() const;
   FieldTypeGroup group() const;
@@ -72,8 +72,8 @@ class AutoFillType {
   AutofillFieldType field_type_;
 };
 
-typedef AutoFillType::FieldTypeGroup FieldTypeGroup;
-typedef AutoFillType::FieldTypeSubGroup FieldTypeSubGroup;
+typedef AutofillType::FieldTypeGroup FieldTypeGroup;
+typedef AutofillType::FieldTypeSubGroup FieldTypeSubGroup;
 typedef std::set<AutofillFieldType> FieldTypeSet;
 typedef std::map<string16, AutofillFieldType> FieldTypeMap;
 

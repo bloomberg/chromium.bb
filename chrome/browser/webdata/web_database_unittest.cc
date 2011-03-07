@@ -14,24 +14,24 @@
 #include "base/path_service.h"
 #include "base/scoped_temp_dir.h"
 #include "base/stl_util-inl.h"
-#include "base/string_number_conversions.h"
 #include "base/string16.h"
+#include "base/string_number_conversions.h"
 #include "base/time.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/autofill/autofill_profile.h"
 #include "chrome/browser/autofill/autofill_type.h"
 #include "chrome/browser/autofill/credit_card.h"
-#include "chrome/browser/search_engines/template_url.h"
 #include "chrome/browser/password_manager/encryptor.h"
+#include "chrome/browser/search_engines/template_url.h"
 #include "chrome/browser/webdata/autofill_change.h"
 #include "chrome/browser/webdata/autofill_entry.h"
 #include "chrome/browser/webdata/web_database.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/guid.h"
 #include "chrome/test/ui_test_utils.h"
-#include "third_party/skia/include/core/SkBitmap.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/skia/include/core/SkBitmap.h"
 #include "webkit/glue/form_field.h"
 #include "webkit/glue/password_form.h"
 
@@ -105,19 +105,19 @@ void AutoFillProfile31FromStatement(const sql::Statement& s,
   DCHECK(date_modified);
   *label = s.ColumnString16(0);
   *unique_id = s.ColumnInt(1);
-  profile->SetInfo(AutoFillType(NAME_FIRST), s.ColumnString16(2));
-  profile->SetInfo(AutoFillType(NAME_MIDDLE), s.ColumnString16(3));
-  profile->SetInfo(AutoFillType(NAME_LAST),s.ColumnString16(4));
-  profile->SetInfo(AutoFillType(EMAIL_ADDRESS), s.ColumnString16(5));
-  profile->SetInfo(AutoFillType(COMPANY_NAME), s.ColumnString16(6));
-  profile->SetInfo(AutoFillType(ADDRESS_HOME_LINE1), s.ColumnString16(7));
-  profile->SetInfo(AutoFillType(ADDRESS_HOME_LINE2), s.ColumnString16(8));
-  profile->SetInfo(AutoFillType(ADDRESS_HOME_CITY), s.ColumnString16(9));
-  profile->SetInfo(AutoFillType(ADDRESS_HOME_STATE), s.ColumnString16(10));
-  profile->SetInfo(AutoFillType(ADDRESS_HOME_ZIP), s.ColumnString16(11));
-  profile->SetInfo(AutoFillType(ADDRESS_HOME_COUNTRY), s.ColumnString16(12));
-  profile->SetInfo(AutoFillType(PHONE_HOME_WHOLE_NUMBER), s.ColumnString16(13));
-  profile->SetInfo(AutoFillType(PHONE_FAX_WHOLE_NUMBER), s.ColumnString16(14));
+  profile->SetInfo(AutofillType(NAME_FIRST), s.ColumnString16(2));
+  profile->SetInfo(AutofillType(NAME_MIDDLE), s.ColumnString16(3));
+  profile->SetInfo(AutofillType(NAME_LAST),s.ColumnString16(4));
+  profile->SetInfo(AutofillType(EMAIL_ADDRESS), s.ColumnString16(5));
+  profile->SetInfo(AutofillType(COMPANY_NAME), s.ColumnString16(6));
+  profile->SetInfo(AutofillType(ADDRESS_HOME_LINE1), s.ColumnString16(7));
+  profile->SetInfo(AutofillType(ADDRESS_HOME_LINE2), s.ColumnString16(8));
+  profile->SetInfo(AutofillType(ADDRESS_HOME_CITY), s.ColumnString16(9));
+  profile->SetInfo(AutofillType(ADDRESS_HOME_STATE), s.ColumnString16(10));
+  profile->SetInfo(AutofillType(ADDRESS_HOME_ZIP), s.ColumnString16(11));
+  profile->SetInfo(AutofillType(ADDRESS_HOME_COUNTRY), s.ColumnString16(12));
+  profile->SetInfo(AutofillType(PHONE_HOME_WHOLE_NUMBER), s.ColumnString16(13));
+  profile->SetInfo(AutofillType(PHONE_FAX_WHOLE_NUMBER), s.ColumnString16(14));
   *date_modified = s.ColumnInt64(15);
   profile->set_guid(s.ColumnString(16));
   EXPECT_TRUE(guid::IsValidGUID(profile->guid()));
@@ -133,19 +133,19 @@ void AutoFillProfile32FromStatement(const sql::Statement& s,
   profile->set_guid(s.ColumnString(0));
   EXPECT_TRUE(guid::IsValidGUID(profile->guid()));
   *label = s.ColumnString16(1);
-  profile->SetInfo(AutoFillType(NAME_FIRST), s.ColumnString16(2));
-  profile->SetInfo(AutoFillType(NAME_MIDDLE), s.ColumnString16(3));
-  profile->SetInfo(AutoFillType(NAME_LAST),s.ColumnString16(4));
-  profile->SetInfo(AutoFillType(EMAIL_ADDRESS), s.ColumnString16(5));
-  profile->SetInfo(AutoFillType(COMPANY_NAME), s.ColumnString16(6));
-  profile->SetInfo(AutoFillType(ADDRESS_HOME_LINE1), s.ColumnString16(7));
-  profile->SetInfo(AutoFillType(ADDRESS_HOME_LINE2), s.ColumnString16(8));
-  profile->SetInfo(AutoFillType(ADDRESS_HOME_CITY), s.ColumnString16(9));
-  profile->SetInfo(AutoFillType(ADDRESS_HOME_STATE), s.ColumnString16(10));
-  profile->SetInfo(AutoFillType(ADDRESS_HOME_ZIP), s.ColumnString16(11));
-  profile->SetInfo(AutoFillType(ADDRESS_HOME_COUNTRY), s.ColumnString16(12));
-  profile->SetInfo(AutoFillType(PHONE_HOME_WHOLE_NUMBER), s.ColumnString16(13));
-  profile->SetInfo(AutoFillType(PHONE_FAX_WHOLE_NUMBER), s.ColumnString16(14));
+  profile->SetInfo(AutofillType(NAME_FIRST), s.ColumnString16(2));
+  profile->SetInfo(AutofillType(NAME_MIDDLE), s.ColumnString16(3));
+  profile->SetInfo(AutofillType(NAME_LAST),s.ColumnString16(4));
+  profile->SetInfo(AutofillType(EMAIL_ADDRESS), s.ColumnString16(5));
+  profile->SetInfo(AutofillType(COMPANY_NAME), s.ColumnString16(6));
+  profile->SetInfo(AutofillType(ADDRESS_HOME_LINE1), s.ColumnString16(7));
+  profile->SetInfo(AutofillType(ADDRESS_HOME_LINE2), s.ColumnString16(8));
+  profile->SetInfo(AutofillType(ADDRESS_HOME_CITY), s.ColumnString16(9));
+  profile->SetInfo(AutofillType(ADDRESS_HOME_STATE), s.ColumnString16(10));
+  profile->SetInfo(AutofillType(ADDRESS_HOME_ZIP), s.ColumnString16(11));
+  profile->SetInfo(AutofillType(ADDRESS_HOME_COUNTRY), s.ColumnString16(12));
+  profile->SetInfo(AutofillType(PHONE_HOME_WHOLE_NUMBER), s.ColumnString16(13));
+  profile->SetInfo(AutofillType(PHONE_FAX_WHOLE_NUMBER), s.ColumnString16(14));
   *date_modified = s.ColumnInt64(15);
 }
 
@@ -156,13 +156,13 @@ void AutoFillProfile33FromStatement(const sql::Statement& s,
   DCHECK(date_modified);
   profile->set_guid(s.ColumnString(0));
   EXPECT_TRUE(guid::IsValidGUID(profile->guid()));
-  profile->SetInfo(AutoFillType(COMPANY_NAME), s.ColumnString16(1));
-  profile->SetInfo(AutoFillType(ADDRESS_HOME_LINE1), s.ColumnString16(2));
-  profile->SetInfo(AutoFillType(ADDRESS_HOME_LINE2), s.ColumnString16(3));
-  profile->SetInfo(AutoFillType(ADDRESS_HOME_CITY), s.ColumnString16(4));
-  profile->SetInfo(AutoFillType(ADDRESS_HOME_STATE), s.ColumnString16(5));
-  profile->SetInfo(AutoFillType(ADDRESS_HOME_ZIP), s.ColumnString16(6));
-  profile->SetInfo(AutoFillType(ADDRESS_HOME_COUNTRY), s.ColumnString16(7));
+  profile->SetInfo(AutofillType(COMPANY_NAME), s.ColumnString16(1));
+  profile->SetInfo(AutofillType(ADDRESS_HOME_LINE1), s.ColumnString16(2));
+  profile->SetInfo(AutofillType(ADDRESS_HOME_LINE2), s.ColumnString16(3));
+  profile->SetInfo(AutofillType(ADDRESS_HOME_CITY), s.ColumnString16(4));
+  profile->SetInfo(AutofillType(ADDRESS_HOME_STATE), s.ColumnString16(5));
+  profile->SetInfo(AutofillType(ADDRESS_HOME_ZIP), s.ColumnString16(6));
+  profile->SetInfo(AutofillType(ADDRESS_HOME_COUNTRY), s.ColumnString16(7));
   *date_modified = s.ColumnInt64(8);
 }
 
@@ -179,11 +179,11 @@ void CreditCard31FromStatement(const sql::Statement& s,
   DCHECK(date_modified);
   *label = s.ColumnString16(0);
   *unique_id = s.ColumnInt(1);
-  credit_card->SetInfo(AutoFillType(CREDIT_CARD_NAME), s.ColumnString16(2));
-  credit_card->SetInfo(AutoFillType(CREDIT_CARD_TYPE), s.ColumnString16(3));
-  credit_card->SetInfo(AutoFillType(CREDIT_CARD_EXP_MONTH),
+  credit_card->SetInfo(AutofillType(CREDIT_CARD_NAME), s.ColumnString16(2));
+  credit_card->SetInfo(AutofillType(CREDIT_CARD_TYPE), s.ColumnString16(3));
+  credit_card->SetInfo(AutofillType(CREDIT_CARD_EXP_MONTH),
                        s.ColumnString16(5));
-  credit_card->SetInfo(AutoFillType(CREDIT_CARD_EXP_4_DIGIT_YEAR),
+  credit_card->SetInfo(AutofillType(CREDIT_CARD_EXP_4_DIGIT_YEAR),
                        s.ColumnString16(6));
   int encrypted_number_len = s.ColumnByteLength(10);
   if (encrypted_number_len) {
@@ -204,10 +204,10 @@ void CreditCard32FromStatement(const sql::Statement& s,
   DCHECK(date_modified);
   credit_card->set_guid(s.ColumnString(0));
   EXPECT_TRUE(guid::IsValidGUID(credit_card->guid()));
-  credit_card->SetInfo(AutoFillType(CREDIT_CARD_NAME), s.ColumnString16(1));
-  credit_card->SetInfo(AutoFillType(CREDIT_CARD_EXP_MONTH),
+  credit_card->SetInfo(AutofillType(CREDIT_CARD_NAME), s.ColumnString16(1));
+  credit_card->SetInfo(AutofillType(CREDIT_CARD_EXP_MONTH),
                        s.ColumnString16(2));
-  credit_card->SetInfo(AutoFillType(CREDIT_CARD_EXP_4_DIGIT_YEAR),
+  credit_card->SetInfo(AutofillType(CREDIT_CARD_EXP_4_DIGIT_YEAR),
                        s.ColumnString16(3));
   int encrypted_number_len = s.ColumnByteLength(4);
   if (encrypted_number_len) {
@@ -1408,24 +1408,24 @@ TEST_F(WebDatabaseTest, AutoFillProfile) {
 
   // Add a 'Home' profile.
   AutoFillProfile home_profile;
-  home_profile.SetInfo(AutoFillType(NAME_FIRST), ASCIIToUTF16("John"));
-  home_profile.SetInfo(AutoFillType(NAME_MIDDLE), ASCIIToUTF16("Q."));
-  home_profile.SetInfo(AutoFillType(NAME_LAST), ASCIIToUTF16("Smith"));
-  home_profile.SetInfo(AutoFillType(EMAIL_ADDRESS),
+  home_profile.SetInfo(AutofillType(NAME_FIRST), ASCIIToUTF16("John"));
+  home_profile.SetInfo(AutofillType(NAME_MIDDLE), ASCIIToUTF16("Q."));
+  home_profile.SetInfo(AutofillType(NAME_LAST), ASCIIToUTF16("Smith"));
+  home_profile.SetInfo(AutofillType(EMAIL_ADDRESS),
                        ASCIIToUTF16("js@smith.xyz"));
-  home_profile.SetInfo(AutoFillType(COMPANY_NAME), ASCIIToUTF16("Google"));
-  home_profile.SetInfo(AutoFillType(ADDRESS_HOME_LINE1),
+  home_profile.SetInfo(AutofillType(COMPANY_NAME), ASCIIToUTF16("Google"));
+  home_profile.SetInfo(AutofillType(ADDRESS_HOME_LINE1),
                        ASCIIToUTF16("1234 Apple Way"));
-  home_profile.SetInfo(AutoFillType(ADDRESS_HOME_LINE2),
+  home_profile.SetInfo(AutofillType(ADDRESS_HOME_LINE2),
                        ASCIIToUTF16("unit 5"));
-  home_profile.SetInfo(AutoFillType(ADDRESS_HOME_CITY),
+  home_profile.SetInfo(AutofillType(ADDRESS_HOME_CITY),
                        ASCIIToUTF16("Los Angeles"));
-  home_profile.SetInfo(AutoFillType(ADDRESS_HOME_STATE), ASCIIToUTF16("CA"));
-  home_profile.SetInfo(AutoFillType(ADDRESS_HOME_ZIP), ASCIIToUTF16("90025"));
-  home_profile.SetInfo(AutoFillType(ADDRESS_HOME_COUNTRY), ASCIIToUTF16("US"));
-  home_profile.SetInfo(AutoFillType(PHONE_HOME_WHOLE_NUMBER),
+  home_profile.SetInfo(AutofillType(ADDRESS_HOME_STATE), ASCIIToUTF16("CA"));
+  home_profile.SetInfo(AutofillType(ADDRESS_HOME_ZIP), ASCIIToUTF16("90025"));
+  home_profile.SetInfo(AutofillType(ADDRESS_HOME_COUNTRY), ASCIIToUTF16("US"));
+  home_profile.SetInfo(AutofillType(PHONE_HOME_WHOLE_NUMBER),
                        ASCIIToUTF16("18181234567"));
-  home_profile.SetInfo(AutoFillType(PHONE_FAX_WHOLE_NUMBER),
+  home_profile.SetInfo(AutofillType(PHONE_FAX_WHOLE_NUMBER),
                        ASCIIToUTF16("1915243678"));
 
   Time pre_creation_time = Time::Now();
@@ -1450,9 +1450,9 @@ TEST_F(WebDatabaseTest, AutoFillProfile) {
   // Add a 'Billing' profile.
   AutoFillProfile billing_profile = home_profile;
   billing_profile.set_guid(guid::GenerateGUID());
-  billing_profile.SetInfo(AutoFillType(ADDRESS_HOME_LINE1),
+  billing_profile.SetInfo(AutofillType(ADDRESS_HOME_LINE1),
                           ASCIIToUTF16("5678 Bottom Street"));
-  billing_profile.SetInfo(AutoFillType(ADDRESS_HOME_LINE2),
+  billing_profile.SetInfo(AutofillType(ADDRESS_HOME_LINE2),
                           ASCIIToUTF16("suite 3"));
 
   pre_creation_time = Time::Now();
@@ -1473,7 +1473,7 @@ TEST_F(WebDatabaseTest, AutoFillProfile) {
   delete db_profile;
 
   // Update the 'Billing' profile, name only.
-  billing_profile.SetInfo(AutoFillType(NAME_FIRST), ASCIIToUTF16("Jane"));
+  billing_profile.SetInfo(AutofillType(NAME_FIRST), ASCIIToUTF16("Jane"));
   Time pre_modification_time = Time::Now();
   EXPECT_TRUE(db.UpdateAutoFillProfile(billing_profile));
   Time post_modification_time = Time::Now();
@@ -1492,26 +1492,26 @@ TEST_F(WebDatabaseTest, AutoFillProfile) {
   delete db_profile;
 
   // Update the 'Billing' profile.
-  billing_profile.SetInfo(AutoFillType(NAME_FIRST), ASCIIToUTF16("Janice"));
-  billing_profile.SetInfo(AutoFillType(NAME_MIDDLE), ASCIIToUTF16("C."));
-  billing_profile.SetInfo(AutoFillType(NAME_FIRST), ASCIIToUTF16("Joplin"));
-  billing_profile.SetInfo(AutoFillType(EMAIL_ADDRESS),
+  billing_profile.SetInfo(AutofillType(NAME_FIRST), ASCIIToUTF16("Janice"));
+  billing_profile.SetInfo(AutofillType(NAME_MIDDLE), ASCIIToUTF16("C."));
+  billing_profile.SetInfo(AutofillType(NAME_FIRST), ASCIIToUTF16("Joplin"));
+  billing_profile.SetInfo(AutofillType(EMAIL_ADDRESS),
                           ASCIIToUTF16("jane@singer.com"));
-  billing_profile.SetInfo(AutoFillType(COMPANY_NAME), ASCIIToUTF16("Indy"));
-  billing_profile.SetInfo(AutoFillType(ADDRESS_HOME_LINE1),
+  billing_profile.SetInfo(AutofillType(COMPANY_NAME), ASCIIToUTF16("Indy"));
+  billing_profile.SetInfo(AutofillType(ADDRESS_HOME_LINE1),
                           ASCIIToUTF16("Open Road"));
-  billing_profile.SetInfo(AutoFillType(ADDRESS_HOME_LINE2),
+  billing_profile.SetInfo(AutofillType(ADDRESS_HOME_LINE2),
                           ASCIIToUTF16("Route 66"));
-  billing_profile.SetInfo(AutoFillType(ADDRESS_HOME_CITY),
+  billing_profile.SetInfo(AutofillType(ADDRESS_HOME_CITY),
                           ASCIIToUTF16("NFA"));
-  billing_profile.SetInfo(AutoFillType(ADDRESS_HOME_STATE), ASCIIToUTF16("NY"));
-  billing_profile.SetInfo(AutoFillType(ADDRESS_HOME_ZIP),
+  billing_profile.SetInfo(AutofillType(ADDRESS_HOME_STATE), ASCIIToUTF16("NY"));
+  billing_profile.SetInfo(AutofillType(ADDRESS_HOME_ZIP),
                           ASCIIToUTF16("10011"));
-  billing_profile.SetInfo(AutoFillType(ADDRESS_HOME_COUNTRY),
+  billing_profile.SetInfo(AutofillType(ADDRESS_HOME_COUNTRY),
                           ASCIIToUTF16("United States"));
-  billing_profile.SetInfo(AutoFillType(PHONE_HOME_WHOLE_NUMBER),
+  billing_profile.SetInfo(AutofillType(PHONE_HOME_WHOLE_NUMBER),
                           ASCIIToUTF16("18181230000"));
-  billing_profile.SetInfo(AutoFillType(PHONE_FAX_WHOLE_NUMBER),
+  billing_profile.SetInfo(AutofillType(PHONE_FAX_WHOLE_NUMBER),
                           ASCIIToUTF16("1915240000"));
   Time pre_modification_time_2 = Time::Now();
   EXPECT_TRUE(db.UpdateAutoFillProfile(billing_profile));
@@ -1542,13 +1542,13 @@ TEST_F(WebDatabaseTest, CreditCard) {
 
   // Add a 'Work' credit card.
   CreditCard work_creditcard;
-  work_creditcard.SetInfo(AutoFillType(CREDIT_CARD_NAME),
+  work_creditcard.SetInfo(AutofillType(CREDIT_CARD_NAME),
                           ASCIIToUTF16("Jack Torrance"));
-  work_creditcard.SetInfo(AutoFillType(CREDIT_CARD_NUMBER),
+  work_creditcard.SetInfo(AutofillType(CREDIT_CARD_NUMBER),
                           ASCIIToUTF16("1234567890123456"));
-  work_creditcard.SetInfo(AutoFillType(CREDIT_CARD_EXP_MONTH),
+  work_creditcard.SetInfo(AutofillType(CREDIT_CARD_EXP_MONTH),
                           ASCIIToUTF16("04"));
-  work_creditcard.SetInfo(AutoFillType(CREDIT_CARD_EXP_4_DIGIT_YEAR),
+  work_creditcard.SetInfo(AutofillType(CREDIT_CARD_EXP_4_DIGIT_YEAR),
                           ASCIIToUTF16("2013"));
 
   Time pre_creation_time = Time::Now();
@@ -1573,13 +1573,13 @@ TEST_F(WebDatabaseTest, CreditCard) {
 
   // Add a 'Target' credit card.
   CreditCard target_creditcard;
-  target_creditcard.SetInfo(AutoFillType(CREDIT_CARD_NAME),
+  target_creditcard.SetInfo(AutofillType(CREDIT_CARD_NAME),
                             ASCIIToUTF16("Jack Torrance"));
-  target_creditcard.SetInfo(AutoFillType(CREDIT_CARD_NUMBER),
+  target_creditcard.SetInfo(AutofillType(CREDIT_CARD_NUMBER),
                             ASCIIToUTF16("1111222233334444"));
-  target_creditcard.SetInfo(AutoFillType(CREDIT_CARD_EXP_MONTH),
+  target_creditcard.SetInfo(AutofillType(CREDIT_CARD_EXP_MONTH),
                             ASCIIToUTF16("06"));
-  target_creditcard.SetInfo(AutoFillType(CREDIT_CARD_EXP_4_DIGIT_YEAR),
+  target_creditcard.SetInfo(AutofillType(CREDIT_CARD_EXP_4_DIGIT_YEAR),
                             ASCIIToUTF16("2012"));
 
   pre_creation_time = Time::Now();
@@ -1600,7 +1600,7 @@ TEST_F(WebDatabaseTest, CreditCard) {
   delete db_creditcard;
 
   // Update the 'Target' credit card.
-  target_creditcard.SetInfo(AutoFillType(CREDIT_CARD_NAME),
+  target_creditcard.SetInfo(AutofillType(CREDIT_CARD_NAME),
                             ASCIIToUTF16("Charles Grady"));
   Time pre_modification_time = Time::Now();
   EXPECT_TRUE(db.UpdateCreditCard(target_creditcard));
@@ -1630,21 +1630,21 @@ TEST_F(WebDatabaseTest, UpdateAutoFillProfile) {
 
   // Add a profile to the db.
   AutoFillProfile profile;
-  profile.SetInfo(AutoFillType(NAME_FIRST), ASCIIToUTF16("John"));
-  profile.SetInfo(AutoFillType(NAME_MIDDLE), ASCIIToUTF16("Q."));
-  profile.SetInfo(AutoFillType(NAME_LAST), ASCIIToUTF16("Smith"));
-  profile.SetInfo(AutoFillType(EMAIL_ADDRESS), ASCIIToUTF16("js@example.com"));
-  profile.SetInfo(AutoFillType(COMPANY_NAME), ASCIIToUTF16("Google"));
-  profile.SetInfo(AutoFillType(ADDRESS_HOME_LINE1),
+  profile.SetInfo(AutofillType(NAME_FIRST), ASCIIToUTF16("John"));
+  profile.SetInfo(AutofillType(NAME_MIDDLE), ASCIIToUTF16("Q."));
+  profile.SetInfo(AutofillType(NAME_LAST), ASCIIToUTF16("Smith"));
+  profile.SetInfo(AutofillType(EMAIL_ADDRESS), ASCIIToUTF16("js@example.com"));
+  profile.SetInfo(AutofillType(COMPANY_NAME), ASCIIToUTF16("Google"));
+  profile.SetInfo(AutofillType(ADDRESS_HOME_LINE1),
                   ASCIIToUTF16("1234 Apple Way"));
-  profile.SetInfo(AutoFillType(ADDRESS_HOME_LINE2), ASCIIToUTF16("unit 5"));
-  profile.SetInfo(AutoFillType(ADDRESS_HOME_CITY), ASCIIToUTF16("Los Angeles"));
-  profile.SetInfo(AutoFillType(ADDRESS_HOME_STATE), ASCIIToUTF16("CA"));
-  profile.SetInfo(AutoFillType(ADDRESS_HOME_ZIP), ASCIIToUTF16("90025"));
-  profile.SetInfo(AutoFillType(ADDRESS_HOME_COUNTRY), ASCIIToUTF16("US"));
-  profile.SetInfo(AutoFillType(PHONE_HOME_WHOLE_NUMBER),
+  profile.SetInfo(AutofillType(ADDRESS_HOME_LINE2), ASCIIToUTF16("unit 5"));
+  profile.SetInfo(AutofillType(ADDRESS_HOME_CITY), ASCIIToUTF16("Los Angeles"));
+  profile.SetInfo(AutofillType(ADDRESS_HOME_STATE), ASCIIToUTF16("CA"));
+  profile.SetInfo(AutofillType(ADDRESS_HOME_ZIP), ASCIIToUTF16("90025"));
+  profile.SetInfo(AutofillType(ADDRESS_HOME_COUNTRY), ASCIIToUTF16("US"));
+  profile.SetInfo(AutofillType(PHONE_HOME_WHOLE_NUMBER),
                   ASCIIToUTF16("18181234567"));
-  profile.SetInfo(AutoFillType(PHONE_FAX_WHOLE_NUMBER),
+  profile.SetInfo(AutofillType(PHONE_FAX_WHOLE_NUMBER),
                   ASCIIToUTF16("1915243678"));
   db.AddAutoFillProfile(profile);
 
@@ -1670,7 +1670,7 @@ TEST_F(WebDatabaseTest, UpdateAutoFillProfile) {
 
   // Now, update the profile and save the update to the database.
   // The modification date should change to reflect the update.
-  profile.SetInfo(AutoFillType(EMAIL_ADDRESS), ASCIIToUTF16("js@smith.xyz"));
+  profile.SetInfo(AutofillType(EMAIL_ADDRESS), ASCIIToUTF16("js@smith.xyz"));
   db.UpdateAutoFillProfile(profile);
 
   // Get the profile.
@@ -1714,13 +1714,13 @@ TEST_F(WebDatabaseTest, UpdateCreditCard) {
 
   // Add a credit card to the db.
   CreditCard credit_card;
-  credit_card.SetInfo(AutoFillType(CREDIT_CARD_NAME),
+  credit_card.SetInfo(AutofillType(CREDIT_CARD_NAME),
                       ASCIIToUTF16("Jack Torrance"));
-  credit_card.SetInfo(AutoFillType(CREDIT_CARD_NUMBER),
+  credit_card.SetInfo(AutofillType(CREDIT_CARD_NUMBER),
                       ASCIIToUTF16("1234567890123456"));
-  credit_card.SetInfo(AutoFillType(CREDIT_CARD_EXP_MONTH),
+  credit_card.SetInfo(AutofillType(CREDIT_CARD_EXP_MONTH),
                       ASCIIToUTF16("04"));
-  credit_card.SetInfo(AutoFillType(CREDIT_CARD_EXP_4_DIGIT_YEAR),
+  credit_card.SetInfo(AutofillType(CREDIT_CARD_EXP_4_DIGIT_YEAR),
                       ASCIIToUTF16("2013"));
   db.AddCreditCard(credit_card);
 
@@ -1746,7 +1746,7 @@ TEST_F(WebDatabaseTest, UpdateCreditCard) {
 
   // Now, update the credit card and save the update to the database.
   // The modification date should change to reflect the update.
-  credit_card.SetInfo(AutoFillType(CREDIT_CARD_EXP_MONTH), ASCIIToUTF16("01"));
+  credit_card.SetInfo(AutofillType(CREDIT_CARD_EXP_MONTH), ASCIIToUTF16("01"));
   db.UpdateCreditCard(credit_card);
 
   // Get the credit card.
@@ -2788,20 +2788,20 @@ TEST_F(WebDatabaseMigrationTest, MigrateVersion31ToCurrent) {
     EXPECT_NO_FATAL_FAILURE(AutoFillProfile33FromStatement(
         s1, &profile_a, &profile_date_modified_a));
     EXPECT_EQ(profile.guid(), profile_a.guid());
-    EXPECT_EQ(profile.GetFieldText(AutoFillType(COMPANY_NAME)),
-              profile_a.GetFieldText(AutoFillType(COMPANY_NAME)));
-    EXPECT_EQ(profile.GetFieldText(AutoFillType(ADDRESS_HOME_LINE1)),
-              profile_a.GetFieldText(AutoFillType(ADDRESS_HOME_LINE1)));
-    EXPECT_EQ(profile.GetFieldText(AutoFillType(ADDRESS_HOME_LINE2)),
-              profile_a.GetFieldText(AutoFillType(ADDRESS_HOME_LINE2)));
-    EXPECT_EQ(profile.GetFieldText(AutoFillType(ADDRESS_HOME_CITY)),
-              profile_a.GetFieldText(AutoFillType(ADDRESS_HOME_CITY)));
-    EXPECT_EQ(profile.GetFieldText(AutoFillType(ADDRESS_HOME_STATE)),
-              profile_a.GetFieldText(AutoFillType(ADDRESS_HOME_STATE)));
-    EXPECT_EQ(profile.GetFieldText(AutoFillType(ADDRESS_HOME_ZIP)),
-              profile_a.GetFieldText(AutoFillType(ADDRESS_HOME_ZIP)));
-    EXPECT_EQ(profile.GetFieldText(AutoFillType(ADDRESS_HOME_COUNTRY)),
-              profile_a.GetFieldText(AutoFillType(ADDRESS_HOME_COUNTRY)));
+    EXPECT_EQ(profile.GetFieldText(AutofillType(COMPANY_NAME)),
+              profile_a.GetFieldText(AutofillType(COMPANY_NAME)));
+    EXPECT_EQ(profile.GetFieldText(AutofillType(ADDRESS_HOME_LINE1)),
+              profile_a.GetFieldText(AutofillType(ADDRESS_HOME_LINE1)));
+    EXPECT_EQ(profile.GetFieldText(AutofillType(ADDRESS_HOME_LINE2)),
+              profile_a.GetFieldText(AutofillType(ADDRESS_HOME_LINE2)));
+    EXPECT_EQ(profile.GetFieldText(AutofillType(ADDRESS_HOME_CITY)),
+              profile_a.GetFieldText(AutofillType(ADDRESS_HOME_CITY)));
+    EXPECT_EQ(profile.GetFieldText(AutofillType(ADDRESS_HOME_STATE)),
+              profile_a.GetFieldText(AutofillType(ADDRESS_HOME_STATE)));
+    EXPECT_EQ(profile.GetFieldText(AutofillType(ADDRESS_HOME_ZIP)),
+              profile_a.GetFieldText(AutofillType(ADDRESS_HOME_ZIP)));
+    EXPECT_EQ(profile.GetFieldText(AutofillType(ADDRESS_HOME_COUNTRY)),
+              profile_a.GetFieldText(AutofillType(ADDRESS_HOME_COUNTRY)));
     EXPECT_EQ(profile_date_modified, profile_date_modified_a);
 
     sql::Statement s2(

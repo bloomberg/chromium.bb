@@ -5,8 +5,8 @@
 #include "chrome/test/live_sync/live_autofill_sync_test.h"
 
 #include "chrome/browser/autofill/autofill_common_test.h"
-#include "chrome/browser/autofill/autofill_type.h"
 #include "chrome/browser/autofill/autofill_profile.h"
+#include "chrome/browser/autofill/autofill_type.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/sync/profile_sync_test_util.h"
@@ -214,7 +214,7 @@ void LiveAutofillSyncTest::RemoveProfile(int profile, const std::string& guid) {
 
 void LiveAutofillSyncTest::UpdateProfile(int profile,
                                          const std::string& guid,
-                                         const AutoFillType& type,
+                                         const AutofillType& type,
                                          const string16& value) {
   const std::vector<AutoFillProfile*>& all_profiles = GetAllProfiles(profile);
   std::vector<AutoFillProfile> profiles;

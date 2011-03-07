@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -7,9 +7,9 @@
 #include <functional>
 #include <vector>
 
+#include "base/string_number_conversions.h"
 #include "base/task.h"
 #include "base/time.h"
-#include "base/string_number_conversions.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/autofill/autofill_profile.h"
 #include "chrome/browser/profiles/profile.h"
@@ -243,8 +243,8 @@ bool AutofillModelAssociator::TraverseAndAssociateAllSyncNodes(
         all_profiles_from_db.begin(); ix != all_profiles_from_db.end(); ++ix) {
       AutoFillProfile* p = *ix;
       VLOG(2) << "[AUTOFILL MIGRATION]  "
-              << p->GetFieldText(AutoFillType(NAME_FIRST))
-              << p->GetFieldText(AutoFillType(NAME_LAST));
+              << p->GetFieldText(AutofillType(NAME_FIRST))
+              << p->GetFieldText(AutofillType(NAME_LAST));
     }
   }
 
@@ -498,9 +498,9 @@ bool AutofillModelAssociator::MergeTimestamps(
 // the local value if they differ, and return whether the merge happened.
 bool MergeField(FormGroup* f, AutofillFieldType t,
                 const std::string& specifics_field) {
-  if (UTF16ToUTF8(f->GetFieldText(AutoFillType(t))) == specifics_field)
+  if (UTF16ToUTF8(f->GetFieldText(AutofillType(t))) == specifics_field)
     return false;
-  f->SetInfo(AutoFillType(t), UTF8ToUTF16(specifics_field));
+  f->SetInfo(AutofillType(t), UTF8ToUTF16(specifics_field));
   return true;
 }
 

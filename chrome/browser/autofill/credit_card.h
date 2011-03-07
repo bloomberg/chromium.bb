@@ -26,12 +26,12 @@ class CreditCard : public FormGroup {
   virtual void GetPossibleFieldTypes(const string16& text,
                                      FieldTypeSet* possible_types) const;
   virtual void GetAvailableFieldTypes(FieldTypeSet* available_types) const;
-  virtual void FindInfoMatches(const AutoFillType& type,
+  virtual void FindInfoMatches(const AutofillType& type,
                                const string16& info,
                                std::vector<string16>* matched_text) const;
-  virtual string16 GetFieldText(const AutoFillType& type) const;
-  virtual string16 GetPreviewText(const AutoFillType& type) const;
-  virtual void SetInfo(const AutoFillType& type, const string16& value);
+  virtual string16 GetFieldText(const AutofillType& type) const;
+  virtual string16 GetPreviewText(const AutofillType& type) const;
+  virtual void SetInfo(const AutofillType& type, const string16& value);
   virtual const string16 Label() const;
 
   // Special method to set value for HTML5 month input type.

@@ -88,7 +88,7 @@ void ContactInfo::GetAvailableFieldTypes(FieldTypeSet* available_types) const {
     available_types->insert(COMPANY_NAME);
 }
 
-void ContactInfo::FindInfoMatches(const AutoFillType& type,
+void ContactInfo::FindInfoMatches(const AutofillType& type,
                                   const string16& info,
                                   std::vector<string16>* matched_text) const {
   DCHECK(matched_text);
@@ -104,7 +104,7 @@ void ContactInfo::FindInfoMatches(const AutoFillType& type,
   }
 }
 
-string16 ContactInfo::GetFieldText(const AutoFillType& type) const {
+string16 ContactInfo::GetFieldText(const AutofillType& type) const {
   AutofillFieldType field_type = type.field_type();
   if (field_type == NAME_FIRST)
     return first();
@@ -133,9 +133,9 @@ string16 ContactInfo::GetFieldText(const AutoFillType& type) const {
   return string16();
 }
 
-void ContactInfo::SetInfo(const AutoFillType& type, const string16& value) {
+void ContactInfo::SetInfo(const AutofillType& type, const string16& value) {
   AutofillFieldType field_type = type.field_type();
-  DCHECK_EQ(AutoFillType::CONTACT_INFO, type.group());
+  DCHECK_EQ(AutofillType::CONTACT_INFO, type.group());
   if (field_type == NAME_FIRST)
     SetFirst(value);
   else if (field_type == NAME_MIDDLE || field_type == NAME_MIDDLE_INITIAL)

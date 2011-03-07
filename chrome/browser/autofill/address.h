@@ -23,11 +23,11 @@ class Address : public FormGroup {
   virtual void GetPossibleFieldTypes(const string16& text,
                                      FieldTypeSet* possible_types) const;
   virtual void GetAvailableFieldTypes(FieldTypeSet* available_types) const;
-  virtual void FindInfoMatches(const AutoFillType& type,
+  virtual void FindInfoMatches(const AutofillType& type,
                                const string16& info,
                                std::vector<string16>* matched_text) const;
-  virtual string16 GetFieldText(const AutoFillType& type) const;
-  virtual void SetInfo(const AutoFillType& type, const string16& value);
+  virtual string16 GetFieldText(const AutofillType& type) const;
+  virtual void SetInfo(const AutofillType& type, const string16& value);
 
   const std::string& country_code() const { return country_code_; }
   void set_country_code(const std::string& country_code) {

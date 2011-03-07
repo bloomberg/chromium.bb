@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -9,135 +9,135 @@
 
 namespace {
 
-const AutoFillType::AutoFillTypeDefinition kUnknownAutoFillTypeDefinition = {
-  /* UNKNOWN_TYPE */ AutoFillType::NO_GROUP, AutoFillType::NO_SUBGROUP
+const AutofillType::AutofillTypeDefinition kUnknownAutofillTypeDefinition = {
+  /* UNKNOWN_TYPE */ AutofillType::NO_GROUP, AutofillType::NO_SUBGROUP
 };
 
-AutoFillType::AutoFillTypeDefinition kAutoFillTypeDefinitions[] = {
+AutofillType::AutofillTypeDefinition kAutofillTypeDefinitions[] = {
   // NO_SERVER_DATA
-  { AutoFillType::NO_GROUP, AutoFillType::NO_SUBGROUP },
+  { AutofillType::NO_GROUP, AutofillType::NO_SUBGROUP },
   // UNKNOWN_TYPE
-  kUnknownAutoFillTypeDefinition,
+  kUnknownAutofillTypeDefinition,
   // EMPTY_TYPE
-  { AutoFillType::NO_GROUP, AutoFillType::NO_SUBGROUP },
+  { AutofillType::NO_GROUP, AutofillType::NO_SUBGROUP },
 
   // NAME_FIRST
-  { AutoFillType::CONTACT_INFO, AutoFillType::NO_SUBGROUP },
+  { AutofillType::CONTACT_INFO, AutofillType::NO_SUBGROUP },
   // NAME_MIDDLE
-  { AutoFillType::CONTACT_INFO, AutoFillType::NO_SUBGROUP },
+  { AutofillType::CONTACT_INFO, AutofillType::NO_SUBGROUP },
   // NAME_LAST
-  { AutoFillType::CONTACT_INFO, AutoFillType::NO_SUBGROUP },
+  { AutofillType::CONTACT_INFO, AutofillType::NO_SUBGROUP },
   // NAME_MIDDLE_INITIAL
-  { AutoFillType::CONTACT_INFO, AutoFillType::NO_SUBGROUP },
+  { AutofillType::CONTACT_INFO, AutofillType::NO_SUBGROUP },
   // NAME_FULL
-  { AutoFillType::CONTACT_INFO, AutoFillType::NO_SUBGROUP },
+  { AutofillType::CONTACT_INFO, AutofillType::NO_SUBGROUP },
   // NAME_SUFFIX
-  { AutoFillType::CONTACT_INFO, AutoFillType::NO_SUBGROUP },
+  { AutofillType::CONTACT_INFO, AutofillType::NO_SUBGROUP },
 
   // EMAIL_ADDRESS
-  { AutoFillType::CONTACT_INFO, AutoFillType::NO_SUBGROUP },
+  { AutofillType::CONTACT_INFO, AutofillType::NO_SUBGROUP },
 
   // PHONE_HOME_NUMBER
-  { AutoFillType::PHONE_HOME, AutoFillType::PHONE_NUMBER },
+  { AutofillType::PHONE_HOME, AutofillType::PHONE_NUMBER },
   // PHONE_HOME_CITY_CODE
-  { AutoFillType::PHONE_HOME, AutoFillType::PHONE_CITY_CODE },
+  { AutofillType::PHONE_HOME, AutofillType::PHONE_CITY_CODE },
   // PHONE_HOME_COUNTRY_CODE
-  { AutoFillType::PHONE_HOME, AutoFillType::PHONE_COUNTRY_CODE },
+  { AutofillType::PHONE_HOME, AutofillType::PHONE_COUNTRY_CODE },
   // PHONE_HOME_CITY_AND_NUMBER
-  { AutoFillType::PHONE_HOME, AutoFillType::PHONE_CITY_AND_NUMBER },
+  { AutofillType::PHONE_HOME, AutofillType::PHONE_CITY_AND_NUMBER },
   // PHONE_HOME_WHOLE_NUMBER
-  { AutoFillType::PHONE_HOME, AutoFillType::PHONE_WHOLE_NUMBER },
+  { AutofillType::PHONE_HOME, AutofillType::PHONE_WHOLE_NUMBER },
 
   // Work phone numbers (values [15,19]) are deprecated.
-  kUnknownAutoFillTypeDefinition,
-  kUnknownAutoFillTypeDefinition,
-  kUnknownAutoFillTypeDefinition,
-  kUnknownAutoFillTypeDefinition,
-  kUnknownAutoFillTypeDefinition,
+  kUnknownAutofillTypeDefinition,
+  kUnknownAutofillTypeDefinition,
+  kUnknownAutofillTypeDefinition,
+  kUnknownAutofillTypeDefinition,
+  kUnknownAutofillTypeDefinition,
 
   // PHONE_FAX_NUMBER
-  { AutoFillType::PHONE_FAX, AutoFillType::PHONE_NUMBER },
+  { AutofillType::PHONE_FAX, AutofillType::PHONE_NUMBER },
   // PHONE_FAX_CITY_CODE
-  { AutoFillType::PHONE_FAX, AutoFillType::PHONE_CITY_CODE },
+  { AutofillType::PHONE_FAX, AutofillType::PHONE_CITY_CODE },
   // PHONE_FAX_COUNTRY_CODE
-  { AutoFillType::PHONE_FAX, AutoFillType::PHONE_COUNTRY_CODE },
+  { AutofillType::PHONE_FAX, AutofillType::PHONE_COUNTRY_CODE },
   // PHONE_FAX_CITY_AND_NUMBER
-  { AutoFillType::PHONE_FAX, AutoFillType::PHONE_CITY_AND_NUMBER },
+  { AutofillType::PHONE_FAX, AutofillType::PHONE_CITY_AND_NUMBER },
   // PHONE_FAX_WHOLE_NUMBER
-  { AutoFillType::PHONE_FAX, AutoFillType::PHONE_WHOLE_NUMBER },
+  { AutofillType::PHONE_FAX, AutofillType::PHONE_WHOLE_NUMBER },
 
   // Cell phone numbers (values [25, 29]) are deprecated.
-  kUnknownAutoFillTypeDefinition,
-  kUnknownAutoFillTypeDefinition,
-  kUnknownAutoFillTypeDefinition,
-  kUnknownAutoFillTypeDefinition,
-  kUnknownAutoFillTypeDefinition,
+  kUnknownAutofillTypeDefinition,
+  kUnknownAutofillTypeDefinition,
+  kUnknownAutofillTypeDefinition,
+  kUnknownAutofillTypeDefinition,
+  kUnknownAutofillTypeDefinition,
 
   // ADDRESS_HOME_LINE1
-  { AutoFillType::ADDRESS_HOME, AutoFillType::ADDRESS_LINE1 },
+  { AutofillType::ADDRESS_HOME, AutofillType::ADDRESS_LINE1 },
   // ADDRESS_HOME_LINE2
-  { AutoFillType::ADDRESS_HOME, AutoFillType::ADDRESS_LINE2 },
+  { AutofillType::ADDRESS_HOME, AutofillType::ADDRESS_LINE2 },
   // ADDRESS_HOME_APT_NUM
-  { AutoFillType::ADDRESS_HOME, AutoFillType::ADDRESS_APT_NUM },
+  { AutofillType::ADDRESS_HOME, AutofillType::ADDRESS_APT_NUM },
   // ADDRESS_HOME_CITY
-  { AutoFillType::ADDRESS_HOME, AutoFillType::ADDRESS_CITY },
+  { AutofillType::ADDRESS_HOME, AutofillType::ADDRESS_CITY },
   // ADDRESS_HOME_STATE
-  { AutoFillType::ADDRESS_HOME, AutoFillType::ADDRESS_STATE },
+  { AutofillType::ADDRESS_HOME, AutofillType::ADDRESS_STATE },
   // ADDRESS_HOME_ZIP
-  { AutoFillType::ADDRESS_HOME, AutoFillType::ADDRESS_ZIP },
+  { AutofillType::ADDRESS_HOME, AutofillType::ADDRESS_ZIP },
   // ADDRESS_HOME_COUNTRY
-  { AutoFillType::ADDRESS_HOME, AutoFillType::ADDRESS_COUNTRY },
+  { AutofillType::ADDRESS_HOME, AutofillType::ADDRESS_COUNTRY },
 
   // ADDRESS_BILLING_LINE1
-  { AutoFillType::ADDRESS_BILLING, AutoFillType::ADDRESS_LINE1 },
+  { AutofillType::ADDRESS_BILLING, AutofillType::ADDRESS_LINE1 },
   // ADDRESS_BILLING_LINE2
-  { AutoFillType::ADDRESS_BILLING, AutoFillType::ADDRESS_LINE2 },
+  { AutofillType::ADDRESS_BILLING, AutofillType::ADDRESS_LINE2 },
   // ADDRESS_BILLING_APT_NUM
-  { AutoFillType::ADDRESS_BILLING, AutoFillType::ADDRESS_APT_NUM },
+  { AutofillType::ADDRESS_BILLING, AutofillType::ADDRESS_APT_NUM },
   // ADDRESS_BILLING_CITY
-  { AutoFillType::ADDRESS_BILLING, AutoFillType::ADDRESS_CITY },
+  { AutofillType::ADDRESS_BILLING, AutofillType::ADDRESS_CITY },
   // ADDRESS_BILLING_STATE
-  { AutoFillType::ADDRESS_BILLING, AutoFillType::ADDRESS_STATE },
+  { AutofillType::ADDRESS_BILLING, AutofillType::ADDRESS_STATE },
   // ADDRESS_BILLING_ZIP
-  { AutoFillType::ADDRESS_BILLING, AutoFillType::ADDRESS_ZIP },
+  { AutofillType::ADDRESS_BILLING, AutofillType::ADDRESS_ZIP },
   // ADDRESS_BILLING_COUNTRY
-  { AutoFillType::ADDRESS_BILLING, AutoFillType::ADDRESS_COUNTRY },
+  { AutofillType::ADDRESS_BILLING, AutofillType::ADDRESS_COUNTRY },
 
   // ADDRESS_SHIPPING values [44,50] are deprecated.
-  kUnknownAutoFillTypeDefinition,
-  kUnknownAutoFillTypeDefinition,
-  kUnknownAutoFillTypeDefinition,
-  kUnknownAutoFillTypeDefinition,
-  kUnknownAutoFillTypeDefinition,
-  kUnknownAutoFillTypeDefinition,
-  kUnknownAutoFillTypeDefinition,
+  kUnknownAutofillTypeDefinition,
+  kUnknownAutofillTypeDefinition,
+  kUnknownAutofillTypeDefinition,
+  kUnknownAutofillTypeDefinition,
+  kUnknownAutofillTypeDefinition,
+  kUnknownAutofillTypeDefinition,
+  kUnknownAutofillTypeDefinition,
 
   // CREDIT_CARD_NAME
-  { AutoFillType::CREDIT_CARD, AutoFillType::NO_SUBGROUP },
+  { AutofillType::CREDIT_CARD, AutofillType::NO_SUBGROUP },
   // CREDIT_CARD_NUMBER
-  { AutoFillType::CREDIT_CARD, AutoFillType::NO_SUBGROUP },
+  { AutofillType::CREDIT_CARD, AutofillType::NO_SUBGROUP },
   // CREDIT_CARD_EXP_MONTH
-  { AutoFillType::CREDIT_CARD, AutoFillType::NO_SUBGROUP },
+  { AutofillType::CREDIT_CARD, AutofillType::NO_SUBGROUP },
   // CREDIT_CARD_EXP_2_DIGIT_YEAR
-  { AutoFillType::CREDIT_CARD, AutoFillType::NO_SUBGROUP },
+  { AutofillType::CREDIT_CARD, AutofillType::NO_SUBGROUP },
   // CREDIT_CARD_EXP_4_DIGIT_YEAR
-  { AutoFillType::CREDIT_CARD, AutoFillType::NO_SUBGROUP },
+  { AutofillType::CREDIT_CARD, AutofillType::NO_SUBGROUP },
   // CREDIT_CARD_EXP_DATE_2_DIGIT_YEAR
-  { AutoFillType::CREDIT_CARD, AutoFillType::NO_SUBGROUP },
+  { AutofillType::CREDIT_CARD, AutofillType::NO_SUBGROUP },
   // CREDIT_CARD_EXP_DATE_4_DIGIT_YEAR
-  { AutoFillType::CREDIT_CARD, AutoFillType::NO_SUBGROUP },
+  { AutofillType::CREDIT_CARD, AutofillType::NO_SUBGROUP },
   // CREDIT_CARD_TYPE
-  { AutoFillType::CREDIT_CARD, AutoFillType::NO_SUBGROUP },
+  { AutofillType::CREDIT_CARD, AutofillType::NO_SUBGROUP },
   // CREDIT_CARD_VERIFICATION_CODE
-  { AutoFillType::CREDIT_CARD, AutoFillType::NO_SUBGROUP },
+  { AutofillType::CREDIT_CARD, AutofillType::NO_SUBGROUP },
 
   // COMPANY_NAME
-  { AutoFillType::CONTACT_INFO, AutoFillType::NO_SUBGROUP },
+  { AutofillType::CONTACT_INFO, AutofillType::NO_SUBGROUP },
 };
 
 }  // namespace
 
-AutoFillType::AutoFillType(AutofillFieldType field_type) {
+AutofillType::AutofillType(AutofillFieldType field_type) {
   if ((field_type < NO_SERVER_DATA || field_type >= MAX_VALID_FIELD_TYPE) ||
       (field_type >= 15 && field_type <= 19) ||
       (field_type >= 25 && field_type <= 29) ||
@@ -147,30 +147,30 @@ AutoFillType::AutoFillType(AutofillFieldType field_type) {
     field_type_ = field_type;
 }
 
-AutoFillType::AutoFillType(const AutoFillType& autofill_type) {
+AutofillType::AutofillType(const AutofillType& autofill_type) {
   *this = autofill_type;
 }
 
-AutoFillType& AutoFillType::operator=(const AutoFillType& autofill_type) {
+AutofillType& AutofillType::operator=(const AutofillType& autofill_type) {
   if (this != &autofill_type)
     this->field_type_ = autofill_type.field_type_;
   return *this;
 }
 
-AutofillFieldType AutoFillType::field_type() const {
+AutofillFieldType AutofillType::field_type() const {
   return field_type_;
 }
 
-FieldTypeGroup AutoFillType::group() const {
-  return kAutoFillTypeDefinitions[field_type_].group;
+FieldTypeGroup AutofillType::group() const {
+  return kAutofillTypeDefinitions[field_type_].group;
 }
 
-FieldTypeSubGroup AutoFillType::subgroup() const {
-  return kAutoFillTypeDefinitions[field_type_].subgroup;
+FieldTypeSubGroup AutofillType::subgroup() const {
+  return kAutofillTypeDefinitions[field_type_].subgroup;
 }
 
 // static
-AutofillFieldType AutoFillType::GetEquivalentFieldType(
+AutofillFieldType AutofillType::GetEquivalentFieldType(
     AutofillFieldType field_type) {
   // When billing information is requested from the profile we map to the
   // home address equivalents.
@@ -202,7 +202,7 @@ AutofillFieldType AutoFillType::GetEquivalentFieldType(
 }
 
 // static
-std::string AutoFillType::FieldTypeToString(AutofillFieldType type) {
+std::string AutofillType::FieldTypeToString(AutofillFieldType type) {
   switch (type) {
     case NO_SERVER_DATA:
       return "NO_SERVER_DATA";
@@ -299,7 +299,7 @@ std::string AutoFillType::FieldTypeToString(AutofillFieldType type) {
 }
 
 // static
-AutofillFieldType AutoFillType::StringToFieldType(const std::string& str) {
+AutofillFieldType AutofillType::StringToFieldType(const std::string& str) {
   if (str == "NO_SERVER_DATA")
     return NO_SERVER_DATA;
   if (str == "UNKNOWN_TYPE")
