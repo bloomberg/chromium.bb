@@ -240,6 +240,12 @@ ChromotingScriptableObject* ChromotingInstance::GetScriptableObject() {
 
 void ChromotingInstance::SubmitLoginInfo(const std::string& username,
                                          const std::string& password) {
+  if (host_connection_->state() !=
+      protocol::ConnectionToHost::STATE_CONNECTED) {
+    LogDebugInfo("Client not connected or already authenticated.");
+    return;
+  }
+
   protocol::LocalLoginCredentials* credentials =
       new protocol::LocalLoginCredentials();
   credentials->set_type(protocol::PASSWORD);

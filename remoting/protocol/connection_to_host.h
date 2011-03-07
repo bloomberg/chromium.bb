@@ -37,6 +37,14 @@ class VideoStub;
 
 class ConnectionToHost : public JingleClient::Callback {
  public:
+  enum State {
+    STATE_EMPTY,
+    STATE_CONNECTED,
+    STATE_AUTHENTICATED,
+    STATE_FAILED,
+    STATE_CLOSED,
+  };
+
   class HostEventCallback {
    public:
     virtual ~HostEventCallback() {}
@@ -95,6 +103,9 @@ class ConnectionToHost : public JingleClient::Callback {
   // Called when the host accepts the client authentication.
   void OnClientAuthenticated();
 
+  // Return the current state of ConnectionToHost.
+  State state() const;
+
  private:
   // The message loop for the jingle thread this object works on.
   MessageLoop* message_loop();
@@ -111,10 +122,8 @@ class ConnectionToHost : public JingleClient::Callback {
   void OnDisconnected();
   void OnServerClosed();
 
-  // Initially false, this is set to true once the client has authenticated
-  // properly. When this is false, many messages to the host (like input events)
-  // will be suppressed.
-  bool client_authenticated_;
+  // Internal state of the connection.
+  State state_;
 
   JingleThread* thread_;
 

@@ -25,7 +25,7 @@ ConnectionToHost::ConnectionToHost(
     JingleThread* thread,
     talk_base::NetworkManager* network_manager,
     talk_base::PacketSocketFactory* socket_factory)
-    : client_authenticated_(false),
+    : state_(STATE_EMPTY),
       thread_(thread),
       network_manager_(network_manager),
       socket_factory_(socket_factory),
@@ -195,14 +195,17 @@ void ConnectionToHost::OnSessionStateChange(
 
   switch (state) {
     case Session::FAILED:
+      state_ = STATE_FAILED;
       event_callback_->OnConnectionFailed(this);
       break;
 
     case Session::CLOSED:
+      state_ = STATE_CLOSED;
       event_callback_->OnConnectionClosed(this);
       break;
 
     case Session::CONNECTED:
+      state_ = STATE_CONNECTED;
       // Initialize reader and writer.
       video_reader_.reset(VideoReader::Create(session_->config()));
       video_reader_->Init(session_, video_stub_);
@@ -218,7 +221,9 @@ void ConnectionToHost::OnSessionStateChange(
 }
 
 void ConnectionToHost::OnClientAuthenticated() {
-  client_authenticated_ = true;
+  // TODO(hclam): Don't send anything except authentication request if it is
+  // not authenticated.
+  state_ = STATE_AUTHENTICATED;
 
   // Create and enable the input stub now that we're authenticated.
   input_stub_.reset(new InputSender(session_->event_channel()));
@@ -229,6 +234,10 @@ void ConnectionToHost::OnClientAuthenticated() {
     host_stub_->OnAuthenticated();
   if (client_stub_)
     client_stub_->OnAuthenticated();
+}
+
+ConnectionToHost::State ConnectionToHost::state() const {
+  return state_;
 }
 
 }  // namespace protocol
