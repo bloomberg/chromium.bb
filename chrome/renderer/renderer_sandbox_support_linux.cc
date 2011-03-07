@@ -23,12 +23,14 @@ static int GetSandboxFD() {
 namespace renderer_sandbox_support {
 
 std::string getFontFamilyForCharacters(const uint16_t* utf16,
-                                       size_t num_utf16) {
+                                       size_t num_utf16,
+                                       const char* preferred_locale) {
   Pickle request;
   request.WriteInt(LinuxSandbox::METHOD_GET_FONT_FAMILY_FOR_CHARS);
   request.WriteInt(num_utf16);
   for (size_t i = 0; i < num_utf16; ++i)
     request.WriteUInt32(utf16[i]);
+  request.WriteString(preferred_locale);
 
   uint8_t buf[512];
   const ssize_t n = UnixDomainSocket::SendRecvMsg(GetSandboxFD(), buf,

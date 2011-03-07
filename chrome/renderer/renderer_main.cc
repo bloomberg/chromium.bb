@@ -9,6 +9,7 @@
 
 #include "base/command_line.h"
 #include "base/debug/trace_event.h"
+#include "base/i18n/rtl.h"
 #include "base/mac/scoped_nsautorelease_pool.h"
 #include "base/metrics/field_trial.h"
 #include "base/message_loop.h"
@@ -33,6 +34,7 @@
 #include "grit/generated_resources.h"
 #include "net/base/net_module.h"
 #include "ui/base/system_monitor/system_monitor.h"
+#include "ui/base/ui_base_switches.h"
 #include "ui/gfx/gfx_module.h"
 
 #if defined(OS_MACOSX)
@@ -213,6 +215,18 @@ int RendererMain(const MainFunctionParams& parameters) {
 #if defined(USE_LINUX_BREAKPAD)
   // Needs to be called after we have chrome::DIR_USER_DATA.
   InitCrashReporter();
+#endif
+
+#if defined(OS_CHROMEOS)
+  // As Zygote process starts up earlier than browser process gets its own
+  // locale (at login time for Chrome OS), we have to set the ICU default
+  // locale for renderer process here.
+  // ICU locale will be used for fallback font selection etc.
+  if (parsed_command_line.HasSwitch(switches::kLang)) {
+    const std::string locale =
+        parsed_command_line.GetSwitchValueASCII(switches::kLang);
+    base::i18n::SetICUDefaultLocale(locale);
+  }
 #endif
 
   // Configure modules that need access to resources.

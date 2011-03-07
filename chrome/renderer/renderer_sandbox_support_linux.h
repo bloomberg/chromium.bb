@@ -20,10 +20,13 @@ namespace renderer_sandbox_support {
 // specified by |utf16|
 //   utf16: a native-endian UTF16 string
 //   num_utf16: the number of 16-bit words in |utf16|
+//   preferred_locale: preferred locale identifier for the |utf16|
 //
 // Returns: the font family or an empty string if the request could not be
 // satisfied.
-std::string getFontFamilyForCharacters(const uint16_t* utf16, size_t num_utf16);
+std::string getFontFamilyForCharacters(const uint16_t* utf16,
+                                       size_t num_utf16,
+                                       const char* preferred_locale);
 
 void getRenderStyleForStrike(const char* family, int sizeAndStyle,
                              WebKit::WebFontRenderStyle* out);

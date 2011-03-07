@@ -115,7 +115,14 @@ class RendererWebKitClientImpl::SandboxSupport
   virtual bool loadFont(NSFont* srcFont, ATSFontContainerRef* out);
 #elif defined(OS_LINUX)
   virtual WebKit::WebString getFontFamilyForCharacters(
-      const WebKit::WebUChar* characters, size_t numCharacters);
+      const WebKit::WebUChar* characters,
+      size_t numCharacters,
+      const char* preferred_locale);
+  // TODO(kochi): Remove this old interface once WebKit side of the change
+  // https://bugs.webkit.org/show_bug.cgi?id=55453 is landed.
+  virtual WebKit::WebString getFontFamilyForCharacters(
+      const WebKit::WebUChar* characters,
+      size_t numCharacters);
   virtual void getRenderStyleForStrike(
       const char* family, int sizeAndStyle, WebKit::WebFontRenderStyle* out);
 
@@ -431,7 +438,9 @@ bool RendererWebKitClientImpl::SandboxSupport::ensureFontLoaded(HFONT font) {
 #elif defined(OS_LINUX)
 
 WebString RendererWebKitClientImpl::SandboxSupport::getFontFamilyForCharacters(
-    const WebKit::WebUChar* characters, size_t num_characters) {
+    const WebKit::WebUChar* characters,
+    size_t num_characters,
+    const char* preferred_locale) {
   base::AutoLock lock(unicode_font_families_mutex_);
   const std::string key(reinterpret_cast<const char*>(characters),
                         num_characters * sizeof(characters[0]));
@@ -442,9 +451,18 @@ WebString RendererWebKitClientImpl::SandboxSupport::getFontFamilyForCharacters(
 
   const std::string family_name =
       renderer_sandbox_support::getFontFamilyForCharacters(characters,
-                                                           num_characters);
+                                                           num_characters,
+                                                           preferred_locale);
   unicode_font_families_.insert(make_pair(key, family_name));
   return WebString::fromUTF8(family_name);
+}
+
+// TODO(kochi): Remove this once the WebKit side of this change in
+// https://bugs.webkit.org/show_bug.cgi?id=55453 is landed.
+WebString RendererWebKitClientImpl::SandboxSupport::getFontFamilyForCharacters(
+    const WebKit::WebUChar* characters,
+    size_t num_characters) {
+  return getFontFamilyForCharacters(characters, num_characters, "");
 }
 
 void RendererWebKitClientImpl::SandboxSupport::getRenderStyleForStrike(
