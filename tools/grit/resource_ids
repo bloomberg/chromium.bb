@@ -59,7 +59,7 @@
     "includes": [7000],
   },
 
-  "ui/base/strings/app_locale_settings.grd": {
+  "app/resources/app_locale_settings.grd": {
     "messages": [7500],
   },
   "chrome/app/resources/locale_settings.grd": {
@@ -81,7 +81,7 @@
     "messages": [9000],
   },
 
-  "ui/base/strings/app_strings.grd": {
+  "app/resources/app_strings.grd": {
     "messages": [9500],
   },
   # Chromium strings and Google Chrome strings must start at the same id.

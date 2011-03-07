@@ -59,9 +59,10 @@
         'gl_binding_output_dir': '<(SHARED_INTERMEDIATE_DIR)/app',
       },
       'dependencies': [
-        # app resources and ui_strings should be shared with the 64-bit
+        # app resources and app_strings should be shared with the 64-bit
         # target, but it doesn't work due to a bug in gyp
         'app_resources',
+        'app_strings',
         '../base/base.gyp:base',
         '../base/base.gyp:base_i18n',
         '../ui/gfx/gfx.gyp:gfx',
@@ -72,7 +73,6 @@
         '../third_party/libpng/libpng.gyp:libpng',
         '../third_party/sqlite/sqlite.gyp:sqlite',
         '../third_party/zlib/zlib.gyp:zlib',
-        '../ui/base/strings/ui_strings.gyp:ui_strings',
         '<(libjpeg_gyp_path):libjpeg',
       ],
       'include_dirs': [
@@ -420,11 +420,11 @@
           'type': '<(library)',
           'msvs_guid': '4987C6F9-B230-48E5-BF91-418EAE69AD90',
           'dependencies': [
-            # app resources and ui_strings should be shared with the 32-bit
+            # app resources and app_strings should be shared with the 32-bit
             # target, but it doesn't work due to a bug in gyp
             'app_resources',
+            'app_strings',
             '../base/base.gyp:base_nacl_win64',
-            '../ui/base/strings/ui_strings.gyp:ui_strings',
           ],
           'variables': {
             'app_base_target': 1,

@@ -64,11 +64,11 @@
       'msvs_guid': '6F9258E5-294F-47B2-919D-17FFE7A8B751',
       'dependencies': [
         '../app/app.gyp:app_base',
+        '../app/app.gyp:app_strings',
         '../app/app.gyp:app_resources',
         '../skia/skia.gyp:skia',
         '../third_party/icu/icu.gyp:icui18n',
         '../third_party/icu/icu.gyp:icuuc',
-        '../ui/base/strings/ui_strings.gyp:ui_strings',
       ],
       'sources': [
         # All .cc, .h under views, except unittests
@@ -460,6 +460,7 @@
       'type': 'executable',
       'dependencies': [
         '../app/app.gyp:app_resources',
+        '../app/app.gyp:app_strings',
         '../base/base.gyp:base',
         '../base/base.gyp:test_support_base',
         '../skia/skia.gyp:skia',
@@ -467,7 +468,6 @@
         '../testing/gtest.gyp:gtest',
         '../third_party/icu/icu.gyp:icui18n',
         '../third_party/icu/icu.gyp:icuuc',
-        '../ui/base/strings/ui_strings.gyp:ui_strings',
         'views',
       ],
       'include_dirs': [

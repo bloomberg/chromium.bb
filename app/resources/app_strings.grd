@@ -157,12 +157,12 @@ need to be translated for each locale.-->
     <file path="app_strings_es.xtb" lang="es" />
     <file path="app_strings_es-419.xtb" lang="es-419" />
     <file path="app_strings_et.xtb" lang="et" />
-    <file path="../../../third_party/launchpad_translations/app_strings_eu.xtb" lang="eu" />
+    <file path="../../third_party/launchpad_translations/app_strings_eu.xtb" lang="eu" />
     <file path="app_strings_fa.xtb" lang="fa" />
     <file path="app_strings_fi.xtb" lang="fi" />
     <file path="app_strings_fil.xtb" lang="fil" />
     <file path="app_strings_fr.xtb" lang="fr" />
-    <file path="../../../third_party/launchpad_translations/app_strings_gl.xtb" lang="gl" />
+    <file path="../../third_party/launchpad_translations/app_strings_gl.xtb" lang="gl" />
     <file path="app_strings_gu.xtb" lang="gu" />
     <file path="app_strings_hi.xtb" lang="hi" />
     <file path="app_strings_hr.xtb" lang="hr" />
@@ -172,10 +172,10 @@ need to be translated for each locale.-->
     <!-- The translation console uses 'iw' for Hebrew, but we use 'he'. -->
     <file path="app_strings_iw.xtb" lang="he" />
     <file path="app_strings_ja.xtb" lang="ja" />
-    <file path="../../../third_party/launchpad_translations/app_strings_ka.xtb" lang="ka" />
+    <file path="../../third_party/launchpad_translations/app_strings_ka.xtb" lang="ka" />
     <file path="app_strings_kn.xtb" lang="kn" />
     <file path="app_strings_ko.xtb" lang="ko" />
-    <file path="../../../third_party/launchpad_translations/app_strings_ku.xtb" lang="ku" />
+    <file path="../../third_party/launchpad_translations/app_strings_ku.xtb" lang="ku" />
     <file path="app_strings_lt.xtb" lang="lt" />
     <file path="app_strings_lv.xtb" lang="lv" />
     <file path="app_strings_ml.xtb" lang="ml" />
@@ -196,7 +196,7 @@ need to be translated for each locale.-->
     <file path="app_strings_te.xtb" lang="te" />
     <file path="app_strings_th.xtb" lang="th" />
     <file path="app_strings_tr.xtb" lang="tr" />
-    <file path="../../../third_party/launchpad_translations/app_strings_ug.xtb" lang="ug" />
+    <file path="../../third_party/launchpad_translations/app_strings_ug.xtb" lang="ug" />
     <file path="app_strings_uk.xtb" lang="uk" />
     <file path="app_strings_vi.xtb" lang="vi" />
     <file path="app_strings_zh-CN.xtb" lang="zh-CN" />

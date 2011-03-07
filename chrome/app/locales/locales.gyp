@@ -25,8 +25,8 @@
     'dependencies': [
       '../../chrome.gyp:chrome_strings',
       '../../chrome.gyp:platform_locale_settings',
-      '../../../ui/base/strings/ui_strings.gyp:ui_strings',
       '../../../webkit/support/webkit_support.gyp:webkit_strings',
+      '../../../app/app.gyp:app_strings',
     ],
     'msvs_settings': {
       'VCLinkerTool': {
