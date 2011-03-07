@@ -24,6 +24,14 @@
 // does not currently exist.
 + (ConfirmQuitPanelController*)sharedController;
 
+// Checks whether the |event| should trigger the feature.
++ (BOOL)eventTriggersFeature:(NSEvent*)event;
+
+// Runs a modal loop that brings up the panel and handles the logic for if and
+// when to terminate. Returns NSApplicationTerminateReply for use in
+// -[NSApplicationDelegate applicationShouldTerminate:].
+- (NSApplicationTerminateReply)runModalLoopForApplication:(NSApplication*)app;
+
 // Shows the window.
 - (void)showWindow:(id)sender;
 
