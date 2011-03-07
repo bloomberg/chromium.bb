@@ -315,6 +315,7 @@ void LocationBarView::InvalidatePageActions() {
 void LocationBarView::OnFocus() {
   // Focus the location entry native view.
   location_entry_->SetFocus();
+  NotifyAccessibilityEvent(AccessibilityTypes::EVENT_FOCUS);
 }
 
 void LocationBarView::SetProfile(Profile* profile) {
@@ -1003,6 +1004,18 @@ bool LocationBarView::SkipDefaultKeyEventProcessing(const views::KeyEvent& e) {
 
 AccessibilityTypes::Role LocationBarView::GetAccessibleRole() {
   return AccessibilityTypes::ROLE_GROUPING;
+}
+
+string16 LocationBarView::GetAccessibleValue() {
+  return location_entry_->GetText();
+}
+
+void LocationBarView::GetSelectionBounds(int* start_index, int* end_index) {
+  string16::size_type entry_start;
+  string16::size_type entry_end;
+  location_entry_->GetSelectionBounds(&entry_start, &entry_end);
+  *start_index = entry_start;
+  *end_index = entry_end;
 }
 
 void LocationBarView::WriteDragDataForView(views::View* sender,

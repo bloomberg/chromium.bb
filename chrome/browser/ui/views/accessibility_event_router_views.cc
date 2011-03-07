@@ -13,19 +13,18 @@
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/views/location_bar/location_bar_view.h"
 #include "chrome/common/notification_type.h"
+#include "ui/base/models/combobox_model.h"
 #include "views/accessibility/accessibility_types.h"
 #include "views/controls/button/custom_button.h"
 #include "views/controls/button/menu_button.h"
 #include "views/controls/button/native_button.h"
+#include "views/controls/combobox/combobox.h"
 #include "views/controls/link.h"
 #include "views/controls/menu/menu_item_view.h"
 #include "views/controls/menu/submenu_view.h"
+#include "views/controls/textfield/textfield.h"
 #include "views/view.h"
 #include "views/window/window.h"
-
-#if defined(OS_WIN)
-#include "chrome/browser/autocomplete/autocomplete_edit_view_win.h"
-#endif
 
 using views::FocusManager;
 
@@ -153,6 +152,10 @@ void AccessibilityEventRouterViews::DispatchAccessibilityNotification(
     SendLinkNotification(view, type, profile);
   } else if (class_name == LocationBarView::kViewClassName) {
     SendLocationBarNotification(view, type, profile);
+  } else if (class_name == views::Textfield::kViewClassName) {
+    SendTextfieldNotification(view, type, profile);
+  } else if (class_name == views::Combobox::kViewClassName) {
+    SendComboboxNotification(view, type, profile);
   }
 }
 
@@ -238,21 +241,39 @@ bool AccessibilityEventRouterViews::IsMenuEvent(
 
 void AccessibilityEventRouterViews::SendLocationBarNotification(
     views::View* view, NotificationType type, Profile* profile) {
-#if defined(OS_WIN)
-  // This particular method isn't needed on Linux/Views, we get text
-  // notifications directly from GTK.
   std::string name = GetViewName(view);
   LocationBarView* location_bar = static_cast<LocationBarView*>(view);
-  AutocompleteEditViewWin* location_entry =
-      static_cast<AutocompleteEditViewWin*>(location_bar->location_entry());
-
-  std::string value = WideToUTF8(location_entry->GetText());
-  std::wstring::size_type selection_start;
-  std::wstring::size_type selection_end;
-  location_entry->GetSelectionBounds(&selection_start, &selection_end);
-
+  int start_index = -1;
+  int end_index = -1;
+  location_bar->GetSelectionBounds(&start_index, &end_index);
   AccessibilityTextBoxInfo info(profile, name, false);
-  info.SetValue(value, selection_start, selection_end);
+  std::string value = UTF16ToUTF8(location_bar->GetAccessibleValue());
+  info.SetValue(value, start_index, end_index);
   SendAccessibilityNotification(type, &info);
-#endif
+}
+
+void AccessibilityEventRouterViews::SendTextfieldNotification(
+    views::View* view, NotificationType type, Profile* profile) {
+  std::string name = GetViewName(view);
+  views::Textfield* textfield = static_cast<views::Textfield*>(view);
+  int start_index = -1;
+  int end_index = -1;
+  textfield->GetSelectionBounds(&start_index, &end_index);
+  bool password = textfield->IsPassword();
+  AccessibilityTextBoxInfo info(profile, name, password);
+  std::string value = UTF16ToUTF8(textfield->GetAccessibleValue());
+  info.SetValue(value, start_index, end_index);
+  SendAccessibilityNotification(type, &info);
+}
+
+void AccessibilityEventRouterViews::SendComboboxNotification(
+    views::View* view, NotificationType type, Profile* profile) {
+  std::string name = GetViewName(view);
+  views::Combobox* combobox = static_cast<views::Combobox*>(view);
+  std::string value = UTF16ToUTF8(combobox->GetAccessibleValue());
+  int selected_item = combobox->selected_item();
+  int item_count = combobox->model()->GetItemCount();
+  AccessibilityComboBoxInfo info(
+      profile, name, value, selected_item, item_count);
+  SendAccessibilityNotification(type, &info);
 }
