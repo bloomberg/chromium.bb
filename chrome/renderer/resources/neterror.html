@@ -160,6 +160,15 @@ if (window.screen.colorDepth >= 24)
       <span jscontent="suggestionsHomepageMsg"></span>
       <a jscontent="hostName" jsvalues="href:homePage"></a>
     </li>
+    <li jsselect="suggestionsCheckConnection">
+      <span jsvalues=".innerHTML:msg"></span>
+    </li>
+    <li jsselect="suggestionsDNSConfig">
+      <span jsvalues=".innerHTML:msg"></span>
+    </li>
+    <li jsselect="suggestionsDisableDNSPrefetch">
+      <span jsvalues=".innerHTML:msg"></span>
+    </li>
     <li jsselect="suggestionsFirewallConfig">
       <span jsvalues=".innerHTML:msg"></span>
     </li>

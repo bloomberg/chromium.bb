@@ -5900,6 +5900,25 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_ERRORPAGES_SUGGESTION_HOMEPAGE" desc="When a page fails to load, sometimes we provide a suggesting of trying just the hostname of the site.">
         Go to the home page of the site:
       </message>
+      <message name="IDS_ERRORPAGES_SUGGESTION_CHECK_CONNECTION" desc="When a page fails to load, sometimes we suggest checking the network connection.">
+        Check your internet connection. Reboot any routers, modems, or other
+        network devices you may be using.
+      </message>
+      <message name="IDS_ERRORPAGES_SUGGESTION_DNS_CONFIG" desc="When a page fails to load, sometimes we suggest checking the DNS configuration.">
+        Check your DNS settings. Contact your network administrator if you're
+        not sure what this means.
+      </message>
+      <message name="IDS_ERRORPAGES_SUGGESTION_DNS_PREFETCH" desc="When a page fails to load, sometimes we suggest disabling prefetching.">
+        Try disabling DNS prefetching by following these steps:
+        Go to
+        <ph name="BEGIN_BOLD">&lt;strong&gt;</ph>
+        Wrench menu &gt;
+        <ph name="SETTINGS_TITLE">&lt;span jscontent="settingsTitle"&gt;&lt;/span&gt;<ex>Settings</ex></ph>
+        &gt;
+        <ph name="ADVANCED_TITLE">&lt;span jscontent="advancedTitle"&gt;&lt;/span&gt;<ex>Under the Hood</ex></ph>
+        <ph name="END_BOLD">&lt;/strong&gt;</ph>
+        and deselect &quot;<ph name="NO_PREFETCH_DESCRIPTION">&lt;span jscontent="noPrefetchTitle"&gt;&lt;/span&gt;<ex>Use DNS pre-fetching to improve page load performance</ex></ph>.&quot;
+      </message>
       <message name="IDS_ERRORPAGES_SUGGESTION_FIREWALL_CONFIG" desc="When a web page fails to load, in some cases we suggest reconfiguring the firewall.">
         Try adding
         <ph name="PRODUCT_NAME">&lt;span jscontent="productName"&gt;&lt;/span&gt;<ex>Google Chrome</ex></ph>
@@ -6007,6 +6026,16 @@ Keep your key file in a safe place. You will need it to create new versions of y
       </message>
       <message name="IDS_ERRORPAGES_SUMMARY_NOT_AVAILABLE" desc="Summary in the error page when we can't connect to a site.">
         The webpage at <ph name="URL">&lt;strong jscontent="failedUrl"&gt;&lt;/strong&gt;</ph> might be temporarily down or it may have moved permanently to a new web address.
+      </message>
+      <message name="IDS_ERRORPAGES_SUMMARY_NAME_NOT_RESOLVED" desc="Summary in the error page when a dns look up fails.">
+        The server at <ph name="HOST_NAME">&lt;strong jscontent="hostName"&gt;&lt;/strong&gt;</ph>
+        can't be found, because the DNS lookup failed.  DNS is the web service
+        that translates a website's name to its internet address.  This error is
+        most often caused by having no connection to the internet or a
+        misconfigured network.  It can also be caused by an unresponsive DNS
+        server or a firewall preventing
+        <ph name="PRODUCT_NAME">&lt;span jscontent="productName"&gt;&lt;/span&gt;<ex>Google Chrome</ex></ph>
+        from accessing the network.
       </message>
       <message name="IDS_ERRORPAGES_SUMMARY_ADDRESS_UNREACHABLE" desc="Summary in the error page when we can't reach a site.  This is slightly more specific than just being unable to connect, as it means we can't find a route to the server.">
         <ph name="PRODUCT_NAME">&lt;span jscontent="productName"&gt;&lt;/span&gt;<ex>Google Chrome</ex></ph>
@@ -6172,7 +6201,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
         The attempt to connect to the server failed.
       </message>
       <message name="IDS_ERRORPAGES_DETAILS_NAME_NOT_RESOLVED" desc="The error message displayed when a dns look up fails.">
-        The server could not be found.
+        Unable to resolve the server's DNS address.
       </message>
       <message name="IDS_ERRORPAGES_DETAILS_ADDRESS_UNREACHABLE" desc="The error message displayed when we can't reach a server.">
         Unable to reach the server.
