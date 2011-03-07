@@ -93,6 +93,11 @@ bool ServiceIPCServer::Send(IPC::Message* msg) {
 
 bool ServiceIPCServer::OnMessageReceived(const IPC::Message& msg) {
   bool handled = true;
+  // When we get a message, always mark the client as connected. The
+  // ChannelProxy::Context is only letting OnChannelConnected get called once,
+  // so on the Mac and Linux, we never would set client_connected_ to true
+  // again on subsequent connections.
+  client_connected_ = true;
   IPC_BEGIN_MESSAGE_MAP(ServiceIPCServer, msg)
     IPC_MESSAGE_HANDLER(ServiceMsg_EnableCloudPrintProxy,
                         OnEnableCloudPrintProxy)
