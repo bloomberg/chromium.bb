@@ -122,8 +122,7 @@ class WindowDelegate {
   Window* window() const { return window_; }
 
  private:
-  friend class WindowGtk;
-  friend class WindowWin;
+  friend class Window;
   // The Window this delegate is bound to. Weak reference.
   Window* window_;
 };

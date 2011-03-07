@@ -95,10 +95,7 @@ ClientView* DialogDelegate::CreateClientView(Window* window) {
 }
 
 DialogClientView* DialogDelegate::GetDialogClientView() const {
-  ClientView* client_view = window()->GetClientView();
-  DialogClientView* dialog_client_view = client_view->AsDialogClientView();
-  DCHECK(dialog_client_view);
-  return dialog_client_view;
+  return window()->client_view()->AsDialogClientView();
 }
 
 AccessibilityTypes::Role DialogDelegate::accessible_role() const {

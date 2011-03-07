@@ -207,7 +207,7 @@ WinInputWindowDialog::WinInputWindowDialog(HWND parent,
       delegate_(delegate) {
   window_ = views::Window::CreateChromeWindow(parent, gfx::Rect(),
                                               new ContentView(this));
-  window_->GetClientView()->AsDialogClientView()->UpdateDialogButtons();
+  window_->client_view()->AsDialogClientView()->UpdateDialogButtons();
 }
 
 WinInputWindowDialog::~WinInputWindowDialog() {

@@ -96,9 +96,6 @@ class WindowWin : public WidgetWin,
   virtual void SetIsAlwaysOnTop(bool always_on_top);
   virtual NonClientFrameView* CreateFrameViewForWindow();
   virtual void UpdateFrameAfterFrameChange();
-  virtual WindowDelegate* GetDelegate() const;
-  virtual NonClientView* GetNonClientView() const;
-  virtual ClientView* GetClientView() const;
   virtual gfx::NativeWindow GetNativeWindow() const;
   virtual bool ShouldUseNativeFrame() const;
   virtual void FrameTypeChanged();
@@ -239,15 +236,6 @@ class WindowWin : public WidgetWin,
 
   // A delegate implementation that handles events received here.
   internal::NativeWindowDelegate* delegate_;
-
-  // Our window delegate (see Init method for documentation).
-  WindowDelegate* window_delegate_;
-
-  // The View that provides the non-client area of the window (title bar,
-  // window controls, sizing borders etc). To use an implementation other than
-  // the default, this class must be subclassed and this value set to the
-  // desired implementation before calling |Init|.
-  NonClientView* non_client_view_;
 
   // Whether we should SetFocus() on a newly created window after
   // Init(). Defaults to true.

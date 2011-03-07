@@ -491,6 +491,6 @@ void SelectFileDialogImpl::FileBrowseDelegateHandler::HandleSetDialogTitle(
     DCHECK(containing_view);
 
     containing_view->GetWindow()->UpdateWindowTitle();
-    containing_view->GetWindow()->GetNonClientView()->SchedulePaint();
+    containing_view->GetWindow()->non_client_view()->SchedulePaint();
   }
 }

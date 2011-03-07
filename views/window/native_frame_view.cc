@@ -35,7 +35,7 @@ gfx::Rect NativeFrameView::GetWindowBoundsForClientBounds(
 }
 
 int NativeFrameView::NonClientHitTest(const gfx::Point& point) {
-  return frame_->GetClientView()->NonClientHitTest(point);
+  return frame_->client_view()->NonClientHitTest(point);
 }
 
 void NativeFrameView::GetWindowMask(const gfx::Size& size,
@@ -52,9 +52,9 @@ void NativeFrameView::ResetWindowControls() {
 }
 
 gfx::Size NativeFrameView::GetPreferredSize() {
-  gfx::Size pref = frame_->GetClientView()->GetPreferredSize();
+  gfx::Size pref = frame_->client_view()->GetPreferredSize();
   gfx::Rect bounds(0, 0, pref.width(), pref.height());
-  return frame_->GetNonClientView()->GetWindowBoundsForClientBounds(
+  return frame_->non_client_view()->GetWindowBoundsForClientBounds(
       bounds).size();
 }
 

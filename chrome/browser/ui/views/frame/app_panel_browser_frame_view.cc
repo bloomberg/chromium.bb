@@ -147,7 +147,7 @@ int AppPanelBrowserFrameView::NonClientHitTest(const gfx::Point& point) {
     return HTNOWHERE;
 
   int frame_component =
-      frame_->GetWindow()->GetClientView()->NonClientHitTest(point);
+      frame_->GetWindow()->client_view()->NonClientHitTest(point);
 
   // See if we're in the sysmenu region.  (We check the ClientView first to be
   // consistent with OpaqueBrowserFrameView; it's not really necessary here.)
@@ -171,7 +171,7 @@ int AppPanelBrowserFrameView::NonClientHitTest(const gfx::Point& point) {
   int window_component = GetHTComponentForFrame(point,
       NonClientBorderThickness(), NonClientBorderThickness(),
       kResizeAreaCornerSize, kResizeAreaCornerSize,
-      frame_->GetWindow()->GetDelegate()->CanResize());
+      frame_->GetWindow()->window_delegate()->CanResize());
   // Fall back to the caption if no other component matches.
   return (window_component == HTNOWHERE) ? HTCAPTION : window_component;
 }
@@ -251,7 +251,7 @@ bool AppPanelBrowserFrameView::ShouldTabIconViewAnimate() const {
 }
 
 SkBitmap AppPanelBrowserFrameView::GetFavIconForTabIconView() {
-  return frame_->GetWindow()->GetDelegate()->GetWindowIcon();
+  return frame_->GetWindow()->window_delegate()->GetWindowIcon();
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -396,13 +396,13 @@ void AppPanelBrowserFrameView::PaintMaximizedFrameBorder(gfx::Canvas* canvas) {
   SkBitmap* titlebar_bottom = rb.GetBitmapNamed(IDR_APP_TOP_CENTER);
   int edge_height = titlebar_bottom->height() - kClientEdgeThickness;
   canvas->TileImageInt(*titlebar_bottom, 0,
-                       frame_->GetWindow()->GetClientView()->y() - edge_height,
+                       frame_->GetWindow()->client_view()->y() - edge_height,
                        width(), edge_height);
 }
 
 void AppPanelBrowserFrameView::PaintTitleBar(gfx::Canvas* canvas) {
   // The window icon is painted by the TabIconView.
-  views::WindowDelegate* d = frame_->GetWindow()->GetDelegate();
+  views::WindowDelegate* d = frame_->GetWindow()->window_delegate();
   canvas->DrawStringInt(d->GetWindowTitle(), BrowserFrame::GetTitleFont(),
       SK_ColorBLACK, GetMirroredXForRect(title_bounds_), title_bounds_.y(),
       title_bounds_.width(), title_bounds_.height());

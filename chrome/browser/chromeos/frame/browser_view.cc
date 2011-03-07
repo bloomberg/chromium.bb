@@ -234,7 +234,7 @@ void BrowserView::Init() {
   // a NonClientFrameView even though visually a TabStrip is over a
   // NonClientFrameView.
   BrowserFrameGtk* gtk_frame = static_cast<BrowserFrameGtk*>(frame());
-  gtk_frame->GetNonClientView()->SetContextMenuController(this);
+  gtk_frame->non_client_view()->SetContextMenuController(this);
 
   // Listen to wrench menu opens.
   toolbar()->AddMenuListener(this);

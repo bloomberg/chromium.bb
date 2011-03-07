@@ -1660,7 +1660,7 @@ bool BrowserView::GetSavedWindowBounds(gfx::Rect* bounds) const {
           bounds->height() + toolbar_->GetPreferredSize().height());
     }
 
-    gfx::Rect window_rect = frame_->GetWindow()->GetNonClientView()->
+    gfx::Rect window_rect = frame_->GetWindow()->non_client_view()->
         GetWindowBoundsForClientBounds(*bounds);
     window_rect.set_origin(bounds->origin());
 
@@ -2573,7 +2573,7 @@ BrowserWindow* BrowserWindow::CreateBrowserWindow(Browser* browser) {
   BrowserView* view = new BrowserView(browser);
   BrowserFrame::Create(view, browser->profile());
 
-  view->GetWindow()->GetNonClientView()->SetAccessibleName(
+  view->GetWindow()->non_client_view()->SetAccessibleName(
       l10n_util::GetStringUTF16(IDS_PRODUCT_NAME));
 
   return view;

@@ -38,7 +38,7 @@ void BrowserFrameChromeos::InitBrowserFrame() {
 
   if (!browser_view()->IsBrowserTypePopup()) {
     // On chromeos we want windows to always render as active.
-    GetNonClientView()->DisableInactiveRendering(true);
+    non_client_view()->DisableInactiveRendering(true);
   }
 }
 

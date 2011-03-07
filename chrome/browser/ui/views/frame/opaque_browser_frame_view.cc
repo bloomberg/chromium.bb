@@ -238,7 +238,7 @@ gfx::Size OpaqueBrowserFrameView::GetMinimumSize() {
   min_size.Enlarge(2 * border_thickness,
                    NonClientTopBorderHeight(false, false) + border_thickness);
 
-  views::WindowDelegate* delegate = frame_->GetWindow()->GetDelegate();
+  views::WindowDelegate* delegate = frame_->GetWindow()->window_delegate();
   int min_titlebar_width = (2 * FrameBorderThickness(false)) +
       kIconLeftSpacing +
       (delegate && delegate->ShouldShowWindowIcon() ?
@@ -283,7 +283,7 @@ int OpaqueBrowserFrameView::NonClientHitTest(const gfx::Point& point) {
     return HTNOWHERE;
 
   int frame_component =
-      frame_->GetWindow()->GetClientView()->NonClientHitTest(point);
+      frame_->GetWindow()->client_view()->NonClientHitTest(point);
 
   // See if we're in the sysmenu region.  We still have to check the tabstrip
   // first so that clicks in a tab don't get treated as sysmenu clicks.
@@ -313,8 +313,8 @@ int OpaqueBrowserFrameView::NonClientHitTest(const gfx::Point& point) {
       minimize_button_->GetMirroredBounds().Contains(point))
     return HTMINBUTTON;
 
-  views::WindowDelegate* delegate = frame_->GetWindow()->GetDelegate();
-  if (delegate == NULL) {
+  views::WindowDelegate* delegate = frame_->GetWindow()->window_delegate();
+  if (!delegate) {
     LOG(WARNING) << "delegate is NULL, returning safe default.";
     return HTCAPTION;
   }
@@ -384,7 +384,7 @@ bool OpaqueBrowserFrameView::HitTest(const gfx::Point& l) const {
   bool vertical_tabs = browser_view_->UseVerticalTabs();
   gfx::Rect tabstrip_bounds = browser_view_->tabstrip()->bounds();
   gfx::Point tabstrip_origin(tabstrip_bounds.origin());
-  View::ConvertPointToView(frame_->GetWindow()->GetClientView(),
+  View::ConvertPointToView(frame_->GetWindow()->client_view(),
                            this, &tabstrip_origin);
   tabstrip_bounds.set_origin(tabstrip_origin);
   if ((!vertical_tabs && l.y() > tabstrip_bounds.bottom()) ||
@@ -432,8 +432,8 @@ bool OpaqueBrowserFrameView::ShouldTabIconViewAnimate() const {
 }
 
 SkBitmap OpaqueBrowserFrameView::GetFavIconForTabIconView() {
-  views::WindowDelegate* delegate = frame_->GetWindow()->GetDelegate();
-  if (delegate == NULL) {
+  views::WindowDelegate* delegate = frame_->GetWindow()->window_delegate();
+  if (!delegate) {
     LOG(WARNING) << "delegate is NULL, returning safe default.";
     return SkBitmap();
   }
@@ -465,7 +465,7 @@ int OpaqueBrowserFrameView::NonClientTopBorderHeight(
     bool restored,
     bool ignore_vertical_tabs) const {
   views::Window* window = frame_->GetWindow();
-  views::WindowDelegate* delegate = window->GetDelegate();
+  views::WindowDelegate* delegate = window->window_delegate();
   // |delegate| may be NULL if called from callback of InputMethodChanged while
   // a window is being destroyed.
   // See more discussion at http://crosbug.com/8958
@@ -509,7 +509,7 @@ gfx::Rect OpaqueBrowserFrameView::IconBounds() const {
   int size = IconSize();
   int frame_thickness = FrameBorderThickness(false);
   int y;
-  views::WindowDelegate* delegate = frame_->GetWindow()->GetDelegate();
+  views::WindowDelegate* delegate = frame_->GetWindow()->window_delegate();
   if (delegate && (delegate->ShouldShowWindowIcon() ||
                    delegate->ShouldShowWindowTitle())) {
     // Our frame border has a different "3D look" than Windows'.  Theirs has a
@@ -698,14 +698,14 @@ void OpaqueBrowserFrameView::PaintMaximizedFrameBorder(gfx::Canvas* canvas) {
         tp->GetBitmapNamed(IDR_APP_TOP_CENTER);
     int edge_height = top_center->height() - kClientEdgeThickness;
     canvas->TileImageInt(*top_center, 0,
-        window->GetClientView()->y() - edge_height, width(), edge_height);
+        window->client_view()->y() - edge_height, width(), edge_height);
   }
 }
 
 void OpaqueBrowserFrameView::PaintTitleBar(gfx::Canvas* canvas) {
   // The window icon is painted by the TabIconView.
-  views::WindowDelegate* delegate = frame_->GetWindow()->GetDelegate();
-  if (delegate == NULL) {
+  views::WindowDelegate* delegate = frame_->GetWindow()->window_delegate();
+  if (!delegate) {
     LOG(WARNING) << "delegate is NULL";
     return;
   }
@@ -856,7 +856,7 @@ void OpaqueBrowserFrameView::PaintOTRAvatar(gfx::Canvas* canvas) {
 
 void OpaqueBrowserFrameView::PaintRestoredClientEdge(gfx::Canvas* canvas) {
   ui::ThemeProvider* tp = GetThemeProvider();
-  int client_area_top = frame_->GetWindow()->GetClientView()->y();
+  int client_area_top = frame_->GetWindow()->client_view()->y();
   int image_top = client_area_top;
 
   gfx::Rect client_area_bounds = CalculateClientAreaBounds(width(), height());
@@ -1019,7 +1019,7 @@ void OpaqueBrowserFrameView::LayoutTitleBar() {
   // The window title is based on the calculated icon position, even when there
   // is no icon.
   gfx::Rect icon_bounds(IconBounds());
-  views::WindowDelegate* delegate = frame_->GetWindow()->GetDelegate();
+  views::WindowDelegate* delegate = frame_->GetWindow()->window_delegate();
   if (delegate && delegate->ShouldShowWindowIcon())
     window_icon_->SetBoundsRect(icon_bounds);
 

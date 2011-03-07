@@ -1270,7 +1270,7 @@ class DefaultButtonTest : public ViewTest {
     focus_manager_ = test_dialog_->contents_->GetFocusManager();
     ASSERT_TRUE(focus_manager_ != NULL);
     client_view_ =
-        static_cast<views::DialogClientView*>(window->GetClientView());
+        static_cast<views::DialogClientView*>(window->client_view());
     ok_button_ = client_view_->ok_button();
     cancel_button_ = client_view_->cancel_button();
   }

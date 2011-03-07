@@ -48,8 +48,8 @@ BubbleFrameView::BubbleFrameView(views::Window* frame,
       throbber_(NULL) {
   set_border(new BubbleBorder(BubbleBorder::NONE));
 
-  if (frame_->GetDelegate()->ShouldShowWindowTitle()) {
-    title_ = new views::Label(frame_->GetDelegate()->GetWindowTitle());
+  if (frame_->window_delegate()->ShouldShowWindowTitle()) {
+    title_ = new views::Label(frame_->window_delegate()->GetWindowTitle());
     title_->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
     title_->SetFont(title_->font().DeriveFont(kFontSizeCorrectionDelta,
                                               gfx::Font::BOLD));
@@ -88,7 +88,7 @@ void BubbleFrameView::StopThrobber() {
   DCHECK(throbber_ != NULL);
   throbber_->Stop();
   if (title_)
-    title_->SetText(frame_->GetDelegate()->GetWindowTitle());
+    title_->SetText(frame_->window_delegate()->GetWindowTitle());
 }
 
 gfx::Rect BubbleFrameView::GetBoundsForClientView() const {
@@ -150,9 +150,9 @@ gfx::Insets BubbleFrameView::GetInsets() const {
 }
 
 gfx::Size BubbleFrameView::GetPreferredSize() {
-  gfx::Size pref = frame_->GetClientView()->GetPreferredSize();
+  gfx::Size pref = frame_->client_view()->GetPreferredSize();
   gfx::Rect bounds(0, 0, pref.width(), pref.height());
-  return frame_->GetNonClientView()->GetWindowBoundsForClientBounds(
+  return frame_->non_client_view()->GetWindowBoundsForClientBounds(
       bounds).size();
 }
 

@@ -11,13 +11,21 @@
 #include "ui/gfx/rect.h"
 #include "ui/gfx/size.h"
 #include "views/widget/widget.h"
+#include "views/window/window_delegate.h"
 
 namespace views {
 
 ////////////////////////////////////////////////////////////////////////////////
 // Window, public:
 
-Window::Window() : native_window_(NULL) {
+Window::Window(WindowDelegate* window_delegate)
+    : native_window_(NULL),
+      window_delegate_(window_delegate),
+      ALLOW_THIS_IN_INITIALIZER_LIST(
+          non_client_view_(new NonClientView(this))) {
+  DCHECK(window_delegate_);
+  DCHECK(!window_delegate_->window_);
+  window_delegate_->window_ = this;
 }
 
 Window::~Window() {
@@ -151,18 +159,6 @@ NonClientFrameView* Window::CreateFrameViewForWindow() {
 void Window::UpdateFrameAfterFrameChange() {
 }
 
-WindowDelegate* Window::GetDelegate() const {
-  return NULL;
-}
-
-NonClientView* Window::GetNonClientView() const {
-  return NULL;
-}
-
-ClientView* Window::GetClientView() const {
-  return NULL;
-}
-
 gfx::NativeWindow Window::GetNativeWindow() const {
   return NULL;
 }
@@ -172,6 +168,19 @@ bool Window::ShouldUseNativeFrame() const {
 }
 
 void Window::FrameTypeChanged() {
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// Window, internal::NativeWindowDelegate implementation:
+
+void Window::OnWindowDestroying() {
+  non_client_view_->WindowClosing();
+  window_delegate_->WindowClosing();
+}
+
+void Window::OnWindowDestroyed() {
+  window_delegate_->DeleteDelegate();
+  window_delegate_ = NULL;
 }
 
 }  // namespace views

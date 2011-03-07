@@ -66,7 +66,7 @@ GlassBrowserFrameView::GlassBrowserFrameView(BrowserFrame* frame,
       browser_view_(browser_view),
       throbber_running_(false),
       throbber_frame_(0) {
-  if (frame_->GetWindow()->GetDelegate()->ShouldShowWindowIcon())
+  if (frame_->GetWindow()->window_delegate()->ShouldShowWindowIcon())
     InitThrobberIcons();
 }
 
@@ -167,7 +167,7 @@ int GlassBrowserFrameView::NonClientHitTest(const gfx::Point& point) {
     return HTNOWHERE;
 
   int frame_component =
-      frame_->GetWindow()->GetClientView()->NonClientHitTest(point);
+      frame_->GetWindow()->client_view()->NonClientHitTest(point);
 
   // See if we're in the sysmenu region.  We still have to check the tabstrip
   // first so that clicks in a tab don't get treated as sysmenu clicks.
@@ -184,7 +184,7 @@ int GlassBrowserFrameView::NonClientHitTest(const gfx::Point& point) {
   int window_component = GetHTComponentForFrame(point, frame_border_thickness,
       nonclient_border_thickness, frame_border_thickness,
       kResizeAreaCornerSize - frame_border_thickness,
-      frame_->GetWindow()->GetDelegate()->CanResize());
+      frame_->GetWindow()->window_delegate()->CanResize());
   // Fall back to the caption if no other component matches.
   return (window_component == HTNOWHERE) ? HTCAPTION : window_component;
 }
@@ -368,7 +368,7 @@ void GlassBrowserFrameView::PaintRestoredClientEdge(gfx::Canvas* canvas) {
   // of how tall the toolbar itself is.
   int client_area_top = browser_view_->UseVerticalTabs() ?
       client_area_bounds.y() :
-      (frame_->GetWindow()->GetClientView()->y() +
+      (frame_->GetWindow()->client_view()->y() +
       browser_view_->GetToolbarBounds().y() +
       tp->GetBitmapNamed(IDR_CONTENT_TOP_LEFT_CORNER)->height());
   int client_area_bottom =

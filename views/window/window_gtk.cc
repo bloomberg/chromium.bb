@@ -87,7 +87,7 @@ Window* Window::CreateChromeWindow(gfx::NativeWindow parent,
                                    const gfx::Rect& bounds,
                                    WindowDelegate* window_delegate) {
   WindowGtk* window = new WindowGtk(window_delegate);
-  window->GetNonClientView()->SetFrameView(window->CreateFrameViewForWindow());
+  window->non_client_view()->SetFrameView(window->CreateFrameViewForWindow());
   window->InitWindow(parent, bounds);
   return window;
 }
@@ -149,7 +149,7 @@ void WindowGtk::Close() {
     return;
   }
 
-  if (non_client_view_->CanClose()) {
+  if (GetWindow()->non_client_view()->CanClose()) {
     WidgetGtk::Close();
     window_closed_ = true;
   }
@@ -213,11 +213,11 @@ void WindowGtk::UpdateWindowTitle() {
 
   // If the non-client view is rendering its own title, it'll need to relayout
   // now.
-  non_client_view_->Layout();
+  GetWindow()->non_client_view()->Layout();
 
   // Update the native frame's text. We do this regardless of whether or not
   // the native frame is being used, since this also updates the taskbar, etc.
-  std::wstring window_title = window_delegate_->GetWindowTitle();
+  std::wstring window_title = GetWindow()->window_delegate()->GetWindowTitle();
   base::i18n::AdjustStringForLocaleDirection(&window_title);
 
   gtk_window_set_title(GetNativeWindow(), WideToUTF8(window_title).c_str());
@@ -242,18 +242,6 @@ void WindowGtk::UpdateFrameAfterFrameChange() {
   // We currently don't support different frame types on Gtk, so we don't
   // need to implement this.
   NOTIMPLEMENTED();
-}
-
-WindowDelegate* WindowGtk::GetDelegate() const {
-  return window_delegate_;
-}
-
-NonClientView* WindowGtk::GetNonClientView() const {
-  return non_client_view_;
-}
-
-ClientView* WindowGtk::GetClientView() const {
-  return non_client_view_->client_view();
 }
 
 gfx::NativeWindow WindowGtk::GetNativeWindow() const {
@@ -286,7 +274,7 @@ gboolean WindowGtk::OnButtonPress(GtkWidget* widget, GdkEventButton* event) {
   GetContainedWidgetEventCoordinates(event, &x, &y);
 
   int hittest_code =
-      non_client_view_->NonClientHitTest(gfx::Point(x, y));
+      GetWindow()->non_client_view()->NonClientHitTest(gfx::Point(x, y));
   switch (hittest_code) {
     case HTCAPTION: {
       MouseEvent mouse_pressed(ui::ET_MOUSE_PRESSED, event->x, event->y,
@@ -345,7 +333,7 @@ gboolean WindowGtk::OnMotionNotify(GtkWidget* widget, GdkEventMotion* event) {
 
   // Update the cursor for the screen edge.
   int hittest_code =
-      non_client_view_->NonClientHitTest(gfx::Point(x, y));
+      GetWindow()->non_client_view()->NonClientHitTest(gfx::Point(x, y));
   if (hittest_code != HTCLIENT) {
     GdkCursorType cursor_type = HitTestCodeToGdkCursorType(hittest_code);
     gdk_window_set_cursor(widget->window, gfx::GetCursor(cursor_type));
@@ -359,9 +347,9 @@ void WindowGtk::OnSizeAllocate(GtkWidget* widget, GtkAllocation* allocation) {
 
   // The Window's NonClientView may provide a custom shape for the Window.
   gfx::Path window_mask;
-  non_client_view_->GetWindowMask(gfx::Size(allocation->width,
-                                            allocation->height),
-                                  &window_mask);
+  GetWindow()->non_client_view()->GetWindowMask(gfx::Size(allocation->width,
+                                                          allocation->height),
+                                                &window_mask);
   GdkRegion* mask_region = window_mask.CreateNativeRegion();
   gdk_window_shape_combine_region(GetNativeView()->window, mask_region, 0, 0);
   if (mask_region)
@@ -385,7 +373,7 @@ gboolean WindowGtk::OnLeaveNotify(GtkWidget* widget, GdkEventCrossing* event) {
 }
 
 void WindowGtk::SetInitialFocus() {
-  View* v = window_delegate_->GetInitiallyFocusedView();
+  View* v = GetWindow()->window_delegate()->GetInitiallyFocusedView();
   if (v) {
     v->RequestFocus();
   }
@@ -396,16 +384,13 @@ void WindowGtk::SetInitialFocus() {
 
 WindowGtk::WindowGtk(WindowDelegate* window_delegate)
     : WidgetGtk(TYPE_WINDOW),
+      Window(window_delegate),
       ALLOW_THIS_IN_INITIALIZER_LIST(delegate_(this)),
       is_modal_(false),
-      window_delegate_(window_delegate),
-      non_client_view_(new NonClientView(this)),
       window_state_(GDK_WINDOW_STATE_WITHDRAWN),
       window_closed_(false) {
   set_native_window(this);
   is_window_ = true;
-  DCHECK(!window_delegate_->window_);
-  window_delegate_->window_ = this;
 }
 
 void WindowGtk::InitWindow(GtkWindow* parent, const gfx::Rect& bounds) {
@@ -415,7 +400,7 @@ void WindowGtk::InitWindow(GtkWindow* parent, const gfx::Rect& bounds) {
 
   // We call this after initializing our members since our implementations of
   // assorted WidgetWin functions may be called during initialization.
-  is_modal_ = window_delegate_->IsModal();
+  is_modal_ = GetWindow()->window_delegate()->IsModal();
   if (is_modal_)
     gtk_window_set_modal(GetNativeWindow(), true);
 
@@ -426,8 +411,9 @@ void WindowGtk::InitWindow(GtkWindow* parent, const gfx::Rect& bounds) {
 
   // Create the ClientView, add it to the NonClientView and add the
   // NonClientView to the RootView. This will cause everything to be parented.
-  non_client_view_->set_client_view(window_delegate_->CreateClientView(this));
-  WidgetGtk::SetContentsView(non_client_view_);
+  GetWindow()->non_client_view()->set_client_view(
+      GetWindow()->window_delegate()->CreateClientView(this));
+  WidgetGtk::SetContentsView(GetWindow()->non_client_view());
 
   UpdateWindowTitle();
   SetInitialBounds(parent, bounds);
@@ -461,19 +447,19 @@ gboolean WindowGtk::CallWindowStateEvent(GtkWidget* widget,
 
 void WindowGtk::SaveWindowPosition() {
   // The delegate may have gone away on us.
-  if (!window_delegate_)
+  if (!GetWindow()->window_delegate())
     return;
 
   bool maximized = window_state_ & GDK_WINDOW_STATE_MAXIMIZED;
-  window_delegate_->SaveWindowPlacement(GetBounds(), maximized);
+  GetWindow()->window_delegate()->SaveWindowPlacement(GetBounds(), maximized);
 }
 
 void WindowGtk::SetInitialBounds(GtkWindow* parent,
                                  const gfx::Rect& create_bounds) {
   gfx::Rect saved_bounds(create_bounds.ToGdkRectangle());
-  if (window_delegate_->GetSavedWindowBounds(&saved_bounds)) {
-    if (!window_delegate_->ShouldRestoreWindowSize())
-      saved_bounds.set_size(non_client_view_->GetPreferredSize());
+  if (GetWindow()->window_delegate()->GetSavedWindowBounds(&saved_bounds)) {
+    if (!GetWindow()->window_delegate()->ShouldRestoreWindowSize())
+      saved_bounds.set_size(GetWindow()->non_client_view()->GetPreferredSize());
     WidgetGtk::SetBounds(saved_bounds);
   } else {
     if (create_bounds.IsEmpty()) {
@@ -500,7 +486,7 @@ void WindowGtk::SizeWindowToDefault(GtkWindow* parent) {
     // We have no parent window, center over the screen.
     center_rect = Screen::GetMonitorWorkAreaNearestWindow(GetNativeView());
   }
-  gfx::Size size = non_client_view_->GetPreferredSize();
+  gfx::Size size = GetWindow()->non_client_view()->GetPreferredSize();
   gfx::Rect bounds(center_rect.x() + (center_rect.width() - size.width()) / 2,
                    center_rect.y() + (center_rect.height() - size.height()) / 2,
                    size.width(), size.height());
@@ -508,10 +494,9 @@ void WindowGtk::SizeWindowToDefault(GtkWindow* parent) {
 }
 
 void WindowGtk::OnDestroy(GtkWidget* widget) {
-  non_client_view_->WindowClosing();
+  delegate_->OnWindowDestroying();
   WidgetGtk::OnDestroy(widget);
-  window_delegate_->DeleteDelegate();
-  window_delegate_ = NULL;
+  delegate_->OnWindowDestroyed();
 }
 
 }  // namespace views

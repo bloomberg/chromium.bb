@@ -308,7 +308,7 @@ int ConstrainedWindowFrameView::NonClientHitTest(const gfx::Point& point) {
   if (!bounds().Contains(point))
     return HTNOWHERE;
 
-  int frame_component = container_->GetClientView()->NonClientHitTest(point);
+  int frame_component = container_->client_view()->NonClientHitTest(point);
 
   // See if we're in the sysmenu region.  (We check the ClientView first to be
   // consistent with OpaqueBrowserFrameView; it's not really necessary here.)
@@ -326,7 +326,7 @@ int ConstrainedWindowFrameView::NonClientHitTest(const gfx::Point& point) {
 
   int window_component = GetHTComponentForFrame(point, kFrameBorderThickness,
       NonClientBorderThickness(), kResizeAreaCornerSize, kResizeAreaCornerSize,
-      container_->GetDelegate()->CanResize());
+      container_->window_delegate()->CanResize());
   // Fall back to the caption if no other component matches.
   return (window_component == HTNOWHERE) ? HTCAPTION : window_component;
 }
@@ -566,15 +566,15 @@ views::NonClientFrameView* ConstrainedWindowWin::CreateFrameViewForWindow() {
 void ConstrainedWindowWin::FocusConstrainedWindow() {
   if ((!owner_->delegate() ||
        owner_->delegate()->ShouldFocusConstrainedWindow()) &&
-      GetDelegate() && GetDelegate()->GetInitiallyFocusedView()) {
-    GetDelegate()->GetInitiallyFocusedView()->RequestFocus();
+      window_delegate() && window_delegate()->GetInitiallyFocusedView()) {
+    window_delegate()->GetInitiallyFocusedView()->RequestFocus();
   }
 }
 
 void ConstrainedWindowWin::ShowConstrainedWindow() {
   // We marked the view as hidden during construction.  Mark it as
   // visible now so FocusManager will let us receive focus.
-  GetNonClientView()->SetVisible(true);
+  non_client_view()->SetVisible(true);
   if (owner_->delegate())
     owner_->delegate()->WillShowConstrainedWindow(owner_);
   ActivateConstrainedWindow();
@@ -593,8 +593,8 @@ void ConstrainedWindowWin::CloseConstrainedWindow() {
 }
 
 std::wstring ConstrainedWindowWin::GetWindowTitle() const {
-  if (GetDelegate())
-    return GetDelegate()->GetWindowTitle();
+  if (window_delegate())
+    return window_delegate()->GetWindowTitle();
 
   // TODO(pkasting): Shouldn't this be using a localized string, or else calling
   // NOTREACHED()?
@@ -613,7 +613,7 @@ ConstrainedWindowWin::ConstrainedWindowWin(
     views::WindowDelegate* window_delegate)
     : WindowWin(window_delegate),
       owner_(owner) {
-  GetNonClientView()->SetFrameView(CreateFrameViewForWindow());
+  non_client_view()->SetFrameView(CreateFrameViewForWindow());
 
   set_window_style(WS_CHILD | WS_CLIPSIBLINGS | WS_CLIPCHILDREN | WS_CAPTION |
                    WS_THICKFRAME | WS_SYSMENU);
@@ -621,7 +621,7 @@ ConstrainedWindowWin::ConstrainedWindowWin(
   // Views default to visible.  Since we are creating a window that is
   // not visible (no WS_VISIBLE), mark our View as hidden so that
   // FocusManager can deal with it properly.
-  GetNonClientView()->SetVisible(false);
+  non_client_view()->SetVisible(false);
 
   WindowWin::Init(owner_->GetNativeView(), gfx::Rect());
 }
@@ -667,7 +667,7 @@ void ConstrainedWindowWin::OnWindowPosChanged(WINDOWPOS* window_pos) {
   // If the window was moved or sized, tell the owner.
   if (!(window_pos->flags & SWP_NOMOVE) || !(window_pos->flags & SWP_NOSIZE))
     owner_->DidMoveOrResize(this);
-  SetMsgHandled(FALSE);
+  WindowWin::OnWindowPosChanged(window_pos);
 }
 
 

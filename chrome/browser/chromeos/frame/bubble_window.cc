@@ -55,7 +55,7 @@ void BubbleWindow::InitWindow(GtkWindow* parent, const gfx::Rect& bounds) {
 void BubbleWindow::TrimMargins(int margin_left, int margin_right,
                                int margin_top, int margin_bottom,
                                int border_radius) {
-  gfx::Size size = GetNonClientView()->GetPreferredSize();
+  gfx::Size size = non_client_view()->GetPreferredSize();
   const int w = size.width() - margin_left - margin_right;
   const int h = size.height() - margin_top - margin_bottom;
   GdkRectangle rect0 = {0, border_radius, w, h - 2 * border_radius};
@@ -111,7 +111,7 @@ views::Window* BubbleWindow::Create(
     Style style,
     views::WindowDelegate* window_delegate) {
   BubbleWindow* window = new BubbleWindow(window_delegate);
-  window->GetNonClientView()->SetFrameView(new BubbleFrameView(window, style));
+  window->non_client_view()->SetFrameView(new BubbleFrameView(window, style));
   window->InitWindow(parent, bounds);
 
   if (style == STYLE_XSHAPE) {

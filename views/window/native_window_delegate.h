@@ -18,6 +18,13 @@ namespace internal {
 class NativeWindowDelegate {
  public:
   virtual ~NativeWindowDelegate() {}
+
+  // Called just before the native window is destroyed. This is the delegate's
+  // last chance to do anything with the native window handle.
+  virtual void OnWindowDestroying() = 0;
+
+  // Called just after the native window is destroyed.
+  virtual void OnWindowDestroyed() = 0;
 };
 
 }  // namespace internal

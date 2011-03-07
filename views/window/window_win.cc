@@ -218,7 +218,8 @@ Window* Window::CreateChromeWindow(gfx::NativeWindow parent,
                                    const gfx::Rect& bounds,
                                    WindowDelegate* window_delegate) {
   WindowWin* window = new WindowWin(window_delegate);
-  window->GetNonClientView()->SetFrameView(window->CreateFrameViewForWindow());
+  window->GetWindow()->non_client_view()->SetFrameView(
+      window->CreateFrameViewForWindow());
   window->Init(parent, bounds);
   return window;
 }
@@ -341,7 +342,7 @@ void WindowWin::Close() {
     return;
   }
 
-  if (non_client_view_->CanClose()) {
+  if (GetWindow()->non_client_view()->CanClose()) {
     SaveWindowPosition();
     RestoreEnabledIfNecessary();
     WidgetWin::Close();
@@ -466,7 +467,7 @@ void WindowWin::SetUseDragFrame(bool use_drag_frame) {
 
 void WindowWin::EnableClose(bool enable) {
   // If the native frame is rendering its own close button, ask it to disable.
-  non_client_view_->EnableClose(enable);
+  GetWindow()->non_client_view()->EnableClose(enable);
 
   // Disable the native frame's close button regardless of whether or not the
   // native frame is in use, since this also affects the system menu.
@@ -482,21 +483,22 @@ void WindowWin::EnableClose(bool enable) {
 
 void WindowWin::DisableInactiveRendering() {
   disable_inactive_rendering_ = true;
-  non_client_view_->DisableInactiveRendering(disable_inactive_rendering_);
+  GetWindow()->non_client_view()->DisableInactiveRendering(
+      disable_inactive_rendering_);
 }
 
 void WindowWin::UpdateWindowTitle() {
   // If the non-client view is rendering its own title, it'll need to relayout
   // now.
-  non_client_view_->Layout();
+  GetWindow()->non_client_view()->Layout();
 
   // Update the native frame's text. We do this regardless of whether or not
   // the native frame is being used, since this also updates the taskbar, etc.
   std::wstring window_title;
   if (IsAccessibleWidget())
-    window_title = window_delegate_->GetAccessibleWindowTitle();
+    window_title = GetWindow()->window_delegate()->GetAccessibleWindowTitle();
   else
-    window_title = window_delegate_->GetWindowTitle();
+    window_title = GetWindow()->window_delegate()->GetWindowTitle();
   base::i18n::AdjustStringForLocaleDirection(&window_title);
   SetWindowText(GetNativeView(), window_title.c_str());
 
@@ -507,11 +509,11 @@ void WindowWin::UpdateWindowTitle() {
 void WindowWin::UpdateWindowIcon() {
   // If the non-client view is rendering its own icon, we need to tell it to
   // repaint.
-  non_client_view_->SchedulePaint();
+  GetWindow()->non_client_view()->SchedulePaint();
 
   // Update the native frame's icon. We do this regardless of whether or not
   // the native frame is being used, since this also updates the taskbar, etc.
-  SkBitmap icon = window_delegate_->GetWindowIcon();
+  SkBitmap icon = GetWindow()->window_delegate()->GetWindowIcon();
   if (!icon.isNull()) {
     HICON windows_icon = IconUtil::CreateHICONFromSkBitmap(icon);
     // We need to make sure to destroy the previous icon, otherwise we'll leak
@@ -523,7 +525,7 @@ void WindowWin::UpdateWindowIcon() {
       DestroyIcon(old_icon);
   }
 
-  icon = window_delegate_->GetWindowAppIcon();
+  icon = GetWindow()->window_delegate()->GetWindowAppIcon();
   if (!icon.isNull()) {
     HICON windows_icon = IconUtil::CreateHICONFromSkBitmap(icon);
     HICON old_icon = reinterpret_cast<HICON>(
@@ -552,18 +554,6 @@ void WindowWin::UpdateFrameAfterFrameChange() {
   ResetWindowRegion(true);
 }
 
-WindowDelegate* WindowWin::GetDelegate() const {
-  return window_delegate_;
-}
-
-NonClientView* WindowWin::GetNonClientView() const {
-  return non_client_view_;
-}
-
-ClientView* WindowWin::GetClientView() const {
-  return non_client_view_->client_view();
-}
-
 gfx::NativeWindow WindowWin::GetNativeWindow() const {
   return GetNativeView();
 }
@@ -585,8 +575,8 @@ void WindowWin::FrameTypeChanged() {
     // DWMNCRP_ENABLED is used for the native frame case. _DISABLED means the
     // DWM doesn't render glass, and so is used in the custom frame case.
     DWMNCRENDERINGPOLICY policy =
-        non_client_view_->UseNativeFrame() ? DWMNCRP_ENABLED
-                                           : DWMNCRP_DISABLED;
+        GetWindow()->non_client_view()->UseNativeFrame() ? DWMNCRP_ENABLED
+                                                         : DWMNCRP_DISABLED;
     DwmSetWindowAttribute(GetNativeView(), DWMWA_NCRENDERING_POLICY,
                           &policy, sizeof(DWMNCRENDERINGPOLICY));
   }
@@ -599,7 +589,7 @@ void WindowWin::FrameTypeChanged() {
 
   // Update the non-client view with the correct frame view for the active frame
   // type.
-  non_client_view_->UpdateFrame();
+  GetWindow()->non_client_view()->UpdateFrame();
 
   // WM_DWMCOMPOSITIONCHANGED is only sent to top level windows, however we want
   // to notify our children too, since we can have MDI child windows who need to
@@ -622,10 +612,9 @@ gfx::Font WindowWin::GetWindowTitleFont() {
 
 WindowWin::WindowWin(WindowDelegate* window_delegate)
     : WidgetWin(),
+      Window(window_delegate),
       ALLOW_THIS_IN_INITIALIZER_LIST(delegate_(this)),
       focus_on_creation_(true),
-      window_delegate_(window_delegate),
-      non_client_view_(new NonClientView(this)),
       owning_hwnd_(NULL),
       minimum_size_(100, 100),
       is_modal_(false),
@@ -645,9 +634,6 @@ WindowWin::WindowWin(WindowDelegate* window_delegate)
   set_native_window(this);
   is_window_ = true;
   InitClass();
-  DCHECK(window_delegate_);
-  DCHECK(!window_delegate_->window_);
-  window_delegate_->window_ = this;
   // Initialize these values to 0 so that subclasses can override the default
   // behavior before calling Init.
   set_window_style(0);
@@ -660,7 +646,7 @@ void WindowWin::Init(HWND parent, const gfx::Rect& bounds) {
   owning_hwnd_ = parent;
   // We call this after initializing our members since our implementations of
   // assorted WidgetWin functions may be called during initialization.
-  is_modal_ = window_delegate_->IsModal();
+  is_modal_ = GetWindow()->window_delegate()->IsModal();
   if (is_modal_)
     BecomeModal();
 
@@ -674,8 +660,9 @@ void WindowWin::Init(HWND parent, const gfx::Rect& bounds) {
 
   // Create the ClientView, add it to the NonClientView and add the
   // NonClientView to the RootView. This will cause everything to be parented.
-  non_client_view_->set_client_view(window_delegate_->CreateClientView(this));
-  WidgetWin::SetContentsView(non_client_view_);
+  GetWindow()->non_client_view()->set_client_view(
+      GetWindow()->window_delegate()->CreateClientView(this));
+  WidgetWin::SetContentsView(GetWindow()->non_client_view());
 
   UpdateWindowTitle();
   UpdateAccessibleRole();
@@ -690,14 +677,14 @@ void WindowWin::Init(HWND parent, const gfx::Rect& bounds) {
 
 void WindowWin::SizeWindowToDefault() {
   ui::CenterAndSizeWindow(owning_window(), GetNativeView(),
-                          non_client_view_->GetPreferredSize(),
+                          GetWindow()->non_client_view()->GetPreferredSize(),
                           false);
 }
 
 gfx::Insets WindowWin::GetClientAreaInsets() const {
   // Returning an empty Insets object causes the default handling in
   // WidgetWin::OnNCCalcSize() to be invoked.
-  if (GetNonClientView()->UseNativeFrame())
+  if (GetWindow()->non_client_view()->UseNativeFrame())
     return gfx::Insets();
 
   if (IsMaximized()) {
@@ -734,7 +721,7 @@ void WindowWin::OnActivateApp(BOOL active, DWORD thread_id) {
     // Another application was activated, we should reset any state that
     // disables inactive rendering now.
     disable_inactive_rendering_ = false;
-    non_client_view_->DisableInactiveRendering(false);
+    GetWindow()->non_client_view()->DisableInactiveRendering(false);
     // Update the native frame too, since it could be rendering the non-client
     // area.
     CallDefaultNCActivateHandler(FALSE);
@@ -745,7 +732,7 @@ LRESULT WindowWin::OnAppCommand(HWND window, short app_command, WORD device,
                                 int keystate) {
   // We treat APPCOMMAND ids as an extension of our command namespace, and just
   // let the delegate figure out what to do...
-  if (!window_delegate_->ExecuteWindowsCommand(app_command))
+  if (!GetWindow()->window_delegate()->ExecuteWindowsCommand(app_command))
     return WidgetWin::OnAppCommand(window, app_command, device, keystate);
   return 0;
 }
@@ -754,13 +741,13 @@ void WindowWin::OnCommand(UINT notification_code, int command_id, HWND window) {
   // If the notification code is > 1 it means it is control specific and we
   // should ignore it.
   if (notification_code > 1 ||
-      window_delegate_->ExecuteWindowsCommand(command_id)) {
+      GetWindow()->window_delegate()->ExecuteWindowsCommand(command_id)) {
     WidgetWin::OnCommand(notification_code, command_id, window);
   }
 }
 
 void WindowWin::OnDestroy() {
-  non_client_view_->WindowClosing();
+  delegate_->OnWindowDestroying();
   RestoreEnabledIfNecessary();
   WidgetWin::OnDestroy();
 }
@@ -778,15 +765,12 @@ LRESULT WindowWin::OnDwmCompositionChanged(UINT msg, WPARAM w_param,
 }
 
 void WindowWin::OnFinalMessage(HWND window) {
-  // Delete and NULL the delegate here once we're guaranteed to get no more
-  // messages.
-  window_delegate_->DeleteDelegate();
-  window_delegate_ = NULL;
+  delegate_->OnWindowDestroyed();
   WidgetWin::OnFinalMessage(window);
 }
 
 void WindowWin::OnGetMinMaxInfo(MINMAXINFO* minmax_info) {
-  gfx::Size min_window_size(GetNonClientView()->GetMinimumSize());
+  gfx::Size min_window_size(GetWindow()->non_client_view()->GetMinimumSize());
   minmax_info->ptMinTrackSize.x = min_window_size.width();
   minmax_info->ptMinTrackSize.y = min_window_size.height();
   WidgetWin::OnGetMinMaxInfo(minmax_info);
@@ -802,7 +786,7 @@ static void EnableMenuItem(HMENU menu, UINT command, bool enabled) {
 void WindowWin::OnInitMenu(HMENU menu) {
   // We only need to manually enable the system menu if we're not using a native
   // frame.
-  if (non_client_view_->UseNativeFrame())
+  if (GetWindow()->non_client_view()->UseNativeFrame())
     WidgetWin::OnInitMenu(menu);
 
   bool is_fullscreen = IsFullscreen();
@@ -813,17 +797,20 @@ void WindowWin::OnInitMenu(HMENU menu) {
   ScopedRedrawLock lock(this);
   EnableMenuItem(menu, SC_RESTORE, is_minimized || is_maximized);
   EnableMenuItem(menu, SC_MOVE, is_restored);
-  EnableMenuItem(menu, SC_SIZE, window_delegate_->CanResize() && is_restored);
+  EnableMenuItem(menu, SC_SIZE,
+                 GetWindow()->window_delegate()->CanResize() && is_restored);
   EnableMenuItem(menu, SC_MAXIMIZE,
-      window_delegate_->CanMaximize() && !is_fullscreen && !is_maximized);
+                 GetWindow()->window_delegate()->CanMaximize() &&
+                     !is_fullscreen && !is_maximized);
   EnableMenuItem(menu, SC_MINIMIZE,
-      window_delegate_->CanMaximize() && !is_minimized);
+                 GetWindow()->window_delegate()->CanMaximize() &&
+                     !is_minimized);
 }
 
 void WindowWin::OnMouseLeave() {
   // We only need to manually track WM_MOUSELEAVE messages between the client
   // and non-client area when we're not using the native frame.
-  if (non_client_view_->UseNativeFrame()) {
+  if (GetWindow()->non_client_view()->UseNativeFrame()) {
     SetMsgHandled(FALSE);
     return;
   }
@@ -854,14 +841,14 @@ LRESULT WindowWin::OnNCActivate(BOOL active) {
   // We can get WM_NCACTIVATE before we're actually visible. If we're not
   // visible, no need to paint.
   if (IsVisible())
-    non_client_view_->SchedulePaint();
+    GetWindow()->non_client_view()->SchedulePaint();
 
   // If we're active again, we should be allowed to render as inactive, so
   // tell the non-client view. This must be done independently of the check for
   // disable_inactive_rendering_ since that check is valid even if the frame
   // is not active, but this can only be done if we've become active.
   if (IsActive())
-    non_client_view_->DisableInactiveRendering(false);
+    GetWindow()->non_client_view()->DisableInactiveRendering(false);
 
   // Reset the disable inactive rendering state since activation has changed.
   if (disable_inactive_rendering_) {
@@ -913,7 +900,7 @@ LRESULT WindowWin::OnNCCalcSize(BOOL mode, LPARAM l_param) {
     if (EdgeHasTopmostAutoHideTaskbar(ABE_LEFT, monitor))
       client_rect->left += kAutoHideTaskbarThicknessPx;
     if (EdgeHasTopmostAutoHideTaskbar(ABE_TOP, monitor)) {
-      if (GetNonClientView()->UseNativeFrame()) {
+      if (GetWindow()->non_client_view()->UseNativeFrame()) {
         // Tricky bit.  Due to a bug in DwmDefWindowProc()'s handling of
         // WM_NCHITTEST, having any nonclient area atop the window causes the
         // caption buttons to draw onscreen but not respond to mouse
@@ -956,7 +943,8 @@ LRESULT WindowWin::OnNCHitTest(const CPoint& point) {
   // provides any of the non-client area.
   CPoint temp = point;
   MapWindowPoints(HWND_DESKTOP, GetNativeView(), &temp, 1);
-  int component = non_client_view_->NonClientHitTest(gfx::Point(temp));
+  int component =
+      GetWindow()->non_client_view()->NonClientHitTest(gfx::Point(temp));
   if (component != HTNOWHERE)
     return component;
 
@@ -968,13 +956,13 @@ LRESULT WindowWin::OnNCHitTest(const CPoint& point) {
 void WindowWin::OnNCPaint(HRGN rgn) {
   // When using a custom frame, we want to avoid calling DefWindowProc() since
   // that may render artifacts.
-  SetMsgHandled(!non_client_view_->UseNativeFrame());
+  SetMsgHandled(!GetWindow()->non_client_view()->UseNativeFrame());
 }
 
 void WindowWin::OnNCLButtonDown(UINT ht_component, const CPoint& point) {
   // When we're using a native frame, window controls work without us
   // interfering.
-  if (!non_client_view_->UseNativeFrame()) {
+  if (!GetWindow()->non_client_view()->UseNativeFrame()) {
     switch (ht_component) {
       case HTCLOSE:
       case HTMINBUTTON:
@@ -1056,7 +1044,7 @@ LRESULT WindowWin::OnNCUAHDrawCaption(UINT msg, WPARAM w_param,
                                       LPARAM l_param) {
   // See comment in widget_win.h at the definition of WM_NCUAHDRAWCAPTION for
   // an explanation about why we need to handle this message.
-  SetMsgHandled(!non_client_view_->UseNativeFrame());
+  SetMsgHandled(!GetWindow()->non_client_view()->UseNativeFrame());
   return 0;
 }
 
@@ -1064,7 +1052,7 @@ LRESULT WindowWin::OnNCUAHDrawFrame(UINT msg, WPARAM w_param,
                                     LPARAM l_param) {
   // See comment in widget_win.h at the definition of WM_NCUAHDRAWCAPTION for
   // an explanation about why we need to handle this message.
-  SetMsgHandled(!non_client_view_->UseNativeFrame());
+  SetMsgHandled(!GetWindow()->non_client_view()->UseNativeFrame());
   return 0;
 }
 
@@ -1116,11 +1104,11 @@ void WindowWin::OnSysCommand(UINT notification_code, CPoint click) {
        ((notification_code & sc_mask) == SC_MOVE) ||
        ((notification_code & sc_mask) == SC_MAXIMIZE)))
     return;
-  if (!non_client_view_->UseNativeFrame()) {
+  if (!GetWindow()->non_client_view()->UseNativeFrame()) {
     if ((notification_code & sc_mask) == SC_MINIMIZE ||
         (notification_code & sc_mask) == SC_MAXIMIZE ||
         (notification_code & sc_mask) == SC_RESTORE) {
-      non_client_view_->ResetWindowControls();
+      GetWindow()->non_client_view()->ResetWindowControls();
     } else if ((notification_code & sc_mask) == SC_MOVE ||
                (notification_code & sc_mask) == SC_SIZE) {
       if (lock_updates_) {
@@ -1146,7 +1134,7 @@ void WindowWin::OnSysCommand(UINT notification_code, CPoint click) {
   }
 
   // First see if the delegate can handle it.
-  if (window_delegate_->ExecuteWindowsCommand(notification_code))
+  if (GetWindow()->window_delegate()->ExecuteWindowsCommand(notification_code))
     return;
 
   // Use the default implementation for any other command.
@@ -1244,7 +1232,7 @@ void WindowWin::SetInitialFocus() {
   if (!focus_on_creation_)
     return;
 
-  View* v = window_delegate_->GetInitiallyFocusedView();
+  View* v = GetWindow()->window_delegate()->GetInitiallyFocusedView();
   if (v) {
     v->RequestFocus();
   } else {
@@ -1261,13 +1249,14 @@ void WindowWin::SetInitialBounds(const gfx::Rect& create_bounds) {
   // state will have been lost. Sadly there's no way to tell on Windows when
   // a window is restored from maximized state, so we can't more accurately
   // track maximized state independently of sizing information.
-  window_delegate_->GetSavedMaximizedState(&saved_maximized_state_);
+  GetWindow()->window_delegate()->GetSavedMaximizedState(
+      &saved_maximized_state_);
 
   // Restore the window's placement from the controller.
   gfx::Rect saved_bounds(create_bounds.ToRECT());
-  if (window_delegate_->GetSavedWindowBounds(&saved_bounds)) {
-    if (!window_delegate_->ShouldRestoreWindowSize()) {
-      saved_bounds.set_size(non_client_view_->GetPreferredSize());
+  if (GetWindow()->window_delegate()->GetSavedWindowBounds(&saved_bounds)) {
+    if (!GetWindow()->window_delegate()->ShouldRestoreWindowSize()) {
+      saved_bounds.set_size(GetWindow()->non_client_view()->GetPreferredSize());
     } else {
       // Make sure the bounds are at least the minimum size.
       if (saved_bounds.width() < minimum_size_.width()) {
@@ -1319,14 +1308,14 @@ void WindowWin::RestoreEnabledIfNecessary() {
 DWORD WindowWin::CalculateWindowStyle() {
   DWORD window_styles =
       WS_CLIPCHILDREN | WS_CLIPSIBLINGS | WS_SYSMENU | WS_CAPTION;
-  bool can_resize = window_delegate_->CanResize();
-  bool can_maximize = window_delegate_->CanMaximize();
+  bool can_resize = GetWindow()->window_delegate()->CanResize();
+  bool can_maximize = GetWindow()->window_delegate()->CanMaximize();
   if (can_maximize) {
     window_styles |= WS_OVERLAPPEDWINDOW;
   } else if (can_resize) {
     window_styles |= WS_OVERLAPPED | WS_THICKFRAME;
   }
-  if (window_delegate_->AsDialogDelegate()) {
+  if (GetWindow()->window_delegate()->AsDialogDelegate()) {
     window_styles |= DS_MODALFRAME;
     // NOTE: Turning this off means we lose the close button, which is bad.
     // Turning it on though means the user can maximize or size the window
@@ -1339,7 +1328,7 @@ DWORD WindowWin::CalculateWindowStyle() {
 
 DWORD WindowWin::CalculateWindowExStyle() {
   DWORD window_ex_styles = 0;
-  if (window_delegate_->AsDialogDelegate())
+  if (GetWindow()->window_delegate()->AsDialogDelegate())
     window_ex_styles |= WS_EX_DLGMODALFRAME;
   return window_ex_styles;
 }
@@ -1349,13 +1338,13 @@ void WindowWin::SaveWindowPosition() {
   // by go/crash) that in some circumstances we can end up here after
   // WM_DESTROY, at which point the window delegate is likely gone. So just
   // bail.
-  if (!window_delegate_)
+  if (!GetWindow()->window_delegate())
     return;
 
   bool maximized;
   gfx::Rect bounds;
   GetWindowBoundsAndMaximizedState(&bounds, &maximized);
-  window_delegate_->SaveWindowPlacement(bounds, maximized);
+  GetWindow()->window_delegate()->SaveWindowPlacement(bounds, maximized);
 }
 
 void WindowWin::LockUpdates() {
@@ -1372,7 +1361,7 @@ void WindowWin::UnlockUpdates() {
 void WindowWin::ResetWindowRegion(bool force) {
   // A native frame uses the native window region, and we don't want to mess
   // with it.
-  if (non_client_view_->UseNativeFrame()) {
+  if (GetWindow()->non_client_view()->UseNativeFrame()) {
     if (force)
       SetWindowRgn(NULL, TRUE);
     return;
@@ -1397,7 +1386,7 @@ void WindowWin::ResetWindowRegion(bool force) {
     new_region = CreateRectRgnIndirect(&work_rect);
   } else {
     gfx::Path window_mask;
-    non_client_view_->GetWindowMask(
+    GetWindow()->non_client_view()->GetWindowMask(
         gfx::Size(window_rect.Width(), window_rect.Height()), &window_mask);
     new_region = window_mask.CreateNativeRegion();
   }
@@ -1431,7 +1420,8 @@ void WindowWin::UpdateAccessibleRole() {
     IID_IAccPropServices, reinterpret_cast<void**>(&pAccPropServices));
   if (SUCCEEDED(hr)) {
     VARIANT var;
-    AccessibilityTypes::Role role = window_delegate_->accessible_role();
+    AccessibilityTypes::Role role =
+        GetWindow()->window_delegate()->accessible_role();
     if (role) {
       var.vt = VT_I4;
       var.lVal = ViewAccessibility::MSAARole(role);
@@ -1447,7 +1437,8 @@ void WindowWin::UpdateAccessibleState() {
     IID_IAccPropServices, reinterpret_cast<void**>(&pAccPropServices));
   if (SUCCEEDED(hr)) {
     VARIANT var;
-    AccessibilityTypes::State state = window_delegate_->accessible_state();
+    AccessibilityTypes::State state =
+        GetWindow()->window_delegate()->accessible_state();
     if (state) {
       var.lVal = ViewAccessibility::MSAAState(state);
       hr = pAccPropServices->SetHwndProp(GetNativeView(), OBJID_CLIENT,

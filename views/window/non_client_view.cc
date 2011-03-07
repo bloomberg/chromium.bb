@@ -6,6 +6,7 @@
 
 #include "views/widget/root_view.h"
 #include "views/widget/widget.h"
+#include "views/window/client_view.h"
 #include "views/window/window.h"
 
 #if !defined(OS_WIN)
@@ -192,7 +193,7 @@ bool NonClientFrameView::AlwaysUseNativeFrame() const {
 bool NonClientFrameView::HitTest(const gfx::Point& l) const {
   // For the default case, we assume the non-client frame view never overlaps
   // the client view.
-  return !GetWindow()->GetClientView()->bounds().Contains(l);
+  return !GetWindow()->client_view()->bounds().Contains(l);
 }
 
 void NonClientFrameView::OnBoundsChanged() {

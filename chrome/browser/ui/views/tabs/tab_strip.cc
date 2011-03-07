@@ -282,7 +282,7 @@ void TabStrip::PaintChildren(gfx::Canvas* canvas) {
     }
   }
 
-  if (GetWindow()->GetNonClientView()->UseNativeFrame()) {
+  if (GetWindow()->non_client_view()->UseNativeFrame()) {
     // Make sure unselected tabs are somewhat transparent.
     SkPaint paint;
     paint.setColor(SkColorSetARGB(200, 255, 255, 255));

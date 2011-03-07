@@ -7,7 +7,9 @@
 #pragma once
 
 #include "ui/gfx/native_widget_types.h"
+#include "views/window/client_view.h"
 #include "views/window/native_window_delegate.h"
+#include "views/window/non_client_view.h"
 
 namespace gfx {
 class Font;
@@ -17,10 +19,8 @@ class Size;
 
 namespace views {
 
-class ClientView;
 class NativeWindow;
 class NonClientFrameView;
-class NonClientView;
 class Widget;
 class WindowDelegate;
 
@@ -40,7 +40,7 @@ class WindowDelegate;
 //
 class Window : public internal::NativeWindowDelegate {
  public:
-  Window();
+  explicit Window(WindowDelegate* window_delegate);
   virtual ~Window();
 
   // Creates an instance of an object implementing this interface.
@@ -177,15 +177,6 @@ class Window : public internal::NativeWindowDelegate {
   // Updates the frame after an event caused it to be changed.
   virtual void UpdateFrameAfterFrameChange();
 
-  // Retrieves the Window's delegate.
-  virtual WindowDelegate* GetDelegate() const;
-
-  // Retrieves the Window's non-client view.
-  virtual NonClientView* GetNonClientView() const;
-
-  // Retrieves the Window's client view.
-  virtual ClientView* GetClientView() const;
-
   // Retrieves the Window's native window handle.
   virtual gfx::NativeWindow GetNativeWindow() const;
 
@@ -195,6 +186,30 @@ class Window : public internal::NativeWindowDelegate {
   // Tell the window that something caused the frame type to change.
   virtual void FrameTypeChanged();
 
+  WindowDelegate* window_delegate() {
+    return const_cast<WindowDelegate*>(
+        const_cast<const Window*>(this)->window_delegate());
+  }
+  const WindowDelegate* window_delegate() const {
+    return window_delegate_;
+  }
+
+  NonClientView* non_client_view() {
+    return const_cast<NonClientView*>(
+        const_cast<const Window*>(this)->non_client_view());
+  }
+  const NonClientView* non_client_view() const {
+    return non_client_view_;
+  }
+
+  ClientView* client_view() {
+    return const_cast<ClientView*>(
+        const_cast<const Window*>(this)->client_view());
+  }
+  const ClientView* client_view() const {
+    return non_client_view()->client_view();
+  }
+
  protected:
   // TODO(beng): Temporarily provided as a way to associate the subclass'
   //             implementation of NativeWidget with this.
@@ -202,8 +217,23 @@ class Window : public internal::NativeWindowDelegate {
     native_window_ = native_window;
   }
 
+  // Overridden from NativeWindowDelegate:
+  virtual void OnWindowDestroying();
+  virtual void OnWindowDestroyed();
+
  private:
+  Window();
+
   NativeWindow* native_window_;
+
+  // Our window delegate (see InitWindow() method for documentation).
+  WindowDelegate* window_delegate_;
+
+  // The View that provides the non-client area of the window (title bar,
+  // window controls, sizing borders etc). To use an implementation other than
+  // the default, this class must be sub-classed and this value set to the
+  // desired implementation before calling |InitWindow()|.
+  NonClientView* non_client_view_;
 
   DISALLOW_COPY_AND_ASSIGN(Window);
 };

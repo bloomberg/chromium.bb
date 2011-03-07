@@ -74,7 +74,7 @@ void LoginHtmlDialog::Show() {
             BubbleWindow::STYLE_XBAR | BubbleWindow::STYLE_THROBBER),
         html_view);
     bubble_frame_view_ = static_cast<BubbleFrameView*>(
-        bubble_window->GetNonClientView()->frame_view());
+        bubble_window->non_client_view()->frame_view());
   } else {
     views::Window::CreateChromeWindow(parent_window_, gfx::Rect(), html_view);
   }

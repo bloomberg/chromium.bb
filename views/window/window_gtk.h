@@ -57,9 +57,6 @@ class WindowGtk : public WidgetGtk, public NativeWindow, public Window {
   virtual void SetIsAlwaysOnTop(bool always_on_top);
   virtual NonClientFrameView* CreateFrameViewForWindow();
   virtual void UpdateFrameAfterFrameChange();
-  virtual WindowDelegate* GetDelegate() const;
-  virtual NonClientView* GetNonClientView() const;
-  virtual ClientView* GetClientView() const;
   virtual gfx::NativeWindow GetNativeWindow() const;
   virtual bool ShouldUseNativeFrame() const;
   virtual void FrameTypeChanged();

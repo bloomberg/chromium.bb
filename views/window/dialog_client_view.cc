@@ -79,7 +79,7 @@ class DialogButton : public NativeButton {
 
   // Overridden to forward to the delegate.
   virtual bool AcceleratorPressed(const Accelerator& accelerator) {
-    if (!owner_->GetDelegate()->AsDialogDelegate()->
+    if (!owner_->window_delegate()->AsDialogDelegate()->
         AreAcceleratorsEnabled(type_)) {
       return false;
     }
@@ -288,7 +288,6 @@ void DialogClientView::WindowClosing() {
     if (saved_focus_manager_)
        saved_focus_manager_->RemoveFocusChangeListener(this);
   }
-  ClientView::WindowClosing();
 }
 
 int DialogClientView::NonClientHitTest(const gfx::Point& point) {
@@ -425,8 +424,8 @@ void DialogClientView::ButtonPressed(
 // DialogClientView, private:
 
 void DialogClientView::PaintSizeBox(gfx::Canvas* canvas) {
-  if (window()->GetDelegate()->CanResize() ||
-      window()->GetDelegate()->CanMaximize()) {
+  if (window()->window_delegate()->CanResize() ||
+      window()->window_delegate()->CanMaximize()) {
 #if defined(OS_WIN)
     HDC dc = canvas->BeginPlatformPaint();
     SIZE gripper_size = { 0, 0 };
@@ -537,9 +536,7 @@ void DialogClientView::CreateExtraView() {
 }
 
 DialogDelegate* DialogClientView::GetDialogDelegate() const {
-  DialogDelegate* dd = window()->GetDelegate()->AsDialogDelegate();
-  DCHECK(dd);
-  return dd;
+  return window()->window_delegate()->AsDialogDelegate();
 }
 
 void DialogClientView::Close() {

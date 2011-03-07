@@ -33,7 +33,6 @@ bool ClientView::CanClose() {
 }
 
 void ClientView::WindowClosing() {
-  window_->GetDelegate()->WindowClosing();
 }
 
 ///////////////////////////////////////////////////////////////////////////////

@@ -56,7 +56,7 @@ BrowserFrameWin::BrowserFrameWin(BrowserView* browser_view, Profile* profile)
       frame_initialized_(false),
       profile_(profile) {
   browser_view_->set_frame(this);
-  GetNonClientView()->SetFrameView(CreateFrameViewForWindow());
+  non_client_view()->SetFrameView(CreateFrameViewForWindow());
   // Don't focus anything on creation, selecting a tab will set the focus.
   set_focus_on_creation(false);
 }
@@ -139,7 +139,7 @@ void BrowserFrameWin::TabStripDisplayModeChanged() {
 gfx::Insets BrowserFrameWin::GetClientAreaInsets() const {
   // Use the default client insets for an opaque frame or a glass popup/app
   // frame.
-  if (!GetNonClientView()->UseNativeFrame() ||
+  if (!non_client_view()->UseNativeFrame() ||
       !browser_view_->IsBrowserTypeNormal()) {
     return WindowWin::GetClientAreaInsets();
   }
@@ -200,7 +200,7 @@ LRESULT BrowserFrameWin::OnNCActivate(BOOL active) {
 
 LRESULT BrowserFrameWin::OnNCHitTest(const CPoint& pt) {
   // Only do DWM hit-testing when we are using the native frame.
-  if (GetNonClientView()->UseNativeFrame()) {
+  if (non_client_view()->UseNativeFrame()) {
     LRESULT result;
     if (DwmDefWindowProc(GetNativeView(), WM_NCHITTEST, 0,
                          MAKELPARAM(pt.x, pt.y), &result)) {
@@ -224,8 +224,8 @@ void BrowserFrameWin::OnWindowPosChanged(WINDOWPOS* window_pos) {
   // SWP_SHOWWINDOW, however callers typically are careful about not specifying
   // this flag unless necessary to avoid flicker.
   if (window_pos->flags & SWP_SHOWWINDOW) {
-    GetNonClientView()->Layout();
-    GetNonClientView()->SchedulePaint();
+    non_client_view()->Layout();
+    non_client_view()->SchedulePaint();
   }
 }
 
@@ -283,7 +283,7 @@ views::RootView* BrowserFrameWin::CreateRootView() {
 
 void BrowserFrameWin::UpdateDWMFrame() {
   // Nothing to do yet, or we're not showing a DWM frame.
-  if (!GetClientView() || !AlwaysUseNativeFrame())
+  if (!client_view() || !AlwaysUseNativeFrame())
     return;
 
   MARGINS margins = { 0 };
