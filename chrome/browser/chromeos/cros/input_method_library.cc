@@ -164,6 +164,10 @@ class InputMethodLibraryImpl : public InputMethodLibrary,
   }
 
   virtual void ChangeInputMethod(const std::string& input_method_id) {
+    // Changing the input method isn't guaranteed to succeed here, but we
+    // should remember the last one regardless. See comments in
+    // FlushImeConfig() for details.
+    tentative_current_input_method_id_ = input_method_id;
     // If the input method daemon is not running and the specified input
     // method is a keyboard layout, switch the keyboard directly.
     if (ibus_daemon_process_id_ == 0 &&
@@ -179,7 +183,8 @@ class InputMethodLibraryImpl : public InputMethodLibrary,
       // ready yet. In this case, we'll defer the input method change
       // until the daemon is ready.
       if (!ChangeInputMethodViaIBus(input_method_id)) {
-        pending_input_method_id_ = input_method_id;
+        VLOG(1) << "Failed to change the input method to " << input_method_id
+                << " (deferring)";
       }
     }
   }
@@ -394,12 +399,20 @@ class InputMethodLibraryImpl : public InputMethodLibrary,
       }
     }
     if (pending_config_requests_.empty()) {
-      // Calls to ChangeInputMethod() will fail if the input method has not
+      // We should change the current input method to the one we have last
+      // remembered in ChangeInputMethod(), for the following reasons:
+      //
+      // 1) Calls to ChangeInputMethod() will fail if the input method has not
       // yet been added to preload_engines.  As such, the call is deferred
       // until after all config values have been sent to the IME process.
-      if (should_change_input_method_ && !pending_input_method_id_.empty()) {
-        ChangeInputMethodViaIBus(pending_input_method_id_);
-        pending_input_method_id_ = "";
+      //
+      // 2) We might have already changed the current input method to one
+      // of XKB layouts without going through the IBus daemon (we can do
+      // it without the IBus daemon started).
+      if (should_change_input_method_ &&
+          !tentative_current_input_method_id_.empty()) {
+        ChangeInputMethodViaIBus(tentative_current_input_method_id_);
+        tentative_current_input_method_id_ = "";
         should_change_input_method_ = false;
         active_input_methods_are_changed = true;
       }
@@ -742,12 +755,12 @@ class InputMethodLibraryImpl : public InputMethodLibrary,
   // True if we should stop input method daemon when there are no input
   // methods other than one for the hardware keyboard.
   bool enable_auto_ime_shutdown_;
-  // The ID of the pending input method (ex. "mozc"). When we change the
-  // current input method via the IBus daemon, we use this variable to
-  // defer the operation until the IBus daemon becomes ready, as needed.
-  std::string pending_input_method_id_;
+  // The ID of the tentative current input method (ex. "mozc"). This value
+  // can be different from the actual current input method, if
+  // ChangeInputMethod() fails.
+  std::string tentative_current_input_method_id_;
   // True if we should change the current input method to
-  // |pending_input_method_id_| once the queue of the pending config
+  // |tentative_current_input_method_id_| once the queue of the pending config
   // requests becomes empty.
   bool should_change_input_method_;
 
