@@ -30,7 +30,7 @@ class P2PSocketsHost : public BrowserMessageFilter {
               const std::vector<char>& data);
   void OnDestroySocket(const IPC::Message& msg, int socket_id);
 
-  IDMap<P2PSocketHost> sockets_;
+  IDMap<P2PSocketHost, IDMapOwnPointer> sockets_;
 
   DISALLOW_COPY_AND_ASSIGN(P2PSocketsHost);
 };

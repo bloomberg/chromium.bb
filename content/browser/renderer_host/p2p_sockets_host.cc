@@ -17,7 +17,8 @@ void P2PSocketsHost::OnChannelClosing() {
   BrowserMessageFilter::OnChannelClosing();
 
   // Since the IPC channel is gone, close pending connections.
-  for (IDMap<P2PSocketHost>::iterator i(&sockets_); !i.IsAtEnd(); i.Advance()) {
+  for (IDMap<P2PSocketHost, IDMapOwnPointer>::iterator i(&sockets_);
+       !i.IsAtEnd(); i.Advance()) {
     sockets_.Remove(i.GetCurrentKey());
   }
 }
