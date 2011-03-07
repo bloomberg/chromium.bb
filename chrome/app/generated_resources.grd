@@ -199,6 +199,7 @@ Other platform defines such as use_titlecase are declared in build/common.gypi.
     <file path="resources/generated_resources_te.xtb" lang="te" />
     <file path="resources/generated_resources_th.xtb" lang="th" />
     <file path="resources/generated_resources_tr.xtb" lang="tr" />
+    <file path="../../third_party/launchpad_translations/generated_resources_ug.xtb" lang="ug" />
     <file path="resources/generated_resources_uk.xtb" lang="uk" />
     <file path="resources/generated_resources_vi.xtb" lang="vi" />
     <file path="resources/generated_resources_zh-CN.xtb" lang="zh-CN" />

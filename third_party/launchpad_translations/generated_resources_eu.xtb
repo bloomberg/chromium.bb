@@ -2917,4 +2917,33 @@ Gorde zure gako-fitxategia toki seguruan. Zure hedapenaren bertsio berriak sortz
 <translation id="8412145213513410671">Kraskadurak (<ph name="CRASH_COUNT"/>)</translation>
 <translation id="8630826211403662855">Bilaketa-hobespenak</translation>
 <translation id="8691686986795184760">(Enpresa-politiken ondorioz gaitua)</translation>
+<translation id="1128128132059598906">EAP-TTLS</translation>
+<translation id="1416836038590872660">EAP-MD5</translation>
+<translation id="1758018619400202187">EAP-TLS</translation>
+<translation id="2053553514270667976">ZIP kodea</translation>
+<translation id="2188985920108004776">EAP metodoa:</translation>
+<translation id="2230051135190148440">CHAP</translation>
+<translation id="2393657444484157959">Zerbitzari-ziurtagiria:</translation>
+<translation id="2694026874607847549">Cookie bat</translation>
+<translation id="2721561274224027017">Indexatutako datu-basea</translation>
+<translation id="2817109084437064140">Inportatu eta lotu gailuarekin...</translation>
+<translation id="2956763290572484660"><ph name="COOKIES"/> cookie</translation>
+<translation id="3084771660770137092">Chromium memoriarik gabe geratu da edo web-orriaren prozesua beste arrazoiren bategatik eten da. Jarraitzeko, birkargatu orria edo joan beste orri batera.</translation>
+<translation id="3108967419958202225">Hautatu...</translation>
+<translation id="3776667127601582921">Kasu honetan, zure nabigatzaileari aurkeztutako zerbitzari-ziurtagiria edo tarteko CA ziurtagiri bat baliogabea da. Agian ziurtagiria gaizki eratu da, eremu baliogabeak ditu, edo ez dago onartuta.</translation>
+<translation id="428771275901304970">1 MB baino gutxiago geratzen da</translation>
+<translation id="4589094618264613095">2. faseko autentifikazioa</translation>
+<translation id="4885705234041587624">MSCHAPv2</translation>
+<translation id="5017508259293544172">LEAP</translation>
+<translation id="5187826826541650604"><ph name="KEY_NAME"/> (<ph name="DEVICE"/>)</translation>
+<translation id="5460896875189097758">Lokalean gordetako datuak</translation>
+<translation id="5941343993301164315">Hasi saioa <ph name="TOKEN_NAME"/>-(e)n</translation>
+<translation id="7282743297697561153">Datu-basearen biltegiratzea</translation>
+<translation id="7427315641433634153">MSCHAP</translation>
+<translation id="8050783156231782848">Ez dago daturik eskuragarri</translation>
+<translation id="8472623782143987204">hardware bidez babestua</translation>
+<translation id="861850123230661844">Nortasun anonimoa:</translation>
+<translation id="9039663905644212491">PEAP</translation>
+<translation id="9049981332609050619"><ph name="DOMAIN"/> domeinua atzitzen saiatu zara, baina zerbitzariak baliogabeko ziurtagiria aurkeztu du.</translation>
+<translation id="9073281213608662541">PAP</translation>
 </translationbundle>

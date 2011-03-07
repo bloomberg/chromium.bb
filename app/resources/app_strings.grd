@@ -146,6 +146,7 @@ need to be translated for each locale.-->
   <translations>
     <file path="app_strings_am.xtb" lang="am" />
     <file path="app_strings_ar.xtb" lang="ar" />
+    <file path="../../third_party/launchpad_translations/app_strings_ast.xtb" lang="ast" />
     <file path="app_strings_bg.xtb" lang="bg" />
     <file path="app_strings_bn.xtb" lang="bn" />
     <file path="app_strings_ca.xtb" lang="ca" />

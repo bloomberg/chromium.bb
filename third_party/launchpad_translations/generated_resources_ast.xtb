@@ -46,7 +46,7 @@
 <translation id="1163931534039071049">&amp;Ver fonte de marcu</translation>
 <translation id="1164369517022005061">Falten <ph name="NUMBER_DEFAULT"/> hores</translation>
 <translation id="1165039591588034296">Fallu</translation>
-<translation id="1166212789817575481">Pesllar solapes a la drecha</translation>
+<translation id="1166212789817575481">Pesllar llingüetes a la drecha</translation>
 <translation id="1166359541137214543">ABC</translation>
 <translation id="1168020859489941584">Abriendo en <ph name="TIME_REMAINING"/>...</translation>
 <translation id="1175364870820465910">&amp;Imprentar...</translation>
@@ -186,4 +186,115 @@ nun ye quien a amosar la páxina web porque'l to equipu nun ta coneutáu a Inter
 <translation id="992543612453727859">Amestar frase al entamu</translation>
 <translation id="994289308992179865">Re&amp;petir</translation>
 <translation id="996250603853062861">Afitando conexón segura...</translation>
+<translation id="1035650339541835006">Configuración d'autocompletar</translation>
+<translation id="1114901192629963971">La contraseña nun pue verificase na rede actual. Seleiciona otra rede.</translation>
+<translation id="1116694919640316211">Tocante a</translation>
+<translation id="1128128132059598906">EAP-TTLS</translation>
+<translation id="1135328998467923690">El paquete ye incorreutu: «<ph name="ERROR_CODE"/>».</translation>
+<translation id="1144684570366564048">Xestionar esceiciones...</translation>
+<translation id="1161575384898972166">Robla en <ph name="TOKEN_NAME"/> pa esportar el certificáu del veceru.</translation>
+<translation id="1177863135347784049">Personalizáu</translation>
+<translation id="1199232041627643649">Caltén <ph name="KEY_EQUIVALENT"/> pa colar.</translation>
+<translation id="1307041843857566458">Confirmar reactivar</translation>
+<translation id="131364520783682672">Bloq Mayús</translation>
+<translation id="1354868058853714482">Adobe Reader ta desanováu y pue ser inseguru.</translation>
+<translation id="1368352873613152012">Polítiques de navegación privada segura</translation>
+<translation id="1375215959205954975">¡Nuevo! Configura la sincronización de contraseñes.</translation>
+<translation id="1375321115329958930">Contraseñes guardaes</translation>
+<translation id="1394630846966197578">Falló la conexón a sirvidores de voz.</translation>
+<translation id="1398199512720662928">Xestionar páxines d'aniciu...</translation>
+<translation id="1416836038590872660">EAP-MD5</translation>
+<translation id="1492188167929010410">ID de cuelgue <ph name="CRASH_ID"/></translation>
+<translation id="1493263392339817010">Personalizar fontes...</translation>
+<translation id="1498146455270488773">Amosar contraseñes guardaes...</translation>
+<translation id="1502960562739459116">Partes de este documento no se pueden mostrar. ¿Instalar Adobe Reader?</translation>
+<translation id="1519704592140256923">Esbillar posición</translation>
+<translation id="1529968269513889022">la selmana pasada</translation>
+<translation id="153384433402665971">El complementu <ph name="PLUGIN_NAME"/> ta bloquiáu porque ta caducáu.</translation>
+<translation id="1545786162090505744">URL con %s nel sitiu de consulta</translation>
+<translation id="1556537182262721003">Nun pue movese'l direutoriu de la estensión al perfil.</translation>
+<translation id="1560991001553749272">Amestáu a Marcadores</translation>
+<translation id="1562633988311880769">Acceder a <ph name="CLOUD_PRINT_NAME"/></translation>
+<translation id="1588343679702972132">Esti sitiu requier que t'identifiques con un certificáu:</translation>
+<translation id="158849752021629804">Ye necesaria una rede doméstica.</translation>
+<translation id="1608306110678187802">I&amp;mprentar marcu...</translation>
+<translation id="1618661679583408047">El certificáu de seguridá del sirvidor entá nun ye válidu.</translation>
+<translation id="1621207256975573490">Guardar &amp;marcu como...</translation>
+<translation id="1660766340404942948">Editar emisor de confianza...</translation>
+<translation id="1661867754829461514">Falta'l PIN.</translation>
+<translation id="16620462294541761">La contraseña nun pudo verificase. Vuelvi a intentalo.</translation>
+<translation id="166278006618318542">Asuntu del algoritmu de clave pública</translation>
+<translation id="1664314758578115406">Amestar páxina...</translation>
+<translation id="1664712100580477121">¿Tas seguru de que quies grabar la imaxe nel siguiente preséu?:</translation>
+<translation id="1665770420914915777">Usar la páxina Llingüeta Nueva</translation>
+<translation id="1674989413181946727">Configuración de SSL en tol equipu:</translation>
+<translation id="1676388805288306495">Camuda la fonte y la llingua predeterminada pa les páxines web.</translation>
+<translation id="1679068421605151609">Ferramientes pa desendolcadores</translation>
+<translation id="1681614449735360921">Ver incompatibilidaes</translation>
+<translation id="1682548588986054654">Nueva ventana d'incógnitu</translation>
+<translation id="1684861821302948641">Zarrar páxines</translation>
+<translation id="1693754753824026215">Mensaxe de la páxina <ph name="SITE"/>:</translation>
+<translation id="1699395855685456105">Revisión de hardware:</translation>
+<translation id="1702534956030472451">Western</translation>
+<translation id="1709220265083931213">Avanzaes</translation>
+<translation id="1715941336038158809">El nome d'usuariu o la contraseña nun son válidos.</translation>
+<translation id="1718559768876751602">Crear una cuenta de Google agora</translation>
+<translation id="1720046318486444925">inglés (EE.XX. internacional)</translation>
+<translation id="1720318856472900922">Autenticación de sirvidor WWW TLS</translation>
+<translation id="1722567105086139392">Enllaz</translation>
+<translation id="1723824996674794290">&amp;Ventana nueva</translation>
+<translation id="1725149567830788547">Amosar &amp;controles</translation>
+<translation id="1731346223650886555">Puntu y coma</translation>
+<translation id="1731911755844941020">Unviando solicitú...</translation>
+<translation id="1734072960870006811">Fax</translation>
+<translation id="1737968601308870607">Ficheru de bug</translation>
+<translation id="1741763547273950878">La páxina <ph name="SITE"/></translation>
+<translation id="176587472219019965">&amp;Ventana nueva</translation>
+<translation id="1779766957982586368">Zarrar ventana</translation>
+<translation id="2149973817440762519">Editar marcador</translation>
+<translation id="2154710561487035718">Copiar URL</translation>
+<translation id="2159017110205600596">Personalizar...</translation>
+<translation id="2224551243087462610">Editar nome de carpeta</translation>
+<translation id="3157931365184549694">Restaurar</translation>
+<translation id="3280237271814976245">Guardar &amp;como...</translation>
+<translation id="3285322247471302225">Lli&amp;ngüeta nueva</translation>
+<translation id="3712897371525859903">Guardar páxina &amp;como...</translation>
+<translation id="3873139305050062481">I&amp;nspeicionar elementu</translation>
+<translation id="3943582379552582368">A&amp;trás</translation>
+<translation id="3943857333388298514">Apegar</translation>
+<translation id="4200983522494130825">Lli&amp;ngüeta nueva</translation>
+<translation id="4408599188496843485">&amp;Ayuda</translation>
+<translation id="4608500690299898628">&amp;Guetar...</translation>
+<translation id="4756388243121344051">&amp;Historial</translation>
+<translation id="4780321648949301421">Guardar páxina como...</translation>
+<translation id="4789872672210757069">Tocante a &amp;<ph name="PRODUCT_NAME"/></translation>
+<translation id="5031870354684148875">Tocante a Google Translate</translation>
+<translation id="5076340679995252485">&amp;Apegar</translation>
+<translation id="5111692334209731439">&amp;Xestor de marcadores</translation>
+<translation id="5509693895992845810">Gu&amp;ardar como...</translation>
+<translation id="5602600725402519729">Re&amp;cargar</translation>
+<translation id="5830720307094128296">Guardar páxina &amp;como...</translation>
+<translation id="5941711191222866238">Minimizar</translation>
+<translation id="5979421442488174909">&amp;Tornar a llingua <ph name="LANGUAGE"/></translation>
+<translation id="630065524203833229">Co&amp;lar</translation>
+<translation id="6463795194797719782">&amp;Editar</translation>
+<translation id="6691936601825168937">Si&amp;guiente</translation>
+<translation id="6824564591481349393">Copiar &amp;direición de corréu-e</translation>
+<translation id="6886871292305414135">Abrir l'enllaz nuna lli&amp;ngüeta nueva</translation>
+<translation id="6896758677409633944">Copiar</translation>
+<translation id="7421925624202799674">&amp;Ver códigu de la páxina</translation>
+<translation id="7567293639574541773">I&amp;nspeicionar elementu</translation>
+<translation id="7724603315864178912">Cortar</translation>
+<translation id="7764209408768029281">Ferra&amp;mientes</translation>
+<translation id="7814458197256864873">&amp;Copiar</translation>
+<translation id="7861215335140947162">&amp;Descargues</translation>
+<translation id="8116972784401310538">&amp;Xestor de marcadores</translation>
+<translation id="8382913212082956454">Copiar &amp;direición de corréu-e</translation>
+<translation id="8502249598105294518">Personalizar y remanar <ph name="PRODUCT_NAME"/></translation>
+<translation id="8664389313780386848">&amp;Ver códigu de la páxina</translation>
+<translation id="9002707937526687073">I&amp;mprentar...</translation>
+<translation id="9027459031423301635">Abrir l'enllaz nuna lli&amp;ngüeta nueva</translation>
+<translation id="9065203028668620118">Editar</translation>
+<translation id="9149866541089851383">Editar...</translation>
+<translation id="989988560359834682">Editar direición</translation>
 </translationbundle>

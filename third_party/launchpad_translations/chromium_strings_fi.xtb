@@ -69,4 +69,10 @@
 <translation id="985602178874221306">Chromium-kehittäjät</translation>
 <translation id="3838208658251026018">Chromium tuo parhaillaan selaimesta <ph name="BROWSER_COMPONENT"/> seuraavia kohteita:</translation>
 <translation id="4649468518813464896">http://www.google.com/support/chrome/bin/answer.py?hl=[GRITLANGCODE]&amp;answer=161796</translation>
+<translation id="1929939181775079593">Chromium ei vastaa. Käynnistetäänkö se uudelleen?</translation>
+<translation id="2407806170074302369">Tietoja Chromium Frame -kehyksestä...</translation>
+<translation id="3190315855212034486">Huh! Chromium kaatui juuri. Käynnistetäänkö se uudelleen?</translation>
+<translation id="7278516633989165382">Chromium Frame -kehys on päivitetty. Käynnistä selain uudelleeen. Chromen versio: <ph name="TODO_0001"/>, Chromium Frame -kehyksen versio: <ph name="TODO_0002"/></translation>
+<translation id="8046283042877435986">Tämä sivusto suosittelee Chromium Frame -kehystä (jo asennettu).</translation>
+<translation id="8971920611044657379">Chromium Frame -kehys</translation>
 </translationbundle>

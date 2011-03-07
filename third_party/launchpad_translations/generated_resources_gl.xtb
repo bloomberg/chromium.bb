@@ -73,7 +73,7 @@
 <translation id="1208126399996836490">Non restabelecer</translation>
 <translation id="1209866192426315618">Restan <ph name="NUMBER_DEFAULT"/> minutos</translation>
 <translation id="1213999834285861200">Excepcións de imaxes</translation>
-<translation id="121632099317611328">A cámara fallou ao iniciarse.</translation>
+<translation id="121632099317611328">Produciuse un fallo na cámara ao iniciarse.</translation>
 <translation id="1217515703261622005">Conversión de números especiais</translation>
 <translation id="121827551500866099">Mostrar todas as descargas...</translation>
 <translation id="122082903575839559">Algoritmo de sinatura do certificado</translation>
@@ -890,7 +890,7 @@
 <translation id="3759074680865891423">Disposición de teclado francés</translation>
 <translation id="3761000923495507277">Mostrar o botón «Páxina de inicio» na barra de ferramentas</translation>
 <translation id="3761171036307311438">Titular da tarxeta:</translation>
-<translation id="376466258076168640">Fcer que <ph name="PRODUCT_NAME"/> sexa o navegador predeterminado</translation>
+<translation id="376466258076168640">Facer que <ph name="PRODUCT_NAME"/> sexa o navegador predeterminado</translation>
 <translation id="3771294271822695279">Ficheiros de vídeo</translation>
 <translation id="3774278775728862009">Método de entrada de tailandés (teclado TIS-820.2538)</translation>
 <translation id="3775432569830822555">Certificado SSL do servidor</translation>
@@ -1168,7 +1168,7 @@
 <translation id="4577070033074325641">Importar marcadores</translation>
 <translation id="4585473702689066695">Produciuse un erro ao tentar estabelecer conexión coa rede «<ph name="NAME"/>».</translation>
 <translation id="4589279373639964403">Exportar marcadores...</translation>
-<translation id="4590074117005971373">Activa un mellor rendemento das etiquetas canvas en contextos 2D empregando o hardware da GPU para renderizalos.</translation>
+<translation id="4590074117005971373">Activa un mellor rendemento das etiquetas canvas en contextos 2D empregando o hardware da GPU para renderizaros.</translation>
 <translation id="4593021220803146968">&amp;Ir a <ph name="URL"/></translation>
 <translation id="4608500690299898628">&amp;Buscar...</translation>
 <translation id="4610637590575890427">Quizais queira dicir que quere ir a <ph name="SITE"/>?</translation>
@@ -1855,12 +1855,12 @@
 <translation id="6692173217867674490">Frase de paso incorrecta</translation>
 <translation id="6698381487523150993">Creado:</translation>
 <translation id="6701535245008341853">Non foi posíbel obter o perfil.</translation>
-<translation id="6704875430222476107"><ph name="PRODUCT_NAME"/> detectou que\n
-        NetNanny está a interceptar conexións seguras. Isto, normalmente, non é un problema\n
-        de seguranza, xa que o software NetNanny adoita a executarse no mesmo equipo.\n
-        Porén, Chrome é intolerante con algúns aspectos específicos das conexións seguras,\n
-        polo que NetNanny  ten que ser configurado para que non execute esta interceptación.\n
-        Prema en «Saber máis» para ver as instrucións.</translation>
+<translation id="6704875430222476107"><ph name="PRODUCT_NAME"/> detectou que
+        NetNanny está a interceptar conexións seguras. Isto, normalmente, non é un problema
+        de seguranza, xa que o software NetNanny adoita a executarse no mesmo equipo.
+        Porén, Chrome é intolerante con algúns aspectos específicos das conexións seguras,
+        polo que NetNanny  ten que ser configurado para que non execute esta interceptación.
+        Prema en «Aprender máis» para ver as instrucións.</translation>
 <translation id="6705050455568279082"><ph name="URL"/> quere realizar un seguimento da súa localización física.</translation>
 <translation id="6705264787989366486">Configurando o enderezo IP para <ph name="NAME"/></translation>
 <translation id="6706684875496318067">O complemento <ph name="PLUGIN_NAME"/> non está permitido.</translation>
@@ -2148,7 +2148,7 @@
 <translation id="7615851733760445951">&lt;non hai ningunha cookie seleccionada&gt;</translation>
 <translation id="7617095560120859490">Díganos o que está acontecendo (requirido)</translation>
 <translation id="7624154074265342755">Redes sen fíos</translation>
-<translation id="7624267205732106503">Limpar cookies e datos de outros sitios ao pechar o navegador</translation>
+<translation id="7624267205732106503">Limpar cookies e datos doutros sitios ao pechar o navegador</translation>
 <translation id="7624421287830016388">Picasa web</translation>
 <translation id="762904068808419792">Escriba aquí a súa consulta de busca.</translation>
 <translation id="762917759028004464">O navegador predeterminado é <ph name="BROWSER_NAME"/>.</translation>
@@ -2676,7 +2676,7 @@ Se vostede pensa que este comportamento non é o desexábel, por exemplo, se vos
 <translation id="907841381057066561">Produciuse un erro ao crear un arquivo .zip temporal durante a compresión.</translation>
 <translation id="908263542783690259">Limpar o historial de navegación</translation>
 <translation id="9086455579313502267">Non é posíbel acceder á rede</translation>
-<translation id="9087725134750123268">Eliminar cookies e datos de outros sitios</translation>
+<translation id="9087725134750123268">Eliminar cookies e datos doutros sitios</translation>
 <translation id="9090669887503413452">Enviar información do sistema</translation>
 <translation id="9095710730982563314">Notificación de excepcións</translation>
 <translation id="9098468523912235228">Hai <ph name="NUMBER_DEFAULT"/> segundos</translation>
@@ -2918,4 +2918,33 @@ Se vostede pensa que este comportamento non é o desexábel, por exemplo, se vos
 <translation id="8412145213513410671">Quebras (<ph name="CRASH_COUNT"/>)</translation>
 <translation id="8630826211403662855">Preferencias de busca</translation>
 <translation id="8691686986795184760">(activado por política de empresa)</translation>
+<translation id="1128128132059598906">EAP-TTLS</translation>
+<translation id="1416836038590872660">EAP-MD5</translation>
+<translation id="1758018619400202187">EAP-TLS</translation>
+<translation id="2053553514270667976">Código ZIP</translation>
+<translation id="2188985920108004776">Método EAP:</translation>
+<translation id="2230051135190148440">CHAP</translation>
+<translation id="2393657444484157959">Certificado do servidor:</translation>
+<translation id="2694026874607847549">1 cookie</translation>
+<translation id="2721561274224027017">Base de datos indexada</translation>
+<translation id="2817109084437064140">Importar e vincular co dispositivo...</translation>
+<translation id="2956763290572484660"><ph name="COOKIES"/> cookies</translation>
+<translation id="3084771660770137092">Unha de dúas, Chrome quedou sen memoria ou, por calquera outra razón, foi rematado o proceso para a páxina web. Para continuar, volva a cargar a páxina ou vaia a outra.</translation>
+<translation id="3108967419958202225">Escolla...</translation>
+<translation id="3776667127601582921">Neste caso, o certificado do servidor ou un certificado de entidade emisora de certificados intermediaria presentado ao seu navegador non é válido. Isto pode significar que o certificado é incorrecto, conten campos non válidos, ou non é compatíbel.</translation>
+<translation id="428771275901304970">Menos de 1 MB dispoñíbel</translation>
+<translation id="4589094618264613095">Fase 2 autenticación:</translation>
+<translation id="4885705234041587624">MSCHAPv2</translation>
+<translation id="5017508259293544172">LEAP</translation>
+<translation id="5187826826541650604"><ph name="KEY_NAME"/> (<ph name="DEVICE"/>)</translation>
+<translation id="5460896875189097758">Datos almacenados localmente</translation>
+<translation id="5941343993301164315">Inicie sesión en <ph name="TOKEN_NAME"/></translation>
+<translation id="7282743297697561153">Base de datos de almacenamento</translation>
+<translation id="7427315641433634153">MSCHAP</translation>
+<translation id="8050783156231782848">Non hai datos dispoñíbeis</translation>
+<translation id="8472623782143987204">hardware de copia de seguranza</translation>
+<translation id="861850123230661844">Identidade anónima:</translation>
+<translation id="9039663905644212491">PEAP</translation>
+<translation id="9049981332609050619">Tentou acceder a <ph name="DOMAIN"/>, mais o servidor presentou un certificado non válido.</translation>
+<translation id="9073281213608662541">PAP</translation>
 </translationbundle>
