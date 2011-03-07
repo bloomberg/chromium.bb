@@ -159,6 +159,10 @@ void JsonPrefStore::ScheduleWritePrefs() {
   writer_.ScheduleWrite(this);
 }
 
+void JsonPrefStore::ReportValueChanged(const std::string& key) {
+  FOR_EACH_OBSERVER(PrefStore::Observer, observers_, OnPrefValueChanged(key));
+}
+
 bool JsonPrefStore::SerializeData(std::string* output) {
   // TODO(tc): Do we want to prune webkit preferences that match the default
   // value?

@@ -607,6 +607,10 @@ ListValue* PrefService::GetMutableList(const char* path) {
   return list;
 }
 
+void PrefService::ReportValueChanged(const std::string& key) {
+  user_pref_store_->ReportValueChanged(key);
+}
+
 void PrefService::SetUserPrefValue(const char* path, Value* new_value) {
   DCHECK(CalledOnValidThread());
   DLOG_IF(WARNING, IsManagedPreference(path)) <<

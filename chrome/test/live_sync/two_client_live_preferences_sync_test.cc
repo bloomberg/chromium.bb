@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/prefs/scoped_pref_update.h"
+#include "chrome/browser/prefs/scoped_user_pref_update.h"
 #include "chrome/browser/sync/profile_sync_service_harness.h"
 #include "chrome/browser/translate/translate_prefs.h"
 #include "chrome/common/pref_names.h"
@@ -277,7 +277,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientLivePreferencesSyncTest,
         Append(Value::CreateStringValue("http://www.google.com/"));
     url_list_client->
         Append(Value::CreateStringValue("http://www.flickr.com/"));
-    ScopedPrefUpdate update(GetPrefs(0), prefs::kURLsToRestoreOnStartup);
+    ScopedUserPrefUpdate update(GetPrefs(0), prefs::kURLsToRestoreOnStartup);
   }
 
   ASSERT_TRUE(GetClient(0)->AwaitMutualSyncCycleCompletion(GetClient(1)));

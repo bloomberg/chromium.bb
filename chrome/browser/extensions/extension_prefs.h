@@ -386,8 +386,8 @@ class ExtensionPrefs {
   // Additionally fires a PREF_CHANGED notification with the top-level
   // |kExtensionsPref| path set.
   // TODO(andybons): Switch this to EXTENSION_PREF_CHANGED to be more granular.
-  // TODO(andybons): Use a ScopedPrefUpdate to update observers on changes to
-  // the mutable extension dictionary.
+  // TODO(andybons): Use a ScopedUserPrefUpdate to update observers on changes
+  // to the mutable extension dictionary.
   void SavePrefsAndNotify();
 
   // Checks if kPrefBlacklist is set to true in the DictionaryValue.

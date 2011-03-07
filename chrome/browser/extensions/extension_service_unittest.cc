@@ -33,7 +33,7 @@
 #include "chrome/browser/extensions/pack_extension_job.cc"
 #include "chrome/browser/prefs/browser_prefs.h"
 #include "chrome/browser/prefs/pref_service_mock_builder.h"
-#include "chrome/browser/prefs/scoped_pref_update.h"
+#include "chrome/browser/prefs/scoped_user_pref_update.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension.h"
@@ -2500,7 +2500,7 @@ TEST_F(ExtensionServiceTest, BlacklistedByPolicyRemovedIfRunning) {
 
   { // Scope for pref update notification.
     PrefService* prefs = profile_->GetPrefs();
-    ScopedPrefUpdate pref_update(prefs, prefs::kExtensionInstallDenyList);
+    ScopedUserPrefUpdate pref_update(prefs, prefs::kExtensionInstallDenyList);
     ListValue* blacklist =
         prefs->GetMutableList(prefs::kExtensionInstallDenyList);
     ASSERT_TRUE(blacklist != NULL);

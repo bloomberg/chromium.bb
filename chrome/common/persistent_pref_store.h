@@ -44,12 +44,15 @@ class PersistentPrefStore : public PrefStore {
   // tests rely on the number of notifications generated.
   //
   // TODO(mnissler, danno): Can we replace GetMutableDictionary() and
-  // GetMutableList() with something along the lines of ScopedPrefUpdate that
-  // updates the value in the end?
+  // GetMutableList() with something along the lines of ScopedUserPrefUpdate
+  // that updates the value in the end?
   virtual void SetValueSilently(const std::string& key, Value* value) = 0;
 
   // Removes the value for |key|.
   virtual void RemoveValue(const std::string& key) = 0;
+
+  // TODO(battre) Remove this function.
+  virtual void ReportValueChanged(const std::string& key) = 0;
 
   // Whether the store is in a pseudo-read-only mode where changes are not
   // actually persisted to disk.  This happens in some cases when there are

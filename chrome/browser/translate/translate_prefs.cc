@@ -6,7 +6,7 @@
 
 #include "base/string_util.h"
 #include "chrome/browser/prefs/pref_service.h"
-#include "chrome/browser/prefs/scoped_pref_update.h"
+#include "chrome/browser/prefs/scoped_user_pref_update.h"
 
 const char TranslatePrefs::kPrefTranslateLanguageBlacklist[] =
     "translate_language_blacklist";
@@ -31,13 +31,13 @@ bool TranslatePrefs::IsLanguageBlacklisted(
 }
 
 void TranslatePrefs::BlacklistLanguage(const std::string& original_language) {
-  ScopedPrefUpdate update(prefs_, kPrefTranslateLanguageBlacklist);
+  ScopedUserPrefUpdate update(prefs_, kPrefTranslateLanguageBlacklist);
   BlacklistValue(kPrefTranslateLanguageBlacklist, original_language);
 }
 
 void TranslatePrefs::RemoveLanguageFromBlacklist(
     const std::string& original_language) {
-  ScopedPrefUpdate update(prefs_, kPrefTranslateLanguageBlacklist);
+  ScopedUserPrefUpdate update(prefs_, kPrefTranslateLanguageBlacklist);
   RemoveValueFromBlacklist(kPrefTranslateLanguageBlacklist, original_language);
 }
 
@@ -46,12 +46,12 @@ bool TranslatePrefs::IsSiteBlacklisted(const std::string& site) {
 }
 
 void TranslatePrefs::BlacklistSite(const std::string& site) {
-  ScopedPrefUpdate update(prefs_, kPrefTranslateSiteBlacklist);
+  ScopedUserPrefUpdate update(prefs_, kPrefTranslateSiteBlacklist);
   BlacklistValue(kPrefTranslateSiteBlacklist, site);
 }
 
 void TranslatePrefs::RemoveSiteFromBlacklist(const std::string& site) {
-  ScopedPrefUpdate update(prefs_, kPrefTranslateSiteBlacklist);
+  ScopedUserPrefUpdate update(prefs_, kPrefTranslateSiteBlacklist);
   RemoveValueFromBlacklist(kPrefTranslateSiteBlacklist, site);
 }
 
@@ -77,7 +77,7 @@ void TranslatePrefs::WhitelistLanguagePair(
     NOTREACHED() << "Unregistered translate whitelist pref";
     return;
   }
-  ScopedPrefUpdate update(prefs_, kPrefTranslateWhitelists);
+  ScopedUserPrefUpdate update(prefs_, kPrefTranslateWhitelists);
   dict->SetString(original_language, target_language);
   prefs_->ScheduleSavePersistentPrefs();
 }
@@ -91,7 +91,7 @@ void TranslatePrefs::RemoveLanguagePairFromWhitelist(
     NOTREACHED() << "Unregistered translate whitelist pref";
     return;
   }
-  ScopedPrefUpdate update(prefs_, kPrefTranslateWhitelists);
+  ScopedUserPrefUpdate update(prefs_, kPrefTranslateWhitelists);
   if (dict->Remove(original_language, NULL))
     prefs_->ScheduleSavePersistentPrefs();
 }
@@ -209,7 +209,7 @@ void TranslatePrefs::MigrateTranslateWhitelists(PrefService* user_prefs) {
   }
   if (!save_prefs)
     return;
-  ScopedPrefUpdate update(user_prefs, kPrefTranslateWhitelists);
+  ScopedUserPrefUpdate update(user_prefs, kPrefTranslateWhitelists);
   user_prefs->ScheduleSavePersistentPrefs();
 }
 

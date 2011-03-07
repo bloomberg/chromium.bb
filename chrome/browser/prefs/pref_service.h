@@ -212,11 +212,13 @@ class PrefService : public base::NonThreadSafe {
   // a non-dict/non-list pref.
   // WARNING: Changes to the dictionary or list will not automatically notify
   // pref observers.
-  // Use a ScopedPrefUpdate to update observers on changes.
+  // Use a ScopedUserPrefUpdate to update observers on changes.
   // These should really be GetUserMutable... since we will only ever get
   // a mutable from the user preferences store.
   DictionaryValue* GetMutableDictionary(const char* path);
   ListValue* GetMutableList(const char* path);
+  // TODO(battre) remove this function (hack).
+  void ReportValueChanged(const std::string& key);
 
   // Returns true if a value has been set for the specified path.
   // NOTE: this is NOT the same as FindPreference. In particular
@@ -233,10 +235,6 @@ class PrefService : public base::NonThreadSafe {
   const Preference* FindPreference(const char* pref_name) const;
 
   bool ReadOnly() const;
-
-  // TODO(mnissler): This should not be public. Change client code to call a
-  // preference setter or use ScopedPrefUpdate.
-  PrefNotifier* pref_notifier() const;
 
  protected:
   // Construct a new pref service, specifying the pref sources as explicit
@@ -276,10 +274,17 @@ class PrefService : public base::NonThreadSafe {
   friend class PrefChangeRegistrar;
   friend class subtle::PrefMemberBase;
 
+  // Give access to pref_notifier();
+  friend class ScopedUserPrefUpdate;
+
   // Construct an incognito version of the pref service. Use
   // CreateIncognitoPrefService() instead of calling this constructor directly.
   PrefService(const PrefService& original,
               PrefStore* incognito_extension_prefs);
+
+  // Returns a PrefNotifier. If you desire access to this, you will probably
+  // want to use a ScopedUserPrefUpdate.
+  PrefNotifier* pref_notifier() const;
 
   // If the pref at the given path changes, we call the observer's Observe
   // method with PREF_CHANGED. Note that observers should not call these methods

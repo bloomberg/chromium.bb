@@ -4,7 +4,7 @@
 
 #include "base/scoped_ptr.h"
 #include "base/string_util.h"
-#include "chrome/browser/prefs/scoped_pref_update.h"
+#include "chrome/browser/prefs/scoped_user_pref_update.h"
 #include "chrome/browser/sync/profile_sync_service_harness.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/live_sync/live_preferences_sync_test.h"
@@ -19,7 +19,7 @@ IN_PROC_BROWSER_TEST_F(MultipleClientLivePreferencesSyncTest, Sanity) {
   for (int i = 0; i < num_clients(); ++i) {
     client_urls[i]->Append(Value::CreateStringValue(StringPrintf(
         "http://www.google.com/%d", i)));
-    ScopedPrefUpdate update(GetPrefs(i), prefs::kURLsToRestoreOnStartup);
+    ScopedUserPrefUpdate update(GetPrefs(i), prefs::kURLsToRestoreOnStartup);
   }
   for (int i = 0; i < num_clients(); ++i) {
     GetClient(i)->AwaitGroupSyncCycleCompletion(clients());

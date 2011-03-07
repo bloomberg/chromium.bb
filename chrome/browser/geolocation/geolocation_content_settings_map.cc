@@ -22,7 +22,7 @@
 #include "chrome/browser/content_settings/content_settings_details.h"
 #include "chrome/browser/content_settings/content_settings_pattern.h"
 #include "chrome/browser/prefs/pref_service.h"
-#include "chrome/browser/prefs/scoped_pref_update.h"
+#include "chrome/browser/prefs/scoped_user_pref_update.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/notification_service.h"
 #include "chrome/common/notification_source.h"
@@ -163,7 +163,7 @@ void GeolocationContentSettingsMap::SetContentSetting(
       prefs::kGeolocationContentSettings);
   DCHECK(all_settings_dictionary);
 
-  ScopedPrefUpdate update(prefs, prefs::kGeolocationContentSettings);
+  ScopedUserPrefUpdate update(prefs, prefs::kGeolocationContentSettings);
   DictionaryValue* requesting_origin_settings_dictionary = NULL;
   all_settings_dictionary->GetDictionaryWithoutPathExpansion(
       requesting_origin.spec(), &requesting_origin_settings_dictionary);

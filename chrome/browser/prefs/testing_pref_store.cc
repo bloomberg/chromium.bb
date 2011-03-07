@@ -71,6 +71,10 @@ void TestingPrefStore::NotifyInitializationCompleted() {
   FOR_EACH_OBSERVER(Observer, observers_, OnInitializationCompleted());
 }
 
+void TestingPrefStore::ReportValueChanged(const std::string& key) {
+  FOR_EACH_OBSERVER(Observer, observers_, OnPrefValueChanged(key));
+}
+
 void TestingPrefStore::SetString(const std::string& key,
                                  const std::string& value) {
   SetValue(key, Value::CreateStringValue(value));

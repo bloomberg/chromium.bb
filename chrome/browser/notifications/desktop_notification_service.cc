@@ -13,7 +13,7 @@
 #include "chrome/browser/notifications/notification_ui_manager.h"
 #include "chrome/browser/notifications/notifications_prefs_cache.h"
 #include "chrome/browser/prefs/pref_service.h"
-#include "chrome/browser/prefs/scoped_pref_update.h"
+#include "chrome/browser/prefs/scoped_user_pref_update.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/tab_contents/confirm_infobar_delegate.h"
 #include "chrome/common/notification_service.h"
@@ -462,11 +462,11 @@ void DesktopNotificationService::PersistPermissionChange(
   // list that changed.
   if (allowed_changed || denied_changed) {
     if (allowed_changed) {
-      ScopedPrefUpdate update_allowed(
+      ScopedUserPrefUpdate update_allowed(
           prefs, prefs::kDesktopNotificationAllowedOrigins);
     }
     if (denied_changed) {
-      ScopedPrefUpdate updateDenied(
+      ScopedUserPrefUpdate updateDenied(
           prefs, prefs::kDesktopNotificationDeniedOrigins);
     }
     prefs->ScheduleSavePersistentPrefs();
@@ -541,7 +541,7 @@ void DesktopNotificationService::ResetAllowedOrigin(const GURL& origin) {
     StringValue value(origin.spec());
     int removed_index = allowed_sites->Remove(value);
     DCHECK_NE(-1, removed_index) << origin << " was not allowed";
-    ScopedPrefUpdate update_allowed(
+    ScopedUserPrefUpdate update_allowed(
         prefs, prefs::kDesktopNotificationAllowedOrigins);
   }
   prefs->ScheduleSavePersistentPrefs();
@@ -560,7 +560,7 @@ void DesktopNotificationService::ResetBlockedOrigin(const GURL& origin) {
     StringValue value(origin.spec());
     int removed_index = denied_sites->Remove(value);
     DCHECK_NE(-1, removed_index) << origin << " was not blocked";
-    ScopedPrefUpdate update_allowed(
+    ScopedUserPrefUpdate update_allowed(
         prefs, prefs::kDesktopNotificationDeniedOrigins);
   }
   prefs->ScheduleSavePersistentPrefs();

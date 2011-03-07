@@ -36,6 +36,8 @@ class TestingPrefStore : public PersistentPrefStore {
   virtual PersistentPrefStore::PrefReadError ReadPrefs();
   virtual bool WritePrefs();
   virtual void ScheduleWritePrefs() {}
+  // TODO(battre) remove this function
+  virtual void ReportValueChanged(const std::string& key);
 
   // Marks the store as having completed initialization.
   void SetInitializationCompleted();

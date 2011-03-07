@@ -9,7 +9,7 @@
 #include "base/string_piece.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/prefs/pref_service.h"
-#include "chrome/browser/prefs/scoped_pref_update.h"
+#include "chrome/browser/prefs/scoped_user_pref_update.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/notification_details.h"
 #include "chrome/common/notification_service.h"
@@ -126,7 +126,8 @@ void HostZoomMap::SetZoomLevel(const GURL& url, double level) {
 
   updating_preferences_ = true;
   {
-    ScopedPrefUpdate update(profile_->GetPrefs(), prefs::kPerHostZoomLevels);
+    ScopedUserPrefUpdate update(profile_->GetPrefs(),
+                                prefs::kPerHostZoomLevels);
     DictionaryValue* host_zoom_dictionary =
         profile_->GetPrefs()->GetMutableDictionary(prefs::kPerHostZoomLevels);
     if (level == default_zoom_level_) {

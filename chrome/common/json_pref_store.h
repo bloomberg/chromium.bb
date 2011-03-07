@@ -46,6 +46,8 @@ class JsonPrefStore : public PersistentPrefStore,
   virtual PrefReadError ReadPrefs();
   virtual bool WritePrefs();
   virtual void ScheduleWritePrefs();
+  // TODO(battre) remove this function
+  virtual void ReportValueChanged(const std::string& key);
 
  private:
   // ImportantFileWriter::DataSerializer overrides:

@@ -12,7 +12,7 @@
 #include "chrome/browser/content_settings/content_settings_details.h"
 #include "chrome/browser/content_settings/content_settings_pattern.h"
 #include "chrome/browser/prefs/pref_service.h"
-#include "chrome/browser/prefs/scoped_pref_update.h"
+#include "chrome/browser/prefs/scoped_user_pref_update.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/content_settings.h"
@@ -123,7 +123,7 @@ void PrefDefaultProvider::UpdateDefaultSetting(
   updating_preferences_ = true;
   {
     base::AutoLock lock(lock_);
-    ScopedPrefUpdate update(prefs, prefs::kDefaultContentSettings);
+    ScopedUserPrefUpdate update(prefs, prefs::kDefaultContentSettings);
     if ((setting == CONTENT_SETTING_DEFAULT) ||
         (setting == kDefaultSettings[content_type])) {
       default_content_settings_.settings[content_type] =
@@ -440,7 +440,7 @@ void PrefProvider::SetContentSetting(
 
   updating_preferences_ = true;
   if (!is_off_the_record())
-    ScopedPrefUpdate update(prefs, prefs::kContentSettingsPatterns);
+    ScopedUserPrefUpdate update(prefs, prefs::kContentSettingsPatterns);
   updating_preferences_ = false;
 
   NotifyObservers(ContentSettingsDetails(pattern, content_type, ""));
@@ -512,7 +512,7 @@ void PrefProvider::ClearAllContentSettingsRules(
 
   updating_preferences_ = true;
   if (!is_off_the_record())
-    ScopedPrefUpdate update(prefs, prefs::kContentSettingsPatterns);
+    ScopedUserPrefUpdate update(prefs, prefs::kContentSettingsPatterns);
   updating_preferences_ = false;
 
   NotifyObservers(

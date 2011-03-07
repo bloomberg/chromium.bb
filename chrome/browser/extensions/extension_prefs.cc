@@ -9,6 +9,7 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/extensions/extension_pref_store.h"
 #include "chrome/browser/prefs/pref_notifier.h"
+#include "chrome/browser/prefs/scoped_user_pref_update.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/url_pattern.h"
 #include "chrome/common/notification_service.h"
@@ -344,9 +345,7 @@ void ExtensionPrefs::AddToExtensionPrefStringSet(
 
 void ExtensionPrefs::SavePrefsAndNotify() {
   prefs_->ScheduleSavePersistentPrefs();
-  // TODO(mnissler, danno): Don't use pref_notifier() here, but tell the
-  // PrefService by some other means that we changed the pref value.
-  prefs_->pref_notifier()->OnPreferenceChanged(kExtensionsPref);
+  ScopedUserPrefUpdate update(prefs_, kExtensionsPref);
 }
 
 bool ExtensionPrefs::IsBlacklistBitSet(DictionaryValue* ext) {
