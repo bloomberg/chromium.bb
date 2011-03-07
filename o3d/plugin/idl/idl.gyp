@@ -12,16 +12,8 @@
     'static_glue_dir': '../../../<(nixysadir)/static_glue/npapi',
     'idl_files': [
       '<!@(python get_idl_files.py)',
-    ],
-    'conditions': [
-      ['support_cairo == 1',
-        {
-          'idl_files': [
-            'layer.idl',
-            'pattern.idl',
-          ],
-        },
-      ],
+      'layer.idl',
+      'pattern.idl',
     ],
   },
   'target_defaults': {

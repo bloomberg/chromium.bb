@@ -362,8 +362,18 @@
       'type': 'static_library',
       'dependencies': [
         '../../skia/skia.gyp:skia',
+        '../build/libs.gyp:cairo_libs',
       ],
       'sources': [
+        'cross/cairo/install_check.cc',
+        'cross/cairo/layer.cc',
+        'cross/cairo/layer.h',
+        'cross/cairo/pattern.cc',
+        'cross/cairo/pattern.h',
+        'cross/cairo/renderer_cairo.cc',
+        'cross/cairo/renderer_cairo.h',
+        'cross/cairo/texture_cairo.cc',
+        'cross/cairo/texture_cairo.h',
       ],
       'conditions': [
         ['OS == "mac"',
@@ -467,24 +477,6 @@
               'win/d3d9/texture_d3d9.h',
               'win/d3d9/utils_d3d9.cc',
               'win/d3d9/utils_d3d9.h',
-            ],
-          },
-        ],
-        ['support_cairo == 1',
-          {
-            'sources': [
-              'cross/cairo/install_check.cc',
-              'cross/cairo/layer.cc',
-              'cross/cairo/layer.h',
-              'cross/cairo/pattern.cc',
-              'cross/cairo/pattern.h',
-              'cross/cairo/renderer_cairo.cc',
-              'cross/cairo/renderer_cairo.h',
-              'cross/cairo/texture_cairo.cc',
-              'cross/cairo/texture_cairo.h',
-            ],
-            'dependencies': [
-              '../build/libs.gyp:cairo_libs',
             ],
           },
         ],

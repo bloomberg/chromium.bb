@@ -67,9 +67,7 @@
 #error Platform not recognized.
 #endif
 
-#if defined(SUPPORT_CAIRO)
 #include "core/cross/cairo/renderer_cairo.h"
-#endif
 
 #if defined(RENDERER_D3D9) && defined(OS_WIN)
 #include "core/win/d3d9/renderer_d3d9.h"

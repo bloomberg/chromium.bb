@@ -37,9 +37,7 @@
 
 #include "core/cross/gl/renderer_gl.h"
 
-#ifdef SUPPORT_CAIRO
-#include "core/cross/cairo/renderer_cairo.h"
-#endif
+#include "core/cross/client_info.h"
 #include "core/cross/error.h"
 #include "core/cross/gl/buffer_gl.h"
 #include "core/cross/gl/draw_element_gl.h"
@@ -1058,6 +1056,12 @@ Renderer::InitStatus  RendererGL::InitPlatformSpecific(
     context_ = 0;
     display_ = NULL;
     window_ = 0;
+  } else if (strcmp("Software Rasterizer",
+                     reinterpret_cast<const char*>(::glGetString(
+                         GL_RENDERER))) == 0) {
+    ClientInfoManager* client_info_manager =
+        service_locator()->GetService<ClientInfoManager>();
+    client_info_manager->SetSoftwareRenderer(true);
   }
   return init_status;
 }

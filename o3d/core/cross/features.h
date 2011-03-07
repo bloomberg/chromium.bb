@@ -82,7 +82,7 @@ class Features {
     return init_status_;
   }
 
-  Renderer::RenderModes render_modes() const {
+  Renderer::RenderModes render_mode() const {
     return render_mode_;
   }
 
