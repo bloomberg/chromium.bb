@@ -109,13 +109,13 @@
         phone<!-- de-DE -->|telefonnummer<!-- es -->|telefono|teléfono<!-- fr-FR -->|telfixe<!-- ja-JP -->|電話<!-- pt-BR, pt-PT -->|telefone|telemovel<!-- ru -->|телефон<!-- zh-CN -->|电话
       </message>
       <message name="IDS_AUTOFILL_COUNTRY_CODE_RE">
-        country.*code|ccode
+        country.*code|ccode|_cc
       </message>
       <message name="IDS_AUTOFILL_AREA_CODE_NOTEXT_RE">
         ^\($
       </message>
       <message name="IDS_AUTOFILL_AREA_CODE_RE">
-        area.*code|acode
+        area.*code|acode|area
       </message>
       <message name="IDS_AUTOFILL_FAX_RE">
         fax<!-- fr-FR -->|télécopie|telecopie<!-- ja-JP -->|ファックス<!-- ru -->|факс<!-- zh-CN -->|传真<!-- zh-TW -->|傳真
