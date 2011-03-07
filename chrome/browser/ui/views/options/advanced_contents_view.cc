@@ -40,7 +40,7 @@
 #include "chrome/browser/ui/options/show_options_url.h"
 #include "chrome/browser/ui/shell_dialogs.h"
 #include "chrome/browser/ui/views/browser_dialogs.h"
-#include "chrome/browser/ui/views/clear_browsing_data.h"
+#include "chrome/browser/ui/views/clear_browsing_data_view.h"
 #include "chrome/browser/ui/views/list_background.h"
 #include "chrome/browser/ui/views/options/content_settings_window_view.h"
 #include "chrome/browser/ui/views/options/fonts_languages_window_view.h"

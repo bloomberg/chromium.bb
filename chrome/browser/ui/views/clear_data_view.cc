@@ -9,7 +9,6 @@
 #include "chrome/browser/browser_window.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search_engines/template_url_model.h"
-#include "chrome/browser/ui/views/clear_browsing_data.h"
 #include "chrome/browser/ui/views/clear_server_data.h"
 #include "grit/generated_resources.h"
 #include "grit/locale_settings.h"

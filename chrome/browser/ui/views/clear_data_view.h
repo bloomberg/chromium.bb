@@ -7,7 +7,7 @@
 #pragma once
 
 #include "chrome/browser/browsing_data_remover.h"
-#include "chrome/browser/ui/views/clear_browsing_data_view.h"
+#include "chrome/browser/ui/views/clear_browsing_data_view2.h"
 #include "chrome/browser/ui/views/clear_server_data.h"
 #include "views/controls/button/button.h"
 #include "views/controls/label.h"
