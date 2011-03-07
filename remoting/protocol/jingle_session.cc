@@ -25,6 +25,7 @@
 #include "third_party/libjingle/source/talk/session/tunnel/pseudotcpchannel.h"
 
 using cricket::BaseSession;
+using cricket::PseudoTcp;
 using cricket::PseudoTcpChannel;
 
 namespace remoting {
@@ -39,6 +40,12 @@ const char kEventChannelName[] = "event";
 const char kVideoChannelName[] = "video";
 const char kVideoRtpChannelName[] = "videortp";
 const char kVideoRtcpChannelName[] = "videortcp";
+
+// Settings to apply to PseudoTcp channels for Control, Input and Video.
+// Disable Nagle's algorithm, to reduce latency for small messages.
+// Reduce the ACK Delay to 10ms, to balance throughput/latency with overhead.
+const int kEnableNoDelay = true;
+const int kDelayedAckTimeoutMs = 10;
 
 // Helper method to create a SSL client socket.
 net::SSLClientSocket* CreateSSLClientSocket(
@@ -366,6 +373,8 @@ void JingleSession::OnInitiate() {
   control_channel_ = new PseudoTcpChannel(
       jingle_session_manager_->jingle_thread(), cricket_session_);
   control_channel_->Connect(content_name, kControlChannelName);
+  control_channel_->SetOption(PseudoTcp::OPT_NODELAY, kEnableNoDelay);
+  control_channel_->SetOption(PseudoTcp::OPT_ACKDELAY, kDelayedAckTimeoutMs);
   control_channel_adapter_.reset(new StreamSocketAdapter(
       control_channel_->GetStream()));
 
@@ -373,6 +382,8 @@ void JingleSession::OnInitiate() {
   event_channel_ = new PseudoTcpChannel(
       jingle_session_manager_->jingle_thread(), cricket_session_);
   event_channel_->Connect(content_name, kEventChannelName);
+  event_channel_->SetOption(PseudoTcp::OPT_NODELAY, kEnableNoDelay);
+  event_channel_->SetOption(PseudoTcp::OPT_ACKDELAY, kDelayedAckTimeoutMs);
   event_channel_adapter_.reset(new StreamSocketAdapter(
       event_channel_->GetStream()));
 
@@ -381,6 +392,8 @@ void JingleSession::OnInitiate() {
   video_channel_ = new PseudoTcpChannel(
       jingle_session_manager_->jingle_thread(), cricket_session_);
   video_channel_->Connect(content_name, kVideoChannelName);
+  video_channel_->SetOption(PseudoTcp::OPT_NODELAY, kEnableNoDelay);
+  video_channel_->SetOption(PseudoTcp::OPT_ACKDELAY, kDelayedAckTimeoutMs);
   video_channel_adapter_.reset(new StreamSocketAdapter(
       video_channel_->GetStream()));
 
