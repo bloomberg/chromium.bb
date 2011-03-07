@@ -141,6 +141,7 @@ class MockWebFrame : public WebKit::WebFrame {
   virtual unsigned unloadListenerCount() const;
   virtual bool isProcessingUserGesture() const;
   virtual bool willSuppressOpenerInNewFrame() const;
+  virtual bool pageDismissalEventBeingDispatched() const;
   virtual void replaceSelection(const WebString& text);
   virtual void insertText(const WebString& text);
   virtual void setMarkedText(const WebString& text,
