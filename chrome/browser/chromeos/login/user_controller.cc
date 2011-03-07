@@ -189,6 +189,15 @@ void UserController::Init(int index,
   label_window_ = CreateLabelWindow(index, WM_IPC_WINDOW_LOGIN_LABEL);
   unselected_label_window_ =
       CreateLabelWindow(index, WM_IPC_WINDOW_LOGIN_UNSELECTED_LABEL);
+
+  // Flush updates to all the windows so their appearance will be synchronized
+  // when being displayed.
+  gdk_window_process_updates(controls_window_->GetNativeView()->window, false);
+  gdk_window_process_updates(image_window_->GetNativeView()->window, false);
+  gdk_window_process_updates(border_window_->GetNativeView()->window, false);
+  gdk_window_process_updates(label_window_->GetNativeView()->window, false);
+  gdk_window_process_updates(
+      unselected_label_window_->GetNativeView()->window, false);
 }
 
 void UserController::ClearAndEnableFields() {
