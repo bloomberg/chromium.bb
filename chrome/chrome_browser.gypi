@@ -3105,6 +3105,8 @@
         'browser/ui/views/page_info_bubble_view.h',
         'browser/ui/views/pinned_contents_info_bubble.cc',
         'browser/ui/views/pinned_contents_info_bubble.h',
+        'browser/ui/views/profile_menu_model.h',
+        'browser/ui/views/profile_menu_model.cc',
         'browser/ui/views/reload_button.cc',
         'browser/ui/views/reload_button.h',
         'browser/ui/views/repost_form_warning_view.cc',
