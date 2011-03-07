@@ -66,6 +66,7 @@
 #include "chrome/browser/sync/sync_ui_util.h"
 #include "chrome/browser/tab_closeable_state_watcher.h"
 #include "chrome/browser/tab_contents/simple_alert_infobar_delegate.h"
+#include "chrome/browser/tabs/tab_finder.h"
 #include "chrome/browser/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/find_bar/find_bar.h"
 #include "chrome/browser/ui/find_bar/find_bar_controller.h"
@@ -260,6 +261,10 @@ Browser::Browser(Type type, Profile* profile)
     profile_->GetProfileSyncService()->AddObserver(this);
 
   CreateInstantIfNecessary();
+
+  // Make sure TabFinder has been created. This does nothing if TabFinder is
+  // not enabled.
+  TabFinder::GetInstance();
 }
 
 Browser::~Browser() {
@@ -1302,6 +1307,17 @@ void Browser::OpenCurrentURL() {
     return;
 
   GURL url(WideToUTF8(location_bar->GetInputString()));
+
+  if (open_disposition == CURRENT_TAB && TabFinder::IsEnabled()) {
+    Browser* existing_browser = NULL;
+    TabContents* existing_tab = TabFinder::GetInstance()->FindTab(
+        this, url, &existing_browser);
+    if (existing_tab) {
+      existing_browser->ActivateContents(existing_tab);
+      return;
+    }
+  }
+
   browser::NavigateParams params(this, url, location_bar->GetPageTransition());
   params.disposition = open_disposition;
   // Use ADD_INHERIT_OPENER so that all pages opened by the omnibox at least

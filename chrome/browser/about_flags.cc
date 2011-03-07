@@ -262,6 +262,13 @@ const Experiment kExperiments[] = {
     kOsAll,
     SINGLE_VALUE_TYPE(switches::kEnableP2PApi)
   },
+  {
+    "focus-existing-tab-on-open",  // FLAGS:RECORD_UMA
+    IDS_FLAGS_FOCUS_EXISTING_TAB_ON_OPEN_NAME,
+    IDS_FLAGS_FOCUS_EXISTING_TAB_ON_OPEN_DESCRIPTION,
+    kOsAll,
+    SINGLE_VALUE_TYPE(switches::kFocusExistingTabOnOpen)
+  },
 };
 
 const Experiment* experiments = kExperiments;

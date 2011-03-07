@@ -2012,6 +2012,8 @@
         'browser/tabs/pinned_tab_service.cc',
         'browser/tabs/pinned_tab_service.h',
         'browser/tabs/tab_handler.h',
+        'browser/tabs/tab_finder.cc',
+        'browser/tabs/tab_finder.h',
         'browser/tabs/tab_strip_model.cc',
         'browser/tabs/tab_strip_model.h',
         'browser/tabs/tab_strip_model_delegate.h',

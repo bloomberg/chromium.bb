@@ -14,17 +14,17 @@ struct ViewHostMsg_FrameNavigate_Params;
 // load events from TabContents.  They also get a chance to filter IPC messages.
 class TabContentsObserver : public IPC::Channel::Listener {
  public:
-  virtual void NavigateToPendingEntry() { }
+  virtual void NavigateToPendingEntry();
 
   virtual void DidNavigateMainFramePostCommit(
       const NavigationController::LoadCommittedDetails& details,
-      const ViewHostMsg_FrameNavigate_Params& params) { }
+      const ViewHostMsg_FrameNavigate_Params& params);
   virtual void DidNavigateAnyFramePostCommit(
       const NavigationController::LoadCommittedDetails& details,
-      const ViewHostMsg_FrameNavigate_Params& params) { }
+      const ViewHostMsg_FrameNavigate_Params& params);
 
-  virtual void DidStartLoading() { }
-  virtual void DidStopLoading() { }
+  virtual void DidStartLoading();
+  virtual void DidStopLoading();
 
 #if 0
   // For unifying with delegate...
@@ -45,6 +45,11 @@ class TabContentsObserver : public IPC::Channel::Listener {
   TabContentsObserver(TabContents* tab_contents);
   virtual ~TabContentsObserver();
 
+  // Invoked when the TabContents is being destroyed. Gives subclasses a chance
+  // to cleanup. At the time this is invoked |tab_contents()| returns NULL.
+  // It is safe to delete 'this' from here.
+  virtual void OnTabContentsDestroyed(TabContents* tab);
+
   // IPC::Channel::Listener implementation.
   virtual bool OnMessageReceived(const IPC::Message& message);
 
@@ -57,9 +62,12 @@ class TabContentsObserver : public IPC::Channel::Listener {
  private:
   friend class TabContents;
 
-  void set_tab_contents(TabContents* tc) { tab_contents_ = tc; }
+  // Invoked from TabContents. Invokes OnTabContentsDestroyed and NULL out
+  // |tab_contents_|.
+  void TabContentsDestroyed();
 
   TabContents* tab_contents_;
+
   // The routing ID of the associated TabContents.
   int routing_id_;
 

@@ -4034,6 +4034,12 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_FLAGS_REMOTING_DESCRIPTION" desc="Description of the 'Remoting' client lab.">
         Enable the UI plus backing code for the Remoting serivce process, and client plugin. Warning: This is currently for developer testing only. Unless you are on the dev team and whitelisted, nothing in the enabled UI will work.
       </message>
+      <message name="IDS_FLAGS_FOCUS_EXISTING_TAB_ON_OPEN_NAME" desc="Name for 'Focus existing tab on open' lab">
+        Focus existing tab on open
+      </message>
+      <message name="IDS_FLAGS_FOCUS_EXISTING_TAB_ON_OPEN_DESCRIPTION" desc="Description of the 'Focus existing tab on open' lab.">
+        Typing a URL of an existing tab into the omnibox results in refocusing the tab instead of loading in the current tab.
+      </message>
       <message name="IDS_FLAGS_ENABLE_NACL_NAME" desc="Description of the 'Enable Native Client' lab.">
         Native Client
       </message>

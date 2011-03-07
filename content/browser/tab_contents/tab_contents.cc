@@ -391,7 +391,7 @@ TabContents::~TabContents() {
         base::TimeTicks::Now() - tab_close_start_time_);
   }
 
-  FOR_EACH_OBSERVER(TabContentsObserver, observers_, set_tab_contents(NULL));
+  FOR_EACH_OBSERVER(TabContentsObserver, observers_, TabContentsDestroyed());
 
   net::NetworkChangeNotifier::RemoveOnlineStateObserver(this);
 }
