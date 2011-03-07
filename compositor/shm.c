@@ -86,8 +86,16 @@ const static struct wl_buffer_interface buffer_interface = {
 	buffer_destroy
 };
 
-static void
-shm_buffer_attach(struct wl_buffer *buffer_base, struct wl_surface *surface)
+int
+wlsc_is_shm_buffer(struct wl_buffer *buffer)
+{
+	return buffer->resource.object.implementation == 
+		(void (**)(void)) &buffer_interface;
+}
+
+void
+wlsc_shm_buffer_attach(struct wl_buffer *buffer_base,
+		       struct wl_surface *surface)
 {
 	struct wlsc_surface *es = (struct wlsc_surface *) surface;
 	struct wlsc_shm_buffer *buffer =
@@ -121,9 +129,14 @@ wlsc_shm_buffer_init(struct wlsc_compositor *compositor,
 	buffer->buffer.width = width;
 	buffer->buffer.height = height;
 	buffer->buffer.visual = visual;
-	buffer->buffer.attach = shm_buffer_attach;
 	buffer->stride = stride;
 	buffer->data = data;
+
+	buffer->buffer.resource.object.interface = &wl_buffer_interface;
+	buffer->buffer.resource.object.implementation = (void (**)(void))
+		&buffer_interface;
+
+	buffer->buffer.resource.destroy = destroy_buffer;
 
 	return buffer;
 }
@@ -183,11 +196,6 @@ shm_create_buffer(struct wl_client *client, struct wl_shm *shm,
 	buffer->mapped = 1;
 
 	buffer->buffer.resource.object.id = id;
-	buffer->buffer.resource.object.interface = &wl_buffer_interface;
-	buffer->buffer.resource.object.implementation = (void (**)(void))
-		&buffer_interface;
-
-	buffer->buffer.resource.destroy = destroy_buffer;
 
 	wl_client_add_resource(client, &buffer->buffer.resource);
 }

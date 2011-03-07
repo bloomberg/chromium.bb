@@ -244,6 +244,12 @@ wlsc_selection_set_focus(struct wl_selection *selection,
 uint32_t
 get_time(void);
 
+int
+wlsc_is_shm_buffer(struct wl_buffer *buffer);
+
+void
+wlsc_shm_buffer_attach(struct wl_buffer *buffer, struct wl_surface *surface);
+
 struct wl_buffer *
 wlsc_shm_buffer_create(struct wlsc_compositor *ec,
 		       int32_t width, int32_t height,

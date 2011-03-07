@@ -293,8 +293,8 @@ wlsc_buffer_attach(struct wl_buffer *buffer, struct wl_surface *surface)
 	struct wlsc_surface *es = (struct wlsc_surface *) surface;
 	struct wlsc_compositor *ec = es->compositor;
 
-	if (buffer->attach) {
-		buffer->attach(buffer, surface);
+	if (wlsc_is_shm_buffer(buffer)) {
+		wlsc_shm_buffer_attach(buffer, surface);
 	} else {
 		es->image = eglCreateImageKHR(ec->display, NULL,
 					      EGL_WAYLAND_BUFFER_WL,
