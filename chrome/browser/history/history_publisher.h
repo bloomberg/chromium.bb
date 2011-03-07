@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -46,8 +46,8 @@ class HistoryPublisher {
   struct PageData {
     const base::Time& time;
     const GURL& url;
-    const wchar_t* html;
-    const wchar_t* title;
+    const char16* html;
+    const char16* title;
     const char* thumbnail_format;
     const std::vector<unsigned char>* thumbnail;
   };

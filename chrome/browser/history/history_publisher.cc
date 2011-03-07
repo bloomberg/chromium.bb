@@ -1,4 +1,4 @@
-// Copyright (c) 2008-2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -29,13 +29,11 @@ void HistoryPublisher::PublishPageContent(const base::Time& time,
                                           const GURL& url,
                                           const string16& title,
                                           const string16& contents) const {
-  std::wstring wide_title = UTF16ToWide(title);
-  std::wstring wide_contents = UTF16ToWide(contents);
   PageData page_data = {
     time,
     url,
-    wide_contents.c_str(),
-    wide_title.c_str(),
+    contents.c_str(),
+    title.c_str(),
     NULL,
     NULL,
   };
