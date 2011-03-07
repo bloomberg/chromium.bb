@@ -443,7 +443,7 @@ bool PluginList::ShouldLoadPlugin(const WebPluginInfo& info,
     if (info.path == internal_plugins_[i].info.path)
       continue;
 
-    if (!IsValid32BitImage(info.path))
+    if (file_util::PathExists(info.path) && (!IsValid32BitImage(info.path)))
       load_plugin = false;
     break;
   }
