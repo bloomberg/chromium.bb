@@ -291,6 +291,9 @@ deps_os = {
 
     "src/third_party/openssl":
       "/trunk/deps/third_party/openssl@69192",
+
+    "src/third_party/WebKit/Tools/gdb":
+      Var("webkit_trunk") + "/Tools/gdb@" + Var("webkit_revision"),
   },
 }
 
