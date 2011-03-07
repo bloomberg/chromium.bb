@@ -503,6 +503,7 @@ RenderWidgetHostViewGtk::RenderWidgetHostViewGtk(RenderWidgetHost* widget_host)
       was_focused_before_grab_(false),
       do_x_grab_(false),
       is_fullscreen_(false),
+      destroy_handler_id_(0),
       dragged_at_horizontal_edge_(0),
       dragged_at_vertical_edge_(0),
       accelerated_surface_acquired_(false) {
@@ -575,6 +576,10 @@ void RenderWidgetHostViewGtk::InitAsFullscreen() {
                    "window-state-event",
                    G_CALLBACK(&OnWindowStateEventThunk),
                    this);
+  destroy_handler_id_ = g_signal_connect(GTK_WIDGET(window),
+                                         "destroy",
+                                         G_CALLBACK(OnDestroyThunk),
+                                         this);
   gtk_container_add(GTK_CONTAINER(window), view_.get());
 
   // Try to move and resize the window to cover the screen in case the window
@@ -762,8 +767,15 @@ void RenderWidgetHostViewGtk::Destroy() {
 
   // If this is a popup or fullscreen widget, then we need to destroy the window
   // that we created to hold it.
-  if (IsPopup() || is_fullscreen_)
-    gtk_widget_destroy(gtk_widget_get_parent(view_.get()));
+  if (IsPopup() || is_fullscreen_) {
+    GtkWidget* window = gtk_widget_get_parent(view_.get());
+
+    // Disconnect the destroy handler so that we don't try to shutdown twice.
+    if (is_fullscreen_)
+      g_signal_handler_disconnect(window, destroy_handler_id_);
+
+    gtk_widget_destroy(window);
+  }
 
   // Remove |view_| from all containers now, so nothing else can hold a
   // reference to |view_|'s widget except possibly a gtk signal handler if
@@ -834,6 +846,11 @@ gboolean RenderWidgetHostViewGtk::OnWindowStateEvent(
   }
 
   return FALSE;
+}
+
+void RenderWidgetHostViewGtk::OnDestroy(GtkWidget* widget) {
+  DCHECK(is_fullscreen_);
+  host_->Shutdown();
 }
 
 bool RenderWidgetHostViewGtk::NeedsInputGrab() {

@@ -131,6 +131,10 @@ class RenderWidgetHostViewGtk : public RenderWidgetHostView,
                        OnWindowStateEvent,
                        GdkEventWindowState*);
 
+  CHROMEGTK_CALLBACK_0(RenderWidgetHostViewGtk,
+                       void,
+                       OnDestroy);
+
   // Returns whether the widget needs an input grab (GTK+ and X) to work
   // properly.
   bool NeedsInputGrab();
@@ -208,6 +212,10 @@ class RenderWidgetHostViewGtk : public RenderWidgetHostView,
 
   // Is the widget fullscreen?
   bool is_fullscreen_;
+
+  // For full-screen windows we have a OnDestroy handler that we need to remove,
+  // so we keep it ID here.
+  unsigned long destroy_handler_id_;
 
   // A convenience wrapper object for GtkIMContext;
   scoped_ptr<GtkIMContextWrapper> im_context_;
