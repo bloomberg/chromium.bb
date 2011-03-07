@@ -76,9 +76,6 @@ class OfflineResourceHandler : public ResourceHandler,
   int deferred_request_id_;
   GURL deferred_url_;
 
-  // If the offline page has been requested to show.
-  bool offline_page_shown_;
-
   scoped_refptr<net::CancelableCompletionCallback<OfflineResourceHandler> >
       appcache_completion_callback_;
 

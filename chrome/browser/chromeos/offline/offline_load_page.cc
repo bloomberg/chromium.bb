@@ -15,6 +15,8 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/tab_contents/tab_util.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/chromeos/cros/cros_library.h"
+#include "chrome/browser/chromeos/cros/network_library.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/jstemplate_builder.h"
 #include "chrome/common/notification_service.h"
@@ -75,10 +77,6 @@ OfflineLoadPage::OfflineLoadPage(TabContents* tab_contents,
 
 std::string OfflineLoadPage::GetHTMLContents() {
   DictionaryValue strings;
-  // Toggle Cancel button.
-  strings.SetString("display_cancel",
-                    tab()->controller().CanGoBack() ? "inline" : "none");
-
   int64 time_to_wait = std::max(
       static_cast<int64>(0),
       kMaxBlankPeriod -
@@ -86,11 +84,16 @@ std::string OfflineLoadPage::GetHTMLContents() {
   // Set the timeout to show the page.
   strings.SetInteger("timeToWait", static_cast<int>(time_to_wait));
   // Button labels
-  SetString(&strings, "load_button", IDS_OFFLINE_LOAD_BUTTON);
-  SetString(&strings, "cancel_button", IDS_OFFLINE_CANCEL_BUTTON);
-
   SetString(&strings, "heading", IDS_OFFLINE_LOAD_HEADLINE);
+  SetString(&strings, "try_loading", IDS_OFFLINE_TRY_LOADING);
   SetString(&strings, "network_settings", IDS_OFFLINE_NETWORK_SETTINGS);
+
+  // Activation
+  SetString(&strings, "activation_heading", IDS_OFFLINE_ACTIVATION_HEADLINE);
+  SetString(&strings, "activation_msg", IDS_OFFLINE_ACTIVATION_MESSAGE);
+  SetString(&strings, "activation_button", IDS_OFFLINE_ACTIVATION_BUTTON);
+  strings.SetString("display_activation",
+                    ShowActivationMessage() ? "block" : "none");
 
   bool rtl = base::i18n::IsRTL();
   strings.SetString("textdirection", rtl ? "rtl" : "ltr");
@@ -173,6 +176,10 @@ void OfflineLoadPage::CommandReceived(const std::string& cmd) {
     Browser* browser = BrowserList::GetLastActive();
     DCHECK(browser);
     browser->ShowOptionsTab(chrome::kInternetOptionsSubPage);
+  } else if (command == "open_activate_broadband") {
+    Browser* browser = BrowserList::GetLastActive();
+    DCHECK(browser);
+    browser->OpenMobilePlanTabAndActivate();
   } else {
     LOG(WARNING) << "Unknown command:" << cmd;
   }
@@ -210,6 +217,22 @@ void OfflineLoadPage::Observe(NotificationType type,
   } else {
     InterstitialPage::Observe(type, source, details);
   }
+}
+
+bool OfflineLoadPage::ShowActivationMessage() {
+  CrosLibrary* cros = CrosLibrary::Get();
+  if (!cros || !cros->GetNetworkLibrary()->cellular_available())
+    return false;
+
+  const CellularNetworkVector& cell_networks =
+      cros->GetNetworkLibrary()->cellular_networks();
+  for (size_t i = 0; i < cell_networks.size(); ++i) {
+    chromeos::ActivationState activation_state =
+        cell_networks[i]->activation_state();
+    if (activation_state == ACTIVATION_STATE_ACTIVATED)
+      return false;
+  }
+  return true;
 }
 
 }  // namespace chromeos

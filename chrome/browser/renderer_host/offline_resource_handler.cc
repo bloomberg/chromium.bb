@@ -32,8 +32,7 @@ OfflineResourceHandler::OfflineResourceHandler(
       render_view_id_(route_id),
       rdh_(rdh),
       request_(request),
-      deferred_request_id_(-1),
-      offline_page_shown_(false) {
+      deferred_request_id_(-1) {
 }
 
 OfflineResourceHandler::~OfflineResourceHandler() {
@@ -71,11 +70,6 @@ void OfflineResourceHandler::OnRequestClosed() {
     appcache_completion_callback_->Cancel();
     appcache_completion_callback_.release();
     Release();  // Balanced with OnWillStart
-  } else if (offline_page_shown_) {
-    offline_page_shown_ = false;
-    // Interstitial page is already closed, so we need
-    // |Release| to balance with OnWillStart.
-    Release();
   }
   next_handler_->OnRequestClosed();
 }
@@ -94,7 +88,6 @@ void OfflineResourceHandler::OnCanHandleOfflineComplete(int rv) {
     Release();  // Balanced with OnWillStart
   } else {
     // Skipping AddRef/Release because they're redundant.
-    offline_page_shown_ = true;
     BrowserThread::PostTask(
         BrowserThread::UI, FROM_HERE,
         NewRunnableMethod(this, &OfflineResourceHandler::ShowOfflinePage));
@@ -150,9 +143,6 @@ void OfflineResourceHandler::OnBlockingPageComplete(bool proceed) {
     NOTREACHED();
     return;
   }
-  DCHECK(offline_page_shown_);
-  offline_page_shown_ = false;
-
   if (proceed) {
     Resume();
   } else {

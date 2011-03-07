@@ -73,6 +73,10 @@ class OfflineLoadPage : public InterstitialPage {
   void GetNormalOfflineStrings(const string16& faield_url,
                                DictionaryValue* strings) const;
 
+  // True if there is a mobile network is available but
+  // has not been activated.
+  bool ShowActivationMessage();
+
   Delegate* delegate_;
   NotificationRegistrar registrar_;
 

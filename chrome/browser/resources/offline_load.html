@@ -8,6 +8,7 @@ html {
   height: 100%;
 }
 body {
+  border: green 1px solid;
   color: #000;
   font-family: Helvetica, Arial, sans-serif;
   background-image: -webkit-linear-gradient(white 50%, rgb(236, 244, 255));
@@ -15,38 +16,84 @@ body {
   padding: 0;
   margin: 0;
   display: -webkit-box;
-  -webkit-box-orient: horizontal;
+  -webkit-box-orient: vertical;
   -webkit-box-pack: center;
-  visibility: hidden;
+  -webkit-box-align: center;
 }
 
-#error {
-  margin-top: 150px;
-  font-size: 16px;
+.upper {
+  width: 60%;
+  height: 50%;
+}
+
+.upper_main {
+  position: relative;
+  width: 100%;
+  bottom: -35%;
+}
+
+.lower {
+  height: 50%;
+  width: 100%;
   display: -webkit-box;
-  width : 800px;
-  max-width: 80%;
+  -webkit-box-pack: center;
   -webkit-box-orient: horizontal;
 }
 
-#error img {
-  vertical-align: middle;
-  width: 96px;
-  height: 96px;
-  -webkit-margin-end: 10px;
-  -webkit-box-flex: 0;
+.lower_left {
+  height: 100%;
+  width: 24%;
+  background-image: -webkit-linear-gradient(-100deg, rgb(230, 230, 230),  rgb(230, 230, 230) 3px, rgb(240, 240, 240) 3px, rgba(240, 240, 240, 0) 20%);
 }
 
-#error #msg_box {
-  vertical-align: middle;
-  -webkit-box-flex: 1;
+.lower_right {
+  height: 100%;
+  width: 24%;
+  background-image: -webkit-linear-gradient(-80deg, rgb(230, 230, 230),  rgb(230, 230, 230) 3px, rgb(240, 240, 240) 3px, rgba(240, 240, 240, 0) 20%);
+}
+
+.lower_main {
+  position: relative;
+  height: 100%;
+  width: 50%;
+  padding-top: 20px;
+  background-image: -webkit-linear-gradient(rgb(230, 230, 230),  rgb(230, 230, 230) 3px, rgb(240, 240, 240) 3px, rgba(240, 240, 240, 0) 20%);
+}
+
+.icon {
+  float: left;
+  margin: 15px;
+  overflow: visible;
+}
+
+.title {
+  float: left;
+  height: 10%;
+  width: 80%;
+  font-family: Sans-serif;
+  font-size: 120%;
+  font-weight: bold;
+  padding: 3px;
+}
+
+.message {
+  float: left;
+  margin-top: 10px;
+}
+
+.link {
+  float: left;
+  clear: both;
+  padding: 3px;
+}
+
+.activation_button {
+  float: left;
+  clear both;
 }
 
 </style>
-<script src="shared/js/local_strings.js"></script>
 <script>
-var localStrings = new LocalStrings();
-
 function sendCommand(cmd) {
   window.domAutomationController.setAutomationId(1);
   window.domAutomationController.send(cmd);
@@ -55,32 +102,42 @@ function sendCommand(cmd) {
 function showPage() {
   document.body.style.visibility = 'visible';
 }
-document.addEventListener('DOMContentLoaded', function() {
-  var timeToWait = localStrings.getString('timeToWait');
-  window.setTimeout(showPage, timeToWait);
-});
+// Start the timer to show the page.
+function startTimer(time) {
+  // wait 2.5 seconds before showing 'load now', 'go back' button.
+  setTimeout('showPage()', time);
+}
 </script>
-</head>
 
 <body oncontextmenu="return false;">
-<div id="error" i18n-values=".title:url">
-  <img i18n-values=".src:icon;.style.display:display_icon">
-  <div id="msg_box">
-    <h3 i18n-content="heading"></h3>
-    <div id="msg" i18n-values=".innerHTML:msg"></div>
-
-    <button id="continue_button" i18n-content="load_button"
-            onclick="sendCommand('proceed')">
-    </button>
-    <button id="cancel_button" i18n-content="cancel_button"
-            i18n-values=".style.display:display_cancel"
-            onclick="sendCommand('dontproceed')">
-    </button>
-    <a href="chrome://settings/internet"
-       onclick="sendCommand('open_network_settings')"
-       i18n-content="network_settings">
-    </a>
+  <div class="upper" i18n-values=".title:url">
+    <div class="upper_main">
+      <div class="icon" i18n-values=".src:icon;.style.display:display_icon"></div>
+      <div class="title" i18n-content="heading"> </div>
+      <div class="message" i18n-values=".innerHTML:msg"> </div>
+      <div class="link"><a href="chrome://settings/internet"
+         onclick="sendCommand('proceed')"
+         i18n-content="try_loading">
+      </a> </div>
+      <div class="link">
+      <a href="chrome://settings/internet"
+        onclick="sendCommand('open_network_settings')"
+         i18n-content="network_settings">
+      </a>
+      </div>
+    </div>
   </div>
-</div>
+  <div class="lower" i18n-values=".style.display:display_activation">
+    <div class="lower_left"> </div>
+    <div class="lower_main">
+      <img class="icon" src="activate_broadband_info.png"></img>
+      <div class="title" i18n-content="activation_heading"></div>
+      <div class="message" i18n-content="activation_msg"></div>
+      <button class="activation_button" i18n-content="activation_button"
+              onclick="sendCommand('open_activate_broadband')">
+      </button>
+    </div>
+    <div class="lower_right"> </div>
+  </div>
 </body>
 </html>
