@@ -3216,6 +3216,8 @@
         'browser/ui/webui/chrome_url_data_manager.h',
         'browser/ui/webui/constrained_html_ui.cc',
         'browser/ui/webui/constrained_html_ui.h',
+        'browser/ui/webui/cookies_tree_model_util.cc',
+        'browser/ui/webui/cookies_tree_model_util.h',
         'browser/ui/webui/crashes_ui.cc',
         'browser/ui/webui/crashes_ui.h',
         'browser/ui/webui/devtools_ui.cc',

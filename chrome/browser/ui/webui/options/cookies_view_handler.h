@@ -47,9 +47,6 @@ class CookiesViewHandler : public OptionsPageUIHandler,
   // SendChildren to pass back children nodes data to WebUI.
   void LoadChildren(const ListValue* args);
 
-  // Gets tree node from given path. Return NULL if path is not valid.
-  CookieTreeNode* GetTreeNodeFromPath(const std::string& path);
-
   // Get children nodes data and pass it to 'CookiesView.loadChildren' to
   // update the WebUI.
   void SendChildren(CookieTreeNode* parent);
