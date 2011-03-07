@@ -65,7 +65,7 @@ class BuilderStageTest(mox.MoxTestBase):
                           redirect_stdout=True).AndReturn(output_obj)
       output_obj = cros_lib.CommandResult()
       output_obj.output = 'private1 private2\n'
-      cros_lib.RunCommand(mox.And(mox.IsA(list), mox.In('--nopublic')),\
+      cros_lib.RunCommand(mox.And(mox.IsA(list), mox.In('--nopublic')), \
                           redirect_stdout=True).AndReturn(output_obj)
     self.mox.ReplayAll()
     stage = stages.BuilderStage(self.bot_id, self.options, self.build_config)
@@ -231,6 +231,7 @@ class BuildTestsTest(BuilderStageTest):
   def setUp(self):
     mox.MoxTestBase.setUp(self)
     BuilderStageTest.setUp(self)
+    self.fake_results_dir = '/tmp/fake_results_dir'
 
   def testFullTests(self):
     """Tests if full unit and cros_au_test_harness tests are run correctly."""
@@ -245,13 +246,18 @@ class BuildTestsTest(BuilderStageTest):
     self.mox.StubOutWithMock(commands, 'RunSmokeSuite')
     self.mox.StubOutWithMock(commands, 'RunAUTestSuite')
     self.mox.StubOutWithMock(commands, 'ArchiveTestResults')
+    self.mox.StubOutWithMock(stages.TestStage, '_CreateTestRoot')
 
+    stages.TestStage._CreateTestRoot().AndReturn(self.fake_results_dir)
     commands.RunUnitTests(self.build_root, full=True)
-    commands.RunSmokeSuite(self.build_root, '/tmp/run_remote_tests.1234')
+    commands.RunSmokeSuite(self.build_root, os.path.join(self.fake_results_dir,
+                                                         'smoke_results'))
     commands.RunAUTestSuite(self.build_root,
                             self.build_config['board'],
+                            os.path.join(self.fake_results_dir,
+                                         'au_test_harness'),
                             full=True)
-    commands.ArchiveTestResults(self.build_root, '/tmp/run_remote_tests.1234')
+    commands.ArchiveTestResults(self.build_root, self.fake_results_dir)
 
     self.mox.ReplayAll()
     stage = stages.TestStage(self.bot_id, self.options, self.build_config)
@@ -269,13 +275,18 @@ class BuildTestsTest(BuilderStageTest):
     self.mox.StubOutWithMock(commands, 'RunSmokeSuite')
     self.mox.StubOutWithMock(commands, 'RunAUTestSuite')
     self.mox.StubOutWithMock(commands, 'ArchiveTestResults')
+    self.mox.StubOutWithMock(stages.TestStage, '_CreateTestRoot')
 
+    stages.TestStage._CreateTestRoot().AndReturn(self.fake_results_dir)
     commands.RunUnitTests(self.build_root, full=False)
-    commands.RunSmokeSuite(self.build_root, '/tmp/run_remote_tests.1234')
+    commands.RunSmokeSuite(self.build_root, os.path.join(self.fake_results_dir,
+                                                         'smoke_results'))
     commands.RunAUTestSuite(self.build_root,
                             self.build_config['board'],
+                            os.path.join(self.fake_results_dir,
+                                         'au_test_harness'),
                             full=False)
-    commands.ArchiveTestResults(self.build_root, '/tmp/run_remote_tests.1234')
+    commands.ArchiveTestResults(self.build_root, self.fake_results_dir)
 
     self.mox.ReplayAll()
     stage = stages.TestStage(self.bot_id, self.options, self.build_config)

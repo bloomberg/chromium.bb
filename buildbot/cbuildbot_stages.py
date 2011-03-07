@@ -7,6 +7,7 @@
 import os
 import re
 import sys
+import tempfile
 
 import chromite.buildbot.cbuildbot_commands as commands
 import chromite.lib.cros_build_lib as cros_lib
@@ -218,17 +219,34 @@ class BuildTargetStage(BuilderStage):
 
 class TestStage(BuilderStage):
   """Stage that performs testing steps."""
+  def _CreateTestRoot(self):
+    """Returns a temporary directory for test results in chroot.
+
+    Returns relative path from chroot rather than whole path.
+    """
+    # Create test directory within tmp in chroot.
+    chroot = os.path.join(self._build_root, 'chroot')
+    chroot_tmp = os.path.join(chroot, 'tmp')
+    test_root = tempfile.mkdtemp(prefix='cbuildbot', dir=chroot_tmp)
+
+    # Relative directory.
+    (_, _, relative_path) = test_root.partition(chroot)
+    return relative_path
+
   def _PerformStage(self):
     if self._build_config['unittests']:
       commands.RunUnitTests(self._build_root,
                             full=(not self._build_config['quick_unit']))
 
     if self._build_config['vm_tests']:
-      test_results_dir = '/tmp/run_remote_tests.%s' % self._options.buildnumber
+      test_results_dir = self._CreateTestRoot()
       try:
-        commands.RunSmokeSuite(self._build_root, test_results_dir)
+        commands.RunSmokeSuite(self._build_root, os.path.join(test_results_dir,
+                                                              'smoke_results'))
         commands.RunAUTestSuite(self._build_root,
                                 self._build_config['board'],
+                                os.path.join(test_results_dir,
+                                             'au_test_harness'),
                                 full=(not self._build_config['quick_vm']))
       finally:
         BuilderStage.test_tarball = commands.ArchiveTestResults(
