@@ -110,9 +110,21 @@
 
   <!-- A pixel buffer. Created using the drm, shm or similar objects.
        It has a size, visual and contents, but not a location on the
-       screen -->
+       screen. -->
   <interface name="wl_buffer" version="1">
-    <!-- Abandon a buffer.  This will invalidate the object id. -->
+    <!-- Notify the server that the specified area of the buffers
+         contents have changed.  To describe a more complicated area
+         of damage, break down the region into rectangles and use this
+         request several times.
+    -->
+    <request name="damage">
+      <arg name="x" type="int"/>
+      <arg name="y" type="int"/>
+      <arg name="width" type="int"/>
+      <arg name="height" type="int"/>
+    </request>
+
+    <!-- Destroy a buffer.  This will invalidate the object id. -->
     <request name="destroy" type="destructor"/>
   </interface>
 
@@ -349,12 +361,10 @@
          active?  -->
     <request name="map_fullscreen"/>
 
-    <!-- Notify the server that the attached buffer's contents have
-         changed, and request a redraw. The arguments allow you to
-         damage only a part of the surface, but the server may ignore
-         it and redraw the entire contents of the surface.  To
-         describe a more complicated area of damage, use this request
-         several times. -->
+    <!-- After attaching a new buffer, this request is used to
+         describe the regions where the new buffer is different from
+         the previous buffer and needs to be repainted.  Coordinates
+         are relative to the new buffer. -->
     <request name="damage">
       <arg name="x" type="int"/>
       <arg name="y" type="int"/>
