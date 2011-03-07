@@ -85,7 +85,6 @@ class PrefProxyConfigTracker;
 class PrefService;
 class ProfileSyncFactory;
 class ProfileSyncService;
-class ProfileSyncService;
 class PromoCounter;
 class ProtocolHandlerRegistry;
 class SQLitePersistentCookieStore;
