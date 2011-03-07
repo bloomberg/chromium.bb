@@ -316,9 +316,13 @@ class KeyEvent : public Event {
 ////////////////////////////////////////////////////////////////////////////////
 class MouseWheelEvent : public LocatedEvent {
  public:
+  // See |offset| for details.
+  static const int kWheelDelta;
+
   explicit MouseWheelEvent(NativeEvent native_event);
   MouseWheelEvent(NativeEvent2 native_event_2, FromNativeEvent2 from_native);
 
+  // The amount to scroll. This is in multiples of kWheelDelta.
   int offset() const { return offset_; }
 
  private:

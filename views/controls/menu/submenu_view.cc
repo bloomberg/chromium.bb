@@ -194,11 +194,7 @@ bool SubmenuView::OnMouseWheel(const MouseWheelEvent& e) {
 
   // If the first item isn't entirely visible, make it visible, otherwise make
   // the next/previous one entirely visible.
-#if defined(OS_WIN)
-  int delta = abs(e.offset() / WHEEL_DELTA);
-#elif defined(OS_LINUX)
-  int delta = abs(e.offset());
-#endif
+  int delta = abs(e.offset() / MouseWheelEvent::kWheelDelta);
   for (bool scroll_up = (e.offset() > 0); delta != 0; --delta) {
     int scroll_target;
     if (scroll_up) {

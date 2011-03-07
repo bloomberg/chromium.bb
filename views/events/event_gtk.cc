@@ -46,19 +46,7 @@ int GetMouseWheelOffset(NativeEvent native_event) {
   DCHECK(native_event->type == GDK_SCROLL);
   int offset = (native_event->scroll.direction == GDK_SCROLL_UP ||
                 native_event->scroll.direction == GDK_SCROLL_LEFT) ? 1 : -1;
-
-  // Scale the offset magnitude by window size, to preserve legacy behavior.
-  // TODO(msw): Investigate the use of offset magnitude throughout the codebase.
-  int width = 0, height = 0;
-  gdk_window_get_geometry(native_event->scroll.window, NULL, NULL, &width,
-                          &height, NULL);
-  if (native_event->scroll.direction == GDK_SCROLL_UP ||
-      native_event->scroll.direction == GDK_SCROLL_DOWN)
-    offset = offset * height / 5;
-  else
-    offset = offset * width / 5;
-
-  return offset;
+  return MouseWheelEvent::kWheelDelta * offset;
 }
 
 unsigned int GetGdkStateFromNative(NativeEvent native_event) {

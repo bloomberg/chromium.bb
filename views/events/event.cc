@@ -112,4 +112,11 @@ TouchEvent::TouchEvent(const TouchEvent& model, View* from, View* to)
 }
 #endif
 
+////////////////////////////////////////////////////////////////////////////////
+// MouseWheelEvent, public:
+
+// This value matches windows WHEEL_DELTA.
+// static
+const int MouseWheelEvent::kWheelDelta = 120;
+
 }  // namespace views
