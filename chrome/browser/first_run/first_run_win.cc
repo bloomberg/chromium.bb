@@ -90,43 +90,6 @@ bool InvokeGoogleUpdateForRename() {
   return false;
 }
 
-bool LaunchSetupWithParam(const std::string& param, const std::wstring& value,
-                          int* ret_code) {
-  FilePath exe_path;
-  if (!PathService::Get(base::DIR_MODULE, &exe_path))
-    return false;
-  exe_path = exe_path.Append(installer::kInstallerDir);
-  exe_path = exe_path.Append(installer::kSetupExe);
-  base::ProcessHandle ph;
-  CommandLine cl(exe_path);
-  cl.AppendSwitchNative(param, value);
-
-  CommandLine* browser_command_line = CommandLine::ForCurrentProcess();
-  if (browser_command_line->HasSwitch(switches::kChromeFrame)) {
-    cl.AppendSwitch(switches::kChromeFrame);
-  }
-
-  if (!base::LaunchApp(cl, false, false, &ph))
-    return false;
-  DWORD wr = ::WaitForSingleObject(ph, INFINITE);
-  if (wr != WAIT_OBJECT_0)
-    return false;
-  return (TRUE == ::GetExitCodeProcess(ph, reinterpret_cast<DWORD*>(ret_code)));
-}
-
-bool WriteEULAtoTempFile(FilePath* eula_path) {
-  base::StringPiece terms =
-      ResourceBundle::GetSharedInstance().GetRawDataResource(IDR_TERMS_HTML);
-  if (terms.empty())
-    return false;
-  FILE *file = file_util::CreateAndOpenTemporaryFile(eula_path);
-  if (!file)
-    return false;
-  bool good = fwrite(terms.data(), terms.size(), 1, file) == 1;
-  fclose(file);
-  return good;
-}
-
 // Helper class that performs delayed first-run tasks that need more of the
 // chrome infrastructure to be up and running before they can be attempted.
 class FirstRunDelayedTasks : public NotificationObserver {
