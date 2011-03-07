@@ -1760,7 +1760,6 @@ void TabContents::CloseConstrainedWindows() {
       BlockTabContent(false);
     }
   }
-  DCHECK(child_windows_.empty());
 }
 
 void TabContents::UpdateAlternateErrorPageURL() {
