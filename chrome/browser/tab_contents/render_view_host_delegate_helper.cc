@@ -12,6 +12,7 @@
 #include "chrome/browser/background_contents_service.h"
 #include "chrome/browser/character_encoding.h"
 #include "chrome/browser/extensions/extension_service.h"
+#include "chrome/browser/gpu_data_manager.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/tab_contents/background_contents.h"
@@ -320,6 +321,20 @@ WebPreferences RenderViewHostDelegateHelper::GetWebkitPrefs(
     } else {
       web_prefs.user_style_sheet_enabled = false;
     }
+  }
+
+  {  // Certain GPU features might have been blacklisted.
+    GpuDataManager* gpu_data_manager = GpuDataManager::GetInstance();
+    DCHECK(gpu_data_manager);
+    if (!gpu_data_manager->GpuFeatureAllowed(
+            GpuFeatureFlags::kGpuFeatureAcceleratedCompositing))
+      web_prefs.accelerated_compositing_enabled = false;
+    if (!gpu_data_manager->GpuFeatureAllowed(
+            GpuFeatureFlags::kGpuFeatureWebgl))
+      web_prefs.experimental_webgl_enabled = false;
+    if (!gpu_data_manager->GpuFeatureAllowed(
+            GpuFeatureFlags::kGpuFeatureMultisampling))
+      web_prefs.gl_multisampling_enabled = false;
   }
 
   web_prefs.uses_universal_detector =

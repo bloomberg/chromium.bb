@@ -159,6 +159,12 @@ void GpuDataManager::AppendRendererCommandLine(
   }
 }
 
+bool GpuDataManager::GpuFeatureAllowed(uint32 feature) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  UpdateGpuFeatureFlags();
+  return ((gpu_feature_flags_.flags() & feature) == 0);
+}
+
 void GpuDataManager::RunGpuInfoUpdateCallbacks() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   std::set<Callback0::Type*>::iterator i = gpu_info_update_callbacks_.begin();

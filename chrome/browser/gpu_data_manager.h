@@ -56,6 +56,9 @@ class GpuDataManager {
   // in correspondance to preliminary gpu feature flags.
   void AppendRendererCommandLine(CommandLine* command_line);
 
+  // If necessary, compute the flags before checking if a feature is allowed
+  bool GpuFeatureAllowed(uint32 feature);
+
  private:
   friend struct DefaultSingletonTraits<GpuDataManager>;
 
