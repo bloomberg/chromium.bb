@@ -92,7 +92,7 @@ ExampleMenuModel::ExampleMenuModel()
 
   submenu_.reset(new ui::SimpleMenuModel(this));
   submenu_->AddItem(kCommandDoSomething, WideToUTF16(L"Do Something 2"));
-  AddSubMenu(-1, ASCIIToUTF16("Submenu"), submenu_.get());
+  AddSubMenu(0, ASCIIToUTF16("Submenu"), submenu_.get());
   menu_.reset(new views::Menu2(this));
 }
 
