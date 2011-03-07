@@ -30,7 +30,7 @@ StatusAreaButton::StatusAreaButton(views::ViewMenuDelegate* menu_delegate)
   SetTextHaloColor(kStatusTextHaloColor);
 }
 
-void StatusAreaButton::OnPaint(gfx::Canvas* canvas, bool for_drag) {
+void StatusAreaButton::PaintButton(gfx::Canvas* canvas, PaintButtonMode mode) {
   if (state() == BS_PUSHED) {
     // Apply 10% white when pushed down.
     canvas->FillRectInt(SkColorSetARGB(0x19, 0xFF, 0xFF, 0xFF),
@@ -38,11 +38,7 @@ void StatusAreaButton::OnPaint(gfx::Canvas* canvas, bool for_drag) {
   }
 
   if (use_menu_button_paint_) {
-    views::MenuButton::PaintButton(
-        canvas,
-        for_drag ?
-            views::MenuButton::PB_FOR_DRAG :
-            views::MenuButton::PB_NORMAL);
+    views::MenuButton::PaintButton(canvas, mode);
   } else {
     canvas->DrawBitmapInt(icon(), horizontal_padding(), 0);
     OnPaintFocusBorder(canvas);

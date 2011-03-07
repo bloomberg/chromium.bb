@@ -17,7 +17,7 @@ class StatusAreaButton : public views::MenuButton {
  public:
   explicit StatusAreaButton(views::ViewMenuDelegate* menu_delegate);
   virtual ~StatusAreaButton() {}
-  virtual void OnPaint(gfx::Canvas* canvas, bool for_drag);
+  virtual void PaintButton(gfx::Canvas* canvas, PaintButtonMode mode);
   virtual gfx::Size GetPreferredSize();
   virtual gfx::Insets GetInsets() const;
 
