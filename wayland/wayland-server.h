@@ -124,7 +124,6 @@ struct wl_buffer {
 	struct wl_compositor *compositor;
 	struct wl_visual *visual;
 	int32_t width, height;
-	void (*attach)(struct wl_buffer *buffer, struct wl_surface *surface);
 };
 
 struct wl_listener {
