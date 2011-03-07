@@ -218,8 +218,13 @@ void CapturerLinuxPimpl::CalculateInvalidRects() {
         XDamageNotifyEvent *event = reinterpret_cast<XDamageNotifyEvent*>(&e);
         gfx::Rect damage_rect(event->area.x, event->area.y, event->area.width,
                               event->area.height);
+
+        // TODO(hclam): Perform more checks on the rect.
+        if (damage_rect.width() <= 0 && damage_rect.height() <= 0)
+          continue;
+
         invalid_rects.insert(damage_rect);
-        VLOG(3) << "Damage receved for rect at ("
+        VLOG(3) << "Damage received for rect at ("
                 << damage_rect.x() << "," << damage_rect.y() << ") size ("
                 << damage_rect.width() << "," << damage_rect.height() << ")";
       }
@@ -229,7 +234,8 @@ void CapturerLinuxPimpl::CalculateInvalidRects() {
   }
 
   if (capture_fullscreen_) {
-    capturer_->InvalidateFullScreen();
+    // TODO(hclam): Check the new dimension again.
+    capturer_->InvalidateFullScreen(width_, height_);
     capture_fullscreen_ = false;
   } else {
     capturer_->InvalidateRects(invalid_rects);

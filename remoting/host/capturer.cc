@@ -49,7 +49,8 @@ void Capturer::InvalidateFullScreen(int width, int height) {
 }
 
 void Capturer::InvalidateFullScreen() {
-  InvalidateFullScreen(width_most_recent_, height_most_recent_);
+  if (width_most_recent_ && height_most_recent_)
+    InvalidateFullScreen(width_most_recent_, height_most_recent_);
 }
 
 void Capturer::CaptureInvalidRects(CaptureCompletedCallback* callback) {

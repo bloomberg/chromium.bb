@@ -62,6 +62,7 @@ class Capturer {
   void InvalidateRects(const InvalidRects& inval_rects);
 
   // Invalidate the entire screen, of a given size.
+  // TODO(hclam): No overload function!
   void InvalidateFullScreen(int width, int height);
 
   // Invalidate the entire screen, using the size of the most recently
