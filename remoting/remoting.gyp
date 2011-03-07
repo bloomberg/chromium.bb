@@ -344,6 +344,8 @@
       'sources': [
         'jingle_glue/channel_socket_adapter.cc',
         'jingle_glue/channel_socket_adapter.h',
+        'jingle_glue/http_port_allocator.cc',
+        'jingle_glue/http_port_allocator.h',
         'jingle_glue/iq_request.cc',
         'jingle_glue/iq_request.h',
         'jingle_glue/jingle_client.cc',

@@ -7,6 +7,7 @@
 #include "base/logging.h"
 #include "base/message_loop.h"
 #include "jingle/notifier/communicator/gaia_token_pre_xmpp_auth.h"
+#include "remoting/jingle_glue/http_port_allocator.h"
 #include "remoting/jingle_glue/iq_request.h"
 #include "remoting/jingle_glue/jingle_info_task.h"
 #include "remoting/jingle_glue/jingle_thread.h"
@@ -16,7 +17,6 @@
 #include "third_party/libjingle/source/talk/base/ssladapter.h"
 #include "third_party/libjingle/source/talk/p2p/base/sessionmanager.h"
 #include "third_party/libjingle/source/talk/p2p/base/transport.h"
-#include "third_party/libjingle/source/talk/p2p/client/httpportallocator.h"
 #include "third_party/libjingle/source/talk/p2p/client/sessionmanagertask.h"
 #include "third_party/libjingle/source/talk/session/tunnel/tunnelsessionclient.h"
 #include "third_party/libjingle/source/talk/xmpp/prexmppauth.h"
@@ -239,8 +239,8 @@ void JingleClient::DoInitialize() {
   }
 
   port_allocator_.reset(
-      new cricket::HttpPortAllocator(network_manager_.get(),
-                                     socket_factory_.get(), "transp2"));
+      new HttpPortAllocator(network_manager_.get(),
+                            socket_factory_.get(), "transp2"));
   // TODO(ajwong): The strategy needs a "start" command or something.  Right
   // now, Init() implicitly starts processing events.  Thus, we must have the
   // other fields of JingleClient initialized first, otherwise the state-change
