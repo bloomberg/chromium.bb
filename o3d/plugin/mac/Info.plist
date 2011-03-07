@@ -41,6 +41,10 @@
 	<key>O3DForceSoftwareRenderer</key>
 	<false/>
 
+	<key>BreakpadInspectorLocation</key>
+	<string>/Library/Internet Plug-Ins/@@@PluginNpapiFilename@@@.plugin/Contents/Resources/crash_inspector</string>
+	<key>BreakpadReporterExeLocation</key>
+	<string>/Library/Internet Plug-Ins/@@@PluginNpapiFilename@@@.plugin/Contents/Resources/crash_report_sender.app/Contents/MacOS/crash_report_sender</string>
 	<key>BreakpadProduct</key>
 	<string>O3D</string>
 	<key>BreakpadProductDisplay</key>
@@ -54,7 +58,7 @@
 	<key>BreakpadReportInterval</key>
 	<string>3600</string>
 	<key>BreakpadURL</key>
-	<string>https://clients2.google.com/cr</string>
+	<string>https://clients2.google.com/cr/report</string>
 
 </dict>
 </plist>

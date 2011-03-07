@@ -14,3 +14,7 @@ find "${BUILT_PRODUCTS_DIR}/${PLUGIN_NPAPI_FILENAME}.plugin/Contents/Frameworks/
 ditto --arch i386 \
   "${BUILT_PRODUCTS_DIR}/crash_report_sender.app" \
   "${BUILT_PRODUCTS_DIR}/${PLUGIN_NPAPI_FILENAME}.plugin/Contents/Resources/crash_report_sender.app"
+
+ditto --arch i386 \
+  "${BUILT_PRODUCTS_DIR}/crash_inspector" \
+  "${BUILT_PRODUCTS_DIR}/${PLUGIN_NPAPI_FILENAME}.plugin/Contents/Resources/crash_inspector"
