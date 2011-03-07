@@ -1456,3 +1456,9 @@
    ...
    fun:CFBundlePreflightExecutable
 }
+{
+   bug_75142
+   Memcheck:Addr4
+   ...
+   fun:CGContextShowGlyphsWithAdvances
+}
