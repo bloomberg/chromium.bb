@@ -258,22 +258,25 @@ class RelayCreateDirectory : public RelayWithStatusCallback {
       const fileapi::FileSystemOperationContext& context,
       const FilePath& file_path,
       bool exclusive,
+      bool recursive,
       fileapi::FileSystemFileUtilProxy::StatusCallback* callback)
       : RelayWithStatusCallback(context, callback),
         file_path_(file_path),
-        exclusive_(exclusive) {
+        exclusive_(exclusive),
+        recursive_(recursive) {
   }
 
  protected:
   virtual void RunWork() {
     set_error_code(
         file_system_file_util()->CreateDirectory(
-            context(), file_path_, exclusive_));
+            context(), file_path_, exclusive_, recursive_));
   }
 
  private:
   FilePath file_path_;
   bool exclusive_;
+  bool recursive_;
 };
 
 class RelayCopy : public RelayWithStatusCallback {
@@ -460,9 +463,10 @@ bool FileSystemFileUtilProxy::CreateDirectory(
     scoped_refptr<MessageLoopProxy> message_loop_proxy,
     const FilePath& file_path,
     bool exclusive,
+    bool recursive,
     StatusCallback* callback) {
   return Start(FROM_HERE, message_loop_proxy, new RelayCreateDirectory(
-      context, file_path, exclusive, callback));
+      context, file_path, exclusive, recursive, callback));
 }
 
 // static

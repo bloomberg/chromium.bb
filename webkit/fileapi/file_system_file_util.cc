@@ -157,16 +157,20 @@ PlatformFileError FileSystemFileUtil::ReadDirectory(
 PlatformFileError FileSystemFileUtil::CreateDirectory(
     FileSystemOperationContext* unused,
     const FilePath& file_path,
-    bool exclusive) {
-  bool path_exists = file_util::PathExists(file_path);
-  if (!file_util::PathExists(file_path.DirName()))
-    return base::PLATFORM_FILE_ERROR_NOT_FOUND;
+    bool exclusive,
+    bool recursive) {
   // If parent dir of file doesn't exist.
+  if (!recursive && !file_util::PathExists(file_path.DirName()))
+    return base::PLATFORM_FILE_ERROR_NOT_FOUND;
+
+  bool path_exists = file_util::PathExists(file_path);
   if (exclusive && path_exists)
     return base::PLATFORM_FILE_ERROR_EXISTS;
+
   // If file exists at the path.
   if (path_exists && !file_util::DirectoryExists(file_path))
     return base::PLATFORM_FILE_ERROR_EXISTS;
+
   if (!file_util::CreateDirectory(file_path))
     return base::PLATFORM_FILE_ERROR_FAILED;
   return base::PLATFORM_FILE_OK;

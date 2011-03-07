@@ -56,7 +56,7 @@ class FileSystemOperation {
                   bool exclusive);
   void CreateDirectory(const FilePath& path,
                        bool exclusive,
-                       bool unused);
+                       bool recursive);
   void Copy(const FilePath& src_path,
             const FilePath& dest_path);
   void Move(const FilePath& src_path,

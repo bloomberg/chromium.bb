@@ -89,6 +89,7 @@ class FileSystemFileUtilProxy {
       scoped_refptr<MessageLoopProxy> message_loop_proxy,
       const FilePath& file_path,
       bool exclusive,
+      bool recursive,
       StatusCallback* callback);
 
   // Copies a file or a directory from |src_file_path| to |dest_file_path|

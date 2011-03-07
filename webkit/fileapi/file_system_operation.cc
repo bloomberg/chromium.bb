@@ -71,12 +71,11 @@ void FileSystemOperation::CreateFile(const FilePath& path,
 
 void FileSystemOperation::CreateDirectory(const FilePath& path,
                                           bool exclusive,
-                                          bool unused) {
+                                          bool recursive) {
 #ifndef NDEBUG
   DCHECK(kOperationNone == pending_operation_);
   pending_operation_ = kOperationCreateDirectory;
 #endif
-  DCHECK(!unused);
 
   if (!VerifyFileSystemPathForWrite(path, true /* create */)) {
     delete this;
@@ -84,7 +83,7 @@ void FileSystemOperation::CreateDirectory(const FilePath& path,
   }
   FileSystemFileUtilProxy::CreateDirectory(
       file_system_operation_context_,
-      proxy_, path, exclusive, callback_factory_.NewCallback(
+      proxy_, path, exclusive, recursive, callback_factory_.NewCallback(
           &FileSystemOperation::DidFinishFileOperation));
 }
 

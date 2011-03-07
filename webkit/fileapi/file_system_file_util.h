@@ -80,7 +80,8 @@ class FileSystemFileUtil {
   virtual PlatformFileError CreateDirectory(
       FileSystemOperationContext* context,
       const FilePath& file_path,
-      bool exclusive);
+      bool exclusive,
+      bool recursive);
 
   // Copies a file or a directory from |src_file_path| to |dest_file_path|
   // Error cases:
