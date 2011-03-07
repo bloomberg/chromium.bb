@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -10,26 +10,22 @@
 
 using WebKit::WebFrame;
 
-namespace {
+namespace webkit_glue {
 
 // Defines how long we should wait for more data before we declare a connection
 // timeout and start a new request.
 // TODO(hclam): Set it to 5s, calibrate this value later.
-const int kTimeoutMilliseconds = 5000;
+static const int kTimeoutMilliseconds = 5000;
 
 // Defines how many times we should try to read from a buffered resource loader
 // before we declare a read error. After each failure of read from a buffered
 // resource loader, a new one is created to be read.
-const int kReadTrials = 3;
+static const int kReadTrials = 3;
 
 // BufferedDataSource has an intermediate buffer, this value governs the initial
 // size of that buffer. It is set to 32KB because this is a typical read size
 // of FFmpeg.
-const int kInitialReadBufferSize = 32768;
-
-} // namespace
-
-namespace webkit_glue {
+static const int kInitialReadBufferSize = 32768;
 
 BufferedDataSource::BufferedDataSource(
     MessageLoop* render_loop,

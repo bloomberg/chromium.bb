@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -22,16 +22,12 @@ namespace media {
 
 class GTEST_TEST_CLASS_NAME_(DecoderBaseTest, FlowControl);
 
-}  // namespace media
-
-namespace {
-
-class MockDecoderOutput : public media::StreamSample {
+class MockDecoderOutput : public StreamSample {
  public:
   MOCK_CONST_METHOD0(IsEndOfStream, bool());
 };
 
-class MockBuffer : public media::Buffer {
+class MockBuffer : public Buffer {
  public:
   MockBuffer() {}
   virtual ~MockBuffer() {}
@@ -42,7 +38,7 @@ class MockBuffer : public media::Buffer {
   DISALLOW_COPY_AND_ASSIGN(MockBuffer);
 };
 
-class MockDecoder : public media::Filter {
+class MockDecoder : public Filter {
  public:
   typedef Callback1<scoped_refptr<MockDecoderOutput> >::Type
       ConsumeAudioSamplesCallback;
@@ -61,34 +57,30 @@ class MockDecoderCallback {
   MOCK_METHOD1(OnReadComplete, void(scoped_refptr<MockDecoderOutput> output));
 };
 
-class MockDecoderImpl : public media::DecoderBase<
+class MockDecoderImpl : public DecoderBase<
   MockDecoder, MockDecoderOutput> {
  public:
   explicit MockDecoderImpl(MessageLoop* message_loop)
-      : media::DecoderBase<MockDecoder, MockDecoderOutput>(message_loop) {
-    media_format_.SetAsString(media::MediaFormat::kMimeType, "mock");
+      : DecoderBase<MockDecoder, MockDecoderOutput>(message_loop) {
+    media_format_.SetAsString(MediaFormat::kMimeType, "mock");
   }
 
   virtual ~MockDecoderImpl() {}
 
   // DecoderBase Implementations.
   MOCK_METHOD3(DoInitialize,
-               void(media::DemuxerStream* demuxer_stream,
+               void(DemuxerStream* demuxer_stream,
                     bool* success,
                     Task* done_cb));
   MOCK_METHOD1(DoStop, void(Task* done_cb));
   MOCK_METHOD2(DoSeek, void(base::TimeDelta time, Task* done_cb));
-  MOCK_METHOD1(DoDecode, void(media::Buffer* input));
+  MOCK_METHOD1(DoDecode, void(Buffer* input));
 
  private:
-  FRIEND_TEST(media::DecoderBaseTest, FlowControl);
+  FRIEND_TEST(DecoderBaseTest, FlowControl);
 
   DISALLOW_COPY_AND_ASSIGN(MockDecoderImpl);
 };
-
-}  // namespace
-
-namespace media {
 
 ACTION(Initialize) {
   AutoTaskRunner done_runner(arg2);

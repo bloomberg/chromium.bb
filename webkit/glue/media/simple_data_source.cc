@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -14,13 +14,9 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebKitClient.h"
 #include "webkit/glue/webkit_glue.h"
 
-namespace {
-
-const char kDataScheme[] = "data";
-
-}  // namespace
-
 namespace webkit_glue {
+
+static const char kDataScheme[] = "data";
 
 SimpleDataSource::SimpleDataSource(
     MessageLoop* render_loop,

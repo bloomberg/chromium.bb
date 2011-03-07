@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -30,15 +30,12 @@ using ::testing::SetArgumentPointee;
 using ::testing::StrEq;
 using ::testing::StrictMock;
 
-namespace {
-
-const int kBufferCount = 3;
-const int kBufferSize = 4096;
-const char* kComponentName = "OMX.google.video_decoder.avc";
-
-}  // namespace
-
 namespace media {
+
+static const int kBufferCount = 3;
+static const int kBufferSize = 4096;
+static const char* kComponentName = "OMX.google.video_decoder.avc";
+
 ACTION(ReturnComponentName) {
   strcpy(((char**)arg2)[0], kComponentName);
 }

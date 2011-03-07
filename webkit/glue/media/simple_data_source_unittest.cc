@@ -32,24 +32,20 @@ using WebKit::WebURLLoader;
 using WebKit::WebURLRequest;
 using WebKit::WebURLResponse;
 
-namespace {
-
-const int kDataSize = 1024;
-const char kHttpUrl[] = "http://test";
-const char kHttpsUrl[] = "https://test";
-const char kFileUrl[] = "file://test";
-const char kDataUrl[] =
-    "data:text/plain;base64,YWJjZGVmZ2hpamtsbW5vcHFyc3R1dnd4eXoK";
-const char kDataUrlDecoded[] = "abcdefghijklmnopqrstuvwxyz";
-const char kInvalidUrl[] = "whatever://test";
-const char kHttpRedirectToSameDomainUrl1[] = "http://test/ing";
-const char kHttpRedirectToSameDomainUrl2[] = "http://test/ing2";
-const char kHttpRedirectToDifferentDomainUrl1[] = "http://test2";
-const char kHttpRedirectToDifferentDomainUrl2[] = "http://test2/ing";
-
-}  // namespace
-
 namespace webkit_glue {
+
+static const int kDataSize = 1024;
+static const char kHttpUrl[] = "http://test";
+static const char kHttpsUrl[] = "https://test";
+static const char kFileUrl[] = "file://test";
+static const char kDataUrl[] =
+    "data:text/plain;base64,YWJjZGVmZ2hpamtsbW5vcHFyc3R1dnd4eXoK";
+static const char kDataUrlDecoded[] = "abcdefghijklmnopqrstuvwxyz";
+static const char kInvalidUrl[] = "whatever://test";
+static const char kHttpRedirectToSameDomainUrl1[] = "http://test/ing";
+static const char kHttpRedirectToSameDomainUrl2[] = "http://test/ing2";
+static const char kHttpRedirectToDifferentDomainUrl1[] = "http://test2";
+static const char kHttpRedirectToDifferentDomainUrl2[] = "http://test2/ing";
 
 class SimpleDataSourceTest : public testing::Test {
  public:

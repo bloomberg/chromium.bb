@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -38,27 +38,23 @@ using WebKit::WebFrameClient;
 using WebKit::WebURLResponse;
 using WebKit::WebView;
 
-namespace {
+namespace webkit_glue {
 
-const char* kHttpUrl = "http://test";
-const char kHttpRedirectToSameDomainUrl1[] = "http://test/ing";
-const char kHttpRedirectToSameDomainUrl2[] = "http://test/ing2";
-const char kHttpRedirectToDifferentDomainUrl1[] = "http://test2";
-const char kHttpRedirectToDifferentDomainUrl2[] = "http://test2/ing";
+static const char* kHttpUrl = "http://test";
+static const char kHttpRedirectToSameDomainUrl1[] = "http://test/ing";
+static const char kHttpRedirectToSameDomainUrl2[] = "http://test/ing2";
+static const char kHttpRedirectToDifferentDomainUrl1[] = "http://test2";
+static const char kHttpRedirectToDifferentDomainUrl2[] = "http://test2/ing";
 
-const int kDataSize = 1024;
-const int kHttpOK = 200;
-const int kHttpPartialContent = 206;
+static const int kDataSize = 1024;
+static const int kHttpOK = 200;
+static const int kHttpPartialContent = 206;
 
 enum NetworkState {
   NONE,
   LOADED,
   LOADING
 };
-
-}  // namespace
-
-namespace webkit_glue {
 
 // Submit a request completed event to the resource loader due to request
 // being canceled. Pretending the event is from external.

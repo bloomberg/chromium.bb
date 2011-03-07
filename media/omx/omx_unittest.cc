@@ -1,4 +1,4 @@
-// Copyright (c) 2009-2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -9,10 +9,10 @@
 #include "third_party/openmax/il/OMX_Component.h"
 #include "third_party/openmax/il/OMX_Core.h"
 
-namespace {
+namespace media {
 
 // Defines the maximum number of buffers created for I/O ports.
-const int kMaxBufferNum = 256;
+static const int kMaxBufferNum = 256;
 
 template <typename T>
 static void ResetHeader(T* param) {
@@ -21,10 +21,6 @@ static void ResetHeader(T* param) {
   param->nVersion.nVersion = 0x00000101;
   param->nSize = sizeof(T);
 }
-
-}  // namespace
-
-namespace media {
 
 class OmxTest : public testing::Test {
  public:

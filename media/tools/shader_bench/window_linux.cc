@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -10,23 +10,21 @@
 #include <gdk/gdkx.h>
 #include <gtk/gtk.h>
 
-namespace {
+namespace media {
 
-gboolean OnDelete(GtkWidget* widget, GdkEventExpose* event) {
+static gboolean OnDelete(GtkWidget* widget, GdkEventExpose* event) {
   gtk_main_quit();
   return FALSE;
 }
 
-gboolean OnExpose(GtkWidget* widget, GdkEventExpose* event, gpointer data) {
-  media::Window* window = reinterpret_cast<media::Window*>(data);
+static gboolean OnExpose(GtkWidget* widget,
+                         GdkEventExpose* event,
+                         gpointer data) {
+  Window* window = reinterpret_cast<Window*>(data);
   if (window)
     window->OnPaint();
   return FALSE;
 }
-
-}  // namespace
-
-namespace media {
 
 gfx::NativeWindow Window::CreateNativeWindow(int width, int height) {
   GtkWidget* hwnd = gtk_window_new(GTK_WINDOW_TOPLEVEL);
@@ -52,12 +50,12 @@ void Window::Start(int limit, Task* done_task, Painter* painter) {
 
   gtk_signal_connect(GTK_OBJECT(window_handle_),
                      "delete_event",
-                     reinterpret_cast<GtkSignalFunc>(::OnDelete),
+                     reinterpret_cast<GtkSignalFunc>(OnDelete),
                      NULL);
 
   gtk_signal_connect(GTK_OBJECT(window_handle_),
                      "expose_event",
-                     reinterpret_cast<GtkSignalFunc>(::OnExpose),
+                     reinterpret_cast<GtkSignalFunc>(OnExpose),
                      this);
 
   gtk_widget_queue_draw(GTK_WIDGET(window_handle_));

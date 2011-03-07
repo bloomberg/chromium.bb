@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.  Use of this
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.  Use of this
 // source code is governed by a BSD-style license that can be found in the
 // LICENSE file.
 
@@ -6,17 +6,17 @@
 
 #include "base/logging.h"
 
-namespace {
+namespace media {
 
-std::string GetCodecName(media::OmxConfigurator::Codec codec) {
+static std::string GetCodecName(OmxConfigurator::Codec codec) {
   switch (codec) {
-    case media::OmxConfigurator::kCodecH264:
+    case OmxConfigurator::kCodecH264:
       return "avc";
-    case media::OmxConfigurator::kCodecH263:
+    case OmxConfigurator::kCodecH263:
       return "h263";
-    case media::OmxConfigurator::kCodecMpeg4:
+    case OmxConfigurator::kCodecMpeg4:
       return "mpeg4";
-    case media::OmxConfigurator::kCodecVc1:
+    case OmxConfigurator::kCodecVc1:
       return "vc1";
     default:
       break;
@@ -24,10 +24,6 @@ std::string GetCodecName(media::OmxConfigurator::Codec codec) {
   NOTREACHED();
   return "";
 }
-
-}  // namespace
-
-namespace media {
 
 std::string OmxDecoderConfigurator::GetRoleName() const {
   return "video_decoder." + GetCodecName(input_format().codec);

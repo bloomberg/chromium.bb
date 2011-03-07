@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -22,16 +22,14 @@ using base::TimeDelta;
 using base::TimeTicks;
 using media::VideoFrame;
 
-namespace {
+static int source_width = 1280;
+static int source_height = 720;
+static int dest_width = 1366;
+static int dest_height = 768;
+static int num_frames = 500;
+static int num_buffers = 50;
 
-int source_width = 1280;
-int source_height = 720;
-int dest_width = 1366;
-int dest_height = 768;
-int num_frames = 500;
-int num_buffers = 50;
-
-double BenchmarkSkia() {
+static double BenchmarkSkia() {
   std::vector<scoped_refptr<VideoFrame> > source_frames;
   ScopedVector<SkBitmap> dest_frames;
   for (int i = 0; i < num_buffers; i++) {
@@ -87,7 +85,7 @@ double BenchmarkSkia() {
   return static_cast<double>((end - start).InMilliseconds()) / num_frames;
 }
 
-double BenchmarkRGBToYUV() {
+static double BenchmarkRGBToYUV() {
   int rgb_stride = source_width * 4;
   scoped_array<uint8> rgb_frame(new uint8[rgb_stride * source_height]);
 
@@ -115,7 +113,7 @@ double BenchmarkRGBToYUV() {
   return static_cast<double>((end - start).InMilliseconds()) / num_frames;
 }
 
-double BenchmarkFilter(media::ScaleFilter filter) {
+static double BenchmarkFilter(media::ScaleFilter filter) {
   std::vector<scoped_refptr<VideoFrame> > source_frames;
   std::vector<scoped_refptr<VideoFrame> > dest_frames;
 
@@ -157,8 +155,6 @@ double BenchmarkFilter(media::ScaleFilter filter) {
   TimeTicks end = TimeTicks::HighResNow();
   return static_cast<double>((end - start).InMilliseconds()) / num_frames;
 }
-
-}  // namespace
 
 int main(int argc, const char** argv) {
   CommandLine::Init(argc, argv);

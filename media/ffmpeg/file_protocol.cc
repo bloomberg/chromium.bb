@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -21,14 +21,12 @@
 // warning C4996: 'open': The POSIX name for this item is deprecated.
 MSVC_PUSH_DISABLE_WARNING(4996)
 
-namespace {
-
-int GetHandle(URLContext *h) {
+static int GetHandle(URLContext *h) {
   return static_cast<int>(reinterpret_cast<intptr_t>(h->priv_data));
 }
 
 // FFmpeg protocol interface.
-int OpenContext(URLContext* h, const char* filename, int flags) {
+static int OpenContext(URLContext* h, const char* filename, int flags) {
   int access = O_RDONLY;
   if (flags & URL_RDWR) {
     access = O_CREAT | O_TRUNC | O_RDWR;
@@ -46,19 +44,19 @@ int OpenContext(URLContext* h, const char* filename, int flags) {
   return 0;
 }
 
-int ReadContext(URLContext* h, unsigned char* buf, int size) {
+static int ReadContext(URLContext* h, unsigned char* buf, int size) {
   return HANDLE_EINTR(read(GetHandle(h), buf, size));
 }
 
 #if LIBAVFORMAT_VERSION_INT >= AV_VERSION_INT(52, 68, 0)
-int WriteContext(URLContext* h, const unsigned char* buf, int size) {
+static int WriteContext(URLContext* h, const unsigned char* buf, int size) {
 #else
-int WriteContext(URLContext* h, unsigned char* buf, int size) {
+static int WriteContext(URLContext* h, unsigned char* buf, int size) {
 #endif
   return HANDLE_EINTR(write(GetHandle(h), buf, size));
 }
 
-int64 SeekContext(URLContext* h, int64 offset, int whence) {
+static int64 SeekContext(URLContext* h, int64 offset, int whence) {
 #if defined(OS_WIN)
   return _lseeki64(GetHandle(h), static_cast<__int64>(offset), whence);
 #else
@@ -67,11 +65,9 @@ int64 SeekContext(URLContext* h, int64 offset, int whence) {
 #endif
 }
 
-int CloseContext(URLContext* h) {
+static int CloseContext(URLContext* h) {
   return HANDLE_EINTR(close(GetHandle(h)));
 }
-
-}  // namespace
 
 MSVC_POP_WARNING()
 

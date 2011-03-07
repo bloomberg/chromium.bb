@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -22,19 +22,19 @@ using WebKit::WebURLRequest;
 using WebKit::WebURLResponse;
 using webkit_glue::MultipartResponseDelegate;
 
-namespace {
+namespace webkit_glue {
 
-const int kHttpOK = 200;
-const int kHttpPartialContent = 206;
+static const int kHttpOK = 200;
+static const int kHttpPartialContent = 206;
 
 // Define the number of bytes in a megabyte.
-const size_t kMegabyte = 1024 * 1024;
+static const size_t kMegabyte = 1024 * 1024;
 
 // Backward capacity of the buffer, by default 2MB.
-const size_t kBackwardCapcity = 2 * kMegabyte;
+static const size_t kBackwardCapcity = 2 * kMegabyte;
 
 // Forward capacity of the buffer, by default 10MB.
-const size_t kForwardCapacity = 10 * kMegabyte;
+static const size_t kForwardCapacity = 10 * kMegabyte;
 
 // The threshold of bytes that we should wait until the data arrives in the
 // future instead of restarting a new connection. This number is defined in the
@@ -42,11 +42,7 @@ const size_t kForwardCapacity = 10 * kMegabyte;
 // and amount of time for a suitable wait. Now I just make a guess for this
 // number to be 2MB.
 // TODO(hclam): determine a better value for this.
-const int kForwardWaitThreshold = 2 * kMegabyte;
-
-} // namespace
-
-namespace webkit_glue {
+static const int kForwardWaitThreshold = 2 * kMegabyte;
 
 BufferedResourceLoader::BufferedResourceLoader(
     const GURL& url,

@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -7,10 +7,10 @@
 #include "base/task.h"
 #include "media/tools/shader_bench/painter.h"
 
-namespace {
+namespace media {
 
-LRESULT CALLBACK WindowProc(HWND hwnd, UINT msg,
-                            WPARAM w_param, LPARAM l_param) {
+static LRESULT CALLBACK WindowProc(HWND hwnd, UINT msg,
+                                   WPARAM w_param, LPARAM l_param) {
   LRESULT result = 0;
   switch (msg) {
     case WM_CLOSE:
@@ -25,9 +25,8 @@ LRESULT CALLBACK WindowProc(HWND hwnd, UINT msg,
       result = 1;
       break;
     case WM_PAINT: {
-      media::Window* window =
-          reinterpret_cast<media::Window*>(
-              GetWindowLongPtr(hwnd, GWL_USERDATA));
+      Window* window =
+          reinterpret_cast<Window*>(GetWindowLongPtr(hwnd, GWL_USERDATA));
       if (window != NULL)
         window->OnPaint();
       ::ValidateRect(hwnd, NULL);
@@ -39,10 +38,6 @@ LRESULT CALLBACK WindowProc(HWND hwnd, UINT msg,
   }
   return result;
 }
-
-}  // namespace
-
-namespace media {
 
 gfx::NativeWindow Window::CreateNativeWindow(int width, int height) {
   WNDCLASS wnd_class = {0};

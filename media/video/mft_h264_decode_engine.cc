@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -26,7 +26,7 @@
 
 using base::TimeDelta;
 
-namespace {
+namespace media {
 
 // Creates an empty Media Foundation sample with no buffers.
 static IMFSample* CreateEmptySample() {
@@ -132,11 +132,11 @@ static IMFSample* CreateInputSample(const uint8* stream, int size,
   return sample.Detach();
 }
 
-const GUID ConvertVideoFrameFormatToGuid(media::VideoFrame::Format format) {
+const GUID ConvertVideoFrameFormatToGuid(VideoFrame::Format format) {
   switch (format) {
-    case media::VideoFrame::NV12:
+    case VideoFrame::NV12:
       return MFVideoFormat_NV12;
-    case media::VideoFrame::YV12:
+    case VideoFrame::YV12:
       return MFVideoFormat_YV12;
     default:
       NOTREACHED() << "Unsupported VideoFrame format";
@@ -145,10 +145,6 @@ const GUID ConvertVideoFrameFormatToGuid(media::VideoFrame::Format format) {
   NOTREACHED();
   return GUID_NULL;
 }
-
-}  // namespace
-
-namespace media {
 
 // public methods
 
@@ -689,7 +685,7 @@ bool MftH264DecodeEngine::DoDecode(const PipelineStatistics& statistics) {
 
 void MftH264DecodeEngine::OnUploadVideoFrameDone(
     ScopedComPtr<IDirect3DSurface9, &IID_IDirect3DSurface9> surface,
-    scoped_refptr<media::VideoFrame> frame,
+    scoped_refptr<VideoFrame> frame,
     PipelineStatistics statistics) {
   // After this method is exited the reference to surface is released.
   event_handler_->ConsumeVideoFrame(frame, statistics);

@@ -30,11 +30,11 @@ using ::testing::StrictMock;
 using ::testing::NiceMock;
 using ::testing::WithArgs;
 
-namespace {
+namespace webkit_glue {
 
-const char* kHttpUrl = "http://test";
-const char* kFileUrl = "file://test";
-const int kDataSize = 1024;
+static const char* kHttpUrl = "http://test";
+static const char* kFileUrl = "file://test";
+static const int kDataSize = 1024;
 
 enum NetworkState {
   NONE,
@@ -42,16 +42,11 @@ enum NetworkState {
   LOADING
 };
 
-}  // namespace
-
-namespace webkit_glue {
-
 // A mock BufferedDataSource to inject mock BufferedResourceLoader through
 // CreateResourceLoader() method.
 class MockBufferedDataSource : public BufferedDataSource {
  public:
-  MockBufferedDataSource(
-      MessageLoop* message_loop, WebFrame* frame)
+  MockBufferedDataSource(MessageLoop* message_loop, WebFrame* frame)
       : BufferedDataSource(message_loop, frame) {
   }
 
