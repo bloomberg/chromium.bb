@@ -3,11 +3,11 @@
 // found in the LICENSE file.
 
 #include "chrome/browser/prefs/pref_set_observer.h"
-#include "chrome/common/notification_details.h"
-#include "chrome/common/notification_observer_mock.h"
-#include "chrome/common/notification_source.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/testing_pref_service.h"
+#include "content/common/notification_details.h"
+#include "content/common/notification_observer_mock.h"
+#include "content/common/notification_source.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_COMMON_NOTIFICATION_OBSERVER_MOCK_H_
-#define CHROME_COMMON_NOTIFICATION_OBSERVER_MOCK_H_
+#ifndef CONTENT_COMMON_NOTIFICATION_OBSERVER_MOCK_H_
+#define CONTENT_COMMON_NOTIFICATION_OBSERVER_MOCK_H_
 #pragma once
 
-#include "chrome/common/notification_observer.h"
-#include "chrome/common/notification_type.h"
+#include "content/common/notification_observer.h"
+#include "content/common/notification_type.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
 class NotificationDetails;
@@ -23,4 +23,4 @@ class NotificationObserverMock : public NotificationObserver {
                              const NotificationDetails& details));
 };
 
-#endif  // CHROME_COMMON_NOTIFICATION_OBSERVER_MOCK_H_
+#endif  // CONTENT_COMMON_NOTIFICATION_OBSERVER_MOCK_H_

@@ -6,20 +6,7 @@
 #define CHROME_COMMON_NOTIFICATION_OBSERVER_H_
 #pragma once
 
-class NotificationDetails;
-class NotificationSource;
-class NotificationType;
-
-// This is the base class for notification observers. When a matching
-// notification is posted to the notification service, Observe is called.
-class NotificationObserver {
- public:
-  NotificationObserver();
-  virtual ~NotificationObserver();
-
-  virtual void Observe(NotificationType type,
-                       const NotificationSource& source,
-                       const NotificationDetails& details) = 0;
-};
+// TODO(jam): remove this file when all files have been converted.
+#include "content/common/notification_observer.h"
 
 #endif  // CHROME_COMMON_NOTIFICATION_OBSERVER_H_

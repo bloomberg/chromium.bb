@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/common/notification_observer_mock.h"
+#include "content/common/notification_observer_mock.h"
 
-#include "chrome/common/notification_details.h"
-#include "chrome/common/notification_source.h"
+#include "content/common/notification_details.h"
+#include "content/common/notification_source.h"
 
 NotificationObserverMock::NotificationObserverMock() {}
 

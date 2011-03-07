@@ -13,9 +13,9 @@
 #include "chrome/browser/prefs/pref_change_registrar.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/extensions/extension_constants.h"
-#include "chrome/common/notification_details.h"
-#include "chrome/common/notification_observer_mock.h"
-#include "chrome/common/notification_source.h"
+#include "content/common/notification_details.h"
+#include "content/common/notification_observer_mock.h"
+#include "content/common/notification_source.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using base::Time;

@@ -92,8 +92,6 @@
         'browser/ui/tab_contents/test_tab_contents_wrapper.h',
         'common/net/test_url_fetcher_factory.cc',
         'common/net/test_url_fetcher_factory.h',
-        'common/notification_observer_mock.cc',
-        'common/notification_observer_mock.h',
         'common/pref_store_observer_mock.cc',
         'common/pref_store_observer_mock.h',
         'renderer/mock_keyboard.cc',
@@ -183,6 +181,8 @@
         '../content/browser/renderer_host/test_render_view_host.h',
         '../content/browser/tab_contents/test_tab_contents.cc',
         '../content/browser/tab_contents/test_tab_contents.h',
+        '../content/common/notification_observer_mock.cc',
+        '../content/common/notification_observer_mock.h',
       ],
       'conditions': [
         ['OS=="linux"', {
@@ -1760,7 +1760,6 @@
         'common/net/gaia/gaia_authenticator_unittest.cc',
         'common/net/gaia/google_service_auth_error_unittest.cc',
         'common/net/url_fetcher_unittest.cc',
-        'common/notification_service_unittest.cc',
         'common/process_watcher_unittest.cc',
         'common/property_bag_unittest.cc',
         'common/render_messages_unittest.cc',
@@ -1856,6 +1855,7 @@
         '../content/browser/tab_contents/navigation_entry_unittest.cc',
         '../content/browser/tab_contents/render_view_host_manager_unittest.cc',
         '../content/browser/webui/web_ui_unittest.cc',
+        '../content/common/notification_service_unittest.cc',
         '../testing/gtest_mac_unittest.mm',
         '../third_party/cld/encodings/compact_lang_det/compact_lang_det_unittest_small.cc',
         '../webkit/fileapi/file_system_dir_url_request_job_unittest.cc',

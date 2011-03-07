@@ -6,10 +6,10 @@
 #include "chrome/browser/prefs/pref_observer_mock.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/prefs/pref_value_store.h"
-#include "chrome/common/notification_observer_mock.h"
-#include "chrome/common/notification_registrar.h"
-#include "chrome/common/notification_service.h"
 #include "chrome/test/testing_pref_service.h"
+#include "content/common/notification_observer_mock.h"
+#include "content/common/notification_registrar.h"
+#include "content/common/notification_service.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

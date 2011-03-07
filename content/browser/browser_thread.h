@@ -53,7 +53,7 @@ class BrowserThread : public base::Thread {
     // This is the thread that interacts with the file system.
     FILE,
 
-    // Used to launch and terminate processes.
+    // Used to launch and terminate Chrome processes.
     PROCESS_LAUNCHER,
 
     // This is the thread to handle slow HTTP cache operations.
