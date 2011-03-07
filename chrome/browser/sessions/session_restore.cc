@@ -267,8 +267,9 @@ void TabLoader::Observe(NotificationType type,
     case NotificationType::TAB_CONTENTS_DESTROYED: {
       TabContents* tab_contents = Source<TabContents>(source).ptr();
       if (!got_first_paint_) {
-        render_widget_hosts_loading_.erase(
-            tab_contents->GetRenderWidgetHostView()->GetRenderWidgetHost());
+        RenderWidgetHost* render_widget_host =
+            GetRenderWidgetHost(&tab_contents->controller());
+        render_widget_hosts_loading_.erase(render_widget_host);
       }
       HandleTabClosedOrLoaded(&tab_contents->controller());
       break;
@@ -289,7 +290,7 @@ void TabLoader::Observe(NotificationType type,
           got_first_paint_ = true;
           base::TimeDelta time_to_paint =
               base::TimeTicks::Now() - restore_started_;
-          HISTOGRAM_CUSTOM_TIMES(
+          UMA_HISTOGRAM_CUSTOM_TIMES(
               "SessionRestore.FirstTabPainted",
               time_to_paint,
               base::TimeDelta::FromMilliseconds(10),
@@ -305,7 +306,7 @@ void TabLoader::Observe(NotificationType type,
                   base::TimeDelta::FromMilliseconds(10),
                   base::TimeDelta::FromSeconds(100),
                   100,
-                  base::Histogram::kNoFlags);
+                  base::Histogram::kUmaTargetedHistogramFlag);
           counter_for_count->AddTime(time_to_paint);
         } else if (render_widget_hosts_loading_.find(render_widget_host) ==
             render_widget_hosts_loading_.end()) {
@@ -378,7 +379,7 @@ void TabLoader::HandleTabClosedOrLoaded(NavigationController* tab) {
   if (tabs_loading_.empty() && tabs_to_load_.empty()) {
     base::TimeDelta time_to_load =
         base::TimeTicks::Now() - restore_started_;
-    HISTOGRAM_CUSTOM_TIMES(
+    UMA_HISTOGRAM_CUSTOM_TIMES(
         "SessionRestore.AllTabsLoaded",
         time_to_load,
         base::TimeDelta::FromMilliseconds(10),
@@ -393,7 +394,7 @@ void TabLoader::HandleTabClosedOrLoaded(NavigationController* tab) {
             base::TimeDelta::FromMilliseconds(10),
             base::TimeDelta::FromSeconds(100),
             100,
-            base::Histogram::kNoFlags);
+            base::Histogram::kUmaTargetedHistogramFlag);
     counter_for_count->AddTime(time_to_load);
   }
 }
