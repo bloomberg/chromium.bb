@@ -1208,3 +1208,8 @@
    fun:remoting::HeartbeatSender::Start
    fun:remoting::HeartbeatSenderTest_DoSendStanza_Test::TestBody
 }
+{
+   bug_75120
+   Heapcheck:Leak
+   fun:remoting::ChromotingHostTest::SetUp
+}
