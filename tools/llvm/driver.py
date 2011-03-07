@@ -106,6 +106,8 @@ INITIAL_ENV = {
   'TRIPLE_X8664': 'x86_64-none-linux-gnu',
 
   'LLVM_GCC'    : '${BASE_ARM}/bin/arm-none-linux-gnueabi-gcc',
+  'LLVM_GXX'    : '${BASE_ARM}/bin/arm-none-linux-gnueabi-g++',
+
   'CC_FLAGS'    : '${OPT_LEVEL} -fuse-llvm-va-arg -Werror-portable-llvm ' +
                   '-nostdinc -DNACL_LINUX=1 -D__native_client__=1',
   'CC_STDINC'   :
@@ -230,7 +232,8 @@ INITIAL_ENV = {
 
   'STDLIB_BC_PREFIX': '${ROOT_BC}/nacl_startup.o',
 
-  'STDLIB_BC_SUFFIX': '-L${ROOT_BC} -lc -lnacl -lstdc++ -lc -lnosys',
+  'STDLIB_BC_SUFFIX': '-L${ROOT_BC} -lc -lnacl ${LIBSTDCPP} -lc -lnosys',
+  'LIBSTDCPP'       : '-lstdc++',
 
   # Build actual command lines below
   'RUN_OPT': '${OPT} ${OPT_FLAGS} "${input}" -f -o "${output}"',
@@ -248,10 +251,10 @@ INITIAL_ENV = {
   'RUN_NACL_AS' : '${AS_%arch%} ${AS_FLAGS_%arch%} "${input}" -o "${output}"',
   'RUN_LLVM_MC' : '${LLVM_MC} ${MC_FLAGS_%arch%} "${input}" -o "${output}"',
 
-  'RUN_GCC': '${LLVM_GCC} -emit-llvm ${mode} ${CC_FLAGS} ${CC_STDINC} ' +
+  'RUN_GCC': '${CC} -emit-llvm ${mode} ${CC_FLAGS} ${CC_STDINC} ' +
              '-fuse-llvm-va-arg "${input}" -o "${output}"',
 
-  'RUN_PP' : '${LLVM_GCC} -E ${CC_FLAGS} ${CC_STDINC} ' +
+  'RUN_PP' : '${CC} -E ${CC_FLAGS} ${CC_STDINC} ' +
              '"${input}" -o "${output}"',
 
   'RUN_LLVM_DIS'    : '${LLVM_DIS} "${input}" -o "${output}"',
@@ -274,8 +277,10 @@ INITIAL_ENV = {
 DriverPatterns = [
   ( '--pnacl-driver-verbose',          "Log.LOG_OUT.append(sys.stderr)"),
   ( '--pnacl-driver-save-temps',       "env.set('CLEANUP', '0')"),
-  ( '--driver=(.+)',                   "env.set('LLVM_GCC', $0)"),
+  ( '--driver=(.+)',                   "env.set('LLVM_GCC', $0)\n"
+                                       "env.set('LLVM_GXX', $0)"),
   ( '--pnacl-driver-set-([^=]+)=(.*)', "env.set($0, $1)"),
+  ( '--pnacl-driver-append-([^=]+)=(.*)', "env.append($0, $1)"),
   ( ('-arch', '(.+)'),                 "env.set('ARCH', FixArch($0))"),
   ( '--pnacl-opt',                     "env.set('INCARNATION', 'opt')"),
   ( '--pnacl-dis',                     "env.set('INCARNATION', 'dis')"),
@@ -529,8 +534,8 @@ def main(argv):
       arch = FixArch(tokens[-2])
       env.set('ARCH', arch)
 
-  if incarnation in ('sfigcc', 'sfig++', 'gcc', 'g++'):
-    incarnation = 'gcc'
+  if incarnation == 'g++':
+    incarnation = 'gxx'
 
   func = globals().get('Incarnation_' + incarnation)
   if not func:
@@ -579,7 +584,17 @@ def Incarnation_opt(argv):
   OptimizeBC(infile, output)
   return 0
 
+def Incarnation_gxx(argv):
+  env.set('CC', '${LLVM_GXX}')
+  Incarnation_cc_common(argv)
+
 def Incarnation_gcc(argv):
+  env.set('CC', '${LLVM_GCC}')
+  env.clear('LIBSTDCPP')
+  Incarnation_cc_common(argv)
+
+def Incarnation_cc_common(argv):
+  assert(env.has('CC'))
   ParseArgs(argv, GCCPatterns)
 
   # "configure", especially when run as part of a toolchain bootstrap
@@ -587,7 +602,7 @@ def Incarnation_gcc(argv):
   # parse the output. In these cases we do not alter the incoming
   # commandline. It is also important to not emit spurious messages.
   if env.getbool('DIAGNOSTIC'):
-    RunWithLog(shell.split(env.get('LLVM_GCC')) + argv)
+    RunWithLog(shell.split(env.get('CC')) + argv)
     return 0
 
   AssertParseComplete()
