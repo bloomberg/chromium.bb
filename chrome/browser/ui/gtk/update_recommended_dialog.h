@@ -18,10 +18,10 @@ class UpdateRecommendedDialog {
   static void Show(GtkWindow* parent);
 
  private:
-  CHROMEGTK_CALLBACK_1(UpdateRecommendedDialog, void, OnResponse, gint);
-
   explicit UpdateRecommendedDialog(GtkWindow* parent);
   ~UpdateRecommendedDialog();
+
+  CHROMEGTK_CALLBACK_1(UpdateRecommendedDialog, void, OnResponse, int);
 
   GtkWidget* dialog_;
 

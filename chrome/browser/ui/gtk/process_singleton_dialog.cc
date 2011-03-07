@@ -4,6 +4,8 @@
 
 #include "chrome/browser/ui/gtk/process_singleton_dialog.h"
 
+#include <gtk/gtk.h>
+
 #include "base/message_loop.h"
 #include "chrome/browser/ui/gtk/gtk_util.h"
 #include "grit/chromium_strings.h"
@@ -28,15 +30,13 @@ ProcessSingletonDialog::ProcessSingletonDialog(const std::string& message) {
   gtk_dialog_add_button(GTK_DIALOG(dialog_), GTK_STOCK_QUIT,
                         GTK_RESPONSE_REJECT);
 
-  g_signal_connect(dialog_, "response", G_CALLBACK(OnResponse), this);
+  g_signal_connect(dialog_, "response", G_CALLBACK(OnResponseThunk), this);
 
   gtk_widget_show_all(dialog_);
   MessageLoop::current()->Run();
 }
 
-// static
-void ProcessSingletonDialog::OnResponse(GtkWidget* widget, int response,
-                                        ProcessSingletonDialog* dialog) {
-  gtk_widget_destroy(dialog->dialog_);
+void ProcessSingletonDialog::OnResponse(GtkWidget* dialog, int response_id) {
+  gtk_widget_destroy(dialog_);
   MessageLoop::current()->Quit();
 }

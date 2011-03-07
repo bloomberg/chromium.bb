@@ -76,9 +76,9 @@ DownloadInProgressDialogGtk::DownloadInProgressDialogGtk(Browser* browser)
   gtk_widget_show_all(dialog);
 }
 
-void DownloadInProgressDialogGtk::OnResponse(GtkWidget* widget,
-                                             int response) {
-  gtk_widget_destroy(widget);
-  browser_->InProgressDownloadResponse(response == GTK_RESPONSE_ACCEPT);
+void DownloadInProgressDialogGtk::OnResponse(GtkWidget* dialog,
+                                             int response_id) {
+  gtk_widget_destroy(dialog);
+  browser_->InProgressDownloadResponse(response_id == GTK_RESPONSE_ACCEPT);
   delete this;
 }

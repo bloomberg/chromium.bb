@@ -98,20 +98,21 @@ ExternalProtocolDialogGtk::ExternalProtocolDialogGtk(const GURL& url)
   gtk_box_pack_start(GTK_BOX(GTK_DIALOG(dialog_)->vbox), vbox,
                      FALSE, FALSE, 0);
 
-  g_signal_connect(dialog_, "response",
-                   G_CALLBACK(OnDialogResponseThunk), this);
+  g_signal_connect(dialog_, "response", G_CALLBACK(OnResponseThunk), this);
 
   gtk_window_set_resizable(GTK_WINDOW(dialog_), FALSE);
   gtk_widget_show_all(dialog_);
 }
 
-void ExternalProtocolDialogGtk::OnDialogResponse(GtkWidget* widget,
-                                                 int response) {
+ExternalProtocolDialogGtk::~ExternalProtocolDialogGtk() {
+}
+
+void ExternalProtocolDialogGtk::OnResponse(GtkWidget* dialog, int response_id) {
   if (gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(checkbox_))) {
-    if (response == GTK_RESPONSE_ACCEPT) {
+    if (response_id == GTK_RESPONSE_ACCEPT) {
       ExternalProtocolHandler::SetBlockState(
           url_.scheme(), ExternalProtocolHandler::DONT_BLOCK);
-    } else if (response == GTK_RESPONSE_REJECT) {
+    } else if (response_id == GTK_RESPONSE_REJECT) {
       ExternalProtocolHandler::SetBlockState(
           url_.scheme(), ExternalProtocolHandler::BLOCK);
     }
@@ -119,7 +120,7 @@ void ExternalProtocolDialogGtk::OnDialogResponse(GtkWidget* widget,
     // the dialog, do nothing.
   }
 
-  if (response == GTK_RESPONSE_ACCEPT) {
+  if (response_id == GTK_RESPONSE_ACCEPT) {
     UMA_HISTOGRAM_LONG_TIMES("clickjacking.launch_url",
                              base::TimeTicks::Now() - creation_time_);
 

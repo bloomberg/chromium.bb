@@ -22,7 +22,7 @@ class JSModalDialogGtk : public NativeAppModalDialog {
                    gfx::NativeWindow parent_window);
   virtual ~JSModalDialogGtk();
 
-  // Overridden from NativeAppModalDialog:
+  // NativeAppModalDialog:
   virtual int GetAppModalDialogButtons() const;
   virtual void ShowAppModalDialog();
   virtual void ActivateAppModalDialog();
@@ -31,7 +31,7 @@ class JSModalDialogGtk : public NativeAppModalDialog {
   virtual void CancelAppModalDialog();
 
  private:
-  CHROMEGTK_CALLBACK_1(JSModalDialogGtk, void, OnDialogResponse, int);
+  CHROMEGTK_CALLBACK_1(JSModalDialogGtk, void, OnResponse, int);
 
   scoped_ptr<JavaScriptAppModalDialog> dialog_;
   GtkWidget* gtk_dialog_;

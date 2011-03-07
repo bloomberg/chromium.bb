@@ -25,7 +25,7 @@ class ImportLockDialogGtk {
   ImportLockDialogGtk(GtkWindow* parent, ImporterHost* importer_host);
   ~ImportLockDialogGtk();
 
-  CHROMEGTK_CALLBACK_1(ImportLockDialogGtk, void, OnDialogResponse, int);
+  CHROMEGTK_CALLBACK_1(ImportLockDialogGtk, void, OnResponse, int);
 
   // Import lock dialog.
   GtkWidget* dialog_;

@@ -261,7 +261,7 @@ void EditSearchEngineDialog::OnEntryChanged(GtkEditable* editable) {
   EnableControls();
 }
 
-void EditSearchEngineDialog::OnResponse(GtkDialog* dialog, int response_id) {
+void EditSearchEngineDialog::OnResponse(GtkWidget* dialog, int response_id) {
   if (response_id == GTK_RESPONSE_OK) {
     controller_->AcceptAddOrEdit(GetTitleInput(),
                                  GetKeywordInput(),

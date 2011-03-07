@@ -34,8 +34,7 @@ InstantConfirmDialogGtk::InstantConfirmDialogGtk(
       GTK_STOCK_CANCEL, GTK_RESPONSE_REJECT,
       GTK_STOCK_OK, GTK_RESPONSE_ACCEPT,
       NULL);
-  g_signal_connect(dialog_, "response",
-                   G_CALLBACK(OnDialogResponseThunk), this);
+  g_signal_connect(dialog_, "response", G_CALLBACK(OnResponseThunk), this);
 
   GtkBox* vbox = GTK_BOX(GTK_DIALOG(dialog_)->vbox);
   gtk_box_set_spacing(vbox, gtk_util::kControlSpacing);
@@ -64,9 +63,8 @@ InstantConfirmDialogGtk::~InstantConfirmDialogGtk() {
   gtk_widget_destroy(dialog_);
 }
 
-void InstantConfirmDialogGtk::OnDialogResponse(GtkWidget* dialog,
-                                               int response) {
-  if (response == GTK_RESPONSE_ACCEPT)
+void InstantConfirmDialogGtk::OnResponse(GtkWidget* dialog, int response_id) {
+  if (response_id == GTK_RESPONSE_ACCEPT)
     InstantController::Enable(profile_);
 
   delete this;

@@ -169,8 +169,7 @@ ClearBrowsingDataDialogGtk::ClearBrowsingDataDialogGtk(GtkWindow* parent,
   gtk_box_reorder_child(GTK_BOX(content_area), GTK_DIALOG(dialog_)->action_area,
                         -1);
 
-  g_signal_connect(dialog_, "response",
-                   G_CALLBACK(OnDialogResponseThunk), this);
+  g_signal_connect(dialog_, "response", G_CALLBACK(OnResponseThunk), this);
 
   UpdateDialogButtons();
 
@@ -181,9 +180,9 @@ ClearBrowsingDataDialogGtk::ClearBrowsingDataDialogGtk(GtkWindow* parent,
 ClearBrowsingDataDialogGtk::~ClearBrowsingDataDialogGtk() {
 }
 
-void ClearBrowsingDataDialogGtk::OnDialogResponse(GtkWidget* widget,
-                                                  int response) {
-  if (response == GTK_RESPONSE_ACCEPT) {
+void ClearBrowsingDataDialogGtk::OnResponse(GtkWidget* dialog,
+                                            int response_id) {
+  if (response_id == GTK_RESPONSE_ACCEPT) {
     PrefService* prefs = profile_->GetPrefs();
     prefs->SetBoolean(prefs::kDeleteBrowsingHistory,
                       IsChecked(del_history_checkbox_));
@@ -211,7 +210,7 @@ void ClearBrowsingDataDialogGtk::OnDialogResponse(GtkWidget* widget,
   }
 
   delete this;
-  gtk_widget_destroy(GTK_WIDGET(widget));
+  gtk_widget_destroy(dialog);
 }
 
 void ClearBrowsingDataDialogGtk::OnDialogWidgetClicked(GtkWidget* widget) {

@@ -41,15 +41,15 @@ GtkWidget* MakeMarkupLabel(const char* format, const std::string& str) {
   return label;
 }
 
-void OnDialogResponse(GtkDialog* dialog, int response_id,
-                      ExtensionInstallUI::Delegate* delegate) {
+void OnResponse(GtkWidget* dialog, int response_id,
+                ExtensionInstallUI::Delegate* delegate) {
   if (response_id == GTK_RESPONSE_ACCEPT) {
     delegate->InstallUIProceed();
   } else {
     delegate->InstallUIAbort();
   }
 
-  gtk_widget_destroy(GTK_WIDGET(dialog));
+  gtk_widget_destroy(dialog);
 }
 
 void ShowInstallPromptDialog2(GtkWindow* parent, SkBitmap* skia_icon,
@@ -160,7 +160,7 @@ void ShowInstallPromptDialog2(GtkWindow* parent, SkBitmap* skia_icon,
     }
   }
 
-  g_signal_connect(dialog, "response", G_CALLBACK(OnDialogResponse), delegate);
+  g_signal_connect(dialog, "response", G_CALLBACK(OnResponse), delegate);
   gtk_window_set_resizable(GTK_WINDOW(dialog), FALSE);
 
   gtk_dialog_set_default_response(GTK_DIALOG(dialog), GTK_RESPONSE_CLOSE);

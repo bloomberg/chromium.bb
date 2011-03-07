@@ -52,16 +52,15 @@ ImportLockDialogGtk::ImportLockDialogGtk(GtkWindow* parent,
   gtk_label_set_line_wrap(GTK_LABEL(label), TRUE);
   gtk_box_pack_start(GTK_BOX(content_area), label, FALSE, FALSE, 0);
 
-  g_signal_connect(dialog_, "response",
-                   G_CALLBACK(OnDialogResponseThunk), this);
+  g_signal_connect(dialog_, "response", G_CALLBACK(OnResponseThunk), this);
   gtk_window_set_resizable(GTK_WINDOW(dialog_), FALSE);
   gtk_widget_show_all(dialog_);
 }
 
 ImportLockDialogGtk::~ImportLockDialogGtk() {}
 
-void ImportLockDialogGtk::OnDialogResponse(GtkWidget* widget, int response) {
-  if (response == GTK_RESPONSE_ACCEPT) {
+void ImportLockDialogGtk::OnResponse(GtkWidget* dialog, int response_id) {
+  if (response_id == GTK_RESPONSE_ACCEPT) {
     MessageLoop::current()->PostTask(FROM_HERE, NewRunnableMethod(
         importer_host_.get(), &ImporterHost::OnLockViewEnd, true));
   } else {

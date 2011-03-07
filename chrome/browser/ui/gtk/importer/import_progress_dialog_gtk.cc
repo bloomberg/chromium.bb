@@ -132,7 +132,7 @@ ImportProgressDialogGtk::ImportProgressDialogGtk(
 
 ImportProgressDialogGtk::~ImportProgressDialogGtk() {}
 
-void ImportProgressDialogGtk::OnResponse(GtkWidget* widget, int response) {
+void ImportProgressDialogGtk::OnResponse(GtkWidget* dialog, int response_id) {
   if (!importing_) {
     CloseDialog();
     return;
@@ -140,7 +140,7 @@ void ImportProgressDialogGtk::OnResponse(GtkWidget* widget, int response) {
 
   // Only response to the dialog is to close it so we hide immediately.
   gtk_widget_hide_all(dialog_);
-  if (response == GTK_RESPONSE_REJECT)
+  if (response_id == GTK_RESPONSE_REJECT)
     importer_host_->Cancel();
 }
 

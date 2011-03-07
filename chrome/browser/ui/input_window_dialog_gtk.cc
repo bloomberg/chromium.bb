@@ -98,7 +98,7 @@ void InputWindowDialogGtk::Close() {
   // Under the model that we've inherited from Windows, dialogs can receive
   // more than one Close() call inside the current message loop event.
   if (dialog_) {
-    gtk_widget_destroy(GTK_WIDGET(dialog_));
+    gtk_widget_destroy(dialog_);
     dialog_ = NULL;
   }
 }

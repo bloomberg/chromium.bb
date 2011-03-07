@@ -49,7 +49,7 @@ class EditSearchEngineDialog {
                      GtkEditable*);
 
   // Callback for dialog buttons.
-  CHROMEG_CALLBACK_1(EditSearchEngineDialog, void, OnResponse, GtkDialog*, int);
+  CHROMEGTK_CALLBACK_1(EditSearchEngineDialog, void, OnResponse, int);
 
   // Callback for window destruction.
   CHROMEGTK_CALLBACK_0(EditSearchEngineDialog, void, OnWindowDestroy);

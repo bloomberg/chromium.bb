@@ -44,7 +44,7 @@ class HungRendererDialogGtk {
   // Create the gtk dialog and add the widgets.
   void Init();
 
-  CHROMEGTK_CALLBACK_1(HungRendererDialogGtk, void, OnDialogResponse, gint);
+  CHROMEGTK_CALLBACK_1(HungRendererDialogGtk, void, OnResponse, int);
 
   GtkDialog* dialog_;
   GtkListStore* model_;
@@ -76,8 +76,7 @@ void HungRendererDialogGtk::Init() {
       GTK_RESPONSE_OK,
       NULL));
   gtk_dialog_set_default_response(dialog_, GTK_RESPONSE_OK);
-  g_signal_connect(dialog_, "response",
-                   G_CALLBACK(OnDialogResponseThunk), this);
+  g_signal_connect(dialog_, "response", G_CALLBACK(OnResponseThunk), this);
 
   // We have an hbox with the frozen icon on the left.  On the right,
   // we have a vbox with the unresponsive text on top and a table of
@@ -182,8 +181,7 @@ void HungRendererDialogGtk::EndForTabContents(TabContents* contents) {
 
 // When the user clicks a button on the dialog or closes the dialog, this
 // callback is called.
-void HungRendererDialogGtk::OnDialogResponse(GtkWidget* widget,
-                                             gint response_id) {
+void HungRendererDialogGtk::OnResponse(GtkWidget* dialog, int response_id) {
   DCHECK(g_instance == this);
   switch (response_id) {
     case kKillPagesButtonResponse:

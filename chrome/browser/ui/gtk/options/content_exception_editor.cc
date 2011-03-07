@@ -116,7 +116,7 @@ void ContentExceptionEditor::OnEntryChanged(GtkWidget* entry) {
   UpdateImage(pattern_image_, is_valid);
 }
 
-void ContentExceptionEditor::OnResponse(GtkWidget* sender, int response_id) {
+void ContentExceptionEditor::OnResponse(GtkWidget* dialog, int response_id) {
   if (response_id == GTK_RESPONSE_OK) {
     // Notify our delegate to update everything.
     ContentSettingsPattern new_pattern(gtk_entry_get_text(GTK_ENTRY(entry_)));

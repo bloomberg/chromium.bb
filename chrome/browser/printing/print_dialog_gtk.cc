@@ -98,7 +98,7 @@ PrintDialogGtk::~PrintDialogGtk() {
   }
 }
 
-void PrintDialogGtk::OnResponse(GtkWidget* dialog, gint response_id) {
+void PrintDialogGtk::OnResponse(GtkWidget* dialog, int response_id) {
   gtk_widget_hide(dialog_);
 
   switch (response_id) {

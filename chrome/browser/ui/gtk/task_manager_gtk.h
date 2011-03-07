@@ -82,7 +82,7 @@ class TaskManagerGtk : public TaskManagerModelObserver {
   CHROMEGTK_CALLBACK_0(TaskManagerGtk, void, OnDestroy);
 
   // Response signal handler that notifies us of dialog responses.
-  CHROMEGTK_CALLBACK_1(TaskManagerGtk, void, OnResponse, gint);
+  CHROMEGTK_CALLBACK_1(TaskManagerGtk, void, OnResponse, int);
 
   // Realize signal handler to set the page column's initial size.
   CHROMEG_CALLBACK_0(TaskManagerGtk, void, OnTreeViewRealize, GtkTreeView*);

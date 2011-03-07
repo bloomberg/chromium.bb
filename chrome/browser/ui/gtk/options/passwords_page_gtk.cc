@@ -244,17 +244,17 @@ void PasswordsPageGtk::OnRemoveAllButtonClicked(GtkWidget* widget) {
   gtk_widget_show_all(confirm);
 }
 
-void PasswordsPageGtk::OnRemoveAllConfirmResponse(GtkWidget* confirm,
-                                                  gint response) {
+void PasswordsPageGtk::OnRemoveAllConfirmResponse(GtkWidget* dialog,
+                                                  int response_id) {
   bool confirmed = false;
-  switch (response) {
+  switch (response_id) {
     case GTK_RESPONSE_YES:
       confirmed = true;
       break;
     default:
       break;
   }
-  gtk_widget_destroy(confirm);
+  gtk_widget_destroy(dialog);
   if (!confirmed)
     return;
 

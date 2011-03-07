@@ -109,15 +109,15 @@ class SelectFileDialogImpl : public SelectFileDialog {
 
   // Callback for when the user responds to a Save As or Open File dialog.
   CHROMEGTK_CALLBACK_1(SelectFileDialogImpl, void,
-                       OnSelectSingleFileDialogResponse, gint);
+                       OnSelectSingleFileDialogResponse, int);
 
   // Callback for when the user responds to a Select Folder dialog.
   CHROMEGTK_CALLBACK_1(SelectFileDialogImpl, void,
-                       OnSelectSingleFolderDialogResponse, gint);
+                       OnSelectSingleFolderDialogResponse, int);
 
   // Callback for when the user responds to a Open Multiple Files dialog.
   CHROMEGTK_CALLBACK_1(SelectFileDialogImpl, void,
-                       OnSelectMultiFileDialogResponse, gint);
+                       OnSelectMultiFileDialogResponse, int);
 
   // Callback for when the file chooser gets destroyed.
   CHROMEGTK_CALLBACK_0(SelectFileDialogImpl, void, OnFileChooserDestroy);
@@ -528,18 +528,18 @@ void SelectFileDialogImpl::SelectSingleFileHelper(GtkWidget* dialog,
     FileSelected(dialog, path);
 }
 
-void SelectFileDialogImpl::OnSelectSingleFileDialogResponse(
-    GtkWidget* dialog, gint response_id) {
+void SelectFileDialogImpl::OnSelectSingleFileDialogResponse(GtkWidget* dialog,
+                                                            int response_id) {
   return SelectSingleFileHelper(dialog, response_id, false);
 }
 
-void SelectFileDialogImpl::OnSelectSingleFolderDialogResponse(
-    GtkWidget* dialog, gint response_id) {
+void SelectFileDialogImpl::OnSelectSingleFolderDialogResponse(GtkWidget* dialog,
+                                                              int response_id) {
   return SelectSingleFileHelper(dialog, response_id, true);
 }
 
-void SelectFileDialogImpl::OnSelectMultiFileDialogResponse(
-    GtkWidget* dialog, gint response_id) {
+void SelectFileDialogImpl::OnSelectMultiFileDialogResponse(GtkWidget* dialog,
+                                                           int response_id) {
   if (IsCancelResponse(response_id)) {
     FileNotSelected(dialog);
     return;

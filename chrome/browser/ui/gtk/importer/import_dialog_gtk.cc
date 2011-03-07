@@ -122,14 +122,13 @@ ImportDialogGtk::ImportDialogGtk(GtkWindow* parent, Profile* profile,
   // Disable controls until source profiles are loaded.
   SetDialogControlsSensitive(false);
 
-  g_signal_connect(dialog_, "response",
-                   G_CALLBACK(OnDialogResponseThunk), this);
+  g_signal_connect(dialog_, "response", G_CALLBACK(OnResponseThunk), this);
 
   UpdateDialogButtons();
 
   gtk_util::ShowDialogWithLocalizedSize(dialog_,
                                         IDS_IMPORT_DIALOG_WIDTH_CHARS,
-                                        -1,  // height
+                                        -1,      // height
                                         false);  // resizable
 }
 
@@ -138,9 +137,9 @@ ImportDialogGtk::~ImportDialogGtk() {
     importer_list_->SetObserver(NULL);
 }
 
-void ImportDialogGtk::OnDialogResponse(GtkWidget* widget, int response) {
+void ImportDialogGtk::OnResponse(GtkWidget* dialog, int response_id) {
   gtk_widget_hide_all(dialog_);
-  if (response == GTK_RESPONSE_ACCEPT) {
+  if (response_id == GTK_RESPONSE_ACCEPT) {
     uint16 items = GetCheckedItems();
     if (items == 0) {
       ImportCompleted();

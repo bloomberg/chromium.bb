@@ -46,7 +46,7 @@ class PrintDialogGtk : public base::RefCountedThreadSafe<PrintDialogGtk> {
   ~PrintDialogGtk();
 
   // Handles dialog response.
-  CHROMEGTK_CALLBACK_1(PrintDialogGtk, void, OnResponse, gint);
+  CHROMEGTK_CALLBACK_1(PrintDialogGtk, void, OnResponse, int);
 
   // Saves data in |metafile| to disk for document named |document_name|.
   void SaveDocumentToDisk(const NativeMetafile* metafile,

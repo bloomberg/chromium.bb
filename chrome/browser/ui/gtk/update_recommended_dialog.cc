@@ -52,7 +52,7 @@ UpdateRecommendedDialog::UpdateRecommendedDialog(GtkWindow* parent) {
 UpdateRecommendedDialog::~UpdateRecommendedDialog() {
 }
 
-void UpdateRecommendedDialog::OnResponse(GtkWidget* sender, gint response_id) {
+void UpdateRecommendedDialog::OnResponse(GtkWidget* dialog, int response_id) {
   gtk_widget_destroy(dialog_);
 
   if (response_id == GTK_RESPONSE_ACCEPT) {

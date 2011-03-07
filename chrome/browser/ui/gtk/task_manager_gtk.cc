@@ -857,7 +857,7 @@ void TaskManagerGtk::OnDestroy(GtkWidget* dialog) {
   delete this;
 }
 
-void TaskManagerGtk::OnResponse(GtkWidget* dialog, gint response_id) {
+void TaskManagerGtk::OnResponse(GtkWidget* dialog, int response_id) {
   if (response_id == GTK_RESPONSE_DELETE_EVENT) {
     // Store the dialog's size so we can restore it the next time it's opened.
     if (g_browser_process->local_state()) {

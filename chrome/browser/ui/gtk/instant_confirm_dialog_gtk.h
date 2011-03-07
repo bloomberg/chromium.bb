@@ -10,6 +10,8 @@
 #include "ui/base/gtk/gtk_signal.h"
 
 class Profile;
+
+typedef struct _GtkWidget GtkWidget;
 typedef struct _GtkWindow GtkWindow;
 
 // A dialog that explains some of the privacy implications surrounding instant.
@@ -20,7 +22,7 @@ class InstantConfirmDialogGtk {
   ~InstantConfirmDialogGtk();
 
  private:
-  CHROMEGTK_CALLBACK_1(InstantConfirmDialogGtk, void, OnDialogResponse, int);
+  CHROMEGTK_CALLBACK_1(InstantConfirmDialogGtk, void, OnResponse, int);
   CHROMEGTK_CALLBACK_0(InstantConfirmDialogGtk, void, OnLinkButtonClicked);
 
   GtkWidget* dialog_;

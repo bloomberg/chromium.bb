@@ -134,8 +134,7 @@ JSModalDialogGtk::JSModalDialogGtk(JavaScriptAppModalDialog* dialog,
   }
 
   gtk_dialog_set_default_response(GTK_DIALOG(gtk_dialog_), GTK_RESPONSE_OK);
-  g_signal_connect(gtk_dialog_, "response",
-                   G_CALLBACK(OnDialogResponseThunk), this);
+  g_signal_connect(gtk_dialog_, "response", G_CALLBACK(OnResponseThunk), this);
 }
 
 JSModalDialogGtk::~JSModalDialogGtk() {
@@ -173,22 +172,21 @@ void JSModalDialogGtk::ActivateAppModalDialog() {
 
 void JSModalDialogGtk::CloseAppModalDialog() {
   DCHECK(gtk_dialog_);
-  OnDialogResponse(gtk_dialog_, GTK_RESPONSE_DELETE_EVENT);
+  OnResponse(gtk_dialog_, GTK_RESPONSE_DELETE_EVENT);
 }
 
 void JSModalDialogGtk::AcceptAppModalDialog() {
-  OnDialogResponse(gtk_dialog_, GTK_RESPONSE_OK);
+  OnResponse(gtk_dialog_, GTK_RESPONSE_OK);
 }
 
 void JSModalDialogGtk::CancelAppModalDialog() {
-  OnDialogResponse(gtk_dialog_, GTK_RESPONSE_CANCEL);
+  OnResponse(gtk_dialog_, GTK_RESPONSE_CANCEL);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 // JSModalDialogGtk, private:
 
-void JSModalDialogGtk::OnDialogResponse(GtkWidget* dialog,
-                                        int response_id) {
+void JSModalDialogGtk::OnResponse(GtkWidget* dialog, int response_id) {
   switch (response_id) {
     case GTK_RESPONSE_OK:
       // The first arg is the prompt text and the second is true if we want to
@@ -205,7 +203,7 @@ void JSModalDialogGtk::OnDialogResponse(GtkWidget* dialog,
     default:
       NOTREACHED();
   }
-  gtk_widget_destroy(GTK_WIDGET(dialog));
+  gtk_widget_destroy(dialog);
 
   // Now that the dialog is gone, we can put all the  windows into separate
   // window groups so other dialogs are no longer app modal.

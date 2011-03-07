@@ -197,7 +197,7 @@ void CryptoModulePasswordDialog::OnResponse(GtkWidget* dialog,
   // gtk_entry_buffer_normal_delete_text:
   // http://git.gnome.org/browse/gtk+/tree/gtk/gtkentrybuffer.c#n187)
   gtk_editable_delete_text(GTK_EDITABLE(password_entry_), 0, -1);
-  gtk_widget_destroy(GTK_WIDGET(dialog_));
+  gtk_widget_destroy(dialog_);
 }
 
 void CryptoModulePasswordDialog::OnWindowDestroy(GtkWidget* widget) {

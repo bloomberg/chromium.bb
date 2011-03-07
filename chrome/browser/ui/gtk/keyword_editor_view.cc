@@ -197,7 +197,7 @@ void KeywordEditorView::Init() {
 
   EnableControls();
 
-  g_signal_connect(dialog_, "response", G_CALLBACK(OnResponse), this);
+  g_signal_connect(dialog_, "response", G_CALLBACK(OnResponseThunk), this);
   g_signal_connect(dialog_, "destroy", G_CALLBACK(OnWindowDestroy), this);
 }
 
@@ -396,10 +396,8 @@ void KeywordEditorView::OnWindowDestroy(GtkWidget* widget,
   MessageLoop::current()->DeleteSoon(FROM_HERE, window);
 }
 
-// static
-void KeywordEditorView::OnResponse(GtkDialog* dialog, int response_id,
-                                   KeywordEditorView* window) {
-  gtk_widget_destroy(window->dialog_);
+void KeywordEditorView::OnResponse(GtkWidget* dialog, int response_id) {
+  gtk_widget_destroy(dialog_);
 }
 
 // static

@@ -121,10 +121,9 @@ class CertificateViewer {
 // CertificateViewer implementation.
 
 // Close button callback.
-void OnDialogResponse(GtkDialog* dialog, gint response_id,
-                      gpointer user_data) {
+void OnResponse(GtkWidget* dialog, int response_id) {
   // "Close" was clicked.
-  gtk_widget_destroy(GTK_WIDGET(dialog));
+  gtk_widget_destroy(dialog);
 }
 
 void OnDestroy(GtkDialog* dialog, CertificateViewer* cert_viewer) {
@@ -173,7 +172,7 @@ CertificateViewer::CertificateViewer(
               l10n_util::GetStringUTF8(
                   IDS_CERT_INFO_DETAILS_TAB_LABEL)).c_str()));
 
-  g_signal_connect(dialog_, "response", G_CALLBACK(OnDialogResponse), NULL);
+  g_signal_connect(dialog_, "response", G_CALLBACK(OnResponse), NULL);
   g_signal_connect(dialog_, "destroy", G_CALLBACK(OnDestroy), this);
 }
 

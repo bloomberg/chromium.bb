@@ -26,15 +26,15 @@ namespace {
 // Left or right margin.
 const int kPanelHorizMargin = 13;
 
-void OnDialogResponse(GtkDialog* dialog, int response_id,
-                      ExtensionInstallUI::Delegate* delegate) {
+void OnResponse(GtkWidget* dialog, int response_id,
+                ExtensionInstallUI::Delegate* delegate) {
   if (response_id == GTK_RESPONSE_ACCEPT) {
     delegate->InstallUIProceed();
   } else {
     delegate->InstallUIAbort();
   }
 
-  gtk_widget_destroy(GTK_WIDGET(dialog));
+  gtk_widget_destroy(dialog);
 }
 
 void ShowInstallPromptDialog(GtkWindow* parent, SkBitmap* skia_icon,
@@ -79,7 +79,7 @@ void ShowInstallPromptDialog(GtkWindow* parent, SkBitmap* skia_icon,
   gtk_misc_set_alignment(GTK_MISC(heading_label), 0.0, 0.5);
   gtk_box_pack_start(GTK_BOX(right_column_area), heading_label, TRUE, TRUE, 0);
 
-  g_signal_connect(dialog, "response", G_CALLBACK(OnDialogResponse), delegate);
+  g_signal_connect(dialog, "response", G_CALLBACK(OnResponse), delegate);
   gtk_window_set_resizable(GTK_WINDOW(dialog), FALSE);
   gtk_widget_show_all(dialog);
 }

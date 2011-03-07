@@ -8,9 +8,10 @@
 
 #include <string>
 
-#include <gtk/gtk.h>
-
 #include "base/basictypes.h"
+#include "ui/base/gtk/gtk_signal.h"
+
+typedef struct _GtkWidget GtkWidget;
 
 // Displays an error to the user when the ProcessSingleton cannot acquire the
 // lock.  This runs the message loop itself as the browser message loop has not
@@ -23,9 +24,7 @@ class ProcessSingletonDialog {
  private:
   explicit ProcessSingletonDialog(const std::string& message);
 
-  static void OnResponse(GtkWidget* widget,
-                         int response,
-                         ProcessSingletonDialog* dialog);
+  CHROMEGTK_CALLBACK_1(ProcessSingletonDialog, void, OnResponse, int);
 
   GtkWidget* dialog_;
 

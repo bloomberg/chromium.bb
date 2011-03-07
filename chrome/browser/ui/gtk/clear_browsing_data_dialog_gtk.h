@@ -25,8 +25,8 @@ class ClearBrowsingDataDialogGtk {
   ClearBrowsingDataDialogGtk(GtkWindow* parent, Profile* profile);
   ~ClearBrowsingDataDialogGtk();
 
-  // Handler to respond to Ok and Cancel responses from the dialog.
-  CHROMEGTK_CALLBACK_1(ClearBrowsingDataDialogGtk, void, OnDialogResponse, int);
+  // Handler to respond to OK and Cancel responses from the dialog.
+  CHROMEGTK_CALLBACK_1(ClearBrowsingDataDialogGtk, void, OnResponse, int);
 
   // Handler to respond to widget clicked actions from the dialog.
   CHROMEGTK_CALLBACK_0(ClearBrowsingDataDialogGtk, void, OnDialogWidgetClicked);

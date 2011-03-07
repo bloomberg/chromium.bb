@@ -191,7 +191,7 @@ class AutoFillProfileEditor {
   void UpdateOkButton();
 
   CHROMEGTK_CALLBACK_0(AutoFillProfileEditor, void, OnDestroy);
-  CHROMEG_CALLBACK_1(AutoFillProfileEditor, void, OnResponse, GtkDialog*, gint);
+  CHROMEGTK_CALLBACK_1(AutoFillProfileEditor, void, OnResponse, int);
   CHROMEG_CALLBACK_0(AutoFillProfileEditor, void, OnPhoneChanged, GtkEditable*);
   CHROMEG_CALLBACK_0(AutoFillProfileEditor, void, OnFaxChanged, GtkEditable*);
   CHROMEG_CALLBACK_0(AutoFillProfileEditor, void, OnFieldChanged, GtkEditable*);
@@ -492,7 +492,7 @@ void AutoFillProfileEditor::OnDestroy(GtkWidget* widget) {
   MessageLoop::current()->DeleteSoon(FROM_HERE, this);
 }
 
-void AutoFillProfileEditor::OnResponse(GtkDialog* dialog, gint response_id) {
+void AutoFillProfileEditor::OnResponse(GtkWidget* dialog, int response_id) {
   if (response_id == GTK_RESPONSE_APPLY || response_id == GTK_RESPONSE_OK)
     ApplyEdits();
 
@@ -500,7 +500,7 @@ void AutoFillProfileEditor::OnResponse(GtkDialog* dialog, gint response_id) {
       response_id == GTK_RESPONSE_APPLY ||
       response_id == GTK_RESPONSE_CANCEL ||
       response_id == GTK_RESPONSE_DELETE_EVENT) {
-    gtk_widget_destroy(GTK_WIDGET(dialog));
+    gtk_widget_destroy(dialog);
   }
 }
 
@@ -557,8 +557,7 @@ class AutoFillCreditCardEditor {
   void UpdateOkButton();
 
   CHROMEGTK_CALLBACK_0(AutoFillCreditCardEditor, void, OnDestroy);
-  CHROMEG_CALLBACK_1(AutoFillCreditCardEditor, void, OnResponse, GtkDialog*,
-                     gint);
+  CHROMEGTK_CALLBACK_1(AutoFillCreditCardEditor, void, OnResponse, int);
   CHROMEG_CALLBACK_0(AutoFillCreditCardEditor, void, OnFieldChanged,
                      GtkEditable*);
   CHROMEG_CALLBACK_2(AutoFillCreditCardEditor, void, OnDeleteTextFromNumber,
@@ -804,7 +803,7 @@ void AutoFillCreditCardEditor::OnDestroy(GtkWidget* widget) {
   MessageLoop::current()->DeleteSoon(FROM_HERE, this);
 }
 
-void AutoFillCreditCardEditor::OnResponse(GtkDialog* dialog, gint response_id) {
+void AutoFillCreditCardEditor::OnResponse(GtkWidget* dialog, int response_id) {
   if (response_id == GTK_RESPONSE_APPLY || response_id == GTK_RESPONSE_OK)
     ApplyEdits();
 
@@ -812,7 +811,7 @@ void AutoFillCreditCardEditor::OnResponse(GtkDialog* dialog, gint response_id) {
       response_id == GTK_RESPONSE_APPLY ||
       response_id == GTK_RESPONSE_CANCEL ||
       response_id == GTK_RESPONSE_DELETE_EVENT) {
-    gtk_widget_destroy(GTK_WIDGET(dialog));
+    gtk_widget_destroy(dialog);
   }
 }
 

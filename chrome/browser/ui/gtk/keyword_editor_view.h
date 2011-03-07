@@ -14,6 +14,7 @@
 #include "base/string16.h"
 #include "chrome/browser/search_engines/template_url_model_observer.h"
 #include "chrome/browser/ui/search_engines/edit_search_engine_controller.h"
+#include "ui/base/gtk/gtk_signal.h"
 #include "ui/base/models/table_model_observer.h"
 
 class KeywordEditorController;
@@ -89,8 +90,7 @@ class KeywordEditorView : public ui::TableModelObserver,
   static void OnWindowDestroy(GtkWidget* widget, KeywordEditorView* window);
 
   // Callback for dialog buttons.
-  static void OnResponse(GtkDialog* dialog, int response_id,
-                         KeywordEditorView* window);
+  CHROMEGTK_CALLBACK_1(KeywordEditorView, void, OnResponse, int);
 
   // Callback checking whether a row should be drawn as a separator.
   static gboolean OnCheckRowIsSeparator(GtkTreeModel* model,

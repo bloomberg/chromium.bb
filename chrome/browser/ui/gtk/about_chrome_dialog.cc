@@ -50,9 +50,9 @@ const char* kEndLinkOss = "END_LINK_OSS";
 const char* kBeginLink = "BEGIN_LINK";
 const char* kEndLink = "END_LINK";
 
-void OnDialogResponse(GtkDialog* dialog, int response_id) {
+void OnResponse(GtkWidget* dialog, int response_id) {
   // We're done.
-  gtk_widget_destroy(GTK_WIDGET(dialog));
+  gtk_widget_destroy(dialog);
 }
 
 GtkWidget* MakeMarkupLabel(const char* format, const std::string& str) {
@@ -280,7 +280,7 @@ void ShowAboutDialogForProfile(GtkWindow* parent, Profile* profile) {
   gtk_container_add(GTK_CONTAINER(alignment), vbox);
   gtk_box_pack_start(GTK_BOX(content_area), alignment, FALSE, FALSE, 0);
 
-  g_signal_connect(dialog, "response", G_CALLBACK(OnDialogResponse), NULL);
+  g_signal_connect(dialog, "response", G_CALLBACK(OnResponse), NULL);
   gtk_window_set_resizable(GTK_WINDOW(dialog), FALSE);
   gtk_widget_show_all(dialog);
   gtk_widget_grab_focus(close_button);

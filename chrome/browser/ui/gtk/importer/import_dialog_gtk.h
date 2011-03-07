@@ -27,7 +27,7 @@ class ImportDialogGtk : public ImporterList::Observer,
   virtual ~ImportDialogGtk();
 
   // Handler to respond to OK or Cancel responses from the dialog.
-  CHROMEGTK_CALLBACK_1(ImportDialogGtk, void, OnDialogResponse, int);
+  CHROMEGTK_CALLBACK_1(ImportDialogGtk, void, OnResponse, int);
 
   // Handler to respond to widget clicked actions from the dialog.
   CHROMEGTK_CALLBACK_0(ImportDialogGtk, void, OnDialogWidgetClicked);
