@@ -1833,11 +1833,13 @@ def main():
   remote_pkgs = {}
   if "--getbinpkg" in emerge.opts:
     binhosts = emerge.settings["PORTAGE_BINHOST"]
-    try:
-      for binhost in binhosts.split():
+    for binhost in binhosts.split():
+      try:
         remote_pkgs.update(deps.RemotePackageDatabase(binhost))
-    except (urllib2.HTTPError, urllib2.URLError):
-      print "Cannot resolve binhost. Building from source..."
+      except (urllib2.HTTPError, urllib2.URLError):
+        pass
+    if not remote_pkgs:
+      print "Can't find any binary packages. Building from source..."
       del emerge.opts["--getbinpkg"]
 
   deps_tree, deps_info = deps.GenDependencyTree(remote_pkgs)
