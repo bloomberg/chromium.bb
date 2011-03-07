@@ -130,6 +130,7 @@ class NotifyingMenuButton : public DropDownButton {
   // Overridden from View:
   virtual void OnFocus() OVERRIDE {
     delegate_->ClearErrors();
+    NotifyAccessibilityEvent(AccessibilityTypes::EVENT_FOCUS);
   }
 
  private:
