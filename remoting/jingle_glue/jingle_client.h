@@ -111,6 +111,7 @@ class XmppSignalStrategy : public SignalStrategy, public sigslot::has_slots<> {
   DISALLOW_COPY_AND_ASSIGN(XmppSignalStrategy);
 };
 
+// TODO(hclam): Javascript implementation of this interface shouldn't be here.
 class JavascriptSignalStrategy : public SignalStrategy {
  public:
   JavascriptSignalStrategy();
