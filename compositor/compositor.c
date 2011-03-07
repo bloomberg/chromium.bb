@@ -132,6 +132,7 @@ wlsc_surface_create(struct wlsc_compositor *compositor,
 
 	wl_list_init(&surface->surface.destroy_listener_list);
 	wl_list_init(&surface->link);
+	wl_list_init(&surface->buffer_link);
 	surface->map_type = WLSC_SURFACE_MAP_UNMAPPED;
 
 	glGenTextures(1, &surface->texture);
@@ -145,6 +146,7 @@ wlsc_surface_create(struct wlsc_compositor *compositor,
 	surface->visual = NULL;
 	surface->image = EGL_NO_IMAGE_KHR;
 	surface->saved_texture = 0;
+	surface->buffer = NULL;
 	surface->x = x;
 	surface->y = y;
 	surface->width = width;
@@ -211,6 +213,8 @@ destroy_surface(struct wl_resource *resource, struct wl_client *client)
 	if (surface->image != EGL_NO_IMAGE_KHR)
 		eglDestroyImageKHR(surface->compositor->display,
 				   surface->image);
+
+	wl_list_remove(&surface->buffer_link);
 
 	time = get_time();
 	wl_list_for_each_safe(l, next,

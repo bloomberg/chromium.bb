@@ -26,6 +26,7 @@
 
 struct wlsc_shm_buffer {
 	struct wl_buffer buffer;
+	struct wl_list surfaces_attached_to;
 	int32_t stride;
 	void *data;
 	int mapped;
@@ -36,18 +37,18 @@ destroy_buffer(struct wl_resource *resource, struct wl_client *client)
 {
 	struct wlsc_shm_buffer *buffer =
 		container_of(resource, struct wlsc_shm_buffer, buffer.resource);
-	struct wlsc_compositor *compositor = 
-		(struct wlsc_compositor *) buffer->buffer.compositor;
-	struct wlsc_surface *es;
+	struct wlsc_surface *es, *next;
 
 	if (buffer->mapped)
 		munmap(buffer->data, buffer->stride * buffer->buffer.height);
 	else
 		free(buffer->data);
 
-	wl_list_for_each(es, &compositor->surface_list, link)
-		if (es->buffer == (struct wl_buffer *) buffer)
-			es->buffer = NULL;
+	wl_list_for_each_safe(es, next, &buffer->surfaces_attached_to,
+			      buffer_link) {
+		es->buffer = NULL;
+		wl_list_remove(&es->buffer_link);
+	}
 
 	free(buffer);
 }
@@ -58,14 +59,9 @@ buffer_damage(struct wl_client *client, struct wl_buffer *buffer_base,
 {
 	struct wlsc_shm_buffer *buffer =
 		(struct wlsc_shm_buffer *) buffer_base;
-	struct wlsc_compositor *compositor = 
-		(struct wlsc_compositor *) buffer->buffer.compositor;
 	struct wlsc_surface *es;
 
-	wl_list_for_each(es, &compositor->surface_list, link) {
-		if (es->buffer != buffer_base)
-			continue;
-
+	wl_list_for_each(es, &buffer->surfaces_attached_to, buffer_link) {
 		glBindTexture(GL_TEXTURE_2D, es->texture);
 		glTexImage2D(GL_TEXTURE_2D, 0, GL_BGRA_EXT,
 			     buffer->buffer.width, buffer->buffer.height, 0,
@@ -111,6 +107,10 @@ wlsc_shm_buffer_attach(struct wl_buffer *buffer_base,
 		     buffer->buffer.width, buffer->buffer.height, 0,
 		     GL_BGRA_EXT, GL_UNSIGNED_BYTE, buffer->data);
 	es->visual = buffer->buffer.visual;
+
+	if (es->buffer)
+		wl_list_remove(&es->buffer_link);
+	wl_list_insert(&buffer->surfaces_attached_to, &es->buffer_link);
 }
 
 static struct wlsc_shm_buffer *
@@ -131,6 +131,8 @@ wlsc_shm_buffer_init(struct wlsc_compositor *compositor,
 	buffer->buffer.visual = visual;
 	buffer->stride = stride;
 	buffer->data = data;
+
+	wl_list_init(&buffer->surfaces_attached_to);
 
 	buffer->buffer.resource.object.interface = &wl_buffer_interface;
 	buffer->buffer.resource.object.implementation = (void (**)(void))

@@ -160,6 +160,7 @@ struct wlsc_surface {
 	int32_t x, y, width, height;
 	int32_t saved_x, saved_y;
 	struct wl_list link;
+	struct wl_list buffer_link;
 	struct wlsc_matrix matrix;
 	struct wlsc_matrix matrix_inv;
 	struct wl_visual *visual;
