@@ -176,6 +176,11 @@ class BrowserInit {
     // politely nag the user about it.
     void AddBadFlagsInfoBarIfNecessary(TabContents* tab);
 
+    // If DNS based certificate checking has been enabled then we show a
+    // warning infobar.
+    void AddDNSCertProvenanceCheckingWarningInfoBarIfNecessary(
+        TabContents* tab);
+
     // Adds additional startup URLs to the specified vector.
     void AddStartupURLs(std::vector<GURL>* startup_urls) const;
 

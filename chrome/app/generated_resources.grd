@@ -4323,6 +4323,11 @@ Keep your key file in a safe place. You will need it to create new versions of y
         You are using an unsupported command-line flag: <ph name="BAD_FLAG">$1<ex>--no-sandbox</ex></ph>. Stability and security will suffer.
       </message>
 
+      <!-- Monoscope warning info bar -->
+      <message name="IDS_DNS_CERT_PROVENANCE_CHECKING_WARNING_MESSAGE" desc="Message shown when the user has DNS certificate provenance checking enabled. This message is followed by a 'Learn more' button.">
+        You have DNS certificate provenance checking enabled. This may result in private information being sent to Google.
+      </message>
+
       <!-- Locale Change Notification-->
       <if expr="pp_ifdef('chromeos')">
         <message name="IDS_LOCALE_CHANGE_MESSAGE" desc="Message shown when locale was changed based on profile content.">

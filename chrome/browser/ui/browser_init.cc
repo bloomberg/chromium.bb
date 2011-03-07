@@ -1025,6 +1025,7 @@ void BrowserInit::LaunchWithProfile::AddInfoBarsIfNecessary(Browser* browser) {
   TabContents* tab_contents = browser->GetSelectedTabContents();
   AddCrashedInfoBarIfNecessary(tab_contents);
   AddBadFlagsInfoBarIfNecessary(tab_contents);
+  AddDNSCertProvenanceCheckingWarningInfoBarIfNecessary(tab_contents);
 }
 
 void BrowserInit::LaunchWithProfile::AddCrashedInfoBarIfNecessary(
@@ -1069,6 +1070,52 @@ void BrowserInit::LaunchWithProfile::AddBadFlagsInfoBarIfNecessary(
                                    UTF8ToUTF16(std::string("--") + bad_flag)),
         false));
   }
+}
+
+class DNSCertProvenanceCheckingInfoBar : public ConfirmInfoBarDelegate {
+ public:
+  explicit DNSCertProvenanceCheckingInfoBar(TabContents* tab_contents)
+      : ConfirmInfoBarDelegate(tab_contents),
+        tab_contents_(tab_contents) {
+  }
+
+  virtual string16 GetMessageText() const {
+    return l10n_util::GetStringUTF16(
+        IDS_DNS_CERT_PROVENANCE_CHECKING_WARNING_MESSAGE);
+  }
+
+  virtual int GetButtons() const {
+    return BUTTON_OK;
+  }
+
+  virtual string16 GetButtonLabel(InfoBarButton button) const {
+    return l10n_util::GetStringUTF16(IDS_OPTIONS_LEARN_MORE_LABEL);
+  }
+
+  virtual bool Accept() {
+    tab_contents_->OpenURL(GURL(kLearnMoreURL), GURL(), NEW_FOREGROUND_TAB,
+                           PageTransition::AUTO_BOOKMARK);
+    return true;
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(DNSCertProvenanceCheckingInfoBar);
+
+  static const char kLearnMoreURL[];
+  TabContents* const tab_contents_;
+};
+
+// This is the page which provides information on DNS certificate provenance
+// checking.
+const char DNSCertProvenanceCheckingInfoBar::kLearnMoreURL[] =
+    "http://dev.chromium.org/dnscertprovenancechecking";
+
+void BrowserInit::LaunchWithProfile::
+    AddDNSCertProvenanceCheckingWarningInfoBarIfNecessary(TabContents* tab) {
+  if (!command_line_.HasSwitch(switches::kEnableDNSCertProvenanceChecking))
+    return;
+
+  tab->AddInfoBar(new DNSCertProvenanceCheckingInfoBar(tab));
 }
 
 void BrowserInit::LaunchWithProfile::AddStartupURLs(
