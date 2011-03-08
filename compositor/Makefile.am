@@ -37,7 +37,6 @@ compositor_SOURCES =				\
 	screenshooter.c				\
 	screenshooter-protocol.c		\
 	screenshooter-server-protocol.h		\
-	shm.c					\
 	$(drm_compositor_sources)		\
 	$(openwfd_compositor_sources)		\
 	$(x11_compositor_sources)		\

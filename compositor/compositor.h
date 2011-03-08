@@ -82,10 +82,6 @@ struct wlsc_input_device {
 	struct wl_selection *selection;
 };
 
-struct wlsc_shm {
-	struct wl_object object;
-};
-
 struct wlsc_sprite {
 	GLuint texture;
 	EGLImageKHR image;
@@ -97,7 +93,8 @@ struct wlsc_sprite {
 struct wlsc_compositor {
 	struct wl_compositor compositor;
 
-	struct wlsc_shm shm;
+	struct wl_shm *shm;
+
 	EGLDisplay display;
 	EGLContext context;
 	EGLConfig config;
@@ -246,18 +243,6 @@ uint32_t
 get_time(void);
 
 int
-wlsc_is_shm_buffer(struct wl_buffer *buffer);
-
-void
-wlsc_shm_buffer_attach(struct wl_buffer *buffer, struct wl_surface *surface);
-
-struct wl_buffer *
-wlsc_shm_buffer_create(struct wlsc_compositor *ec,
-		       int32_t width, int32_t height,
-		       int32_t stride, struct wl_visual *visual,
-		       void *data);
-
-int
 wlsc_compositor_init(struct wlsc_compositor *ec, struct wl_display *display);
 void
 wlsc_output_move(struct wlsc_output *output, int x, int y);
@@ -270,9 +255,6 @@ wlsc_output_destroy(struct wlsc_output *output);
 void
 wlsc_input_device_init(struct wlsc_input_device *device,
 		       struct wlsc_compositor *ec);
-
-int
-wlsc_shm_init(struct wlsc_compositor *ec);
 
 int
 wlsc_shell_init(struct wlsc_compositor *ec);

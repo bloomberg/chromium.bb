@@ -296,17 +296,34 @@ wlsc_buffer_attach(struct wl_buffer *buffer, struct wl_surface *surface)
 {
 	struct wlsc_surface *es = (struct wlsc_surface *) surface;
 	struct wlsc_compositor *ec = es->compositor;
+	struct wl_list *surfaces_attached_to;
 
-	if (wlsc_is_shm_buffer(buffer)) {
-		wlsc_shm_buffer_attach(buffer, surface);
+	if (es->saved_texture != 0)
+		es->texture = es->saved_texture;
+
+	glBindTexture(GL_TEXTURE_2D, es->texture);
+
+	if (wl_buffer_is_shm(buffer)) {
+		/* Unbind any EGLImage texture that may be bound, so we don't
+		 * overwrite it.*/
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_BGRA_EXT,
+			     0, 0, 0, GL_BGRA_EXT, GL_UNSIGNED_BYTE, NULL);
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_BGRA_EXT,
+			     buffer->width, buffer->height, 0,
+			     GL_BGRA_EXT, GL_UNSIGNED_BYTE,
+			     wl_shm_buffer_get_data(buffer));
+		es->visual = buffer->visual;
+
+		surfaces_attached_to = buffer->user_data;
+
+		if (es->buffer)
+			wl_list_remove(&es->buffer_link);
+		wl_list_insert(surfaces_attached_to, &es->buffer_link);
 	} else {
 		es->image = eglCreateImageKHR(ec->display, NULL,
 					      EGL_WAYLAND_BUFFER_WL,
 					      buffer, NULL);
 
-		if (es->saved_texture != 0)
-			es->texture = es->saved_texture;
-		glBindTexture(GL_TEXTURE_2D, es->texture);
 		glEGLImageTargetTexture2DOES(GL_TEXTURE_2D, es->image);
 		es->visual = buffer->visual;
 	}
@@ -1517,6 +1534,60 @@ wlsc_output_init(struct wlsc_output *output, struct wlsc_compositor *c,
 			      wlsc_output_post_geometry);
 }
 
+static void
+shm_buffer_created(struct wl_buffer *buffer)
+{
+	struct wl_list *surfaces_attached_to;
+
+	surfaces_attached_to = malloc(sizeof *surfaces_attached_to);
+	if (!surfaces_attached_to) {
+		buffer->user_data = NULL;
+		return;
+	}
+
+	wl_list_init(surfaces_attached_to);
+
+	buffer->user_data = surfaces_attached_to;
+}
+
+static void
+shm_buffer_damaged(struct wl_buffer *buffer,
+		   int32_t x, int32_t y, int32_t width, int32_t height)
+{
+	struct wl_list *surfaces_attached_to = buffer->user_data;
+	struct wlsc_surface *es;
+
+	wl_list_for_each(es, surfaces_attached_to, buffer_link) {
+		glBindTexture(GL_TEXTURE_2D, es->texture);
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_BGRA_EXT,
+			     buffer->width, buffer->height, 0,
+			     GL_BGRA_EXT, GL_UNSIGNED_BYTE,
+			     wl_shm_buffer_get_data(buffer));
+		/* Hmm, should use glTexSubImage2D() here but GLES2 doesn't
+		 * support any unpack attributes except GL_UNPACK_ALIGNMENT. */
+	}
+}
+
+static void
+shm_buffer_destroyed(struct wl_buffer *buffer)
+{
+	struct wl_list *surfaces_attached_to = buffer->user_data;
+	struct wlsc_surface *es, *next;
+
+	wl_list_for_each_safe(es, next, surfaces_attached_to, buffer_link) {
+		es->buffer = NULL;
+		wl_list_remove(&es->buffer_link);
+	}
+
+	free(surfaces_attached_to);
+}
+
+const static struct wl_shm_callbacks shm_callbacks = {
+	shm_buffer_created,
+	shm_buffer_damaged,
+	shm_buffer_destroyed
+};
+
 int
 wlsc_compositor_init(struct wlsc_compositor *ec, struct wl_display *display)
 {
@@ -1527,7 +1598,7 @@ wlsc_compositor_init(struct wlsc_compositor *ec, struct wl_display *display)
 
 	wl_compositor_init(&ec->compositor, &compositor_interface, display);
 
-	wlsc_shm_init(ec);
+	ec->shm = wl_shm_init(display, &shm_callbacks);
 	eglBindWaylandDisplayWL(ec->display, ec->wl_display);
 
 	wl_list_init(&ec->surface_list);
