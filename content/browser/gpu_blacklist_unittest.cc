@@ -4,6 +4,11 @@
 
 #include <vector>
 
+#include "base/base_paths.h"
+#include "base/file_path.h"
+#include "base/file_util.h"
+#include "base/path_service.h"
+#include "base/scoped_ptr.h"
 #include "base/version.h"
 #include "chrome/common/gpu_info.h"
 #include "content/browser/gpu_blacklist.h"
@@ -35,6 +40,26 @@ class GpuBlacklistTest : public testing::Test {
  private:
   GPUInfo gpu_info_;
 };
+
+TEST_F(GpuBlacklistTest, CurrentBlacklistValidation) {
+  FilePath data_file;
+  ASSERT_TRUE(PathService::Get(base::DIR_SOURCE_ROOT, &data_file));
+  data_file =
+      data_file.Append(FILE_PATH_LITERAL("chrome"))
+               .Append(FILE_PATH_LITERAL("browser"))
+               .Append(FILE_PATH_LITERAL("resources"))
+               .Append(FILE_PATH_LITERAL("software_rendering_list.json"));
+  ASSERT_TRUE(file_util::PathExists(data_file));
+  int64 data_file_size64 = 0;
+  ASSERT_TRUE(file_util::GetFileSize(data_file, &data_file_size64));
+  int data_file_size = static_cast<int>(data_file_size64);
+  scoped_array<char> data(new char[data_file_size]);
+  ASSERT_EQ(file_util::ReadFile(data_file, data.get(), data_file_size),
+            data_file_size);
+  std::string json_string(data.get(), data_file_size);
+  GpuBlacklist blacklist;
+  EXPECT_TRUE(blacklist.LoadGpuBlacklist(json_string, true));
+}
 
 TEST_F(GpuBlacklistTest, DeafaultBlacklistSettings) {
   scoped_ptr<Version> os_version(Version::GetVersionFromString("10.6.4"));
