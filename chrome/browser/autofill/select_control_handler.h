@@ -11,7 +11,7 @@
 class FormGroup;
 
 namespace webkit_glue {
-class FormField;
+struct FormField;
 }  // namespace webkit_glue
 
 namespace autofill {

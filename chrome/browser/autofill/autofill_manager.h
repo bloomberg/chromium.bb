@@ -28,7 +28,7 @@ class RenderViewHost;
 
 namespace webkit_glue {
 struct FormData;
-class FormField;
+struct FormField;
 }  // namespace webkit_glue
 
 // Manages saving and restoring the user's personal information entered into web

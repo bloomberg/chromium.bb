@@ -51,11 +51,11 @@ class AccountCreationTabContents : public WizardWebPageViewTabContents {
       std::string user_name;
       std::string domain;
       for (size_t i = 0; i < form.fields.size(); i++) {
-        std::string name = UTF16ToASCII(form.fields[i].name());
+        std::string name = UTF16ToASCII(form.fields[i].name);
         if (name == kEmailFieldName) {
-          user_name = UTF16ToASCII(form.fields[i].value());
+          user_name = UTF16ToASCII(form.fields[i].value);
         } else if (name == kDomainFieldName) {
-          domain = UTF16ToASCII(form.fields[i].value());
+          domain = UTF16ToASCII(form.fields[i].value);
         }
       }
       if (!user_name.empty()) {

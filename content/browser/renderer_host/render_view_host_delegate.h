@@ -76,7 +76,7 @@ class CookieOptions;
 
 namespace webkit_glue {
 struct FormData;
-class FormField;
+struct FormField;
 struct PasswordForm;
 }
 

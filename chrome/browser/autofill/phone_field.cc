@@ -281,9 +281,9 @@ bool PhoneField::ParseInternal(
                      &parsed_fields[phone_field_grammars_[i].phone_part]))
         break;
       if (phone_field_grammars_[i].max_size &&
-          (!parsed_fields[phone_field_grammars_[i].phone_part]->max_length() ||
+          (!parsed_fields[phone_field_grammars_[i].phone_part]->max_length ||
             phone_field_grammars_[i].max_size <
-            parsed_fields[phone_field_grammars_[i].phone_part]->max_length())) {
+            parsed_fields[phone_field_grammars_[i].phone_part]->max_length)) {
         break;
       }
     }

@@ -225,7 +225,7 @@ TEST_F(AutofillMetricsTest, QualityMetrics) {
   FormField field;
   autofill_test::CreateTestFormField(
       "Autofilled", "autofilled", "Elvis Presley", "text", &field);
-  field.set_autofilled(true);
+  field.is_autofilled = true;
   form.fields.push_back(field);
   autofill_test::CreateTestFormField(
       "Autofill Failed", "autofillfailed", "buddy@gmail.com", "text", &field);
@@ -395,7 +395,7 @@ TEST_F(AutofillMetricsTest, SaneMetricsWithCacheMismatch) {
   FormField field;
   autofill_test::CreateTestFormField(
       "Both match", "match", "Elvis Presley", "text", &field);
-  field.set_autofilled(true);
+  field.is_autofilled = true;
   form.fields.push_back(field);
   heuristic_types.push_back(NAME_FULL);
   server_types.push_back(NAME_FULL);
@@ -484,7 +484,7 @@ TEST_F(AutofillMetricsTest, NoQualityMetricsForNonAutofillableForms) {
   FormField field;
   autofill_test::CreateTestFormField(
       "Autofilled", "autofilled", "Elvis Presley", "text", &field);
-  field.set_autofilled(true);
+  field.is_autofilled = true;
   form.fields.push_back(field);
   autofill_test::CreateTestFormField(
       "Autofill Failed", "autofillfailed", "buddy@gmail.com", "text", &field);
@@ -520,7 +520,7 @@ TEST_F(AutofillMetricsTest, QualityMetricsWithExperimentId) {
   FormField field;
   autofill_test::CreateTestFormField(
       "Autofilled", "autofilled", "Elvis Presley", "text", &field);
-  field.set_autofilled(true);
+  field.is_autofilled = true;
   form.fields.push_back(field);
   autofill_test::CreateTestFormField(
       "Autofill Failed", "autofillfailed", "buddy@gmail.com", "text", &field);

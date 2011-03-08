@@ -11,7 +11,7 @@ class CreditCard;
 class Profile;
 
 namespace webkit_glue {
-class FormField;
+struct FormField;
 }  // namespace webkit_glue
 
 // Common utilities shared amongst AutoFill tests.
