@@ -237,7 +237,6 @@ class MouseEvent : public LocatedEvent {
 ////////////////////////////////////////////////////////////////////////////////
 class TouchEvent : public LocatedEvent {
  public:
-  explicit TouchEvent(NativeEvent native_event);
   TouchEvent(NativeEvent2 native_event_2, FromNativeEvent2 from_native);
 
   // Create a new touch event.

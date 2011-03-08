@@ -73,7 +73,8 @@ bool DispatchX2Event(RootView* root, XEvent* xev) {
     // Create a TouchEvent, and send it off to |root|. If the event
     // is processed by |root|, then return. Otherwise let it fall through so it
     // can be used (if desired) as a mouse event.
-    TouchEvent touch(xev);
+    Event::FromNativeEvent2 from_native;
+    TouchEvent touch(xev, from_native);
     if (root->OnTouchEvent(touch) != views::View::TOUCH_STATUS_UNKNOWN)
       return true;
   }
@@ -96,7 +97,8 @@ bool DispatchX2Event(RootView* root, XEvent* xev) {
         return root->OnMouseWheel(wheelev);
       }
 
-      MouseEvent mouseev(xev);
+      Event::FromNativeEvent2 from_native;
+      MouseEvent mouseev(xev, from_native);
       if (!touch_event) {
         // Show the cursor, and decide whether or not the cursor should be
         // automatically hidden after a certain time of inactivity.
@@ -178,7 +180,8 @@ bool DispatchXEvent(XEvent* xev) {
           MouseWheelEvent wheelev(xev, from_native);
           return root->OnMouseWheel(wheelev);
         } else {
-          MouseEvent mouseev(xev);
+          Event::FromNativeEvent2 from_native;
+          MouseEvent mouseev(xev, from_native);
           if (xev->type == ButtonPress) {
             return root->OnMousePressed(mouseev);
           } else {
@@ -190,7 +193,8 @@ bool DispatchXEvent(XEvent* xev) {
       }
 
       case MotionNotify: {
-        MouseEvent mouseev(xev);
+        Event::FromNativeEvent2 from_native;
+        MouseEvent mouseev(xev, from_native);
         if (mouseev.type() == ui::ET_MOUSE_DRAGGED) {
           return root->OnMouseDragged(mouseev);
         } else {

@@ -262,10 +262,6 @@ KeyEvent::KeyEvent(NativeEvent2 native_event_2, FromNativeEvent2 from_native)
 ////////////////////////////////////////////////////////////////////////////////
 // MouseEvent, public:
 
-MouseEvent::MouseEvent(NativeEvent native_event)
-    : LocatedEvent(native_event) {
-}
-
 MouseEvent::MouseEvent(NativeEvent2 native_event_2,
                        FromNativeEvent2 from_native)
     : LocatedEvent(native_event_2, from_native) {
@@ -276,7 +272,7 @@ MouseEvent::MouseEvent(NativeEvent2 native_event_2,
 
 MouseWheelEvent::MouseWheelEvent(NativeEvent2 native_event_2,
                                  FromNativeEvent2 from_native)
-    : LocatedEvent(native_event_2, from_native),
+    : MouseEvent(native_event_2, from_native),
       offset_(GetMouseWheelOffset(native_event_2)) {
 }
 
@@ -284,11 +280,12 @@ MouseWheelEvent::MouseWheelEvent(NativeEvent2 native_event_2,
 // TouchEvent, public:
 
 #if defined(HAVE_XINPUT2)
-TouchEvent::TouchEvent(XEvent* xev)
-    : LocatedEvent(GetTouchEventType(xev),
-                   GetTouchEventLocation(xev),
-                   GetTouchEventFlags(xev)),
-      touch_id_(GetTouchIDFromXEvent(xev)) {
+TouchEvent::TouchEvent(NativeEvent2 native_event_2,
+                       FromNativeEvent2 from_native)
+    : LocatedEvent(GetTouchEventType(native_event_2),
+                   GetTouchEventLocation(native_event_2),
+                   GetTouchEventFlags(native_event_2)),
+      touch_id_(GetTouchIDFromXEvent(native_event_2)) {
 }
 #endif
 
