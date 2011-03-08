@@ -69,7 +69,7 @@ bool PlatformContext3DImpl::Init() {
   command_buffer_ = channel_->CreateOffscreenCommandBuffer(
         parent_command_buffer,
         gfx::Size(1, 1),
-        "",
+        "*",
         attribs,
         parent_texture_id_);
 
