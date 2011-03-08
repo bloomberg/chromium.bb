@@ -824,7 +824,7 @@ views::MenuButton* BookmarkBarView::GetMenuButtonForNode(
     return other_bookmarked_button_;
   if (node == model_->GetBookmarkBarNode())
     return overflow_button_;
-  int index = model_->GetBookmarkBarNode()->IndexOfChild(node);
+  int index = model_->GetBookmarkBarNode()->GetIndexOf(node);
   if (index == -1 || !node->is_folder())
     return NULL;
   return static_cast<views::MenuButton*>(GetChildViewAt(index));
@@ -1041,7 +1041,7 @@ void BookmarkBarView::BookmarkNodeChangedImpl(BookmarkModel* model,
     // We only care about nodes on the bookmark bar.
     return;
   }
-  int index = model_->GetBookmarkBarNode()->IndexOfChild(node);
+  int index = model_->GetBookmarkBarNode()->GetIndexOf(node);
   DCHECK_NE(-1, index);
   views::TextButton* button = GetBookmarkButton(index);
   gfx::Size old_pref = button->GetPreferredSize();
@@ -1513,7 +1513,7 @@ void BookmarkBarView::StartThrobbing(const BookmarkNode* node,
     parent_on_bb = parent;
   }
   if (parent_on_bb) {
-    int index = bbn->IndexOfChild(parent_on_bb);
+    int index = bbn->GetIndexOf(parent_on_bb);
     if (index >= GetFirstHiddenNodeIndex()) {
       // Node is hidden, animate the overflow button.
       throbbing_view_ = overflow_button_;

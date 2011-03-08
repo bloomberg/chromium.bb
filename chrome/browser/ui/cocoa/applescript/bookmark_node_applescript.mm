@@ -1,12 +1,12 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #import "chrome/browser/ui/cocoa/applescript/bookmark_node_applescript.h"
 
 #include "base/logging.h"
-#include "base/sys_string_conversions.h"
 #import "base/scoped_nsobject.h"
+#include "base/sys_string_conversions.h"
 #import "chrome/browser/app_controller_mac.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
 #import "chrome/browser/chrome_browser_application_mac.h"
@@ -104,7 +104,7 @@
 
 - (NSNumber*)index {
   const BookmarkNode* parent = bookmarkNode_->GetParent();
-  int index = parent->IndexOfChild(bookmarkNode_);
+  int index = parent->GetIndexOf(bookmarkNode_);
   // NOTE: AppleScript is 1-Based.
   return [NSNumber numberWithInt:index+1];
 }

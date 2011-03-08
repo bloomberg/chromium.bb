@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -25,9 +25,9 @@
 #import "chrome/browser/ui/cocoa/rwhvm_editcommand_helper.h"
 #import "chrome/browser/ui/cocoa/view_id_util.h"
 #include "chrome/common/chrome_switches.h"
-#include "chrome/common/native_web_keyboard_event.h"
 #include "chrome/common/edit_command.h"
 #include "chrome/common/gpu_messages.h"
+#include "chrome/common/native_web_keyboard_event.h"
 #include "chrome/common/plugin_messages.h"
 #include "chrome/common/render_messages.h"
 #include "content/browser/browser_thread.h"
@@ -38,12 +38,12 @@
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/renderer_host/render_widget_host.h"
 #include "skia/ext/platform_canvas.h"
+#import "third_party/mozilla/ComplexTextInputPanel.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/mac/WebInputEventFactory.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebInputEvent.h"
 #include "webkit/glue/webaccessibility.h"
 #include "webkit/plugins/npapi/webplugin.h"
-#import "third_party/mozilla/ComplexTextInputPanel.h"
 
 using WebKit::WebInputEvent;
 using WebKit::WebInputEventFactory;
@@ -2073,7 +2073,7 @@ void RenderWidgetHostViewMac::SetTextInputActive(bool active) {
   return NO;
 }
 
-- (NSUInteger)accessibilityIndexOfChild:(id)child {
+- (NSUInteger)accessibilityGetIndexOf:(id)child {
   BrowserAccessibilityManager* manager =
       renderWidgetHostView_->browser_accessibility_manager_.get();
   // Only child is root.

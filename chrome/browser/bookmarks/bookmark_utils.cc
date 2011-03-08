@@ -262,7 +262,7 @@ int PerformBookmarkDrop(Profile* profile,
       // Drag from same profile. Move nodes.
       for (size_t i = 0; i < dragged_nodes.size(); ++i) {
         model->Move(dragged_nodes[i], parent_node, index);
-        index = parent_node->IndexOfChild(dragged_nodes[i]) + 1;
+        index = parent_node->GetIndexOf(dragged_nodes[i]) + 1;
       }
       return ui::DragDropTypes::DRAG_MOVE;
     }
@@ -292,7 +292,7 @@ bool IsValidDropLocation(Profile* profile,
       // nodes being dragged.
       const BookmarkNode* node = nodes[i];
       int node_index = (drop_parent == node->GetParent()) ?
-          drop_parent->IndexOfChild(nodes[i]) : -1;
+          drop_parent->GetIndexOf(nodes[i]) : -1;
       if (node_index != -1 && (index == node_index || index == node_index + 1))
         return false;
 
@@ -404,7 +404,7 @@ void CopyToClipboard(BookmarkModel* model,
   if (remove_nodes) {
     for (size_t i = 0; i < nodes.size(); ++i) {
       model->Remove(nodes[i]->GetParent(),
-                    nodes[i]->GetParent()->IndexOfChild(nodes[i]));
+                    nodes[i]->GetParent()->GetIndexOf(nodes[i]));
     }
   }
 }
@@ -649,7 +649,7 @@ const BookmarkNode* GetParentForNewNodes(
 
   if (index) {
     if (selection.size() == 1 && selection[0]->is_url()) {
-      *index = real_parent->IndexOfChild(selection[0]) + 1;
+      *index = real_parent->GetIndexOf(selection[0]) + 1;
       if (*index == 0) {
         // Node doesn't exist in parent, add to end.
         NOTREACHED();

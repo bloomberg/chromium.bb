@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -11,8 +11,8 @@
 #include "base/scoped_vector.h"
 #include "build/build_config.h"
 #include "chrome/browser/bookmarks/bookmark_index.h"
-#include "chrome/browser/bookmarks/bookmark_utils.h"
 #include "chrome/browser/bookmarks/bookmark_storage.h"
+#include "chrome/browser/bookmarks/bookmark_utils.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/history/history_notifications.h"
 #include "chrome/browser/profiles/profile.h"
@@ -194,7 +194,7 @@ void BookmarkModel::Move(const BookmarkNode* node,
   SetDateGroupModified(new_parent, Time::Now());
 
   const BookmarkNode* old_parent = node->GetParent();
-  int old_index = old_parent->IndexOfChild(node);
+  int old_index = old_parent->GetIndexOf(node);
 
   if (old_parent == new_parent &&
       (index == old_index || index == old_index + 1)) {
@@ -468,7 +468,7 @@ void BookmarkModel::SetURLStarred(const GURL& url,
     // Remove all the bookmarks.
     for (size_t i = 0; i < bookmarks.size(); ++i) {
       const BookmarkNode* node = bookmarks[i];
-      Remove(node->GetParent(), node->GetParent()->IndexOfChild(node));
+      Remove(node->GetParent(), node->GetParent()->GetIndexOf(node));
     }
   }
 }
@@ -598,7 +598,7 @@ void BookmarkModel::RemoveAndDeleteNode(BookmarkNode* delete_me) {
 
   BookmarkNode* parent = AsMutable(node->GetParent());
   DCHECK(parent);
-  int index = parent->IndexOfChild(node.get());
+  int index = parent->GetIndexOf(node.get());
   parent->Remove(index);
   history::URLsStarredDetails details(false);
   {

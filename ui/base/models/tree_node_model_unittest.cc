@@ -171,7 +171,7 @@ TEST_F(TreeNodeModelTest, RemoveAllNodes) {
 // |-- child1
 // |   |-- foo1
 // +-- child2
-TEST_F(TreeNodeModelTest, IndexOfChild) {
+TEST_F(TreeNodeModelTest, GetIndexOf) {
   TreeNodeWithValue<int>* root =
       new TreeNodeWithValue<int>(ASCIIToUTF16("root"), 0);
   TreeNodeModel<TreeNodeWithValue<int> > model(root);
@@ -190,10 +190,10 @@ TEST_F(TreeNodeModelTest, IndexOfChild) {
       new TreeNodeWithValue<int>(ASCIIToUTF16("foo1"), 0);
   model.Add(child1, 0, foo1);
 
-  ASSERT_EQ(0, model.IndexOfChild(root, child1));
-  ASSERT_EQ(1, model.IndexOfChild(root, child2));
-  ASSERT_EQ(0, model.IndexOfChild(child1, foo1));
-  ASSERT_EQ(-1, model.IndexOfChild(root, foo1));
+  ASSERT_EQ(0, model.GetIndexOf(root, child1));
+  ASSERT_EQ(1, model.GetIndexOf(root, child2));
+  ASSERT_EQ(0, model.GetIndexOf(child1, foo1));
+  ASSERT_EQ(-1, model.GetIndexOf(root, foo1));
 }
 
 // Verify whether a specified node has or not an ancestor.

@@ -644,7 +644,7 @@ void RecordAppLaunch(Profile* profile, GURL url) {
     int index = -1;
     if (node != bookmarkModel_->GetBookmarkBarNode() && !node->is_folder()) {
       const BookmarkNode* parent = node->GetParent();
-      index = parent->IndexOfChild(node) + 1;
+      index = parent->GetIndexOf(node) + 1;
       if (index > parent->GetChildCount())
         index = -1;
       node = parent;
@@ -657,7 +657,7 @@ void RecordAppLaunch(Profile* profile, GURL url) {
   const BookmarkNode* node = [self nodeFromMenuItem:sender];
   if (node) {
     bookmarkModel_->Remove(node->GetParent(),
-                           node->GetParent()->IndexOfChild(node));
+                           node->GetParent()->GetIndexOf(node));
   }
 }
 
@@ -720,7 +720,7 @@ void RecordAppLaunch(Profile* profile, GURL url) {
     newIndex = parent->GetChildCount();
   } else {
     parent = senderNode->GetParent();
-    newIndex = parent->IndexOfChild(senderNode) + 1;
+    newIndex = parent->GetIndexOf(senderNode) + 1;
   }
   BookmarkNameFolderController* controller =
       [[BookmarkNameFolderController alloc]
@@ -1758,7 +1758,7 @@ static BOOL ValueInRangeInclusive(CGFloat low, CGFloat value, CGFloat high) {
     const BookmarkNode* afterNode =
         [buttonToTheRightOfDraggedButton bookmarkNode];
     DCHECK(afterNode);
-    int index = afterNode->GetParent()->IndexOfChild(afterNode);
+    int index = afterNode->GetParent()->GetIndexOf(afterNode);
     // Make sure we don't get confused by buttons which aren't visible.
     return std::min(index, displayedButtonCount_);
   }
@@ -2065,7 +2065,7 @@ static BOOL ValueInRangeInclusive(CGFloat low, CGFloat value, CGFloat high) {
   if (node) {
     const BookmarkNode* parent = node->GetParent();
     bookmarkModel_->Remove(parent,
-                           parent->IndexOfChild(node));
+                           parent->GetIndexOf(node));
   }
 }
 

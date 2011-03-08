@@ -205,7 +205,7 @@ BookmarkBubbleGtk::~BookmarkBubbleGtk() {
     BookmarkModel* model = profile_->GetBookmarkModel();
     const BookmarkNode* node = model->GetMostRecentlyAddedNodeForURL(url_);
     if (node)
-      model->Remove(node->GetParent(), node->GetParent()->IndexOfChild(node));
+      model->Remove(node->GetParent(), node->GetParent()->GetIndexOf(node));
   }
 }
 

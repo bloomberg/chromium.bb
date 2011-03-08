@@ -1156,7 +1156,7 @@ static BOOL ValueInRangeInclusive(CGFloat low, CGFloat value, CGFloat high) {
                                        bookmarkNode];
   DCHECK(beforeNode);
   // Be careful if the number of buttons != number of nodes.
-  return ((beforeNode->GetParent()->IndexOfChild(beforeNode) + 1) -
+  return ((beforeNode->GetParent()->GetIndexOf(beforeNode) + 1) -
           [[parentButton_ cell] startingChildIndex]);
 }
 
@@ -1279,7 +1279,7 @@ static BOOL ValueInRangeInclusive(CGFloat low, CGFloat value, CGFloat high) {
   if (node) {
     const BookmarkNode* parent = node->GetParent();
     [self bookmarkModel]->Remove(parent,
-                                 parent->IndexOfChild(node));
+                                 parent->GetIndexOf(node));
   }
 }
 

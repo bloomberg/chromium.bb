@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -23,7 +23,7 @@ DictionaryValue* GetNodeDictionary(const BookmarkNode* node,
   const BookmarkNode* parent = node->GetParent();
   if (parent) {
     dict->SetString(keys::kParentIdKey, base::Int64ToString(parent->id()));
-    dict->SetInteger(keys::kIndexKey, parent->IndexOfChild(node));
+    dict->SetInteger(keys::kIndexKey, parent->GetIndexOf(node));
   }
 
   if (!node->is_folder()) {
@@ -101,7 +101,7 @@ bool RemoveNode(BookmarkModel* model,
   }
 
   const BookmarkNode* parent = node->GetParent();
-  int index = parent->IndexOfChild(node);
+  int index = parent->GetIndexOf(node);
   model->Remove(parent, index);
   return true;
 }

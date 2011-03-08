@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -209,7 +209,7 @@ class CookiesTreeModelTest : public testing::Test {
     // find the parent and index
     CookieTreeNode* parent_node = node->GetParent();
     DCHECK(parent_node);
-    int ct_node_index = parent_node->IndexOfChild(node);
+    int ct_node_index = parent_node->GetIndexOf(node);
     delete parent_node->GetModel()->Remove(parent_node, ct_node_index);
   }
  protected:

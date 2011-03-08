@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 #include "chrome/browser/sync/glue/bookmark_change_processor.h"
@@ -107,7 +107,7 @@ void BookmarkChangeProcessor::RemoveSyncNodeHierarchy(
   int index = 0;
   while (node) {
     // The top of |index_stack| should always be |node|'s index.
-    DCHECK(!node->GetParent() || (node->GetParent()->IndexOfChild(node) ==
+    DCHECK(!node->GetParent() || (node->GetParent()->GetIndexOf(node) ==
       index_stack.top()));
     if (index == node->GetChildCount()) {
       // If we've processed all of |node|'s children, delete |node| and move
@@ -214,7 +214,7 @@ void BookmarkChangeProcessor::BookmarkNodeChanged(BookmarkModel* model,
             sync_node.GetParentId()),
             node->GetParent());
   // This node's index should be one more than the predecessor's index.
-  DCHECK_EQ(node->GetParent()->IndexOfChild(node),
+  DCHECK_EQ(node->GetParent()->GetIndexOf(node),
             CalculateBookmarkModelInsertionIndex(node->GetParent(),
                                                  &sync_node));
 }
@@ -343,7 +343,7 @@ int BookmarkChangeProcessor::CalculateBookmarkModelInsertionIndex(
       model_associator_->GetChromeNodeFromSyncId(predecessor_id);
   DCHECK(predecessor);
   DCHECK_EQ(predecessor->GetParent(), parent);
-  return parent->IndexOfChild(predecessor) + 1;
+  return parent->GetIndexOf(predecessor) + 1;
 }
 
 // ApplyModelChanges is called by the sync backend after changes have been made
@@ -410,7 +410,7 @@ void BookmarkChangeProcessor::ApplyChangesFromSyncModel(
       }
       DCHECK_EQ(dst->GetChildCount(), 0) << "Node being deleted has children";
       model_associator_->Disassociate(changes[i].id);
-      model->Remove(parent, parent->IndexOfChild(dst));
+      model->Remove(parent, parent->GetIndexOf(dst));
       dst = NULL;
     } else {
       DCHECK_EQ((changes[i].action ==
@@ -432,7 +432,7 @@ void BookmarkChangeProcessor::ApplyChangesFromSyncModel(
     // There should be no nodes left under the foster parent.
     DCHECK_EQ(foster_parent->GetChildCount(), 0);
     model->Remove(foster_parent->GetParent(),
-                  foster_parent->GetParent()->IndexOfChild(foster_parent));
+                  foster_parent->GetParent()->GetIndexOf(foster_parent));
     foster_parent = NULL;
   }
 

@@ -1,11 +1,11 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "chrome/test/live_sync/bookmark_model_verifier.h"
 
-#include <vector>
 #include <stack>
+#include <vector>
 
 #include "base/rand_util.h"
 #include "base/string_number_conversions.h"
@@ -85,11 +85,11 @@ bool BookmarkModelVerifier::NodesMatch(const BookmarkNode* node_a,
                << node_b->GetURL();
     return false;
   }
-  if (node_a->GetParent()->IndexOfChild(node_a) !=
-      node_b->GetParent()->IndexOfChild(node_b)) {
+  if (node_a->GetParent()->GetIndexOf(node_a) !=
+      node_b->GetParent()->GetIndexOf(node_b)) {
     LOG(ERROR) << "Index mismatch: "
-               << node_a->GetParent()->IndexOfChild(node_a) << " vs. "
-               << node_b->GetParent()->IndexOfChild(node_b);
+               << node_a->GetParent()->GetIndexOf(node_a) << " vs. "
+               << node_b->GetParent()->GetIndexOf(node_b);
     return false;
   }
   return true;
@@ -186,7 +186,7 @@ void BookmarkModelVerifier::FindNodeInVerifier(BookmarkModel* foreign_model,
   std::stack<int> path;
   const BookmarkNode* walker = foreign_node;
   while (walker != foreign_model->root_node()) {
-    path.push(walker->GetParent()->IndexOfChild(walker));
+    path.push(walker->GetParent()->GetIndexOf(walker));
     walker = walker->GetParent();
   }
 

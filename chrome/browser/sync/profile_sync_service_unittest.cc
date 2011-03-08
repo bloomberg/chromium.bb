@@ -1,17 +1,16 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include <stack>
 #include <vector>
 
-#include "testing/gtest/include/gtest/gtest.h"
 #include "base/file_util.h"
 #include "base/message_loop.h"
 #include "base/scoped_ptr.h"
+#include "base/string16.h"
 #include "base/string_number_conversions.h"
 #include "base/string_util.h"
-#include "base/string16.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
@@ -20,10 +19,10 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sync/abstract_profile_sync_service_test.h"
 #include "chrome/browser/sync/engine/syncapi.h"
-#include "chrome/browser/sync/glue/change_processor.h"
 #include "chrome/browser/sync/glue/bookmark_change_processor.h"
 #include "chrome/browser/sync/glue/bookmark_data_type_controller.h"
 #include "chrome/browser/sync/glue/bookmark_model_associator.h"
+#include "chrome/browser/sync/glue/change_processor.h"
 #include "chrome/browser/sync/glue/data_type_controller.h"
 #include "chrome/browser/sync/glue/model_associator.h"
 #include "chrome/browser/sync/glue/sync_backend_host.h"
@@ -32,14 +31,15 @@
 #include "chrome/browser/sync/js_test_util.h"
 #include "chrome/browser/sync/profile_sync_factory.h"
 #include "chrome/browser/sync/profile_sync_factory_mock.h"
-#include "chrome/browser/sync/test_profile_sync_service.h"
 #include "chrome/browser/sync/profile_sync_test_util.h"
+#include "chrome/browser/sync/test_profile_sync_service.h"
 #include "chrome/common/net/gaia/gaia_constants.h"
 #include "chrome/common/pref_names.h"
-#include "chrome/test/testing_profile.h"
 #include "chrome/test/testing_pref_service.h"
+#include "chrome/test/testing_profile.h"
 #include "content/browser/browser_thread.h"
 #include "testing/gmock/include/gmock/gmock.h"
+#include "testing/gtest/include/gtest/gtest.h"
 
 using std::vector;
 using browser_sync::AssociatorInterface;
@@ -392,7 +392,7 @@ class ProfileSyncServiceTest : public testing::Test {
       EXPECT_EQ(bnode->GetURL(), gnode.GetURL());
 
     // Check for position matches.
-    int browser_index = bnode->GetParent()->IndexOfChild(bnode);
+    int browser_index = bnode->GetParent()->GetIndexOf(bnode);
     if (browser_index == 0) {
       EXPECT_EQ(gnode.GetPredecessorId(), 0);
     } else {
@@ -479,8 +479,8 @@ class ProfileSyncServiceTest : public testing::Test {
 
   void ExpectModelMatch(sync_api::BaseTransaction* trans) {
     const BookmarkNode* root = model_->root_node();
-    EXPECT_EQ(root->IndexOfChild(model_->GetBookmarkBarNode()), 0);
-    EXPECT_EQ(root->IndexOfChild(model_->other_node()), 1);
+    EXPECT_EQ(root->GetIndexOf(model_->GetBookmarkBarNode()), 0);
+    EXPECT_EQ(root->GetIndexOf(model_->other_node()), 1);
 
     std::stack<int64> stack;
     stack.push(bookmark_bar_id());
@@ -613,11 +613,11 @@ TEST_F(ProfileSyncServiceTest, BookmarkModelOperations) {
 
   // Test deletion.
   // Delete a single item.
-  model_->Remove(url2->GetParent(), url2->GetParent()->IndexOfChild(url2));
+  model_->Remove(url2->GetParent(), url2->GetParent()->GetIndexOf(url2));
   ExpectModelMatch();
   // Delete an item with several children.
   model_->Remove(folder2->GetParent(),
-                 folder2->GetParent()->IndexOfChild(folder2));
+                 folder2->GetParent()->GetIndexOf(folder2));
   ExpectModelMatch();
 }
 

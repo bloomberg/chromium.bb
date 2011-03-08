@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -395,7 +395,7 @@ bool GetState(BrowserAccessibility* accessibility, int state) {
 }
 
 // Returns the index of the child in this objects array of children.
-- (NSUInteger)accessibilityIndexOfChild:(id)child {
+- (NSUInteger)accessibilityGetIndexOf:(id)child {
   NSUInteger index = 0;
   for (BrowserAccessibilityCocoa* childToCheck in [self children]) {
     if ([child isEqual:childToCheck])

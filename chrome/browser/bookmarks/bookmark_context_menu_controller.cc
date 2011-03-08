@@ -159,7 +159,7 @@ void BookmarkContextMenuController::ExecuteCommand(int id) {
 
       for (size_t i = 0; i < selection_.size(); ++i) {
         model_->Remove(selection_[i]->GetParent(),
-                      selection_[i]->GetParent()->IndexOfChild(selection_[i]));
+                       selection_[i]->GetParent()->GetIndexOf(selection_[i]));
       }
       selection_.clear();
       break;

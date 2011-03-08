@@ -163,7 +163,7 @@ int BookmarkMenuController::GetDropOperation(
 
   const BookmarkNode* node = menu_id_to_node_map_[item->GetCommand()];
   const BookmarkNode* drop_parent = node->GetParent();
-  int index_to_drop_at = drop_parent->IndexOfChild(node);
+  int index_to_drop_at = drop_parent->GetIndexOf(node);
   if (*position == DROP_AFTER) {
     index_to_drop_at++;
   } else if (*position == DROP_ON) {
@@ -184,7 +184,7 @@ int BookmarkMenuController::OnPerformDrop(MenuItemView* menu,
   DCHECK(model);
   const BookmarkNode* drop_parent = drop_node->GetParent();
   DCHECK(drop_parent);
-  int index_to_drop_at = drop_parent->IndexOfChild(drop_node);
+  int index_to_drop_at = drop_parent->GetIndexOf(drop_node);
   if (position == DROP_AFTER) {
     index_to_drop_at++;
   } else if (position == DROP_ON) {

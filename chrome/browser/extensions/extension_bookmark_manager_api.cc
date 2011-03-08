@@ -245,7 +245,7 @@ bool PasteBookmarkManagerFunction::RunImpl() {
   int highest_index = -1;  // -1 means insert at end of list.
   for (size_t node = 0; node < nodes.size(); ++node) {
     // + 1 so that we insert after the selection.
-    int this_node_index = parent_node->IndexOfChild(nodes[node]) + 1;
+    int this_node_index = parent_node->GetIndexOf(nodes[node]) + 1;
     if (this_node_index > highest_index)
       highest_index = this_node_index;
   }

@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -523,7 +523,7 @@ TEST_F(BookmarkBarControllerTest, NoItemContainerGoesAway) {
                                            ASCIIToUTF16("title"),
                                            GURL("http://www.google.com"));
   EXPECT_TRUE([noItemContainer isHidden]);
-  model->Remove(bar, bar->IndexOfChild(node));
+  model->Remove(bar, bar->GetIndexOf(node));
   EXPECT_FALSE([noItemContainer isHidden]);
 
   // Now try it using a bookmark from the Other Bookmarks.
@@ -1526,7 +1526,7 @@ TEST_F(BookmarkBarControllerTest, NodeDeletedWhileMenuIsOpen) {
 
   // Now delete the node and make sure things are happy (no crash,
   // NULL node caught).
-  model->Remove(parent, parent->IndexOfChild(initialNode));
+  model->Remove(parent, parent->GetIndexOf(initialNode));
   EXPECT_EQ(nil, [bar_ nodeFromMenuItem:item]);
   // Should not crash by referencing a deleted node.
   [bar_ openBookmarkInNewWindow:item];
@@ -1563,7 +1563,7 @@ TEST_F(BookmarkBarControllerTest, NodeDeletedWhileContextMenuIsOpen) {
   [bar_ setButtonContextMenu:fakeMenu];
 
   // Force a delete which should cancelTracking on the menu.
-  model->Remove(framma->GetParent(), framma->GetParent()->IndexOfChild(framma));
+  model->Remove(framma->GetParent(), framma->GetParent()->GetIndexOf(framma));
 
   // Restore, then confirm cancelTracking was called.
   [bar_ setButtonContextMenu:origMenu];

@@ -175,7 +175,7 @@ class BookmarkBarFolderControllerTest : public CocoaTest {
   void RemoveLongTitleNode() {
     BookmarkModel* model = helper_.profile()->GetBookmarkModel();
     model->Remove(longTitleNode_->GetParent(),
-                  longTitleNode_->GetParent()->IndexOfChild(longTitleNode_));
+                  longTitleNode_->GetParent()->GetIndexOf(longTitleNode_));
   }
 
   // Add LOTS of nodes to our model if needed (e.g. scrolling).

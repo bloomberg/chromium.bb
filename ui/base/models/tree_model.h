@@ -59,16 +59,16 @@ class TreeModel {
   // see SetRootShown for details.
   virtual TreeModelNode* GetRoot() = 0;
 
-  // Returns the number of children in the specified node.
+  // Returns the number of children in |parent|.
   virtual int GetChildCount(TreeModelNode* parent) = 0;
 
-  // Returns the child node at the specified index.
+  // Returns the child node of |parent| at |index|.
   virtual TreeModelNode* GetChild(TreeModelNode* parent, int index) = 0;
 
-  // Returns the index of child node at the specified index.
-  virtual int IndexOfChild(TreeModelNode* parent, TreeModelNode* child) = 0;
+  // Returns the index of |child| in |parent|.
+  virtual int GetIndexOf(TreeModelNode* parent, TreeModelNode* child) = 0;
 
-  // Returns the parent of a node, or NULL if node is the root.
+  // Returns the parent of |node|, or NULL if |node| is the root.
   virtual TreeModelNode* GetParent(TreeModelNode* node) = 0;
 
   // Adds an observer of the model.
@@ -77,7 +77,7 @@ class TreeModel {
   // Removes an observer of the model.
   virtual void RemoveObserver(TreeModelObserver* observer) = 0;
 
-  // Sets the title of the specified node.
+  // Sets the title of |node|.
   // This is only invoked if the node is editable and the user edits a node.
   virtual void SetTitle(TreeModelNode* node, const string16& title);
 

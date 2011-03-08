@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -354,7 +354,7 @@ TEST_F(BookmarkEditorControllerTreeTest, RenameBookmarkInPlace) {
   UpdateBB3();
   const BookmarkNode* newParent = bookmark_bb_3_->GetParent();
   ASSERT_EQ(newParent, oldParent);
-  int childIndex = newParent->IndexOfChild(bookmark_bb_3_);
+  int childIndex = newParent->GetIndexOf(bookmark_bb_3_);
   ASSERT_EQ(3, childIndex);
 }
 
@@ -365,7 +365,7 @@ TEST_F(BookmarkEditorControllerTreeTest, ChangeBookmarkURLInPlace) {
   UpdateBB3();
   const BookmarkNode* newParent = bookmark_bb_3_->GetParent();
   ASSERT_EQ(newParent, oldParent);
-  int childIndex = newParent->IndexOfChild(bookmark_bb_3_);
+  int childIndex = newParent->GetIndexOf(bookmark_bb_3_);
   ASSERT_EQ(3, childIndex);
 }
 
@@ -375,7 +375,7 @@ TEST_F(BookmarkEditorControllerTreeTest, ChangeBookmarkGroup) {
   UpdateBB3();
   const BookmarkNode* parent = bookmark_bb_3_->GetParent();
   ASSERT_EQ(parent, group_c_);
-  int childIndex = parent->IndexOfChild(bookmark_bb_3_);
+  int childIndex = parent->GetIndexOf(bookmark_bb_3_);
   ASSERT_EQ(4, childIndex);
 }
 
@@ -386,7 +386,7 @@ TEST_F(BookmarkEditorControllerTreeTest, ChangeNameAndBookmarkGroup) {
   UpdateBB3();
   const BookmarkNode* parent = bookmark_bb_3_->GetParent();
   ASSERT_EQ(parent, group_c_);
-  int childIndex = parent->IndexOfChild(bookmark_bb_3_);
+  int childIndex = parent->GetIndexOf(bookmark_bb_3_);
   ASSERT_EQ(4, childIndex);
   EXPECT_EQ(bookmark_bb_3_->GetTitle(), ASCIIToUTF16("NEW NAME"));
 }

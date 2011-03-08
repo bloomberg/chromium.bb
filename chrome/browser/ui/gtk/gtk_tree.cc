@@ -410,7 +410,7 @@ GtkTreePath* TreeAdapter::GetTreePath(ui::TreeModelNode* node) {
   while (parent) {
     parent = tree_model_->GetParent(parent);
     if (parent) {
-      int idx = tree_model_->IndexOfChild(parent, node);
+      int idx = tree_model_->GetIndexOf(parent, node);
       gtk_tree_path_prepend_index(path, idx);
       node = parent;
     }

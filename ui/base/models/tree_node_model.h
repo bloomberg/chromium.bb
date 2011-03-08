@@ -86,7 +86,7 @@ class TreeNode : public TreeModelNode {
     // If the node has a parent, remove it from its parent.
     NodeType* node_parent = child->GetParent();
     if (node_parent)
-      node_parent->Remove(node_parent->IndexOfChild(child));
+      node_parent->Remove(node_parent->GetIndexOf(child));
     child->parent_ = static_cast<NodeType*>(this);
     children_->insert(children_->begin() + index, child);
   }
@@ -143,8 +143,8 @@ class TreeNode : public TreeModelNode {
     return parent_;
   }
 
-  // Returns the index of the specified child, or -1 if node is a not a child.
-  int IndexOfChild(const NodeType* node) const {
+  // Returns the index of |node|, or -1 if |node| is not a child of this.
+  int GetIndexOf(const NodeType* node) const {
     DCHECK(node);
     typename std::vector<NodeType*>::const_iterator i =
         std::find(children_->begin(), children_->end(), node);
@@ -249,9 +249,9 @@ class TreeNodeModel : public TreeModel {
     return AsNode(parent)->GetChild(index);
   }
 
-  virtual int IndexOfChild(TreeModelNode* parent, TreeModelNode* child) {
+  virtual int GetIndexOf(TreeModelNode* parent, TreeModelNode* child) {
     DCHECK(parent);
-    return AsNode(parent)->IndexOfChild(AsNode(child));
+    return AsNode(parent)->GetIndexOf(AsNode(child));
   }
 
   virtual TreeModelNode* GetParent(TreeModelNode* node) {

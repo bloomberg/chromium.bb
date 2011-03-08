@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -644,7 +644,7 @@ void CookiesTreeModel::DeleteCookieNode(CookieTreeNode* cookie_node) {
   cookie_node->DeleteStoredObjects();
   // find the parent and index
   CookieTreeNode* parent_node = cookie_node->GetParent();
-  int cookie_node_index = parent_node->IndexOfChild(cookie_node);
+  int cookie_node_index = parent_node->GetIndexOf(cookie_node);
   delete Remove(parent_node, cookie_node_index);
   if (parent_node->GetChildCount() == 0)
     DeleteCookieNode(parent_node);

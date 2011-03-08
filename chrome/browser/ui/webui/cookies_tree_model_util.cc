@@ -208,7 +208,7 @@ CookieTreeNode* GetTreeNodeFromPath(CookieTreeNode* root,
     child = reinterpret_cast<CookieTreeNode*>(
         HexStringToPointer(node_ids[i]));
 
-    child_index = parent->IndexOfChild(child);
+    child_index = parent->GetIndexOf(child);
     if (child_index == -1)
       break;
 

@@ -92,7 +92,7 @@ IN_PROC_BROWSER_TEST_F(SingleClientLiveBookmarksSyncTest, Sanity) {
       "Rearrange stuff in tier1_a"));
   ASSERT_TRUE(ModelMatchesVerifier(0));
 
-  ASSERT_EQ(1, tier1_a_url0->GetParent()->IndexOfChild(tier1_a_url0));
+  ASSERT_EQ(1, tier1_a_url0->GetParent()->GetIndexOf(tier1_a_url0));
   Move(0, tier1_a_url0, bar, bar->GetChildCount());
   const BookmarkNode* boa = AddURL(0, bar, bar->GetChildCount(),
       L"Bank of America", GURL("https://www.bankofamerica.com"));
