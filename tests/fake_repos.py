@@ -18,10 +18,9 @@ import subprocess
 import sys
 import tempfile
 import time
-import unittest
 
-sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-
+# trial_dir must be first for non-system libraries.
+from tests import trial_dir
 import scm
 
 ## Utility functions
@@ -230,14 +229,6 @@ class FakeReposBase(object):
 
   populateSvn() and populateGit() need to be implemented by the subclass.
   """
-
-  # When SHOULD_LEAK is set to True, temporary directories created while the
-  # tests are running aren't deleted at the end of the tests. Expect failures
-  # when running more than one test due to inter-test side-effects. Helps with
-  # debugging.
-  SHOULD_LEAK = False
-  # Override if unhappy.
-  TRIAL_DIR = None
   # Hostname
   NB_GIT_REPOS = 1
   USERS = [
@@ -245,20 +236,14 @@ class FakeReposBase(object):
       ('user2@example.com', 'bar'),
   ]
 
-  def __init__(self, trial_dir=None, leak=None, host=None):
+  def __init__(self, host=None):
     global _FAKE_LOADED
     if _FAKE_LOADED:
       raise Exception('You can only start one FakeRepos at a time.')
     _FAKE_LOADED = True
-    # Quick hack.
-    if '-v' in sys.argv:
-      logging.basicConfig(level=logging.DEBUG)
-    elif leak is not None:
-      self.SHOULD_LEAK = leak
-    self.host = host or '127.0.0.1'
-    if trial_dir:
-      self.TRIAL_DIR = trial_dir
 
+    self.trial = trial_dir.TrialDir('repos')
+    self.host = host or '127.0.0.1'
     # Format is [ None, tree, tree, ...]
     # i.e. revisions are 1-based.
     self.svn_revs = [None]
@@ -269,8 +254,6 @@ class FakeReposBase(object):
     self.git_hashes = {}
     self.svnserve = None
     self.gitdaemon = None
-    self.common_init = False
-    self.repos_dir = None
     self.git_pid_file = None
     self.git_root = None
     self.svn_checkout = None
@@ -282,28 +265,24 @@ class FakeReposBase(object):
     self.svn_port = 3690
     self.git_port = 9418
 
-  def trial_dir(self):
-    if not self.TRIAL_DIR:
-      self.TRIAL_DIR = os.path.join(
-          os.path.dirname(os.path.abspath(__file__)), '_trial')
-    return self.TRIAL_DIR
+  @property
+  def root_dir(self):
+    return self.trial.root_dir
 
   def set_up(self):
-    """All late initialization comes here.
-
-    Note that it deletes all trial_dir() and not only repos_dir.
-    """
+    """All late initialization comes here."""
     self.cleanup_dirt()
-    if not self.common_init:
-      self.common_init = True
-      self.repos_dir = os.path.join(self.trial_dir(), 'repos')
-      self.git_root = join(self.repos_dir, 'git')
-      self.svn_checkout = join(self.repos_dir, 'svn_checkout')
-      self.svn_repo = join(self.repos_dir, 'svn')
-      add_kill()
-      rmtree(self.trial_dir())
-      os.makedirs(self.repos_dir)
-      atexit.register(self.tear_down)
+    if not self.root_dir:
+      try:
+        add_kill()
+        # self.root_dir is not set before this call.
+        self.trial.set_up()
+        self.git_root = join(self.root_dir, 'git')
+        self.svn_checkout = join(self.root_dir, 'svn_checkout')
+        self.svn_repo = join(self.root_dir, 'svn')
+      finally:
+        # Registers cleanup.
+        atexit.register(self.tear_down)
 
   def cleanup_dirt(self):
     """For each dirty repository, destroy it."""
@@ -318,9 +297,9 @@ class FakeReposBase(object):
     """Kills the servers and delete the directories."""
     self.tear_down_svn()
     self.tear_down_git()
-    if not self.SHOULD_LEAK:
-      logging.debug('Removing %s' % self.trial_dir())
-      rmtree(self.trial_dir())
+    # This deletes the directories.
+    self.trial.tear_down()
+    self.trial = None
 
   def tear_down_svn(self):
     if self.svnserve:
@@ -328,7 +307,7 @@ class FakeReposBase(object):
       self.svnserve.kill()
       self.wait_for_port_to_free(self.svn_port)
       self.svnserve = None
-      if not self.SHOULD_LEAK:
+      if not self.trial.SHOULD_LEAK:
         logging.debug('Removing %s' % self.svn_repo)
         rmtree(self.svn_repo)
         logging.debug('Removing %s' % self.svn_checkout)
@@ -349,7 +328,7 @@ class FakeReposBase(object):
         kill_pid(pid)
         self.git_pid_file = None
       self.wait_for_port_to_free(self.git_port)
-      if not self.SHOULD_LEAK:
+      if not self.trial.SHOULD_LEAK:
         logging.debug('Removing %s' % self.git_root)
         rmtree(self.git_root)
       else:
@@ -392,7 +371,7 @@ class FakeReposBase(object):
     write(join(self.svn_repo, 'conf', 'passwd'), text)
 
     # Start the daemon.
-    cmd = ['svnserve', '-d', '--foreground', '-r', self.repos_dir]
+    cmd = ['svnserve', '-d', '--foreground', '-r', self.root_dir]
     if self.host == '127.0.0.1':
       cmd.append('--listen-host=' + self.host)
     self.check_port_is_free(self.svn_port)
@@ -420,12 +399,12 @@ class FakeReposBase(object):
     cmd = ['git', 'daemon',
         '--export-all',
         '--reuseaddr',
-        '--base-path=' + self.repos_dir,
+        '--base-path=' + self.root_dir,
         '--pid-file=' + self.git_pid_file.name]
     if self.host == '127.0.0.1':
       cmd.append('--listen=' + self.host)
     self.check_port_is_free(self.git_port)
-    self.gitdaemon = Popen(cmd, cwd=self.repos_dir)
+    self.gitdaemon = Popen(cmd, cwd=self.root_dir)
     self.wait_for_port_to_bind(self.git_port, self.gitdaemon)
     self.git_dirty = False
     return True
@@ -714,37 +693,22 @@ hooks = [
     })
 
 
-class FakeReposTestBase(unittest.TestCase):
+class FakeReposTestBase(trial_dir.TestCase):
   """This is vaguely inspired by twisted."""
-
-  # Replace this in your subclass.
-  CLASS_ROOT_DIR = None
-
   # static FakeRepos instance. Lazy loaded.
   FAKE_REPOS = None
   # Override if necessary.
   FAKE_REPOS_CLASS = FakeRepos
 
-  def __init__(self, *args, **kwargs):
-    unittest.TestCase.__init__(self, *args, **kwargs)
+  def setUp(self):
+    super(FakeReposTestBase, self).setUp()
     if not FakeReposTestBase.FAKE_REPOS:
       # Lazy create the global instance.
       FakeReposTestBase.FAKE_REPOS = self.FAKE_REPOS_CLASS()
-
-  def setUp(self):
-    unittest.TestCase.setUp(self)
-    self.FAKE_REPOS.set_up()
-
-    # Remove left overs and start fresh.
-    if not self.CLASS_ROOT_DIR:
-      self.CLASS_ROOT_DIR = join(self.FAKE_REPOS.trial_dir(), 'smoke')
-    self.root_dir = join(self.CLASS_ROOT_DIR, self.id())
-    rmtree(self.root_dir)
-    os.makedirs(self.root_dir)
-
-  def tearDown(self):
-    if not self.FAKE_REPOS.SHOULD_LEAK:
-      rmtree(self.root_dir)
+    # No need to call self.FAKE_REPOS.setUp(), it will be called by the child
+    # class.
+    # Do not define tearDown(), since super's version does the right thing and
+    # FAKE_REPOS is kept across tests.
 
   @property
   def svn_base(self):
@@ -824,22 +788,15 @@ class FakeReposTestBase(unittest.TestCase):
 
 def main(argv):
   fake = FakeRepos()
-  print 'Using %s' % fake.trial_dir()
+  print 'Using %s' % fake.root_dir
   try:
     fake.set_up_svn()
     fake.set_up_git()
     print('Fake setup, press enter to quit or Ctrl-C to keep the checkouts.')
     sys.stdin.readline()
   except KeyboardInterrupt:
-    fake.SHOULD_LEAK = True
+    trial_dir.TrialDir.SHOULD_LEAK.leak = True
   return 0
-
-
-if '-l' in sys.argv:
-  # See SHOULD_LEAK definition in FakeReposBase for its purpose.
-  FakeReposBase.SHOULD_LEAK = True
-  print 'Leaking!'
-  sys.argv.remove('-l')
 
 
 if __name__ == '__main__':
