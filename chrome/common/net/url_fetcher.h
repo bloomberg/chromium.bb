@@ -212,6 +212,12 @@ class URLFetcher {
   const std::string& upload_data() const;
 
  private:
+  friend class URLFetcherTest;
+
+  // Only used by URLFetcherTest, returns the number of URLFetcher::Core objects
+  // actively running.
+  static int GetNumFetcherCores();
+
   class Core;
 
   scoped_refptr<Core> core_;

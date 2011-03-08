@@ -28,6 +28,23 @@ namespace {
 
 const FilePath::CharType kDocRoot[] = FILE_PATH_LITERAL("chrome/test/data");
 
+class CurriedTask : public Task {
+ public:
+  CurriedTask(Task* task, MessageLoop* target_loop)
+      : task_(task),
+        target_loop_(target_loop) {}
+
+  virtual void Run() {
+    target_loop_->PostTask(FROM_HERE, task_);
+  }
+
+ private:
+  Task* const task_;
+  MessageLoop* const target_loop_;
+
+  DISALLOW_COPY_AND_ASSIGN(CurriedTask);
+};
+
 class TestURLRequestContextGetter : public URLRequestContextGetter {
  public:
   explicit TestURLRequestContextGetter(
@@ -51,6 +68,8 @@ class TestURLRequestContextGetter : public URLRequestContextGetter {
 
   scoped_refptr<net::URLRequestContext> context_;
 };
+
+}  // namespace
 
 class URLFetcherTest : public testing::Test, public URLFetcher::Delegate {
  public:
@@ -90,6 +109,10 @@ class URLFetcherTest : public testing::Test, public URLFetcher::Delegate {
 #endif
   }
 
+  int GetNumFetcherCores() const {
+    return URLFetcher::GetNumFetcherCores();
+  }
+
   // URLFetcher is designed to run on the main UI thread, but in our tests
   // we assume that the current thread is the IO thread where the URLFetcher
   // dispatches its requests to.  When we wish to simulate being used from
@@ -99,6 +122,34 @@ class URLFetcherTest : public testing::Test, public URLFetcher::Delegate {
 
   URLFetcher* fetcher_;
 };
+
+void URLFetcherTest::CreateFetcher(const GURL& url) {
+  fetcher_ = new URLFetcher(url, URLFetcher::GET, this);
+  fetcher_->set_request_context(new TestURLRequestContextGetter(
+      io_message_loop_proxy()));
+  fetcher_->Start();
+}
+
+void URLFetcherTest::OnURLFetchComplete(const URLFetcher* source,
+                                        const GURL& url,
+                                        const net::URLRequestStatus& status,
+                                        int response_code,
+                                        const ResponseCookies& cookies,
+                                        const std::string& data) {
+  EXPECT_TRUE(status.is_success());
+  EXPECT_EQ(200, response_code);  // HTTP OK
+  EXPECT_FALSE(data.empty());
+
+  delete fetcher_;  // Have to delete this here and not in the destructor,
+                    // because the destructor won't necessarily run on the
+                    // same thread that CreateFetcher() did.
+
+  io_message_loop_proxy()->PostTask(FROM_HERE, new MessageLoop::QuitTask());
+  // If the current message loop is not the IO loop, it will be shut down when
+  // the main loop returns and this thread subsequently goes out of scope.
+}
+
+namespace {
 
 // Version of URLFetcherTest that does a POST instead
 class URLFetcherPostTest : public URLFetcherTest {
@@ -259,32 +310,6 @@ class FetcherWrapperTask : public Task {
   URLFetcherTest* test_;
   GURL url_;
 };
-
-void URLFetcherTest::CreateFetcher(const GURL& url) {
-  fetcher_ = new URLFetcher(url, URLFetcher::GET, this);
-  fetcher_->set_request_context(new TestURLRequestContextGetter(
-      io_message_loop_proxy()));
-  fetcher_->Start();
-}
-
-void URLFetcherTest::OnURLFetchComplete(const URLFetcher* source,
-                                        const GURL& url,
-                                        const net::URLRequestStatus& status,
-                                        int response_code,
-                                        const ResponseCookies& cookies,
-                                        const std::string& data) {
-  EXPECT_TRUE(status.is_success());
-  EXPECT_EQ(200, response_code);  // HTTP OK
-  EXPECT_FALSE(data.empty());
-
-  delete fetcher_;  // Have to delete this here and not in the destructor,
-                    // because the destructor won't necessarily run on the
-                    // same thread that CreateFetcher() did.
-
-  io_message_loop_proxy()->PostTask(FROM_HERE, new MessageLoop::QuitTask());
-  // If the current message loop is not the IO loop, it will be shut down when
-  // the main loop returns and this thread subsequently goes out of scope.
-}
 
 void URLFetcherPostTest::CreateFetcher(const GURL& url) {
   fetcher_ = new URLFetcher(url, URLFetcher::POST, this);
@@ -700,6 +725,23 @@ TEST_F(URLFetcherMultipleAttemptTest, SameData) {
   CreateFetcher(test_server.GetURL("defaultresponse"));
 
   MessageLoop::current()->Run();
+}
+
+// Tests to make sure CancelAll() will successfully cancel existing URLFetchers.
+TEST_F(URLFetcherTest, CancelAll) {
+  net::TestServer test_server(net::TestServer::TYPE_HTTP, FilePath(kDocRoot));
+  ASSERT_TRUE(test_server.Start());
+  EXPECT_EQ(0, GetNumFetcherCores());
+
+  CreateFetcher(test_server.GetURL("defaultresponse"));
+  io_message_loop_proxy()->PostTask(
+      FROM_HERE,
+      new CurriedTask(new MessageLoop::QuitTask(), MessageLoop::current()));
+  MessageLoop::current()->Run();
+  EXPECT_EQ(1, GetNumFetcherCores());
+  URLFetcher::CancelAll();
+  EXPECT_EQ(0, GetNumFetcherCores());
+  delete fetcher_;
 }
 
 }  // namespace.

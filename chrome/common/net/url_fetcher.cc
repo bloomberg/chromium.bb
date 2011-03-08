@@ -77,6 +77,10 @@ class URLFetcher::Core
 
     void CancelAll();
 
+    int size() const {
+      return fetchers_.size();
+    }
+
    private:
     std::set<Core*> fetchers_;
 
@@ -181,12 +185,8 @@ void URLFetcher::Core::Registry::RemoveURLFetcherCore(Core* core) {
 }
 
 void URLFetcher::Core::Registry::CancelAll() {
-  std::set<Core*> fetchers;
-  fetchers.swap(fetchers_);
-
-  for (std::set<Core*>::iterator it = fetchers.begin();
-       it != fetchers.end(); ++it)
-    (*it)->CancelURLRequest();
+  while (!fetchers_.empty())
+    (*fetchers_.begin())->CancelURLRequest();
 }
 
 // static
@@ -577,6 +577,11 @@ void URLFetcher::ReceivedContentWasMalformed() {
 // static
 void URLFetcher::CancelAll() {
   Core::CancelAll();
+}
+
+// static
+int URLFetcher::GetNumFetcherCores() {
+  return Core::g_registry.Get().size();
 }
 
 URLFetcher::Delegate* URLFetcher::delegate() const {
