@@ -1213,3 +1213,9 @@
    Heapcheck:Leak
    fun:remoting::ChromotingHostTest::SetUp
 }
+{
+   bug_75224
+   Heapcheck:Leak
+   fun:AutofillDownloadTestHelper
+   fun:AutoFillDownloadTest_*Test_Test::TestBody
+}
