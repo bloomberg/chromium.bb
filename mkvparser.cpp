@@ -6303,8 +6303,22 @@ long Cluster::Parse(long long& pos, long& len) const
         //const long long block_start = pos;
         const long long block_stop = pos + size;
 
-        if ((cluster_stop >= 0) && (block_stop > cluster_stop))
-            return E_FILE_FORMAT_INVALID;
+        if (cluster_stop >= 0)
+        {
+            if (block_stop > cluster_stop)
+                return E_FILE_FORMAT_INVALID;
+        }
+        else if ((total >= 0) && (block_stop > total))
+        {
+            m_element_size = total - m_element_start;
+            pos = total;
+            break;
+        }
+        else if (block_stop > avail)
+        {
+            len = static_cast<long>(size);
+            return E_BUFFER_NOT_FULL;
+        }
 
         if (id == 0x20)  //BlockGroup
             return ParseBlockGroup(size, pos, len);
@@ -6318,6 +6332,7 @@ long Cluster::Parse(long long& pos, long& len) const
 
     assert(m_element_size > 0);
 
+#ifdef _DEBUG
     if (m_entries_count > 0)
     {
         const long idx = m_entries_count - 1;
@@ -6338,13 +6353,18 @@ long Cluster::Parse(long long& pos, long& len) const
 
         if ((total >= 0) && (stop > total))
         {
+#if 0
             --m_entries_count;
             assert(m_entries_count > 0);  //TODO
 
             m_entries[idx] = 0;
             delete pLast;
+#else
+            assert(false);
+#endif
         }
     }
+#endif
 
     m_pos = pos;
     assert((cluster_stop < 0) || (m_pos <= cluster_stop));
