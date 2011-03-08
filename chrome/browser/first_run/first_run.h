@@ -245,7 +245,10 @@ class Upgrade {
   // above for the possible outcomes of the function. This is an experimental,
   // non-localized dialog.
   // |version| can be 0, 1 or 2 and selects what strings to present.
-  static TryResult ShowTryChromeDialog(size_t version);
+  // |process_singleton| needs to be valid and it will be locked while
+  // the dialog is shown.
+  static TryResult ShowTryChromeDialog(size_t version,
+                                       ProcessSingleton* process_singleton);
 #endif  // OS_WIN
 
   // Launches chrome again simulating a 'user' launch. If chrome could not

@@ -585,7 +585,7 @@ class TryChromeDialog : public views::ButtonListener,
   // Shows the modal dialog asking the user to try chrome. Note that the dialog
   // has no parent and it will position itself in a lower corner of the screen.
   // The dialog does not steal focus and does not have an entry in the taskbar.
-  Upgrade::TryResult ShowModal() {
+  Upgrade::TryResult ShowModal(ProcessSingleton* process_singleton) {
     using views::GridLayout;
     ResourceBundle& rb = ResourceBundle::GetSharedInstance();
 
@@ -600,6 +600,7 @@ class TryChromeDialog : public views::ButtonListener,
       NOTREACHED();
       return Upgrade::TD_DIALOG_ERROR;
     }
+
     popup->set_delete_on_destroy(true);
     popup->set_window_style(WS_POPUP | WS_CLIPCHILDREN);
     popup->set_window_ex_style(WS_EX_TOOLWINDOW);
@@ -730,10 +731,14 @@ class TryChromeDialog : public views::ButtonListener,
     // Carve the toast shape into the window.
     SetToastRegion(popup->GetNativeView(),
                    preferred.width(), preferred.height());
-    // Time to show the window in a modal loop.
     popup_ = popup;
+
+    // Time to show the window in a modal loop. We don't want this chrome
+    // instance trying to serve WM_COPYDATA requests, as we'll surely crash.
+    process_singleton->Lock(popup->GetNativeView());
     popup_->Show();
     MessageLoop::current()->Run();
+    process_singleton->Unlock();
     return result_;
   }
 
@@ -822,12 +827,14 @@ class TryChromeDialog : public views::ButtonListener,
 
 }  // namespace
 
-Upgrade::TryResult Upgrade::ShowTryChromeDialog(size_t version) {
+Upgrade::TryResult Upgrade::ShowTryChromeDialog(
+    size_t version,
+    ProcessSingleton* process_singleton) {
   if (version > 10000) {
     // This is a test value. We want to make sure we exercise
     // returning this early. See EarlyReturnTest test harness.
     return Upgrade::TD_NOT_NOW;
   }
   TryChromeDialog td(version);
-  return td.ShowModal();
+  return td.ShowModal(process_singleton);
 }

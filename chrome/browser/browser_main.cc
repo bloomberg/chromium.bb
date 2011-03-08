@@ -1233,9 +1233,18 @@ int BrowserMain(const MainFunctionParams& parameters) {
       parsed_command_line.GetSwitchValueASCII(switches::kTryChromeAgain);
   if (!try_chrome.empty()) {
 #if defined(OS_WIN)
+    // Setup.exe has determined that we need to run a retention experiment
+    // and has lauched chrome to show the experiment UI.
+    if (process_singleton.FoundOtherProcessWindow()) {
+      // It seems that we don't need to run the experiment since chrome
+      // in the same profile is already running.
+      VLOG(1) << "Retention experiment not required";
+      return Upgrade::TD_NOT_NOW;
+    }
     int try_chrome_int;
     base::StringToInt(try_chrome, &try_chrome_int);
-    Upgrade::TryResult answer = Upgrade::ShowTryChromeDialog(try_chrome_int);
+    Upgrade::TryResult answer =
+        Upgrade::ShowTryChromeDialog(try_chrome_int, &process_singleton);
     if (answer == Upgrade::TD_NOT_NOW)
       return ResultCodes::NORMAL_EXIT_CANCEL;
     if (answer == Upgrade::TD_UNINSTALL_CHROME)
