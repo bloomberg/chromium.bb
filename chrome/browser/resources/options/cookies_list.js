@@ -119,8 +119,11 @@ cr.define('options', function() {
         return;
       this.expanded_ = expanded;
       if (expanded) {
+        var oldExpanded = this.list.expandedItem;
         this.list.expandedItem = this;
         this.updateItems_();
+        if (oldExpanded)
+          oldExpanded.expanded = false;
         this.classList.add('show-items');
       } else {
         if (this.list.expandedItem == this) {
@@ -177,7 +180,7 @@ cr.define('options', function() {
       this.classList.remove('measure-items');
       this.itemsChild.style.height = itemsHeight + 'px';
       this.style.height = fixedHeight + 'px';
-      if (this.selected)
+      if (this.expanded)
         this.list.leadItemHeight = fixedHeight;
     },
 
@@ -214,7 +217,7 @@ cr.define('options', function() {
         else
           text = list[i];
       this.dataChild.textContent = text;
-      if (this.selected)
+      if (this.expanded)
         this.updateItems_();
     },
 
@@ -610,10 +613,19 @@ cr.define('options', function() {
       ce.changes.forEach(function(change) {
           var listItem = this.getListItemByIndex(change.index);
           if (listItem) {
-            if (!change.selected)
-              listItem.expanded = false;
-            else if (listItem.lead)
+            if (!change.selected) {
+              // We set a timeout here, rather than setting the item unexpanded
+              // immediately, so that if another item gets set expanded right
+              // away, it will be expanded before this item is unexpanded. It
+              // will notice that, and unexpand this item in sync with its own
+              // expansion. Later, this callback will end up having no effect.
+              window.setTimeout(function() {
+                if (!listItem.selected || !listItem.lead)
+                  listItem.expanded = false;
+              }, 0);
+            } else if (listItem.lead) {
               listItem.expanded = true;
+            }
           }
         }, this);
     },
@@ -626,8 +638,13 @@ cr.define('options', function() {
     cookieLeadChange_: function(pe) {
       if (pe.oldValue != -1) {
         var listItem = this.getListItemByIndex(pe.oldValue);
-        if (listItem)
-          listItem.expanded = false;
+        if (listItem) {
+          // See cookieSelectionChange_ above for why we use a timeout here.
+          window.setTimeout(function() {
+            if (!listItem.lead || !listItem.selected)
+              listItem.expanded = false;
+          }, 0);
+        }
       }
       if (pe.newValue != -1) {
         var listItem = this.getListItemByIndex(pe.newValue);
