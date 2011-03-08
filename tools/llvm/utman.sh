@@ -86,6 +86,11 @@ readonly TC_SRC_BINUTILS="${TC_SRC}/binutils"
 readonly TC_SRC_NEWLIB="${TC_SRC}/newlib"
 readonly TC_SRC_LIBSTDCPP="${TC_SRC_LLVM_GCC}/llvm-gcc-4.2/libstdc++-v3"
 
+readonly EXPORT_HEADER_SCRIPT="$(pwd)/src/trusted/service_runtime/export_header.py"
+readonly NACL_SYS_HEADERS="$(pwd)/src/trusted/service_runtime/include"
+readonly NACL_SYS_TS="${TC_SRC}/nacl.sys.timestamp"
+readonly NEWLIB_INCLUDE_DIR="${TC_SRC_NEWLIB}/newlib-trunk/newlib/libc/include"
+
 # The location of each project
 # These should be absolute paths.
 readonly TC_BUILD_LLVM="${TC_BUILD}/llvm"
@@ -286,18 +291,15 @@ hg-freshness-check() {
   StepBanner "HG-FRESHNESS-CHECK" "Checking for updates..."
 
   # Leave this global and mutable
-  FRESHNESS_WARNING=false
+  FRESHNESS_ERROR=false
 
   hg-freshness-check-common "${TC_SRC_LLVM}"       ${LLVM_REV}
   hg-freshness-check-common "${TC_SRC_LLVM_GCC}"   ${LLVM_GCC_REV}
   hg-freshness-check-common "${TC_SRC_NEWLIB}"     ${NEWLIB_REV}
   hg-freshness-check-common "${TC_SRC_BINUTILS}"   ${BINUTILS_REV}
 
-  if ${FRESHNESS_WARNING}; then
-    if ! confirm-yes "Continue build" ; then
-      echo "Cancelled build."
-      exit -1
-    fi
+  if ${FRESHNESS_ERROR}; then
+    exit -1
   fi
 }
 
@@ -305,17 +307,27 @@ hg-freshness-check-common() {
   local dir="$1"
   local rev="$2"
   local name=$(basename "${dir}")
+  local defstr=$(echo "${name}" | tr '[a-z]-' '[A-Z]_')
 
   if ! hg-at-revision "${dir}" "${rev}" ; then
+    echo ""
     echo "*******************************************************************"
-    echo "* Warning: hg/${name} is not at the 'stable' revision.             "
+    echo "*                         ERROR                                   *"
+    echo "*                                                                 *"
+    echo "*         hg/${name} is not at the stable revision"
+    echo "*                                                                 *"
+    echo "*  If your repository is behind stable, update it using:          *"
+    echo "*    tools/llvm/utman.sh hg-update-stable-${name}"
+    echo "*                                                                 *"
+    echo "*  If your repository is ahead of stable, then update:            *"
+    echo "*    ${defstr}_REV"
+    echo "*  in tools/llvm/utman.sh to prevent this error message.          *"
     echo "*******************************************************************"
-
     # TODO(pdox): Make this a BUILDBOT flag
     if ${UTMAN_DEBUG}; then
       "hg-update-stable-${name}"
     else
-      FRESHNESS_WARNING=true
+      FRESHNESS_ERROR=true
     fi
   fi
 }
@@ -341,14 +353,11 @@ hg-update-tip-llvm() {
 }
 
 hg-update-tip-newlib() {
-  if hg-update-newlib-confirm; then
-    rm -rf "${TC_SRC_NEWLIB}"
-    hg-checkout ${REPO_NEWLIB}   ${TC_SRC_NEWLIB}   ${NEWLIB_REV}
-    hg-update "${TC_SRC_NEWLIB}"
-    newlib-nacl-headers
-  else
-    echo "Cancelled."
-  fi
+  newlib-nacl-headers-check
+  newlib-nacl-headers-clean
+  hg-pull-newlib
+  hg-update "${TC_SRC_NEWLIB}"
+  newlib-nacl-headers-force
 }
 
 hg-update-tip-binutils() {
@@ -368,34 +377,20 @@ hg-update-stable() {
 
 hg-update-stable-llvm-gcc() {
   hg-pull-llvm-gcc
-  hg-update "${TC_SRC_LLVM_GCC}"  ${LLVM_GCC_REV}
+  hg-update "${TC_SRC_LLVM_GCC}" ${LLVM_GCC_REV}
 }
 
 hg-update-stable-llvm() {
   hg-pull-llvm
-  hg-update "${TC_SRC_LLVM}"      ${LLVM_REV}
+  hg-update "${TC_SRC_LLVM}" ${LLVM_REV}
 }
 
 hg-update-stable-newlib() {
-  if ${UTMAN_DEBUG} || hg-update-newlib-confirm; then
-    rm -rf "${TC_SRC_NEWLIB}"
-    hg-checkout ${REPO_NEWLIB}   ${TC_SRC_NEWLIB}   ${NEWLIB_REV}
-    newlib-nacl-headers
-  else
-    echo "Cancelled."
-  fi
-}
-
-hg-update-newlib-confirm() {
-  echo
-  echo "Due to special header magic, the newlib repository cannot simply be"
-  echo "updated in place. Instead, the entire source directory must be"
-  echo "deleted and cloned again."
-  echo ""
-  echo "WARNING: Local changes to newlib will be lost."
-  echo ""
-  confirm-yes "Continue"
-  return $?
+  newlib-nacl-headers-check
+  newlib-nacl-headers-clean
+  hg-pull-newlib
+  hg-update "${TC_SRC_NEWLIB}" ${NEWLIB_REV}
+  newlib-nacl-headers-force
 }
 
 hg-update-stable-binutils() {
@@ -453,12 +448,14 @@ hg-checkout-binutils() {
 }
 
 hg-checkout-newlib() {
-  local add_headers=false
+  local force_headers=false
   if [ ! -d "${TC_SRC_NEWLIB}" ]; then
-    add_headers=true
+    force_headers=true
   fi
   hg-checkout ${REPO_NEWLIB}   ${TC_SRC_NEWLIB}   ${NEWLIB_REV}
-  if ${add_headers}; then
+  if ${force_headers}; then
+    newlib-nacl-headers-force
+  else
     newlib-nacl-headers
   fi
 }
@@ -636,6 +633,38 @@ clean() {
   clean-logs
   clean-build
   clean-install
+  clean-scons
+  tidy-binutils
+}
+
+#@ fast-clean            - Clean everything except LLVM.
+fast-clean() {
+  local did_backup=false
+  local backup_dir="$(pwd)/llvm-build-backup"
+
+  if [ -d "${TC_BUILD_LLVM}" ]; then
+    rm -rf "${backup_dir}"
+    mv "${TC_BUILD_LLVM}" "${backup_dir}"
+    did_backup=true
+  fi
+
+  clean
+
+  if ${did_backup} ; then
+    mkdir -p "${TC_BUILD}"
+    mv "${backup_dir}" "${TC_BUILD_LLVM}"
+  fi
+}
+
+tidy-binutils() {
+  # The binutils configure/build process leaves this residual file
+  # in the source directory.
+  rm -f "${TC_SRC_BINUTILS}"/binutils-2.20/opcodes/i386-tbl.h
+}
+
+#+ clean-scons           - Clean scons-out directory
+clean-scons() {
+  rm -rf scons-out
 }
 
 #+ clean-build           - Clean all build directories
@@ -907,7 +936,7 @@ gcc-stage1-sysroot() {
   rm -rf "${sys_include}" "${sys_include2}"
   mkdir -p "${sys_include}"
   ln -sf "${sys_include}" "${sys_include2}"
-  cp -r "${TC_SRC_NEWLIB}"/newlib-trunk/newlib/libc/include/* ${sys_include}
+  cp -r "${NEWLIB_INCLUDE_DIR}"/* ${sys_include}
 }
 
 #+ gcc-stage1-clean      - Clean gcc stage 1
@@ -2216,15 +2245,61 @@ extrasdk-make-install() {
       extra_sdk_libs_platform
 }
 
-#+ newlib-nacl-headers   - Add custom NaCl headers to newlib
+newlib-nacl-headers-clean() {
+  # Clean the include directory and revert it to its pure state
+  if [ -d "${NEWLIB_INCLUDE_DIR}" ]; then
+    rm -rf "${NEWLIB_INCLUDE_DIR}"
+    RunWithLog "newlib-freshen" \
+      hg revert "${NEWLIB_INCLUDE_DIR}"
+  fi
+}
+
+#+ newlib-nacl-headers-force   - Install NaCl headers to newlib
+newlib-nacl-headers-force() {
+  StepBanner "newlib-nacl-headers" "Adding nacl headers to newlib"
+
+  assert-dir "${NEWLIB_INCLUDE_DIR}" "Newlib is not checked out"
+
+  newlib-nacl-headers-clean
+
+  # Install the headers
+  "${EXPORT_HEADER_SCRIPT}" \
+      "${NACL_SYS_HEADERS}" \
+      "${NEWLIB_INCLUDE_DIR}"
+
+  # Record the header install time
+  ts-touch "${NACL_SYS_TS}"
+}
+
+#+ newlib-nacl-headers-check - Make sure the newlib nacl headers haven't
+#+                             been modified since the last install.
+newlib-nacl-headers-check() {
+  if ts-dir-changed "${NACL_SYS_TS}" "${NEWLIB_INCLUDE_DIR}"; then
+    echo ""
+    echo "*******************************************************************"
+    echo "*                            ERROR                                *"
+    echo "*      The NewLib include directory has local modifications       *"
+    echo "*******************************************************************"
+    echo "* The NewLib include directory should not be modified directly.   *"
+    echo "* Instead, modifications should be done from:                     *"
+    echo "*   src/trusted/service_runtime/include                           *"
+    echo "*                                                                 *"
+    echo "* To overwrite the local changes to newlib, run:                  *"
+    echo "*  tools/llvm/utman.sh newlib-nacl-headers-force                  *"
+    echo "*******************************************************************"
+    echo ""
+    if ! ${UTMAN_DEBUG} ; then
+      exit -1
+    fi
+  fi
+}
+
+#+ newlib-nacl-headers   - Install NaCl headers to newlib (if safe)
 newlib-nacl-headers() {
-  StepBanner "Adding nacl headers to newlib"
-  here=$(pwd)
-  spushd ${TC_SRC_NEWLIB}/newlib-trunk
-  ${here}/src/trusted/service_runtime/export_header.py \
-      ${here}/src/trusted/service_runtime/include \
-      newlib/libc/include
-  spopd
+  # Refuse to freshen newlib headers if they have
+  # been modified since the last install.
+  newlib-nacl-headers-check
+  newlib-nacl-headers-force
 }
 
 
@@ -2840,22 +2915,34 @@ DebugRun() {
   fi
 }
 
-# Check if the source for a given build has been modified
-ts-modified() {
-  local srcdir="$1"
-  local objdir="$2"
-  local tsfile="${objdir}/${TIMESTAMP_FILENAME}"
+ts-dir-changed() {
+  local tsfile="$1"
+  local dir="$2"
 
-  if [ -f "$tsfile" ]; then
-    local MODIFIED=$(find "${srcdir}" -newer "${tsfile}")
+  if [ -f "${tsfile}" ]; then
+    local MODIFIED=$(find "${dir}" -newer "${tsfile}")
     [ ${#MODIFIED} -gt 0 ]
     ret=$?
   else
     true
     ret=$?
   fi
-
   return $ret
+}
+
+# Check if the source for a given build has been modified
+ts-modified() {
+  local srcdir="$1"
+  local objdir="$2"
+  local tsfile="${objdir}/${TIMESTAMP_FILENAME}"
+
+  ts-dir-changed "${tsfile}" "${srcdir}"
+  return $?
+}
+
+ts-touch() {
+  local tsfile="$1"
+  touch "${tsfile}"
 }
 
 # Record the time when make begins, but don't yet
