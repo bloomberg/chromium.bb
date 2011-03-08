@@ -105,6 +105,16 @@ struct wl_visual {
 	struct wl_object object;
 };
 
+struct wl_shm_callbacks {
+	void (*buffer_created)(struct wl_buffer *buffer);
+
+	void (*buffer_damaged)(struct wl_buffer *buffer,
+			      int32_t x, int32_t y,
+			      int32_t width, int32_t height);
+
+	void (*buffer_destroyed)(struct wl_buffer *buffer);
+};
+
 struct wl_compositor {
 	struct wl_object object;
 	struct wl_visual argb_visual;
@@ -124,6 +134,7 @@ struct wl_buffer {
 	struct wl_compositor *compositor;
 	struct wl_visual *visual;
 	int32_t width, height;
+	void *user_data;
 };
 
 struct wl_listener {
@@ -259,6 +270,29 @@ int
 wl_input_device_update_grab(struct wl_input_device *device,
 			    struct wl_grab *grab,
 			    struct wl_surface *surface, uint32_t time);
+
+struct wl_shm;
+
+void *
+wl_shm_buffer_get_data(struct wl_buffer *buffer);
+
+int32_t
+wl_shm_buffer_get_stride(struct wl_buffer *buffer);
+
+struct wl_buffer *
+wl_shm_buffer_create(struct wl_shm *shm, int width, int height,
+		     int stride, struct wl_visual *visual,
+		     void *data);
+
+int
+wl_buffer_is_shm(struct wl_buffer *buffer);
+
+struct wl_shm *
+wl_shm_init(struct wl_display *display,
+	    const struct wl_shm_callbacks *callbacks);
+
+void
+wl_shm_finish(struct wl_shm *shm);
 
 int
 wl_compositor_init(struct wl_compositor *compositor,
