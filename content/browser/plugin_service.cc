@@ -23,7 +23,6 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/default_plugin.h"
 #include "chrome/common/extensions/extension.h"
-#include "chrome/common/gpu_plugin.h"
 #include "chrome/common/logging_chrome.h"
 #include "chrome/common/notification_type.h"
 #include "chrome/common/notification_service.h"
@@ -133,8 +132,6 @@ PluginService::PluginService()
   plugin_selection_policy_ = new chromeos::PluginSelectionPolicy;
   plugin_selection_policy_->StartInit();
 #endif
-
-  chrome::RegisterInternalGPUPlugin();
 
   // Start watching for changes in the plugin list. This means watching
   // for changes in the Windows registry keys and on both Windows and POSIX

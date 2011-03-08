@@ -517,12 +517,6 @@ int ChromeMain(int argc, char** argv) {
     return 1;
 #endif
 
-  if (command_line.HasSwitch(switches::kEnableNaCl)) {
-    // NaCl currently requires two flags to run
-    CommandLine* singleton_command_line = CommandLine::ForCurrentProcess();
-    singleton_command_line->AppendSwitch(switches::kEnableGPUPlugin);
-  }
-
   base::ProcessId browser_pid = base::GetCurrentProcId();
   if (SubprocessIsBrowserChild(process_type)) {
 #if defined(OS_WIN) || defined(OS_MACOSX)

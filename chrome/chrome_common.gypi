@@ -291,8 +291,6 @@
         'common/font_loader_mac.h',
         'common/font_loader_mac.mm',
         'common/gears_api.h',
-        'common/gpu_plugin.cc',
-        'common/gpu_plugin.h',
         'common/important_file_writer.cc',
         'common/important_file_writer.h',
         'common/json_pref_store.cc',

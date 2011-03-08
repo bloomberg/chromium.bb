@@ -12,10 +12,10 @@
 #include "base/ref_counted.h"
 #include "base/shared_memory.h"
 #include "base/task.h"
-#include "chrome/plugin/command_buffer_stub.h"
 #include "googleurl/src/gurl.h"
 #include "ipc/ipc_channel.h"
 #include "third_party/npapi/bindings/npapi.h"
+#include "ui/gfx/native_widget_types.h"
 #include "ui/gfx/rect.h"
 
 class PluginChannel;
@@ -103,8 +103,6 @@ class WebPluginDelegateStub : public IPC::Channel::Listener,
                                const GURL& url,
                                int notify_id);
   void OnHTTPRangeRequestReply(unsigned long resource_id, int range_request_id);
-  void OnCreateCommandBuffer(int* route_id);
-  void OnDestroyCommandBuffer();
 
   void CreateSharedBuffer(uint32 size,
                           base::SharedMemory* shared_buf,
@@ -123,17 +121,12 @@ class WebPluginDelegateStub : public IPC::Channel::Listener,
   GURL page_url_;
 
 #if defined(ENABLE_GPU)
-  // If this is the GPU plugin, the stub object that forwards to the
-  // command buffer service.
-  scoped_ptr<CommandBufferStub> command_buffer_stub_;
-
 #if defined(OS_MACOSX)
   // If this is a GPU-accelerated plug-in, we need to be able to receive a fake
   // window handle which is used for subsequent communication back to the
   // browser.
   void OnSetFakeAcceleratedSurfaceWindowHandle(gfx::PluginWindowHandle window);
 #endif
-
 #endif
 
   DISALLOW_IMPLICIT_CONSTRUCTORS(WebPluginDelegateStub);

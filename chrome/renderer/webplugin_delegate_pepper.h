@@ -16,7 +16,6 @@
 #include "base/weak_ptr.h"
 #include "base/task.h"
 #include "chrome/renderer/pepper_devices.h"
-#include "chrome/renderer/command_buffer_proxy.h"
 #include "third_party/npapi/bindings/npapi.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFileChooserCompletion.h"
@@ -213,10 +212,6 @@ class WebPluginDelegatePepper : public webkit::npapi::WebPluginDelegate,
       webkit::npapi::PluginInstance *instance);
   ~WebPluginDelegatePepper();
 
-  // Set a task that calls the repaint callback the next time the window
-  // is invalid and needs to be repainted.
-  void ScheduleHandleRepaint(NPP npp, NPDeviceContext3D* context);
-
   //-----------------------------------------
   // used for windowed and windowless plugins
 
@@ -250,27 +245,6 @@ class WebPluginDelegatePepper : public webkit::npapi::WebPluginDelegate,
                             const gfx::Rect& dest_rect, int canvas_height);
 #endif  // OS_MACOSX
 
-#if defined(ENABLE_GPU)
-
-  void ForwardHandleRepaint(NPP npp, NPDeviceContext3D* context);
-
-  // Synchronize a 3D context state with the service.
-  void Synchronize3DContext(NPDeviceContext3D* context,
-                            const gpu::CommandBuffer::State& state);
-
-  // Synchronize the 3D context state with the proxy and invoke the async
-  // flush callback.
-  void Device3DUpdateState(NPP npp,
-                           NPDeviceContext3D* context,
-                           NPDeviceFlushContextCallbackPtr callback,
-                           void* user_data);
-#endif
-
-  // Tells the browser out-of-band where the nested delegate lives on
-  // the page.
-  void SendNestedDelegateGeometryToBrowser(const gfx::Rect& window_rect,
-                                           const gfx::Rect& clip_rect);
-
   // Returns the selection.  If nothing is selected, returns an empty string.
   // If html is true, it will return a string only if html data is available.
   string16 GetSelectedText(bool html) const;
@@ -296,9 +270,6 @@ class WebPluginDelegatePepper : public webkit::npapi::WebPluginDelegate,
   // The url with which the plugin was instantiated.
   std::string plugin_url_;
 
-  // The nested GPU plugin.
-  WebPluginDelegateProxy* nested_delegate_;
-
   // The last printable_area passed in to PrintBegin. We remember this because
   // we need to stretch the printed raster bitmap to these dimensions. It is
   // cleared in PrintEnd.
@@ -322,14 +293,6 @@ class WebPluginDelegatePepper : public webkit::npapi::WebPluginDelegate,
   // subsequent PrintPage requests.
   bool pdf_output_done_;
 #endif   // defined(OS_LINUX)
-
-#if defined(ENABLE_GPU)
-  // The command buffer used to issue commands to the nested GPU plugin.
-  CommandBufferProxy* command_buffer_;
-
-  // Runnable methods that must be cancelled when the 3D context is destroyed.
-  ScopedRunnableMethodFactory<WebPluginDelegatePepper> method_factory3d_;
-#endif
 
   // The id of the current find operation, or -1 if none is in process.
   int find_identifier_;
