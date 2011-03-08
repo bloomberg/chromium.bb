@@ -6,13 +6,13 @@
 
 (function() {
   // Indicates a pass to the C++ backend.
-  function pass(message) {
+  function pass() {
     chrome.send('Pass', []);
   }
 
   // Indicates a fail to the C++ backend.
   function fail(message) {
-    chrome.send('Fail', []);
+    chrome.send('Fail', [String(message)]);
   }
 
   // Asserts.
@@ -25,7 +25,7 @@
         message = test + '\n' + message;
       else
         message = test;
-      fail(message);
+      throw new Error(message);
     }
   }
 
@@ -39,18 +39,19 @@
 
   function assertEquals(expected, actual, message) {
     if (expected !== actual) {
-      fail('Test Error in ' + testName(currentTest) +
-           '\nActual: ' + actual + '\nExpected: ' + expected + '\n' + message);
+      throw new Error('Test Error in ' + testName(currentTest) +
+                      '\nActual: ' + actual + '\nExpected: ' + expected +
+                      '\n' + message);
     }
     if (typeof expected != typeof actual) {
-      fail('Test Error in ' + testName(currentTest) +
-           ' (type mismatch)\nActual Type: ' + typeof actual +
-           '\nExpected Type:' + typeof expected + '\n' + message);
+      throw new Error('Test Error in ' + testName(currentTest) +
+                      ' (type mismatch)\nActual Type: ' + typeof actual +
+                      '\nExpected Type:' + typeof expected + '\n' + message);
     }
   }
 
   function assertNotReached(message) {
-    fail(message);
+    throw new Error(message);
   }
 
   // Call this method within your test script file to begin tests.
@@ -67,7 +68,8 @@
         console.log(
             'Failed: ' + currentTest.name + '\nwith exception: ' + e.message);
 
-        fail();
+        fail(e.message);
+        return;
       }
     }
 

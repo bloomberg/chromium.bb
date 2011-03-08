@@ -5,6 +5,7 @@
 #include "content/browser/webui/web_ui_handler_browsertest.h"
 
 #include "base/utf_string_conversions.h"
+#include "base/values.h"
 #include "chrome/test/ui_test_utils.h"
 #include "content/browser/renderer_host/render_view_host.h"
 
@@ -24,6 +25,10 @@ void WebUIHandlerBrowserTest::HandleFail(const ListValue* args) {
   test_succeeded_ = false;
   if (is_waiting_)
     MessageLoopForUI::current()->Quit();
+
+  std::string message;
+  ASSERT_TRUE(args->GetString(0, &message));
+  LOG(INFO) << message;
 }
 
 void WebUIHandlerBrowserTest::RegisterMessages() {
