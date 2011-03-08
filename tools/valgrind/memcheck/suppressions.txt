@@ -3936,7 +3936,7 @@
    bug_75247
    Memcheck:Leak
    fun:_Znw*
-   fun:_ZN26AutofillDownloadTestHelperC1Ev
+   fun:*AutofillDownloadTestHelper*
 }
 {
    bug_75251
