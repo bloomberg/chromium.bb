@@ -83,7 +83,9 @@ RendererCairo* RendererCairo::CreateDefault(ServiceLocator* service_locator) {
 void RendererCairo::Destroy() {
   DLOG(INFO) << "To Destroy";
 
+#if defined(OS_LINUX) || defined(OS_WIN)
   DestroyCairoSurface();
+#endif
 
 #if defined(OS_LINUX)
   display_ = NULL;
@@ -101,6 +103,14 @@ bool LayerZValueLessThan(const Layer* first, const Layer* second) {
 }
 
 void RendererCairo::Paint() {
+#ifdef OS_MACOSX
+  // On OSX we can't persist the Cairo surface across Paint() calls because
+  // of issues in Safari with unbalanced CGContextSaveGState/RestoreGState calls
+  // causing crashes, so we have to create and destroy the surface for every
+  // frame.
+  CreateCairoSurface();
+#endif
+
   if (!main_surface_) {
     DLOG(INFO) << "No target surface, cannot paint";
     return;
@@ -199,6 +209,10 @@ void RendererCairo::Paint() {
   cairo_paint(current_drawing);
 
   cairo_destroy(current_drawing);
+
+#ifdef OS_MACOSX
+  DestroyCairoSurface();
+#endif
 }
 
 void RendererCairo::ClipArea(cairo_t* cr,  LayerList::iterator it) {
@@ -228,7 +242,9 @@ void RendererCairo::RemoveLayer(Layer* image) {
 }
 
 void RendererCairo::InitCommon() {
+#if defined(OS_LINUX) || defined(OS_WIN)
   CreateCairoSurface();
+#endif
 }
 
 void RendererCairo::CreateCairoSurface() {
@@ -249,11 +265,9 @@ void RendererCairo::CreateCairoSurface() {
     DLOG(INFO) << "No CGContextRef, cannot initialize yet";
     return;
   }
-  // Save a pristine CG graphics state.
-  CGContextSaveGState(mac_cg_context_ref_);
-  // Transform the coordinate space to match Cairo's conventions.
-  CGContextTranslateCTM(mac_cg_context_ref_, 0.0, display_height());
-  CGContextScaleCTM(mac_cg_context_ref_, 1.0, -1.0);
+  // Normally this function requires the caller to transform the CG coordinate
+  // space to match Cairo's origin convention, but in NPAPI it happens to
+  // already be that way.
   main_surface_ = cairo_quartz_surface_create_for_cg_context(
       mac_cg_context_ref_,
       display_width(),
@@ -291,11 +305,7 @@ void RendererCairo::CreateCairoSurface() {
 void RendererCairo::DestroyCairoSurface() {
   if (main_surface_ != NULL) {
     cairo_surface_destroy(main_surface_);
-    main_surface_= NULL;
-#ifdef OS_MACOSX
-    // Get back the pristine CG state.
-    CGContextRestoreGState(mac_cg_context_ref_);
-#endif
+    main_surface_ = NULL;
   }
 }
 
@@ -331,9 +341,7 @@ Renderer::InitStatus RendererCairo::InitPlatformSpecific(
 bool RendererCairo::ChangeDisplayWindow(const DisplayWindow& display_window) {
   const DisplayWindowMac &display_platform =
       static_cast<const DisplayWindowMac&>(display_window);
-  DestroyCairoSurface();
   mac_cg_context_ref_ = display_platform.cg_context_ref();
-  CreateCairoSurface();
 }
 #endif
 
@@ -345,7 +353,7 @@ void RendererCairo::Resize(int width, int height) {
 #if defined(OS_LINUX)
   // Resize the mainSurface and buffer
   cairo_xlib_surface_set_size(main_surface_, width, height);
-#elif defined(OS_MACOSX) || defined(OS_WIN)
+#elif defined(OS_WIN)
   DestroyCairoSurface();
   CreateCairoSurface();
 #endif
