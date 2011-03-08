@@ -14,8 +14,9 @@ var server;
 // The default socket address for the plugin.
 var default_addr;
 
+
 // Tests passing scalar types.
-var ScalarTypes = function() {
+var ScalarTypes = function(tester, server) {
   tester.addTest('bool_passret', function() {
     assert(!server.bool(true));
     assert(server.bool(false));
@@ -83,8 +84,9 @@ var ScalarTypes = function() {
   });
 }
 
+
 // Tests passing array types.
-var ArrayTypes = function() {
+var ArrayTypes = function(tester, server) {
 
   var reverse = function(array) {
     // array.slice(0) is a JS idiom for cloning an array.
@@ -168,8 +170,9 @@ var ArrayTypes = function() {
   });
 }
 
+
 // Tests passing more complex or special-purpose types.
-var SpecialTypes = function() {
+var SpecialTypes = function(tester, server) {
 
   tester.addTest('string_send', function() {
     var str = 'one more test';
@@ -238,10 +241,13 @@ var SpecialTypes = function() {
 
     <script type="text/javascript">
       //<![CDATA[
-      server = document.getElementById("nacl_server");
-      ScalarTypes();
-      ArrayTypes();
-      SpecialTypes();
+      var tester = new Tester();
+      var server = $("nacl_server");
+      ScalarTypes(tester, server);
+      ArrayTypes(tester, server);
+      SpecialTypes(tester, server);
+      tester.waitFor(server);
+      tester.run();
       //]]>
     </script>
   </body>

@@ -19,7 +19,7 @@ var kSampleString = 'hello, world';
 var kSampleObject = new Array(10);
 
 
-function EnqueueTests(naclModule, suffix) {
+function EnqueueTests(tester, naclModule, suffix) {
   // Test access to NaCl ppruntime objects from the browser.
   // Read a property that is not set.
   tester.addTest('browser_nacl_read_notset' + suffix, function() {
@@ -138,11 +138,13 @@ function EnqueueTests(naclModule, suffix) {
 </body>
 
 <script type="text/javascript">
-//<![CDATA[
-EnqueueTests($('basic_object'), '');
-
-// Same interface but with a user-supplied main() entry point.
-EnqueueTests($('user_main'), '_user');
-//]]>
+  //<![CDATA[
+  var tester = new Tester();
+  EnqueueTests(tester, $('basic_object'), '');
+  // Same interface but with a user-supplied main() entry point.
+  EnqueueTests(tester, $('user_main'), '_user');
+  tester.waitFor($('basic_object'), $('user_main'));
+  tester.run();
+  //]]>
 </script>
 </html>

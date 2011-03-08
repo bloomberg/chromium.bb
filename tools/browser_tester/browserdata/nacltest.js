@@ -223,7 +223,10 @@ function RPCWrapper() {
 }
 
 
-// Begin functions for testing 
+//
+// BEGIN functions for testing 
+//
+
 
 function fail(message, info) {
   var parts = [];
@@ -310,11 +313,6 @@ function assertRaises(func, message) {
 }
 
 
-function log(message) {
-  tester.log(message);
-}
-
-
 function halt_and_pass() {
   throw {type: 'test_pass'};
 }
@@ -324,7 +322,10 @@ function halt_and_callback(time, callback) {
   throw {type: 'test_wait', time: time, callback: callback};
 }
 
-// End functions for testing
+
+//
+// END functions for testing
+//
 
 
 function begins_with(s, prefix) {
@@ -345,36 +346,10 @@ function ends_with(s, suffix) {
 }
 
 
-// All of these methods for identifying a nexe are not bomb proof.
-// One of them should work, however.
-function is_nacl_embed(embed) {
-  if (embed.type != undefined) {
-    var type = embed.type.toLowerCase();
-    if (begins_with(type, 'application/') && type.indexOf('-nacl') != -1) {
-      return true;
-    }
-  }
-  if (embed.src != undefined) {
-    var src = embed.src.toLowerCase();
-    if (ends_with(src, '.nexe')) {
-      return true;
-    } else if (ends_with(src, '.nmf')) {
-      return true;
-    }
-  }
-  if (embed.nexes != undefined) {
-    return true;
-  }
-  return false;
+function is_loaded(embed) {
+  return embed.__moduleReady == 1;
 }
 
-function is_loading(embed) {
-  return embed.__moduleReady == 0;
-}
-
-function is_broken(embed) {
-  return embed.__moduleReady == undefined;
-}
 
 function embed_name(embed) {
   if (embed.name != undefined) {
@@ -397,11 +372,11 @@ function Tester() {
   var tests = [];
   // Log messages that occur before RPC has been set up
   var backlog = [];
+  var embedsToWaitFor = [];
 
-  this.initRPC = function() {
-    this.rpc = new RPCWrapper();
-    this.rpc.startup();
-  }
+  //
+  // BEGIN public interface
+  //
 
   this.log = function(message) {
     if (this.rpc == undefined) {
@@ -411,9 +386,12 @@ function Tester() {
     }
   }
 
+  this.addTest = function(name, callback) {
+    tests.push({name: name, callback: callback});
+  }
+
   this.run = function() {
     this.initRPC();
-    this.reportExternalErrors('#setup#');
 
     // Wait for three seconds.
     // TODO(ncbray) use error handling mechanisms (when they are implemented)
@@ -423,29 +401,38 @@ function Tester() {
     setTimeout(function() { this_.waitForPlugins(); }, 0);
   }
 
+  // Takes an arbitrary number of arguments.
+  this.waitFor = function() {
+    for (var i = 0; i< arguments.length; i++) {
+      embedsToWaitFor.push(arguments[i]);
+    }
+  }
+
+  //
+  // END public interface
+  //
+
+  this.initRPC = function() {
+    this.rpc = new RPCWrapper();
+    this.rpc.startup();
+  }
+
   // Find all the plugins in the DOM and make sure they've all loaded.
   this.waitForPlugins = function() {
-    var loaded = true;
     var waiting = [];
     var loaded = [];
 
-    var embeds = document.getElementsByTagName('embed');
-    for (var i = 0; i < embeds.length; i++) {
-      if (is_nacl_embed(embeds[i])) {
-        if (is_broken(embeds[i])) {
-          this.rpc.client_error('nacl embed is broken: ' +
-                                embed_name(embeds[i]));
-        } else if (is_loading(embeds[i])) {
-          waiting.push(embeds[i]);
-        } else {
-          loaded.push(embeds[i]);
-        }
+    for (var i = 0; i < embedsToWaitFor.length; i++) {
+      if (is_loaded(embedsToWaitFor[i])) {
+        loaded.push(embedsToWaitFor[i]);
+      } else {
+        waiting.push(embedsToWaitFor[i]);
       }
     }
 
     function doStart() {
       for (var i = 0; i < loaded.length; i++) {
-        log(embed_name(loaded[i]) + ' loaded');
+        this_.log(embed_name(loaded[i]) + ' loaded');
       }
       this_.startTesting();
     }
@@ -457,9 +444,10 @@ function Tester() {
       if (this.retries <= 0) {
         for (var j = 0; j < waiting.length; j++) {
           this.rpc.client_error(embed_name(waiting[j]) +
-                                ' took too long to load');
-          doStart();
+                                ' took too long to load with status: ' +
+                                toString(waiting[j].__moduleReady));
         }
+        doStart();
       } else {
         setTimeout(function() { this_.waitForPlugins(); }, this.retryWait);
       }
@@ -477,7 +465,6 @@ function Tester() {
     } else {
       // There are no more test suites.
       this.rpc.blankLine();
-      this.reportExternalErrors('#shutdown#');
       this.rpc.shutdown();
     }
   }
@@ -552,58 +539,4 @@ function Tester() {
       this.nextTest();
     }
   }
-
-  this.addTest = function(name, callback) {
-    tests.push({name: name, callback: callback});
-  }
-
-  var errors = [];
-
-  // Defer handling the error
-  this.externalError = function(err) {
-    errors.push(err);
-  }
-
-  this.handleExternalError = function(err) {
-    this.rpc.client_error(err.toString());
-  }
-
-  // Report log messages / exceptions that occur outside of the tests
-  this.reportExternalErrors = function(psedo_test) {
-    this.currentTest = psedo_test;
-
-    // Log messages that occurred before rpc was set up
-    for (var i = 0; i < backlog.length; i++) {
-      this.log(backlog[i]);
-    }
-    backlog = [];
-
-    // Exceptions that occurred outside of tests
-    for (var i = 0; i < errors.length; i++) {
-      this.handleExternalError(errors[i]);
-    }
-    errors = [];
-  }
 }
-
-
-tester = new Tester();
-
-// Using onload guarantees we'll be in a reasonable state before we start
-// testing.  Unfortunately, if the user redefines onload, testing will not start
-// automatically.
-window.onload = function() { tester.run(); };
-
-
-// Not fully supported on Chrome - only some errors will be caught.
-window.onerror = function(err, url, line) {
-  if (url == undefined || line == undefined) {
-    tester.externalError(err.toString());
-  } else {
-    tester.externalError(err.toString() + ' - ' + url.toString() + '(' +
-      line.toString() + ')');
-  }
-
-  // Don't eat it - let the browser log it
-  return false;
-};

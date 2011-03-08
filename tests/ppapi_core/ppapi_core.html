@@ -8,7 +8,7 @@
     <script type="text/javascript" src="nacltest.js"></script>
     <script type="application/x-javascript">
       //<![CDATA[
-function setupTests(plugin) {
+function setupTests(tester, plugin) {
 
     tester.addTest('PPB_Core::GetTime', function() {
       assert(plugin.testGetTime());
@@ -41,7 +41,7 @@ function setupTests(plugin) {
 
       // Deliberately global - this what the nexe expects.
       CallOnMainThreadCallback = function() {
-        log('CallOnMainThread callback!');
+        tester.log('CallOnMainThread callback!');
         got_callback = true;
       }
 
@@ -49,7 +49,7 @@ function setupTests(plugin) {
         if (!got_callback) {
           halt_and_callback(1, wait);
         } else {
-          log('Done waiting.');
+          tester.log('Done waiting.');
         }
       }
 
@@ -70,7 +70,10 @@ function setupTests(plugin) {
 
     <script type="text/javascript">
       //<![CDATA[
-      setupTests($('test_nexe'));
+      var tester = new Tester();
+      setupTests(tester, $('test_nexe'));
+      tester.waitFor($('test_nexe'));
+      tester.run();
       //]]>
     </script>
   </body>
