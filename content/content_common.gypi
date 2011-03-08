@@ -9,6 +9,7 @@
       'type': '<(library)',
       'dependencies': [
         '../ipc/ipc.gyp:ipc',
+        '../webkit/support/webkit_support.gyp:fileapi',
       ],
       'include_dirs': [
         '..',
