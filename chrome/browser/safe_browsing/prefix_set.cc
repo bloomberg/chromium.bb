@@ -7,10 +7,27 @@
 #include <algorithm>
 #include <math.h>
 
+#include "base/file_util.h"
 #include "base/logging.h"
+#include "base/md5.h"
 #include "base/metrics/histogram.h"
 
 namespace {
+
+// |kMagic| should be reasonably unique, and not match itself across
+// endianness changes.  I generated this value with:
+// md5 -qs chrome/browser/safe_browsing/prefix_set.cc | colrm 9
+static uint32 kMagic = 0x864088dd;
+
+// Current version the code writes out.
+static uint32 kVersion = 0x1;
+
+typedef struct {
+  uint32 magic;
+  uint32 version;
+  uint32 index_size;
+  uint32 deltas_size;
+} FileHeader;
 
 // For |std::upper_bound()| to find a prefix w/in a vector of pairs.
 bool PrefixLess(const std::pair<SBPrefix,size_t>& a,
@@ -66,6 +83,13 @@ PrefixSet::PrefixSet(const std::vector<SBPrefix>& sorted_prefixes) {
   }
 }
 
+PrefixSet::PrefixSet(std::vector<std::pair<SBPrefix,size_t> > *index,
+                     std::vector<uint16> *deltas) {
+  DCHECK(index && deltas);
+  index_.swap(*index);
+  deltas_.swap(*deltas);
+}
+
 PrefixSet::~PrefixSet() {}
 
 bool PrefixSet::Exists(SBPrefix prefix) const {
@@ -115,6 +139,129 @@ void PrefixSet::GetPrefixes(std::vector<SBPrefix>* prefixes) {
       prefixes->push_back(current);
     }
   }
+}
+
+// static
+PrefixSet* PrefixSet::LoadFile(const FilePath& filter_name) {
+  int64 size_64;
+  if (!file_util::GetFileSize(filter_name, &size_64))
+    return NULL;
+  if (size_64 < static_cast<int64>(sizeof(FileHeader) + sizeof(MD5Digest)))
+    return NULL;
+
+  file_util::ScopedFILE file(file_util::OpenFile(filter_name, "rb"));
+  if (!file.get())
+    return NULL;
+
+  FileHeader header;
+  size_t read = fread(&header, sizeof(header), 1, file.get());
+  if (read != 1)
+    return NULL;
+
+  if (header.magic != kMagic || header.version != kVersion)
+    return NULL;
+
+  std::vector<std::pair<SBPrefix,size_t> > index;
+  const size_t index_bytes = sizeof(index[0]) * header.index_size;
+
+  std::vector<uint16> deltas;
+  const size_t deltas_bytes = sizeof(deltas[0]) * header.deltas_size;
+
+  // Check for bogus sizes before allocating any space.
+  const size_t expected_bytes =
+      sizeof(header) + index_bytes + deltas_bytes + sizeof(MD5Digest);
+  if (static_cast<int64>(expected_bytes) != size_64)
+    return NULL;
+
+  // The file looks valid, start building the digest.
+  MD5Context context;
+  MD5Init(&context);
+  MD5Update(&context, &header, sizeof(header));
+
+  // Read the index vector.  Herb Sutter indicates that vectors are
+  // guaranteed to be contiuguous, so reading to where element 0 lives
+  // is valid.
+  index.resize(header.index_size);
+  read = fread(&(index[0]), sizeof(index[0]), index.size(), file.get());
+  if (read != index.size())
+    return NULL;
+  MD5Update(&context, &(index[0]), index_bytes);
+
+  // Read vector of deltas.
+  deltas.resize(header.deltas_size);
+  read = fread(&(deltas[0]), sizeof(deltas[0]), deltas.size(), file.get());
+  if (read != deltas.size())
+    return NULL;
+  MD5Update(&context, &(deltas[0]), deltas_bytes);
+
+  MD5Digest calculated_digest;
+  MD5Final(&calculated_digest, &context);
+
+  MD5Digest file_digest;
+  read = fread(&file_digest, sizeof(file_digest), 1, file.get());
+  if (read != 1)
+    return NULL;
+
+  if (0 != memcmp(&file_digest, &calculated_digest, sizeof(file_digest)))
+    return NULL;
+
+  // Steals contents of |index| and |deltas| via swap().
+  return new PrefixSet(&index, &deltas);
+}
+
+bool PrefixSet::WriteFile(const FilePath& filter_name) const {
+  FileHeader header;
+  header.magic = kMagic;
+  header.version = kVersion;
+  header.index_size = static_cast<uint32>(index_.size());
+  header.deltas_size = static_cast<uint32>(deltas_.size());
+
+  // Sanity check that the 32-bit values never mess things up.
+  if (static_cast<size_t>(header.index_size) != index_.size() ||
+      static_cast<size_t>(header.deltas_size) != deltas_.size()) {
+    NOTREACHED();
+    return false;
+  }
+
+  file_util::ScopedFILE file(file_util::OpenFile(filter_name, "wb"));
+  if (!file.get())
+    return false;
+
+  MD5Context context;
+  MD5Init(&context);
+
+  // TODO(shess): The I/O code in safe_browsing_store_file.cc would
+  // sure be useful about now.
+  size_t written = fwrite(&header, sizeof(header), 1, file.get());
+  if (written != 1)
+    return false;
+  MD5Update(&context, &header, sizeof(header));
+
+  // As for reads, the standard guarantees the ability to access the
+  // contents of the vector by a pointer to an element.
+  const size_t index_bytes = sizeof(index_[0]) * index_.size();
+  written = fwrite(&(index_[0]), sizeof(index_[0]), index_.size(), file.get());
+  if (written != index_.size())
+    return false;
+  MD5Update(&context, &(index_[0]), index_bytes);
+
+  const size_t deltas_bytes = sizeof(deltas_[0]) * deltas_.size();
+  written = fwrite(&(deltas_[0]), sizeof(deltas_[0]), deltas_.size(),
+                   file.get());
+  if (written != deltas_.size())
+    return false;
+  MD5Update(&context, &(deltas_[0]), deltas_bytes);
+
+  MD5Digest digest;
+  MD5Final(&digest, &context);
+  written = fwrite(&digest, sizeof(digest), 1, file.get());
+  if (written != 1)
+    return false;
+
+  // TODO(shess): Can this code check that the close was successful?
+  file.reset();
+
+  return true;
 }
 
 }  // namespace safe_browsing

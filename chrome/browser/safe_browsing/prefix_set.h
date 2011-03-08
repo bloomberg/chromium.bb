@@ -37,8 +37,7 @@
 // 2^16 apart, which would need 512k (versus 256k to store the raw
 // data).
 //
-// TODO(shess): Write serialization code.  Something like this should
-// work:
+// The on-disk format looks like:
 //         4 byte magic number
 //         4 byte version number
 //         4 byte |index_.size()|
@@ -55,6 +54,8 @@
 
 #include "chrome/browser/safe_browsing/safe_browsing_util.h"
 
+class FilePath;
+
 namespace safe_browsing {
 
 class PrefixSet {
@@ -64,6 +65,10 @@ class PrefixSet {
 
   // |true| if |prefix| was in |prefixes| passed to the constructor.
   bool Exists(SBPrefix prefix) const;
+
+  // Persist the set on disk.
+  static PrefixSet* LoadFile(const FilePath& filter_name);
+  bool WriteFile(const FilePath& filter_name) const;
 
   // Regenerate the vector of prefixes passed to the constructor into
   // |prefixes|.  Prefixes will be added in sorted order.
@@ -77,6 +82,11 @@ class PrefixSet {
   // a new index entry.  This helps keep the worst-case performance
   // for |Exists()| under control.
   static const size_t kMaxRun = 100;
+
+  // Helper for |LoadFile()|.  Steals the contents of |index| and
+  // |deltas| using |swap()|.
+  PrefixSet(std::vector<std::pair<SBPrefix,size_t> > *index,
+            std::vector<uint16> *deltas);
 
   // Top-level index of prefix to offset in |deltas_|.  Each pair
   // indicates a base prefix and where the deltas from that prefix
