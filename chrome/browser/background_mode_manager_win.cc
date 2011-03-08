@@ -58,7 +58,8 @@ void EnableLaunchOnStartupTask::Run() {
   FilePath executable;
   if (!PathService::Get(base::FILE_EXE, &executable))
     return;
-  std::wstring new_value = executable.value() + L" --no-startup-window";
+  std::wstring new_value = executable.value() +
+      L" --" + ASCIIToUTF16(switches::kNoStartupWindow);
   if (read_key.ValueExists(key_name)) {
     std::wstring current_value;
     if ((read_key.ReadValue(key_name, &current_value) == ERROR_SUCCESS) &&

@@ -67,8 +67,8 @@ void EnableLaunchOnStartupTask::Run() {
         << "Failed to register launch on login.  CHROME_WRAPPER not set.";
     return;
   }
-  std::string command_line =
-      wrapper_script + " --no-startup-window";
+  std::string command_line = wrapper_script +
+      " --" + switches::kNoStartupWindow;
   if (!AutoStart::AddApplication(
           ShellIntegration::GetDesktopName(environment.get()),
           version_info->Name(),
