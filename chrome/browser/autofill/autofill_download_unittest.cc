@@ -10,6 +10,7 @@
 #include "chrome/browser/autofill/autofill_download.h"
 #include "chrome/browser/autofill/autofill_metrics.h"
 #include "chrome/common/net/test_url_fetcher_factory.h"
+#include "chrome/test/test_url_request_context_getter.h"
 #include "chrome/test/testing_browser_process.h"
 #include "chrome/test/testing_browser_process_test.h"
 #include "chrome/test/testing_profile.h"
@@ -46,11 +47,17 @@ class MockAutofillMetrics : public AutofillMetrics {
 class AutofillDownloadTestHelper : public AutofillDownloadManager::Observer {
  public:
   AutofillDownloadTestHelper()
-      : download_manager(&profile) {
+      : download_manager(&profile),
+        request_context_getter(new TestURLRequestContextGetter()) {
     download_manager.SetObserver(this);
   }
   ~AutofillDownloadTestHelper() {
+    Profile::set_default_request_context(NULL);
     download_manager.SetObserver(NULL);
+  }
+
+  void InitContextGetter() {
+    Profile::set_default_request_context(request_context_getter.get());
   }
 
   void LimitCache(size_t cache_size) {
@@ -102,6 +109,7 @@ class AutofillDownloadTestHelper : public AutofillDownloadManager::Observer {
 
   TestingProfile profile;
   AutofillDownloadManager download_manager;
+  scoped_refptr<URLRequestContextGetter> request_context_getter;
 };
 
 typedef TestingBrowserProcessTest AutoFillDownloadTest;
@@ -192,7 +200,11 @@ TEST_F(AutoFillDownloadTest, QueryAndUploadTest) {
 
   // Request with id 0.
   MockAutofillMetrics mock_metric_logger;
-  EXPECT_CALL(mock_metric_logger, Log(AutofillMetrics::QUERY_SENT)).Times(1);
+  EXPECT_CALL(mock_metric_logger, Log(AutofillMetrics::QUERY_SENT)).Times(2);
+  // First one will fail because context is not set up.
+  EXPECT_FALSE(helper.download_manager.StartQueryRequest(form_structures,
+                                                         mock_metric_logger));
+  helper.InitContextGetter();
   EXPECT_TRUE(helper.download_manager.StartQueryRequest(form_structures,
                                                         mock_metric_logger));
   // Set upload to 100% so requests happen.
@@ -351,6 +363,7 @@ TEST_F(AutoFillDownloadTest, CacheQueryTest) {
   // Create and register factory.
   TestURLFetcherFactory factory;
   URLFetcher::set_factory(&factory);
+  helper.InitContextGetter();
 
   FormData form;
   form.method = ASCIIToUTF16("post");

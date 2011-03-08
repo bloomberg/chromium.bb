@@ -173,6 +173,15 @@ void AutofillDownloadManager::SetNegativeUploadRate(double rate) {
 bool AutofillDownloadManager::StartRequest(
     const std::string& form_xml,
     const FormRequestData& request_data) {
+  URLRequestContextGetter* request_context =
+      Profile::GetDefaultRequestContext();
+  // Check if default request context is NULL: this very rarely happens,
+  // I think, this could happen only if user opens chrome with some pages
+  // loading the forms immediately; I cannot reproduce this even in that
+  // scenario, but bug 74492 shows it happened at least once. In that case bail
+  // out and fall back on our own heuristics.
+  if (!request_context)
+    return false;
   std::string request_url;
   if (request_data.request_type == AutofillDownloadManager::REQUEST_QUERY)
     request_url = AUTO_FILL_QUERY_SERVER_REQUEST_URL;
@@ -187,7 +196,7 @@ bool AutofillDownloadManager::StartRequest(
                                            this);
   url_fetchers_[fetcher] = request_data;
   fetcher->set_automatically_retry_on_5xx(false);
-  fetcher->set_request_context(Profile::GetDefaultRequestContext());
+  fetcher->set_request_context(request_context);
   fetcher->set_upload_data("text/plain", form_xml);
   fetcher->Start();
   return true;
