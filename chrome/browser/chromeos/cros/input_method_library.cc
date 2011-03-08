@@ -713,6 +713,7 @@ class InputMethodLibraryImpl : public InputMethodLibrary,
     if (type.value == NotificationType::APP_TERMINATING) {
       notification_registrar_.RemoveAll();
       StopInputMethodDaemon();
+      candidate_window_controller_.reset(NULL);
     }
   }
 
@@ -773,7 +774,8 @@ class InputMethodLibraryImpl : public InputMethodLibrary,
   // should be checked where we call libcros functions.
   bool initialized_successfully_;
 
-  // The candidate window.
+  // The candidate window.  This will be deleted when the APP_TERMINATING
+  // message is sent.
   scoped_ptr<CandidateWindowController> candidate_window_controller_;
 
   // The active input method ids cache.
