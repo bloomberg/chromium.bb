@@ -288,9 +288,9 @@ def ValidateSdk(env):
     if os.path.exists(env.subst(c)):
       continue
     # Windows build does not use cygwin and so can not see nacl subdirectory
-    # if it's cygwin's symlink - check for nacl64/include instead...
-    if os.path.exists(re.sub(r'nacl/include/([^/]*)$',
-                             r'nacl64/include/\1',
+    # if it's cygwin's symlink - check for /include instead...
+    if os.path.exists(re.sub(r'(nacl64|nacl)/include/([^/]*)$',
+                             r'include/\1',
                              env.subst(c))):
       continue
     message = env.subst('''
