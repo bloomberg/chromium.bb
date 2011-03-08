@@ -640,7 +640,7 @@ WindowWin::WindowWin(WindowDelegate* window_delegate)
   set_window_ex_style(0);
 }
 
-void WindowWin::Init(HWND parent, const gfx::Rect& bounds) {
+void WindowWin::Init(gfx::NativeView parent, const gfx::Rect& bounds) {
   // We need to save the parent window, since later calls to GetParent() will
   // return NULL.
   owning_hwnd_ = parent;
@@ -807,12 +807,12 @@ void WindowWin::OnInitMenu(HMENU menu) {
                      !is_minimized);
 }
 
-void WindowWin::OnMouseLeave() {
+LRESULT WindowWin::OnMouseLeave(UINT message, WPARAM w_param, LPARAM l_param) {
   // We only need to manually track WM_MOUSELEAVE messages between the client
   // and non-client area when we're not using the native frame.
   if (GetWindow()->non_client_view()->UseNativeFrame()) {
     SetMsgHandled(FALSE);
-    return;
+    return 0;
   }
 
   bool process_mouse_exited = true;
@@ -832,7 +832,37 @@ void WindowWin::OnMouseLeave() {
 
   if (process_mouse_exited)
     ProcessMouseExited();
+  return 0;
 }
+
+LRESULT WindowWin::OnMouseRange(UINT message, WPARAM w_param, LPARAM l_param) {
+  if (message == WM_RBUTTONUP) {
+    if (is_right_mouse_pressed_on_caption_) {
+      is_right_mouse_pressed_on_caption_ = false;
+      ReleaseCapture();
+      // |point| is in window coordinates, but WM_NCHITTEST and TrackPopupMenu()
+      // expect screen coordinates.
+      CPoint screen_point(l_param);
+      MapWindowPoints(GetNativeView(), HWND_DESKTOP, &screen_point, 1);
+      w_param = SendMessage(GetNativeView(), WM_NCHITTEST, 0,
+                            MAKELPARAM(screen_point.x, screen_point.y));
+      if (w_param == HTCAPTION || w_param == HTSYSMENU) {
+        UINT flags = TPM_LEFTBUTTON | TPM_RIGHTBUTTON | TPM_RETURNCMD;
+        if (base::i18n::IsRTL())
+          flags |= TPM_RIGHTALIGN;
+        HMENU system_menu = GetSystemMenu(GetNativeView(), FALSE);
+        int id = TrackPopupMenu(system_menu, flags, screen_point.x,
+                                screen_point.y, 0, GetNativeView(), NULL);
+        ExecuteSystemMenuCommand(id);
+        return 0;
+      }
+    }
+  }
+
+  WidgetWin::OnMouseRange(message, w_param, l_param);
+  return 0;
+}
+
 
 LRESULT WindowWin::OnNCActivate(BOOL active) {
   is_active_ = !!active;
@@ -953,17 +983,14 @@ LRESULT WindowWin::OnNCHitTest(const CPoint& point) {
   return WidgetWin::OnNCHitTest(point);
 }
 
-void WindowWin::OnNCPaint(HRGN rgn) {
-  // When using a custom frame, we want to avoid calling DefWindowProc() since
-  // that may render artifacts.
-  SetMsgHandled(!GetWindow()->non_client_view()->UseNativeFrame());
-}
-
-void WindowWin::OnNCLButtonDown(UINT ht_component, const CPoint& point) {
+LRESULT WindowWin::OnNCMouseRange(UINT message,
+                                  WPARAM w_param,
+                                  LPARAM l_param) {
   // When we're using a native frame, window controls work without us
   // interfering.
-  if (!GetWindow()->non_client_view()->UseNativeFrame()) {
-    switch (ht_component) {
+  if (message == WM_NCLBUTTONDOWN &&
+      !GetWindow()->non_client_view()->UseNativeFrame()) {
+    switch (w_param) {
       case HTCLOSE:
       case HTMINBUTTON:
       case HTMAXBUTTON: {
@@ -979,32 +1006,15 @@ void WindowWin::OnNCLButtonDown(UINT ht_component, const CPoint& point) {
         // our view! Ick! By handling this message we prevent Windows from
         // doing this undesirable thing, but that means we need to roll the
         // sys-command handling ourselves.
-        ProcessNCMousePress(point, MK_LBUTTON);
-        return;
+        // Combine |w_param| with common key state message flags.
+        w_param |= ((GetKeyState(VK_CONTROL) & 0x80) == 0x80)? MK_CONTROL : 0;
+        w_param |= ((GetKeyState(VK_SHIFT) & 0x80) == 0x80)? MK_SHIFT : 0;
+        ProcessMousePressed(message, w_param, l_param);
+        return 0;
       }
     }
-  }
-
-  WidgetWin::OnNCLButtonDown(ht_component, point);
-
-  /* TODO(beng): Fix the standard non-client over-painting bug. This code
-                 doesn't work but identifies the problem.
-  if (!IsMsgHandled()) {
-    // WindowWin::OnNCLButtonDown set the message as unhandled. This normally
-    // means WidgetWin::ProcessWindowMessage will pass it to
-    // DefWindowProc. Sadly, DefWindowProc for WM_NCLBUTTONDOWN does weird
-    // non-client painting, so we need to call it directly here inside a
-    // scoped update lock.
-    ScopedRedrawLock lock(this);
-    DefWindowProc(GetNativeView(), WM_NCLBUTTONDOWN, ht_component,
-                  MAKELPARAM(point.x, point.y));
-    SetMsgHandled(TRUE);
-  }
-  */
-}
-
-void WindowWin::OnNCRButtonDown(UINT ht_component, const CPoint& point) {
-  if (ht_component == HTCAPTION || ht_component == HTSYSMENU) {
+  } else if (message == WM_NCRBUTTONDOWN &&
+      (w_param == HTCAPTION || w_param == HTSYSMENU)) {
     is_right_mouse_pressed_on_caption_ = true;
     // We SetCapture() to ensure we only show the menu when the button down and
     // up are both on the caption.  Note: this causes the button up to be
@@ -1012,32 +1022,29 @@ void WindowWin::OnNCRButtonDown(UINT ht_component, const CPoint& point) {
     SetCapture();
   }
 
-  WidgetWin::OnNCRButtonDown(ht_component, point);
+  WidgetWin::OnNCMouseRange(message, w_param, l_param);
+
+  /* TODO(beng): Fix the standard non-client over-painting bug. This code
+                 doesn't work but identifies the problem.
+  if (message == WM_NCLBUTTONDOWN && !IsMsgHandled()) {
+    // WindowWin::OnNCLButtonDown set the message as unhandled. This normally
+    // means WidgetWin::ProcessWindowMessage will pass it to
+    // DefWindowProc. Sadly, DefWindowProc for WM_NCLBUTTONDOWN does weird
+    // non-client painting, so we need to call it directly here inside a
+    // scoped update lock.
+    ScopedRedrawLock lock(this);
+    DefWindowProc(GetNativeView(), WM_NCLBUTTONDOWN, w_param, l_param);
+    SetMsgHandled(TRUE);
+  }
+  */
+
+  return 0;
 }
 
-void WindowWin::OnRButtonUp(UINT ht_component, const CPoint& point) {
-  if (is_right_mouse_pressed_on_caption_) {
-    is_right_mouse_pressed_on_caption_ = false;
-    ReleaseCapture();
-    // |point| is in window coordinates, but WM_NCHITTEST and TrackPopupMenu()
-    // expect screen coordinates.
-    CPoint screen_point(point);
-    MapWindowPoints(GetNativeView(), HWND_DESKTOP, &screen_point, 1);
-    ht_component = SendMessage(GetNativeView(), WM_NCHITTEST, 0,
-                               MAKELPARAM(screen_point.x, screen_point.y));
-    if (ht_component == HTCAPTION || ht_component == HTSYSMENU) {
-      UINT flags = TPM_LEFTBUTTON | TPM_RIGHTBUTTON | TPM_RETURNCMD;
-      if (base::i18n::IsRTL())
-        flags |= TPM_RIGHTALIGN;
-      HMENU system_menu = GetSystemMenu(GetNativeView(), FALSE);
-      int id = TrackPopupMenu(system_menu, flags, screen_point.x,
-                              screen_point.y, 0, GetNativeView(), NULL);
-      ExecuteSystemMenuCommand(id);
-      return;
-    }
-  }
-
-  WidgetWin::OnRButtonUp(ht_component, point);
+void WindowWin::OnNCPaint(HRGN rgn) {
+  // When using a custom frame, we want to avoid calling DefWindowProc() since
+  // that may render artifacts.
+  SetMsgHandled(!GetWindow()->non_client_view()->UseNativeFrame());
 }
 
 LRESULT WindowWin::OnNCUAHDrawCaption(UINT msg, WPARAM w_param,
@@ -1445,18 +1452,6 @@ void WindowWin::UpdateAccessibleState() {
         CHILDID_SELF, PROPID_ACC_STATE, var);
     }
   }
-}
-
-void WindowWin::ProcessNCMousePress(const CPoint& point, int flags) {
-  CPoint temp = point;
-  MapWindowPoints(HWND_DESKTOP, GetNativeView(), &temp, 1);
-  UINT message_flags = 0;
-  if ((GetKeyState(VK_CONTROL) & 0x80) == 0x80)
-    message_flags |= MK_CONTROL;
-  if ((GetKeyState(VK_SHIFT) & 0x80) == 0x80)
-    message_flags |= MK_SHIFT;
-  message_flags |= flags;
-  ProcessMousePressed(temp, message_flags, false, false);
 }
 
 LRESULT WindowWin::CallDefaultNCActivateHandler(BOOL active) {

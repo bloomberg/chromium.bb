@@ -18,12 +18,9 @@ namespace {
 // as with mouse messages, so we need to explicitly ask for these states.
 int GetKeyStateFlags() {
   int flags = 0;
-  if (GetKeyState(VK_MENU) & 0x80)
-    flags |= ui::Event::EF_ALT_DOWN;
-  if (GetKeyState(VK_SHIFT) & 0x80)
-    flags |= ui::Event::EF_SHIFT_DOWN;
-  if (GetKeyState(VK_CONTROL) & 0x80)
-    flags |= ui::Event::EF_CONTROL_DOWN;
+  flags |= (GetKeyState(VK_MENU) & 0x80)? ui::EF_ALT_DOWN : 0;
+  flags |= (GetKeyState(VK_SHIFT) & 0x80)? ui::EF_SHIFT_DOWN : 0;
+  flags |= (GetKeyState(VK_CONTROL) & 0x80)? ui::EF_CONTROL_DOWN : 0;
   return flags;
 }
 
@@ -32,6 +29,7 @@ ui::Event::EventType EventTypeFromNative(NativeEvent native_event) {
   switch (native_event.message) {
     case WM_KEYDOWN:
     case WM_SYSKEYDOWN:
+    case WM_CHAR:
       return ui::Event::ET_KEY_PRESSED;
     case WM_KEYUP:
     case WM_SYSKEYUP:
@@ -72,22 +70,22 @@ ui::Event::EventType EventTypeFromNative(NativeEvent native_event) {
 
 bool IsClientMouseEvent(NativeEvent native_event) {
   return native_event.message == WM_MOUSELEAVE ||
+         native_event.message == WM_MOUSEHOVER ||
         (native_event.message >= WM_MOUSEFIRST &&
          native_event.message <= WM_MOUSELAST);
 }
 
 bool IsNonClientMouseEvent(NativeEvent native_event) {
   return native_event.message == WM_NCMOUSELEAVE ||
+         native_event.message == WM_NCMOUSEHOVER ||
         (native_event.message >= WM_NCMOUSEMOVE &&
-         native_event.message <= WM_NCMBUTTONDBLCLK);
+         native_event.message <= WM_NCXBUTTONDBLCLK);
 }
 
 gfx::Point MousePositionFromNative(NativeEvent native_event) {
-  if (IsClientMouseEvent(native_event)) {
-    // Client message. The position is contained in the LPARAM.
-    return gfx::Point(GET_X_LPARAM(native_event.lParam),
-                      GET_Y_LPARAM(native_event.lParam));
-  }
+  // Client message. The position is contained in the LPARAM.
+  if (IsClientMouseEvent(native_event))
+    return gfx::Point(native_event.lParam);
   DCHECK(IsNonClientMouseEvent(native_event));
   // Non-client message. The position is contained in a POINTS structure in
   // LPARAM, and is in screen coordinates so we have to convert to client.
@@ -143,20 +141,14 @@ int MouseEventFlagsFromNative(NativeEvent native_event) {
 }
 
 int MouseWheelEventFlagsFromNative(NativeEvent native_event) {
-  int native_flags = GET_KEYSTATE_WPARAM(native_event.wParam);
+  int win_flags = GET_KEYSTATE_WPARAM(native_event.wParam);
   int flags = 0;
-  if (native_flags & MK_CONTROL)
-    flags |= ui::Event::EF_CONTROL_DOWN;
-  if (native_flags & MK_SHIFT)
-    flags |= ui::Event::EF_SHIFT_DOWN;
-  if (GetKeyState(VK_MENU) < 0)
-    flags |= ui::Event::EF_ALT_DOWN;
-  if (native_flags & MK_LBUTTON)
-    flags |= ui::Event::EF_LEFT_BUTTON_DOWN;
-  if (native_flags & MK_MBUTTON)
-    flags |= ui::Event::EF_MIDDLE_BUTTON_DOWN;
-  if (native_flags & MK_RBUTTON)
-    flags |= ui::Event::EF_RIGHT_BUTTON_DOWN;
+  flags |= (win_flags & MK_CONTROL) ? ui::MouseEvent::EF_CONTROL_DOWN : 0;
+  flags |= (win_flags & MK_SHIFT) ? ui::MouseEvent::EF_SHIFT_DOWN : 0;
+  flags |= (GetKeyState(VK_MENU) < 0) ? ui::MouseEvent::EF_ALT_DOWN : 0;
+  flags |= (win_flags & MK_LBUTTON) ? ui::MouseEvent::EF_LEFT_BUTTON_DOWN : 0;
+  flags |= (win_flags & MK_MBUTTON) ? ui::MouseEvent::EF_MIDDLE_BUTTON_DOWN : 0;
+  flags |= (win_flags & MK_RBUTTON) ? ui::MouseEvent::EF_RIGHT_BUTTON_DOWN : 0;
   return flags;
 }
 

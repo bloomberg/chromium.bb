@@ -38,6 +38,7 @@ Event::Event(NativeEvent2 native_event_2, ui::EventType type, int flags,
 ////////////////////////////////////////////////////////////////////////////////
 // LocatedEvent, protected:
 
+// TODO(msw): Kill this legacy constructor when we update uses.
 LocatedEvent::LocatedEvent(ui::EventType type, const gfx::Point& location,
                            int flags)
     : Event(type, flags),
@@ -51,9 +52,6 @@ LocatedEvent::LocatedEvent(const LocatedEvent& model, View* source,
   if (target)
     View::ConvertPointToView(source, target, &location_);
 }
-
-////////////////////////////////////////////////////////////////////////////////
-// LocatedEvent, private:
 
 LocatedEvent::LocatedEvent(const LocatedEvent& model, RootView* root)
     : Event(model),
@@ -73,16 +71,17 @@ KeyEvent::KeyEvent(ui::EventType type, ui::KeyboardCode key_code,
 ////////////////////////////////////////////////////////////////////////////////
 // MouseEvent, public:
 
+// TODO(msw): Kill this legacy constructor when we update uses.
 MouseEvent::MouseEvent(ui::EventType type,
-                       View* from,
-                       View* to,
+                       View* source,
+                       View* target,
                        const gfx::Point &l,
                        int flags)
-    : LocatedEvent(MouseEvent(type, l.x(), l.y(), flags), from, to) {
+    : LocatedEvent(MouseEvent(type, l.x(), l.y(), flags), source, target) {
 }
 
-MouseEvent::MouseEvent(const MouseEvent& model, View* from, View* to)
-    : LocatedEvent(model, from, to) {
+MouseEvent::MouseEvent(const MouseEvent& model, View* source, View* target)
+    : LocatedEvent(model, source, target) {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -97,17 +96,18 @@ TouchEvent::TouchEvent(ui::EventType type, int x, int y, int flags,
 
 
 TouchEvent::TouchEvent(ui::EventType type,
-                       View* from,
-                       View* to,
+                       View* source,
+                       View* target,
                        const gfx::Point& l,
                        int flags,
                        int touch_id)
-    : LocatedEvent(TouchEvent(type, l.x(), l.y(), flags, touch_id), from, to),
+    : LocatedEvent(TouchEvent(type, l.x(), l.y(), flags, touch_id), source,
+                              target),
       touch_id_(touch_id) {
 }
 
-TouchEvent::TouchEvent(const TouchEvent& model, View* from, View* to)
-    : LocatedEvent(model, from, to),
+TouchEvent::TouchEvent(const TouchEvent& model, View* source, View* target)
+    : LocatedEvent(model, source, target),
       touch_id_(model.touch_id_) {
 }
 #endif

@@ -153,8 +153,6 @@ class WidgetGtk : public Widget,
   virtual void Init(gfx::NativeView parent, const gfx::Rect& bounds);
   virtual void InitWithWidget(Widget* parent, const gfx::Rect& bounds);
   virtual gfx::NativeView GetNativeView() const;
-  virtual void GenerateMousePressedForView(View* view,
-                                           const gfx::Point& point);
   virtual bool GetAccelerator(int cmd_id, ui::Accelerator* accelerator);
   virtual Window* GetWindow();
   virtual const Window* GetWindow() const;

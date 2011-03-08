@@ -142,6 +142,23 @@ LocatedEvent::LocatedEvent(NativeEvent2 native_event_2,
 #endif
 
 ////////////////////////////////////////////////////////////////////////////////
+// MouseEvent, public:
+
+MouseEvent::MouseEvent(NativeEvent native_event)
+    : LocatedEvent(native_event) {
+}
+
+#if !defined(TOUCH_UI)
+MouseEvent::MouseEvent(NativeEvent2 native_event_2,
+                       FromNativeEvent2 from_native)
+    : LocatedEvent(native_event_2, from_native) {
+  // No one should ever call this on Gtk-views.
+  // TODO(msw): remove once we rid views of Gtk/Gdk.
+  NOTREACHED();
+}
+#endif
+
+////////////////////////////////////////////////////////////////////////////////
 // KeyEvent, public:
 
 KeyEvent::KeyEvent(NativeEvent native_event)
@@ -164,14 +181,14 @@ KeyEvent::KeyEvent(NativeEvent2 native_event_2, FromNativeEvent2 from_native)
 // MouseWheelEvent, public:
 
 MouseWheelEvent::MouseWheelEvent(NativeEvent native_event)
-    : LocatedEvent(native_event),
+    : MouseEvent(native_event),
       offset_(GetMouseWheelOffset(native_event)) {
 }
 
 #if !defined(TOUCH_UI)
 MouseWheelEvent::MouseWheelEvent(NativeEvent2 native_event_2,
                                  FromNativeEvent2 from_native)
-    : LocatedEvent(native_event_2, from_native) {
+    : MouseEvent(native_event_2, from_native) {
   // No one should ever call this on Gtk-views.
   // TODO(msw): remove once we rid views of Gtk/Gdk.
   NOTREACHED();

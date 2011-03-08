@@ -121,8 +121,6 @@ class WidgetWin : public ui::WindowImpl,
   virtual void Init(gfx::NativeView parent, const gfx::Rect& bounds) OVERRIDE;
   virtual void InitWithWidget(Widget* parent, const gfx::Rect& bounds) OVERRIDE;
   virtual gfx::NativeView GetNativeView() const OVERRIDE;
-  virtual void GenerateMousePressedForView(View* view,
-                                           const gfx::Point& point) OVERRIDE;
   virtual bool GetAccelerator(int cmd_id,
                               ui::Accelerator* accelerator) OVERRIDE;
   virtual Window* GetWindow() OVERRIDE;
@@ -240,7 +238,7 @@ class WidgetWin : public ui::WindowImpl,
   BEGIN_MSG_MAP_EX(WidgetWin)
     // Range handlers must go first!
     MESSAGE_RANGE_HANDLER_EX(WM_MOUSEFIRST, WM_MOUSELAST, OnMouseRange)
-    MESSAGE_RANGE_HANDLER_EX(WM_NCMOUSEMOVE, WM_NCMOUSEMOVE, OnMouseRange)
+    MESSAGE_RANGE_HANDLER_EX(WM_NCMOUSEMOVE, WM_NCXBUTTONDBLCLK, OnNCMouseRange)
 
     // Reflected message handler
     MESSAGE_HANDLER_EX(kReflectedMessage, OnReflectedMessage)
@@ -254,9 +252,14 @@ class WidgetWin : public ui::WindowImpl,
 
     // Non-atlcrack.h handlers
     MESSAGE_HANDLER_EX(WM_GETOBJECT, OnGetObject)
-    MESSAGE_HANDLER_EX(WM_NCMOUSELEAVE, OnNCMouseLeave)
+
+    // Mouse events.
+    MESSAGE_HANDLER_EX(WM_MOUSEACTIVATE, OnMouseActivate)
     MESSAGE_HANDLER_EX(WM_MOUSELEAVE, OnMouseLeave)
+    MESSAGE_HANDLER_EX(WM_MOUSEMOVE, OnMouseMove)
     MESSAGE_HANDLER_EX(WM_MOUSEWHEEL, OnMouseWheel)
+    MESSAGE_HANDLER_EX(WM_NCMOUSELEAVE, OnNCMouseLeave)
+    MESSAGE_HANDLER_EX(WM_NCMOUSEMOVE, OnNCMouseMove)
 
     // Key events.
     MESSAGE_HANDLER_EX(WM_KEYDOWN, OnKeyDown)
@@ -285,36 +288,15 @@ class WidgetWin : public ui::WindowImpl,
     MSG_WM_INITMENU(OnInitMenu)
     MSG_WM_INITMENUPOPUP(OnInitMenuPopup)
     MSG_WM_KILLFOCUS(OnKillFocus)
-    MSG_WM_LBUTTONDBLCLK(OnLButtonDblClk)
-    MSG_WM_LBUTTONDOWN(OnLButtonDown)
-    MSG_WM_LBUTTONUP(OnLButtonUp)
-    MSG_WM_MBUTTONDOWN(OnMButtonDown)
-    MSG_WM_MBUTTONUP(OnMButtonUp)
-    MSG_WM_MBUTTONDBLCLK(OnMButtonDblClk)
-    MSG_WM_MOUSEACTIVATE(OnMouseActivate)
-    MSG_WM_MOUSEMOVE(OnMouseMove)
     MSG_WM_MOVE(OnMove)
     MSG_WM_MOVING(OnMoving)
     MSG_WM_NCACTIVATE(OnNCActivate)
     MSG_WM_NCCALCSIZE(OnNCCalcSize)
     MSG_WM_NCHITTEST(OnNCHitTest)
-    MSG_WM_NCMOUSEMOVE(OnNCMouseMove)
-    MSG_WM_NCLBUTTONDBLCLK(OnNCLButtonDblClk)
-    MSG_WM_NCLBUTTONDOWN(OnNCLButtonDown)
-    MSG_WM_NCLBUTTONUP(OnNCLButtonUp)
-    MSG_WM_NCMBUTTONDBLCLK(OnNCMButtonDblClk)
-    MSG_WM_NCMBUTTONDOWN(OnNCMButtonDown)
-    MSG_WM_NCMBUTTONUP(OnNCMButtonUp)
     MSG_WM_NCPAINT(OnNCPaint)
-    MSG_WM_NCRBUTTONDBLCLK(OnNCRButtonDblClk)
-    MSG_WM_NCRBUTTONDOWN(OnNCRButtonDown)
-    MSG_WM_NCRBUTTONUP(OnNCRButtonUp)
     MSG_WM_NOTIFY(OnNotify)
     MSG_WM_PAINT(OnPaint)
     MSG_WM_POWERBROADCAST(OnPowerBroadcast)
-    MSG_WM_RBUTTONDBLCLK(OnRButtonDblClk)
-    MSG_WM_RBUTTONDOWN(OnRButtonDown)
-    MSG_WM_RBUTTONUP(OnRButtonUp)
     MSG_WM_SETFOCUS(OnSetFocus)
     MSG_WM_SETICON(OnSetIcon)
     MSG_WM_SETTEXT(OnSetText)
@@ -364,34 +346,20 @@ class WidgetWin : public ui::WindowImpl,
   virtual LRESULT OnKeyDown(UINT message, WPARAM w_param, LPARAM l_param);
   virtual LRESULT OnKeyUp(UINT message, WPARAM w_param, LPARAM l_param);
   virtual void OnKillFocus(HWND focused_window);
-  virtual void OnLButtonDblClk(UINT flags, const CPoint& point);
-  virtual void OnLButtonDown(UINT flags, const CPoint& point);
-  virtual void OnLButtonUp(UINT flags, const CPoint& point);
-  virtual void OnMButtonDblClk(UINT flags, const CPoint& point);
-  virtual void OnMButtonDown(UINT flags, const CPoint& point);
-  virtual void OnMButtonUp(UINT flags, const CPoint& point);
-  virtual LRESULT OnMouseActivate(HWND window, UINT hittest_code, UINT message);
-  virtual void OnMouseMove(UINT flags, const CPoint& point);
+  virtual LRESULT OnMouseActivate(UINT message, WPARAM w_param, LPARAM l_param);
   virtual LRESULT OnMouseLeave(UINT message, WPARAM w_param, LPARAM l_param);
+  virtual LRESULT OnMouseMove(UINT message, WPARAM w_param, LPARAM l_param);
+  virtual LRESULT OnMouseRange(UINT message, WPARAM w_param, LPARAM l_param);
   virtual LRESULT OnMouseWheel(UINT message, WPARAM w_param, LPARAM l_param);
   virtual void OnMove(const CPoint& point);
   virtual void OnMoving(UINT param, LPRECT new_bounds);
-  virtual LRESULT OnMouseRange(UINT msg, WPARAM w_param, LPARAM l_param);
   virtual LRESULT OnNCActivate(BOOL active);
   virtual LRESULT OnNCCalcSize(BOOL w_param, LPARAM l_param);
   virtual LRESULT OnNCHitTest(const CPoint& pt);
-  virtual void OnNCLButtonDblClk(UINT flags, const CPoint& point);
-  virtual void OnNCLButtonDown(UINT flags, const CPoint& point);
-  virtual void OnNCLButtonUp(UINT flags, const CPoint& point);
-  virtual void OnNCMButtonDblClk(UINT flags, const CPoint& point);
-  virtual void OnNCMButtonDown(UINT flags, const CPoint& point);
-  virtual void OnNCMButtonUp(UINT flags, const CPoint& point);
-  virtual LRESULT OnNCMouseLeave(UINT uMsg, WPARAM w_param, LPARAM l_param);
-  virtual LRESULT OnNCMouseMove(UINT flags, const CPoint& point);
+  virtual LRESULT OnNCMouseLeave(UINT message, WPARAM w_param, LPARAM l_param);
+  virtual LRESULT OnNCMouseMove(UINT message, WPARAM w_param, LPARAM l_param);
+  virtual LRESULT OnNCMouseRange(UINT message, WPARAM w_param, LPARAM l_param);
   virtual void OnNCPaint(HRGN rgn);
-  virtual void OnNCRButtonDblClk(UINT flags, const CPoint& point);
-  virtual void OnNCRButtonDown(UINT flags, const CPoint& point);
-  virtual void OnNCRButtonUp(UINT flags, const CPoint& point);
   virtual LRESULT OnNCUAHDrawCaption(UINT msg,
                                      WPARAM w_param,
                                      LPARAM l_param);
@@ -399,9 +367,6 @@ class WidgetWin : public ui::WindowImpl,
   virtual LRESULT OnNotify(int w_param, NMHDR* l_param);
   virtual void OnPaint(HDC dc);
   virtual LRESULT OnPowerBroadcast(DWORD power_event, DWORD data);
-  virtual void OnRButtonDblClk(UINT flags, const CPoint& point);
-  virtual void OnRButtonDown(UINT flags, const CPoint& point);
-  virtual void OnRButtonUp(UINT flags, const CPoint& point);
   virtual LRESULT OnReflectedMessage(UINT msg, WPARAM w_param, LPARAM l_param);
   virtual void OnSetFocus(HWND focused_window);
   virtual LRESULT OnSetIcon(UINT size_type, HICON new_icon);
@@ -425,13 +390,9 @@ class WidgetWin : public ui::WindowImpl,
   // Actually handle mouse events. These functions are called by subclasses who
   // override the message handlers above to do the actual real work of handling
   // the event in the View system.
-  bool ProcessMousePressed(const CPoint& point,
-                           UINT flags,
-                           bool dbl_click,
-                           bool non_client);
-  void ProcessMouseDragged(const CPoint& point, UINT flags);
-  void ProcessMouseReleased(const CPoint& point, UINT flags);
-  void ProcessMouseMoved(const CPoint& point, UINT flags, bool is_nonclient);
+  bool ProcessMousePressed(UINT message, WPARAM w_param, LPARAM l_param);
+  bool ProcessMouseReleased(UINT message, WPARAM w_param, LPARAM l_param);
+  bool ProcessMouseMoved(UINT message, WPARAM w_param, LPARAM l_param);
   void ProcessMouseExited();
 
   // Called when a MSAA screen reader client is detected.
@@ -539,7 +500,7 @@ class WidgetWin : public ui::WindowImpl,
   // If true, the last event was a mouse move event.
   bool last_mouse_event_was_move_;
 
-  // Coordinates of the last mouse move event, in screen coordinates.
+  // Coordinates of the last mouse move event.
   int last_mouse_move_x_;
   int last_mouse_move_y_;
 

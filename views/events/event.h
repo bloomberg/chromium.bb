@@ -83,9 +83,6 @@ class Event {
 #if defined(OS_WIN)
   // Returns the EventFlags in terms of windows flags.
   int GetWindowsFlags() const;
-
-  // Convert windows flags to views::Event flags
-  static int ConvertWindowsFlags(uint32 win_flags);
 #elif defined(OS_LINUX)
   // Convert the state member on a GdkEvent to views::Event flags
   static int GetFlagsFromGdkState(unsigned int state);
@@ -137,23 +134,22 @@ class LocatedEvent : public Event {
   const gfx::Point& location() const { return location_; }
 
  protected:
-  // This constructor is to allow converting the location of an event from the
-  // widget's coordinate system to the RootView's coordinate system.
-  LocatedEvent(const LocatedEvent& model, RootView* root);
-
   explicit LocatedEvent(NativeEvent native_event);
   LocatedEvent(NativeEvent2 native_event_2, FromNativeEvent2 from_native);
 
-  // TODO(msw): Kill this legacy constructor when we update MouseEvent???
+  // TODO(msw): Kill this legacy constructor when we update uses.
   // Simple initialization from cracked metadata.
   LocatedEvent(ui::EventType type, const gfx::Point& location, int flags);
 
   // Create a new LocatedEvent which is identical to the provided model.
   // If source / target views are provided, the model location will be converted
-  // from 'source' coordinate system to 'target' coordinate system
+  // from |source| coordinate system to |target| coordinate system.
   LocatedEvent(const LocatedEvent& model, View* source, View* target);
 
- private:
+  // This constructor is to allow converting the location of an event from the
+  // widget's coordinate system to the RootView's coordinate system.
+  LocatedEvent(const LocatedEvent& model, RootView* root);
+
   gfx::Point location_;
 };
 
@@ -166,29 +162,29 @@ class LocatedEvent : public Event {
 ////////////////////////////////////////////////////////////////////////////////
 class MouseEvent : public LocatedEvent {
  public:
+  explicit MouseEvent(NativeEvent native_event);
+  MouseEvent(NativeEvent2 native_event_2, FromNativeEvent2 from_native);
+
+  // Create a new MouseEvent which is identical to the provided model.
+  // If source / target views are provided, the model location will be converted
+  // from |source| coordinate system to |target| coordinate system.
+  MouseEvent(const MouseEvent& model, View* source, View* target);
+
+  // TODO(msw): Kill this legacy constructor when we update uses.
   // Create a new mouse event
   MouseEvent(ui::EventType type, int x, int y, int flags)
       : LocatedEvent(type, gfx::Point(x, y), flags) {
   }
 
-  // Create a new mouse event from a type and a point. If from / to views
-  // are provided, the point will be converted from 'from' coordinate system to
-  // 'to' coordinate system.
+  // TODO(msw): Kill this legacy constructor when we update uses.
+  // Create a new mouse event from a type and a point. If source / target views
+  // are provided, the point will be converted from |source| coordinate system
+  // to |target| coordinate system.
   MouseEvent(ui::EventType type,
-             View* from,
-             View* to,
+             View* source,
+             View* target,
              const gfx::Point &l,
              int flags);
-
-  // Create a new MouseEvent which is identical to the provided model.
-  // If from / to views are provided, the model location will be converted
-  // from 'from' coordinate system to 'to' coordinate system
-  MouseEvent(const MouseEvent& model, View* from, View* to);
-
-#if defined(TOUCH_UI)
-  // Create a mouse event from an X mouse event.
-  explicit MouseEvent(XEvent* xevent);
-#endif
 
   // Conveniences to quickly test what button is down
   bool IsOnlyLeftMouseButton() const {
@@ -218,12 +214,13 @@ class MouseEvent : public LocatedEvent {
     return (flags() & ui::EF_RIGHT_BUTTON_DOWN) != 0;
   }
 
- private:
-  friend class RootView;
-
+ protected:
   MouseEvent(const MouseEvent& model, RootView* root)
       : LocatedEvent(model, root) {
   }
+
+ private:
+  friend class RootView;
 
   DISALLOW_COPY_AND_ASSIGN(MouseEvent);
 };
@@ -240,27 +237,26 @@ class MouseEvent : public LocatedEvent {
 ////////////////////////////////////////////////////////////////////////////////
 class TouchEvent : public LocatedEvent {
  public:
+  explicit TouchEvent(NativeEvent native_event);
+  TouchEvent(NativeEvent2 native_event_2, FromNativeEvent2 from_native);
+
   // Create a new touch event.
   TouchEvent(ui::EventType type, int x, int y, int flags, int touch_id);
 
   // Create a new touch event from a type and a point. If from / to views
-  // are provided, the point will be converted from 'from' coordinate system to
-  // 'to' coordinate system.
+  // are provided, the point will be converted from 'source' coordinate system
+  // to 'target' coordinate system.
   TouchEvent(ui::EventType type,
-             View* from,
-             View* to,
+             View* source,
+             View* target,
              const gfx::Point& l,
              int flags,
              int touch_id);
 
   // Create a new TouchEvent which is identical to the provided model.
-  // If from / to views are provided, the model location will be converted
-  // from 'from' coordinate system to 'to' coordinate system.
-  TouchEvent(const TouchEvent& model, View* from, View* to);
-
-#if defined(HAVE_XINPUT2)
-  explicit TouchEvent(XEvent* xev);
-#endif
+  // If source / target views are provided, the model location will be converted
+  // from |source| coordinate system to |target| coordinate system.
+  TouchEvent(const TouchEvent& model, View* source, View* target);
 
   bool identity() const { return touch_id_; }
 
@@ -285,6 +281,7 @@ class TouchEvent : public LocatedEvent {
 //
 //  KeyEvent encapsulates keyboard input events - key press and release.
 //
+////////////////////////////////////////////////////////////////////////////////
 class KeyEvent : public Event {
  public:
   explicit KeyEvent(NativeEvent native_event);
@@ -314,7 +311,7 @@ class KeyEvent : public Event {
 // Note: e.GetOffset() > 0 means scroll up / left.
 //
 ////////////////////////////////////////////////////////////////////////////////
-class MouseWheelEvent : public LocatedEvent {
+class MouseWheelEvent : public MouseEvent {
  public:
   // See |offset| for details.
   static const int kWheelDelta;
@@ -329,7 +326,7 @@ class MouseWheelEvent : public LocatedEvent {
   friend class RootView;
 
   MouseWheelEvent(const MouseWheelEvent& model, RootView* root)
-      : LocatedEvent(model, root),
+      : MouseEvent(model, root),
         offset_(model.offset_) {
   }
 

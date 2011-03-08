@@ -262,10 +262,13 @@ KeyEvent::KeyEvent(NativeEvent2 native_event_2, FromNativeEvent2 from_native)
 ////////////////////////////////////////////////////////////////////////////////
 // MouseEvent, public:
 
-MouseEvent::MouseEvent(XEvent* xev)
-    : LocatedEvent(EventTypeFromNative(xev),
-                   GetMouseEventLocation(xev),
-                   GetMouseEventFlags(xev)) {
+MouseEvent::MouseEvent(NativeEvent native_event)
+    : LocatedEvent(native_event) {
+}
+
+MouseEvent::MouseEvent(NativeEvent2 native_event_2,
+                       FromNativeEvent2 from_native)
+    : LocatedEvent(native_event_2, from_native) {
 }
 
 ////////////////////////////////////////////////////////////////////////////////

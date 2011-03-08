@@ -215,14 +215,6 @@ gfx::NativeView WidgetWin::GetNativeView() const {
   return WindowImpl::hwnd();
 }
 
-void WidgetWin::GenerateMousePressedForView(View* view,
-                                            const gfx::Point& point) {
-  gfx::Point point_in_widget(point);
-  View::ConvertPointToWidget(view, &point_in_widget);
-  GetRootView()->SetMouseHandler(view);
-  ProcessMousePressed(point_in_widget.ToPOINT(), MK_LBUTTON, false, false);
-}
-
 bool WidgetWin::GetAccelerator(int cmd_id, ui::Accelerator* accelerator) {
   return false;
 }
@@ -663,49 +655,45 @@ void WidgetWin::OnKillFocus(HWND focused_window) {
   SetMsgHandled(FALSE);
 }
 
-// TODO(pkasting): ORing the pressed/released button into the flags is _wrong_.
-// It makes it impossible to tell which button was modified when multiple
-// buttons are/were held down.  We need to instead put the modified button into
-// a separate member on the MouseEvent, then audit all consumers of MouseEvents
-// to fix them to use the resulting values correctly.
-
-void WidgetWin::OnLButtonDown(UINT flags, const CPoint& point) {
-  ProcessMousePressed(point, flags | MK_LBUTTON, false, false);
-}
-
-void WidgetWin::OnLButtonUp(UINT flags, const CPoint& point) {
-  ProcessMouseReleased(point, flags | MK_LBUTTON);
-}
-
-void WidgetWin::OnLButtonDblClk(UINT flags, const CPoint& point) {
-  ProcessMousePressed(point, flags | MK_LBUTTON, true, false);
-}
-
-void WidgetWin::OnMButtonDown(UINT flags, const CPoint& point) {
-  ProcessMousePressed(point, flags | MK_MBUTTON, false, false);
-}
-
-void WidgetWin::OnMButtonUp(UINT flags, const CPoint& point) {
-  ProcessMouseReleased(point, flags | MK_MBUTTON);
-}
-
-void WidgetWin::OnMButtonDblClk(UINT flags, const CPoint& point) {
-  ProcessMousePressed(point, flags | MK_MBUTTON, true, false);
-}
-
-LRESULT WidgetWin::OnMouseActivate(HWND window, UINT hittest_code,
-                                   UINT message) {
+LRESULT WidgetWin::OnMouseActivate(UINT message,
+                                   WPARAM w_param,
+                                   LPARAM l_param) {
   SetMsgHandled(FALSE);
   return MA_ACTIVATE;
-}
-
-void WidgetWin::OnMouseMove(UINT flags, const CPoint& point) {
-  ProcessMouseMoved(point, flags, false);
 }
 
 LRESULT WidgetWin::OnMouseLeave(UINT message, WPARAM w_param, LPARAM l_param) {
   tooltip_manager_->OnMouseLeave();
   ProcessMouseExited();
+  return 0;
+}
+
+LRESULT WidgetWin::OnMouseMove(UINT message, WPARAM w_param, LPARAM l_param) {
+  ProcessMouseMoved(message, w_param, l_param);
+  return 0;
+}
+
+LRESULT WidgetWin::OnMouseRange(UINT message, WPARAM w_param, LPARAM l_param) {
+  tooltip_manager_->OnMouse(message, w_param, l_param);
+
+  switch (message) {
+    case WM_LBUTTONDBLCLK:
+    case WM_LBUTTONDOWN:
+    case WM_MBUTTONDBLCLK:
+    case WM_MBUTTONDOWN:
+    case WM_RBUTTONDBLCLK:
+    case WM_RBUTTONDOWN:
+      SetMsgHandled(ProcessMousePressed(message, w_param, l_param));
+      break;
+    case WM_LBUTTONUP:
+    case WM_MBUTTONUP:
+    case WM_RBUTTONUP:
+      SetMsgHandled(ProcessMouseReleased(message, w_param, l_param));
+      break;
+    default:
+      SetMsgHandled(FALSE);
+  }
+
   return 0;
 }
 
@@ -730,12 +718,6 @@ void WidgetWin::OnMove(const CPoint& point) {
 void WidgetWin::OnMoving(UINT param, const LPRECT new_bounds) {
 }
 
-LRESULT WidgetWin::OnMouseRange(UINT msg, WPARAM w_param, LPARAM l_param) {
-  tooltip_manager_->OnMouse(msg, w_param, l_param);
-  SetMsgHandled(FALSE);
-  return 0;
-}
-
 LRESULT WidgetWin::OnNCActivate(BOOL active) {
   SetMsgHandled(FALSE);
   return 0;
@@ -751,40 +733,16 @@ LRESULT WidgetWin::OnNCHitTest(const CPoint& pt) {
   return 0;
 }
 
-void WidgetWin::OnNCLButtonDblClk(UINT flags, const CPoint& point) {
-  SetMsgHandled(ProcessMousePressed(point, flags | MK_LBUTTON, true, true));
-}
-
-void WidgetWin::OnNCLButtonDown(UINT flags, const CPoint& point) {
-  SetMsgHandled(ProcessMousePressed(point, flags | MK_LBUTTON, false, true));
-}
-
-void WidgetWin::OnNCLButtonUp(UINT flags, const CPoint& point) {
-  SetMsgHandled(FALSE);
-}
-
-void WidgetWin::OnNCMButtonDblClk(UINT flags, const CPoint& point) {
-  SetMsgHandled(ProcessMousePressed(point, flags | MK_MBUTTON, true, true));
-}
-
-void WidgetWin::OnNCMButtonDown(UINT flags, const CPoint& point) {
-  SetMsgHandled(ProcessMousePressed(point, flags | MK_MBUTTON, false, true));
-}
-
-void WidgetWin::OnNCMButtonUp(UINT flags, const CPoint& point) {
-  SetMsgHandled(FALSE);
-}
-
-LRESULT WidgetWin::OnNCMouseLeave(UINT uMsg, WPARAM w_param, LPARAM l_param) {
+LRESULT WidgetWin::OnNCMouseLeave(UINT message,
+                                  WPARAM w_param,
+                                  LPARAM l_param) {
   ProcessMouseExited();
   return 0;
 }
 
-LRESULT WidgetWin::OnNCMouseMove(UINT flags, const CPoint& point) {
-  // NC points are in screen coordinates.
-  CPoint temp = point;
-  MapWindowPoints(HWND_DESKTOP, hwnd(), &temp, 1);
-  ProcessMouseMoved(temp, 0, true);
+LRESULT WidgetWin::OnNCMouseMove(UINT message, WPARAM w_param, LPARAM l_param) {
+  tooltip_manager_->OnMouse(message, w_param, l_param);
+  ProcessMouseMoved(message, w_param, l_param);
 
   // We need to process this message to stop Windows from drawing the window
   // controls as the mouse moves over the title bar area when the window is
@@ -792,19 +750,29 @@ LRESULT WidgetWin::OnNCMouseMove(UINT flags, const CPoint& point) {
   return 0;
 }
 
+LRESULT WidgetWin::OnNCMouseRange(UINT message,
+                                  WPARAM w_param,
+                                  LPARAM l_param) {
+  switch (message) {
+    case WM_NCLBUTTONDBLCLK:
+    case WM_NCLBUTTONDOWN:
+    case WM_NCMBUTTONDBLCLK:
+    case WM_NCMBUTTONDOWN:
+    case WM_NCRBUTTONDBLCLK:
+    case WM_NCRBUTTONDOWN:
+      SetMsgHandled(ProcessMousePressed(message, w_param, l_param));
+      break;
+    case WM_NCLBUTTONUP:
+    case WM_NCMBUTTONUP:
+    case WM_NCRBUTTONUP:
+    default:
+      SetMsgHandled(FALSE);
+  }
+
+  return 0;
+}
+
 void WidgetWin::OnNCPaint(HRGN rgn) {
-  SetMsgHandled(FALSE);
-}
-
-void WidgetWin::OnNCRButtonDblClk(UINT flags, const CPoint& point) {
-  SetMsgHandled(ProcessMousePressed(point, flags | MK_RBUTTON, true, true));
-}
-
-void WidgetWin::OnNCRButtonDown(UINT flags, const CPoint& point) {
-  SetMsgHandled(ProcessMousePressed(point, flags | MK_RBUTTON, false, true));
-}
-
-void WidgetWin::OnNCRButtonUp(UINT flags, const CPoint& point) {
   SetMsgHandled(FALSE);
 }
 
@@ -846,18 +814,6 @@ LRESULT WidgetWin::OnPowerBroadcast(DWORD power_event, DWORD data) {
     monitor->ProcessWmPowerBroadcastMessage(power_event);
   SetMsgHandled(FALSE);
   return 0;
-}
-
-void WidgetWin::OnRButtonDown(UINT flags, const CPoint& point) {
-  ProcessMousePressed(point, flags | MK_RBUTTON, false, false);
-}
-
-void WidgetWin::OnRButtonUp(UINT flags, const CPoint& point) {
-  ProcessMouseReleased(point, flags | MK_RBUTTON);
-}
-
-void WidgetWin::OnRButtonDblClk(UINT flags, const CPoint& point) {
-  ProcessMousePressed(point, flags | MK_RBUTTON, true, false);
 }
 
 LRESULT WidgetWin::OnReflectedMessage(UINT msg,
@@ -946,23 +902,15 @@ void WidgetWin::TrackMouseEvents(DWORD mouse_tracking_flags) {
   }
 }
 
-bool WidgetWin::ProcessMousePressed(const CPoint& point,
-                                    UINT flags,
-                                    bool dbl_click,
-                                    bool non_client) {
+bool WidgetWin::ProcessMousePressed(UINT message,
+                                    WPARAM w_param,
+                                    LPARAM l_param) {
   last_mouse_event_was_move_ = false;
-  // Windows gives screen coordinates for nonclient events, while the RootView
-  // expects window coordinates; convert if necessary.
-  gfx::Point converted_point(point);
-  if (non_client)
-    View::ConvertPointToView(NULL, GetRootView(), &converted_point);
-  MouseEvent mouse_pressed(ui::ET_MOUSE_PRESSED,
-                           converted_point.x(),
-                           converted_point.y(),
-                           (dbl_click ? ui::EF_IS_DOUBLE_CLICK : 0) |
-                           (non_client ? ui::EF_IS_NON_CLIENT : 0) |
-                           Event::ConvertWindowsFlags(flags));
-  if (GetRootView()->OnMousePressed(mouse_pressed)) {
+
+  MSG msg;
+  MakeMSG(&msg, message, w_param, l_param, 0, GET_X_LPARAM(l_param),
+          GET_Y_LPARAM(l_param));
+  if (GetRootView()->OnMousePressed(MouseEvent(msg))) {
     is_mouse_down_ = true;
     if (!has_capture_) {
       SetCapture();
@@ -973,21 +921,11 @@ bool WidgetWin::ProcessMousePressed(const CPoint& point,
   return false;
 }
 
-void WidgetWin::ProcessMouseDragged(const CPoint& point, UINT flags) {
+bool WidgetWin::ProcessMouseReleased(UINT message,
+                                     WPARAM w_param,
+                                     LPARAM l_param) {
   last_mouse_event_was_move_ = false;
-  MouseEvent mouse_drag(ui::ET_MOUSE_DRAGGED,
-                        point.x,
-                        point.y,
-                        Event::ConvertWindowsFlags(flags));
-  GetRootView()->OnMouseDragged(mouse_drag);
-}
 
-void WidgetWin::ProcessMouseReleased(const CPoint& point, UINT flags) {
-  last_mouse_event_was_move_ = false;
-  MouseEvent mouse_up(ui::ET_MOUSE_RELEASED,
-                      point.x,
-                      point.y,
-                      Event::ConvertWindowsFlags(flags));
   // Release the capture first, that way we don't get confused if
   // OnMouseReleased blocks.
   if (has_capture_ && ReleaseCaptureOnMouseReleased()) {
@@ -995,35 +933,37 @@ void WidgetWin::ProcessMouseReleased(const CPoint& point, UINT flags) {
     ReleaseCapture();
   }
   is_mouse_down_ = false;
-  GetRootView()->OnMouseReleased(mouse_up, false);
+
+  MSG msg;
+  MakeMSG(&msg, message, w_param, l_param, 0, GET_X_LPARAM(l_param),
+          GET_Y_LPARAM(l_param));
+  GetRootView()->OnMouseReleased(MouseEvent(msg), false);
+  return true;
 }
 
-void WidgetWin::ProcessMouseMoved(const CPoint &point, UINT flags,
-                                  bool is_nonclient) {
+bool WidgetWin::ProcessMouseMoved(UINT message,
+                                  WPARAM w_param,
+                                  LPARAM l_param) {
   // Windows only fires WM_MOUSELEAVE events if the application begins
   // "tracking" mouse events for a given HWND during WM_MOUSEMOVE events.
   // We need to call |TrackMouseEvents| to listen for WM_MOUSELEAVE.
   if (!has_capture_)
-    TrackMouseEvents(is_nonclient ? TME_NONCLIENT | TME_LEAVE : TME_LEAVE);
-  if (has_capture_ && is_mouse_down_) {
-    ProcessMouseDragged(point, flags);
-  } else {
-    gfx::Point screen_loc(point);
-    View::ConvertPointToScreen(GetRootView(), &screen_loc);
-    if (last_mouse_event_was_move_ && last_mouse_move_x_ == screen_loc.x() &&
-        last_mouse_move_y_ == screen_loc.y()) {
-      // Don't generate a mouse event for the same location as the last.
-      return;
-    }
-    last_mouse_move_x_ = screen_loc.x();
-    last_mouse_move_y_ = screen_loc.y();
+    TrackMouseEvents((message == WM_NCMOUSEMOVE) ?
+        TME_NONCLIENT | TME_LEAVE : TME_LEAVE);
+  MSG msg;
+  MakeMSG(&msg, message, w_param, l_param, 0, GET_X_LPARAM(l_param),
+          GET_Y_LPARAM(l_param));
+  if (has_capture_ && is_mouse_down_)
+    GetRootView()->OnMouseDragged(MouseEvent(msg));
+  else if (!last_mouse_event_was_move_ ||
+      (last_mouse_move_x_ != GET_X_LPARAM(l_param) &&
+       last_mouse_move_y_ != GET_Y_LPARAM(l_param))) {
+    last_mouse_move_x_ = GET_X_LPARAM(l_param);
+    last_mouse_move_y_ = GET_Y_LPARAM(l_param);
     last_mouse_event_was_move_ = true;
-    MouseEvent mouse_move(ui::ET_MOUSE_MOVED,
-                          point.x,
-                          point.y,
-                          Event::ConvertWindowsFlags(flags));
-    GetRootView()->OnMouseMoved(mouse_move);
+    GetRootView()->OnMouseMoved(MouseEvent(msg));
   }
+  return true;
 }
 
 void WidgetWin::ProcessMouseExited() {

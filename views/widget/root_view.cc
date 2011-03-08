@@ -85,7 +85,7 @@ void RootView::ProcessMouseDragCanceled() {
   if (mouse_pressed_handler_) {
     // Synthesize a release event.
     MouseEvent release_event(ui::ET_MOUSE_RELEASED, last_mouse_event_x_,
-      last_mouse_event_y_, last_mouse_event_flags_);
+        last_mouse_event_y_, last_mouse_event_flags_);
     OnMouseReleased(release_event, true);
   }
 }
@@ -172,17 +172,6 @@ Widget* RootView::GetWidget() {
 
 bool RootView::OnMousePressed(const MouseEvent& event) {
   MouseEvent e(event, this);
-
-  // This function does not normally handle non-client messages except for
-  // non-client double-clicks. Actually, all double-clicks are special as the
-  // are formed from a single-click followed by a double-click event. When the
-  // double-click event lands on a different view than its single-click part,
-  // we transform it into a single-click which prevents odd things.
-  if ((e.flags() & ui::EF_IS_NON_CLIENT) &&
-      !(e.flags() & ui::EF_IS_DOUBLE_CLICK)) {
-    last_click_handler_ = NULL;
-    return false;
-  }
 
   UpdateCursor(e);
   SetMouseLocationAndFlags(e);

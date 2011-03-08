@@ -601,11 +601,6 @@ gfx::NativeView WidgetGtk::GetNativeView() const {
   return widget_;
 }
 
-void WidgetGtk::GenerateMousePressedForView(View* view,
-                                            const gfx::Point& point) {
-  NOTIMPLEMENTED();
-}
-
 bool WidgetGtk::GetAccelerator(int cmd_id, ui::Accelerator* accelerator) {
   NOTIMPLEMENTED();
   return false;

@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -66,39 +66,39 @@ class WindowWin : public WidgetWin,
   }
 
   // Overridden from Window:
-  virtual gfx::Rect GetBounds() const;
-  virtual gfx::Rect GetNormalBounds() const;
+  virtual gfx::Rect GetBounds() const OVERRIDE;
+  virtual gfx::Rect GetNormalBounds() const OVERRIDE;
   virtual void SetWindowBounds(const gfx::Rect& bounds,
-                               gfx::NativeWindow other_window);
-  virtual void Show();
-  virtual void HideWindow();
-  virtual void SetNativeWindowProperty(const char* name, void* value);
-  virtual void* GetNativeWindowProperty(const char* name);
-  virtual void PushForceHidden();
-  virtual void PopForceHidden();
-  virtual void Activate();
-  virtual void Deactivate();
-  virtual void Close();
-  virtual void Maximize();
-  virtual void Minimize();
-  virtual void Restore();
-  virtual bool IsActive() const;
-  virtual bool IsVisible() const;
-  virtual bool IsMaximized() const;
-  virtual bool IsMinimized() const;
-  virtual void SetFullscreen(bool fullscreen);
-  virtual bool IsFullscreen() const;
-  virtual void SetUseDragFrame(bool use_drag_frame);
-  virtual void EnableClose(bool enable);
-  virtual void DisableInactiveRendering();
-  virtual void UpdateWindowTitle();
-  virtual void UpdateWindowIcon();
-  virtual void SetIsAlwaysOnTop(bool always_on_top);
-  virtual NonClientFrameView* CreateFrameViewForWindow();
-  virtual void UpdateFrameAfterFrameChange();
-  virtual gfx::NativeWindow GetNativeWindow() const;
-  virtual bool ShouldUseNativeFrame() const;
-  virtual void FrameTypeChanged();
+                               gfx::NativeWindow other_window) OVERRIDE;
+  virtual void Show() OVERRIDE;
+  virtual void HideWindow() OVERRIDE;
+  virtual void SetNativeWindowProperty(const char* name, void* value) OVERRIDE;
+  virtual void* GetNativeWindowProperty(const char* name) OVERRIDE;
+  virtual void PushForceHidden() OVERRIDE;
+  virtual void PopForceHidden() OVERRIDE;
+  virtual void Activate() OVERRIDE;
+  virtual void Deactivate() OVERRIDE;
+  virtual void Close() OVERRIDE;
+  virtual void Maximize() OVERRIDE;
+  virtual void Minimize() OVERRIDE;
+  virtual void Restore() OVERRIDE;
+  virtual bool IsActive() const OVERRIDE;
+  virtual bool IsVisible() const OVERRIDE;
+  virtual bool IsMaximized() const OVERRIDE;
+  virtual bool IsMinimized() const OVERRIDE;
+  virtual void SetFullscreen(bool fullscreen) OVERRIDE;
+  virtual bool IsFullscreen() const OVERRIDE;
+  virtual void SetUseDragFrame(bool use_drag_frame) OVERRIDE;
+  virtual void EnableClose(bool enable) OVERRIDE;
+  virtual void DisableInactiveRendering() OVERRIDE;
+  virtual void UpdateWindowTitle() OVERRIDE;
+  virtual void UpdateWindowIcon() OVERRIDE;
+  virtual void SetIsAlwaysOnTop(bool always_on_top) OVERRIDE;
+  virtual NonClientFrameView* CreateFrameViewForWindow() OVERRIDE;
+  virtual void UpdateFrameAfterFrameChange() OVERRIDE;
+  virtual gfx::NativeWindow GetNativeWindow() const OVERRIDE;
+  virtual bool ShouldUseNativeFrame() const OVERRIDE;
+  virtual void FrameTypeChanged() OVERRIDE;
 
   // Returns the system set window title font.
   static gfx::Font GetWindowTitleFont();
@@ -113,7 +113,7 @@ class WindowWin : public WidgetWin,
   // If parent is NULL, this WindowWin is top level on the desktop.
   // If |bounds| is empty, the view is queried for its preferred size and
   // centered on screen.
-  virtual void Init(HWND parent, const gfx::Rect& bounds);
+  virtual void Init(gfx::NativeView parent, const gfx::Rect& bounds) OVERRIDE;
 
   // Sizes the window to the default size specified by its ClientView.
   virtual void SizeWindowToDefault();
@@ -124,35 +124,40 @@ class WindowWin : public WidgetWin,
   virtual gfx::Insets GetClientAreaInsets() const;
 
   // Overridden from WidgetWin:
-  virtual void OnActivate(UINT action, BOOL minimized, HWND window);
-  virtual void OnActivateApp(BOOL active, DWORD thread_id);
+  virtual void OnActivate(UINT action, BOOL minimized, HWND window) OVERRIDE;
+  virtual void OnActivateApp(BOOL active, DWORD thread_id) OVERRIDE;
   virtual LRESULT OnAppCommand(HWND window, short app_command, WORD device,
-                               int keystate);
-  virtual void OnCommand(UINT notification_code, int command_id, HWND window);
-  virtual void OnDestroy();
+                               int keystate) OVERRIDE;
+  virtual void OnCommand(UINT notification_code, int command_id, HWND window)
+      OVERRIDE;
+  virtual void OnDestroy() OVERRIDE;
   virtual LRESULT OnDwmCompositionChanged(UINT msg, WPARAM w_param,
-                                          LPARAM l_param);
-  virtual void OnFinalMessage(HWND window);
-  virtual void OnGetMinMaxInfo(MINMAXINFO* minmax_info);
-  virtual void OnInitMenu(HMENU menu);
-  virtual void OnMouseLeave();
-  virtual LRESULT OnNCActivate(BOOL active);
+                                          LPARAM l_param) OVERRIDE;
+  virtual void OnFinalMessage(HWND window) OVERRIDE;
+  virtual void OnGetMinMaxInfo(MINMAXINFO* minmax_info) OVERRIDE;
+  virtual void OnInitMenu(HMENU menu) OVERRIDE;
+  virtual LRESULT OnMouseLeave(UINT message, WPARAM w_param, LPARAM l_param)
+      OVERRIDE;
+  virtual LRESULT OnMouseRange(UINT message, WPARAM w_param, LPARAM l_param)
+      OVERRIDE;
+  virtual LRESULT OnNCActivate(BOOL active) OVERRIDE;
   LRESULT OnNCCalcSize(BOOL mode, LPARAM l_param);  // Don't override.
-  virtual LRESULT OnNCHitTest(const CPoint& point);
-  virtual void OnNCPaint(HRGN rgn);
-  virtual void OnNCLButtonDown(UINT ht_component, const CPoint& point);
-  virtual void OnNCRButtonDown(UINT ht_component, const CPoint& point);
-  virtual void OnRButtonUp(UINT ht_component, const CPoint& point);
-  virtual LRESULT OnNCUAHDrawCaption(UINT msg, WPARAM w_param, LPARAM l_param);
-  virtual LRESULT OnNCUAHDrawFrame(UINT msg, WPARAM w_param, LPARAM l_param);
-  virtual LRESULT OnSetIcon(UINT size_type, HICON new_icon);
-  virtual LRESULT OnSetText(const wchar_t* text);
-  virtual void OnSettingChange(UINT flags, const wchar_t* section);
-  virtual void OnSize(UINT size_param, const CSize& new_size);
-  virtual void OnSysCommand(UINT notification_code, CPoint click);
-  virtual void OnWindowPosChanging(WINDOWPOS* window_pos);
-  virtual Window* GetWindow() { return this; }
-  virtual const Window* GetWindow() const { return this; }
+  virtual LRESULT OnNCHitTest(const CPoint& point) OVERRIDE;
+  virtual void OnNCPaint(HRGN rgn) OVERRIDE;
+  virtual LRESULT OnNCMouseRange(UINT message, WPARAM w_param, LPARAM l_param)
+      OVERRIDE;
+  virtual LRESULT OnNCUAHDrawCaption(UINT msg, WPARAM w_param, LPARAM l_param)
+      OVERRIDE;
+  virtual LRESULT OnNCUAHDrawFrame(UINT msg, WPARAM w_param, LPARAM l_param)
+      OVERRIDE;
+  virtual LRESULT OnSetIcon(UINT size_type, HICON new_icon) OVERRIDE;
+  virtual LRESULT OnSetText(const wchar_t* text) OVERRIDE;
+  virtual void OnSettingChange(UINT flags, const wchar_t* section) OVERRIDE;
+  virtual void OnSize(UINT size_param, const CSize& new_size) OVERRIDE;
+  virtual void OnSysCommand(UINT notification_code, CPoint click) OVERRIDE;
+  virtual void OnWindowPosChanging(WINDOWPOS* window_pos) OVERRIDE;
+  virtual Window* GetWindow() OVERRIDE { return this; }
+  virtual const Window* GetWindow() const OVERRIDE { return this; }
 
   // Accessor for disable_inactive_rendering_.
   bool disable_inactive_rendering() const {
@@ -209,13 +214,6 @@ class WindowWin : public WidgetWin,
   void UpdateAccessibleName(std::wstring& accessible_name);
   void UpdateAccessibleRole();
   void UpdateAccessibleState();
-
-  // Converts a non-client mouse down message to a regular ChromeViews event
-  // and handle it. |point| is the mouse position of the message in screen
-  // coords. |flags| are flags that would be passed with a WM_L/M/RBUTTON*
-  // message and relate to things like which button was pressed. These are
-  // combined with flags relating to the current key state.
-  void ProcessNCMousePress(const CPoint& point, int flags);
 
   // Calls the default WM_NCACTIVATE handler with the specified activation
   // value, safely wrapping the call in a ScopedRedrawLock to prevent frame
