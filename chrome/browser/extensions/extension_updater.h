@@ -37,13 +37,36 @@ class ManifestFetchData {
  public:
   static const int kNeverPinged = -1;
 
+  // Each ping type is sent at most once per day.
+  enum PingType {
+    // Used for counting total installs of an extension/app/theme.
+    ROLLCALL,
+
+    // Used for counting number of active users of an app, where "active" means
+    // the app was launched at least once since the last active ping.
+    ACTIVE
+  };
+
+  struct PingData {
+    // The number of days it's been since our last rollcall or active ping,
+    // respectively. These are calculated based on the start of day from the
+    // server's perspective.
+    int rollcall_days;
+    int active_days;
+
+    PingData() : rollcall_days(0), active_days(0) {}
+    PingData(int rollcall, int active)
+        : rollcall_days(rollcall), active_days(active) {}
+  };
+
   explicit ManifestFetchData(const GURL& update_url);
   ~ManifestFetchData();
 
   // Returns true if this extension information was successfully added. If the
   // return value is false it means the full_url would have become too long, and
   // this ManifestFetchData object remains unchanged.
-  bool AddExtension(std::string id, std::string version, int ping_days,
+  bool AddExtension(std::string id, std::string version,
+                    const PingData& ping_data,
                     const std::string& update_url_data);
 
   const GURL& base_url() const { return base_url_; }
@@ -54,20 +77,16 @@ class ManifestFetchData {
   // Returns true if the given id is included in this manifest fetch.
   bool Includes(std::string extension_id) const;
 
-  // Returns true if a ping parameter was added to full_url for this extension
-  // id.
-  bool DidPing(std::string extension_id) const;
+  // Returns true if a ping parameter for |type| was added to full_url for this
+  // extension id.
+  bool DidPing(std::string extension_id, PingType type) const;
 
  private:
-  // Returns true if we should include a ping parameter for a given number of
-  // days.
-  bool ShouldPing(int days) const;
-
+  // The set of extension id's for this ManifestFetchData.
   std::set<std::string> extension_ids_;
 
-  // Keeps track of the day value to use for the extensions where we want to
-  // send a 'days since last ping' parameter in the check.
-  std::map<std::string, int> ping_days_;
+  // The set of ping data we actually sent.
+  std::map<std::string, PingData> pings_;
 
   // The base update url without any arguments added.
   GURL base_url_;

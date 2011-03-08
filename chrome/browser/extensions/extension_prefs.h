@@ -68,7 +68,7 @@ class ExtensionPrefs {
   explicit ExtensionPrefs(PrefService* prefs,
                           const FilePath& root_dir,
                           ExtensionPrefValueMap* extension_pref_value_map);
-  ~ExtensionPrefs();
+  virtual ~ExtensionPrefs();
 
   // Returns a copy of the Extensions prefs.
   // TODO(erikkay) Remove this so that external consumers don't need to be
@@ -158,6 +158,18 @@ class ExtensionPrefs {
   // Similar to the 2 above, but for the extensions blacklist.
   base::Time BlacklistLastPingDay() const;
   void SetBlacklistLastPingDay(const base::Time& time);
+
+  // Similar to LastPingDay/SetLastPingDay, but for sending "days since active"
+  // ping.
+  base::Time LastActivePingDay(const std::string& extension_id);
+  void SetLastActivePingDay(const std::string& extension_id,
+                            const base::Time& time);
+
+  // A bit we use for determining if we should send the "days since active"
+  // ping. A value of true means the item has been active (launched) since the
+  // last update check.
+  bool GetActiveBit(const std::string& extension_id);
+  void SetActiveBit(const std::string& extension_id, bool active);
 
   // Gets the permissions (|api_permissions|, |host_extent| and |full_access|)
   // granted to the extension with |extension_id|. |full_access| will be true
@@ -394,10 +406,6 @@ class ExtensionPrefs {
   // Return false if the value is false or kPrefBlacklist does not exist.
   // This is used to decide if an extension is blacklisted.
   bool IsBlacklistBitSet(DictionaryValue* ext);
-
-  // Helper methods for the public last ping day functions.
-  base::Time LastPingDayImpl(const DictionaryValue* dictionary) const;
-  void SetLastPingDayImpl(const base::Time& time, DictionaryValue* dictionary);
 
   // Helper method to acquire the installation time of an extension.
   // Returns base::Time() if the installation time could not be parsed or

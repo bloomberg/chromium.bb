@@ -18,6 +18,7 @@
 #include "base/metrics/histogram.h"
 #include "base/path_service.h"
 #include "base/string_util.h"
+#include "base/time.h"
 #include "base/threading/thread.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/utf_string_conversions.h"
@@ -501,6 +502,8 @@ TabContents* Browser::OpenApplication(
     extension_misc::LaunchContainer container,
     TabContents* existing_tab) {
   TabContents* tab = NULL;
+  ExtensionPrefs* prefs = profile->GetExtensionService()->extension_prefs();
+  prefs->SetActiveBit(extension->id(), true);
 
   UMA_HISTOGRAM_ENUMERATION("Extensions.AppLaunchContainer", container, 100);
 

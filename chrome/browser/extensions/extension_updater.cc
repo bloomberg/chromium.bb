@@ -39,6 +39,8 @@
 #include "base/sys_string_conversions.h"
 #endif
 
+#define SEND_ACTIVE_PINGS 1
+
 using base::RandDouble;
 using base::RandInt;
 using base::Time;
@@ -78,9 +80,10 @@ ManifestFetchData::~ManifestFetchData() {}
 //   id=EXTENSION_ID&v=VERSION&uc
 //
 // Additionally, we may include the parameter ping=PING_DATA where PING_DATA
-// looks like r=DAYS for extensions in the Chrome extensions gallery. This value
-// will be present at most once every 24 hours, and indicate the number of days
-// since the last time it was present in an update check.
+// looks like r=DAYS or a=DAYS for extensions in the Chrome extensions gallery.
+// ('r' refers to 'roll call' ie installation, and 'a' refers to 'active').
+// These values will each be present at most once every 24 hours, and indicate
+// the number of days since the last time it was present in an update check.
 //
 // So for two extensions like:
 //   Extension 1- id:aaaa version:1.1
@@ -91,7 +94,7 @@ ManifestFetchData::~ManifestFetchData() {}
 //
 // (Note that '=' is %3D and '&' is %26 when urlencoded.)
 bool ManifestFetchData::AddExtension(std::string id, std::string version,
-                                     int days,
+                                     const PingData& ping_data,
                                      const std::string& update_url_data) {
   if (extension_ids_.find(id) != extension_ids_.end()) {
     NOTREACHED() << "Duplicate extension id " << id;
@@ -111,9 +114,26 @@ bool ManifestFetchData::AddExtension(std::string id, std::string version,
     parts.push_back("ap=" + EscapeQueryParamValue(update_url_data, true));
   }
 
-  if (ShouldPing(days)) {
-    parts.push_back("ping=" +
-        EscapeQueryParamValue("r=" + base::IntToString(days), true));
+  // Append rollcall and active ping parameters.
+  if (base_url_.DomainIs("google.com")) {
+    std::string ping_value;
+    pings_[id] = PingData(0, 0);
+
+    if (ping_data.rollcall_days == kNeverPinged ||
+        ping_data.rollcall_days > 0) {
+      ping_value += "r=" + base::IntToString(ping_data.rollcall_days);
+      pings_[id].rollcall_days = ping_data.rollcall_days;
+    }
+#if SEND_ACTIVE_PINGS
+    if (ping_data.active_days == kNeverPinged || ping_data.active_days > 0) {
+      if (!ping_value.empty())
+        ping_value += "&";
+      ping_value += "a=" + base::IntToString(ping_data.active_days);
+      pings_[id].active_days = ping_data.active_days;
+    }
+#endif  // SEND_ACTIVE_PINGS
+    if (!ping_value.empty())
+      parts.push_back("ping=" + EscapeQueryParamValue(ping_value, true));
   }
 
   std::string extra = full_url_.has_query() ? "&" : "?";
@@ -129,7 +149,6 @@ bool ManifestFetchData::AddExtension(std::string id, std::string version,
 
   // We have room so go ahead and add the extension.
   extension_ids_.insert(id);
-  ping_days_[id] = days;
   full_url_ = GURL(full_url_.possibly_invalid_spec() + extra);
   return true;
 }
@@ -138,28 +157,48 @@ bool ManifestFetchData::Includes(std::string extension_id) const {
   return extension_ids_.find(extension_id) != extension_ids_.end();
 }
 
-bool ManifestFetchData::DidPing(std::string extension_id) const {
-  std::map<std::string, int>::const_iterator i = ping_days_.find(extension_id);
-  if (i != ping_days_.end()) {
-    return ShouldPing(i->second);
-  }
-  return false;
-}
-
-bool ManifestFetchData::ShouldPing(int days) const {
-  return base_url_.DomainIs("google.com") &&
-         (days == kNeverPinged || days > 0);
+bool ManifestFetchData::DidPing(std::string extension_id, PingType type) const {
+  std::map<std::string, PingData>::const_iterator i = pings_.find(extension_id);
+  if (i == pings_.end())
+    return false;
+  int value = 0;
+  if (type == ROLLCALL)
+    value = i->second.rollcall_days;
+  else if (type == ACTIVE)
+    value = i->second.active_days;
+  else
+    NOTREACHED();
+  return value == kNeverPinged || value > 0;
 }
 
 namespace {
+
+// When we've computed a days value, we want to make sure we don't send a
+// negative value (due to the system clock being set backwards, etc.), since -1
+// is a special sentinel value that means "never pinged", and other negative
+// values don't make sense.
+static int SanitizeDays(int days) {
+  if (days < 0)
+    return 0;
+  return days;
+}
 
 // Calculates the value to use for the ping days parameter.
 static int CalculatePingDays(const Time& last_ping_day) {
   int days = ManifestFetchData::kNeverPinged;
   if (!last_ping_day.is_null()) {
-    days = (Time::Now() - last_ping_day).InDays();
+    days = SanitizeDays((Time::Now() - last_ping_day).InDays());
   }
   return days;
+}
+
+static int CalculateActivePingDays(const Time& last_active_ping_day,
+                                   bool hasActiveBit) {
+  if (!hasActiveBit)
+    return 0;
+  if (last_active_ping_day.is_null())
+    return ManifestFetchData::kNeverPinged;
+  return SanitizeDays((Time::Now() - last_active_ping_day).InDays());
 }
 
 }  // namespace
@@ -299,11 +338,14 @@ void ManifestFetchesBuilder::AddExtensionData(
       fetches_.find(update_url);
 
   // Find or create a ManifestFetchData to add this extension to.
-  int ping_days =
-      CalculatePingDays(service_->extension_prefs()->LastPingDay(id));
+  ExtensionPrefs* prefs = service_->extension_prefs();
+  ManifestFetchData::PingData ping_data;
+  ping_data.rollcall_days = CalculatePingDays(prefs->LastPingDay(id));
+  ping_data.active_days = CalculateActivePingDays(prefs->LastActivePingDay(id),
+                                                  prefs->GetActiveBit(id));
   while (existing_iter != fetches_.end()) {
     if (existing_iter->second->AddExtension(id, version.GetString(),
-                                            ping_days, update_url_data)) {
+                                            ping_data, update_url_data)) {
       fetch = existing_iter->second;
       break;
     }
@@ -312,7 +354,7 @@ void ManifestFetchesBuilder::AddExtensionData(
   if (!fetch) {
     fetch = new ManifestFetchData(update_url);
     fetches_.insert(std::pair<GURL, ManifestFetchData*>(update_url, fetch));
-    bool added = fetch->AddExtension(id, version.GetString(), ping_days,
+    bool added = fetch->AddExtension(id, version.GetString(), ping_data,
                                      update_url_data);
     DCHECK(added);
   }
@@ -614,7 +656,7 @@ void ExtensionUpdater::HandleManifestResults(
   }
 
   // If the manifest response included a <daystart> element, we want to save
-  // that value for any extensions which had sent ping_days in the request.
+  // that value for any extensions which had sent a ping in the request.
   if (fetch_data.base_url().DomainIs("google.com") &&
       results.daystart_elapsed_seconds >= 0) {
     Time daystart =
@@ -622,14 +664,18 @@ void ExtensionUpdater::HandleManifestResults(
 
     const std::set<std::string>& extension_ids = fetch_data.extension_ids();
     std::set<std::string>::const_iterator i;
+    ExtensionPrefs* prefs = service_->extension_prefs();
     for (i = extension_ids.begin(); i != extension_ids.end(); i++) {
-      bool did_ping = fetch_data.DidPing(*i);
-      if (did_ping) {
+      if (fetch_data.DidPing(*i, ManifestFetchData::ROLLCALL)) {
         if (*i == kBlacklistAppID) {
-          service_->extension_prefs()->SetBlacklistLastPingDay(daystart);
+          prefs->SetBlacklistLastPingDay(daystart);
         } else if (service_->GetExtensionById(*i, true) != NULL) {
-          service_->extension_prefs()->SetLastPingDay(*i, daystart);
+          prefs->SetLastPingDay(*i, daystart);
         }
+      }
+      if (prefs->GetActiveBit(*i)) {
+        prefs->SetActiveBit(*i, false);
+        prefs->SetLastActivePingDay(*i, daystart);
       }
     }
   }
@@ -786,9 +832,10 @@ void ExtensionUpdater::CheckNow() {
     ManifestFetchData* blacklist_fetch =
         new ManifestFetchData(Extension::GalleryUpdateUrl(true));
     std::string version = prefs_->GetString(kExtensionBlacklistUpdateVersion);
-    int ping_days =
+    ManifestFetchData::PingData ping_data;
+    ping_data.rollcall_days =
         CalculatePingDays(service_->extension_prefs()->BlacklistLastPingDay());
-    blacklist_fetch->AddExtension(kBlacklistAppID, version, ping_days, "");
+    blacklist_fetch->AddExtension(kBlacklistAppID, version, ping_data, "");
     StartUpdateCheck(blacklist_fetch);
   }
 

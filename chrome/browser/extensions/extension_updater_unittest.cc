@@ -42,6 +42,9 @@ int expected_load_flags =
     net::LOAD_DO_NOT_SAVE_COOKIES |
     net::LOAD_DISABLE_CACHE;
 
+const ManifestFetchData::PingData kNeverPingedData(
+    ManifestFetchData::kNeverPinged, ManifestFetchData::kNeverPinged);
+
 }  // namespace
 
 // Base class for further specialized test classes.
@@ -433,7 +436,7 @@ class ExtensionUpdaterTest : public testing::Test {
     // option to appear in the x= parameter.
     ManifestFetchData fetch_data(GURL("http://localhost/foo"));
     fetch_data.AddExtension(id, version,
-                            ManifestFetchData::kNeverPinged, "");
+                            kNeverPingedData, "");
     EXPECT_EQ("http://localhost/foo\?x=id%3Daaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
               "%26v%3D1.0%26uc",
               fetch_data.full_url().spec());
@@ -447,7 +450,7 @@ class ExtensionUpdaterTest : public testing::Test {
     // option to appear in the x= parameter.
     ManifestFetchData fetch_data(GURL("http://localhost/foo"));
     fetch_data.AddExtension(id, version,
-                            ManifestFetchData::kNeverPinged, "bar");
+                            kNeverPingedData, "bar");
     EXPECT_EQ("http://localhost/foo\?x=id%3Daaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
               "%26v%3D1.0%26uc%26ap%3Dbar",
               fetch_data.full_url().spec());
@@ -461,7 +464,7 @@ class ExtensionUpdaterTest : public testing::Test {
     // option to appear in the x= parameter.
     ManifestFetchData fetch_data(GURL("http://localhost/foo"));
     fetch_data.AddExtension(id, version,
-                            ManifestFetchData::kNeverPinged, "a=1&b=2&c");
+                            kNeverPingedData, "a=1&b=2&c");
     EXPECT_EQ("http://localhost/foo\?x=id%3Daaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
               "%26v%3D1.0%26uc%26ap%3Da%253D1%2526b%253D2%2526c",
               fetch_data.full_url().spec());
@@ -515,12 +518,12 @@ class ExtensionUpdaterTest : public testing::Test {
     scoped_ptr<Version> one(Version::GetVersionFromString("1.0"));
     EXPECT_TRUE(tmp[0]->version()->Equals(*one));
     fetch_data.AddExtension(tmp[0]->id(), tmp[0]->VersionString(),
-                            ManifestFetchData::kNeverPinged,
+                            kNeverPingedData,
                             kEmptyUpdateUrlData);
     AddParseResult(tmp[0]->id(),
         "1.1", "http://localhost/e1_1.1.crx", &updates);
     fetch_data.AddExtension(tmp[1]->id(), tmp[1]->VersionString(),
-                            ManifestFetchData::kNeverPinged,
+                            kNeverPingedData,
                             kEmptyUpdateUrlData);
     AddParseResult(tmp[1]->id(),
         tmp[1]->VersionString(), "http://localhost/e2_2.0.crx", &updates);
@@ -547,7 +550,7 @@ class ExtensionUpdaterTest : public testing::Test {
     for (PendingExtensionMap::const_iterator it = pending_extensions.begin();
          it != pending_extensions.end(); ++it) {
       fetch_data.AddExtension(it->first, "1.0.0.0",
-                              ManifestFetchData::kNeverPinged,
+                              kNeverPingedData,
                               kEmptyUpdateUrlData);
       AddParseResult(it->first,
                      "1.1", "http://localhost/e1_1.1.crx", &updates);
@@ -585,8 +588,9 @@ class ExtensionUpdaterTest : public testing::Test {
     // second one should be queued up.
     ManifestFetchData* fetch1 = new ManifestFetchData(url1);
     ManifestFetchData* fetch2 = new ManifestFetchData(url2);
-    fetch1->AddExtension("1111", "1.0", 0, kEmptyUpdateUrlData);
-    fetch2->AddExtension("12345", "2.0", ManifestFetchData::kNeverPinged,
+    ManifestFetchData::PingData zeroDays(0, 0);
+    fetch1->AddExtension("1111", "1.0", zeroDays, kEmptyUpdateUrlData);
+    fetch2->AddExtension("12345", "2.0", kNeverPingedData,
                          kEmptyUpdateUrlData);
     updater->StartUpdateCheck(fetch1);
     updater->StartUpdateCheck(fetch2);
@@ -807,7 +811,15 @@ class ExtensionUpdaterTest : public testing::Test {
     file_util::Delete(service.install_path(), false);
   }
 
-  static void TestGalleryRequests(int ping_days) {
+  // Test requests to both a Google server and a non-google server. This allows
+  // us to test various combinations of installed (ie roll call) and active
+  // (ie app launch) ping scenarios. The invariant is that each type of ping
+  // value should be present at most once per day, and can be calculated based
+  // on the delta between now and the last ping time (or in the case of active
+  // pings, that delta plus whether the app has been active).
+  static void TestGalleryRequests(int rollcall_ping_days,
+                                  int active_ping_days,
+                                  bool active_bit) {
     TestURLFetcherFactory factory;
     URLFetcher::set_factory(&factory);
 
@@ -824,15 +836,29 @@ class ExtensionUpdaterTest : public testing::Test {
     EXPECT_EQ(2u, tmp.size());
     service.set_extensions(tmp);
 
+    ExtensionPrefs* prefs = service.extension_prefs();
+    const std::string& id = tmp[0]->id();
     Time now = Time::Now();
-    if (ping_days == 0) {
-      service.extension_prefs()->SetLastPingDay(
-          tmp[0]->id(), now - TimeDelta::FromSeconds(15));
-    } else if (ping_days > 0) {
-      Time last_ping_day =
-          now - TimeDelta::FromDays(ping_days) - TimeDelta::FromSeconds(15);
-      service.extension_prefs()->SetLastPingDay(tmp[0]->id(), last_ping_day);
+    if (rollcall_ping_days == 0) {
+      prefs->SetLastPingDay(id, now - TimeDelta::FromSeconds(15));
+    } else if (rollcall_ping_days > 0) {
+      Time last_ping_day = now -
+                           TimeDelta::FromDays(rollcall_ping_days) -
+                           TimeDelta::FromSeconds(15);
+      prefs->SetLastPingDay(id, last_ping_day);
     }
+
+    // Store a value for the last day we sent an active ping.
+    if (active_ping_days == 0) {
+      prefs->SetLastActivePingDay(id, now - TimeDelta::FromSeconds(15));
+    } else if (active_ping_days > 0) {
+      Time last_active_ping_day = now -
+                                  TimeDelta::FromDays(active_ping_days) -
+                                  TimeDelta::FromSeconds(15);
+      prefs->SetLastActivePingDay(id, last_active_ping_day);
+    }
+    if (active_bit)
+      prefs->SetActiveBit(id, true);
 
     MessageLoop message_loop;
     scoped_refptr<ExtensionUpdater> updater(
@@ -870,17 +896,27 @@ class ExtensionUpdaterTest : public testing::Test {
       NOTREACHED();
     }
 
-    // Now make sure the non-google query had no ping parameter, but the google
-    // one did (depending on ping_days).
-    std::string search_string = "ping%3Dr";
+    // First make sure the non-google query had no ping parameter.
+    std::string search_string = "ping%3D";
     EXPECT_TRUE(url2_query.find(search_string) == std::string::npos);
-    if (ping_days == 0) {
-      EXPECT_TRUE(url1_query.find(search_string) == std::string::npos);
-    } else {
-      search_string += "%253D" + base::IntToString(ping_days);
-      size_t pos = url1_query.find(search_string);
-      EXPECT_TRUE(pos != std::string::npos);
+
+    // Now make sure the google query had the correct ping parameter.
+    bool ping_expected = false;
+    bool did_rollcall = false;
+    if (rollcall_ping_days != 0) {
+      search_string += "r%253D" + base::IntToString(rollcall_ping_days);
+      did_rollcall = true;
+      ping_expected = true;
     }
+    if (active_bit && active_ping_days != 0) {
+      if (did_rollcall)
+        search_string += "%2526";
+      search_string += "a%253D" + base::IntToString(active_ping_days);
+      ping_expected = true;
+    }
+    bool ping_found = url1_query.find(search_string) != std::string::npos;
+    EXPECT_EQ(ping_expected, ping_found) << "query was: " << url1_query
+        << " was looking for " << search_string;
   }
 
   // This makes sure that the extension updater properly stores the results
@@ -904,7 +940,7 @@ class ExtensionUpdaterTest : public testing::Test {
     ManifestFetchData fetch_data(update_url);
     const Extension* extension = tmp[0];
     fetch_data.AddExtension(extension->id(), extension->VersionString(),
-                            ManifestFetchData::kNeverPinged,
+                            kNeverPingedData,
                             kEmptyUpdateUrlData);
     UpdateManifest::Results results;
     results.daystart_elapsed_seconds = 750;
@@ -975,10 +1011,32 @@ TEST(ExtensionUpdaterTest, TestMultipleExtensionDownloading) {
 }
 
 TEST(ExtensionUpdaterTest, TestGalleryRequests) {
-  ExtensionUpdaterTest::TestGalleryRequests(ManifestFetchData::kNeverPinged);
-  ExtensionUpdaterTest::TestGalleryRequests(0);
-  ExtensionUpdaterTest::TestGalleryRequests(1);
-  ExtensionUpdaterTest::TestGalleryRequests(5);
+  // We want to test a variety of combinations of expected ping conditions for
+  // rollcall and active pings.
+  int ping_cases[] = { ManifestFetchData::kNeverPinged, 0, 1, 5 };
+
+  for (size_t i = 0; i < arraysize(ping_cases); i++) {
+    for (size_t j = 0; j < arraysize(ping_cases); j++) {
+      for (size_t k = 0; k < 2; k++) {
+        int rollcall_ping_days = ping_cases[i];
+        int active_ping_days = ping_cases[j];
+        // Skip cases where rollcall_ping_days == -1, but active_ping_days > 0,
+        // because rollcall_ping_days == -1 means the app was just installed and
+        // this is the first update check after installation.
+        if (rollcall_ping_days == ManifestFetchData::kNeverPinged &&
+            active_ping_days > 0)
+          continue;
+
+        bool active_bit = k > 0;
+        ExtensionUpdaterTest::TestGalleryRequests(
+            rollcall_ping_days, active_ping_days, active_bit);
+        ASSERT_FALSE(HasFailure()) <<
+          " rollcall_ping_days=" << ping_cases[i] <<
+          " active_ping_days=" << ping_cases[j] <<
+          " active_bit=" << active_bit;
+      }
+    }
+  }
 }
 
 TEST(ExtensionUpdaterTest, TestHandleManifestResults) {

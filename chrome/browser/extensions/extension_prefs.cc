@@ -51,6 +51,12 @@ const char kExtensionToolbar[] = "extensions.toolbar";
 // its update check.
 const char kLastPingDay[] = "lastpingday";
 
+// Similar to kLastPingDay, but for "active" instead of "rollcall" pings.
+const char kLastActivePingDay[] = "last_active_pingday";
+
+// A bit we use to keep track of whether we need to do an "active" ping.
+const char kActiveBit[] = "active_bit";
+
 // Path for settings specific to blacklist update.
 const char kExtensionsBlacklistUpdate[] = "extensions.blacklistupdate";
 
@@ -464,11 +470,24 @@ void ExtensionPrefs::UpdateBlacklist(
   return;
 }
 
-Time ExtensionPrefs::LastPingDayImpl(const DictionaryValue* dictionary) const {
-  if (dictionary && dictionary->HasKey(kLastPingDay)) {
-    std::string string_value;
-    int64 value;
-    dictionary->GetString(kLastPingDay, &string_value);
+namespace {
+
+// Serializes |time| as a string value mapped to |key| in |dictionary|.
+void SaveTime(DictionaryValue* dictionary, const char* key, const Time& time) {
+  if (!dictionary)
+    return;
+  std::string string_value = base::Int64ToString(time.ToInternalValue());
+  dictionary->SetString(key, string_value);
+}
+
+// The opposite of SaveTime. If |key| is not found, this returns an empty Time
+// (is_null() will return true).
+Time ReadTime(const DictionaryValue* dictionary, const char* key) {
+  if (!dictionary)
+    return Time();
+  std::string string_value;
+  int64 value;
+  if (dictionary->GetString(key, &string_value)) {
     if (base::StringToInt64(string_value, &value)) {
       return Time::FromInternalValue(value);
     }
@@ -476,35 +495,55 @@ Time ExtensionPrefs::LastPingDayImpl(const DictionaryValue* dictionary) const {
   return Time();
 }
 
-void ExtensionPrefs::SetLastPingDayImpl(const Time& time,
-                                        DictionaryValue* dictionary) {
-  if (!dictionary) {
-    NOTREACHED();
-    return;
-  }
-  std::string value = base::Int64ToString(time.ToInternalValue());
-  dictionary->SetString(kLastPingDay, value);
-  SavePrefsAndNotify();
-}
+}  // namespace
 
 Time ExtensionPrefs::LastPingDay(const std::string& extension_id) const {
   DCHECK(Extension::IdIsValid(extension_id));
-  return LastPingDayImpl(GetExtensionPref(extension_id));
-}
-
-Time ExtensionPrefs::BlacklistLastPingDay() const {
-  return LastPingDayImpl(prefs_->GetDictionary(kExtensionsBlacklistUpdate));
+  return ReadTime(GetExtensionPref(extension_id), kLastPingDay);
 }
 
 void ExtensionPrefs::SetLastPingDay(const std::string& extension_id,
                                     const Time& time) {
   DCHECK(Extension::IdIsValid(extension_id));
-  SetLastPingDayImpl(time, GetExtensionPref(extension_id));
+  SaveTime(GetExtensionPref(extension_id), kLastPingDay, time);
+}
+
+Time ExtensionPrefs::BlacklistLastPingDay() const {
+  return ReadTime(prefs_->GetDictionary(kExtensionsBlacklistUpdate),
+                  kLastPingDay);
 }
 
 void ExtensionPrefs::SetBlacklistLastPingDay(const Time& time) {
-  SetLastPingDayImpl(time,
-                     prefs_->GetMutableDictionary(kExtensionsBlacklistUpdate));
+  SaveTime(prefs_->GetMutableDictionary(kExtensionsBlacklistUpdate),
+           kLastPingDay,
+           time);
+}
+
+Time ExtensionPrefs::LastActivePingDay(const std::string& extension_id) {
+  DCHECK(Extension::IdIsValid(extension_id));
+  return ReadTime(GetExtensionPref(extension_id), kLastActivePingDay);
+}
+
+void ExtensionPrefs::SetLastActivePingDay(const std::string& extension_id,
+                                          const base::Time& time) {
+  DCHECK(Extension::IdIsValid(extension_id));
+  SaveTime(GetExtensionPref(extension_id), kLastActivePingDay, time);
+}
+
+bool ExtensionPrefs::GetActiveBit(const std::string& extension_id) {
+  DictionaryValue* dictionary = GetExtensionPref(extension_id);
+  bool result = false;
+  if (dictionary && dictionary->GetBoolean(kActiveBit, &result))
+    return result;
+  return false;
+}
+
+void ExtensionPrefs::SetActiveBit(const std::string& extension_id,
+                                  bool active) {
+  DictionaryValue* dictionary = GetExtensionPref(extension_id);
+  if (!dictionary)
+    return;
+  dictionary->SetBoolean(kActiveBit, active);
 }
 
 bool ExtensionPrefs::GetGrantedPermissions(
@@ -1139,8 +1178,7 @@ void ExtensionPrefs::SetAppLauncherOrder(
       NotificationService::NoDetails());
 }
 
-int ExtensionPrefs::GetPageIndex(const std::string& extension_id)
-{
+int ExtensionPrefs::GetPageIndex(const std::string& extension_id) {
   int value;
   if (ReadExtensionPrefInteger(extension_id, kPrefPageIndex, &value))
     return value;
@@ -1148,8 +1186,7 @@ int ExtensionPrefs::GetPageIndex(const std::string& extension_id)
   return -1;
 }
 
-void ExtensionPrefs::SetPageIndex(const std::string& extension_id, int index)
-{
+void ExtensionPrefs::SetPageIndex(const std::string& extension_id, int index) {
   CHECK_GE(index, 0);
   UpdateExtensionPref(extension_id, kPrefPageIndex,
                       Value::CreateIntegerValue(index));
