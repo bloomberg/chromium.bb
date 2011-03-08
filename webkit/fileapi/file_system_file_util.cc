@@ -6,65 +6,6 @@
 
 #include "base/file_util_proxy.h"
 
-// This also removes the destination directory if it's non-empty and all other
-// checks are passed (so that the copy/move correctly overwrites the
-// destination).
-// TODO(ericu, dmikurube): This method won't work with obfuscation and quota
-// since all (file_util::) operations should consider obfuscation and quota.
-// We will need to virtualize all these calls.  We should do that by making this
-// method a non-virtual member of FileSystemFileUtil, but changing all of its
-// file_util calls to be FileSystemFileUtil calls.  That way when we override
-// them for obfuscation or quota, it'll just work.
-static base::PlatformFileError PerformCommonCheckAndPreparationForMoveAndCopy(
-    const FilePath& src_file_path,
-    const FilePath& dest_file_path) {
-  // Exits earlier if the source path does not exist.
-  if (!file_util::PathExists(src_file_path))
-    return base::PLATFORM_FILE_ERROR_NOT_FOUND;
-
-  // The parent of the |dest_file_path| does not exist.
-  if (!file_util::DirectoryExists(dest_file_path.DirName()))
-    return base::PLATFORM_FILE_ERROR_NOT_FOUND;
-
-  // It is an error to try to copy/move an entry into its child.
-  if (src_file_path.IsParent(dest_file_path))
-    return base::PLATFORM_FILE_ERROR_INVALID_OPERATION;
-
-  // Now it is ok to return if the |dest_file_path| does not exist.
-  if (!file_util::PathExists(dest_file_path))
-    return base::PLATFORM_FILE_OK;
-
-  // |src_file_path| exists and is a directory.
-  // |dest_file_path| exists and is a file.
-  bool src_is_directory = file_util::DirectoryExists(src_file_path);
-  bool dest_is_directory = file_util::DirectoryExists(dest_file_path);
-  if (src_is_directory && !dest_is_directory)
-    return base::PLATFORM_FILE_ERROR_NOT_A_DIRECTORY;
-
-  // |src_file_path| exists and is a file.
-  // |dest_file_path| exists and is a directory.
-  if (!src_is_directory && dest_is_directory)
-    return base::PLATFORM_FILE_ERROR_NOT_A_FILE;
-
-  // It is an error to copy/move an entry into the same path.
-  if (src_file_path.value() == dest_file_path.value())
-    return base::PLATFORM_FILE_ERROR_EXISTS;
-
-  if (dest_is_directory) {
-    // It is an error to copy/move an entry to a non-empty directory.
-    // Otherwise the copy/move attempt must overwrite the destination, but
-    // the file_util's Copy or Move method doesn't perform overwrite
-    // on all platforms, so we delete the destination directory here.
-    // TODO(kinuko): may be better to change the file_util::{Copy,Move}.
-    if (!file_util::Delete(dest_file_path, false /* recursive */)) {
-      if (!file_util::IsDirectoryEmpty(dest_file_path))
-        return base::PLATFORM_FILE_ERROR_NOT_EMPTY;
-      return base::PLATFORM_FILE_ERROR_FAILED;
-    }
-  }
-  return base::PLATFORM_FILE_OK;
-}
-
 namespace fileapi {
 
 FileSystemFileUtil* FileSystemFileUtil::GetInstance() {
@@ -177,13 +118,13 @@ PlatformFileError FileSystemFileUtil::CreateDirectory(
 }
 
 PlatformFileError FileSystemFileUtil::Copy(
-    FileSystemOperationContext* unused,
+    FileSystemOperationContext* context,
     const FilePath& src_file_path,
     const FilePath& dest_file_path) {
   PlatformFileError error_code;
   error_code =
       PerformCommonCheckAndPreparationForMoveAndCopy(
-          src_file_path, dest_file_path);
+          context, src_file_path, dest_file_path);
   if (error_code != base::PLATFORM_FILE_OK)
     return error_code;
   if (!file_util::CopyDirectory(src_file_path, dest_file_path,
@@ -193,13 +134,13 @@ PlatformFileError FileSystemFileUtil::Copy(
 }
 
 PlatformFileError FileSystemFileUtil::Move(
-    FileSystemOperationContext* unused,
+    FileSystemOperationContext* context,
     const FilePath& src_file_path,
     const FilePath& dest_file_path) {
   PlatformFileError error_code;
   error_code =
       PerformCommonCheckAndPreparationForMoveAndCopy(
-          src_file_path, dest_file_path);
+          context, src_file_path, dest_file_path);
   if (error_code != base::PLATFORM_FILE_OK)
     return error_code;
   if (!file_util::Move(src_file_path, dest_file_path))
@@ -252,6 +193,77 @@ PlatformFileError FileSystemFileUtil::Truncate(
     error_code = base::PLATFORM_FILE_ERROR_FAILED;
   base::ClosePlatformFile(file);
   return error_code;
+}
+
+PlatformFileError
+FileSystemFileUtil::PerformCommonCheckAndPreparationForMoveAndCopy(
+    FileSystemOperationContext* context,
+    const FilePath& src_file_path,
+    const FilePath& dest_file_path) {
+  // Exits earlier if the source path does not exist.
+  if (!PathExists(context, src_file_path))
+    return base::PLATFORM_FILE_ERROR_NOT_FOUND;
+
+  // The parent of the |dest_file_path| does not exist.
+  if (!DirectoryExists(context, dest_file_path.DirName()))
+    return base::PLATFORM_FILE_ERROR_NOT_FOUND;
+
+  // It is an error to try to copy/move an entry into its child.
+  if (src_file_path.IsParent(dest_file_path))
+    return base::PLATFORM_FILE_ERROR_INVALID_OPERATION;
+
+  // Now it is ok to return if the |dest_file_path| does not exist.
+  if (!PathExists(context, dest_file_path))
+    return base::PLATFORM_FILE_OK;
+
+  // |src_file_path| exists and is a directory.
+  // |dest_file_path| exists and is a file.
+  bool src_is_directory = DirectoryExists(context, src_file_path);
+  bool dest_is_directory = DirectoryExists(context, dest_file_path);
+  if (src_is_directory && !dest_is_directory)
+    return base::PLATFORM_FILE_ERROR_NOT_A_DIRECTORY;
+
+  // |src_file_path| exists and is a file.
+  // |dest_file_path| exists and is a directory.
+  if (!src_is_directory && dest_is_directory)
+    return base::PLATFORM_FILE_ERROR_NOT_A_FILE;
+
+  // It is an error to copy/move an entry into the same path.
+  if (src_file_path.value() == dest_file_path.value())
+    return base::PLATFORM_FILE_ERROR_EXISTS;
+
+  if (dest_is_directory) {
+    // It is an error to copy/move an entry to a non-empty directory.
+    // Otherwise the copy/move attempt must overwrite the destination, but
+    // the file_util's Copy or Move method doesn't perform overwrite
+    // on all platforms, so we delete the destination directory here.
+    // TODO(kinuko): may be better to change the file_util::{Copy,Move}.
+    if (base::PLATFORM_FILE_OK !=
+        Delete(context, dest_file_path, false /* recursive */)) {
+      if (!IsDirectoryEmpty(context, dest_file_path))
+        return base::PLATFORM_FILE_ERROR_NOT_EMPTY;
+      return base::PLATFORM_FILE_ERROR_FAILED;
+    }
+  }
+  return base::PLATFORM_FILE_OK;
+}
+
+bool FileSystemFileUtil::PathExists(
+    FileSystemOperationContext* unused,
+    const FilePath& file_path) {
+  return file_util::PathExists(file_path);
+}
+
+bool FileSystemFileUtil::DirectoryExists(
+    FileSystemOperationContext* unused,
+    const FilePath& file_path) {
+  return file_util::DirectoryExists(file_path);
+}
+
+bool FileSystemFileUtil::IsDirectoryEmpty(
+    FileSystemOperationContext* unused,
+    const FilePath& file_path) {
+  return file_util::IsDirectoryEmpty(file_path);
 }
 
 }  // namespace fileapi

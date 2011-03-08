@@ -127,6 +127,27 @@ class FileSystemFileUtil {
 
  protected:
   FileSystemFileUtil() { }
+
+  // This also removes the destination directory if it's non-empty and all
+  // other checks are passed (so that the copy/move correctly overwrites the
+  // destination).
+  PlatformFileError PerformCommonCheckAndPreparationForMoveAndCopy(
+      FileSystemOperationContext* unused,
+      const FilePath& src_file_path,
+      const FilePath& dest_file_path);
+
+  virtual bool PathExists(
+      FileSystemOperationContext* unused,
+      const FilePath& file_path);
+
+  virtual bool DirectoryExists(
+      FileSystemOperationContext* unused,
+      const FilePath& file_path);
+
+  virtual bool IsDirectoryEmpty(
+      FileSystemOperationContext* unused,
+      const FilePath& file_path);
+
   friend struct DefaultSingletonTraits<FileSystemFileUtil>;
   DISALLOW_COPY_AND_ASSIGN(FileSystemFileUtil);
 };
