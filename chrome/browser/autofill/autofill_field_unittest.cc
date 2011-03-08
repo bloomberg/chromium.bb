@@ -33,30 +33,30 @@ TEST(AutofillFieldTest, Type) {
 
 TEST(AutofillFieldTest, IsEmpty) {
   AutofillField field;
-  ASSERT_EQ(string16(), field.value);
+  ASSERT_EQ(string16(), field.value());
 
   // Field value is empty.
   EXPECT_TRUE(field.IsEmpty());
 
   // Field value is non-empty.
-  field.value = ASCIIToUTF16("Value");
+  field.set_value(ASCIIToUTF16("Value"));
   EXPECT_FALSE(field.IsEmpty());
 }
 
 TEST(AutofillFieldTest, FieldSignature) {
   AutofillField field;
-  ASSERT_EQ(string16(), field.name);
-  ASSERT_EQ(string16(), field.form_control_type);
+  ASSERT_EQ(string16(), field.name());
+  ASSERT_EQ(string16(), field.form_control_type());
 
   // Signature is empty.
   EXPECT_EQ("2085434232", field.FieldSignature());
 
   // Field name is set.
-  field.name = ASCIIToUTF16("Name");
+  field.set_name(ASCIIToUTF16("Name"));
   EXPECT_EQ("1606968241", field.FieldSignature());
 
   // Field form control type is set.
-  field.form_control_type = ASCIIToUTF16("Text");
+  field.set_form_control_type(ASCIIToUTF16("Text"));
   EXPECT_EQ("4246049809", field.FieldSignature());
 
   // Heuristic type does not affect FieldSignature.

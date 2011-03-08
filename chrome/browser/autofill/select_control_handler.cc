@@ -125,10 +125,10 @@ bool SetSelectControlValue(const string16& value,
   string16 value_lowercase = StringToLowerASCII(value);
 
   for (std::vector<string16>::const_iterator iter =
-           field->option_strings.begin();
-       iter != field->option_strings.end(); ++iter) {
+           field->option_strings().begin();
+       iter != field->option_strings().end(); ++iter) {
     if (value_lowercase == StringToLowerASCII(*iter)) {
-      field->value = *iter;
+      field->set_value(*iter);
       return true;
     }
   }
@@ -165,13 +165,13 @@ bool FillCountrySelectControl(const FormGroup& form_group,
   std::string app_locale = AutofillCountry::ApplicationLocale();
 
   for (std::vector<string16>::const_iterator iter =
-           field->option_strings.begin();
-       iter != field->option_strings.end();
+           field->option_strings().begin();
+       iter != field->option_strings().end();
        ++iter) {
     // Canonicalize each <option> value to a country code, and compare to the
     // target country code.
     if (country_code == AutofillCountry::GetCountryCode(*iter, app_locale)) {
-      field->value = *iter;
+      field->set_value(*iter);
       return true;
     }
   }
@@ -202,30 +202,30 @@ void FillSelectControl(const FormGroup& form_group,
                        AutofillType type,
                        webkit_glue::FormField* field) {
   DCHECK(field);
-  DCHECK_EQ(ASCIIToUTF16("select-one"), field->form_control_type);
+  DCHECK_EQ(ASCIIToUTF16("select-one"), field->form_control_type());
 
   string16 field_text = form_group.GetFieldText(type);
   if (field_text.empty())
     return;
 
   string16 value;
-  for (size_t i = 0; i < field->option_strings.size(); ++i) {
-    if (field_text == field->option_strings[i]) {
+  for (size_t i = 0; i < field->option_strings().size(); ++i) {
+    if (field_text == field->option_strings()[i]) {
       // An exact match, use it.
       value = field_text;
       break;
     }
 
-    if (StringToLowerASCII(field->option_strings[i]) ==
+    if (StringToLowerASCII(field->option_strings()[i]) ==
         StringToLowerASCII(field_text)) {
       // A match, but not in the same case. Save it in case an exact match is
       // not found.
-      value = field->option_strings[i];
+      value = field->option_strings()[i];
     }
   }
 
   if (!value.empty()) {
-    field->value = value;
+    field->set_value(value);
     return;
   }
 

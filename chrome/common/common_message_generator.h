@@ -4,7 +4,6 @@
 
 // Multiply-included file, hence no include guard.
 
-#include "chrome/common/autofill_messages.h"
 #include "chrome/common/database_messages.h"
 #include "chrome/common/file_utilities_messages.h"
 #include "chrome/common/indexed_db_messages.h"
@@ -16,6 +15,7 @@
 
 #if 0  // This feature is not yet enabled for these files.
 
+#include "chrome/common/autofill_messages.h"
 #include "chrome/common/automation_messages.h"
 #include "chrome/common/devtools_messages.h"
 #include "chrome/common/dom_storage_messages.h"

@@ -651,15 +651,15 @@ TEST_F(PersonalDataManagerTest, ImportPhoneNumberSplitAcrossMultipleFields) {
   form.fields.push_back(field);
   autofill_test::CreateTestFormField(
       "Phone #:", "home_phone_area_code", "650", "text", &field);
-  field.max_length = 3;
+  field.set_max_length(3);
   form.fields.push_back(field);
   autofill_test::CreateTestFormField(
       "Phone #:", "home_phone_prefix", "555", "text", &field);
-  field.max_length = 3;
+  field.set_max_length(3);
   form.fields.push_back(field);
   autofill_test::CreateTestFormField(
       "Phone #:", "home_phone_suffix", "0000", "text", &field);
-  field.max_length = 4;
+  field.set_max_length(4);
   form.fields.push_back(field);
   autofill_test::CreateTestFormField(
       "Address:", "address1", "21 Laussat St", "text", &field);

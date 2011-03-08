@@ -249,9 +249,9 @@ TEST_F(FormManagerTest, WebFormControlElementToFormFieldSelect) {
                                                    ASCIIToUTF16("select-one"),
                                                    0,
                                                    false)));
-  ASSERT_EQ(2U, result3.option_strings.size());
-  EXPECT_EQ(ASCIIToUTF16("CA"), result3.option_strings[0]);
-  EXPECT_EQ(ASCIIToUTF16("TX"), result3.option_strings[1]);
+  ASSERT_EQ(2U, result3.option_strings().size());
+  EXPECT_EQ(ASCIIToUTF16("CA"), result3.option_strings()[0]);
+  EXPECT_EQ(ASCIIToUTF16("TX"), result3.option_strings()[1]);
 }
 
 // We should be not extract the value for non-text and non-select fields.
@@ -793,11 +793,11 @@ TEST_F(FormManagerTest, FillForm) {
             fields[4]);
 
   // Fill the form.
-  form.fields[0].value = ASCIIToUTF16("Wyatt");
-  form.fields[1].value = ASCIIToUTF16("Earp");
-  form.fields[2].value = ASCIIToUTF16("Alpha");
-  form.fields[3].value = ASCIIToUTF16("Beta");
-  form.fields[4].value = ASCIIToUTF16("Gamma");
+  form.fields[0].set_value(ASCIIToUTF16("Wyatt"));
+  form.fields[1].set_value(ASCIIToUTF16("Earp"));
+  form.fields[2].set_value(ASCIIToUTF16("Alpha"));
+  form.fields[3].set_value(ASCIIToUTF16("Beta"));
+  form.fields[4].set_value(ASCIIToUTF16("Gamma"));
   EXPECT_TRUE(form_manager.FillForm(form, input_element));
 
   // Verify the filled elements.
@@ -905,11 +905,11 @@ TEST_F(FormManagerTest, PreviewForm) {
             fields[4]);
 
   // Preview the form.
-  form.fields[0].value = ASCIIToUTF16("Wyatt");
-  form.fields[1].value = ASCIIToUTF16("Earp");
-  form.fields[2].value = ASCIIToUTF16("Alpha");
-  form.fields[3].value = ASCIIToUTF16("Beta");
-  form.fields[4].value = ASCIIToUTF16("Gamma");
+  form.fields[0].set_value(ASCIIToUTF16("Wyatt"));
+  form.fields[1].set_value(ASCIIToUTF16("Earp"));
+  form.fields[2].set_value(ASCIIToUTF16("Alpha"));
+  form.fields[3].set_value(ASCIIToUTF16("Beta"));
+  form.fields[4].set_value(ASCIIToUTF16("Gamma"));
   EXPECT_TRUE(form_manager.PreviewForm(form, input_element));
 
   // Verify the previewed elements.
@@ -1484,9 +1484,9 @@ TEST_F(FormManagerTest, FillFormMaxLength) {
             fields[2]);
 
   // Fill the form.
-  form.fields[0].value = ASCIIToUTF16("Brother");
-  form.fields[1].value = ASCIIToUTF16("Jonathan");
-  form.fields[2].value = ASCIIToUTF16("brotherj@example.com");
+  form.fields[0].set_value(ASCIIToUTF16("Brother"));
+  form.fields[1].set_value(ASCIIToUTF16("Jonathan"));
+  form.fields[2].set_value(ASCIIToUTF16("brotherj@example.com"));
   EXPECT_TRUE(form_manager.FillForm(form, WebNode()));
 
   // Find the newly-filled form that contains the input element.
@@ -1578,9 +1578,9 @@ TEST_F(FormManagerTest, FillFormNegativeMaxLength) {
             fields[2]);
 
   // Fill the form.
-  form.fields[0].value = ASCIIToUTF16("Brother");
-  form.fields[1].value = ASCIIToUTF16("Jonathan");
-  form.fields[2].value = ASCIIToUTF16("brotherj@example.com");
+  form.fields[0].set_value(ASCIIToUTF16("Brother"));
+  form.fields[1].set_value(ASCIIToUTF16("Jonathan"));
+  form.fields[2].set_value(ASCIIToUTF16("brotherj@example.com"));
   EXPECT_TRUE(form_manager.FillForm(form, WebNode()));
 
   // Find the newly-filled form that contains the input element.
@@ -1681,13 +1681,13 @@ TEST_F(FormManagerTest, FillFormMoreFormDataFields) {
   form->fields.insert(form->fields.begin() + 6, field4);
 
   // Fill the form.
-  form->fields[0].value = ASCIIToUTF16("Alpha");
-  form->fields[1].value = ASCIIToUTF16("Brother");
-  form->fields[2].value = ASCIIToUTF16("Abracadabra");
-  form->fields[3].value = ASCIIToUTF16("Joseph");
-  form->fields[4].value = ASCIIToUTF16("Beta");
-  form->fields[5].value = ASCIIToUTF16("Jonathan");
-  form->fields[6].value = ASCIIToUTF16("Omega");
+  form->fields[0].set_value(ASCIIToUTF16("Alpha"));
+  form->fields[1].set_value(ASCIIToUTF16("Brother"));
+  form->fields[2].set_value(ASCIIToUTF16("Abracadabra"));
+  form->fields[3].set_value(ASCIIToUTF16("Joseph"));
+  form->fields[4].set_value(ASCIIToUTF16("Beta"));
+  form->fields[5].set_value(ASCIIToUTF16("Jonathan"));
+  form->fields[6].set_value(ASCIIToUTF16("Omega"));
   EXPECT_TRUE(form_manager.FillForm(*form, WebNode()));
 
   // Get the input element we want to find.
@@ -1764,9 +1764,9 @@ TEST_F(FormManagerTest, FillFormFewerFormDataFields) {
   form->fields.erase(form->fields.begin() + 3);
 
   // Fill the form.
-  form->fields[0].value = ASCIIToUTF16("Brother");
-  form->fields[1].value = ASCIIToUTF16("Joseph");
-  form->fields[2].value = ASCIIToUTF16("Jonathan");
+  form->fields[0].set_value(ASCIIToUTF16("Brother"));
+  form->fields[1].set_value(ASCIIToUTF16("Joseph"));
+  form->fields[2].set_value(ASCIIToUTF16("Jonathan"));
   EXPECT_TRUE(form_manager.FillForm(*form, WebNode()));
 
   // Get the input element we want to find.
@@ -1863,13 +1863,13 @@ TEST_F(FormManagerTest, FillFormChangedFormDataFields) {
   FormData* form = &forms[0];
 
   // Fill the form.
-  form->fields[0].value = ASCIIToUTF16("Brother");
-  form->fields[1].value = ASCIIToUTF16("Joseph");
-  form->fields[2].value = ASCIIToUTF16("Jonathan");
+  form->fields[0].set_value(ASCIIToUTF16("Brother"));
+  form->fields[1].set_value(ASCIIToUTF16("Joseph"));
+  form->fields[2].set_value(ASCIIToUTF16("Jonathan"));
 
   // Alter the label and name used for matching.
-  form->fields[1].label = ASCIIToUTF16("bogus");
-  form->fields[1].name = ASCIIToUTF16("bogus");
+  form->fields[1].set_label(ASCIIToUTF16("bogus"));
+  form->fields[1].set_name(ASCIIToUTF16("bogus"));
 
   EXPECT_TRUE(form_manager.FillForm(*form, WebNode()));
 
@@ -1938,9 +1938,9 @@ TEST_F(FormManagerTest, FillFormExtraFieldInCache) {
   form->fields.pop_back();
 
   // Fill the form.
-  form->fields[0].value = ASCIIToUTF16("Brother");
-  form->fields[1].value = ASCIIToUTF16("Joseph");
-  form->fields[2].value = ASCIIToUTF16("Jonathan");
+  form->fields[0].set_value(ASCIIToUTF16("Brother"));
+  form->fields[1].set_value(ASCIIToUTF16("Joseph"));
+  form->fields[2].set_value(ASCIIToUTF16("Jonathan"));
   EXPECT_TRUE(form_manager.FillForm(*form, WebNode()));
 
   // Get the input element we want to find.
@@ -2043,9 +2043,9 @@ TEST_F(FormManagerTest, FillFormEmptyName) {
             fields[2]);
 
   // Fill the form.
-  form.fields[0].value = ASCIIToUTF16("Wyatt");
-  form.fields[1].value = ASCIIToUTF16("Earp");
-  form.fields[2].value = ASCIIToUTF16("wyatt@example.com");
+  form.fields[0].set_value(ASCIIToUTF16("Wyatt"));
+  form.fields[1].set_value(ASCIIToUTF16("Earp"));
+  form.fields[2].set_value(ASCIIToUTF16("wyatt@example.com"));
   EXPECT_TRUE(form_manager.FillForm(form, WebNode()));
 
   // Find the newly-filled form that contains the input element.
@@ -2143,9 +2143,9 @@ TEST_F(FormManagerTest, FillFormEmptyFormNames) {
             fields[2]);
 
   // Fill the form.
-  form.fields[0].value = ASCIIToUTF16("Red");
-  form.fields[1].value = ASCIIToUTF16("Yellow");
-  form.fields[2].value = ASCIIToUTF16("Also Yellow");
+  form.fields[0].set_value(ASCIIToUTF16("Red"));
+  form.fields[1].set_value(ASCIIToUTF16("Yellow"));
+  form.fields[2].set_value(ASCIIToUTF16("Also Yellow"));
   EXPECT_TRUE(form_manager.FillForm(form, WebNode()));
 
   // Find the newly-filled form that contains the input element.
@@ -2386,9 +2386,9 @@ TEST_F(FormManagerTest, FillFormNonEmptyField) {
             fields[2]);
 
   // Preview the form and verify that the cursor position has been updated.
-  form.fields[0].value = ASCIIToUTF16("Wyatt");
-  form.fields[1].value = ASCIIToUTF16("Earp");
-  form.fields[2].value = ASCIIToUTF16("wyatt@example.com");
+  form.fields[0].set_value(ASCIIToUTF16("Wyatt"));
+  form.fields[1].set_value(ASCIIToUTF16("Earp"));
+  form.fields[2].set_value(ASCIIToUTF16("wyatt@example.com"));
   EXPECT_TRUE(form_manager.PreviewForm(form, input_element));
   EXPECT_EQ(2, input_element.selectionStart());
   EXPECT_EQ(5, input_element.selectionEnd());

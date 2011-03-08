@@ -29,6 +29,7 @@
           'common/app_mode_common_mac.mm',
           'common/auto_start_linux.cc',
           'common/auto_start_linux.h',
+          'common/autofill_messages.cc',
           'common/autofill_messages.h',
           'common/bindings_policy.h',
           'common/child_process_info.cc',

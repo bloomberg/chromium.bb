@@ -52,7 +52,7 @@ static bool FindFormInputElements(WebKit::WebFormElement* fe,
   // form; it can't be the right one.
   for (size_t j = 0; j < data.fields.size(); j++) {
     WebKit::WebVector<WebKit::WebNode> temp_elements;
-    fe->getNamedElements(data.fields[j].name, temp_elements);
+    fe->getNamedElements(data.fields[j].name(), temp_elements);
 
     // Match the first input element, if any.
     // |getNamedElements| may return non-input elements where the names match,
@@ -73,7 +73,7 @@ static bool FindFormInputElements(WebKit::WebFormElement* fe,
         // one suffices and if some function needs to deal with multiple
         // matching elements it can get at them through the FormElement*.
         // Note: This assignment adds a reference to the InputElement.
-        result->input_elements[data.fields[j].name] =
+        result->input_elements[data.fields[j].name()] =
             temp_elements[i].to<WebKit::WebInputElement>();
         found_input = true;
       }
@@ -143,7 +143,7 @@ bool FillForm(FormElements* fe, const webkit_glue::FormData& data) {
 
   std::map<string16, string16> data_map;
   for (size_t i = 0; i < data.fields.size(); i++)
-    data_map[data.fields[i].name] = data.fields[i].value;
+    data_map[data.fields[i].name()] = data.fields[i].value();
 
   for (FormInputElementMap::iterator it = fe->input_elements.begin();
        it != fe->input_elements.end(); ++it) {
@@ -409,12 +409,12 @@ void PasswordAutofillManager::OnFillPasswordForm(
     // Attach autocomplete listener to enable selecting alternate logins.
     // First, get pointers to username element.
     WebKit::WebInputElement username_element =
-        form_elements->input_elements[form_data.basic_data.fields[0].name];
+        form_elements->input_elements[form_data.basic_data.fields[0].name()];
 
     // Get pointer to password element. (We currently only support single
     // password forms).
     WebKit::WebInputElement password_element =
-        form_elements->input_elements[form_data.basic_data.fields[1].name];
+        form_elements->input_elements[form_data.basic_data.fields[1].name()];
 
     DCHECK(login_to_password_info_.find(username_element) ==
         login_to_password_info_.end());
@@ -432,8 +432,8 @@ void PasswordAutofillManager::GetSuggestions(
     const webkit_glue::PasswordFormFillData& fill_data,
     const string16& input,
     std::vector<string16>* suggestions) {
-  if (StartsWith(fill_data.basic_data.fields[0].value, input, false))
-    suggestions->push_back(fill_data.basic_data.fields[0].value);
+  if (StartsWith(fill_data.basic_data.fields[0].value(), input, false))
+    suggestions->push_back(fill_data.basic_data.fields[0].value());
 
   webkit_glue::PasswordFormFillData::LoginCollection::const_iterator iter;
   for (iter = fill_data.additional_logins.begin();
@@ -477,10 +477,10 @@ bool PasswordAutofillManager::FillUserNameAndPassword(
   string16 password;
 
   // Look for any suitable matches to current field text.
-  if (DoUsernamesMatch(fill_data.basic_data.fields[0].value, current_username,
+  if (DoUsernamesMatch(fill_data.basic_data.fields[0].value(), current_username,
                        exact_username_match)) {
-    username = fill_data.basic_data.fields[0].value;
-    password = fill_data.basic_data.fields[1].value;
+    username = fill_data.basic_data.fields[0].value();
+    password = fill_data.basic_data.fields[1].value();
   } else {
     // Scan additional logins for a match.
     webkit_glue::PasswordFormFillData::LoginCollection::const_iterator iter;

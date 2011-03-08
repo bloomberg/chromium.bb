@@ -110,10 +110,10 @@ void WebPasswordAutocompleteListenerImpl::didBlurInputElement(
   string16 user_input16 = user_input;
 
   // If enabled, set the password field to match the current username.
-  if (data_.basic_data.fields[0].value == user_input16) {
-    if (password_delegate_->IsValidValue(data_.basic_data.fields[1].value)) {
+  if (data_.basic_data.fields[0].value() == user_input16) {
+    if (password_delegate_->IsValidValue(data_.basic_data.fields[1].value())) {
       // Preferred username/login is selected.
-      password_delegate_->SetValue(data_.basic_data.fields[1].value);
+      password_delegate_->SetValue(data_.basic_data.fields[1].value());
       password_delegate_->SetAutofilled(true);
     }
   } else if (data_.additional_logins.find(user_input16) !=
@@ -160,8 +160,8 @@ void WebPasswordAutocompleteListenerImpl::performInlineAutocomplete(
   // to simplify lookup and save string conversions (see SetValue) on each
   // successful call to OnInlineAutocompleteNeeded.
   if (TryToMatch(user_input16,
-                 data_.basic_data.fields[0].value,
-                 data_.basic_data.fields[1].value)) {
+                 data_.basic_data.fields[0].value(),
+                 data_.basic_data.fields[1].value())) {
     return;
   }
 
@@ -209,8 +209,8 @@ bool WebPasswordAutocompleteListenerImpl::TryToMatch(const string16& input,
 
 void WebPasswordAutocompleteListenerImpl::GetSuggestions(
     const string16& input, std::vector<string16>* suggestions) {
-  if (StartsWith(data_.basic_data.fields[0].value, input, false))
-    suggestions->push_back(data_.basic_data.fields[0].value);
+  if (StartsWith(data_.basic_data.fields[0].value(), input, false))
+    suggestions->push_back(data_.basic_data.fields[0].value());
 
   for (PasswordFormFillData::LoginCollection::iterator it =
        data_.additional_logins.begin();

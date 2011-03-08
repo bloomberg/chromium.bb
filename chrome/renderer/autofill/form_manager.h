@@ -16,7 +16,7 @@
 
 namespace webkit_glue {
 struct FormData;
-struct FormField;
+class FormField;
 }  // namespace webkit_glue
 
 namespace WebKit {

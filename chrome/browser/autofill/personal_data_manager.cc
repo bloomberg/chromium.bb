@@ -182,7 +182,7 @@ bool PersonalDataManager::ImportFormData(
     const FormStructure* form = *iter;
     for (size_t i = 0; i < form->field_count(); ++i) {
       const AutofillField* field = form->field(i);
-      string16 value = CollapseWhitespace(field->value, false);
+      string16 value = CollapseWhitespace(field->value(), false);
 
       // If we don't know the type of the field, or the user hasn't entered any
       // information into the field, then skip it.
@@ -196,7 +196,7 @@ bool PersonalDataManager::ImportFormData(
         // If the user has a password set, we have no way of setting credit
         // card numbers.
         if (!HasPassword()) {
-          if (LowerCaseEqualsASCII(field->form_control_type, "month")) {
+          if (LowerCaseEqualsASCII(field->form_control_type(), "month")) {
             DCHECK_EQ(CREDIT_CARD_EXP_MONTH, field_type.field_type());
             local_imported_credit_card->SetInfoForMonthInputType(value);
           } else {

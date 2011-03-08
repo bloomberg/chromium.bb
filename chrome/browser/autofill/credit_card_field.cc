@@ -118,7 +118,7 @@ CreditCardField* CreditCardField::Parse(
         &credit_card_field->number_))
       continue;
 
-    if ((*q) && LowerCaseEqualsASCII((*q)->form_control_type, "month")) {
+    if ((*q) && LowerCaseEqualsASCII((*q)->form_control_type(), "month")) {
       credit_card_field->expiration_month_ = *q++;
     } else {
       // "Expiration date" is the most common label here, but some pages have
@@ -187,7 +187,7 @@ CreditCardField* CreditCardField::Parse(
       credit_card_field->expiration_month_ &&
       (credit_card_field->expiration_year_ ||
       (LowerCaseEqualsASCII(
-           credit_card_field->expiration_month_->form_control_type,
+           credit_card_field->expiration_month_->form_control_type(),
            "month")))) {
       *iter = q;
       return credit_card_field.release();

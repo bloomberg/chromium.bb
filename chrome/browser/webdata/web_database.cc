@@ -1401,10 +1401,10 @@ bool WebDatabase::AddFormFieldValuesTime(const std::vector<FormField>& elements,
        itr++) {
     if (seen_names.size() >= kMaximumUniqueNames)
       break;
-    if (seen_names.find(itr->name) != seen_names.end())
+    if (seen_names.find(itr->name()) != seen_names.end())
       continue;
     result = result && AddFormFieldValueTime(*itr, changes, time);
-    seen_names.insert(itr->name);
+    seen_names.insert(itr->name());
   }
   return result;
 }
@@ -1443,8 +1443,8 @@ bool WebDatabase::GetIDAndCountOfFormElement(
     return false;
   }
 
-  s.BindString16(0, element.name);
-  s.BindString16(1, element.value);
+  s.BindString16(0, element.name());
+  s.BindString16(1, element.value());
 
   *pair_id = 0;
   *count = 0;
@@ -1622,9 +1622,9 @@ bool WebDatabase::InsertFormElement(const FormField& element,
     return false;
   }
 
-  s.BindString16(0, element.name);
-  s.BindString16(1, element.value);
-  s.BindString16(2, l10n_util::ToLower(element.value));
+  s.BindString16(0, element.name());
+  s.BindString16(1, element.value());
+  s.BindString16(2, l10n_util::ToLower(element.value()));
 
   if (!s.Run()) {
     NOTREACHED();
@@ -1701,7 +1701,7 @@ bool WebDatabase::AddFormFieldValueTime(const FormField& element,
       count == 0 ? AutofillChange::ADD : AutofillChange::UPDATE;
   changes->push_back(
       AutofillChange(change_type,
-                     AutofillKey(element.name, element.value)));
+                     AutofillKey(element.name(), element.value())));
   return true;
 }
 
