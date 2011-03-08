@@ -29,9 +29,6 @@
       'autofill',
       # crbug.com/73439
       '-autofill.AutoFillTest.testFilterMalformedEmailAddresses',
-      # crbug.com/74843
-      '-autofill.AutoFillTest.testAutofillInvalid',
-      '-autofill.AutoFillTest.testFillProfileCrazyCharacters',
       'bookmark_bar',
       'bookmarks',
       'browser',

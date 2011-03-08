@@ -80,7 +80,7 @@ class AutoFillTest(pyauto.PyUITest):
                        'ADDRESS_HOME_CITY': 'Sunnyvale',
                        'ADDRESS_HOME_STATE': 'CA',
                        'ADDRESS_HOME_ZIP': 'my_zip',
-                       'ADDRESS_HOME_COUNTRY': 'USA'}
+                       'ADDRESS_HOME_COUNTRY': 'United States'}
     # Add some invalid fields.
     with_invalid = without_invalid.copy()
     with_invalid['PHONE_HOME_WHOLE_NUMBER'] = 'Invalid_Phone_Number'
