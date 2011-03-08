@@ -588,7 +588,8 @@ void HistoryBackend::InitImpl(const std::string& languages) {
     thumbnail_name = GetFaviconsFileName();
   }
   if (thumbnail_db_->Init(thumbnail_name,
-                          history_publisher_.get()) != sql::INIT_OK) {
+                          history_publisher_.get(),
+                          db_.get()) != sql::INIT_OK) {
     // Unlike the main database, we don't error out when the database is too
     // new because this error is much less severe. Generally, this shouldn't
     // happen since the thumbnail and main datbase versions should be in sync.
@@ -1600,27 +1601,31 @@ bool HistoryBackend::GetThumbnailFromOlderRedirect(
 }
 
 void HistoryBackend::GetFavIcon(scoped_refptr<GetFavIconRequest> request,
-                                const GURL& icon_url) {
-  UpdateFavIconMappingAndFetchImpl(NULL, icon_url, request);
+                                const GURL& icon_url,
+                                int icon_types) {
+  UpdateFavIconMappingAndFetchImpl(NULL, icon_url, request, icon_types);
 }
 
 void HistoryBackend::UpdateFavIconMappingAndFetch(
     scoped_refptr<GetFavIconRequest> request,
     const GURL& page_url,
-    const GURL& icon_url) {
-  UpdateFavIconMappingAndFetchImpl(&page_url, icon_url, request);
+    const GURL& icon_url,
+    IconType icon_type) {
+  UpdateFavIconMappingAndFetchImpl(&page_url, icon_url, request, icon_type);
 }
 
 void HistoryBackend::SetFavIconOutOfDateForPage(const GURL& page_url) {
-  if (!thumbnail_db_.get() || !db_.get())
+  std::vector<IconMapping> icon_mappings;
+
+  if (!thumbnail_db_.get() ||
+      !thumbnail_db_->GetIconMappingsForPageURL(page_url,
+                                                &icon_mappings))
     return;
 
-  URLRow url_row;
-  URLID url_id = db_->GetRowForURL(page_url, &url_row);
-  if (!url_id || !url_row.favicon_id())
-    return;
-
-  thumbnail_db_->SetFavIconLastUpdateTime(url_row.favicon_id(), Time());
+  for (std::vector<IconMapping>::iterator m = icon_mappings.begin();
+       m != icon_mappings.end(); ++m) {
+    thumbnail_db_->SetFavIconLastUpdateTime(m->icon_id, Time());
+  }
   ScheduleCommit();
 }
 
@@ -1636,10 +1641,11 @@ void HistoryBackend::SetImportedFavicons(
 
   for (size_t i = 0; i < favicon_usage.size(); i++) {
     FavIconID favicon_id = thumbnail_db_->GetFavIconIDForFavIconURL(
-        favicon_usage[i].favicon_url);
+        favicon_usage[i].favicon_url, history::FAV_ICON, NULL);
     if (!favicon_id) {
       // This favicon doesn't exist yet, so we create it using the given data.
-      favicon_id = thumbnail_db_->AddFavIcon(favicon_usage[i].favicon_url);
+      favicon_id = thumbnail_db_->AddFavIcon(favicon_usage[i].favicon_url,
+                                             history::FAV_ICON);
       if (!favicon_id)
         continue;  // Unable to add the favicon.
       thumbnail_db_->SetFavIcon(favicon_id,
@@ -1663,16 +1669,17 @@ void HistoryBackend::SetImportedFavicons(
           url_info.set_typed_count(0);
           url_info.set_last_visit(base::Time());
           url_info.set_hidden(false);
-          url_info.set_favicon_id(favicon_id);
           db_->AddURL(url_info);
+          thumbnail_db_->AddIconMapping(*url, favicon_id);
           favicons_changed.insert(*url);
         }
-      } else if (url_row.favicon_id() == 0) {
-        // URL is present in history, update the favicon *only* if it
-        // is not set already.
-        url_row.set_favicon_id(favicon_id);
-        db_->UpdateURLRow(url_row.id(), url_row);
-        favicons_changed.insert(*url);
+      } else {
+        if (!thumbnail_db_->GetIconMappingForPageURL(*url, FAV_ICON, NULL)) {
+          // URL is present in history, update the favicon *only* if it is not
+          // set already.
+          thumbnail_db_->AddIconMapping(*url, favicon_id);
+          favicons_changed.insert(*url);
+        }
       }
     }
   }
@@ -1688,7 +1695,12 @@ void HistoryBackend::SetImportedFavicons(
 void HistoryBackend::UpdateFavIconMappingAndFetchImpl(
     const GURL* page_url,
     const GURL& icon_url,
-    scoped_refptr<GetFavIconRequest> request) {
+    scoped_refptr<GetFavIconRequest> request,
+    int icon_types) {
+  // Check only a single type was given when the page_url was specified.
+  DCHECK(!page_url || (page_url && (icon_types == FAV_ICON ||
+      icon_types == TOUCH_ICON || icon_types == TOUCH_PRECOMPOSED_ICON)));
+
   if (request->canceled())
     return;
 
@@ -1697,8 +1709,10 @@ void HistoryBackend::UpdateFavIconMappingAndFetchImpl(
   scoped_refptr<RefCountedBytes> data;
 
   if (thumbnail_db_.get()) {
+    IconType returned_icon_type;
     const FavIconID favicon_id =
-        thumbnail_db_->GetFavIconIDForFavIconURL(icon_url);
+        thumbnail_db_->GetFavIconIDForFavIconURL(
+            icon_url, icon_types, &returned_icon_type);
     if (favicon_id) {
       data = new RefCountedBytes;
       know_favicon = true;
@@ -1710,7 +1724,7 @@ void HistoryBackend::UpdateFavIconMappingAndFetchImpl(
       }
 
       if (page_url)
-        SetFavIconMapping(*page_url, favicon_id);
+        SetFavIconMapping(*page_url, favicon_id, returned_icon_type);
     }
     // else case, haven't cached entry yet. Caller is responsible for
     // downloading the favicon and invoking SetFavIcon.
@@ -1722,7 +1736,8 @@ void HistoryBackend::UpdateFavIconMappingAndFetchImpl(
 
 void HistoryBackend::GetFavIconForURL(
     scoped_refptr<GetFavIconRequest> request,
-    const GURL& page_url) {
+    const GURL& page_url,
+    int icon_types) {
   if (request->canceled())
     return;
 
@@ -1736,11 +1751,12 @@ void HistoryBackend::GetFavIconForURL(
     // Time the query.
     TimeTicks beginning_time = TimeTicks::Now();
 
-    URLRow url_info;
+    std::vector<IconMapping> icon_mappings;
     data = new RefCountedBytes;
     Time last_updated;
-    if (db_->GetRowForURL(page_url, &url_info) && url_info.favicon_id() &&
-        thumbnail_db_->GetFavIcon(url_info.favicon_id(), &last_updated,
+    if (thumbnail_db_->GetIconMappingsForPageURL(page_url, &icon_mappings) &&
+        (icon_mappings.front().icon_type & icon_types) &&
+        thumbnail_db_->GetFavIcon(icon_mappings.front().icon_id, &last_updated,
                                   &data->data, &icon_url)) {
       know_favicon = true;
       expired = (Time::Now() - last_updated) >
@@ -1759,23 +1775,29 @@ void HistoryBackend::GetFavIconForURL(
 void HistoryBackend::SetFavIcon(
     const GURL& page_url,
     const GURL& icon_url,
-    scoped_refptr<RefCountedMemory> data) {
+    scoped_refptr<RefCountedMemory> data,
+    IconType icon_type) {
   DCHECK(data.get());
   if (!thumbnail_db_.get() || !db_.get())
     return;
 
-  FavIconID id = thumbnail_db_->GetFavIconIDForFavIconURL(icon_url);
+  FavIconID id = thumbnail_db_->GetFavIconIDForFavIconURL(
+      icon_url, icon_type, NULL);
   if (!id)
-    id = thumbnail_db_->AddFavIcon(icon_url);
+    id = thumbnail_db_->AddFavIcon(icon_url, icon_type);
 
   // Set the image data.
   thumbnail_db_->SetFavIcon(id, data, Time::Now());
 
-  SetFavIconMapping(page_url, id);
+  SetFavIconMapping(page_url, id, icon_type);
 }
 
 void HistoryBackend::SetFavIconMapping(const GURL& page_url,
-                                       FavIconID id) {
+                                       FavIconID id,
+                                       IconType icon_type) {
+  if (!thumbnail_db_.get())
+    return;
+
   // Find all the pages whose favicons we should set, we want to set it for
   // all the pages in the redirect chain if it redirected.
   history::RedirectList dummy_list;
@@ -1799,27 +1821,18 @@ void HistoryBackend::SetFavIconMapping(const GURL& page_url,
   // Save page <-> favicon association.
   for (history::RedirectList::const_iterator i(redirects->begin());
        i != redirects->end(); ++i) {
-    URLRow row;
-    if (!db_->GetRowForURL(*i, &row) || row.favicon_id() == id)
-      continue;
-
-    FavIconID old_id = row.favicon_id();
-    if (old_id == id)
-      continue;
-    row.set_favicon_id(id);
-    db_->UpdateURLRow(row.id(), row);
-
-    if (old_id) {
+    FavIconID replaced_id;
+    if (AddOrUpdateIconMapping(*i, id, icon_type, &replaced_id)) {
       // The page's favicon ID changed. This means that the one we just
       // changed from could have been orphaned, and we need to re-check it.
       // This is not super fast, but this case will get triggered rarely,
       // since normally a page will always map to the same favicon ID. It
       // will mostly happen for favicons we import.
-      if (!db_->IsFavIconUsed(old_id) && thumbnail_db_.get())
-        thumbnail_db_->DeleteFavIcon(old_id);
-    }
+      if (replaced_id && !thumbnail_db_->HasMappingFor(replaced_id))
+        thumbnail_db_->DeleteFavIcon(replaced_id);
 
-    favicons_changed.insert(row.url());
+      favicons_changed.insert(*i);
+    }
   }
 
   // Send the notification about the changed favicons.
@@ -1828,6 +1841,43 @@ void HistoryBackend::SetFavIconMapping(const GURL& page_url,
   BroadcastNotifications(NotificationType::FAVICON_CHANGED, changed_details);
 
   ScheduleCommit();
+}
+
+bool HistoryBackend::AddOrUpdateIconMapping(const GURL& page_url,
+                                            FavIconID id,
+                                            IconType icon_type,
+                                            FavIconID* replaced_icon) {
+  *replaced_icon = 0;
+  std::vector<IconMapping> icon_mappings;
+  if (!thumbnail_db_->GetIconMappingsForPageURL(page_url, &icon_mappings)) {
+    // There is no mapping add it directly.
+    thumbnail_db_->AddIconMapping(page_url, id);
+    return true;
+  }
+  // Iterate all matched icon mappings,
+  // a. If the given icon id and matched icon id are same, return.
+  // b. If the given icon type and matched icon type are same, but icon id
+  //    are not, update the IconMapping.
+  // c. If the given icon_type and matched icon type are not same, but
+  //    either of them is ICON_TOUCH or ICON_PRECOMPOSED_TOUCH, update the
+  //    IconMapping.
+  // d. Otherwise add a icon mapping.
+  for (std::vector<IconMapping>::iterator m = icon_mappings.begin();
+       m != icon_mappings.end(); ++m) {
+    if (m->icon_id == id)
+      // The mapping is already there.
+      return false;
+
+    if ((icon_type == TOUCH_ICON && m->icon_type == TOUCH_PRECOMPOSED_ICON) ||
+        (icon_type == TOUCH_PRECOMPOSED_ICON && m->icon_type == TOUCH_ICON) ||
+        (icon_type == m->icon_type)) {
+      thumbnail_db_->UpdateIconMapping(m->mapping_id, id);
+      *replaced_icon = m->icon_id;
+      return true;
+    }
+  }
+  thumbnail_db_->AddIconMapping(page_url, id);
+  return true;
 }
 
 void HistoryBackend::Commit() {
@@ -2120,6 +2170,9 @@ bool HistoryBackend::ClearAllThumbnailHistory(
   if (!thumbnail_db_->InitTemporaryFavIconsTable())
     return false;
 
+  if (!thumbnail_db_->InitTemporaryIconMappingTable())
+    return false;
+
   // This maps existing favicon IDs to the ones in the temporary table.
   typedef std::map<FavIconID, FavIconID> FavIconMap;
   FavIconMap copied_favicons;
@@ -2128,26 +2181,33 @@ bool HistoryBackend::ClearAllThumbnailHistory(
   // URLs to have the new IDs.
   for (std::vector<URLRow>::iterator i = kept_urls->begin();
        i != kept_urls->end(); ++i) {
-    FavIconID old_id = i->favicon_id();
-    if (!old_id)
-      continue;  // URL has no favicon.
-    FavIconID new_id;
+    std::vector<IconMapping> icon_mappings;
+    if (!thumbnail_db_->GetIconMappingsForPageURL(i->url(), &icon_mappings))
+      continue;
 
-    FavIconMap::const_iterator found = copied_favicons.find(old_id);
-    if (found == copied_favicons.end()) {
-      new_id = thumbnail_db_->CopyToTemporaryFavIconTable(old_id);
-      copied_favicons[old_id] = new_id;
-    } else {
-      // We already encountered a URL that used this favicon, use the ID we
-      // previously got.
-      new_id = found->second;
+    for (std::vector<IconMapping>::iterator m = icon_mappings.begin();
+         m != icon_mappings.end(); ++m) {
+      FavIconID old_id = m->icon_id;
+      FavIconID new_id;
+      FavIconMap::const_iterator found = copied_favicons.find(old_id);
+      if (found == copied_favicons.end()) {
+        new_id = thumbnail_db_->CopyToTemporaryFavIconTable(old_id);
+        copied_favicons[old_id] = new_id;
+      } else {
+        // We already encountered a URL that used this favicon, use the ID we
+        // previously got.
+        new_id = found->second;
+      }
+      // Add Icon mapping, and we don't care wheteher it suceeded or not.
+      thumbnail_db_->AddToTemporaryIconMappingTable(i->url(), new_id);
     }
-    i->set_favicon_id(new_id);
   }
 
-  // Rename the duplicate favicon table back and recreate the other tables.
-  // This will make the database consistent again.
+  // Rename the duplicate favicon and icon_mapping back table and recreate the
+  // other tables. This will make the database consistent again.
   thumbnail_db_->CommitTemporaryFavIconTable();
+  thumbnail_db_->CommitTemporaryIconMappingTable();
+
   thumbnail_db_->RecreateThumbnailTable();
 
   // Vacuum to remove all the pages associated with the dropped tables. There

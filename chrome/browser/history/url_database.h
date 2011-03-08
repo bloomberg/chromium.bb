@@ -111,20 +111,44 @@ class URLDatabase {
 
   // Enumeration ---------------------------------------------------------------
 
-  // A basic enumerator to enumerate urls
-  class URLEnumerator {
+  // A basic enumerator to enumerate urls database.
+  class URLEnumeratorBase {
    public:
-    URLEnumerator() : initialized_(false) {
-    }
-
-    // Retreives the next url. Returns false if no more urls are available
-    bool GetNextURL(history::URLRow* r);
+    URLEnumeratorBase();
+    virtual ~URLEnumeratorBase();
 
    private:
     friend class URLDatabase;
 
     bool initialized_;
     sql::Statement statement_;
+
+    DISALLOW_COPY_AND_ASSIGN(URLEnumeratorBase);
+  };
+
+  // A basic enumerator to enumerate urls
+  class URLEnumerator : public URLEnumeratorBase {
+   public:
+    URLEnumerator();
+
+    // Retreives the next url. Returns false if no more urls are available
+    bool GetNextURL(history::URLRow* r);
+
+   private:
+    DISALLOW_COPY_AND_ASSIGN(URLEnumerator);
+  };
+
+  // A basic enumerator to enumerate icon mapping, it is only used for icon
+  // mapping migration.
+  class IconMappingEnumerator : public URLEnumeratorBase {
+   public:
+    IconMappingEnumerator();
+
+    // Retreives the next url. Returns false if no more urls are available
+    bool GetNextIconMapping(IconMapping* r);
+
+   private:
+    DISALLOW_COPY_AND_ASSIGN(IconMappingEnumerator);
   };
 
   // Initializes the given enumerator to enumerator all URLs in the database.
@@ -137,9 +161,6 @@ class URLDatabase {
   bool InitURLEnumeratorForSignificant(URLEnumerator* enumerator);
 
   // Favicons ------------------------------------------------------------------
-
-  // Check whether a favicon is used by any URLs in the database.
-  bool IsFavIconUsed(FavIconID favicon_id);
 
   // Autocomplete --------------------------------------------------------------
 
@@ -194,6 +215,11 @@ class URLDatabase {
   // the favicon couldn't be updated.
   bool MigrateFromVersion11ToVersion12();
 
+  // Initializes the given enumerator to enumerator all URL and icon mappings
+  // in the database. Only used for icon mapping migration.
+  bool InitIconMappingEnumeratorForEverything(
+      IconMappingEnumerator* enumerator);
+
  protected:
   friend class VisitDatabase;
 
@@ -220,12 +246,8 @@ class URLDatabase {
   // different name but the same schema.
   bool CreateURLTable(bool is_temporary);
   // We have two tiers of indices for the URL table. The main tier is used by
-  // all URL databases, and is an index over the URL itself. The main history
-  // DB also creates indices over the favicons and bookmark IDs. The archived
-  // and in-memory databases don't need these supplimentary indices so we can
-  // save space by not creating them.
+  // all URL databases, and is an index over the URL itself.
   void CreateMainURLIndex();
-  void CreateSupplimentaryURLIndices();
 
   // Ensures the keyword search terms table exists.
   bool InitKeywordSearchTermsTable();
@@ -267,7 +289,7 @@ class URLDatabase {
 // string dynamically anyway, use the constant, it will save space.
 #define HISTORY_URL_ROW_FIELDS \
     " urls.id, urls.url, urls.title, urls.visit_count, urls.typed_count, " \
-    "urls.last_visit_time, urls.hidden, urls.favicon_id "
+    "urls.last_visit_time, urls.hidden "
 
 }  // history
 

@@ -119,7 +119,6 @@ sql::InitStatus HistoryDatabase::Init(const FilePath& history_name,
     return sql::INIT_FAILURE;
   CreateMainURLIndex();
   CreateKeywordSearchTermsIndices();
-  CreateSupplimentaryURLIndices();
 
   // Version check.
   sql::InitStatus version_status = EnsureCurrentVersion(bookmarks_path);
@@ -168,7 +167,6 @@ bool HistoryDatabase::RecreateAllTablesButURL() {
   // We also add the supplementary URL indices at this point. This index is
   // over parts of the URL table that weren't automatically created when the
   // temporary URL table was
-  CreateSupplimentaryURLIndices();
   CreateKeywordSearchTermsIndices();
   return true;
 }

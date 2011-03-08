@@ -78,7 +78,6 @@ struct ParamTraits<history::URLRow> {
     WriteParam(m, p.typed_count());
     WriteParam(m, p.last_visit());
     WriteParam(m, p.hidden());
-    WriteParam(m, p.favicon_id());
   }
   static bool Read(const Message* m, void** iter, param_type* p) {
     history::URLID id;
@@ -103,7 +102,6 @@ struct ParamTraits<history::URLRow> {
     p->set_typed_count(typed_count);
     p->set_last_visit(last_visit);
     p->set_hidden(hidden);
-    p->set_favicon_id(favicon_id);
     return true;
   }
   static void Log(const param_type& p, std::string* l) {
@@ -121,8 +119,6 @@ struct ParamTraits<history::URLRow> {
     LogParam(p.last_visit(), l);
     l->append(", ");
     LogParam(p.hidden(), l);
-    l->append(", ");
-    LogParam(p.favicon_id(), l);
     l->append(")");
   }
 };  // ParamTraits<history::URLRow>

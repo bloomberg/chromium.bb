@@ -210,16 +210,25 @@ class HistoryBackend : public base::RefCountedThreadSafe<HistoryBackend>,
   // Favicon -------------------------------------------------------------------
 
   void GetFavIcon(scoped_refptr<GetFavIconRequest> request,
-                  const GURL& icon_url);
+                  const GURL& icon_url,
+                  int icon_types);
+
   void GetFavIconForURL(scoped_refptr<GetFavIconRequest> request,
-                        const GURL& page_url);
+                        const GURL& page_url,
+                        int icon_types);
+
   void SetFavIcon(const GURL& page_url,
                   const GURL& icon_url,
-                  scoped_refptr<RefCountedMemory> data);
+                  scoped_refptr<RefCountedMemory> data,
+                  IconType icon_type);
+
   void UpdateFavIconMappingAndFetch(scoped_refptr<GetFavIconRequest> request,
                                     const GURL& page_url,
-                                    const GURL& icon_url);
+                                    const GURL& icon_url,
+                                    IconType icon_type);
+
   void SetFavIconOutOfDateForPage(const GURL& page_url);
+
   void SetImportedFavicons(
       const std::vector<ImportedFavIconUsage>& favicon_usage);
 
@@ -320,6 +329,7 @@ class HistoryBackend : public base::RefCountedThreadSafe<HistoryBackend>,
  private:
   friend class base::RefCountedThreadSafe<HistoryBackend>;
   friend class CommitLaterTask;  // The commit task needs to call Commit().
+  friend class HistoryBackendTest;
   friend class HistoryTest;  // So the unit tests can poke our innards.
   FRIEND_TEST_ALL_PREFIXES(HistoryBackendTest, DeleteAll);
   FRIEND_TEST_ALL_PREFIXES(HistoryBackendTest, ImportedFaviconsTest);
@@ -331,6 +341,10 @@ class HistoryBackend : public base::RefCountedThreadSafe<HistoryBackend>,
   FRIEND_TEST_ALL_PREFIXES(HistoryBackendTest, AddVisitsSource);
   FRIEND_TEST_ALL_PREFIXES(HistoryBackendTest, RemoveVisitsSource);
   FRIEND_TEST_ALL_PREFIXES(HistoryBackendTest, MigrationVisitSource);
+  FRIEND_TEST_ALL_PREFIXES(HistoryBackendTest, MigrationIconMapping);
+  FRIEND_TEST_ALL_PREFIXES(HistoryBackendTest, SetFavIconMapping);
+  FRIEND_TEST_ALL_PREFIXES(HistoryBackendTest, AddOrUpdateIconMapping);
+
   friend class ::TestingProfile;
 
   // Computes the name of the specified database on disk.
@@ -433,14 +447,28 @@ class HistoryBackend : public base::RefCountedThreadSafe<HistoryBackend>,
   // If page_url is non-null and SetFavIcon has previously been invoked for
   // icon_url the favicon url for page_url (and all redirects) is set to
   // icon_url.
+  // Only a single type can be given in icon_type when page_url is specified.
   void UpdateFavIconMappingAndFetchImpl(
       const GURL* page_url,
       const GURL& icon_url,
-      scoped_refptr<GetFavIconRequest> request);
+      scoped_refptr<GetFavIconRequest> request,
+      int icon_type);
 
   // Sets the favicon url id for page_url to id. This will also broadcast
   // notifications as necessary.
-  void SetFavIconMapping(const GURL& page_url, FavIconID id);
+  void SetFavIconMapping(const GURL& page_url,
+                         FavIconID id,
+                         IconType icon_type);
+
+  // Updates the FavIconID associated with the url of a page. If there is an
+  // existing mapping between |page_url| and |id| this does nothing and returns
+  // false. If the mapping needs to be added or updated, true is returned. If
+  // there is an existing mapping but it does not map to |id|, then the |id| of
+  // the replaced FavIconID is set in |replaced_icon_id|.
+  bool AddOrUpdateIconMapping(const GURL& page_url,
+                              FavIconID id,
+                              IconType icon_type,
+                              FavIconID* replaced_icon_id);
 
   // Generic stuff -------------------------------------------------------------
 

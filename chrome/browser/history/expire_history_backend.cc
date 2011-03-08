@@ -317,12 +317,12 @@ void ExpireHistoryBackend::StartArchivingOldStuff(
 
 void ExpireHistoryBackend::DeleteFaviconsIfPossible(
     const std::set<FavIconID>& favicon_set) {
-  if (!main_db_ || !thumb_db_)
+  if (!thumb_db_)
     return;
 
   for (std::set<FavIconID>::const_iterator i = favicon_set.begin();
        i != favicon_set.end(); ++i) {
-    if (!main_db_->IsFavIconUsed(*i))
+    if (!thumb_db_->HasMappingFor(*i))
       thumb_db_->DeleteFavIcon(*i);
   }
 }
@@ -408,13 +408,20 @@ void ExpireHistoryBackend::DeleteOneURL(
     dependencies->deleted_urls.push_back(url_row);
 
     // Delete stuff that references this URL.
-    if (thumb_db_)
+    if (thumb_db_) {
       thumb_db_->DeleteThumbnail(url_row.id());
 
-    // Collect shared information.
-    if (url_row.favicon_id())
-      dependencies->affected_favicons.insert(url_row.favicon_id());
-
+      // Collect shared information.
+      std::vector<IconMapping> icon_mappings;
+      if (thumb_db_->GetIconMappingsForPageURL(url_row.url(), &icon_mappings)) {
+        for (std::vector<IconMapping>::iterator m = icon_mappings.begin();
+             m != icon_mappings.end(); ++m) {
+          dependencies->affected_favicons.insert(m->icon_id);
+        }
+        // Delete the mapping entries for the url.
+        thumb_db_->DeleteIconMappings(url_row.url());
+      }
+    }
     // Last, delete the URL entry.
     main_db_->DeleteURLRow(url_row.id());
   }

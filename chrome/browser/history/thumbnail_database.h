@@ -11,7 +11,9 @@
 #include "app/sql/connection.h"
 #include "app/sql/init_status.h"
 #include "app/sql/meta_table.h"
+#include "base/gtest_prod_util.h"
 #include "base/ref_counted.h"
+#include "base/scoped_ptr.h"
 #include "chrome/browser/history/history_types.h"
 
 class FilePath;
@@ -43,7 +45,8 @@ class ThumbnailDatabase {
   // Must be called after creation but before any other methods are called.
   // When not INIT_OK, no other functions should be called.
   sql::InitStatus Init(const FilePath& db_name,
-                       const HistoryPublisher* history_publisher);
+                       const HistoryPublisher* history_publisher,
+                       URLDatabase* url_database);
 
   // Open database on a given filename. If the file does not exist,
   // it is created.
@@ -102,9 +105,16 @@ class ThumbnailDatabase {
   // Sets the time the favicon was last updated.
   bool SetFavIconLastUpdateTime(FavIconID icon_id, base::Time time);
 
-  // Returns the id of the entry in the favicon database with the specified url.
+  // Returns the id of the entry in the favicon database with the specified url
+  // and icon type. If |required_icon_type| contains multiple icon types and
+  // there are more than one matched icon in database, only one icon will be
+  // returned in the priority of TOUCH_PRECOMPOSED_ICON, TOUCH_ICON, and
+  // FAV_ICON, and the icon type is returned in icon_type parameter if it is not
+  // NULL.
   // Returns 0 if no entry exists for the specified url.
-  FavIconID GetFavIconIDForFavIconURL(const GURL& icon_url);
+  FavIconID GetFavIconIDForFavIconURL(const GURL& icon_url,
+                                      int required_icon_type,
+                                      IconType* icon_type);
 
   // Gets the png encoded favicon and last updated time for the specified
   // favicon id.
@@ -113,11 +123,69 @@ class ThumbnailDatabase {
                   std::vector<unsigned char>* png_icon_data,
                   GURL* icon_url);
 
-  // Adds the favicon URL to the favicon db, returning its id.
-  FavIconID AddFavIcon(const GURL& icon_url);
+  // Adds the favicon URL and icon type to the favicon db, returning its id.
+  FavIconID AddFavIcon(const GURL& icon_url, IconType icon_type);
 
   // Delete the favicon with the provided id. Returns false on failure
   bool DeleteFavIcon(FavIconID id);
+
+  // Icon Mapping --------------------------------------------------------------
+  //
+  // Returns true if there is a matched icon mapping for the given page and
+  // icon type.
+  // The matched icon mapping is returned in the icon_mapping parameter if it is
+  // not NULL.
+  bool GetIconMappingForPageURL(const GURL& page_url,
+                                IconType required_icon_type,
+                                IconMapping* icon_mapping);
+
+  // Returns true if there is any matched icon mapping for the given page.
+  // All matched icon mappings are returned in descent order of IconType if
+  // mapping_data is not NULL.
+  bool GetIconMappingsForPageURL(const GURL& page_url,
+                                 std::vector<IconMapping>* mapping_data);
+
+  // Adds a mapping between the given page_url and icon_id.
+  // Returns the new mapping id if the adding succeeds, otherwise 0 is returned.
+  IconMappingID AddIconMapping(const GURL& page_url, FavIconID icon_id);
+
+  // Updates the page and icon mapping for the given mapping_id with the given
+  // icon_id.
+  // Returns true if the update succeeded.
+  bool UpdateIconMapping(IconMappingID mapping_id, FavIconID icon_id);
+
+  // Deletes the icon mapping entries for the given page url.
+  // Returns true if the deletion succeeded.
+  bool DeleteIconMappings(const GURL& page_url);
+
+  // Checks whether a favicon is used by any URLs in the database.
+  bool HasMappingFor(FavIconID id);
+
+  // Temporary IconMapping -----------------------------------------------------
+  //
+  // Creates a temporary table to store icon mapping. Icon mapping will be
+  // copied to this table by AddToTemporaryIconMappingTable() and then the
+  // original table will be dropped, leaving only those copied mapping
+  // remaining. This is used to quickly delete most of the icon mapping when
+  // clearing history.
+  bool InitTemporaryIconMappingTable() {
+    return InitIconMappingTable(&db_, true);
+  }
+
+  // Copies the given icon mapping from the "main" icon_mapping table to the
+  // temporary one. This is only valid in between calls to
+  // InitTemporaryIconMappingTable()
+  // and CommitTemporaryIconMappingTable().
+  //
+  // The ID of the favicon will change when this copy takes place. The new ID
+  // is returned, or 0 on failure.
+  IconMappingID AddToTemporaryIconMappingTable(const GURL& page_url,
+                                               const FavIconID icon_id);
+
+  // Replaces the main icon mapping table with the temporary table created by
+  // InitTemporaryIconMappingTable(). This will mean all icon mapping not copied
+  // over will be deleted. Returns true on success.
+  bool CommitTemporaryIconMappingTable();
 
   // Temporary FavIcons --------------------------------------------------------
 
@@ -152,6 +220,8 @@ class ThumbnailDatabase {
 
  private:
   friend class ExpireHistoryBackend;
+  FRIEND_TEST_ALL_PREFIXES(ThumbnailDatabaseTest, UpgradeToVersion4);
+  FRIEND_TEST_ALL_PREFIXES(HistoryBackendTest, MigrationIconMapping);
 
   // Creates the thumbnail table, returning true if the table already exists
   // or was successfully created.
@@ -169,11 +239,36 @@ class ThumbnailDatabase {
   // Adds support for the new metadata on web page thumbnails.
   bool UpgradeToVersion3();
 
+  // Adds support for the icon_type in favicon table.
+  bool UpgradeToVersion4();
+
+  // Migrates the icon mapping data from URL database to Thumbnail database.
+  // Return whether the migration succeeds.
+  bool MigrateIconMappingData(URLDatabase* url_db);
+
   // Creates the index over the favicon table. This will be called during
   // initialization after the table is created. This is a separate function
   // because it is used by SwapFaviconTables to create an index over the
   // newly-renamed favicons table (formerly the temporary table with no index).
   void InitFavIconsIndex();
+
+  // Creates the icon_map table, return true if the table already exists or was
+  // successfully created.
+  bool InitIconMappingTable(sql::Connection* db, bool is_temporary);
+
+  // Creates the index over the icon_mapping table, This will be called during
+  // initialization after the table is created. This is a separate function
+  // because it is used by CommitTemporaryIconMappingTable to create an index
+  // over the newly-renamed icon_mapping table (formerly the temporary table
+  // with no index).
+  void InitIconMappingIndex();
+
+  // Adds a mapping between the given page_url and icon_id; The mapping will be
+  // added to temp_icon_mapping table if is_temporary is true.
+  // Returns the new mapping id if the adding succeeds, otherwise 0 is returned.
+  IconMappingID AddIconMapping(const GURL& page_url,
+                               FavIconID icon_id,
+                               bool is_temporary);
 
   sql::Connection db_;
   sql::MetaTable meta_table_;

@@ -52,7 +52,6 @@ class VisitDatabaseTest : public PlatformTest,
     // Initialize the tables for this test.
     CreateURLTable(false);
     CreateMainURLIndex();
-    CreateSupplimentaryURLIndices();
     InitVisitTable();
   }
   void TearDown() {

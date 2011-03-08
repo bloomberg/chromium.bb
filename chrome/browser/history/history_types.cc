@@ -40,7 +40,6 @@ URLRow& URLRow::operator=(const URLRow& other) {
   typed_count_ = other.typed_count_;
   last_visit_ = other.last_visit_;
   hidden_ = other.hidden_;
-  favicon_id_ = other.favicon_id_;
   return *this;
 }
 
@@ -52,7 +51,6 @@ void URLRow::Swap(URLRow* other) {
   std::swap(typed_count_, other->typed_count_);
   std::swap(last_visit_, other->last_visit_);
   std::swap(hidden_, other->hidden_);
-  std::swap(favicon_id_, other->favicon_id_);
 }
 
 void URLRow::Initialize() {
@@ -61,7 +59,6 @@ void URLRow::Initialize() {
   typed_count_ = 0;
   last_visit_ = base::Time();
   hidden_ = false;
-  favicon_id_ = 0;
 }
 
 // VisitRow --------------------------------------------------------------------
@@ -402,5 +399,15 @@ bool RowQualifiesAsSignificant(const URLRow& row,
          (row.visit_count() > kLowQualityMatchVisitLimit) ||
          (row.last_visit() >= real_threshold);
 }
+
+// IconMapping ----------------------------------------------------------------
+
+IconMapping::IconMapping()
+    : mapping_id(0),
+      icon_id(0),
+      icon_type(INVALID_ICON) {
+}
+
+IconMapping::~IconMapping() {}
 
 }  // namespace history

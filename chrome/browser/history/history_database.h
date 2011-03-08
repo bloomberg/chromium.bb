@@ -145,6 +145,7 @@ class HistoryDatabase : public DownloadDatabase,
   virtual void UpdateEarlyExpirationThreshold(base::Time threshold);
 
  private:
+  FRIEND_TEST_ALL_PREFIXES(IconMappingMigrationTest, TestIconMappingMigration);
   // Implemented for URLDatabase.
   virtual sql::Connection& GetDB();
 

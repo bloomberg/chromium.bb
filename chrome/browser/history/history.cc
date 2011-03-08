@@ -451,7 +451,7 @@ HistoryService::Handle HistoryService::GetPageThumbnail(
 void HistoryService::GetFavicon(FaviconService::GetFaviconRequest* request,
                                 const GURL& icon_url) {
   Schedule(PRIORITY_NORMAL, &HistoryBackend::GetFavIcon, NULL, request,
-           icon_url);
+           icon_url, history::FAV_ICON);
 }
 
 void HistoryService::UpdateFaviconMappingAndFetch(
@@ -459,14 +459,14 @@ void HistoryService::UpdateFaviconMappingAndFetch(
     const GURL& page_url,
     const GURL& icon_url) {
   Schedule(PRIORITY_NORMAL, &HistoryBackend::UpdateFavIconMappingAndFetch, NULL,
-           request, page_url, icon_url);
+           request, page_url, icon_url, history::FAV_ICON);
 }
 
 void HistoryService::GetFaviconForURL(
     FaviconService::GetFaviconRequest* request,
     const GURL& page_url) {
   Schedule(PRIORITY_NORMAL, &HistoryBackend::GetFavIconForURL, NULL, request,
-           page_url);
+           page_url, history::FAV_ICON);
 }
 
 void HistoryService::SetFavicon(const GURL& page_url,
@@ -477,7 +477,8 @@ void HistoryService::SetFavicon(const GURL& page_url,
 
   ScheduleAndForget(PRIORITY_NORMAL, &HistoryBackend::SetFavIcon,
       page_url, icon_url,
-      scoped_refptr<RefCountedMemory>(new RefCountedBytes(image_data)));
+      scoped_refptr<RefCountedMemory>(new RefCountedBytes(image_data)),
+      history::FAV_ICON);
 }
 
 void HistoryService::SetFaviconOutOfDateForPage(const GURL& page_url) {

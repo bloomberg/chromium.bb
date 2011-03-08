@@ -42,6 +42,7 @@ typedef int64 UIStarID;  // Identifier for star entries that come from the UI.
 typedef int64 DownloadID;   // Identifier for a download.
 typedef int64 FavIconID;  // For FavIcons.
 typedef int64 SegmentID;  // URL segments for the most visited view.
+typedef int64 IconMappingID; // For page url and icon mapping.
 
 // URLRow ---------------------------------------------------------------------
 
@@ -116,12 +117,6 @@ class URLRow {
     hidden_ = hidden;
   }
 
-  // ID of the favicon. A value of 0 means the favicon isn't known yet.
-  FavIconID favicon_id() const { return favicon_id_; }
-  void set_favicon_id(FavIconID favicon_id) {
-    favicon_id_ = favicon_id;
-  }
-
  protected:
   // Swaps the contents of this URLRow with another, which allows it to be
   // destructively copied without memory allocations.
@@ -161,9 +156,6 @@ class URLRow {
   // Indicates this entry should now be shown in typical UI or queries, this
   // is usually for subframes.
   bool hidden_;
-
-  // The ID of the favicon for this url.
-  FavIconID favicon_id_;
 
   // We support the implicit copy constuctor and operator=.
 };
@@ -683,6 +675,33 @@ base::Time AutocompleteAgeThreshold();
 // provide a non-null |time_cache| by simply initializing |time_cache| with
 // AutocompleteAgeThreshold() (or any other desired time in the past).
 bool RowQualifiesAsSignificant(const URLRow& row, const base::Time& threshold);
+
+// Defines the icon types. They are also stored in icon_type field of favicons
+// table.
+enum IconType {
+  INVALID_ICON = 0x0,
+  FAV_ICON = 1 << 0,
+  TOUCH_ICON = 1 << 1,
+  TOUCH_PRECOMPOSED_ICON = 1 << 2
+};
+
+// Used for the mapping between the page and icon.
+struct IconMapping {
+  IconMapping();
+  ~IconMapping();
+
+  // The unique id of the mapping.
+  IconMappingID mapping_id;
+
+  // The url of a web page.
+  GURL page_url;
+
+  // The unique id of the icon.
+  FavIconID icon_id;
+
+  // The type of icon.
+  IconType icon_type;
+};
 
 }  // namespace history
 
