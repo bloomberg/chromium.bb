@@ -164,6 +164,7 @@ class BackForwardMenuModel : public ui::MenuModel {
   FRIEND_TEST_ALL_PREFIXES(BackFwdMenuModelTest, BasicCase);
   FRIEND_TEST_ALL_PREFIXES(BackFwdMenuModelTest, MaxItemsTest);
   FRIEND_TEST_ALL_PREFIXES(BackFwdMenuModelTest, ChapterStops);
+  FRIEND_TEST_ALL_PREFIXES(BackFwdMenuModelTest, EscapeLabel);
 
   DISALLOW_COPY_AND_ASSIGN(BackForwardMenuModel);
 };

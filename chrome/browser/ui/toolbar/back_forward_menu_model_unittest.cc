@@ -420,3 +420,33 @@ TEST_F(BackFwdMenuModelTest, ChapterStops) {
   EXPECT_EQ(1, back_model->GetIndexOfNextChapterStop(2, false));
   EXPECT_EQ(-1, back_model->GetIndexOfNextChapterStop(1, false));
 }
+
+TEST_F(BackFwdMenuModelTest, EscapeLabel) {
+  scoped_ptr<BackForwardMenuModel> back_model(new BackForwardMenuModel(
+      NULL, BackForwardMenuModel::BACKWARD_MENU));
+  back_model->set_test_tab_contents(contents());
+
+  EXPECT_EQ(0, back_model->GetItemCount());
+  EXPECT_FALSE(back_model->ItemHasCommand(1));
+
+  LoadURLAndUpdateState("http://www.a.com/1", "A B");
+  LoadURLAndUpdateState("http://www.a.com/1", "A & B");
+  LoadURLAndUpdateState("http://www.a.com/2", "A && B");
+  LoadURLAndUpdateState("http://www.a.com/2", "A &&& B");
+  LoadURLAndUpdateState("http://www.a.com/3", "");
+
+  EXPECT_EQ(6, back_model->GetItemCount());
+
+  // On Mac ui::MenuModel::GetLabelAt should return unescaped strings.
+#if defined(OS_MACOSX)
+  EXPECT_EQ(ASCIIToUTF16("A B"), back_model->GetLabelAt(3));
+  EXPECT_EQ(ASCIIToUTF16("A & B"), back_model->GetLabelAt(2));
+  EXPECT_EQ(ASCIIToUTF16("A && B"), back_model->GetLabelAt(1));
+  EXPECT_EQ(ASCIIToUTF16("A &&& B"), back_model->GetLabelAt(0));
+#else
+  EXPECT_EQ(ASCIIToUTF16("A B"), back_model->GetLabelAt(3));
+  EXPECT_EQ(ASCIIToUTF16("A && B"), back_model->GetLabelAt(2));
+  EXPECT_EQ(ASCIIToUTF16("A &&&& B"), back_model->GetLabelAt(1));
+  EXPECT_EQ(ASCIIToUTF16("A &&&&&& B"), back_model->GetLabelAt(0));
+#endif // defined(OS_MACOSX)
+}
