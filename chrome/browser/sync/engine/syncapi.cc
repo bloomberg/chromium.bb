@@ -1868,10 +1868,6 @@ void SyncManager::SyncInternal::UpdateCredentials(
   connection_manager()->set_auth_token(credentials.sync_token);
   TalkMediatorLogin(credentials.email, credentials.sync_token);
   CheckServerReachable();
-  // TODO(tim): Why is this nudge necessary? Possibly just to realize that
-  // our credentials are invalid (may have been cached, etc), rather than
-  // wait until a sync needs to happen.  Not sure that justifies it...
-  sync_manager_->RequestNudge();
 }
 
 void SyncManager::SyncInternal::UpdateEnabledTypes(
