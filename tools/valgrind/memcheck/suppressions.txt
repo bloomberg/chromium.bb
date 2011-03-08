@@ -3938,6 +3938,17 @@
    fun:_Znw*
    fun:_ZN26AutofillDownloadTestHelperC1Ev
 }
+{
+   bug_75251
+   Memcheck:Leak
+   fun:_Znw*
+   fun:*base*MessageLoopProxy*CreateForCurrentThread*
+   fun:*MessageLoopRelay*
+   fun:*RelayReadDirectory*
+   fun:*RelayReadDirectory*
+   fun:*base*FileUtilProxy*ReadDirectory*
+   fun:*fileapi*FileSystemDirURLRequestJob*DidGetRootPath*
+}
 
 #-----------------------------------------------------------------------
 # These only occur on our Google workstations
