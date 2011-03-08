@@ -290,7 +290,12 @@ def ValidateSdk(env):
     # Windows build does not use cygwin and so can not see nacl subdirectory
     # if it's cygwin's symlink - check for /include instead...
     if os.path.exists(re.sub(r'(nacl64|nacl)/include/([^/]*)$',
-                             r'include/\1',
+                             r'include/\2',
+                             env.subst(c))):
+      continue
+    # TODO(pasko): remove the legacy header presence test below.
+    if os.path.exists(re.sub(r'nacl/include/([^/]*)$',
+                             r'nacl64/include/\1',
                              env.subst(c))):
       continue
     message = env.subst('''
