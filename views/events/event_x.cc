@@ -96,17 +96,6 @@ ui::EventType GetTouchEventType(XEvent* xev) {
   return ui::ET_UNKNOWN;
 }
 
-gfx::Point GetTouchEventLocation(XEvent* xev) {
-  XIDeviceEvent* xiev = static_cast<XIDeviceEvent*>(xev->xcookie.data);
-  return gfx::Point(xiev->event_x, xiev->event_y);
-}
-
-int GetTouchEventFlags(XEvent* xev) {
-  XIDeviceEvent* xiev = static_cast<XIDeviceEvent*>(xev->xcookie.data);
-  return GetButtonMaskForX2Event(xiev) |
-         GetEventFlagsFromXState(xiev->mods.effective);
-}
-
 int GetTouchIDFromXEvent(XEvent* xev) {
   // TODO(sad): How we determine the touch-id from the event is as yet
   // undecided.
@@ -171,7 +160,7 @@ int GetMouseWheelOffset(XEvent* xev) {
   return xev->xbutton.button == 4 ? kWheelScrollAmount : -kWheelScrollAmount;
 }
 
-gfx::Point GetMouseEventLocation(XEvent* xev) {
+gfx::Point GetEventLocation(XEvent* xev) {
   switch (xev->type) {
     case ButtonPress:
     case ButtonRelease:
@@ -193,7 +182,7 @@ gfx::Point GetMouseEventLocation(XEvent* xev) {
   return gfx::Point();
 }
 
-int GetMouseEventFlags(XEvent* xev) {
+int GetLocatedEventFlags(XEvent* xev, bool touch) {
   switch (xev->type) {
     case ButtonPress:
     case ButtonRelease:
@@ -211,7 +200,7 @@ int GetMouseEventFlags(XEvent* xev) {
         case XI_ButtonRelease:
           return GetButtonMaskForX2Event(xievent) |
                  GetEventFlagsFromXState(xievent->mods.effective) |
-                 GetEventFlagsForButton(xievent->detail);
+                 (touch ? 0 : GetEventFlagsForButton(xievent->detail));
 
         case XI_Motion:
            return GetButtonMaskForX2Event(xievent) |
@@ -243,9 +232,9 @@ LocatedEvent::LocatedEvent(NativeEvent2 native_event_2,
                            FromNativeEvent2 from_native)
     : Event(native_event_2,
             EventTypeFromNative(native_event_2),
-            GetEventFlagsFromXState(native_event_2->xbutton.state),
+            GetLocatedEventFlags(native_event_2, false),
             from_native),
-      location_(GetMouseEventLocation(native_event_2)) {
+      location_(GetEventLocation(native_event_2)) {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -283,8 +272,8 @@ MouseWheelEvent::MouseWheelEvent(NativeEvent2 native_event_2,
 TouchEvent::TouchEvent(NativeEvent2 native_event_2,
                        FromNativeEvent2 from_native)
     : LocatedEvent(GetTouchEventType(native_event_2),
-                   GetTouchEventLocation(native_event_2),
-                   GetTouchEventFlags(native_event_2)),
+                   GetEventLocation(native_event_2),
+                   GetLocatedEventFlags(native_event_2, true)),
       touch_id_(GetTouchIDFromXEvent(native_event_2)) {
 }
 #endif
