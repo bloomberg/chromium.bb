@@ -6332,7 +6332,9 @@ long Cluster::Parse(long long& pos, long& len) const
 
     assert(m_element_size > 0);
 
-#ifdef _DEBUG
+    m_pos = pos;
+    assert((cluster_stop < 0) || (m_pos <= cluster_stop));
+
     if (m_entries_count > 0)
     {
         const long idx = m_entries_count - 1;
@@ -6344,7 +6346,9 @@ long Cluster::Parse(long long& pos, long& len) const
         assert(pBlock);
 
         const long long start = pBlock->m_start;
-        assert((total < 0) || (start <= total));
+
+        if ((total >= 0) && (start > total))
+            return -1;  //defend against trucated stream
 
         const long long size = pBlock->m_size;
 
@@ -6352,22 +6356,8 @@ long Cluster::Parse(long long& pos, long& len) const
         assert((cluster_stop < 0) || (stop <= cluster_stop));
 
         if ((total >= 0) && (stop > total))
-        {
-#if 0
-            --m_entries_count;
-            assert(m_entries_count > 0);  //TODO
-
-            m_entries[idx] = 0;
-            delete pLast;
-#else
-            assert(false);
-#endif
-        }
+            return -1;  //defend against trucated stream
     }
-#endif
-
-    m_pos = pos;
-    assert((cluster_stop < 0) || (m_pos <= cluster_stop));
 
     return 1;  //no more entries
 }
