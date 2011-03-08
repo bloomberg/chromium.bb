@@ -175,7 +175,15 @@ int SpdySM::SpdyHandleNewStream(const SpdyControlFrame* frame,
     *is_https_scheme = true;
   }
 
-  std::string uri = UrlUtilities::GetUrlPath(url->second);
+  // url->second here only ever seems to contain just the path. When this
+  // path contains a query string with a http:// in one of its values,
+  // UrlUtilities::GetUrlPath will fail and always return a / breaking
+  // the request. GetUrlPath assumes the absolute URL is being passed in.
+  std::string uri;
+  if (url->second.compare(0,4,"http") == 0)
+    uri = UrlUtilities::GetUrlPath(url->second);
+  else
+    uri = std::string(url->second);
   if (acceptor_->flip_handler_type_ == FLIP_HANDLER_SPDY_SERVER) {
     SpdyHeaderBlock::iterator referer = headers.find("referer");
     std::string host = UrlUtilities::GetUrlHost(url->second);
@@ -429,7 +437,7 @@ void SpdySM::CopyHeaders(SpdyHeaderBlock& dest, const BalsaHeaders& headers) {
       dest[hi->first.as_string()] = hi->second.as_string();
     } else {
       dest[hi->first.as_string()] = (
-          std::string(fhi->second.data(), fhi->second.size()) + "," +
+          std::string(fhi->second.data(), fhi->second.size()) + "\0" +
           std::string(hi->second.data(), hi->second.size()));
     }
   }
