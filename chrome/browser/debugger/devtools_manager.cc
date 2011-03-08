@@ -17,12 +17,12 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/common/devtools_messages.h"
-#include "chrome/common/notification_service.h"
 #include "chrome/common/pref_names.h"
 #include "content/browser/browsing_instance.h"
 #include "content/browser/child_process_security_policy.h"
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/site_instance.h"
+#include "content/common/notification_service.h"
 #include "googleurl/src/gurl.h"
 
 // static

@@ -28,10 +28,10 @@
 #include "chrome/browser/search_engines/template_url_model_observer.h"
 #include "chrome/browser/tabs/tab_strip_model.h"
 #include "chrome/common/automation_constants.h"
-#include "chrome/common/notification_observer.h"
-#include "chrome/common/notification_registrar.h"
-#include "chrome/common/notification_type.h"
 #include "content/browser/cancelable_request.h"
+#include "content/common/notification_observer.h"
+#include "content/common/notification_registrar.h"
+#include "content/common/notification_type.h"
 #include "ui/gfx/size.h"
 
 class AutocompleteEditModel;

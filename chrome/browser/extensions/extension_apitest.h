@@ -11,7 +11,7 @@
 
 #include "base/values.h"
 #include "chrome/browser/extensions/extension_browsertest.h"
-#include "chrome/common/notification_registrar.h"
+#include "content/common/notification_registrar.h"
 
 class Extension;
 

@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -10,10 +10,10 @@
 #include <string>
 
 #include "base/singleton.h"
+#include "chrome/browser/extensions/extension_function.h"
 #include "chrome/browser/history/history.h"
 #include "chrome/browser/history/history_notifications.h"
-#include "chrome/browser/extensions/extension_function.h"
-#include "chrome/common/notification_registrar.h"
+#include "content/common/notification_registrar.h"
 
 // Observes History service and routes the notifications as events to the
 // extension system.

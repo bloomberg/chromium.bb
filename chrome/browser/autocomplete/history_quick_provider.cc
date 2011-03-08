@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,20 +6,20 @@
 
 #include "base/basictypes.h"
 #include "base/i18n/break_iterator.h"
-#include "base/string_util.h"
 #include "base/logging.h"
+#include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/autocomplete/autocomplete_match.h"
 #include "chrome/browser/history/history.h"
-#include "chrome/browser/prefs/pref_service.h"
-#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/history/in_memory_url_index.h"
 #include "chrome/browser/net/url_fixer_upper.h"
-#include "chrome/common/notification_source.h"
-#include "chrome/common/notification_type.h"
+#include "chrome/browser/prefs/pref_service.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "content/browser/plugin_service.h"
+#include "content/common/notification_source.h"
+#include "content/common/notification_type.h"
 #include "googleurl/src/url_util.h"
 #include "net/base/escape.h"
 #include "net/base/net_util.h"

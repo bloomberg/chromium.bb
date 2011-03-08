@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -20,11 +20,11 @@
 #include "chrome/browser/favicon_service.h"
 #include "chrome/browser/history/history.h"
 #include "chrome/browser/history/history_types.h"
-#include "chrome/common/notification_registrar.h"
 #include "content/browser/cancelable_request.h"
+#include "content/common/notification_registrar.h"
 #include "googleurl/src/gurl.h"
-#include "third_party/skia/include/core/SkBitmap.h"
 #include "testing/gtest/include/gtest/gtest_prod.h"
+#include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/base/models/tree_node_model.h"
 
 class BookmarkIndex;

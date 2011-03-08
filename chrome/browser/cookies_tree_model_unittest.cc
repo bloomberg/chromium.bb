@@ -12,9 +12,9 @@
 #include "chrome/browser/mock_browsing_data_indexed_db_helper.h"
 #include "chrome/browser/mock_browsing_data_local_storage_helper.h"
 #include "chrome/common/net/url_request_context_getter.h"
-#include "chrome/common/notification_details.h"
-#include "chrome/common/notification_type.h"
 #include "chrome/test/testing_profile.h"
+#include "content/common/notification_details.h"
+#include "content/common/notification_type.h"
 #include "net/url_request/url_request_context.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

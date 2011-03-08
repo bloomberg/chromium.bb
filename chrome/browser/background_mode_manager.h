@@ -10,8 +10,8 @@
 #include "chrome/browser/background_application_list_model.h"
 #include "chrome/browser/prefs/pref_change_registrar.h"
 #include "chrome/browser/status_icons/status_icon.h"
-#include "chrome/common/notification_observer.h"
-#include "chrome/common/notification_registrar.h"
+#include "content/common/notification_observer.h"
+#include "content/common/notification_registrar.h"
 #include "ui/base/models/simple_menu_model.h"
 
 class Browser;

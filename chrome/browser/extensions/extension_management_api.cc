@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -19,13 +19,13 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/webui/extension_icon_source.h"
+#include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/extensions/extension_error_utils.h"
-#include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_icon_set.h"
 #include "chrome/common/extensions/url_pattern.h"
-#include "chrome/common/notification_service.h"
-#include "chrome/common/notification_type.h"
+#include "content/common/notification_service.h"
+#include "content/common/notification_type.h"
 
 using base::IntToString;
 namespace events = extension_event_names;

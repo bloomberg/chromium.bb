@@ -13,8 +13,8 @@
 #include "chrome/browser/history/history.h"
 #include "chrome/browser/importer/importer_list.h"
 #include "chrome/browser/sync/profile_sync_service_harness.h"
-#include "chrome/common/notification_registrar.h"
 #include "chrome/common/page_type.h"
+#include "content/common/notification_registrar.h"
 
 class DictionaryValue;
 class TemplateURLModel;

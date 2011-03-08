@@ -13,10 +13,10 @@
 #include "chrome/browser/tab_contents/confirm_infobar_delegate.h"
 #include "chrome/common/extensions/extension_file_util.h"
 #include "chrome/common/extensions/extension_resource.h"
-#include "chrome/common/notification_details.h"
-#include "chrome/common/notification_registrar.h"
-#include "chrome/common/notification_source.h"
 #include "content/browser/tab_contents/tab_contents.h"
+#include "content/common/notification_details.h"
+#include "content/common/notification_registrar.h"
+#include "content/common/notification_source.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 

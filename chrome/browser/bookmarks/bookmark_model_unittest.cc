@@ -1,9 +1,9 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include <string>
 #include <set>
+#include <string>
 
 #include "base/base_paths.h"
 #include "base/file_util.h"
@@ -20,16 +20,16 @@
 #include "chrome/browser/history/history_notifications.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_paths.h"
-#include "chrome/common/notification_details.h"
-#include "chrome/common/notification_registrar.h"
-#include "chrome/common/notification_source.h"
 #include "chrome/test/model_test_utils.h"
 #include "chrome/test/testing_browser_process_test.h"
 #include "chrome/test/testing_profile.h"
 #include "content/browser/browser_thread.h"
+#include "content/common/notification_details.h"
+#include "content/common/notification_registrar.h"
+#include "content/common/notification_source.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "ui/base/models/tree_node_model.h"
 #include "ui/base/models/tree_node_iterator.h"
+#include "ui/base/models/tree_node_model.h"
 
 using base::Time;
 using base::TimeDelta;

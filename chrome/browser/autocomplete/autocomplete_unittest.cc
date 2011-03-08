@@ -13,12 +13,12 @@
 #include "chrome/browser/autocomplete/search_provider.h"
 #include "chrome/browser/search_engines/template_url.h"
 #include "chrome/browser/search_engines/template_url_model.h"
-#include "chrome/common/notification_observer.h"
-#include "chrome/common/notification_registrar.h"
-#include "chrome/common/notification_service.h"
 #include "chrome/test/testing_browser_process.h"
 #include "chrome/test/testing_browser_process_test.h"
 #include "chrome/test/testing_profile.h"
+#include "content/common/notification_observer.h"
+#include "content/common/notification_registrar.h"
+#include "content/common/notification_service.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 static std::ostream& operator<<(std::ostream& os,

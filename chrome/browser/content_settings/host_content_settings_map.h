@@ -21,9 +21,9 @@
 #include "chrome/browser/content_settings/content_settings_pattern.h"
 #include "chrome/browser/prefs/pref_change_registrar.h"
 #include "chrome/common/content_settings.h"
-#include "chrome/common/notification_observer.h"
-#include "chrome/common/notification_registrar.h"
 #include "content/browser/browser_thread.h"
+#include "content/common/notification_observer.h"
+#include "content/common/notification_registrar.h"
 
 namespace content_settings {
 class DefaultProviderInterface;

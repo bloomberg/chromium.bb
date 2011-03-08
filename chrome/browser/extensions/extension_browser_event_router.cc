@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -14,11 +14,11 @@
 #include "chrome/browser/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
-#include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/extensions/extension.h"
-#include "chrome/common/notification_service.h"
+#include "chrome/common/extensions/extension_constants.h"
 #include "content/browser/tab_contents/navigation_entry.h"
 #include "content/browser/tab_contents/tab_contents.h"
+#include "content/common/notification_service.h"
 
 namespace events = extension_event_names;
 namespace tab_keys = extension_tabs_module_constants;

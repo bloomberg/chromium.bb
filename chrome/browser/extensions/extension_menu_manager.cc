@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,17 +6,17 @@
 
 #include <algorithm>
 
+#include "base/json/json_writer.h"
 #include "base/logging.h"
 #include "base/stl_util-inl.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
-#include "base/json/json_writer.h"
 #include "chrome/browser/extensions/extension_event_router.h"
 #include "chrome/browser/extensions/extension_tabs_module.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/extensions/extension.h"
-#include "chrome/common/notification_service.h"
+#include "content/common/notification_service.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/favicon_size.h"
 #include "webkit/glue/context_menu.h"

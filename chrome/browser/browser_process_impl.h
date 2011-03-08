@@ -23,8 +23,8 @@
 #include "chrome/browser/prefs/pref_change_registrar.h"
 #include "chrome/browser/prefs/pref_member.h"
 #include "chrome/browser/tab_contents/thumbnail_generator.h"
-#include "chrome/common/notification_observer.h"
-#include "chrome/common/notification_registrar.h"
+#include "content/common/notification_observer.h"
+#include "content/common/notification_registrar.h"
 #include "ipc/ipc_message.h"
 
 class ChromeNetLog;

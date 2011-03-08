@@ -15,7 +15,7 @@
 #include "chrome/browser/tab_contents/render_view_host_delegate_helper.h"
 #include "chrome/browser/ui/app_modal_dialogs/js_modal_dialog.h"
 #include "content/browser/renderer_host/render_view_host_delegate.h"
-#include "chrome/common/notification_registrar.h"
+#include "content/common/notification_registrar.h"
 
 #if defined(TOOLKIT_VIEWS)
 #include "chrome/browser/ui/views/extensions/extension_view.h"

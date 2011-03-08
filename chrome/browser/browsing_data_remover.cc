@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -27,10 +27,10 @@
 #include "chrome/browser/sessions/tab_restore_service.h"
 #include "chrome/browser/webdata/web_data_service.h"
 #include "chrome/common/net/url_request_context_getter.h"
-#include "chrome/common/notification_source.h"
 #include "chrome/common/url_constants.h"
 #include "content/browser/browser_thread.h"
 #include "content/browser/in_process_webkit/webkit_context.h"
+#include "content/common/notification_source.h"
 #include "net/base/cookie_monster.h"
 #include "net/base/net_errors.h"
 #include "net/base/transport_security_state.h"

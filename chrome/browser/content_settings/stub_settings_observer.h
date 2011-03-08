@@ -7,9 +7,9 @@
 #pragma once
 
 #include "chrome/browser/content_settings/content_settings_details.h"
-#include "chrome/common/notification_observer.h"
-#include "chrome/common/notification_registrar.h"
-#include "chrome/common/notification_service.h"
+#include "content/common/notification_observer.h"
+#include "content/common/notification_registrar.h"
+#include "content/common/notification_service.h"
 
 class HostContentSettingsMap;
 

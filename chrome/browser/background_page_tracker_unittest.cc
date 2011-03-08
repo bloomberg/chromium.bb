@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,11 +6,11 @@
 #include "base/command_line.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/background_page_tracker.h"
-#include "chrome/common/notification_service.h"
-#include "chrome/common/notification_type.h"
 #include "chrome/test/testing_browser_process.h"
 #include "chrome/test/testing_browser_process_test.h"
 #include "chrome/test/testing_pref_service.h"
+#include "content/common/notification_service.h"
+#include "content/common/notification_type.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
 

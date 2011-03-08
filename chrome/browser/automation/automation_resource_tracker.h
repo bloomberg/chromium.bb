@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -9,10 +9,10 @@
 #include <map>
 
 #include "base/basictypes.h"
-#include "chrome/common/notification_observer.h"
-#include "chrome/common/notification_registrar.h"
-#include "chrome/common/notification_source.h"
-#include "chrome/common/notification_type.h"
+#include "content/common/notification_observer.h"
+#include "content/common/notification_registrar.h"
+#include "content/common/notification_source.h"
+#include "content/common/notification_type.h"
 #include "ipc/ipc_message.h"
 
 // Template trick so that AutomationResourceTracker can be used with non-pointer

@@ -24,7 +24,7 @@
 #include "chrome/browser/net/service_providers_win.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_switches.h"
-#include "chrome/common/notification_service.h"
+#include "content/common/notification_service.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 

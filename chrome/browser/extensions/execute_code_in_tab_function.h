@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -10,8 +10,8 @@
 
 #include "chrome/browser/extensions/extension_function.h"
 #include "chrome/common/extensions/extension_resource.h"
-#include "chrome/common/notification_observer.h"
-#include "chrome/common/notification_registrar.h"
+#include "content/common/notification_observer.h"
+#include "content/common/notification_registrar.h"
 
 // Implement API call tabs.executeScript and tabs.insertCSS.
 class ExecuteCodeInTabFunction : public AsyncExtensionFunction,

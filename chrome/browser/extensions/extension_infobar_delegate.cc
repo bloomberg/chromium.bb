@@ -9,10 +9,10 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/common/extensions/extension.h"
-#include "chrome/common/notification_details.h"
-#include "chrome/common/notification_source.h"
-#include "chrome/common/notification_type.h"
 #include "content/browser/tab_contents/tab_contents.h"
+#include "content/common/notification_details.h"
+#include "content/common/notification_source.h"
+#include "content/common/notification_type.h"
 
 ExtensionInfoBarDelegate::ExtensionInfoBarDelegate(Browser* browser,
                                                    TabContents* tab_contents,

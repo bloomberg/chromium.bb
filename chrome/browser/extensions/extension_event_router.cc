@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -13,10 +13,10 @@
 #include "chrome/browser/extensions/extension_webrequest_api.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/extensions/extension.h"
-#include "chrome/common/notification_service.h"
 #include "chrome/common/render_messages.h"
 #include "content/browser/child_process_security_policy.h"
 #include "content/browser/renderer_host/render_process_host.h"
+#include "content/common/notification_service.h"
 
 namespace {
 

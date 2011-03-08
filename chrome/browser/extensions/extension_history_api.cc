@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -15,8 +15,8 @@
 #include "chrome/browser/history/history.h"
 #include "chrome/browser/history/history_types.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/common/notification_type.h"
-#include "chrome/common/notification_service.h"
+#include "content/common/notification_service.h"
+#include "content/common/notification_type.h"
 
 namespace keys = extension_history_api_constants;
 

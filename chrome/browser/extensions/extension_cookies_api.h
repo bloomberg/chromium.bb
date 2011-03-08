@@ -16,8 +16,8 @@
 #include "base/time.h"
 #include "chrome/browser/extensions/extension_function.h"
 #include "chrome/browser/net/chrome_cookie_notification_details.h"
-#include "chrome/common/notification_observer.h"
-#include "chrome/common/notification_registrar.h"
+#include "content/common/notification_observer.h"
+#include "content/common/notification_registrar.h"
 #include "googleurl/src/gurl.h"
 #include "net/base/cookie_monster.h"
 

@@ -11,9 +11,9 @@
 #include "base/basictypes.h"
 #include "chrome/browser/debugger/devtools_client_host.h"
 #include "chrome/browser/debugger/devtools_toggle_action.h"
-#include "chrome/common/notification_observer.h"
-#include "chrome/common/notification_registrar.h"
 #include "content/browser/tab_contents/tab_contents_delegate.h"
+#include "content/common/notification_observer.h"
+#include "content/common/notification_registrar.h"
 
 namespace IPC {
 class Message;
