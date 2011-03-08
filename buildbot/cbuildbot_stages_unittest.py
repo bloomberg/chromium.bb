@@ -41,11 +41,13 @@ class BuilderStageTest(mox.MoxTestBase):
                                 'src/third_party/chromiumos-overlay')
     stages.BuilderStage.rev_overlays = [self.overlay]
     stages.BuilderStage.push_overlays = [self.overlay]
+    self.mox.StubOutWithMock(os.path, 'isdir')
 
   def testGetPortageEnvVar(self):
     """Basic test case for _GetPortageEnvVar function."""
     self.mox.StubOutWithMock(cros_lib, 'OldRunCommand')
     envvar = 'EXAMPLE'
+    os.path.isdir(self.build_root + '/.repo').AndReturn(True)
     cros_lib.OldRunCommand(mox.And(mox.IsA(list), mox.In(envvar)),
                            cwd='%s/src/scripts' % self.build_root,
                            redirect_stdout=True, enter_chroot=True,
@@ -58,6 +60,7 @@ class BuilderStageTest(mox.MoxTestBase):
 
   def testResolveOverlays(self):
     self.mox.StubOutWithMock(cros_lib, 'RunCommand')
+    os.path.isdir(self.build_root + '/.repo').AndReturn(True)
     for _ in range(3):
       output_obj = cros_lib.CommandResult()
       output_obj.output = 'public1 public2\n'
@@ -84,12 +87,12 @@ class SyncStageTest(BuilderStageTest):
     mox.MoxTestBase.setUp(self)
     BuilderStageTest.setUp(self)
     self.mox.StubOutWithMock(commands, 'PreFlightRinse')
-    self.mox.StubOutWithMock(os.path, 'isdir')
 
   def testFullSync(self):
     """Tests whether we can perform a full sync with a missing .repo folder."""
     self.mox.StubOutWithMock(commands, 'FullCheckout')
 
+    os.path.isdir(self.build_root + '/.repo').AndReturn(False)
     os.path.isdir(self.build_root + '/.repo').AndReturn(False)
     commands.FullCheckout(self.build_root, self.options.tracking_branch,
                           url=self.url)
@@ -105,6 +108,7 @@ class SyncStageTest(BuilderStageTest):
     self.mox.StubOutWithMock(commands, 'IncrementalCheckout')
     self.mox.StubOutWithMock(stages.BuilderStage, '_GetPortageEnvVar')
 
+    os.path.isdir(self.build_root + '/.repo').AndReturn(True)
     commands.PreFlightRinse(self.build_root, self.build_config['board'],
                             self.options.tracking_branch, [self.overlay])
     os.path.isdir(self.build_root + '/.repo').AndReturn(True)
@@ -123,7 +127,6 @@ class BuildBoardTest(BuilderStageTest):
   def setUp(self):
     mox.MoxTestBase.setUp(self)
     BuilderStageTest.setUp(self)
-    self.mox.StubOutWithMock(os.path, 'isdir')
 
   def testFullBuild(self):
     """Tests whether correctly run make chroot and setup board for a full."""
@@ -132,6 +135,7 @@ class BuildBoardTest(BuilderStageTest):
     self.mox.StubOutWithMock(commands, 'MakeChroot')
     self.mox.StubOutWithMock(commands, 'SetupBoard')
 
+    os.path.isdir(self.build_root + '/.repo').AndReturn(True)
     os.path.isdir(os.path.join(self.build_root, 'chroot')).AndReturn(True)
     commands.MakeChroot(self.build_root, self.build_config['chroot_replace'])
     os.path.isdir(os.path.join(self.build_root, 'chroot/build',
@@ -145,6 +149,7 @@ class BuildBoardTest(BuilderStageTest):
 
   def testBinBuild(self):
     """Tests whether we skip un-necessary steps for a binary builder."""
+    os.path.isdir(self.build_root + '/.repo').AndReturn(True)
     os.path.isdir(os.path.join(self.build_root, 'chroot')).AndReturn(True)
     os.path.isdir(os.path.join(self.build_root, 'chroot/build',
                                self.build_config['board'])).AndReturn(True)
@@ -159,6 +164,7 @@ class BuildBoardTest(BuilderStageTest):
     self.mox.StubOutWithMock(commands, 'MakeChroot')
     self.mox.StubOutWithMock(commands, 'SetupBoard')
 
+    os.path.isdir(self.build_root + '/.repo').AndReturn(True)
     os.path.isdir(os.path.join(self.build_root, 'chroot')).AndReturn(False)
     commands.MakeChroot(self.build_root, self.build_config['chroot_replace'])
     os.path.isdir(os.path.join(self.build_root, 'chroot/build',
@@ -177,7 +183,6 @@ class BuildBoardTest(BuilderStageTest):
   def setUp(self):
     mox.MoxTestBase.setUp(self)
     BuilderStageTest.setUp(self)
-    self.mox.StubOutWithMock(os.path, 'isdir')
 
   def testFullBuild(self):
     """Tests whether correctly run make chroot and setup board for a full."""
@@ -186,6 +191,7 @@ class BuildBoardTest(BuilderStageTest):
     self.mox.StubOutWithMock(commands, 'MakeChroot')
     self.mox.StubOutWithMock(commands, 'SetupBoard')
 
+    os.path.isdir(self.build_root + '/.repo').AndReturn(True)
     os.path.isdir(os.path.join(self.build_root, 'chroot')).AndReturn(True)
     commands.MakeChroot(self.build_root, self.build_config['chroot_replace'])
     os.path.isdir(os.path.join(self.build_root, 'chroot/build',
@@ -199,6 +205,7 @@ class BuildBoardTest(BuilderStageTest):
 
   def testBinBuild(self):
     """Tests whether we skip un-necessary steps for a binary builder."""
+    os.path.isdir(self.build_root + '/.repo').AndReturn(True)
     os.path.isdir(os.path.join(self.build_root, 'chroot')).AndReturn(True)
     os.path.isdir(os.path.join(self.build_root, 'chroot/build',
                                self.build_config['board'])).AndReturn(True)
@@ -213,6 +220,7 @@ class BuildBoardTest(BuilderStageTest):
     self.mox.StubOutWithMock(commands, 'MakeChroot')
     self.mox.StubOutWithMock(commands, 'SetupBoard')
 
+    os.path.isdir(self.build_root + '/.repo').AndReturn(True)
     os.path.isdir(os.path.join(self.build_root, 'chroot')).AndReturn(False)
     commands.MakeChroot(self.build_root, self.build_config['chroot_replace'])
     os.path.isdir(os.path.join(self.build_root, 'chroot/build',
@@ -248,6 +256,7 @@ class BuildTestsTest(BuilderStageTest):
     self.mox.StubOutWithMock(commands, 'ArchiveTestResults')
     self.mox.StubOutWithMock(stages.TestStage, '_CreateTestRoot')
 
+    os.path.isdir(self.build_root + '/.repo').AndReturn(True)
     stages.TestStage._CreateTestRoot().AndReturn(self.fake_results_dir)
     commands.RunUnitTests(self.build_root, full=True)
     commands.RunSmokeSuite(self.build_root, os.path.join(self.fake_results_dir,
@@ -277,6 +286,7 @@ class BuildTestsTest(BuilderStageTest):
     self.mox.StubOutWithMock(commands, 'ArchiveTestResults')
     self.mox.StubOutWithMock(stages.TestStage, '_CreateTestRoot')
 
+    os.path.isdir(self.build_root + '/.repo').AndReturn(True)
     stages.TestStage._CreateTestRoot().AndReturn(self.fake_results_dir)
     commands.RunUnitTests(self.build_root, full=False)
     commands.RunSmokeSuite(self.build_root, os.path.join(self.fake_results_dir,

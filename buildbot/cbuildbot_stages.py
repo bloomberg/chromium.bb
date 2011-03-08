@@ -38,6 +38,9 @@ class BuilderStage():
     self._name = self.name_stage_re.match(self.__class__.__name__).group(1)
     self._build_type = None
     self._ExtractVariables()
+    repo_dir = os.path.join(self._build_root, '.repo')
+    if not self._options.clobber and os.path.isdir(repo_dir):
+      self._ExtractOverlays()
 
   def _ExtractVariables(self):
     """Extracts common variables from build config and options into class."""
@@ -46,6 +49,8 @@ class BuilderStage():
     if self._options.prebuilts and not self._options.debug:
       self._build_type = self._build_config['build_type']
 
+  def _ExtractOverlays(self):
+    """Extracts list of overlays into class."""
     if not BuilderStage.rev_overlays or not BuilderStage.push_overlays:
       rev_overlays = self._ResolveOverlays(self._build_config['rev_overlays'])
       push_overlays = self._ResolveOverlays(self._build_config['push_overlays'])
@@ -143,6 +148,7 @@ class SyncStage(BuilderStage):
                                                                '.repo')):
       commands.FullCheckout(self._build_root, self._options.tracking_branch,
                             url=self._options.url)
+      self._ExtractOverlays()
     else:
       commands.PreFlightRinse(self._build_root, self._build_config['board'],
                               self._options.tracking_branch,
