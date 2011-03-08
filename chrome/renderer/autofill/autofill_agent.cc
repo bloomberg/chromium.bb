@@ -351,7 +351,7 @@ void AutoFillAgent::FillAutoFillFormData(const WebNode& node,
     return;
 
   autofill_action_ = action;
-  was_query_node_autofilled_ = field.is_autofilled();
+  was_query_node_autofilled_ = field.is_autofilled;
   Send(new AutoFillHostMsg_FillAutoFillFormData(
       routing_id(), autofill_query_id_, form, field, unique_id));
 }
@@ -381,7 +381,7 @@ bool AutoFillAgent::FindFormAndFieldForNode(const WebNode& node,
   // label, so find the label here.
   // TODO(jhawkins): Add form and field identities so we can use the cached form
   // data in FormManager.
-  field->set_label(FormManager::LabelForElement(element));
+  field->label = FormManager::LabelForElement(element);
 
   return true;
 }

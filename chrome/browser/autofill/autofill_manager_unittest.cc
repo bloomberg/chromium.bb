@@ -1178,7 +1178,7 @@ TEST_F(AutofillManagerTest, GetFieldSuggestionsWhenFormIsAutoFilled) {
   FormsSeen(forms);
 
   // Mark one of the fields as filled.
-  form.fields[2].set_autofilled(true);
+  form.fields[2].is_autofilled = true;
   const FormField& field = form.fields[0];
   GetAutoFillSuggestions(form, field);
 
@@ -1266,7 +1266,7 @@ TEST_F(AutofillManagerTest, GetFieldSuggestionsWithDuplicateValues) {
   autofill_manager_->AddProfile(profile);
 
   FormField& field = form.fields[0];
-  field.set_autofilled(true);
+  field.is_autofilled = true;
   GetAutoFillSuggestions(form, field);
 
   // No suggestions provided, so send an empty vector as the results.
@@ -1477,7 +1477,7 @@ TEST_F(AutofillManagerTest, FillFormWithMultipleSections) {
   CreateTestAddressFormData(&form);
   for (size_t i = kAddressFormSize; i < form.fields.size(); ++i) {
     // Make sure the fields have distinct names.
-    form.fields[i].set_name(form.fields[i].name() + ASCIIToUTF16("_"));
+    form.fields[i].name = form.fields[i].name + ASCIIToUTF16("_");
   }
   std::vector<FormData> forms(1, form);
   FormsSeen(forms);
@@ -1496,7 +1496,7 @@ TEST_F(AutofillManagerTest, FillFormWithMultipleSections) {
     // The second address section should be empty.
     ASSERT_EQ(results.fields.size(), 2*kAddressFormSize);
     for (size_t i = kAddressFormSize; i < form.fields.size(); ++i) {
-      EXPECT_EQ(string16(), results.fields[i].value());
+      EXPECT_EQ(string16(), results.fields[i].value);
     }
 
     // The first address section should be filled with Elvis's data.
@@ -1521,7 +1521,7 @@ TEST_F(AutofillManagerTest, FillFormWithMultipleSections) {
     // The first address section should be empty.
     ASSERT_EQ(results.fields.size(), 2*kAddressFormSize);
     for (size_t i = 0; i < kAddressFormSize; ++i) {
-      EXPECT_EQ(string16(), results.fields[i].value());
+      EXPECT_EQ(string16(), results.fields[i].value);
     }
 
     // The second address section should be filled with Elvis's data.
@@ -1530,9 +1530,9 @@ TEST_F(AutofillManagerTest, FillFormWithMultipleSections) {
                                secondSection.fields.begin() + kAddressFormSize);
     for (size_t i = 0; i < kAddressFormSize; ++i) {
       // Restore the expected field names.
-      string16 name = secondSection.fields[i].name();
+      string16 name = secondSection.fields[i].name;
       string16 original_name = name.substr(0, name.size() - 1);
-      secondSection.fields[i].set_name(original_name);
+      secondSection.fields[i].name = original_name;
     }
     ExpectFilledAddressFormElvis(page_id, secondSection, kPageID2, false);
   }
@@ -1544,7 +1544,7 @@ TEST_F(AutofillManagerTest, FillAutoFilledForm) {
   FormData form;
   CreateTestAddressFormData(&form);
   // Mark one of the address fields as autofilled.
-  form.fields[4].set_autofilled(true);
+  form.fields[4].is_autofilled = true;
   CreateTestCreditCardFormData(&form, true, false);
   std::vector<FormData> forms(1, form);
   FormsSeen(forms);
@@ -1584,7 +1584,7 @@ TEST_F(AutofillManagerTest, FillAutoFilledForm) {
   for (std::vector<FormField>::iterator iter = form.fields.begin();
        iter != form.fields.end();
        ++iter) {
-    iter->set_autofilled(true);
+    iter->is_autofilled = true;
   }
 
   const int kPageID3 = 3;
@@ -1615,23 +1615,23 @@ TEST_F(AutofillManagerTest, FillPhoneNumber) {
   FormField field;
   autofill_test::CreateTestFormField(
       "country code", "country code", "", "text", &field);
-  field.set_max_length(1);
+  field.max_length = 1;
   form.fields.push_back(field);
   autofill_test::CreateTestFormField(
       "area code", "area code", "", "text", &field);
-  field.set_max_length(3);
+  field.max_length = 3;
   form.fields.push_back(field);
   autofill_test::CreateTestFormField(
       "phone", "phone prefix", "1", "text", &field);
-  field.set_max_length(3);
+  field.max_length = 3;
   form.fields.push_back(field);
   autofill_test::CreateTestFormField(
       "-", "phone suffix", "", "text", &field);
-  field.set_max_length(4);
+  field.max_length = 4;
   form.fields.push_back(field);
   autofill_test::CreateTestFormField(
       "Phone Extension", "ext", "", "text", &field);
-  field.set_max_length(3);
+  field.max_length = 3;
   form.fields.push_back(field);
 
   std::vector<FormData> forms(1, form);
@@ -1659,12 +1659,12 @@ TEST_F(AutofillManagerTest, FillPhoneNumber) {
     EXPECT_TRUE(GetAutoFillFormDataFilledMessage(&page_id, &results));
 
     if (i != 7) {
-      EXPECT_EQ(ASCIIToUTF16(test_data), results.fields[2].value());
-      EXPECT_EQ(ASCIIToUTF16(test_data), results.fields[3].value());
+      EXPECT_EQ(ASCIIToUTF16(test_data), results.fields[2].value);
+      EXPECT_EQ(ASCIIToUTF16(test_data), results.fields[3].value);
     } else {
       // The only size that is parsed and split, right now is 7:
-      EXPECT_EQ(ASCIIToUTF16("123"), results.fields[2].value());
-      EXPECT_EQ(ASCIIToUTF16("4567"), results.fields[3].value());
+      EXPECT_EQ(ASCIIToUTF16("123"), results.fields[2].value);
+      EXPECT_EQ(ASCIIToUTF16("4567"), results.fields[3].value);
     }
   }
 

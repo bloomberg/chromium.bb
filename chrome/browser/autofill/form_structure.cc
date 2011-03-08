@@ -58,10 +58,10 @@ FormStructure::FormStructure(const FormData& form)
     // Add all supported form fields (including with empty names) to the
     // signature.  This is a requirement for AutoFill servers.
     form_signature_field_names_.append("&");
-    form_signature_field_names_.append(UTF16ToUTF8(field->name()));
+    form_signature_field_names_.append(UTF16ToUTF8(field->name));
 
     // Generate a unique name for this field by appending a counter to the name.
-    string16 unique_name = field->name() +
+    string16 unique_name = field->name +
         base::IntToString16(fields_.size() + 1);
     fields_.push_back(new AutofillField(*field, unique_name));
   }

@@ -124,7 +124,7 @@ bool FormField::MatchName(AutofillField* field, const string16& pattern) {
   WebKit::WebRegularExpression re(WebKit::WebString(pattern),
                                   WebKit::WebTextCaseInsensitive);
   bool match = re.match(
-      WebKit::WebString(StringToLowerASCII(field->name()))) != -1;
+      WebKit::WebString(StringToLowerASCII(field->name))) != -1;
   return match;
 }
 
@@ -135,7 +135,7 @@ bool FormField::MatchLabel(AutofillField* field, const string16& pattern) {
   WebKit::WebRegularExpression re(WebKit::WebString(pattern),
                                   WebKit::WebTextCaseInsensitive);
   bool match = re.match(
-      WebKit::WebString(StringToLowerASCII(field->label()))) != -1;
+      WebKit::WebString(StringToLowerASCII(field->label))) != -1;
   return match;
 }
 
@@ -350,7 +350,7 @@ bool FormFieldSet::CheckECML(FormStructure* fields) {
 
   const string16 ecom(ASCIIToUTF16("ecom"));
   for (size_t index = 0; index < num_fields; ++index) {
-    const string16& utf16_name = fields->field(index)->name();
+    const string16& utf16_name = fields->field(index)->name;
     if (StartsWith(utf16_name, ecom, true)) {
       std::string name(UTF16ToASCII(utf16_name));
       for (size_t i = 0; i < ARRAYSIZE_UNSAFE(form_fields); ++i) {

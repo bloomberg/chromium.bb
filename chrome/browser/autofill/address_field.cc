@@ -148,7 +148,7 @@ AddressType AddressField::FindType() const {
   // "bill" or "ship".  We could check for the ECML type prefixes
   // here, but there's no need to since ECML's prefixes Ecom_BillTo
   // and Ecom_ShipTo contain "bill" and "ship" anyway.
-  string16 name = StringToLowerASCII(address1_->name());
+  string16 name = StringToLowerASCII(address1_->name);
   return AddressTypeFromText(name);
 }
 
@@ -294,7 +294,7 @@ bool AddressField::ParseZipCode(
   }
 
   AddressType tempType;
-  string16 name = (**iter)->name();
+  string16 name = (**iter)->name;
 
   // Note: comparisons using the ecml compliant name as a prefix must be used in
   // order to accommodate Google Checkout. See FormFieldSet::GetEcmlPattern for

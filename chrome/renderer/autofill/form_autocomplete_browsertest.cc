@@ -40,12 +40,12 @@ TEST_F(FormAutocompleteTest, NormalFormSubmit) {
   ASSERT_EQ(2U, forms.a.fields.size());
 
   webkit_glue::FormField& form_field = forms.a.fields[0];
-  EXPECT_EQ(WebString("fname"), form_field.name());
-  EXPECT_EQ(WebString("Rick"), form_field.value());
+  EXPECT_EQ(WebString("fname"), form_field.name);
+  EXPECT_EQ(WebString("Rick"), form_field.value);
 
   form_field = forms.a.fields[1];
-  EXPECT_EQ(WebString("lname"), form_field.name());
-  EXPECT_EQ(WebString("Deckard"), form_field.value());
+  EXPECT_EQ(WebString("lname"), form_field.name);
+  EXPECT_EQ(WebString("Deckard"), form_field.value);
 }
 
 // Tests that submitting a form that has autocomplete="off" does not generate a
@@ -88,8 +88,8 @@ TEST_F(FormAutocompleteTest, AutoCompleteOffInputSubmit) {
   ASSERT_EQ(1U, forms.a.fields.size());
 
   webkit_glue::FormField& form_field = forms.a.fields[0];
-  EXPECT_EQ(WebString("fname"), form_field.name());
-  EXPECT_EQ(WebString("Rick"), form_field.value());
+  EXPECT_EQ(WebString("fname"), form_field.name);
+  EXPECT_EQ(WebString("Rick"), form_field.value);
 }
 
 // Tests that submitting a form that has been dynamically set as autocomplete

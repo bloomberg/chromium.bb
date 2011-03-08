@@ -198,7 +198,7 @@ void AutoFillMergeTest::MergeProfiles(const std::string& profiles,
         AutofillField* field =
             const_cast<AutofillField*>(form_structure.field(i));
         AutofillFieldType type =
-            AutofillType::StringToFieldType(UTF16ToUTF8(field->name()));
+            AutofillType::StringToFieldType(UTF16ToUTF8(field->name));
         field->set_heuristic_type(type);
       }
       std::vector<const FormStructure*> form_structures(1, &form_structure);

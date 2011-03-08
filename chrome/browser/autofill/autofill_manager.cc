@@ -193,7 +193,7 @@ bool SectionIsAutoFilled(const FormStructure* form_structure,
       continue;
 
     AutofillType autofill_type(form_structure->field(k)->type());
-    if (form.fields[j].is_autofilled())
+    if (form.fields[j].is_autofilled)
       return true;
 
     // We found a matching field in the |form_structure| so we
@@ -382,7 +382,7 @@ void AutofillManager::OnQueryFormFieldAutoFill(
   // hand off what we generated and they will send the results back to the
   // renderer.
   tab_contents()->autocomplete_history_manager()->OnGetAutocompleteSuggestions(
-      query_id, field.name(), field.value(), values, labels, icons, unique_ids);
+      query_id, field.name, field.value, values, labels, icons, unique_ids);
 }
 
 void AutofillManager::OnFillAutoFillFormData(int query_id,
@@ -577,7 +577,7 @@ void AutofillManager::DeterminePossibleFieldTypesForUpload(
   for (size_t i = 0; i < submitted_form->field_count(); i++) {
     const AutofillField* field = submitted_form->field(i);
     FieldTypeSet field_types;
-    personal_data_->GetPossibleFieldTypes(field->value(), &field_types);
+    personal_data_->GetPossibleFieldTypes(field->value, &field_types);
 
     DCHECK(!field_types.empty());
     submitted_form->set_possible_types(i, field_types);
@@ -604,11 +604,11 @@ void AutofillManager::LogMetricsAboutSubmittedForm(
   for (size_t i = 0; i < submitted_form->field_count(); ++i) {
     const AutofillField* field = submitted_form->field(i);
     FieldTypeSet field_types;
-    personal_data_->GetPossibleFieldTypes(field->value(), &field_types);
+    personal_data_->GetPossibleFieldTypes(field->value, &field_types);
     DCHECK(!field_types.empty());
 
-    if (field->form_control_type() == ASCIIToUTF16("select-one")) {
-      // TODO(isherman): <select> fields don't support |is_autofilled()|. Since
+    if (field->form_control_type == ASCIIToUTF16("select-one")) {
+      // TODO(isherman): <select> fields don't support |is_autofilled|. Since
       // this is heavily relied upon by our metrics, we just don't log anything
       // for all <select> fields. Better to have less data than misleading data.
       continue;
@@ -618,7 +618,7 @@ void AutofillManager::LogMetricsAboutSubmittedForm(
     metric_logger_->Log(AutofillMetrics::FIELD_SUBMITTED, experiment_id);
     if (field_types.find(EMPTY_TYPE) == field_types.end() &&
         field_types.find(UNKNOWN_TYPE) == field_types.end()) {
-      if (field->is_autofilled()) {
+      if (field->is_autofilled) {
         metric_logger_->Log(AutofillMetrics::FIELD_AUTOFILLED, experiment_id);
       } else {
         metric_logger_->Log(AutofillMetrics::FIELD_AUTOFILL_FAILED,
@@ -817,7 +817,7 @@ void AutofillManager::GetProfileSuggestions(FormStructure* form,
     string16 profile_field_value = profile->GetFieldText(type);
 
     if (!profile_field_value.empty() &&
-        StartsWith(profile_field_value, field.value(), false)) {
+        StartsWith(profile_field_value, field.value, false)) {
       matched_profiles.push_back(profile);
       values->push_back(profile_field_value);
       unique_ids->push_back(PackGUIDs(std::string(), profile->guid()));
@@ -857,7 +857,7 @@ void AutofillManager::GetCreditCardSuggestions(FormStructure* form,
     // The value of the stored data for this field type in the |credit_card|.
     string16 creditcard_field_value = credit_card->GetFieldText(type);
     if (!creditcard_field_value.empty() &&
-        StartsWith(creditcard_field_value, field.value(), false)) {
+        StartsWith(creditcard_field_value, field.value, false)) {
       if (type.field_type() == CREDIT_CARD_NUMBER)
         creditcard_field_value = credit_card->ObfuscatedNumber();
 
@@ -876,9 +876,9 @@ void AutofillManager::FillCreditCardFormField(const CreditCard* credit_card,
   DCHECK_EQ(AutofillType::CREDIT_CARD, type.group());
   DCHECK(field);
 
-  if (field->form_control_type() == ASCIIToUTF16("select-one")) {
+  if (field->form_control_type == ASCIIToUTF16("select-one")) {
     autofill::FillSelectControl(*credit_card, type, field);
-  } else if (field->form_control_type() == ASCIIToUTF16("month")) {
+  } else if (field->form_control_type == ASCIIToUTF16("month")) {
     // HTML5 input="month" consists of year-month.
     string16 year = credit_card->GetFieldText(
         AutofillType(CREDIT_CARD_EXP_4_DIGIT_YEAR));
@@ -887,10 +887,10 @@ void AutofillManager::FillCreditCardFormField(const CreditCard* credit_card,
     if (!year.empty() && !month.empty()) {
       // Fill the value only if |credit_card| includes both year and month
       // information.
-      field->set_value(year + ASCIIToUTF16("-") + month);
+      field->value = year + ASCIIToUTF16("-") + month;
     }
   } else {
-    field->set_value(credit_card->GetFieldText(type));
+    field->value = credit_card->GetFieldText(type);
   }
 }
 
@@ -904,10 +904,10 @@ void AutofillManager::FillFormField(const AutoFillProfile* profile,
   if (type.subgroup() == AutofillType::PHONE_NUMBER) {
     FillPhoneNumberField(profile, type, field);
   } else {
-    if (field->form_control_type() == ASCIIToUTF16("select-one"))
+    if (field->form_control_type == ASCIIToUTF16("select-one"))
       autofill::FillSelectControl(*profile, type, field);
     else
-      field->set_value(profile->GetFieldText(type));
+      field->value = profile->GetFieldText(type);
   }
 }
 
@@ -921,17 +921,17 @@ void AutofillManager::FillPhoneNumberField(const AutoFillProfile* profile,
       static_cast<size_t>(PhoneNumber::kPrefixLength +
                           PhoneNumber::kSuffixLength));
   if (has_valid_suffix_and_prefix &&
-      field->max_length() == PhoneNumber::kPrefixLength) {
+      field->max_length == PhoneNumber::kPrefixLength) {
     number = number.substr(PhoneNumber::kPrefixOffset,
                            PhoneNumber::kPrefixLength);
-    field->set_value(number);
+    field->value = number;
   } else if (has_valid_suffix_and_prefix &&
-             field->max_length() == PhoneNumber::kSuffixLength) {
+             field->max_length == PhoneNumber::kSuffixLength) {
     number = number.substr(PhoneNumber::kSuffixOffset,
                            PhoneNumber::kSuffixLength);
-    field->set_value(number);
+    field->value = number;
   } else {
-    field->set_value(number);
+    field->value = number;
   }
 }
 

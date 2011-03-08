@@ -2,52 +2,43 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_COMMON_AUTOFILL_MESSAGES_H_
-#define CHROME_COMMON_AUTOFILL_MESSAGES_H_
-#pragma once
+// Multiply-included message file, hence no include guard.
 
 #include <string>
 
+#include "chrome/common/common_param_traits.h"
 #include "ipc/ipc_message_macros.h"
+#include "webkit/glue/form_data.h"
+#include "webkit/glue/form_field.h"
+#include "webkit/glue/password_form.h"
+#include "webkit/glue/password_form_dom_manager.h"
 
 #define IPC_MESSAGE_START AutoFillMsgStart
 
-namespace webkit_glue {
-class FormField;
-struct FormData;
-struct PasswordForm;
-struct PasswordFormFillData;
-}
+IPC_STRUCT_TRAITS_BEGIN(webkit_glue::FormField)
+  IPC_STRUCT_TRAITS_MEMBER(label)
+  IPC_STRUCT_TRAITS_MEMBER(name)
+  IPC_STRUCT_TRAITS_MEMBER(value)
+  IPC_STRUCT_TRAITS_MEMBER(form_control_type)
+  IPC_STRUCT_TRAITS_MEMBER(max_length)
+  IPC_STRUCT_TRAITS_MEMBER(is_autofilled)
+  IPC_STRUCT_TRAITS_MEMBER(option_strings)
+IPC_STRUCT_TRAITS_END()
 
-namespace IPC {
+IPC_STRUCT_TRAITS_BEGIN(webkit_glue::FormData)
+  IPC_STRUCT_TRAITS_MEMBER(name)
+  IPC_STRUCT_TRAITS_MEMBER(method)
+  IPC_STRUCT_TRAITS_MEMBER(origin)
+  IPC_STRUCT_TRAITS_MEMBER(action)
+  IPC_STRUCT_TRAITS_MEMBER(user_submitted)
+  IPC_STRUCT_TRAITS_MEMBER(fields)
+IPC_STRUCT_TRAITS_END()
 
-template <>
-struct ParamTraits<webkit_glue::FormField> {
-  typedef webkit_glue::FormField param_type;
-  static void Write(Message* m, const param_type& p);
-  static bool Read(const Message* m, void** iter, param_type* p);
-  static void Log(const param_type& p, std::string* l);
-};
-
-
-// Traits for FormData structure to pack/unpack.
-template <>
-struct ParamTraits<webkit_glue::FormData> {
-  typedef webkit_glue::FormData param_type;
-  static void Write(Message* m, const param_type& p);
-  static bool Read(const Message* m, void** iter, param_type* p);
-  static void Log(const param_type& p, std::string* l);
-};
-
-template <>
-struct ParamTraits<webkit_glue::PasswordFormFillData> {
-  typedef webkit_glue::PasswordFormFillData param_type;
-  static void Write(Message* m, const param_type& p);
-  static bool Read(const Message* m, void** iter, param_type* r);
-  static void Log(const param_type& p, std::string* l);
-};
-
-}  // namespace IPC
+IPC_STRUCT_TRAITS_BEGIN(webkit_glue::PasswordFormFillData)
+  IPC_STRUCT_TRAITS_MEMBER(basic_data)
+  IPC_STRUCT_TRAITS_MEMBER(additional_logins)
+  IPC_STRUCT_TRAITS_MEMBER(wait_for_username)
+IPC_STRUCT_TRAITS_END()
 
 // AutoFill messages sent from the browser to the renderer.
 
@@ -122,4 +113,4 @@ IPC_MESSAGE_ROUTED2(AutoFillHostMsg_RemoveAutocompleteEntry,
 // Instructs the browser to show the AutoFill dialog.
 IPC_MESSAGE_ROUTED0(AutoFillHostMsg_ShowAutoFillDialog)
 
-#endif  // CHROME_COMMON_AUTOFILL_MESSAGES_H_
+

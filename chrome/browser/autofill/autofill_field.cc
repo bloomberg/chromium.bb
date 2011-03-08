@@ -59,12 +59,12 @@ AutofillFieldType AutofillField::type() const {
 }
 
 bool AutofillField::IsEmpty() const {
-  return value().empty();
+  return value.empty();
 }
 
 std::string AutofillField::FieldSignature() const {
-  std::string field_name = UTF16ToUTF8(name());
-  std::string type = UTF16ToUTF8(form_control_type());
+  std::string field_name = UTF16ToUTF8(name);
+  std::string type = UTF16ToUTF8(form_control_type);
   std::string field_string = field_name + "&" + type;
   return Hash32Bit(field_string);
 }

@@ -32,7 +32,7 @@ class Time;
 }
 
 namespace webkit_glue {
-class FormField;
+struct FormField;
 struct PasswordForm;
 }
 

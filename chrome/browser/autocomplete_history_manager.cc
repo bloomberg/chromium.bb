@@ -119,11 +119,11 @@ void AutocompleteHistoryManager::OnFormSubmitted(const FormData& form) {
   for (std::vector<webkit_glue::FormField>::const_iterator iter =
            form.fields.begin();
        iter != form.fields.end(); ++iter) {
-    if (!iter->value().empty() &&
-        !iter->name().empty() &&
-        iter->form_control_type() == ASCIIToUTF16("text") &&
-        !CreditCard::IsCreditCardNumber(iter->value()) &&
-        !IsSSN(iter->value()))
+    if (!iter->value.empty() &&
+        !iter->name.empty() &&
+        iter->form_control_type == ASCIIToUTF16("text") &&
+        !CreditCard::IsCreditCardNumber(iter->value) &&
+        !IsSSN(iter->value))
       values.push_back(*iter);
   }
 
