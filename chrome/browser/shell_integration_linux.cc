@@ -175,6 +175,52 @@ void CreateShortcutInApplicationsMenu(const FilePath& shortcut_filename,
   LaunchXdgUtility(argv);
 }
 
+// Quote a string such that it appears as one verbatim argument for the Exec
+// key in a desktop file.
+std::string QuoteArgForDesktopFileExec(const std::string& arg) {
+  // http://standards.freedesktop.org/desktop-entry-spec/latest/ar01s06.html
+
+  // Quoting is only necessary if the argument has a reserved character.
+  if (arg.find_first_of(" \t\n\"'\\><~|&;$*?#()`") == std::string::npos)
+    return arg;  // No quoting necessary.
+
+  std::string quoted = "\"";
+  for (size_t i = 0; i < arg.size(); ++i) {
+    // Note that the set of backslashed characters is smaller than the
+    // set of reserved characters.
+    switch (arg[i]) {
+      case '"':
+      case '`':
+      case '$':
+      case '\\':
+        quoted += '\\';
+        break;
+    }
+    quoted += arg[i];
+  }
+  quoted += '"';
+
+  return quoted;
+}
+
+// Escape a string if needed for the right side of a Key=Value
+// construct in a desktop file.  (Note that for Exec= lines this
+// should be used in conjunction with QuoteArgForDesktopFileExec,
+// possibly escaping a backslash twice.)
+std::string EscapeStringForDesktopFile(const std::string& arg) {
+  // http://standards.freedesktop.org/desktop-entry-spec/latest/ar01s03.html
+  if (arg.find('\\') == std::string::npos)
+    return arg;
+
+  std::string escaped;
+  for (size_t i = 0; i < arg.size(); ++i) {
+    if (arg[i] == '\\')
+      escaped += '\\';
+    escaped += arg[i];
+  }
+  return escaped;
+}
+
 }  // namespace
 
 // static
@@ -328,13 +374,25 @@ std::string ShellIntegration::GetDesktopFileContents(
       std::string exec_path = tokenizer.token().substr(5);
       StringTokenizer exec_tokenizer(exec_path, " ");
       std::string final_path;
-      while (exec_tokenizer.GetNext()) {
-        if (exec_tokenizer.token() != "%U")
-          final_path += exec_tokenizer.token() + " ";
+      while (exec_tokenizer.GetNext() && exec_tokenizer.token() != "%U") {
+        if (!final_path.empty())
+          final_path += " ";
+        final_path += exec_tokenizer.token();
       }
-      std::string switches =
-          ShellIntegration::GetCommandLineArgumentsCommon(url, extension_id);
-      output_buffer += std::string("Exec=") + final_path + switches + "\n";
+      CommandLine cmd_line =
+          ShellIntegration::CommandLineArgsForLauncher(url, extension_id);
+      const CommandLine::SwitchMap& switch_map = cmd_line.GetSwitches();
+      for (CommandLine::SwitchMap::const_iterator i = switch_map.begin();
+           i != switch_map.end(); ++i) {
+        if (i->second.empty()) {
+          final_path += " --" + i->first;
+        } else {
+          final_path += " " + QuoteArgForDesktopFileExec("--" + i->first +
+                                                         "=" + i->second);
+        }
+      }
+      output_buffer += std::string("Exec=") +
+                       EscapeStringForDesktopFile(final_path) + "\n";
     } else if (tokenizer.token().substr(0, 5) == "Name=") {
       std::string final_title = UTF16ToUTF8(title);
       // Make sure no endline characters can slip in and possibly introduce

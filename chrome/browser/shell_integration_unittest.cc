@@ -191,7 +191,7 @@ TEST(ShellIntegrationTest, GetDesktopFileContents) {
       "Version=1.0\n"
       "Encoding=UTF-8\n"
       "Name=GMail\n"
-      "Exec=/opt/google/chrome/google-chrome --app=\"http://gmail.com/\"\n"
+      "Exec=/opt/google/chrome/google-chrome --app=http://gmail.com/\n"
       "Terminal=false\n"
       "Icon=chrome-http__gmail.com\n"
       "Type=Application\n"
@@ -209,7 +209,7 @@ TEST(ShellIntegrationTest, GetDesktopFileContents) {
 
       "#!/usr/bin/env xdg-open\n"
       "Name=GMail\n"
-      "Exec=/opt/google/chrome/google-chrome --app=\"http://gmail.com/\"\n"
+      "Exec=/opt/google/chrome/google-chrome --app=http://gmail.com/\n"
     },
 
     // Make sure i18n-ed comments are removed.
@@ -223,7 +223,7 @@ TEST(ShellIntegrationTest, GetDesktopFileContents) {
 
       "#!/usr/bin/env xdg-open\n"
       "Name=GMail\n"
-      "Exec=/opt/google/chrome/google-chrome --app=\"http://gmail.com/\"\n"
+      "Exec=/opt/google/chrome/google-chrome --app=http://gmail.com/\n"
     },
 
     // Make sure that empty icons are replaced by the chrome icon.
@@ -238,7 +238,7 @@ TEST(ShellIntegrationTest, GetDesktopFileContents) {
 
       "#!/usr/bin/env xdg-open\n"
       "Name=GMail\n"
-      "Exec=/opt/google/chrome/google-chrome --app=\"http://gmail.com/\"\n"
+      "Exec=/opt/google/chrome/google-chrome --app=http://gmail.com/\n"
       "Icon=/opt/google/chrome/product_logo_48.png\n"
     },
 
@@ -253,7 +253,7 @@ TEST(ShellIntegrationTest, GetDesktopFileContents) {
       "#!/usr/bin/env xdg-open\n"
       "Name=http://evil.com/evil%20--join-the-b0tnet\n"
       "Exec=/opt/google/chrome/google-chrome "
-      "--app=\"http://evil.com/evil%20--join-the-b0tnet\"\n"
+      "--app=http://evil.com/evil%20--join-the-b0tnet\n"
     },
     { "http://evil.com/evil; rm -rf /; \"; rm -rf $HOME >ownz0red",
       "Innocent Title",
@@ -265,8 +265,11 @@ TEST(ShellIntegrationTest, GetDesktopFileContents) {
       "#!/usr/bin/env xdg-open\n"
       "Name=Innocent Title\n"
       "Exec=/opt/google/chrome/google-chrome "
-      "--app=\"http://evil.com/evil%3B%20rm%20-rf%20/%3B%20%22%3B%20rm%20"
-      "-rf%20%24HOME%20%3Eownz0red\"\n"
+      "\"--app=http://evil.com/evil;%20rm%20-rf%20/;%20%22;%20rm%20"
+      // Note: $ is escaped as \$ within an arg to Exec, and then
+      // the \ is escaped as \\ as all strings in a Desktop file should
+      // be; finally, \\ becomes \\\\ when represented in a C++ string!
+      "-rf%20\\\\$HOME%20%3Eownz0red\"\n"
     },
     { "http://evil.com/evil | cat `echo ownz0red` >/dev/null",
       "Innocent Title",
@@ -278,11 +281,12 @@ TEST(ShellIntegrationTest, GetDesktopFileContents) {
       "#!/usr/bin/env xdg-open\n"
       "Name=Innocent Title\n"
       "Exec=/opt/google/chrome/google-chrome "
-      "--app=\"http://evil.com/evil%20%7C%20cat%20%60echo%20ownz0red"
-      "%60%20%3E/dev/null\"\n"
+      "--app=http://evil.com/evil%20%7C%20cat%20%60echo%20ownz0red"
+      "%60%20%3E/dev/null\n"
     },
   };
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(test_cases); i++) {
+    SCOPED_TRACE(i);
     EXPECT_EQ(test_cases[i].expected_output,
               ShellIntegration::GetDesktopFileContents(
                   test_cases[i].template_contents,

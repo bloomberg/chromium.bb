@@ -23,56 +23,41 @@ ShellIntegration::ShortcutInfo::ShortcutInfo()
 
 ShellIntegration::ShortcutInfo::~ShortcutInfo() {}
 
-std::string ShellIntegration::GetCommandLineArgumentsCommon(
+// static
+CommandLine ShellIntegration::CommandLineArgsForLauncher(
     const GURL& url,
     const std::string& extension_app_id) {
-  const CommandLine cmd = *CommandLine::ForCurrentProcess();
-  std::wstring arguments_w;
+  const CommandLine& cmd_line = *CommandLine::ForCurrentProcess();
+  CommandLine new_cmd_line(CommandLine::NO_PROGRAM);
 
   // Use the same UserDataDir for new launches that we currently have set.
-  FilePath user_data_dir = cmd.GetSwitchValuePath(switches::kUserDataDir);
-  if (!user_data_dir.value().empty()) {
+  FilePath user_data_dir = cmd_line.GetSwitchValuePath(switches::kUserDataDir);
+  if (!user_data_dir.empty()) {
     // Make sure user_data_dir is an absolute path.
     if (file_util::AbsolutePath(&user_data_dir) &&
         file_util::PathExists(user_data_dir)) {
-      // TODO: This is wrong in pathological quoting scenarios; we shouldn't be
-      // passing around command lines as strings at all.
-      arguments_w += std::wstring(L"--") + ASCIIToWide(switches::kUserDataDir) +
-                     L"=\"" + user_data_dir.ToWStringHack() + L"\" ";
+      new_cmd_line.AppendSwitchPath(switches::kUserDataDir, user_data_dir);
     }
   }
 
 #if defined(OS_CHROMEOS)
-  FilePath profile = cmd.GetSwitchValuePath(switches::kLoginProfile);
-  if (!profile.empty()) {
-    arguments_w += std::wstring(L"--") + ASCIIToWide(switches::kLoginProfile) +
-        L"=\"" + profile.ToWStringHack() + L"\" ";
-  }
+  FilePath profile = cmd_line.GetSwitchValuePath(switches::kLoginProfile);
+  if (!profile.empty())
+    new_cmd_line.AppendSwitchPath(switches::kLoginProfile, profile);
 #endif
 
   // If |extension_app_id| is present, we use the kAppId switch rather than
   // the kApp switch (the launch url will be read from the extension app
   // during launch.
   if (!extension_app_id.empty()) {
-    arguments_w += std::wstring(L"--") + ASCIIToWide(switches::kAppId) +
-        L"=\"" + ASCIIToWide(extension_app_id) + L"\"";
+    new_cmd_line.AppendSwitchASCII(switches::kAppId, extension_app_id);
   } else {
     // Use '--app=url' instead of just 'url' to launch the browser with minimal
     // chrome.
     // Note: Do not change this flag!  Old Gears shortcuts will break if you do!
-    std::string url_string = url.spec();
-    ReplaceSubstringsAfterOffset(&url_string, 0, "\\", "%5C");
-    ReplaceSubstringsAfterOffset(&url_string, 0, "\"", "%22");
-    ReplaceSubstringsAfterOffset(&url_string, 0, ";",  "%3B");
-    ReplaceSubstringsAfterOffset(&url_string, 0, "$",  "%24");
-#if defined(OS_WIN)  // Windows shortcuts can't escape % so we use \x instead.
-    ReplaceSubstringsAfterOffset(&url_string, 0, "%",  "\\x");
-#endif
-    std::wstring url_w = UTF8ToWide(url_string);
-    arguments_w += std::wstring(L"--") + ASCIIToWide(switches::kApp) +
-        L"=\"" + url_w + L"\"";
+    new_cmd_line.AppendSwitchASCII(switches::kApp, url.spec());
   }
-  return WideToUTF8(arguments_w);
+  return new_cmd_line;
 }
 
 ///////////////////////////////////////////////////////////////////////////////

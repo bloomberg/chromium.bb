@@ -14,6 +14,7 @@
 #include <vector>
 
 #include "base/callback.h"
+#include "base/command_line.h"
 #include "base/file_util.h"
 #include "base/md5.h"
 #include "base/message_loop.h"
@@ -93,8 +94,8 @@ FilePath GetSanitizedFileName(const string16& name) {
 // Returns relative directory of given web app url.
 FilePath GetWebAppDir(const ShellIntegration::ShortcutInfo& info) {
   if (!info.extension_id.empty()) {
-    std::string app_name = web_app::GenerateApplicationNameFromExtensionId(
-        info.extension_id);
+    std::string app_name =
+        web_app::GenerateApplicationNameFromExtensionId(info.extension_id);
 #if defined(OS_WIN)
     return FilePath(UTF8ToWide(app_name));
 #elif defined(OS_POSIX)
@@ -378,10 +379,14 @@ bool CreateShortcutTask::CreateShortcut() {
   // Working directory.
   FilePath chrome_folder = chrome_exe.DirName();
 
-  std::string switches =
-     ShellIntegration::GetCommandLineArgumentsCommon(shortcut_info_.url,
-     shortcut_info_.extension_id);
-  std::wstring wide_switchs(UTF8ToWide(switches));
+  CommandLine cmd_line =
+     ShellIntegration::CommandLineArgsForLauncher(shortcut_info_.url,
+                                                  shortcut_info_.extension_id);
+  // TODO(evan): we rely on the fact that command_line_string() is
+  // properly quoted for a Windows command line.  The method on
+  // CommandLine should probably be renamed to better reflect that
+  // fact.
+  std::wstring wide_switches(cmd_line.command_line_string());
 
   // Sanitize description
   if (shortcut_info_.description.length() >= MAX_PATH)
@@ -417,7 +422,7 @@ bool CreateShortcutTask::CreateShortcut() {
     success &= file_util::CreateShortcutLink(chrome_exe.value().c_str(),
         shortcut_file.value().c_str(),
         chrome_folder.value().c_str(),
-        wide_switchs.c_str(),
+        wide_switches.c_str(),
         shortcut_info_.description.c_str(),
         icon_file.value().c_str(),
         0,

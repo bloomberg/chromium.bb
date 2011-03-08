@@ -14,6 +14,7 @@
 #include "googleurl/src/gurl.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 
+class CommandLine;
 class FilePath;
 class PrefService;
 
@@ -72,14 +73,12 @@ class ShellIntegration {
     bool create_in_quick_launch_bar;
   };
 
-  // Re-implementation of chrome_plugin_utill::CPB_GetCommandLineArgumentsCommon
-  // which is deprecated. If |extension_app_id| is non-empty, an arguments
-  // string is created using the kAppId=<id> flag. Otherwise, the kApp=<url> is
-  // used.
-  // NOTE: This function is dangerous, do not use!  You cannot treat
-  // command lines as plain strings as there are metacharacters.
-  // TODO(evanm): remove it.
-  static std::string GetCommandLineArgumentsCommon(
+  // Set up command line arguments for launching a URL or an app.
+  // The new command line reuses the current process's user data directory (and
+  // login profile, for ChromeOS).
+  // If |extension_app_id| is non-empty, the arguments use kAppId=<id>.
+  // Otherwise, kApp=<url> is used.
+  static CommandLine CommandLineArgsForLauncher(
       const GURL& url,
       const std::string& extension_app_id);
 
