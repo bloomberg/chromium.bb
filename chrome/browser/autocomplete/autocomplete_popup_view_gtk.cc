@@ -188,6 +188,12 @@ void AutocompletePopupViewGtk::SetupLayoutForMatch(
   // elided pure LTR text.
   bool marked_with_lre = false;
   string16 localized_text = text;
+  // Pango is really easy to overflow and send into a computational death
+  // spiral that can corrupt the screen. Assume that we'll never have more than
+  // 2000 characters, which should be a safe assumption until we all get robot
+  // eyes. http://crbug.com/66576
+  if (localized_text.size() > 2000)
+    localized_text = localized_text.substr(0, 2000);
   bool is_rtl = base::i18n::IsRTL();
   if (is_rtl && !base::i18n::StringContainsStrongRTLChars(localized_text)) {
     localized_text.insert(0, 1, base::i18n::kLeftToRightEmbeddingMark);
