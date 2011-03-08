@@ -72,9 +72,6 @@ int main(int argc, char **argv) {
   if (CommandLine::ForCurrentProcess()->HasSwitch(kNoRegistrationSwitch)) {
     ret = test_suite.Run();
   } else {
-    // Register paths needed by the ScopedChromeFrameRegistrar.
-    chrome::RegisterPathProvider();
-
     // This will register the chrome frame in the build directory. It currently
     // leaves that chrome frame registered once the tests are done. It must be
     // constructed AFTER the TestSuite is created since TestSuites create THE

@@ -57,6 +57,9 @@ class ScopedChromeFrameRegistrar {
 
   // Indicates whether per user or per machine registration is needed.
   RegistrationType registration_type_;
+  // We need to register the chrome path provider only once per process. This
+  // flag keeps track of that.
+  static bool register_chrome_path_provider_;
 };
 
 // Returns the path to the Chrome Frame DLL in the build directory. Assumes

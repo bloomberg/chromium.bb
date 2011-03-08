@@ -45,8 +45,14 @@ FilePath GetChromeFrameBuildPath() {
   return dll_path;
 }
 
+bool ScopedChromeFrameRegistrar::register_chrome_path_provider_ = false;;
+
 // static
 void ScopedChromeFrameRegistrar::RegisterDefaults() {
+  if (!register_chrome_path_provider_) {
+    chrome::RegisterPathProvider();
+    register_chrome_path_provider_ = true;
+  }
   FilePath dll_path = GetChromeFrameBuildPath();
   RegisterAtPath(dll_path.value(), chrome_frame_test::GetTestBedType());
 }
@@ -148,6 +154,11 @@ FilePath ScopedChromeFrameRegistrar::GetReferenceChromeFrameDllPath() {
 ScopedChromeFrameRegistrar::ScopedChromeFrameRegistrar(
     const std::wstring& path, RegistrationType registration_type)
     : registration_type_(registration_type) {
+  if (!register_chrome_path_provider_) {
+    // Register paths needed by the ScopedChromeFrameRegistrar.
+    chrome::RegisterPathProvider();
+    register_chrome_path_provider_ = true;
+  }
   original_dll_path_ = path;
   RegisterChromeFrameAtPath(original_dll_path_);
 }
@@ -155,6 +166,11 @@ ScopedChromeFrameRegistrar::ScopedChromeFrameRegistrar(
 ScopedChromeFrameRegistrar::ScopedChromeFrameRegistrar(
     RegistrationType registration_type)
     : registration_type_(registration_type) {
+  if (!register_chrome_path_provider_) {
+    // Register paths needed by the ScopedChromeFrameRegistrar.
+    chrome::RegisterPathProvider();
+    register_chrome_path_provider_ = true;
+  }
   original_dll_path_ = GetChromeFrameBuildPath().value();
   RegisterChromeFrameAtPath(original_dll_path_);
 }

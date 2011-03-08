@@ -36,7 +36,6 @@
 #include "chrome_frame/test/chrome_frame_test_utils.h"
 #include "chrome_frame/test/net/test_automation_resource_message_filter.h"
 #include "chrome_frame/test/simulate_input.h"
-#include "chrome_frame/test_utils.h"
 #include "chrome_frame/test/win_event_receiver.h"
 #include "chrome_frame/utils.h"
 #include "content/browser/plugin_service.h"
@@ -193,7 +192,6 @@ void FakeExternalTab::Initialize() {
 
   icu_util::Initialize();
 
-  chrome::RegisterPathProvider();
   app::RegisterPathProvider();
   ui::RegisterPathProvider();
 
@@ -255,7 +253,8 @@ void FakeExternalTab::Shutdown() {
 
 CFUrlRequestUnittestRunner::CFUrlRequestUnittestRunner(int argc, char** argv)
     : NetTestSuite(argc, argv),
-      chrome_frame_html_("/chrome_frame", kChromeFrameHtml) {
+      chrome_frame_html_("/chrome_frame", kChromeFrameHtml),
+      registrar_(chrome_frame_test::GetTestBedType()) {
   // Register the main thread by instantiating it, but don't call any methods.
   main_thread_.reset(new BrowserThread(BrowserThread::UI,
                                        MessageLoop::current()));
@@ -510,10 +509,6 @@ int main(int argc, char** argv) {
   // the instance of the AtExitManager that RegisterPathProvider() and others
   // below require. So we have to instantiate this first.
   CFUrlRequestUnittestRunner test_suite(argc, argv);
-
-  // Register paths needed by the ScopedChromeFrameRegistrar.
-  chrome::RegisterPathProvider();
-  ScopedChromeFrameRegistrar registrar(chrome_frame_test::GetTestBedType());
 
   WindowWatchdog watchdog;
   // See url_request_unittest.cc for these credentials.

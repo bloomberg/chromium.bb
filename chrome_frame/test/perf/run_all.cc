@@ -16,7 +16,6 @@ void PureCall() {
 
 int main(int argc, char **argv) {
   base::PerfTestSuite perf_suite(argc, argv);
-  chrome::RegisterPathProvider();
   base::PlatformThread::SetName("ChromeFrame perf tests");
 
   _set_purecall_handler(PureCall);
@@ -24,12 +23,13 @@ int main(int argc, char **argv) {
   SetConfigBool(kChromeFrameHeadlessMode, true);
   SetConfigBool(kChromeFrameUnpinnedMode, true);
 
-  base::ProcessHandle crash_service = chrome_frame_test::StartCrashService();
-
   // Use ctor/raii to register the local Chrome Frame dll.
   scoped_ptr<ScopedChromeFrameRegistrar> registrar(
       new ScopedChromeFrameRegistrar(
           ScopedChromeFrameRegistrar::SYSTEM_LEVEL));
+
+  base::ProcessHandle crash_service = chrome_frame_test::StartCrashService();
+
   int ret = perf_suite.Run();
 
   DeleteConfigValue(kChromeFrameHeadlessMode);
