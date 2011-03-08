@@ -9,7 +9,7 @@
 #include "base/logging.h"
 
 OwnedWidgetGtk::~OwnedWidgetGtk() {
-  DCHECK(!widget_) << "You must explicitly call OwnerWidgetGtk::Destroy().";
+  Destroy();
 }
 
 void OwnedWidgetGtk::Own(GtkWidget* widget) {

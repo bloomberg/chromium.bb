@@ -13,7 +13,7 @@
 // class FooViewGtk() {
 //  public:
 //   FooViewGtk() { }
-//   ~FooViewGtk() { widget_.Destroy(); }
+//   ~FooViewGtk() { }
 //   void Init() { vbox_.Own(gtk_vbox_new()); }
 //   GtkWidget* widget() { return vbox_.get() };  // Host my widget!
 //  private:
@@ -68,17 +68,18 @@ class OwnedWidgetGtk {
   GtkWidget* operator->() const { return widget_; }
 
   // Takes ownership of a widget, by taking the initial floating reference of
-  // the GtkWidget.  It is expected that Own() is called right after the widget
+  // the GtkWidget. It is expected that Own() is called right after the widget
   // has been created, and before any other references to the widget might have
-  // been added.  It is valid to never call Own(), in which case Destroy() will
-  // do nothing.  If Own() has been called, you must explicitly call Destroy().
+  // been added. It is valid to never call Own(), in which case Destroy() will
+  // do nothing. If Own() has been called, you must explicitly call Destroy().
   void Own(GtkWidget* widget);
 
-  // You must call Destroy() after you have called Own().  Calling Destroy()
+  // You may call Destroy() after you have called Own(). Calling Destroy()
   // will call gtk_widget_destroy(), and drop our reference to the widget.
-  // After a call to Destroy(), you may call Own() again.  NOTE: It is expected
+  // Destroy() is also called in this object's destructor.
+  // After a call to Destroy(), you may call Own() again. NOTE: It is expected
   // that after gtk_widget_destroy we will be holding the only reference left
-  // on the object.  We assert this in debug mode to help catch any leaks.
+  // on the object. We assert this in debug mode to help catch any leaks.
   void Destroy();
 
  private:
