@@ -171,6 +171,13 @@ void HttpSM::ResetForNewConnection() {
       << "to: " << connection_->server_ip_ << ":"
       << connection_->server_port_ << " ";
   }
+  // Message has not been fully read, either it is incomplete or the
+  // server is closing the connection to signal message end.
+  if (!MessageFullyRead()) {
+    VLOG(2) << "HTTP response closed before end of file detected. "
+            << "Sending EOF to spdy.";
+    sm_spdy_interface_->SendEOF(stream_id_);
+  }
   seq_num_ = 0;
   output_ordering_.Reset();
   http_framer_->Reset();
