@@ -128,7 +128,7 @@ class BrowserAccessibility {
   virtual void NativeAddReference() { }
 
   // Subclasses should override this to support platform reference counting.
-  virtual void NativeReleaseReference() { delete this; }
+  virtual void NativeReleaseReference();
 
   //
   // Accessors

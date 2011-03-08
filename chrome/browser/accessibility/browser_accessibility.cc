@@ -184,6 +184,10 @@ void BrowserAccessibility::InternalReleaseReference(bool recursive) {
   }
 }
 
+void BrowserAccessibility::NativeReleaseReference() {
+  delete this;
+}
+
 bool BrowserAccessibility::HasAttribute(
     WebAccessibility::Attribute attribute) {
   return (attributes_.find(attribute) != attributes_.end());
