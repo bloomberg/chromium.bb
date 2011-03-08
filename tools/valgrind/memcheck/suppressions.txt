@@ -3932,6 +3932,13 @@
    fun:_ZN14NewTabObserver7ObserveE16NotificationTypeRK18NotificationSourceRK19NotificationDetails
 }
 
+{
+   bug_75247
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN26AutofillDownloadTestHelperC1Ev
+}
+
 #-----------------------------------------------------------------------
 # These only occur on our Google workstations
 {
