@@ -4153,10 +4153,10 @@ long Segment::DoParseNext(
     for (;;)
     {
         if ((total >= 0) && (pos >= total))
-            break;
+            return 1;  //EOF
 
         if ((segment_stop >= 0) && (pos >= segment_stop))
-            break;
+            return 1;  //EOF
 
         if ((pos + 1) > avail)
         {
