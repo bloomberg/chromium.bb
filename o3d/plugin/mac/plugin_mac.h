@@ -95,7 +95,7 @@ void CFReleaseIfNotNull(CFTypeRef cf);
 // Returns NULL in the event of an error.
 char* CreatePosixFilePathFromHFSFilePath(const char* hfsPath);
 
-bool HandleMacEvent(EventRecord* the_event, NPP instance);
+bool HandleCarbonEvent(EventRecord* the_event, NPP instance);
 
 // initiated_from_browser indicates whether the event came from the
 // browser's window. It will be false if the event originated from the

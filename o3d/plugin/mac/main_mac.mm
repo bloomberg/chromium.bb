@@ -251,10 +251,8 @@ void DispatchMacKeyboardEvent(PluginObject* obj,
                         the_event->modifiers);
 }
 
-
-
-void HandleMouseEvent(PluginObject* obj,
-                      EventRecord* the_event) {
+static void HandleCarbonMouseEvent(PluginObject* obj,
+                                   EventRecord* the_event) {
   DCHECK(obj);
   DCHECK(obj->client());
   int screen_x = the_event->where.h;
@@ -292,11 +290,14 @@ void HandleMouseEvent(PluginObject* obj,
     y = screen_y - wBounds.top;
     in_plugin = true;
   } else {
-    Rect  wBounds;
-    GetWindowBounds(obj->mac_window_, kWindowGlobalPortRgn, &wBounds);
+    Rect wBounds;
+    GetWindowBounds(obj->mac_window_,
+                    (obj->drawing_model_ == NPDrawingModelQuickDraw) ?
+                        kWindowGlobalPortRgn : kWindowStructureRgn,
+                    &wBounds);
     x = screen_x - wBounds.left - obj->last_plugin_loc_.h;
     y = screen_y - wBounds.top - obj->last_plugin_loc_.v;
-    in_plugin = x >=0 && y >= 0 && x < obj->width() && y < obj->height();
+    in_plugin = x >= 0 && y >= 0 && x < obj->width() && y < obj->height();
   }
 
   o3d::Event event(type);
@@ -334,8 +335,8 @@ void HandleMouseEvent(PluginObject* obj,
 // These events come from the new Cocoa revision of the NPAPI spec,
 // currently implemented only in Safari.
 // See https://wiki.mozilla.org/Mac:NPAPI_Event_Models
-void HandleCocoaMouseEvent(PluginObject* obj,
-                           NPCocoaEvent* the_event) {
+static void HandleCocoaMouseEvent(PluginObject* obj,
+                                  NPCocoaEvent* the_event) {
   DCHECK(obj);
   DCHECK(obj->client());
   int screen_x = the_event->data.mouse.pluginX;
@@ -462,19 +463,34 @@ static bool PreferCoreAnimation() {
   return (!isSafari || o3d::IsMacOSTenSixOrHigher());
 }
   
+static void SuppressRenderModeAuto(PluginObject* obj) {
+  // If the web app specified RenderMode=Auto but the best available drawing
+  // model for 3D is one for which 2D is not implemented then we cannot
+  // provide an automatic 2D fallback because it is not legal to change drawing
+  // or event models outside of NPP_New(). To achieve a 2D fallback the web app
+  // will have to watch for initialization errors and reload the plugin with
+  // RenderMode=2D.
+  if (obj->features()->render_mode() == Renderer::RENDER_MODE_AUTO) {
+    DLOG(INFO) << "Suppressing RenderMode=Auto for incompatible drawing model";
+    obj->features()->set_render_mode(Renderer::RENDER_MODE_3D);
+  }
+}
+
 // Negotiates the best plugin drawing and event model, sets the
 // browser to use that, and updates the PluginObject so we can
 // remember which one we chose. We prefer these combinations in the
 // given order:
 //  - Core Animation drawing model, Cocoa event model
 //  - QuickDraw drawing model, Carbon event model
-//  - Core Graphics drawing model, Cocoa event model
+//  - Core Graphics drawing model, Cocoa or Carbon event model
 // If the browser doesn't even understand the question, we use the
 // QuickDraw drawing model and Carbon event model for best backward
 // compatibility.
 //
 // This ordering provides the best forward-looking behavior while
-// still providing compatibility with older browsers.
+// still providing compatibility with older browsers. Even though Core Graphics
+// is newer than QuickDraw, we prefer QuickDraw when available because the Core
+// Graphics rendering path with OpenGL is pathologically sub-optimal.
 //
 // Returns NPERR_NO_ERROR (0) if successful, otherwise an NPError code.
 NPError Mac_SetBestEventAndDrawingModel(NPP instance, PluginObject* obj) {
@@ -535,6 +551,8 @@ NPError Mac_SetBestEventAndDrawingModel(NPP instance, PluginObject* obj) {
     // NPN_SetValue for the event or drawing models at all.
     obj->drawing_model_ = NPDrawingModelQuickDraw;
     obj->event_model_ = NPEventModelCarbon;
+    DLOG(INFO) << "Legacy browser, assuming QuickDraw and Carbon";
+    SuppressRenderModeAuto(obj);
     return NPERR_NO_ERROR;
   }
 
@@ -542,19 +560,29 @@ NPError Mac_SetBestEventAndDrawingModel(NPP instance, PluginObject* obj) {
   NPDrawingModel drawing_model = NPDrawingModelQuickDraw;
   NPEventModel event_model = NPEventModelCarbon;
 
-  if (supportsCoreAnimation && supportsCocoaEventModel &&
+  // If the web app has requested 2D mode then we only want to select drawing
+  // models supported by RendererCairo (currently only Core Graphics).
+  bool wants_2d = obj->features()->render_mode() == Renderer::RENDER_MODE_2D;
+
+  if (!wants_2d && supportsCoreAnimation && supportsCocoaEventModel &&
       PreferCoreAnimation()) {
     drawing_model = NPDrawingModelCoreAnimation;
     event_model = NPEventModelCocoa;
-    DLOG(INFO) << "Core Animation drawing model";
-  } else if (supportsQuickDraw && supportsCarbonEventModel) {
+    DLOG(INFO) << "Selecting Core Animation and Cocoa";
+    SuppressRenderModeAuto(obj);
+  } else if (!wants_2d && supportsQuickDraw && supportsCarbonEventModel) {
     drawing_model = NPDrawingModelQuickDraw;
     event_model = NPEventModelCarbon;
-    DLOG(INFO) << "QuickDraw drawing model";
+    DLOG(INFO) << "Selecting QuickDraw and Carbon";
+    SuppressRenderModeAuto(obj);
   } else if (supportsCoreGraphics && supportsCocoaEventModel) {
     drawing_model = NPDrawingModelCoreGraphics;
     event_model = NPEventModelCocoa;
-    DLOG(INFO) << "Core Graphics drawing model";
+    DLOG(INFO) << "Selecting Core Graphics and Cocoa";
+  } else if (supportsCoreGraphics && supportsCarbonEventModel) {
+    drawing_model = NPDrawingModelCoreGraphics;
+    event_model = NPEventModelCarbon;
+    DLOG(INFO) << "Selecting Core Graphics and Carbon";
   } else {
     // If all of the above tests failed, we are running on a browser
     // which we don't know how to handle.
@@ -671,7 +699,7 @@ NPError PlatformNPPGetValue(PluginObject *obj,
   return NPERR_INVALID_PARAM;
 }
 
-bool HandleMacEvent(EventRecord* the_event, NPP instance) {
+bool HandleCarbonEvent(EventRecord* the_event, NPP instance) {
   PluginObject* obj = static_cast<PluginObject*>(instance->pdata);
   bool handled = false;
   FullscreenWindowMac* fullscreen_window = obj->GetFullscreenMacWindow();
@@ -707,30 +735,36 @@ bool HandleMacEvent(EventRecord* the_event, NPP instance) {
         obj->CancelFullscreenDisplay();
       }
 
-      // Send nullEvents to HandleMouseEvent so they can be used to simulate
-      // mouse moved events. Not needed in fullscreen mode, where we really do
-      // get mouse moved events. See the osEvt case below.
+      // Send nullEvents to HandleCarbonMouseEvent so they can be used to
+      // simulate mouse moved events. Not needed in fullscreen mode, where we
+      // really do get mouse moved events. See the osEvt case below.
       if (!fullscreen_window)
-        HandleMouseEvent(obj, the_event);
+        HandleCarbonMouseEvent(obj, the_event);
 
       handled = true;
       break;
     case updateEvt:
-      DrawPlugin(obj, false, obj->mac_cg_context_ref_);
+      // We dispatch a render callback from this point iff using Core Graphics.
+      // With CoreGraphics+Carbon this is the only source of rendering, whereas
+      // with QuickDraw+Carbon the main source of rendering is in
+      // RenderTimer::TimerCallback().
+      DrawPlugin(obj,
+                 obj->drawing_model_ == NPDrawingModelCoreGraphics,
+                 obj->mac_cg_context_ref_);
       handled = true;
       break;
     case osEvt:
       // These are mouse moved messages when so tagged in the high byte.
       if ((the_event->message >> 24) == mouseMovedMessage) {
-        HandleMouseEvent(obj, the_event);
+        HandleCarbonMouseEvent(obj, the_event);
         handled = true;
       }
       break;
     case mouseDown:
-      HandleMouseEvent(obj, the_event);
+      HandleCarbonMouseEvent(obj, the_event);
       break;
     case mouseUp:
-      HandleMouseEvent(obj, the_event);
+      HandleCarbonMouseEvent(obj, the_event);
       handled = true;
       break;
     case keyDown:
@@ -995,40 +1029,51 @@ NPError PlatformNPPSetWindow(NPP instance,
       CGLSetCurrentContext(obj->mac_cgl_context_);
     }
   } else if (obj->drawing_model_ == NPDrawingModelCoreGraphics) {
-    // TODO(tschmelcher): We could skip this when RenderMode is 2D (though it's
-    // harmless).
-    if (obj->mac_cgl_pbuffer_ == NULL) {
+    // It's important to skip this when RenderMode=2D is specified because it
+    // can make OSX on an MBP6,2 flip between the Intel and NVIDIA GPUs multiple
+    // times in FF, which significantly delays our start-up.
+    if (obj->features()->render_mode() != Renderer::RENDER_MODE_2D &&
+        obj->mac_cgl_pbuffer_ == NULL) {
       // We initialize things with a CGL context rendering to a 1x1
       // pbuffer. Later we use the O3D RenderSurface APIs to set up the
       // framebuffer object which is used for rendering.
       CGLContextObj share_context = obj->GetFullscreenShareContext();
       CGLPixelFormatObj pixel_format = obj->GetFullscreenCGLPixelFormatObj();
-      DCHECK(share_context);
-      CGLError result;
-      CGLContextObj context;
-      result = CGLCreateContext(pixel_format, share_context, &context);
-      if (result != kCGLNoError) {
-        DLOG(ERROR) << "Error " << result << " creating context.";
-        return NPERR_GENERIC_ERROR;
+      if (!share_context || !pixel_format) {
+        // This can happen in FF when using Core Graphics, though curiously
+        // only on certain websites.
+        LOG(ERROR) << "Failed to create share context and/or pixel format";
+        // We continue initializing, though without a CGLContextObj RendererGL
+        // will fail to initialize. If the web app is using RenderMode=Auto
+        // though then Cairo will work.
+      } else {
+        CGLError result;
+        CGLContextObj context;
+        result = CGLCreateContext(pixel_format, share_context, &context);
+        if (result != kCGLNoError) {
+          DLOG(ERROR) << "Error " << result << " creating context.";
+          return NPERR_GENERIC_ERROR;
+        }
+        CGLPBufferObj pbuffer;
+        if ((result = CGLCreatePBuffer(1, 1,
+                                       GL_TEXTURE_2D, GL_RGBA,
+                                       0, &pbuffer)) != kCGLNoError) {
+          CGLDestroyContext(context);
+          DLOG(ERROR) << "Error " << result << " creating pbuffer.";
+          return NPERR_GENERIC_ERROR;
+        }
+        if ((result = CGLSetPBuffer(context, pbuffer, 0, 0, 0)) !=
+            kCGLNoError) {
+          CGLDestroyContext(context);
+          CGLDestroyPBuffer(pbuffer);
+          DLOG(ERROR) << "Error " << result << " attaching pbuffer to context.";
+          return NPERR_GENERIC_ERROR;
+        }
+        // Must make the context current for renderer creation to succeed
+        CGLSetCurrentContext(context);
+        obj->mac_cgl_context_ = context;
+        obj->mac_cgl_pbuffer_ = pbuffer;
       }
-      CGLPBufferObj pbuffer;
-      if ((result = CGLCreatePBuffer(1, 1,
-                                     GL_TEXTURE_2D, GL_RGBA,
-                                     0, &pbuffer)) != kCGLNoError) {
-        CGLDestroyContext(context);
-        DLOG(ERROR) << "Error " << result << " creating pbuffer.";
-        return NPERR_GENERIC_ERROR;
-      }
-      if ((result = CGLSetPBuffer(context, pbuffer, 0, 0, 0)) != kCGLNoError) {
-        CGLDestroyContext(context);
-        CGLDestroyPBuffer(pbuffer);
-        DLOG(ERROR) << "Error " << result << " attaching pbuffer to context.";
-        return NPERR_GENERIC_ERROR;
-      }
-      // Must make the context current for renderer creation to succeed
-      CGLSetCurrentContext(context);
-      obj->mac_cgl_context_ = context;
-      obj->mac_cgl_pbuffer_ = pbuffer;
     }
   } else if (!had_a_window && obj->mac_agl_context_ == NULL) {
     // setup AGL context
@@ -1172,10 +1217,10 @@ NPError PlatformNPPSetWindow(NPP instance,
     aglSetCurrentContext(obj->mac_agl_context_);
 
     Rect windowRect = {0, 0, 0, 0};
-    if (obj->drawing_model_ == NPDrawingModelQuickDraw)
-      GetWindowBounds(obj->mac_window_, kWindowContentRgn, &windowRect);
-    else
-      GetWindowBounds(obj->mac_window_, kWindowStructureRgn, &windowRect);
+    GetWindowBounds(obj->mac_window_,
+                    (obj->drawing_model_ == NPDrawingModelQuickDraw) ?
+                        kWindowContentRgn : kWindowStructureRgn,
+                    &windowRect);
 
     int windowHeight = windowRect.bottom - windowRect.top;
 
@@ -1278,7 +1323,7 @@ void PlatformNPPStreamAsFile(StreamManager *stream_manager,
 int16 PlatformNPPHandleEvent(NPP instance, PluginObject *obj, void *event) {
   if (obj->event_model_ == NPEventModelCarbon) {
     EventRecord* theEvent = static_cast<EventRecord*>(event);
-    return HandleMacEvent(theEvent, instance) ? 1 : 0;
+    return HandleCarbonEvent(theEvent, instance) ? 1 : 0;
   } else if (obj->event_model_ == NPEventModelCocoa){
     return HandleCocoaEvent(instance, (NPCocoaEvent*)event, true) ? 1 : 0;
   }

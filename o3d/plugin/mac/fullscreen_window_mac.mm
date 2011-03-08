@@ -88,7 +88,7 @@ o3d::Event::Button MacOSMouseButtonNumberToO3DButton(int inButton) {
 
 // Handles the CarbonEvents that we get sent for the fullscreen mode window.
 // Most of these can be converted to EventRecord events and handled by the
-// HandleMacEvent() function in main_mac.mm, but some have no equivalent in
+// HandleCarbonEvent() function in main_mac.mm, but some have no equivalent in
 // that space, scroll-wheel events for example, and so must be handled here.
 static OSStatus HandleFullscreenWindow(EventHandlerCallRef inHandlerCallRef,
                                        EventRef inEvent,
@@ -211,7 +211,7 @@ static OSStatus HandleFullscreenWindow(EventHandlerCallRef inHandlerCallRef,
     EventRecord eventRecord;
 
     if (ConvertEventRefToEventRecord(inEvent, &eventRecord)) {
-      HandleMacEvent(&eventRecord, (NPP)inUserData);
+      HandleCarbonEvent(&eventRecord, (NPP)inUserData);
       return noErr;
     } else {
       return eventNotHandledErr;

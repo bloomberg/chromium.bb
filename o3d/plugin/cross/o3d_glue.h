@@ -346,6 +346,7 @@ class PluginObject: public NPObject {
   void Init(int argc, char* argn[], char* argv[]);
   void TearDown();
   ServiceLocator* service_locator() { return &service_locator_; }
+  Features *features() { return features_; }
   Client *client() { return client_; }
   Renderer *renderer() { return renderer_; }
   NPP npp() { return npp_; }

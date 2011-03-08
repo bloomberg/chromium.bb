@@ -112,7 +112,7 @@ class Renderer {
     DISPLAY_MODE_DEFAULT = 0
   };
 
-  enum RenderModes {
+  enum RenderMode {
     RENDER_MODE_AUTO,
     RENDER_MODE_3D,
     RENDER_MODE_2D,
