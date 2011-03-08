@@ -131,7 +131,7 @@ int PluginMain(const MainFunctionParams& parameters) {
   }
 #endif
   if (parsed_command_line.HasSwitch(switches::kPluginStartupDialog)) {
-    ChildProcess::WaitForDebugger(L"Plugin");
+    ChildProcess::WaitForDebugger("Plugin");
   }
 
   {

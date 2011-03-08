@@ -89,7 +89,7 @@ int NaClBrokerMain(const MainFunctionParams& parameters) {
 // behavior of the renderer.
 static void HandleNaClTestParameters(const CommandLine& command_line) {
   if (command_line.HasSwitch(switches::kNaClStartupDialog)) {
-    ChildProcess::WaitForDebugger(L"NativeClient");
+    ChildProcess::WaitForDebugger("NativeClient");
   }
 }
 

@@ -35,7 +35,7 @@ class NotificationType {
 
     // This is sent when the user does a gesture resulting in a noteworthy
     // action taking place. This is typically used for logging. The source is
-    // the profile, and the details is a wstring identifying the action.
+    // the profile, and the details is a string identifying the action.
     USER_ACTION,
 
     // NavigationController ----------------------------------------------------

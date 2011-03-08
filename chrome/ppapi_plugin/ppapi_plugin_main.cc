@@ -14,7 +14,7 @@
 int PpapiPluginMain(const MainFunctionParams& parameters) {
   const CommandLine& command_line = parameters.command_line_;
   if (command_line.HasSwitch(switches::kPpapiStartupDialog)) {
-    ChildProcess::WaitForDebugger(L"Ppapi");
+    ChildProcess::WaitForDebugger("Ppapi");
   }
 
   MessageLoop main_message_loop(MessageLoop::TYPE_UI);

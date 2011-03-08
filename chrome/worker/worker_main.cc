@@ -46,7 +46,7 @@ int WorkerMain(const MainFunctionParams& parameters) {
 
   const CommandLine& parsed_command_line = parameters.command_line_;
   if (parsed_command_line.HasSwitch(switches::kWaitForDebugger)) {
-    ChildProcess::WaitForDebugger(L"Worker");
+    ChildProcess::WaitForDebugger("Worker");
   }
 
   // Load the accelerator table from the browser executable and tell the

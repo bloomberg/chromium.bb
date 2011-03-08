@@ -1704,7 +1704,7 @@ int BrowserMain(const MainFunctionParams& parameters) {
   // of --wait-for-debugger only makes sense when Chrome itself is a
   // child process (e.g. when launched by PyAuto).
   if (parsed_command_line.HasSwitch(switches::kWaitForDebugger)) {
-    ChildProcess::WaitForDebugger(L"Browser");
+    ChildProcess::WaitForDebugger("Browser");
   }
 
   // If remoting or cloud print proxy is enabled and setup has been completed

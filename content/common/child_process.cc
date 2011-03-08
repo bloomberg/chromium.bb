@@ -78,19 +78,19 @@ base::WaitableEvent* ChildProcess::GetShutDownEvent() {
   return &child_process_->shutdown_event_;
 }
 
-void ChildProcess::WaitForDebugger(const std::wstring& label) {
+void ChildProcess::WaitForDebugger(const std::string& label) {
 #if defined(OS_WIN)
 #if defined(GOOGLE_CHROME_BUILD)
-  std::wstring title = L"Google Chrome";
+  std::string title = "Google Chrome";
 #else  // CHROMIUM_BUILD
-  std::wstring title = L"Chromium";
+  std::string title = "Chromium";
 #endif  // CHROMIUM_BUILD
-  title += L" ";
+  title += " ";
   title += label;  // makes attaching to process easier
-  std::wstring message = label;
-  message += L" starting with pid: ";
-  message += UTF8ToWide(base::IntToString(base::GetCurrentProcId()));
-  ::MessageBox(NULL, message.c_str(), title.c_str(),
+  std::string message = label;
+  message += " starting with pid: ";
+  message += base::IntToString(base::GetCurrentProcId());
+  ::MessageBox(NULL, UTF8ToWide(message).c_str(), UTF8ToWide(title).c_str(),
                MB_OK | MB_SETFOREGROUND);
 #elif defined(OS_POSIX)
   // TODO(playmobil): In the long term, overriding this flag doesn't seem

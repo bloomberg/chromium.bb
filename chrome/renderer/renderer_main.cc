@@ -176,7 +176,7 @@ static void HandleRendererErrorTestParameters(const CommandLine& command_line) {
   }
 
   if (command_line.HasSwitch(switches::kRendererStartupDialog)) {
-    ChildProcess::WaitForDebugger(L"Renderer");
+    ChildProcess::WaitForDebugger("Renderer");
   }
 }
 

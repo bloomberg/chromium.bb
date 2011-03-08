@@ -45,7 +45,7 @@ int GpuMain(const MainFunctionParams& parameters) {
 
   const CommandLine& command_line = parameters.command_line_;
   if (command_line.HasSwitch(switches::kGpuStartupDialog)) {
-    ChildProcess::WaitForDebugger(L"Gpu");
+    ChildProcess::WaitForDebugger("Gpu");
   }
 
 #if defined(OS_MACOSX)
