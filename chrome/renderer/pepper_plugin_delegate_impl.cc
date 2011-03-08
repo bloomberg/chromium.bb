@@ -40,6 +40,7 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFileChooserCompletion.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFileChooserParams.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebPluginContainer.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebScreenInfo.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebView.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/size.h"
@@ -865,6 +866,11 @@ webkit::ppapi::FullscreenContainer*
 PepperPluginDelegateImpl::CreateFullscreenContainer(
     webkit::ppapi::PluginInstance* instance) {
   return render_view_->CreatePepperFullscreenContainer(instance);
+}
+
+gfx::Size PepperPluginDelegateImpl::GetScreenSize() {
+  WebKit::WebScreenInfo info = render_view_->screenInfo();
+  return gfx::Size(info.rect.width, info.rect.height);
 }
 
 std::string PepperPluginDelegateImpl::GetDefaultEncoding() {

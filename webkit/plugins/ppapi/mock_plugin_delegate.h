@@ -83,6 +83,7 @@ class MockPluginDelegate : public PluginDelegate {
       const gfx::Point& position);
   virtual FullscreenContainer* CreateFullscreenContainer(
       PluginInstance* instance);
+  virtual gfx::Size GetScreenSize();
   virtual std::string GetDefaultEncoding();
   virtual void ZoomLimitsChanged(double minimum_factor,
                                  double maximum_factor);

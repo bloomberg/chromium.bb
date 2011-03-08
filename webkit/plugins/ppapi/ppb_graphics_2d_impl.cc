@@ -459,12 +459,14 @@ bool PPB_Graphics2D_Impl::BindToInstance(PluginInstance* new_instance) {
     // we need to clear the list, but we still want to issue any pending
     // callbacks to the plugin.
     if (!unpainted_flush_callback_.is_null()) {
-      ScheduleOffscreenCallback(unpainted_flush_callback_);
-      unpainted_flush_callback_.Clear();
+      FlushCallbackData callback;
+      std::swap(callback, unpainted_flush_callback_);
+      ScheduleOffscreenCallback(callback);
     }
     if (!painted_flush_callback_.is_null()) {
-      ScheduleOffscreenCallback(painted_flush_callback_);
-      painted_flush_callback_.Clear();
+      FlushCallbackData callback;
+      std::swap(callback, painted_flush_callback_);
+      ScheduleOffscreenCallback(callback);
     }
   } else if (flushed_any_data_) {
     // Only schedule a paint if this backing store has had any data flushed to

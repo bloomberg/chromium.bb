@@ -167,6 +167,7 @@ class PepperPluginDelegateImpl
   virtual webkit::ppapi::FullscreenContainer*
       CreateFullscreenContainer(
           webkit::ppapi::PluginInstance* instance);
+  virtual gfx::Size GetScreenSize();
   virtual std::string GetDefaultEncoding();
   virtual void ZoomLimitsChanged(double minimum_factor, double maximum_factor);
   virtual std::string ResolveProxy(const GURL& url);

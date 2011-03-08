@@ -144,9 +144,6 @@ int32_t PPB_Surface3D_Impl::SwapBuffers(PP_CompletionCallback callback) {
 }
 
 void PPB_Surface3D_Impl::ViewInitiatedPaint() {
-  if (swap_callback_.func) {
-    swap_initiated_ = true;
-  }
 }
 
 void PPB_Surface3D_Impl::ViewFlushedPaint() {
@@ -166,8 +163,17 @@ unsigned int PPB_Surface3D_Impl::GetBackingTextureId() {
 }
 
 void PPB_Surface3D_Impl::OnSwapBuffers() {
-  if (bound_to_instance_)
+  if (bound_to_instance_) {
     instance()->CommitBackingTexture();
+    swap_initiated_ = true;
+  } else if (swap_callback_.func) {
+    // If we're off-screen, no need to trigger compositing so run the callback
+    // immediately.
+    PP_CompletionCallback callback = PP_BlockUntilComplete();
+    std::swap(callback, swap_callback_);
+    swap_initiated_ = false;
+    PP_RunCompletionCallback(&callback, PP_OK);
+  }
 }
 
 }  // namespace ppapi

@@ -308,6 +308,10 @@ class PluginDelegate {
   virtual FullscreenContainer* CreateFullscreenContainer(
       PluginInstance* instance) = 0;
 
+  // Gets the size of the screen. The fullscreen window will be created at that
+  // size.
+  virtual gfx::Size GetScreenSize() = 0;
+
   // Returns a string with the name of the default 8-bit char encoding.
   virtual std::string GetDefaultEncoding() = 0;
 

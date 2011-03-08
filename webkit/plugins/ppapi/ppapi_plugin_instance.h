@@ -186,8 +186,26 @@ class PluginInstance : public base::RefCounted<PluginInstance> {
   void Graphics3DContextLost();
 
   // Implementation of PPB_Fullscreen_Dev.
+
+  // Because going to fullscreen is asynchronous (but going out is not), there
+  // are 3 states:
+  // - normal (fullscreen_container_ == NULL)
+  // - fullscreen pending (fullscreen_container_ != NULL, fullscreen_ == false)
+  // - fullscreen (fullscreen_container_ != NULL, fullscreen_ = true)
+  //
+  // In normal state, events come from webkit and painting goes back to it.
+  // In fullscreen state, events come from the fullscreen container, and
+  // painting goes back to it
+  // In pending state, events from webkit are ignored, and as soon as we receive
+  // events from the fullscreen container, we go to the fullscreen state.
   bool IsFullscreen();
-  bool SetFullscreen(bool fullscreen);
+  bool IsFullscreenOrPending();
+
+  // Switches between fullscreen and normal mode. If |delay_report| is set to
+  // false, it may report the new state through DidChangeView immediately. If
+  // true, it will delay it. When called from the plugin, delay_report should be
+  // true to avoid re-entrancy.
+  void SetFullscreen(bool fullscreen, bool delay_report);
 
   // Implementation of PPB_Flash.
   bool NavigateToURL(const char* url, const char* target);
@@ -219,6 +237,10 @@ class PluginInstance : public base::RefCounted<PluginInstance> {
   // Determines if we think the plugin has focus, both content area and webkit
   // (see has_webkit_focus_ below).
   bool PluginHasFocus() const;
+
+  // Reports the current plugin geometry to the plugin by calling
+  // DidChangeView.
+  void ReportGeometry();
 
   // Queries the plugin for supported print formats and sets |format| to the
   // best format to use. Returns false if the plugin does not support any
@@ -328,8 +350,13 @@ class PluginInstance : public base::RefCounted<PluginInstance> {
   // to use a more optimized painting path in some cases.
   bool always_on_top_;
 
-  // Plugin container for fullscreen mode. NULL if not in fullscreen mode.
+  // Plugin container for fullscreen mode. NULL if not in fullscreen mode. Note:
+  // there is a transition state where fullscreen_container_ is non-NULL but
+  // fullscreen_ is false (see above).
   FullscreenContainer* fullscreen_container_;
+
+  // True if we are in fullscreen mode. Note: it is false during the transition.
+  bool fullscreen_;
 
   typedef std::set<PluginObject*> PluginObjectSet;
   PluginObjectSet live_plugin_objects_;

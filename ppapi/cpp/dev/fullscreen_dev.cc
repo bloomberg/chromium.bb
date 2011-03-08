@@ -9,6 +9,7 @@
 #include "ppapi/cpp/instance.h"
 #include "ppapi/cpp/module.h"
 #include "ppapi/cpp/module_impl.h"
+#include "ppapi/cpp/size.h"
 
 namespace pp {
 
@@ -21,7 +22,7 @@ template <> const char* interface_name<PPB_Fullscreen_Dev>() {
 }  // namespace
 
 Fullscreen_Dev::Fullscreen_Dev(Instance* instance)
-    : associated_instance_(instance) {
+    : instance_(instance) {
 }
 
 Fullscreen_Dev::~Fullscreen_Dev() {
@@ -30,14 +31,21 @@ Fullscreen_Dev::~Fullscreen_Dev() {
 bool Fullscreen_Dev::IsFullscreen() {
   return has_interface<PPB_Fullscreen_Dev>() &&
       get_interface<PPB_Fullscreen_Dev>()->IsFullscreen(
-          associated_instance_->pp_instance());
+          instance_->pp_instance());
 }
 
 bool Fullscreen_Dev::SetFullscreen(bool fullscreen) {
   if (!has_interface<PPB_Fullscreen_Dev>())
     return false;
   return PPBoolToBool(get_interface<PPB_Fullscreen_Dev>()->SetFullscreen(
-      associated_instance_->pp_instance(), BoolToPPBool(fullscreen)));
+      instance_->pp_instance(), BoolToPPBool(fullscreen)));
+}
+
+bool Fullscreen_Dev::GetScreenSize(Size* size) {
+  if (!has_interface<PPB_Fullscreen_Dev>())
+    return false;
+  return PPBoolToBool(get_interface<PPB_Fullscreen_Dev>()->GetScreenSize(
+      instance_->pp_instance(), &size->pp_size()));
 }
 
 }  // namespace pp

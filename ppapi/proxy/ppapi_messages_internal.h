@@ -456,6 +456,10 @@ IPC_SYNC_MESSAGE_ROUTED2_1(PpapiHostMsg_PPBFullscreen_SetFullscreen,
                            PP_Instance /* instance */,
                            PP_Bool /* fullscreen */,
                            PP_Bool /* result */)
+IPC_SYNC_MESSAGE_ROUTED1_2(PpapiHostMsg_PPBFullscreen_GetScreenSize,
+                           PP_Instance /* instance */,
+                           PP_Bool /* result */,
+                           PP_Size /* size */)
 
 // PPB_Graphics2D.
 IPC_SYNC_MESSAGE_ROUTED3_1(PpapiHostMsg_PPBGraphics2D_Create,

@@ -178,6 +178,10 @@ FullscreenContainer* MockPluginDelegate::CreateFullscreenContainer(
   return NULL;
 }
 
+gfx::Size MockPluginDelegate::GetScreenSize() {
+  return gfx::Size(1024, 768);
+}
+
 std::string MockPluginDelegate::GetDefaultEncoding() {
   return "iso-8859-1";
 }

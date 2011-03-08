@@ -5,6 +5,7 @@
 #include "webkit/plugins/ppapi/ppapi_plugin_instance.h"
 
 #include "base/logging.h"
+#include "base/message_loop.h"
 #include "base/metrics/histogram.h"
 #include "base/scoped_ptr.h"
 #include "base/utf_string_conversions.h"
@@ -247,12 +248,24 @@ PP_Bool SetFullscreen(PP_Instance instance_id, PP_Bool fullscreen) {
   PluginInstance* instance = ResourceTracker::Get()->GetInstance(instance_id);
   if (!instance)
     return PP_FALSE;
-  return BoolToPPBool(instance->SetFullscreen(PPBoolToBool(fullscreen)));
+  instance->SetFullscreen(PPBoolToBool(fullscreen), true);
+  return PP_TRUE;
 }
+
+PP_Bool GetScreenSize(PP_Instance instance_id, PP_Size* size) {
+  PluginInstance* instance = ResourceTracker::Get()->GetInstance(instance_id);
+  if (!instance || !size)
+    return PP_FALSE;
+  gfx::Size screen_size = instance->delegate()->GetScreenSize();
+  *size = PP_MakeSize(screen_size.width(), screen_size.height());
+  return PP_TRUE;
+}
+
 
 const PPB_Fullscreen_Dev ppb_fullscreen = {
   &IsFullscreen,
   &SetFullscreen,
+  &GetScreenSize
 };
 
 void ZoomChanged(PP_Instance instance_id, double factor) {
@@ -321,7 +334,8 @@ PluginInstance::PluginInstance(PluginDelegate* delegate,
       plugin_print_interface_(NULL),
       plugin_graphics_3d_interface_(NULL),
       always_on_top_(false),
-      fullscreen_container_(NULL) {
+      fullscreen_container_(NULL),
+      fullscreen_(false) {
   pp_instance_ = ResourceTracker::Get()->AddInstance(this);
 
   memset(&current_print_settings_, 0, sizeof(current_print_settings_));
@@ -433,7 +447,7 @@ void PluginInstance::InstanceCrashed() {
   ResourceTracker::Get()->InstanceCrashed(pp_instance());
 
   // Free any associated graphics.
-  SetFullscreen(false);
+  SetFullscreen(false, false);
   bound_graphics_ = NULL;
   InvalidateRect(gfx::Rect());
 
@@ -479,6 +493,9 @@ bool PluginInstance::BindGraphics(PP_Resource graphics_id) {
       Resource::GetAs<PPB_Surface3D_Impl>(graphics_id);
 
   if (graphics_2d) {
+    // Refuse to bind if we're transitioning to fullscreen.
+    if (fullscreen_container_ && !fullscreen_)
+      return false;
     if (!graphics_2d->BindToInstance(this))
       return false;  // Can't bind to more than one instance.
 
@@ -508,6 +525,9 @@ bool PluginInstance::BindGraphics(PP_Resource graphics_id) {
     bound_graphics_ = graphics_2d;
     // BindToInstance will have invalidated the plugin if necessary.
   } else if (graphics_3d) {
+    // Refuse to bind if we're transitioning to fullscreen.
+    if (fullscreen_container_ && !fullscreen_)
+      return false;
     // Make sure graphics can only be bound to the instance it is
     // associated with.
     if (graphics_3d->instance() != this)
@@ -635,6 +655,7 @@ PP_Var PluginInstance::GetInstanceObject() {
 
 void PluginInstance::ViewChanged(const gfx::Rect& position,
                                  const gfx::Rect& clip) {
+  fullscreen_ = (fullscreen_container_ != NULL);
   position_ = position;
 
   if (clip.IsEmpty()) {
@@ -838,6 +859,14 @@ bool PluginInstance::PluginHasFocus() const {
   return has_webkit_focus_ && has_content_area_focus_;
 }
 
+void PluginInstance::ReportGeometry() {
+  // If this call was delayed, we may have transitioned back to fullscreen in
+  // the mean time, so only report the geometry if we are actually in normal
+  // mode.
+  if (container_ && !fullscreen_container_)
+    container_->reportGeometry();
+}
+
 bool PluginInstance::GetPreferredPrintOutputFormat(
     PP_PrintOutputFormat_Dev* format) {
   // Keep a reference on the stack. See NOTE above.
@@ -966,30 +995,40 @@ void PluginInstance::PrintEnd() {
 }
 
 bool PluginInstance::IsFullscreen() {
+  return fullscreen_;
+}
+
+bool PluginInstance::IsFullscreenOrPending() {
   return fullscreen_container_ != NULL;
 }
 
-bool PluginInstance::SetFullscreen(bool fullscreen) {
+void PluginInstance::SetFullscreen(bool fullscreen, bool delay_report) {
   // Keep a reference on the stack. See NOTE above.
   scoped_refptr<PluginInstance> ref(this);
-  bool is_fullscreen = (fullscreen_container_ != NULL);
-  if (fullscreen == is_fullscreen)
-    return true;
+
+  // We check whether we are trying to switch to the state we're already going
+  // to (i.e. if we're already switching to fullscreen but the fullscreen
+  // container isn't ready yet, don't do anything more).
+  if (fullscreen == IsFullscreenOrPending())
+    return;
+
+  BindGraphics(0);
   VLOG(1) << "Setting fullscreen to " << (fullscreen ? "on" : "off");
   if (fullscreen) {
+    DCHECK(!fullscreen_container_);
     fullscreen_container_ = delegate_->CreateFullscreenContainer(this);
   } else {
+    DCHECK(fullscreen_container_);
     fullscreen_container_->Destroy();
     fullscreen_container_ = NULL;
-    // TODO(piman): currently the fullscreen container resizes the plugin to the
-    // fullscreen size so we need to reset the size here. Eventually it will
-    // transparently scale and this won't be necessary.
-    if (container_) {
-      container_->reportGeometry();
-      container_->invalidate();
+    fullscreen_ = false;
+    if (!delay_report) {
+      ReportGeometry();
+    } else {
+      MessageLoop::current()->PostTask(
+          FROM_HERE, NewRunnableMethod(this, &PluginInstance::ReportGeometry));
     }
   }
-  return true;
 }
 
 bool PluginInstance::NavigateToURL(const char* url, const char* target) {

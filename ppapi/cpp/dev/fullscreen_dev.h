@@ -5,13 +5,10 @@
 #ifndef PPAPI_CPP_DEV_FULLSCREEN_DEV_H_
 #define PPAPI_CPP_DEV_FULLSCREEN_DEV_H_
 
-#include <string>
-
-#include "ppapi/c/dev/ppb_fullscreen_dev.h"
-
 namespace pp {
 
 class Instance;
+class Size;
 
 class Fullscreen_Dev {
  public:
@@ -21,9 +18,10 @@ class Fullscreen_Dev {
   // PPB_Fullscreen_Dev methods.
   bool IsFullscreen();
   bool SetFullscreen(bool fullscreen);
+  bool GetScreenSize(Size* size);
 
  private:
-  Instance* associated_instance_;
+  Instance* instance_;
 };
 
 }  // namespace pp

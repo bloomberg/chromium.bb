@@ -63,8 +63,6 @@ class PepperWidget : public WebWidget {
   }
 
   virtual void paint(WebCanvas* canvas, const WebRect& rect) {
-    if (!plugin_)
-      return;
     WebRect plugin_rect(0, 0, size_.width, size_.height);
     plugin_->Paint(canvas, plugin_rect, rect);
   }
@@ -84,8 +82,6 @@ class PepperWidget : public WebWidget {
   }
 
   virtual bool handleInputEvent(const WebInputEvent& event) {
-    if (!plugin_)
-      return false;
     return plugin_->HandleInputEvent(event, &cursor_);
   }
 
@@ -97,46 +93,40 @@ class PepperWidget : public WebWidget {
     NOTIMPLEMENTED();
   }
 
+  // TODO(piman): figure out IME and implement these if necessary.
   virtual bool setComposition(
       const WebString& text,
       const WebVector<WebCompositionUnderline>& underlines,
       int selectionStart,
       int selectionEnd) {
-    NOTIMPLEMENTED();
     return false;
   }
 
   virtual bool confirmComposition() {
-    NOTIMPLEMENTED();
     return false;
   }
 
   virtual bool confirmComposition(const WebString& text) {
-    NOTIMPLEMENTED();
     return false;
   }
 
   virtual WebTextInputType textInputType() {
-    NOTIMPLEMENTED();
     return WebKit::WebTextInputTypeNone;
   }
 
   virtual WebRect caretOrSelectionBounds() {
-    NOTIMPLEMENTED();
     return WebRect();
   }
 
   virtual void setTextDirection(WebTextDirection) {
-    NOTIMPLEMENTED();
   }
 
   virtual bool isAcceleratedCompositingActive() const {
-    return widget_->context() && plugin_ &&
-        (plugin_->GetBackingTextureId() != 0);
+    return widget_->context() && (plugin_->GetBackingTextureId() != 0);
   }
 
  private:
-  webkit::ppapi::PluginInstance* plugin_;
+  scoped_refptr<webkit::ppapi::PluginInstance> plugin_;
   RenderWidgetFullscreenPepper* widget_;
   WebSize size_;
   WebCursorInfo cursor_;
@@ -223,7 +213,7 @@ void RenderWidgetFullscreenPepper::Close() {
   // If the fullscreen window is closed (e.g. user pressed escape), reset to
   // normal mode.
   if (plugin_)
-    plugin_->SetFullscreen(false);
+    plugin_->SetFullscreen(false, false);
 }
 
 webkit::ppapi::PluginInstance*

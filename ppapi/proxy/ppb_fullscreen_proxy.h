@@ -7,6 +7,7 @@
 
 #include "ppapi/c/pp_completion_callback.h"
 #include "ppapi/c/pp_bool.h"
+#include "ppapi/c/pp_size.h"
 #include "ppapi/c/pp_instance.h"
 #include "ppapi/proxy/interface_proxy.h"
 
@@ -36,6 +37,9 @@ class PPB_Fullscreen_Proxy : public InterfaceProxy {
   void OnMsgSetFullscreen(PP_Instance instance,
                           PP_Bool fullscreen,
                           PP_Bool* result);
+  void OnMsgGetScreenSize(PP_Instance instance,
+                          PP_Bool* result,
+                          PP_Size* size);
 };
 
 }  // namespace proxy
