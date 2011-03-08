@@ -85,11 +85,11 @@ bool BookmarkModelVerifier::NodesMatch(const BookmarkNode* node_a,
                << node_b->GetURL();
     return false;
   }
-  if (node_a->GetParent()->GetIndexOf(node_a) !=
-      node_b->GetParent()->GetIndexOf(node_b)) {
+  if (node_a->parent()->GetIndexOf(node_a) !=
+      node_b->parent()->GetIndexOf(node_b)) {
     LOG(ERROR) << "Index mismatch: "
-               << node_a->GetParent()->GetIndexOf(node_a) << " vs. "
-               << node_b->GetParent()->GetIndexOf(node_b);
+               << node_a->parent()->GetIndexOf(node_a) << " vs. "
+               << node_b->parent()->GetIndexOf(node_b);
     return false;
   }
   return true;
@@ -153,7 +153,7 @@ bool BookmarkModelVerifier::ContainsDuplicateBookmarks(BookmarkModel* model) {
     for (std::vector<const BookmarkNode*>::const_iterator it = nodes.begin();
          it != nodes.end(); ++it) {
       if (node->id() != (*it)->id() &&
-          node->GetParent() == (*it)->GetParent() &&
+          node->parent() == (*it)->parent() &&
           node->GetTitle() == (*it)->GetTitle()){
         return true;
       }
@@ -186,8 +186,8 @@ void BookmarkModelVerifier::FindNodeInVerifier(BookmarkModel* foreign_model,
   std::stack<int> path;
   const BookmarkNode* walker = foreign_node;
   while (walker != foreign_model->root_node()) {
-    path.push(walker->GetParent()->GetIndexOf(walker));
-    walker = walker->GetParent();
+    path.push(walker->parent()->GetIndexOf(walker));
+    walker = walker->parent();
   }
 
   // Swing over to the other tree.
@@ -329,10 +329,10 @@ const BookmarkNode* BookmarkModelVerifier::SetURL(BookmarkModel* model,
     const BookmarkNode* v_node = NULL;
     FindNodeInVerifier(model, node, &v_node);
     bookmark_utils::ApplyEditsWithNoGroupChange(
-        verifier_model_, v_node->GetParent(),
+        verifier_model_, v_node->parent(),
         BookmarkEditor::EditDetails(v_node), v_node->GetTitle(), new_url);
   }
   return bookmark_utils::ApplyEditsWithNoGroupChange(
-      model, node->GetParent(), BookmarkEditor::EditDetails(node),
+      model, node->parent(), BookmarkEditor::EditDetails(node),
       node->GetTitle(), new_url);
 }

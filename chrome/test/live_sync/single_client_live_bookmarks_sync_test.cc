@@ -84,15 +84,15 @@ IN_PROC_BROWSER_TEST_F(SingleClientLiveBookmarksSyncTest, Sanity) {
   const BookmarkNode* porsche = AddURL(0, bar, 2, L"Porsche",
       GURL("http://www.porsche.com"));
   // Rearrange stuff in tier1_a.
-  ASSERT_EQ(tier1_a, tier1_a_url2->GetParent());
-  ASSERT_EQ(tier1_a, tier1_a_url1->GetParent());
+  ASSERT_EQ(tier1_a, tier1_a_url2->parent());
+  ASSERT_EQ(tier1_a, tier1_a_url1->parent());
   Move(0, tier1_a_url2, tier1_a, 0);
   Move(0, tier1_a_url1, tier1_a, 2);
   ASSERT_TRUE(GetClient(0)->AwaitSyncCycleCompletion(
       "Rearrange stuff in tier1_a"));
   ASSERT_TRUE(ModelMatchesVerifier(0));
 
-  ASSERT_EQ(1, tier1_a_url0->GetParent()->GetIndexOf(tier1_a_url0));
+  ASSERT_EQ(1, tier1_a_url0->parent()->GetIndexOf(tier1_a_url0));
   Move(0, tier1_a_url0, bar, bar->GetChildCount());
   const BookmarkNode* boa = AddURL(0, bar, bar->GetChildCount(),
       L"Bank of America", GURL("https://www.bankofamerica.com"));

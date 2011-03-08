@@ -61,7 +61,7 @@ TEST_F(BookmarkModelObserverForCocoaTest, TestCallback) {
   model->Move(node, model->other_node(), 0);
   EXPECT_EQ(3, pingCount.get()->pings);
 
-  model->Remove(node->GetParent(), 0);
+  model->Remove(node->parent(), 0);
   EXPECT_EQ(4, pingCount.get()->pings);
 }
 

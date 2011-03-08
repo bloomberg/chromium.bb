@@ -27,12 +27,12 @@ RecentlyUsedFoldersComboModel::RecentlyUsedFoldersComboModel(
   // fix up the order.
   RemoveNode(model->GetBookmarkBarNode());
   RemoveNode(model->other_node());
-  RemoveNode(node->GetParent());
+  RemoveNode(node->parent());
 
   // Make the parent the first item, unless it's the bookmark bar or other node.
-  if (node->GetParent() != model->GetBookmarkBarNode() &&
-      node->GetParent() != model->other_node()) {
-    nodes_.insert(nodes_.begin(), node->GetParent());
+  if (node->parent() != model->GetBookmarkBarNode() &&
+      node->parent() != model->other_node()) {
+    nodes_.insert(nodes_.begin(), node->parent());
   }
 
   // Make sure we only have kMaxMRUFolders in the first chunk.
@@ -45,7 +45,7 @@ RecentlyUsedFoldersComboModel::RecentlyUsedFoldersComboModel(
 
   std::vector<const BookmarkNode*>::iterator it = std::find(nodes_.begin(),
                                                             nodes_.end(),
-                                                            node->GetParent());
+                                                            node->parent());
   node_parent_index_ = static_cast<int>(it - nodes_.begin());
 }
 

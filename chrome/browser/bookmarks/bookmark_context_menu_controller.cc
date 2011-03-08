@@ -158,8 +158,8 @@ void BookmarkContextMenuController::ExecuteCommand(int id) {
           profile_);
 
       for (size_t i = 0; i < selection_.size(); ++i) {
-        model_->Remove(selection_[i]->GetParent(),
-                       selection_[i]->GetParent()->GetIndexOf(selection_[i]));
+        model_->Remove(selection_[i]->parent(),
+                       selection_[i]->parent()->GetIndexOf(selection_[i]));
       }
       selection_.clear();
       break;
@@ -241,7 +241,7 @@ bool BookmarkContextMenuController::IsCommandIdChecked(int command_id) const {
 bool BookmarkContextMenuController::IsCommandIdEnabled(int command_id) const {
   bool is_root_node =
       (selection_.size() == 1 &&
-       selection_[0]->GetParent() == model_->root_node());
+       selection_[0]->parent() == model_->root_node());
   switch (command_id) {
     case IDC_BOOKMARK_BAR_OPEN_INCOGNITO:
       return !profile_->IsOffTheRecord() &&

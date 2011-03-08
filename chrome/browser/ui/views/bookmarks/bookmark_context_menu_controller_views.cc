@@ -146,8 +146,8 @@ void BookmarkContextMenuControllerViews::ExecuteCommand(int id) {
 
       delegate_->WillRemoveBookmarks(selection_);
       for (size_t i = 0; i < selection_.size(); ++i) {
-        model->Remove(selection_[i]->GetParent(),
-                      selection_[i]->GetParent()->GetIndexOf(selection_[i]));
+        model->Remove(selection_[i]->parent(),
+                      selection_[i]->parent()->GetIndexOf(selection_[i]));
       }
       delegate_->DidRemoveBookmarks();
       selection_.clear();
@@ -228,7 +228,7 @@ bool BookmarkContextMenuControllerViews::IsItemChecked(int id) const {
 bool BookmarkContextMenuControllerViews::IsCommandEnabled(int id) const {
   bool is_root_node =
       (selection_.size() == 1 &&
-       selection_[0]->GetParent() == model_->root_node());
+       selection_[0]->parent() == model_->root_node());
   switch (id) {
     case IDC_BOOKMARK_BAR_OPEN_INCOGNITO:
       return !profile_->IsOffTheRecord() &&

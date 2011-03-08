@@ -84,7 +84,7 @@ class TreeNode : public TreeModelNode {
     DCHECK_LE(0, index);
     DCHECK_GE(GetChildCount(), index);
     // If the node has a parent, remove it from its parent.
-    NodeType* node_parent = child->GetParent();
+    NodeType* node_parent = child->parent();
     if (node_parent)
       node_parent->Remove(node_parent->GetIndexOf(child));
     child->parent_ = static_cast<NodeType*>(this);
@@ -135,13 +135,9 @@ class TreeNode : public TreeModelNode {
     return children_[index];
   }
 
-  // Returns the parent.
-  NodeType* GetParent() {
-    return parent_;
-  }
-  const NodeType* GetParent() const {
-    return parent_;
-  }
+  // Returns the parent of this object, or NULL if it's the root.
+  const NodeType* parent() const { return parent_; }
+  NodeType* parent() { return parent_; }
 
   // Returns the index of |node|, or -1 if |node| is not a child of this.
   int GetIndexOf(const NodeType* node) const {
@@ -256,7 +252,7 @@ class TreeNodeModel : public TreeModel {
 
   virtual TreeModelNode* GetParent(TreeModelNode* node) {
     DCHECK(node);
-    return AsNode(node)->GetParent();
+    return AsNode(node)->parent();
   }
 
   NodeType* AsNode(TreeModelNode* model_node) {

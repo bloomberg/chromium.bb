@@ -477,7 +477,7 @@ void BookmarkBarGtk::BookmarkNodeRemoved(BookmarkModel* model,
 
 void BookmarkBarGtk::BookmarkNodeChanged(BookmarkModel* model,
                                          const BookmarkNode* node) {
-  if (node->GetParent() != model_->GetBookmarkBarNode()) {
+  if (node->parent() != model_->GetBookmarkBarNode()) {
     // We only care about nodes on the bookmark bar.
     return;
   }
@@ -722,8 +722,8 @@ bool BookmarkBarGtk::GetTabContentsSize(gfx::Size* size) {
 void BookmarkBarGtk::StartThrobbing(const BookmarkNode* node) {
   const BookmarkNode* parent_on_bb = NULL;
   for (const BookmarkNode* parent = node; parent;
-       parent = parent->GetParent()) {
-    if (parent->GetParent() == model_->GetBookmarkBarNode()) {
+       parent = parent->parent()) {
+    if (parent->parent() == model_->GetBookmarkBarNode()) {
       parent_on_bb = parent;
       break;
     }
@@ -976,7 +976,7 @@ void BookmarkBarGtk::PopupMenuForNode(GtkWidget* sender,
     parent = model_->GetBookmarkBarNode();
   } else if (sender != bookmark_toolbar_.get()) {
     nodes.push_back(node);
-    parent = node->GetParent();
+    parent = node->parent();
   } else {
     parent = model_->GetBookmarkBarNode();
     nodes.push_back(parent);
@@ -1392,7 +1392,7 @@ void BookmarkBarGtk::PopupForButton(GtkWidget* button) {
   } else {
     // Overflow exists: don't show anything for an overflowed folder button.
     if (button != overflow_button_ && button != other_bookmarks_button_ &&
-        node->GetParent()->GetIndexOf(node) >= first_hidden) {
+        node->parent()->GetIndexOf(node) >= first_hidden) {
       return;
     }
   }

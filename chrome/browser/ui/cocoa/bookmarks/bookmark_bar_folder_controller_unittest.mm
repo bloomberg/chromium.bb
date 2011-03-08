@@ -174,8 +174,8 @@ class BookmarkBarFolderControllerTest : public CocoaTest {
   // Remove the bookmark with the long title.
   void RemoveLongTitleNode() {
     BookmarkModel* model = helper_.profile()->GetBookmarkModel();
-    model->Remove(longTitleNode_->GetParent(),
-                  longTitleNode_->GetParent()->GetIndexOf(longTitleNode_));
+    model->Remove(longTitleNode_->parent(),
+                  longTitleNode_->parent()->GetIndexOf(longTitleNode_));
   }
 
   // Add LOTS of nodes to our model if needed (e.g. scrolling).

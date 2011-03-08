@@ -436,7 +436,7 @@ bool CreateBookmarkFunction::RunImpl() {
     error_ = keys::kNoParentError;
     return false;
   }
-  if (parent->GetParent() == NULL) {  // Can't create children of the root.
+  if (parent->parent() == NULL) {  // Can't create children of the root.
     error_ = keys::kNoParentError;
     return false;
   }
@@ -517,7 +517,7 @@ bool MoveBookmarkFunction::RunImpl() {
   const BookmarkNode* parent = NULL;
   if (!destination->HasKey(keys::kParentIdKey)) {
     // Optional, defaults to current parent.
-    parent = node->GetParent();
+    parent = node->parent();
   } else {
     std::string parentId_string;
     EXTENSION_FUNCTION_VALIDATE(destination->GetString(keys::kParentIdKey,
@@ -692,11 +692,11 @@ class RemoveBookmarksBucketMapper : public BookmarkBucketMapper<std::string> {
     for (IdList::iterator it = ids.begin(); it != ids.end(); ++it) {
       BookmarkModel* model = profile_->GetBookmarkModel();
       const BookmarkNode* node = model->GetNodeByID(*it);
-      if (!node || !node->GetParent())
+      if (!node || !node->parent())
         return;
 
       std::string bucket_id;
-      bucket_id += UTF16ToUTF8(node->GetParent()->GetTitle());
+      bucket_id += UTF16ToUTF8(node->parent()->GetTitle());
       bucket_id += UTF16ToUTF8(node->GetTitle());
       bucket_id += node->GetURL().spec();
       buckets->push_back(GetBucket(base::SHA1HashString(bucket_id)));

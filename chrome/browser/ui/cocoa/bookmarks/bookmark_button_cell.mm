@@ -145,7 +145,7 @@
   const BookmarkNode* node =
       static_cast<const BookmarkNode*>([[self representedObject] pointerValue]);
 
-  if (node->GetParent() && node->GetParent()->type() == BookmarkNode::FOLDER) {
+  if (node->parent() && node->parent()->type() == BookmarkNode::FOLDER) {
     UserMetrics::RecordAction(UserMetricsAction("BookmarkBarFolder_CtxMenu"));
   } else {
     UserMetrics::RecordAction(UserMetricsAction("BookmarkBar_CtxMenu"));

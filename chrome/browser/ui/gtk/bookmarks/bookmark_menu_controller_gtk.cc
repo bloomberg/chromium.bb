@@ -255,7 +255,7 @@ gboolean BookmarkMenuController::OnMenuButtonPressedOrReleased(
   } else if (event->button == 3) {
     DCHECK_NE(is_empty_menu, !!node);
     if (!is_empty_menu)
-      parent = node->GetParent();
+      parent = node->parent();
 
     // Show the right click menu and stop processing this button event.
     std::vector<const BookmarkNode*> nodes;

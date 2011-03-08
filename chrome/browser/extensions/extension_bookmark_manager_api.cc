@@ -80,7 +80,7 @@ void AddNodeToList(ListValue* list, const BookmarkNode& node) {
   std::string id_string = base::Int64ToString(node.id());
   dict->SetString(keys::kIdKey, id_string);
 
-  std::string parent_id_string = base::Int64ToString(node.GetParent()->id());
+  std::string parent_id_string = base::Int64ToString(node.parent()->id());
   dict->SetString(keys::kParentIdKey, parent_id_string);
 
   if (node.is_url())

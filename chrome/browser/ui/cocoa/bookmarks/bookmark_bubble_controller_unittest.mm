@@ -277,7 +277,7 @@ TEST_F(BookmarkBubbleControllerTest, TestUserEdit) {
 
   // Make sure bookmark has changed
   EXPECT_EQ(node->GetTitle(), ASCIIToUTF16("oops"));
-  EXPECT_EQ(node->GetParent()->GetTitle(), ASCIIToUTF16("grandma"));
+  EXPECT_EQ(node->parent()->GetTitle(), ASCIIToUTF16("grandma"));
 }
 
 // Confirm happiness with parent nodes that have the same name.
@@ -308,7 +308,7 @@ TEST_F(BookmarkBubbleControllerTest, TestNewParentSameName) {
 
     // Make sure bookmark has changed, and that the parent is what we
     // expect.  This proves nobody did searching based on name.
-    EXPECT_EQ(node->GetParent(), bookmarkBarNode->GetChild(i));
+    EXPECT_EQ(node->parent(), bookmarkBarNode->GetChild(i));
   }
 }
 

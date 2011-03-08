@@ -118,7 +118,7 @@ class StatusBubbleMacTest : public CocoaTest {
   NSWindow* GetWindow() {
     return bubble_->window_;
   }
-  NSWindow* GetParent() {
+  NSWindow* parent() {
     return bubble_->parent_;
   }
   StatusBubbleMac::StatusBubbleState GetState() {

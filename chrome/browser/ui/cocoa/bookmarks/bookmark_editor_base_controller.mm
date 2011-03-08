@@ -364,7 +364,7 @@ class BookmarkEditorBaseControllerBridge : public BookmarkModelObserver {
   while (node != rootNode) {
     DCHECK(node);
     nodeStack.push(node);
-    node = node->GetParent();
+    node = node->parent();
   }
   NSUInteger stackSize = nodeStack.size();
 

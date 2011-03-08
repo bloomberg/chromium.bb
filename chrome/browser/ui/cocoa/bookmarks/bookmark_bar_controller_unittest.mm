@@ -1563,7 +1563,7 @@ TEST_F(BookmarkBarControllerTest, NodeDeletedWhileContextMenuIsOpen) {
   [bar_ setButtonContextMenu:fakeMenu];
 
   // Force a delete which should cancelTracking on the menu.
-  model->Remove(framma->GetParent(), framma->GetParent()->GetIndexOf(framma));
+  model->Remove(framma->parent(), framma->parent()->GetIndexOf(framma));
 
   // Restore, then confirm cancelTracking was called.
   [bar_ setButtonContextMenu:origMenu];

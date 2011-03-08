@@ -348,22 +348,22 @@ TEST_F(BookmarkEditorControllerTreeTest, VerifyBookmarkTestModel) {
 }
 
 TEST_F(BookmarkEditorControllerTreeTest, RenameBookmarkInPlace) {
-  const BookmarkNode* oldParent = bookmark_bb_3_->GetParent();
+  const BookmarkNode* oldParent = bookmark_bb_3_->parent();
   [controller_ setDisplayName:@"NEW NAME"];
   [controller_ ok:nil];
   UpdateBB3();
-  const BookmarkNode* newParent = bookmark_bb_3_->GetParent();
+  const BookmarkNode* newParent = bookmark_bb_3_->parent();
   ASSERT_EQ(newParent, oldParent);
   int childIndex = newParent->GetIndexOf(bookmark_bb_3_);
   ASSERT_EQ(3, childIndex);
 }
 
 TEST_F(BookmarkEditorControllerTreeTest, ChangeBookmarkURLInPlace) {
-  const BookmarkNode* oldParent = bookmark_bb_3_->GetParent();
+  const BookmarkNode* oldParent = bookmark_bb_3_->parent();
   [controller_ setDisplayURL:@"https://bb-3.com"];
   [controller_ ok:nil];
   UpdateBB3();
-  const BookmarkNode* newParent = bookmark_bb_3_->GetParent();
+  const BookmarkNode* newParent = bookmark_bb_3_->parent();
   ASSERT_EQ(newParent, oldParent);
   int childIndex = newParent->GetIndexOf(bookmark_bb_3_);
   ASSERT_EQ(3, childIndex);
@@ -373,7 +373,7 @@ TEST_F(BookmarkEditorControllerTreeTest, ChangeBookmarkGroup) {
   [controller_ selectTestNodeInBrowser:group_c_];
   [controller_ ok:nil];
   UpdateBB3();
-  const BookmarkNode* parent = bookmark_bb_3_->GetParent();
+  const BookmarkNode* parent = bookmark_bb_3_->parent();
   ASSERT_EQ(parent, group_c_);
   int childIndex = parent->GetIndexOf(bookmark_bb_3_);
   ASSERT_EQ(4, childIndex);
@@ -384,7 +384,7 @@ TEST_F(BookmarkEditorControllerTreeTest, ChangeNameAndBookmarkGroup) {
   [controller_ selectTestNodeInBrowser:group_c_];
   [controller_ ok:nil];
   UpdateBB3();
-  const BookmarkNode* parent = bookmark_bb_3_->GetParent();
+  const BookmarkNode* parent = bookmark_bb_3_->parent();
   ASSERT_EQ(parent, group_c_);
   int childIndex = parent->GetIndexOf(bookmark_bb_3_);
   ASSERT_EQ(4, childIndex);

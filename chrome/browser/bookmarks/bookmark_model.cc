@@ -193,7 +193,7 @@ void BookmarkModel::Move(const BookmarkNode* node,
 
   SetDateGroupModified(new_parent, Time::Now());
 
-  const BookmarkNode* old_parent = node->GetParent();
+  const BookmarkNode* old_parent = node->parent();
   int old_index = old_parent->GetIndexOf(node);
 
   if (old_parent == new_parent &&
@@ -468,7 +468,7 @@ void BookmarkModel::SetURLStarred(const GURL& url,
     // Remove all the bookmarks.
     for (size_t i = 0; i < bookmarks.size(); ++i) {
       const BookmarkNode* node = bookmarks[i];
-      Remove(node->GetParent(), node->GetParent()->GetIndexOf(node));
+      Remove(node->parent(), node->parent()->GetIndexOf(node));
     }
   }
 }
@@ -596,7 +596,7 @@ void BookmarkModel::DoneLoading(
 void BookmarkModel::RemoveAndDeleteNode(BookmarkNode* delete_me) {
   scoped_ptr<BookmarkNode> node(delete_me);
 
-  BookmarkNode* parent = AsMutable(node->GetParent());
+  BookmarkNode* parent = AsMutable(node->parent());
   DCHECK(parent);
   int index = parent->GetIndexOf(node.get());
   parent->Remove(index);

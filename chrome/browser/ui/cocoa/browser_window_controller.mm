@@ -1570,7 +1570,7 @@
       [[[BookmarkEditorController alloc]
          initWithParentWindow:[self window]
                       profile:browser_->profile()
-                       parent:node->GetParent()
+                       parent:node->parent()
                          node:node
                 configuration:BookmarkEditor::SHOW_TREE]
         runAsModalSheet];

@@ -97,7 +97,7 @@ bool BrowserAccessibility::IsDescendantOf(
   return false;
 }
 
-BrowserAccessibility* BrowserAccessibility::GetParent() {
+BrowserAccessibility* BrowserAccessibility::parent() {
   return parent_;
 }
 

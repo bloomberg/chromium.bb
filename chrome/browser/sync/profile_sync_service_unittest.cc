@@ -385,30 +385,30 @@ class ProfileSyncServiceTest : public testing::Test {
         bnode != model_->other_node()) {
       EXPECT_EQ(bnode->GetTitle(), WideToUTF16Hack(gnode.GetTitle()));
       EXPECT_EQ(associator()->GetChromeNodeFromSyncId(gnode.GetParentId()),
-        bnode->GetParent());
+        bnode->parent());
     }
     EXPECT_EQ(bnode->is_folder(), gnode.GetIsFolder());
     if (bnode->is_url())
       EXPECT_EQ(bnode->GetURL(), gnode.GetURL());
 
     // Check for position matches.
-    int browser_index = bnode->GetParent()->GetIndexOf(bnode);
+    int browser_index = bnode->parent()->GetIndexOf(bnode);
     if (browser_index == 0) {
       EXPECT_EQ(gnode.GetPredecessorId(), 0);
     } else {
       const BookmarkNode* bprev =
-          bnode->GetParent()->GetChild(browser_index - 1);
+          bnode->parent()->GetChild(browser_index - 1);
       sync_api::ReadNode gprev(trans);
       ASSERT_TRUE(associator()->InitSyncNodeFromChromeId(bprev->id(),
                                                          &gprev));
       EXPECT_EQ(gnode.GetPredecessorId(), gprev.GetId());
       EXPECT_EQ(gnode.GetParentId(), gprev.GetParentId());
     }
-    if (browser_index == bnode->GetParent()->GetChildCount() - 1) {
+    if (browser_index == bnode->parent()->GetChildCount() - 1) {
       EXPECT_EQ(gnode.GetSuccessorId(), 0);
     } else {
       const BookmarkNode* bnext =
-          bnode->GetParent()->GetChild(browser_index + 1);
+          bnode->parent()->GetChild(browser_index + 1);
       sync_api::ReadNode gnext(trans);
       ASSERT_TRUE(associator()->InitSyncNodeFromChromeId(bnext->id(),
                                                          &gnext));
@@ -474,7 +474,7 @@ class ProfileSyncServiceTest : public testing::Test {
     const BookmarkNode* parent =
         associator()->GetChromeNodeFromSyncId(parent_sync_id);
     EXPECT_TRUE(parent);
-    EXPECT_EQ(node->GetParent(), parent);
+    EXPECT_EQ(node->parent(), parent);
   }
 
   void ExpectModelMatch(sync_api::BaseTransaction* trans) {
@@ -613,11 +613,11 @@ TEST_F(ProfileSyncServiceTest, BookmarkModelOperations) {
 
   // Test deletion.
   // Delete a single item.
-  model_->Remove(url2->GetParent(), url2->GetParent()->GetIndexOf(url2));
+  model_->Remove(url2->parent(), url2->parent()->GetIndexOf(url2));
   ExpectModelMatch();
   // Delete an item with several children.
-  model_->Remove(folder2->GetParent(),
-                 folder2->GetParent()->GetIndexOf(folder2));
+  model_->Remove(folder2->parent(),
+                 folder2->parent()->GetIndexOf(folder2));
   ExpectModelMatch();
 }
 

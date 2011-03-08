@@ -20,7 +20,7 @@ DictionaryValue* GetNodeDictionary(const BookmarkNode* node,
   DictionaryValue* dict = new DictionaryValue();
   dict->SetString(keys::kIdKey, base::Int64ToString(node->id()));
 
-  const BookmarkNode* parent = node->GetParent();
+  const BookmarkNode* parent = node->parent();
   if (parent) {
     dict->SetString(keys::kParentIdKey, base::Int64ToString(parent->id()));
     dict->SetInteger(keys::kIndexKey, parent->GetIndexOf(node));
@@ -100,7 +100,7 @@ bool RemoveNode(BookmarkModel* model,
     return false;
   }
 
-  const BookmarkNode* parent = node->GetParent();
+  const BookmarkNode* parent = node->parent();
   int index = parent->GetIndexOf(node);
   model->Remove(parent, index);
   return true;

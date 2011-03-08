@@ -75,7 +75,7 @@ class BrowserAccessibility {
   bool IsDescendantOf(BrowserAccessibility* ancestor);
 
   // Returns the parent of this object, or NULL if it's the root.
-  BrowserAccessibility* GetParent();
+  BrowserAccessibility* parent();
 
   // Returns the number of children of this object.
   uint32 GetChildCount();

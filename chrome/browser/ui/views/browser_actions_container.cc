@@ -98,7 +98,7 @@ void BrowserActionButton::ViewHierarchyChanged(
 
     // LoadImage is not guaranteed to be synchronous, so we might see the
     // callback OnImageLoaded execute immediately. It (through UpdateState)
-    // expects GetParent() to return the owner for this button, so this
+    // expects parent() to return the owner for this button, so this
     // function is as early as we can start this request.
     tracker_.LoadImage(extension_, extension_->GetResource(relative_path),
                        gfx::Size(Extension::kBrowserActionIconMaxSize,

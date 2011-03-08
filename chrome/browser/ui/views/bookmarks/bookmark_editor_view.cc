@@ -177,7 +177,7 @@ bool BookmarkEditorView::CanEdit(views::TreeView* tree_view,
                                  ui::TreeModelNode* node) {
   // Only allow editting of children of the bookmark bar node and other node.
   EditorNode* bb_node = tree_model_->AsNode(node);
-  return (bb_node->GetParent() && bb_node->GetParent()->GetParent());
+  return (bb_node->parent() && bb_node->parent()->parent());
 }
 
 void BookmarkEditorView::ContentsChanged(Textfield* sender,
@@ -470,7 +470,7 @@ void BookmarkEditorView::ExpandAndSelect() {
 
   const BookmarkNode* to_select = parent_;
   if (details_.type == EditDetails::EXISTING_NODE)
-    to_select = details_.existing_node->GetParent();
+    to_select = details_.existing_node->parent();
   int64 group_id_to_select = to_select->id();
   EditorNode* b_node =
       FindNodeWithID(tree_model_->GetRoot(), group_id_to_select);

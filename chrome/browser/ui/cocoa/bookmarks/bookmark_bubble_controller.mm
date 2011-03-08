@@ -116,7 +116,7 @@ void BookmarkBubbleNotificationBridge::Observe(
 // until we find something visible to pulse.
 - (void)startPulsingBookmarkButton:(const BookmarkNode*)node  {
   while (node) {
-    if ((node->GetParent() == model_->GetBookmarkBarNode()) ||
+    if ((node->parent() == model_->GetBookmarkBarNode()) ||
         (node == model_->other_node())) {
       pulsingBookmarkNode_ = node;
       NSValue *value = [NSValue valueWithPointer:node];
@@ -132,7 +132,7 @@ void BookmarkBubbleNotificationBridge::Observe(
                     userInfo:dict];
       return;
     }
-    node = node->GetParent();
+    node = node->parent();
   }
 }
 
@@ -332,7 +332,7 @@ void BookmarkBubbleNotificationBridge::Observe(
         model_->profile());
   }
   // Then the parent folder.
-  const BookmarkNode* oldParent = node_->GetParent();
+  const BookmarkNode* oldParent = node_->parent();
   NSMenuItem* selectedItem = [folderPopUpButton_ selectedItem];
   id representedObject = [selectedItem representedObject];
   if ([representedObject isEqual:[[self class] chooseAnotherFolderObject]]) {
@@ -365,7 +365,7 @@ void BookmarkBubbleNotificationBridge::Observe(
   ChooseAnotherFolder* obj = [[self class] chooseAnotherFolderObject];
   [item setRepresentedObject:obj];
   // Finally, select the current parent.
-  NSValue* parentValue = [NSValue valueWithPointer:node_->GetParent()];
+  NSValue* parentValue = [NSValue valueWithPointer:node_->parent()];
   NSInteger idx = [menu indexOfItemWithRepresentedObject:parentValue];
   [folderPopUpButton_ selectItemAtIndex:idx];
 }

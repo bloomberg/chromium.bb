@@ -1794,7 +1794,7 @@ void TestingAutomationProvider::RemoveBookmark(int handle,
       const BookmarkNode* node = model->GetNodeByID(id);
       DCHECK(node);
       if (node) {
-        const BookmarkNode* parent = node->GetParent();
+        const BookmarkNode* parent = node->parent();
         DCHECK(parent);
         model->Remove(parent, parent->GetIndexOf(node));
         *success = true;

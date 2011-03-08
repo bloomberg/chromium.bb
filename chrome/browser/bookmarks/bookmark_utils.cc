@@ -291,7 +291,7 @@ bool IsValidDropLocation(Profile* profile,
       // Don't allow the drop if the user is attempting to drop on one of the
       // nodes being dragged.
       const BookmarkNode* node = nodes[i];
-      int node_index = (drop_parent == node->GetParent()) ?
+      int node_index = (drop_parent == node->parent()) ?
           drop_parent->GetIndexOf(nodes[i]) : -1;
       if (node_index != -1 && (index == node_index || index == node_index + 1))
         return false;
@@ -403,8 +403,8 @@ void CopyToClipboard(BookmarkModel* model,
 
   if (remove_nodes) {
     for (size_t i = 0; i < nodes.size(); ++i) {
-      model->Remove(nodes[i]->GetParent(),
-                    nodes[i]->GetParent()->GetIndexOf(nodes[i]));
+      model->Remove(nodes[i]->parent(),
+                    nodes[i]->parent()->GetIndexOf(nodes[i]));
     }
   }
 }
@@ -591,7 +591,7 @@ const BookmarkNode* ApplyEditsWithPossibleGroupChange(BookmarkModel* model,
   const BookmarkNode* node = details.existing_node;
   DCHECK(node);
 
-  if (new_parent != node->GetParent())
+  if (new_parent != node->parent())
     model->Move(node, new_parent, new_parent->GetChildCount());
   if (node->is_url())
     model->SetURL(node, new_url);

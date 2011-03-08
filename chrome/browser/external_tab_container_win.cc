@@ -686,8 +686,7 @@ void ExternalTabContainer::ShowHtmlDialog(HtmlDialogUIDelegate* delegate,
                                           tab_contents_->profile()));
   }
 
-  gfx::NativeWindow parent = parent_window ? parent_window
-                                           : GetParent();
+  gfx::NativeWindow parent = parent_window ? parent_window : GetParent();
   browser_->window()->ShowHTMLDialog(delegate, parent);
 }
 

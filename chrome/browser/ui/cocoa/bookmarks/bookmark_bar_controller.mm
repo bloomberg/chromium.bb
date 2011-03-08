@@ -288,7 +288,7 @@ void RecordAppLaunch(Profile* profile, GURL url) {
     [otherBookmarksButton_ setIsContinuousPulsing:doPulse];
     return;
   }
-  if (node->GetParent() == bookmarkModel_->GetBookmarkBarNode()) {
+  if (node->parent() == bookmarkModel_->GetBookmarkBarNode()) {
     [offTheSideButton_ setIsContinuousPulsing:doPulse];
     return;
   }
@@ -612,7 +612,7 @@ void RecordAppLaunch(Profile* profile, GURL url) {
   // UI.
   BookmarkEditor::Show([[self view] window],
                        browser_->profile(),
-                       node->GetParent(),
+                       node->parent(),
                        BookmarkEditor::EditDetails(node),
                        BookmarkEditor::SHOW_TREE);
 }
@@ -643,7 +643,7 @@ void RecordAppLaunch(Profile* profile, GURL url) {
   if (node) {
     int index = -1;
     if (node != bookmarkModel_->GetBookmarkBarNode() && !node->is_folder()) {
-      const BookmarkNode* parent = node->GetParent();
+      const BookmarkNode* parent = node->parent();
       index = parent->GetIndexOf(node) + 1;
       if (index > parent->GetChildCount())
         index = -1;
@@ -656,8 +656,8 @@ void RecordAppLaunch(Profile* profile, GURL url) {
 - (IBAction)deleteBookmark:(id)sender {
   const BookmarkNode* node = [self nodeFromMenuItem:sender];
   if (node) {
-    bookmarkModel_->Remove(node->GetParent(),
-                           node->GetParent()->GetIndexOf(node));
+    bookmarkModel_->Remove(node->parent(),
+                           node->parent()->GetIndexOf(node));
   }
 }
 
@@ -719,7 +719,7 @@ void RecordAppLaunch(Profile* profile, GURL url) {
     parent = senderNode;
     newIndex = parent->GetChildCount();
   } else {
-    parent = senderNode->GetParent();
+    parent = senderNode->parent();
     newIndex = parent->GetIndexOf(senderNode) + 1;
   }
   BookmarkNameFolderController* controller =
@@ -1758,7 +1758,7 @@ static BOOL ValueInRangeInclusive(CGFloat low, CGFloat value, CGFloat high) {
     const BookmarkNode* afterNode =
         [buttonToTheRightOfDraggedButton bookmarkNode];
     DCHECK(afterNode);
-    int index = afterNode->GetParent()->GetIndexOf(afterNode);
+    int index = afterNode->parent()->GetIndexOf(afterNode);
     // Make sure we don't get confused by buttons which aren't visible.
     return std::min(index, displayedButtonCount_);
   }
@@ -2063,7 +2063,7 @@ static BOOL ValueInRangeInclusive(CGFloat low, CGFloat value, CGFloat high) {
   // http://crbug.com/35966
   const BookmarkNode* node = [button bookmarkNode];
   if (node) {
-    const BookmarkNode* parent = node->GetParent();
+    const BookmarkNode* parent = node->parent();
     bookmarkModel_->Remove(parent,
                            parent->GetIndexOf(node));
   }

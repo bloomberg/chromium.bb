@@ -274,7 +274,7 @@ BrowserAccessibility* BrowserAccessibilityManager::UpdateNode(
     DCHECK_EQ(0U, src.children.size());
     current->Initialize(
         this,
-        current->GetParent(),
+        current->parent(),
         current->child_id(),
         current->index_in_parent(),
         src);

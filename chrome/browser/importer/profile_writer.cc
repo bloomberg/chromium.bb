@@ -334,7 +334,7 @@ bool ProfileWriter::DoesBookmarkExist(
 
     // Does the path match?
     bool found_match = true;
-    const BookmarkNode* parent = node->GetParent();
+    const BookmarkNode* parent = node->parent();
     for (std::vector<std::wstring>::const_reverse_iterator path_it =
              entry.path.rbegin();
          (path_it != entry.path.rend()) && found_match; ++path_it) {
@@ -344,7 +344,7 @@ bool ProfileWriter::DoesBookmarkExist(
       if (NULL == parent || *path_it != folder_name)
         found_match = false;
       else
-        parent = parent->GetParent();
+        parent = parent->parent();
     }
 
     // We need a post test to differentiate checks such as

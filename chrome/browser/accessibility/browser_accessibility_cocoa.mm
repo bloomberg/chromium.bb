@@ -112,7 +112,7 @@ bool GetState(BrowserAccessibility* accessibility, int state) {
   if (![self isIgnored]) {
     children_.reset();
   } else {
-    [browserAccessibility_->GetParent()->toBrowserAccessibilityCocoa()
+    [browserAccessibility_->parent()->toBrowserAccessibilityCocoa()
        childrenChanged];
   }
 }
@@ -201,9 +201,9 @@ bool GetState(BrowserAccessibility* accessibility, int state) {
   }
   if ([attribute isEqualToString:NSAccessibilityParentAttribute]) {
     // A nil parent means we're the root.
-    if (browserAccessibility_->GetParent()) {
+    if (browserAccessibility_->parent()) {
       return NSAccessibilityUnignoredAncestor(
-          browserAccessibility_->GetParent()->toBrowserAccessibilityCocoa());
+          browserAccessibility_->parent()->toBrowserAccessibilityCocoa());
     } else {
       // Hook back up to RenderWidgetHostViewCocoa.
       return browserAccessibility_->manager()->GetParentView();

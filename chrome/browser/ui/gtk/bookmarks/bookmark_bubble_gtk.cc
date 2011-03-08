@@ -205,7 +205,7 @@ BookmarkBubbleGtk::~BookmarkBubbleGtk() {
     BookmarkModel* model = profile_->GetBookmarkModel();
     const BookmarkNode* node = model->GetMostRecentlyAddedNodeForURL(url_);
     if (node)
-      model->Remove(node->GetParent(), node->GetParent()->GetIndexOf(node));
+      model->Remove(node->parent(), node->parent()->GetIndexOf(node));
   }
 }
 
@@ -287,7 +287,7 @@ void BookmarkBubbleGtk::ApplyEdits() {
     // Last index means 'Choose another folder...'
     if (index < folder_combo_model_->GetItemCount() - 1) {
       const BookmarkNode* new_parent = folder_combo_model_->GetNodeAt(index);
-      if (new_parent != node->GetParent()) {
+      if (new_parent != node->parent()) {
         UserMetrics::RecordAction(
             UserMetricsAction("BookmarkBubble_ChangeParent"), profile_);
         model->Move(node, new_parent, new_parent->GetChildCount());

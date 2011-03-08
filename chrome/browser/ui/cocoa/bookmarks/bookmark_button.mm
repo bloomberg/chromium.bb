@@ -180,7 +180,7 @@ BookmarkButton* gDraggedButton = nil; // Weak
                                              delay:NO];
   }
   const BookmarkNode* node = [self bookmarkNode];
-  const BookmarkNode* parent = node ? node->GetParent() : NULL;
+  const BookmarkNode* parent = node ? node->parent() : NULL;
   if (parent && parent->type() == BookmarkNode::FOLDER) {
     UserMetrics::RecordAction(UserMetricsAction("BookmarkBarFolder_DragStart"));
   } else {

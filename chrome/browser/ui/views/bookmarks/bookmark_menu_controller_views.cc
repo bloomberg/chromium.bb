@@ -150,7 +150,7 @@ bool BookmarkMenuController::CanDrop(MenuItemView* menu,
   const BookmarkNode* drop_node = menu_id_to_node_map_[menu->GetCommand()];
   DCHECK(drop_node);
   while (drop_node && drop_node != drag_node)
-    drop_node = drop_node->GetParent();
+    drop_node = drop_node->parent();
   return (drop_node == NULL);
 }
 
@@ -162,7 +162,7 @@ int BookmarkMenuController::GetDropOperation(
   DCHECK(drop_data_.is_valid());
 
   const BookmarkNode* node = menu_id_to_node_map_[item->GetCommand()];
-  const BookmarkNode* drop_parent = node->GetParent();
+  const BookmarkNode* drop_parent = node->parent();
   int index_to_drop_at = drop_parent->GetIndexOf(node);
   if (*position == DROP_AFTER) {
     index_to_drop_at++;
@@ -182,7 +182,7 @@ int BookmarkMenuController::OnPerformDrop(MenuItemView* menu,
   DCHECK(drop_node);
   BookmarkModel* model = profile_->GetBookmarkModel();
   DCHECK(model);
-  const BookmarkNode* drop_parent = drop_node->GetParent();
+  const BookmarkNode* drop_parent = drop_node->parent();
   DCHECK(drop_parent);
   int index_to_drop_at = drop_parent->GetIndexOf(drop_node);
   if (position == DROP_AFTER) {
@@ -212,7 +212,7 @@ bool BookmarkMenuController::ShowContextMenu(MenuItemView* source,
           parent_,
           profile_,
           page_navigator_,
-          nodes[0]->GetParent(),
+          nodes[0]->parent(),
           nodes));
   context_menu_->set_observer(this);
   context_menu_->RunMenuAt(p);

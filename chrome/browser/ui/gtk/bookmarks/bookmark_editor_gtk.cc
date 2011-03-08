@@ -67,7 +67,7 @@ class BookmarkEditorGtk::ContextMenuController
   void RunMenu(const gfx::Point& point, guint32 event_time) {
     const BookmarkNode* selected_node = GetSelectedNode();
     if (selected_node)
-      running_menu_for_root_ = selected_node->GetParent()->IsRoot();
+      running_menu_for_root_ = selected_node->parent()->IsRoot();
 #if defined(TOOLKIT_VIEWS)
     menu_->RunContextMenuAt(point);
 #else
@@ -317,7 +317,7 @@ void BookmarkEditorGtk::Init(GtkWindow* parent_window) {
     GtkTreeIter selected_iter;
     int64 selected_id = 0;
     if (details_.type == EditDetails::EXISTING_NODE)
-      selected_id = details_.existing_node->GetParent()->id();
+      selected_id = details_.existing_node->parent()->id();
     else if (parent_)
       selected_id = parent_->id();
     tree_store_ = bookmark_utils::MakeFolderTreeStore();

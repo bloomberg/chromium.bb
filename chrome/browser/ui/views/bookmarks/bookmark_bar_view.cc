@@ -1037,7 +1037,7 @@ void BookmarkBarView::BookmarkNodeChanged(BookmarkModel* model,
 
 void BookmarkBarView::BookmarkNodeChangedImpl(BookmarkModel* model,
                                               const BookmarkNode* node) {
-  if (node->GetParent() != model_->GetBookmarkBarNode()) {
+  if (node->parent() != model_->GetBookmarkBarNode()) {
     // We only care about nodes on the bookmark bar.
     return;
   }
@@ -1234,7 +1234,7 @@ void BookmarkBarView::ShowContextMenuForView(View* source,
     const BookmarkNode* node =
         model_->GetBookmarkBarNode()->GetChild(bookmark_button_index);
     nodes.push_back(node);
-    parent = node->GetParent();
+    parent = node->parent();
   } else {
     parent = model_->GetBookmarkBarNode();
     nodes.push_back(parent);
@@ -1507,7 +1507,7 @@ void BookmarkBarView::StartThrobbing(const BookmarkNode* node,
   const BookmarkNode* bbn = model_->GetBookmarkBarNode();
   const BookmarkNode* parent_on_bb = node;
   while (parent_on_bb) {
-    const BookmarkNode* parent = parent_on_bb->GetParent();
+    const BookmarkNode* parent = parent_on_bb->parent();
     if (parent == bbn)
       break;
     parent_on_bb = parent;

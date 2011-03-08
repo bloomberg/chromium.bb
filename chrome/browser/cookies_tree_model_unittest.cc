@@ -207,7 +207,7 @@ class CookiesTreeModelTest : public testing::Test {
   void DeleteStoredObjects(CookieTreeNode* node) {
     node->DeleteStoredObjects();
     // find the parent and index
-    CookieTreeNode* parent_node = node->GetParent();
+    CookieTreeNode* parent_node = node->parent();
     DCHECK(parent_node);
     int ct_node_index = parent_node->GetIndexOf(node);
     delete parent_node->GetModel()->Remove(parent_node, ct_node_index);

@@ -303,7 +303,7 @@ TEST_F(BookmarkModelTest, Move) {
 
   AssertObserverCount(0, 1, 0, 0, 0);
   observer_details.AssertEquals(root, group1, 1, 0);
-  EXPECT_TRUE(group1 == node->GetParent());
+  EXPECT_TRUE(group1 == node->parent());
   EXPECT_EQ(1, root->GetChildCount());
   EXPECT_EQ(group1, root->GetChild(0));
   EXPECT_EQ(1, group1->GetChildCount());
@@ -399,7 +399,7 @@ TEST_F(BookmarkModelTest, MostRecentlyModifiedGroups) {
 
   // Nuke the group and do another fetch, making sure group isn't in the
   // returned list.
-  model.Remove(group->GetParent(), 0);
+  model.Remove(group->parent(), 0);
   most_recent_groups =
       bookmark_utils::GetMostRecentlyModifiedGroups(&model, 1);
   ASSERT_EQ(1U, most_recent_groups.size());
@@ -546,7 +546,7 @@ TEST_F(BookmarkModelTest, NotifyURLsStarred) {
   EXPECT_EQ(0, listener.notification_count_);
 
   // Remove n2.
-  model.Remove(n2->GetParent(), 1);
+  model.Remove(n2->parent(), 1);
   n2 = NULL;
 
   // Shouldn't have received any notification as n1 still exists with the same
@@ -556,7 +556,7 @@ TEST_F(BookmarkModelTest, NotifyURLsStarred) {
   EXPECT_TRUE(model.GetMostRecentlyAddedNodeForURL(url) == n1);
 
   // Remove n1.
-  model.Remove(n1->GetParent(), 0);
+  model.Remove(n1->parent(), 0);
 
   // Now we should get the notification.
   EXPECT_EQ(1, listener.notification_count_);

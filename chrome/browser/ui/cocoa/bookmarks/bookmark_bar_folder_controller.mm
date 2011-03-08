@@ -1156,7 +1156,7 @@ static BOOL ValueInRangeInclusive(CGFloat low, CGFloat value, CGFloat high) {
                                        bookmarkNode];
   DCHECK(beforeNode);
   // Be careful if the number of buttons != number of nodes.
-  return ((beforeNode->GetParent()->GetIndexOf(beforeNode) + 1) -
+  return ((beforeNode->parent()->GetIndexOf(beforeNode) + 1) -
           [[parentButton_ cell] startingChildIndex]);
 }
 
@@ -1277,7 +1277,7 @@ static BOOL ValueInRangeInclusive(CGFloat low, CGFloat value, CGFloat high) {
   // http://crbug.com/35966
   const BookmarkNode* node = [button bookmarkNode];
   if (node) {
-    const BookmarkNode* parent = node->GetParent();
+    const BookmarkNode* parent = node->parent();
     [self bookmarkModel]->Remove(parent,
                                  parent->GetIndexOf(node));
   }
@@ -1477,7 +1477,7 @@ static BOOL ValueInRangeInclusive(CGFloat low, CGFloat value, CGFloat high) {
   // When adding a button to an empty folder we must remove the 'empty'
   // placeholder button. This can be detected by checking for a parent
   // child count of 1.
-  const BookmarkNode* parentNode = node->GetParent();
+  const BookmarkNode* parentNode = node->parent();
   if (parentNode->GetChildCount() == 1) {
     BookmarkButton* emptyButton = [buttons_ lastObject];
     newButtonFrame = [emptyButton frame];

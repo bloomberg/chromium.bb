@@ -103,7 +103,7 @@
 }
 
 - (NSNumber*)index {
-  const BookmarkNode* parent = bookmarkNode_->GetParent();
+  const BookmarkNode* parent = bookmarkNode_->parent();
   int index = parent->GetIndexOf(bookmarkNode_);
   // NOTE: AppleScript is 1-Based.
   return [NSNumber numberWithInt:index+1];
