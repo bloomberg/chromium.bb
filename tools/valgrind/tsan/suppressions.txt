@@ -369,6 +369,20 @@
    fun:base::ThreadCollisionWarner::Leave
 }
 
+{
+   bug_75246a
+   ThreadSanitizer:Race
+   ...
+   fun:MockConnectionManager::set_store_birthday
+}
+
+{
+   bug_75246b
+   ThreadSanitizer:Race
+   ...
+   fun:MockConnectionManager::PostBufferToPath
+}
+
 ############################
 # Benign races in ICU
 {
