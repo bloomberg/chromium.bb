@@ -1194,44 +1194,46 @@ std::vector<GURL> BrowserInit::GetURLsFromCommandLine(
   for (size_t i = 0; i < params.size(); ++i) {
     FilePath param = FilePath(params[i]);
     // Handle Vista way of searching - "? <search-term>"
-    if (param.value().find(FILE_PATH_LITERAL("? ")) == 0) {
+    if (param.value().size() > 2 &&
+        param.value()[0] == '?' && param.value()[1] == ' ') {
       const TemplateURL* default_provider =
           profile->GetTemplateURLModel()->GetDefaultSearchProvider();
-      if (!default_provider || !default_provider->url()) {
-        // No search provider available. Just treat this as regular URL.
-        urls.push_back(URLFixerUpper::FixupRelativeFile(cur_dir, param));
+      if (default_provider && default_provider->url()) {
+        const TemplateURLRef* search_url = default_provider->url();
+        DCHECK(search_url->SupportsReplacement());
+        string16 search_term = param.LossyDisplayName().substr(2);
+        urls.push_back(GURL(search_url->ReplaceSearchTerms(
+                                *default_provider, search_term,
+                                TemplateURLRef::NO_SUGGESTIONS_AVAILABLE,
+                                string16())));
         continue;
       }
-      const TemplateURLRef* search_url = default_provider->url();
-      DCHECK(search_url->SupportsReplacement());
-      std::wstring search_term = param.ToWStringHack().substr(2);
-      urls.push_back(GURL(search_url->ReplaceSearchTerms(
-          *default_provider, WideToUTF16Hack(search_term),
-          TemplateURLRef::NO_SUGGESTIONS_AVAILABLE, string16())));
-    } else {
-      // This will create a file URL or a regular URL.
-      // This call can (in rare circumstances) block the UI thread.
-      // Allow it until this bug is fixed.
-      //  http://code.google.com/p/chromium/issues/detail?id=60641
-      GURL url;
-      {
-        base::ThreadRestrictions::ScopedAllowIO allow_io;
-        url = URLFixerUpper::FixupRelativeFile(cur_dir, param);
-      }
-      // Exclude dangerous schemes.
-      if (url.is_valid()) {
-        ChildProcessSecurityPolicy *policy =
-            ChildProcessSecurityPolicy::GetInstance();
-        if (policy->IsWebSafeScheme(url.scheme()) ||
-            url.SchemeIs(chrome::kFileScheme) ||
+    }
+
+    // Otherwise, fall through to treating it as a URL.
+
+    // This will create a file URL or a regular URL.
+    // This call can (in rare circumstances) block the UI thread.
+    // Allow it until this bug is fixed.
+    //  http://code.google.com/p/chromium/issues/detail?id=60641
+    GURL url;
+    {
+      base::ThreadRestrictions::ScopedAllowIO allow_io;
+      url = URLFixerUpper::FixupRelativeFile(cur_dir, param);
+    }
+    // Exclude dangerous schemes.
+    if (url.is_valid()) {
+      ChildProcessSecurityPolicy *policy =
+          ChildProcessSecurityPolicy::GetInstance();
+      if (policy->IsWebSafeScheme(url.scheme()) ||
+          url.SchemeIs(chrome::kFileScheme) ||
 #if defined(OS_CHROMEOS)
-            // In ChromeOS, allow a settings page to be specified on the
-            // command line. See ExistingUserController::OnLoginSuccess.
-            (url.spec().find(chrome::kChromeUISettingsURL) == 0) ||
+          // In ChromeOS, allow a settings page to be specified on the
+          // command line. See ExistingUserController::OnLoginSuccess.
+          (url.spec().find(chrome::kChromeUISettingsURL) == 0) ||
 #endif
-            (url.spec().compare(chrome::kAboutBlankURL) == 0)) {
-          urls.push_back(url);
-        }
+          (url.spec().compare(chrome::kAboutBlankURL) == 0)) {
+        urls.push_back(url);
       }
     }
   }
