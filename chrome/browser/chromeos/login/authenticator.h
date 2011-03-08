@@ -47,7 +47,7 @@ class Authenticator : public base::RefCountedThreadSafe<Authenticator> {
   virtual bool AuthenticateToUnlock(const std::string& username,
                                     const std::string& password) = 0;
 
-  // Initiates off the record ("browse without signing in") login.
+  // Initiates incognito ("browse without signing in") login.
   virtual void LoginOffTheRecord() = 0;
 
   // |credentials| are the tokens that we get back from the ClientLogin API.

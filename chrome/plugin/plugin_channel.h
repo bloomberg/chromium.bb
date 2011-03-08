@@ -90,7 +90,7 @@ class PluginChannel : public PluginChannelBase {
 
   int in_send_;  // Tracks if we're in a Send call.
   bool log_messages_;  // True if we should log sent and received messages.
-  bool off_the_record_; // True if the renderer is in off the record mode.
+  bool off_the_record_; // True if the renderer is in incognito mode.
   scoped_refptr<MessageFilter> filter_;  // Handles the modal dialog events.
 
   DISALLOW_COPY_AND_ASSIGN(PluginChannel);

@@ -121,9 +121,9 @@ Browser* WaitForNewBrowser();
 // called.
 Browser* WaitForNewBrowserWithCount(size_t start_count);
 
-// Opens |url| in an incognito browser window with the off the record profile of
+// Opens |url| in an incognito browser window with the incognito profile of
 // |profile|, blocking until the navigation finishes. This will create a new
-// browser if a browser with the off the record profile does not exist.
+// browser if a browser with the incognito profile does not exist.
 void OpenURLOffTheRecord(Profile* profile, const GURL& url);
 
 // Navigates the selected tab of |browser| to |url|, blocking until the

@@ -100,7 +100,7 @@ class ExceptionsView : public ExceptionEditorView::Delegate,
   // The model displayed in the table.
   ContentExceptionsTableModel model_;
 
-  // True if the user can also add off the record entries.
+  // True if the user can also add incognito entries.
   bool allow_off_the_record_;
 
   views::TableView* table_;

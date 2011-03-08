@@ -69,7 +69,7 @@ BaseSessionService::BaseSessionService(SessionType type,
       pending_reset_(false),
       commands_since_reset_(0) {
   if (profile) {
-    // We should never be created when off the record.
+    // We should never be created when incognito.
     DCHECK(!profile->IsOffTheRecord());
   }
   backend_ = new SessionBackend(type,

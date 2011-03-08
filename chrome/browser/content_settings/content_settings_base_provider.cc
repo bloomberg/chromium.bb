@@ -97,8 +97,8 @@ ContentSetting BaseProvider::GetContentSetting(
         requested_setting)->second;
   }
 
-  // If this map is not for an off-the-record profile, these searches will never
-  // match. The additional off-the-record exceptions always overwrite the
+  // If this map is not for an incognito profile, these searches will never
+  // match. The additional incognito exceptions always overwrite the
   // regular ones.
   i = off_the_record_settings_.find(host);
   if (i != off_the_record_settings_.end() &&
@@ -189,8 +189,8 @@ ContentSettings BaseProvider::GetNonDefaultContentSettings(
   if (i != host_content_settings_.end())
     output = i->second.content_settings;
 
-  // If this map is not for an off-the-record profile, these searches will never
-  // match. The additional off-the-record exceptions always overwrite the
+  // If this map is not for an incognito profile, these searches will never
+  // match. The additional incognito exceptions always overwrite the
   // regular ones.
   i = off_the_record_settings_.find(host);
   if (i != off_the_record_settings_.end()) {

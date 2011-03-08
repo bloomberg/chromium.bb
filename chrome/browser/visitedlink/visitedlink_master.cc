@@ -261,7 +261,7 @@ bool VisitedLinkMaster::Init() {
 }
 
 VisitedLinkMaster::Hash VisitedLinkMaster::TryToAddURL(const GURL& url) {
-  // Extra check that we are not off the record. This should not happen.
+  // Extra check that we are not incognito. This should not happen.
   if (profile_ && profile_->IsOffTheRecord()) {
     NOTREACHED();
     return null_hash_;

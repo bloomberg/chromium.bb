@@ -518,7 +518,7 @@ void IOThread::ChangedToOnTheRecordOnIOThread() {
 
   // Clear all of the passively logged data.
   // TODO(eroman): this is a bit heavy handed, really all we need to do is
-  //               clear the data pertaining to off the record context.
+  //               clear the data pertaining to incognito context.
   net_log_->ClearAllPassivelyCapturedEvents();
 }
 

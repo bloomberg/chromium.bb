@@ -606,7 +606,7 @@ class OffTheRecordProfileImpl : public Profile,
   }
 
   virtual void InitChromeOSPreferences() {
-    // The off-the-record profile shouldn't have Chrome OS's preferences.
+    // The incognito profile shouldn't have Chrome OS's preferences.
     // The preferences are associated with the regular user profile.
   }
 #endif  // defined(OS_CHROMEOS)
@@ -615,7 +615,7 @@ class OffTheRecordProfileImpl : public Profile,
     // DownloadManager is lazily created, so check before accessing it.
     if (download_manager_.get()) {
       // Drop our download manager so we forget about all the downloads made
-      // in off-the-record mode.
+      // in incognito mode.
       download_manager_->Shutdown();
       download_manager_ = NULL;
     }

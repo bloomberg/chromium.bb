@@ -23,8 +23,7 @@ struct DomainMatchCase {
   const bool matches;
 };
 
-// A test profile that supports linking with another profile for off-the-record
-// (a.k.a. incognito) support.
+// A test profile that supports linking with another profile for incognito support.
 class OtrTestingProfile : public TestingProfile {
  public:
   OtrTestingProfile() : linked_profile_(NULL) {}

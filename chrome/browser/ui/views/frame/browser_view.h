@@ -153,11 +153,11 @@ class BrowserView : public BrowserBubbleHost,
   bool UseVerticalTabs() const;
 
   // Returns true if the profile associated with this Browser window is
-  // off the record.
+  // incognito.
   bool IsOffTheRecord() const;
 
   // Returns true if the non-client view should render the Off-The-Record
-  // avatar icon if the window is off the record.
+  // avatar icon if the window is incognito.
   bool ShouldShowOffTheRecordAvatar() const;
 
   // Handle the specified |accelerator| being pressed.

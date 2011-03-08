@@ -130,7 +130,7 @@ class TestingProfile : public Profile {
 
   virtual FilePath GetPath();
 
-  // Sets whether we're off the record. Default is false.
+  // Sets whether we're incognito. Default is false.
   void set_off_the_record(bool off_the_record) {
     off_the_record_ = off_the_record;
   }

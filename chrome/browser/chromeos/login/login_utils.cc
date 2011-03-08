@@ -118,7 +118,7 @@ class LoginUtilsImpl : public LoginUtils {
       bool pending_requests);
 
   // Invoked after the tmpfs is successfully mounted.
-  // Launches a browser in the off the record (incognito) mode.
+  // Launches a browser in the incognito mode.
   virtual void CompleteOffTheRecordLogin(const GURL& start_url);
 
   // Invoked when the user is logging in for the first time, or is logging in as
@@ -385,7 +385,7 @@ void LoginUtilsImpl::RespectLocalePreference(Profile* profile) {
 }
 
 void LoginUtilsImpl::CompleteOffTheRecordLogin(const GURL& start_url) {
-  VLOG(1) << "Completing off the record login";
+  VLOG(1) << "Completing incognito login";
 
   UserManager::Get()->OffTheRecordUserLoggedIn();
 

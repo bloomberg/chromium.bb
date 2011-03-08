@@ -123,7 +123,7 @@ class Profile {
   enum ServiceAccessType {
     // The caller plans to perform a read or write that takes place as a result
     // of the user input. Use this flag when the operation you are doing can be
-    // performed while off the record. (ex: creating a bookmark)
+    // performed while incognito. (ex: creating a bookmark)
     //
     // Since EXPLICIT_ACCESS means "as a result of a user action", this request
     // always succeeds.
@@ -132,7 +132,7 @@ class Profile {
     // The caller plans to call a method that will permanently change some data
     // in the profile, as part of Chrome's implicit data logging. Use this flag
     // when you are about to perform an operation which is incompatible with the
-    // off the record mode.
+    // incognito mode.
     IMPLICIT_ACCESS
   };
 
@@ -165,22 +165,22 @@ class Profile {
   // Returns the path of the directory where this profile's data is stored.
   virtual FilePath GetPath() = 0;
 
-  // Return whether this profile is off the record. Default is false.
+  // Return whether this profile is incognito. Default is false.
   virtual bool IsOffTheRecord() = 0;
 
-  // Return the off the record version of this profile. The returned pointer
+  // Return the incognito version of this profile. The returned pointer
   // is owned by the receiving profile. If the receiving profile is off the
   // record, the same profile is returned.
   virtual Profile* GetOffTheRecordProfile() = 0;
 
-  // Destroys the off the record profile.
+  // Destroys the incognito profile.
   virtual void DestroyOffTheRecordProfile() = 0;
 
-  // True if an off the record profile exists.
+  // True if an incognito profile exists.
   virtual bool HasOffTheRecordProfile() = 0;
 
   // Return the original "recording" profile. This method returns this if the
-  // profile is not off the record.
+  // profile is not incognito.
   virtual Profile* GetOriginalProfile() = 0;
 
   // Returns a pointer to the ChromeAppCacheService instance for this profile.
@@ -391,11 +391,11 @@ class Profile {
   virtual FindBarState* GetFindBarState() = 0;
 
   // Returns the session service for this profile. This may return NULL. If
-  // this profile supports a session service (it isn't off the record), and
+  // this profile supports a session service (it isn't incognito), and
   // the session service hasn't yet been created, this forces creation of
   // the session service.
   //
-  // This returns NULL in two situations: the profile is off the record, or the
+  // This returns NULL in two situations: the profile is incognito, or the
   // session service has been explicitly shutdown (browser is exiting). Callers
   // should always check the return value for NULL.
   virtual SessionService* GetSessionService() = 0;
@@ -436,7 +436,7 @@ class Profile {
 
   // Return whether 2 profiles are the same. 2 profiles are the same if they
   // represent the same profile. This can happen if there is pointer equality
-  // or if one profile is the off the record version of another profile (or vice
+  // or if one profile is the incognito version of another profile (or vice
   // versa).
   virtual bool IsSameProfile(Profile* profile) = 0;
 
@@ -446,7 +446,7 @@ class Profile {
   // the user started chrome.
   virtual base::Time GetStartTime() const = 0;
 
-  // Returns the TabRestoreService. This returns NULL when off the record.
+  // Returns the TabRestoreService. This returns NULL when incognito.
   virtual TabRestoreService* GetTabRestoreService() = 0;
 
   virtual void ResetTabRestoreService() = 0;

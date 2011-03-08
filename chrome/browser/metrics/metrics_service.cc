@@ -1910,7 +1910,7 @@ void MetricsService::RecordPluginChanges(PrefService* pref) {
 bool MetricsService::CanLogNotification(NotificationType type,
                                         const NotificationSource& source,
                                         const NotificationDetails& details) {
-  // We simply don't log anything to UMA if there is a single off the record
+  // We simply don't log anything to UMA if there is a single incognito
   // session visible. The problem is that we always notify using the orginal
   // profile in order to simplify notification processing.
   return !BrowserList::IsOffTheRecordSessionActive();

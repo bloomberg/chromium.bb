@@ -338,12 +338,12 @@ TEST(ThumbnailGeneratorSimpleTest, ShouldUpdateThumbnail) {
   EXPECT_TRUE(ThumbnailGenerator::ShouldUpdateThumbnail(
       &profile, top_sites.get(), kGoodURL));
 
-  // Should be false, if it's in the off-the-record mode.
+  // Should be false, if it's in the incognito mode.
   profile.set_off_the_record(true);
   EXPECT_FALSE(ThumbnailGenerator::ShouldUpdateThumbnail(
       &profile, top_sites.get(), kGoodURL));
 
-  // Should be true again, once turning off the off-the-record mode.
+  // Should be true again, once turning off the incognito mode.
   profile.set_off_the_record(false);
   EXPECT_TRUE(ThumbnailGenerator::ShouldUpdateThumbnail(
       &profile, top_sites.get(), kGoodURL));

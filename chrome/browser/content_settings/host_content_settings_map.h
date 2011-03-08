@@ -94,7 +94,7 @@ class HostContentSettingsMap
   // For a given content type, returns all patterns with a non-default setting,
   // mapped to their actual settings, in lexicographical order.  |settings|
   // must be a non-NULL outparam. If this map was created for the
-  // off-the-record profile, it will only return those settings differing from
+  // incognito profile, it will only return those settings differing from
   // the main map. For ContentSettingsTypes that require an resource identifier
   // to be specified, the |resource_identifier| must be non-empty.
   //
@@ -104,7 +104,7 @@ class HostContentSettingsMap
                              SettingsForOneType* settings) const;
 
   // Sets the default setting for a particular content type. This method must
-  // not be invoked on an off-the-record map.
+  // not be invoked on an incognito map.
   //
   // This should only be called on the UI thread.
   void SetDefaultContentSetting(ContentSettingsType content_type,
@@ -145,7 +145,7 @@ class HostContentSettingsMap
   }
 
   // Sets whether we block all third-party cookies. This method must not be
-  // invoked on an off-the-record map.
+  // invoked on an incognito map.
   //
   // This should only be called on the UI thread.
   void SetBlockThirdPartyCookies(bool block);

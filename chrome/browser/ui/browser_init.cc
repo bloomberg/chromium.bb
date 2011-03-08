@@ -540,7 +540,7 @@ bool BrowserInit::LaunchBrowser(const CommandLine& command_line,
   }
 #endif
 
-  // Continue with the off-the-record profile from here on if --incognito
+  // Continue with the incognito profile from here on if --incognito
   if (command_line.HasSwitch(switches::kIncognito) &&
       profile->GetPrefs()->GetBoolean(prefs::kIncognitoEnabled)) {
     profile = profile->GetOffTheRecordProfile();
@@ -562,7 +562,7 @@ bool BrowserInit::LaunchBrowser(const CommandLine& command_line,
 #if defined(OS_CHROMEOS)
   // Initialize Chrome OS preferences like touch pad sensitivity. For the
   // preferences to work in the guest mode, the initialization has to be
-  // done after |profile| is switched to the off-the-record profile (which
+  // done after |profile| is switched to the incognito profile (which
   // is actually GuestSessionProfile in the guest mode). See the
   // GetOffTheRecordProfile() call above.
   profile->InitChromeOSPreferences();

@@ -464,7 +464,7 @@ TEST_F(HostContentSettingsMapTest, OffTheRecord) {
                 host, CONTENT_SETTINGS_TYPE_IMAGES, ""));
 
   // Changing content settings on the main map should also affect the
-  // off-the-record map.
+  // incognito map.
   host_content_settings_map->SetContentSetting(pattern,
       CONTENT_SETTINGS_TYPE_IMAGES, "", CONTENT_SETTING_BLOCK);
   EXPECT_EQ(CONTENT_SETTING_BLOCK,
@@ -474,7 +474,7 @@ TEST_F(HostContentSettingsMapTest, OffTheRecord) {
             otr_map->GetContentSetting(
                 host, CONTENT_SETTINGS_TYPE_IMAGES, ""));
 
-  // Changing content settings on the off-the-record map should NOT affect the
+  // Changing content settings on the incognito map should NOT affect the
   // main map.
   otr_map->SetContentSetting(pattern,
       CONTENT_SETTINGS_TYPE_IMAGES, "", CONTENT_SETTING_ALLOW);

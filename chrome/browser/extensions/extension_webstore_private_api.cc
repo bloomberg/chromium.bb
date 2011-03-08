@@ -87,8 +87,8 @@ DictionaryValue* CreateLoginResult(Profile* profile) {
   return dictionary;
 }
 
-// If |profile| is not off the record, returns it. Otherwise returns the real
-// (not off the record) default profile.
+// If |profile| is not incognito, returns it. Otherwise returns the real
+// (not incognito) default profile.
 Profile* GetDefaultProfile(Profile* profile) {
   if (!profile->IsOffTheRecord())
     return profile;

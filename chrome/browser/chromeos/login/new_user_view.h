@@ -43,7 +43,7 @@ class NewUserView : public ThrobberHostView,
     virtual void OnLogin(const std::string& username,
                          const std::string& password) = 0;
 
-    // Initiates off the record (incognito) login.
+    // Initiates incognito login.
     virtual void OnLoginAsGuest() = 0;
 
     // User initiated new account creation.

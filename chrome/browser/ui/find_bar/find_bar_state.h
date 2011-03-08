@@ -28,7 +28,7 @@ class FindBarState {
   }
 
   // Retrieves the last prepopulate text for a given Profile.  If the profile is
-  // off the record and has an empty prepopulate text, falls back to the
+  // incognito and has an empty prepopulate text, falls back to the
   // prepopulate text from the normal profile.
   static string16 GetLastPrepopulateText(Profile* profile);
 

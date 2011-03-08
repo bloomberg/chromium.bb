@@ -138,7 +138,7 @@ class WebPlugin {
                                         const char* range_info,
                                         int range_request_id) = 0;
 
-  // Returns true iff in off the record (Incognito) mode.
+  // Returns true iff in incognito mode.
   virtual bool IsOffTheRecord() = 0;
 
   // Called when the WebPluginResourceClient instance is deleted.

@@ -65,7 +65,7 @@ class UserManager : public UserImageLoader::Delegate,
   // It is sorted in order of recency, with most recent at the beginning.
   virtual std::vector<User> GetUsers() const;
 
-  // Indicates that user just started off the record session.
+  // Indicates that user just started incognito session.
   virtual void OffTheRecordUserLoggedIn();
 
   // Indicates that a user with the given email has just logged in.

@@ -98,7 +98,7 @@ class ProviderInterface {
   // For a given content type, returns all content setting rules with a
   // non-default setting, mapped to their actual settings.
   // |content_settings_rules| must be non-NULL. If this provider was created for
-  // the off-the-record profile, it will only return those settings differing
+  // the incognito profile, it will only return those settings differing
   // from the corresponding regular provider. For ContentSettingsTypes that
   // require a resource identifier to be specified, the |resource_identifier|
   // must be non-empty.

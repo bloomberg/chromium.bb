@@ -9,7 +9,7 @@
 #include "chrome/browser/content_exceptions_table_model.h"
 #include "views/controls/table/table_view.h"
 
-// A thin wrapper around TableView that displays off-the-record entries in
+// A thin wrapper around TableView that displays incognito entries in
 // italics.
 class ContentExceptionsTableView : public views::TableView {
  public:

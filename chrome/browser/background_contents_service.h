@@ -129,7 +129,7 @@ class BackgroundContentsService : private NotificationObserver,
   bool IsTracked(BackgroundContents* contents) const;
 
   // PrefService used to store list of background pages (or NULL if this is
-  // running under an off-the-record profile).
+  // running under an incognito profile).
   PrefService* prefs_;
   NotificationRegistrar registrar_;
 

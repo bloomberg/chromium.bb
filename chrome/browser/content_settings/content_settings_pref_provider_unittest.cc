@@ -107,7 +107,7 @@ TEST_F(PrefDefaultProviderTest, OffTheRecord) {
             otr_provider.ProvideDefaultSetting(CONTENT_SETTINGS_TYPE_COOKIES));
 
   // Changing content settings on the main provider should also affect the
-  // off-the-record map.
+  // incognito map.
   provider.UpdateDefaultSetting(CONTENT_SETTINGS_TYPE_COOKIES,
                                 CONTENT_SETTING_BLOCK);
   EXPECT_EQ(CONTENT_SETTING_BLOCK,
@@ -115,7 +115,7 @@ TEST_F(PrefDefaultProviderTest, OffTheRecord) {
   EXPECT_EQ(CONTENT_SETTING_BLOCK,
             otr_provider.ProvideDefaultSetting(CONTENT_SETTINGS_TYPE_COOKIES));
 
-  // Changing content settings on the off-the-record provider should be ignored.
+  // Changing content settings on the incognito provider should be ignored.
   otr_provider.UpdateDefaultSetting(CONTENT_SETTINGS_TYPE_COOKIES,
                                    CONTENT_SETTING_ALLOW);
   EXPECT_EQ(CONTENT_SETTING_BLOCK,

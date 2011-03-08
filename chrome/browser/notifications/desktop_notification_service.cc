@@ -411,7 +411,7 @@ void DesktopNotificationService::OnPrefsChanged(const std::string& pref_name) {
 
 void DesktopNotificationService::PersistPermissionChange(
     const GURL& origin, bool is_allowed) {
-  // Don't persist changes when off the record.
+  // Don't persist changes when incognito.
   if (profile_->IsOffTheRecord())
     return;
 

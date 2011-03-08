@@ -121,7 +121,7 @@ class BaseProvider : public ProviderInterface {
   bool is_off_the_record_;
 
   // Differences to the preference-stored host content settings for
-  // off-the-record settings.
+  // incognito settings.
   HostContentSettings off_the_record_settings_;
 
   // Used around accesses to the content_settings_ object to guarantee

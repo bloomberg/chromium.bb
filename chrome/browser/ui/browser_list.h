@@ -158,7 +158,7 @@ class BrowserList {
   // currently open.
   static size_t GetBrowserCountForType(Profile* p, Browser::Type type);
 
-  // Returns true if at least one off the record session is active.
+  // Returns true if at least one incognito session is active.
   static bool IsOffTheRecordSessionActive();
 
   // Send out notifications.

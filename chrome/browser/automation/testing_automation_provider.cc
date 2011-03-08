@@ -3435,7 +3435,7 @@ void TestingAutomationProvider::AddSavedPassword(
       GetPasswordFormFromDict(*password_dict);
 
   Profile* profile = browser->profile();
-  // Use IMPLICIT_ACCESS since new passwords aren't added off the record.
+  // Use IMPLICIT_ACCESS since new passwords aren't added in incognito mode.
   PasswordStore* password_store =
       profile->GetPasswordStore(Profile::IMPLICIT_ACCESS);
 
@@ -3478,7 +3478,7 @@ void TestingAutomationProvider::RemoveSavedPassword(
       GetPasswordFormFromDict(*password_dict);
 
   Profile* profile = browser->profile();
-  // Use EXPLICIT_ACCESS since passwords can be removed off the record.
+  // Use EXPLICIT_ACCESS since passwords can be removed in incognito mode.
   PasswordStore* password_store =
       profile->GetPasswordStore(Profile::EXPLICIT_ACCESS);
 
@@ -3494,7 +3494,7 @@ void TestingAutomationProvider::GetSavedPasswords(
     DictionaryValue* args,
     IPC::Message* reply_message) {
   Profile* profile = browser->profile();
-  // Use EXPLICIT_ACCESS since saved passwords can be retreived off the record.
+  // Use EXPLICIT_ACCESS since saved passwords can be retreived in incognito mode.
   PasswordStore* password_store =
       profile->GetPasswordStore(Profile::EXPLICIT_ACCESS);
   password_store->GetAutofillableLogins(

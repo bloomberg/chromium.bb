@@ -352,7 +352,7 @@ TEST_F(SessionRestoreUITest, DontRestoreWhileIncognito) {
   scoped_refptr<BrowserProxy> browser_proxy(automation()->GetBrowserWindow(0));
   ASSERT_TRUE(browser_proxy.get());
 
-  // Create an off the record window.
+  // Create an incognito window.
   ASSERT_TRUE(browser_proxy->RunCommand(IDC_NEW_INCOGNITO_WINDOW));
   int window_count;
   ASSERT_TRUE(automation()->GetBrowserWindowCount(&window_count));

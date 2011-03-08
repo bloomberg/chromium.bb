@@ -359,7 +359,7 @@ class RenderMessageFilter : public BrowserMessageFilter,
   // Handles zoom-related messages.
   scoped_refptr<HostZoomMap> host_zoom_map_;
 
-  // Whether this process is used for off the record tabs.
+  // Whether this process is used for incognito tabs.
   bool off_the_record_;
 
   base::TimeTicks last_plugin_refresh_time_;  // Initialized to 0.

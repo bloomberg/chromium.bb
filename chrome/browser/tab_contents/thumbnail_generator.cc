@@ -664,7 +664,7 @@ bool ThumbnailGenerator::ShouldUpdateThumbnail(Profile* profile,
                                                const GURL& url) {
   if (!profile || !top_sites)
     return false;
-  // Skip if it's in the off-the-record mode.
+  // Skip if it's in the incognito mode.
   if (profile->IsOffTheRecord())
     return false;
   // Skip if the given URL is not appropriate for history.

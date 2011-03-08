@@ -65,7 +65,7 @@ class GoogleAuthenticator : public Authenticator, public GaiaAuthConsumer {
   bool AuthenticateToUnlock(const std::string& username,
                             const std::string& password);
 
-  // Initiates off the record ("browse without signing in") login.
+  // Initiates incognito ("browse without signing in") login.
   // Mounts tmpfs and notifies consumer on the success/failure.
   void LoginOffTheRecord();
 

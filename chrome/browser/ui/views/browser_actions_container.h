@@ -443,7 +443,7 @@ class BrowserActionsContainer
 
   // Animate to the target size (unless testing, in which case we go straight to
   // the target size).  This also saves the target number of visible icons in
-  // the pref if we're not off the record.
+  // the pref if we're not incognito.
   void SaveDesiredSizeAndAnimate(ui::Tween::Type type,
                                  size_t num_visible_icons);
 

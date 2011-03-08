@@ -349,7 +349,7 @@ void SearchProvider::StartOrStopSuggestQuery(bool minimal_changes) {
 }
 
 bool SearchProvider::IsQuerySuitableForSuggest() const {
-  // Don't run Suggest when off the record, the engine doesn't support it, or
+  // Don't run Suggest in incognito mode, the engine doesn't support it, or
   // the user has disabled it.
   if (profile_->IsOffTheRecord() ||
       (!providers_.valid_suggest_for_keyword_provider() &&

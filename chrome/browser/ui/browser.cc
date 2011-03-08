@@ -1567,7 +1567,7 @@ void Browser::BookmarkCurrentPage() {
   bookmark_utils::GetURLAndTitleToBookmark(tab, &url, &title);
   bool was_bookmarked = model->IsBookmarked(url);
   if (!was_bookmarked && profile_->IsOffTheRecord()) {
-    // If we're off the record the favicon may not have been saved. Save it now
+    // If we're incognito the favicon may not have been saved. Save it now
     // so that bookmarks have an icon for the page.
     tab->SaveFavicon();
   }
