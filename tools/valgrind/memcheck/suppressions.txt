@@ -3816,34 +3816,6 @@
   fun:_ZN7testing8internal35HandleExceptionsInMethodIfSupportedINS_4TestEvEET0_PT_MS4_FS3_vEPKc
 }
 {
-   bug_75018_a
-   Memcheck:Cond
-   ...
-   fun:_ZN6PickleC1EPKci
-   fun:_ZN7fileapi20FileSystemUsageCache4ReadERK8FilePathPj
-}
-{
-   bug_75018_b
-   Memcheck:Cond
-   fun:_ZNK6Pickle18IteratorHasRoomForEPKvi
-   fun:_ZNK6Pickle9ReadBytesEPPvPPKci
-   fun:_ZN7fileapi20FileSystemUsageCache4ReadERK8FilePathPj
-   fun:_ZN7fileapi20FileSystemUsageCache8GetUsageERK8FilePath
-   fun:_ZN7fileapi22FileSystemUsageTracker12GetUsageTask15RunOnFileThreadEv
-   fun:_Z16DispatchToMethodIN7fileapi22FileSystemUsageTracker12GetUsageTaskEMS2_FvvEEvPT_T0_RK6Tuple0
-   fun:_ZN14RunnableMethodIN7fileapi22FileSystemUsageTracker12GetUsageTaskEMS2_FvvE6Tuple0E3RunEv
-}
-{
-   bug_75018_c
-   Memcheck:Cond
-   fun:_ZNK6Pickle9ReadBytesEPPvPPKci
-   fun:_ZN7fileapi20FileSystemUsageCache4ReadERK8FilePathPj
-   fun:_ZN7fileapi20FileSystemUsageCache8GetUsageERK8FilePath
-   fun:_ZN7fileapi22FileSystemUsageTracker12GetUsageTask15RunOnFileThreadEv
-   fun:_Z16DispatchToMethodIN7fileapi22FileSystemUsageTracker12GetUsageTaskEMS2_FvvEEvPT_T0_RK6Tuple0
-   fun:_ZN14RunnableMethodIN7fileapi22FileSystemUsageTracker12GetUsageTaskEMS2_FvvE6Tuple0E3RunEv
-}
-{
    bug_75019
    Memcheck:Leak
    fun:_Znw*
