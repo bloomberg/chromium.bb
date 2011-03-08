@@ -8,6 +8,7 @@
 #include <string>
 #include <vector>
 
+#include "base/allocator/allocator_shim.h"
 #include "base/at_exit.h"
 #include "base/command_line.h"
 #include "base/debug/trace_event.h"
@@ -1138,6 +1139,14 @@ int BrowserMain(const MainFunctionParams& parameters) {
   // TODO(viettrungluu): put the remainder into BrowserMainParts
   const CommandLine& parsed_command_line = parameters.command_line_;
   base::mac::ScopedNSAutoreleasePool* pool = parameters.autorelease_pool_;
+
+#if defined(OS_WIN) && !defined(NO_TCMALLOC)
+  // When linking shared libraries, NO_TCMALLOC is defined, and dynamic
+  // allocator selection is not supported.
+
+  // Make this call before going multithreaded, or spawning any subprocesses.
+  base::allocator::SetupSubprocessAllocator();
+#endif  // OS_WIN
 
   FilePath user_data_dir;
 #if defined(OS_WIN)
