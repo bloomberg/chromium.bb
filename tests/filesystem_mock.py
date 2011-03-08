@@ -32,10 +32,15 @@ class MockFileSystem(object):
   def _split(self, path):
     return path.rsplit(self.sep, 1)
 
+  def abspath(self, path):
+    if path.endswith(self.sep):
+      return path[:-1]
+    return path
+
   def dirname(self, path):
-    if not self.sep in path:
+    if self.sep not in path:
       return ''
-    return self._split(path)[0]
+    return self._split(path)[0] or self.sep
 
   def exists(self, path):
     return self.isfile(path) or self.isdir(path)
@@ -56,7 +61,7 @@ class MockFileSystem(object):
     return any(f.startswith(path) for f in files)
 
   def join(self, *comps):
-    # FIXME: might want tests for this and/or a better comment about how
+    # TODO: Might want tests for this and/or a better comment about how
     # it works.
     return re.sub(re.escape(os.path.sep), self.sep, os.path.join(*comps))
 
