@@ -220,13 +220,23 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, JavascriptAlertActivatesTab) {
   EXPECT_EQ(1, browser()->selected_index());
 }
 
+
+
+#if defined(OS_WIN)
+// http://crbug.com/75274. On XP crashes inside
+// URLFetcher::Core::Registry::RemoveURLFetcherCore.
+#define MAYBE_ThirtyFourTabs FLAKY_ThirtyFourTabs
+#else
+#define MAYBE_ThirtyFourTabs ThirtyFourTabs
+#endif
+
 // Create 34 tabs and verify that a lot of processes have been created. The
 // exact number of processes depends on the amount of memory. Previously we
 // had a hard limit of 31 processes and this test is mainly directed at
 // verifying that we don't crash when we pass this limit.
 // Warning: this test can take >30 seconds when running on a slow (low
 // memory?) Mac builder.
-IN_PROC_BROWSER_TEST_F(BrowserTest, ThirtyFourTabs) {
+IN_PROC_BROWSER_TEST_F(BrowserTest, MAYBE_ThirtyFourTabs) {
   GURL url(ui_test_utils::GetTestUrl(FilePath(FilePath::kCurrentDirectory),
                                      FilePath(kTitle2File)));
 
