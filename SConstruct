@@ -2089,6 +2089,7 @@ nacl_env.Append(
     'tests/math/nacl.scons',
     'tests/memcheck_test/nacl.scons',
     'tests/mmap/nacl.scons',
+    'tests/multiple_sandboxes/nacl.scons',
     'tests/nacl.scons',
     'tests/nacl_log/nacl.scons',
     'tests/nameservice/nacl.scons',

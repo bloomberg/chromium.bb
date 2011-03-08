@@ -1,0 +1,54 @@
+# -*- python -*-
+# Copyright 2011 The Native Client Authors.  All rights reserved.
+# Use of this source code is governed by a BSD-style license that can
+# be found in the LICENSE file.
+
+Import('env')
+
+if 'TRUSTED_ENV' not in env:
+  Return()
+trusted_env = env['TRUSTED_ENV']
+
+# This duplicates the library list in src/trusted/service_runtime/build.scons.
+# We would not have to do this if we could get Scons to track dependencies
+# between libraries.
+VALIDATOR_LIBS = []
+if trusted_env.Bit('target_x86'):
+  VALIDATOR_LIBS += ['ncopcode_utils', 'ncvalidate']
+  if trusted_env.Bit('target_x86_64'):
+    VALIDATOR_LIBS += ['ncvalidate_sfi']
+elif trusted_env.Bit('target_arm'):
+  VALIDATOR_LIBS += ['ncvalidate_arm_v2', 'arm_validator_core']
+
+DEBUG_LIBS = ['gdb_rsp', 'debug_stub']
+
+runner = trusted_env.ComponentProgram(
+    'multidomain_test_host', ['multidomain_test_host.c'],
+    EXTRA_LIBS=['sel',
+                'gio_wrapped_desc',
+                'nonnacl_srpc',
+                'nrd_xfer',
+                'nacl_base',
+                'imc',
+                'container',
+                'platform',
+                'platform_qual_lib',
+                'gio',
+                ] + VALIDATOR_LIBS + DEBUG_LIBS)
+
+test_prog = env.ComponentProgram(
+    'multidomain_test_guest.nexe', ['multidomain_test_guest.c'])
+
+node = env.CommandTest('multidomain_test.out', [runner, test_prog],
+                       stdout_golden=env.File('multidomain_test.stdout'))
+# NaCl's ARM sandbox does not support multiple sandboxes per process.
+# This currently fails on Mac because it tries to enable the outer sandbox
+# twice, which does not work.
+# multidomain_test_host assumes it is given a statically linked executable.
+# Statically-linked nacl-glibc does not work here because of validation
+# failures which require stubout mode.
+is_broken = (env.Bit('build_arm')
+             or env.Bit('host_mac')
+             or env.Bit('nacl_glibc'))
+env.AddNodeToTestSuite(node, ['small_tests'], 'run_multidomain_test',
+                       is_broken=is_broken)
