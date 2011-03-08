@@ -178,6 +178,8 @@ class PageCyclerTest : public UIPerfTest {
     // Expose garbage collection for the page cycler tests.
     launch_arguments_.AppendSwitchASCII(switches::kJavaScriptFlags,
                                         "--expose_gc");
+    // Enable experimental extension APIs for webrequest tests.
+    launch_arguments_.AppendSwitch(switches::kEnableExperimentalExtensionApis);
 #if defined(OS_MACOSX)
     static rlim_t initial_fd_limit = GetFileDescriptorLimit();
     fd_limit_ = initial_fd_limit;
@@ -368,6 +370,9 @@ class PageCyclerExtensionTest : public PageCyclerTest {
   }
 };
 
+class PageCyclerExtensionWebRequestTest : public PageCyclerExtensionTest {
+};
+
 static FilePath GetDatabaseDataPath(const char* name) {
   FilePath test_path;
   PathService::Get(base::DIR_SOURCE_ROOT, &test_path);
@@ -550,11 +555,21 @@ TEST_F(PageCyclerExtensionTest, name##10) { \
   RunTest("times", "content_scripts10", "_extcs10", test, false); \
 }
 
+// This macro lets us define tests with an extension that listens to the
+// webrequest.onBeforeRequest. It measures the effect that a blocking event
+// for every request has on page cycle time.
+#define PAGE_CYCLER_EXTENSIONS_WEBREQUEST_FILE_TESTS(test, name) \
+TEST_F(PageCyclerExtensionWebRequestTest, name) { \
+  RunTest("times", "extension_webrequest", "_extwr", test, false); \
+}
+
 // file-URL tests
 PAGE_CYCLER_FILE_TESTS("moz", MozFile);
 PAGE_CYCLER_EXTENSIONS_FILE_TESTS("moz", MozFile);
+PAGE_CYCLER_EXTENSIONS_WEBREQUEST_FILE_TESTS("moz", MozFile)
 PAGE_CYCLER_FILE_TESTS("intl1", Intl1File);
 PAGE_CYCLER_FILE_TESTS("intl2", Intl2File);
+PAGE_CYCLER_EXTENSIONS_WEBREQUEST_FILE_TESTS("intl2", Intl2File);
 PAGE_CYCLER_FILE_TESTS("dom", DomFile);
 PAGE_CYCLER_FILE_TESTS("dhtml", DhtmlFile);
 PAGE_CYCLER_FILE_TESTS("morejs", MorejsFile);

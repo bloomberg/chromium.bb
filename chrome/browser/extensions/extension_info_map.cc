@@ -25,10 +25,6 @@ ExtensionInfoMap::~ExtensionInfoMap() {
 void ExtensionInfoMap::AddExtension(const Extension* extension) {
   CheckOnValidThread();
   extension_info_[extension->id()] = extension;
-
-  // Our map has already added a reference. Balance the reference given at the
-  // call-site.
-  extension->Release();
 }
 
 void ExtensionInfoMap::RemoveExtension(const std::string& id) {

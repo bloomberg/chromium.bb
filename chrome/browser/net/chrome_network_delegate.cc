@@ -41,9 +41,10 @@ ChromeNetworkDelegate::ChromeNetworkDelegate(
 
 ChromeNetworkDelegate::~ChromeNetworkDelegate() {}
 
-void ChromeNetworkDelegate::OnBeforeURLRequest(net::URLRequest* request) {
-  ExtensionWebRequestEventRouter::GetInstance()->OnBeforeRequest(
-      event_router_.get(), profile_id_, request->url(), request->method());
+bool ChromeNetworkDelegate::OnBeforeURLRequest(
+    net::URLRequest* request, net::CompletionCallback* callback) {
+  return ExtensionWebRequestEventRouter::GetInstance()->OnBeforeRequest(
+      profile_id_, event_router_.get(), request, callback);
 }
 
 void ChromeNetworkDelegate::OnSendHttpRequest(

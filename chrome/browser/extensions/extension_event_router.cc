@@ -34,6 +34,14 @@ static void DispatchEvent(RenderProcessHost* renderer,
       extension_id, kDispatchEvent, args, event_url));
 }
 
+static void NotifyEventListenerRemovedOnIOThread(
+    ProfileId profile_id,
+    const std::string& extension_id,
+    const std::string& sub_event_name) {
+  ExtensionWebRequestEventRouter::GetInstance()->RemoveEventListener(
+      profile_id, extension_id, sub_event_name);
+}
+
 }  // namespace
 
 struct ExtensionEventRouter::EventListener {
@@ -120,8 +128,11 @@ void ExtensionEventRouter::RemoveEventListener(
   if (event_name.compare(extension_processes_api_constants::kOnUpdated) == 0)
     ExtensionProcessesEventRouter::GetInstance()->ListenerRemoved();
 
-  ExtensionWebRequestEventRouter::RemoveEventListenerOnUIThread(
-      listener.extension_id, event_name);
+  BrowserThread::PostTask(
+      BrowserThread::IO, FROM_HERE,
+      NewRunnableFunction(
+          &NotifyEventListenerRemovedOnIOThread,
+          profile_->GetRuntimeId(), listener.extension_id, event_name));
 }
 
 bool ExtensionEventRouter::HasEventListener(const std::string& event_name) {

@@ -9,7 +9,7 @@ function runTests() {
         expect([
           [ "onBeforeNavigate",
             { frameId: 0,
-              requestId: 0,
+              requestId: "0",
               tabId: 0,
               timeStamp: 0,
               url: getURL('a.html') }],
@@ -32,7 +32,7 @@ function runTests() {
               url: getURL('a.html') }],
           [ "onBeforeNavigate",
             { frameId: 0,
-              requestId: 0,
+              requestId: "0",
               tabId: 0,
               timeStamp: 0,
               url: getURL('a.html#anchor') }],

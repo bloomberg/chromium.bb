@@ -259,6 +259,7 @@ var chrome = chrome || {};
     this.eventName_ = eventName;
     this.argSchemas_ = opt_argSchemas;
     this.subEvents_ = [];
+    this.callbackMap_ = {};
   };
 
   // Registers a callback to be called when this event is dispatched. If
@@ -275,24 +276,43 @@ var chrome = chrome || {};
 
     var subEvent = new chrome.Event(subEventName, this.argSchemas_);
     this.subEvents_.push(subEvent);
-    subEvent.addListener(cb);
+    var subEventCallback = cb;
+    if (opt_extraInfo && opt_extraInfo.indexOf("blocking") >= 0) {
+      var eventName = this.eventName_;
+      subEventCallback = function() {
+        var requestId = arguments[0].requestId;
+        try {
+          var result = cb.apply(null, arguments);
+          chrome.experimental.webRequest.eventHandled(
+              eventName, subEventName, requestId, result);
+        } catch (e) {
+          chrome.experimental.webRequest.eventHandled(
+              eventName, subEventName, requestId);
+          throw e;
+        }
+      };
+    }
+    this.callbackMap_[cb] = subEventCallback;
+    subEvent.addListener(subEventCallback);
   };
 
   // Unregisters a callback.
   chrome.WebRequestEvent.prototype.removeListener = function(cb) {
     var idx = this.findListener_(cb);
-    if (idx >= -1) {
+    if (idx < 0) {
       return;
     }
 
-    this.subEvents_[idx].removeListener(cb);
+    var subEventCallback = this.callbackMap_[cb];
+    this.subEvents_[idx].removeListener(subEventCallback);
     if (!this.subEvents_[idx].hasListeners())
       this.subEvents_.splice(idx, 1);
   };
 
   chrome.WebRequestEvent.prototype.findListener_ = function(cb) {
+    var subEventCallback = this.callbackMap_[cb];
     for (var i = 0; i < this.subEvents_.length; i++) {
-      if (this.subEvents_[i].findListener_(cb) > -1)
+      if (this.subEvents_[i].findListener_(subEventCallback) > -1)
         return i;
     }
 

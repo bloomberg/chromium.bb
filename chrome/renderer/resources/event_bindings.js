@@ -165,7 +165,8 @@ var chrome = chrome || {};
       try {
         this.listeners_[i].apply(null, args);
       } catch (e) {
-        console.error(e);
+        console.error("Error in event handler for '" + this.eventName_ +
+                      "': " + e);
       }
     }
   };

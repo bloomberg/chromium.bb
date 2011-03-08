@@ -2,12 +2,12 @@
 var getURL = chrome.extension.getURL;
 var expectedEventData;
 var capturedEventData;
-var captureFilteredEvents;
 
-function expect(data, filtered) {
+function expect(data, filter, extraInfoSpec) {
   expectedEventData = data;
   capturedEventData = [];
-  captureFilteredEvents = filtered;
+  removeListeners();
+  initListeners(filter, extraInfoSpec);
 }
 
 function checkExpectations() {
@@ -20,49 +20,66 @@ function checkExpectations() {
   chrome.test.succeed();
 }
 
-function captureEvent(name, details, isFiltered) {
+function captureEvent(name, details) {
   // TODO(mpcomplete): implement the rest of the parameters.
   delete details.requestId;
   delete details.tabId;
   delete details.timeStamp;
   delete details.type;
-  if (captureFilteredEvents == isFiltered)
-    capturedEventData.push([name, details]);
+  capturedEventData.push([name, details]);
   checkExpectations();
 }
 
-chrome.experimental.webRequest.onBeforeRequest.addListener(
-    function(details) {
-  captureEvent("onBeforeRequest", details);
-});
-chrome.experimental.webRequest.onRequestSent.addListener(
-    function(details) {
-  captureEvent("onRequestSent", details);
-});
-chrome.experimental.webRequest.onHeadersReceived.addListener(
-    function(details) {
-  captureEvent("onHeadersReceived", details);
-});
-chrome.experimental.webRequest.onBeforeRedirect.addListener(
-    function(details) {
-  captureEvent("onBeforeRedirect", details);
-});
-chrome.experimental.webRequest.onCompleted.addListener(
-    function(details) {
-  captureEvent("onCompleted", details);
-});
-chrome.experimental.webRequest.onErrorOccurred.addListener(
-    function(details) {
-  captureEvent("onErrorOccurred", details);
-});
+function initListeners(filter, extraInfoSpec) {
+  chrome.experimental.webRequest.onBeforeRequest.addListener(
+      function(details) {
+    captureEvent("onBeforeRequest", details);
+    return {cancel: true};  // no effect unless event is blocking.
+  }, filter, extraInfoSpec);
+  chrome.experimental.webRequest.onRequestSent.addListener(
+      function(details) {
+    captureEvent("onRequestSent", details);
+    return {cancel: true};
+  }, filter, extraInfoSpec);
+  chrome.experimental.webRequest.onHeadersReceived.addListener(
+      function(details) {
+    captureEvent("onHeadersReceived", details);
+    return {cancel: true};
+  }, filter, extraInfoSpec);
+  chrome.experimental.webRequest.onBeforeRedirect.addListener(
+      function(details) {
+    captureEvent("onBeforeRedirect", details);
+    return {cancel: true};
+  }, filter, extraInfoSpec);
+  chrome.experimental.webRequest.onCompleted.addListener(
+      function(details) {
+    captureEvent("onCompleted", details);
+    return {cancel: true};
+  }, filter, extraInfoSpec);
+  chrome.experimental.webRequest.onErrorOccurred.addListener(
+      function(details) {
+    captureEvent("onErrorOccurred", details);
+    return {cancel: true};
+  }, filter, extraInfoSpec);
+}
 
-// For filter tests.
-chrome.experimental.webRequest.onBeforeRequest.addListener(
-    function(details) {
-  captureEvent("onBeforeRequest", details, true);
-},
-    {urls: [getURL("simpleLoad/*")]}
-);
+function removeListeners() {
+  function helper(event) {
+    // Note: We're poking at the internal event data, but it's easier than
+    // the alternative. If this starts failing, we just need to update this
+    // helper.
+    for (var cb in event.callbackMap_) {
+      event.removeListener(cb);
+    }
+    chrome.test.assertEq(0, event.subEvents_.length);
+  }
+  helper(chrome.experimental.webRequest.onBeforeRequest);
+  helper(chrome.experimental.webRequest.onRequestSent);
+  helper(chrome.experimental.webRequest.onHeadersReceived);
+  helper(chrome.experimental.webRequest.onBeforeRedirect);
+  helper(chrome.experimental.webRequest.onCompleted);
+  helper(chrome.experimental.webRequest.onErrorOccurred);
+}
 
 chrome.tabs.getSelected(null, function(tab) {
   var tabId = tab.id;
@@ -108,6 +125,21 @@ chrome.tabs.getSelected(null, function(tab) {
       chrome.tabs.update(tabId, { url: getURL("complexLoad/a.html") });
     },
 
+    // Navigates to a page with subresources, with a blocking handler that
+    // cancels the page request. The page will not load, and we should not
+    // see the subresources.
+    function complexLoadBlocking() {
+      expect([
+        [ "onBeforeRequest",
+          {
+            method: "GET",
+            url: getURL("complexLoad/a.html")
+          }
+        ]
+      ], {}, ["blocking"]);
+      chrome.tabs.update(tabId, { url: getURL("complexLoad/a.html") });
+    },
+
     // Loads several resources, but should only see the simpleLoad
     // due to the filter.
     function simpleLoadFiltered() {
@@ -118,9 +150,9 @@ chrome.tabs.getSelected(null, function(tab) {
             url: getURL("simpleLoad/a.html")
           }
         ],
-      ], true);
+      ], {urls: [getURL("simpleLoad/*")]}, []);
       chrome.tabs.update(tabId, { url: getURL("complexLoad/a.html") });
-      chrome.tabs.update(tabId, { url: getURL("simpleLoad/a.html") });
+      chrome.tabs.create({ url: getURL("simpleLoad/a.html") });
     },
   ]);
 });

@@ -7,6 +7,7 @@
 #include "chrome/browser/extensions/extension_webnavigation_api.h"
 
 #include "base/json/json_writer.h"
+#include "base/string_number_conversions.h"
 #include "base/time.h"
 #include "base/values.h"
 #include "chrome/browser/extensions/extension_event_router.h"
@@ -64,7 +65,8 @@ void DispatchOnBeforeNavigate(NavigationController* controller,
                    ExtensionTabUtil::GetTabId(controller->tab_contents()));
   dict->SetString(keys::kUrlKey, details->url().spec());
   dict->SetInteger(keys::kFrameIdKey, GetFrameId(details));
-  dict->SetInteger(keys::kRequestIdKey, static_cast<int>(request_id));
+  dict->SetString(keys::kRequestIdKey,
+                  base::Uint64ToString(request_id));
   dict->SetDouble(keys::kTimeStampKey, MilliSecondsFromTime(base::Time::Now()));
   args.Append(dict);
 

@@ -83,14 +83,9 @@ TEST_F(ExtensionInfoMapTest, RefCounting) {
   EXPECT_TRUE(extension2->HasOneRef());
   EXPECT_TRUE(extension3->HasOneRef());
 
-  // Add a ref to each extension and give it to the info map. The info map
-  // expects the caller to add a ref for it, but then assumes ownership of that
-  // reference.
-  extension1->AddRef();
+  // Add a ref to each extension and give it to the info map.
   info_map->AddExtension(extension1);
-  extension2->AddRef();
   info_map->AddExtension(extension2);
-  extension3->AddRef();
   info_map->AddExtension(extension3);
 
   // Release extension1, and the info map should have the only ref.
@@ -114,9 +109,7 @@ TEST_F(ExtensionInfoMapTest, Properties) {
   scoped_refptr<Extension> extension1(CreateExtension("extension1"));
   scoped_refptr<Extension> extension2(CreateExtension("extension2"));
 
-  extension1->AddRef();
   info_map->AddExtension(extension1);
-  extension2->AddRef();
   info_map->AddExtension(extension2);
 
   EXPECT_EQ(extension1->name(),
@@ -143,9 +136,7 @@ TEST_F(ExtensionInfoMapTest, CheckPermissions) {
   ASSERT_TRUE(app->is_app());
   ASSERT_TRUE(app->web_extent().ContainsURL(app_url));
 
-  app->AddRef();
   info_map->AddExtension(app);
-  extension->AddRef();
   info_map->AddExtension(extension);
 
   // The app should have the notifications permission, either from a

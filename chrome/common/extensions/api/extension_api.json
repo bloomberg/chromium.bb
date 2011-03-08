@@ -3337,7 +3337,7 @@
               "tabId": {"type": "integer", "description": "The ID of the tab in which the navigation is about to occur."},
               "url": {"type": "string"},
               "frameId": {"type": "integer", "description": "0 indicates the navigation happens in the tab content window; positive value indicates navigation in a subframe. Frame IDs are unique within a tab."},
-              "requestId": {"type": "integer", "description": "The ID of the request to retrieve the document of this navigation. Note that this event is fired prior to the corresponding chrome.experimental.webRequest.onBeforeRequest."},
+              "requestId": {"type": "string", "description": "The ID of the request to retrieve the document of this navigation. Note that this event is fired prior to the corresponding chrome.experimental.webRequest.onBeforeRequest."},
               "timeStamp": {"type": "number", "description": "The time when the browser was about to start the navigation, in milliseconds since the epoch."}
             }
           }
@@ -3479,11 +3479,30 @@
             "description": "Array of extra information that should be passed to the listener function.",
             "items": {
               "type": "string",
-              "enum": ["requestLine", "requestHeaders", "statusLine", "responseHeaders", "redirectRequestLine", "redirectRequestHeaders"]
+              "enum": ["requestLine", "requestHeaders", "statusLine", "responseHeaders", "redirectRequestLine", "redirectRequestHeaders", "blocking"]
             }
           },
           {"type": "string", "name": "eventName"},
           {"type": "string", "name": "subEventName"}
+        ]
+      },
+      {
+        "name": "eventHandled",
+        "nodoc": true,
+        "type": "function",
+        "description": "Used internally to send a response for a blocked event.",
+        "parameters": [
+          {"type": "string", "name": "eventName"},
+          {"type": "string", "name": "subEventName"},
+          {"type": "string", "name": "requestId"},
+          {
+            "type": "object",
+            "name": "response",
+            "optional": true,
+            "properties": {
+              "cancel": {"type": "boolean", "optional": true}
+            }
+          }
         ]
       }
     ],
@@ -3497,7 +3516,7 @@
             "type": "object",
             "name": "details",
             "properties": {
-              "requestId": {"type": "integer", "description": "The ID of the request. Request IDs are unique within a browser session. As a result, they could be used to relate different events of the same request."},
+              "requestId": {"type": "string", "description": "The ID of the request. Request IDs are unique within a browser session. As a result, they could be used to relate different events of the same request."},
               "url": {"type": "string"},
               "method": {"type": "string", "description": "Standard HTTP method."},
               "tabId": {"type": "integer", "description": "The ID of the tab in which the request takes place. Set to null if the request isn't related to a tab."},
@@ -3516,7 +3535,7 @@
             "type": "object",
             "name": "details",
             "properties": {
-              "requestId": {"type": "integer", "description": "The ID of the request."},
+              "requestId": {"type": "string", "description": "The ID of the request."},
               "url": {"type": "string"},
               "ip": {"type": "string", "description": "The server IP address that is actually connected to. Note that it may be a literal IPv6 address."},
               "timeStamp": {"type": "number", "description": "The time when the browser finished sending the request, in milliseconds since the epoch."}
@@ -3533,7 +3552,7 @@
             "type": "object",
             "name": "details",
             "properties": {
-              "requestId": {"type": "integer", "description": "The ID of the request."},
+              "requestId": {"type": "string", "description": "The ID of the request."},
               "url": {"type": "string"},
               "statusCode": {"type": "integer", "description": "Standard HTTP status code returned by the server."},
               "timeStamp": {"type": "number", "description": "The time when the status line and response headers were received, in milliseconds since the epoch."}
@@ -3550,7 +3569,7 @@
             "type": "object",
             "name": "details",
             "properties": {
-              "requestId": {"type": "integer", "description": "The ID of the request."},
+              "requestId": {"type": "string", "description": "The ID of the request."},
               "url": {"type": "string", "description": "The URL of the current request."},
               "statusCode": {"type": "integer", "description": "Standard HTTP status code returned by the server."},
               "redirectUrl": {"type": "string", "description": "The new URL."},
@@ -3568,7 +3587,7 @@
             "type": "object",
             "name": "details",
             "properties": {
-              "requestId": {"type": "integer", "description": "The ID of the request."},
+              "requestId": {"type": "string", "description": "The ID of the request."},
               "url": {"type": "string", "description": "The URL of the current request."},
               "statusCode": {"type": "integer", "description": "Standard HTTP status code returned by the server."},
               "timeStamp": {"type": "number", "description": "The time when the response was received completely, in milliseconds since the epoch."}
@@ -3585,7 +3604,7 @@
             "type": "object",
             "name": "details",
             "properties": {
-              "requestId": {"type": "integer", "description": "The ID of the request."},
+              "requestId": {"type": "string", "description": "The ID of the request."},
               "url": {"type": "string", "description": "The URL of the current request."},
               "error": {"type": "string", "description": "The error description."},
               "timeStamp": {"type": "number", "description": "The time when the error occurred, in milliseconds since the epoch."}

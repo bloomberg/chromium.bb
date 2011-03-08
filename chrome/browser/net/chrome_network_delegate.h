@@ -17,8 +17,8 @@ class ExtensionEventRouterForwarder;
 // add hooks into the network stack.
 class ChromeNetworkDelegate : public net::NetworkDelegate {
  public:
-  // If |profile| is NULL, events will be broadcasted to all profiles,
-  // otherwise, they will be only send to the specified profile.
+  // If |profile_id| is the invalid profile, events will be broadcasted to all
+  // profiles, otherwise, they will only be sent to the specified profile.
   explicit ChromeNetworkDelegate(
       ExtensionEventRouterForwarder* event_router,
       ProfileId profile_id);
@@ -26,7 +26,8 @@ class ChromeNetworkDelegate : public net::NetworkDelegate {
 
  private:
   // NetworkDelegate methods:
-  virtual void OnBeforeURLRequest(net::URLRequest* request);
+  virtual bool OnBeforeURLRequest(net::URLRequest* request,
+                                  net::CompletionCallback* callback);
   virtual void OnSendHttpRequest(net::HttpRequestHeaders* headers);
   virtual void OnResponseStarted(net::URLRequest* request);
   virtual void OnReadCompleted(net::URLRequest* request, int bytes_read);

@@ -836,14 +836,11 @@ URLRequestContextGetter* ProfileImpl::GetRequestContextForExtensions() {
 
 void ProfileImpl::RegisterExtensionWithRequestContexts(
     const Extension* extension) {
-  // AddRef to ensure the data lives until the other thread gets it. Balanced in
-  // OnNewExtensions.
-  extension->AddRef();
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
       NewRunnableMethod(extension_info_map_.get(),
                         &ExtensionInfoMap::AddExtension,
-                        extension));
+                        make_scoped_refptr(extension)));
 }
 
 void ProfileImpl::UnregisterExtensionWithRequestContexts(

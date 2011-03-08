@@ -65,6 +65,7 @@
     "chrome.experimental.webNavigation.onDOMContentLoaded": "experimental.webNavigation.html#event-onDOMContentLoaded", 
     "chrome.experimental.webNavigation.onErrorOccurred": "experimental.webNavigation.html#event-onErrorOccurred", 
     "chrome.experimental.webRequest.addEventListener": "experimental.webRequest.html#method-addEventListener", 
+    "chrome.experimental.webRequest.eventHandled": "experimental.webRequest.html#method-eventHandled", 
     "chrome.experimental.webRequest.onBeforeRedirect": "experimental.webRequest.html#event-onBeforeRedirect", 
     "chrome.experimental.webRequest.onBeforeRequest": "experimental.webRequest.html#event-onBeforeRequest", 
     "chrome.experimental.webRequest.onCompleted": "experimental.webRequest.html#event-onCompleted", 
