@@ -21,7 +21,6 @@ class AudioHandler {
   static AudioHandler* GetInstance();
 
   // Get volume level in our internal 0-100% range, 0 being pure silence.
-  // Volume may go above 100% if another process changes PulseAudio's volume.
   // Returns default of 0 on error.  This function will block until the volume
   // is retrieved or fails.  Blocking call.
   double GetVolumePercent();
@@ -48,8 +47,7 @@ class AudioHandler {
 
  private:
   enum MixerType {
-    MIXER_TYPE_PULSEAUDIO = 0,
-    MIXER_TYPE_ALSA,
+    MIXER_TYPE_ALSA = 0,
     MIXER_TYPE_NONE,
   };
 
@@ -59,7 +57,6 @@ class AudioHandler {
 
   // Connect to the current mixer_type_.
   bool TryToConnect(bool async);
-  void UseNextMixer();
 
   void OnMixerInitialized(bool success);
 
@@ -81,7 +78,7 @@ class AudioHandler {
   double max_volume_db_;
   double min_volume_db_;
 
-  // Which mixer is being used, PulseAudio, ALSA or none.
+  // Which mixer is being used, ALSA or none.
   MixerType mixer_type_;
 
   DISALLOW_COPY_AND_ASSIGN(AudioHandler);

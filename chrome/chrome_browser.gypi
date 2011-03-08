@@ -365,8 +365,6 @@
         'browser/chromeos/audio_mixer.h',
         'browser/chromeos/audio_mixer_alsa.cc',
         'browser/chromeos/audio_mixer_alsa.h',
-        'browser/chromeos/audio_mixer_pulse.cc',
-        'browser/chromeos/audio_mixer_pulse.h',
         'browser/chromeos/boot_times_loader.cc',
         'browser/chromeos/boot_times_loader.h',
         'browser/chromeos/brightness_bubble.cc',
@@ -3430,11 +3428,6 @@
             'browser/password_manager/native_backend_kwallet_x.h',
             'browser/platform_util_linux.cc',
           ],
-          'link_settings': {
-            'libraries': [
-              '-lpulse',
-            ],
-          },
         }],
         ['use_gconf==0', {
           'sources!': [
