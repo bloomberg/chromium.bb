@@ -48,6 +48,9 @@ class TabStripModelObserverBridge;
   // The layer showing the background layer. Covers the whole visible area.
   CALayer* bgLayer_;  // weak
 
+  // Top gradient.
+  CALayer* topGradient_;  // weak
+
   // The layer drawn behind the currently selected tile.
   CALayer* selectionHighlight_;  // weak
 
