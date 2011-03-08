@@ -24,6 +24,7 @@ using testing::InSequence;
 using testing::NotNull;
 using testing::StrictMock;
 
+namespace net {
 namespace {
 
 const char kBasic[] = "Hello\n";
@@ -49,29 +50,29 @@ bool GetResponseBody(const GURL& url, std::string* out_body) {
   return true;
 }
 
-class MockJobObserver : public net::URLRequestJobTracker::JobObserver {
+class MockJobObserver : public URLRequestJobTracker::JobObserver {
  public:
-  MOCK_METHOD1(OnJobAdded, void(net::URLRequestJob* job));
-  MOCK_METHOD1(OnJobRemoved, void(net::URLRequestJob* job));
-  MOCK_METHOD2(OnJobDone, void(net::URLRequestJob* job,
-                               const net::URLRequestStatus& status));
-  MOCK_METHOD3(OnJobRedirect, void(net::URLRequestJob* job,
+  MOCK_METHOD1(OnJobAdded, void(URLRequestJob* job));
+  MOCK_METHOD1(OnJobRemoved, void(URLRequestJob* job));
+  MOCK_METHOD2(OnJobDone, void(URLRequestJob* job,
+                               const URLRequestStatus& status));
+  MOCK_METHOD3(OnJobRedirect, void(URLRequestJob* job,
                                    const GURL& location,
                                    int status_code));
-  MOCK_METHOD3(OnBytesRead, void(net::URLRequestJob* job,
+  MOCK_METHOD3(OnBytesRead, void(URLRequestJob* job,
                                  const char* buf,
                                  int byte_count));
 };
 
-// A net::URLRequestJob that returns static content for given URLs. We do
-// not use net::URLRequestTestJob here because net::URLRequestTestJob fakes
+// A URLRequestJob that returns static content for given URLs. We do
+// not use URLRequestTestJob here because URLRequestTestJob fakes
 // async operations by calling ReadRawData synchronously in an async
-// callback. This test requires a net::URLRequestJob that returns false for
+// callback. This test requires a URLRequestJob that returns false for
 // async reads, in order to exercise the real async read codepath.
-class URLRequestJobTrackerTestJob : public net::URLRequestJob {
+class URLRequestJobTrackerTestJob : public URLRequestJob {
  public:
-  URLRequestJobTrackerTestJob(net::URLRequest* request, bool async_reads)
-      : net::URLRequestJob(request), async_reads_(async_reads) {}
+  URLRequestJobTrackerTestJob(URLRequest* request, bool async_reads)
+      : URLRequestJob(request), async_reads_(async_reads) {}
 
   void Start() {
     ASSERT_TRUE(GetResponseBody(request_->url(), &response_data_));
@@ -82,7 +83,7 @@ class URLRequestJobTrackerTestJob : public net::URLRequestJob {
         this, &URLRequestJobTrackerTestJob::NotifyHeadersComplete));
   }
 
-  bool ReadRawData(net::IOBuffer* buf, int buf_size,
+  bool ReadRawData(IOBuffer* buf, int buf_size,
                    int *bytes_read) {
     const size_t bytes_to_read = std::min(
         response_data_.size(), static_cast<size_t>(buf_size));
@@ -94,12 +95,12 @@ class URLRequestJobTrackerTestJob : public net::URLRequestJob {
     response_data_.erase(0, bytes_to_read);
 
     if (async_reads_) {
-      SetStatus(net::URLRequestStatus(net::URLRequestStatus::IO_PENDING, 0));
+      SetStatus(URLRequestStatus(URLRequestStatus::IO_PENDING, 0));
       MessageLoop::current()->PostTask(FROM_HERE, NewRunnableMethod(
           this, &URLRequestJobTrackerTestJob::OnReadCompleted,
           bytes_to_read));
     } else {
-      SetStatus(net::URLRequestStatus());
+      SetStatus(URLRequestStatus());
       *bytes_read = bytes_to_read;
     }
     return !async_reads_;
@@ -107,9 +108,9 @@ class URLRequestJobTrackerTestJob : public net::URLRequestJob {
 
   void OnReadCompleted(int status) {
     if (status == 0) {
-      NotifyDone(net::URLRequestStatus());
+      NotifyDone(URLRequestStatus());
     } else if (status > 0) {
-      SetStatus(net::URLRequestStatus());
+      SetStatus(URLRequestStatus());
     } else {
       ASSERT_FALSE(true) << "Unexpected OnReadCompleted callback.";
     }
@@ -125,7 +126,7 @@ class URLRequestJobTrackerTestJob : public net::URLRequestJob {
       encoding_types->push_back(Filter::FILTER_TYPE_GZIP);
       return true;
     } else {
-      return net::URLRequestJob::GetContentEncodings(encoding_types);
+      return URLRequestJob::GetContentEncodings(encoding_types);
     }
   }
 
@@ -136,7 +137,7 @@ class URLRequestJobTrackerTestJob : public net::URLRequestJob {
   const bool async_reads_;
 };
 
-// Google Mock Matcher to check two net::URLRequestStatus instances for
+// Google Mock Matcher to check two URLRequestStatus instances for
 // equality.
 MATCHER_P(StatusEq, other, "") {
   return (arg.status() == other.status() &&
@@ -151,7 +152,7 @@ MATCHER_P2(MemEq, other, len, "") {
 class URLRequestJobTrackerTest : public PlatformTest {
  protected:
   static void SetUpTestCase() {
-    net::URLRequest::RegisterProtocolFactory("test", &Factory);
+    URLRequest::RegisterProtocolFactory("test", &Factory);
   }
 
   virtual void SetUp() {
@@ -173,19 +174,19 @@ class URLRequestJobTrackerTest : public PlatformTest {
                                       MemEq(body.data(), body.size()),
                                       Eq(static_cast<int>(body.size()))));
     EXPECT_CALL(observer, OnJobDone(NotNull(),
-                StatusEq(net::URLRequestStatus())));
+                StatusEq(URLRequestStatus())));
     EXPECT_CALL(observer, OnJobRemoved(NotNull()));
 
     // Attach our observer and perform the resource fetch.
-    net::g_url_request_job_tracker.AddObserver(&observer);
+    g_url_request_job_tracker.AddObserver(&observer);
     Fetch(gurl);
-    net::g_url_request_job_tracker.RemoveObserver(&observer);
+    g_url_request_job_tracker.RemoveObserver(&observer);
   }
 
   void Fetch(const GURL& url) {
     TestDelegate d;
     {
-      net::URLRequest request(url, &d);
+      URLRequest request(url, &d);
       request.Start();
       MessageLoop::current()->RunAllPending();
     }
@@ -197,13 +198,13 @@ class URLRequestJobTrackerTest : public PlatformTest {
     EXPECT_STREQ(kBasic, d.data_received().c_str());
   }
 
-  static net::URLRequest::ProtocolFactory Factory;
+  static URLRequest::ProtocolFactory Factory;
   static bool g_async_reads;
 };
 
 // static
-net::URLRequestJob* URLRequestJobTrackerTest::Factory(
-    net::URLRequest* request,
+URLRequestJob* URLRequestJobTrackerTest::Factory(
+    URLRequest* request,
     const std::string& scheme) {
   return new URLRequestJobTrackerTestJob(request, g_async_reads);
 }
@@ -232,3 +233,4 @@ TEST_F(URLRequestJobTrackerTest, CompressedSync) {
 }
 
 }  // namespace
+}  // namespace net
