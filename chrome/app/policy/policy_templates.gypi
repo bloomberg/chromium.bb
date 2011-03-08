@@ -66,7 +66,16 @@
           },
           'conditions': [
             ['OS=="win"', {
+              'variables': {
+                'version_path': '<(grit_out_dir)/app/policy/VERSION',
+              },
               'actions': [
+                {
+                  'action_name': 'add_version',
+                  'inputs': ['../../VERSION'],
+                  'outputs': ['<(version_path)'],
+                  'action': ['cp', '<@(_inputs)', '<@(_outputs)'],
+                },
                 {
                   # Add all the templates generated at the previous step into
                   # a zip archive.
@@ -76,6 +85,7 @@
                         'tools/build/win/make_zip_with_relative_entries.py'
                   },
                   'inputs': [
+                    '<(version_path)',
                     '<@(template_files)',
                     '<(zip_script)'
                   ],
@@ -87,7 +97,8 @@
                     '<(zip_script)',
                     '<@(_outputs)',
                     '<(grit_out_dir)/app/policy',
-                    '<@(template_files)'
+                    '<@(template_files)',
+                    '<(version_path)'
                   ],
                   'message': 'Packing generated templates into <(_outputs)',
                 }
