@@ -411,7 +411,7 @@ void SyncSetupFlow::GetDialogSize(gfx::Size* size) const {
       IDS_SYNC_SETUP_WIZARD_HEIGHT_LINES,
       approximate_web_font);
 
-#if defined(OS_MACOSX)
+#if !defined(OS_WIN)
   // NOTE(akalin): This is a hack to work around a problem with font height on
   // windows.  Basically font metrics are incorrectly returned in logical units
   // instead of pixels on Windows.  Logical units are very commonly 96 DPI
