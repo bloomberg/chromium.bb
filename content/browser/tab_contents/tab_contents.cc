@@ -44,8 +44,6 @@
 #include "chrome/browser/pdf_unsupported_feature.h"
 #include "chrome/browser/platform_util.h"
 #include "chrome/browser/plugin_observer.h"
-#include "chrome/browser/prerender/prerender_manager.h"
-#include "chrome/browser/prerender/prerender_plt_recorder.h"
 #include "chrome/browser/printing/print_preview_message_handler.h"
 #include "chrome/browser/printing/print_preview_tab_controller.h"
 #include "chrome/browser/printing/print_view_manager.h"
@@ -276,8 +274,7 @@ TabContents::TabContents(Profile* profile,
       maximum_zoom_percent_(
           static_cast<int>(WebKit::WebView::maxTextSizeMultiplier * 100)),
       temporary_zoom_settings_(false),
-      content_restrictions_(0),
-      was_prerendered_(false) {
+      content_restrictions_(0) {
   renderer_preferences_util::UpdateFromSystemSettings(
       &renderer_preferences_, profile);
 
@@ -402,7 +399,6 @@ void TabContents::AddObservers() {
   fav_icon_helper_.reset(new FavIconHelper(this));
   autofill_manager_.reset(new AutofillManager(this));
   autocomplete_history_manager_.reset(new AutocompleteHistoryManager(this));
-  prerender_plt_recorder_.reset(new prerender::PrerenderPLTRecorder(this));
   desktop_notification_handler_.reset(
       new DesktopNotificationHandlerForTC(this, GetRenderProcessHost()));
   plugin_observer_.reset(new PluginObserver(this));
@@ -1375,12 +1371,10 @@ void TabContents::OnDidStartProvisionalLoadForFrame(int64 frame_id,
     if (!is_error_page)
       content_settings_delegate_->ClearCookieSpecificContentSettings();
     content_settings_delegate_->ClearGeolocationContentSettings();
-    // TODO(cbentzel): Should error pages still show prerendered icon?
-    set_was_prerendered(false);
 
-    // Check if the URL we are about to load has been prerendered by any chance,
-    // and use it if possible.
-    MaybeUsePreloadedPage(url);
+    // Notify observers about the provisional change in the main frame URL.
+    FOR_EACH_OBSERVER(TabContentsObserver, observers_,
+                      OnProvisionalChangeToMainFrameUrl(url));
   }
 }
 
@@ -1396,9 +1390,9 @@ void TabContents::OnDidRedirectProvisionalLoad(int32 page_id,
     return;
   entry->set_url(target_url);
 
-  // Check if the URL we are about to load has been prerendered by any chance,
-  // and use it if possible.
-  MaybeUsePreloadedPage(target_url);
+  // Notify observers about the provisional change in the main frame URL.
+  FOR_EACH_OBSERVER(TabContentsObserver, observers_,
+                    OnProvisionalChangeToMainFrameUrl(target_url));
 }
 
 void TabContents::OnDidFailProvisionalLoadWithError(
@@ -2131,10 +2125,6 @@ void TabContents::DidNavigate(RenderViewHost* rvh,
   int extra_invalidate_flags = 0;
 
   if (PageTransition::IsMainFrame(params.transition)) {
-    if (MaybeUsePreloadedPage(params.url)) {
-      return;
-    }
-
     bool was_bookmark_bar_visible = ShouldShowBookmarkBar();
 
     render_manager_.DidNavigateMainFrame(rvh);
@@ -2849,13 +2839,4 @@ void TabContents::CreateViewAndSetSizeForRVH(RenderViewHost* rvh) {
 void TabContents::OnOnlineStateChanged(bool online) {
   render_view_host()->Send(new ViewMsg_NetworkStateChanged(
       render_view_host()->routing_id(), online));
-}
-
-bool TabContents::MaybeUsePreloadedPage(const GURL& url) {
-  prerender::PrerenderManager* pm = profile()->GetPrerenderManager();
-  if (pm != NULL) {
-    if (pm->MaybeUsePreloadedPage(this, url))
-      return true;
-  }
-  return false;
 }

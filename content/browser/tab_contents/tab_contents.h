@@ -52,7 +52,6 @@ class HistoryAddPageArgs;
 
 namespace prerender {
 class PrerenderManager;
-class PrerenderPLTRecorder;
 }
 
 namespace printing {
@@ -717,9 +716,6 @@ class TabContents : public PageNavigator,
     return safebrowsing_detection_host_.get();
   }
 
-  bool was_prerendered() const { return was_prerendered_; }
-  void set_was_prerendered(bool prerendered) { was_prerendered_ = prerendered; }
-
  protected:
   // from RenderViewHostDelegate.
   virtual bool OnMessageReceived(const IPC::Message& message);
@@ -1031,11 +1027,6 @@ class TabContents : public PageNavigator,
   // NetworkChangeNotifier::OnlineStateObserver:
   virtual void OnOnlineStateChanged(bool online);
 
-  // Checks with the PrerenderManager if the specified URL has been preloaded,
-  // and if so, swap the RenderViewHost with the preload into this TabContents
-  // object.
-  bool MaybeUsePreloadedPage(const GURL& url);
-
   // Adds the given window to the list of child windows. The window will notify
   // via WillClose() when it is being destroyed.
   void AddConstrainedDialog(ConstrainedWindow* window);
@@ -1082,9 +1073,6 @@ class TabContents : public PageNavigator,
 
   // Handles plugin messages.
   scoped_ptr<PluginObserver> plugin_observer_;
-
-  // Prerender PageLoadTime Recorder.
-  scoped_ptr<prerender::PrerenderPLTRecorder> prerender_plt_recorder_;
 
   // TabContentsSSLHelper, lazily created.
   scoped_ptr<TabContentsSSLHelper> ssl_helper_;
@@ -1264,9 +1252,6 @@ class TabContents : public PageNavigator,
   // Content restrictions, used to disable print/copy etc based on content's
   // (full-page plugins for now only) permissions.
   int content_restrictions_;
-
-  // Were the contents of this tab previously prerendered?
-  bool was_prerendered_;
 
   DISALLOW_COPY_AND_ASSIGN(TabContents);
 };

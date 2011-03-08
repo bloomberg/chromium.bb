@@ -22,6 +22,7 @@ class TabContentsObserver : public IPC::Channel::Listener {
   virtual void DidNavigateAnyFramePostCommit(
       const NavigationController::LoadCommittedDetails& details,
       const ViewHostMsg_FrameNavigate_Params& params);
+  virtual void OnProvisionalChangeToMainFrameUrl(const GURL& url);
 
   virtual void DidStartLoading();
   virtual void DidStopLoading();

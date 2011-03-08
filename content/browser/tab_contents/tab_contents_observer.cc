@@ -20,6 +20,9 @@ void TabContentsObserver::DidNavigateAnyFramePostCommit(
     const ViewHostMsg_FrameNavigate_Params& params) {
 }
 
+void TabContentsObserver::OnProvisionalChangeToMainFrameUrl(const GURL& url) {
+}
+
 void TabContentsObserver::DidStartLoading() {
 }
 

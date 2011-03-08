@@ -6,6 +6,7 @@
 
 #include "base/command_line.h"
 #include "chrome/browser/content_settings/host_content_settings_map.h"
+#include "chrome/browser/prerender/prerender_manager.h"
 #include "chrome/browser/profiles/profile.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "grit/generated_resources.h"
@@ -179,7 +180,14 @@ ContentSettingPrerenderImageModel::ContentSettingPrerenderImageModel()
 
 void ContentSettingPrerenderImageModel::UpdateFromTabContents(
     TabContents* tab_contents) {
-  set_visible(tab_contents && tab_contents->was_prerendered());
+  bool visibility = false;
+  if (tab_contents) {
+    prerender::PrerenderManager* pm =
+        tab_contents->profile()->GetPrerenderManager();
+    if (pm && pm->IsTabContentsPrerendered(tab_contents))
+      visibility = true;
+  }
+  set_visible(visibility);
 }
 
 ContentSettingImageModel::ContentSettingImageModel(

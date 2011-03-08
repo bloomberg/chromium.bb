@@ -29,6 +29,7 @@
 #include "chrome/browser/notifications/desktop_notification_service.h"
 #include "chrome/browser/prefs/browser_prefs.h"
 #include "chrome/browser/prefs/testing_pref_store.h"
+#include "chrome/browser/prerender/prerender_manager.h"
 #include "chrome/browser/search_engines/template_url_fetcher.h"
 #include "chrome/browser/search_engines/template_url_model.h"
 #include "chrome/browser/sessions/session_service.h"
@@ -787,7 +788,11 @@ ChromeURLDataManager* TestingProfile::GetChromeURLDataManager() {
 }
 
 prerender::PrerenderManager* TestingProfile::GetPrerenderManager() {
-  return NULL;
+  if (!prerender::PrerenderManager::IsPrerenderingEnabled())
+    return NULL;
+  if (!prerender_manager_)
+    prerender_manager_ = new prerender::PrerenderManager(this);
+  return prerender_manager_;
 }
 
 PrefService* TestingProfile::GetOffTheRecordPrefs() {

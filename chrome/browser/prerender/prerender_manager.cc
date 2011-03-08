@@ -153,7 +153,7 @@ bool PrerenderManager::MaybeUsePreloadedPage(TabContents* tc, const GURL& url) {
   pc->set_render_view_host(NULL);
   rvh->Send(new ViewMsg_DisplayPrerenderedPage(rvh->routing_id()));
   tc->SwapInRenderViewHost(rvh);
-  tc->set_was_prerendered(true);
+  MarkTabContentsAsPrerendered(tc);
 
   ViewHostMsg_FrameNavigate_Params* p = pc->navigate_params();
   if (p != NULL)
@@ -306,6 +306,18 @@ void PrerenderManager::PeriodicCleanup() {
        ++it) {
     (*it)->DestroyWhenUsingTooManyResources();
   }
+}
+
+void PrerenderManager::MarkTabContentsAsPrerendered(TabContents* tc) {
+  prerendered_tc_set_.insert(tc);
+}
+
+void PrerenderManager::MarkTabContentsAsNotPrerendered(TabContents* tc) {
+  prerendered_tc_set_.erase(tc);
+}
+
+bool PrerenderManager::IsTabContentsPrerendered(TabContents* tc) const {
+  return prerendered_tc_set_.count(tc) > 0;
 }
 
 }  // namespace prerender

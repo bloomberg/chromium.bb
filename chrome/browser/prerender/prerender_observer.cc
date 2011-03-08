@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/prerender/prerender_plt_recorder.h"
+#include "chrome/browser/prerender/prerender_observer.h"
 
 #include "base/time.h"
 #include "chrome/browser/prerender/prerender_manager.h"
@@ -12,23 +12,30 @@
 
 namespace prerender {
 
-PrerenderPLTRecorder::PrerenderPLTRecorder(TabContents* tab_contents)
+PrerenderObserver::PrerenderObserver(TabContents* tab_contents)
     : TabContentsObserver(tab_contents),
       pplt_load_start_() {
 }
 
-PrerenderPLTRecorder::~PrerenderPLTRecorder() {
+PrerenderObserver::~PrerenderObserver() {
 }
 
-bool PrerenderPLTRecorder::OnMessageReceived(const IPC::Message& message) {
-  IPC_BEGIN_MESSAGE_MAP(PrerenderPLTRecorder, message)
-      IPC_MESSAGE_HANDLER(ViewHostMsg_DidStartProvisionalLoadForFrame,
-                          OnDidStartProvisionalLoadForFrame)
+void PrerenderObserver::OnProvisionalChangeToMainFrameUrl(const GURL& url) {
+  PrerenderManager* pm = MaybeGetPrerenderManager();
+  if (pm)
+    pm->MarkTabContentsAsNotPrerendered(tab_contents());
+  MaybeUsePreloadedPage(url);
+}
+
+bool PrerenderObserver::OnMessageReceived(const IPC::Message& message) {
+  IPC_BEGIN_MESSAGE_MAP(PrerenderObserver, message)
+    IPC_MESSAGE_HANDLER(ViewHostMsg_DidStartProvisionalLoadForFrame,
+                        OnDidStartProvisionalLoadForFrame)
   IPC_END_MESSAGE_MAP()
   return false;
 }
 
-void PrerenderPLTRecorder::OnDidStartProvisionalLoadForFrame(int64 frame_id,
+void PrerenderObserver::OnDidStartProvisionalLoadForFrame(int64 frame_id,
                                                              bool is_main_frame,
                                                              const GURL& url) {
   if (is_main_frame) {
@@ -37,7 +44,7 @@ void PrerenderPLTRecorder::OnDidStartProvisionalLoadForFrame(int64 frame_id,
   }
 }
 
-void PrerenderPLTRecorder::DidStopLoading() {
+void PrerenderObserver::DidStopLoading() {
   // Compute the PPLT metric and report it in a histogram, if needed.
   if (!pplt_load_start_.is_null()) {
     PrerenderManager::RecordPerceivedPageLoadTime(
@@ -46,6 +53,17 @@ void PrerenderPLTRecorder::DidStopLoading() {
 
   // Reset the PPLT metric.
   pplt_load_start_ = base::TimeTicks();
+}
+
+PrerenderManager* PrerenderObserver::MaybeGetPrerenderManager() {
+  return tab_contents()->profile()->GetPrerenderManager();
+}
+
+bool PrerenderObserver::MaybeUsePreloadedPage(const GURL& url) {
+  PrerenderManager* pm = MaybeGetPrerenderManager();
+  if (pm && pm->MaybeUsePreloadedPage(tab_contents(), url))
+    return true;
+  return false;
 }
 
 }  // namespace prerender

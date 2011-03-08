@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_PRERENDER_PRERENDER_PLT_RECORDER_H_
-#define CHROME_BROWSER_PRERENDER_PRERENDER_PLT_RECORDER_H_
+#ifndef CHROME_BROWSER_PRERENDER_PRERENDER_OBSERVER_H_
+#define CHROME_BROWSER_PRERENDER_PRERENDER_OBSERVER_H_
 #pragma once
 
 #include <list>
@@ -20,14 +20,17 @@ class TabContents;
 
 namespace prerender {
 
-// PrerenderPLTRecorder is responsible for recording perceived pageload times
+class PrerenderManager;
+
+// PrerenderObserver is responsible for recording perceived pageload times
 // to compare PLT's with prerendering enabled and disabled.
-class PrerenderPLTRecorder : public TabContentsObserver {
+class PrerenderObserver : public TabContentsObserver {
  public:
-  explicit PrerenderPLTRecorder(TabContents* tab_contents);
-  virtual ~PrerenderPLTRecorder();
+  explicit PrerenderObserver(TabContents* tab_contents);
+  virtual ~PrerenderObserver();
 
   // TabContentsObserver implementation.
+  virtual void OnProvisionalChangeToMainFrameUrl(const GURL& url);
   virtual bool OnMessageReceived(const IPC::Message& message);
 
   // Message handler.
@@ -38,13 +41,21 @@ class PrerenderPLTRecorder : public TabContentsObserver {
   virtual void DidStopLoading();
 
  private:
+  // Retrieves the PrerenderManager, or NULL, if none was found.
+  PrerenderManager* MaybeGetPrerenderManager();
+
+  // Checks with the PrerenderManager if the specified URL has been preloaded,
+  // and if so, swap the RenderViewHost with the preload into this TabContents
+  // object.
+  bool MaybeUsePreloadedPage(const GURL& url);
+
   // System time at which the current load was started for the purpose of
   // the perceived page load time (PPLT).
   base::TimeTicks pplt_load_start_;
 
-  DISALLOW_COPY_AND_ASSIGN(PrerenderPLTRecorder);
+  DISALLOW_COPY_AND_ASSIGN(PrerenderObserver);
 };
 
 }  // prerender
 
-#endif  // CHROME_BROWSER_PRERENDER_PRERENDER_PLT_RECORDER_H_
+#endif  // CHROME_BROWSER_PRERENDER_PRERENDER_OBSERVER_H_

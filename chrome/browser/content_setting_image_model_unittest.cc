@@ -4,6 +4,7 @@
 
 #include "chrome/browser/content_setting_image_model.h"
 #include "chrome/browser/content_settings/host_content_settings_map.h"
+#include "chrome/browser/prerender/prerender_manager.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/test/testing_profile.h"
 #include "content/browser/browser_thread.h"
@@ -67,6 +68,8 @@ TEST_F(ContentSettingImageModelTest, CookieAccessed) {
 }
 
 TEST_F(ContentSettingImageModelTest, Prerender) {
+  prerender::PrerenderManager::SetMode(
+      prerender::PrerenderManager::PRERENDER_MODE_ENABLED);
   TestTabContents tab_contents(profile_.get(), NULL);
   scoped_ptr<ContentSettingImageModel> content_setting_image_model(
      ContentSettingImageModel::CreateContentSettingImageModel(
@@ -76,10 +79,10 @@ TEST_F(ContentSettingImageModelTest, Prerender) {
   EXPECT_FALSE(content_setting_image_model->get_tooltip().empty());
 
   // Make the tab_contents prerendered
-  tab_contents.set_was_prerendered(true);
+  tab_contents.profile()->GetPrerenderManager()->MarkTabContentsAsPrerendered(
+      &tab_contents);
   content_setting_image_model->UpdateFromTabContents(&tab_contents);
   EXPECT_TRUE(content_setting_image_model->is_visible());
   EXPECT_NE(0, content_setting_image_model->get_icon());
   EXPECT_FALSE(content_setting_image_model->get_tooltip().empty());
 }
-

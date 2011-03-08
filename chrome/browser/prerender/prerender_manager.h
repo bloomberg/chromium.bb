@@ -9,6 +9,7 @@
 #include <list>
 #include <vector>
 
+#include "base/hash_tables.h"
 #include "base/ref_counted.h"
 #include "base/scoped_ptr.h"
 #include "base/time.h"
@@ -18,6 +19,19 @@
 
 class Profile;
 class TabContents;
+
+#if defined(COMPILER_GCC)
+
+namespace __gnu_cxx {
+template <>
+struct hash<TabContents*> {
+  std::size_t operator()(TabContents* value) const {
+    return reinterpret_cast<std::size_t>(value);
+  }
+};
+}
+
+#endif
 
 namespace prerender {
 
@@ -77,6 +91,12 @@ class PrerenderManager : public base::RefCounted<PrerenderManager> {
   // in posting a task to the UI thread if we are not in the UI thread.
   static void RecordPrefetchTagObserved();
 
+  // Maintaining and querying the set of TabContents belonging to this
+  // PrerenderManager that are currently showing prerendered pages.
+  void MarkTabContentsAsPrerendered(TabContents* tc);
+  void MarkTabContentsAsNotPrerendered(TabContents* tc);
+  bool IsTabContentsPrerendered(TabContents* tc) const;
+
  protected:
   virtual ~PrerenderManager();
 
@@ -123,6 +143,9 @@ class PrerenderManager : public base::RefCounted<PrerenderManager> {
 
   // List of prerendered elements.
   std::list<PrerenderContentsData> prerender_list_;
+
+  // Set of TabContents which are currently displaying a prerendered page.
+  base::hash_set<TabContents*> prerendered_tc_set_;
 
   // Default maximum permitted elements to prerender.
   static const unsigned int kDefaultMaxPrerenderElements = 1;

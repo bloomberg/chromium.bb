@@ -13,6 +13,10 @@
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/browser/tab_contents/tab_contents_observer.h"
 
+namespace prerender {
+class PrerenderObserver;
+}
+
 class Extension;
 class FindTabHelper;
 class NavigationController;
@@ -137,6 +141,8 @@ class TabContentsWrapper : public NotificationObserver,
   // per documentation in password_manager.h.
   scoped_ptr<PasswordManagerDelegate> password_manager_delegate_;
   scoped_ptr<PasswordManager> password_manager_;
+
+  scoped_ptr<prerender::PrerenderObserver> prerender_observer_;
 
   scoped_ptr<SearchEngineTabHelper> search_engine_tab_helper_;
 

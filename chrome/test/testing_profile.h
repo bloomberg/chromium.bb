@@ -405,6 +405,8 @@ class TestingProfile : public Profile {
   ScopedTempDir temp_dir_;
 
   scoped_ptr<ChromeURLDataManager> chrome_url_data_manager_;
+
+  scoped_refptr<prerender::PrerenderManager> prerender_manager_;
 };
 
 // A profile that derives from another profile.  This does not actually

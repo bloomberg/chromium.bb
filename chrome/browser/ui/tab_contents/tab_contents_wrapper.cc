@@ -11,6 +11,7 @@
 #include "chrome/browser/password_manager/password_manager.h"
 #include "chrome/browser/password_manager_delegate_impl.h"
 #include "chrome/browser/prefs/pref_service.h"
+#include "chrome/browser/prerender/prerender_observer.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/tab_contents/simple_alert_infobar_delegate.h"
 #include "chrome/browser/ui/find_bar/find_tab_helper.h"
@@ -54,6 +55,8 @@ TabContentsWrapper::TabContentsWrapper(TabContents* contents)
                  NotificationService::AllSources());
   registrar_.Add(this, NotificationType::BOOKMARK_MODEL_LOADED,
                  NotificationService::AllSources());
+
+  prerender_observer_.reset(new prerender::PrerenderObserver(contents));
 }
 
 TabContentsWrapper::~TabContentsWrapper() {
