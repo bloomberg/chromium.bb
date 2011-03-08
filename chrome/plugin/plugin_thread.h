@@ -9,8 +9,8 @@
 #include "base/file_path.h"
 #include "base/native_library.h"
 #include "build/build_config.h"
-#include "chrome/common/child_thread.h"
 #include "chrome/plugin/plugin_channel.h"
+#include "content/common/child_thread.h"
 #include "webkit/plugins/npapi/plugin_lib.h"
 
 #if defined(OS_POSIX)

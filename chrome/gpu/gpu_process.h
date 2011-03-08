@@ -6,7 +6,7 @@
 #define CHROME_GPU_GPU_PROCESS_H_
 #pragma once
 
-#include "chrome/common/child_process.h"
+#include "content/common/child_process.h"
 
 class GpuProcess : public ChildProcess {
  public:

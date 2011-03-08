@@ -10,12 +10,12 @@
 #include "base/synchronization/lock.h"
 #include "base/synchronization/waitable_event.h"
 #include "build/build_config.h"
-#include "chrome/common/child_process.h"
 #include "chrome/common/plugin_messages.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/plugin/plugin_thread.h"
 #include "chrome/plugin/webplugin_delegate_stub.h"
 #include "chrome/plugin/webplugin_proxy.h"
+#include "content/common/child_process.h"
 #include "webkit/plugins/npapi/plugin_instance.h"
 
 #if defined(OS_POSIX)

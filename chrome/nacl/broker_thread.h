@@ -7,8 +7,8 @@
 #pragma once
 
 #include "base/process.h"
-#include "chrome/common/child_thread.h"
 #include "chrome/common/nacl_types.h"
+#include "content/common/child_thread.h"
 
 #if defined(OS_WIN)
 #include "sandbox/src/sandbox.h"

@@ -5,11 +5,11 @@
 #include "chrome/gpu/gpu_video_decoder.h"
 
 #include "base/command_line.h"
-#include "chrome/common/child_thread.h"
 #include "chrome/common/gpu_messages.h"
 #include "chrome/gpu/gpu_channel.h"
 #include "chrome/gpu/media/fake_gl_video_decode_engine.h"
 #include "chrome/gpu/media/fake_gl_video_device.h"
+#include "content/common/child_thread.h"
 #include "media/base/data_buffer.h"
 #include "media/base/media_switches.h"
 #include "media/base/video_frame.h"

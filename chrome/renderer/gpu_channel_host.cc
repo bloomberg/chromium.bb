@@ -4,12 +4,12 @@
 
 #include "chrome/renderer/gpu_channel_host.h"
 
-#include "chrome/common/child_process.h"
 #include "chrome/common/gpu_create_command_buffer_config.h"
 #include "chrome/common/gpu_messages.h"
 #include "chrome/renderer/command_buffer_proxy.h"
 #include "chrome/renderer/gpu_video_service_host.h"
 #include "chrome/renderer/render_thread.h"
+#include "content/common/child_process.h"
 
 GpuChannelHost::GpuChannelHost() : state_(kUnconnected) {
 }

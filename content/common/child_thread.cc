@@ -1,19 +1,19 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/common/child_thread.h"
+#include "content/common/child_thread.h"
 
 #include "base/message_loop.h"
 #include "base/string_util.h"
 #include "base/command_line.h"
-#include "chrome/common/child_process.h"
-#include "chrome/common/chrome_switches.h"
-#include "chrome/common/file_system/file_system_dispatcher.h"
-#include "chrome/common/socket_stream_dispatcher.h"
+#include "content/common/child_process.h"
 #include "content/common/child_process_messages.h"
+#include "content/common/content_switches.h"
+#include "content/common/file_system/file_system_dispatcher.h"
 #include "content/common/notification_service.h"
 #include "content/common/resource_dispatcher.h"
+#include "content/common/socket_stream_dispatcher.h"
 #include "ipc/ipc_logging.h"
 #include "ipc/ipc_sync_channel.h"
 #include "ipc/ipc_sync_message_filter.h"

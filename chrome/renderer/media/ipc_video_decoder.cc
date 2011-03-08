@@ -5,8 +5,8 @@
 #include "chrome/renderer/media/ipc_video_decoder.h"
 
 #include "base/task.h"
-#include "chrome/common/child_process.h"
 #include "chrome/renderer/ggl/ggl.h"
+#include "content/common/child_process.h"
 #include "media/base/callback.h"
 #include "media/base/filters.h"
 #include "media/base/filter_host.h"

@@ -4,10 +4,10 @@
 
 #include "chrome/worker/websharedworker_stub.h"
 
-#include "chrome/common/child_thread.h"
-#include "chrome/common/file_system/file_system_dispatcher.h"
 #include "chrome/common/webmessageportchannel_impl.h"
 #include "chrome/common/worker_messages.h"
+#include "content/common/child_thread.h"
+#include "content/common/file_system/file_system_dispatcher.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebSharedWorker.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebString.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebURL.h"

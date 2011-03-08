@@ -11,12 +11,12 @@
 #include "base/command_line.h"
 #include "base/process_util.h"
 #include "base/string_util.h"
-#include "chrome/common/child_process.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/gpu_messages.h"
 #include "chrome/gpu/gpu_thread.h"
 #include "chrome/gpu/gpu_video_service.h"
+#include "content/common/child_process.h"
 
 #if defined(OS_POSIX)
 #include "ipc/ipc_channel_posix.h"

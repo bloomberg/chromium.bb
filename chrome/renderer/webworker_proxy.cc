@@ -4,10 +4,10 @@
 
 #include "chrome/renderer/webworker_proxy.h"
 
-#include "chrome/common/child_thread.h"
 #include "chrome/common/render_messages.h"
 #include "chrome/common/webmessageportchannel_impl.h"
 #include "chrome/common/worker_messages.h"
+#include "content/common/child_thread.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebURL.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebWorkerClient.h"
 

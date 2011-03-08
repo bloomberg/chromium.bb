@@ -10,7 +10,7 @@
 #include <vector>
 
 #include "base/platform_file.h"
-#include "chrome/common/child_thread.h"
+#include "content/common/child_thread.h"
 #include "printing/native_metafile.h"
 
 class GURL;

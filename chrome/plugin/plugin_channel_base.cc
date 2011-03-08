@@ -10,7 +10,7 @@
 #include "base/hash_tables.h"
 #include "base/lazy_instance.h"
 #include "base/string_number_conversions.h"
-#include "chrome/common/child_process.h"
+#include "content/common/child_process.h"
 #include "ipc/ipc_sync_message.h"
 
 #if defined(OS_POSIX)

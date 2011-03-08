@@ -13,12 +13,12 @@
 #include "base/command_line.h"
 #include "base/threading/worker_pool.h"
 #include "build/build_config.h"
-#include "chrome/common/child_process.h"
 #include "chrome/common/child_process_logging.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/gpu_messages.h"
 #include "chrome/gpu/gpu_info_collector.h"
 #include "chrome/gpu/gpu_watchdog_thread.h"
+#include "content/common/child_process.h"
 #include "ipc/ipc_channel_handle.h"
 
 #if defined(OS_MACOSX)

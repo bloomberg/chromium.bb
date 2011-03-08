@@ -5,8 +5,8 @@
 #include "chrome/worker/webworker_stub_base.h"
 
 #include "base/compiler_specific.h"
-#include "chrome/common/child_process.h"
 #include "chrome/worker/worker_thread.h"
+#include "content/common/child_process.h"
 
 WebWorkerStubBase::WebWorkerStubBase(
     int route_id, const WorkerAppCacheInitInfo& appcache_init_info)

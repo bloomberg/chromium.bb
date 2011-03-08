@@ -6,7 +6,7 @@
 #define CHROME_PPAPI_PLUGIN_PPAPI_PROCESS_H_
 #pragma once
 
-#include "chrome/common/child_process.h"
+#include "content/common/child_process.h"
 
 class PpapiProcess : public ChildProcess {
  public:

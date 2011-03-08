@@ -8,7 +8,7 @@
 
 #include <set>
 
-#include "chrome/common/child_thread.h"
+#include "content/common/child_thread.h"
 
 class GURL;
 class AppCacheDispatcher;

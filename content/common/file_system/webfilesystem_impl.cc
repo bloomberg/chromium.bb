@@ -1,13 +1,13 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/common/file_system/webfilesystem_impl.h"
+#include "content/common/file_system/webfilesystem_impl.h"
 
-#include "chrome/common/file_system/file_system_dispatcher.h"
-#include "chrome/common/file_system/webfilesystem_callback_dispatcher.h"
-#include "chrome/common/file_system/webfilewriter_impl.h"
-#include "chrome/common/child_thread.h"
+#include "content/common/child_thread.h"
+#include "content/common/file_system/file_system_dispatcher.h"
+#include "content/common/file_system/webfilesystem_callback_dispatcher.h"
+#include "content/common/file_system/webfilewriter_impl.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFileInfo.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFileSystemCallbacks.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebString.h"

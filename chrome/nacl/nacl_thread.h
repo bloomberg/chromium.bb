@@ -7,8 +7,8 @@
 #pragma once
 
 #include "base/native_library.h"
-#include "chrome/common/child_thread.h"
 #include "chrome/common/nacl_types.h"
+#include "content/common/child_thread.h"
 
 // The NaClThread class represents a background thread where NaCl app gets
 // started.

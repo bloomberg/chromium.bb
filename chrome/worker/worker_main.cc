@@ -6,13 +6,13 @@
 #include "base/message_loop.h"
 #include "base/string_util.h"
 #include "base/threading/platform_thread.h"
-#include "chrome/common/child_process.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/hi_res_timer_manager.h"
 #include "chrome/common/logging_chrome.h"
 #include "chrome/common/main_function_params.h"
 #include "chrome/worker/worker_thread.h"
+#include "content/common/child_process.h"
 #include "ui/base/system_monitor/system_monitor.h"
 
 #if defined(OS_WIN)

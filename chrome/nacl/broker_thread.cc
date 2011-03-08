@@ -8,11 +8,11 @@
 #include "base/command_line.h"
 #include "base/path_service.h"
 #include "base/process_util.h"
-#include "chrome/common/child_process.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/nacl_cmd_line.h"
 #include "chrome/common/nacl_messages.h"
 #include "chrome/common/sandbox_policy.h"
+#include "content/common/child_process.h"
 #include "ipc/ipc_switches.h"
 
 NaClBrokerThread::NaClBrokerThread()

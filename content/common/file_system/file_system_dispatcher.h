@@ -1,9 +1,9 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_COMMON_FILE_SYSTEM_FILE_SYSTEM_DISPATCHER_H_
-#define CHROME_COMMON_FILE_SYSTEM_FILE_SYSTEM_DISPATCHER_H_
+#ifndef CONTENT_COMMON_FILE_SYSTEM_FILE_SYSTEM_DISPATCHER_H_
+#define CONTENT_COMMON_FILE_SYSTEM_FILE_SYSTEM_DISPATCHER_H_
 
 #include <vector>
 
@@ -97,4 +97,4 @@ class FileSystemDispatcher : public IPC::Channel::Listener {
   DISALLOW_COPY_AND_ASSIGN(FileSystemDispatcher);
 };
 
-#endif  // CHROME_COMMON_FILE_SYSTEM_FILE_SYSTEM_DISPATCHER_H_
+#endif  // CONTENT_COMMON_FILE_SYSTEM_FILE_SYSTEM_DISPATCHER_H_

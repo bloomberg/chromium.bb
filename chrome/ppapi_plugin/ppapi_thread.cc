@@ -8,8 +8,8 @@
 
 #include "base/process_util.h"
 #include "base/rand_util.h"
-#include "chrome/common/child_process.h"
 #include "chrome/ppapi_plugin/plugin_process_dispatcher.h"
+#include "content/common/child_process.h"
 #include "ipc/ipc_channel_handle.h"
 #include "ipc/ipc_sync_channel.h"
 #include "ppapi/c/pp_errors.h"

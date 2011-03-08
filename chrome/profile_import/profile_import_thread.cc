@@ -13,7 +13,7 @@
 #include "chrome/browser/importer/importer_list.h"
 #include "chrome/browser/importer/importer_messages.h"
 #include "chrome/browser/search_engines/template_url.h"
-#include "chrome/common/child_process.h"
+#include "content/common/child_process.h"
 
 namespace {
 // Rather than sending all import items over IPC at once we chunk them into

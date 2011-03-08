@@ -4,8 +4,8 @@
 
 #include "chrome/common/database_util.h"
 
-#include "chrome/common/child_thread.h"
 #include "chrome/common/database_messages.h"
+#include "content/common/child_thread.h"
 #include "ipc/ipc_sync_message_filter.h"
 #include "third_party/sqlite/sqlite3.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebString.h"

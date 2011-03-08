@@ -16,7 +16,6 @@
 #include "chrome/app/breakpad_linux.h"
 #endif
 
-#include "chrome/common/child_process.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/hi_res_timer_manager.h"
@@ -26,6 +25,7 @@
 #include "chrome/common/sandbox_policy.h"
 #include "chrome/nacl/nacl_main_platform_delegate.h"
 #include "chrome/nacl/nacl_thread.h"
+#include "content/common/child_process.h"
 #include "ui/base/system_monitor/system_monitor.h"
 
 #if defined(OS_WIN)

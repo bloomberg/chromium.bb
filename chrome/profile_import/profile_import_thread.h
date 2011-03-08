@@ -15,7 +15,7 @@
 #include "chrome/browser/history/history_types.h"
 #include "chrome/browser/importer/importer_data_types.h"
 #include "chrome/browser/importer/profile_writer.h"
-#include "chrome/common/child_thread.h"
+#include "content/common/child_thread.h"
 #include "webkit/glue/password_form.h"
 
 class DictionaryValue;

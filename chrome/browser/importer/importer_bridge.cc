@@ -14,10 +14,10 @@
 #if defined(OS_WIN)
 #include "chrome/browser/password_manager/ie7_password.h"
 #endif
-#include "chrome/common/child_thread.h"
 #include "chrome/browser/importer/importer_messages.h"
 #include "chrome/profile_import/profile_import_thread.h"
 #include "content/browser/browser_thread.h"
+#include "content/common/child_thread.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "webkit/glue/password_form.h"
 

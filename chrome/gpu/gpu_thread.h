@@ -13,11 +13,11 @@
 #include "base/scoped_ptr.h"
 #include "base/time.h"
 #include "build/build_config.h"
-#include "chrome/common/child_thread.h"
 #include "chrome/common/gpu_info.h"
 #include "chrome/gpu/gpu_channel.h"
 #include "chrome/gpu/gpu_config.h"
 #include "chrome/gpu/x_util.h"
+#include "content/common/child_thread.h"
 #include "ui/gfx/native_widget_types.h"
 
 namespace IPC {
