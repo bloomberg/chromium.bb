@@ -64,8 +64,8 @@ class BrowserAccessibilityWin
   // BrowserAccessibility methods.
   //
   virtual void Initialize();
-  virtual void ReleaseTree();
-  virtual void ReleaseReference();
+  virtual void NativeAddReference();
+  virtual void NativeReleaseReference();
 
   //
   // IAccessible methods.
@@ -477,13 +477,6 @@ class BrowserAccessibilityWin
                     IA2TextBoundaryType boundary,
                     LONG start_offset,
                     LONG direction);
-
-  // COM objects are reference-counted. When we're done with this object
-  // and it's removed from our accessibility tree, a client may still be
-  // holding onto a pointer to this object, so we mark it as inactive
-  // so that calls to any of this object's methods immediately return
-  // failure.
-  bool instance_active_;
 
   // IAccessible role and state.
   int32 ia_role_;

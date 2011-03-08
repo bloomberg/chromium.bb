@@ -18,10 +18,6 @@ BrowserAccessibilityManager* BrowserAccessibilityManager::Create(
       parent_view, src, delegate, factory);
 }
 
-BrowserAccessibility* BrowserAccessibilityFactory::Create() {
-  return BrowserAccessibility::Create();
-}
-
 BrowserAccessibilityManagerMac::BrowserAccessibilityManagerMac(
     gfx::NativeView parent_window,
     const webkit_glue::WebAccessibility& src,

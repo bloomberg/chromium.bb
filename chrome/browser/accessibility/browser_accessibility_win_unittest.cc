@@ -11,6 +11,8 @@
 
 using webkit_glue::WebAccessibility;
 
+namespace {
+
 // Subclass of BrowserAccessibilityWin that counts the number of instances.
 class CountedBrowserAccessibility : public BrowserAccessibilityWin {
  public:
@@ -35,6 +37,8 @@ class CountedBrowserAccessibilityFactory
     return instance;
   }
 };
+
+}  // anonymous namespace
 
 VARIANT CreateI4Variant(LONG value) {
   VARIANT variant = {0};

@@ -19,7 +19,7 @@ class BrowserAccessibilityMac : public BrowserAccessibility {
  public:
   // Implementation of BrowserAccessibility.
   virtual void Initialize();
-  virtual void ReleaseReference();
+  virtual void NativeReleaseReference();
 
   // Overrides from BrowserAccessibility.
   // Used to know when to update the cocoa children.

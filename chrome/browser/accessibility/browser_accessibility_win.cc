@@ -34,15 +34,13 @@ BrowserAccessibilityWin* BrowserAccessibility::toBrowserAccessibilityWin() {
 }
 
 BrowserAccessibilityWin::BrowserAccessibilityWin()
-    : instance_active_(false),
-      ia_role_(0),
+    : ia_role_(0),
       ia_state_(0),
       ia2_role_(0),
       ia2_state_(0) {
 }
 
 BrowserAccessibilityWin::~BrowserAccessibilityWin() {
-  ReleaseTree();
 }
 
 //
@@ -391,7 +389,7 @@ STDMETHODIMP BrowserAccessibilityWin::accSelect(
     return E_FAIL;
 
   if (flags_sel & SELFLAG_TAKEFOCUS) {
-    manager_->SetFocus(*this);
+    manager_->SetFocus(this, true);
     return S_OK;
   }
 
@@ -1125,6 +1123,8 @@ HRESULT WINAPI BrowserAccessibilityWin::InternalQueryInterface(
 
 // Initialize this object and mark it as active.
 void BrowserAccessibilityWin::Initialize() {
+  BrowserAccessibility::Initialize();
+
   InitRoleAndState();
 
   // Expose headings levels to NVDA with the "level" object attribute.
@@ -1147,28 +1147,15 @@ void BrowserAccessibilityWin::Initialize() {
   // announce the name.
   if (name_.empty() && HasAttribute(WebAccessibility::ATTR_DESCRIPTION))
     GetAttribute(WebAccessibility::ATTR_DESCRIPTION, &name_);
-
-  instance_active_ = true;
 }
 
-// Mark this object as inactive, and remove references to all children.
-// When no other clients hold any references to this object it will be
-// deleted, and in the meantime, calls to any methods will return E_FAIL.
-void BrowserAccessibilityWin::ReleaseTree() {
-  if (!instance_active_)
-    return;
-
-  // Mark this object as inactive, so calls to all COM methods will return
-  // failure.
-  instance_active_ = false;
-
-  BrowserAccessibility::ReleaseTree();
+void BrowserAccessibilityWin::NativeAddReference() {
+  AddRef();
 }
 
-void BrowserAccessibilityWin::ReleaseReference() {
+void BrowserAccessibilityWin::NativeReleaseReference() {
   Release();
 }
-
 
 BrowserAccessibilityWin* BrowserAccessibilityWin::NewReference() {
   AddRef();

@@ -22,12 +22,6 @@ BrowserAccessibilityManager* BrowserAccessibilityManager::Create(
       factory);
 }
 
-// Defining this here instead of in the base implementation file to address link
-// errors on the linux shared library build. (linux shlib)
-BrowserAccessibility* BrowserAccessibilityFactory::Create() {
-  return BrowserAccessibility::Create();
-}
-
 BrowserAccessibilityManagerWin*
 BrowserAccessibilityManager::toBrowserAccessibilityManagerWin() {
   return static_cast<BrowserAccessibilityManagerWin*>(this);
@@ -39,6 +33,12 @@ BrowserAccessibilityManagerWin::BrowserAccessibilityManagerWin(
     BrowserAccessibilityDelegate* delegate,
     BrowserAccessibilityFactory* factory)
     : BrowserAccessibilityManager(parent_view, src, delegate, factory) {
+  // Allow NULL parent_view for unit testing.
+  if (parent_view == NULL) {
+    window_iaccessible_ = NULL;
+    return;
+  }
+
   HRESULT hr = ::CreateStdAccessibleObject(
       parent_view, OBJID_WINDOW, IID_IAccessible,
       reinterpret_cast<void **>(&window_iaccessible_));

@@ -193,10 +193,14 @@ struct WebAccessibility {
   ~WebAccessibility();
 
  private:
-  // Initialize an already-created struct, same as the constructor a
+  // Initialize an already-created struct, same as the constructor above.
   void Init(const WebKit::WebAccessibilityObject& src,
             WebKit::WebAccessibilityCache* cache,
             bool include_children);
+
+  // Returns true if |ancestor| is an ancestor of |child|.
+  bool IsAncestorOf(const WebKit::WebAccessibilityObject& ancestor,
+                    const WebKit::WebAccessibilityObject& child);
 
  public:
   // This is a simple serializable struct. All member variables should be
@@ -209,6 +213,7 @@ struct WebAccessibility {
   WebKit::WebRect location;
   std::map<int32, string16> attributes;
   std::vector<WebAccessibility> children;
+  std::vector<int32> indirect_child_ids;
   std::vector<std::pair<string16, string16> > html_attributes;
 };
 

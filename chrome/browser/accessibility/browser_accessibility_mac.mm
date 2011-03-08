@@ -22,6 +22,8 @@ BrowserAccessibilityMac::BrowserAccessibilityMac()
 }
 
 void BrowserAccessibilityMac::Initialize() {
+  BrowserAccessibility::Initialize();
+
   if (browser_accessibility_cocoa_)
     return;
 
@@ -31,7 +33,7 @@ void BrowserAccessibilityMac::Initialize() {
       delegate:(RenderWidgetHostViewCocoa*)manager_->GetParentView()];
 }
 
-void BrowserAccessibilityMac::ReleaseReference() {
+void BrowserAccessibilityMac::NativeReleaseReference() {
   if (browser_accessibility_cocoa_) {
     BrowserAccessibilityCocoa* temp = browser_accessibility_cocoa_;
     browser_accessibility_cocoa_ = nil;

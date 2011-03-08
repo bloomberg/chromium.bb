@@ -745,6 +745,7 @@ void ParamTraits<webkit_glue::WebAccessibility>::Write(Message* m,
   WriteParam(m, p.location);
   WriteParam(m, p.attributes);
   WriteParam(m, p.children);
+  WriteParam(m, p.indirect_child_ids);
   WriteParam(m, p.html_attributes);
 }
 
@@ -767,6 +768,7 @@ bool ParamTraits<webkit_glue::WebAccessibility>::Read(
   ret = ret && ReadParam(m, iter, &p->location);
   ret = ret && ReadParam(m, iter, &p->attributes);
   ret = ret && ReadParam(m, iter, &p->children);
+  ret = ret && ReadParam(m, iter, &p->indirect_child_ids);
   ret = ret && ReadParam(m, iter, &p->html_attributes);
   return ret;
 }
@@ -791,6 +793,8 @@ void ParamTraits<webkit_glue::WebAccessibility>::Log(const param_type& p,
   LogParam(p.children, l);
   l->append(", ");
   LogParam(p.html_attributes, l);
+  l->append(", ");
+  LogParam(p.indirect_child_ids, l);
   l->append(")");
 }
 

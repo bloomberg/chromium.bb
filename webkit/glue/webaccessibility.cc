@@ -380,12 +380,6 @@ void WebAccessibility::Init(const WebKit::WebAccessibilityObject& src,
   // Add the source object to the cache and store its id.
   id = cache->addOrGetId(src);
 
-  if (role == WebAccessibility::ROLE_EDITABLE_TEXT ||
-      role == WebAccessibility::ROLE_TEXTAREA ||
-      role == WebAccessibility::ROLE_TEXT_FIELD) {
-    include_children = false;
-  }
-
   if (include_children) {
     // Recursively create children.
     int child_count = src.childCount();
@@ -393,13 +387,33 @@ void WebAccessibility::Init(const WebKit::WebAccessibilityObject& src,
       WebAccessibilityObject child = src.childAt(i);
 
       // The child may be invalid due to issues in webkit accessibility code.
-      // Don't add children are invalid thus preventing a crash.
+      // Don't add children that are invalid thus preventing a crash.
       // https://bugs.webkit.org/show_bug.cgi?id=44149
       // TODO(ctguil): We may want to remove this check as webkit stabilizes.
-      if (child.isValid())
+      if (!child.isValid())
+        continue;
+
+      // Some nodes appear in the tree in more than one place: for example,
+      // a cell in a table appears as a child of both a row and a column.
+      // Only recursively add child nodes that have this node as one of its
+      // ancestors. For child nodes that are actually parented to something
+      // else, store only the ID.
+      if (IsAncestorOf(src, child)) {
         children.push_back(WebAccessibility(child, cache, include_children));
+      } else {
+        indirect_child_ids.push_back(cache->addOrGetId(child));
+      }
     }
   }
+}
+
+bool WebAccessibility::IsAncestorOf(
+    const WebKit::WebAccessibilityObject& ancestor,
+    const WebKit::WebAccessibilityObject& child) {
+  WebKit::WebAccessibilityObject parent = child.parentObject();
+  while (!parent.isNull() && !parent.equals(ancestor))
+    parent = parent.parentObject();
+  return parent.equals(ancestor);
 }
 
 }  // namespace webkit_glue

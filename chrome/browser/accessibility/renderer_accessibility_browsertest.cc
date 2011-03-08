@@ -201,4 +201,40 @@ IN_PROC_BROWSER_TEST_F(RendererAccessibilityBrowserTest,
   EXPECT_STREQ("Hello, world.", UTF16ToUTF8(text.value).c_str());
 }
 
+IN_PROC_BROWSER_TEST_F(RendererAccessibilityBrowserTest,
+                       CrossPlatformMultipleInheritanceAccessibility) {
+  // In a WebKit accessibility render tree for a table, each cell is a
+  // child of both a row and a column, so it appears to use multiple
+  // inheritance. Make sure that the WebAccessibilityObject tree only
+  // keeps one copy of each cell, and uses an indirect child id for the
+  // additional reference to it.
+  const char url_str[] =
+      "data:text/html,"
+      "<!doctype html>"
+      "<table border=1><tr><td>1</td><td>2</td></tr></table>";
+  GURL url(url_str);
+  browser()->OpenURL(url, GURL(), CURRENT_TAB, PageTransition::TYPED);
+
+  const WebAccessibility& tree = GetWebAccessibilityTree();
+  ASSERT_EQ(1U, tree.children.size());
+  const WebAccessibility& table = tree.children[0];
+  EXPECT_EQ(WebAccessibility::ROLE_TABLE, table.role);
+  const WebAccessibility& row = table.children[0];
+  EXPECT_EQ(WebAccessibility::ROLE_ROW, row.role);
+  const WebAccessibility& cell1 = row.children[0];
+  EXPECT_EQ(WebAccessibility::ROLE_CELL, cell1.role);
+  const WebAccessibility& cell2 = row.children[1];
+  EXPECT_EQ(WebAccessibility::ROLE_CELL, cell2.role);
+  const WebAccessibility& column1 = table.children[1];
+  EXPECT_EQ(WebAccessibility::ROLE_COLUMN, column1.role);
+  EXPECT_EQ(0U, column1.children.size());
+  EXPECT_EQ(1U, column1.indirect_child_ids.size());
+  EXPECT_EQ(cell1.id, column1.indirect_child_ids[0]);
+  const WebAccessibility& column2 = table.children[2];
+  EXPECT_EQ(WebAccessibility::ROLE_COLUMN, column2.role);
+  EXPECT_EQ(0U, column2.children.size());
+  EXPECT_EQ(1U, column2.indirect_child_ids.size());
+  EXPECT_EQ(cell2.id, column2.indirect_child_ids[0]);
+}
+
 }  // namespace

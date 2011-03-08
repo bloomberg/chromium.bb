@@ -46,21 +46,15 @@ class BrowserAccessibility {
   // Perform platform specific initialization. This can be called multiple times
   // during the lifetime of this instance after the members of this base object
   // have been reset with new values from the renderer process.
-  virtual void Initialize() = 0;
-
-  // Remove references to all children and delete them if possible.
-  virtual void ReleaseTree();
-
-  // Release a reference to this node. This may be a no-op on platforms other
-  // than windows.
-  virtual void ReleaseReference() = 0;
+  virtual void Initialize();
 
   // Replace a child object. Used when updating the accessibility tree.
   virtual void ReplaceChild(
       BrowserAccessibility* old_acc,
       BrowserAccessibility* new_acc);
 
-  // Initialize this object
+  // Initialize this object, reading attributes from |src|. Does not
+  // recurse into children of |src| and build the whole subtree.
   void Initialize(BrowserAccessibilityManager* manager,
                   BrowserAccessibility* parent,
                   int32 child_id,
@@ -69,6 +63,13 @@ class BrowserAccessibility {
 
   // Add a child of this object.
   void AddChild(BrowserAccessibility* child);
+
+  // Detach all descendants of this subtree and push all of the node pointers,
+  // including this node, onto the end of |nodes|.
+  void DetachTree(std::vector<BrowserAccessibility*>* nodes);
+
+  // Update the parent and index in parent if this node has been moved.
+  void UpdateParent(BrowserAccessibility* parent, int index_in_parent);
 
   // Return true if this object is equal to or a descendant of |ancestor|.
   bool IsDescendantOf(BrowserAccessibility* ancestor);
@@ -96,7 +97,43 @@ class BrowserAccessibility {
   // Returns the deepest descendant that contains the specified point.
   BrowserAccessibility* BrowserAccessibilityForPoint(const gfx::Point& point);
 
+  //
+  // Reference counting
+  //
+  // Each object has an internal reference count and many platform
+  // implementations may also use native reference counting.
+  //
+  // The internal reference counting is used because sometimes
+  // multiple references to the same object exist temporarily during
+  // an update. When the internal reference count reaches zero,
+  // NativeReleaseReference is called.
+  //
+  // Native reference counting is used on some platforms because the
+  // operating system may hold onto a reference to a BrowserAccessibility
+  // object even after we're through with it. On these platforms, when
+  // the internal reference count reaches zero, instance_active is set
+  // to zero, and all queries on this object should return failure.
+  // The object isn't actually deleted until the operating system releases
+  // all of its references.
+  //
+
+  // Increment this node's internal reference count.
+  virtual void InternalAddReference();
+
+  // Decrement this node's internal reference count. If the reference count
+  // reaches zero, call NativeReleaseReference().
+  virtual void InternalReleaseReference(bool recursive);
+
+  // Subclasses should override this to support platform reference counting.
+  virtual void NativeAddReference() { }
+
+  // Subclasses should override this to support platform reference counting.
+  virtual void NativeReleaseReference() { delete this; }
+
+  //
   // Accessors
+  //
+
   const std::map<int32, string16>& attributes() const { return attributes_; }
   int32 child_id() const { return child_id_; }
   const std::vector<BrowserAccessibility*>& children() const {
@@ -114,6 +151,8 @@ class BrowserAccessibility {
   const string16& role_name() const { return role_name_; }
   int32 state() const { return state_; }
   const string16& value() const { return value_; }
+  bool instance_active() const { return instance_active_; }
+  int32 ref_count() const { return ref_count_; }
 
 #if defined(OS_MACOSX) && __OBJC__
   BrowserAccessibilityCocoa* toBrowserAccessibilityCocoa();
@@ -158,6 +197,9 @@ class BrowserAccessibility {
   // The children of this object.
   std::vector<BrowserAccessibility*> children_;
 
+  // The number of internal references to this object.
+  int32 ref_count_;
+
   // Accessibility metadata from the renderer
   string16 name_;
   string16 value_;
@@ -167,6 +209,14 @@ class BrowserAccessibility {
   int32 state_;
   string16 role_name_;
   WebKit::WebRect location_;
+  std::vector<int32> indirect_child_ids_;
+
+  // BrowserAccessibility objects are reference-counted on some platforms.
+  // When we're done with this object and it's removed from our accessibility
+  // tree, a client may still be holding onto a pointer to this object, so
+  // we mark it as inactive so that calls to any of this object's methods
+  // immediately return failure.
+  bool instance_active_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(BrowserAccessibility);

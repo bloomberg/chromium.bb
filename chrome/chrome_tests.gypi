@@ -1137,6 +1137,7 @@
         # All unittests in browser, common, renderer and service.
         'browser/about_flags_unittest.cc',
         'browser/accessibility/browser_accessibility_mac_unittest.mm',
+        'browser/accessibility/browser_accessibility_manager_unittest.cc',
         'browser/accessibility/browser_accessibility_win_unittest.cc',
         'browser/app_controller_mac_unittest.mm',
         'browser/autocomplete_history_manager_unittest.cc',

@@ -10,6 +10,10 @@
 
 using webkit_glue::WebAccessibility;
 
+BrowserAccessibility* BrowserAccessibilityFactory::Create() {
+  return BrowserAccessibility::Create();
+}
+
 // Start child IDs at -1 and decrement each time, because clients use
 // child IDs of 1, 2, 3, ... to access the children of an object by
 // index, so we use negative IDs to clearly distinguish between indices
@@ -17,18 +21,32 @@ using webkit_glue::WebAccessibility;
 // static
 int32 BrowserAccessibilityManager::next_child_id_ = -1;
 
+#if defined(OS_LINUX)
+// There's no OS-specific implementation of BrowserAccessibilityManager
+// on Linux, so just instantiate the base class.
+// static
+BrowserAccessibilityManager* BrowserAccessibilityManager::Create(
+    gfx::NativeView parent_view,
+    const WebAccessibility& src,
+    BrowserAccessibilityDelegate* delegate,
+    BrowserAccessibilityFactory* factory) {
+  return new BrowserAccessibilityManager(
+      parent_view, src, delegate, factory);
+}
+#endif
+
 BrowserAccessibilityManager::BrowserAccessibilityManager(
     gfx::NativeView parent_view,
-      const WebAccessibility& src,
-      BrowserAccessibilityDelegate* delegate,
-      BrowserAccessibilityFactory* factory)
+    const WebAccessibility& src,
+    BrowserAccessibilityDelegate* delegate,
+    BrowserAccessibilityFactory* factory)
     : parent_view_(parent_view),
       delegate_(delegate),
       factory_(factory),
       focus_(NULL) {
-  root_ = CreateAccessibilityTree(NULL, GetNextChildID(), src, 0);
+  root_ = CreateAccessibilityTree(NULL, src, 0);
   if (!focus_)
-    focus_ = root_;
+    SetFocus(root_, false);
 }
 
 // static
@@ -46,11 +64,11 @@ int32 BrowserAccessibilityManager::GetNextChildID() {
 
 BrowserAccessibilityManager::~BrowserAccessibilityManager() {
   // Clients could still hold references to some nodes of the tree, so
-  // calling Inactivate will make sure that as many nodes as possible are
-  // released now, and remaining nodes are marked as inactive so that
-  // calls to any methods on them will return E_FAIL;
-  root_->ReleaseTree();
-  root_->ReleaseReference();
+  // calling InternalReleaseReference will make sure that as many nodes
+  // as possible are released now, and remaining nodes are marked as
+  // inactive so that calls to any methods on them will fail gracefully.
+  focus_->InternalReleaseReference(false);
+  root_->InternalReleaseReference(true);
 }
 
 BrowserAccessibility* BrowserAccessibilityManager::GetRoot() {
@@ -139,27 +157,26 @@ void BrowserAccessibilityManager::OnAccessibilityObjectFocusChange(
   if (!new_browser_acc)
     return;
 
-  focus_ = new_browser_acc;
-  if (delegate_ && delegate_->HasFocus())
+  SetFocus(new_browser_acc, false);
+  if (delegate_ && delegate_->HasFocus()) {
     GotFocus();
-  // Mac currently does not have a BrowserAccessibilityDelegate.
-  else if (!delegate_) {
+  } else if (!delegate_) {
+    // Mac currently does not have a BrowserAccessibilityDelegate.
     NotifyAccessibilityEvent(
         ViewHostMsg_AccessibilityNotification_Params::
-            NOTIFICATION_TYPE_FOCUS_CHANGED,
+        NOTIFICATION_TYPE_FOCUS_CHANGED,
         focus_);
   }
 }
 
 void BrowserAccessibilityManager::OnAccessibilityObjectLoadComplete(
   const WebAccessibility& acc_obj) {
-  root_->ReleaseTree();
-  root_->ReleaseReference();
-  focus_ = NULL;
+  SetFocus(NULL, false);
+  root_->InternalReleaseReference(true);
 
-  root_ = CreateAccessibilityTree(NULL, GetNextChildID(), acc_obj, 0);
+  root_ = CreateAccessibilityTree(NULL, acc_obj, 0);
   if (!focus_)
-    focus_ = root_;
+    SetFocus(root_, false);
 
   NotifyAccessibilityEvent(
       ViewHostMsg_AccessibilityNotification_Params::
@@ -217,9 +234,15 @@ BrowserAccessibility* BrowserAccessibilityManager::GetFocus(
 }
 
 void BrowserAccessibilityManager::SetFocus(
-    const BrowserAccessibility& node) {
-  if (delegate_)
-    delegate_->SetAccessibilityFocus(node.renderer_id());
+    BrowserAccessibility* node, bool notify) {
+  if (focus_)
+    focus_->InternalReleaseReference(false);
+  focus_ = node;
+  if (focus_)
+    focus_->InternalAddReference();
+
+  if (notify && node && delegate_)
+    delegate_->SetAccessibilityFocus(node->renderer_id());
 }
 
 void BrowserAccessibilityManager::DoDefaultAction(
@@ -234,105 +257,91 @@ gfx::Rect BrowserAccessibilityManager::GetViewBounds() {
   return gfx::Rect();
 }
 
-bool BrowserAccessibilityManager::CanModifyTreeInPlace(
-    BrowserAccessibility* current_root,
-    const WebAccessibility& new_root) {
-  if (current_root->renderer_id() != new_root.id)
-    return false;
-  if (current_root->GetChildCount() != new_root.children.size())
-    return false;
-  for (unsigned int i = 0; i < current_root->GetChildCount(); i++) {
-    if (!CanModifyTreeInPlace(current_root->GetChild(i),
-                              new_root.children[i])) {
-      return false;
-    }
-  }
-  return true;
-}
-
-void BrowserAccessibilityManager::ModifyTreeInPlace(
-      BrowserAccessibility* current_root,
-      const WebAccessibility& new_root) {
-  DCHECK_EQ(current_root->renderer_id(), new_root.id);
-  DCHECK_EQ(current_root->GetChildCount(), new_root.children.size());
-  for (unsigned int i = 0; i < current_root->GetChildCount(); i++)
-    ModifyTreeInPlace(current_root->GetChild(i), new_root.children[i]);
-  current_root->Initialize(
-      this,
-      current_root->GetParent(),
-      current_root->child_id(),
-      current_root->index_in_parent(),
-      new_root);
-}
-
 BrowserAccessibility* BrowserAccessibilityManager::UpdateNode(
-    const WebAccessibility& acc_obj,
+    const WebAccessibility& src,
     bool include_children) {
   base::hash_map<int32, int32>::iterator iter =
-      renderer_id_to_child_id_map_.find(acc_obj.id);
+      renderer_id_to_child_id_map_.find(src.id);
   if (iter == renderer_id_to_child_id_map_.end())
     return NULL;
 
   int32 child_id = iter->second;
-  BrowserAccessibility* old_browser_acc = GetFromChildID(child_id);
-  if (!old_browser_acc)
+  BrowserAccessibility* current = GetFromChildID(child_id);
+  if (!current)
     return NULL;
 
   if (!include_children) {
-    DCHECK_EQ(0U, acc_obj.children.size());
-    old_browser_acc->Initialize(
+    DCHECK_EQ(0U, src.children.size());
+    current->Initialize(
         this,
-        old_browser_acc->GetParent(),
-        old_browser_acc->child_id(),
-        old_browser_acc->index_in_parent(),
-        acc_obj);
-    return old_browser_acc;
+        current->GetParent(),
+        current->child_id(),
+        current->index_in_parent(),
+        src);
+    return current;
   }
 
-  if (CanModifyTreeInPlace(old_browser_acc, acc_obj)) {
-    ModifyTreeInPlace(old_browser_acc, acc_obj);
-    return old_browser_acc;
-  }
+  // Detach all of the nodes in the old tree and get a single flat vector
+  // of all node pointers.
+  std::vector<BrowserAccessibility*> old_tree_nodes;
+  current->DetachTree(&old_tree_nodes);
 
-  BrowserAccessibility* new_browser_acc = CreateAccessibilityTree(
-      old_browser_acc->GetParent(),
-      child_id,
-      acc_obj,
-      old_browser_acc->index_in_parent());
+  // Build a new tree, reusing old nodes if possible. Each node that's
+  // reused will have its reference count incremented by one.
+  current = CreateAccessibilityTree(NULL, src, -1);
 
-  if (old_browser_acc->GetParent()) {
-    old_browser_acc->GetParent()->ReplaceChild(
-        old_browser_acc,
-        new_browser_acc);
-  } else {
-    DCHECK_EQ(old_browser_acc, root_);
-    root_ = new_browser_acc;
-  }
-  if (focus_ && focus_->IsDescendantOf(old_browser_acc))
-    focus_ = root_;
+  // Decrement the reference count of all nodes in the old tree, which will
+  // delete any nodes no longer needed.
+  for (int i = 0; i < static_cast<int>(old_tree_nodes.size()); i++)
+    old_tree_nodes[i]->InternalReleaseReference(false);
 
-  old_browser_acc->ReleaseTree();
-  old_browser_acc->ReleaseReference();
-  child_id_map_[child_id] = new_browser_acc;
+  DCHECK(focus_);
+  if (!focus_->instance_active())
+    SetFocus(root_, false);
 
-  return new_browser_acc;
+  return current;
 }
 
 BrowserAccessibility* BrowserAccessibilityManager::CreateAccessibilityTree(
     BrowserAccessibility* parent,
-    int child_id,
     const WebAccessibility& src,
     int index_in_parent) {
-  BrowserAccessibility* instance = factory_->Create();
+  BrowserAccessibility* instance = NULL;
+  int32 child_id = 0;
+  base::hash_map<int32, int32>::iterator iter =
+      renderer_id_to_child_id_map_.find(src.id);
+
+  // If a BrowserAccessibility instance for this ID already exists, add a
+  // new reference to it and retrieve its children vector.
+  if (iter != renderer_id_to_child_id_map_.end()) {
+    child_id = iter->second;
+    instance = GetFromChildID(child_id);
+  }
+
+  // If the node has changed roles, don't reuse a BrowserAccessibility
+  // object, that could confuse a screen reader.
+  if (instance && instance->role() != src.role)
+    instance = NULL;
+
+  if (instance) {
+    // If we're reusing a node, update its parent and increment its
+    // reference count.
+    instance->UpdateParent(parent, index_in_parent);
+    instance->InternalAddReference();
+  } else {
+    // Otherwise, create a new instance.
+    instance = factory_->Create();
+    child_id = GetNextChildID();
+  }
 
   instance->Initialize(this, parent, child_id, index_in_parent, src);
   child_id_map_[child_id] = instance;
   renderer_id_to_child_id_map_[src.id] = child_id;
   if ((src.state >> WebAccessibility::STATE_FOCUSED) & 1)
-    focus_ = instance;
+    SetFocus(instance, false);
   for (int i = 0; i < static_cast<int>(src.children.size()); ++i) {
     BrowserAccessibility* child = CreateAccessibilityTree(
-        instance, GetNextChildID(), src.children[i], i);
+        instance, src.children[i], i);
     instance->AddChild(child);
   }
 

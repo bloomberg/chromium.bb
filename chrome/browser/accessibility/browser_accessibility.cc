@@ -8,14 +8,25 @@
 #include "base/string_number_conversions.h"
 #include "chrome/browser/accessibility/browser_accessibility_manager.h"
 
+#if defined(OS_LINUX)
+// There's no OS-specific implementation of BrowserAccessibilityManager
+// on Linux, so just instantiate the base class.
+// static
+BrowserAccessibility* BrowserAccessibility::Create() {
+  return new BrowserAccessibility();
+}
+#endif
+
 BrowserAccessibility::BrowserAccessibility()
     : manager_(NULL),
       parent_(NULL),
       child_id_(0),
       index_in_parent_(0),
       renderer_id_(0),
+      ref_count_(1),
       role_(0),
-      state_(0) {
+      state_(0),
+      instance_active_(false) {
 }
 
 BrowserAccessibility::~BrowserAccessibility() {
@@ -48,27 +59,31 @@ void BrowserAccessibility::Initialize(
   location_ = src.location;
   role_ = src.role;
   state_ = src.state;
+  indirect_child_ids_ = src.indirect_child_ids;
 
   Initialize();
 }
 
-void BrowserAccessibility::ReleaseTree() {
-  // Now we can safely call InactivateTree on our children and remove
-  // references to them, so that as much of the tree as possible will be
-  // destroyed now - however, nodes that still have references to them
-  // might stick around a while until all clients have released them.
-  for (std::vector<BrowserAccessibility*>::iterator iter =
-           children_.begin();
-       iter != children_.end(); ++iter) {
-    (*iter)->ReleaseTree();
-    (*iter)->ReleaseReference();
-  }
-  children_.clear();
-  manager_->Remove(child_id_);
+void BrowserAccessibility::Initialize() {
+  instance_active_ = true;
 }
 
 void BrowserAccessibility::AddChild(BrowserAccessibility* child) {
   children_.push_back(child);
+}
+
+void BrowserAccessibility::DetachTree(
+    std::vector<BrowserAccessibility*>* nodes) {
+  nodes->push_back(this);
+  for (size_t i = 0; i < children_.size(); i++)
+    children_[i]->DetachTree(nodes);
+  children_.clear();
+}
+
+void BrowserAccessibility::UpdateParent(BrowserAccessibility* parent,
+                                        int index_in_parent) {
+  parent_ = parent;
+  index_in_parent_ = index_in_parent;
 }
 
 bool BrowserAccessibility::IsDescendantOf(
@@ -143,6 +158,30 @@ BrowserAccessibility* BrowserAccessibility::BrowserAccessibilityForPoint(
       return child->BrowserAccessibilityForPoint(point);
   }
   return this;
+}
+
+void BrowserAccessibility::InternalAddReference() {
+  ref_count_++;
+}
+
+void BrowserAccessibility::InternalReleaseReference(bool recursive) {
+  DCHECK_GT(ref_count_, 0);
+
+  if (recursive || ref_count_ == 1) {
+    for (std::vector<BrowserAccessibility*>::iterator iter = children_.begin();
+         iter != children_.end();
+         ++iter) {
+      (*iter)->InternalReleaseReference(true);
+    }
+  }
+
+  ref_count_--;
+  if (ref_count_ == 0) {
+    instance_active_ = false;
+    children_.clear();
+    manager_->Remove(child_id_);
+    NativeReleaseReference();
+  }
 }
 
 bool BrowserAccessibility::HasAttribute(
