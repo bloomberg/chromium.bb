@@ -38,6 +38,7 @@
 #elif defined(OS_MACOSX)
 #include <cairo-quartz.h>
 #elif defined(OS_WIN)
+#include <cairo-win32-private.h>
 #include <cairo-win32.h>
 #endif
 
@@ -274,30 +275,34 @@ void RendererCairo::CreateCairoSurface() {
       display_height());
 #elif defined(OS_WIN)
   HDC hdc = GetDC(hwnd_);
-  if (display_width() > 0 && display_height() > 0) {
-    RECT rect;
-    GetClipBox(hdc, &rect);
-    if (rect.right - rect.left != display_width() ||
-        rect.bottom - rect.top != display_height()) {
-      // The hdc doesn't have the right clip box.
-      // Need to reset the clip box on hdc.
-      DLOG(WARNING) << "CreateCairoSurface clip box (" << rect.left << ","
-                    << rect.top << "," << rect.right << "," << rect.bottom
-                    << ") doesn't match the image size " << display_width()
-                    << "x" << display_height();
-      HRGN hRegion = CreateRectRgn(0, 0, display_width(), display_height());
-      int result = SelectClipRgn(hdc, hRegion);
-      if (result == ERROR) {
-        LOG(ERROR) << "CreateCairoSurface SelectClipRgn returns ERROR";
-      } else if (result == NULLREGION) {
-        // This should not happen since the ShowWindow is called.
-        LOG(ERROR) << "CreateCairoSurface SelectClipRgn returns NULLREGION";
-      }
-      DeleteObject(hRegion);
-    }
-  }
 
   main_surface_ = cairo_win32_surface_create(hdc);
+
+  // Check the surface to make sure it has the correct clip box.
+  cairo_win32_surface_t* cairo_surface =
+      reinterpret_cast<cairo_win32_surface_t*>(main_surface_);
+  if (cairo_surface->extents.width != display_width() ||
+      cairo_surface->extents.height != display_height()) {
+    // The clip box doesn't have the right info.  Need to do the following:
+    // 1. Update the surface parameters to the right rectangle.
+    // 2. Try to update the DC clip region.
+    DLOG(WARNING) << "CreateCairoSurface updates clip box from (0,0,"
+                  << cairo_surface->extents.width << ","
+                  << cairo_surface->extents.height << ") to (0,0,"
+                  << display_width() << "," << display_height() << ").";
+    HRGN hRegion = CreateRectRgn(0, 0, display_width(), display_height());
+    int result = SelectClipRgn(hdc, hRegion);
+    if (result == ERROR) {
+      LOG(ERROR) << "CreateCairoSurface SelectClipRgn returns ERROR";
+    } else if (result == NULLREGION) {
+      // This should not happen since the ShowWindow is called.
+      LOG(ERROR) << "CreateCairoSurface SelectClipRgn returns NULLREGION";
+    }
+    DeleteObject(hRegion);
+    cairo_surface->extents.width = display_width();
+    cairo_surface->extents.height = display_height();
+  }
+
   ReleaseDC(hwnd_, hdc);
 #endif
 }

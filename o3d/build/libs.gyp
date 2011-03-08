@@ -76,6 +76,7 @@
               ],
               'include_dirs': [
                 '../../<(cairodir)/src',
+                '../../<(pixmandir)/pixman',
                 '../build/misc',
               ],
             },
