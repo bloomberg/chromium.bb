@@ -967,8 +967,8 @@ def SendUpstream(parser, args, cmd):
 
   # We want to squash all this branch's commits into one commit with the
   # proper description.
-  # We do this by doing a "merge --squash" into a new commit branch, then
-  # dcommitting that.
+  # We do this by doing a "reset --soft" to the base branch (which keeps
+  # the working copy the same), then dcommitting that.
   MERGE_BRANCH = 'git-cl-commit'
   # Delete the merge branch if it already exists.
   if RunGitWithCode(['show-ref', '--quiet', '--verify',
@@ -987,8 +987,8 @@ def SendUpstream(parser, args, cmd):
   # we clean up the branches.
   retcode = -1
   try:
-    RunGit(['checkout', '-q', '-b', MERGE_BRANCH, base_branch])
-    RunGit(['merge', '--squash', cl.GetBranchRef()])
+    RunGit(['checkout', '-q', '-b', MERGE_BRANCH])
+    RunGit(['reset', '--soft', base_branch])
     if options.contributor:
       RunGit(['commit', '--author', options.contributor, '-m', description])
     else:
