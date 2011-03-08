@@ -289,8 +289,6 @@ class SafeBrowsingServiceTest : public InProcessBrowserTest {
     // This test will fill up the database using testing prefixes
     // and urls.
     command_line->AppendSwitch(switches::kSbDisableAutoUpdate);
-
-    command_line->AppendSwitch(switches::kSbEnableDownloadProtection);
   }
 
   virtual void SetUpInProcessBrowserTestFixture() {

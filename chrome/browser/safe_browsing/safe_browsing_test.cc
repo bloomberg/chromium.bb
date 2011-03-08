@@ -289,10 +289,15 @@ class SafeBrowsingServiceTest : public InProcessBrowserTest {
     // Makes sure the auto update is not triggered. This test will force the
     // update when needed.
     command_line->AppendSwitch(switches::kSbDisableAutoUpdate);
+
     // This test uses loopback. No need to use IPv6 especially it makes
     // local requests slow on Windows trybot when ipv6 local address [::1]
     // is not setup.
     command_line->AppendSwitch(switches::kDisableIPv6);
+
+    // TODO(lzheng): The test server does not understand download related
+    // requests. We need to fix the server.
+    command_line->AppendSwitch(switches::kSbDisableDownloadProtection);
 
     // In this test, we fetch SafeBrowsing data and Mac key from the same
     // server. Although in real production, they are served from different

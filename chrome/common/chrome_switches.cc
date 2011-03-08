@@ -953,15 +953,17 @@ const char kSbMacKeyURLPrefix[] = "safebrowsing-mackey-url-prefix";
 // This is used for testing only.
 const char kSbDisableAutoUpdate[] = "safebrowsing-disable-auto-update";
 
-// If present, safebrowsing checks download url and download content's hash
-// to make sure the content are not malicious.
-const char kSbEnableDownloadProtection[] = "safebrowsing-download-protection";
+// TODO(lzheng): Remove this flag once the feature works fine
+// (http://crbug.com/74848).
+// This flag disables safebrowsing feature that checks download url and download
+// content's hash to make sure the content are not malicious.
+const char kSbDisableDownloadProtection[] =
+    "safebrowsing-disable-download-protection";
 
-// This flag is used together with kSbEnableDownloadProtection. When that flag
-// is present but this flag is absent, we won't show the warning ui. The purpose
-// of this flag is to make sure we roll out download url detection smoothly.
-// We will remove this flag once we verify that the download url detection works
-// as expectecd according to UMA reports.
+// When this flag is absent, we won't show the warning ui. The purpose of this
+// flag is to make sure we roll out download url detection smoothly. We will
+// remove this flag once we verify that the download url detection works as
+// expectecd according to UMA reports.
 const char kSbEnableDownloadWarningUI[] = "safebrowsing-download-warning-ui";
 
 // Enable support for SDCH filtering (dictionary based expansion of content).

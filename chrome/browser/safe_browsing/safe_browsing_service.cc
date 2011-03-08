@@ -525,7 +525,7 @@ void SafeBrowsingService::OnIOInitialize(
 
   CommandLine* cmdline = CommandLine::ForCurrentProcess();
   enable_download_protection_ =
-      cmdline->HasSwitch(switches::kSbEnableDownloadProtection);
+      !cmdline->HasSwitch(switches::kSbDisableDownloadProtection);
 
   MakeDatabaseAvailable();
 
