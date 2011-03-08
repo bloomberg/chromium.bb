@@ -8,22 +8,24 @@
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
-#include "chrome/browser/importer/importer.h"
+#include "base/ref_counted.h"
+#include "base/scoped_ptr.h"
 #include "chrome/browser/importer/importer_data_types.h"
+#include "chrome/browser/importer/importer_progress_observer.h"
 #include "views/view.h"
 #include "views/window/dialog_delegate.h"
-#include "views/window/window.h"
+
+class ImporterHost;
+class ImporterObserver;
 
 namespace views {
 class CheckmarkThrobber;
 class Label;
 }
 
-class ImporterObserver;
-
 class ImportProgressDialogView : public views::View,
                                  public views::DialogDelegate,
-                                 public ImporterHost::Observer {
+                                 public importer::ImporterProgressObserver {
  public:
   // |items| is a bitmask of importer::ImportItem being imported.
   // |bookmark_import| is true if we're importing bookmarks from a
@@ -56,10 +58,10 @@ class ImportProgressDialogView : public views::View,
   // Set up the control layout within this dialog.
   void InitControlLayout();
 
-  // ImporterHost::Observer:
+  // importer::ImporterProgressObserver:
+  virtual void ImportStarted() OVERRIDE;
   virtual void ImportItemStarted(importer::ImportItem item) OVERRIDE;
   virtual void ImportItemEnded(importer::ImportItem item) OVERRIDE;
-  virtual void ImportStarted() OVERRIDE;
   virtual void ImportEnded() OVERRIDE;
 
   // The native window that we are parented to. Can be NULL.

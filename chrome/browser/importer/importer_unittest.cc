@@ -16,6 +16,7 @@
 #include <vector>
 
 #include "app/win/scoped_com_initializer.h"
+#include "base/compiler_specific.h"
 #include "base/file_util.h"
 #include "base/message_loop.h"
 #include "base/path_service.h"
@@ -27,6 +28,7 @@
 #include "chrome/browser/importer/importer.h"
 #include "chrome/browser/importer/importer_bridge.h"
 #include "chrome/browser/importer/importer_data_types.h"
+#include "chrome/browser/importer/importer_progress_observer.h"
 #include "chrome/browser/search_engines/template_url.h"
 #include "chrome/common/chrome_paths.h"
 #include "content/browser/browser_thread.h"
@@ -70,7 +72,7 @@ class ImporterTest : public testing::Test {
   }
 
   void Firefox3xImporterTest(std::string profile_dir,
-                             ImporterHost::Observer* observer,
+                             importer::ImporterProgressObserver* observer,
                              ProfileWriter* writer,
                              bool import_search_plugins) {
     FilePath data_path;
@@ -201,7 +203,7 @@ bool IsWindowsVista() {
 }
 
 class TestObserver : public ProfileWriter,
-                     public ImporterHost::Observer {
+                     public importer::ImporterProgressObserver {
  public:
   TestObserver() : ProfileWriter(NULL) {
     bookmark_count_ = 0;
@@ -209,10 +211,11 @@ class TestObserver : public ProfileWriter,
     password_count_ = 0;
   }
 
-  virtual void ImportItemStarted(importer::ImportItem item) {}
-  virtual void ImportItemEnded(importer::ImportItem item) {}
-  virtual void ImportStarted() {}
-  virtual void ImportEnded() {
+  // importer::ImporterProgressObserver:
+  virtual void ImportStarted() OVERRIDE {}
+  virtual void ImportItemStarted(importer::ImportItem item) OVERRIDE {}
+  virtual void ImportItemEnded(importer::ImportItem item) OVERRIDE {}
+  virtual void ImportEnded() OVERRIDE {
     MessageLoop::current()->Quit();
     EXPECT_EQ(arraysize(kIEBookmarks), bookmark_count_);
     EXPECT_EQ(1, history_count_);
@@ -555,7 +558,7 @@ static const KeywordList kFirefox2Keywords[] = {
 static const int kDefaultFirefox2KeywordIndex = 8;
 
 class FirefoxObserver : public ProfileWriter,
-                        public ImporterHost::Observer {
+                        public importer::ImporterProgressObserver {
  public:
   FirefoxObserver() : ProfileWriter(NULL) {
     bookmark_count_ = 0;
@@ -564,10 +567,11 @@ class FirefoxObserver : public ProfileWriter,
     keyword_count_ = 0;
   }
 
-  virtual void ImportItemStarted(importer::ImportItem item) {}
-  virtual void ImportItemEnded(importer::ImportItem item) {}
-  virtual void ImportStarted() {}
-  virtual void ImportEnded() {
+  // importer::ImporterProgressObserver:
+  virtual void ImportStarted() OVERRIDE {}
+  virtual void ImportItemStarted(importer::ImportItem item) OVERRIDE {}
+  virtual void ImportItemEnded(importer::ImportItem item) OVERRIDE {}
+  virtual void ImportEnded() OVERRIDE {
     MessageLoop::current()->Quit();
     EXPECT_EQ(arraysize(kFirefox2Bookmarks), bookmark_count_);
     EXPECT_EQ(1U, history_count_);
@@ -753,7 +757,7 @@ static const KeywordList kFirefox3Keywords[] = {
 static const int kDefaultFirefox3KeywordIndex = 8;
 
 class Firefox3Observer : public ProfileWriter,
-                         public ImporterHost::Observer {
+                         public importer::ImporterProgressObserver {
  public:
   Firefox3Observer()
       : ProfileWriter(NULL), bookmark_count_(0), history_count_(0),
@@ -766,10 +770,11 @@ class Firefox3Observer : public ProfileWriter,
         import_search_engines_(import_search_engines) {
   }
 
-  virtual void ImportItemStarted(importer::ImportItem item) {}
-  virtual void ImportItemEnded(importer::ImportItem item) {}
-  virtual void ImportStarted() {}
-  virtual void ImportEnded() {
+  // importer::ImporterProgressObserver:
+  virtual void ImportStarted() OVERRIDE {}
+  virtual void ImportItemStarted(importer::ImportItem item) OVERRIDE {}
+  virtual void ImportItemEnded(importer::ImportItem item) OVERRIDE {}
+  virtual void ImportEnded() OVERRIDE {
     MessageLoop::current()->Quit();
     EXPECT_EQ(arraysize(kFirefox3Bookmarks), bookmark_count_);
     EXPECT_EQ(1U, history_count_);

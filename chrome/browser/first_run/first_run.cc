@@ -4,6 +4,7 @@
 
 #include "chrome/browser/first_run/first_run.h"
 
+#include "base/compiler_specific.h"
 #include "base/command_line.h"
 #include "base/file_util.h"
 #include "base/path_service.h"
@@ -11,6 +12,7 @@
 #include "build/build_config.h"
 #include "chrome/browser/importer/importer.h"
 #include "chrome/browser/importer/importer_progress_dialog.h"
+#include "chrome/browser/importer/importer_progress_observer.h"
 #include "chrome/browser/metrics/user_metrics.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/process_singleton.h"
@@ -636,20 +638,21 @@ void FirstRunImportObserver::ImportCanceled() {
 #if defined(OS_POSIX)
 namespace {
 
-// This class acts as an observer for the ImporterHost::Observer::ImportEnded
+// This class acts as an observer for the ImporterProgressObserver::ImportEnded
 // callback. When the import process is started, certain errors may cause
 // ImportEnded() to be called synchronously, but the typical case is that
 // ImportEnded() is called asynchronously. Thus we have to handle both cases.
-class ImportEndedObserver : public ImporterHost::Observer {
+class ImportEndedObserver : public importer::ImporterProgressObserver {
  public:
   ImportEndedObserver() : ended_(false),
                           should_quit_message_loop_(false) {}
   virtual ~ImportEndedObserver() {}
 
-  virtual void ImportItemStarted(importer::ImportItem item) {}
-  virtual void ImportItemEnded(importer::ImportItem item) {}
-  virtual void ImportStarted() {}
-  virtual void ImportEnded() {
+  // importer::ImporterProgressObserver:
+  virtual void ImportStarted() OVERRIDE {}
+  virtual void ImportItemStarted(importer::ImportItem item) OVERRIDE {}
+  virtual void ImportItemEnded(importer::ImportItem item) OVERRIDE {}
+  virtual void ImportEnded() OVERRIDE {
     ended_ = true;
     if (should_quit_message_loop_)
       MessageLoop::current()->Quit();

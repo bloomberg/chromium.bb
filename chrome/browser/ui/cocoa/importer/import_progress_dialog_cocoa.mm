@@ -10,6 +10,7 @@
 #import "base/scoped_nsobject.h"
 #import "base/sys_string_conversions.h"
 #include "base/utf_string_conversions.h"
+#include "chrome/browser/importer/importer.h"
 #include "chrome/browser/importer/importer_observer.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
@@ -160,16 +161,16 @@ ImporterObserverBridge::ImporterObserverBridge(
 
 ImporterObserverBridge::~ImporterObserverBridge() {}
 
+void ImporterObserverBridge::ImportStarted() {
+  // Not needed for out of process import.
+}
+
 void ImporterObserverBridge::ImportItemStarted(importer::ImportItem item) {
   [owner_ ImportItemStarted:item];
 }
 
 void ImporterObserverBridge::ImportItemEnded(importer::ImportItem item) {
   [owner_ ImportItemEnded:item];
-}
-
-void ImporterObserverBridge::ImportStarted() {
-  // Not needed for out of process import.
 }
 
 void ImporterObserverBridge::ImportEnded() {

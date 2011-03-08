@@ -12,6 +12,7 @@
 #include <string>
 #include <vector>
 
+#include "base/compiler_specific.h"
 #include "base/scoped_ptr.h"
 #include "base/weak_ptr.h"
 #include "chrome/browser/automation/automation_provider_json.h"
@@ -21,8 +22,8 @@
 #include "chrome/browser/download/download_manager.h"
 #include "chrome/browser/history/history.h"
 #include "chrome/browser/history/history_types.h"
-#include "chrome/browser/importer/importer.h"
 #include "chrome/browser/importer/importer_data_types.h"
+#include "chrome/browser/importer/importer_progress_observer.h"
 #include "chrome/browser/password_manager/password_store.h"
 #include "chrome/browser/search_engines/template_url_model_observer.h"
 #include "chrome/browser/tabs/tab_strip_model.h"
@@ -819,17 +820,19 @@ class AutomationProviderHistoryObserver {
 
 // Allows the automation provider to wait for import queries to finish.
 class AutomationProviderImportSettingsObserver
-    : public ImporterHost::Observer {
+    : public importer::ImporterProgressObserver {
  public:
   AutomationProviderImportSettingsObserver(
       AutomationProvider* provider,
       IPC::Message* reply_message);
   virtual ~AutomationProviderImportSettingsObserver();
 
-  virtual void ImportStarted();
-  virtual void ImportItemStarted(importer::ImportItem item);
-  virtual void ImportItemEnded(importer::ImportItem item);
-  virtual void ImportEnded();
+  // importer::ImporterProgressObserver:
+  virtual void ImportStarted() OVERRIDE;
+  virtual void ImportItemStarted(importer::ImportItem item) OVERRIDE;
+  virtual void ImportItemEnded(importer::ImportItem item) OVERRIDE;
+  virtual void ImportEnded() OVERRIDE;
+
  private:
   base::WeakPtr<AutomationProvider> provider_;
   scoped_ptr<IPC::Message> reply_message_;

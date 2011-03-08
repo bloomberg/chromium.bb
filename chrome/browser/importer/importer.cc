@@ -12,6 +12,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/importer/firefox_profile_lock.h"
 #include "chrome/browser/importer/importer_bridge.h"
+#include "chrome/browser/importer/importer_progress_observer.h"
 #include "chrome/browser/search_engines/template_url.h"
 #include "chrome/browser/search_engines/template_url_model.h"
 #include "chrome/browser/tabs/tab_strip_model.h"
@@ -215,7 +216,7 @@ void ImporterHost::Cancel() {
     importer_->Cancel();
 }
 
-void ImporterHost::SetObserver(Observer* observer) {
+void ImporterHost::SetObserver(importer::ImporterProgressObserver* observer) {
   observer_ = observer;
 }
 

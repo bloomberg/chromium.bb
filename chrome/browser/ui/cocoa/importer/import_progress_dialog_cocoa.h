@@ -8,11 +8,15 @@
 
 #import <Cocoa/Cocoa.h>
 
-#include "chrome/browser/importer/importer.h"
+#include "base/basictypes.h"
+#include "base/compiler_specific.h"
+#include "base/scoped_ptr.h"
 #include "chrome/browser/importer/importer_data_types.h"
+#include "chrome/browser/importer/importer_progress_observer.h"
 
-class ImporterObserverBridge;
+class ImporterHost;
 class ImporterObserver;
+class ImporterObserverBridge;
 
 // Class that acts as a controller for the dialog that shows progress for an
 // import operation.
@@ -20,7 +24,7 @@ class ImporterObserver;
 @interface ImportProgressDialogController : NSWindowController {
   scoped_ptr<ImporterObserverBridge> import_host_observer_bridge_;
   ImporterHost* importer_host_;  // (weak)
-  ImporterObserver* observer_;  // (weak)
+  ImporterObserver* observer_;   // (weak)
 
   // Strings bound to static labels in the UI dialog.
   NSString* explanatory_text_;
@@ -67,25 +71,18 @@ class ImporterObserver;
 @end
 
 // C++ -> objc bridge for import status notifications.
-class ImporterObserverBridge : public ImporterHost::Observer {
+class ImporterObserverBridge : public importer::ImporterProgressObserver {
  public:
   ImporterObserverBridge(ImportProgressDialogController* owner);
   virtual ~ImporterObserverBridge();
 
-  // Invoked when data for the specified item is about to be collected.
-  virtual void ImportItemStarted(importer::ImportItem item);
-
-  // Invoked when data for the specified item has been collected from the
-  // source profile and is now ready for further processing.
-  virtual void ImportItemEnded(importer::ImportItem item);
-
-  // Invoked when the import begins.
-  virtual void ImportStarted();
-
-  // Invoked when the source profile has been imported.
-  virtual void ImportEnded();
-
  private:
+  // importer::ImporterProgressObserver:
+  virtual void ImportStarted() OVERRIDE;
+  virtual void ImportItemStarted(importer::ImportItem item) OVERRIDE;
+  virtual void ImportItemEnded(importer::ImportItem item) OVERRIDE;
+  virtual void ImportEnded() OVERRIDE;
+
   ImportProgressDialogController* owner_;
 
   DISALLOW_COPY_AND_ASSIGN(ImporterObserverBridge);

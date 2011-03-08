@@ -9,6 +9,7 @@
 #include <string>
 
 #include "base/utf_string_conversions.h"
+#include "chrome/browser/importer/importer.h"
 #include "chrome/browser/importer/importer_observer.h"
 #include "chrome/browser/ui/gtk/gtk_util.h"
 #include "grit/chromium_strings.h"
@@ -154,6 +155,10 @@ void ImportProgressDialogGtk::CloseDialog() {
   delete this;
 }
 
+void ImportProgressDialogGtk::ImportStarted() {
+  importing_ = true;
+}
+
 void ImportProgressDialogGtk::ImportItemStarted(importer::ImportItem item) {
   DCHECK(items_ & item);
   switch (item) {
@@ -200,10 +205,6 @@ void ImportProgressDialogGtk::ImportItemEnded(importer::ImportItem item) {
     default:
       break;
   }
-}
-
-void ImportProgressDialogGtk::ImportStarted() {
-  importing_ = true;
 }
 
 void ImportProgressDialogGtk::ImportEnded() {

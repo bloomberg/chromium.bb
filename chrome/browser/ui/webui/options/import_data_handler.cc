@@ -15,7 +15,7 @@
 #include "base/threading/thread_restrictions.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
-#include "chrome/browser/importer/importer_data_types.h"
+#include "chrome/browser/importer/importer.h"
 #include "chrome/browser/profiles/profile.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
@@ -117,24 +117,6 @@ void ImportDataHandler::ImportData(const ListValue* args) {
   }
 }
 
-void ImportDataHandler::ImportStarted() {
-}
-
-void ImportDataHandler::ImportItemStarted(importer::ImportItem item) {
-  // TODO(csilv): show progress detail in the web view.
-}
-
-void ImportDataHandler::ImportItemEnded(importer::ImportItem item) {
-  // TODO(csilv): show progress detail in the web view.
-}
-
-void ImportDataHandler::ImportEnded() {
-  importer_host_->SetObserver(NULL);
-  importer_host_ = NULL;
-
-  web_ui_->CallJavascriptFunction(L"ImportDataOverlay.dismiss");
-}
-
 void ImportDataHandler::SourceProfilesLoaded() {
   ListValue browser_profiles;
   int profiles_count = importer_list_->GetAvailableProfileCount();
@@ -162,4 +144,22 @@ void ImportDataHandler::SourceProfilesLoaded() {
   web_ui_->CallJavascriptFunction(
       L"options.ImportDataOverlay.updateSupportedBrowsers",
       browser_profiles);
+}
+
+void ImportDataHandler::ImportStarted() {
+}
+
+void ImportDataHandler::ImportItemStarted(importer::ImportItem item) {
+  // TODO(csilv): show progress detail in the web view.
+}
+
+void ImportDataHandler::ImportItemEnded(importer::ImportItem item) {
+  // TODO(csilv): show progress detail in the web view.
+}
+
+void ImportDataHandler::ImportEnded() {
+  importer_host_->SetObserver(NULL);
+  importer_host_ = NULL;
+
+  web_ui_->CallJavascriptFunction(L"ImportDataOverlay.dismiss");
 }

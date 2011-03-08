@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/views/importer/import_progress_dialog_view.h"
 
 #include "base/utf_string_conversions.h"
+#include "chrome/browser/importer/importer.h"
 #include "chrome/browser/importer/importer_observer.h"
 #include "chrome/browser/importer/importer_progress_dialog.h"
 #include "grit/chromium_strings.h"
@@ -215,6 +216,10 @@ void ImportProgressDialogView::InitControlLayout() {
   }
 }
 
+void ImportProgressDialogView::ImportStarted() {
+  importing_ = true;
+}
+
 void ImportProgressDialogView::ImportItemStarted(importer::ImportItem item) {
   DCHECK(items_ & item);
   switch (item) {
@@ -260,10 +265,6 @@ void ImportProgressDialogView::ImportItemEnded(importer::ImportItem item) {
       state_cookies_->SetChecked(true);
       break;
   }
-}
-
-void ImportProgressDialogView::ImportStarted() {
-  importing_ = true;
 }
 
 void ImportProgressDialogView::ImportEnded() {

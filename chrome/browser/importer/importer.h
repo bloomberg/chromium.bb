@@ -38,6 +38,10 @@ class URLRow;
 struct ImportedFavIconUsage;
 }
 
+namespace importer {
+class ImporterProgressObserver;
+}
+
 namespace webkit_glue {
 struct PasswordForm;
 }
@@ -49,27 +53,6 @@ class ImporterHost : public base::RefCountedThreadSafe<ImporterHost>,
                      public BookmarkModelObserver,
                      public NotificationObserver {
  public:
-  // An interface which an object can implement to be notified of events during
-  // the import process.
-  class Observer {
-   public:
-    // Invoked when data for the specified item is about to be collected.
-    virtual void ImportItemStarted(importer::ImportItem item) = 0;
-
-    // Invoked when data for the specified item has been collected from the
-    // source profile and is now ready for further processing.
-    virtual void ImportItemEnded(importer::ImportItem item) = 0;
-
-    // Invoked when the import begins.
-    virtual void ImportStarted() = 0;
-
-    // Invoked when the source profile has been imported.
-    virtual void ImportEnded() = 0;
-
-   protected:
-    virtual ~Observer() {}
-  };
-
   ImporterHost();
 
   // BookmarkModelObserver implementation.
@@ -138,7 +121,7 @@ class ImporterHost : public base::RefCountedThreadSafe<ImporterHost>,
     parent_window_ = parent_window;
   }
 
-  void SetObserver(Observer* observer);
+  void SetObserver(importer::ImporterProgressObserver* observer);
 
   // A series of functions invoked at the start, during and end of the end
   // of the import process. The middle functions are notifications that the
@@ -173,7 +156,7 @@ class ImporterHost : public base::RefCountedThreadSafe<ImporterHost>,
   // Profile we're importing from.
   Profile* profile_;
 
-  Observer* observer_;
+  importer::ImporterProgressObserver* observer_;
 
   // TODO(mirandac): task_ and importer_ should be private.  Can't just put
   // them there without changing the order of construct/destruct, so do this

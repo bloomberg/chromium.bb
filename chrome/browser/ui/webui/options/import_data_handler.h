@@ -4,37 +4,44 @@
 
 #ifndef CHROME_BROWSER_UI_WEBUI_OPTIONS_IMPORT_DATA_HANDLER_H_
 #define CHROME_BROWSER_UI_WEBUI_OPTIONS_IMPORT_DATA_HANDLER_H_
+#pragma once
 
+#include "base/basictypes.h"
+#include "base/compiler_specific.h"
 #include "base/ref_counted.h"
-#include "chrome/browser/importer/importer.h"
+#include "chrome/browser/importer/importer_data_types.h"
+#include "chrome/browser/importer/importer_list.h"
+#include "chrome/browser/importer/importer_progress_observer.h"
 #include "chrome/browser/ui/webui/options/options_ui.h"
+
+class ImporterHost;
 
 // Chrome personal stuff import data overlay UI handler.
 class ImportDataHandler : public OptionsPageUIHandler,
-                          public ImporterHost::Observer,
-                          public ImporterList::Observer {
+                          public ImporterList::Observer,
+                          public importer::ImporterProgressObserver {
  public:
   ImportDataHandler();
   virtual ~ImportDataHandler();
 
-  // OptionsPageUIHandler implementation.
+  // OptionsPageUIHandler:
   virtual void GetLocalizedValues(DictionaryValue* localized_strings);
   virtual void Initialize();
 
-  // WebUIMessageHandler implementation.
+  // WebUIMessageHandler:
   virtual void RegisterMessages();
 
  private:
   void ImportData(const ListValue* args);
 
-  // ImporterHost::Observer implementation.
-  virtual void ImportStarted();
-  virtual void ImportItemStarted(importer::ImportItem item);
-  virtual void ImportItemEnded(importer::ImportItem item);
-  virtual void ImportEnded();
-
-  // ImporterList::Observer implementation.
+  // ImporterList::Observer:
   virtual void SourceProfilesLoaded();
+
+  // importer::ImporterProgressObserver:
+  virtual void ImportStarted() OVERRIDE;
+  virtual void ImportItemStarted(importer::ImportItem item) OVERRIDE;
+  virtual void ImportItemEnded(importer::ImportItem item) OVERRIDE;
+  virtual void ImportEnded() OVERRIDE;
 
   scoped_refptr<ImporterList> importer_list_;
 
