@@ -285,8 +285,7 @@ void PrintingMessageFilter::OnUpdatePrintSettingsReply(
     scoped_refptr<printing::PrinterQuery> printer_query,
     IPC::Message* reply_msg) {
   ViewMsg_Print_Params params;
-  if (!printer_query.get() ||
-      printer_query->last_status() != printing::PrintingContext::OK) {
+  if (printer_query->last_status() != printing::PrintingContext::OK) {
     memset(&params, 0, sizeof(params));
   } else {
     RenderParamsFromPrintSettings(printer_query->settings(), &params);
@@ -294,14 +293,9 @@ void PrintingMessageFilter::OnUpdatePrintSettingsReply(
   }
   ViewHostMsg_UpdatePrintSettings::WriteReplyParams(reply_msg, params);
   Send(reply_msg);
-  // If printing was enabled.
-  if (printer_query.get()) {
-    // If user hasn't cancelled.
-    if (printer_query->cookie() && printer_query->settings().dpi()) {
-      print_job_manager_->QueuePrinterQuery(printer_query.get());
-    } else {
-      printer_query->StopWorker();
-    }
-  }
+  // If user hasn't cancelled.
+  if (printer_query->cookie() && printer_query->settings().dpi())
+    print_job_manager_->QueuePrinterQuery(printer_query.get());
+  else
+    printer_query->StopWorker();
 }
-
