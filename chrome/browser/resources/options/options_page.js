@@ -659,6 +659,12 @@ cr.define('options', function() {
     if (!topPage || topPage.isOverlay || !topPage.parentPage)
       return;
 
+    // Do nothing if there is no client coordinates.
+    // When user clicks on a radio/checkbox label span, a click event will be
+    // generated on target radio/checkbox but with client coordinates (0, 0).
+    if (!event.clientX && !event.clientY)
+      return;
+
     // Don't interfere with navbar clicks.
     if ($('navbar').contains(event.target))
       return;
