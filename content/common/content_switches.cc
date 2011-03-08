@@ -126,6 +126,14 @@ const char kPluginProcess[]                 = "plugin";
 // Causes the plugin process to display a dialog on launch.
 const char kPluginStartupDialog[]           = "plugin-startup-dialog";
 
+// Use the PPAPI (Pepper) Flash found at the given path.
+const char kPpapiFlashPath[]                = "ppapi-flash-path";
+
+// Report the given version for the PPAPI (Pepper) Flash. The version should be
+// numbers separated by '.'s (e.g., "12.3.456.78"). If not specified, it
+// defaults to "10.2.999.999".
+const char kPpapiFlashVersion[]             = "ppapi-flash-version";
+
 // Runs PPAPI (Pepper) plugins out-of-process.
 const char kPpapiOutOfProcess[]             = "ppapi-out-of-process";
 
@@ -154,7 +162,7 @@ const char kProcessPerTab[]                 = "process-per-tab";
 // renderer or plugin host.  If it's empty, it's the browser.
 const char kProcessType[]                   = "type";
 
-// Register pepper plugins that should be loaded into the renderer.
+// Register Pepper plugins (see pepper_plugin_registry.cc for its format).
 const char kRegisterPepperPlugins[]         = "register-pepper-plugins";
 
 // On POSIX only: the contents of this flag are prepended to the renderer

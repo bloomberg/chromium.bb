@@ -44,6 +44,8 @@ extern const char kPluginLauncher[];
 extern const char kPluginPath[];
 extern const char kPluginProcess[];
 extern const char kPluginStartupDialog[];
+extern const char kPpapiFlashPath[];
+extern const char kPpapiFlashVersion[];
 extern const char kPpapiOutOfProcess[];
 extern const char kPpapiPluginLauncher[];
 extern const char kPpapiPluginProcess[];

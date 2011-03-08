@@ -13,6 +13,7 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
+#include "content/common/content_switches.h"
 #include "remoting/client/plugin/pepper_entrypoints.h"
 
 namespace {
@@ -30,6 +31,14 @@ const char* kNaClPluginDescription = "Native Client Executable";
 #if defined(ENABLE_REMOTING)
 const char* kRemotingPluginMimeType = "pepper-application/x-chromoting";
 #endif
+
+const char* kFlashPluginName = "Shockwave Flash";
+const char* kFlashPluginSwfMimeType = "application/x-shockwave-flash";
+const char* kFlashPluginSwfExtension = "swf";
+const char* kFlashPluginSwfDescription = "Shockwave Flash";
+const char* kFlashPluginSplMimeType = "application/futuresplash";
+const char* kFlashPluginSplExtension = "spl";
+const char* kFlashPluginSplDescription = "FutureSplash Player";
 
 // Appends the known built-in plugins to the given vector. Some built-in
 // plugins are "internal" which means they are compiled into the Chrome binary,
@@ -100,14 +109,56 @@ void ComputeBuiltInPlugins(std::vector<PepperPluginInfo>* plugins) {
 
 // Appends any plugins from the command line to the given vector.
 void ComputePluginsFromCommandLine(std::vector<PepperPluginInfo>* plugins) {
+  bool out_of_process =
+      CommandLine::ForCurrentProcess()->HasSwitch(switches::kPpapiOutOfProcess);
+
+  // Handle any Pepper Flash first.
+  const CommandLine::StringType flash_path =
+      CommandLine::ForCurrentProcess()->GetSwitchValueNative(
+          switches::kPpapiFlashPath);
+  if (!flash_path.empty()) {
+    PepperPluginInfo plugin;
+    plugin.is_out_of_process = out_of_process;
+    plugin.path = FilePath(flash_path);
+    plugin.name = kFlashPluginName;
+
+    const std::string flash_version =
+        CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
+                switches::kPpapiFlashVersion);
+    std::vector<std::string> flash_version_numbers;
+    base::SplitString(flash_version, '.', &flash_version_numbers);
+    if (flash_version_numbers.size() < 1)
+      flash_version_numbers.push_back("10");
+    // |SplitString()| puts in an empty string given an empty string. :(
+    else if (flash_version_numbers[0].empty())
+      flash_version_numbers[0] = "10";
+    if (flash_version_numbers.size() < 2)
+      flash_version_numbers.push_back("2");
+    if (flash_version_numbers.size() < 3)
+      flash_version_numbers.push_back("999");
+    if (flash_version_numbers.size() < 4)
+      flash_version_numbers.push_back("999");
+    // E.g., "Shockwave Flash 10.2 r154":
+    plugin.description = plugin.name + " " + flash_version_numbers[0] + "." +
+        flash_version_numbers[1] + " r" + flash_version_numbers[2];
+    plugin.version = JoinString(flash_version_numbers, '.');
+    webkit::npapi::WebPluginMimeType swf_mime_type(kFlashPluginSwfMimeType,
+                                                   kFlashPluginSwfExtension,
+                                                   kFlashPluginSwfDescription);
+    plugin.mime_types.push_back(swf_mime_type);
+    webkit::npapi::WebPluginMimeType spl_mime_type(kFlashPluginSplMimeType,
+                                                   kFlashPluginSplExtension,
+                                                   kFlashPluginSplDescription);
+    plugin.mime_types.push_back(spl_mime_type);
+    plugins->push_back(plugin);
+  }
+
+  // Handle other plugins.
   const std::string value =
       CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
           switches::kRegisterPepperPlugins);
   if (value.empty())
     return;
-
-  bool out_of_process =
-      CommandLine::ForCurrentProcess()->HasSwitch(switches::kPpapiOutOfProcess);
 
   // FORMAT:
   // command-line = <plugin-entry> + *( LWS + "," + LWS + <plugin-entry> )
