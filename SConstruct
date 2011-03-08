@@ -414,7 +414,6 @@ nacl_glibc_skiplist = set([
     # such executables.  See
     # http://code.google.com/p/nativeclient/issues/detail?id=1183
     'run_earth',
-    'run_life',
     'run_mandel_nav',
     'run_whole_archive_test',
     'validate_ppapi_example_audio',
@@ -2148,7 +2147,6 @@ if nacl_env.Bit('build_av_apps'):
       'common/console/nacl.scons',
 
       'tests/earth/nacl.scons',
-      'tests/life/nacl.scons',
       'tests/mandel_nav/nacl.scons',
       'tests/many/nacl.scons',
       # TODO(polina,dspringer): *** Add this test back in when URLLoader
