@@ -2385,10 +2385,15 @@ TEST_F(FormManagerTest, FillFormNonEmptyField) {
                       false),
             fields[2]);
 
-  // Fill the form.
+  // Preview the form and verify that the cursor position has been updated.
   form.fields[0].set_value(ASCIIToUTF16("Wyatt"));
   form.fields[1].set_value(ASCIIToUTF16("Earp"));
   form.fields[2].set_value(ASCIIToUTF16("wyatt@example.com"));
+  EXPECT_TRUE(form_manager.PreviewForm(form, input_element));
+  EXPECT_EQ(2, input_element.selectionStart());
+  EXPECT_EQ(5, input_element.selectionEnd());
+
+  // Fill the form.
   EXPECT_TRUE(form_manager.FillForm(form, input_element));
 
   // Find the newly-filled form that contains the input element.

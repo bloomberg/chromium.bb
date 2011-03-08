@@ -918,9 +918,11 @@ void FormManager::PreviewFormField(WebFormControlElement* field,
   input_element->setSuggestedValue(
       data->value().substr(0, input_element->maxLength()));
   input_element->setAutofilled(true);
-  if (is_initiating_node)
-    input_element->setSelectionRange(0,
+  if (is_initiating_node) {
+    // Select the part of the text that the user didn't type.
+    input_element->setSelectionRange(input_element->value().length(),
                                      input_element->suggestedValue().length());
+  }
 }
 
 }  // namespace autofill
