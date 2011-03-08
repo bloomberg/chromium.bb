@@ -690,6 +690,7 @@ void BrowserRenderProcessHost::PropagateBrowserCommandLineToRenderer(
     switches::kEnableBenchmarking,
     switches::kEnableClickToPlay,
     switches::kEnableCrxlessWebApps,
+    switches::kEnableDataTransferItems,
     switches::kEnableDCHECK,
     switches::kEnableExperimentalExtensionApis,
     switches::kEnableInBrowserThumbnailing,

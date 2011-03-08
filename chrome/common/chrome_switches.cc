@@ -465,6 +465,9 @@ const char kEnableConnectBackupJobs[]       = "enable-connect-backup-jobs";
 // Enables web developers to create apps for Chrome without using crx packages.
 const char kEnableCrxlessWebApps[]          = "enable-crxless-web-apps";
 
+// Enables data transfer items.
+const char kEnableDataTransferItems[]       = "enable-data-transfer-items";
+
 // Enables device motion events.
 const char kEnableDeviceMotion[]            = "enable-device-motion";
 

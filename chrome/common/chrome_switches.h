@@ -139,6 +139,7 @@ extern const char kEnableCloudPrint[];
 extern const char kEnableCompositeToTexture[];
 extern const char kEnableConnectBackupJobs[];
 extern const char kEnableCrxlessWebApps[];
+extern const char kEnableDataTransferItems[];
 extern const char kEnableDeviceMotion[];
 extern const char kEnableDNSCertProvenanceChecking[];
 extern const char kEnableDNSSECCerts[];
