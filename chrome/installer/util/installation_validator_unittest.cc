@@ -71,7 +71,6 @@ const wchar_t* const kChromeFrameChannels[] = {
 
 class FakeProductState : public ProductState {
  public:
-  void Clear();
   void SetChannel(const wchar_t* base, int channel_modifiers);
   void SetVersion(const char* version);
   void SetUninstallCommand(BrowserDistribution::Type dist_type,
@@ -142,18 +141,6 @@ FilePath FakeProductState::GetSetupExePath(BrowserDistribution::Type dist_type,
       .AppendASCII(version)
       .Append(installer::kInstallerDir)
       .Append(installer::kSetupExe);
-}
-
-void FakeProductState::Clear() {
-  channel_.set_value(std::wstring());
-  version_.reset();
-  old_version_.reset();
-  brand_.clear();
-  rename_cmd_.clear();
-  uninstall_command_ = CommandLine(CommandLine::NO_PROGRAM);
-  commands_.Clear();
-  msi_ = false;
-  multi_install_ = false;
 }
 
 // Sets the channel_ member of this instance according to a base channel value

@@ -80,6 +80,9 @@ class ProductState {
   // Returns this object a la operator=().
   ProductState& CopyFrom(const ProductState& other);
 
+  // Clears the state of this object.
+  void Clear();
+
  protected:
   static bool InitializeCommands(const base::win::RegKey& version_key,
                                  AppCommands* commands);

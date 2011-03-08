@@ -33,12 +33,6 @@ bool ProductState::InitializeCommands(const base::win::RegKey& version_key,
   static const DWORD kAccess = KEY_ENUMERATE_SUB_KEYS | KEY_QUERY_VALUE;
   base::win::RegKey commands_key;
 
-  if (!version_key.Valid()) {
-    // Version key may be invalid if we're not running under Google Update.
-    LOG(WARNING) << "Could not InitializeCommands, version_key is invalid.";
-    return false;
-  }
-
   if (commands_key.Open(version_key.Handle(), google_update::kRegCommandsKey,
                         kAccess) == ERROR_SUCCESS)
     return commands->Initialize(commands_key);
@@ -50,35 +44,35 @@ bool ProductState::Initialize(bool system_install,
   const std::wstring version_key(distribution->GetVersionKey());
   const std::wstring state_key(distribution->GetStateKey());
   const HKEY root_key = system_install ? HKEY_LOCAL_MACHINE : HKEY_CURRENT_USER;
-  base::win::RegKey key(root_key, version_key.c_str(), KEY_QUERY_VALUE);
-  std::wstring version_str;
-  if (key.ReadValue(google_update::kRegVersionField,
-                    &version_str) == ERROR_SUCCESS) {
-    version_.reset(Version::GetVersionFromString(WideToASCII(version_str)));
+  base::win::RegKey key;
+
+  // Clear the runway.
+  Clear();
+
+  // Read from the Clients key.
+  if (key.Open(root_key, version_key.c_str(),
+               KEY_QUERY_VALUE) == ERROR_SUCCESS) {
+    std::wstring version_str;
+    if (key.ReadValue(google_update::kRegVersionField,
+                      &version_str) == ERROR_SUCCESS) {
+      version_.reset(Version::GetVersionFromString(WideToASCII(version_str)));
+    }
+
+    // Attempt to read the other values even if the "pv" version value was
+    // absent. Note that ProductState instances containing these values will
+    // only be accessible via InstallationState::GetNonVersionedProductState.
+    if (key.ReadValue(google_update::kRegOldVersionField,
+                      &version_str) == ERROR_SUCCESS) {
+      old_version_.reset(
+          Version::GetVersionFromString(WideToASCII(version_str)));
+    }
+
+    key.ReadValue(google_update::kRegRenameCmdField, &rename_cmd_);
+    if (!InitializeCommands(key, &commands_))
+      commands_.Clear();
   }
-
-  // Attempt to read the other values even if the "pv" version value was absent.
-  // Note that ProductState instances containing these values will only be
-  // accessible via InstallationState::GetNonVersionedProductState.
-  if (key.ReadValue(google_update::kRegOldVersionField,
-                    &version_str) == ERROR_SUCCESS) {
-    old_version_.reset(
-        Version::GetVersionFromString(WideToASCII(version_str)));
-  }
-
-  if (key.ReadValue(google_update::kRegRenameCmdField,
-                    &rename_cmd_) != ERROR_SUCCESS)
-    rename_cmd_.clear();
-
-  if (!InitializeCommands(key, &commands_))
-    commands_.Clear();
 
   // Read from the ClientState key.
-  channel_.set_value(std::wstring());
-  uninstall_command_ = CommandLine(CommandLine::NO_PROGRAM);
-  brand_.clear();
-  msi_ = false;
-  multi_install_ = false;
   if (key.Open(root_key, state_key.c_str(),
                KEY_QUERY_VALUE) == ERROR_SUCCESS) {
     std::wstring setup_path;
@@ -101,12 +95,10 @@ bool ProductState::Initialize(bool system_install,
     msi_ = (key.ReadValueDW(google_update::kRegMSIField,
                             &dw_value) == ERROR_SUCCESS) && (dw_value != 0);
     // Multi-install is implied or is derived from the command-line.
-    if (distribution->GetType() == BrowserDistribution::CHROME_BINARIES) {
+    if (distribution->GetType() == BrowserDistribution::CHROME_BINARIES)
       multi_install_ = true;
-    } else {
-      multi_install_ = uninstall_command_.HasSwitch(
-          switches::kMultiInstall);
-    }
+    else
+      multi_install_ = uninstall_command_.HasSwitch(switches::kMultiInstall);
   }
 
   return version_.get() != NULL;
@@ -134,6 +126,18 @@ ProductState& ProductState::CopyFrom(const ProductState& other) {
   multi_install_ = other.multi_install_;
 
   return *this;
+}
+
+void ProductState::Clear() {
+  channel_.set_value(std::wstring());
+  version_.reset();
+  old_version_.reset();
+  brand_.clear();
+  rename_cmd_.clear();
+  uninstall_command_ = CommandLine(CommandLine::NO_PROGRAM);
+  commands_.Clear();
+  msi_ = false;
+  multi_install_ = false;
 }
 
 InstallationState::InstallationState() {
