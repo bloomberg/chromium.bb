@@ -24,6 +24,7 @@ class MessageLoop;
 namespace remoting {
 
 class JingleThread;
+class PortAllocatorSessionFactory;
 class XmppProxy;
 class VideoPacket;
 
@@ -65,7 +66,8 @@ class ConnectionToHost : public JingleClient::Callback {
   // TODO(sergeyu): Constructor shouldn't need thread here.
   ConnectionToHost(JingleThread* thread,
                    talk_base::NetworkManager* network_manager,
-                   talk_base::PacketSocketFactory* socket_factory);
+                   talk_base::PacketSocketFactory* socket_factory,
+                   PortAllocatorSessionFactory* session_factory);
   virtual ~ConnectionToHost();
 
   // TODO(ajwong): We need to generalize this API.
@@ -129,6 +131,7 @@ class ConnectionToHost : public JingleClient::Callback {
 
   scoped_ptr<talk_base::NetworkManager> network_manager_;
   scoped_ptr<talk_base::PacketSocketFactory> socket_factory_;
+  scoped_ptr<PortAllocatorSessionFactory> port_allocator_session_factory_;
 
   scoped_ptr<SignalStrategy> signal_strategy_;
   scoped_refptr<JingleClient> jingle_client_;

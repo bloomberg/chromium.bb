@@ -59,4 +59,10 @@ const void* PPP_GetInterface(const char* interface_name) {
   return pp::Module::Get()->GetPluginInterface(interface_name);
 }
 
+const void* PPP_GetBrowserInterface(const char* interface_name) {
+  if (!pp::Module::Get())
+    return NULL;
+  return pp::Module::Get()->GetBrowserInterface(interface_name);
+}
+
 }  // namespace remoting

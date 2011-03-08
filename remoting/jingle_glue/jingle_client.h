@@ -41,6 +41,7 @@ class Session;
 namespace remoting {
 
 class JingleThread;
+class PortAllocatorSessionFactory;
 class XmppProxy;
 
 // TODO(ajwong): The SignalStrategy stuff needs to be separated out to separate
@@ -140,11 +141,13 @@ class JingleClient : public base::RefCountedThreadSafe<JingleClient>,
   // objects is given to JingleClient.
   JingleClient(JingleThread* thread,
                SignalStrategy* signal_strategy,
+               PortAllocatorSessionFactory* session_factory,
                Callback* callback);
   JingleClient(JingleThread* thread,
                SignalStrategy* signal_strategy,
                talk_base::NetworkManager* network_manager,
                talk_base::PacketSocketFactory* socket_factory,
+               PortAllocatorSessionFactory* session_factory,
                Callback* callback);
   ~JingleClient();
 
@@ -223,6 +226,7 @@ class JingleClient : public base::RefCountedThreadSafe<JingleClient>,
   scoped_ptr<talk_base::NetworkManager> network_manager_;
   scoped_ptr<talk_base::PacketSocketFactory> socket_factory_;
   scoped_ptr<cricket::HttpPortAllocator> port_allocator_;
+  scoped_ptr<PortAllocatorSessionFactory> port_allocator_session_factory_;
   scoped_ptr<cricket::SessionManager> session_manager_;
 
   scoped_ptr<JingleInfoRequest> jingle_info_request_;

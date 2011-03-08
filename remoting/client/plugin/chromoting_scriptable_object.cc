@@ -266,7 +266,7 @@ void ChromotingScriptableObject::SignalDesktopSizeChange() {
 
   if (!exception.is_undefined()) {
     LOG(WARNING) << "Exception when invoking JS callback"
-                 << exception.AsString();
+                 << exception.DebugString();
   }
 }
 

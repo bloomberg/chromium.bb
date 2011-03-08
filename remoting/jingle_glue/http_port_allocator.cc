@@ -6,13 +6,18 @@
 
 namespace remoting {
 
+PortAllocatorSessionFactory::~PortAllocatorSessionFactory() {
+}
+
 HttpPortAllocator::HttpPortAllocator(
     talk_base::NetworkManager* network_manager,
     talk_base::PacketSocketFactory* socket_factory,
+    PortAllocatorSessionFactory* session_factory,
     const std::string &user_agent)
     : cricket::HttpPortAllocator(network_manager,
                                  socket_factory,
-                                 user_agent) {
+                                 user_agent),
+      session_factory_(session_factory) {
 }
 
 HttpPortAllocator::~HttpPortAllocator() {
@@ -20,6 +25,11 @@ HttpPortAllocator::~HttpPortAllocator() {
 
 cricket::PortAllocatorSession *HttpPortAllocator::CreateSession(
     const std::string& name, const std::string& session_type) {
+  if (session_factory_) {
+    return session_factory_->CreateSession(
+        this, name, session_type, stun_hosts(), relay_hosts(), relay_token(),
+        user_agent());
+  }
   return new cricket::HttpPortAllocatorSession(
       this, name, session_type, stun_hosts(), relay_hosts(), relay_token(),
       user_agent());

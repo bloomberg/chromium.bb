@@ -91,6 +91,8 @@
         'client/plugin/pepper_entrypoints.h',
         'client/plugin/pepper_input_handler.cc',
         'client/plugin/pepper_input_handler.h',
+        'client/plugin/pepper_port_allocator_session.cc',
+        'client/plugin/pepper_port_allocator_session.h',
         'client/plugin/pepper_view.cc',
         'client/plugin/pepper_view.h',
         'client/plugin/pepper_view_proxy.cc',

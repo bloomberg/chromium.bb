@@ -164,6 +164,7 @@ JavascriptIqRequest* JavascriptSignalStrategy::CreateIqRequest() {
 
 JingleClient::JingleClient(JingleThread* thread,
                            SignalStrategy* signal_strategy,
+                           PortAllocatorSessionFactory* session_factory,
                            Callback* callback)
     : thread_(thread),
       state_(START),
@@ -171,13 +172,15 @@ JingleClient::JingleClient(JingleThread* thread,
       closed_(false),
       initialized_finished_(false),
       callback_(callback),
-      signal_strategy_(signal_strategy) {
+      signal_strategy_(signal_strategy),
+      port_allocator_session_factory_(session_factory) {
 }
 
 JingleClient::JingleClient(JingleThread* thread,
                            SignalStrategy* signal_strategy,
                            talk_base::NetworkManager* network_manager,
                            talk_base::PacketSocketFactory* socket_factory,
+                           PortAllocatorSessionFactory* session_factory,
                            Callback* callback)
     : thread_(thread),
       state_(START),
@@ -187,7 +190,8 @@ JingleClient::JingleClient(JingleThread* thread,
       callback_(callback),
       signal_strategy_(signal_strategy),
       network_manager_(network_manager),
-      socket_factory_(socket_factory) {
+      socket_factory_(socket_factory),
+      port_allocator_session_factory_(session_factory) {
 }
 
 JingleClient::~JingleClient() {
@@ -220,8 +224,10 @@ void JingleClient::DoInitialize() {
   }
 
   port_allocator_.reset(
-      new HttpPortAllocator(network_manager_.get(),
-                            socket_factory_.get(), "transp2"));
+      new remoting::HttpPortAllocator(
+          network_manager_.get(), socket_factory_.get(),
+          port_allocator_session_factory_.get(), "transp2"));
+
   // TODO(ajwong): The strategy needs a "start" command or something.  Right
   // now, Init() implicitly starts processing events.  Thus, we must have the
   // other fields of JingleClient initialized first, otherwise the state-change

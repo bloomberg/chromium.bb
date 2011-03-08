@@ -7,6 +7,7 @@
 #include "base/callback.h"
 #include "base/message_loop.h"
 #include "remoting/base/constants.h"
+#include "remoting/jingle_glue/http_port_allocator.h"
 #include "remoting/jingle_glue/jingle_thread.h"
 #include "remoting/proto/auth.pb.h"
 #include "remoting/protocol/client_message_dispatcher.h"
@@ -24,11 +25,13 @@ namespace protocol {
 ConnectionToHost::ConnectionToHost(
     JingleThread* thread,
     talk_base::NetworkManager* network_manager,
-    talk_base::PacketSocketFactory* socket_factory)
+    talk_base::PacketSocketFactory* socket_factory,
+    PortAllocatorSessionFactory* session_factory)
     : state_(STATE_EMPTY),
       thread_(thread),
       network_manager_(network_manager),
       socket_factory_(socket_factory),
+      port_allocator_session_factory_(session_factory),
       event_callback_(NULL),
       dispatcher_(new ClientMessageDispatcher()) {
 }
@@ -62,7 +65,9 @@ void ConnectionToHost::Connect(const std::string& username,
   signal_strategy_.reset(
       new XmppSignalStrategy(thread_, username, auth_token,
                              kChromotingTokenServiceName));
-  jingle_client_ = new JingleClient(thread_, signal_strategy_.get(), this);
+  jingle_client_ =
+      new JingleClient(thread_, signal_strategy_.get(),
+                       port_allocator_session_factory_.release(), this);
   jingle_client_->Init();
 
   // Save jid of the host. The actual connection is created later after
@@ -84,7 +89,9 @@ void ConnectionToHost::ConnectSandboxed(scoped_refptr<XmppProxy> xmpp_proxy,
   JavascriptSignalStrategy* strategy = new JavascriptSignalStrategy(your_jid);
   strategy->AttachXmppProxy(xmpp_proxy);
   signal_strategy_.reset(strategy);
-  jingle_client_ = new JingleClient(thread_, signal_strategy_.get(), this);
+  jingle_client_ =
+      new JingleClient(thread_, signal_strategy_.get(),
+                       port_allocator_session_factory_.release(), this);
   jingle_client_->Init();
 
   // Save jid of the host. The actual connection is created later after

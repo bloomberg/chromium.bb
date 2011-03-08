@@ -33,7 +33,7 @@ int main(int argc, char** argv) {
   MessageLoop ui_loop;
   remoting::ClientContext context;
   remoting::protocol::ConnectionToHost connection(context.jingle_thread(),
-                                                  NULL, NULL);
+                                                  NULL, NULL, NULL);
   remoting::X11View view;
   scoped_refptr<remoting::RectangleUpdateDecoder> rectangle_decoder =
       new remoting::RectangleUpdateDecoder(context.decode_message_loop(),

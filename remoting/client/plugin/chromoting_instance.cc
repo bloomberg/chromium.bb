@@ -25,6 +25,7 @@
 #include "remoting/client/rectangle_update_decoder.h"
 #include "remoting/client/plugin/chromoting_scriptable_object.h"
 #include "remoting/client/plugin/pepper_input_handler.h"
+#include "remoting/client/plugin/pepper_port_allocator_session.h"
 #include "remoting/client/plugin/pepper_view.h"
 #include "remoting/client/plugin/pepper_view_proxy.h"
 #include "remoting/client/plugin/pepper_util.h"
@@ -79,6 +80,8 @@ bool ChromotingInstance::Init(uint32_t argc,
       plugin_instance->delegate()->GetP2PSocketDispatcher();
   IpcNetworkManager* network_manager = NULL;
   IpcPacketSocketFactory* socket_factory = NULL;
+  PortAllocatorSessionFactory* session_factory =
+      CreatePepperPortAllocatorSessionFactory(this);
 
   // If we don't have socket dispatcher for IPC (e.g. P2P API is
   // disabled), then JingleClient will try to use physical sockets.
@@ -90,7 +93,8 @@ bool ChromotingInstance::Init(uint32_t argc,
 
   // Create the chromoting objects.
   host_connection_.reset(new protocol::ConnectionToHost(
-      context_.jingle_thread(), network_manager, socket_factory));
+      context_.jingle_thread(), network_manager, socket_factory,
+      session_factory));
   view_.reset(new PepperView(this, &context_));
   view_proxy_ = new PepperViewProxy(this, view_.get());
   rectangle_decoder_ = new RectangleUpdateDecoder(

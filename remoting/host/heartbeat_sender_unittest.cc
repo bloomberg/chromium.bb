@@ -65,7 +65,7 @@ class HeartbeatSenderTest : public testing::Test {
 
     signal_strategy_.reset(new MockSignalStrategy());
     jingle_client_ =
-        new JingleClient(&jingle_thread_, signal_strategy_.get(), NULL);
+        new JingleClient(&jingle_thread_, signal_strategy_.get(), NULL, NULL);
     jingle_client_->full_jid_ = kTestJid;
   }
 
