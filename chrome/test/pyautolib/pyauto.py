@@ -217,7 +217,11 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
     for item in os.listdir(profile_dir):
       if item != '.pki':  # Causes stateful partition to get erased
         pyauto_utils.RemovePath(os.path.join(profile_dir, item))
-    # TODO(nirnimesh): Clean up other files in /home/chronos?
+
+    chronos_dir = '/home/chronos'
+    for item in os.listdir(chronos_dir):
+      if item != 'user' and not item.startswith('.'):
+        pyauto_utils.RemovePath(os.path.join(chronos_dir, item))
 
   def RestartBrowser(self, clear_profile=True):
     """Restart the browser.
