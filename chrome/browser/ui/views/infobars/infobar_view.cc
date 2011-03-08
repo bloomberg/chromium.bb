@@ -89,6 +89,19 @@ void InfoBarView::Hide(bool animate) {
   }
 }
 
+void InfoBarView::Close() {
+  parent()->RemoveChildView(this);
+  if (container_)
+    container_->OnInfoBarAnimated(true);
+  // Note that we only tell the delegate we're closed here, and not when we're
+  // simply destroyed (by virtue of a tab switch or being moved from window to
+  // window), since this action can cause the delegate to destroy itself.
+  if (delegate_) {
+    delegate_->InfoBarClosed();
+    delegate_ = NULL;
+  }
+}
+
 void InfoBarView::PaintArrow(gfx::Canvas* canvas,
                              View* outer_view,
                              int arrow_center_x) {
@@ -379,20 +392,6 @@ void InfoBarView::DestroyFocusTracker(bool restore_focus) {
       focus_tracker_->FocusLastFocusedExternalView();
     focus_tracker_->SetFocusManager(NULL);
     focus_tracker_.reset();
-  }
-}
-
-void InfoBarView::Close() {
-  DCHECK(container_);
-  container_->RemoveInfoBar(this);
-  container_->OnInfoBarAnimated(true);
-
-  // Note that we only tell the delegate we're closed here, and not when we're
-  // simply destroyed (by virtue of a tab switch or being moved from window to
-  // window), since this action can cause the delegate to destroy itself.
-  if (delegate_) {
-    delegate_->InfoBarClosed();
-    delegate_ = NULL;
   }
 }
 
