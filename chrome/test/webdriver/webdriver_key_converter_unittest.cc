@@ -7,7 +7,7 @@
 
 #include "base/string16.h"
 #include "base/utf_string_conversions.h"
-#include "chrome/test/webdriver/automation.h"
+#include "chrome/test/automation/automation_json_requests.h"
 #include "chrome/test/webdriver/webdriver_key_converter.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

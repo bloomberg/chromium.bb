@@ -24,9 +24,7 @@
 #include "chrome/common/url_constants.h"
 #include "chrome/test/automation/automation_json_requests.h"
 #include "chrome/test/automation/automation_proxy.h"
-#include "chrome/test/automation/browser_proxy.h"
 #include "chrome/test/automation/proxy_launcher.h"
-#include "chrome/test/automation/tab_proxy.h"
 #include "googleurl/src/gurl.h"
 #include "ui/gfx/point.h"
 
@@ -117,17 +115,6 @@ bool GetDefaultChromeExeDir(FilePath* browser_directory) {
 
 namespace webdriver {
 
-WebKeyEvent::WebKeyEvent(automation::KeyEventTypes type,
-                         ui::KeyboardCode key_code,
-                         const std::string& unmodified_text,
-                         const std::string& modified_text,
-                         int modifiers)
-    : type(type),
-      key_code(key_code),
-      unmodified_text(unmodified_text),
-      modified_text(modified_text),
-      modifiers(modifiers) {}
-
 Automation::Automation() {}
 
 Automation::~Automation() {}
@@ -173,92 +160,74 @@ void Automation::ExecuteScript(int tab_id,
                                const std::string& script,
                                std::string* result,
                                bool* success) {
-  TabProxy* tab = GetTabById(tab_id);
-  if (!tab) {
+  int windex = 0, tab_index = 0;
+  if (!GetIndicesForTab(tab_id, &windex, &tab_index)) {
     *success = false;
     return;
   }
-  std::wstring wide_xpath = UTF8ToWide(frame_xpath);
-  std::wstring wide_script = UTF8ToWide(script);
-  std::wstring wide_result;
-  *success = tab->ExecuteAndExtractString(
-      wide_xpath, wide_script, &wide_result);
-  if (*success)
-    *result = WideToUTF8(wide_result);
+
+  Value* unscoped_value;
+  if (!SendExecuteJavascriptJSONRequest(
+      automation(), windex, tab_index, frame_xpath, script, &unscoped_value)) {
+    *success = false;
+    return;
+  }
+  scoped_ptr<Value> value(unscoped_value);
+  *success = value->GetAsString(result);
 }
 
 void Automation::MouseMove(int tab_id,
                            const gfx::Point& p,
                            bool* success) {
-  std::string reply;
-  DictionaryValue dict;
-
-  dict.SetString("command", "WebkitMouseMove");
-  dict.SetInteger("x", p.x());
-  dict.SetInteger("y", p.y());
-
-  *success = SendJSONRequest(tab_id, dict, &reply);
-  if (!*success) {
-    LOG(ERROR) << "Could not send mouse event. Reply: " << reply;
+  int windex = 0, tab_index = 0;
+  if (!GetIndicesForTab(tab_id, &windex, &tab_index)) {
+    *success = false;
+    return;
   }
+
+  *success = SendMouseMoveJSONRequest(
+      automation(), windex, tab_index, p.x(), p.y());
 }
 
 void Automation::MouseClick(int tab_id,
                             const gfx::Point& p,
-                            int flag,
+                            automation::MouseButton button,
                             bool* success) {
-  std::string reply;
-  DictionaryValue dict;
-
-  dict.SetString("command", "WebkitMouseClick");
-  dict.SetInteger("button_flags", flag);
-  dict.SetInteger("x", p.x());
-  dict.SetInteger("y", p.y());
-
-  *success = SendJSONRequest(tab_id, dict, &reply);
-  if (!*success) {
-    LOG(ERROR) << "Could not send mouse event. Reply: " << reply;
+  int windex = 0, tab_index = 0;
+  if (!GetIndicesForTab(tab_id, &windex, &tab_index)) {
+    *success = false;
+    return;
   }
+
+  *success = SendMouseClickJSONRequest(
+      automation(), windex, tab_index, button, p.x(), p.y());
 }
 
 void Automation::MouseDrag(int tab_id,
                            const gfx::Point& start,
                            const gfx::Point& end,
                            bool* success) {
-  std::string reply;
-  DictionaryValue dict;
-
-  dict.SetString("command", "WebkitMouseDrag");
-  dict.SetInteger("start_x", start.x());
-  dict.SetInteger("start_y", start.y());
-  dict.SetInteger("end_x", end.x());
-  dict.SetInteger("end_y", end.y());
-
-  *success = SendJSONRequest(tab_id, dict, &reply);
-  if (!*success) {
-    LOG(ERROR) << "Could not send mouse event. Reply: " << reply;
+  int windex = 0, tab_index = 0;
+  if (!GetIndicesForTab(tab_id, &windex, &tab_index)) {
+    *success = false;
+    return;
   }
+
+  *success = SendMouseDragJSONRequest(
+      automation(), windex, tab_index, start.x(), start.y(), end.x(), end.y());
 }
 
 void Automation::SendWebKeyEvent(int tab_id,
                                  const WebKeyEvent& key_event,
                                  bool* success) {
-  std::string reply;
-  DictionaryValue dict;
-
-  dict.SetString("command", "SendKeyEventToActiveTab");
-  dict.SetInteger("type", key_event.type);
-  dict.SetInteger("nativeKeyCode", key_event.key_code);
-  dict.SetInteger("windowsKeyCode", key_event.key_code);
-  dict.SetString("unmodifiedText", key_event.unmodified_text);
-  dict.SetString("text", key_event.modified_text);
-  dict.SetInteger("modifiers", key_event.modifiers);
-  dict.SetBoolean("isSystemKey", false);
-
-  *success = SendJSONRequest(tab_id, dict, &reply);
-  if (!*success) {
-    LOG(ERROR) << "Could not send web key event. Reply: " << reply;
+  int windex = 0, tab_index = 0;
+  if (!GetIndicesForTab(tab_id, &windex, &tab_index)) {
+    *success = false;
+    return;
   }
+
+  *success = SendWebKeyEventJSONRequest(
+      automation(), windex, tab_index, key_event);
 }
 
 void Automation::NavigateToURL(int tab_id,
@@ -280,163 +249,134 @@ void Automation::NavigateToURL(int tab_id,
 }
 
 void Automation::GoForward(int tab_id, bool* success) {
-  TabProxy* tab = GetTabById(tab_id);
-  if (!tab) {
+  int windex = 0, tab_index = 0;
+  if (!GetIndicesForTab(tab_id, &windex, &tab_index)) {
     *success = false;
     return;
   }
-  *success = tab->GoForward();
+
+  *success = SendGoForwardJSONRequest(automation(), windex, tab_index);
 }
 
 void Automation::GoBack(int tab_id, bool* success) {
-  TabProxy* tab = GetTabById(tab_id);
-  if (!tab) {
+  int windex = 0, tab_index = 0;
+  if (!GetIndicesForTab(tab_id, &windex, &tab_index)) {
     *success = false;
     return;
   }
-  *success = tab->GoBack();
+
+  *success = SendGoBackJSONRequest(automation(), windex, tab_index);
 }
 
 void Automation::Reload(int tab_id, bool* success) {
-  TabProxy* tab = GetTabById(tab_id);
-  if (!tab) {
+  int windex = 0, tab_index = 0;
+  if (!GetIndicesForTab(tab_id, &windex, &tab_index)) {
     *success = false;
     return;
   }
-  *success = tab->Reload();
+
+  *success = SendReloadJSONRequest(automation(), windex, tab_index);
 }
 
 void Automation::GetURL(int tab_id,
                         std::string* url,
                         bool* success) {
-  TabProxy* tab = GetTabById(tab_id);
-  if (!tab) {
+  int windex = 0, tab_index = 0;
+  if (!GetIndicesForTab(tab_id, &windex, &tab_index)) {
     *success = false;
     return;
   }
-  GURL gurl;
-  *success = tab->GetCurrentURL(&gurl);
-  if (*success)
-    *url = gurl.possibly_invalid_spec();
+
+  *success = SendGetTabURLJSONRequest(automation(), windex, tab_index, url);
 }
 
 void Automation::GetGURL(int tab_id,
                          GURL* gurl,
                          bool* success) {
-  TabProxy* tab = GetTabById(tab_id);
-  if (!tab) {
-    *success = false;
-    return;
-  }
-  *success = tab->GetCurrentURL(gurl);
+  std::string url;
+  GetURL(tab_id, &url, success);
+  if (*success)
+    *gurl = GURL(url);
 }
 
 void Automation::GetTabTitle(int tab_id,
                              std::string* tab_title,
                              bool* success) {
-  TabProxy* tab = GetTabById(tab_id);
-  if (!tab) {
+  int windex = 0, tab_index = 0;
+  if (!GetIndicesForTab(tab_id, &windex, &tab_index)) {
     *success = false;
     return;
   }
-  std::wstring wide_title;
-  *success = tab->GetTabTitle(&wide_title);
-  if (*success)
-    *tab_title = WideToUTF8(wide_title);
+
+  *success = SendGetTabTitleJSONRequest(
+      automation(), windex, tab_index, tab_title);
 }
 
 void Automation::GetCookies(int tab_id,
                             const GURL& gurl,
                             std::string* cookies,
                             bool* success) {
-  TabProxy* tab = GetTabById(tab_id);
-  if (!tab) {
+  int windex = 0, tab_index = 0;
+  if (!GetIndicesForTab(tab_id, &windex, &tab_index)) {
     *success = false;
     return;
   }
-  *success = tab->GetCookies(gurl, cookies);
-}
 
-void Automation::GetCookieByName(int tab_id,
-                                 const GURL& gurl,
-                                 const std::string& cookie_name,
-                                 std::string* cookie,
-                                 bool* success) {
-  TabProxy* tab = GetTabById(tab_id);
-  if (!tab) {
-    *success = false;
-    return;
-  }
-  *success = tab->GetCookieByName(gurl, cookie_name, cookie);
+  *success = SendGetCookiesJSONRequest(
+      automation(), windex, gurl.possibly_invalid_spec(), cookies);
 }
 
 void Automation::DeleteCookie(int tab_id,
                               const GURL& gurl,
                               const std::string& cookie_name,
                               bool* success) {
-  TabProxy* tab = GetTabById(tab_id);
-  if (!tab) {
+  int windex = 0, tab_index = 0;
+  if (!GetIndicesForTab(tab_id, &windex, &tab_index)) {
     *success = false;
     return;
   }
-  *success = tab->DeleteCookie(gurl, cookie_name);
+
+  *success = SendDeleteCookieJSONRequest(
+      automation(),
+      windex,
+      gurl.possibly_invalid_spec(),
+      cookie_name);
 }
 
 void Automation::SetCookie(int tab_id,
                            const GURL& gurl,
                            const std::string& cookie,
                            bool* success) {
-  TabProxy* tab = GetTabById(tab_id);
-  if (!tab) {
+  int windex = 0, tab_index = 0;
+  if (!GetIndicesForTab(tab_id, &windex, &tab_index)) {
     *success = false;
     return;
   }
-  *success = tab->SetCookie(gurl, cookie);
+
+  *success = SendSetCookieJSONRequest(
+      automation(),
+      windex,
+      gurl.possibly_invalid_spec(),
+      cookie);
 }
 
 void Automation::GetTabIds(std::vector<int>* tab_ids,
                            bool* success) {
-  *success = false;
-  int browser_count = 0;
-  if (!automation()->GetBrowserWindowCount(&browser_count)) {
-    LOG(ERROR) << "Failed to get browser window count";
-    return;
-  }
-  TabIdMap tab_id_map;
-  for (int browser_index = 0; browser_index < browser_count; ++browser_index) {
-    scoped_refptr<BrowserProxy> browser =
-        automation()->GetBrowserWindow(browser_index);
-    if (!browser.get())
-      continue;
-    int tab_count = 0;
-    if (!browser->GetTabCount(&tab_count))
-      continue;
-
-    for (int tab_index = 0; tab_index < tab_count; ++tab_index) {
-      scoped_refptr<TabProxy> tab = browser->GetTab(tab_index);
-      if (!tab.get())
-        continue;
-      tab_ids->push_back(tab->handle());
-      tab_id_map.insert(std::make_pair(tab->handle(), tab));
-    }
-  }
-
-  tab_id_map_ = tab_id_map;
-  *success = true;
+  *success = SendGetTabIdsJSONRequest(automation(), tab_ids);
 }
 
-void Automation::DoesTabExist(int tab_id, bool* does_exist) {
-  TabProxy* tab = GetTabById(tab_id);
-  *does_exist = tab && tab->is_valid();
+void Automation::DoesTabExist(int tab_id, bool* does_exist, bool* success) {
+  *success = SendIsTabIdValidJSONRequest(automation(), tab_id, does_exist);
 }
 
 void Automation::CloseTab(int tab_id, bool* success) {
-  TabProxy* tab = GetTabById(tab_id);
-  if (!tab) {
+  int windex = 0, tab_index = 0;
+  if (!GetIndicesForTab(tab_id, &windex, &tab_index)) {
     *success = false;
     return;
   }
-  *success = tab->Close(true);
+
+  *success = SendCloseTabJSONRequest(automation(), windex, tab_index);
 }
 
 void Automation::GetVersion(std::string* version) {
@@ -444,61 +384,17 @@ void Automation::GetVersion(std::string* version) {
 }
 
 void Automation::WaitForAllTabsToStopLoading(bool* success) {
-  DictionaryValue dict;
-  dict.SetString("command", "WaitForAllTabsToStopLoading");
-  std::string request, reply;
-  base::JSONWriter::Write(&dict, false, &request);
-  *success = automation()->SendJSONRequest(request, &reply);
-}
-
-TabProxy* Automation::GetTabById(int tab_id) {
-  TabIdMap::const_iterator iter = tab_id_map_.find(tab_id);
-  if (iter != tab_id_map_.end()) {
-    return iter->second.get();
-  }
-  return NULL;
+  *success = SendWaitForAllTabsToStopLoadingJSONRequest(automation());
 }
 
 AutomationProxy* Automation::automation() const {
   return launcher_->automation();
 }
 
-bool Automation::SendJSONRequest(int tab_id,
-                                 const DictionaryValue& dict,
-                                 std::string* reply) {
-  std::string request;
-
-  base::JSONWriter::Write(&dict, false, &request);
-  TabProxy* tab = GetTabById(tab_id);
-  if (!tab) {
-    LOG(ERROR) << "No such tab";
-    return false;
-  }
-
-  int tab_index = 0;
-  if (!tab->GetTabIndex(&tab_index)) {
-    LOG(ERROR) << "Could not get tab index";
-    return false;
-  }
-
-  scoped_refptr<BrowserProxy> browser = tab->GetParentBrowser();
-  if (!browser.get()) {
-    LOG(ERROR) << "Could not get parent browser of tab";
-    return false;
-  }
-
-  if (!browser->ActivateTab(tab_index)) {
-    LOG(ERROR) << "Could not activate tab";
-    return false;
-  }
-
-  return browser->SendJSONRequest(request, reply);
-}
-
 bool Automation::GetIndicesForTab(
     int tab_id, int* browser_index, int* tab_index) {
-  if (!SendGetIndicesFromTabJSONRequest(automation(), tab_id,
-                                        browser_index, tab_index)) {
+  if (!SendGetIndicesFromTabIdJSONRequest(automation(), tab_id,
+                                          browser_index, tab_index)) {
     LOG(ERROR) << "Could not get browser and tab indices for WebDriver tab id";
     return false;
   }

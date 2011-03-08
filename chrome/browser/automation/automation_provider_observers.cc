@@ -2009,6 +2009,10 @@ void AllTabsStoppedLoadingObserver::Observe(
 }
 
 void AllTabsStoppedLoadingObserver::CheckIfStopped() {
+  if (!automation_) {
+    delete this;
+    return;
+  }
   bool done_loading = true;
   BrowserList::const_iterator iter = BrowserList::begin();
   for (; iter != BrowserList::end(); ++iter) {
@@ -2107,4 +2111,25 @@ void WaitForProcessLauncherThreadToGoIdleObserver::RunOnUIThread() {
   if (automation_)
     automation_->Send(reply_message_.release());
   Release();
+}
+
+ExecuteJavascriptObserver::ExecuteJavascriptObserver(
+    AutomationProvider* automation,
+    IPC::Message* reply_message)
+    : automation_(automation->AsWeakPtr()),
+      reply_message_(reply_message) {
+}
+
+ExecuteJavascriptObserver::~ExecuteJavascriptObserver() {
+}
+
+void ExecuteJavascriptObserver::OnDomOperationCompleted(
+    const std::string& json) {
+  if (automation_) {
+    DictionaryValue dict;
+    dict.SetString("result", json);
+    AutomationJSONReply(automation_, reply_message_.release())
+        .SendSuccess(&dict);
+  }
+  delete this;
 }

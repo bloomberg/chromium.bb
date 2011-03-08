@@ -1152,4 +1152,22 @@ class WaitForProcessLauncherThreadToGoIdleObserver
   DISALLOW_COPY_AND_ASSIGN(WaitForProcessLauncherThreadToGoIdleObserver);
 };
 
+// Observes the result of execution of Javascript and sends a JSON reply.
+class ExecuteJavascriptObserver : public DomOperationObserver {
+ public:
+  ExecuteJavascriptObserver(AutomationProvider* automation,
+                            IPC::Message* reply_message);
+  virtual ~ExecuteJavascriptObserver();
+
+ private:
+  // Overriden from DomOperationObserver.
+  virtual void OnDomOperationCompleted(const std::string& json);
+
+  base::WeakPtr<AutomationProvider> automation_;
+  scoped_ptr<IPC::Message> reply_message_;
+
+  DISALLOW_COPY_AND_ASSIGN(ExecuteJavascriptObserver);
+};
+
+
 #endif  // CHROME_BROWSER_AUTOMATION_AUTOMATION_PROVIDER_OBSERVERS_H_

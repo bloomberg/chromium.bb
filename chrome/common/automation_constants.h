@@ -44,6 +44,12 @@ enum KeyModifierMasks {
   kMetaKeyMask    = 1 << 3,
 };
 
+enum MouseButton {
+  kLeftButton = 0,
+  kMiddleButton,
+  kRightButton,
+};
+
 }  // namespace automation
 
 // Used by AutomationProxy, declared here so that other headers don't need

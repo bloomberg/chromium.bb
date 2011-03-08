@@ -12,6 +12,7 @@
 #include "base/scoped_ptr.h"
 #include "base/string16.h"
 #include "base/threading/thread.h"
+#include "chrome/common/automation_constants.h"
 #include "chrome/test/webdriver/automation.h"
 #include "chrome/test/webdriver/error_codes.h"
 
@@ -74,10 +75,8 @@ class Session {
   // ownership of |element|.
   ErrorCode SendKeys(const WebElementId& element, const string16& keys);
 
-  // Click events with the mouse should use the values found in:
-  // views/events/event.h.  In the Webdriver JSON spec the MouseMove
-  // function directly maps to the hover command.
-  void MouseClick(const gfx::Point& click, int flags);
+  // Clicks the mouse at the given location using the given button.
+  void MouseClick(const gfx::Point& click, automation::MouseButton button);
   bool MouseMove(const gfx::Point& location);
   bool MouseDrag(const gfx::Point& start, const gfx::Point& end);
 

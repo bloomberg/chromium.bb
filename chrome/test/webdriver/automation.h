@@ -20,27 +20,13 @@ class DictionaryValue;
 class FilePath;
 class GURL;
 class ProxyLauncher;
-class TabProxy;
+struct WebKeyEvent;
 
 namespace gfx {
 class Point;
 }
 
 namespace webdriver {
-
-struct WebKeyEvent {
-  WebKeyEvent(automation::KeyEventTypes type,
-              ui::KeyboardCode key_code,
-              const std::string& unmodified_text,
-              const std::string& modified_text,
-              int modifiers);
-
-  automation::KeyEventTypes type;
-  ui::KeyboardCode key_code;
-  std::string unmodified_text;
-  std::string modified_text;
-  int modifiers;
-};
 
 // Creates and controls the Chrome instance.
 // This class should be created and accessed on a single thread.
@@ -80,11 +66,6 @@ class Automation {
   void GetTabTitle(int tab_id, std::string* tab_title, bool* success);
   void GetCookies(
       int tab_id, const GURL& gurl, std::string* cookies, bool* success);
-  void GetCookieByName(int tab_id,
-                       const GURL& gurl,
-                       const std::string& cookie_name,
-                       std::string* cookie,
-                       bool* success);
   void DeleteCookie(int tab_id,
                     const GURL& gurl,
                     const std::string& cookie_name,
@@ -92,7 +73,10 @@ class Automation {
   void SetCookie(
       int tab_id, const GURL& gurl, const std::string& cookie, bool* success);
   void MouseMove(int tab_id, const gfx::Point& p, bool* success);
-  void MouseClick(int tab_id, const gfx::Point& p, int flag, bool* success);
+  void MouseClick(int tab_id,
+                  const gfx::Point& p,
+                  automation::MouseButton button,
+                  bool* success);
   void MouseDrag(int tab_id,
                  const gfx::Point& start,
                  const gfx::Point& end,
@@ -103,7 +87,7 @@ class Automation {
   void GetTabIds(std::vector<int>* tab_ids, bool* success);
 
   // Check if the given tab exists currently.
-  void DoesTabExist(int tab_id, bool* does_exist);
+  void DoesTabExist(int tab_id, bool* does_exist, bool* success);
 
   void CloseTab(int tab_id, bool* success);
 
@@ -114,20 +98,10 @@ class Automation {
   void WaitForAllTabsToStopLoading(bool* success);
 
  private:
-  typedef std::map<int, scoped_refptr<TabProxy> > TabIdMap;
-
-  TabProxy* GetTabById(int tab_id);
   AutomationProxy* automation() const;
+  bool GetIndicesForTab(int tab_id, int* browser_index, int* tab_index);
 
   scoped_ptr<ProxyLauncher> launcher_;
-  // Map from tab ID to |TabProxy|. The tab ID is simply the |AutomationHandle|
-  // for the proxy.
-  TabIdMap tab_id_map_;
-
-  bool SendJSONRequest(
-      int tab_id, const DictionaryValue& dict, std::string* reply);
-
-  bool GetIndicesForTab(int tab_id, int* browser_index, int* tab_index);
 
   DISALLOW_COPY_AND_ASSIGN(Automation);
 };

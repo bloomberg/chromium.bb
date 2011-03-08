@@ -152,25 +152,6 @@ class AutomationInterstitialPage : public InterstitialPage {
   DISALLOW_COPY_AND_ASSIGN(AutomationInterstitialPage);
 };
 
-Browser* GetBrowserAt(int index) {
-  if (index < 0)
-    return NULL;
-  BrowserList::const_iterator iter = BrowserList::begin();
-  for (; (iter != BrowserList::end()) && (index > 0); ++iter, --index) {}
-  if (iter == BrowserList::end())
-    return NULL;
-  return *iter;
-}
-
-TabContents* GetTabContentsAt(int browser_index, int tab_index) {
-  if (tab_index < 0)
-    return NULL;
-  Browser* browser = GetBrowserAt(browser_index);
-  if (!browser || tab_index >= browser->tab_count())
-    return NULL;
-  return browser->GetTabContentsAt(tab_index);
-}
-
 }  // namespace
 
 TestingAutomationProvider::TestingAutomationProvider(Profile* profile)
@@ -776,9 +757,8 @@ void TestingAutomationProvider::GetNormalBrowserWindowCount(int* window_count) {
 
 void TestingAutomationProvider::GetBrowserWindow(int index, int* handle) {
   *handle = 0;
-  Browser* browser = GetBrowserAt(index);
-  if (browser)
-    *handle = browser_tracker_->Add(browser);
+  if (index >= 0 && index < static_cast<int>(BrowserList::size()))
+    *handle = browser_tracker_->Add(*(BrowserList::begin() + index));
 }
 
 void TestingAutomationProvider::FindNormalBrowserWindow(int* handle) {
@@ -914,11 +894,16 @@ void TestingAutomationProvider::WindowSimulateKeyPress(
                              ui::EF_COMMAND_DOWN));
 }
 
-void TestingAutomationProvider::WebkitMouseClick(Browser* browser,
-                                                 DictionaryValue* args,
+void TestingAutomationProvider::WebkitMouseClick(DictionaryValue* args,
                                                  IPC::Message* reply_message) {
-  WebKit::WebMouseEvent mouse_event;
+  TabContents* tab_contents;
+  std::string error;
+  if (!GetTabFromJSONArgs(args, &tab_contents, &error)) {
+    AutomationJSONReply(this, reply_message).SendError(error);
+    return;
+  }
 
+  WebKit::WebMouseEvent mouse_event;
   if (!args->GetInteger("x", &mouse_event.x) ||
       !args->GetInteger("y", &mouse_event.y)) {
     AutomationJSONReply(this, reply_message)
@@ -926,18 +911,17 @@ void TestingAutomationProvider::WebkitMouseClick(Browser* browser,
     return;
   }
 
-  int button_flags;
-  if (!args->GetInteger("button_flags", &button_flags)) {
+  int button;
+  if (!args->GetInteger("button", &button)) {
     AutomationJSONReply(this, reply_message)
         .SendError("Mouse button missing or invalid");
     return;
   }
-
-  if (button_flags == ui::EF_LEFT_BUTTON_DOWN) {
+  if (button == automation::kLeftButton) {
     mouse_event.button = WebKit::WebMouseEvent::ButtonLeft;
-  } else if (button_flags == ui::EF_RIGHT_BUTTON_DOWN) {
+  } else if (button == automation::kRightButton) {
     mouse_event.button = WebKit::WebMouseEvent::ButtonRight;
-  } else if (button_flags == ui::EF_MIDDLE_BUTTON_DOWN) {
+  } else if (button == automation::kMiddleButton) {
     mouse_event.button = WebKit::WebMouseEvent::ButtonMiddle;
   } else {
     AutomationJSONReply(this, reply_message)
@@ -945,7 +929,6 @@ void TestingAutomationProvider::WebkitMouseClick(Browser* browser,
     return;
   }
 
-  TabContents* tab_contents = browser->GetSelectedTabContents();
   mouse_event.type = WebKit::WebInputEvent::MouseDown;
   mouse_event.clickCount = 1;
 
@@ -956,11 +939,16 @@ void TestingAutomationProvider::WebkitMouseClick(Browser* browser,
   tab_contents->render_view_host()->ForwardMouseEvent(mouse_event);
 }
 
-void TestingAutomationProvider::WebkitMouseMove(Browser* browser,
-                                                DictionaryValue* args,
-                                                IPC::Message* reply_message) {
-  WebKit::WebMouseEvent mouse_event;
+void TestingAutomationProvider::WebkitMouseMove(
+    DictionaryValue* args, IPC::Message* reply_message) {
+  TabContents* tab_contents;
+  std::string error;
+  if (!GetTabFromJSONArgs(args, &tab_contents, &error)) {
+    AutomationJSONReply(this, reply_message).SendError(error);
+    return;
+  }
 
+  WebKit::WebMouseEvent mouse_event;
   if (!args->GetInteger("x", &mouse_event.x) ||
       !args->GetInteger("y", &mouse_event.y)) {
     AutomationJSONReply(this, reply_message)
@@ -968,18 +956,22 @@ void TestingAutomationProvider::WebkitMouseMove(Browser* browser,
     return;
   }
 
-  TabContents* tab_contents = browser->GetSelectedTabContents();
   mouse_event.type = WebKit::WebInputEvent::MouseMove;
   new InputEventAckNotificationObserver(this, reply_message, mouse_event.type);
   tab_contents->render_view_host()->ForwardMouseEvent(mouse_event);
 }
 
-void TestingAutomationProvider::WebkitMouseDrag(Browser* browser,
-                                                DictionaryValue* args,
+void TestingAutomationProvider::WebkitMouseDrag(DictionaryValue* args,
                                                 IPC::Message* reply_message) {
+  TabContents* tab_contents;
+  std::string error;
+  if (!GetTabFromJSONArgs(args, &tab_contents, &error)) {
+    AutomationJSONReply(this, reply_message).SendError(error);
+    return;
+  }
+
   WebKit::WebMouseEvent mouse_event;
   int start_x, start_y, end_x, end_y;
-
   if (!args->GetInteger("start_x", &start_x) ||
       !args->GetInteger("start_y", &start_y) ||
       !args->GetInteger("end_x", &end_x) ||
@@ -990,7 +982,6 @@ void TestingAutomationProvider::WebkitMouseDrag(Browser* browser,
   }
 
   mouse_event.type = WebKit::WebInputEvent::MouseMove;
-  TabContents* tab_contents = browser->GetSelectedTabContents();
   // Step 1- Move the mouse to the start position.
   mouse_event.x = start_x;
   mouse_event.y = start_y;
@@ -2119,6 +2110,40 @@ void TestingAutomationProvider::SendJSONRequest(int handle,
       &TestingAutomationProvider::GetIndicesFromTab;
   handler_map["NavigateToURL"] =
       &TestingAutomationProvider::NavigateToURL;
+  handler_map["ExecuteJavascript"] =
+      &TestingAutomationProvider::ExecuteJavascriptJSON;
+  handler_map["GoForward"] =
+      &TestingAutomationProvider::GoForward;
+  handler_map["GoBack"] =
+      &TestingAutomationProvider::GoBack;
+  handler_map["Reload"] =
+      &TestingAutomationProvider::ReloadJSON;
+  handler_map["GetTabURL"] =
+      &TestingAutomationProvider::GetTabURLJSON;
+  handler_map["GetTabTitle"] =
+      &TestingAutomationProvider::GetTabTitleJSON;
+  handler_map["GetCookies"] =
+      &TestingAutomationProvider::GetCookiesJSON;
+  handler_map["DeleteCookie"] =
+      &TestingAutomationProvider::DeleteCookieJSON;
+  handler_map["SetCookie"] =
+      &TestingAutomationProvider::SetCookieJSON;
+  handler_map["GetTabIds"] =
+      &TestingAutomationProvider::GetTabIds;
+  handler_map["IsTabIdValid"] =
+      &TestingAutomationProvider::IsTabIdValid;
+  handler_map["CloseTab"] =
+      &TestingAutomationProvider::CloseTabJSON;
+  handler_map["WebkitMouseMove"] =
+      &TestingAutomationProvider::WebkitMouseMove;
+  handler_map["WebkitMouseClick"] =
+      &TestingAutomationProvider::WebkitMouseClick;
+  handler_map["WebkitMouseDrag"] =
+      &TestingAutomationProvider::WebkitMouseDrag;
+  handler_map["SendWebkitKeyEvent"] =
+      &TestingAutomationProvider::SendWebkitKeyEvent;
+  handler_map["ActivateTab"] =
+      &TestingAutomationProvider::ActivateTabJSON;
 #if defined(OS_CHROMEOS)
   handler_map["LoginAsGuest"] = &TestingAutomationProvider::LoginAsGuest;
   handler_map["Login"] = &TestingAutomationProvider::Login;
@@ -2261,9 +2286,6 @@ void TestingAutomationProvider::SendJSONRequest(int handle,
   browser_handler_map["KillRendererProcess"] =
       &TestingAutomationProvider::KillRendererProcess;
 
-  browser_handler_map["SendKeyEventToActiveTab"] =
-      &TestingAutomationProvider::SendKeyEventToActiveTab;
-
   browser_handler_map["GetNTPThumbnailMode"] =
       &TestingAutomationProvider::GetNTPThumbnailMode;
   browser_handler_map["SetNTPThumbnailMode"] =
@@ -2272,13 +2294,6 @@ void TestingAutomationProvider::SendJSONRequest(int handle,
       &TestingAutomationProvider::GetNTPMenuMode;
   browser_handler_map["SetNTPMenuMode"] =
       &TestingAutomationProvider::SetNTPMenuMode;
-
-  browser_handler_map["WebkitMouseMove"] =
-      &TestingAutomationProvider::WebkitMouseMove;
-  browser_handler_map["WebkitMouseClick"] =
-      &TestingAutomationProvider::WebkitMouseClick;
-  browser_handler_map["WebkitMouseDrag"] =
-      &TestingAutomationProvider::WebkitMouseDrag;
 
   if (handler_map.find(std::string(command)) != handler_map.end()) {
     (this->*handler_map[command])(dict_value, reply_message);
@@ -4568,10 +4583,16 @@ void TestingAutomationProvider::KillRendererProcess(
   base::CloseProcessHandle(process);
 }
 
-void TestingAutomationProvider::SendKeyEventToActiveTab(
-    Browser* browser,
+void TestingAutomationProvider::SendWebkitKeyEvent(
     DictionaryValue* args,
     IPC::Message* reply_message) {
+  TabContents* tab_contents;
+  std::string error;
+  if (!GetTabFromJSONArgs(args, &tab_contents, &error)) {
+    AutomationJSONReply(this, reply_message).SendError(error);
+    return;
+  }
+
   int type, modifiers;
   bool is_system_key;
   string16 unmodified_text, text;
@@ -4657,8 +4678,7 @@ void TestingAutomationProvider::SendKeyEventToActiveTab(
   event.timeStampSeconds = base::Time::Now().ToDoubleT();
   event.skip_in_browser = true;
   new InputEventAckNotificationObserver(this, reply_message, event.type);
-  browser->GetSelectedTabContents()->render_view_host()->
-    ForwardKeyboardEvent(event);
+  tab_contents->render_view_host()->ForwardKeyboardEvent(event);
 }
 
 // Sample JSON input: { "command": "GetNTPThumbnailMode" }
@@ -4802,19 +4822,36 @@ void TestingAutomationProvider::GetIndicesFromTab(
     DictionaryValue* args,
     IPC::Message* reply_message) {
   AutomationJSONReply reply(this, reply_message);
-  int tab_handle = 0;
-  if (!args->GetInteger("tab_handle", &tab_handle) ||
-      !tab_tracker_->ContainsHandle(tab_handle)) {
-    reply.SendError("'tab_handle' missing or invalid");
+  int id_or_handle = 0;
+  bool has_id = args->HasKey("tab_id");
+  bool has_handle = args->HasKey("tab_handle");
+  if (has_id && has_handle) {
+    reply.SendError(
+        "Both 'tab_id' and 'tab_handle' were specified. Only one is allowed");
+    return;
+  } else if (!has_id && !has_handle) {
+    reply.SendError("Either 'tab_id' or 'tab_handle' must be specified");
     return;
   }
-  NavigationController* controller = tab_tracker_->GetResource(tab_handle);
+  if (has_id && !args->GetInteger("tab_id", &id_or_handle)) {
+    reply.SendError("'tab_id' is invalid");
+    return;
+  }
+  if (has_handle && (!args->GetInteger("tab_handle", &id_or_handle) ||
+                     !tab_tracker_->ContainsHandle(id_or_handle))) {
+    reply.SendError("'tab_handle' is invalid");
+    return;
+  }
+  int id = id_or_handle;
+  if (has_handle)
+    id = tab_tracker_->GetResource(id_or_handle)->session_id().id();
   BrowserList::const_iterator iter = BrowserList::begin();
   int browser_index = 0;
   for (; iter != BrowserList::end(); ++iter, ++browser_index) {
     Browser* browser = *iter;
     for (int tab_index = 0; tab_index < browser->tab_count(); ++tab_index) {
-      if (browser->GetTabContentsAt(tab_index) == controller->tab_contents()) {
+      TabContents* tab = browser->GetTabContentsAt(tab_index);
+      if (tab->controller().session_id().id() == id) {
         DictionaryValue dict;
         dict.SetInteger("windex", browser_index);
         dict.SetInteger("tab_index", tab_index);
@@ -4829,16 +4866,12 @@ void TestingAutomationProvider::GetIndicesFromTab(
 void TestingAutomationProvider::NavigateToURL(
     DictionaryValue* args,
     IPC::Message* reply_message) {
-  int browser_index = 0, tab_index = 0, navigation_count = 0;
-  std::string url;
-  if (!args->GetInteger("windex", &browser_index)) {
-    AutomationJSONReply(this, reply_message)
-        .SendError("'windex' missing or invalid");
-    return;
-  }
-  if (!args->GetInteger("tab_index", &tab_index)) {
-    AutomationJSONReply(this, reply_message)
-        .SendError("'tab_index' missing or invalid");
+  int navigation_count;
+  std::string url, error;
+  Browser* browser;
+  TabContents* tab_contents;
+  if (!GetBrowserAndTabFromJSONArgs(args, &browser, &tab_contents, &error)) {
+    AutomationJSONReply(this, reply_message).SendError(error);
     return;
   }
   if (!args->GetString("url", &url)) {
@@ -4851,18 +4884,320 @@ void TestingAutomationProvider::NavigateToURL(
         .SendError("'navigation_count' missing or invalid");
     return;
   }
-  Browser* browser = GetBrowserAt(browser_index);
-  TabContents* tab_contents = GetTabContentsAt(browser_index, tab_index);
-  if (!browser || !tab_contents) {
-    AutomationJSONReply(this, reply_message)
-        .SendError("Cannot locate tab or browser to navigate");
-    return;
-  }
   new NavigationNotificationObserver(
       &tab_contents->controller(), this, reply_message,
       navigation_count, false, true);
   browser->OpenURLFromTab(
       tab_contents, GURL(url), GURL(), CURRENT_TAB, PageTransition::TYPED);
+}
+
+void TestingAutomationProvider::ExecuteJavascriptJSON(
+    DictionaryValue* args,
+    IPC::Message* reply_message) {
+  string16 frame_xpath, javascript;
+  std::string error;
+  TabContents* tab_contents;
+  if (!GetTabFromJSONArgs(args, &tab_contents, &error)) {
+    AutomationJSONReply(this, reply_message).SendError(error);
+    return;
+  }
+  if (!args->GetString("frame_xpath", &frame_xpath)) {
+    AutomationJSONReply(this, reply_message)
+        .SendError("'frame_xpath' missing or invalid");
+    return;
+  }
+  if (!args->GetString("javascript", &javascript)) {
+    AutomationJSONReply(this, reply_message)
+        .SendError("'javascript' missing or invalid");
+    return;
+  }
+
+  // Set the routing id of this message with the controller.
+  // This routing id needs to be remembered for the reverse
+  // communication while sending back the response of
+  // this javascript execution.
+  std::string set_automation_id;
+  base::SStringPrintf(&set_automation_id,
+                      "window.domAutomationController.setAutomationId(%d);",
+                      reply_message->routing_id());
+
+  new ExecuteJavascriptObserver(this, reply_message);
+  tab_contents->render_view_host()->ExecuteJavascriptInWebFrame(
+      frame_xpath, UTF8ToUTF16(set_automation_id));
+  tab_contents->render_view_host()->ExecuteJavascriptInWebFrame(
+      frame_xpath, javascript);
+}
+
+void TestingAutomationProvider::GoForward(
+    DictionaryValue* args,
+    IPC::Message* reply_message) {
+  TabContents* tab_contents;
+  std::string error;
+  if (!GetTabFromJSONArgs(args, &tab_contents, &error)) {
+    AutomationJSONReply(this, reply_message).SendError(error);
+    return;
+  }
+  NavigationController& controller = tab_contents->controller();
+  if (!controller.CanGoForward()) {
+    DictionaryValue dict;
+    dict.SetBoolean("did_go_forward", false);
+    AutomationJSONReply(this, reply_message).SendSuccess(&dict);
+    return;
+  }
+  new NavigationNotificationObserver(&controller, this, reply_message,
+                                     1, false, true);
+  controller.GoForward();
+}
+
+void TestingAutomationProvider::GoBack(
+    DictionaryValue* args,
+    IPC::Message* reply_message) {
+  TabContents* tab_contents;
+  std::string error;
+  if (!GetTabFromJSONArgs(args, &tab_contents, &error)) {
+    AutomationJSONReply(this, reply_message).SendError(error);
+    return;
+  }
+  NavigationController& controller = tab_contents->controller();
+  if (!controller.CanGoBack()) {
+    DictionaryValue dict;
+    dict.SetBoolean("did_go_back", false);
+    AutomationJSONReply(this, reply_message).SendSuccess(&dict);
+    return;
+  }
+  new NavigationNotificationObserver(&controller, this, reply_message,
+                                     1, false, true);
+  controller.GoBack();
+}
+
+void TestingAutomationProvider::ReloadJSON(
+    DictionaryValue* args,
+    IPC::Message* reply_message) {
+  TabContents* tab_contents;
+  std::string error;
+  if (!GetTabFromJSONArgs(args, &tab_contents, &error)) {
+    AutomationJSONReply(this, reply_message).SendError(error);
+    return;
+  }
+  NavigationController& controller = tab_contents->controller();
+  new NavigationNotificationObserver(&controller, this, reply_message,
+                                     1, false, true);
+  controller.Reload(false);
+}
+
+void TestingAutomationProvider::GetTabURLJSON(
+    DictionaryValue* args,
+    IPC::Message* reply_message) {
+  AutomationJSONReply reply(this, reply_message);
+  TabContents* tab_contents;
+  std::string error;
+  if (!GetTabFromJSONArgs(args, &tab_contents, &error)) {
+    reply.SendError(error);
+    return;
+  }
+  DictionaryValue dict;
+  dict.SetString("url", tab_contents->GetURL().possibly_invalid_spec());
+  reply.SendSuccess(&dict);
+}
+
+void TestingAutomationProvider::GetTabTitleJSON(
+    DictionaryValue* args,
+    IPC::Message* reply_message) {
+  AutomationJSONReply reply(this, reply_message);
+  TabContents* tab_contents;
+  std::string error;
+  if (!GetTabFromJSONArgs(args, &tab_contents, &error)) {
+    reply.SendError(error);
+    return;
+  }
+  DictionaryValue dict;
+  dict.SetString("title", tab_contents->GetTitle());
+  reply.SendSuccess(&dict);
+}
+
+void TestingAutomationProvider::GetCookiesJSON(
+    DictionaryValue* args, IPC::Message* reply_message) {
+  AutomationJSONReply reply(this, reply_message);
+  Browser* browser;
+  std::string error;
+  if (!GetBrowserFromJSONArgs(args, &browser, &error)) {
+    reply.SendError(error);
+    return;
+  }
+  std::string url;
+  if (!args->GetString("url", &url)) {
+    reply.SendError("'url' missing or invalid");
+    return;
+  }
+
+  // Since we are running on the UI thread don't call GetURLRequestContext().
+  scoped_refptr<URLRequestContextGetter> context_getter =
+      browser->profile()->GetRequestContext();
+
+  std::string cookies;
+  base::WaitableEvent event(true /* manual reset */,
+                            false /* not initially signaled */);
+  Task* task = NewRunnableFunction(
+      &GetCookiesOnIOThread,
+      GURL(url), context_getter, &event, &cookies);
+  if (!BrowserThread::PostTask(BrowserThread::IO, FROM_HERE, task)) {
+    reply.SendError("Couldn't post task to get the cookies");
+    return;
+  }
+  event.Wait();
+
+  DictionaryValue dict;
+  dict.SetString("cookies", cookies);
+  reply.SendSuccess(&dict);
+}
+
+void TestingAutomationProvider::DeleteCookieJSON(
+    DictionaryValue* args, IPC::Message* reply_message) {
+  AutomationJSONReply reply(this, reply_message);
+  Browser* browser;
+  std::string error;
+  if (!GetBrowserFromJSONArgs(args, &browser, &error)) {
+    reply.SendError(error);
+    return;
+  }
+  std::string url, name;
+  if (!args->GetString("url", &url)) {
+    reply.SendError("'url' missing or invalid");
+    return;
+  }
+  if (!args->GetString("name", &name)) {
+    reply.SendError("'name' missing or invalid");
+    return;
+  }
+
+  // Since we are running on the UI thread don't call GetURLRequestContext().
+  scoped_refptr<URLRequestContextGetter> context_getter =
+      browser->profile()->GetRequestContext();
+
+  base::WaitableEvent event(true /* manual reset */,
+                            false /* not initially signaled */);
+  Task* task = NewRunnableFunction(
+      &DeleteCookieOnIOThread,
+      GURL(url), name, context_getter, &event);
+  if (!BrowserThread::PostTask(BrowserThread::IO, FROM_HERE, task)) {
+    reply.SendError("Couldn't post task to delete the cookie");
+    return;
+  }
+  event.Wait();
+  reply.SendSuccess(NULL);
+}
+
+void TestingAutomationProvider::SetCookieJSON(
+    DictionaryValue* args, IPC::Message* reply_message) {
+  AutomationJSONReply reply(this, reply_message);
+  Browser* browser;
+  std::string error;
+  if (!GetBrowserFromJSONArgs(args, &browser, &error)) {
+    reply.SendError(error);
+    return;
+  }
+  std::string url, cookie;
+  if (!args->GetString("url", &url)) {
+    reply.SendError("'url' missing or invalid");
+    return;
+  }
+  if (!args->GetString("cookie", &cookie)) {
+    reply.SendError("'cookie' missing or invalid");
+    return;
+  }
+
+  // Since we are running on the UI thread don't call GetURLRequestContext().
+  scoped_refptr<URLRequestContextGetter> context_getter =
+      browser->profile()->GetRequestContext();
+
+  base::WaitableEvent event(true /* manual reset */,
+                            false /* not initially signaled */);
+  bool success = false;
+  Task* task = NewRunnableFunction(
+      &SetCookieOnIOThread,
+      GURL(url), cookie, context_getter, &event, &success);
+  if (!BrowserThread::PostTask(BrowserThread::IO, FROM_HERE, task)) {
+    reply.SendError("Couldn't post task to set the cookie");
+    return;
+  }
+  event.Wait();
+
+  if (!success) {
+    reply.SendError("Could not set the cookie");
+    return;
+  }
+  reply.SendSuccess(NULL);
+}
+
+void TestingAutomationProvider::GetTabIds(
+    DictionaryValue* args, IPC::Message* reply_message) {
+  ListValue* id_list = new ListValue();
+  BrowserList::const_iterator iter = BrowserList::begin();
+  for (; iter != BrowserList::end(); ++iter) {
+    Browser* browser = *iter;
+    for (int i = 0; i < browser->tab_count(); ++i) {
+      int id = browser->GetTabContentsAt(i)->controller().session_id().id();
+      id_list->Append(Value::CreateIntegerValue(id));
+    }
+  }
+  DictionaryValue dict;
+  dict.Set("ids", id_list);
+  AutomationJSONReply(this, reply_message).SendSuccess(&dict);
+}
+
+void TestingAutomationProvider::IsTabIdValid(
+    DictionaryValue* args, IPC::Message* reply_message) {
+  AutomationJSONReply reply(this, reply_message);
+  int id;
+  if (!args->GetInteger("id", &id)) {
+    reply.SendError("'id' missing or invalid");
+    return;
+  }
+  bool is_valid = false;
+  BrowserList::const_iterator iter = BrowserList::begin();
+  for (; iter != BrowserList::end(); ++iter) {
+    Browser* browser = *iter;
+    for (int i = 0; i < browser->tab_count(); ++i) {
+      TabContents* tab = browser->GetTabContentsAt(i);
+      if (tab->controller().session_id().id() == id) {
+        is_valid = true;
+        break;
+      }
+    }
+  }
+  DictionaryValue dict;
+  dict.SetBoolean("is_valid", is_valid);
+  reply.SendSuccess(&dict);
+}
+
+void TestingAutomationProvider::CloseTabJSON(
+    DictionaryValue* args, IPC::Message* reply_message) {
+  AutomationJSONReply reply(this, reply_message);
+  Browser* browser;
+  TabContents* tab_contents;
+  std::string error;
+  if (!GetBrowserAndTabFromJSONArgs(args, &browser, &tab_contents, &error)) {
+    reply.SendError(error);
+    return;
+  }
+  browser->CloseTabContents(tab_contents);
+  reply.SendSuccess(NULL);
+}
+
+void TestingAutomationProvider::ActivateTabJSON(
+    DictionaryValue* args,
+    IPC::Message* reply_message) {
+  AutomationJSONReply reply(this, reply_message);
+  Browser* browser;
+  TabContents* tab_contents;
+  std::string error;
+  if (!GetBrowserAndTabFromJSONArgs(args, &browser, &tab_contents, &error)) {
+    reply.SendError(error);
+    return;
+  }
+  browser->SelectTabContentsAt(
+      browser->GetIndexOfController(&tab_contents->controller()), true);
+  reply.SendSuccess(NULL);
 }
 
 void TestingAutomationProvider::WaitForTabCountToBecome(

@@ -10,8 +10,13 @@
 
 #include <string>
 
-class Value;
+#include "base/compiler_specific.h"
+
 class AutomationProvider;
+class Browser;
+class DictionaryValue;
+class TabContents;
+class Value;
 
 namespace IPC {
 class Message;
@@ -39,5 +44,30 @@ class AutomationJSONReply {
   AutomationProvider* provider_;
   IPC::Message* message_;
 };
+
+// Gets the browser specified by the given dictionary |args|. |args| should
+// contain a key 'windex' which refers to the index of the browser. Returns
+// true on success and sets |browser|. Otherwise, |error| will be set.
+bool GetBrowserFromJSONArgs(DictionaryValue* args,
+                            Browser** browser,
+                            std::string* error) WARN_UNUSED_RESULT;
+
+// Gets the tab specified by the given dictionary |args|. |args| should
+// contain a key 'windex' which refers to the index of the parent browser,
+// and a key 'tab_index' which refers to the index of the tab in that browser.
+// Returns true on success and sets |tab|. Otherwise, |error| will be set.
+bool GetTabFromJSONArgs(DictionaryValue* args,
+                        TabContents** tab,
+                        std::string* error) WARN_UNUSED_RESULT;
+
+// Gets the browser and tab specified by the given dictionary |args|. |args|
+// should contain a key 'windex' which refers to the index of the browser and
+// a key 'tab_index' which refers to the index of the tab in that browser.
+// Returns true on success and sets |browser| and |tab|. Otherwise, |error|
+// will be set.
+bool GetBrowserAndTabFromJSONArgs(DictionaryValue* args,
+                                  Browser** browser,
+                                  TabContents** tab,
+                                  std::string* error) WARN_UNUSED_RESULT;
 
 #endif  // CHROME_BROWSER_AUTOMATION_AUTOMATION_PROVIDER_JSON_H_

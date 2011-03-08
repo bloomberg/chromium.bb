@@ -5,11 +5,11 @@
 #include "chrome/test/webdriver/commands/mouse_commands.h"
 
 #include "base/values.h"
+#include "chrome/common/automation_constants.h"
 #include "chrome/test/webdriver/commands/response.h"
 #include "chrome/test/webdriver/error_codes.h"
 #include "chrome/test/webdriver/session.h"
 #include "chrome/test/webdriver/web_element_id.h"
-#include "ui/base/events.h"
 #include "ui/gfx/point.h"
 
 namespace webdriver {
@@ -43,7 +43,7 @@ void MouseCommand::ExecutePost(Response* response) {
   switch (cmd_) {
     case kClick:
       VLOG(1) << "Mouse click at: (" << x << ", " << y << ")" << std::endl;
-      session_->MouseClick(gfx::Point(x, y), ui::EF_LEFT_BUTTON_DOWN);
+      session_->MouseClick(gfx::Point(x, y), automation::kLeftButton);
       break;
 
     case kHover:
@@ -108,4 +108,3 @@ HoverCommand::HoverCommand(const std::vector<std::string>& path_segments,
 HoverCommand::~HoverCommand() {}
 
 }  // namespace webdriver
-

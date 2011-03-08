@@ -30,6 +30,7 @@
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/test/automation/automation_json_requests.h"
 #include "chrome/test/test_launcher_utils.h"
 #include "chrome/test/webdriver/session_manager.h"
 #include "chrome/test/webdriver/utility_functions.h"
@@ -259,14 +260,15 @@ bool Session::GetTabTitle(std::string* tab_title) {
   return success;
 }
 
-void Session::MouseClick(const gfx::Point& click, int flags) {
+void Session::MouseClick(const gfx::Point& click,
+                         automation::MouseButton button) {
   bool success = false;
   RunSessionTask(NewRunnableMethod(
       automation_.get(),
       &Automation::MouseClick,
       current_window_id_,
       click,
-      flags,
+      button,
       &success));
 }
 
@@ -309,16 +311,20 @@ bool Session::GetCookies(const GURL& url, std::string* cookies) {
 bool Session::GetCookieByName(const GURL& url,
                               const std::string& cookie_name,
                               std::string* cookie) {
-  bool success = false;
-  RunSessionTask(NewRunnableMethod(
-      automation_.get(),
-      &Automation::GetCookieByName,
-      current_window_id_,
-      url,
-      cookie_name,
-      cookie,
-      &success));
-  return success;
+  std::string cookies;
+  if (!GetCookies(url, &cookies))
+    return false;
+
+  std::string namestr = cookie_name + "=";
+  std::string::size_type idx = cookies.find(namestr);
+  if (idx != std::string::npos) {
+    cookies.erase(0, idx + namestr.length());
+    *cookie = cookies.substr(0, cookies.find(";"));
+  } else {
+    cookie->clear();
+  }
+
+  return true;
 }
 
 bool Session::DeleteCookie(const GURL& url, const std::string& cookie_name) {
@@ -359,12 +365,18 @@ ErrorCode Session::SwitchToWindow(const std::string& name) {
   int switch_to_id = 0;
   int name_no = 0;
   if (base::StringToInt(name, &name_no)) {
+    bool success = false;
     bool does_exist = false;
     RunSessionTask(NewRunnableMethod(
         automation_.get(),
         &Automation::DoesTabExist,
         name_no,
-        &does_exist));
+        &does_exist,
+        &success));
+    if (!success) {
+      LOG(ERROR) << "Unable to determine if window exists";
+      return kUnknownError;
+    }
     if (does_exist)
       switch_to_id = name_no;
   }

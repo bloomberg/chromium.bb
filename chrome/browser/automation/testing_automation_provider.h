@@ -118,17 +118,6 @@ class TestingAutomationProvider : public AutomationProvider,
   void WindowSimulateMouseMove(const IPC::Message& message,
                                int handle,
                                const gfx::Point& location);
-  // The Webkit mouse functions below work on the currently selected
-  // tab.
-  void WebkitMouseClick(Browser* browser,
-                        DictionaryValue* args,
-                        IPC::Message* message);
-  void WebkitMouseMove(Browser* browser,
-                       DictionaryValue* args,
-                       IPC::Message* message);
-  void WebkitMouseDrag(Browser* browser,
-                       DictionaryValue* args,
-                       IPC::Message* message);
   void WindowSimulateKeyPress(const IPC::Message& message,
                               int handle,
                               int key,
@@ -799,20 +788,184 @@ class TestingAutomationProvider : public AutomationProvider,
                                    IPC::Message* reply_message);
 
   // Gets the browser and tab index of the given tab. Uses the JSON interface.
+  // Either "tab_id" or "tab_handle" must be specified, but not both. "tab_id"
+  // refers to the ID from the |NavigationController|, while "tab_handle" is
+  // the handle number assigned by the automation system.
   // Example:
-  //   input: { "tab_handle": 3 }
-  //   output: { "browser_index": 1, "tab_index": 5 }
+  //   input: { "tab_id": 1,     // optional
+  //            "tab_handle": 3  // optional
+  //          }
+  //   output: { "windex": 1, "tab_index": 5 }
   void GetIndicesFromTab(DictionaryValue* args, IPC::Message* reply_message);
 
   // Navigates to the given URL. Uses the JSON interface.
   // Example:
-  //   input: { "browser_index": 1,
+  //   input: { "windex": 1,
   //            "tab_index": 3,
   //            "url": "http://www.google.com",
   //            "navigation_count": 1  // number of navigations to wait for
   //          }
   //   output: { "result": AUTOMATION_MSG_NAVIGATION_SUCCESS }
   void NavigateToURL(DictionaryValue* args, IPC::Message* reply_message);
+
+  // Executes javascript in the specified frame. Uses the JSON interface.
+  // Waits for a result from the |DOMAutomationController|. The javascript
+  // must send a string.
+  // Example:
+  //   input: { "windex": 1,
+  //            "tab_index": 1,
+  //            "frame_xpath": "//frames[1]",
+  //            "javascript":
+  //                "window.domAutomationController.send(window.name)",
+  //           }
+  //   output: { "result": "My Window Name" }
+  // This and some following methods have a suffix of JSON to distingush them
+  // from already existing methods which perform the same function, but use
+  // custom IPC messages instead of the JSON IPC message. These functions will
+  // eventually be replaced with the JSON ones and the JSON suffix will be
+  // dropped.
+  // TODO(kkania): Replace the non-JSON counterparts and drop the JSON suffix.
+  void ExecuteJavascriptJSON(
+      DictionaryValue* args, IPC::Message* reply_message);
+
+  // Goes forward in the specified tab. Uses the JSON interface.
+  // Example:
+  //   input: { "windex": 1, "tab_index": 1 }
+  //   output: { "did_go_forward": true,                      // optional
+  //             "result": AUTOMATION_MSG_NAVIGATION_SUCCESS  // optional
+  //           }
+  void GoForward(DictionaryValue* args, IPC::Message* reply_message);
+
+  // Goes back in the specified tab. Uses the JSON interface.
+  // Example:
+  //   input: { "windex": 1, "tab_index": 1 }
+  //   output: { "did_go_back": true,                         // optional
+  //             "result": AUTOMATION_MSG_NAVIGATION_SUCCESS  // optional
+  //           }
+  void GoBack(DictionaryValue* args, IPC::Message* reply_message);
+
+  // Reload the specified tab. Uses the JSON interface.
+  // Example:
+  //   input: { "windex": 1, "tab_index": 1 }
+  //   output: { "result": AUTOMATION_MSG_NAVIGATION_SUCCESS  // optional }
+  void ReloadJSON(DictionaryValue* args, IPC::Message* reply_message);
+
+  // Get the current url of the specified tab. Uses the JSON interface.
+  // Example:
+  //   input: { "windex": 1, "tab_index": 1 }
+  //   output: { "url": "http://www.google.com" }
+  void GetTabURLJSON(DictionaryValue* args, IPC::Message* reply_message);
+
+  // Get the current url of the specified tab. Uses the JSON interface.
+  // Example:
+  //   input: { "windex": 1, "tab_index": 1 }
+  //   output: { "title": "Google" }
+  void GetTabTitleJSON(DictionaryValue* args, IPC::Message* reply_message);
+
+  // Gets the cookies for the given URL. Uses the JSON interface.
+  // Example:
+  //   input: { "windex": 1, "tab_index": 1, "url": "http://www.google.com" }
+  //   output: { "cookies": "PREF=12012" }
+  void GetCookiesJSON(DictionaryValue* args, IPC::Message* reply_message);
+
+  // Deletes the cookie with the given name for the URL. Uses the JSON
+  // interface.
+  // Example:
+  //   input: { "windex": 1,
+  //            "tab_index": 1,
+  //            "url": "http://www.google.com",
+  //            "name": "my_cookie"
+  //          }
+  //   output: none
+  void DeleteCookieJSON(DictionaryValue* args, IPC::Message* reply_message);
+
+  // Sets a cookie for the given URL. Uses the JSON interface.
+  // Example:
+  //   input: { "windex": 1,
+  //            "tab_index": 1,
+  //            "url": "http://www.google.com",
+  //            "cookie": "PREF=21321"
+  //          }
+  //   output: none
+  void SetCookieJSON(DictionaryValue* args, IPC::Message* reply_message);
+
+  // Gets the ID for every open tab. This ID is unique per session.
+  // Example:
+  //   input: none
+  //   output: { "ids": [4124, 213, 1] }
+  void GetTabIds(DictionaryValue* args, IPC::Message* reply_message);
+
+  // Checks if the given tab ID refers to an open tab.
+  // Example:
+  //   input: { "id": 41 }
+  //   output: { "is_valid": false }
+  void IsTabIdValid(DictionaryValue* args, IPC::Message* reply_message);
+
+  // Closes the specified tab.
+  // Example:
+  //   input: { "windex": 1, "tab_index": 1 }
+  //   output: none
+  void CloseTabJSON(DictionaryValue* args, IPC::Message* reply_message);
+
+  // Sends the WebKit events for a mouse click at a given coordinate.
+  // Example:
+  //   input: { "windex": 1,
+  //            "tab_index": 1,
+  //            "button": automation::kLeftButton,
+  //            "x": 100,
+  //            "y": 100
+  //          }
+  //   output: none
+  void WebkitMouseClick(DictionaryValue* args,
+                        IPC::Message* message);
+
+  // Sends the WebKit event for a mouse move to a given coordinate.
+  // Example:
+  //   input: { "windex": 1,
+  //            "tab_index": 1,
+  //            "x": 100,
+  //            "y": 100
+  //          }
+  //   output: none
+  void WebkitMouseMove(DictionaryValue* args,
+                       IPC::Message* message);
+
+  // Sends the WebKit events for a mouse drag between two coordinates.
+  // Example:
+  //   input: { "windex": 1,
+  //            "tab_index": 1,
+  //            "start_x": 100,
+  //            "start_y": 100,
+  //            "end_x": 100,
+  //            "end_y": 100
+  //          }
+  //   output: none
+  void WebkitMouseDrag(DictionaryValue* args,
+                       IPC::Message* message);
+
+  // Sends the WebKit key event with the specified properties.
+  // Example:
+  //   input: { "windex": 1,
+  //            "tab_index": 1,
+  //            "type": automation::kRawKeyDownType,
+  //            "nativeKeyCode": ui::VKEY_X,
+  //            "windowsKeyCode": ui::VKEY_X,
+  //            "unmodifiedText": "x",
+  //            "text": "X",
+  //            "modifiers": automation::kShiftKeyMask,
+  //            "isSystemKey": false
+  //          }
+  //   output: none
+  void SendWebkitKeyEvent(DictionaryValue* args,
+                          IPC::Message* message);
+
+  // Activates the given tab.
+  // Example:
+  //   input: { "windex": 1,
+  //            "tab_index": 1,
+  //          }
+  //   output: none
+  void ActivateTabJSON(DictionaryValue* args, IPC::Message* message);
 
 #if defined(OS_CHROMEOS)
   void LoginAsGuest(DictionaryValue* args, IPC::Message* reply_message);
