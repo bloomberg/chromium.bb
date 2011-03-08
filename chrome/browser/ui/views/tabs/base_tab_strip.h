@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "base/scoped_ptr.h"
+#include "chrome/browser/ui/views/tabs/abstract_tab_strip_view.h"
 #include "chrome/browser/ui/views/tabs/base_tab.h"
 #include "chrome/browser/ui/views/tabs/tab_controller.h"
 #include "views/animation/bounds_animator.h"
@@ -19,7 +20,7 @@ class DraggedTabController;
 class TabStripController;
 
 // Base class for the view tab strip implementations.
-class BaseTabStrip : public views::View,
+class BaseTabStrip : public AbstractTabStripView,
                      public TabController {
  public:
   enum Type {
@@ -38,10 +39,6 @@ class BaseTabStrip : public views::View,
   // Returns true if the specified point(TabStrip coordinates) is
   // in the window caption area of the browser window.
   virtual bool IsPositionInWindowCaption(const gfx::Point& point) = 0;
-
-  // Updates the loading animations displayed by tabs in the tabstrip to the
-  // next frame.
-  void UpdateLoadingAnimations();
 
   // Returns true if Tabs in this TabStrip are currently changing size or
   // position.
@@ -126,6 +123,11 @@ class BaseTabStrip : public views::View,
   // Returns true if a tab is being dragged into this tab strip.
   bool IsActiveDropTarget() const;
 
+  // AbstractTabStripView implementation
+  virtual bool IsTabStripEditable() const;
+  virtual bool IsTabStripCloseable() const;
+  virtual void UpdateLoadingAnimations();
+
   // TabController overrides:
   virtual void SelectTab(BaseTab* tab);
   virtual void CloseTab(BaseTab* tab);
@@ -142,6 +144,11 @@ class BaseTabStrip : public views::View,
 
   // View overrides:
   virtual void Layout();
+  virtual bool GetDropFormats(
+      int* formats,
+      std::set<OSExchangeData::CustomFormat>* custom_formats);
+  virtual bool CanDrop(const OSExchangeData& data);
+
 
  protected:
   // The Tabs we contain, and their last generated "good" bounds.

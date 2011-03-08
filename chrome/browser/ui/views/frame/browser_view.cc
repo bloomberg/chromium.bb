@@ -1033,7 +1033,7 @@ bool BrowserView::IsBookmarkBarAnimating() const {
 }
 
 bool BrowserView::IsTabStripEditable() const {
-  return !tabstrip_->IsDragSessionActive() && !tabstrip_->IsActiveDropTarget();
+  return tabstrip_->IsTabStripEditable();
 }
 
 bool BrowserView::IsToolbarVisible() const {
@@ -1701,7 +1701,7 @@ views::ClientView* BrowserView::CreateClientView(views::Window* window) {
 bool BrowserView::CanClose() {
   // You cannot close a frame for which there is an active originating drag
   // session.
-  if (tabstrip_->IsDragSessionActive())
+  if (!tabstrip_->IsTabStripCloseable())
     return false;
 
   // Give beforeunload handlers the chance to cancel the close before we hide
@@ -1847,19 +1847,14 @@ views::LayoutManager* BrowserView::CreateLayoutManager() const {
 
 void BrowserView::InitTabStrip(TabStripModel* model) {
   // Throw away the existing tabstrip if we're switching display modes.
-  scoped_ptr<BaseTabStrip> old_strip(tabstrip_);
+  scoped_ptr<AbstractTabStripView> old_strip(tabstrip_);
   if (tabstrip_)
     tabstrip_->parent()->RemoveChildView(tabstrip_);
 
-  BrowserTabStripController* tabstrip_controller =
-      new BrowserTabStripController(browser_.get(), model);
-
-  tabstrip_ = CreateTabStrip(tabstrip_controller, UseVerticalTabs());
+  tabstrip_ = CreateTabStrip(browser_.get(), model, UseVerticalTabs());
 
   tabstrip_->SetAccessibleName(l10n_util::GetStringUTF16(IDS_ACCNAME_TABSTRIP));
   AddChildView(tabstrip_);
-
-  tabstrip_controller->InitFromModel(tabstrip_);
 }
 
 ///////////////////////////////////////////////////////////////////////////////

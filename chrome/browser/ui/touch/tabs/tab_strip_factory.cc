@@ -10,8 +10,16 @@
 #include "chrome/browser/ui/views/tabs/browser_tab_strip_controller.h"
 
 // The implmentation of CreateTabStrip for touchui creates a TouchTabStrip
-BaseTabStrip* CreateTabStrip(BrowserTabStripController* tabstrip_controller,
-                             bool use_vertical_tabs) {
-  return new TouchTabStrip(tabstrip_controller);
+AbstractTabStripView* CreateTabStrip(Browser* browser,
+                                     TabStripModel* model,
+                                     bool use_vertical_tabs) {
+  BrowserTabStripController* tabstrip_controller =
+      new BrowserTabStripController(browser, model);
+  // Ownership of this controller is given to a specific tabstrip when we
+  // construct it below.
+
+  TouchTabStrip* tabstrip = new TouchTabStrip(tabstrip_controller);
+  tabstrip_controller->InitFromModel(tabstrip);
+  return tabstrip;
 }
 

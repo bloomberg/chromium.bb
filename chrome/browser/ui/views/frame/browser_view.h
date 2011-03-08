@@ -20,8 +20,7 @@
 #include "chrome/browser/ui/views/frame/browser_frame.h"
 #include "chrome/browser/ui/views/infobars/infobar_container.h"
 #include "chrome/browser/ui/views/tab_contents/tab_contents_container.h"
-#include "chrome/browser/ui/views/tabs/base_tab_strip.h"
-#include "chrome/browser/ui/views/tabs/tab_strip.h"
+#include "chrome/browser/ui/views/tabs/abstract_tab_strip_view.h"
 #include "chrome/browser/ui/views/unhandled_keyboard_event_handler.h"
 #include "chrome/common/notification_registrar.h"
 #include "ui/base/models/simple_menu_model.h"
@@ -151,7 +150,7 @@ class BrowserView : public BrowserBubbleHost,
   int GetSidebarWidth() const;
 
   // Accessor for the TabStrip.
-  BaseTabStrip* tabstrip() const { return tabstrip_; }
+  AbstractTabStripView* tabstrip() const { return tabstrip_; }
 
   // Accessor for the Toolbar.
   ToolbarView* toolbar() const { return toolbar_; }
@@ -592,7 +591,7 @@ class BrowserView : public BrowserBubbleHost,
   views::View* active_bookmark_bar_;
 
   // The TabStrip.
-  BaseTabStrip* tabstrip_;
+  AbstractTabStripView* tabstrip_;
 
   // The Toolbar containing the navigation buttons, menus and the address bar.
   ToolbarView* toolbar_;

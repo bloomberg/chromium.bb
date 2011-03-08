@@ -125,10 +125,6 @@ BaseTabStrip::BaseTabStrip(TabStripController* controller, Type type)
 BaseTabStrip::~BaseTabStrip() {
 }
 
-void BaseTabStrip::UpdateLoadingAnimations() {
-  controller_->UpdateLoadingAnimations();
-}
-
 bool BaseTabStrip::IsAnimating() const {
   return bounds_animator_.IsAnimating();
 }
@@ -227,6 +223,18 @@ bool BaseTabStrip::IsActiveDropTarget() const {
       return true;
   }
   return false;
+}
+
+bool BaseTabStrip::IsTabStripEditable() const {
+  return !IsDragSessionActive() && !IsActiveDropTarget();
+}
+
+bool BaseTabStrip::IsTabStripCloseable() const {
+  return !IsDragSessionActive();
+}
+
+void BaseTabStrip::UpdateLoadingAnimations() {
+  controller_->UpdateLoadingAnimations();
 }
 
 void BaseTabStrip::SelectTab(BaseTab* tab) {
@@ -339,6 +347,20 @@ void BaseTabStrip::Layout() {
   if (last_layout_size_ == size())
     return;
   DoLayout();
+}
+
+bool BaseTabStrip::GetDropFormats(
+      int* formats,
+      std::set<ui::OSExchangeData::CustomFormat>* custom_formats) {
+  if (IsVisible() && !IsAnimating()) {
+    *formats = ui::OSExchangeData::URL | ui::OSExchangeData::STRING;
+    return true;
+  }
+  return false;
+}
+
+bool BaseTabStrip::CanDrop(const ui::OSExchangeData& data) {
+  return IsVisible() && !IsAnimating();
 }
 
 bool BaseTabStrip::OnMouseDragged(const views::MouseEvent&  event) {

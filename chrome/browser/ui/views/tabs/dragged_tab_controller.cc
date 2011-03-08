@@ -780,7 +780,11 @@ BaseTabStrip* DraggedTabController::GetTabStripForPoint(
       !browser->browser()->SupportsWindowFeature(Browser::FEATURE_TABSTRIP))
     return NULL;
 
-  BaseTabStrip* other_tabstrip = browser->tabstrip();
+  // This cast seems ugly, but the controller and the view are tighly coupled at
+  // creation time, so it will be okay.
+  BaseTabStrip* other_tabstrip =
+      static_cast<BaseTabStrip*>(browser->tabstrip());
+
   if (!other_tabstrip->controller()->IsCompatibleWith(source_tabstrip_))
     return NULL;
   return GetTabStripIfItContains(other_tabstrip, screen_point);

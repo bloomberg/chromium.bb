@@ -10,11 +10,21 @@
 
 // This default implementation of CreateTabStrip creates a TabStrip or a
 // SideTabStrip, depending on whether we are using vertical tabs.
-BaseTabStrip* CreateTabStrip(BrowserTabStripController* tabstrip_controller,
-                             bool use_vertical_tabs) {
+AbstractTabStripView* CreateTabStrip(Browser* browser,
+                                     TabStripModel* model,
+                                     bool use_vertical_tabs) {
+  BrowserTabStripController* tabstrip_controller =
+      new BrowserTabStripController(browser, model);
+  // Ownership of this controller is given to a specific tabstrip when we
+  // construct it below.
+
+  BaseTabStrip* tabstrip = NULL;
+
   if (use_vertical_tabs)
-    return new SideTabStrip(tabstrip_controller);
+    tabstrip = new SideTabStrip(tabstrip_controller);
   else
-    return new TabStrip(tabstrip_controller);
+    tabstrip = new TabStrip(tabstrip_controller);
+  tabstrip_controller->InitFromModel(tabstrip);
+  return tabstrip;
 }
 

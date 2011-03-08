@@ -29,10 +29,9 @@ BrowserRootView::BrowserRootView(BrowserView* browser_view,
 bool BrowserRootView::GetDropFormats(
       int* formats,
       std::set<ui::OSExchangeData::CustomFormat>* custom_formats) {
-  if (tabstrip() && tabstrip()->IsVisible() && !tabstrip()->IsAnimating()) {
-    *formats = ui::OSExchangeData::URL | ui::OSExchangeData::STRING;
-    return true;
-  }
+  // Make the drop targets of the tabstrip qualify for the entire view.
+  if (tabstrip())
+    return tabstrip()->GetDropFormats(formats, custom_formats);
   return false;
 }
 
@@ -41,7 +40,7 @@ bool BrowserRootView::AreDropTypesRequired() {
 }
 
 bool BrowserRootView::CanDrop(const ui::OSExchangeData& data) {
-  if (!tabstrip() || !tabstrip()->IsVisible() || tabstrip()->IsAnimating())
+  if (!tabstrip() || !tabstrip()->CanDrop(data))
     return false;
 
   // If there is a URL, we'll allow the drop.
@@ -132,7 +131,7 @@ views::DropTargetEvent* BrowserRootView::MapEventToTabStrip(
                                     event.source_operations());
 }
 
-BaseTabStrip* BrowserRootView::tabstrip() const {
+AbstractTabStripView* BrowserRootView::tabstrip() const {
   return browser_view_->tabstrip();
 }
 

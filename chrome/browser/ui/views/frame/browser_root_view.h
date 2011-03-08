@@ -8,8 +8,8 @@
 
 #include "views/widget/root_view.h"
 
+class AbstractTabStripView;
 class BrowserView;
-class BaseTabStrip;
 
 namespace ui {
 class OSExchangeData;
@@ -45,7 +45,7 @@ class BrowserRootView : public views::RootView {
       const views::DropTargetEvent& event,
       const ui::OSExchangeData& data);
 
-  inline BaseTabStrip* tabstrip() const;
+  inline AbstractTabStripView* tabstrip() const;
 
   // Returns true if |data| has string contents and the user can "paste and go".
   // If |url| is non-NULL and the user can "paste and go", |url| is set to the
