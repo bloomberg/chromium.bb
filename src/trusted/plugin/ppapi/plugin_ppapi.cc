@@ -512,6 +512,8 @@ void PluginPpapi::UrlDidOpenForUrlAsNaClDesc(int32_t pp_error,
     js_callback.Call(pp::Var("onfail"), pp::Var("scriptable handle failed"));
     return;
   }
+  // We succeeded, so do not unref the wrapper!
+  (void)(scoped_desc_wrapper.release());
 
   js_callback.Call(pp::Var("onload"), pp::Var(this, handle));
 }
