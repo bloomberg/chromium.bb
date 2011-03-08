@@ -484,6 +484,9 @@ STDMETHODIMP UrlmonUrlRequest::GetBindInfo(DWORD* bind_flags,
 
     if (get_upload_data(&bind_info->stgmedData.pstm) == S_OK) {
       bind_info->stgmedData.tymed = TYMED_ISTREAM;
+#pragma warning(disable:4244)
+      bind_info->cbstgmedData = post_data_len();
+#pragma warning(default:4244)
       DVLOG(1) << __FUNCTION__ << me() << method()
                << " request with " << base::Int64ToString(post_data_len())
                << " bytes. url=" << url();
@@ -582,12 +585,6 @@ STDMETHODIMP UrlmonUrlRequest::BeginningTransaction(const wchar_t* url,
   if (post_data_len() > 0) {
     if (is_chunked_upload()) {
       new_headers = base::StringPrintf("Transfer-Encoding: chunked\r\n");
-    } else {
-      // Tack on the Content-Length header since when using an IStream type
-      // STGMEDIUM, it looks like it doesn't get set for us :(
-      new_headers = base::StringPrintf(
-          "Content-Length: %s\r\n",
-          base::Int64ToString(post_data_len()).c_str());
     }
   }
 
