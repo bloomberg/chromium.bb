@@ -1105,6 +1105,15 @@ TEST(ExtensionTest, ApiPermissions) {
   }
 }
 
+TEST(ExtensionTest, GetHostPermissionMessages_ManyHosts) {
+  scoped_refptr<Extension> extension;
+  extension = LoadManifest("permissions", "many-hosts.json");
+  std::vector<string16> warnings = extension->GetPermissionMessages();
+  ASSERT_EQ(1u, warnings.size());
+  EXPECT_EQ("Your data on www.google.com and encrypted.google.com",
+            UTF16ToUTF8(warnings[0]));
+}
+
 TEST(ExtensionTest, GetDistinctHostsForDisplay) {
   std::vector<std::string> expected;
   expected.push_back("www.foo.com");
@@ -1194,6 +1203,9 @@ TEST(ExtensionTest, GetDistinctHostsForDisplay) {
     // This is an unknown RCD, which shouldn't be uniqued out.
     actual.push_back(
         URLPattern(URLPattern::SCHEME_HTTP, "http://www.foo.xyzzy/path"));
+    // But it should only occur once.
+    actual.push_back(
+        URLPattern(URLPattern::SCHEME_HTTP, "http://www.foo.xyzzy/path"));
 
     expected.push_back("www.foo.xyzzy");
 
@@ -1212,6 +1224,88 @@ TEST(ExtensionTest, GetDistinctHostsForDisplay) {
     CompareLists(expected,
                  Extension::GetDistinctHostsForDisplay(actual));
   }
+}
+
+TEST(ExtensionTest, GetDistinctHostsForDisplay_ComIsBestRcd) {
+  URLPatternList actual;
+  actual.push_back(
+      URLPattern(URLPattern::SCHEME_HTTP, "http://www.foo.ca/path"));
+  actual.push_back(
+      URLPattern(URLPattern::SCHEME_HTTP, "http://www.foo.org/path"));
+  actual.push_back(
+      URLPattern(URLPattern::SCHEME_HTTP, "http://www.foo.co.uk/path"));
+  actual.push_back(
+      URLPattern(URLPattern::SCHEME_HTTP, "http://www.foo.net/path"));
+  actual.push_back(
+      URLPattern(URLPattern::SCHEME_HTTP, "http://www.foo.jp/path"));
+  actual.push_back(
+      URLPattern(URLPattern::SCHEME_HTTP, "http://www.foo.com/path"));
+
+  std::vector<std::string> expected;
+  expected.push_back("www.foo.com");
+
+  CompareLists(expected,
+                 Extension::GetDistinctHostsForDisplay(actual));
+}
+
+TEST(ExtensionTest, GetDistinctHostsForDisplay_NetIs2ndBestRcd) {
+  URLPatternList actual;
+  actual.push_back(
+      URLPattern(URLPattern::SCHEME_HTTP, "http://www.foo.ca/path"));
+  actual.push_back(
+      URLPattern(URLPattern::SCHEME_HTTP, "http://www.foo.org/path"));
+  actual.push_back(
+      URLPattern(URLPattern::SCHEME_HTTP, "http://www.foo.co.uk/path"));
+  actual.push_back(
+      URLPattern(URLPattern::SCHEME_HTTP, "http://www.foo.net/path"));
+  actual.push_back(
+      URLPattern(URLPattern::SCHEME_HTTP, "http://www.foo.jp/path"));
+  // No http://www.foo.com/path
+
+  std::vector<std::string> expected;
+  expected.push_back("www.foo.net");
+
+  CompareLists(expected,
+                 Extension::GetDistinctHostsForDisplay(actual));
+}
+
+TEST(ExtensionTest, GetDistinctHostsForDisplay_OrgIs3rdBestRcd) {
+  URLPatternList actual;
+  actual.push_back(
+      URLPattern(URLPattern::SCHEME_HTTP, "http://www.foo.ca/path"));
+  actual.push_back(
+      URLPattern(URLPattern::SCHEME_HTTP, "http://www.foo.org/path"));
+  actual.push_back(
+      URLPattern(URLPattern::SCHEME_HTTP, "http://www.foo.co.uk/path"));
+  // No http://www.foo.net/path
+  actual.push_back(
+      URLPattern(URLPattern::SCHEME_HTTP, "http://www.foo.jp/path"));
+  // No http://www.foo.com/path
+
+  std::vector<std::string> expected;
+  expected.push_back("www.foo.org");
+
+  CompareLists(expected,
+                 Extension::GetDistinctHostsForDisplay(actual));
+}
+
+TEST(ExtensionTest, GetDistinctHostsForDisplay_FirstInListIs4thBestRcd) {
+  URLPatternList actual;
+  actual.push_back(
+      URLPattern(URLPattern::SCHEME_HTTP, "http://www.foo.ca/path"));
+  // No http://www.foo.org/path
+  actual.push_back(
+      URLPattern(URLPattern::SCHEME_HTTP, "http://www.foo.co.uk/path"));
+  // No http://www.foo.net/path
+  actual.push_back(
+      URLPattern(URLPattern::SCHEME_HTTP, "http://www.foo.jp/path"));
+  // No http://www.foo.com/path
+
+  std::vector<std::string> expected;
+  expected.push_back("www.foo.ca");
+
+  CompareLists(expected,
+                 Extension::GetDistinctHostsForDisplay(actual));
 }
 
 TEST(ExtensionTest, IsElevatedHostList) {

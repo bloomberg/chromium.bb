@@ -354,36 +354,64 @@ bool Extension::IsElevatedHostList(
   return !new_hosts_only.empty();
 }
 
+// Helper for GetDistinctHosts(): com > net > org > everything else.
+static bool RcdBetterThan(std::string a, std::string b) {
+  if (a == b)
+    return false;
+  if (a == "com")
+    return true;
+  if (a == "net")
+    return b != "com";
+  if (a == "org")
+    return b != "com" && b != "net";
+  return false;
+}
+
 // static
 std::vector<std::string> Extension::GetDistinctHosts(
     const URLPatternList& host_patterns, bool include_rcd) {
-  // Vector because we later want to access these by index.
-  std::vector<std::string> distinct_hosts;
-
-  std::set<std::string> rcd_set;
+  // Use a vector to preserve order (also faster than a map on small sets).
+  // Each item is a host split into two parts: host without RCDs and
+  // current best RCD.
+  typedef std::vector<std::pair<std::string, std::string> > HostVector;
+  HostVector hosts_best_rcd;
   for (size_t i = 0; i < host_patterns.size(); ++i) {
-    std::string candidate = host_patterns[i].host();
+    std::string host = host_patterns[i].host();
 
     // Add the subdomain wildcard back to the host, if necessary.
     if (host_patterns[i].match_subdomains())
-      candidate = "*." + candidate;
+      host = "*." + host;
 
-    size_t registry = net::RegistryControlledDomainService::GetRegistryLength(
-        candidate, false);
-    if (registry && registry != std::string::npos) {
-      std::string no_rcd(candidate, 0, candidate.size() - registry);
-      if (rcd_set.count(no_rcd))
-        continue;
-      rcd_set.insert(no_rcd);
-      if (!include_rcd)
-        candidate = no_rcd;
+    // If the host has an RCD, split it off so we can detect duplicates.
+    std::string rcd;
+    size_t reg_len = net::RegistryControlledDomainService::GetRegistryLength(
+        host, false);
+    if (reg_len && reg_len != std::string::npos) {
+      if (include_rcd)  // else leave rcd empty
+        rcd = host.substr(host.size() - reg_len);
+      host = host.substr(0, host.size() - reg_len);
     }
-    if (std::find(distinct_hosts.begin(), distinct_hosts.end(), candidate) ==
-                  distinct_hosts.end()) {
-      distinct_hosts.push_back(candidate);
+
+    // Check if we've already seen this host.
+    HostVector::iterator it = hosts_best_rcd.begin();
+    for (; it != hosts_best_rcd.end(); ++it) {
+      if (it->first == host)
+        break;
+    }
+    // If this host was found, replace the RCD if this one is better.
+    if (it != hosts_best_rcd.end()) {
+      if (include_rcd && RcdBetterThan(rcd, it->second))
+        it->second = rcd;
+    } else {  // Previously unseen host, append it.
+      hosts_best_rcd.push_back(std::make_pair(host, rcd));
     }
   }
 
+  // Build up the final vector by concatenating hosts and RCDs.
+  std::vector<std::string> distinct_hosts;
+  for (HostVector::iterator it = hosts_best_rcd.begin();
+       it != hosts_best_rcd.end(); ++it)
+    distinct_hosts.push_back(it->first + it->second);
   return distinct_hosts;
 }
 

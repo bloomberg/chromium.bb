@@ -146,8 +146,10 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
   // present in the manifest to make it as easy as possible to process by
   // users. In particular we disregard the scheme and path components of
   // URLPatterns and de-dupe the result, which includes filtering out common
-  // hosts with differing RCDs. (NOTE: when de-duping hosts with common RCDs,
-  // the first pattern is returned and the rest discarded)
+  // hosts with differing RCDs (aka Registry Controlled Domains, most of which
+  // are Top Level Domains but also include exceptions like co.uk).
+  // NOTE: when de-duping hosts the preferred RCD will be returned, given this
+  // order of preference: .com, .net, .org, first in list.
   static std::vector<std::string> GetDistinctHostsForDisplay(
       const URLPatternList& list);
 
