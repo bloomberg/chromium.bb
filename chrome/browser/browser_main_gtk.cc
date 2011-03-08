@@ -76,6 +76,9 @@ void BrowserMainPartsGtk::PreEarlyInitialization() {
 void BrowserMainPartsGtk::DetectRunningAsRoot() {
   if (geteuid() == 0) {
     const CommandLine& command_line = *CommandLine::ForCurrentProcess();
+    if (!parsed_command_line().HasSwitch(switches::kUserDataDir))
+      return;
+
     gfx::GtkInitFromCommandLine(command_line);
 
     // Get just enough of our resource machinery up so we can extract the
@@ -94,6 +97,7 @@ void BrowserMainPartsGtk::DetectRunningAsRoot() {
         "%s",
         message.c_str());
 
+    LOG(ERROR) << "Startup refusing to run as root.";
     message = l10n_util::GetStringFUTF8(
         IDS_REFUSE_TO_RUN_AS_ROOT_2,
         l10n_util::GetStringUTF16(IDS_PRODUCT_NAME));
