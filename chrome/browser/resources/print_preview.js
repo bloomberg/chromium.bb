@@ -17,6 +17,7 @@ function load() {
   });
 
   chrome.send('getPrinters');
+  chrome.send('getPreview');
 };
 
 /**

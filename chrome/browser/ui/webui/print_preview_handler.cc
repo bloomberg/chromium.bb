@@ -7,8 +7,10 @@
 #include "base/json/json_reader.h"
 #include "base/threading/thread.h"
 #include "base/values.h"
+#include "chrome/browser/printing/print_preview_tab_controller.h"
 #include "content/browser/browser_thread.h"
 #include "content/browser/renderer_host/render_view_host.h"
+#include "content/browser/tab_contents/tab_contents.h"
 #include "printing/backend/print_backend.h"
 
 class EnumeratePrintersTaskProxy
@@ -67,6 +69,8 @@ PrintPreviewHandler::~PrintPreviewHandler() {
 void PrintPreviewHandler::RegisterMessages() {
   web_ui_->RegisterMessageCallback("getPrinters",
       NewCallback(this, &PrintPreviewHandler::HandleGetPrinters));
+  web_ui_->RegisterMessageCallback("getPreview",
+      NewCallback(this, &PrintPreviewHandler::HandleGetPreview));
   web_ui_->RegisterMessageCallback("print",
       NewCallback(this, &PrintPreviewHandler::HandlePrint));
 }
@@ -78,6 +82,18 @@ void PrintPreviewHandler::HandleGetPrinters(const ListValue*) {
       BrowserThread::FILE, FROM_HERE,
       NewRunnableMethod(task.get(),
                         &EnumeratePrintersTaskProxy::EnumeratePrinters));
+}
+
+void PrintPreviewHandler::HandleGetPreview(const ListValue*) {
+  printing::PrintPreviewTabController* tab_controller =
+      printing::PrintPreviewTabController::GetInstance();
+  if (!tab_controller)
+    return;
+  TabContents* initiator_tab =
+      tab_controller->GetInitiatorTab(web_ui_->tab_contents());
+  if (!initiator_tab)
+    return;
+  initiator_tab->render_view_host()->PrintPreview();
 }
 
 void PrintPreviewHandler::HandlePrint(const ListValue* args) {

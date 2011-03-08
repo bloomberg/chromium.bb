@@ -1190,12 +1190,10 @@ void TabContents::PrintPreview() {
       return;
 
     printing::PrintPreviewTabController* tab_controller =
-      printing::PrintPreviewTabController::GetInstance();
+        printing::PrintPreviewTabController::GetInstance();
     if (!tab_controller)
       return;
     tab_controller->GetOrCreatePreviewTab(this, controller().window_id().id());
-
-    render_view_host()->PrintPreview();
   } else {
     PrintNow();
   }

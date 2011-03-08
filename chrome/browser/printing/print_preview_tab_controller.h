@@ -44,6 +44,10 @@ class PrintPreviewTabController
   // Returns NULL if no preview tab exists for |tab|.
   TabContents* GetPrintPreviewForTab(TabContents* tab) const;
 
+  // Returns initiator tab for |preview_tab|.
+  // Returns NULL if no initiator tab exists for |preview_tab|.
+  TabContents* GetInitiatorTab(TabContents* preview_tab);
+
   // Notification observer implementation.
   virtual void Observe(NotificationType type,
                        const NotificationSource& source,
@@ -59,10 +63,6 @@ class PrintPreviewTabController
   // Key: Preview tab.
   // Value: Initiator tab.
   typedef std::map<TabContents*, TabContents*> PrintPreviewTabMap;
-
-  // Returns initiator tab for |preview_tab|.
-  // Returns NULL if no initiator tab exists for |preview_tab|.
-  TabContents* GetInitiatorTab(TabContents* preview_tab);
 
   // Creates a new print preview tab.
   TabContents* CreatePrintPreviewTab(
