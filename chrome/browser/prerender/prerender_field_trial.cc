@@ -56,8 +56,9 @@ void ConfigurePrefetchAndPrerender(const CommandLine& command_line) {
   switch (prerender_option) {
     case PRERENDER_OPTION_AUTO: {
       const base::FieldTrial::Probability kPrefetchDivisor = 1000;
-      const base::FieldTrial::Probability kYesPrefetchProbability = 500;
-      const base::FieldTrial::Probability kPrerenderProbability = 0;
+      const base::FieldTrial::Probability kYesPrefetchProbability = 0;
+      const base::FieldTrial::Probability kPrerenderExperimentProbability = 0;
+      const base::FieldTrial::Probability kPrerenderControlProbability = 0;
 
       scoped_refptr<base::FieldTrial> trial(
           new base::FieldTrial("Prefetch", kPrefetchDivisor,
@@ -66,20 +67,28 @@ void ConfigurePrefetchAndPrerender(const CommandLine& command_line) {
       const int kNoPrefetchGroup = trial->kDefaultGroupNumber;
       const int kYesPrefetchGroup =
           trial->AppendGroup("ContentPrefetchEnabled", kYesPrefetchProbability);
-      const int kPrerenderGroup =
-          trial->AppendGroup("ContentPrefetchPrerender", kPrerenderProbability);
+      const int kPrerenderExperimentGroup =
+          trial->AppendGroup("ContentPrefetchPrerender",
+                             kPrerenderExperimentProbability);
+      const int kPrerenderControlGroup =
+          trial->AppendGroup("ContentPrefetchPrerenderControl",
+                             kPrerenderControlProbability);
       const int trial_group = trial->group();
       if (trial_group == kYesPrefetchGroup) {
         ResourceDispatcherHost::set_is_prefetch_enabled(true);
-        PrerenderManager::SetMode(
-            PrerenderManager::PRERENDER_MODE_EXPERIMENT_CONTROL_GROUP);
+        PrerenderManager::SetMode(PrerenderManager::PRERENDER_MODE_DISABLED);
       } else if (trial_group == kNoPrefetchGroup) {
         ResourceDispatcherHost::set_is_prefetch_enabled(false);
-        PrerenderManager::SetMode(PrerenderManager::PRERENDER_MODE_DISABLED);
-      } else if (trial_group == kPrerenderGroup) {
+        PrerenderManager::SetMode(
+            PrerenderManager::PRERENDER_MODE_DISABLED);
+      } else if (trial_group == kPrerenderExperimentGroup) {
         ResourceDispatcherHost::set_is_prefetch_enabled(true);
         PrerenderManager::SetMode(
             PrerenderManager::PRERENDER_MODE_EXPERIMENT_PRERENDER_GROUP);
+      } else if (trial_group == kPrerenderControlGroup) {
+        ResourceDispatcherHost::set_is_prefetch_enabled(false);
+        PrerenderManager::SetMode(
+            PrerenderManager::PRERENDER_MODE_EXPERIMENT_CONTROL_GROUP);
       } else {
         NOTREACHED();
       }
