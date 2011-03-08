@@ -95,13 +95,14 @@ AutomatedUITestBase.CloseTab
 ResourceDispatcherTest.CrossSiteFailedRequest
 ResourceDispatcherTest.RespectNoSniffDirective
 
-# Valgrind internal error: received SIGSERV. http://crbug.com/51716
+# Valgrind internal error: received SIGSEGV. http://crbug.com/51716
 AutomatedUITestBase.Navigate
 AutomationProxyTest.AcceleratorDownloads
 AutomationProxyTest2.GetActiveTabIndex
 AutomationProxyTest5.TestLifetimeOfDomAutomationController
 ErrorPageTest.IFrameDNSError_Basic
 IFrameTest.Crash
+MediaTest.VideoBearSilentTheora
 MetricsServiceTest.CrashRenderers
 PPAPITest.Buffer
 PPAPITest.FileIO
