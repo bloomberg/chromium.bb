@@ -260,9 +260,9 @@ class SandboxIPCProcess  {
     if (!pickle.ReadString(&iter, &preferred_locale))
       return;
 
-    // TODO(kochi): Pass preferred_locale.c_str() as the third parameter
-    // once https://bugs.webkit.org/show_bug.cgi?id=55453 is landed.
-    WebCString family = WebFontInfo::familyForChars(chars.get(), num_chars);
+    WebCString family = WebFontInfo::familyForChars(chars.get(),
+                                                    num_chars,
+                                                    preferred_locale.c_str());
 
     Pickle reply;
     if (family.data()) {
