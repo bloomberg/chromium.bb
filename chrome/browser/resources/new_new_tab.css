@@ -33,7 +33,7 @@ body.loading #main {
 .maxiview,
 #login-container,
 #notification-container,
-#closed-sections-bar[chromeos] {
+#closed-sections-bar {
   width: 920px;
 }
 
@@ -307,15 +307,15 @@ html[dir=rtl] .foreign-session-client {
 }
 
 #attribution {
-  position: fixed;
-  right: 5px;
   bottom: 5px;
+  left: 8px;
+  position: fixed;
   text-align: end;
 }
 
 html[dir=rtl] #attribution {
-  left: 5px;
-  right: auto;
+  left: auto;
+  right: 8px;
 }
 
 #attribution.obscured {
@@ -456,15 +456,9 @@ html[dir=rtl] .section-close-button {
 }
 
 #closed-sections-bar {
+  bottom: 14px;
   position: fixed;
-}
-
-#closed-sections-bar:not([chromeos]) {
-  bottom: 5px;
-}
-
-#closed-sections-bar[chromeos] {
-  padding-top: 0.56em;
+  text-align: end;
 }
 
 #closed-sections-bar > button {
@@ -477,7 +471,7 @@ html[dir=rtl] .section-close-button {
   cursor: pointer;
   font: inherit;
   margin: 0;
-  margin-right: 1.5em;
+  -webkit-margin-start: 1.5em;
   padding: 2px 0 0 0;
 
   /* Note: The font here should end up the same as .section > h2. A different
@@ -574,7 +568,8 @@ html[anim=true][enable-section-animations=true] .miniview {
 .small-layout .section,
 .small-layout .maxiview,
 .small-layout #login-container,
-.small-layout #notification-container {
+.small-layout #notification-container,
+.small-layout #closed-sections-bar {
   width: 692px;
 }
 
