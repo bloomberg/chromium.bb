@@ -312,7 +312,9 @@ WebKit::WebApplicationCacheHost* CreateApplicationCacheHost(
 
 WebKit::WebString GetWebKitRootDir() {
   FilePath path = GetWebKitRootDirFilePath();
-  return WebKit::WebString::fromUTF8(WideToUTF8(path.ToWStringHack()).c_str());
+  std::string path_ascii = path.MaybeAsASCII();
+  CHECK(!path_ascii.empty());
+  return WebKit::WebString::fromUTF8(path_ascii.c_str());
 }
 
 void SetUpGLBindings(GLBindingPreferences bindingPref) {
