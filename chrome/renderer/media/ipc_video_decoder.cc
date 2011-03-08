@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -20,9 +20,7 @@
 
 IpcVideoDecoder::IpcVideoDecoder(MessageLoop* message_loop,
                                  ggl::Context* ggl_context)
-    : width_(0),
-      height_(0),
-      decode_context_message_loop_(message_loop),
+    : decode_context_message_loop_(message_loop),
       ggl_context_(ggl_context) {
 }
 
@@ -47,15 +45,22 @@ void IpcVideoDecoder::Initialize(media::DemuxerStream* demuxer_stream,
   // Get the AVStream by querying for the provider interface.
   media::AVStreamProvider* av_stream_provider;
   if (!demuxer_stream->QueryInterface(&av_stream_provider)) {
-    host()->SetError(media::PIPELINE_ERROR_DECODE);
-    callback->Run();
-    delete callback;
+    media::VideoCodecInfo info = {0};
+    OnInitializeComplete(info);
     return;
   }
 
   AVStream* av_stream = av_stream_provider->GetAVStream();
-  width_ = av_stream->codec->width;
-  height_ = av_stream->codec->height;
+
+  int width = av_stream->codec->width;
+  int height = av_stream->codec->height;
+  if (width > media::Limits::kMaxDimension ||
+      height > media::Limits::kMaxDimension ||
+      (width * height) > media::Limits::kMaxCanvas) {
+    media::VideoCodecInfo info = {0};
+    OnInitializeComplete(info);
+    return;
+  }
 
   // Create a video decode context that assocates with the graphics
   // context.
@@ -69,8 +74,8 @@ void IpcVideoDecoder::Initialize(media::DemuxerStream* demuxer_stream,
   // Initialize hardware decoder.
   media::VideoCodecConfig param;
   memset(&param, 0, sizeof(param));
-  param.width = width_;
-  param.height = height_;
+  param.width = width;
+  param.height = height;
 
   // VideoDecodeEngine will perform initialization on the message loop
   // given to it so it doesn't matter on which thread we are calling this.

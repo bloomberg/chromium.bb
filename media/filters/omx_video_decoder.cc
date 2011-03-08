@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -20,8 +20,7 @@ OmxVideoDecoder::OmxVideoDecoder(
     VideoDecodeContext* context)
     : message_loop_(message_loop),
       decode_engine_(new OmxVideoDecodeEngine()),
-      decode_context_(context),
-      width_(0), height_(0) {
+      decode_context_(context) {
   DCHECK(decode_engine_.get());
   memset(&info_, 0, sizeof(info_));
 }
@@ -58,19 +57,18 @@ void OmxVideoDecoder::Initialize(DemuxerStream* demuxer_stream,
   AVStreamProvider* av_stream_provider;
   if (!demuxer_stream->QueryInterface(&av_stream_provider)) {
     VideoCodecInfo info = {0};
-    OmxVideoDecoder::OnInitializeComplete(info);
+    OnInitializeComplete(info);
     return;
   }
   AVStream* av_stream = av_stream_provider->GetAVStream();
 
-  // TODO(jiesun): shouldn't we check this in demuxer?
-  width_ = av_stream->codec->width;
-  height_ = av_stream->codec->height;
-  if (width_ > Limits::kMaxDimension ||
-      height_ > Limits::kMaxDimension ||
-      (width_ * height_) > Limits::kMaxCanvas) {
+  int width = av_stream->codec->width;
+  int height = av_stream->codec->height;
+  if (width > Limits::kMaxDimension ||
+      height > Limits::kMaxDimension ||
+      (width * height) > Limits::kMaxCanvas) {
     VideoCodecInfo info = {0};
-    OmxVideoDecoder::OnInitializeComplete(info);
+    OnInitializeComplete(info);
     return;
   }
 
@@ -90,23 +88,26 @@ void OmxVideoDecoder::Initialize(DemuxerStream* demuxer_stream,
       NOTREACHED();
   }
   config.opaque_context = NULL;
-  config.width = width_;
-  config.height = height_;
+  config.width = width;
+  config.height = height;
   decode_engine_->Initialize(message_loop_, this, NULL, config);
 }
 
 void OmxVideoDecoder::OnInitializeComplete(const VideoCodecInfo& info) {
+  // TODO(scherkus): Dedup this from FFmpegVideoDecoder::OnInitializeComplete.
   DCHECK_EQ(MessageLoop::current(), message_loop_);
   DCHECK(initialize_callback_.get());
 
-  info_ = info;  // Save a copy.
+  info_ = info;
   AutoCallbackRunner done_runner(initialize_callback_.release());
 
   if (info.success) {
     media_format_.SetAsString(MediaFormat::kMimeType,
                               mime_type::kUncompressedVideo);
-    media_format_.SetAsInteger(MediaFormat::kWidth, width_);
-    media_format_.SetAsInteger(MediaFormat::kHeight, height_);
+    media_format_.SetAsInteger(MediaFormat::kWidth,
+                               info.stream_info.surface_width);
+    media_format_.SetAsInteger(MediaFormat::kHeight,
+                               info.stream_info.surface_height);
     media_format_.SetAsInteger(
         MediaFormat::kSurfaceType,
         static_cast<int>(info.stream_info.surface_type));

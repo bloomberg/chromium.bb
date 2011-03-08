@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -61,8 +61,6 @@ class OmxVideoDecoder : public VideoDecoder,
   scoped_ptr<VideoDecodeEngine> decode_engine_;
   scoped_ptr<VideoDecodeContext> decode_context_;
   MediaFormat media_format_;
-  size_t width_;
-  size_t height_;
 
   scoped_ptr<FilterCallback> initialize_callback_;
   scoped_ptr<FilterCallback> uninitialize_callback_;
