@@ -12,7 +12,7 @@
 #include "base/basictypes.h"
 #include "googleurl/src/gurl.h"
 
-class GPUInfo;
+struct GPUInfo;
 
 #if defined(OS_WIN) || defined(OS_MACOSX)
 // The maximum number of active extensions we will report.

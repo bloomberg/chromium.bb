@@ -17,8 +17,7 @@
 #include "build/build_config.h"
 #include "chrome/common/dx_diag_node.h"
 
-class GPUInfo {
- public:
+struct GPUInfo {
   GPUInfo();
   ~GPUInfo();
 
@@ -30,127 +29,72 @@ class GPUInfo {
     kComplete,
   };
 
-  // Returns whether this GPUInfo has been partially or fully initialized with
+  // Whether this GPUInfo has been partially or fully initialized with
   // information.
-  Level level() const;
+  Level level;
 
   // The amount of time taken to get from the process starting to the message
   // loop being pumped.
-  base::TimeDelta initialization_time() const;
+  base::TimeDelta initialization_time;
 
-  // Return the DWORD (uint32) representing the graphics card vendor id.
-  uint32 vendor_id() const;
+  // The DWORD (uint32) representing the graphics card vendor id.
+  uint32 vendor_id;
 
-  // Return the DWORD (uint32) representing the graphics card device id.
-  // Device ids are unique to vendor, not to one another.
-  uint32 device_id() const;
+  // The DWORD (uint32) representing the graphics card device id.  Device ids
+  // are unique to vendor, not to one another.
+  uint32 device_id;
 
-  // Return the vendor of the graphics driver currently installed.
-  std::string driver_vendor() const;
+  // The vendor of the graphics driver currently installed.
+  std::string driver_vendor;
 
-  // Return the version of the graphics driver currently installed.
-  std::string driver_version() const;
+  // The version of the graphics driver currently installed.
+  std::string driver_version;
 
-  // Return the date of the graphics driver currently installed.
-  std::string driver_date() const;
+  // The date of the graphics driver currently installed.
+  std::string driver_date;
 
-  // Return the version of the pixel/fragment shader used by the gpu.
-  // Major version in the second lowest 8 bits, minor in the lowest 8 bits,
-  // eg version 2.5 would be 0x00000205.
-  uint32 pixel_shader_version() const;
+  // The version of the pixel/fragment shader used by the gpu.  Major version in
+  // the second lowest 8 bits, minor in the lowest 8 bits, eg version 2.5 would
+  // be 0x00000205.
+  uint32 pixel_shader_version;
 
-  // Return the version of the vertex shader used by the gpu.
-  // Major version in the second lowest 8 bits, minor in the lowest 8 bits,
-  // eg version 2.5 would be 0x00000205.
-  uint32 vertex_shader_version() const;
+  // The version of the vertex shader used by the gpu.  Major version in the
+  // second lowest 8 bits, minor in the lowest 8 bits, eg version 2.5 would be
+  // 0x00000205.
+  uint32 vertex_shader_version;
 
-  // Return the version of OpenGL we are using.
+  // The version of OpenGL we are using.
   // Major version in the second lowest 8 bits, minor in the lowest 8 bits,
   // eg version 2.5 would be 0x00000205.
   // Returns 0 if we're not using OpenGL, say because we're going through
   // D3D instead.
   // TODO(zmo): should be able to tell if it's GL or GLES.
-  uint32 gl_version() const;
+  uint32 gl_version;
 
-  // Return the GL_VERSION string.
-  // Return "" if we are not using OpenGL.
-  std::string gl_version_string() const;
+  // The GL_VERSION string.  "" if we are not using OpenGL.
+  std::string gl_version_string;
 
-  // Return the GL_VENDOR string.
-  // Return "" if we are not using OpenGL.
-  std::string gl_vendor() const;
+  // The GL_VENDOR string.  "" if we are not using OpenGL.
+  std::string gl_vendor;
 
-  // Return the GL_RENDERER string.
-  // Return "" if we are not using OpenGL.
-  std::string gl_renderer() const;
+  // The GL_RENDERER string.  "" if we are not using OpenGL.
+  std::string gl_renderer;
 
-  // Return the GL_EXTENSIONS string.
-  // Return "" if we are not using OpenGL.
-  std::string gl_extensions() const;
+  // The GL_EXTENSIONS string.  "" if we are not using OpenGL.
+  std::string gl_extensions;
 
-  // Return the device semantics, i.e. whether the Vista and Windows 7 specific
+  // The device semantics, i.e. whether the Vista and Windows 7 specific
   // semantics are available.
-  bool can_lose_context() const;
+  bool can_lose_context;
 
-  // Return true if there was an error at any stage of collecting GPUInfo data.
+  // True if there was an error at any stage of collecting GPUInfo data.
   // If there was an error, then the GPUInfo fields may be incomplete or set
   // to default values such as 0 or empty string.
-  bool collection_error() const;
-
-  void SetLevel(Level level);
-
-  void SetInitializationTime(const base::TimeDelta& initialization_time);
-
-  void SetVideoCardInfo(uint32 vendor_id, uint32 device_id);
-
-  void SetDriverInfo(const std::string& driver_vendor,
-                     const std::string& driver_version,
-                     const std::string& driver_date);
-
-  void SetShaderVersion(uint32 pixel_shader_version,
-                        uint32 vertex_shader_version);
-
-  void SetGLVersion(uint32 gl_version);
-
-  void SetGLVersionString(const std::string& gl_vendor_string);
-
-  void SetGLVendor(const std::string& gl_vendor);
-
-  void SetGLRenderer(const std::string& gl_renderer);
-
-  void SetGLExtensions(const std::string& gl_extensions);
-
-  void SetCanLoseContext(bool can_lose_context);
-
-  void SetCollectionError(bool collection_error);
+  bool collection_error;
 
 #if defined(OS_WIN)
   // The information returned by the DirectX Diagnostics Tool.
-  const DxDiagNode& dx_diagnostics() const;
-
-  void SetDxDiagnostics(const DxDiagNode& dx_diagnostics);
-#endif
-
- private:
-  Level level_;
-  base::TimeDelta initialization_time_;
-  uint32 vendor_id_;
-  uint32 device_id_;
-  std::string driver_vendor_;
-  std::string driver_version_;
-  std::string driver_date_;
-  uint32 pixel_shader_version_;
-  uint32 vertex_shader_version_;
-  uint32 gl_version_;
-  std::string gl_version_string_;
-  std::string gl_vendor_;
-  std::string gl_renderer_;
-  std::string gl_extensions_;
-  bool can_lose_context_;
-  bool collection_error_;
-
-#if defined(OS_WIN)
-  DxDiagNode dx_diagnostics_;
+  DxDiagNode dx_diagnostics;
 #endif
 };
 

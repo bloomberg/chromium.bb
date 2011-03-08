@@ -74,7 +74,7 @@ void GpuDataManager::RequestCompleteGpuInfoIfNeeded() {
 
 void GpuDataManager::UpdateGpuInfo(const GPUInfo& gpu_info) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  if (gpu_info_.level() >= gpu_info.level())
+  if (gpu_info_.level >= gpu_info.level)
     return;
   gpu_info_ = gpu_info;
   child_process_logging::SetGpuInfo(gpu_info);
@@ -228,7 +228,7 @@ bool GpuDataManager::UpdateGpuBlacklist() {
 
 void GpuDataManager::UpdateGpuFeatureFlags() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  if (gpu_info_.level() == GPUInfo::kUninitialized)
+  if (gpu_info_.level == GPUInfo::kUninitialized)
     return;
 
   // Need to call this before checking gpu_feature_flags_set_ because it might
@@ -249,7 +249,7 @@ void GpuDataManager::UpdateGpuFeatureFlags() {
     uint32 max_entry_id = gpu_blacklist->max_entry_id();
     if (gpu_feature_flags_.flags() != 0) {
       // If gpu is blacklisted, no further GPUInfo will be collected.
-      gpu_info_.SetLevel(GPUInfo::kComplete);
+      gpu_info_.level = GPUInfo::kComplete;
 
       // Notify clients that GpuInfo state has changed
       RunGpuInfoUpdateCallbacks();

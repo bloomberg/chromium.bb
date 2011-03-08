@@ -47,10 +47,10 @@
 typedef std::map<std::string, std::string> SubstitutionMap;
 
 class Value;
-class GPUInfo;
 class SkBitmap;
-struct ThumbnailScore;
 class WebCursor;
+struct GPUInfo;
+struct ThumbnailScore;
 
 namespace gfx {
 class Rect;

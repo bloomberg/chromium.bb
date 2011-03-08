@@ -13,17 +13,21 @@
 TEST(GPUIPCMessageTest, GPUInfo) {
   GPUInfo input;
   // Test variables taken from HP Z600 Workstation
-  input.SetLevel(GPUInfo::kPartial);
-  input.SetInitializationTime(base::TimeDelta::FromMilliseconds(100));
-  input.SetVideoCardInfo(0x10de, 0x0658);
-  input.SetDriverInfo("NVIDIA", "195.36.24", "7-14-2009");
-  input.SetShaderVersion(0x0162, 0x0162);
-  input.SetGLVersion(0x0302);
-  input.SetGLVersionString("3.2.0 NVIDIA 195.36.24");
-  input.SetGLVendor("NVIDIA Corporation");
-  input.SetGLRenderer("Quadro FX 380/PCI/SSE2");
-  input.SetGLExtensions("GL_ARB_texture_rg GL_ARB_window_pos");
-  input.SetCanLoseContext(false);
+  input.level = GPUInfo::kPartial;
+  input.initialization_time = base::TimeDelta::FromMilliseconds(100);
+  input.vendor_id = 0x10de;
+  input.device_id = 0x0658;
+  input.driver_vendor = "NVIDIA";
+  input.driver_version = "195.36.24";
+  input.driver_date = "7-14-2009";
+  input.pixel_shader_version = 0x0162;
+  input.vertex_shader_version = 0x0162;
+  input.gl_version = 0x0302;
+  input.gl_version_string = "3.2.0 NVIDIA 195.36.24";
+  input.gl_vendor = "NVIDIA Corporation";
+  input.gl_renderer = "Quadro FX 380/PCI/SSE2";
+  input.gl_extensions ="GL_ARB_texture_rg GL_ARB_window_pos";
+  input.can_lose_context = false;
 
   IPC::Message msg(1, 2, IPC::Message::PRIORITY_NORMAL);
   IPC::WriteParam(&msg, input);
@@ -31,22 +35,22 @@ TEST(GPUIPCMessageTest, GPUInfo) {
   GPUInfo output;
   void* iter = NULL;
   EXPECT_TRUE(IPC::ReadParam(&msg, &iter, &output));
-  EXPECT_EQ(input.level(), output.level());
-  EXPECT_EQ(input.initialization_time().InMilliseconds(),
-            output.initialization_time().InMilliseconds());
-  EXPECT_EQ(input.vendor_id(), output.vendor_id());
-  EXPECT_EQ(input.device_id(), output.device_id());
-  EXPECT_EQ(input.driver_vendor(), output.driver_vendor());
-  EXPECT_EQ(input.driver_version(), output.driver_version());
-  EXPECT_EQ(input.driver_date(), output.driver_date());
-  EXPECT_EQ(input.pixel_shader_version(), output.pixel_shader_version());
-  EXPECT_EQ(input.vertex_shader_version(), output.vertex_shader_version());
-  EXPECT_EQ(input.gl_version(), output.gl_version());
-  EXPECT_EQ(input.gl_version_string(), output.gl_version_string());
-  EXPECT_EQ(input.gl_vendor(), output.gl_vendor());
-  EXPECT_EQ(input.gl_renderer(), output.gl_renderer());
-  EXPECT_EQ(input.gl_extensions(), output.gl_extensions());
-  EXPECT_EQ(input.can_lose_context(), output.can_lose_context());
+  EXPECT_EQ(input.level, output.level);
+  EXPECT_EQ(input.initialization_time.InMilliseconds(),
+            output.initialization_time.InMilliseconds());
+  EXPECT_EQ(input.vendor_id, output.vendor_id);
+  EXPECT_EQ(input.device_id, output.device_id);
+  EXPECT_EQ(input.driver_vendor, output.driver_vendor);
+  EXPECT_EQ(input.driver_version, output.driver_version);
+  EXPECT_EQ(input.driver_date, output.driver_date);
+  EXPECT_EQ(input.pixel_shader_version, output.pixel_shader_version);
+  EXPECT_EQ(input.vertex_shader_version, output.vertex_shader_version);
+  EXPECT_EQ(input.gl_version, output.gl_version);
+  EXPECT_EQ(input.gl_version_string, output.gl_version_string);
+  EXPECT_EQ(input.gl_vendor, output.gl_vendor);
+  EXPECT_EQ(input.gl_renderer, output.gl_renderer);
+  EXPECT_EQ(input.gl_extensions, output.gl_extensions);
+  EXPECT_EQ(input.can_lose_context, output.can_lose_context);
 
   std::string log_message;
   IPC::LogParam(output, &log_message);

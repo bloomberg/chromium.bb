@@ -500,12 +500,12 @@ bool GpuBlacklist::GpuBlacklistEntry::Contains(
   DCHECK(os_type != kOsAny);
   if (os_info_.get() != NULL && !os_info_->Contains(os_type, os_version))
     return false;
-  if (vendor_id_ != 0 && vendor_id_ != gpu_info.vendor_id())
+  if (vendor_id_ != 0 && vendor_id_ != gpu_info.vendor_id)
     return false;
   if (device_id_list_.size() > 0) {
     bool found = false;
     for (size_t i = 0; i < device_id_list_.size(); ++i) {
-      if (device_id_list_[i] == gpu_info.device_id()) {
+      if (device_id_list_[i] == gpu_info.device_id) {
         found = true;
         break;
       }
@@ -514,24 +514,23 @@ bool GpuBlacklist::GpuBlacklistEntry::Contains(
       return false;
   }
   if (driver_vendor_info_.get() != NULL &&
-      !driver_vendor_info_->Contains(gpu_info.driver_vendor()))
+      !driver_vendor_info_->Contains(gpu_info.driver_vendor))
     return false;
   if (driver_version_info_.get() != NULL) {
     scoped_ptr<Version> driver_version(
-        Version::GetVersionFromString(gpu_info.driver_version()));
+        Version::GetVersionFromString(gpu_info.driver_version));
     if (driver_version.get() == NULL ||
         !driver_version_info_->Contains(*driver_version))
       return false;
   }
   if (driver_date_info_.get() != NULL) {
-    scoped_ptr<Version> driver_date(GetDateFromString(
-        gpu_info.driver_date()));
+    scoped_ptr<Version> driver_date(GetDateFromString(gpu_info.driver_date));
     if (driver_date.get() == NULL ||
         !driver_date_info_->Contains(*driver_date))
       return false;
   }
   if (gl_renderer_info_.get() != NULL &&
-      !gl_renderer_info_->Contains(gpu_info.gl_renderer()))
+      !gl_renderer_info_->Contains(gpu_info.gl_renderer))
     return false;
   for (size_t i = 0; i < exceptions_.size(); ++i) {
     if (exceptions_[i]->Contains(os_type, os_version, gpu_info))
@@ -634,7 +633,7 @@ GpuFeatureFlags GpuBlacklist::DetermineGpuFeatureFlags(
   active_entries_.clear();
   GpuFeatureFlags flags;
   // No need to go through blacklist entries if GPUInfo isn't available.
-  if (gpu_info.level() == GPUInfo::kUninitialized)
+  if (gpu_info.level == GPUInfo::kUninitialized)
     return flags;
 
   if (os == kOsAny)

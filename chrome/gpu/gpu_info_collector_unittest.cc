@@ -65,15 +65,19 @@ class GPUInfoCollectorTest : public testing::Test {
         "GL_OES_packed_depth_stencil GL_EXT_texture_format_BGRA8888 "
         "GL_EXT_read_format_bgra";
 #endif
-    test_values_.SetVideoCardInfo(vendor_id, device_id);
-    test_values_.SetDriverInfo(driver_vendor, driver_version, "");
-    test_values_.SetShaderVersion(shader_version, shader_version);
-    test_values_.SetGLVersion(gl_version);
-    test_values_.SetGLRenderer(gl_renderer);
-    test_values_.SetGLVendor(gl_vendor);
-    test_values_.SetGLVersionString(gl_version_string);
-    test_values_.SetGLExtensions(gl_extensions);
-    test_values_.SetCanLoseContext(false);
+    test_values_.vendor_id = vendor_id;
+    test_values_.device_id = device_id;
+    test_values_.driver_vendor = driver_vendor;
+    test_values_.driver_version =driver_version;
+    test_values_.driver_date = "";
+    test_values_.pixel_shader_version = shader_version;
+    test_values_.vertex_shader_version = shader_version;
+    test_values_.gl_version = gl_version;
+    test_values_.gl_renderer = gl_renderer;
+    test_values_.gl_vendor = gl_vendor;
+    test_values_.gl_version_string = gl_version_string;
+    test_values_.gl_extensions = gl_extensions;
+    test_values_.can_lose_context = false;
 
     EXPECT_CALL(*gl_, GetString(GL_EXTENSIONS))
         .WillRepeatedly(Return(reinterpret_cast<const GLubyte*>(
@@ -109,8 +113,8 @@ class GPUInfoCollectorTest : public testing::Test {
 TEST_F(GPUInfoCollectorTest, DriverVendorGL) {
   GPUInfo gpu_info;
   gpu_info_collector::CollectGraphicsInfoGL(&gpu_info);
-  std::string driver_vendor = gpu_info.driver_vendor();
-  EXPECT_EQ(test_values_.driver_vendor(), driver_vendor);
+  std::string driver_vendor = gpu_info.driver_vendor;
+  EXPECT_EQ(test_values_.driver_vendor, driver_vendor);
 }
 
 // Skip Windows because the driver version is obtained from bot registry.
@@ -118,58 +122,56 @@ TEST_F(GPUInfoCollectorTest, DriverVendorGL) {
 TEST_F(GPUInfoCollectorTest, DriverVersionGL) {
   GPUInfo gpu_info;
   gpu_info_collector::CollectGraphicsInfoGL(&gpu_info);
-  std::string driver_version = gpu_info.driver_version();
-  EXPECT_EQ(test_values_.driver_version(), driver_version);
+  std::string driver_version = gpu_info.driver_version;
+  EXPECT_EQ(test_values_.driver_version, driver_version);
 }
 #endif
 
 TEST_F(GPUInfoCollectorTest, PixelShaderVersionGL) {
   GPUInfo gpu_info;
   gpu_info_collector::CollectGraphicsInfoGL(&gpu_info);
-  uint32 ps_version = gpu_info.pixel_shader_version();
-  EXPECT_EQ(test_values_.pixel_shader_version(), ps_version);
+  uint32 ps_version = gpu_info.pixel_shader_version;
+  EXPECT_EQ(test_values_.pixel_shader_version, ps_version);
 }
 
 TEST_F(GPUInfoCollectorTest, VertexShaderVersionGL) {
   GPUInfo gpu_info;
   gpu_info_collector::CollectGraphicsInfoGL(&gpu_info);
-  uint32 vs_version = gpu_info.vertex_shader_version();
-  EXPECT_EQ(test_values_.vertex_shader_version(), vs_version);
+  uint32 vs_version = gpu_info.vertex_shader_version;
+  EXPECT_EQ(test_values_.vertex_shader_version, vs_version);
 }
 
 TEST_F(GPUInfoCollectorTest, GLVersionGL) {
   GPUInfo gpu_info;
   gpu_info_collector::CollectGraphicsInfoGL(&gpu_info);
-  uint32 gl_version = gpu_info.gl_version();
-  EXPECT_EQ(test_values_.gl_version(), gl_version);
+  uint32 gl_version = gpu_info.gl_version;
+  EXPECT_EQ(test_values_.gl_version, gl_version);
 }
 
 TEST_F(GPUInfoCollectorTest, GLVersionStringGL) {
   GPUInfo gpu_info;
   gpu_info_collector::CollectGraphicsInfoGL(&gpu_info);
-  std::string gl_version_string = gpu_info.gl_version_string();
-  EXPECT_EQ(test_values_.gl_version_string(), gl_version_string);
+  std::string gl_version_string = gpu_info.gl_version_string;
+  EXPECT_EQ(test_values_.gl_version_string, gl_version_string);
 }
 
 TEST_F(GPUInfoCollectorTest, GLRendererGL) {
   GPUInfo gpu_info;
   gpu_info_collector::CollectGraphicsInfoGL(&gpu_info);
-  std::string gl_renderer = gpu_info.gl_renderer();
-  EXPECT_EQ(test_values_.gl_renderer(), gl_renderer);
+  std::string gl_renderer = gpu_info.gl_renderer;
+  EXPECT_EQ(test_values_.gl_renderer, gl_renderer);
 }
 
 TEST_F(GPUInfoCollectorTest, GLVendorGL) {
   GPUInfo gpu_info;
   gpu_info_collector::CollectGraphicsInfoGL(&gpu_info);
-  std::string gl_vendor = gpu_info.gl_vendor();
-  EXPECT_EQ(test_values_.gl_vendor(), gl_vendor);
+  std::string gl_vendor = gpu_info.gl_vendor;
+  EXPECT_EQ(test_values_.gl_vendor, gl_vendor);
 }
 
 TEST_F(GPUInfoCollectorTest, GLExtensionsGL) {
   GPUInfo gpu_info;
   gpu_info_collector::CollectGraphicsInfoGL(&gpu_info);
-  std::string gl_extensions = gpu_info.gl_extensions();
-  EXPECT_EQ(test_values_.gl_extensions(), gl_extensions);
+  std::string gl_extensions = gpu_info.gl_extensions;
+  EXPECT_EQ(test_values_.gl_extensions, gl_extensions);
 }
-
-

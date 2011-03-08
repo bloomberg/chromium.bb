@@ -39,7 +39,6 @@
 #include "chrome/common/about_handler.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_version_info.h"
-#include "chrome/common/gpu_info.h"
 #include "chrome/common/jstemplate_builder.h"
 #include "chrome/common/net/gaia/google_service_auth_error.h"
 #include "chrome/common/render_messages.h"

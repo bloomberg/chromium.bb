@@ -131,7 +131,7 @@ void GpuThread::OnInitialize() {
   }
   bool gpu_info_result = gpu_info_collector::CollectGraphicsInfo(&gpu_info_);
   if (!gpu_info_result) {
-    gpu_info_.SetCollectionError(true);
+    gpu_info_.collection_error = true;
     LOG(ERROR) << "gpu_info_collector::CollectGraphicsInfo() failed";
   }
   child_process_logging::SetGpuInfo(gpu_info_);
@@ -139,7 +139,7 @@ void GpuThread::OnInitialize() {
 
   // Record initialization only after collecting the GPU info because that can
   // take a significant amount of time.
-  gpu_info_.SetInitializationTime(base::Time::Now() - process_start_time_);
+  gpu_info_.initialization_time = base::Time::Now() - process_start_time_;
 
 #if defined (OS_MACOSX)
   // Note that kNoSandbox will also disable the GPU sandbox.
@@ -248,9 +248,9 @@ void GpuThread::OnSynchronize() {
 
 void GpuThread::OnCollectGraphicsInfo(GPUInfo::Level level) {
 #if defined(OS_WIN)
-  if (level == GPUInfo::kComplete && gpu_info_.level() <= GPUInfo::kPartial) {
+  if (level == GPUInfo::kComplete && gpu_info_.level <= GPUInfo::kPartial) {
     // Prevent concurrent collection of DirectX diagnostics.
-    gpu_info_.SetLevel(GPUInfo::kCompleting);
+    gpu_info_.level = GPUInfo::kCompleting;
 
     // Asynchronously collect the DirectX diagnostics because this can take a
     // couple of seconds.
@@ -261,7 +261,7 @@ void GpuThread::OnCollectGraphicsInfo(GPUInfo::Level level) {
 
       // Flag GPU info as complete if the DirectX diagnostics cannot be
       // collected.
-      gpu_info_.SetLevel(GPUInfo::kComplete);
+      gpu_info_.level = GPUInfo::kComplete;
     } else {
       // Do not send response if we are still completing the GPUInfo struct
       return;
@@ -338,8 +338,8 @@ void GpuThread::CollectDxDiagnostics(GpuThread* thread) {
 
 // Runs on the GPU thread.
 void GpuThread::SetDxDiagnostics(GpuThread* thread, const DxDiagNode& node) {
-  thread->gpu_info_.SetDxDiagnostics(node);
-  thread->gpu_info_.SetLevel(GPUInfo::kComplete);
+  thread->gpu_info_.dx_diagnostics = node;
+  thread->gpu_info_.level = GPUInfo::kComplete;
   thread->Send(new GpuHostMsg_GraphicsInfoCollected(thread->gpu_info_));
 }
 

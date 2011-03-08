@@ -145,22 +145,22 @@ void SetGpuKeyValue(const char* param_name, const std::string& value_str,
 void SetGpuInfoImpl(const GPUInfo& gpu_info,
                     SetCrashKeyValueFuncPtr set_key_func) {
   SetGpuKeyValue(kGPUVendorIdParamName,
-                 base::UintToString(gpu_info.vendor_id()),
+                 base::UintToString(gpu_info.vendor_id),
                  set_key_func);
   SetGpuKeyValue(kGPUDeviceIdParamName,
-                 base::UintToString(gpu_info.device_id()),
+                 base::UintToString(gpu_info.device_id),
                  set_key_func);
   SetGpuKeyValue(kGPUDriverVersionParamName,
-                 gpu_info.driver_version(),
+                 gpu_info.driver_version,
                  set_key_func);
   SetGpuKeyValue(kGPUPixelShaderVersionParamName,
-                 base::UintToString(gpu_info.pixel_shader_version()),
+                 base::UintToString(gpu_info.pixel_shader_version),
                  set_key_func);
   SetGpuKeyValue(kGPUVertexShaderVersionParamName,
-                 base::UintToString(gpu_info.vertex_shader_version()),
+                 base::UintToString(gpu_info.vertex_shader_version),
                  set_key_func);
   SetGpuKeyValue(kGPUGLVersionParamName,
-                 base::UintToString(gpu_info.gl_version()),
+                 base::UintToString(gpu_info.gl_version),
                  set_key_func);
 }
 

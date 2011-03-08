@@ -8,10 +8,10 @@
 
 #include "content/browser/browser_message_filter.h"
 
-struct GPUCreateCommandBufferConfig;
-class GPUInfo;
 class GpuProcessHost;
 class GpuProcessHostUIShim;
+struct GPUCreateCommandBufferConfig;
+struct GPUInfo;
 
 namespace IPC {
 struct ChannelHandle;

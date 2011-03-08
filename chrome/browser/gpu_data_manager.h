@@ -19,7 +19,7 @@
 class CommandLine;
 class DictionaryValue;
 class GpuBlacklist;
-class GPUInfo;
+struct GPUInfo;
 
 class GpuDataManager {
  public:

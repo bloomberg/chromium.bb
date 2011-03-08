@@ -313,38 +313,38 @@ std::string VersionNumberToString(uint32 value) {
 DictionaryValue* GpuInfoToDict(const GPUInfo& gpu_info) {
   ListValue* basic_info = new ListValue();
   basic_info->Append(NewDescriptionValuePair("Initialization time",
-      base::Int64ToString(gpu_info.initialization_time().InMilliseconds())));
+      base::Int64ToString(gpu_info.initialization_time.InMilliseconds())));
   basic_info->Append(NewDescriptionValuePair("Vendor Id",
-      base::StringPrintf("0x%04x", gpu_info.vendor_id())));
+      base::StringPrintf("0x%04x", gpu_info.vendor_id)));
   basic_info->Append(NewDescriptionValuePair("Device Id",
-      base::StringPrintf("0x%04x", gpu_info.device_id())));
+      base::StringPrintf("0x%04x", gpu_info.device_id)));
   basic_info->Append(NewDescriptionValuePair("Driver vendor",
-      gpu_info.driver_vendor()));
+      gpu_info.driver_vendor));
   basic_info->Append(NewDescriptionValuePair("Driver version",
-      gpu_info.driver_version()));
+      gpu_info.driver_version));
   basic_info->Append(NewDescriptionValuePair("Driver date",
-      gpu_info.driver_date()));
+      gpu_info.driver_date));
   basic_info->Append(NewDescriptionValuePair("Pixel shader version",
-      VersionNumberToString(gpu_info.pixel_shader_version())));
+      VersionNumberToString(gpu_info.pixel_shader_version)));
   basic_info->Append(NewDescriptionValuePair("Vertex shader version",
-      VersionNumberToString(gpu_info.vertex_shader_version())));
+      VersionNumberToString(gpu_info.vertex_shader_version)));
   basic_info->Append(NewDescriptionValuePair("GL version",
-      VersionNumberToString(gpu_info.gl_version())));
+      VersionNumberToString(gpu_info.gl_version)));
   basic_info->Append(NewDescriptionValuePair("GL_VENDOR",
-      gpu_info.gl_vendor()));
+      gpu_info.gl_vendor));
   basic_info->Append(NewDescriptionValuePair("GL_RENDERER",
-      gpu_info.gl_renderer()));
+      gpu_info.gl_renderer));
   basic_info->Append(NewDescriptionValuePair("GL_VERSION",
-      gpu_info.gl_version_string()));
+      gpu_info.gl_version_string));
   basic_info->Append(NewDescriptionValuePair("GL_EXTENSIONS",
-      gpu_info.gl_extensions()));
+      gpu_info.gl_extensions));
 
   DictionaryValue* info = new DictionaryValue();
   info->Set("basic_info", basic_info);
 
 #if defined(OS_WIN)
-  if (gpu_info.level() == GPUInfo::kComplete) {
-    ListValue* dx_info = DxDiagNodeToList(gpu_info.dx_diagnostics());
+  if (gpu_info.level == GPUInfo::kComplete) {
+    ListValue* dx_info = DxDiagNodeToList(gpu_info.dx_diagnostics);
     info->Set("diagnostics", dx_info);
   }
 #endif
@@ -360,7 +360,7 @@ Value* GpuMessageHandler::OnRequestLogMessages(const ListValue*) {
 
 void GpuMessageHandler::OnGpuInfoUpdate() {
   const GPUInfo& gpu_info = gpu_data_manager_->gpu_info();
-  if (gpu_info.level() == GPUInfo::kUninitialized)
+  if (gpu_info.level == GPUInfo::kUninitialized)
     return;
 
   // Get GPU Info.

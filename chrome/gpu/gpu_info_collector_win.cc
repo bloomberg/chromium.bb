@@ -51,12 +51,12 @@ bool CollectGraphicsInfo(GPUInfo* gpu_info) {
   DCHECK(gpu_info);
 
   if (gfx::GetGLImplementation() != gfx::kGLImplementationEGLGLES2) {
-    gpu_info->SetLevel(GPUInfo::kComplete);
+    gpu_info->level = GPUInfo::kComplete;
     return CollectGraphicsInfoGL(gpu_info);
   }
 
   // Set to partial now in case this function returns false below.
-  gpu_info->SetLevel(GPUInfo::kPartial);
+  gpu_info->level = GPUInfo::kPartial;
 
   // TODO(zmo): the following code only works if running on top of ANGLE.
   // Need to handle the case when running on top of real EGL/GLES2 drivers.
@@ -91,7 +91,7 @@ bool CollectGraphicsInfo(GPUInfo* gpu_info) {
 bool CollectPreliminaryGraphicsInfo(GPUInfo* gpu_info) {
   DCHECK(gpu_info);
 
-  gpu_info->SetLevel(GPUInfo::kPreliminary);
+  gpu_info->level = GPUInfo::kPreliminary;
 
   bool rt = true;
   if (!CollectVideoCardInfo(gpu_info))
@@ -111,8 +111,8 @@ bool CollectGraphicsInfoD3D(IDirect3D9* d3d, GPUInfo* gpu_info) {
   if (d3d->GetDeviceCaps(D3DADAPTER_DEFAULT,
                          D3DDEVTYPE_HAL,
                          &d3d_caps) == D3D_OK) {
-    gpu_info->SetShaderVersion(d3d_caps.PixelShaderVersion,
-                               d3d_caps.VertexShaderVersion);
+    gpu_info->pixel_shader_version = d3d_caps.PixelShaderVersion;
+    gpu_info->vertex_shader_version = d3d_caps.VertexShaderVersion;
   } else {
     LOG(ERROR) << "d3d->GetDeviceCaps() failed";
     succeed = false;
@@ -127,7 +127,7 @@ bool CollectGraphicsInfoD3D(IDirect3D9* d3d, GPUInfo* gpu_info) {
   } else {
     can_lose_context = true;
   }
-  gpu_info->SetCanLoseContext(can_lose_context);
+  gpu_info->can_lose_context = can_lose_context;
 
   d3d->Release();
   return true;
@@ -154,7 +154,8 @@ bool CollectVideoCardInfo(GPUInfo* gpu_info) {
     std::wstring device_id_string = id.substr(17, 4);
     base::HexStringToInt(WideToASCII(vendor_id_string), &vendor_id);
     base::HexStringToInt(WideToASCII(device_id_string), &device_id);
-    gpu_info->SetVideoCardInfo(vendor_id, device_id);
+    gpu_info->vendor_id = vendor_id;
+    gpu_info->device_id = device_id;
     // TODO(zmo): we only need to call CollectDriverInfoD3D() if we use ANGLE.
     return CollectDriverInfoD3D(id, gpu_info);
   }
@@ -231,7 +232,9 @@ bool CollectDriverInfoD3D(const std::wstring& device_id, GPUInfo* gpu_info) {
         if (result == ERROR_SUCCESS)
           driver_date = WideToASCII(std::wstring(value));
 
-        gpu_info->SetDriverInfo("", driver_version, driver_date);
+        gpu_info->driver_vendor = "";
+        gpu_info->driver_version = driver_version;
+        gpu_info->driver_date = driver_date;
         found = true;
         RegCloseKey(key);
         break;
@@ -246,14 +249,16 @@ bool CollectDriverInfoD3D(const std::wstring& device_id, GPUInfo* gpu_info) {
 bool CollectDriverInfoGL(GPUInfo* gpu_info) {
   DCHECK(gpu_info);
 
-  std::string gl_version_string = gpu_info->gl_version_string();
+  std::string gl_version_string = gpu_info->gl_version_string;
 
   // TODO(zmo): We assume the driver version is in the end of GL_VERSION
   // string.  Need to verify if it is true for majority drivers.
 
   size_t pos = gl_version_string.find_last_not_of("0123456789.");
   if (pos != std::string::npos && pos < gl_version_string.length() - 1) {
-    gpu_info->SetDriverInfo("", gl_version_string.substr(pos + 1), "");
+    gpu_info->driver_vendor = "";
+    gpu_info->driver_version = gl_version_string.substr(pos + 1);
+    gpu_info->driver_date = "";
     return true;
   }
   return false;

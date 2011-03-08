@@ -15,8 +15,8 @@
 #include "chrome/common/gpu_feature_flags.h"
 
 class DictionaryValue;
-class GPUInfo;
 class Version;
+struct GPUInfo;
 
 class GpuBlacklist {
  public:

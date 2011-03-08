@@ -340,12 +340,8 @@ void MetricsLog::RecordEnvironment(
     OPEN_ELEMENT_FOR_SCOPE("gpu");
     GpuProcessHostUIShim* ui_shim = GpuProcessHostUIShim::GetForRenderer(0);
     if (ui_shim) {
-      WriteIntAttribute(
-          "vendorid",
-          ui_shim->gpu_info().vendor_id());
-      WriteIntAttribute(
-          "deviceid",
-          ui_shim->gpu_info().device_id());
+      WriteIntAttribute("vendorid", ui_shim->gpu_info().vendor_id);
+      WriteIntAttribute("deviceid", ui_shim->gpu_info().device_id);
     }
   }
 

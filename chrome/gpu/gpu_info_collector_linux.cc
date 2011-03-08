@@ -141,16 +141,16 @@ bool CollectGraphicsInfo(GPUInfo* gpu_info) {
 
   // TODO(zmo): need to consider the case where we are running on top of
   // desktop GL and GL_ARB_robustness extension is available.
-  gpu_info->SetCanLoseContext(
-      gfx::GetGLImplementation() == gfx::kGLImplementationEGLGLES2);
-  gpu_info->SetLevel(GPUInfo::kComplete);
+  gpu_info->can_lose_context =
+      (gfx::GetGLImplementation() == gfx::kGLImplementationEGLGLES2);
+  gpu_info->level = GPUInfo::kComplete;
   return CollectGraphicsInfoGL(gpu_info);
 }
 
 bool CollectPreliminaryGraphicsInfo(GPUInfo* gpu_info) {
   DCHECK(gpu_info);
 
-  gpu_info->SetLevel(GPUInfo::kPartial);
+  gpu_info->level = GPUInfo::kPartial;
 
   bool rt = true;
   if (!CollectVideoCardInfo(gpu_info))
@@ -198,8 +198,8 @@ bool CollectVideoCardInfo(GPUInfo* gpu_info) {
   } else {
     // If more than one graphics card are identified, find the one that matches
     // gl VENDOR and RENDERER info.
-    std::string gl_vendor_string = gpu_info->gl_vendor();
-    std::string gl_renderer_string = gpu_info->gl_renderer();
+    std::string gl_vendor_string = gpu_info->gl_vendor;
+    std::string gl_renderer_string = gpu_info->gl_renderer;
     const int buffer_size = 255;
     scoped_array<char> buffer(new char[buffer_size]);
     std::vector<PciDevice*> candidates;
@@ -244,8 +244,10 @@ bool CollectVideoCardInfo(GPUInfo* gpu_info) {
     if (gpu_active == NULL && candidates.size() == 1)
       gpu_active = candidates[0];
   }
-  if (gpu_active != NULL)
-    gpu_info->SetVideoCardInfo(gpu_active->vendor_id, gpu_active->device_id);
+  if (gpu_active != NULL) {
+    gpu_info->vendor_id =  gpu_active->vendor_id;
+    gpu_info->device_id = gpu_active->device_id;
+  }
   (interface->pci_cleanup)(access);
   FinalizeLibPci(&interface);
   return (gpu_active != NULL);
@@ -254,7 +256,7 @@ bool CollectVideoCardInfo(GPUInfo* gpu_info) {
 bool CollectDriverInfoGL(GPUInfo* gpu_info) {
   DCHECK(gpu_info);
 
-  std::string gl_version_string = gpu_info->gl_version_string();
+  std::string gl_version_string = gpu_info->gl_version_string;
   std::vector<std::string> pieces;
   base::SplitStringAlongWhitespace(gl_version_string, &pieces);
   // In linux, the gl version string might be in the format of
@@ -269,7 +271,9 @@ bool CollectDriverInfoGL(GPUInfo* gpu_info) {
   if (pos != std::string::npos)
     driver_version = driver_version.substr(0, pos);
 
-  gpu_info->SetDriverInfo(pieces[1], driver_version, "");
+  gpu_info->driver_vendor = pieces[1];
+  gpu_info->driver_version = driver_version;
+  gpu_info->driver_date = "";
   return true;
 }
 

@@ -17,7 +17,6 @@
 #include "chrome/browser/tab_contents/render_view_host_delegate_helper.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/gpu_feature_flags.h"
-#include "chrome/common/gpu_info.h"
 #include "chrome/common/gpu_messages.h"
 #include "chrome/common/render_messages.h"
 #include "chrome/gpu/gpu_thread.h"

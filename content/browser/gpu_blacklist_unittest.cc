@@ -26,12 +26,12 @@ class GpuBlacklistTest : public testing::Test {
 
  protected:
   void SetUp() {
-    gpu_info_.SetVideoCardInfo(0x10de,  // Vendor ID
-                               0x0640);  // Device ID
-    gpu_info_.SetDriverInfo("NVIDIA",  // Driver vendor
-                            "1.6.18",  // Driver Version
-                            "7-14-2009");  // Driver date
-    gpu_info_.SetLevel(GPUInfo::kComplete);
+    gpu_info_.vendor_id = 0x10de;
+    gpu_info_.device_id = 0x0640;
+    gpu_info_.driver_vendor = "NVIDIA";
+    gpu_info_.driver_version = "1.6.18";
+    gpu_info_.driver_date = "7-14-2009";
+    gpu_info_.level = GPUInfo::kComplete;
   }
 
   void TearDown() {

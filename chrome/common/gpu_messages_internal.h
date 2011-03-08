@@ -21,7 +21,7 @@ struct ChannelHandle;
 }
 
 struct GPUCreateCommandBufferConfig;
-class GPUInfo;
+struct GPUInfo;
 
 //------------------------------------------------------------------------------
 // GPU Messages

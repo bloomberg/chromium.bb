@@ -46,16 +46,16 @@ namespace gpu_info_collector {
 bool CollectGraphicsInfo(GPUInfo* gpu_info) {
   DCHECK(gpu_info);
 
-  gpu_info->SetCanLoseContext(
-      gfx::GetGLImplementation() == gfx::kGLImplementationEGLGLES2);
-  gpu_info->SetLevel(GPUInfo::kComplete);
+  gpu_info->can_lose_context =
+      (gfx::GetGLImplementation() == gfx::kGLImplementationEGLGLES2);
+  gpu_info-> level = GPUInfo::kComplete;
   return CollectGraphicsInfoGL(gpu_info);
 }
 
 bool CollectPreliminaryGraphicsInfo(GPUInfo* gpu_info) {
   DCHECK(gpu_info);
 
-  gpu_info->SetLevel(GPUInfo::kPartial);
+  gpu_info->level = GPUInfo::kPartial;
 
   bool rt = true;
   if (!CollectVideoCardInfo(gpu_info))
@@ -80,7 +80,8 @@ bool CollectVideoCardInfo(GPUInfo* gpu_info) {
     CFRelease(device_id_ref);
   }
 
-  gpu_info->SetVideoCardInfo(vendor_id, device_id);
+  gpu_info->vendor_id = vendor_id;
+  gpu_info->device_id = device_id;
   return true;
 }
 
@@ -91,11 +92,13 @@ bool CollectDriverInfoGL(GPUInfo* gpu_info) {
   // Mac OpenGL drivers have the driver version
   // at the end of the gl version string preceded by a dash.
   // Use some jiggery-pokery to turn that utf8 string into a std::wstring.
-  std::string gl_version_string = gpu_info->gl_version_string();
+  std::string gl_version_string = gpu_info->gl_version_string;
   size_t pos = gl_version_string.find_last_of('-');
   if (pos == std::string::npos)
     return false;
-  gpu_info->SetDriverInfo("", gl_version_string.substr(pos + 1), "");
+  gpu_info->driver_vendor = "";
+  gpu_info->driver_version = gl_version_string.substr(pos + 1);
+  gpu_info->driver_date = "";
   return true;
 }
 

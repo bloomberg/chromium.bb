@@ -86,10 +86,10 @@ bool CollectGraphicsInfoGL(GPUInfo* gpu_info) {
   if (context == NULL)
     return false;
 
-  gpu_info->SetGLRenderer(GetGLString(GL_RENDERER));
-  gpu_info->SetGLVendor(GetGLString(GL_VENDOR));
-  gpu_info->SetGLVersionString(GetGLString(GL_VERSION));
-  gpu_info->SetGLExtensions(GetGLString(GL_EXTENSIONS));
+  gpu_info->gl_renderer = GetGLString(GL_RENDERER);
+  gpu_info->gl_vendor = GetGLString(GL_VENDOR);
+  gpu_info->gl_version_string =GetGLString(GL_VERSION);
+  gpu_info->gl_extensions =GetGLString(GL_EXTENSIONS);
 
   bool validGLVersionInfo = CollectGLVersionInfo(gpu_info);
   bool validVideoCardInfo = CollectVideoCardInfo(gpu_info);
@@ -103,15 +103,16 @@ bool CollectGraphicsInfoGL(GPUInfo* gpu_info) {
 bool CollectGLVersionInfo(GPUInfo* gpu_info) {
   DCHECK(gpu_info);
 
-  std::string gl_version_string = gpu_info->gl_version_string();
+  std::string gl_version_string = gpu_info->gl_version_string;
   std::string glsl_version_string =
       GetGLString(GL_SHADING_LANGUAGE_VERSION);
 
   uint32 gl_version = GetVersionNumberFromString(gl_version_string);
-  gpu_info->SetGLVersion(gl_version);
+  gpu_info->gl_version = gl_version;
 
   uint32 glsl_version = GetVersionNumberFromString(glsl_version_string);
-  gpu_info->SetShaderVersion(glsl_version, glsl_version);
+  gpu_info->pixel_shader_version = glsl_version;
+  gpu_info->vertex_shader_version = glsl_version;
 
   return true;
 }

@@ -78,10 +78,10 @@ bool WebGraphicsContext3DCommandBufferImpl::initialize(
   GPUInfo gpu_info = host->gpu_info();
   UMA_HISTOGRAM_ENUMERATION(
       "GPU.WebGraphicsContext3D_Init_CanLoseContext",
-      attributes.canRecoverFromContextLoss * 2 + gpu_info.can_lose_context(),
+      attributes.canRecoverFromContextLoss * 2 + gpu_info.can_lose_context,
       4);
   if (attributes.canRecoverFromContextLoss == false) {
-    if (gpu_info.can_lose_context())
+    if (gpu_info.can_lose_context)
       return false;
   }
 

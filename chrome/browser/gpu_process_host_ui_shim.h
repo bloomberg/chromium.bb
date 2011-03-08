@@ -31,9 +31,9 @@ class Size;
 
 class GpuDataManager;
 struct GPUCreateCommandBufferConfig;
-class GPUInfo;
 struct GpuHostMsg_AcceleratedSurfaceSetIOSurface_Params;
 struct GpuHostMsg_AcceleratedSurfaceBuffersSwapped_Params;
+struct GPUInfo;
 
 namespace IPC {
 struct ChannelHandle;

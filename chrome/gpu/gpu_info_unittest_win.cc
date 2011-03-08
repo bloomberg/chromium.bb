@@ -47,13 +47,13 @@ class GPUInfoTest : public testing::Test {
 TEST_F(GPUInfoTest, PixelShaderVersionD3D) {
   GPUInfo gpu_info;
   ASSERT_TRUE(gpu_info_collector::CollectGraphicsInfoD3D(&d3d_, &gpu_info));
-  uint32 ps_version = gpu_info.pixel_shader_version();
+  uint32 ps_version = gpu_info.pixel_shader_version;
   EXPECT_EQ(ps_version, D3DPS_VERSION(3, 0));
 }
 
 TEST_F(GPUInfoTest, VertexShaderVersionD3D) {
   GPUInfo gpu_info;
   ASSERT_TRUE(gpu_info_collector::CollectGraphicsInfoD3D(&d3d_, &gpu_info));
-  uint32 vs_version = gpu_info.vertex_shader_version();
+  uint32 vs_version = gpu_info.vertex_shader_version;
   EXPECT_EQ(vs_version, D3DVS_VERSION(3, 0));
 }

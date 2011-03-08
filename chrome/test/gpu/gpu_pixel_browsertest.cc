@@ -122,7 +122,7 @@ bool CollectGPUInfo(GPUInfo* client_info) {
   if (!gpu_host_shim)
     return false;
   GPUInfo info = gpu_host_shim->gpu_info();
-  if (info.level() == GPUInfo::kUninitialized) {
+  if (info.level == GPUInfo::kUninitialized) {
     GPUInfoCollectedObserver observer(gpu_host_shim);
     gpu_host_shim->CollectGpuInfoAsynchronously(GPUInfo::kPartial);
     ui_test_utils::RunMessageLoop();
@@ -224,7 +224,7 @@ class GpuPixelBrowserTest : public InProcessBrowserTest {
         return false;
       }
       img_name = base::StringPrintf("%s_%s_%04x-%04x.png",
-          img_name.c_str(), os_label, info.vendor_id(), info.device_id());
+          img_name.c_str(), os_label, info.vendor_id, info.device_id);
     } else {
       img_name = base::StringPrintf("%s_%s_mesa.png",
           img_name.c_str(), os_label);

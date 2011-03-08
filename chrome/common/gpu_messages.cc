@@ -128,98 +128,67 @@ void ParamTraits<GpuHostMsg_AcceleratedSurfaceBuffersSwapped_Params> ::Log(
 #endif  // if defined(OS_MACOSX)
 
 void ParamTraits<GPUInfo> ::Write(Message* m, const param_type& p) {
-  WriteParam(m, static_cast<int32>(p.level()));
-  WriteParam(m, p.initialization_time());
-  WriteParam(m, p.vendor_id());
-  WriteParam(m, p.device_id());
-  WriteParam(m, p.driver_vendor());
-  WriteParam(m, p.driver_version());
-  WriteParam(m, p.driver_date());
-  WriteParam(m, p.pixel_shader_version());
-  WriteParam(m, p.vertex_shader_version());
-  WriteParam(m, p.gl_version());
-  WriteParam(m, p.gl_version_string());
-  WriteParam(m, p.gl_vendor());
-  WriteParam(m, p.gl_renderer());
-  WriteParam(m, p.gl_extensions());
-  WriteParam(m, p.can_lose_context());
+  WriteParam(m, static_cast<int32>(p.level));
+  WriteParam(m, p.initialization_time);
+  WriteParam(m, p.vendor_id);
+  WriteParam(m, p.device_id);
+  WriteParam(m, p.driver_vendor);
+  WriteParam(m, p.driver_version);
+  WriteParam(m, p.driver_date);
+  WriteParam(m, p.pixel_shader_version);
+  WriteParam(m, p.vertex_shader_version);
+  WriteParam(m, p.gl_version);
+  WriteParam(m, p.gl_version_string);
+  WriteParam(m, p.gl_vendor);
+  WriteParam(m, p.gl_renderer);
+  WriteParam(m, p.gl_extensions);
+  WriteParam(m, p.can_lose_context);
+  WriteParam(m, p.collection_error);
 
 #if defined(OS_WIN)
-  ParamTraits<DxDiagNode> ::Write(m, p.dx_diagnostics());
+  ParamTraits<DxDiagNode> ::Write(m, p.dx_diagnostics);
 #endif
 }
 
 bool ParamTraits<GPUInfo> ::Read(const Message* m, void** iter, param_type* p) {
-  int32 level;
-  base::TimeDelta initialization_time;
-  uint32 vendor_id;
-  uint32 device_id;
-  std::string driver_vendor;
-  std::string driver_version;
-  std::string driver_date;
-  uint32 pixel_shader_version;
-  uint32 vertex_shader_version;
-  uint32 gl_version;
-  std::string gl_version_string;
-  std::string gl_vendor;
-  std::string gl_renderer;
-  std::string gl_extensions;
-  bool can_lose_context;
-  bool ret = ReadParam(m, iter, &level);
-  ret = ret && ReadParam(m, iter, &initialization_time);
-  ret = ret && ReadParam(m, iter, &vendor_id);
-  ret = ret && ReadParam(m, iter, &device_id);
-  ret = ret && ReadParam(m, iter, &driver_vendor);
-  ret = ret && ReadParam(m, iter, &driver_version);
-  ret = ret && ReadParam(m, iter, &driver_date);
-  ret = ret && ReadParam(m, iter, &pixel_shader_version);
-  ret = ret && ReadParam(m, iter, &vertex_shader_version);
-  ret = ret && ReadParam(m, iter, &gl_version);
-  ret = ret && ReadParam(m, iter, &gl_version_string);
-  ret = ret && ReadParam(m, iter, &gl_vendor);
-  ret = ret && ReadParam(m, iter, &gl_renderer);
-  ret = ret && ReadParam(m, iter, &gl_extensions);
-  ret = ret && ReadParam(m, iter, &can_lose_context);
-  p->SetLevel(static_cast<GPUInfo::Level>(level));
-  if (!ret)
-    return false;
-
-  p->SetInitializationTime(initialization_time);
-  p->SetVideoCardInfo(vendor_id, device_id);
-  p->SetDriverInfo(driver_vendor, driver_version, driver_date);
-  p->SetShaderVersion(pixel_shader_version, vertex_shader_version);
-  p->SetGLVersion(gl_version);
-  p->SetGLVersionString(gl_version_string);
-  p->SetGLVendor(gl_vendor);
-  p->SetGLRenderer(gl_renderer);
-  p->SetGLExtensions(gl_extensions);
-  p->SetCanLoseContext(can_lose_context);
-
+  return
+      ReadParam(m, iter, &p->level) &&
+      ReadParam(m, iter, &p->initialization_time) &&
+      ReadParam(m, iter, &p->vendor_id) &&
+      ReadParam(m, iter, &p->device_id) &&
+      ReadParam(m, iter, &p->driver_vendor) &&
+      ReadParam(m, iter, &p->driver_version) &&
+      ReadParam(m, iter, &p->driver_date) &&
+      ReadParam(m, iter, &p->pixel_shader_version) &&
+      ReadParam(m, iter, &p->vertex_shader_version) &&
+      ReadParam(m, iter, &p->gl_version) &&
+      ReadParam(m, iter, &p->gl_version_string) &&
+      ReadParam(m, iter, &p->gl_vendor) &&
+      ReadParam(m, iter, &p->gl_renderer) &&
+      ReadParam(m, iter, &p->gl_extensions) &&
+      ReadParam(m, iter, &p->can_lose_context) &&
+      ReadParam(m, iter, &p->collection_error) &&
 #if defined(OS_WIN)
-  DxDiagNode dx_diagnostics;
-  if (!ReadParam(m, iter, &dx_diagnostics))
-    return false;
-
-  p->SetDxDiagnostics(dx_diagnostics);
+      ReadParam(m, iter, &p->dx_diagnostics);
+#else
+      true;
 #endif
-
-  return true;
 }
 
 void ParamTraits<GPUInfo> ::Log(const param_type& p, std::string* l) {
   l->append(base::StringPrintf("<GPUInfo> %d %d %x %x %s %s %s %x %x %x %d",
-                               p.level(),
+                               p.level,
                                static_cast<int32>(
-                                   p.initialization_time().InMilliseconds()),
-                               p.vendor_id(),
-                               p.device_id(),
-                               p.driver_vendor().c_str(),
-                               p.driver_version().c_str(),
-                               p.driver_date().c_str(),
-                               p.pixel_shader_version(),
-                               p.vertex_shader_version(),
-                               p.gl_version(),
-                               p.can_lose_context()));
+                                   p.initialization_time.InMilliseconds()),
+                               p.vendor_id,
+                               p.device_id,
+                               p.driver_vendor.c_str(),
+                               p.driver_version.c_str(),
+                               p.driver_date.c_str(),
+                               p.pixel_shader_version,
+                               p.vertex_shader_version,
+                               p.gl_version,
+                               p.can_lose_context));
 }
 
 
