@@ -218,6 +218,7 @@ class Window : public internal::NativeWindowDelegate {
   }
 
   // Overridden from NativeWindowDelegate:
+  virtual gfx::Size GetPreferredSize() const;
   virtual void OnWindowDestroying();
   virtual void OnWindowDestroyed();
 

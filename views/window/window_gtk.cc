@@ -459,7 +459,7 @@ void WindowGtk::SetInitialBounds(GtkWindow* parent,
   gfx::Rect saved_bounds(create_bounds.ToGdkRectangle());
   if (GetWindow()->window_delegate()->GetSavedWindowBounds(&saved_bounds)) {
     if (!GetWindow()->window_delegate()->ShouldRestoreWindowSize())
-      saved_bounds.set_size(GetWindow()->non_client_view()->GetPreferredSize());
+      saved_bounds.set_size(delegate_->GetPreferredSize());
     WidgetGtk::SetBounds(saved_bounds);
   } else {
     if (create_bounds.IsEmpty()) {
@@ -486,7 +486,7 @@ void WindowGtk::SizeWindowToDefault(GtkWindow* parent) {
     // We have no parent window, center over the screen.
     center_rect = Screen::GetMonitorWorkAreaNearestWindow(GetNativeView());
   }
-  gfx::Size size = GetWindow()->non_client_view()->GetPreferredSize();
+  gfx::Size size = delegate_->GetPreferredSize();
   gfx::Rect bounds(center_rect.x() + (center_rect.width() - size.width()) / 2,
                    center_rect.y() + (center_rect.height() - size.height()) / 2,
                    size.width(), size.height());

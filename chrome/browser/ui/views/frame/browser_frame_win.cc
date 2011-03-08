@@ -30,6 +30,8 @@ static const int kTabDragWindowAlpha = 200;
 // We need to offset the DWMFrame into the toolbar so that the blackness
 // doesn't show up on our rounded corners.
 static const int kDWMFrameTopOffset = 3;
+// If not -1, windows are shown with this state.
+static int explicit_show_state = -1;
 
 // static (Factory method.)
 BrowserFrame* BrowserFrame::Create(BrowserView* browser_view,
@@ -39,34 +41,33 @@ BrowserFrame* BrowserFrame::Create(BrowserView* browser_view,
   return frame;
 }
 
-// static
-const gfx::Font& BrowserFrame::GetTitleFont() {
-  static gfx::Font* title_font =
-      new gfx::Font(views::WindowWin::GetWindowTitleFont());
-  return *title_font;
-}
-
 ///////////////////////////////////////////////////////////////////////////////
-// BrowserFrame, public:
+// BrowserFrameWin, public:
 
 BrowserFrameWin::BrowserFrameWin(BrowserView* browser_view, Profile* profile)
     : WindowWin(browser_view),
       browser_view_(browser_view),
-      root_view_(NULL),
-      frame_initialized_(false),
-      profile_(profile) {
+      root_view_(NULL) {
   browser_view_->set_frame(this);
   non_client_view()->SetFrameView(CreateFrameViewForWindow());
   // Don't focus anything on creation, selecting a tab will set the focus.
   set_focus_on_creation(false);
 }
 
+BrowserFrameWin::~BrowserFrameWin() {
+}
+
 void BrowserFrameWin::InitBrowserFrame() {
   WindowWin::Init(NULL, gfx::Rect());
 }
 
-BrowserFrameWin::~BrowserFrameWin() {
+// static
+void BrowserFrameWin::SetShowState(int state) {
+  explicit_show_state = state;
 }
+
+////////////////////////////////////////////////////////////////////////////////
+// BrowserFrameWin, BrowserFrame implementation:
 
 views::Window* BrowserFrameWin::GetWindow() {
   return this;
@@ -134,7 +135,18 @@ void BrowserFrameWin::TabStripDisplayModeChanged() {
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-// BrowserFrame, views::WindowWin overrides:
+// BrowserFrameWin, views::WindowWin overrides:
+
+int BrowserFrameWin::GetShowState() const {
+  if (explicit_show_state != -1)
+    return explicit_show_state;
+
+  STARTUPINFO si = {0};
+  si.cb = sizeof(si);
+  si.dwFlags = STARTF_USESHOWWINDOW;
+  GetStartupInfo(&si);
+  return si.wShowWindow;
+}
 
 gfx::Insets BrowserFrameWin::GetClientAreaInsets() const {
   // Use the default client insets for an opaque frame or a glass popup/app
@@ -176,8 +188,8 @@ void BrowserFrameWin::OnInitMenuPopup(HMENU menu, UINT position,
   browser_view_->PrepareToRunSystemMenu(menu);
 }
 
-LRESULT BrowserFrameWin::OnMouseActivate(HWND window, UINT hittest_code,
-                                         UINT message) {
+LRESULT BrowserFrameWin::OnMouseActivate(UINT message, WPARAM w_param,
+                                         LPARAM l_param) {
   return browser_view_->ActivateAppModalDialog() ? MA_NOACTIVATEANDEAT
                                                  : MA_ACTIVATE;
 }
@@ -230,7 +242,7 @@ void BrowserFrameWin::OnWindowPosChanged(WINDOWPOS* window_pos) {
 }
 
 ThemeProvider* BrowserFrameWin::GetThemeProvider() const {
-  return profile_->GetThemeProvider();
+  return browser_view_->browser()->profile()->GetThemeProvider();
 }
 
 void BrowserFrameWin::OnScreenReaderDetected() {
@@ -239,11 +251,7 @@ void BrowserFrameWin::OnScreenReaderDetected() {
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-// BrowserFrame, views::CustomFrameWindow overrides:
-
-int BrowserFrameWin::GetShowState() const {
-  return browser_view_->GetShowState();
-}
+// BrowserFrameWin, views::Window overrides:
 
 void BrowserFrameWin::Activate() {
   // When running under remote desktop, if the remote desktop client is not
@@ -279,7 +287,7 @@ views::RootView* BrowserFrameWin::CreateRootView() {
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-// BrowserFrame, private:
+// BrowserFrameWin, private:
 
 void BrowserFrameWin::UpdateDWMFrame() {
   // Nothing to do yet, or we're not showing a DWM frame.
@@ -310,3 +318,14 @@ void BrowserFrameWin::UpdateDWMFrame() {
   }
   DwmExtendFrameIntoClientArea(GetNativeView(), &margins);
 }
+
+////////////////////////////////////////////////////////////////////////////////
+// BrowserFrame, public:
+
+// static
+const gfx::Font& BrowserFrame::GetTitleFont() {
+  static gfx::Font* title_font =
+      new gfx::Font(views::WindowWin::GetWindowTitleFont());
+  return *title_font;
+}
+

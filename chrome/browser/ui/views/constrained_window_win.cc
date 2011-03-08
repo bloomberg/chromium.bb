@@ -366,7 +366,7 @@ void ConstrainedWindowFrameView::OnThemeChanged() {
 void ConstrainedWindowFrameView::ButtonPressed(
     views::Button* sender, const views::Event& event) {
   if (sender == close_button_)
-    container_->ExecuteSystemMenuCommand(SC_CLOSE);
+    container_->Close();
 }
 
 ////////////////////////////////////////////////////////////////////////////////

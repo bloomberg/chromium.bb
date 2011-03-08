@@ -88,11 +88,6 @@ class BrowserView : public BrowserBubbleHost,
   // The browser view's class name.
   static const char kViewClassName[];
 
-  // Explicitly sets how windows are shown. Use a value of -1 to give the
-  // default behavior. This is used during testing and not generally useful
-  // otherwise.
-  static void SetShowState(int state);
-
   explicit BrowserView(Browser* browser);
   virtual ~BrowserView();
 
@@ -106,10 +101,6 @@ class BrowserView : public BrowserBubbleHost,
 
   // Returns a Browser instance of this view.
   Browser* browser() const { return browser_.get(); }
-
-  // Returns the show flag that should be used to show the frame containing
-  // this view.
-  int GetShowState() const;
 
   // Called by the frame to notify the BrowserView that it was moved, and that
   // any dependent popup windows should be repositioned.

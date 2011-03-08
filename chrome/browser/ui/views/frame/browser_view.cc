@@ -118,9 +118,6 @@ static const int kLoadingAnimationFrameTimeMs = 30;
 // The amount of space we expect the window border to take up.
 static const int kWindowBorderWidth = 5;
 
-// If not -1, windows are shown with this state.
-static int explicit_show_state = -1;
-
 // How round the 'new tab' style bookmarks bar is.
 static const int kNewtabBarRoundness = 5;
 // ------------
@@ -421,11 +418,6 @@ class DownloadInProgressConfirmDialogDelegate : public views::DialogDelegate,
 ///////////////////////////////////////////////////////////////////////////////
 // BrowserView, public:
 
-// static
-void BrowserView::SetShowState(int state) {
-  explicit_show_state = state;
-}
-
 BrowserView::BrowserView(Browser* browser)
     : views::ClientView(NULL, NULL),
       last_focused_view_storage_id_(
@@ -504,22 +496,6 @@ BrowserView* BrowserView::GetBrowserViewForNativeWindow(
   }
 #endif
   return NULL;
-}
-
-int BrowserView::GetShowState() const {
-  if (explicit_show_state != -1)
-    return explicit_show_state;
-
-#if defined(OS_WIN)
-  STARTUPINFO si = {0};
-  si.cb = sizeof(si);
-  si.dwFlags = STARTF_USESHOWWINDOW;
-  GetStartupInfo(&si);
-  return si.wShowWindow;
-#else
-  NOTIMPLEMENTED();
-  return 0;
-#endif
 }
 
 void BrowserView::WindowMoved() {

@@ -173,6 +173,10 @@ void Window::FrameTypeChanged() {
 ////////////////////////////////////////////////////////////////////////////////
 // Window, internal::NativeWindowDelegate implementation:
 
+gfx::Size Window::GetPreferredSize() const {
+  return non_client_view_->GetPreferredSize();
+}
+
 void Window::OnWindowDestroying() {
   non_client_view_->WindowClosing();
   window_delegate_->WindowClosing();

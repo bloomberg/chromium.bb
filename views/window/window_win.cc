@@ -293,15 +293,6 @@ void WindowWin::PopForceHidden() {
   }
 }
 
-int WindowWin::GetShowState() const {
-  return SW_SHOWNORMAL;
-}
-
-void WindowWin::ExecuteSystemMenuCommand(int command) {
-  if (command)
-    SendMessage(GetNativeView(), WM_SYSCOMMAND, command, 0);
-}
-
 namespace {
 static BOOL CALLBACK SendDwmCompositionChanged(HWND window, LPARAM param) {
   SendMessage(window, WM_DWMCOMPOSITIONCHANGED, 0, 0);
@@ -677,7 +668,7 @@ void WindowWin::Init(gfx::NativeView parent, const gfx::Rect& bounds) {
 
 void WindowWin::SizeWindowToDefault() {
   ui::CenterAndSizeWindow(owning_window(), GetNativeView(),
-                          GetWindow()->non_client_view()->GetPreferredSize(),
+                          delegate_->GetPreferredSize(),
                           false);
 }
 
@@ -706,6 +697,10 @@ gfx::Insets WindowWin::GetClientAreaInsets() const {
   // Note: this is only required for non-fullscreen windows. Note that
   // fullscreen windows are in restored state, not maximized.
   return gfx::Insets(0, 0, IsFullscreen() ? 0 : 1, 0);
+}
+
+int WindowWin::GetShowState() const {
+  return SW_SHOWNORMAL;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -1263,7 +1258,7 @@ void WindowWin::SetInitialBounds(const gfx::Rect& create_bounds) {
   gfx::Rect saved_bounds(create_bounds.ToRECT());
   if (GetWindow()->window_delegate()->GetSavedWindowBounds(&saved_bounds)) {
     if (!GetWindow()->window_delegate()->ShouldRestoreWindowSize()) {
-      saved_bounds.set_size(GetWindow()->non_client_view()->GetPreferredSize());
+      saved_bounds.set_size(delegate_->GetPreferredSize());
     } else {
       // Make sure the bounds are at least the minimum size.
       if (saved_bounds.width() < minimum_size_.width()) {
@@ -1460,6 +1455,11 @@ LRESULT WindowWin::CallDefaultNCActivateHandler(BOOL active) {
   // it from doing so.
   ScopedRedrawLock lock(this);
   return DefWindowProc(GetNativeView(), WM_NCACTIVATE, active, 0);
+}
+
+void WindowWin::ExecuteSystemMenuCommand(int command) {
+  if (command)
+    SendMessage(GetNativeView(), WM_SYSCOMMAND, command, 0);
 }
 
 void WindowWin::GetWindowBoundsAndMaximizedState(gfx::Rect* bounds,

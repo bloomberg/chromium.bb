@@ -19,6 +19,9 @@ class NativeWindowDelegate {
  public:
   virtual ~NativeWindowDelegate() {}
 
+  // Returns the window's preferred size.
+  virtual gfx::Size GetPreferredSize() const = 0;
+
   // Called just before the native window is destroyed. This is the delegate's
   // last chance to do anything with the native window handle.
   virtual void OnWindowDestroying() = 0;

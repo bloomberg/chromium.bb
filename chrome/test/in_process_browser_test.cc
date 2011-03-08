@@ -45,7 +45,7 @@
 #endif
 
 #if defined(OS_WIN)
-#include "chrome/browser/ui/views/frame/browser_view.h"
+#include "chrome/browser/ui/views/frame/browser_frame_win.h"
 #endif
 
 namespace {
@@ -165,7 +165,7 @@ void InProcessBrowserTest::PrepareTestCommandLine(CommandLine* command_line) {
 #if defined(OS_WIN)
   // Hide windows on show.
   if (!command_line->HasSwitch(kUnitTestShowWindows) && !show_window_)
-    BrowserView::SetShowState(SW_HIDE);
+    BrowserFrameWin::SetShowState(SW_HIDE);
 #endif
 
   if (dom_automation_enabled_)
@@ -227,7 +227,7 @@ void InProcessBrowserTest::TearDown() {
   browser_shutdown::delete_resources_on_shutdown = true;
 
 #if defined(OS_WIN)
-  BrowserView::SetShowState(-1);
+  BrowserFrameWin::SetShowState(-1);
 #endif
 }
 

@@ -49,16 +49,6 @@ class WindowWin : public WidgetWin,
   // Show the window with the specified show command.
   void Show(int show_state);
 
-  // Retrieve the show state of the window. This is one of the SW_SHOW* flags
-  // passed into Windows' ShowWindow method. For normal windows this defaults
-  // to SW_SHOWNORMAL, however windows (e.g. the main window) can override this
-  // method to provide different values (e.g. retrieve the user's specified
-  // show state from the shortcut starutp info).
-  virtual int GetShowState() const;
-
-  // Executes the specified SC_command.
-  void ExecuteSystemMenuCommand(int command);
-
   // Accessors and setters for various properties.
   HWND owning_window() const { return owning_hwnd_; }
   void set_focus_on_creation(bool focus_on_creation) {
@@ -122,6 +112,13 @@ class WindowWin : public WidgetWin,
   // the window. Override this function instead of OnNCCalcSize, which is
   // crazily complicated.
   virtual gfx::Insets GetClientAreaInsets() const;
+
+  // Retrieve the show state of the window. This is one of the SW_SHOW* flags
+  // passed into Windows' ShowWindow method. For normal windows this defaults
+  // to SW_SHOWNORMAL, however windows (e.g. the main window) can override this
+  // method to provide different values (e.g. retrieve the user's specified
+  // show state from the shortcut starutp info).
+  virtual int GetShowState() const;
 
   // Overridden from WidgetWin:
   virtual void OnActivate(UINT action, BOOL minimized, HWND window) OVERRIDE;
@@ -219,6 +216,9 @@ class WindowWin : public WidgetWin,
   // value, safely wrapping the call in a ScopedRedrawLock to prevent frame
   // flicker.
   LRESULT CallDefaultNCActivateHandler(BOOL active);
+
+  // Executes the specified SC_command.
+  void ExecuteSystemMenuCommand(int command);
 
   // Returns the normal bounds of the window in screen coordinates and
   // whether the window is maximized. The arguments can be NULL.
