@@ -28,6 +28,9 @@ const int kElementPadding = 5;
 const int kLeftPadding = 5;
 const int kRightPadding = 5;
 
+// The horizontal space allotted for the icon.
+const int kIconSizePixels = 26;
+
 }  // namespace
 
 // static
@@ -63,6 +66,13 @@ InfoBar::InfoBar(InfoBarDelegate* delegate)
     GdkPixbuf* pixbuf = gfx::GdkPixbufFromSkBitmap(icon);
     GtkWidget* image = gtk_image_new_from_pixbuf(pixbuf);
     g_object_unref(pixbuf);
+
+    // All icons should be 26x26, but some are larger with transparent padding
+    // pixels around the edges. (And some are smaller). Thus we hardcode the
+    // width and center the image.
+    gtk_widget_set_size_request(image, kIconSizePixels, 0);
+    gtk_misc_set_alignment(GTK_MISC(image), 0.5, 0.5);
+
     gtk_box_pack_start(GTK_BOX(hbox_), image, FALSE, FALSE, 0);
   }
 

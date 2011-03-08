@@ -21,7 +21,8 @@ InfoBar* ConfirmInfoBarDelegate::CreateInfoBar() {
 
 ConfirmInfoBarGtk::ConfirmInfoBarGtk(ConfirmInfoBarDelegate* delegate)
     : InfoBar(delegate) {
-  confirm_hbox_ = gtk_chrome_shrinkable_hbox_new(FALSE, FALSE, 0);
+  confirm_hbox_ = gtk_chrome_shrinkable_hbox_new(FALSE, FALSE,
+                                                 kEndOfLabelSpacing);
   // This alignment allocates the confirm hbox only as much space as it
   // requests, and less if there is not enough available.
   GtkWidget* align = gtk_alignment_new(0, 0, 0, 1);
@@ -37,7 +38,7 @@ ConfirmInfoBarGtk::ConfirmInfoBarGtk(ConfirmInfoBarDelegate* delegate)
   GtkWidget* label = gtk_label_new(label_text.c_str());
   gtk_util::ForceFontSizePixels(label, 13.4);
   gtk_misc_set_alignment(GTK_MISC(label), 0, 0.5);
-  gtk_util::CenterWidgetInHBox(confirm_hbox_, label, true, kEndOfLabelSpacing);
+  gtk_util::CenterWidgetInHBox(confirm_hbox_, label, true, 0);
   gtk_widget_modify_fg(label, GTK_STATE_NORMAL, &gtk_util::kGdkBlack);
   g_signal_connect(label, "map",
                    G_CALLBACK(gtk_util::InitLabelSizeRequestAndEllipsizeMode),
@@ -64,8 +65,7 @@ void ConfirmInfoBarGtk::AddButton(ConfirmInfoBarDelegate::InfoBarButton type) {
   if (delegate_->AsConfirmInfoBarDelegate()->GetButtons() & type) {
     GtkWidget* button = gtk_button_new_with_label(UTF16ToUTF8(
         delegate_->AsConfirmInfoBarDelegate()->GetButtonLabel(type)).c_str());
-    gtk_util::CenterWidgetInHBox(confirm_hbox_, button, true,
-                                 kButtonButtonSpacing);
+    gtk_util::CenterWidgetInHBox(confirm_hbox_, button, true, 0);
     g_signal_connect(button, "clicked",
                      G_CALLBACK(type == ConfirmInfoBarDelegate::BUTTON_OK ?
                                 OnOkButtonThunk : OnCancelButtonThunk),
