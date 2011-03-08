@@ -102,8 +102,7 @@ a.hostentry {
   -webkit-user-select: none;
   margin: 0;
   padding: 0;
-  overflow: hidden;
-  scrollbars: no;
+  overflow: auto;
 }
 
 /* Old overlay-style status message. */
