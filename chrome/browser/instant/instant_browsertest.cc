@@ -529,8 +529,8 @@ IN_PROC_BROWSER_TEST_F(InstantTest, MAYBE_SearchServerDoesntSupportInstant) {
 // Verifies transitioning from loading a non-search string to a search string
 // with the provider not supporting instant works (meaning we don't display
 // anything).
-#if defined(OS_MACOSX)
-// Showing as flaky on Mac
+#if defined(OS_MACOSX) || define(OS_LINUX)
+// Showing as flaky on Mac and Linux/ChromeOS
 // http://crbug.com/70810
 #define MAYBE_NonSearchToSearchDoesntSupportInstant \
     DISABLED_NonSearchToSearchDoesntSupportInstant
