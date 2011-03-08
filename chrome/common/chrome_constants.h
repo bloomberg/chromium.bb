@@ -81,6 +81,11 @@ extern const size_t kMaxTitleChars;
 
 extern const bool kRecordModeEnabled;
 
+// Most sequence numbers are used by a renderer when responding to a browser
+// request for histogram data.  This reserved number is used when a renderer
+// sends an unprovoked update, such as after a page has been loaded.  Using
+// this reserved constant avoids any chance of confusion with a response having
+// a browser-supplied sequence number.
 extern const int kHistogramSynchronizerReservedSequenceNumber;
 
 // The maximum number of session history entries per tab.

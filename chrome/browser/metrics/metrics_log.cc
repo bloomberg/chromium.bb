@@ -98,7 +98,7 @@ void MetricsLog::RecordIncrementalStabilityElements() {
   OPEN_ELEMENT_FOR_SCOPE("profile");
   WriteCommonEventAttributes();
 
-  WriteInstallElement();  // Supply appversion.
+  WriteInstallElement();
 
   {
     OPEN_ELEMENT_FOR_SCOPE("stability");  // Minimal set of stability elements.

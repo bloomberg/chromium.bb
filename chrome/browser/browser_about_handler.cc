@@ -152,7 +152,9 @@ const char *kAllAboutPaths[] = {
   kPluginsPath,
   kStatsPath,
   kSyncInternalsPath,
+#ifdef TRACK_ALL_TASK_OBJECTS
   kTasksPath,
+#endif  // TRACK_ALL_TASK_OBJECTS
   kTcmallocPath,
   kTermsPath,
   kVersionPath,
