@@ -150,7 +150,6 @@ class IndexedDBDispatcher : public IPC::Channel::Listener {
   void OnSuccessNull(int32 response_id);
   void OnSuccessIDBDatabase(int32 response_id, int32 object_id);
   void OnSuccessIndexedDBKey(int32 response_id, const IndexedDBKey& key);
-  void OnSuccessIDBObjectStore(int32 response_id, int32 object_id);
   void OnSuccessIDBTransaction(int32 response_id, int32 object_id);
   void OnSuccessIDBIndex(int32 response_id, int32 object_id);
   void OnSuccessOpenCursor(int32 response_id, int32 object_id);

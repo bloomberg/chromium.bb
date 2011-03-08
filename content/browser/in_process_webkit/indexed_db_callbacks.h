@@ -17,7 +17,6 @@
 
 class IndexedDBMsg_CallbacksSuccessIDBDatabase;
 class IndexedDBMsg_CallbacksSuccessIDBIndex;
-class IndexedDBMsg_CallbacksSuccessIDBObjectStore;
 class IndexedDBMsg_CallbacksSuccessIDBTransaction;
 
 // Template magic to figure out what message to send to the renderer based on
@@ -28,9 +27,6 @@ template <> struct WebIDBToMsgHelper<WebKit::WebIDBDatabase> {
 };
 template <> struct WebIDBToMsgHelper<WebKit::WebIDBIndex> {
   typedef IndexedDBMsg_CallbacksSuccessIDBIndex MsgType;
-};
-template <> struct WebIDBToMsgHelper<WebKit::WebIDBObjectStore> {
-  typedef IndexedDBMsg_CallbacksSuccessIDBObjectStore MsgType;
 };
 template <> struct WebIDBToMsgHelper<WebKit::WebIDBTransaction> {
   typedef IndexedDBMsg_CallbacksSuccessIDBTransaction MsgType;

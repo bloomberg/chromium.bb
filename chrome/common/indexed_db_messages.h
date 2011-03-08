@@ -145,9 +145,6 @@ IPC_MESSAGE_CONTROL2(IndexedDBMsg_CallbacksSuccessIndexedDBKey,
 IPC_MESSAGE_CONTROL2(IndexedDBMsg_CallbacksSuccessIDBIndex,
                      int32 /* response_id */,
                      int32 /* idb_index_id */)
-IPC_MESSAGE_CONTROL2(IndexedDBMsg_CallbacksSuccessIDBObjectStore,
-                     int32 /* response_id */,
-                     int32 /* idb_object_store_id */)
 IPC_MESSAGE_CONTROL2(IndexedDBMsg_CallbacksSuccessIDBTransaction,
                      int32 /* response_id */,
                      int32 /* idb_transaction_id */)
