@@ -47,8 +47,8 @@
       'msvs_guid': '70760ECA-4D8B-47A4-ACDC-D3E7F25F0543',
       'dependencies': [
         '<(DEPTH)/app/app.gyp:app_base',
-        '<(DEPTH)/app/app.gyp:app_strings',
         '<(DEPTH)/skia/skia.gyp:skia',
+        '<(DEPTH)/ui/base/strings/ui_strings.gyp:ui_strings',
         '<(DEPTH)/ui/gfx/gfx.gyp:gfx',
       ],
       'sources': [
