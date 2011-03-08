@@ -62,11 +62,11 @@ string16 CutString(const string16& text,
 string16 ElideUrl(const GURL& url,
                   const gfx::Font& font,
                   int available_pixel_width,
-                  const std::wstring& languages) {
+                  const std::string& languages) {
   // Get a formatted string and corresponding parsing of the url.
   url_parse::Parsed parsed;
-  string16 url_string = net::FormatUrl(url, WideToUTF8(languages),
-      net::kFormatUrlOmitAll, UnescapeRule::SPACES, &parsed, NULL, NULL);
+  string16 url_string = net::FormatUrl(url, languages, net::kFormatUrlOmitAll,
+      UnescapeRule::SPACES, &parsed, NULL, NULL);
   if (available_pixel_width <= 0)
     return url_string;
 
@@ -388,15 +388,14 @@ string16 ElideText(const string16& text,
   return CutString(text, lo, elide_in_middle, true);
 }
 
-// TODO(viettrungluu): convert |languages| to an |std::string|.
 SortedDisplayURL::SortedDisplayURL(const GURL& url,
-                                   const std::wstring& languages) {
+                                   const std::string& languages) {
   std::wstring host;
-  net::AppendFormattedHost(url, languages, &host, NULL, NULL);
+  net::AppendFormattedHost(url, UTF8ToWide(languages), &host, NULL, NULL);
   sort_host_ = WideToUTF16Hack(host);
   string16 host_minus_www = net::StripWWW(WideToUTF16Hack(host));
   url_parse::Parsed parsed;
-  display_url_ = net::FormatUrl(url, WideToUTF8(languages),
+  display_url_ = net::FormatUrl(url, languages,
       net::kFormatUrlOmitAll, UnescapeRule::SPACES, &parsed, &prefix_end_,
       NULL);
   if (sort_host_.length() > host_minus_www.length()) {

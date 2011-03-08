@@ -80,9 +80,8 @@ void PossibleURLModel::Reload(Profile *profile) {
 void PossibleURLModel::OnHistoryQueryComplete(HistoryService::Handle h,
                                               history::QueryResults* result) {
   results_.resize(result->size());
-  std::wstring languages = profile_ ?
-      UTF8ToWide(profile_->GetPrefs()->GetString(prefs::kAcceptLanguages)) :
-      std::wstring();
+  std::string languages = profile_ ?
+      profile_->GetPrefs()->GetString(prefs::kAcceptLanguages) : std::string();
   for (size_t i = 0; i < result->size(); ++i) {
     results_[i].url = (*result)[i].url();
     results_[i].index = i;

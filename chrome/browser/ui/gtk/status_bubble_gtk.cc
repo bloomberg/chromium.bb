@@ -107,7 +107,7 @@ void StatusBubbleGtk::SetStatusTextToURL() {
   // TODO(tc): We don't actually use gfx::Font as the font in the status
   // bubble.  We should extend ui::ElideUrl to take some sort of pango font.
   url_text_ = UTF16ToUTF8(ui::ElideUrl(url_, gfx::Font(), desired_width,
-                          UTF16ToWideHack(languages_)));
+                          UTF16ToUTF8(languages_)));
   SetStatusTextTo(url_text_);
 }
 

@@ -34,7 +34,7 @@ namespace ui {
 string16 ElideUrl(const GURL& url,
                   const gfx::Font& font,
                   int available_pixel_width,
-                  const std::wstring& languages);
+                  const std::string& languages);
 
 // Elides |text| to fit in |available_pixel_width|.  If |elide_in_middle| is
 // set the ellipsis is placed in the middle of the string; otherwise it is
@@ -61,7 +61,7 @@ string16 ElideFilename(const FilePath& filename,
 // SortedDisplayURL is relatively cheap and supports value semantics.
 class SortedDisplayURL {
  public:
-  SortedDisplayURL(const GURL& url, const std::wstring& languages);
+  SortedDisplayURL(const GURL& url, const std::string& languages);
   SortedDisplayURL();
   ~SortedDisplayURL();
 

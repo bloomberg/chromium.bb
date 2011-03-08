@@ -115,8 +115,8 @@ void PasswordsTableModel::OnPasswordStoreRequestDone(
 
   STLDeleteElements<PasswordRows>(&saved_signons_);
   saved_signons_.resize(result.size(), NULL);
-  std::wstring languages =
-      UTF8ToWide(profile_->GetPrefs()->GetString(prefs::kAcceptLanguages));
+  std::string languages = profile_->GetPrefs()->GetString(
+      prefs::kAcceptLanguages);
   for (size_t i = 0; i < result.size(); ++i) {
     saved_signons_[i] = new PasswordRow(
         ui::SortedDisplayURL(result[i]->origin, languages), result[i]);

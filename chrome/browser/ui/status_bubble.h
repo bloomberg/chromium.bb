@@ -36,6 +36,8 @@ class StatusBubble {
   // the bubble to fade in and remain open until given an empty URL or until
   // the Hide() method is called. languages is the value of Accept-Language
   // to determine what characters are understood by a user.
+  // TODO(tc): |languages| should be std::string (ascii)-- it's current
+  // usage is as bad as a WideToUTF8Hack.
   virtual void SetURL(const GURL& url, const string16& languages) = 0;
 
   // Skip the fade and instant-hide the bubble.

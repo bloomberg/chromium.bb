@@ -49,7 +49,7 @@ void RunTest(Testcase* testcases, size_t num_testcases) {
     EXPECT_EQ(UTF8ToUTF16(testcases[i].output),
               ElideUrl(url, font,
                        font.GetStringWidth(UTF8ToUTF16(testcases[i].output)),
-                       std::wstring()));
+                       std::string()));
   }
 }
 
@@ -256,7 +256,7 @@ TEST(TextEliderTest, ElideTextLongStrings) {
 
 // Verifies display_url is set correctly.
 TEST(TextEliderTest, SortedDisplayURL) {
-  ui::SortedDisplayURL d_url(GURL("http://www.google.com"), std::wstring());
+  ui::SortedDisplayURL d_url(GURL("http://www.google.com"), std::string());
   EXPECT_EQ("www.google.com", UTF16ToASCII(d_url.display_url()));
 }
 
@@ -291,8 +291,8 @@ TEST(TextEliderTest, SortedDisplayURLCompare) {
   };
 
   for (size_t i = 0; i < arraysize(tests); ++i) {
-    ui::SortedDisplayURL url1(GURL(tests[i].a), std::wstring());
-    ui::SortedDisplayURL url2(GURL(tests[i].b), std::wstring());
+    ui::SortedDisplayURL url1(GURL(tests[i].a), std::string());
+    ui::SortedDisplayURL url2(GURL(tests[i].b), std::string());
     EXPECT_EQ(tests[i].compare_result, url1.Compare(url2, collator.get()));
     EXPECT_EQ(-tests[i].compare_result, url2.Compare(url1, collator.get()));
   }

@@ -439,7 +439,7 @@ void Label::CalculateDrawStringParams(std::wstring* paint_text,
     // TODO(jungshik) : Figure out how to get 'intl.accept_languages'
     // preference and use it when calling ElideUrl.
     *paint_text = UTF16ToWideHack(
-        ui::ElideUrl(url_, font_, GetAvailableRect().width(), std::wstring()));
+        ui::ElideUrl(url_, font_, GetAvailableRect().width(), std::string()));
 
     // An URLs is always treated as an LTR text and therefore we should
     // explicitly mark it as such if the locale is RTL so that URLs containing

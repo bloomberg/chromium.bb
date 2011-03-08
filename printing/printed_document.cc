@@ -239,7 +239,7 @@ void PrintedDocument::PrintHeaderFooter(gfx::NativeDrawingContext context,
   if (string_size.width() > bounding.width()) {
     if (line == PageOverlays::kUrl) {
       output = UTF16ToWideHack(ui::ElideUrl(url(), font, bounding.width(),
-                                            std::wstring()));
+                                            std::string()));
     } else {
       output = UTF16ToWideHack(ui::ElideText(WideToUTF16Hack(output),
           font, bounding.width(), false));

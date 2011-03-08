@@ -1575,8 +1575,8 @@ std::wstring BookmarkBarView::CreateToolTipForURLAndTitle(
     // "/http://www.yahoo.com" when rendered, as is, in an RTL context since
     // the Unicode BiDi algorithm puts certain characters on the left by
     // default.
-    std::wstring languages =
-        UTF8ToWide(profile->GetPrefs()->GetString(prefs::kAcceptLanguages));
+    std::string languages = profile->GetPrefs()->GetString(
+        prefs::kAcceptLanguages);
     string16 elided_url(ui::ElideUrl(url, tt_font, max_width, languages));
     elided_url = base::i18n::GetDisplayStringInLTRDirectionality(elided_url);
     result.append(UTF16ToWideHack(elided_url));
