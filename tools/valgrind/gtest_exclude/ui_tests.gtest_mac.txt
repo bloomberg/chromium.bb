@@ -142,3 +142,12 @@ NamedInterfaceTest.BasicNamedInterface
 
 # Fails a Check most of the time, see http://crbug.com/74473
 UILayoutTest.MediaUILayoutTest
+
+# Fails to start the browser, see http://crbug.com/75249
+AutomationProxyTest.AcceleratorNewTab
+HistoryTester.VerifyHistoryLength2
+RedirectTest.ClientServerServer
+
+# Fails, see http://crbug.com/75250
+NewTabUITest.AboutHangInNTP
+NewTabUIProcessPerTabTest.NavBeforeNTPCommits
