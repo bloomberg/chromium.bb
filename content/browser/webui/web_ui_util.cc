@@ -16,8 +16,8 @@ std::string GetImageDataUrl(const SkBitmap& bitmap) {
   std::vector<unsigned char> output;
   gfx::PNGCodec::EncodeBGRASkBitmap(bitmap, false, &output);
   std::string str_url;
-  std::copy(output.begin(), output.end(),
-            std::back_inserter(str_url));
+  str_url.insert(str_url.end(), output.begin(), output.end());
+
   base::Base64Encode(str_url, &str_url);
   str_url.insert(0, "data:image/png;base64,");
   return str_url;
@@ -31,8 +31,9 @@ std::string GetImageDataUrlFromResource(int res) {
     return std::string();
   scoped_refptr<RefCountedMemory> raw_icon(icon_data);
   std::string str_url;
-  std::copy(raw_icon->front(), raw_icon->front() + raw_icon->size(),
-            std::back_inserter(str_url));
+  str_url.insert(str_url.end(),
+    raw_icon->front(),
+    raw_icon->front() + raw_icon->size());
   base::Base64Encode(str_url, &str_url);
   str_url.insert(0, "data:image/png;base64,");
   return str_url;

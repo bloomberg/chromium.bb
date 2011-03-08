@@ -82,7 +82,7 @@ bool FailureLogHelper::AddFailureForLogMessage(int severity,
                                                const std::string& str) {
   if (severity == kViolationSeverity_ && !str.empty()) {
     // Remove the trailing newline, if present.
-    std::streamsize message_length = str.size() - message_start;
+    size_t message_length = str.size() - message_start;
     if (*str.rbegin() == '\n')
       --message_length;
     ADD_FAILURE_AT(file, line)

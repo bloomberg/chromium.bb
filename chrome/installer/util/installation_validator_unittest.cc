@@ -346,7 +346,7 @@ bool InstallationValidatorTest::HandleLogMessage(int severity,
   // All validation failures result in LOG(ERROR)
   if (severity == logging::LOG_ERROR && !str.empty()) {
     // Remove the trailing newline, if present.
-    std::streamsize message_length = str.size() - message_start;
+    size_t message_length = str.size() - message_start;
     if (*str.rbegin() == '\n')
       --message_length;
     if (validation_error_recipient_ != NULL) {
