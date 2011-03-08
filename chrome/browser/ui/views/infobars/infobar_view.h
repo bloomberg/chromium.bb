@@ -67,11 +67,6 @@ class InfoBarView : public InfoBar,
   // container (triggering its deletion), and its delegate is closed.
   void Hide(bool animate);
 
-  // Closes the InfoBar immediately and removes it from its container. Notifies
-  // the delegate that it has closed. The InfoBar is deleted after this function
-  // is called.
-  void Close();
-
   // Paint the arrow on |canvas|. |arrow_center_x| indicates the
   // desired location of the center of the arrow in the |outer_view|
   // coordinate system.
@@ -160,6 +155,11 @@ class InfoBarView : public InfoBar,
   // true, restores focus to the view tracked by the focus tracker before doing
   // so.
   void DestroyFocusTracker(bool restore_focus);
+
+  // Closes the InfoBar immediately and removes it from its container. Notifies
+  // the delegate that it has closed. The InfoBar is deleted after this function
+  // is called.
+  void Close();
 
   // Deletes this object (called after a return to the message loop to allow
   // the stack in ViewHierarchyChanged to unwind).
