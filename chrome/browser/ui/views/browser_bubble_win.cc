@@ -17,7 +17,7 @@ class BubbleWidget : public views::WidgetWin {
     set_window_ex_style(WS_EX_TOOLWINDOW);
   }
 
-  void Show(bool activate) {
+  void ShowAndActivate(bool activate) {
     if (activate)
       ShowWindow(SW_SHOW);
     else
@@ -115,7 +115,7 @@ void BrowserBubble::Show(bool activate) {
   if (visible_)
     return;
   BubbleWidget* pop = static_cast<BubbleWidget*>(popup_);
-  pop->Show(activate);
+  pop->ShowAndActivate(activate);
   visible_ = true;
 }
 
