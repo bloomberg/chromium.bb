@@ -734,7 +734,7 @@ solutions = [
       # Notify the user if there is an orphaned entry in their working copy.
       # Only delete the directory if there are no changes in it, and
       # delete_unversioned_trees is set to true.
-      entries = [i.name for i in self.tree(False)]
+      entries = [i.name for i in self.tree(False) if i.url]
       for entry, prev_url in self._ReadEntries().iteritems():
         if not prev_url:
           # entry must have been overridden via .gclient custom_deps
