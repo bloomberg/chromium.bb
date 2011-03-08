@@ -11,6 +11,7 @@
 #include <vector>
 
 #include "base/file_path.h"
+#include "webkit/plugins/npapi/webplugininfo.h"
 #include "webkit/plugins/ppapi/plugin_delegate.h"
 #include "webkit/plugins/ppapi/plugin_module.h"
 
@@ -28,12 +29,10 @@ struct PepperPluginInfo {
   bool is_out_of_process;
 
   FilePath path;  // Internal plugins have "internal-[name]" as path.
-  std::vector<std::string> mime_types;
   std::string name;
   std::string description;
   std::string version;
-  std::string file_extensions;
-  std::string type_descriptions;
+  std::vector<webkit::npapi::WebPluginMimeType> mime_types;
 
   // When is_internal is set, this contains the function pointers to the
   // entry points for the internal plugins.

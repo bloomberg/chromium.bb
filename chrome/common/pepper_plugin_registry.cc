@@ -50,9 +50,10 @@ void ComputeBuiltInPlugins(std::vector<PepperPluginInfo>* plugins) {
       PepperPluginInfo pdf;
       pdf.path = path;
       pdf.name = kPDFPluginName;
-      pdf.mime_types.push_back(kPDFPluginMimeType);
-      pdf.file_extensions = kPDFPluginExtension;
-      pdf.type_descriptions = kPDFPluginDescription;
+      webkit::npapi::WebPluginMimeType pdf_mime_type(kPDFPluginMimeType,
+                                                     kPDFPluginExtension,
+                                                     kPDFPluginDescription);
+      pdf.mime_types.push_back(pdf_mime_type);
       plugins->push_back(pdf);
 
       skip_pdf_file_check = true;
@@ -66,9 +67,10 @@ void ComputeBuiltInPlugins(std::vector<PepperPluginInfo>* plugins) {
       PepperPluginInfo nacl;
       nacl.path = path;
       nacl.name = kNaClPluginName;
-      nacl.mime_types.push_back(kNaClPluginMimeType);
-      nacl.file_extensions = kNaClPluginExtension;
-      nacl.type_descriptions = kNaClPluginDescription;
+      webkit::npapi::WebPluginMimeType nacl_mime_type(kNaClPluginMimeType,
+                                                      kNaClPluginExtension,
+                                                      kNaClPluginDescription);
+      nacl.mime_types.push_back(nacl_mime_type);
       plugins->push_back(nacl);
 
       skip_nacl_file_check = true;
@@ -82,7 +84,10 @@ void ComputeBuiltInPlugins(std::vector<PepperPluginInfo>* plugins) {
     PepperPluginInfo info;
     info.is_internal = true;
     info.path = FilePath(FILE_PATH_LITERAL("internal-chromoting"));
-    info.mime_types.push_back(kRemotingPluginMimeType);
+    webkit::npapi::WebPluginMimeType remoting_mime_type(kRemotingPluginMimeType,
+                                                        std::string(),
+                                                        std::string());
+    info.mime_types.push_back(remoting_mime_type);
     info.internal_entry_points.get_interface = remoting::PPP_GetInterface;
     info.internal_entry_points.initialize_module =
         remoting::PPP_InitializeModule;
@@ -136,14 +141,16 @@ void ComputePluginsFromCommandLine(std::vector<PepperPluginInfo>* plugins) {
 #endif
     if (name_parts.size() > 1)
       plugin.name = name_parts[1];
-    if (name_parts.size() > 2) {
+    if (name_parts.size() > 2)
       plugin.description = name_parts[2];
-      plugin.type_descriptions = name_parts[2];
-    }
     if (name_parts.size() > 3)
       plugin.version = name_parts[3];
-    for (size_t j = 1; j < parts.size(); ++j)
-      plugin.mime_types.push_back(parts[j]);
+    for (size_t j = 1; j < parts.size(); ++j) {
+      webkit::npapi::WebPluginMimeType mime_type(parts[j],
+                                                 std::string(),
+                                                 plugin.description);
+      plugin.mime_types.push_back(mime_type);
+    }
 
     plugins->push_back(plugin);
   }

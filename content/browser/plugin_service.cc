@@ -554,12 +554,13 @@ void PluginService::RegisterPepperPlugins() {
 
   for (size_t i = 0; i < ppapi_plugins_.size(); ++i) {
     webkit::npapi::WebPluginInfo info;
-    info.path = ppapi_plugins_[i].path;
     info.name = ppapi_plugins_[i].name.empty() ?
         ppapi_plugins_[i].path.BaseName().LossyDisplayName() :
         ASCIIToUTF16(ppapi_plugins_[i].name);
-    info.desc = ASCIIToUTF16(ppapi_plugins_[i].description);
+    info.path = ppapi_plugins_[i].path;
     info.version = ASCIIToUTF16(ppapi_plugins_[i].version);
+    info.desc = ASCIIToUTF16(ppapi_plugins_[i].description);
+    info.mime_types = ppapi_plugins_[i].mime_types;
 
     webkit::npapi::WebPluginInfo::EnabledStates enabled_state =
         webkit::npapi::WebPluginInfo::USER_ENABLED_POLICY_UNMANAGED;
@@ -573,18 +574,6 @@ void PluginService::RegisterPepperPlugins() {
           webkit::npapi::WebPluginInfo::USER_DISABLED_POLICY_UNMANAGED;
     }
     info.enabled = enabled_state;
-
-    // TODO(evan): Pepper shouldn't require us to parse strings to get
-    // the list of mime types out.
-    if (!webkit::npapi::PluginList::ParseMimeTypes(
-            JoinString(ppapi_plugins_[i].mime_types, '|'),
-            ppapi_plugins_[i].file_extensions,
-            ASCIIToUTF16(ppapi_plugins_[i].type_descriptions),
-            &info.mime_types)) {
-      LOG(ERROR) << "Error parsing mime types for "
-                 << ppapi_plugins_[i].path.LossyDisplayName();
-      return;
-    }
 
     webkit::npapi::PluginList::Singleton()->RegisterInternalPlugin(info);
   }

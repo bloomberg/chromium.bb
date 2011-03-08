@@ -15,8 +15,14 @@ namespace webkit {
 namespace npapi {
 
 // Describes a mime type entry for a plugin.
+// TODO(viettrungluu): This isn't NPAPI-specific. Move this somewhere else.
 struct WebPluginMimeType {
   WebPluginMimeType();
+  // A constructor for the common case of a single file extension and an ASCII
+  // description.
+  WebPluginMimeType(const std::string& m,
+                    const std::string& f,
+                    const std::string& d);
   ~WebPluginMimeType();
 
   // The name of the mime type (e.g., "application/x-shockwave-flash").

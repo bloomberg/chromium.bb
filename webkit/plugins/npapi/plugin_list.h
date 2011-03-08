@@ -111,11 +111,10 @@ class PluginList {
                       WebPluginInfo* info,
                       const PluginEntryPoints** entry_points);
 
-  // In Windows and Pepper plugins, the mime types are passed as a specially
-  // formatted list of strings.  This function parses those strings into
-  // a WebPluginMimeType vector.
-  // TODO(evan): make Pepper pass around formatted data and move this code
-  // into plugin_list_win.
+  // In Windows plugins, the mime types are passed as a specially formatted list
+  // of strings. This function parses those strings into a WebPluginMimeType
+  // vector.
+  // TODO(evan): move this code into plugin_list_win.
   static bool ParseMimeTypes(const std::string& mime_types,
                              const std::string& file_extensions,
                              const string16& mime_type_descriptions,
