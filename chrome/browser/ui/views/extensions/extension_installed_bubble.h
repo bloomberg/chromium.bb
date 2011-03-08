@@ -8,8 +8,8 @@
 
 #include "base/ref_counted.h"
 #include "chrome/browser/ui/views/info_bubble.h"
-#include "chrome/common/notification_observer.h"
-#include "chrome/common/notification_registrar.h"
+#include "content/common/notification_observer.h"
+#include "content/common/notification_registrar.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 
 class Browser;

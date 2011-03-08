@@ -12,7 +12,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/views/location_bar/location_bar_view.h"
-#include "chrome/common/notification_type.h"
+#include "content/common/notification_type.h"
 #include "ui/base/models/combobox_model.h"
 #include "views/accessibility/accessibility_types.h"
 #include "views/controls/button/custom_button.h"

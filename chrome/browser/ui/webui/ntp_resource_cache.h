@@ -9,8 +9,8 @@
 #include "base/basictypes.h"
 #include "base/ref_counted.h"
 #include "chrome/browser/prefs/pref_change_registrar.h"
-#include "chrome/common/notification_observer.h"
-#include "chrome/common/notification_registrar.h"
+#include "content/common/notification_observer.h"
+#include "content/common/notification_registrar.h"
 
 class Profile;
 class RefCountedBytes;

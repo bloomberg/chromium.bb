@@ -9,7 +9,7 @@
 #include "chrome/browser/content_settings/host_content_settings_map.h"
 #include "chrome/browser/ui/views/options/options_page_view.h"
 #include "chrome/common/content_settings_types.h"
-#include "chrome/common/notification_registrar.h"
+#include "content/common/notification_registrar.h"
 #include "views/controls/button/button.h"
 
 namespace views {

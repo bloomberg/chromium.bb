@@ -11,9 +11,9 @@
 #include "base/string16.h"
 #include "chrome/browser/history/history.h"
 #include "chrome/browser/ui/webui/chrome_url_data_manager.h"
-#include "chrome/common/notification_registrar.h"
 #include "content/browser/cancelable_request.h"
 #include "content/browser/webui/web_ui.h"
+#include "content/common/notification_registrar.h"
 
 class GURL;
 

@@ -7,8 +7,8 @@
 #pragma once
 
 #include "chrome/browser/prefs/pref_change_registrar.h"
-#include "chrome/common/notification_observer.h"
 #include "content/browser/webui/web_ui.h"
+#include "content/common/notification_observer.h"
 
 class Extension;
 class Value;

@@ -7,8 +7,8 @@
 #pragma once
 
 #include "chrome/browser/prefs/pref_member.h"
-#include "chrome/common/notification_observer.h"
 #include "content/browser/webui/web_ui.h"
+#include "content/common/notification_observer.h"
 
 // The NTP login handler currently simply displays the current logged in
 // username at the top of the NTP (and update itself when that changes).

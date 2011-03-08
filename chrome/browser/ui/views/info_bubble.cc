@@ -7,7 +7,7 @@
 #include <vector>
 
 #include "chrome/browser/ui/window_sizer.h"
-#include "chrome/common/notification_service.h"
+#include "content/common/notification_service.h"
 #include "third_party/skia/include/core/SkPaint.h"
 #include "ui/base/animation/slide_animation.h"
 #include "ui/base/keycodes/keyboard_codes.h"

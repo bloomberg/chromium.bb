@@ -9,8 +9,8 @@
 #include "base/scoped_ptr.h"
 #include "chrome/browser/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/views/tabs/tab_strip_controller.h"
-#include "chrome/common/notification_observer.h"
-#include "chrome/common/notification_registrar.h"
+#include "content/common/notification_observer.h"
+#include "content/common/notification_registrar.h"
 
 class BaseTab;
 class BaseTabStrip;

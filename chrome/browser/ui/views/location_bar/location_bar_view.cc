@@ -33,8 +33,8 @@
 #include "chrome/browser/ui/views/location_bar/selected_keyword_view.h"
 #include "chrome/browser/ui/views/location_bar/star_view.h"
 #include "chrome/common/chrome_switches.h"
-#include "chrome/common/notification_service.h"
 #include "content/browser/renderer_host/render_widget_host_view.h"
+#include "content/common/notification_service.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
 #include "ui/base/dragdrop/drag_drop_types.h"
@@ -48,8 +48,8 @@
 #include "views/drag_utils.h"
 
 #if defined(OS_WIN)
-#include "chrome/browser/ui/views/location_bar/suggested_text_view.h"
 #include "chrome/browser/ui/views/first_run_bubble.h"
+#include "chrome/browser/ui/views/location_bar/suggested_text_view.h"
 #endif
 
 using views::View;

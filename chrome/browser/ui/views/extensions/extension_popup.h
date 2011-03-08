@@ -11,7 +11,7 @@
 #include "chrome/browser/ui/views/browser_bubble.h"
 #include "chrome/browser/ui/views/bubble_border.h"
 #include "chrome/browser/ui/views/extensions/extension_view.h"
-#include "chrome/common/notification_observer.h"
+#include "content/common/notification_observer.h"
 #include "googleurl/src/gurl.h"
 
 

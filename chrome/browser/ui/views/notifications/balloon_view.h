@@ -13,7 +13,7 @@
 #include "base/task.h"
 #include "chrome/browser/notifications/balloon.h"
 #include "chrome/browser/ui/views/notifications/balloon_view_host.h"
-#include "chrome/common/notification_registrar.h"
+#include "content/common/notification_registrar.h"
 #include "ui/base/animation/animation_delegate.h"
 #include "ui/gfx/path.h"
 #include "ui/gfx/point.h"

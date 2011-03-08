@@ -9,8 +9,8 @@
 #include <set>
 
 #include "chrome/browser/ui/views/accessible_pane_view.h"
-#include "chrome/common/notification_observer.h"
-#include "chrome/common/notification_registrar.h"
+#include "content/common/notification_observer.h"
+#include "content/common/notification_registrar.h"
 #include "views/view.h"
 
 class BrowserView;

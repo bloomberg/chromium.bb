@@ -16,8 +16,8 @@
 #include "chrome/browser/sync/engine/syncapi.h"
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/ui/webui/new_tab_ui.h"
-#include "chrome/common/notification_details.h"
-#include "chrome/common/notification_service.h"
+#include "content/common/notification_details.h"
+#include "content/common/notification_service.h"
 #include "chrome/common/url_constants.h"
 
 namespace browser_sync {
