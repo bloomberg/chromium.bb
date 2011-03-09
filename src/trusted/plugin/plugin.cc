@@ -79,6 +79,14 @@ bool DefaultSocketAddress(void* obj, plugin::SrpcParams* params) {
   return true;
 }
 
+bool GetSandboxISAProperty(void* obj, plugin::SrpcParams* params) {
+  UNREFERENCED_PARAMETER(obj);
+  const char* isa = plugin::GetSandboxISA();
+  PLUGIN_PRINTF(("GetSandboxISAProperty ('isa'='%s')\n", isa));
+  params->outs()[0]->arrays.str = strdup(isa);
+  return true;
+}
+
 // A method to test the cost of invoking a method in a plugin without
 // making an RPC to the service runtime.  Used for performance evaluation.
 bool NullPluginMethod(void* obj, plugin::SrpcParams* params) {
@@ -260,6 +268,7 @@ void Plugin::LoadMethods() {
   // Methods supported by Plugin.
   AddMethodCall(ShmFactory, "__shmFactory", "i", "h");
   AddMethodCall(DefaultSocketAddress, "__defaultSocketAddress", "", "h");
+  AddMethodCall(GetSandboxISAProperty, "__getSandboxISA", "", "s");
   AddMethodCall(LaunchExecutableFromFd, "__launchExecutableFromFd", "h", "");
   AddMethodCall(NullPluginMethod, "__nullPluginMethod", "s", "i");
   AddMethodCall(SendAsyncMessage0, "__sendAsyncMessage0", "s", "");
