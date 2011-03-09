@@ -73,7 +73,7 @@ IN_PROC_BROWSER_TEST_F(ProxySettingsApiTest, ProxyDirectSettings) {
   CommandLine::ForCurrentProcess()->AppendSwitch(
       switches::kEnableExperimentalExtensionApis);
 
-  ASSERT_TRUE(RunExtensionTest("proxy/direct")) << message_;
+  ASSERT_TRUE(RunExtensionTestIncognito("proxy/direct")) << message_;
   const Extension* extension = GetSingleLoadedExtension();
   ASSERT_TRUE(extension);
 
@@ -87,7 +87,7 @@ IN_PROC_BROWSER_TEST_F(ProxySettingsApiTest, ProxyAutoSettings) {
   CommandLine::ForCurrentProcess()->AppendSwitch(
       switches::kEnableExperimentalExtensionApis);
 
-  ASSERT_TRUE(RunExtensionTest("proxy/auto")) << message_;
+  ASSERT_TRUE(RunExtensionTestIncognito("proxy/auto")) << message_;
   const Extension* extension = GetSingleLoadedExtension();
   ASSERT_TRUE(extension);
 
@@ -163,7 +163,7 @@ IN_PROC_BROWSER_TEST_F(ProxySettingsApiTest, ProxyFixedIndividual) {
   CommandLine::ForCurrentProcess()->AppendSwitch(
       switches::kEnableExperimentalExtensionApis);
 
-  ASSERT_TRUE(RunExtensionTest("proxy/individual")) << message_;
+  ASSERT_TRUE(RunExtensionTestIncognito("proxy/individual")) << message_;
   const Extension* extension = GetSingleLoadedExtension();
   ASSERT_TRUE(extension);
 
@@ -195,7 +195,8 @@ IN_PROC_BROWSER_TEST_F(ProxySettingsApiTest,
   CommandLine::ForCurrentProcess()->AppendSwitch(
       switches::kEnableExperimentalExtensionApis);
 
-  ASSERT_TRUE(RunExtensionTest("proxy/individual_incognito_only")) << message_;
+  ASSERT_TRUE(RunExtensionTestIncognito("proxy/individual_incognito_only")) <<
+      message_;
   const Extension* extension = GetSingleLoadedExtension();
   ASSERT_TRUE(extension);
 
@@ -220,7 +221,8 @@ IN_PROC_BROWSER_TEST_F(ProxySettingsApiTest,
   CommandLine::ForCurrentProcess()->AppendSwitch(
       switches::kEnableExperimentalExtensionApis);
 
-  ASSERT_TRUE(RunExtensionTest("proxy/individual_incognito_also")) << message_;
+  ASSERT_TRUE(RunExtensionTestIncognito("proxy/individual_incognito_also")) <<
+      message_;
   const Extension* extension = GetSingleLoadedExtension();
   ASSERT_TRUE(extension);
 
@@ -264,7 +266,7 @@ IN_PROC_BROWSER_TEST_F(ProxySettingsApiTest,
   CommandLine::ForCurrentProcess()->AppendSwitch(
       switches::kEnableExperimentalExtensionApis);
 
-  ASSERT_TRUE(RunExtensionTest("proxy/bypass")) << message_;
+  ASSERT_TRUE(RunExtensionTestIncognito("proxy/bypass")) << message_;
   const Extension* extension = GetSingleLoadedExtension();
   ASSERT_TRUE(extension);
 

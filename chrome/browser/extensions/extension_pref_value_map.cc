@@ -57,7 +57,7 @@ bool ExtensionPrefValueMap::CanExtensionControlPref(
   }
 
   ExtensionEntryMap::const_iterator winner =
-      GetEffectivePrefValueController(pref_key, incognito);
+      GetEffectivePrefValueController(pref_key, incognito, NULL);
   if (winner == entries_.end())
     return true;
 
@@ -69,7 +69,7 @@ bool ExtensionPrefValueMap::DoesExtensionControlPref(
     const std::string& pref_key,
     bool incognito) const {
   ExtensionEntryMap::const_iterator winner =
-      GetEffectivePrefValueController(pref_key, incognito);
+      GetEffectivePrefValueController(pref_key, incognito, NULL);
   if (winner == entries_.end())
     return false;
   return winner->first == extension_id;
@@ -144,9 +144,10 @@ void ExtensionPrefValueMap::GetExtensionControlledKeys(
 
 const Value* ExtensionPrefValueMap::GetEffectivePrefValue(
     const std::string& key,
-    bool incognito) const {
+    bool incognito,
+    bool* from_incognito) const {
   ExtensionEntryMap::const_iterator winner =
-      GetEffectivePrefValueController(key, incognito);
+      GetEffectivePrefValueController(key, incognito, from_incognito);
   if (winner == entries_.end())
     return NULL;
 
@@ -162,7 +163,8 @@ const Value* ExtensionPrefValueMap::GetEffectivePrefValue(
 ExtensionPrefValueMap::ExtensionEntryMap::const_iterator
 ExtensionPrefValueMap::GetEffectivePrefValueController(
     const std::string& key,
-    bool incognito) const {
+    bool incognito,
+    bool* from_incognito) const {
   ExtensionEntryMap::const_iterator winner = entries_.end();
   base::Time winners_install_time;
 
@@ -182,6 +184,8 @@ ExtensionPrefValueMap::GetEffectivePrefValueController(
     if (prefs->GetValue(key, &value)) {
       winner = i;
       winners_install_time = install_time;
+      if (from_incognito)
+        *from_incognito = false;
     }
 
     if (!incognito)
@@ -191,6 +195,8 @@ ExtensionPrefValueMap::GetEffectivePrefValueController(
     if (prefs->GetValue(key, &value)) {
       winner = i;
       winners_install_time = install_time;
+      if (from_incognito)
+        *from_incognito = true;
     }
   }
   return winner;

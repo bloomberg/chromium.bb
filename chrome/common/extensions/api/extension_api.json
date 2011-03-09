@@ -4564,7 +4564,7 @@
                   "incognito": {
                     "type": "boolean",
                     "optional": true,
-                    "description": "Whether to return the setting that applies to the incognito session only (default false)."
+                    "description": "Whether to return the setting that applies to the incognito session (default false)."
                   }
                 }
               },
@@ -4582,9 +4582,14 @@
                         "type": "any"
                       },
                       "levelOfControl": {
-                        "description": "One of<br>NotControllable = cannot be controlled by any extension<br>ControlledByOtherExtensions = controlled by extensions with higher precedence<br>ControllableByThisExtension = can be controlled by this extension<br>ControlledByThisExtension = controlled by this extension",
+                        "description": "One of<br><var>NotControllable</var>: cannot be controlled by any extension<br><var>ControlledByOtherExtensions</var>: controlled by extensions with higher precedence<br><var>ControllableByThisExtension</var>: can be controlled by this extension<br><var>ControlledByThisExtension</var>: controlled by this extension",
                         "type": "string",
                         "enum": ["NotControllable", "ControlledByOtherExtensions", "ControllableByThisExtension", "ControlledByThisExtension"]
+                      },
+                      "incognitoSpecific": {
+                        "description": "Whether the effective value is specific to the incognito session.<br>This property will <em>only</em> be present if the <var>incognito</var> property in the <var>details</var> parameter of <code>get()</code> was true.",
+                        "type": "boolean",
+                        "optional": true
                       }
                     }
                   }
@@ -4603,7 +4608,7 @@
                 "description": "What setting to change.",
                 "properties": {
                   "value": {
-                    "description": "The value of the preference.",
+                    "description": "The value of the preference. <br>Note that every preference has a specific value type, which is described together with the preference. An extension should <em>not</em> set a preference value of a different type.",
                     "type": "any"
                   },
                   "incognito": {

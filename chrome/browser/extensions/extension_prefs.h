@@ -320,6 +320,10 @@ class ExtensionPrefs {
                                 const std::string& pref_key,
                                 bool incognito);
 
+  // Returns true if there is an extension which controls the preference value
+  //  for |pref_key| *and* it is specific to incognito mode.
+  bool HasIncognitoPrefValue(const std::string& pref_key);
+
   static void RegisterUserPrefs(PrefService* prefs);
 
   // The underlying PrefService.

@@ -119,7 +119,8 @@ class ExtensionPrefValueMap {
   void RemoveObserver(Observer* observer);
 
   const Value* GetEffectivePrefValue(const std::string& key,
-                                     bool incognito) const;
+                                     bool incognito,
+                                     bool* from_incognito) const;
 
  private:
   struct ExtensionEntry;
@@ -137,8 +138,15 @@ class ExtensionPrefValueMap {
   void GetExtensionControlledKeys(const ExtensionEntry& entry,
                                   std::set<std::string>* out) const;
 
+  // Returns an iterator to the extension which controls the preference |key|.
+  // If |incognito| is true, looks at incognito preferences first. In that case,
+  // if |from_incognito| is not NULL, it is set to true if the effective pref
+  // value is coming from the incognito preferences, false if it is coming from
+  // the normal ones.
   ExtensionEntryMap::const_iterator GetEffectivePrefValueController(
-      const std::string& key, bool incognito) const;
+      const std::string& key,
+      bool incognito,
+      bool* from_incognito) const;
 
   void NotifyOfDestruction();
   void NotifyPrefValueChanged(const std::string& key);

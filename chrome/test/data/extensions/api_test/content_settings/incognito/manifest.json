@@ -1,7 +1,7 @@
 {
-  "name" : "Content Settings API Test Extension",
+  "name" : "Content Settings API Test Extension (Incognito)",
   "version" : "0.1",
-  "description" : "Content Settings API Test Extension",
+  "description" : "Content Settings API Test Extension (Incognito)",
   "permissions": [ "experimental", "contentSettings" ],
   "background_page": "test.html"
 }

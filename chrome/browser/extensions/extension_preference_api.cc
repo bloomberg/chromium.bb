@@ -25,6 +25,14 @@ const char kControlledByOtherExtensions[] = "ControlledByOtherExtensions";
 const char kControllableByThisExtension[] = "ControllableByThisExtension";
 const char kControlledByThisExtension[] = "ControlledByThisExtension";
 
+const char kIncognito[] = "incognito";
+const char kIncognitoSpecific[] = "incognitoSpecific";
+const char kLevelOfControl[] = "levelOfControl";
+const char kValue[] = "value";
+
+const char kIncognitoErrorMessage[] =
+    "You do not have permission to access incognito preferences.";
+
 PrefMappingEntry pref_mapping[] = {
   { "blockThirdPartyCookies",
     prefs::kBlockThirdPartyCookies,
@@ -108,8 +116,13 @@ bool GetPreferenceFunction::RunImpl() {
   EXTENSION_FUNCTION_VALIDATE(args_->GetDictionary(1, &details));
 
   bool incognito = false;
-  if (details->HasKey("incognito"))
-    EXTENSION_FUNCTION_VALIDATE(details->GetBoolean("incognito", &incognito));
+  if (details->HasKey(kIncognito))
+    EXTENSION_FUNCTION_VALIDATE(details->GetBoolean(kIncognito, &incognito));
+
+  if (incognito && !include_incognito()) {
+    error_ = kIncognitoErrorMessage;
+    return false;
+  }
 
   PrefService* prefs = incognito ? profile_->GetOffTheRecordPrefs()
                                  : profile_->GetPrefs();
@@ -129,8 +142,14 @@ bool GetPreferenceFunction::RunImpl() {
   std::string level_of_control = GetLevelOfControl(browser_pref, incognito);
 
   scoped_ptr<DictionaryValue> result(new DictionaryValue);
-  result->Set("value", pref->GetValue()->DeepCopy());
-  result->Set("levelOfControl", Value::CreateStringValue(level_of_control));
+  result->Set(kValue, pref->GetValue()->DeepCopy());
+  result->Set(kLevelOfControl, Value::CreateStringValue(level_of_control));
+  if (incognito) {
+    ExtensionPrefs* ep = profile_->GetExtensionService()->extension_prefs();
+    result->Set(
+        kIncognitoSpecific,
+        Value::CreateBooleanValue(ep->HasIncognitoPrefValue(browser_pref)));
+  }
   result_.reset(result.release());
   return true;
 }
@@ -144,11 +163,16 @@ bool SetPreferenceFunction::RunImpl() {
   EXTENSION_FUNCTION_VALIDATE(args_->GetDictionary(1, &details));
 
   Value* value = NULL;
-  EXTENSION_FUNCTION_VALIDATE(details->Get("value", &value));
+  EXTENSION_FUNCTION_VALIDATE(details->Get(kValue, &value));
 
   bool incognito = false;
-  if (details->HasKey("incognito"))
-    EXTENSION_FUNCTION_VALIDATE(details->GetBoolean("incognito", &incognito));
+  if (details->HasKey(kIncognito))
+    EXTENSION_FUNCTION_VALIDATE(details->GetBoolean(kIncognito, &incognito));
+
+  if (incognito && !include_incognito()) {
+    error_ = kIncognitoErrorMessage;
+    return false;
+  }
 
   std::string browser_pref;
   std::string permission;
@@ -180,8 +204,11 @@ bool ClearPreferenceFunction::RunImpl() {
   EXTENSION_FUNCTION_VALIDATE(args_->GetDictionary(1, &details));
 
   bool incognito = false;
-  if (details->HasKey("incognito"))
-    EXTENSION_FUNCTION_VALIDATE(details->GetBoolean("incognito", &incognito));
+  if (details->HasKey(kIncognito))
+    EXTENSION_FUNCTION_VALIDATE(details->GetBoolean(kIncognito, &incognito));
+
+  // We don't check incognito permissions here, as an extension should be always
+  // allowed to clear its own settings.
 
   std::string browser_pref;
   std::string permission;

@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 // proxy api test
-// browser_tests.exe --gtest_filter=ExtensionApiTest.ProxyAutoSettings
+// browser_tests.exe --gtest_filter=ExtensionApiTest.ProxyDirectSettings
 
 function expect(expected, message) {
   return chrome.test.callbackPass(function(value) {
@@ -27,6 +27,7 @@ chrome.test.runTests([
     chrome.experimental.proxy.settings.get(
         {'incognito': true},
         expect({ 'value': config,
+                 'incognitoSpecific': false,
                  'levelOfControl': "ControlledByThisExtension" },
                "invalid proxy settings"));
   }

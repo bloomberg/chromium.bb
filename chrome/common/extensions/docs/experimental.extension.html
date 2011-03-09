@@ -873,7 +873,7 @@
           <dd class="todo" style="display: none; ">
             Undocumented.
           </dd>
-          <dd>Whether to return the setting that applies to the incognito session only (default false).</dd>
+          <dd>Whether to return the setting that applies to the incognito session (default false).</dd>
           <dd style="display: none; ">
             This parameter was added in version
             <b><span></span></b>.
@@ -1172,7 +1172,75 @@
           <dd class="todo" style="display: none; ">
             Undocumented.
           </dd>
-          <dd>One of<br>NotControllable = cannot be controlled by any extension<br>ControlledByOtherExtensions = controlled by extensions with higher precedence<br>ControllableByThisExtension = can be controlled by this extension<br>ControlledByThisExtension = controlled by this extension</dd>
+          <dd>One of<br><var>NotControllable</var>: cannot be controlled by any extension<br><var>ControlledByOtherExtensions</var>: controlled by extensions with higher precedence<br><var>ControllableByThisExtension</var>: can be controlled by this extension<br><var>ControlledByThisExtension</var>: controlled by this extension</dd>
+          <dd style="display: none; ">
+            This parameter was added in version
+            <b><span></span></b>.
+            You must omit this parameter in earlier versions,
+            and you may omit it in any version.  If you require this
+            parameter, the manifest key
+            <a href="manifest.html#minimum_chrome_version">minimum_chrome_version</a>
+            can ensure that your extension won't be run in an earlier browser version.
+          </dd>
+
+          <!-- OBJECT PROPERTIES -->
+          <dd style="display: none; ">
+            <dl>
+              <div>
+                <div>
+                </div>
+              </div>
+            </dl>
+          </dd>
+
+          <!-- OBJECT METHODS -->
+          <dd style="display: none; ">
+            <div></div>
+          </dd>
+
+          <!-- OBJECT EVENT FIELDS -->
+          <dd style="display: none; ">
+            <div></div>
+          </dd>
+
+          <!-- FUNCTION PARAMETERS -->
+          <dd style="display: none; ">
+            <div></div>
+          </dd>
+
+        </div>
+              </div><div>
+                <div>
+          <dt>
+            <var>incognitoSpecific</var>
+              <em>
+
+                <!-- TYPE -->
+                <div style="display:inline">
+                  (
+                    <span class="optional">optional</span>
+                    <span class="enum" style="display: none; ">enumerated</span>
+                    <span id="typeTemplate">
+                      <span style="display: none; ">
+                        <a> Type</a>
+                      </span>
+                      <span>
+                        <span style="display: none; ">
+                          array of <span><span></span></span>
+                        </span>
+                        <span>boolean</span>
+                        <span style="display: none; "></span>
+                      </span>
+                    </span>
+                  )
+                </div>
+
+              </em>
+          </dt>
+          <dd class="todo" style="display: none; ">
+            Undocumented.
+          </dd>
+          <dd>Whether the effective value is specific to the incognito session.<br>This property will <em>only</em> be present if the <var>incognito</var> property in the <var>details</var> parameter of <code>get()</code> was true.</dd>
           <dd style="display: none; ">
             This parameter was added in version
             <b><span></span></b>.
@@ -1336,7 +1404,7 @@
           <dd class="todo" style="display: none; ">
             Undocumented.
           </dd>
-          <dd>The value of the preference.</dd>
+          <dd>The value of the preference. <br>Note that every preference has a specific value type, which is described together with the preference. An extension should <em>not</em> set a preference value of a different type.</dd>
           <dd style="display: none; ">
             This parameter was added in version
             <b><span></span></b>.

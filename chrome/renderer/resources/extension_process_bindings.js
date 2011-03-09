@@ -367,6 +367,8 @@ var chrome = chrome || {};
                            [prefKey, details, callback],
                            extendSchema(clearSchema));
       };
+      this.onChange = new chrome.Event('experimental.preferences.' + prefKey
+                                           + '.onChange');
     };
     customBindings['Preference'].prototype = new CustomBindingsObject();
   }

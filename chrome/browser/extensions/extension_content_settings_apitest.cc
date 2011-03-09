@@ -32,7 +32,8 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, IncognitoContentSettings) {
   PrefService* prefs = browser()->profile()->GetPrefs();
   prefs->SetBoolean(prefs::kBlockThirdPartyCookies, false);
 
-  EXPECT_TRUE(RunExtensionTest("content_settings/incognito")) << message_;
+  EXPECT_TRUE(RunExtensionTestIncognito("content_settings/incognito")) <<
+      message_;
 
   // Setting an incognito preference should not create an incognito profile.
   EXPECT_FALSE(browser()->profile()->HasOffTheRecordProfile());
@@ -49,6 +50,13 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, IncognitoContentSettings) {
   ASSERT_TRUE(pref);
   EXPECT_FALSE(pref->IsExtensionControlled());
   EXPECT_FALSE(prefs->GetBoolean(prefs::kBlockThirdPartyCookies));
+}
+
+IN_PROC_BROWSER_TEST_F(ExtensionApiTest, IncognitoDisabledContentSettings) {
+  CommandLine::ForCurrentProcess()->AppendSwitch(
+      switches::kEnableExperimentalExtensionApis);
+
+  EXPECT_FALSE(RunExtensionTest("content_settings/incognito"));
 }
 
 IN_PROC_BROWSER_TEST_F(ExtensionApiTest, ContentSettingsClear) {
