@@ -41,7 +41,7 @@ MetricsCrosSettingsProvider* StatsOptionsHandler::provider() const {
 void StatsOptionsHandler::HandleMetricsReportingCheckbox(
     const ListValue* args) {
 #if defined(GOOGLE_CHROME_BUILD)
-  const std::string checked_str = WideToUTF8(ExtractStringValue(args));
+  const std::string checked_str = UTF16ToUTF8(ExtractStringValue(args));
   const bool enabled = (checked_str == "true");
   UserMetricsRecordAction(
       enabled ?
@@ -58,7 +58,7 @@ void StatsOptionsHandler::SetupMetricsReportingCheckbox(bool user_changed) {
   FundamentalValue disabled(!UserManager::Get()->current_user_is_owner());
   FundamentalValue user_has_changed(user_changed);
   web_ui_->CallJavascriptFunction(
-      L"options.AdvancedOptions.SetMetricsReportingCheckboxState", checked,
+      "options.AdvancedOptions.SetMetricsReportingCheckboxState", checked,
       disabled, user_has_changed);
 #endif
 }
