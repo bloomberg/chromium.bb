@@ -8,6 +8,7 @@
 
 #include "base/string_number_conversions.h"
 #include "base/string_util.h"
+#include "base/stringprintf.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/common/gpu_info.h"
 #include "chrome/installer/util/google_update_settings.h"
@@ -145,10 +146,10 @@ void SetGpuKeyValue(const char* param_name, const std::string& value_str,
 void SetGpuInfoImpl(const GPUInfo& gpu_info,
                     SetCrashKeyValueFuncPtr set_key_func) {
   SetGpuKeyValue(kGPUVendorIdParamName,
-                 base::UintToString(gpu_info.vendor_id),
+                 base::StringPrintf("0x%04x", gpu_info.vendor_id),
                  set_key_func);
   SetGpuKeyValue(kGPUDeviceIdParamName,
-                 base::UintToString(gpu_info.device_id),
+                 base::StringPrintf("0x%04x", gpu_info.device_id),
                  set_key_func);
   SetGpuKeyValue(kGPUDriverVersionParamName,
                  gpu_info.driver_version,

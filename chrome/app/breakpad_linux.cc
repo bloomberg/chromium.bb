@@ -99,11 +99,173 @@ static unsigned my_uint64_len(uint64_t i) {
 
 // uint64_t version of my_itos() from
 // breakpad/src/common/linux/linux_libc_support.h. Convert a non-negative
-// integer to a string.
+// integer to a string (not null-terminated).
 static void my_uint64tos(char* output, uint64_t i, unsigned i_len) {
   for (unsigned index = i_len; index; --index, i /= 10)
     output[index - 1] = '0' + (i % 10);
 }
+
+namespace {
+
+// MIME substrings.
+static const char g_rn[] = "\r\n";
+static const char g_form_data_msg[] = "Content-Disposition: form-data; name=\"";
+static const char g_quote_msg[] = "\"";
+static const char g_dashdash_msg[] = "--";
+static const char g_dump_msg[] = "upload_file_minidump\"; filename=\"dump\"";
+static const char g_content_type_msg[] =
+    "Content-Type: application/octet-stream";
+
+// MimeWriter manages an iovec for writing MIMEs to a file.
+class MimeWriter {
+ public:
+  static const int kIovCapacity = 30;
+  static const size_t kMaxCrashChunkSize = 64;
+
+  MimeWriter(int fd, const char* const mime_boundary);
+  ~MimeWriter();
+
+  // Append boundary.
+  void AddBoundary();
+
+  // Append end of file boundary.
+  void AddEnd();
+
+  // Append key/value pair with specified sizes.
+  void AddPairData(const char* msg_type,
+                   size_t msg_type_size,
+                   const char* msg_data,
+                   size_t msg_data_size);
+
+  // Append key/value pair.
+  void AddPairString(const char* msg_type,
+                     const char* msg_data) {
+    AddPairData(msg_type, my_strlen(msg_type), msg_data, my_strlen(msg_data));
+  }
+
+  // Append key/value pair, splitting value into chunks no larger than
+  // kMaxCrashChunkSize. The msg_type string will have a counter suffix to
+  // distinguish each chunk.
+  void AddPairDataInChunks(const char* msg_type,
+                           size_t msg_type_size,
+                           const char* msg_data,
+                           size_t msg_data_size);
+
+  // Add binary file dump. Currently this is only done once, so the name is
+  // fixed.
+  void AddFileDump(uint8_t* file_data,
+                   size_t file_size);
+
+  // Flush any pending iovecs to the output file.
+  void Flush() {
+    IGNORE_RET(sys_writev(fd_, iov_, iov_index_));
+    iov_index_ = 0;
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(MimeWriter);
+
+  void AddItem(const void* base, size_t size);
+  // Minor performance trade-off for easier-to-maintain code.
+  void AddString(const char* str) {
+    AddItem(str, my_strlen(str));
+  }
+
+  struct kernel_iovec iov_[kIovCapacity];
+  int iov_index_;
+
+  // Output file descriptor.
+  int fd_;
+
+  const char* const mime_boundary_;
+};
+
+MimeWriter::MimeWriter(int fd, const char* const mime_boundary)
+    : iov_index_(0),
+      fd_(fd),
+      mime_boundary_(mime_boundary) {
+}
+
+MimeWriter::~MimeWriter() {
+}
+
+void MimeWriter::AddBoundary() {
+  AddString(mime_boundary_);
+  AddString(g_rn);
+}
+
+void MimeWriter::AddEnd() {
+  AddString(mime_boundary_);
+  AddString(g_dashdash_msg);
+  AddString(g_rn);
+}
+
+void MimeWriter::AddPairData(const char* msg_type,
+                             size_t msg_type_size,
+                             const char* msg_data,
+                             size_t msg_data_size) {
+  AddString(g_form_data_msg);
+  AddItem(msg_type, msg_type_size);
+  AddString(g_quote_msg);
+  AddString(g_rn);
+  AddString(g_rn);
+  AddItem(msg_data, msg_data_size);
+  AddString(g_rn);
+}
+
+void MimeWriter::AddPairDataInChunks(const char* msg_type,
+                                     size_t msg_type_size,
+                                     const char* msg_data,
+                                     size_t msg_data_size) {
+  unsigned i = 0;
+  size_t done = 0, msg_length = msg_data_size;
+
+  while (msg_length) {
+    char num[16];
+    const unsigned num_len = my_int_len(++i);
+    my_itos(num, i, num_len);
+
+    size_t chunk_len = std::min((size_t)kMaxCrashChunkSize, msg_length);
+
+    AddString(g_form_data_msg);
+    AddItem(msg_type, msg_type_size);
+    AddItem(num, num_len);
+    AddString(g_quote_msg);
+    AddString(g_rn);
+    AddString(g_rn);
+    AddItem(msg_data + done, chunk_len);
+    AddString(g_rn);
+    AddBoundary();
+    Flush();
+
+    done += chunk_len;
+    msg_length -= chunk_len;
+  }
+}
+
+void MimeWriter::AddFileDump(uint8_t* file_data,
+                             size_t file_size) {
+  AddString(g_form_data_msg);
+  AddString(g_dump_msg);
+  AddString(g_rn);
+  AddString(g_content_type_msg);
+  AddString(g_rn);
+  AddString(g_rn);
+  AddItem(file_data, file_size);
+  AddString(g_rn);
+}
+
+void MimeWriter::AddItem(const void* base, size_t size) {
+  // Check if the iovec is full and needs to be flushed to output file.
+  if (iov_index_ == kIovCapacity) {
+    Flush();
+  }
+  iov_[iov_index_].iov_base = const_cast<void*>(base);
+  iov_[iov_index_].iov_len = size;
+  ++iov_index_;
+}
+
+} // namespace
 
 pid_t HandleCrashDump(const BreakpadInfo& info) {
   // WARNING: this code runs in a compromised context. It may not call into
@@ -190,8 +352,6 @@ pid_t HandleCrashDump(const BreakpadInfo& info) {
   mime_boundary[28 + 16] = 0;
   IGNORE_RET(sys_close(ufd));
 
-  static const char version_msg[] = PRODUCT_VERSION;
-
   // The MIME block looks like this:
   //   BOUNDARY \r\n (0, 1)
   //   Content-Disposition: form-data; name="prod" \r\n \r\n (2..6)
@@ -219,6 +379,11 @@ pid_t HandleCrashDump(const BreakpadInfo& info) {
   //   abcdef \r\n (5, 6)
   //   BOUNDARY \r\n (7, 8)
   //
+  //   zero or more gpu entries:
+  //   Content-Disposition: form-data; name="gpu-xxxxx" \r\n \r\n (0..4)
+  //   <gpu-xxxxx> \r\n (5, 6)
+  //   BOUNDARY \r\n (7, 8)
+  //
   //   zero or more:
   //   Content-Disposition: form-data; name="url-chunk-1" \r\n \r\n (0..5)
   //   abcdef \r\n (6, 7)
@@ -229,96 +394,30 @@ pid_t HandleCrashDump(const BreakpadInfo& info) {
   //   <dump contents> (6)
   //   \r\n BOUNDARY -- \r\n (7,8,9,10)
 
-  static const char rn[] = {'\r', '\n'};
-  static const char form_data_msg[] = "Content-Disposition: form-data; name=\"";
-  static const char prod_msg[] = "prod";
-  static const char quote_msg[] = {'"'};
-#if defined(OS_CHROMEOS)
+  #if defined(OS_CHROMEOS)
   static const char chrome_product_msg[] = "Chrome_ChromeOS";
-#else  // OS_LINUX
+  #else  // OS_LINUX
   static const char chrome_product_msg[] = "Chrome_Linux";
-#endif
+  #endif
+  static const char version_msg[] = PRODUCT_VERSION;
+  static const char prod_msg[] = "prod";
   static const char ver_msg[] = "ver";
   static const char guid_msg[] = "guid";
-  static const char dashdash_msg[] = {'-', '-'};
-  static const char dump_msg[] = "upload_file_minidump\"; filename=\"dump\"";
-  static const char content_type_msg[] =
-      "Content-Type: application/octet-stream";
   static const char url_chunk_msg[] = "url-chunk-";
   static const char process_time_msg[] = "ptime";
   static const char process_type_msg[] = "ptype";
   static const char distro_msg[] = "lsb-release";
 
-  struct kernel_iovec iov[29];
-  iov[0].iov_base = mime_boundary;
-  iov[0].iov_len = sizeof(mime_boundary) - 1;
-  iov[1].iov_base = const_cast<char*>(rn);
-  iov[1].iov_len = sizeof(rn);
+  MimeWriter writer(fd, mime_boundary);
 
-  iov[2].iov_base = const_cast<char*>(form_data_msg);
-  iov[2].iov_len = sizeof(form_data_msg) - 1;
-  iov[3].iov_base = const_cast<char*>(prod_msg);
-  iov[3].iov_len = sizeof(prod_msg) - 1;
-  iov[4].iov_base = const_cast<char*>(quote_msg);
-  iov[4].iov_len = sizeof(quote_msg);
-  iov[5].iov_base = const_cast<char*>(rn);
-  iov[5].iov_len = sizeof(rn);
-  iov[6].iov_base = const_cast<char*>(rn);
-  iov[6].iov_len = sizeof(rn);
-
-  iov[7].iov_base = const_cast<char*>(chrome_product_msg);
-  iov[7].iov_len = sizeof(chrome_product_msg) - 1;
-  iov[8].iov_base = const_cast<char*>(rn);
-  iov[8].iov_len = sizeof(rn);
-
-  iov[9].iov_base = mime_boundary;
-  iov[9].iov_len = sizeof(mime_boundary) - 1;
-  iov[10].iov_base = const_cast<char*>(rn);
-  iov[10].iov_len = sizeof(rn);
-
-  iov[11].iov_base = const_cast<char*>(form_data_msg);
-  iov[11].iov_len = sizeof(form_data_msg) - 1;
-  iov[12].iov_base = const_cast<char*>(ver_msg);
-  iov[12].iov_len = sizeof(ver_msg) - 1;
-  iov[13].iov_base = const_cast<char*>(quote_msg);
-  iov[13].iov_len = sizeof(quote_msg);
-  iov[14].iov_base = const_cast<char*>(rn);
-  iov[14].iov_len = sizeof(rn);
-  iov[15].iov_base = const_cast<char*>(rn);
-  iov[15].iov_len = sizeof(rn);
-
-  iov[16].iov_base = const_cast<char*>(version_msg);
-  iov[16].iov_len = sizeof(version_msg) - 1;
-  iov[17].iov_base = const_cast<char*>(rn);
-  iov[17].iov_len = sizeof(rn);
-
-  iov[18].iov_base = mime_boundary;
-  iov[18].iov_len = sizeof(mime_boundary) - 1;
-  iov[19].iov_base = const_cast<char*>(rn);
-  iov[19].iov_len = sizeof(rn);
-
-  iov[20].iov_base = const_cast<char*>(form_data_msg);
-  iov[20].iov_len = sizeof(form_data_msg) - 1;
-  iov[21].iov_base = const_cast<char*>(guid_msg);
-  iov[21].iov_len = sizeof(guid_msg) - 1;
-  iov[22].iov_base = const_cast<char*>(quote_msg);
-  iov[22].iov_len = sizeof(quote_msg);
-  iov[23].iov_base = const_cast<char*>(rn);
-  iov[23].iov_len = sizeof(rn);
-  iov[24].iov_base = const_cast<char*>(rn);
-  iov[24].iov_len = sizeof(rn);
-
-  iov[25].iov_base = const_cast<char*>(info.guid);
-  iov[25].iov_len = info.guid_length;
-  iov[26].iov_base = const_cast<char*>(rn);
-  iov[26].iov_len = sizeof(rn);
-
-  iov[27].iov_base = mime_boundary;
-  iov[27].iov_len = sizeof(mime_boundary) - 1;
-  iov[28].iov_base = const_cast<char*>(rn);
-  iov[28].iov_len = sizeof(rn);
-
-  IGNORE_RET(sys_writev(fd, iov, 29));
+  writer.AddBoundary();
+  writer.AddPairString(prod_msg, chrome_product_msg);
+  writer.AddBoundary();
+  writer.AddPairString(ver_msg, version_msg);
+  writer.AddBoundary();
+  writer.AddPairString(guid_msg, info.guid);
+  writer.AddBoundary();
+  writer.Flush();
 
   if (info.process_start_time > 0) {
     struct kernel_timeval tv;
@@ -330,150 +429,58 @@ pid_t HandleCrashDump(const BreakpadInfo& info) {
         const unsigned time_len = my_uint64_len(time);
         my_uint64tos(time_str, time, time_len);
 
-        iov[0].iov_base = const_cast<char*>(form_data_msg);
-        iov[0].iov_len = sizeof(form_data_msg) - 1;
-        iov[1].iov_base = const_cast<char*>(process_time_msg);
-        iov[1].iov_len = sizeof(process_time_msg) - 1;
-        iov[2].iov_base = const_cast<char*>(quote_msg);
-        iov[2].iov_len = sizeof(quote_msg);
-        iov[3].iov_base = const_cast<char*>(rn);
-        iov[3].iov_len = sizeof(rn);
-        iov[4].iov_base = const_cast<char*>(rn);
-        iov[4].iov_len = sizeof(rn);
-
-        iov[5].iov_base = const_cast<char*>(time_str);
-        iov[5].iov_len = time_len;
-        iov[6].iov_base = const_cast<char*>(rn);
-        iov[6].iov_len = sizeof(rn);
-        iov[7].iov_base = mime_boundary;
-        iov[7].iov_len = sizeof(mime_boundary) - 1;
-        iov[8].iov_base = const_cast<char*>(rn);
-        iov[8].iov_len = sizeof(rn);
-
-        IGNORE_RET(sys_writev(fd, iov, 9));
+        writer.AddPairData(process_time_msg, sizeof(process_time_msg) - 1,
+                           time_str, time_len);
+        writer.AddBoundary();
+        writer.Flush();
       }
     }
   }
 
   if (info.process_type_length) {
-    iov[0].iov_base = const_cast<char*>(form_data_msg);
-    iov[0].iov_len = sizeof(form_data_msg) - 1;
-    iov[1].iov_base = const_cast<char*>(process_type_msg);
-    iov[1].iov_len = sizeof(process_type_msg) - 1;
-    iov[2].iov_base = const_cast<char*>(quote_msg);
-    iov[2].iov_len = sizeof(quote_msg);
-    iov[3].iov_base = const_cast<char*>(rn);
-    iov[3].iov_len = sizeof(rn);
-    iov[4].iov_base = const_cast<char*>(rn);
-    iov[4].iov_len = sizeof(rn);
+    writer.AddPairString(process_type_msg, info.process_type);
+    writer.AddBoundary();
+    writer.Flush();
+  }
 
-    iov[5].iov_base = const_cast<char*>(info.process_type);
-    iov[5].iov_len = info.process_type_length;
-    iov[6].iov_base = const_cast<char*>(rn);
-    iov[6].iov_len = sizeof(rn);
-    iov[7].iov_base = mime_boundary;
-    iov[7].iov_len = sizeof(mime_boundary) - 1;
-    iov[8].iov_base = const_cast<char*>(rn);
-    iov[8].iov_len = sizeof(rn);
+  // If GPU info is known, send it.
+  unsigned gpu_vendor_len = my_strlen(child_process_logging::g_gpu_vendor_id);
+  if (gpu_vendor_len) {
+    static const char vendor_msg[] = "gpu-venid";
+    static const char device_msg[] = "gpu-devid";
+    static const char driver_msg[] = "gpu-driver";
+    static const char psver_msg[] = "gpu-psver";
+    static const char vsver_msg[] = "gpu-vsver";
 
-    IGNORE_RET(sys_writev(fd, iov, 9));
+    writer.AddPairString(vendor_msg, child_process_logging::g_gpu_vendor_id);
+    writer.AddBoundary();
+    writer.AddPairString(device_msg, child_process_logging::g_gpu_device_id);
+    writer.AddBoundary();
+    writer.AddPairString(driver_msg, child_process_logging::g_gpu_driver_ver);
+    writer.AddBoundary();
+    writer.AddPairString(psver_msg, child_process_logging::g_gpu_ps_ver);
+    writer.AddBoundary();
+    writer.AddPairString(vsver_msg, child_process_logging::g_gpu_vs_ver);
+    writer.AddBoundary();
+    writer.Flush();
   }
 
   if (info.distro_length) {
-    iov[0].iov_base = const_cast<char*>(form_data_msg);
-    iov[0].iov_len = sizeof(form_data_msg) - 1;
-    iov[1].iov_base = const_cast<char*>(distro_msg);
-    iov[1].iov_len = sizeof(distro_msg) - 1;
-    iov[2].iov_base = const_cast<char*>(quote_msg);
-    iov[2].iov_len = sizeof(quote_msg);
-    iov[3].iov_base = const_cast<char*>(rn);
-    iov[3].iov_len = sizeof(rn);
-    iov[4].iov_base = const_cast<char*>(rn);
-    iov[4].iov_len = sizeof(rn);
-
-    iov[5].iov_base = const_cast<char*>(info.distro);
-    iov[5].iov_len = info.distro_length;
-    iov[6].iov_base = const_cast<char*>(rn);
-    iov[6].iov_len = sizeof(rn);
-    iov[7].iov_base = mime_boundary;
-    iov[7].iov_len = sizeof(mime_boundary) - 1;
-    iov[8].iov_base = const_cast<char*>(rn);
-    iov[8].iov_len = sizeof(rn);
-
-    IGNORE_RET(sys_writev(fd, iov, 9));
+    writer.AddPairString(distro_msg, info.distro);
+    writer.AddBoundary();
+    writer.Flush();
   }
 
   // For rendererers and plugins.
   if (info.crash_url_length) {
-    unsigned i = 0, done = 0, crash_url_length = info.crash_url_length;
-    static const unsigned kMaxCrashChunkSize = 64;
-    static const unsigned kMaxUrlLength = 8 * kMaxCrashChunkSize;
-    if (crash_url_length > kMaxUrlLength)
-      crash_url_length = kMaxUrlLength;
-
-    while (crash_url_length) {
-      char num[16];
-      const unsigned num_len = my_int_len(++i);
-      my_itos(num, i, num_len);
-
-      iov[0].iov_base = const_cast<char*>(form_data_msg);
-      iov[0].iov_len = sizeof(form_data_msg) - 1;
-      iov[1].iov_base = const_cast<char*>(url_chunk_msg);
-      iov[1].iov_len = sizeof(url_chunk_msg) - 1;
-      iov[2].iov_base = num;
-      iov[2].iov_len = num_len;
-      iov[3].iov_base = const_cast<char*>(quote_msg);
-      iov[3].iov_len = sizeof(quote_msg);
-      iov[4].iov_base = const_cast<char*>(rn);
-      iov[4].iov_len = sizeof(rn);
-      iov[5].iov_base = const_cast<char*>(rn);
-      iov[5].iov_len = sizeof(rn);
-
-      const unsigned len = crash_url_length > kMaxCrashChunkSize ?
-                           kMaxCrashChunkSize : crash_url_length;
-      iov[6].iov_base = const_cast<char*>(info.crash_url + done);
-      iov[6].iov_len = len;
-      iov[7].iov_base = const_cast<char*>(rn);
-      iov[7].iov_len = sizeof(rn);
-      iov[8].iov_base = mime_boundary;
-      iov[8].iov_len = sizeof(mime_boundary) - 1;
-      iov[9].iov_base = const_cast<char*>(rn);
-      iov[9].iov_len = sizeof(rn);
-
-      IGNORE_RET(sys_writev(fd, iov, 10));
-
-      done += len;
-      crash_url_length -= len;
-    }
+    static const unsigned kMaxUrlLength = 8 * MimeWriter::kMaxCrashChunkSize;
+    writer.AddPairDataInChunks(url_chunk_msg, sizeof(url_chunk_msg) - 1,
+        info.crash_url, std::min(info.crash_url_length, kMaxUrlLength));
   }
 
-  iov[0].iov_base = const_cast<char*>(form_data_msg);
-  iov[0].iov_len = sizeof(form_data_msg) - 1;
-  iov[1].iov_base = const_cast<char*>(dump_msg);
-  iov[1].iov_len = sizeof(dump_msg) - 1;
-  iov[2].iov_base = const_cast<char*>(rn);
-  iov[2].iov_len = sizeof(rn);
-
-  iov[3].iov_base = const_cast<char*>(content_type_msg);
-  iov[3].iov_len = sizeof(content_type_msg) - 1;
-  iov[4].iov_base = const_cast<char*>(rn);
-  iov[4].iov_len = sizeof(rn);
-  iov[5].iov_base = const_cast<char*>(rn);
-  iov[5].iov_len = sizeof(rn);
-
-  iov[6].iov_base = dump_data;
-  iov[6].iov_len = st.st_size;
-
-  iov[7].iov_base = const_cast<char*>(rn);
-  iov[7].iov_len = sizeof(rn);
-  iov[8].iov_base = mime_boundary;
-  iov[8].iov_len = sizeof(mime_boundary) - 1;
-  iov[9].iov_base = const_cast<char*>(dashdash_msg);
-  iov[9].iov_len = sizeof(dashdash_msg);
-  iov[10].iov_base = const_cast<char*>(rn);
-  iov[10].iov_len = sizeof(rn);
-
-  IGNORE_RET(sys_writev(fd, iov, 11));
+  writer.AddFileDump(dump_data, st.st_size);
+  writer.AddEnd();
+  writer.Flush();
 
   IGNORE_RET(sys_close(fd));
 

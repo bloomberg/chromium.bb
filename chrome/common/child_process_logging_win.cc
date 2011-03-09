@@ -8,6 +8,7 @@
 
 #include "base/string_util.h"
 #include "base/string_number_conversions.h"
+#include "base/stringprintf.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/gpu_info.h"
@@ -137,8 +138,8 @@ void SetGpuInfo(const GPUInfo& gpu_info) {
       return;
   }
   (set_gpu_info)(
-      base::UintToString16(gpu_info.vendor_id).c_str(),
-      base::UintToString16(gpu_info.device_id).c_str(),
+      base::StringPrintf(L"0x%04x", gpu_info.vendor_id).c_str(),
+      base::StringPrintf(L"0x%04x", gpu_info.device_id).c_str(),
       UTF8ToUTF16(gpu_info.driver_version).c_str(),
       base::UintToString16(gpu_info.pixel_shader_version).c_str(),
       base::UintToString16(gpu_info.vertex_shader_version).c_str());

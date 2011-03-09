@@ -4,6 +4,7 @@
 
 #include "chrome/common/child_process_logging.h"
 
+#include "base/string_number_conversions.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/common/gpu_info.h"
@@ -21,6 +22,14 @@ static const size_t kClientIdSize = 32 + 1;
 // these strings to the browser.
 char g_active_url[kMaxActiveURLSize];
 char g_client_id[kClientIdSize];
+
+static const size_t kGpuStringSize = 32;
+
+char g_gpu_vendor_id[kGpuStringSize] = "";
+char g_gpu_device_id[kGpuStringSize] = "";
+char g_gpu_driver_ver[kGpuStringSize] = "";
+char g_gpu_ps_ver[kGpuStringSize] = "";
+char g_gpu_vs_ver[kGpuStringSize] = "";
 
 void SetActiveURL(const GURL& url) {
   base::strlcpy(g_active_url,
@@ -49,7 +58,17 @@ void SetActiveExtensions(const std::set<std::string>& extension_ids) {
 }
 
 void SetGpuInfo(const GPUInfo& gpu_info) {
-  // TODO(rlp): Bug 38737.
+  snprintf(g_gpu_vendor_id, kGpuStringSize, "0x%04x", gpu_info.vendor_id);
+  snprintf(g_gpu_device_id, kGpuStringSize, "0x%04x", gpu_info.device_id);
+  strncpy(g_gpu_driver_ver,
+          gpu_info.driver_version.c_str(),
+          kGpuStringSize);
+  strncpy(g_gpu_ps_ver,
+          base::UintToString(gpu_info.pixel_shader_version).c_str(),
+          kGpuStringSize);
+  strncpy(g_gpu_vs_ver,
+          base::UintToString(gpu_info.vertex_shader_version).c_str(),
+          kGpuStringSize);
 }
 
 void SetNumberOfViews(int number_of_views) {

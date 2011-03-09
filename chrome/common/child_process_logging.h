@@ -28,6 +28,11 @@ namespace child_process_logging {
 // compromised context without going through the standard library.
 extern char g_active_url[];
 extern char g_client_id[];
+extern char g_gpu_vendor_id[];
+extern char g_gpu_device_id[];
+extern char g_gpu_driver_ver[];
+extern char g_gpu_ps_ver[];
+extern char g_gpu_vs_ver[];
 #endif
 
 // Sets the URL that is logged if the child process crashes. Use GURL() to clear
