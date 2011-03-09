@@ -84,8 +84,9 @@ void Window::SetWindowBounds(const gfx::Rect& bounds,
 }
 
 void Window::Show() {
-  native_window_->Show(saved_maximized_state_ ? NativeWindow::SHOW_MAXIMIZED
-                                              : NativeWindow::SHOW_RESTORED);
+  native_window_->ShowNativeWindow(
+      saved_maximized_state_ ? NativeWindow::SHOW_MAXIMIZED
+                             : NativeWindow::SHOW_RESTORED);
   // |saved_maximized_state_| only applies the first time the window is shown.
   // If we don't reset the value the window will be shown maximized every time
   // it is subsequently shown after being hidden.

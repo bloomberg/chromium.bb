@@ -361,7 +361,7 @@ void WindowGtk::SetInitialFocus() {
 ////////////////////////////////////////////////////////////////////////////////
 // WindowGtk, NativeWindow implementation:
 
-void WindowGtk::Show(ShowState state) {
+void WindowGtk::ShowNativeWindow(ShowState state) {
   // No concept of maximization (yet) on ChromeOS.
   gtk_widget_show(GetNativeView());
 }

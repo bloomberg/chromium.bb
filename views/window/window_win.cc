@@ -1167,7 +1167,7 @@ void WindowWin::OnWindowPosChanging(WINDOWPOS* window_pos) {
 ////////////////////////////////////////////////////////////////////////////////
 // WindowWin, NativeWindow implementation:
 
-void WindowWin::Show(ShowState state) {
+void WindowWin::ShowNativeWindow(ShowState state) {
   Show(state == SHOW_MAXIMIZED ? SW_SHOWMAXIMIZED : GetShowState());
 }
 

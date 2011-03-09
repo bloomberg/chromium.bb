@@ -75,7 +75,7 @@ class WindowGtk : public WidgetGtk, public NativeWindow, public Window {
 
  protected:
   // Overridden from NativeWindow:
-  virtual void Show(ShowState state) OVERRIDE;
+  virtual void ShowNativeWindow(ShowState state) OVERRIDE;
   virtual void BecomeModal() OVERRIDE;
   virtual void CenterWindow(const gfx::Size& size) OVERRIDE;
   virtual void SetWindowTitle(const std::wstring& title) OVERRIDE;

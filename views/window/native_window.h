@@ -25,7 +25,7 @@ class NativeWindow {
   virtual ~NativeWindow() {}
 
   // Shows the window.
-  virtual void Show(ShowState state) = 0;
+  virtual void ShowNativeWindow(ShowState state) = 0;
 
   // Makes the NativeWindow modal.
   virtual void BecomeModal() = 0;

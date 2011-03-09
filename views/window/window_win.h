@@ -156,7 +156,7 @@ class WindowWin : public WidgetWin,
   virtual const Window* GetWindow() const OVERRIDE { return this; }
 
   // Overridden from NativeWindow:
-  virtual void Show(ShowState state);
+  virtual void ShowNativeWindow(ShowState state);
   virtual void BecomeModal() OVERRIDE;
   virtual void CenterWindow(const gfx::Size& size) OVERRIDE;
   virtual void SetWindowTitle(const std::wstring& title) OVERRIDE;
