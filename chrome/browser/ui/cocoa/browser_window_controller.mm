@@ -687,6 +687,9 @@
 
 - (void)activate {
   [[self window] makeKeyAndOrderFront:self];
+  ProcessSerialNumber psn;
+  GetCurrentProcess(&psn);
+  SetFrontProcessWithOptions(&psn, kSetFrontProcessFrontWindowOnly);
 }
 
 // Determine whether we should let a window zoom/unzoom to the given |newFrame|.
