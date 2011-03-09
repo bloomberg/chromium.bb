@@ -71,8 +71,9 @@ const NSTimeInterval kWindowFadeAnimationDuration = 0.2;
   scoped_nsobject<NSMutableAttributedString> attrString(
       [[NSMutableAttributedString alloc] initWithString:text]);
   scoped_nsobject<NSShadow> textShadow([[NSShadow alloc] init]);
-  [textShadow setShadowColor:[NSColor colorWithCalibratedWhite:0 alpha:0.6]];
-  [textShadow setShadowOffset:NSMakeSize(0, -1)];
+  [textShadow.get() setShadowColor:[NSColor colorWithCalibratedWhite:0
+                                                               alpha:0.6]];
+  [textShadow.get() setShadowOffset:NSMakeSize(0, -1)];
   [textShadow setShadowBlurRadius:1.0];
   [attrString addAttribute:NSShadowAttributeName
                      value:textShadow
