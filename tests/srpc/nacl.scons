@@ -26,8 +26,11 @@ env.AddPrebuiltBinaryToRepository(srpc_test_nexe)
 
 
 
-srpc_shm_nexe = env.ComponentProgram('srpc_shm.nexe', 'srpc_shm.c',
-                                     EXTRA_LIBS=['srpc', 'm', 'pthread'])
+srpc_shm_nexe = env.ComponentProgram(
+    'srpc_shm.nexe',
+    'srpc_shm.c',
+    EXTRA_LIBS=['srpc', 'platform', 'gio', 'm', 'pthread'])
+
 env.Publish('srpc_shm.nexe', 'run',
             [ 'srpc_shm.html',
               env.File('${SCONSTRUCT_DIR}/tests/nacl_js_lib.js') ])
@@ -67,8 +70,9 @@ env.Publish('srpc_nrd_client.nexe', 'run',
 env.AddPrebuiltBinaryToRepository(srpc_nrd_client_nexe)
 
 
-cat_nexe = env.ComponentProgram('cat.nexe', 'cat.c',
-                                EXTRA_LIBS=['srpc', 'm', 'pthread'])
+cat_nexe = env.ComponentProgram(
+    'cat.nexe', 'cat.c', EXTRA_LIBS=['srpc', 'platform', 'gio', 'm', 'pthread'])
+
 env.Publish('cat.nexe', 'run',
             ['srpc_url_as_nacl_desc.html',
              'srpc_url_as_nacl_desc_success.html',
@@ -92,8 +96,8 @@ env.Publish('srpc_bad_service.nexe', 'run', [])
 
 node = env.SelUniversalTest(
     'srpc_basic_test.out',
+    sel_universal_flags=['--command_file', env.File('srpc_basic_test.stdin')],
     command=[env.File('srpc_test.nexe')],
-    stdin=env.File('srpc_basic_test.stdin'),
     stdout_golden=env.File('srpc_basic_test.stdout'),
     )
 env.AddNodeToTestSuite(node,
@@ -101,15 +105,15 @@ env.AddNodeToTestSuite(node,
                        'run_srpc_basic_test')
 
 node = env.SelUniversalTest(
-    'srpc_sysv_shm_test.out',
+    'srpc_shm_test.out',
+    sel_universal_flags=['--command_file',
+                         env.File('srpc_shm_test.stdin')],
     command=[env.File('srpc_shm.nexe')],
-    stdin=env.File('srpc_sysv_shm_test.stdin'),
-    stdout_golden=env.File('srpc_sysv_shm_test.stdout'),
+    stdout_golden=env.File('srpc_shm_test.stdout'),
     )
 env.AddNodeToTestSuite(node,
                        ['sel_ldr_tests', 'small_tests'],
-                       'run_srpc_sysv_shm_test',
-                       is_broken=env.Bit('host_windows'))
+                       'run_srpc_shm_test')
 
 node = env.SelUniversalTest(
     'srpc_bad_service.out',
@@ -210,8 +214,7 @@ node = env.SelUniversalTest(
     )
 env.AddNodeToTestSuite(node,
                        ['sel_ldr_tests', 'small_tests'],
-                       'run_srpc_ro_file_test',
-                       is_broken=env.Bit('host_windows'))
+                       'run_srpc_ro_file_test')
 
 ######################################################################
 ## PPAPI Browser Tests

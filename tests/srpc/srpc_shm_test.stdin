@@ -1,0 +1,3 @@
+shmem desc_shmem desc_address 65536
+strcpy ${desc_address} 0 "Hello shared memory."
+rpc map_handle h(desc_shmem) * s(100)

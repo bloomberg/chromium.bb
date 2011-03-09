@@ -1,0 +1,5 @@
+rpc call intiated map_handle:h:s
+input 0:  h(desc_shmem)
+rpc call complete map_handle:h:s
+output 0:  s("Hello shared memory.")
+

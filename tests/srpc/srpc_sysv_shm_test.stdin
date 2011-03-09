@@ -1,3 +1,0 @@
-shmem desc_shmem desc_address 65536
-strcpy ${desc_address} 0 "Hello SysV shared memory."
-rpc map_sysv_handle h(desc_shmem) *

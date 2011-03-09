@@ -7,6 +7,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <nacl/nacl_log.h>
 #include <nacl/nacl_srpc.h>
 #include <sys/mman.h>
 #include <sys/stat.h>
@@ -18,6 +19,8 @@
  */
 # define S_IFSHM 0000240000
 #endif
+
+
 
 void Cat(NaClSrpcRpc *rpc,
          NaClSrpcArg **in_args,
@@ -31,25 +34,23 @@ void Cat(NaClSrpcRpc *rpc,
 
   rpc->result = NACL_SRPC_RESULT_APP_ERROR;
   fd = in_args[0]->u.hval;
-  printf("CatFile: Got fd %d\n", fd);
+  NaClLog(LOG_INFO, "CatFile: Got fd %d\n", fd);
   if (-1 != fstat(fd, &stb)) {
-#define P(fmt, field) \
-    do { printf(#field " = " fmt "\n", (int) stb.field); } while (0)
-
-    P("0x%04x", st_mode);
-    P("0x%x", st_size);
-    P("%d", st_size);
-#undef P
+    NaClLog(LOG_INFO, "st_mode = 0x%04x\n", (int) stb.st_mode);
+    NaClLog(LOG_INFO, "st_size = 0x%04x (%d)\n",
+            (int) stb.st_size, (int) stb.st_size);
+  } else {
+     NaClLog(LOG_WARNING, "fstat failed");
   }
   bufsize = out_args[0]->u.count;
-  printf("read loop, up to %d chars\n", bufsize);
+  NaClLog(LOG_INFO, "read loop, up to %d chars\n", bufsize);
   if ((stb.st_mode & S_IFMT) == S_IFSHM) {
     /* Chrome integration returns a shared memory descriptor for this now. */
     char *file_map;
-    printf("mmapping\n");
+    NaClLog(LOG_INFO, "mmapping\n");
     file_map = (char *) mmap(NULL, stb.st_size, PROT_READ, MAP_SHARED, fd, 0);
     if (MAP_FAILED == file_map) {
-      printf("map failed");
+      NaClLog(LOG_ERROR, "map failed");
       done->Run(done);
       return;
     }
@@ -59,25 +60,24 @@ void Cat(NaClSrpcRpc *rpc,
       putchar(ch);
     }
     out_args[0]->arrays.carr[nchar] = '\0';
-    printf("EOF\n");
+    NaClLog(LOG_INFO, "EOF\n");
   } else {
     FILE *iob = fdopen(fd, "r");
-    printf("fdopening\n");
+    NaClLog(LOG_INFO, "fdopening\n");
     if (NULL == iob) {
-      printf("fdopen failed");
+      NaClLog(LOG_ERROR, "fdopen failed");
       done->Run(done);
       return;
     }
     for (nchar = 0; EOF != (ch = getc(iob)) && nchar < bufsize-1; ++nchar) {
       out_args[0]->arrays.carr[nchar] = ch;
-      putchar(ch);
     }
     out_args[0]->arrays.carr[nchar] = '\0';
-    printf("EOF\n");
+    NaClLog(LOG_INFO, "EOF\n");
     fclose(iob);
   }
-  printf("got %d bytes\n", nchar);
-  printf("out param: %.*s\n", nchar, out_args[0]->arrays.carr);
+  NaClLog(LOG_INFO, "got %d bytes\n", nchar);
+  NaClLog(LOG_INFO, "out param: %.*s\n", nchar, out_args[0]->arrays.carr);
   rpc->result = NACL_SRPC_RESULT_OK;
   done->Run(done);
 }
@@ -88,6 +88,7 @@ const struct NaClSrpcHandlerDesc srpc_methods[] = {
 };
 
 int main() {
+  NaClLogModuleInit();
   if (!NaClSrpcModuleInit()) {
     return 1;
   }
