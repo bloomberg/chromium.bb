@@ -1519,7 +1519,6 @@ class AdvancedContentsView : public OptionsPageView {
   virtual int GetLineScrollIncrement(views::ScrollView* scroll_view,
                                      bool is_horizontal, bool is_positive);
   virtual void Layout();
-  virtual void OnBoundsChanged();
 
  protected:
   // OptionsPageView implementation:
@@ -1571,11 +1570,6 @@ void AdvancedContentsView::Layout() {
   }
   View::Layout();
 }
-
-void AdvancedContentsView::OnBoundsChanged() {
-  // Override to do nothing. Calling Layout() interferes with our scrolling.
-}
-
 
 ////////////////////////////////////////////////////////////////////////////////
 // AdvancedContentsView, OptionsPageView implementation:

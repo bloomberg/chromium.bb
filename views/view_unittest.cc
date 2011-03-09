@@ -148,16 +148,18 @@ class TestView : public View {
     accelerator_count_map_.clear();
   }
 
-  virtual void OnBoundsChanged();
-  virtual void ViewHierarchyChanged(bool is_add, View *parent, View *child);
-  virtual bool OnMousePressed(const MouseEvent& event);
-  virtual bool OnMouseDragged(const MouseEvent& event);
-  virtual void OnMouseReleased(const MouseEvent& event, bool canceled);
+  virtual void OnBoundsChanged(const gfx::Rect& previous_bounds) OVERRIDE;
+  virtual void ViewHierarchyChanged(
+      bool is_add, View *parent, View *child) OVERRIDE;
+  virtual bool OnMousePressed(const MouseEvent& event) OVERRIDE;
+  virtual bool OnMouseDragged(const MouseEvent& event) OVERRIDE;
+  virtual void OnMouseReleased(const MouseEvent& event, bool canceled) OVERRIDE;
 #if defined(TOUCH_UI)
   virtual TouchStatus OnTouchEvent(const TouchEvent& event);
 #endif
-  virtual void Paint(gfx::Canvas* canvas);
-  virtual bool AcceleratorPressed(const Accelerator& accelerator);
+  virtual void Paint(gfx::Canvas* canvas) OVERRIDE;
+  virtual void SchedulePaintInRect(const gfx::Rect& rect) OVERRIDE;
+  virtual bool AcceleratorPressed(const Accelerator& accelerator) OVERRIDE;
 
   // OnBoundsChanged test
   bool did_change_bounds_;
@@ -173,7 +175,10 @@ class TestView : public View {
   int last_mouse_event_type_;
   gfx::Point location_;
 
-#if defined(TOUCH_UI)
+  // Painting
+  std::vector<gfx::Rect> scheduled_paint_rects_;
+
+  #if defined(TOUCH_UI)
   // TouchEvent
   int last_touch_event_type_;
   bool last_touch_event_was_handled_;
@@ -218,7 +223,7 @@ class MockGestureManager : public GestureManager {
 // OnBoundsChanged
 ////////////////////////////////////////////////////////////////////////////////
 
-void TestView::OnBoundsChanged() {
+void TestView::OnBoundsChanged(const gfx::Rect& previous_bounds) {
   did_change_bounds_ = true;
   new_bounds_ = bounds();
 }
@@ -559,6 +564,11 @@ TEST_F(ViewTest, TouchEvent) {
 
 void TestView::Paint(gfx::Canvas* canvas) {
   canvas->AsCanvasSkia()->getClipBounds(&last_clip_);
+}
+
+void TestView::SchedulePaintInRect(const gfx::Rect& rect) {
+  scheduled_paint_rects_.push_back(rect);
+  View::SchedulePaintInRect(rect);
 }
 
 void CheckRect(const SkRect& check_rect, const SkRect& target_rect) {
@@ -1778,3 +1788,26 @@ TEST_F(ViewTest, OnVisibleBoundsChanged) {
 }
 
 #endif
+
+////////////////////////////////////////////////////////////////////////////////
+// BoundsChanged()
+
+TEST_F(ViewTest, SetBoundsPaint) {
+  TestView* top_view = new TestView;
+  TestView* child_view = new TestView;
+
+  top_view->SetBounds(0, 0, 100, 100);
+  top_view->scheduled_paint_rects_.clear();
+  child_view->SetBounds(10, 10, 20, 20);
+  top_view->AddChildView(child_view);
+
+  top_view->scheduled_paint_rects_.clear();
+  child_view->SetBounds(30, 30, 20, 20);
+  EXPECT_EQ(2U, top_view->scheduled_paint_rects_.size());
+
+  // There should be 2 rects, spanning from (10, 10) to (50, 50).
+  gfx::Rect paint_rect =
+      top_view->scheduled_paint_rects_[0].Union(
+          top_view->scheduled_paint_rects_[1]);
+  EXPECT_EQ(gfx::Rect(10, 10, 40, 40), paint_rect);
+}

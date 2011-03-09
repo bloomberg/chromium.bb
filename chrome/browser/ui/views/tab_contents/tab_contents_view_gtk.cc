@@ -239,8 +239,13 @@ void TabContentsViewGtk::SetPageTitle(const std::wstring& title) {
     gdk_window_set_title(content_view->window, WideToUTF8(title).c_str());
 }
 
-void TabContentsViewGtk::OnTabCrashed(base::TerminationStatus /* status */,
+void TabContentsViewGtk::OnTabCrashed(base::TerminationStatus status,
                                       int /* error_code */) {
+  SadTabView::Kind kind =
+      status == base::TERMINATION_STATUS_PROCESS_WAS_KILLED ?
+      SadTabView::KILLED : SadTabView::CRASHED;
+  sad_tab_ = new SadTabView(tab_contents(), kind);
+  SetContentsView(sad_tab_);
 }
 
 void TabContentsViewGtk::SizeContents(const gfx::Size& size) {
@@ -402,16 +407,8 @@ void TabContentsViewGtk::OnSizeAllocate(GtkWidget* widget,
 
 gboolean TabContentsViewGtk::OnPaint(GtkWidget* widget, GdkEventExpose* event) {
   if (tab_contents()->render_view_host() &&
-      !tab_contents()->render_view_host()->IsRenderViewLive()) {
-    base::TerminationStatus status =
-        tab_contents()->render_view_host()->render_view_termination_status();
-    SadTabView::Kind kind =
-        status == base::TERMINATION_STATUS_PROCESS_WAS_KILLED ?
-        SadTabView::KILLED : SadTabView::CRASHED;
-    sad_tab_ = new SadTabView(tab_contents(), kind);
-    SetContentsView(sad_tab_);
-    gfx::Rect bounds = GetWindowScreenBounds();
-    sad_tab_->SetBoundsRect(gfx::Rect(0, 0, bounds.width(), bounds.height()));
+      !tab_contents()->render_view_host()->IsRenderViewLive() &&
+      sad_tab_) {
     gfx::CanvasSkiaPaint canvas(event);
     sad_tab_->Paint(&canvas);
   }
@@ -449,6 +446,8 @@ void TabContentsViewGtk::WasSized(const gfx::Size& size) {
   RenderWidgetHostView* rwhv = tab_contents()->GetRenderWidgetHostView();
   if (rwhv && rwhv->GetViewBounds().size() != size)
     rwhv->SetSize(size);
+  if (sad_tab_ && sad_tab_->size() != size)
+    sad_tab_->SetSize(size);
 
   if (needs_resize)
     SetFloatingPosition(size);

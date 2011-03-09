@@ -225,7 +225,7 @@ void TabContentsViewViews::GetViewBounds(gfx::Rect* out) const {
   out->SetRect(x(), y(), width(), height());
 }
 
-void TabContentsViewViews::OnBoundsChanged() {
+void TabContentsViewViews::OnBoundsChanged(const gfx::Rect& previous_bounds) {
   if (IsVisibleInRootView())
     WasSized(size());
 }

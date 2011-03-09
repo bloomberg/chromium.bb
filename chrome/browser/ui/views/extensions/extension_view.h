@@ -57,15 +57,15 @@ class ExtensionView : public views::NativeViewHost {
   void SetContainer(Container* container) { container_ = container; }
 
   // Overridden from views::NativeViewHost:
-  virtual void SetVisible(bool is_visible);
-  virtual void OnBoundsChanged();
-  virtual void ViewHierarchyChanged(bool is_add,
-                                    views::View *parent, views::View *child);
+  virtual void SetVisible(bool is_visible) OVERRIDE;
+  virtual void ViewHierarchyChanged(
+      bool is_add, views::View *parent, views::View *child) OVERRIDE;
 
  protected:
   // Overridden from views::View.
-  virtual void PreferredSizeChanged();
-  virtual bool SkipDefaultKeyEventProcessing(const views::KeyEvent& e);
+  virtual void PreferredSizeChanged() OVERRIDE;
+  virtual bool SkipDefaultKeyEventProcessing(const views::KeyEvent& e) OVERRIDE;
+  virtual void OnBoundsChanged(const gfx::Rect& previous_bounds) OVERRIDE;
 
  private:
   friend class ExtensionHost;

@@ -249,9 +249,6 @@ class View : public AcceleratorTarget {
   void SetX(int x);
   void SetY(int y);
 
-  // Override to be notified when the bounds of the view have changed.
-  virtual void OnBoundsChanged();
-
   // No transformation is applied on the size or the locations.
   const gfx::Rect& bounds() const { return bounds_; }
   int x() const { return bounds_.x(); }
@@ -956,6 +953,9 @@ class View : public AcceleratorTarget {
  protected:
   // Size and disposition ------------------------------------------------------
 
+  // Override to be notified when the bounds of the view have changed.
+  virtual void OnBoundsChanged(const gfx::Rect& previous_bounds);
+
   // Called when the preferred size of a child view changed.  This gives the
   // parent an opportunity to do a fresh layout if that makes sense.
   virtual void ChildPreferredSizeChanged(View* child) {}
@@ -1200,7 +1200,7 @@ class View : public AcceleratorTarget {
 
   // Responsible for propagating bounds change notifications to relevant
   // views.
-  void BoundsChanged();
+  void BoundsChanged(const gfx::Rect& previous_bounds);
 
   // Visible bounds notification registration.
   // When a view is added to a hierarchy, it and all its children are asked if

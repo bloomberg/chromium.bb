@@ -196,11 +196,6 @@ bool NonClientFrameView::HitTest(const gfx::Point& l) const {
   return !GetWindow()->client_view()->bounds().Contains(l);
 }
 
-void NonClientFrameView::OnBoundsChanged() {
-  // Overridden to do nothing. The NonClientView manually calls Layout on the
-  // FrameView when it is itself laid out, see comment in NonClientView::Layout.
-}
-
 ////////////////////////////////////////////////////////////////////////////////
 // NonClientFrameView, protected:
 
@@ -259,6 +254,11 @@ bool NonClientFrameView::ShouldPaintAsActive() const {
 
 AccessibilityTypes::Role NonClientFrameView::GetAccessibleRole() {
   return AccessibilityTypes::ROLE_WINDOW;
+}
+
+void NonClientFrameView::OnBoundsChanged(const gfx::Rect& previous_bounds) {
+  // Overridden to do nothing. The NonClientView manually calls Layout on the
+  // FrameView when it is itself laid out, see comment in NonClientView::Layout.
 }
 
 }  // namespace views

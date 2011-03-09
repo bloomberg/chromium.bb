@@ -128,17 +128,6 @@ void TableView::SetSortDescriptors(const SortDescriptors& sort_descriptors) {
   SendMessage(list_view_, WM_SETREDRAW, static_cast<WPARAM>(TRUE), 0);
 }
 
-void TableView::OnBoundsChanged() {
-  if (!list_view_)
-    return;
-  SendMessage(list_view_, WM_SETREDRAW, static_cast<WPARAM>(FALSE), 0);
-  Layout();
-  if ((autosize_columns_ || !column_sizes_valid_) && width() > 0)
-    ResetColumnSizes();
-  UpdateContentOffset();
-  SendMessage(list_view_, WM_SETREDRAW, static_cast<WPARAM>(TRUE), 0);
-}
-
 int TableView::RowCount() const {
   if (!list_view_)
     return 0;
@@ -1509,6 +1498,17 @@ bool TableView::OnKeyDown(ui::KeyboardCode virtual_keycode) {
     table_view_observer_->OnKeyDown(virtual_keycode);
   }
   return false;  // Let the key event be processed as ususal.
+}
+
+void TableView::OnBoundsChanged(const gfx::Rect& previous_bounds) {
+  if (!list_view_)
+    return;
+  SendMessage(list_view_, WM_SETREDRAW, static_cast<WPARAM>(FALSE), 0);
+  Layout();
+  if ((autosize_columns_ || !column_sizes_valid_) && width() > 0)
+    ResetColumnSizes();
+  UpdateContentOffset();
+  SendMessage(list_view_, WM_SETREDRAW, static_cast<WPARAM>(TRUE), 0);
 }
 
 int TableView::PreviousSelectedViewIndex(int view_index) {

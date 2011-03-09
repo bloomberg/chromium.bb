@@ -57,36 +57,37 @@ class BalloonViewImpl : public BalloonView,
   ~BalloonViewImpl();
 
   // BalloonView interface.
-  virtual void Show(Balloon* balloon);
-  virtual void Update();
-  virtual void RepositionToBalloon();
-  virtual void Close(bool by_user);
-  virtual gfx::Size GetSize() const;
-  virtual BalloonHost* GetHost() const;
+  virtual void Show(Balloon* balloon) OVERRIDE;
+  virtual void Update() OVERRIDE;
+  virtual void RepositionToBalloon() OVERRIDE;
+  virtual void Close(bool by_user) OVERRIDE;
+  virtual gfx::Size GetSize() const OVERRIDE;
+  virtual BalloonHost* GetHost() const OVERRIDE;
 
  private:
   // views::View interface.
-  virtual void OnPaint(gfx::Canvas* canvas);
-  virtual void OnBoundsChanged();
-  virtual gfx::Size GetPreferredSize();
+  virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE;
+  virtual void OnBoundsChanged(const gfx::Rect& previous_bounds) OVERRIDE;
+  virtual gfx::Size GetPreferredSize() OVERRIDE;
 
   // views::ViewMenuDelegate interface.
-  virtual void RunMenu(views::View* source, const gfx::Point& pt);
+  virtual void RunMenu(views::View* source, const gfx::Point& pt) OVERRIDE;
 
   // views::WidgetDelegate interface.
-  virtual void DisplayChanged();
-  virtual void WorkAreaChanged();
+  virtual void DisplayChanged() OVERRIDE;
+  virtual void WorkAreaChanged() OVERRIDE;
 
   // views::ButtonListener interface.
-  virtual void ButtonPressed(views::Button* sender, const views::Event&);
+  virtual void ButtonPressed(
+      views::Button* sender, const views::Event&) OVERRIDE;
 
   // NotificationObserver interface.
   virtual void Observe(NotificationType type,
                        const NotificationSource& source,
-                       const NotificationDetails& details);
+                       const NotificationDetails& details) OVERRIDE;
 
   // ui::AnimationDelegate interface.
-  virtual void AnimationProgressed(const ui::Animation* animation);
+  virtual void AnimationProgressed(const ui::Animation* animation) OVERRIDE;
 
   // Launches the options menu at screen coordinates |pt|.
   void RunOptionsMenu(const gfx::Point& pt);

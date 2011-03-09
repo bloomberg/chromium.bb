@@ -162,8 +162,6 @@ class TableView : public NativeControl,
   // Current sort.
   const SortDescriptors& sort_descriptors() const { return sort_descriptors_; }
 
-  virtual void OnBoundsChanged();
-
   // Returns the number of rows in the TableView.
   int RowCount() const;
 
@@ -246,7 +244,7 @@ class TableView : public NativeControl,
 
  protected:
   // Overriden to return the position of the first selected row.
-  virtual gfx::Point GetKeyboardContextMenuLocation();
+  virtual gfx::Point GetKeyboardContextMenuLocation() OVERRIDE;
 
   // Subclasses that want to customize the colors of a particular row/column,
   // must invoke this passing in true. The default value is false, such that
@@ -264,7 +262,10 @@ class TableView : public NativeControl,
   virtual void OnMiddleClick();
 
   // Overridden from NativeControl. Notifies the observer.
-  virtual bool OnKeyDown(ui::KeyboardCode virtual_keycode);
+  virtual bool OnKeyDown(ui::KeyboardCode virtual_keycode) OVERRIDE;
+
+  // View override.
+  virtual void OnBoundsChanged(const gfx::Rect& previous_bounds) OVERRIDE;
 
   // Invoked to customize the colors or font at a particular cell. If you
   // change the colors or font, return true. This is only invoked if

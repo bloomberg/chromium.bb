@@ -214,17 +214,14 @@ void View::SetBoundsRect(const gfx::Rect& bounds) {
     if (needs_layout_) {
       needs_layout_ = false;
       Layout();
+      SchedulePaint();
     }
     return;
   }
 
   gfx::Rect prev = bounds_;
   bounds_ = bounds;
-  bool size_changed = prev.size() != bounds_.size();
-  bool position_changed = prev.origin() != bounds_.origin();
-
-  if (size_changed || position_changed)
-    BoundsChanged();
+  BoundsChanged(prev);
 }
 
 void View::SetSize(const gfx::Size& size) {
@@ -241,11 +238,6 @@ void View::SetX(int x) {
 
 void View::SetY(int y) {
   SetBounds(x(), y, width(), height());
-}
-
-void View::OnBoundsChanged() {
-  needs_layout_ = false;
-  Layout();
 }
 
 gfx::Rect View::GetContentsBounds() const {
@@ -468,10 +460,8 @@ void View::Layout() {
   needs_layout_ = false;
 
   // If we have a layout manager, let it handle the layout for us.
-  if (layout_manager_.get()) {
+  if (layout_manager_.get())
     layout_manager_->Layout(this);
-    SchedulePaint();
-  }
 
   // Make sure to propagate the Layout() call to any children that haven't
   // received it yet through the layout manager and need to be laid out. This
@@ -1085,6 +1075,9 @@ int View::GetLineScrollIncrement(ScrollView* scroll_view,
 
 // Size and disposition --------------------------------------------------------
 
+void View::OnBoundsChanged(const gfx::Rect& previous_bounds) {
+}
+
 void View::PreferredSizeChanged() {
   InvalidateLayout();
   if (parent_)
@@ -1361,8 +1354,22 @@ void View::VisibilityChangedImpl(View* starting_from, bool is_visible) {
   VisibilityChanged(starting_from, is_visible);
 }
 
-void View::BoundsChanged() {
-  OnBoundsChanged();
+void View::BoundsChanged(const gfx::Rect& previous_bounds) {
+  if (parent_) {
+    parent_->SchedulePaintInRect(previous_bounds);
+    parent_->SchedulePaintInRect(bounds_);
+  } else {
+    // Previous bounds has no meaning to an orphan. This should only happen
+    // when the View is a RootView.
+    SchedulePaintInRect(gfx::Rect(0, 0, bounds_.width(), bounds_.height()));
+  }
+
+  OnBoundsChanged(previous_bounds);
+
+  if (previous_bounds.size() != size()) {
+    needs_layout_ = false;
+    Layout();
+  }
 
   // Notify interested Views that visible bounds within the root view may have
   // changed.

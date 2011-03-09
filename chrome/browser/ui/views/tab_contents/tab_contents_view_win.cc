@@ -182,13 +182,18 @@ void TabContentsViewWin::SetPageTitle(const std::wstring& title) {
   }
 }
 
-void TabContentsViewWin::OnTabCrashed(base::TerminationStatus /* status */,
+void TabContentsViewWin::OnTabCrashed(base::TerminationStatus status,
                                       int /* error_code */) {
-  // Force an invalidation to render sad tab. We will notice we crashed when we
-  // paint.
+  // Force an invalidation to render sad tab.
   // Note that it's possible to get this message after the window was destroyed.
-  if (::IsWindow(GetNativeView()))
+  if (::IsWindow(GetNativeView())) {
+    SadTabView::Kind kind =
+        status == base::TERMINATION_STATUS_PROCESS_WAS_KILLED ?
+        SadTabView::KILLED : SadTabView::CRASHED;
+    sad_tab_ = new SadTabView(tab_contents(), kind);
+    SetContentsView(sad_tab_);
     InvalidateRect(GetNativeView(), NULL, FALSE);
+  }
 }
 
 void TabContentsViewWin::SizeContents(const gfx::Size& size) {
@@ -436,18 +441,7 @@ LRESULT TabContentsViewWin::OnMouseRange(UINT msg,
 void TabContentsViewWin::OnPaint(HDC junk_dc) {
   if (tab_contents()->render_view_host() &&
       !tab_contents()->render_view_host()->IsRenderViewLive()) {
-    base::TerminationStatus status =
-        tab_contents()->render_view_host()->render_view_termination_status();
-    SadTabView::Kind kind =
-        status == base::TERMINATION_STATUS_PROCESS_WAS_KILLED ?
-        SadTabView::KILLED : SadTabView::CRASHED;
-    sad_tab_ = new SadTabView(tab_contents(), kind);
-    SetContentsView(sad_tab_);
-    CRect cr;
-    GetClientRect(&cr);
-    sad_tab_->SetBoundsRect(gfx::Rect(cr));
-    gfx::CanvasSkiaPaint canvas(GetNativeView(), true);
-    sad_tab_->Paint(&canvas);
+    WidgetWin::OnPaint(junk_dc);
     return;
   }
 
@@ -568,6 +562,9 @@ void TabContentsViewWin::WasSized(const gfx::Size& size) {
   RenderWidgetHostView* rwhv = tab_contents()->GetRenderWidgetHostView();
   if (rwhv)
     rwhv->SetSize(size);
+  // TODO(beng) This really shouldn't be necessary but currently is.
+  if (sad_tab_ && sad_tab_->size() != size)
+    sad_tab_->SetSize(size);
 
   // We have to layout root view here because we handle OnWindowPosChanged
   // without calling DefWindowProc (it sends OnSize and OnMove) so we don't

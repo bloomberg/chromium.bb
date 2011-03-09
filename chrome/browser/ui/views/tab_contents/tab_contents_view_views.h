@@ -44,26 +44,26 @@ class TabContentsViewViews : public TabContentsView, public views::View {
   void RemoveConstrainedWindow(ConstrainedWindowGtk* constrained_window);
 
   // TabContentsView implementation
-  virtual void CreateView(const gfx::Size& initial_size);
+  virtual void CreateView(const gfx::Size& initial_size) OVERRIDE;
   virtual RenderWidgetHostView* CreateViewForWidget(
-      RenderWidgetHost* render_widget_host);
-  virtual gfx::NativeView GetNativeView() const;
-  virtual gfx::NativeView GetContentNativeView() const;
-  virtual gfx::NativeWindow GetTopLevelNativeWindow() const;
-  virtual void GetContainerBounds(gfx::Rect* out) const;
-  virtual void SetPageTitle(const std::wstring& title);
+      RenderWidgetHost* render_widget_host) OVERRIDE;
+  virtual gfx::NativeView GetNativeView() const OVERRIDE;
+  virtual gfx::NativeView GetContentNativeView() const OVERRIDE;
+  virtual gfx::NativeWindow GetTopLevelNativeWindow() const OVERRIDE;
+  virtual void GetContainerBounds(gfx::Rect* out) const OVERRIDE;
+  virtual void SetPageTitle(const std::wstring& title) OVERRIDE;
   virtual void OnTabCrashed(base::TerminationStatus status,
-                            int error_code);
-  virtual void SizeContents(const gfx::Size& size);
-  virtual void Focus();
-  virtual void SetInitialFocus();
-  virtual void StoreFocus();
-  virtual void RestoreFocus();
-  virtual void GetViewBounds(gfx::Rect* out) const;
+                            int error_code) OVERRIDE;
+  virtual void SizeContents(const gfx::Size& size) OVERRIDE;
+  virtual void Focus() OVERRIDE;
+  virtual void SetInitialFocus() OVERRIDE;
+  virtual void StoreFocus() OVERRIDE;
+  virtual void RestoreFocus() OVERRIDE;
+  virtual void GetViewBounds(gfx::Rect* out) const OVERRIDE;
 
   // views::View implementation
-  virtual void OnBoundsChanged();
-  virtual void OnPaint(gfx::Canvas* canvas);
+  virtual void OnBoundsChanged(const gfx::Rect& previous_bounds) OVERRIDE;
+  virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE;
 
   // Backend implementation of RenderViewHostDelegate::View.
   virtual void ShowContextMenu(const ContextMenuParams& params);
@@ -72,15 +72,15 @@ class TabContentsViewViews : public TabContentsView, public views::View {
                              double item_font_size,
                              int selected_item,
                              const std::vector<WebMenuItem>& items,
-                             bool right_aligned);
+                             bool right_aligned) OVERRIDE;
   virtual void StartDragging(const WebDropData& drop_data,
                              WebKit::WebDragOperationsMask ops_allowed,
                              const SkBitmap& image,
-                             const gfx::Point& image_offset);
-  virtual void UpdateDragCursor(WebKit::WebDragOperation operation);
-  virtual void GotFocus();
-  virtual void TakeFocus(bool reverse);
-  virtual void VisibilityChanged(views::View *, bool is_visible);
+                             const gfx::Point& image_offset) OVERRIDE;
+  virtual void UpdateDragCursor(WebKit::WebDragOperation operation) OVERRIDE;
+  virtual void GotFocus() OVERRIDE;
+  virtual void TakeFocus(bool reverse) OVERRIDE;
+  virtual void VisibilityChanged(views::View *, bool is_visible) OVERRIDE;
 
  private:
   // Signal handlers -----------------------------------------------------------

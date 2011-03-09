@@ -121,10 +121,6 @@ gfx::Size SubmenuView::GetPreferredSize() {
                    height + insets.height());
 }
 
-void SubmenuView::OnBoundsChanged() {
-  SchedulePaint();
-}
-
 AccessibilityTypes::Role SubmenuView::GetAccessibleRole() {
   return AccessibilityTypes::ROLE_MENUPOPUP;
 }
@@ -325,6 +321,10 @@ void SubmenuView::MenuHostDestroyed() {
 
 std::string SubmenuView::GetClassName() const {
   return kViewClassName;
+}
+
+void SubmenuView::OnBoundsChanged(const gfx::Rect& previous_bounds) {
+  SchedulePaint();
 }
 
 void SubmenuView::PaintDropIndicator(gfx::Canvas* canvas,

@@ -276,7 +276,6 @@ views::LayoutManager* BrowserView::CreateLayoutManager() const {
 
 void BrowserView::ChildPreferredSizeChanged(View* child) {
   Layout();
-  SchedulePaint();
 }
 
 bool BrowserView::GetSavedWindowBounds(gfx::Rect* bounds) const {

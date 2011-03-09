@@ -421,10 +421,10 @@ class CandidateWindowView : public views::View {
 
  protected:
   // Override View::VisibilityChanged()
-  virtual void VisibilityChanged(View* starting_from, bool is_visible);
+  virtual void VisibilityChanged(View* starting_from, bool is_visible) OVERRIDE;
 
   // Override View::OnBoundsChanged()
-  virtual void OnBoundsChanged();
+  virtual void OnBoundsChanged(const gfx::Rect& previous_bounds) OVERRIDE;
 
  private:
   // Initializes the candidate views if needed.
@@ -1248,10 +1248,10 @@ void CandidateWindowView::VisibilityChanged(View* starting_from,
   }
 }
 
-void CandidateWindowView::OnBoundsChanged() {
+void CandidateWindowView::OnBoundsChanged(const gfx::Rect& previous_bounds) {
   // If the bounds(size) of candidate window is changed,
   // we should move the frame to the right position.
-  View::OnBoundsChanged();
+  View::OnBoundsChanged(previous_bounds);
   MoveParentFrame();
 }
 

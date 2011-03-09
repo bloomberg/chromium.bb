@@ -24,7 +24,7 @@ class AdvancedScrollViewContainer : public views::View {
   virtual ~AdvancedScrollViewContainer();
 
   // views::View overrides:
-  virtual void Layout();
+  virtual void Layout() OVERRIDE;
 
  private:
   // The contents of the advanced scroll view.

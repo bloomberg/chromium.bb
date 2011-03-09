@@ -165,10 +165,6 @@ void BalloonViewImpl::DelayedClose(bool by_user) {
   balloon_->OnClose(by_user);
 }
 
-void BalloonViewImpl::OnBoundsChanged() {
-  SizeContentsWindow();
-}
-
 gfx::Size BalloonViewImpl::GetPreferredSize() {
   return gfx::Size(1000, 1000);
 }
@@ -491,6 +487,10 @@ void BalloonViewImpl::OnPaint(gfx::Canvas* canvas) {
 
   View::OnPaint(canvas);
   OnPaintBorder(canvas);
+}
+
+void BalloonViewImpl::OnBoundsChanged(const gfx::Rect& previous_bounds) {
+  SizeContentsWindow();
 }
 
 void BalloonViewImpl::Observe(NotificationType type,

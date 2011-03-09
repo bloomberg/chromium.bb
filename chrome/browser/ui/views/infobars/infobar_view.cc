@@ -351,8 +351,7 @@ gfx::Size InfoBarView::GetPreferredSize() {
   return gfx::Size(0, AnimatedTabHeight() + AnimatedBarHeight());
 }
 
-void InfoBarView::OnBoundsChanged() {
-  views::View::OnBoundsChanged();
+void InfoBarView::OnBoundsChanged(const gfx::Rect& previous_bounds) {
   int tab_height = AnimatedTabHeight();
   int bar_height = AnimatedBarHeight();
   int divider_y = tab_height - 1;

@@ -69,11 +69,11 @@ class NonClientFrameView : public View {
   virtual void ResetWindowControls() = 0;
 
   // Overridden from View:
-  virtual bool HitTest(const gfx::Point& l) const;
-  virtual AccessibilityTypes::Role GetAccessibleRole();
+  virtual bool HitTest(const gfx::Point& l) const OVERRIDE;
+  virtual AccessibilityTypes::Role GetAccessibleRole() OVERRIDE;
 
  protected:
-  virtual void OnBoundsChanged();
+  virtual void OnBoundsChanged(const gfx::Rect& previous_bounds) OVERRIDE;
 
   NonClientFrameView() : paint_as_active_(false) {}
 

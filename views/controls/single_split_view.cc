@@ -38,13 +38,6 @@ SingleSplitView::SingleSplitView(View* leading,
 #endif
 }
 
-void SingleSplitView::OnBoundsChanged() {
-  divider_offset_ = CalculateDividerOffset(divider_offset_, previous_bounds_,
-                                           bounds());
-  View::OnBoundsChanged();
-  previous_bounds_ = bounds();
-}
-
 void SingleSplitView::Layout() {
   gfx::Rect leading_bounds;
   gfx::Rect trailing_bounds;
@@ -192,6 +185,11 @@ void SingleSplitView::OnMouseReleased(const MouseEvent& event, bool canceled) {
     if (!observer_ || observer_->SplitHandleMoved(this))
       Layout();
   }
+}
+
+void SingleSplitView::OnBoundsChanged(const gfx::Rect& previous_bounds) {
+  divider_offset_ = CalculateDividerOffset(divider_offset_, previous_bounds,
+                                           bounds());
 }
 
 bool SingleSplitView::IsPointInDivider(const gfx::Point& p) {

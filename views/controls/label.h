@@ -55,28 +55,25 @@ class Label : public View {
   virtual ~Label();
 
   // Overridden to compute the size required to display this label.
-  virtual gfx::Size GetPreferredSize();
+  virtual gfx::Size GetPreferredSize() OVERRIDE;
 
   // Overriden to return the baseline of the label.
-  virtual int GetBaseline();
+  virtual int GetBaseline() OVERRIDE;
 
   // Return the height necessary to display this label with the provided width.
   // This method is used to layout multi-line labels. It is equivalent to
   // GetPreferredSize().height() if the receiver is not multi-line.
   virtual int GetHeightForWidth(int w);
 
-  // Overriden to dirty our text bounds if we're multi-line.
-  virtual void OnBoundsChanged();
-
   // Returns views/Label.
-  virtual std::string GetClassName() const;
+  virtual std::string GetClassName() const OVERRIDE;
 
   // Overridden to paint
-  virtual void OnPaint(gfx::Canvas* canvas);
+  virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE;
 
   // If the mouse is over the label, and a mouse over background has been
   // specified, its used. Otherwise super's implementation is invoked.
-  virtual void OnPaintBackground(gfx::Canvas* canvas);
+  virtual void OnPaintBackground(gfx::Canvas* canvas) OVERRIDE;
 
   // Set the font.
   void SetFont(const gfx::Font& font);
@@ -166,7 +163,7 @@ class Label : public View {
   const Background* GetMouseOverBackground() const;
 
   // Sets the enabled state. Setting the enabled state resets the color.
-  virtual void SetEnabled(bool enabled);
+  virtual void SetEnabled(bool enabled) OVERRIDE;
 
   // Overridden from View:
   virtual gfx::Insets GetInsets() const;
@@ -180,8 +177,8 @@ class Label : public View {
   void SizeToFit(int max_width);
 
   // Accessibility accessors, overridden from View.
-  virtual AccessibilityTypes::Role GetAccessibleRole();
-  virtual AccessibilityTypes::State GetAccessibleState();
+  virtual AccessibilityTypes::Role GetAccessibleRole() OVERRIDE;
+  virtual AccessibilityTypes::State GetAccessibleState() OVERRIDE;
 
   // Gets/sets the flag to determine whether the label should be collapsed when
   // it's hidden (not visible). If this flag is true, the label will return a
@@ -208,6 +205,10 @@ class Label : public View {
   void invalidate_text_size() { text_size_valid_ = false; }
 
   virtual gfx::Size GetTextSize() const;
+
+  // Overriden to dirty our text bounds if we're multi-line.
+  virtual void OnBoundsChanged(const gfx::Rect& previous_bounds) OVERRIDE;
+
  private:
   // These tests call CalculateDrawStringParams in order to verify the
   // calculations done for drawing text.

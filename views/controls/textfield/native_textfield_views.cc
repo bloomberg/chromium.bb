@@ -122,10 +122,6 @@ void NativeTextfieldViews::OnPaint(gfx::Canvas* canvas) {
     OnPaintBorder(canvas);
 }
 
-void NativeTextfieldViews::OnBoundsChanged() {
-  UpdateCursorBoundsAndTextOffset();
-}
-
 void NativeTextfieldViews::OnFocus() {
   NOTREACHED();
 }
@@ -404,6 +400,10 @@ bool NativeTextfieldViews::IsTextfieldViewsEnabled() {
 // static
 void NativeTextfieldViews::SetEnableTextfieldViews(bool enabled) {
   textfield_view_enabled = enabled;
+}
+
+void NativeTextfieldViews::OnBoundsChanged(const gfx::Rect& previous_bounds) {
+  UpdateCursorBoundsAndTextOffset();
 }
 
 

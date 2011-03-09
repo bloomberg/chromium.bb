@@ -74,14 +74,6 @@ void ExtensionView::SetVisible(bool is_visible) {
   }
 }
 
-void ExtensionView::OnBoundsChanged() {
-  View::OnBoundsChanged();
-  // Propagate the new size to RenderWidgetHostView.
-  // We can't send size zero because RenderWidget DCHECKs that.
-  if (render_view_host()->view() && !bounds().IsEmpty())
-    render_view_host()->view()->SetSize(size());
-}
-
 void ExtensionView::CreateWidgetHostView() {
   DCHECK(!initialized_);
   initialized_ = true;
@@ -178,6 +170,13 @@ bool ExtensionView::SkipDefaultKeyEventProcessing(const views::KeyEvent& e) {
   // Let the tab key event be processed by the renderer (instead of moving the
   // focus to the next focusable view).
   return (e.key_code() == ui::VKEY_TAB);
+}
+
+void ExtensionView::OnBoundsChanged(const gfx::Rect& previous_bounds) {
+  // Propagate the new size to RenderWidgetHostView.
+  // We can't send size zero because RenderWidget DCHECKs that.
+  if (render_view_host()->view() && !bounds().IsEmpty())
+    render_view_host()->view()->SetSize(size());
 }
 
 void ExtensionView::HandleMouseMove() {

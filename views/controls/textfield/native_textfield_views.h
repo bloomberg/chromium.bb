@@ -54,7 +54,6 @@ class NativeTextfieldViews : public views::View,
   virtual bool OnKeyPressed(const views::KeyEvent& e) OVERRIDE;
   virtual bool OnKeyReleased(const views::KeyEvent& e) OVERRIDE;
   virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE;
-  virtual void OnBoundsChanged() OVERRIDE;
   virtual void OnFocus() OVERRIDE;
   virtual void OnBlur() OVERRIDE;
   virtual gfx::NativeCursor GetCursorForPoint(ui::EventType event_type,
@@ -119,6 +118,9 @@ class NativeTextfieldViews : public views::View,
     NONE,
   };
 
+ protected:
+  // View override.
+  virtual void OnBoundsChanged(const gfx::Rect& previous_bounds) OVERRIDE;
 
  private:
   friend class NativeTextfieldViewsTest;

@@ -50,32 +50,28 @@ class SubmenuView : public View {
 
   // Positions and sizes the child views. This tiles the views vertically,
   // giving each child the available width.
-  virtual void Layout();
-  virtual gfx::Size GetPreferredSize();
-
-  // View method. Overridden to schedule a paint. We do this so that when
-  // scrolling occurs, everything is repainted correctly.
-  virtual void OnBoundsChanged();
+  virtual void Layout() OVERRIDE;
+  virtual gfx::Size GetPreferredSize() OVERRIDE;
 
   // Override from View.
-  virtual AccessibilityTypes::Role GetAccessibleRole();
+  virtual AccessibilityTypes::Role GetAccessibleRole() OVERRIDE;
 
   // Painting.
-  virtual void PaintChildren(gfx::Canvas* canvas);
+  virtual void PaintChildren(gfx::Canvas* canvas) OVERRIDE;
 
   // Drag and drop methods. These are forwarded to the MenuController.
   virtual bool GetDropFormats(
       int* formats,
-      std::set<OSExchangeData::CustomFormat>* custom_formats);
-  virtual bool AreDropTypesRequired();
+      std::set<OSExchangeData::CustomFormat>* custom_formats) OVERRIDE;
+  virtual bool AreDropTypesRequired() OVERRIDE;
   virtual bool CanDrop(const OSExchangeData& data);
-  virtual void OnDragEntered(const DropTargetEvent& event);
-  virtual int OnDragUpdated(const DropTargetEvent& event);
-  virtual void OnDragExited();
-  virtual int OnPerformDrop(const DropTargetEvent& event);
+  virtual void OnDragEntered(const DropTargetEvent& event) OVERRIDE;
+  virtual int OnDragUpdated(const DropTargetEvent& event) OVERRIDE;
+  virtual void OnDragExited() OVERRIDE;
+  virtual int OnPerformDrop(const DropTargetEvent& event) OVERRIDE;
 
   // Scrolls on menu item boundaries.
-  virtual bool OnMouseWheel(const MouseWheelEvent& e);
+  virtual bool OnMouseWheel(const MouseWheelEvent& e) OVERRIDE;
 
   // Returns true if the menu is showing.
   bool IsShowing();
@@ -141,7 +137,13 @@ class SubmenuView : public View {
   static const int kSubmenuBorderSize;
 
  protected:
-  virtual std::string GetClassName() const;
+  // View override.
+  virtual std::string GetClassName() const OVERRIDE;
+
+  // View method. Overridden to schedule a paint. We do this so that when
+  // scrolling occurs, everything is repainted correctly.
+  virtual void OnBoundsChanged(const gfx::Rect& previous_bounds) OVERRIDE;
+
 
  private:
   // Paints the drop indicator. This is only invoked if item is non-NULL and

@@ -73,10 +73,6 @@ int Label::GetHeightForWidth(int w) {
   return h + GetInsets().height();
 }
 
-void Label::OnBoundsChanged() {
-  text_size_valid_ &= !is_multi_line_;
-}
-
 std::string Label::GetClassName() const {
   return kViewClassName;
 }
@@ -314,6 +310,10 @@ gfx::Size Label::GetTextSize() const {
   }
 
   return text_size_;
+}
+
+void Label::OnBoundsChanged(const gfx::Rect& previous_bounds) {
+  text_size_valid_ &= !is_multi_line_;
 }
 
 // static

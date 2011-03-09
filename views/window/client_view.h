@@ -55,14 +55,15 @@ class ClientView : public View {
   virtual int NonClientHitTest(const gfx::Point& point);
 
   // Overridden from View:
-  virtual gfx::Size GetPreferredSize();
-  virtual void Layout();
+  virtual gfx::Size GetPreferredSize() OVERRIDE;
+  virtual void Layout() OVERRIDE;
 
  protected:
   // Overridden from View:
-  virtual void ViewHierarchyChanged(bool is_add, View* parent, View* child);
-  virtual void OnBoundsChanged();
-  virtual AccessibilityTypes::Role GetAccessibleRole();
+  virtual void ViewHierarchyChanged(
+      bool is_add, View* parent, View* child) OVERRIDE;
+  virtual void OnBoundsChanged(const gfx::Rect& previous_bounds) OVERRIDE;
+  virtual AccessibilityTypes::Role GetAccessibleRole() OVERRIDE;
 
   // Accessors for private data members.
   Window* window() const { return window_; }

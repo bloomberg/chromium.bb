@@ -252,13 +252,6 @@ void MenuScrollViewContainer::Layout() {
   scroll_view_->Layout();
 }
 
-void MenuScrollViewContainer::OnBoundsChanged() {
-  gfx::Size content_pref = scroll_view_->GetContents()->GetPreferredSize();
-  scroll_up_button_->SetVisible(content_pref.height() > height());
-  scroll_down_button_->SetVisible(content_pref.height() > height());
-  Layout();
-}
-
 gfx::Size MenuScrollViewContainer::GetPreferredSize() {
   gfx::Size prefsize = scroll_view_->GetContents()->GetPreferredSize();
   gfx::Insets insets = GetInsets();
@@ -274,6 +267,14 @@ AccessibilityTypes::State MenuScrollViewContainer::GetAccessibleState() {
   // Some AT (like NVDA) will not process focus events on menu item children
   // unless a parent claims to be focused.
   return AccessibilityTypes::STATE_FOCUSED;
+}
+
+void MenuScrollViewContainer::OnBoundsChanged(
+    const gfx::Rect& previous_bounds) {
+  gfx::Size content_pref = scroll_view_->GetContents()->GetPreferredSize();
+  scroll_up_button_->SetVisible(content_pref.height() > height());
+  scroll_down_button_->SetVisible(content_pref.height() > height());
+  Layout();
 }
 
 }  // namespace views
