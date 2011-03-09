@@ -72,6 +72,8 @@ class OwnersDatabaseTest(unittest.TestCase):
 
   def test_covered_by__owners_propagates_down(self):
     self.assert_covered_by(['chrome/gpu/OWNERS'], [ben])
+
+  def test_covered_by__no_file_in_dir(self):
     self.assert_covered_by(['/chrome/renderer/gpu/gpu_channel_host.h'], [peter])
 
   def assert_not_covered_by(self, files, reviewers, unreviewed_files):
@@ -114,8 +116,11 @@ class OwnersDatabaseTest(unittest.TestCase):
     db = self.db()
     self.files['/foo/OWNERS'] = owners_file_contents
     self.files['/foo/DEPS'] = ''
-    self.assertRaises(owners.SyntaxErrorInOwnersFile, db.reviewers_for,
-      ['/foo/DEPS'])
+    try:
+      db.reviewers_for(['/foo/DEPS'])
+      self.fail()  # pragma: no cover
+    except owners.SyntaxErrorInOwnersFile, e:
+      self.assertTrue(str(e).startswith('/foo/OWNERS:1'))
 
   def test_syntax_error__unknown_token(self):
     self.assert_syntax_error('{}\n')

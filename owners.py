@@ -16,17 +16,14 @@ BASIC_EMAIL_REGEXP = r'^[\w\-\+\%\.]+\@[\w\-\+\%\.]+$'
 
 
 class SyntaxErrorInOwnersFile(Exception):
-  def __init__(self, path, line, msg):
-    super(SyntaxErrorInOwnersFile, self).__init__((path, line, msg))
+  def __init__(self, path, lineno, msg):
+    super(SyntaxErrorInOwnersFile, self).__init__((path, lineno, msg))
     self.path = path
-    self.line = line
+    self.lineno = lineno
     self.msg = msg
 
   def __str__(self):
-    if self.msg:
-      return "%s:%d syntax error: %s" % (self.path, self.line, self.msg)
-    else:
-      return "%s:%d syntax error" % (self.path, self.line)
+    return "%s:%d syntax error: %s" % (self.path, self.lineno, self.msg)
 
 
 class Database(object):
@@ -141,11 +138,16 @@ class Database(object):
       if line == 'set noparent':
         self.stop_looking.add(dirpath)
         continue
+      if line.startswith('set '):
+        raise SyntaxErrorInOwnersFile(owners_path, lineno,
+            'unknown option: "%s"' % line[4:].strip())
       if self.email_regexp.match(line) or line == EVERYONE:
         self.owned_by.setdefault(line, set()).add(dirpath)
         self.owners_for.setdefault(dirpath, set()).add(line)
         continue
-      raise SyntaxErrorInOwnersFile(owners_path, lineno, line)
+      raise SyntaxErrorInOwnersFile(owners_path, lineno,
+            ('line is not a comment, a "set" directive, '
+             'or an email address: "%s"' % line))
 
   def _covering_set_of_owners_for(self, files):
     # TODO(dpranke): implement the greedy algorithm for covering sets, and
