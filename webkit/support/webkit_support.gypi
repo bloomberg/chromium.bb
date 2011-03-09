@@ -83,13 +83,11 @@
         '<(DEPTH)/webkit/tools/test_shell/mock_webclipboard_impl.h',
         '<(DEPTH)/webkit/tools/test_shell/simple_appcache_system.cc',
         '<(DEPTH)/webkit/tools/test_shell/simple_appcache_system.h',
+        '<(DEPTH)/webkit/tools/test_shell/simple_clipboard_impl.cc',
         '<(DEPTH)/webkit/tools/test_shell/simple_file_system.cc',
         '<(DEPTH)/webkit/tools/test_shell/simple_file_system.h',
         '<(DEPTH)/webkit/tools/test_shell/simple_file_writer.cc',
         '<(DEPTH)/webkit/tools/test_shell/simple_file_writer.h',
-        '<(DEPTH)/webkit/tools/test_shell/simple_clipboard_impl.cc',
-        '<(DEPTH)/webkit/tools/test_shell/simple_database_system.cc',
-        '<(DEPTH)/webkit/tools/test_shell/simple_database_system.h',
         '<(DEPTH)/webkit/tools/test_shell/simple_resource_loader_bridge.cc',
         '<(DEPTH)/webkit/tools/test_shell/simple_resource_loader_bridge.h',
         '<(DEPTH)/webkit/tools/test_shell/simple_socket_stream_bridge.cc',
@@ -102,6 +100,8 @@
         '<(DEPTH)/webkit/tools/test_shell/test_shell_webblobregistry_impl.h',
         '<(DEPTH)/webkit/tools/test_shell/test_shell_webmimeregistry_impl.cc',
         '<(DEPTH)/webkit/tools/test_shell/test_shell_webmimeregistry_impl.h',
+        'simple_database_system.cc',
+        'simple_database_system.h',
       ],
       'conditions': [
         ['inside_chromium_build==0', {

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "webkit/tools/test_shell/simple_database_system.h"
+#include "webkit/support/simple_database_system.h"
 
 #include "base/auto_reset.h"
 #include "base/file_util.h"

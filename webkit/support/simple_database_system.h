@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef WEBKIT_TOOLS_TEST_SHELL_SIMPLE_DATABASE_SYSTEM_H_
-#define WEBKIT_TOOLS_TEST_SHELL_SIMPLE_DATABASE_SYSTEM_H_
+#ifndef WEBKIT_SUPPORT_SIMPLE_DATABASE_SYSTEM_H_
+#define WEBKIT_SUPPORT_SIMPLE_DATABASE_SYSTEM_H_
 
 #include "base/file_path.h"
 #include "base/hash_tables.h"
@@ -81,4 +81,4 @@ class SimpleDatabaseSystem : public webkit_database::DatabaseTracker::Observer,
   webkit_database::DatabaseConnections database_connections_;
 };
 
-#endif  // WEBKIT_TOOLS_TEST_SHELL_SIMPLE_DATABASE_SYSTEM_H_
+#endif  // WEBKIT_SUPPORT_SIMPLE_DATABASE_SYSTEM_H_

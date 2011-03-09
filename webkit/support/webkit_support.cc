@@ -47,9 +47,9 @@
 #include "webkit/plugins/npapi/webplugin_page_delegate.h"
 #include "webkit/plugins/npapi/webplugininfo.h"
 #include "webkit/support/platform_support.h"
+#include "webkit/support/simple_database_system.h"
 #include "webkit/support/test_webplugin_page_delegate.h"
 #include "webkit/support/test_webkit_client.h"
-#include "webkit/tools/test_shell/simple_database_system.h"
 #include "webkit/tools/test_shell/simple_file_system.h"
 #include "webkit/tools/test_shell/simple_resource_loader_bridge.h"
 
