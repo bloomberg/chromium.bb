@@ -19,32 +19,46 @@ struct DownloadCreateInfo;
 // Usage:
 // {
 //    scoped_refptr<DownloadSBClient> client_ = new DownloadSBClient(...);
-//    client_->CheckDownloadUrl(NewCallback(this, &DownloadManager::CallBack));
+//    client_->CheckDownloadUrl(..., NewCallback(this,
+//                              &DownloadManager::UrlCallBack));
+//    or
+//    client_->CheckDownloadHash(..., NewCallback(this,
+//                               &DownloadManager::HashCallBack));
 // }
-// DownloadManager::CallBack(...) {
+// DownloadManager::UrlCallBack(...) or HashCallCall {
 //    // After this, the |client_| is gone.
 // }
 class DownloadSBClient
     : public SafeBrowsingService::Client,
       public base::RefCountedThreadSafe<DownloadSBClient> {
  public:
-  typedef Callback2<DownloadCreateInfo*, bool>::Type DoneCallback;
+  typedef Callback2<DownloadCreateInfo*, bool>::Type UrlDoneCallback;
+  typedef Callback2<int32, bool>::Type HashDoneCallback;
 
-  explicit DownloadSBClient(DownloadCreateInfo* info);
+  DownloadSBClient(int32 download_id,
+                   const GURL& download_url,
+                   const GURL& page_url,
+                   const GURL& referrer_url);
 
-  // Note: This method can only be called once per DownloadSBClient instance.
-  void CheckDownloadUrl(DoneCallback* callback);
-
- protected:
-  // Call SafeBrowsingService on IO thread to verify the download URL.
-  void CheckDownloadUrlOnIOThread();
-
-  // The callback interface for SafeBrowsingService::Client.
-  // Called when the result of checking a download URL is known.
-  virtual void OnDownloadUrlCheckResult(
-      const GURL& url, SafeBrowsingService::UrlCheckResult result);
+  // Call safebrowsing service to verifiy the download.
+  // For each DownloadSBClient instance, either CheckDownloadUrl or
+  // CheckDownloadHash can be called, and be called only once.
+  // DownloadSBClient instance.
+  void CheckDownloadUrl(DownloadCreateInfo* info, UrlDoneCallback* callback);
+  void CheckDownloadHash(const std::string& hash, HashDoneCallback* callback);
 
  private:
+  // Call SafeBrowsingService on IO thread to verify the download URL or
+  // hash of downloaded file.
+  void CheckDownloadUrlOnIOThread(const GURL& url);
+  void CheckDownloadHashOnIOThread(const std::string& hash);
+
+  // Callback interfaces for SafeBrowsingService::Client.
+  virtual void OnDownloadUrlCheckResult(
+      const GURL& url, SafeBrowsingService::UrlCheckResult result);
+  virtual void OnDownloadHashCheckResult(
+      const std::string& hash, SafeBrowsingService::UrlCheckResult result);
+
   // Enumerate for histogramming purposes.
   // DO NOT CHANGE THE ORDERING OF THESE VALUES (different histogram data will
   // be mixed together based on their values).
@@ -53,27 +67,42 @@ class DownloadSBClient
     DOWNLOAD_URL_CHECKS_CANCELED,
     DOWNLOAD_URL_CHECKS_MALWARE,
 
+    DOWNLOAD_HASH_CHECKS_TOTAL,
+    DOWNLOAD_HASH_CHECKS_MALWARE,
+
     // Memory space for histograms is determined by the max.
     // ALWAYS ADD NEW VALUES BEFORE THIS ONE.
-    DOWNLOAD_URL_CHECKS_MAX
+    DOWNLOAD_CHECKS_MAX
   };
 
   friend class base::RefCountedThreadSafe<DownloadSBClient>;
   virtual ~DownloadSBClient();
 
-  // Call DownloadManager on UI thread.
+  // Call DownloadManager on UI thread for download URL or hash check.
   void SafeBrowsingCheckUrlDone(SafeBrowsingService::UrlCheckResult result);
+  void SafeBrowsingCheckHashDone(SafeBrowsingService::UrlCheckResult result);
+
+  // Report malware hits to safebrowsing service.
+  void ReportMalware(SafeBrowsingService::UrlCheckResult result);
 
   // Update the UMA stats.
-  void UpdateDownloadUrlCheckStats(SBStatsType stat_type);
+  void UpdateDownloadCheckStats(SBStatsType stat_type);
 
-  scoped_ptr<DoneCallback> done_callback_;
+  scoped_ptr<UrlDoneCallback> url_done_callback_;
+  scoped_ptr<HashDoneCallback> hash_done_callback_;
 
   // Not owned by this class.
   DownloadCreateInfo* info_;
+
+  int32 download_id_;
   scoped_refptr<SafeBrowsingService> sb_service_;
 
-  // When a safebrowsing URL check starts, for stats purpose.
+  // These URLs are used to report malware to safe browsing service.
+  GURL download_url_;
+  GURL page_url_;
+  GURL referrer_url_;
+
+  // When a safebrowsing check starts, for stats purpose.
   base::TimeTicks start_time_;
 
   DISALLOW_COPY_AND_ASSIGN(DownloadSBClient);

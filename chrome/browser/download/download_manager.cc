@@ -250,9 +250,10 @@ void DownloadManager::StartDownload(DownloadCreateInfo* info) {
 
   // Create a client to verify download URL with safebrowsing.
   // It deletes itself after the callback.
-  scoped_refptr<DownloadSBClient> sb_client = new DownloadSBClient(info);
+  scoped_refptr<DownloadSBClient> sb_client = new DownloadSBClient(
+      info->download_id, info->url, info->original_url, info->referrer_url);
   sb_client->CheckDownloadUrl(
-      NewCallback(this, &DownloadManager::CheckDownloadUrlDone));
+      info, NewCallback(this, &DownloadManager::CheckDownloadUrlDone));
 }
 
 void DownloadManager::CheckDownloadUrlDone(DownloadCreateInfo* info,
@@ -525,7 +526,9 @@ void DownloadManager::UpdateDownload(int32 download_id, int64 size) {
   }
 }
 
-void DownloadManager::OnAllDataSaved(int32 download_id, int64 size) {
+void DownloadManager::OnAllDataSaved(int32 download_id,
+                                     int64 size,
+                                     const std::string& hash) {
   VLOG(20) << __FUNCTION__ << "()" << " download_id = " << download_id
            << " size = " << size;
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
@@ -538,7 +541,37 @@ void DownloadManager::OnAllDataSaved(int32 download_id, int64 size) {
   DownloadItem* download = active_downloads_[download_id];
   download->OnAllDataSaved(size);
 
+  // When hash is not available, it means either it is not calculated
+  // or there is error while it is calculated. We will skip the download hash
+  // check in that case.
+  if (!hash.empty()) {
+    scoped_refptr<DownloadSBClient> sb_client =
+        new DownloadSBClient(download_id,
+                             download->url(),
+                             download->original_url(),
+                             download->referrer_url());
+    sb_client->CheckDownloadHash(
+        hash, NewCallback(this, &DownloadManager::CheckDownloadHashDone));
+  }
   MaybeCompleteDownload(download);
+}
+
+// TODO(lzheng): This function currently works as a callback place holder.
+// Once we decide the hash check is reliable, we could move the
+// MaybeCompleteDownload in OnAllDataSaved to this function.
+void DownloadManager::CheckDownloadHashDone(int32 download_id,
+                                            bool is_dangerous_hash) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DVLOG(1) << "CheckDownloadHashDone, download_id: " << download_id
+           << " is dangerous_hash: " << is_dangerous_hash;
+
+  // If it's not in active_downloads_, that means it was cancelled or
+  // the download already finished.
+  if (active_downloads_.count(download_id) == 0)
+    return;
+
+  DVLOG(1) << "CheckDownloadHashDone, url: "
+           << active_downloads_[download_id]->url().spec();
 }
 
 bool DownloadManager::IsDownloadReadyForCompletion(DownloadItem* download) {

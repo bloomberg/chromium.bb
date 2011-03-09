@@ -217,11 +217,15 @@ void DownloadFileManager::OnResponseCompleted(int id, DownloadBuffer* buffer) {
 
     DownloadManager* download_manager = download->GetDownloadManager();
     if (download_manager) {
+      std::string hash;
+      if (!download->GetSha256Hash(&hash))
+        hash.clear();
+
       BrowserThread::PostTask(
           BrowserThread::UI, FROM_HERE,
           NewRunnableMethod(
               download_manager, &DownloadManager::OnAllDataSaved,
-              id, download->bytes_so_far()));
+              id, download->bytes_so_far(), hash));
     }
 
     // We need to keep the download around until the UI thread has finalized
@@ -283,8 +287,7 @@ void DownloadFileManager::OnDownloadManagerShutdown(DownloadManager* manager) {
 // The DownloadManager in the UI thread has provided an intermediate .crdownload
 // name for the download specified by 'id'. Rename the in progress download.
 void DownloadFileManager::OnIntermediateDownloadName(
-    int id, const FilePath& full_path, DownloadManager* download_manager)
-{
+    int id, const FilePath& full_path, DownloadManager* download_manager) {
   VLOG(20) << __FUNCTION__ << "()" << " id = " << id
            << " full_path = \"" << full_path.value() << "\"";
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));

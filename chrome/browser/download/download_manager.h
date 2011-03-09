@@ -114,7 +114,9 @@ class DownloadManager
   // Notifications sent from the download thread to the UI thread
   void StartDownload(DownloadCreateInfo* info);
   void UpdateDownload(int32 download_id, int64 size);
-  void OnAllDataSaved(int32 download_id, int64 size);
+  // |hash| is sha256 hash for the downloaded file. It is empty when the hash
+  // is not available.
+  void OnAllDataSaved(int32 download_id, int64 size, const std::string& hash);
 
   // Called from a view when a user clicks a UI button or link.
   void DownloadCancelled(int32 download_id);
@@ -227,6 +229,10 @@ class DownloadManager
 
   // Callback function after url is checked with safebrowsing service.
   void CheckDownloadUrlDone(DownloadCreateInfo* info, bool is_dangerous_url);
+
+  // Callback function after download file hash is checked with safebrowsing
+  // service.
+  void CheckDownloadHashDone(int32 download_id, bool is_dangerous_hash);
 
  private:
   // For testing.
