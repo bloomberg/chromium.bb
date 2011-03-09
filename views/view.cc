@@ -689,7 +689,7 @@ void View::Paint(gfx::Canvas* canvas) {
   if (!IsVisible())
     return;
 
-  // We're going to modify the canvas, save it's state first.
+  // We're going to modify the canvas, save its state first.
   canvas->Save();
 
   // Paint this View and its children, setting the clip rect to the bounds
@@ -1461,7 +1461,7 @@ void View::ConvertPointToView(const View* src,
     if (!src->ConvertPointForAncestor(dst, point)) {
       // |src| is not an ancestor of |dst|, and |dst| is not an ancestor of
       // |src| either. At this stage, |point| is in the widget's coordinate
-      // system. So convert from the widget's to |dst|'s coordiante system now.
+      // system. So convert from the widget's to |dst|'s coordinate system now.
       ConvertPointFromWidget(dst, point);
     }
   }
@@ -1478,7 +1478,7 @@ bool View::ProcessMousePressed(const MouseEvent& e, DragInfo* drag_info) {
       context_menu_controller_ : 0;
 
   const bool result = OnMousePressed(e);
-  // WARNING: we may have been deleted, don't use any View variables;
+  // WARNING: we may have been deleted, don't use any View variables.
 
   if (!enabled)
     return result;
