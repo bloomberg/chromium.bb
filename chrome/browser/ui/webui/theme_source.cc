@@ -95,7 +95,9 @@ MessageLoop* ThemeSource::MessageLoopForRequestPath(
 }
 
 bool ThemeSource::ShouldReplaceExistingSource() const {
-  return false;
+  // We currently get the css_bytes_ in the ThemeSource constructor, so we need
+  // to recreate the source itself when a theme changes.
+  return true;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
