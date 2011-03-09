@@ -154,6 +154,12 @@ class OutputApi(object):
       """Whether this presubmit result should result in a prompt warning."""
       return False
 
+  class PresubmitAddText(PresubmitResult):
+    """Propagates a line of text back to the caller."""
+    def __init__(self, message, items=None, long_text=''):
+      super(OutputApi.PresubmitAddText, self).__init__("ADD: " + message,
+          items, long_text)
+
   class PresubmitError(PresubmitResult):
     """A hard presubmit error."""
     def IsFatal(self):

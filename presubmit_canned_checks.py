@@ -632,15 +632,14 @@ def CheckOwners(input_api, output_api, source_file_filter=None):
   owners_db = input_api.owners_db
 
   if input_api.is_committing:
-    missing_files = owners_db.FilesNotCoveredBy(affected_files,
+    missing_files = owners_db.files_not_covered_by(affected_files,
                                                 input_api.change.approvers)
     if missing_files:
-      return [output_api.PresubmitPromptWarning('Missing approvals for: %s' %
+      return [output_api.PresubmitError('Missing owner LGTM for: %s' %
               ','.join(missing_files))]
     return []
   elif input_api.change.tags.get('R'):
     return []
 
-  suggested_reviewers = owners_db.ReviewersFor(affected_files)
-  # TODO(dpranke): Actually propagate the info back.
-  return []
+  suggested_reviewers = owners_db.reviewers_for(affected_files)
+  return [output_api.PresubmitAddText('R=%s' % ','.join(suggested_reviewers))]

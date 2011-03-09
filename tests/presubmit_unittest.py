@@ -13,6 +13,7 @@ import StringIO
 # Fixes include path.
 from super_mox import mox, SuperMoxTestBase
 
+import owners
 import presubmit_support as presubmit
 # Shortcut.
 presubmit_canned_checks = presubmit.presubmit_canned_checks
@@ -1035,8 +1036,8 @@ class OuputApiUnittest(PresubmitTestsBase):
   def testMembersChanged(self):
     self.mox.ReplayAll()
     members = [
-      'MailTextResult', 'PresubmitError', 'PresubmitNotifyResult',
-      'PresubmitPromptWarning', 'PresubmitResult',
+      'MailTextResult', 'PresubmitAddText', 'PresubmitError',
+      'PresubmitNotifyResult', 'PresubmitPromptWarning', 'PresubmitResult',
     ]
     # If this test fails, you should add the relevant test.
     self.compareMembers(presubmit.OutputApi(), members)
@@ -1053,10 +1054,20 @@ class OuputApiUnittest(PresubmitTestsBase):
     self.failIf(presubmit.OutputApi.PresubmitNotifyResult('').IsFatal())
     self.failIf(presubmit.OutputApi.PresubmitNotifyResult('').ShouldPrompt())
 
+    self.failIf(presubmit.OutputApi.PresubmitAddText('foo').IsFatal())
+    self.failIf(presubmit.OutputApi.PresubmitAddText('foo').ShouldPrompt())
+
     # TODO(joi) Test MailTextResult once implemented.
 
   def testOutputApiHandling(self):
     self.mox.ReplayAll()
+
+    output = StringIO.StringIO()
+    unused_input = StringIO.StringIO()
+    added_text = presubmit.OutputApi.PresubmitAddText('R=ben@example.com')
+    self.failUnless(added_text._Handle(output, unused_input))
+    self.failUnlessEqual(output.getvalue(), 'ADD: R=ben@example.com\n')
+
     output = StringIO.StringIO()
     unused_input = StringIO.StringIO()
     error = presubmit.OutputApi.PresubmitError('!!!')
@@ -1839,6 +1850,59 @@ mac|success|blew
     self.assertEquals(len(results), 1)
     self.assertEquals(results[0].__class__,
         presubmit.OutputApi.PresubmitNotifyResult)
+
+  def OwnersTest(self, is_committing, change_tags=None,
+      suggested_reviewers=None, approvers=None,
+      uncovered_files=None, expected_results=None):
+    affected_file = self.mox.CreateMock(presubmit.SvnAffectedFile)
+    affected_file.LocalPath().AndReturn('foo.cc')
+    change = self.mox.CreateMock(presubmit.Change)
+    change.AffectedFiles(None).AndReturn([affected_file])
+
+    input_api = self.MockInputApi(change, False)
+    fake_db = self.mox.CreateMock(owners.Database)
+    input_api.owners_db = fake_db
+    input_api.is_committing = is_committing
+
+    if is_committing:
+      change.approvers = approvers
+      fake_db.files_not_covered_by(set(['foo.cc']), approvers).AndReturn(
+          uncovered_files)
+    else:
+      change.tags = change_tags
+      if not change_tags.get('R'):
+        fake_db.reviewers_for(set(['foo.cc'])).AndReturn(suggested_reviewers)
+
+    self.mox.ReplayAll()
+    results = presubmit_canned_checks.CheckOwners(input_api,
+        presubmit.OutputApi, None)
+    self.assertEquals(len(results), len(expected_results))
+    if results and expected_results:
+      output = StringIO.StringIO()
+      unused_input = StringIO.StringIO()
+      results[0]._Handle(output, unused_input)
+      self.assertEquals(output.getvalue(), expected_results[0])
+
+  def testCannedCheckOwners_WithReviewer(self):
+    self.OwnersTest(is_committing=False, change_tags={'R': 'ben@example.com'},
+        expected_results=[])
+
+  def testCannedCheckOwners_NoReviewer(self):
+    self.OwnersTest(is_committing=False, change_tags={},
+        suggested_reviewers=['ben@example.com'],
+        expected_results=['ADD: R=ben@example.com\n'])
+
+  def testCannedCheckOwners_CommittingWithoutOwnerLGTM(self):
+    self.OwnersTest(is_committing=True,
+        approvers=set(),
+        uncovered_files=set(['foo.cc']),
+        expected_results=['Missing owner LGTM for: foo.cc\n'])
+
+  def testCannedCheckOwners_CommittingWithLGTMs(self):
+    self.OwnersTest(is_committing=True,
+        approvers=set('ben@example.com'),
+        uncovered_files=set(),
+        expected_results=[])
 
 
 if __name__ == '__main__':
