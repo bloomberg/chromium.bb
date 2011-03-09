@@ -22,7 +22,10 @@
  * to request a pointer to a specific browser interface. Browser interface
  * names are ASCII strings and are generally defined in the header file for the
  * interface, such as PP_AUDIO_INTERFACE found in ppb.audio.h or
- * PPB_GRAPHICS_2D_INTERFACE in ppb_graphics_2d.h.
+ * PPB_GRAPHICS_2D_INTERFACE in ppb_graphics_2d.h. Click
+ * <a href="http://code.google.com/chrome/nativeclient/docs/reference/pepperc/
+ *globals_defs.html" title="macros">here</a> for a complete list of interface
+ * names.
  *
  * This value will be NULL if the interface is not supported on the browser.
  */
