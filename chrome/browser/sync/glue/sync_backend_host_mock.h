@@ -8,10 +8,10 @@
 
 #include <set>
 
-#include "chrome/browser/sync/glue/sync_backend_host.h"
 #include "base/task.h"
+#include "chrome/browser/sync/glue/sync_backend_host.h"
 #include "chrome/browser/sync/profile_sync_test_util.h"
-#include "chrome/common/notification_type.h"
+#include "content/common/notification_type.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
 namespace browser_sync {

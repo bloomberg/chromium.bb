@@ -6,10 +6,10 @@
 #include "base/string16.h"
 #include "chrome/browser/printing/print_job.h"
 #include "chrome/browser/printing/print_job_worker.h"
-#include "chrome/common/notification_registrar.h"
-#include "chrome/common/notification_service.h"
-#include "printing/printed_pages_source.h"
+#include "content/common/notification_registrar.h"
+#include "content/common/notification_service.h"
 #include "googleurl/src/gurl.h"
+#include "printing/printed_pages_source.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace {

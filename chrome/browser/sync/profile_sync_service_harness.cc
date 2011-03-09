@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -8,13 +8,13 @@
 #include <vector>
 
 #include "base/message_loop.h"
-#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/net/gaia/token_service.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sync/glue/sync_backend_host.h"
 #include "chrome/browser/sync/sessions/session_state.h"
 #include "chrome/common/net/gaia/gaia_constants.h"
 #include "chrome/common/net/gaia/google_service_auth_error.h"
-#include "chrome/common/notification_source.h"
+#include "content/common/notification_source.h"
 
 // The amount of time for which we wait for a live sync operation to complete.
 static const int kLiveSyncOperationTimeoutMs = 45000;

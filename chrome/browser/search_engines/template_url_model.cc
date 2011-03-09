@@ -28,9 +28,9 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/env_vars.h"
 #include "chrome/common/extensions/extension.h"
-#include "chrome/common/notification_service.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
+#include "content/common/notification_service.h"
 #include "net/base/net_util.h"
 #include "ui/base/l10n/l10n_util.h"
 

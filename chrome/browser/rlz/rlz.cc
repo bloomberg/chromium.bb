@@ -8,8 +8,8 @@
 
 #include "chrome/browser/rlz/rlz.h"
 
-#include <windows.h>
 #include <process.h>
+#include <windows.h>
 
 #include <algorithm>
 
@@ -17,10 +17,10 @@
 #include "base/message_loop.h"
 #include "base/path_service.h"
 #include "base/string_util.h"
+#include "base/synchronization/lock.h"
 #include "base/task.h"
 #include "base/threading/thread.h"
 #include "base/threading/thread_restrictions.h"
-#include "base/synchronization/lock.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/profile.h"
@@ -29,10 +29,10 @@
 #include "chrome/browser/search_engines/template_url_model.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/env_vars.h"
-#include "chrome/common/notification_registrar.h"
-#include "chrome/common/notification_service.h"
 #include "chrome/installer/util/google_update_settings.h"
 #include "content/browser/browser_thread.h"
+#include "content/common/notification_registrar.h"
+#include "content/common/notification_service.h"
 
 namespace {
 

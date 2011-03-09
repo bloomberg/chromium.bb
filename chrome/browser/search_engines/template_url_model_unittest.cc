@@ -3,10 +3,10 @@
 // found in the LICENSE file.
 
 #include "base/callback.h"
+#include "base/ref_counted.h"
 #include "base/scoped_vector.h"
 #include "base/string_split.h"
 #include "base/string_util.h"
-#include "base/ref_counted.h"
 #include "base/threading/thread.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/history/history.h"
@@ -18,12 +18,12 @@
 #include "chrome/browser/search_engines/template_url_model_test_util.h"
 #include "chrome/browser/search_engines/template_url_prepopulate_data.h"
 #include "chrome/browser/webdata/web_database.h"
-#include "chrome/common/notification_details.h"
-#include "chrome/common/notification_source.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/testing_pref_service.h"
 #include "chrome/test/testing_profile.h"
 #include "content/browser/browser_thread.h"
+#include "content/common/notification_details.h"
+#include "content/common/notification_source.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using base::Time;

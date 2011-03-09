@@ -15,10 +15,10 @@
 #include "chrome/browser/upgrade_detector.h"
 #include "chrome/common/child_process_host.h"
 #include "chrome/common/chrome_switches.h"
-#include "chrome/common/notification_service.h"
 #include "chrome/common/service_messages.h"
 #include "chrome/common/service_process_util.h"
 #include "content/browser/browser_thread.h"
+#include "content/common/notification_service.h"
 #include "ui/base/ui_base_switches.h"
 
 

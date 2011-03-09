@@ -19,7 +19,7 @@
 #include "chrome/browser/webdata/web_data_service.h"
 #include "chrome/browser/webdata/web_database.h"
 #include "chrome/common/guid.h"
-#include "chrome/common/notification_service.h"
+#include "content/common/notification_service.h"
 
 namespace browser_sync {
 

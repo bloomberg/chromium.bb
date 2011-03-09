@@ -8,8 +8,8 @@
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/printing/print_job.h"
-#include "chrome/common/notification_service.h"
 #include "content/browser/browser_thread.h"
+#include "content/common/notification_service.h"
 #include "printing/printed_document.h"
 #include "printing/printed_page.h"
 

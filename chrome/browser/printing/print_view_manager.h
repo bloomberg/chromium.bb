@@ -8,9 +8,9 @@
 
 #include "base/ref_counted.h"
 #include "base/string16.h"
-#include "chrome/common/notification_observer.h"
-#include "chrome/common/notification_registrar.h"
 #include "content/browser/tab_contents/tab_contents_observer.h"
+#include "content/common/notification_observer.h"
+#include "content/common/notification_registrar.h"
 #include "printing/printed_pages_source.h"
 
 class RenderViewHost;
