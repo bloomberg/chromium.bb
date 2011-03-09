@@ -324,3 +324,23 @@ void SpellCheckHostImpl::SaveDictionaryData() {
   data_.clear();
   Initialize();
 }
+
+const base::PlatformFile& SpellCheckHostImpl::GetDictionaryFile() const {
+  return file_;
+}
+
+const std::vector<std::string>& SpellCheckHostImpl::GetCustomWords() const {
+  return custom_words_;
+}
+
+const std::string& SpellCheckHostImpl::GetLastAddedFile() const {
+  return custom_words_.back();
+}
+
+const std::string& SpellCheckHostImpl::GetLanguage() const {
+  return language_;
+}
+
+bool SpellCheckHostImpl::IsUsingPlatformChecker() const {
+  return use_platform_spellchecker_;
+}

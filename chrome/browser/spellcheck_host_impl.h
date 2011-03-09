@@ -50,25 +50,15 @@ class SpellCheckHostImpl : public SpellCheckHost,
 
   virtual void AddWord(const std::string& word);
 
-  virtual const base::PlatformFile& GetDictionaryFile() const {
-    return file_;
-  }
+  virtual const base::PlatformFile& GetDictionaryFile() const;
 
-  virtual const std::vector<std::string>& GetCustomWords() const {
-    return custom_words_;
-  }
+  virtual const std::vector<std::string>& GetCustomWords() const;
 
-  virtual const std::string& GetLastAddedFile() const {
-    return custom_words_.back();
-  }
+  virtual const std::string& GetLastAddedFile() const;
 
-  virtual const std::string& GetLanguage() const {
-    return language_;
-  }
+  virtual const std::string& GetLanguage() const;
 
-  virtual bool IsUsingPlatformChecker() const {
-    return use_platform_spellchecker_;
-  }
+  virtual bool IsUsingPlatformChecker() const;
 
  private:
   // These two classes can destruct us.
