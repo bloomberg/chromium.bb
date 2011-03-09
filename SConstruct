@@ -2153,7 +2153,6 @@ if nacl_env.Bit('build_av_apps'):
       # TODO(polina,dspringer): *** Add this test back in when URLLoader
       # works! ***
       # 'tests/multiarch/nacl.scons',
-      'tests/voronoi/nacl.scons',
       ])
 
 nacl_env.Append(
