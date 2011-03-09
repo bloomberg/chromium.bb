@@ -182,10 +182,10 @@ def FileWrite(filename, content, mode='w'):
     f.close()
 
 
-def RemoveDirectory(*path):
-  """Recursively removes a directory, even if it's marked read-only.
+def rmtree(path):
+  """shutil.rmtree() on steroids.
 
-  Remove the directory located at *path, if it exists.
+  Recursively removes a directory, even if it's marked read-only.
 
   shutil.rmtree() doesn't work on Windows if any of the files or directories
   are read-only, which svn repositories and some .svn files are.  We need to
@@ -208,63 +208,55 @@ def RemoveDirectory(*path):
   In the ordinary case, this is not a problem: for our purposes, the user
   will never lack write permission on *path's parent.
   """
-  logging.debug(path)
-  file_path = os.path.join(*path)
-  if not os.path.exists(file_path):
+  if not os.path.exists(path):
     return
 
-  if os.path.islink(file_path) or not os.path.isdir(file_path):
-    raise Error('RemoveDirectory asked to remove non-directory %s' % file_path)
+  if os.path.islink(path) or not os.path.isdir(path):
+    raise Error('Called rmtree(%s) in non-directory' % path)
 
-  has_win32api = False
   if sys.platform == 'win32':
-    has_win32api = True
     # Some people don't have the APIs installed. In that case we'll do without.
     try:
       win32api = __import__('win32api')
       win32con = __import__('win32con')
     except ImportError:
-      has_win32api = False
+      pass
   else:
     # On POSIX systems, we need the x-bit set on the directory to access it,
     # the r-bit to see its contents, and the w-bit to remove files from it.
     # The actual modes of the files within the directory is irrelevant.
-    os.chmod(file_path, stat.S_IRUSR | stat.S_IWUSR | stat.S_IXUSR)
-  for fn in os.listdir(file_path):
-    fullpath = os.path.join(file_path, fn)
+    os.chmod(path, stat.S_IRUSR | stat.S_IWUSR | stat.S_IXUSR)
 
+  def remove(func, subpath):
+    if sys.platform == 'win32':
+      os.chmod(subpath, stat.S_IWRITE)
+      if win32api and win32con:
+        win32api.SetFileAttributes(subpath, win32con.FILE_ATTRIBUTE_NORMAL)
+    try:
+      func(subpath)
+    except OSError, e:
+      if e.errno != errno.EACCES or sys.platform != 'win32':
+        raise
+      # Failed to delete, try again after a 100ms sleep.
+      time.sleep(0.1)
+      func(subpath)
+
+  for fn in os.listdir(path):
     # If fullpath is a symbolic link that points to a directory, isdir will
     # be True, but we don't want to descend into that as a directory, we just
     # want to remove the link.  Check islink and treat links as ordinary files
     # would be treated regardless of what they reference.
+    fullpath = os.path.join(path, fn)
     if os.path.islink(fullpath) or not os.path.isdir(fullpath):
-      if sys.platform == 'win32':
-        os.chmod(fullpath, stat.S_IWRITE)
-        if has_win32api:
-          win32api.SetFileAttributes(fullpath, win32con.FILE_ATTRIBUTE_NORMAL)
-      try:
-        os.remove(fullpath)
-      except OSError, e:
-        if e.errno != errno.EACCES or sys.platform != 'win32':
-          raise
-        print 'Failed to delete %s: trying again' % fullpath
-        time.sleep(0.1)
-        os.remove(fullpath)
+      remove(os.remove, fullpath)
     else:
-      RemoveDirectory(fullpath)
+      # Recurse.
+      rmtree(fullpath)
 
-  if sys.platform == 'win32':
-    os.chmod(file_path, stat.S_IWRITE)
-    if has_win32api:
-      win32api.SetFileAttributes(file_path, win32con.FILE_ATTRIBUTE_NORMAL)
-  try:
-    os.rmdir(file_path)
-  except OSError, e:
-    if e.errno != errno.EACCES or sys.platform != 'win32':
-      raise
-    print 'Failed to remove %s: trying again' % file_path
-    time.sleep(0.1)
-    os.rmdir(file_path)
+  remove(os.rmdir, path)
+
+# TODO(maruel): Rename the references.
+RemoveDirectory = rmtree
 
 
 def CheckCallAndFilterAndHeader(args, always=False, **kwargs):

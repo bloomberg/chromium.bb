@@ -276,7 +276,7 @@ class RealSvnTest(fake_repos.FakeReposTestBase):
     self._capture(
         ['propset', 'foo', 'bar',
          scm.os.path.join(self.svn_root, 'prout', 'origin')])
-    fake_repos.rmtree(scm.os.path.join(self.svn_root, 'prout'))
+    fake_repos.gclient_utils.rmtree(scm.os.path.join(self.svn_root, 'prout'))
     with open(scm.os.path.join(self.svn_root, 'faa'), 'w') as f:
       f.write('eh')
     with open(scm.os.path.join(self.svn_root, 'faala'), 'w') as f:

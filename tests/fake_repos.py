@@ -7,20 +7,18 @@
 
 import atexit
 import datetime
-import errno
 import logging
 import os
 import pprint
 import re
 import socket
-import stat
 import subprocess
 import sys
 import tempfile
-import time
 
 # trial_dir must be first for non-system libraries.
 from tests import trial_dir
+import gclient_utils
 import scm
 
 ## Utility functions
@@ -64,71 +62,6 @@ def add_kill():
     def kill_nix(process):
       return kill_pid(process.pid)
     subprocess.Popen.kill = kill_nix
-
-
-def rmtree(*path):
-  """Recursively removes a directory, even if it's marked read-only.
-
-  Remove the directory located at *path, if it exists.
-
-  shutil.rmtree() doesn't work on Windows if any of the files or directories
-  are read-only, which svn repositories and some .svn files are.  We need to
-  be able to force the files to be writable (i.e., deletable) as we traverse
-  the tree.
-
-  Even with all this, Windows still sometimes fails to delete a file, citing
-  a permission error (maybe something to do with antivirus scans or disk
-  indexing).  The best suggestion any of the user forums had was to wait a
-  bit and try again, so we do that too.  It's hand-waving, but sometimes it
-  works. :/
-  """
-  file_path = os.path.join(*path)
-  if not os.path.exists(file_path):
-    return
-
-  def RemoveWithRetry_win(rmfunc, path):
-    os.chmod(path, stat.S_IWRITE)
-    if win32_api_avail:
-      win32api.SetFileAttributes(path, win32con.FILE_ATTRIBUTE_NORMAL)
-    try:
-      return rmfunc(path)
-    except EnvironmentError, e:
-      if e.errno != errno.EACCES:
-        raise
-      print 'Failed to delete %s: trying again' % repr(path)
-      time.sleep(0.1)
-      return rmfunc(path)
-
-  def RemoveWithRetry_non_win(rmfunc, path):
-    if os.path.islink(path):
-      return os.remove(path)
-    else:
-      return rmfunc(path)
-
-  win32_api_avail = False
-  remove_with_retry = None
-  if sys.platform.startswith('win'):
-    # Some people don't have the APIs installed. In that case we'll do without.
-    try:
-      win32api = __import__('win32api')
-      win32con = __import__('win32con')
-      win32_api_avail = True
-    except ImportError:
-      pass
-    remove_with_retry = RemoveWithRetry_win
-  else:
-    remove_with_retry = RemoveWithRetry_non_win
-
-  for root, dirs, files in os.walk(file_path, topdown=False):
-    # For POSIX:  making the directory writable guarantees removability.
-    # Windows will ignore the non-read-only bits in the chmod value.
-    os.chmod(root, 0770)
-    for name in files:
-      remove_with_retry(os.remove, os.path.join(root, name))
-    for name in dirs:
-      remove_with_retry(os.rmdir, os.path.join(root, name))
-
-  remove_with_retry(os.rmdir, file_path)
 
 
 def write(path, content):
@@ -309,9 +242,9 @@ class FakeReposBase(object):
       self.svnserve = None
       if not self.trial.SHOULD_LEAK:
         logging.debug('Removing %s' % self.svn_repo)
-        rmtree(self.svn_repo)
+        gclient_utils.rmtree(self.svn_repo)
         logging.debug('Removing %s' % self.svn_checkout)
-        rmtree(self.svn_checkout)
+        gclient_utils.rmtree(self.svn_checkout)
       else:
         return False
     return True
@@ -330,7 +263,7 @@ class FakeReposBase(object):
       self.wait_for_port_to_free(self.git_port)
       if not self.trial.SHOULD_LEAK:
         logging.debug('Removing %s' % self.git_root)
-        rmtree(self.git_root)
+        gclient_utils.rmtree(self.git_root)
       else:
         return False
     return True

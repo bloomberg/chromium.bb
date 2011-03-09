@@ -9,7 +9,8 @@ import StringIO
 
 # Fixes include path.
 from super_mox import SuperMoxTestBase
-
+import trial_dir
+import os
 import gclient_utils
 
 
@@ -32,8 +33,8 @@ class GclientUtilsUnittest(GclientUtilBase):
         'ParseXML', 'Popen',
         'PrintableObject', 'RemoveDirectory', 'SoftClone', 'SplitUrlRevision',
         'SyntaxErrorToError', 'WorkItem',
-        'errno', 'hack_subprocess', 'logging', 'os', 'Queue', 're', 'stat',
-        'subprocess', 'sys','threading', 'time', 'xml',
+        'errno', 'hack_subprocess', 'logging', 'os', 'Queue', 're', 'rmtree',
+        'stat', 'subprocess', 'sys','threading', 'time', 'xml',
     ]
     # If this test fails, you should add the relevant test.
     self.compareMembers(gclient_utils, members)
@@ -179,6 +180,24 @@ class SplitUrlRevisionTestCase(GclientUtilBase):
     out_url, out_rev = gclient_utils.SplitUrlRevision("%s@%s" % (url, rev))
     self.assertEquals(out_rev, rev)
     self.assertEquals(out_url, url)
+
+
+class GClientUtilsTest(trial_dir.TestCase):
+  def testHardToDelete(self):
+    # Use the fact that tearDown will delete the directory to make it hard to do
+    # so.
+    l1 = os.path.join(self.root_dir, 'l1')
+    l2 = os.path.join(l1, 'l2')
+    l3 = os.path.join(l2, 'l3')
+    f3 = os.path.join(l3, 'f3')
+    os.mkdir(l1)
+    os.mkdir(l2)
+    os.mkdir(l3)
+    gclient_utils.FileWrite(f3, 'foo')
+    os.chmod(f3, 0)
+    os.chmod(l3, 0)
+    os.chmod(l2, 0)
+    os.chmod(l1, 0)
 
 
 if __name__ == '__main__':
