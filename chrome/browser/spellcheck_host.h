@@ -9,33 +9,64 @@
 #include <string>
 #include <vector>
 
-#include "base/file_path.h"
 #include "base/platform_file.h"
 #include "base/ref_counted.h"
-#include "base/scoped_ptr.h"
-#include "chrome/common/net/url_fetcher.h"
 #include "content/browser/browser_thread.h"
 
 class Profile;
 class SpellCheckHostObserver;
 class URLRequestContextGetter;
 
-class SpellCheckHost : public base::RefCountedThreadSafe<SpellCheckHost,
-                           BrowserThread::DeleteOnFileThread>,
-                       public URLFetcher::Delegate {
+// An abstract interface that provides operations that controls the spellchecker
+// attached to the browser. This class provides the operations listed below:
+// * Adding a word to the user dictionary;
+// * Retrieving the dictionary file (if it has one);
+// * Retrieving the list of words in the user dictionary;
+// * Retrieving the language used by the spellchecker.
+// * Listing available languages for a Profile object;
+// * Accepting an observer to reacting the state change of the object.
+//   You can also remove the observer from the SpellCheckHost object.
+//   The object should implement SpellCheckHostObserver interface.
+//
+// The following snippet describes how to use this class,
+//   std::vector<std::string> languages;
+//   SpellCheckHost::GetSpellCheckLanguages(profile_, &languages);
+//   spellcheck_host_ = SpellCheckHost::Create(
+//       observer, languages[0], req_getter);
+//
+// The class is intended to be owned by ProfileImpl so users should
+// retrieve the instance via Profile::GetSpellCheckHost().
+// Users should not hold the reference over the function scope because
+// the instance can be invalidated during the browser's lifecycle.
+class SpellCheckHost
+    : public base::RefCountedThreadSafe<SpellCheckHost,
+                                        BrowserThread::DeleteOnFileThread> {
  public:
-  SpellCheckHost(SpellCheckHostObserver* observer,
-                 const std::string& language,
-                 URLRequestContextGetter* request_context_getter);
+  virtual ~SpellCheckHost() {}
 
-  void Initialize();
+  // Creates the instance of SpellCheckHost implementation object.
+  static scoped_refptr<SpellCheckHost> Create(
+      SpellCheckHostObserver* observer,
+      const std::string& language,
+      URLRequestContextGetter* request_context_getter);
 
-  // Clear |observer_|. Used to prevent calling back to a deleted object.
-  void UnsetObserver();
+  // Clears an observer which is set on creation.
+  // Used to prevent calling back to a deleted object.
+  virtual void UnsetObserver() = 0;
 
-  // Add the given word to the custom words list and inform renderer of the
+  // Adds the given word to the custom words list and inform renderer of the
   // update.
-  void AddWord(const std::string& word);
+  virtual void AddWord(const std::string& word) = 0;
+
+  virtual const base::PlatformFile& GetDictionaryFile() const = 0;
+
+  virtual const std::vector<std::string>& GetCustomWords() const = 0;
+
+  virtual const std::string& GetLastAddedFile() const = 0;
+
+  virtual const std::string& GetLanguage() const = 0;
+
+  virtual bool IsUsingPlatformChecker() const = 0;
 
   // This function computes a vector of strings which are to be displayed in
   // the context menu over a text area for changing spell check languages. It
@@ -44,93 +75,6 @@ class SpellCheckHost : public base::RefCountedThreadSafe<SpellCheckHost,
   // has some dependencies in l10n util that need porting first.
   static int GetSpellCheckLanguages(Profile* profile,
                                     std::vector<std::string>* languages);
-
-  const base::PlatformFile& bdict_file() const { return file_; }
-
-  const std::vector<std::string>& custom_words() const { return custom_words_; }
-
-  const std::string& last_added_word() const { return custom_words_.back(); }
-
-  const std::string& language() const { return language_; }
-
-  bool use_platform_spellchecker() const { return use_platform_spellchecker_; }
-
- private:
-  // These two classes can destruct us.
-  friend class BrowserThread;
-  friend class DeleteTask<SpellCheckHost>;
-
-  virtual ~SpellCheckHost();
-
-  // Figure out the location for the dictionary. This is only non-trivial for
-  // Windows:
-  // The default place whether the spellcheck dictionary can reside is
-  // chrome::DIR_APP_DICTIONARIES. However, for systemwide installations,
-  // this directory may not have permissions for download. In that case, the
-  // alternate directory for download is chrome::DIR_USER_DATA.
-  void InitializeDictionaryLocation();
-
-  // Load and parse the custom words dictionary and open the bdic file.
-  // Executed on the file thread.
-  void InitializeInternal();
-
-  void InitializeOnFileThread();
-
-  // Inform |observer_| that initialization has finished.
-  void InformObserverOfInitialization();
-
-  // If |bdict_file_| is missing, we attempt to download it.
-  void DownloadDictionary();
-
-  // Write a custom dictionary addition to disk.
-  void WriteWordToCustomDictionary(const std::string& word);
-
-  // URLFetcher::Delegate implementation.  Called when we finish downloading the
-  // spellcheck dictionary; saves the dictionary to |data_|.
-  virtual void OnURLFetchComplete(const URLFetcher* source,
-                                  const GURL& url,
-                                  const net::URLRequestStatus& status,
-                                  int response_code,
-                                  const ResponseCookies& cookies,
-                                  const std::string& data);
-
-  // Saves |data_| to disk. Run on the file thread.
-  void SaveDictionaryData();
-
-  // May be NULL.
-  SpellCheckHostObserver* observer_;
-
-  // The desired location of the dictionary file (whether or not t exists yet).
-  FilePath bdict_file_path_;
-
-  // The location of the custom words file.
-  FilePath custom_dictionary_file_;
-
-  // The language of the dictionary file.
-  std::string language_;
-
-  // The file descriptor/handle for the dictionary file.
-  base::PlatformFile file_;
-
-  // In-memory cache of the custom words file.
-  std::vector<std::string> custom_words_;
-
-  // We don't want to attempt to download a missing dictionary file more than
-  // once.
-  bool tried_to_download_;
-
-  // Whether we should use the platform spellchecker instead of Hunspell.
-  bool use_platform_spellchecker_;
-
-  // Data received from the dictionary download.
-  std::string data_;
-
-  // Used for downloading the dictionary file. We don't hold a reference, and
-  // it is only valid to use it on the UI thread.
-  URLRequestContextGetter* request_context_getter_;
-
-  // Used for downloading the dictionary file.
-  scoped_ptr<URLFetcher> fetcher_;
 };
 
 #endif  // CHROME_BROWSER_SPELLCHECK_HOST_H_

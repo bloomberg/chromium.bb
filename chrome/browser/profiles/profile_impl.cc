@@ -1223,11 +1223,10 @@ void ProfileImpl::ReinitializeSpellCheckHost(bool force) {
   PrefService* prefs = GetPrefs();
   if (prefs->GetBoolean(prefs::kEnableSpellCheck)) {
     // Retrieve the (perhaps updated recently) dictionary name from preferences.
-    spellcheck_host_ = new SpellCheckHost(
+    spellcheck_host_ = SpellCheckHost::Create(
         this,
         prefs->GetString(prefs::kSpellCheckDictionary),
         GetRequestContext());
-    spellcheck_host_->Initialize();
   } else if (notify) {
     // The spellchecker has been disabled.
     SpellCheckHostInitialized();
@@ -1236,8 +1235,9 @@ void ProfileImpl::ReinitializeSpellCheckHost(bool force) {
 
 void ProfileImpl::SpellCheckHostInitialized() {
   spellcheck_host_ready_ = spellcheck_host_ &&
-      (spellcheck_host_->bdict_file() != base::kInvalidPlatformFileValue ||
-       spellcheck_host_->use_platform_spellchecker());
+      (spellcheck_host_->GetDictionaryFile() !=
+       base::kInvalidPlatformFileValue ||
+       spellcheck_host_->IsUsingPlatformChecker());
   NotificationService::current()->Notify(
       NotificationType::SPELLCHECK_HOST_REINITIALIZED,
           Source<Profile>(this), NotificationService::NoDetails());

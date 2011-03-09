@@ -1814,6 +1814,8 @@
         'browser/speech/speech_input_manager.cc',
         'browser/spellcheck_host.cc',
         'browser/spellcheck_host.h',
+        'browser/spellcheck_host_impl.cc',
+        'browser/spellcheck_host_impl.h',
         'browser/spellcheck_message_filter.cc',
         'browser/spellcheck_message_filter.h',
         'browser/spellchecker_linux.cc',

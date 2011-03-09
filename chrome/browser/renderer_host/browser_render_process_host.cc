@@ -1144,7 +1144,7 @@ void BrowserRenderProcessHost::Observe(NotificationType type,
     case NotificationType::SPELLCHECK_WORD_ADDED: {
       AddSpellCheckWord(
           reinterpret_cast<const Source<SpellCheckHost>*>(&source)->
-          ptr()->last_added_word());
+          ptr()->GetLastAddedFile());
       break;
     }
     case NotificationType::SPELLCHECK_AUTOSPELL_TOGGLED: {
@@ -1244,19 +1244,25 @@ void BrowserRenderProcessHost::InitSpellChecker() {
     PrefService* prefs = profile()->GetPrefs();
     IPC::PlatformFileForTransit file;
 
-    if (spellcheck_host->bdict_file() != base::kInvalidPlatformFileValue) {
+    if (spellcheck_host->GetDictionaryFile() !=
+        base::kInvalidPlatformFileValue) {
 #if defined(OS_POSIX)
-      file = base::FileDescriptor(spellcheck_host->bdict_file(), false);
+      file = base::FileDescriptor(spellcheck_host->GetDictionaryFile(), false);
 #elif defined(OS_WIN)
-      ::DuplicateHandle(::GetCurrentProcess(), spellcheck_host->bdict_file(),
-                        GetHandle(), &file, 0, false, DUPLICATE_SAME_ACCESS);
+      ::DuplicateHandle(::GetCurrentProcess(),
+                        spellcheck_host->GetDictionaryFile(),
+                        GetHandle(),
+                        &file,
+                        0,
+                        false,
+                        DUPLICATE_SAME_ACCESS);
 #endif
     }
 
     Send(new ViewMsg_SpellChecker_Init(
         file,
-        spellcheck_host->custom_words(),
-        spellcheck_host->language(),
+        spellcheck_host->GetCustomWords(),
+        spellcheck_host->GetLanguage(),
         prefs->GetBoolean(prefs::kEnableAutoSpellCorrect)));
   } else {
     Send(new ViewMsg_SpellChecker_Init(
