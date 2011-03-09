@@ -96,9 +96,7 @@ bool CollectDriverInfoGL(GPUInfo* gpu_info) {
   size_t pos = gl_version_string.find_last_of('-');
   if (pos == std::string::npos)
     return false;
-  gpu_info->driver_vendor = "";
   gpu_info->driver_version = gl_version_string.substr(pos + 1);
-  gpu_info->driver_date = "";
   return true;
 }
 

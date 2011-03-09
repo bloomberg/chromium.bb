@@ -273,7 +273,6 @@ bool CollectDriverInfoGL(GPUInfo* gpu_info) {
 
   gpu_info->driver_vendor = pieces[1];
   gpu_info->driver_version = driver_version;
-  gpu_info->driver_date = "";
   return true;
 }
 

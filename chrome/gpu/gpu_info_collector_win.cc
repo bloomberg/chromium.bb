@@ -232,7 +232,6 @@ bool CollectDriverInfoD3D(const std::wstring& device_id, GPUInfo* gpu_info) {
         if (result == ERROR_SUCCESS)
           driver_date = WideToASCII(std::wstring(value));
 
-        gpu_info->driver_vendor = "";
         gpu_info->driver_version = driver_version;
         gpu_info->driver_date = driver_date;
         found = true;
@@ -256,9 +255,7 @@ bool CollectDriverInfoGL(GPUInfo* gpu_info) {
 
   size_t pos = gl_version_string.find_last_not_of("0123456789.");
   if (pos != std::string::npos && pos < gl_version_string.length() - 1) {
-    gpu_info->driver_vendor = "";
     gpu_info->driver_version = gl_version_string.substr(pos + 1);
-    gpu_info->driver_date = "";
     return true;
   }
   return false;
