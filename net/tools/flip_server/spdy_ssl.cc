@@ -44,9 +44,8 @@ void InitSSL(SSLState* state,
   // Disable SSLv2 support.
   SSL_CTX_set_options(state->ssl_ctx,
                       SSL_OP_NO_SSLv2 | SSL_OP_CIPHER_SERVER_PREFERENCE);
-  if (SSL_CTX_use_certificate_file(state->ssl_ctx,
-                                   ssl_cert_name.c_str(),
-                                   SSL_FILETYPE_PEM) <= 0) {
+  if (SSL_CTX_use_certificate_chain_file(state->ssl_ctx,
+                                         ssl_cert_name.c_str()) <= 0) {
     PrintSslError();
     LOG(FATAL) << "Unable to use cert.pem as SSL cert.";
   }
