@@ -199,3 +199,6 @@ PREFIX: webcore::cssselector::~cssselector___webcore::cssselectorlist::deletesel
 
 # 75459
 PREFIX: webcore::inlinebox::logicalheight___webcore::inlineflowbox::maxyvisualoverflow___webcore::renderlineboxlist::anylineintersectsrect___webcore::renderlineboxlist::paint___webcore::renderblock::paintcontents___webcore::renderblock::paintobject
+
+# 75490
+PREFIX: webcore::font::operator==___webcore::styleinheriteddata::operator==___webcore::dataref<webcore::styleinheriteddata>::operator==___webcore::renderstyle::operator==___webcore::node::diff___webcore::element::recalcstyle
