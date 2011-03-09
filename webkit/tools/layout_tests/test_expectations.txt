@@ -21,3 +21,6 @@ BUG_TONYG MAC : svg/text/font-size-below-point-five.svg = TEXT
 
 // Skip these tests until the test_expecitations can be updated after this Chromium patch lands.
 BUGWK44797 SKIP : fullscreen = PASS FAIL TIMEOUT
+
+// Until new baselines land in WebKit.
+BUG_MMALY : fast/js/mozilla/strict/15.5.5.1.html = PASS TEXT
