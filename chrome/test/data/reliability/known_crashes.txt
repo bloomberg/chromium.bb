@@ -187,3 +187,6 @@ PREFIX: webcore::cssparser::createfloatingvaluelist___cssyyparse___webcore::cssp
 
 # 75368
 PREFIX: skpixelref::unlockpixels___skbitmap::freepixels___webcore::framedata::clear___wtf::vector<webcore::framedata,0>::shrink___webcore::bitmapimage::~bitmapimage___webcore::bitmapimage::`scalar deleting destructor'___webcore::cachedimage::~cachedimage___webcore::cachedimage::`scalar deleting destructor'
+
+# 75373
+PREFIX: webcore::scriptexecutioncontext::~scriptexecutioncontext___webcore::document::~document___webcore::imagedocument::`scalar deleting destructor'___webcore::node::~node___webcore::htmlparagraphelement::`scalar deleting destructor'___themeinstalledinfobardelegate::infobarclosed___webcore::domdatastore::weaknodecallback___v8::internal::globalhandles::node::postgarbagecollectionprocessing___v8::internal::globalhandles::postgarbagecollectionprocessing
