@@ -10,6 +10,14 @@
 #include <vector>
 
 #include "base/basictypes.h"
+#include "base/cpu.h"
+
+#if defined(ARCH_CPU_X86_FAMILY)
+#if defined(__x86_64__) || defined(_M_X64) || defined(__SSE2__) || _M_IX86_FP==2
+// This is where we had compiler support for SSE2 instructions.
+#define SIMD_SSE2 1
+#endif
+#endif
 
 // avoid confusion with Mac OS X's math library (Carbon)
 #if defined(__APPLE__)
@@ -98,6 +106,17 @@ class ConvolutionFilter1D {
     return &filter_values_[filter.data_location];
   }
 
+
+  inline void PaddingForSIMD(int padding_count) {
+    // Padding |padding_count| of more dummy coefficients after the coefficients
+    // of last filter to prevent SIMD instructions which load 8 or 16 bytes
+    // together to access invalid memory areas. We are not trying to align the
+    // coefficients right now due to the opaqueness of <vector> implementation.
+    // This has to be done after all |AddFilter| calls.
+    for (int i = 0; i < padding_count; ++i)
+      filter_values_.push_back(static_cast<Fixed>(0));
+  }
+
  private:
   struct FilterInstance {
     // Offset within filter_values for this instance of the filter.
@@ -146,8 +165,8 @@ void BGRAConvolve2D(const unsigned char* source_data,
                     const ConvolutionFilter1D& xfilter,
                     const ConvolutionFilter1D& yfilter,
                     int output_byte_row_stride,
-                    unsigned char* output);
-
+                    unsigned char* output,
+                    bool use_sse2);
 }  // namespace skia
 
 #endif  // SKIA_EXT_CONVOLVER_H_

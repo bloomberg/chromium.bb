@@ -7,8 +7,14 @@
 #include <vector>
 
 #include "base/basictypes.h"
+#include "base/logging.h"
+#include "base/time.h"
 #include "skia/ext/convolver.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/skia/include/core/SkBitmap.h"
+#include "third_party/skia/include/core/SkColorPriv.h"
+#include "third_party/skia/include/core/SkRect.h"
+#include "third_party/skia/include/core/SkTypes.h"
 
 namespace skia {
 
@@ -35,7 +41,7 @@ void TestImpulseConvolution(const unsigned char* data, int width, int height) {
   std::vector<unsigned char> output;
   output.resize(byte_count);
   BGRAConvolve2D(data, width * 4, true, filter_x, filter_y,
-                 filter_x.num_values() * 4, &output[0]);
+                 filter_x.num_values() * 4, &output[0], false);
 
   // Output should exactly match input.
   EXPECT_EQ(0, memcmp(data, &output[0], byte_count));
@@ -106,7 +112,7 @@ TEST(Convolver, Halve) {
 
   // Do the convolution.
   BGRAConvolve2D(&input[0], src_width, true, filter_x, filter_y,
-                 filter_x.num_values() * 4, &output[0]);
+                 filter_x.num_values() * 4, &output[0], false);
 
   // Compute the expected results and check, allowing for a small difference
   // to account for rounding errors.
@@ -202,6 +208,114 @@ TEST(Convolver, AddFilter) {
   ASSERT_TRUE(values == NULL);   // filter_length == 0 => values is NULL
   ASSERT_EQ(66, filter_offset);  // value passed in
   ASSERT_EQ(0, filter_length);
+}
+
+TEST(Convolver, SIMDVerification) {
+#if defined(SIMD_SSE2)
+  base::CPU cpu;
+  if (!cpu.has_sse2()) return;
+
+  int source_sizes[][2] = { {1920, 1080}, {720, 480}, {1377, 523}, {325, 241} };
+  int dest_sizes[][2] = { {1280, 1024}, {480, 270}, {177, 123} };
+  float filter[] = { 0.05f, -0.15f, 0.6f, 0.6f, -0.15f, 0.05f };
+
+  srand(static_cast<unsigned int>(time(0)));
+
+  // Loop over some specific source and destination dimensions.
+  for (unsigned int i = 0; i < arraysize(source_sizes); ++i) {
+    unsigned int source_width = source_sizes[i][0];
+    unsigned int source_height = source_sizes[i][1];
+    for (unsigned int j = 0; j < arraysize(dest_sizes); ++j) {
+      unsigned int dest_width = source_sizes[j][0];
+      unsigned int dest_height = source_sizes[j][1];
+
+      // Preparing convolve coefficients.
+      ConvolutionFilter1D x_filter, y_filter;
+      for (unsigned int p = 0; p < dest_width; ++p) {
+        unsigned int offset = source_width * p / dest_width;
+        if (offset > source_width - arraysize(filter))
+          offset = source_width - arraysize(filter);
+        x_filter.AddFilter(offset, filter, arraysize(filter));
+      }
+      for (unsigned int p = 0; p < dest_height; ++p) {
+        unsigned int offset = source_height * p / dest_height;
+        if (offset > source_height - arraysize(filter))
+          offset = source_height - arraysize(filter);
+        y_filter.AddFilter(offset, filter, arraysize(filter));
+      }
+
+      // Allocate input and output skia bitmap.
+      SkBitmap source, result_c, result_sse;
+      source.setConfig(SkBitmap::kARGB_8888_Config,
+                       source_width, source_height);
+      source.allocPixels();
+      result_c.setConfig(SkBitmap::kARGB_8888_Config,
+                         dest_width, dest_height);
+      result_c.allocPixels();
+      result_sse.setConfig(SkBitmap::kARGB_8888_Config,
+                           dest_width, dest_height);
+      result_sse.allocPixels();
+
+      // Randomize source bitmap for testing.
+      unsigned char* src_ptr = static_cast<unsigned char*>(source.getPixels());
+      for (int y = 0; y < source.height(); y++) {
+        for (int x = 0; x < source.rowBytes(); x++)
+          src_ptr[x] = rand() % 255;
+        src_ptr += source.rowBytes();
+      }
+
+      // Test both cases with different has_alpha.
+      for (int alpha = 0; alpha < 2; alpha++) {
+        // Convolve using C code.
+        base::TimeTicks resize_start;
+        base::TimeDelta delta_c, delta_sse;
+        unsigned char* r1 = static_cast<unsigned char*>(result_c.getPixels());
+        unsigned char* r2 = static_cast<unsigned char*>(result_sse.getPixels());
+
+        resize_start = base::TimeTicks::Now();
+        BGRAConvolve2D(static_cast<const uint8*>(source.getPixels()),
+                       static_cast<int>(source.rowBytes()),
+                       alpha ? true : false, x_filter, y_filter,
+                       static_cast<int>(result_c.rowBytes()), r1, false);
+        delta_c = base::TimeTicks::Now() - resize_start;
+
+        resize_start = base::TimeTicks::Now();
+        // Convolve using SSE2 code
+        BGRAConvolve2D(static_cast<const uint8*>(source.getPixels()),
+                       static_cast<int>(source.rowBytes()),
+                       alpha ? true : false, x_filter, y_filter,
+                       static_cast<int>(result_sse.rowBytes()), r2, true);
+        delta_sse = base::TimeTicks::Now() - resize_start;
+
+        // Unfortunately I could not enable the performance check now.
+        // Most bots use debug version, and there are great difference between
+        // the code generation for intrinsic, etc. In release version speed
+        // difference was 150%-200% depend on alpha channel presence;
+        // while in debug version speed difference was 96%-120%.
+        // TODO(jiesun): optimize further until we could enable this for
+        // debug version too.
+        // EXPECT_LE(delta_sse, delta_c);
+
+        int64 c_us = delta_c.InMicroseconds();
+        int64 sse_us = delta_sse.InMicroseconds();
+        LOG(INFO) << "from:" << source_width << "x" << source_height
+                  << " to:" << dest_width << "x" << dest_height
+                  << (alpha ? " with alpha" : " w/o alpha");
+        LOG(INFO) << "c:" << c_us << " sse:" << sse_us;
+        LOG(INFO) << "ratio:" << static_cast<float>(c_us) / sse_us;
+
+        // Comparing result.
+        for (unsigned int i = 0; i < dest_height; i++) {
+          for (unsigned int x = 0; x < dest_width * 4; x++) {  // RGBA always.
+            EXPECT_EQ(r1[x], r2[x]);
+          }
+          r1 += result_c.rowBytes();
+          r2 += result_sse.rowBytes();
+        }
+      }
+    }
+  }
+#endif
 }
 
 }  // namespace skia

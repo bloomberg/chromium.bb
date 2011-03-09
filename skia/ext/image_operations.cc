@@ -16,10 +16,10 @@
 #include "base/time.h"
 #include "build/build_config.h"
 #include "skia/ext/convolver.h"
+#include "third_party/skia/include/core/SkColorPriv.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/core/SkRect.h"
 #include "third_party/skia/include/core/SkFontHost.h"
-#include "third_party/skia/include/core/SkColorPriv.h"
 
 namespace skia {
 
@@ -316,6 +316,8 @@ void ResizeFilter::ComputeFilters(int src_size,
     output->AddFilter(src_begin, &fixed_filter_values[0],
                       static_cast<int>(fixed_filter_values->size()));
   }
+
+  output->PaddingForSIMD(8);
 }
 
 ImageOperations::ResizeMethod ResizeMethodToAlgorithmMethod(
@@ -502,6 +504,7 @@ SkBitmap ImageOperations::ResizeBasic(const SkBitmap& source,
       reinterpret_cast<const uint8*>(source.getPixels());
 
   // Convolve into the result.
+  base::CPU cpu;
   SkBitmap result;
   result.setConfig(SkBitmap::kARGB_8888_Config,
                    dest_subset.width(), dest_subset.height());
@@ -509,7 +512,8 @@ SkBitmap ImageOperations::ResizeBasic(const SkBitmap& source,
   BGRAConvolve2D(source_subset, static_cast<int>(source.rowBytes()),
                  !source.isOpaque(), filter.x_filter(), filter.y_filter(),
                  static_cast<int>(result.rowBytes()),
-                 static_cast<unsigned char*>(result.getPixels()));
+                 static_cast<unsigned char*>(result.getPixels()),
+                 cpu.has_sse2());
 
   // Preserve the "opaque" flag for use as an optimization later.
   result.setIsOpaque(source.isOpaque());
