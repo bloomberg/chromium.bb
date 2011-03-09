@@ -4,6 +4,6 @@
 
 {
   'variables': {
-    'plugin_version': '0.1.43.5',
+    'plugin_version': '0.1.43.6',
   }
 }
