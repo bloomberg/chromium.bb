@@ -124,7 +124,6 @@
         'controls/listbox/native_listbox_win.h',
         'controls/listbox/listbox.cc',
         'controls/listbox/listbox.h',
-        'controls/menu/controller.h',
         'controls/menu/menu.cc',
         'controls/menu/menu.h',
         'controls/menu/menu_2.cc',

@@ -136,7 +136,6 @@
       'sources': [
         'framework/pepper.cc',
         '../../third_party/gles2_book/Common/Include/esUtil.h',
-        '../../third_party/gles2_book/Common/Include/esUtil_win.h',
         '../../third_party/gles2_book/Common/Source/esShader.c',
         '../../third_party/gles2_book/Common/Source/esShapes.c',
         '../../third_party/gles2_book/Common/Source/esTransform.c',

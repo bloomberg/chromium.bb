@@ -70,7 +70,6 @@
         '../third_party/skia/gpu/include/GrPaint.h',
         '../third_party/skia/gpu/include/GrPath.h',
         '../third_party/skia/gpu/include/GrPathIter.h',
-        '../third_party/skia/gpu/include/GrPathRenderer.h',
         '../third_party/skia/gpu/include/GrPathSink.h',
         '../third_party/skia/gpu/include/GrPoint.h',
         '../third_party/skia/gpu/include/GrRandom.h',
@@ -424,8 +423,6 @@
 
         '../third_party/skia/src/images/bmpdecoderhelper.cpp',
         '../third_party/skia/src/images/bmpdecoderhelper.h',
-        '../third_party/skia/src/images/fpdfemb.h',
-        '../third_party/skia/src/images/fpdfemb_ext.h',
         '../third_party/skia/src/images/SkBitmap_RLEPixels.h',
         '../third_party/skia/src/images/SkCreateRLEPixelRef.cpp',
         #'../third_party/skia/src/images/SkFDStream.cpp',
@@ -482,7 +479,7 @@
         #'../third_party/skia/src/ports/SkXMLPullParser_expat.cpp',
         '../third_party/skia/src/ports/sk_predefined_gamma.h',
 
-        '../third_party/skia/src/include/utils/mac/SkCGUtils.h',
+        '../third_party/skia/include/utils/mac/SkCGUtils.h',
         '../third_party/skia/src/utils/mac/SkCreateCGImageRef.cpp',
 
         '../third_party/skia/include/core/Sk64.h',
