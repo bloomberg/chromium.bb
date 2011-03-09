@@ -13,6 +13,9 @@ const char kAllowFileAccessFromFiles[]      = "allow-file-access-from-files";
 // Allows debugging of sandboxed processes (see zygote_main_linux.cc).
 const char kAllowSandboxDebugging[]         = "allow-sandbox-debugging";
 
+// Path to the exe to run for the renderer and plugin subprocesses.
+const char kBrowserSubprocessPath[]         = "browser-subprocess-path";
+
 // Disable limits on the number of backing stores. Can prevent blinking for
 // users with many windows/tabs and lots of memory.
 const char kDisableBackingStoreLimit[]      = "disable-backing-store-limit";

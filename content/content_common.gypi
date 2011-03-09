@@ -26,6 +26,8 @@
         'common/content_message_generator.h',
         'common/content_constants.cc',
         'common/content_constants.h',
+        'common/content_paths.cc',
+        'common/content_paths.h',
         'common/content_switches.cc',
         'common/content_switches.h',
         'common/file_system/file_system_dispatcher.cc',

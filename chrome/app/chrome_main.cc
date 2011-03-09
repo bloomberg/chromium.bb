@@ -27,6 +27,7 @@
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_counters.h"
 #include "chrome/common/chrome_paths.h"
+#include "chrome/common/chrome_paths_internal.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/chrome_version_info.h"
 #include "chrome/common/logging_chrome.h"
@@ -36,6 +37,7 @@
 #include "chrome/common/set_process_title.h"
 #include "chrome/common/url_constants.h"
 #include "content/browser/renderer_host/render_process_host.h"
+#include "content/common/content_paths.h"
 #include "ipc/ipc_switches.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/ui_base_paths.h"
@@ -562,6 +564,15 @@ int ChromeMain(int argc, char** argv) {
   app::RegisterPathProvider();
   ui::RegisterPathProvider();
   chrome::RegisterPathProvider();
+  content::RegisterPathProvider();
+
+#if defined(OS_MACOSX)
+  // On the Mac, the child executable lives at a predefined location within
+  // the app bundle's versioned directory.
+  PathService::Override(content::CHILD_PROCESS_EXE,
+      chrome::GetVersionedDirectory().
+          Append(chrome::kHelperProcessExecutablePath));
+#endif
 
   // Notice a user data directory override if any
   FilePath user_data_dir =

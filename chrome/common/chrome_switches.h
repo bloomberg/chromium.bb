@@ -43,7 +43,6 @@ extern const char kAutomationClientChannelID[];
 extern const char kBlockReadingThirdPartyCookies[];
 extern const char kBrowserAssertTest[];
 extern const char kBrowserCrashTest[];
-extern const char kBrowserSubprocessPath[];
 extern const char kCheckForUpdateIntervalSec[];
 extern const char kChromeFrame[];
 extern const char kChromeVersion[];

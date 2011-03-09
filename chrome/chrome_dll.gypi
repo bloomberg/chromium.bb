@@ -599,6 +599,7 @@
             # to avoid making common compile on 64 bit on Windows.
             '../content/common/child_process.cc',
             '../content/common/child_thread.cc',
+            '../content/common/content_paths.cc',
             '../content/common/content_switches.cc',
             '../content/common/notification_details.cc',
             '../content/common/notification_service.cc',

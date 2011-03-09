@@ -94,9 +94,6 @@ const char kBrowserAssertTest[]             = "assert-test";
 // Causes the browser process to crash on startup.
 const char kBrowserCrashTest[]              = "crash-test";
 
-// Path to the exe to run for the renderer and plugin subprocesses.
-const char kBrowserSubprocessPath[]         = "browser-subprocess-path";
-
 // How often (in seconds) to check for updates. Should only be used for
 // testing purposes.
 const char kCheckForUpdateIntervalSec[]     = "check-for-update-interval";

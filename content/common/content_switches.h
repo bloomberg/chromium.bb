@@ -12,6 +12,7 @@ namespace switches {
 
 extern const char kAllowFileAccessFromFiles[];
 extern const char kAllowSandboxDebugging[];
+extern const char kBrowserSubprocessPath[];
 extern const char kDisableBackingStoreLimit[];
 extern const char kDisableFileSystem[];
 extern const char kDisableGpuSandbox[];

@@ -5,14 +5,14 @@
 #include "chrome/common/child_process_host.h"
 
 #include "base/command_line.h"
+#include "base/file_path.h"
 #include "base/metrics/histogram.h"
 #include "base/path_service.h"
 #include "base/third_party/dynamic_annotations/dynamic_annotations.h"
 #include "chrome/common/child_process_info.h"
-#include "chrome/common/chrome_constants.h"
-#include "chrome/common/chrome_paths_internal.h"
-#include "chrome/common/chrome_switches.h"
 #include "content/common/child_process_messages.h"
+#include "content/common/content_paths.h"
+#include "content/common/content_switches.h"
 #include "ipc/ipc_logging.h"
 
 #if defined(OS_LINUX)
@@ -47,13 +47,6 @@ FilePath ChildProcessHost::GetChildPath(bool allow_self) {
   if (!child_path.empty())
     return child_path;
 
-#if defined(OS_MACOSX)
-  // On the Mac, the child executable lives at a predefined location within
-  // the app bundle's versioned directory.
-  return chrome::GetVersionedDirectory().
-      Append(chrome::kHelperProcessExecutablePath);
-#endif
-
 #if defined(OS_LINUX)
   // Use /proc/self/exe rather than our known binary path so updates
   // can't swap out the binary from underneath us.
@@ -66,7 +59,7 @@ FilePath ChildProcessHost::GetChildPath(bool allow_self) {
 
   // On most platforms, the child executable is the same as the current
   // executable.
-  PathService::Get(base::FILE_EXE, &child_path);
+  PathService::Get(content::CHILD_PROCESS_EXE, &child_path);
   return child_path;
 }
 
