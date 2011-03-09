@@ -977,6 +977,8 @@ NPError PlatformNPPSetWindow(NPP instance,
   obj->last_plugin_loc_.h = window->x;
   obj->last_plugin_loc_.v = window->y;
 
+  bool mac_cg_context_ref_changed = false;
+
   switch (obj->drawing_model_) {
     case NPDrawingModelCoreAnimation: {
       O3DLayer* o3dLayer = ObjO3DLayer(obj);
@@ -995,7 +997,11 @@ NPError PlatformNPPSetWindow(NPP instance,
         } else {
           new_window = static_cast<OpaqueWindowPtr*>(np_cg->window);
         }
-        obj->mac_cg_context_ref_ = np_cg->context;
+        CGContextRef new_mac_cg_context_ref = np_cg->context;
+        if (new_mac_cg_context_ref != obj->mac_cg_context_ref_) {
+          obj->mac_cg_context_ref_ = new_mac_cg_context_ref;
+          mac_cg_context_ref_changed = true;
+        }
       }
       break;
     }
@@ -1196,7 +1202,8 @@ NPError PlatformNPPSetWindow(NPP instance,
                            window->clipRect.right == 0);
 
   if (is_empty_cliprect && (!is_null_cliprect) &&
-      had_a_window && (!window_changed) && !obj->ScrollIsInProgress()) {
+      had_a_window && (!window_changed) && !obj->ScrollIsInProgress() &&
+      !mac_cg_context_ref_changed) {
     return NPERR_NO_ERROR;
   }
 
@@ -1251,6 +1258,13 @@ NPError PlatformNPPSetWindow(NPP instance,
     if (obj->drawing_model_ == NPDrawingModelCoreGraphics) {
       if (!obj->renderer()->SupportsCoreGraphics()) {
         obj->EnableOffscreenRendering();
+      }
+      if (mac_cg_context_ref_changed) {
+        o3d::DisplayWindowMac display;
+        display.set_agl_context(obj->mac_agl_context_);
+        display.set_cgl_context(obj->mac_cgl_context_);
+        display.set_cg_context_ref(obj->mac_cg_context_ref_);
+        obj->renderer()->ChangeDisplayWindow(display);
       }
       obj->Resize(window->width, window->height);
     } else if (had_a_window) {
