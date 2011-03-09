@@ -18,13 +18,13 @@
 	<string>APPL</string>
 	<key>CFBundleSignature</key>
 	<string>????</string>
+	<key>LSBackgroundOnly</key>
+	<true/>
 	<key>LSFileQuarantineEnabled</key>
 	<true/>
 	<key>LSHasLocalizedDisplayName</key>
 	<string>1</string>
 	<key>LSMinimumSystemVersion</key>
 	<string>10.5.0</string>
-	<key>LSUIElement</key>
-	<string>1</string>
 </dict>
 </plist>
