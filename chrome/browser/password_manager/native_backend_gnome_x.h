@@ -38,6 +38,9 @@ class NativeBackendGnome : public PasswordStoreX::NativeBackend {
   virtual bool GetBlacklistLogins(PasswordFormList* forms);
 
  private:
+  // Adds a login form without checking for one to replace first.
+  bool RawAddLogin(const webkit_glue::PasswordForm& form);
+
   // Reads PasswordForms from the keyring with the given autofillability state.
   bool GetLoginsList(PasswordFormList* forms, bool autofillable);
 
