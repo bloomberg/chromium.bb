@@ -190,3 +190,6 @@ PREFIX: skpixelref::unlockpixels___skbitmap::freepixels___webcore::framedata::cl
 
 # 75373
 PREFIX: webcore::scriptexecutioncontext::~scriptexecutioncontext___webcore::document::~document___webcore::imagedocument::`scalar deleting destructor'___webcore::node::~node___webcore::htmlparagraphelement::`scalar deleting destructor'___themeinstalledinfobardelegate::infobarclosed___webcore::domdatastore::weaknodecallback___v8::internal::globalhandles::node::postgarbagecollectionprocessing___v8::internal::globalhandles::postgarbagecollectionprocessing
+
+# 75447
+PREFIX: tcmalloc::threadcache::freelist::poprange___tcmalloc::threadcache::releasetocentralcache___tcmalloc::threadcache::listtoolong___tcmalloc::threadcache::deallocate___`anonymous namespace'::do_free_with_callback___free___pickle::~pickle___ppapihostmsg_ppbtesting_runmessageloop::`scalar deleting destructor'___ipc::channel::channelimpl::processoutgoingmessages
