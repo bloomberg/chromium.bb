@@ -14,6 +14,33 @@ import sys
 import chromebinaries
 
 
+def FindChrome(src_dir, options):
+  if options.browser_path:
+    return options.browser_path
+  
+  # List of places that chrome could live.
+  # In theory we should be more careful about what platform we're actually
+  # building for.
+  # As currently constructed, this will also hork people who have debug and
+  # release builds sitting side by side who build locally.
+  mode = options.mode
+  chrome_locations = [
+      'build/%s/chrome.exe' % mode,
+      'chrome/%s/chrome.exe' % mode,
+      'out/%s/chrome' % mode,
+      'xcodebuild/%s/Chromium.app/Contents/MacOS/Chromium' % mode,
+      'xcodebuild/%s/Chrome.app/Contents/MacOS/Chrome' % mode,
+  ]
+
+  # Pick the first one we find.
+  for chrome in chrome_locations:
+    chrome_filename = os.path.join(src_dir, chrome)
+    if os.path.exists(chrome_filename):
+      return chrome_filename
+  raise Exception('Cannot find a chome binary - specify one with '
+                  '--browser_path?')
+
+
 def BuildAndTest(options):
   # Refuse to run under cygwin.
   if sys.platform == 'cygwin':
@@ -41,13 +68,16 @@ def BuildAndTest(options):
   env = dict(os.environ)
   if sys.platform in ['win32', 'cygwin']:
     shell = True
-    if (os.environ.get('PROCESSOR_ARCHITECTURE', '').find('64') >= 0 or
-        os.environ.get('PROCESSOR_ARCHITEW6432', '').find('64') >= 0):
+    if options.bits == 64:
       bits = 64
-      tools_bits = 'x64'
+    elif options.bits == 32:
+      bits = 32
+    elif (os.environ.get('PROCESSOR_ARCHITECTURE', '').find('64') >= 0 or
+          os.environ.get('PROCESSOR_ARCHITEW6432', '').find('64') >= 0):
+      bits = 64
     else:
       bits = 32
-      tools_bits = 'x86'
+    tool_bits = {32: 'x86', 64: 'x64'}[bits]
     msvs_path = ';'.join([
         r'c:\Program Files\Microsoft Visual Studio 9.0\VC',
         r'c:\Program Files (x86)\Microsoft Visual Studio 9.0\VC',
@@ -71,37 +101,33 @@ def BuildAndTest(options):
         shell=True, stdout=subprocess.PIPE)
     (p_stdout, _) = p.communicate()
     assert p.returncode == 0
-    if p_stdout.find('64') >= 0:
+    if options.bits == 64:
+      bits = 64
+    elif options.bits == 32:
+      bits = 32
+    elif p_stdout.find('64') >= 0:
       bits = 64
     else:
       bits = 32
     scons = ['./scons']
     shell = False
 
-  # List of places that chrome could live.
-  # In theory we should be more careful about what platform we're actually
-  # building for.
-  # As currently constructed, this will also hork people who have debug and
-  # release builds sitting side by side who build locally.
-  mode = options.mode
-  chrome_locations = [
-      'build/%s/chrome.exe' % mode,
-      'chrome/%s/chrome.exe' % mode,
-      'out/%s/chrome' % mode,
-      'xcodebuild/%s/Chromium.app/Contents/MacOS/Chromium' % mode,
-      'xcodebuild/%s/Chrome.app/Contents/MacOS/Chrome' % mode,
-  ]
+  chrome_filename = FindChrome(src_dir, options)
 
-  # Pick the first one we find.
-  for chrome in chrome_locations:
-   chrome_filename = os.path.join(src_dir, chrome)
-   if os.path.exists(chrome_filename):
-     break
-  else:
-    raise Exception("You don't have a build of chrome present")
+  if options.jobs > 1:
+    scons.append('-j%d' % options.jobs)
+
+
+  if options.partial_sdk:
+    # Build the partial sdk
+    cmd = scons + ['platform=x86-%d' % bits, '--mode=nacl_extra_sdk',
+                   'extra_sdk_update_header', 'install_libpthread',
+                   'extra_sdk_update',
+    ]
+    subprocess.check_call(cmd, shell=shell, cwd=nacl_dir, env=env)
 
   # Run nacl/chrome integration tests.
-  cmd = scons + ['platform=x86-%d' % bits,
+  cmd = scons + ['-k', 'platform=x86-%d' % bits,
       'disable_dynamic_plugin_loading=1',
       'chrome_browser_path=' + chrome_filename,
       'chrome_browser_tests',
@@ -113,6 +139,18 @@ def MakeCommandLineParser():
   parser = optparse.OptionParser()
   parser.add_option('-m', '--mode', dest='mode', default='Debug',
                     help='Debug/Release mode')
+  parser.add_option('--partial_sdk', dest='partial_sdk', default=False,
+                    action='store_true', help='Build partial SDK')
+  parser.add_option('-j', dest='jobs', default=1, type='int',
+                    help='Number of parallel jobs')
+
+  # Not used on the bots, but handy for running the script manually.
+  parser.add_option('--bits', dest='bits', action='store',
+                    type='int', default=None,
+                    help='32/64')
+  parser.add_option('--browser_path', dest='browser_path', action='store',
+                    type='string', default=None,
+                    help='Path to the chrome browser.')
   return parser
 
 
