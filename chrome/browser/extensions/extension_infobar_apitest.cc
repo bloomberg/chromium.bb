@@ -7,7 +7,8 @@
 #include "chrome/common/chrome_switches.h"
 
 #if defined(OS_WIN)
-#define MAYBE_Infobars Infobars
+// Also marking this as disabled on Windows. See http://crbug.com/75451.
+#define MAYBE_Infobars DISABLED_Infobars
 #else
 // Need to finish port to Linux. See http://crbug.com/39916 for details.
 // Temporarily marked as DISABLED on OSX too. See http://crbug.com/60990 for details.
