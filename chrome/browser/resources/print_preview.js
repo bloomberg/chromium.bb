@@ -10,6 +10,9 @@ var expectedPageCount = 0;
  * Window onload handler, sets up the page.
  */
 function load() {
+  $('printer-list').disabled = true;
+  $('print-button').disabled = true;
+
   $('print-button').addEventListener('click', printFile);
 
   $('cancel-button').addEventListener('click', function(e) {
@@ -73,8 +76,8 @@ function printFile() {
   var twoSided = $('two-sided').checked;
   var copies = $('copies').value;
   var collate = $('collate').checked;
-  var layout = $('layout').options[$('layout').selectedIndex].value;
-  var color = $('color').options[$('color').selectedIndex].value;
+  var landscape = ($('layout').options[$('layout').selectedIndex].value == "1");
+  var color = ($('color').options[$('color').selectedIndex].value == "1");
 
   var jobSettings = JSON.stringify({'printerName': printerName,
                                     'pageRange': pageRanges,
@@ -82,7 +85,7 @@ function printFile() {
                                     'twoSided': twoSided,
                                     'copies': copies,
                                     'collate': collate,
-                                    'layout': layout,
+                                    'landscape': landscape,
                                     'color': color});
   chrome.send('print', [jobSettings]);
 }
@@ -97,12 +100,11 @@ function setPrinters(printers) {
       option.textContent = printers[i];
       $('printer-list').add(option);
     }
+    $('printer-list').disabled = false;
   } else {
     var option = document.createElement('option');
     option.textContent = localStrings.getString('noPrinter');
     $('printer-list').add(option);
-    $('printer-list').disabled = true;
-    $('print-button').disabled = true;
   }
 }
 
@@ -125,7 +127,9 @@ function createPDFPlugin(url, pagesCount) {
   }
 
   // Enable the print button.
-  $('print-button').disabled = false;
+  if (!$('printer-list').disabled) {
+    $('print-button').disabled = false;
+  }
 
   if ($('pdf-viewer')) {
     $('pdf-viewer').reload();
