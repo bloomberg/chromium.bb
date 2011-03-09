@@ -61,73 +61,73 @@ class Database(object):
     # (This is implicitly true for the root directory).
     self.stop_looking = set([''])
 
-  def ReviewersFor(self, files):
+  def reviewers_for(self, files):
     """Returns a suggested set of reviewers that will cover the set of files.
 
     files is a set of paths relative to (and under) self.root."""
-    self._CheckPaths(files)
-    self._LoadDataNeededFor(files)
-    return self._CoveringSetOfOwnersFor(files)
+    self._check_paths(files)
+    self._load_data_needed_for(files)
+    return self._covering_set_of_owners_for(files)
 
-  def FilesAreCoveredBy(self, files, reviewers):
+  def files_are_covered_by(self, files, reviewers):
     """Returns whether every file is owned by at least one reviewer."""
-    return not self.FilesNotCoveredBy(files, reviewers)
+    return not self.files_not_covered_by(files, reviewers)
 
-  def FilesNotCoveredBy(self, files, reviewers):
+  def files_not_covered_by(self, files, reviewers):
     """Returns the set of files that are not owned by at least one reviewer."""
-    self._CheckPaths(files)
-    self._CheckReviewers(reviewers)
+    self._check_paths(files)
+    self._check_reviewers(reviewers)
     if not reviewers:
       return files
 
-    self._LoadDataNeededFor(files)
-    files_by_dir = self._FilesByDir(files)
-    covered_dirs = self._DirsCoveredBy(reviewers)
+    self._load_data_needed_for(files)
+    files_by_dir = self._files_by_dir(files)
+    covered_dirs = self._dirs_covered_by(reviewers)
     uncovered_files = []
     for d, files_in_d in files_by_dir.iteritems():
-      if not self._IsDirCoveredBy(d, covered_dirs):
+      if not self._is_dir_covered_by(d, covered_dirs):
         uncovered_files.extend(files_in_d)
     return set(uncovered_files)
 
-  def _CheckPaths(self, files):
-    def _isunder(f, pfx):
+  def _check_paths(self, files):
+    def _is_under(f, pfx):
       return self.os_path.abspath(self.os_path.join(pfx, f)).startswith(pfx)
-    assert all(_isunder(f, self.os_path.abspath(self.root)) for f in files)
+    assert all(_is_under(f, self.os_path.abspath(self.root)) for f in files)
 
-  def _CheckReviewers(self, reviewers):
+  def _check_reviewers(self, reviewers):
     """Verifies each reviewer is a valid email address."""
     assert all(self.email_regexp.match(r) for r in reviewers)
 
-  def _FilesByDir(self, files):
+  def _files_by_dir(self, files):
     dirs = {}
     for f in files:
       dirs.setdefault(self.os_path.dirname(f), []).append(f)
     return dirs
 
-  def _DirsCoveredBy(self, reviewers):
+  def _dirs_covered_by(self, reviewers):
     dirs = self.owned_by[EVERYONE]
     for r in reviewers:
       dirs = dirs | self.owned_by.get(r, set())
     return dirs
 
-  def _StopLooking(self, dirname):
+  def _stop_looking(self, dirname):
     return dirname in self.stop_looking
 
-  def _IsDirCoveredBy(self, dirname, covered_dirs):
-    while not dirname in covered_dirs and not self._StopLooking(dirname):
+  def _is_dir_covered_by(self, dirname, covered_dirs):
+    while not dirname in covered_dirs and not self._stop_looking(dirname):
       dirname = self.os_path.dirname(dirname)
     return dirname in covered_dirs
 
-  def _LoadDataNeededFor(self, files):
+  def _load_data_needed_for(self, files):
     for f in files:
       dirpath = self.os_path.dirname(f)
       while not dirpath in self.owners_for:
-        self._ReadOwnersInDir(dirpath)
-        if self._StopLooking(dirpath):
+        self._read_owners_in_dir(dirpath)
+        if self._stop_looking(dirpath):
           break
         dirpath = self.os_path.dirname(dirpath)
 
-  def _ReadOwnersInDir(self, dirpath):
+  def _read_owners_in_dir(self, dirpath):
     owners_path = self.os_path.join(self.root, dirpath, 'OWNERS')
     if not self.os_path.exists(owners_path):
       return
@@ -147,7 +147,7 @@ class Database(object):
         continue
       raise SyntaxErrorInOwnersFile(owners_path, lineno, line)
 
-  def _CoveringSetOfOwnersFor(self, files):
+  def _covering_set_of_owners_for(self, files):
     # TODO(dpranke): implement the greedy algorithm for covering sets, and
     # consider returning multiple options in case there are several equally
     # short combinations of owners.
@@ -156,7 +156,7 @@ class Database(object):
       dirname = self.os_path.dirname(f)
       while dirname in self.owners_for:
         every_owner |= self.owners_for[dirname]
-        if self._StopLooking(dirname):
+        if self._stop_looking(dirname):
           break
         dirname = self.os_path.dirname(dirname)
     return every_owner
