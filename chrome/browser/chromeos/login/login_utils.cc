@@ -416,6 +416,8 @@ std::string LoginUtilsImpl::GetOffTheRecordCommandLine(
       switches::kLoginProfile,
       switches::kCompressSystemFeedback,
       switches::kDisableSeccompSandbox,
+      switches::kPpapiFlashPath,
+      switches::kPpapiFlashVersion,
 #if defined(HAVE_XINPUT2)
       switches::kTouchDevices,
 #endif
