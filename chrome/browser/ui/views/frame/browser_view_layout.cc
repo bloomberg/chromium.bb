@@ -362,12 +362,18 @@ int BrowserViewLayout::LayoutBookmarkBar(int top) {
 }
 
 int BrowserViewLayout::LayoutInfoBar(int top) {
+  // Raise the |infobar_container_| by its overlapping tab_height.
   bool visible = InfobarVisible();
-  int height = visible ? infobar_container_->GetPreferredSize().height() : 0;
   infobar_container_->SetVisible(visible);
-  infobar_container_->SetBounds(vertical_layout_rect_.x(), top,
-                                vertical_layout_rect_.width(), height);
-  return top + height;
+  int height = infobar_container_->GetPreferredSize().height();
+  DCHECK(visible || !height) << "Invisible InfoBarContainer has height.";
+  int overlapped_top = top -
+      static_cast<InfoBarContainer*>(infobar_container_)->VerticalOverlap();
+  infobar_container_->SetBounds(vertical_layout_rect_.x(),
+                                overlapped_top,
+                                vertical_layout_rect_.width(),
+                                height);
+  return overlapped_top + height;
 }
 
 // |browser_reserved_rect| is in browser_view_ coordinates.

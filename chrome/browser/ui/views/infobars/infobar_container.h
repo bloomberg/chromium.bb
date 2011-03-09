@@ -37,6 +37,11 @@ class InfoBarContainer : public AccessiblePaneView,
   explicit InfoBarContainer(Delegate* delegate);
   virtual ~InfoBarContainer();
 
+  // Overlap the previous view by this amount, vertically, so that the
+  // first InfoBarView in this InfoBarContainer may draw its tab on
+  // top.
+  int VerticalOverlap();
+
   // Changes the TabContents for which this container is showing infobars.  This
   // will remove all current infobars from the container, add the infobars from
   // |contents|, and show them all.  |contents| may be NULL.
@@ -57,13 +62,6 @@ class InfoBarContainer : public AccessiblePaneView,
   // hidden.
   void RemoveInfoBar(InfoBarView* infobar);
 
-  // Paint the InfoBar arrows on |canvas|. |arrow_center_x| indicates
-  // the desired location of the center of the arrow in the
-  // |outer_view| coordinate system.
-  void PaintInfoBarArrows(gfx::Canvas* canvas,
-                          View* outer_view,
-                          int arrow_center_x);
-
  private:
   typedef std::set<InfoBarView*> InfoBars;
 
@@ -76,6 +74,11 @@ class InfoBarContainer : public AccessiblePaneView,
   virtual void Observe(NotificationType type,
                        const NotificationSource& source,
                        const NotificationDetails& details);
+
+  // Return the maximum vertical overlap of the InfoBarContainer's children,
+  // and, when |total_height| is non-NULL, set the |*total_height| of the
+  // InfoBarContainer.
+  int GetVerticalOverlap(int* total_height);
 
   // Removes an InfoBar for the specified delegate, in response to a
   // notification from the selected TabContents. The InfoBar's disappearance

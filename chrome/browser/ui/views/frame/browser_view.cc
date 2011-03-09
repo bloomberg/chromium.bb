@@ -1781,11 +1781,15 @@ void BrowserView::Layout() {
 }
 
 void BrowserView::PaintChildren(gfx::Canvas* canvas) {
-  views::ClientView::PaintChildren(canvas);
+  // Paint the |infobar_container_| last so that it may paint its
+  // overlapping tabs.
+  for (int i = 0; i < child_count(); ++i) {
+    View* child = GetChildViewAt(i);
+    if (child != infobar_container_)
+      child->Paint(canvas);
+  }
 
-  infobar_container_->PaintInfoBarArrows(canvas->AsCanvasSkia(),
-                                         this,
-                                         GetInfoBarArrowCenterX());
+  infobar_container_->Paint(canvas);
 }
 
 void BrowserView::ViewHierarchyChanged(bool is_add,

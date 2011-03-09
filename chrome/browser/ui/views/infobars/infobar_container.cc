@@ -33,6 +33,10 @@ InfoBarContainer::~InfoBarContainer() {
   ChangeTabContents(NULL);
 }
 
+int InfoBarContainer::VerticalOverlap() {
+  return GetVerticalOverlap(NULL);
+}
+
 void InfoBarContainer::ChangeTabContents(TabContents* contents) {
   registrar_.RemoveAll();
 
@@ -80,30 +84,21 @@ void InfoBarContainer::RemoveInfoBar(InfoBarView* infobar) {
   infobars_.erase(infobar);
 }
 
-void InfoBarContainer::PaintInfoBarArrows(gfx::Canvas* canvas,
-                                          View* outer_view,
-                                          int arrow_center_x) {
-  for (int i = 0; i < child_count(); ++i) {
-    InfoBarView* infobar = static_cast<InfoBarView*>(GetChildViewAt(i));
-    infobar->PaintArrow(canvas, outer_view, arrow_center_x);
-  }
-}
-
 gfx::Size InfoBarContainer::GetPreferredSize() {
   // We do not have a preferred width (we will expand to fit the available width
-  // of the delegate). Our preferred height is the sum of the preferred heights
-  // of the InfoBars contained within us.
-  int height = 0;
-  for (int i = 0; i < child_count(); ++i)
-    height += GetChildViewAt(i)->GetPreferredSize().height();
-  return gfx::Size(0, height);
+  // of the delegate).
+  int total_height;
+  GetVerticalOverlap(&total_height);
+  return gfx::Size(0, total_height);
 }
 
 void InfoBarContainer::Layout() {
-  int top = 0;
+  int top = GetVerticalOverlap(NULL);
+
   for (int i = 0; i < child_count(); ++i) {
     View* child = GetChildViewAt(i);
     gfx::Size ps = child->GetPreferredSize();
+    top -= static_cast<InfoBarView*>(child)->AnimatedTabHeight();
     child->SetBounds(0, top, width(), ps.height());
     top += ps.height();
   }
@@ -138,6 +133,25 @@ void InfoBarContainer::Observe(NotificationType type,
       NOTREACHED();
       break;
   }
+}
+
+int InfoBarContainer::GetVerticalOverlap(int* total_height) {
+  // Our |total_height| is the sum of the preferred heights of the InfoBars
+  // contained within us plus the |vertical_overlap|.
+  int vertical_overlap = 0;
+  int next_child_y = 0;
+
+  for (int i = 0; i < child_count(); ++i) {
+    View* child = GetChildViewAt(i);
+    gfx::Size ps = child->GetPreferredSize();
+    next_child_y -= static_cast<InfoBarView*>(child)->AnimatedTabHeight();
+    vertical_overlap = std::max(vertical_overlap, -next_child_y);
+    next_child_y += child->GetPreferredSize().height();
+  }
+
+  if (total_height)
+    *total_height = next_child_y + vertical_overlap;
+  return vertical_overlap;
 }
 
 void InfoBarContainer::RemoveInfoBar(InfoBarDelegate* delegate,

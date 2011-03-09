@@ -6,7 +6,6 @@
 #define CHROME_BROWSER_UI_VIEWS_INFOBARS_INFOBAR_BACKGROUND_H_
 #pragma once
 
-#include "base/scoped_ptr.h"
 #include "chrome/browser/tab_contents/infobar_delegate.h"
 #include "views/background.h"
 
@@ -24,7 +23,8 @@ class InfoBarBackground : public views::Background {
   // views::Background:
   virtual void Paint(gfx::Canvas* canvas, views::View* view) const;
 
-  scoped_ptr<views::Background> gradient_background_;
+  SkColor top_color_;
+  SkColor bottom_color_;
 
   DISALLOW_COPY_AND_ASSIGN(InfoBarBackground);
 };

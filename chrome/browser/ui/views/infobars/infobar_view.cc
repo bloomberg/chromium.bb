@@ -41,6 +41,14 @@ const int InfoBarView::kButtonButtonSpacing = 10;
 const int InfoBarView::kEndOfLabelSpacing = 16;
 const int InfoBarView::kHorizontalPadding = 6;
 
+const int InfoBarView::kCurveWidth = 13;
+const int InfoBarView::kMaxIconWidth = 30;
+const int InfoBarView::kTabHeight = 9;
+const int InfoBarView::kTabIconPadding = 2;
+
+const int InfoBarView::kTabWidth = (kCurveWidth + kTabIconPadding) * 2 +
+    kMaxIconWidth;
+
 InfoBarView::InfoBarView(InfoBarDelegate* delegate)
     : InfoBar(delegate),
       container_(NULL),
@@ -49,7 +57,9 @@ InfoBarView::InfoBarView(InfoBarDelegate* delegate)
       close_button_(NULL),
       ALLOW_THIS_IN_INITIALIZER_LIST(animation_(new ui::SlideAnimation(this))),
       ALLOW_THIS_IN_INITIALIZER_LIST(delete_factory_(this)),
-      target_height_(kDefaultTargetHeight) {
+      target_height_(kDefaultTargetHeight),
+      fill_path_(new SkPath),
+      stroke_path_(new SkPath) {
   set_parent_owned(false);  // InfoBar deletes itself at the appropriate time.
 
   InfoBarDelegate::Type infobar_type = delegate->GetInfoBarType();
@@ -87,61 +97,6 @@ void InfoBarView::Hide(bool animate) {
     animation_->Reset(0.0);
     Close();
   }
-}
-
-void InfoBarView::PaintArrow(gfx::Canvas* canvas,
-                             View* outer_view,
-                             int arrow_center_x) {
-  gfx::Point infobar_top(0, y());
-  ConvertPointToView(parent(), outer_view, &infobar_top);
-  int infobar_top_y = infobar_top.y();
-  SkPoint gradient_points[2] = {
-      {SkIntToScalar(0), SkIntToScalar(infobar_top_y)},
-      {SkIntToScalar(0), SkIntToScalar(infobar_top_y + target_height_)}
-  };
-  InfoBarDelegate::Type infobar_type = delegate_->GetInfoBarType();
-  SkColor gradient_colors[2] = {
-      InfoBarBackground::GetTopColor(infobar_type),
-      InfoBarBackground::GetBottomColor(infobar_type),
-  };
-  SkShader* gradient_shader = SkGradientShader::CreateLinear(gradient_points,
-      gradient_colors, NULL, 2, SkShader::kMirror_TileMode);
-  SkPaint paint;
-  paint.setStrokeWidth(1);
-  paint.setStyle(SkPaint::kFill_Style);
-  paint.setShader(gradient_shader);
-  gradient_shader->unref();
-
-  // The size of the arrow (its height; also half its width).  The
-  // arrow area is |arrow_size| ^ 2.  By taking the square root of the
-  // animation value, we cause a linear animation of the area, which
-  // matches the perception of the animation of the InfoBar.
-  const int kArrowSize = 10;
-  int arrow_size = static_cast<int>(kArrowSize *
-                                    sqrt(animation_->GetCurrentValue()));
-  SkPath fill_path;
-  fill_path.moveTo(SkPoint::Make(SkIntToScalar(arrow_center_x - arrow_size),
-                                 SkIntToScalar(infobar_top_y)));
-  fill_path.rLineTo(SkIntToScalar(arrow_size), SkIntToScalar(-arrow_size));
-  fill_path.rLineTo(SkIntToScalar(arrow_size), SkIntToScalar(arrow_size));
-  SkPath border_path(fill_path);
-  fill_path.close();
-  gfx::CanvasSkia* canvas_skia = canvas->AsCanvasSkia();
-  canvas_skia->drawPath(fill_path, paint);
-
-  // Fill and stroke have different opinions about how to treat paths.  Because
-  // in Skia integral coordinates represent pixel boundaries, offsetting the
-  // path makes it go exactly through pixel centers; this results in lines that
-  // are exactly where we expect, instead of having odd "off by one" issues.
-  // Were we to do this for |fill_path|, however, which tries to fill "inside"
-  // the path (using some questionable math), we'd get a fill at a very
-  // different place than we'd want.
-  border_path.offset(SK_ScalarHalf, SK_ScalarHalf);
-  paint.setShader(NULL);
-  paint.setColor(SkColorSetA(ResourceBundle::toolbar_separator_color,
-                             SkColorGetA(gradient_colors[0])));
-  paint.setStyle(SkPaint::kStroke_Style);
-  canvas_skia->drawPath(border_path, paint);
 }
 
 InfoBarView::~InfoBarView() {
@@ -231,9 +186,18 @@ views::TextButton* InfoBarView::CreateTextButton(
 void InfoBarView::Layout() {
   int start_x = kHorizontalPadding;
   if (icon_ != NULL) {
+    // Center the icon horizontally within the tab, and vertically between the
+    // entire height (tab + bar).
     gfx::Size icon_size = icon_->GetPreferredSize();
-    icon_->SetBounds(start_x, OffsetY(icon_size), icon_size.width(),
-                     icon_size.height());
+    int center_x = std::max((kTabWidth - icon_size.width()) / 2, 0);
+    int full_height = target_height_ + kTabHeight;
+
+    // This duplicates OffsetY except centered within the entire height (tab +
+    // bar) instead of just within the bar.
+    int offset_y =
+        std::max((full_height - icon_size.height()) / 2, 0) -
+        (full_height - height());
+    icon_->SetBounds(center_x, offset_y, icon_size.width(), icon_size.height());
     start_x += icon_->bounds().right();
   }
 
@@ -307,6 +271,25 @@ void InfoBarView::ViewHierarchyChanged(bool is_add, View* parent, View* child) {
   }
 }
 
+void InfoBarView::PaintChildren(gfx::Canvas* canvas) {
+  canvas->Save();
+
+  // TODO(scr): This really should be the |fill_path_|, but the clipPath seems
+  // broken on non-Windows platforms (crbug.com/75154). For now, just clip to
+  // the bar bounds.
+  //
+  // gfx::CanvasSkia* canvas_skia = canvas->AsCanvasSkia();
+  // canvas_skia->clipPath(*fill_path_);
+  int tab_height = AnimatedTabHeight();
+  int bar_height = AnimatedBarHeight();
+  DCHECK_EQ(tab_height + bar_height, height())
+      << "Animation progressed between OnBoundsChanged & PaintChildren.";
+  canvas->ClipRectInt(0, tab_height, width(), bar_height);
+
+  views::View::PaintChildren(canvas);
+  canvas->Restore();
+}
+
 void InfoBarView::ButtonPressed(views::Button* sender,
                                 const views::Event& event) {
   if (sender == close_button_) {
@@ -348,7 +331,16 @@ int InfoBarView::CenterY(const gfx::Size prefsize) const {
 }
 
 int InfoBarView::OffsetY(const gfx::Size prefsize) const {
-  return CenterY(prefsize) - (target_height_ - height());
+  return CenterY(prefsize) + AnimatedTabHeight() -
+      (target_height_ - AnimatedBarHeight());
+}
+
+int InfoBarView::AnimatedTabHeight() const {
+  return static_cast<int>(kTabHeight * animation_->GetCurrentValue());
+}
+
+int InfoBarView::AnimatedBarHeight() const {
+  return static_cast<int>(target_height_ * animation_->GetCurrentValue());
 }
 
 AccessibilityTypes::Role InfoBarView::GetAccessibleRole() {
@@ -356,8 +348,60 @@ AccessibilityTypes::Role InfoBarView::GetAccessibleRole() {
 }
 
 gfx::Size InfoBarView::GetPreferredSize() {
-  return gfx::Size(0,
-      static_cast<int>(target_height_ * animation_->GetCurrentValue()));
+  return gfx::Size(0, AnimatedTabHeight() + AnimatedBarHeight());
+}
+
+void InfoBarView::OnBoundsChanged() {
+  views::View::OnBoundsChanged();
+  int tab_height = AnimatedTabHeight();
+  int bar_height = AnimatedBarHeight();
+  int divider_y = tab_height - 1;
+  DCHECK_EQ(tab_height + bar_height, height())
+      << "Animation progressed between Layout & OnBoundsChanged.";
+
+  int mirrored_x = GetMirroredXWithWidthInView(0, kTabWidth);
+  stroke_path_->rewind();
+  fill_path_->rewind();
+
+  if (tab_height) {
+    stroke_path_->moveTo(SkIntToScalar(mirrored_x),
+                         SkIntToScalar(divider_y));
+    stroke_path_->rCubicTo(
+        SkScalarDiv(kCurveWidth, 2), 0.0,
+        SkScalarDiv(kCurveWidth, 2),
+        SkIntToScalar(-divider_y),
+        SkIntToScalar(kCurveWidth),
+        SkIntToScalar(-divider_y));
+    stroke_path_->rLineTo(SkScalarMulAdd(kTabIconPadding, 2, kMaxIconWidth),
+                          0.0);
+    stroke_path_->rCubicTo(
+        SkScalarDiv(kCurveWidth, 2), 0.0,
+        SkScalarDiv(kCurveWidth, 2),
+        SkIntToScalar(divider_y),
+        SkIntToScalar(kCurveWidth),
+        SkIntToScalar(divider_y));
+
+    // Create the fill portion of the tab.  Because the fill is inside the
+    // bounds and will not cover the separator, we need to extend downward by a
+    // pixel before closing.
+    *fill_path_ = *stroke_path_;
+    fill_path_->rLineTo(0.0, 1.0);
+    fill_path_->rLineTo(-SkIntToScalar(kTabWidth), 0.0);
+    fill_path_->close();
+
+    // Fill and stroke have different opinions about how to treat paths.
+    // Because in Skia integral coordinates represent pixel boundaries,
+    // offsetting the path makes it go exactly through pixel centers; this
+    // results in lines that are exactly where we expect, instead of having odd
+    // "off by one" issues.  Were we to do this for |fill_path|, however, which
+    // tries to fill "inside" the path (using some questionable math), we'd get
+    // a fill at a very different place than we'd want.
+    stroke_path_->offset(SK_ScalarHalf, SK_ScalarHalf);
+  }
+  if (bar_height) {
+    fill_path_->addRect(0.0, SkIntToScalar(tab_height),
+                        SkIntToScalar(width()), SkIntToScalar(height()));
+  }
 }
 
 void InfoBarView::FocusWillChange(View* focused_before, View* focused_now) {

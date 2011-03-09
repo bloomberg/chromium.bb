@@ -13,6 +13,7 @@
 
 class InfoBarContainer;
 class InfoBarDelegate;
+class SkPath;
 
 namespace ui {
 class SlideAnimation;
@@ -67,10 +68,10 @@ class InfoBarView : public InfoBar,
   // container (triggering its deletion), and its delegate is closed.
   void Hide(bool animate);
 
-  // Paint the arrow on |canvas|. |arrow_center_x| indicates the
-  // desired location of the center of the arrow in the |outer_view|
-  // coordinate system.
-  void PaintArrow(gfx::Canvas* canvas, View* outer_view, int arrow_center_x);
+  SkPath* fill_path() const { return fill_path_.get(); }
+  SkPath* stroke_path() const { return stroke_path_.get(); }
+
+  int AnimatedTabHeight() const;
 
  protected:
   // The target height of the InfoBar, regardless of what its current height
@@ -129,27 +130,36 @@ class InfoBarView : public InfoBar,
   int EndX() const;
 
   // Returns a centered y-position of a control of height specified in
-  // |prefsize| within the standard InfoBar height. Stable during an animation.
-  int CenterY(const gfx::Size prefsize) const;
-
-  // Returns a centered y-position of a control of height specified in
   // |prefsize| within the standard InfoBar height, adjusted according to the
   // current amount of animation offset the |parent| InfoBar currently has.
   // Changes during an animation.
   int OffsetY(const gfx::Size prefsize) const;
 
  private:
+  static const int kCurveWidth;
   static const int kHorizontalPadding;
+  static const int kMaxIconWidth;
+  static const int kTabHeight;
+  static const int kTabIconPadding;
+  static const int kTabWidth;
 
   // views::View:
   virtual AccessibilityTypes::Role GetAccessibleRole();
   virtual gfx::Size GetPreferredSize();
+  virtual void OnBoundsChanged();
+  virtual void PaintChildren(gfx::Canvas* canvas);
 
   // views::FocusChangeListener:
   virtual void FocusWillChange(View* focused_before, View* focused_now);
 
   // ui::AnimationDelegate:
   virtual void AnimationEnded(const ui::Animation* animation);
+
+  // Returns a centered y-position of a control of height specified in
+  // |prefsize| within the standard InfoBar height. Stable during an animation.
+  int CenterY(const gfx::Size prefsize) const;
+
+  int AnimatedBarHeight() const;
 
   // Destroys the external focus tracker, if present. If |restore_focus| is
   // true, restores focus to the view tracked by the focus tracker before doing
@@ -187,8 +197,11 @@ class InfoBarView : public InfoBar,
   // Used to delete this object after a return to the message loop.
   ScopedRunnableMethodFactory<InfoBarView> delete_factory_;
 
-  // The target height for the InfoBarView.
+  // The target height for the bar portion of the InfoBarView.
   int target_height_;
+
+  scoped_ptr<SkPath> fill_path_;
+  scoped_ptr<SkPath> stroke_path_;
 
   DISALLOW_COPY_AND_ASSIGN(InfoBarView);
 };
