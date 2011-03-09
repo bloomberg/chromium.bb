@@ -329,6 +329,9 @@ bool ExceptionCallback(int exception_type,
 }
 
 void InitializeBreakpad() {
+  // Don't initialize if we are running in the Chrome browser
+  // since Chrome already runs Breakpad and on Mac the two
+  // instances collide and break crash dump reporting.
   if (!gBreakpadRef && !IsBrowserChrome()) {
     NSBundle* bundle = [NSBundle bundleWithIdentifier:@"com.google.o3d"];
     NSDictionary* info = [bundle infoDictionary];
