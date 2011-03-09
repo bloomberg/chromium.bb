@@ -10,6 +10,7 @@
 
 #include "base/base_paths.h"
 #include "base/command_line.h"
+#include "base/i18n/file_util_icu.h"
 #include "base/logging.h"
 #include "base/message_loop.h"
 #include "base/path_service.h"
@@ -284,6 +285,16 @@ BrowserWindowGtk::BrowserWindowGtk(Browser* browser)
   // window-to-parent modality.
   gtk_window_group_add_window(gtk_window_group_new(), window_);
   g_object_unref(gtk_window_get_group(window_));
+
+  if (browser_->type() & Browser::TYPE_APP) {
+    std::string wmclassname = browser_->app_name();
+    if (wmclassname != DevToolsWindow::kDevToolsApp) {
+      file_util::ReplaceIllegalCharactersInPath(&wmclassname, '_');
+      TrimString(wmclassname, "_", &wmclassname);
+      gtk_window_set_wmclass(window_, wmclassname.c_str(),
+                             wmclassname.c_str());
+    }
+  }
 
   // For popups, we initialize widgets then set the window geometry, because
   // popups need the widgets inited before they can set the window size

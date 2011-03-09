@@ -176,6 +176,7 @@ class Browser : public TabHandlerDelegate,
   // Accessors ////////////////////////////////////////////////////////////////
 
   Type type() const { return type_; }
+  const std::string& app_name() const { return app_name_; }
   Profile* profile() const { return profile_; }
   const std::vector<std::wstring>& user_data_dir_profiles() const;
 
