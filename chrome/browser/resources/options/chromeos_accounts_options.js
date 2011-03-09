@@ -41,7 +41,9 @@ cr.define('options', function() {
       // If the current user is not the owner, show some warning,
       // and do not show the user list.
       if (AccountsOptions.currentUserIsOwner()) {
-        options.accounts.UserList.decorate(userList);
+        if (!AccountsOptions.whitelistIsManaged()) {
+          options.accounts.UserList.decorate(userList);
+        }
       } else {
         $('ownerOnlyWarning').classList.remove('hidden');
       }
@@ -63,6 +65,7 @@ cr.define('options', function() {
     updateControls_: function() {
       $('userList').disabled =
       $('userNameEdit').disabled = !AccountsOptions.currentUserIsOwner() ||
+                                   AccountsOptions.whitelistIsManaged() ||
                                    !$('useWhitelistCheck').checked;
     },
 
@@ -117,6 +120,13 @@ cr.define('options', function() {
    */
   AccountsOptions.currentUserIsOwner = function() {
     return localStrings.getString('current_user_is_owner') == 'true';
+  };
+
+  /**
+   * Returns whether the whitelist is managed by policy or not.
+   */
+  AccountsOptions.whitelistIsManaged = function() {
+    return localStrings.getString('whitelist_is_managed') == 'true';
   };
 
   /**

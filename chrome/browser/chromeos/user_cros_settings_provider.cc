@@ -486,9 +486,11 @@ void UserCrosSettingsProvider::DoSet(const std::string& path,
 bool UserCrosSettingsProvider::Get(const std::string& path,
                                    Value** out_value) const {
   if (IsControlledBooleanSetting(path)) {
+    PrefService* prefs = g_browser_process->local_state();
     *out_value = CreateSettingsBooleanValue(
-        g_browser_process->local_state()->GetBoolean(path.c_str()),
-        !UserManager::Get()->current_user_is_owner());
+        prefs->GetBoolean(path.c_str()),
+        !UserManager::Get()->current_user_is_owner() ||
+            prefs->IsManagedPreference(path.c_str()));
     return true;
   } else if (path == kAccountsPrefUsers) {
     ListValue* user_list = new ListValue;

@@ -19,10 +19,6 @@ class MetricsCrosSettingsProvider : public CrosSettingsProvider {
  public:
   MetricsCrosSettingsProvider() {}
 
-  // CrosSettingsProvider implementation.
-  virtual bool Get(const std::string& path, Value** value) const;
-  virtual bool HandlesSetting(const std::string& path);
-
   // Actual methods to control stats/crash reporting. Currently these
   // methods are public and static so they are accessible directly
   // from cros code. But this will change soon: crosbug.com/7359
@@ -32,6 +28,8 @@ class MetricsCrosSettingsProvider : public CrosSettingsProvider {
  private:
   // CrosSettingsProvider implementation.
   virtual void DoSet(const std::string& path, Value* value);
+  virtual bool Get(const std::string& path, Value** value) const;
+  virtual bool HandlesSetting(const std::string& path);
 
   DISALLOW_COPY_AND_ASSIGN(MetricsCrosSettingsProvider);
 };

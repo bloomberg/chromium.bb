@@ -271,7 +271,7 @@ string16 SystemSettingsProvider::GetTimezoneName(
   // to ICU 4.6.
   // In the meantime, we use "LONG" name with "Exemplar City" to distinguish
   // multiple timezones with the same "LONG" name but with different
-  // rules (e.g. US Mountain Time in Dever vs Phoneix).
+  // rules (e.g. US Mountain Time in Denver vs Phoenix).
   icu::UnicodeString name;
   timezone.getDisplayName(dst_offset != 0, icu::TimeZone::LONG, name);
   string16 result(l10n_util::GetStringFUTF16(

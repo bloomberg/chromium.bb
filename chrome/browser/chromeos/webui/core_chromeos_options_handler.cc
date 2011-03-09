@@ -53,7 +53,7 @@ void CoreChromeOSOptionsHandler::StopObservingPref(const std::string& path) {
   // Unregister this instance from observing prefs of chrome os settings.
   if (CrosSettings::IsCrosSettings(path))
     CrosSettings::Get()->RemoveSettingsObserver(path.c_str(), this);
-  else    // Call base class to handle regular preferences.
+  else  // Call base class to handle regular preferences.
     ::CoreOptionsHandler::StopObservingPref(path);
 }
 

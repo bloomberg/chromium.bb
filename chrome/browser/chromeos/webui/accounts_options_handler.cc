@@ -8,9 +8,12 @@
 #include "base/scoped_ptr.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
+#include "chrome/browser/browser_process.h"
+#include "chrome/browser/chromeos/cros_settings_names.h"
 #include "chrome/browser/chromeos/login/authenticator.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/chromeos/user_cros_settings_provider.h"
+#include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/ui/webui/options/options_managed_banner_handler.h"
 #include "chrome/common/url_constants.h"
 #include "content/browser/webui/web_ui_util.h"
@@ -65,6 +68,9 @@ void AccountsOptionsHandler::GetLocalizedValues(
   localized_strings->SetString("current_user_is_owner",
       UserManager::Get()->current_user_is_owner() ?
       ASCIIToUTF16("true") : ASCIIToUTF16("false"));
+  localized_strings->SetString("whitelist_is_managed",
+      g_browser_process->local_state()->IsManagedPreference(
+          kAccountsPrefUsers) ?  ASCIIToUTF16("true") : ASCIIToUTF16("false"));
 }
 
 UserCrosSettingsProvider* AccountsOptionsHandler::users_settings() const {
