@@ -15,7 +15,7 @@
 #include "base/threading/thread_restrictions.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
-#include "chrome/browser/importer/importer.h"
+#include "chrome/browser/importer/importer_host.h"
 #include "chrome/browser/profiles/profile.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"

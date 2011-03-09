@@ -7,7 +7,7 @@
 #include <gtk/gtk.h>
 
 #include "base/message_loop.h"
-#include "chrome/browser/importer/importer.h"
+#include "chrome/browser/importer/importer_host.h"
 #include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/browser/ui/gtk/gtk_util.h"
 #include "grit/chromium_strings.h"

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/importer/importer.h"
+#include "chrome/browser/importer/importer_host.h"
 
 #include "base/threading/thread.h"
 #include "base/utf_string_conversions.h"

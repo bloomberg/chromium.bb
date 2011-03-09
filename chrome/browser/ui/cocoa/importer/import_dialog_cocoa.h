@@ -9,7 +9,7 @@
 #import <Cocoa/Cocoa.h>
 
 #include "base/scoped_nsobject.h"
-#include "chrome/browser/importer/importer.h"
+#include "chrome/browser/importer/importer_host.h"
 
 class Profile;
 class ImporterListObserverBridge;

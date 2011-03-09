@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_IMPORTER_IMPORTER_H_
-#define CHROME_BROWSER_IMPORTER_IMPORTER_H_
+#ifndef CHROME_BROWSER_IMPORTER_IMPORTER_HOST_H_
+#define CHROME_BROWSER_IMPORTER_IMPORTER_HOST_H_
 #pragma once
 
 #include <string>
@@ -434,4 +434,4 @@ class Importer : public base::RefCountedThreadSafe<Importer> {
   DISALLOW_COPY_AND_ASSIGN(Importer);
 };
 
-#endif  // CHROME_BROWSER_IMPORTER_IMPORTER_H_
+#endif  // CHROME_BROWSER_IMPORTER_IMPORTER_HOST_H_

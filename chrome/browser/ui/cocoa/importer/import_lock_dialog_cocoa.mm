@@ -6,7 +6,7 @@
 
 #include "base/message_loop.h"
 #include "base/scoped_nsobject.h"
-#include "chrome/browser/importer/importer.h"
+#include "chrome/browser/importer/importer_host.h"
 #include "chrome/browser/ui/browser_dialogs.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"

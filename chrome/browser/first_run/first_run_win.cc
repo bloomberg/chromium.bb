@@ -24,7 +24,7 @@
 #include "base/win/windows_version.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_updater.h"
-#include "chrome/browser/importer/importer.h"
+#include "chrome/browser/importer/importer_host.h"
 #include "chrome/browser/importer/importer_progress_dialog.h"
 #include "chrome/browser/metrics/user_metrics.h"
 #include "chrome/browser/process_singleton.h"

@@ -8,6 +8,7 @@
 
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/importer/importer_data_types.h"
+#include "chrome/browser/importer/importer_host.h"
 #include "chrome/browser/importer/importer_progress_dialog.h"
 #include "chrome/browser/ui/gtk/gtk_util.h"
 #include "grit/generated_resources.h"
@@ -21,7 +22,7 @@ gboolean IsChecked(GtkWidget* widget) {
   return gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(widget));
 }
 
-}   // namespace
+}  // namespace
 
 // static
 void ImportDialogGtk::Show(GtkWindow* parent, Profile* profile,

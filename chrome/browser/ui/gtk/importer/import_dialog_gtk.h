@@ -8,18 +8,25 @@
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
-#include "chrome/browser/importer/importer.h"
+#include "base/ref_counted.h"
+#include "chrome/browser/importer/importer_list.h"
 #include "chrome/browser/importer/importer_observer.h"
 #include "ui/base/gtk/gtk_signal.h"
 
+class ImporterHost;
 class Profile;
 
+typedef struct _GtkWidget GtkWidget;
+typedef struct _GtkWindow GtkWindow;
+
+// ImportDialogGtk presents the dialog that allows the user to select what to
+// import from other browsers.
 class ImportDialogGtk : public ImporterList::Observer,
                         public ImporterObserver {
  public:
-  // Displays the import box to import data from another browser into |profile|
-  // |initial_state| is a bitmask of ImportItems. Each checkbox for the bits in
-  // is checked.
+  // Displays the import box to import data from another browser into |profile|.
+  // |initial_state| is a bitmask of importer::ImportItem.
+  // Each checkbox for the bits in |initial_state| is checked.
   static void Show(GtkWindow* parent, Profile* profile, uint16 initial_state);
 
  private:

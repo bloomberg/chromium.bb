@@ -9,7 +9,7 @@
 #include <string>
 
 #include "base/utf_string_conversions.h"
-#include "chrome/browser/importer/importer.h"
+#include "chrome/browser/importer/importer_host.h"
 #include "chrome/browser/importer/importer_observer.h"
 #include "chrome/browser/ui/gtk/gtk_util.h"
 #include "grit/chromium_strings.h"

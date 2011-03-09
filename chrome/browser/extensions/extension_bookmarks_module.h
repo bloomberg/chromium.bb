@@ -14,7 +14,7 @@
 #include "base/singleton.h"
 #include "chrome/browser/bookmarks/bookmark_model_observer.h"
 #include "chrome/browser/extensions/extension_function.h"
-#include "chrome/browser/importer/importer.h"
+#include "chrome/browser/importer/importer_host.h"
 #include "chrome/browser/importer/importer_list.h"
 #include "chrome/browser/ui/shell_dialogs.h"
 #include "content/common/notification_observer.h"

@@ -10,7 +10,7 @@
 #import "base/scoped_nsobject.h"
 #import "base/sys_string_conversions.h"
 #include "base/utf_string_conversions.h"
-#include "chrome/browser/importer/importer.h"
+#include "chrome/browser/importer/importer_host.h"
 #include "chrome/browser/importer/importer_observer.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"

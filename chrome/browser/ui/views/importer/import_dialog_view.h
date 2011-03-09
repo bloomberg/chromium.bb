@@ -12,7 +12,7 @@
 #include "base/compiler_specific.h"
 #include "base/ref_counted.h"
 #include "base/string16.h"
-#include "chrome/browser/importer/importer.h"
+#include "chrome/browser/importer/importer_host.h"
 #include "chrome/browser/importer/importer_observer.h"
 #include "ui/base/models/combobox_model.h"
 #include "views/controls/button/native_button.h"

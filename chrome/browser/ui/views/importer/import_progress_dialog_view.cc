@@ -5,7 +5,7 @@
 #include "chrome/browser/ui/views/importer/import_progress_dialog_view.h"
 
 #include "base/utf_string_conversions.h"
-#include "chrome/browser/importer/importer.h"
+#include "chrome/browser/importer/importer_host.h"
 #include "chrome/browser/importer/importer_observer.h"
 #include "chrome/browser/importer/importer_progress_dialog.h"
 #include "grit/chromium_strings.h"

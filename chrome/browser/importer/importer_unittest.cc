@@ -5,6 +5,7 @@
 #include "build/build_config.h"
 
 #if defined(OS_WIN)
+// The order of these includes is important.
 #include <windows.h>
 #include <unknwn.h>
 #include <intshcut.h>
@@ -25,9 +26,9 @@
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/history/history_types.h"
-#include "chrome/browser/importer/importer.h"
 #include "chrome/browser/importer/importer_bridge.h"
 #include "chrome/browser/importer/importer_data_types.h"
+#include "chrome/browser/importer/importer_host.h"
 #include "chrome/browser/importer/importer_progress_observer.h"
 #include "chrome/browser/search_engines/template_url.h"
 #include "chrome/common/chrome_paths.h"

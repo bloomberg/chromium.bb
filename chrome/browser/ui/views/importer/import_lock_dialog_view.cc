@@ -6,7 +6,7 @@
 
 #include "base/message_loop.h"
 #include "base/utf_string_conversions.h"
-#include "chrome/browser/importer/importer.h"
+#include "chrome/browser/importer/importer_host.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "grit/locale_settings.h"
