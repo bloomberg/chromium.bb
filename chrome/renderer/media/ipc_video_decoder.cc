@@ -114,8 +114,6 @@ void IpcVideoDecoder::OnInitializeComplete(const media::VideoCodecInfo& info) {
   DCHECK_EQ(ChildProcess::current()->io_message_loop(), MessageLoop::current());
 
   if (info.success) {
-    media_format_.SetAsString(media::MediaFormat::kMimeType,
-                              media::mime_type::kUncompressedVideo);
     media_format_.SetAsInteger(media::MediaFormat::kSurfaceType,
                                media::VideoFrame::TYPE_GL_TEXTURE);
     media_format_.SetAsInteger(media::MediaFormat::kSurfaceFormat,

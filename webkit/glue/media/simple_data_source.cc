@@ -210,8 +210,6 @@ void SimpleDataSource::Abort() {
 void SimpleDataSource::SetURL(const GURL& url) {
   url_ = url;
   media_format_.Clear();
-  media_format_.SetAsString(media::MediaFormat::kMimeType,
-                            media::mime_type::kApplicationOctetStream);
   media_format_.SetAsString(media::MediaFormat::kURL, url.spec());
 }
 

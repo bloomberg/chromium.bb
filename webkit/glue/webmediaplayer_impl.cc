@@ -481,13 +481,13 @@ bool WebMediaPlayerImpl::totalBytesKnown() {
 bool WebMediaPlayerImpl::hasVideo() const {
   DCHECK(MessageLoop::current() == main_loop_);
 
-  return pipeline_->IsRendered(media::mime_type::kMajorTypeVideo);
+  return pipeline_->HasVideo();
 }
 
 bool WebMediaPlayerImpl::hasAudio() const {
   DCHECK(MessageLoop::current() == main_loop_);
 
-  return pipeline_->IsRendered(media::mime_type::kMajorTypeAudio);
+  return pipeline_->HasAudio();
 }
 
 WebKit::WebSize WebMediaPlayerImpl::naturalSize() const {

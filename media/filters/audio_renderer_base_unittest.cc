@@ -58,8 +58,6 @@ class AudioRendererBaseTest : public ::testing::Test {
         .WillRepeatedly(Invoke(this, &AudioRendererBaseTest::EnqueueCallback));
 
     // Sets the essential media format keys for this decoder.
-    decoder_media_format_.SetAsString(MediaFormat::kMimeType,
-                                      mime_type::kUncompressedAudio);
     decoder_media_format_.SetAsInteger(MediaFormat::kChannels, 1);
     decoder_media_format_.SetAsInteger(MediaFormat::kSampleRate, 44100);
     decoder_media_format_.SetAsInteger(MediaFormat::kSampleBits, 16);

@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -52,9 +52,6 @@ typedef Callback1<const PipelineStatistics&>::Type StatisticsCallback;
 class Filter : public base::RefCountedThreadSafe<Filter> {
  public:
   Filter();
-
-  // Return the major mime type for this filter.
-  virtual const char* major_mime_type() const;
 
   // Sets the private member |host_|. This is the first method called by
   // the FilterHost after a filter is created.  The host holds a strong
@@ -156,6 +153,12 @@ class Demuxer : public Filter {
 
 class DemuxerStream : public base::RefCountedThreadSafe<DemuxerStream> {
  public:
+  enum Type {
+    UNKNOWN,
+    AUDIO,
+    VIDEO,
+  };
+
   // Schedules a read.  When the |read_callback| is called, the downstream
   // filter takes ownership of the buffer by AddRef()'ing the buffer.
   //
@@ -172,6 +175,9 @@ class DemuxerStream : public base::RefCountedThreadSafe<DemuxerStream> {
     *interface_out = reinterpret_cast<Interface*>(i);
     return (NULL != i);
   };
+
+  // Returns the type of stream.
+  virtual Type type() = 0;
 
   // Returns the media format of this stream.
   virtual const MediaFormat& media_format() = 0;
@@ -194,8 +200,6 @@ class DemuxerStream : public base::RefCountedThreadSafe<DemuxerStream> {
 
 class VideoDecoder : public Filter {
  public:
-  virtual const char* major_mime_type() const;
-
   // Initialize a VideoDecoder with the given DemuxerStream, executing the
   // callback upon completion.
   // stats_callback is used to update global pipeline statistics.
@@ -238,8 +242,6 @@ class VideoDecoder : public Filter {
 
 class AudioDecoder : public Filter {
  public:
-  virtual const char* major_mime_type() const;
-
   // Initialize a AudioDecoder with the given DemuxerStream, executing the
   // callback upon completion.
   // stats_callback is used to update global pipeline statistics.
@@ -277,8 +279,6 @@ class AudioDecoder : public Filter {
 
 class VideoRenderer : public Filter {
  public:
-  virtual const char* major_mime_type() const;
-
   // Initialize a VideoRenderer with the given VideoDecoder, executing the
   // callback upon completion.
   virtual void Initialize(VideoDecoder* decoder, FilterCallback* callback,
@@ -292,8 +292,6 @@ class VideoRenderer : public Filter {
 
 class AudioRenderer : public Filter {
  public:
-  virtual const char* major_mime_type() const;
-
   // Initialize a AudioRenderer with the given AudioDecoder, executing the
   // callback upon completion.
   virtual void Initialize(AudioDecoder* decoder, FilterCallback* callback) = 0;

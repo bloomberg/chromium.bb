@@ -62,7 +62,6 @@ class MockDecoderImpl : public DecoderBase<
  public:
   explicit MockDecoderImpl(MessageLoop* message_loop)
       : DecoderBase<MockDecoder, MockDecoderOutput>(message_loop) {
-    media_format_.SetAsString(MediaFormat::kMimeType, "mock");
   }
 
   virtual ~MockDecoderImpl() {}

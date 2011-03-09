@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -11,10 +11,6 @@ namespace media {
 Filter::Filter() : host_(NULL) {}
 
 Filter::~Filter() {}
-
-const char* Filter::major_mime_type() const {
-  return "";
-}
 
 void Filter::set_host(FilterHost* host) {
   DCHECK(host);
@@ -72,22 +68,6 @@ void Filter::OnAudioRendererDisabled() {
 
 bool DataSource::IsUrlSupported(const std::string& url) {
   return true;
-}
-
-const char* AudioDecoder::major_mime_type() const {
-  return mime_type::kMajorTypeAudio;
-}
-
-const char* AudioRenderer::major_mime_type() const {
-  return mime_type::kMajorTypeAudio;
-}
-
-const char* VideoDecoder::major_mime_type() const {
-  return mime_type::kMajorTypeVideo;
-}
-
-const char* VideoRenderer::major_mime_type() const {
-  return mime_type::kMajorTypeVideo;
 }
 
 void* DemuxerStream::QueryInterface(const char* interface_id) {

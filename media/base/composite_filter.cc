@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -67,10 +67,6 @@ bool CompositeFilter::AddFilter(scoped_refptr<Filter> filter) {
   filter->set_host(host_impl_.get());
   filters_.push_back(make_scoped_refptr(filter.get()));
   return true;
-}
-
-const char* CompositeFilter::major_mime_type() const {
-  return "";
 }
 
 void CompositeFilter::set_host(FilterHost* host) {

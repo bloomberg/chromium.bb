@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -266,7 +266,7 @@ int main(int argc, char** argv) {
     g_running = true;
 
     // Check if video is present.
-    audio_only = !pipeline->IsRendered(media::mime_type::kMajorTypeVideo);
+    audio_only = !pipeline->HasVideo();
 
     message_loop.PostTask(FROM_HERE,
         NewRunnableFunction(PeriodicalUpdate, pipeline,

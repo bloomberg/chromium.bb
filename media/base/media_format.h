@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -12,40 +12,16 @@
 
 namespace media {
 
-// Common MIME types.
-namespace mime_type {
-extern const char kURL[];
-extern const char kApplicationOctetStream[];
-extern const char kMPEGAudio[];
-extern const char kAACAudio[];
-extern const char kH264AnnexB[];
-extern const char kUncompressedAudio[];
-extern const char kUncompressedVideo[];
-extern const char kUncompressedVideoEglImage[];
-extern const char kMajorTypeAudio[];
-extern const char kMajorTypeVideo[];
-}  // namespace mime_type
-
 // MediaFormat is used to describe the output of a Filter to determine whether
 // a downstream filter can accept the output from an upstream filter.
-// In general, every MediaFormat contains a MIME type describing its output as
-// well as additional key-values describing additional details.
 //
-// For example, an audio decoder could output audio/x-uncompressed and include
-// additional key-values such as the number of channels and the sample rate.
-// An audio renderer would use this information to properly initialize the
-// audio hardware before playback started.
-//
-// It's also perfectly acceptable to create your own MIME types and standards
-// to allow communication between two filters that goes beyond the basics
-// described here.  For example, you could write a video decoder that outputs
-// a MIME type video/x-special for which your video renderer knows it's some
-// special form of decompressed video output that regular video renderers
-// couldn't handle.
+// For example, an audio decoder could output key-values for the number of
+// channels and the sample rate.  A downstream audio renderer would use this
+// information to properly initialize the audio hardware before playback
+// started.
 class MediaFormat {
  public:
   // Common keys.
-  static const char kMimeType[];
   static const char kURL[];
   static const char kSurfaceType[];
   static const char kSurfaceFormat[];
@@ -54,7 +30,6 @@ class MediaFormat {
   static const char kChannels[];
   static const char kWidth[];
   static const char kHeight[];
-  static const char kFFmpegCodecID[];
 
   MediaFormat();
   ~MediaFormat();

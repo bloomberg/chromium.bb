@@ -35,8 +35,6 @@ class AudioRendererImplTest : public ::testing::Test {
     decoder_ = new media::MockAudioDecoder();
 
     // Associate media format with decoder
-    decoder_media_format_.SetAsString(media::MediaFormat::kMimeType,
-                                      media::mime_type::kUncompressedAudio);
     decoder_media_format_.SetAsInteger(media::MediaFormat::kChannels, 2);
     decoder_media_format_.SetAsInteger(media::MediaFormat::kSampleRate, 48000);
     decoder_media_format_.SetAsInteger(media::MediaFormat::kSampleBits, 16);

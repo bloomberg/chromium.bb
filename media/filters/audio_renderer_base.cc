@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -259,12 +259,9 @@ bool AudioRendererBase::ParseMediaFormat(const MediaFormat& media_format,
                                          int* sample_rate_out,
                                          int* sample_bits_out) {
   // TODO(scherkus): might be handy to support NULL parameters.
-  std::string mime_type;
-  return media_format.GetAsString(MediaFormat::kMimeType, &mime_type) &&
-      media_format.GetAsInteger(MediaFormat::kChannels, channels_out) &&
+  return media_format.GetAsInteger(MediaFormat::kChannels, channels_out) &&
       media_format.GetAsInteger(MediaFormat::kSampleRate, sample_rate_out) &&
-      media_format.GetAsInteger(MediaFormat::kSampleBits, sample_bits_out) &&
-      mime_type.compare(mime_type::kUncompressedAudio) == 0;
+      media_format.GetAsInteger(MediaFormat::kSampleBits, sample_bits_out);
 }
 
 void AudioRendererBase::SetPlaybackRate(float playback_rate) {

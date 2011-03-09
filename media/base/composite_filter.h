@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -25,7 +25,6 @@ class CompositeFilter : public Filter {
   bool AddFilter(scoped_refptr<Filter> filter);
 
   // media::Filter methods.
-  virtual const char* major_mime_type() const;
   virtual void set_host(FilterHost* host);
   virtual FilterHost* host();
   virtual void Play(FilterCallback* play_callback);
