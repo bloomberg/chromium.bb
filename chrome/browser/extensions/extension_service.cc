@@ -1132,13 +1132,18 @@ bool ExtensionService::IsIncognitoEnabled(const Extension* extension) {
 
 void ExtensionService::SetIsIncognitoEnabled(const Extension* extension,
                                               bool enabled) {
+  // Broadcast unloaded and loaded events to update browser state. Only bother
+  // if the value changed and the extension is actually enabled, since there is
+  // no UI otherwise.
+  bool old_enabled = extension_prefs_->IsIncognitoEnabled(extension->id());
+  if (enabled == old_enabled)
+    return;
+
   extension_prefs_->SetIsIncognitoEnabled(extension->id(), enabled);
 
-  // Broadcast unloaded and loaded events to update browser state. Only bother
-  // if the extension is actually enabled, since there is no UI otherwise.
-  bool is_enabled = std::find(extensions_.begin(), extensions_.end(),
-                              extension) != extensions_.end();
-  if (is_enabled) {
+  bool extension_is_enabled = std::find(extensions_.begin(), extensions_.end(),
+                                        extension) != extensions_.end();
+  if (extension_is_enabled) {
     NotifyExtensionUnloaded(extension, UnloadedExtensionInfo::DISABLE);
     NotifyExtensionLoaded(extension);
   }
