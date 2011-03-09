@@ -240,11 +240,9 @@ class BrowserWindow {
   // Shows the repost form confirmation dialog box.
   virtual void ShowRepostFormWarningDialog(TabContents* tab_contents) = 0;
 
-#if defined(OS_WIN) || defined(OS_MACOSX)
   // Shows the Content Settings dialog box.
   virtual void ShowContentSettingsWindow(ContentSettingsType content_type,
                                          Profile* profile) = 0;
-#endif  // defined(OS_WIN) || defined(OS_MACOSX)
 
   // Shows the collected cookies dialog box.
   virtual void ShowCollectedCookiesDialog(TabContents* tab_contents) = 0;

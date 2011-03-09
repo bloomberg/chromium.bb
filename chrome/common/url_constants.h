@@ -189,11 +189,11 @@ extern const char kClearBrowserDataSubPage[];
 extern const char kContentSettingsSubPage[];
 extern const char kContentSettingsExceptionsSubPage[];
 extern const char kImportDataSubPage[];
-extern const char kLanguageOptionsSubPage[];
 extern const char kPersonalOptionsSubPage[];
 extern const char kSearchEnginesSubPage[];
 #if defined(OS_CHROMEOS)
 extern const char kInternetOptionsSubPage[];
+extern const char kLanguageOptionsSubPage[];
 extern const char kSystemOptionsSubPage[];
 #endif
 
