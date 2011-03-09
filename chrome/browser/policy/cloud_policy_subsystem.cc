@@ -15,9 +15,9 @@
 #include "chrome/browser/policy/device_management_service.h"
 #include "chrome/browser/policy/device_token_fetcher.h"
 #include "chrome/common/chrome_switches.h"
-#include "chrome/common/notification_details.h"
-#include "chrome/common/notification_source.h"
-#include "chrome/common/notification_type.h"
+#include "content/common/notification_details.h"
+#include "content/common/notification_source.h"
+#include "content/common/notification_type.h"
 
 namespace {
 

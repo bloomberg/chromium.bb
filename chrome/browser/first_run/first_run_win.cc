@@ -4,9 +4,9 @@
 
 #include "chrome/browser/first_run/first_run.h"
 
-#include <windows.h>
 #include <shellapi.h>
 #include <shlobj.h>
+#include <windows.h>
 
 #include <set>
 #include <sstream>
@@ -33,7 +33,6 @@
 #include "chrome/browser/ui/views/first_run_search_engine_view.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_switches.h"
-#include "chrome/common/notification_service.h"
 #include "chrome/common/worker_thread_ticker.h"
 #include "chrome/installer/util/browser_distribution.h"
 #include "chrome/installer/util/google_update_constants.h"
@@ -41,11 +40,15 @@
 #include "chrome/installer/util/install_util.h"
 #include "chrome/installer/util/shell_util.h"
 #include "chrome/installer/util/util_constants.h"
+#include "content/common/notification_service.h"
 #include "google_update_idl.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "grit/locale_settings.h"
 #include "grit/theme_resources.h"
+#include "ui/base/l10n/l10n_util.h"
+#include "ui/base/resource/resource_bundle.h"
+#include "ui/base/ui_base_switches.h"
 #include "views/controls/button/image_button.h"
 #include "views/controls/button/radio_button.h"
 #include "views/controls/image_view.h"
@@ -56,9 +59,6 @@
 #include "views/widget/root_view.h"
 #include "views/widget/widget_win.h"
 #include "views/window/window.h"
-#include "ui/base/resource/resource_bundle.h"
-#include "ui/base/l10n/l10n_util.h"
-#include "ui/base/ui_base_switches.h"
 
 namespace {
 

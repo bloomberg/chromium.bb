@@ -14,8 +14,8 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search_engines/template_url.h"
 #include "chrome/browser/search_engines/template_url_model.h"
-#include "chrome/common/notification_service.h"
 #include "chrome/common/pref_names.h"
+#include "content/common/notification_service.h"
 
 using webkit_glue::PasswordForm;
 

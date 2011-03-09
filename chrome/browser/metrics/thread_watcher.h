@@ -22,9 +22,9 @@
 #include "base/task.h"
 #include "base/threading/thread.h"
 #include "base/time.h"
-#include "chrome/common/notification_observer.h"
-#include "chrome/common/notification_registrar.h"
 #include "content/browser/browser_thread.h"
+#include "content/common/notification_observer.h"
+#include "content/common/notification_registrar.h"
 
 class CustomThreadWatcher;
 class ThreadWatcherList;

@@ -10,7 +10,7 @@
 #include "base/observer_list.h"
 #include "base/ref_counted.h"
 #include "base/scoped_ptr.h"
-#include "chrome/common/notification_observer.h"
+#include "content/common/notification_observer.h"
 #include "net/proxy/proxy_config.h"
 #include "net/proxy/proxy_config_service.h"
 

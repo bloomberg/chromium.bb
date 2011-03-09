@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -10,15 +10,15 @@
 #include "base/string_split.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
-#include "net/base/mime_util.h"
 #include "chrome/browser/platform_util.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/common/notification_details.h"
-#include "chrome/common/notification_source.h"
 #include "chrome/common/render_messages_params.h"
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/renderer_host/render_widget_host_view.h"
+#include "content/common/notification_details.h"
+#include "content/common/notification_source.h"
 #include "grit/generated_resources.h"
+#include "net/base/mime_util.h"
 #include "ui/base/l10n/l10n_util.h"
 
 FileSelectHelper::FileSelectHelper(Profile* profile)

@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -20,7 +20,7 @@
 #include "chrome/browser/keychain_mac.h"
 #include "chrome/browser/password_manager/login_database.h"
 #include "chrome/browser/password_manager/password_store_change.h"
-#include "chrome/common/notification_service.h"
+#include "content/common/notification_service.h"
 
 using webkit_glue::PasswordForm;
 

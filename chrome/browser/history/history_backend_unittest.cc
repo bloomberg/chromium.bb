@@ -1,13 +1,13 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include <set>
 #include <vector>
 
+#include "base/command_line.h"
 #include "base/file_path.h"
 #include "base/file_util.h"
-#include "base/command_line.h"
 #include "base/path_service.h"
 #include "base/ref_counted.h"
 #include "base/scoped_ptr.h"
@@ -16,14 +16,14 @@
 #include "chrome/browser/bookmarks/bookmark_model.h"
 #include "chrome/browser/history/history_backend.h"
 #include "chrome/browser/history/history_notifications.h"
-#include "chrome/browser/history/in_memory_history_backend.h"
 #include "chrome/browser/history/in_memory_database.h"
+#include "chrome/browser/history/in_memory_history_backend.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_paths.h"
-#include "chrome/common/notification_details.h"
-#include "chrome/common/notification_source.h"
 #include "chrome/common/thumbnail_score.h"
 #include "chrome/tools/profiles/thumbnail-inl.h"
+#include "content/common/notification_details.h"
+#include "content/common/notification_source.h"
 #include "googleurl/src/gurl.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/codec/jpeg_codec.h"

@@ -4,10 +4,10 @@
 
 #include "chrome/browser/instant/instant_controller.h"
 
-#include "build/build_config.h"
 #include "base/command_line.h"
 #include "base/message_loop.h"
 #include "base/metrics/histogram.h"
+#include "build/build_config.h"
 #include "chrome/browser/autocomplete/autocomplete_match.h"
 #include "chrome/browser/instant/instant_delegate.h"
 #include "chrome/browser/instant/instant_loader.h"
@@ -20,11 +20,11 @@
 #include "chrome/browser/search_engines/template_url_model.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/common/chrome_switches.h"
-#include "chrome/common/notification_service.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "content/browser/renderer_host/render_widget_host_view.h"
 #include "content/browser/tab_contents/tab_contents.h"
+#include "content/common/notification_service.h"
 
 // Number of ms to delay between loading urls.
 static const int kUpdateDelayMS = 200;

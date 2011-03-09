@@ -6,7 +6,7 @@
 #include "build/build_config.h"
 #include "chrome/browser/metrics/metrics_service.h"
 #include "chrome/browser/metrics/thread_watcher.h"
-#include "chrome/common/notification_service.h"
+#include "content/common/notification_service.h"
 
 #if defined(OS_WIN)
 #include <Objbase.h>

@@ -17,8 +17,8 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
-#include "chrome/common/notification_service.h"
 #include "chrome/common/pref_names.h"
+#include "content/common/notification_service.h"
 
 #if defined(OS_WIN)
 #include "chrome/browser/policy/configuration_policy_provider_win.h"

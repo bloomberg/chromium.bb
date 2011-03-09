@@ -20,15 +20,15 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/policy/browser_policy_connector.h"
 #include "chrome/browser/policy/configuration_policy_provider.h"
-#include "chrome/browser/policy/profile_policy_connector.h"
 #include "chrome/browser/policy/policy_path_parser.h"
+#include "chrome/browser/policy/profile_policy_connector.h"
 #include "chrome/browser/prefs/pref_value_map.h"
 #include "chrome/browser/prefs/proxy_config_dictionary.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search_engines/search_terms_data.h"
 #include "chrome/browser/search_engines/template_url.h"
-#include "chrome/common/notification_service.h"
 #include "chrome/common/pref_names.h"
+#include "content/common/notification_service.h"
 #include "policy/policy_constants.h"
 
 namespace policy {

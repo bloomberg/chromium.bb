@@ -17,8 +17,8 @@
 #include "chrome/browser/history/url_database.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_switches.h"
-#include "chrome/common/notification_details.h"
-#include "chrome/common/notification_source.h"
+#include "content/common/notification_details.h"
+#include "content/common/notification_source.h"
 
 namespace history {
 

@@ -1,12 +1,12 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "chrome/browser/metrics/user_metrics.h"
 
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/common/notification_service.h"
 #include "content/browser/browser_thread.h"
+#include "content/common/notification_service.h"
 
 void UserMetrics::RecordAction(const UserMetricsAction& action,
                                Profile* profile) {

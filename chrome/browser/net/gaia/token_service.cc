@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -11,8 +11,8 @@
 #include "chrome/common/net/gaia/gaia_auth_fetcher.h"
 #include "chrome/common/net/gaia/gaia_constants.h"
 #include "chrome/common/net/url_request_context_getter.h"
-#include "chrome/common/notification_service.h"
 #include "content/browser/browser_thread.h"
+#include "content/common/notification_service.h"
 
 // Unfortunately kNumServices must be defined in the .h.
 // TODO(chron): Sync doesn't use the TalkToken anymore so we can stop

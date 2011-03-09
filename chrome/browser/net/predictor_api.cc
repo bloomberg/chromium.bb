@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -7,13 +7,13 @@
 #include <map>
 #include <string>
 
-#include "base/metrics/field_trial.h"
 #include "base/lazy_instance.h"
+#include "base/metrics/field_trial.h"
 #include "base/stl_util-inl.h"
 #include "base/string_number_conversions.h"
+#include "base/synchronization/waitable_event.h"
 #include "base/threading/thread.h"
 #include "base/values.h"
-#include "base/synchronization/waitable_event.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/io_thread.h"
 #include "chrome/browser/net/preconnect.h"
@@ -24,10 +24,10 @@
 #include "chrome/browser/prefs/session_startup_pref.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
-#include "chrome/common/notification_registrar.h"
-#include "chrome/common/notification_service.h"
 #include "chrome/common/pref_names.h"
 #include "content/browser/browser_thread.h"
+#include "content/common/notification_registrar.h"
+#include "content/common/notification_service.h"
 #include "net/base/host_resolver.h"
 #include "net/base/host_resolver_impl.h"
 

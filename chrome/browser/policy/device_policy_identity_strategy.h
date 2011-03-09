@@ -11,8 +11,8 @@
 #include "base/ref_counted.h"
 #include "base/weak_ptr.h"
 #include "chrome/browser/policy/cloud_policy_identity_strategy.h"
-#include "chrome/common/notification_observer.h"
-#include "chrome/common/notification_registrar.h"
+#include "content/common/notification_observer.h"
+#include "content/common/notification_registrar.h"
 
 class TokenService;
 

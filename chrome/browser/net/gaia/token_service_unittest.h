@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
@@ -12,11 +12,11 @@
 #include "chrome/browser/net/gaia/token_service.h"
 #include "chrome/browser/webdata/web_data_service.h"
 #include "chrome/common/net/gaia/gaia_auth_consumer.h"
-#include "chrome/common/notification_details.h"
-#include "chrome/common/notification_source.h"
 #include "chrome/test/signaling_task.h"
 #include "chrome/test/test_notification_tracker.h"
 #include "chrome/test/testing_profile.h"
+#include "content/common/notification_details.h"
+#include "content/common/notification_source.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 // TestNotificationTracker doesn't do a deep copy on the notification details.

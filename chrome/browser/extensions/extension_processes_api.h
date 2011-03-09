@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -11,7 +11,7 @@
 
 #include "chrome/browser/extensions/extension_function.h"
 #include "chrome/browser/task_manager/task_manager.h"
-#include "chrome/common/notification_registrar.h"
+#include "content/common/notification_registrar.h"
 
 // Observes the Task Manager and routes the notifications as events to the
 // extension system.

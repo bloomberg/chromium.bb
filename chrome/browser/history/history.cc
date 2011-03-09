@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -45,11 +45,11 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/visitedlink/visitedlink_master.h"
 #include "chrome/common/chrome_constants.h"
-#include "chrome/common/notification_service.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/thumbnail_score.h"
 #include "chrome/common/url_constants.h"
 #include "content/browser/browser_thread.h"
+#include "content/common/notification_service.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "third_party/skia/include/core/SkBitmap.h"

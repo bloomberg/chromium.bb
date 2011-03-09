@@ -8,7 +8,7 @@
 
 #include "base/scoped_ptr.h"
 #include "chrome/browser/prefs/pref_member.h"
-#include "chrome/common/notification_observer.h"
+#include "content/common/notification_observer.h"
 
 class FilePath;
 class PrefService;

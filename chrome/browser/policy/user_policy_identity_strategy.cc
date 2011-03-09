@@ -13,10 +13,10 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/guid.h"
 #include "chrome/common/net/gaia/gaia_constants.h"
-#include "chrome/common/notification_details.h"
-#include "chrome/common/notification_service.h"
-#include "chrome/common/notification_source.h"
 #include "content/browser/browser_thread.h"
+#include "content/common/notification_details.h"
+#include "content/common/notification_service.h"
+#include "content/common/notification_source.h"
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/login/user_manager.h"

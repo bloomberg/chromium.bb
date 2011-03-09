@@ -30,11 +30,11 @@
 #include "chrome/browser/extensions/pending_extension_info.h"
 #include "chrome/browser/extensions/sandboxed_extension_unpacker.h"
 #include "chrome/browser/prefs/pref_change_registrar.h"
-#include "chrome/common/notification_observer.h"
-#include "chrome/common/notification_registrar.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/property_bag.h"
 #include "content/browser/browser_thread.h"
+#include "content/common/notification_observer.h"
+#include "content/common/notification_registrar.h"
 
 class ExtensionBrowserEventRouter;
 class ExtensionServiceBackend;

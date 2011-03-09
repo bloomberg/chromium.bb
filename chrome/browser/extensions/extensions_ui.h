@@ -15,9 +15,9 @@
 #include "chrome/browser/ui/shell_dialogs.h"
 #include "chrome/browser/ui/webui/chrome_url_data_manager.h"
 #include "chrome/common/extensions/extension_resource.h"
-#include "chrome/common/notification_observer.h"
-#include "chrome/common/notification_registrar.h"
 #include "content/browser/webui/web_ui.h"
+#include "content/common/notification_observer.h"
+#include "content/common/notification_registrar.h"
 #include "googleurl/src/gurl.h"
 
 class DictionaryValue;

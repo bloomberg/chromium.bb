@@ -18,9 +18,9 @@
 #include "chrome/browser/ui/views/infobars/infobar_container.h"
 #include "chrome/browser/ui/views/unhandled_keyboard_event_handler.h"
 #include "chrome/common/navigation_types.h"
-#include "chrome/common/notification_observer.h"
-#include "chrome/common/notification_registrar.h"
 #include "content/browser/tab_contents/tab_contents_delegate.h"
+#include "content/common/notification_observer.h"
+#include "content/common/notification_registrar.h"
 #include "views/accelerator.h"
 #include "views/widget/widget_win.h"
 

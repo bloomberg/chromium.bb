@@ -161,8 +161,8 @@
 #include "base/md5.h"
 #include "base/metrics/histogram.h"
 #include "base/string_number_conversions.h"
-#include "base/threading/thread.h"
 #include "base/threading/platform_thread.h"
+#include "base/threading/thread.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
@@ -179,13 +179,13 @@
 #include "chrome/common/child_process_logging.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/guid.h"
-#include "chrome/common/notification_service.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/render_messages.h"
 #include "content/browser/renderer_host/render_process_host.h"
+#include "content/common/notification_service.h"
+#include "libxml/xmlwriter.h"
 #include "webkit/plugins/npapi/plugin_list.h"
 #include "webkit/plugins/npapi/webplugininfo.h"
-#include "libxml/xmlwriter.h"
 
 // TODO(port): port browser_distribution.h.
 #if !defined(OS_POSIX)

@@ -19,8 +19,8 @@
 #include "base/basictypes.h"
 #include "base/gtest_prod_util.h"
 #include "base/scoped_ptr.h"
-#include "chrome/common/notification_observer.h"
-#include "chrome/common/notification_registrar.h"
+#include "content/common/notification_observer.h"
+#include "content/common/notification_registrar.h"
 
 class FilePath;
 class GURL;

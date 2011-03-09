@@ -18,8 +18,8 @@
 #include "chrome/browser/importer/importer_list.h"
 #include "chrome/browser/importer/profile_writer.h"
 #include "chrome/browser/profile_import_process_host.h"
-#include "chrome/common/notification_observer.h"
-#include "chrome/common/notification_registrar.h"
+#include "content/common/notification_observer.h"
+#include "content/common/notification_registrar.h"
 #include "ui/gfx/native_widget_types.h"
 
 class ExternalProcessImporterClient;

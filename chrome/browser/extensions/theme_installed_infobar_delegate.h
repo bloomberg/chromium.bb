@@ -7,7 +7,7 @@
 #pragma once
 
 #include "chrome/browser/tab_contents/confirm_infobar_delegate.h"
-#include "chrome/common/notification_registrar.h"
+#include "content/common/notification_registrar.h"
 
 class Extension;
 class SkBitmap;

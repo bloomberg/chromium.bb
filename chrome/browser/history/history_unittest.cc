@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -46,10 +46,10 @@
 #include "chrome/browser/history/in_memory_history_backend.h"
 #include "chrome/browser/history/page_usage_data.h"
 #include "chrome/common/chrome_paths.h"
-#include "chrome/common/notification_details.h"
-#include "chrome/common/notification_source.h"
 #include "chrome/common/thumbnail_score.h"
 #include "chrome/tools/profiles/thumbnail-inl.h"
+#include "content/common/notification_details.h"
+#include "content/common/notification_source.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/gfx/codec/jpeg_codec.h"

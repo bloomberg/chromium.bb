@@ -4,16 +4,16 @@
 
 #include "chrome/browser/extensions/extension_prefs.h"
 
-#include "base/string_util.h"
 #include "base/string_number_conversions.h"
+#include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/extensions/extension_pref_store.h"
 #include "chrome/browser/prefs/pref_notifier.h"
 #include "chrome/browser/prefs/scoped_user_pref_update.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/url_pattern.h"
-#include "chrome/common/notification_service.h"
 #include "chrome/common/pref_names.h"
+#include "content/common/notification_service.h"
 
 using base::Time;
 
