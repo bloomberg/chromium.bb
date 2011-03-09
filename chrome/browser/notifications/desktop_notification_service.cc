@@ -43,45 +43,6 @@ using WebKit::WebTextDirection;
 
 const ContentSetting kDefaultSetting = CONTENT_SETTING_ASK;
 
-// NotificationPermissionCallbackTask -----------------------------------------
-
-// A task object which calls the renderer to inform the web page that the
-// permission request has completed.
-class NotificationPermissionCallbackTask : public Task {
- public:
-  NotificationPermissionCallbackTask(int process_id,
-                                     int route_id,
-                                     int request_id);
-  virtual ~NotificationPermissionCallbackTask();
-
- private:
-  virtual void Run();
-
-  int process_id_;
-  int route_id_;
-  int request_id_;
-};
-
-NotificationPermissionCallbackTask::NotificationPermissionCallbackTask(
-    int process_id,
-    int route_id,
-    int request_id)
-    : process_id_(process_id),
-      route_id_(route_id),
-      request_id_(request_id) {
-}
-
-NotificationPermissionCallbackTask::~NotificationPermissionCallbackTask() {
-}
-
-void NotificationPermissionCallbackTask::Run() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  RenderViewHost* host = RenderViewHost::FromID(process_id_, route_id_);
-  if (host)
-    host->Send(new ViewMsg_PermissionRequestDone(route_id_, request_id_));
-}
-
-
 // NotificationPermissionInfoBarDelegate --------------------------------------
 
 // The delegate for the infobar shown when an origin requests notification
@@ -154,9 +115,9 @@ void NotificationPermissionInfoBarDelegate::InfoBarClosed() {
   if (!action_taken_)
     UMA_HISTOGRAM_COUNTS("NotificationPermissionRequest.Ignored", 1);
 
-  BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
-      new NotificationPermissionCallbackTask(process_id_, route_id_,
-                                             callback_context_));
+  RenderViewHost* host = RenderViewHost::FromID(process_id_, route_id_);
+  if (host)
+    host->Send(new ViewMsg_PermissionRequestDone(route_id_, callback_context_));
 
   delete this;
 }
@@ -610,10 +571,9 @@ void DesktopNotificationService::RequestPermission(
                         route_id, callback_context));
   } else {
     // Notify renderer immediately.
-    BrowserThread::PostTask(
-      BrowserThread::IO, FROM_HERE,
-      new NotificationPermissionCallbackTask(
-          process_id, route_id, callback_context));
+    RenderViewHost* host = RenderViewHost::FromID(process_id, route_id);
+    if (host)
+      host->Send(new ViewMsg_PermissionRequestDone(route_id, callback_context));
   }
 }
 
