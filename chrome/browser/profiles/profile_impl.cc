@@ -372,12 +372,16 @@ void ProfileImpl::InitExtensions() {
                         // since it isn't used anymore.
   user_script_master_ = new UserScriptMaster(script_dir, this);
 
+  bool autoupdate_enabled = true;
+#if defined(OS_CHROMEOS)
+  autoupdate_enabled = !command_line->HasSwitch(switches::kGuestSession);
+#endif
   extensions_service_ = new ExtensionService(
       this,
       CommandLine::ForCurrentProcess(),
       GetPath().AppendASCII(ExtensionService::kInstallDirectoryName),
       extension_prefs_.get(),
-      true);
+      autoupdate_enabled);
 
   RegisterComponentExtensions();
   extensions_service_->Init();

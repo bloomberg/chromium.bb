@@ -400,8 +400,10 @@ ExtensionService::ExtensionService(Profile* profile,
 
   backend_ = new ExtensionServiceBackend(install_directory_);
 
-  ExternalExtensionProviderImpl::CreateExternalProviders(
-      this, profile_, &external_extension_providers_);
+  if (extensions_enabled()) {
+    ExternalExtensionProviderImpl::CreateExternalProviders(
+        this, profile_, &external_extension_providers_);
+  }
 
   // Use monochrome icons for Omnibox icons.
   omnibox_popup_icon_manager_.set_monochrome(true);
