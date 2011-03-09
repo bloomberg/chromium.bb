@@ -204,14 +204,16 @@ void UILayoutTest::RunLayoutTest(const std::string& test_case_file_name,
   ASSERT_TRUE(file_util::WriteFile(new_test_file_path,
                                    &test_html.at(0),
                                    static_cast<int>(test_html.size())));
+  // We expect the test case dir to be ASCII.  It might be empty, so we
+  // can't test whether MaybeAsASCII succeeded, but the tests will fail
+  // loudly in that case anyway.
+  std::string url_path = test_case_dir_.MaybeAsASCII();
 
   scoped_ptr<GURL> new_test_url;
   if (port != kNoHttpPort)
     new_test_url.reset(new GURL(
         StringPrintf("http://localhost:%d/", port) +
-        WideToUTF8(test_case_dir_.ToWStringHack()) +
-        "/" +
-        test_case_file_name));
+        url_path + "/" + test_case_file_name));
   else
     new_test_url.reset(new GURL(net::FilePathToFileURL(new_test_file_path)));
 
