@@ -381,7 +381,7 @@ void AdvancedOptionsHandler::HandleAutoOpenButton(const ListValue* args) {
 void AdvancedOptionsHandler::HandleMetricsReportingCheckbox(
     const ListValue* args) {
 #if defined(GOOGLE_CHROME_BUILD) && !defined(OS_CHROMEOS)
-  std::string checked_str = WideToUTF8(ExtractStringValue(args));
+  std::string checked_str = UTF16ToUTF8(ExtractStringValue(args));
   bool enabled = checked_str == "true";
   UserMetricsRecordAction(
       enabled ?
