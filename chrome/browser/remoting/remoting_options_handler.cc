@@ -6,7 +6,10 @@
 
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
+#include "chrome/browser/prefs/pref_service.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/service/service_process_control_manager.h"
+#include "chrome/common/pref_names.h"
 #include "chrome/common/remoting/chromoting_host_info.h"
 #include "content/browser/webui/web_ui.h"
 #include "grit/generated_resources.h"
@@ -36,6 +39,8 @@ void RemotingOptionsHandler::Init(WebUI* web_ui) {
     // Assume that host is not started if we can't request status.
     SetStatus(false, "");
   }
+  web_ui_->GetProfile()->GetPrefs()->SetBoolean(
+      prefs::kRemotingHasSetupCompleted, false);
 }
 
 // ServiceProcessControl::MessageHandler interface

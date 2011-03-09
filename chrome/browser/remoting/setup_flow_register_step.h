@@ -26,6 +26,8 @@ class SetupFlowRegisterStep : public SetupFlowStepBase {
  protected:
   virtual void DoStart();
 
+  // This methods is called when are sure remoting is enabled.
+  void SetRemotingEnabled();
   void OnRequestDone(DirectoryAddRequest::Result result,
                      const std::string& error_message);
 
