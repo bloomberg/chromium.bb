@@ -113,6 +113,9 @@ void KeyboardOverlayUIHTMLSource::StartDataRequest(const std::string& path,
       l10n_util::GetStringUTF16(IDS_KEYBOARD_OVERLAY_BOOKMARK_CURRENT_PAGE));
   localized_strings.SetString("keyboardOverlayBookmarkAllTabs",
       l10n_util::GetStringUTF16(IDS_KEYBOARD_OVERLAY_BOOKMARK_ALL_TABS));
+  localized_strings.SetString("keyboardOverlayClearBrowsingDataDialog",
+      l10n_util::GetStringUTF16(
+          IDS_KEYBOARD_OVERLAY_CLEAR_BROWSING_DATA_DIALOG));
   localized_strings.SetString("keyboardOverlayCloseTab",
       l10n_util::GetStringUTF16(IDS_KEYBOARD_OVERLAY_CLOSE_TAB));
   localized_strings.SetString("keyboardOverlayCloseWindow",
@@ -168,6 +171,8 @@ void KeyboardOverlayUIHTMLSource::StartDataRequest(const std::string& path,
       l10n_util::GetStringUTF16(IDS_KEYBOARD_OVERLAY_REOPEN_LAST_CLOSED_TAB));
   localized_strings.SetString("keyboardOverlayResetZoom",
       l10n_util::GetStringUTF16(IDS_KEYBOARD_OVERLAY_RESET_ZOOM));
+  localized_strings.SetString("keyboardOverlaySelectWordAtATime",
+      l10n_util::GetStringUTF16(IDS_KEYBOARD_OVERLAY_SELECT_WORD_AT_A_TIME));
   localized_strings.SetString("keyboardOverlaySelectWordAtATime",
       l10n_util::GetStringUTF16(IDS_KEYBOARD_OVERLAY_SELECT_WORD_AT_A_TIME));
   localized_strings.SetString("keyboardOverlayToggleBookmarkBar",

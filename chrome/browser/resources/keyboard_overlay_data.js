@@ -5029,18 +5029,48 @@ var keyboardOverlayData = {
           "label": "tab",
           "notes": "tab"
         },
-        "10": {},
-        "11": {},
-        "12": {},
+        "10": {
+          "key": "W",
+          "label": "W"
+        },
+        "11": {
+          "key": "i",
+          "label": "i"
+        },
+        "12": {
+          "key": "n",
+          "label": "n"
+        },
         "13": {},
-        "14": {},
+        "14": {
+          "key": "a",
+          "label": "a"
+        },
         "15": {},
-        "16": {},
-        "17": {},
-        "18": {},
-        "19": {},
-        "1A": {},
-        "1B": {},
+        "16": {
+          "key": "C",
+          "label": "C"
+        },
+        "17": {
+          "key": "r",
+          "label": "r"
+        },
+        "18": {
+          "key": "-",
+          "label": "-"
+        },
+        "19": {
+          "key": "\u0664",
+          "p5": "664"
+        },
+        "1A": {
+          "key": "\u0668",
+          "p5": "668"
+        },
+        "1B": {
+          "key": "!",
+          "label": "!"
+        },
         "1C": {
           "format": "right",
           "key": "enter",
@@ -5053,17 +5083,50 @@ var keyboardOverlayData = {
           "label": "ctrl",
           "notes": "left ctrl"
         },
-        "1E": {},
-        "1F": {},
-        "20": {},
-        "21": {},
-        "22": {},
-        "23": {},
-        "24": {},
-        "25": {},
-        "26": {},
-        "27": {},
-        "28": {},
+        "1E": {
+          "key": "\u096f",
+          "p5": "96F"
+        },
+        "1F": {
+          "key": "\u0966",
+          "p5": "966"
+        },
+        "20": {
+          "key": "\u0966",
+          "p5": "966"
+        },
+        "21": {
+          "key": ".",
+          "label": "."
+        },
+        "22": {
+          "key": "\u096f",
+          "p5": "96F"
+        },
+        "23": {
+          "key": "\u0967",
+          "p5": "967"
+        },
+        "24": {
+          "key": "/",
+          "label": "/"
+        },
+        "25": {
+          "key": "c",
+          "label": "c"
+        },
+        "26": {
+          "key": "l",
+          "label": "l"
+        },
+        "27": {
+          "key": "e",
+          "label": "e"
+        },
+        "28": {
+          "key": "v",
+          "label": "v"
+        },
         "29": {},
         "2A": {
           "format": "left",
@@ -5072,16 +5135,46 @@ var keyboardOverlayData = {
           "notes": "left shift"
         },
         "2B": {},
-        "2C": {},
-        "2D": {},
-        "2E": {},
-        "2F": {},
-        "30": {},
-        "31": {},
-        "32": {},
-        "33": {},
-        "34": {},
-        "35": {},
+        "2C": {
+          "key": "e",
+          "label": "e"
+        },
+        "2D": {
+          "key": "r",
+          "label": "r"
+        },
+        "2E": {
+          "key": "p",
+          "label": "p"
+        },
+        "2F": {
+          "key": "u",
+          "label": "u"
+        },
+        "30": {
+          "key": "zz",
+          "label": "zz"
+        },
+        "31": {
+          "key": "l",
+          "label": "l"
+        },
+        "32": {
+          "key": "e",
+          "label": "e"
+        },
+        "33": {
+          "key": "h",
+          "label": "h"
+        },
+        "34": {
+          "key": "e",
+          "label": "e"
+        },
+        "35": {
+          "key": "re",
+          "label": "re"
+        },
         "36": {
           "format": "right",
           "key": "shift",
@@ -23550,6 +23643,7 @@ var keyboardOverlayData = {
     "b CTRL SHIFT": "keyboardOverlayToggleBookmarkBar",
     "backspace": "keyboardOverlayBack",
     "backspace CTRL": "keyboardOverlayDeleteWord",
+    "backspace CTRL SHIFT": "keyboardOverlayClearBrowsingDataDialog",
     "backspace SHIFT": "keyboardOverlayForward",
     "c CTRL": "keyboardOverlayCopy",
     "d ALT": "keyboardOverlayFocusAddressBar",
@@ -23574,7 +23668,7 @@ var keyboardOverlayData = {
     "k CTRL": "keyboardOverlayFocusAddressBarInSearchMode",
     "l CTRL": "keyboardOverlayFocusAddressBar",
     "left ALT": "keyboardOverlayBack",
-    "left/right CTRL SHIFT": "keyboardOverlaySelectWordAtATime",
+    "left CTRL SHIFT": "keyboardOverlaySelectWordAtATime",
     "m ALT CTRL": "keyboardOverlayUseExternalMonitor",
     "n CTRL": "keyboardOverlayNewWindow",
     "n CTRL SHIFT": "keyboardOverlayNewIncognitoWindow",
@@ -23584,6 +23678,7 @@ var keyboardOverlayData = {
     "r CTRL": "keyboardOverlayReloadCurrentPage",
     "r CTRL SHIFT": "keyboardOverlayReloadIgnoringCache",
     "right ALT": "keyboardOverlayForward",
+    "right CTRL SHIFT": "keyboardOverlaySelectWordAtATime",
     "s CTRL": "keyboardOverlaySave",
     "space CTRL": "keyboardOverlaySelectPreviousInputMethod",
     "space SHIFT": "keyboardOverlayScrollUpOnePage",

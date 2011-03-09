@@ -11060,6 +11060,9 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_KEYBOARD_OVERLAY_BOOKMARK_ALL_TABS" desc="The text in the keyboard overlay to explain the shortcut.">
         Bookmark all tabs
       </message>
+      <message name="IDS_KEYBOARD_OVERLAY_CLEAR_BROWSING_DATA_DIALOG" desc="The text in the keyboard overlay to explain the shortcut.">
+        "Clear browsing data" dialog
+      </message>
       <message name="IDS_KEYBOARD_OVERLAY_CLOSE_TAB" desc="The text in the keyboard overlay to explain the shortcut.">
         Close tab
       </message>
@@ -11140,6 +11143,9 @@ Keep your key file in a safe place. You will need it to create new versions of y
       </message>
       <message name="IDS_KEYBOARD_OVERLAY_RESET_ZOOM" desc="The text in the keyboard overlay to explain the shortcut.">
         Reset zoom
+      </message>
+      <message name="IDS_KEYBOARD_OVERLAY_SELECT_WORD_AT_A_TIME" desc="The text in the keyboard overlay to explain the shortcut.">
+        Select "word at a time"
       </message>
       <message name="IDS_KEYBOARD_OVERLAY_SELECT_WORD_AT_A_TIME" desc="The text in the keyboard overlay to explain the shortcut.">
         Select "word at a time"
