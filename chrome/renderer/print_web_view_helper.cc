@@ -107,8 +107,8 @@ PrepareFrameAndViewForPrint::~PrepareFrameAndViewForPrint() {
 PrintWebViewHelper::PrintWebViewHelper(RenderView* render_view)
     : RenderViewObserver(render_view),
       print_web_view_(NULL),
-      user_cancelled_scripted_print_count_(0),
-      is_preview_(false) {}
+      user_cancelled_scripted_print_count_(0) {
+}
 
 PrintWebViewHelper::~PrintWebViewHelper() {}
 
@@ -155,25 +155,26 @@ void PrintWebViewHelper::OnPrintForPrintPreview(
   WebDocument document = main_frame->document();
   // <object> with id="pdf-viewer" is created in
   // chrome/browser/resources/print_preview.js
-  WebElement element = document.getElementById("pdf-viewer");
-  if (element.isNull()) {
+  WebElement pdf_element = document.getElementById("pdf-viewer");
+  if (pdf_element.isNull()) {
     NOTREACHED();
     return;
   }
 
-  if (!InitPrintSettings(element.document().frame(), &element)) {
+  WebFrame* pdf_frame = pdf_element.document().frame();
+  if (!InitPrintSettings(pdf_frame, &pdf_element)) {
     NOTREACHED() << "Failed to initialize print page settings";
     return;
   }
 
   if (!UpdatePrintSettings(job_settings)) {
     NOTREACHED() << "Failed to update print page settings";
-    DidFinishPrinting(true); // Release all printing resources.
+    DidFinishPrinting(true);  // Release all printing resources.
     return;
   }
 
   // Render Pages for printing.
-  RenderPagesForPrint(element.document().frame(), &element);
+  RenderPagesForPrint(pdf_frame, &pdf_element);
 #endif
 }
 
@@ -220,36 +221,14 @@ void PrintWebViewHelper::Print(WebKit::WebFrame* frame,
                                WebNode* node,
                                bool script_initiated,
                                bool is_preview) {
-  const int kMinSecondsToIgnoreJavascriptInitiatedPrint = 2;
-  const int kMaxSecondsToIgnoreJavascriptInitiatedPrint = 2 * 60;  // 2 Minutes.
-
   // If still not finished with earlier print request simply ignore.
   if (print_web_view_)
     return;
 
-  // Check if there is script repeatedly trying to print and ignore it if too
-  // frequent.  We use exponential wait time so for a page that calls print() in
-  // a loop the user will need to cancel the print dialog after 2 seconds, 4
-  // seconds, 8, ... up to the maximum of 2 minutes.
-  // This gives the user time to navigate from the page.
-  if (script_initiated && (user_cancelled_scripted_print_count_ > 0)) {
-    base::TimeDelta diff = base::Time::Now() - last_cancelled_script_print_;
-    int min_wait_seconds = std::min(
-        kMinSecondsToIgnoreJavascriptInitiatedPrint <<
-            (user_cancelled_scripted_print_count_ - 1),
-        kMaxSecondsToIgnoreJavascriptInitiatedPrint);
-    if (diff.InSeconds() < min_wait_seconds) {
-      WebString message(WebString::fromUTF8(
-          "Ignoring too frequent calls to print()."));
-      frame->addMessageToConsole(WebConsoleMessage(
-          WebConsoleMessage::LevelWarning,
-          message));
-      return;
-    }
-  }
+  if (script_initiated && IsScriptInitiatedPrintTooFrequent(frame))
+    return;
 
   bool print_cancelled = false;
-  is_preview_ = is_preview;
 
   // Initialize print settings.
   if (!InitPrintSettings(frame, node))
@@ -262,7 +241,7 @@ void PrintWebViewHelper::Print(WebKit::WebFrame* frame,
   // a scope for itself (see comments on PrepareFrameAndViewForPrint).
   {
     PrepareFrameAndViewForPrint prep_frame_view(
-        (*print_pages_params_).params, frame, node, frame->view());
+        print_pages_params_->params, frame, node, frame->view());
     expected_pages_count = prep_frame_view.GetExpectedPageCount();
     if (expected_pages_count)
       use_browser_overlays = prep_frame_view.ShouldUseBrowserOverlays();
@@ -270,7 +249,7 @@ void PrintWebViewHelper::Print(WebKit::WebFrame* frame,
 
   // Some full screen plugins can say they don't want to print.
   if (expected_pages_count) {
-    if (!is_preview_) {
+    if (!is_preview) {
       // Ask the browser to show UI to retrieve the final print settings.
       if (!GetPrintSettingsFromUser(frame, expected_pages_count,
                                     use_browser_overlays)) {
@@ -280,19 +259,16 @@ void PrintWebViewHelper::Print(WebKit::WebFrame* frame,
 
     // Render Pages for printing.
     if (!print_cancelled) {
-      if (is_preview_)
+      if (is_preview)
         RenderPagesForPreview(frame);
       else
         RenderPagesForPrint(frame, node);
 
-      // Reset cancel counter on first successful print.
-      user_cancelled_scripted_print_count_ = 0;
+      ResetScriptedPrintCount();
       return;  // All went well.
     } else {
-      if (script_initiated) {
-        ++user_cancelled_scripted_print_count_;
-        last_cancelled_script_print_ = base::Time::Now();
-      }
+      if (script_initiated)
+        IncrementScriptedPrintCount();
     }
   } else {
     // Nothing to print.
@@ -388,8 +364,9 @@ void PrintWebViewHelper::PrintPages(const ViewMsg_PrintPages_Params& params,
 #endif  // OS_MACOSX || OS_WIN
 
 void PrintWebViewHelper::didStopLoading() {
-  DCHECK(print_pages_params_.get() != NULL);
-  PrintPages(*print_pages_params_.get(), print_web_view_->mainFrame(), NULL);
+  ViewMsg_PrintPages_Params* params = print_pages_params_.get();
+  DCHECK(params != NULL);
+  PrintPages(*params, print_web_view_->mainFrame(), NULL);
 }
 
 void PrintWebViewHelper::GetPageSizeAndMarginsInPoints(
@@ -572,7 +549,7 @@ bool PrintWebViewHelper::GetPrintSettingsFromUser(WebFrame* frame,
   // popup and the print() command has been issued from the parent. The
   // receiver of this message has to deal with this.
   params.host_window_id = render_view()->host_window();
-  params.cookie = (*print_pages_params_).params.document_cookie;
+  params.cookie = print_pages_params_->params.document_cookie;
   params.has_selection = frame->hasSelection();
   params.expected_pages_count = expected_pages_count;
   params.use_overlays = use_browser_overlays;
@@ -630,3 +607,41 @@ bool PrintWebViewHelper::CopyMetafileDataToSharedMem(
   return false;
 }
 #endif  // defined(OS_POSIX)
+
+bool PrintWebViewHelper::IsScriptInitiatedPrintTooFrequent(
+    WebKit::WebFrame* frame) {
+  const int kMinSecondsToIgnoreJavascriptInitiatedPrint = 2;
+  const int kMaxSecondsToIgnoreJavascriptInitiatedPrint = 2 * 60;  // 2 Minutes.
+
+  // Check if there is script repeatedly trying to print and ignore it if too
+  // frequent.  We use exponential wait time so for a page that calls print() in
+  // a loop the user will need to cancel the print dialog after 2 seconds, 4
+  // seconds, 8, ... up to the maximum of 2 minutes.
+  // This gives the user time to navigate from the page.
+  if (user_cancelled_scripted_print_count_ > 0) {
+    base::TimeDelta diff = base::Time::Now() - last_cancelled_script_print_;
+    int min_wait_seconds = std::min(
+        kMinSecondsToIgnoreJavascriptInitiatedPrint <<
+            (user_cancelled_scripted_print_count_ - 1),
+        kMaxSecondsToIgnoreJavascriptInitiatedPrint);
+    if (diff.InSeconds() < min_wait_seconds) {
+      WebString message(WebString::fromUTF8(
+          "Ignoring too frequent calls to print()."));
+      frame->addMessageToConsole(WebConsoleMessage(
+          WebConsoleMessage::LevelWarning,
+          message));
+      return true;
+    }
+  }
+  return false;
+}
+
+void PrintWebViewHelper::ResetScriptedPrintCount() {
+  // Reset cancel counter on first successful print.
+  user_cancelled_scripted_print_count_ = 0;
+}
+
+void PrintWebViewHelper::IncrementScriptedPrintCount() {
+  ++user_cancelled_scripted_print_count_;
+  last_cancelled_script_print_ = base::Time::Now();
+}

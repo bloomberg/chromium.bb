@@ -208,11 +208,21 @@ class PrintWebViewHelper : public RenderViewObserver ,
   bool CopyMetafileDataToSharedMem(printing::NativeMetafile* metafile,
                                    base::SharedMemoryHandle* shared_mem_handle);
 
+  // Returns true if script initiated printing occurs too often.
+  bool IsScriptInitiatedPrintTooFrequent(WebKit::WebFrame* frame);
+
+  // Reset the counter for script initiated printing.
+  // Scripted printing will be allowed to continue.
+  void ResetScriptedPrintCount();
+
+  // Increment the counter for script initiated printing.
+  // Scripted printing will be blocked for a limited amount of time.
+  void IncrementScriptedPrintCount();
+
   WebKit::WebView* print_web_view_;
   scoped_ptr<ViewMsg_PrintPages_Params> print_pages_params_;
   base::Time last_cancelled_script_print_;
   int user_cancelled_scripted_print_count_;
-  bool is_preview_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(PrintWebViewHelper);
