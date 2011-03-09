@@ -330,9 +330,10 @@ def _SendChangeHTTP(options):
   logging.info('Sending by HTTP')
   logging.info(description)
   logging.info(url)
-  logging.info(options.diff)
   if options.dry_run:
+    print options.diff
     return
+  logging.info(options.diff)
 
   try:
     logging.info('Opening connection...')
@@ -509,8 +510,7 @@ def TryChange(argv,
                         "optional if --issue is used, In that case, the "
                         "latest patchset will be used.")
   group.add_option("--dry_run", action='store_true',
-                   help="Don't send the try job. This implies --verbose, so "
-                        "it will print the diff.")
+                   help="Just prints the diff and quits")
   parser.add_option_group(group)
 
   group = optparse.OptionGroup(parser, "Try job options")
@@ -611,18 +611,24 @@ def TryChange(argv,
 
   options, args = parser.parse_args(argv)
 
+  # Note that the args array includes the script name, so
+  # a single argument results in len(args) == 2.
+
   # If they've asked for help, give it to them
-  if len(args) == 1 and args[0] == 'help':
+  if len(args) == 2 and args[1] == 'help':
     parser.print_help()
     return 0
 
   # If they've said something confusing, don't spawn a try job until you
   # understand what they want.
-  if args:
-    parser.error('Extra argument(s) "%s" not understood' % ' '.join(args))
-
-  if options.dry_run:
-    options.verbose++
+  if len(args) > 1:
+    plural = ""
+    if len(args) > 2:
+      plural = "s"
+    print >> sys.stderr, (
+        'Argument%s \"%s\" not understood' % (plural, ' '.join(args[1:])))
+    parser.print_help()
+    return 1
 
   LOG_FORMAT = '%(levelname)s %(filename)s(%(lineno)d): %(message)s'
   if not swallow_exception:
