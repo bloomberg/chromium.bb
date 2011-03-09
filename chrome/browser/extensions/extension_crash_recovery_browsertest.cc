@@ -389,14 +389,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionCrashRecoveryTest,
   ASSERT_EQ(size_before, GetExtensionService()->extensions()->size());
 }
 
-// http://crbug.com/75134 Crashes on Win/ChromeOS only.
-#if defined(OS_WIN) || defined(OS_CHROMEOS)
-#define MAYBE_TwoExtensionsIgnoreFirst DISABLED_TwoExtensionsIgnoreFirst
-#else
-#define MAYBE_TwoExtensionsIgnoreFirst TwoExtensionsIgnoreFirst
-#endif
-IN_PROC_BROWSER_TEST_F(ExtensionCrashRecoveryTest,
-                       MAYBE_TwoExtensionsIgnoreFirst) {
+IN_PROC_BROWSER_TEST_F(ExtensionCrashRecoveryTest, TwoExtensionsIgnoreFirst) {
   const size_t size_before = GetExtensionService()->extensions()->size();
   LoadTestExtension();
   LoadSecondExtension();
@@ -413,9 +406,8 @@ IN_PROC_BROWSER_TEST_F(ExtensionCrashRecoveryTest,
   CheckExtensionConsistency(size_before);
 }
 
-// Marked as flaky due to http://crbug.com/75134
 IN_PROC_BROWSER_TEST_F(ExtensionCrashRecoveryTest,
-                       FLAKY_TwoExtensionsReloadIndependently) {
+                       TwoExtensionsReloadIndependently) {
   const size_t size_before = GetExtensionService()->extensions()->size();
   LoadTestExtension();
   LoadSecondExtension();
