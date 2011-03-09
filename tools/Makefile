@@ -609,6 +609,10 @@ glibc-adhoc-files:
 	    $(ARCH_DEST)/lib/libcrt_platform.a
 	echo '/* Intentionally empty */' > \
 	    $(ARCH_DEST)/lib/libnosys.so
+	for f in catchsegv gencat getconf getent iconv ldd locale \
+	    localedef mtrace pcprofiledump rpcgen sprof tzselect xtrace; do \
+	    rm -f $(ARCH_DEST)/bin/$$f ; \
+	done
 
 
 ##################################################################
@@ -715,6 +719,11 @@ endif
 	    DESTDIR=$(DESTDIR) \
 	    install
 	$(MAKE) -f $(THISMAKEFILE) redirector
+	$(MAKE) -f $(THISMAKEFILE) gcc-redirector
+	touch $@
+
+.PHONY: gcc-redirector
+gcc-redirector:
 ifeq ($(PLATFORM), Cygwin)
 	for exe in "$(DESTDIR)$(SDKROOT)/$(CROSSARCH)/bin/"* ; do \
 	  echo "The next command can hang on FAT partiton; use NTFS!" ; \
@@ -748,7 +757,6 @@ else
 	    true; \
 	done;
 endif
-	touch $@
 
 .PHONY: gcc
 gcc: BUILD/stamp-$(CROSSARCH)-gcc
@@ -894,6 +902,8 @@ dev-build-with-glibc:
 	$(MAKE) -f $(THISMAKEFILE) scons-libs-glibc LIB_BITS=64
 	$(MAKE) -f $(THISMAKEFILE) stubout LIB_BITS=32
 	$(MAKE) -f $(THISMAKEFILE) stubout LIB_BITS=64
+	$(MAKE) -f $(THISMAKEFILE) redirector
+	$(MAKE) -f $(THISMAKEFILE) gcc-redirector
 
 .PHONY: dev-build
 dev-build:
