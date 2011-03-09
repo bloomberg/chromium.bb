@@ -21,6 +21,7 @@
 #include "base/message_loop.h"
 #include "base/metrics/histogram.h"
 #include "base/string_util.h"
+#include "base/threading/thread_restrictions.h"
 #include "base/threading/worker_pool.h"
 #include "base/synchronization/waitable_event.h"
 #include "net/base/net_errors.h"
@@ -52,6 +53,7 @@ int64 MapErrorCode(int err) {
 // ReadFile() is a simple wrapper around read() that handles EINTR signals and
 // calls MapErrorCode() to map errno to net error codes.
 int ReadFile(base::PlatformFile file, char* buf, int buf_len) {
+  base::ThreadRestrictions::AssertIOAllowed();
   // read(..., 0) returns 0 to indicate end-of-file.
 
   // Loop in the case of getting interrupted by a signal.
@@ -65,6 +67,7 @@ int ReadFile(base::PlatformFile file, char* buf, int buf_len) {
 // calls MapErrorCode() to map errno to net error codes.  It tries to write to
 // completion.
 int WriteFile(base::PlatformFile file, const char* buf, int buf_len) {
+  base::ThreadRestrictions::AssertIOAllowed();
   ssize_t res = HANDLE_EINTR(write(file, buf, buf_len));
   if (res == -1)
     return MapErrorCode(errno);
@@ -75,6 +78,7 @@ int WriteFile(base::PlatformFile file, const char* buf, int buf_len) {
 // calls MapErrorCode() to map errno to net error codes.  It tries to flush to
 // completion.
 int FlushFile(base::PlatformFile file) {
+  base::ThreadRestrictions::AssertIOAllowed();
   ssize_t res = HANDLE_EINTR(fsync(file));
   if (res == -1)
     return MapErrorCode(errno);
@@ -362,6 +366,8 @@ bool FileStream::IsOpen() const {
 }
 
 int64 FileStream::Seek(Whence whence, int64 offset) {
+  base::ThreadRestrictions::AssertIOAllowed();
+
   if (!IsOpen())
     return ERR_UNEXPECTED;
 
@@ -377,6 +383,8 @@ int64 FileStream::Seek(Whence whence, int64 offset) {
 }
 
 int64 FileStream::Available() {
+  base::ThreadRestrictions::AssertIOAllowed();
+
   if (!IsOpen())
     return ERR_UNEXPECTED;
 
@@ -438,7 +446,7 @@ int FileStream::ReadUntilComplete(char *buf, int buf_len) {
 int FileStream::Write(
     const char* buf, int buf_len, CompletionCallback* callback) {
   // write(..., 0) will return 0, which indicates end-of-file.
-  DCHECK(buf_len > 0);
+  DCHECK_GT(buf_len, 0);
 
   if (!IsOpen())
     return ERR_UNEXPECTED;
@@ -455,6 +463,8 @@ int FileStream::Write(
 }
 
 int64 FileStream::Truncate(int64 bytes) {
+  base::ThreadRestrictions::AssertIOAllowed();
+
   if (!IsOpen())
     return ERR_UNEXPECTED;
 

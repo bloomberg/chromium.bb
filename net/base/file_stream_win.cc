@@ -10,6 +10,7 @@
 #include "base/logging.h"
 #include "base/message_loop.h"
 #include "base/metrics/histogram.h"
+#include "base/threading/thread_restrictions.h"
 #include "net/base/net_errors.h"
 
 namespace net {
@@ -198,6 +199,8 @@ int64 FileStream::Seek(Whence whence, int64 offset) {
 }
 
 int64 FileStream::Available() {
+  base::ThreadRestrictions::AssertIOAllowed();
+
   if (!IsOpen())
     return ERR_UNEXPECTED;
 
@@ -223,8 +226,12 @@ int FileStream::Read(
 
   OVERLAPPED* overlapped = NULL;
   if (async_context_.get()) {
+    DCHECK(callback);
     DCHECK(!async_context_->callback());
     overlapped = async_context_->overlapped();
+  } else {
+    DCHECK(!callback);
+    base::ThreadRestrictions::AssertIOAllowed();
   }
 
   int rv;
@@ -279,8 +286,12 @@ int FileStream::Write(
 
   OVERLAPPED* overlapped = NULL;
   if (async_context_.get()) {
+    DCHECK(callback);
     DCHECK(!async_context_->callback());
     overlapped = async_context_->overlapped();
+  } else {
+    DCHECK(!callback);
+    base::ThreadRestrictions::AssertIOAllowed();
   }
 
   int rv;
@@ -304,6 +315,8 @@ int FileStream::Write(
 }
 
 int FileStream::Flush() {
+  base::ThreadRestrictions::AssertIOAllowed();
+
   if (!IsOpen())
     return ERR_UNEXPECTED;
 
@@ -319,6 +332,8 @@ int FileStream::Flush() {
 }
 
 int64 FileStream::Truncate(int64 bytes) {
+  base::ThreadRestrictions::AssertIOAllowed();
+
   if (!IsOpen())
     return ERR_UNEXPECTED;
 
