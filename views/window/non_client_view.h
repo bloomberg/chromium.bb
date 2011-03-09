@@ -67,6 +67,7 @@ class NonClientFrameView : public View {
                              gfx::Path* window_mask) = 0;
   virtual void EnableClose(bool enable) = 0;
   virtual void ResetWindowControls() = 0;
+  virtual void UpdateWindowIcon() = 0;
 
   // Overridden from View:
   virtual bool HitTest(const gfx::Point& l) const OVERRIDE;
@@ -193,6 +194,9 @@ class NonClientView : public View {
   // would lead to the controls returning to this normal state naturally, e.g.
   // when the window is maximized, minimized or restored.
   void ResetWindowControls();
+
+  // Tells the NonClientView to invalidate the NonClientFrameView's window icon.
+  void UpdateWindowIcon();
 
   // Get/Set client_view property.
   ClientView* client_view() const { return client_view_; }

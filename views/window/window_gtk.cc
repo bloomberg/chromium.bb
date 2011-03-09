@@ -203,10 +203,6 @@ void WindowGtk::EnableClose(bool enable) {
   gtk_window_set_deletable(GetNativeWindow(), enable);
 }
 
-void WindowGtk::UpdateWindowIcon() {
-  // Doesn't matter for chrome os.
-}
-
 void WindowGtk::SetIsAlwaysOnTop(bool always_on_top) {
   gtk_window_set_keep_above(GetNativeWindow(), always_on_top);
 }
@@ -395,6 +391,11 @@ void WindowGtk::CenterWindow(const gfx::Size& size) {
 
 void WindowGtk::SetWindowTitle(const std::wstring& title) {
   // We don't have a window title on ChromeOS (right now).
+}
+
+void WindowGtk::SetWindowIcons(const SkBitmap& window_icon,
+                               const SkBitmap& app_icon) {
+  // We don't have window icons on ChromeOS.
 }
 
 void WindowGtk::SetAccessibleName(const std::wstring& name) {

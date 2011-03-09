@@ -137,6 +137,9 @@ void BubbleFrameView::EnableClose(bool enable) {
 void BubbleFrameView::ResetWindowControls() {
 }
 
+void BubbleFrameView::UpdateWindowIcon() {
+}
+
 gfx::Insets BubbleFrameView::GetInsets() const {
   gfx::Insets border_insets;
   border()->GetInsets(&border_insets);

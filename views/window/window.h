@@ -108,14 +108,13 @@ class Window : public internal::NativeWindowDelegate {
   // Decrements the force hidden count, showing the window if we have reached
   // the top of the stack. See PushForceHidden.
   virtual void PopForceHidden() = 0;
+#endif
 
   // Prevents the window from being rendered as deactivated the next time it is.
   // This state is reset automatically as soon as the window becomes activated
   // again. There is no ability to control the state through this API as this
   // leads to sync problems.
-  // For Gtk use WidgetGtk::make_transient_to_parent.
-  virtual void DisableInactiveRendering() = 0;
-#endif
+  void DisableInactiveRendering();
 
   // Activates the window, assuming it already exists and is visible.
   virtual void Activate();
@@ -166,7 +165,7 @@ class Window : public internal::NativeWindowDelegate {
   void UpdateWindowTitle();
 
   // Tell the window to update its icon from the delegate.
-  virtual void UpdateWindowIcon();
+  void UpdateWindowIcon();
 
   // Sets whether or not the window is always-on-top.
   virtual void SetIsAlwaysOnTop(bool always_on_top);
@@ -218,6 +217,8 @@ class Window : public internal::NativeWindowDelegate {
   }
 
   // Overridden from NativeWindowDelegate:
+  virtual bool IsInactiveRenderingDisabled() const OVERRIDE;
+  virtual void EnableInactiveRendering() OVERRIDE;
   virtual bool IsModal() const OVERRIDE;
   virtual void OnNativeWindowCreated(const gfx::Rect& bounds) OVERRIDE;
   virtual void OnWindowDestroying() OVERRIDE;
@@ -246,6 +247,10 @@ class Window : public internal::NativeWindowDelegate {
 
   // The smallest size the window can be.
   gfx::Size minimum_size_;
+
+  // True when the window should be rendered as active, regardless of whether
+  // or not it actually is.
+  bool disable_inactive_rendering_;
 
   DISALLOW_COPY_AND_ASSIGN(Window);
 };

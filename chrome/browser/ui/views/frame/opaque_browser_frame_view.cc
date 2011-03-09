@@ -346,6 +346,10 @@ void OpaqueBrowserFrameView::ResetWindowControls() {
   // The close button isn't affected by this constraint.
 }
 
+void OpaqueBrowserFrameView::UpdateWindowIcon() {
+  window_icon_->SchedulePaint();
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 // OpaqueBrowserFrameView, views::View overrides:
 

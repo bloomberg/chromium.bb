@@ -18,17 +18,18 @@ class NativeFrameView : public NonClientFrameView {
   virtual ~NativeFrameView();
 
   // NonClientFrameView overrides:
-  virtual gfx::Rect GetBoundsForClientView() const;
+  virtual gfx::Rect GetBoundsForClientView() const OVERRIDE;
   virtual gfx::Rect GetWindowBoundsForClientBounds(
-      const gfx::Rect& client_bounds) const;
-  virtual int NonClientHitTest(const gfx::Point& point);
+      const gfx::Rect& client_bounds) const OVERRIDE;
+  virtual int NonClientHitTest(const gfx::Point& point) OVERRIDE;
   virtual void GetWindowMask(const gfx::Size& size,
-                             gfx::Path* window_mask);
-  virtual void EnableClose(bool enable);
-  virtual void ResetWindowControls();
+                             gfx::Path* window_mask) OVERRIDE;
+  virtual void EnableClose(bool enable) OVERRIDE;
+  virtual void ResetWindowControls() OVERRIDE;
+  virtual void UpdateWindowIcon() OVERRIDE;
 
   // View overrides:
-  virtual gfx::Size GetPreferredSize();
+  virtual gfx::Size GetPreferredSize() OVERRIDE;
 
  private:
   // Our containing frame.

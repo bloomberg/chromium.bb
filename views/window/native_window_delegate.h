@@ -19,6 +19,9 @@ class NativeWindowDelegate {
  public:
   virtual ~NativeWindowDelegate() {}
 
+  virtual bool IsInactiveRenderingDisabled() const = 0;
+  virtual void EnableInactiveRendering() = 0;
+
   // Returns true if the window is modal.
   virtual bool IsModal() const = 0;
 

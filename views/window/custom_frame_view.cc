@@ -202,6 +202,10 @@ void CustomFrameView::ResetWindowControls() {
   // The close button isn't affected by this constraint.
 }
 
+void CustomFrameView::UpdateWindowIcon() {
+  window_icon_->SchedulePaint();
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 // CustomFrameView, View overrides:
 

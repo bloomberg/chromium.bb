@@ -51,7 +51,6 @@ class WindowGtk : public WidgetGtk, public NativeWindow, public Window {
   virtual bool IsFullscreen() const;
   virtual void SetUseDragFrame(bool use_drag_frame);
   virtual void EnableClose(bool enable);
-  virtual void UpdateWindowIcon();
   virtual void SetIsAlwaysOnTop(bool always_on_top);
   virtual NonClientFrameView* CreateFrameViewForWindow();
   virtual void UpdateFrameAfterFrameChange();
@@ -79,6 +78,8 @@ class WindowGtk : public WidgetGtk, public NativeWindow, public Window {
   virtual void BecomeModal() OVERRIDE;
   virtual void CenterWindow(const gfx::Size& size) OVERRIDE;
   virtual void SetWindowTitle(const std::wstring& title) OVERRIDE;
+  virtual void SetWindowIcons(const SkBitmap& window_icon,
+                              const SkBitmap& app_icon) OVERRIDE;
   virtual void SetAccessibleName(const std::wstring& name) OVERRIDE;
   virtual void SetAccessibleRole(AccessibilityTypes::Role role) OVERRIDE;
   virtual void SetAccessibleState(AccessibilityTypes::State state) OVERRIDE;

@@ -35,22 +35,25 @@ class CustomFrameView : public NonClientFrameView,
   explicit CustomFrameView(Window* frame);
   virtual ~CustomFrameView();
 
-  // Overridden from views::NonClientFrameView:
-  virtual gfx::Rect GetBoundsForClientView() const;
+  // Overridden from NonClientFrameView:
+  virtual gfx::Rect GetBoundsForClientView() const OVERRIDE;
   virtual gfx::Rect GetWindowBoundsForClientBounds(
-      const gfx::Rect& client_bounds) const;
-  virtual int NonClientHitTest(const gfx::Point& point);
-  virtual void GetWindowMask(const gfx::Size& size, gfx::Path* window_mask);
-  virtual void EnableClose(bool enable);
-  virtual void ResetWindowControls();
+      const gfx::Rect& client_bounds) const OVERRIDE;
+  virtual int NonClientHitTest(const gfx::Point& point) OVERRIDE;
+  virtual void GetWindowMask(const gfx::Size& size, gfx::Path* window_mask)
+      OVERRIDE;
+  virtual void EnableClose(bool enable) OVERRIDE;
+  virtual void ResetWindowControls() OVERRIDE;
+  virtual void UpdateWindowIcon() OVERRIDE;
 
   // View overrides:
-  virtual void OnPaint(gfx::Canvas* canvas);
-  virtual void Layout();
-  virtual gfx::Size GetPreferredSize();
+  virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE;
+  virtual void Layout() OVERRIDE;
+  virtual gfx::Size GetPreferredSize() OVERRIDE;
 
   // ButtonListener implementation:
-  virtual void ButtonPressed(Button* sender, const views::Event& event);
+  virtual void ButtonPressed(Button* sender, const views::Event& event)
+      OVERRIDE;
 
  private:
   // Returns the thickness of the border that makes up the window frame edges.

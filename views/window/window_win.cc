@@ -470,42 +470,6 @@ void WindowWin::EnableClose(bool enable) {
                    SWP_NOSENDCHANGING | SWP_NOSIZE | SWP_NOZORDER);
 }
 
-void WindowWin::DisableInactiveRendering() {
-  disable_inactive_rendering_ = true;
-  GetWindow()->non_client_view()->DisableInactiveRendering(
-      disable_inactive_rendering_);
-}
-
-void WindowWin::UpdateWindowIcon() {
-  // If the non-client view is rendering its own icon, we need to tell it to
-  // repaint.
-  GetWindow()->non_client_view()->SchedulePaint();
-
-  // Update the native frame's icon. We do this regardless of whether or not
-  // the native frame is being used, since this also updates the taskbar, etc.
-  SkBitmap icon = GetWindow()->window_delegate()->GetWindowIcon();
-  if (!icon.isNull()) {
-    HICON windows_icon = IconUtil::CreateHICONFromSkBitmap(icon);
-    // We need to make sure to destroy the previous icon, otherwise we'll leak
-    // these GDI objects until we crash!
-    HICON old_icon = reinterpret_cast<HICON>(
-        SendMessage(GetNativeView(), WM_SETICON, ICON_SMALL,
-                    reinterpret_cast<LPARAM>(windows_icon)));
-    if (old_icon)
-      DestroyIcon(old_icon);
-  }
-
-  icon = GetWindow()->window_delegate()->GetWindowAppIcon();
-  if (!icon.isNull()) {
-    HICON windows_icon = IconUtil::CreateHICONFromSkBitmap(icon);
-    HICON old_icon = reinterpret_cast<HICON>(
-        SendMessage(GetNativeView(), WM_SETICON, ICON_BIG,
-                    reinterpret_cast<LPARAM>(windows_icon)));
-    if (old_icon)
-      DestroyIcon(old_icon);
-  }
-}
-
 void WindowWin::SetIsAlwaysOnTop(bool always_on_top) {
   ::SetWindowPos(GetNativeView(),
       always_on_top ? HWND_TOPMOST : HWND_NOTOPMOST,
@@ -588,7 +552,6 @@ WindowWin::WindowWin(WindowDelegate* window_delegate)
       restored_enabled_(false),
       fullscreen_(false),
       window_closed_(false),
-      disable_inactive_rendering_(false),
       is_active_(false),
       lock_updates_(false),
       saved_window_style_(0),
@@ -664,8 +627,7 @@ void WindowWin::OnActivateApp(BOOL active, DWORD thread_id) {
   if (!active && thread_id != GetCurrentThreadId()) {
     // Another application was activated, we should reset any state that
     // disables inactive rendering now.
-    disable_inactive_rendering_ = false;
-    GetWindow()->non_client_view()->DisableInactiveRendering(false);
+    delegate_->EnableInactiveRendering();
     // Update the native frame too, since it could be rendering the non-client
     // area.
     CallDefaultNCActivateHandler(FALSE);
@@ -818,18 +780,11 @@ LRESULT WindowWin::OnNCActivate(BOOL active) {
     GetWindow()->non_client_view()->SchedulePaint();
 
   // If we're active again, we should be allowed to render as inactive, so
-  // tell the non-client view. This must be done independently of the check for
-  // disable_inactive_rendering_ since that check is valid even if the frame
-  // is not active, but this can only be done if we've become active.
+  // tell the non-client view.
+  bool inactive_rendering_disabled = delegate_->IsInactiveRenderingDisabled();
   if (IsActive())
-    GetWindow()->non_client_view()->DisableInactiveRendering(false);
-
-  // Reset the disable inactive rendering state since activation has changed.
-  if (disable_inactive_rendering_) {
-    disable_inactive_rendering_ = false;
-    return CallDefaultNCActivateHandler(TRUE);
-  }
-  return CallDefaultNCActivateHandler(active);
+    delegate_->EnableInactiveRendering();
+  return CallDefaultNCActivateHandler(inactive_rendering_disabled || active);
 }
 
 LRESULT WindowWin::OnNCCalcSize(BOOL mode, LPARAM l_param) {
@@ -1192,6 +1147,28 @@ void WindowWin::CenterWindow(const gfx::Size& size) {
 void WindowWin::SetWindowTitle(const std::wstring& title) {
   SetWindowText(GetNativeView(), title.c_str());
   SetAccessibleName(title);
+}
+
+void WindowWin::SetWindowIcons(const SkBitmap& window_icon,
+                               const SkBitmap& app_icon) {
+  if (!window_icon.isNull()) {
+    HICON windows_icon = IconUtil::CreateHICONFromSkBitmap(window_icon);
+    // We need to make sure to destroy the previous icon, otherwise we'll leak
+    // these GDI objects until we crash!
+    HICON old_icon = reinterpret_cast<HICON>(
+        SendMessage(GetNativeView(), WM_SETICON, ICON_SMALL,
+                    reinterpret_cast<LPARAM>(windows_icon)));
+    if (old_icon)
+      DestroyIcon(old_icon);
+  }
+  if (!app_icon.isNull()) {
+    HICON windows_icon = IconUtil::CreateHICONFromSkBitmap(app_icon);
+    HICON old_icon = reinterpret_cast<HICON>(
+        SendMessage(GetNativeView(), WM_SETICON, ICON_BIG,
+                    reinterpret_cast<LPARAM>(windows_icon)));
+    if (old_icon)
+      DestroyIcon(old_icon);
+  }
 }
 
 void WindowWin::SetAccessibleName(const std::wstring& name) {

@@ -63,11 +63,11 @@ class NativeWidget {
   // Returns true if a system screen reader is active for the NativeWidget.
   virtual bool IsScreenReaderActive() const = 0;
 
-  // Widget pass-thrus ---------------------------------------------------------
-  // TODO(beng): Investigate if we can move these to a NativeWidgetPrivate
-  //             interface.
+ protected:
+  friend class Widget;
 
-  // See method documentation in Widget:
+  // Widget pass-thrus, private to Views. --------------------------------------
+  // See method documentation in Widget.
   virtual gfx::Rect GetWindowScreenBounds() const = 0;
   virtual gfx::Rect GetClientAreaScreenBounds() const = 0;
   virtual void SetBounds(const gfx::Rect& bounds) = 0;

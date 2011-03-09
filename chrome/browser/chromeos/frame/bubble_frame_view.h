@@ -34,23 +34,25 @@ class BubbleFrameView : public views::NonClientFrameView,
   virtual ~BubbleFrameView();
 
   // Overridden from views::NonClientFrameView:
-  virtual gfx::Rect GetBoundsForClientView() const;
+  virtual gfx::Rect GetBoundsForClientView() const OVERRIDE;
   virtual gfx::Rect GetWindowBoundsForClientBounds(
-      const gfx::Rect& client_bounds) const;
-  virtual int NonClientHitTest(const gfx::Point& point);
-  virtual void GetWindowMask(const gfx::Size& size, gfx::Path* window_mask);
-  virtual void EnableClose(bool enable);
-  virtual void ResetWindowControls();
+      const gfx::Rect& client_bounds) const OVERRIDE;
+  virtual int NonClientHitTest(const gfx::Point& point) OVERRIDE;
+  virtual void GetWindowMask(const gfx::Size& size, gfx::Path* window_mask)
+      OVERRIDE;
+  virtual void EnableClose(bool enable) OVERRIDE;
+  virtual void ResetWindowControls() OVERRIDE;
+  virtual void UpdateWindowIcon() OVERRIDE;
 
   // View overrides:
-  virtual gfx::Insets GetInsets() const;
-  virtual gfx::Size GetPreferredSize();
-  virtual void Layout();
-  virtual void OnPaint(gfx::Canvas* canvas);
+  virtual gfx::Insets GetInsets() const OVERRIDE;
+  virtual gfx::Size GetPreferredSize() OVERRIDE;
+  virtual void Layout() OVERRIDE;
+  virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE;
 
   // Overridden from views::ButtonListener:
-  virtual void ButtonPressed(views::Button* sender,
-                             const views::Event& event);
+  virtual void ButtonPressed(views::Button* sender, const views::Event& event)
+      OVERRIDE;
 
   void StartThrobber();
   void StopThrobber();

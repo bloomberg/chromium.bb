@@ -5,6 +5,7 @@
 #include "views/window/window.h"
 
 #include "base/string_util.h"
+#include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/base/l10n/l10n_font_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/font.h"
@@ -26,7 +27,8 @@ Window::Window(WindowDelegate* window_delegate)
       ALLOW_THIS_IN_INITIALIZER_LIST(
           non_client_view_(new NonClientView(this))),
       saved_maximized_state_(false),
-      minimum_size_(100, 100) {
+      minimum_size_(100, 100),
+      disable_inactive_rendering_(false) {
   DCHECK(window_delegate_);
   DCHECK(!window_delegate_->window_);
   window_delegate_->window_ = this;
@@ -103,6 +105,11 @@ void* Window::GetNativeWindowProperty(const char* name) {
   return NULL;
 }
 
+void Window::DisableInactiveRendering() {
+  disable_inactive_rendering_ = true;
+  non_client_view_->DisableInactiveRendering(disable_inactive_rendering_);
+}
+
 void Window::Activate() {
 }
 
@@ -171,6 +178,9 @@ void Window::UpdateWindowTitle() {
 }
 
 void Window::UpdateWindowIcon() {
+  non_client_view_->UpdateWindowIcon();
+  native_window_->SetWindowIcons(window_delegate_->GetWindowIcon(),
+                                 window_delegate_->GetWindowAppIcon());
 }
 
 void Window::SetIsAlwaysOnTop(bool always_on_top) {
@@ -196,6 +206,15 @@ void Window::FrameTypeChanged() {
 
 ////////////////////////////////////////////////////////////////////////////////
 // Window, internal::NativeWindowDelegate implementation:
+
+bool Window::IsInactiveRenderingDisabled() const {
+  return disable_inactive_rendering_;
+}
+
+void Window::EnableInactiveRendering() {
+  disable_inactive_rendering_ = false;
+  non_client_view_->DisableInactiveRendering(false);
+}
 
 bool Window::IsModal() const {
   return window_delegate_->IsModal();
@@ -265,7 +284,9 @@ void Window::SetInitialBounds(const gfx::Rect& bounds) {
 
     // Widget's SetBounds method does not further modify the bounds that are
     // passed to it.
-    native_window_->AsNativeWidget()->SetBounds(saved_bounds);
+    // TODO(beng): Should be able to call Widget::SetBounds() directly once
+    //             Window subclasses Widget.
+    native_window_->AsNativeWidget()->GetWidget()->SetBounds(saved_bounds);
   } else {
     if (bounds.IsEmpty()) {
       // No initial bounds supplied, so size the window to its content and

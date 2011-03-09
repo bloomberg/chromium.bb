@@ -78,8 +78,6 @@ class WindowWin : public WidgetWin,
   virtual bool IsFullscreen() const OVERRIDE;
   virtual void SetUseDragFrame(bool use_drag_frame) OVERRIDE;
   virtual void EnableClose(bool enable) OVERRIDE;
-  virtual void DisableInactiveRendering() OVERRIDE;
-  virtual void UpdateWindowIcon() OVERRIDE;
   virtual void SetIsAlwaysOnTop(bool always_on_top) OVERRIDE;
   virtual NonClientFrameView* CreateFrameViewForWindow() OVERRIDE;
   virtual void UpdateFrameAfterFrameChange() OVERRIDE;
@@ -113,11 +111,6 @@ class WindowWin : public WidgetWin,
   // method to provide different values (e.g. retrieve the user's specified
   // show state from the shortcut starutp info).
   virtual int GetShowState() const;
-
-  // Accessor for disable_inactive_rendering_.
-  bool disable_inactive_rendering() const {
-    return disable_inactive_rendering_;
-  }
 
   // Overridden from WidgetWin:
   virtual void OnActivate(UINT action, BOOL minimized, HWND window) OVERRIDE;
@@ -169,6 +162,8 @@ class WindowWin : public WidgetWin,
   virtual void BecomeModal() OVERRIDE;
   virtual void CenterWindow(const gfx::Size& size) OVERRIDE;
   virtual void SetWindowTitle(const std::wstring& title) OVERRIDE;
+  virtual void SetWindowIcons(const SkBitmap& window_icon,
+                              const SkBitmap& app_icon) OVERRIDE;
   virtual void SetAccessibleName(const std::wstring& name) OVERRIDE;
   virtual void SetAccessibleRole(AccessibilityTypes::Role role) OVERRIDE;
   virtual void SetAccessibleState(AccessibilityTypes::State state) OVERRIDE;
@@ -258,10 +253,6 @@ class WindowWin : public WidgetWin,
 
   // Set to true if the window is in the process of closing .
   bool window_closed_;
-
-  // True when the window should be rendered as active, regardless of whether
-  // or not it actually is.
-  bool disable_inactive_rendering_;
 
   // True if this window is the active top level window.
   bool is_active_;

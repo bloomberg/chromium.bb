@@ -51,6 +51,10 @@ void NativeFrameView::ResetWindowControls() {
   // Nothing to do.
 }
 
+void NativeFrameView::UpdateWindowIcon() {
+  // Nothing to do.
+}
+
 gfx::Size NativeFrameView::GetPreferredSize() {
   gfx::Size pref = frame_->client_view()->GetPreferredSize();
   gfx::Rect bounds(0, 0, pref.width(), pref.height());

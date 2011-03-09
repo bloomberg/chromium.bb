@@ -368,20 +368,7 @@ bool WidgetWin::IsAccessibleWidget() const {
 }
 
 bool WidgetWin::ContainsNativeView(gfx::NativeView native_view) const {
-  if (hwnd() == native_view)
-    return true;
-
-  // Traverse the set of parents of the given view to determine if native_view
-  // is a descendant of this window.
-  HWND parent_window = ::GetParent(native_view);
-  HWND previous_child = native_view;
-  while (parent_window && parent_window != previous_child) {
-    if (hwnd() == parent_window)
-      return true;
-    previous_child = parent_window;
-    parent_window = ::GetParent(parent_window);
-  }
-  return false;
+  return hwnd() == native_view || ::IsChild(hwnd(), native_view);
 }
 
 void WidgetWin::RunShellDrag(View* view,

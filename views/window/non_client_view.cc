@@ -107,6 +107,10 @@ void NonClientView::ResetWindowControls() {
   frame_view_->ResetWindowControls();
 }
 
+void NonClientView::UpdateWindowIcon() {
+  frame_view_->UpdateWindowIcon();
+}
+
 void NonClientView::LayoutFrameView() {
   // First layout the NonClientFrameView, which determines the size of the
   // ClientView...

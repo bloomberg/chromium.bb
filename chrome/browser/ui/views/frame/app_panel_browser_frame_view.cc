@@ -210,6 +210,11 @@ void AppPanelBrowserFrameView::ResetWindowControls() {
   // The close button isn't affected by this constraint.
 }
 
+void AppPanelBrowserFrameView::UpdateWindowIcon() {
+  window_icon_->SchedulePaint();
+}
+
+
 ///////////////////////////////////////////////////////////////////////////////
 // AppPanelBrowserFrameView, views::View overrides:
 
