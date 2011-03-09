@@ -264,6 +264,9 @@ class ChromeTests:
   def TestApp(self):
     return self.SimpleTest("chrome", "app_unittests")
 
+  def TestUIBase(self):
+    return self.SimpleTest("chrome", "ui_base_unittests")
+
   def TestGfx(self):
     return self.SimpleTest("chrome", "gfx_unittests")
 
@@ -439,6 +442,7 @@ class ChromeTests:
     "ui": TestUI,                "ui_tests": TestUI,
     "unit": TestUnit,            "unit_tests": TestUnit,
     "app": TestApp,              "app_unittests": TestApp,
+    "ui_base": TestUIBase,       "ui_base_unittests": TestUIBase,
     "gfx": TestGfx,              "gfx_unittests": TestGfx,
   }
 
