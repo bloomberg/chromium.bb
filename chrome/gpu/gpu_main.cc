@@ -31,7 +31,7 @@
 #endif
 
 #if defined(USE_X11)
-#include "ui/gfx/gtk_util.h"
+#include "ui/base/x/x11_util.h"
 #endif
 
 // Main function for starting the Gpu process.
@@ -55,24 +55,20 @@ int GpuMain(const MainFunctionParams& parameters) {
   MessageLoop main_message_loop(MessageLoop::TYPE_UI);
   base::PlatformThread::SetName("CrGpuMain");
 
+  if (!command_line.HasSwitch(switches::kSingleProcess)) {
 #if defined(OS_WIN)
-  // Prevent Windows from displaying a modal dialog on failures like not being
-  // able to load a DLL.
-  SetErrorMode(
-      SEM_FAILCRITICALERRORS | SEM_NOGPFAULTERRORBOX | SEM_NOOPENFILEERRORBOX);
+    // Prevent Windows from displaying a modal dialog on failures like not being
+    // able to load a DLL.
+    SetErrorMode(
+        SEM_FAILCRITICALERRORS |
+        SEM_NOGPFAULTERRORBOX |
+        SEM_NOOPENFILEERRORBOX);
+#elif defined(USE_X11)
+    ui::SetDefaultX11ErrorHandlers();
 #endif
+  }
 
   app::win::ScopedCOMInitializer com_initializer;
-
-#if defined(USE_X11)
-  // The X11 port of the command buffer code assumes it can access the X
-  // display via the macro GDK_DISPLAY(), which implies that Gtk has been
-  // initialized. This code was taken from PluginThread. TODO(kbr):
-  // rethink whether initializing Gtk is really necessary or whether we
-  // should just send a raw display connection down to the GPUProcessor.
-  g_thread_init(NULL);
-  gfx::GtkInitFromCommandLine(command_line);
-#endif
 
   // We can not tolerate early returns from this code, because the
   // detection of early return of a child process is implemented using
