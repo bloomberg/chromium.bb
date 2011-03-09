@@ -140,21 +140,6 @@ const char* kIllegalString = "illegal value";
 
 int next_page_id_ = 1;
 
-// Used to write a platform neutral file:/// URL by only taking the filename
-// (e.g., converts "file:///tmp/foo.txt" to just "foo.txt").
-std::string UrlSuitableForTestResult(const std::string& url) {
-  if (url.empty() || std::string::npos == url.find("file://"))
-    return url;
-
-  // TODO: elsewhere in the codebase we use net::FormatUrl() for this.
-  std::string filename =
-      WideToUTF8(FilePath::FromWStringHack(UTF8ToWide(url))
-                     .BaseName().ToWStringHack());
-  if (filename.empty())
-    return "file:";  // A WebKit test has this in its expected output.
-  return filename;
-}
-
 // Used to write a platform neutral file:/// URL by taking the
 // filename and its directory. (e.g., converts
 // "file:///tmp/foo/bar.txt" to just "bar.txt").
@@ -352,28 +337,13 @@ WebStorageNamespace* TestWebViewDelegate::createSessionStorageNamespace(
 void TestWebViewDelegate::didAddMessageToConsole(
     const WebConsoleMessage& message, const WebString& source_name,
     unsigned source_line) {
-  if (!shell_->layout_test_mode()) {
-    logging::LogMessage("CONSOLE", 0).stream() << "\""
-                                               << message.text.utf8().data()
-                                               << ",\" source: "
-                                               << source_name.utf8().data()
-                                               << "("
-                                               << source_line
-                                               << ")";
-  } else {
-    // This matches win DumpRenderTree's UIDelegate.cpp.
-    std::string new_message;
-    if (!message.text.isEmpty()) {
-      new_message = message.text.utf8();
-      size_t file_protocol = new_message.find("file://");
-      if (file_protocol != std::string::npos) {
-        new_message = new_message.substr(0, file_protocol) +
-            UrlSuitableForTestResult(new_message.substr(file_protocol));
-      }
-    }
-
-    printf("CONSOLE MESSAGE: line %d: %s\n", source_line, new_message.data());
-  }
+  logging::LogMessage("CONSOLE", 0).stream() << "\""
+                                             << message.text.utf8().data()
+                                             << ",\" source: "
+                                             << source_name.utf8().data()
+                                             << "("
+                                             << source_line
+                                             << ")";
 }
 
 void TestWebViewDelegate::didStartLoading() {

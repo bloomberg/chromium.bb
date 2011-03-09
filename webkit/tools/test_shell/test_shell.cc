@@ -651,8 +651,8 @@ bool IsDefaultPluginEnabled() {
   FilePath exe_path;
 
   if (PathService::Get(base::FILE_EXE, &exe_path)) {
-    std::wstring exe_name = exe_path.BaseName().ToWStringHack();
-    if (StartsWith(exe_name, L"test_shell_tests", false))
+    std::string exe_name = exe_path.BaseName().MaybeAsASCII();
+    if (StartsWithASCII(exe_name, "test_shell_tests", false))
       return true;
   }
   return false;
