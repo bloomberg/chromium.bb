@@ -10,9 +10,10 @@
 
 #include "base/observer_list.h"
 #include "chrome/browser/tabs/tab_strip_model_observer.h"
+#include "chrome/browser/tabs/tab_strip_selection_model.h"
+#include "chrome/common/notification_observer.h"
+#include "chrome/common/notification_registrar.h"
 #include "chrome/common/page_transition_types.h"
-#include "content/common/notification_observer.h"
-#include "content/common/notification_registrar.h"
 
 class NavigationController;
 class Profile;
@@ -132,7 +133,9 @@ class TabStripModel : public NotificationObserver {
   Profile* profile() const { return profile_; }
 
   // Retrieve the index of the currently selected TabContents.
-  int selected_index() const { return selected_index_; }
+  // TODO(sky): rename this to active and update similar places (observer,
+  // other methods...).
+  int selected_index() const { return selection_model_.active(); }
 
   // Returns true if the tabstrip is currently closing all open tabs (via a
   // call to CloseAllTabs). As tabs close, the selection in the tabstrip
@@ -222,6 +225,12 @@ class TabStripModel : public NotificationObserver {
   // NOTE: this does nothing if the move would result in app tabs and non-app
   // tabs mixing.
   void MoveTabContentsAt(int index, int to_position, bool select_after_move);
+
+  // Moves the selected tabs to |index|. |index| is treated as if the tab strip
+  // did not contain any of the selected tabs. For example, if the tabstrip
+  // contains [A b c D E f] (upper case selected) and this is invoked with 1 the
+  // result is [b A D E c f].
+  void MoveSelectedTabsTo(int index);
 
   // Returns the currently selected TabContents, or NULL if there is none.
   TabContentsWrapper* GetSelectedTabContents() const;
@@ -346,6 +355,19 @@ class TabStripModel : public NotificationObserver {
   // is between IndexOfFirstNonMiniTab and count().
   int ConstrainInsertionIndex(int index, bool mini_tab);
 
+  // Extends the selection from the anchor to |index|.
+  void ExtendSelectionTo(int index);
+
+  // Toggles the selection at |index|. This does nothing if |index| is selected
+  // and there are no other selected tabs.
+  void ToggleSelectionAt(int index);
+
+  // Returns true if the tab at |index| is selected.
+  bool IsTabSelected(int index);
+
+  // Sets the selection to match that of |source|.
+  void SetSelectionFromModel(const TabStripSelectionModel& source);
+
   // Command level API /////////////////////////////////////////////////////////
 
   // Adds a TabContents at the best position in the TabStripModel given the
@@ -452,12 +474,15 @@ class TabStripModel : public NotificationObserver {
 
   TabContentsWrapper* GetContentsAt(int index) const;
 
-  // The actual implementation of SelectTabContentsAt. Takes the previously
-  // selected contents in |old_contents|, which may actually not be in
-  // |contents_| anymore because it may have been removed by a call to say
-  // DetachTabContentsAt...
-  void ChangeSelectedContentsFrom(
-      TabContentsWrapper* old_contents, int to_index, bool user_gesture);
+  // If the TabContentsWrapper at |to_index| differs from |old_contents|
+  // notifies observers.
+  void NotifyTabSelectedIfChanged(TabContentsWrapper* old_contents,
+                                  int to_index,
+                                  bool user_gesture);
+
+  // Notifies the observers the selection changed. |old_selected_index| gives
+  // the old selected index.
+  void NotifySelectionChanged(int old_selected_index);
 
   // Returns the number of New Tab tabs in the TabStripModel.
   int GetNewTabCount() const;
@@ -471,6 +496,10 @@ class TabStripModel : public NotificationObserver {
   void MoveTabContentsAtImpl(int index,
                              int to_position,
                              bool select_after_move);
+
+  // Implementation of MoveSelectedTabsTo. Moves |length| of the selected tabs
+  // starting at |start| to |index|. See MoveSelectedTabsTo for more details.
+  void MoveSelectedTabsToImpl(int index, size_t start, size_t length);
 
   // Returns true if the tab represented by the specified data has an opener
   // that matches the specified one. If |use_group| is true, then this will
@@ -548,9 +577,6 @@ class TabStripModel : public NotificationObserver {
   typedef std::vector<TabContentsData*> TabContentsDataVector;
   TabContentsDataVector contents_data_;
 
-  // The index of the TabContents in |contents_| that is currently selected.
-  int selected_index_;
-
   // A profile associated with this TabStripModel, used when creating new Tabs.
   Profile* profile_;
 
@@ -567,6 +593,8 @@ class TabStripModel : public NotificationObserver {
 
   // A scoped container for notification registries.
   NotificationRegistrar registrar_;
+
+  TabStripSelectionModel selection_model_;
 
   DISALLOW_COPY_AND_ASSIGN(TabStripModel);
 };

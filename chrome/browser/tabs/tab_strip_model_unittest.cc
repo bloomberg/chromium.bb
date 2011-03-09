@@ -11,6 +11,7 @@
 #include "base/scoped_ptr.h"
 #include "base/stl_util-inl.h"
 #include "base/string_number_conversions.h"
+#include "base/string_split.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/defaults.h"
@@ -218,6 +219,30 @@ class TabStripModelTest : public RenderViewHostTestHarness {
       result += base::IntToString(indices[i]);
     }
     return result;
+  }
+
+  void PrepareTabstripForSelectionTest(TabStripModel* model,
+                                       int tab_count,
+                                       int pinned_count,
+                                       const std::string& selected_tabs) {
+    for (int i = 0; i < tab_count; ++i) {
+      TabContentsWrapper* contents = CreateTabContents();
+      SetID(contents->tab_contents(), i);
+      model->AppendTabContents(contents, true);
+    }
+    for (int i = 0; i < pinned_count; ++i)
+      model->SetTabPinned(i, true);
+
+    TabStripSelectionModel selection_model;
+    std::vector<std::string> selection;
+    base::SplitStringAlongWhitespace(selected_tabs, &selection);
+    for (size_t i = 0; i < selection.size(); ++i) {
+      int value;
+      ASSERT_TRUE(base::StringToInt(selection[i], &value));
+      selection_model.AddIndexToSelection(value);
+    }
+    selection_model.set_active(selection_model.selected_indices()[0]);
+    model->SetSelectionFromModel(selection_model);
   }
 
  private:
@@ -1897,4 +1922,65 @@ TEST_F(TabStripModelTest, DeleteFromDestroy) {
   // out notification that it is being destroyed.
   DeleteTabContentsOnDestroyedObserver observer(contents2, contents1);
   strip.CloseAllTabs();
+}
+
+TEST_F(TabStripModelTest, MoveSelectedTabsTo) {
+  struct TestData {
+    // Number of tabs the tab strip should have.
+    const int tab_count;
+
+    // Number of pinned tabs.
+    const int pinned_count;
+
+    // Index of the tabs to select.
+    const std::string selected_tabs;
+
+    // Index to move the tabs to.
+    const int target_index;
+
+    // Expected state after the move (space separated list of indices).
+    const std::string state_after_move;
+  } test_data[] = {
+    // 1 selected tab.
+    { 2, 0, "0", 1, "1 0" },
+    { 3, 0, "0", 2, "1 2 0" },
+    { 3, 0, "2", 0, "2 0 1" },
+    { 3, 0, "2", 1, "0 2 1" },
+    { 3, 0, "0 1", 0, "0 1 2" },
+
+    // 2 selected tabs.
+    { 6, 0, "4 5", 1, "0 4 5 1 2 3" },
+    { 3, 0, "0 1", 1, "2 0 1" },
+    { 4, 0, "0 2", 1, "1 0 2 3" },
+    { 6, 0, "0 1", 3, "2 3 4 0 1 5" },
+
+    // 3 selected tabs.
+    { 6, 0, "0 2 3", 3, "1 4 5 0 2 3" },
+    { 7, 0, "4 5 6", 1, "0 4 5 6 1 2 3" },
+    { 7, 0, "1 5 6", 4, "0 2 3 4 1 5 6" },
+
+    // 5 selected tabs.
+    { 8, 0, "0 2 3 6 7", 3, "1 4 5 0 2 3 6 7" },
+
+    // 7 selected tabs
+    { 16, 0, "0 1 2 3 4 7 9", 8, "5 6 8 10 11 12 13 14 0 1 2 3 4 7 9 15" },
+
+    // With pinned tabs.
+    { 6, 2, "2 3", 2, "0p 1p 2 3 4 5" },
+    { 6, 2, "0 4", 3, "1p 0p 2 4 3 5" },
+    { 6, 3, "1 2 4", 0, "1p 2p 0p 4 3 5" },
+    { 8, 3, "1 3 4", 4, "0p 2p 1p 5 3 4 6 7" },
+  };
+
+  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(test_data); ++i) {
+    TabStripDummyDelegate delegate(NULL);
+    TabStripModel strip(&delegate, profile());
+    ASSERT_NO_FATAL_FAILURE(
+        PrepareTabstripForSelectionTest(&strip, test_data[i].tab_count,
+                                        test_data[i].pinned_count,
+                                        test_data[i].selected_tabs));
+    strip.MoveSelectedTabsTo(test_data[i].target_index);
+    EXPECT_EQ(test_data[i].state_after_move, GetPinnedState(strip)) << i;
+    strip.CloseAllTabs();
+  }
 }

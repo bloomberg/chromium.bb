@@ -2010,6 +2010,8 @@
         'browser/tabs/tab_strip_model_observer.h',
         'browser/tabs/tab_strip_model_order_controller.cc',
         'browser/tabs/tab_strip_model_order_controller.h',
+        'browser/tabs/tab_strip_selection_model.cc',
+        'browser/tabs/tab_strip_selection_model.h',
         'browser/task_manager/task_manager.cc',
         'browser/task_manager/task_manager.h',
         'browser/task_manager/task_manager_resource_providers.cc',

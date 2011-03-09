@@ -60,7 +60,6 @@ bool TabStripModelDelegate::CanCloseTab() const {
 
 TabStripModel::TabStripModel(TabStripModelDelegate* delegate, Profile* profile)
     : delegate_(delegate),
-      selected_index_(kNoTab),
       profile_(profile),
       closing_all_(false),
       order_controller_(NULL) {
@@ -152,17 +151,15 @@ void TabStripModel::InsertTabContentsAt(int index,
 
   contents_data_.insert(contents_data_.begin() + index, data);
 
-  if (index <= selected_index_) {
-    // If a tab is inserted before the current selected index,
-    // then |selected_index| needs to be incremented.
-    ++selected_index_;
-  }
+  selection_model_.IncrementFrom(index);
 
   FOR_EACH_OBSERVER(TabStripModelObserver, observers_,
-      TabInsertedAt(contents, index, foreground));
+                    TabInsertedAt(contents, index, foreground));
 
-  if (foreground)
-    ChangeSelectedContentsFrom(selected_contents, index, false);
+  if (foreground) {
+    selection_model_.SetSelectedIndex(index);
+    NotifyTabSelectedIfChanged(selected_contents, index, false);
+  }
 }
 
 TabContentsWrapper* TabStripModel::ReplaceTabContentsAt(
@@ -181,10 +178,10 @@ TabContentsWrapper* TabStripModel::ReplaceTabContentsAt(
   // When the selected tab contents is replaced send out selected notification
   // too. We do this as nearly all observers need to treat a replace of the
   // selected contents as selection changing.
-  if (selected_index_ == index) {
+  if (selected_index() == index) {
     FOR_EACH_OBSERVER(TabStripModelObserver, observers_,
                       TabSelectedAt(old_contents, new_contents,
-                                    selected_index_, false));
+                                    selected_index(), false));
   }
   return old_contents;
 }
@@ -222,12 +219,22 @@ TabContentsWrapper* TabStripModel::DetachTabContentsAt(int index) {
     // a second pass.
     FOR_EACH_OBSERVER(TabStripModelObserver, observers_, TabStripEmpty());
   } else {
-    if (index == selected_index_) {
-      ChangeSelectedContentsFrom(removed_contents, next_selected_index, false);
-    } else if (index < selected_index_) {
-      // The selected tab didn't change, but its position shifted; update our
-      // index to continue to point at it.
-      --selected_index_;
+    int old_selected = selected_index();
+    selection_model_.DecrementFrom(index);
+    if (index == old_selected) {
+      if (!selection_model_.empty()) {
+        // A selected tab was removed, but there is still something selected.
+        // Move the active and anchor to the first selected index.
+        selection_model_.set_active(selection_model_.selected_indices()[0]);
+        selection_model_.set_anchor(selection_model_.active());
+        NotifyTabSelectedIfChanged(removed_contents, selected_index(), false);
+      } else {
+        // The selected tab was removed and nothing is selected. Reset the
+        // selection and send out notification.
+        selection_model_.SetSelectedIndex(next_selected_index);
+        NotifyTabSelectedIfChanged(removed_contents, next_selected_index,
+                                   false);
+      }
     }
   }
   return removed_contents;
@@ -235,10 +242,15 @@ TabContentsWrapper* TabStripModel::DetachTabContentsAt(int index) {
 
 void TabStripModel::SelectTabContentsAt(int index, bool user_gesture) {
   DCHECK(ContainsIndex(index));
-  ChangeSelectedContentsFrom(GetSelectedTabContents(), index, user_gesture);
+  TabContentsWrapper* old =
+      (selected_index() == TabStripSelectionModel::kUnselectedIndex) ?
+      NULL : GetSelectedTabContents();
+  selection_model_.SetSelectedIndex(index);
+  NotifyTabSelectedIfChanged(old, index, user_gesture);
 }
 
-void TabStripModel::MoveTabContentsAt(int index, int to_position,
+void TabStripModel::MoveTabContentsAt(int index,
+                                      int to_position,
                                       bool select_after_move) {
   DCHECK(ContainsIndex(index));
   if (index == to_position)
@@ -255,8 +267,36 @@ void TabStripModel::MoveTabContentsAt(int index, int to_position,
   MoveTabContentsAtImpl(index, to_position, select_after_move);
 }
 
+void TabStripModel::MoveSelectedTabsTo(int index) {
+  size_t selected_pinned_count = 0;
+  size_t selected_count = selection_model_.selected_indices().size();
+  for (size_t i = 0; i < selected_count &&
+           IsTabPinned(selection_model_.selected_indices()[i]); ++i) {
+    selected_pinned_count++;
+  }
+
+  size_t total_pinned_count = 0;
+  for (int i = 0; i < count() && IsTabPinned(i); ++i)
+    total_pinned_count++;
+
+  // To maintain that all pinned tabs occur before non-pinned tabs we move them
+  // first.
+  if (selected_pinned_count > 0) {
+    MoveSelectedTabsToImpl(
+        std::min(static_cast<int>(total_pinned_count - selected_pinned_count),
+                 index), 0u, selected_pinned_count);
+  }
+  if (selected_pinned_count == selected_count)
+    return;
+
+  // Then move the non-pinned tabs.
+  MoveSelectedTabsToImpl(std::max(index, static_cast<int>(total_pinned_count)),
+                         selected_pinned_count,
+                         selected_count - selected_pinned_count);
+}
+
 TabContentsWrapper* TabStripModel::GetSelectedTabContents() const {
-  return GetTabContentsAt(selected_index_);
+  return GetTabContentsAt(selected_index());
 }
 
 TabContentsWrapper* TabStripModel::GetTabContentsAt(int index) const {
@@ -511,6 +551,49 @@ int TabStripModel::ConstrainInsertionIndex(int index, bool mini_tab) {
       std::min(count(), std::max(index, IndexOfFirstNonMiniTab()));
 }
 
+void TabStripModel::ExtendSelectionTo(int index) {
+  DCHECK(ContainsIndex(index));
+  int old_selection = selected_index();
+  selection_model_.SetSelectionFromAnchorTo(index);
+  // This may not have resulted in a change, but we assume it did.
+  NotifySelectionChanged(old_selection);
+}
+
+void TabStripModel::ToggleSelectionAt(int index) {
+  DCHECK(ContainsIndex(index));
+  int old_selection = selected_index();
+  if (selection_model_.IsSelected(index)) {
+    if (selection_model_.size() == 1) {
+      // One tab must be selected and this tab is currently selected so we can't
+      // unselect it.
+      return;
+    }
+    selection_model_.RemoveIndexFromSelection(index);
+    selection_model_.set_anchor(index);
+    if (selection_model_.active() == TabStripSelectionModel::kUnselectedIndex)
+      selection_model_.set_active(selection_model_.selected_indices()[0]);
+  } else {
+    selection_model_.AddIndexToSelection(index);
+    selection_model_.set_anchor(index);
+    selection_model_.set_active(index);
+  }
+  NotifySelectionChanged(old_selection);
+}
+
+bool TabStripModel::IsTabSelected(int index) {
+  DCHECK(ContainsIndex(index));
+  return selection_model_.IsSelected(index);
+}
+
+void TabStripModel::SetSelectionFromModel(
+    const TabStripSelectionModel& source) {
+  DCHECK_NE(TabStripSelectionModel::kUnselectedIndex, source.active());
+  int old_selected_index = selected_index();
+  selection_model_.Copy(source);
+  // This may not have resulted in a change, but we assume it did.
+  NotifySelectionChanged(old_selected_index);
+}
+
 void TabStripModel::AddTabContents(TabContentsWrapper* contents,
                                    int index,
                                    PageTransition::Type transition,
@@ -579,7 +662,8 @@ void TabStripModel::AddTabContents(TabContentsWrapper* contents,
 }
 
 void TabStripModel::CloseSelectedTab() {
-  CloseTabContentsAt(selected_index_, CLOSE_CREATE_HISTORICAL_TAB);
+  // TODO: this should close all selected tabs.
+  CloseTabContentsAt(selected_index(), CLOSE_CREATE_HISTORICAL_TAB);
 }
 
 void TabStripModel::SelectNextTab() {
@@ -595,13 +679,15 @@ void TabStripModel::SelectLastTab() {
 }
 
 void TabStripModel::MoveTabNext() {
-  int new_index = std::min(selected_index_ + 1, count() - 1);
-  MoveTabContentsAt(selected_index_, new_index, true);
+  // TODO: this likely needs to be updated for multi-selection.
+  int new_index = std::min(selected_index() + 1, count() - 1);
+  MoveTabContentsAt(selected_index(), new_index, true);
 }
 
 void TabStripModel::MoveTabPrevious() {
-  int new_index = std::max(selected_index_ - 1, 0);
-  MoveTabContentsAt(selected_index_, new_index, true);
+  // TODO: this likely needs to be updated for multi-selection.
+  int new_index = std::max(selected_index() - 1, 0);
+  MoveTabContentsAt(selected_index(), new_index, true);
 }
 
 // Context menu functions.
@@ -950,8 +1036,9 @@ TabContentsWrapper* TabStripModel::GetContentsAt(int index) const {
   return contents_data_.at(index)->contents;
 }
 
-void TabStripModel::ChangeSelectedContentsFrom(
-    TabContentsWrapper* old_contents, int to_index, bool user_gesture) {
+void TabStripModel::NotifyTabSelectedIfChanged(TabContentsWrapper* old_contents,
+                                               int to_index,
+                                               bool user_gesture) {
   TabContentsWrapper* new_contents = GetContentsAt(to_index);
   if (old_contents == new_contents)
     return;
@@ -962,17 +1049,20 @@ void TabStripModel::ChangeSelectedContentsFrom(
                       TabDeselected(last_selected_contents));
   }
 
-  selected_index_ = to_index;
-  ObserverListBase<TabStripModelObserver>::Iterator it(observers_);
-  TabStripModelObserver* obs;
-  while ((obs = it.GetNext()) != NULL)
-    obs->TabSelectedAt(last_selected_contents, new_contents,
-                       selected_index_, user_gesture);
-  /*
   FOR_EACH_OBSERVER(TabStripModelObserver, observers_,
-      TabSelectedAt(last_selected_contents, new_contents, selected_index_,
-                    user_gesture));
-                    */
+                    TabSelectedAt(last_selected_contents, new_contents,
+                                  selected_index(), user_gesture));
+}
+
+void TabStripModel::NotifySelectionChanged(int old_selected_index) {
+  TabContentsWrapper* old_tab =
+      old_selected_index == TabStripSelectionModel::kUnselectedIndex ?
+      NULL : GetTabContentsAt(old_selected_index);
+  TabContentsWrapper* new_tab =
+      selected_index() == TabStripSelectionModel::kUnselectedIndex ?
+      NULL : GetTabContentsAt(selected_index());
+  FOR_EACH_OBSERVER(TabStripModelObserver, observers_,
+                    TabSelectedAt(old_tab, new_tab, selected_index(), true));
 }
 
 void TabStripModel::SelectRelativeTab(bool next) {
@@ -981,29 +1071,63 @@ void TabStripModel::SelectRelativeTab(bool next) {
   if (contents_data_.empty())
     return;
 
-  int index = selected_index_;
+  int index = selected_index();
   int delta = next ? 1 : -1;
   index = (index + count() + delta) % count();
   SelectTabContentsAt(index, true);
 }
 
-void TabStripModel::MoveTabContentsAtImpl(int index, int to_position,
+void TabStripModel::MoveTabContentsAtImpl(int index,
+                                          int to_position,
                                           bool select_after_move) {
   TabContentsData* moved_data = contents_data_.at(index);
   contents_data_.erase(contents_data_.begin() + index);
   contents_data_.insert(contents_data_.begin() + to_position, moved_data);
 
-  // if !select_after_move, keep the same tab selected as was selected before.
-  if (select_after_move || index == selected_index_) {
-    selected_index_ = to_position;
-  } else if (index < selected_index_ && to_position >= selected_index_) {
-    selected_index_--;
-  } else if (index > selected_index_ && to_position <= selected_index_) {
-    selected_index_++;
+  selection_model_.Move(index, to_position);
+  if (!selection_model_.IsSelected(select_after_move) && select_after_move) {
+    // TODO(sky): why doesn't this code notify observers?
+    selection_model_.SetSelectedIndex(to_position);
   }
 
   FOR_EACH_OBSERVER(TabStripModelObserver, observers_,
                     TabMoved(moved_data->contents, index, to_position));
+}
+
+void TabStripModel::MoveSelectedTabsToImpl(int index,
+                                           size_t start,
+                                           size_t length) {
+  DCHECK(start < selection_model_.selected_indices().size() &&
+         start + length <= selection_model_.selected_indices().size());
+  size_t end = start + length;
+  int count_before_index = 0;
+  for (size_t i = start; i < end &&
+       selection_model_.selected_indices()[i] < index + count_before_index;
+       ++i) {
+    count_before_index++;
+  }
+
+  // First move those before index. Any tabs before index end up moving in the
+  // selection model so we use start each time through.
+  int target_index = index + count_before_index;
+  size_t tab_index = start;
+  while (tab_index < end &&
+         selection_model_.selected_indices()[start] < index) {
+    MoveTabContentsAt(selection_model_.selected_indices()[start],
+                      target_index - 1, false);
+    tab_index++;
+  }
+
+  // Then move those after the index. These don't result in reordering the
+  // selection.
+  while (tab_index < end) {
+    if (selection_model_.selected_indices()[tab_index] != target_index) {
+      MoveTabContentsAt(selection_model_.selected_indices()[tab_index],
+                        target_index, false);
+    }
+    tab_index++;
+    target_index++;
+  }
 }
 
 // static

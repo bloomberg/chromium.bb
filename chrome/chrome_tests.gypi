@@ -1520,6 +1520,7 @@
         'browser/tab_contents/web_contents_unittest.cc',
         'browser/tabs/pinned_tab_codec_unittest.cc',
         'browser/tabs/tab_strip_model_unittest.cc',
+        'browser/tabs/tab_strip_selection_model_unittest.cc',
         'browser/task_manager/task_manager_unittest.cc',
         'browser/themes/browser_theme_pack_unittest.cc',
         'browser/themes/browser_theme_provider_unittest.cc',
