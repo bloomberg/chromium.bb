@@ -38,6 +38,9 @@ TEST(AutofillCountryTest, CountryCodeForLocale) {
   EXPECT_EQ("CA", AutofillCountry::CountryCodeForLocale("fr_CA"));
   EXPECT_EQ("FR", AutofillCountry::CountryCodeForLocale("fr"));
   EXPECT_EQ("US", AutofillCountry::CountryCodeForLocale("Unknown"));
+  // "es-419" isn't associated with a country. See base/l10n/l10n_util.cc
+  // for details about this locale. Default to US.
+  EXPECT_EQ("US", AutofillCountry::CountryCodeForLocale("es-419"));
 }
 
 // Test mapping of localized country names to country codes.

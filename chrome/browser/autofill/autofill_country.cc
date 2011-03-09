@@ -387,7 +387,9 @@ const std::string AutofillCountry::CountryCodeForLocale(
   std::string country_code = icu::Locale(likely_locale.c_str()).getCountry();
 
   // Default to the United States if we have no better guess.
-  return !country_code.empty() ? country_code : "US";
+  if (!AutofillCountries::countries().count(country_code))
+    return "US";
+  return country_code;
 }
 
 // static
