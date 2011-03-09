@@ -13,6 +13,7 @@ UNIT_TESTS = [
   'tests.gclient_scm_test',
   'tests.gclient_smoketest',
   'tests.gclient_utils_test',
+  'tests.owners_unittest',
   'tests.presubmit_unittest',
   'tests.scm_unittest',
   'tests.trychange_unittest',
