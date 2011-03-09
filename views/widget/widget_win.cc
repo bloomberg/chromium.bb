@@ -956,7 +956,7 @@ bool WidgetWin::ProcessMouseMoved(UINT message,
   if (has_capture_ && is_mouse_down_)
     GetRootView()->OnMouseDragged(MouseEvent(msg));
   else if (!last_mouse_event_was_move_ ||
-      (last_mouse_move_x_ != GET_X_LPARAM(l_param) &&
+      (last_mouse_move_x_ != GET_X_LPARAM(l_param) ||
        last_mouse_move_y_ != GET_Y_LPARAM(l_param))) {
     last_mouse_move_x_ = GET_X_LPARAM(l_param);
     last_mouse_move_y_ = GET_Y_LPARAM(l_param);
