@@ -622,6 +622,14 @@ class BrowserWindowFullScreenControllerTest : public CocoaTest {
 - (BOOL)supportsFullscreen;
 @end
 
+// Check if the window is front most or if one of its child windows (such
+// as a status bubble) is front most.
+static bool IsFrontWindow(NSWindow *window) {
+  NSWindow* frontmostWindow = [[NSApp orderedWindows] objectAtIndex:0];
+  return [frontmostWindow isEqual:window] ||
+         [[frontmostWindow parentWindow] isEqual:window];
+}
+
 TEST_F(BrowserWindowFullScreenControllerTest, TestFullscreen) {
   EXPECT_FALSE([controller_ isFullscreen]);
   [controller_ setFullscreen:YES];
@@ -638,13 +646,11 @@ TEST_F(BrowserWindowFullScreenControllerTest, TestActivate) {
   EXPECT_FALSE([controller_ isFullscreen]);
 
   [controller_ activate];
-  NSWindow* frontmostWindow = [[NSApp orderedWindows] objectAtIndex:0];
-  EXPECT_EQ(frontmostWindow, [controller_ window]);
+  EXPECT_TRUE(IsFrontWindow([controller_ window]));
 
   [controller_ setFullscreen:YES];
   [controller_ activate];
-  frontmostWindow = [[NSApp orderedWindows] objectAtIndex:0];
-  EXPECT_EQ(frontmostWindow, [controller_ createFullscreenWindow]);
+  EXPECT_TRUE(IsFrontWindow([controller_ createFullscreenWindow]));
 
   // We have to cleanup after ourselves by unfullscreening.
   [controller_ setFullscreen:NO];
