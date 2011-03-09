@@ -302,6 +302,38 @@ sdkdirs:
 	  fi; \
 	done
 
+GLIBC_SDKDIRS=\
+    $(DESTDIR)$(SDKROOT)/bin \
+    $(DESTDIR)$(SDKROOT)/include \
+    $(DESTDIR)$(SDKROOT)/lib \
+    $(DESTDIR)$(SDKROOT)/libexec \
+    $(DESTDIR)$(SDKROOT)/nacl \
+    $(DESTDIR)$(SDKROOT)/nacl64/lib \
+    $(DESTDIR)$(SDKROOT)/nacl64/lib32
+
+# This structure has symlinks in toolchain/nacl64 subdirectory. This causes
+# problems on Windows buildbots running non-Cygwin python (scons).
+# TODO(pasko): either switch to another link structure or run scons in Cygwin on
+# Windows.
+.PHONY: glibc-sdkdirs
+glibc-sdkdirs:
+	echo "Creating the SDK tree at $(DESTDIR)$(SDKROOT)"
+	@for d in $(GLIBC_SDKDIRS); do \
+	  if [ ! -d $$d ]; then \
+	    echo install -m 755 -d $$d; \
+	    install -m 755 -d $$d; \
+	  fi; \
+	done
+	# Make sure there is a single install location for all header files.
+	ln -sfn ../include $(DESTDIR)$(SDKROOT)/nacl/include
+	ln -sfn ../include $(DESTDIR)$(SDKROOT)/nacl64/include
+	# libgcc_s.so is installed to lib64
+	ln -sfn lib $(DESTDIR)$(SDKROOT)/nacl64/lib64
+	# GCC searches for 32bit libraries in nacl64/lib/32 and in nacl64/lib32
+	# at different times.
+	ln -sfn ../lib32 $(DESTDIR)$(SDKROOT)/nacl64/lib/32
+	ln -sfn ../nacl64/lib32 $(DESTDIR)$(SDKROOT)/nacl/lib
+
 ##################################################################
 # binutils:
 # Builds the cross assembler, linker, archiver, etc.
@@ -389,7 +421,8 @@ PREGCC_BUILD_DIR=BUILD/build-pregcc-$(CROSSARCH)
 #   the search path will include full gcc stuff that should not be picked.
 # make install:
 #   DESTDIR should be ignored at this step.
-BUILD/stamp-$(CROSSARCH)-pregcc-standalone: | SRC/gcc BUILD
+BUILD/stamp-$(CROSSARCH)-pregcc-standalone: \
+  BUILD/stamp-$(CROSSARCH)-binutils | SRC/gcc BUILD
 	rm -rf $(PREGCC_PREFIX)
 	mkdir -p $(PREGCC_PREFIX)/$(CROSSARCH)/bin
 	for f in '$(PREFIX)/$(CROSSARCH)/bin/*'; do \
@@ -501,110 +534,134 @@ GLIBC_BUILD_DIR=BUILD/build-glibc-$(CROSSARCH)
 # Glibc is built with pregcc.
 GLIBC_CC=$(PREGCC_PREFIX)/bin/$(CROSSARCH)-gcc
 
-# Convert (nacl or nacl64) to (i486 or x86_64).
-GLIBC_HOST=$(if $(filter 32,$(BITSPLATFORM)),i486,x86_64)-linux-gnu
-
-# Convert (nacl or nacl64) to ("-march=i486" or "").
-GLIBC_HOST_CFLAGS=$(if $(filter 32,$(BITSPLATFORM)),-march=i486,)
-
 # CFLAGS for building glibc.
 GLIBC_CFLAGS=-O2 -g
 
-# Extra arguments to scons to define build and install destinations.
-SCONS_DESTINATIONS=\
- DESTINATION_ROOT=tools/BUILD/build-extra_sdk-$(CROSSARCH) \
- naclsdk_mode=custom:$(SDKLOC_NATIVE)/$(SDKNAME) \
- extra_sdk_lib_destination=$(DESTDIR)$(SDKROOT)/$(CROSSARCH)/lib \
- extra_sdk_include_destination=$(DESTDIR)$(SDKROOT)/$(CROSSARCH)/include \
+# LIB_BITS is used with different values to execute targets in this Makefile for
+# different architectures (32, 64) when building libraries (glibc and nacl).
+# CROSSARCH and BITSPLATFORM could be used for this, but we better avoid
+# redefining variables with recursive $(MAKE) calls.
+LIB_BITS?=64
+ARCH_DEST=$(DESTDIR)$(SDKROOT)/$(if $(filter 32,$(LIB_BITS)),nacl,nacl64)
 
-# Build glibc:
-BUILD/stamp-$(CROSSARCH)-glibc: | SRC/glibc SRC/linux-headers-for-nacl
-	rm -rf $(GLIBC_BUILD_DIR)
-	mkdir -p $(GLIBC_BUILD_DIR)/lib
-	cd $(GLIBC_BUILD_DIR) && ../../SRC/glibc/configure \
+BUILD/stamp-glibc32: SRC/stamp-glibc SRC/stamp-linux-headers \
+  BUILD/stamp-$(CROSSARCH)-pregcc-standalone
+	rm -rf BUILD/build-glibc32
+	mkdir -p BUILD/build-glibc32/lib
+	cd BUILD/build-glibc32 && ../../SRC/glibc/configure \
 	    BUILD_CC="gcc -O2 -g" \
-	    CC=$(GLIBC_CC) \
-	    CFLAGS="$(GLIBC_CFLAGS) $(GLIBC_HOST_CFLAGS) -pipe -fno-strict-aliasing -mno-tls-direct-seg-refs" \
+	    CC="$(GLIBC_CC) -m32" \
+	    CFLAGS="$(GLIBC_CFLAGS) -pipe -fno-strict-aliasing -mno-tls-direct-seg-refs -march=i486" \
 	    libc_cv_forced_unwind=yes \
 	    libc_cv_c_cleanup=yes \
-	    --prefix=$(PREFIX)/$(CROSSARCH) \
-	    --host=$(GLIBC_HOST) \
+	    libc_cv_slibdir=$(PREFIX)/nacl64/lib32 \
+	    --prefix=$(PREFIX)/nacl \
+	    --host=i486-linux-gnu \
 	    --with-headers=$(LINUX_HEADERS) \
 	    --enable-kernel=2.2.0
-	$(MAKE) -C $(GLIBC_BUILD_DIR)
-	$(MAKE) -C $(GLIBC_BUILD_DIR) DESTDIR=$(DESTDIR) install
+	$(MAKE) -C BUILD/build-glibc32
+	$(MAKE) -C BUILD/build-glibc32 DESTDIR=$(DESTDIR) install
 	touch $@
 
+BUILD/stamp-glibc64: SRC/stamp-glibc SRC/stamp-linux-headers \
+  BUILD/stamp-$(CROSSARCH)-pregcc-standalone
+	rm -rf BUILD/build-glibc64
+	mkdir -p BUILD/build-glibc64
+	cd BUILD/build-glibc64 && ../../SRC/glibc/configure \
+	    BUILD_CC="gcc -O2 -g" \
+	    CC="$(GLIBC_CC) -m64" \
+	    CFLAGS="$(GLIBC_CFLAGS) -pipe -fno-strict-aliasing -mno-tls-direct-seg-refs" \
+	    libc_cv_forced_unwind=yes \
+	    libc_cv_c_cleanup=yes \
+	    libc_cv_slibdir=$(PREFIX)/nacl64/lib \
+	    --prefix=$(PREFIX)/nacl64 \
+	    --host=x86_64-linux-gnu \
+	    --with-headers=$(LINUX_HEADERS) \
+	    --enable-kernel=2.2.0
+	$(MAKE) -C BUILD/build-glibc64
+	$(MAKE) -C BUILD/build-glibc64 DESTDIR=$(DESTDIR) install
+	touch $@
+
+.PHONY: export-headers
+export-headers:
+	rm -rf $(HPREFIX)
+	../src/trusted/service_runtime/export_header.py \
+	  ../src/trusted/service_runtime/include $(HPREFIX)
 
 ##################################################################
 # Ad hoc linker scripts and a selection of NaCl headers for GCC.
 ##################################################################
-BUILD/stamp-$(CROSSARCH)-glibc-adhoc-files:
+.PHONY: glibc-adhoc-files
+glibc-adhoc-files:
+	install -m 755 -d  $(ARCH_DEST)/lib/ldscripts
 	cp -f SRC/glibc/nacl/dyn-link/ldscripts/* \
-	    $(DESTDIR)$(SDKROOT)/$(CROSSARCH)/lib/ldscripts/
-	cp -rf $(LINUX_HEADERS)/* $(DESTDIR)$(SDKROOT)/$(CROSSARCH)/include
-	rm -rf $(HPREFIX)
-	../src/trusted/service_runtime/export_header.py \
-	  ../src/trusted/service_runtime/include $(HPREFIX)
-	mkdir -p $(DESTDIR)$(SDKROOT)/$(CROSSARCH)/include/{sys,machine}
-	cp -f $(NACL_BITS_HEADERS) $(DESTDIR)$(SDKROOT)/$(CROSSARCH)/include/bits
-	cp -f $(NACL_SYS_HEADERS) $(DESTDIR)$(SDKROOT)/$(CROSSARCH)/include/sys
-	cp -f $(NACL_MACHINE_HEADERS) $(DESTDIR)$(SDKROOT)/$(CROSSARCH)/include/machine
+	    $(ARCH_DEST)/lib/ldscripts/
+	cp -rf $(LINUX_HEADERS)/* $(ARCH_DEST)/include
+	mkdir -p $(ARCH_DEST)/include/{sys,machine}
+	cp -f $(NACL_BITS_HEADERS) $(ARCH_DEST)/include/bits
+	cp -f $(NACL_SYS_HEADERS) $(ARCH_DEST)/include/sys
+	cp -f $(NACL_MACHINE_HEADERS) $(ARCH_DEST)/include/machine
 	cp ../src/untrusted/include/machine/_default_types.h \
-		$(DESTDIR)$(SDKROOT)/$(CROSSARCH)/include/machine/_default_types.h
+	    $(ARCH_DEST)/include/machine/_default_types.h
 	echo '/* Intentionally empty */' > \
-		$(DESTDIR)$(SDKROOT)/$(CROSSARCH)/lib/libnacl.so
+	    $(ARCH_DEST)/lib/libnacl.so
 	echo '/* Intentionally empty */' > \
-		$(DESTDIR)$(SDKROOT)/$(CROSSARCH)/lib/libcrt_platform.a
+	    $(ARCH_DEST)/lib/libcrt_platform.a
 	echo '/* Intentionally empty */' > \
-		$(DESTDIR)$(SDKROOT)/$(CROSSARCH)/lib/libnosys.so
-	cd $(DESTDIR)$(SDKROOT)/$(CROSSARCH) && \
-		rm -rf lib$(BITSPLATFORM) && ln -s lib lib$(BITSPLATFORM)
-	touch $@
+	    $(ARCH_DEST)/lib/libnosys.so
+
 
 ##################################################################
 # Native Client libraries.
 ##################################################################
-BUILD/stamp-$(CROSSARCH)-libs-glibc: BUILD/stamp-$(CROSSARCH)-glibc-adhoc-files
-	rm -rf BUILD/build-extra_sdk-$(CROSSARCH)
-	mkdir BUILD/build-extra_sdk-$(CROSSARCH)
+
+# Extra arguments to scons to define build and install destinations.
+SCONS_DESTINATIONS_NOLIB=\
+ DESTINATION_ROOT=tools/BUILD/build-extra_sdk-$(CROSSARCH) \
+ naclsdk_mode=custom:$(SDKLOC_NATIVE)/$(SDKNAME) \
+ extra_sdk_include_destination=$(DESTDIR)$(SDKROOT)/$(CROSSARCH)/include \
+
+BUILD_EXTRA_SDK=BUILD/build-extra_sdk-$(CROSSARCH)
+
+.PHONY: scons-libs-glibc
+scons-libs-glibc: glibc-adhoc-files
+	rm -rf $(BUILD_EXTRA_SDK)
+	mkdir $(BUILD_EXTRA_SDK)
 	cd .. && \
 	  (./$(SCONS) \
-	    $(SCONS_DESTINATIONS) \
+	    $(SCONS_DESTINATIONS_NOLIB) \
+	    extra_sdk_lib_destination=$(ARCH_DEST)/lib \
 	    MODE=nacl_extra_sdk --nacl_glibc \
 	    extra_sdk_update_header extra_sdk_update \
-	    targetplatform=x86-$(BITSPLATFORM) --verbose )
+	    targetplatform=x86-$(LIB_BITS) --verbose )
 	# Remove the fake libnacl.so to let libnacl.a be used to run tests.
-	if [ -f $(DESTDIR)$(SDKROOT)/$(CROSSARCH)/lib/libnacl.a ]; then \
-	  rm -f $(DESTDIR)$(SDKROOT)/$(CROSSARCH)/lib/libnacl.so; \
+	if [ -f $(ARCH_DEST)/lib/libnacl.a ]; then \
+	  rm -f $(ARCH_DEST)/lib/libnacl.so; \
 	fi
-	touch $@
 
-NCVAL_STUBOUT=$(abspath BUILD/build-extra_sdk-$(CROSSARCH)/opt-linux-x86-$(BITSPLATFORM)/staging/ncval_stubout)
-BUILD/stamp-$(CROSSARCH)-stubout:
-	cd .. && ./$(SCONS) --mode=opt-linux platform=x86-$(BITSPLATFORM) \
-	    $(SCONS_DESTINATIONS) ncval_stubout
-	set -e; find $(DESTDIR)$(SDKROOT)/$(CROSSARCH)/lib -name '*.so' | \
+NCVAL_STUBOUT=$(abspath $(BUILD_EXTRA_SDK)/opt-linux-x86-$(LIB_BITS)/staging/ncval_stubout)
+.PHONY: stubout
+stubout:
+	cd .. && ./$(SCONS) --mode=opt-linux platform=x86-$(LIB_BITS) \
+	    $(SCONS_DESTINATIONS_NOLIB) ncval_stubout
+	set -e; find $(ARCH_DEST)/lib/ -name '*.so' | \
 	  while read library ; do \
 	    if [ "$$(head -c 4 "$$library" | tail -c 3)" = 'ELF' ] ; then \
+	      echo $(NCVAL_STUBOUT) "$$library" -o "$$library"; \
 	      $(NCVAL_STUBOUT) "$$library" -o "$$library"; \
 	    fi \
 	  done
-	touch $@
-
-.PHONY: stubout
-stubout: BUILD/stamp-$(CROSSARCH)-stubout
 
 
 ##################################################################
 # gcc:
 #   Builds GCC with glibc as a C library.
 ##################################################################
-BUILD/stamp-$(CROSSARCH)-full-gcc: BUILD/stamp-$(CROSSARCH)-glibc-adhoc-files
+BUILD/stamp-$(CROSSARCH)-full-gcc: glibc-adhoc-files
 	rm -rf BUILD/build-full-gcc-$(CROSSARCH)
 	mkdir BUILD/build-full-gcc-$(CROSSARCH)
 	# See http://code.google.com/p/nativeclient/issues/detail?id=854
-	rm -f $(DESTDIR)$(SDKROOT)/$(CROSSARCH)/sys-include
+	rm -rf $(DESTDIR)$(SDKROOT)/$(CROSSARCH)/sys-include
 	mkdir $(DESTDIR)$(SDKROOT)/$(CROSSARCH)/sys-include
 	ln -s ../include/limits.h $(DESTDIR)$(SDKROOT)/$(CROSSARCH)/sys-include/limits.h
 	PATH=$(BUILDPATH) $(MAKE) \
@@ -754,10 +811,6 @@ nacl_libraries_nocpp: ALWAYS
 # nacl_libraries:
 # Injects nacl-specific libraries in toolchain.
 ##################################################################
-# TODO(khim): make npapi headers in the Chrome repository to be compilable under
-#             __native_client__ or remove them.
-# TODO(khim): factor out {n,p}papi headers and libraries out of the toolchain.
-#             Add them to SDK during the SDK build.
 nacl_libraries: ALWAYS
 	cd .. && \
 	  (./$(SCONS) naclsdk_mode=custom:$(SDKLOC_NATIVE)/$(SDKNAME) \
@@ -827,14 +880,20 @@ endif
 
 .PHONY: dev-build-with-glibc
 dev-build-with-glibc:
-	$(MAKE) -f $(THISMAKEFILE) sdkdirs
+	$(MAKE) -f $(THISMAKEFILE) glibc-sdkdirs
 	cp -f SRC/gcc/COPYING* $(DESTDIR)$(SDKROOT)
 	$(MAKE) -f $(THISMAKEFILE) BUILD/stamp-$(CROSSARCH)-binutils
 	$(MAKE) -f $(THISMAKEFILE) BUILD/stamp-$(CROSSARCH)-pregcc-standalone
-	$(MAKE) -f $(THISMAKEFILE) BUILD/stamp-$(CROSSARCH)-glibc
+	$(MAKE) -f $(THISMAKEFILE) BUILD/stamp-glibc32
+	$(MAKE) -f $(THISMAKEFILE) BUILD/stamp-glibc64
+	$(MAKE) -f $(THISMAKEFILE) export-headers
+	$(MAKE) -f $(THISMAKEFILE) glibc-adhoc-files LIB_BITS=32
+	$(MAKE) -f $(THISMAKEFILE) glibc-adhoc-files LIB_BITS=64
 	$(MAKE) -f $(THISMAKEFILE) BUILD/stamp-$(CROSSARCH)-full-gcc
-	$(MAKE) -f $(THISMAKEFILE) BUILD/stamp-$(CROSSARCH)-libs-glibc
-	$(MAKE) -f $(THISMAKEFILE) BUILD/stamp-$(CROSSARCH)-stubout
+	$(MAKE) -f $(THISMAKEFILE) scons-libs-glibc LIB_BITS=32
+	$(MAKE) -f $(THISMAKEFILE) scons-libs-glibc LIB_BITS=64
+	$(MAKE) -f $(THISMAKEFILE) stubout LIB_BITS=32
+	$(MAKE) -f $(THISMAKEFILE) stubout LIB_BITS=64
 
 .PHONY: dev-build
 dev-build:
@@ -854,7 +913,7 @@ dev-build:
 	$(MAKE) -f $(THISMAKEFILE) sdk_minimal_test
 	$(MAKE) -f $(THISMAKEFILE) redirector
 
-# Newlib toolchain for buildbot
+# Newlib toolchain for buildbot.
 .PHONY: build
 build: | \
   pinned-src-binutils \
@@ -862,6 +921,15 @@ build: | \
   pinned-src-newlib \
   pinned-src-gdb
 	$(MAKE) -f $(THISMAKEFILE) dev-build
+
+# Glibc toolchain for buildbot.
+.PHONY: buildbot-build-with-glibc
+buildbot-build-with-glibc: | \
+  pinned-src-binutils \
+  pinned-src-gcc \
+  pinned-src-glibc \
+  pinned-src-linux-headers-for-nacl
+	$(MAKE) -f $(THISMAKEFILE) dev-build-with-glibc
 
 ##################################################################
 # Run DejaGnu tests.
@@ -893,7 +961,7 @@ check: ALWAYS
 nacl-check: ALWAYS
 	(cd .. && \
 	  ./$(SCONS) -k \
-	    $(SCONS_DESTINATIONS) \
+	    $(SCONS_DESTINATIONS_NOLIB) \
 	    --mode=dbg-linux,nacl platform=x86-$(BITSPLATFORM) \
 	    sdl=none --nacl_glibc --verbose small_tests)
 
