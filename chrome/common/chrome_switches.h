@@ -112,7 +112,6 @@ extern const char kDisableSyncBookmarks[];
 extern const char kDisableSyncExtensions[];
 extern const char kDisableSyncPreferences[];
 extern const char kDisableSyncThemes[];
-extern const char kDisableTabbedOptions[];
 extern const char kDisableTabCloseableStateWatcher[];
 extern const char kDisableTranslate[];
 extern const char kDisableWebResources[];

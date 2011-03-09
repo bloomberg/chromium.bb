@@ -540,7 +540,6 @@ class Browser : public TabHandlerDelegate,
   void ShowOptionsTab(const std::string& sub_page);
   void OpenClearBrowsingDataDialog();
   void OpenOptionsDialog();
-  void OpenKeywordEditor();
   void OpenPasswordManager();
   void OpenSyncMyBookmarksDialog();
 #if defined(ENABLE_REMOTING)

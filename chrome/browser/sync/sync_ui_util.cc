@@ -4,7 +4,6 @@
 
 #include "chrome/browser/sync/sync_ui_util.h"
 
-#include "base/command_line.h"
 #include "base/i18n/number_formatting.h"
 #include "base/i18n/time_formatting.h"
 #include "base/string_util.h"
@@ -13,7 +12,6 @@
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/options/options_window.h"
-#include "chrome/common/chrome_switches.h"
 #include "chrome/common/net/gaia/google_service_auth_error.h"
 #include "chrome/common/url_constants.h"
 #include "grit/browser_resources.h"
@@ -277,20 +275,13 @@ void OpenSyncMyBookmarksDialog(Profile* profile,
     return;
   }
 
-  bool use_tabbed_options = !CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kDisableTabbedOptions);
-
   if (service->HasSyncSetupCompleted()) {
-    if (use_tabbed_options) {
-      bool create_window = browser == NULL;
-      if (create_window)
-        browser = Browser::Create(profile);
-      browser->ShowOptionsTab(chrome::kPersonalOptionsSubPage);
-      if (create_window)
-        browser->window()->Show();
-    } else {
-      ShowOptionsWindow(OPTIONS_PAGE_CONTENT, OPTIONS_GROUP_NONE, profile);
-    }
+    bool create_window = browser == NULL;
+    if (create_window)
+      browser = Browser::Create(profile);
+    browser->ShowOptionsTab(chrome::kPersonalOptionsSubPage);
+    if (create_window)
+      browser->window()->Show();
   } else {
     service->ShowLoginDialog(NULL);
     ProfileSyncService::SyncEvent(code);  // UMA stats

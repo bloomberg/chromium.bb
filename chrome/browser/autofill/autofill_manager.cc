@@ -10,7 +10,6 @@
 #include <utility>
 
 #include "base/basictypes.h"
-#include "base/command_line.h"
 #include "base/string16.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/autocomplete_history_manager.h"
@@ -24,7 +23,6 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/common/autofill_messages.h"
-#include "chrome/common/chrome_switches.h"
 #include "chrome/common/guid.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
@@ -510,17 +508,9 @@ void AutofillManager::OnFillAutoFillFormData(int query_id,
 }
 
 void AutofillManager::OnShowAutoFillDialog() {
-  if (!CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kDisableTabbedOptions)) {
-    Browser* browser = BrowserList::GetLastActive();
-    if (browser)
-      browser->ShowOptionsTab(chrome::kAutoFillSubPage);
-    return;
-  }
-
-  ShowAutoFillDialog(tab_contents()->GetContentNativeView(),
-                     personal_data_,
-                     tab_contents()->profile()->GetOriginalProfile());
+  Browser* browser = BrowserList::GetLastActive();
+  if (browser)
+    browser->ShowOptionsTab(chrome::kAutoFillSubPage);
 }
 
 void AutofillManager::OnDidFillAutoFillFormData() {

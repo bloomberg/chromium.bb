@@ -1873,35 +1873,16 @@ void Browser::ShowOptionsTab(const std::string& sub_page) {
 void Browser::OpenClearBrowsingDataDialog() {
   UserMetrics::RecordAction(UserMetricsAction("ClearBrowsingData_ShowDlg"),
                             profile_);
-  if (!CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kDisableTabbedOptions)) {
-    ShowOptionsTab(chrome::kClearBrowserDataSubPage);
-  } else {
-    window_->ShowClearBrowsingDataDialog();
-  }
+  // TODO(jhawkins): Remove BrowserWindow::ShowClearBrowsingDataDialog.
+  ShowOptionsTab(chrome::kClearBrowserDataSubPage);
 }
 
 void Browser::OpenOptionsDialog() {
   UserMetrics::RecordAction(UserMetricsAction("ShowOptions"), profile_);
-  if (!CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kDisableTabbedOptions)) {
-    GURL url(chrome::kChromeUISettingsURL);
-    browser::NavigateParams params(GetSingletonTabNavigateParams(url));
-    params.path_behavior = browser::NavigateParams::IGNORE_AND_STAY_PUT;
-    browser::Navigate(&params);
-  } else {
-    ShowOptionsWindow(OPTIONS_PAGE_DEFAULT, OPTIONS_GROUP_NONE, profile_);
-  }
-}
-
-void Browser::OpenKeywordEditor() {
-  UserMetrics::RecordAction(UserMetricsAction("EditSearchEngines"), profile_);
-  if (!CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kDisableTabbedOptions)) {
-    ShowOptionsTab(chrome::kSearchEnginesSubPage);
-  } else {
-    window_->ShowSearchEnginesDialog();
-  }
+  GURL url(chrome::kChromeUISettingsURL);
+  browser::NavigateParams params(GetSingletonTabNavigateParams(url));
+  params.path_behavior = browser::NavigateParams::IGNORE_AND_STAY_PUT;
+  browser::Navigate(&params);
 }
 
 void Browser::OpenPasswordManager() {
@@ -1910,12 +1891,8 @@ void Browser::OpenPasswordManager() {
 
 void Browser::OpenImportSettingsDialog() {
   UserMetrics::RecordAction(UserMetricsAction("Import_ShowDlg"), profile_);
-  if (!CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kDisableTabbedOptions)) {
-    ShowOptionsTab(chrome::kImportDataSubPage);
-  } else {
-    window_->ShowImportDialog();
-  }
+  // TODO(jhawkins): Remove BrowserWindow::ShowImportDialog().
+  ShowOptionsTab(chrome::kImportDataSubPage);
 }
 
 void Browser::OpenSyncMyBookmarksDialog() {
@@ -1960,49 +1937,28 @@ void Browser::OpenAutoFillHelpTabAndActivate() {
 }
 
 void Browser::OpenSearchEngineOptionsDialog() {
-  if (!CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kDisableTabbedOptions)) {
-    OpenKeywordEditor();
-  } else {
-    ShowOptionsWindow(OPTIONS_PAGE_GENERAL, OPTIONS_GROUP_DEFAULT_SEARCH,
-                      profile_);
-  }
+  UserMetrics::RecordAction(UserMetricsAction("EditSearchEngines"), profile_);
+  // TODO(jhawkins): Remove BrowserWindow::ShowSearchEngineDialog().
+  ShowOptionsTab(chrome::kSearchEnginesSubPage);
 }
 
 #if defined(OS_CHROMEOS)
 void Browser::OpenSystemOptionsDialog() {
   UserMetrics::RecordAction(UserMetricsAction("OpenSystemOptionsDialog"),
                             profile_);
-  if (!CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kDisableTabbedOptions)) {
-    ShowOptionsTab(chrome::kSystemOptionsSubPage);
-  } else {
-    ShowOptionsWindow(OPTIONS_PAGE_SYSTEM, OPTIONS_GROUP_NONE,
-                      profile_);
-  }
+  ShowOptionsTab(chrome::kSystemOptionsSubPage);
 }
 
 void Browser::OpenInternetOptionsDialog() {
   UserMetrics::RecordAction(UserMetricsAction("OpenInternetOptionsDialog"),
                             profile_);
-  if (!CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kDisableTabbedOptions)) {
-    ShowOptionsTab(chrome::kInternetOptionsSubPage);
-  } else {
-    ShowOptionsWindow(OPTIONS_PAGE_INTERNET, OPTIONS_GROUP_DEFAULT_SEARCH,
-                      profile_);
-  }
+  ShowOptionsTab(chrome::kInternetOptionsSubPage);
 }
 
 void Browser::OpenLanguageOptionsDialog() {
   UserMetrics::RecordAction(UserMetricsAction("OpenLanguageOptionsDialog"),
                             profile_);
-  if (!CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kDisableTabbedOptions)) {
-    ShowOptionsTab(chrome::kLanguageOptionsSubPage);
-  } else {
-    // Language options dialog has been replaced by WebUI.
-  }
+  ShowOptionsTab(chrome::kLanguageOptionsSubPage);
 }
 
 void Browser::OpenSystemTabAndActivate() {
@@ -2307,7 +2263,7 @@ void Browser::ExecuteCommandWithDisposition(
     case IDC_MANAGE_EXTENSIONS:     ShowExtensionsTab();              break;
     case IDC_SYNC_BOOKMARKS:        OpenSyncMyBookmarksDialog();      break;
     case IDC_OPTIONS:               OpenOptionsDialog();              break;
-    case IDC_EDIT_SEARCH_ENGINES:   OpenKeywordEditor();              break;
+    case IDC_EDIT_SEARCH_ENGINES:   OpenSearchEngineOptionsDialog();  break;
     case IDC_VIEW_PASSWORDS:        OpenPasswordManager();            break;
     case IDC_CLEAR_BROWSING_DATA:   OpenClearBrowsingDataDialog();    break;
     case IDC_IMPORT_SETTINGS:       OpenImportSettingsDialog();       break;
@@ -3214,15 +3170,10 @@ void Browser::ShowRepostFormWarningDialog(TabContents *tab_contents) {
 }
 
 void Browser::ShowContentSettingsWindow(ContentSettingsType content_type) {
-  if (!CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kDisableTabbedOptions)) {
-    ShowOptionsTab(
-        chrome::kContentSettingsExceptionsSubPage + std::string(kHashMark) +
-        ContentSettingsHandler::ContentSettingsTypeToGroupName(content_type));
-  } else {
-    window()->ShowContentSettingsWindow(content_type,
-                                        profile_->GetOriginalProfile());
-  }
+  // TODO(jhawkins): Remove BrowserWindow::ShowContentSettingsWindow.
+  ShowOptionsTab(
+      chrome::kContentSettingsExceptionsSubPage + std::string(kHashMark) +
+      ContentSettingsHandler::ContentSettingsTypeToGroupName(content_type));
 }
 
 void Browser::ShowCollectedCookiesDialog(TabContents *tab_contents) {

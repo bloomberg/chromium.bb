@@ -209,12 +209,8 @@ static WebUIFactoryFunction GetWebUIFactoryFunction(Profile* profile,
   if (url.host() == chrome::kChromeUINetworkMenu)
     return &NewWebUI<chromeos::NetworkMenuUI>;
 #else
-  if (url.host() == chrome::kChromeUISettingsHost) {
-    if (!CommandLine::ForCurrentProcess()->HasSwitch(
-        switches::kDisableTabbedOptions)) {
-      return &NewWebUI<OptionsUI>;
-    }
-  }
+  if (url.host() == chrome::kChromeUISettingsHost)
+    return &NewWebUI<OptionsUI>;
   if (url.host() == chrome::kChromeUIPrintHost) {
     if (CommandLine::ForCurrentProcess()->HasSwitch(
         switches::kEnablePrintPreview)) {

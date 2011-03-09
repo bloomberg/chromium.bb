@@ -762,32 +762,18 @@ void RecordLastRunAppBundlePath() {
       break;
     case IDC_CLEAR_BROWSING_DATA: {
       // There may not be a browser open, so use the default profile.
-      if (CommandLine::ForCurrentProcess()->HasSwitch(
-              switches::kDisableTabbedOptions)) {
-        [ClearBrowsingDataController
-            showClearBrowsingDialogForProfile:defaultProfile];
+      if (Browser* browser = ActivateBrowser(defaultProfile)) {
+        browser->OpenClearBrowsingDataDialog();
       } else {
-        if (Browser* browser = ActivateBrowser(defaultProfile)) {
-          browser->OpenClearBrowsingDataDialog();
-        } else {
-          Browser::OpenClearBrowingDataDialogWindow(defaultProfile);
-        }
+        Browser::OpenClearBrowingDataDialogWindow(defaultProfile);
       }
       break;
     }
     case IDC_IMPORT_SETTINGS: {
-      if (CommandLine::ForCurrentProcess()->HasSwitch(
-              switches::kDisableTabbedOptions)) {
-        UserMetrics::RecordAction(UserMetricsAction("Import_ShowDlg"),
-                                  defaultProfile);
-        [ImportDialogController
-            showImportSettingsDialogForProfile:defaultProfile];
+      if (Browser* browser = ActivateBrowser(defaultProfile)) {
+        browser->OpenImportSettingsDialog();
       } else {
-        if (Browser* browser = ActivateBrowser(defaultProfile)) {
-          browser->OpenImportSettingsDialog();
-        } else {
-          Browser::OpenImportSettingsDialogWindow(defaultProfile);
-        }
+        Browser::OpenImportSettingsDialogWindow(defaultProfile);
       }
       break;
     }
@@ -1050,19 +1036,12 @@ void RecordLastRunAppBundlePath() {
 // Show the preferences window, or bring it to the front if it's already
 // visible.
 - (IBAction)showPreferences:(id)sender {
-  const CommandLine& parsed_command_line = *CommandLine::ForCurrentProcess();
-  if (!parsed_command_line.HasSwitch(switches::kDisableTabbedOptions)) {
-    if (Browser* browser = ActivateBrowser([self defaultProfile])) {
-      // Show options tab in the active browser window.
-      browser->OpenOptionsDialog();
-    } else {
-      // No browser window, so create one for the options tab.
-      Browser::OpenOptionsWindow([self defaultProfile]);
-    }
+  if (Browser* browser = ActivateBrowser([self defaultProfile])) {
+    // Show options tab in the active browser window.
+    browser->OpenOptionsDialog();
   } else {
-    [self showPreferencesWindow:sender
-                           page:OPTIONS_PAGE_DEFAULT
-                        profile:[self defaultProfile]];
+    // No browser window, so create one for the options tab.
+    Browser::OpenOptionsWindow([self defaultProfile]);
   }
 }
 

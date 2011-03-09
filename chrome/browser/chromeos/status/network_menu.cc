@@ -6,14 +6,12 @@
 
 #include <algorithm>
 
-#include "base/command_line.h"
 #include "base/stringprintf.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/browser/chromeos/webui/network_menu_ui.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
-#include "chrome/common/chrome_switches.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/browser/ui/views/window.h"
 #include "grit/generated_resources.h"
@@ -91,8 +89,6 @@ SkBitmap NetworkMenu::kAnimatingImagesBlack[kNumAnimatingImages];
 
 NetworkMenu::NetworkMenu()
     : min_width_(-1) {
-  use_settings_ui_ = !CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kDisableTabbedOptions);
   network_menu_.reset(NetworkMenuUI::CreateMenu2(this));
 }
 
@@ -815,7 +811,7 @@ void NetworkMenu::ActivateCellular(const CellularNetwork* cellular) const {
 }
 
 void NetworkMenu::ShowOther() const {
-  if (use_settings_ui_ && MenuUI::IsEnabled()) {
+  if (MenuUI::IsEnabled()) {
     Browser* browser = BrowserList::GetLastActive();
     if (browser) {
       std::string page = StringPrintf("%s?networkType=%d",
