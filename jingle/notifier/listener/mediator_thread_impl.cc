@@ -156,7 +156,8 @@ void MediatorThreadImpl::DoLogin(
                                    cert_verifier_.get(),
                                    server_list,
                                    server_list_count,
-                                   notifier_options_.try_ssltcp_first));
+                                   notifier_options_.try_ssltcp_first,
+                                   notifier_options_.auth_mechanism));
   login_->StartConnection();
 }
 

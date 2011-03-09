@@ -7,6 +7,7 @@
 #include <algorithm>
 
 #include "base/basictypes.h"
+#include "base/logging.h"
 #include "talk/base/socketaddress.h"
 #include "talk/xmpp/constants.h"
 #include "talk/xmpp/saslcookiemechanism.h"
@@ -14,8 +15,6 @@
 namespace notifier {
 
 namespace {
-
-const char kGaiaAuthMechanism[] = "X-GOOGLE-TOKEN";
 
 class GaiaCookieMechanism : public buzz::SaslCookieMechanism {
  public:
@@ -49,13 +48,20 @@ class GaiaCookieMechanism : public buzz::SaslCookieMechanism {
 
 }  // namespace
 
+// By default use a Google cookie auth mechanism.
+const char GaiaTokenPreXmppAuth::kDefaultAuthMechanism[] = "X-GOOGLE-TOKEN";
+
 GaiaTokenPreXmppAuth::GaiaTokenPreXmppAuth(
     const std::string& username,
     const std::string& token,
-    const std::string& token_service)
+    const std::string& token_service,
+    const std::string& auth_mechanism)
     : username_(username),
       token_(token),
-      token_service_(token_service) { }
+      token_service_(token_service),
+      auth_mechanism_(auth_mechanism) {
+  DCHECK(!auth_mechanism_.empty());
+}
 
 GaiaTokenPreXmppAuth::~GaiaTokenPreXmppAuth() { }
 
@@ -94,16 +100,16 @@ std::string GaiaTokenPreXmppAuth::GetAuthCookie() const {
 std::string GaiaTokenPreXmppAuth::ChooseBestSaslMechanism(
     const std::vector<std::string> & mechanisms, bool encrypted) {
   return (std::find(mechanisms.begin(),
-                    mechanisms.end(), kGaiaAuthMechanism) !=
-          mechanisms.end()) ? kGaiaAuthMechanism : "";
+                    mechanisms.end(), auth_mechanism_) !=
+          mechanisms.end()) ? auth_mechanism_ : "";
 }
 
 buzz::SaslMechanism* GaiaTokenPreXmppAuth::CreateSaslMechanism(
     const std::string& mechanism) {
-  if (mechanism != kGaiaAuthMechanism)
-    return NULL;
-  return new GaiaCookieMechanism(
-      kGaiaAuthMechanism, username_, token_, token_service_);
+  if (mechanism == auth_mechanism_)
+    return new GaiaCookieMechanism(
+        mechanism, username_, token_, token_service_);
+  return NULL;
 }
 
 }  // namespace notifier

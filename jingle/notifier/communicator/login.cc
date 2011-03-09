@@ -37,7 +37,8 @@ Login::Login(Delegate* delegate,
              net::CertVerifier* cert_verifier,
              ServerInformation* server_list,
              int server_count,
-             bool try_ssltcp_first)
+             bool try_ssltcp_first,
+             const std::string& auth_mechanism)
     : delegate_(delegate),
       login_settings_(new LoginSettings(user_settings,
                                         options,
@@ -45,7 +46,8 @@ Login::Login(Delegate* delegate,
                                         cert_verifier,
                                         server_list,
                                         server_count,
-                                        try_ssltcp_first)),
+                                        try_ssltcp_first,
+                                        auth_mechanism)),
       redirect_port_(0) {
   net::NetworkChangeNotifier::AddIPAddressObserver(this);
   ResetReconnectState();

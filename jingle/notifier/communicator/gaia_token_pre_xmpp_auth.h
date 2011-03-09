@@ -18,7 +18,8 @@ namespace notifier {
 class GaiaTokenPreXmppAuth : public buzz::PreXmppAuth {
  public:
   GaiaTokenPreXmppAuth(const std::string& username, const std::string& token,
-                       const std::string& token_service);
+                       const std::string& token_service,
+                       const std::string& auth_mechanism);
 
   virtual ~GaiaTokenPreXmppAuth();
 
@@ -50,10 +51,13 @@ class GaiaTokenPreXmppAuth : public buzz::PreXmppAuth {
   virtual buzz::SaslMechanism* CreateSaslMechanism(
       const std::string& mechanism);
 
+  static const char kDefaultAuthMechanism[];
+
  private:
   std::string username_;
   std::string token_;
   std::string token_service_;
+  std::string auth_mechanism_;
 };
 
 }  // namespace notifier

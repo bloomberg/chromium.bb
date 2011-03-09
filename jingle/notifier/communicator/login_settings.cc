@@ -22,14 +22,16 @@ LoginSettings::LoginSettings(const buzz::XmppClientSettings& user_settings,
                              net::CertVerifier* cert_verifier,
                              ServerInformation* server_list,
                              int server_count,
-                             bool try_ssltcp_first)
+                             bool try_ssltcp_first,
+                             const std::string& auth_mechanism)
     :  try_ssltcp_first_(try_ssltcp_first),
        host_resolver_(host_resolver),
        cert_verifier_(cert_verifier),
        server_list_(new ServerInformation[server_count]),
        server_count_(server_count),
        user_settings_(new buzz::XmppClientSettings(user_settings)),
-       connection_options_(new ConnectionOptions(options)) {
+       connection_options_(new ConnectionOptions(options)),
+       auth_mechanism_(auth_mechanism) {
   // Note: firewall may be NULL.
   DCHECK(server_list);
   DCHECK(host_resolver);

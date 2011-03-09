@@ -113,7 +113,8 @@ void SingleLoginAttempt::OnNewSettings(
   buzz::PreXmppAuth* pre_xmpp_auth =
       new GaiaTokenPreXmppAuth(
           jid.Str(), client_settings.auth_cookie(),
-          client_settings.token_service());
+          client_settings.token_service(),
+          login_settings_->auth_mechanism());
   xmpp_connection_.reset(
       new XmppConnection(client_settings, login_settings_->cert_verifier(),
                          this, pre_xmpp_auth));

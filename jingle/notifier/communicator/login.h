@@ -64,7 +64,8 @@ class Login : public net::NetworkChangeNotifier::IPAddressObserver,
         net::CertVerifier* cert_verifier,
         ServerInformation* server_list,
         int server_count,
-        bool try_ssltcp_first);
+        bool try_ssltcp_first,
+        const std::string& auth_mechanism);
   virtual ~Login();
 
   void StartConnection();

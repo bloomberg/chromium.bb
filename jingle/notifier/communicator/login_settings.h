@@ -35,7 +35,8 @@ class LoginSettings {
                 net::CertVerifier* cert_verifier,
                 ServerInformation* server_list,
                 int server_count,
-                bool try_ssltcp_first);
+                bool try_ssltcp_first,
+                const std::string& auth_mechanism);
 
   ~LoginSettings();
 
@@ -74,6 +75,10 @@ class LoginSettings {
   void set_server_override(const net::HostPortPair& server);
   void clear_server_override();
 
+  std::string auth_mechanism() const {
+    return auth_mechanism_;
+  }
+
  private:
   bool try_ssltcp_first_;
 
@@ -86,6 +91,8 @@ class LoginSettings {
 
   scoped_ptr<buzz::XmppClientSettings> user_settings_;
   scoped_ptr<ConnectionOptions> connection_options_;
+  std::string auth_mechanism_;
+
   DISALLOW_COPY_AND_ASSIGN(LoginSettings);
 };
 }  // namespace notifier

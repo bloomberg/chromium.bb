@@ -21,6 +21,7 @@
         'notifier/base/fake_ssl_client_socket.h',
         'notifier/base/notification_method.h',
         'notifier/base/notification_method.cc',
+        'notifier/base/notifier_options.cc',
         'notifier/base/notifier_options.h',
         'notifier/base/task_pump.cc',
         'notifier/base/task_pump.h',
