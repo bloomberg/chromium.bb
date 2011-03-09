@@ -102,7 +102,8 @@ class CustomButton : public Button,
   virtual void OnDragDone() OVERRIDE;
   virtual void ShowContextMenu(const gfx::Point& p,
                                bool is_mouse_gesture) OVERRIDE;
-  virtual void ViewHierarchyChanged(bool is_add, View* parent,
+  virtual void ViewHierarchyChanged(bool is_add,
+                                    View* parent,
                                     View* child) OVERRIDE;
   virtual void SetHotTracked(bool flag) OVERRIDE;
   virtual bool IsHotTracked() const OVERRIDE;

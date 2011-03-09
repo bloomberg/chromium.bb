@@ -114,9 +114,9 @@ class FullscreenExitBubble::FullscreenExitPopup : public views::WidgetWin {
   virtual ~FullscreenExitPopup() {}
 
   // views::WidgetWin:
-  virtual LRESULT OnMouseActivate(HWND window,
-                                  UINT hittest_code,
-                                  UINT message) {
+  virtual LRESULT OnMouseActivate(UINT message,
+                                  WPARAM w_param,
+                                  LPARAM l_param) OVERRIDE {
     // Prevent the popup from being activated, so it won't steal focus from the
     // rest of the browser, and doesn't cause problems with the FocusManager's
     // "RestoreFocusedView()" functionality.

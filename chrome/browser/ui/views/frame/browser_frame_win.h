@@ -56,15 +56,17 @@ class BrowserFrameWin : public BrowserFrame, public views::WindowWin {
   // Overridden from views::WindowWin:
   virtual int GetShowState() const OVERRIDE;
   virtual gfx::Insets GetClientAreaInsets() const OVERRIDE;
-  virtual bool GetAccelerator(int cmd_id, ui::Accelerator* accelerator)
-      OVERRIDE;
+  virtual bool GetAccelerator(int cmd_id,
+                              ui::Accelerator* accelerator) OVERRIDE;
   virtual void OnEndSession(BOOL ending, UINT logoff) OVERRIDE;
   virtual void OnEnterSizeMove() OVERRIDE;
   virtual void OnExitSizeMove() OVERRIDE;
-  virtual void OnInitMenuPopup(HMENU menu, UINT position, BOOL is_system_menu)
-      OVERRIDE;
-  virtual LRESULT OnMouseActivate(UINT message, WPARAM w_param, LPARAM l_param)
-      OVERRIDE;
+  virtual void OnInitMenuPopup(HMENU menu,
+                               UINT position,
+                               BOOL is_system_menu) OVERRIDE;
+  virtual LRESULT OnMouseActivate(UINT message,
+                                  WPARAM w_param,
+                                  LPARAM l_param) OVERRIDE;
   virtual void OnMove(const CPoint& point) OVERRIDE;
   virtual void OnMoving(UINT param, LPRECT new_bounds) OVERRIDE;
   virtual LRESULT OnNCActivate(BOOL active) OVERRIDE;

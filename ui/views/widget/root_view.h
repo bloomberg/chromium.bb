@@ -26,25 +26,25 @@ class RootView : public View,
   virtual ~RootView();
 
   // Overridden from View:
-  virtual void OnViewRemoved(View* parent, View* child);
-  virtual bool OnKeyPressed(const KeyEvent& event);
-  virtual bool OnKeyReleased(const KeyEvent& event);
-  virtual bool OnMouseWheel(const MouseWheelEvent& event);
-  virtual bool OnMousePressed(const MouseEvent& event);
-  virtual bool OnMouseDragged(const MouseEvent& event);
-  virtual void OnMouseReleased(const MouseEvent& event);
-  virtual void OnMouseCaptureLost();
-  virtual void OnMouseMoved(const MouseEvent& event);
-  virtual void OnMouseExited(const MouseEvent& event);
-  virtual void Paint(gfx::Canvas* canvas);
-  virtual void InvalidateRect(const gfx::Rect& invalid_rect);
-  virtual Widget* GetWidget() const;
+  virtual void OnViewRemoved(View* parent, View* child) OVERRIDE;
+  virtual bool OnKeyPressed(const KeyEvent& event) OVERRIDE;
+  virtual bool OnKeyReleased(const KeyEvent& event) OVERRIDE;
+  virtual bool OnMouseWheel(const MouseWheelEvent& event) OVERRIDE;
+  virtual bool OnMousePressed(const MouseEvent& event) OVERRIDE;
+  virtual bool OnMouseDragged(const MouseEvent& event) OVERRIDE;
+  virtual void OnMouseReleased(const MouseEvent& event) OVERRIDE;
+  virtual void OnMouseCaptureLost() OVERRIDE;
+  virtual void OnMouseMoved(const MouseEvent& event) OVERRIDE;
+  virtual void OnMouseExited(const MouseEvent& event) OVERRIDE;
+  virtual void Paint(gfx::Canvas* canvas) OVERRIDE;
+  virtual void InvalidateRect(const gfx::Rect& invalid_rect) OVERRIDE;
+  virtual Widget* GetWidget() const OVERRIDE;
 
  private:
   // Overridden from FocusTraversable:
-  virtual const FocusSearch* GetFocusSearch() const;
-  virtual FocusTraversable* GetFocusTraversableParent() const;
-  virtual View* GetFocusTraversableParentView() const;
+  virtual const FocusSearch* GetFocusSearch() const OVERRIDE;
+  virtual FocusTraversable* GetFocusTraversableParent() const OVERRIDE;
+  virtual View* GetFocusTraversableParentView() const OVERRIDE;
 
   Widget* widget_;
 

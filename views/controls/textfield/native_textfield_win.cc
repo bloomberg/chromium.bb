@@ -730,7 +730,8 @@ void NativeTextfieldWin::OnMouseLeave() {
   SetContainsMouse(false);
 }
 
-LRESULT NativeTextfieldWin::OnMouseWheel(UINT message, WPARAM w_param,
+LRESULT NativeTextfieldWin::OnMouseWheel(UINT message,
+                                         WPARAM w_param,
                                          LPARAM l_param) {
   // Reroute the mouse-wheel to the window under the mouse pointer if
   // applicable.

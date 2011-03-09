@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -33,21 +33,24 @@ class ConstrainedWindowWin : public ConstrainedWindow,
   TabContents* owner() const { return owner_; }
 
   // Overridden from views::Window:
-  virtual views::NonClientFrameView* CreateFrameViewForWindow();
+  virtual views::NonClientFrameView* CreateFrameViewForWindow() OVERRIDE;
 
   // Overridden from ConstrainedWindow:
-  virtual void ShowConstrainedWindow();
-  virtual void CloseConstrainedWindow();
-  virtual void FocusConstrainedWindow();
+  virtual void ShowConstrainedWindow() OVERRIDE;
+  virtual void CloseConstrainedWindow() OVERRIDE;
+  virtual void FocusConstrainedWindow() OVERRIDE;
+
   virtual std::wstring GetWindowTitle() const;
   virtual const gfx::Rect& GetCurrentBounds() const;
 
  protected:
   // Windows message handlers:
-  virtual void OnDestroy();
-  virtual void OnFinalMessage(HWND window);
-  virtual LRESULT OnMouseActivate(HWND window, UINT hittest_code, UINT message);
-  virtual void OnWindowPosChanged(WINDOWPOS* window_pos);
+  virtual void OnDestroy() OVERRIDE;
+  virtual void OnFinalMessage(HWND window) OVERRIDE;
+  virtual LRESULT OnMouseActivate(UINT message,
+                                  WPARAM w_param,
+                                  LPARAM l_param) OVERRIDE;
+  virtual void OnWindowPosChanged(WINDOWPOS* window_pos) OVERRIDE;
 
  private:
   friend class ConstrainedWindow;

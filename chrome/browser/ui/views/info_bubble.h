@@ -143,9 +143,9 @@ class BorderWidget : public views::WidgetWin {
 
  private:
   // Overridden from WidgetWin:
-  virtual LRESULT OnMouseActivate(HWND window,
-                                  UINT hit_test,
-                                  UINT mouse_message);
+  virtual LRESULT OnMouseActivate(UINT message,
+                                  WPARAM w_param,
+                                  LPARAM l_param) OVERRIDE;
 
   DISALLOW_COPY_AND_ASSIGN(BorderWidget);
 };

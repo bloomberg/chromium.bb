@@ -231,7 +231,8 @@ class WidgetWin : public ui::WindowImpl,
 
   // Overridden from WindowImpl:
   virtual HICON GetDefaultWindowIcon() const OVERRIDE;
-  virtual LRESULT OnWndProc(UINT message, WPARAM w_param,
+  virtual LRESULT OnWndProc(UINT message,
+                            WPARAM w_param,
                             LPARAM l_param) OVERRIDE;
 
   // Message Handlers ----------------------------------------------------------

@@ -649,12 +649,13 @@ void ConstrainedWindowWin::OnFinalMessage(HWND window) {
   WindowWin::OnFinalMessage(window);
 }
 
-LRESULT ConstrainedWindowWin::OnMouseActivate(HWND window,
-                                               UINT hittest_code,
-                                               UINT message) {
+LRESULT ConstrainedWindowWin::OnMouseActivate(UINT message,
+                                              WPARAM w_param,
+                                              LPARAM l_param) {
   // We only detach the window if the user clicked on the title bar. That
   // way, users can click inside the contents of legitimate popups obtained
   // with a mouse gesture.
+  UINT hittest_code = static_cast<UINT>(LOWORD(l_param));
   if (hittest_code != HTCLIENT && hittest_code != HTNOWHERE &&
       hittest_code != HTCLOSE) {
     ActivateConstrainedWindow();

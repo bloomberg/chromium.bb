@@ -231,9 +231,9 @@ gfx::Rect BorderWidget::SizeAndGetBounds(
   return contents_bounds;
 }
 
-LRESULT BorderWidget::OnMouseActivate(HWND window,
-                                      UINT hit_test,
-                                      UINT mouse_message) {
+LRESULT BorderWidget::OnMouseActivate(UINT message,
+                                      WPARAM w_param,
+                                      LPARAM l_param) {
   // Never activate.
   return MA_NOACTIVATE;
 }

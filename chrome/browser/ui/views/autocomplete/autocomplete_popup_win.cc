@@ -40,7 +40,8 @@ AutocompletePopupWin::~AutocompletePopupWin() {
 ////////////////////////////////////////////////////////////////////////////////
 // AutocompletePopupWin, WidgetWin overrides:
 
-LRESULT AutocompletePopupWin::OnMouseActivate(HWND window, UINT hit_test,
-                                              UINT mouse_message) {
+LRESULT AutocompletePopupWin::OnMouseActivate(UINT message,
+                                              WPARAM w_param,
+                                              LPARAM l_param) {
   return MA_NOACTIVATE;
 }

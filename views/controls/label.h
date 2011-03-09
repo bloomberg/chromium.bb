@@ -156,9 +156,9 @@ class Label : public View {
 
   // Mouse enter/exit are overridden to render mouse over background color.
   // These invoke SetContainsMouse as necessary.
-  virtual void OnMouseMoved(const MouseEvent& e);
-  virtual void OnMouseEntered(const MouseEvent& event);
-  virtual void OnMouseExited(const MouseEvent& event);
+  virtual void OnMouseMoved(const MouseEvent& e) OVERRIDE;
+  virtual void OnMouseEntered(const MouseEvent& event) OVERRIDE;
+  virtual void OnMouseExited(const MouseEvent& event) OVERRIDE;
 
   // The background color to use when the mouse is over the label. Label
   // takes ownership of the Background.

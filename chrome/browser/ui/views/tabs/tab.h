@@ -57,20 +57,21 @@ class Tab : public BaseTab {
 
  protected:
   // BaseTab overrides:
-  virtual const gfx::Rect& GetTitleBounds() const;
-  virtual const gfx::Rect& GetIconBounds() const;
-  virtual void DataChanged(const TabRendererData& old);
+  virtual const gfx::Rect& GetTitleBounds() const OVERRIDE;
+  virtual const gfx::Rect& GetIconBounds() const OVERRIDE;
+  virtual void DataChanged(const TabRendererData& old) OVERRIDE;
 
  private:
   // Overridden from views::View:
-  virtual void OnPaint(gfx::Canvas* canvas);
-  virtual void Layout();
-  virtual void OnThemeChanged();
-  virtual std::string GetClassName() const;
-  virtual bool HasHitTestMask() const;
-  virtual void GetHitTestMask(gfx::Path* path) const;
-  virtual bool GetTooltipTextOrigin(const gfx::Point& p, gfx::Point* origin);
-  virtual void OnMouseMoved(const views::MouseEvent& event);
+  virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE;
+  virtual void Layout() OVERRIDE;
+  virtual void OnThemeChanged() OVERRIDE;
+  virtual std::string GetClassName() const OVERRIDE;
+  virtual bool HasHitTestMask() const OVERRIDE;
+  virtual void GetHitTestMask(gfx::Path* path) const OVERRIDE;
+  virtual bool GetTooltipTextOrigin(const gfx::Point& p,
+                                    gfx::Point* origin) OVERRIDE;
+  virtual void OnMouseMoved(const views::MouseEvent& event) OVERRIDE;
 
   // Paint various portions of the Tab
   void PaintTabBackground(gfx::Canvas* canvas);

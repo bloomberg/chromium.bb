@@ -62,29 +62,32 @@ class DownloadItemView : public views::ButtonListener,
   virtual ~DownloadItemView();
 
   // DownloadObserver method
-  virtual void OnDownloadUpdated(DownloadItem* download);
-  virtual void OnDownloadFileCompleted(DownloadItem* download) { }
-  virtual void OnDownloadOpened(DownloadItem* download);
+  virtual void OnDownloadUpdated(DownloadItem* download) OVERRIDE;
+  virtual void OnDownloadFileCompleted(DownloadItem* download) OVERRIDE { }
+  virtual void OnDownloadOpened(DownloadItem* download) OVERRIDE;
 
   // View overrides
-  virtual void Layout();
-  virtual void OnPaint(gfx::Canvas* canvas);
-  virtual gfx::Size GetPreferredSize();
-  virtual void OnMouseExited(const views::MouseEvent& event);
-  virtual void OnMouseMoved(const views::MouseEvent& event);
-  virtual bool OnMousePressed(const views::MouseEvent& event);
-  virtual void OnMouseReleased(const views::MouseEvent& event, bool canceled);
-  virtual bool OnMouseDragged(const views::MouseEvent& event);
-  virtual bool OnKeyPressed(const views::KeyEvent& e);
-  virtual void ShowContextMenu(const gfx::Point& p, bool is_mouse_gesture);
-  virtual AccessibilityTypes::Role GetAccessibleRole();
-  virtual AccessibilityTypes::State GetAccessibleState();
+  virtual void Layout() OVERRIDE;
+  virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE;
+  virtual gfx::Size GetPreferredSize() OVERRIDE;
+  virtual void OnMouseExited(const views::MouseEvent& event) OVERRIDE;
+  virtual void OnMouseMoved(const views::MouseEvent& event) OVERRIDE;
+  virtual bool OnMousePressed(const views::MouseEvent& event) OVERRIDE;
+  virtual void OnMouseReleased(const views::MouseEvent& event,
+                               bool canceled) OVERRIDE;
+  virtual bool OnMouseDragged(const views::MouseEvent& event) OVERRIDE;
+  virtual bool OnKeyPressed(const views::KeyEvent& e) OVERRIDE;
+  virtual void ShowContextMenu(const gfx::Point& p,
+                               bool is_mouse_gesture) OVERRIDE;
+  virtual AccessibilityTypes::Role GetAccessibleRole() OVERRIDE;
+  virtual AccessibilityTypes::State GetAccessibleState() OVERRIDE;
 
   // ButtonListener implementation.
-  virtual void ButtonPressed(views::Button* sender, const views::Event& event);
+  virtual void ButtonPressed(views::Button* sender,
+                             const views::Event& event) OVERRIDE;
 
   // ui::AnimationDelegate implementation.
-  virtual void AnimationProgressed(const ui::Animation* animation);
+  virtual void AnimationProgressed(const ui::Animation* animation) OVERRIDE;
 
   // Timer callback for handling animations
   void UpdateDownloadProgress();

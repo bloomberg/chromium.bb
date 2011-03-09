@@ -28,12 +28,12 @@ class MenuHostRootView : public RootView {
     suspend_events_ = true;
   }
 
-  virtual bool OnMousePressed(const MouseEvent& event);
-  virtual bool OnMouseDragged(const MouseEvent& event);
-  virtual void OnMouseReleased(const MouseEvent& event, bool canceled);
-  virtual void OnMouseMoved(const MouseEvent& event);
-  virtual bool OnMouseWheel(const MouseWheelEvent& e);
-  virtual void ProcessOnMouseExited();
+  virtual bool OnMousePressed(const MouseEvent& event) OVERRIDE;
+  virtual bool OnMouseDragged(const MouseEvent& event) OVERRIDE;
+  virtual void OnMouseReleased(const MouseEvent& event, bool canceled) OVERRIDE;
+  virtual void OnMouseMoved(const MouseEvent& event) OVERRIDE;
+  virtual bool OnMouseWheel(const MouseWheelEvent& e) OVERRIDE;
+  virtual void ProcessOnMouseExited() OVERRIDE;
 
  private:
   // Returns the MenuController for this MenuHostRootView.

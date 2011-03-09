@@ -122,30 +122,39 @@ class WindowWin : public WidgetWin,
   // Overridden from WidgetWin:
   virtual void OnActivate(UINT action, BOOL minimized, HWND window) OVERRIDE;
   virtual void OnActivateApp(BOOL active, DWORD thread_id) OVERRIDE;
-  virtual LRESULT OnAppCommand(HWND window, short app_command, WORD device,
+  virtual LRESULT OnAppCommand(HWND window,
+                               short app_command,
+                               WORD device,
                                int keystate) OVERRIDE;
-  virtual void OnCommand(UINT notification_code, int command_id, HWND window)
-      OVERRIDE;
+  virtual void OnCommand(UINT notification_code,
+                         int command_id,
+                         HWND window) OVERRIDE;
   virtual void OnDestroy() OVERRIDE;
-  virtual LRESULT OnDwmCompositionChanged(UINT msg, WPARAM w_param,
+  virtual LRESULT OnDwmCompositionChanged(UINT msg,
+                                          WPARAM w_param,
                                           LPARAM l_param) OVERRIDE;
   virtual void OnFinalMessage(HWND window) OVERRIDE;
   virtual void OnGetMinMaxInfo(MINMAXINFO* minmax_info) OVERRIDE;
   virtual void OnInitMenu(HMENU menu) OVERRIDE;
-  virtual LRESULT OnMouseLeave(UINT message, WPARAM w_param, LPARAM l_param)
-      OVERRIDE;
-  virtual LRESULT OnMouseRange(UINT message, WPARAM w_param, LPARAM l_param)
-      OVERRIDE;
+  virtual LRESULT OnMouseLeave(UINT message,
+                               WPARAM w_param,
+                               LPARAM l_param) OVERRIDE;
+  virtual LRESULT OnMouseRange(UINT message,
+                               WPARAM w_param,
+                               LPARAM l_param) OVERRIDE;
   virtual LRESULT OnNCActivate(BOOL active) OVERRIDE;
   LRESULT OnNCCalcSize(BOOL mode, LPARAM l_param);  // Don't override.
   virtual LRESULT OnNCHitTest(const CPoint& point) OVERRIDE;
   virtual void OnNCPaint(HRGN rgn) OVERRIDE;
-  virtual LRESULT OnNCMouseRange(UINT message, WPARAM w_param, LPARAM l_param)
-      OVERRIDE;
-  virtual LRESULT OnNCUAHDrawCaption(UINT msg, WPARAM w_param, LPARAM l_param)
-      OVERRIDE;
-  virtual LRESULT OnNCUAHDrawFrame(UINT msg, WPARAM w_param, LPARAM l_param)
-      OVERRIDE;
+  virtual LRESULT OnNCMouseRange(UINT message,
+                                 WPARAM w_param,
+                                 LPARAM l_param) OVERRIDE;
+  virtual LRESULT OnNCUAHDrawCaption(UINT msg,
+                                     WPARAM w_param,
+                                     LPARAM l_param) OVERRIDE;
+  virtual LRESULT OnNCUAHDrawFrame(UINT msg,
+                                   WPARAM w_param,
+                                   LPARAM l_param) OVERRIDE;
   virtual LRESULT OnSetIcon(UINT size_type, HICON new_icon) OVERRIDE;
   virtual LRESULT OnSetText(const wchar_t* text) OVERRIDE;
   virtual void OnSettingChange(UINT flags, const wchar_t* section) OVERRIDE;
