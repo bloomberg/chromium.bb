@@ -227,8 +227,9 @@ INITIAL_ENV = {
                           '${ROOT_%arch%}/crtbegin.o',
 
   'STDLIB_NATIVE_SUFFIX': '${ROOT_%arch%}/libcrt_platform.a ' +
-                          '${ROOT_%arch%}/crtend.o ${ROOT_%arch%}/crtn.o ' +
-                          '-L${ROOT_%arch%} -lgcc_eh -lgcc',
+                          '-L${ROOT_%arch%} -lgcc_eh -lgcc ' +
+                          '${ROOT_%arch%}/crtend.o ${ROOT_%arch%}/crtn.o',
+
 
   'STDLIB_BC_PREFIX': '${ROOT_BC}/nacl_startup.o',
 
