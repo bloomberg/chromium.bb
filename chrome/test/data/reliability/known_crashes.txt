@@ -193,3 +193,6 @@ PREFIX: webcore::scriptexecutioncontext::~scriptexecutioncontext___webcore::docu
 
 # 75447
 PREFIX: tcmalloc::threadcache::freelist::poprange___tcmalloc::threadcache::releasetocentralcache___tcmalloc::threadcache::listtoolong___tcmalloc::threadcache::deallocate___`anonymous namespace'::do_free_with_callback___free___pickle::~pickle___ppapihostmsg_ppbtesting_runmessageloop::`scalar deleting destructor'___ipc::channel::channelimpl::processoutgoingmessages
+
+# 75455
+PREFIX: webcore::cssselector::~cssselector___webcore::cssselectorlist::deleteselectors___webcore::cssstylerule::~cssstylerule___webcore::cssstylerule::`scalar deleting destructor'___wtf::vectordestructor<1,wtf::refptr<webcore::cssvalue> >::destruct___webcore::stylesheet::~stylesheet___webcore::cssstylesheet::`scalar deleting destructor'___wtf::vectordestructor<1,wtf::refptr<webcore::cssvalue> >::destruct___webcore::stylesheetlist::~stylesheetlist___webcore::document::~document___webcore::ftpdirectorydocument::`scalar deleting destructor'___webcore::node::~node___webcore::deletebutton::`scalar deleting destructor'___v8::string::externalstringresourcebase::dispose___webcore::domdatastore::weaknodecallback___v8::internal::globalhandles::node::postgarbagecollectionprocessing
