@@ -554,6 +554,12 @@ bool PluginObject::RequestFullscreenDisplay() {
 
   FullscreenWindowMac* fullscreen_window =
       FullscreenWindowMac::Create(this, target_width, target_height);
+  if (!fullscreen_window) {
+    if (was_offscreen_) {
+      EnableOffscreenRendering();
+    }
+    return false;
+  }
   SetFullscreenMacWindow(fullscreen_window);
   Rect bounds = o3d::CGRect2Rect(fullscreen_window->GetWindowBounds());
 
