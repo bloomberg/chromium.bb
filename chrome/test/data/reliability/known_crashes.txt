@@ -196,3 +196,6 @@ PREFIX: tcmalloc::threadcache::freelist::poprange___tcmalloc::threadcache::relea
 
 # 75455
 PREFIX: webcore::cssselector::~cssselector___webcore::cssselectorlist::deleteselectors___webcore::cssstylerule::~cssstylerule___webcore::cssstylerule::`scalar deleting destructor'___wtf::vectordestructor<1,wtf::refptr<webcore::cssvalue> >::destruct___webcore::stylesheet::~stylesheet___webcore::cssstylesheet::`scalar deleting destructor'___wtf::vectordestructor<1,wtf::refptr<webcore::cssvalue> >::destruct___webcore::stylesheetlist::~stylesheetlist___webcore::document::~document___webcore::ftpdirectorydocument::`scalar deleting destructor'___webcore::node::~node___webcore::deletebutton::`scalar deleting destructor'___v8::string::externalstringresourcebase::dispose___webcore::domdatastore::weaknodecallback___v8::internal::globalhandles::node::postgarbagecollectionprocessing
+
+# 75459
+PREFIX: webcore::inlinebox::logicalheight___webcore::inlineflowbox::maxyvisualoverflow___webcore::renderlineboxlist::anylineintersectsrect___webcore::renderlineboxlist::paint___webcore::renderblock::paintcontents___webcore::renderblock::paintobject
