@@ -229,6 +229,7 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
   static bool IdIsValid(const std::string& id);
 
   // Generate an ID for an extension in the given path.
+  // Used while developing extensions, before they have a key.
   static std::string GenerateIdForPath(const FilePath& file_name);
 
   // Returns true if the specified file is an extension.
