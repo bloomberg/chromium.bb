@@ -73,7 +73,7 @@ function EnqueueTests(tester, naclModule, suffix) {
   tester.addTest('browser_nacl_int_argret' + suffix, function() {
     assertEqual(naclModule.methodInt32(13), 13);
   });
-  
+
   tester.addTest('browser_nacl_string_argret' + suffix, function() {
     assertEqual(naclModule.methodString('bogus'), 'bogus');
   });
@@ -97,7 +97,7 @@ function EnqueueTests(tester, naclModule, suffix) {
     assertEqual(naclModule.methodStringWith2Args(kSampleString, kSampleString),
                 kSampleString);
   });
-  
+
   // Broken, corrupted object returned.
   // TODO(ncbray) fix or remove.
   // http://code.google.com/p/nativeclient/issues/detail?id=1367
@@ -126,14 +126,14 @@ function EnqueueTests(tester, naclModule, suffix) {
 <embed id="basic_object"
        name="naclModule"
        width=0 height=0
-       src="ppapi_basic_object.nexe"
+       nacl="basic_object.nmf"
        type="application/x-nacl" />
 </body>
 
 <embed id="user_main"
        name="naclModule"
        width=0 height=0
-       src="ppapi_user_main.nexe"
+       nacl="user_main.nmf"
        type="application/x-nacl" />
 </body>
 

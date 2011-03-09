@@ -5,72 +5,80 @@
 
 Import('env')
 
-env.Prepend(CPPDEFINES=['XP_UNIX'])
-
 # TODO(robertm): those should not be necessary once we go -std=c99
 env.FilterOut(CFLAGS=['-pedantic'])
 env.FilterOut(CCFLAGS=['-pedantic'])
 
-basic_obj = env.ComponentObject('basic_object.cc'),
+basic_obj_sources = env.ComponentObject('basic_object.cc'),
 
-basic_object_nexe = env.ComponentProgram('ppapi_basic_object.nexe',
-                     [basic_obj,],
-                     EXTRA_LIBS=['ppruntime',
-                                 'imc',
-                                 'platform',
-                                 'gio',
-                                 'pthread',
-                                 'm',
-                                 'srpc'])
+basic_obj_target = 'ppapi_basic_object_%s.nexe' % env.get('TARGET_FULLARCH')
+env.Alias('ppapi_basic_object.nexe', ['$STAGING_DIR/%s' % basic_obj_target])
+basic_object_nexe = env.ComponentProgram(basic_obj_target,
+                                         [basic_obj_sources],
+                                         EXTRA_LIBS=['ppruntime',
+                                                     'imc',
+                                                     'platform',
+                                                     'gio',
+                                                     'pthread',
+                                                     'm',
+                                                     'srpc'])
 
-# Note that the html is required to run this program.
-env.Publish('ppapi_basic_object.nexe', 'run',
-            [env.File('${SCONSTRUCT_DIR}/tools/browser_tester/browserdata/'
-                      'nacltest.js'),
-             'basic_object.html'])
+# Note that the html and a .nmf manifest is required to run this program.
+dest_copy = env.Replicate('$STAGING_DIR',
+                          ['basic_object.html',
+                           'basic_object.nmf',
+                           'user_main.nmf',
+                           env.File('${SCONSTRUCT_DIR}/tools/browser_tester/'
+                                    'browserdata/nacltest.js')])
+env.Depends(basic_obj_target, dest_copy)
 
-user_main_nexe = env.ComponentProgram('ppapi_user_main.nexe',
-                     [basic_obj,
-                      'user_main.cc',],
-                     EXTRA_LIBS=['ppruntime',
-                                 'imc',
-                                 'platform',
-                                 'gio',
-                                 'pthread',
-                                 'm',
-                                 'srpc'])
+user_main_target = 'ppapi_user_main_%s.nexe' % env.get('TARGET_FULLARCH')
+env.Alias('ppapi_user_main.nexe', ['$STAGING_DIR/%s' % user_main_target])
+user_main_nexe = env.ComponentProgram(user_main_target,
+                                      [basic_obj_sources, 'user_main.cc',],
+                                      EXTRA_LIBS=['ppruntime',
+                                                  'imc',
+                                                  'platform',
+                                                  'gio',
+                                                  'pthread',
+                                                  'm',
+                                                  'srpc'])
 
-# Note that the html is required to run this program.
-env.Publish('ppapi_user_main.nexe', 'run',
-            [env.File('${SCONSTRUCT_DIR}/tools/browser_tester/browserdata/'
-                      'nacltest.js'),
-             'basic_object.html'])
+env.Depends(user_main_target, dest_copy)
 
 node = env.PPAPIBrowserTester(
     'ppapi_basic_object_browser_test.out',
     url='basic_object.html',
-    files=[basic_object_nexe, user_main_nexe, env.File('basic_object.html')])
+    files=[basic_object_nexe,
+           user_main_nexe,
+           env.File('basic_object.html'),
+           env.File('basic_object.nmf'),
+           env.File('user_main.nmf')])
 
 env.AddNodeToTestSuite(node,
                        ['chrome_browser_tests'],
                        'run_ppapi_basic_object_browser_test',
                        is_broken=env.PPAPIBrowserTesterIsBroken())
 
-env.ComponentProgram('ppapi_event_example.nexe',
-                     ['event_example.cc',],
-                     EXTRA_LIBS=['ppruntime',
-                                 'imc',
-                                 'platform',
-                                 'gio',
-                                 'ppapi_cpp',
-                                 'pthread',
-                                 'm',
-                                 'srpc'])
+event_target = 'ppapi_event_example_%s.nexe' % env.get('TARGET_FULLARCH')
+env.Alias('ppapi_event_example.nexe', ['$STAGING_DIR/%s' % event_target])
+event_example_nexe = env.ComponentProgram(event_target,
+                                          ['event_example.cc',],
+                                          EXTRA_LIBS=['ppruntime',
+                                                      'imc',
+                                                      'platform',
+                                                      'gio',
+                                                      'ppapi_cpp',
+                                                      'pthread',
+                                                      'm',
+                                                      'srpc'])
 
-# Note that the html is required to run this program.
-env.Publish('ppapi_event_example.nexe', 'run',
-            [env.File('${SCONSTRUCT_DIR}/tests/nacl_js_lib.js'),
-             'event_example.html'])
+# Note that the html and a .nmf manifest is required to run this program.
+dest_copy = env.Replicate('$STAGING_DIR',
+                          ['event_example.html',
+                           'event_example.nmf',
+                           env.File('${SCONSTRUCT_DIR}/tests/nacl_js_lib.js')])
+env.Depends(event_target, dest_copy)
 
 node = env.SelUniversalTest(
     'ppapi_event_example.out',
@@ -79,7 +87,7 @@ node = env.SelUniversalTest(
                          '--command_file',
                          env.File('event_example.stdin'),
                          ],
-    command=[env.File('ppapi_event_example.nexe')],
+    command=[event_example_nexe],
     stdout_golden=env.File('event_example.stdout'),
     )
 
