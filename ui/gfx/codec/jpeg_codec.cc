@@ -225,11 +225,11 @@ bool JPEGCodec::Encode(const unsigned char* input, ColorFormat format,
     cinfo.input_components = 3;
     cinfo.in_color_space = JCS_RGB;
   } else if (format == FORMAT_RGBA ||
-             format == FORMAT_SkBitmap && SK_R32_SHIFT == 0) {
+             (format == FORMAT_SkBitmap && SK_R32_SHIFT == 0)) {
     cinfo.input_components = 4;
     cinfo.in_color_space = JCS_EXT_RGBX;
   } else if (format == FORMAT_BGRA ||
-             format == FORMAT_SkBitmap && SK_B32_SHIFT == 0) {
+             (format == FORMAT_SkBitmap && SK_B32_SHIFT == 0)) {
     cinfo.input_components = 4;
     cinfo.in_color_space = JCS_EXT_BGRX;
   } else {
@@ -489,11 +489,11 @@ bool JPEGCodec::Decode(const unsigned char* input, size_t input_size,
         cinfo.out_color_space = JCS_RGB;
         cinfo.output_components = 3;
       } else if (format == FORMAT_RGBA ||
-                 format == FORMAT_SkBitmap && SK_R32_SHIFT == 0) {
+                 (format == FORMAT_SkBitmap && SK_R32_SHIFT == 0)) {
         cinfo.out_color_space = JCS_EXT_RGBX;
         cinfo.output_components = 4;
       } else if (format == FORMAT_BGRA ||
-                 format == FORMAT_SkBitmap && SK_B32_SHIFT == 0) {
+                 (format == FORMAT_SkBitmap && SK_B32_SHIFT == 0)) {
         cinfo.out_color_space = JCS_EXT_BGRX;
         cinfo.output_components = 4;
       } else {
