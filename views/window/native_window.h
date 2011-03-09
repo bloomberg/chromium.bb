@@ -24,6 +24,13 @@ class NativeWindow {
 
   virtual ~NativeWindow() {}
 
+ protected:
+  friend class Window;
+
+  // Returns the bounds of the window in screen coordinates for its non-
+  // maximized state, regardless of whether or not it is currently maximized.
+  virtual gfx::Rect GetRestoredBounds() const = 0;
+
   // Shows the window.
   virtual void ShowNativeWindow(ShowState state) = 0;
 
@@ -32,6 +39,14 @@ class NativeWindow {
 
   // Centers the window and sizes it to the specified size.
   virtual void CenterWindow(const gfx::Size& size) = 0;
+
+  // Retrieves the window's current restored bounds and maximized state, for
+  // persisting.
+  virtual void GetWindowBoundsAndMaximizedState(gfx::Rect* bounds,
+                                                bool* maximized) const = 0;
+
+  // Enables or disables the close button for the window.
+  virtual void EnableClose(bool enable) = 0;
 
   // Sets the NativeWindow title.
   virtual void SetWindowTitle(const std::wstring& title) = 0;

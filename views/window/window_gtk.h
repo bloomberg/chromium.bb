@@ -30,8 +30,6 @@ class WindowGtk : public WidgetGtk, public NativeWindow, public Window {
   virtual ~WindowGtk();
 
   // Overridden from Window:
-  virtual gfx::Rect GetBounds() const;
-  virtual gfx::Rect GetNormalBounds() const;
   virtual void SetWindowBounds(const gfx::Rect& bounds,
                                gfx::NativeWindow other_window);
   virtual void HideWindow();
@@ -39,7 +37,6 @@ class WindowGtk : public WidgetGtk, public NativeWindow, public Window {
   virtual void* GetNativeWindowProperty(const char* name);
   virtual void Activate();
   virtual void Deactivate();
-  virtual void Close();
   virtual void Maximize();
   virtual void Minimize();
   virtual void Restore();
@@ -50,7 +47,6 @@ class WindowGtk : public WidgetGtk, public NativeWindow, public Window {
   virtual void SetFullscreen(bool fullscreen);
   virtual bool IsFullscreen() const;
   virtual void SetUseDragFrame(bool use_drag_frame);
-  virtual void EnableClose(bool enable);
   virtual void SetIsAlwaysOnTop(bool always_on_top);
   virtual NonClientFrameView* CreateFrameViewForWindow();
   virtual void UpdateFrameAfterFrameChange();
@@ -74,9 +70,13 @@ class WindowGtk : public WidgetGtk, public NativeWindow, public Window {
 
  protected:
   // Overridden from NativeWindow:
+  virtual gfx::Rect GetRestoredBounds() const OVERRIDE;
   virtual void ShowNativeWindow(ShowState state) OVERRIDE;
   virtual void BecomeModal() OVERRIDE;
   virtual void CenterWindow(const gfx::Size& size) OVERRIDE;
+  virtual void GetWindowBoundsAndMaximizedState(gfx::Rect* bounds,
+                                                bool* maximized) const OVERRIDE;
+  virtual void EnableClose(bool enable) OVERRIDE;
   virtual void SetWindowTitle(const std::wstring& title) OVERRIDE;
   virtual void SetWindowIcons(const SkBitmap& window_icon,
                               const SkBitmap& app_icon) OVERRIDE;

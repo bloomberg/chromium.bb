@@ -104,15 +104,6 @@ void Window::CloseAllSecondaryWindows() {
   g_list_free(windows);
 }
 
-gfx::Rect WindowGtk::GetBounds() const {
-  return GetWindowScreenBounds();
-}
-
-gfx::Rect WindowGtk::GetNormalBounds() const {
-  // We currently don't support tiling, so this doesn't matter.
-  return GetBounds();
-}
-
 void WindowGtk::SetWindowBounds(const gfx::Rect& bounds,
                                 gfx::NativeWindow other_window) {
   // TODO: need to deal with other_window.
@@ -137,18 +128,6 @@ void WindowGtk::Activate() {
 
 void WindowGtk::Deactivate() {
   gdk_window_lower(GTK_WIDGET(GetNativeView())->window);
-}
-
-void WindowGtk::Close() {
-  if (window_closed_) {
-    // Don't do anything if we've already been closed.
-    return;
-  }
-
-  if (GetWindow()->non_client_view()->CanClose()) {
-    WidgetGtk::Close();
-    window_closed_ = true;
-  }
 }
 
 void WindowGtk::Maximize() {
@@ -197,10 +176,6 @@ bool WindowGtk::IsFullscreen() const {
 
 void WindowGtk::SetUseDragFrame(bool use_drag_frame) {
   NOTIMPLEMENTED();
-}
-
-void WindowGtk::EnableClose(bool enable) {
-  gtk_window_set_deletable(GetNativeWindow(), enable);
 }
 
 void WindowGtk::SetIsAlwaysOnTop(bool always_on_top) {
@@ -357,6 +332,11 @@ void WindowGtk::SetInitialFocus() {
 ////////////////////////////////////////////////////////////////////////////////
 // WindowGtk, NativeWindow implementation:
 
+gfx::Rect WindowGtk::GetRestoredBounds() const {
+  // We currently don't support tiling, so this doesn't matter.
+  return GetWindowScreenBounds();
+}
+
 void WindowGtk::ShowNativeWindow(ShowState state) {
   // No concept of maximization (yet) on ChromeOS.
   gtk_widget_show(GetNativeView());
@@ -387,6 +367,15 @@ void WindowGtk::CenterWindow(const gfx::Size& size) {
                    center_rect.y() + (center_rect.height() - size.height()) / 2,
                    size.width(), size.height());
   SetWindowBounds(bounds, NULL);
+}
+
+void WindowGtk::GetWindowBoundsAndMaximizedState(gfx::Rect* bounds,
+                                                 bool* maximized) const {
+  // Do nothing for now. ChromeOS isn't yet saving window placement.
+}
+
+void WindowGtk::EnableClose(bool enable) {
+  gtk_window_set_deletable(GetNativeWindow(), enable);
 }
 
 void WindowGtk::SetWindowTitle(const std::wstring& title) {
@@ -467,9 +456,9 @@ void WindowGtk::SaveWindowPosition() {
 }
 
 void WindowGtk::OnDestroy(GtkWidget* widget) {
-  delegate_->OnWindowDestroying();
+  delegate_->OnNativeWindowDestroying();
   WidgetGtk::OnDestroy(widget);
-  delegate_->OnWindowDestroyed();
+  delegate_->OnNativeWindowDestroyed();
 }
 
 }  // namespace views

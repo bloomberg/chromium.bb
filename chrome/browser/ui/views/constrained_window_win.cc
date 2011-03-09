@@ -369,7 +369,7 @@ void ConstrainedWindowFrameView::OnThemeChanged() {
 void ConstrainedWindowFrameView::ButtonPressed(
     views::Button* sender, const views::Event& event) {
   if (sender == close_button_)
-    container_->Close();
+    container_->CloseConstrainedWindow();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -592,7 +592,7 @@ void ConstrainedWindowWin::CloseConstrainedWindow() {
                                          Source<ConstrainedWindow>(this),
                                          NotificationService::NoDetails());
 
-  Close();
+  Window::Close();
 }
 
 std::wstring ConstrainedWindowWin::GetWindowTitle() const {

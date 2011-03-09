@@ -28,7 +28,8 @@ Window::Window(WindowDelegate* window_delegate)
           non_client_view_(new NonClientView(this))),
       saved_maximized_state_(false),
       minimum_size_(100, 100),
-      disable_inactive_rendering_(false) {
+      disable_inactive_rendering_(false),
+      window_closed_(false) {
   DCHECK(window_delegate_);
   DCHECK(!window_delegate_->window_);
   window_delegate_->window_ = this;
@@ -74,11 +75,12 @@ void Window::CloseSecondaryWidget(Widget* widget) {
 }
 
 gfx::Rect Window::GetBounds() const {
-  return gfx::Rect();
+  // TODO(beng): Clean this up once Window subclasses Widget.
+  return native_window_->AsNativeWidget()->GetWidget()->GetWindowScreenBounds();
 }
 
 gfx::Rect Window::GetNormalBounds() const {
-  return gfx::Rect();
+  return native_window_->GetRestoredBounds();
 }
 
 void Window::SetWindowBounds(const gfx::Rect& bounds,
@@ -117,6 +119,20 @@ void Window::Deactivate() {
 }
 
 void Window::Close() {
+  if (window_closed_) {
+    // It appears we can hit this code path if you close a modal dialog then
+    // close the last browser before the destructor is hit, which triggers
+    // invoking Close again.
+    return;
+  }
+
+  if (non_client_view_->CanClose()) {
+    SaveWindowPosition();
+    // TODO(beng): This can be simplified to Widget::Close() once Window
+    //             subclasses Widget.
+    native_window_->AsNativeWidget()->GetWidget()->Close();
+    window_closed_ = true;
+  }
 }
 
 void Window::Maximize() {
@@ -159,6 +175,8 @@ bool Window::IsAppWindow() const {
 }
 
 void Window::EnableClose(bool enable) {
+  non_client_view_->EnableClose(enable);
+  native_window_->EnableClose(enable);
 }
 
 void Window::UpdateWindowTitle() {
@@ -220,6 +238,26 @@ bool Window::IsModal() const {
   return window_delegate_->IsModal();
 }
 
+bool Window::IsDialogBox() const {
+  return !!window_delegate_->AsDialogDelegate();
+}
+
+bool Window::IsUsingNativeFrame() const {
+  return non_client_view_->UseNativeFrame();
+}
+
+gfx::Size Window::GetMinimumSize() const {
+  return non_client_view_->GetMinimumSize();
+}
+
+int Window::GetNonClientComponent(const gfx::Point& point) const {
+  return non_client_view_->NonClientHitTest(point);
+}
+
+bool Window::ExecuteCommand(int command_id) {
+  return window_delegate_->ExecuteWindowsCommand(command_id);
+}
+
 void Window::OnNativeWindowCreated(const gfx::Rect& bounds) {
   if (window_delegate_->IsModal())
     native_window_->BecomeModal();
@@ -238,14 +276,23 @@ void Window::OnNativeWindowCreated(const gfx::Rect& bounds) {
   SetInitialBounds(bounds);
 }
 
-void Window::OnWindowDestroying() {
+void Window::OnNativeWindowActivationChanged(bool active) {
+  if (!active)
+    SaveWindowPosition();
+}
+
+void Window::OnNativeWindowDestroying() {
   non_client_view_->WindowClosing();
   window_delegate_->WindowClosing();
 }
 
-void Window::OnWindowDestroyed() {
+void Window::OnNativeWindowDestroyed() {
   window_delegate_->DeleteDelegate();
   window_delegate_ = NULL;
+}
+
+void Window::OnNativeWindowBoundsChanged() {
+  SaveWindowPosition();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -297,6 +344,20 @@ void Window::SetInitialBounds(const gfx::Rect& bounds) {
       SetWindowBounds(bounds, NULL);
     }
   }
+}
+
+void Window::SaveWindowPosition() {
+  // The window delegate does the actual saving for us. It seems like (judging
+  // by go/crash) that in some circumstances we can end up here after
+  // WM_DESTROY, at which point the window delegate is likely gone. So just
+  // bail.
+  if (!window_delegate_)
+    return;
+
+  bool maximized;
+  gfx::Rect bounds;
+  native_window_->GetWindowBoundsAndMaximizedState(&bounds, &maximized);
+  window_delegate_->SaveWindowPlacement(bounds, maximized);
 }
 
 }  // namespace views

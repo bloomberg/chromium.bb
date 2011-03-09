@@ -71,7 +71,7 @@ class Window : public internal::NativeWindowDelegate {
   static void CloseSecondaryWidget(Widget* widget);
 
   // Retrieves the window's bounds, including its frame.
-  virtual gfx::Rect GetBounds() const;
+  gfx::Rect GetBounds() const;
 
   // Retrieves the restored bounds for the window.
   virtual gfx::Rect GetNormalBounds() const;
@@ -123,11 +123,10 @@ class Window : public internal::NativeWindowDelegate {
   // window.
   virtual void Deactivate();
 
-  // Closes the window, ultimately destroying it. This isn't immediate (it
-  // occurs after a return to the message loop. Implementors must also make sure
-  // that invoking Close multiple times doesn't cause bad things to happen,
-  // since it can happen.
-  virtual void Close();
+  // Closes the window, ultimately destroying it. The window hides immediately,
+  // and is destroyed after a return to the message loop. Close() can be called
+  // multiple times.
+  void Close();
 
   // Maximizes/minimizes/restores the window.
   virtual void Maximize();
@@ -220,15 +219,26 @@ class Window : public internal::NativeWindowDelegate {
   virtual bool IsInactiveRenderingDisabled() const OVERRIDE;
   virtual void EnableInactiveRendering() OVERRIDE;
   virtual bool IsModal() const OVERRIDE;
+  virtual bool IsDialogBox() const OVERRIDE;
+  virtual bool IsUsingNativeFrame() const OVERRIDE;
+  virtual gfx::Size GetMinimumSize() const OVERRIDE;
+  virtual int GetNonClientComponent(const gfx::Point& point) const OVERRIDE;
+  virtual bool ExecuteCommand(int command_id) OVERRIDE;
   virtual void OnNativeWindowCreated(const gfx::Rect& bounds) OVERRIDE;
-  virtual void OnWindowDestroying() OVERRIDE;
-  virtual void OnWindowDestroyed() OVERRIDE;
+  virtual void OnNativeWindowActivationChanged(bool active) OVERRIDE;
+  virtual void OnNativeWindowDestroying() OVERRIDE;
+  virtual void OnNativeWindowDestroyed() OVERRIDE;
+  virtual void OnNativeWindowBoundsChanged() OVERRIDE;
 
  private:
   Window();
 
   // Sizes and positions the window just after it is created.
   void SetInitialBounds(const gfx::Rect& bounds);
+
+  // Persists the window's restored position and maximized state using the
+  // window delegate.
+  void SaveWindowPosition();
 
   NativeWindow* native_window_;
 
@@ -251,6 +261,9 @@ class Window : public internal::NativeWindowDelegate {
   // True when the window should be rendered as active, regardless of whether
   // or not it actually is.
   bool disable_inactive_rendering_;
+
+  // Set to true if the window is in the process of closing .
+  bool window_closed_;
 
   DISALLOW_COPY_AND_ASSIGN(Window);
 };

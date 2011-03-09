@@ -55,8 +55,6 @@ class WindowWin : public WidgetWin,
   }
 
   // Overridden from Window:
-  virtual gfx::Rect GetBounds() const OVERRIDE;
-  virtual gfx::Rect GetNormalBounds() const OVERRIDE;
   virtual void SetWindowBounds(const gfx::Rect& bounds,
                                gfx::NativeWindow other_window) OVERRIDE;
   virtual void HideWindow() OVERRIDE;
@@ -66,7 +64,6 @@ class WindowWin : public WidgetWin,
   virtual void PopForceHidden() OVERRIDE;
   virtual void Activate() OVERRIDE;
   virtual void Deactivate() OVERRIDE;
-  virtual void Close() OVERRIDE;
   virtual void Maximize() OVERRIDE;
   virtual void Minimize() OVERRIDE;
   virtual void Restore() OVERRIDE;
@@ -77,7 +74,6 @@ class WindowWin : public WidgetWin,
   virtual void SetFullscreen(bool fullscreen) OVERRIDE;
   virtual bool IsFullscreen() const OVERRIDE;
   virtual void SetUseDragFrame(bool use_drag_frame) OVERRIDE;
-  virtual void EnableClose(bool enable) OVERRIDE;
   virtual void SetIsAlwaysOnTop(bool always_on_top) OVERRIDE;
   virtual NonClientFrameView* CreateFrameViewForWindow() OVERRIDE;
   virtual void UpdateFrameAfterFrameChange() OVERRIDE;
@@ -158,9 +154,13 @@ class WindowWin : public WidgetWin,
   virtual const Window* GetWindow() const OVERRIDE { return this; }
 
   // Overridden from NativeWindow:
-  virtual void ShowNativeWindow(ShowState state);
+  virtual gfx::Rect GetRestoredBounds() const OVERRIDE;
+  virtual void ShowNativeWindow(ShowState state) OVERRIDE;
   virtual void BecomeModal() OVERRIDE;
   virtual void CenterWindow(const gfx::Size& size) OVERRIDE;
+  virtual void GetWindowBoundsAndMaximizedState(gfx::Rect* bounds,
+                                                bool* maximized) const OVERRIDE;
+  virtual void EnableClose(bool enable) OVERRIDE;
   virtual void SetWindowTitle(const std::wstring& title) OVERRIDE;
   virtual void SetWindowIcons(const SkBitmap& window_icon,
                               const SkBitmap& app_icon) OVERRIDE;
@@ -192,9 +192,6 @@ class WindowWin : public WidgetWin,
   DWORD CalculateWindowStyle();
   DWORD CalculateWindowExStyle();
 
-  // Asks the delegate if any to save the window's location and size.
-  void SaveWindowPosition();
-
   // Lock or unlock the window from being able to redraw itself in response to
   // updates to its invalid region.
   class ScopedRedrawLock;
@@ -222,11 +219,6 @@ class WindowWin : public WidgetWin,
   // Executes the specified SC_command.
   void ExecuteSystemMenuCommand(int command);
 
-  // Returns the normal bounds of the window in screen coordinates and
-  // whether the window is maximized. The arguments can be NULL.
-  void GetWindowBoundsAndMaximizedState(gfx::Rect* bounds,
-                                        bool* maximized) const;
-
   // Static resource initialization.
   static void InitClass();
   enum ResizeCursor {
@@ -250,9 +242,6 @@ class WindowWin : public WidgetWin,
 
   // Saved window information from before entering fullscreen mode.
   SavedWindowInfo saved_window_info_;
-
-  // Set to true if the window is in the process of closing .
-  bool window_closed_;
 
   // True if this window is the active top level window.
   bool is_active_;
