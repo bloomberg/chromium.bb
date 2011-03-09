@@ -104,7 +104,8 @@ class WindowDelegate {
   // Default is true.
   virtual bool ShouldRestoreWindowSize() const;
 
-  // Called when the window closes.
+  // Called when the window closes. The delegate MUST NOT delete itself during
+  // this call, since it can be called afterwards. See DeleteDelegate().
   virtual void WindowClosing() {}
 
   // Called when the window is destroyed. No events must be sent or received

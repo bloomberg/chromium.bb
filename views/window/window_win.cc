@@ -115,6 +115,10 @@ bool EdgeHasTopmostAutoHideTaskbar(UINT edge, HMONITOR monitor) {
       (GetWindowLong(taskbar, GWL_EXSTYLE) & WS_EX_TOPMOST);
 }
 
+HWND GetOwner(HWND window) {
+  return ::GetWindow(window, GW_OWNER);
+}
+
 }  // namespace
 
 namespace views {
@@ -303,13 +307,6 @@ static BOOL CALLBACK SendDwmCompositionChanged(HWND window, LPARAM param) {
 ////////////////////////////////////////////////////////////////////////////////
 // WindowWin, Window implementation:
 
-void WindowWin::Show() {
-  int show_state = GetShowState();
-  if (saved_maximized_state_)
-    show_state = SW_SHOWMAXIMIZED;
-  Show(show_state);
-}
-
 void WindowWin::Activate() {
   if (IsMinimized())
     ::ShowWindow(GetNativeView(), SW_RESTORE);
@@ -341,9 +338,10 @@ void WindowWin::Close() {
     // closes us, we want our owner to gain activation.  But only if the owner
     // is visible. If we don't manually force that here, the other app will
     // regain activation instead.
-    if (owning_hwnd_ && GetNativeView() == GetForegroundWindow() &&
-        IsWindowVisible(owning_hwnd_)) {
-      SetForegroundWindow(owning_hwnd_);
+    HWND owner = GetOwner(GetNativeView());
+    if (owner && GetNativeView() == GetForegroundWindow() &&
+        IsWindowVisible(owner)) {
+      SetForegroundWindow(owner);
     }
     window_closed_ = true;
   }
@@ -478,25 +476,6 @@ void WindowWin::DisableInactiveRendering() {
       disable_inactive_rendering_);
 }
 
-void WindowWin::UpdateWindowTitle() {
-  // If the non-client view is rendering its own title, it'll need to relayout
-  // now.
-  GetWindow()->non_client_view()->Layout();
-
-  // Update the native frame's text. We do this regardless of whether or not
-  // the native frame is being used, since this also updates the taskbar, etc.
-  std::wstring window_title;
-  if (IsAccessibleWidget())
-    window_title = GetWindow()->window_delegate()->GetAccessibleWindowTitle();
-  else
-    window_title = GetWindow()->window_delegate()->GetWindowTitle();
-  base::i18n::AdjustStringForLocaleDirection(&window_title);
-  SetWindowText(GetNativeView(), window_title.c_str());
-
-  // Also update the accessibility name.
-  UpdateAccessibleName(window_title);
-}
-
 void WindowWin::UpdateWindowIcon() {
   // If the non-client view is rendering its own icon, we need to tell it to
   // repaint.
@@ -606,9 +585,6 @@ WindowWin::WindowWin(WindowDelegate* window_delegate)
       Window(window_delegate),
       ALLOW_THIS_IN_INITIALIZER_LIST(delegate_(this)),
       focus_on_creation_(true),
-      owning_hwnd_(NULL),
-      minimum_size_(100, 100),
-      is_modal_(false),
       restored_enabled_(false),
       fullscreen_(false),
       window_closed_(false),
@@ -616,7 +592,6 @@ WindowWin::WindowWin(WindowDelegate* window_delegate)
       is_active_(false),
       lock_updates_(false),
       saved_window_style_(0),
-      saved_maximized_state_(0),
       ignore_window_pos_changes_(false),
       ignore_pos_changes_factory_(this),
       force_hidden_count_(0),
@@ -632,44 +607,18 @@ WindowWin::WindowWin(WindowDelegate* window_delegate)
 }
 
 void WindowWin::Init(gfx::NativeView parent, const gfx::Rect& bounds) {
-  // We need to save the parent window, since later calls to GetParent() will
-  // return NULL.
-  owning_hwnd_ = parent;
-  // We call this after initializing our members since our implementations of
-  // assorted WidgetWin functions may be called during initialization.
-  is_modal_ = GetWindow()->window_delegate()->IsModal();
-  if (is_modal_)
-    BecomeModal();
-
   if (window_style() == 0)
     set_window_style(CalculateWindowStyle());
   if (window_ex_style() == 0)
     set_window_ex_style(CalculateWindowExStyle());
 
-  WidgetWin::Init(parent, bounds);
-  ui::SetWindowUserData(GetNativeView(), this);
-
-  // Create the ClientView, add it to the NonClientView and add the
-  // NonClientView to the RootView. This will cause everything to be parented.
-  GetWindow()->non_client_view()->set_client_view(
-      GetWindow()->window_delegate()->CreateClientView(this));
-  WidgetWin::SetContentsView(GetWindow()->non_client_view());
-
-  UpdateWindowTitle();
-  UpdateAccessibleRole();
-  UpdateAccessibleState();
-
-  SetInitialBounds(bounds);
-
   GetMonitorAndRects(bounds.ToRECT(), &last_monitor_, &last_monitor_rect_,
                      &last_work_area_);
-  ResetWindowRegion(false);
-}
 
-void WindowWin::SizeWindowToDefault() {
-  ui::CenterAndSizeWindow(owning_window(), GetNativeView(),
-                          delegate_->GetPreferredSize(),
-                          false);
+  WidgetWin::Init(parent, bounds);
+
+  ui::SetWindowUserData(GetNativeView(), this);
+  delegate_->OnNativeWindowCreated(bounds);
 }
 
 gfx::Insets WindowWin::GetClientAreaInsets() const {
@@ -1216,19 +1165,87 @@ void WindowWin::OnWindowPosChanging(WINDOWPOS* window_pos) {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// WindowWin, private:
+// WindowWin, NativeWindow implementation:
+
+void WindowWin::Show(ShowState state) {
+  Show(state == SHOW_MAXIMIZED ? SW_SHOWMAXIMIZED : GetShowState());
+}
 
 void WindowWin::BecomeModal() {
   // We implement modality by crawling up the hierarchy of windows starting
   // at the owner, disabling all of them so that they don't receive input
   // messages.
-  DCHECK(owning_hwnd_) << "Can't create a modal dialog without an owner";
-  HWND start = owning_hwnd_;
-  while (start != NULL) {
+  HWND start = GetOwner(GetNativeView());
+  while (start) {
     ::EnableWindow(start, FALSE);
     start = ::GetParent(start);
   }
 }
+
+void WindowWin::CenterWindow(const gfx::Size& size) {
+  HWND parent = GetParent();
+  if (!IsWindow())
+    parent = GetOwner(GetNativeView());
+  ui::CenterAndSizeWindow(parent, GetNativeView(), size, false);
+}
+
+void WindowWin::SetWindowTitle(const std::wstring& title) {
+  SetWindowText(GetNativeView(), title.c_str());
+  SetAccessibleName(title);
+}
+
+void WindowWin::SetAccessibleName(const std::wstring& name) {
+  base::win::ScopedComPtr<IAccPropServices> pAccPropServices;
+  HRESULT hr = CoCreateInstance(CLSID_AccPropServices, NULL, CLSCTX_SERVER,
+      IID_IAccPropServices, reinterpret_cast<void**>(&pAccPropServices));
+  if (SUCCEEDED(hr)) {
+    VARIANT var;
+    var.vt = VT_BSTR;
+    var.bstrVal = SysAllocString(name.c_str());
+    hr = pAccPropServices->SetHwndProp(GetNativeView(), OBJID_CLIENT,
+                                       CHILDID_SELF, PROPID_ACC_NAME, var);
+  }
+}
+
+void WindowWin::SetAccessibleRole(AccessibilityTypes::Role role) {
+  base::win::ScopedComPtr<IAccPropServices> pAccPropServices;
+  HRESULT hr = CoCreateInstance(CLSID_AccPropServices, NULL, CLSCTX_SERVER,
+      IID_IAccPropServices, reinterpret_cast<void**>(&pAccPropServices));
+  if (SUCCEEDED(hr)) {
+    VARIANT var;
+    if (role) {
+      var.vt = VT_I4;
+      var.lVal = ViewAccessibility::MSAARole(role);
+      hr = pAccPropServices->SetHwndProp(GetNativeView(), OBJID_CLIENT,
+                                         CHILDID_SELF, PROPID_ACC_ROLE, var);
+    }
+  }
+}
+
+void WindowWin::SetAccessibleState(AccessibilityTypes::State state) {
+  base::win::ScopedComPtr<IAccPropServices> pAccPropServices;
+  HRESULT hr = CoCreateInstance(CLSID_AccPropServices, NULL, CLSCTX_SERVER,
+      IID_IAccPropServices, reinterpret_cast<void**>(&pAccPropServices));
+  if (SUCCEEDED(hr)) {
+    VARIANT var;
+    if (state) {
+      var.lVal = ViewAccessibility::MSAAState(state);
+      hr = pAccPropServices->SetHwndProp(GetNativeView(), OBJID_CLIENT,
+                                         CHILDID_SELF, PROPID_ACC_STATE, var);
+    }
+  }
+}
+
+NativeWidget* WindowWin::AsNativeWidget() {
+  return this;
+}
+
+const NativeWidget* WindowWin::AsNativeWidget() const {
+  return this;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// WindowWin, private:
 
 void WindowWin::SetInitialFocus() {
   if (!focus_on_creation_)
@@ -1244,63 +1261,13 @@ void WindowWin::SetInitialFocus() {
   }
 }
 
-void WindowWin::SetInitialBounds(const gfx::Rect& create_bounds) {
-  // First we obtain the window's saved show-style and store it. We need to do
-  // this here, rather than in Show() because by the time Show() is called,
-  // the window's size will have been reset (below) and the saved maximized
-  // state will have been lost. Sadly there's no way to tell on Windows when
-  // a window is restored from maximized state, so we can't more accurately
-  // track maximized state independently of sizing information.
-  GetWindow()->window_delegate()->GetSavedMaximizedState(
-      &saved_maximized_state_);
-
-  // Restore the window's placement from the controller.
-  gfx::Rect saved_bounds(create_bounds.ToRECT());
-  if (GetWindow()->window_delegate()->GetSavedWindowBounds(&saved_bounds)) {
-    if (!GetWindow()->window_delegate()->ShouldRestoreWindowSize()) {
-      saved_bounds.set_size(delegate_->GetPreferredSize());
-    } else {
-      // Make sure the bounds are at least the minimum size.
-      if (saved_bounds.width() < minimum_size_.width()) {
-        saved_bounds.SetRect(saved_bounds.x(), saved_bounds.y(),
-                             saved_bounds.right() + minimum_size_.width() -
-                                 saved_bounds.width(),
-                             saved_bounds.bottom());
-      }
-
-      if (saved_bounds.height() < minimum_size_.height()) {
-        saved_bounds.SetRect(saved_bounds.x(), saved_bounds.y(),
-                             saved_bounds.right(),
-                             saved_bounds.bottom() + minimum_size_.height() -
-                                 saved_bounds.height());
-      }
-    }
-
-    // "Show state" (maximized, minimized, etc) is handled by Show().
-    // Don't use SetBounds here. SetBounds constrains to the size of the
-    // monitor, but we don't want that when creating a new window as the result
-    // of dragging out a tab to create a new window.
-    SetWindowPos(NULL, saved_bounds.x(), saved_bounds.y(),
-                 saved_bounds.width(), saved_bounds.height(), 0);
-  } else {
-    if (create_bounds.IsEmpty()) {
-      // No initial bounds supplied, so size the window to its content and
-      // center over its parent.
-      SizeWindowToDefault();
-    } else {
-      // Use the supplied initial bounds.
-      SetWindowBounds(create_bounds, NULL);
-    }
-  }
-}
-
 void WindowWin::RestoreEnabledIfNecessary() {
-  if (is_modal_ && !restored_enabled_) {
+  if (delegate_->IsModal() && !restored_enabled_) {
     restored_enabled_ = true;
     // If we were run modally, we need to undo the disabled-ness we inflicted on
     // the owner's parent hierarchy.
-    HWND start = owning_hwnd_;
-    while (start != NULL) {
+    HWND start = GetOwner(GetNativeView());
+    while (start) {
       ::EnableWindow(start, TRUE);
       start = ::GetParent(start);
     }
@@ -1401,52 +1368,6 @@ void WindowWin::ResetWindowRegion(bool force) {
   }
 
   DeleteObject(current_rgn);
-}
-
-void WindowWin::UpdateAccessibleName(std::wstring& accessible_name) {
-  base::win::ScopedComPtr<IAccPropServices> pAccPropServices;
-  HRESULT hr = CoCreateInstance(CLSID_AccPropServices, NULL, CLSCTX_SERVER,
-      IID_IAccPropServices, reinterpret_cast<void**>(&pAccPropServices));
-  if (SUCCEEDED(hr)) {
-    VARIANT var;
-    var.vt = VT_BSTR;
-    var.bstrVal = SysAllocString(accessible_name.c_str());
-    hr = pAccPropServices->SetHwndProp(GetNativeView(), OBJID_CLIENT,
-        CHILDID_SELF, PROPID_ACC_NAME, var);
-  }
-}
-
-void WindowWin::UpdateAccessibleRole() {
-  base::win::ScopedComPtr<IAccPropServices> pAccPropServices;
-  HRESULT hr = CoCreateInstance(CLSID_AccPropServices, NULL, CLSCTX_SERVER,
-    IID_IAccPropServices, reinterpret_cast<void**>(&pAccPropServices));
-  if (SUCCEEDED(hr)) {
-    VARIANT var;
-    AccessibilityTypes::Role role =
-        GetWindow()->window_delegate()->accessible_role();
-    if (role) {
-      var.vt = VT_I4;
-      var.lVal = ViewAccessibility::MSAARole(role);
-      hr = pAccPropServices->SetHwndProp(GetNativeView(), OBJID_CLIENT,
-        CHILDID_SELF, PROPID_ACC_ROLE, var);
-    }
-  }
-}
-
-void WindowWin::UpdateAccessibleState() {
-  base::win::ScopedComPtr<IAccPropServices> pAccPropServices;
-  HRESULT hr = CoCreateInstance(CLSID_AccPropServices, NULL, CLSCTX_SERVER,
-    IID_IAccPropServices, reinterpret_cast<void**>(&pAccPropServices));
-  if (SUCCEEDED(hr)) {
-    VARIANT var;
-    AccessibilityTypes::State state =
-        GetWindow()->window_delegate()->accessible_state();
-    if (state) {
-      var.lVal = ViewAccessibility::MSAAState(state);
-      hr = pAccPropServices->SetHwndProp(GetNativeView(), OBJID_CLIENT,
-        CHILDID_SELF, PROPID_ACC_STATE, var);
-    }
-  }
 }
 
 LRESULT WindowWin::CallDefaultNCActivateHandler(BOOL active) {

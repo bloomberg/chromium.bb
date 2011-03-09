@@ -34,7 +34,6 @@ class WindowGtk : public WidgetGtk, public NativeWindow, public Window {
   virtual gfx::Rect GetNormalBounds() const;
   virtual void SetWindowBounds(const gfx::Rect& bounds,
                                gfx::NativeWindow other_window);
-  virtual void Show();
   virtual void HideWindow();
   virtual void SetNativeWindowProperty(const char* name, void* value);
   virtual void* GetNativeWindowProperty(const char* name);
@@ -52,7 +51,6 @@ class WindowGtk : public WidgetGtk, public NativeWindow, public Window {
   virtual bool IsFullscreen() const;
   virtual void SetUseDragFrame(bool use_drag_frame);
   virtual void EnableClose(bool enable);
-  virtual void UpdateWindowTitle();
   virtual void UpdateWindowIcon();
   virtual void SetIsAlwaysOnTop(bool always_on_top);
   virtual NonClientFrameView* CreateFrameViewForWindow();
@@ -76,6 +74,17 @@ class WindowGtk : public WidgetGtk, public NativeWindow, public Window {
   virtual void SetInitialFocus();
 
  protected:
+  // Overridden from NativeWindow:
+  virtual void Show(ShowState state) OVERRIDE;
+  virtual void BecomeModal() OVERRIDE;
+  virtual void CenterWindow(const gfx::Size& size) OVERRIDE;
+  virtual void SetWindowTitle(const std::wstring& title) OVERRIDE;
+  virtual void SetAccessibleName(const std::wstring& name) OVERRIDE;
+  virtual void SetAccessibleRole(AccessibilityTypes::Role role) OVERRIDE;
+  virtual void SetAccessibleState(AccessibilityTypes::State state) OVERRIDE;
+  virtual NativeWidget* AsNativeWidget() OVERRIDE;
+  virtual const NativeWidget* AsNativeWidget() const OVERRIDE;
+
   // For  the constructor.
   friend class Window;
 
@@ -98,16 +107,8 @@ class WindowGtk : public WidgetGtk, public NativeWindow, public Window {
   // Asks the delegate if any to save the window's location and size.
   void SaveWindowPosition();
 
-  void SetInitialBounds(GtkWindow* parent, const gfx::Rect& bounds);
-  void SizeWindowToDefault(GtkWindow* parent);
-
   // A delegate implementation that handles events received here.
   internal::NativeWindowDelegate* delegate_;
-
-  // Whether or not the window is modal. This comes from the delegate and is
-  // cached at Init time to avoid calling back to the delegate from the
-  // destructor.
-  bool is_modal_;
 
   // Our window delegate.
   WindowDelegate* window_delegate_;

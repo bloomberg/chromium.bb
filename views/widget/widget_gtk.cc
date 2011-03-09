@@ -708,6 +708,10 @@ TooltipManager* WidgetGtk::GetTooltipManager() const {
   return tooltip_manager_.get();
 }
 
+bool WidgetGtk::IsScreenReaderActive() const {
+  return false;
+}
+
 gfx::Rect WidgetGtk::GetWindowScreenBounds() const {
   // Client == Window bounds on Gtk.
   return GetClientAreaScreenBounds();

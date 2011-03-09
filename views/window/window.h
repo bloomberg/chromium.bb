@@ -84,7 +84,7 @@ class Window : public internal::NativeWindowDelegate {
                                gfx::NativeWindow other_window);
 
   // Makes the window visible.
-  virtual void Show();
+  void Show();
 
   // Hides the window. This does not delete the window, it just hides it. This
   // always hides the window, it is separate from the stack maintained by
@@ -163,7 +163,7 @@ class Window : public internal::NativeWindowDelegate {
   virtual void EnableClose(bool enable);
 
   // Tell the window to update its title from the delegate.
-  virtual void UpdateWindowTitle();
+  void UpdateWindowTitle();
 
   // Tell the window to update its icon from the delegate.
   virtual void UpdateWindowIcon();
@@ -218,12 +218,16 @@ class Window : public internal::NativeWindowDelegate {
   }
 
   // Overridden from NativeWindowDelegate:
-  virtual gfx::Size GetPreferredSize() const;
-  virtual void OnWindowDestroying();
-  virtual void OnWindowDestroyed();
+  virtual bool IsModal() const OVERRIDE;
+  virtual void OnNativeWindowCreated(const gfx::Rect& bounds) OVERRIDE;
+  virtual void OnWindowDestroying() OVERRIDE;
+  virtual void OnWindowDestroyed() OVERRIDE;
 
  private:
   Window();
+
+  // Sizes and positions the window just after it is created.
+  void SetInitialBounds(const gfx::Rect& bounds);
 
   NativeWindow* native_window_;
 
@@ -235,6 +239,13 @@ class Window : public internal::NativeWindowDelegate {
   // the default, this class must be sub-classed and this value set to the
   // desired implementation before calling |InitWindow()|.
   NonClientView* non_client_view_;
+
+  // The saved maximized state for this window. See note in SetInitialBounds
+  // that explains why we save this.
+  bool saved_maximized_state_;
+
+  // The smallest size the window can be.
+  gfx::Size minimum_size_;
 
   DISALLOW_COPY_AND_ASSIGN(Window);
 };

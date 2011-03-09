@@ -60,6 +60,9 @@ class NativeWidget {
   // to update tooltips.
   virtual TooltipManager* GetTooltipManager() const = 0;
 
+  // Returns true if a system screen reader is active for the NativeWidget.
+  virtual bool IsScreenReaderActive() const = 0;
+
   // Widget pass-thrus ---------------------------------------------------------
   // TODO(beng): Investigate if we can move these to a NativeWidgetPrivate
   //             interface.

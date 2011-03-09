@@ -265,6 +265,10 @@ TooltipManager* WidgetWin::GetTooltipManager() const {
   return tooltip_manager_.get();
 }
 
+bool WidgetWin::IsScreenReaderActive() const {
+  return screen_reader_active_;
+}
+
 gfx::Rect WidgetWin::GetWindowScreenBounds() const {
   RECT r;
   GetWindowRect(&r);

@@ -50,7 +50,6 @@ class WindowWin : public WidgetWin,
   void Show(int show_state);
 
   // Accessors and setters for various properties.
-  HWND owning_window() const { return owning_hwnd_; }
   void set_focus_on_creation(bool focus_on_creation) {
     focus_on_creation_ = focus_on_creation;
   }
@@ -60,7 +59,6 @@ class WindowWin : public WidgetWin,
   virtual gfx::Rect GetNormalBounds() const OVERRIDE;
   virtual void SetWindowBounds(const gfx::Rect& bounds,
                                gfx::NativeWindow other_window) OVERRIDE;
-  virtual void Show() OVERRIDE;
   virtual void HideWindow() OVERRIDE;
   virtual void SetNativeWindowProperty(const char* name, void* value) OVERRIDE;
   virtual void* GetNativeWindowProperty(const char* name) OVERRIDE;
@@ -81,7 +79,6 @@ class WindowWin : public WidgetWin,
   virtual void SetUseDragFrame(bool use_drag_frame) OVERRIDE;
   virtual void EnableClose(bool enable) OVERRIDE;
   virtual void DisableInactiveRendering() OVERRIDE;
-  virtual void UpdateWindowTitle() OVERRIDE;
   virtual void UpdateWindowIcon() OVERRIDE;
   virtual void SetIsAlwaysOnTop(bool always_on_top) OVERRIDE;
   virtual NonClientFrameView* CreateFrameViewForWindow() OVERRIDE;
@@ -105,9 +102,6 @@ class WindowWin : public WidgetWin,
   // centered on screen.
   virtual void Init(gfx::NativeView parent, const gfx::Rect& bounds) OVERRIDE;
 
-  // Sizes the window to the default size specified by its ClientView.
-  virtual void SizeWindowToDefault();
-
   // Returns the insets of the client area relative to the non-client area of
   // the window. Override this function instead of OnNCCalcSize, which is
   // crazily complicated.
@@ -119,6 +113,11 @@ class WindowWin : public WidgetWin,
   // method to provide different values (e.g. retrieve the user's specified
   // show state from the shortcut starutp info).
   virtual int GetShowState() const;
+
+  // Accessor for disable_inactive_rendering_.
+  bool disable_inactive_rendering() const {
+    return disable_inactive_rendering_;
+  }
 
   // Overridden from WidgetWin:
   virtual void OnActivate(UINT action, BOOL minimized, HWND window) OVERRIDE;
@@ -156,10 +155,16 @@ class WindowWin : public WidgetWin,
   virtual Window* GetWindow() OVERRIDE { return this; }
   virtual const Window* GetWindow() const OVERRIDE { return this; }
 
-  // Accessor for disable_inactive_rendering_.
-  bool disable_inactive_rendering() const {
-    return disable_inactive_rendering_;
-  }
+  // Overridden from NativeWindow:
+  virtual void Show(ShowState state);
+  virtual void BecomeModal() OVERRIDE;
+  virtual void CenterWindow(const gfx::Size& size) OVERRIDE;
+  virtual void SetWindowTitle(const std::wstring& title) OVERRIDE;
+  virtual void SetAccessibleName(const std::wstring& name) OVERRIDE;
+  virtual void SetAccessibleRole(AccessibilityTypes::Role role) OVERRIDE;
+  virtual void SetAccessibleState(AccessibilityTypes::State state) OVERRIDE;
+  virtual NativeWidget* AsNativeWidget() OVERRIDE;
+  virtual const NativeWidget* AsNativeWidget() const OVERRIDE;
 
  private:
   // Information saved before going into fullscreen mode, used to restore the
@@ -171,17 +176,10 @@ class WindowWin : public WidgetWin,
     RECT window_rect;
   };
 
-  // Sets the window as modal (by disabling all the other windows).
-  void BecomeModal();
-
   // Sets-up the focus manager with the view that should have focus when the
   // window is shown the first time.  If NULL is returned, the focus goes to the
   // button if there is one, otherwise the to the Cancel button.
   void SetInitialFocus();
-
-  // Place and size the window when it is created. |create_bounds| are the
-  // bounds used when the window was created.
-  void SetInitialBounds(const gfx::Rect& create_bounds);
 
   // If necessary, enables all ancestors.
   void RestoreEnabledIfNecessary();
@@ -239,18 +237,6 @@ class WindowWin : public WidgetWin,
   // Init(). Defaults to true.
   bool focus_on_creation_;
 
-  // We need to save the parent window that spawned us, since GetParent()
-  // returns NULL for dialogs.
-  HWND owning_hwnd_;
-
-  // The smallest size the window can be.
-  gfx::Size minimum_size_;
-
-  // Whether or not the window is modal. This comes from the delegate and is
-  // cached at Init time to avoid calling back to the delegate from the
-  // destructor.
-  bool is_modal_;
-
   // Whether all ancestors have been enabled. This is only used if is_modal_ is
   // true.
   bool restored_enabled_;
@@ -276,10 +262,6 @@ class WindowWin : public WidgetWin,
 
   // The window styles of the window before updates were locked.
   DWORD saved_window_style_;
-
-  // The saved maximized state for this window. See note in SetInitialBounds
-  // that explains why we save this.
-  bool saved_maximized_state_;
 
   // When true, this flag makes us discard incoming SetWindowPos() requests that
   // only change our position/size.  (We still allow changes to Z-order,

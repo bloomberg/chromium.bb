@@ -19,8 +19,11 @@ class NativeWindowDelegate {
  public:
   virtual ~NativeWindowDelegate() {}
 
-  // Returns the window's preferred size.
-  virtual gfx::Size GetPreferredSize() const = 0;
+  // Returns true if the window is modal.
+  virtual bool IsModal() const = 0;
+
+  // Called just after the NativeWindow has been created.
+  virtual void OnNativeWindowCreated(const gfx::Rect& bounds) = 0;
 
   // Called just before the native window is destroyed. This is the delegate's
   // last chance to do anything with the native window handle.

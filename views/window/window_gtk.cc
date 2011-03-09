@@ -119,10 +119,6 @@ void WindowGtk::SetWindowBounds(const gfx::Rect& bounds,
   WidgetGtk::SetBounds(bounds);
 }
 
-void WindowGtk::Show() {
-  gtk_widget_show(GetNativeView());
-}
-
 void WindowGtk::HideWindow() {
   Hide();
 }
@@ -205,23 +201,6 @@ void WindowGtk::SetUseDragFrame(bool use_drag_frame) {
 
 void WindowGtk::EnableClose(bool enable) {
   gtk_window_set_deletable(GetNativeWindow(), enable);
-}
-
-void WindowGtk::UpdateWindowTitle() {
-  // ChromeOS doesn't use a window title, so don't update them.
-#if !defined(OS_CHROMEOS)
-
-  // If the non-client view is rendering its own title, it'll need to relayout
-  // now.
-  GetWindow()->non_client_view()->Layout();
-
-  // Update the native frame's text. We do this regardless of whether or not
-  // the native frame is being used, since this also updates the taskbar, etc.
-  std::wstring window_title = GetWindow()->window_delegate()->GetWindowTitle();
-  base::i18n::AdjustStringForLocaleDirection(&window_title);
-
-  gtk_window_set_title(GetNativeWindow(), WideToUTF8(window_title).c_str());
-#endif
 }
 
 void WindowGtk::UpdateWindowIcon() {
@@ -380,13 +359,68 @@ void WindowGtk::SetInitialFocus() {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+// WindowGtk, NativeWindow implementation:
+
+void WindowGtk::Show(ShowState state) {
+  // No concept of maximization (yet) on ChromeOS.
+  gtk_widget_show(GetNativeView());
+}
+
+void WindowGtk::BecomeModal() {
+  gtk_window_set_modal(GetNativeWindow(), true);
+}
+
+void WindowGtk::CenterWindow(const gfx::Size& size) {
+  gfx::Rect center_rect;
+
+  GtkWindow* parent = gtk_window_get_transient_for(GetNativeWindow());
+  if (parent) {
+    // We have a parent window, center over it.
+    gint parent_x = 0;
+    gint parent_y = 0;
+    gtk_window_get_position(parent, &parent_x, &parent_y);
+    gint parent_w = 0;
+    gint parent_h = 0;
+    gtk_window_get_size(parent, &parent_w, &parent_h);
+    center_rect = gfx::Rect(parent_x, parent_y, parent_w, parent_h);
+  } else {
+    // We have no parent window, center over the screen.
+    center_rect = Screen::GetMonitorWorkAreaNearestWindow(GetNativeView());
+  }
+  gfx::Rect bounds(center_rect.x() + (center_rect.width() - size.width()) / 2,
+                   center_rect.y() + (center_rect.height() - size.height()) / 2,
+                   size.width(), size.height());
+  SetWindowBounds(bounds, NULL);
+}
+
+void WindowGtk::SetWindowTitle(const std::wstring& title) {
+  // We don't have a window title on ChromeOS (right now).
+}
+
+void WindowGtk::SetAccessibleName(const std::wstring& name) {
+}
+
+void WindowGtk::SetAccessibleRole(AccessibilityTypes::Role role) {
+}
+
+void WindowGtk::SetAccessibleState(AccessibilityTypes::State state) {
+}
+
+NativeWidget* WindowGtk::AsNativeWidget() {
+  return this;
+}
+
+const NativeWidget* WindowGtk::AsNativeWidget() const {
+  return this;
+}
+
+////////////////////////////////////////////////////////////////////////////////
 // WindowGtk, protected:
 
 WindowGtk::WindowGtk(WindowDelegate* window_delegate)
     : WidgetGtk(TYPE_WINDOW),
       Window(window_delegate),
       ALLOW_THIS_IN_INITIALIZER_LIST(delegate_(this)),
-      is_modal_(false),
       window_state_(GDK_WINDOW_STATE_WITHDRAWN),
       window_closed_(false) {
   set_native_window(this);
@@ -397,35 +431,12 @@ void WindowGtk::InitWindow(GtkWindow* parent, const gfx::Rect& bounds) {
   if (parent)
     make_transient_to_parent();
   WidgetGtk::Init(GTK_WIDGET(parent), bounds);
-
-  // We call this after initializing our members since our implementations of
-  // assorted WidgetWin functions may be called during initialization.
-  is_modal_ = GetWindow()->window_delegate()->IsModal();
-  if (is_modal_)
-    gtk_window_set_modal(GetNativeWindow(), true);
+  delegate_->OnNativeWindowCreated(bounds);
 
   g_signal_connect(G_OBJECT(GetNativeWindow()), "configure-event",
                    G_CALLBACK(CallConfigureEvent), this);
   g_signal_connect(G_OBJECT(GetNativeWindow()), "window-state-event",
                    G_CALLBACK(CallWindowStateEvent), this);
-
-  // Create the ClientView, add it to the NonClientView and add the
-  // NonClientView to the RootView. This will cause everything to be parented.
-  GetWindow()->non_client_view()->set_client_view(
-      GetWindow()->window_delegate()->CreateClientView(this));
-  WidgetGtk::SetContentsView(GetWindow()->non_client_view());
-
-  UpdateWindowTitle();
-  SetInitialBounds(parent, bounds);
-
-  // if (!IsAppWindow()) {
-  //   notification_registrar_.Add(
-  //       this,
-  //       NotificationType::ALL_APPWINDOWS_CLOSED,
-  //       NotificationService::AllSources());
-  // }
-
-  // ResetWindowRegion(false);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -452,45 +463,6 @@ void WindowGtk::SaveWindowPosition() {
 
   bool maximized = window_state_ & GDK_WINDOW_STATE_MAXIMIZED;
   GetWindow()->window_delegate()->SaveWindowPlacement(GetBounds(), maximized);
-}
-
-void WindowGtk::SetInitialBounds(GtkWindow* parent,
-                                 const gfx::Rect& create_bounds) {
-  gfx::Rect saved_bounds(create_bounds.ToGdkRectangle());
-  if (GetWindow()->window_delegate()->GetSavedWindowBounds(&saved_bounds)) {
-    if (!GetWindow()->window_delegate()->ShouldRestoreWindowSize())
-      saved_bounds.set_size(delegate_->GetPreferredSize());
-    WidgetGtk::SetBounds(saved_bounds);
-  } else {
-    if (create_bounds.IsEmpty()) {
-      SizeWindowToDefault(parent);
-    } else {
-      SetWindowBounds(create_bounds, NULL);
-    }
-  }
-}
-
-void WindowGtk::SizeWindowToDefault(GtkWindow* parent) {
-  gfx::Rect center_rect;
-
-  if (parent) {
-    // We have a parent window, center over it.
-    gint parent_x = 0;
-    gint parent_y = 0;
-    gtk_window_get_position(parent, &parent_x, &parent_y);
-    gint parent_w = 0;
-    gint parent_h = 0;
-    gtk_window_get_size(parent, &parent_w, &parent_h);
-    center_rect = gfx::Rect(parent_x, parent_y, parent_w, parent_h);
-  } else {
-    // We have no parent window, center over the screen.
-    center_rect = Screen::GetMonitorWorkAreaNearestWindow(GetNativeView());
-  }
-  gfx::Size size = delegate_->GetPreferredSize();
-  gfx::Rect bounds(center_rect.x() + (center_rect.width() - size.width()) / 2,
-                   center_rect.y() + (center_rect.height() - size.height()) / 2,
-                   size.width(), size.height());
-  SetWindowBounds(bounds, NULL);
 }
 
 void WindowGtk::OnDestroy(GtkWidget* widget) {

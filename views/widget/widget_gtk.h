@@ -177,6 +177,7 @@ class WidgetGtk : public Widget,
   virtual void SetNativeWindowProperty(const char* name, void* value) OVERRIDE;
   virtual void* GetNativeWindowProperty(const char* name) OVERRIDE;
   virtual TooltipManager* GetTooltipManager() const OVERRIDE;
+  virtual bool IsScreenReaderActive() const OVERRIDE;
   virtual gfx::Rect GetWindowScreenBounds() const OVERRIDE;
   virtual gfx::Rect GetClientAreaScreenBounds() const OVERRIDE;
   virtual void SetBounds(const gfx::Rect& bounds) OVERRIDE;
