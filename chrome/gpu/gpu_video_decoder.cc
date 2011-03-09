@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -86,7 +86,8 @@ void GpuVideoDecoder::OnInitializeComplete(const VideoCodecInfo& info) {
   }
 
   // TODO(jiesun): Check the assumption of input size < original size.
-  param.input_buffer_size = config_.width * config_.height * 3 / 2;
+  param.input_buffer_size =
+      info.stream_info.surface_width * info.stream_info.surface_height * 3 / 2;
   if (!CreateInputTransferBuffer(param.input_buffer_size,
                                  &param.input_buffer_handle)) {
     SendInitializeDone(param);
@@ -245,7 +246,6 @@ GpuVideoDecoder::GpuVideoDecoder(
       sender_(sender),
       renderer_handle_(handle),
       gles2_decoder_(decoder) {
-  memset(&config_, 0, sizeof(config_));
   memset(&info_, 0, sizeof(info_));
 
   // TODO(jiesun): find a better way to determine which VideoDecodeEngine
@@ -268,11 +268,14 @@ GpuVideoDecoder::~GpuVideoDecoder() {}
 
 void GpuVideoDecoder::OnInitialize(const GpuVideoDecoderInitParam& param) {
   // TODO(jiesun): codec id should come from |param|.
-  config_.codec = media::kCodecH264;
-  config_.width = param.width;
-  config_.height = param.height;
-  config_.opaque_context = NULL;
-  decode_engine_->Initialize(message_loop_, this, this, config_);
+  media::VideoCodecConfig config(media::kCodecH264,
+                                 param.width,
+                                 param.height,
+                                 param.frame_rate_num,
+                                 param.frame_rate_den,
+                                 NULL,
+                                 0);
+  decode_engine_->Initialize(message_loop_, this, this, config);
 }
 
 void GpuVideoDecoder::OnUninitialize() {

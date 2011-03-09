@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -197,7 +197,6 @@ class GpuVideoDecoder
   typedef std::map<int32, scoped_refptr<media::VideoFrame> > VideoFrameMap;
   VideoFrameMap video_frame_map_;
 
-  media::VideoCodecConfig config_;
   media::VideoCodecInfo info_;
 
   DISALLOW_COPY_AND_ASSIGN(GpuVideoDecoder);
