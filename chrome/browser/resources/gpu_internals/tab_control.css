@@ -28,7 +28,6 @@ found in the LICENSE file.
   -webkit-box-flex: 1;
   display: -webkit-box;
   -webkit-box-orient: vertical;
-  -webkit-box-pack: stretch;
   overflow: auto;
 }
 

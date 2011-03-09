@@ -23,35 +23,57 @@ body {
   margin: 0;
 }
 </style>
-<link rel="stylesheet" href="gpu_internals/tab_control.css">
 <link rel="stylesheet" href="gpu_internals/info_view.css">
+<link rel="stylesheet" href="gpu_internals/overlay.css">
+<link rel="stylesheet" href="gpu_internals/tab_control.css">
+<link rel="stylesheet" href="gpu_internals/timeline_view.css">
+<link rel="stylesheet" href="gpu_internals/timeline.css">
+<link rel="stylesheet" href="gpu_internals/tracing_controller.css">
 <script src="chrome://resources/js/cr.js"></script>
 <script src="chrome://resources/js/cr/event_target.js"></script>
 <script src="chrome://resources/js/cr/ui.js"></script>
 <script src="chrome://resources/js/util.js"></script>
 <script src="gpu_internals/tab_control.js"></script>
+<script src="gpu_internals/overlay.js"></script>
 <script src="gpu_internals/browser_bridge.js"></script>
+<script src="gpu_internals/tracing_controller.js"></script>
 <script src="gpu_internals/info_view.js"></script>
-
+<script src="gpu_internals/timeline_model.js"></script>
+<script src="gpu_internals/sorted_array_utils.js"></script>
+<script src="gpu_internals/timeline.js"></script>
+<script src="gpu_internals/timeline_track.js"></script>
+<script src="gpu_internals/fast_rect_renderer.js"></script>
+<script src="gpu_internals/timeline_view.js"></script>
+<script src="gpu_internals/simulated_trace_data.js"></script>
 
 <script>
-var browser;
+var browserBridge;
+var tracingController;
+var timelineView; // made global for debugging purposes only
 
 /**
  * Main entry point. called once the page has loaded.
  */
 function onLoad() {
   browserBridge = new gpu.BrowserBridge();
+  if (browserBridge.debugMode)
+    tracingController = new gpu.TracingController();
 
   // Create the views.
   cr.ui.decorate('#info-view', gpu.InfoView);
+
+  timelineView = $('timeline-view');
+  if (browserBridge.debugMode)
+    cr.ui.decorate(timelineView, gpu.TimelineView);
+  else
+    timelineView.parentNode.removeChild(timelineView);
 
   // Create the main tab control
   var tabs = $('main-tabs');
   cr.ui.decorate(tabs, gpu.TabControl);
 
   // Sync the main-tabs selectedTabs in-sync with the location.
-  tabs.addEventListener('selectedTabChanged', function() {
+  tabs.addEventListener('selectedTabChange', function() {
     if (tabs.selectedTab.id) {
       history.pushState('', '', '#' + tabs.selectedTab.id);
     }
@@ -78,6 +100,9 @@ document.addEventListener('DOMContentLoaded', onLoad);
   <!-- Tabs -->
   <div id="main-tabs">
     <include src="gpu_internals/info_view.html">
+    <include src="gpu_internals/timeline_view.html">
   </div>
+
+  <include src="gpu_internals/tracing_controller.html">
 </body>
 </html>

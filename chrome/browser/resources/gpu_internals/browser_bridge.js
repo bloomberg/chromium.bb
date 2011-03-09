@@ -12,9 +12,12 @@ cr.define('gpu', function() {
     // If we are not running inside WebUI, output chrome.send messages
     // to the console to help with quick-iteration debugging.
     if (chrome.send === undefined && console.log) {
+      this.debugMode_ = true;
       chrome.send = function(messageHandler, args) {
         console.log('chrome.send', messageHandler, args);
       };
+    } else {
+      this.debugMode_ = false;
     }
 
     this.nextRequestId_ = 0;
@@ -26,6 +29,14 @@ cr.define('gpu', function() {
 
   BrowserBridge.prototype = {
     __proto__: cr.EventTarget.prototype,
+
+    /**
+     * Returns true if the page is hosted inside Chrome WebUI
+     * Helps have behavior conditional to emulate_webui.py
+     */
+    get debugMode() {
+      return this.debugMode_;
+    },
 
     /**
      * Sends a message to the browser with specified args. The
@@ -72,6 +83,6 @@ cr.define('gpu', function() {
   };
 
   return {
-    BrowserBridge : BrowserBridge
+    BrowserBridge: BrowserBridge
   };
 });

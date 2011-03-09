@@ -1,8 +1,9 @@
 // Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+
+
 /**
- *
  * @fileoverview This implements a tab control.
  *
  * An individual tab within a tab control is, unsurprisingly, a Tab.
@@ -36,7 +37,7 @@ cr.define('gpu', function() {
   Tab.prototype = {
     __proto__: HTMLDivElement.prototype,
 
-    decorate : function() {
+    decorate: function() {
     }
   };
 
@@ -83,7 +84,7 @@ cr.define('gpu', function() {
       this.onTabChanged_();
     },
 
-    onTabChanged_ : function(e) {
+    onTabChanged_: function(e) {
       if (this.tab_) {
         this.textContent = this.tab_.label;
         this.selected = this.tab_.selected;
@@ -109,7 +110,7 @@ cr.define('gpu', function() {
   TabControl.prototype = {
     __proto__: HTMLDivElement.prototype,
 
-    selectedTab_ : null,
+    selectedTab_: null,
 
     /**
      * Initializes the tab control element.
@@ -137,7 +138,7 @@ cr.define('gpu', function() {
     /**
      * Adds an element to the tab control.
      */
-    addTab : function(tab) {
+    addTab: function(tab) {
       if (tab.parentNode == this.tabs_)
         throw Error('Tab is already part of this control.');
       if (!(tab instanceof Tab))
@@ -160,7 +161,7 @@ cr.define('gpu', function() {
      * Removes a tab from the tab control.
      * changing the selected tab if needed.
      */
-    removeTab : function(tab) {
+    removeTab: function(tab) {
       if (tab.parentNode != this.tabs_)
         throw new Error('Tab is not attached to this control.');
 
@@ -176,7 +177,7 @@ cr.define('gpu', function() {
 
       this.tabs_.removeChild(tab);
       tab.tabStripButton_.parentNode.removeChild(
-        tab.tabStripButton_);
+          tab.tabStripButton_);
     },
 
     /**
@@ -191,7 +192,7 @@ cr.define('gpu', function() {
      */
     set selectedTab(tab) {
       if (tab.parentNode != this.tabs_)
-        throw Error("Tab is not part of this TabControl.");
+        throw Error('Tab is not part of this TabControl.');
       tab.selected = true;
     },
 
@@ -243,7 +244,7 @@ cr.define('gpu', function() {
   };
 
   return {
-    Tab : Tab,
+    Tab: Tab,
     TabControl: TabControl
   };
 });

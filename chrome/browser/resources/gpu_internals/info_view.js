@@ -1,15 +1,12 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+
 /**
- * This view displays options for importing/exporting the captured data. Its
- * primarily usefulness is to allow users to copy-paste their data in an easy
- * to read format for bug reports.
- *
- *   - Has a button to generate a text report.
- *
- *   - Shows how many events have been captured.
+ * @fileoverview This view displays information on the current GPU
+ * hardware.  Its primary usefulness is to allow users to copy-paste
+ * their data in an easy to read format for bug reports.
  */
 cr.define('gpu', function() {
   /**
@@ -54,14 +51,14 @@ cr.define('gpu', function() {
      */
     beginRequestLogMessages: function() {
       browserBridge.callAsync('requestLogMessages', undefined,
-        (function(messages) {
-           if(messages.length != this.logMessages_.length) {
-             this.logMessages_ = messages;
-             this.refresh();
-           }
-           // check again in 250 ms
-           window.setTimeout(this.beginRequestLogMessages.bind(this), 250);
-         }).bind(this));
+          (function(messages) {
+            if (messages.length != this.logMessages_.length) {
+              this.logMessages_ = messages;
+              this.refresh();
+            }
+            // check again in 250 ms
+            window.setTimeout(this.beginRequestLogMessages.bind(this), 250);
+          }).bind(this));
     },
 
     /**
@@ -71,18 +68,18 @@ cr.define('gpu', function() {
       // Client info
       if (this.clientInfo_) {
         var chromeVersion = this.clientInfo_.version +
-          ' (' + this.clientInfo_.official +
-          ' ' + this.clientInfo_.cl +
-          ') ' + this.clientInfo_.version_mod;
+            ' (' + this.clientInfo_.official +
+            ' ' + this.clientInfo_.cl +
+            ') ' + this.clientInfo_.version_mod;
         this.setTable_('client-info', [
-            {
-              description: 'Data exported',
-              value: (new Date()).toLocaleString()
-            },
-            {
-              description: 'Chrome version',
-              value: chromeVersion
-            }]);
+          {
+            description: 'Data exported',
+            value: (new Date()).toLocaleString()
+          },
+          {
+            description: 'Chrome version',
+            value: chromeVersion
+          }]);
       } else {
         this.setText_('client-info', '... loading...');
       }
@@ -93,13 +90,13 @@ cr.define('gpu', function() {
       var gpuInfo = browserBridge.gpuInfo;
       if (gpuInfo) {
         if (gpuInfo.blacklistingReasons) {
-          blacklistedIndicator.style.display = 'block';
+          blacklistedIndicator.hidden = false;
           // Not using jstemplate here because we need to manipulate
           // href on the fly
           var reasonsEl = blacklistedIndicator.querySelector(
               '.blacklisted-reasons');
-          reasonsEl.textContent = "";
-          for (var i = 0; i < gpuInfo.blacklistingReasons.length; ++i) {
+          reasonsEl.textContent = '';
+          for (var i = 0; i < gpuInfo.blacklistingReasons.length; i++) {
             var reason = gpuInfo.blacklistingReasons[i];
 
             var reasonEl = document.createElement('li');
@@ -110,7 +107,7 @@ cr.define('gpu', function() {
             reasonEl.appendChild(desc);
 
             // Spacing ':' element
-            if(reason.cr_bugs.length + reason.webkit_bugs.length > 0) {
+            if (reason.cr_bugs.length + reason.webkit_bugs.length > 0) {
               var tmp = document.createElement('span');
               tmp.textContent = '  ';
               reasonEl.appendChild(tmp);
@@ -119,59 +116,61 @@ cr.define('gpu', function() {
             var nreasons = 0;
             var j;
             // cr_bugs
-            for (j =  0; j < reason.cr_bugs.length; ++j) {
+            for (j = 0; j < reason.cr_bugs.length; ++j) {
               if (nreasons > 0) {
                 var tmp = document.createElement('span');
                 tmp.textContent = ', ';
                 reasonEl.appendChild(tmp);
               }
 
-              var lnk = document.createElement('a');
+              var link = document.createElement('a');
               var bugid = parseInt(reason.cr_bugs[j]);
-              lnk.textContent = bugid;
-              lnk.href = 'http://crbug.com/' + bugid;
-              reasonEl.appendChild(lnk);
-              nreasons += 1;
+              link.textContent = bugid;
+              link.href = 'http://crbug.com/' + bugid;
+              reasonEl.appendChild(link);
+              nreasons ++;
             }
 
-            for (j =  0; j < reason.webkit_bugs.length; ++j) {
+            for (j = 0; j < reason.webkit_bugs.length; ++j) {
               if (nreasons > 0) {
                 var tmp = document.createElement('span');
                 tmp.textContent = ', ';
                 reasonEl.appendChild(tmp);
               }
 
-              var lnk = document.createElement('a');
+              var link = document.createElement('a');
               var bugid = parseInt(reason.webkit_bugs[j]);
-              lnk.textContent = bugid;
+              link.textContent = bugid;
 
-              lnk.href = 'https://bugs.webkit.org/show_bug.cgi?id=' + bugid;
-              reasonEl.appendChild(lnk);
-              nreasons += 1;
+              link.href = 'https://bugs.webkit.org/show_bug.cgi?id=' + bugid;
+              reasonEl.appendChild(link);
+              nreasons ++;
             }
 
             reasonsEl.appendChild(reasonEl);
           }
         } else {
-          blacklistedIndicator.style.display = 'none';
+          blacklistedIndicator.hidden = true;
         }
         this.setTable_('basic-info', gpuInfo.basic_info);
 
         if (gpuInfo.diagnostics) {
-          diagnostics.style.display = 'block';
+          diagnostics.hidden = false;
           this.setTable_('diagnostics-table', gpuInfo.diagnostics);
         } else {
-          diagnostics.style.display = 'none';
+          diagnostics.hidden = true;
         }
       } else {
-        blacklistedIndicator.style.display = 'none';
+        blacklistedIndicator.hidden = true;
         this.setText_('basic-info', '... loading ...');
-        diagnostics.style.display = 'none';
+        diagnostics.hidden = true;
       }
 
       // Log messages
-      jstProcess(new JsEvalContext({values: this.logMessages_}),
-                 document.getElementById('log-messages'));
+      if (!browserBridge.debugMode) {
+        jstProcess(new JsEvalContext({values: this.logMessages_}),
+                   document.getElementById('log-messages'));
+      }
     },
 
     setText_: function(outputElementId, text) {
