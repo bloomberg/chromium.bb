@@ -258,4 +258,4 @@ from the Ispell distribution they are under the Ispell copyright:
   ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
   POSSIBILITY OF SUCH DAMAGE.
 
-Build Date: Thu Jan  6 02:31:28 MST 2011
+Build Date: Thu Jan  6 02:31:29 MST 2011
