@@ -198,6 +198,8 @@ void ContentSettingsHandler::GetLocalizedValues(
     { "examplePattern", IDS_EXCEPTIONS_PATTERN_EXAMPLE },
     { "addNewExceptionInstructions", IDS_EXCEPTIONS_ADD_NEW_INSTRUCTIONS },
     { "manage_exceptions", IDS_EXCEPTIONS_MANAGE },
+    { "exceptionPatternHeader", IDS_EXCEPTIONS_PATTERN_HEADER },
+    { "exceptionBehaviorHeader", IDS_EXCEPTIONS_ACTION_HEADER },
     // Cookies filter.
     { "cookies_tab_label", IDS_COOKIES_TAB_LABEL },
     { "cookies_header", IDS_COOKIES_HEADER },
