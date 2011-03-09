@@ -1348,6 +1348,14 @@ void TabContents::ViewSource() {
   delegate_->ViewSourceForTab(this, active_entry->url());
 }
 
+void TabContents::ViewFrameSource(const GURL& url,
+                                  const std::string& content_state) {
+  if (!delegate_)
+    return;
+
+  delegate_->ViewSourceForFrame(this, url, content_state);
+}
+
 void TabContents::OnDidStartProvisionalLoadForFrame(int64 frame_id,
                                                     bool is_main_frame,
                                                     const GURL& url) {

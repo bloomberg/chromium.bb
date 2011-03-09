@@ -3156,6 +3156,15 @@ void Browser::ViewSourceForTab(TabContents* source, const GURL& page_url) {
   ViewSource(wrapper);
 }
 
+void Browser::ViewSourceForFrame(TabContents* source,
+                                 const GURL& frame_url,
+                                 const std::string& frame_content_state) {
+  DCHECK(source);
+  int index = tabstrip_model()->GetWrapperIndex(source);
+  TabContentsWrapper* wrapper = tabstrip_model()->GetTabContentsAt(index);
+  ViewSource(wrapper, frame_url, frame_content_state);
+}
+
 bool Browser::PreHandleKeyboardEvent(const NativeWebKeyboardEvent& event,
                                      bool* is_keyboard_shortcut) {
   return window()->PreHandleKeyboardEvent(event, is_keyboard_shortcut);
@@ -4318,6 +4327,18 @@ void Browser::CreateInstantIfNecessary() {
 }
 
 void Browser::ViewSource(TabContentsWrapper* contents) {
+  DCHECK(contents);
+
+  NavigationEntry* active_entry = contents->controller().GetActiveEntry();
+  if (!active_entry)
+    return;
+
+  ViewSource(contents, active_entry->url(), active_entry->content_state());
+}
+
+void Browser::ViewSource(TabContentsWrapper* contents,
+                         const GURL& url,
+                         const std::string& content_state) {
   UserMetrics::RecordAction(UserMetricsAction("ViewSource"), profile_);
   DCHECK(contents);
 
@@ -4328,19 +4349,18 @@ void Browser::ViewSource(TabContentsWrapper* contents) {
   if (!active_entry)
     return;
 
-  // Do not restore scroller position.
-  std::string content_state = webkit_glue::RemoveScrollOffsetFromHistoryState(
-      active_entry->content_state());
-  active_entry->set_content_state(content_state);
+  GURL view_source_url = GURL(chrome::kViewSourceScheme + std::string(":") +
+      url.spec());
+  active_entry->set_virtual_url(view_source_url);
 
-  GURL url = GURL(chrome::kViewSourceScheme + std::string(":") +
-      active_entry->url().spec());
-  active_entry->set_virtual_url(url);
+  // Do not restore scroller position.
+  active_entry->set_content_state(
+      webkit_glue::RemoveScrollOffsetFromHistoryState(content_state));
+
   // Do not restore title, derive it from the url.
   active_entry->set_title(string16());
 
   // Now show view-source entry.
-
   if (CanSupportWindowFeature(FEATURE_TABSTRIP)) {
     // If this is a tabbed browser, just create a duplicate tab inside the same
     // window next to the tab being duplicated.

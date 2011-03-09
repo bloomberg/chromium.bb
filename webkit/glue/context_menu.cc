@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "webkit/glue/context_menu.h"
+#include "webkit/glue/glue_serialize.h"
 
 namespace webkit_glue {
 
@@ -42,6 +43,11 @@ ContextMenuParams::ContextMenuParams(const WebKit::WebContextMenuData& data)
   custom_context.is_pepper_menu = false;
   for (size_t i = 0; i < data.customItems.size(); ++i)
     custom_items.push_back(WebMenuItem(data.customItems[i]));
+
+  if (!data.frameHistoryItem.isNull()) {
+    frame_content_state =
+        webkit_glue::HistoryItemToString(data.frameHistoryItem);
+  }
 }
 
 ContextMenuParams::~ContextMenuParams() {

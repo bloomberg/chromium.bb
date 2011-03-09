@@ -788,6 +788,9 @@ class Browser : public TabHandlerDelegate,
                             const NavigationEntry::SSLStatus& ssl,
                             bool show_history);
   virtual void ViewSourceForTab(TabContents* source, const GURL& page_url);
+  virtual void ViewSourceForFrame(TabContents* source,
+                                  const GURL& frame_url,
+                                  const std::string& frame_content_state);
   virtual bool PreHandleKeyboardEvent(const NativeWebKeyboardEvent& event,
                                         bool* is_keyboard_shortcut);
   virtual void HandleKeyboardEvent(const NativeWebKeyboardEvent& event);
@@ -1007,6 +1010,11 @@ class Browser : public TabHandlerDelegate,
 
   // Creates a NavigateParams struct for a singleton tab navigation.
   browser::NavigateParams GetSingletonTabNavigateParams(const GURL& url);
+
+  // Opens view-source tab for any frame within given tab contents.
+  void ViewSource(TabContentsWrapper* tab,
+                  const GURL& url,
+                  const std::string& content_state);
 
   // Data members /////////////////////////////////////////////////////////////
 

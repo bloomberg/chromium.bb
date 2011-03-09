@@ -126,6 +126,7 @@ void ParamTraits<ContextMenuParams>::Write(Message* m, const param_type& p) {
   WriteParam(m, p.is_image_blocked);
   WriteParam(m, p.page_url);
   WriteParam(m, p.frame_url);
+  WriteParam(m, p.frame_content_state);
   WriteParam(m, p.media_flags);
   WriteParam(m, p.selection_text);
   WriteParam(m, p.misspelled_word);
@@ -156,6 +157,7 @@ bool ParamTraits<ContextMenuParams>::Read(const Message* m, void** iter,
       ReadParam(m, iter, &p->is_image_blocked) &&
       ReadParam(m, iter, &p->page_url) &&
       ReadParam(m, iter, &p->frame_url) &&
+      ReadParam(m, iter, &p->frame_content_state) &&
       ReadParam(m, iter, &p->media_flags) &&
       ReadParam(m, iter, &p->selection_text) &&
       ReadParam(m, iter, &p->misspelled_word) &&

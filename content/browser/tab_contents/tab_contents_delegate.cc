@@ -135,6 +135,19 @@ void TabContentsDelegate::ViewSourceForTab(TabContents* source,
                  PageTransition::LINK);
 }
 
+void TabContentsDelegate::ViewSourceForFrame(TabContents* source,
+                                             const GURL& frame_url,
+                                             const std::string& content_state) {
+  // Same as ViewSourceForTab, but for given subframe.
+  GURL url = GURL(chrome::kViewSourceScheme + std::string(":") +
+                      frame_url.spec());
+  OpenURLFromTab(source,
+                 url,
+                 GURL(),
+                 NEW_FOREGROUND_TAB,
+                 PageTransition::LINK);
+}
+
 bool TabContentsDelegate::PreHandleKeyboardEvent(
     const NativeWebKeyboardEvent& event,
     bool* is_keyboard_shortcut) {

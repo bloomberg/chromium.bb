@@ -243,6 +243,11 @@ class TabContentsDelegate : public AutomationResourceRoutingDelegate {
   // page url.
   virtual void ViewSourceForTab(TabContents* source, const GURL& page_url);
 
+  // Opens source view for the given subframe.
+  virtual void ViewSourceForFrame(TabContents* source,
+                                  const GURL& url,
+                                  const std::string& content_state);
+
   // Allows delegates to handle keyboard events before sending to the renderer.
   // Returns true if the |event| was handled. Otherwise, if the |event| would be
   // handled in HandleKeyboardEvent() method as a normal keyboard shortcut,

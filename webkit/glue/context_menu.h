@@ -64,6 +64,10 @@ struct ContextMenuParams {
   // This is the URL of the subframe that the context menu was invoked on.
   GURL frame_url;
 
+  // This is the history item state of the subframe that the context menu was
+  // invoked on.
+  std::string frame_content_state;
+
   // These are the parameters for the media element that the context menu
   // was invoked on.
   int media_flags;
