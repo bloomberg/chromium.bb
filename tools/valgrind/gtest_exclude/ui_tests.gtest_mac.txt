@@ -147,7 +147,13 @@ UILayoutTest.MediaUILayoutTest
 AutomationProxyTest.AcceleratorNewTab
 HistoryTester.VerifyHistoryLength2
 RedirectTest.ClientServerServer
+DomCheckerTest.File
+ResourceDispatcherTest.CrossSiteOnunloadCookie
+ResourceDispatcherTest.SniffHTMLWithNoContentType
 
 # Fails, see http://crbug.com/75250
 NewTabUITest.AboutHangInNTP
 NewTabUIProcessPerTabTest.NavBeforeNTPCommits
+
+# Fails with valgrind assertion, see http://crbug.com/75396
+ViewSourceTest.ViewSourceInMenuEnabledOnANormalPage
