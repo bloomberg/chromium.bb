@@ -397,6 +397,23 @@ def GetRandomAction(browser):
   return ChooseFrom(possible_actions)
 
 
+def Seed(seed=None):
+  """Seed random for reproducible command sequences.
+
+  Args:
+    seed: optional long int input for random.seed.  If none is given,
+          one is generated.
+
+  Returns:
+    The given or generated seed.
+  """
+  if not seed:
+    random.seed()
+    seed = random.getrandbits(64)
+  random.seed(seed)
+  return seed
+
+
 def ChooseFrom(choice_list):
   """Return a random choice from given list.
 
