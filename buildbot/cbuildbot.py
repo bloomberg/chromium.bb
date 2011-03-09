@@ -112,7 +112,7 @@ def main():
 
     # TODO(sosa): We only want to archive artifacts if we have artifacts to
     # archive.  Today this means we have at least built an image.  We should
-    # make this more general and have depedencies within stages themselves ...
+    # make this more general and have dependencies within stages themselves ...
     # i.e. archive -> build_target ... however someday it might be
     # archive->sync.
     try:

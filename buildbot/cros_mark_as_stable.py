@@ -8,7 +8,7 @@
 
 
 import fileinput
-import gflags
+import optparse
 import os
 import re
 import shutil
@@ -21,31 +21,8 @@ if __name__ == '__main__':
 
 from cros_build_lib import Info, RunCommand, Warning, Die
 
-
-gflags.DEFINE_boolean('all', False,
-                      'Mark all packages as stable.')
-gflags.DEFINE_string('board', '',
-                     'Board for which the package belongs.', short_name='b')
-gflags.DEFINE_string('drop_file', None,
-                     'File to list packages that were revved.')
-gflags.DEFINE_boolean('dryrun', False,
-                     'Passes dry-run to git push if pushing a change.')
-gflags.DEFINE_string('overlays', '',
-                     'Colon-separated list of overlays to modify.',
-                     short_name='o')
-gflags.DEFINE_string('packages', '',
-                     'Colon-separated list of packages to mark as stable.',
-                     short_name='p')
-gflags.DEFINE_string('srcroot', '%s/trunk/src' % os.environ['HOME'],
-                     'Path to root src directory.',
-                     short_name='r')
-gflags.DEFINE_string('tracking_branch', 'cros/master',
-                     'Used with commit to specify branch to track against.',
-                     short_name='t')
-gflags.DEFINE_boolean('verbose', False,
-                      'Prints out verbose information about what is going on.',
-                      short_name='v')
-
+# TODO(sosa): Remove during OO refactor.
+VERBOSE = False
 
 # Takes two strings, package_name and commit_id.
 _GIT_COMMIT_MESSAGE = 'Marking 9999 ebuild for %s with commit %s as stable.'
@@ -78,20 +55,20 @@ def BestEBuild(ebuilds):
 
 def _Print(message):
   """Verbose print function."""
-  if gflags.FLAGS.verbose:
-    Info(message)
+  if VERBOSE: Info(message)
 
 
 def _CleanStalePackages(board, package_atoms):
     """Cleans up stale package info from a previous build."""
-    Info('Cleaning up stale packages %s.' % package_atoms)
-    unmerge_board_cmd = ['emerge-%s' % board, '--unmerge']
-    unmerge_board_cmd.extend(package_atoms)
-    RunCommand(unmerge_board_cmd)
+    if package_atoms:
+      Info('Cleaning up stale packages %s.' % package_atoms)
+      unmerge_board_cmd = ['emerge-%s' % board, '--unmerge']
+      unmerge_board_cmd.extend(package_atoms)
+      RunCommand(unmerge_board_cmd)
 
-    unmerge_host_cmd = ['sudo', 'emerge', '--unmerge']
-    unmerge_host_cmd.extend(package_atoms)
-    RunCommand(unmerge_host_cmd)
+      unmerge_host_cmd = ['sudo', 'emerge', '--unmerge']
+      unmerge_host_cmd.extend(package_atoms)
+      RunCommand(unmerge_host_cmd)
 
     RunCommand(['eclean-%s' % board, '-d', 'packages'], redirect_stderr=True)
     RunCommand(['sudo', 'eclean', '-d', 'packages'], redirect_stderr=True)
@@ -181,17 +158,17 @@ def _DoWeHaveLocalCommits(stable_branch, tracking_branch):
     return False
 
 
-def _CheckSaneArguments(package_list, command):
+def _CheckSaneArguments(package_list, command, options):
   """Checks to make sure the flags are sane.  Dies if arguments are not sane."""
   if not command in COMMAND_DICTIONARY.keys():
     _PrintUsageAndDie('%s is not a valid command' % command)
-  if not gflags.FLAGS.packages and command == 'commit' and not gflags.FLAGS.all:
+  if not options.packages and command == 'commit' and not options.all:
     _PrintUsageAndDie('Please specify at least one package')
-  if not gflags.FLAGS.board and command == 'commit':
+  if not options.board and command == 'commit':
     _PrintUsageAndDie('Please specify a board')
-  if not os.path.isdir(gflags.FLAGS.srcroot):
+  if not os.path.isdir(options.srcroot):
     _PrintUsageAndDie('srcroot is not a valid path')
-  gflags.FLAGS.srcroot = os.path.abspath(gflags.FLAGS.srcroot)
+  options.srcroot = os.path.abspath(options.srcroot)
 
 
 def _PrintUsageAndDie(error_message=''):
@@ -202,8 +179,8 @@ def _PrintUsageAndDie(error_message=''):
   for command in commands:
     command_usage += '  %s: %s\n' % (command, COMMAND_DICTIONARY[command])
   commands_str = '|'.join(commands)
-  Warning('Usage: %s FLAGS [%s]\n\n%s\nFlags:%s' % (sys.argv[0], commands_str,
-                                                  command_usage, gflags.FLAGS))
+  Warning('Usage: %s FLAGS [%s]\n\n%s' % (sys.argv[0], commands_str,
+                                          command_usage))
   if error_message:
     Die(error_message)
   else:
@@ -244,7 +221,7 @@ def Clean(tracking_branch):
     branch.Delete()
 
 
-def PushChange(stable_branch, tracking_branch):
+def PushChange(stable_branch, tracking_branch, dryrun):
   """Pushes commits in the stable_branch to the remote git repository.
 
   Pushes locals commits from calls to CommitChange to the remote git
@@ -253,6 +230,7 @@ def PushChange(stable_branch, tracking_branch):
   Args:
     stable_branch: The local branch with commits we want to push.
     tracking_branch: The tracking branch of the local branch.
+    dryrun: Use git push --dryrun to emulate a push.
   Raises:
       OSError: Error occurred while pushing.
   """
@@ -280,7 +258,7 @@ def PushChange(stable_branch, tracking_branch):
       _SimpleRunCommand('git merge --squash %s' % stable_branch)
       _SimpleRunCommand('git commit -m "%s"' % description)
       _SimpleRunCommand('git config push.default tracking')
-      if gflags.FLAGS.dryrun:
+      if dryrun:
         _SimpleRunCommand('git push --dry-run')
       else:
         _SimpleRunCommand('git push')
@@ -362,7 +340,7 @@ class EBuild(object):
         self.is_stable = True
     fileinput.close()
 
-  def GetCommitId(self):
+  def GetCommitId(self, srcroot):
     """Get the commit id for this ebuild."""
     # Grab and evaluate CROS_WORKON variables from this ebuild.
     unstable_ebuild = '%s-9999.ebuild' % self.ebuild_path_no_version
@@ -374,7 +352,6 @@ class EBuild(object):
     project, subdir = _SimpleRunCommand(cmd).split()
 
     # Calculate srcdir.
-    srcroot = gflags.FLAGS.srcroot
     if self.category == 'chromeos-base':
       dir = 'platform'
     else:
@@ -494,7 +471,7 @@ class EBuildStableMarker(object):
     old_ebuild_path = self._ebuild.ebuild_path
     diff_cmd = ['diff', '-Bu', old_ebuild_path, new_stable_ebuild_path]
     if 0 == RunCommand(diff_cmd, exit_code=True, redirect_stdout=True,
-                       redirect_stderr=True, print_cmd=gflags.FLAGS.verbose):
+                       redirect_stderr=True, print_cmd=VERBOSE):
       os.unlink(new_stable_ebuild_path)
       return None
     else:
@@ -523,32 +500,55 @@ class EBuildStableMarker(object):
 
 
 def main(argv):
-  try:
-    argv = gflags.FLAGS(argv)
-    if len(argv) != 2:
-      _PrintUsageAndDie('Must specify a valid command')
-    else:
-      command = argv[1]
-  except gflags.FlagsError, e :
-    _PrintUsageAndDie(str(e))
+  parser = optparse.OptionParser('cros_mark_as_stable OPTIONS packages')
+  parser.add_option('--all', action='store_true',
+                    help='Mark all packages as stable.')
+  parser.add_option('-b', '--board',
+                    help='Board for which the package belongs.')
+  parser.add_option('--drop_file',
+                    help='File to list packages that were revved.')
+  parser.add_option('--dryrun', action='store_true',
+                    help='Passes dry-run to git push if pushing a change.')
+  parser.add_option('-o', '--overlays',
+                    help='Colon-separated list of overlays to modify.')
+  parser.add_option('-p', '--packages',
+                    help='Colon separated list of packages to rev.')
+  parser.add_option('-r', '--srcroot',
+                    default='%s/trunk/src' % os.environ['HOME'],
+                    help='Path to root src directory.')
+  parser.add_option('-t', '--tracking_branch', default='cros/master',
+                     help='Used with commit to specify branch to track.')
+  parser.add_option('--verbose', action='store_true',
+                    help='Prints out debug info.')
+  (options, args) = parser.parse_args()
 
-  package_list = gflags.FLAGS.packages.split(':')
-  _CheckSaneArguments(package_list, command)
-  if gflags.FLAGS.overlays:
+  global VERBOSE
+  VERBOSE = options.verbose
+
+  if len(args) != 1:
+    _PrintUsageAndDie('Must specify a valid command [commit, clean, push]')
+
+  command = args[0]
+  package_list = None
+  if options.packages:
+    package_list = options.packages.split(':')
+
+  _CheckSaneArguments(package_list, command, options)
+  if options.overlays:
     overlays = {}
-    for path in gflags.FLAGS.overlays.split(':'):
+    for path in options.overlays.split(':'):
       if command != 'clean' and not os.path.isdir(path):
         Die('Cannot find overlay: %s' % path)
       overlays[path] = []
   else:
     Warning('Missing --overlays argument')
     overlays = {
-      '%s/private-overlays/chromeos-overlay' % gflags.FLAGS.srcroot: [],
-      '%s/third_party/chromiumos-overlay' % gflags.FLAGS.srcroot: []
+      '%s/private-overlays/chromeos-overlay' % options.srcroot: [],
+      '%s/third_party/chromiumos-overlay' % options.srcroot: []
     }
 
   if command == 'commit':
-    _BuildEBuildDictionary(overlays, gflags.FLAGS.all, package_list)
+    _BuildEBuildDictionary(overlays, options.all, package_list)
 
   for overlay, ebuilds in overlays.items():
     if not os.path.isdir(overlay):
@@ -561,11 +561,11 @@ def main(argv):
     os.chdir(overlay)
 
     if command == 'clean':
-      Clean(gflags.FLAGS.tracking_branch)
+      Clean(options.tracking_branch)
     elif command == 'push':
-      PushChange(STABLE_BRANCH_NAME, gflags.FLAGS.tracking_branch)
+      PushChange(STABLE_BRANCH_NAME, options.tracking_branch, options.dryrun)
     elif command == 'commit' and ebuilds:
-      work_branch = GitBranch(STABLE_BRANCH_NAME, gflags.FLAGS.tracking_branch)
+      work_branch = GitBranch(STABLE_BRANCH_NAME, options.tracking_branch)
       work_branch.CreateBranch()
       if not work_branch.Exists():
         Die('Unable to create stabilizing branch in %s' % overlay)
@@ -577,7 +577,7 @@ def main(argv):
         try:
           _Print('Working on %s' % ebuild.package)
           worker = EBuildStableMarker(ebuild)
-          commit_id = ebuild.GetCommitId()
+          commit_id = ebuild.GetCommitId(options.srcroot)
           new_package = worker.RevWorkOnEBuild(commit_id)
           if new_package:
             message = _GIT_COMMIT_MESSAGE % (ebuild.package, commit_id)
@@ -590,9 +590,9 @@ def main(argv):
                   'and reset the git repo yourself.' % overlay)
           raise
 
-      _CleanStalePackages(gflags.FLAGS.board, new_package_atoms)
-      if gflags.FLAGS.drop_file:
-        fh = open(gflags.FLAGS.drop_file, 'w')
+      _CleanStalePackages(options.board, new_package_atoms)
+      if options.drop_file:
+        fh = open(options.drop_file, 'w')
         fh.write(' '.join(revved_packages))
         fh.close()
 

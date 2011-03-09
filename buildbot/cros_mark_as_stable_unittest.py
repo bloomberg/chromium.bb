@@ -16,6 +16,7 @@ import constants
 sys.path.append(constants.CROSUTILS_LIB_DIR)
 import cros_mark_as_stable
 
+
 class NonClassTests(mox.MoxTestBase):
   def setUp(self):
     mox.MoxTestBase.setUp(self)
@@ -32,6 +33,7 @@ class NonClassTests(mox.MoxTestBase):
 
     cros_mark_as_stable._DoWeHaveLocalCommits(
         self._branch, self._tracking_branch).AndReturn(True)
+    cros_mark_as_stable.GitBranch.Exists().AndReturn(False)
     cros_mark_as_stable.GitBranch.CreateBranch()
     cros_mark_as_stable.GitBranch.Exists().AndReturn(True)
     cros_mark_as_stable._SimpleRunCommand('git log --format=format:%s%n%n%b ' +
@@ -44,7 +46,7 @@ class NonClassTests(mox.MoxTestBase):
     cros_mark_as_stable._SimpleRunCommand('git config push.default tracking')
     cros_mark_as_stable._SimpleRunCommand('git push')
     self.mox.ReplayAll()
-    cros_mark_as_stable.PushChange(self._branch, self._tracking_branch)
+    cros_mark_as_stable.PushChange(self._branch, self._tracking_branch, False)
     self.mox.VerifyAll()
 
 
@@ -64,7 +66,7 @@ class GitBranchTest(mox.MoxTestBase):
     # Test init with no previous branch existing.
     self._branch.Exists().AndReturn(False)
     cros_mark_as_stable._SimpleRunCommand(
-        'git checkout -b %s %s' % (self._branch_name, self._tracking_branch))
+        'git checkout -b %s %s -f' % (self._branch_name, self._tracking_branch))
     self.mox.ReplayAll()
     cros_mark_as_stable.GitBranch.Checkout(self._branch)
     self.mox.VerifyAll()
@@ -72,7 +74,7 @@ class GitBranchTest(mox.MoxTestBase):
   def testCheckoutNoCreate(self):
     # Test init with previous branch existing.
     self._branch.Exists().AndReturn(True)
-    cros_mark_as_stable._SimpleRunCommand('git checkout %s' % (
+    cros_mark_as_stable._SimpleRunCommand('git checkout %s -f' % (
         self._branch_name))
     self.mox.ReplayAll()
     cros_mark_as_stable.GitBranch.Checkout(self._branch)
