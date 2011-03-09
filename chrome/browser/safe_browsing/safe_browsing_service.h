@@ -160,6 +160,13 @@ class SafeBrowsingService
   // Result will be passed to callback in |client|.
   virtual bool CheckDownloadHash(const std::string& full_hash, Client* client);
 
+  // Check if the |url| matches any of the full-length hashes from the
+  // client-side phishing detection whitelist.  Returns true if there was a
+  // match and false otherwise.  To make sure we are conservative we will return
+  // true if an error occurs. This method is expected to be called on the IO
+  // thread.
+  bool MatchCsdWhitelistUrl(const GURL& url);
+
   // Called on the IO thread to cancel a pending check if the result is no
   // longer needed.
   void CancelCheck(Client* client);
@@ -412,6 +419,10 @@ class SafeBrowsingService
   // Indicate if download_protection is enabled by command switch
   // so we allow this feature to be exersized.
   bool enable_download_protection_;
+
+  // Indicate if client-side phishing detection whitelist should be enabled
+  // or not.
+  bool enable_csd_whitelist_;
 
   // The SafeBrowsing thread that runs database operations.
   //

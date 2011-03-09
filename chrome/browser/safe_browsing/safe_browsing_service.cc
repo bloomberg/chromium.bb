@@ -156,6 +156,7 @@ SafeBrowsingService::SafeBrowsingService()
       protocol_manager_(NULL),
       enabled_(false),
       enable_download_protection_(false),
+      enable_csd_whitelist_(false),
       update_in_progress_(false),
       database_update_in_progress_(false),
       closing_database_(false),
@@ -236,6 +237,17 @@ bool SafeBrowsingService::CheckDownloadHash(const std::string& full_hash,
                         check),
       download_hashcheck_timeout_ms_);
   return false;
+}
+
+bool SafeBrowsingService::MatchCsdWhitelistUrl(const GURL& url) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK(enable_csd_whitelist_);
+  if (!enabled_ || !enable_csd_whitelist_ || !MakeDatabaseAvailable()) {
+    // There is something funky going on here.  Just to be safe we return
+    // true in this case.
+    return true;
+  }
+  return database_->ContainsCsdWhitelistedUrl(url);
 }
 
 bool SafeBrowsingService::CheckBrowseUrl(const GURL& url,
@@ -526,6 +538,8 @@ void SafeBrowsingService::OnIOInitialize(
   CommandLine* cmdline = CommandLine::ForCurrentProcess();
   enable_download_protection_ =
       !cmdline->HasSwitch(switches::kSbDisableDownloadProtection);
+  enable_csd_whitelist_ =
+      cmdline->HasSwitch(switches::kEnableClientSidePhishingDetection);
 
   MakeDatabaseAvailable();
 
@@ -658,7 +672,8 @@ SafeBrowsingDatabase* SafeBrowsingService::GetDatabase() {
   const base::TimeTicks before = base::TimeTicks::Now();
 
   SafeBrowsingDatabase* database =
-      SafeBrowsingDatabase::Create(enable_download_protection_);
+      SafeBrowsingDatabase::Create(enable_download_protection_,
+                                   enable_csd_whitelist_);
 
   database->Init(path);
   {

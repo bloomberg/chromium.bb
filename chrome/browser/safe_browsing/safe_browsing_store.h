@@ -177,6 +177,10 @@ class SafeBrowsingStore {
   // Get all Add prefixes out from the store.
   virtual bool GetAddPrefixes(std::vector<SBAddPrefix>* add_prefixes) = 0;
 
+  // Get all add full-length hashes.
+  virtual bool GetAddFullHashes(
+      std::vector<SBAddFullHash>* add_full_hashes) = 0;
+
   // Start an update.  None of the following methods should be called
   // unless this returns true.  If this returns true, the update
   // should be terminated by FinishUpdate() or CancelUpdate().

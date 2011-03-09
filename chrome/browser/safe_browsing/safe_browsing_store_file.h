@@ -115,8 +115,10 @@ class SafeBrowsingStoreFile : public SafeBrowsingStore {
   // Delete any on-disk files, including the permanent storage.
   virtual bool Delete();
 
-  // Get all Add prefixes from the store.
+  // Get all add hash prefixes and full-length hashes, respectively, from
+  // the store.
   virtual bool GetAddPrefixes(std::vector<SBAddPrefix>* add_prefixes);
+  virtual bool GetAddFullHashes(std::vector<SBAddFullHash>* add_full_hashes);
 
   virtual bool BeginChunk();
 
@@ -161,6 +163,7 @@ class SafeBrowsingStoreFile : public SafeBrowsingStore {
                         const std::set<SBPrefix>& prefix_misses,
                         std::vector<SBAddPrefix>* add_prefixes_result,
                         std::vector<SBAddFullHash>* add_full_hashes_result);
+
   // Enumerate different format-change events for histogramming
   // purposes.  DO NOT CHANGE THE ORDERING OF THESE VALUES.
   // TODO(shess): Remove this once the format change is complete.

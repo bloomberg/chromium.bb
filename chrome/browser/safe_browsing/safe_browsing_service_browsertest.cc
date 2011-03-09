@@ -71,6 +71,9 @@ class TestSafeBrowsingDatabase :  public SafeBrowsingDatabase {
   virtual bool ContainsDownloadHashPrefix(const SBPrefix& prefix) {
     return download_digest_prefix_.count(prefix) > 0;
   }
+  virtual bool ContainsCsdWhitelistedUrl(const GURL& url) {
+    return true;
+  }
   virtual bool UpdateStarted(std::vector<SBListChunkRanges>* lists) {
     ADD_FAILURE() << "Not implemented.";
     return false;
@@ -145,7 +148,8 @@ class TestSafeBrowsingDatabaseFactory : public SafeBrowsingDatabaseFactory {
   virtual ~TestSafeBrowsingDatabaseFactory() {}
 
   virtual SafeBrowsingDatabase* CreateSafeBrowsingDatabase(
-      bool enable_download_protection) {
+      bool enable_download_protection,
+      bool enable_client_side_whitelist) {
     db_ = new TestSafeBrowsingDatabase();
     return db_;
   }

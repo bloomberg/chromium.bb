@@ -36,8 +36,12 @@ union SBFullHash {
   SBPrefix prefix;
 };
 
-inline bool operator==(const SBFullHash& rhash, const SBFullHash& lhash) {
-  return memcmp(rhash.full_hash, lhash.full_hash, sizeof(SBFullHash)) == 0;
+inline bool operator==(const SBFullHash& lhash, const SBFullHash& rhash) {
+  return memcmp(lhash.full_hash, rhash.full_hash, sizeof(SBFullHash)) == 0;
+}
+
+inline bool operator<(const SBFullHash& lhash, const SBFullHash& rhash) {
+  return memcmp(lhash.full_hash, rhash.full_hash, sizeof(SBFullHash)) < 0;
 }
 
 // Container for information about a specific host in an add/sub chunk.
@@ -260,6 +264,8 @@ extern const char kPhishingList[];
 // Binary Download list names.
 extern const char kBinUrlList[];
 extern const char kBinHashList[];
+// SafeBrowsing client-side detection whitelist list name.
+extern const char kCsdWhiteList[];
 
 enum ListType {
   INVALID = -1,
@@ -267,6 +273,7 @@ enum ListType {
   PHISH = 1,
   BINURL = 2,
   BINHASH = 3,
+  CSDWHITELIST = 4,
 };
 
 // Maps a list name to ListType.

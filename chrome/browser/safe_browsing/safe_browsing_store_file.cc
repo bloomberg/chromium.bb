@@ -306,6 +306,31 @@ bool SafeBrowsingStoreFile::GetAddPrefixes(
   return true;
 }
 
+bool SafeBrowsingStoreFile::GetAddFullHashes(
+    std::vector<SBAddFullHash>* add_full_hashes) {
+  add_full_hashes->clear();
+
+  file_util::ScopedFILE file(file_util::OpenFile(filename_, "rb"));
+  if (file.get() == NULL) return false;
+
+  FileHeader header;
+  if (!ReadAndVerifyHeader(filename_, file.get(), &header, NULL))
+    return OnCorruptDatabase();
+
+  size_t offset =
+      header.add_chunk_count * sizeof(int32) +
+      header.sub_chunk_count * sizeof(int32) +
+      header.add_prefix_count * sizeof(SBAddPrefix) +
+      header.sub_prefix_count * sizeof(SBSubPrefix);
+  if (!FileSkip(offset, file.get()))
+    return false;
+
+  return ReadToVector(add_full_hashes,
+                      header.add_hash_count,
+                      file.get(),
+                      NULL);
+}
+
 bool SafeBrowsingStoreFile::WriteAddHash(int32 chunk_id,
                                          base::Time receive_time,
                                          const SBFullHash& full_hash) {

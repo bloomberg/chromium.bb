@@ -167,6 +167,7 @@ const char kMalwareList[] = "goog-malware-shavar";
 const char kPhishingList[] = "goog-phish-shavar";
 const char kBinUrlList[] = "goog-badbinurl-shavar";
 const char kBinHashList[] = "goog-badbinhash-shavar";
+const char kCsdWhiteList[] = "goog-csdwhite-sha256";
 
 // Keywords to identify a list type from listname.
 // TODO(lzheng): check if this can be replaced by full listnames.
@@ -183,8 +184,10 @@ int GetListId(const std::string& name) {
     id = PHISH;
   } else if (name == safe_browsing_util::kBinUrlList) {
     id = BINURL;
-  }  else if (name == safe_browsing_util::kBinHashList) {
+  } else if (name == safe_browsing_util::kBinHashList) {
     id = BINHASH;
+  } else if (name == safe_browsing_util::kCsdWhiteList) {
+    id = CSDWHITELIST;
   } else {
     id = INVALID;
   }
@@ -204,6 +207,9 @@ bool GetListName(int list_id, std::string* list) {
       break;
     case BINHASH:
       *list = safe_browsing_util::kBinHashList;
+      break;
+    case CSDWHITELIST:
+      *list = safe_browsing_util::kCsdWhiteList;
       break;
     default:
       return false;
