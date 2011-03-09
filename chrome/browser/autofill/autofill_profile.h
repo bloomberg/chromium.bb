@@ -11,7 +11,11 @@
 #include <vector>
 
 #include "base/string16.h"
+#include "chrome/browser/autofill/address.h"
+#include "chrome/browser/autofill/contact_info.h"
+#include "chrome/browser/autofill/fax_number.h"
 #include "chrome/browser/autofill/form_group.h"
+#include "chrome/browser/autofill/home_phone_number.h"
 
 // A collection of FormGroups stored in a profile.  AutoFillProfile also
 // implements the FormGroup interface so that owners of this object can request
@@ -26,21 +30,21 @@ class AutoFillProfile : public FormGroup {
   AutoFillProfile(const AutoFillProfile&);
   virtual ~AutoFillProfile();
 
-  // FormGroup implementation:
+  AutoFillProfile& operator=(const AutoFillProfile& profile);
+
+  // FormGroup:
   virtual void GetPossibleFieldTypes(const string16& text,
                                      FieldTypeSet* possible_types) const;
   virtual void GetAvailableFieldTypes(FieldTypeSet* available_types) const;
   virtual string16 GetFieldText(const AutofillType& type) const;
-  // Returns true if the info matches the profile data corresponding to type.
-  // If the type is UNKNOWN_TYPE then info will be matched against all of the
+  // Returns true if the |value| matches the profile data corresponding to type.
+  // If the type is UNKNOWN_TYPE then |value| will be matched against all of the
   // profile data.
   virtual void FindInfoMatches(const AutofillType& type,
-                               const string16& info,
+                               const string16& value,
                                std::vector<string16>* matched_text) const;
   virtual void SetInfo(const AutofillType& type, const string16& value);
-  // Returns a copy of the profile it is called on. The caller is responsible
-  // for deleting profile when they are done with it.
-  virtual FormGroup* Clone() const;
+
   // The user-visible label of the profile, generated in relation to other
   // profiles. Shows at least 2 fields that differentiate profile from other
   // profiles. See AdjustInferredLabels() further down for more description.
@@ -86,9 +90,6 @@ class AutoFillProfile : public FormGroup {
   // Returns true if there are no values (field types) set.
   bool IsEmpty() const;
 
-  // For use in STL containers.
-  void operator=(const AutoFillProfile&);
-
   // Comparison for Sync.  Returns 0 if the profile is the same as |this|,
   // or < 0, or > 0 if it is different.  The implied ordering can be used for
   // culling duplicates.  The ordering is based on collation order of the
@@ -106,7 +107,9 @@ class AutoFillProfile : public FormGroup {
   const string16 PrimaryValue() const;
 
  private:
-  typedef std::map<FieldTypeGroup, FormGroup*> FormGroupMap;
+  typedef std::vector<const FormGroup*> FormGroupList;
+  typedef std::map<FieldTypeGroup, const FormGroup*> FormGroupMap;
+  typedef std::map<FieldTypeGroup, FormGroup*> MutableFormGroupMap;
 
   // Builds inferred label from the first |num_fields_to_include| non-empty
   // fields in |label_fields|. Uses as many fields as possible if there are not
@@ -127,8 +130,11 @@ class AutoFillProfile : public FormGroup {
       size_t num_fields_to_include,
       std::vector<string16>* created_labels);
 
-  // Utility to initialize a |FormGroupMap|.
-  static void InitPersonalInfo(FormGroupMap* personal_info);
+  // Utilities for listing and lookup of the data members that constitute
+  // user-visible profile information.
+  FormGroupList info_list() const;
+  FormGroupMap info_map() const;
+  MutableFormGroupMap mutable_info_map();
 
   // The label presented to the user when selecting a profile.
   string16 label_;
@@ -137,7 +143,12 @@ class AutoFillProfile : public FormGroup {
   std::string guid_;
 
   // Personal information for this profile.
-  FormGroupMap personal_info_;
+  NameInfo name_;
+  EmailInfo email_;
+  CompanyInfo company_;
+  HomePhoneNumber home_number_;
+  FaxNumber fax_number_;
+  Address address_;
 };
 
 // So we can compare AutoFillProfiles with EXPECT_EQ().

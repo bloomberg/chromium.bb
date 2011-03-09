@@ -22,20 +22,20 @@ AutofillType::AutofillTypeDefinition kAutofillTypeDefinitions[] = {
   { AutofillType::NO_GROUP, AutofillType::NO_SUBGROUP },
 
   // NAME_FIRST
-  { AutofillType::CONTACT_INFO, AutofillType::NO_SUBGROUP },
+  { AutofillType::NAME, AutofillType::NO_SUBGROUP },
   // NAME_MIDDLE
-  { AutofillType::CONTACT_INFO, AutofillType::NO_SUBGROUP },
+  { AutofillType::NAME, AutofillType::NO_SUBGROUP },
   // NAME_LAST
-  { AutofillType::CONTACT_INFO, AutofillType::NO_SUBGROUP },
+  { AutofillType::NAME, AutofillType::NO_SUBGROUP },
   // NAME_MIDDLE_INITIAL
-  { AutofillType::CONTACT_INFO, AutofillType::NO_SUBGROUP },
+  { AutofillType::NAME, AutofillType::NO_SUBGROUP },
   // NAME_FULL
-  { AutofillType::CONTACT_INFO, AutofillType::NO_SUBGROUP },
+  { AutofillType::NAME, AutofillType::NO_SUBGROUP },
   // NAME_SUFFIX
-  { AutofillType::CONTACT_INFO, AutofillType::NO_SUBGROUP },
+  { AutofillType::NAME, AutofillType::NO_SUBGROUP },
 
   // EMAIL_ADDRESS
-  { AutofillType::CONTACT_INFO, AutofillType::NO_SUBGROUP },
+  { AutofillType::EMAIL, AutofillType::NO_SUBGROUP },
 
   // PHONE_HOME_NUMBER
   { AutofillType::PHONE_HOME, AutofillType::PHONE_NUMBER },
@@ -132,7 +132,7 @@ AutofillType::AutofillTypeDefinition kAutofillTypeDefinitions[] = {
   { AutofillType::CREDIT_CARD, AutofillType::NO_SUBGROUP },
 
   // COMPANY_NAME
-  { AutofillType::CONTACT_INFO, AutofillType::NO_SUBGROUP },
+  { AutofillType::COMPANY, AutofillType::NO_SUBGROUP },
 };
 
 }  // namespace

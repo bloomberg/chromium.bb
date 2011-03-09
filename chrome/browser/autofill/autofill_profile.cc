@@ -102,12 +102,10 @@ void GetFieldsForDistinguishingProfiles(
 
 AutoFillProfile::AutoFillProfile(const std::string& guid)
     : guid_(guid) {
-  InitPersonalInfo(&personal_info_);
 }
 
 AutoFillProfile::AutoFillProfile()
     : guid_(guid::GenerateGUID()) {
-  InitPersonalInfo(&personal_info_);
 }
 
 AutoFillProfile::AutoFillProfile(const AutoFillProfile& source)
@@ -116,77 +114,82 @@ AutoFillProfile::AutoFillProfile(const AutoFillProfile& source)
 }
 
 AutoFillProfile::~AutoFillProfile() {
-  STLDeleteContainerPairSecondPointers(personal_info_.begin(),
-                                       personal_info_.end());
+}
+
+AutoFillProfile& AutoFillProfile::operator=(const AutoFillProfile& profile) {
+  if (this == &profile)
+    return *this;
+
+  label_ = profile.label_;
+  guid_ = profile.guid_;
+
+  name_ = profile.name_;
+  email_ = profile.email_;
+  company_ = profile.company_;
+  home_number_ = profile.home_number_;
+  fax_number_ = profile.fax_number_;
+  address_ = profile.address_;
+
+  return *this;
 }
 
 void AutoFillProfile::GetPossibleFieldTypes(
     const string16& text,
     FieldTypeSet* possible_types) const {
-  for (FormGroupMap::const_iterator iter = personal_info_.begin();
-       iter != personal_info_.end(); ++iter) {
-    FormGroup* data = iter->second;
-    DCHECK(data != NULL);
-    data->GetPossibleFieldTypes(text, possible_types);
-  }
+  FormGroupList info = info_list();
+  for (FormGroupList::const_iterator it = info.begin(); it != info.end(); ++it)
+    (*it)->GetPossibleFieldTypes(text, possible_types);
 }
 
 void AutoFillProfile::GetAvailableFieldTypes(
     FieldTypeSet* available_types) const {
-  for (FormGroupMap::const_iterator iter = personal_info_.begin();
-       iter != personal_info_.end(); ++iter) {
-    FormGroup* data = iter->second;
-    DCHECK(data != NULL);
-    data->GetAvailableFieldTypes(available_types);
-  }
+  FormGroupList info = info_list();
+  for (FormGroupList::const_iterator it = info.begin(); it != info.end(); ++it)
+    (*it)->GetAvailableFieldTypes(available_types);
 }
 
 string16 AutoFillProfile::GetFieldText(const AutofillType& type) const {
   AutofillType return_type(
       AutofillType::GetEquivalentFieldType(type.field_type()));
 
-  FormGroupMap::const_iterator iter = personal_info_.find(return_type.group());
-  if (iter == personal_info_.end() || iter->second == NULL)
+  FormGroupMap info = info_map();
+  FormGroupMap::const_iterator it = info.find(return_type.group());
+  if (it == info.end())
     return string16();
 
-  return iter->second->GetFieldText(return_type);
+  return it->second->GetFieldText(return_type);
 }
 
 void AutoFillProfile::FindInfoMatches(
     const AutofillType& type,
-    const string16& info,
+    const string16& value,
     std::vector<string16>* matched_text) const {
   if (matched_text == NULL) {
     DLOG(ERROR) << "NULL matched text passed in";
     return;
   }
 
-  string16 clean_info = StringToLowerASCII(CollapseWhitespace(info, false));
+  string16 clean_info = StringToLowerASCII(CollapseWhitespace(value, false));
 
   // If the field_type is unknown, then match against all field types.
   if (type.field_type() == UNKNOWN_TYPE) {
-    FormGroupMap::const_iterator iter;
-    for (iter = personal_info_.begin(); iter != personal_info_.end(); ++iter) {
-      iter->second->FindInfoMatches(type, clean_info, matched_text);
-    }
+    FormGroupList info = info_list();
+    for (FormGroupList::const_iterator it = info.begin();
+         it != info.end(); ++it)
+      (*it)->FindInfoMatches(type, clean_info, matched_text);
   } else {
-    FormGroupMap::const_iterator iter = personal_info_.find(type.group());
-    DCHECK(iter != personal_info_.end() && iter->second != NULL);
-    if (iter != personal_info_.end() && iter->second != NULL)
-      iter->second->FindInfoMatches(type, clean_info, matched_text);
+    FormGroupMap info = info_map();
+    FormGroupMap::const_iterator it = info.find(type.group());
+    DCHECK(it != info.end());
+    it->second->FindInfoMatches(type, clean_info, matched_text);
   }
 }
 
 void AutoFillProfile::SetInfo(const AutofillType& type, const string16& value) {
-  FormGroupMap::const_iterator iter = personal_info_.find(type.group());
-  if (iter == personal_info_.end() || iter->second == NULL)
-    return;
-
-  iter->second->SetInfo(type, CollapseWhitespace(value, false));
-}
-
-FormGroup* AutoFillProfile::Clone() const {
-  return new AutoFillProfile(*this);
+  MutableFormGroupMap info = mutable_info_map();
+  MutableFormGroupMap::iterator it = info.find(type.group());
+  DCHECK(it != info.end());
+  it->second->SetInfo(type, CollapseWhitespace(value, false));
 }
 
 const string16 AutoFillProfile::Label() const {
@@ -194,19 +197,11 @@ const string16 AutoFillProfile::Label() const {
 }
 
 const std::string AutoFillProfile::CountryCode() const {
-  FormGroup* form_group =
-      personal_info_.find(AutofillType::ADDRESS_HOME)->second;
-  DCHECK(form_group);
-  Address* address = static_cast<Address*>(form_group);
-  return address->country_code();
+  return address_.country_code();
 }
 
 void AutoFillProfile::SetCountryCode(const std::string& country_code) {
-  FormGroup* form_group =
-      personal_info_.find(AutofillType::ADDRESS_HOME)->second;
-  DCHECK(form_group);
-  Address* address = static_cast<Address*>(form_group);
-  address->set_country_code(country_code);
+  address_.set_country_code(country_code);
 }
 
 // static
@@ -276,25 +271,6 @@ bool AutoFillProfile::IsEmpty() const {
   FieldTypeSet types;
   GetAvailableFieldTypes(&types);
   return types.empty();
-}
-
-void AutoFillProfile::operator=(const AutoFillProfile& source) {
-  if (this == &source)
-    return;
-
-  label_ = source.label_;
-  guid_ = source.guid_;
-
-  STLDeleteContainerPairSecondPointers(personal_info_.begin(),
-                                       personal_info_.end());
-  personal_info_.clear();
-
-  FormGroupMap::const_iterator iter;
-  for (iter = source.personal_info_.begin();
-       iter != source.personal_info_.end();
-       ++iter) {
-    personal_info_[iter->first] = iter->second->Clone();
-  }
 }
 
 int AutoFillProfile::Compare(const AutoFillProfile& profile) const {
@@ -446,12 +422,36 @@ void AutoFillProfile::CreateDifferentiatingLabels(
   }
 }
 
-// static
-void AutoFillProfile::InitPersonalInfo(FormGroupMap* personal_info) {
-  (*personal_info)[AutofillType::CONTACT_INFO] = new ContactInfo();
-  (*personal_info)[AutofillType::PHONE_HOME] = new HomePhoneNumber();
-  (*personal_info)[AutofillType::PHONE_FAX] = new FaxNumber();
-  (*personal_info)[AutofillType::ADDRESS_HOME] = new Address();
+AutoFillProfile::FormGroupList AutoFillProfile::info_list() const {
+  FormGroupList v(6);
+  v[0] = &name_;
+  v[1] = &email_;
+  v[2] = &company_;
+  v[3] = &home_number_;
+  v[4] = &fax_number_;
+  v[5] = &address_;
+  return v;
+}
+
+AutoFillProfile::FormGroupMap AutoFillProfile::info_map() const {
+  FormGroupMap m;
+  m[AutofillType::NAME] = &name_;
+  m[AutofillType::EMAIL] = &email_;
+  m[AutofillType::COMPANY] = &company_;
+  m[AutofillType::PHONE_HOME] = &home_number_;
+  m[AutofillType::PHONE_FAX] = &fax_number_;
+  m[AutofillType::ADDRESS_HOME] = &address_;
+  return m;
+}
+
+AutoFillProfile::MutableFormGroupMap AutoFillProfile::mutable_info_map() {
+  FormGroupMap m_const = info_map();
+  MutableFormGroupMap m;
+  for (FormGroupMap::const_iterator it = m_const.begin();
+       it != m_const.end(); ++it) {
+    m[it->first] = const_cast<FormGroup*>(it->second);
+  }
+  return m;
 }
 
 // So we can compare AutoFillProfiles with EXPECT_EQ().

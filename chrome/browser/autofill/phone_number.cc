@@ -34,7 +34,21 @@ const int kAutoFillPhoneLength = arraysize(kAutoFillPhoneTypes);
 
 PhoneNumber::PhoneNumber() {}
 
+PhoneNumber::PhoneNumber(const PhoneNumber& number) : FormGroup() {
+  *this = number;
+}
+
 PhoneNumber::~PhoneNumber() {}
+
+PhoneNumber& PhoneNumber::operator=(const PhoneNumber& number) {
+  if (this == &number)
+    return *this;
+  country_code_ = number.country_code_;
+  city_code_ = number.city_code_;
+  number_ = number.number_;
+  extension_ = number.extension_;
+  return *this;
+}
 
 void PhoneNumber::GetPossibleFieldTypes(const string16& text,
                                         FieldTypeSet* possible_types) const {
@@ -210,14 +224,6 @@ void PhoneNumber::set_whole_number(const string16& whole_number) {
   set_number(number);
   set_city_code(city_code);
   set_country_code(country_code);
-}
-
-PhoneNumber::PhoneNumber(const PhoneNumber& phone_number)
-    : FormGroup(),
-      country_code_(phone_number.country_code_),
-      city_code_(phone_number.city_code_),
-      number_(phone_number.number_),
-      extension_(phone_number.extension_) {
 }
 
 bool PhoneNumber::FindInfoMatchesHelper(const FieldTypeSubGroup& subgroup,

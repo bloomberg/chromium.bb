@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -13,9 +13,10 @@ class FormGroup;
 class FaxNumber : public PhoneNumber {
  public:
   FaxNumber();
+  explicit FaxNumber(const FaxNumber& fax);
   virtual ~FaxNumber();
 
-  virtual FormGroup* Clone() const;
+  FaxNumber& operator=(const FaxNumber& fax);
 
  protected:
   virtual AutofillFieldType GetNumberType() const;
@@ -23,10 +24,6 @@ class FaxNumber : public PhoneNumber {
   virtual AutofillFieldType GetCountryCodeType() const;
   virtual AutofillFieldType GetCityAndNumberType() const;
   virtual AutofillFieldType GetWholeNumberType() const;
-
- private:
-  explicit FaxNumber(const FaxNumber& phone) : PhoneNumber(phone) {}
-  void operator=(const FaxNumber& phone);
 };
 
 #endif  // CHROME_BROWSER_AUTOFILL_FAX_NUMBER_H_

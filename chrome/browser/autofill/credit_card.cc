@@ -148,10 +148,6 @@ CreditCard::CreditCard(const CreditCard& credit_card) : FormGroup() {
 
 CreditCard::~CreditCard() {}
 
-FormGroup* CreditCard::Clone() const {
-  return new CreditCard(*this);
-}
-
 void CreditCard::GetPossibleFieldTypes(const string16& text,
                                        FieldTypeSet* possible_types) const {
   if (IsNameOnCard(text))

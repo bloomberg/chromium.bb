@@ -23,7 +23,7 @@ TEST(AutofillTypeTest, Basic) {
   // Type with group but no subgroup.
   AutofillType first(NAME_FIRST);
   EXPECT_EQ(NAME_FIRST, first.field_type());
-  EXPECT_EQ(AutofillType::CONTACT_INFO, first.group());
+  EXPECT_EQ(AutofillType::NAME, first.group());
   EXPECT_EQ(AutofillType::NO_SUBGROUP, first.subgroup());
 
   // Type with group and subgroup.
@@ -35,7 +35,7 @@ TEST(AutofillTypeTest, Basic) {
   // Last value, to check any offset errors.
   AutofillType last(COMPANY_NAME);
   EXPECT_EQ(COMPANY_NAME, last.field_type());
-  EXPECT_EQ(AutofillType::CONTACT_INFO, last.group());
+  EXPECT_EQ(AutofillType::COMPANY, last.group());
   EXPECT_EQ(AutofillType::NO_SUBGROUP, last.subgroup());
 
   // Boundary (error) condition.

@@ -12,26 +12,37 @@
 
 static const string16 kNameSplitChars = ASCIIToUTF16("-'. ");
 
-static const AutofillFieldType kAutoFillContactInfoTypes[] = {
+static const AutofillFieldType kAutoFillNameInfoTypes[] = {
   NAME_FIRST,
   NAME_MIDDLE,
-  NAME_LAST,
-  EMAIL_ADDRESS,
-  COMPANY_NAME,
+  NAME_LAST
 };
 
-static const size_t kAutoFillContactInfoLength =
-    arraysize(kAutoFillContactInfoTypes);
+static const size_t kAutoFillNameInfoLength =
+    arraysize(kAutoFillNameInfoTypes);
 
-ContactInfo::ContactInfo() {}
+NameInfo::NameInfo() {}
 
-ContactInfo::~ContactInfo() {}
-
-FormGroup* ContactInfo::Clone() const {
-  return new ContactInfo(*this);
+NameInfo::NameInfo(const NameInfo& info) : FormGroup() {
+  *this = info;
 }
 
-void ContactInfo::GetPossibleFieldTypes(const string16& text,
+NameInfo::~NameInfo() {}
+
+NameInfo& NameInfo::operator=(const NameInfo& info) {
+  if (this == &info)
+    return *this;
+
+  first_tokens_ = info.first_tokens_;
+  middle_tokens_ = info.middle_tokens_;
+  last_tokens_ = info.last_tokens_;
+  first_ = info.first_;
+  middle_ = info.middle_;
+  last_ = info.last_;
+  return *this;
+}
+
+void NameInfo::GetPossibleFieldTypes(const string16& text,
                                         FieldTypeSet* possible_types) const {
   DCHECK(possible_types);
 
@@ -47,20 +58,11 @@ void ContactInfo::GetPossibleFieldTypes(const string16& text,
   if (IsMiddleInitial(text))
     possible_types->insert(NAME_MIDDLE_INITIAL);
 
-  if (IsSuffix(text))
-    possible_types->insert(NAME_SUFFIX);
-
   if (IsFullName(text))
     possible_types->insert(NAME_FULL);
-
-  if (email_ == text)
-    possible_types->insert(EMAIL_ADDRESS);
-
-  if (company_name_ == text)
-    possible_types->insert(COMPANY_NAME);
 }
 
-void ContactInfo::GetAvailableFieldTypes(FieldTypeSet* available_types) const {
+void NameInfo::GetAvailableFieldTypes(FieldTypeSet* available_types) const {
   DCHECK(available_types);
 
   if (!first().empty())
@@ -77,26 +79,17 @@ void ContactInfo::GetAvailableFieldTypes(FieldTypeSet* available_types) const {
 
   if (!FullName().empty())
     available_types->insert(NAME_FULL);
-
-  if (!suffix().empty())
-    available_types->insert(NAME_SUFFIX);
-
-  if (!email().empty())
-    available_types->insert(EMAIL_ADDRESS);
-
-  if (!company_name().empty())
-    available_types->insert(COMPANY_NAME);
 }
 
-void ContactInfo::FindInfoMatches(const AutofillType& type,
+void NameInfo::FindInfoMatches(const AutofillType& type,
                                   const string16& info,
                                   std::vector<string16>* matched_text) const {
   DCHECK(matched_text);
 
   string16 match;
   if (type.field_type() == UNKNOWN_TYPE) {
-    for (size_t i = 0; i < kAutoFillContactInfoLength; i++) {
-      if (FindInfoMatchesHelper(kAutoFillContactInfoTypes[i], info, &match))
+    for (size_t i = 0; i < kAutoFillNameInfoLength; i++) {
+      if (FindInfoMatchesHelper(kAutoFillNameInfoTypes[i], info, &match))
         matched_text->push_back(match);
     }
   } else if (FindInfoMatchesHelper(type.field_type(), info, &match)) {
@@ -104,7 +97,7 @@ void ContactInfo::FindInfoMatches(const AutofillType& type,
   }
 }
 
-string16 ContactInfo::GetFieldText(const AutofillType& type) const {
+string16 NameInfo::GetFieldText(const AutofillType& type) const {
   AutofillFieldType field_type = type.field_type();
   if (field_type == NAME_FIRST)
     return first();
@@ -121,82 +114,25 @@ string16 ContactInfo::GetFieldText(const AutofillType& type) const {
   if (field_type == NAME_FULL)
     return FullName();
 
-  if (field_type == NAME_SUFFIX)
-    return suffix();
-
-  if (field_type == EMAIL_ADDRESS)
-    return email();
-
-  if (field_type == COMPANY_NAME)
-    return company_name();
-
   return string16();
 }
 
-void ContactInfo::SetInfo(const AutofillType& type, const string16& value) {
+void NameInfo::SetInfo(const AutofillType& type, const string16& value) {
   AutofillFieldType field_type = type.field_type();
-  DCHECK_EQ(AutofillType::CONTACT_INFO, type.group());
+  DCHECK_EQ(AutofillType::NAME, type.group());
   if (field_type == NAME_FIRST)
     SetFirst(value);
   else if (field_type == NAME_MIDDLE || field_type == NAME_MIDDLE_INITIAL)
     SetMiddle(value);
   else if (field_type == NAME_LAST)
     SetLast(value);
-  else if (field_type == NAME_SUFFIX)
-    set_suffix(value);
-  else if (field_type == EMAIL_ADDRESS)
-    email_ = value;
-  else if (field_type == COMPANY_NAME)
-    company_name_ = value;
   else if (field_type == NAME_FULL)
     SetFullName(value);
   else
     NOTREACHED();
 }
 
-ContactInfo::ContactInfo(const ContactInfo& contact_info)
-    : FormGroup(),
-      first_tokens_(contact_info.first_tokens_),
-      middle_tokens_(contact_info.middle_tokens_),
-      last_tokens_(contact_info.last_tokens_),
-      first_(contact_info.first_),
-      middle_(contact_info.middle_),
-      last_(contact_info.last_),
-      suffix_(contact_info.suffix_),
-      email_(contact_info.email_),
-      company_name_(contact_info.company_name_) {
-}
-
-string16 ContactInfo::FullName() const {
-  if (first_.empty())
-    return string16();
-
-  std::vector<string16> full_name;
-  full_name.push_back(first_);
-
-  if (!middle_.empty())
-    full_name.push_back(middle_);
-
-  if (!last_.empty())
-    full_name.push_back(last_);
-
-  if (!suffix_.empty())
-    full_name.push_back(suffix_);
-
-  return JoinString(full_name, ' ');
-}
-
-string16 ContactInfo::MiddleInitial() const {
-  if (middle_.empty())
-    return string16();
-
-  string16 middle_name(middle());
-  string16 initial;
-  initial.push_back(middle_name[0]);
-  return initial;
-}
-
-bool ContactInfo::FindInfoMatchesHelper(const AutofillFieldType& field_type,
+bool NameInfo::FindInfoMatchesHelper(const AutofillFieldType& field_type,
                                         const string16& info,
                                         string16* match) const {
   if (match == NULL) {
@@ -214,51 +150,63 @@ bool ContactInfo::FindInfoMatchesHelper(const AutofillFieldType& field_type,
   } else if (field_type == NAME_LAST &&
              StartsWith(last(), info, false)) {
     *match = last();
-  } else if (field_type == NAME_SUFFIX &&
-             StartsWith(suffix(), info, false)) {
-    *match = suffix();
   } else if (field_type == NAME_MIDDLE_INITIAL && IsMiddleInitial(info)) {
     *match = MiddleInitial();
   } else if (field_type == NAME_FULL &&
              StartsWith(FullName(), info, false)) {
     *match = FullName();
-  } else if (field_type == EMAIL_ADDRESS &&
-             StartsWith(email(), info, false)) {
-    *match = email();
-  } else if (field_type == COMPANY_NAME &&
-             StartsWith(company_name(), info, false)) {
-    *match = company_name();
   }
 
   return !match->empty();
+}
+
+string16 NameInfo::FullName() const {
+  if (first_.empty())
+    return string16();
+
+  std::vector<string16> full_name;
+  full_name.push_back(first_);
+
+  if (!middle_.empty())
+    full_name.push_back(middle_);
+
+  if (!last_.empty())
+    full_name.push_back(last_);
+
+  return JoinString(full_name, ' ');
+}
+
+string16 NameInfo::MiddleInitial() const {
+  if (middle_.empty())
+    return string16();
+
+  string16 middle_name(middle());
+  string16 initial;
+  initial.push_back(middle_name[0]);
+  return initial;
 }
 
 // If each of the 'words' contained in the text are also present in the first
 // name then we will consider the text to be of type kFirstName. This means
 // that people with multiple first names will be able to enter any one of
 // their first names and have it correctly recognized.
-bool ContactInfo::IsFirstName(const string16& text) const {
+bool NameInfo::IsFirstName(const string16& text) const {
   return IsNameMatch(text, first_tokens_);
 }
 
 // If each of the 'words' contained in the text are also present in the middle
 // name then we will consider the text to be of type kMiddleName.
-bool ContactInfo::IsMiddleName(const string16& text) const {
+bool NameInfo::IsMiddleName(const string16& text) const {
   return IsNameMatch(text, middle_tokens_);
 }
 
 // If each of the 'words' contained in the text are also present in the last
 // name then we will consider the text to be of type kLastName.
-bool ContactInfo::IsLastName(const string16& text) const {
+bool NameInfo::IsLastName(const string16& text) const {
   return IsNameMatch(text, last_tokens_);
 }
 
-bool ContactInfo::IsSuffix(const string16& text) const {
-  string16 lower_suffix = StringToLowerASCII(suffix_);
-  return (lower_suffix == text);
-}
-
-bool ContactInfo::IsMiddleInitial(const string16& text) const {
+bool NameInfo::IsMiddleInitial(const string16& text) const {
   if (text.length() != 1)
      return false;
 
@@ -280,7 +228,7 @@ bool ContactInfo::IsMiddleInitial(const string16& text) const {
 //    2) it contains at least one word from the last name.
 //    3) all of the words in the field match a word in either the first,
 //       middle, or last name.
-bool ContactInfo::IsFullName(const string16& text) const {
+bool NameInfo::IsFullName(const string16& text) const {
   size_t first_tokens_size = first_tokens_.size();
   if (first_tokens_size == 0)
     return false;
@@ -291,7 +239,7 @@ bool ContactInfo::IsFullName(const string16& text) const {
   if (last_tokens_size == 0)
     return false;
 
-  NameTokens text_tokens;
+  std::vector<string16> text_tokens;
   Tokenize(text, kNameSplitChars, &text_tokens);
   size_t text_tokens_size = text_tokens.size();
   if (text_tokens_size == 0 || text_tokens_size < 2)
@@ -304,8 +252,8 @@ bool ContactInfo::IsFullName(const string16& text) const {
 
   bool first_name_match = false;
   bool last_name_match = false;
-  NameTokens::iterator iter;
-  for (iter = text_tokens.begin(); iter != text_tokens.end(); ++iter) {
+  for (std::vector<string16>::iterator iter = text_tokens.begin();
+       iter != text_tokens.end(); ++iter) {
     bool match = false;
     if (IsWordInName(*iter, first_tokens_)) {
       match = true;
@@ -327,13 +275,13 @@ bool ContactInfo::IsFullName(const string16& text) const {
   return (first_name_match && last_name_match);
 }
 
-bool ContactInfo::IsNameMatch(const string16& text,
-                              const NameTokens& name_tokens) const {
+bool NameInfo::IsNameMatch(const string16& text,
+                           const std::vector<string16>& name_tokens) const {
   size_t name_tokens_size = name_tokens.size();
   if (name_tokens_size == 0)
     return false;
 
-  NameTokens text_tokens;
+  std::vector<string16> text_tokens;
   Tokenize(text, kNameSplitChars, &text_tokens);
   size_t text_tokens_size = text_tokens.size();
   if (text_tokens_size == 0)
@@ -344,8 +292,8 @@ bool ContactInfo::IsNameMatch(const string16& text,
 
   // If each of the 'words' contained in the text are also present in the name,
   // then we will consider the text to match the name.
-  NameTokens::iterator iter;
-  for (iter = text_tokens.begin(); iter != text_tokens.end(); ++iter) {
+  for (std::vector<string16>::iterator iter = text_tokens.begin();
+       iter != text_tokens.end(); ++iter) {
     if (!IsWordInName(*iter, name_tokens))
       return false;
   }
@@ -353,10 +301,10 @@ bool ContactInfo::IsNameMatch(const string16& text,
   return true;
 }
 
-bool ContactInfo::IsWordInName(const string16& word,
-                               const NameTokens& name_tokens) const {
-  NameTokens::const_iterator iter;
-  for (iter = name_tokens.begin(); iter != name_tokens.end(); ++iter) {
+bool NameInfo::IsWordInName(const string16& word,
+                            const std::vector<string16>& name_tokens) const {
+  for (std::vector<string16>::const_iterator iter = name_tokens.begin();
+       iter != name_tokens.end(); ++iter) {
     // |*iter| is already lower-cased.
     if (StringToLowerASCII(word) == *iter)
       return true;
@@ -365,35 +313,38 @@ bool ContactInfo::IsWordInName(const string16& word,
   return false;
 }
 
-void ContactInfo::SetFirst(const string16& first) {
+void NameInfo::SetFirst(const string16& first) {
   first_ = first;
   first_tokens_.clear();
   Tokenize(first, kNameSplitChars, &first_tokens_);
-  NameTokens::iterator iter;
-  for (iter = first_tokens_.begin(); iter != first_tokens_.end(); ++iter)
+  for (std::vector<string16>::iterator iter = first_tokens_.begin();
+       iter != first_tokens_.end(); ++iter) {
     *iter = StringToLowerASCII(*iter);
+  }
 }
 
-void ContactInfo::SetMiddle(const string16& middle) {
+void NameInfo::SetMiddle(const string16& middle) {
   middle_ = middle;
   middle_tokens_.clear();
   Tokenize(middle, kNameSplitChars, &middle_tokens_);
-  NameTokens::iterator iter;
-  for (iter = middle_tokens_.begin(); iter != middle_tokens_.end(); ++iter)
+  for (std::vector<string16>::iterator iter = middle_tokens_.begin();
+       iter != middle_tokens_.end(); ++iter) {
     *iter = StringToLowerASCII(*iter);
+  }
 }
 
-void ContactInfo::SetLast(const string16& last) {
+void NameInfo::SetLast(const string16& last) {
   last_ = last;
   last_tokens_.clear();
   Tokenize(last, kNameSplitChars, &last_tokens_);
-  NameTokens::iterator iter;
-  for (iter = last_tokens_.begin(); iter != last_tokens_.end(); ++iter)
+  for (std::vector<string16>::iterator iter = last_tokens_.begin();
+       iter != last_tokens_.end(); ++iter) {
     *iter = StringToLowerASCII(*iter);
+  }
 }
 
-void ContactInfo::SetFullName(const string16& full) {
-  NameTokens full_name_tokens;
+void NameInfo::SetFullName(const string16& full) {
+  std::vector<string16> full_name_tokens;
   Tokenize(full, ASCIIToUTF16(" "), &full_name_tokens);
   // Clear the names.
   SetFirst(string16());
@@ -415,3 +366,119 @@ void ContactInfo::SetFullName(const string16& full) {
   }
 }
 
+EmailInfo::EmailInfo() {}
+
+EmailInfo::EmailInfo(const EmailInfo& info) : FormGroup() {
+  *this = info;
+}
+
+EmailInfo::~EmailInfo() {}
+
+EmailInfo& EmailInfo::operator=(const EmailInfo& info) {
+  if (this == &info)
+    return *this;
+
+  email_ = info.email_;
+  return *this;
+}
+
+void EmailInfo::GetPossibleFieldTypes(const string16& text,
+                                      FieldTypeSet* possible_types) const {
+  DCHECK(possible_types);
+  // TODO(isherman): Investigate case-insensitive comparison.
+  if (email_ == text)
+    possible_types->insert(EMAIL_ADDRESS);
+}
+
+void EmailInfo::GetAvailableFieldTypes(FieldTypeSet* available_types) const {
+  DCHECK(available_types);
+  if (!email_.empty())
+    available_types->insert(EMAIL_ADDRESS);
+}
+
+void EmailInfo::FindInfoMatches(const AutofillType& type,
+                                const string16& info,
+                                std::vector<string16>* matched_text) const {
+  DCHECK(matched_text);
+
+  string16 match;
+  if (type.field_type() == UNKNOWN_TYPE && StartsWith(email_, info, false)) {
+      matched_text->push_back(email_);
+  } else if (type.field_type() == EMAIL_ADDRESS &&
+      StartsWith(email_, info, false)) {
+    matched_text->push_back(email_);
+  }
+}
+
+string16 EmailInfo::GetFieldText(const AutofillType& type) const {
+  AutofillFieldType field_type = type.field_type();
+  if (field_type == EMAIL_ADDRESS)
+    return email_;
+
+  return string16();
+}
+
+void EmailInfo::SetInfo(const AutofillType& type, const string16& value) {
+  DCHECK_EQ(AutofillType::EMAIL, type.group());
+  email_ = value;
+}
+
+CompanyInfo::CompanyInfo() {}
+
+CompanyInfo::CompanyInfo(const CompanyInfo& info) : FormGroup() {
+  *this = info;
+}
+
+CompanyInfo::~CompanyInfo() {}
+
+CompanyInfo& CompanyInfo::operator=(const CompanyInfo& info) {
+  if (this == &info)
+    return *this;
+
+  company_name_ = info.company_name_;
+  return *this;
+}
+
+void CompanyInfo::GetPossibleFieldTypes(const string16& text,
+                                        FieldTypeSet* possible_types) const {
+  DCHECK(possible_types);
+
+  if (company_name_ == text)
+    possible_types->insert(COMPANY_NAME);
+}
+
+void CompanyInfo::GetAvailableFieldTypes(FieldTypeSet* available_types) const {
+  DCHECK(available_types);
+
+  if (!company_name_.empty())
+    available_types->insert(COMPANY_NAME);
+}
+
+void CompanyInfo::FindInfoMatches(const AutofillType& type,
+                                  const string16& info,
+                                  std::vector<string16>* matched_text) const {
+  DCHECK(matched_text);
+
+  string16 match;
+  if (type.field_type() == UNKNOWN_TYPE &&
+      StartsWith(company_name_, info, false)) {
+    matched_text->push_back(company_name_);
+  } else if (type.field_type() == COMPANY_NAME &&
+      StartsWith(company_name_, info, false)) {
+    matched_text->push_back(company_name_);
+  }
+}
+
+string16 CompanyInfo::GetFieldText(const AutofillType& type) const {
+  AutofillFieldType field_type = type.field_type();
+
+  if (field_type == COMPANY_NAME)
+    return company_name_;
+
+  return string16();
+}
+
+void CompanyInfo::SetInfo(const AutofillType& type, const string16& value) {
+  DCHECK_EQ(AutofillType::COMPANY, type.group());
+  company_name_ = value;
+}

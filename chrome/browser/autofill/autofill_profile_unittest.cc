@@ -603,7 +603,7 @@ TEST(AutoFillProfileTest, AssignmentOperator){
   EXPECT_TRUE(a == b);
 }
 
-TEST(AutoFillProfileTest, Clone) {
+TEST(AutoFillProfileTest, Copy) {
   AutoFillProfile a;
 
   // Clone should be logically equal to the original.
@@ -611,8 +611,8 @@ TEST(AutoFillProfileTest, Clone) {
                                 "marion@me.xyz", "Fox", "123 Zoo St.", "unit 5",
                                 "Hollywood", "CA", "91601", "US", "12345678910",
                                 "01987654321");
-  scoped_ptr<AutoFillProfile> b(static_cast<AutoFillProfile*>(a.Clone()));
-  EXPECT_TRUE(a == *b);
+  AutoFillProfile b(a);
+  EXPECT_TRUE(a == b);
 }
 
 TEST(AutoFillProfileTest, Compare) {

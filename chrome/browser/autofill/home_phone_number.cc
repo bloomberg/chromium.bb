@@ -1,11 +1,20 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "chrome/browser/autofill/home_phone_number.h"
 
-FormGroup* HomePhoneNumber::Clone() const {
-  return new HomePhoneNumber(*this);
+HomePhoneNumber::HomePhoneNumber() {}
+
+HomePhoneNumber::HomePhoneNumber(const HomePhoneNumber& phone)
+  : PhoneNumber(phone) {
+}
+
+HomePhoneNumber::~HomePhoneNumber() {}
+
+HomePhoneNumber& HomePhoneNumber::operator=(const HomePhoneNumber& phone) {
+  PhoneNumber::operator=(phone);
+  return *this;
 }
 
 AutofillFieldType HomePhoneNumber::GetNumberType() const {

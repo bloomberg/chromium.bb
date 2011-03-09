@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -12,8 +12,11 @@ class FormGroup;
 
 class HomePhoneNumber : public PhoneNumber {
  public:
-  HomePhoneNumber() {}
-  virtual FormGroup* Clone() const;
+  HomePhoneNumber();
+  explicit HomePhoneNumber(const HomePhoneNumber& phone);
+  virtual ~HomePhoneNumber();
+
+  HomePhoneNumber& operator=(const HomePhoneNumber& phone);
 
  protected:
   virtual AutofillFieldType GetNumberType() const;
@@ -21,10 +24,6 @@ class HomePhoneNumber : public PhoneNumber {
   virtual AutofillFieldType GetCountryCodeType() const;
   virtual AutofillFieldType GetCityAndNumberType() const;
   virtual AutofillFieldType GetWholeNumberType() const;
-
- private:
-  explicit HomePhoneNumber(const HomePhoneNumber& phone) : PhoneNumber(phone) {}
-  void operator=(const HomePhoneNumber& phone);
 };
 
 #endif  // CHROME_BROWSER_AUTOFILL_HOME_PHONE_NUMBER_H_

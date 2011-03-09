@@ -20,9 +20,6 @@ class FormGroup {
  public:
   virtual ~FormGroup() {}
 
-  // Returns a clone of this object.
-  virtual FormGroup* Clone() const = 0;
-
   // Used to determine the type of a field based on the text that a user enters
   // into the field. The field types can then be reported back to the server.
   // This method is additive on |possible_types|.

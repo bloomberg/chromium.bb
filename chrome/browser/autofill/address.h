@@ -16,10 +16,12 @@
 class Address : public FormGroup {
  public:
   Address();
+  explicit Address(const Address& address);
   virtual ~Address();
 
+  Address& operator=(const Address& address);
+
   // FormGroup:
-  virtual FormGroup* Clone() const;
   virtual void GetPossibleFieldTypes(const string16& text,
                                      FieldTypeSet* possible_types) const;
   virtual void GetAvailableFieldTypes(FieldTypeSet* available_types) const;
@@ -40,10 +42,6 @@ class Address : public FormGroup {
  private:
   // Vector of tokens in an address line.
   typedef std::vector<string16> LineTokens;
-
-  explicit Address(const Address& address);
-
-  void operator=(const Address& address);
 
   // Returns the localized country name corresponding to |country_code_|.
   string16 Country() const;

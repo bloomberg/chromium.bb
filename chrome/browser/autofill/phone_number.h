@@ -16,10 +16,12 @@
 class PhoneNumber : public FormGroup {
  public:
   PhoneNumber();
+  explicit PhoneNumber(const PhoneNumber& number);
   virtual ~PhoneNumber();
 
+  PhoneNumber& operator=(const PhoneNumber& number);
+
   // FormGroup implementation:
-  virtual FormGroup* Clone() const = 0;
   virtual void GetPossibleFieldTypes(const string16& text,
                                      FieldTypeSet* possible_types) const;
   virtual void GetAvailableFieldTypes(FieldTypeSet* available_types) const;
@@ -53,13 +55,8 @@ class PhoneNumber : public FormGroup {
   virtual AutofillFieldType GetCityAndNumberType() const = 0;
   virtual AutofillFieldType GetWholeNumberType() const = 0;
 
- protected:
-  explicit PhoneNumber(const PhoneNumber& phone_number);
-
  private:
   FRIEND_TEST_ALL_PREFIXES(PhoneNumberTest, Matcher);
-
-  void operator=(const PhoneNumber& phone_number);
 
   const string16& country_code() const { return country_code_; }
   const string16& city_code() const { return city_code_; }

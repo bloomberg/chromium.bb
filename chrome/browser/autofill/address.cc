@@ -29,10 +29,25 @@ const int kAutoFillAddressLength = arraysize(kAutoFillAddressTypes);
 
 Address::Address() {}
 
+Address::Address(const Address& address) : FormGroup() {
+  *this = address;
+}
+
 Address::~Address() {}
 
-FormGroup* Address::Clone() const {
-  return new Address(*this);
+Address& Address::operator=(const Address& address) {
+  if (this == &address)
+    return *this;
+
+  line1_tokens_ = address.line1_tokens_;
+  line2_tokens_= address.line2_tokens_;
+  line1_ = address.line1_;
+  line2_ = address.line2_;
+  city_ = address.city_;
+  state_ = address.state_;
+  country_code_ = address.country_code_;
+  zip_code_ = address.zip_code_;
+  return *this;
 }
 
 void Address::GetPossibleFieldTypes(const string16& text,
@@ -152,18 +167,6 @@ void Address::Clear() {
   state_.clear();
   country_code_.clear();
   zip_code_.clear();
-}
-
-Address::Address(const Address& address)
-    : FormGroup(),
-      line1_tokens_(address.line1_tokens_),
-      line2_tokens_(address.line2_tokens_),
-      line1_(address.line1_),
-      line2_(address.line2_),
-      city_(address.city_),
-      state_(address.state_),
-      country_code_(address.country_code_),
-      zip_code_(address.zip_code_) {
 }
 
 string16 Address::Country() const {

@@ -672,9 +672,10 @@ TEST_F(AutofillManagerTest, GetProfileSuggestionsWithDuplicates) {
   FormsSeen(forms);
 
   // Add a duplicate profile.
-  AutoFillProfile* duplicate_profile = static_cast<AutoFillProfile*>(
-      autofill_manager_->GetProfileWithGUID(
-          "00000000-0000-0000-0000-000000000001")->Clone());
+  AutoFillProfile* duplicate_profile =
+      new AutoFillProfile(
+          *(autofill_manager_->GetProfileWithGUID(
+              "00000000-0000-0000-0000-000000000001")));
   autofill_manager_->AddProfile(duplicate_profile);
 
   const FormField& field = form.fields[0];
