@@ -40,6 +40,7 @@
 #include "chrome_frame/utils.h"
 #include "content/browser/plugin_service.h"
 #include "content/browser/renderer_host/render_process_host.h"
+#include "content/common/content_paths.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/ui_base_paths.h"
@@ -193,6 +194,7 @@ void FakeExternalTab::Initialize() {
   icu_util::Initialize();
 
   app::RegisterPathProvider();
+  content::RegisterPathProvider();
   ui::RegisterPathProvider();
 
   // Load Chrome.dll as our resource dll.
