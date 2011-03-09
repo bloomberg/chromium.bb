@@ -55,9 +55,11 @@ class TabStrip : public BaseTabStrip,
   // MouseWatcherListener overrides:
   virtual void MouseMovedOutOfView();
 
-  // BaseTabStrip implementation:
-  virtual void SetBackgroundOffset(const gfx::Point& offset);
+  // AbstractTabStripView implementation:
   virtual bool IsPositionInWindowCaption(const gfx::Point& point);
+  virtual void SetBackgroundOffset(const gfx::Point& offset);
+
+  // BaseTabStrip implementation:
   virtual void PrepareForCloseAt(int model_index);
   virtual void RemoveTabAt(int model_index);
   virtual void SelectTabAt(int old_model_index, int new_model_index);

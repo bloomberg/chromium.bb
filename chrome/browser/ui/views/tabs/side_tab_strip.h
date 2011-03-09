@@ -18,10 +18,11 @@ class SideTabStrip : public BaseTabStrip {
   explicit SideTabStrip(TabStripController* controller);
   virtual ~SideTabStrip();
 
-  // BaseTabStrip implementation:
-  virtual void SetBackgroundOffset(const gfx::Point& offset);
+  // AbstractTabStripView implementation:
   virtual bool IsPositionInWindowCaption(const gfx::Point& point);
+  virtual void SetBackgroundOffset(const gfx::Point& offset);
 
+  // BaseTabStrip implementation:
   virtual void StartHighlight(int model_index);
   virtual void StopAllHighlighting();
   virtual BaseTab* CreateTabForDragging();

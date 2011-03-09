@@ -33,13 +33,6 @@ class BaseTabStrip : public AbstractTabStripView,
 
   Type type() const { return type_; }
 
-  // Set the background offset used by inactive tabs to match the frame image.
-  virtual void SetBackgroundOffset(const gfx::Point& offset) = 0;
-
-  // Returns true if the specified point(TabStrip coordinates) is
-  // in the window caption area of the browser window.
-  virtual bool IsPositionInWindowCaption(const gfx::Point& point) = 0;
-
   // Returns true if Tabs in this TabStrip are currently changing size or
   // position.
   virtual bool IsAnimating() const;

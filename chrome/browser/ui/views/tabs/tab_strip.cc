@@ -162,12 +162,7 @@ void TabStrip::MouseMovedOutOfView() {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// TabStrip, BaseTabStrip implementation:
-
-void TabStrip::SetBackgroundOffset(const gfx::Point& offset) {
-  for (int i = 0; i < tab_count(); ++i)
-    GetTabAtTabDataIndex(i)->set_background_offset(offset);
-}
+// TabStrip, AbstractTabStripView implementation:
 
 bool TabStrip::IsPositionInWindowCaption(const gfx::Point& point) {
   views::View* v = GetEventHandlerForPoint(point);
@@ -192,6 +187,14 @@ bool TabStrip::IsPositionInWindowCaption(const gfx::Point& point) {
   // processed for them.
   return false;
 }
+
+void TabStrip::SetBackgroundOffset(const gfx::Point& offset) {
+  for (int i = 0; i < tab_count(); ++i)
+    GetTabAtTabDataIndex(i)->set_background_offset(offset);
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// TabStrip, BaseTabStrip implementation:
 
 void TabStrip::PrepareForCloseAt(int model_index) {
   if (!in_tab_close_ && IsAnimating()) {

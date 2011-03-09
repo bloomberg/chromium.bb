@@ -33,12 +33,7 @@ TouchTabStrip::~TouchTabStrip() {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// TouchTabStrip, BaseTabStrip implementation:
-
-void TouchTabStrip::SetBackgroundOffset(const gfx::Point& offset) {
-  for (int i = 0; i < tab_count(); ++i)
-    GetTabAtTabDataIndex(i)->set_background_offset(offset);
-}
+// TouchTabStrip, AbstractTabStripView implementation:
 
 bool TouchTabStrip::IsPositionInWindowCaption(const gfx::Point& point) {
   views::View* v = GetEventHandlerForPoint(point);
@@ -52,6 +47,14 @@ bool TouchTabStrip::IsPositionInWindowCaption(const gfx::Point& point) {
   // client area so that regular events can be processed for them.
   return false;
 }
+
+void TouchTabStrip::SetBackgroundOffset(const gfx::Point& offset) {
+  for (int i = 0; i < tab_count(); ++i)
+    GetTabAtTabDataIndex(i)->set_background_offset(offset);
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// TouchTabStrip, BaseTabStrip implementation:
 
 void TouchTabStrip::PrepareForCloseAt(int model_index) {
   if (!in_tab_close_ && IsAnimating()) {

@@ -25,9 +25,11 @@ class TouchTabStrip : public BaseTabStrip {
   explicit TouchTabStrip(TabStripController* controller);
   virtual ~TouchTabStrip();
 
-  // BaseTabStrip implementation:
-  virtual void SetBackgroundOffset(const gfx::Point& offset);
+  // AbstractTabStripView implementation:
   virtual bool IsPositionInWindowCaption(const gfx::Point& point);
+  virtual void SetBackgroundOffset(const gfx::Point& offset);
+
+  // BaseTabStrip implementation:
   virtual void PrepareForCloseAt(int model_index);
   virtual void StartHighlight(int model_index);
   virtual void StopAllHighlighting();

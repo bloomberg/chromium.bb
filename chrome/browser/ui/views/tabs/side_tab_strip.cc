@@ -87,14 +87,17 @@ SideTabStrip::~SideTabStrip() {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// SideTabStrip, BaseTabStrip implementation:
-
-void SideTabStrip::SetBackgroundOffset(const gfx::Point& offset) {
-}
+// SideTabStrip, AbstractTabStripView implementation:
 
 bool SideTabStrip::IsPositionInWindowCaption(const gfx::Point& point) {
   return GetEventHandlerForPoint(point) == this;
 }
+
+void SideTabStrip::SetBackgroundOffset(const gfx::Point& offset) {
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// SideTabStrip, BaseTabStrip implementation:
 
 void SideTabStrip::StartHighlight(int model_index) {
 }
