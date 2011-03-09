@@ -30,7 +30,6 @@
 #include "chrome/browser/ui/gtk/gtk_theme_provider.h"
 #include "chrome/browser/ui/gtk/gtk_util.h"
 #include "chrome/browser/ui/gtk/hover_controller_gtk.h"
-#include "chrome/browser/ui/gtk/importer/import_dialog_gtk.h"
 #include "chrome/browser/ui/gtk/menu_gtk.h"
 #include "chrome/browser/ui/gtk/rounded_window.h"
 #include "chrome/browser/ui/gtk/tabs/tab_strip_gtk.h"
@@ -377,8 +376,7 @@ void BookmarkBarGtk::OnStateChanged() {
 }
 
 void BookmarkBarGtk::ShowImportDialog() {
-  ImportDialogGtk::Show(window_->window(), browser_->profile(),
-                        importer::FAVORITES);
+  browser_->OpenImportSettingsDialog();
 }
 
 void BookmarkBarGtk::EnterFullscreen() {

@@ -56,10 +56,6 @@
 #include "views/widget/widget.h"
 #include "views/window/window.h"
 
-#if defined(OS_WIN)
-#include "chrome/browser/ui/views/importer/import_dialog_view.h"
-#endif
-
 using views::CustomButton;
 using views::DropTargetEvent;
 using views::MenuButton;
@@ -854,12 +850,7 @@ void BookmarkBarView::GetAnchorPositionAndStartIndexForButton(
 }
 
 void BookmarkBarView::ShowImportDialog() {
-#if defined(OS_WIN)
-  views::Window::CreateChromeWindow(
-      GetWindow()->GetNativeWindow(),
-      gfx::Rect(),
-      new ImportDialogView(profile_, importer::FAVORITES))->Show();
-#endif
+  browser_->OpenImportSettingsDialog();
 }
 
 void BookmarkBarView::Init() {

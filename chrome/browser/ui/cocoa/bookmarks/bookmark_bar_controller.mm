@@ -33,7 +33,6 @@
 #import "chrome/browser/ui/cocoa/browser_window_controller.h"
 #import "chrome/browser/ui/cocoa/event_utils.h"
 #import "chrome/browser/ui/cocoa/fullscreen_controller.h"
-#import "chrome/browser/ui/cocoa/importer/import_dialog_cocoa.h"
 #import "chrome/browser/ui/cocoa/menu_button.h"
 #import "chrome/browser/ui/cocoa/themed_window.h"
 #import "chrome/browser/ui/cocoa/toolbar/toolbar_controller.h"
@@ -732,8 +731,7 @@ void RecordAppLaunch(Profile* profile, GURL url) {
 }
 
 - (IBAction)importBookmarks:(id)sender {
-  [ImportDialogController showImportSettingsDialogForProfile:
-      browser_->profile()];
+  browser_->OpenImportSettingsDialog();
 }
 
 #pragma mark Private Methods
