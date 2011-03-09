@@ -781,7 +781,8 @@ string16 TruncateString(const string16& string, size_t length) {
 
 string16 ToLower(const string16& string) {
   icu::UnicodeString lower_u_str(
-      icu::UnicodeString(string.c_str()).toLower(icu::Locale::getDefault()));
+      icu::UnicodeString(FALSE, string.c_str(), string.size()).toLower(
+          icu::Locale::getDefault()));
   string16 result;
   lower_u_str.extract(0, lower_u_str.length(),
                       WriteInto(&result, lower_u_str.length() + 1));
@@ -790,7 +791,8 @@ string16 ToLower(const string16& string) {
 
 string16 ToUpper(const string16& string) {
   icu::UnicodeString upper_u_str(
-      icu::UnicodeString(string.c_str()).toUpper(icu::Locale::getDefault()));
+      icu::UnicodeString(FALSE, string.c_str(), string.size()).toUpper(
+          icu::Locale::getDefault()));
   string16 result;
   upper_u_str.extract(0, upper_u_str.length(),
                       WriteInto(&result, upper_u_str.length() + 1));

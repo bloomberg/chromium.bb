@@ -330,6 +330,21 @@ TEST_F(L10nUtilTest, LocaleDisplayName) {
 
   result = l10n_util::GetDisplayNameForLocale("es-419", "en", false);
   EXPECT_EQ(ASCIIToUTF16("Spanish (Latin America)"), result);
+
+  // ToUpper and ToLower should work with embedded NULLs.
+  const size_t length_with_null = 4;
+  char16 buf_with_null[length_with_null] = { 0, 'a', 0, 'b' };
+  string16 string16_with_null(buf_with_null, length_with_null);
+
+  string16 upper_with_null = l10n_util::ToUpper(string16_with_null);
+  ASSERT_EQ(length_with_null, upper_with_null.size());
+  EXPECT_TRUE(upper_with_null[0] == 0 && upper_with_null[1] == 'A' &&
+              upper_with_null[2] == 0 && upper_with_null[3] == 'B');
+
+  string16 lower_with_null = l10n_util::ToLower(upper_with_null);
+  ASSERT_EQ(length_with_null, upper_with_null.size());
+  EXPECT_TRUE(lower_with_null[0] == 0 && lower_with_null[1] == 'a' &&
+              lower_with_null[2] == 0 && lower_with_null[3] == 'b');
 }
 
 TEST_F(L10nUtilTest, GetParentLocales) {
