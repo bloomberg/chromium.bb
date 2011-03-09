@@ -314,6 +314,13 @@ void RenderTimer::TimerCallback(CFRunLoopTimerRef timer, void* info) {
 
 #pragma mark ____BREAKPAD
 
+bool IsBrowserChrome() {
+  NSString *processName = [[NSProcessInfo processInfo] processName];
+  NSString *chromeString = @"Google Chrome Helper";
+  bool areEqual = [processName isEqualToString:chromeString];
+  return areEqual;
+}
+  
 bool ExceptionCallback(int exception_type,
                        int exception_code,
                        mach_port_t crashing_thread,
@@ -322,7 +329,7 @@ bool ExceptionCallback(int exception_type,
 }
 
 void InitializeBreakpad() {
-  if (!gBreakpadRef) {
+  if (!gBreakpadRef && !IsBrowserChrome()) {
     NSBundle* bundle = [NSBundle bundleWithIdentifier:@"com.google.o3d"];
     NSDictionary* info = [bundle infoDictionary];
 
