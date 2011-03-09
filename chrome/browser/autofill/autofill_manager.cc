@@ -861,8 +861,17 @@ void AutofillManager::GetCreditCardSuggestions(FormStructure* form,
       if (type.field_type() == CREDIT_CARD_NUMBER)
         creditcard_field_value = credit_card->ObfuscatedNumber();
 
+      string16 label;
+      if (credit_card->number().empty()) {
+        // If there is no CC number, return name to show something.
+        label = credit_card->GetFieldText(AutofillType(CREDIT_CARD_NAME));
+      } else {
+        label = kCreditCardPrefix;
+        label.append(credit_card->LastFourDigits());
+      }
+
       values->push_back(creditcard_field_value);
-      labels->push_back(kCreditCardPrefix + credit_card->LastFourDigits());
+      labels->push_back(label);
       icons->push_back(credit_card->type());
       unique_ids->push_back(PackGUIDs(credit_card->guid(), std::string()));
     }

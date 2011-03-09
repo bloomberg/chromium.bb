@@ -26,7 +26,7 @@ TEST(CreditCardTest, PreviewSummaryAndObfuscatedNumberStrings) {
   autofill_test::SetCreditCardInfo(&credit_card00,
       "John Dillinger", "", "", "");
   string16 summary00 = credit_card00.PreviewSummary();
-  EXPECT_EQ(string16(), summary00);
+  EXPECT_EQ(string16(ASCIIToUTF16("John Dillinger")), summary00);
   string16 obfuscated00 = credit_card00.ObfuscatedNumber();
   EXPECT_EQ(string16(), obfuscated00);
 
@@ -35,7 +35,7 @@ TEST(CreditCardTest, PreviewSummaryAndObfuscatedNumberStrings) {
   autofill_test::SetCreditCardInfo(&credit_card1,
       "John Dillinger", "", "01", "2010");
   string16 summary1 = credit_card1.PreviewSummary();
-  EXPECT_EQ(string16(), summary1);
+  EXPECT_EQ(string16(ASCIIToUTF16("John Dillinger")), summary1);
   string16 obfuscated1 = credit_card1.ObfuscatedNumber();
   EXPECT_EQ(string16(), obfuscated1);
 

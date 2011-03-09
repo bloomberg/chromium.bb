@@ -368,7 +368,7 @@ string16 CreditCard::ObfuscatedNumber() const {
 string16 CreditCard::PreviewSummary() const {
   string16 preview;
   if (number().empty())
-    return preview;  // No CC number, means empty preview.
+    return name_on_card_;  // No CC number, return name only.
   string16 obfuscated_cc_number = ObfuscatedNumber();
   if (!expiration_month() || !expiration_year())
     return obfuscated_cc_number;  // No expiration date set.
