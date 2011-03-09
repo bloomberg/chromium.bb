@@ -18,6 +18,7 @@
 #include "chrome/browser/command_updater.h"
 #include "chrome/browser/download/download_manager.h"
 #include "chrome/browser/fonts_languages_window.h"
+#include "chrome/browser/instant/instant_confirm_dialog.h"
 #include "chrome/browser/metrics/user_metrics.h"
 #include "chrome/browser/printing/print_job_manager.h"
 #include "chrome/browser/profiles/profile_manager.h"
@@ -1149,6 +1150,20 @@ void ShowFontsLanguagesWindow(gfx::NativeWindow window,
                               Profile* profile) {
   NOTIMPLEMENTED();
 }
+
+namespace browser {
+
+void ShowInstantConfirmDialog(gfx::NativeWindow parent, Profile* profile) {
+  if (Browser* browser = ActivateBrowser(profile)) {
+    // Show options tab in the active browser window.
+    browser->OpenOptionsDialog();
+  } else {
+    // No browser window, so create one for the options tab.
+    Browser::OpenOptionsWindow(profile);
+  }
+}
+
+}  // namespace browser
 
 namespace app_controller_mac {
 
