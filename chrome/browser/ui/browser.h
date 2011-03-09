@@ -33,11 +33,11 @@
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper_delegate.h"
 #include "chrome/browser/ui/toolbar/toolbar_model.h"
 #include "chrome/common/extensions/extension_constants.h"
-#include "chrome/common/notification_registrar.h"
 #include "chrome/common/page_transition_types.h"
 #include "chrome/common/page_zoom.h"
 #include "content/browser/tab_contents/page_navigator.h"
 #include "content/browser/tab_contents/tab_contents_delegate.h"
+#include "content/common/notification_registrar.h"
 #include "ui/gfx/rect.h"
 
 class BrowserWindow;

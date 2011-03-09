@@ -10,10 +10,10 @@
 
 #include "base/scoped_ptr.h"
 #include "base/task.h"
-#include "net/url_request/url_request_job.h"
 #include "chrome/common/chrome_plugin_api.h"
 #include "chrome/common/chrome_plugin_util.h"
-#include "chrome/common/notification_registrar.h"
+#include "content/common/notification_registrar.h"
+#include "net/url_request/url_request_job.h"
 
 namespace net {
 class URLRequest;

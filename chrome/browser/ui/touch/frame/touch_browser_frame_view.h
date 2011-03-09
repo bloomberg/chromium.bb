@@ -6,10 +6,10 @@
 #define CHROME_BROWSER_UI_TOUCH_FRAME_TOUCH_BROWSER_FRAME_VIEW_H_
 #pragma once
 
-#include "chrome/browser/ui/views/frame/opaque_browser_frame_view.h"
 #include "chrome/browser/tabs/tab_strip_model_observer.h"
-#include "chrome/common/notification_observer.h"
-#include "chrome/common/notification_registrar.h"
+#include "chrome/browser/ui/views/frame/opaque_browser_frame_view.h"
+#include "content/common/notification_observer.h"
+#include "content/common/notification_registrar.h"
 #include "ui/base/animation/animation_delegate.h"
 #include "views/focus/focus_manager.h"
 

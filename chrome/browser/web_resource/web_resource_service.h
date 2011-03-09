@@ -9,7 +9,7 @@
 #include <string>
 
 #include "chrome/browser/utility_process_host.h"
-#include "chrome/common/notification_type.h"
+#include "content/common/notification_type.h"
 
 class PrefService;
 class Profile;

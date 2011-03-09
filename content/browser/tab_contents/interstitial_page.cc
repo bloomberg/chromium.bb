@@ -19,8 +19,6 @@
 #include "chrome/common/bindings_policy.h"
 #include "chrome/common/dom_storage_common.h"
 #include "chrome/common/net/url_request_context_getter.h"
-#include "chrome/common/notification_service.h"
-#include "chrome/common/notification_source.h"
 #include "content/browser/browser_thread.h"
 #include "content/browser/renderer_host/render_process_host.h"
 #include "content/browser/renderer_host/render_view_host.h"
@@ -31,6 +29,8 @@
 #include "content/browser/tab_contents/navigation_entry.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/browser/tab_contents/tab_contents_view.h"
+#include "content/common/notification_service.h"
+#include "content/common/notification_source.h"
 #include "net/base/escape.h"
 
 #if defined(TOOLKIT_GTK)

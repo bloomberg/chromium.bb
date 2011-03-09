@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -8,6 +8,8 @@
 #include "base/mac/mac_util.h"
 #include "base/sys_string_conversions.h"
 #include "base/utf_string_conversions.h"
+#include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/cocoa/browser_window_cocoa.h"
 #include "chrome/browser/ui/cocoa/browser_window_controller.h"
 #include "chrome/browser/ui/cocoa/extensions/browser_actions_controller.h"
@@ -15,13 +17,11 @@
 #include "chrome/browser/ui/cocoa/info_bubble_view.h"
 #include "chrome/browser/ui/cocoa/location_bar/location_bar_view_mac.h"
 #include "chrome/browser/ui/cocoa/toolbar/toolbar_controller.h"
-#include "chrome/browser/ui/browser.h"
-#include "chrome/browser/ui/browser_window.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_action.h"
-#include "chrome/common/notification_details.h"
-#include "chrome/common/notification_registrar.h"
-#include "chrome/common/notification_source.h"
+#include "content/common/notification_details.h"
+#include "content/common/notification_registrar.h"
+#include "content/common/notification_source.h"
 #include "grit/generated_resources.h"
 #import "skia/ext/skia_utils_mac.h"
 #import "third_party/GTM/AppKit/GTMUILocalizerAndLayoutTweaker.h"

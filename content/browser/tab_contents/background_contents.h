@@ -12,9 +12,9 @@
 #include "chrome/browser/renderer_host/render_view_host_delegate.h"
 #include "chrome/browser/tab_contents/render_view_host_delegate_helper.h"
 #include "chrome/browser/ui/app_modal_dialogs/js_modal_dialog.h"
-#include "chrome/common/notification_registrar.h"
 #include "chrome/common/view_types.h"
 #include "chrome/common/window_container_type.h"
+#include "content/common/notification_registrar.h"
 #include "webkit/glue/window_open_disposition.h"
 
 class TabContents;

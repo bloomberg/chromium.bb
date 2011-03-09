@@ -6,7 +6,6 @@
 
 #include <algorithm>
 
-#include "ui/base/l10n/l10n_util.h"
 #include "app/mac/nsimage_cache.h"
 #include "base/mac/mac_util.h"
 #include "base/singleton.h"
@@ -21,7 +20,6 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search_engines/template_url_model.h"
 #include "chrome/browser/themes/browser_theme_provider.h"
-#include "chrome/browser/upgrade_detector.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"
 #import "chrome/browser/ui/cocoa/accelerators_cocoa.h"
@@ -42,21 +40,23 @@
 #import "chrome/browser/ui/cocoa/wrench_menu/wrench_menu_controller.h"
 #include "chrome/browser/ui/toolbar/toolbar_model.h"
 #include "chrome/browser/ui/toolbar/wrench_menu_model.h"
-#include "chrome/common/notification_details.h"
-#include "chrome/common/notification_observer.h"
-#include "chrome/common/notification_service.h"
-#include "chrome/common/notification_type.h"
+#include "chrome/browser/upgrade_detector.h"
 #include "chrome/common/pref_names.h"
 #include "content/browser/tab_contents/tab_contents.h"
+#include "content/common/notification_details.h"
+#include "content/common/notification_observer.h"
+#include "content/common/notification_service.h"
+#include "content/common/notification_type.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "ui/base/l10n/l10n_util_mac.h"
 #include "ui/base/models/accelerator_cocoa.h"
 #include "ui/base/models/menu_model.h"
 #include "ui/base/resource/resource_bundle.h"
-#include "ui/gfx/rect.h"
 #include "ui/gfx/image.h"
+#include "ui/gfx/rect.h"
 
 namespace {
 

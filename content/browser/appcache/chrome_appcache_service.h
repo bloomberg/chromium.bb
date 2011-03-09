@@ -8,8 +8,8 @@
 
 #include "base/ref_counted.h"
 #include "chrome/browser/content_settings/host_content_settings_map.h"
-#include "chrome/common/notification_registrar.h"
 #include "content/browser/browser_thread.h"
+#include "content/common/notification_registrar.h"
 #include "webkit/appcache/appcache_policy.h"
 #include "webkit/appcache/appcache_service.h"
 #include "webkit/quota/special_storage_policy.h"

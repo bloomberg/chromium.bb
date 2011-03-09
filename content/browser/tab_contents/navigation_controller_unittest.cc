@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -8,16 +8,15 @@
 #include "base/stl_util-inl.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
-#include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/history/history.h"
+#include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/sessions/session_service.h"
 #include "chrome/browser/sessions/session_service_test_helper.h"
 #include "chrome/browser/sessions/session_types.h"
-#include "chrome/common/notification_registrar.h"
 #include "chrome/common/render_messages.h"
 #include "chrome/common/render_messages_params.h"
-#include "chrome/test/testing_profile.h"
 #include "chrome/test/test_notification_tracker.h"
+#include "chrome/test/testing_profile.h"
 #include "content/browser/renderer_host/test_render_view_host.h"
 #include "content/browser/site_instance.h"
 #include "content/browser/tab_contents/navigation_controller.h"
@@ -25,6 +24,7 @@
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/browser/tab_contents/tab_contents_delegate.h"
 #include "content/browser/tab_contents/test_tab_contents.h"
+#include "content/common/notification_registrar.h"
 #include "net/base/net_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "webkit/glue/webkit_glue.h"

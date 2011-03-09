@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -18,12 +18,12 @@
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_paths_internal.h"
 #include "chrome/common/chrome_switches.h"
-#include "chrome/common/notification_service.h"
 #include "chrome/common/plugin_messages.h"
 #include "chrome/common/process_watcher.h"
 #include "chrome/common/result_codes.h"
 #include "chrome/installer/util/google_update_settings.h"
 #include "content/browser/browser_thread.h"
+#include "content/common/notification_service.h"
 
 #if defined(OS_LINUX)
 #include "base/linux_util.h"

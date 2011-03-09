@@ -13,9 +13,9 @@
 #include "base/compiler_specific.h"
 #include "base/process_util.h"
 #include "chrome/browser/task_manager/task_manager.h"
-#include "chrome/common/notification_observer.h"
-#include "chrome/common/notification_registrar.h"
 #include "content/common/child_process_info.h"
+#include "content/common/notification_observer.h"
+#include "content/common/notification_registrar.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebCache.h"
 
 class BackgroundContents;

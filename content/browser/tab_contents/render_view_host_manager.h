@@ -9,8 +9,8 @@
 #include "base/basictypes.h"
 #include "base/logging.h"
 #include "base/scoped_ptr.h"
-#include "chrome/common/notification_registrar.h"
 #include "content/browser/renderer_host/render_view_host_delegate.h"
+#include "content/common/notification_registrar.h"
 
 class WebUI;
 class InterstitialPage;

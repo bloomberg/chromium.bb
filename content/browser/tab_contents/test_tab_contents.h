@@ -6,8 +6,8 @@
 #define CONTENT_BROWSER_TAB_CONTENTS_TEST_TAB_CONTENTS_H_
 #pragma once
 
-#include "chrome/common/notification_registrar.h"
 #include "content/browser/tab_contents/tab_contents.h"
+#include "content/common/notification_registrar.h"
 #include "webkit/glue/webpreferences.h"
 
 class Profile;

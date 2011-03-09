@@ -1,17 +1,17 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "content/browser/renderer_host/backing_store_manager.h"
 
-#include "base/sys_info.h"
 #include "base/command_line.h"
+#include "base/sys_info.h"
+#include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/common/mru_cache.h"
 #include "content/browser/renderer_host/backing_store.h"
 #include "content/browser/renderer_host/render_widget_host.h"
-#include "chrome/common/chrome_constants.h"
-#include "chrome/common/mru_cache.h"
-#include "chrome/common/notification_service.h"
+#include "content/common/notification_service.h"
 
 namespace {
 

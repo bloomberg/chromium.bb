@@ -10,9 +10,9 @@
 #import "chrome/browser/ui/cocoa/infobars/infobar_container_controller.h"
 #import "chrome/browser/ui/cocoa/infobars/infobar_controller.h"
 #import "chrome/browser/ui/cocoa/view_id_util.h"
-#include "chrome/common/notification_details.h"
-#include "chrome/common/notification_source.h"
 #include "content/browser/tab_contents/tab_contents.h"
+#include "content/common/notification_details.h"
+#include "content/common/notification_source.h"
 #include "skia/ext/skia_utils_mac.h"
 
 // C++ class that receives INFOBAR_ADDED and INFOBAR_REMOVED

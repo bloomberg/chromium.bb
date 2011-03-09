@@ -9,7 +9,7 @@
 #include "chrome/browser/browser_list.h"
 #include "chrome/browser/net/chrome_url_request_context.h"
 #include "chrome/common/chrome_constants.h"
-#include "chrome/common/notification_service.h"
+#include "content/common/notification_service.h"
 #include "net/base/net_errors.h"
 #include "webkit/appcache/appcache_thread.h"
 

@@ -26,7 +26,7 @@
 #include "chrome/browser/search_engines/template_url.h"
 #include "chrome/browser/webdata/autofill_change.h"
 #include "chrome/common/guid.h"
-#include "chrome/common/notification_service.h"
+#include "content/common/notification_service.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/codec/png_codec.h"

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_EXTENSIONS_EXTENSIONS_UI_H_
-#define CHROME_BROWSER_EXTENSIONS_EXTENSIONS_UI_H_
+#ifndef CHROME_BROWSER_UI_WEBUI_OPTIONS_EXTENSION_SETTINGS_HANDLER_H_
+#define CHROME_BROWSER_UI_WEBUI_OPTIONS_EXTENSION_SETTINGS_HANDLER_H_
 #pragma once
 
 #include <string>
@@ -15,9 +15,9 @@
 #include "chrome/browser/ui/shell_dialogs.h"
 #include "chrome/browser/ui/webui/chrome_url_data_manager.h"
 #include "chrome/common/extensions/extension_resource.h"
-#include "chrome/common/notification_observer.h"
-#include "chrome/common/notification_registrar.h"
 #include "content/browser/webui/web_ui.h"
+#include "content/common/notification_observer.h"
+#include "content/common/notification_registrar.h"
 #include "googleurl/src/gurl.h"
 
 class DictionaryValue;
@@ -273,4 +273,4 @@ class ExtensionsUI : public WebUI {
   DISALLOW_COPY_AND_ASSIGN(ExtensionsUI);
 };
 
-#endif  // CHROME_BROWSER_EXTENSIONS_EXTENSIONS_UI_H_
+#endif  // CHROME_BROWSER_UI_WEBUI_OPTIONS_EXTENSION_SETTINGS_HANDLER_H_

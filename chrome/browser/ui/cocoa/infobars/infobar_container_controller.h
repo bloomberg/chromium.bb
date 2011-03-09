@@ -11,7 +11,7 @@
 #include "base/scoped_nsobject.h"
 #include "base/scoped_ptr.h"
 #import "chrome/browser/ui/cocoa/view_resizer.h"
-#include "chrome/common/notification_registrar.h"
+#include "content/common/notification_registrar.h"
 
 @class InfoBarController;
 class InfoBarDelegate;

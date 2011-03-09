@@ -9,8 +9,6 @@
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_switches.h"
-#include "chrome/common/notification_service.h"
-#include "chrome/common/notification_type.h"
 #include "chrome/common/render_messages.h"
 #include "chrome/common/render_messages_params.h"
 #include "chrome/common/url_constants.h"
@@ -24,6 +22,8 @@
 #include "content/browser/tab_contents/tab_contents_view.h"
 #include "content/browser/webui/web_ui.h"
 #include "content/browser/webui/web_ui_factory.h"
+#include "content/common/notification_service.h"
+#include "content/common/notification_type.h"
 
 namespace base {
 class WaitableEvent;

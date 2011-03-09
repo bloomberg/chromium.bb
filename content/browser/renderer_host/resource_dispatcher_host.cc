@@ -9,8 +9,8 @@
 #include <set>
 #include <vector>
 
-#include "base/logging.h"
 #include "base/command_line.h"
+#include "base/logging.h"
 #include "base/message_loop.h"
 #include "base/metrics/histogram.h"
 #include "base/scoped_ptr.h"
@@ -37,7 +37,6 @@
 #include "chrome/browser/ssl/ssl_manager.h"
 #include "chrome/browser/ui/login/login_prompt.h"
 #include "chrome/common/chrome_switches.h"
-#include "chrome/common/notification_service.h"
 #include "chrome/common/render_messages.h"
 #include "chrome/common/render_messages_params.h"
 #include "chrome/common/url_constants.h"
@@ -61,6 +60,7 @@
 #include "content/browser/renderer_host/resource_request_details.h"
 #include "content/browser/renderer_host/sync_resource_handler.h"
 #include "content/browser/worker_host/worker_service.h"
+#include "content/common/notification_service.h"
 #include "content/common/resource_messages.h"
 #include "net/base/auth.h"
 #include "net/base/cert_status_flags.h"

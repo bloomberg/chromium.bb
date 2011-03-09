@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -19,8 +19,8 @@
 #include "base/md5.h"
 #include "base/message_loop.h"
 #include "base/path_service.h"
-#include "base/threading/thread.h"
 #include "base/scoped_ptr.h"
+#include "base/threading/thread.h"
 #include "base/utf_string_conversions.h"
 #include "base/win/windows_version.h"
 #include "chrome/browser/download/download_util.h"
@@ -29,11 +29,11 @@
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_plugin_util.h"
 #include "chrome/common/extensions/extension.h"
-#include "chrome/common/notification_registrar.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/common/web_apps.h"
 #include "content/browser/browser_thread.h"
 #include "content/browser/tab_contents/tab_contents.h"
+#include "content/common/notification_registrar.h"
 
 #if defined(OS_LINUX)
 #include "base/environment.h"
@@ -41,8 +41,8 @@
 
 #if defined(OS_WIN)
 #include "base/win/win_util.h"
-#include "chrome/common/notification_details.h"
-#include "chrome/common/notification_source.h"
+#include "content/common/notification_details.h"
+#include "content/common/notification_source.h"
 #include "ui/gfx/icon_util.h"
 #endif  // defined(OS_WIN)
 

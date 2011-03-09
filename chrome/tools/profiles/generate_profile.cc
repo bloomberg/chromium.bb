@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -22,10 +22,10 @@
 #include "chrome/browser/history/history.h"
 #include "chrome/browser/history/top_sites.h"
 #include "chrome/common/chrome_paths.h"
-#include "chrome/test/testing_profile.h"
 #include "chrome/common/thumbnail_score.h"
-#include "chrome/common/notification_service.h"
+#include "chrome/test/testing_profile.h"
 #include "content/browser/browser_thread.h"
+#include "content/common/notification_service.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/ui_base_paths.h"

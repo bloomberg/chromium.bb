@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -9,9 +9,9 @@
 #include "chrome/browser/browser_shutdown.h"
 #include "chrome/browser/extensions/extension_host.h"
 #include "chrome/browser/ui/app_modal_dialogs/native_app_modal_dialog.h"
-#include "chrome/common/notification_service.h"
-#include "chrome/common/notification_type.h"
 #include "content/browser/tab_contents/tab_contents.h"
+#include "content/common/notification_service.h"
+#include "content/common/notification_type.h"
 #include "ui/base/text/text_elider.h"
 
 namespace {

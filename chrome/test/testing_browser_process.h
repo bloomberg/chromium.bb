@@ -17,7 +17,7 @@
 
 #include "base/scoped_ptr.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/common/notification_service.h"
+#include "content/common/notification_service.h"
 
 class IOThread;
 class GoogleURLTracker;

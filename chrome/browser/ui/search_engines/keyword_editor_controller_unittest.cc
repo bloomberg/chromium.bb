@@ -9,11 +9,11 @@
 #include "chrome/browser/search_engines/template_url_model.h"
 #include "chrome/browser/ui/search_engines/keyword_editor_controller.h"
 #include "chrome/browser/ui/search_engines/template_url_table_model.h"
-#include "chrome/common/notification_details.h"
-#include "chrome/common/notification_source.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/testing_pref_service.h"
 #include "chrome/test/testing_profile.h"
+#include "content/common/notification_details.h"
+#include "content/common/notification_source.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/models/table_model_observer.h"
 

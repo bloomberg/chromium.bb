@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -11,12 +11,12 @@
 #include "base/path_service.h"
 #include "base/perftimer.h"
 #include "base/string_util.h"
-#include "base/threading/thread.h"
 #include "base/threading/platform_thread.h"
+#include "base/threading/thread.h"
 #include "chrome/common/chrome_counters.h"
-#include "chrome/common/chrome_switches.h"
-#include "chrome/common/notification_service.h"
 #include "chrome/common/chrome_paths.h"
+#include "chrome/common/chrome_switches.h"
+#include "content/common/notification_service.h"
 #include "webkit/plugins/npapi/plugin_list.h"
 
 #if defined(OS_WIN)

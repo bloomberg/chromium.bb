@@ -14,7 +14,7 @@
 #include "base/message_loop.h"
 #include "base/string_util.h"
 #include "chrome/common/chrome_plugin_lib.h"
-#include "chrome/common/notification_source.h"
+#include "content/common/notification_source.h"
 #include "net/base/io_buffer.h"
 #include "net/base/net_errors.h"
 #include "net/base/x509_certificate.h"

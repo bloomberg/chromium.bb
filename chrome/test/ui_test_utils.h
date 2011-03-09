@@ -8,19 +8,19 @@
 
 #include <map>
 #include <queue>
-#include <string>
 #include <set>
+#include <string>
 
 #include "base/basictypes.h"
 #include "base/message_loop.h"
 #include "base/scoped_temp_dir.h"
 #include "base/string16.h"
 #include "chrome/browser/ui/view_ids.h"
-#include "chrome/common/notification_observer.h"
-#include "chrome/common/notification_registrar.h"
-#include "chrome/common/notification_service.h"
-#include "chrome/common/notification_source.h"
 #include "chrome/test/automation/dom_element_proxy.h"
+#include "content/common/notification_observer.h"
+#include "content/common/notification_registrar.h"
+#include "content/common/notification_service.h"
+#include "content/common/notification_source.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/keycodes/keyboard_codes.h"
 #include "ui/gfx/native_widget_types.h"

@@ -8,8 +8,8 @@
 
 #include "base/basictypes.h"
 #include "chrome/browser/search_engines/template_url_fetcher_callbacks.h"
-#include "chrome/common/notification_observer.h"
-#include "chrome/common/notification_registrar.h"
+#include "content/common/notification_observer.h"
+#include "content/common/notification_registrar.h"
 
 class SearchEngineTabHelper;
 class TabContents;

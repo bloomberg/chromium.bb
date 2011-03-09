@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -16,7 +16,6 @@
 #include "chrome/browser/sessions/session_types.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/navigation_types.h"
-#include "chrome/common/notification_service.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/render_messages_params.h"
 #include "chrome/common/url_constants.h"
@@ -26,10 +25,11 @@
 #include "content/browser/tab_contents/navigation_entry.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/browser/tab_contents/tab_contents_delegate.h"
+#include "content/common/notification_service.h"
 #include "grit/app_resources.h"
 #include "net/base/escape.h"
-#include "net/base/net_util.h"
 #include "net/base/mime_util.h"
+#include "net/base/net_util.h"
 #include "webkit/glue/webkit_glue.h"
 
 namespace {
