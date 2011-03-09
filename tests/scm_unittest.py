@@ -282,11 +282,18 @@ class RealSvnTest(fake_repos.FakeReposTestBase):
     with open(scm.os.path.join(self.svn_root, 'faala'), 'w') as f:
       f.write('oh')
     self._capture(['add', scm.os.path.join(self.svn_root, 'faala')])
+    added_and_removed = scm.os.path.join(self.svn_root, 'added_and_removed')
+    with open(added_and_removed, 'w') as f:
+      f.write('oh')
+    self._capture(['add', added_and_removed])
+    scm.os.remove(added_and_removed)
 
     scm.SVN.Revert(self.svn_root)
     self._capture(['update', '--revision', 'base'])
 
     self.assertTree(self.tree, self.svn_root)
+    # Asserting the tree is not sufficient, svn status must come out clear too.
+    self.assertEquals('', self._capture(['status']))
 
 
 if __name__ == '__main__':

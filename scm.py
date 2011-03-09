@@ -878,7 +878,7 @@ class SVN(object):
 
       # svn revert is really stupid. It fails on inconsistent line-endings,
       # on switched directories, etc. So take no chance and delete everything!
-      if file_status[0][0] in ('D', 'A') or file_status[0][2] != ' ':
+      if file_status[0][0] in ('D', 'A', '!') or file_status[0][2] != ' ':
         # Added, deleted file requires manual intervention and require calling
         # revert, like for properties.
         try:
