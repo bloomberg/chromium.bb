@@ -2303,8 +2303,6 @@
         'browser/ui/cocoa/infobars/mock_confirm_infobar_delegate.h',
         'browser/ui/cocoa/infobars/mock_link_infobar_delegate.cc',
         'browser/ui/cocoa/infobars/mock_link_infobar_delegate.h',
-        'browser/ui/cocoa/instant_confirm_window_controller.h',
-        'browser/ui/cocoa/instant_confirm_window_controller.mm',
         'browser/ui/cocoa/js_modal_dialog_cocoa.h',
         'browser/ui/cocoa/js_modal_dialog_cocoa.mm',
         'browser/ui/cocoa/keystone_infobar.h',

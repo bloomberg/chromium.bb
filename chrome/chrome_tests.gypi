@@ -1616,7 +1616,6 @@
         'browser/ui/cocoa/infobars/infobar_container_controller_unittest.mm',
         'browser/ui/cocoa/infobars/infobar_controller_unittest.mm',
         'browser/ui/cocoa/infobars/infobar_gradient_view_unittest.mm',
-        'browser/ui/cocoa/instant_confirm_window_controller_unittest.mm',
         'browser/ui/cocoa/location_bar/autocomplete_text_field_cell_unittest.mm',
         'browser/ui/cocoa/location_bar/autocomplete_text_field_editor_unittest.mm',
         'browser/ui/cocoa/location_bar/autocomplete_text_field_unittest.mm',
