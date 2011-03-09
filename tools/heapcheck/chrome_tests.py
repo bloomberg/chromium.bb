@@ -96,7 +96,7 @@ class ChromeTests(object):
       "ui": self.TestUI,                "ui_tests": self.TestUI,
       "unit": self.TestUnit,            "unit_tests": self.TestUnit,
       "app": self.TestApp,              "app_unittests": self.TestApp,
-      "ui_base": self.TestUIBase,       "ui_base_unittests": self.TestIUBase,
+      "ui_base": self.TestUIBase,       "ui_base_unittests": self.TestUIBase,
       "gfx": self.TestGfx,              "gfx_unittests": self.TestGfx,
     }
 
