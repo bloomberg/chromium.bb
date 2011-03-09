@@ -184,3 +184,6 @@ PREFIX: webcore::reportfatalerrorinv8___v8::internal::v8::fatalprocessoutofmemor
 
 # 75361
 PREFIX: webcore::cssparser::createfloatingvaluelist___cssyyparse___webcore::cssparser::parsesheet___webcore::cssstylesheet::parsestringatline___webcore::styleelement::createsheet___webcore::styleelement::process___webcore::styleelement::finishparsingchildren
+
+# 75368
+PREFIX: skpixelref::unlockpixels___skbitmap::freepixels___webcore::framedata::clear___wtf::vector<webcore::framedata,0>::shrink___webcore::bitmapimage::~bitmapimage___webcore::bitmapimage::`scalar deleting destructor'___webcore::cachedimage::~cachedimage___webcore::cachedimage::`scalar deleting destructor'
