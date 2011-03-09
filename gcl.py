@@ -916,11 +916,10 @@ def TryChange(change_info, args, swallow_exception):
       trychange_args.extend(["--issue", str(change_info.issue)])
     if change_info.patchset:
       trychange_args.extend(["--patchset", str(change_info.patchset)])
-    trychange_args.extend(args)
     file_list = change_info.GetFileNames()
   else:
-    trychange_args.extend(args)
     file_list = []
+  trychange_args.extend(args)
   return trychange.TryChange(
       trychange_args,
       file_list=file_list,
