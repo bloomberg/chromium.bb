@@ -10,7 +10,7 @@
 
 #include "base/basictypes.h"
 #include "base/time.h"
-#include "chrome/common/child_process_info.h"
+#include "content/common/child_process_info.h"
 #include "net/base/load_states.h"
 #include "net/url_request/url_request.h"
 #include "webkit/glue/resource_type.h"

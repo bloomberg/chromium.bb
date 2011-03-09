@@ -17,11 +17,11 @@
 #include "base/string_number_conversions.h"
 #include "base/string_util.h"
 #include "base/win/windows_version.h"
-#include "chrome/common/child_process_info.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/debug_flags.h"
+#include "content/common/child_process_info.h"
 #include "sandbox/src/sandbox.h"
 
 static sandbox::BrokerServices* g_broker_services = NULL;

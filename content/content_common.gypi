@@ -17,6 +17,10 @@
       'sources': [
         'common/child_process.cc',
         'common/child_process.h',
+        'common/child_process_host.cc',
+        'common/child_process_host.h',
+        'common/child_process_info.cc',
+        'common/child_process_info.h',
         'common/child_process_messages.h',
         'common/child_thread.cc',
         'common/child_thread.h',

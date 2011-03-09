@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_COMMON_CHILD_PROCESS_INFO_H_
-#define CHROME_COMMON_CHILD_PROCESS_INFO_H_
+#ifndef CONTENT_COMMON_CHILD_PROCESS_INFO_H_
+#define CONTENT_COMMON_CHILD_PROCESS_INFO_H_
 #pragma once
 
 #include <string>
@@ -85,10 +85,6 @@ class ChildProcessInfo {
   static std::string GetTypeNameInEnglish(ProcessType type);
   static std::string GetRendererTypeNameInEnglish(RendererProcessType type);
 
-  // Returns a localized title for the child process.  For example, a plugin
-  // process would be "Plug-in: Flash" when name is "Flash".
-  string16 GetLocalizedTitle() const;
-
   // We define the < operator so that the ChildProcessInfo can be used as a key
   // in a std::map.
   bool operator <(const ChildProcessInfo& rhs) const {
@@ -138,4 +134,4 @@ class ChildProcessInfo {
   mutable base::Process process_;
 };
 
-#endif  // CHROME_COMMON_CHILD_PROCESS_INFO_H_
+#endif  // CONTENT_COMMON_CHILD_PROCESS_INFO_H_

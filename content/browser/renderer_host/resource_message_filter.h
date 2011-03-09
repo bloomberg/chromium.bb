@@ -6,8 +6,8 @@
 #define CONTENT_BROWSER_RENDERER_HOST_RESOURCE_MESSAGE_FILTER_H_
 
 #include "base/scoped_ptr.h"
-#include "chrome/common/child_process_info.h"
 #include "content/browser/browser_message_filter.h"
+#include "content/common/child_process_info.h"
 
 class ChromeURLRequestContext;
 class ResourceDispatcherHost;

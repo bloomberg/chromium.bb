@@ -11,7 +11,7 @@
 #include "base/process_util.h"
 #include "base/ref_counted.h"
 #include "base/string16.h"
-#include "chrome/common/child_process_info.h"
+#include "content/common/child_process_info.h"
 
 // We collect data about each browser process.  A browser may
 // have multiple processes (of course!).  Even IE has multiple

@@ -77,7 +77,7 @@
 #include "base/file_descriptor_posix.h"
 #endif
 #if defined(OS_WIN)
-#include "chrome/common/child_process_host.h"
+#include "content/common/child_process_host.h"
 #endif
 #if defined(USE_NSS)
 #include "chrome/browser/ui/crypto_module_password_dialog.h"

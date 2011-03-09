@@ -642,7 +642,7 @@ TaskManagerChildProcessResource::~TaskManagerChildProcessResource() {
 // TaskManagerResource methods:
 string16 TaskManagerChildProcessResource::GetTitle() const {
   if (title_.empty())
-    title_ = child_process_.GetLocalizedTitle();
+    title_ = GetLocalizedTitle();
 
   return title_;
 }
@@ -691,6 +691,60 @@ bool TaskManagerChildProcessResource::SupportNetworkUsage() const {
 
 void TaskManagerChildProcessResource::SetSupportNetworkUsage() {
   network_usage_support_ = true;
+}
+
+string16 TaskManagerChildProcessResource::GetLocalizedTitle() const {
+  string16 title = WideToUTF16Hack(child_process_.name());
+  if (child_process_.type() == ChildProcessInfo::PLUGIN_PROCESS &&
+      title.empty()) {
+    title = l10n_util::GetStringUTF16(IDS_TASK_MANAGER_UNKNOWN_PLUGIN_NAME);
+  }
+
+  // Explicitly mark name as LTR if there is no strong RTL character,
+  // to avoid the wrong concatenation result similar to "!Yahoo! Mail: the
+  // best web-based Email: NIGULP", in which "NIGULP" stands for the Hebrew
+  // or Arabic word for "plugin".
+  base::i18n::AdjustStringForLocaleDirection(&title);
+
+  switch (child_process_.type()) {
+    case ChildProcessInfo::UTILITY_PROCESS:
+      return l10n_util::GetStringUTF16(IDS_TASK_MANAGER_UTILITY_PREFIX);
+
+    case ChildProcessInfo::PROFILE_IMPORT_PROCESS:
+      return l10n_util::GetStringUTF16(IDS_TASK_MANAGER_UTILITY_PREFIX);
+
+    case ChildProcessInfo::GPU_PROCESS:
+      return l10n_util::GetStringUTF16(IDS_TASK_MANAGER_GPU_PREFIX);
+
+    case ChildProcessInfo::NACL_BROKER_PROCESS:
+      return l10n_util::GetStringUTF16(IDS_TASK_MANAGER_NACL_BROKER_PREFIX);
+
+    case ChildProcessInfo::PLUGIN_PROCESS:
+    case ChildProcessInfo::PPAPI_PLUGIN_PROCESS: {
+      return l10n_util::GetStringFUTF16(
+          IDS_TASK_MANAGER_PLUGIN_PREFIX, title,
+          WideToUTF16Hack(child_process_.version()));
+    }
+
+    case ChildProcessInfo::NACL_LOADER_PROCESS:
+      return l10n_util::GetStringFUTF16(IDS_TASK_MANAGER_NACL_PREFIX, title);
+
+    case ChildProcessInfo::WORKER_PROCESS:
+      return l10n_util::GetStringFUTF16(IDS_TASK_MANAGER_WORKER_PREFIX, title);
+
+    // These types don't need display names or get them from elsewhere.
+    case ChildProcessInfo::BROWSER_PROCESS:
+    case ChildProcessInfo::RENDER_PROCESS:
+    case ChildProcessInfo::ZYGOTE_PROCESS:
+    case ChildProcessInfo::SANDBOX_HELPER_PROCESS:
+      NOTREACHED();
+      break;
+
+    case ChildProcessInfo::UNKNOWN_PROCESS:
+      NOTREACHED() << "Need localized name for child process type.";
+  }
+
+  return title;
 }
 
 ////////////////////////////////////////////////////////////////////////////////

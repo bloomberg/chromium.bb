@@ -17,12 +17,12 @@
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "base/version.h"
-#include "chrome/common/child_process_host.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/chrome_version_info.h"
 #include "chrome/common/service_process_util.h"
+#include "content/common/child_process_host.h"
 
 #if !defined(OS_MACOSX)
 

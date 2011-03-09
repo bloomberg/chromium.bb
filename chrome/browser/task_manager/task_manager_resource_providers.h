@@ -13,9 +13,9 @@
 #include "base/compiler_specific.h"
 #include "base/process_util.h"
 #include "chrome/browser/task_manager/task_manager.h"
-#include "chrome/common/child_process_info.h"
 #include "chrome/common/notification_observer.h"
 #include "chrome/common/notification_registrar.h"
+#include "content/common/child_process_info.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebCache.h"
 
 class BackgroundContents;
@@ -224,6 +224,10 @@ class TaskManagerChildProcessResource : public TaskManager::Resource {
   int process_id() const { return pid_; }
 
  private:
+  // Returns a localized title for the child process.  For example, a plugin
+  // process would be "Plug-in: Flash" when name is "Flash".
+  string16 GetLocalizedTitle() const;
+
   ChildProcessInfo child_process_;
   int pid_;
   mutable string16 title_;

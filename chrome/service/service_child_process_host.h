@@ -7,8 +7,8 @@
 #pragma once
 
 #include "base/process.h"
-#include "chrome/common/child_process_host.h"
-#include "chrome/common/child_process_info.h"
+#include "content/common/child_process_host.h"
+#include "content/common/child_process_info.h"
 
 
 // Plugins/workers and other child processes that live on the IO thread should

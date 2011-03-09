@@ -6,7 +6,7 @@
 #define CHROME_COMMON_DEBUG_FLAGS_H__
 #pragma once
 
-#include "chrome/common/child_process_info.h"
+#include "content/common/child_process_info.h"
 
 class CommandLine;
 

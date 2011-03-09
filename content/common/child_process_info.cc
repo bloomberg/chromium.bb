@@ -1,8 +1,8 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/common/child_process_info.h"
+#include "content/common/child_process_info.h"
 
 #include <limits>
 
@@ -13,8 +13,6 @@
 #include "base/rand_util.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
-#include "grit/generated_resources.h"
-#include "ui/base/l10n/l10n_util.h"
 
 ChildProcessInfo::ChildProcessInfo(ProcessType type, int id) :
     type_(type),
@@ -117,58 +115,6 @@ std::string ChildProcessInfo::GetFullTypeNameInEnglish(
   if (type == RENDER_PROCESS)
     return GetRendererTypeNameInEnglish(rtype);
   return GetTypeNameInEnglish(type);
-}
-
-
-string16 ChildProcessInfo::GetLocalizedTitle() const {
-  string16 title = WideToUTF16Hack(name_);
-  if (type_ == ChildProcessInfo::PLUGIN_PROCESS && title.empty())
-    title = l10n_util::GetStringUTF16(IDS_TASK_MANAGER_UNKNOWN_PLUGIN_NAME);
-
-  // Explicitly mark name as LTR if there is no strong RTL character,
-  // to avoid the wrong concatenation result similar to "!Yahoo! Mail: the
-  // best web-based Email: NIGULP", in which "NIGULP" stands for the Hebrew
-  // or Arabic word for "plugin".
-  base::i18n::AdjustStringForLocaleDirection(&title);
-
-  switch (type_) {
-    case ChildProcessInfo::UTILITY_PROCESS:
-      return l10n_util::GetStringUTF16(IDS_TASK_MANAGER_UTILITY_PREFIX);
-
-    case ChildProcessInfo::PROFILE_IMPORT_PROCESS:
-      return l10n_util::GetStringUTF16(IDS_TASK_MANAGER_UTILITY_PREFIX);
-
-    case ChildProcessInfo::GPU_PROCESS:
-      return l10n_util::GetStringUTF16(IDS_TASK_MANAGER_GPU_PREFIX);
-
-    case ChildProcessInfo::NACL_BROKER_PROCESS:
-      return l10n_util::GetStringUTF16(IDS_TASK_MANAGER_NACL_BROKER_PREFIX);
-
-    case ChildProcessInfo::PLUGIN_PROCESS:
-    case ChildProcessInfo::PPAPI_PLUGIN_PROCESS:
-      return l10n_util::GetStringFUTF16(IDS_TASK_MANAGER_PLUGIN_PREFIX,
-                                        title,
-                                        WideToUTF16Hack(version_));
-
-    case ChildProcessInfo::NACL_LOADER_PROCESS:
-      return l10n_util::GetStringFUTF16(IDS_TASK_MANAGER_NACL_PREFIX, title);
-
-    case ChildProcessInfo::WORKER_PROCESS:
-      return l10n_util::GetStringFUTF16(IDS_TASK_MANAGER_WORKER_PREFIX, title);
-
-    // These types don't need display names or get them from elsewhere.
-    case BROWSER_PROCESS:
-    case RENDER_PROCESS:
-    case ZYGOTE_PROCESS:
-    case SANDBOX_HELPER_PROCESS:
-      NOTREACHED();
-      break;
-
-    case UNKNOWN_PROCESS:
-      NOTREACHED() << "Need localized name for child process type.";
-  }
-
-  return title;
 }
 
 std::string ChildProcessInfo::GenerateRandomChannelID(void* instance) {

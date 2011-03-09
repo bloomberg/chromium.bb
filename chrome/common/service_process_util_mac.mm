@@ -18,10 +18,10 @@
 #include "base/sys_string_conversions.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/version.h"
-#include "chrome/common/child_process_host.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/chrome_version_info.h"
+#include "content/common/child_process_host.h"
 #include "third_party/GTM/Foundation/GTMServiceManagement.h"
 
 namespace {

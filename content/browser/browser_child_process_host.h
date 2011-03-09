@@ -8,10 +8,10 @@
 
 #include <list>
 
-#include "chrome/common/child_process_host.h"
-#include "chrome/common/child_process_info.h"
 #include "content/browser/child_process_launcher.h"
 #include "content/browser/renderer_host/resource_message_filter.h"
+#include "content/common/child_process_host.h"
+#include "content/common/child_process_info.h"
 
 class ResourceDispatcherHost;
 
