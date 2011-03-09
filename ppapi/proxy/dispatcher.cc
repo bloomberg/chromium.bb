@@ -37,6 +37,7 @@
 #include "ppapi/c/ppb_url_response_info.h"
 #include "ppapi/c/ppp_instance.h"
 #include "ppapi/c/private/ppb_flash.h"
+#include "ppapi/c/private/ppb_flash_clipboard.h"
 #include "ppapi/c/private/ppb_flash_file.h"
 #include "ppapi/c/private/ppb_flash_menu.h"
 #include "ppapi/c/private/ppb_pdf.h"
@@ -52,6 +53,7 @@
 #include "ppapi/proxy/ppb_file_chooser_proxy.h"
 #include "ppapi/proxy/ppb_file_ref_proxy.h"
 #include "ppapi/proxy/ppb_file_system_proxy.h"
+#include "ppapi/proxy/ppb_flash_clipboard_proxy.h"
 #include "ppapi/proxy/ppb_flash_file_proxy.h"
 #include "ppapi/proxy/ppb_flash_proxy.h"
 #include "ppapi/proxy/ppb_flash_menu_proxy.h"
@@ -109,6 +111,7 @@ InterfaceList::InterfaceList() {
   AddPPB(PPB_FileChooser_Proxy::GetInfo());
   AddPPB(PPB_FileRef_Proxy::GetInfo());
   AddPPB(PPB_FileSystem_Proxy::GetInfo());
+  AddPPB(PPB_Flash_Clipboard_Proxy::GetInfo());
   AddPPB(PPB_Flash_File_FileRef_Proxy::GetInfo());
   AddPPB(PPB_Flash_File_ModuleLocal_Proxy::GetInfo());
   AddPPB(PPB_Flash_Proxy::GetInfo());

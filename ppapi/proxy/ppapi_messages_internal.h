@@ -356,6 +356,16 @@ IPC_SYNC_MESSAGE_ROUTED1_0(PpapiHostMsg_PPBFlash_RunMessageLoop,
 IPC_SYNC_MESSAGE_ROUTED1_0(PpapiHostMsg_PPBFlash_QuitMessageLoop,
                            PP_Instance /* instance */)
 
+// PPB_Flash_Clipboard.
+IPC_SYNC_MESSAGE_ROUTED2_1(PpapiHostMsg_PPBFlashClipboard_ReadPlainText,
+                           PP_Instance /* instance */,
+                           int /* clipboard_type */,
+                           pp::proxy::SerializedVar /* result */)
+IPC_MESSAGE_ROUTED3(PpapiHostMsg_PPBFlashClipboard_WritePlainText,
+                    PP_Instance /* instance */,
+                    int /* clipboard_type */,
+                    pp::proxy::SerializedVar /* text */)
+
 // PPB_Flash_File_FileRef.
 IPC_SYNC_MESSAGE_ROUTED2_2(PpapiHostMsg_PPBFlashFile_FileRef_OpenFile,
                            pp::proxy::HostResource /* file_ref */,
