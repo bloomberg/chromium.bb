@@ -346,11 +346,6 @@ void GpuProcessHostUIShim::SendAboutGpuHang() {
   Send(new GpuMsg_Hang());
 }
 
-const GPUInfo& GpuProcessHostUIShim::gpu_info() const {
-  DCHECK(CalledOnValidThread());
-  return gpu_data_manager_->gpu_info();
-}
-
 GpuProcessHostUIShim::~GpuProcessHostUIShim() {
   DCHECK(CalledOnValidThread());
   g_hosts_by_id.Remove(host_id_);

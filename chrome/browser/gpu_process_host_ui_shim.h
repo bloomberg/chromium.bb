@@ -33,7 +33,6 @@ class GpuDataManager;
 struct GPUCreateCommandBufferConfig;
 struct GpuHostMsg_AcceleratedSurfaceSetIOSurface_Params;
 struct GpuHostMsg_AcceleratedSurfaceBuffersSwapped_Params;
-struct GPUInfo;
 
 namespace IPC {
 struct ChannelHandle;
@@ -122,9 +121,6 @@ class GpuProcessHostUIShim
   // Tells the GPU process to let its main thread enter an infinite loop.
   // Useful for testing.
   void SendAboutGpuHang();
-
-  // Return all known information about the GPU.
-  const GPUInfo& gpu_info() const;
 
   // Can be called directly from the UI thread to log a message.
   void AddCustomLogMessage(int level, const std::string& header,

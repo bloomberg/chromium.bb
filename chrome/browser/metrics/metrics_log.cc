@@ -19,7 +19,7 @@
 #include "chrome/browser/autocomplete/autocomplete.h"
 #include "chrome/browser/autocomplete/autocomplete_match.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/gpu_process_host_ui_shim.h"
+#include "chrome/browser/gpu_data_manager.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/common/chrome_version_info.h"
 #include "chrome/common/logging_chrome.h"
@@ -338,10 +338,10 @@ void MetricsLog::RecordEnvironment(
 
   {
     OPEN_ELEMENT_FOR_SCOPE("gpu");
-    GpuProcessHostUIShim* ui_shim = GpuProcessHostUIShim::GetForRenderer(0);
-    if (ui_shim) {
-      WriteIntAttribute("vendorid", ui_shim->gpu_info().vendor_id);
-      WriteIntAttribute("deviceid", ui_shim->gpu_info().device_id);
+    GpuDataManager* gpu_data_manager = GpuDataManager::GetInstance();
+    if (gpu_data_manager) {
+      WriteIntAttribute("vendorid", gpu_data_manager->gpu_info().vendor_id);
+      WriteIntAttribute("deviceid", gpu_data_manager->gpu_info().device_id);
     }
   }
 
