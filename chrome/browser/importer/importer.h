@@ -10,10 +10,11 @@
 #include <vector>
 
 #include "base/basictypes.h"
+#include "base/compiler_specific.h"
 #include "base/ref_counted.h"
 #include "base/scoped_ptr.h"
 #include "build/build_config.h"
-#include "chrome/browser/bookmarks/bookmark_model_observer.h"
+#include "chrome/browser/bookmarks/base_bookmark_model_observer.h"
 #include "chrome/browser/importer/importer_data_types.h"
 #include "chrome/browser/importer/importer_list.h"
 #include "chrome/browser/importer/profile_writer.h"
@@ -50,38 +51,10 @@ struct PasswordForm;
 // browsers dynamically, and controls the process of importing. When
 // the import process is done, ImporterHost deletes itself.
 class ImporterHost : public base::RefCountedThreadSafe<ImporterHost>,
-                     public BookmarkModelObserver,
+                     public BaseBookmarkModelObserver,
                      public NotificationObserver {
  public:
   ImporterHost();
-
-  // BookmarkModelObserver implementation.
-  virtual void Loaded(BookmarkModel* model);
-  virtual void BookmarkNodeMoved(BookmarkModel* model,
-                                 const BookmarkNode* old_parent,
-                                 int old_index,
-                                 const BookmarkNode* new_parent,
-                                 int new_index) {}
-  virtual void BookmarkNodeAdded(BookmarkModel* model,
-                                 const BookmarkNode* parent,
-                                 int index) {}
-  virtual void BookmarkNodeRemoved(BookmarkModel* model,
-                                   const BookmarkNode* parent,
-                                   int old_index,
-                                   const BookmarkNode* node) {}
-  virtual void BookmarkNodeChanged(BookmarkModel* model,
-                                   const BookmarkNode* node) {}
-  virtual void BookmarkNodeChildrenReordered(BookmarkModel* model,
-                                             const BookmarkNode* node) {}
-  virtual void BookmarkNodeFavIconLoaded(BookmarkModel* model,
-                                         const BookmarkNode* node) {}
-  virtual void BookmarkModelBeingDeleted(BookmarkModel* model);
-
-  // NotificationObserver implementation. Called when TemplateURLModel has been
-  // loaded.
-  virtual void Observe(NotificationType type,
-                       const NotificationSource& source,
-                       const NotificationDetails& details);
 
   // ShowWarningDialog() asks user to close the application that is owning the
   // lock. They can retry or skip the importing process.
@@ -197,6 +170,17 @@ class ImporterHost : public base::RefCountedThreadSafe<ImporterHost>,
   // will be called when the loading observer sees that model loading is
   // complete.
   virtual void InvokeTaskIfDone();
+
+  // BaseBookmarkModelObserver:
+  virtual void Loaded(BookmarkModel* model) OVERRIDE;
+  virtual void BookmarkModelBeingDeleted(BookmarkModel* model) OVERRIDE;
+  virtual void BookmarkModelChanged() OVERRIDE;
+
+  // NotificationObserver:
+  // Called when TemplateURLModel has been loaded.
+  virtual void Observe(NotificationType type,
+                       const NotificationSource& source,
+                       const NotificationDetails& details) OVERRIDE;
 
   DISALLOW_COPY_AND_ASSIGN(ImporterHost);
 };

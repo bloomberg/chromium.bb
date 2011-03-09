@@ -99,28 +99,6 @@ ImporterHost::~ImporterHost() {
   }
 }
 
-void ImporterHost::Loaded(BookmarkModel* model) {
-  DCHECK(model->IsLoaded());
-  model->RemoveObserver(this);
-  waiting_for_bookmarkbar_model_ = false;
-  installed_bookmark_observer_ = false;
-
-  importer_->set_import_to_bookmark_bar(!model->HasBookmarks());
-  InvokeTaskIfDone();
-}
-
-void ImporterHost::BookmarkModelBeingDeleted(BookmarkModel* model) {
-  installed_bookmark_observer_ = false;
-}
-
-void ImporterHost::Observe(NotificationType type,
-                           const NotificationSource& source,
-                           const NotificationDetails& details) {
-  DCHECK(type == NotificationType::TEMPLATE_URL_MODEL_LOADED);
-  registrar_.RemoveAll();
-  InvokeTaskIfDone();
-}
-
 void ImporterHost::ShowWarningDialog() {
   if (headless_) {
     OnLockViewEnd(false);
@@ -225,6 +203,31 @@ void ImporterHost::InvokeTaskIfDone() {
       !is_source_readable_)
     return;
   BrowserThread::PostTask(BrowserThread::FILE, FROM_HERE, task_);
+}
+
+void ImporterHost::Loaded(BookmarkModel* model) {
+  DCHECK(model->IsLoaded());
+  model->RemoveObserver(this);
+  waiting_for_bookmarkbar_model_ = false;
+  installed_bookmark_observer_ = false;
+
+  importer_->set_import_to_bookmark_bar(!model->HasBookmarks());
+  InvokeTaskIfDone();
+}
+
+void ImporterHost::BookmarkModelBeingDeleted(BookmarkModel* model) {
+  installed_bookmark_observer_ = false;
+}
+
+void ImporterHost::BookmarkModelChanged() {
+}
+
+void ImporterHost::Observe(NotificationType type,
+                           const NotificationSource& source,
+                           const NotificationDetails& details) {
+  DCHECK(type == NotificationType::TEMPLATE_URL_MODEL_LOADED);
+  registrar_.RemoveAll();
+  InvokeTaskIfDone();
 }
 
 void ImporterHost::ImportItemStarted(importer::ImportItem item) {
