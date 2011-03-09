@@ -371,7 +371,6 @@ void InputMethodMenu::InputMethodChanged(
     const InputMethodDescriptor& current_input_method,
     size_t num_active_input_methods) {
   UpdateUIFromInputMethod(current_input_method, num_active_input_methods);
-  PrepareMenu();
 }
 
 void InputMethodMenu::PreferenceUpdateNeeded(

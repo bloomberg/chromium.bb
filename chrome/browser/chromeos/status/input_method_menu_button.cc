@@ -13,7 +13,11 @@
 #include "chrome/browser/chromeos/status/status_area_host.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_list.h"
+#include "chrome/browser/ui/browser_window.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "views/window/window.h"
 
 namespace {
 
@@ -110,6 +114,21 @@ void InputMethodMenuButton::RunMenu(views::View* unused_source,
   menu_->RunMenu(unused_source, pt);
 }
 
+bool InputMethodMenuButton::WindowIsActive() {
+  Browser* active_browser = BrowserList::GetLastActive();
+  if (!active_browser) {
+    // Can't get an active browser. Just return true, which is safer.
+    return true;
+  }
+  BrowserWindow* active_window = active_browser->window();
+  const views::Window* current_window = GetWindow();
+  if (!active_window || !current_window) {
+    // Can't get an active or current window. Just return true as well.
+    return true;
+  }
+  return active_window->GetNativeHandle() == current_window->GetNativeWindow();
+}
+
 void InputMethodMenuButton::UpdateUI(const std::string& input_method_id,
                                      const std::wstring& name,
                                      const std::wstring& tooltip,
@@ -130,7 +149,19 @@ void InputMethodMenuButton::UpdateUI(const std::string& input_method_id,
     SetTooltipText(tooltip);
   }
   SetText(name);
-  SchedulePaint();
+
+  if (WindowIsActive()) {
+    // We don't call these functions if the |current_window| is not active since
+    // the calls are relatively expensive (crosbug.com/9206). Please note that
+    // PrepareMenu() is necessary for fixing crosbug.com/7522 when the window
+    // is active.
+    menu_->PrepareMenu();
+    SchedulePaint();
+  }
+
+  // TODO(yusukes): For a window which isn't on top, probably it's better to
+  // update the texts when the window gets activated because SetTooltipText()
+  // and SetText() are also expensive.
 }
 
 void InputMethodMenuButton::OpenConfigUI() {

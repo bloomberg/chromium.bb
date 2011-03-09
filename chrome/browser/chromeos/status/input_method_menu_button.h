@@ -43,6 +43,9 @@ class InputMethodMenuButton : public StatusAreaButton,
   void UpdateUIFromCurrentInputMethod();
 
  private:
+  // Returns true if the Chrome window where the button lives is active.
+  bool WindowIsActive();
+
   scoped_ptr<InputMethodMenu> menu_;
   StatusAreaHost* host_;
 
