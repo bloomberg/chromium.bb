@@ -66,7 +66,7 @@ void AddStartupPageHandler::UpdateFieldWithRecentPage(const ListValue* args) {
       UnescapeRule::SPACES, NULL, NULL, NULL);
 
   scoped_ptr<Value> url_value(Value::CreateStringValue(url_string));
-  web_ui_->CallJavascriptFunction(L"AddStartupPageOverlay.setInputFieldValue",
+  web_ui_->CallJavascriptFunction("AddStartupPageOverlay.setInputFieldValue",
                                   *url_value.get());
 }
 
@@ -81,7 +81,7 @@ void AddStartupPageHandler::OnModelChanged() {
     pages.Append(dict);
   }
 
-  web_ui_->CallJavascriptFunction(L"AddStartupPageOverlay.updateRecentPageList",
+  web_ui_->CallJavascriptFunction("AddStartupPageOverlay.updateRecentPageList",
                                   pages);
 }
 

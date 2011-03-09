@@ -285,7 +285,7 @@ void MediaplayerHandler::FirePlaylistChanged(const std::string& path,
   info_value.SetString(kPropertyPath, path);
   info_value.SetBoolean(kPropertyForce, force);
   info_value.SetInteger(kPropertyOffset, offset);
-  web_ui_->CallJavascriptFunction(L"playlistChanged", info_value, urls);
+  web_ui_->CallJavascriptFunction("playlistChanged", info_value, urls);
 }
 
 void MediaplayerHandler::SetCurrentPlaylistOffset(int offset) {

@@ -284,7 +284,7 @@ void FlowHandler::ShowGaiaLogin(const DictionaryValue& args) {
   // frame, this call would be necessary to ensure that this method actually
   // shows the gaia login.
   if (web_ui_)
-    web_ui_->CallJavascriptFunction(L"showGaiaLoginIframe");
+    web_ui_->CallJavascriptFunction("showGaiaLoginIframe");
 
   std::string json;
   base::JSONWriter::Write(&args, false, &json);
@@ -308,7 +308,7 @@ void FlowHandler::ShowConfigure(const DictionaryValue& args) {
   // "Customize Sync"), this will be redundant.  However, if you're coming from
   // another wizard state, this will make sure Choose Data Types is on top.
   if (web_ui_)
-    web_ui_->CallJavascriptFunction(L"showConfigure");
+    web_ui_->CallJavascriptFunction("showConfigure");
 
   std::string json;
   base::JSONWriter::Write(&args, false, &json);
@@ -319,7 +319,7 @@ void FlowHandler::ShowConfigure(const DictionaryValue& args) {
 
 void FlowHandler::ShowPassphraseEntry(const DictionaryValue& args) {
   if (web_ui_)
-    web_ui_->CallJavascriptFunction(L"showPassphrase");
+    web_ui_->CallJavascriptFunction("showPassphrase");
 
   std::string json;
   base::JSONWriter::Write(&args, false, &json);
@@ -330,7 +330,7 @@ void FlowHandler::ShowPassphraseEntry(const DictionaryValue& args) {
 
 void FlowHandler::ShowFirstPassphrase(const DictionaryValue& args) {
   if (web_ui_)
-    web_ui_->CallJavascriptFunction(L"showFirstPassphrase");
+    web_ui_->CallJavascriptFunction("showFirstPassphrase");
 
   std::string json;
   base::JSONWriter::Write(&args, false, &json);
@@ -341,7 +341,7 @@ void FlowHandler::ShowFirstPassphrase(const DictionaryValue& args) {
 
 void FlowHandler::ShowSettingUp() {
   if (web_ui_)
-    web_ui_->CallJavascriptFunction(L"showSettingUp");
+    web_ui_->CallJavascriptFunction("showSettingUp");
 }
 
 void FlowHandler::ShowSetupDone(const std::wstring& user) {
@@ -354,7 +354,7 @@ void FlowHandler::ShowSetupDone(const std::wstring& user) {
   ExecuteJavascriptInIFrame(kDoneIframeXPath, javascript);
 
   if (web_ui_)
-    web_ui_->CallJavascriptFunction(L"showSetupDone", synced_to_string);
+    web_ui_->CallJavascriptFunction("showSetupDone", synced_to_string);
 
   ExecuteJavascriptInIFrame(kDoneIframeXPath,
                             L"onPageShown();");

@@ -72,7 +72,7 @@ void SyncInternalsUI::HandleJsEvent(const std::string& name,
                                     const browser_sync::JsArgList& args) {
   VLOG(1) << "Handling event: " << name << " with args " << args.ToString();
   std::vector<const Value*> arg_list(args.Get().begin(), args.Get().end());
-  CallJavascriptFunction(UTF8ToWide(name), arg_list);
+  CallJavascriptFunction(name, arg_list);
 }
 
 browser_sync::JsFrontend* SyncInternalsUI::GetJsFrontend() {

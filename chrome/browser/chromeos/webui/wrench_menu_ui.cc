@@ -101,7 +101,7 @@ void WrenchMenuUI::UpdateZoomControls() {
   params.SetBoolean("minus", enable_decrement);
   params.SetString("percent", l10n_util::GetStringFUTF16(
       IDS_ZOOM_PERCENT, UTF8ToUTF16(base::IntToString(zoom))));
-  CallJavascriptFunction(L"updateZoomControls", params);
+  CallJavascriptFunction("updateZoomControls", params);
 }
 
 views::Menu2* WrenchMenuUI::CreateMenu2(ui::MenuModel* model) {

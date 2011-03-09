@@ -202,8 +202,7 @@ void AutoFillOptionsHandler::LoadAutoFillData() {
     addresses.Append(entry);
   }
 
-  web_ui_->CallJavascriptFunction(L"AutoFillOptions.setAddressList",
-                                  addresses);
+  web_ui_->CallJavascriptFunction("AutoFillOptions.setAddressList", addresses);
 
   ListValue credit_cards;
   for (std::vector<CreditCard*>::const_iterator i =
@@ -218,7 +217,7 @@ void AutoFillOptionsHandler::LoadAutoFillData() {
     credit_cards.Append(entry);
   }
 
-  web_ui_->CallJavascriptFunction(L"AutoFillOptions.setCreditCardList",
+  web_ui_->CallJavascriptFunction("AutoFillOptions.setCreditCardList",
                                   credit_cards);
 }
 
@@ -292,7 +291,7 @@ void AutoFillOptionsHandler::LoadAddressEditor(const ListValue* args) {
   address.SetString("email",
                      profile->GetFieldText(AutofillType(EMAIL_ADDRESS)));
 
-  web_ui_->CallJavascriptFunction(L"AutoFillOptions.editAddress", address);
+  web_ui_->CallJavascriptFunction("AutoFillOptions.editAddress", address);
 }
 
 void AutoFillOptionsHandler::LoadCreditCardEditor(const ListValue* args) {
@@ -331,7 +330,7 @@ void AutoFillOptionsHandler::LoadCreditCardEditor(const ListValue* args) {
       "expirationYear",
       credit_card->GetFieldText(AutofillType(CREDIT_CARD_EXP_4_DIGIT_YEAR)));
 
-  web_ui_->CallJavascriptFunction(L"AutoFillOptions.editCreditCard",
+  web_ui_->CallJavascriptFunction("AutoFillOptions.editCreditCard",
                                   credit_card_data);
 }
 

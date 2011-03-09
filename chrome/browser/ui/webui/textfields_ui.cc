@@ -56,7 +56,8 @@ void TextfieldsDOMHandler::RegisterMessages() {
 }
 
 void TextfieldsDOMHandler::HandleTextfieldValue(const ListValue* args) {
-  static_cast<TextfieldsUI*>(web_ui_)->set_text(ExtractStringValue(args));
+  static_cast<TextfieldsUI*>(web_ui_)->set_text(
+      UTF16ToWideHack(ExtractStringValue(args)));
 }
 
 /**

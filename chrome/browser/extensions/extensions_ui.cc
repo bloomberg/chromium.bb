@@ -283,7 +283,7 @@ void ExtensionsDOMHandler::HandleRequestExtensionsData(const ListValue* args) {
       ->GetBoolean(prefs::kExtensionsUIDeveloperMode);
   results.SetBoolean("developerMode", developer_mode);
 
-  web_ui_->CallJavascriptFunction(L"returnExtensionsData", results);
+  web_ui_->CallJavascriptFunction("returnExtensionsData", results);
 }
 
 void ExtensionsDOMHandler::RegisterForNotifications() {
@@ -352,7 +352,7 @@ void ExtensionsDOMHandler::HandleInspectMessage(const ListValue* args) {
 }
 
 void ExtensionsDOMHandler::HandleReloadMessage(const ListValue* args) {
-  std::string extension_id = WideToASCII(ExtractStringValue(args));
+  std::string extension_id = UTF16ToASCII(ExtractStringValue(args));
   CHECK(!extension_id.empty());
   extensions_service_->ReloadExtension(extension_id);
 }
@@ -415,7 +415,7 @@ void ExtensionsDOMHandler::HandleAllowFileAccessMessage(const ListValue* args) {
 }
 
 void ExtensionsDOMHandler::HandleUninstallMessage(const ListValue* args) {
-  std::string extension_id = WideToASCII(ExtractStringValue(args));
+  std::string extension_id = UTF16ToASCII(ExtractStringValue(args));
   CHECK(!extension_id.empty());
   const Extension* extension =
       extensions_service_->GetExtensionById(extension_id, true);
@@ -486,7 +486,7 @@ void ExtensionsDOMHandler::HandleLoadMessage(const ListValue* args) {
 void ExtensionsDOMHandler::ShowAlert(const std::string& message) {
   ListValue arguments;
   arguments.Append(Value::CreateStringValue(message));
-  web_ui_->CallJavascriptFunction(L"alert", arguments);
+  web_ui_->CallJavascriptFunction("alert", arguments);
 }
 
 void ExtensionsDOMHandler::HandlePackMessage(const ListValue* args) {
@@ -528,7 +528,7 @@ void ExtensionsDOMHandler::OnPackSuccess(const FilePath& crx_file,
                                                                  pem_file)));
 
   ListValue results;
-  web_ui_->CallJavascriptFunction(L"hidePackDialog", results);
+  web_ui_->CallJavascriptFunction("hidePackDialog", results);
 }
 
 void ExtensionsDOMHandler::OnPackFailure(const std::string& error) {
@@ -587,7 +587,7 @@ void ExtensionsDOMHandler::FileSelected(const FilePath& path, int index,
   // Add the extensions to the results structure.
   ListValue results;
   results.Append(Value::CreateStringValue(path.value()));
-  web_ui_->CallJavascriptFunction(L"window.handleFilePathSelected", results);
+  web_ui_->CallJavascriptFunction("window.handleFilePathSelected", results);
 }
 
 void ExtensionsDOMHandler::MultiFilesSelected(
@@ -636,7 +636,7 @@ void ExtensionsDOMHandler::Observe(NotificationType type,
 }
 
 const Extension* ExtensionsDOMHandler::GetExtension(const ListValue* args) {
-  std::string extension_id = WideToASCII(ExtractStringValue(args));
+  std::string extension_id = UTF16ToASCII(ExtractStringValue(args));
   CHECK(!extension_id.empty());
   return extensions_service_->GetExtensionById(extension_id, true);
 }

@@ -234,7 +234,7 @@ void CoreOptionsHandler::HandleFetchPrefs(const ListValue* args) {
 
     result_value.Set(pref_name.c_str(), FetchPref(pref_name));
   }
-  web_ui_->CallJavascriptFunction(UTF16ToWideHack(callback_function).c_str(),
+  web_ui_->CallJavascriptFunction(UTF16ToASCII(callback_function),
                                   result_value);
 }
 
@@ -345,7 +345,7 @@ void CoreOptionsHandler::HandleClearPref(const ListValue* args) {
 }
 
 void CoreOptionsHandler::HandleUserMetricsAction(const ListValue* args) {
-  std::string metric = WideToUTF8(ExtractStringValue(args));
+  std::string metric = UTF16ToUTF8(ExtractStringValue(args));
   if (!metric.empty())
     UserMetricsRecordAction(UserMetricsAction(metric.c_str()));
 }
@@ -367,7 +367,8 @@ void CoreOptionsHandler::NotifyPrefChanged(const std::string* pref_name) {
       dict->SetBoolean("managed", pref->IsManaged());
       result_value.Append(dict);
 
-      web_ui_->CallJavascriptFunction(callback_function, result_value);
+      web_ui_->CallJavascriptFunction(WideToASCII(callback_function),
+                                      result_value);
     }
   }
 }

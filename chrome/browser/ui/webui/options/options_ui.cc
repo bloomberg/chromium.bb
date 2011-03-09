@@ -270,7 +270,7 @@ void OptionsUI::DidBecomeActiveForReusedRenderView() {
   // won't fire to initilize the handlers. To make sure initialization always
   // happens, call reinitializeCore (which is a no-op unless the DOM was already
   // initialized).
-  CallJavascriptFunction(L"OptionsPage.reinitializeCore");
+  CallJavascriptFunction("OptionsPage.reinitializeCore");
 
   WebUI::DidBecomeActiveForReusedRenderView();
 }

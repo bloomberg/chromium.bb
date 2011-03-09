@@ -144,19 +144,18 @@ void LanguageOptionsHandlerCommon::LanguageOptionsOpenCallback(
 
 void LanguageOptionsHandlerCommon::UiLanguageChangeCallback(
     const ListValue* args) {
-  const std::string language_code = WideToASCII(ExtractStringValue(args));
+  const std::string language_code = UTF16ToASCII(ExtractStringValue(args));
   CHECK(!language_code.empty());
   const std::string action = StringPrintf(
       "LanguageOptions_UiLanguageChange_%s", language_code.c_str());
   UserMetrics::RecordComputedAction(action);
   SetApplicationLocale(language_code);
-    web_ui_->CallJavascriptFunction(
-      L"options.LanguageOptions.uiLanguageSaved");
+    web_ui_->CallJavascriptFunction("options.LanguageOptions.uiLanguageSaved");
 }
 
 void LanguageOptionsHandlerCommon::SpellCheckLanguageChangeCallback(
     const ListValue* args) {
-  const std::string language_code = WideToASCII(ExtractStringValue(args));
+  const std::string language_code = UTF16ToASCII(ExtractStringValue(args));
   CHECK(!language_code.empty());
   const std::string action = StringPrintf(
       "LanguageOptions_SpellCheckLanguageChange_%s", language_code.c_str());

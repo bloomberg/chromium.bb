@@ -591,7 +591,7 @@ void MenuUI::ModelUpdated(const ui::MenuModel* model) {
   json_model.SetInteger("maxIconWidth", max_icon_width);
   json_model.SetBoolean("isRoot", widget->is_root());
   json_model.SetBoolean("hasAccelerator", has_accelerator);
-  CallJavascriptFunction(L"updateModel", json_model);
+  CallJavascriptFunction("updateModel", json_model);
 }
 
 DictionaryValue* MenuUI::CreateMenuItem(const ui::MenuModel* model,

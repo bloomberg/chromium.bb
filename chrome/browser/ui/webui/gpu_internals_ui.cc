@@ -208,12 +208,12 @@ void GpuMessageHandler::OnCallAsync(const ListValue* args) {
 
   // call BrowserBridge.onCallAsyncReply with result
   if (ret) {
-    web_ui_->CallJavascriptFunction(L"browserBridge.onCallAsyncReply",
+    web_ui_->CallJavascriptFunction("browserBridge.onCallAsyncReply",
         *requestId,
         *ret);
     delete ret;
   } else {
-    web_ui_->CallJavascriptFunction(L"browserBridge.onCallAsyncReply",
+    web_ui_->CallJavascriptFunction("browserBridge.onCallAsyncReply",
         *requestId);
   }
 }
@@ -373,7 +373,7 @@ void GpuMessageHandler::OnGpuInfoUpdate() {
 
 
   // Send GPU Info to javascript.
-  web_ui_->CallJavascriptFunction(L"browserBridge.onGpuInfoUpdate",
+  web_ui_->CallJavascriptFunction("browserBridge.onGpuInfoUpdate",
       *gpu_info_val);
 
   delete gpu_info_val;

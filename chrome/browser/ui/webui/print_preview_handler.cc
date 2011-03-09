@@ -122,5 +122,5 @@ void PrintPreviewHandler::HandlePrint(const ListValue* args) {
 }
 
 void PrintPreviewHandler::SendPrinterList(const ListValue& printers) {
-  web_ui_->CallJavascriptFunction(L"setPrinters", printers);
+  web_ui_->CallJavascriptFunction("setPrinters", printers);
 }

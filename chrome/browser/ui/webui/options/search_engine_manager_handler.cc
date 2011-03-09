@@ -125,7 +125,7 @@ void SearchEngineManagerHandler::OnModelChanged() {
     others_list.Append(CreateDictionaryForEngine(i, i == default_index));
   }
 
-  web_ui_->CallJavascriptFunction(L"SearchEngineManager.updateSearchEngineList",
+  web_ui_->CallJavascriptFunction("SearchEngineManager.updateSearchEngineList",
                                   defaults_list, others_list);
 }
 
@@ -246,8 +246,8 @@ void SearchEngineManagerHandler::CheckSearchEngineInfoValidity(
   validity.SetBoolean("keyword", edit_controller_->IsKeywordValid(keyword));
   validity.SetBoolean("url", edit_controller_->IsURLValid(url));
   StringValue indexValue(modelIndex);
-  web_ui_->CallJavascriptFunction(
-      L"SearchEngineManager.validityCheckCallback", validity, indexValue);
+  web_ui_->CallJavascriptFunction("SearchEngineManager.validityCheckCallback",
+                                  validity, indexValue);
 }
 
 void SearchEngineManagerHandler::EditCancelled(const ListValue* args) {

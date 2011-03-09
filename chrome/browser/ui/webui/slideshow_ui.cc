@@ -167,7 +167,7 @@ void SlideshowHandler::RegisterMessages() {
 
 void SlideshowHandler::HandleRefreshDirectory(const ListValue* args) {
 #if defined(OS_CHROMEOS)
-  std::string path = WideToUTF8(ExtractStringValue(args));
+  std::string path = UTF16ToUTF8(ExtractStringValue(args));
   GetChildrenForPath(FilePath(path), true);
 #endif
 }
@@ -200,7 +200,7 @@ void SlideshowHandler::GetChildrenForPath(const FilePath& path,
 void SlideshowHandler::HandleGetChildren(const ListValue* args) {
 #if defined(OS_CHROMEOS)
   filelist_value_.reset(new ListValue());
-  std::string path = WideToUTF8(ExtractStringValue(args));
+  std::string path = UTF16ToUTF8(ExtractStringValue(args));
   GetChildrenForPath(FilePath(path), false);
 #endif
 }
@@ -263,7 +263,7 @@ void SlideshowHandler::OnListDone(int error) {
     info_value.SetString("functionCall", "getChildren");
   }
   info_value.SetString(kPropertyPath, currentpath_.value());
-  web_ui_->CallJavascriptFunction(L"browseFileResult",
+  web_ui_->CallJavascriptFunction("browseFileResult",
                                   info_value, *(filelist_value_.get()));
 }
 

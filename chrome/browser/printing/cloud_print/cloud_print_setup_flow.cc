@@ -236,7 +236,7 @@ void CloudPrintSetupFlow::OnUserClickedPrintTestPage() {
 // Helper methods for showing contents of the Web UI
 void CloudPrintSetupFlow::ShowGaiaLogin(const DictionaryValue& args) {
   if (web_ui_)
-    web_ui_->CallJavascriptFunction(L"cloudprint.showSetupLogin");
+    web_ui_->CallJavascriptFunction("cloudprint.showSetupLogin");
 
   std::string json;
   base::JSONWriter::Write(&args, false, &json);
@@ -282,7 +282,7 @@ void CloudPrintSetupFlow::ShowSetupDone() {
 
     FundamentalValue new_width(done_size.width());
     FundamentalValue new_height(done_size.height());
-    web_ui_->CallJavascriptFunction(L"cloudprint.showSetupDone",
+    web_ui_->CallJavascriptFunction("cloudprint.showSetupDone",
                                     new_width, new_height);
   }
 

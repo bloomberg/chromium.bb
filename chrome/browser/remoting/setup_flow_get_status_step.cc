@@ -41,7 +41,7 @@ void SetupFlowGetStatusStep::OnRemotingHostInfo(
 }
 
 void SetupFlowGetStatusStep::DoStart() {
-  flow()->web_ui()->CallJavascriptFunction(L"showSettingUp");
+  flow()->web_ui()->CallJavascriptFunction("showSettingUp");
 
   process_control_ =
       ServiceProcessControlManager::GetInstance()->GetProcessControl(

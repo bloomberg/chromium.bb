@@ -548,7 +548,7 @@ void FilebrowseHandler::FireUploadComplete() {
   picture_url += kPicasawebDropBox;
   info_value.SetString("url", picture_url);
   info_value.SetInteger("status_code", upload_response_code_);
-  web_ui_->CallJavascriptFunction(L"uploadComplete", info_value);
+  web_ui_->CallJavascriptFunction("uploadComplete", info_value);
 #endif
 }
 
@@ -558,7 +558,7 @@ void FilebrowseHandler::MountChanged(chromeos::MountLibrary* obj,
                                      const std::string& path) {
   if (evt == chromeos::DISK_REMOVED ||
       evt == chromeos::DISK_CHANGED) {
-    web_ui_->CallJavascriptFunction(L"rootsChanged");
+    web_ui_->CallJavascriptFunction("rootsChanged");
   }
 }
 #endif
@@ -623,13 +623,13 @@ void FilebrowseHandler::HandleGetRoots(const ListValue* args) {
 
   info_value.SetString("functionCall", "getRoots");
   info_value.SetString(kPropertyPath, "");
-  web_ui_->CallJavascriptFunction(L"browseFileResult",
+  web_ui_->CallJavascriptFunction("browseFileResult",
                                   info_value, results_value);
 }
 
 void FilebrowseHandler::HandleCreateNewFolder(const ListValue* args) {
 #if defined(OS_CHROMEOS)
-  std::string path = WideToUTF8(ExtractStringValue(args));
+  std::string path = UTF16ToUTF8(ExtractStringValue(args));
   FilePath currentpath(path);
 
   scoped_refptr<TaskProxy> task = new TaskProxy(AsWeakPtr(), currentpath);
@@ -648,7 +648,7 @@ void FilebrowseHandler::CreateNewFolder(const FilePath& currentpath) const {
 
 void FilebrowseHandler::PlayMediaFile(const ListValue* args) {
 #if defined(OS_CHROMEOS)
-  std::string url = WideToUTF8(ExtractStringValue(args));
+  std::string url = UTF16ToUTF8(ExtractStringValue(args));
   GURL gurl(url);
 
   Browser* browser = Browser::GetBrowserForController(
@@ -660,7 +660,7 @@ void FilebrowseHandler::PlayMediaFile(const ListValue* args) {
 
 void FilebrowseHandler::EnqueueMediaFile(const ListValue* args) {
 #if defined(OS_CHROMEOS)
-  std::string url = WideToUTF8(ExtractStringValue(args));
+  std::string url = UTF16ToUTF8(ExtractStringValue(args));
   GURL gurl(url);
 
   Browser* browser = Browser::GetBrowserForController(
@@ -679,7 +679,7 @@ void FilebrowseHandler::HandleIsAdvancedEnabled(const ListValue* args) {
   DictionaryValue info_value;
   info_value.SetBoolean("enabled", is_enabled);
   info_value.SetBoolean("mpEnabled", mp_enabled);
-  web_ui_->CallJavascriptFunction(L"enabledResult",
+  web_ui_->CallJavascriptFunction("enabledResult",
                                   info_value);
 
 #endif
@@ -687,7 +687,7 @@ void FilebrowseHandler::HandleIsAdvancedEnabled(const ListValue* args) {
 
 void FilebrowseHandler::HandleRefreshDirectory(const ListValue* args) {
 #if defined(OS_CHROMEOS)
-  std::string path = WideToUTF8(ExtractStringValue(args));
+  std::string path = UTF16ToUTF8(ExtractStringValue(args));
   FilePath currentpath(path);
   GetChildrenForPath(currentpath, true);
 #endif
@@ -743,7 +743,7 @@ void FilebrowseHandler::OpenNewPopupWindow(const ListValue* args) {
 }
 
 void FilebrowseHandler::OpenNewWindow(const ListValue* args, bool popup) {
-  std::string url = WideToUTF8(ExtractStringValue(args));
+  std::string url = UTF16ToUTF8(ExtractStringValue(args));
   Browser* browser = popup ?
       Browser::CreateForType(Browser::TYPE_APP_PANEL, profile_) :
       BrowserList::GetLastActive();
@@ -819,7 +819,7 @@ void FilebrowseHandler::ReadInFile() {
 // TODO(dhg): Remove this and implement general upload.
 void FilebrowseHandler::UploadToPicasaweb(const ListValue* args) {
 #if defined(OS_CHROMEOS)
-  std::string search_string = WideToUTF8(ExtractStringValue(args));
+  std::string search_string = UTF16ToUTF8(ExtractStringValue(args));
   current_file_uploaded_ = search_string;
   //  ReadInFile();
   FilePath current_path(search_string);
@@ -873,7 +873,7 @@ void FilebrowseHandler::GetChildrenForPath(const FilePath& path,
 
 void FilebrowseHandler::HandleGetChildren(const ListValue* args) {
 #if defined(OS_CHROMEOS)
-  std::string path = WideToUTF8(ExtractStringValue(args));
+  std::string path = UTF16ToUTF8(ExtractStringValue(args));
   FilePath currentpath(path);
   filelist_value_.reset(new ListValue());
 
@@ -928,7 +928,7 @@ void FilebrowseHandler::OnListDone(int error) {
     info_value.SetString("functionCall", "getChildren");
   }
   info_value.SetString(kPropertyPath, currentpath_.value());
-  web_ui_->CallJavascriptFunction(L"browseFileResult",
+  web_ui_->CallJavascriptFunction("browseFileResult",
                                   info_value, *(filelist_value_.get()));
 }
 
@@ -980,7 +980,7 @@ void FilebrowseHandler::UpdateDownloadList() {
 void FilebrowseHandler::SendNewDownload(DownloadItem* download) {
   ListValue results_value;
   results_value.Append(download_util::CreateDownloadItemValue(download, -1));
-  web_ui_->CallJavascriptFunction(L"newDownload", results_value);
+  web_ui_->CallJavascriptFunction("newDownload", results_value);
 }
 
 void FilebrowseHandler::DeleteFile(const FilePath& path, TaskProxy* task) {
@@ -1011,7 +1011,7 @@ void FilebrowseHandler::CopyFile(const FilePath& src,
 
 void FilebrowseHandler::HandleDeleteFile(const ListValue* args) {
 #if defined(OS_CHROMEOS)
-  std::string path = WideToUTF8(ExtractStringValue(args));
+  std::string path = UTF16ToUTF8(ExtractStringValue(args));
   FilePath currentpath(path);
 
   // Don't allow file deletion in inaccessible dirs.
@@ -1128,7 +1128,7 @@ void FilebrowseHandler::FireOnValidatedSavePathOnUIThread(bool valid,
 
   FundamentalValue valid_value(valid);
   StringValue path_value(save_path.value());
-  web_ui_->CallJavascriptFunction(L"onValidatedSavePath",
+  web_ui_->CallJavascriptFunction("onValidatedSavePath",
       valid_value, path_value);
 }
 
@@ -1142,7 +1142,7 @@ void FilebrowseHandler::OnDownloadUpdated(DownloadItem* download) {
 
   scoped_ptr<DictionaryValue> download_item(
       download_util::CreateDownloadItemValue(download, id));
-  web_ui_->CallJavascriptFunction(L"downloadUpdated", *download_item.get());
+  web_ui_->CallJavascriptFunction("downloadUpdated", *download_item.get());
 }
 
 void FilebrowseHandler::ClearDownloadItems() {
@@ -1161,7 +1161,7 @@ void FilebrowseHandler::SendCurrentDownloads() {
     results_value.Append(download_util::CreateDownloadItemValue(*it, index));
   }
 
-  web_ui_->CallJavascriptFunction(L"downloadsList", results_value);
+  web_ui_->CallJavascriptFunction("downloadsList", results_value);
 }
 
 void FilebrowseHandler::OnDownloadFileCompleted(DownloadItem* download) {

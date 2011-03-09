@@ -285,7 +285,7 @@ void KeyboardOverlayHandler::GetKeyboardOverlayId(const ListValue* args) {
   const std::string keyboard_overlay_id =
       library->GetKeyboardOverlayId(descriptor.id);
   StringValue param(keyboard_overlay_id);
-  web_ui_->CallJavascriptFunction(L"initKeyboardOverlayId", param);
+  web_ui_->CallJavascriptFunction("initKeyboardOverlayId", param);
 }
 
 ////////////////////////////////////////////////////////////////////////////////

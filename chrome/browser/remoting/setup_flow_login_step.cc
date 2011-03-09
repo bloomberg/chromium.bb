@@ -135,7 +135,7 @@ void SetupFlowLoginStep::ShowGaiaLogin(const DictionaryValue& args) {
   WebUI* web_ui = flow()->web_ui();
   DCHECK(web_ui);
 
-  web_ui->CallJavascriptFunction(L"showLogin");
+  web_ui->CallJavascriptFunction("showLogin");
 
   std::string json;
   base::JSONWriter::Write(&args, false, &json);

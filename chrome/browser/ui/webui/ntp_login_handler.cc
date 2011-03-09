@@ -51,5 +51,5 @@ void NTPLoginHandler::UpdateLogin() {
   std::string username = web_ui_->GetProfile()->GetPrefs()->GetString(
       prefs::kGoogleServicesUsername);
   StringValue string_value(username);
-  web_ui_->CallJavascriptFunction(L"updateLogin", string_value);
+  web_ui_->CallJavascriptFunction("updateLogin", string_value);
 }

@@ -27,7 +27,7 @@ void SetupFlowRegisterStep::Cancel() {
 }
 
 void SetupFlowRegisterStep::DoStart() {
-  flow()->web_ui()->CallJavascriptFunction(L"showSettingUp");
+  flow()->web_ui()->CallJavascriptFunction("showSettingUp");
 
   request_.reset(new DirectoryAddRequest(
       flow()->profile()->GetRequestContext()));

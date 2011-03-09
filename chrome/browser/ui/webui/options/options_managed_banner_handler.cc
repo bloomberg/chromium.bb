@@ -4,7 +4,7 @@
 
 #include "chrome/browser/ui/webui/options/options_managed_banner_handler.h"
 
-#include "base/utf_string_conversions.h"
+#include "base/string_util.h"
 #include "base/values.h"
 #include "chrome/browser/profiles/profile.h"
 #include "content/browser/webui/web_ui.h"
@@ -27,12 +27,12 @@ void OptionsManagedBannerHandler::OnUpdateVisibility() {
 
 void OptionsManagedBannerHandler::SetupBannerVisibility() {
   // Construct the banner visibility script name.
-  string16 script = ASCIIToUTF16("options.") + page_name_ +
-      ASCIIToUTF16(".getInstance().setManagedBannerVisibility");
+  std::string script = "options." + UTF16ToASCII(page_name_) +
+      ".getInstance().setManagedBannerVisibility";
 
   // Get the visiblity value from the base class.
   FundamentalValue visibility(DetermineVisibility());
 
   // Set the managed state in the javascript handler.
-  web_ui_->CallJavascriptFunction(UTF16ToWideHack(script), visibility);
+  web_ui_->CallJavascriptFunction(script, visibility);
 }

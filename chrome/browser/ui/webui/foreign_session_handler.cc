@@ -62,7 +62,7 @@ void ForeignSessionHandler::Observe(NotificationType type,
     case NotificationType::FOREIGN_SESSION_DISABLED:
       // Calling foreignSessions with empty list will automatically hide
       // foreign session section.
-      web_ui_->CallJavascriptFunction(L"foreignSessions", list_value);
+      web_ui_->CallJavascriptFunction("foreignSessions", list_value);
       break;
     default:
       NOTREACHED();
@@ -122,10 +122,10 @@ void ForeignSessionHandler::HandleGetForeignSessions(const ListValue* args) {
     }
     added_count++;
 
-    // Give ownership to |session_list|
+    // Give ownership to |session_list|.
     session_list.Append(window_list.release());
   }
-  web_ui_->CallJavascriptFunction(L"foreignSessions", session_list);
+  web_ui_->CallJavascriptFunction("foreignSessions", session_list);
 }
 
 void ForeignSessionHandler::HandleOpenForeignSession(
@@ -137,7 +137,7 @@ void ForeignSessionHandler::HandleOpenForeignSession(
     return;
   }
 
-  // Extract the machine tag (always provided)
+  // Extract the machine tag (always provided).
   std::string session_string_value;
   if (!args->GetString(0, &session_string_value)) {
     LOG(ERROR) << "Failed to extract session tag.";

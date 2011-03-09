@@ -141,7 +141,7 @@ void FontSettingsHandler::FontsListHasLoaded() {
   selected_values.Append(Value::CreateStringValue(fixed_font_.GetValue()));
   selected_values.Append(Value::CreateStringValue(font_encoding_.GetValue()));
 
-  web_ui_->CallJavascriptFunction(L"FontSettings.setFontsData",
+  web_ui_->CallJavascriptFunction("FontSettings.setFontsData",
                                   *fonts_list, encoding_list, selected_values);
 }
 
@@ -166,18 +166,18 @@ void FontSettingsHandler::SetupStandardFontSample() {
   StringValue font_value(standard_font_.GetValue());
   FundamentalValue size_value(default_font_size_.GetValue());
   web_ui_->CallJavascriptFunction(
-      L"FontSettings.setupStandardFontSample", font_value, size_value);
+      "FontSettings.setupStandardFontSample", font_value, size_value);
 }
 
 void FontSettingsHandler::SetupFixedFontSample() {
   StringValue font_value(fixed_font_.GetValue());
   FundamentalValue size_value(default_fixed_font_size_.GetValue());
   web_ui_->CallJavascriptFunction(
-      L"FontSettings.setupFixedFontSample", font_value, size_value);
+      "FontSettings.setupFixedFontSample", font_value, size_value);
 }
 
 void FontSettingsHandler::SetupMinimumFontSample() {
   FundamentalValue size_value(minimum_font_size_.GetValue());
-  web_ui_->CallJavascriptFunction(
-      L"FontSettings.setupMinimumFontSample", size_value);
+  web_ui_->CallJavascriptFunction("FontSettings.setupMinimumFontSample",
+                                  size_value);
 }

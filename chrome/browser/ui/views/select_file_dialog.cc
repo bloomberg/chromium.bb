@@ -475,14 +475,14 @@ void SelectFileDialogImpl::FileBrowseDelegateHandler::RegisterMessages() {
 
 void SelectFileDialogImpl::FileBrowseDelegateHandler::HandleSetDialogTitle(
     const ListValue* args) {
-  std::wstring new_title = ExtractStringValue(args);
+  std::wstring new_title = UTF16ToWideHack(ExtractStringValue(args));
   if (new_title != delegate_->title_) {
     delegate_->title_ = new_title;
 
     // Notify the containing view about the title change.
     // The current HtmlDialogUIDelegate and HtmlDialogView does not support
     // dynamic title change. We hijacked the mechanism between HTMLDialogUI
-    // and HtmlDialogView to get the HtmlDialgoView and forced it to update
+    // and HtmlDialogView to get the HtmlDialogView and forced it to update
     // its title.
     // TODO(xiyuan): Change this when the infrastructure is improved.
     HtmlDialogUIDelegate** delegate = HtmlDialogUI::GetPropertyAccessor().

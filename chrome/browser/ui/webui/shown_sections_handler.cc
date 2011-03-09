@@ -78,7 +78,7 @@ void ShownSectionsHandler::Observe(NotificationType type,
     DCHECK(*pref_name == prefs::kNTPShownSections);
     int sections = pref_service_->GetInteger(prefs::kNTPShownSections);
     FundamentalValue sections_value(sections);
-    web_ui_->CallJavascriptFunction(L"setShownSections", sections_value);
+    web_ui_->CallJavascriptFunction("setShownSections", sections_value);
   } else {
     NOTREACHED();
   }
@@ -87,7 +87,7 @@ void ShownSectionsHandler::Observe(NotificationType type,
 void ShownSectionsHandler::HandleGetShownSections(const ListValue* args) {
   int sections = GetShownSections(pref_service_);
   FundamentalValue sections_value(sections);
-  web_ui_->CallJavascriptFunction(L"onShownSections", sections_value);
+  web_ui_->CallJavascriptFunction("onShownSections", sections_value);
 }
 
 void ShownSectionsHandler::HandleSetShownSections(const ListValue* args) {

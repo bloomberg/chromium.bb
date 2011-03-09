@@ -108,8 +108,8 @@ void AccountsOptionsHandler::FetchUserPictures(const ListValue* args) {
     user_pictures.SetWithoutPathExpansion(it->email(), image_url);
   }
 
-  web_ui_->CallJavascriptFunction(L"AccountsOptions.setUserPictures",
-      user_pictures);
+  web_ui_->CallJavascriptFunction("AccountsOptions.setUserPictures",
+                                  user_pictures);
 }
 
 void AccountsOptionsHandler::WhitelistExistingUsers(const ListValue* args) {
@@ -129,7 +129,7 @@ void AccountsOptionsHandler::WhitelistExistingUsers(const ListValue* args) {
     }
   }
 
-  web_ui_->CallJavascriptFunction(L"AccountsOptions.addUsers", whitelist_users);
+  web_ui_->CallJavascriptFunction("AccountsOptions.addUsers", whitelist_users);
 }
 
 void AccountsOptionsHandler::Initialize() {

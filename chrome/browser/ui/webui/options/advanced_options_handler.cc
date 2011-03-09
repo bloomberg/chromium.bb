@@ -353,7 +353,7 @@ void AdvancedOptionsHandler::HandleSelectDownloadLocation(
 
 void AdvancedOptionsHandler::HandlePromptForDownload(
     const ListValue* args) {
-  std::string checked_str = WideToUTF8(ExtractStringValue(args));
+  std::string checked_str = UTF16ToUTF8(ExtractStringValue(args));
   ask_for_save_location_.SetValue(checked_str == "true");
 }
 
@@ -515,13 +515,13 @@ void AdvancedOptionsHandler::SetupCloudPrintProxySection() {
   StringValue label(label_str);
 
   web_ui_->CallJavascriptFunction(
-      L"options.AdvancedOptions.SetupCloudPrintProxySection",
+      "options.AdvancedOptions.SetupCloudPrintProxySection",
       disabled, label, allowed);
 }
 
 void AdvancedOptionsHandler::RemoveCloudPrintProxySection() {
   web_ui_->CallJavascriptFunction(
-      L"options.AdvancedOptions.RemoveCloudPrintProxySection");
+      "options.AdvancedOptions.RemoveCloudPrintProxySection");
 }
 
 #endif
@@ -529,7 +529,7 @@ void AdvancedOptionsHandler::RemoveCloudPrintProxySection() {
 #if defined(ENABLE_REMOTING) && !defined(OS_CHROMEOS)
 void AdvancedOptionsHandler::RemoveRemotingSection() {
   web_ui_->CallJavascriptFunction(
-      L"options.AdvancedOptions.RemoveRemotingSection");
+      "options.AdvancedOptions.RemoveRemotingSection");
 }
 
 void AdvancedOptionsHandler::ShowRemotingSetupDialog(const ListValue* args) {
@@ -551,7 +551,7 @@ void AdvancedOptionsHandler::SetupMetricsReportingCheckbox() {
   FundamentalValue checked(enable_metrics_recording_.GetValue());
   FundamentalValue disabled(enable_metrics_recording_.IsManaged());
   web_ui_->CallJavascriptFunction(
-      L"options.AdvancedOptions.SetMetricsReportingCheckboxState", checked,
+      "options.AdvancedOptions.SetMetricsReportingCheckboxState", checked,
       disabled);
 #endif
 }
@@ -562,7 +562,7 @@ void AdvancedOptionsHandler::SetupMetricsReportingSettingVisibility() {
   if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kGuestSession)) {
     FundamentalValue visible(false);
     web_ui_->CallJavascriptFunction(
-        L"options.AdvancedOptions.SetMetricsReportingSettingVisibility",
+        "options.AdvancedOptions.SetMetricsReportingSettingVisibility",
         visible);
   }
 #endif
@@ -573,22 +573,21 @@ void AdvancedOptionsHandler::SetupFontSizeLabel() {
   FundamentalValue fixed_font_size(default_fixed_font_size_.GetValue());
   FundamentalValue font_size(default_font_size_.GetValue());
   web_ui_->CallJavascriptFunction(
-      L"options.AdvancedOptions.SetFontSize", fixed_font_size,
-      font_size);
+      "options.AdvancedOptions.SetFontSize", fixed_font_size, font_size);
 }
 
 void AdvancedOptionsHandler::SetupDownloadLocationPath() {
   StringValue value(default_download_location_.GetValue().value());
   FundamentalValue disabled(default_download_location_.IsManaged());
   web_ui_->CallJavascriptFunction(
-      L"options.AdvancedOptions.SetDownloadLocationPath", value, disabled);
+      "options.AdvancedOptions.SetDownloadLocationPath", value, disabled);
 }
 
 void AdvancedOptionsHandler::SetupPromptForDownload() {
   FundamentalValue checked(ask_for_save_location_.GetValue());
   FundamentalValue disabled(default_download_location_.IsManaged());
   web_ui_->CallJavascriptFunction(
-      L"options.AdvancedOptions.SetPromptForDownload", checked, disabled);
+      "options.AdvancedOptions.SetPromptForDownload", checked, disabled);
 }
 
 void AdvancedOptionsHandler::SetupAutoOpenFileTypesDisabledAttribute() {
@@ -598,7 +597,7 @@ void AdvancedOptionsHandler::SetupAutoOpenFileTypesDisabledAttribute() {
   bool disabled = !(manager && manager->download_prefs()->IsAutoOpenUsed());
   FundamentalValue value(disabled);
   web_ui_->CallJavascriptFunction(
-      L"options.AdvancedOptions.SetAutoOpenFileTypesDisabledAttribute", value);
+      "options.AdvancedOptions.SetAutoOpenFileTypesDisabledAttribute", value);
 }
 
 void AdvancedOptionsHandler::SetupProxySettingsSection() {
@@ -624,7 +623,7 @@ void AdvancedOptionsHandler::SetupProxySettingsSection() {
   StringValue label(label_str);
 
   web_ui_->CallJavascriptFunction(
-      L"options.AdvancedOptions.SetupProxySettingsSection", disabled, label);
+      "options.AdvancedOptions.SetupProxySettingsSection", disabled, label);
 }
 
 #if defined(OS_WIN)
@@ -645,15 +644,15 @@ void AdvancedOptionsHandler::SetupSSLConfigSettings() {
   FundamentalValue disabledValue(disabled);
   FundamentalValue checkRevocationValue(checkRevocationSetting);
   web_ui_->CallJavascriptFunction(
-      L"options.AdvancedOptions.SetCheckRevocationCheckboxState",
+      "options.AdvancedOptions.SetCheckRevocationCheckboxState",
       checkRevocationValue, disabledValue);
   FundamentalValue useSSL3Value(useSSL3Setting);
   web_ui_->CallJavascriptFunction(
-      L"options.AdvancedOptions.SetUseSSL3CheckboxState",
+      "options.AdvancedOptions.SetUseSSL3CheckboxState",
       useSSL3Value, disabledValue);
   FundamentalValue useTLS1Value(useTLS1Setting);
   web_ui_->CallJavascriptFunction(
-      L"options.AdvancedOptions.SetUseTLS1CheckboxState",
+      "options.AdvancedOptions.SetUseTLS1CheckboxState",
       useTLS1Value, disabledValue);
 }
 #endif

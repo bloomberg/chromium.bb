@@ -20,7 +20,7 @@ void TextfieldViews::SetText(const std::wstring& text) {
   TextfieldsUI* textfields_ui = web_ui();
   if (textfields_ui) {
     StringValue text_value(WideToUTF16(text));
-    textfields_ui->CallJavascriptFunction(L"setTextfieldValue", text_value);
+    textfields_ui->CallJavascriptFunction("setTextfieldValue", text_value);
   }
   SchedulePaint();
 }

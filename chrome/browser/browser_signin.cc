@@ -159,7 +159,7 @@ void BrowserSigninHtml::ForceDialogClose() {
     StringValue value("DialogClose");
     ListValue close_args;
     close_args.Append(new StringValue(""));
-    web_ui_->CallJavascriptFunction(L"chrome.send", value, close_args);
+    web_ui_->CallJavascriptFunction("chrome.send", value, close_args);
   }
 }
 

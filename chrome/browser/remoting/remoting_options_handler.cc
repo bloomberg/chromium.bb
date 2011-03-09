@@ -61,7 +61,7 @@ void RemotingOptionsHandler::SetStatus(
 
   FundamentalValue enabled_value(enabled);
   StringValue status_value(status);
-  web_ui_->CallJavascriptFunction(L"options.AdvancedOptions.SetRemotingStatus",
+  web_ui_->CallJavascriptFunction("options.AdvancedOptions.SetRemotingStatus",
                                   enabled_value, status_value);
 }
 

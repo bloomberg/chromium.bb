@@ -450,7 +450,7 @@ void CertificateManagerHandler::View(const ListValue* args) {
 void CertificateManagerHandler::GetCATrust(const ListValue* args) {
   net::X509Certificate* cert = CallbackArgsToCert(args);
   if (!cert) {
-    web_ui_->CallJavascriptFunction(L"CertificateEditCaTrustOverlay.dismiss");
+    web_ui_->CallJavascriptFunction("CertificateEditCaTrustOverlay.dismiss");
     return;
   }
 
@@ -461,7 +461,7 @@ void CertificateManagerHandler::GetCATrust(const ListValue* args) {
   FundamentalValue obj_sign_value(
       bool(trust & net::CertDatabase::TRUSTED_OBJ_SIGN));
   web_ui_->CallJavascriptFunction(
-      L"CertificateEditCaTrustOverlay.populateTrust",
+      "CertificateEditCaTrustOverlay.populateTrust",
       ssl_value, email_value, obj_sign_value);
 }
 
@@ -476,7 +476,7 @@ void CertificateManagerHandler::EditCATrust(const ListValue* args) {
   fail |= !CallbackArgsToBool(args, 3, &trust_obj_sign);
   if (fail) {
     LOG(ERROR) << "EditCATrust args fail";
-    web_ui_->CallJavascriptFunction(L"CertificateEditCaTrustOverlay.dismiss");
+    web_ui_->CallJavascriptFunction("CertificateEditCaTrustOverlay.dismiss");
     return;
   }
 
@@ -486,7 +486,7 @@ void CertificateManagerHandler::EditCATrust(const ListValue* args) {
       trust_ssl * net::CertDatabase::TRUSTED_SSL +
           trust_email * net::CertDatabase::TRUSTED_EMAIL +
           trust_obj_sign * net::CertDatabase::TRUSTED_OBJ_SIGN);
-  web_ui_->CallJavascriptFunction(L"CertificateEditCaTrustOverlay.dismiss");
+  web_ui_->CallJavascriptFunction("CertificateEditCaTrustOverlay.dismiss");
   if (!result) {
     // TODO(mattm): better error messages?
     ShowError(
@@ -528,13 +528,13 @@ void CertificateManagerHandler::ExportPersonalFileSelected(
     const FilePath& path) {
   file_path_ = path;
   web_ui_->CallJavascriptFunction(
-      L"CertificateManager.exportPersonalAskPassword");
+      "CertificateManager.exportPersonalAskPassword");
 }
 
 void CertificateManagerHandler::ExportPersonalPasswordSelected(
     const ListValue* args) {
   if (!args->GetString(0, &password_)){
-    web_ui_->CallJavascriptFunction(L"CertificateRestoreOverlay.dismiss");
+    web_ui_->CallJavascriptFunction("CertificateRestoreOverlay.dismiss");
     ImportExportCleanup();
     return;
   }
@@ -560,7 +560,7 @@ void CertificateManagerHandler::ExportPersonalSlotsUnlocked() {
       password_,
       &output);
   if (!num_exported) {
-    web_ui_->CallJavascriptFunction(L"CertificateRestoreOverlay.dismiss");
+    web_ui_->CallJavascriptFunction("CertificateRestoreOverlay.dismiss");
     ShowError(
         l10n_util::GetStringUTF8(IDS_CERT_MANAGER_PKCS12_EXPORT_ERROR_TITLE),
         l10n_util::GetStringUTF8(IDS_CERT_MANAGER_UNKNOWN_ERROR));
@@ -576,7 +576,7 @@ void CertificateManagerHandler::ExportPersonalSlotsUnlocked() {
 
 void CertificateManagerHandler::ExportPersonalFileWritten(int write_errno,
                                                           int bytes_written) {
-  web_ui_->CallJavascriptFunction(L"CertificateRestoreOverlay.dismiss");
+  web_ui_->CallJavascriptFunction("CertificateRestoreOverlay.dismiss");
   ImportExportCleanup();
   if (write_errno) {
     ShowError(
@@ -605,13 +605,13 @@ void CertificateManagerHandler::ImportPersonalFileSelected(
     const FilePath& path) {
   file_path_ = path;
   web_ui_->CallJavascriptFunction(
-      L"CertificateManager.importPersonalAskPassword");
+      "CertificateManager.importPersonalAskPassword");
 }
 
 void CertificateManagerHandler::ImportPersonalPasswordSelected(
     const ListValue* args) {
   if (!args->GetString(0, &password_)){
-    web_ui_->CallJavascriptFunction(L"CertificateRestoreOverlay.dismiss");
+    web_ui_->CallJavascriptFunction("CertificateRestoreOverlay.dismiss");
     ImportExportCleanup();
     return;
   }
@@ -625,7 +625,7 @@ void CertificateManagerHandler::ImportPersonalFileRead(
     int read_errno, std::string data) {
   if (read_errno) {
     ImportExportCleanup();
-    web_ui_->CallJavascriptFunction(L"CertificateRestoreOverlay.dismiss");
+    web_ui_->CallJavascriptFunction("CertificateRestoreOverlay.dismiss");
     ShowError(
         l10n_util::GetStringUTF8(IDS_CERT_MANAGER_PKCS12_IMPORT_ERROR_TITLE),
         l10n_util::GetStringFUTF8(IDS_CERT_MANAGER_READ_ERROR_FORMAT,
@@ -652,7 +652,7 @@ void CertificateManagerHandler::ImportPersonalSlotUnlocked() {
   int result = certificate_manager_model_->ImportFromPKCS12(
       module_, file_data_, password_);
   ImportExportCleanup();
-  web_ui_->CallJavascriptFunction(L"CertificateRestoreOverlay.dismiss");
+  web_ui_->CallJavascriptFunction("CertificateRestoreOverlay.dismiss");
   switch (result) {
     case net::OK:
       break;
@@ -784,7 +784,7 @@ void CertificateManagerHandler::ImportCAFileRead(int read_errno,
   // TODO(mattm): check here if root_cert is not a CA cert and show error.
 
   StringValue cert_name(root_cert->subject().GetDisplayName());
-  web_ui_->CallJavascriptFunction(L"CertificateEditCaTrustOverlay.showImport",
+  web_ui_->CallJavascriptFunction("CertificateEditCaTrustOverlay.showImport",
                                   cert_name);
 }
 
@@ -799,7 +799,7 @@ void CertificateManagerHandler::ImportCATrustSelected(const ListValue* args) {
   if (fail) {
     LOG(ERROR) << "ImportCATrustSelected args fail";
     ImportExportCleanup();
-    web_ui_->CallJavascriptFunction(L"CertificateEditCaTrustOverlay.dismiss");
+    web_ui_->CallJavascriptFunction("CertificateEditCaTrustOverlay.dismiss");
     return;
   }
 
@@ -810,7 +810,7 @@ void CertificateManagerHandler::ImportCATrustSelected(const ListValue* args) {
           trust_email * net::CertDatabase::TRUSTED_EMAIL +
           trust_obj_sign * net::CertDatabase::TRUSTED_OBJ_SIGN,
       &not_imported);
-  web_ui_->CallJavascriptFunction(L"CertificateEditCaTrustOverlay.dismiss");
+  web_ui_->CallJavascriptFunction("CertificateEditCaTrustOverlay.dismiss");
   if (!result) {
     ShowError(
         l10n_util::GetStringUTF8(IDS_CERT_MANAGER_CA_IMPORT_ERROR_TITLE),
@@ -899,7 +899,7 @@ void CertificateManagerHandler::PopulateTree(const std::string& tab_name,
     ListValue args;
     args.Append(Value::CreateStringValue(tree_name));
     args.Append(nodes);
-    web_ui_->CallJavascriptFunction(L"CertificateManager.onPopulateTree", args);
+    web_ui_->CallJavascriptFunction("CertificateManager.onPopulateTree", args);
   }
 }
 
@@ -912,7 +912,7 @@ void CertificateManagerHandler::ShowError(const std::string& title,
   args.push_back(Value::CreateNullValue());  // cancelTitle
   args.push_back(Value::CreateNullValue());  // okCallback
   args.push_back(Value::CreateNullValue());  // cancelCallback
-  web_ui_->CallJavascriptFunction(L"AlertOverlay.show", args.get());
+  web_ui_->CallJavascriptFunction("AlertOverlay.show", args.get());
 }
 
 void CertificateManagerHandler::ShowImportErrors(
@@ -938,7 +938,7 @@ void CertificateManagerHandler::ShowImportErrors(
 
   StringValue title_value(title);
   StringValue error_value(error);
-  web_ui_->CallJavascriptFunction(L"CertificateImportErrorOverlay.show",
+  web_ui_->CallJavascriptFunction("CertificateImportErrorOverlay.show",
                                   title_value,
                                   error_value,
                                   cert_error_list);

@@ -127,7 +127,7 @@ void MostVisitedHandler::SendPagesValue() {
       has_blacklisted_urls = ts->HasBlacklistedItems();
     FundamentalValue first_run(IsFirstRun());
     FundamentalValue has_blacklisted_urls_value(has_blacklisted_urls);
-    web_ui_->CallJavascriptFunction(L"mostVisitedPages",
+    web_ui_->CallJavascriptFunction("mostVisitedPages",
                                     *(pages_value_.get()),
                                     first_run,
                                     has_blacklisted_urls_value);
@@ -146,7 +146,7 @@ void MostVisitedHandler::StartQueryForMostVisited() {
 }
 
 void MostVisitedHandler::HandleBlacklistURL(const ListValue* args) {
-  std::string url = WideToUTF8(ExtractStringValue(args));
+  std::string url = UTF16ToUTF8(ExtractStringValue(args));
   BlacklistURL(GURL(url));
 }
 
@@ -219,7 +219,7 @@ void MostVisitedHandler::AddPinnedURL(const MostVisitedPage& page, int index) {
 }
 
 void MostVisitedHandler::HandleRemovePinnedURL(const ListValue* args) {
-  std::string url = WideToUTF8(ExtractStringValue(args));
+  std::string url = UTF16ToUTF8(ExtractStringValue(args));
   RemovePinnedURL(GURL(url));
 }
 

@@ -87,7 +87,7 @@ void PasswordManagerHandler::UpdatePasswordLists(const ListValue* args) {
 }
 
 void PasswordManagerHandler::RemoveSavedPassword(const ListValue* args) {
-  std::string string_value = WideToUTF8(ExtractStringValue(args));
+  std::string string_value = UTF16ToUTF8(ExtractStringValue(args));
   int index;
   base::StringToInt(string_value, &index);
 
@@ -99,7 +99,7 @@ void PasswordManagerHandler::RemoveSavedPassword(const ListValue* args) {
 
 void PasswordManagerHandler::RemovePasswordException(
     const ListValue* args) {
-  std::string string_value = WideToUTF8(ExtractStringValue(args));
+  std::string string_value = UTF16ToUTF8(ExtractStringValue(args));
   int index;
   base::StringToInt(string_value, &index);
 
@@ -138,8 +138,8 @@ void PasswordManagerHandler::SetPasswordList() {
     entries.Append(entry);
   }
 
-  web_ui_->CallJavascriptFunction(
-      L"PasswordManager.setSavedPasswordsList", entries);
+  web_ui_->CallJavascriptFunction("PasswordManager.setSavedPasswordsList",
+                                  entries);
 }
 
 void PasswordManagerHandler::SetPasswordExceptionList() {
@@ -149,8 +149,8 @@ void PasswordManagerHandler::SetPasswordExceptionList() {
         net::FormatUrl(password_exception_list_[i]->origin, languages_)));
   }
 
-  web_ui_->CallJavascriptFunction(
-      L"PasswordManager.setPasswordExceptionsList", entries);
+  web_ui_->CallJavascriptFunction("PasswordManager.setPasswordExceptionsList",
+                                  entries);
 }
 
 PasswordManagerHandler::ListPopulater::ListPopulater(

@@ -151,7 +151,7 @@ void RecentlyClosedTabsHandler::TabRestoreServiceChanged(
   ListValue list_value;
   NewTabUI::AddRecentlyClosedEntries(service->entries(), &list_value);
 
-  web_ui_->CallJavascriptFunction(L"recentlyClosedTabs", list_value);
+  web_ui_->CallJavascriptFunction("recentlyClosedTabs", list_value);
 }
 
 void RecentlyClosedTabsHandler::TabRestoreServiceDestroyed(
@@ -196,12 +196,12 @@ void MetricsHandler::RegisterMessages() {
 }
 
 void MetricsHandler::HandleMetrics(const ListValue* args) {
-  std::string string_action = WideToUTF8(ExtractStringValue(args));
+  std::string string_action = UTF16ToUTF8(ExtractStringValue(args));
   UserMetrics::RecordComputedAction(string_action, web_ui_->GetProfile());
 }
 
 void MetricsHandler::HandleLogEventTime(const ListValue* args) {
-  std::string event_name = WideToUTF8(ExtractStringValue(args));
+  std::string event_name = UTF16ToUTF8(ExtractStringValue(args));
   web_ui_->tab_contents()->LogNewTabTime(event_name);
 }
 
@@ -240,7 +240,7 @@ void NewTabPageSetHomePageHandler::HandleSetHomePage(
       l10n_util::GetStringUTF16(IDS_NEW_TAB_HOME_PAGE_SET_NOTIFICATION)));
   list_value.Append(new StringValue(
       l10n_util::GetStringUTF16(IDS_NEW_TAB_HOME_PAGE_HIDE_NOTIFICATION)));
-  web_ui_->CallJavascriptFunction(L"onHomePageSet", list_value);
+  web_ui_->CallJavascriptFunction("onHomePageSet", list_value);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -397,14 +397,14 @@ void NewTabUI::Observe(NotificationType type,
           GetProfile()->GetThemeProvider()->HasCustomImage(
               IDR_THEME_NTP_ATTRIBUTION) ?
           "true" : "false"));
-      CallJavascriptFunction(L"themeChanged", args);
+      CallJavascriptFunction("themeChanged", args);
       break;
     }
     case NotificationType::BOOKMARK_BAR_VISIBILITY_PREF_CHANGED: {
       if (GetProfile()->GetPrefs()->GetBoolean(prefs::kShowBookmarkBar))
-        CallJavascriptFunction(L"bookmarkBarAttached");
+        CallJavascriptFunction("bookmarkBarAttached");
       else
-        CallJavascriptFunction(L"bookmarkBarDetached");
+        CallJavascriptFunction("bookmarkBarDetached");
       break;
     }
     case NotificationType::RENDER_WIDGET_HOST_DID_PAINT: {

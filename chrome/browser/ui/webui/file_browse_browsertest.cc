@@ -122,7 +122,7 @@ IN_PROC_BROWSER_TEST_F(FileBrowseBrowserTest, InputFileTriggerFileBrowse) {
   WebUI* file_browser_ui = observer.file_browse_ui();
   ASSERT_TRUE(file_browser_ui);
 
-  file_browser_ui->CallJavascriptFunction(L"dialogCancelClick");
+  file_browser_ui->CallJavascriptFunction("dialogCancelClick");
 
   observer.WaitForFileBrowseClose();
 }

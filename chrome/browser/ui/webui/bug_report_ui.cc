@@ -562,13 +562,13 @@ void BugReportHandler::HandleGetDialogDefaults(const ListValue*) {
   dialog_defaults.Append(new StringValue(GetUserEmail()));
 #endif
 
-  web_ui_->CallJavascriptFunction(L"setupDialogDefaults", dialog_defaults);
+  web_ui_->CallJavascriptFunction("setupDialogDefaults", dialog_defaults);
 }
 
 void BugReportHandler::HandleRefreshCurrentScreenshot(const ListValue*) {
   std::string current_screenshot(kCurrentScreenshotUrl);
   StringValue screenshot(current_screenshot);
-  web_ui_->CallJavascriptFunction(L"setupCurrentScreenshot", screenshot);
+  web_ui_->CallJavascriptFunction("setupCurrentScreenshot", screenshot);
 }
 
 
@@ -580,7 +580,7 @@ void BugReportHandler::HandleRefreshSavedScreenshots(const ListValue*) {
   ListValue screenshots_list;
   for (size_t i = 0; i < saved_screenshots.size(); ++i)
     screenshots_list.Append(new StringValue(saved_screenshots[i]));
-  web_ui_->CallJavascriptFunction(L"setupSavedScreenshots", screenshots_list);
+  web_ui_->CallJavascriptFunction("setupSavedScreenshots", screenshots_list);
 }
 #endif
 

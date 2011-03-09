@@ -169,7 +169,7 @@ void ConflictsDOMHandler::SendModuleList() {
   }
   results.SetString("modulesTableTitle", table_title);
 
-  web_ui_->CallJavascriptFunction(L"returnModuleList", results);
+  web_ui_->CallJavascriptFunction("returnModuleList", results);
 }
 
 void ConflictsDOMHandler::Observe(NotificationType type,

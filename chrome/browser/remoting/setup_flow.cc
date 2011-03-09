@@ -84,7 +84,7 @@ void SetupFlowErrorStepBase::DoStart() {
       L"setMessage('" + UTF16ToWide(GetErrorMessage()) + L"');";
   ExecuteJavascriptInIFrame(kErrorIframeXPath, javascript);
 
-  flow()->web_ui()->CallJavascriptFunction(L"showError");
+  flow()->web_ui()->CallJavascriptFunction("showError");
 
   ExecuteJavascriptInIFrame(kErrorIframeXPath, L"onPageShown();");
 }
@@ -110,7 +110,7 @@ void SetupFlowDoneStep::DoStart() {
       L"setMessage('" + UTF16ToWide(message_) + L"');";
   ExecuteJavascriptInIFrame(kDoneIframeXPath, javascript);
 
-  flow()->web_ui()->CallJavascriptFunction(L"showSetupDone");
+  flow()->web_ui()->CallJavascriptFunction("showSetupDone");
 
   ExecuteJavascriptInIFrame(kDoneIframeXPath, L"onPageShown();");
 }

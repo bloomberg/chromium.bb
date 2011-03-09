@@ -52,7 +52,7 @@ void TipsHandler::HandleGetTips(const ListValue* args) {
         prefs::kNTPTipsResourceServer);
     std::string locale = g_browser_process->GetApplicationLocale();
     if (!EndsWith(server, locale, false)) {
-      web_ui_->CallJavascriptFunction(L"tips", list_value);
+      web_ui_->CallJavascriptFunction("tips", list_value);
       return;
     }
   }
@@ -95,7 +95,7 @@ void TipsHandler::SendTip(const std::string& tip, const std::string& tip_type,
   tips_cache_->SetInteger(PromoResourceService::kCurrentTipPrefName,
                           tip_index);
   // Send list of web resource items back out to the DOM.
-  web_ui_->CallJavascriptFunction(L"tips", list_value);
+  web_ui_->CallJavascriptFunction("tips", list_value);
 }
 
 // static

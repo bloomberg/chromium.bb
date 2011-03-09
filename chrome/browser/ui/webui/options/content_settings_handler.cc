@@ -258,8 +258,8 @@ void ContentSettingsHandler::Initialize() {
   const HostContentSettingsMap* settings_map = GetContentSettingsMap();
   scoped_ptr<Value> block_3rd_party(Value::CreateBooleanValue(
       settings_map->BlockThirdPartyCookies()));
-  web_ui_->CallJavascriptFunction(
-      L"ContentSettings.setBlockThirdPartyCookies", *block_3rd_party.get());
+  web_ui_->CallJavascriptFunction("ContentSettings.setBlockThirdPartyCookies",
+                                  *block_3rd_party.get());
 
   clear_plugin_lso_data_enabled_.Init(prefs::kClearPluginLSODataEnabled,
                                       g_browser_process->local_state(),
@@ -298,7 +298,7 @@ void ContentSettingsHandler::Observe(NotificationType type,
       Profile* profile = static_cast<Source<Profile> >(source).ptr();
       if (profile->IsOffTheRecord()) {
         web_ui_->CallJavascriptFunction(
-            L"ContentSettingsExceptionsArea.OTRProfileDestroyed");
+            "ContentSettingsExceptionsArea.OTRProfileDestroyed");
       }
       break;
     }
@@ -353,7 +353,7 @@ void ContentSettingsHandler::UpdateClearPluginLSOData() {
   scoped_ptr<Value> label(
       Value::CreateStringValue(l10n_util::GetStringUTF16(label_id)));
   web_ui_->CallJavascriptFunction(
-      L"ContentSettings.setClearLocalDataOnShutdownLabel", *label);
+      "ContentSettings.setClearLocalDataOnShutdownLabel", *label);
 }
 
 void ContentSettingsHandler::UpdateSettingDefaultFromModel(
@@ -365,7 +365,7 @@ void ContentSettingsHandler::UpdateSettingDefaultFromModel(
       GetDefaultSettingManagedFromModel(type));
 
   web_ui_->CallJavascriptFunction(
-      L"ContentSettings.setContentFilterSettingsValue", filter_settings);
+      "ContentSettings.setContentFilterSettingsValue", filter_settings);
 }
 
 std::string ContentSettingsHandler::GetSettingDefaultFromModel(
@@ -481,8 +481,8 @@ void ContentSettingsHandler::UpdateGeolocationExceptionsView() {
 
   StringValue type_string(
       ContentSettingsTypeToGroupName(CONTENT_SETTINGS_TYPE_GEOLOCATION));
-  web_ui_->CallJavascriptFunction(
-      L"ContentSettings.setExceptions", type_string, exceptions);
+  web_ui_->CallJavascriptFunction("ContentSettings.setExceptions",
+                                  type_string, exceptions);
 
   // This is mainly here to keep this function ideologically parallel to
   // UpdateExceptionsViewFromHostContentSettingsMap().
@@ -508,8 +508,8 @@ void ContentSettingsHandler::UpdateNotificationExceptionsView() {
 
   StringValue type_string(
       ContentSettingsTypeToGroupName(CONTENT_SETTINGS_TYPE_NOTIFICATIONS));
-  web_ui_->CallJavascriptFunction(
-      L"ContentSettings.setExceptions", type_string, exceptions);
+  web_ui_->CallJavascriptFunction("ContentSettings.setExceptions",
+                                  type_string, exceptions);
 
   // This is mainly here to keep this function ideologically parallel to
   // UpdateExceptionsViewFromHostContentSettingsMap().
@@ -527,8 +527,8 @@ void ContentSettingsHandler::UpdateExceptionsViewFromHostContentSettingsMap(
   }
 
   StringValue type_string(ContentSettingsTypeToGroupName(type));
-  web_ui_->CallJavascriptFunction(
-      L"ContentSettings.setExceptions", type_string, exceptions);
+  web_ui_->CallJavascriptFunction("ContentSettings.setExceptions", type_string,
+                                  exceptions);
 
   UpdateExceptionsViewFromOTRHostContentSettingsMap(type);
 
@@ -553,8 +553,8 @@ void ContentSettingsHandler::UpdateExceptionsViewFromOTRHostContentSettingsMap(
   }
 
   StringValue type_string(ContentSettingsTypeToGroupName(type));
-  web_ui_->CallJavascriptFunction(
-      L"ContentSettings.setOTRExceptions", type_string, otr_exceptions);
+  web_ui_->CallJavascriptFunction("ContentSettings.setOTRExceptions",
+                                  type_string, otr_exceptions);
 }
 
 void ContentSettingsHandler::RegisterMessages() {
@@ -599,9 +599,10 @@ void ContentSettingsHandler::SetContentFilter(const ListValue* args) {
 }
 
 void ContentSettingsHandler::SetAllowThirdPartyCookies(const ListValue* args) {
-  std::wstring allow = ExtractStringValue(args);
+  string16 allow = ExtractStringValue(args);
 
-  GetContentSettingsMap()->SetBlockThirdPartyCookies(allow == L"true");
+  GetContentSettingsMap()->SetBlockThirdPartyCookies(
+      LowerCaseEqualsASCII(allow, "true"));
 }
 
 void ContentSettingsHandler::RemoveException(const ListValue* args) {
@@ -712,10 +713,11 @@ void ContentSettingsHandler::CheckExceptionPatternValidity(
   scoped_ptr<Value> valid_value(Value::CreateBooleanValue(pattern.IsValid()));
 
   web_ui_->CallJavascriptFunction(
-      L"ContentSettings.patternValidityCheckComplete", *type,
-                                                       *mode_value.get(),
-                                                       *pattern_value.get(),
-                                                       *valid_value.get());
+      "ContentSettings.patternValidityCheckComplete",
+      *type,
+      *mode_value.get(),
+      *pattern_value.get(),
+      *valid_value.get());
 }
 
 // static

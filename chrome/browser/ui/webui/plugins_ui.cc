@@ -293,7 +293,7 @@ void PluginsDOMHandler::HandleSaveShowDetailsToPrefs(const ListValue* args) {
 
 void PluginsDOMHandler::HandleGetShowDetails(const ListValue* args) {
   FundamentalValue show_details(show_details_.GetValue());
-  web_ui_->CallJavascriptFunction(L"loadShowDetailsFromPrefs", show_details);
+  web_ui_->CallJavascriptFunction("loadShowDetailsFromPrefs", show_details);
 }
 
 void PluginsDOMHandler::Observe(NotificationType type,
@@ -338,7 +338,7 @@ void PluginsDOMHandler::PluginsLoaded(ListWrapper* wrapper) {
   DictionaryValue results;
   results.Set("plugins", wrapper->list);
   wrapper->list = NULL;  // So it doesn't get deleted.
-  web_ui_->CallJavascriptFunction(L"returnPluginsData", results);
+  web_ui_->CallJavascriptFunction("returnPluginsData", results);
 }
 
 }  // namespace

@@ -198,7 +198,7 @@ void AppLauncherHandler::Observe(NotificationType type,
 
       DictionaryValue dictionary;
       FillAppDictionary(&dictionary);
-      web_ui_->CallJavascriptFunction(L"appsPrefChangeCallback", dictionary);
+      web_ui_->CallJavascriptFunction("appsPrefChangeCallback", dictionary);
       break;
     }
     default:
@@ -279,7 +279,7 @@ void AppLauncherHandler::HandleGetApps(const ListValue* args) {
   }
 
   FillAppDictionary(&dictionary);
-  web_ui_->CallJavascriptFunction(L"getAppsCallback", dictionary);
+  web_ui_->CallJavascriptFunction("getAppsCallback", dictionary);
 
   // First time we get here we set up the observer so that we can tell update
   // the apps as they change.
@@ -392,7 +392,7 @@ void AppLauncherHandler::HandleSetLaunchType(const ListValue* args) {
 }
 
 void AppLauncherHandler::HandleUninstallApp(const ListValue* args) {
-  std::string extension_id = WideToUTF8(ExtractStringValue(args));
+  std::string extension_id = UTF16ToUTF8(ExtractStringValue(args));
   const Extension* extension = extensions_service_->GetExtensionById(
       extension_id, false);
   if (!extension)
@@ -550,7 +550,7 @@ void AppLauncherHandler::InstallUIProceed() {
       // icon disappears but isn't replaced by the enabled icon, making a poor
       // visual experience.
       StringValue* app_id = Value::CreateStringValue(extension->id());
-      web_ui_->CallJavascriptFunction(L"launchAppAfterEnable", *app_id);
+      web_ui_->CallJavascriptFunction("launchAppAfterEnable", *app_id);
       break;
     }
     default:

@@ -373,7 +373,7 @@ void InternetOptionsHandler::RefreshNetworkData(
   DictionaryValue dictionary;
   FillNetworkInfo(&dictionary, cros);
   web_ui_->CallJavascriptFunction(
-      L"options.InternetOptions.refreshNetworkData", dictionary);
+      "options.InternetOptions.refreshNetworkData", dictionary);
 }
 
 void InternetOptionsHandler::OnNetworkManagerChanged(
@@ -439,7 +439,7 @@ void InternetOptionsHandler::OnCellularDataPlanChanged(
   connection_plans.Set("plans", plan_list);
   SetActivationButtonVisibility(cellular, &connection_plans);
   web_ui_->CallJavascriptFunction(
-      L"options.InternetOptions.updateCellularPlans", connection_plans);
+      "options.InternetOptions.updateCellularPlans", connection_plans);
 }
 
 DictionaryValue* InternetOptionsHandler::CellularDataPlanToDictionary(
@@ -566,7 +566,7 @@ void InternetOptionsHandler::PopulateDictionaryDetails(
   }
 
   web_ui_->CallJavascriptFunction(
-      L"options.InternetOptions.showDetailedInfo", dictionary);
+      "options.InternetOptions.showDetailedInfo", dictionary);
 }
 
 void InternetOptionsHandler::PopulateWifiDetails(
@@ -794,7 +794,7 @@ void InternetOptionsHandler::HandleWifiButtonClick(
             DictionaryValue dictionary;
             dictionary.SetString("servicePath", network->service_path());
             web_ui_->CallJavascriptFunction(
-                L"options.InternetOptions.showPasswordEntry", dictionary);
+                "options.InternetOptions.showPasswordEntry", dictionary);
           }
         } else {
           CreateModalPopup(new chromeos::NetworkConfigView(network));

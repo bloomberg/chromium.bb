@@ -35,9 +35,9 @@ const char kJsCallbackGetRegistrationUrl[] = "getRegistrationUrl";
 const char kJsCallbackUserInfo[] = "getUserInfo";
 
 // Host page JS API function names.
-const wchar_t kJsApiSetRegistrationUrl[] = L"setRegistrationUrl";
-const wchar_t kJsApiSetUserInfo[] = L"setUserInfo";
-const wchar_t kJsApiSkipRegistration[] = L"skipRegistration";
+const char kJsApiSetRegistrationUrl[] = "setRegistrationUrl";
+const char kJsApiSetUserInfo[] = "setUserInfo";
+const char kJsApiSkipRegistration[] = "skipRegistration";
 
 // Constant value for os_name sent in setUserInfo.
 const char kOSName[] = "ChromeOS";

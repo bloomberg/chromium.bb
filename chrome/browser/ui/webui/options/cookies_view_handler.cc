@@ -114,7 +114,7 @@ void CookiesViewHandler::TreeNodesAdded(ui::TreeModel* model,
           cookies_tree_model_util::GetTreeNodeId(parent_node)));
   args.Append(Value::CreateIntegerValue(start));
   args.Append(children);
-  web_ui_->CallJavascriptFunction(L"CookiesView.onTreeItemAdded", args);
+  web_ui_->CallJavascriptFunction("CookiesView.onTreeItemAdded", args);
 }
 
 void CookiesViewHandler::TreeNodesRemoved(ui::TreeModel* model,
@@ -132,7 +132,7 @@ void CookiesViewHandler::TreeNodesRemoved(ui::TreeModel* model,
           cookies_tree_model_->AsNode(parent))));
   args.Append(Value::CreateIntegerValue(start));
   args.Append(Value::CreateIntegerValue(count));
-  web_ui_->CallJavascriptFunction(L"CookiesView.onTreeItemRemoved", args);
+  web_ui_->CallJavascriptFunction("CookiesView.onTreeItemRemoved", args);
 }
 
 void CookiesViewHandler::TreeModelBeginBatch(CookiesTreeModel* model) {
@@ -207,5 +207,5 @@ void CookiesViewHandler::SendChildren(CookieTreeNode* parent) {
       Value::CreateStringValue(cookies_tree_model_util::GetTreeNodeId(parent)));
   args.Append(children);
 
-  web_ui_->CallJavascriptFunction(L"CookiesView.loadChildren", args);
+  web_ui_->CallJavascriptFunction("CookiesView.loadChildren", args);
 }

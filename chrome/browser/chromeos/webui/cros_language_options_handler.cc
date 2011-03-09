@@ -202,7 +202,7 @@ void CrosLanguageOptionsHandler::RestartCallback(const ListValue* args) {
 
 void CrosLanguageOptionsHandler::InputMethodDisableCallback(
     const ListValue* args) {
-  const std::string input_method_id = WideToASCII(ExtractStringValue(args));
+  const std::string input_method_id = UTF16ToASCII(ExtractStringValue(args));
   const std::string action = StringPrintf(
       "LanguageOptions_DisableInputMethod_%s", input_method_id.c_str());
   UserMetrics::RecordComputedAction(action);
@@ -210,7 +210,7 @@ void CrosLanguageOptionsHandler::InputMethodDisableCallback(
 
 void CrosLanguageOptionsHandler::InputMethodEnableCallback(
     const ListValue* args) {
-  const std::string input_method_id = WideToASCII(ExtractStringValue(args));
+  const std::string input_method_id = UTF16ToASCII(ExtractStringValue(args));
   const std::string action = StringPrintf(
       "LanguageOptions_EnableInputMethod_%s", input_method_id.c_str());
   UserMetrics::RecordComputedAction(action);
@@ -218,7 +218,7 @@ void CrosLanguageOptionsHandler::InputMethodEnableCallback(
 
 void CrosLanguageOptionsHandler::InputMethodOptionsOpenCallback(
     const ListValue* args) {
-  const std::string input_method_id = WideToASCII(ExtractStringValue(args));
+  const std::string input_method_id = UTF16ToASCII(ExtractStringValue(args));
   const std::string action = StringPrintf(
       "InputMethodOptions_Open_%s", input_method_id.c_str());
   UserMetrics::RecordComputedAction(action);

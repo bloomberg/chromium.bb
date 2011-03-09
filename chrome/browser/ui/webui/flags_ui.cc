@@ -140,7 +140,7 @@ void FlagsDOMHandler::HandleRequestFlagsExperiments(const ListValue* args) {
                   g_browser_process->local_state()));
   results.SetBoolean("needsRestart",
                      about_flags::IsRestartNeededToCommitChanges());
-  web_ui_->CallJavascriptFunction(L"returnFlagsExperiments", results);
+  web_ui_->CallJavascriptFunction("returnFlagsExperiments", results);
 }
 
 void FlagsDOMHandler::HandleEnableFlagsExperimentMessage(

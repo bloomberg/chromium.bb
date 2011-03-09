@@ -47,8 +47,8 @@ namespace {
 const char kJsApiStartActivation[] = "startActivation";
 const char kJsApiSetTransactionStatus[] = "setTransactionStatus";
 
-const wchar_t kJsDeviceStatusChangedHandler[] =
-    L"mobile.MobileSetup.deviceStateChanged";
+const char kJsDeviceStatusChangedHandler[] =
+    "mobile.MobileSetup.deviceStateChanged";
 
 // Error codes matching codes defined in the cellular config file.
 const char kErrorDefault[] = "default";

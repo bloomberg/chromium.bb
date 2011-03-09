@@ -35,7 +35,7 @@ class TestSyncInternalsUI : public SyncInternalsUI {
       : SyncInternalsUI(contents) {}
   virtual ~TestSyncInternalsUI() {}
 
-  MOCK_METHOD1(ExecuteJavascript, void(const std::wstring&));
+  MOCK_METHOD1(ExecuteJavascript, void(const string16&));
 };
 
 class SyncInternalsUITest : public RenderViewHostTestHarness {
@@ -139,7 +139,7 @@ TEST_F(SyncInternalsUITest, HandleJsEvent) {
   ConstructTestSyncInternalsUI();
 
   EXPECT_CALL(*GetTestSyncInternalsUI(),
-              ExecuteJavascript(std::wstring(L"testMessage(5,true);")));
+              ExecuteJavascript(ASCIIToUTF16("testMessage(5,true);")));
 
   ListValue args;
   args.Append(Value::CreateIntegerValue(5));
@@ -153,7 +153,7 @@ TEST_F(SyncInternalsUITest, HandleJsEventNullService) {
   ConstructTestSyncInternalsUI();
 
   EXPECT_CALL(*GetTestSyncInternalsUI(),
-              ExecuteJavascript(std::wstring(L"testMessage(5,true);")));
+              ExecuteJavascript(ASCIIToUTF16("testMessage(5,true);")));
 
   ListValue args;
   args.Append(Value::CreateIntegerValue(5));
@@ -191,8 +191,8 @@ TEST_F(SyncInternalsUITest, ProcessWebUIMessageBasicNullService) {
 }
 
 namespace {
-const wchar_t kAboutInfoCall[] =
-    L"onGetAboutInfoFinished({\"summary\":\"SYNC DISABLED\"});";
+const char kAboutInfoCall[] =
+    "onGetAboutInfoFinished({\"summary\":\"SYNC DISABLED\"});";
 }  // namespace
 
 TEST_F(SyncInternalsUITest, ProcessWebUIMessageGetAboutInfo) {
@@ -204,7 +204,7 @@ TEST_F(SyncInternalsUITest, ProcessWebUIMessageGetAboutInfo) {
   ConstructTestSyncInternalsUI();
 
   EXPECT_CALL(*GetTestSyncInternalsUI(),
-              ExecuteJavascript(std::wstring(kAboutInfoCall)));
+              ExecuteJavascript(ASCIIToUTF16(kAboutInfoCall)));
 
   GetTestSyncInternalsUI()->ProcessWebUIMessage(params);
 }
@@ -218,7 +218,7 @@ TEST_F(SyncInternalsUITest, ProcessWebUIMessageGetAboutInfoNullService) {
   ConstructTestSyncInternalsUI();
 
   EXPECT_CALL(*GetTestSyncInternalsUI(),
-              ExecuteJavascript(std::wstring(kAboutInfoCall)));
+              ExecuteJavascript(ASCIIToUTF16(kAboutInfoCall)));
 
   GetTestSyncInternalsUI()->ProcessWebUIMessage(params);
 }

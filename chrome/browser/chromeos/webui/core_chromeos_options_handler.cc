@@ -7,6 +7,7 @@
 #include <string>
 
 #include "base/string_number_conversions.h"
+#include "base/string_util.h"
 #include "chrome/browser/chromeos/cros_settings.h"
 #include "chrome/browser/metrics/user_metrics.h"
 #include "content/common/notification_details.h"
@@ -88,7 +89,8 @@ void CoreChromeOSOptionsHandler::NotifySettingsChanged(
     ListValue result_value;
     result_value.Append(Value::CreateStringValue(setting_name->c_str()));
     result_value.Append(value->DeepCopy());
-    web_ui_->CallJavascriptFunction(callback_function, result_value);
+    web_ui_->CallJavascriptFunction(WideToASCII(callback_function),
+                                    result_value);
   }
   if (value)
     delete value;

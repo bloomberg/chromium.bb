@@ -94,8 +94,8 @@ void ImportDataHandler::ImportData(const ListValue* args) {
   uint16 import_services = (selected_items & supported_items);
   if (import_services) {
     FundamentalValue state(true);
-    web_ui_->CallJavascriptFunction(
-        L"ImportDataOverlay.setImportingState", state);
+    web_ui_->CallJavascriptFunction("ImportDataOverlay.setImportingState",
+                                    state);
 
     // TODO(csilv): Out-of-process import has only been qualified on MacOS X,
     // so we will only use it on that platform since it is required. Remove this
@@ -142,8 +142,7 @@ void ImportDataHandler::SourceProfilesLoaded() {
   }
 
   web_ui_->CallJavascriptFunction(
-      L"options.ImportDataOverlay.updateSupportedBrowsers",
-      browser_profiles);
+      "options.ImportDataOverlay.updateSupportedBrowsers", browser_profiles);
 }
 
 void ImportDataHandler::ImportStarted() {
@@ -161,5 +160,5 @@ void ImportDataHandler::ImportEnded() {
   importer_host_->SetObserver(NULL);
   importer_host_ = NULL;
 
-  web_ui_->CallJavascriptFunction(L"ImportDataOverlay.dismiss");
+  web_ui_->CallJavascriptFunction("ImportDataOverlay.dismiss");
 }

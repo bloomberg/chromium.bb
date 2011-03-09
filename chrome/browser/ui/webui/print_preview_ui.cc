@@ -32,5 +32,5 @@ PrintPreviewUIHTMLSource* PrintPreviewUI::html_source() {
 void PrintPreviewUI::PreviewDataIsAvailable(int expected_pages_count) {
   StringValue dummy_url("chrome://print/print.pdf");
   FundamentalValue pages_count(expected_pages_count);
-  CallJavascriptFunction(L"createPDFPlugin", dummy_url, pages_count);
+  CallJavascriptFunction("createPDFPlugin", dummy_url, pages_count);
 }

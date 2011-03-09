@@ -237,38 +237,37 @@ void PersonalOptionsHandler::OnStateChanged() {
   }
 
   scoped_ptr<Value> completed(Value::CreateBooleanValue(sync_setup_completed));
-  web_ui_->CallJavascriptFunction(L"PersonalOptions.setSyncSetupCompleted",
+  web_ui_->CallJavascriptFunction("PersonalOptions.setSyncSetupCompleted",
                                   *completed);
 
   scoped_ptr<Value> label(Value::CreateStringValue(status_label));
-  web_ui_->CallJavascriptFunction(L"PersonalOptions.setSyncStatus",
-                                  *label);
+  web_ui_->CallJavascriptFunction("PersonalOptions.setSyncStatus", *label);
 
   scoped_ptr<Value> enabled(
       Value::CreateBooleanValue(is_start_stop_button_enabled));
-  web_ui_->CallJavascriptFunction(L"PersonalOptions.setStartStopButtonEnabled",
+  web_ui_->CallJavascriptFunction("PersonalOptions.setStartStopButtonEnabled",
                                   *enabled);
 
   scoped_ptr<Value> visible(
       Value::CreateBooleanValue(is_start_stop_button_visible));
-  web_ui_->CallJavascriptFunction(L"PersonalOptions.setStartStopButtonVisible",
+  web_ui_->CallJavascriptFunction("PersonalOptions.setStartStopButtonVisible",
                                   *visible);
 
   label.reset(Value::CreateStringValue(start_stop_button_label));
-  web_ui_->CallJavascriptFunction(L"PersonalOptions.setStartStopButtonLabel",
+  web_ui_->CallJavascriptFunction("PersonalOptions.setStartStopButtonLabel",
                                   *label);
 
   label.reset(Value::CreateStringValue(link_label));
-  web_ui_->CallJavascriptFunction(L"PersonalOptions.setSyncActionLinkLabel",
+  web_ui_->CallJavascriptFunction("PersonalOptions.setSyncActionLinkLabel",
                                   *label);
 
   enabled.reset(Value::CreateBooleanValue(!managed));
-  web_ui_->CallJavascriptFunction(L"PersonalOptions.setSyncActionLinkEnabled",
+  web_ui_->CallJavascriptFunction("PersonalOptions.setSyncActionLinkEnabled",
                                   *enabled);
 
   visible.reset(Value::CreateBooleanValue(status_has_error));
-  web_ui_->CallJavascriptFunction(
-    L"PersonalOptions.setSyncStatusErrorVisible", *visible);
+  web_ui_->CallJavascriptFunction("PersonalOptions.setSyncStatusErrorVisible",
+                                  *visible);
 }
 
 void PersonalOptionsHandler::OnLoginSuccess() {
@@ -287,7 +286,7 @@ void PersonalOptionsHandler::ObserveThemeChanged() {
   bool is_gtk_theme = provider->UseGtkTheme();
   FundamentalValue gtk_enabled(!is_gtk_theme);
   web_ui_->CallJavascriptFunction(
-      L"options.PersonalOptions.setGtkThemeButtonEnabled", gtk_enabled);
+      "options.PersonalOptions.setGtkThemeButtonEnabled", gtk_enabled);
 #else
   BrowserThemeProvider* provider =
       reinterpret_cast<BrowserThemeProvider*>(profile->GetThemeProvider());
@@ -297,7 +296,7 @@ void PersonalOptionsHandler::ObserveThemeChanged() {
   bool is_classic_theme = !is_gtk_theme && provider->UsingDefaultTheme();
   FundamentalValue enabled(!is_classic_theme);
   web_ui_->CallJavascriptFunction(
-      L"options.PersonalOptions.setThemesResetButtonEnabled", enabled);
+      "options.PersonalOptions.setThemesResetButtonEnabled", enabled);
 }
 
 void PersonalOptionsHandler::Initialize() {
@@ -320,10 +319,10 @@ void PersonalOptionsHandler::Initialize() {
     DictionaryValue args;
     SyncSetupFlow::GetArgsForConfigure(sync_service, &args);
 
-    web_ui_->CallJavascriptFunction(
-        L"PersonalOptions.setRegisteredDataTypes", args);
+    web_ui_->CallJavascriptFunction("PersonalOptions.setRegisteredDataTypes",
+                                    args);
   } else {
-    web_ui_->CallJavascriptFunction(L"options.PersonalOptions.hideSyncSection");
+    web_ui_->CallJavascriptFunction("options.PersonalOptions.hideSyncSection");
   }
 }
 
@@ -394,8 +393,8 @@ void PersonalOptionsHandler::LoadAccountPicture(const ListValue* args) {
   std::string email = chromeos::UserManager::Get()->logged_in_user().email();
   if (!email.empty()) {
     StringValue image_url(chrome::kChromeUIUserImageURL + email);
-    web_ui_->CallJavascriptFunction(L"PersonalOptions.setAccountPicture",
-        image_url);
+    web_ui_->CallJavascriptFunction("PersonalOptions.setAccountPicture",
+                                    image_url);
   }
 }
 #endif

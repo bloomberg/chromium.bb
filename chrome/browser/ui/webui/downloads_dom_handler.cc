@@ -108,7 +108,7 @@ void DownloadsDOMHandler::OnDownloadUpdated(DownloadItem* download) {
 
   ListValue results_value;
   results_value.Append(download_util::CreateDownloadItemValue(download, id));
-  web_ui_->CallJavascriptFunction(L"downloadUpdated", results_value);
+  web_ui_->CallJavascriptFunction("downloadUpdated", results_value);
 }
 
 // A download has started or been deleted. Query our DownloadManager for the
@@ -139,7 +139,7 @@ void DownloadsDOMHandler::ModelChanged() {
 }
 
 void DownloadsDOMHandler::HandleGetDownloads(const ListValue* args) {
-  std::wstring new_search = ExtractStringValue(args);
+  std::wstring new_search = UTF16ToWideHack(ExtractStringValue(args));
   if (search_text_.compare(new_search) != 0) {
     search_text_ = new_search;
     ModelChanged();
@@ -217,7 +217,7 @@ void DownloadsDOMHandler::SendCurrentDownloads() {
     results_value.Append(download_util::CreateDownloadItemValue(*it, index));
   }
 
-  web_ui_->CallJavascriptFunction(L"downloadsList", results_value);
+  web_ui_->CallJavascriptFunction("downloadsList", results_value);
 }
 
 void DownloadsDOMHandler::ClearDownloadItems() {

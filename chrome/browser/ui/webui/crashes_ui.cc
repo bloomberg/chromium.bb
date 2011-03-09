@@ -177,7 +177,7 @@ void CrashesDOMHandler::UpdateUI() {
 
   FundamentalValue enabled(crash_reporting_enabled);
 
-  web_ui_->CallJavascriptFunction(L"updateCrashList", enabled, crash_list);
+  web_ui_->CallJavascriptFunction("updateCrashList", enabled, crash_list);
 }
 
 bool CrashesDOMHandler::CrashReportingEnabled() const {

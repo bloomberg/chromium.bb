@@ -80,7 +80,7 @@ void SystemOptionsHandler::Initialize() {
   bool acc_enabled = pref_service->GetBoolean(prefs::kAccessibilityEnabled);
   FundamentalValue checked(acc_enabled);
   web_ui_->CallJavascriptFunction(
-      L"options.SystemOptions.SetAccessibilityCheckboxState", checked);
+      "options.SystemOptions.SetAccessibilityCheckboxState", checked);
 }
 
 void SystemOptionsHandler::RegisterMessages() {

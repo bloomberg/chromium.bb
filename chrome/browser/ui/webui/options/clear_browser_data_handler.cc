@@ -139,7 +139,7 @@ void ClearBrowserDataHandler::HandleClearBrowserData(const ListValue* value) {
   int period_selected = prefs->GetInteger(prefs::kDeleteTimePeriod);
 
   FundamentalValue state(true);
-  web_ui_->CallJavascriptFunction(L"ClearBrowserDataOverlay.setClearingState",
+  web_ui_->CallJavascriptFunction("ClearBrowserDataOverlay.setClearingState",
                                   state);
 
   // BrowsingDataRemover deletes itself when done.
@@ -157,7 +157,7 @@ void ClearBrowserDataHandler::UpdateClearPluginLSOData() {
   scoped_ptr<Value> label(
       Value::CreateStringValue(l10n_util::GetStringUTF16(label_id)));
   web_ui_->CallJavascriptFunction(
-      L"ClearBrowserDataOverlay.setClearLocalDataLabel", *label);
+      "ClearBrowserDataOverlay.setClearLocalDataLabel", *label);
 }
 
 void ClearBrowserDataHandler::OnBrowsingDataRemoverDone() {
@@ -165,5 +165,5 @@ void ClearBrowserDataHandler::OnBrowsingDataRemoverDone() {
   // itself after we return.
   remover_ = NULL;
   DCHECK(web_ui_);
-  web_ui_->CallJavascriptFunction(L"ClearBrowserDataOverlay.doneClearing");
+  web_ui_->CallJavascriptFunction("ClearBrowserDataOverlay.doneClearing");
 }

@@ -553,9 +553,9 @@ void NetInternalsMessageHandler::CallJavascriptFunction(
     const Value* value) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   if (value) {
-    web_ui_->CallJavascriptFunction(function_name, *value);
+    web_ui_->CallJavascriptFunction(WideToASCII(function_name), *value);
   } else {
-    web_ui_->CallJavascriptFunction(function_name);
+    web_ui_->CallJavascriptFunction(WideToASCII(function_name));
   }
 }
 

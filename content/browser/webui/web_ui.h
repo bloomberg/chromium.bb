@@ -119,23 +119,24 @@ class WebUI {
   // the renderer.  This is asynchronous; there's no way to get the result
   // of the call, and should be thought of more like sending a message to
   // the page.
+  // All function names in WebUI must consist of only ASCII characters.
   // There are variants for calls with more arguments.
-  void CallJavascriptFunction(const std::wstring& function_name);
-  void CallJavascriptFunction(const std::wstring& function_name,
+  void CallJavascriptFunction(const std::string& function_name);
+  void CallJavascriptFunction(const std::string& function_name,
                               const Value& arg);
-  void CallJavascriptFunction(const std::wstring& function_name,
+  void CallJavascriptFunction(const std::string& function_name,
                               const Value& arg1,
                               const Value& arg2);
-  void CallJavascriptFunction(const std::wstring& function_name,
+  void CallJavascriptFunction(const std::string& function_name,
                               const Value& arg1,
                               const Value& arg2,
                               const Value& arg3);
-  void CallJavascriptFunction(const std::wstring& function_name,
+  void CallJavascriptFunction(const std::string& function_name,
                               const Value& arg1,
                               const Value& arg2,
                               const Value& arg3,
                               const Value& arg4);
-  void CallJavascriptFunction(const std::wstring& function_name,
+  void CallJavascriptFunction(const std::string& function_name,
                               const std::vector<const Value*>& args);
 
   ui::ThemeProvider* GetThemeProvider() const;
@@ -153,7 +154,7 @@ class WebUI {
 
   // Execute a string of raw Javascript on the page.  Overridable for
   // testing purposes.
-  virtual void ExecuteJavascript(const std::wstring& javascript);
+  virtual void ExecuteJavascript(const string16& javascript);
 
   // Options that may be overridden by individual Web UI implementations. The
   // bool options default to false. See the public getters for more information.
@@ -210,7 +211,7 @@ class WebUIMessageHandler {
   bool ExtractIntegerValue(const ListValue* value, int* out_int);
 
   // Extract a string value from a list Value.
-  std::wstring ExtractStringValue(const ListValue* value);
+  string16 ExtractStringValue(const ListValue* value);
 
   WebUI* web_ui_;
 

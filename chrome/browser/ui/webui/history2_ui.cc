@@ -203,7 +203,7 @@ void BrowsingHistoryHandler2::HandleSearchHistory(const ListValue* args) {
 
 void BrowsingHistoryHandler2::HandleRemoveURLsOnOneDay(const ListValue* args) {
   if (cancelable_delete_consumer_.HasPendingRequests()) {
-    web_ui_->CallJavascriptFunction(L"deleteFailed");
+    web_ui_->CallJavascriptFunction("deleteFailed");
     return;
   }
 
@@ -296,12 +296,12 @@ void BrowsingHistoryHandler2::QueryComplete(
   info_value.SetString("term", search_text_);
   info_value.SetBoolean("finished", results->reached_beginning());
 
-  web_ui_->CallJavascriptFunction(L"historyResult", info_value, results_value);
+  web_ui_->CallJavascriptFunction("historyResult", info_value, results_value);
 }
 
 void BrowsingHistoryHandler2::RemoveComplete() {
   // Some Visits were deleted from history. Reload the list.
-  web_ui_->CallJavascriptFunction(L"deleteComplete");
+  web_ui_->CallJavascriptFunction("deleteComplete");
 }
 
 void BrowsingHistoryHandler2::ExtractSearchHistoryArguments(
@@ -382,7 +382,7 @@ void BrowsingHistoryHandler2::Observe(NotificationType type,
   }
 
   // Some URLs were deleted from history. Reload the list.
-  web_ui_->CallJavascriptFunction(L"historyDeleted");
+  web_ui_->CallJavascriptFunction("historyDeleted");
 }
 
 ////////////////////////////////////////////////////////////////////////////////

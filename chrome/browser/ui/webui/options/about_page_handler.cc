@@ -280,7 +280,7 @@ void AboutPageHandler::PageReady(const ListValue* args) {
   // Update the channel information.
   std::string channel = update_library->GetReleaseTrack();
   scoped_ptr<Value> channel_string(Value::CreateStringValue(channel));
-  web_ui_->CallJavascriptFunction(L"AboutPage.updateSelectedOptionCallback",
+  web_ui_->CallJavascriptFunction("AboutPage.updateSelectedOptionCallback",
                                   *channel_string);
 
   update_observer_.reset(new UpdateObserver(this));
@@ -303,7 +303,7 @@ void AboutPageHandler::SetReleaseTrack(const ListValue* args) {
     LOG(WARNING) << "Non-owner tried to change release track.";
     return;
   }
-  const std::string channel = WideToUTF8(ExtractStringValue(args));
+  const std::string channel = UTF16ToUTF8(ExtractStringValue(args));
   chromeos::CrosLibrary::Get()->GetUpdateLibrary()->SetReleaseTrack(channel);
 #endif
 }
@@ -390,20 +390,20 @@ void AboutPageHandler::UpdateStatus(
     // can read it, hence insert delay for this.
     scoped_ptr<Value> insert_delay(Value::CreateBooleanValue(
         status.status == chromeos::UPDATE_STATUS_CHECKING_FOR_UPDATE));
-    web_ui_->CallJavascriptFunction(L"AboutPage.updateStatusCallback",
+    web_ui_->CallJavascriptFunction("AboutPage.updateStatusCallback",
                                     *update_message, *insert_delay);
 
     scoped_ptr<Value> enabled_value(Value::CreateBooleanValue(enabled));
-    web_ui_->CallJavascriptFunction(L"AboutPage.updateEnableCallback",
+    web_ui_->CallJavascriptFunction("AboutPage.updateEnableCallback",
                                     *enabled_value);
 
     scoped_ptr<Value> image_string(Value::CreateStringValue(image));
-    web_ui_->CallJavascriptFunction(L"AboutPage.setUpdateImage",
+    web_ui_->CallJavascriptFunction("AboutPage.setUpdateImage",
                                     *image_string);
   }
   // We'll change the "Check For Update" button to "Restart" button.
   if (status.status == chromeos::UPDATE_STATUS_UPDATED_NEED_REBOOT) {
-    web_ui_->CallJavascriptFunction(L"AboutPage.changeToRestartButton");
+    web_ui_->CallJavascriptFunction("AboutPage.changeToRestartButton");
   }
 }
 
@@ -411,7 +411,7 @@ void AboutPageHandler::OnOSVersion(chromeos::VersionLoader::Handle handle,
                                    std::string version) {
   if (version.size()) {
     scoped_ptr<Value> version_string(Value::CreateStringValue(version));
-    web_ui_->CallJavascriptFunction(L"AboutPage.updateOSVersionCallback",
+    web_ui_->CallJavascriptFunction("AboutPage.updateOSVersionCallback",
                                     *version_string);
   }
 }

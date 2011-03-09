@@ -231,9 +231,10 @@ void BrowserOptionsHandler::SetDefaultBrowserUIString(int status_string_id) {
       (status_string_id == IDS_OPTIONS_DEFAULTBROWSER_DEFAULT ||
        status_string_id == IDS_OPTIONS_DEFAULTBROWSER_NOTDEFAULT)));
 
-  web_ui_->CallJavascriptFunction(
-      L"BrowserOptions.updateDefaultBrowserState",
-      *(status_string.get()), *(is_default.get()), *(can_be_default.get()));
+  web_ui_->CallJavascriptFunction("BrowserOptions.updateDefaultBrowserState",
+                                  *(status_string.get()),
+                                  *(is_default.get()),
+                                  *(can_be_default.get()));
 }
 
 void BrowserOptionsHandler::OnTemplateURLModelChanged() {
@@ -261,7 +262,7 @@ void BrowserOptionsHandler::OnTemplateURLModelChanged() {
 
   scoped_ptr<Value> default_value(Value::CreateIntegerValue(default_index));
 
-  web_ui_->CallJavascriptFunction(L"BrowserOptions.updateSearchEngines",
+  web_ui_->CallJavascriptFunction("BrowserOptions.updateSearchEngines",
                                   search_engines, *(default_value.get()));
 }
 
@@ -315,7 +316,7 @@ void BrowserOptionsHandler::OnModelChanged() {
     startup_pages.Append(entry);
   }
 
-  web_ui_->CallJavascriptFunction(L"BrowserOptions.updateStartupPages",
+  web_ui_->CallJavascriptFunction("BrowserOptions.updateStartupPages",
                                   startup_pages);
 }
 
