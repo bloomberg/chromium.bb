@@ -5,7 +5,6 @@
 #include "content/browser/plugin_service.h"
 
 #include "base/auto_reset.h"
-#include "base/command_line.h"
 #include "chrome/test/testing_profile.h"
 #include "content/browser/browser_thread.h"
 #include "testing/gtest/include/gtest/gtest.h"
