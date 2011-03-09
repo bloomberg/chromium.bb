@@ -17,6 +17,7 @@
 #include "chrome/browser/browser_shutdown.h"
 #include "chrome/browser/command_updater.h"
 #include "chrome/browser/download/download_manager.h"
+#include "chrome/browser/fonts_languages_window.h"
 #include "chrome/browser/metrics/user_metrics.h"
 #include "chrome/browser/printing/print_job_manager.h"
 #include "chrome/browser/profiles/profile_manager.h"
@@ -33,12 +34,10 @@
 #import "chrome/browser/ui/cocoa/browser_window_cocoa.h"
 #import "chrome/browser/ui/cocoa/browser_window_controller.h"
 #import "chrome/browser/ui/cocoa/bug_report_window_controller.h"
-#import "chrome/browser/ui/cocoa/clear_browsing_data_controller.h"
 #import "chrome/browser/ui/cocoa/confirm_quit_panel_controller.h"
 #import "chrome/browser/ui/cocoa/encoding_menu_controller_delegate_mac.h"
 #import "chrome/browser/ui/cocoa/history_menu_bridge.h"
 #import "chrome/browser/ui/cocoa/importer/import_dialog_cocoa.h"
-#import "chrome/browser/ui/cocoa/options/preferences_window_controller.h"
 #import "chrome/browser/ui/cocoa/tabs/tab_strip_controller.h"
 #import "chrome/browser/ui/cocoa/tabs/tab_window_controller.h"
 #include "chrome/browser/ui/cocoa/task_manager_mac.h"
@@ -151,9 +150,6 @@ void RecordLastRunAppBundlePath() {
 - (void)checkForAnyKeyWindows;
 - (BOOL)userWillWaitForInProgressDownloads:(int)downloadCount;
 - (BOOL)shouldQuitWithInProgressDownloads;
-- (void)showPreferencesWindow:(id)sender
-                         page:(OptionsPage)page
-                      profile:(Profile*)profile;
 - (void)executeApplication:(id)sender;
 @end
 
@@ -1019,20 +1015,6 @@ void RecordLastRunAppBundlePath() {
   [sender replyToOpenOrPrint:NSApplicationDelegateReplySuccess];
 }
 
-// Called when the preferences window is closed. We use this to release the
-// window controller.
-- (void)prefsWindowClosed:(NSNotification*)notification {
-  NSWindow* window = [prefsController_ window];
-  DCHECK_EQ([notification object], window);
-  NSNotificationCenter* defaultCenter = [NSNotificationCenter defaultCenter];
-  [defaultCenter removeObserver:self
-                           name:NSWindowWillCloseNotification
-                         object:window];
-  // PreferencesWindowControllers are autoreleased in
-  // -[PreferencesWindowController windowWillClose:].
-  prefsController_ = nil;
-}
-
 // Show the preferences window, or bring it to the front if it's already
 // visible.
 - (IBAction)showPreferences:(id)sender {
@@ -1043,26 +1025,6 @@ void RecordLastRunAppBundlePath() {
     // No browser window, so create one for the options tab.
     Browser::OpenOptionsWindow([self defaultProfile]);
   }
-}
-
-- (void)showPreferencesWindow:(id)sender
-                         page:(OptionsPage)page
-                      profile:(Profile*)profile {
-  if (prefsController_) {
-    [prefsController_ switchToPage:page animate:YES];
-  } else {
-    prefsController_ =
-        [[PreferencesWindowController alloc] initWithProfile:profile
-                                                 initialPage:page];
-    // Watch for a notification of when it goes away so that we can destroy
-    // the controller.
-    [[NSNotificationCenter defaultCenter]
-        addObserver:self
-           selector:@selector(prefsWindowClosed:)
-               name:NSWindowWillCloseNotification
-             object:[prefsController_ window]];
-  }
-  [prefsController_ showPreferences:sender];
 }
 
 // Called when the about window is closed. We use this to release the
@@ -1179,7 +1141,13 @@ void ShowOptionsWindow(OptionsPage page,
                        Profile* profile) {
   // TODO(akalin): Use highlight_group.
   AppController* appController = [NSApp delegate];
-  [appController showPreferencesWindow:nil page:page profile:profile];
+  [appController showPreferences:nil];
+}
+
+void ShowFontsLanguagesWindow(gfx::NativeWindow window,
+                              FontsLanguagesPage page,
+                              Profile* profile) {
+  NOTIMPLEMENTED();
 }
 
 namespace app_controller_mac {

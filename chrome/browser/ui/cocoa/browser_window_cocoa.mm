@@ -22,16 +22,12 @@
 #import "chrome/browser/ui/cocoa/browser_window_controller.h"
 #import "chrome/browser/ui/cocoa/bug_report_window_controller.h"
 #import "chrome/browser/ui/cocoa/chrome_event_processing_window.h"
-#import "chrome/browser/ui/cocoa/clear_browsing_data_controller.h"
 #import "chrome/browser/ui/cocoa/content_settings/collected_cookies_mac.h"
 #import "chrome/browser/ui/cocoa/download/download_shelf_controller.h"
 #import "chrome/browser/ui/cocoa/html_dialog_window_controller.h"
 #import "chrome/browser/ui/cocoa/importer/import_dialog_cocoa.h"
 #import "chrome/browser/ui/cocoa/location_bar/location_bar_view_mac.h"
 #import "chrome/browser/ui/cocoa/nsmenuitem_additions.h"
-#import "chrome/browser/ui/cocoa/options/content_settings_dialog_controller.h"
-#import "chrome/browser/ui/cocoa/options/edit_search_engine_cocoa_controller.h"
-#import "chrome/browser/ui/cocoa/options/keyword_editor_cocoa_controller.h"
 #include "chrome/browser/ui/cocoa/repost_form_warning_mac.h"
 #include "chrome/browser/ui/cocoa/restart_browser.h"
 #include "chrome/browser/ui/cocoa/status_bubble_mac.h"
@@ -224,16 +220,7 @@ bool BrowserWindowCocoa::IsFullscreenBubbleVisible() const {
 void BrowserWindowCocoa::ConfirmAddSearchProvider(
     const TemplateURL* template_url,
     Profile* profile) {
-  // The controller will release itself when the window closes.
-  EditSearchEngineCocoaController* editor =
-      [[EditSearchEngineCocoaController alloc] initWithProfile:profile
-                                                      delegate:NULL
-                                                   templateURL:template_url];
-  [NSApp beginSheet:[editor window]
-     modalForWindow:window()
-      modalDelegate:controller_
-     didEndSelector:@selector(sheetDidEnd:returnCode:context:)
-        contextInfo:NULL];
+  NOTIMPLEMENTED();
 }
 
 LocationBar* BrowserWindowCocoa::GetLocationBar() const {
@@ -337,17 +324,15 @@ DownloadShelf* BrowserWindowCocoa::GetDownloadShelf() {
 }
 
 void BrowserWindowCocoa::ShowClearBrowsingDataDialog() {
-  [ClearBrowsingDataController
-      showClearBrowsingDialogForProfile:browser_->profile()];
+  NOTIMPLEMENTED();
 }
 
 void BrowserWindowCocoa::ShowImportDialog() {
-  [ImportDialogController
-          showImportSettingsDialogForProfile:browser_->profile()];
+  NOTIMPLEMENTED();
 }
 
 void BrowserWindowCocoa::ShowSearchEnginesDialog() {
-  [KeywordEditorCocoaController showKeywordEditor:browser_->profile()];
+  NOTIMPLEMENTED();
 }
 
 void BrowserWindowCocoa::ShowPasswordManager() {
@@ -362,8 +347,7 @@ void BrowserWindowCocoa::ShowRepostFormWarningDialog(
 void BrowserWindowCocoa::ShowContentSettingsWindow(
     ContentSettingsType settings_type,
     Profile* profile) {
-  [ContentSettingsDialogController showContentSettingsForType:settings_type
-                                                      profile:profile];
+  NOTIMPLEMENTED();
 }
 
 void BrowserWindowCocoa::ShowCollectedCookiesDialog(TabContents* tab_contents) {

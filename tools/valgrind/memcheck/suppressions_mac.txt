@@ -1260,69 +1260,6 @@
    fun:__NSFontInstanceInfoInitializeMetricsInfo
 }
 {
-   bug_68092
-   Memcheck:Addr1
-   fun:_CGSLockWindow
-   fun:CGSDeviceLock
-   fun:ripd_Lock
-   fun:ripl_BltShape
-   fun:ripc_Render
-   fun:ripc_DrawRects
-   fun:CGContextFillRects
-   fun:createTopShadowWindow
-   fun:MetalSheetProgress
-   fun:_NSMoveHelperTimerCallBack
-   fun:__CFRunLoopRun
-   fun:CFRunLoopRunSpecific
-   fun:CFRunLoopRunInMode
-   fun:-[NSMoveHelper _doAnimation]
-   fun:-[NSMoveHelper(NSSheets) _moveParent:andOpenSheet:]
-   fun:-[NSWindow(NSSheets) _orderFrontRelativeToWindow:]
-   fun:-[NSWindow _reallyDoOrderWindow:relativeTo:findKey:forCounter:force:isModal:]
-   fun:-[NSApplication _orderFrontModalWindow:relativeToWindow:]
-   fun:-[NSApplication _commonBeginModalSessionForWindow:relativeToWindow:modalDelegate:didEndSelector:contextInfo:]
-   fun:-[AutoFillDialogController editSelection:]
-   fun:_ZN12_GLOBAL__N_154AutoFillDialogControllerTest_AutoFillDataMutation_Test8TestBodyEv
-}
-{
-   bug_69757a
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_ZN9__gnu_cxx13new_allocatorISt13_Rb_tree_nodeISt4pairIKSsPN3net13CookieMonster15CanonicalCookieEEEE8allocateEmPKv
-   fun:_ZNSt8_Rb_treeISsSt4pairIKSsPN3net13CookieMonster15CanonicalCookieEESt10_Select1stIS6_ESt4lessISsESaIS6_EE11_M_get_nodeEv
-   fun:_ZNSt8_Rb_treeISsSt4pairIKSsPN3net13CookieMonster15CanonicalCookieEESt10_Select1stIS6_ESt4lessISsESaIS6_EE14_M_create_nodeERKS6_
-   fun:_ZNSt8_Rb_treeISsSt4pairIKSsPN3net13CookieMonster15CanonicalCookieEESt10_Select1stIS6_ESt4lessISsESaIS6_EE9_M_insertEPSt18_Rb_tree_node_baseSE_RKS6_
-   fun:_ZNSt8_Rb_treeISsSt4pairIKSsPN3net13CookieMonster15CanonicalCookieEESt10_Select1stIS6_ESt4lessISsESaIS6_EE12insert_equalERKS6_
-   fun:_ZNSt8multimapISsPN3net13CookieMonster15CanonicalCookieESt4lessISsESaISt4pairIKSsS3_EEE6insertERKS8_
-   fun:_ZN3net13CookieMonster20InternalInsertCookieERKSsPNS0_15CanonicalCookieEb
-   fun:_ZN3net13CookieMonster18SetCanonicalCookieEP10scoped_ptrINS0_15CanonicalCookieEERKN4base4TimeERKNS_13CookieOptionsE
-   fun:_ZN3net13CookieMonster35SetCookieWithCreationTimeAndOptionsERK4GURLRKSsRKN4base4TimeERKNS_13CookieOptionsE
-   fun:_ZN3net13CookieMonster20SetCookieWithOptionsERK4GURLRKSsRKNS_13CookieOptionsE
-   fun:_ZN3net11CookieStore9SetCookieERK4GURLRKSs
-   fun:_ZN12_GLOBAL__N_*CookiesWindowControllerTest_*_Test8TestBodyEv
-}
-{
-   bug_69757b
-   Memcheck:Leak
-   fun:_Znw*
-   ...
-   fun:_ZN21TestURLRequestContext4InitEv
-   fun:_ZN21TestURLRequestContextC2Ev
-   fun:_ZN21TestURLRequestContextC1Ev
-   fun:_ZN27TestURLRequestContextGetter20GetURLRequestContextEv
-   fun:_ZN23URLRequestContextGetter14GetCookieStoreEv
-   fun:-[CookiesWindowController loadTreeModelFromProfile]
-   fun:-[CookiesWindowController initWithProfile:databaseHelper:storageHelper:appcacheHelper:indexedDBHelper:]
-   fun:_ZN12_GLOBAL__N_127CookiesWindowControllerTest5SetUpEv
-}
-{
-   bug_69757c
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_ZN14TestingProfile20CreateRequestContextEv
-   fun:_ZN12_GLOBAL__N_127CookiesWindowControllerTest5SetUpEv
-}
-{
    bug_71111
    Memcheck:Leak
    fun:malloc_zone_malloc
