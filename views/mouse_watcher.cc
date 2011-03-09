@@ -96,8 +96,12 @@ class MouseWatcher::Observer : public MessageLoopForUI::Observer {
 
   // Returns true if the mouse is over the view's window.
   bool IsMouseOverWindow() {
+    Window* window = view()->GetWindow();
+    if (!window)
+      return false;
+
     return Screen::GetWindowAtCursorScreenPoint() ==
-        view()->GetWindow()->GetNativeWindow();
+        window->GetNativeWindow();
   }
 
   // Called from the message loop observer when a mouse movement has occurred.
