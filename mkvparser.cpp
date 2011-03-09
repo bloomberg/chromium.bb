@@ -6494,7 +6494,16 @@ long Cluster::ParseBlockGroup(
 
     assert((total < 0) || (avail <= total));
 
-    for (;;)
+    if ((total >= 0) && (payload_stop > total))
+        return E_FILE_FORMAT_INVALID;
+
+    if (payload_stop > avail)
+    {
+         len = static_cast<long>(payload_size);
+         return E_BUFFER_NOT_FULL;
+    }
+
+    while (pos < payload_stop)
     {
         //parse sub-block element ID
 
@@ -6574,13 +6583,16 @@ long Cluster::ParseBlockGroup(
         {
             pos += size;  //consume sub-part of block group
 
-            if (pos >= payload_stop)
+            if (pos > payload_stop)
                 return E_FILE_FORMAT_INVALID;
 
             continue;
         }
 
         const long long block_stop = pos + size;
+
+        if (block_stop > payload_stop)
+            return E_FILE_FORMAT_INVALID;
 
         //parse track number
 
@@ -6668,11 +6680,16 @@ long Cluster::ParseBlockGroup(
             return E_BUFFER_NOT_FULL;
         }
 
-        CreateBlock(0x20, payload_start, payload_size);  //BlockGroup ID
-        m_pos = payload_stop;
-
-        return 0;  //success
+        pos = block_stop;  //consume block-part of block group
+        assert(pos <= payload_stop);
     }
+
+    assert(pos == payload_stop);
+
+    CreateBlock(0x20, payload_start, payload_size);  //BlockGroup ID
+    m_pos = payload_stop;
+
+    return 0;  //success
 }
 
 
