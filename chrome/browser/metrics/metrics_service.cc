@@ -169,7 +169,6 @@
 #include "chrome/browser/browser_list.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/load_notification_details.h"
-#include "chrome/browser/memory_details.h"
 #include "chrome/browser/metrics/histogram_synchronizer.h"
 #include "chrome/browser/metrics/metrics_log.h"
 #include "chrome/browser/prefs/pref_service.h"
@@ -314,23 +313,6 @@ struct MetricsService::ChildProcessStats {
   int instances;
 
   ChildProcessInfo::ProcessType process_type;
-};
-
-// Handles asynchronous fetching of memory details.
-// Will run the provided task after finished.
-class MetricsMemoryDetails : public MemoryDetails {
- public:
-  explicit MetricsMemoryDetails(Task* completion) : completion_(completion) {}
-
-  virtual void OnDetailsAvailable() {
-    MessageLoop::current()->PostTask(FROM_HERE, completion_);
-  }
-
- private:
-  ~MetricsMemoryDetails() {}
-
-  Task* completion_;
-  DISALLOW_COPY_AND_ASSIGN(MetricsMemoryDetails);
 };
 
 class MetricsService::InitTaskComplete : public Task {
@@ -972,10 +954,8 @@ void MetricsService::StartLogTransmissionTimer() {
 
   // Right before the UMA transmission gets started, there's one more thing we'd
   // like to record: the histogram of memory usage, so we spawn a task to
-  // collect the memory details and when that task is finished, it will call
-  // OnMemoryDetailCollectionDone, which will call HistogramSynchronization to
-  // collect histograms from all renderers and then we will call
-  // OnHistogramSynchronizationDone to continue processing.
+  // collect histograms from all the renderers and when that task is finished,
+  // it will call OnHistogramSynchronizationDone to continue processing.
   MessageLoop::current()->PostDelayedTask(FROM_HERE,
       log_sender_factory_.
           NewRunnableMethod(&MetricsService::LogTransmissionTimerDone),
@@ -983,19 +963,6 @@ void MetricsService::StartLogTransmissionTimer() {
 }
 
 void MetricsService::LogTransmissionTimerDone() {
-  Task* task = log_sender_factory_.
-      NewRunnableMethod(&MetricsService::OnMemoryDetailCollectionDone);
-
-  scoped_refptr<MetricsMemoryDetails> details(new MetricsMemoryDetails(task));
-  details->StartFetch();
-
-  // Collect WebCore cache information to put into a histogram.
-  for (RenderProcessHost::iterator i(RenderProcessHost::AllHostsIterator());
-       !i.IsAtEnd(); i.Advance())
-    i.GetCurrentValue()->Send(new ViewMsg_GetCacheResourceStats());
-}
-
-void MetricsService::OnMemoryDetailCollectionDone() {
   DCHECK(IsSingleThreaded());
 
   // HistogramSynchronizer will Collect histograms from all renderers and it
@@ -1013,6 +980,11 @@ void MetricsService::OnMemoryDetailCollectionDone() {
   HistogramSynchronizer::FetchRendererHistogramsAsynchronously(
       MessageLoop::current(), callback_task,
       kMaxHistogramGatheringWaitDuration);
+
+  // Collect WebCore cache information to put into a histogram.
+  for (RenderProcessHost::iterator i(RenderProcessHost::AllHostsIterator());
+       !i.IsAtEnd(); i.Advance())
+    i.GetCurrentValue()->Send(new ViewMsg_GetCacheResourceStats());
 }
 
 void MetricsService::OnHistogramSynchronizationDone() {

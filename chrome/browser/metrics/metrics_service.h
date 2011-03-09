@@ -230,10 +230,8 @@ class MetricsService : public NotificationObserver,
   // Internal function to collect process memory information.
   void LogTransmissionTimerDone();
 
-  // Do not call OnMemoryDetailCollectionDone() or
-  // OnHistogramSynchronizationDone() directly.
+  // Do not call OnHistogramSynchronizationDone() directly.
   // Use StartLogTransmissionTimer() to schedule a call.
-  void OnMemoryDetailCollectionDone();
   void OnHistogramSynchronizationDone();
 
   // Takes whatever log should be uploaded next (according to the state_)
