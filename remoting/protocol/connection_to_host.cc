@@ -67,6 +67,7 @@ void ConnectionToHost::Connect(const std::string& username,
                              kChromotingTokenServiceName));
   jingle_client_ =
       new JingleClient(thread_, signal_strategy_.get(),
+                       network_manager_.release(), socket_factory_.release(),
                        port_allocator_session_factory_.release(), this);
   jingle_client_->Init();
 
@@ -91,6 +92,7 @@ void ConnectionToHost::ConnectSandboxed(scoped_refptr<XmppProxy> xmpp_proxy,
   signal_strategy_.reset(strategy);
   jingle_client_ =
       new JingleClient(thread_, signal_strategy_.get(),
+                       network_manager_.release(), socket_factory_.release(),
                        port_allocator_session_factory_.release(), this);
   jingle_client_->Init();
 
