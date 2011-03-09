@@ -101,11 +101,22 @@ void Features::ParseFeatures(const std::vector<std::string>& features,
         init_status_ = static_cast<Renderer::InitStatus>(value);
       } else if (feature.compare("RenderMode") == 0 &&
                  arguments.size() == 1) {
-        if (arguments[0].compare("Auto") == 0) {
+        std::string render_mode_str;
+        const char* override;
+        if (arguments[0].compare("Auto") == 0 &&
+            (override = getenv("O3D_OVERRIDE_RENDER_MODE_AUTO"))) {
+          // For testing purposes, allow developers to override RenderMode=Auto
+          // with an environment variable. This is useful for testing 2D mode
+          // without having to alter the web app.
+          render_mode_str = override;
+        } else {
+          render_mode_str = arguments[0];
+        }
+        if (render_mode_str.compare("Auto") == 0) {
           render_mode_ = Renderer::RENDER_MODE_AUTO;
-        } else if (arguments[0].compare("3D") == 0) {
+        } else if (render_mode_str.compare("3D") == 0) {
           render_mode_ = Renderer::RENDER_MODE_3D;
-        } else if (arguments[0].compare("2D") == 0) {
+        } else if (render_mode_str.compare("2D") == 0) {
           render_mode_ = Renderer::RENDER_MODE_2D;
         }
       }
