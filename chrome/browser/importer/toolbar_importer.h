@@ -16,8 +16,9 @@
 #include "base/compiler_specific.h"
 #include "base/gtest_prod_util.h"
 #include "base/string16.h"
+#include "chrome/browser/importer/importer.h"
 #include "chrome/browser/importer/importer_data_types.h"
-#include "chrome/browser/importer/importer_host.h"
+#include "chrome/browser/importer/profile_writer.h"
 #include "chrome/common/net/url_fetcher.h"
 
 class ImporterBridge;
@@ -28,7 +29,7 @@ class XmlReader;
 // exposed through the ToolbarImportUtils namespace.
 namespace toolbar_importer_utils {
 bool IsGoogleGAIACookieInstalled();
-}  // namespace toolbar_importer_utils
+}
 
 // Toolbar5Importer is a class which exposes the functionality needed to
 // communicate with the Google Toolbar v5 front-end, negotiate the download of

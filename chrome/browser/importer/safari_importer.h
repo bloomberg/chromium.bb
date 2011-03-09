@@ -14,9 +14,12 @@
 #include "base/compiler_specific.h"
 #include "base/file_path.h"
 #include "base/gtest_prod_util.h"
+#include "chrome/browser/history/history_types.h"
+#include "chrome/browser/importer/importer.h"
 #include "chrome/browser/importer/importer_data_types.h"
-#include "chrome/browser/importer/importer_host.h"
+#include "chrome/browser/importer/profile_writer.h"
 #include "chrome/common/sqlite_utils.h"
+#include "googleurl/src/gurl.h"
 
 #if __OBJC__
 @class NSDictionary;

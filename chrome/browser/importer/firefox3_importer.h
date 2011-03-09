@@ -14,8 +14,9 @@
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/file_path.h"
+#include "chrome/browser/history/history_types.h"
+#include "chrome/browser/importer/importer.h"
 #include "chrome/browser/importer/importer_data_types.h"
-#include "chrome/browser/importer/importer_host.h"
 #include "googleurl/src/gurl.h"
 
 struct sqlite3;

@@ -12,7 +12,8 @@
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/gtest_prod_util.h"
-#include "chrome/browser/importer/importer_host.h"
+#include "chrome/browser/importer/importer.h"
+#include "chrome/browser/importer/profile_writer.h"
 
 class IEImporter : public Importer {
  public:

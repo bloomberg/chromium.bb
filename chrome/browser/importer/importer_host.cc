@@ -24,57 +24,13 @@
 #include "content/browser/site_instance.h"
 #include "content/common/notification_source.h"
 #include "grit/generated_resources.h"
-#include "skia/ext/image_operations.h"
 #include "ui/base/l10n/l10n_util.h"
-#include "ui/gfx/codec/png_codec.h"
-#include "ui/gfx/favicon_size.h"
-#include "webkit/glue/image_decoder.h"
 
 // TODO(port): Port these files.
 #if defined(OS_WIN)
 #include "ui/base/message_box_win.h"
 #include "views/window/window.h"
 #endif
-
-using webkit_glue::PasswordForm;
-
-// Importer.
-
-void Importer::Cancel() { cancelled_ = true; }
-
-Importer::Importer()
-    : cancelled_(false),
-      import_to_bookmark_bar_(false),
-      bookmark_bar_disabled_(false) {
-}
-
-Importer::~Importer() {
-}
-
-// static
-bool Importer::ReencodeFavicon(const unsigned char* src_data, size_t src_len,
-                               std::vector<unsigned char>* png_data) {
-  // Decode the favicon using WebKit's image decoder.
-  webkit_glue::ImageDecoder decoder(gfx::Size(kFavIconSize, kFavIconSize));
-  SkBitmap decoded = decoder.Decode(src_data, src_len);
-  if (decoded.empty())
-    return false;  // Unable to decode.
-
-  if (decoded.width() != kFavIconSize || decoded.height() != kFavIconSize) {
-    // The bitmap is not the correct size, re-sample.
-    int new_width = decoded.width();
-    int new_height = decoded.height();
-    calc_favicon_target_size(&new_width, &new_height);
-    decoded = skia::ImageOperations::Resize(
-        decoded, skia::ImageOperations::RESIZE_LANCZOS3, new_width, new_height);
-  }
-
-  // Encode our bitmap as a PNG.
-  gfx::PNGCodec::EncodeBGRASkBitmap(decoded, false, png_data);
-  return true;
-}
-
-// ImporterHost.
 
 ImporterHost::ImporterHost()
     : profile_(NULL),

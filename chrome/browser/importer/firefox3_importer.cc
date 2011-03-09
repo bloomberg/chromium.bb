@@ -22,6 +22,7 @@
 #include "chrome/browser/search_engines/template_url.h"
 #include "chrome/common/sqlite_utils.h"
 #include "chrome/common/time_format.h"
+#include "content/browser/browser_thread.h"
 #include "grit/generated_resources.h"
 #include "webkit/glue/password_form.h"
 
