@@ -51,7 +51,7 @@ TEST_F(DownloadUtilMacTest, AddFileToPasteboardTest) {
   NSArray* files = [pasteboard() propertyListForType:NSFilenamesPboardType];
   ASSERT_TRUE(files != nil);
   NSString* expectedPath = [files objectAtIndex:0];
-  NSString* realPath = base::SysWideToNSString(testPath.ToWStringHack());
+  NSString* realPath = base::SysUTF8ToNSString(testPath.value());
   EXPECT_NSEQ(expectedPath, realPath);
 }
 
