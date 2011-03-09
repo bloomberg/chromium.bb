@@ -192,11 +192,11 @@ const char kContentSettingsSubPage[] = "content";
 const char kContentSettingsExceptionsSubPage[] = "contentExceptions";
 const char kDefaultOptionsSubPage[] =  "";
 const char kImportDataSubPage[] = "importData";
+const char kLanguageOptionsSubPage[] = "language";
 const char kPersonalOptionsSubPage[] =  "personal";
 const char kSearchEnginesSubPage[] = "searchEngines";
 #if defined(OS_CHROMEOS)
 const char kInternetOptionsSubPage[] = "internet";
-const char kLanguageOptionsSubPage[] = "languages";
 const char kSystemOptionsSubPage[] = "system";
 #endif
 

@@ -61,7 +61,6 @@
 #include "chrome/browser/ui/gtk/keyword_editor_view.h"
 #include "chrome/browser/ui/gtk/location_bar_view_gtk.h"
 #include "chrome/browser/ui/gtk/nine_box.h"
-#include "chrome/browser/ui/gtk/options/content_settings_window_gtk.h"
 #include "chrome/browser/ui/gtk/reload_button_gtk.h"
 #include "chrome/browser/ui/gtk/repost_form_warning_gtk.h"
 #include "chrome/browser/ui/gtk/status_bubble_gtk.h"
@@ -899,12 +898,6 @@ void BrowserWindowGtk::ShowPasswordManager() {
 
 void BrowserWindowGtk::ShowRepostFormWarningDialog(TabContents* tab_contents) {
   new RepostFormWarningGtk(GetNativeHandle(), tab_contents);
-}
-
-void BrowserWindowGtk::ShowContentSettingsWindow(
-    ContentSettingsType content_type,
-    Profile* profile) {
-  ContentSettingsWindowGtk::Show(GetNativeHandle(), content_type, profile);
 }
 
 void BrowserWindowGtk::ShowCollectedCookiesDialog(TabContents* tab_contents) {

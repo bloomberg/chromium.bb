@@ -17,7 +17,6 @@
 #include "chrome/browser/ui/gtk/gtk_chrome_link_button.h"
 #include "chrome/browser/ui/gtk/gtk_theme_provider.h"
 #include "chrome/browser/ui/gtk/gtk_util.h"
-#include "chrome/browser/ui/gtk/options/content_settings_window_gtk.h"
 #include "chrome/common/content_settings.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/common/notification_source.h"
