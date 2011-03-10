@@ -31,6 +31,11 @@ class RPCListener(object):
     self._TestingDone()
     return 'OK'
 
+  # Does nothing.  Called to prevent timeouts.  (The server resets the timeout
+  # every time it receives a GET request.)
+  def Ping(self):
+    return 'OK'
+
   def Shutdown(self, message, passed):
     self.Log(message)
     # This check looks slightly backwards, but this is intentional.

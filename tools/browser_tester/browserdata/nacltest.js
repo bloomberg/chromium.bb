@@ -122,6 +122,10 @@ function RPCWrapper() {
     }
   }
 
+  this.ping = function() {
+    rpcCall('Ping', {});
+  }
+
   this.client_error = function(message) {
     this.num_errors += 1;
     this.visualError();
@@ -393,11 +397,11 @@ function Tester() {
   this.run = function() {
     this.initRPC();
 
-    // Wait for three seconds.
+    // Wait for up to ten seconds for the nexes to load.
     // TODO(ncbray) use error handling mechanisms (when they are implemented)
     // rather than a timeout.
-    this.retries = 300;
-    this.retryWait = 10;
+    this.retries = 200;
+    this.retryWait = 50;
     setTimeout(function() { this_.waitForPlugins(); }, 0);
   }
 
@@ -450,6 +454,8 @@ function Tester() {
         doStart();
       } else {
         setTimeout(function() { this_.waitForPlugins(); }, this.retryWait);
+        // Prevent the server from thinking the test has died.
+        this.rpc.ping();
       }
     }
   }
