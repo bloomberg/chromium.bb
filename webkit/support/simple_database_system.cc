@@ -177,9 +177,9 @@ void SimpleDatabaseSystem::SetFullFilePathsForVfsFile(
 
   base::AutoLock file_names_auto_lock(file_names_lock_);
   file_names_[vfs_file_name] = file_name;
+  DCHECK(file_name.Extension().empty());
   file_names_[vfs_file_name + ASCIIToUTF16("-journal")] =
-      FilePath::FromWStringHack(file_name.ToWStringHack() +
-                                ASCIIToWide("-journal"));
+      file_name.InsertBeforeExtensionASCII("-journal");
 }
 
 FilePath SimpleDatabaseSystem::GetFullFilePathForVfsFile(
