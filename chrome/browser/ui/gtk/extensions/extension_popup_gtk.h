@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_GTK_EXTENSION_POPUP_GTK_H_
-#define CHROME_BROWSER_UI_GTK_EXTENSION_POPUP_GTK_H_
+#ifndef CHROME_BROWSER_UI_GTK_EXTENSIONS_EXTENSION_POPUP_GTK_H_
+#define CHROME_BROWSER_UI_GTK_EXTENSIONS_EXTENSION_POPUP_GTK_H_
 #pragma once
 
 #include "base/scoped_ptr.h"
 #include "base/task.h"
-#include "chrome/browser/ui/gtk/extension_view_gtk.h"
+#include "chrome/browser/ui/gtk/extensions/extension_view_gtk.h"
 #include "chrome/browser/ui/gtk/info_bubble_gtk.h"
 #include "content/common/notification_observer.h"
 #include "content/common/notification_registrar.h"
@@ -97,4 +97,4 @@ class ExtensionPopupGtk : public NotificationObserver,
   DISALLOW_COPY_AND_ASSIGN(ExtensionPopupGtk);
 };
 
-#endif  // CHROME_BROWSER_UI_GTK_EXTENSION_POPUP_GTK_H_
+#endif  // CHROME_BROWSER_UI_GTK_EXTENSIONS_EXTENSION_POPUP_GTK_H_

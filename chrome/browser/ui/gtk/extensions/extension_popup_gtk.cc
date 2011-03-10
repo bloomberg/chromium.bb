@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/gtk/extension_popup_gtk.h"
+#include "chrome/browser/ui/gtk/extensions/extension_popup_gtk.h"
 
 #include <gtk/gtk.h>
 
