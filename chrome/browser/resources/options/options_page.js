@@ -499,33 +499,36 @@ cr.define('options', function() {
     chrome.send('coreOptionsInitialize');
     this.initialized_ = true;
 
-    var self = this;
-    // Close subpages if the user clicks on the html body. Listen in the
-    // capturing phase so that we can stop the click from doing anything.
-    document.body.addEventListener('click',
-                                   this.bodyMouseEventHandler_.bind(this),
-                                   true);
-    // We also need to cancel mousedowns on non-subpage content.
-    document.body.addEventListener('mousedown',
-                                   this.bodyMouseEventHandler_.bind(this),
-                                   true);
-
-    // Hook up the close buttons.
-    subpageCloseButtons = document.querySelectorAll('.close-subpage');
-    for (var i = 0; i < subpageCloseButtons.length; i++) {
-      subpageCloseButtons[i].onclick = function() {
-        self.closeTopSubPage_();
-      };
-    };
-
-    // Install handler for key presses.
-    document.addEventListener('keydown', this.keyDownEventHandler_.bind(this));
-
-    document.addEventListener('focus', this.manageFocusChange_.bind(this),
-                              true);
-
     document.addEventListener('scroll', this.handleScroll_.bind(this));
     window.addEventListener('resize', this.handleResize_.bind(this));
+
+    if (!document.documentElement.classList.contains('hide-menu')) {
+      // Close subpages if the user clicks on the html body. Listen in the
+      // capturing phase so that we can stop the click from doing anything.
+      document.body.addEventListener('click',
+                                     this.bodyMouseEventHandler_.bind(this),
+                                     true);
+      // We also need to cancel mousedowns on non-subpage content.
+      document.body.addEventListener('mousedown',
+                                     this.bodyMouseEventHandler_.bind(this),
+                                     true);
+
+      var self = this;
+      // Hook up the close buttons.
+      subpageCloseButtons = document.querySelectorAll('.close-subpage');
+      for (var i = 0; i < subpageCloseButtons.length; i++) {
+        subpageCloseButtons[i].onclick = function() {
+          self.closeTopSubPage_();
+        };
+      };
+
+      // Install handler for key presses.
+      document.addEventListener('keydown',
+                                this.keyDownEventHandler_.bind(this));
+
+      document.addEventListener('focus', this.manageFocusChange_.bind(this),
+                                true);
+    }
 
     // Calculate and store the horizontal locations of elements that may be
     // frozen later.
