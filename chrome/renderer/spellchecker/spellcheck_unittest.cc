@@ -414,6 +414,11 @@ TEST_F(SpellCheckTest, SpellCheckText) {
       L"Google's mission is to organise the world's information and make it "
       L"universally accessible and useful."
     }, {
+      // English (Canada)
+      "en-CA",
+      L"Google's mission is to organize the world's information and make it "
+      L"universally accessible and useful."
+    }, {
       // English (United Kingdom)
       "en-GB",
       L"Google's mission is to organise the world's information and make it "

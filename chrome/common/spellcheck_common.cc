@@ -24,6 +24,7 @@ static const struct {
   {"de", "de-DE"},
   {"el", "el-GR"},
   {"en-AU", "en-AU"},
+  {"en-CA", "en-CA"},
   {"en-GB", "en-GB"},
   {"en-US", "en-US"},
   {"es", "es-ES"},
@@ -80,7 +81,7 @@ FilePath GetVersionedFileName(const std::string& input_language,
     // The corresponding version.
     const char* version;
   } special_version_string[] = {
-    {"es-ES", "-1-1"}, // 1-1: Have not been augmented with addtional words.
+    {"es-ES", "-1-1"},  // 1-1: Have not been augmented with addtional words.
     {"nl-NL", "-1-1"},
     {"sv-SE", "-1-1"},
     {"he-IL", "-1-1"},
@@ -88,16 +89,18 @@ FilePath GetVersionedFileName(const std::string& input_language,
     {"hi-IN", "-1-1"},
     {"tr-TR", "-1-1"},
     {"et-EE", "-1-1"},
-    {"lt-LT", "-1-3"}, // 1-3 (Feb 2009): new words, as well as an upgraded
-                       // dictionary.
+    {"lt-LT", "-1-3"},  // 1-3 (Feb 2009): new words, as well as an upgraded
+                        // dictionary.
     {"pl-PL", "-1-3"},
-    {"fr-FR", "-2-0"}, // 2-0 (2010): upgraded dictionaries.
+    {"fr-FR", "-2-0"},  // 2-0 (2010): upgraded dictionaries.
     {"hu-HU", "-2-0"},
     {"ro-RO", "-2-0"},
     {"ru-RU", "-2-0"},
     {"bg-BG", "-2-0"},
     {"sr",    "-2-0"},
     {"uk-UA", "-2-0"},
+    {"en-US", "-2-1"},  // 2-1 (Mar 2011): upgraded dictionaries.
+    {"en-CA", "-2-1"},
   };
 
   // Generate the bdict file name using default version string or special
