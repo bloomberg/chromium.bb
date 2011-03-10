@@ -9,7 +9,7 @@ crash_service.exe
 First Run
 gears.dll
 ppGoogleNaClPluginChrome.dll
-icudt46.dll
+icudt.dll
 locales/ar.dll
 locales/bg.dll
 locales/bn.dll

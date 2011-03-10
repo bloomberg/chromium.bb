@@ -23,7 +23,7 @@ deps = {
     "/trunk/deps/support@20411",
 
   "src/googleurl":
-    (Var("googlecode_url") % "google-url") + "/trunk@152",
+    (Var("googlecode_url") % "google-url") + "/trunk@153",
 
   "src/seccompsandbox":
     (Var("googlecode_url") % "seccompsandbox") + "/trunk@153",
@@ -48,7 +48,7 @@ deps = {
     "/trunk/deps/third_party/WebKit@76115",
 
   "src/third_party/icu":
-    "/trunk/deps/third_party/icu46@75916",
+    "/trunk/deps/third_party/icu46@77181",
 
   "src/third_party/hunspell":
    "/trunk/deps/third_party/hunspell@65351",

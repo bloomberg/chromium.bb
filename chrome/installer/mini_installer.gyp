@@ -197,7 +197,7 @@
                 '<(PRODUCT_DIR)/nacl64.dll',
                 '<(PRODUCT_DIR)/ppGoogleNaClPluginChrome.dll',
                 '<(PRODUCT_DIR)/locales/en-US.dll',
-                '<(PRODUCT_DIR)/icudt46.dll',
+                '<(PRODUCT_DIR)/icudt.dll',
               ],
               'outputs': [
                 'xxx.out',
