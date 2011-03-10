@@ -36,6 +36,7 @@
       'codesign',
       'content',
       '-content.ContentTest.testTopSitesContent',  # crbug.com/71824
+      '-content.ContentTest.testLocalFileBasics',  # crbug.com/75533
       'cookies',
       'crash_reporter',
       'databases',
