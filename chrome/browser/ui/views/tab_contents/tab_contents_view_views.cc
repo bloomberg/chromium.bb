@@ -268,7 +268,8 @@ void TabContentsViewViews::VisibilityChanged(views::View *, bool is_visible) {
 
 void TabContentsViewViews::ShowContextMenu(const ContextMenuParams& params) {
   // Allow delegates to handle the context menu operation first.
-  if (tab_contents()->delegate()->HandleContextMenu(params))
+  if (tab_contents()->delegate() &&
+      tab_contents()->delegate()->HandleContextMenu(params))
     return;
 
   context_menu_.reset(new RenderViewContextMenuViews(tab_contents(), params));

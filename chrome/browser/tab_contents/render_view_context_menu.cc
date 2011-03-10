@@ -878,8 +878,9 @@ bool RenderViewContextMenu::IsCommandIdEnabled(int id) const {
       return source_tab_contents_->controller().CanGoForward();
 
     case IDC_RELOAD:
-      return source_tab_contents_->delegate()->CanReloadContents(
-          source_tab_contents_);
+      return source_tab_contents_->delegate() &&
+          source_tab_contents_->delegate()->CanReloadContents(
+              source_tab_contents_);
 
     case IDC_VIEW_SOURCE:
     case IDC_CONTENT_CONTEXT_VIEWFRAMESOURCE:
