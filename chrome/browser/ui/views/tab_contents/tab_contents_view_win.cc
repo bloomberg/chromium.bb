@@ -395,22 +395,15 @@ void TabContentsViewWin::ShowPopupMenu(const gfx::Rect& bounds,
   NOTREACHED();
 }
 
-void TabContentsViewWin::OnHScroll(int scroll_type, short position,
+void TabContentsViewWin::OnHScroll(int scroll_type,
+                                   short position,
                                    HWND scrollbar) {
   ScrollCommon(WM_HSCROLL, scroll_type, position, scrollbar);
 }
 
-void TabContentsViewWin::OnMouseLeave() {
-  // Let our delegate know that the mouse moved (useful for resetting status
-  // bubble state).
-  if (tab_contents()->delegate())
-    tab_contents()->delegate()->ContentsMouseEvent(
-        tab_contents(), views::Screen::GetCursorScreenPoint(), false);
-  SetMsgHandled(FALSE);
-}
-
 LRESULT TabContentsViewWin::OnMouseRange(UINT msg,
-                                         WPARAM w_param, LPARAM l_param) {
+                                         WPARAM w_param,
+                                         LPARAM l_param) {
   if (tab_contents()->is_crashed() && sad_tab_ != NULL) {
     return WidgetWin::OnMouseRange(msg, w_param, l_param);
   }
@@ -455,8 +448,9 @@ void TabContentsViewWin::OnPaint(HDC junk_dc) {
 // A message is reflected here from view().
 // Return non-zero to indicate that it is handled here.
 // Return 0 to allow view() to further process it.
-LRESULT TabContentsViewWin::OnReflectedMessage(UINT msg, WPARAM w_param,
-                                        LPARAM l_param) {
+LRESULT TabContentsViewWin::OnReflectedMessage(UINT msg,
+                                               WPARAM w_param,
+                                               LPARAM l_param) {
   MSG* message = reinterpret_cast<MSG*>(l_param);
   switch (message->message) {
     case WM_MOUSEWHEEL:
@@ -477,7 +471,8 @@ LRESULT TabContentsViewWin::OnReflectedMessage(UINT msg, WPARAM w_param,
   return 0;
 }
 
-void TabContentsViewWin::OnVScroll(int scroll_type, short position,
+void TabContentsViewWin::OnVScroll(int scroll_type,
+                                   short position,
                                    HWND scrollbar) {
   ScrollCommon(WM_VSCROLL, scroll_type, position, scrollbar);
 }

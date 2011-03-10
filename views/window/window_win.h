@@ -108,9 +108,6 @@ class WindowWin : public WidgetWin,
   virtual void OnFinalMessage(HWND window) OVERRIDE;
   virtual void OnGetMinMaxInfo(MINMAXINFO* minmax_info) OVERRIDE;
   virtual void OnInitMenu(HMENU menu) OVERRIDE;
-  virtual LRESULT OnMouseLeave(UINT message,
-                               WPARAM w_param,
-                               LPARAM l_param) OVERRIDE;
   virtual LRESULT OnMouseRange(UINT message,
                                WPARAM w_param,
                                LPARAM l_param) OVERRIDE;

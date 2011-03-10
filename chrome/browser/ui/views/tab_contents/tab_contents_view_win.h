@@ -40,43 +40,43 @@ class TabContentsViewWin : public TabContentsView,
 
   // TabContentsView implementation --------------------------------------------
 
-  virtual void CreateView(const gfx::Size& initial_size);
+  virtual void CreateView(const gfx::Size& initial_size) OVERRIDE;
   virtual RenderWidgetHostView* CreateViewForWidget(
-      RenderWidgetHost* render_widget_host);
-  virtual gfx::NativeView GetNativeView() const;
-  virtual gfx::NativeView GetContentNativeView() const;
-  virtual gfx::NativeWindow GetTopLevelNativeWindow() const;
-  virtual void GetContainerBounds(gfx::Rect* out) const;
-  virtual void SetPageTitle(const std::wstring& title);
+      RenderWidgetHost* render_widget_host) OVERRIDE;
+  virtual gfx::NativeView GetNativeView() const OVERRIDE;
+  virtual gfx::NativeView GetContentNativeView() const OVERRIDE;
+  virtual gfx::NativeWindow GetTopLevelNativeWindow() const OVERRIDE;
+  virtual void GetContainerBounds(gfx::Rect* out) const OVERRIDE;
+  virtual void SetPageTitle(const std::wstring& title) OVERRIDE;
   virtual void OnTabCrashed(base::TerminationStatus status,
-                            int error_code);
-  virtual void SizeContents(const gfx::Size& size);
-  virtual void Focus();
-  virtual void SetInitialFocus();
-  virtual void StoreFocus();
-  virtual void RestoreFocus();
-  virtual bool IsDoingDrag() const;
-  virtual void CancelDragAndCloseTab();
-  virtual void GetViewBounds(gfx::Rect* out) const;
+                            int error_code) OVERRIDE;
+  virtual void SizeContents(const gfx::Size& size) OVERRIDE;
+  virtual void Focus() OVERRIDE;
+  virtual void SetInitialFocus() OVERRIDE;
+  virtual void StoreFocus() OVERRIDE;
+  virtual void RestoreFocus() OVERRIDE;
+  virtual bool IsDoingDrag() const OVERRIDE;
+  virtual void CancelDragAndCloseTab() OVERRIDE;
+  virtual void GetViewBounds(gfx::Rect* out) const OVERRIDE;
 
   // Backend implementation of RenderViewHostDelegate::View.
-  virtual void ShowContextMenu(const ContextMenuParams& params);
+  virtual void ShowContextMenu(const ContextMenuParams& params) OVERRIDE;
   virtual void ShowPopupMenu(const gfx::Rect& bounds,
                              int item_height,
                              double item_font_size,
                              int selected_item,
                              const std::vector<WebMenuItem>& items,
-                             bool right_aligned);
+                             bool right_aligned) OVERRIDE;
   virtual void StartDragging(const WebDropData& drop_data,
                              WebKit::WebDragOperationsMask operations,
                              const SkBitmap& image,
-                             const gfx::Point& image_offset);
-  virtual void UpdateDragCursor(WebKit::WebDragOperation operation);
-  virtual void GotFocus();
-  virtual void TakeFocus(bool reverse);
+                             const gfx::Point& image_offset) OVERRIDE;
+  virtual void UpdateDragCursor(WebKit::WebDragOperation operation) OVERRIDE;
+  virtual void GotFocus() OVERRIDE;
+  virtual void TakeFocus(bool reverse) OVERRIDE;
 
   // WidgetWin overridde.
-  virtual views::FocusManager* GetFocusManager();
+  virtual views::FocusManager* GetFocusManager() OVERRIDE;
 
   void EndDragging();
 
@@ -89,17 +89,24 @@ class TabContentsViewWin : public TabContentsView,
   // Windows events ------------------------------------------------------------
 
   // Overrides from WidgetWin.
-  virtual void OnDestroy();
-  virtual void OnHScroll(int scroll_type, short position, HWND scrollbar);
-  virtual void OnMouseLeave();
-  virtual LRESULT OnMouseRange(UINT msg, WPARAM w_param, LPARAM l_param);
-  virtual void OnPaint(HDC junk_dc);
-  virtual LRESULT OnReflectedMessage(UINT msg, WPARAM w_param, LPARAM l_param);
-  virtual void OnVScroll(int scroll_type, short position, HWND scrollbar);
-  virtual void OnWindowPosChanged(WINDOWPOS* window_pos);
-  virtual void OnSize(UINT param, const WTL::CSize& size);
-  virtual LRESULT OnNCCalcSize(BOOL w_param, LPARAM l_param);
-  virtual void OnNCPaint(HRGN rgn);
+  virtual void OnDestroy() OVERRIDE;
+  virtual void OnHScroll(int scroll_type,
+                         short position,
+                         HWND scrollbar) OVERRIDE;
+  virtual LRESULT OnMouseRange(UINT msg,
+                               WPARAM w_param,
+                               LPARAM l_param) OVERRIDE;
+  virtual void OnPaint(HDC junk_dc) OVERRIDE;
+  virtual LRESULT OnReflectedMessage(UINT msg,
+                                     WPARAM w_param,
+                                     LPARAM l_param) OVERRIDE;
+  virtual void OnVScroll(int scroll_type,
+                         short position,
+                         HWND scrollbar) OVERRIDE;
+  virtual void OnWindowPosChanged(WINDOWPOS* window_pos) OVERRIDE;
+  virtual void OnSize(UINT param, const WTL::CSize& size) OVERRIDE;
+  virtual LRESULT OnNCCalcSize(BOOL w_param, LPARAM l_param) OVERRIDE;
+  virtual void OnNCPaint(HRGN rgn) OVERRIDE;
 
   // Backend for all scroll messages, the |message| parameter indicates which
   // one it is.
