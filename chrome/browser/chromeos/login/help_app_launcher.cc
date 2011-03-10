@@ -7,6 +7,7 @@
 #include "base/file_util.h"
 #include "base/logging.h"
 #include "base/utf_string_conversions.h"
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/login/help_app_launcher.h"
 #include "chrome/common/url_constants.h"
 #include "content/browser/browser_thread.h"
@@ -46,28 +47,39 @@ void HelpAppLauncher::ShowHelpTopic(HelpTopic help_topic_id) {
 
   // TODO(nkostylev): Detect connectivity state (offline/online).
   // Help presentation may wary based on that (dialog/launch BWSI mode).
+  std::string locale = g_browser_process->GetApplicationLocale();
   BrowserThread::PostTask(BrowserThread::FILE, FROM_HERE,
       NewRunnableMethod(this,
                         &HelpAppLauncher::FindStaticHelpTopic,
-                        kHelpTopicFiles[help_topic_id]));
+                        kHelpTopicFiles[help_topic_id],
+                        locale));
 }
 
 ///////////////////////////////////////////////////////////////////////////////
 // HelpApp, private:
 
-void HelpAppLauncher::FindStaticHelpTopic(const std::string& filename) {
+void HelpAppLauncher::FindStaticHelpTopic(const std::string& filename,
+                                          const std::string& locale) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
-  FilePath file_path(kHelpTopicBasePath + filename);
-  if (file_util::PathExists(file_path)) {
-    const std::string path_url = std::string(chrome::kFileScheme) +
-         chrome::kStandardSchemeSeparator + file_path.value();
-    BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-        NewRunnableMethod(this,
-                          &HelpAppLauncher::ShowHelpTopicDialog,
-                          GURL(path_url)));
-  } else {
-    LOG(ERROR) << "Help topic file was not found. ID: " << help_topic_id_;
+  FilePath file_path(kHelpTopicBasePath);
+  file_path = file_path.Append(locale);
+  file_path = file_path.Append(filename);
+
+  if (!file_util::PathExists(file_path)) {
+    // Check default location if locale specific help content is absent.
+    file_path = FilePath(kHelpTopicBasePath + filename);
+    if (!file_util::PathExists(file_path)) {
+      LOG(ERROR) << "Help topic file was not found. ID: " << help_topic_id_;
+      return;
+    }
   }
+
+  const std::string path_url = std::string(chrome::kFileScheme) +
+       chrome::kStandardSchemeSeparator + file_path.value();
+  BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
+      NewRunnableMethod(this,
+                        &HelpAppLauncher::ShowHelpTopicDialog,
+                        GURL(path_url)));
 }
 
 void HelpAppLauncher::ShowHelpTopicDialog(const GURL& topic_url) {

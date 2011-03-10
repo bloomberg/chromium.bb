@@ -54,7 +54,8 @@ class HelpAppLauncher : public LoginHtmlDialog::Delegate,
   // Checks whether local help file with |filename| exists
   // and opens it in a dialog if it does.
   // Executed on a FILE thread.
-  void FindStaticHelpTopic(const std::string& filename);
+  void FindStaticHelpTopic(const std::string& filename,
+                           const std::string& locale);
 
   // Shows help topic dialog for specified GURL.
   void ShowHelpTopicDialog(const GURL& topic_url);
