@@ -450,7 +450,12 @@ TEST_F(SessionRestoreUITest, TwoWindowsCloseOneRestoreOnlyOne) {
 // process-per-site and process-per-site-instance, because we treat the new tab
 // as a special case in process-per-site-instance so that it only ever uses one
 // process.)
-TEST_F(SessionRestoreUITest, ShareProcessesOnRestore) {
+//
+// Flaky:  http://http://code.google.com/p/chromium/issues/detail?id=52022
+// Unfortunately, the fix at http://http://codereview.chromium.org/6546078
+// breaks NTP background image refreshing, so ThemeSource had to revert to
+// replacing the existing data source.
+TEST_F(SessionRestoreUITest, FLAKY_ShareProcessesOnRestore) {
   if (ProxyLauncher::in_process_renderer()) {
     // No point in running this test in single process mode.
     return;
