@@ -20,6 +20,7 @@ node = env.BrowserTester(
     files=['${SCONSTRUCT_DIR}/tests/prebuilt/x86/srpc_hw.nexe',
            '${SCONSTRUCT_DIR}/tests/prebuilt/x64/srpc_hw.nexe',
            '${SCONSTRUCT_DIR}/tests/prebuilt/arm/srpc_hw.nexe',
+           '${SCONSTRUCT_DIR}/tests/prebuilt/srpc_hw.nmf',
            env.File('multiarch.html'),
            env.File('multiarch.js'),
            ],

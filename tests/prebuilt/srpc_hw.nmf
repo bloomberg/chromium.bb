@@ -1,0 +1,7 @@
+{
+  "nexes": {
+    "x86-64": "/tests/prebuilt/x64/srpc_hw.nexe",
+    "x86-32": "/tests/prebuilt/x86/srpc_hw.nexe",
+    "ARM": "/tests/prebuilt/arm/srpc_hw.nexe"
+  }
+}
