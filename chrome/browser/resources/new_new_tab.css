@@ -456,9 +456,14 @@ html[dir=rtl] .section-close-button {
 }
 
 #closed-sections-bar {
-  bottom: 14px;
   position: fixed;
   text-align: end;
+}
+
+/* closed-sections-bar is bottom aligned for non-ChromeOS build. On ChromeOS,
+it goes right under the sections. */
+#closed-sections-bar:not([chromeos]) {
+  bottom: 14px;
 }
 
 #closed-sections-bar > button {
