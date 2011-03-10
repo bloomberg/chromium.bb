@@ -74,6 +74,7 @@ enum IPCMessageStart {
   ResourceMsgStart,
   FileSystemMsgStart,
   ChildProcessMsgStart,
+  ClipboardMsgStart,
 };
 
 class DictionaryValue;

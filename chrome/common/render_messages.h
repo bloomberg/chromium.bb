@@ -23,7 +23,6 @@
 #include "content/common/common_param_traits.h"
 #include "ipc/ipc_message_utils.h"
 #include "ipc/ipc_platform_file.h"                     // ifdefed typedef.
-#include "ui/base/clipboard/clipboard.h"                   // enum
 #include "webkit/appcache/appcache_interfaces.h"  // enum appcache::Status
 
 #if defined(OS_MACOSX)
@@ -353,42 +352,6 @@ struct ParamTraits<URLPattern> {
   static void Write(Message* m, const param_type& p);
   static bool Read(const Message* m, void** iter, param_type* p);
   static void Log(const param_type& p, std::string* l);
-};
-
-template <>
-struct ParamTraits<ui::Clipboard::Buffer> {
-  typedef ui::Clipboard::Buffer param_type;
-  static void Write(Message* m, const param_type& p) {
-    m->WriteInt(p);
-  }
-  static bool Read(const Message* m, void** iter, param_type* p) {
-    int buffer;
-    if (!m->ReadInt(iter, &buffer) || !ui::Clipboard::IsValidBuffer(buffer))
-      return false;
-    *p = ui::Clipboard::FromInt(buffer);
-    return true;
-  }
-  static void Log(const param_type& p, std::string* l) {
-    std::string type;
-    switch (p) {
-      case ui::Clipboard::BUFFER_STANDARD:
-        type = "BUFFER_STANDARD";
-        break;
-#if defined(USE_X11)
-      case ui::Clipboard::BUFFER_SELECTION:
-        type = "BUFFER_SELECTION";
-        break;
-#endif
-      case ui::Clipboard::BUFFER_DRAG:
-        type = "BUFFER_DRAG";
-        break;
-      default:
-        type = "UNKNOWN";
-        break;
-    }
-
-    LogParam(type, l);
-  }
 };
 
 // Traits for EditCommand structure.

@@ -74,6 +74,7 @@
 #include "content/browser/plugin_service.h"
 #include "content/browser/renderer_host/audio_renderer_host.h"
 #include "content/browser/renderer_host/blob_message_filter.h"
+#include "content/browser/renderer_host/clipboard_message_filter.h"
 #include "content/browser/renderer_host/database_message_filter.h"
 #include "content/browser/renderer_host/file_utilities_message_filter.h"
 #include "content/browser/renderer_host/gpu_message_filter.h"
@@ -453,6 +454,7 @@ void BrowserRenderProcessHost::CreateMessageFilters() {
   channel_->AddFilter(new AudioRendererHost());
   channel_->AddFilter(
       new AppCacheDispatcherHost(profile()->GetRequestContext(), id()));
+  channel_->AddFilter(new ClipboardMessageFilter());
   channel_->AddFilter(new DOMStorageMessageFilter(id(), profile()));
   channel_->AddFilter(new IndexedDBDispatcherHost(id(), profile()));
   channel_->AddFilter(

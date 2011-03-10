@@ -12,6 +12,8 @@
 #include "base/file_path.h"
 #include "base/nullable_string16.h"
 #include "base/platform_file.h"
+#include "base/process.h"
+#include "base/shared_memory.h"
 #include "base/sync_socket.h"
 #include "chrome/common/content_settings.h"
 #include "chrome/common/extensions/extension.h"
@@ -1448,52 +1450,7 @@ IPC_SYNC_MESSAGE_ROUTED1_0(ViewHostMsg_DestroyPluginContainer,
                            gfx::PluginWindowHandle /* id */)
 #endif
 
-// Clipboard IPC messages
-
-// This message is used when the object list does not contain a bitmap.
-IPC_MESSAGE_CONTROL1(ViewHostMsg_ClipboardWriteObjectsAsync,
-    ui::Clipboard::ObjectMap /* objects */)
-// This message is used when the object list contains a bitmap.
-// It is synchronized so that the renderer knows when it is safe to
-// free the shared memory used to transfer the bitmap.
-IPC_SYNC_MESSAGE_CONTROL2_0(ViewHostMsg_ClipboardWriteObjectsSync,
-    ui::Clipboard::ObjectMap /* objects */,
-    base::SharedMemoryHandle /* bitmap handle */)
-IPC_SYNC_MESSAGE_CONTROL2_1(ViewHostMsg_ClipboardIsFormatAvailable,
-                            std::string /* format */,
-                            ui::Clipboard::Buffer /* buffer */,
-                            bool /* result */)
-IPC_SYNC_MESSAGE_CONTROL1_1(ViewHostMsg_ClipboardReadText,
-                            ui::Clipboard::Buffer /* buffer */,
-                            string16 /* result */)
-IPC_SYNC_MESSAGE_CONTROL1_1(ViewHostMsg_ClipboardReadAsciiText,
-                            ui::Clipboard::Buffer  /* buffer */,
-                            std::string /* result */)
-IPC_SYNC_MESSAGE_CONTROL1_2(ViewHostMsg_ClipboardReadHTML,
-                            ui::Clipboard::Buffer  /* buffer */,
-                            string16 /* markup */,
-                            GURL /* url */)
-
-IPC_SYNC_MESSAGE_CONTROL1_3(ViewHostMsg_ClipboardReadAvailableTypes,
-                            ui::Clipboard::Buffer /* buffer */,
-                            bool /* result */,
-                            std::vector<string16> /* types */,
-                            bool /* contains filenames */)
-IPC_SYNC_MESSAGE_CONTROL2_3(ViewHostMsg_ClipboardReadData,
-                            ui::Clipboard::Buffer /* buffer */,
-                            string16 /* type */,
-                            bool /* succeeded */,
-                            string16 /* data */,
-                            string16 /* metadata */)
-IPC_SYNC_MESSAGE_CONTROL1_2(ViewHostMsg_ClipboardReadFilenames,
-                            ui::Clipboard::Buffer /* buffer */,
-                            bool /* result */,
-                            std::vector<string16> /* filenames */)
-
 #if defined(OS_MACOSX)
-IPC_MESSAGE_CONTROL1(ViewHostMsg_ClipboardFindPboardWriteStringAsync,
-    string16 /* text */)
-
 // Request that the browser load a font into shared memory for us.
 IPC_SYNC_MESSAGE_CONTROL1_2(ViewHostMsg_LoadFont,
                            FontDescriptor /* font to load */,

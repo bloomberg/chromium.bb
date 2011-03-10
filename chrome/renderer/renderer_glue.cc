@@ -18,6 +18,7 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/chrome_version_info.h"
+#include "chrome/common/clipboard_messages.h"
 #include "chrome/common/render_messages.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/plugin/npobject_util.h"
@@ -115,14 +116,14 @@ ScopedClipboardWriterGlue::~ScopedClipboardWriterGlue() {
 
   if (shared_buf_) {
     RenderThread::current()->Send(
-        new ViewHostMsg_ClipboardWriteObjectsSync(objects_,
+        new ClipboardHostMsg_WriteObjectsSync(objects_,
                 shared_buf_->handle()));
     delete shared_buf_;
     return;
   }
 
   RenderThread::current()->Send(
-      new ViewHostMsg_ClipboardWriteObjectsAsync(objects_));
+      new ClipboardHostMsg_WriteObjectsAsync(objects_));
 }
 
 namespace webkit_glue {
@@ -161,23 +162,23 @@ bool ClipboardIsFormatAvailable(const ui::Clipboard::FormatType& format,
                                 ui::Clipboard::Buffer buffer) {
   bool result;
   RenderThread::current()->Send(
-      new ViewHostMsg_ClipboardIsFormatAvailable(format, buffer, &result));
+      new ClipboardHostMsg_IsFormatAvailable(format, buffer, &result));
   return result;
 }
 
 void ClipboardReadText(ui::Clipboard::Buffer buffer, string16* result) {
-  RenderThread::current()->Send(new ViewHostMsg_ClipboardReadText(buffer,
+  RenderThread::current()->Send(new ClipboardHostMsg_ReadText(buffer,
                                                                   result));
 }
 
 void ClipboardReadAsciiText(ui::Clipboard::Buffer buffer, std::string* result) {
-  RenderThread::current()->Send(new ViewHostMsg_ClipboardReadAsciiText(buffer,
+  RenderThread::current()->Send(new ClipboardHostMsg_ReadAsciiText(buffer,
                                                                        result));
 }
 
 void ClipboardReadHTML(ui::Clipboard::Buffer buffer, string16* markup,
                        GURL* url) {
-  RenderThread::current()->Send(new ViewHostMsg_ClipboardReadHTML(buffer,
+  RenderThread::current()->Send(new ClipboardHostMsg_ReadHTML(buffer,
                                                                   markup, url));
 }
 
@@ -185,7 +186,7 @@ bool ClipboardReadAvailableTypes(ui::Clipboard::Buffer buffer,
                                  std::vector<string16>* types,
                                  bool* contains_filenames) {
   bool result = false;
-  RenderThread::current()->Send(new ViewHostMsg_ClipboardReadAvailableTypes(
+  RenderThread::current()->Send(new ClipboardHostMsg_ReadAvailableTypes(
       buffer, &result, types, contains_filenames));
   return result;
 }
@@ -193,7 +194,7 @@ bool ClipboardReadAvailableTypes(ui::Clipboard::Buffer buffer,
 bool ClipboardReadData(ui::Clipboard::Buffer buffer, const string16& type,
                        string16* data, string16* metadata) {
   bool result = false;
-  RenderThread::current()->Send(new ViewHostMsg_ClipboardReadData(
+  RenderThread::current()->Send(new ClipboardHostMsg_ReadData(
       buffer, type, &result, data, metadata));
   return result;
 }
@@ -201,7 +202,7 @@ bool ClipboardReadData(ui::Clipboard::Buffer buffer, const string16& type,
 bool ClipboardReadFilenames(ui::Clipboard::Buffer buffer,
                             std::vector<string16>* filenames) {
   bool result;
-  RenderThread::current()->Send(new ViewHostMsg_ClipboardReadFilenames(
+  RenderThread::current()->Send(new ClipboardHostMsg_ReadFilenames(
       buffer, &result, filenames));
   return result;
 }

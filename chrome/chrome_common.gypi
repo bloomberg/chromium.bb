@@ -41,6 +41,7 @@
           'common/chrome_counters.h',
           'common/chrome_version_info.cc',
           'common/chrome_version_info.h',
+          'common/clipboard_messages.h',
           'common/common_message_generator.cc',
           'common/common_message_generator.h',
           'common/common_param_traits.cc',

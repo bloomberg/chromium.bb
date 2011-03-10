@@ -16,7 +16,6 @@
 #include "chrome/browser/automation/automation_resource_message_filter.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_plugin_browsing_context.h"
-#include "chrome/browser/clipboard_dispatcher.h"
 #include "chrome/browser/download/download_types.h"
 #include "chrome/browser/extensions/extension_message_service.h"
 #include "chrome/browser/metrics/histogram_synchronizer.h"
@@ -121,24 +120,6 @@ class ContextMenuMessageDispatcher : public Task {
   const ViewHostMsg_ContextMenu context_menu_message_;
 
   DISALLOW_COPY_AND_ASSIGN(ContextMenuMessageDispatcher);
-};
-
-// Completes a clipboard write initiated by the renderer. The write must be
-// performed on the UI thread because the clipboard service from the IO thread
-// cannot create windows so it cannot be the "owner" of the clipboard's
-// contents.
-class WriteClipboardTask : public Task {
- public:
-  explicit WriteClipboardTask(ui::Clipboard::ObjectMap* objects)
-      : objects_(objects) {}
-  ~WriteClipboardTask() {}
-
-  void Run() {
-    g_browser_process->clipboard()->WriteObjects(*objects_.get());
-  }
-
- private:
-  scoped_ptr<ui::Clipboard::ObjectMap> objects_;
 };
 
 // Common functionality for converting a sync renderer message to a callback
@@ -383,28 +364,6 @@ bool RenderMessageFilter::OnMessageReceived(const IPC::Message& message,
     IPC_MESSAGE_HANDLER(ViewHostMsg_RendererHistograms, OnRendererHistograms)
     IPC_MESSAGE_HANDLER_GENERIC(ViewHostMsg_UpdateRect,
         render_widget_helper_->DidReceiveUpdateMsg(message))
-    IPC_MESSAGE_HANDLER(ViewHostMsg_ClipboardWriteObjectsAsync,
-                        OnClipboardWriteObjectsAsync)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_ClipboardWriteObjectsSync,
-                        OnClipboardWriteObjectsSync)
-    IPC_MESSAGE_HANDLER_DELAY_REPLY(ViewHostMsg_ClipboardIsFormatAvailable,
-                                    OnClipboardIsFormatAvailable)
-    IPC_MESSAGE_HANDLER_DELAY_REPLY(ViewHostMsg_ClipboardReadText,
-                                    OnClipboardReadText)
-    IPC_MESSAGE_HANDLER_DELAY_REPLY(ViewHostMsg_ClipboardReadAsciiText,
-                                    OnClipboardReadAsciiText)
-    IPC_MESSAGE_HANDLER_DELAY_REPLY(ViewHostMsg_ClipboardReadHTML,
-                                    OnClipboardReadHTML)
-#if defined(OS_MACOSX)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_ClipboardFindPboardWriteStringAsync,
-                        OnClipboardFindPboardWriteString)
-#endif
-    IPC_MESSAGE_HANDLER_DELAY_REPLY(ViewHostMsg_ClipboardReadAvailableTypes,
-                                    OnClipboardReadAvailableTypes)
-    IPC_MESSAGE_HANDLER_DELAY_REPLY(ViewHostMsg_ClipboardReadData,
-                                    OnClipboardReadData)
-    IPC_MESSAGE_HANDLER_DELAY_REPLY(ViewHostMsg_ClipboardReadFilenames,
-                                    OnClipboardReadFilenames)
     IPC_MESSAGE_HANDLER(ViewHostMsg_CheckNotificationPermission,
                         OnCheckNotificationPermission)
     IPC_MESSAGE_HANDLER(ViewHostMsg_RevealFolderInOS, OnRevealFolderInOS)
@@ -798,125 +757,6 @@ void RenderMessageFilter::OnDownloadUrl(const IPC::Message& message,
                                            context);
 }
 
-void RenderMessageFilter::OnClipboardWriteObjectsSync(
-    const ui::Clipboard::ObjectMap& objects,
-    base::SharedMemoryHandle bitmap_handle) {
-  DCHECK(base::SharedMemory::IsHandleValid(bitmap_handle))
-      << "Bad bitmap handle";
-  // We cannot write directly from the IO thread, and cannot service the IPC
-  // on the UI thread. We'll copy the relevant data and get a handle to any
-  // shared memory so it doesn't go away when we resume the renderer, and post
-  // a task to perform the write on the UI thread.
-  ui::Clipboard::ObjectMap* long_living_objects =
-      new ui::Clipboard::ObjectMap(objects);
-
-  // Splice the shared memory handle into the clipboard data.
-  ui::Clipboard::ReplaceSharedMemHandle(long_living_objects, bitmap_handle,
-                                        peer_handle());
-
-  BrowserThread::PostTask(
-      BrowserThread::UI,
-      FROM_HERE,
-      new WriteClipboardTask(long_living_objects));
-}
-
-void RenderMessageFilter::OnClipboardWriteObjectsAsync(
-    const ui::Clipboard::ObjectMap& objects) {
-  // We cannot write directly from the IO thread, and cannot service the IPC
-  // on the UI thread. We'll copy the relevant data and post a task to preform
-  // the write on the UI thread.
-  ui::Clipboard::ObjectMap* long_living_objects =
-      new ui::Clipboard::ObjectMap(objects);
-
-  // This async message doesn't support shared-memory based bitmaps; they must
-  // be removed otherwise we might dereference a rubbish pointer.
-  long_living_objects->erase(ui::Clipboard::CBF_SMBITMAP);
-
-  BrowserThread::PostTask(
-      BrowserThread::UI,
-      FROM_HERE,
-      new WriteClipboardTask(long_living_objects));
-}
-
-#if !defined(USE_X11)
-// On non-X11 platforms, clipboard actions can be performed on the IO thread.
-// On X11, since the clipboard is linked with GTK, we either have to do this
-// with GTK on the UI thread, or with Xlib on the BACKGROUND_X11 thread. In an
-// ideal world, we would do the latter. However, for now we're going to
-// terminate these calls on the UI thread. This risks deadlock in the case of
-// plugins, but it's better than crashing which is what doing on the IO thread
-// gives us.
-//
-// See resource_message_filter_gtk.cc for the Linux implementation of these
-// functions.
-
-void RenderMessageFilter::OnClipboardIsFormatAvailable(
-    ui::Clipboard::FormatType format, ui::Clipboard::Buffer buffer,
-    IPC::Message* reply) {
-  const bool result = GetClipboard()->IsFormatAvailable(format, buffer);
-  ViewHostMsg_ClipboardIsFormatAvailable::WriteReplyParams(reply, result);
-  Send(reply);
-}
-
-void RenderMessageFilter::OnClipboardReadText(ui::Clipboard::Buffer buffer,
-                                              IPC::Message* reply) {
-  string16 result;
-  GetClipboard()->ReadText(buffer, &result);
-  ViewHostMsg_ClipboardReadText::WriteReplyParams(reply, result);
-  Send(reply);
-}
-
-void RenderMessageFilter::OnClipboardReadAsciiText(ui::Clipboard::Buffer buffer,
-                                                   IPC::Message* reply) {
-  std::string result;
-  GetClipboard()->ReadAsciiText(buffer, &result);
-  ViewHostMsg_ClipboardReadAsciiText::WriteReplyParams(reply, result);
-  Send(reply);
-}
-
-void RenderMessageFilter::OnClipboardReadHTML(ui::Clipboard::Buffer buffer,
-                                              IPC::Message* reply) {
-  std::string src_url_str;
-  string16 markup;
-  GetClipboard()->ReadHTML(buffer, &markup, &src_url_str);
-  const GURL src_url = GURL(src_url_str);
-
-  ViewHostMsg_ClipboardReadHTML::WriteReplyParams(reply, markup, src_url);
-  Send(reply);
-}
-
-void RenderMessageFilter::OnClipboardReadAvailableTypes(
-    ui::Clipboard::Buffer buffer, IPC::Message* reply) {
-  std::vector<string16> types;
-  bool contains_filenames = false;
-  bool result = ClipboardDispatcher::ReadAvailableTypes(
-      buffer, &types, &contains_filenames);
-  ViewHostMsg_ClipboardReadAvailableTypes::WriteReplyParams(
-      reply, result, types, contains_filenames);
-  Send(reply);
-}
-
-void RenderMessageFilter::OnClipboardReadData(
-    ui::Clipboard::Buffer buffer, const string16& type, IPC::Message* reply) {
-  string16 data;
-  string16 metadata;
-  bool result = ClipboardDispatcher::ReadData(buffer, type, &data, &metadata);
-  ViewHostMsg_ClipboardReadData::WriteReplyParams(
-      reply, result, data, metadata);
-  Send(reply);
-}
-
-void RenderMessageFilter::OnClipboardReadFilenames(
-    ui::Clipboard::Buffer buffer, IPC::Message* reply) {
-  std::vector<string16> filenames;
-  bool result = ClipboardDispatcher::ReadFilenames(buffer, &filenames);
-  ViewHostMsg_ClipboardReadFilenames::WriteReplyParams(
-      reply, result, filenames);
-  Send(reply);
-}
-
-#endif
-
 void RenderMessageFilter::OnCheckNotificationPermission(
     const GURL& source_url, int* result) {
   *result = WebKit::WebNotificationPresenter::PermissionNotAllowed;
@@ -1047,15 +887,6 @@ void RenderMessageFilter::OnResolveProxyCompleted(
     const std::string& proxy_list) {
   ViewHostMsg_ResolveProxy::WriteReplyParams(reply_msg, result, proxy_list);
   Send(reply_msg);
-}
-
-// static
-ui::Clipboard* RenderMessageFilter::GetClipboard() {
-  // We have a static instance of the clipboard service for use by all message
-  // filters.  This instance lives for the life of the browser processes.
-  static ui::Clipboard* clipboard = new ui::Clipboard;
-
-  return clipboard;
 }
 
 ChromeURLRequestContext* RenderMessageFilter::GetRequestContextForURL(

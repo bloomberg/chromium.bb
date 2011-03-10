@@ -2,11 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/renderer_host/render_message_filter.h"
+#include "content/browser/renderer_host/clipboard_message_filter.h"
 
 #import <Cocoa/Cocoa.h>
 
-#include "base/message_loop.h"
 #include "base/sys_string_conversions.h"
 #import "chrome/browser/ui/cocoa/find_pasteboard.h"
 #include "content/browser/browser_thread.h"
@@ -30,8 +29,7 @@ class WriteFindPboardTask : public Task {
 };
 
 // Called on the IO thread.
-void RenderMessageFilter::OnClipboardFindPboardWriteString(
-    const string16& text) {
+void ClipboardMessageFilter::OnFindPboardWriteString(const string16& text) {
   if (text.length() <= kMaxFindPboardStringLength) {
     NSString* nsText = base::SysUTF16ToNSString(text);
     if (nsText) {

@@ -29,6 +29,7 @@
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/common/clipboard_messages.h"
 #include "chrome/common/database_messages.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_constants.h"
@@ -1547,7 +1548,7 @@ void RenderView::OnCopyToFindPboard() {
   if (frame->hasSelection()) {
     string16 selection = frame->selectionAsText();
     RenderThread::current()->Send(
-        new ViewHostMsg_ClipboardFindPboardWriteStringAsync(selection));
+        new ClipboardHostMsg_FindPboardWriteStringAsync(selection));
   }
 
   UserMetricsRecordAction("CopyToFindPboard");
