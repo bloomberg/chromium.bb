@@ -112,8 +112,9 @@ class PluginGroup;
 }  // namespace npapi
 
 namespace ppapi {
-class PluginInstance;
 class FullscreenContainer;
+class PluginInstance;
+class PluginModule;
 }  // namespace ppapi
 
 }  // namespace webkit
@@ -330,11 +331,6 @@ class RenderView : public RenderWidget,
   // plugin. See default_plugin_shared.h for possible values of |status|.
   void OnMissingPluginStatus(WebPluginDelegateProxy* delegate,
                              int status);
-
-  // Notification that the given pepper plugin we created is being deleted the
-  // pointer must not be dereferenced as this is called from the destructor of
-  // the plugin.
-  void OnPepperPluginDestroy(WebPluginDelegatePepper* pepper_plugin);
 
   // Creates a fullscreen container for a pepper plugin instance.
   webkit::ppapi::FullscreenContainer* CreatePepperFullscreenContainer(
@@ -1303,10 +1299,6 @@ class RenderView : public RenderWidget,
   // we can enumerate them to send updates about things like window location
   // or tab focus and visibily. These are non-owning references.
   std::set<WebPluginDelegateProxy*> plugin_delegates_;
-
-  // A list of all Pepper v1 plugins that we've created that haven't been
-  // destroyed yet. Pepper v2 plugins are tracked by the pepper_delegate_.
-  std::set<WebPluginDelegatePepper*> current_oldstyle_pepper_plugins_;
 
   // Helper objects ------------------------------------------------------------
 

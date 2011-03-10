@@ -97,7 +97,6 @@
 #include "chrome/renderer/visitedlink_slave.h"
 #include "chrome/renderer/web_ui_bindings.h"
 #include "chrome/renderer/webgraphicscontext3d_command_buffer_impl.h"
-#include "chrome/renderer/webplugin_delegate_pepper.h"
 #include "chrome/renderer/webplugin_delegate_proxy.h"
 #include "chrome/renderer/websharedworker_proxy.h"
 #include "chrome/renderer/webworker_proxy.h"
@@ -3936,46 +3935,15 @@ webkit::npapi::WebPluginDelegate* RenderView::CreatePluginDelegate(
   if (!PluginChannelHost::IsListening())
     return NULL;
 
-  bool use_pepper_host = false;
   bool in_process_plugin = RenderProcess::current()->UseInProcessPlugins();
-  // Check for trusted Pepper plugins.
-  const char kPepperPrefix[] = "pepper-";
-  if (StartsWithASCII(mime_type, kPepperPrefix, true)) {
-    if (CommandLine::ForCurrentProcess()->
-            HasSwitch(switches::kInternalPepper)) {
-      in_process_plugin = true;
-      use_pepper_host = true;
-    } else {
-      // In process Pepper plugins must be explicitly enabled.
-      return NULL;
-    }
-  } else {
-    FilePath internal_pdf_path;
-    PathService::Get(chrome::FILE_PDF_PLUGIN, &internal_pdf_path);
-    if (file_path == internal_pdf_path) {
-      in_process_plugin = true;
-      use_pepper_host = true;
-    }
-  }
-
   if (in_process_plugin) {
-    if (use_pepper_host) {
-      WebPluginDelegatePepper* pepper_plugin =
-           WebPluginDelegatePepper::Create(file_path, mime_type, AsWeakPtr());
-      if (!pepper_plugin)
-        return NULL;
-
-      current_oldstyle_pepper_plugins_.insert(pepper_plugin);
-      return pepper_plugin;
-    } else {
 #if defined(OS_WIN)  // In-proc plugins aren't supported on Linux or Mac.
-      return webkit::npapi::WebPluginDelegateImpl::Create(
-          file_path, mime_type, gfx::NativeViewFromId(host_window_));
+    return webkit::npapi::WebPluginDelegateImpl::Create(
+        file_path, mime_type, gfx::NativeViewFromId(host_window_));
 #else
-      NOTIMPLEMENTED();
-      return NULL;
+    NOTIMPLEMENTED();
+    return NULL;
 #endif
-    }
   }
 
   return new WebPluginDelegateProxy(mime_type, AsWeakPtr());
@@ -4577,35 +4545,6 @@ void RenderView::InsertCSS(const std::wstring& frame_xpath,
   web_frame->insertStyleText(WebString::fromUTF8(css), WebString::fromUTF8(id));
 }
 
-void RenderView::OnPepperPluginDestroy(
-    WebPluginDelegatePepper* pepper_plugin) {
-  std::set<WebPluginDelegatePepper*>::iterator found_pepper =
-      current_oldstyle_pepper_plugins_.find(pepper_plugin);
-  if (found_pepper == current_oldstyle_pepper_plugins_.end()) {
-    NOTREACHED();
-    return;
-  }
-  current_oldstyle_pepper_plugins_.erase(found_pepper);
-
-  // The plugin could have been destroyed while it was waiting for a file
-  // choose callback, so check all pending completion callbacks and NULL them.
-  for (std::deque< linked_ptr<PendingFileChooser> >::iterator i =
-           file_chooser_completions_.begin();
-       i != file_chooser_completions_.end(); /* nothing */) {
-    if ((*i)->completion == pepper_plugin) {
-      // We NULL the first one instead of deleting it because the plugin might
-      // be the one waiting for a file choose callback. If the callback later
-      // comes, we don't want to send the result to the next callback in line.
-      if (i == file_chooser_completions_.begin())
-        (*i)->completion = NULL;
-      else
-        i = file_chooser_completions_.erase(i);
-    } else {
-      ++i;
-    }
-  }
-}
-
 void RenderView::OnScriptEvalRequest(const string16& frame_xpath,
                                      const string16& jscript,
                                      int id,
@@ -5084,14 +5023,6 @@ void RenderView::OnResize(const gfx::Size& new_size,
 void RenderView::DidInitiatePaint() {
   // Notify the pepper plugins that we started painting.
   pepper_delegate_.ViewInitiatedPaint();
-
-  // Notify any "old-style" pepper plugins that we started painting. This is
-  // used for internal bookkeeping only, so we know that the set can not change
-  // under us.
-  for (std::set<WebPluginDelegatePepper*>::iterator i =
-           current_oldstyle_pepper_plugins_.begin();
-       i != current_oldstyle_pepper_plugins_.end(); ++i)
-    (*i)->RenderViewInitiatedPaint();
 }
 
 void RenderView::DidFlushPaint() {
@@ -5100,23 +5031,6 @@ void RenderView::DidFlushPaint() {
   // our set, possibly invalidating the iterator. So we iterate on a copy that
   // won't change out from under us.
   pepper_delegate_.ViewFlushedPaint();
-
-  // Notify any old-style pepper plugins that we painted. This will call into
-  // the plugin, and we it may ask to close itself as a result. This will, in
-  // turn, modify our set, possibly invalidating the iterator. So we iterate on
-  // a copy that won't change out from under us.
-  // This should be deleted when we don't support old Pepper anymore.
-  std::set<WebPluginDelegatePepper*> plugins = current_oldstyle_pepper_plugins_;
-  for (std::set<WebPluginDelegatePepper*>::iterator i = plugins.begin();
-       i != plugins.end(); ++i) {
-    // The copy above makes sure our iterator is never invalid if some plugins
-    // are destroyed. But some plugin may decide to close all of its views in
-    // response to a paint in one of them, so we need to make sure each one is
-    // still "current" before using it.
-    if (current_oldstyle_pepper_plugins_.find(*i) !=
-        current_oldstyle_pepper_plugins_.end())
-      (*i)->RenderViewFlushedPaint();
-  }
 
   WebFrame* main_frame = webview()->mainFrame();
 

@@ -723,7 +723,6 @@ void BrowserRenderProcessHost::PropagateBrowserCommandLineToRenderer(
     switches::kInProcessPlugins,
 #endif  // GOOGLE_CHROME_BUILD
     switches::kInProcessWebGL,
-    switches::kInternalPepper,
     switches::kJavaScriptFlags,
     switches::kLoggingLevel,
     switches::kMemoryProfiling,

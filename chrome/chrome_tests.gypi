@@ -2294,7 +2294,6 @@
         'renderer/autofill/form_manager_browsertest.cc',
         'renderer/autofill/password_autofill_manager_unittest.cc',
         'renderer/page_click_tracker_browsertest.cc',
-        'renderer/pepper_devices_browsertest.cc',
         'renderer/render_view_browsertest.cc',
         'renderer/render_view_browsertest_mac.mm',
         'renderer/render_widget_browsertest.cc',
