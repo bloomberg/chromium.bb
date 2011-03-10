@@ -544,8 +544,8 @@ GLIBC_CFLAGS=-O2 -g
 LIB_BITS?=64
 ARCH_DEST=$(DESTDIR)$(SDKROOT)/$(if $(filter 32,$(LIB_BITS)),nacl,nacl64)
 
-BUILD/stamp-glibc32: SRC/stamp-glibc SRC/stamp-linux-headers \
-  BUILD/stamp-$(CROSSARCH)-pregcc-standalone
+BUILD/stamp-glibc32: BUILD/stamp-$(CROSSARCH)-pregcc-standalone \
+  | SRC/glibc SRC/linux-headers-for-nacl
 	rm -rf BUILD/build-glibc32
 	mkdir -p BUILD/build-glibc32/lib
 	cd BUILD/build-glibc32 && ../../SRC/glibc/configure \
@@ -563,8 +563,8 @@ BUILD/stamp-glibc32: SRC/stamp-glibc SRC/stamp-linux-headers \
 	$(MAKE) -C BUILD/build-glibc32 DESTDIR=$(DESTDIR) install
 	touch $@
 
-BUILD/stamp-glibc64: SRC/stamp-glibc SRC/stamp-linux-headers \
-  BUILD/stamp-$(CROSSARCH)-pregcc-standalone
+BUILD/stamp-glibc64: BUILD/stamp-$(CROSSARCH)-pregcc-standalone \
+  | SRC/glibc SRC/linux-headers-for-nacl
 	rm -rf BUILD/build-glibc64
 	mkdir -p BUILD/build-glibc64
 	cd BUILD/build-glibc64 && ../../SRC/glibc/configure \
