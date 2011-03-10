@@ -2,7 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="zh-CN">
 <translation id="IDS_STANDARD_FONT_FAMILY">Droid Sans Fallback</translation>
-<translation id="IDS_FIXED_FONT_FAMILY">NSong ASC</translation>
+<translation id="IDS_FIXED_FONT_FAMILY">Monospace</translation>
 <translation id="IDS_SERIF_FONT_FAMILY">Song ASC</translation>
 <translation id="IDS_SANS_SERIF_FONT_FAMILY">Droid Sans Fallback</translation>
 <translation id="IDS_MINIMUM_FONT_SIZE">12</translation>

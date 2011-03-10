@@ -2,8 +2,8 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="zh-TW">
 <translation id="IDS_STANDARD_FONT_FAMILY">Droid Sans Fallback</translation>
-<translation id="IDS_FIXED_FONT_FAMILY">MingLiu</translation>
-<translation id="IDS_SERIF_FONT_FAMILY">PMingLiu</translation>
+<translation id="IDS_FIXED_FONT_FAMILY">Monospace</translation>
+<translation id="IDS_SERIF_FONT_FAMILY">PMingLiU</translation>
 <translation id="IDS_SANS_SERIF_FONT_FAMILY">Droid Sans Fallback</translation>
 <translation id="IDS_MINIMUM_FONT_SIZE">12</translation>
 <translation id="IDS_MINIMUM_LOGICAL_FONT_SIZE">12</translation>

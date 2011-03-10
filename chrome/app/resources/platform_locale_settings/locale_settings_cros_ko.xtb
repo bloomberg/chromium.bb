@@ -2,7 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="ko">
 <translation id="IDS_STANDARD_FONT_FAMILY">Gulim</translation>
-<translation id="IDS_FIXED_FONT_FAMILY">Gulimche</translation>
+<translation id="IDS_FIXED_FONT_FAMILY">Monospace</translation>
 <translation id="IDS_SERIF_FONT_FAMILY">Batang</translation>
 <translation id="IDS_SANS_SERIF_FONT_FAMILY">Gulim</translation>
 <translation id="IDS_MINIMUM_FONT_SIZE">10</translation>
