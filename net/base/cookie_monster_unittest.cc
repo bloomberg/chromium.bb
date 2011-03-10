@@ -1944,6 +1944,7 @@ TEST(CookieMonsterTest, CookieOrdering) {
     EXPECT_EQ("b", cookies[i++].Name());
     EXPECT_EQ("c", cookies[i++].Name());
   }
+  cm->ValidateMap();  // Quick check that ValidateMap() doesn't fail.
 }
 
 
@@ -2030,11 +2031,14 @@ TEST(CookieMonsterTest, GarbageCollectionTriggers) {
               test_case->num_cookies, test_case->num_old_cookies,
               CookieMonster::kSafeFromGlobalPurgeDays * 2));
       cm->SetExpiryAndKeyScheme(schemes[recent_scheme]);
+      cm->ValidateMap();
       EXPECT_EQ(test_case->expected_initial_cookies,
                 static_cast<int>(cm->GetAllCookies().size()))
           << "For test case " << ci;
       // Will trigger GC
+      cm->ValidateMap();
       cm->SetCookie(GURL("http://newdomain.com"), "b=2");
+      cm->ValidateMap();
       EXPECT_EQ(test_case->expected_cookies_after_set[recent_scheme],
                 static_cast<int>((cm->GetAllCookies().size())))
           << "For test case (" << ci << ", " << recent_scheme << ")";

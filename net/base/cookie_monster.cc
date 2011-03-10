@@ -799,6 +799,14 @@ CookieMonster* CookieMonster::GetCookieMonster() {
   return this;
 }
 
+void CookieMonster::ValidateMap() {
+  base::AutoLock autolock(lock_);
+  // Skipping InitIfNecessary() to allow validation before first use.
+
+  for (CookieMap::iterator it = cookies_.begin(); it != cookies_.end(); ++it)
+    CHECK(it->second);
+}
+
 CookieMonster::~CookieMonster() {
   DeleteAll(false);
 }

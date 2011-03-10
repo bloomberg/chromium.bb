@@ -114,6 +114,7 @@ void TabSpecificContentSettings::OnCookiesRead(
   typedef net::CookieList::const_iterator cookie_iterator;
   for (cookie_iterator cookie = cookie_list.begin();
        cookie != cookie_list.end(); ++cookie) {
+    container.cookies()->ValidateMap();
     container.cookies()->SetCookieWithDetails(url,
                                               cookie->Name(),
                                               cookie->Value(),
@@ -122,6 +123,7 @@ void TabSpecificContentSettings::OnCookiesRead(
                                               cookie->ExpiryDate(),
                                               cookie->IsSecure(),
                                               cookie->IsHttpOnly());
+    container.cookies()->ValidateMap();
   }
   if (blocked_by_policy)
     OnContentBlocked(CONTENT_SETTINGS_TYPE_COOKIES, std::string());
@@ -135,12 +137,16 @@ void TabSpecificContentSettings::OnCookieChanged(
     const net::CookieOptions& options,
     bool blocked_by_policy) {
   if (blocked_by_policy) {
+    blocked_local_shared_objects_.cookies()->ValidateMap();
     blocked_local_shared_objects_.cookies()->SetCookieWithOptions(
         url, cookie_line, options);
+    blocked_local_shared_objects_.cookies()->ValidateMap();
     OnContentBlocked(CONTENT_SETTINGS_TYPE_COOKIES, std::string());
   } else {
+    allowed_local_shared_objects_.cookies()->ValidateMap();
     allowed_local_shared_objects_.cookies()->SetCookieWithOptions(
         url, cookie_line, options);
+    allowed_local_shared_objects_.cookies()->ValidateMap();
     OnContentAccessed(CONTENT_SETTINGS_TYPE_COOKIES);
   }
 }
@@ -286,6 +292,7 @@ TabSpecificContentSettings::LocalSharedObjectsContainer::
 
 TabSpecificContentSettings::LocalSharedObjectsContainer::
     ~LocalSharedObjectsContainer() {
+  cookies_->ValidateMap();
 }
 
 void TabSpecificContentSettings::LocalSharedObjectsContainer::Reset() {

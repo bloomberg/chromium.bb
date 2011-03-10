@@ -230,6 +230,11 @@ class CookieMonster : public CookieStore {
 
   virtual CookieMonster* GetCookieMonster();
 
+  // Debugging method to perform various validation checks on the map.
+  // Currently just checking that there are no null CanonicalCookie pointers
+  // in the map.
+  void ValidateMap();
+
  private:
   // Testing support.
   // For SetCookieWithCreationTime.
