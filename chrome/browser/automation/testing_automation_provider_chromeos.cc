@@ -172,12 +172,21 @@ void TestingAutomationProvider::ConnectToWifiNetwork(
   }
 
   NetworkLibrary* network_library = CrosLibrary::Get()->GetNetworkLibrary();
-  if (!network_library->ConnectToWifiNetwork(
-      service_path, password, identity, certpath)) {
+  WifiNetwork* wifi = network_library->FindWifiNetworkByPath(service_path);
+  if (!wifi) {
     reply.SendError("Failed to connect");
     return;
   }
+  if (!password.empty())
+    wifi->SetPassphrase(password);
+  if (!identity.empty())
+    wifi->SetIdentity(identity);
+  if (!certpath.empty())
+    wifi->SetCertPath(certpath);
+  network_library->ConnectToWifiNetwork(service_path);
+
+  // TODO(stevenjb): Observe the network library and check for a successful
+  // connection.
 
   reply.SendSuccess(NULL);
 }
-
