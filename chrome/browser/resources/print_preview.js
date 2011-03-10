@@ -19,6 +19,7 @@ function load() {
     window.close();
   });
 
+  $('pages').addEventListener('input', selectPageRange);
   chrome.send('getPrinters');
   chrome.send('getPreview');
 };
@@ -152,6 +153,10 @@ function createPDFPlugin(url, pagesCount) {
     return;
   }
   pdfPlugin.onload('onPDFLoad()');
+}
+
+function selectPageRange() {
+  $('print-pages').checked = true;
 }
 
 window.addEventListener('DOMContentLoaded', load);

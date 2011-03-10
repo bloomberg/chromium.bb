@@ -5553,7 +5553,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
         Cancel
       </message>
       <message name="IDS_PRINT_PREVIEW_OPTION_ALL_PAGES" desc="Option to print all pages.">
-        all
+        All
       </message>
       <message name="IDS_PRINT_PREVIEW_OPTION_BW" desc="Option to print in black and white.">
         Black and white
@@ -5572,6 +5572,24 @@ Keep your key file in a safe place. You will need it to create new versions of y
       </message>
       <message name="IDS_PRINT_PREVIEW_OPTION_TWO_SIDED" desc="Option to do two-sided (duplex) printing.">
         two-sided
+      </message>
+      <message name="IDS_PRINT_PREVIEW_PAGES_LABEL" desc="Page range option label.">
+        Pages
+      </message>
+      <message name="IDS_PRINT_PREVIEW_LAYOUT_LABEL" desc="Layout option label.">
+        Layout
+      </message>
+      <message name="IDS_PRINT_PREVIEW_COPIES_LABEL" desc="Copies option label.">
+        Copies
+      </message>
+      <message name="IDS_PRINT_PREVIEW_EXAMPLE_PAGE_RANGE_TEXT" desc="Example page range text.">
+        e.g. 1-5, 8, 11-13
+      </message>
+      <message name="IDS_PRINT_PREVIEW_PAGE_RANGE_TEXT" desc="Aria-label page range text.">
+        page range text box
+      </message>
+      <message name="IDS_PRINT_PREVIEW_PAGE_RANGE_RADIO" desc="Aria-label page range radio.">
+        page range radio button
       </message>
 
       <!-- Load State -->

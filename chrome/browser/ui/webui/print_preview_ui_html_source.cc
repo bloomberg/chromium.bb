@@ -35,6 +35,12 @@ void SetLocalizedStrings(DictionaryValue* localized_strings) {
   localized_strings->SetString(std::string("cancelButton"),
       l10n_util::GetStringUTF8(IDS_PRINT_PREVIEW_CANCEL_BUTTON));
 
+  localized_strings->SetString(std::string("copiesLabel"),
+      l10n_util::GetStringUTF8(IDS_PRINT_PREVIEW_COPIES_LABEL));
+  localized_strings->SetString(std::string("examplePageRangeText"),
+      l10n_util::GetStringUTF8(IDS_PRINT_PREVIEW_EXAMPLE_PAGE_RANGE_TEXT));
+  localized_strings->SetString(std::string("layoutLabel"),
+      l10n_util::GetStringUTF8(IDS_PRINT_PREVIEW_LAYOUT_LABEL));
   localized_strings->SetString(std::string("optionAllPages"),
       l10n_util::GetStringUTF8(IDS_PRINT_PREVIEW_OPTION_ALL_PAGES));
   localized_strings->SetString(std::string("optionBw"),
@@ -49,6 +55,12 @@ void SetLocalizedStrings(DictionaryValue* localized_strings) {
       l10n_util::GetStringUTF8(IDS_PRINT_PREVIEW_OPTION_PORTRAIT));
   localized_strings->SetString(std::string("optionTwoSided"),
       l10n_util::GetStringUTF8(IDS_PRINT_PREVIEW_OPTION_TWO_SIDED));
+  localized_strings->SetString(std::string("pagesLabel"),
+      l10n_util::GetStringUTF8(IDS_PRINT_PREVIEW_PAGES_LABEL));
+  localized_strings->SetString(std::string("pageRangeTextBox"),
+      l10n_util::GetStringUTF8(IDS_PRINT_PREVIEW_PAGE_RANGE_TEXT));
+  localized_strings->SetString(std::string("pageRangeRadio"),
+      l10n_util::GetStringUTF8(IDS_PRINT_PREVIEW_PAGE_RANGE_RADIO));
 }
 
 }  // namespace

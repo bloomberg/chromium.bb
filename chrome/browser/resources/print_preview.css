@@ -91,3 +91,8 @@ select {
   border-color: transparent;
   padding: 0;
 }
+
+#example-text-div {
+  -webkit-margin-start: 26px;
+  color: gray;
+}
