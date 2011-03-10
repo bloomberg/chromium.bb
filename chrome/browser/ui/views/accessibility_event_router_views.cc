@@ -24,6 +24,8 @@
 #include "views/controls/menu/submenu_view.h"
 #include "views/controls/textfield/textfield.h"
 #include "views/view.h"
+#include "views/widget/native_widget.h"
+#include "views/widget/widget.h"
 #include "views/window/window.h"
 
 using views::FocusManager;
@@ -124,8 +126,9 @@ void AccessibilityEventRouterViews::DispatchAccessibilityNotification(
   Profile* profile = NULL;
   views::Window* window = view->GetWindow();
   if (window) {
-    profile = reinterpret_cast<Profile*>(window->GetNativeWindowProperty(
-        Profile::kProfileKey));
+    profile = reinterpret_cast<Profile*>(
+        window->AsWidget()->native_widget()->GetNativeWindowProperty(
+            Profile::kProfileKey));
   }
   if (!profile)
     profile = most_recent_profile_;

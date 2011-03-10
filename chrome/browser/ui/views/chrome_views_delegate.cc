@@ -15,6 +15,8 @@
 #include "chrome/common/pref_names.h"
 #include "ui/base/clipboard/clipboard.h"
 #include "ui/gfx/rect.h"
+#include "views/widget/native_widget.h"
+#include "views/widget/widget.h"
 #include "views/window/window.h"
 
 #if defined(OS_WIN)
@@ -30,8 +32,8 @@ namespace {
 // TODO(mirandac): This function will also separate windows by profile in a
 // multi-profile environment.
 PrefService* GetPrefsForWindow(views::Window* window) {
-  Profile* profile =
-      reinterpret_cast<Profile*>(window->GetNativeWindowProperty(
+  Profile* profile = reinterpret_cast<Profile*>(
+      window->AsWidget()->native_widget()->GetNativeWindowProperty(
           Profile::kProfileKey));
   if (!profile) {
     // Use local state for windows that have no explicit profile.

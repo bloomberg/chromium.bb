@@ -78,7 +78,7 @@ void ClearDataView::StartClearingBrowsingData() {
 }
 
 void ClearDataView::StopClearingBrowsingData() {
-  window()->Close();
+  window()->CloseWindow();
 }
 
 void ClearDataView::StartClearingServerData() {
@@ -90,7 +90,7 @@ void ClearDataView::StartClearingServerData() {
 }
 
 void ClearDataView::SucceededClearingServerData() {
-  window()->Close();
+  window()->CloseWindow();
 }
 
 void ClearDataView::FailedClearingServerData() {

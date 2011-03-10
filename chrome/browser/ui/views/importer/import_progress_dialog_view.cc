@@ -276,7 +276,7 @@ void ImportProgressDialogView::ImportEnded() {
   // In every case, we need to close the UI now.
   importing_ = false;
   importer_host_->SetObserver(NULL);
-  window()->Close();
+  window()->CloseWindow();
   if (importer_observer_)
     importer_observer_->ImportCompleted();
 }

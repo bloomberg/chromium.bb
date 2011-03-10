@@ -189,7 +189,7 @@ void TableViewTest::SetUp() {
 }
 
 void TableViewTest::TearDown() {
-  window_->Close();
+  window_->CloseWindow();
   // Temporary workaround to avoid leak of RootView::pending_paint_task_.
   message_loop_.RunAllPending();
   OleUninitialize();
@@ -511,7 +511,7 @@ void TableView2Test::SetUp() {
 }
 
 void TableView2Test::TearDown() {
-  window_->Close();
+  window_->CloseWindow();
   // Temporary workaround to avoid leak of RootView::pending_paint_task_.
   message_loop_.RunAllPending();
 #if defined(OS_WIN)

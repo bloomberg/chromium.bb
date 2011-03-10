@@ -431,7 +431,7 @@ void FirstRun::ShowFirstRunDialog(Profile* profile,
   search_engine_dialog->Show();
   views::AcceleratorHandler accelerator_handler;
   MessageLoopForUI::current()->Run(&accelerator_handler);
-  search_engine_dialog->Close();
+  search_engine_dialog->CloseWindow();
 }
 
 // static

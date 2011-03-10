@@ -88,7 +88,7 @@ void ViewEventTestBase::TearDown() {
 #if defined(OS_WIN)
     DestroyWindow(window_->GetNativeWindow());
 #else
-    window_->Close();
+    window_->CloseWindow();
     MessageLoop::current()->PostTask(FROM_HERE, new MessageLoop::QuitTask());
     ui_test_utils::RunMessageLoop();
 #endif

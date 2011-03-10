@@ -421,7 +421,7 @@ void OpaqueBrowserFrameView::ButtonPressed(views::Button* sender,
   else if (sender == restore_button_)
     window->Restore();
   else if (sender == close_button_)
-    window->Close();
+    window->CloseWindow();
 }
 
 ///////////////////////////////////////////////////////////////////////////////

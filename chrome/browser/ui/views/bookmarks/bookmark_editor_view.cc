@@ -237,7 +237,7 @@ void BookmarkEditorView::Show(HWND parent_hwnd) {
 
 void BookmarkEditorView::Close() {
   DCHECK(window());
-  window()->Close();
+  window()->CloseWindow();
 }
 
 void BookmarkEditorView::ShowContextMenuForView(View* source,
@@ -391,7 +391,7 @@ void BookmarkEditorView::BookmarkNodeRemoved(BookmarkModel* model,
        details_.existing_node->HasAncestor(node)) ||
       (parent_ && parent_->HasAncestor(node))) {
     // The node, or its parent was removed. Close the dialog.
-    window()->Close();
+    window()->CloseWindow();
   } else {
     Reset();
   }

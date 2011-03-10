@@ -128,6 +128,13 @@ void SendFrameChanged(HWND window) {
       SWP_NOSENDCHANGING | SWP_NOSIZE | SWP_NOZORDER);
 }
 
+// Callback used to notify child windows that the top level window received a
+// DWMCompositionChanged message.
+BOOL CALLBACK SendDwmCompositionChanged(HWND window, LPARAM param) {
+  SendMessage(window, WM_DWMCOMPOSITIONCHANGED, 0, 0);
+  return TRUE;
+}
+
 // Enables or disables the menu item for the specified command and menu.
 void EnableMenuItem(HMENU menu, UINT command, bool enabled) {
   UINT flags = MF_BYCOMMAND | (enabled ? MF_ENABLED : MF_DISABLED | MF_GRAYED);
@@ -241,12 +248,6 @@ Window* Window::CreateChromeWindow(gfx::NativeWindow parent,
   return window;
 }
 
-void WindowWin::SetWindowBounds(const gfx::Rect& bounds,
-                                gfx::NativeWindow other_window) {
-  SetChildBounds(GetNativeView(), GetParent(), other_window, bounds,
-                 kMonitorEdgePadding, 0);
-}
-
 void WindowWin::Show(int show_state) {
   ShowWindow(show_state);
   // When launched from certain programs like bash and Windows Live Messenger,
@@ -270,19 +271,6 @@ void WindowWin::Show(int show_state) {
   SetInitialFocus();
 }
 
-void WindowWin::HideWindow() {
-  // We can just call the function implemented by the widget.
-  Hide();
-}
-
-void WindowWin::SetNativeWindowProperty(const char* name, void* value) {
-  WidgetWin::SetNativeWindowProperty(name, value);
-}
-
-void* WindowWin::GetNativeWindowProperty(const char* name) {
-  return WidgetWin::GetNativeWindowProperty(name);
-}
-
 void WindowWin::PushForceHidden() {
   if (force_hidden_count_++ == 0)
     Hide();
@@ -294,196 +282,6 @@ void WindowWin::PopForceHidden() {
     ShowWindow(SW_SHOW);
   }
 }
-
-namespace {
-static BOOL CALLBACK SendDwmCompositionChanged(HWND window, LPARAM param) {
-  SendMessage(window, WM_DWMCOMPOSITIONCHANGED, 0, 0);
-  return TRUE;
-}
-}  // namespace
-
-////////////////////////////////////////////////////////////////////////////////
-// WindowWin, Window implementation:
-
-void WindowWin::Activate() {
-  if (IsMinimized())
-    ::ShowWindow(GetNativeView(), SW_RESTORE);
-  ::SetWindowPos(GetNativeView(), HWND_TOP, 0, 0, 0, 0,
-                 SWP_NOSIZE | SWP_NOMOVE);
-  SetForegroundWindow(GetNativeView());
-}
-
-void WindowWin::Deactivate() {
-  HWND hwnd = ::GetNextWindow(GetNativeView(), GW_HWNDNEXT);
-  if (hwnd)
-    ::SetForegroundWindow(hwnd);
-}
-
-void WindowWin::Maximize() {
-  ExecuteSystemMenuCommand(SC_MAXIMIZE);
-}
-
-void WindowWin::Minimize() {
-  ExecuteSystemMenuCommand(SC_MINIMIZE);
-}
-
-void WindowWin::Restore() {
-  ExecuteSystemMenuCommand(SC_RESTORE);
-}
-
-bool WindowWin::IsActive() const {
-  return is_active_;
-}
-
-bool WindowWin::IsVisible() const {
-  return !!::IsWindowVisible(GetNativeView());
-}
-
-bool WindowWin::IsMaximized() const {
-  return !!::IsZoomed(GetNativeView());
-}
-
-bool WindowWin::IsMinimized() const {
-  return !!::IsIconic(GetNativeView());
-}
-
-void WindowWin::SetFullscreen(bool fullscreen) {
-  if (fullscreen_ == fullscreen)
-    return;  // Nothing to do.
-
-  // Reduce jankiness during the following position changes by hiding the window
-  // until it's in the final position.
-  PushForceHidden();
-
-  // Size/position/style window appropriately.
-  if (!fullscreen_) {
-    // Save current window information.  We force the window into restored mode
-    // before going fullscreen because Windows doesn't seem to hide the
-    // taskbar if the window is in the maximized state.
-    saved_window_info_.maximized = IsMaximized();
-    if (saved_window_info_.maximized)
-      Restore();
-    saved_window_info_.style = GetWindowLong(GWL_STYLE);
-    saved_window_info_.ex_style = GetWindowLong(GWL_EXSTYLE);
-    GetWindowRect(&saved_window_info_.window_rect);
-  }
-
-  // Toggle fullscreen mode.
-  fullscreen_ = fullscreen;
-
-  if (fullscreen_) {
-    // Set new window style and size.
-    MONITORINFO monitor_info;
-    monitor_info.cbSize = sizeof(monitor_info);
-    GetMonitorInfo(MonitorFromWindow(GetNativeView(), MONITOR_DEFAULTTONEAREST),
-                   &monitor_info);
-    gfx::Rect monitor_rect(monitor_info.rcMonitor);
-    SetWindowLong(GWL_STYLE,
-                  saved_window_info_.style & ~(WS_CAPTION | WS_THICKFRAME));
-    SetWindowLong(GWL_EXSTYLE,
-                  saved_window_info_.ex_style & ~(WS_EX_DLGMODALFRAME |
-                  WS_EX_WINDOWEDGE | WS_EX_CLIENTEDGE | WS_EX_STATICEDGE));
-    SetWindowPos(NULL, monitor_rect.x(), monitor_rect.y(),
-                 monitor_rect.width(), monitor_rect.height(),
-                 SWP_NOZORDER | SWP_NOACTIVATE | SWP_FRAMECHANGED);
-  } else {
-    // Reset original window style and size.  The multiple window size/moves
-    // here are ugly, but if SetWindowPos() doesn't redraw, the taskbar won't be
-    // repainted.  Better-looking methods welcome.
-    gfx::Rect new_rect(saved_window_info_.window_rect);
-    SetWindowLong(GWL_STYLE, saved_window_info_.style);
-    SetWindowLong(GWL_EXSTYLE, saved_window_info_.ex_style);
-    SetWindowPos(NULL, new_rect.x(), new_rect.y(), new_rect.width(),
-                 new_rect.height(),
-                 SWP_NOZORDER | SWP_NOACTIVATE | SWP_FRAMECHANGED);
-    if (saved_window_info_.maximized)
-      Maximize();
-  }
-
-  // Undo our anti-jankiness hacks.
-  PopForceHidden();
-}
-
-bool WindowWin::IsFullscreen() const {
-  return fullscreen_;
-}
-
-void WindowWin::SetUseDragFrame(bool use_drag_frame) {
-  if (use_drag_frame) {
-    // Make the frame slightly transparent during the drag operation.
-    drag_frame_saved_window_style_ = GetWindowLong(GWL_STYLE);
-    drag_frame_saved_window_ex_style_ = GetWindowLong(GWL_EXSTYLE);
-    SetWindowLong(GWL_EXSTYLE,
-                  drag_frame_saved_window_ex_style_ | WS_EX_LAYERED);
-    // Remove the captions tyle so the window doesn't have window controls for a
-    // more "transparent" look.
-    SetWindowLong(GWL_STYLE, drag_frame_saved_window_style_ & ~WS_CAPTION);
-    SetLayeredWindowAttributes(GetNativeWindow(), RGB(0xFF, 0xFF, 0xFF),
-                               kDragFrameWindowAlpha, LWA_ALPHA);
-  } else {
-    SetWindowLong(GWL_STYLE, drag_frame_saved_window_style_);
-    SetWindowLong(GWL_EXSTYLE, drag_frame_saved_window_ex_style_);
-  }
-}
-
-void WindowWin::SetIsAlwaysOnTop(bool always_on_top) {
-  ::SetWindowPos(GetNativeView(),
-      always_on_top ? HWND_TOPMOST : HWND_NOTOPMOST,
-      0, 0, 0, 0,
-      SWP_NOMOVE | SWP_NOSIZE | SWP_FRAMECHANGED);
-}
-
-NonClientFrameView* WindowWin::CreateFrameViewForWindow() {
-  if (ShouldUseNativeFrame())
-    return new NativeFrameView(this);
-  return new CustomFrameView(this);
-}
-
-void WindowWin::UpdateFrameAfterFrameChange() {
-  // We've either gained or lost a custom window region, so reset it now.
-  ResetWindowRegion(true);
-}
-
-gfx::NativeWindow WindowWin::GetNativeWindow() const {
-  return GetNativeView();
-}
-
-bool WindowWin::ShouldUseNativeFrame() const {
-  ui::ThemeProvider* tp = GetThemeProvider();
-  if (!tp)
-    return WidgetWin::IsAeroGlassEnabled();
-  return tp->ShouldUseNativeFrame();
-}
-
-void WindowWin::FrameTypeChanged() {
-  // Called when the frame type could possibly be changing (theme change or
-  // DWM composition change).
-  if (base::win::GetVersion() >= base::win::VERSION_VISTA) {
-    // We need to toggle the rendering policy of the DWM/glass frame as we
-    // change from opaque to glass. "Non client rendering enabled" means that
-    // the DWM's glass non-client rendering is enabled, which is why
-    // DWMNCRP_ENABLED is used for the native frame case. _DISABLED means the
-    // DWM doesn't render glass, and so is used in the custom frame case.
-    DWMNCRENDERINGPOLICY policy =
-        delegate_->IsUsingNativeFrame() ? DWMNCRP_ENABLED : DWMNCRP_DISABLED;
-    DwmSetWindowAttribute(GetNativeView(), DWMWA_NCRENDERING_POLICY,
-                          &policy, sizeof(DWMNCRENDERINGPOLICY));
-  }
-
-  // Send a frame change notification, since the non-client metrics have
-  // changed.
-  SendFrameChanged(GetNativeView());
-
-  // Update the non-client view with the correct frame view for the active frame
-  // type.
-  GetWindow()->non_client_view()->UpdateFrame();
-
-  // WM_DWMCOMPOSITIONCHANGED is only sent to top level windows, however we want
-  // to notify our children too, since we can have MDI child windows who need to
-  // update their appearance.
-  EnumChildWindows(GetNativeView(), &SendDwmCompositionChanged, NULL);
-}
-
 
 // static
 gfx::Font WindowWin::GetWindowTitleFont() {
@@ -592,6 +390,10 @@ LRESULT WindowWin::OnAppCommand(HWND window, short app_command, WORD device,
   if (!GetWindow()->window_delegate()->ExecuteWindowsCommand(app_command))
     return WidgetWin::OnAppCommand(window, app_command, device, keystate);
   return 0;
+}
+
+void WindowWin::OnClose() {
+  GetWindow()->CloseWindow();
 }
 
 void WindowWin::OnCommand(UINT notification_code, int command_id, HWND window) {
@@ -1209,6 +1011,198 @@ NativeWidget* WindowWin::AsNativeWidget() {
 
 const NativeWidget* WindowWin::AsNativeWidget() const {
   return this;
+}
+
+void WindowWin::SetWindowBounds(const gfx::Rect& bounds,
+                                gfx::NativeWindow other_window) {
+  SetChildBounds(GetNativeView(), GetParent(), other_window, bounds,
+                 kMonitorEdgePadding, 0);
+}
+
+void WindowWin::HideWindow() {
+  // We can just call the function implemented by the widget.
+  Hide();
+}
+
+void WindowWin::Activate() {
+  if (IsMinimized())
+    ::ShowWindow(GetNativeView(), SW_RESTORE);
+  ::SetWindowPos(GetNativeView(), HWND_TOP, 0, 0, 0, 0,
+                 SWP_NOSIZE | SWP_NOMOVE);
+  SetForegroundWindow(GetNativeView());
+}
+
+void WindowWin::Deactivate() {
+  HWND hwnd = ::GetNextWindow(GetNativeView(), GW_HWNDNEXT);
+  if (hwnd)
+    ::SetForegroundWindow(hwnd);
+}
+
+void WindowWin::Maximize() {
+  ExecuteSystemMenuCommand(SC_MAXIMIZE);
+}
+
+void WindowWin::Minimize() {
+  ExecuteSystemMenuCommand(SC_MINIMIZE);
+}
+
+void WindowWin::Restore() {
+  ExecuteSystemMenuCommand(SC_RESTORE);
+}
+
+bool WindowWin::IsActive() const {
+  return is_active_;
+}
+
+bool WindowWin::IsVisible() const {
+  return !!::IsWindowVisible(GetNativeView());
+}
+
+bool WindowWin::IsMaximized() const {
+  return !!::IsZoomed(GetNativeView());
+}
+
+bool WindowWin::IsMinimized() const {
+  return !!::IsIconic(GetNativeView());
+}
+
+void WindowWin::SetFullscreen(bool fullscreen) {
+  if (fullscreen_ == fullscreen)
+    return;  // Nothing to do.
+
+  // Reduce jankiness during the following position changes by hiding the window
+  // until it's in the final position.
+  PushForceHidden();
+
+  // Size/position/style window appropriately.
+  if (!fullscreen_) {
+    // Save current window information.  We force the window into restored mode
+    // before going fullscreen because Windows doesn't seem to hide the
+    // taskbar if the window is in the maximized state.
+    saved_window_info_.maximized = IsMaximized();
+    if (saved_window_info_.maximized)
+      Restore();
+    saved_window_info_.style = GetWindowLong(GWL_STYLE);
+    saved_window_info_.ex_style = GetWindowLong(GWL_EXSTYLE);
+    GetWindowRect(&saved_window_info_.window_rect);
+  }
+
+  // Toggle fullscreen mode.
+  fullscreen_ = fullscreen;
+
+  if (fullscreen_) {
+    // Set new window style and size.
+    MONITORINFO monitor_info;
+    monitor_info.cbSize = sizeof(monitor_info);
+    GetMonitorInfo(MonitorFromWindow(GetNativeView(), MONITOR_DEFAULTTONEAREST),
+                   &monitor_info);
+    gfx::Rect monitor_rect(monitor_info.rcMonitor);
+    SetWindowLong(GWL_STYLE,
+                  saved_window_info_.style & ~(WS_CAPTION | WS_THICKFRAME));
+    SetWindowLong(GWL_EXSTYLE,
+                  saved_window_info_.ex_style & ~(WS_EX_DLGMODALFRAME |
+                  WS_EX_WINDOWEDGE | WS_EX_CLIENTEDGE | WS_EX_STATICEDGE));
+    SetWindowPos(NULL, monitor_rect.x(), monitor_rect.y(),
+                 monitor_rect.width(), monitor_rect.height(),
+                 SWP_NOZORDER | SWP_NOACTIVATE | SWP_FRAMECHANGED);
+  } else {
+    // Reset original window style and size.  The multiple window size/moves
+    // here are ugly, but if SetWindowPos() doesn't redraw, the taskbar won't be
+    // repainted.  Better-looking methods welcome.
+    gfx::Rect new_rect(saved_window_info_.window_rect);
+    SetWindowLong(GWL_STYLE, saved_window_info_.style);
+    SetWindowLong(GWL_EXSTYLE, saved_window_info_.ex_style);
+    SetWindowPos(NULL, new_rect.x(), new_rect.y(), new_rect.width(),
+                 new_rect.height(),
+                 SWP_NOZORDER | SWP_NOACTIVATE | SWP_FRAMECHANGED);
+    if (saved_window_info_.maximized)
+      Maximize();
+  }
+
+  // Undo our anti-jankiness hacks.
+  PopForceHidden();
+}
+
+bool WindowWin::IsFullscreen() const {
+  return fullscreen_;
+}
+
+void WindowWin::SetAlwaysOnTop(bool always_on_top) {
+  ::SetWindowPos(GetNativeView(), always_on_top ? HWND_TOPMOST : HWND_NOTOPMOST,
+                 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE);
+}
+
+bool WindowWin::IsAppWindow() const {
+  return false;
+}
+
+void WindowWin::SetUseDragFrame(bool use_drag_frame) {
+  if (use_drag_frame) {
+    // Make the frame slightly transparent during the drag operation.
+    drag_frame_saved_window_style_ = GetWindowLong(GWL_STYLE);
+    drag_frame_saved_window_ex_style_ = GetWindowLong(GWL_EXSTYLE);
+    SetWindowLong(GWL_EXSTYLE,
+                  drag_frame_saved_window_ex_style_ | WS_EX_LAYERED);
+    // Remove the captions tyle so the window doesn't have window controls for a
+    // more "transparent" look.
+    SetWindowLong(GWL_STYLE, drag_frame_saved_window_style_ & ~WS_CAPTION);
+    SetLayeredWindowAttributes(GetNativeWindow(), RGB(0xFF, 0xFF, 0xFF),
+                               kDragFrameWindowAlpha, LWA_ALPHA);
+  } else {
+    SetWindowLong(GWL_STYLE, drag_frame_saved_window_style_);
+    SetWindowLong(GWL_EXSTYLE, drag_frame_saved_window_ex_style_);
+  }
+}
+
+NonClientFrameView* WindowWin::CreateFrameViewForWindow() {
+  if (ShouldUseNativeFrame())
+    return new NativeFrameView(this);
+  return new CustomFrameView(this);
+}
+
+void WindowWin::UpdateFrameAfterFrameChange() {
+  // We've either gained or lost a custom window region, so reset it now.
+  ResetWindowRegion(true);
+}
+
+gfx::NativeWindow WindowWin::GetNativeWindow() const {
+  return GetNativeView();
+}
+
+bool WindowWin::ShouldUseNativeFrame() const {
+  ui::ThemeProvider* tp = GetThemeProvider();
+  if (!tp)
+    return WidgetWin::IsAeroGlassEnabled();
+  return tp->ShouldUseNativeFrame();
+}
+
+void WindowWin::FrameTypeChanged() {
+  // Called when the frame type could possibly be changing (theme change or
+  // DWM composition change).
+  if (base::win::GetVersion() >= base::win::VERSION_VISTA) {
+    // We need to toggle the rendering policy of the DWM/glass frame as we
+    // change from opaque to glass. "Non client rendering enabled" means that
+    // the DWM's glass non-client rendering is enabled, which is why
+    // DWMNCRP_ENABLED is used for the native frame case. _DISABLED means the
+    // DWM doesn't render glass, and so is used in the custom frame case.
+    DWMNCRENDERINGPOLICY policy =
+        delegate_->IsUsingNativeFrame() ? DWMNCRP_ENABLED : DWMNCRP_DISABLED;
+    DwmSetWindowAttribute(GetNativeView(), DWMWA_NCRENDERING_POLICY,
+                          &policy, sizeof(DWMNCRENDERINGPOLICY));
+  }
+
+  // Send a frame change notification, since the non-client metrics have
+  // changed.
+  SendFrameChanged(GetNativeView());
+
+  // Update the non-client view with the correct frame view for the active frame
+  // type.
+  GetWindow()->non_client_view()->UpdateFrame();
+
+  // WM_DWMCOMPOSITIONCHANGED is only sent to top level windows, however we want
+  // to notify our children too, since we can have MDI child windows who need to
+  // update their appearance.
+  EnumChildWindows(GetNativeView(), &SendDwmCompositionChanged, NULL);
 }
 
 ////////////////////////////////////////////////////////////////////////////////

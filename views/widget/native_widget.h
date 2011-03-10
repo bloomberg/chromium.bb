@@ -8,8 +8,14 @@
 
 #include <set>
 
+#include "ui/gfx/native_widget_types.h"
+
 namespace gfx {
 class Rect;
+}
+
+namespace ui {
+class OSExchangeData;
 }
 
 namespace views {

@@ -37,7 +37,7 @@ class AcceleratorHandlerGtkTest
   }
 
   virtual void TearDown() {
-    window_->Close();
+    window_->CloseWindow();
 
     // Flush the message loop to make Purify happy.
     message_loop_.RunAllPending();

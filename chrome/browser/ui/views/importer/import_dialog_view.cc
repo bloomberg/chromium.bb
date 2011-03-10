@@ -291,7 +291,7 @@ void ImportDialogView::SourceProfilesLoaded() {
 
 void ImportDialogView::ImportCompleted() {
   // Now close this window since the import completed or was canceled.
-  window()->Close();
+  window()->CloseWindow();
 }
 
 void ImportDialogView::ImportCanceled() {

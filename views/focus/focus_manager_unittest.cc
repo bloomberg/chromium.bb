@@ -132,7 +132,7 @@ class FocusManagerTest : public testing::Test, public WindowDelegate {
   virtual void TearDown() {
     if (focus_change_listener_)
       GetFocusManager()->RemoveFocusChangeListener(focus_change_listener_);
-    window_->Close();
+    window_->CloseWindow();
 
     // Flush the message loop to make Purify happy.
     message_loop()->RunAllPending();
@@ -1702,7 +1702,7 @@ class FocusManagerDtorTest : public FocusManagerTest {
 
   virtual void TearDown() {
     if (window_) {
-      window_->Close();
+      window_->CloseWindow();
       message_loop()->RunAllPending();
     }
   }
@@ -1720,7 +1720,7 @@ TEST_F(FocusManagerDtorTest, FocusManagerDestructedLast) {
   tabbed_pane->AddTab(L"Awesome tab", button);
 
   // Close the window.
-  window_->Close();
+  window_->CloseWindow();
   message_loop()->RunAllPending();
 
   // Test window, button and focus manager should all be destructed.

@@ -104,110 +104,6 @@ void Window::CloseAllSecondaryWindows() {
   g_list_free(windows);
 }
 
-void WindowGtk::SetWindowBounds(const gfx::Rect& bounds,
-                                gfx::NativeWindow other_window) {
-  // TODO: need to deal with other_window.
-  WidgetGtk::SetBounds(bounds);
-}
-
-void WindowGtk::HideWindow() {
-  Hide();
-}
-
-void WindowGtk::SetNativeWindowProperty(const char* name, void* value) {
-  WidgetGtk::SetNativeWindowProperty(name, value);
-}
-
-void* WindowGtk::GetNativeWindowProperty(const char* name) {
-  return WidgetGtk::GetNativeWindowProperty(name);
-}
-
-void WindowGtk::Activate() {
-  gtk_window_present(GTK_WINDOW(GetNativeView()));
-}
-
-void WindowGtk::Deactivate() {
-  gdk_window_lower(GTK_WIDGET(GetNativeView())->window);
-}
-
-void WindowGtk::Maximize() {
-  gtk_window_maximize(GetNativeWindow());
-}
-
-void WindowGtk::Minimize() {
-  gtk_window_iconify(GetNativeWindow());
-}
-
-void WindowGtk::Restore() {
-  if (IsMaximized())
-    gtk_window_unmaximize(GetNativeWindow());
-  else if (IsMinimized())
-    gtk_window_deiconify(GetNativeWindow());
-  else if (IsFullscreen())
-    SetFullscreen(false);
-}
-
-bool WindowGtk::IsActive() const {
-  return WidgetGtk::IsActive();
-}
-
-bool WindowGtk::IsVisible() const {
-  return GTK_WIDGET_VISIBLE(GetNativeView());
-}
-
-bool WindowGtk::IsMaximized() const {
-  return window_state_ & GDK_WINDOW_STATE_MAXIMIZED;
-}
-
-bool WindowGtk::IsMinimized() const {
-  return window_state_ & GDK_WINDOW_STATE_ICONIFIED;
-}
-
-void WindowGtk::SetFullscreen(bool fullscreen) {
-  if (fullscreen)
-    gtk_window_fullscreen(GetNativeWindow());
-  else
-    gtk_window_unfullscreen(GetNativeWindow());
-}
-
-bool WindowGtk::IsFullscreen() const {
-  return window_state_ & GDK_WINDOW_STATE_FULLSCREEN;
-}
-
-void WindowGtk::SetUseDragFrame(bool use_drag_frame) {
-  NOTIMPLEMENTED();
-}
-
-void WindowGtk::SetIsAlwaysOnTop(bool always_on_top) {
-  gtk_window_set_keep_above(GetNativeWindow(), always_on_top);
-}
-
-NonClientFrameView* WindowGtk::CreateFrameViewForWindow() {
-  // TODO(erg): Always use a custom frame view? Are there cases where we let
-  // the window manager deal with the X11 equivalent of the "non-client" area?
-  return new CustomFrameView(this);
-}
-
-void WindowGtk::UpdateFrameAfterFrameChange() {
-  // We currently don't support different frame types on Gtk, so we don't
-  // need to implement this.
-  NOTIMPLEMENTED();
-}
-
-gfx::NativeWindow WindowGtk::GetNativeWindow() const {
-  return GTK_WINDOW(GetNativeView());
-}
-
-bool WindowGtk::ShouldUseNativeFrame() const {
-  return false;
-}
-
-void WindowGtk::FrameTypeChanged() {
-  // This is called when the Theme has changed, so forward the event to the root
-  // widget.
-  ThemeChanged();
-}
-
 Window* WindowGtk::AsWindow() {
   return this;
 }
@@ -402,6 +298,106 @@ NativeWidget* WindowGtk::AsNativeWidget() {
 
 const NativeWidget* WindowGtk::AsNativeWidget() const {
   return this;
+}
+
+void WindowGtk::SetWindowBounds(const gfx::Rect& bounds,
+                                gfx::NativeWindow other_window) {
+  // TODO: need to deal with other_window.
+  WidgetGtk::SetBounds(bounds);
+}
+
+void WindowGtk::HideWindow() {
+  Hide();
+}
+
+void WindowGtk::Activate() {
+  gtk_window_present(GTK_WINDOW(GetNativeView()));
+}
+
+void WindowGtk::Deactivate() {
+  gdk_window_lower(GTK_WIDGET(GetNativeView())->window);
+}
+
+void WindowGtk::Maximize() {
+  gtk_window_maximize(GetNativeWindow());
+}
+
+void WindowGtk::Minimize() {
+  gtk_window_iconify(GetNativeWindow());
+}
+
+void WindowGtk::Restore() {
+  if (IsMaximized())
+    gtk_window_unmaximize(GetNativeWindow());
+  else if (IsMinimized())
+    gtk_window_deiconify(GetNativeWindow());
+  else if (IsFullscreen())
+    SetFullscreen(false);
+}
+
+bool WindowGtk::IsActive() const {
+  return WidgetGtk::IsActive();
+}
+
+bool WindowGtk::IsVisible() const {
+  return GTK_WIDGET_VISIBLE(GetNativeView());
+}
+
+bool WindowGtk::IsMaximized() const {
+  return window_state_ & GDK_WINDOW_STATE_MAXIMIZED;
+}
+
+bool WindowGtk::IsMinimized() const {
+  return window_state_ & GDK_WINDOW_STATE_ICONIFIED;
+}
+
+void WindowGtk::SetFullscreen(bool fullscreen) {
+  if (fullscreen)
+    gtk_window_fullscreen(GetNativeWindow());
+  else
+    gtk_window_unfullscreen(GetNativeWindow());
+}
+
+bool WindowGtk::IsFullscreen() const {
+  return window_state_ & GDK_WINDOW_STATE_FULLSCREEN;
+}
+
+void WindowGtk::SetUseDragFrame(bool use_drag_frame) {
+  NOTIMPLEMENTED();
+}
+
+void WindowGtk::SetAlwaysOnTop(bool always_on_top) {
+  gtk_window_set_keep_above(GetNativeWindow(), always_on_top);
+}
+
+bool WindowGtk::IsAppWindow() const {
+  return false;
+}
+
+NonClientFrameView* WindowGtk::CreateFrameViewForWindow() {
+  // TODO(erg): Always use a custom frame view? Are there cases where we let
+  // the window manager deal with the X11 equivalent of the "non-client" area?
+  return new CustomFrameView(this);
+}
+
+void WindowGtk::UpdateFrameAfterFrameChange() {
+  // We currently don't support different frame types on Gtk, so we don't
+  // need to implement this.
+  NOTIMPLEMENTED();
+}
+
+gfx::NativeWindow WindowGtk::GetNativeWindow() const {
+  return GTK_WINDOW(GetNativeView());
+}
+
+bool WindowGtk::ShouldUseNativeFrame() const {
+  return false;
+}
+
+void WindowGtk::FrameTypeChanged() {
+  // This is called when the Theme has changed, so forward the event to the root
+  // widget.
+  ThemeChanged();
 }
 
 ////////////////////////////////////////////////////////////////////////////////

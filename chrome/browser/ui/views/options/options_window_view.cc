@@ -20,6 +20,8 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "views/controls/tabbed_pane/tabbed_pane.h"
 #include "views/widget/root_view.h"
+#include "views/widget/widget.h"
+#include "views/widget/native_widget.h"
 #include "views/window/dialog_delegate.h"
 #include "views/window/window.h"
 
@@ -223,7 +225,8 @@ void OptionsWindowView::Init() {
 
   // Bind the profile to the window so that the ChromeViewsDelegate can find
   // the user preferences to store and retrieve window placement settings.
-  window()->SetNativeWindowProperty(Profile::kProfileKey, profile_);
+  window()->AsWidget()->native_widget()->SetNativeWindowProperty(
+      Profile::kProfileKey, profile_);
 
   DCHECK(tabs_->GetTabCount() == OPTIONS_PAGE_COUNT);
 }

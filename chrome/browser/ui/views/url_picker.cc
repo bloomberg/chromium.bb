@@ -128,7 +128,7 @@ void UrlPicker::Show(HWND parent) {
 
 void UrlPicker::Close() {
   DCHECK(window());
-  window()->Close();
+  window()->CloseWindow();
 }
 
 std::wstring UrlPicker::GetWindowTitle() const {
@@ -193,7 +193,7 @@ gfx::Size UrlPicker::GetPreferredSize() {
 bool UrlPicker::AcceleratorPressed(
     const views::Accelerator& accelerator) {
   if (accelerator.GetKeyCode() == VK_ESCAPE) {
-    window()->Close();
+    window()->CloseWindow();
   } else if (accelerator.GetKeyCode() == VK_RETURN) {
     views::FocusManager* fm = GetFocusManager();
     if (fm->GetFocusedView() == url_table_) {
@@ -205,7 +205,7 @@ bool UrlPicker::AcceleratorPressed(
       if (GetInputURL().is_valid()) {
         PerformModelChange();
         if (window())
-          window()->Close();
+          window()->CloseWindow();
       } else {
         url_field_->SelectAll();
       }
@@ -237,7 +237,7 @@ void UrlPicker::OnDoubleClick() {
     OnSelectionChanged();
     PerformModelChange();
     if (window())
-      window()->Close();
+      window()->CloseWindow();
   }
 }
 

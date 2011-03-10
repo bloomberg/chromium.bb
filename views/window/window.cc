@@ -66,7 +66,7 @@ void Window::CloseSecondaryWidget(Widget* widget) {
   Window* window = widget->GetWindow();
   if (window) {
     if (!window->IsAppWindow())
-      window->Close();
+      window->CloseWindow();
   } else {
     // If it's not a Window, then close it anyway since it probably is
     // secondary.
@@ -85,6 +85,7 @@ gfx::Rect Window::GetNormalBounds() const {
 
 void Window::SetWindowBounds(const gfx::Rect& bounds,
                              gfx::NativeWindow other_window) {
+  native_window_->SetWindowBounds(bounds, other_window);
 }
 
 void Window::Show() {
@@ -98,13 +99,7 @@ void Window::Show() {
 }
 
 void Window::HideWindow() {
-}
-
-void Window::SetNativeWindowProperty(const char* name, void* value) {
-}
-
-void* Window::GetNativeWindowProperty(const char* name) {
-  return NULL;
+  native_window_->HideWindow();
 }
 
 void Window::DisableInactiveRendering() {
@@ -113,12 +108,14 @@ void Window::DisableInactiveRendering() {
 }
 
 void Window::Activate() {
+  native_window_->Activate();
 }
 
 void Window::Deactivate() {
+  native_window_->Deactivate();
 }
 
-void Window::Close() {
+void Window::CloseWindow() {
   if (window_closed_) {
     // It appears we can hit this code path if you close a modal dialog then
     // close the last browser before the destructor is hit, which triggers
@@ -136,42 +133,47 @@ void Window::Close() {
 }
 
 void Window::Maximize() {
+  native_window_->Maximize();
 }
 
 void Window::Minimize() {
+  native_window_->Minimize();
 }
 
 void Window::Restore() {
+  native_window_->Restore();
 }
 
 bool Window::IsActive() const {
-  return false;
+  return native_window_->IsActive();
 }
 
 bool Window::IsVisible() const {
-  return false;
+  return native_window_->IsVisible();
 }
 
 bool Window::IsMaximized() const {
-  return false;
+  return native_window_->IsMaximized();
 }
 
 bool Window::IsMinimized() const {
-  return false;
+  return native_window_->IsMinimized();
 }
 
 void Window::SetFullscreen(bool fullscreen) {
+  native_window_->SetFullscreen(fullscreen);
 }
 
 bool Window::IsFullscreen() const {
-  return false;
+  return native_window_->IsFullscreen();
 }
 
 void Window::SetUseDragFrame(bool use_drag_frame) {
+  native_window_->SetUseDragFrame(use_drag_frame);
 }
 
 bool Window::IsAppWindow() const {
-  return false;
+  return native_window_->IsAppWindow();
 }
 
 void Window::EnableClose(bool enable) {
@@ -202,24 +204,35 @@ void Window::UpdateWindowIcon() {
 }
 
 void Window::SetIsAlwaysOnTop(bool always_on_top) {
+  native_window_->SetAlwaysOnTop(always_on_top);
 }
 
 NonClientFrameView* Window::CreateFrameViewForWindow() {
-  return NULL;
+  return native_window_->CreateFrameViewForWindow();
 }
 
 void Window::UpdateFrameAfterFrameChange() {
+  native_window_->UpdateFrameAfterFrameChange();
 }
 
 gfx::NativeWindow Window::GetNativeWindow() const {
-  return NULL;
+  return native_window_->GetNativeWindow();
 }
 
 bool Window::ShouldUseNativeFrame() const {
-  return false;
+  return native_window_->ShouldUseNativeFrame();
 }
 
 void Window::FrameTypeChanged() {
+  native_window_->FrameTypeChanged();
+}
+
+Widget* Window::AsWidget() {
+  return const_cast<Widget*>(const_cast<const Window*>(this)->AsWidget());
+}
+
+const Widget* Window::AsWidget() const {
+  return native_window_->AsNativeWidget()->GetWidget();
 }
 
 ////////////////////////////////////////////////////////////////////////////////

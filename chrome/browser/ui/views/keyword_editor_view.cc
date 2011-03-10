@@ -70,7 +70,7 @@ void KeywordEditorView::ShowAndObserve(Profile* profile,
     return;
 
   if (open_window != NULL)
-    open_window->Close();
+    open_window->CloseWindow();
   DCHECK(!open_window);
 
   // Both of these will be deleted when the dialog closes.

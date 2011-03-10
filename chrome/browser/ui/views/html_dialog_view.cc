@@ -144,7 +144,7 @@ void HtmlDialogView::OnDialogClosed(const std::string& json_retval) {
     delegate_ = NULL;  // We will not communicate further with the delegate.
     dialog_delegate->OnDialogClosed(json_retval);
   }
-  window()->Close();
+  window()->CloseWindow();
 }
 
 void HtmlDialogView::OnCloseContents(TabContents* source,

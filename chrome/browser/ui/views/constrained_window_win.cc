@@ -592,7 +592,7 @@ void ConstrainedWindowWin::CloseConstrainedWindow() {
                                          Source<ConstrainedWindow>(this),
                                          NotificationService::NoDetails());
 
-  Window::Close();
+  Window::CloseWindow();
 }
 
 std::wstring ConstrainedWindowWin::GetWindowTitle() const {

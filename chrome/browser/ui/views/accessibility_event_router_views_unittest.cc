@@ -16,6 +16,7 @@
 #include "views/controls/button/native_button.h"
 #include "views/layout/grid_layout.h"
 #include "views/views_delegate.h"
+#include "views/widget/native_widget.h"
 #include "views/widget/root_view.h"
 #include "views/widget/widget.h"
 #include "views/window/window.h"
@@ -158,7 +159,7 @@ TEST_F(AccessibilityEventRouterViewsTest, TestFocusNotification) {
 
   // Create a profile and associate it with this window.
   TestingProfile profile;
-  window->SetNativeWindowProperty(
+  window->AsWidget()->native_widget()->SetNativeWindowProperty(
       Profile::kProfileKey, &profile);
 
   // Change the accessible name of button3.

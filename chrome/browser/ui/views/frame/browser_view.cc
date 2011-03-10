@@ -90,6 +90,7 @@
 #include "chrome/browser/jumplist_win.h"
 #include "ui/base/message_box_win.h"
 #include "ui/base/view_prop.h"
+#include "views/window/window_win.h"
 #elif defined(OS_LINUX)
 #include "chrome/browser/ui/views/accelerator_table_gtk.h"
 #include "views/window/hit_test.h"
@@ -722,7 +723,7 @@ void BrowserView::SetBounds(const gfx::Rect& bounds) {
 void BrowserView::Close() {
   BrowserBubbleHost::Close();
 
-  frame_->GetWindow()->Close();
+  frame_->GetWindow()->CloseWindow();
 }
 
 void BrowserView::Activate() {
@@ -2192,7 +2193,8 @@ void BrowserView::ProcessFullscreen(bool fullscreen) {
 #endif
   }
 #if defined(OS_WIN)
-  frame_->GetWindow()->PushForceHidden();
+  static_cast<views::WindowWin*>(
+      frame_->GetWindow()->native_window())->PushForceHidden();
 #endif
 
   // Notify bookmark bar, so it can set itself to the appropriate drawing state.
@@ -2233,7 +2235,8 @@ void BrowserView::ProcessFullscreen(bool fullscreen) {
   ignore_layout_ = false;
   Layout();
 #if defined(OS_WIN)
-  frame_->GetWindow()->PopForceHidden();
+  static_cast<views::WindowWin*>(
+      frame_->GetWindow()->native_window())->PopForceHidden();
 #endif
 }
 

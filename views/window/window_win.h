@@ -54,32 +54,14 @@ class WindowWin : public WidgetWin,
     focus_on_creation_ = focus_on_creation;
   }
 
-  // Overridden from Window:
-  virtual void SetWindowBounds(const gfx::Rect& bounds,
-                               gfx::NativeWindow other_window) OVERRIDE;
-  virtual void HideWindow() OVERRIDE;
-  virtual void SetNativeWindowProperty(const char* name, void* value) OVERRIDE;
-  virtual void* GetNativeWindowProperty(const char* name) OVERRIDE;
-  virtual void PushForceHidden() OVERRIDE;
-  virtual void PopForceHidden() OVERRIDE;
-  virtual void Activate() OVERRIDE;
-  virtual void Deactivate() OVERRIDE;
-  virtual void Maximize() OVERRIDE;
-  virtual void Minimize() OVERRIDE;
-  virtual void Restore() OVERRIDE;
-  virtual bool IsActive() const OVERRIDE;
-  virtual bool IsVisible() const OVERRIDE;
-  virtual bool IsMaximized() const OVERRIDE;
-  virtual bool IsMinimized() const OVERRIDE;
-  virtual void SetFullscreen(bool fullscreen) OVERRIDE;
-  virtual bool IsFullscreen() const OVERRIDE;
-  virtual void SetUseDragFrame(bool use_drag_frame) OVERRIDE;
-  virtual void SetIsAlwaysOnTop(bool always_on_top) OVERRIDE;
-  virtual NonClientFrameView* CreateFrameViewForWindow() OVERRIDE;
-  virtual void UpdateFrameAfterFrameChange() OVERRIDE;
-  virtual gfx::NativeWindow GetNativeWindow() const OVERRIDE;
-  virtual bool ShouldUseNativeFrame() const OVERRIDE;
-  virtual void FrameTypeChanged() OVERRIDE;
+  // Hides the window if it hasn't already been force-hidden. The force hidden
+  // count is tracked, so calling multiple times is allowed, you just have to
+  // be sure to call PopForceHidden the same number of times.
+  void PushForceHidden();
+
+  // Decrements the force hidden count, showing the window if we have reached
+  // the top of the stack. See PushForceHidden.
+  void PopForceHidden();
 
   // Returns the system set window title font.
   static gfx::Font GetWindowTitleFont();
@@ -115,6 +97,7 @@ class WindowWin : public WidgetWin,
                                short app_command,
                                WORD device,
                                int keystate) OVERRIDE;
+  virtual void OnClose() OVERRIDE;
   virtual void OnCommand(UINT notification_code,
                          int command_id,
                          HWND window) OVERRIDE;
@@ -169,6 +152,28 @@ class WindowWin : public WidgetWin,
   virtual void SetAccessibleState(AccessibilityTypes::State state) OVERRIDE;
   virtual NativeWidget* AsNativeWidget() OVERRIDE;
   virtual const NativeWidget* AsNativeWidget() const OVERRIDE;
+  virtual void SetWindowBounds(const gfx::Rect& bounds,
+                               gfx::NativeWindow other_window) OVERRIDE;
+  virtual void HideWindow() OVERRIDE;
+  virtual void Activate() OVERRIDE;
+  virtual void Deactivate() OVERRIDE;
+  virtual void Maximize() OVERRIDE;
+  virtual void Minimize() OVERRIDE;
+  virtual void Restore() OVERRIDE;
+  virtual bool IsActive() const OVERRIDE;
+  virtual bool IsVisible() const OVERRIDE;
+  virtual bool IsMaximized() const OVERRIDE;
+  virtual bool IsMinimized() const OVERRIDE;
+  virtual void SetFullscreen(bool fullscreen) OVERRIDE;
+  virtual bool IsFullscreen() const OVERRIDE;
+  virtual void SetAlwaysOnTop(bool always_on_top) OVERRIDE;
+  virtual bool IsAppWindow() const OVERRIDE;
+  virtual void SetUseDragFrame(bool use_drag_frame) OVERRIDE;
+  virtual NonClientFrameView* CreateFrameViewForWindow() OVERRIDE;
+  virtual void UpdateFrameAfterFrameChange() OVERRIDE;
+  virtual gfx::NativeWindow GetNativeWindow() const OVERRIDE;
+  virtual bool ShouldUseNativeFrame() const OVERRIDE;
+  virtual void FrameTypeChanged() OVERRIDE;
 
  private:
   // Information saved before going into fullscreen mode, used to restore the
