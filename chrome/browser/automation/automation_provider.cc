@@ -125,7 +125,6 @@ AutomationProvider::AutomationProvider(Profile* profile)
   autocomplete_edit_tracker_.reset(
       new AutomationAutocompleteEditTracker(this));
   new_tab_ui_load_observer_.reset(new NewTabUILoadObserver(this));
-  dom_operation_observer_.reset(new DomOperationMessageSender(this));
   metric_event_duration_observer_.reset(new MetricEventDurationObserver());
   extension_test_result_observer_.reset(
       new ExtensionTestResultNotificationObserver(this));

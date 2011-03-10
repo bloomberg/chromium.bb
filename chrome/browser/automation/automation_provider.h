@@ -392,7 +392,6 @@ class AutomationProvider
   scoped_ptr<IPC::ChannelProxy> channel_;
   scoped_ptr<NotificationObserver> new_tab_ui_load_observer_;
   scoped_ptr<NotificationObserver> find_in_page_observer_;
-  scoped_ptr<NotificationObserver> dom_operation_observer_;
   scoped_ptr<ExtensionTestResultNotificationObserver>
       extension_test_result_observer_;
   scoped_ptr<AutomationExtensionTracker> extension_tracker_;

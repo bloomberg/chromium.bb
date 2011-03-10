@@ -528,15 +528,21 @@ class DomOperationObserver : public NotificationObserver {
   DISALLOW_COPY_AND_ASSIGN(DomOperationObserver);
 };
 
+// Sends a message back to the automation client with the results of the DOM
+// operation.
 class DomOperationMessageSender : public DomOperationObserver {
  public:
-  explicit DomOperationMessageSender(AutomationProvider* automation);
+  explicit DomOperationMessageSender(AutomationProvider* automation,
+                                     IPC::Message* relpy_message,
+                                     bool use_json_interface);
   virtual ~DomOperationMessageSender();
 
   virtual void OnDomOperationCompleted(const std::string& json);
 
  private:
   base::WeakPtr<AutomationProvider> automation_;
+  scoped_ptr<IPC::Message> reply_message_;
+  bool use_json_interface_;
 
   DISALLOW_COPY_AND_ASSIGN(DomOperationMessageSender);
 };
@@ -1174,23 +1180,5 @@ class WaitForProcessLauncherThreadToGoIdleObserver
 
   DISALLOW_COPY_AND_ASSIGN(WaitForProcessLauncherThreadToGoIdleObserver);
 };
-
-// Observes the result of execution of Javascript and sends a JSON reply.
-class ExecuteJavascriptObserver : public DomOperationObserver {
- public:
-  ExecuteJavascriptObserver(AutomationProvider* automation,
-                            IPC::Message* reply_message);
-  virtual ~ExecuteJavascriptObserver();
-
- private:
-  // Overriden from DomOperationObserver.
-  virtual void OnDomOperationCompleted(const std::string& json);
-
-  base::WeakPtr<AutomationProvider> automation_;
-  scoped_ptr<IPC::Message> reply_message_;
-
-  DISALLOW_COPY_AND_ASSIGN(ExecuteJavascriptObserver);
-};
-
 
 #endif  // CHROME_BROWSER_AUTOMATION_AUTOMATION_PROVIDER_OBSERVERS_H_

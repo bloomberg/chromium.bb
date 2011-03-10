@@ -1025,24 +1025,30 @@ void DomOperationObserver::Observe(
 }
 
 DomOperationMessageSender::DomOperationMessageSender(
-    AutomationProvider* automation)
-    : automation_(automation->AsWeakPtr()) {
+    AutomationProvider* automation,
+    IPC::Message* reply_message,
+    bool use_json_interface)
+    : automation_(automation->AsWeakPtr()),
+      reply_message_(reply_message),
+      use_json_interface_(use_json_interface) {
 }
 
 DomOperationMessageSender::~DomOperationMessageSender() {}
 
 void DomOperationMessageSender::OnDomOperationCompleted(
     const std::string& json) {
-  if (!automation_)
-    return;
-
-  IPC::Message* reply_message = automation_->reply_message_release();
-  if (reply_message) {
-    AutomationMsg_DomOperation::WriteReplyParams(reply_message, json);
-    automation_->Send(reply_message);
-  } else {
-    LOG(ERROR) << "DOM operation completed, but no reply message";
+  if (automation_) {
+    if (use_json_interface_) {
+      DictionaryValue dict;
+      dict.SetString("result", json);
+      AutomationJSONReply(automation_, reply_message_.release())
+          .SendSuccess(&dict);
+    } else {
+      AutomationMsg_DomOperation::WriteReplyParams(reply_message_.get(), json);
+      automation_->Send(reply_message_.release());
+    }
   }
+  delete this;
 }
 
 DocumentPrintedNotificationObserver::DocumentPrintedNotificationObserver(
@@ -2136,25 +2142,4 @@ void WaitForProcessLauncherThreadToGoIdleObserver::RunOnUIThread() {
   if (automation_)
     automation_->Send(reply_message_.release());
   Release();
-}
-
-ExecuteJavascriptObserver::ExecuteJavascriptObserver(
-    AutomationProvider* automation,
-    IPC::Message* reply_message)
-    : automation_(automation->AsWeakPtr()),
-      reply_message_(reply_message) {
-}
-
-ExecuteJavascriptObserver::~ExecuteJavascriptObserver() {
-}
-
-void ExecuteJavascriptObserver::OnDomOperationCompleted(
-    const std::string& json) {
-  if (automation_) {
-    DictionaryValue dict;
-    dict.SetString("result", json);
-    AutomationJSONReply(automation_, reply_message_.release())
-        .SendSuccess(&dict);
-  }
-  delete this;
 }

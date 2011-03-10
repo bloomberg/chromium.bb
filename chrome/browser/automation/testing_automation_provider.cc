@@ -1256,9 +1256,7 @@ void TestingAutomationProvider::ExecuteJavascript(
                       "window.domAutomationController.setAutomationId(%d);",
                       reply_message->routing_id());
 
-  DCHECK(!reply_message_);
-  reply_message_ = reply_message;
-
+  new DomOperationMessageSender(this, reply_message, false);
   tab_contents->render_view_host()->ExecuteJavascriptInWebFrame(
       WideToUTF16Hack(frame_xpath), UTF8ToUTF16(set_automation_id));
   tab_contents->render_view_host()->ExecuteJavascriptInWebFrame(
@@ -4925,7 +4923,7 @@ void TestingAutomationProvider::ExecuteJavascriptJSON(
                       "window.domAutomationController.setAutomationId(%d);",
                       reply_message->routing_id());
 
-  new ExecuteJavascriptObserver(this, reply_message);
+  new DomOperationMessageSender(this, reply_message, true);
   tab_contents->render_view_host()->ExecuteJavascriptInWebFrame(
       frame_xpath, UTF8ToUTF16(set_automation_id));
   tab_contents->render_view_host()->ExecuteJavascriptInWebFrame(
