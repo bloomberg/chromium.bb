@@ -116,7 +116,7 @@ void AutoFillAgent::didAcceptAutoFillSuggestion(const WebKit::WebNode& node,
 
     string16 substring = value;
     substring = substring.substr(0, element.maxLength());
-    element.setValue(substring);
+    element.setValue(substring, true);
 
     WebFrame* webframe = node.document().frame();
     if (webframe)

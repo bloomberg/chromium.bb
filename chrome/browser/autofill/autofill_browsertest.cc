@@ -35,8 +35,7 @@ static const char* kTestFormString =
     "<form action=\"http://www.example.com/\" method=\"POST\">"
     "<label for=\"firstname\">First name:</label>"
     " <input type=\"text\" id=\"firstname\""
-    "        onFocus=\"domAutomationController.send(true)\""
-    " /><br />"
+    "        onFocus=\"domAutomationController.send(true)\" /><br />"
     "<label for=\"lastname\">Last name:</label>"
     " <input type=\"text\" id=\"lastname\" /><br />"
     "<label for=\"address1\">Address line 1:</label>"
@@ -261,6 +260,61 @@ IN_PROC_BROWSER_TEST_F(AutoFillTest, AutoFillViaDownArrow) {
 
   // The form should be filled.
   ExpectFilledTestForm();
+}
+
+// Test that a JavaScript onchange event is fired after auto-filling a form.
+IN_PROC_BROWSER_TEST_F(AutoFillTest, OnChangeAfterAutoFill) {
+  CreateTestProfile();
+
+  const char* kOnChangeScript =
+      "<script>"
+      "focused_fired = false;"
+      "unfocused_fired = false;"
+      "select_fired = false;"
+      "document.getElementById('firstname').onchange = function() {"
+      "  focused_fired = true;"
+      "};"
+      "document.getElementById('lastname').onchange = function() {"
+      "  unfocused_fired = true;"
+      "};"
+      "document.getElementById('state').onchange = function() {"
+      "  select_fired = true;"
+      "};"
+      "</script>";
+
+  // Load the test page.
+  ASSERT_TRUE(ui_test_utils::BringBrowserWindowToFront(browser()));
+  ASSERT_NO_FATAL_FAILURE(ui_test_utils::NavigateToURL(browser(),
+      GURL(std::string(kDataURIPrefix) + kTestFormString + kOnChangeScript)));
+
+  // Invoke Autofill.
+  TryBasicFormFill();
+
+  // The change event should have already fired for unfocused fields, both of
+  // <input> and of <select> type. However, it should not yet have fired for the
+  // focused field.
+  bool focused_fired = false;
+  bool unfocused_fired = false;
+  bool select_fired = false;
+  ASSERT_TRUE(ui_test_utils::ExecuteJavaScriptAndExtractBool(
+      render_view_host(), L"",
+      L"domAutomationController.send(focused_fired);", &focused_fired));
+  ASSERT_TRUE(ui_test_utils::ExecuteJavaScriptAndExtractBool(
+      render_view_host(), L"",
+      L"domAutomationController.send(unfocused_fired);", &unfocused_fired));
+  ASSERT_TRUE(ui_test_utils::ExecuteJavaScriptAndExtractBool(
+      render_view_host(), L"",
+      L"domAutomationController.send(select_fired);", &select_fired));
+  EXPECT_FALSE(focused_fired);
+  EXPECT_TRUE(unfocused_fired);
+  EXPECT_TRUE(select_fired);
+
+  // Unfocus the first name field. Its change event should fire.
+  ASSERT_TRUE(ui_test_utils::ExecuteJavaScriptAndExtractBool(
+      render_view_host(), L"",
+      L"document.getElementById('firstname').blur();"
+      L"domAutomationController.send(focused_fired);", &focused_fired));
+  EXPECT_TRUE(focused_fired);
 }
 
 // Test that form filling works after reloading the current page.

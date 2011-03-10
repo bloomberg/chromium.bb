@@ -671,7 +671,7 @@ bool FormManager::ClearFormWithNode(const WebNode& node) {
       if (!input_element->isEnabled())
         continue;
 
-      input_element->setValue(string16());
+      input_element->setValue(string16(), true);
       input_element->setAutofilled(false);
 
       // Clearing the value in the focused node (above) can cause selection
@@ -684,6 +684,7 @@ bool FormManager::ClearFormWithNode(const WebNode& node) {
       DCHECK(IsSelectElement(element));
       WebSelectElement select_element = element.to<WebSelectElement>();
       select_element.setValue(form_element->control_values[i]);
+      select_element.dispatchFormControlChangeEvent();
     }
   }
 
@@ -722,7 +723,7 @@ bool FormManager::ClearPreviewedFormWithNode(const WebNode& node,
     if (is_initiating_node) {
       // Call |setValue()| to force the renderer to update the field's displayed
       // value.
-      input_element->setValue(input_element->value());
+      input_element->setValue(input_element->value(), false);
       input_element->setAutofilled(was_autofilled);
     } else {
       input_element->setAutofilled(false);
@@ -888,7 +889,7 @@ void FormManager::FillFormField(WebFormControlElement* field,
     // If the maxlength attribute contains a negative value, maxLength()
     // returns the default maxlength value.
     input_element->setValue(
-        data->value.substr(0, input_element->maxLength()));
+        data->value.substr(0, input_element->maxLength()), true);
     input_element->setAutofilled(true);
     if (is_initiating_node) {
       int length = input_element->value().length();
@@ -898,6 +899,7 @@ void FormManager::FillFormField(WebFormControlElement* field,
     DCHECK(IsSelectElement(*field));
     WebSelectElement select_element = field->to<WebSelectElement>();
     select_element.setValue(data->value);
+    select_element.dispatchFormControlChangeEvent();
   }
 }
 
