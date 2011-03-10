@@ -451,8 +451,8 @@ TEST_F(SessionRestoreUITest, TwoWindowsCloseOneRestoreOnlyOne) {
 // as a special case in process-per-site-instance so that it only ever uses one
 // process.)
 //
-// Flaky:  http://http://code.google.com/p/chromium/issues/detail?id=52022
-// Unfortunately, the fix at http://http://codereview.chromium.org/6546078
+// Flaky: http://code.google.com/p/chromium/issues/detail?id=52022
+// Unfortunately, the fix at http://codereview.chromium.org/6546078
 // breaks NTP background image refreshing, so ThemeSource had to revert to
 // replacing the existing data source.
 TEST_F(SessionRestoreUITest, FLAKY_ShareProcessesOnRestore) {
