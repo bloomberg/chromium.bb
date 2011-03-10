@@ -116,12 +116,14 @@ ServiceURLRequestContext::ServiceURLRequestContext(
   set_ssl_config_service(new net::SSLConfigServiceDefaults);
   set_http_auth_handler_factory(net::HttpAuthHandlerFactory::CreateDefault(
       host_resolver()));
+
   net::HttpNetworkSession::Params session_params;
   session_params.host_resolver = host_resolver();
   session_params.cert_verifier = cert_verifier();
   session_params.dnsrr_resolver = dnsrr_resolver();
   session_params.proxy_service = proxy_service();
   session_params.ssl_config_service = ssl_config_service();
+  session_params.http_auth_handler_factory = http_auth_handler_factory();
   scoped_refptr<net::HttpNetworkSession> network_session(
       new net::HttpNetworkSession(session_params));
   set_http_transaction_factory(
