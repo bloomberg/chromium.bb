@@ -340,6 +340,12 @@ void AppLauncherHandler::HandleLaunchApp(const ListValue* args) {
   WindowOpenDisposition disposition =
         disposition_utils::DispositionFromClick(middle_button, alt_key,
                                                 ctrl_key, meta_key, shift_key);
+
+  if (extension_id != extension_misc::kWebStoreAppId) {
+    RecordAppLaunchByID(promo_active_, launch_bucket);
+    extensions_service_->default_apps()->SetPromoHidden();
+  }
+
   if (disposition == NEW_FOREGROUND_TAB || disposition == NEW_BACKGROUND_TAB) {
     // TODO(jamescook): Proper support for background tabs.
     Browser::OpenApplication(
@@ -365,14 +371,11 @@ void AppLauncherHandler::HandleLaunchApp(const ListValue* args) {
     TabContents* new_contents = Browser::OpenApplication(
         profile, extension, launch_container, old_contents);
 
+    // This will also destroy the handler, so do not perform any actions after.
     if (new_contents != old_contents && browser->tab_count() > 1)
       browser->CloseTabContents(old_contents);
   }
 
-  if (extension_id != extension_misc::kWebStoreAppId) {
-    RecordAppLaunchByID(promo_active_, launch_bucket);
-    extensions_service_->default_apps()->SetPromoHidden();
-  }
 }
 
 void AppLauncherHandler::HandleSetLaunchType(const ListValue* args) {
