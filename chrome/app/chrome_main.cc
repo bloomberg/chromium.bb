@@ -25,6 +25,7 @@
 #include "chrome/browser/diagnostics/diagnostics_main.h"
 #include "chrome/browser/platform_util.h"
 #include "chrome/common/chrome_constants.h"
+#include "chrome/common/chrome_content_client.h"
 #include "chrome/common/chrome_counters.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_paths_internal.h"
@@ -37,6 +38,7 @@
 #include "chrome/common/set_process_title.h"
 #include "chrome/common/url_constants.h"
 #include "content/browser/renderer_host/render_process_host.h"
+#include "content/common/content_client.h"
 #include "content/common/content_paths.h"
 #include "ipc/ipc_switches.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -573,6 +575,10 @@ int ChromeMain(int argc, char** argv) {
       chrome::GetVersionedDirectory().
           Append(chrome::kHelperProcessExecutablePath));
 #endif
+
+  // Initialize the content client which that code uses to talk to Chrome.
+  chrome::ChromeContentClient chrome_content_client;
+  content::SetContentClient(&chrome_content_client);
 
   // Notice a user data directory override if any
   FilePath user_data_dir =

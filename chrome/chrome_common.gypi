@@ -217,6 +217,8 @@
         'common/automation_messages_internal.h',
         'common/badge_util.cc',
         'common/badge_util.h',
+        'common/chrome_content_client.cc',
+        'common/chrome_content_client.h',
         'common/chrome_descriptors.h',
         'common/chrome_plugin_api.h',
         'common/chrome_plugin_lib.cc',

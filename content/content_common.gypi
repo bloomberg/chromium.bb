@@ -28,6 +28,8 @@
         'common/common_param_traits.h',
         'common/content_message_generator.cc',
         'common/content_message_generator.h',
+        'common/content_client.cc',
+        'common/content_client.h',
         'common/content_constants.cc',
         'common/content_constants.h',
         'common/content_paths.cc',
