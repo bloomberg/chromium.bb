@@ -121,7 +121,7 @@ void CapturerGdi::CalculateInvalidRects() {
     capture_fullscreen_ = true;
 
   if (capture_fullscreen_) {
-    InvalidateFullScreen(current.size.width(), current.size.height());
+    InvalidateScreen(current.size);
     capture_fullscreen_ = false;
     return;
   }
@@ -137,7 +137,7 @@ void CapturerGdi::CalculateInvalidRects() {
   if ((current.size != prev.size) ||
       (current.bytes_per_pixel != prev.bytes_per_pixel) ||
       (current.bytes_per_row != prev.bytes_per_row)) {
-    InvalidateFullScreen(current.size.width(), current.size.height());
+    InvalidateScreen(current.size);
     return;
   }
 
@@ -166,8 +166,7 @@ void CapturerGdi::CaptureRects(const InvalidRects& rects,
   planes.strides[0] = buffer.bytes_per_row;
 
   scoped_refptr<CaptureData> data(new CaptureData(planes,
-                                                  buffer.size.width(),
-                                                  buffer.size.height(),
+                                                  buffer.size,
                                                   pixel_format_));
   data->mutable_dirty_rects() = rects;
 

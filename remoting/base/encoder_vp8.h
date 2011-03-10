@@ -27,7 +27,7 @@ class EncoderVp8 : public Encoder {
 
  private:
   // Initialize the encoder. Returns true if successful.
-  bool Init(int width, int height);
+  bool Init(const gfx::Size& size);
 
   // Prepare |image_| for encoding. Write updated rectangles into
   // |updated_rects|. Returns true if successful.
@@ -51,9 +51,8 @@ class EncoderVp8 : public Encoder {
   // Buffer for storing the yuv image.
   scoped_array<uint8> yuv_image_;
 
-  // The current frame dimensions.
-  int width_;
-  int height_;
+  // The current frame size.
+  gfx::Size size_;
 
   DISALLOW_COPY_AND_ASSIGN(EncoderVp8);
 };

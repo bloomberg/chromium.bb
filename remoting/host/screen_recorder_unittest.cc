@@ -115,8 +115,9 @@ TEST_F(ScreenRecorderTest, OneRecordCycle) {
     planes.data[i] = reinterpret_cast<uint8*>(i);
     planes.strides[i] = kWidth * 4;
   }
-  scoped_refptr<CaptureData> data(new CaptureData(planes, kWidth,
-                                                  kHeight, kFormat));
+  scoped_refptr<CaptureData> data(new CaptureData(planes,
+                                                  gfx::Size(kWidth, kHeight),
+                                                  kFormat));
   EXPECT_CALL(capturer_, width()).WillRepeatedly(Return(kWidth));
   EXPECT_CALL(capturer_, height()).WillRepeatedly(Return(kHeight));
   EXPECT_CALL(capturer_, InvalidateFullScreen());
@@ -166,8 +167,9 @@ TEST_F(ScreenRecorderTest, StartAndStop) {
     planes.data[i] = reinterpret_cast<uint8*>(i);
     planes.strides[i] = kWidth * 4;
   }
-  scoped_refptr<CaptureData> data(new CaptureData(planes, kWidth,
-                                                  kHeight, kFormat));
+  scoped_refptr<CaptureData> data(new CaptureData(planes,
+                                                  gfx::Size(kWidth, kHeight),
+                                                  kFormat));
   EXPECT_CALL(capturer_, width()).WillRepeatedly(Return(kWidth));
   EXPECT_CALL(capturer_, height()).WillRepeatedly(Return(kHeight));
   EXPECT_CALL(capturer_, InvalidateFullScreen());

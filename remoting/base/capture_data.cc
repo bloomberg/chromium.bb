@@ -14,11 +14,10 @@ DataPlanes::DataPlanes() {
 }
 
 CaptureData::CaptureData(const DataPlanes &data_planes,
-                         int width,
-                         int height,
+                         const gfx::Size& size,
                          media::VideoFrame::Format format) :
-    data_planes_(data_planes), dirty_rects_(),
-    width_(width), height_(height), pixel_format_(format) {
+    data_planes_(data_planes), dirty_rects_(), size_(size),
+    pixel_format_(format) {
 }
 
 CaptureData::~CaptureData() {}

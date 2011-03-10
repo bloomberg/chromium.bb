@@ -235,7 +235,7 @@ void CapturerLinuxPimpl::CalculateInvalidRects() {
 
   if (capture_fullscreen_) {
     // TODO(hclam): Check the new dimension again.
-    capturer_->InvalidateFullScreen(width_, height_);
+    capturer_->InvalidateScreen(gfx::Size(width_, height_));
     capture_fullscreen_ = false;
   } else {
     capturer_->InvalidateRects(invalid_rects);
@@ -250,8 +250,8 @@ void CapturerLinuxPimpl::CaptureRects(
   planes.data[0] = buffer;
   planes.strides[0] = stride_;
 
-  scoped_refptr<CaptureData> capture_data(
-      new CaptureData(planes, width_, height_, media::VideoFrame::RGB32));
+  scoped_refptr<CaptureData> capture_data(new CaptureData(
+      planes, gfx::Size(width_, height_), media::VideoFrame::RGB32));
 
   // Synchronize the current buffer with the last one since we do not capture
   // the entire desktop. Note that encoder may be reading from the previous

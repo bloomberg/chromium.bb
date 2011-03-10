@@ -14,8 +14,7 @@ Capturer::Capturer(MessageLoop* message_loop)
     : pixel_format_(media::VideoFrame::INVALID),
       current_buffer_(0),
       message_loop_(message_loop),
-      width_most_recent_(0),
-      height_most_recent_(0) {
+      size_most_recent_(0, 0) {
 }
 
 Capturer::~Capturer() {
@@ -42,15 +41,15 @@ void Capturer::InvalidateRects(const InvalidRects& inval_rects) {
   }
 }
 
-void Capturer::InvalidateFullScreen(int width, int height) {
+void Capturer::InvalidateScreen(const gfx::Size& size) {
   base::AutoLock auto_inval_rects_lock(inval_rects_lock_);
   inval_rects_.clear();
-  inval_rects_.insert(gfx::Rect(0, 0, width, height));
+  inval_rects_.insert(gfx::Rect(0, 0, size.width(), size.height()));
 }
 
 void Capturer::InvalidateFullScreen() {
-  if (width_most_recent_ && height_most_recent_)
-    InvalidateFullScreen(width_most_recent_, height_most_recent_);
+  if (size_most_recent_ != gfx::Size(0, 0))
+    InvalidateScreen(size_most_recent_);
 }
 
 void Capturer::CaptureInvalidRects(CaptureCompletedCallback* callback) {
@@ -75,8 +74,7 @@ void Capturer::FinishCapture(scoped_refptr<CaptureData> data,
   // Select the next buffer to be the current buffer.
   current_buffer_ = (current_buffer_ + 1) % kNumBuffers;
 
-  width_most_recent_ = data->width();
-  height_most_recent_ = data->height();
+  size_most_recent_ = data->size();
 
   callback->Run(data);
   delete callback;

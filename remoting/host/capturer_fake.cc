@@ -38,13 +38,12 @@ CapturerFake::~CapturerFake() {
 }
 
 void CapturerFake::ScreenConfigurationChanged() {
-  width_ = kWidth;
-  height_ = kHeight;
-  bytes_per_row_ = width_ * kBytesPerPixel;
+  size_ = gfx::Size(kWidth, kHeight);
+  bytes_per_row_ = size_.width() * kBytesPerPixel;
   pixel_format_ = media::VideoFrame::RGB32;
 
   // Create memory for the buffers.
-  int buffer_size = height_ * bytes_per_row_;
+  int buffer_size = size_.height() * bytes_per_row_;
   for (int i = 0; i < kNumBuffers; i++) {
     buffers_[i].reset(new uint8[buffer_size]);
   }
@@ -52,7 +51,7 @@ void CapturerFake::ScreenConfigurationChanged() {
 
 void CapturerFake::CalculateInvalidRects() {
   GenerateImage();
-  InvalidateFullScreen(width_, height_);
+  InvalidateScreen(size_);
 }
 
 void CapturerFake::CaptureRects(const InvalidRects& rects,
@@ -62,8 +61,7 @@ void CapturerFake::CaptureRects(const InvalidRects& rects,
   planes.strides[0] = bytes_per_row_;
 
   scoped_refptr<CaptureData> capture_data(new CaptureData(planes,
-                                                          width_,
-                                                          height_,
+                                                          size_,
                                                           pixel_format_));
   capture_data->mutable_dirty_rects() = rects;
   FinishCapture(capture_data, callback);
@@ -71,17 +69,17 @@ void CapturerFake::CaptureRects(const InvalidRects& rects,
 
 void CapturerFake::GenerateImage() {
   memset(buffers_[current_buffer_].get(), 0xff,
-         width_ * height_ * kBytesPerPixel);
+         size_.width() * size_.height() * kBytesPerPixel);
 
   uint8* row = buffers_[current_buffer_].get() +
-      (box_pos_y_ * width_ + box_pos_x_) * kBytesPerPixel;
+      (box_pos_y_ * size_.width() + box_pos_x_) * kBytesPerPixel;
 
   box_pos_x_ += box_speed_x_;
-  if (box_pos_x_ + kBoxWidth >= width_ || box_pos_x_ == 0)
+  if (box_pos_x_ + kBoxWidth >= size_.width() || box_pos_x_ == 0)
     box_speed_x_ = -box_speed_x_;
 
   box_pos_y_ += box_speed_y_;
-  if (box_pos_y_ + kBoxHeight >= height_ || box_pos_y_ == 0)
+  if (box_pos_y_ + kBoxHeight >= size_.height() || box_pos_y_ == 0)
     box_speed_y_ = -box_speed_y_;
 
   // Draw rectangle with the following colors in it's corners:

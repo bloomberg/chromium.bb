@@ -256,7 +256,7 @@ scoped_refptr<CaptureData> PrepareEncodeData(media::VideoFrame::Format format,
   planes.strides[0] = kWidth * kBytesPerPixel;
 
   scoped_refptr<CaptureData> data =
-      new CaptureData(planes, kWidth, kHeight, format);
+      new CaptureData(planes, gfx::Size(kWidth, kHeight), format);
   return data;
 }
 

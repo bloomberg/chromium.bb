@@ -27,8 +27,7 @@ struct DataPlanes {
 class CaptureData : public base::RefCountedThreadSafe<CaptureData> {
  public:
   CaptureData(const DataPlanes &data_planes,
-              int width,
-              int height,
+              const gfx::Size& size,
               media::VideoFrame::Format format);
 
   // Get the data_planes data of the last capture.
@@ -38,15 +37,8 @@ class CaptureData : public base::RefCountedThreadSafe<CaptureData> {
   // written into |rects|.
   const InvalidRects& dirty_rects() const { return dirty_rects_; }
 
-  // TODO(simonmorris): The next two methods should be replaced by a
-  // gfx::Size size(), and objects that store that size should also
-  // use a gfx::Size to do so.
-
-  // Get the width of the image captured.
-  int width() const { return width_; }
-
-  // Get the height of the image captured.
-  int height() const { return height_; }
+  // Return the size of the image captured.
+  gfx::Size size() const { return size_; }
 
   // Get the pixel format of the image captured.
   media::VideoFrame::Format pixel_format() const { return pixel_format_; }
@@ -57,8 +49,7 @@ class CaptureData : public base::RefCountedThreadSafe<CaptureData> {
  private:
   const DataPlanes data_planes_;
   InvalidRects dirty_rects_;
-  int width_;
-  int height_;
+  gfx::Size size_;
   media::VideoFrame::Format pixel_format_;
 
   friend class base::RefCountedThreadSafe<CaptureData>;

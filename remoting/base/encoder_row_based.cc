@@ -42,8 +42,7 @@ EncoderRowBased::EncoderRowBased(Compressor* compressor,
                                  VideoPacketFormat::Encoding encoding)
     : encoding_(encoding),
       compressor_(compressor),
-      screen_width_(0),
-      screen_height_(0),
+      screen_size_(0, 0),
       packet_size_(kPacketSize) {
 }
 
@@ -52,8 +51,7 @@ EncoderRowBased::EncoderRowBased(Compressor* compressor,
                                  int packet_size)
     : encoding_(encoding),
       compressor_(compressor),
-      screen_width_(0),
-      screen_height_(0),
+      screen_size_(0, 0),
       packet_size_(packet_size) {
 }
 
@@ -151,12 +149,10 @@ void EncoderRowBased::PrepareUpdateStart(const gfx::Rect& rect,
   format->set_width(rect.width());
   format->set_height(rect.height());
   format->set_encoding(encoding_);
-  if ((capture_data_->width() != screen_width_) ||
-      (capture_data_->height() != screen_height_)) {
-    screen_width_ = capture_data_->width();
-    screen_height_ = capture_data_->height();
-    format->set_screen_width(screen_width_);
-    format->set_screen_height(screen_height_);
+  if (capture_data_->size() != screen_size_) {
+    screen_size_ = capture_data_->size();
+    format->set_screen_width(screen_size_.width());
+    format->set_screen_height(screen_size_.height());
   }
 }
 

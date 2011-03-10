@@ -115,7 +115,7 @@ void CapturerMac::CaptureRects(const InvalidRects& rects,
   planes.strides[0] = bytes_per_row_;
 
   scoped_refptr<CaptureData> data(
-      new CaptureData(planes, width_, height_, pixel_format()));
+      new CaptureData(planes, gfx::Size(width_, height_), pixel_format()));
   data->mutable_dirty_rects() = rects;
   FinishCapture(data, callback);
 }

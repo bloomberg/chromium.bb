@@ -33,8 +33,7 @@ EncoderVp8::EncoderVp8()
       active_map_width_(0),
       active_map_height_(0),
       last_timestamp_(0),
-      width_(0),
-      height_(0) {
+      size_(0, 0) {
 }
 
 EncoderVp8::~EncoderVp8() {
@@ -44,9 +43,8 @@ EncoderVp8::~EncoderVp8() {
   }
 }
 
-bool EncoderVp8::Init(int width, int height) {
-  width_ = width;
-  height_ = height;
+bool EncoderVp8::Init(const gfx::Size& size) {
+  size_ = size;
   codec_.reset(new vpx_codec_ctx_t());
   image_.reset(new vpx_image_t());
   memset(image_.get(), 0, sizeof(vpx_image_t));
@@ -54,20 +52,20 @@ bool EncoderVp8::Init(int width, int height) {
   image_->fmt = VPX_IMG_FMT_YV12;
 
   // libvpx seems to require both to be assigned.
-  image_->d_w = width;
-  image_->w = width;
-  image_->d_h = height;
-  image_->h = height;
+  image_->d_w = size.width();
+  image_->w = size.width();
+  image_->d_h = size.height();
+  image_->h = size.height();
 
   // YUV image size is 1.5 times of a plane. Multiplication is performed first
   // to avoid rounding error.
-  const int plane_size = width * height;
-  const int size = plane_size * 3 / 2;
+  const int plane_size = size.width() * size.height();
+  const int yuv_image_size = plane_size * 3 / 2;
 
-  yuv_image_.reset(new uint8[size]);
+  yuv_image_.reset(new uint8[yuv_image_size]);
 
   // Reset image value to 128 so we just need to fill in the y plane.
-  memset(yuv_image_.get(), 128, size);
+  memset(yuv_image_.get(), 128, yuv_image_size);
 
   // Fill in the information for |image_|.
   unsigned char* image = reinterpret_cast<unsigned char*>(yuv_image_.get());
@@ -91,15 +89,15 @@ bool EncoderVp8::Init(int width, int height) {
     return false;
 
   // Initialize active map.
-  active_map_width_ = (width + kMacroBlockSize - 1) / kMacroBlockSize;
-  active_map_height_ = (height + kMacroBlockSize - 1) / kMacroBlockSize;
+  active_map_width_ = (size.width() + kMacroBlockSize - 1) / kMacroBlockSize;
+  active_map_height_ = (size.height() + kMacroBlockSize - 1) / kMacroBlockSize;
   active_map_.reset(new uint8[active_map_width_ * active_map_height_]);
 
   // TODO(hclam): Tune the parameters to better suit the application.
-  config.rc_target_bitrate = width * height * config.rc_target_bitrate
-      / config.g_w / config.g_h;
-  config.g_w = width;
-  config.g_h = height;
+  config.rc_target_bitrate = size.width() * size.height() *
+      config.rc_target_bitrate / config.g_w / config.g_h;
+  config.g_w = size.width();
+  config.g_h = size.height();
   config.g_pass = VPX_RC_ONE_PASS;
   config.g_profile = 1;
   config.g_threads = 1;
@@ -147,7 +145,8 @@ bool EncoderVp8::PrepareImage(scoped_refptr<CaptureData> capture_data,
   const InvalidRects& rects = capture_data->dirty_rects();
   const uint8* in = capture_data->data_planes().data[0];
   const int in_stride = capture_data->data_planes().strides[0];
-  const int plane_size = capture_data->width() * capture_data->height();
+  const int plane_size =
+      capture_data->size().width() * capture_data->size().height();
   uint8* y_out = yuv_image_.get();
   uint8* u_out = yuv_image_.get() + plane_size;
   uint8* v_out = yuv_image_.get() + plane_size + plane_size / 4;
@@ -204,9 +203,8 @@ void EncoderVp8::PrepareActiveMap(
 void EncoderVp8::Encode(scoped_refptr<CaptureData> capture_data,
                         bool key_frame,
                         DataAvailableCallback* data_available_callback) {
-  if (!initialized_ || (capture_data->width() != width_) ||
-      (capture_data->height() != height_)) {
-    bool ret = Init(capture_data->width(), capture_data->height());
+  if (!initialized_ || (capture_data->size() != size_)) {
+    bool ret = Init(capture_data->size());
     // TODO(hclam): Handle error better.
     DCHECK(ret) << "Initialization of encoder failed";
     initialized_ = ret;
@@ -269,8 +267,8 @@ void EncoderVp8::Encode(scoped_refptr<CaptureData> capture_data,
   message->mutable_format()->set_encoding(VideoPacketFormat::ENCODING_VP8);
   message->set_flags(VideoPacket::FIRST_PACKET | VideoPacket::LAST_PACKET |
                      VideoPacket::LAST_PARTITION);
-  message->mutable_format()->set_screen_width(capture_data->width());
-  message->mutable_format()->set_screen_height(capture_data->height());
+  message->mutable_format()->set_screen_width(capture_data->size().width());
+  message->mutable_format()->set_screen_height(capture_data->size().height());
   for (size_t i = 0; i < updated_rects.size(); ++i) {
     Rect* rect = message->add_dirty_rects();
     rect->set_x(updated_rects[i].x());

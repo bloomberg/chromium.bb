@@ -44,8 +44,8 @@ void CapturerCallback::CaptureDoneCallback(
   int height = CGDisplayPixelsHigh(mainDevice);
 
   EXPECT_EQ(rects_, capture_data->dirty_rects());
-  EXPECT_EQ(width, capture_data->width());
-  EXPECT_EQ(height, capture_data->height());
+  EXPECT_EQ(width, capture_data->size().width());
+  EXPECT_EQ(height, capture_data->size().height());
   const DataPlanes &planes = capture_data->data_planes();
   EXPECT_TRUE(planes.data[0] != NULL);
   EXPECT_TRUE(planes.data[1] == NULL);

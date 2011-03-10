@@ -62,8 +62,7 @@ class Capturer {
   void InvalidateRects(const InvalidRects& inval_rects);
 
   // Invalidate the entire screen, of a given size.
-  // TODO(hclam): No overload function!
-  void InvalidateFullScreen(int width, int height);
+  void InvalidateScreen(const gfx::Size& size);
 
   // Invalidate the entire screen, using the size of the most recently
   // captured screen.
@@ -84,9 +83,8 @@ class Capturer {
   // method is called.
   virtual void CaptureInvalidRects(CaptureCompletedCallback* callback);
 
-  // Get the width/height of the most recently captured screen.
-  int width_most_recent() { return width_most_recent_; }
-  int height_most_recent() { return height_most_recent_; }
+  // Get the size of the most recently captured screen.
+  const gfx::Size& size_most_recent() const { return size_most_recent_; }
 
  protected:
   explicit Capturer(MessageLoop* message_loop);
@@ -142,9 +140,8 @@ class Capturer {
   // A lock protecting |inval_rects_| across threads.
   base::Lock inval_rects_lock_;
 
-  // The width and height of the most recently captured screen.
-  int width_most_recent_;
-  int height_most_recent_;
+  // The size of the most recently captured screen.
+  gfx::Size size_most_recent_;
 };
 
 }  // namespace remoting
