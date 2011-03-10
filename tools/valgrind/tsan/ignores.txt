@@ -146,3 +146,6 @@ fun_r:gethostbyname2_r*
 # Strange reports below _IO_getline, every time in "Concurrent access".
 # Probably the reports are there since we're missing the libc internal locks
 fun_r:_IO_getline*
+
+# Many data races in WebKit filesystem API, see http://crbug.com/75589
+fun_r:*WebKit*FileSystem*
