@@ -4791,9 +4791,10 @@ Keep your key file in a safe place. You will need it to create new versions of y
         Stop import
       </message>
 
-      <!-- Confirm to quit panel -->
+      <!-- Confirm to quit panel.  The example text uses cmd+, but we acutally
+      use ⌘ to work around a bug in the translation console. -->
       <message name="IDS_CONFIRM_TO_QUIT_DESCRIPTION" desc="Instructions for how the user should confirm quitting.">
-        Hold <ph name="KEY_EQUIVALENT">$1<ex>⌘Q</ex></ph> to Quit.
+        Hold <ph name="KEY_EQUIVALENT">$1<ex>cmd+Q</ex></ph> to Quit.
       </message>
 
       <!-- Importer Lock Dialog -->
