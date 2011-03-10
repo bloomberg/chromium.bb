@@ -121,6 +121,8 @@ INSTANTIATE_TEST_CASE_P(
                     prefs::kAuthServerWhitelist),
         TypeAndName(kPolicyAuthNegotiateDelegateWhitelist,
                     prefs::kAuthNegotiateDelegateWhitelist),
+        TypeAndName(kPolicyDownloadDirectory,
+                    prefs::kDownloadDefaultDirectory),
         TypeAndName(kPolicyGSSAPILibraryName,
                     prefs::kGSSAPILibraryName)));
 
@@ -194,6 +196,12 @@ INSTANTIATE_TEST_CASE_P(
                     prefs::kEnableAuthNegotiatePort),
         TypeAndName(kPolicyInstantEnabled,
                     prefs::kInstantEnabled),
+        TypeAndName(kPolicyDisablePluginFinder,
+                    prefs::kDisablePluginFinder),
+        TypeAndName(kPolicyClearSiteDataOnExit,
+                    prefs::kClearSiteDataOnExit),
+        TypeAndName(kPolicyDefaultBrowserSettingEnabled,
+                    prefs::kDefaultBrowserSettingEnabled),
         TypeAndName(kPolicyDisable3DAPIs,
                     prefs::kDisable3DAPIs)));
 

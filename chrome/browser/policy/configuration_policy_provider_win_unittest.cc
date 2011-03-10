@@ -466,6 +466,18 @@ INSTANTIATE_TEST_CASE_P(
             kPolicyIncognitoEnabled,
             key::kIncognitoEnabled),
         PolicyTestParams::ForBooleanPolicy(
+            kPolicyDisablePluginFinder,
+            key::kDisablePluginFinder),
+        PolicyTestParams::ForBooleanPolicy(
+            kPolicyClearSiteDataOnExit,
+            key::kClearSiteDataOnExit),
+        PolicyTestParams::ForStringPolicy(
+            kPolicyDownloadDirectory,
+            key::kDownloadDirectory),
+        PolicyTestParams::ForBooleanPolicy(
+            kPolicyDefaultBrowserSettingEnabled,
+            key::kDefaultBrowserSettingEnabled),
+        PolicyTestParams::ForBooleanPolicy(
             kPolicyCloudPrintProxyEnabled,
             key::kCloudPrintProxyEnabled)));
 
