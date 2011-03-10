@@ -65,6 +65,8 @@ using base::TimeDelta;
 using base::TimeTicks;
 
 static const int kMinutesInTenYears = 10 * 365 * 24 * 60;
+static const int kMonsterAlive = 0xBBEEEEFF;
+static const int kMonsterDead = 0xFFEEEEDD;
 
 namespace net {
 
@@ -358,7 +360,8 @@ CookieMonster::CookieMonster(PersistentCookieStore* store, Delegate* delegate)
       last_access_threshold_(
           TimeDelta::FromSeconds(kDefaultAccessUpdateThresholdSeconds)),
       delegate_(delegate),
-      last_statistic_record_time_(Time::Now()) {
+      last_statistic_record_time_(Time::Now()),
+      monster_alive_(kMonsterAlive) {
   InitializeHistograms();
   SetDefaultCookieableSchemes();
 }
@@ -372,7 +375,8 @@ CookieMonster::CookieMonster(PersistentCookieStore* store,
       last_access_threshold_(base::TimeDelta::FromMilliseconds(
           last_access_threshold_milliseconds)),
       delegate_(delegate),
-      last_statistic_record_time_(base::Time::Now()) {
+      last_statistic_record_time_(base::Time::Now()),
+      monster_alive_(kMonsterAlive) {
   InitializeHistograms();
   SetDefaultCookieableSchemes();
 }
@@ -799,16 +803,20 @@ CookieMonster* CookieMonster::GetCookieMonster() {
   return this;
 }
 
-void CookieMonster::ValidateMap() {
+void CookieMonster::ValidateMap(int arg) {
   base::AutoLock autolock(lock_);
   // Skipping InitIfNecessary() to allow validation before first use.
 
+  CHECK_EQ(kMonsterAlive, monster_alive_);
   for (CookieMap::iterator it = cookies_.begin(); it != cookies_.end(); ++it)
     CHECK(it->second);
+  // Keep routine from optimizing away.
+  VLOG(1) << "ValidateMap arg was " << arg;
 }
 
 CookieMonster::~CookieMonster() {
   DeleteAll(false);
+  monster_alive_ = kMonsterDead;
 }
 
 bool CookieMonster::SetCookieWithCreationTime(const GURL& url,

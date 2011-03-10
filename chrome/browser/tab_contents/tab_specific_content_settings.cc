@@ -10,6 +10,7 @@
 #include "chrome/browser/browsing_data_indexed_db_helper.h"
 #include "chrome/browser/browsing_data_local_storage_helper.h"
 #include "chrome/browser/cookies_tree_model.h"
+#include "chrome/browser/prerender/prerender_manager.h"
 #include "net/base/cookie_monster.h"
 
 bool TabSpecificContentSettings::LocalSharedObjectsContainer::empty() const {
@@ -114,7 +115,7 @@ void TabSpecificContentSettings::OnCookiesRead(
   typedef net::CookieList::const_iterator cookie_iterator;
   for (cookie_iterator cookie = cookie_list.begin();
        cookie != cookie_list.end(); ++cookie) {
-    container.cookies()->ValidateMap();
+    container.cookies()->ValidateMap(prerender::PrerenderManager::GetMode());
     container.cookies()->SetCookieWithDetails(url,
                                               cookie->Name(),
                                               cookie->Value(),
@@ -123,7 +124,7 @@ void TabSpecificContentSettings::OnCookiesRead(
                                               cookie->ExpiryDate(),
                                               cookie->IsSecure(),
                                               cookie->IsHttpOnly());
-    container.cookies()->ValidateMap();
+    container.cookies()->ValidateMap(prerender::PrerenderManager::GetMode());
   }
   if (blocked_by_policy)
     OnContentBlocked(CONTENT_SETTINGS_TYPE_COOKIES, std::string());
@@ -137,16 +138,20 @@ void TabSpecificContentSettings::OnCookieChanged(
     const net::CookieOptions& options,
     bool blocked_by_policy) {
   if (blocked_by_policy) {
-    blocked_local_shared_objects_.cookies()->ValidateMap();
+    blocked_local_shared_objects_.cookies()->ValidateMap(
+        prerender::PrerenderManager::GetMode());
     blocked_local_shared_objects_.cookies()->SetCookieWithOptions(
         url, cookie_line, options);
-    blocked_local_shared_objects_.cookies()->ValidateMap();
+    blocked_local_shared_objects_.cookies()->ValidateMap(
+        prerender::PrerenderManager::GetMode());
     OnContentBlocked(CONTENT_SETTINGS_TYPE_COOKIES, std::string());
   } else {
-    allowed_local_shared_objects_.cookies()->ValidateMap();
+    allowed_local_shared_objects_.cookies()->ValidateMap(
+        prerender::PrerenderManager::GetMode());
     allowed_local_shared_objects_.cookies()->SetCookieWithOptions(
         url, cookie_line, options);
-    allowed_local_shared_objects_.cookies()->ValidateMap();
+    allowed_local_shared_objects_.cookies()->ValidateMap(
+        prerender::PrerenderManager::GetMode());
     OnContentAccessed(CONTENT_SETTINGS_TYPE_COOKIES);
   }
 }
@@ -292,11 +297,13 @@ TabSpecificContentSettings::LocalSharedObjectsContainer::
 
 TabSpecificContentSettings::LocalSharedObjectsContainer::
     ~LocalSharedObjectsContainer() {
-  cookies_->ValidateMap();
+  cookies_->ValidateMap(prerender::PrerenderManager::GetMode());
 }
 
 void TabSpecificContentSettings::LocalSharedObjectsContainer::Reset() {
+  cookies_->ValidateMap(prerender::PrerenderManager::GetMode());
   cookies_->DeleteAll(false);
+  cookies_->ValidateMap(prerender::PrerenderManager::GetMode());
   appcaches_->Reset();
   databases_->Reset();
   indexed_dbs_->Reset();

@@ -233,7 +233,9 @@ class CookieMonster : public CookieStore {
   // Debugging method to perform various validation checks on the map.
   // Currently just checking that there are no null CanonicalCookie pointers
   // in the map.
-  void ValidateMap();
+  // Argument |arg| is to allow retaining of arbitrary data if the CHECKs
+  // in the function trip.  TODO(rdsmith):Remove hack.
+  void ValidateMap(int arg);
 
  private:
   // Testing support.
@@ -495,6 +497,10 @@ class CookieMonster : public CookieStore {
   base::Time last_statistic_record_time_;
 
   static bool enable_file_scheme_;
+
+  // For temporary debugging; allows for an assert in ValidateMap()
+  // if that function is called post-destruction.
+  int monster_alive_;
 
   DISALLOW_COPY_AND_ASSIGN(CookieMonster);
 };
