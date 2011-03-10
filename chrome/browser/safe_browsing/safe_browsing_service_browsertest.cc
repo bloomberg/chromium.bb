@@ -383,6 +383,45 @@ IN_PROC_BROWSER_TEST_F(SafeBrowsingServiceTest, Malware) {
   EXPECT_TRUE(ShowingInterstitialPage());
 }
 
+const char kPrefetchMalwarePage[] = "files/safe_browsing/prefetch_malware.html";
+
+// This test confirms that prefetches don't themselves get the
+// interstitial treatment.
+IN_PROC_BROWSER_TEST_F(SafeBrowsingServiceTest, Prefetch) {
+  GURL url = test_server()->GetURL(kPrefetchMalwarePage);
+  GURL malware_url = test_server()->GetURL(kMalwarePage);
+
+  class SetPrefetchForTest {
+   public:
+    explicit SetPrefetchForTest(bool prefetch)
+        : old_prefetch_state_(ResourceDispatcherHost::is_prefetch_enabled()) {
+      ResourceDispatcherHost::set_is_prefetch_enabled(prefetch);
+    }
+
+    ~SetPrefetchForTest() {
+      ResourceDispatcherHost::set_is_prefetch_enabled(old_prefetch_state_);
+    }
+   private:
+    bool old_prefetch_state_;
+  } set_prefetch_for_test(true);
+
+  // Even though we have added this uri to the safebrowsing database and
+  // getfullhash result, we should not see the interstitial page since the
+  // only malware was a prefetch target.
+  SBFullHashResult malware_full_hash;
+  int chunk_id = 0;
+  GenUrlFullhashResult(malware_url, safe_browsing_util::kMalwareList,
+                       chunk_id, &malware_full_hash);
+  SetupResponseForUrl(malware_url, malware_full_hash);
+  ui_test_utils::NavigateToURL(browser(), url);
+  EXPECT_FALSE(ShowingInterstitialPage());
+
+  // However, when we navigate to the malware page, we should still get
+  // the interstitial.
+  ui_test_utils::NavigateToURL(browser(), malware_url);
+  EXPECT_TRUE(ShowingInterstitialPage());
+}
+
 }  // namespace
 
 class TestSBClient

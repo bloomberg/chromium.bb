@@ -9,8 +9,10 @@
 #include "content/browser/renderer_host/resource_dispatcher_host.h"
 #include "content/browser/renderer_host/resource_message_filter.h"
 #include "content/common/resource_response.h"
-#include "net/base/net_errors.h"
 #include "net/base/io_buffer.h"
+#include "net/base/load_flags.h"
+#include "net/base/net_errors.h"
+#include "net/url_request/url_request.h"
 
 // Maximum time in milliseconds to wait for the safe browsing service to
 // verify a URL. After this amount of time the outstanding check will be
@@ -158,7 +160,15 @@ void SafeBrowsingResourceHandler::OnBrowseUrlCheckResult(
     // Continue the request.
     ResumeRequest();
   } else {
-    StartDisplayingBlockingPage(url, result);
+    const net::URLRequest* request = rdh_->GetURLRequest(
+        GlobalRequestID(render_process_host_id_, deferred_request_id_));
+    if (request->load_flags() & net::LOAD_PREFETCH) {
+      // Don't prefetch resources that fail safe browsing, disallow
+      // them.
+      rdh_->CancelRequest(render_process_host_id_, deferred_request_id_, false);
+    } else {
+      StartDisplayingBlockingPage(url, result);
+    }
   }
 
   Release();  // Balances the AddRef() in CheckingUrl().

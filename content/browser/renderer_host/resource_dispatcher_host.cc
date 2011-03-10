@@ -1185,7 +1185,13 @@ void ResourceDispatcherHost::CancelRequest(int child_id,
     DLOG(WARNING) << "Canceling a request that wasn't found";
     return;
   }
-  CancelRequestInternal(i->second, from_renderer);
+  net::URLRequest* request = i->second;
+  const bool started_before_cancel = request->is_pending();
+  CancelRequestInternal(request, from_renderer);
+  // If the request isn't in flight, then we won't get asyncronous notification,
+  // so we have to signal ourselves to finish this request.
+  if (!started_before_cancel)
+    OnResponseCompleted(request);
 }
 
 void ResourceDispatcherHost::CancelRequestInternal(net::URLRequest* request,
