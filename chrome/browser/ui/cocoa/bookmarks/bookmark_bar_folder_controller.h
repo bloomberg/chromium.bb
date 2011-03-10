@@ -169,6 +169,9 @@
 // Passed up by a child view to tell us of a desire to scroll.
 - (void)scrollWheel:(NSEvent *)theEvent;
 
+- (void)mouseDragged:(NSEvent*)theEvent;
+
+
 // Forwarded to the associated BookmarkBarController.
 - (IBAction)addFolder:(id)sender;
 - (IBAction)addPage:(id)sender;

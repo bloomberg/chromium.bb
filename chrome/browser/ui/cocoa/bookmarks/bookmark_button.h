@@ -212,6 +212,10 @@ class ThemeProvider;
 // Return YES if this is a folder button (the node has subnodes).
 - (BOOL)isFolder;
 
+- (void)mouseDragged:(NSEvent*)theEvent;
+
+- (BOOL)acceptsTrackInFrom:(id)sender;
+
 // At this time we represent an empty folder (e.g. the string
 // '(empty)') as a disabled button with no associated node.
 //

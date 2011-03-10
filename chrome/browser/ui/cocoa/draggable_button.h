@@ -17,6 +17,13 @@
   NSTimeInterval whenMouseDown_;
 }
 
+@property NSTimeInterval durationMouseWasDown;
+
+@property NSTimeInterval whenMouseDown;
+
+// Whether the action has already fired for this click.
+@property(nonatomic) BOOL actionHasFired;
+
 // Enable or disable dragability for special buttons like "Other Bookmarks".
 @property(nonatomic) BOOL draggable;
 
@@ -31,11 +38,6 @@
 // -drag* methods of NSView when overriding this method.
 - (void)beginDrag:(NSEvent*)dragEvent;
 
-// Called internally. Default impl only returns YES if sender==self.
-// Override if your subclass wants to accept being tracked into while a
-// click is being tracked on another DraggableButton. Needed to support
-// buttons being used as fake menu items or menu titles, as BookmarkButton does.
-- (BOOL)acceptsTrackInFrom:(id)sender;
 
 // Override if you want to do any extra work on mouseUp, after a mouseDown
 // action has already fired.
@@ -64,8 +66,6 @@
                               xHysteresis:(float)xHysteresis
                               yHysteresis:(float)yHysteresis;
 
-
-@property(nonatomic) NSTimeInterval durationMouseWasDown;
 
 @end  // @interface DraggableButton
 

@@ -2134,7 +2134,8 @@ static BOOL ValueInRangeInclusive(CGFloat low, CGFloat value, CGFloat high) {
     [[hoverButton_ target]
      performSelector:@selector(openBookmarkFolderFromButton:)
      withObject:hoverButton_
-     afterDelay:bookmarks::kDragHoverOpenDelay];
+     afterDelay:bookmarks::kDragHoverOpenDelay
+     inModes:[NSArray arrayWithObject:NSRunLoopCommonModes]];
   }
   if (!button) {
     if (hoverButton_) {

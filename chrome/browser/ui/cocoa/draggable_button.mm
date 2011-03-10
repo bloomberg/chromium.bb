@@ -22,6 +22,9 @@ const CGFloat kDragExpirationTimeout = 1.0;
 @synthesize draggable = draggable_;
 @synthesize actsOnMouseDown = actsOnMouseDown_;
 @synthesize durationMouseWasDown = durationMouseWasDown_;
+@synthesize actionHasFired = actionHasFired_;
+@synthesize whenMouseDown = whenMouseDown_;
+
 
 - (id)initWithFrame:(NSRect)frame {
   if ((self = [super initWithFrame:frame])) {
@@ -153,62 +156,33 @@ const CGFloat kDragExpirationTimeout = 1.0;
   // action has already fired.
 }
 
-- (BOOL)acceptsTrackInFrom:(id)sender {
-  return (sender == self);
-}
-
 - (void)performMouseDownAction:(NSEvent*)theEvent {
-  int eventMask = NSLeftMouseUpMask | NSMouseEnteredMask | NSMouseExitedMask;
+  int eventMask = NSLeftMouseUpMask;
 
   [[self target] performSelector:[self action] withObject:self];
   actionHasFired_ = YES;
 
-  DraggableButton* insideBtn = nil;
-
   while (1) {
     theEvent = [[self window] nextEventMatchingMask:eventMask];
+    if (!theEvent)
+      continue;
     NSPoint mouseLoc = [self convertPoint:[theEvent locationInWindow]
                                  fromView:nil];
     BOOL isInside = [self mouse:mouseLoc inRect:[self bounds]];
+    [self highlight:isInside];
 
     switch ([theEvent type]) {
-      case NSMouseEntered:
-      case NSMouseExited: {
-        NSView* trackedView = (NSView*)[[theEvent trackingArea] owner];
-        if (trackedView && [trackedView isKindOfClass:[self class]]) {
-          DraggableButton *btn = static_cast<DraggableButton*>(trackedView);
-          if (![btn acceptsTrackInFrom:self])
-            break;
-          if ([theEvent type] == NSMouseEntered) {
-            [[NSCursor arrowCursor] set];
-            [[btn cell] mouseEntered:theEvent];
-            insideBtn = btn;
-          } else {
-            [[btn cell] mouseExited:theEvent];
-            if (insideBtn == btn)
-              insideBtn = nil;
-          }
-        }
-        break;
-      }
-      case NSLeftMouseUp: {
-        if (!isInside && insideBtn && insideBtn != self) {
-          // Has tracked onto another DraggableButton menu item, and released,
-          // so click it.
-          [insideBtn performClick:self];
-        }
+      case NSLeftMouseUp:
         durationMouseWasDown_ = [theEvent timestamp] - whenMouseDown_;
         [self secondaryMouseUpAction:isInside];
-        [[self cell] mouseExited:theEvent];
-        [[insideBtn cell] mouseExited:theEvent];
-        return;
         break;
-      }
       default:
         /* Ignore any other kind of event. */
         break;
     }
   }
+
+  [self highlight:NO];
 }
 
 // Mimic "begin a click" operation visually.  Do NOT follow through

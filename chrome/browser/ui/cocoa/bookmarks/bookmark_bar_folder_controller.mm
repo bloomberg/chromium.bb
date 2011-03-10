@@ -103,6 +103,12 @@ struct LayoutMetrics {
 
 }  // namespace
 
+
+// Required to set the right tracking bounds for our fake menus.
+@interface NSView(Private)
+- (void)_updateTrackingAreas;
+@end
+
 @interface BookmarkBarFolderController(Private)
 - (void)configureWindow;
 - (void)addOrUpdateScrollTracking;
@@ -691,6 +697,16 @@ struct LayoutMetrics {
   if (!metrics.preScroll)
     [[scrollView_ documentView] scrollPoint:metrics.scrollPoint];
 
+  // TODO(maf) find a non-SPI way to do this.
+  // Hack. This is the only way I've found to get the tracking area cache
+  // to update properly during a mouse tracking loop.
+  // Without this, the item tracking-areas are wrong when using a scrollable
+  // menu with the mouse held down.
+  NSView *contentView = [[self window] contentView] ;
+  if ([contentView respondsToSelector:@selector(_updateTrackingAreas)])
+    [contentView _updateTrackingAreas];
+
+
   if (metrics.canScrollUp != metrics.couldScrollUp ||
       metrics.canScrollDown != metrics.couldScrollDown ||
       metrics.scrollDelta != 0.0) {
@@ -796,8 +812,8 @@ struct LayoutMetrics {
   [folderView_ setFrame:folderFrame];
   NSSize newSize = NSMakeSize(windowWidth, 0.0);
   [self adjustWindowLeft:newWindowTopLeft.x size:newSize scrollingBy:0.0];
-  [window display];
   [self configureWindowLevel];
+  [window display];
 }
 
 // TODO(mrossetti): See if the following can be moved into view's viewWillDraw:.
@@ -901,43 +917,44 @@ struct LayoutMetrics {
 }
 
 
-// Add a timer to fire at a regular interveral which scrolls the
+// Add a timer to fire at a regular interval which scrolls the
 // window vertically |delta|.
 - (void)addScrollTimerWithDelta:(CGFloat)delta {
   if (scrollTimer_ && verticalScrollDelta_ == delta)
     return;
   [self endScroll];
   verticalScrollDelta_ = delta;
-  scrollTimer_ =
-      [NSTimer scheduledTimerWithTimeInterval:kBookmarkBarFolderScrollInterval
-                                       target:self
-                                     selector:@selector(performScroll:)
-                                     userInfo:nil
-                                      repeats:YES];
+  scrollTimer_ = [NSTimer timerWithTimeInterval:kBookmarkBarFolderScrollInterval
+                                         target:self
+                                       selector:@selector(performScroll:)
+                                       userInfo:nil
+                                        repeats:YES];
+
+  [[NSRunLoop mainRunLoop] addTimer:scrollTimer_ forMode:NSRunLoopCommonModes];
 }
+
 
 // Called as a result of our tracking area.  Warning: on the main
 // screen (of a single-screened machine), the minimum mouse y value is
 // 1, not 0.  Also, we do not get events when the mouse is above the
 // menubar (to be fixed by setting the proper window level; see
 // initializer).
-- (void)mouseMoved:(NSEvent*)theEvent {
-  NSWindow* window = [theEvent window];
-  DCHECK(window == [self window]);
-
+// Note [theEvent window] may not be our window, as we also get these messages
+// forwarded from BookmarkButton's mouse tracking loop.
+- (void)mouseMovedOrDragged:(NSEvent*)theEvent {
   NSPoint eventScreenLocation =
-      [window convertBaseToScreen:[theEvent locationInWindow]];
+      [[theEvent window] convertBaseToScreen:[theEvent locationInWindow]];
 
   // Base hot spot calculations on the positions of the scroll arrow views.
   NSRect testRect = [scrollDownArrowView_ frame];
   NSPoint testPoint = [visibleView_ convertPoint:testRect.origin
                                                   toView:nil];
-  testPoint = [window convertBaseToScreen:testPoint];
+  testPoint = [[self window] convertBaseToScreen:testPoint];
   CGFloat closeToTopOfScreen = testPoint.y;
 
   testRect = [scrollUpArrowView_ frame];
   testPoint = [visibleView_ convertPoint:testRect.origin toView:nil];
-  testPoint = [window convertBaseToScreen:testPoint];
+  testPoint = [[self window] convertBaseToScreen:testPoint];
   CGFloat closeToBottomOfScreen = testPoint.y + testRect.size.height;
   if (eventScreenLocation.y <= closeToBottomOfScreen &&
       ![scrollUpArrowView_ isHidden]) {
@@ -948,6 +965,14 @@ struct LayoutMetrics {
   } else {
     [self endScroll];
   }
+}
+
+- (void)mouseMoved:(NSEvent*)theEvent {
+  [self mouseMovedOrDragged:theEvent];
+}
+
+- (void)mouseDragged:(NSEvent*)theEvent {
+  [self mouseMovedOrDragged:theEvent];
 }
 
 - (void)mouseExited:(NSEvent*)theEvent {
@@ -964,7 +989,9 @@ struct LayoutMetrics {
                               initWithRect:[view bounds]
                                    options:(NSTrackingMouseMoved |
                                             NSTrackingMouseEnteredAndExited |
-                                            NSTrackingActiveAlways)
+                                            NSTrackingActiveAlways |
+                                            NSTrackingEnabledDuringMouseDrag
+                                            )
                               proxiedOwner:self
                                   userInfo:nil]);
   [view addTrackingArea:scrollTrackingArea_.get()];

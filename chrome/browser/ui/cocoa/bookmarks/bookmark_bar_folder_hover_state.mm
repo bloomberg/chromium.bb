@@ -85,7 +85,8 @@
   [self setHoverState:kHoverStateClosing];
   [self performSelector:@selector(closeBookmarkFolderOnHoverButton:)
              withObject:hoverButton_
-             afterDelay:bookmarks::kDragHoverCloseDelay];
+             afterDelay:bookmarks::kDragHoverCloseDelay
+                inModes:[NSArray arrayWithObject:NSRunLoopCommonModes]];
 }
 
 // Cancel pending hover close.  Transition to kHoverStateOpen state.
@@ -104,7 +105,8 @@
   [self setHoverState:kHoverStateOpening];
   [self performSelector:@selector(openBookmarkFolderOnHoverButton:)
              withObject:hoverButton_
-             afterDelay:bookmarks::kDragHoverOpenDelay];
+             afterDelay:bookmarks::kDragHoverOpenDelay
+                inModes:[NSArray arrayWithObject:NSRunLoopCommonModes]];
 }
 
 // Cancel pending hover open.  Transition to kHoverStateClosed state.
