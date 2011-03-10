@@ -211,15 +211,25 @@ bool NetworkMenu::ConnectToNetworkAt(int index,
         ShowTabbedNetworkSettings(wifi);
         return true;
       }
+      bool connected = false;
       if (wifi->IsPassphraseRequired()) {
         // Show the connection UI if we require a passphrase.
         ShowNetworkConfigView(new NetworkConfigView(wifi));
         return true;
       } else {
-        cros->ConnectToWifiNetwork(service_path);
-        // Connection failures are responsible for updating the UI, including
-        // reopening dialogs.
-        return true;
+        connected = cros->ConnectToWifiNetwork(
+            service_path, passphrase, std::string(), std::string());
+      }
+      if (!connected) {
+        if (!MenuUI::IsEnabled()) {
+          // Show the wifi dialog on a failed attempt for non Web UI menus.
+          ShowNetworkConfigView(new NetworkConfigView(wifi));
+          return true;
+        } else {
+          // If the connection attempt failed immediately (e.g. short password)
+          // keep the menu open so that a retry can be attempted.
+          return false;
+        }
       }
     } else {
       // If we are attempting to connect to a network that no longer exists,
@@ -249,13 +259,15 @@ bool NetworkMenu::ConnectToNetworkAt(int index,
       // TODO(stevenjb): Show notification.
     }
   } else if (flags & FLAG_OTHER_NETWORK) {
+    bool connected = false;
     if (MenuUI::IsEnabled()) {
       // default is true
       bool auto_connect_bool = auto_connect == 0 ? false : true;
-      cros->ConnectToWifiNetwork(
+      connected = cros->ConnectToWifiNetwork(
           passphrase.empty() ? SECURITY_NONE : SECURITY_UNKNOWN,
           ssid, passphrase, std::string(), std::string(), auto_connect_bool);
-    } else {
+    }
+    if (!connected) {
       ShowOther();
     }
   }

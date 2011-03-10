@@ -354,6 +354,7 @@ bool WifiConfigView::Login() {
     identity_string = UTF16ToUTF8(identity_textfield_->text());
   }
   NetworkLibrary* cros = CrosLibrary::Get()->GetNetworkLibrary();
+  bool connected = false;
   if (!wifi_) {
     ConnectionSecurity sec = SECURITY_UNKNOWN;
     int index = security_combobox_->selected_item();
@@ -365,7 +366,7 @@ bool WifiConfigView::Login() {
       sec = SECURITY_WPA;
     else if (index == SECURITY_INDEX_RSN)
       sec = SECURITY_RSN;
-    cros->ConnectToWifiNetwork(
+    connected =  cros->ConnectToWifiNetwork(
         sec, GetSSID(), GetPassphrase(),
         identity_string, certificate_path_, true);
   } else {
@@ -377,9 +378,16 @@ bool WifiConfigView::Login() {
     if (passphrase != wifi_->passphrase())
       wifi_->SetPassphrase(passphrase);
 
-    cros->ConnectToWifiNetwork(wifi_);
-    // Connection failures are responsible for updating the UI, including
-    // reopening dialogs.
+    connected = cros->ConnectToWifiNetwork(
+        wifi_, passphrase, identity_string, certificate_path_);
+  }
+  if (!connected) {
+    // Assume this failed due to an invalid password.
+    // TODO(stevenjb): Modify libcros to set an error code. Return 'false'
+    // only on invalid password or other recoverable failure. crosbug.com/9538.
+    // Update any error message and return false (keep dialog open).
+    UpdateErrorLabel(true);
+    return false;
   }
   return true;  // dialog will be closed
 }

@@ -1544,87 +1544,95 @@ class NetworkLibraryImpl : public NetworkLibrary  {
     return true;
   }
 
-  static void WirelessConnectCallback(void *object,
-                                      const char *path,
-                                      NetworkMethodErrorType error,
-                                      const char* error_message) {
-    NetworkLibraryImpl* networklib = static_cast<NetworkLibraryImpl*>(object);
-    DCHECK(networklib);
-
-    if (error != NETWORK_METHOD_ERROR_NONE) {
-      LOG(ERROR) << "Error from ServiceConnect callback: "
-                 << error_message;
-      return;
+  bool CallConnectToNetworkForWifi(const std::string& service_path,
+                                   const std::string& password,
+                                   const std::string& identity,
+                                   const std::string& certpath) {
+    // Blocking DBus call. TODO(stevenjb): make async.
+    if (ConnectToNetworkWithCertInfo(
+            service_path.c_str(),
+            password.empty() ? NULL : password.c_str(),
+            identity.empty() ? NULL : identity.c_str(),
+            certpath.empty() ? NULL : certpath.c_str())) {
+      // Update local cache and notify listeners.
+      WifiNetwork* wifi = GetWifiNetworkByPath(service_path);
+      if (wifi) {
+        wifi->set_passphrase(password);
+        wifi->set_identity(identity);
+        wifi->set_cert_path(certpath);
+        wifi->set_connecting(true);
+        active_wifi_ = wifi;
+      }
+      // If we succeed, this network will be remembered; request an update.
+      // TODO(stevenjb): flimflam should do this automatically.
+      RequestRememberedNetworksUpdate();
+      // Notify observers.
+      NotifyNetworkManagerChanged();
+      NotifyUserConnectionInitated(wifi);
+      return true;
     }
-
-    WirelessNetwork* wireless = networklib->GetWirelessNetworkByPath(path);
-    if (!wireless) {
-      LOG(ERROR) << "No wireless network for path: " << path;
-      return;
-    }
-
-    wireless->set_connecting(true);
-    // Update local cache and notify listeners.
-    if (wireless->type() == TYPE_WIFI)
-      networklib->active_wifi_ = static_cast<WifiNetwork *>(wireless);
-    else if (wireless->type() == TYPE_CELLULAR)
-      networklib->active_cellular_ = static_cast<CellularNetwork *>(wireless);
-    else
-      LOG(ERROR) << "Network of unexpected type: " << wireless->type();
-
-    // If we succeed, this network will be remembered; request an update.
-    // TODO(stevenjb): flimflam should do this automatically.
-    networklib->RequestRememberedNetworksUpdate();
-    // Notify observers.
-    networklib->NotifyNetworkManagerChanged();
-    networklib->NotifyUserConnectionInitiated(wireless);
-  }
-
-
-  void CallConnectToNetworkForWifi(const std::string& service_path) {
-    RequestNetworkServiceConnect(service_path.c_str(),
-                                 WirelessConnectCallback, this);
+    return false;
   }
 
   // Use this when the code needs to cache a copy of the WifiNetwork and
   // expects |network|->error_ to be set on failure.
-  virtual void ConnectToWifiNetwork(WifiNetwork* network) {
+  virtual bool ConnectToWifiNetwork(WifiNetwork* network,
+                                    const std::string& password,
+                                    const std::string& identity,
+                                    const std::string& certpath) {
     DCHECK(network);
     if (!EnsureCrosLoaded() || !network)
-      return;
-    CallConnectToNetworkForWifi(network->service_path());
+      return true;  // No library loaded, don't trigger a retry attempt.
+    bool res = CallConnectToNetworkForWifi(
+        network->service_path(), password, identity, certpath);
+    if (!res) {
+      // The only likely cause for an immediate failure is a badly formatted
+      // passphrase. TODO(stevenjb): get error information from libcros
+      // and call set_error correctly. crosbug.com/9538.
+      // NOTE: This only sets the error field of |network|, which will
+      // always be a local copy, not the network_library copy.
+      // The network_library copy will be updated by libcros.
+      network->set_error(ERROR_BAD_PASSPHRASE);
+    }
+    return res;
   }
 
   // Use this to connect to a wifi network by service path.
-  virtual void ConnectToWifiNetwork(const std::string& service_path) {
+  virtual bool ConnectToWifiNetwork(const std::string& service_path,
+                                    const std::string& password,
+                                    const std::string& identity,
+                                    const std::string& certpath) {
     if (!EnsureCrosLoaded())
-      return;
+      return true;  // No library loaded, don't trigger a retry attempt.
     WifiNetwork* wifi = GetWifiNetworkByPath(service_path);
     if (!wifi) {
       LOG(WARNING) << "Attempt to connect to non existing network: "
                    << service_path;
-      return;
+      return false;
     }
-    CallConnectToNetworkForWifi(service_path);
+    bool res = CallConnectToNetworkForWifi(
+        service_path, password, identity, certpath);
+    return res;
   }
 
   // Use this to connect to an unlisted wifi network.
   // This needs to request information about the named service.
   // The connection attempt will occur in the callback.
-  virtual void ConnectToWifiNetwork(ConnectionSecurity security,
+  virtual bool ConnectToWifiNetwork(ConnectionSecurity security,
                                     const std::string& ssid,
                                     const std::string& password,
                                     const std::string& identity,
                                     const std::string& certpath,
                                     bool auto_connect) {
     if (!EnsureCrosLoaded())
-      return;
+      return true;  // No library loaded, don't trigger a retry attempt.
     RequestHiddenWifiNetwork(ssid.c_str(),
                              SecurityToString(security),
                              WifiServiceUpdateAndConnect,
                              this);
     // Store the connection data to be used by the callback.
     connect_data_.SetData(ssid, password, identity, certpath, auto_connect);
+    return true;  // No immediate failure mode
   }
 
   // Callback
@@ -1650,26 +1658,43 @@ class NetworkLibraryImpl : public NetworkLibrary  {
                    << network->name() << " != " << data.name;
       return;
     }
-
-    WifiNetwork *wifi = static_cast<WifiNetwork *>(network);
-    if (!data.password.empty())
-      wifi->SetPassphrase(data.password);
-    if (!data.identity.empty())
-      wifi->SetIdentity(data.identity);
-    if (!data.certpath.empty())
-      wifi->SetCertPath(data.certpath);
-    wifi->SetAutoConnect(data.auto_connect);
-
-    CallConnectToNetworkForWifi(wifi->service_path());
+    // Blocking DBus call. TODO(stevenjb): make async.
+    if (ConnectToNetworkWithCertInfo(
+            network->service_path().c_str(),
+            data.password.empty() ? NULL : data.password.c_str(),
+            data.identity.empty() ? NULL : data.identity.c_str(),
+            data.certpath.empty() ? NULL : data.certpath.c_str())) {
+      LOG(WARNING) << "Connected to: " << network->service_path();
+      // Set auto-connect (synchronous libcros method).
+      SetAutoConnect(network->service_path().c_str(), data.auto_connect);
+      // If we succeed, this network will be remembered; request an update.
+      // TODO(stevenjb): flimflam should do this automatically.
+      RequestRememberedNetworksUpdate();
+      // Notify observers.
+      NotifyNetworkManagerChanged();
+      NotifyUserConnectionInitated(network);
+    }
   }
 
-  virtual void ConnectToCellularNetwork(const CellularNetwork* network) {
+  virtual bool ConnectToCellularNetwork(const CellularNetwork* network) {
     DCHECK(network);
     if (!EnsureCrosLoaded() || !network)
-      return;
-
-    RequestNetworkServiceConnect(network->service_path().c_str(),
-                                 WirelessConnectCallback, this);
+      return true;  // No library loaded, don't trigger a retry attempt.
+    // Blocking DBus call. TODO(stevenjb): make async.
+    if (ConnectToNetwork(network->service_path().c_str(), NULL)) {
+      // Update local cache and notify listeners.
+      CellularNetwork* cellular =
+          GetCellularNetworkByPath(network->service_path());
+      if (cellular) {
+        cellular->set_connecting(true);
+        active_cellular_ = cellular;
+      }
+      NotifyNetworkManagerChanged();
+      NotifyUserConnectionInitated(cellular);
+      return true;
+    } else {
+      return false;  // Immediate failure.
+    }
   }
 
   virtual void RefreshCellularDataPlans(const CellularNetwork* network) {
@@ -2640,7 +2665,7 @@ class NetworkLibraryImpl : public NetworkLibrary  {
                       OnCellularDataPlanChanged(this));
   }
 
-  void NotifyUserConnectionInitiated(const Network* network) {
+  void NotifyUserConnectionInitated(const Network* network) {
     FOR_EACH_OBSERVER(UserActionObserver,
                       user_action_observers_,
                       OnConnectionInitiated(this, network));
@@ -3046,15 +3071,29 @@ class NetworkLibraryStubImpl : public NetworkLibrary {
     return false;
   }
 
-  virtual void ConnectToWifiNetwork(WifiNetwork* network) {}
-  virtual void ConnectToWifiNetwork(const std::string& service_path) {}
-  virtual void ConnectToWifiNetwork(ConnectionSecurity security,
+  virtual bool ConnectToWifiNetwork(WifiNetwork* network,
+                                    const std::string& password,
+                                    const std::string& identity,
+                                    const std::string& certpath) {
+    return true;
+  }
+  virtual bool ConnectToWifiNetwork(const std::string& service_path,
+                                    const std::string& password,
+                                    const std::string& identity,
+                                    const std::string& certpath) {
+    return true;
+  }
+  virtual bool ConnectToWifiNetwork(ConnectionSecurity security,
                                     const std::string& ssid,
                                     const std::string& password,
                                     const std::string& identity,
                                     const std::string& certpath,
-                                    bool auto_connect) {}
-  virtual void ConnectToCellularNetwork(const CellularNetwork* network) {}
+                                    bool auto_connect) {
+    return true;
+  }
+  virtual bool ConnectToCellularNetwork(const CellularNetwork* network) {
+    return true;
+  }
   virtual void RefreshCellularDataPlans(const CellularNetwork* network) {}
   virtual void SignalCellularPlanPayment() {}
   virtual bool HasRecentCellularPlanPayment() { return false; }

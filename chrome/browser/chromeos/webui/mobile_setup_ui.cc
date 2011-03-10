@@ -668,7 +668,8 @@ bool MobileSetupHandler::ConnectToNetwork(
     LOG(INFO) << "Connecting to: " << network->service_path();
   connection_retry_count_++;
   connection_start_time_ = base::Time::Now();
-  if (!network) {
+  if (!network || !chromeos::CrosLibrary::Get()->GetNetworkLibrary()->
+      ConnectToCellularNetwork(network)) {
     LOG(WARNING) << "Connect failed."
                  << (network ? network->service_path().c_str() : "no service");
     // If we coudn't connect during reconnection phase, try to reconnect
@@ -680,8 +681,6 @@ bool MobileSetupHandler::ConnectToNetwork(
         delay);
     return false;
   }
-  chromeos::CrosLibrary::Get()->GetNetworkLibrary()->
-      ConnectToCellularNetwork(network);
   return true;
 }
 

@@ -669,7 +669,8 @@ void InternetOptionsHandler::LoginCallback(const ListValue* args) {
 
   chromeos::NetworkLibrary* cros =
       chromeos::CrosLibrary::Get()->GetNetworkLibrary();
-  cros->ConnectToWifiNetwork(service_path);
+  cros->ConnectToWifiNetwork(
+      service_path, password, std::string(), std::string());
 }
 
 void InternetOptionsHandler::LoginCertCallback(const ListValue* args) {
@@ -693,7 +694,8 @@ void InternetOptionsHandler::LoginCertCallback(const ListValue* args) {
     if (network)
       password = network->passphrase();
   }
-  cros->ConnectToWifiNetwork(service_path);
+  cros->ConnectToWifiNetwork(
+      service_path, password, identity, certpath);
 }
 
 void InternetOptionsHandler::LoginToOtherCallback(const ListValue* args) {
@@ -798,7 +800,8 @@ void InternetOptionsHandler::HandleWifiButtonClick(
           CreateModalPopup(new chromeos::NetworkConfigView(network));
         }
       } else {
-        cros->ConnectToWifiNetwork(service_path);
+        cros->ConnectToWifiNetwork(
+            service_path, std::string(), std::string(), std::string());
       }
     } else if (command == "disconnect") {
       cros->DisconnectFromWirelessNetwork(network);
