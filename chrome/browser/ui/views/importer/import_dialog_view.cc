@@ -24,16 +24,6 @@
 using views::ColumnSet;
 using views::GridLayout;
 
-namespace browser {
-
-// Declared in browser_dialogs.h so callers don't have to depend on our header.
-void ShowImportDialogView(views::Widget* parent, Profile* profile) {
-  views::Window::CreateChromeWindow(parent->GetNativeView(), gfx::Rect(),
-      new ImportDialogView(profile, importer::ALL))->Show();
-}
-
-}  // namespace browser
-
 ImportDialogView::ImportDialogView(Profile* profile, uint16 initial_state)
     : import_from_label_(NULL),
       profile_combobox_(NULL),

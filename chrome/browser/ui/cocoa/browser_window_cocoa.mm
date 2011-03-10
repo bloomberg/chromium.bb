@@ -323,22 +323,6 @@ DownloadShelf* BrowserWindowCocoa::GetDownloadShelf() {
   return [shelfController bridge];
 }
 
-void BrowserWindowCocoa::ShowClearBrowsingDataDialog() {
-  NOTIMPLEMENTED();
-}
-
-void BrowserWindowCocoa::ShowImportDialog() {
-  NOTIMPLEMENTED();
-}
-
-void BrowserWindowCocoa::ShowSearchEnginesDialog() {
-  NOTIMPLEMENTED();
-}
-
-void BrowserWindowCocoa::ShowPasswordManager() {
-  NOTIMPLEMENTED();
-}
-
 void BrowserWindowCocoa::ShowRepostFormWarningDialog(
     TabContents* tab_contents) {
   RepostFormWarningMac::Create(GetNativeHandle(), tab_contents);

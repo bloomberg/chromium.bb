@@ -1102,23 +1102,6 @@ DownloadShelf* BrowserView::GetDownloadShelf() {
   return download_shelf_.get();
 }
 
-void BrowserView::ShowClearBrowsingDataDialog() {
-  browser::ShowClearBrowsingDataView(GetWindow()->GetNativeWindow(),
-                                     browser_->profile());
-}
-
-void BrowserView::ShowImportDialog() {
-  browser::ShowImportDialogView(GetWidget(), browser_->profile());
-}
-
-void BrowserView::ShowSearchEnginesDialog() {
-  browser::ShowKeywordEditorView(browser_->profile());
-}
-
-void BrowserView::ShowPasswordManager() {
-  browser::ShowPasswordsExceptionsWindowView(browser_->profile());
-}
-
 void BrowserView::ShowRepostFormWarningDialog(TabContents* tab_contents) {
   browser::ShowRepostFormWarningDialog(GetNativeHandle(), tab_contents);
 }

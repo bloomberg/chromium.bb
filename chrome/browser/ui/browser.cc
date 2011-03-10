@@ -1873,7 +1873,6 @@ void Browser::ShowOptionsTab(const std::string& sub_page) {
 void Browser::OpenClearBrowsingDataDialog() {
   UserMetrics::RecordAction(UserMetricsAction("ClearBrowsingData_ShowDlg"),
                             profile_);
-  // TODO(jhawkins): Remove BrowserWindow::ShowClearBrowsingDataDialog.
   ShowOptionsTab(chrome::kClearBrowserDataSubPage);
 }
 
@@ -1886,12 +1885,13 @@ void Browser::OpenOptionsDialog() {
 }
 
 void Browser::OpenPasswordManager() {
-  window_->ShowPasswordManager();
+  UserMetrics::RecordAction(UserMetricsAction("Options_ShowPasswordManager"),
+                            profile_);
+  ShowOptionsTab(chrome::kPasswordManagerSubPage);
 }
 
 void Browser::OpenImportSettingsDialog() {
   UserMetrics::RecordAction(UserMetricsAction("Import_ShowDlg"), profile_);
-  // TODO(jhawkins): Remove BrowserWindow::ShowImportDialog().
   ShowOptionsTab(chrome::kImportDataSubPage);
 }
 
@@ -1938,7 +1938,6 @@ void Browser::OpenAutoFillHelpTabAndActivate() {
 
 void Browser::OpenSearchEngineOptionsDialog() {
   UserMetrics::RecordAction(UserMetricsAction("EditSearchEngines"), profile_);
-  // TODO(jhawkins): Remove BrowserWindow::ShowSearchEngineDialog().
   ShowOptionsTab(chrome::kSearchEnginesSubPage);
 }
 

@@ -31,11 +31,6 @@ void ShowClearBrowsingDataView(views::Widget* parent,
                                    profile);
 }
 
-void ShowImportDialogView(views::Widget* parent, Profile* profile) {
-  // Import currently doesn't matter.
-  NOTIMPLEMENTED();
-}
-
 void ShowPasswordsExceptionsWindowView(Profile* profile) {
   ShowPasswordsExceptionsWindow(profile);
 }

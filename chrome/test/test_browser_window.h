@@ -77,10 +77,6 @@ class TestBrowserWindow : public BrowserWindow {
   virtual bool IsDownloadShelfVisible() const;
   virtual DownloadShelf* GetDownloadShelf();
   virtual void ShowReportBugDialog() {}
-  virtual void ShowClearBrowsingDataDialog() {}
-  virtual void ShowImportDialog() {}
-  virtual void ShowSearchEnginesDialog() {}
-  virtual void ShowPasswordManager() {}
   virtual void ShowRepostFormWarningDialog(TabContents* tab_contents) {}
   virtual void ShowContentSettingsWindow(ContentSettingsType content_type,
                                          Profile* profile) {}

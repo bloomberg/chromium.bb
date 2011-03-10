@@ -881,22 +881,6 @@ DownloadShelf* BrowserWindowGtk::GetDownloadShelf() {
   return download_shelf_.get();
 }
 
-void BrowserWindowGtk::ShowClearBrowsingDataDialog() {
-  ClearBrowsingDataDialogGtk::Show(window_, browser_->profile());
-}
-
-void BrowserWindowGtk::ShowImportDialog() {
-  ImportDialogGtk::Show(window_, browser_->profile(), ALL);
-}
-
-void BrowserWindowGtk::ShowSearchEnginesDialog() {
-  KeywordEditorView::Show(browser_->profile());
-}
-
-void BrowserWindowGtk::ShowPasswordManager() {
-  NOTIMPLEMENTED();
-}
-
 void BrowserWindowGtk::ShowRepostFormWarningDialog(TabContents* tab_contents) {
   new RepostFormWarningGtk(GetNativeHandle(), tab_contents);
 }

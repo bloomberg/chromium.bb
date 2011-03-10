@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -50,9 +50,6 @@ void ShowBugReportView(views::Window* parent,
 // Shows the "Clear browsing data" dialog box. See ClearBrowsingDataView.
 void ShowClearBrowsingDataView(gfx::NativeWindow parent,
                                Profile* profile);
-
-// Shows the "Importer" dialog. See ImportDialogView.
-void ShowImportDialogView(views::Widget* parent, Profile* profile);
 
 // Shows or hides the global bookmark bubble for the star button.
 void ShowBookmarkBubbleView(views::Window* parent,

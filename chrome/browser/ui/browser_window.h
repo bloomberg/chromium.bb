@@ -225,18 +225,6 @@ class BrowserWindow {
   // Returns the DownloadShelf.
   virtual DownloadShelf* GetDownloadShelf() = 0;
 
-  // Shows the Clear Browsing Data dialog box.
-  virtual void ShowClearBrowsingDataDialog() = 0;
-
-  // Shows the Import Bookmarks & Settings dialog box.
-  virtual void ShowImportDialog() = 0;
-
-  // Shows the Search Engines dialog box.
-  virtual void ShowSearchEnginesDialog() = 0;
-
-  // Shows the Password Manager dialog box.
-  virtual void ShowPasswordManager() = 0;
-
   // Shows the repost form confirmation dialog box.
   virtual void ShowRepostFormWarningDialog(TabContents* tab_contents) = 0;
 
