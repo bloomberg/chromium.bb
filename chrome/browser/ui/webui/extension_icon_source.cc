@@ -123,15 +123,16 @@ void ExtensionIconSource::StartDataRequest(const std::string& path,
   ExtensionResource icon =
       request->extension->GetIconResource(request->size, request->match);
 
-  // We fall back to multiple sources, using the following order:
-  //  1) The icons as listed in the extension / app manifests.
-  //  2) If a 16px icon and the extension has a launch URL, see if Chrome
-  //     has a corresponding favicon.
-  //  3) If still no matches, load the default extension / application icon.
-  if (!icon.relative_path().empty()) {
+  if (icon.relative_path().empty())
+    LoadIconFailed(request_id);
+  else
     LoadExtensionImage(icon, request_id);
-    return;
-  }
+}
+
+void ExtensionIconSource::LoadIconFailed(int request_id) {
+  ExtensionIconRequest* request = GetData(request_id);
+  ExtensionResource icon =
+      request->extension->GetIconResource(request->size, request->match);
 
   if (request->size == Extension::EXTENSION_ICON_BITTY)
     LoadFaviconImage(request_id);
@@ -236,7 +237,11 @@ void ExtensionIconSource::OnImageLoaded(SkBitmap* image,
                                         int index) {
   int request_id = tracker_map_[index];
   tracker_map_.erase(tracker_map_.find(index));
-  FinalizeImage(image, request_id);
+
+  if (!image || image->empty())
+    LoadIconFailed(request_id);
+  else
+    FinalizeImage(image, request_id);
 }
 
 bool ExtensionIconSource::ParseData(const std::string& path,

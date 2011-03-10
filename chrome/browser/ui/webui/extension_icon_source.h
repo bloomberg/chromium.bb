@@ -110,6 +110,14 @@ class ExtensionIconSource : public ChromeURLDataManager::DataSource,
                              ExtensionResource resource,
                              int id);
 
+  // Called when the extension doesn't have an icon. We fall back to multiple
+  // sources, using the following order:
+  //  1) The icons as listed in the extension / app manifests.
+  //  2) If a 16px icon and the extension has a launch URL, see if Chrome
+  //     has a corresponding favicon.
+  //  3) If still no matches, load the default extension / application icon.
+  void LoadIconFailed(int request_id);
+
   // Parses and savse an ExtensionIconRequest for the URL |path| for the
   // specified |request_id|.
   bool ParseData(const std::string& path, int request_id);
