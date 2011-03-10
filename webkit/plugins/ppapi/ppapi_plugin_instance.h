@@ -267,6 +267,11 @@ class PluginInstance : public base::RefCounted<PluginInstance> {
   // Returns NULL if bound graphics is not a 3D surface.
   PPB_Surface3D_Impl* bound_graphics_3d() const;
 
+  // Sets the id of the texture that the plugin draws to. The id is in the
+  // compositor space so it can use it to composite with rest of the page.
+  // A value of zero indicates the plugin is not backed by a texture.
+  void setBackingTextureId(unsigned int id);
+
   // Internal helper function for PrintPage().
   bool PrintPageHelper(PP_PrintPageNumberRange_Dev* page_ranges,
                        int num_ranges,

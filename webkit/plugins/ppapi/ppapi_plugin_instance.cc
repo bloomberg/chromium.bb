@@ -481,6 +481,7 @@ bool PluginInstance::BindGraphics(PP_Resource graphics_id) {
       } else if (bound_graphics_.get()) {
         bound_graphics_3d()->BindToInstance(false);
       }
+      setBackingTextureId(0);
       InvalidateRect(gfx::Rect());
     }
     bound_graphics_ = NULL;
@@ -523,6 +524,7 @@ bool PluginInstance::BindGraphics(PP_Resource graphics_id) {
     }
 
     bound_graphics_ = graphics_2d;
+    setBackingTextureId(0);
     // BindToInstance will have invalidated the plugin if necessary.
   } else if (graphics_3d) {
     // Refuse to bind if we're transitioning to fullscreen.
@@ -535,6 +537,7 @@ bool PluginInstance::BindGraphics(PP_Resource graphics_id) {
     if (!graphics_3d->BindToInstance(true))
       return false;
 
+    setBackingTextureId(graphics_3d->GetBackingTextureId());
     bound_graphics_ = graphics_3d;
   }
 
@@ -1295,6 +1298,21 @@ PPB_Surface3D_Impl* PluginInstance::bound_graphics_3d() const {
     return NULL;
 
   return bound_graphics_->Cast<PPB_Surface3D_Impl>();
+}
+
+void PluginInstance::setBackingTextureId(unsigned int id) {
+  // If we have a full-screen container_ then the plugin is fullscreen,
+  // and the parent context is not the one for the browser page, but for the
+  // full-screen window, and so the parent texture ID doesn't correspond to
+  // anything in the page's context.
+  //
+  // TODO(alokp): It would be better at some point to have the equivalent
+  // in the FullscreenContainer so that we don't need to poll
+  if (fullscreen_container_)
+    return;
+
+  if (container_)
+    container_->setBackingTextureId(id);
 }
 
 void PluginInstance::AddPluginObject(PluginObject* plugin_object) {
