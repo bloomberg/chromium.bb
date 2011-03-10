@@ -145,6 +145,16 @@
   fun:browser_sync::*
 }
 
+{
+  bug_75607
+  ThreadSanitizer:Race
+  fun:WebCore::ResourceResponseBase::~ResourceResponseBase*
+  fun:WebCore::ResourceResponse::~ResourceResponse*
+  ...
+  fun:WebCore::DocumentLoader::~DocumentLoader*
+  fun:WebKit::WebDataSourceImpl::~WebDataSourceImpl*
+}
+
 ############################
 # Benign races
 {
