@@ -121,7 +121,13 @@ IN_PROC_BROWSER_TEST_F(ServiceProcessControlBrowserTest,
 
 // This tests the case when a service process is launched when browser
 // starts but we try to launch it again in the remoting setup dialog.
-IN_PROC_BROWSER_TEST_F(ServiceProcessControlBrowserTest, LaunchTwice) {
+// Fails on mac. http://crbug.com/75518
+#if defined(OS_MACOSX)
+#define MAYBE_LaunchTwice FAILS_LaunchTwice
+#else
+#define MAYBE_LaunchTwice LaunchTwice
+#endif
+IN_PROC_BROWSER_TEST_F(ServiceProcessControlBrowserTest, MAYBE_LaunchTwice) {
   // Launch the service process the first time.
   LaunchServiceProcessControl();
 
@@ -146,7 +152,14 @@ static void DecrementUntilZero(int* count) {
 
 // Invoke multiple Launch calls in succession and ensure that all the tasks
 // get invoked.
-IN_PROC_BROWSER_TEST_F(ServiceProcessControlBrowserTest, MultipleLaunchTasks) {
+// Fails on mac. http://crbug.com/75518
+#if defined(OS_MACOSX)
+#define MAYBE_MultipleLaunchTasks FAILS_MultipleLaunchTasks
+#else
+#define MAYBE_MultipleLaunchTasks MultipleLaunchTasks
+#endif
+IN_PROC_BROWSER_TEST_F(ServiceProcessControlBrowserTest,
+                       MAYBE_MultipleLaunchTasks) {
   ServiceProcessControl* process =
       ServiceProcessControlManager::GetInstance()->GetProcessControl(
           browser()->profile());
@@ -165,7 +178,13 @@ IN_PROC_BROWSER_TEST_F(ServiceProcessControlBrowserTest, MultipleLaunchTasks) {
 }
 
 // Make sure using the same task for success and failure tasks works.
-IN_PROC_BROWSER_TEST_F(ServiceProcessControlBrowserTest, SameLaunchTask) {
+// Fails on mac. http://crbug.com/75518
+#if defined(OS_MACOSX)
+#define MAYBE_SameLaunchTask FAILS_SameLaunchTask
+#else
+#define MAYBE_SameLaunchTask SameLaunchTask
+#endif
+IN_PROC_BROWSER_TEST_F(ServiceProcessControlBrowserTest, MAYBE_SameLaunchTask) {
   ServiceProcessControl* process =
       ServiceProcessControlManager::GetInstance()->GetProcessControl(
           browser()->profile());
@@ -184,7 +203,14 @@ IN_PROC_BROWSER_TEST_F(ServiceProcessControlBrowserTest, SameLaunchTask) {
 
 // Tests whether disconnecting from the service IPC causes the service process
 // to die.
-IN_PROC_BROWSER_TEST_F(ServiceProcessControlBrowserTest, DieOnDisconnect) {
+// Fails on mac. http://crbug.com/75518
+#if defined(OS_MACOSX)
+#define MAYBE_DieOnDisconnect FAILS_DieOnDisconnect
+#else
+#define MAYBE_DieOnDisconnect DieOnDisconnect
+#endif
+IN_PROC_BROWSER_TEST_F(ServiceProcessControlBrowserTest,
+                       MAYBE_DieOnDisconnect) {
   // Launch the service process.
   LaunchServiceProcessControl();
   // Make sure we are connected to the service process.
@@ -208,7 +234,13 @@ IN_PROC_BROWSER_TEST_F(ServiceProcessControlBrowserTest,
   WaitForShutdown();
 }
 
-IN_PROC_BROWSER_TEST_F(ServiceProcessControlBrowserTest, CheckPid) {
+// Fails on mac. http://crbug.com/75518
+#if defined(OS_MACOSX)
+#define MAYBE_CheckPid FAILS_CheckPid
+#else
+#define MAYBE_CheckPid CheckPid
+#endif
+IN_PROC_BROWSER_TEST_F(ServiceProcessControlBrowserTest, MAYBE_CheckPid) {
   base::ProcessId service_pid;
   EXPECT_FALSE(GetServiceProcessData(NULL, &service_pid));
   // Launch the service process.
