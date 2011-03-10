@@ -256,6 +256,9 @@ def SetUpArgumentBits(env):
   BitFromArgument(env, 'sdl_sel_universal', default=False,
     desc='enhance sel_universal with SDL ppapi emulation')
 
+  BitFromArgument(env, 'use_sandboxed_translator', default=False,
+    desc='use pnacl sandboxed translator for linking (not available for arm)')
+
 def CheckArguments():
   for key in ARGUMENTS:
     if key not in ACCEPTABLE_ARGUMENTS:

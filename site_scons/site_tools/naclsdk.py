@@ -219,6 +219,10 @@ def _SetEnvForPnacl(env, arch):
     #       does more than linking
     pnacl_sdk_ld_flags += ' -fPIC'
 
+  if env.Bit('use_sandboxed_translator'):
+    assert arch in ['x86-32', 'x86-64']
+    pnacl_sdk_ld_flags += ' --pnacl-sb'
+
   # TODO(pdox): Remove the dependency on the gcc toolchain here.
   cc_other_map = {
       'arm':    pnacl_sdk_cc + pnacl_sdk_cc_native_flags,
@@ -245,6 +249,8 @@ def _SetEnvForPnacl(env, arch):
               CC_NATIVE=pnacl_sdk_cc + pnacl_sdk_cc_native_flags,
               CC_OTHER=cc_other_map[arch],
               LINK=pnacl_sdk_ld + pnacl_sdk_ld_flags,
+              # TODO(robertm): remove this and its usage case, e.g.
+              #                src/trusted/service_runtime/nacl.scons
               # Grrr... and sometimes we need raw assembly and the real ld.
               LD=ld_map[arch],
               AR=pnacl_sdk_ar,

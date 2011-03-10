@@ -1622,6 +1622,16 @@ def RunWithLog(args, stdin = None, silent = False, errexit = True):
     Log.Info('Return Code: ' + str(ret))
 
 
+def CheckPresenceSelUniversal():
+  'Assert that both sel_universal and sel_ldr exist'
+  sel_universal = env.eval('${SEL_UNIVERSAL_%arch%}')
+  if not os.path.exists(sel_universal):
+    Log.Fatal('Could not find sel_universal [%s]', sel_universal)
+  sel_ldr = env.eval('${SEL_LDR_%arch%}')
+  if not os.path.exists(sel_ldr):
+    Log.Fatal('Could not find sel_ldr [%s]', sel_ldr)
+
+
 def MakeSelUniversalScriptForLLC(infile, outfile, flags):
   script = []
   script.append('readonly_file myfile %s' % infile)
@@ -1635,7 +1645,9 @@ def MakeSelUniversalScriptForLLC(infile, outfile, flags):
   script.append('')
   return '\n'.join(script)
 
+
 def RunLLCSRPC():
+  CheckPresenceSelUniversal()
   infile = env.get("input")
   outfile = env.get("output")
   flags = shell.split(env.get("LLC_FLAGS"))
@@ -1721,6 +1733,7 @@ def MakeSelUniversalScriptForLD(main_input, files, outfile):
   return '\n'.join(script)
 
 def RunLDSRPC():
+  CheckPresenceSelUniversal()
   # The "main" input file is the application's combined object file.
   main_input = env.get("inputs")
   all_inputs = env.get("LD_INPUTS")
