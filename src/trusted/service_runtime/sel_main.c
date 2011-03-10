@@ -29,6 +29,7 @@
 #include "native_client/src/shared/platform/nacl_sync_checked.h"
 #include "native_client/src/shared/srpc/nacl_srpc.h"
 
+#include "native_client/src/trusted/service_runtime/include/sys/fcntl.h"
 #include "native_client/src/trusted/service_runtime/nacl_app.h"
 #include "native_client/src/trusted/service_runtime/nacl_all_modules.h"
 #include "native_client/src/trusted/service_runtime/nacl_config_dangerous.h"
@@ -504,6 +505,9 @@ int main(int  argc,
     }
   }
 
+
+  NaClAppInitialDescriptorHookup(nap);
+
   /*
    * Execute additional I/O redirections.  NB: since the NaClApp
    * takes ownership of host / IMC socket descriptors, all but
@@ -575,25 +579,11 @@ int main(int  argc,
       }
 
       /*
-       * Finish setting up the NaCl App.  This includes dup'ing
-       * descriptors 0-2 and making them available to the NaCl App.
-       *
-       * If a log file were specified at the command-line and the
-       * logging module was set to use a log file instead of standard
-       * error, then we redirect standard output of the NaCl module to
-       * that log file too.  Standard input is inherited, and could
-       * result in a NaCl module competing for input from the terminal;
-       * for graphical / browser plugin environments, this never is
-       * allowed to happen, and having this is useful for debugging, and
-       * for potential standalone text-mode applications of NaCl.
-       *
-       * TODO(bsy): consider whether inheriting stdin should occur only
-       * in debug mode.
+       * Finish setting up the NaCl App.  On x86-32, this means
+       * allocating segment selectors.  On x86-64 and ARM, this is
+       * (currently) a no-op.
        */
-      errcode = NaClAppPrepareToLaunch(nap,
-                                       0,
-                                       (2 == log_desc) ? 1 : log_desc,
-                                       log_desc);
+      errcode = NaClAppPrepareToLaunch(nap);
       if (LOAD_OK != errcode) {
         nap->module_load_status = errcode;
         fprintf(stderr, "NaClAppPrepareToLaunch returned %d", errcode);

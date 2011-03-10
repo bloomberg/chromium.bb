@@ -53,7 +53,9 @@ int main(int argc, char **argv) {
                         /* check_abi= */ 0) != LOAD_OK)
       NaClLog(LOG_FATAL, "NaClAppLoadFile() failed\n");
 
-    if (NaClAppPrepareToLaunch(&app[i], 0, 1, 2) != LOAD_OK)
+    NaClAppInitialDescriptorHookup(&app[i]);
+
+    if (NaClAppPrepareToLaunch(&app[i]) != LOAD_OK)
       NaClLog(LOG_FATAL, "NaClAppPrepareToLaunch() failed\n");
   }
 

@@ -219,8 +219,7 @@ int NaClHostDescOpen(struct NaClHostDesc  *d,
   /*
    * Sanitize access flags.
    */
-  if (0 != (flags & ~(NACL_ABI_O_ACCMODE | NACL_ABI_O_CREAT
-                      | NACL_ABI_O_TRUNC | NACL_ABI_O_APPEND))) {
+  if (0 != (flags & ~NACL_ALLOWED_OPEN_FLAGS)) {
     return -NACL_ABI_EINVAL;
   }
 
@@ -266,28 +265,28 @@ int NaClHostDescOpen(struct NaClHostDesc  *d,
 
 int NaClHostDescPosixDup(struct NaClHostDesc  *d,
                          int                  posix_d,
-                         int                  mode) {
+                         int                  flags) {
   int host_desc;
 
   if (NULL == d) {
     NaClLog(LOG_FATAL, "NaClHostDescPosixDup: 'this' is NULL\n");
   }
   /*
-   * Sanitize access modes.
+   * Sanitize access flags.
    */
-  if (0 != (mode & ~O_ACCMODE)) {
+  if (0 != (flags & ~NACL_ALLOWED_OPEN_FLAGS)) {
     return -NACL_ABI_EINVAL;
   }
 
-  switch (mode & O_ACCMODE) {
-    case O_RDONLY:
-    case O_WRONLY:
-    case O_RDWR:
+  switch (flags & NACL_ABI_O_ACCMODE) {
+    case NACL_ABI_O_RDONLY:
+    case NACL_ABI_O_WRONLY:
+    case NACL_ABI_O_RDWR:
       break;
     default:
       NaClLog(LOG_ERROR,
-              "NaClHostDescPosixDup: bad access mode 0x%x.\n",
-              mode);
+              "NaClHostDescPosixDup: bad access flags 0x%x.\n",
+              flags);
       return -NACL_ABI_EINVAL;
   }
 
@@ -301,26 +300,26 @@ int NaClHostDescPosixDup(struct NaClHostDesc  *d,
 
 int NaClHostDescPosixTake(struct NaClHostDesc *d,
                           int                 posix_d,
-                          int                 mode) {
+                          int                 flags) {
   if (NULL == d) {
     NaClLog(LOG_FATAL, "NaClHostDescPosixTake: 'this' is NULL\n");
   }
   /*
-   * Sanitize access modes.
+   * Sanitize access flags.
    */
-  if (0 != (mode & ~O_ACCMODE)) {
+  if (0 != (flags & ~NACL_ALLOWED_OPEN_FLAGS)) {
     return -NACL_ABI_EINVAL;
   }
 
-  switch (mode & O_ACCMODE) {
-    case O_RDONLY:
-    case O_WRONLY:
-    case O_RDWR:
+  switch (flags & NACL_ABI_O_ACCMODE) {
+    case NACL_ABI_O_RDONLY:
+    case NACL_ABI_O_WRONLY:
+    case NACL_ABI_O_RDWR:
       break;
     default:
       NaClLog(LOG_ERROR,
-              "NaClHostDescPosixTake: bad access mode 0x%x.\n",
-              mode);
+              "NaClHostDescPosixTake: bad access flags 0x%x.\n",
+              flags);
       return -NACL_ABI_EINVAL;
   }
 

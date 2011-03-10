@@ -11,10 +11,13 @@
  */
 #include "native_client/src/include/portability_io.h"
 #include "native_client/src/include/portability_string.h"
+#include "native_client/src/include/nacl_macros.h"
 
+#include "native_client/src/shared/gio/gio.h"
 #include "native_client/src/shared/platform/nacl_check.h"
 #include "native_client/src/shared/platform/nacl_sync_checked.h"
 #include "native_client/src/shared/srpc/nacl_srpc.h"
+
 
 #include "native_client/src/trusted/desc/nacl_desc_base.h"
 #include "native_client/src/trusted/desc/nacl_desc_conn_cap.h"
@@ -26,6 +29,7 @@
 #include "native_client/src/trusted/service_runtime/arch/sel_ldr_arch.h"
 #include "native_client/src/trusted/gio/gio_nacl_desc.h"
 #include "native_client/src/trusted/gio/gio_shm.h"
+#include "native_client/src/trusted/service_runtime/include/sys/fcntl.h"
 #include "native_client/src/trusted/service_runtime/nacl_app.h"
 #include "native_client/src/trusted/service_runtime/nacl_app_thread.h"
 #include "native_client/src/trusted/service_runtime/nacl_globals.h"
@@ -696,15 +700,19 @@ struct NaClAppThread *NaClGetThreadMu(struct NaClApp  *nap,
 
 void NaClAddHostDescriptor(struct NaClApp *nap,
                            int            host_os_desc,
-                           int            mode,
+                           int            flag,
                            int            nacl_desc) {
   struct NaClDescIoDesc *dp;
 
   NaClLog(4,
-          "NaClAddHostDescriptor: host %d as nacl desc %d\n",
+          "NaClAddHostDescriptor: host %d as nacl desc %d, flag 0x%x\n",
           host_os_desc,
-          nacl_desc);
-  dp = NaClDescIoDescMake(NaClHostDescPosixMake(host_os_desc, mode));
+          nacl_desc,
+          flag);
+  dp = NaClDescIoDescMake(NaClHostDescPosixMake(host_os_desc, flag));
+  if (NULL == dp) {
+    NaClLog(LOG_FATAL, "NaClAddHostDescriptor: NaClDescIoDescMake failed\n");
+  }
   NaClSetDesc(nap, nacl_desc, (struct NaClDesc *) dp);
 }
 
@@ -727,6 +735,52 @@ void NaClAddImcHandle(struct NaClApp  *nap,
                         " IMC descriptor object\n"));
   }
   NaClSetDesc(nap, nacl_desc, (struct NaClDesc *) dp);
+}
+
+/*
+ * Process default descriptor inheritance.  This means dup'ing
+ * descriptors 0-2 and making them available to the NaCl App.
+ *
+ * When standard input is inherited, this could result in a NaCl
+ * module competing for input from the terminal; for graphical /
+ * browser plugin environments, this never is allowed to happen, and
+ * having this is useful for debugging, and for potential standalone
+ * text-mode applications of NaCl.
+ *
+ * TODO(bsy): consider whether default inheritance should occur only
+ * in debug mode.
+ */
+void NaClAppInitialDescriptorHookup(struct NaClApp  *nap) {
+  static struct {
+    int         d;
+    char const  *env_name;
+    int         flags;
+    int         mode;
+    int         nacl_flags;
+  } redir_control[] = {
+    { 0, "NACL_EXE_STDIN",  O_RDONLY, 0,
+      NACL_ABI_O_RDONLY, },
+    { 1, "NACL_EXE_STDOUT", O_WRONLY | O_APPEND | O_CREAT, 0777,
+      NACL_ABI_O_WRONLY | NACL_ABI_O_APPEND, },
+    { 2, "NACL_EXE_STDERR", O_WRONLY | O_APPEND | O_CREAT, 0777,
+      NACL_ABI_O_WRONLY | NACL_ABI_O_APPEND, },
+  };
+
+  size_t  ix;
+  char    *env;
+  int     d;
+
+  for (ix = 0; ix < NACL_ARRAY_SIZE(redir_control); ++ix) {
+    d = -1;
+    if (NULL != (env = getenv(redir_control[ix].env_name))) {
+      d = open(env, redir_control[ix].flags, redir_control[ix].mode);
+      /* may return -1, esp sandbox */
+    }
+    if (-1 == d) {
+      d = DUP(redir_control[ix].d);
+    }
+    NaClAddHostDescriptor(nap, d, redir_control[ix].nacl_flags, (int) ix);
+  }
 }
 
 void NaClAppVmmapUpdate(struct NaClApp    *nap,
@@ -976,6 +1030,7 @@ static void NaClLoadModuleRpc(struct NaClSrpcRpc      *rpc,
     rpc->result = NACL_SRPC_RESULT_APP_ERROR;
     NaClXCondVarBroadcast(&nap->cv);
   }
+
  cleanup_status_mu:
   NaClXMutexUnlock(&nap->mu);  /* NaClAppPrepareToLaunch takes mu */
   if (LOAD_OK != suberr) {
@@ -989,10 +1044,9 @@ static void NaClLoadModuleRpc(struct NaClSrpcRpc      *rpc,
    ***************************************************************************/
 
   /*
-   * Finish setting up the NaCl App.  This includes dup'ing
-   * descriptors 0-2 and making them available to the NaCl App.
+   * Finish setting up the NaCl App.
    */
-  suberr = NaClAppPrepareToLaunch(nap, 0, 1, 2);
+  suberr = NaClAppPrepareToLaunch(nap);
   NaClXMutexLock(&nap->mu);
   if (LOAD_OK != suberr) {
     nap->module_load_status = suberr;

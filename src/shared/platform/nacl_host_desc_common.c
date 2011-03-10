@@ -353,17 +353,19 @@ int NaClXlateNaClSyncStatus(NaClSyncStatus status) {
 
 
 struct NaClHostDesc *NaClHostDescPosixMake(int  posix_d,
-                                           int  mode) {
+                                           int  flags) {
   struct NaClHostDesc *nhdp;
+  int                 error;
 
   nhdp = malloc(sizeof *nhdp);
   if (NULL == nhdp) {
     NaClLog(LOG_FATAL, "NaClHostDescPosixMake(%d,0x%x): malloc failed\n",
-            posix_d, mode);
+            posix_d, flags);
   }
-  if (NaClHostDescPosixTake(nhdp, posix_d, mode)) {
-    NaClLog(LOG_FATAL, "NaClHostDescPosixMake(%d,0x%x): Take failed\n",
-            posix_d, mode);
+  if (0 != (error = NaClHostDescPosixTake(nhdp, posix_d, flags))) {
+    NaClLog(LOG_FATAL,
+            "NaClHostDescPosixMake(%d,0x%x): Take failed, error %da\n",
+            posix_d, flags, error);
   }
   return nhdp;
 }

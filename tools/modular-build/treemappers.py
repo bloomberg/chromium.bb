@@ -127,6 +127,7 @@ def NaClSourceSubset(input_tree):
       "native_client/tools/browser_tester",
       "native_client/tools/command_tester.py",
       "native_client/tools/diff.py",
+      "native_client/tools/file_cmp_test.py",
       "native_client/tools/srpcgen.py",
       "native_client/tools/test_lib.py",
       "native_client/tools/tests",

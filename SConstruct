@@ -2112,6 +2112,7 @@ nacl_env.Append(
     # http://code.google.com/p/nativeclient/issues/detail?id=902 gets fixed
     # 'tests/ppapi_tests/nacl.scons',
     'tests/ppapi/nacl.scons',
+    'tests/redir/nacl.scons',
     'tests/rodata_not_writable/nacl.scons',
     'tests/signal_handler/nacl.scons',
     'tests/srpc/nacl.scons',

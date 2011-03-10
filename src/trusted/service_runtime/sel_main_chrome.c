@@ -5,6 +5,7 @@
  */
 
 #include "native_client/src/include/portability.h"
+#include "native_client/src/include/portability_io.h"
 
 #if NACL_OSX
 #include <crt_externs.h>
@@ -17,6 +18,7 @@
 #include "native_client/src/shared/platform/nacl_check.h"
 #include "native_client/src/shared/platform/nacl_sync.h"
 #include "native_client/src/shared/platform/nacl_sync_checked.h"
+#include "native_client/src/trusted/service_runtime/include/sys/fcntl.h"
 #include "native_client/src/trusted/service_runtime/nacl_globals.h"
 #include "native_client/src/trusted/service_runtime/env_cleanser.h"
 #include "native_client/src/trusted/service_runtime/nacl_app.h"
@@ -65,6 +67,13 @@ int NaClMainForChromium(int handle_count, const NaClHandle *handles,
 
   nap = &state;
   errcode = LOAD_OK;
+
+  NaClAppInitialDescriptorHookup(nap);
+
+  /*
+   * NACL_SERVICE_PORT_DESCRIPTOR and NACL_SERVICE_ADDRESS_DESCRIPTOR
+   * are 3 and 4.
+   */
 
   /* import IMC handle - used to be "-i" */
   CHECK(handle_count == 3);

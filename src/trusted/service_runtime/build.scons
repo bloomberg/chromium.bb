@@ -639,6 +639,7 @@ if env.Bit('target_x86'):
       'nacl_log.out',
       command = [env.File(arch_testdata_dir + '/hello_world.nexe')],
       log_golden = env.File('testdata/hello_world.log'),
+      stdout_golden = env.File('testdata/hello_world.stdout'),
       filter_regex = '"' + RE_HELLO + '|' + RE_IDENT + '"',
       filter_group_only = 'true',
       )

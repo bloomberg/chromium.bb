@@ -433,6 +433,8 @@ void NaClRemoveThreadMu(struct NaClApp  *nap,
 struct NaClAppThread *NaClGetThreadMu(struct NaClApp  *nap,
                                       int             thread_num);
 
+void NaClAppInitialDescriptorHookup(struct NaClApp  *nap);
+
 void NaClAppVmmapUpdate(struct NaClApp    *nap,
                         uintptr_t         page_num,
                         size_t            npages,

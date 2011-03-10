@@ -162,11 +162,19 @@ extern int NaClHostDescUnmap(void   *start_addr,
 extern int NaClHostDescUnmapUnsafe(void   *start_addr,
                                    size_t len);
 
+
+/*
+ * These are the flags that are permitted.
+ */
+#define NACL_ALLOWED_OPEN_FLAGS                 \
+  (NACL_ABI_O_ACCMODE | NACL_ABI_O_CREAT        \
+   | NACL_ABI_O_TRUNC | NACL_ABI_O_APPEND)
+
 /*
  * Constructor for a NaClHostDesc object.
  *
  * path should be a host-OS pathname to a file.  No validation is
- * done.  mode should contain one of O_RDONLY, O_WRONLY, and O_RDWR,
+ * done.  flags should contain one of O_RDONLY, O_WRONLY, and O_RDWR,
  * and can additionally contain O_CREAT, O_TRUNC, and O_APPEND.
  *
  * Uses raw syscall return convention, so returns 0 for success and
@@ -182,7 +190,7 @@ extern int NaClHostDescUnmapUnsafe(void   *start_addr,
  */
 extern int NaClHostDescOpen(struct NaClHostDesc *d,
                             char const          *path,
-                            int                 mode,
+                            int                 flags,
                             int                 perms);
 
 /*
@@ -193,16 +201,18 @@ extern int NaClHostDescOpen(struct NaClHostDesc *d,
  *
  * d is a POSIX-interface descriptor
  *
- * mode may only contain one of NACL_ABI_O_RDONLY, NACL_ABI_O_WRONLY,
- * or NACL_ABI_O_RDWR, and must be the actual mode that d was opened
- * with.  Note that these are host OS access mode bits.
+ * flags may only contain one of NACL_ABI_O_RDONLY, NACL_ABI_O_WRONLY,
+ * or NACL_ABI_O_RDWR, and must be the NACL_ABI_* versions of the
+ * actual mode that d was opened with.  NACL_ABI_O_CREAT/APPEND are
+ * permitted, but ignored, so it is safe to pass the same flags value
+ * used in NaClHostDescOpen and pass it to NaClHostDescPosixDup.
  *
  * Underlying host-OS functions: dup / _dup; mode is what posix_d was
  * opened with
  */
 extern int NaClHostDescPosixDup(struct NaClHostDesc *d,
                                 int                 posix_d,
-                                int                 mode);
+                                int                 flags);
 
 /*
  * Essentially the same as NaClHostDescPosixDup, but without the dup
@@ -210,7 +220,7 @@ extern int NaClHostDescPosixDup(struct NaClHostDesc *d,
  */
 extern int NaClHostDescPosixTake(struct NaClHostDesc  *d,
                                  int                  posix_d,
-                                 int                  mode);
+                                 int                  flags);
 
 
 /*
@@ -218,7 +228,7 @@ extern int NaClHostDescPosixTake(struct NaClHostDesc  *d,
  * Aborts process if no memory.
  */
 extern struct NaClHostDesc *NaClHostDescPosixMake(int posix_d,
-                                                  int mode);
+                                                  int flags);
 /*
  * Read data from an opened file into a memory buffer.
  *
