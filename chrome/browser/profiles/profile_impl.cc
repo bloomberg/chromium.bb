@@ -406,7 +406,7 @@ void ProfileImpl::RegisterComponentExtensions() {
   // following commands on a unixy system:
   //
   //   ssh-keygen -t rsa -b 1024 -N '' -f /tmp/key.pem
-  //   rsa -pubout -outform DER < /tmp/key.pem 2>/dev/null | base64 -w 0
+  //   openssl rsa -pubout -outform DER < /tmp/key.pem 2>/dev/null | base64 -w 0
   typedef std::list<std::pair<FilePath::StringType, int> >
       ComponentExtensionList;
   ComponentExtensionList component_extensions;
