@@ -180,16 +180,16 @@ void AutoFillProfile::FindInfoMatches(
   } else {
     FormGroupMap info = info_map();
     FormGroupMap::const_iterator it = info.find(type.group());
-    DCHECK(it != info.end());
-    it->second->FindInfoMatches(type, clean_info, matched_text);
+    if (it != info.end())
+      it->second->FindInfoMatches(type, clean_info, matched_text);
   }
 }
 
 void AutoFillProfile::SetInfo(const AutofillType& type, const string16& value) {
   MutableFormGroupMap info = mutable_info_map();
   MutableFormGroupMap::iterator it = info.find(type.group());
-  DCHECK(it != info.end());
-  it->second->SetInfo(type, CollapseWhitespace(value, false));
+  if (it != info.end())
+    it->second->SetInfo(type, CollapseWhitespace(value, false));
 }
 
 const string16 AutoFillProfile::Label() const {
