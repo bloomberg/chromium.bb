@@ -118,7 +118,7 @@ ConfirmQuitPanelController* g_confirmQuitPanelController = nil;
     g_confirmQuitPanelController =
         [[ConfirmQuitPanelController alloc] init];
   }
-  return g_confirmQuitPanelController;
+  return [[g_confirmQuitPanelController retain] autorelease];
 }
 
 - (id)init {
@@ -158,6 +158,8 @@ ConfirmQuitPanelController* g_confirmQuitPanelController = nil;
 }
 
 - (NSApplicationTerminateReply)runModalLoopForApplication:(NSApplication*)app {
+  scoped_nsobject<ConfirmQuitPanelController> keepAlive([self retain]);
+
   // If this is the second of two such attempts to quit within a certain time
   // interval, then just quit.
   // Time of last quit attempt, if any.
@@ -243,7 +245,7 @@ ConfirmQuitPanelController* g_confirmQuitPanelController = nil;
 - (void)showWindow:(id)sender {
   // If a panel that is fading out is going to be reused here, make sure it
   // does not get released when the animation finishes.
-  scoped_nsobject<ConfirmQuitPanelController> stayAlive([self retain]);
+  scoped_nsobject<ConfirmQuitPanelController> keepAlive([self retain]);
   [[self window] setAnimations:[NSDictionary dictionary]];
   [[self window] center];
   [[self window] setAlphaValue:1.0];
