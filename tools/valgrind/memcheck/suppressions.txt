@@ -3945,6 +3945,51 @@
    fun:_Znw*
    fun:*AutofillDownloadTestHelper*
 }
+{
+   bug_75634_a
+   Memcheck:Value4
+   ...
+   fun:_ZNSs6appendEPKc
+   fun:_ZN4base10JSONWriter15BuildJSONStringEPK5Valueib
+   fun:_ZN4base10JSONWriter15BuildJSONStringEPK5Valueib
+   fun:_ZN4base10JSONWriter15BuildJSONStringEPK5Valueib
+   fun:_ZN4base10JSONWriter15BuildJSONStringEPK5Valueib
+   fun:_ZN4base10JSONWriter23WriteWithOptionalEscapeEPK5ValuebbPSs
+   fun:_ZN4base10JSONWriter5WriteEPK5ValuebPSs
+   fun:_ZN25JSONStringValueSerializer9SerializeERK5Value
+   fun:_ZN13JsonPrefStore13SerializeDataEPSs
+   fun:_ZN13JsonPrefStore10WritePrefsEv
+   fun:_ZN11PrefService19SavePersistentPrefsEv
+   fun:_ZN11ProfileImpl19MarkAsCleanShutdownEv
+   fun:_ZN11ProfileImplD0Ev
+   fun:_ZN14ProfileManagerD0Ev
+   fun:_ZN10scoped_ptrI14ProfileManagerE5resetEPS0_
+   fun:_ZN18BrowserProcessImplD0Ev
+   fun:_ZN16browser_shutdown8ShutdownEv
+}
+{
+   bug_75634_b
+   Memcheck:Cond
+   fun:memcpy
+   fun:_ZNSs6appendEPKcj
+   fun:_ZNSs6appendEPKc
+   fun:_ZN4base10JSONWriter15BuildJSONStringEPK5Valueib
+   fun:_ZN4base10JSONWriter15BuildJSONStringEPK5Valueib
+   fun:_ZN4base10JSONWriter15BuildJSONStringEPK5Valueib
+   fun:_ZN4base10JSONWriter15BuildJSONStringEPK5Valueib
+   fun:_ZN4base10JSONWriter23WriteWithOptionalEscapeEPK5ValuebbPSs
+   fun:_ZN4base10JSONWriter5WriteEPK5ValuebPSs
+   fun:_ZN25JSONStringValueSerializer9SerializeERK5Value
+   fun:_ZN13JsonPrefStore13SerializeDataEPSs
+   fun:_ZN13JsonPrefStore10WritePrefsEv
+   fun:_ZN11PrefService19SavePersistentPrefsEv
+   fun:_ZN11ProfileImpl19MarkAsCleanShutdownEv
+   fun:_ZN11ProfileImplD0Ev
+   fun:_ZN14ProfileManagerD0Ev
+   fun:_ZN10scoped_ptrI14ProfileManagerE5resetEPS0_
+   fun:_ZN18BrowserProcessImplD0Ev
+   fun:_ZN16browser_shutdown8ShutdownEv
+}
 
 #-----------------------------------------------------------------------
 # These only occur on our Google workstations
