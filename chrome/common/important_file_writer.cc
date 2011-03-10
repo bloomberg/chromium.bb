@@ -106,10 +106,19 @@ void ImportantFileWriter::WriteNow(const std::string& data) {
   if (HasPendingWrite())
     timer_.Stop();
 
-  // TODO(sanjeevr): Add a DCHECK for the return value of PostTask.
-  // (Some tests fail if we add the DCHECK and they need to be fixed first).
-  file_message_loop_proxy_->PostTask(FROM_HERE,
-                                     new WriteToDiskTask(path_, data));
+  if (!file_message_loop_proxy_->PostTask(FROM_HERE,
+                                          new WriteToDiskTask(path_, data))) {
+    // Posting the task to background message loop is not expected
+    // to fail, but if it does, avoid losing data and just hit the disk
+    // on the current thread.
+    // TODO(phajdan.jr): Fix test failures on Win and enable code below.
+#if !defined(OS_WIN)
+    NOTREACHED();
+
+    WriteToDiskTask write_task(path_, data);
+    write_task.Run();
+#endif
+  }
 }
 
 void ImportantFileWriter::ScheduleWrite(DataSerializer* serializer) {

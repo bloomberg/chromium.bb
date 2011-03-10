@@ -178,8 +178,7 @@ class TestBrowserWindowForWizardTest : public TestBrowserWindow {
 class SyncSetupWizardTest : public BrowserWithTestWindowTest {
  public:
   SyncSetupWizardTest()
-      : file_thread_(BrowserThread::FILE, MessageLoop::current()),
-        test_window_(NULL),
+      : test_window_(NULL),
         wizard_(NULL) { }
   virtual ~SyncSetupWizardTest() { }
   virtual void SetUp() {
@@ -203,7 +202,6 @@ class SyncSetupWizardTest : public BrowserWithTestWindowTest {
     wizard_.reset();
   }
 
-  BrowserThread file_thread_;
   TestBrowserWindowForWizardTest* test_window_;
   scoped_ptr<SyncSetupWizard> wizard_;
   ProfileSyncServiceForWizardTest* service_;

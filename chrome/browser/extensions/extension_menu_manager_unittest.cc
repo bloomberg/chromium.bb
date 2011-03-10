@@ -31,8 +31,11 @@ using testing::SaveArg;
 // Base class for tests.
 class ExtensionMenuManagerTest : public testing::Test {
  public:
-  ExtensionMenuManagerTest() : next_id_(1) {}
-  ~ExtensionMenuManagerTest() {}
+  ExtensionMenuManagerTest()
+      : ui_thread_(BrowserThread::UI, &message_loop_),
+        file_thread_(BrowserThread::FILE, &message_loop_),
+        next_id_(1) {
+  }
 
   // Returns a test item.
   ExtensionMenuItem* CreateTestItem(Extension* extension) {
@@ -51,6 +54,10 @@ class ExtensionMenuManagerTest : public testing::Test {
   }
 
  protected:
+  MessageLoopForUI message_loop_;
+  BrowserThread ui_thread_;
+  BrowserThread file_thread_;
+
   ExtensionMenuManager manager_;
   ExtensionList extensions_;
   TestExtensionPrefs prefs_;
@@ -409,9 +416,6 @@ TEST_F(ExtensionMenuManagerTest, RemoveOneByOne) {
 }
 
 TEST_F(ExtensionMenuManagerTest, ExecuteCommand) {
-  MessageLoopForUI message_loop;
-  BrowserThread ui_thread(BrowserThread::UI, &message_loop);
-
   MockTestingProfile profile;
 
   scoped_ptr<MockExtensionEventRouter> mock_event_router(

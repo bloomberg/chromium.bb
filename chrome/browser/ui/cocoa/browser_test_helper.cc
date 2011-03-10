@@ -27,12 +27,15 @@ BrowserTestHelper::~BrowserTestHelper() {
   // Delete the testing profile on the UI thread. But first release the
   // browser, since it may trigger accesses to the profile upon destruction.
   browser_.reset();
+  message_loop_.DeleteSoon(FROM_HERE, profile_.release());
+
+  // Make sure any pending tasks run before we destroy other threads.
+  message_loop_.RunAllPending();
 
   // Drop any new tasks for the IO and FILE threads.
   io_thread_.reset();
   file_thread_.reset();
 
-  message_loop_.DeleteSoon(FROM_HERE, profile_.release());
   message_loop_.RunAllPending();
 }
 

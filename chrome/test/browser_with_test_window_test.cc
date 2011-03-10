@@ -21,6 +21,7 @@
 
 BrowserWithTestWindowTest::BrowserWithTestWindowTest()
     : ui_thread_(BrowserThread::UI, message_loop()),
+      file_thread_(BrowserThread::FILE, message_loop()),
       rph_factory_(),
       rvh_factory_(&rph_factory_) {
 #if defined(OS_WIN)

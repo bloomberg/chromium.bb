@@ -315,6 +315,11 @@ class ExtensionUpdaterTest : public testing::Test {
   }
 
   static void TestExtensionUpdateCheckRequests(bool pending) {
+    MessageLoop message_loop;
+    BrowserThread file_thread(BrowserThread::FILE, &message_loop);
+    BrowserThread io_thread(BrowserThread::IO);
+    io_thread.Start();
+
     // Create an extension with an update_url.
     ServiceForManifestTests service;
     std::string update_url("http://foo.com/bar");
@@ -329,11 +334,7 @@ class ExtensionUpdaterTest : public testing::Test {
       service.set_extensions(extensions);
     }
 
-    // Setup and start the updater.
-    MessageLoop message_loop;
-    BrowserThread io_thread(BrowserThread::IO);
-    io_thread.Start();
-
+    // Set up and start the updater.
     TestURLFetcherFactory factory;
     URLFetcher::set_factory(&factory);
     scoped_refptr<ExtensionUpdater> updater(
@@ -493,13 +494,15 @@ class ExtensionUpdaterTest : public testing::Test {
   }
 
   static void TestDetermineUpdates() {
+    MessageLoop message_loop;
+    BrowserThread file_thread(BrowserThread::FILE, &message_loop);
+
     // Create a set of test extensions
     ServiceForManifestTests service;
     ExtensionList tmp;
     service.CreateTestExtensions(1, 3, &tmp, NULL, Extension::INTERNAL);
     service.set_extensions(tmp);
 
-    MessageLoop message_loop;
     scoped_refptr<ExtensionUpdater> updater(
         new ExtensionUpdater(&service, service.pref_service(),
                              kUpdateFrequencySecs));
@@ -575,9 +578,9 @@ class ExtensionUpdaterTest : public testing::Test {
     TestURLFetcherFactory factory;
     TestURLFetcher* fetcher = NULL;
     URLFetcher::set_factory(&factory);
-    ServiceForDownloadTests service;
+    scoped_ptr<ServiceForDownloadTests> service(new ServiceForDownloadTests);
     scoped_refptr<ExtensionUpdater> updater(
-        new ExtensionUpdater(&service, service.pref_service(),
+        new ExtensionUpdater(service.get(), service->pref_service(),
                              kUpdateFrequencySecs));
     updater->Start();
 
@@ -627,8 +630,13 @@ class ExtensionUpdaterTest : public testing::Test {
     file_thread.Stop();
     io_thread.Stop();
     ui_loop.RunAllPending();
-    EXPECT_EQ("12345", service.last_inquired_extension_id());
+    EXPECT_EQ("12345", service->last_inquired_extension_id());
     xmlCleanupGlobals();
+
+    // The FILE thread is needed for |service|'s cleanup,
+    // because of ImportantFileWriter.
+    file_thread.Start();
+    service.reset();
   }
 
   static void TestSingleExtensionDownloading(bool pending) {
@@ -642,9 +650,9 @@ class ExtensionUpdaterTest : public testing::Test {
     TestURLFetcherFactory factory;
     TestURLFetcher* fetcher = NULL;
     URLFetcher::set_factory(&factory);
-    ServiceForDownloadTests service;
+    scoped_ptr<ServiceForDownloadTests> service(new ServiceForDownloadTests);
     scoped_refptr<ExtensionUpdater> updater(
-        new ExtensionUpdater(&service, service.pref_service(),
+        new ExtensionUpdater(service.get(), service->pref_service(),
                              kUpdateFrequencySecs));
     updater->Start();
 
@@ -666,7 +674,7 @@ class ExtensionUpdaterTest : public testing::Test {
           PendingExtensionInfo(test_url, &ShouldAlwaysInstall, kIsFromSync,
                                kInstallSilently, kInitialState,
                                kInitialIncognitoEnabled, Extension::INTERNAL);
-      service.set_pending_extensions(pending_extensions);
+      service->set_pending_extensions(pending_extensions);
     }
 
     // Call back the ExtensionUpdater with a 200 response and some test data
@@ -683,13 +691,18 @@ class ExtensionUpdaterTest : public testing::Test {
 
     // Expect that ExtensionUpdater asked the mock extensions service to install
     // a file with the test data for the right id.
-    EXPECT_EQ(id, service.extension_id());
-    FilePath tmpfile_path = service.install_path();
+    EXPECT_EQ(id, service->extension_id());
+    FilePath tmpfile_path = service->install_path();
     EXPECT_FALSE(tmpfile_path.empty());
-    EXPECT_EQ(test_url, service.download_url());
+    EXPECT_EQ(test_url, service->download_url());
     std::string file_contents;
     EXPECT_TRUE(file_util::ReadFileToString(tmpfile_path, &file_contents));
     EXPECT_TRUE(extension_data == file_contents);
+
+    // The FILE thread is needed for |service|'s cleanup,
+    // because of ImportantFileWriter.
+    file_thread.Start();
+    service.reset();
 
     file_util::Delete(tmpfile_path, false);
     URLFetcher::set_factory(NULL);
@@ -698,6 +711,7 @@ class ExtensionUpdaterTest : public testing::Test {
   static void TestBlacklistDownloading() {
     MessageLoop message_loop;
     BrowserThread ui_thread(BrowserThread::UI, &message_loop);
+    BrowserThread file_thread(BrowserThread::FILE, &message_loop);
     BrowserThread io_thread(BrowserThread::IO);
     io_thread.Start();
 
@@ -820,6 +834,9 @@ class ExtensionUpdaterTest : public testing::Test {
   static void TestGalleryRequests(int rollcall_ping_days,
                                   int active_ping_days,
                                   bool active_bit) {
+    MessageLoop message_loop;
+    BrowserThread file_thread(BrowserThread::FILE, &message_loop);
+
     TestURLFetcherFactory factory;
     URLFetcher::set_factory(&factory);
 
@@ -860,7 +877,6 @@ class ExtensionUpdaterTest : public testing::Test {
     if (active_bit)
       prefs->SetActiveBit(id, true);
 
-    MessageLoop message_loop;
     scoped_refptr<ExtensionUpdater> updater(
       new ExtensionUpdater(&service, service.pref_service(),
                            kUpdateFrequencySecs));
@@ -972,6 +988,9 @@ TEST(ExtensionUpdaterTest, TestBlacklistUpdateCheckRequests) {
 }
 
 TEST(ExtensionUpdaterTest, TestUpdateUrlData) {
+  MessageLoop message_loop;
+  BrowserThread file_thread(BrowserThread::FILE, &message_loop);
+
   ExtensionUpdaterTest::TestUpdateUrlDataEmpty();
   ExtensionUpdaterTest::TestUpdateUrlDataSimple();
   ExtensionUpdaterTest::TestUpdateUrlDataCompound();
@@ -1044,6 +1063,9 @@ TEST(ExtensionUpdaterTest, TestHandleManifestResults) {
 }
 
 TEST(ExtensionUpdaterTest, TestManifestFetchesBuilderAddExtension) {
+  MessageLoop message_loop;
+  BrowserThread file_thread(BrowserThread::FILE, &message_loop);
+
   MockService service;
   ManifestFetchesBuilder builder(&service);
 
@@ -1091,6 +1113,8 @@ TEST(ExtensionUpdaterTest, TestManifestFetchesBuilderAddExtension) {
 
 TEST(ExtensionUpdaterTest, TestStartUpdateCheckMemory) {
     MessageLoop message_loop;
+    BrowserThread file_thread(BrowserThread::FILE, &message_loop);
+
     ServiceForManifestTests service;
     TestURLFetcherFactory factory;
     URLFetcher::set_factory(&factory);
@@ -1110,6 +1134,8 @@ TEST(ExtensionUpdaterTest, TestStartUpdateCheckMemory) {
 
 TEST(ExtensionUpdaterTest, TestAfterStopBehavior) {
     MessageLoop message_loop;
+    BrowserThread file_thread(BrowserThread::FILE, &message_loop);
+
     ServiceForManifestTests service;
     scoped_refptr<ExtensionUpdater> updater(
         new ExtensionUpdater(&service, service.pref_service(),

@@ -9,6 +9,7 @@
 #include "base/message_loop_proxy.h"
 #include "base/scoped_ptr.h"
 #include "base/values.h"
+#include "base/synchronization/waitable_event.h"
 #include "chrome/browser/extensions/extension_pref_store.h"
 #include "chrome/browser/extensions/extension_pref_value_map.h"
 #include "chrome/browser/extensions/extension_prefs.h"
@@ -18,6 +19,7 @@
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/json_pref_store.h"
+#include "chrome/test/signaling_task.h"
 #include "content/browser/browser_thread.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -65,10 +67,18 @@ void TestExtensionPrefs::RecreateExtensionPrefs() {
     // The PrefService writes its persistent file on the file thread, so we
     // need to wait for any pending I/O to complete before creating a new
     // PrefService.
-    MessageLoop file_loop;
-    BrowserThread file_thread(BrowserThread::FILE, &file_loop);
+    base::WaitableEvent io_finished(false, false);
     pref_service_->SavePersistentPrefs();
-    file_loop.RunAllPending();
+    EXPECT_TRUE(BrowserThread::PostTask(BrowserThread::FILE, FROM_HERE,
+                                        new SignalingTask(&io_finished)));
+
+    // If the FILE thread is in fact the current thread (possible in testing
+    // scenarios), we have to ensure the task has a chance to run. If the FILE
+    // thread is a different thread, the test must ensure that thread is running
+    // (otherwise the Wait below will hang).
+    MessageLoop::current()->RunAllPending();
+
+    EXPECT_TRUE(io_finished.Wait());
   }
 
   extension_pref_value_map_.reset(new ExtensionPrefValueMap);

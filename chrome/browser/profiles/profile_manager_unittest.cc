@@ -20,7 +20,9 @@
 
 class ProfileManagerTest : public testing::Test {
  protected:
-  ProfileManagerTest() : ui_thread_(BrowserThread::UI, &message_loop_) {
+  ProfileManagerTest()
+      : ui_thread_(BrowserThread::UI, &message_loop_),
+        file_thread_(BrowserThread::FILE, &message_loop_) {
   }
 
   virtual void SetUp() {
@@ -40,6 +42,7 @@ class ProfileManagerTest : public testing::Test {
 
   MessageLoopForUI message_loop_;
   BrowserThread ui_thread_;
+  BrowserThread file_thread_;
 
   // the path to temporary directory used to contain the test operations
   FilePath test_dir_;
@@ -140,8 +143,13 @@ TEST_F(ProfileManagerTest, CreateAndUseTwoProfiles) {
   EXPECT_TRUE(profile1->GetBookmarkModel());
   EXPECT_TRUE(profile2->GetBookmarkModel());
   EXPECT_TRUE(profile2->GetHistoryService(Profile::EXPLICIT_ACCESS));
+
+  // Make sure any pending tasks run before we destroy the profiles.
+  message_loop_.RunAllPending();
+
   profile1.reset();
   profile2.reset();
+
   // Make sure history cleans up correctly.
   message_loop_.RunAllPending();
 }

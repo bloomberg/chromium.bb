@@ -16,6 +16,7 @@
 #include "content/common/notification_details.h"
 #include "content/common/notification_observer_mock.h"
 #include "content/common/notification_source.h"
+#include "content/browser/browser_thread.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using base::Time;
@@ -61,7 +62,10 @@ static void AssertEqualExtents(ExtensionExtent* extent1,
 // Base class for tests.
 class ExtensionPrefsTest : public testing::Test {
  public:
-  ExtensionPrefsTest() {}
+  ExtensionPrefsTest()
+      : ui_thread_(BrowserThread::UI, &message_loop_),
+        file_thread_(BrowserThread::FILE, &message_loop_) {
+  }
 
   // This function will get called once, and is the right place to do operations
   // on ExtensionPrefs that write data.
@@ -91,6 +95,10 @@ class ExtensionPrefsTest : public testing::Test {
 
  protected:
   ExtensionPrefs* prefs() { return prefs_.prefs(); }
+
+  MessageLoop message_loop_;
+  BrowserThread ui_thread_;
+  BrowserThread file_thread_;
 
   TestExtensionPrefs prefs_;
 

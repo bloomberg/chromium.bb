@@ -9,16 +9,7 @@
 #include "chrome/test/testing_profile.h"
 #include "content/browser/browser_thread.h"
 
-class BookmarkBarViewTest : public BrowserWithTestWindowTest {
- public:
-  BookmarkBarViewTest()
-      : file_thread_(BrowserThread::FILE, message_loop()) {}
-
- private:
-  BrowserThread file_thread_;
-
-  DISALLOW_COPY_AND_ASSIGN(BookmarkBarViewTest);
-};
+typedef BrowserWithTestWindowTest BookmarkBarViewTest;
 
 TEST_F(BookmarkBarViewTest, SwitchProfile) {
   profile()->CreateBookmarkModel(true);
