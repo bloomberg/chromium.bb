@@ -7155,7 +7155,7 @@ void Cluster::LoadBlockEntries() const
         const long long element_size = cluster_stop - m_element_start;
         assert((m_element_size <= 0) || (m_element_size == element_size));
 
-        if (element_size <= 0)
+        if (m_element_size <= 0)
             m_element_size = element_size;
     }
 
