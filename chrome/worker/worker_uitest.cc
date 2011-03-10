@@ -156,30 +156,6 @@ class WorkerTest : public UILayoutTest {
     EXPECT_EQ(AUTOMATION_MSG_NAVIGATION_SUCCESS, tab->NavigateToURL(about_url));
   }
 
-  void RunWorkerFileSystemLayoutTest(const std::string& test_case_file_name) {
-    FilePath worker_test_dir;
-    worker_test_dir = worker_test_dir.AppendASCII("fast");
-
-    FilePath filesystem_test_dir;
-    filesystem_test_dir = filesystem_test_dir.AppendASCII("filesystem");
-    filesystem_test_dir = filesystem_test_dir.AppendASCII("workers");
-    InitializeForLayoutTest(worker_test_dir, filesystem_test_dir, kNoHttpPort);
-
-    FilePath resource_dir;
-    resource_dir = resource_dir.AppendASCII("resources");
-    AddResourceForLayoutTest(worker_test_dir.AppendASCII("filesystem"),
-                             resource_dir);
-
-    RunLayoutTest(test_case_file_name, kNoHttpPort);
-
-    // Navigate to a blank page so that any workers are cleaned up.
-    // This helps leaks trackers do a better job of reporting.
-    scoped_refptr<TabProxy> tab(GetActiveTab());
-    DCHECK(tab.get());
-    GURL about_url(chrome::kAboutBlankURL);
-    EXPECT_EQ(AUTOMATION_MSG_NAVIGATION_SUCCESS, tab->NavigateToURL(about_url));
-  }
-
   bool NavigateAndWaitForAuth(TabProxy* tab, const GURL& url) {
     // Pass a large number of navigations to tell the tab to block until an auth
     // dialog pops up.
@@ -705,29 +681,97 @@ TEST_F(WorkerTest, FLAKY_QueuedSharedWorkerStartedFromOtherTab) {
   ASSERT_TRUE(WaitForProcessCountToBe(2, max_workers_per_tab+1));
 }
 
-// FileSystem worker tests.
-// They are disabled for now as the feature is not enabled by default.
-// http://crbug.com/32277
-TEST_F(WorkerTest, DISABLED_WorkerFileSystemTemporaryTest) {
+class WorkerFileSystemTest : public WorkerTest {
+ protected:
+  void RunWorkerFileSystemLayoutTest(const std::string& test_case_file_name) {
+    FilePath worker_test_dir;
+    worker_test_dir = worker_test_dir.AppendASCII("fast");
+
+    FilePath filesystem_test_dir;
+    filesystem_test_dir = filesystem_test_dir.AppendASCII("filesystem");
+    filesystem_test_dir = filesystem_test_dir.AppendASCII("workers");
+    InitializeForLayoutTest(worker_test_dir, filesystem_test_dir, kNoHttpPort);
+
+    FilePath resource_dir;
+    resource_dir = resource_dir.AppendASCII("resources");
+    AddResourceForLayoutTest(worker_test_dir.AppendASCII("filesystem"),
+                             resource_dir);
+
+    // FS tests also rely on common files in js/resources.
+    FilePath js_dir = worker_test_dir.AppendASCII("js");
+    FilePath js_resource_dir;
+    js_resource_dir = js_resource_dir.AppendASCII("resources");
+    AddResourceForLayoutTest(js_dir, js_resource_dir);
+
+    RunLayoutTest(test_case_file_name, kNoHttpPort);
+
+    // Navigate to a blank page so that any workers are cleaned up.
+    // This helps leaks trackers do a better job of reporting.
+    scoped_refptr<TabProxy> tab(GetActiveTab());
+    ASSERT_TRUE(tab.get());
+    GURL about_url(chrome::kAboutBlankURL);
+    EXPECT_EQ(AUTOMATION_MSG_NAVIGATION_SUCCESS, tab->NavigateToURL(about_url));
+  }
+};
+
+TEST_F(WorkerFileSystemTest, Temporary) {
   RunWorkerFileSystemLayoutTest("simple-temporary.html");
 }
 
-TEST_F(WorkerTest, DISABLED_WorkerFileSystemPersistentTest) {
+TEST_F(WorkerFileSystemTest, Persistent) {
   RunWorkerFileSystemLayoutTest("simple-persistent.html");
 }
 
-TEST_F(WorkerTest, DISABLED_WorkerFileSystemSyncTemporaryTest) {
+TEST_F(WorkerFileSystemTest, SyncTemporary) {
   RunWorkerFileSystemLayoutTest("simple-temporary-sync.html");
 }
 
-TEST_F(WorkerTest, DISABLED_WorkerFileSystemSyncPersistentTest) {
+TEST_F(WorkerFileSystemTest, SyncPersistent) {
   RunWorkerFileSystemLayoutTest("simple-persistent-sync.html");
 }
 
-TEST_F(WorkerTest, DISABLED_WorkerFileSystemAsyncOperationsTest) {
+TEST_F(WorkerFileSystemTest, AsyncOperations) {
   RunWorkerFileSystemLayoutTest("async-operations.html");
 }
 
-TEST_F(WorkerTest, DISABLED_WorkerFileSystemSyncOperationsTest) {
+TEST_F(WorkerFileSystemTest, SyncOperations) {
   RunWorkerFileSystemLayoutTest("sync-operations.html");
+}
+
+TEST_F(WorkerFileSystemTest, FileEntryToURISync) {
+  RunWorkerFileSystemLayoutTest("file-entry-to-uri-sync.html");
+}
+
+#if defined(OS_LINUX)
+// These tests fail on Linux due to an assert in WebKit's RNG.
+// See http://webkit.org/b/55728.
+#define FileFromFileEntry DISABLED_FileFromFileEntry
+#define FileFromFileEntrySync DISABLED_FileFromFileEntrySync
+#define FileWriterTruncateExtend DISABLED_FileWriterTruncateExtend
+#define FileWriterSyncTruncateExtend DISABLED_FileWriterSyncTruncateExtend
+#define FileWriterSyncWriteOverlapped DISABLED_FileWriterSyncWriteOverlapped
+#elif defined(OS_WIN)
+// See http://crbug.com/75548
+#define FileWriterTruncateExtend DISABLED_FileWriterTruncateExtend
+#define FileWriterSyncTruncateExtend DISABLED_FileWriterSyncTruncateExtend
+#define FileWriterSyncWriteOverlapped DISABLED_FileWriterSyncWriteOverlapped
+#endif
+TEST_F(WorkerFileSystemTest, FileFromFileEntry) {
+  RunWorkerFileSystemLayoutTest("file-from-file-entry.html");
+}
+
+TEST_F(WorkerFileSystemTest, FileFromFileEntrySync) {
+  RunWorkerFileSystemLayoutTest("file-from-file-entry-sync.html");
+}
+
+TEST_F(WorkerFileSystemTest, FileWriterTruncateExtend) {
+  RunWorkerFileSystemLayoutTest("file-writer-truncate-extend.html");
+}
+
+TEST_F(WorkerFileSystemTest, FileWriterSyncTruncateExtend) {
+  RunWorkerFileSystemLayoutTest("file-writer-sync-truncate-extend.html");
+}
+
+TEST_F(WorkerFileSystemTest, FileWriterSyncWriteOverlapped) {
+  RunWorkerFileSystemLayoutTest("file-writer-sync-write-overlapped.html");
 }
