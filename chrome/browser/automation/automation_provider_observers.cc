@@ -24,6 +24,10 @@
 #include "chrome/browser/bookmarks/bookmark_model.h"
 #include "chrome/browser/browser_list.h"
 #include "chrome/browser/browser_process.h"
+#if defined(OS_CHROMEOS)
+#include "chrome/browser/chromeos/cros/cros_library.h"
+#include "chrome/browser/chromeos/login/authentication_notification_details.h"
+#endif  // defined(OS_CHROMEOS)
 #include "chrome/browser/dom_operation_notification_details.h"
 #include "chrome/browser/download/download_item.h"
 #include "chrome/browser/download/save_package.h"
@@ -61,10 +65,6 @@
 #include "googleurl/src/gurl.h"
 #include "ui/gfx/codec/png_codec.h"
 #include "ui/gfx/rect.h"
-
-#if defined(OS_CHROMEOS)
-#include "chrome/browser/chromeos/login/authentication_notification_details.h"
-#endif
 
 // Holds onto start and stop timestamps for a particular tab
 class InitialLoadObserver::TabTime {
@@ -150,8 +150,33 @@ DictionaryValue* InitialLoadObserver::GetTimingInformation() const {
 void InitialLoadObserver::ConditionMet() {
   registrar_.RemoveAll();
   if (automation_)
-    automation_->OnInitialLoadsComplete();
+    automation_->OnInitialTabLoadsComplete();
 }
+
+#if defined(OS_CHROMEOS)
+NetworkManagerInitObserver::NetworkManagerInitObserver(
+    AutomationProvider* automation)
+    : automation_(automation->AsWeakPtr()) {
+  if (chromeos::CrosLibrary::Get()->EnsureLoaded()) {
+    chromeos::CrosLibrary::Get()->GetNetworkLibrary()->
+        AddNetworkManagerObserver(this);
+  } else {
+    automation_->OnNetworkLibraryInit();
+    delete this;
+  }
+}
+
+NetworkManagerInitObserver::~NetworkManagerInitObserver() {}
+
+void NetworkManagerInitObserver::OnNetworkManagerChanged(
+    chromeos::NetworkLibrary* obj) {
+  if (!obj->wifi_scanning()) {
+    obj->RemoveNetworkManagerObserver(this);
+    automation_->OnNetworkLibraryInit();
+    delete this;
+  }
+}
+#endif  // defined(OS_CHROMEOS)
 
 NewTabUILoadObserver::NewTabUILoadObserver(AutomationProvider* automation)
     : automation_(automation->AsWeakPtr()) {
@@ -1282,7 +1307,7 @@ void ScreenLockUnlockObserver::Observe(NotificationType type,
     reply.SendError("Screen lock failure.");
   delete this;
 }
-#endif
+#endif  // defined(OS_CHROMEOS)
 
 AutomationProviderBookmarkModelObserver::
 AutomationProviderBookmarkModelObserver(

@@ -977,6 +977,10 @@ class TestingAutomationProvider : public AutomationProvider,
   void ScreenLock(DictionaryValue* args, IPC::Message* reply_message);
 
   void ScreenUnlock(DictionaryValue* args, IPC::Message* reply_message);
+
+  void GetNetworkInfo(DictionaryValue* args, IPC::Message* reply_message);
+
+  void ConnectToWifiNetwork(DictionaryValue* args, IPC::Message* reply_message);
 #endif  // defined(OS_CHROMEOS)
 
   void WaitForTabCountToBecome(int browser_handle,

@@ -112,7 +112,8 @@ AutomationProvider::AutomationProvider(Profile* profile)
       reply_message_(NULL),
       reinitialize_on_channel_error_(false),
       is_connected_(false),
-      initial_loads_complete_(false) {
+      initial_tab_loads_complete_(false),
+      network_library_initialized_(true) {
   TRACE_EVENT_BEGIN("AutomationProvider::AutomationProvider", 0, "");
 
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
@@ -176,6 +177,13 @@ bool AutomationProvider::InitializeChannel(const std::string& channel_id) {
       true, g_browser_process->shutdown_event()));
   channel_->AddFilter(automation_resource_message_filter_);
 
+#if defined(OS_CHROMEOS)
+  // Wait for the network manager to initialize.
+  // The observer will delete itself when done.
+  network_library_initialized_ = false;
+  new NetworkManagerInitObserver(this);
+#endif
+
   TRACE_EVENT_END("AutomationProvider::InitializeChannel", 0, "");
 
   return true;
@@ -188,14 +196,20 @@ std::string AutomationProvider::GetProtocolVersion() {
 
 void AutomationProvider::SetExpectedTabCount(size_t expected_tabs) {
   if (expected_tabs == 0)
-    OnInitialLoadsComplete();
+    OnInitialTabLoadsComplete();
   else
     initial_load_observer_.reset(new InitialLoadObserver(expected_tabs, this));
 }
 
-void AutomationProvider::OnInitialLoadsComplete() {
-  initial_loads_complete_ = true;
-  if (is_connected_)
+void AutomationProvider::OnInitialTabLoadsComplete() {
+  initial_tab_loads_complete_ = true;
+  if (is_connected_ && network_library_initialized_)
+    Send(new AutomationMsg_InitialLoadsComplete());
+}
+
+void AutomationProvider::OnNetworkLibraryInit() {
+  network_library_initialized_ = true;
+  if (is_connected_ && initial_tab_loads_complete_)
     Send(new AutomationMsg_InitialLoadsComplete());
 }
 
@@ -320,7 +334,7 @@ void AutomationProvider::OnChannelConnected(int pid) {
 
   // Send a hello message with our current automation protocol version.
   channel_->Send(new AutomationMsg_Hello(GetProtocolVersion()));
-  if (initial_loads_complete_)
+  if (initial_tab_loads_complete_ && network_library_initialized_)
     Send(new AutomationMsg_InitialLoadsComplete());
 }
 

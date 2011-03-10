@@ -2286,6 +2286,31 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
     }
     return self._GetResultFromJSONRequest(cmd_dict, windex=-1)
 
+  def GetNetworkInfo(self):
+    """Get details about ethernet, wifi, and cellular networks on chromeos.
+
+    Raises:
+      pyauto_errors.JSONInterfaceError if the automation call returns an error.
+    """
+    cmd_dict = { 'command': 'GetNetworkInfo' }
+    return self._GetResultFromJSONRequest(cmd_dict, windex=-1)
+
+  def ConnectToWifiNetwork(self, service_path,
+                           password='', identity='', certpath=''):
+    """Connect to a wifi network by its service path.
+
+    Raises:
+      pyauto_errors.JSONInterfaceError if the automation call returns an error.
+    """
+    cmd_dict = {
+        'command': 'ConnectToWifiNetwork',
+        'service_path': service_path,
+        'password': password,
+        'identity': identity,
+        'certpath': certpath,
+    }
+    return self._GetResultFromJSONRequest(cmd_dict, windex=-1)
+
   ## ChromeOS section -- end
 
 

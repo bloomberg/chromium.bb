@@ -2150,6 +2150,10 @@ void TestingAutomationProvider::SendJSONRequest(int handle,
   handler_map["Logout"] = &TestingAutomationProvider::Logout;
   handler_map["ScreenLock"] = &TestingAutomationProvider::ScreenLock;
   handler_map["ScreenUnlock"] = &TestingAutomationProvider::ScreenUnlock;
+
+  handler_map["GetNetworkInfo"] = &TestingAutomationProvider::GetNetworkInfo;
+  handler_map["ConnectToWifiNetwork"] =
+      &TestingAutomationProvider::ConnectToWifiNetwork;
 #endif  // defined(OS_CHROMEOS)
 
   std::map<std::string, BrowserJsonHandler> browser_handler_map;

@@ -103,7 +103,10 @@ class AutomationProvider
 
   // Called when the inital set of tabs has finished loading.
   // Call SetExpectedTabCount(0) to set this to true immediately.
-  void OnInitialLoadsComplete();
+  void OnInitialTabLoadsComplete();
+
+  // Called when the ChromeOS network library has finished its first update.
+  void OnNetworkLibraryInit();
 
   // Get the index of a particular NavigationController object
   // in the given parent window.  This method uses
@@ -399,7 +402,10 @@ class AutomationProvider
   bool is_connected_;
 
   // True iff browser finished loading initial set of tabs.
-  bool initial_loads_complete_;
+  bool initial_tab_loads_complete_;
+
+  // True iff the Chrome OS network library finished initialization.
+  bool network_library_initialized_;
 
   // ID of automation channel.
   std::string channel_id_;

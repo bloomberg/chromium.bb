@@ -18,6 +18,9 @@
 #include "chrome/browser/automation/automation_provider_json.h"
 #include "chrome/browser/bookmarks/bookmark_model_observer.h"
 #include "chrome/browser/browsing_data_remover.h"
+#if defined(OS_CHROMEOS)
+#include "chrome/browser/chromeos/cros/network_library.h"
+#endif  // defined(OS_CHROMEOS)
 #include "chrome/browser/download/download_item.h"
 #include "chrome/browser/download/download_manager.h"
 #include "chrome/browser/history/history.h"
@@ -89,6 +92,23 @@ class InitialLoadObserver : public NotificationObserver {
 
   DISALLOW_COPY_AND_ASSIGN(InitialLoadObserver);
 };
+
+#if defined(OS_CHROMEOS)
+// Watches for NetworkManager events. Because NetworkLibrary loads
+// asynchronously, this is used to make sure it is done before tests are run.
+class NetworkManagerInitObserver
+    : public chromeos::NetworkLibrary::NetworkManagerObserver {
+ public:
+  explicit NetworkManagerInitObserver(AutomationProvider* automation);
+  virtual ~NetworkManagerInitObserver();
+  virtual void OnNetworkManagerChanged(chromeos::NetworkLibrary* obj);
+
+ private:
+  base::WeakPtr<AutomationProvider> automation_;
+
+  DISALLOW_COPY_AND_ASSIGN(NetworkManagerInitObserver);
+};
+#endif  // defined(OS_CHROMEOS)
 
 // Watches for NewTabUI page loads for performance timing purposes.
 class NewTabUILoadObserver : public NotificationObserver {
@@ -674,7 +694,7 @@ class ScreenLockUnlockObserver : public NotificationObserver {
 
   DISALLOW_COPY_AND_ASSIGN(ScreenLockUnlockObserver);
 };
-#endif
+#endif  // defined(OS_CHROMEOS)
 
 // Waits for the bookmark model to load.
 class AutomationProviderBookmarkModelObserver : BookmarkModelObserver {
