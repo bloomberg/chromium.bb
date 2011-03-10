@@ -750,7 +750,7 @@ TEST_F(WorkerFileSystemTest, FileEntryToURISync) {
 #define FileWriterTruncateExtend DISABLED_FileWriterTruncateExtend
 #define FileWriterSyncTruncateExtend DISABLED_FileWriterSyncTruncateExtend
 #define FileWriterSyncWriteOverlapped DISABLED_FileWriterSyncWriteOverlapped
-#elif defined(OS_WIN)
+#else
 // See http://crbug.com/75548
 #define FileWriterTruncateExtend DISABLED_FileWriterTruncateExtend
 #define FileWriterSyncTruncateExtend DISABLED_FileWriterSyncTruncateExtend
