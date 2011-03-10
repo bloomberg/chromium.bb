@@ -18,7 +18,7 @@
 #include "base/timer.h"
 #include "chrome/common/edit_command.h"
 #include "chrome/common/native_web_keyboard_event.h"
-#include "chrome/common/property_bag.h"
+#include "content/common/property_bag.h"
 #include "ipc/ipc_channel.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebInputEvent.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebTextDirection.h"

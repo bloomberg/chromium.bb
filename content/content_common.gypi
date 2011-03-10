@@ -60,6 +60,8 @@
         'common/p2p_messages.h',
         'common/p2p_sockets.cc',
         'common/p2p_sockets.h',
+        'common/property_bag.cc',
+        'common/property_bag.h',
         'common/resource_dispatcher.cc',
         'common/resource_dispatcher.h',
         'common/resource_messages.h',

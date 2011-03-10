@@ -24,7 +24,6 @@
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/browser/ui/webui/new_tab_ui.h"
 #include "chrome/common/extensions/extension.h"
-#include "chrome/common/property_bag.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/test/testing_profile.h"
 #include "content/browser/renderer_host/test_render_view_host.h"
@@ -35,6 +34,7 @@
 #include "content/common/notification_observer_mock.h"
 #include "content/common/notification_registrar.h"
 #include "content/common/notification_source.h"
+#include "content/common/property_bag.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/system_monitor/system_monitor.h"
 

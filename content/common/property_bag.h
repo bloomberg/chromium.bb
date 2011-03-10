@@ -1,9 +1,9 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_COMMON_PROPERTY_BAG_H_
-#define CHROME_COMMON_PROPERTY_BAG_H_
+#ifndef CONTENT_COMMON_PROPERTY_BAG_H_
+#define CONTENT_COMMON_PROPERTY_BAG_H_
 #pragma once
 
 #include <map>
@@ -172,4 +172,4 @@ class PropertyAccessor : public PropertyAccessorBase {
   DISALLOW_COPY_AND_ASSIGN(PropertyAccessor);
 };
 
-#endif  // CHROME_COMMON_PROPERTY_BAG_H_
+#endif  // CONTENT_COMMON_PROPERTY_BAG_H_
