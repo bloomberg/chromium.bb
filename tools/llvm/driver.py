@@ -109,7 +109,8 @@ INITIAL_ENV = {
   'LLVM_GXX'    : '${BASE_ARM}/bin/arm-none-linux-gnueabi-g++',
 
   'CC_FLAGS'    : '${OPT_LEVEL} -fuse-llvm-va-arg -Werror-portable-llvm ' +
-                  '-nostdinc -DNACL_LINUX=1 -D__native_client__=1',
+                  '-nostdinc -DNACL_LINUX=1 -D__native_client__=1 ' +
+                  '-D__pnacl__=1',
   'CC_STDINC'   :
     # NOTE: the two competing approaches here
     #       make the gcc driver "right" or
