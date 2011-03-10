@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/common/gpu_info.h"
+#include "content/common/gpu_info.h"
 
 GPUInfo::GPUInfo()
     : level(kUninitialized),

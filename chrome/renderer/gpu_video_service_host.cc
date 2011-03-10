@@ -4,9 +4,9 @@
 
 #include "chrome/renderer/gpu_video_service_host.h"
 
-#include "chrome/common/gpu_messages.h"
 #include "chrome/renderer/gpu_video_decoder_host.h"
 #include "chrome/renderer/render_thread.h"
+#include "content/common/gpu_messages.h"
 
 GpuVideoServiceHost::GpuVideoServiceHost()
     : channel_(NULL),

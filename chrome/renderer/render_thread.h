@@ -16,7 +16,6 @@
 #include "build/build_config.h"
 #include "chrome/common/css_colors.h"
 #include "chrome/common/extensions/extension_set.h"
-#include "chrome/common/gpu_info.h"
 #include "chrome/renderer/visitedlink_slave.h"
 #include "content/common/child_thread.h"
 #include "ipc/ipc_channel_proxy.h"
@@ -45,6 +44,7 @@ class WebDatabaseObserverImpl;
 struct ContentSettings;
 struct RendererPreferences;
 struct DOMStorageMsg_Event_Params;
+struct GPUInfo;
 struct ViewMsg_ExtensionLoaded_Params;
 struct ViewMsg_New_Params;
 struct WebPreferences;

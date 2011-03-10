@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,22 +6,111 @@
 #include <string>
 
 #include "base/shared_memory.h"
-#include "chrome/common/gpu_info.h"
-#include "chrome/common/gpu_video_common.h"
+#include "content/common/common_param_traits.h"
+#include "content/common/gpu_info.h"
+#include "gpu/ipc/gpu_command_buffer_traits.h"
+#include "gpu/command_buffer/common/command_buffer.h"
+#include "ipc/ipc_channel_handle.h"
 #include "ipc/ipc_message_macros.h"
+#include "ui/gfx/native_widget_types.h"
+#include "ui/gfx/size.h"
+
+// Multiply-included message file, hence no include guard.
 
 #define IPC_MESSAGE_START GpuMsgStart
 
-namespace gfx {
-class Size;
-}
+// Flag assigned to a video buffer for both input and output.
+#define kGpuVideoEndOfStream (1 << 0)
 
-namespace IPC {
-struct ChannelHandle;
-}
+IPC_STRUCT_BEGIN(GPUCreateCommandBufferConfig)
+  IPC_STRUCT_MEMBER(std::string, allowed_extensions)
+  IPC_STRUCT_MEMBER(std::vector<int>, attribs)
+IPC_STRUCT_END()
 
-struct GPUCreateCommandBufferConfig;
-struct GPUInfo;
+IPC_STRUCT_BEGIN(GpuVideoDecoderInitParam)
+  IPC_STRUCT_MEMBER(int32, codec_id)
+  IPC_STRUCT_MEMBER(int32, width)
+  IPC_STRUCT_MEMBER(int32, height)
+  IPC_STRUCT_MEMBER(int32, profile)
+  IPC_STRUCT_MEMBER(int32, level)
+  IPC_STRUCT_MEMBER(int32, frame_rate_den)
+  IPC_STRUCT_MEMBER(int32, frame_rate_num)
+  IPC_STRUCT_MEMBER(int32, aspect_ratio_den)
+  IPC_STRUCT_MEMBER(int32, aspect_ratio_num)
+IPC_STRUCT_END()
+
+IPC_STRUCT_BEGIN(GpuVideoDecoderInitDoneParam)
+  // other parameter is only meaningful when this is true.
+  IPC_STRUCT_MEMBER(int32, success)
+  IPC_STRUCT_MEMBER(int32, input_buffer_size)
+  IPC_STRUCT_MEMBER(base::SharedMemoryHandle, input_buffer_handle)
+IPC_STRUCT_END()
+
+IPC_STRUCT_BEGIN(GpuVideoDecoderInputBufferParam)
+  IPC_STRUCT_MEMBER(int64, timestamp)  // In unit of microseconds.
+  IPC_STRUCT_MEMBER(int32, offset)
+  IPC_STRUCT_MEMBER(int32, size)
+  IPC_STRUCT_MEMBER(int32, flags)  // Miscellaneous flag bit mask.
+IPC_STRUCT_END()
+
+IPC_STRUCT_BEGIN(GpuVideoDecoderErrorInfoParam)
+  IPC_STRUCT_MEMBER(int32, error_id)  // TODO(jiesun): define enum.
+IPC_STRUCT_END()
+
+// TODO(jiesun): define this.
+IPC_STRUCT_BEGIN(GpuVideoDecoderFormatChangeParam)
+  IPC_STRUCT_MEMBER(int32, input_buffer_size)
+  IPC_STRUCT_MEMBER(base::SharedMemoryHandle, input_buffer_handle)
+IPC_STRUCT_END()
+
+#if defined(OS_MACOSX)
+IPC_STRUCT_BEGIN(GpuHostMsg_AcceleratedSurfaceSetIOSurface_Params)
+  IPC_STRUCT_MEMBER(int32, renderer_id)
+  IPC_STRUCT_MEMBER(int32, render_view_id)
+  IPC_STRUCT_MEMBER(gfx::PluginWindowHandle, window)
+  IPC_STRUCT_MEMBER(int32, width)
+  IPC_STRUCT_MEMBER(int32, height)
+  IPC_STRUCT_MEMBER(uint64, identifier)
+IPC_STRUCT_END()
+
+IPC_STRUCT_BEGIN(GpuHostMsg_AcceleratedSurfaceBuffersSwapped_Params)
+  IPC_STRUCT_MEMBER(int32, renderer_id)
+  IPC_STRUCT_MEMBER(int32, render_view_id)
+  IPC_STRUCT_MEMBER(gfx::PluginWindowHandle, window)
+  IPC_STRUCT_MEMBER(uint64, surface_id)
+  IPC_STRUCT_MEMBER(int32, route_id)
+  IPC_STRUCT_MEMBER(uint64, swap_buffers_count)
+IPC_STRUCT_END()
+#endif
+
+IPC_STRUCT_TRAITS_BEGIN(DxDiagNode)
+  IPC_STRUCT_TRAITS_MEMBER(values)
+  IPC_STRUCT_TRAITS_MEMBER(children)
+IPC_STRUCT_TRAITS_END()
+
+IPC_ENUM_TRAITS(GPUInfo::Level)
+
+IPC_STRUCT_TRAITS_BEGIN(GPUInfo)
+  IPC_STRUCT_TRAITS_MEMBER(level)
+  IPC_STRUCT_TRAITS_MEMBER(initialization_time)
+  IPC_STRUCT_TRAITS_MEMBER(vendor_id)
+  IPC_STRUCT_TRAITS_MEMBER(device_id)
+  IPC_STRUCT_TRAITS_MEMBER(driver_vendor)
+  IPC_STRUCT_TRAITS_MEMBER(driver_version)
+  IPC_STRUCT_TRAITS_MEMBER(driver_date)
+  IPC_STRUCT_TRAITS_MEMBER(pixel_shader_version)
+  IPC_STRUCT_TRAITS_MEMBER(vertex_shader_version)
+  IPC_STRUCT_TRAITS_MEMBER(gl_version)
+  IPC_STRUCT_TRAITS_MEMBER(gl_version_string)
+  IPC_STRUCT_TRAITS_MEMBER(gl_vendor)
+  IPC_STRUCT_TRAITS_MEMBER(gl_renderer)
+  IPC_STRUCT_TRAITS_MEMBER(gl_extensions)
+  IPC_STRUCT_TRAITS_MEMBER(can_lose_context)
+  IPC_STRUCT_TRAITS_MEMBER(collection_error)
+#if defined(OS_WIN)
+  IPC_STRUCT_TRAITS_MEMBER(dx_diagnostics)
+#endif
+IPC_STRUCT_TRAITS_END()
 
 //------------------------------------------------------------------------------
 // GPU Messages
@@ -91,6 +180,13 @@ IPC_MESSAGE_CONTROL0(GpuMsg_Crash)
 
 // Tells the GPU process to hang.
 IPC_MESSAGE_CONTROL0(GpuMsg_Hang)
+
+// The browser sends this to a renderer process in response to a
+// GpuHostMsg_EstablishGpuChannel message.
+IPC_MESSAGE_CONTROL3(GpuMsg_GpuChannelEstablished,
+                     IPC::ChannelHandle /* handle to channel */,
+                     base::ProcessHandle /* renderer_process_for_gpu */,
+                     GPUInfo /* stats about GPU process*/)
 
 //------------------------------------------------------------------------------
 // GPU Host Messages

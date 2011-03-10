@@ -13,7 +13,7 @@
 #include "chrome/common/common_param_traits.h"
 #include "chrome/common/page_type.h"
 #include "chrome/common/security_style.h"
-#include "chrome/common/common_param_traits.h"
+#include "content/common/common_param_traits.h"
 #include "net/base/host_port_pair.h"
 #include "net/base/upload_data.h"
 #include "ui/gfx/rect.h"

@@ -7,8 +7,8 @@
 #include "base/string_number_conversions.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
-#include "chrome/common/gpu_info.h"
 #include "chrome/installer/util/google_update_settings.h"
+#include "content/common/gpu_info.h"
 #include "googleurl/src/gurl.h"
 
 namespace child_process_logging {

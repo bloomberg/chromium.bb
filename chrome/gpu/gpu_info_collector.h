@@ -8,8 +8,7 @@
 
 #include "base/basictypes.h"
 #include "build/build_config.h"
-#include "chrome/common/dx_diag_node.h"
-#include "chrome/common/gpu_info.h"
+#include "content/common/gpu_info.h"
 
 struct IDirect3D9;
 

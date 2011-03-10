@@ -9,6 +9,7 @@ include_rules = [
   "+chrome",
 
   "+grit",
+  "+gpu",
   "+media",
   "+net",
   "+ppapi",

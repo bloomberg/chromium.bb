@@ -14,7 +14,7 @@
 #include "base/sys_info.h"
 #include "base/values.h"
 #include "base/version.h"
-#include "chrome/common/gpu_info.h"
+#include "content/common/gpu_info.h"
 
 namespace {
 

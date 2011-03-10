@@ -10,9 +10,10 @@
 
 #include "base/basictypes.h"
 #include "base/callback.h"
+#include "base/process.h"
 #include "base/ref_counted.h"
 #include "base/scoped_ptr.h"
-#include "chrome/common/gpu_video_common.h"
+#include "base/shared_memory.h"
 #include "chrome/gpu/media/gpu_video_device.h"
 #include "media/video/video_decode_context.h"
 #include "media/video/video_decode_engine.h"
@@ -32,6 +33,9 @@ class GLES2Decoder;
 }  // namespace gpu
 
 class GpuChannel;
+struct GpuVideoDecoderInitDoneParam;
+struct GpuVideoDecoderInitParam;
+struct GpuVideoDecoderInputBufferParam;
 
 // A GpuVideoDecoder is a platform independent video decoder that uses platform
 // specific VideoDecodeEngine and GpuVideoDevice for the actual decoding

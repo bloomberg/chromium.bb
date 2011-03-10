@@ -8,8 +8,8 @@
 #include <deque>
 #include <map>
 
+#include "base/shared_memory.h"
 #include "base/singleton.h"
-#include "chrome/common/gpu_video_common.h"
 #include "chrome/renderer/gpu_channel_host.h"
 #include "ipc/ipc_message.h"
 #include "media/base/buffers.h"
@@ -20,6 +20,7 @@ using media::VideoFrame;
 using media::Buffer;
 
 class MessageRouter;
+struct GpuVideoDecoderInitDoneParam;
 
 // This class is used to talk to GpuVideoDecoder in the GPU process through
 // IPC messages. It implements the interface of VideoDecodeEngine so users

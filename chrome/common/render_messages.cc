@@ -6,7 +6,6 @@
 #include "chrome/common/edit_command.h"
 #include "chrome/common/extensions/extension_extent.h"
 #include "chrome/common/extensions/url_pattern.h"
-#include "chrome/common/gpu_param_traits.h"
 #include "chrome/common/render_messages_params.h"
 #include "chrome/common/thumbnail_score.h"
 #include "chrome/common/web_apps.h"

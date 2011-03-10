@@ -14,8 +14,6 @@
 #include "base/process.h"
 #include "base/scoped_ptr.h"
 #include "build/build_config.h"
-#include "chrome/common/gpu_create_command_buffer_config.h"
-#include "chrome/common/gpu_video_common.h"
 #include "chrome/gpu/gpu_command_buffer_stub.h"
 #include "content/common/message_router.h"
 #include "ipc/ipc_sync_channel.h"
@@ -23,6 +21,7 @@
 #include "ui/gfx/size.h"
 
 class GpuThread;
+struct GPUCreateCommandBufferConfig;
 
 // Encapsulates an IPC channel between the GPU process and one renderer
 // process. On the renderer side there's a corresponding GpuChannelHost.

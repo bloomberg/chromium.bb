@@ -21,7 +21,7 @@
 #include "base/singleton.h"
 #include "base/threading/non_thread_safe.h"
 #include "chrome/common/gpu_feature_flags.h"
-#include "chrome/common/gpu_info.h"
+#include "content/common/gpu_info.h"
 #include "content/common/message_router.h"
 #include "ui/gfx/native_widget_types.h"
 

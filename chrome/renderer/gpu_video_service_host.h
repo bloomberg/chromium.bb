@@ -6,7 +6,6 @@
 #define CHROME_RENDERER_GPU_VIDEO_SERVICE_HOST_H_
 
 #include "base/singleton.h"
-#include "chrome/common/gpu_video_common.h"
 #include "chrome/renderer/gpu_channel_host.h"
 #include "chrome/renderer/gpu_video_decoder_host.h"
 #include "ipc/ipc_channel.h"

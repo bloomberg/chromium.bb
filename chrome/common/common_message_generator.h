@@ -20,7 +20,6 @@
 #include "chrome/common/automation_messages.h"
 #include "chrome/common/devtools_messages.h"
 #include "chrome/common/dom_storage_messages.h"
-#include "chrome/common/gpu_messages.h"
 #include "chrome/common/nacl_messages.h"
 #include "chrome/common/pepper_file_messages.h"
 #include "chrome/common/pepper_messages.h"

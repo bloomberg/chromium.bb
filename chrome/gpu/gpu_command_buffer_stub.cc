@@ -7,11 +7,11 @@
 #include "base/process_util.h"
 #include "base/shared_memory.h"
 #include "build/build_config.h"
-#include "chrome/common/gpu_messages.h"
 #include "chrome/gpu/gpu_channel.h"
 #include "chrome/gpu/gpu_command_buffer_stub.h"
 #include "chrome/gpu/gpu_thread.h"
 #include "content/common/child_thread.h"
+#include "content/common/gpu_messages.h"
 
 using gpu::Buffer;
 

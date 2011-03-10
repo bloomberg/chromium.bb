@@ -31,7 +31,6 @@
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_localization_peer.h"
 #include "chrome/common/extensions/extension_set.h"
-#include "chrome/common/gpu_messages.h"
 #include "chrome/common/plugin_messages.h"
 #include "chrome/common/render_messages.h"
 #include "chrome/common/render_messages_params.h"
@@ -67,6 +66,7 @@
 #include "chrome/renderer/security_filter_peer.h"
 #include "chrome/renderer/spellchecker/spellcheck.h"
 #include "chrome/renderer/user_script_slave.h"
+#include "content/common/gpu_messages.h"
 #include "content/common/resource_dispatcher.h"
 #include "content/common/resource_messages.h"
 #include "ipc/ipc_channel_handle.h"
@@ -679,7 +679,7 @@ bool RenderThread::OnControlMessageReceived(const IPC::Message& msg) {
                         OnSpellCheckWordAdded)
     IPC_MESSAGE_HANDLER(ViewMsg_SpellChecker_EnableAutoSpellCorrect,
                         OnSpellCheckEnableAutoSpellCorrect)
-    IPC_MESSAGE_HANDLER(ViewMsg_GpuChannelEstablished, OnGpuChannelEstablished)
+    IPC_MESSAGE_HANDLER(GpuMsg_GpuChannelEstablished, OnGpuChannelEstablished)
     IPC_MESSAGE_HANDLER(ViewMsg_SetPhishingModel, OnSetPhishingModel)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()

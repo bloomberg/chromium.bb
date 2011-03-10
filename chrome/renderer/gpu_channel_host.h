@@ -12,7 +12,7 @@
 #include "base/hash_tables.h"
 #include "base/process_util.h"
 #include "base/scoped_ptr.h"
-#include "chrome/common/gpu_info.h"
+#include "content/common/gpu_info.h"
 #include "content/common/message_router.h"
 #include "ipc/ipc_channel_handle.h"
 #include "ipc/ipc_sync_channel.h"

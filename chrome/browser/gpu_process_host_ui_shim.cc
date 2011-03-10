@@ -8,13 +8,13 @@
 #include "chrome/browser/gpu_process_host_ui_shim.h"
 
 #include "base/id_map.h"
-#include "chrome/common/gpu_messages.h"
 #include "chrome/browser/gpu_data_manager.h"
 #include "content/browser/browser_thread.h"
 #include "content/browser/gpu_process_host.h"
 #include "content/browser/renderer_host/render_process_host.h"
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/renderer_host/render_widget_host_view.h"
+#include "content/common/gpu_messages.h"
 
 #if defined(OS_LINUX)
 // These two #includes need to come after gpu_messages.h.

@@ -4,12 +4,11 @@
 
 #include "chrome/renderer/gpu_channel_host.h"
 
-#include "chrome/common/gpu_create_command_buffer_config.h"
-#include "chrome/common/gpu_messages.h"
 #include "chrome/renderer/command_buffer_proxy.h"
 #include "chrome/renderer/gpu_video_service_host.h"
 #include "chrome/renderer/render_thread.h"
 #include "content/common/child_process.h"
+#include "content/common/gpu_messages.h"
 
 GpuChannelHost::GpuChannelHost() : state_(kUnconnected) {
 }
@@ -105,7 +104,9 @@ CommandBufferProxy* GpuChannelHost::CreateViewCommandBuffer(
   if (!channel_.get())
     return NULL;
 
-  GPUCreateCommandBufferConfig init_params(allowed_extensions, attribs);
+  GPUCreateCommandBufferConfig init_params;
+  init_params.allowed_extensions = allowed_extensions;
+  init_params.attribs = attribs;
   int32 route_id;
   if (!RenderThread::current()->Send(
       new GpuHostMsg_CreateViewCommandBuffer(
@@ -136,7 +137,9 @@ CommandBufferProxy* GpuChannelHost::CreateOffscreenCommandBuffer(
   if (!channel_.get())
     return NULL;
 
-  GPUCreateCommandBufferConfig init_params(allowed_extensions, attribs);
+  GPUCreateCommandBufferConfig init_params;
+  init_params.allowed_extensions = allowed_extensions;
+  init_params.attribs = attribs;
   int32 parent_route_id = parent ? parent->route_id() : 0;
   int32 route_id;
   if (!Send(new GpuChannelMsg_CreateOffscreenCommandBuffer(parent_route_id,

@@ -4,8 +4,8 @@
 
 #include "base/message_loop.h"
 #include "base/process.h"
-#include "chrome/common/gpu_messages.h"
 #include "chrome/gpu/gpu_video_decoder.h"
+#include "content/common/gpu_messages.h"
 #include "gpu/command_buffer/service/gles2_cmd_decoder_mock.h"
 #include "ipc/ipc_message_utils.h"
 #include "media/base/pipeline.h"

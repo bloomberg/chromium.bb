@@ -4,8 +4,8 @@
 
 #include "app/gfx/gl/gl_implementation.h"
 #include "base/scoped_ptr.h"
-#include "chrome/common/gpu_info.h"
 #include "chrome/gpu/gpu_info_collector.h"
+#include "content/common/gpu_info.h"
 #include "gpu/command_buffer/common/gl_mock.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"

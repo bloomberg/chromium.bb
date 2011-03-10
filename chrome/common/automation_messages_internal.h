@@ -15,7 +15,7 @@
 #include "ipc/ipc_message_macros.h"
 #include "net/url_request/url_request_status.h"
 #include "ui/gfx/rect.h"
-
+#include "webkit/glue/window_open_disposition.h"
 
 
 // NOTE: All IPC messages have either a routing_id of 0 (for asynchronous

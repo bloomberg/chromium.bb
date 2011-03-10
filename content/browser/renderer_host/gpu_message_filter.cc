@@ -10,10 +10,9 @@
 
 #include "base/callback.h"
 #include "chrome/browser/gpu_process_host_ui_shim.h"
-#include "chrome/common/gpu_create_command_buffer_config.h"
-#include "chrome/common/gpu_messages.h"
 #include "chrome/common/render_messages.h"
 #include "content/browser/gpu_process_host.h"
+#include "content/common/gpu_messages.h"
 
 GpuMessageFilter::GpuMessageFilter(int render_process_id)
     : gpu_host_id_(0),
@@ -92,10 +91,8 @@ class EstablishChannelCallback
 #endif
 
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-    ViewMsg_GpuChannelEstablished* reply =
-        new ViewMsg_GpuChannelEstablished(channel,
-                                          renderer_process_for_gpu,
-                                          gpu_info);
+    IPC::Message* reply = new GpuMsg_GpuChannelEstablished(
+        channel, renderer_process_for_gpu, gpu_info);
 
     // If the renderer process is performing synchronous initialization,
     // it needs to handle this message before receiving the reply for

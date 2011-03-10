@@ -13,10 +13,10 @@
 #include "base/string_util.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_switches.h"
-#include "chrome/common/gpu_messages.h"
 #include "chrome/gpu/gpu_thread.h"
 #include "chrome/gpu/gpu_video_service.h"
 #include "content/common/child_process.h"
+#include "content/common/gpu_messages.h"
 
 #if defined(OS_POSIX)
 #include "ipc/ipc_channel_posix.h"

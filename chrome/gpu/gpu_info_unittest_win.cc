@@ -3,9 +3,9 @@
 // found in the LICENSE file.
 
 #include "base/scoped_ptr.h"
-#include "chrome/common/gpu_info.h"
 #include "chrome/gpu/gpu_idirect3d9_mock_win.h"
 #include "chrome/gpu/gpu_info_collector.h"
+#include "content/common/gpu_info.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

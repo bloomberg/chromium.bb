@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_COMMON_GPU_INFO_H__
-#define CHROME_COMMON_GPU_INFO_H__
+#ifndef CONTENT_COMMON_GPU_INFO_H_
+#define CONTENT_COMMON_GPU_INFO_H_
 #pragma once
 
 // Provides access to the GPU information for the system
@@ -12,10 +12,9 @@
 #include <string>
 
 #include "base/basictypes.h"
-#include "base/scoped_ptr.h"
 #include "base/time.h"
 #include "build/build_config.h"
-#include "chrome/common/dx_diag_node.h"
+#include "content/common/dx_diag_node.h"
 
 struct GPUInfo {
   GPUInfo();
@@ -98,4 +97,4 @@ struct GPUInfo {
 #endif
 };
 
-#endif  // CHROME_COMMON_GPU_INFO_H__
+#endif  // CONTENT_COMMON_GPU_INFO_H_

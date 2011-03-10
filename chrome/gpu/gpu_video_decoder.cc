@@ -5,11 +5,11 @@
 #include "chrome/gpu/gpu_video_decoder.h"
 
 #include "base/command_line.h"
-#include "chrome/common/gpu_messages.h"
 #include "chrome/gpu/gpu_channel.h"
 #include "chrome/gpu/media/fake_gl_video_decode_engine.h"
 #include "chrome/gpu/media/fake_gl_video_device.h"
 #include "content/common/child_thread.h"
+#include "content/common/gpu_messages.h"
 #include "media/base/data_buffer.h"
 #include "media/base/media_switches.h"
 #include "media/base/video_frame.h"
@@ -127,11 +127,11 @@ void GpuVideoDecoder::ConsumeVideoFrame(scoped_refptr<VideoFrame> frame,
   // TODO(sjl): Do something with the statistics...
 
   if (frame->IsEndOfStream()) {
-    SendConsumeVideoFrame(kGpuVideoInvalidFrameId, 0, 0, kGpuVideoEndOfStream);
+    SendConsumeVideoFrame(0, 0, 0, kGpuVideoEndOfStream);
     return;
   }
 
-  int32 frame_id = kGpuVideoInvalidFrameId;
+  int32 frame_id = -1;
   for (VideoFrameMap::iterator i = video_frame_map_.begin();
        i != video_frame_map_.end(); ++i) {
     if (i->second == frame) {
@@ -139,7 +139,11 @@ void GpuVideoDecoder::ConsumeVideoFrame(scoped_refptr<VideoFrame> frame,
       break;
     }
   }
-  DCHECK_NE(-1, frame_id) << "VideoFrame not recognized";
+
+  if (frame_id == -1) {
+    NOTREACHED() << "VideoFrame not recognized";
+    return;
+  }
 
   SendConsumeVideoFrame(frame_id, frame->GetTimestamp().InMicroseconds(),
                         frame->GetDuration().InMicroseconds(), 0);

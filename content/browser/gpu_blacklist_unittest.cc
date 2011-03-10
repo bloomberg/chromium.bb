@@ -10,8 +10,8 @@
 #include "base/path_service.h"
 #include "base/scoped_ptr.h"
 #include "base/version.h"
-#include "chrome/common/gpu_info.h"
 #include "content/browser/gpu_blacklist.h"
+#include "content/common/gpu_info.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 class GpuBlacklistTest : public testing::Test {

@@ -27,7 +27,6 @@
 //
 // TODO(erg): The following headers are historical and only work because
 // their definitions are inlined, which also needs to be fixed.
-#include "ui/gfx/native_widget_types.h"
 #include "webkit/glue/webcursor.h"
 #include "webkit/glue/window_open_disposition.h"
 
@@ -39,12 +38,6 @@ class ListValue;
 struct ThumbnailScore;
 struct WebApplicationInfo;
 class WebCursor;
-
-namespace gfx {
-class Point;
-class Rect;
-class Size;
-}  // namespace gfx
 
 namespace printing {
 struct PageRange;
@@ -66,30 +59,6 @@ struct ParamTraits<SkBitmap> {
   // r->SetConfig() and r->SetPixels() are called.
   static bool Read(const Message* m, void** iter, param_type* r);
 
-  static void Log(const param_type& p, std::string* l);
-};
-
-template <>
-struct ParamTraits<gfx::Point> {
-  typedef gfx::Point param_type;
-  static void Write(Message* m, const param_type& p);
-  static bool Read(const Message* m, void** iter, param_type* r);
-  static void Log(const param_type& p, std::string* l);
-};
-
-template <>
-struct ParamTraits<gfx::Rect> {
-  typedef gfx::Rect param_type;
-  static void Write(Message* m, const param_type& p);
-  static bool Read(const Message* m, void** iter, param_type* r);
-  static void Log(const param_type& p, std::string* l);
-};
-
-template <>
-struct ParamTraits<gfx::Size> {
-  typedef gfx::Size param_type;
-  static void Write(Message* m, const param_type& p);
-  static bool Read(const Message* m, void** iter, param_type* r);
   static void Log(const param_type& p, std::string* l);
 };
 
@@ -127,38 +96,6 @@ struct ParamTraits<ContentSettings> {
   static void Write(Message* m, const param_type& p);
   static bool Read(const Message* m, void** iter, param_type* r);
   static void Log(const param_type& p, std::string* l);
-};
-
-template <>
-struct ParamTraits<gfx::NativeWindow> {
-  typedef gfx::NativeWindow param_type;
-  static void Write(Message* m, const param_type& p) {
-#if defined(OS_WIN)
-    // HWNDs are always 32 bits on Windows, even on 64 bit systems.
-    m->WriteUInt32(reinterpret_cast<uint32>(p));
-#else
-    m->WriteData(reinterpret_cast<const char*>(&p), sizeof(p));
-#endif
-  }
-  static bool Read(const Message* m, void** iter, param_type* r) {
-#if defined(OS_WIN)
-    return m->ReadUInt32(iter, reinterpret_cast<uint32*>(r));
-#else
-    const char *data;
-    int data_size = 0;
-    bool result = m->ReadData(iter, &data, &data_size);
-    if (result && data_size == sizeof(gfx::NativeWindow)) {
-      memcpy(r, data, sizeof(gfx::NativeWindow));
-    } else {
-      result = false;
-      NOTREACHED();
-    }
-    return result;
-#endif
-  }
-  static void Log(const param_type& p, std::string* l) {
-    l->append("<gfx::NativeWindow>");
-  }
 };
 
 template <>

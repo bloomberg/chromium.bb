@@ -3,9 +3,9 @@
 // found in the LICENSE file.
 
 #include "base/message_loop.h"
-#include "chrome/common/gpu_messages.h"
 #include "chrome/renderer/gpu_video_decoder_host.h"
 #include "content/common/message_router.h"
+#include "content/common/gpu_messages.h"
 #include "media/base/pipeline.h"
 #include "media/video/video_mock_objects.h"
 #include "testing/gmock/include/gmock/gmock.h"
