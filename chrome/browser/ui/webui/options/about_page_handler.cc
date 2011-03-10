@@ -315,7 +315,9 @@ void AboutPageHandler::CheckNow(const ListValue* args) {
   if (chromeos::CrosLibrary::Get()->EnsureLoaded() &&
       (!WizardController::default_controller() ||
         WizardController::IsDeviceRegistered())) {
-    chromeos::CrosLibrary::Get()->GetUpdateLibrary()->CheckForUpdate();
+    chromeos::CrosLibrary::Get()->GetUpdateLibrary()->
+        RequestUpdateCheck(NULL,   // no callback
+                           NULL);  // no userdata
   }
 }
 

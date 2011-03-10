@@ -11,6 +11,7 @@
 #include "chrome/browser/chromeos/login/screen_observer.h"
 #include "chrome/browser/chromeos/login/update_view.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
+#include "content/browser/browser_thread.h"
 
 namespace {
 
@@ -37,6 +38,21 @@ const char kUpdateDeadlineFile[] = "/tmp/update-check-response-deadline";
 
 namespace chromeos {
 
+
+// static
+UpdateScreen::InstanceSet& UpdateScreen::GetInstanceSet() {
+  static std::set<UpdateScreen*> instance_set;
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));  // not threadsafe.
+  return instance_set;
+}
+
+// static
+bool UpdateScreen::HasInstance(UpdateScreen* inst) {
+  InstanceSet& instance_set = GetInstanceSet();
+  InstanceSet::iterator found = instance_set.find(inst);
+  return (found != instance_set.end());
+}
+
 UpdateScreen::UpdateScreen(WizardScreenDelegate* delegate)
     : DefaultViewScreen<chromeos::UpdateView>(delegate,
                                               kUpdateScreenWidth,
@@ -45,6 +61,7 @@ UpdateScreen::UpdateScreen(WizardScreenDelegate* delegate)
       reboot_check_delay_(0),
       is_downloading_update_(false),
       is_all_updates_critical_(false) {
+  GetInstanceSet().insert(this);
 }
 
 UpdateScreen::~UpdateScreen() {
@@ -52,6 +69,7 @@ UpdateScreen::~UpdateScreen() {
   if (view())
     view()->set_controller(NULL);
   CrosLibrary::Get()->GetUpdateLibrary()->RemoveObserver(this);
+  GetInstanceSet().erase(this);
 }
 
 void UpdateScreen::UpdateStatusChanged(UpdateLibrary* library) {
@@ -134,6 +152,20 @@ void UpdateScreen::UpdateStatusChanged(UpdateLibrary* library) {
   }
 }
 
+namespace {
+// Invoked from call to RequestUpdateCheck upon completion of the DBus call.
+void StartUpdateCallback(void* user_data,
+                         UpdateResult result,
+                         const char* msg) {
+  if (result != UPDATE_RESULT_SUCCESS) {
+    DCHECK(user_data);
+    UpdateScreen* screen = static_cast<UpdateScreen*>(user_data);
+    if (UpdateScreen::HasInstance(screen))
+      screen->ExitUpdate(UpdateScreen::REASON_UPDATE_INIT_FAILED);
+  }
+}
+}  // namespace
+
 void UpdateScreen::StartUpdate() {
   // Reset view if view was created.
   if (view()) {
@@ -149,9 +181,8 @@ void UpdateScreen::StartUpdate() {
   } else {
     CrosLibrary::Get()->GetUpdateLibrary()->AddObserver(this);
     VLOG(1) << "Initiate update check";
-    if (!CrosLibrary::Get()->GetUpdateLibrary()->CheckForUpdate()) {
-      ExitUpdate(REASON_UPDATE_INIT_FAILED);
-    }
+    CrosLibrary::Get()->GetUpdateLibrary()->RequestUpdateCheck(
+        StartUpdateCallback, this);
   }
 }
 

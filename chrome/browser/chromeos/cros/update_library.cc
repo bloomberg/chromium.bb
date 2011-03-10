@@ -36,11 +36,9 @@ class UpdateLibraryImpl : public UpdateLibrary {
     observers_.RemoveObserver(observer);
   }
 
-  bool CheckForUpdate() {
-    if (!CrosLibrary::Get()->EnsureLoaded())
-      return false;
-
-    return InitiateUpdateCheck();
+  void RequestUpdateCheck(chromeos::UpdateCallback callback, void* user_data) {
+    if (CrosLibrary::Get()->EnsureLoaded())
+      chromeos::RequestUpdateCheck(callback, user_data);
   }
 
   bool RebootAfterUpdate() {
@@ -119,7 +117,10 @@ class UpdateLibraryStubImpl : public UpdateLibrary {
   ~UpdateLibraryStubImpl() {}
   void AddObserver(Observer* observer) {}
   void RemoveObserver(Observer* observer) {}
-  bool CheckForUpdate() { return false; }
+  void RequestUpdateCheck(chromeos::UpdateCallback callback, void* user_data) {
+    if (callback)
+      callback(user_data, UPDATE_RESULT_FAILED, "stub update");
+  }
   bool RebootAfterUpdate() { return false; }
   bool SetReleaseTrack(const std::string& track) { return false; }
   std::string GetReleaseTrack() { return "beta-channel"; }

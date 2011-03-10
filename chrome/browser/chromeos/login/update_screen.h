@@ -60,6 +60,9 @@ class UpdateScreen: public DefaultViewScreen<chromeos::UpdateView>,
   // Default value is false.
   void SetAllUpdatesCritical(bool is_critical);
 
+  // Returns true if this instance is still active (i.e. has not been deleted).
+  static bool HasInstance(UpdateScreen* inst);
+
  private:
   // Timer notification handlers.
   void OnWaitForRebootTimeElapsed();
@@ -70,6 +73,10 @@ class UpdateScreen: public DefaultViewScreen<chromeos::UpdateView>,
   // Timer for the interval to wait for the reboot.
   // If reboot didn't happen - ask user to reboot manually.
   base::OneShotTimer<UpdateScreen> reboot_timer_;
+
+  // Returns a static InstanceSet.
+  typedef std::set<UpdateScreen*> InstanceSet;
+  static InstanceSet& GetInstanceSet();
 
   // True if in the process of checking for update.
   bool checking_for_update_;

@@ -62,8 +62,9 @@ class UpdateLibrary {
   virtual void AddObserver(Observer* observer) = 0;
   virtual void RemoveObserver(Observer* observer) = 0;
 
-  // Initiates update check and returns true if check was initiated.
-  virtual bool CheckForUpdate() = 0;
+  // Requests an update check and calls |callback| when completed.
+  virtual void RequestUpdateCheck(chromeos::UpdateCallback callback,
+                                  void* user_data) = 0;
 
   // Reboots if update has been performed.
   virtual bool RebootAfterUpdate() = 0;
