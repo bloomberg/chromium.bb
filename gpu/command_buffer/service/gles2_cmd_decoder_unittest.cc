@@ -42,6 +42,15 @@ class GLES2DecoderTest : public GLES2DecoderTestBase {
       bool init);
 };
 
+class GLES2DecoderRGBBackbufferTest : public GLES2DecoderTest {
+ public:
+  GLES2DecoderRGBBackbufferTest() { }
+
+  virtual void SetUp() {
+    InitDecoder("", false);
+  }
+};
+
 class GLES2DecoderWithShaderTest : public GLES2DecoderWithShaderTestBase {
  public:
   GLES2DecoderWithShaderTest()
@@ -1411,12 +1420,14 @@ class ReadPixelsEmulator {
   // pack_alignment is the alignment you want ReadPixels to use
   // when copying. The actual data passed in pixels should be contiguous.
   ReadPixelsEmulator(GLsizei width, GLsizei height, GLint bytes_per_pixel,
-                     const void* pixels, GLint pack_alignment)
+                     const void* src_pixels, const void* expected_pixels,
+                     GLint pack_alignment)
       : width_(width),
         height_(height),
         pack_alignment_(pack_alignment),
         bytes_per_pixel_(bytes_per_pixel),
-        pixels_(reinterpret_cast<const int8*>(pixels)) {
+        src_pixels_(reinterpret_cast<const int8*>(src_pixels)),
+        expected_pixels_(reinterpret_cast<const int8*>(expected_pixels)) {
   }
 
   void ReadPixels(
@@ -1427,7 +1438,7 @@ class ReadPixelsEmulator {
     DCHECK_LE(x + width, width_);
     DCHECK_LE(y + height, height_);
     for (GLint yy = 0; yy < height; ++yy) {
-      const int8* src = GetPixelAddress(x, y + yy);
+      const int8* src = GetPixelAddress(src_pixels_, x, y + yy);
       const void* dst = ComputePackAlignmentAddress(0, yy, width, pixels);
       memcpy(const_cast<void*>(dst), src, width * bytes_per_pixel_);
     }
@@ -1436,7 +1447,8 @@ class ReadPixelsEmulator {
   bool CompareRowSegment(
       GLint x, GLint y, GLsizei width, const void* data) const {
     DCHECK(x + width <= width_ || width == 0);
-    return memcmp(data, GetPixelAddress(x, y), width * bytes_per_pixel_) == 0;
+    return memcmp(data, GetPixelAddress(expected_pixels_, x, y),
+                  width * bytes_per_pixel_) == 0;
   }
 
   // Helper to compute address of pixel in pack aligned data.
@@ -1452,7 +1464,7 @@ class ReadPixelsEmulator {
   GLint ComputeImageDataSize(GLint width, GLint height) const {
     GLint row_size = width * bytes_per_pixel_;
     if (height > 1) {
-      GLint temp = row_size + pack_alignment_;
+      GLint temp = row_size + pack_alignment_ - 1;
       GLint padded_row_size = (temp / pack_alignment_) * pack_alignment_;
       GLint size_of_all_but_last_row = (height - 1) * padded_row_size;
       return size_of_all_but_last_row + row_size;
@@ -1462,15 +1474,16 @@ class ReadPixelsEmulator {
   }
 
  private:
-  const int8* GetPixelAddress(GLint x, GLint y) const {
-    return pixels_ + (width_ * y + x) * bytes_per_pixel_;
+  const int8* GetPixelAddress(const int8* base, GLint x, GLint y) const {
+    return base + (width_ * y + x) * bytes_per_pixel_;
   }
 
   GLsizei width_;
   GLsizei height_;
   GLint pack_alignment_;
   GLint bytes_per_pixel_;
-  const int8* pixels_;
+  const int8* src_pixels_;
+  const int8* expected_pixels_;
 };
 
 }  // anonymous namespace
@@ -1529,7 +1542,7 @@ void GLES2DecoderTest::CheckReadPixelsOutOfRange(
   }
 
   ReadPixelsEmulator emu(
-      kWidth, kHeight, kBytesPerPixel, kSrcPixels, kPackAlignment);
+      kWidth, kHeight, kBytesPerPixel, kSrcPixels, kSrcPixels, kPackAlignment);
   typedef ReadPixels::Result Result;
   Result* result = GetSharedMemoryAs<Result*>();
   uint32 result_shm_id = kSharedMemoryId;
@@ -1621,7 +1634,7 @@ TEST_F(GLES2DecoderTest, ReadPixels) {
   context_->SetSize(gfx::Size(INT_MAX, INT_MAX));
 
   ReadPixelsEmulator emu(
-      kWidth, kHeight, kBytesPerPixel, kSrcPixels, kPackAlignment);
+      kWidth, kHeight, kBytesPerPixel, kSrcPixels, kSrcPixels, kPackAlignment);
   typedef ReadPixels::Result Result;
   Result* result = GetSharedMemoryAs<Result*>();
   uint32 result_shm_id = kSharedMemoryId;
@@ -1638,6 +1651,53 @@ TEST_F(GLES2DecoderTest, ReadPixels) {
       .WillOnce(Invoke(&emu, &ReadPixelsEmulator::ReadPixels));
   ReadPixels cmd;
   cmd.Init(0, 0, kWidth, kHeight, GL_RGB, GL_UNSIGNED_BYTE,
+           pixels_shm_id, pixels_shm_offset,
+           result_shm_id, result_shm_offset);
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
+  for (GLint yy = 0; yy < kHeight; ++yy) {
+    EXPECT_TRUE(emu.CompareRowSegment(
+        0, yy, kWidth,
+        emu.ComputePackAlignmentAddress(0, yy, kWidth, dest)));
+  }
+}
+
+TEST_F(GLES2DecoderRGBBackbufferTest, ReadPixelsNoAlphaBackbuffer) {
+  const GLsizei kWidth = 3;
+  const GLsizei kHeight = 3;
+  const GLint kBytesPerPixel = 4;
+  const GLint kPackAlignment = 4;
+  static const uint8 kExpectedPixels[kWidth * kHeight * kBytesPerPixel] = {
+    12, 13, 14, 255, 19, 18, 19, 255, 13, 14, 18, 255,
+    29, 28, 23, 255, 21, 22, 21, 255, 28, 23, 22, 255,
+    31, 34, 39, 255, 32, 37, 32, 255, 34, 39, 37, 255,
+  };
+  static const uint8 kSrcPixels[kWidth * kHeight * kBytesPerPixel] = {
+    12, 13, 14, 18, 19, 18, 19, 12, 13, 14, 18, 19,
+    29, 28, 23, 22, 21, 22, 21, 29, 28, 23, 22, 21,
+    31, 34, 39, 37, 32, 37, 32, 31, 34, 39, 37, 32,
+  };
+
+  context_->SetSize(gfx::Size(INT_MAX, INT_MAX));
+
+  ReadPixelsEmulator emu(
+      kWidth, kHeight, kBytesPerPixel, kSrcPixels, kExpectedPixels,
+      kPackAlignment);
+  typedef ReadPixels::Result Result;
+  Result* result = GetSharedMemoryAs<Result*>();
+  uint32 result_shm_id = kSharedMemoryId;
+  uint32 result_shm_offset = kSharedMemoryOffset;
+  uint32 pixels_shm_id = kSharedMemoryId;
+  uint32 pixels_shm_offset = kSharedMemoryOffset + sizeof(*result);
+  void* dest = &result[1];
+  EXPECT_CALL(*gl_, GetError())
+     .WillOnce(Return(GL_NO_ERROR))
+     .WillOnce(Return(GL_NO_ERROR))
+     .RetiresOnSaturation();
+  EXPECT_CALL(
+      *gl_, ReadPixels(0, 0, kWidth, kHeight, GL_RGBA, GL_UNSIGNED_BYTE, _))
+      .WillOnce(Invoke(&emu, &ReadPixelsEmulator::ReadPixels));
+  ReadPixels cmd;
+  cmd.Init(0, 0, kWidth, kHeight, GL_RGBA, GL_UNSIGNED_BYTE,
            pixels_shm_id, pixels_shm_offset,
            result_shm_id, result_shm_offset);
   EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));

@@ -46,10 +46,11 @@ GLES2DecoderTestBase::GLES2DecoderTestBase()
 GLES2DecoderTestBase::~GLES2DecoderTestBase() {}
 
 void GLES2DecoderTestBase::SetUp() {
-  InitDecoder("");
+  InitDecoder("", true);
 }
 
-void GLES2DecoderTestBase::InitDecoder(const char* extensions) {
+void GLES2DecoderTestBase::InitDecoder(
+    const char* extensions, bool has_alpha_backbuffer) {
   gl_.reset(new StrictMock<MockGLInterface>());
   ::gfx::GLInterface::SetGLInterface(gl_.get());
   group_ = ContextGroup::Ref(new ContextGroup());
@@ -61,7 +62,7 @@ void GLES2DecoderTestBase::InitDecoder(const char* extensions) {
   EXPECT_TRUE(group_->Initialize(extensions));
 
   EXPECT_CALL(*gl_, GetIntegerv(GL_ALPHA_BITS, _))
-      .WillOnce(SetArgumentPointee<1>(8))
+      .WillOnce(SetArgumentPointee<1>(has_alpha_backbuffer ? 8 : 0))
       .RetiresOnSaturation();
   EXPECT_CALL(*gl_, EnableVertexAttribArray(0))
       .Times(1)

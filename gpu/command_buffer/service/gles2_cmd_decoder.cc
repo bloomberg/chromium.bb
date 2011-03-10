@@ -4863,9 +4863,57 @@ error::Error GLES2DecoderImpl::HandleReadPixels(
   GLenum error = glGetError();
   if (error == GL_NO_ERROR) {
     *result = true;
+
+    GLenum read_format = GetBoundReadFrameBufferInternalFormat();
+    uint32 channels_exist = GLES2Util::GetChannelsForFormat(read_format);
+    if ((channels_exist & 0x0008) == 0) {
+      // Set the alpha to 255 because some drivers are buggy in this regard.
+      uint32 temp_size;
+      if (!GLES2Util::ComputeImageDataSize(
+          width, 1, format, type, pack_alignment_, &temp_size)) {
+        SetGLError(GL_INVALID_VALUE, "glReadPixels: dimensions out of range");
+        return error::kNoError;
+      }
+      GLsizei unpadded_row_size = temp_size;
+      if (!GLES2Util::ComputeImageDataSize(
+          width, 2, format, type, pack_alignment_, &temp_size)) {
+        SetGLError(GL_INVALID_VALUE, "glReadPixels: dimensions out of range");
+        return error::kNoError;
+      }
+      GLsizei padded_row_size = temp_size - unpadded_row_size;
+      if (padded_row_size < 0 || unpadded_row_size < 0) {
+        SetGLError(GL_INVALID_VALUE, "glReadPixels: dimensions out of range");
+        return error::kNoError;
+      }
+      // NOTE: Assumes the type is GL_UNSIGNED_BYTE which was true at the time
+      // of this implementation.
+      if (type != GL_UNSIGNED_BYTE) {
+        SetGLError(GL_INVALID_OPERATION, "unsupported readPixel format");
+        return error::kNoError;
+      }
+      switch (format) {
+        case GL_RGBA:
+        case GL_ALPHA: {
+          int offset = (format == GL_ALPHA) ? 0 : 3;
+          int step = (format == GL_ALPHA) ? 1 : 4;
+          uint8* dst = static_cast<uint8*>(pixels) + offset;
+          for (GLint yy = 0; yy < height; ++yy) {
+            uint8* end = dst + unpadded_row_size;
+            for (uint8* d = dst; d < end; d += step) {
+              *d = 255;
+            }
+            dst += padded_row_size;
+          }
+          break;
+        }
+        default:
+          break;
+      }
+    }
   } else {
     SetGLError(error, NULL);
   }
+
   return error::kNoError;
 }
 

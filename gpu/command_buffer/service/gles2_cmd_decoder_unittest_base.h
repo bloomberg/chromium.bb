@@ -160,7 +160,7 @@ class GLES2DecoderTestBase : public testing::Test {
 
   void SetBucketAsCString(uint32 bucket_id, const char* str);
 
-  void InitDecoder(const char* extensions);
+  void InitDecoder(const char* extensions, bool has_alpha_backbuffer);
 
   const ContextGroup& group() const {
     return *group_.get();
