@@ -121,9 +121,9 @@ IN_PROC_BROWSER_TEST_F(ServiceProcessControlBrowserTest,
 
 // This tests the case when a service process is launched when browser
 // starts but we try to launch it again in the remoting setup dialog.
-// Fails on mac. http://crbug.com/75518
+// Crashes on mac. http://crbug.com/75518
 #if defined(OS_MACOSX)
-#define MAYBE_LaunchTwice FAILS_LaunchTwice
+#define MAYBE_LaunchTwice DISABLED_LaunchTwice
 #else
 #define MAYBE_LaunchTwice LaunchTwice
 #endif
@@ -152,9 +152,9 @@ static void DecrementUntilZero(int* count) {
 
 // Invoke multiple Launch calls in succession and ensure that all the tasks
 // get invoked.
-// Fails on mac. http://crbug.com/75518
+// Crashes on mac. http://crbug.com/75518
 #if defined(OS_MACOSX)
-#define MAYBE_MultipleLaunchTasks FAILS_MultipleLaunchTasks
+#define MAYBE_MultipleLaunchTasks DISABLED_MultipleLaunchTasks
 #else
 #define MAYBE_MultipleLaunchTasks MultipleLaunchTasks
 #endif
@@ -178,9 +178,9 @@ IN_PROC_BROWSER_TEST_F(ServiceProcessControlBrowserTest,
 }
 
 // Make sure using the same task for success and failure tasks works.
-// Fails on mac. http://crbug.com/75518
+// Crashes on mac. http://crbug.com/75518
 #if defined(OS_MACOSX)
-#define MAYBE_SameLaunchTask FAILS_SameLaunchTask
+#define MAYBE_SameLaunchTask DISABLED_SameLaunchTask
 #else
 #define MAYBE_SameLaunchTask SameLaunchTask
 #endif
@@ -203,9 +203,9 @@ IN_PROC_BROWSER_TEST_F(ServiceProcessControlBrowserTest, MAYBE_SameLaunchTask) {
 
 // Tests whether disconnecting from the service IPC causes the service process
 // to die.
-// Fails on mac. http://crbug.com/75518
+// Crashes on mac. http://crbug.com/75518
 #if defined(OS_MACOSX)
-#define MAYBE_DieOnDisconnect FAILS_DieOnDisconnect
+#define MAYBE_DieOnDisconnect DISABLED_DieOnDisconnect
 #else
 #define MAYBE_DieOnDisconnect DieOnDisconnect
 #endif
@@ -234,9 +234,9 @@ IN_PROC_BROWSER_TEST_F(ServiceProcessControlBrowserTest,
   WaitForShutdown();
 }
 
-// Fails on mac. http://crbug.com/75518
+// Crashes on mac. http://crbug.com/75518
 #if defined(OS_MACOSX)
-#define MAYBE_CheckPid FAILS_CheckPid
+#define MAYBE_CheckPid DISABLED_CheckPid
 #else
 #define MAYBE_CheckPid CheckPid
 #endif
