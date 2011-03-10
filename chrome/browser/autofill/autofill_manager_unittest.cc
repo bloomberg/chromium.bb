@@ -52,7 +52,7 @@ typedef Tuple5<int,
 class TestPersonalDataManager : public PersonalDataManager {
  public:
   TestPersonalDataManager() {
-    CreateTestAutoFillProfiles(&web_profiles_);
+    CreateTestAutofillProfiles(&web_profiles_);
     CreateTestCreditCards(&credit_cards_);
   }
 
@@ -60,8 +60,8 @@ class TestPersonalDataManager : public PersonalDataManager {
   virtual void SaveImportedFormData() {}
   virtual bool IsDataLoaded() const { return true; }
 
-  AutoFillProfile* GetProfileWithGUID(const char* guid) {
-    for (std::vector<AutoFillProfile *>::iterator it = web_profiles_.begin();
+  AutofillProfile* GetProfileWithGUID(const char* guid) {
+    for (std::vector<AutofillProfile *>::iterator it = web_profiles_.begin();
          it != web_profiles_.end(); ++it) {
       if (!(*it)->guid().compare(guid))
         return *it;
@@ -69,11 +69,11 @@ class TestPersonalDataManager : public PersonalDataManager {
     return NULL;
   }
 
-  void AddProfile(AutoFillProfile* profile) {
+  void AddProfile(AutofillProfile* profile) {
     web_profiles_->push_back(profile);
   }
 
-  void ClearAutoFillProfiles() {
+  void ClearAutofillProfiles() {
     web_profiles_.reset();
   }
 
@@ -92,8 +92,8 @@ class TestPersonalDataManager : public PersonalDataManager {
  }
 
  private:
-  void CreateTestAutoFillProfiles(ScopedVector<AutoFillProfile>* profiles) {
-    AutoFillProfile* profile = new AutoFillProfile;
+  void CreateTestAutofillProfiles(ScopedVector<AutofillProfile>* profiles) {
+    AutofillProfile* profile = new AutofillProfile;
     autofill_test::SetProfileInfo(profile, "Elvis", "Aaron",
                                   "Presley", "theking@gmail.com", "RCA",
                                   "3734 Elvis Presley Blvd.", "Apt. 10",
@@ -101,7 +101,7 @@ class TestPersonalDataManager : public PersonalDataManager {
                                   "12345678901", "");
     profile->set_guid("00000000-0000-0000-0000-000000000001");
     profiles->push_back(profile);
-    profile = new AutoFillProfile;
+    profile = new AutofillProfile;
     autofill_test::SetProfileInfo(profile, "Charles", "Hardin",
                                   "Holley", "buddy@gmail.com", "Decca",
                                   "123 Apple St.", "unit 6", "Lubbock",
@@ -109,7 +109,7 @@ class TestPersonalDataManager : public PersonalDataManager {
                                   "");
     profile->set_guid("00000000-0000-0000-0000-000000000002");
     profiles->push_back(profile);
-    profile = new AutoFillProfile;
+    profile = new AutofillProfile;
     autofill_test::SetProfileInfo(profile, "", "", "", "", "", "", "",
                                   "", "", "", "", "", "");
     profile->set_guid("00000000-0000-0000-0000-000000000003");
@@ -417,11 +417,11 @@ class TestAutofillManager : public AutofillManager {
     autofill_enabled_ = autofill_enabled;
   }
 
-  AutoFillProfile* GetProfileWithGUID(const char* guid) {
+  AutofillProfile* GetProfileWithGUID(const char* guid) {
     return test_personal_data_->GetProfileWithGUID(guid);
   }
 
-  void AddProfile(AutoFillProfile* profile) {
+  void AddProfile(AutofillProfile* profile) {
     test_personal_data_->AddProfile(profile);
   }
 
@@ -672,8 +672,8 @@ TEST_F(AutofillManagerTest, GetProfileSuggestionsWithDuplicates) {
   FormsSeen(forms);
 
   // Add a duplicate profile.
-  AutoFillProfile* duplicate_profile =
-      new AutoFillProfile(
+  AutofillProfile* duplicate_profile =
+      new AutofillProfile(
           *(autofill_manager_->GetProfileWithGUID(
               "00000000-0000-0000-0000-000000000001")));
   autofill_manager_->AddProfile(duplicate_profile);
@@ -787,7 +787,7 @@ TEST_F(AutofillManagerTest, GetProfileSuggestionsMethodGet) {
                     expected_labels2, expected_icons2, expected_unique_ids2);
 
   // Now clear the test profiles and try again -- we shouldn't return a warning.
-  test_personal_data_->ClearAutoFillProfiles();
+  test_personal_data_->ClearAutofillProfiles();
   GetAutoFillSuggestions(form, field);
   EXPECT_FALSE(GetAutoFillSuggestionsMessage(NULL, NULL, NULL, NULL, NULL));
 }
@@ -1260,7 +1260,7 @@ TEST_F(AutofillManagerTest, GetFieldSuggestionsWithDuplicateValues) {
   FormsSeen(forms);
 
   // |profile| will be owned by the mock PersonalDataManager.
-  AutoFillProfile* profile = new AutoFillProfile;
+  AutofillProfile* profile = new AutofillProfile;
   autofill_test::SetProfileInfo(profile, "Elvis", "", "", "", "",
                                 "", "", "", "", "", "", "", "");
   profile->set_guid("00000000-0000-0000-0000-000000000101");
@@ -1638,7 +1638,7 @@ TEST_F(AutofillManagerTest, FillPhoneNumber) {
   std::vector<FormData> forms(1, form);
   FormsSeen(forms);
 
-  AutoFillProfile *work_profile = autofill_manager_->GetProfileWithGUID(
+  AutofillProfile *work_profile = autofill_manager_->GetProfileWithGUID(
       "00000000-0000-0000-0000-000000000002");
   ASSERT_TRUE(work_profile != NULL);
   const AutofillType phone_type(PHONE_HOME_NUMBER);

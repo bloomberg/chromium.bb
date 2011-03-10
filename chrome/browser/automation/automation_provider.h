@@ -46,7 +46,7 @@ namespace IPC {
 class ChannelProxy;
 }
 
-class AutoFillProfile;
+class AutofillProfile;
 class AutomationAutocompleteEditTracker;
 class AutomationBrowserTracker;
 class AutomationExtensionTracker;

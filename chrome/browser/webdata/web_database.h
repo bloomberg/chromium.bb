@@ -18,7 +18,7 @@
 
 class AutofillChange;
 class AutofillEntry;
-class AutoFillProfile;
+class AutofillProfile;
 class CreditCard;
 class FilePath;
 class GURL;
@@ -222,20 +222,20 @@ class WebDatabase {
   virtual bool UpdateAutofillEntries(const std::vector<AutofillEntry>& entries);
 
   // Records a single AutoFill profile in the autofill_profiles table.
-  virtual bool AddAutoFillProfile(const AutoFillProfile& profile);
+  virtual bool AddAutofillProfile(const AutofillProfile& profile);
 
   // Updates the database values for the specified profile.
-  virtual bool UpdateAutoFillProfile(const AutoFillProfile& profile);
+  virtual bool UpdateAutofillProfile(const AutofillProfile& profile);
 
   // Removes a row from the autofill_profiles table.  |guid| is the identifier
   // of the profile to remove.
-  virtual bool RemoveAutoFillProfile(const std::string& guid);
+  virtual bool RemoveAutofillProfile(const std::string& guid);
 
   // Retrieves a profile with guid |guid|.  The caller owns |profile|.
-  bool GetAutoFillProfile(const std::string& guid, AutoFillProfile** profile);
+  bool GetAutofillProfile(const std::string& guid, AutofillProfile** profile);
 
   // Retrieves all profiles in the database.  Caller owns the returned profiles.
-  virtual bool GetAutoFillProfiles(std::vector<AutoFillProfile*>* profiles);
+  virtual bool GetAutofillProfiles(std::vector<AutofillProfile*>* profiles);
 
   // Records a single credit card in the credit_cards table.
   bool AddCreditCard(const CreditCard& credit_card);
@@ -257,7 +257,7 @@ class WebDatabase {
 
   // Removes rows from autofill_profiles and credit_cards if they were created
   // on or after |delete_begin| and strictly before |delete_end|.
-  bool RemoveAutoFillProfilesAndCreditCardsModifiedBetween(
+  bool RemoveAutofillProfilesAndCreditCardsModifiedBetween(
       base::Time delete_begin,
       base::Time delete_end);
 
@@ -307,12 +307,12 @@ class WebDatabase {
                            Autofill_GetAllAutofillEntries_TwoSame);
   FRIEND_TEST_ALL_PREFIXES(WebDatabaseTest, Autofill_UpdateDontReplace);
   FRIEND_TEST_ALL_PREFIXES(WebDatabaseTest, Autofill_AddFormFieldValues);
-  FRIEND_TEST_ALL_PREFIXES(WebDatabaseTest, AutoFillProfile);
+  FRIEND_TEST_ALL_PREFIXES(WebDatabaseTest, AutofillProfile);
   FRIEND_TEST_ALL_PREFIXES(WebDatabaseTest, CreditCard);
-  FRIEND_TEST_ALL_PREFIXES(WebDatabaseTest, UpdateAutoFillProfile);
+  FRIEND_TEST_ALL_PREFIXES(WebDatabaseTest, UpdateAutofillProfile);
   FRIEND_TEST_ALL_PREFIXES(WebDatabaseTest, UpdateCreditCard);
   FRIEND_TEST_ALL_PREFIXES(WebDatabaseTest,
-                           RemoveAutoFillProfilesAndCreditCardsModifiedBetween);
+                           RemoveAutofillProfilesAndCreditCardsModifiedBetween);
 
   // Methods for adding autofill entries at a specified time.  For
   // testing only.
@@ -337,10 +337,10 @@ class WebDatabase {
   bool InitLoginsTable();
   bool InitAutofillTable();
   bool InitAutofillDatesTable();
-  bool InitAutoFillProfilesTable();
-  bool InitAutoFillProfileNamesTable();
-  bool InitAutoFillProfileEmailsTable();
-  bool InitAutoFillProfilePhonesTable();
+  bool InitAutofillProfilesTable();
+  bool InitAutofillProfileNamesTable();
+  bool InitAutofillProfileEmailsTable();
+  bool InitAutofillProfilePhonesTable();
   bool InitCreditCardsTable();
   bool InitTokenServiceTable();
   bool InitWebAppIconsTable();

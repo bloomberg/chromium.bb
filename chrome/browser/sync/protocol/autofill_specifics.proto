@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
@@ -81,7 +81,7 @@ message AutofillSpecifics {
   repeated int64 usage_timestamp = 3;
 
   // An autofill++ profile object.  If present, indicates this entity
-  // represents an AutoFillProfile exclusively, and no other fields (such as
+  // represents an AutofillProfile exclusively, and no other fields (such as
   // name/value or credit_card) should be present.
   optional AutofillProfileSpecifics profile = 4;
 

@@ -159,8 +159,8 @@ bool FillStateSelectControl(const string16& value,
 
 bool FillCountrySelectControl(const FormGroup& form_group,
                               webkit_glue::FormField* field) {
-  const AutoFillProfile& profile =
-      static_cast<const AutoFillProfile&>(form_group);
+  const AutofillProfile& profile =
+      static_cast<const AutofillProfile&>(form_group);
   std::string country_code = profile.CountryCode();
   std::string app_locale = AutofillCountry::ApplicationLocale();
 

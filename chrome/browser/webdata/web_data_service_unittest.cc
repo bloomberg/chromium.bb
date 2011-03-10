@@ -252,7 +252,7 @@ TEST_F(WebDataServiceAutofillTest, FormFillRemoveMany) {
 }
 
 TEST_F(WebDataServiceAutofillTest, ProfileAdd) {
-  AutoFillProfile profile;
+  AutofillProfile profile;
 
   // Check that GUID-based notification was sent.
   const AutofillProfileChange expected_change(
@@ -265,12 +265,12 @@ TEST_F(WebDataServiceAutofillTest, ProfileAdd) {
                        Pointee(expected_change)))).
       WillOnce(SignalEvent(&done_event_));
 
-  wds_->AddAutoFillProfile(profile);
+  wds_->AddAutofillProfile(profile);
   done_event_.TimedWait(test_timeout_);
 
   // Check that it was added.
-  AutofillWebDataServiceConsumer<std::vector<AutoFillProfile*> > consumer;
-  WebDataService::Handle handle = wds_->GetAutoFillProfiles(&consumer);
+  AutofillWebDataServiceConsumer<std::vector<AutofillProfile*> > consumer;
+  WebDataService::Handle handle = wds_->GetAutofillProfiles(&consumer);
   MessageLoop::current()->Run();
   EXPECT_EQ(handle, consumer.handle());
   ASSERT_EQ(1U, consumer.result().size());
@@ -279,18 +279,18 @@ TEST_F(WebDataServiceAutofillTest, ProfileAdd) {
 }
 
 TEST_F(WebDataServiceAutofillTest, ProfileRemove) {
-  AutoFillProfile profile;
+  AutofillProfile profile;
 
   // Add a profile.
   EXPECT_CALL(*observer_helper_->observer(), Observe(_, _, _)).
       Times(1).
       WillOnce(SignalEvent(&done_event_));
-  wds_->AddAutoFillProfile(profile);
+  wds_->AddAutofillProfile(profile);
   done_event_.TimedWait(test_timeout_);
 
   // Check that it was added.
-  AutofillWebDataServiceConsumer<std::vector<AutoFillProfile*> > consumer;
-  WebDataService::Handle handle = wds_->GetAutoFillProfiles(&consumer);
+  AutofillWebDataServiceConsumer<std::vector<AutofillProfile*> > consumer;
+  WebDataService::Handle handle = wds_->GetAutofillProfiles(&consumer);
   MessageLoop::current()->Run();
   EXPECT_EQ(handle, consumer.handle());
   ASSERT_EQ(1U, consumer.result().size());
@@ -309,33 +309,33 @@ TEST_F(WebDataServiceAutofillTest, ProfileRemove) {
       WillOnce(SignalEvent(&done_event_));
 
   // Remove the profile.
-  wds_->RemoveAutoFillProfile(profile.guid());
+  wds_->RemoveAutofillProfile(profile.guid());
   done_event_.TimedWait(test_timeout_);
 
   // Check that it was removed.
-  AutofillWebDataServiceConsumer<std::vector<AutoFillProfile*> > consumer2;
-  WebDataService::Handle handle2 = wds_->GetAutoFillProfiles(&consumer2);
+  AutofillWebDataServiceConsumer<std::vector<AutofillProfile*> > consumer2;
+  WebDataService::Handle handle2 = wds_->GetAutofillProfiles(&consumer2);
   MessageLoop::current()->Run();
   EXPECT_EQ(handle2, consumer2.handle());
   ASSERT_EQ(0U, consumer2.result().size());
 }
 
 TEST_F(WebDataServiceAutofillTest, ProfileUpdate) {
-  AutoFillProfile profile1;
+  AutofillProfile profile1;
   profile1.SetInfo(AutofillType(NAME_FIRST), ASCIIToUTF16("Abe"));
-  AutoFillProfile profile2;
+  AutofillProfile profile2;
   profile2.SetInfo(AutofillType(NAME_FIRST), ASCIIToUTF16("Alice"));
 
   EXPECT_CALL(*observer_helper_->observer(), Observe(_, _, _)).
       WillOnce(DoDefault()).
       WillOnce(SignalEvent(&done_event_));
-  wds_->AddAutoFillProfile(profile1);
-  wds_->AddAutoFillProfile(profile2);
+  wds_->AddAutofillProfile(profile1);
+  wds_->AddAutofillProfile(profile2);
   done_event_.TimedWait(test_timeout_);
 
   // Check that they were added.
-  AutofillWebDataServiceConsumer<std::vector<AutoFillProfile*> > consumer;
-  WebDataService::Handle handle = wds_->GetAutoFillProfiles(&consumer);
+  AutofillWebDataServiceConsumer<std::vector<AutofillProfile*> > consumer;
+  WebDataService::Handle handle = wds_->GetAutofillProfiles(&consumer);
   MessageLoop::current()->Run();
   EXPECT_EQ(handle, consumer.handle());
   ASSERT_EQ(2U, consumer.result().size());
@@ -343,7 +343,7 @@ TEST_F(WebDataServiceAutofillTest, ProfileUpdate) {
   EXPECT_EQ(profile2, *consumer.result()[1]);
   STLDeleteElements(&consumer.result());
 
-  AutoFillProfile profile1_changed(profile1);
+  AutofillProfile profile1_changed(profile1);
   profile1_changed.SetInfo(AutofillType(NAME_FIRST), ASCIIToUTF16("Bill"));
   const AutofillProfileChange expected_change(
       AutofillProfileChange::UPDATE, profile1.guid(), &profile1_changed);
@@ -357,12 +357,12 @@ TEST_F(WebDataServiceAutofillTest, ProfileUpdate) {
       WillOnce(SignalEvent(&done_event_));
 
   // Update the profile.
-  wds_->UpdateAutoFillProfile(profile1_changed);
+  wds_->UpdateAutofillProfile(profile1_changed);
   done_event_.TimedWait(test_timeout_);
 
   // Check that the updates were made.
-  AutofillWebDataServiceConsumer<std::vector<AutoFillProfile*> > consumer2;
-  WebDataService::Handle handle2 = wds_->GetAutoFillProfiles(&consumer2);
+  AutofillWebDataServiceConsumer<std::vector<AutofillProfile*> > consumer2;
+  WebDataService::Handle handle2 = wds_->GetAutofillProfiles(&consumer2);
   MessageLoop::current()->Run();
   EXPECT_EQ(handle2, consumer2.handle());
   ASSERT_EQ(2U, consumer2.result().size());

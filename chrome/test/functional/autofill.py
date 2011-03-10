@@ -24,7 +24,7 @@ class AutoFillTest(pyauto.PyUITest):
     pp = pprint.PrettyPrinter(indent=2)
     while True:
       raw_input('Hit <enter> to dump info.. ')
-      info = self.GetAutoFillProfile()
+      info = self.GetAutofillProfile()
       pp.pprint(info)
 
   def testFillProfile(self):
@@ -38,14 +38,14 @@ class AutoFillTest(pyauto.PyUITest):
                      'CREDIT_CARD_EXP_4_DIGIT_YEAR': '2011'},
                     {'CREDIT_CARD_NAME': 'Bob C. Smith'}]
 
-    self.FillAutoFillProfile(profiles=profiles, credit_cards=credit_cards)
-    profile = self.GetAutoFillProfile()
+    self.FillAutofillProfile(profiles=profiles, credit_cards=credit_cards)
+    profile = self.GetAutofillProfile()
     self.assertEqual(profiles, profile['profiles'])
     self.assertEqual(credit_cards, profile['credit_cards'])
 
     profiles = [ {'NAME_FIRST': 'Larry'}]
-    self.FillAutoFillProfile(profiles=profiles)
-    profile = self.GetAutoFillProfile()
+    self.FillAutofillProfile(profiles=profiles)
+    profile = self.GetAutofillProfile()
     self.assertEqual(profiles, profile['profiles'])
     self.assertEqual(credit_cards, profile['credit_cards'])
 
@@ -54,22 +54,22 @@ class AutoFillTest(pyauto.PyUITest):
     # Adding autofill profiles.
     file_path = os.path.join(self.DataDir(), 'autofill', 'crazy_autofill.txt')
     profiles = self.EvalDataFrom(file_path)
-    self.FillAutoFillProfile(profiles=profiles)
+    self.FillAutofillProfile(profiles=profiles)
 
-    self.assertEqual(profiles, self.GetAutoFillProfile()['profiles'])
+    self.assertEqual(profiles, self.GetAutofillProfile()['profiles'])
 
     # Adding credit cards.
     file_path = os.path.join(self.DataDir(), 'autofill',
                              'crazy_creditcards.txt')
     test_data = self.EvalDataFrom(file_path)
     credit_cards_input = test_data['input']
-    self.FillAutoFillProfile(credit_cards=credit_cards_input)
+    self.FillAutofillProfile(credit_cards=credit_cards_input)
     self.assertEqual(test_data['expected'],
-                     self.GetAutoFillProfile()['credit_cards'])
+                     self.GetAutofillProfile()['credit_cards'])
 
   def testGetProfilesEmpty(self):
     """Test getting profiles when none have been filled."""
-    profile = self.GetAutoFillProfile()
+    profile = self.GetAutofillProfile()
     self.assertEqual([], profile['profiles'])
     self.assertEqual([], profile['credit_cards'])
 
@@ -85,16 +85,16 @@ class AutoFillTest(pyauto.PyUITest):
     with_invalid = without_invalid.copy()
     with_invalid['PHONE_HOME_WHOLE_NUMBER'] = 'Invalid_Phone_Number'
     with_invalid['PHONE_FAX_WHOLE_NUMBER'] = 'Invalid_Fax_Number'
-    self.FillAutoFillProfile(profiles=[with_invalid])
+    self.FillAutofillProfile(profiles=[with_invalid])
     self.assertEqual([without_invalid],
-                     self.GetAutoFillProfile()['profiles'])
+                     self.GetAutofillProfile()['profiles'])
 
     # Then try credit cards with invalid input.  Should strip off all non-digits
     credit_card = {'CREDIT_CARD_NUMBER': 'Not_0123-5Checked'}
     expected_credit_card = {'CREDIT_CARD_NUMBER': '01235'}
-    self.FillAutoFillProfile(credit_cards=[credit_card])
+    self.FillAutofillProfile(credit_cards=[credit_card])
     self.assertEqual([expected_credit_card],
-                     self.GetAutoFillProfile()['credit_cards'])
+                     self.GetAutofillProfile()['credit_cards'])
 
   def testFilterIncompleteAddresses(self):
     """Test Autofill filters out profile with incomplete address info."""
@@ -117,7 +117,7 @@ class AutoFillTest(pyauto.PyUITest):
       });
     """
     self.ExecuteJavascript(js_code, 0, 0)
-    self.assertEqual([], self.GetAutoFillProfile()['profiles'])
+    self.assertEqual([], self.GetAutofillProfile()['profiles'])
 
   def testFilterMalformedEmailAddresses(self):
     """Test Autofill filters out malformed email address during form submit."""
@@ -144,7 +144,7 @@ class AutoFillTest(pyauto.PyUITest):
       });
     """
     self.ExecuteJavascript(js_code, 0, 0)
-    if 'EMAIL_ADDRESS' in self.GetAutoFillProfile()['profiles'][0]:
+    if 'EMAIL_ADDRESS' in self.GetAutofillProfile()['profiles'][0]:
       raise KeyError('TEST FAIL: Malformed email address is saved in profiles.')
 
   def AutofillCrowdsourcing(self):
@@ -160,14 +160,14 @@ class AutoFillTest(pyauto.PyUITest):
     file_path = os.path.join(self.DataDir(), 'autofill',
                              'crowdsource_autofill.txt')
     profiles = self.EvalDataFrom(file_path)
-    self.FillAutoFillProfile(profiles=profiles)
+    self.FillAutofillProfile(profiles=profiles)
     # Autofill server captures 2.5% of the data posted.
     # Looping 1000 times is a safe minimum to exceed the server's threshold or
     # noise.
     for i in range(1000):
-      fname = self.GetAutoFillProfile()['profiles'][0]['NAME_FIRST']
-      lname = self.GetAutoFillProfile()['profiles'][0]['NAME_LAST']
-      email = self.GetAutoFillProfile()['profiles'][0]['EMAIL_ADDRESS']
+      fname = self.GetAutofillProfile()['profiles'][0]['NAME_FIRST']
+      lname = self.GetAutofillProfile()['profiles'][0]['NAME_LAST']
+      email = self.GetAutofillProfile()['profiles'][0]['EMAIL_ADDRESS']
       # Submit form to collect crowdsourcing data for Autofill.
       self.NavigateToURL(url, 0, 0)
       fname_field = ('document.getElementById("fn").value = "%s"; '
@@ -207,11 +207,11 @@ class AutoFillTest(pyauto.PyUITest):
     # Verify total number of inputted profiles is greater than the final number
     # of profiles after merging.
     self.assertTrue(
-        len(list_of_dict) > len(self.GetAutoFillProfile()['profiles']))
+        len(list_of_dict) > len(self.GetAutofillProfile()['profiles']))
     # Write profile dictionary to a file.
     merged_profile = os.path.join(self.DataDir(), 'autofill',
                                   'merged-profiles.txt')
-    profile_dict = self.GetAutoFillProfile()['profiles']
+    profile_dict = self.GetAutofillProfile()['profiles']
     output = open(merged_profile, 'wb')
     pickle.dump(profile_dict, output)
     output.close()

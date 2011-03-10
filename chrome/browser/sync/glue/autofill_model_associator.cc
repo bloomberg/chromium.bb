@@ -35,8 +35,8 @@ struct AutofillModelAssociator::DataBundle {
   std::set<AutofillKey> current_entries;
   std::vector<AutofillEntry> new_entries;
   std::set<string16> current_profiles;
-  std::vector<AutoFillProfile*> updated_profiles;
-  std::vector<AutoFillProfile*> new_profiles;  // We own these pointers.
+  std::vector<AutofillProfile*> updated_profiles;
+  std::vector<AutofillProfile*> new_profiles;  // We own these pointers.
   ~DataBundle() { STLDeleteElements(&new_profiles); }
 };
 
@@ -118,7 +118,7 @@ bool AutofillModelAssociator::TraverseAndAssociateChromeAutofillEntries(
 
 bool AutofillModelAssociator::LoadAutofillData(
     std::vector<AutofillEntry>* entries,
-    std::vector<AutoFillProfile*>* profiles) {
+    std::vector<AutofillProfile*>* profiles) {
   if (IsAbortPending())
     return false;
   if (!web_database_->GetAllAutofillEntries(entries))
@@ -126,7 +126,7 @@ bool AutofillModelAssociator::LoadAutofillData(
 
   if (IsAbortPending())
     return false;
-  if (!web_database_->GetAutoFillProfiles(profiles))
+  if (!web_database_->GetAutofillProfiles(profiles))
     return false;
 
   return true;
@@ -142,7 +142,7 @@ bool AutofillModelAssociator::AssociateModels() {
 
   // TODO(zork): Attempt to load the model association from storage.
   std::vector<AutofillEntry> entries;
-  ScopedVector<AutoFillProfile> profiles;
+  ScopedVector<AutofillProfile> profiles;
 
   if (!LoadAutofillData(&entries, &profiles.get())) {
     LOG(ERROR) << "Could not get the autofill data from WebDatabase.";
@@ -213,14 +213,14 @@ bool AutofillModelAssociator::SaveChangesToWebData(const DataBundle& bundle) {
   for (size_t i = 0; i < bundle.new_profiles.size(); i++) {
     if (IsAbortPending())
       return false;
-    if (!web_database_->AddAutoFillProfile(*bundle.new_profiles[i]))
+    if (!web_database_->AddAutofillProfile(*bundle.new_profiles[i]))
       return false;
   }
 
   for (size_t i = 0; i < bundle.updated_profiles.size(); i++) {
     if (IsAbortPending())
       return false;
-    if (!web_database_->UpdateAutoFillProfile(*bundle.updated_profiles[i]))
+    if (!web_database_->UpdateAutofillProfile(*bundle.updated_profiles[i]))
       return false;
   }
   return true;
@@ -230,7 +230,7 @@ bool AutofillModelAssociator::TraverseAndAssociateAllSyncNodes(
     sync_api::WriteTransaction* write_trans,
     const sync_api::ReadNode& autofill_root,
     DataBundle* bundle,
-    const std::vector<AutoFillProfile*>& all_profiles_from_db) {
+    const std::vector<AutofillProfile*>& all_profiles_from_db) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::DB));
 
   bool autofill_profile_not_migrated = HasNotMigratedYet(write_trans);
@@ -239,9 +239,9 @@ bool AutofillModelAssociator::TraverseAndAssociateAllSyncNodes(
     VLOG(2) << "[AUTOFILL MIGRATION]"
             << "Printing profiles from web db";
 
-    for (std::vector<AutoFillProfile*>::const_iterator ix =
+    for (std::vector<AutofillProfile*>::const_iterator ix =
         all_profiles_from_db.begin(); ix != all_profiles_from_db.end(); ++ix) {
-      AutoFillProfile* p = *ix;
+      AutofillProfile* p = *ix;
       VLOG(2) << "[AUTOFILL MIGRATION]  "
               << p->GetFieldText(AutofillType(NAME_FIRST))
               << p->GetFieldText(AutofillType(NAME_LAST));
@@ -288,8 +288,8 @@ bool AutofillModelAssociator::TraverseAndAssociateAllSyncNodes(
 
 // Define the functor to be used as the predicate in find_if call.
 struct CompareProfiles
-  : public std::binary_function<AutoFillProfile*, AutoFillProfile*, bool> {
-  bool operator() (AutoFillProfile* p1, AutoFillProfile* p2) const {
+  : public std::binary_function<AutofillProfile*, AutofillProfile*, bool> {
+  bool operator() (AutofillProfile* p1, AutofillProfile* p2) const {
     if (p1->Compare(*p2) == 0)
       return true;
     else
@@ -297,11 +297,11 @@ struct CompareProfiles
   }
 };
 
-AutoFillProfile* AutofillModelAssociator::FindCorrespondingNodeFromWebDB(
+AutofillProfile* AutofillModelAssociator::FindCorrespondingNodeFromWebDB(
     const sync_pb::AutofillProfileSpecifics& profile,
-    const std::vector<AutoFillProfile*>& all_profiles_from_db) {
+    const std::vector<AutofillProfile*>& all_profiles_from_db) {
   static std::string guid(guid::GenerateGUID());
-  AutoFillProfile p;
+  AutofillProfile p;
   p.set_guid(guid);
   if (!FillProfileWithServerData(&p, profile)) {
     // Not a big deal. We encountered an error. Just say this profile does not
@@ -311,7 +311,7 @@ AutoFillProfile* AutofillModelAssociator::FindCorrespondingNodeFromWebDB(
   }
 
   // Now instantiate the functor and call find_if.
-  std::vector<AutoFillProfile*>::const_iterator ix =
+  std::vector<AutofillProfile*>::const_iterator ix =
       std::find_if(all_profiles_from_db.begin(),
                    all_profiles_from_db.end(),
                    std::bind2nd(CompareProfiles(), &p));
@@ -342,11 +342,11 @@ void AutofillModelAssociator::AddNativeProfileIfNeeded(
     const sync_pb::AutofillProfileSpecifics& profile,
     DataBundle* bundle,
     const sync_api::ReadNode& node,
-    const std::vector<AutoFillProfile*>& all_profiles_from_db) {
+    const std::vector<AutofillProfile*>& all_profiles_from_db) {
 
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::DB));
 
-  AutoFillProfile* profile_in_web_db = FindCorrespondingNodeFromWebDB(
+  AutofillProfile* profile_in_web_db = FindCorrespondingNodeFromWebDB(
       profile, all_profiles_from_db);
 
   if (profile_in_web_db != NULL) {
@@ -365,7 +365,7 @@ void AutofillModelAssociator::AddNativeProfileIfNeeded(
       return;
     }
     Associate(&guid, node.GetId());
-    AutoFillProfile* p = new AutoFillProfile(guid);
+    AutofillProfile* p = new AutofillProfile(guid);
     FillProfileWithServerData(p, profile);
     bundle->new_profiles.push_back(p);
   }
@@ -506,10 +506,10 @@ bool MergeField(FormGroup* f, AutofillFieldType t,
 
 // static
 bool AutofillModelAssociator::FillProfileWithServerData(
-    AutoFillProfile* merge_into,
+    AutofillProfile* merge_into,
     const sync_pb::AutofillProfileSpecifics& specifics) {
   bool diff = false;
-  AutoFillProfile* p = merge_into;
+  AutofillProfile* p = merge_into;
   const sync_pb::AutofillProfileSpecifics& s(specifics);
   diff = MergeField(p, NAME_FIRST, s.name_first()) || diff;
   diff = MergeField(p, NAME_LAST, s.name_last()) || diff;

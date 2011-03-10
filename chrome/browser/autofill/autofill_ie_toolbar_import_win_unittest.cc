@@ -16,7 +16,7 @@
 using base::win::RegKey;
 
 // Defined in autofill_ie_toolbar_import_win.cc. Not exposed in the header file.
-bool ImportCurrentUserProfiles(std::vector<AutoFillProfile>* profiles,
+bool ImportCurrentUserProfiles(std::vector<AutofillProfile>* profiles,
                                std::vector<CreditCard>* credit_cards);
 
 namespace {
@@ -158,7 +158,7 @@ TEST_F(AutofillIeToolbarImportTest, TestAutoFillImport) {
   profile_key.Close();
   cc_key.Close();
 
-  std::vector<AutoFillProfile> profiles;
+  std::vector<AutofillProfile> profiles;
   std::vector<CreditCard> credit_cards;
   EXPECT_TRUE(ImportCurrentUserProfiles(&profiles, &credit_cards));
   ASSERT_EQ(profiles.size(), 2);

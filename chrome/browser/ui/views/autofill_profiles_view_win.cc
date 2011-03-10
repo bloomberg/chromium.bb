@@ -59,17 +59,17 @@ const int kSubViewVerticalInsets = 5;
 };  // namespace
 
 /////////////////////////////////////////////////////////////////////////////
-// AutoFillProfilesView, static data:
-AutoFillProfilesView* AutoFillProfilesView::instance_ = NULL;
+// AutofillProfilesView, static data:
+AutofillProfilesView* AutofillProfilesView::instance_ = NULL;
 
 /////////////////////////////////////////////////////////////////////////////
-// AutoFillProfilesView, public:
-AutoFillProfilesView::AutoFillProfilesView(
+// AutofillProfilesView, public:
+AutofillProfilesView::AutofillProfilesView(
     AutoFillDialogObserver* observer,
     PersonalDataManager* personal_data_manager,
     Profile* profile,
     PrefService* preferences,
-    AutoFillProfile* imported_profile,
+    AutofillProfile* imported_profile,
     CreditCard* imported_credit_card)
     : observer_(observer),
       personal_data_manager_(personal_data_manager),
@@ -95,7 +95,7 @@ AutoFillProfilesView::AutoFillProfilesView(
   personal_data_manager_->SetObserver(this);
 }
 
-AutoFillProfilesView::~AutoFillProfilesView() {
+AutofillProfilesView::~AutofillProfilesView() {
   // Clear model as it gets deleted before the view.
   if (scroll_view_)
     scroll_view_->SetModel(NULL);
@@ -105,15 +105,15 @@ AutoFillProfilesView::~AutoFillProfilesView() {
 }
 
 // TODO: get rid of imported_profile and imported_credit_card.
-int AutoFillProfilesView::Show(gfx::NativeWindow parent,
+int AutofillProfilesView::Show(gfx::NativeWindow parent,
                                AutoFillDialogObserver* observer,
                                PersonalDataManager* personal_data_manager,
                                Profile* profile,
                                PrefService* preferences,
-                               AutoFillProfile* imported_profile,
+                               AutofillProfile* imported_profile,
                                CreditCard* imported_credit_card) {
   if (!instance_) {
-    instance_ = new AutoFillProfilesView(observer, personal_data_manager,
+    instance_ = new AutofillProfilesView(observer, personal_data_manager,
         profile, preferences, imported_profile, imported_credit_card);
 
     // |instance_| will get deleted once Close() is called.
@@ -127,13 +127,13 @@ int AutoFillProfilesView::Show(gfx::NativeWindow parent,
 }
 
 /////////////////////////////////////////////////////////////////////////////
-// AutoFillProfilesView, protected:
-void AutoFillProfilesView::AddClicked(int group_type) {
+// AutofillProfilesView, protected:
+void AutofillProfilesView::AddClicked(int group_type) {
   scoped_ptr<EditableSetInfo> info;
   std::vector<EditableSetInfo>::iterator it = profiles_set_.end();
   int added_item_index = -1;
   if (group_type == ContentListTableModel::kAddressGroup) {
-    AutoFillProfile address;
+    AutofillProfile address;
     info.reset(new EditableSetInfo(&address));
   } else if (group_type == ContentListTableModel::kCreditCardGroup) {
     CreditCard credit_card;
@@ -148,7 +148,7 @@ void AutoFillProfilesView::AddClicked(int group_type) {
   edit_view->window()->Show();
 }
 
-void AutoFillProfilesView::EditClicked() {
+void AutofillProfilesView::EditClicked() {
   int index = scroll_view_->FirstSelectedRow();
   if (index == -1)
     return;  // Happens if user double clicks and the table is empty.
@@ -168,7 +168,7 @@ void AutoFillProfilesView::EditClicked() {
   edit_view->window()->Show();
 }
 
-void AutoFillProfilesView::DeleteClicked() {
+void AutofillProfilesView::DeleteClicked() {
   DCHECK_GT(scroll_view_->SelectedRowCount(), 0);
   int last_view_row = -1;
   for (views::TableView::iterator i = scroll_view_->SelectionBegin();
@@ -184,7 +184,7 @@ void AutoFillProfilesView::DeleteClicked() {
   SaveData();
 }
 
-void AutoFillProfilesView::EditAccepted(EditableSetInfo* data,
+void AutofillProfilesView::EditAccepted(EditableSetInfo* data,
                                         bool new_item) {
   DCHECK(data);
   std::vector<EditableSetInfo>::iterator it;
@@ -216,7 +216,7 @@ void AutoFillProfilesView::EditAccepted(EditableSetInfo* data,
   SaveData();
 }
 
-void AutoFillProfilesView::UpdateWidgetState() {
+void AutofillProfilesView::UpdateWidgetState() {
   bool autofill_enabled = enable_auto_fill_.GetValue();
   enable_auto_fill_button_->SetChecked(autofill_enabled);
   enable_auto_fill_button_->SetEnabled(!enable_auto_fill_.IsManaged());
@@ -234,35 +234,35 @@ void AutoFillProfilesView::UpdateWidgetState() {
                              autofill_enabled);
 }
 
-void AutoFillProfilesView::ChildWindowOpened() {
+void AutofillProfilesView::ChildWindowOpened() {
   child_dialog_opened_ = true;
   UpdateWidgetState();
 }
 
-void AutoFillProfilesView::ChildWindowClosed() {
+void AutofillProfilesView::ChildWindowClosed() {
   child_dialog_opened_ = false;
   UpdateWidgetState();
 }
 
-SkBitmap* AutoFillProfilesView::GetWarningBitmap(bool good) {
+SkBitmap* AutofillProfilesView::GetWarningBitmap(bool good) {
   ResourceBundle& rb = ResourceBundle::GetSharedInstance();
   return rb.GetBitmapNamed(good ? IDR_INPUT_GOOD : IDR_INPUT_ALERT);
 }
 
 
 /////////////////////////////////////////////////////////////////////////////
-// AutoFillProfilesView, views::View implementations
-void AutoFillProfilesView::Layout() {
+// AutofillProfilesView, views::View implementations
+void AutofillProfilesView::Layout() {
   View::Layout();
 }
 
-gfx::Size AutoFillProfilesView::GetPreferredSize() {
+gfx::Size AutofillProfilesView::GetPreferredSize() {
   return views::Window::GetLocalizedContentsSize(
       IDS_AUTOFILL_DIALOG_WIDTH_CHARS,
       IDS_AUTOFILL_DIALOG_HEIGHT_LINES);
 }
 
-void AutoFillProfilesView::ViewHierarchyChanged(bool is_add,
+void AutofillProfilesView::ViewHierarchyChanged(bool is_add,
                                                 views::View* parent,
                                                 views::View* child) {
   if (is_add && child == this)
@@ -270,12 +270,12 @@ void AutoFillProfilesView::ViewHierarchyChanged(bool is_add,
 }
 
 /////////////////////////////////////////////////////////////////////////////
-// AutoFillProfilesView, views::DialogDelegate implementations:
-int AutoFillProfilesView::GetDialogButtons() const {
+// AutofillProfilesView, views::DialogDelegate implementations:
+int AutofillProfilesView::GetDialogButtons() const {
   return MessageBoxFlags::DIALOGBUTTON_CANCEL;
 }
 
-std::wstring AutoFillProfilesView::GetDialogButtonLabel(
+std::wstring AutofillProfilesView::GetDialogButtonLabel(
     MessageBoxFlags::DialogButton button) const {
   switch (button) {
   case MessageBoxFlags::DIALOGBUTTON_CANCEL:
@@ -287,7 +287,7 @@ std::wstring AutoFillProfilesView::GetDialogButtonLabel(
   return std::wstring();
 }
 
-views::View* AutoFillProfilesView::GetExtraView() {
+views::View* AutofillProfilesView::GetExtraView() {
   // The dialog sizes the extra view to fill the entire available space.
   // We use a container to lay it out properly.
   views::View* link_container = new views::View();
@@ -308,7 +308,7 @@ views::View* AutoFillProfilesView::GetExtraView() {
   return link_container;
 }
 
-bool AutoFillProfilesView::IsDialogButtonEnabled(
+bool AutofillProfilesView::IsDialogButtonEnabled(
     MessageBoxFlags::DialogButton button) const {
   switch (button) {
   case MessageBoxFlags::DIALOGBUTTON_OK:
@@ -322,31 +322,31 @@ bool AutoFillProfilesView::IsDialogButtonEnabled(
 }
 
 
-std::wstring AutoFillProfilesView::GetWindowTitle() const {
+std::wstring AutofillProfilesView::GetWindowTitle() const {
   return UTF16ToWide(l10n_util::GetStringUTF16(IDS_AUTOFILL_OPTIONS_TITLE));
 }
 
-void AutoFillProfilesView::WindowClosing() {
+void AutofillProfilesView::WindowClosing() {
   focus_manager_->RemoveFocusChangeListener(this);
   instance_ = NULL;
 }
 
-views::View* AutoFillProfilesView::GetContentsView() {
+views::View* AutofillProfilesView::GetContentsView() {
   return this;
 }
 
-bool AutoFillProfilesView::Cancel() {
+bool AutofillProfilesView::Cancel() {
   // No way to cancel - we save back all the info always.
   return Accept();
 }
 
-bool AutoFillProfilesView::Accept() {
+bool AutofillProfilesView::Accept() {
   return true;
 }
 
 /////////////////////////////////////////////////////////////////////////////
-// AutoFillProfilesView, views::ButtonListener implementations:
-void AutoFillProfilesView::ButtonPressed(views::Button* sender,
+// AutofillProfilesView, views::ButtonListener implementations:
+void AutofillProfilesView::ButtonPressed(views::Button* sender,
                                          const views::Event& event) {
   if (sender == add_address_button_) {
     AddClicked(ContentListTableModel::kAddressGroup);
@@ -368,8 +368,8 @@ void AutoFillProfilesView::ButtonPressed(views::Button* sender,
 }
 
 /////////////////////////////////////////////////////////////////////////////
-// AutoFillProfilesView, views::LinkController implementations:
-void AutoFillProfilesView::LinkActivated(views::Link* source, int event_flags) {
+// AutofillProfilesView, views::LinkController implementations:
+void AutofillProfilesView::LinkActivated(views::Link* source, int event_flags) {
   Browser* browser = BrowserList::GetLastActive();
   if (!browser || !browser->GetSelectedTabContents())
     browser = Browser::Create(profile_);
@@ -378,8 +378,8 @@ void AutoFillProfilesView::LinkActivated(views::Link* source, int event_flags) {
 
 
 /////////////////////////////////////////////////////////////////////////////
-// AutoFillProfilesView, views::FocusChangeListener implementations:
-void AutoFillProfilesView::FocusWillChange(views::View* focused_before,
+// AutofillProfilesView, views::FocusChangeListener implementations:
+void AutofillProfilesView::FocusWillChange(views::View* focused_before,
                                            views::View* focused_now) {
   if (focused_now) {
     focused_now->ScrollRectToVisible(gfx::Rect(focused_now->width(),
@@ -388,26 +388,26 @@ void AutoFillProfilesView::FocusWillChange(views::View* focused_before,
 }
 
 /////////////////////////////////////////////////////////////////////////////
-// AutoFillProfilesView, views::TableViewObserver implementations:
-void AutoFillProfilesView::OnSelectionChanged() {
+// AutofillProfilesView, views::TableViewObserver implementations:
+void AutofillProfilesView::OnSelectionChanged() {
   UpdateWidgetState();
 }
 
-void AutoFillProfilesView::OnDoubleClick() {
+void AutofillProfilesView::OnDoubleClick() {
   if (!child_dialog_opened_)
     EditClicked();
 }
 
 
 /////////////////////////////////////////////////////////////////////////////
-// AutoFillProfilesView, PersonalDataManager::Observer implementations.
-void AutoFillProfilesView::OnPersonalDataLoaded() {
+// AutofillProfilesView, PersonalDataManager::Observer implementations.
+void AutofillProfilesView::OnPersonalDataLoaded() {
   GetData();
 }
 
-void AutoFillProfilesView::OnPersonalDataChanged() {
+void AutofillProfilesView::OnPersonalDataChanged() {
   profiles_set_.clear();
-  for (std::vector<AutoFillProfile*>::const_iterator address_it =
+  for (std::vector<AutofillProfile*>::const_iterator address_it =
            personal_data_manager_->profiles().begin();
        address_it != personal_data_manager_->profiles().end();
        ++address_it) {
@@ -432,8 +432,8 @@ void AutoFillProfilesView::OnPersonalDataChanged() {
 }
 
 /////////////////////////////////////////////////////////////////////////////
-// AutoFillProfilesView, NotificationObserver implementation.
-void AutoFillProfilesView::Observe(NotificationType type,
+// AutofillProfilesView, NotificationObserver implementation.
+void AutofillProfilesView::Observe(NotificationType type,
                                    const NotificationSource& source,
                                    const NotificationDetails& details) {
   DCHECK_EQ(NotificationType::PREF_CHANGED, type.value);
@@ -443,8 +443,8 @@ void AutoFillProfilesView::Observe(NotificationType type,
 }
 
 /////////////////////////////////////////////////////////////////////////////
-// AutoFillProfilesView, private:
-void AutoFillProfilesView::Init() {
+// AutofillProfilesView, private:
+void AutofillProfilesView::Init() {
   GetData();
 
   enable_auto_fill_button_ = new views::Checkbox(
@@ -514,7 +514,7 @@ void AutoFillProfilesView::Init() {
   UpdateWidgetState();
 }
 
-void AutoFillProfilesView::GetData() {
+void AutofillProfilesView::GetData() {
   if (!personal_data_manager_->IsDataLoaded()) {
     return;
   }
@@ -522,7 +522,7 @@ void AutoFillProfilesView::GetData() {
                                !credit_card_set_.empty();
   if (!imported_data_present) {
     profiles_set_.reserve(personal_data_manager_->profiles().size());
-    for (std::vector<AutoFillProfile*>::const_iterator address_it =
+    for (std::vector<AutofillProfile*>::const_iterator address_it =
          personal_data_manager_->profiles().begin();
          address_it != personal_data_manager_->profiles().end();
          ++address_it) {
@@ -549,12 +549,12 @@ void AutoFillProfilesView::GetData() {
   }
 }
 
-bool AutoFillProfilesView::IsDataReady() const {
+bool AutofillProfilesView::IsDataReady() const {
   return personal_data_manager_->IsDataLoaded();
 }
 
-void AutoFillProfilesView::SaveData() {
-  std::vector<AutoFillProfile> profiles;
+void AutofillProfilesView::SaveData() {
+  std::vector<AutofillProfile> profiles;
   profiles.reserve(profiles_set_.size());
   std::vector<EditableSetInfo>::iterator it;
   for (it = profiles_set_.begin(); it != profiles_set_.end(); ++it) {
@@ -569,9 +569,9 @@ void AutoFillProfilesView::SaveData() {
 }
 
 /////////////////////////////////////////////////////////////////////////////
-// AutoFillProfilesView::PhoneSubView, public:
-AutoFillProfilesView::PhoneSubView::PhoneSubView(
-    AutoFillProfilesView* autofill_view,
+// AutofillProfilesView::PhoneSubView, public:
+AutofillProfilesView::PhoneSubView::PhoneSubView(
+    AutofillProfilesView* autofill_view,
     views::Label* label,
     views::Textfield* text_phone)
     : autofill_view_(autofill_view),
@@ -583,14 +583,14 @@ AutoFillProfilesView::PhoneSubView::PhoneSubView(
   DCHECK(text_phone_);
 }
 
-void AutoFillProfilesView::PhoneSubView::ContentsChanged(
+void AutofillProfilesView::PhoneSubView::ContentsChanged(
     views::Textfield* sender, const string16& new_contents) {
   if (sender == text_phone_) {
     UpdateButtons();
   }
 }
 
-bool AutoFillProfilesView::PhoneSubView::IsValid() const {
+bool AutofillProfilesView::PhoneSubView::IsValid() const {
   if (text_phone_) {
     string16 phone = text_phone_->text();
     if (phone.empty())
@@ -603,7 +603,7 @@ bool AutoFillProfilesView::PhoneSubView::IsValid() const {
   return false;
 }
 
-void AutoFillProfilesView::PhoneSubView::UpdateButtons() {
+void AutofillProfilesView::PhoneSubView::UpdateButtons() {
   if (phone_warning_button_) {
     SkBitmap* image = text_phone_->text().empty() ? NULL :
         autofill_view_->GetWarningBitmap(IsValid());
@@ -616,10 +616,10 @@ void AutoFillProfilesView::PhoneSubView::UpdateButtons() {
 }
 
 /////////////////////////////////////////////////////////////////////////////
-// AutoFillProfilesView::PhoneSubView, protected:
+// AutofillProfilesView::PhoneSubView, protected:
 /////////////////////////////////////////////////////////////////////////////
-// AutoFillProfilesView::PhoneSubView, views::View implementations
-void AutoFillProfilesView::PhoneSubView::ViewHierarchyChanged(
+// AutofillProfilesView::PhoneSubView, views::View implementations
+void AutofillProfilesView::PhoneSubView::ViewHierarchyChanged(
     bool is_add, views::View* parent, views::View* child) {
   if (is_add && this == child) {
     views::GridLayout* layout = new views::GridLayout(this);
@@ -651,43 +651,43 @@ void AutoFillProfilesView::PhoneSubView::ViewHierarchyChanged(
 }
 
 /////////////////////////////////////////////////////////////////////////////
-// AutoFillProfilesView::EditableSetViewContents, static data:
-AutoFillProfilesView::EditableSetViewContents::TextFieldToAutoFill
-    AutoFillProfilesView::EditableSetViewContents::address_fields_[] = {
-  { AutoFillProfilesView::EditableSetViewContents::TEXT_FULL_NAME,
+// AutofillProfilesView::EditableSetViewContents, static data:
+AutofillProfilesView::EditableSetViewContents::TextFieldToAutoFill
+    AutofillProfilesView::EditableSetViewContents::address_fields_[] = {
+  { AutofillProfilesView::EditableSetViewContents::TEXT_FULL_NAME,
     NAME_FULL },
-  { AutoFillProfilesView::EditableSetViewContents::TEXT_COMPANY, COMPANY_NAME },
-  { AutoFillProfilesView::EditableSetViewContents::TEXT_EMAIL, EMAIL_ADDRESS },
-  { AutoFillProfilesView::EditableSetViewContents::TEXT_ADDRESS_LINE_1,
+  { AutofillProfilesView::EditableSetViewContents::TEXT_COMPANY, COMPANY_NAME },
+  { AutofillProfilesView::EditableSetViewContents::TEXT_EMAIL, EMAIL_ADDRESS },
+  { AutofillProfilesView::EditableSetViewContents::TEXT_ADDRESS_LINE_1,
     ADDRESS_HOME_LINE1 },
-  { AutoFillProfilesView::EditableSetViewContents::TEXT_ADDRESS_LINE_2,
+  { AutofillProfilesView::EditableSetViewContents::TEXT_ADDRESS_LINE_2,
     ADDRESS_HOME_LINE2 },
-  { AutoFillProfilesView::EditableSetViewContents::TEXT_ADDRESS_CITY,
+  { AutofillProfilesView::EditableSetViewContents::TEXT_ADDRESS_CITY,
     ADDRESS_HOME_CITY },
-  { AutoFillProfilesView::EditableSetViewContents::TEXT_ADDRESS_STATE,
+  { AutofillProfilesView::EditableSetViewContents::TEXT_ADDRESS_STATE,
     ADDRESS_HOME_STATE },
-  { AutoFillProfilesView::EditableSetViewContents::TEXT_ADDRESS_ZIP,
+  { AutofillProfilesView::EditableSetViewContents::TEXT_ADDRESS_ZIP,
     ADDRESS_HOME_ZIP },
-  { AutoFillProfilesView::EditableSetViewContents::TEXT_ADDRESS_COUNTRY,
+  { AutofillProfilesView::EditableSetViewContents::TEXT_ADDRESS_COUNTRY,
     ADDRESS_HOME_COUNTRY },
-  { AutoFillProfilesView::EditableSetViewContents::TEXT_PHONE_PHONE,
+  { AutofillProfilesView::EditableSetViewContents::TEXT_PHONE_PHONE,
     PHONE_HOME_WHOLE_NUMBER },
-  { AutoFillProfilesView::EditableSetViewContents::TEXT_FAX_PHONE,
+  { AutofillProfilesView::EditableSetViewContents::TEXT_FAX_PHONE,
     PHONE_FAX_WHOLE_NUMBER },
 };
 
-AutoFillProfilesView::EditableSetViewContents::TextFieldToAutoFill
-    AutoFillProfilesView::EditableSetViewContents::credit_card_fields_[] = {
-  { AutoFillProfilesView::EditableSetViewContents::TEXT_CC_NAME,
+AutofillProfilesView::EditableSetViewContents::TextFieldToAutoFill
+    AutofillProfilesView::EditableSetViewContents::credit_card_fields_[] = {
+  { AutofillProfilesView::EditableSetViewContents::TEXT_CC_NAME,
     CREDIT_CARD_NAME },
-  { AutoFillProfilesView::EditableSetViewContents::TEXT_CC_NUMBER,
+  { AutofillProfilesView::EditableSetViewContents::TEXT_CC_NUMBER,
     CREDIT_CARD_NUMBER },
 };
 
 /////////////////////////////////////////////////////////////////////////////
-// AutoFillProfilesView::EditableSetViewContents, public:
-AutoFillProfilesView::EditableSetViewContents::EditableSetViewContents(
-    AutoFillProfilesView* observer,
+// AutofillProfilesView::EditableSetViewContents, public:
+AutofillProfilesView::EditableSetViewContents::EditableSetViewContents(
+    AutofillProfilesView* observer,
     bool new_item,
     const EditableSetInfo& field_set)
     : temporary_info_(field_set),
@@ -698,14 +698,14 @@ AutoFillProfilesView::EditableSetViewContents::EditableSetViewContents(
 }
 
 /////////////////////////////////////////////////////////////////////////////
-// AutoFillProfilesView::EditableSetViewContents, protected:
+// AutofillProfilesView::EditableSetViewContents, protected:
 /////////////////////////////////////////////////////////////////////////////
-// AutoFillProfilesView::EditableSetViewContents, views::View implementations
-void AutoFillProfilesView::EditableSetViewContents::Layout() {
+// AutofillProfilesView::EditableSetViewContents, views::View implementations
+void AutofillProfilesView::EditableSetViewContents::Layout() {
   View::Layout();
 }
 
-gfx::Size AutoFillProfilesView::EditableSetViewContents::GetPreferredSize() {
+gfx::Size AutofillProfilesView::EditableSetViewContents::GetPreferredSize() {
   if (temporary_info_.is_address) {
     return views::Window::GetLocalizedContentsSize(
         IDS_AUTOFILL_DIALOG_EDIT_ADDRESS_WIDTH_CHARS,
@@ -717,7 +717,7 @@ gfx::Size AutoFillProfilesView::EditableSetViewContents::GetPreferredSize() {
   }
 }
 
-void AutoFillProfilesView::EditableSetViewContents::ViewHierarchyChanged(
+void AutofillProfilesView::EditableSetViewContents::ViewHierarchyChanged(
     bool is_add, views::View* parent, views::View* child) {
   if (is_add && this == child) {
     observer_->ChildWindowOpened();
@@ -734,15 +734,15 @@ void AutoFillProfilesView::EditableSetViewContents::ViewHierarchyChanged(
 }
 
 /////////////////////////////////////////////////////////////////////////////
-// AutoFillProfilesView::EditableSetViewContents,
+// AutofillProfilesView::EditableSetViewContents,
 // views::DialogDelegate implementations
-int AutoFillProfilesView::EditableSetViewContents::GetDialogButtons() const {
+int AutofillProfilesView::EditableSetViewContents::GetDialogButtons() const {
   return MessageBoxFlags::DIALOGBUTTON_CANCEL |
          MessageBoxFlags::DIALOGBUTTON_OK;
 }
 
 std::wstring
-AutoFillProfilesView::EditableSetViewContents::GetDialogButtonLabel(
+AutofillProfilesView::EditableSetViewContents::GetDialogButtonLabel(
     MessageBoxFlags::DialogButton button) const {
   switch (button) {
   case MessageBoxFlags::DIALOGBUTTON_OK:
@@ -756,7 +756,7 @@ AutoFillProfilesView::EditableSetViewContents::GetDialogButtonLabel(
   return std::wstring();
 }
 
-bool AutoFillProfilesView::EditableSetViewContents::IsDialogButtonEnabled(
+bool AutofillProfilesView::EditableSetViewContents::IsDialogButtonEnabled(
     MessageBoxFlags::DialogButton button) const {
   switch (button) {
     case MessageBoxFlags::DIALOGBUTTON_OK: {
@@ -803,7 +803,7 @@ bool AutoFillProfilesView::EditableSetViewContents::IsDialogButtonEnabled(
 }
 
 std::wstring
-AutoFillProfilesView::EditableSetViewContents::GetWindowTitle() const {
+AutofillProfilesView::EditableSetViewContents::GetWindowTitle() const {
   int string_id = 0;
   if (temporary_info_.is_address) {
     string_id = new_item_ ? IDS_AUTOFILL_ADD_ADDRESS_CAPTION :
@@ -815,35 +815,35 @@ AutoFillProfilesView::EditableSetViewContents::GetWindowTitle() const {
   return UTF16ToWide(l10n_util::GetStringUTF16(string_id));
 }
 
-void AutoFillProfilesView::EditableSetViewContents::WindowClosing() {
+void AutofillProfilesView::EditableSetViewContents::WindowClosing() {
   observer_->ChildWindowClosed();
 }
 
-views::View* AutoFillProfilesView::EditableSetViewContents::GetContentsView() {
+views::View* AutofillProfilesView::EditableSetViewContents::GetContentsView() {
   return this;
 }
 
-bool AutoFillProfilesView::EditableSetViewContents::Cancel() {
+bool AutofillProfilesView::EditableSetViewContents::Cancel() {
   return true;
 }
 
-bool AutoFillProfilesView::EditableSetViewContents::Accept() {
+bool AutofillProfilesView::EditableSetViewContents::Accept() {
   observer_->EditAccepted(&temporary_info_, new_item_);
   return true;
 }
 
 /////////////////////////////////////////////////////////////////////////////
-// AutoFillProfilesView::EditableSetViewContents,
+// AutofillProfilesView::EditableSetViewContents,
 // views::ButtonListener implementations
-void AutoFillProfilesView::EditableSetViewContents::ButtonPressed(
+void AutofillProfilesView::EditableSetViewContents::ButtonPressed(
     views::Button* sender, const views::Event& event) {
   NOTREACHED();
 }
 
 /////////////////////////////////////////////////////////////////////////////
-// AutoFillProfilesView::EditableSetViewContents,
+// AutofillProfilesView::EditableSetViewContents,
 // views::TextfieldController implementations:
-void AutoFillProfilesView::EditableSetViewContents::ContentsChanged(
+void AutofillProfilesView::EditableSetViewContents::ContentsChanged(
     views::Textfield* sender,  const string16& new_contents) {
   if (temporary_info_.is_address) {
     for (int field = 0; field < arraysize(address_fields_); ++field) {
@@ -873,7 +873,7 @@ void AutoFillProfilesView::EditableSetViewContents::ContentsChanged(
   }
 }
 
-bool AutoFillProfilesView::EditableSetViewContents::HandleKeyEvent(
+bool AutofillProfilesView::EditableSetViewContents::HandleKeyEvent(
     views::Textfield* sender, const views::KeyEvent& key_event) {
   if (sender == text_fields_[TEXT_CC_NUMBER] &&
       !has_credit_card_number_been_edited_) {
@@ -885,9 +885,9 @@ bool AutoFillProfilesView::EditableSetViewContents::HandleKeyEvent(
 }
 
 /////////////////////////////////////////////////////////////////////////////
-// AutoFillProfilesView::EditableSetViewContents,
+// AutofillProfilesView::EditableSetViewContents,
 // views::Combobox::Listener implementations:
-void AutoFillProfilesView::EditableSetViewContents::ItemChanged(
+void AutofillProfilesView::EditableSetViewContents::ItemChanged(
     views::Combobox* combo_box, int prev_index, int new_index) {
   if (combo_box == combo_box_month_) {
     if (new_index == -1) {
@@ -911,8 +911,8 @@ void AutoFillProfilesView::EditableSetViewContents::ItemChanged(
 }
 
 /////////////////////////////////////////////////////////////////////////////
-// AutoFillProfilesView::EditableSetViewContents, private:
-void AutoFillProfilesView::EditableSetViewContents::InitAddressFields(
+// AutofillProfilesView::EditableSetViewContents, private:
+void AutofillProfilesView::EditableSetViewContents::InitAddressFields(
     views::GridLayout* layout) {
   DCHECK(temporary_info_.is_address);
 
@@ -1009,7 +1009,7 @@ void AutoFillProfilesView::EditableSetViewContents::InitAddressFields(
   UpdateButtons();
 }
 
-void AutoFillProfilesView::EditableSetViewContents::InitCreditCardFields(
+void AutofillProfilesView::EditableSetViewContents::InitCreditCardFields(
     views::GridLayout* layout) {
   DCHECK(!temporary_info_.is_address);
 
@@ -1089,7 +1089,7 @@ void AutoFillProfilesView::EditableSetViewContents::InitCreditCardFields(
   UpdateButtons();
 }
 
-void AutoFillProfilesView::EditableSetViewContents::InitLayoutGrid(
+void AutofillProfilesView::EditableSetViewContents::InitLayoutGrid(
     views::GridLayout* layout) {
   views::ColumnSet* column_set =
       layout->AddColumnSet(double_column_fill_view_set_id_);
@@ -1170,7 +1170,7 @@ void AutoFillProfilesView::EditableSetViewContents::InitLayoutGrid(
 }
 
 views::Label*
-AutoFillProfilesView::EditableSetViewContents::CreateLeftAlignedLabel(
+AutofillProfilesView::EditableSetViewContents::CreateLeftAlignedLabel(
     int label_id) {
   views::Label* label =
       new views::Label(UTF16ToWide(l10n_util::GetStringUTF16(label_id)));
@@ -1178,11 +1178,11 @@ AutoFillProfilesView::EditableSetViewContents::CreateLeftAlignedLabel(
   return label;
 }
 
-void AutoFillProfilesView::EditableSetViewContents::UpdateButtons() {
+void AutofillProfilesView::EditableSetViewContents::UpdateButtons() {
   GetDialogClientView()->UpdateDialogButtons();
 }
 
-bool AutoFillProfilesView::EditableSetViewContents::UpdateContentsPhoneViews(
+bool AutofillProfilesView::EditableSetViewContents::UpdateContentsPhoneViews(
     TextFields field, views::Textfield* sender, const string16& new_contents) {
   switch (field) {
     case TEXT_PHONE_PHONE:
@@ -1208,21 +1208,21 @@ bool AutoFillProfilesView::EditableSetViewContents::UpdateContentsPhoneViews(
   return false;
 }
 
-void AutoFillProfilesView::StringVectorComboboxModel::set_cb_strings(
+void AutofillProfilesView::StringVectorComboboxModel::set_cb_strings(
     std::vector<std::wstring> *source) {
   cb_strings_.swap(*source);
 }
 
-int AutoFillProfilesView::StringVectorComboboxModel::GetItemCount() {
+int AutofillProfilesView::StringVectorComboboxModel::GetItemCount() {
   return cb_strings_.size();
 }
 
-string16 AutoFillProfilesView::StringVectorComboboxModel::GetItemAt(int index) {
+string16 AutofillProfilesView::StringVectorComboboxModel::GetItemAt(int index) {
   DCHECK_GT(static_cast<int>(cb_strings_.size()), index);
   return WideToUTF16Hack(cb_strings_[index]);
 }
 
-int AutoFillProfilesView::StringVectorComboboxModel::GetIndex(
+int AutofillProfilesView::StringVectorComboboxModel::GetIndex(
     const std::wstring& value) {
   for (size_t index = 0; index < cb_strings_.size(); ++index) {
     if (cb_strings_[index] == value)
@@ -1231,7 +1231,7 @@ int AutoFillProfilesView::StringVectorComboboxModel::GetIndex(
   return -1;
 }
 
-AutoFillProfilesView::ContentListTableModel::ContentListTableModel(
+AutofillProfilesView::ContentListTableModel::ContentListTableModel(
     std::vector<EditableSetInfo>* profiles,
     std::vector<EditableSetInfo>* credit_cards)
     : profiles_(profiles),
@@ -1239,17 +1239,17 @@ AutoFillProfilesView::ContentListTableModel::ContentListTableModel(
       observer_(NULL) {
 }
 
-void AutoFillProfilesView::ContentListTableModel::Refresh() {
+void AutofillProfilesView::ContentListTableModel::Refresh() {
   if (observer_)
     observer_->OnModelChanged();
 }
 
-void AutoFillProfilesView::ContentListTableModel::AddItem(int index) {
+void AutofillProfilesView::ContentListTableModel::AddItem(int index) {
   if (observer_)
     observer_->OnItemsAdded(index, 1);
 }
 
-void AutoFillProfilesView::ContentListTableModel::RemoveItem(int index) {
+void AutofillProfilesView::ContentListTableModel::RemoveItem(int index) {
   DCHECK(index < static_cast<int>(profiles_->size() + credit_cards_->size()));
   if (index < static_cast<int>(profiles_->size()))
     profiles_->erase(profiles_->begin() + index);
@@ -1259,16 +1259,16 @@ void AutoFillProfilesView::ContentListTableModel::RemoveItem(int index) {
     observer_->OnItemsRemoved(index, 1);
 }
 
-void AutoFillProfilesView::ContentListTableModel::UpdateItem(int index) {
+void AutofillProfilesView::ContentListTableModel::UpdateItem(int index) {
   if (observer_)
     observer_->OnItemsChanged(index, 1);
 }
 
-int AutoFillProfilesView::ContentListTableModel::RowCount() {
+int AutofillProfilesView::ContentListTableModel::RowCount() {
   return profiles_->size() + credit_cards_->size();
 }
 
-string16 AutoFillProfilesView::ContentListTableModel::GetText(
+string16 AutofillProfilesView::ContentListTableModel::GetText(
     int row, int column_id) {
   DCHECK(row < static_cast<int>(profiles_->size() + credit_cards_->size()));
   if (row < static_cast<int>(profiles_->size())) {
@@ -1280,7 +1280,7 @@ string16 AutoFillProfilesView::ContentListTableModel::GetText(
 }
 
 ui::TableModel::Groups
-    AutoFillProfilesView::ContentListTableModel::GetGroups() {
+    AutofillProfilesView::ContentListTableModel::GetGroups() {
   ui::TableModel::Groups groups;
 
   ui::TableModel::Group profile_group;
@@ -1298,13 +1298,13 @@ ui::TableModel::Groups
   return groups;
 }
 
-int AutoFillProfilesView::ContentListTableModel::GetGroupID(int row) {
+int AutofillProfilesView::ContentListTableModel::GetGroupID(int row) {
   DCHECK(row < static_cast<int>(profiles_->size() + credit_cards_->size()));
   return (row < static_cast<int>(profiles_->size())) ? kAddressGroup :
                                                        kCreditCardGroup;
 }
 
-void AutoFillProfilesView::ContentListTableModel::SetObserver(
+void AutofillProfilesView::ContentListTableModel::SetObserver(
     ui::TableModelObserver* observer) {
   observer_ = observer;
 }
@@ -1319,6 +1319,6 @@ void ShowAutoFillDialog(gfx::NativeView parent,
   PersonalDataManager* personal_data_manager =
       profile->GetPersonalDataManager();
   DCHECK(personal_data_manager);
-  AutoFillProfilesView::Show(parent, observer, personal_data_manager, profile,
+  AutofillProfilesView::Show(parent, observer, personal_data_manager, profile,
                              profile->GetPrefs(), NULL, NULL);
 }

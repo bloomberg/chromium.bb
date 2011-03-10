@@ -75,8 +75,8 @@ class MockPersonalDataManagerObserver : public PersonalDataManager::Observer {
 
 }  // namespace
 
-AutoFillProfile CreateAutofillProfile(LiveAutofillSyncTest::ProfileType type) {
-  AutoFillProfile profile;
+AutofillProfile CreateAutofillProfile(LiveAutofillSyncTest::ProfileType type) {
+  AutofillProfile profile;
   switch (type) {
     case LiveAutofillSyncTest::PROFILE_MARION:
       autofill_test::SetProfileInfoWithGuid(&profile,
@@ -181,7 +181,7 @@ bool LiveAutofillSyncTest::KeysMatch(int profile_a, int profile_b) {
 }
 
 void LiveAutofillSyncTest::SetProfiles(
-    int profile, std::vector<AutoFillProfile>* autofill_profiles) {
+    int profile, std::vector<AutofillProfile>* autofill_profiles) {
   MockPersonalDataManagerObserver observer;
   EXPECT_CALL(observer, OnPersonalDataLoaded()).
       WillOnce(QuitUIMessageLoop());
@@ -193,9 +193,9 @@ void LiveAutofillSyncTest::SetProfiles(
 }
 
 void LiveAutofillSyncTest::AddProfile(int profile,
-                                      const AutoFillProfile& autofill_profile) {
-  const std::vector<AutoFillProfile*>& all_profiles = GetAllProfiles(profile);
-  std::vector<AutoFillProfile> autofill_profiles;
+                                      const AutofillProfile& autofill_profile) {
+  const std::vector<AutofillProfile*>& all_profiles = GetAllProfiles(profile);
+  std::vector<AutofillProfile> autofill_profiles;
   for (size_t i = 0; i < all_profiles.size(); ++i)
     autofill_profiles.push_back(*all_profiles[i]);
   autofill_profiles.push_back(autofill_profile);
@@ -203,8 +203,8 @@ void LiveAutofillSyncTest::AddProfile(int profile,
 }
 
 void LiveAutofillSyncTest::RemoveProfile(int profile, const std::string& guid) {
-  const std::vector<AutoFillProfile*>& all_profiles = GetAllProfiles(profile);
-  std::vector<AutoFillProfile> autofill_profiles;
+  const std::vector<AutofillProfile*>& all_profiles = GetAllProfiles(profile);
+  std::vector<AutofillProfile> autofill_profiles;
   for (size_t i = 0; i < all_profiles.size(); ++i) {
     if (all_profiles[i]->guid() != guid)
       autofill_profiles.push_back(*all_profiles[i]);
@@ -216,8 +216,8 @@ void LiveAutofillSyncTest::UpdateProfile(int profile,
                                          const std::string& guid,
                                          const AutofillType& type,
                                          const string16& value) {
-  const std::vector<AutoFillProfile*>& all_profiles = GetAllProfiles(profile);
-  std::vector<AutoFillProfile> profiles;
+  const std::vector<AutofillProfile*>& all_profiles = GetAllProfiles(profile);
+  std::vector<AutofillProfile> profiles;
   for (size_t i = 0; i < all_profiles.size(); ++i) {
     profiles.push_back(*all_profiles[i]);
     if (all_profiles[i]->guid() == guid)
@@ -226,7 +226,7 @@ void LiveAutofillSyncTest::UpdateProfile(int profile,
   SetProfiles(profile, &profiles);
 }
 
-const std::vector<AutoFillProfile*>& LiveAutofillSyncTest::GetAllProfiles(
+const std::vector<AutofillProfile*>& LiveAutofillSyncTest::GetAllProfiles(
     int profile) {
   MockPersonalDataManagerObserver observer;
   EXPECT_CALL(observer, OnPersonalDataLoaded()).
@@ -240,24 +240,24 @@ const std::vector<AutoFillProfile*>& LiveAutofillSyncTest::GetAllProfiles(
 }
 
 bool LiveAutofillSyncTest::ProfilesMatch(int profile_a, int profile_b) {
-  const std::vector<AutoFillProfile*>& autofill_profiles_a =
+  const std::vector<AutofillProfile*>& autofill_profiles_a =
       GetAllProfiles(profile_a);
-  std::map<std::string, AutoFillProfile> autofill_profiles_a_map;
+  std::map<std::string, AutofillProfile> autofill_profiles_a_map;
   for (size_t i = 0; i < autofill_profiles_a.size(); ++i) {
-    const AutoFillProfile* p = autofill_profiles_a[i];
+    const AutofillProfile* p = autofill_profiles_a[i];
     autofill_profiles_a_map[p->guid()] = *p;
   }
 
-  const std::vector<AutoFillProfile*>& autofill_profiles_b =
+  const std::vector<AutofillProfile*>& autofill_profiles_b =
       GetAllProfiles(profile_b);
   for (size_t i = 0; i < autofill_profiles_b.size(); ++i) {
-    const AutoFillProfile* p = autofill_profiles_b[i];
+    const AutofillProfile* p = autofill_profiles_b[i];
     if (!autofill_profiles_a_map.count(p->guid())) {
       VLOG(1) << "GUID " << p->guid() << " not found in profile "
               << profile_b << ".";
       return false;
     }
-    AutoFillProfile* expected_profile = &autofill_profiles_a_map[p->guid()];
+    AutofillProfile* expected_profile = &autofill_profiles_a_map[p->guid()];
     expected_profile->set_guid(p->guid());
     if (*expected_profile != *p) {
       VLOG(1) << "Mismatch in profile with GUID " << p->guid() << ".";

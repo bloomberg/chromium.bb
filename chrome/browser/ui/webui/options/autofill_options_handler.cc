@@ -193,7 +193,7 @@ void AutoFillOptionsHandler::LoadAutoFillData() {
     return;
 
   ListValue addresses;
-  for (std::vector<AutoFillProfile*>::const_iterator i =
+  for (std::vector<AutofillProfile*>::const_iterator i =
            personal_data_->web_profiles().begin();
        i != personal_data_->web_profiles().end(); ++i) {
     ListValue* entry = new ListValue();
@@ -254,7 +254,7 @@ void AutoFillOptionsHandler::LoadAddressEditor(const ListValue* args) {
     return;
   }
 
-  AutoFillProfile* profile = personal_data_->GetProfileByGUID(guid);
+  AutofillProfile* profile = personal_data_->GetProfileByGUID(guid);
   if (!profile) {
     // There is a race where a user can click once on the close button and
     // quickly click again on the list item before the item is removed (since
@@ -344,7 +344,7 @@ void AutoFillOptionsHandler::SetAddress(const ListValue* args) {
     return;
   }
 
-  AutoFillProfile profile(guid);
+  AutofillProfile profile(guid);
 
   std::string country_code;
   string16 value;

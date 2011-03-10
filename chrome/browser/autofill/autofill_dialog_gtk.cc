@@ -39,12 +39,12 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/gtk_util.h"
 
-// Shows the editor for adding/editing an AutoFillProfile. If
-// |auto_fill_profile| is NULL, a new AutoFillProfile should be created.
-void ShowAutoFillProfileEditor(gfx::NativeView parent,
+// Shows the editor for adding/editing an AutofillProfile. If
+// |auto_fill_profile| is NULL, a new AutofillProfile should be created.
+void ShowAutofillProfileEditor(gfx::NativeView parent,
                                AutoFillDialogObserver* observer,
                                Profile* profile,
-                               AutoFillProfile* auto_fill_profile);
+                               AutofillProfile* auto_fill_profile);
 
 // Shows the editor for adding/editing a CreditCard. If |credit_card| is NULL, a
 // new CreditCard should be created.
@@ -147,13 +147,13 @@ class AutoFillDialog : public PersonalDataManager::Observer,
   // Returns a bitmask of the selection types.
   int GetSelectionType();
 
-  void AddAddressToTree(const AutoFillProfile& profile, GtkTreeIter* iter);
+  void AddAddressToTree(const AutofillProfile& profile, GtkTreeIter* iter);
 
   void AddCreditCardToTree(const CreditCard& credit_card, GtkTreeIter* iter);
 
   // Returns the set of selected profiles and cards. The values placed in
   // the specified vectors are owned by PersonalDataManager.
-  void GetSelectedEntries(std::vector<AutoFillProfile*>* profiles,
+  void GetSelectedEntries(std::vector<AutofillProfile*>* profiles,
                           std::vector<CreditCard*>* cards);
 
   Profile* profile_;
@@ -297,7 +297,7 @@ gboolean AutoFillDialog::OnCheckRowIsSeparator(GtkTreeModel* model,
 }
 
 void AutoFillDialog::OnAddAddress(GtkWidget* widget) {
-  ShowAutoFillProfileEditor(NULL, observer_, profile_, NULL);
+  ShowAutofillProfileEditor(NULL, observer_, profile_, NULL);
 }
 
 void AutoFillDialog::OnAddCreditCard(GtkWidget* widget) {
@@ -307,26 +307,26 @@ void AutoFillDialog::OnAddCreditCard(GtkWidget* widget) {
 void AutoFillDialog::OnEdit(GtkWidget* widget) {
   DCHECK_EQ(SELECTION_SINGLE, GetSelectionType());
 
-  std::vector<AutoFillProfile*> profiles;
+  std::vector<AutofillProfile*> profiles;
   std::vector<CreditCard*> cards;
 
   GetSelectedEntries(&profiles, &cards);
 
   if (profiles.size() == 1)
-    ShowAutoFillProfileEditor(dialog_, observer_, profile_, profiles[0]);
+    ShowAutofillProfileEditor(dialog_, observer_, profile_, profiles[0]);
   else if (cards.size() == 1)
     ShowAutoFillCreditCardEditor(dialog_, observer_, profile_, cards[0]);
 }
 
 void AutoFillDialog::OnRemove(GtkWidget* widget) {
   PersonalDataManager* data_manager = profile_->GetPersonalDataManager();
-  std::vector<AutoFillProfile*> selected_profiles;
+  std::vector<AutofillProfile*> selected_profiles;
   std::vector<CreditCard*> selected_cards;
 
   GetSelectedEntries(&selected_profiles, &selected_cards);
 
-  std::vector<AutoFillProfile> profiles;
-  for (std::vector<AutoFillProfile*>::const_iterator i =
+  std::vector<AutofillProfile> profiles;
+  for (std::vector<AutofillProfile*>::const_iterator i =
            data_manager->profiles().begin();
        i != data_manager->profiles().end(); ++i) {
     if (std::find(selected_profiles.begin(), selected_profiles.end(), *i) ==
@@ -400,7 +400,7 @@ void AutoFillDialog::LoadAutoFillData() {
 
   // The addresses.
   profile_count_ = 0;
-  for (std::vector<AutoFillProfile*>::const_iterator i =
+  for (std::vector<AutofillProfile*>::const_iterator i =
            personal_data_->profiles().begin();
        i != personal_data_->profiles().end(); ++i) {
     AddAddressToTree(*(*i), &iter);
@@ -605,7 +605,7 @@ int AutoFillDialog::GetSelectionType() {
   return state;
 }
 
-void AutoFillDialog::AddAddressToTree(const AutoFillProfile& profile,
+void AutoFillDialog::AddAddressToTree(const AutofillProfile& profile,
                                       GtkTreeIter* iter) {
   gtk_list_store_append(list_store_, iter);
   gtk_list_store_set(
@@ -628,7 +628,7 @@ void AutoFillDialog::AddCreditCardToTree(const CreditCard& credit_card,
 }
 
 void AutoFillDialog::GetSelectedEntries(
-    std::vector<AutoFillProfile*>* profiles,
+    std::vector<AutofillProfile*>* profiles,
     std::vector<CreditCard*>* cards) {
   std::set<int> selection;
   gtk_tree::GetSelectedIndices(

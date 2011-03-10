@@ -17,20 +17,20 @@
 #include "chrome/browser/autofill/form_group.h"
 #include "chrome/browser/autofill/home_phone_number.h"
 
-// A collection of FormGroups stored in a profile.  AutoFillProfile also
+// A collection of FormGroups stored in a profile.  AutofillProfile also
 // implements the FormGroup interface so that owners of this object can request
 // form information from the profile, and the profile will delegate the request
 // to the requested form group type.
-class AutoFillProfile : public FormGroup {
+class AutofillProfile : public FormGroup {
  public:
-  explicit AutoFillProfile(const std::string& guid);
+  explicit AutofillProfile(const std::string& guid);
 
   // For use in STL containers.
-  AutoFillProfile();
-  AutoFillProfile(const AutoFillProfile&);
-  virtual ~AutoFillProfile();
+  AutofillProfile();
+  AutofillProfile(const AutofillProfile&);
+  virtual ~AutofillProfile();
 
-  AutoFillProfile& operator=(const AutoFillProfile& profile);
+  AutofillProfile& operator=(const AutofillProfile& profile);
 
   // FormGroup:
   virtual void GetPossibleFieldTypes(const string16& text,
@@ -50,7 +50,7 @@ class AutoFillProfile : public FormGroup {
   // profiles. See AdjustInferredLabels() further down for more description.
   virtual const string16 Label() const;
 
-  // This guid is the primary identifier for |AutoFillProfile| objects.
+  // This guid is the primary identifier for |AutofillProfile| objects.
   const std::string guid() const { return guid_; }
   void set_guid(const std::string& guid) { guid_ = guid; }
 
@@ -71,7 +71,7 @@ class AutoFillProfile : public FormGroup {
   // This function is useful if you want to adjust unique labels for all
   // profiles. For non permanent situations (selection of profile, when user
   // started typing in the field, for example) use CreateInferredLabels().
-  static bool AdjustInferredLabels(std::vector<AutoFillProfile*>* profiles);
+  static bool AdjustInferredLabels(std::vector<AutofillProfile*>* profiles);
 
   // Creates inferred labels for |profiles|, according to the rules above and
   // stores them in |created_labels|. If |suggested_fields| is not NULL, the
@@ -81,7 +81,7 @@ class AutoFillProfile : public FormGroup {
   // |UNKNOWN_TYPE| when |suggested_fields| is NULL. Each label includes at
   // least |minimal_fields_shown| fields, if possible.
   static void CreateInferredLabels(
-      const std::vector<AutoFillProfile*>* profiles,
+      const std::vector<AutofillProfile*>* profiles,
       const std::vector<AutofillFieldType>* suggested_fields,
       AutofillFieldType excluded_field,
       size_t minimal_fields_shown,
@@ -95,11 +95,11 @@ class AutoFillProfile : public FormGroup {
   // culling duplicates.  The ordering is based on collation order of the
   // textual contents of the fields.
   // GUIDs are not compared, only the values of the contents themselves.
-  int Compare(const AutoFillProfile& profile) const;
+  int Compare(const AutofillProfile& profile) const;
 
   // Equality operators compare GUIDs and the contents in the comparison.
-  bool operator==(const AutoFillProfile& profile) const;
-  virtual bool operator!=(const AutoFillProfile& profile) const;
+  bool operator==(const AutofillProfile& profile) const;
+  virtual bool operator!=(const AutofillProfile& profile) const;
 
   // Returns concatenation of full name and address line 1.  This acts as the
   // basis of comparison for new values that are submitted through forms to
@@ -124,7 +124,7 @@ class AutoFillProfile : public FormGroup {
   // the profiles, if possible; and also at least |num_fields_to_include|
   // fields, if possible. The label fields are drawn from |fields|.
   static void CreateDifferentiatingLabels(
-      const std::vector<AutoFillProfile*>& profiles,
+      const std::vector<AutofillProfile*>& profiles,
       const std::list<size_t>& indices,
       const std::vector<AutofillFieldType>& fields,
       size_t num_fields_to_include,
@@ -151,7 +151,7 @@ class AutoFillProfile : public FormGroup {
   Address address_;
 };
 
-// So we can compare AutoFillProfiles with EXPECT_EQ().
-std::ostream& operator<<(std::ostream& os, const AutoFillProfile& profile);
+// So we can compare AutofillProfiles with EXPECT_EQ().
+std::ostream& operator<<(std::ostream& os, const AutofillProfile& profile);
 
 #endif  // CHROME_BROWSER_AUTOFILL_AUTOFILL_PROFILE_H_

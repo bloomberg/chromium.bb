@@ -86,7 +86,7 @@ bool IsValidEmail(const string16& value) {
 // been met.  An address submitted via a form must have at least these fields
 // filled.  No verification of validity of the contents is preformed.  This is
 // and existence check only.
-bool IsMinimumAddress(const AutoFillProfile& profile) {
+bool IsMinimumAddress(const AutofillProfile& profile) {
   return !profile.GetFieldText(AutofillType(ADDRESS_HOME_LINE1)).empty() &&
          !profile.GetFieldText(AutofillType(ADDRESS_HOME_CITY)).empty() &&
          !profile.GetFieldText(AutofillType(ADDRESS_HOME_STATE)).empty() &&
@@ -128,10 +128,10 @@ void PersonalDataManager::OnWebDataServiceRequestDone(
   // If both requests have responded, then all personal data is loaded.
   if (pending_profiles_query_ == 0 && pending_creditcards_query_ == 0) {
     is_data_loaded_ = true;
-    std::vector<AutoFillProfile*> profile_pointers(web_profiles_.size());
+    std::vector<AutofillProfile*> profile_pointers(web_profiles_.size());
     std::copy(web_profiles_.begin(), web_profiles_.end(),
               profile_pointers.begin());
-    AutoFillProfile::AdjustInferredLabels(&profile_pointers);
+    AutofillProfile::AdjustInferredLabels(&profile_pointers);
     FOR_EACH_OBSERVER(Observer, observers_, OnPersonalDataLoaded());
   }
 }
@@ -140,7 +140,7 @@ void PersonalDataManager::OnWebDataServiceRequestDone(
 // PersonalDataManager,
 // views::ButtonListener implementations
 void PersonalDataManager::OnAutoFillDialogApply(
-    std::vector<AutoFillProfile>* profiles,
+    std::vector<AutofillProfile>* profiles,
     std::vector<CreditCard>* credit_cards) {
   // |profiles| may be NULL.
   // |credit_cards| may be NULL.
@@ -169,7 +169,7 @@ void PersonalDataManager::RemoveObserver(
 bool PersonalDataManager::ImportFormData(
     const std::vector<const FormStructure*>& form_structures,
     const CreditCard** imported_credit_card) {
-  scoped_ptr<AutoFillProfile> imported_profile(new AutoFillProfile);
+  scoped_ptr<AutofillProfile> imported_profile(new AutofillProfile);
   scoped_ptr<CreditCard> local_imported_credit_card(new CreditCard);
 
   // Parse the form and construct a profile based on the information that is
@@ -300,24 +300,24 @@ bool PersonalDataManager::ImportFormData(
   return imported_profile.get() || *imported_credit_card;
 }
 
-void PersonalDataManager::SetProfiles(std::vector<AutoFillProfile>* profiles) {
+void PersonalDataManager::SetProfiles(std::vector<AutofillProfile>* profiles) {
   if (profile_->IsOffTheRecord())
     return;
 
   // Remove empty profiles from input.
   profiles->erase(
       std::remove_if(profiles->begin(), profiles->end(),
-                     std::mem_fun_ref(&AutoFillProfile::IsEmpty)),
+                     std::mem_fun_ref(&AutofillProfile::IsEmpty)),
       profiles->end());
 
   // Ensure that profile labels are up to date.  Currently, sync relies on
   // labels to identify a profile.
   // TODO(dhollowa): We need to deprecate labels and update the way sync
   // identifies profiles.
-  std::vector<AutoFillProfile*> profile_pointers(profiles->size());
+  std::vector<AutofillProfile*> profile_pointers(profiles->size());
   std::transform(profiles->begin(), profiles->end(), profile_pointers.begin(),
-      address_of<AutoFillProfile>);
-  AutoFillProfile::AdjustInferredLabels(&profile_pointers);
+      address_of<AutofillProfile>);
+  AutofillProfile::AdjustInferredLabels(&profile_pointers);
 
   WebDataService* wds = profile_->GetWebDataService(Profile::EXPLICIT_ACCESS);
   if (!wds)
@@ -325,33 +325,33 @@ void PersonalDataManager::SetProfiles(std::vector<AutoFillProfile>* profiles) {
 
   // Any profiles that are not in the new profile list should be removed from
   // the web database.
-  for (std::vector<AutoFillProfile*>::const_iterator iter =
+  for (std::vector<AutofillProfile*>::const_iterator iter =
            web_profiles_.begin();
        iter != web_profiles_.end(); ++iter) {
-    if (!FindByGUID<AutoFillProfile>(*profiles, (*iter)->guid()))
-      wds->RemoveAutoFillProfile((*iter)->guid());
+    if (!FindByGUID<AutofillProfile>(*profiles, (*iter)->guid()))
+      wds->RemoveAutofillProfile((*iter)->guid());
   }
 
   // Update the web database with the existing profiles.
-  for (std::vector<AutoFillProfile>::iterator iter = profiles->begin();
+  for (std::vector<AutofillProfile>::iterator iter = profiles->begin();
        iter != profiles->end(); ++iter) {
-    if (FindByGUID<AutoFillProfile>(web_profiles_, iter->guid()))
-      wds->UpdateAutoFillProfile(*iter);
+    if (FindByGUID<AutofillProfile>(web_profiles_, iter->guid()))
+      wds->UpdateAutofillProfile(*iter);
   }
 
   // Add the new profiles to the web database.  Don't add a duplicate.
-  for (std::vector<AutoFillProfile>::iterator iter = profiles->begin();
+  for (std::vector<AutofillProfile>::iterator iter = profiles->begin();
        iter != profiles->end(); ++iter) {
-    if (!FindByGUID<AutoFillProfile>(web_profiles_, iter->guid()) &&
+    if (!FindByGUID<AutofillProfile>(web_profiles_, iter->guid()) &&
         !FindByContents(web_profiles_, *iter))
-      wds->AddAutoFillProfile(*iter);
+      wds->AddAutofillProfile(*iter);
   }
 
   // Copy in the new profiles.
   web_profiles_.reset();
-  for (std::vector<AutoFillProfile>::iterator iter = profiles->begin();
+  for (std::vector<AutofillProfile>::iterator iter = profiles->begin();
        iter != profiles->end(); ++iter) {
-    web_profiles_.push_back(new AutoFillProfile(*iter));
+    web_profiles_.push_back(new AutofillProfile(*iter));
   }
 
   // Read our writes to ensure consistency with the database.
@@ -413,62 +413,62 @@ void PersonalDataManager::SetCreditCards(
 }
 
 // TODO(jhawkins): Refactor SetProfiles so this isn't so hacky.
-void PersonalDataManager::AddProfile(const AutoFillProfile& profile) {
+void PersonalDataManager::AddProfile(const AutofillProfile& profile) {
   // Don't save a web profile if the data in the profile is a subset of an
   // auxiliary profile.
-  for (std::vector<AutoFillProfile*>::const_iterator iter =
+  for (std::vector<AutofillProfile*>::const_iterator iter =
            auxiliary_profiles_.begin();
        iter != auxiliary_profiles_.end(); ++iter) {
     if (profile.IsSubsetOf(**iter))
       return;
   }
 
-  std::vector<AutoFillProfile> profiles;
+  std::vector<AutofillProfile> profiles;
   MergeProfile(profile, web_profiles_.get(), &profiles);
   SetProfiles(&profiles);
 }
 
-void PersonalDataManager::UpdateProfile(const AutoFillProfile& profile) {
+void PersonalDataManager::UpdateProfile(const AutofillProfile& profile) {
   WebDataService* wds = profile_->GetWebDataService(Profile::EXPLICIT_ACCESS);
   if (!wds)
     return;
 
   // Update the cached profile.
-  for (std::vector<AutoFillProfile*>::iterator iter = web_profiles_->begin();
+  for (std::vector<AutofillProfile*>::iterator iter = web_profiles_->begin();
        iter != web_profiles_->end(); ++iter) {
     if ((*iter)->guid() == profile.guid()) {
       delete *iter;
-      *iter = new AutoFillProfile(profile);
+      *iter = new AutofillProfile(profile);
       break;
     }
   }
 
   // Ensure that profile labels are up to date.
-  AutoFillProfile::AdjustInferredLabels(&web_profiles_.get());
+  AutofillProfile::AdjustInferredLabels(&web_profiles_.get());
 
-  wds->UpdateAutoFillProfile(profile);
+  wds->UpdateAutofillProfile(profile);
   FOR_EACH_OBSERVER(Observer, observers_, OnPersonalDataChanged());
 }
 
 void PersonalDataManager::RemoveProfile(const std::string& guid) {
   // TODO(jhawkins): Refactor SetProfiles so this isn't so hacky.
-  std::vector<AutoFillProfile> profiles(web_profiles_.size());
+  std::vector<AutofillProfile> profiles(web_profiles_.size());
   std::transform(web_profiles_.begin(), web_profiles_.end(),
                  profiles.begin(),
-                 DereferenceFunctor<AutoFillProfile>());
+                 DereferenceFunctor<AutofillProfile>());
 
   // Remove the profile that matches |guid|.
   profiles.erase(
       std::remove_if(profiles.begin(), profiles.end(),
-                     FormGroupMatchesByGUIDFunctor<AutoFillProfile>(guid)),
+                     FormGroupMatchesByGUIDFunctor<AutofillProfile>(guid)),
       profiles.end());
 
   SetProfiles(&profiles);
 }
 
-AutoFillProfile* PersonalDataManager::GetProfileByGUID(
+AutofillProfile* PersonalDataManager::GetProfileByGUID(
     const std::string& guid) {
-  for (std::vector<AutoFillProfile*>::iterator iter = web_profiles_->begin();
+  for (std::vector<AutofillProfile*>::iterator iter = web_profiles_->begin();
        iter != web_profiles_->end(); ++iter) {
     if ((*iter)->guid() == guid)
       return *iter;
@@ -539,8 +539,8 @@ void PersonalDataManager::GetPossibleFieldTypes(const string16& text,
     return;
   }
 
-  const std::vector<AutoFillProfile*>& profiles = this->profiles();
-  for (std::vector<AutoFillProfile*>::const_iterator iter = profiles.begin();
+  const std::vector<AutofillProfile*>& profiles = this->profiles();
+  for (std::vector<AutofillProfile*>::const_iterator iter = profiles.begin();
        iter != profiles.end(); ++iter) {
     const FormGroup* profile = *iter;
     if (!profile) {
@@ -574,7 +574,7 @@ bool PersonalDataManager::IsDataLoaded() const {
   return is_data_loaded_;
 }
 
-const std::vector<AutoFillProfile*>& PersonalDataManager::profiles() {
+const std::vector<AutofillProfile*>& PersonalDataManager::profiles() {
   // |profile_| is NULL in AutofillManagerTest.
   bool auxiliary_profiles_enabled = profile_ ? profile_->GetPrefs()->GetBoolean(
       prefs::kAutoFillAuxiliaryProfilesEnabled) : false;
@@ -596,7 +596,7 @@ const std::vector<AutoFillProfile*>& PersonalDataManager::profiles() {
   return profiles_;
 }
 
-const std::vector<AutoFillProfile*>& PersonalDataManager::web_profiles() {
+const std::vector<AutofillProfile*>& PersonalDataManager::web_profiles() {
   return web_profiles_.get();
 }
 
@@ -639,7 +639,7 @@ void PersonalDataManager::LoadProfiles() {
 
   CancelPendingQuery(&pending_profiles_query_);
 
-  pending_profiles_query_ = web_data_service->GetAutoFillProfiles(this);
+  pending_profiles_query_ = web_data_service->GetAutofillProfiles(this);
 }
 
 // Win and Linux implementations do nothing.  Mac implementation fills in the
@@ -669,11 +669,11 @@ void PersonalDataManager::ReceiveLoadedProfiles(WebDataService::Handle h,
   pending_profiles_query_ = 0;
   web_profiles_.reset();
 
-  const WDResult<std::vector<AutoFillProfile*> >* r =
-      static_cast<const WDResult<std::vector<AutoFillProfile*> >*>(result);
+  const WDResult<std::vector<AutofillProfile*> >* r =
+      static_cast<const WDResult<std::vector<AutofillProfile*> >*>(result);
 
-  std::vector<AutoFillProfile*> profiles = r->GetValue();
-  for (std::vector<AutoFillProfile*>::iterator iter = profiles.begin();
+  std::vector<AutofillProfile*> profiles = r->GetValue();
+  for (std::vector<AutofillProfile*>::iterator iter = profiles.begin();
        iter != profiles.end(); ++iter) {
     web_profiles_.push_back(*iter);
   }
@@ -712,7 +712,7 @@ void PersonalDataManager::CancelPendingQuery(WebDataService::Handle* handle) {
 }
 
 void PersonalDataManager::SaveImportedProfile(
-    const AutoFillProfile& imported_profile) {
+    const AutofillProfile& imported_profile) {
   if (profile_->IsOffTheRecord())
     return;
 
@@ -720,9 +720,9 @@ void PersonalDataManager::SaveImportedProfile(
 }
 
 bool PersonalDataManager::MergeProfile(
-    const AutoFillProfile& profile,
-    const std::vector<AutoFillProfile*>& existing_profiles,
-    std::vector<AutoFillProfile>* merged_profiles) {
+    const AutofillProfile& profile,
+    const std::vector<AutofillProfile*>& existing_profiles,
+    std::vector<AutofillProfile>* merged_profiles) {
   DCHECK(merged_profiles);
   merged_profiles->clear();
 
@@ -731,7 +731,7 @@ bool PersonalDataManager::MergeProfile(
 
   // First preference is to add missing values to an existing profile.
   // Only merge with the first match.
-  for (std::vector<AutoFillProfile*>::const_iterator iter =
+  for (std::vector<AutofillProfile*>::const_iterator iter =
            existing_profiles.begin();
        iter != existing_profiles.end(); ++iter) {
     if (!merged) {
@@ -753,7 +753,7 @@ bool PersonalDataManager::MergeProfile(
   // Again, only merge with the first match.
   if (!merged) {
     merged_profiles->clear();
-    for (std::vector<AutoFillProfile*>::const_iterator iter =
+    for (std::vector<AutofillProfile*>::const_iterator iter =
              existing_profiles.begin();
          iter != existing_profiles.end(); ++iter) {
       if (!merged) {

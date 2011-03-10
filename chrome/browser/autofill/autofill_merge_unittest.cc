@@ -44,7 +44,7 @@ const AutofillFieldType kProfileFieldTypes[] = {
 };
 
 // Serializes the |profiles| into a string.
-std::string SerializeProfiles(const std::vector<AutoFillProfile*>& profiles) {
+std::string SerializeProfiles(const std::vector<AutofillProfile*>& profiles) {
   std::string result;
   for (size_t i = 0; i < profiles.size(); ++i) {
     result += kProfileSeparator;
@@ -70,11 +70,11 @@ class PersonalDataManagerMock : public PersonalDataManager {
   void Reset();
 
   // PersonalDataManager:
-  virtual void SaveImportedProfile(const AutoFillProfile& profile) OVERRIDE;
-  virtual const std::vector<AutoFillProfile*>& web_profiles() OVERRIDE;
+  virtual void SaveImportedProfile(const AutofillProfile& profile) OVERRIDE;
+  virtual const std::vector<AutofillProfile*>& web_profiles() OVERRIDE;
 
  private:
-  ScopedVector<AutoFillProfile> profiles_;
+  ScopedVector<AutofillProfile> profiles_;
 
   DISALLOW_COPY_AND_ASSIGN(PersonalDataManagerMock);
 };
@@ -90,13 +90,13 @@ void PersonalDataManagerMock::Reset() {
 }
 
 void PersonalDataManagerMock::SaveImportedProfile(
-    const AutoFillProfile& profile) {
-  std::vector<AutoFillProfile> profiles;
+    const AutofillProfile& profile) {
+  std::vector<AutofillProfile> profiles;
   if (!MergeProfile(profile, profiles_.get(), &profiles))
-    profiles_.push_back(new AutoFillProfile(profile));
+    profiles_.push_back(new AutofillProfile(profile));
 }
 
-const std::vector<AutoFillProfile*>& PersonalDataManagerMock::web_profiles() {
+const std::vector<AutofillProfile*>& PersonalDataManagerMock::web_profiles() {
   return profiles_.get();
 }
 

@@ -76,7 +76,7 @@ class AutoFillTest : public InProcessBrowserTest {
   void CreateTestProfile() {
     autofill_test::DisableSystemServices(browser()->profile());
 
-    AutoFillProfile profile;
+    AutofillProfile profile;
     autofill_test::SetProfileInfo(
         &profile, "Milton", "C.", "Waddams",
         "red.swingline@initech.com", "Initech", "4120 Freidrich Lane",
@@ -87,7 +87,7 @@ class AutoFillTest : public InProcessBrowserTest {
         browser()->profile()->GetPersonalDataManager();
     ASSERT_TRUE(personal_data_manager);
 
-    std::vector<AutoFillProfile> profiles(1, profile);
+    std::vector<AutofillProfile> profiles(1, profile);
     personal_data_manager->SetProfiles(&profiles);
   }
 

@@ -31,7 +31,7 @@ inline void check_and_set(
     profile->SetInfo(AutofillType(type), ASCIIToUTF16(value));
 }
 
-void SetProfileInfo(AutoFillProfile* profile,
+void SetProfileInfo(AutofillProfile* profile,
     const char* first_name, const char* middle_name,
     const char* last_name, const char* email, const char* company,
     const char* address1, const char* address2, const char* city,
@@ -52,7 +52,7 @@ void SetProfileInfo(AutoFillProfile* profile,
   check_and_set(profile, PHONE_FAX_WHOLE_NUMBER, fax);
 }
 
-void SetProfileInfoWithGuid(AutoFillProfile* profile,
+void SetProfileInfoWithGuid(AutofillProfile* profile,
     const char* guid, const char* first_name, const char* middle_name,
     const char* last_name, const char* email, const char* company,
     const char* address1, const char* address2, const char* city,

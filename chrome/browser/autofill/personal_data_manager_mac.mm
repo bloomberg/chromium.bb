@@ -30,7 +30,7 @@ class AuxiliaryProfilesImpl {
   // Constructor takes a reference to the |profiles| that will be filled in
   // by the subsequent call to |GetAddressBookMeCard()|.  |profiles| may not
   // be NULL.
-  explicit AuxiliaryProfilesImpl(ScopedVector<AutoFillProfile>* profiles)
+  explicit AuxiliaryProfilesImpl(ScopedVector<AutofillProfile>* profiles)
       : profiles_(*profiles) {
   }
   virtual ~AuxiliaryProfilesImpl() {}
@@ -41,25 +41,25 @@ class AuxiliaryProfilesImpl {
  private:
   void GetAddressBookNames(ABPerson* me,
                            NSString* addressLabelRaw,
-                           AutoFillProfile* profile);
-  void GetAddressBookAddresses(NSDictionary* address, AutoFillProfile* profile);
+                           AutofillProfile* profile);
+  void GetAddressBookAddresses(NSDictionary* address, AutofillProfile* profile);
   void GetAddressBookEmail(ABPerson* me,
                            NSString* addressLabelRaw,
-                           AutoFillProfile* profile);
+                           AutofillProfile* profile);
   void GetAddressBookPhoneNumbers(ABPerson* me,
                                   NSString* addressLabelRaw,
-                                  AutoFillProfile* profile);
+                                  AutofillProfile* profile);
 
  private:
   // A reference to the profiles this class populates.
-  ScopedVector<AutoFillProfile>& profiles_;
+  ScopedVector<AutofillProfile>& profiles_;
 
   DISALLOW_COPY_AND_ASSIGN(AuxiliaryProfilesImpl);
 };
 
 // This method uses the |ABAddressBook| system service to fetch the "me" card
 // from the active user's address book.  It looks for the user address
-// information and translates it to the internal list of |AutoFillProfile| data
+// information and translates it to the internal list of |AutofillProfile| data
 // structures.
 void AuxiliaryProfilesImpl::GetAddressBookMeCard() {
   profiles_.reset();
@@ -79,7 +79,7 @@ void AuxiliaryProfilesImpl::GetAddressBookMeCard() {
       const size_t kGUIDLength = 36U;
       std::string guid = base::SysNSStringToUTF8(
           [me valueForProperty:kABUIDProperty]).substr(0, kGUIDLength);
-      scoped_ptr<AutoFillProfile> profile(new AutoFillProfile(guid));
+      scoped_ptr<AutofillProfile> profile(new AutofillProfile(guid));
       DCHECK(guid::IsValidGUID(profile->guid()));
 
       // Fill in name and company information.
@@ -105,7 +105,7 @@ void AuxiliaryProfilesImpl::GetAddressBookMeCard() {
 void AuxiliaryProfilesImpl::GetAddressBookNames(
     ABPerson* me,
     NSString* addressLabelRaw,
-    AutoFillProfile* profile) {
+    AutofillProfile* profile) {
   NSString* firstName = [me valueForProperty:kABFirstNameProperty];
   NSString* middleName = [me valueForProperty:kABMiddleNameProperty];
   NSString* lastName = [me valueForProperty:kABLastNameProperty];
@@ -130,7 +130,7 @@ void AuxiliaryProfilesImpl::GetAddressBookNames(
 // line 1: "c/o John Doe", line 2: "1122 Other Avenue, Apt #7".
 void AuxiliaryProfilesImpl::GetAddressBookAddresses(
     NSDictionary* address,
-    AutoFillProfile* profile) {
+    AutofillProfile* profile) {
   if (NSString* addressField = [address objectForKey:kABAddressStreetKey]) {
     // If there are newlines in the address, split into two lines.
     if ([addressField rangeOfCharacterFromSet:
@@ -180,7 +180,7 @@ void AuxiliaryProfilesImpl::GetAddressBookAddresses(
 void AuxiliaryProfilesImpl::GetAddressBookEmail(
     ABPerson* me,
     NSString* addressLabelRaw,
-    AutoFillProfile* profile) {
+    AutofillProfile* profile) {
   ABMultiValue* emailAddresses = [me valueForProperty:kABEmailProperty];
   NSString* emailAddress = nil;
   for (NSUInteger j = 0, emailCount = [emailAddresses count];
@@ -202,7 +202,7 @@ void AuxiliaryProfilesImpl::GetAddressBookEmail(
 void AuxiliaryProfilesImpl::GetAddressBookPhoneNumbers(
     ABPerson* me,
     NSString* addressLabelRaw,
-    AutoFillProfile* profile) {
+    AutofillProfile* profile) {
   string16 number;
   string16 city_code;
   string16 country_code;

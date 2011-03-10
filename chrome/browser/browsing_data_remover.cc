@@ -228,7 +228,7 @@ void BrowsingDataRemover::Remove(int remove_mask) {
     if (web_data_service) {
       web_data_service->RemoveFormElementsAddedBetween(delete_begin_,
           delete_end_);
-      web_data_service->RemoveAutoFillProfilesAndCreditCardsModifiedBetween(
+      web_data_service->RemoveAutofillProfilesAndCreditCardsModifiedBetween(
           delete_begin_, delete_end_);
       PersonalDataManager* data_manager = profile_->GetPersonalDataManager();
       if (data_manager) {

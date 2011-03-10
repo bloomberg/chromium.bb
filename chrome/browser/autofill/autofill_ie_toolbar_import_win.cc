@@ -18,7 +18,7 @@ using base::win::RegKey;
 
 // Forward declaration. This function is not in unnamed namespace as it
 // is referenced in the unittest.
-bool ImportCurrentUserProfiles(std::vector<AutoFillProfile>* profiles,
+bool ImportCurrentUserProfiles(std::vector<AutofillProfile>* profiles,
                                std::vector<CreditCard>* credit_cards);
 namespace {
 
@@ -177,7 +177,7 @@ class AutoFillImporter : public PersonalDataManager::Observer {
   }
 
   PersonalDataManager* personal_data_manager_;
-  std::vector<AutoFillProfile> profiles_;
+  std::vector<AutofillProfile> profiles_;
   std::vector<CreditCard> credit_cards_;
 };
 
@@ -186,7 +186,7 @@ class AutoFillImporter : public PersonalDataManager::Observer {
 // Imports AutoFill profiles and credit cards from IE Toolbar if present and not
 // password protected. Returns true if data is successfully retrieved. False if
 // there is no data, data is password protected or error occurred.
-bool ImportCurrentUserProfiles(std::vector<AutoFillProfile>* profiles,
+bool ImportCurrentUserProfiles(std::vector<AutofillProfile>* profiles,
                                std::vector<CreditCard>* credit_cards) {
   DCHECK(profiles);
   DCHECK(credit_cards);
@@ -205,7 +205,7 @@ bool ImportCurrentUserProfiles(std::vector<AutoFillProfile>* profiles,
     key_name.append(L"\\");
     key_name.append(iterator_profiles.Name());
     RegKey key(HKEY_CURRENT_USER, key_name.c_str(), KEY_READ);
-    AutoFillProfile profile;
+    AutofillProfile profile;
     if (ImportSingleProfile(&profile, &key, reg_to_field)) {
       // Combine phones into whole phone #.
       string16 phone;

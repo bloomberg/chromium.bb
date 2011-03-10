@@ -104,7 +104,7 @@ TEST(SelectControlHandlerTest, AddressCountryFull) {
   field.form_control_type = ASCIIToUTF16("select-one");
   field.option_strings = options;
 
-  AutoFillProfile profile;
+  AutofillProfile profile;
   profile.SetInfo(AutofillType(ADDRESS_HOME_COUNTRY), ASCIIToUTF16("CA"));
   autofill::FillSelectControl(profile,
                               AutofillType(ADDRESS_HOME_COUNTRY),
@@ -124,7 +124,7 @@ TEST(SelectControlHandlerTest, AddressCountryAbbrev) {
   field.form_control_type = ASCIIToUTF16("select-one");
   field.option_strings = options;
 
-  AutoFillProfile profile;
+  AutofillProfile profile;
   profile.SetInfo(AutofillType(ADDRESS_HOME_COUNTRY), ASCIIToUTF16("Canada"));
   autofill::FillSelectControl(profile,
                               AutofillType(ADDRESS_HOME_COUNTRY),
@@ -144,7 +144,7 @@ TEST(SelectControlHandlerTest, AddressStateFull) {
   field.form_control_type = ASCIIToUTF16("select-one");
   field.option_strings = options;
 
-  AutoFillProfile profile;
+  AutofillProfile profile;
   profile.SetInfo(AutofillType(ADDRESS_HOME_STATE), ASCIIToUTF16("CA"));
   autofill::FillSelectControl(profile,
                               AutofillType(ADDRESS_HOME_STATE),
@@ -164,7 +164,7 @@ TEST(SelectControlHandlerTest, AddressStateAbbrev) {
   field.form_control_type = ASCIIToUTF16("select-one");
   field.option_strings = options;
 
-  AutoFillProfile profile;
+  AutofillProfile profile;
   profile.SetInfo(AutofillType(ADDRESS_HOME_STATE), ASCIIToUTF16("California"));
   autofill::FillSelectControl(profile,
                               AutofillType(ADDRESS_HOME_STATE),

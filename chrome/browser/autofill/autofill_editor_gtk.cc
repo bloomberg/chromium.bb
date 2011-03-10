@@ -148,19 +148,19 @@ bool IsValidPhoneNumber(GtkWidget* widget) {
   return PhoneNumber::ParsePhoneNumber(text, &number, &city_code,&country_code);
 }
 
-// AutoFillProfileEditor -------------------------------------------------------
+// AutofillProfileEditor -------------------------------------------------------
 
-// Class responsible for editing or creating an AutoFillProfile.
-class AutoFillProfileEditor {
+// Class responsible for editing or creating an AutofillProfile.
+class AutofillProfileEditor {
  public:
-  AutoFillProfileEditor(AutoFillDialogObserver* observer,
+  AutofillProfileEditor(AutoFillDialogObserver* observer,
                         Profile* profile,
-                        AutoFillProfile* auto_fill_profile);
+                        AutofillProfile* auto_fill_profile);
 
  private:
-  friend class DeleteTask<AutoFillProfileEditor>;
+  friend class DeleteTask<AutofillProfileEditor>;
 
-  virtual ~AutoFillProfileEditor() {}
+  virtual ~AutofillProfileEditor() {}
 
   void Init();
 
@@ -168,15 +168,15 @@ class AutoFillProfileEditor {
   void RegisterForTextChanged();
 
   // Sets the values of the various widgets to |profile|.
-  void SetWidgetValues(AutoFillProfile* profile);
+  void SetWidgetValues(AutofillProfile* profile);
 
   // Notifies the observer of the new changes. This either updates the current
-  // AutoFillProfile or creates a new one.
+  // AutofillProfile or creates a new one.
   void ApplyEdits();
 
   // Sets the various form fields in |profile| to match the values in the
   // widgets.
-  void SetProfileValuesFromWidgets(AutoFillProfile* profile);
+  void SetProfileValuesFromWidgets(AutofillProfile* profile);
 
   // Updates the image displayed by |image| depending upon whether the text in
   // |entry| is a valid phone number.
@@ -190,11 +190,11 @@ class AutoFillProfileEditor {
   // Updates the enabled state of the ok button.
   void UpdateOkButton();
 
-  CHROMEGTK_CALLBACK_0(AutoFillProfileEditor, void, OnDestroy);
-  CHROMEGTK_CALLBACK_1(AutoFillProfileEditor, void, OnResponse, int);
-  CHROMEG_CALLBACK_0(AutoFillProfileEditor, void, OnPhoneChanged, GtkEditable*);
-  CHROMEG_CALLBACK_0(AutoFillProfileEditor, void, OnFaxChanged, GtkEditable*);
-  CHROMEG_CALLBACK_0(AutoFillProfileEditor, void, OnFieldChanged, GtkEditable*);
+  CHROMEGTK_CALLBACK_0(AutofillProfileEditor, void, OnDestroy);
+  CHROMEGTK_CALLBACK_1(AutofillProfileEditor, void, OnResponse, int);
+  CHROMEG_CALLBACK_0(AutofillProfileEditor, void, OnPhoneChanged, GtkEditable*);
+  CHROMEG_CALLBACK_0(AutofillProfileEditor, void, OnFaxChanged, GtkEditable*);
+  CHROMEG_CALLBACK_0(AutofillProfileEditor, void, OnFieldChanged, GtkEditable*);
 
   // Are we creating a new profile?
   const bool is_new_;
@@ -223,13 +223,13 @@ class AutoFillProfileEditor {
   GtkWidget* email_;
   GtkWidget* ok_button_;
 
-  DISALLOW_COPY_AND_ASSIGN(AutoFillProfileEditor);
+  DISALLOW_COPY_AND_ASSIGN(AutofillProfileEditor);
 };
 
-AutoFillProfileEditor::AutoFillProfileEditor(
+AutofillProfileEditor::AutofillProfileEditor(
     AutoFillDialogObserver* observer,
     Profile* profile,
-    AutoFillProfile* auto_fill_profile)
+    AutofillProfile* auto_fill_profile)
     : is_new_(!auto_fill_profile ? true : false),
       profile_guid_(auto_fill_profile ? auto_fill_profile->guid()
           : std::string()),
@@ -252,7 +252,7 @@ AutoFillProfileEditor::AutoFillProfileEditor(
   gtk_util::PresentWindow(dialog_, gtk_get_current_event_time());
 }
 
-void AutoFillProfileEditor::Init() {
+void AutofillProfileEditor::Init() {
   TableBuilder main_table_builder(15, 2);
 
   main_table_builder.AddWidget(CreateLabel(IDS_AUTOFILL_DIALOG_FULL_NAME), 2);
@@ -342,7 +342,7 @@ void AutoFillProfileEditor::Init() {
                      main_table_builder.table(), TRUE, TRUE, 0);
 }
 
-void AutoFillProfileEditor::RegisterForTextChanged() {
+void AutofillProfileEditor::RegisterForTextChanged() {
   g_signal_connect(full_name_, "changed", G_CALLBACK(OnFieldChangedThunk),
                    this);
   g_signal_connect(company_, "changed", G_CALLBACK(OnFieldChangedThunk),
@@ -360,7 +360,7 @@ void AutoFillProfileEditor::RegisterForTextChanged() {
   g_signal_connect(fax_, "changed", G_CALLBACK(OnFieldChangedThunk), this);
 }
 
-void AutoFillProfileEditor::SetWidgetValues(AutoFillProfile* profile) {
+void AutofillProfileEditor::SetWidgetValues(AutofillProfile* profile) {
   SetEntryText(full_name_, profile, NAME_FULL);
   SetEntryText(company_, profile, COMPANY_NAME);
   SetEntryText(address_1_, profile, ADDRESS_HOME_LINE1);
@@ -377,20 +377,20 @@ void AutoFillProfileEditor::SetWidgetValues(AutoFillProfile* profile) {
   UpdatePhoneImage(fax_, fax_image_);
 }
 
-void AutoFillProfileEditor::ApplyEdits() {
+void AutofillProfileEditor::ApplyEdits() {
   // Build the current set of profiles.
-  std::vector<AutoFillProfile> profiles;
+  std::vector<AutofillProfile> profiles;
   PersonalDataManager* data_manager = profile_->GetPersonalDataManager();
-  for (std::vector<AutoFillProfile*>::const_iterator i =
+  for (std::vector<AutofillProfile*>::const_iterator i =
            data_manager->profiles().begin();
        i != data_manager->profiles().end(); ++i) {
     profiles.push_back(**i);
   }
-  AutoFillProfile* profile = NULL;
+  AutofillProfile* profile = NULL;
 
   if (!is_new_) {
     // The user is editing an existing profile, find it.
-    for (std::vector<AutoFillProfile>::iterator i = profiles.begin();
+    for (std::vector<AutofillProfile>::iterator i = profiles.begin();
          i != profiles.end(); ++i) {
       if (i->guid() == profile_guid_) {
         profile = &(*i);
@@ -402,7 +402,7 @@ void AutoFillProfileEditor::ApplyEdits() {
   }
 
   if (!profile) {
-    profiles.push_back(AutoFillProfile());
+    profiles.push_back(AutofillProfile());
     profile = &profiles.back();
   }
 
@@ -413,8 +413,8 @@ void AutoFillProfileEditor::ApplyEdits() {
   observer_->OnAutoFillDialogApply(&profiles, NULL);
 }
 
-void AutoFillProfileEditor::SetProfileValuesFromWidgets(
-    AutoFillProfile* profile) {
+void AutofillProfileEditor::SetProfileValuesFromWidgets(
+    AutofillProfile* profile) {
   SetFormValue(full_name_, profile, NAME_FULL);
   SetFormValue(company_, profile, COMPANY_NAME);
   SetFormValue(address_1_, profile, ADDRESS_HOME_LINE1);
@@ -439,7 +439,7 @@ void AutoFillProfileEditor::SetProfileValuesFromWidgets(
   profile->SetInfo(AutofillType(PHONE_FAX_NUMBER), number);
 }
 
-void AutoFillProfileEditor::UpdatePhoneImage(GtkWidget* entry,
+void AutofillProfileEditor::UpdatePhoneImage(GtkWidget* entry,
                                              GtkWidget* image) {
   string16 number, city_code, country_code;
   string16 text(GetEntryText(entry));
@@ -457,7 +457,7 @@ void AutoFillProfileEditor::UpdatePhoneImage(GtkWidget* entry,
   }
 }
 
-void AutoFillProfileEditor::SetPhoneSizeRequest(GtkWidget* widget) {
+void AutofillProfileEditor::SetPhoneSizeRequest(GtkWidget* widget) {
   GdkPixbuf* buf =
       ResourceBundle::GetSharedInstance().GetPixbufNamed(IDR_INPUT_ALERT);
   gtk_widget_set_size_request(widget,
@@ -465,7 +465,7 @@ void AutoFillProfileEditor::SetPhoneSizeRequest(GtkWidget* widget) {
                               gdk_pixbuf_get_height(buf));
 }
 
-void AutoFillProfileEditor::UpdateOkButton() {
+void AutofillProfileEditor::UpdateOkButton() {
   // Enable the ok button if at least one field is non-empty and the phone
   // numbers are valid.
   bool valid =
@@ -488,11 +488,11 @@ void AutoFillProfileEditor::UpdateOkButton() {
   gtk_widget_set_sensitive(ok_button_, valid);
 }
 
-void AutoFillProfileEditor::OnDestroy(GtkWidget* widget) {
+void AutofillProfileEditor::OnDestroy(GtkWidget* widget) {
   MessageLoop::current()->DeleteSoon(FROM_HERE, this);
 }
 
-void AutoFillProfileEditor::OnResponse(GtkWidget* dialog, int response_id) {
+void AutofillProfileEditor::OnResponse(GtkWidget* dialog, int response_id) {
   if (response_id == GTK_RESPONSE_APPLY || response_id == GTK_RESPONSE_OK)
     ApplyEdits();
 
@@ -504,15 +504,15 @@ void AutoFillProfileEditor::OnResponse(GtkWidget* dialog, int response_id) {
   }
 }
 
-void AutoFillProfileEditor::OnPhoneChanged(GtkEditable* editable) {
+void AutofillProfileEditor::OnPhoneChanged(GtkEditable* editable) {
   UpdatePhoneImage(phone_, phone_image_);
 }
 
-void AutoFillProfileEditor::OnFaxChanged(GtkEditable* editable) {
+void AutofillProfileEditor::OnFaxChanged(GtkEditable* editable) {
   UpdatePhoneImage(fax_, fax_image_);
 }
 
-void AutoFillProfileEditor::OnFieldChanged(GtkEditable* editable) {
+void AutofillProfileEditor::OnFieldChanged(GtkEditable* editable) {
   UpdateOkButton();
 }
 
@@ -858,12 +858,12 @@ void AutoFillCreditCardEditor::OnInsertTextIntoNumber(GtkEditable* editable,
 
 }  // namespace
 
-void ShowAutoFillProfileEditor(gfx::NativeView parent,
+void ShowAutofillProfileEditor(gfx::NativeView parent,
                                AutoFillDialogObserver* observer,
                                Profile* profile,
-                               AutoFillProfile* auto_fill_profile) {
-  // AutoFillProfileEditor takes care of deleting itself.
-  new AutoFillProfileEditor(observer, profile, auto_fill_profile);
+                               AutofillProfile* auto_fill_profile) {
+  // AutofillProfileEditor takes care of deleting itself.
+  new AutofillProfileEditor(observer, profile, auto_fill_profile);
 }
 
 void ShowAutoFillCreditCardEditor(gfx::NativeView parent,

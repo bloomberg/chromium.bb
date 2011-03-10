@@ -179,7 +179,7 @@ void AutofillProfileChangeProcessor::CommitChangesFromSyncModel() {
   for (unsigned int i = 0;i < autofill_changes_.size(); ++i) {
     if (sync_api::SyncManager::ChangeRecord::ACTION_DELETE ==
         autofill_changes_[i].action_) {
-      if (!web_database_->RemoveAutoFillProfile(
+      if (!web_database_->RemoveAutofillProfile(
           autofill_changes_[i].profile_specifics_.guid())) {
         LOG(ERROR) << "could not delete the profile " <<
            autofill_changes_[i].profile_specifics_.guid();
@@ -218,10 +218,10 @@ void AutofillProfileChangeProcessor::ApplyAutofillProfileChange(
             profile_specifics.guid();
         return;
       }
-      AutoFillProfile p(profile_specifics.guid());
+      AutofillProfile p(profile_specifics.guid());
       AutofillProfileModelAssociator::OverwriteProfileWithServerData(&p,
           profile_specifics);
-      if (!web_database_->AddAutoFillProfile(p)) {
+      if (!web_database_->AddAutofillProfile(p)) {
         LOG(ERROR) << "could not add autofill profile for guid " << p.guid();
         break;
       }
@@ -232,18 +232,18 @@ void AutofillProfileChangeProcessor::ApplyAutofillProfileChange(
       break;
     }
     case sync_api::SyncManager::ChangeRecord::ACTION_UPDATE: {
-      AutoFillProfile *p;
-      if (!web_database_->GetAutoFillProfile(profile_specifics.guid(), &p)) {
+      AutofillProfile *p;
+      if (!web_database_->GetAutofillProfile(profile_specifics.guid(), &p)) {
         LOG(ERROR) << "Could not find the autofill profile to update for " <<
             profile_specifics.guid();
         break;
       }
-      scoped_ptr<AutoFillProfile> autofill_pointer(p);
+      scoped_ptr<AutofillProfile> autofill_pointer(p);
       AutofillProfileModelAssociator::OverwriteProfileWithServerData(
           autofill_pointer.get(),
           profile_specifics);
 
-      if (!web_database_->UpdateAutoFillProfile(*(autofill_pointer.get()))) {
+      if (!web_database_->UpdateAutofillProfile(*(autofill_pointer.get()))) {
         LOG(ERROR) << "Could not update autofill profile for " <<
             profile_specifics.guid();
         break;
@@ -278,7 +278,7 @@ void AutofillProfileChangeProcessor::RemoveSyncNode(const std::string& guid,
 void AutofillProfileChangeProcessor::AddAutofillProfileSyncNode(
     sync_api::WriteTransaction* trans,
     sync_api::BaseNode& autofill_profile_root,
-    const AutoFillProfile& profile) {
+    const AutofillProfile& profile) {
 
   std::string guid = profile.guid();
 
@@ -315,7 +315,7 @@ void AutofillProfileChangeProcessor::StopObserving() {
 }
 
 void AutofillProfileChangeProcessor::WriteAutofillProfile(
-    const AutoFillProfile& profile,
+    const AutofillProfile& profile,
     sync_api::WriteNode* node) {
   sync_pb::AutofillProfileSpecifics specifics;
 

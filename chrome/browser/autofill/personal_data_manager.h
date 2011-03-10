@@ -55,7 +55,7 @@ class PersonalDataManager
                                            const WDTypedResult* result);
 
   // AutoFillDialogObserver implementation:
-  virtual void OnAutoFillDialogApply(std::vector<AutoFillProfile>* profiles,
+  virtual void OnAutoFillDialogApply(std::vector<AutofillProfile>* profiles,
                                      std::vector<CreditCard>* credit_cards);
 
   // Sets the listener to be notified of PersonalDataManager events.
@@ -86,24 +86,24 @@ class PersonalDataManager
   // updates in |profiles| make it to the DB.  This is why SetProfiles will
   // invoke Refresh after finishing, to ensure we get into a
   // consistent state.  See Refresh for details.
-  void SetProfiles(std::vector<AutoFillProfile>* profiles);
+  void SetProfiles(std::vector<AutofillProfile>* profiles);
 
   // Sets |credit_cards_| to the contents of |credit_cards| and updates the web
   // database by adding, updating and removing credit cards.
   void SetCreditCards(std::vector<CreditCard>* credit_cards);
 
   // Adds |profile| to the web database.
-  void AddProfile(const AutoFillProfile& profile);
+  void AddProfile(const AutofillProfile& profile);
 
   // Updates |profile| which already exists in the web database.
-  void UpdateProfile(const AutoFillProfile& profile);
+  void UpdateProfile(const AutofillProfile& profile);
 
   // Removes the profile represented by |guid|.
   void RemoveProfile(const std::string& guid);
 
   // Returns the profile with the specified |guid|, or NULL if there is no
   // profile with the specified |guid|.
-  AutoFillProfile* GetProfileByGUID(const std::string& guid);
+  AutofillProfile* GetProfileByGUID(const std::string& guid);
 
   // Adds |credit_card| to the web database.
   void AddCreditCard(const CreditCard& credit_card);
@@ -133,8 +133,8 @@ class PersonalDataManager
   // lifetime is until the web database is updated with new profile and credit
   // card information, respectively.  |profiles()| returns both web and
   // auxiliary profiles.  |web_profiles()| returns only web profiles.
-  const std::vector<AutoFillProfile*>& profiles();
-  virtual const std::vector<AutoFillProfile*>& web_profiles();
+  const std::vector<AutofillProfile*>& profiles();
+  virtual const std::vector<AutofillProfile*>& web_profiles();
   virtual const std::vector<CreditCard*>& credit_cards();
 
   // Re-loads profiles and credit cards from the WebDatabase asynchronously.
@@ -192,14 +192,14 @@ class PersonalDataManager
   void CancelPendingQuery(WebDataService::Handle* handle);
 
   // Saves |imported_profile| to the WebDB if it exists.
-  virtual void SaveImportedProfile(const AutoFillProfile& imported_profile);
+  virtual void SaveImportedProfile(const AutofillProfile& imported_profile);
 
   // Merges |profile| into one of the |existing_profiles| if possible; otherwise
   // appends |profile| to the end of that list. Fills |merged_profiles| with the
   // result.
-  bool MergeProfile(const AutoFillProfile& profile,
-                    const std::vector<AutoFillProfile*>& existing_profiles,
-                    std::vector<AutoFillProfile>* merged_profiles);
+  bool MergeProfile(const AutofillProfile& profile,
+                    const std::vector<AutofillProfile*>& existing_profiles,
+                    std::vector<AutofillProfile>* merged_profiles);
 
   // The first time this is called, logs an UMA metrics for the number of
   // profiles the user has. On subsequent calls, does nothing.
@@ -216,14 +216,14 @@ class PersonalDataManager
   bool is_data_loaded_;
 
   // The loaded web profiles.
-  ScopedVector<AutoFillProfile> web_profiles_;
+  ScopedVector<AutofillProfile> web_profiles_;
 
   // Auxiliary profiles.
-  ScopedVector<AutoFillProfile> auxiliary_profiles_;
+  ScopedVector<AutofillProfile> auxiliary_profiles_;
 
   // Storage for combined web and auxiliary profiles.  Contents are weak
   // references.  Lifetime managed by |web_profiles_| and |auxiliary_profiles_|.
-  std::vector<AutoFillProfile*> profiles_;
+  std::vector<AutofillProfile*> profiles_;
 
   // The loaded credit cards.
   ScopedVector<CreditCard> credit_cards_;

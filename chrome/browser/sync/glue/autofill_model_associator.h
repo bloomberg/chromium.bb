@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -20,7 +20,7 @@
 #include "chrome/browser/sync/protocol/autofill_specifics.pb.h"
 #include "chrome/browser/webdata/autofill_entry.h"
 
-class AutoFillProfile;
+class AutofillProfile;
 
 class ProfileSyncService;
 class WebDatabase;
@@ -93,7 +93,7 @@ class AutofillModelAssociator
                               const std::vector<base::Time>& timestamps,
                               std::vector<base::Time>* new_timestamps);
   static bool FillProfileWithServerData(
-      AutoFillProfile* merge_into,
+      AutofillProfile* merge_into,
       const sync_pb::AutofillProfileSpecifics& specifics);
 
   // TODO(georgey) : add the same processing for CC info (already in protocol
@@ -108,9 +108,9 @@ class AutofillModelAssociator
  protected:
   // Given a profile from sync db it tries to match the profile against
   // one in web db. it ignores the guid and compares the actual data.
-  AutoFillProfile* FindCorrespondingNodeFromWebDB(
+  AutofillProfile* FindCorrespondingNodeFromWebDB(
       const sync_pb::AutofillProfileSpecifics& profile,
-      const std::vector<AutoFillProfile*>& all_profiles_from_db);
+      const std::vector<AutofillProfile*>& all_profiles_from_db);
 
  private:
   typedef std::map<std::string, int64> AutofillToSyncIdMap;
@@ -122,7 +122,7 @@ class AutofillModelAssociator
 
   // Helper to query WebDatabase for the current autofill state.
   bool LoadAutofillData(std::vector<AutofillEntry>* entries,
-                        std::vector<AutoFillProfile*>* profiles);
+                        std::vector<AutofillProfile*>* profiles);
 
   // We split up model association first by autofill sub-type (entries, and
   // profiles.  There is a Traverse* method for each of these.
@@ -132,12 +132,12 @@ class AutofillModelAssociator
       const std::vector<AutofillEntry>& all_entries_from_db,
       std::set<AutofillKey>* current_entries,
       std::vector<AutofillEntry>* new_entries);
-  bool TraverseAndAssociateChromeAutoFillProfiles(
+  bool TraverseAndAssociateChromeAutofillProfiles(
       sync_api::WriteTransaction* write_trans,
       const sync_api::ReadNode& autofill_root,
-      const std::vector<AutoFillProfile*>& all_profiles_from_db,
+      const std::vector<AutofillProfile*>& all_profiles_from_db,
       std::set<string16>* current_profiles,
-      std::vector<AutoFillProfile*>* updated_profiles);
+      std::vector<AutofillProfile*>* updated_profiles);
 
   // Once the above traversals are complete, we traverse the sync model to
   // associate all remaining nodes.
@@ -145,7 +145,7 @@ class AutofillModelAssociator
       sync_api::WriteTransaction* write_trans,
       const sync_api::ReadNode& autofill_root,
       DataBundle* bundle,
-      const std::vector<AutoFillProfile*>& all_profiles_from_db);
+      const std::vector<AutofillProfile*>& all_profiles_from_db);
 
   // Helper to persist any changes that occured during model association to
   // the WebDatabase.
@@ -157,13 +157,13 @@ class AutofillModelAssociator
                               DataBundle* bundle,
                               const sync_api::ReadNode& node);
 
-  // Helper to insert an AutoFillProfile into the WebDatabase (e.g. in response
+  // Helper to insert an AutofillProfile into the WebDatabase (e.g. in response
   // to encountering a sync node that doesn't exist yet locally).
   void AddNativeProfileIfNeeded(
       const sync_pb::AutofillProfileSpecifics& profile,
       DataBundle* bundle,
       const sync_api::ReadNode& node,
-      const std::vector<AutoFillProfile*>& all_profiles_from_db);
+      const std::vector<AutofillProfile*>& all_profiles_from_db);
 
   // Called at various points in model association to determine if the
   // user requested an abort.

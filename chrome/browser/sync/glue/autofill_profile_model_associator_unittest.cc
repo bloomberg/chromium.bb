@@ -18,7 +18,7 @@ using ::testing::ReturnRef;
 using ::testing::Pointee;
 using ::testing::Ref;
 using ::testing::Invoke;
-class AutoFillProfile;
+class AutofillProfile;
 
 using browser_sync::AutofillProfileModelAssociator;
 
@@ -31,15 +31,15 @@ class MockAutofillProfileModelAssociator
   MockAutofillProfileModelAssociator() {
   }
   virtual ~MockAutofillProfileModelAssociator() {}
-  bool TraverseAndAssociateChromeAutoFillProfilesWrapper(
+  bool TraverseAndAssociateChromeAutofillProfilesWrapper(
       sync_api::WriteTransaction* write_trans,
       const sync_api::ReadNode& autofill_root,
-      const std::vector<AutoFillProfile*>& all_profiles_from_db,
+      const std::vector<AutofillProfile*>& all_profiles_from_db,
       std::set<std::string>* current_profiles,
-      std::vector<AutoFillProfile*>* updated_profiles,
-      std::vector<AutoFillProfile*>* new_profiles,
+      std::vector<AutofillProfile*>* updated_profiles,
+      std::vector<AutofillProfile*>* new_profiles,
       std::vector<std::string>* profiles_to_delete) {
-      return TraverseAndAssociateChromeAutoFillProfiles(write_trans,
+      return TraverseAndAssociateChromeAutofillProfiles(write_trans,
           autofill_root,
           all_profiles_from_db,
           current_profiles,
@@ -52,13 +52,13 @@ class MockAutofillProfileModelAssociator
                     DataBundle*,
                     const sync_api::ReadNode&));
   MOCK_METHOD2(OverwriteProfileWithServerData,
-               bool(AutoFillProfile*,
+               bool(AutofillProfile*,
                     const sync_pb::AutofillProfileSpecifics&));
   MOCK_METHOD6(MakeNewAutofillProfileSyncNodeIfNeeded,
                bool(sync_api::WriteTransaction*,
                     const sync_api::BaseNode&,
-                    const AutoFillProfile&,
-                    std::vector<AutoFillProfile*>*,
+                    const AutofillProfile&,
+                    std::vector<AutofillProfile*>*,
                     std::set<std::string>*,
                     std::vector<std::string>*));
   MOCK_METHOD2(Associate, void(const std::string*, int64));
@@ -94,7 +94,7 @@ class AutofillProfileModelAssociatorTest : public testing::Test {
 
 TEST_F(AutofillProfileModelAssociatorTest,
     TestAssociateProfileInWebDBWithSyncDB) {
-  ScopedVector<AutoFillProfile> profiles_from_web_db;
+  ScopedVector<AutofillProfile> profiles_from_web_db;
   std::string guid = "EDC609ED-7EEE-4F27-B00C-423242A9C44B";
 
   sync_pb::EntitySpecifics specifics;
@@ -108,7 +108,7 @@ TEST_F(AutofillProfileModelAssociatorTest,
 
   // This will be released inside the function
   // TraverseAndAssociateChromeAutofillProfiles
-  AutoFillProfile *profile = new AutoFillProfile(guid);
+  AutofillProfile *profile = new AutofillProfile(guid);
 
   // Set up the entry kernel with what we want.
   EntryKernel kernel;
@@ -125,7 +125,7 @@ TEST_F(AutofillProfileModelAssociatorTest,
 
   profiles_from_web_db.push_back(profile);
 
-  associator_.TraverseAndAssociateChromeAutoFillProfilesWrapper(&write_trans,
+  associator_.TraverseAndAssociateChromeAutofillProfilesWrapper(&write_trans,
       read_node,
       profiles_from_web_db.get(),
       &current_profiles,
@@ -137,7 +137,7 @@ TEST_F(AutofillProfileModelAssociatorTest,
 }
 
 TEST_F(AutofillProfileModelAssociatorTest, TestAssociatingMissingWebDBProfile) {
-  ScopedVector<AutoFillProfile> profiles_from_web_db;
+  ScopedVector<AutofillProfile> profiles_from_web_db;
   MockDirectory mock_directory;
 
   MockWriteTransaction write_trans(&mock_directory);
@@ -149,7 +149,7 @@ TEST_F(AutofillProfileModelAssociatorTest, TestAssociatingMissingWebDBProfile) {
 
   std::string guid = "EDC609ED-7EEE-4F27-B00C-423242A9C44A";
   std::set<std::string> current_profiles;
-  AutoFillProfile *profile = new AutoFillProfile(guid);
+  AutofillProfile *profile = new AutofillProfile(guid);
 
   EXPECT_CALL(associator_,
               MakeNewAutofillProfileSyncNodeIfNeeded(&write_trans,
@@ -162,7 +162,7 @@ TEST_F(AutofillProfileModelAssociatorTest, TestAssociatingMissingWebDBProfile) {
 
   profiles_from_web_db.push_back(profile);
 
-  associator_.TraverseAndAssociateChromeAutoFillProfilesWrapper(&write_trans,
+  associator_.TraverseAndAssociateChromeAutofillProfilesWrapper(&write_trans,
       autofill_root,
       profiles_from_web_db.get(),
       &current_profiles,

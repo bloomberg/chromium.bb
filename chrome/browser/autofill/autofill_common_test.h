@@ -6,7 +6,7 @@
 #define CHROME_BROWSER_AUTOFILL_AUTOFILL_COMMON_TEST_H_
 #pragma once
 
-class AutoFillProfile;
+class AutofillProfile;
 class CreditCard;
 class Profile;
 
@@ -27,14 +27,14 @@ void CreateTestFormField(const char* label,
 // A unit testing utility that is common to a number of the AutoFill unit
 // tests.  |SetProfileInfo| provides a quick way to populate a profile with
 // c-strings.
-void SetProfileInfo(AutoFillProfile* profile,
+void SetProfileInfo(AutofillProfile* profile,
     const char* first_name, const char* middle_name,
     const char* last_name, const char* email, const char* company,
     const char* address1, const char* address2, const char* city,
     const char* state, const char* zipcode, const char* country,
     const char* phone, const char* fax);
 
-void SetProfileInfoWithGuid(AutoFillProfile* profile,
+void SetProfileInfoWithGuid(AutofillProfile* profile,
     const char* guid, const char* first_name, const char* middle_name,
     const char* last_name, const char* email, const char* company,
     const char* address1, const char* address2, const char* city,

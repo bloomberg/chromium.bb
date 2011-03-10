@@ -41,7 +41,7 @@ class PrefService;
 class SkBitmap;
 
 ///////////////////////////////////////////////////////////////////////////////
-// AutoFillProfilesView
+// AutofillProfilesView
 //
 //  The contents of the "AutoFill profiles" dialog window.
 //
@@ -54,7 +54,7 @@ class SkBitmap;
 // And there is a support data structure EditableSetInfo which encapsulates
 // editable set (address or credit card) and allows for quick addition and
 // deletion.
-class AutoFillProfilesView : public views::View,
+class AutofillProfilesView : public views::View,
                              public views::DialogDelegate,
                              public views::ButtonListener,
                              public views::LinkController,
@@ -63,14 +63,14 @@ class AutoFillProfilesView : public views::View,
                              public PersonalDataManager::Observer,
                              public NotificationObserver {
  public:
-  virtual ~AutoFillProfilesView();
+  virtual ~AutofillProfilesView();
 
   static int Show(gfx::NativeWindow parent,
                   AutoFillDialogObserver* observer,
                   PersonalDataManager* personal_data_manager,
                   Profile* profile,
                   PrefService* preferences,
-                  AutoFillProfile* imported_profile,
+                  AutofillProfile* imported_profile,
                   CreditCard* imported_credit_card);
 
  protected:
@@ -155,10 +155,10 @@ class AutoFillProfilesView : public views::View,
     bool is_address;
     // If |is_address| is true |address| has some data and |credit_card|
     // is empty, and vice versa
-    AutoFillProfile address;
+    AutofillProfile address;
     CreditCard credit_card;
 
-    explicit EditableSetInfo(const AutoFillProfile* input_address)
+    explicit EditableSetInfo(const AutofillProfile* input_address)
         : address(*input_address),
           is_address(true) {
     }
@@ -187,11 +187,11 @@ class AutoFillProfilesView : public views::View,
     FocusedItem(int g, int i) : group(g), item(i) {}
   };
 
-  AutoFillProfilesView(AutoFillDialogObserver* observer,
+  AutofillProfilesView(AutoFillDialogObserver* observer,
                        PersonalDataManager* personal_data_manager,
                        Profile* profile,
                        PrefService* preferences,
-                       AutoFillProfile* imported_profile,
+                       AutofillProfile* imported_profile,
                        CreditCard* imported_credit_card);
   void Init();
 
@@ -207,7 +207,7 @@ class AutoFillProfilesView : public views::View,
   class PhoneSubView : public views::View,
                        public views::ButtonListener {
    public:
-    PhoneSubView(AutoFillProfilesView* autofill_view,
+    PhoneSubView(AutofillProfilesView* autofill_view,
                  views::Label* label,
                  views::Textfield* text_phone);
     virtual ~PhoneSubView() {}
@@ -233,7 +233,7 @@ class AutoFillProfilesView : public views::View,
 
    private:
     void UpdateButtons();
-    AutoFillProfilesView* autofill_view_;
+    AutofillProfilesView* autofill_view_;
     views::Label* label_;
     views::Textfield* text_phone_;
     views::ImageButton* phone_warning_button_;
@@ -252,7 +252,7 @@ class AutoFillProfilesView : public views::View,
                                   public views::TextfieldController,
                                   public views::Combobox::Listener {
    public:
-    EditableSetViewContents(AutoFillProfilesView* observer,
+    EditableSetViewContents(AutofillProfilesView* observer,
                             bool new_item,
                             const EditableSetInfo& field_set);
     virtual ~EditableSetViewContents() {}
@@ -331,7 +331,7 @@ class AutoFillProfilesView : public views::View,
     views::Textfield* text_fields_[MAX_TEXT_FIELD];
     EditableSetInfo temporary_info_;
     bool has_credit_card_number_been_edited_;
-    AutoFillProfilesView* observer_;
+    AutofillProfilesView* observer_;
     scoped_ptr<StringVectorComboboxModel> combo_box_model_month_;
     views::Combobox* combo_box_month_;
     scoped_ptr<StringVectorComboboxModel> combo_box_model_year_;
@@ -434,9 +434,9 @@ class AutoFillProfilesView : public views::View,
   views::FocusManager* focus_manager_;
   bool child_dialog_opened_;
 
-  static AutoFillProfilesView* instance_;
+  static AutofillProfilesView* instance_;
 
-  DISALLOW_COPY_AND_ASSIGN(AutoFillProfilesView);
+  DISALLOW_COPY_AND_ASSIGN(AutofillProfilesView);
 };
 
 #endif  // CHROME_BROWSER_UI_VIEWS_AUTOFILL_PROFILES_VIEW_WIN_H_

@@ -94,8 +94,8 @@ bool CompareAutofillEntries(const AutofillEntry& a, const AutofillEntry& b) {
   return !timestamps2.empty();
 }
 
-void AutoFillProfile31FromStatement(const sql::Statement& s,
-                                    AutoFillProfile* profile,
+void AutofillProfile31FromStatement(const sql::Statement& s,
+                                    AutofillProfile* profile,
                                     string16* label,
                                     int* unique_id,
                                     int64* date_modified) {
@@ -123,8 +123,8 @@ void AutoFillProfile31FromStatement(const sql::Statement& s,
   EXPECT_TRUE(guid::IsValidGUID(profile->guid()));
 }
 
-void AutoFillProfile32FromStatement(const sql::Statement& s,
-                                    AutoFillProfile* profile,
+void AutofillProfile32FromStatement(const sql::Statement& s,
+                                    AutofillProfile* profile,
                                     string16* label,
                                     int64* date_modified) {
   DCHECK(profile);
@@ -149,8 +149,8 @@ void AutoFillProfile32FromStatement(const sql::Statement& s,
   *date_modified = s.ColumnInt64(15);
 }
 
-void AutoFillProfile33FromStatement(const sql::Statement& s,
-                                    AutoFillProfile* profile,
+void AutofillProfile33FromStatement(const sql::Statement& s,
+                                    AutofillProfile* profile,
                                     int64* date_modified) {
   DCHECK(profile);
   DCHECK(date_modified);
@@ -1401,13 +1401,13 @@ TEST_F(WebDatabaseTest, TokenServiceGetSet) {
   EXPECT_EQ(out_map.find(service)->second, "ham");
 }
 
-TEST_F(WebDatabaseTest, AutoFillProfile) {
+TEST_F(WebDatabaseTest, AutofillProfile) {
   WebDatabase db;
 
   ASSERT_EQ(sql::INIT_OK, db.Init(file_));
 
   // Add a 'Home' profile.
-  AutoFillProfile home_profile;
+  AutofillProfile home_profile;
   home_profile.SetInfo(AutofillType(NAME_FIRST), ASCIIToUTF16("John"));
   home_profile.SetInfo(AutofillType(NAME_MIDDLE), ASCIIToUTF16("Q."));
   home_profile.SetInfo(AutofillType(NAME_LAST), ASCIIToUTF16("Smith"));
@@ -1429,12 +1429,12 @@ TEST_F(WebDatabaseTest, AutoFillProfile) {
                        ASCIIToUTF16("1915243678"));
 
   Time pre_creation_time = Time::Now();
-  EXPECT_TRUE(db.AddAutoFillProfile(home_profile));
+  EXPECT_TRUE(db.AddAutofillProfile(home_profile));
   Time post_creation_time = Time::Now();
 
   // Get the 'Home' profile.
-  AutoFillProfile* db_profile;
-  ASSERT_TRUE(db.GetAutoFillProfile(home_profile.guid(), &db_profile));
+  AutofillProfile* db_profile;
+  ASSERT_TRUE(db.GetAutofillProfile(home_profile.guid(), &db_profile));
   EXPECT_EQ(home_profile, *db_profile);
   sql::Statement s_home(db.db_.GetUniqueStatement(
       "SELECT date_modified "
@@ -1448,7 +1448,7 @@ TEST_F(WebDatabaseTest, AutoFillProfile) {
   delete db_profile;
 
   // Add a 'Billing' profile.
-  AutoFillProfile billing_profile = home_profile;
+  AutofillProfile billing_profile = home_profile;
   billing_profile.set_guid(guid::GenerateGUID());
   billing_profile.SetInfo(AutofillType(ADDRESS_HOME_LINE1),
                           ASCIIToUTF16("5678 Bottom Street"));
@@ -1456,11 +1456,11 @@ TEST_F(WebDatabaseTest, AutoFillProfile) {
                           ASCIIToUTF16("suite 3"));
 
   pre_creation_time = Time::Now();
-  EXPECT_TRUE(db.AddAutoFillProfile(billing_profile));
+  EXPECT_TRUE(db.AddAutofillProfile(billing_profile));
   post_creation_time = Time::Now();
 
   // Get the 'Billing' profile.
-  ASSERT_TRUE(db.GetAutoFillProfile(billing_profile.guid(), &db_profile));
+  ASSERT_TRUE(db.GetAutofillProfile(billing_profile.guid(), &db_profile));
   EXPECT_EQ(billing_profile, *db_profile);
   sql::Statement s_billing(db.db_.GetUniqueStatement(
       "SELECT date_modified FROM autofill_profiles WHERE guid=?"));
@@ -1475,9 +1475,9 @@ TEST_F(WebDatabaseTest, AutoFillProfile) {
   // Update the 'Billing' profile, name only.
   billing_profile.SetInfo(AutofillType(NAME_FIRST), ASCIIToUTF16("Jane"));
   Time pre_modification_time = Time::Now();
-  EXPECT_TRUE(db.UpdateAutoFillProfile(billing_profile));
+  EXPECT_TRUE(db.UpdateAutofillProfile(billing_profile));
   Time post_modification_time = Time::Now();
-  ASSERT_TRUE(db.GetAutoFillProfile(billing_profile.guid(), &db_profile));
+  ASSERT_TRUE(db.GetAutofillProfile(billing_profile.guid(), &db_profile));
   EXPECT_EQ(billing_profile, *db_profile);
   sql::Statement s_billing_updated(db.db_.GetUniqueStatement(
       "SELECT date_modified FROM autofill_profiles WHERE guid=?"));
@@ -1514,9 +1514,9 @@ TEST_F(WebDatabaseTest, AutoFillProfile) {
   billing_profile.SetInfo(AutofillType(PHONE_FAX_WHOLE_NUMBER),
                           ASCIIToUTF16("1915240000"));
   Time pre_modification_time_2 = Time::Now();
-  EXPECT_TRUE(db.UpdateAutoFillProfile(billing_profile));
+  EXPECT_TRUE(db.UpdateAutofillProfile(billing_profile));
   Time post_modification_time_2 = Time::Now();
-  ASSERT_TRUE(db.GetAutoFillProfile(billing_profile.guid(), &db_profile));
+  ASSERT_TRUE(db.GetAutofillProfile(billing_profile.guid(), &db_profile));
   EXPECT_EQ(billing_profile, *db_profile);
   sql::Statement s_billing_updated_2(db.db_.GetUniqueStatement(
       "SELECT date_modified FROM autofill_profiles WHERE guid=?"));
@@ -1531,8 +1531,8 @@ TEST_F(WebDatabaseTest, AutoFillProfile) {
   delete db_profile;
 
   // Remove the 'Billing' profile.
-  EXPECT_TRUE(db.RemoveAutoFillProfile(billing_profile.guid()));
-  EXPECT_FALSE(db.GetAutoFillProfile(billing_profile.guid(), &db_profile));
+  EXPECT_TRUE(db.RemoveAutofillProfile(billing_profile.guid()));
+  EXPECT_FALSE(db.GetAutofillProfile(billing_profile.guid(), &db_profile));
 }
 
 TEST_F(WebDatabaseTest, CreditCard) {
@@ -1624,12 +1624,12 @@ TEST_F(WebDatabaseTest, CreditCard) {
   EXPECT_FALSE(db.GetCreditCard(target_creditcard.guid(), &db_creditcard));
 }
 
-TEST_F(WebDatabaseTest, UpdateAutoFillProfile) {
+TEST_F(WebDatabaseTest, UpdateAutofillProfile) {
   WebDatabase db;
   ASSERT_EQ(sql::INIT_OK, db.Init(file_));
 
   // Add a profile to the db.
-  AutoFillProfile profile;
+  AutofillProfile profile;
   profile.SetInfo(AutofillType(NAME_FIRST), ASCIIToUTF16("John"));
   profile.SetInfo(AutofillType(NAME_MIDDLE), ASCIIToUTF16("Q."));
   profile.SetInfo(AutofillType(NAME_LAST), ASCIIToUTF16("Smith"));
@@ -1646,7 +1646,7 @@ TEST_F(WebDatabaseTest, UpdateAutoFillProfile) {
                   ASCIIToUTF16("18181234567"));
   profile.SetInfo(AutofillType(PHONE_FAX_WHOLE_NUMBER),
                   ASCIIToUTF16("1915243678"));
-  db.AddAutoFillProfile(profile);
+  db.AddAutofillProfile(profile);
 
   // Set a mocked value for the profile's creation time.
   const time_t mock_creation_date = Time::Now().ToTimeT() - 13;
@@ -1657,9 +1657,9 @@ TEST_F(WebDatabaseTest, UpdateAutoFillProfile) {
   ASSERT_TRUE(s_mock_creation_date.Run());
 
   // Get the profile.
-  AutoFillProfile* tmp_profile;
-  ASSERT_TRUE(db.GetAutoFillProfile(profile.guid(), &tmp_profile));
-  scoped_ptr<AutoFillProfile> db_profile(tmp_profile);
+  AutofillProfile* tmp_profile;
+  ASSERT_TRUE(db.GetAutofillProfile(profile.guid(), &tmp_profile));
+  scoped_ptr<AutofillProfile> db_profile(tmp_profile);
   EXPECT_EQ(profile, *db_profile);
   sql::Statement s_original(db.db_.GetUniqueStatement(
       "SELECT date_modified FROM autofill_profiles"));
@@ -1671,10 +1671,10 @@ TEST_F(WebDatabaseTest, UpdateAutoFillProfile) {
   // Now, update the profile and save the update to the database.
   // The modification date should change to reflect the update.
   profile.SetInfo(AutofillType(EMAIL_ADDRESS), ASCIIToUTF16("js@smith.xyz"));
-  db.UpdateAutoFillProfile(profile);
+  db.UpdateAutofillProfile(profile);
 
   // Get the profile.
-  ASSERT_TRUE(db.GetAutoFillProfile(profile.guid(), &tmp_profile));
+  ASSERT_TRUE(db.GetAutofillProfile(profile.guid(), &tmp_profile));
   db_profile.reset(tmp_profile);
   EXPECT_EQ(profile, *db_profile);
   sql::Statement s_updated(db.db_.GetUniqueStatement(
@@ -1692,12 +1692,12 @@ TEST_F(WebDatabaseTest, UpdateAutoFillProfile) {
   s_mock_modification_date.BindInt64(0, mock_modification_date);
   ASSERT_TRUE(s_mock_modification_date.Run());
 
-  // Finally, call into |UpdateAutoFillProfile()| without changing the profile.
+  // Finally, call into |UpdateAutofillProfile()| without changing the profile.
   // The modification date should not change.
-  db.UpdateAutoFillProfile(profile);
+  db.UpdateAutofillProfile(profile);
 
   // Get the profile.
-  ASSERT_TRUE(db.GetAutoFillProfile(profile.guid(), &tmp_profile));
+  ASSERT_TRUE(db.GetAutofillProfile(profile.guid(), &tmp_profile));
   db_profile.reset(tmp_profile);
   EXPECT_EQ(profile, *db_profile);
   sql::Statement s_unchanged(db.db_.GetUniqueStatement(
@@ -1784,7 +1784,7 @@ TEST_F(WebDatabaseTest, UpdateCreditCard) {
   EXPECT_FALSE(s_unchanged.Step());
 }
 
-TEST_F(WebDatabaseTest, RemoveAutoFillProfilesAndCreditCardsModifiedBetween) {
+TEST_F(WebDatabaseTest, RemoveAutofillProfilesAndCreditCardsModifiedBetween) {
   WebDatabase db;
   ASSERT_EQ(sql::INIT_OK, db.Init(file_));
 
@@ -1816,7 +1816,7 @@ TEST_F(WebDatabaseTest, RemoveAutoFillProfilesAndCreditCardsModifiedBetween) {
       "VALUES('00000000-0000-0000-0000-000000000011', 67);"));
 
   // Remove all entries modified in the bounded time range [17,41).
-  db.RemoveAutoFillProfilesAndCreditCardsModifiedBetween(
+  db.RemoveAutofillProfilesAndCreditCardsModifiedBetween(
       base::Time::FromTimeT(17), base::Time::FromTimeT(41));
   sql::Statement s_autofill_profiles_bounded(db.db_.GetUniqueStatement(
       "SELECT date_modified FROM autofill_profiles"));
@@ -1842,7 +1842,7 @@ TEST_F(WebDatabaseTest, RemoveAutoFillProfilesAndCreditCardsModifiedBetween) {
   EXPECT_FALSE(s_credit_cards_bounded.Step());
 
   // Remove all entries modified on or after time 51 (unbounded range).
-  db.RemoveAutoFillProfilesAndCreditCardsModifiedBetween(
+  db.RemoveAutofillProfilesAndCreditCardsModifiedBetween(
       base::Time::FromTimeT(51), base::Time());
   sql::Statement s_autofill_profiles_unbounded(db.db_.GetUniqueStatement(
       "SELECT date_modified FROM autofill_profiles"));
@@ -1860,7 +1860,7 @@ TEST_F(WebDatabaseTest, RemoveAutoFillProfilesAndCreditCardsModifiedBetween) {
   EXPECT_FALSE(s_credit_cards_unbounded.Step());
 
   // Remove all remaining entries.
-  db.RemoveAutoFillProfilesAndCreditCardsModifiedBetween(base::Time(),
+  db.RemoveAutofillProfilesAndCreditCardsModifiedBetween(base::Time(),
                                                          base::Time());
   sql::Statement s_autofill_profiles_empty(db.db_.GetUniqueStatement(
       "SELECT date_modified FROM autofill_profiles"));
@@ -2686,7 +2686,7 @@ TEST_F(WebDatabaseMigrationTest, MigrateVersion31ToCurrent) {
 
   // Verify pre-conditions. These are expectations for version 30 of the
   // database.
-  AutoFillProfile profile;
+  AutofillProfile profile;
   string16 profile_label;
   int profile_unique_id = 0;
   int64 profile_date_modified = 0;
@@ -2721,7 +2721,7 @@ TEST_F(WebDatabaseMigrationTest, MigrateVersion31ToCurrent) {
             "zipcode, country, phone, fax, date_modified, guid "
             "FROM autofill_profiles"));
     ASSERT_TRUE(s1.Step());
-    EXPECT_NO_FATAL_FAILURE(AutoFillProfile31FromStatement(
+    EXPECT_NO_FATAL_FAILURE(AutofillProfile31FromStatement(
         s1, &profile, &profile_label, &profile_unique_id,
         &profile_date_modified));
 
@@ -2783,9 +2783,9 @@ TEST_F(WebDatabaseMigrationTest, MigrateVersion31ToCurrent) {
             "FROM autofill_profiles"));
     ASSERT_TRUE(s1.Step());
 
-    AutoFillProfile profile_a;
+    AutofillProfile profile_a;
     int64 profile_date_modified_a = 0;
-    EXPECT_NO_FATAL_FAILURE(AutoFillProfile33FromStatement(
+    EXPECT_NO_FATAL_FAILURE(AutofillProfile33FromStatement(
         s1, &profile_a, &profile_date_modified_a));
     EXPECT_EQ(profile.guid(), profile_a.guid());
     EXPECT_EQ(profile.GetFieldText(AutofillType(COMPANY_NAME)),

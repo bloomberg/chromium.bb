@@ -15,7 +15,7 @@ AutofillChange::~AutofillChange() {
 }
 
 AutofillProfileChange::AutofillProfileChange(
-  Type type, std::string key, const AutoFillProfile* profile)
+  Type type, std::string key, const AutofillProfile* profile)
     : GenericAutofillChange<std::string>(type, key),
       profile_(profile) {
   DCHECK(type == ADD ? (profile && profile->guid() == key) : true);

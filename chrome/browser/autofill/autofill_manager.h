@@ -19,7 +19,7 @@
 #include "content/browser/tab_contents/tab_contents_observer.h"
 
 class AutoFillCCInfoBarDelegate;
-class AutoFillProfile;
+class AutofillProfile;
 class AutofillMetrics;
 class CreditCard;
 class FormStructure;
@@ -117,7 +117,7 @@ class AutofillManager : public TabContentsObserver,
 
   // Fills |host| with the RenderViewHost for this tab.
   // Returns false if Autofill is disabled or if the host is unavailable.
-  bool GetHost(const std::vector<AutoFillProfile*>& profiles,
+  bool GetHost(const std::vector<AutofillProfile*>& profiles,
                const std::vector<CreditCard*>& credit_cards,
                RenderViewHost** host) WARN_UNUSED_RESULT;
 
@@ -163,13 +163,13 @@ class AutofillManager : public TabContentsObserver,
                                webkit_glue::FormField* field);
 
   // Set |field| argument's value based on |type| and contents of the |profile|.
-  void FillFormField(const AutoFillProfile* profile,
+  void FillFormField(const AutofillProfile* profile,
                      AutofillType type,
                      webkit_glue::FormField* field);
 
   // Set |field| argument's value for phone/fax number based on contents of the
   // |profile|. |type| is the type of the phone.
-  void FillPhoneNumberField(const AutoFillProfile* profile,
+  void FillPhoneNumberField(const AutofillProfile* profile,
                             AutofillType type,
                             webkit_glue::FormField* field);
 

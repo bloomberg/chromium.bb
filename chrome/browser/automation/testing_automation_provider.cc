@@ -2254,10 +2254,10 @@ void TestingAutomationProvider::SendJSONRequest(int handle,
   browser_handler_map["GetTranslateInfo"] =
       &TestingAutomationProvider::GetTranslateInfo;
 
-  browser_handler_map["GetAutoFillProfile"] =
-      &TestingAutomationProvider::GetAutoFillProfile;
-  browser_handler_map["FillAutoFillProfile"] =
-      &TestingAutomationProvider::FillAutoFillProfile;
+  browser_handler_map["GetAutofillProfile"] =
+      &TestingAutomationProvider::GetAutofillProfile;
+  browser_handler_map["FillAutofillProfile"] =
+      &TestingAutomationProvider::FillAutofillProfile;
 
   browser_handler_map["GetActiveNotifications"] =
       &TestingAutomationProvider::GetActiveNotifications;
@@ -3936,15 +3936,15 @@ void TestingAutomationProvider::UninstallExtensionById(
 }
 
 // Sample json input:
-//    { "command": "GetAutoFillProfile" }
-// Refer to GetAutoFillProfile() in chrome/test/pyautolib/pyauto.py for sample
+//    { "command": "GetAutofillProfile" }
+// Refer to GetAutofillProfile() in chrome/test/pyautolib/pyauto.py for sample
 // json output.
-void TestingAutomationProvider::GetAutoFillProfile(
+void TestingAutomationProvider::GetAutofillProfile(
     Browser* browser,
     DictionaryValue* args,
     IPC::Message* reply_message) {
   AutomationJSONReply reply(this, reply_message);
-  // Get the AutoFillProfiles currently in the database.
+  // Get the AutofillProfiles currently in the database.
   int tab_index = 0;
   if (!args->GetInteger("tab_index", &tab_index)) {
     reply.SendError("Invalid or missing tab_index integer value.");
@@ -3956,10 +3956,10 @@ void TestingAutomationProvider::GetAutoFillProfile(
     PersonalDataManager* pdm = tab_contents->profile()->GetOriginalProfile()
         ->GetPersonalDataManager();
     if (pdm) {
-      std::vector<AutoFillProfile*> autofill_profiles = pdm->profiles();
+      std::vector<AutofillProfile*> autofill_profiles = pdm->profiles();
       std::vector<CreditCard*> credit_cards = pdm->credit_cards();
 
-      ListValue* profiles = GetListFromAutoFillProfiles(autofill_profiles);
+      ListValue* profiles = GetListFromAutofillProfiles(autofill_profiles);
       ListValue* cards = GetListFromCreditCards(credit_cards);
 
       scoped_ptr<DictionaryValue> return_value(new DictionaryValue);
@@ -3977,10 +3977,10 @@ void TestingAutomationProvider::GetAutoFillProfile(
   }
 }
 
-// Refer to FillAutoFillProfile() in chrome/test/pyautolib/pyauto.py for sample
+// Refer to FillAutofillProfile() in chrome/test/pyautolib/pyauto.py for sample
 // json input.
 // Sample json output: {}
-void TestingAutomationProvider::FillAutoFillProfile(
+void TestingAutomationProvider::FillAutofillProfile(
     Browser* browser,
     DictionaryValue* args,
     IPC::Message* reply_message) {
@@ -3994,11 +3994,11 @@ void TestingAutomationProvider::FillAutoFillProfile(
 
   std::string error_mesg;
 
-  std::vector<AutoFillProfile> autofill_profiles;
+  std::vector<AutofillProfile> autofill_profiles;
   std::vector<CreditCard> credit_cards;
-  // Create an AutoFillProfile for each of the dictionary profiles.
+  // Create an AutofillProfile for each of the dictionary profiles.
   if (profiles) {
-    autofill_profiles = GetAutoFillProfilesFromList(*profiles, &error_mesg);
+    autofill_profiles = GetAutofillProfilesFromList(*profiles, &error_mesg);
   }
   // Create a CreditCard for each of the dictionary values.
   if (cards) {
@@ -4009,7 +4009,7 @@ void TestingAutomationProvider::FillAutoFillProfile(
     return;
   }
 
-  // Save the AutoFillProfiles.
+  // Save the AutofillProfiles.
   int tab_index = 0;
   if (!args->GetInteger("tab_index", &tab_index)) {
     reply.SendError("Invalid or missing tab_index integer");
@@ -4252,18 +4252,18 @@ void TestingAutomationProvider::DisableSyncForDatatypes(
 }
 
 /* static */
-ListValue* TestingAutomationProvider::GetListFromAutoFillProfiles(
-    const std::vector<AutoFillProfile*>& autofill_profiles) {
+ListValue* TestingAutomationProvider::GetListFromAutofillProfiles(
+    const std::vector<AutofillProfile*>& autofill_profiles) {
   ListValue* profiles = new ListValue;
 
   std::map<AutofillFieldType, std::string> autofill_type_to_string
       = GetAutofillFieldToStringMap();
 
-  // For each AutoFillProfile, transform it to a dictionary object to return.
-  for (std::vector<AutoFillProfile*>::const_iterator it =
+  // For each AutofillProfile, transform it to a dictionary object to return.
+  for (std::vector<AutofillProfile*>::const_iterator it =
            autofill_profiles.begin();
        it != autofill_profiles.end(); ++it) {
-    AutoFillProfile* profile = *it;
+    AutofillProfile* profile = *it;
     DictionaryValue* profile_info = new DictionaryValue;
     // For each of the types, if it has a value, add it to the dictionary.
     for (std::map<AutofillFieldType, std::string>::iterator
@@ -4287,7 +4287,7 @@ ListValue* TestingAutomationProvider::GetListFromCreditCards(
   std::map<AutofillFieldType, std::string> credit_card_type_to_string =
       GetCreditCardFieldToStringMap();
 
-  // For each AutoFillProfile, transform it to a dictionary object to return.
+  // For each AutofillProfile, transform it to a dictionary object to return.
   for (std::vector<CreditCard*>::const_iterator it =
            credit_cards.begin();
        it != credit_cards.end(); ++it) {
@@ -4309,10 +4309,10 @@ ListValue* TestingAutomationProvider::GetListFromCreditCards(
 }
 
 /* static */
-std::vector<AutoFillProfile>
-TestingAutomationProvider::GetAutoFillProfilesFromList(
+std::vector<AutofillProfile>
+TestingAutomationProvider::GetAutofillProfilesFromList(
     const ListValue& profiles, std::string* error_message) {
-  std::vector<AutoFillProfile> autofill_profiles;
+  std::vector<AutofillProfile> autofill_profiles;
   DictionaryValue* profile_info = NULL;
   string16 current_value;
 
@@ -4322,7 +4322,7 @@ TestingAutomationProvider::GetAutoFillProfilesFromList(
   int num_profiles = profiles.GetSize();
   for (int i = 0; i < num_profiles; i++) {
     profiles.GetDictionary(i, &profile_info);
-    AutoFillProfile profile;
+    AutofillProfile profile;
     // Loop through the possible profile types and add those provided.
     for (std::map<AutofillFieldType, std::string>::iterator type_it =
          autofill_type_to_string.begin();

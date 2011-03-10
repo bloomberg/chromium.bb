@@ -48,7 +48,7 @@ class AutofillProfileChangeProcessor : public ChangeProcessor,
                        const NotificationDetails& details);
 
 
-  static void WriteAutofillProfile(const AutoFillProfile& profile,
+  static void WriteAutofillProfile(const AutofillProfile& profile,
                                    sync_api::WriteNode* node);
 
  protected:
@@ -73,7 +73,7 @@ class AutofillProfileChangeProcessor : public ChangeProcessor,
 
   virtual void AddAutofillProfileSyncNode(sync_api::WriteTransaction* trans,
       sync_api::BaseNode& autofill_profile_root,
-      const AutoFillProfile& profile);
+      const AutofillProfile& profile);
 
   void ActOnChange(AutofillProfileChange* change,
       sync_api::WriteTransaction* trans,

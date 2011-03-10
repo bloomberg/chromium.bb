@@ -100,23 +100,23 @@ void GetFieldsForDistinguishingProfiles(
 
 }  // namespace
 
-AutoFillProfile::AutoFillProfile(const std::string& guid)
+AutofillProfile::AutofillProfile(const std::string& guid)
     : guid_(guid) {
 }
 
-AutoFillProfile::AutoFillProfile()
+AutofillProfile::AutofillProfile()
     : guid_(guid::GenerateGUID()) {
 }
 
-AutoFillProfile::AutoFillProfile(const AutoFillProfile& source)
+AutofillProfile::AutofillProfile(const AutofillProfile& source)
     : FormGroup() {
   operator=(source);
 }
 
-AutoFillProfile::~AutoFillProfile() {
+AutofillProfile::~AutofillProfile() {
 }
 
-AutoFillProfile& AutoFillProfile::operator=(const AutoFillProfile& profile) {
+AutofillProfile& AutofillProfile::operator=(const AutofillProfile& profile) {
   if (this == &profile)
     return *this;
 
@@ -133,7 +133,7 @@ AutoFillProfile& AutoFillProfile::operator=(const AutoFillProfile& profile) {
   return *this;
 }
 
-void AutoFillProfile::GetPossibleFieldTypes(
+void AutofillProfile::GetPossibleFieldTypes(
     const string16& text,
     FieldTypeSet* possible_types) const {
   FormGroupList info = info_list();
@@ -141,14 +141,14 @@ void AutoFillProfile::GetPossibleFieldTypes(
     (*it)->GetPossibleFieldTypes(text, possible_types);
 }
 
-void AutoFillProfile::GetAvailableFieldTypes(
+void AutofillProfile::GetAvailableFieldTypes(
     FieldTypeSet* available_types) const {
   FormGroupList info = info_list();
   for (FormGroupList::const_iterator it = info.begin(); it != info.end(); ++it)
     (*it)->GetAvailableFieldTypes(available_types);
 }
 
-string16 AutoFillProfile::GetFieldText(const AutofillType& type) const {
+string16 AutofillProfile::GetFieldText(const AutofillType& type) const {
   AutofillType return_type(
       AutofillType::GetEquivalentFieldType(type.field_type()));
 
@@ -160,7 +160,7 @@ string16 AutoFillProfile::GetFieldText(const AutofillType& type) const {
   return it->second->GetFieldText(return_type);
 }
 
-void AutoFillProfile::FindInfoMatches(
+void AutofillProfile::FindInfoMatches(
     const AutofillType& type,
     const string16& value,
     std::vector<string16>* matched_text) const {
@@ -185,28 +185,28 @@ void AutoFillProfile::FindInfoMatches(
   }
 }
 
-void AutoFillProfile::SetInfo(const AutofillType& type, const string16& value) {
+void AutofillProfile::SetInfo(const AutofillType& type, const string16& value) {
   MutableFormGroupMap info = mutable_info_map();
   MutableFormGroupMap::iterator it = info.find(type.group());
   if (it != info.end())
     it->second->SetInfo(type, CollapseWhitespace(value, false));
 }
 
-const string16 AutoFillProfile::Label() const {
+const string16 AutofillProfile::Label() const {
   return label_;
 }
 
-const std::string AutoFillProfile::CountryCode() const {
+const std::string AutofillProfile::CountryCode() const {
   return address_.country_code();
 }
 
-void AutoFillProfile::SetCountryCode(const std::string& country_code) {
+void AutofillProfile::SetCountryCode(const std::string& country_code) {
   address_.set_country_code(country_code);
 }
 
 // static
-bool AutoFillProfile::AdjustInferredLabels(
-    std::vector<AutoFillProfile*>* profiles) {
+bool AutofillProfile::AdjustInferredLabels(
+    std::vector<AutofillProfile*>* profiles) {
   const size_t kMinimalFieldsShown = 2;
 
   std::vector<string16> created_labels;
@@ -225,8 +225,8 @@ bool AutoFillProfile::AdjustInferredLabels(
 }
 
 // static
-void AutoFillProfile::CreateInferredLabels(
-    const std::vector<AutoFillProfile*>* profiles,
+void AutofillProfile::CreateInferredLabels(
+    const std::vector<AutofillProfile*>* profiles,
     const std::vector<AutofillFieldType>* suggested_fields,
     AutofillFieldType excluded_field,
     size_t minimal_fields_shown,
@@ -267,13 +267,13 @@ void AutoFillProfile::CreateInferredLabels(
   }
 }
 
-bool AutoFillProfile::IsEmpty() const {
+bool AutofillProfile::IsEmpty() const {
   FieldTypeSet types;
   GetAvailableFieldTypes(&types);
   return types.empty();
 }
 
-int AutoFillProfile::Compare(const AutoFillProfile& profile) const {
+int AutofillProfile::Compare(const AutofillProfile& profile) const {
   // The following AutoFill field types are the only types we store in the WebDB
   // so far, so we're only concerned with matching these types in the profile.
   const AutofillFieldType types[] = { NAME_FIRST,
@@ -300,22 +300,22 @@ int AutoFillProfile::Compare(const AutoFillProfile& profile) const {
   return 0;
 }
 
-bool AutoFillProfile::operator==(const AutoFillProfile& profile) const {
+bool AutofillProfile::operator==(const AutofillProfile& profile) const {
   return guid_ == profile.guid_ && Compare(profile) == 0;
 }
 
-bool AutoFillProfile::operator!=(const AutoFillProfile& profile) const {
+bool AutofillProfile::operator!=(const AutofillProfile& profile) const {
   return !operator==(profile);
 }
 
-const string16 AutoFillProfile::PrimaryValue() const {
+const string16 AutofillProfile::PrimaryValue() const {
   return GetFieldText(AutofillType(NAME_FULL)) +
          GetFieldText(AutofillType(ADDRESS_HOME_LINE1)) +
          GetFieldText(AutofillType(ADDRESS_HOME_LINE2)) +
          GetFieldText(AutofillType(EMAIL_ADDRESS));
 }
 
-string16 AutoFillProfile::ConstructInferredLabel(
+string16 AutofillProfile::ConstructInferredLabel(
     const std::vector<AutofillFieldType>& included_fields,
     size_t num_fields_to_use) const {
   const string16 separator =
@@ -346,8 +346,8 @@ string16 AutoFillProfile::ConstructInferredLabel(
 }
 
 // static
-void AutoFillProfile::CreateDifferentiatingLabels(
-    const std::vector<AutoFillProfile*>& profiles,
+void AutofillProfile::CreateDifferentiatingLabels(
+    const std::vector<AutofillProfile*>& profiles,
     const std::list<size_t>& indices,
     const std::vector<AutofillFieldType>& fields,
     size_t num_fields_to_include,
@@ -363,7 +363,7 @@ void AutoFillProfile::CreateDifferentiatingLabels(
 
     for (std::list<size_t>::const_iterator it = indices.begin();
          it != indices.end(); ++it) {
-      const AutoFillProfile* profile = profiles[*it];
+      const AutofillProfile* profile = profiles[*it];
       string16 field_text = profile->GetFieldText(AutofillType(*field));
 
       // If this label is not already in the map, add it with frequency 0.
@@ -384,7 +384,7 @@ void AutoFillProfile::CreateDifferentiatingLabels(
   // we only include fields that that have at last two distinct values.
   for (std::list<size_t>::const_iterator it = indices.begin();
        it != indices.end(); ++it) {
-    const AutoFillProfile* profile = profiles[*it];
+    const AutofillProfile* profile = profiles[*it];
 
     std::vector<AutofillFieldType> label_fields;
     bool found_differentiating_field = false;
@@ -422,7 +422,7 @@ void AutoFillProfile::CreateDifferentiatingLabels(
   }
 }
 
-AutoFillProfile::FormGroupList AutoFillProfile::info_list() const {
+AutofillProfile::FormGroupList AutofillProfile::info_list() const {
   FormGroupList v(6);
   v[0] = &name_;
   v[1] = &email_;
@@ -433,7 +433,7 @@ AutoFillProfile::FormGroupList AutoFillProfile::info_list() const {
   return v;
 }
 
-AutoFillProfile::FormGroupMap AutoFillProfile::info_map() const {
+AutofillProfile::FormGroupMap AutofillProfile::info_map() const {
   FormGroupMap m;
   m[AutofillType::NAME] = &name_;
   m[AutofillType::EMAIL] = &email_;
@@ -444,7 +444,7 @@ AutoFillProfile::FormGroupMap AutoFillProfile::info_map() const {
   return m;
 }
 
-AutoFillProfile::MutableFormGroupMap AutoFillProfile::mutable_info_map() {
+AutofillProfile::MutableFormGroupMap AutofillProfile::mutable_info_map() {
   FormGroupMap m_const = info_map();
   MutableFormGroupMap m;
   for (FormGroupMap::const_iterator it = m_const.begin();
@@ -454,8 +454,8 @@ AutoFillProfile::MutableFormGroupMap AutoFillProfile::mutable_info_map() {
   return m;
 }
 
-// So we can compare AutoFillProfiles with EXPECT_EQ().
-std::ostream& operator<<(std::ostream& os, const AutoFillProfile& profile) {
+// So we can compare AutofillProfiles with EXPECT_EQ().
+std::ostream& operator<<(std::ostream& os, const AutofillProfile& profile) {
   return os
       << UTF16ToUTF8(profile.Label())
       << " "

@@ -633,13 +633,13 @@ class TestingAutomationProvider : public AutomationProvider,
 
   // Get the profiles that are currently saved to the DB.
   // Uses the JSON interface for input/output.
-  void GetAutoFillProfile(Browser* browser,
+  void GetAutofillProfile(Browser* browser,
                           DictionaryValue* args,
                           IPC::Message* reply_message);
 
-  // Fill in an AutoFillProfile with the given profile information.
+  // Fill in an AutofillProfile with the given profile information.
   // Uses the JSON interface for input/output.
-  void FillAutoFillProfile(Browser* browser,
+  void FillAutofillProfile(Browser* browser,
                            DictionaryValue* args,
                            IPC::Message* reply_message);
 
@@ -678,7 +678,7 @@ class TestingAutomationProvider : public AutomationProvider,
   // Args:
   //   profiles/cards: the ListValue of profiles/credit cards to translate.
   //   error_message: a pointer to the return string in case of error.
-  static std::vector<AutoFillProfile> GetAutoFillProfilesFromList(
+  static std::vector<AutofillProfile> GetAutofillProfilesFromList(
       const ListValue& profiles, std::string* error_message);
   static std::vector<CreditCard> GetCreditCardsFromList(
       const ListValue& cards, std::string* error_message);
@@ -686,8 +686,8 @@ class TestingAutomationProvider : public AutomationProvider,
   // The opposite of the above: translates from the internal data structure
   // for profiles and credit cards to a ListValue of DictionaryValues. The
   // caller owns the returned object.
-  static ListValue* GetListFromAutoFillProfiles(
-      const std::vector<AutoFillProfile*>& autofill_profiles);
+  static ListValue* GetListFromAutofillProfiles(
+      const std::vector<AutofillProfile*>& autofill_profiles);
   static ListValue* GetListFromCreditCards(
       const std::vector<CreditCard*>& credit_cards);
 

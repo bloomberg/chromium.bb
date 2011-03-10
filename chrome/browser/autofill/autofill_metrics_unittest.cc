@@ -42,7 +42,7 @@ class TestPersonalDataManager : public PersonalDataManager {
  public:
   TestPersonalDataManager() {
     set_metric_logger(new MockAutofillMetrics);
-    CreateTestAutoFillProfiles(&web_profiles_);
+    CreateTestAutofillProfiles(&web_profiles_);
     CreateTestCreditCards(&credit_cards_);
   }
 
@@ -53,16 +53,16 @@ class TestPersonalDataManager : public PersonalDataManager {
   // Overridden to avoid a trip to the database. This should be a no-op except
   // for the side-effect of logging the profile count.
   virtual void LoadProfiles() {
-    std::vector<AutoFillProfile*> profiles;
+    std::vector<AutofillProfile*> profiles;
     web_profiles_.release(&profiles);
-    WDResult<std::vector<AutoFillProfile*> > result(AUTOFILL_PROFILES_RESULT,
+    WDResult<std::vector<AutofillProfile*> > result(AUTOFILL_PROFILES_RESULT,
                                                     profiles);
     ReceiveLoadedProfiles(0, &result);
   }
 
   // Adds |profile| to |web_profiles_| and takes ownership of the profile's
   // memory.
-  virtual void AddProfile(AutoFillProfile* profile) {
+  virtual void AddProfile(AutofillProfile* profile) {
     web_profiles_.push_back(profile);
   }
 
@@ -76,8 +76,8 @@ class TestPersonalDataManager : public PersonalDataManager {
   }
 
  private:
-  void CreateTestAutoFillProfiles(ScopedVector<AutoFillProfile>* profiles) {
-    AutoFillProfile* profile = new AutoFillProfile;
+  void CreateTestAutofillProfiles(ScopedVector<AutofillProfile>* profiles) {
+    AutofillProfile* profile = new AutofillProfile;
     autofill_test::SetProfileInfo(profile, "Elvis", "Aaron",
                                   "Presley", "theking@gmail.com", "RCA",
                                   "3734 Elvis Presley Blvd.", "Apt. 10",
@@ -85,7 +85,7 @@ class TestPersonalDataManager : public PersonalDataManager {
                                   "12345678901", "");
     profile->set_guid("00000000-0000-0000-0000-000000000001");
     profiles->push_back(profile);
-    profile = new AutoFillProfile;
+    profile = new AutofillProfile;
     autofill_test::SetProfileInfo(profile, "Charles", "Hardin",
                                   "Holley", "buddy@gmail.com", "Decca",
                                   "123 Apple St.", "unit 6", "Lubbock",
@@ -93,7 +93,7 @@ class TestPersonalDataManager : public PersonalDataManager {
                                   "");
     profile->set_guid("00000000-0000-0000-0000-000000000002");
     profiles->push_back(profile);
-    profile = new AutoFillProfile;
+    profile = new AutofillProfile;
     autofill_test::SetProfileInfo(profile, "", "", "", "", "", "", "",
                                   "", "", "", "", "", "");
     profile->set_guid("00000000-0000-0000-0000-000000000003");

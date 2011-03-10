@@ -1015,7 +1015,7 @@ class NotificationType {
     // key of the entry that was affected.
     AUTOFILL_ENTRIES_CHANGED,
 
-    // Sent when an AutoFillProfile has been added/removed/updated in the
+    // Sent when an AutofillProfile has been added/removed/updated in the
     // WebDatabase.  The detail is an AutofillProfileChange.
     AUTOFILL_PROFILE_CHANGED,
 

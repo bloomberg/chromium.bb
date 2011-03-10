@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -20,7 +20,7 @@
 #include "chrome/browser/sync/protocol/autofill_specifics.pb.h"
 #include "chrome/browser/webdata/autofill_entry.h"
 
-class AutoFillProfile;
+class AutofillProfile;
 
 class ProfileSyncService;
 class WebDatabase;
@@ -94,35 +94,35 @@ class AutofillProfileModelAssociator
   virtual bool GetSyncIdForTaggedNode(const std::string& tag, int64* sync_id);
 
   static bool OverwriteProfileWithServerData(
-      AutoFillProfile* merge_into,
+      AutofillProfile* merge_into,
       const sync_pb::AutofillProfileSpecifics& specifics);
 
  protected:
   AutofillProfileModelAssociator();
-  bool TraverseAndAssociateChromeAutoFillProfiles(
+  bool TraverseAndAssociateChromeAutofillProfiles(
       sync_api::WriteTransaction* write_trans,
       const sync_api::ReadNode& autofill_root,
-      const std::vector<AutoFillProfile*>& all_profiles_from_db,
+      const std::vector<AutofillProfile*>& all_profiles_from_db,
       std::set<std::string>* current_profiles,
-      std::vector<AutoFillProfile*>* updated_profiles,
-      std::vector<AutoFillProfile*>* new_profiles,
+      std::vector<AutofillProfile*>* updated_profiles,
+      std::vector<AutofillProfile*>* new_profiles,
       std::vector<std::string>* profiles_to_delete);
 
-  // Helper to insert an AutoFillProfile into the WebDatabase (e.g. in response
+  // Helper to insert an AutofillProfile into the WebDatabase (e.g. in response
   // to encountering a sync node that doesn't exist yet locally).
   virtual void AddNativeProfileIfNeeded(
       const sync_pb::AutofillProfileSpecifics& profile,
       DataBundle* bundle,
       const sync_api::ReadNode& node);
 
-  // Helper to insert a sync node for the given AutoFillProfile (e.g. in
+  // Helper to insert a sync node for the given AutofillProfile (e.g. in
   // response to encountering a native profile that doesn't exist yet in the
   // cloud).
   virtual bool MakeNewAutofillProfileSyncNodeIfNeeded(
       sync_api::WriteTransaction* trans,
       const sync_api::BaseNode& autofill_root,
-      const AutoFillProfile& profile,
-      std::vector<AutoFillProfile*>* new_profiles,
+      const AutofillProfile& profile,
+      std::vector<AutofillProfile*>* new_profiles,
       std::set<std::string>* current_profiles,
       std::vector<std::string>* profiles_to_delete);
 
@@ -142,7 +142,7 @@ class AutofillProfileModelAssociator
   // struct DataBundle;
 
   // Helper to query WebDatabase for the current autofill state.
-  bool LoadAutofillData(std::vector<AutoFillProfile*>* profiles);
+  bool LoadAutofillData(std::vector<AutofillProfile*>* profiles);
 
   static bool MergeField(FormGroup* f,
                          AutofillFieldType t,
@@ -158,7 +158,7 @@ class AutofillProfileModelAssociator
 
   int64 FindSyncNodeWithProfile(sync_api::WriteTransaction* trans,
       const sync_api::BaseNode& autofill_root,
-      const AutoFillProfile& profile,
+      const AutofillProfile& profile,
       std::set<std::string>* current_profiles);
 
   ProfileSyncService* sync_service_;
@@ -186,8 +186,8 @@ struct AutofillProfileModelAssociator::DataBundle {
 
   std::set<std::string> current_profiles;
   std::vector<std::string> profiles_to_delete;
-  std::vector<AutoFillProfile*> updated_profiles;
-  std::vector<AutoFillProfile*> new_profiles;  // We own these pointers.
+  std::vector<AutofillProfile*> updated_profiles;
+  std::vector<AutofillProfile*> new_profiles;  // We own these pointers.
 };
 
 }  // namespace browser_sync

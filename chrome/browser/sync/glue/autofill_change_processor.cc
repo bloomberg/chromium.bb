@@ -344,11 +344,11 @@ void AutofillChangeProcessor::ApplySyncAutofillProfileChange(
         DCHECK(false) << "Guid generated is invalid " << guid;
         return;
       }
-      scoped_ptr<AutoFillProfile> p(new AutoFillProfile);
+      scoped_ptr<AutofillProfile> p(new AutofillProfile);
       p->set_guid(guid);
       AutofillModelAssociator::FillProfileWithServerData(p.get(),
                                                               profile);
-      if (!web_database_->AddAutoFillProfile(*p.get())) {
+      if (!web_database_->AddAutofillProfile(*p.get())) {
         NOTREACHED() << "Couldn't add autofill profile: " << guid;
         return;
       }
@@ -364,16 +364,16 @@ void AutofillChangeProcessor::ApplySyncAutofillProfileChange(
             "model association has not happened");
         return;
       }
-      AutoFillProfile *temp_ptr;
-      if (!web_database_->GetAutoFillProfile(*guid, &temp_ptr)) {
+      AutofillProfile *temp_ptr;
+      if (!web_database_->GetAutofillProfile(*guid, &temp_ptr)) {
         LOG(ERROR) << "Autofill profile not found for " << *guid;
         return;
       }
 
-      scoped_ptr<AutoFillProfile> p(temp_ptr);
+      scoped_ptr<AutofillProfile> p(temp_ptr);
 
       AutofillModelAssociator::FillProfileWithServerData(p.get(), profile);
-      if (!web_database_->UpdateAutoFillProfile(*(p.get()))) {
+      if (!web_database_->UpdateAutofillProfile(*(p.get()))) {
         LOG(ERROR) << "Couldn't update autofill profile: " << guid;
         return;
       }
@@ -393,7 +393,7 @@ void AutofillChangeProcessor::ApplySyncAutofillProfileDelete(
     return;
   }
 
-  if (!web_database_->RemoveAutoFillProfile(*guid)) {
+  if (!web_database_->RemoveAutofillProfile(*guid)) {
     LOG(ERROR) << "Could not remove the profile";
     return;
   }

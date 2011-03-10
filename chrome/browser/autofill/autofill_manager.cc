@@ -387,7 +387,7 @@ void AutofillManager::OnFillAutoFillFormData(int query_id,
                                              const FormData& form,
                                              const FormField& field,
                                              int unique_id) {
-  const std::vector<AutoFillProfile*>& profiles = personal_data_->profiles();
+  const std::vector<AutofillProfile*>& profiles = personal_data_->profiles();
   const std::vector<CreditCard*>& credit_cards = personal_data_->credit_cards();
   RenderViewHost* host = NULL;
   FormStructure* form_structure = NULL;
@@ -407,9 +407,9 @@ void AutofillManager::OnFillAutoFillFormData(int query_id,
   DCHECK(!guid::IsValidGUID(cc_guid) || !guid::IsValidGUID(profile_guid));
 
   // Find the profile that matches the |profile_id|, if one is specified.
-  const AutoFillProfile* profile = NULL;
+  const AutofillProfile* profile = NULL;
   if (guid::IsValidGUID(profile_guid)) {
-    for (std::vector<AutoFillProfile*>::const_iterator iter = profiles.begin();
+    for (std::vector<AutofillProfile*>::const_iterator iter = profiles.begin();
          iter != profiles.end(); ++iter) {
       if ((*iter)->guid() == profile_guid) {
         profile = *iter;
@@ -720,7 +720,7 @@ void AutofillManager::set_metric_logger(
   metric_logger_.reset(metric_logger);
 }
 
-bool AutofillManager::GetHost(const std::vector<AutoFillProfile*>& profiles,
+bool AutofillManager::GetHost(const std::vector<AutofillProfile*>& profiles,
                               const std::vector<CreditCard*>& credit_cards,
                               RenderViewHost** host) {
   if (!IsAutoFillEnabled())
@@ -797,11 +797,11 @@ void AutofillManager::GetProfileSuggestions(FormStructure* form,
                                             std::vector<string16>* labels,
                                             std::vector<string16>* icons,
                                             std::vector<int>* unique_ids) {
-  const std::vector<AutoFillProfile*>& profiles = personal_data_->profiles();
-  std::vector<AutoFillProfile*> matched_profiles;
-  for (std::vector<AutoFillProfile*>::const_iterator iter = profiles.begin();
+  const std::vector<AutofillProfile*>& profiles = personal_data_->profiles();
+  std::vector<AutofillProfile*> matched_profiles;
+  for (std::vector<AutofillProfile*>::const_iterator iter = profiles.begin();
        iter != profiles.end(); ++iter) {
-    AutoFillProfile* profile = *iter;
+    AutofillProfile* profile = *iter;
 
     // The value of the stored data for this field type in the |profile|.
     string16 profile_field_value = profile->GetFieldText(type);
@@ -825,7 +825,7 @@ void AutofillManager::GetProfileSuggestions(FormStructure* form,
     form_fields.push_back((*iter)->type());
   }
 
-  AutoFillProfile::CreateInferredLabels(&matched_profiles, &form_fields,
+  AutofillProfile::CreateInferredLabels(&matched_profiles, &form_fields,
                                         type.field_type(), 1, labels);
 
   // No icons for profile suggestions.
@@ -893,7 +893,7 @@ void AutofillManager::FillCreditCardFormField(const CreditCard* credit_card,
   }
 }
 
-void AutofillManager::FillFormField(const AutoFillProfile* profile,
+void AutofillManager::FillFormField(const AutofillProfile* profile,
                                     AutofillType type,
                                     webkit_glue::FormField* field) {
   DCHECK(profile);
@@ -910,7 +910,7 @@ void AutofillManager::FillFormField(const AutoFillProfile* profile,
   }
 }
 
-void AutofillManager::FillPhoneNumberField(const AutoFillProfile* profile,
+void AutofillManager::FillPhoneNumberField(const AutofillProfile* profile,
                                            AutofillType type,
                                            webkit_glue::FormField* field) {
   // If we are filling a phone number, check to see if the size field

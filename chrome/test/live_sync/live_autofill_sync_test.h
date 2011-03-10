@@ -15,7 +15,7 @@
 
 class AutofillEntry;
 class AutofillKey;
-class AutoFillProfile;
+class AutofillProfile;
 class WebDataService;
 
 class LiveAutofillSyncTest : public LiveSyncTest {
@@ -53,10 +53,10 @@ class LiveAutofillSyncTest : public LiveSyncTest {
   // Replaces the Autofill profiles in sync profile |profile| with
   // |autofill_profiles|.
   void SetProfiles(
-      int profile, std::vector<AutoFillProfile>* autofill_profiles);
+      int profile, std::vector<AutofillProfile>* autofill_profiles);
 
   // Adds the autofill profile |autofill_profile| to sync profile |profile|.
-  void AddProfile(int profile, const AutoFillProfile& autofill_profile);
+  void AddProfile(int profile, const AutofillProfile& autofill_profile);
 
   // Removes the autofill profile with guid |guid| from sync profile
   // |profile|.
@@ -71,7 +71,7 @@ class LiveAutofillSyncTest : public LiveSyncTest {
 
   // Gets all the Autofill profiles in the PersonalDataManager of sync profile
   // |profile|.
-  const std::vector<AutoFillProfile*>& GetAllProfiles(int profile)
+  const std::vector<AutofillProfile*>& GetAllProfiles(int profile)
       WARN_UNUSED_RESULT;
 
   // Compares the Autofill profiles in the PersonalDataManagers of sync profiles
@@ -82,7 +82,7 @@ class LiveAutofillSyncTest : public LiveSyncTest {
   DISALLOW_COPY_AND_ASSIGN(LiveAutofillSyncTest);
 };
 
-AutoFillProfile CreateAutofillProfile(LiveAutofillSyncTest::ProfileType type);
+AutofillProfile CreateAutofillProfile(LiveAutofillSyncTest::ProfileType type);
 
 class TwoClientLiveAutofillSyncTest : public LiveAutofillSyncTest {
  public:

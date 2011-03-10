@@ -1262,13 +1262,13 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
             tab_index=tab_index, window_index=window_index)['page_translated'],
         args=[tab_index, window_index])
 
-  def FillAutoFillProfile(self, profiles=None, credit_cards=None,
+  def FillAutofillProfile(self, profiles=None, credit_cards=None,
                           tab_index=0, window_index=0):
     """Set the autofill profile to contain the given profiles and credit cards.
 
        If profiles or credit_cards are specified, they will overwrite existing
        profiles and credit cards. To update profiles and credit cards, get the
-       existing ones with the GetAutoFillProfile function and then append new
+       existing ones with the GetAutofillProfile function and then append new
        profiles to the list and call this function.
 
     Args:
@@ -1321,19 +1321,19 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
       pyauto_errors.JSONInterfaceError if the automation call returns an error.
     """
     cmd_dict = {  # Prepare command for the json interface
-      'command': 'FillAutoFillProfile',
+      'command': 'FillAutofillProfile',
       'tab_index': tab_index,
       'profiles': profiles,
       'credit_cards': credit_cards
     }
     self._GetResultFromJSONRequest(cmd_dict, windex=window_index)
 
-  def GetAutoFillProfile(self, tab_index=0, window_index=0):
+  def GetAutofillProfile(self, tab_index=0, window_index=0):
     """Return the profile including all profiles and credit cards currently
        saved as a list of dictionaries.
 
        The format of the returned dictionary is described above in
-       FillAutoFillProfile. The general format is:
+       FillAutofillProfile. The general format is:
        {'profiles': [list of profile dictionaries as described above],
         'credit_cards': [list of credit card dictionaries as described above]}
 
@@ -1345,7 +1345,7 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
        pyauto_errors.JSONInterfaceError if the automation call returns an error.
     """
     cmd_dict = {  # Prepare command for the json interface
-      'command': 'GetAutoFillProfile',
+      'command': 'GetAutofillProfile',
       'tab_index': tab_index
     }
     return self._GetResultFromJSONRequest(cmd_dict, windex=window_index)

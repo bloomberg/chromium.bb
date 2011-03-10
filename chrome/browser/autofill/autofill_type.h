@@ -62,7 +62,7 @@ class AutofillType {
   FieldTypeSubGroup subgroup() const;
 
   // Maps |field_type| to a field type that can be directly stored in a profile
-  // (in the sense that it makes sense to call |AutoFillProfile::SetInfo()| with
+  // (in the sense that it makes sense to call |AutofillProfile::SetInfo()| with
   // the returned field type as the first parameter).
   static AutofillFieldType GetEquivalentFieldType(AutofillFieldType field_type);
 

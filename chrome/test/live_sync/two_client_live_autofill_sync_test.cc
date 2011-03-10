@@ -154,9 +154,9 @@ IN_PROC_BROWSER_TEST_F(TwoClientLiveAutofillSyncTest, AddDuplicateProfiles) {
 IN_PROC_BROWSER_TEST_F(TwoClientLiveAutofillSyncTest, SameProfileWithConflict) {
   ASSERT_TRUE(SetupClients()) << "SetupClients() failed.";
 
-  AutoFillProfile profile0 =
+  AutofillProfile profile0 =
       CreateAutofillProfile(LiveAutofillSyncTest::PROFILE_HOMER);
-  AutoFillProfile profile1 =
+  AutofillProfile profile1 =
       CreateAutofillProfile(LiveAutofillSyncTest::PROFILE_HOMER);
   profile1.SetInfo(AutofillType(PHONE_FAX_WHOLE_NUMBER),
                    ASCIIToUTF16("1234567890"));
