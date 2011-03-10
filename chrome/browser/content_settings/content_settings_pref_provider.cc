@@ -562,24 +562,36 @@ void PrefProvider::ReadExceptions(bool overwrite) {
   base::AutoLock auto_lock(lock());
 
   PrefService* prefs = profile_->GetPrefs();
-  DictionaryValue* all_settings_dictionary =
-      prefs->GetMutableDictionary(prefs::kContentSettingsPatterns);
+  const DictionaryValue* all_settings_dictionary =
+      prefs->GetDictionary(prefs::kContentSettingsPatterns);
 
   if (overwrite)
     host_content_settings()->clear();
 
   // Careful: The returned value could be NULL if the pref has never been set.
   if (all_settings_dictionary != NULL) {
-    // Convert all Unicode patterns into punycode form, then read.
-    CanonicalizeContentSettingsExceptions(all_settings_dictionary);
+    DictionaryValue* mutable_settings;
+    scoped_ptr<DictionaryValue> mutable_settings_scope;
 
-    for (DictionaryValue::key_iterator i(all_settings_dictionary->begin_keys());
-         i != all_settings_dictionary->end_keys(); ++i) {
+    if (!is_off_the_record()) {
+      mutable_settings =
+          prefs->GetMutableDictionary(prefs::kContentSettingsPatterns);
+    } else {
+      // Create copy as we do not want to persist anything in OTR prefs.
+      mutable_settings = all_settings_dictionary->DeepCopy();
+      mutable_settings_scope.reset(mutable_settings);
+    }
+
+    // Convert all Unicode patterns into punycode form, then read.
+    CanonicalizeContentSettingsExceptions(mutable_settings);
+
+    for (DictionaryValue::key_iterator i(mutable_settings->begin_keys());
+         i != mutable_settings->end_keys(); ++i) {
       const std::string& pattern(*i);
       if (!ContentSettingsPattern(pattern).IsValid())
         LOG(WARNING) << "Invalid pattern stored in content settings";
       DictionaryValue* pattern_settings_dictionary = NULL;
-      bool found = all_settings_dictionary->GetDictionaryWithoutPathExpansion(
+      bool found = mutable_settings->GetDictionaryWithoutPathExpansion(
           pattern, &pattern_settings_dictionary);
       DCHECK(found);
 

@@ -13,6 +13,10 @@ OverlayPersistentPrefStore::~OverlayPersistentPrefStore() {
   underlay_->RemoveObserver(this);
 }
 
+bool OverlayPersistentPrefStore::IsSetInOverlay(const std::string& key) const {
+  return overlay_.GetValue(key, NULL);
+}
+
 void OverlayPersistentPrefStore::AddObserver(PrefStore::Observer* observer) {
   observers_.AddObserver(observer);
 }

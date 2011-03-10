@@ -24,6 +24,11 @@ class OverlayPersistentPrefStore : public PersistentPrefStore,
   explicit OverlayPersistentPrefStore(PersistentPrefStore* underlay);
   virtual ~OverlayPersistentPrefStore();
 
+  // Returns true if a value has been set for the |key| in this
+  // OverlayPersistentPrefStore, i.e. if it potentially overrides a value
+  // from the |underlay_|.
+  virtual bool IsSetInOverlay(const std::string& key) const;
+
   // Methods of PrefStore.
   virtual void AddObserver(PrefStore::Observer* observer);
   virtual void RemoveObserver(PrefStore::Observer* observer);
