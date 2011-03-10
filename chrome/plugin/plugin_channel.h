@@ -46,8 +46,8 @@ class PluginChannel : public PluginChannelBase {
 
   bool in_send() { return in_send_ != 0; }
 
-  bool off_the_record() { return off_the_record_; }
-  void set_off_the_record(bool value) { off_the_record_ = value; }
+  bool incognito() { return incognito_; }
+  void set_incognito(bool value) { incognito_ = value; }
 
 #if defined(OS_POSIX)
   int renderer_fd() const { return channel_->GetClientFileDescriptor(); }
@@ -90,7 +90,7 @@ class PluginChannel : public PluginChannelBase {
 
   int in_send_;  // Tracks if we're in a Send call.
   bool log_messages_;  // True if we should log sent and received messages.
-  bool off_the_record_; // True if the renderer is in incognito mode.
+  bool incognito_; // True if the renderer is in incognito mode.
   scoped_refptr<MessageFilter> filter_;  // Handles the modal dialog events.
 
   DISALLOW_COPY_AND_ASSIGN(PluginChannel);

@@ -34,7 +34,7 @@ class PluginThread : public ChildThread {
   virtual bool OnControlMessageReceived(const IPC::Message& msg);
 
   // Callback for when a channel has been created.
-  void OnCreateChannel(int renderer_id, bool off_the_record);
+  void OnCreateChannel(int renderer_id, bool incognito);
   void OnPluginMessage(const std::vector<uint8> &data);
   void OnNotifyRenderersOfPendingShutdown();
 #if defined(OS_MACOSX)

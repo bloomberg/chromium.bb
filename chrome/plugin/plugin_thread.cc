@@ -141,7 +141,7 @@ bool PluginThread::OnControlMessageReceived(const IPC::Message& msg) {
 }
 
 void PluginThread::OnCreateChannel(int renderer_id,
-                                   bool off_the_record) {
+                                   bool incognito) {
   scoped_refptr<PluginChannel> channel(PluginChannel::GetPluginChannel(
       renderer_id, ChildProcess::current()->io_message_loop()));
   IPC::ChannelHandle channel_handle;
@@ -151,7 +151,7 @@ void PluginThread::OnCreateChannel(int renderer_id,
     // On POSIX, pass the renderer-side FD.
     channel_handle.socket = base::FileDescriptor(channel->renderer_fd(), false);
 #endif
-    channel->set_off_the_record(off_the_record);
+    channel->set_incognito(incognito);
   }
 
   Send(new PluginProcessHostMsg_ChannelCreated(channel_handle));

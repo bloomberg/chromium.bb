@@ -717,7 +717,7 @@ void WebPluginProxy::OnPaint(const gfx::Rect& damaged_rect) {
 }
 
 bool WebPluginProxy::IsOffTheRecord() {
-  return channel_->off_the_record();
+  return channel_->incognito();
 }
 
 void WebPluginProxy::ResourceClientDeleted(
