@@ -20,7 +20,7 @@ if [ -z $target ]; then
     exit 1
 fi
 
-datafile=$(mktemp)
+datafile=$(mktemp -t tmp.XXXXXXXXXX)
 trap "rm -f $datafile" EXIT
 
 echo 'ago count' > $datafile
