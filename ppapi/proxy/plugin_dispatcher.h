@@ -49,6 +49,9 @@ class PluginDispatcher : public Dispatcher {
   static const void* GetInterfaceFromDispatcher(const char* interface);
 
   // Dispatcher overrides.
+  virtual bool InitWithChannel(Delegate* delegate,
+                               const IPC::ChannelHandle& channel_handle,
+                               bool is_client);
   virtual bool IsPlugin() const;
 
   // IPC::Channel::Listener implementation.

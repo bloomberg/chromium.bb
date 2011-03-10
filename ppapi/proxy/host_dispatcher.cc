@@ -20,6 +20,27 @@ namespace {
 typedef std::map<PP_Instance, HostDispatcher*> InstanceToDispatcherMap;
 InstanceToDispatcherMap* g_instance_to_dispatcher = NULL;
 
+typedef std::map<PP_Module, HostDispatcher*> ModuleToDispatcherMap;
+ModuleToDispatcherMap* g_module_to_dispatcher = NULL;
+
+PP_Bool ReserveInstanceID(PP_Module module, PP_Instance instance) {
+  // Default to returning true (usable) failure. Otherwise, if there's some
+  // kind of communication error or the plugin just crashed, we'll get into an
+  // infinite loop generating new instnace IDs since we think they're all in
+  // use.
+  ModuleToDispatcherMap::const_iterator found =
+      g_module_to_dispatcher->find(module);
+  if (found == g_module_to_dispatcher->end()) {
+    NOTREACHED();
+    return PP_TRUE;
+  }
+
+  bool usable = true;
+  if (!found->second->Send(new PpapiMsg_ReserveInstanceId(instance, &usable)))
+    return PP_TRUE;
+  return BoolToPPBool(usable);
+}
+
 }  // namespace
 
 HostDispatcher::HostDispatcher(base::ProcessHandle remote_process_handle,
@@ -28,6 +49,10 @@ HostDispatcher::HostDispatcher(base::ProcessHandle remote_process_handle,
     : Dispatcher(remote_process_handle, local_get_interface),
       pp_module_(module),
       ppb_proxy_(NULL) {
+  if (!g_module_to_dispatcher)
+    g_module_to_dispatcher = new ModuleToDispatcherMap;
+  (*g_module_to_dispatcher)[pp_module_] = this;
+
   const PPB_Var_Deprecated* var_interface =
       static_cast<const PPB_Var_Deprecated*>(
           local_get_interface(PPB_VAR_DEPRECATED_INTERFACE));
@@ -35,9 +60,16 @@ HostDispatcher::HostDispatcher(base::ProcessHandle remote_process_handle,
 
   memset(plugin_interface_support_, 0,
          sizeof(PluginInterfaceSupport) * INTERFACE_ID_COUNT);
+
+  ppb_proxy_ = reinterpret_cast<const PPB_Proxy_Private*>(
+      GetLocalInterface(PPB_PROXY_PRIVATE_INTERFACE));
+  DCHECK(ppb_proxy_) << "The proxy interface should always be supported.";
+
+  ppb_proxy_->SetReserveInstanceIDCallback(pp_module_, &ReserveInstanceID);
 }
 
 HostDispatcher::~HostDispatcher() {
+  g_module_to_dispatcher->erase(pp_module_);
 }
 
 // static
@@ -104,7 +136,7 @@ void HostDispatcher::OnChannelError() {
   Dispatcher::OnChannelError();  // Stop using the channel.
 
   // Tell the host about the crash so it can clean up.
-  GetPPBProxy()->PluginCrashed(pp_module());
+  ppb_proxy_->PluginCrashed(pp_module());
 }
 
 const void* HostDispatcher::GetProxiedInterface(const std::string& interface) {
@@ -150,14 +182,6 @@ InterfaceProxy* HostDispatcher::GetOrCreatePPBInterfaceProxy(
     proxy = CreatePPBInterfaceProxy(info);
   }
   return proxy;
-}
-
-const PPB_Proxy_Private* HostDispatcher::GetPPBProxy() {
-  if (!ppb_proxy_) {
-    ppb_proxy_ = reinterpret_cast<const PPB_Proxy_Private*>(
-        GetLocalInterface(PPB_PROXY_PRIVATE_INTERFACE));
-  }
-  return ppb_proxy_;
 }
 
 InterfaceProxy* HostDispatcher::CreatePPBInterfaceProxy(

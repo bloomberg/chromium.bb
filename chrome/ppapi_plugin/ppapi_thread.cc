@@ -48,6 +48,18 @@ bool PpapiThread::OnMessageReceived(const IPC::Message& msg) {
   return true;
 }
 
+MessageLoop* PpapiThread::GetIPCMessageLoop() {
+  return ChildProcess::current()->io_message_loop();
+}
+
+base::WaitableEvent* PpapiThread::GetShutdownEvent() {
+  return ChildProcess::current()->GetShutDownEvent();
+}
+
+std::set<PP_Instance>* PpapiThread::GetGloballySeenInstanceIDSet() {
+  return &globally_seen_instance_ids_;
+}
+
 void PpapiThread::OnMsgLoadPlugin(const FilePath& path) {
   base::ScopedNativeLibrary library(base::LoadNativeLibrary(path));
   if (!library.is_valid())
@@ -103,10 +115,7 @@ bool PpapiThread::SetupRendererChannel(base::ProcessHandle host_process_handle,
   IPC::ChannelHandle plugin_handle;
   plugin_handle.name = StringPrintf("%d.r%d", base::GetCurrentProcId(),
                                     renderer_id);
-  if (!dispatcher->InitWithChannel(
-          ChildProcess::current()->io_message_loop(),
-          plugin_handle, false,
-          ChildProcess::current()->GetShutDownEvent()))
+  if (!dispatcher->InitWithChannel(this, plugin_handle, false))
     return false;
 
   handle->name = plugin_handle.name;

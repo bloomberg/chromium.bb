@@ -6,6 +6,7 @@
 #define PPAPI_PROXY_DISPATCHER_H_
 
 #include <map>
+#include <set>
 #include <string>
 #include <vector>
 
@@ -16,6 +17,7 @@
 #include "ipc/ipc_channel_handle.h"
 #include "ipc/ipc_message.h"
 #include "ipc/ipc_platform_file.h"
+#include "ppapi/c/pp_instance.h"
 #include "ppapi/c/pp_module.h"
 #include "ppapi/proxy/callback_tracker.h"
 #include "ppapi/proxy/interface_id.h"
@@ -60,13 +62,31 @@ class Dispatcher : public IPC::Channel::Listener,
   typedef int32_t (*InitModuleFunc)(PP_Module, GetInterfaceFunc);
   typedef void (*ShutdownModuleFunc)();
 
+  class Delegate {
+   public:
+    // Returns the dedicated message loop for processing IPC requests.
+    virtual MessageLoop* GetIPCMessageLoop() = 0;
+
+    // Returns the event object that becomes signalled when the main thread's
+    // message loop exits.
+    virtual base::WaitableEvent* GetShutdownEvent() = 0;
+
+    // Returns the set used for globally uniquifying PP_Instances. This same
+    // set must be returned for all channels. This is required only for the
+    // plugin side, for the host side, the return value may be NULL.
+    //
+    // DEREFERENCE ONLY ON THE I/O THREAD.
+    virtual std::set<PP_Instance>* GetGloballySeenInstanceIDSet() = 0;
+  };
+
   virtual ~Dispatcher();
 
   // You must call this function before anything else. Returns true on success.
-  bool InitWithChannel(MessageLoop* ipc_message_loop,
-                       const IPC::ChannelHandle& channel_handle,
-                       bool is_client,
-                       base::WaitableEvent* shutdown_event);
+  // The delegate pointer must outlive this class, ownership is not
+  // transferred.
+  virtual bool InitWithChannel(Delegate* delegate,
+                               const IPC::ChannelHandle& channel_handle,
+                               bool is_client);
 
   // Alternative to InitWithChannel() for unit tests that want to send all
   // messages sent via this dispatcher to the given test sink. The test sink
@@ -137,7 +157,12 @@ class Dispatcher : public IPC::Channel::Listener,
     return disallow_trusted_interfaces_;
   }
 
+  Delegate* delegate() { return delegate_; }
+
  private:
+  // Non-owning pointer. Guaranteed non-NULL after init is called.
+  Delegate* delegate_;
+
   base::ProcessHandle remote_process_handle_;  // See getter above.
 
   // When we're unit testing, this will indicate the sink for the messages to

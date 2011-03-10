@@ -12,6 +12,7 @@
 #include "ipc/ipc_sync_channel.h"
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/proxy/interface_proxy.h"
+#include "ppapi/proxy/plugin_message_filter.h"
 #include "ppapi/proxy/plugin_var_serialization_rules.h"
 #include "ppapi/proxy/ppapi_messages.h"
 #include "ppapi/proxy/ppp_class_proxy.h"
@@ -70,6 +71,20 @@ const void* PluginDispatcher::GetInterfaceFromDispatcher(
   if (!info)
     return NULL;
   return info->interface;
+}
+
+bool PluginDispatcher::InitWithChannel(
+    Delegate* delegate,
+    const IPC::ChannelHandle& channel_handle,
+    bool is_client) {
+  if (!Dispatcher::InitWithChannel(delegate, channel_handle, is_client))
+    return false;
+
+  // The message filter will intercept and process certain messages directly
+  // on the I/O thread.
+  channel()->AddFilter(
+      new PluginMessageFilter(delegate->GetGloballySeenInstanceIDSet()));
+  return true;
 }
 
 bool PluginDispatcher::IsPlugin() const {

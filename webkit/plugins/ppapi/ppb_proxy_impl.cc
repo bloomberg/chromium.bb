@@ -28,9 +28,17 @@ PP_Instance GetInstanceForResource(PP_Resource resource) {
   return obj->instance()->pp_instance();
 }
 
+void SetReserveInstanceIDCallback(PP_Module module,
+                                  PP_Bool (*reserve)(PP_Module, PP_Instance)) {
+  PluginModule* plugin_module = ResourceTracker::Get()->GetModule(module);
+  if (plugin_module)
+    plugin_module->SetReserveInstanceIDCallback(reserve);
+}
+
 const PPB_Proxy_Private ppb_proxy = {
   &PluginCrashed,
-  &GetInstanceForResource
+  &GetInstanceForResource,
+  &SetReserveInstanceIDCallback
 };
 
 }  // namespace

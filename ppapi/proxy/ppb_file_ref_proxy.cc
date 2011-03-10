@@ -259,7 +259,7 @@ void PPB_FileRef_Proxy::SerializeFileRef(PP_Resource file_ref,
   }
   HostDispatcher* host_dispatcher = static_cast<HostDispatcher*>(dispatcher());
   PP_Instance instance =
-      host_dispatcher->GetPPBProxy()->GetInstanceForResource(file_ref);
+      host_dispatcher->ppb_proxy()->GetInstanceForResource(file_ref);
 
   result->resource.SetHostResource(instance, file_ref);
   result->file_system_type =

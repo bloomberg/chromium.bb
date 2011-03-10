@@ -13,6 +13,7 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
+#include "content/common/child_process.h"
 #include "content/common/content_switches.h"
 #include "remoting/client/plugin/pepper_entrypoints.h"
 
@@ -325,4 +326,20 @@ PepperPluginRegistry::PepperPluginRegistry() {
     }
     preloaded_modules_[current.path] = module;
   }
+}
+
+MessageLoop* PepperPluginRegistry::GetIPCMessageLoop() {
+  // This is called only in the renderer so we know we have a child process.
+  DCHECK(ChildProcess::current()) << "Must be in the renderer.";
+  return ChildProcess::current()->io_message_loop();
+}
+
+base::WaitableEvent* PepperPluginRegistry::GetShutdownEvent() {
+  DCHECK(ChildProcess::current()) << "Must be in the renderer.";
+  return ChildProcess::current()->GetShutDownEvent();
+}
+
+std::set<PP_Instance>* PepperPluginRegistry::GetGloballySeenInstanceIDSet() {
+  // This function is not needed on the host side of the proxy.
+  return NULL;
 }

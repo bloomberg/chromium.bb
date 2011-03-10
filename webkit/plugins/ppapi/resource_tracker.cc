@@ -12,6 +12,7 @@
 #include "base/rand_util.h"
 #include "ppapi/c/pp_resource.h"
 #include "ppapi/c/pp_var.h"
+#include "webkit/plugins/ppapi/plugin_module.h"
 #include "webkit/plugins/ppapi/ppapi_plugin_instance.h"
 #include "webkit/plugins/ppapi/resource.h"
 #include "webkit/plugins/ppapi/var.h"
@@ -279,7 +280,8 @@ PP_Instance ResourceTracker::AddInstance(PluginInstance* instance) {
     new_instance = MakeTypedId(static_cast<PP_Instance>(base::RandUint64()),
                                PP_ID_TYPE_INSTANCE);
   } while (!new_instance ||
-           instance_map_.find(new_instance) != instance_map_.end());
+           instance_map_.find(new_instance) != instance_map_.end() ||
+           !instance->module()->ReserveInstanceID(new_instance));
 
   instance_map_[new_instance].instance = instance;
   return new_instance;

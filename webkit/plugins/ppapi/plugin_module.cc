@@ -382,7 +382,8 @@ PluginModule::PluginModule(const std::string& name,
       callback_tracker_(new CallbackTracker),
       is_crashed_(false),
       library_(NULL),
-      name_(name) {
+      name_(name),
+      reserve_instance_id_(NULL) {
   pp_module_ = ResourceTracker::Get()->AddModule(this);
   GetMainThreadMessageLoop();  // Initialize the main thread message loop.
   GetLivePluginSet()->insert(this);
@@ -503,6 +504,18 @@ void PluginModule::PluginCrashed() {
     (*i)->InstanceCrashed();
 
   lifetime_delegate_->PluginModuleDead(this);
+}
+
+void PluginModule::SetReserveInstanceIDCallback(
+    PP_Bool (*reserve)(PP_Module, PP_Instance)) {
+  DCHECK(!reserve_instance_id_) << "Only expect one set.";
+  reserve_instance_id_ = reserve;
+}
+
+bool PluginModule::ReserveInstanceID(PP_Instance instance) {
+  if (reserve_instance_id_)
+    return PPBoolToBool(reserve_instance_id_(pp_module_, instance));
+  return true;  // Instance ID is usable.
 }
 
 bool PluginModule::InitializeModule() {

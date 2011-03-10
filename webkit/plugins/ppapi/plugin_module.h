@@ -15,6 +15,8 @@
 #include "base/ref_counted.h"
 #include "base/scoped_ptr.h"
 #include "base/weak_ptr.h"
+#include "ppapi/c/pp_bool.h"
+#include "ppapi/c/pp_instance.h"
 #include "ppapi/c/pp_module.h"
 #include "ppapi/c/ppb.h"
 #include "webkit/plugins/ppapi/plugin_delegate.h"
@@ -126,6 +128,18 @@ class PluginModule : public base::RefCounted<PluginModule>,
   // release relevant resources and update all affected instances.
   void PluginCrashed();
 
+  // Reserves the given instance is unique within the plugin, checking for
+  // collisions. See PPB_Proxy_Private for more information.
+  //
+  // The setter will set the callback which is set up when the proxy
+  // initializes. The Reserve function will call the previously set callback if
+  // it exists to validate the ID. If the callback has not been set (such as
+  // for in-process plugins), the Reserve function will assume that the ID is
+  // usable and will return true.
+  void SetReserveInstanceIDCallback(
+      PP_Bool (*reserve)(PP_Module, PP_Instance));
+  bool ReserveInstanceID(PP_Instance instance);
+
  private:
   // Calls the InitializeModule entrypoint. The entrypoint must have been
   // set and the plugin must not be out of process (we don't maintain
@@ -166,6 +180,8 @@ class PluginModule : public base::RefCounted<PluginModule>,
   // there are no more instances, this object should be deleted.
   typedef std::set<PluginInstance*> PluginInstanceSet;
   PluginInstanceSet instances_;
+
+  PP_Bool (*reserve_instance_id_)(PP_Module, PP_Instance);
 
   DISALLOW_COPY_AND_ASSIGN(PluginModule);
 };

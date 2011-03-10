@@ -79,7 +79,7 @@ class HostDispatcher : public Dispatcher {
   InterfaceProxy* GetOrCreatePPBInterfaceProxy(InterfaceID id);
 
   // Returns the proxy interface for talking to the implementation.
-  const PPB_Proxy_Private* GetPPBProxy();
+  const PPB_Proxy_Private* ppb_proxy() const { return ppb_proxy_; }
 
  private:
   friend class HostDispatcherTest;
@@ -101,7 +101,7 @@ class HostDispatcher : public Dispatcher {
   // messages. They are created on demand when we receive messages.
   scoped_ptr<InterfaceProxy> target_proxies_[INTERFACE_ID_COUNT];
 
-  // Lazily initialized, may be NULL. Use GetPPBProxy().
+  // Guaranteed non-NULL.
   const PPB_Proxy_Private* ppb_proxy_;
 
   DISALLOW_COPY_AND_ASSIGN(HostDispatcher);

@@ -362,9 +362,8 @@ bool DispatcherWrapper::Init(
   dispatcher_.reset(new pp::proxy::HostDispatcher(
       plugin_process_handle, pp_module, local_get_interface));
 
-  if (!dispatcher_->InitWithChannel(
-          ChildProcess::current()->io_message_loop(), channel_handle,
-          true, ChildProcess::current()->GetShutDownEvent())) {
+  if (!dispatcher_->InitWithChannel(PepperPluginRegistry::GetInstance(),
+                                    channel_handle, true)) {
     dispatcher_.reset();
     return false;
   }

@@ -165,7 +165,8 @@ InterfaceList* InterfaceList::GetInstance() {
 
 Dispatcher::Dispatcher(base::ProcessHandle remote_process_handle,
                        GetInterfaceFunc local_get_interface)
-    : remote_process_handle_(remote_process_handle),
+    : delegate_(NULL),
+      remote_process_handle_(remote_process_handle),
       test_sink_(NULL),
       disallow_trusted_interfaces_(false),  // TODO(brettw) make this settable.
       local_get_interface_(local_get_interface),
@@ -175,14 +176,14 @@ Dispatcher::Dispatcher(base::ProcessHandle remote_process_handle,
 Dispatcher::~Dispatcher() {
 }
 
-bool Dispatcher::InitWithChannel(MessageLoop* ipc_message_loop,
+bool Dispatcher::InitWithChannel(Delegate* delegate,
                                  const IPC::ChannelHandle& channel_handle,
-                                 bool is_client,
-                                 base::WaitableEvent* shutdown_event) {
+                                 bool is_client) {
   IPC::Channel::Mode mode = is_client ? IPC::Channel::MODE_CLIENT
                                       : IPC::Channel::MODE_SERVER;
   channel_.reset(new IPC::SyncChannel(channel_handle, mode, this,
-                                      ipc_message_loop, false, shutdown_event));
+                                      delegate->GetIPCMessageLoop(), false,
+                                      delegate->GetShutdownEvent()));
   return true;
 }
 

@@ -27,7 +27,8 @@ class PluginDispatcher;
 }
 }
 
-class PpapiThread : public ChildThread {
+class PpapiThread : public ChildThread,
+                    public pp::proxy::Dispatcher::Delegate {
  public:
   PpapiThread();
   ~PpapiThread();
@@ -35,6 +36,11 @@ class PpapiThread : public ChildThread {
  private:
   // ChildThread overrides.
   virtual bool OnMessageReceived(const IPC::Message& msg);
+
+  // Dispatcher::Delegate implementation.
+  virtual MessageLoop* GetIPCMessageLoop();
+  virtual base::WaitableEvent* GetShutdownEvent();
+  virtual std::set<PP_Instance>* GetGloballySeenInstanceIDSet();
 
   // Message handlers.
   void OnMsgLoadPlugin(const FilePath& path);
@@ -58,6 +64,9 @@ class PpapiThread : public ChildThread {
   // To force people to "do the right thing" we generate a random module ID
   // and pass it around as necessary.
   PP_Module local_pp_module_;
+
+  // See Dispatcher::Delegate::GetGloballySeenInstanceIDSet.
+  std::set<PP_Instance> globally_seen_instance_ids_;
 
   DISALLOW_COPY_AND_ASSIGN(PpapiThread);
 };

@@ -20,6 +20,24 @@ IPC_MESSAGE_CONTROL2(PpapiMsg_CreateChannel,
                      base::ProcessHandle /* host_process_handle */,
                      int /* renderer_id */);
 
+// Each plugin may be referenced by multiple renderers. We need the instance
+// IDs to be unique within a plugin, despite coming from different renderers,
+// and unique within a renderer, despite going to different plugins. This means
+// that neither the renderer nor the plugin can generate instance IDs without
+// consulting the other.
+//
+// We resolve this by having the renderer generate a unique instance ID inside
+// its process. It then asks the plugin to reserve that ID by sending this sync
+// message. If the plugin has not yet seen this ID, it will remember it as used
+// (to prevent a race condition if another renderer tries to then use the same
+// instance), and set usable as true.
+//
+// If the plugin has already seen the instance ID, it will set usable as false
+// and the renderer must retry a new instance ID.
+IPC_SYNC_MESSAGE_CONTROL1_1(PpapiMsg_ReserveInstanceId,
+                            PP_Instance /* instance */,
+                            bool /* usable */)
+
 // Sent in both directions to see if the other side supports the given
 // interface.
 IPC_SYNC_MESSAGE_CONTROL1_1(PpapiMsg_SupportsInterface,
