@@ -724,22 +724,13 @@ class NetworkLibrary {
   // TODO(stevenjb): eliminate Network* version of Connect functions.
   // Instead, always use service_path and improve the error handling.
   // Connect to the specified wireless network with password.
-  // Returns false if the attempt fails immediately (e.g. passphrase too short)
-  // and sets network->error().
-  virtual bool ConnectToWifiNetwork(WifiNetwork* network,
-                                    const std::string& password,
-                                    const std::string& identity,
-                                    const std::string& certpath) = 0;
+  virtual void ConnectToWifiNetwork(WifiNetwork* network) = 0;
 
   // Same as above but searches for an existing network by name.
-  virtual bool ConnectToWifiNetwork(const std::string& service_path,
-                                    const std::string& password,
-                                    const std::string& identity,
-                                    const std::string& certpath) = 0;
+  virtual void ConnectToWifiNetwork(const std::string& service_path) = 0;
 
   // Connect to the specified network with security, ssid, and password.
-  // Returns false if the attempt fails immediately (e.g. passphrase too short).
-  virtual bool ConnectToWifiNetwork(ConnectionSecurity security,
+  virtual void ConnectToWifiNetwork(ConnectionSecurity security,
                                     const std::string& ssid,
                                     const std::string& password,
                                     const std::string& identity,
@@ -747,8 +738,7 @@ class NetworkLibrary {
                                     bool auto_connect) = 0;
 
   // Connect to the specified cellular network.
-  // Returns false if the attempt fails immediately.
-  virtual bool ConnectToCellularNetwork(const CellularNetwork* network) = 0;
+  virtual void ConnectToCellularNetwork(const CellularNetwork* network) = 0;
 
   // Initiates cellular data plan refresh. Plan data will be passed through
   // Network::Observer::CellularDataPlanChanged callback.
