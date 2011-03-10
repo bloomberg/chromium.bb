@@ -25,10 +25,40 @@
 #include "net/url_request/url_request_file_job.h"
 #include "net/url_request/url_request_job.h"
 
-static ChromeURLDataManagerBackend* GetBackend(net::URLRequest* request) {
+namespace {
+
+ChromeURLDataManagerBackend* GetBackend(net::URLRequest* request) {
   return static_cast<ChromeURLRequestContext*>(request->context())->
       GetChromeURLDataManagerBackend();
 }
+
+// Parse a URL into the components used to resolve its request. |source_name|
+// is the hostname and |path| is the remaining portion of the URL.
+void URLToRequest(const GURL& url, std::string* source_name,
+                  std::string* path) {
+  DCHECK(url.SchemeIs(chrome::kChromeDevToolsScheme) ||
+         url.SchemeIs(chrome::kChromeUIScheme));
+
+  if (!url.is_valid()) {
+    NOTREACHED();
+    return;
+  }
+
+  // Our input looks like: chrome://source_name/extra_bits?foo .
+  // So the url's "host" is our source, and everything after the host is
+  // the path.
+  source_name->assign(url.host());
+
+  const std::string& spec = url.possibly_invalid_spec();
+  const url_parse::Parsed& parsed = url.parsed_for_possibly_invalid_spec();
+  // + 1 to skip the slash at the beginning of the path.
+  int offset = parsed.CountCharactersBefore(url_parse::Parsed::PATH, false) + 1;
+
+  if (offset < static_cast<int>(spec.size()))
+    path->assign(spec.substr(offset));
+}
+
+}  // namespace
 
 // URLRequestChromeJob is a net::URLRequestJob that manages running
 // chrome-internal resource requests asynchronously.
@@ -92,67 +122,15 @@ class URLRequestChromeFileJob : public net::URLRequestFileJob {
   DISALLOW_COPY_AND_ASSIGN(URLRequestChromeFileJob);
 };
 
-void ChromeURLDataManagerBackend::URLToRequest(const GURL& url,
-                                               std::string* source_name,
-                                               std::string* path) {
-  DCHECK(url.SchemeIs(chrome::kChromeDevToolsScheme) ||
-         url.SchemeIs(chrome::kChromeUIScheme));
-
-  if (!url.is_valid()) {
-    NOTREACHED();
-    return;
-  }
-
-  // Our input looks like: chrome://source_name/extra_bits?foo .
-  // So the url's "host" is our source, and everything after the host is
-  // the path.
-  source_name->assign(url.host());
-
-  const std::string& spec = url.possibly_invalid_spec();
-  const url_parse::Parsed& parsed = url.parsed_for_possibly_invalid_spec();
-  // + 1 to skip the slash at the beginning of the path.
-  int offset = parsed.CountCharactersBefore(url_parse::Parsed::PATH, false) + 1;
-
-  if (offset < static_cast<int>(spec.size()))
-    path->assign(spec.substr(offset));
-}
-
-bool ChromeURLDataManagerBackend::URLToFilePath(const GURL& url,
-                                                FilePath* file_path) {
-  // Parse the URL into a request for a source and path.
-  std::string source_name;
-  std::string relative_path;
-
-  // Remove Query and Ref from URL.
-  GURL stripped_url;
-  GURL::Replacements replacements;
-  replacements.ClearQuery();
-  replacements.ClearRef();
-  stripped_url = url.ReplaceComponents(replacements);
-
-  URLToRequest(stripped_url, &source_name, &relative_path);
-
-  FileSourceMap::const_iterator i(file_sources_.find(source_name));
-  if (i == file_sources_.end())
-    return false;
-
-  // Check that |relative_path| is not an absolute path (otherwise AppendASCII()
-  // will DCHECK). The awkward use of StringType is because on some systems
-  // FilePath expects a std::string, but on others a std::wstring.
-  FilePath p(FilePath::StringType(relative_path.begin(), relative_path.end()));
-  if (p.IsAbsolute())
-    return false;
-
-  *file_path = i->second.AppendASCII(relative_path);
-
-  return true;
-}
+class DevToolsJobFactory {
+ public:
+  static bool IsSupportedURL(const GURL& url, FilePath* path);
+  static net::URLRequestJob* CreateJobForRequest(net::URLRequest* request,
+                                          const FilePath& path);
+};
 
 ChromeURLDataManagerBackend::ChromeURLDataManagerBackend()
     : next_request_id_(0) {
-  FilePath inspector_dir;
-  if (PathService::Get(chrome::DIR_INSPECTOR, &inspector_dir))
-    AddFileSource(chrome::kChromeUIDevToolsHost, inspector_dir);
   AddDataSource(new SharedResourcesDataSource());
 }
 
@@ -185,12 +163,6 @@ void ChromeURLDataManagerBackend::AddDataSource(
   }
   data_sources_[source->source_name()] = source;
   source->backend_ = this;
-}
-
-void ChromeURLDataManagerBackend::AddFileSource(const std::string& source_name,
-                                                const FilePath& file_path) {
-  DCHECK(file_sources_.count(source_name) == 0);
-  file_sources_[source_name] = file_path;
 }
 
 bool ChromeURLDataManagerBackend::HasPendingJob(
@@ -280,9 +252,8 @@ net::URLRequestJob* ChromeURLDataManagerBackend::Factory(
     const std::string& scheme) {
   // Try first with a file handler
   FilePath path;
-  ChromeURLDataManagerBackend* backend = GetBackend(request);
-  if (backend->URLToFilePath(request->url(), &path))
-    return new URLRequestChromeFileJob(request, path);
+  if (DevToolsJobFactory::IsSupportedURL(request->url(), &path))
+    return DevToolsJobFactory::CreateJobForRequest(request, path);
 
   // Next check for chrome://view-http-cache/*, which uses its own job type.
   if (ViewHttpCacheJobFactory::IsSupportedURL(request->url()))
@@ -394,3 +365,46 @@ URLRequestChromeFileJob::URLRequestChromeFileJob(net::URLRequest* request,
 }
 
 URLRequestChromeFileJob::~URLRequestChromeFileJob() {}
+
+bool DevToolsJobFactory::IsSupportedURL(const GURL& url, FilePath* path) {
+  if (!url.SchemeIs(chrome::kChromeDevToolsScheme))
+    return false;
+
+  if (!url.is_valid()) {
+    NOTREACHED();
+    return false;
+  }
+
+  // Remove Query and Ref from URL.
+  GURL stripped_url;
+  GURL::Replacements replacements;
+  replacements.ClearQuery();
+  replacements.ClearRef();
+  stripped_url = url.ReplaceComponents(replacements);
+
+  std::string source_name;
+  std::string relative_path;
+  URLToRequest(stripped_url, &source_name, &relative_path);
+
+  if (source_name != chrome::kChromeUIDevToolsHost)
+    return false;
+
+  // Check that |relative_path| is not an absolute path (otherwise
+  // AppendASCII() will DCHECK).  The awkward use of StringType is because on
+  // some systems FilePath expects a std::string, but on others a std::wstring.
+  FilePath p(FilePath::StringType(relative_path.begin(), relative_path.end()));
+  if (p.IsAbsolute())
+    return false;
+
+  FilePath inspector_dir;
+  if (!PathService::Get(chrome::DIR_INSPECTOR, &inspector_dir))
+    return false;
+
+  *path = inspector_dir.AppendASCII(relative_path);
+  return true;
+}
+
+net::URLRequestJob* DevToolsJobFactory::CreateJobForRequest(
+    net::URLRequest* request, const FilePath& path) {
+  return new URLRequestChromeFileJob(request, path);
+}

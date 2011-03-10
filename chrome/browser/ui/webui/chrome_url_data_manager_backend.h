@@ -40,12 +40,6 @@ class ChromeURLDataManagerBackend {
   // Adds a DataSource to the collection of data sources.
   void AddDataSource(ChromeURLDataManager::DataSource* source);
 
-  // Add/remove a path from the collection of file sources.
-  // A file source acts like a file:// URL to the specified path.
-  // Calling this from threads other the IO thread must be done via
-  // InvokeLater.
-  void AddFileSource(const std::string& source_name, const FilePath& path);
-
   // DataSource invokes this. Sends the data to the URLRequest.
   void DataAvailable(RequestID request_id, RefCountedMemory* bytes);
 
@@ -57,15 +51,7 @@ class ChromeURLDataManagerBackend {
 
   typedef std::map<std::string,
       scoped_refptr<ChromeURLDataManager::DataSource> > DataSourceMap;
-  typedef std::map<std::string, FilePath> FileSourceMap;
   typedef std::map<RequestID, URLRequestChromeJob*> PendingRequestMap;
-
-  // Parse a URL into the components used to resolve its request.
-  void URLToRequest(const GURL& url, std::string* source, std::string* path);
-
-  // Translate a chrome resource URL into a local file path if there is one.
-  // Returns false if there is no file handler for this URL
-  bool URLToFilePath(const GURL& url, FilePath* file_path);
 
   // Called by the job when it's starting up.
   // Returns false if |url| is not a URL managed by this object.
@@ -78,9 +64,6 @@ class ChromeURLDataManagerBackend {
   // Called by ~URLRequestChromeJob to verify that |pending_requests_| is kept
   // up to date.
   bool HasPendingJob(URLRequestChromeJob* job) const;
-
-  // File sources of data, keyed by source name (e.g. "inspector").
-  FileSourceMap file_sources_;
 
   // Custom sources of data, keyed by source path (e.g. "favicon").
   DataSourceMap data_sources_;
