@@ -118,12 +118,6 @@ void PrintWebViewHelper::PrintFrame(WebFrame* frame,
   Print(frame, NULL, script_initiated, is_preview);
 }
 
-void PrintWebViewHelper::PrintNode(WebNode* node,
-                                   bool script_initiated,
-                                   bool is_preview) {
-  Print(node->document().frame(), node, script_initiated, is_preview);
-}
-
 bool PrintWebViewHelper::OnMessageReceived(const IPC::Message& message) {
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(PrintWebViewHelper, message)
@@ -214,7 +208,7 @@ void PrintWebViewHelper::OnPrintNodeUnderContextMenu() {
   // Make a copy of the node, since we will do a sync call to the browser and
   // during that time OnContextMenuClosed might reset context_menu_node_.
   WebNode context_menu_node(render_view()->context_menu_node());
-  PrintNode(&context_menu_node, false, false);
+  Print(context_menu_node.document().frame(), &context_menu_node, false, false);
 }
 
 void PrintWebViewHelper::Print(WebKit::WebFrame* frame,
@@ -487,12 +481,30 @@ void PrintWebViewHelper::UpdatePrintableSizeInPrintParameters(
 bool PrintWebViewHelper::InitPrintSettings(WebFrame* frame,
                                            WebNode* node) {
   ViewMsg_PrintPages_Params settings;
-  if (GetDefaultPrintSettings(frame, node, &settings.params)) {
-    print_pages_params_.reset(new ViewMsg_PrintPages_Params(settings));
-    print_pages_params_->pages.clear();
-    return true;
+
+  if (!render_view()->Send(new ViewHostMsg_GetDefaultPrintSettings(
+          render_view()->routing_id(), &settings.params))) {
+    NOTREACHED();
+    return false;
   }
-  return false;
+  // Check if the printer returned any settings, if the settings is empty, we
+  // can safely assume there are no printer drivers configured. So we safely
+  // terminate.
+  if (settings.params.IsEmpty()) {
+    render_view()->runModalAlertDialog(
+        frame,
+        l10n_util::GetStringUTF16(IDS_DEFAULT_PRINTER_NOT_FOUND_WARNING));
+    return false;
+  }
+  if (!settings.params.dpi || !settings.params.document_cookie) {
+    // Invalid print page settings.
+    NOTREACHED();
+    return false;
+  }
+  UpdatePrintableSizeInPrintParameters(frame, node, &settings.params);
+  settings.pages.clear();
+  print_pages_params_.reset(new ViewMsg_PrintPages_Params(settings));
+  return true;
 }
 
 bool PrintWebViewHelper::UpdatePrintSettings(
@@ -506,32 +518,6 @@ bool PrintWebViewHelper::UpdatePrintSettings(
     return false;
   }
   print_pages_params_.reset(new ViewMsg_PrintPages_Params(settings));
-  return true;
-}
-
-bool PrintWebViewHelper::GetDefaultPrintSettings(WebFrame* frame,
-                                                 WebNode* node,
-                                                 ViewMsg_Print_Params* params) {
-  if (!render_view()->Send(new ViewHostMsg_GetDefaultPrintSettings(
-          render_view()->routing_id(), params))) {
-    NOTREACHED();
-    return false;
-  }
-  // Check if the printer returned any settings, if the settings is empty, we
-  // can safely assume there are no printer drivers configured. So we safely
-  // terminate.
-  if (params->IsEmpty()) {
-    render_view()->runModalAlertDialog(
-        frame,
-        l10n_util::GetStringUTF16(IDS_DEFAULT_PRINTER_NOT_FOUND_WARNING));
-    return false;
-  }
-  if (!(params->dpi && params->document_cookie)) {
-    // Invalid print page settings.
-    NOTREACHED();
-    return false;
-  }
-  UpdatePrintableSizeInPrintParameters(frame, node, params);
   return true;
 }
 
