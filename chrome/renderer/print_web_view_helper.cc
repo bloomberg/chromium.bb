@@ -501,7 +501,7 @@ bool PrintWebViewHelper::UpdatePrintSettings(
   if (!render_view()->Send(new ViewHostMsg_UpdatePrintSettings(
           render_view()->routing_id(),
           print_pages_params_->params.document_cookie,
-          job_settings, &settings.params))) {
+          job_settings, &settings))) {
     NOTREACHED();
     return false;
   }

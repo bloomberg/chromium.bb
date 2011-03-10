@@ -1592,7 +1592,7 @@ IPC_SYNC_MESSAGE_ROUTED0_1(ViewHostMsg_GetDefaultPrintSettings,
 IPC_SYNC_MESSAGE_ROUTED2_1(ViewHostMsg_UpdatePrintSettings,
                            int /* document_cookie */,
                            DictionaryValue /* job_settings */,
-                           ViewMsg_Print_Params /* current_settings */)
+                           ViewMsg_PrintPages_Params /* current_settings */)
 
 // It's the renderer that controls the printing process when it is generated
 // by javascript. This step is about showing UI to the user to select the

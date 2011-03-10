@@ -284,12 +284,14 @@ void PrintingMessageFilter::OnUpdatePrintSettings(
 void PrintingMessageFilter::OnUpdatePrintSettingsReply(
     scoped_refptr<printing::PrinterQuery> printer_query,
     IPC::Message* reply_msg) {
-  ViewMsg_Print_Params params;
+  ViewMsg_PrintPages_Params params;
   if (printer_query->last_status() != printing::PrintingContext::OK) {
     memset(&params, 0, sizeof(params));
   } else {
-    RenderParamsFromPrintSettings(printer_query->settings(), &params);
-    params.document_cookie = printer_query->cookie();
+    RenderParamsFromPrintSettings(printer_query->settings(), &params.params);
+    params.params.document_cookie = printer_query->cookie();
+    params.pages =
+        printing::PageRange::GetPages(printer_query->settings().ranges);
   }
   ViewHostMsg_UpdatePrintSettings::WriteReplyParams(reply_msg, params);
   Send(reply_msg);
