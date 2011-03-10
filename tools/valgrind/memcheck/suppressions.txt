@@ -3990,6 +3990,17 @@
    fun:_ZN18BrowserProcessImplD0Ev
    fun:_ZN16browser_shutdown8ShutdownEv
 }
+{
+   bug_75641
+   Memcheck:Param
+   write(buf)
+   obj:/lib/tls/i686/cmov/libpthread-2.7.so
+   fun:_ZN3net10FileStream5WriteEPKciP14CallbackRunnerI6Tuple1IiEE
+   fun:_ZN14SessionBackend20AppendCommandsToFileEPN3net10FileStreamERKSt6vectorIP14SessionCommandSaIS5_EE
+   fun:_ZN14SessionBackend14AppendCommandsEPSt6vectorIP14SessionCommandSaIS2_EEb
+   fun:_Z16DispatchToMethodI14SessionBackendMS0_FvPSt6vectorIP14SessionCommandSaIS3_EEbES6_bEvPT_T0_RK6Tuple2IT1_T2_E
+   fun:_ZN14RunnableMethodI14SessionBackendMS0_FvPSt6vectorIP14SessionCommandSaIS3_EEbE6Tuple2IS6_bEE3RunEv
+}
 
 #-----------------------------------------------------------------------
 # These only occur on our Google workstations
