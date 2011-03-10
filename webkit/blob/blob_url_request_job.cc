@@ -11,6 +11,7 @@
 #include "base/message_loop.h"
 #include "base/message_loop_proxy.h"
 #include "base/string_number_conversions.h"
+#include "base/threading/thread_restrictions.h"
 #include "net/base/io_buffer.h"
 #include "net/base/net_errors.h"
 #include "net/http/http_request_headers.h"
@@ -313,6 +314,9 @@ bool BlobURLRequestJob::ReadFile(const BlobData::Item& item,
 
   // Open the file if not yet.
   if (!stream_.IsOpen()) {
+    // stream_.Open() and stream_.Seek() block the IO thread.
+    // See http://crbug.com/75548.
+    base::ThreadRestrictions::ScopedAllowIO allow_io;
     int rv = stream_.Open(item.file_path(), base::PLATFORM_FILE_OPEN |
         base::PLATFORM_FILE_READ | base::PLATFORM_FILE_ASYNC);
     if (rv != net::OK) {

@@ -5,6 +5,7 @@
 #include "webkit/fileapi/file_writer_delegate.h"
 
 #include "base/message_loop.h"
+#include "base/threading/thread_restrictions.h"
 #include "net/base/net_errors.h"
 #include "webkit/fileapi/file_system_operation.h"
 
@@ -67,6 +68,9 @@ void FileWriterDelegate::OnSSLCertificateError(
 
 void FileWriterDelegate::OnResponseStarted(net::URLRequest* request) {
   DCHECK_EQ(request_, request);
+  // file_stream_->Seek() blocks the IO thread.
+  // See http://crbug.com/75548.
+  base::ThreadRestrictions::ScopedAllowIO allow_io;
   if (!request->status().is_success()) {
     OnError(base::PLATFORM_FILE_ERROR_FAILED);
     return;
@@ -164,4 +168,3 @@ void FileWriterDelegate::OnProgress(int bytes_read, bool done) {
 }
 
 }  // namespace fileapi
-
