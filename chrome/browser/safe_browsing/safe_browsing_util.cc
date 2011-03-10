@@ -169,13 +169,6 @@ const char kBinUrlList[] = "goog-badbinurl-shavar";
 const char kBinHashList[] = "goog-badbinhash-shavar";
 const char kCsdWhiteList[] = "goog-csdwhite-sha256";
 
-// Keywords to identify a list type from listname.
-// TODO(lzheng): check if this can be replaced by full listnames.
-const char kMalwareListKey[] = "-malware-";
-const char kPhishingListKey[] = "-phish-";
-const char kBinUrlListKey[] = "-badbinurl-";
-const char kBinHashListKey[] = "-badbinhash-";
-
 int GetListId(const std::string& name) {
   int id;
   if (name == safe_browsing_util::kMalwareList) {
@@ -455,19 +448,19 @@ int GetUrlHashIndex(const GURL& url,
 }
 
 bool IsPhishingList(const std::string& list_name) {
-  return list_name.find(kPhishingListKey) != std::string::npos;
+  return list_name.compare(kPhishingList) == 0;
 }
 
 bool IsMalwareList(const std::string& list_name) {
-  return list_name.find(kMalwareListKey) != std::string::npos;
+  return list_name.compare(kMalwareList) == 0;
 }
 
 bool IsBadbinurlList(const std::string& list_name) {
-  return list_name.find(kBinUrlListKey) != std::string::npos;
+  return list_name.compare(kBinUrlList) == 0;
 }
 
 bool IsBadbinhashList(const std::string& list_name) {
-  return list_name.find(kBinHashListKey) != std::string::npos;
+  return list_name.compare(kBinHashList) == 0;
 }
 
 static void DecodeWebSafe(std::string* decoded) {
