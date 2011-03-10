@@ -1,0 +1,46 @@
+# define a bunch of variables for readability
+
+set_variable MODULE i(4444)
+set_variable INSTANCE i(5555)
+set_variable WIDTH  1000
+set_variable HEIGHT 700
+set_variable TAGS C(23,id\000name\000src\000style\000type\000)
+set_variable VALUES C(74,naclModule\000naclModule\000ppapi.nexe\000background-color:gray\000application/x-nacl\000)
+
+echo
+echo "*** INITIALIZE DUMMY PEPPER UPCALL"
+initialize_pepper pepper_desc
+
+echo
+echo "*** INITIALIZE SDL PEPPER"
+sdl_initialize  ${INSTANCE} ${WIDTH} ${HEIGHT} demo
+
+echo
+echo "*** CREATE UPCALL SERVICE"
+install_upcalls service_string
+# the variable service string is very long and might change so we suppress it
+nondeterministic s("${service_string}") @LENGTHY_SERIVE_STRING
+
+echo
+echo "*** INIT MODULE"
+rpc PPP_InitializeModule hide-results i(0) ${MODULE} h(pepper_desc) s("${service_string}") * i(0) i(0)
+
+
+rpc PPP_Instance_DidCreate ${INSTANCE} i(5) ${TAGS} ${VALUES} * i(0)
+
+echo
+echo "*** TRIGGER REPAINT"
+rpc PPP_Instance_DidChangeView ${INSTANCE} I(4,8,79,${WIDTH},${HEIGHT}) I(4,0,0,${WIDTH},${HEIGHT}) *
+# leave time for flush of stdout
+
+
+sdl_event_loop
+
+
+
+######################################################################
+## EPILOG
+######################################################################
+echo
+echo "*** DONE"
+rpc PPP_ShutdownModule *

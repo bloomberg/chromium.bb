@@ -253,6 +253,8 @@ def SetUpArgumentBits(env):
   BitFromArgument(env, 'disable_dynamic_plugin_loading', default=False,
     desc='Do not do dynamic plugin injection')
 
+  BitFromArgument(env, 'sdl_sel_universal', default=False,
+    desc='enhance sel_universal with SDL ppapi emulation')
 
 def CheckArguments():
   for key in ARGUMENTS:

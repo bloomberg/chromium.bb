@@ -8,21 +8,25 @@
  * Concrete implemenatation of IMultimedia interface using SDL
  */
 
-#include <SDL.h>
+#include <SDL/SDL.h>
 #include <string.h>
 
 #include <functional>
 #include <queue>
+#include "ppapi/c/pp_input_event.h"
 
 #include "native_client/src/shared/platform/nacl_log.h"
 #include "native_client/src/shared/platform/nacl_sync.h"
 #include "native_client/src/shared/platform/nacl_sync_checked.h"
 
 // TODO(robertm): the next include file should be moved to src/untrusted
-#include "native_client/src/trusted/service_runtime/include/sys/audio_video.h"
-#include "native_client/src/trusted/service_runtime/include/sys/errno.h"
 #include "native_client/src/trusted/sel_universal/multimedia.h"
 #include "native_client/src/trusted/sel_universal/workqueue.h"
+
+// from sdl_ppapi_event_translator.cc
+// TODO(robertm): add header when this becomes more complex
+extern bool ConvertSDLEventToPPAPI(
+  const SDL_Event& sdl_event, PP_InputEvent* pp_event);
 
 // This file implements a IMultimedia interface using SDL
 
@@ -101,7 +105,6 @@ class JobSdlInit: public Job {
 };
 
 
-
 class JobSdlQuit: public Job {
  private:
   SDLInfo* info_;
@@ -172,8 +175,8 @@ class JobSdlUpdate: public Job {
 
 class JobSdlEventPoll: public Job {
  public:
-  JobSdlEventPoll(SDLInfo* info, NaClMultimediaEvent* event)
-    : info_(info), event_(event) {}
+  JobSdlEventPoll(SDLInfo* info, PP_InputEvent* pp_event, bool poll)
+    : info_(info), pp_event_(pp_event), poll_(poll) {}
 
   virtual void Action() {
     NaClLog(3, "JobSdlEventPoll::Action\n");
@@ -184,68 +187,33 @@ class JobSdlEventPoll: public Job {
 
     for (;;) {
       SDL_Event sdl_event;
-      const int32_t result = SDL_PollEvent(&sdl_event);
+      const int32_t result = poll_ ?
+                             SDL_PollEvent(&sdl_event) :
+                             SDL_WaitEvent(&sdl_event);
+
       if (result == 0) {
-        event_->type = NACL_EVENT_NOT_USED;
-        return;
+        if (poll_) {
+          InvalidateEvent(pp_event_);
+          return;
+        } else {
+          NaClLog(LOG_WARNING, "SDL_WaitEvent failed\n");
+        }
       }
 
-      switch (sdl_event.type) {
-       case SDL_ACTIVEEVENT:
-        event_->type = NACL_EVENT_ACTIVE;
-        event_->active.gain = sdl_event.active.gain;
-        event_->active.state = sdl_event.active.state;
-        return;
-       case SDL_VIDEOEXPOSE:
-        event_->type = NACL_EVENT_EXPOSE;
-        return;
-       case SDL_KEYDOWN:
-       case SDL_KEYUP:
-        // NOTE: we exploit the fact NACL keysym == SDK keysyms
-        event_->type = (SDL_KEYUP == sdl_event.type) ?
-                       NACL_EVENT_KEY_UP : NACL_EVENT_KEY_DOWN;
-        event_->key.which = sdl_event.key.which;
-        event_->key.state = sdl_event.key.state;
-        event_->key.keysym.scancode = sdl_event.key.keysym.scancode;
-        event_->key.keysym.sym = sdl_event.key.keysym.sym;
-        event_->key.keysym.mod = sdl_event.key.keysym.mod;
-        event_->key.keysym.unicode = sdl_event.key.keysym.unicode;
-        return;
-       case SDL_MOUSEMOTION:
-        event_->type = NACL_EVENT_MOUSE_MOTION;
-        event_->motion.which = sdl_event.motion.which;
-        event_->motion.state = sdl_event.motion.state;
-        event_->motion.x = sdl_event.motion.x;
-        event_->motion.y = sdl_event.motion.y;
-        event_->motion.xrel = sdl_event.motion.xrel;
-        event_->motion.yrel = sdl_event.motion.yrel;
-        return;
-       case SDL_MOUSEBUTTONDOWN:
-       case SDL_MOUSEBUTTONUP:
-        event_->type = (SDL_MOUSEBUTTONUP == sdl_event.type) ?
-                        NACL_EVENT_MOUSE_BUTTON_UP :
-                        NACL_EVENT_MOUSE_BUTTON_DOWN;
-        event_->button.which = sdl_event.button.which;
-        event_->button.button = sdl_event.button.button;
-        event_->button.state = sdl_event.button.state;
-        event_->button.x = sdl_event.button.x;
-        event_->button.y = sdl_event.button.y;
-        return;
-       case SDL_QUIT:
-        event_->type = NACL_EVENT_QUIT;
-        return;
-       default:
-        /* an sdl event happened, but we don't support it
-           so move along and try polling again */
-        break;
+      if (!ConvertSDLEventToPPAPI(sdl_event, pp_event_)) {
+        continue;
       }
+
+      break;
     }
   }
 
  private:
   SDLInfo* info_;
-  NaClMultimediaEvent* event_;
+  PP_InputEvent* pp_event_;
+  bool poll_;
 };
+
 
 // Again, the issue that all this wrapping magic is trying to work around
 // is that SDL requires certain calls to be made from the same thread
@@ -278,11 +246,32 @@ class MultimediaSDL : public IMultimedia {
     job.Wait();
   }
 
-  virtual void EventPoll(NaClMultimediaEvent* event) {
-    JobSdlEventPoll job(&sdl_info_, event);
+  virtual void PushUserEvent(int data1, int data2) {
+    // NOTE: this is intentionally not using the queue
+    // so we can unblock a queue that is waiting for an event
+    NaClLog(3, "JobSdlPushUserEvent::Action\n");
+    if (!sdl_info_.initialized_sdl) {
+      NaClLog(LOG_FATAL, "sdl not initialized\n");
+    }
+    SDL_Event event;
+    event.type = SDL_USEREVENT;
+    event.user.data1 = (void*) data1;
+    event.user.data2 = (void*) data2;
+    SDL_PushEvent(&event);
+  }
+
+  virtual void EventPoll(PP_InputEvent* event) {
+    JobSdlEventPoll job(&sdl_info_, event, true);
     sdl_workqueue_.JobPut(&job);
     job.Wait();
   }
+
+  virtual void EventGet(PP_InputEvent* event) {
+    JobSdlEventPoll job(&sdl_info_, event, false);
+    sdl_workqueue_.JobPut(&job);
+    job.Wait();
+  }
+
 
  private:
   ThreadedWorkQueue sdl_workqueue_;

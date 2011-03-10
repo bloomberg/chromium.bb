@@ -9,6 +9,24 @@ Import('env')
 if env.CrossToolsBuild():
   Return()
 
+sdl_multimedia_srcs = []
+if env.Bit('sdl_sel_universal'):
+  # only linux-x86-64 support so far
+  if not env.Bit('host_linux') or not 'x86-64' == env['BUILD_FULLARCH']:
+    import sys
+    print
+    print   "SORRY, SDL ENHANCED SEL_UNIVERSAL ONLY ON"
+    print   "linux-x86-64 for now"
+    print
+    sys.exit(-1)
+  env.Append(CPPDEFINES=['NACL_SEL_UNIVERSAL_INCLUDE_SDL'])
+  env.Append(LIBS=['SDL'])
+  env.Append(LIBS=['SDLmain'])
+
+  sdl_multimedia_srcs.append('multimedia_handler.cc')
+  sdl_multimedia_srcs.append('sdl_ppapi_event_translator.cc')
+  sdl_multimedia_srcs.append('multimedia_sdl.cc')
+
 
 # NOTE: Probably because of GetPluginDir()
 if env.Bit('linux') and env.Bit('target_x86'):
@@ -16,7 +34,6 @@ if env.Bit('linux') and env.Bit('target_x86'):
 
 # NOTE: we need Cocoa because of the GetPluginDir() implementation
 #       on mac (nonnacl_util_c)
-
 env.ComponentProgram('sel_universal',
                     ['sel_universal.cc',
                      'rpc_universal.cc',
@@ -24,7 +41,7 @@ env.ComponentProgram('sel_universal',
                      'replay_handler.cc',
                      'parsing.cc',
                      'rpc_universal_system.cc',
-                     ],
+                     ] + sdl_multimedia_srcs,
                     EXTRA_LIBS=['nonnacl_util',
                                 'nonnacl_srpc',
                                 'nrd_xfer',
@@ -36,150 +53,3 @@ env.ComponentProgram('sel_universal',
                                 ],
                     FRAMEWORKS=['Cocoa'],
                     )
-
-######################################################################
-# TODO: factor SDL support out of sel_universal itself
-# Exiting here and thus disabling the experimental SDL build of
-# sel_universal. SCons doesn't like building several executables
-# from the same .o file (sel_universal.o) and fixing this
-# may not be worth since we want to refactor SDL support anyway.
-# (see http://www.scons.org/doc/1.1.0/HTML/scons-user/x1392.html#AEN1510)
-######################################################################
-Return()
-
-######################################################################
-# NOTE: below is a somewhat experimental section for
-#       a multimedia enabled sel_universal
-#       currently only video output is working which is enough to
-#       make earth.nexe work
-#
-#       The idea is to remove all the sdl cruft from sel_ldr once this
-#       become more mature
-######################################################################
-if ARGUMENTS.get('sdl', 'none') == 'none':
-  Return()
-
-# TODO(robertm): x86/64 has not been tested - it may just work
-if env.Bit('target_x86_64'):
-  Return()
-
-def ReplicateDlls(sdl_dll):
-  dsts = []
-  lib = None
-  if env.Bit('windows'):
-    dsts = ['${STAGING_DIR}', '.']
-    lib = '${SDL_DIR}/lib/SDL.dll'
-  elif env.Bit('mac'):
-    # TODO: why do we replicate this THREE times?
-    dsts = ['${TARGET_ROOT}/Frameworks',
-            '${OBJ_ROOT}/Frameworks',
-            '${OBJ_ROOT}/src/trusted/Frameworks']
-    lib = '${SDL_DIR}/SDL.framework'
-  elif env.Bit('linux') and env.Bit('build_x86'):
-    dsts = ['${STAGING_DIR}', '.']
-    if sdl_env.Bit('build_x86_32'):
-      lib = '${SDL_DIR}/lib/libSDL-1.2.so.0'
-    elif sdl_env.Bit('build_x86_64'):
-      lib = '${SDL_DIR}/lib64/libSDL-1.2.so.0'
-
-  assert dsts
-  sdl_dll = []
-  for d in dsts:
-    sdl_dll += sdl_env.Replicate(d, lib)
-  return sdl_dll
-
-
-def AddSdlRequirements(sdl_env, target):
-  # TODO(robetrm): reinvestigate this
-  if sdl_env.Bit('target_arm'):
-    return
-  if ARGUMENTS.get('sdl', 'none') == 'none':
-    return
-
-  sdl_env.Requires(target, ReplicateDlls(sdl_env))
-
-
-def MakeSdlEnv(env):
-  # TODO(robertm): consider always using SDL here and get rid of
-  #                this function as we already make sure above that we
-  #                are in dsl mode
-  if ARGUMENTS.get('sdl', 'none') == 'none':
-    return env
-
-  sdl_env = env.Clone()
-  sdl_env.Append(CPPDEFINES=['HAVE_SDL'])
-  sdl_env.Tool('sdl')
-  print '=' * 70
-  print 'SDL build (%s) enabled for %s' % (ARGUMENTS.get('sdl', 'none'),
-                                           sdl_env['BUILD_TYPE'])
-  print sdl_env.subst('Using version in ${SDL_DIR}')
-  print '=' * 70
-
-  # TODO(bradnelson): this should probably go into the "Tool"
-  if sdl_env.Bit('windows'):
-    if sdl_env.Bit('debug'):
-      sdl_env.Append(LINKFLAGS = ['/SUBSYSTEM:CONSOLE'])
-    else:
-      sdl_env.Append(LINKFLAGS = ['/SUBSYSTEM:WINDOWS'])
-
-  return sdl_env
-
-
-def MakeExtraSdlLibs(env):
-  if env.Bit('mac'):
-    env_sdlmain = env.Clone()
-    # TODO(robertm): explain why we need to disable this warning
-    env_sdlmain.FilterOut(CCFLAGS=['-Werror'])
-
-    obj = env_sdlmain.ComponentObject(
-        'SDLApplication',
-        '${MAIN_DIR}/common/SDLApplication.m')
-    env_sdlmain.ComponentLibrary('mac_extra', [obj])
-    return ['mac_extra']
-  else:
-    return []
-
-
-
-
-sdl_env = MakeSdlEnv(env)
-
-sdl_env.ComponentLibrary('multimedia_sdl', ['multimedia_sdl.cc'])
-sdl_env.Append(CPPDEFINES=['NACL_SEL_UNIVERSAL_INCLUDE_SDL'])
-
-# work around a cast warning in multimedia_handler.cc
-sdl_env.Append(CCFLAGS=['-fno-strict-aliasing'])
-# NOTE: on arm we typically try to build static but we cannot build
-#       anything containing SDL static
-sdl_env.FilterOut(LINKFLAGS=['-static'])
-extra_libs = MakeExtraSdlLibs(sdl_env)
-node = sdl_env.ComponentProgram('sel_universal_sdl',
-                                ['sel_universal_new.cc',
-                                 'multimedia_handler.cc'
-                                 ],
-                                EXTRA_LIBS=['multimedia_sdl',
-                                            'nonnacl_util',
-                                            'nonnacl_srpc',
-                                            'nrd_xfer',
-                                            'nacl_base',
-                                            'platform',
-                                            'gio',
-                                            'imc',
-                                            ] + extra_libs,
-                                )
-
-
-AddSdlRequirements(sdl_env, node)
-
-# TODO(robertm): eliminate unistd.h include which does not exist on windows
-if not sdl_env.Bit('windows'):
-  # manual test for multimedia
-  sdl_env.ComponentProgram('multimedia_test',
-                           ['multimedia_test.cc',
-                            ],
-                           EXTRA_LIBS=['multimedia_sdl',
-                                       'platform',
-                                       'gio',
-                                       ] + extra_libs,
-                           )
-  AddSdlRequirements(sdl_env, node)

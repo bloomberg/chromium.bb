@@ -4,13 +4,8 @@
  * be found in the LICENSE file.
  */
 
-// Second generation sel_universal implemented in C++ and with
-// (limited) multimedia support
-
-#ifdef NACL_SEL_UNIVERSAL_INCLUDE_SDL
-  // NOTE: we need to include this so that it can "hijack" main
-#include <SDL.h>
-#endif
+// Second generation sel_universal implemented in C++ and with optional
+// multimedia support via SDL
 
 #include <stdio.h>
 
@@ -29,6 +24,11 @@
 #include "native_client/src/trusted/sel_universal/pepper_handler.h"
 #include "native_client/src/trusted/sel_universal/replay_handler.h"
 #include "native_client/src/trusted/sel_universal/rpc_universal.h"
+#if defined(NACL_SEL_UNIVERSAL_INCLUDE_SDL)
+// NOTE: we need to include this so that it can "hijack" main
+#include <SDL/SDL.h>
+#include "native_client/src/trusted/sel_universal/multimedia_handler.h"
+#endif
 
 using std::ifstream;
 using std::map;
@@ -193,6 +193,12 @@ int main(int argc, char* argv[]) {
   loop.AddHandler("file_size", HandlerFileSize);
   loop.AddHandler("sync_socket_create", HandlerSyncSocketCreate);
   loop.AddHandler("sync_socket_write", HandlerSyncSocketWrite);
+#if  NACL_SEL_UNIVERSAL_INCLUDE_SDL
+  loop.AddHandler("sdl_initialize", HandlerSDLInitialize);
+  loop.AddHandler("sdl_event_loop", HandlerSDLEventLoop);
+#endif
+// start multimedia event loop
+bool HandlerEventLoop(NaClCommandLoop* ncl, const vector<string>& args);
 
   NaClLog(1, "populating initial vars\n");
   for (map<string, string>::iterator it = initial_vars.begin();

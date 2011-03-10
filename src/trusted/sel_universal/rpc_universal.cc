@@ -358,8 +358,28 @@ static bool HandleHelp(NaClCommandLoop* ncl, const vector<string>& args) {
   return true;
 }
 
+bool NaClCommandLoop::InvokeNexeRpc(string signature,
+                                    NaClSrpcArg** in,
+                                    NaClSrpcArg** out) {
+  const uint32_t rpc_num = NaClSrpcServiceMethodIndex(getService(),
+                                                      signature.c_str());
 
+  if (kNaClSrpcInvalidMethodIndex == rpc_num) {
+    NaClLog(LOG_ERROR, "No RPC found of signature: [%s]\n", signature.c_str());
+    return false;
+  }
 
+  NaClLog(1, "Calling RPC %s (%u)\n", signature.c_str(), (unsigned) rpc_num);
+
+  const  NaClSrpcError result = NaClSrpcInvokeV(
+    getChannel(), rpc_num, in, out);
+  NaClLog(1, "Result %d\n", result);
+
+  if (NACL_SRPC_RESULT_OK != result) {
+    NaClLog(LOG_ERROR, "RPC call failed: %s.\n", NaClSrpcErrorString(result));
+  }
+  return NACL_SRPC_RESULT_OK == result;
+}
 
 static bool HandleRpc(NaClCommandLoop* ncl, const vector<string>& args) {
   // we need two args at start and the "*" in out separator
@@ -412,28 +432,13 @@ static bool HandleRpc(NaClCommandLoop* ncl, const vector<string>& args) {
 
   const string signature = BuildSignature(args[1], inv, outv);
 
-  const uint32_t rpc_num = NaClSrpcServiceMethodIndex(ncl->getService(),
-                                                      signature.c_str());
-
-  if (kNaClSrpcInvalidMethodIndex == rpc_num) {
-    NaClLog(LOG_ERROR, "No RPC found of signature: [%s]\n", signature.c_str());
-    return false;
-  }
-
-  NaClLog(1, "Calling RPC %s (#%"NACL_PRIu32")...\n", args[1].c_str(), rpc_num);
-
   NaClSrpcArg* empty[] = {NULL};
   printf("rpc call intiated %s\n", signature.c_str());
   ncl->DumpArgsAndResults(inv, empty);
   fflush(stdout);
   fflush(stderr);
 
-  const  NaClSrpcError result = NaClSrpcInvokeV(
-    ncl->getChannel(), rpc_num, inv, outv);
-  NaClLog(1, "Result %d\n", result);
-
-  if (NACL_SRPC_RESULT_OK != result) {
-    NaClLog(LOG_ERROR, "RPC call failed: %s.\n", NaClSrpcErrorString(result));
+  if (!ncl->InvokeNexeRpc(signature, inv, outv)) {
     return false;
   }
 

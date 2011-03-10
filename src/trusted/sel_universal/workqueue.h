@@ -8,14 +8,11 @@
 #define NATIVE_CLIENT_SRC_TRUSTED_SEL_LDR_UNIVERSAL_WORKQUEUE_H_
 
 #include <assert.h>
-
 #include <queue>
 
 #include "native_client/src/shared/platform/nacl_semaphore.h"
 #include "native_client/src/shared/platform/nacl_sync.h"
 #include "native_client/src/shared/platform/nacl_threads.h"
-
-
 
 // This file implements a simple work queue backed by a single thread
 // the units of work have to subclassed from Job.
@@ -44,6 +41,10 @@ class Job {
   Job() {
     NaClMutexCtor(&mutex_);
     NaClCondVarCtor(&condvar_);
+    // we grab the lock here so that we have it when Wait is called
+    // subsequently - otherwise NaClCondVarSignal might happen
+    // before NaClCondVarWait which is an error
+    NaClMutexLock(&mutex_);
   }
 
   virtual ~Job() {}
@@ -55,7 +56,7 @@ class Job {
   }
 
   void Wait() {
-    ScopedMutexLock lock(&mutex_);
+    // NOTE: the mutex has been locked in the constructor
     NaClCondVarWait(&condvar_, &mutex_);
   }
 

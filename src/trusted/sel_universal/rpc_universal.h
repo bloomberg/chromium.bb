@@ -38,6 +38,7 @@ class NaClCommandLoop {
   NaClSrpcService* getService() const { return service_; }
   NaClSrpcChannel* getChannel() const { return channel_; }
   void DumpArgsAndResults(NaClSrpcArg* inv[], NaClSrpcArg* outv[]);
+  bool InvokeNexeRpc(string signature, NaClSrpcArg** in, NaClSrpcArg** out);
 
   bool StartInteractiveLoop();
   bool ProcessCommands(const vector<string>& commands);
