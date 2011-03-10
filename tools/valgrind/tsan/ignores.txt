@@ -149,3 +149,6 @@ fun_r:_IO_getline*
 
 # Many data races in WebKit filesystem API, see http://crbug.com/75589
 fun_r:*WebKit*FileSystem*
+
+# Data race in WebKit WebWorker API, see http://crbug.com/75694
+fun_r:*WebKit*WebWorkerImpl*startWorkerContext*
