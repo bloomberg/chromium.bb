@@ -71,7 +71,8 @@ struct PPB_Graphics2D {
    *
    * The given image will be placed at |top_left| from the top left of the
    * context's internal backing store. Then the src_rect will be copied into the
-   * backing store. This parameter may not be NULL.
+   * backing store. This parameter may not be NULL. This means that the
+   * rectangle being painted will be at src_rect offset by top_left.
    *
    * The src_rect is specified in the coordinate system of the image being
    * painted, not the context. For the common case of copying the entire image,
@@ -83,6 +84,14 @@ struct PPB_Graphics2D {
    * context. Attempting to paint outside of the context will result in an
    * error. However, the source bitmap may fall outside the context, as long
    * as the src_rect subset of it falls entirely within the context.
+   *
+   * There are two modes most plugins may use for painting. The first is
+   * that you will generate a new ImageData (possibly representing a subset of
+   * your plugin) and then paint it. In this case, you'll set the location of
+   * your painting to top_left and set src_rect to NULL. The second is that
+   * you're generating small invalid regions out of a larger bitmap
+   * representing your entire plugin. In this case, you would set the location
+   * of your image to (0,0) and then set src_rect to the pixels you changed.
    */
   void (*PaintImageData)(PP_Resource graphics_2d,
                          PP_Resource image_data,
