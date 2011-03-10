@@ -28,6 +28,7 @@
 #include "views/background.h"
 #include "views/controls/button/image_button.h"
 #include "views/controls/label.h"
+#include "views/controls/textfield/textfield.h"
 #include "views/focus/focus_manager.h"
 #include "views/widget/widget.h"
 
@@ -464,7 +465,7 @@ void FindBarView::ButtonPressed(
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// FindBarView, views::Textfield::Controller implementation:
+// FindBarView, views::TextfieldController implementation:
 
 void FindBarView::ContentsChanged(views::Textfield* sender,
                                   const string16& new_contents) {

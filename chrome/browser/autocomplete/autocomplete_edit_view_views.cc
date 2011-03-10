@@ -24,6 +24,7 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/font.h"
 #include "views/border.h"
+#include "views/controls/textfield/textfield.h"
 #include "views/layout/fill_layout.h"
 
 namespace {
@@ -574,7 +575,7 @@ void AutocompleteEditViewViews::Observe(NotificationType type,
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// AutocompleteEditViewViews, Textfield::Controller implementation:
+// AutocompleteEditViewViews, views::TextfieldController implementation:
 
 void AutocompleteEditViewViews::ContentsChanged(views::Textfield* sender,
                                                 const string16& new_contents) {

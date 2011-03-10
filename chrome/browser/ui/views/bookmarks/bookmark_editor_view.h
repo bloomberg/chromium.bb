@@ -14,6 +14,7 @@
 #include "ui/base/models/tree_node_model.h"
 #include "views/controls/button/button.h"
 #include "views/controls/textfield/textfield.h"
+#include "views/controls/textfield/textfield_controller.h"
 #include "views/controls/tree/tree_view.h"
 #include "views/window/dialog_delegate.h"
 
@@ -44,7 +45,7 @@ class BookmarkEditorView : public BookmarkEditor,
                            public views::ButtonListener,
                            public views::TreeViewController,
                            public views::DialogDelegate,
-                           public views::Textfield::Controller,
+                           public views::TextfieldController,
                            public views::ContextMenuController,
                            public ui::SimpleMenuModel::Delegate,
                            public BookmarkModelObserver {
@@ -86,17 +87,18 @@ class BookmarkEditorView : public BookmarkEditor,
   virtual bool AreAcceleratorsEnabled(MessageBoxFlags::DialogButton button);
   virtual views::View* GetContentsView();
 
-  // View methods.
+  // views::View.
   virtual void Layout();
   virtual gfx::Size GetPreferredSize();
-  virtual void ViewHierarchyChanged(bool is_add, views::View* parent,
+  virtual void ViewHierarchyChanged(bool is_add,
+                                    views::View* parent,
                                     views::View* child);
 
-  // TreeViewObserver methods.
+  // views::TreeViewObserver.
   virtual void OnTreeViewSelectionChanged(views::TreeView* tree_view);
   virtual bool CanEdit(views::TreeView* tree_view, ui::TreeModelNode* node);
 
-  // Textfield::Controller methods.
+  // views::TextfieldController:
   virtual void ContentsChanged(views::Textfield* sender,
                                const std::wstring& new_contents);
   virtual bool HandleKeyEvent(views::Textfield* sender,
@@ -104,10 +106,10 @@ class BookmarkEditorView : public BookmarkEditor,
     return false;
   }
 
-  // NativeButton.
+  // views::ButtonListener:
   virtual void ButtonPressed(views::Button* sender, const views::Event& event);
 
-  // ui::SimpleMenuModel::Delegate.
+  // ui::SimpleMenuModel::Delegate:
   virtual bool IsCommandIdChecked(int command_id) const;
   virtual bool IsCommandIdEnabled(int command_id) const;
   virtual bool GetAcceleratorForCommandId(int command_id,

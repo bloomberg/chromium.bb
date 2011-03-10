@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -18,7 +18,7 @@
 #include "views/controls/button/image_button.h"
 #include "views/controls/button/native_button.h"
 #include "views/controls/combobox/combobox.h"
-#include "views/controls/textfield/textfield.h"
+#include "views/controls/textfield/textfield_controller.h"
 #include "views/view.h"
 
 class FilePath;
@@ -29,7 +29,7 @@ class NetworkConfigView;
 
 // A dialog box for showing a password textfield.
 class WifiConfigView : public views::View,
-                       public views::Textfield::Controller,
+                       public views::TextfieldController,
                        public views::ButtonListener,
                        public views::Combobox::Listener,
                        public SelectFileDialog::Listener {
@@ -40,20 +40,20 @@ class WifiConfigView : public views::View,
   explicit WifiConfigView(NetworkConfigView* parent);
   virtual ~WifiConfigView();
 
-  // views::Textfield::Controller methods.
+  // views::TextfieldController:
   virtual void ContentsChanged(views::Textfield* sender,
                                const string16& new_contents);
   virtual bool HandleKeyEvent(views::Textfield* sender,
                               const views::KeyEvent& key_event);
 
-  // views::ButtonListener
+  // views::ButtonListener:
   virtual void ButtonPressed(views::Button* sender, const views::Event& event);
 
-  // views::Combobox::Listener
+  // views::Combobox::Listener:
   virtual void ItemChanged(views::Combobox* combo_box,
                            int prev_index, int new_index);
 
-  // SelectFileDialog::Listener implementation.
+  // SelectFileDialog::Listener:
   virtual void FileSelected(const FilePath& path, int index, void* params);
 
   // Login to network. Returns false if the dialog should remain open.

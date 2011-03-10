@@ -12,6 +12,7 @@
 #include "ui/gfx/size.h"
 #include "views/controls/button/button.h"
 #include "views/controls/textfield/textfield.h"
+#include "views/controls/textfield/textfield_controller.h"
 
 class FindBarHost;
 
@@ -31,7 +32,7 @@ class View;
 ////////////////////////////////////////////////////////////////////////////////
 class FindBarView : public DropdownBarView,
                     public views::ButtonListener,
-                    public views::Textfield::Controller {
+                    public views::TextfieldController {
  public:
   // A tag denoting which button the user pressed.
   enum ButtonTag {
@@ -64,7 +65,7 @@ class FindBarView : public DropdownBarView,
   // Claims focus for the text field and selects its contents.
   virtual void SetFocusAndSelection(bool select_all);
 
-  // Overridden from views::View:
+  // views::View:
   virtual void OnPaint(gfx::Canvas* canvas);
   virtual void Layout();
   virtual gfx::Size GetPreferredSize();
@@ -72,10 +73,10 @@ class FindBarView : public DropdownBarView,
                                     views::View* parent,
                                     views::View* child);
 
-  // Overridden from views::ButtonListener:
+  // views::ButtonListener:
   virtual void ButtonPressed(views::Button* sender, const views::Event& event);
 
-  // Overridden from views::Textfield::Controller:
+  // views::TextfieldController:
   virtual void ContentsChanged(views::Textfield* sender,
                                const string16& new_contents);
   virtual bool HandleKeyEvent(views::Textfield* sender,

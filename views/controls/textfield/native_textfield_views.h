@@ -20,13 +20,14 @@ class Time;
 
 namespace gfx {
 class Canvas;
-}  // namespace
+}
 
 namespace views {
 
 class KeyEvent;
 class Menu2;
 class TextfieldViewsModel;
+class TextRange;
 
 // A views/skia only implementation of NativeTextfieldWrapper.
 // No platform specific code is used.

@@ -42,6 +42,7 @@
 #include "views/controls/scroll_view.h"
 #include "views/controls/separator.h"
 #include "views/controls/table/table_view.h"
+#include "views/controls/textfield/textfield.h"
 #include "views/layout/grid_layout.h"
 #include "views/layout/layout_constants.h"
 #include "views/window/window.h"
@@ -841,7 +842,7 @@ void AutoFillProfilesView::EditableSetViewContents::ButtonPressed(
 
 /////////////////////////////////////////////////////////////////////////////
 // AutoFillProfilesView::EditableSetViewContents,
-// views::Textfield::Controller implementations
+// views::TextfieldController implementations:
 void AutoFillProfilesView::EditableSetViewContents::ContentsChanged(
     views::Textfield* sender,  const string16& new_contents) {
   if (temporary_info_.is_address) {

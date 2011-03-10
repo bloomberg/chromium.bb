@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -9,7 +9,7 @@
 #include <string>
 
 #include "views/controls/button/button.h"
-#include "views/controls/textfield/textfield.h"
+#include "views/controls/textfield/textfield_controller.h"
 #include "views/view.h"
 #include "views/window/dialog_delegate.h"
 
@@ -28,7 +28,7 @@ namespace chromeos {
 class PasswordChangedView : public views::View,
                             public views::DialogDelegate,
                             public views::ButtonListener,
-                            public views::Textfield::Controller {
+                            public views::TextfieldController {
  public:
   // Delegate class to get notifications from the view.
   class Delegate {
@@ -45,23 +45,23 @@ class PasswordChangedView : public views::View,
   PasswordChangedView(Delegate* delegate, bool full_sync_disabled);
   virtual ~PasswordChangedView() {}
 
-  // views::DialogDelegate overrides:
+  // views::DialogDelegate:
   virtual bool Accept();
   virtual int GetDialogButtons() const;
 
-  // views::WindowDelegate overrides:
+  // views::WindowDelegate:
   virtual View* GetInitiallyFocusedView();
   virtual bool IsModal() const { return true; }
   virtual views::View* GetContentsView() { return this; }
 
-  // views::View overrides:
+  // views::View:
   virtual std::wstring GetWindowTitle() const;
 
-  // views::ButtonListener overrides:
+  // views::ButtonListener:
   virtual void ButtonPressed(views::Button* sender,
                              const views::Event& event);
 
-  // views::Textfield::Controller overrides:
+  // views::TextfieldController:
   virtual bool HandleKeyEvent(views::Textfield* sender,
                               const views::KeyEvent& keystroke) {
     return false;
@@ -70,7 +70,7 @@ class PasswordChangedView : public views::View,
                                const string16& new_contents) {}
 
  protected:
-  // views::View overrides:
+  // views::View:
   virtual gfx::Size GetPreferredSize();
   virtual void ViewHierarchyChanged(bool is_add,
                                     views::View* parent,

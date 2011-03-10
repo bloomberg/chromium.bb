@@ -6,6 +6,7 @@
 
 #include "base/utf_string_conversions.h"
 #include "views/controls/label.h"
+#include "views/controls/textfield/textfield.h"
 #include "views/layout/grid_layout.h"
 #include "views/view.h"
 

@@ -22,7 +22,7 @@
 #include "views/controls/combobox/combobox.h"
 #include "views/controls/link.h"
 #include "views/controls/table/table_view_observer.h"
-#include "views/controls/textfield/textfield.h"
+#include "views/controls/textfield/textfield_controller.h"
 #include "views/focus/focus_manager.h"
 #include "views/view.h"
 #include "views/window/dialog_delegate.h"
@@ -249,7 +249,7 @@ class AutoFillProfilesView : public views::View,
   class EditableSetViewContents : public views::View,
                                   public views::DialogDelegate,
                                   public views::ButtonListener,
-                                  public views::Textfield::Controller,
+                                  public views::TextfieldController,
                                   public views::Combobox::Listener {
    public:
     EditableSetViewContents(AutoFillProfilesView* observer,
@@ -258,13 +258,14 @@ class AutoFillProfilesView : public views::View,
     virtual ~EditableSetViewContents() {}
 
    protected:
-    // views::View methods:
+    // views::View:
     virtual void Layout();
     virtual gfx::Size GetPreferredSize();
-    virtual void ViewHierarchyChanged(bool is_add, views::View* parent,
+    virtual void ViewHierarchyChanged(bool is_add,
+                                      views::View* parent,
                                       views::View* child);
 
-    // views::DialogDelegate methods:
+    // views::DialogDelegate:
     virtual int GetDialogButtons() const;
     virtual std::wstring GetDialogButtonLabel(
       MessageBoxFlags::DialogButton button) const;
@@ -280,11 +281,11 @@ class AutoFillProfilesView : public views::View,
     virtual bool Cancel();
     virtual bool Accept();
 
-    // views::ButtonListener methods:
+    // views::ButtonListener:
     virtual void ButtonPressed(views::Button* sender,
                                const views::Event& event);
 
-    // views::Textfield::Controller methods:
+    // views::TextfieldController:
     virtual void ContentsChanged(views::Textfield* sender,
                                  const string16& new_contents);
     virtual bool HandleKeyEvent(views::Textfield* sender,

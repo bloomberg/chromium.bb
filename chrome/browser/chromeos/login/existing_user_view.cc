@@ -5,12 +5,13 @@
 #include "chrome/browser/chromeos/login/existing_user_view.h"
 
 #include "base/utf_string_conversions.h"
-#include "chrome/browser/chromeos/login/user_controller.h"
 #include "chrome/browser/chromeos/login/textfield_with_margin.h"
+#include "chrome/browser/chromeos/login/user_controller.h"
 #include "chrome/browser/chromeos/login/wizard_accessibility_helper.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "views/background.h"
+#include "views/controls/textfield/textfield.h"
 #include "views/focus/focus_manager.h"
 #include "views/layout/fill_layout.h"
 

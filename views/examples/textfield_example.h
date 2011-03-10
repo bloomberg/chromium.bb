@@ -12,31 +12,31 @@
 #include "base/compiler_specific.h"
 #include "base/string16.h"
 #include "views/controls/button/text_button.h"
-#include "views/controls/textfield/textfield.h"
+#include "views/controls/textfield/textfield_controller.h"
 #include "views/examples/example_base.h"
 
 namespace examples {
 
 // TextfieldExample mimics login screen.
 class TextfieldExample : public ExampleBase,
-                         public views::Textfield::Controller,
+                         public views::TextfieldController,
                          public views::ButtonListener {
  public:
   explicit TextfieldExample(ExamplesMain* main);
   virtual ~TextfieldExample();
 
-  // Overridden from ExampleBase:
+  // ExampleBase:
   virtual std::wstring GetExampleTitle() OVERRIDE;
   virtual void CreateExampleView(views::View* container) OVERRIDE;
 
  private:
-  // Overridden from views::Textfield::Controller:
+  // views::TextfieldController:
   virtual void ContentsChanged(views::Textfield* sender,
                                const string16& new_contents) OVERRIDE;
   virtual bool HandleKeyEvent(views::Textfield* sender,
                               const views::KeyEvent& key_event) OVERRIDE;
 
-  // Overridden from views::ButtonListener:
+  // views::ButtonListener:
   virtual void ButtonPressed(views::Button* sender,
                              const views::Event& event) OVERRIDE;
 

@@ -25,6 +25,7 @@
 #include "views/controls/button/native_button.h"
 #include "views/controls/label.h"
 #include "views/controls/menu/menu_2.h"
+#include "views/controls/textfield/textfield.h"
 #include "views/focus/focus_manager.h"
 #include "views/layout/grid_layout.h"
 #include "views/layout/layout_constants.h"

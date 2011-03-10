@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -8,7 +8,7 @@
 
 #include "views/controls/button/native_button.h"
 #include "views/controls/table/table_view_observer.h"
-#include "views/controls/textfield/textfield.h"
+#include "views/controls/textfield/textfield_controller.h"
 #include "views/view.h"
 #include "views/window/dialog_delegate.h"
 #include "views/window/window.h"
@@ -42,11 +42,10 @@ class UrlPickerDelegate {
 ////////////////////////////////////////////////////////////////////////////////
 class UrlPicker : public views::View,
                   public views::DialogDelegate,
-                  public views::Textfield::Controller,
+                  public views::TextfieldController,
                   public views::TableViewObserver {
  public:
-  UrlPicker(UrlPickerDelegate* delegate,
-            Profile* profile);
+  UrlPicker(UrlPickerDelegate* delegate, Profile* profile);
   virtual ~UrlPicker();
 
   // Show the dialog on the provided contents.
@@ -55,7 +54,7 @@ class UrlPicker : public views::View,
   // Closes the dialog.
   void Close();
 
-  // DialogDelegate.
+  // views::DialogDelegate:
   virtual std::wstring GetWindowTitle() const;
   virtual bool IsModal() const;
   virtual std::wstring GetDialogButtonLabel(
@@ -66,7 +65,7 @@ class UrlPicker : public views::View,
       MessageBoxFlags::DialogButton button) const;
   virtual views::View* GetContentsView();
 
-  // TextField::Controller.
+  // views::TextFieldController:
   virtual void ContentsChanged(views::Textfield* sender,
                                const std::wstring& new_contents);
   virtual bool HandleKeyEvent(views::Textfield* sender,
@@ -74,11 +73,11 @@ class UrlPicker : public views::View,
     return false;
   }
 
-  // Overridden from View.
+  // views::View:
   virtual gfx::Size GetPreferredSize();
   virtual bool AcceleratorPressed(const views::Accelerator& accelerator);
 
-  // TableViewObserver.
+  // views::TableViewObserver:
   virtual void OnSelectionChanged();
   virtual void OnDoubleClick();
 

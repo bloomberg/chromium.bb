@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -8,14 +8,14 @@
 
 #include <string>
 
-#include "chrome/browser/content_settings/host_content_settings_map.h"
 #include "chrome/browser/content_setting_combo_model.h"
+#include "chrome/browser/content_settings/host_content_settings_map.h"
 #include "chrome/common/content_settings.h"
 #include "chrome/common/content_settings_types.h"
-#include "views/window/dialog_delegate.h"
 #include "views/controls/button/checkbox.h"
 #include "views/controls/combobox/combobox.h"
-#include "views/controls/textfield/textfield.h"
+#include "views/controls/textfield/textfield_controller.h"
+#include "views/window/dialog_delegate.h"
 
 namespace views {
 class ImageView;
@@ -31,7 +31,7 @@ class ContentExceptionsTableModel;
 // To use an ExceptionEditorView create one and invoke Show on it.
 // ExceptionEditorView is deleted when the dialog closes.
 class ExceptionEditorView : public views::View,
-                            public views::Textfield::Controller,
+                            public views::TextfieldController,
                             public views::DialogDelegate {
  public:
   class Delegate {
@@ -71,9 +71,9 @@ class ExceptionEditorView : public views::View,
   virtual bool Accept();
   virtual views::View* GetContentsView();
 
-  // views::Textfield::Controller overrides. Updates whether the user can
-  // accept the dialog as well as updating image views showing whether value is
-  // valid.
+  // views::TextfieldController:
+  // Updates whether the user can accept the dialog as well as updating image
+  // views showing whether value is valid.
   virtual void ContentsChanged(views::Textfield* sender,
                                const std::wstring& new_contents);
   virtual bool HandleKeyEvent(views::Textfield* sender,

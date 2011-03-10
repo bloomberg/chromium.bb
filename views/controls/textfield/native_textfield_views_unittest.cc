@@ -12,13 +12,14 @@
 #include "views/controls/menu/menu_2.h"
 #include "views/controls/textfield/native_textfield_views.h"
 #include "views/controls/textfield/textfield.h"
+#include "views/controls/textfield/textfield_controller.h"
 #include "views/controls/textfield/textfield_views_model.h"
 #include "views/events/event.h"
 #include "views/focus/focus_manager.h"
 #include "views/test/test_views_delegate.h"
 #include "views/test/views_test_base.h"
-#include "views/widget/widget.h"
 #include "views/views_delegate.h"
+#include "views/widget/widget.h"
 
 namespace views {
 
@@ -33,7 +34,7 @@ namespace views {
 // textfield_unittests.cc once we move the test utility functions
 // from chrome/browser/automation/ to app/test/.
 class NativeTextfieldViewsTest : public ViewsTestBase,
-                                 public Textfield::Controller {
+                                 public TextfieldController {
  public:
   NativeTextfieldViewsTest()
       : widget_(NULL),
@@ -42,7 +43,7 @@ class NativeTextfieldViewsTest : public ViewsTestBase,
         model_(NULL) {
   }
 
-  // ::testing::Test overrides.
+  // ::testing::Test:
   virtual void SetUp() {
     NativeTextfieldViews::SetEnableTextfieldViews(true);
   }
@@ -54,7 +55,7 @@ class NativeTextfieldViewsTest : public ViewsTestBase,
     ViewsTestBase::TearDown();
   }
 
-  // Textfield::Controller implementation:
+  // TextfieldController:
   virtual void ContentsChanged(Textfield* sender,
                                const string16& new_contents){
     last_contents_ = new_contents;

@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -11,7 +11,7 @@
 #include "chrome/browser/chromeos/login/image_decoder.h"
 #include "googleurl/src/gurl.h"
 #include "views/controls/button/button.h"
-#include "views/controls/textfield/textfield.h"
+#include "views/controls/textfield/textfield_controller.h"
 #include "views/window/dialog_delegate.h"
 
 namespace views {
@@ -26,7 +26,7 @@ namespace chromeos {
 // A dialog box that shows a CAPTCHA image and allows user to input response.
 class CaptchaView : public views::View,
                     public views::DialogDelegate,
-                    public views::Textfield::Controller,
+                    public views::TextfieldController,
                     public ImageDecoder::Delegate,
                     public views::ButtonListener {
  public:
@@ -44,26 +44,22 @@ class CaptchaView : public views::View,
   CaptchaView(const GURL& captcha_url, bool is_standalone);
   virtual ~CaptchaView() {}
 
-  // views::DialogDelegate overrides:
+  // views::DialogDelegate:
   virtual bool Accept();
-
-  // views::WindowDelegate overrides:
   virtual bool IsModal() const { return true; }
   virtual views::View* GetContentsView() { return this; }
-
-  // views::View overrides:
   virtual std::wstring GetWindowTitle() const;
 
-  // views::Textfield::Controller implementation:
+  // views::TextfieldController:
   virtual void ContentsChanged(views::Textfield* sender,
-                                 const string16& new_contents) {}
+                               const string16& new_contents) {}
   virtual bool HandleKeyEvent(views::Textfield* sender,
                               const views::KeyEvent& key_event);
 
-  // Overriden from ImageDownloader::Delegate:
+  // ImageDownloader::Delegate:
   virtual void OnImageDecoded(const SkBitmap& decoded_image);
 
-  // Overridden from views::ButtonListener.
+  // views::ButtonListener:
   virtual void ButtonPressed(views::Button* sender, const views::Event& event);
 
   // Initializes UI.
@@ -78,7 +74,7 @@ class CaptchaView : public views::View,
   void SetCaptchaURL(const GURL& captcha_url);
 
  protected:
-  // views::View overrides:
+  // views::View:
   virtual gfx::Size GetPreferredSize();
   virtual void ViewHierarchyChanged(bool is_add,
                                     views::View* parent,

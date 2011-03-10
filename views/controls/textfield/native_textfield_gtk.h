@@ -14,6 +14,8 @@
 
 namespace views {
 
+class TextRange;
+
 class NativeTextfieldGtk : public NativeControlGtk,
                            public NativeTextfieldWrapper {
  public:

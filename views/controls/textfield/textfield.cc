@@ -16,6 +16,8 @@
 #include "ui/gfx/insets.h"
 #include "views/controls/native/native_view_host.h"
 #include "views/controls/textfield/native_textfield_wrapper.h"
+#include "views/controls/textfield/text_range.h"
+#include "views/controls/textfield/textfield_controller.h"
 #include "views/widget/widget.h"
 
 #if defined(OS_LINUX)
@@ -24,8 +26,8 @@
 #include "base/win/win_util.h"
 // TODO(beng): this should be removed when the OS_WIN hack from
 // ViewHierarchyChanged is removed.
-#include "views/controls/textfield/native_textfield_win.h"
 #include "views/controls/textfield/native_textfield_views.h"
+#include "views/controls/textfield/native_textfield_win.h"
 #include "views/events/event_utils_win.h"
 #endif
 
@@ -33,27 +35,6 @@ namespace views {
 
 // static
 const char Textfield::kViewClassName[] = "views/Textfield";
-
-/////////////////////////////////////////////////////////////////////////////
-// TextRange
-
-TextRange::TextRange(size_t start, size_t end)
-    : start_(start),
-      end_(end) {
-}
-
-size_t TextRange::GetMin() const {
-  return std::min(start_, end_);
-}
-
-size_t TextRange::GetMax() const {
-  return std::max(start_, end_);
-}
-
-void TextRange::SetRange(size_t start, size_t end) {
-  start_ = start;
-  end_ = end;
-}
 
 /////////////////////////////////////////////////////////////////////////////
 // Textfield
@@ -97,11 +78,11 @@ Textfield::Textfield(StyleFlags style)
 Textfield::~Textfield() {
 }
 
-void Textfield::SetController(Controller* controller) {
+void Textfield::SetController(TextfieldController* controller) {
   controller_ = controller;
 }
 
-Textfield::Controller* Textfield::GetController() const {
+TextfieldController* Textfield::GetController() const {
   return controller_;
 }
 

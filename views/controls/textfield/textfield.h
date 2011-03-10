@@ -15,6 +15,7 @@
 #include <string>
 
 #include "base/basictypes.h"
+#include "base/compiler_specific.h"
 #include "base/string16.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/base/keycodes/keyboard_codes.h"
@@ -33,94 +34,29 @@ namespace views {
 
 class KeyEvent;
 class NativeTextfieldWrapper;
+class TextfieldController;
+class TextRange;
 
-// TextRange specifies the range of text in the Textfield.  This is
-// used to specify selected text and will be used to change the
-// attributes of characters in the textfield. When this is used for
-// selection, the end is caret position, and the start is where
-// selection started.  The range preserves the direction, and
-// selecting from the end to the begining is considered "reverse"
-// order. (that is, start > end is reverse)
-class TextRange {
- public:
-  TextRange() : start_(0), end_(0) {}
-  TextRange(size_t start, size_t end);
-
-  // Allow copy so that the omnibox can save the view state
-  // for each tabs.
-  explicit TextRange(const TextRange& range)
-      : start_(range.start_), end_(range.end_) {}
-
-  // Returns the start position;
-  size_t start() const { return start_; }
-
-  // Returns the end position.
-  size_t end() const { return end_; }
-
-  // Returns true if the selected text is empty.
-  bool is_empty() const { return start_ == end_; }
-
-  // Returns true if the selection is made in reverse order.
-  bool is_reverse() const { return start_ > end_; }
-
-  // Returns the min of selected range.
-  size_t GetMin() const;
-
-  // Returns the max of selected range.
-  size_t GetMax() const;
-
-  // Returns true if the the selection range is same ignoring the direction.
-  bool EqualsIgnoringDirection(const TextRange& range) const {
-    return GetMin() == range.GetMin() && GetMax() == range.GetMax();
-  }
-
-  // Set the range with |start| and |end|.
-  void SetRange(size_t start, size_t end);
-
- private:
-  size_t start_;
-  size_t end_;
-
-  // No assign.
-  void operator=(const TextRange&);
-};
-
-// This class implements a ChromeView that wraps a native text (edit) field.
+// This class implements a View that wraps a native text (edit) field.
 class Textfield : public View {
  public:
   // The button's class name.
   static const char kViewClassName[];
 
-  // This defines the callback interface for other code to be notified of
-  // changes in the state of a text field.
-  class Controller {
-   public:
-    // This method is called whenever the text in the field changes.
-    virtual void ContentsChanged(Textfield* sender,
-                                 const string16& new_contents) = 0;
-
-    // This method is called to get notified about keystrokes in the edit.
-    // This method returns true if the message was handled and should not be
-    // processed further. If it returns false the processing continues.
-    virtual bool HandleKeyEvent(Textfield* sender,
-                                const KeyEvent& key_event) = 0;
-  };
-
   enum StyleFlags {
-    STYLE_DEFAULT = 0,
-    STYLE_PASSWORD = 1<<0,
-    STYLE_MULTILINE = 1<<1,
-    STYLE_LOWERCASE = 1<<2
+    STYLE_DEFAULT   = 0,
+    STYLE_PASSWORD  = 1 << 0,
+    STYLE_MULTILINE = 1 << 1,
+    STYLE_LOWERCASE = 1 << 2
   };
 
   Textfield();
   explicit Textfield(StyleFlags style);
   virtual ~Textfield();
 
-
-  // Controller accessors
-  void SetController(Controller* controller);
-  Controller* GetController() const;
+  // TextfieldController accessors
+  void SetController(TextfieldController* controller);
+  TextfieldController* GetController() const;
 
   // Gets/Sets whether or not the Textfield is read-only.
   bool read_only() const { return read_only_; }
@@ -287,7 +223,7 @@ class Textfield : public View {
 
  private:
   // This is the current listener for events from this Textfield.
-  Controller* controller_;
+  TextfieldController* controller_;
 
   // The mask of style options for this Textfield.
   StyleFlags style_;

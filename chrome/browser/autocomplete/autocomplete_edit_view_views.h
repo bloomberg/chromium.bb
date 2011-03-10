@@ -14,7 +14,8 @@
 #include "chrome/browser/ui/toolbar/toolbar_model.h"
 #include "chrome/common/page_transition_types.h"
 #include "content/common/notification_observer.h"
-#include "views/controls/textfield/textfield.h"
+#include "views/controls/textfield/text_range.h"
+#include "views/controls/textfield/textfield_controller.h"
 #include "views/view.h"
 #include "webkit/glue/window_open_disposition.h"
 
@@ -38,7 +39,7 @@ class TabContents;
 class AutocompleteEditViewViews : public views::View,
                                   public AutocompleteEditView,
                                   public NotificationObserver,
-                                  public views::Textfield::Controller {
+                                  public views::TextfieldController {
  public:
   AutocompleteEditViewViews(AutocompleteEditController* controller,
                             ToolbarModel* toolbar_model,
@@ -119,12 +120,12 @@ class AutocompleteEditViewViews : public views::View,
   virtual views::View* AddToView(views::View* parent);
   virtual int OnPerformDrop(const views::DropTargetEvent& event);
 
-  // Overridden from NotificationObserver:
+  // NotificationObserver:
   virtual void Observe(NotificationType type,
                        const NotificationSource& source,
                        const NotificationDetails& details);
 
-  // Overridden from Textfield::Controller
+  // views::TextfieldController:
   virtual void ContentsChanged(views::Textfield* sender,
                                const string16& new_contents);
   virtual bool HandleKeyEvent(views::Textfield* sender,

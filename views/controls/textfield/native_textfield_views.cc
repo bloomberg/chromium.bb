@@ -18,7 +18,9 @@
 #include "views/background.h"
 #include "views/border.h"
 #include "views/controls/menu/menu_2.h"
+#include "views/controls/textfield/text_range.h"
 #include "views/controls/textfield/textfield.h"
+#include "views/controls/textfield/textfield_controller.h"
 #include "views/controls/textfield/textfield_views_model.h"
 #include "views/events/event.h"
 #include "views/metrics.h"
@@ -162,7 +164,7 @@ void NativeTextfieldViews::UpdateText() {
   UpdateCursorBoundsAndTextOffset();
   SchedulePaint();
   if (changed) {
-    Textfield::Controller* controller = textfield_->GetController();
+    TextfieldController* controller = textfield_->GetController();
     if (controller)
       controller->ContentsChanged(textfield_, GetText());
   }
@@ -175,7 +177,7 @@ void NativeTextfieldViews::AppendText(const string16& text) {
   UpdateCursorBoundsAndTextOffset();
   SchedulePaint();
 
-  Textfield::Controller* controller = textfield_->GetController();
+  TextfieldController* controller = textfield_->GetController();
   if (controller)
     controller->ContentsChanged(textfield_, GetText());
 }
@@ -291,7 +293,7 @@ size_t NativeTextfieldViews::GetCursorPosition() const {
 }
 
 bool NativeTextfieldViews::HandleKeyPressed(const views::KeyEvent& e) {
-  Textfield::Controller* controller = textfield_->GetController();
+  TextfieldController* controller = textfield_->GetController();
   bool handled = false;
   if (controller)
     handled = controller->HandleKeyEvent(textfield_, e);
@@ -824,7 +826,7 @@ void NativeTextfieldViews::SetCursorForMouseClick(const views::MouseEvent& e) {
 
 void NativeTextfieldViews::PropagateTextChange() {
   textfield_->SyncText();
-  Textfield::Controller* controller = textfield_->GetController();
+  TextfieldController* controller = textfield_->GetController();
   if (controller)
     controller->ContentsChanged(textfield_, GetText());
 }

@@ -11,10 +11,11 @@
 #include "chrome/browser/shell_integration.h"
 #include "chrome/browser/ui/views/options/options_page_view.h"
 #include "chrome/browser/ui/views/url_picker.h"
-#include "views/controls/combobox/combobox.h"
 #include "views/controls/button/button.h"
+#include "views/controls/combobox/combobox.h"
 #include "views/controls/link.h"
 #include "views/controls/table/table_view_observer.h"
+#include "views/controls/textfield/textfield_controller.h"
 #include "views/view.h"
 
 class CustomHomePagesTableModel;
@@ -37,7 +38,7 @@ class Textfield;
 class GeneralPageView : public OptionsPageView,
                         public views::Combobox::Listener,
                         public views::ButtonListener,
-                        public views::Textfield::Controller,
+                        public views::TextfieldController,
                         public UrlPickerDelegate,
                         public views::TableViewObserver,
                         public ShellIntegration::DefaultBrowserObserver,
@@ -47,26 +48,26 @@ class GeneralPageView : public OptionsPageView,
   virtual ~GeneralPageView();
 
  protected:
-  // views::ButtonListener implementation:
+  // views::ButtonListener:
   virtual void ButtonPressed(views::Button* sender, const views::Event& event);
 
-  // views::Combobox::Listener implementation:
+  // views::Combobox::Listener:
   virtual void ItemChanged(views::Combobox* combobox,
                            int prev_index,
                            int new_index);
 
-  // views::Textfield::Controller implementation:
+  // views::TextfieldController:
   virtual void ContentsChanged(views::Textfield* sender,
                                const std::wstring& new_contents);
   virtual bool HandleKeyEvent(views::Textfield* sender,
                               const views::KeyEvent& key_event);
 
-  // OptionsPageView implementation:
+  // OptionsPageView:
   virtual void InitControlLayout();
   virtual void NotifyPrefChanged(const std::string* pref_name);
   virtual void HighlightGroup(OptionsGroup highlight_group);
 
-  // LinkController implementation:
+  // views::LinkController:
   virtual void LinkActivated(views::Link* source, int event_flags);
 
  private:

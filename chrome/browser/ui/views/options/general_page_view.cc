@@ -317,7 +317,7 @@ void GeneralPageView::ItemChanged(views::Combobox* combobox,
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-// GeneralPageView, views::Textfield::Controller implementation:
+// GeneralPageView, views::Textfield:Controller implementation:
 
 void GeneralPageView::ContentsChanged(views::Textfield* sender,
                                       const std::wstring& new_contents) {

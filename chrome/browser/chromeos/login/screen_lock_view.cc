@@ -23,6 +23,7 @@
 #include "views/border.h"
 #include "views/controls/image_view.h"
 #include "views/controls/label.h"
+#include "views/controls/textfield/textfield.h"
 #include "views/layout/grid_layout.h"
 
 namespace chromeos {

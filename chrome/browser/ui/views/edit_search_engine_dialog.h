@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -13,7 +13,7 @@
 
 #include <windows.h>
 
-#include "views/controls/textfield/textfield.h"
+#include "views/controls/textfield/textfield_controller.h"
 #include "views/window/dialog_delegate.h"
 
 namespace views {
@@ -29,7 +29,7 @@ class TemplateURL;
 class TemplateURLModel;
 
 class EditSearchEngineDialog : public views::View,
-                               public views::Textfield::Controller,
+                               public views::TextfieldController,
                                public views::DialogDelegate {
  public:
   // The |template_url| and/or |delegate| may be NULL.
@@ -44,7 +44,7 @@ class EditSearchEngineDialog : public views::View,
                    EditSearchEngineControllerDelegate* delegate,
                    Profile* profile);
 
-  // views::DialogDelegate overrides.
+  // views::DialogDelegate:
   virtual bool IsModal() const;
   virtual std::wstring GetWindowTitle() const;
   virtual bool IsDialogButtonEnabled(
@@ -53,9 +53,9 @@ class EditSearchEngineDialog : public views::View,
   virtual bool Accept();
   virtual views::View* GetContentsView();
 
-  // views::Textfield::Controller overrides. Updates whether the user can
-  // accept the dialog as well as updating image views showing whether value is
-  // valid.
+  // views::TextfieldController:
+  // Updates whether the user can accept the dialog as well as updating image
+  // views showing whether value is valid.
   virtual void ContentsChanged(views::Textfield* sender,
                                const std::wstring& new_contents);
   virtual bool HandleKeyEvent(views::Textfield* sender,

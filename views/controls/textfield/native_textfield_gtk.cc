@@ -15,7 +15,9 @@
 #include "views/controls/textfield/gtk_views_entry.h"
 #include "views/controls/textfield/gtk_views_textview.h"
 #include "views/controls/textfield/native_textfield_views.h"
+#include "views/controls/textfield/text_range.h"
 #include "views/controls/textfield/textfield.h"
+#include "views/controls/textfield/textfield_controller.h"
 #include "views/widget/widget_gtk.h"
 
 namespace views {
@@ -383,7 +385,7 @@ gboolean NativeTextfieldGtk::OnKeyPressEventHandler(
 }
 
 gboolean NativeTextfieldGtk::OnKeyPressEvent(GdkEventKey* event) {
-  Textfield::Controller* controller = textfield_->GetController();
+  TextfieldController* controller = textfield_->GetController();
   if (controller) {
     KeyEvent key_event(reinterpret_cast<GdkEvent*>(event));
     return controller->HandleKeyEvent(textfield_, key_event);
@@ -406,7 +408,7 @@ gboolean NativeTextfieldGtk::OnActivate() {
   GdkEventKey* key_event = reinterpret_cast<GdkEventKey*>(event);
   gboolean handled = false;
 
-  Textfield::Controller* controller = textfield_->GetController();
+  TextfieldController* controller = textfield_->GetController();
   if (controller) {
     KeyEvent views_key_event(event);
     handled = controller->HandleKeyEvent(textfield_, views_key_event);
@@ -428,7 +430,7 @@ gboolean NativeTextfieldGtk::OnChangedHandler(
 
 gboolean NativeTextfieldGtk::OnChanged() {
   textfield_->SyncText();
-  Textfield::Controller* controller = textfield_->GetController();
+  TextfieldController* controller = textfield_->GetController();
   if (controller)
     controller->ContentsChanged(textfield_, GetText());
   textfield_->NotifyAccessibilityEvent(AccessibilityTypes::EVENT_TEXT_CHANGED);

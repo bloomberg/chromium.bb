@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -12,8 +12,8 @@
 #include "chrome/browser/cookies_tree_model.h"
 #include "net/base/cookie_monster.h"
 #include "views/controls/button/button.h"
+#include "views/controls/textfield/textfield_controller.h"
 #include "views/controls/tree/tree_view.h"
-#include "views/controls/textfield/textfield.h"
 #include "views/view.h"
 #include "views/window/dialog_delegate.h"
 #include "views/window/window.h"
@@ -42,7 +42,7 @@ class CookiesView : public CookiesTreeModel::Observer,
                     public views::DialogDelegate,
                     public views::ButtonListener,
                     public views::TreeViewController,
-                    public views::Textfield::Controller {
+                    public views::TextfieldController {
  public:
   // Show the Cookies Window, creating one if necessary.
   static void ShowCookiesWindow(Profile* profile);
@@ -64,40 +64,33 @@ class CookiesView : public CookiesTreeModel::Observer,
   virtual void TreeNodeChanged(ui::TreeModel* model, ui::TreeModelNode* node) {}
   // End TreeModelObserver implementation.
 
-  // views::ButtonListener implementation.
+  // views::ButtonListener:
   virtual void ButtonPressed(views::Button* sender, const views::Event& event);
 
-  // views::TreeViewController implementation.
+  // views::TreeViewController:
   virtual void OnTreeViewSelectionChanged(views::TreeView* tree_view);
-
-  // views::TreeViewController implementation.
   virtual void OnTreeViewKeyDown(ui::KeyboardCode keycode);
 
-  // views::Textfield::Controller implementation.
+  // views::TextfieldController:
   virtual void ContentsChanged(views::Textfield* sender,
                                const std::wstring& new_contents);
   virtual bool HandleKeyEvent(views::Textfield* sender,
                               const views::KeyEvent& key);
 
-  // views::WindowDelegate implementation.
-  virtual int GetDialogButtons() const {
-    return MessageBoxFlags::DIALOGBUTTON_CANCEL;
-  }
-  virtual views::View* GetInitiallyFocusedView() {
-    return search_field_;
-  }
-
-  virtual bool CanResize() const { return true; }
+  // views::WindowDelegate:
+  virtual int GetDialogButtons() const;
+  virtual views::View* GetInitiallyFocusedView();
+  virtual bool CanResize() const;
   virtual std::wstring GetWindowTitle() const;
   virtual void WindowClosing();
   virtual views::View* GetContentsView();
 
-  // views::View overrides:
+  // views::View:
   virtual void Layout();
   virtual gfx::Size GetPreferredSize();
 
  protected:
-  // views::View overrides:
+  // views::View:
   virtual void ViewHierarchyChanged(bool is_add,
                                     views::View* parent,
                                     views::View* child);

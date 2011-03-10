@@ -12,8 +12,9 @@
 #include "ui/base/clipboard/clipboard.h"
 #include "ui/base/clipboard/scoped_clipboard_writer.h"
 #include "ui/gfx/font.h"
-#include "views/views_delegate.h"
+#include "views/controls/textfield/text_range.h"
 #include "views/controls/textfield/textfield.h"
+#include "views/views_delegate.h"
 
 namespace views {
 
