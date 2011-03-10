@@ -15,7 +15,7 @@ fi
 
 GNU_MP_MAJOR=0
 GMP_HEADER=""
-for header in gmp-i386.h gmp-x86_64.h gmp.h ; do
+for header in gmp-i386.h gmp.h ; do
   if [[ -f /usr/include/${header} ]]; then
     declare -r GMP_HEADER=/usr/include/${header}
     break
