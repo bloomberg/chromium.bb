@@ -71,6 +71,8 @@ ScoredHistoryMatch::ScoredHistoryMatch(const URLRow& url_info)
       raw_score(0),
       prefix_adjust(0) {}
 
+ScoredHistoryMatch::~ScoredHistoryMatch() {}
+
 struct InMemoryURLIndex::TermCharWordSet {
   TermCharWordSet()  // Required for STL resize().
       : char_(0),

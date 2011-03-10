@@ -60,6 +60,7 @@ typedef std::vector<TermMatch> TermMatches;
 struct ScoredHistoryMatch : public HistoryMatch {
   ScoredHistoryMatch();  // Required by STL.
   explicit ScoredHistoryMatch(const URLRow& url_info);
+  ~ScoredHistoryMatch();
 
   // An interim score taking into consideration location and completeness
   // of the match.
