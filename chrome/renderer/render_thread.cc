@@ -998,7 +998,7 @@ void RenderThread::EnsureWebKitInitialized() {
       !command_line.HasSwitch(switches::kDisableFileSystem));
 
   WebRuntimeFeatures::enableJavaScriptI18NAPI(
-      command_line.HasSwitch(switches::kEnableJavaScriptI18NAPI));
+      !command_line.HasSwitch(switches::kDisableJavaScriptI18NAPI));
 }
 
 void RenderThread::IdleHandler() {

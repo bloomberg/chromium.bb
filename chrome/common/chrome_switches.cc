@@ -277,11 +277,14 @@ const char kDisableIPv6[]                   = "disable-ipv6";
 // Disable speculative TCP/IP preconnection.
 const char kDisablePreconnect[]             = "disable-preconnect";
 
+// Prevent Java from running.
+const char kDisableJava[]                   = "disable-java";
+
 // Don't execute JavaScript (browser JS like the new tab page still runs).
 const char kDisableJavaScript[]             = "disable-javascript";
 
-// Prevent Java from running.
-const char kDisableJava[]                   = "disable-java";
+// Disable JavaScript I18N API.
+const char kDisableJavaScriptI18NAPI[]      = "disable-javascript-i18n-api";
 
 // Disable LocalStorage.
 const char kDisableLocalStorage[]           = "disable-local-storage";
@@ -502,9 +505,6 @@ const char kEnableInBrowserThumbnailing[]   = "enable-in-browser-thumbnailing";
 // allow support independent of application testing.
 // This flag overrides "disable-ipv6" which appears elswhere in this file.
 const char kEnableIPv6[]                    = "enable-ipv6";
-
-// Enable experimental JavaScript I18N API.
-const char kEnableJavaScriptI18NAPI[]       = "enable-javascript-i18n-api";
 
 // Allows reporting memory info (JS heap size) to page.
 const char kEnableMemoryInfo[]              = "enable-memory-info";
