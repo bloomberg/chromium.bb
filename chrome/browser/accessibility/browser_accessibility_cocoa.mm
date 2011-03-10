@@ -93,9 +93,9 @@ bool GetState(BrowserAccessibility* accessibility, int state) {
 - (NSArray*)children {
   if (!children_.get()) {
     children_.reset([[NSMutableArray alloc]
-        initWithCapacity:browserAccessibility_->GetChildCount()] );
+        initWithCapacity:browserAccessibility_->child_count()] );
     for (uint32 index = 0;
-         index < browserAccessibility_->GetChildCount();
+         index < browserAccessibility_->child_count();
          ++index) {
       BrowserAccessibilityCocoa* child =
           browserAccessibility_->GetChild(index)->toBrowserAccessibilityCocoa();

@@ -406,7 +406,7 @@ void BookmarkFaviconFetcher::ExtractUrls(const BookmarkNode* node) {
       bookmark_urls_.push_back(url);
     }
   } else {
-    for (int i = 0; i < node->GetChildCount(); ++i) {
+    for (int i = 0; i < node->child_count(); ++i) {
       ExtractUrls(node->GetChild(i));
     }
   }

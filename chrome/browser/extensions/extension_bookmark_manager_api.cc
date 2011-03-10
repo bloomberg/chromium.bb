@@ -89,7 +89,7 @@ void AddNodeToList(ListValue* list, const BookmarkNode& node) {
   dict->SetString(keys::kTitleKey, node.GetTitle());
 
   ListValue* children = new ListValue();
-  for (int i = 0; i < node.GetChildCount(); ++i)
+  for (int i = 0; i < node.child_count(); ++i)
     AddNodeToList(children, *node.GetChild(i));
   dict->Set(keys::kChildrenKey, children);
 
@@ -391,7 +391,7 @@ bool DropBookmarkManagerFunction::RunImpl() {
   if (args_->GetSize() == 2)
     EXTENSION_FUNCTION_VALIDATE(args_->GetInteger(1, &drop_index));
   else
-    drop_index = drop_parent->GetChildCount();
+    drop_index = drop_parent->child_count();
 
   if (dispatcher()->render_view_host()->delegate()->GetRenderViewType() ==
       ViewType::TAB_CONTENTS) {

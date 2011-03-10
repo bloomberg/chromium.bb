@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -75,8 +75,8 @@ TEST_F(BookmarkAllTabsControllerTest, BookmarkAllTabs) {
   [controller_ selectTestNodeInBrowser:group_a_];
   [controller_ setDisplayName:@"ALL MY TABS"];
   [controller_ ok:nil];
-  EXPECT_EQ(4, group_a_->GetChildCount());
+  EXPECT_EQ(4, group_a_->child_count());
   const BookmarkNode* folderChild = group_a_->GetChild(3);
   EXPECT_EQ(folderChild->GetTitle(), ASCIIToUTF16("ALL MY TABS"));
-  EXPECT_EQ(3, folderChild->GetChildCount());
+  EXPECT_EQ(3, folderChild->child_count());
 }

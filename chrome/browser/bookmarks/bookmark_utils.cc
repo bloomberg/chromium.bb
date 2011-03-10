@@ -105,7 +105,7 @@ void CloneBookmarkNodeImpl(BookmarkModel* model,
 // Returns the number of descendants of node that are of type url.
 int DescendantURLCount(const BookmarkNode* node) {
   int result = 0;
-  for (int i = 0; i < node->GetChildCount(); ++i) {
+  for (int i = 0; i < node->child_count(); ++i) {
     const BookmarkNode* child = node->GetChild(i);
     if (child->is_url())
       result++;
@@ -147,7 +147,7 @@ void OpenAllImpl(const BookmarkNode* node,
     }
   } else {
     // Group, recurse through children.
-    for (int i = 0; i < node->GetChildCount(); ++i) {
+    for (int i = 0; i < node->child_count(); ++i) {
       OpenAllImpl(node->GetChild(i), initial_disposition, navigator,
                   opened_url);
     }
@@ -420,7 +420,7 @@ void PasteFromClipboard(BookmarkModel* model,
     return;
 
   if (index == -1)
-    index = parent->GetChildCount();
+    index = parent->child_count();
   bookmark_utils::CloneBookmarkNode(
       model, bookmark_data.elements, parent, index);
 }
@@ -546,11 +546,11 @@ static const BookmarkNode* CreateNewNode(BookmarkModel* model,
     const string16& new_title, const GURL& new_url) {
   const BookmarkNode* node;
   if (details.type == BookmarkEditor::EditDetails::NEW_URL) {
-    node = model->AddURL(parent, parent->GetChildCount(), new_title, new_url);
+    node = model->AddURL(parent, parent->child_count(), new_title, new_url);
   } else if (details.type == BookmarkEditor::EditDetails::NEW_FOLDER) {
-    node = model->AddGroup(parent, parent->GetChildCount(), new_title);
+    node = model->AddGroup(parent, parent->child_count(), new_title);
     for (size_t i = 0; i < details.urls.size(); ++i) {
-      model->AddURL(node, node->GetChildCount(), details.urls[i].second,
+      model->AddURL(node, node->child_count(), details.urls[i].second,
                     details.urls[i].first);
     }
     model->SetDateGroupModified(parent, Time::Now());
@@ -592,7 +592,7 @@ const BookmarkNode* ApplyEditsWithPossibleGroupChange(BookmarkModel* model,
   DCHECK(node);
 
   if (new_parent != node->parent())
-    model->Move(node, new_parent, new_parent->GetChildCount());
+    model->Move(node, new_parent, new_parent->child_count());
   if (node->is_url())
     model->SetURL(node, new_url);
   model->SetTitle(node, new_title);
@@ -653,10 +653,10 @@ const BookmarkNode* GetParentForNewNodes(
       if (*index == 0) {
         // Node doesn't exist in parent, add to end.
         NOTREACHED();
-        *index = real_parent->GetChildCount();
+        *index = real_parent->child_count();
       }
     } else {
-      *index = real_parent->GetChildCount();
+      *index = real_parent->child_count();
     }
   }
 
@@ -669,7 +669,7 @@ bool NodeHasURLs(const BookmarkNode* node) {
   if (node->is_url())
     return true;
 
-  for (int i = 0; i < node->GetChildCount(); ++i) {
+  for (int i = 0; i < node->child_count(); ++i) {
     if (NodeHasURLs(node->GetChild(i)))
       return true;
   }

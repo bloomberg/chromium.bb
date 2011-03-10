@@ -462,7 +462,7 @@ BookmarkEditorView::EditorNode* BookmarkEditorView::AddNewGroup(
       l10n_util::GetStringUTF16(IDS_BOOMARK_EDITOR_NEW_FOLDER_NAME));
   new_node->value = 0;
   // new_node is now owned by parent.
-  tree_model_->Add(parent, parent->GetChildCount(), new_node);
+  tree_model_->Add(parent, parent->child_count(), new_node);
   return new_node;
 }
 
@@ -485,7 +485,7 @@ BookmarkEditorView::EditorNode* BookmarkEditorView::CreateRootNode() {
   EditorNode* root_node = new EditorNode(std::wstring(), 0);
   const BookmarkNode* bb_root_node = bb_model_->root_node();
   CreateNodes(bb_root_node, root_node);
-  DCHECK(root_node->GetChildCount() == 2);
+  DCHECK(root_node->child_count() == 2);
   DCHECK(bb_root_node->GetChild(0)->type() == BookmarkNode::BOOKMARK_BAR);
   DCHECK(bb_root_node->GetChild(1)->type() == BookmarkNode::OTHER_NODE);
   return root_node;
@@ -493,13 +493,13 @@ BookmarkEditorView::EditorNode* BookmarkEditorView::CreateRootNode() {
 
 void BookmarkEditorView::CreateNodes(const BookmarkNode* bb_node,
                                      BookmarkEditorView::EditorNode* b_node) {
-  for (int i = 0; i < bb_node->GetChildCount(); ++i) {
+  for (int i = 0; i < bb_node->child_count(); ++i) {
     const BookmarkNode* child_bb_node = bb_node->GetChild(i);
     if (child_bb_node->is_folder()) {
       EditorNode* new_b_node =
           new EditorNode(WideToUTF16(child_bb_node->GetTitle()),
                                      child_bb_node->id());
-      b_node->Add(b_node->GetChildCount(), new_b_node);
+      b_node->Add(b_node->child_count(), new_b_node);
       CreateNodes(child_bb_node, new_b_node);
     }
   }
@@ -510,7 +510,7 @@ BookmarkEditorView::EditorNode* BookmarkEditorView::FindNodeWithID(
     int64 id) {
   if (node->value == id)
     return node;
-  for (int i = 0; i < node->GetChildCount(); ++i) {
+  for (int i = 0; i < node->child_count(); ++i) {
     EditorNode* result = FindNodeWithID(node->GetChild(i), id);
     if (result)
       return result;
@@ -563,17 +563,17 @@ void BookmarkEditorView::ApplyNameChangesAndCreateNewGroups(
     const BookmarkNode** parent_bb_node) {
   if (parent_b_node == b_node)
     *parent_bb_node = bb_node;
-  for (int i = 0; i < b_node->GetChildCount(); ++i) {
+  for (int i = 0; i < b_node->child_count(); ++i) {
     EditorNode* child_b_node = b_node->GetChild(i);
     const BookmarkNode* child_bb_node = NULL;
     if (child_b_node->value == 0) {
       // New group.
       child_bb_node = bb_model_->AddGroup(bb_node,
-          bb_node->GetChildCount(), child_b_node->GetTitle());
+          bb_node->child_count(), child_b_node->GetTitle());
     } else {
       // Existing node, reset the title (BBModel ignores changes if the title
       // is the same).
-      for (int j = 0; j < bb_node->GetChildCount(); ++j) {
+      for (int j = 0; j < bb_node->child_count(); ++j) {
         const BookmarkNode* node = bb_node->GetChild(j);
         if (node->is_folder() && node->id() == child_b_node->value) {
           child_bb_node = node;

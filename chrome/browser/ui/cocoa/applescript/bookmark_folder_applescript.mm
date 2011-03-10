@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -17,9 +17,9 @@
 
 - (NSArray*)bookmarkFolders {
   NSMutableArray* bookmarkFolders = [NSMutableArray
-      arrayWithCapacity:bookmarkNode_->GetChildCount()];
+      arrayWithCapacity:bookmarkNode_->child_count()];
 
-  for (int i = 0; i < bookmarkNode_->GetChildCount(); ++i) {
+  for (int i = 0; i < bookmarkNode_->child_count(); ++i) {
     const BookmarkNode* node = bookmarkNode_->GetChild(i);
 
     if (!node->is_folder())
@@ -45,7 +45,7 @@
     return;
 
   const BookmarkNode* node = model->AddGroup(bookmarkNode_,
-                                             bookmarkNode_->GetChildCount(),
+                                             bookmarkNode_->child_count(),
                                              string16());
   if (!node) {
     AppleScript::SetError(AppleScript::errCreateBookmarkFolder);
@@ -89,9 +89,9 @@
 
 - (NSArray*)bookmarkItems {
   NSMutableArray* bookmarkItems = [NSMutableArray
-      arrayWithCapacity:bookmarkNode_->GetChildCount()];
+      arrayWithCapacity:bookmarkNode_->child_count()];
 
-  for (int i = 0; i < bookmarkNode_->GetChildCount(); ++i) {
+  for (int i = 0; i < bookmarkNode_->child_count(); ++i) {
     const BookmarkNode* node = bookmarkNode_->GetChild(i);
 
     if (!node->is_url())
@@ -124,7 +124,7 @@
   }
 
   const BookmarkNode* node = model->AddURL(bookmarkNode_,
-                                           bookmarkNode_->GetChildCount(),
+                                           bookmarkNode_->child_count(),
                                            string16(),
                                            url);
   if (!node) {

@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -361,7 +361,7 @@ bool StarredURLDatabase::BuildStarNodes(
         StarredNode* parent =
             group_id_to_node_map[star_entries[i].parent_group_id];
         StarredNode* node = new StarredNode(star_entries[i]);
-        parent->Add(parent->GetChildCount(), node);
+        parent->Add(parent->child_count(), node);
       }
     } else if (groups_with_duplicate_ids->find(star_entries[i].id) ==
                groups_with_duplicate_ids->end()) {
@@ -378,7 +378,7 @@ bool StarredURLDatabase::BuildStarNodes(
             group_id_to_node_map[star_entries[i].parent_group_id];
         StarredNode* node = group_id_to_node_map[star_entries[i].group_id];
         if (!node->HasAncestor(parent) && !parent->HasAncestor(node)) {
-          parent->Add(parent->GetChildCount(), node);
+          parent->Add(parent->child_count(), node);
         } else {
           // The node has a cycle. Add it to the list of roots so the cycle is
           // broken.
@@ -403,7 +403,7 @@ StarredURLDatabase::StarredNode* StarredURLDatabase::GetNodeByType(
 
 bool StarredURLDatabase::EnsureVisualOrder(
     StarredURLDatabase::StarredNode* node) {
-  for (int i = 0; i < node->GetChildCount(); ++i) {
+  for (int i = 0; i < node->child_count(); ++i) {
     if (node->GetChild(i)->value.visual_order != i) {
       StarredEntry& entry = node->GetChild(i)->value;
       entry.visual_order = i;
@@ -521,7 +521,7 @@ bool StarredURLDatabase::EnsureStarredIntegrityImpl(
 
 bool StarredURLDatabase::Move(StarredNode* source, StarredNode* new_parent) {
   history::StarredEntry& entry = source->value;
-  entry.visual_order = new_parent->GetChildCount();
+  entry.visual_order = new_parent->child_count();
   entry.parent_group_id = new_parent->value.group_id;
   if (!UpdateStarredEntryRow(entry.id, entry.title,
                              entry.parent_group_id, entry.visual_order,
@@ -529,7 +529,7 @@ bool StarredURLDatabase::Move(StarredNode* source, StarredNode* new_parent) {
     NOTREACHED() << "Unable to move folder";
     return false;
   }
-  new_parent->Add(new_parent->GetChildCount(), source);
+  new_parent->Add(new_parent->child_count(), source);
   return true;
 }
 
@@ -611,7 +611,7 @@ bool StarredURLDatabase::MigrateBookmarksToFileImpl(const FilePath& path) {
     // Add the node to its parent. |entries| is ordered by parent then
     // visual order so that we know we maintain visual order by always adding
     // to the end.
-    parent->Add(parent->GetChildCount(), node);
+    parent->Add(parent->child_count(), node);
   }
 
   // Save to file.

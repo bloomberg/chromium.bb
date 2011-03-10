@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -89,49 +89,49 @@ class BookmarkEditorBaseControllerTest : public CocoaTest {
 TEST_F(BookmarkEditorBaseControllerTest, VerifyBookmarkTestModel) {
   BookmarkModel& model(*(browser_helper_.profile()->GetBookmarkModel()));
   const BookmarkNode& root(*model.GetBookmarkBarNode());
-  EXPECT_EQ(4, root.GetChildCount());
+  EXPECT_EQ(4, root.child_count());
   // a
   const BookmarkNode* child = root.GetChild(0);
-  EXPECT_EQ(3, child->GetChildCount());
+  EXPECT_EQ(3, child->child_count());
   const BookmarkNode* subchild = child->GetChild(0);
-  EXPECT_EQ(0, subchild->GetChildCount());
+  EXPECT_EQ(0, subchild->child_count());
   subchild = child->GetChild(1);
-  EXPECT_EQ(0, subchild->GetChildCount());
+  EXPECT_EQ(0, subchild->child_count());
   subchild = child->GetChild(2);
-  EXPECT_EQ(0, subchild->GetChildCount());
+  EXPECT_EQ(0, subchild->child_count());
   // b
   child = root.GetChild(1);
-  EXPECT_EQ(5, child->GetChildCount());
+  EXPECT_EQ(5, child->child_count());
   subchild = child->GetChild(0);
-  EXPECT_EQ(1, subchild->GetChildCount());
+  EXPECT_EQ(1, subchild->child_count());
   const BookmarkNode* subsubchild = subchild->GetChild(0);
-  EXPECT_EQ(0, subsubchild->GetChildCount());
+  EXPECT_EQ(0, subsubchild->child_count());
   subchild = child->GetChild(1);
-  EXPECT_EQ(0, subchild->GetChildCount());
+  EXPECT_EQ(0, subchild->child_count());
   subchild = child->GetChild(2);
-  EXPECT_EQ(0, subchild->GetChildCount());
+  EXPECT_EQ(0, subchild->child_count());
   subchild = child->GetChild(3);
-  EXPECT_EQ(2, subchild->GetChildCount());
+  EXPECT_EQ(2, subchild->child_count());
   subsubchild = subchild->GetChild(0);
-  EXPECT_EQ(0, subsubchild->GetChildCount());
+  EXPECT_EQ(0, subsubchild->child_count());
   subsubchild = subchild->GetChild(1);
-  EXPECT_EQ(0, subsubchild->GetChildCount());
+  EXPECT_EQ(0, subsubchild->child_count());
   subchild = child->GetChild(4);
-  EXPECT_EQ(0, subchild->GetChildCount());
+  EXPECT_EQ(0, subchild->child_count());
   // c
   child = root.GetChild(2);
-  EXPECT_EQ(4, child->GetChildCount());
+  EXPECT_EQ(4, child->child_count());
   subchild = child->GetChild(0);
-  EXPECT_EQ(0, subchild->GetChildCount());
+  EXPECT_EQ(0, subchild->child_count());
   subchild = child->GetChild(1);
-  EXPECT_EQ(0, subchild->GetChildCount());
+  EXPECT_EQ(0, subchild->child_count());
   subchild = child->GetChild(2);
-  EXPECT_EQ(0, subchild->GetChildCount());
+  EXPECT_EQ(0, subchild->child_count());
   subchild = child->GetChild(3);
-  EXPECT_EQ(0, subchild->GetChildCount());
+  EXPECT_EQ(0, subchild->child_count());
   // d
   child = root.GetChild(3);
-  EXPECT_EQ(0, child->GetChildCount());
+  EXPECT_EQ(0, child->child_count());
   [controller_ cancel:nil];
 }
 
@@ -144,7 +144,7 @@ TEST_F(BookmarkEditorBaseControllerTest, NodeSelection) {
 }
 
 TEST_F(BookmarkEditorBaseControllerTest, CreateFolder) {
-  EXPECT_EQ(2, group_b_3_->GetChildCount());
+  EXPECT_EQ(2, group_b_3_->child_count());
   [controller_ selectTestNodeInBrowser:group_b_3_];
   NSString* expectedName =
       l10n_util::GetNSStringWithFixup(IDS_BOOMARK_EDITOR_NEW_FOLDER_NAME);
@@ -160,7 +160,7 @@ TEST_F(BookmarkEditorBaseControllerTest, CreateFolder) {
   EXPECT_NSEQ(expectedName, newFolderName);
   [controller_ createNewFolders];
   // Verify that the tab folder was added to the new folder.
-  EXPECT_EQ(3, group_b_3_->GetChildCount());
+  EXPECT_EQ(3, group_b_3_->child_count());
   [controller_ cancel:nil];
 }
 

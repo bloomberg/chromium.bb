@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -23,7 +23,7 @@ class BookmarkNameFolderControllerTest : public CocoaTest {
 TEST_F(BookmarkNameFolderControllerTest, AddNew) {
   BookmarkModel* model = helper_.profile()->GetBookmarkModel();
   const BookmarkNode* parent = model->GetBookmarkBarNode();
-  EXPECT_EQ(0, parent->GetChildCount());
+  EXPECT_EQ(0, parent->child_count());
 
   scoped_nsobject<BookmarkNameFolderController>
     controller([[BookmarkNameFolderController alloc]
@@ -35,16 +35,16 @@ TEST_F(BookmarkNameFolderControllerTest, AddNew) {
 
   // Do nothing.
   [controller cancel:nil];
-  EXPECT_EQ(0, parent->GetChildCount());
+  EXPECT_EQ(0, parent->child_count());
 
   // Change name then cancel.
   [controller setFolderName:@"Bozo"];
   [controller cancel:nil];
-  EXPECT_EQ(0, parent->GetChildCount());
+  EXPECT_EQ(0, parent->child_count());
 
   // Add a new folder.
   [controller ok:nil];
-  EXPECT_EQ(1, parent->GetChildCount());
+  EXPECT_EQ(1, parent->child_count());
   EXPECT_TRUE(parent->GetChild(0)->is_folder());
   EXPECT_EQ(ASCIIToUTF16("Bozo"), parent->GetChild(0)->GetTitle());
 }
@@ -59,7 +59,7 @@ TEST_F(BookmarkNameFolderControllerTest, AddNewWithSibling) {
                 GURL("http://www.google.com"));
   model->AddURL(parent, 1, ASCIIToUTF16("title 3"),
                 GURL("http://www.google.com"));
-  EXPECT_EQ(2, parent->GetChildCount());
+  EXPECT_EQ(2, parent->child_count());
 
   scoped_nsobject<BookmarkNameFolderController>
     controller([[BookmarkNameFolderController alloc]
@@ -74,7 +74,7 @@ TEST_F(BookmarkNameFolderControllerTest, AddNewWithSibling) {
   [controller ok:nil];
 
   // Confirm we now have 3, and that the new one is in the middle.
-  EXPECT_EQ(3, parent->GetChildCount());
+  EXPECT_EQ(3, parent->child_count());
   EXPECT_TRUE(parent->GetChild(1)->is_folder());
   EXPECT_EQ(ASCIIToUTF16("middle"), parent->GetChild(1)->GetTitle());
 }
@@ -83,7 +83,7 @@ TEST_F(BookmarkNameFolderControllerTest, AddNewWithSibling) {
 TEST_F(BookmarkNameFolderControllerTest, AddNewDefaultName) {
  BookmarkModel* model = helper_.profile()->GetBookmarkModel();
   const BookmarkNode* parent = model->GetBookmarkBarNode();
-  EXPECT_EQ(0, parent->GetChildCount());
+  EXPECT_EQ(0, parent->child_count());
 
   scoped_nsobject<BookmarkNameFolderController>
     controller([[BookmarkNameFolderController alloc]
@@ -96,7 +96,7 @@ TEST_F(BookmarkNameFolderControllerTest, AddNewDefaultName) {
 
   // Click OK without changing the name
   [controller ok:nil];
-  EXPECT_EQ(1, parent->GetChildCount());
+  EXPECT_EQ(1, parent->child_count());
   EXPECT_TRUE(parent->GetChild(0)->is_folder());
 }
 
@@ -104,7 +104,7 @@ TEST_F(BookmarkNameFolderControllerTest, AddNewDefaultName) {
 TEST_F(BookmarkNameFolderControllerTest, AddNewBlankName) {
   BookmarkModel* model = helper_.profile()->GetBookmarkModel();
   const BookmarkNode* parent = model->GetBookmarkBarNode();
-  EXPECT_EQ(0, parent->GetChildCount());
+  EXPECT_EQ(0, parent->child_count());
 
   scoped_nsobject<BookmarkNameFolderController>
   controller([[BookmarkNameFolderController alloc]
@@ -117,7 +117,7 @@ TEST_F(BookmarkNameFolderControllerTest, AddNewBlankName) {
   // Change the name to blank, click OK.
   [controller setFolderName:@""];
   [controller ok:nil];
-  EXPECT_EQ(1, parent->GetChildCount());
+  EXPECT_EQ(1, parent->child_count());
   EXPECT_TRUE(parent->GetChild(0)->is_folder());
 }
 
@@ -125,7 +125,7 @@ TEST_F(BookmarkNameFolderControllerTest, Rename) {
   BookmarkModel* model = helper_.profile()->GetBookmarkModel();
   const BookmarkNode* parent = model->GetBookmarkBarNode();
   const BookmarkNode* folder = model->AddGroup(parent,
-                                               parent->GetChildCount(),
+                                               parent->child_count(),
                                                ASCIIToUTF16("group"));
 
   // Rename the folder by creating a controller that originates from
@@ -140,7 +140,7 @@ TEST_F(BookmarkNameFolderControllerTest, Rename) {
   EXPECT_NSEQ(@"group", [controller folderName]);
   [controller setFolderName:@"Zobo"];
   [controller ok:nil];
-  EXPECT_EQ(1, parent->GetChildCount());
+  EXPECT_EQ(1, parent->child_count());
   EXPECT_TRUE(parent->GetChild(0)->is_folder());
   EXPECT_EQ(ASCIIToUTF16("Zobo"), parent->GetChild(0)->GetTitle());
 }
@@ -148,7 +148,7 @@ TEST_F(BookmarkNameFolderControllerTest, Rename) {
 TEST_F(BookmarkNameFolderControllerTest, EditAndConfirmOKButton) {
   BookmarkModel* model = helper_.profile()->GetBookmarkModel();
   const BookmarkNode* parent = model->GetBookmarkBarNode();
-  EXPECT_EQ(0, parent->GetChildCount());
+  EXPECT_EQ(0, parent->child_count());
 
   scoped_nsobject<BookmarkNameFolderController>
     controller([[BookmarkNameFolderController alloc]

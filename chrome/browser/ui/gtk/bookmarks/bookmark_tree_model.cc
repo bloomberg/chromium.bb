@@ -55,12 +55,12 @@ void RecursiveResolve(BookmarkModel* bb_model, const BookmarkNode* bb_node,
           bookmark_utils::GetTitleFromTreeIter(tree_model, &child_iter);
       const BookmarkNode* child_bb_node = NULL;
       if (id == 0) {
-        child_bb_node = bb_model->AddGroup(bb_node, bb_node->GetChildCount(),
+        child_bb_node = bb_model->AddGroup(bb_node, bb_node->child_count(),
                                            title);
       } else {
         // Existing node, reset the title (BBModel ignores changes if the title
         // is the same).
-        for (int j = 0; j < bb_node->GetChildCount(); ++j) {
+        for (int j = 0; j < bb_node->child_count(); ++j) {
           const BookmarkNode* node = bb_node->GetChild(j);
           if (node->is_folder() && node->id() == id) {
             child_bb_node = node;
@@ -103,7 +103,7 @@ GtkTreeStore* MakeFolderTreeStore() {
 void AddToTreeStore(BookmarkModel* model, int64 selected_id,
                     GtkTreeStore* store, GtkTreeIter* selected_iter) {
   const BookmarkNode* root_node = model->root_node();
-  for (int i = 0; i < root_node->GetChildCount(); ++i) {
+  for (int i = 0; i < root_node->child_count(); ++i) {
     AddToTreeStoreAt(root_node->GetChild(i), selected_id, store, selected_iter,
                      NULL);
   }
@@ -154,7 +154,7 @@ void AddToTreeStoreAt(const BookmarkNode* node, int64 selected_id,
      *selected_iter = iter;
   }
 
-  for (int i = 0; i < node->GetChildCount(); ++i) {
+  for (int i = 0; i < node->child_count(); ++i) {
     AddToTreeStoreAt(node->GetChild(i), selected_id, store, selected_iter,
                      &iter);
   }
@@ -183,7 +183,7 @@ const BookmarkNode* CommitTreeStoreDifferencesBetween(
 
     int64 id = GetIdFromTreeIter(tree_model, &tree_root);
     const BookmarkNode* child_node = NULL;
-    for (int j = 0; j < root_node->GetChildCount(); ++j) {
+    for (int j = 0; j < root_node->child_count(); ++j) {
       const BookmarkNode* node = root_node->GetChild(j);
       if (node->is_folder() && node->id() == id) {
         child_node = node;

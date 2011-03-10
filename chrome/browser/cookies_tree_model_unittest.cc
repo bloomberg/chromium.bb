@@ -105,9 +105,9 @@ class CookiesTreeModelTest : public testing::Test {
   std::string GetNodesOfChildren(
       const CookieTreeNode* node,
       CookieTreeNode::DetailedInfo::NodeType node_type) {
-    if (node->GetChildCount()) {
+    if (node->child_count()) {
       std::string retval;
-      for (int i = 0; i < node->GetChildCount(); ++i) {
+      for (int i = 0; i < node->child_count(); ++i) {
         retval += GetNodesOfChildren(node->GetChild(i), node_type);
       }
       return retval;
@@ -260,7 +260,7 @@ TEST_F(CookiesTreeModelTest, RemoveAll) {
   {
     SCOPED_TRACE("After removing");
     EXPECT_EQ(1, cookies_model->GetRoot()->GetTotalNodeCount());
-    EXPECT_EQ(0, cookies_model->GetRoot()->GetChildCount());
+    EXPECT_EQ(0, cookies_model->GetRoot()->child_count());
     EXPECT_EQ(std::string(""), GetMonsterCookies(monster));
     EXPECT_EQ(GetMonsterCookies(monster),
               GetDisplayedCookies(cookies_model.get()));
@@ -666,7 +666,7 @@ TEST_F(CookiesTreeModelTest, ContentSettings) {
       static_cast<CookieTreeRootNode*>(cookies_model.GetRoot());
   CookieTreeOriginNode* origin = root->GetOrCreateOriginNode(host);
 
-  EXPECT_EQ(1, origin->GetChildCount());
+  EXPECT_EQ(1, origin->child_count());
   EXPECT_TRUE(origin->CanCreateContentException());
   origin->CreateContentException(
       content_settings, CONTENT_SETTING_SESSION_ONLY);

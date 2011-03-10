@@ -142,15 +142,15 @@ void BookmarkMenuController::NavigateToMenuItem(
 void BookmarkMenuController::BuildMenu(const BookmarkNode* parent,
                                        int start_child_index,
                                        GtkWidget* menu) {
-  DCHECK(!parent->GetChildCount() ||
-         start_child_index < parent->GetChildCount());
+  DCHECK(!parent->child_count() ||
+         start_child_index < parent->child_count());
 
   signals_.Connect(menu, "button-press-event",
                    G_CALLBACK(OnMenuButtonPressedOrReleasedThunk), this);
   signals_.Connect(menu, "button-release-event",
                    G_CALLBACK(OnMenuButtonPressedOrReleasedThunk), this);
 
-  for (int i = start_child_index; i < parent->GetChildCount(); ++i) {
+  for (int i = start_child_index; i < parent->child_count(); ++i) {
     const BookmarkNode* node = parent->GetChild(i);
 
     // This breaks on word boundaries. Ideally we would break on character
@@ -201,7 +201,7 @@ void BookmarkMenuController::BuildMenu(const BookmarkNode* parent,
     node_to_menu_widget_map_[node] = menu_item;
   }
 
-  if (parent->GetChildCount() == 0) {
+  if (parent->child_count() == 0) {
     GtkWidget* empty_menu = gtk_menu_item_new_with_label(
         l10n_util::GetStringUTF8(IDS_MENU_EMPTY_SUBMENU).c_str());
     gtk_widget_set_sensitive(empty_menu, FALSE);

@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -95,14 +95,6 @@ bool BrowserAccessibility::IsDescendantOf(
   }
 
   return false;
-}
-
-BrowserAccessibility* BrowserAccessibility::parent() {
-  return parent_;
-}
-
-uint32 BrowserAccessibility::GetChildCount() {
-  return children_.size();
 }
 
 BrowserAccessibility* BrowserAccessibility::GetChild(uint32 child_index) {

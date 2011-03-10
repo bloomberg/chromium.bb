@@ -343,7 +343,7 @@ void BookmarkBubbleNotificationBridge::Observe(
       static_cast<const BookmarkNode*>([representedObject pointerValue]);
   DCHECK(newParent);
   if (oldParent != newParent) {
-    int index = newParent->GetChildCount();
+    int index = newParent->child_count();
     model_->Move(node_, newParent, index);
     UserMetrics::RecordAction(UserMetricsAction("BookmarkBubble_ChangeParent"),
                               model_->profile());
@@ -395,7 +395,7 @@ void BookmarkBubbleNotificationBridge::Observe(
     [item setIndentationLevel:indentation];
     ++indentation;
   }
-  for (int i = 0; i < parent->GetChildCount(); i++) {
+  for (int i = 0; i < parent->child_count(); i++) {
     const BookmarkNode* child = parent->GetChild(i);
     if (child->is_folder())
       [self addFolderNodes:child

@@ -404,7 +404,7 @@ class ProfileSyncServiceTest : public testing::Test {
       EXPECT_EQ(gnode.GetPredecessorId(), gprev.GetId());
       EXPECT_EQ(gnode.GetParentId(), gprev.GetParentId());
     }
-    if (browser_index == bnode->parent()->GetChildCount() - 1) {
+    if (browser_index == bnode->parent()->child_count() - 1) {
       EXPECT_EQ(gnode.GetSuccessorId(), 0);
     } else {
       const BookmarkNode* bnext =
@@ -415,7 +415,7 @@ class ProfileSyncServiceTest : public testing::Test {
       EXPECT_EQ(gnode.GetSuccessorId(), gnext.GetId());
       EXPECT_EQ(gnode.GetParentId(), gnext.GetParentId());
     }
-    if (bnode->GetChildCount()) {
+    if (bnode->child_count()) {
       EXPECT_TRUE(gnode.GetFirstChildId());
     }
   }
@@ -772,7 +772,7 @@ TEST_F(ProfileSyncServiceTest, ServerChangeWithNonCanonicalURL) {
 
     adds.ApplyPendingChanges(change_processor());
 
-    EXPECT_TRUE(model_->other_node()->GetChildCount() == 1);
+    EXPECT_TRUE(model_->other_node()->child_count() == 1);
     ExpectModelMatch(&trans);
   }
 
@@ -782,7 +782,7 @@ TEST_F(ProfileSyncServiceTest, ServerChangeWithNonCanonicalURL) {
   StartSyncService();
 
   // There should still be just the one bookmark.
-  EXPECT_TRUE(model_->other_node()->GetChildCount() == 1);
+  EXPECT_TRUE(model_->other_node()->child_count() == 1);
   ExpectModelMatch();
 }
 
@@ -806,7 +806,7 @@ TEST_F(ProfileSyncServiceTest, DISABLED_ServerChangeWithInvalidURL) {
     // We're lenient about what should happen -- the model could wind up with
     // the node or without it; but things should be consistent, and we
     // shouldn't crash.
-    child_count = model_->other_node()->GetChildCount();
+    child_count = model_->other_node()->child_count();
     EXPECT_TRUE(child_count == 0 || child_count == 1);
     ExpectModelMatch(&trans);
   }
@@ -817,7 +817,7 @@ TEST_F(ProfileSyncServiceTest, DISABLED_ServerChangeWithInvalidURL) {
   StartSyncService();
 
   // Things ought not to have changed.
-  EXPECT_EQ(model_->other_node()->GetChildCount(), child_count);
+  EXPECT_EQ(model_->other_node()->child_count(), child_count);
   ExpectModelMatch();
 }
 
@@ -853,7 +853,7 @@ TEST_F(ProfileSyncServiceTest, CornerCaseNames) {
   }
 
   // Verify that the browser model matches the sync model.
-  EXPECT_TRUE(model_->other_node()->GetChildCount() == 2*arraysize(names));
+  EXPECT_TRUE(model_->other_node()->child_count() == 2*arraysize(names));
   ExpectModelMatch();
 }
 
@@ -889,7 +889,7 @@ TEST_F(ProfileSyncServiceTest, RepeatedMiddleInsertion) {
   }
 
   // Verify that the browser model matches the sync model.
-  EXPECT_EQ(model_->other_node()->GetChildCount(), count);
+  EXPECT_EQ(model_->other_node()->child_count(), count);
   ExpectModelMatch();
 }
 
@@ -949,13 +949,13 @@ TEST_F(ProfileSyncServiceTest, MergeDuplicates) {
   model_->AddURL(model_->other_node(), 0, ASCIIToUTF16("Dup"),
                  GURL("http://dup.com/"));
 
-  EXPECT_EQ(2, model_->other_node()->GetChildCount());
+  EXPECT_EQ(2, model_->other_node()->child_count());
 
   // Restart the sync service to trigger model association.
   StopSyncService(SAVE_TO_STORAGE);
   StartSyncService();
 
-  EXPECT_EQ(2, model_->other_node()->GetChildCount());
+  EXPECT_EQ(2, model_->other_node()->child_count());
   ExpectModelMatch();
 }
 
@@ -1282,7 +1282,7 @@ void ProfileSyncServiceTestWithData::WriteTestDataToBookmarkModel() {
                        kBookmarkBarChildren,
                        arraysize(kBookmarkBarChildren));
 
-  ASSERT_GE(bookmarks_bar_node->GetChildCount(), 4);
+  ASSERT_GE(bookmarks_bar_node->child_count(), 4);
   const BookmarkNode* f1_node = bookmarks_bar_node->GetChild(1);
   PopulateFromTestData(f1_node, kF1Children, arraysize(kF1Children));
   const BookmarkNode* f2_node = bookmarks_bar_node->GetChild(3);
@@ -1293,7 +1293,7 @@ void ProfileSyncServiceTestWithData::WriteTestDataToBookmarkModel() {
                        kOtherBookmarkChildren,
                        arraysize(kOtherBookmarkChildren));
 
-  ASSERT_GE(other_bookmarks_node->GetChildCount(), 6);
+  ASSERT_GE(other_bookmarks_node->child_count(), 6);
   const BookmarkNode* f3_node = other_bookmarks_node->GetChild(0);
   PopulateFromTestData(f3_node, kF3Children, arraysize(kF3Children));
   const BookmarkNode* f4_node = other_bookmarks_node->GetChild(3);
@@ -1312,7 +1312,7 @@ void ProfileSyncServiceTestWithData::ExpectBookmarkModelMatchesTestData() {
                       kBookmarkBarChildren,
                       arraysize(kBookmarkBarChildren));
 
-  ASSERT_GE(bookmark_bar_node->GetChildCount(), 4);
+  ASSERT_GE(bookmark_bar_node->child_count(), 4);
   const BookmarkNode* f1_node = bookmark_bar_node->GetChild(1);
   CompareWithTestData(f1_node, kF1Children, arraysize(kF1Children));
   const BookmarkNode* f2_node = bookmark_bar_node->GetChild(3);
@@ -1323,7 +1323,7 @@ void ProfileSyncServiceTestWithData::ExpectBookmarkModelMatchesTestData() {
                       kOtherBookmarkChildren,
                       arraysize(kOtherBookmarkChildren));
 
-  ASSERT_GE(other_bookmarks_node->GetChildCount(), 6);
+  ASSERT_GE(other_bookmarks_node->child_count(), 6);
   const BookmarkNode* f3_node = other_bookmarks_node->GetChild(0);
   CompareWithTestData(f3_node, kF3Children, arraysize(kF3Children));
   const BookmarkNode* f4_node = other_bookmarks_node->GetChild(3);
@@ -1394,8 +1394,8 @@ TEST_F(ProfileSyncServiceTestWithData, MergeWithEmptyBookmarkModel) {
 
   // Blow away the bookmark model -- it should be empty afterwards.
   LoadBookmarkModel(DELETE_EXISTING_STORAGE, DONT_SAVE_TO_STORAGE);
-  EXPECT_EQ(model_->GetBookmarkBarNode()->GetChildCount(), 0);
-  EXPECT_EQ(model_->other_node()->GetChildCount(), 0);
+  EXPECT_EQ(model_->GetBookmarkBarNode()->child_count(), 0);
+  EXPECT_EQ(model_->other_node()->child_count(), 0);
 
   // Now restart the sync service.  Starting it should populate the bookmark
   // model -- test for consistency.
@@ -1427,7 +1427,7 @@ TEST_F(ProfileSyncServiceTestWithData, MergeExpectedIdenticalModels) {
   ExpectBookmarkModelMatchesTestData();
   const BookmarkNode* bookmark_bar = model_->GetBookmarkBarNode();
   ASSERT_TRUE(bookmark_bar);
-  ASSERT_GT(bookmark_bar->GetChildCount(), 1);
+  ASSERT_GT(bookmark_bar->child_count(), 1);
   model_->Move(bookmark_bar->GetChild(0), bookmark_bar, 1);
   StartSyncService();
   ExpectModelMatch();
@@ -1444,26 +1444,26 @@ TEST_F(ProfileSyncServiceTestWithData, MergeModelsWithSomeExtras) {
   // Remove some nodes and reorder some nodes.
   const BookmarkNode* bookmark_bar_node = model_->GetBookmarkBarNode();
   int remove_index = 2;
-  ASSERT_GT(bookmark_bar_node->GetChildCount(), remove_index);
+  ASSERT_GT(bookmark_bar_node->child_count(), remove_index);
   const BookmarkNode* child_node = bookmark_bar_node->GetChild(remove_index);
   ASSERT_TRUE(child_node);
   ASSERT_TRUE(child_node->is_url());
   model_->Remove(bookmark_bar_node, remove_index);
-  ASSERT_GT(bookmark_bar_node->GetChildCount(), remove_index);
+  ASSERT_GT(bookmark_bar_node->child_count(), remove_index);
   child_node = bookmark_bar_node->GetChild(remove_index);
   ASSERT_TRUE(child_node);
   ASSERT_TRUE(child_node->is_folder());
   model_->Remove(bookmark_bar_node, remove_index);
 
   const BookmarkNode* other_node = model_->other_node();
-  ASSERT_GE(other_node->GetChildCount(), 1);
+  ASSERT_GE(other_node->child_count(), 1);
   const BookmarkNode* f3_node = other_node->GetChild(0);
   ASSERT_TRUE(f3_node);
   ASSERT_TRUE(f3_node->is_folder());
   remove_index = 2;
-  ASSERT_GT(f3_node->GetChildCount(), remove_index);
+  ASSERT_GT(f3_node->child_count(), remove_index);
   model_->Remove(f3_node, remove_index);
-  ASSERT_GT(f3_node->GetChildCount(), remove_index);
+  ASSERT_GT(f3_node->child_count(), remove_index);
   model_->Remove(f3_node, remove_index);
 
   StartSyncService();
@@ -1477,32 +1477,32 @@ TEST_F(ProfileSyncServiceTestWithData, MergeModelsWithSomeExtras) {
   // Remove some nodes and reorder some nodes.
   bookmark_bar_node = model_->GetBookmarkBarNode();
   remove_index = 0;
-  ASSERT_GT(bookmark_bar_node->GetChildCount(), remove_index);
+  ASSERT_GT(bookmark_bar_node->child_count(), remove_index);
   child_node = bookmark_bar_node->GetChild(remove_index);
   ASSERT_TRUE(child_node);
   ASSERT_TRUE(child_node->is_url());
   model_->Remove(bookmark_bar_node, remove_index);
-  ASSERT_GT(bookmark_bar_node->GetChildCount(), remove_index);
+  ASSERT_GT(bookmark_bar_node->child_count(), remove_index);
   child_node = bookmark_bar_node->GetChild(remove_index);
   ASSERT_TRUE(child_node);
   ASSERT_TRUE(child_node->is_folder());
   model_->Remove(bookmark_bar_node, remove_index);
 
-  ASSERT_GE(bookmark_bar_node->GetChildCount(), 2);
+  ASSERT_GE(bookmark_bar_node->child_count(), 2);
   model_->Move(bookmark_bar_node->GetChild(0), bookmark_bar_node, 1);
 
   other_node = model_->other_node();
-  ASSERT_GE(other_node->GetChildCount(), 1);
+  ASSERT_GE(other_node->child_count(), 1);
   f3_node = other_node->GetChild(0);
   ASSERT_TRUE(f3_node);
   ASSERT_TRUE(f3_node->is_folder());
   remove_index = 0;
-  ASSERT_GT(f3_node->GetChildCount(), remove_index);
+  ASSERT_GT(f3_node->child_count(), remove_index);
   model_->Remove(f3_node, remove_index);
-  ASSERT_GT(f3_node->GetChildCount(), remove_index);
+  ASSERT_GT(f3_node->child_count(), remove_index);
   model_->Remove(f3_node, remove_index);
 
-  ASSERT_GE(other_node->GetChildCount(), 4);
+  ASSERT_GE(other_node->child_count(), 4);
   model_->Move(other_node->GetChild(0), other_node, 1);
   model_->Move(other_node->GetChild(2), other_node, 3);
 

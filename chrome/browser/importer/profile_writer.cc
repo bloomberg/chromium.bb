@@ -105,7 +105,7 @@ void ProfileWriter::AddBookmarkEntry(
       const std::wstring& folder_name = (!import_to_bookmark_bar &&
           !it->in_toolbar && (i == it->path.begin())) ? real_first_folder : *i;
 
-      for (int index = 0; index < parent->GetChildCount(); ++index) {
+      for (int index = 0; index < parent->child_count(); ++index) {
         const BookmarkNode* node = parent->GetChild(index);
         if ((node->type() == BookmarkNode::BOOKMARK_BAR ||
              node->type() == BookmarkNode::FOLDER) &&
@@ -115,16 +115,16 @@ void ProfileWriter::AddBookmarkEntry(
         }
       }
       if (child == NULL)
-        child = model->AddGroup(parent, parent->GetChildCount(),
+        child = model->AddGroup(parent, parent->child_count(),
                                 WideToUTF16Hack(folder_name));
       parent = child;
     }
     groups_added_to.insert(parent);
     if (it->is_folder) {
-      model->AddGroup(parent, parent->GetChildCount(),
+      model->AddGroup(parent, parent->child_count(),
                       WideToUTF16Hack(it->title));
     } else {
-      model->AddURLWithCreationTime(parent, parent->GetChildCount(),
+      model->AddURLWithCreationTime(parent, parent->child_count(),
           WideToUTF16Hack(it->title), it->url, it->creation_time);
     }
 
@@ -298,7 +298,7 @@ std::wstring ProfileWriter::GenerateUniqueFolderName(
   std::set<std::wstring> other_folder_names;
   const BookmarkNode* other = model->other_node();
 
-  for (int i = 0, child_count = other->GetChildCount(); i < child_count; ++i) {
+  for (int i = 0, child_count = other->child_count(); i < child_count; ++i) {
     const BookmarkNode* node = other->GetChild(i);
     if (node->is_folder())
       other_folder_names.insert(UTF16ToWideHack(node->GetTitle()));

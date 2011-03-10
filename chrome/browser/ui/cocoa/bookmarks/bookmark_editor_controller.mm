@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -126,10 +126,10 @@
     model->SetTitle(node_, newTitle);
     const BookmarkNode* oldParentNode = [self parentNode];
     if (newParentNode != oldParentNode)
-      model->Move(node_, newParentNode, newParentNode->GetChildCount());
+      model->Move(node_, newParentNode, newParentNode->child_count());
   } else {
     // Otherwise, add a new bookmark at the end of the newly selected folder.
-    model->AddURL(newParentNode, newParentNode->GetChildCount(), newTitle,
+    model->AddURL(newParentNode, newParentNode->child_count(), newTitle,
                   newURL);
   }
   return [NSNumber numberWithBool:YES];

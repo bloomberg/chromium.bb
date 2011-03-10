@@ -730,9 +730,9 @@ struct LayoutMetrics {
   const BookmarkNode* node = [parentButton_ bookmarkNode];
   DCHECK(node);
   int startingIndex = [[parentButton_ cell] startingChildIndex];
-  DCHECK_LE(startingIndex, node->GetChildCount());
+  DCHECK_LE(startingIndex, node->child_count());
   // Must have at least 1 button (for "empty")
-  int buttons = std::max(node->GetChildCount() - startingIndex, 1);
+  int buttons = std::max(node->child_count() - startingIndex, 1);
 
   // Prelim height of the window.  We'll trim later as needed.
   int height = [self menuHeightForButtonCount:buttons];
@@ -751,7 +751,7 @@ struct LayoutMetrics {
   // TODO(jrg): combine with addNodesToButtonList: code from
   // bookmark_bar_controller.mm (but use y offset)
   // http://crbug.com/35966
-  if (!node->GetChildCount()) {
+  if (!node->child_count()) {
     // If no children we are the empty button.
     BookmarkButton* button = [self makeButtonForNode:nil
                                                frame:buttonsOuterFrame];
@@ -759,7 +759,7 @@ struct LayoutMetrics {
     [folderView_ addSubview:button];
   } else {
     for (int i = startingIndex;
-         i < node->GetChildCount();
+         i < node->child_count();
          i++) {
       const BookmarkNode* child = node->GetChild(i);
       BookmarkButton* button = [self makeButtonForNode:child
@@ -1177,7 +1177,7 @@ static BOOL ValueInRangeInclusive(CGFloat low, CGFloat value, CGFloat high) {
   if ([button isFolder]) {
     destParent = [button bookmarkNode];
     // Drop it at the end.
-    destIndex = [button bookmarkNode]->GetChildCount();
+    destIndex = [button bookmarkNode]->child_count();
   } else {
     // Else we're dropping somewhere in the folder, so find the right spot.
     destParent = [parentButton_ bookmarkNode];
@@ -1478,7 +1478,7 @@ static BOOL ValueInRangeInclusive(CGFloat low, CGFloat value, CGFloat high) {
   // placeholder button. This can be detected by checking for a parent
   // child count of 1.
   const BookmarkNode* parentNode = node->parent();
-  if (parentNode->GetChildCount() == 1) {
+  if (parentNode->child_count() == 1) {
     BookmarkButton* emptyButton = [buttons_ lastObject];
     newButtonFrame = [emptyButton frame];
     [emptyButton setDelegate:nil];
@@ -1525,7 +1525,7 @@ static BOOL ValueInRangeInclusive(CGFloat low, CGFloat value, CGFloat high) {
   if ([button isFolder]) {
     destParent = [button bookmarkNode];
     // Drop it at the end.
-    destIndex = [button bookmarkNode]->GetChildCount();
+    destIndex = [button bookmarkNode]->child_count();
   } else {
     // Else we're dropping somewhere in the folder, so find the right spot.
     destParent = [parentButton_ bookmarkNode];

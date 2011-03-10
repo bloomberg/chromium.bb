@@ -506,7 +506,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientLiveBookmarksSyncTest,
   ASSERT_TRUE(GetClient(0)->AwaitMutualSyncCycleCompletion(GetClient(1)));
   ASSERT_TRUE(AllModelsMatchVerifier());
 
-  Remove(0, folder, folder->GetChildCount() - 1);
+  Remove(0, folder, folder->child_count() - 1);
   ASSERT_TRUE(GetClient(0)->AwaitMutualSyncCycleCompletion(GetClient(1)));
   ASSERT_TRUE(AllModelsMatchVerifier());
 }
@@ -548,7 +548,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientLiveBookmarksSyncTest,
   ASSERT_TRUE(GetClient(0)->AwaitMutualSyncCycleCompletion(GetClient(1)));
   ASSERT_TRUE(AllModelsMatchVerifier());
 
-  int child_count = folder->GetChildCount();
+  int child_count = folder->child_count();
   for (int i = 0; i < child_count; ++i) {
     Remove(0, folder, 0);
   }
@@ -769,7 +769,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientLiveBookmarksSyncTest,
   ASSERT_TRUE(GetClient(0)->AwaitMutualSyncCycleCompletion(GetClient(1)));
   ASSERT_TRUE(AllModelsMatchVerifier());
 
-  int num_bookmarks_to_move = GetBookmarkBarNode(0)->GetChildCount() - 2;
+  int num_bookmarks_to_move = GetBookmarkBarNode(0)->child_count() - 2;
   for (int i = 0; i < num_bookmarks_to_move; ++i) {
     Move(0, GetBookmarkBarNode(0)->GetChild(2), folder, i);
     ASSERT_TRUE(GetClient(0)->AwaitMutualSyncCycleCompletion(GetClient(1)));
@@ -794,7 +794,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientLiveBookmarksSyncTest,
   ASSERT_TRUE(GetClient(0)->AwaitMutualSyncCycleCompletion(GetClient(1)));
   ASSERT_TRUE(AllModelsMatchVerifier());
 
-  int num_bookmarks_to_move = folder->GetChildCount() - 2;
+  int num_bookmarks_to_move = folder->child_count() - 2;
   for (int i = 0; i < num_bookmarks_to_move; ++i) {
     Move(0, folder->GetChild(0), GetBookmarkBarNode(0), i);
     ASSERT_TRUE(GetClient(0)->AwaitMutualSyncCycleCompletion(GetClient(1)));
@@ -880,7 +880,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientLiveBookmarksSyncTest, SC_HoistBMs10LevelUp) {
       ASSERT_TRUE(AddURL(0, folder, i, title, url) != NULL);
     }
     std::wstring title = IndexedFolderName(level);
-    folder = AddGroup(0, folder, folder->GetChildCount(), title);
+    folder = AddGroup(0, folder, folder->child_count(), title);
     ASSERT_TRUE(folder != NULL);
     if (level == 0) folder_L0 = folder;
     if (level == 10) folder_L10 = folder;
@@ -894,7 +894,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientLiveBookmarksSyncTest, SC_HoistBMs10LevelUp) {
   ASSERT_TRUE(AllModelsMatchVerifier());
 
   GURL url10 = GURL(IndexedURL(10));
-  Move(0, GetUniqueNodeByURL(0, url10), folder_L0, folder_L0->GetChildCount());
+  Move(0, GetUniqueNodeByURL(0, url10), folder_L0, folder_L0->child_count());
   GURL url11 = GURL(IndexedURL(11));
   Move(0, GetUniqueNodeByURL(0, url11), folder_L0, 0);
   GURL url12 = GURL(IndexedURL(12));
@@ -921,7 +921,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientLiveBookmarksSyncTest,
       ASSERT_TRUE(AddURL(0, folder, i, title, url) != NULL);
     }
     std::wstring title = IndexedFolderName(level);
-    folder = AddGroup(0, folder, folder->GetChildCount(), title);
+    folder = AddGroup(0, folder, folder->child_count(), title);
     ASSERT_TRUE(folder != NULL);
     if (level == 0) folder_L0 = folder;
     if (level == 10) folder_L10 = folder;
@@ -936,7 +936,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientLiveBookmarksSyncTest,
 
   GURL url10 = GURL(IndexedURL(10));
   Move(0, GetUniqueNodeByURL(0, url10), folder_L10,
-      folder_L10->GetChildCount());
+      folder_L10->child_count());
   GURL url11 = GURL(IndexedURL(11));
   Move(0, GetUniqueNodeByURL(0, url11), folder_L10, 0);
   GURL url12 = GURL(IndexedURL(12));
@@ -961,17 +961,17 @@ IN_PROC_BROWSER_TEST_F(TwoClientLiveBookmarksSyncTest,
       ASSERT_TRUE(AddURL(0, folder, i, title, url) != NULL);
     }
     std::wstring title = IndexedFolderName(level);
-    folder = AddGroup(0, folder, folder->GetChildCount(), title);
+    folder = AddGroup(0, folder, folder->child_count(), title);
     ASSERT_TRUE(folder != NULL);
     if (level == 5) folder_L5 = folder;
   }
   folder =
-      AddGroup(0, GetBookmarkBarNode(0)->GetChildCount(), kGenericFolderName);
+      AddGroup(0, GetBookmarkBarNode(0)->child_count(), kGenericFolderName);
   ASSERT_TRUE(folder != NULL);
   ASSERT_TRUE(GetClient(0)->AwaitMutualSyncCycleCompletion(GetClient(1)));
   ASSERT_TRUE(AllModelsMatchVerifier());
 
-  Move(0, folder, folder_L5, folder_L5->GetChildCount());
+  Move(0, folder, folder_L5, folder_L5->child_count());
   ASSERT_TRUE(GetClient(0)->AwaitMutualSyncCycleCompletion(GetClient(1)));
   ASSERT_TRUE(AllModelsMatchVerifier());
 }
@@ -992,12 +992,12 @@ IN_PROC_BROWSER_TEST_F(TwoClientLiveBookmarksSyncTest,
       ASSERT_TRUE(AddURL(0, folder, i, title, url) != NULL);
     }
     std::wstring title = IndexedFolderName(level);
-    folder = AddGroup(0, folder, folder->GetChildCount(), title);
+    folder = AddGroup(0, folder, folder->child_count(), title);
     ASSERT_TRUE(folder != NULL);
     if (level == 5) folder_L5 = folder;
   }
   folder =
-      AddGroup(0, GetBookmarkBarNode(0)->GetChildCount(), kGenericFolderName);
+      AddGroup(0, GetBookmarkBarNode(0)->child_count(), kGenericFolderName);
   ASSERT_TRUE(folder != NULL);
   for (int i = 0; i < 10; ++i) {
     std::wstring title = IndexedURLTitle(i);
@@ -1007,7 +1007,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientLiveBookmarksSyncTest,
   ASSERT_TRUE(GetClient(0)->AwaitMutualSyncCycleCompletion(GetClient(1)));
   ASSERT_TRUE(AllModelsMatchVerifier());
 
-  Move(0, folder, folder_L5, folder_L5->GetChildCount());
+  Move(0, folder, folder_L5, folder_L5->child_count());
   ASSERT_TRUE(GetClient(0)->AwaitMutualSyncCycleCompletion(GetClient(1)));
   ASSERT_TRUE(AllModelsMatchVerifier());
 }
@@ -1028,12 +1028,12 @@ IN_PROC_BROWSER_TEST_F(TwoClientLiveBookmarksSyncTest,
       ASSERT_TRUE(AddURL(0, folder, i, title, url) != NULL);
     }
     std::wstring title = IndexedFolderName(level);
-    folder = AddGroup(0, folder, folder->GetChildCount(), title);
+    folder = AddGroup(0, folder, folder->child_count(), title);
     ASSERT_TRUE(folder != NULL);
     if (level == 5) folder_L5 = folder;
   }
   folder =
-      AddGroup(0, folder_L5, folder_L5->GetChildCount(), kGenericFolderName);
+      AddGroup(0, folder_L5, folder_L5->child_count(), kGenericFolderName);
   ASSERT_TRUE(folder != NULL);
   for (int i = 0; i < 10; ++i) {
     std::wstring title = IndexedURLTitle(i);
@@ -1044,7 +1044,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientLiveBookmarksSyncTest,
   ASSERT_TRUE(AllModelsMatchVerifier());
 
   Move(0, folder, GetBookmarkBarNode(0),
-      GetBookmarkBarNode(0)->GetChildCount());
+      GetBookmarkBarNode(0)->child_count());
   ASSERT_TRUE(GetClient(0)->AwaitMutualSyncCycleCompletion(GetClient(1)));
   ASSERT_TRUE(AllModelsMatchVerifier());
 }

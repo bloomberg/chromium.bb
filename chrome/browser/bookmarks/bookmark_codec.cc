@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -107,7 +107,7 @@ Value* BookmarkCodec::EncodeNode(const BookmarkNode* node) {
 
     ListValue* child_values = new ListValue();
     value->Set(kChildrenKey, child_values);
-    for (int i = 0; i < node->GetChildCount(); ++i)
+    for (int i = 0; i < node->child_count(); ++i)
       child_values->Append(EncodeNode(node->GetChild(i)));
   }
   return value;
@@ -247,7 +247,7 @@ bool BookmarkCodec::DecodeNode(const DictionaryValue& value,
       return false;  // Node invalid.
 
     if (parent)
-      parent->Add(parent->GetChildCount(), node);
+      parent->Add(parent->child_count(), node);
     node->set_type(BookmarkNode::URL);
     UpdateChecksumWithUrlNode(id_string, title, url_string);
   } else {
@@ -275,7 +275,7 @@ bool BookmarkCodec::DecodeNode(const DictionaryValue& value,
     node->set_date_group_modified(Time::FromInternalValue(internal_time));
 
     if (parent)
-      parent->Add(parent->GetChildCount(), node);
+      parent->Add(parent->child_count(), node);
 
     UpdateChecksumWithFolderNode(id_string, title);
 
@@ -299,7 +299,7 @@ void BookmarkCodec::ReassignIDs(BookmarkNode* bb_node,
 void BookmarkCodec::ReassignIDsHelper(BookmarkNode* node) {
   DCHECK(node);
   node->set_id(++maximum_id_);
-  for (int i = 0; i < node->GetChildCount(); ++i)
+  for (int i = 0; i < node->child_count(); ++i)
     ReassignIDsHelper(node->GetChild(i));
 }
 

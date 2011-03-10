@@ -121,7 +121,7 @@ void CookiesView::ButtonPressed(
     views::Button* sender, const views::Event& event) {
   if (sender == remove_button_) {
     cookies_tree_->RemoveSelectedItems();
-    if (cookies_tree_model_->GetRoot()->GetChildCount() == 0)
+    if (cookies_tree_model_->GetRoot()->child_count() == 0)
       UpdateForEmptyState();
   } else if (sender == remove_all_button_) {
     cookies_tree_model_->DeleteAllStoredObjects();
@@ -375,7 +375,7 @@ void CookiesView::Init() {
   // Add the Remove/Remove All buttons to the ClientView
   parent()->AddChildView(remove_button_);
   parent()->AddChildView(remove_all_button_);
-  if (!cookies_tree_model_.get()->GetRoot()->GetChildCount()) {
+  if (!cookies_tree_model_.get()->GetRoot()->child_count()) {
     UpdateForEmptyState();
   } else {
     UpdateVisibleDetailedInfo(cookie_info_view_);

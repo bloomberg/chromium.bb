@@ -299,11 +299,11 @@ TEST_F(BookmarkContextMenuControllerTest, CutCopyPasteNode) {
 
   controller.reset(new BookmarkContextMenuController(
       NULL, NULL, profile_.get(), NULL, nodes[0]->parent(), nodes));
-  int old_count = model_->GetBookmarkBarNode()->GetChildCount();
+  int old_count = model_->GetBookmarkBarNode()->child_count();
   controller->ExecuteCommand(IDC_PASTE);
 
   ASSERT_TRUE(model_->GetBookmarkBarNode()->GetChild(1)->is_url());
-  ASSERT_EQ(old_count + 1, model_->GetBookmarkBarNode()->GetChildCount());
+  ASSERT_EQ(old_count + 1, model_->GetBookmarkBarNode()->child_count());
   ASSERT_EQ(model_->GetBookmarkBarNode()->GetChild(0)->GetURL(),
             model_->GetBookmarkBarNode()->GetChild(1)->GetURL());
 
@@ -313,5 +313,5 @@ TEST_F(BookmarkContextMenuControllerTest, CutCopyPasteNode) {
   controller->ExecuteCommand(IDC_CUT);
   ASSERT_TRUE(model_->GetBookmarkBarNode()->GetChild(0)->is_url());
   ASSERT_TRUE(model_->GetBookmarkBarNode()->GetChild(1)->is_folder());
-  ASSERT_EQ(old_count, model_->GetBookmarkBarNode()->GetChildCount());
+  ASSERT_EQ(old_count, model_->GetBookmarkBarNode()->child_count());
 }

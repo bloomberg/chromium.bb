@@ -109,7 +109,7 @@ void BookmarkChangeProcessor::RemoveSyncNodeHierarchy(
     // The top of |index_stack| should always be |node|'s index.
     DCHECK(!node->parent() || (node->parent()->GetIndexOf(node) ==
       index_stack.top()));
-    if (index == node->GetChildCount()) {
+    if (index == node->child_count()) {
       // If we've processed all of |node|'s children, delete |node| and move
       // on to its successor.
       RemoveOneSyncNode(&trans, node);
@@ -119,7 +119,7 @@ void BookmarkChangeProcessor::RemoveSyncNodeHierarchy(
     } else {
       // If |node| has an unprocessed child, process it next after pushing the
       // current state onto the stack.
-      DCHECK_LT(index, node->GetChildCount());
+      DCHECK_LT(index, node->child_count());
       index_stack.push(index);
       node = node->GetChild(index);
       index = 0;
@@ -262,7 +262,7 @@ void BookmarkChangeProcessor::BookmarkNodeChildrenReordered(
 
   // The given node's children got reordered. We need to reorder all the
   // children of the corresponding sync node.
-  for (int i = 0; i < node->GetChildCount(); ++i) {
+  for (int i = 0; i < node->child_count(); ++i) {
     sync_api::WriteNode sync_child(&trans);
     if (!model_associator_->InitSyncNodeFromChromeId(node->GetChild(i)->id(),
                                                      &sync_child)) {
@@ -397,18 +397,18 @@ void BookmarkChangeProcessor::ApplyChangesFromSyncModel(
       // reparented by a later change record.  Move them to a temporary place.
       DCHECK(dst) << "Could not find node to be deleted";
       const BookmarkNode* parent = dst->parent();
-      if (dst->GetChildCount()) {
+      if (dst->child_count()) {
         if (!foster_parent) {
           foster_parent = model->AddGroup(model->other_node(),
-                                          model->other_node()->GetChildCount(),
+                                          model->other_node()->child_count(),
                                           string16());
         }
-        for (int i = dst->GetChildCount() - 1; i >= 0; --i) {
+        for (int i = dst->child_count() - 1; i >= 0; --i) {
           model->Move(dst->GetChild(i), foster_parent,
-                      foster_parent->GetChildCount());
+                      foster_parent->child_count());
         }
       }
-      DCHECK_EQ(dst->GetChildCount(), 0) << "Node being deleted has children";
+      DCHECK_EQ(dst->child_count(), 0) << "Node being deleted has children";
       model_associator_->Disassociate(changes[i].id);
       model->Remove(parent, parent->GetIndexOf(dst));
       dst = NULL;
@@ -430,7 +430,7 @@ void BookmarkChangeProcessor::ApplyChangesFromSyncModel(
   // Clean up the temporary node.
   if (foster_parent) {
     // There should be no nodes left under the foster parent.
-    DCHECK_EQ(foster_parent->GetChildCount(), 0);
+    DCHECK_EQ(foster_parent->child_count(), 0);
     model->Remove(foster_parent->parent(),
                   foster_parent->parent()->GetIndexOf(foster_parent));
     foster_parent = NULL;
@@ -487,7 +487,7 @@ const BookmarkNode* BookmarkChangeProcessor::CreateBookmarkNode(
     BookmarkModel* model,
     int index) {
   DCHECK(parent);
-  DCHECK(index >= 0 && index <= parent->GetChildCount());
+  DCHECK(index >= 0 && index <= parent->child_count());
 
   const BookmarkNode* node;
   if (sync_node->GetIsFolder()) {

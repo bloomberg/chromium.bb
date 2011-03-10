@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -153,7 +153,7 @@ class BookmarkCodecTest : public testing::Test {
     int64 node_id = node->id();
     EXPECT_TRUE(assigned_ids->find(node_id) == assigned_ids->end());
     assigned_ids->insert(node_id);
-    for (int i = 0; i < node->GetChildCount(); ++i)
+    for (int i = 0; i < node->child_count(); ++i)
       CheckIDs(node->GetChild(i), assigned_ids);
   }
 
@@ -221,7 +221,7 @@ TEST_F(BookmarkCodecTest, ChecksumManualEditIDsTest) {
 
   // The test depends on existence of multiple children under bookmark bar, so
   // make sure that's the case.
-  int bb_child_count = model_to_encode->GetBookmarkBarNode()->GetChildCount();
+  int bb_child_count = model_to_encode->GetBookmarkBarNode()->child_count();
   ASSERT_GT(bb_child_count, 1);
 
   std::string enc_checksum;
@@ -270,10 +270,10 @@ TEST_F(BookmarkCodecTest, PersistIDsTest) {
   // ID persistence is working properly.
   const BookmarkNode* bookmark_bar = decoded_model.GetBookmarkBarNode();
   decoded_model.AddURL(
-      bookmark_bar, bookmark_bar->GetChildCount(), ASCIIToUTF16(kUrl3Title),
+      bookmark_bar, bookmark_bar->child_count(), ASCIIToUTF16(kUrl3Title),
       GURL(kUrl3Url));
   const BookmarkNode* group2_node = decoded_model.AddGroup(
-      bookmark_bar, bookmark_bar->GetChildCount(), ASCIIToUTF16(kGroup2Title));
+      bookmark_bar, bookmark_bar->child_count(), ASCIIToUTF16(kGroup2Title));
   decoded_model.AddURL(group2_node, 0, ASCIIToUTF16(kUrl4Title),
                        GURL(kUrl4Url));
 

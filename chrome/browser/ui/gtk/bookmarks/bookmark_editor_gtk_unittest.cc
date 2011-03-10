@@ -250,7 +250,7 @@ TEST_F(BookmarkEditorGtkTest, MoveToNewParent) {
   const BookmarkNode* mf2 = bb_node->GetChild(1);
 
   // F2 in the model should have two children now: F21 and the node edited.
-  ASSERT_EQ(2, mf2->GetChildCount());
+  ASSERT_EQ(2, mf2->child_count());
   // F21 should be first.
   ASSERT_EQ(ASCIIToUTF16("F21"), mf2->GetChild(0)->GetTitle());
   // Then a.
@@ -258,7 +258,7 @@ TEST_F(BookmarkEditorGtkTest, MoveToNewParent) {
 
   // F21 should have one child, F211.
   const BookmarkNode* mf21 = mf2->GetChild(0);
-  ASSERT_EQ(1, mf21->GetChildCount());
+  ASSERT_EQ(1, mf21->child_count());
   ASSERT_EQ(ASCIIToUTF16("F211"), mf21->GetChild(0)->GetTitle());
 }
 
@@ -279,7 +279,7 @@ TEST_F(BookmarkEditorGtkTest, NewURL) {
 
   const BookmarkNode* bb_node =
       profile_->GetBookmarkModel()->GetBookmarkBarNode();
-  ASSERT_EQ(4, bb_node->GetChildCount());
+  ASSERT_EQ(4, bb_node->child_count());
 
   const BookmarkNode* new_node = bb_node->GetChild(3);
   EXPECT_EQ(ASCIIToUTF16("new_a"), new_node->GetTitle());
@@ -300,7 +300,7 @@ TEST_F(BookmarkEditorGtkTest, ChangeURLNoTree) {
   editor.ApplyEdits(NULL);
 
   const BookmarkNode* other_node = profile_->GetBookmarkModel()->other_node();
-  ASSERT_EQ(2, other_node->GetChildCount());
+  ASSERT_EQ(2, other_node->child_count());
 
   const BookmarkNode* new_node = other_node->GetChild(0);
 
@@ -319,7 +319,7 @@ TEST_F(BookmarkEditorGtkTest, ChangeTitleNoTree) {
   editor.ApplyEdits();
 
   const BookmarkNode* other_node = profile_->GetBookmarkModel()->other_node();
-  ASSERT_EQ(2, other_node->GetChildCount());
+  ASSERT_EQ(2, other_node->child_count());
 
   const BookmarkNode* new_node = other_node->GetChild(0);
   EXPECT_EQ(ASCIIToUTF16("new_a"), new_node->GetTitle());

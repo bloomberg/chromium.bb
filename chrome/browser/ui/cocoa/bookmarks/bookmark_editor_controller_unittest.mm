@@ -50,7 +50,7 @@ class BookmarkEditorControllerTest : public CocoaTest {
 
 TEST_F(BookmarkEditorControllerTest, NoEdit) {
   [controller_ cancel:nil];
-  ASSERT_EQ(default_parent_->GetChildCount(), 1);
+  ASSERT_EQ(default_parent_->child_count(), 1);
   const BookmarkNode* child = default_parent_->GetChild(0);
   EXPECT_EQ(child->GetTitle(), default_title_);
   EXPECT_EQ(child->GetURL(), GURL(default_name_));
@@ -59,7 +59,7 @@ TEST_F(BookmarkEditorControllerTest, NoEdit) {
 TEST_F(BookmarkEditorControllerTest, EditTitle) {
   [controller_ setDisplayName:@"whamma jamma bamma"];
   [controller_ ok:nil];
-  ASSERT_EQ(default_parent_->GetChildCount(), 1);
+  ASSERT_EQ(default_parent_->child_count(), 1);
   const BookmarkNode* child = default_parent_->GetChild(0);
   EXPECT_EQ(child->GetTitle(), ASCIIToUTF16("whamma jamma bamma"));
   EXPECT_EQ(child->GetURL(), GURL(default_name_));
@@ -70,7 +70,7 @@ TEST_F(BookmarkEditorControllerTest, EditURL) {
   [controller_ setDisplayURL:@"http://yellow-sneakers.com/"];
   EXPECT_TRUE([controller_ okButtonEnabled]);
   [controller_ ok:nil];
-  ASSERT_EQ(default_parent_->GetChildCount(), 1);
+  ASSERT_EQ(default_parent_->child_count(), 1);
   const BookmarkNode* child = default_parent_->GetChild(0);
   EXPECT_EQ(child->GetTitle(), default_title_);
   EXPECT_EQ(child->GetURL(), GURL("http://yellow-sneakers.com/"));
@@ -79,7 +79,7 @@ TEST_F(BookmarkEditorControllerTest, EditURL) {
 TEST_F(BookmarkEditorControllerTest, EditAndFixPrefix) {
   [controller_ setDisplayURL:@"x"];
   [controller_ ok:nil];
-  ASSERT_EQ(default_parent_->GetChildCount(), 1);
+  ASSERT_EQ(default_parent_->child_count(), 1);
   const BookmarkNode* child = default_parent_->GetChild(0);
   EXPECT_TRUE(child->GetURL().is_valid());
 }
@@ -300,50 +300,50 @@ TEST_F(BookmarkEditorControllerTreeTest, VerifyBookmarkTestModel) {
   BookmarkModel& model(*(browser_helper_.profile()->GetBookmarkModel()));
   model.root_node();
   const BookmarkNode& root(*model.GetBookmarkBarNode());
-  EXPECT_EQ(4, root.GetChildCount());
+  EXPECT_EQ(4, root.child_count());
   const BookmarkNode* child = root.GetChild(0);
-  EXPECT_EQ(3, child->GetChildCount());
+  EXPECT_EQ(3, child->child_count());
   const BookmarkNode* subchild = child->GetChild(0);
-  EXPECT_EQ(0, subchild->GetChildCount());
+  EXPECT_EQ(0, subchild->child_count());
   subchild = child->GetChild(1);
-  EXPECT_EQ(0, subchild->GetChildCount());
+  EXPECT_EQ(0, subchild->child_count());
   subchild = child->GetChild(2);
-  EXPECT_EQ(0, subchild->GetChildCount());
+  EXPECT_EQ(0, subchild->child_count());
 
   child = root.GetChild(1);
-  EXPECT_EQ(4, child->GetChildCount());
+  EXPECT_EQ(4, child->child_count());
   subchild = child->GetChild(0);
-  EXPECT_EQ(0, subchild->GetChildCount());
+  EXPECT_EQ(0, subchild->child_count());
   subchild = child->GetChild(1);
-  EXPECT_EQ(5, subchild->GetChildCount());
+  EXPECT_EQ(5, subchild->child_count());
   const BookmarkNode* subsubchild = subchild->GetChild(0);
-  EXPECT_EQ(0, subsubchild->GetChildCount());
+  EXPECT_EQ(0, subsubchild->child_count());
   subsubchild = subchild->GetChild(1);
-  EXPECT_EQ(0, subsubchild->GetChildCount());
+  EXPECT_EQ(0, subsubchild->child_count());
   subsubchild = subchild->GetChild(2);
-  EXPECT_EQ(0, subsubchild->GetChildCount());
+  EXPECT_EQ(0, subsubchild->child_count());
   subsubchild = subchild->GetChild(3);
-  EXPECT_EQ(0, subsubchild->GetChildCount());
+  EXPECT_EQ(0, subsubchild->child_count());
   subsubchild = subchild->GetChild(4);
-  EXPECT_EQ(0, subsubchild->GetChildCount());
+  EXPECT_EQ(0, subsubchild->child_count());
   subchild = child->GetChild(2);
-  EXPECT_EQ(0, subchild->GetChildCount());
+  EXPECT_EQ(0, subchild->child_count());
   subchild = child->GetChild(3);
-  EXPECT_EQ(0, subchild->GetChildCount());
+  EXPECT_EQ(0, subchild->child_count());
 
   child = root.GetChild(2);
-  EXPECT_EQ(4, child->GetChildCount());
+  EXPECT_EQ(4, child->child_count());
   subchild = child->GetChild(0);
-  EXPECT_EQ(0, subchild->GetChildCount());
+  EXPECT_EQ(0, subchild->child_count());
   subchild = child->GetChild(1);
-  EXPECT_EQ(0, subchild->GetChildCount());
+  EXPECT_EQ(0, subchild->child_count());
   subchild = child->GetChild(2);
-  EXPECT_EQ(0, subchild->GetChildCount());
+  EXPECT_EQ(0, subchild->child_count());
   subchild = child->GetChild(3);
-  EXPECT_EQ(0, subchild->GetChildCount());
+  EXPECT_EQ(0, subchild->child_count());
 
   child = root.GetChild(3);
-  EXPECT_EQ(0, child->GetChildCount());
+  EXPECT_EQ(0, child->child_count());
   [controller_ cancel:nil];
 }
 
@@ -395,7 +395,7 @@ TEST_F(BookmarkEditorControllerTreeTest, AddFolderWithGroupSelected) {
   // Folders are NOT added unless the OK button is pressed.
   [controller_ newFolder:nil];
   [controller_ cancel:nil];
-  EXPECT_EQ(5, group_bb_->GetChildCount());
+  EXPECT_EQ(5, group_bb_->child_count());
 }
 
 class BookmarkEditorControllerTreeNoNodeTest :
@@ -417,7 +417,7 @@ TEST_F(BookmarkEditorControllerTreeNoNodeTest, NewBookmarkNoNode) {
   [controller_ setDisplayURL:@"http://NEWURL.com"];
   [controller_ ok:nil];
   const BookmarkNode* new_node = group_bb_->GetChild(5);
-  ASSERT_EQ(0, new_node->GetChildCount());
+  ASSERT_EQ(0, new_node->child_count());
   EXPECT_EQ(new_node->GetTitle(), ASCIIToUTF16("NEW BOOKMARK"));
   EXPECT_EQ(new_node->GetURL(), GURL("http://NEWURL.com"));
 }

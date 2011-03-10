@@ -24,7 +24,7 @@ template <class NodeType>
 class TreeNodeIterator {
  public:
   explicit TreeNodeIterator(NodeType* node) {
-    if (node->GetChildCount() > 0)
+    if (node->child_count() > 0)
       positions_.push(Position<NodeType>(node, 0));
   }
 
@@ -48,7 +48,7 @@ class TreeNodeIterator {
 
     // Advance to next position.
     while (!positions_.empty() && positions_.top().index >=
-           positions_.top().node->GetChildCount()) {
+           positions_.top().node->child_count()) {
       positions_.pop();
     }
 

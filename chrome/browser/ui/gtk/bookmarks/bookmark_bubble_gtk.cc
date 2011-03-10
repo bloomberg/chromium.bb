@@ -290,7 +290,7 @@ void BookmarkBubbleGtk::ApplyEdits() {
       if (new_parent != node->parent()) {
         UserMetrics::RecordAction(
             UserMetricsAction("BookmarkBubble_ChangeParent"), profile_);
-        model->Move(node, new_parent, new_parent->GetChildCount());
+        model->Move(node, new_parent, new_parent->child_count());
       }
     }
   }

@@ -644,7 +644,7 @@ void RecordAppLaunch(Profile* profile, GURL url) {
     if (node != bookmarkModel_->GetBookmarkBarNode() && !node->is_folder()) {
       const BookmarkNode* parent = node->parent();
       index = parent->GetIndexOf(node) + 1;
-      if (index > parent->GetChildCount())
+      if (index > parent->child_count())
         index = -1;
       node = parent;
     }
@@ -716,7 +716,7 @@ void RecordAppLaunch(Profile* profile, GURL url) {
       type == BookmarkNode::OTHER_NODE ||
       type == BookmarkNode::FOLDER) {
     parent = senderNode;
-    newIndex = parent->GetChildCount();
+    newIndex = parent->child_count();
   } else {
     parent = senderNode->parent();
     newIndex = parent->GetIndexOf(senderNode) + 1;
@@ -779,7 +779,7 @@ void RecordAppLaunch(Profile* profile, GURL url) {
   [[offTheSideButton_ cell] setStartingChildIndex:displayedButtonCount_];
   [[offTheSideButton_ cell]
    setBookmarkNode:bookmarkModel_->GetBookmarkBarNode()];
-  int bookmarkChildren = bookmarkModel_->GetBookmarkBarNode()->GetChildCount();
+  int bookmarkChildren = bookmarkModel_->GetBookmarkBarNode()->child_count();
   if (bookmarkChildren > displayedButtonCount_) {
     [offTheSideButton_ setHidden:NO];
   } else {
@@ -924,7 +924,7 @@ void RecordAppLaunch(Profile* profile, GURL url) {
   if (menu == [[self view] menu]) {
     thingsToDo = [buttons_ count] ? YES : NO;
   } else {
-    if (node && node->is_folder() && node->GetChildCount()) {
+    if (node && node->is_folder() && node->child_count()) {
       thingsToDo = YES;
     }
   }
@@ -1008,7 +1008,7 @@ void RecordAppLaunch(Profile* profile, GURL url) {
   if (child->is_folder()) {
     NSMenu* submenu = [[[NSMenu alloc] initWithTitle:title] autorelease];
     [menu setSubmenu:submenu forItem:item];
-    if (child->GetChildCount()) {
+    if (child->child_count()) {
       [self addFolderNode:child toMenu:submenu];  // potentially recursive
     } else {
       [self tagEmptyMenu:submenu];
@@ -1040,7 +1040,7 @@ void RecordAppLaunch(Profile* profile, GURL url) {
 // Add the children of the given bookmark node (and their children...)
 // to menu, one menu item per node.
 - (void)addFolderNode:(const BookmarkNode*)node toMenu:(NSMenu*)menu {
-  for (int i = 0; i < node->GetChildCount(); i++) {
+  for (int i = 0; i < node->child_count(); i++) {
     const BookmarkNode* child = node->GetChild(i);
     [self addNode:child toMenu:menu];
   }
@@ -1083,7 +1083,7 @@ void RecordAppLaunch(Profile* profile, GURL url) {
 // appropriate) the "no items" container (text which says "bookmarks
 // go here").
 - (void)showOrHideNoItemContainerForNode:(const BookmarkNode*)node {
-  BOOL hideNoItemWarning = node->GetChildCount() > 0;
+  BOOL hideNoItemWarning = node->child_count() > 0;
   [[buttonView_ noItemContainer] setHidden:hideNoItemWarning];
 }
 
@@ -1095,7 +1095,7 @@ void RecordAppLaunch(Profile* profile, GURL url) {
 
   CGFloat maxViewX = NSMaxX([[self view] bounds]);
   int xOffset = 0;
-  for (int i = 0; i < node->GetChildCount(); i++) {
+  for (int i = 0; i < node->child_count(); i++) {
     const BookmarkNode* child = node->GetChild(i);
     BookmarkButton* button = [self buttonForNode:child xOffset:&xOffset];
     if (NSMinX([button frame]) >= maxViewX)
@@ -1393,7 +1393,7 @@ void RecordAppLaunch(Profile* profile, GURL url) {
 
 - (void)redistributeButtonsOnBarAsNeeded {
   const BookmarkNode* node = bookmarkModel_->GetBookmarkBarNode();
-  NSInteger barCount = node->GetChildCount();
+  NSInteger barCount = node->child_count();
 
   // Determine the current maximum extent of the visible buttons.
   CGFloat maxViewX = NSMaxX([[self view] bounds]);
@@ -1781,7 +1781,7 @@ static BOOL ValueInRangeInclusive(CGFloat low, CGFloat value, CGFloat high) {
   if ([button isFolder]) {
     destParent = [button bookmarkNode];
     // Drop it at the end.
-    destIndex = [button bookmarkNode]->GetChildCount();
+    destIndex = [button bookmarkNode]->child_count();
   } else {
     // Else we're dropping somewhere on the bar, so find the right spot.
     destParent = bookmarkModel_->GetBookmarkBarNode();
@@ -2354,7 +2354,7 @@ static BOOL ValueInRangeInclusive(CGFloat low, CGFloat value, CGFloat high) {
   if ([button isFolder]) {
     destParent = [button bookmarkNode];
     // Drop it at the end.
-    destIndex = [button bookmarkNode]->GetChildCount();
+    destIndex = [button bookmarkNode]->child_count();
   } else {
     // Else we're dropping somewhere on the bar, so find the right spot.
     destParent = bookmarkModel_->GetBookmarkBarNode();

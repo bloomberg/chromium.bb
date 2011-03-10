@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -33,7 +33,7 @@ BookmarkNodeData::Element::Element(const BookmarkNode* node)
       url(node->GetURL()),
       title(node->GetTitle()),
       id_(node->id()) {
-  for (int i = 0; i < node->GetChildCount(); ++i)
+  for (int i = 0; i < node->child_count(); ++i)
     children.push_back(Element(node->GetChild(i)));
 }
 

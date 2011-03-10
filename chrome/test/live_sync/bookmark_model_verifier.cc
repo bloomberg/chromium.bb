@@ -196,7 +196,7 @@ void BookmarkModelVerifier::FindNodeInVerifier(BookmarkModel* foreign_model,
   // Climb down.
   while (!path.empty()) {
     ASSERT_TRUE(walker->is_folder());
-    ASSERT_LT(path.top(), walker->GetChildCount());
+    ASSERT_LT(path.top(), walker->child_count());
     walker = walker->GetChild(path.top());
     path.pop();
   }
@@ -315,7 +315,7 @@ void BookmarkModelVerifier::SortChildren(BookmarkModel* model,
 
 void BookmarkModelVerifier::ReverseChildOrder(BookmarkModel* model,
                                               const BookmarkNode* parent) {
-  int child_count = parent->GetChildCount();
+  int child_count = parent->child_count();
   if (child_count <= 0)
     return;
   for (int index = 0; index < child_count; index++)

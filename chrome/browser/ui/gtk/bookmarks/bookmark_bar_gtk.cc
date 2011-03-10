@@ -509,7 +509,7 @@ void BookmarkBarGtk::CreateAllBookmarkButtons() {
   DCHECK(bar && model_->other_node());
 
   // Create a button for each of the children on the bookmark bar.
-  for (int i = 0; i < bar->GetChildCount(); ++i) {
+  for (int i = 0; i < bar->child_count(); ++i) {
     const BookmarkNode* node = bar->GetChild(i);
     GtkToolItem* item = CreateBookmarkToolItem(node);
     gtk_toolbar_insert(GTK_TOOLBAR(bookmark_toolbar_.get()), item, -1);
@@ -525,7 +525,7 @@ void BookmarkBarGtk::CreateAllBookmarkButtons() {
 }
 
 void BookmarkBarGtk::SetInstructionState() {
-  show_instructions_ = (model_->GetBookmarkBarNode()->GetChildCount() == 0);
+  show_instructions_ = (model_->GetBookmarkBarNode()->child_count() == 0);
   if (show_instructions_) {
     gtk_widget_hide(bookmark_toolbar_.get());
     gtk_widget_show_all(instructions_);
@@ -1254,7 +1254,7 @@ void BookmarkBarGtk::OnDragReceived(GtkWidget* widget,
     index = GetToolbarIndexForDragOverFolder(widget, x);
     if (index < 0) {
       dest_node = GetNodeForToolButton(widget);
-      index = dest_node->GetChildCount();
+      index = dest_node->child_count();
     }
   }
 

@@ -428,7 +428,7 @@ const BookmarkNode* BookmarkModel::AddURLWithCreationTime(
 
 void BookmarkModel::SortChildren(const BookmarkNode* parent) {
   if (!parent || !parent->is_folder() || is_root(parent) ||
-      parent->GetChildCount() <= 1) {
+      parent->child_count() <= 1) {
     return;
   }
 
@@ -463,7 +463,7 @@ void BookmarkModel::SetURLStarred(const GURL& url,
   if (is_starred) {
     // Create a bookmark.
     const BookmarkNode* parent = GetParentForNewNodes();
-    AddURL(parent, parent->GetChildCount(), title, url);
+    AddURL(parent, parent->child_count(), title, url);
   } else {
     // Remove all the bookmarks.
     for (size_t i = 0; i < bookmarks.size(); ++i) {
@@ -538,7 +538,7 @@ void BookmarkModel::RemoveNode(BookmarkNode* node,
   CancelPendingFavIconLoadRequests(node);
 
   // Recurse through children.
-  for (int i = node->GetChildCount() - 1; i >= 0; --i)
+  for (int i = node->child_count() - 1; i >= 0; --i)
     RemoveNode(node->GetChild(i), removed_urls);
 }
 
@@ -689,7 +689,7 @@ const BookmarkNode* BookmarkModel::GetNodeByID(const BookmarkNode* node,
   if (node->id() == id)
     return node;
 
-  for (int i = 0, child_count = node->GetChildCount(); i < child_count; ++i) {
+  for (int i = 0, child_count = node->child_count(); i < child_count; ++i) {
     const BookmarkNode* result = GetNodeByID(node->GetChild(i), id);
     if (result)
       return result;
@@ -701,8 +701,8 @@ bool BookmarkModel::IsValidIndex(const BookmarkNode* parent,
                                  int index,
                                  bool allow_end) {
   return (parent && parent->is_folder() &&
-          (index >= 0 && (index < parent->GetChildCount() ||
-                          (allow_end && index == parent->GetChildCount()))));
+          (index >= 0 && (index < parent->child_count() ||
+                          (allow_end && index == parent->child_count()))));
 }
 
 BookmarkNode* BookmarkModel::CreateBookmarkNode() {
@@ -811,7 +811,7 @@ void BookmarkModel::PopulateNodesByURL(BookmarkNode* node) {
   // explicitly grab the lock.
   if (node->is_url())
     nodes_ordered_by_url_set_.insert(node);
-  for (int i = 0; i < node->GetChildCount(); ++i)
+  for (int i = 0; i < node->child_count(); ++i)
     PopulateNodesByURL(node->GetChild(i));
 }
 

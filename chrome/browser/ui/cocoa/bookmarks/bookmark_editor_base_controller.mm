@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -392,7 +392,7 @@ class BookmarkEditorBaseControllerBridge : public BookmarkModelObserver {
 
 - (NSMutableArray*)addChildFoldersFromNode:(const BookmarkNode*)node {
   NSMutableArray* childFolders = nil;
-  int childCount = node->GetChildCount();
+  int childCount = node->child_count();
   for (int i = 0; i < childCount; ++i) {
     const BookmarkNode* childNode = node->GetChild(i);
     if (childNode->type() != BookmarkNode::URL) {

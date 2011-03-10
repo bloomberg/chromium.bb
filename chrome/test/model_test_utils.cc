@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -13,7 +13,7 @@ namespace model_test_utils {
 std::string ModelStringFromNode(const BookmarkNode* node) {
   // Since the children of the node are not available as a vector,
   // we'll just have to do it the hard way.
-  int child_count = node->GetChildCount();
+  int child_count = node->child_count();
   std::string child_string;
   for (int i = 0; i < child_count; ++i) {
     const BookmarkNode* child = node->GetChild(i);
@@ -34,7 +34,7 @@ std::string::size_type AddNodesFromString(BookmarkModel& model,
                                           const std::string& model_string,
                                           std::string::size_type start_pos) {
   DCHECK(node);
-  int index = node->GetChildCount();
+  int index = node->child_count();
   static const std::string folder_tell(":[");
   std::string::size_type end_pos = model_string.find(' ', start_pos);
   while (end_pos != std::string::npos) {

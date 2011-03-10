@@ -99,7 +99,7 @@ class BookmarkStorage::LoadTask : public Task {
       if (node->GetURL().is_valid())
         details_->index()->Add(node);
     } else {
-      for (int i = 0; i < node->GetChildCount(); ++i)
+      for (int i = 0; i < node->child_count(); ++i)
         AddBookmarksToIndex(node->GetChild(i));
     }
   }

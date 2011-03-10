@@ -132,24 +132,24 @@ class BookmarkBarFolderControllerTest : public CocoaTest {
     BookmarkModel* model = helper_.profile()->GetBookmarkModel();
     const BookmarkNode* parent = model->GetBookmarkBarNode();
     const BookmarkNode* folderA = model->AddGroup(parent,
-                                                  parent->GetChildCount(),
+                                                  parent->child_count(),
                                                   ASCIIToUTF16("group"));
     folderA_ = folderA;
-    model->AddGroup(parent, parent->GetChildCount(),
+    model->AddGroup(parent, parent->child_count(),
                     ASCIIToUTF16("sibbling group"));
     const BookmarkNode* folderB = model->AddGroup(folderA,
-                                                  folderA->GetChildCount(),
+                                                  folderA->child_count(),
                                                   ASCIIToUTF16("subgroup 1"));
     model->AddGroup(folderA,
-                    folderA->GetChildCount(),
+                    folderA->child_count(),
                     ASCIIToUTF16("subgroup 2"));
-    model->AddURL(folderA, folderA->GetChildCount(), ASCIIToUTF16("title a"),
+    model->AddURL(folderA, folderA->child_count(), ASCIIToUTF16("title a"),
                   GURL("http://www.google.com/a"));
     longTitleNode_ = model->AddURL(
-      folderA, folderA->GetChildCount(),
+      folderA, folderA->child_count(),
       ASCIIToUTF16("title super duper long long whoa momma title you betcha"),
       GURL("http://www.google.com/b"));
-    model->AddURL(folderB, folderB->GetChildCount(), ASCIIToUTF16("t"),
+    model->AddURL(folderB, folderB->child_count(), ASCIIToUTF16("t"),
                   GURL("http://www.google.com/c"));
 
     bar_.reset(
@@ -183,7 +183,7 @@ class BookmarkBarFolderControllerTest : public CocoaTest {
   int AddLotsOfNodes() {
     BookmarkModel* model = helper_.profile()->GetBookmarkModel();
     for (int i = 0; i < kLotsOfNodesCount; i++) {
-      model->AddURL(folderA_, folderA_->GetChildCount(),
+      model->AddURL(folderA_, folderA_->child_count(),
                     ASCIIToUTF16("repeated title"),
                     GURL("http://www.google.com/repeated/url"));
     }
@@ -1169,7 +1169,7 @@ TEST_F(BookmarkBarFolderControllerMenuTest, MenuSizingAndScrollArrows) {
 
   const BookmarkNode* parent = model.GetBookmarkBarNode();
   const BookmarkNode* folder = model.AddGroup(parent,
-                                              parent->GetChildCount(),
+                                              parent->child_count(),
                                               ASCIIToUTF16("BIG"));
 
   // Pop open the new folder window and verify it has one (empty) item.
@@ -1189,7 +1189,7 @@ TEST_F(BookmarkBarFolderControllerMenuTest, MenuSizingAndScrollArrows) {
   EXPECT_FALSE([folderController canScrollDown]);
 
   // Now add a real bookmark and reopen.
-  model.AddURL(folder, folder->GetChildCount(), ASCIIToUTF16("a"),
+  model.AddURL(folder, folder->child_count(), ASCIIToUTF16("a"),
                GURL("http://a.com/"));
   folderController = [bar_ folderController];
   EXPECT_TRUE(folderController);
@@ -1215,7 +1215,7 @@ TEST_F(BookmarkBarFolderControllerMenuTest, MenuSizingAndScrollArrows) {
   EXPECT_LT(scrollerWidth, NSWidth([folderView frame]));
 
   // Add a wider bookmark and make sure the button widths match.
-  int reallyWideButtonNumber = folder->GetChildCount();
+  int reallyWideButtonNumber = folder->child_count();
   model.AddURL(folder, reallyWideButtonNumber,
                ASCIIToUTF16("A really, really, really, really, really, "
                             "really long name"),
@@ -1230,7 +1230,7 @@ TEST_F(BookmarkBarFolderControllerMenuTest, MenuSizingAndScrollArrows) {
   // for a scroll up arrow.
   NSUInteger tripWire = 0;  // Prevent a runaway.
   while (![folderController canScrollUp] && ++tripWire < 1000) {
-    model.AddURL(folder, folder->GetChildCount(), ASCIIToUTF16("B"),
+    model.AddURL(folder, folder->child_count(), ASCIIToUTF16("B"),
                  GURL("http://b.com/"));
   }
   EXPECT_TRUE([folderController canScrollUp]);
@@ -1256,10 +1256,10 @@ TEST_F(BookmarkBarFolderControllerMenuTest, HoverThenDeleteBookmark) {
   BookmarkModel& model(*helper_.profile()->GetBookmarkModel());
   const BookmarkNode* root = model.GetBookmarkBarNode();
   const BookmarkNode* folder = model.AddGroup(root,
-                                              root->GetChildCount(),
+                                              root->child_count(),
                                               ASCIIToUTF16("BIG"));
   for (int i = 0; i < kLotsOfNodesCount; i++)
-    model.AddURL(folder, folder->GetChildCount(), ASCIIToUTF16("kid"),
+    model.AddURL(folder, folder->child_count(), ASCIIToUTF16("kid"),
                   GURL("http://kid.com/smile"));
 
   // Pop open the new folder window and hover one of its kids.
@@ -1391,7 +1391,7 @@ TEST_F(BookmarkBarFolderControllerMenuTest, DragBookmarkDataToTrash) {
   EXPECT_EQ(model_string, actual);
 
   const BookmarkNode* folderNode = root->GetChild(1);
-  int oldFolderChildCount = folderNode->GetChildCount();
+  int oldFolderChildCount = folderNode->child_count();
 
   // Pop open a folder.
   BookmarkButton* button = [bar_ buttonWithTitleEqualTo:@"2f"];
@@ -1409,7 +1409,7 @@ TEST_F(BookmarkBarFolderControllerMenuTest, DragBookmarkDataToTrash) {
   [folderController didDragBookmarkToTrash:buttonToDelete];
 
   // There should be one less button in the folder.
-  int newFolderChildCount = folderNode->GetChildCount();
+  int newFolderChildCount = folderNode->child_count();
   EXPECT_EQ(oldFolderChildCount - 1, newFolderChildCount);
   // Verify the model.
   const std::string expected("1b 2f:[ 2f2f:[ 2f2f1b 2f2f2b 2f2f3b ] "

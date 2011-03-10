@@ -227,7 +227,7 @@ void ExtensionBookmarkEventRouter::BookmarkNodeChildrenReordered(
     BookmarkModel* model, const BookmarkNode* node) {
   ListValue args;
   args.Append(new StringValue(base::Int64ToString(node->id())));
-  int childCount = node->GetChildCount();
+  int childCount = node->child_count();
   ListValue* children = new ListValue();
   for (int i = 0; i < childCount; ++i) {
     const BookmarkNode* child = node->GetChild(i);
@@ -318,7 +318,7 @@ bool GetBookmarkChildrenFunction::RunImpl() {
     error_ = keys::kNoNodeError;
     return false;
   }
-  int child_count = node->GetChildCount();
+  int child_count = node->child_count();
   for (int i = 0; i < child_count; ++i) {
     const BookmarkNode* child = node->GetChild(i);
     extension_bookmark_helpers::AddNode(child, json.get(), false);
@@ -443,10 +443,10 @@ bool CreateBookmarkFunction::RunImpl() {
 
   int index;
   if (!json->HasKey(keys::kIndexKey)) {  // Optional (defaults to end).
-    index = parent->GetChildCount();
+    index = parent->child_count();
   } else {
     EXTENSION_FUNCTION_VALIDATE(json->GetInteger(keys::kIndexKey, &index));
-    if (index > parent->GetChildCount() || index < 0) {
+    if (index > parent->child_count() || index < 0) {
       error_ = keys::kInvalidIndexError;
       return false;
     }
@@ -542,12 +542,12 @@ bool MoveBookmarkFunction::RunImpl() {
   if (destination->HasKey(keys::kIndexKey)) {  // Optional (defaults to end).
     EXTENSION_FUNCTION_VALIDATE(destination->GetInteger(keys::kIndexKey,
                                                         &index));
-    if (index > parent->GetChildCount() || index < 0) {
+    if (index > parent->child_count() || index < 0) {
       error_ = keys::kInvalidIndexError;
       return false;
     }
   } else {
-    index = parent->GetChildCount();
+    index = parent->child_count();
   }
 
   model->Move(node, parent, index);

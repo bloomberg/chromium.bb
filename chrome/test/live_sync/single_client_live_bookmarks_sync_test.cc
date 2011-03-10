@@ -93,12 +93,12 @@ IN_PROC_BROWSER_TEST_F(SingleClientLiveBookmarksSyncTest, Sanity) {
   ASSERT_TRUE(ModelMatchesVerifier(0));
 
   ASSERT_EQ(1, tier1_a_url0->parent()->GetIndexOf(tier1_a_url0));
-  Move(0, tier1_a_url0, bar, bar->GetChildCount());
-  const BookmarkNode* boa = AddURL(0, bar, bar->GetChildCount(),
+  Move(0, tier1_a_url0, bar, bar->child_count());
+  const BookmarkNode* boa = AddURL(0, bar, bar->child_count(),
       L"Bank of America", GURL("https://www.bankofamerica.com"));
   ASSERT_TRUE(boa != NULL);
-  Move(0, tier1_a_url0, top, top->GetChildCount());
-  const BookmarkNode* bubble = AddURL(0, bar, bar->GetChildCount(),
+  Move(0, tier1_a_url0, top, top->child_count());
+  const BookmarkNode* bubble = AddURL(0, bar, bar->child_count(),
       L"Seattle Bubble", GURL("http://seattlebubble.com"));
   ASSERT_TRUE(bubble != NULL);
   const BookmarkNode* wired = AddURL(0, bar, 2, L"Wired News",
@@ -111,8 +111,8 @@ IN_PROC_BROWSER_TEST_F(SingleClientLiveBookmarksSyncTest, Sanity) {
   ASSERT_TRUE(GetClient(0)->AwaitSyncCycleCompletion("Change title."));
   ASSERT_TRUE(ModelMatchesVerifier(0));
 
-  ASSERT_EQ(tier1_a_url0->id(), top->GetChild(top->GetChildCount() - 1)->id());
-  Remove(0, top, top->GetChildCount() - 1);
+  ASSERT_EQ(tier1_a_url0->id(), top->GetChild(top->child_count() - 1)->id());
+  Remove(0, top, top->child_count() - 1);
   Move(0, wired, tier1_b, 0);
   Move(0, porsche, bar, 3);
   const BookmarkNode* tier3_b = AddGroup(0, tier2_b, 1, L"tier3_b");

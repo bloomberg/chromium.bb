@@ -198,7 +198,7 @@ void CookiesViewHandler::LoadChildren(const ListValue* args) {
 
 void CookiesViewHandler::SendChildren(CookieTreeNode* parent) {
   ListValue* children = new ListValue;
-  cookies_tree_model_util::GetChildNodeList(parent, 0, parent->GetChildCount(),
+  cookies_tree_model_util::GetChildNodeList(parent, 0, parent->child_count(),
       children);
 
   ListValue args;

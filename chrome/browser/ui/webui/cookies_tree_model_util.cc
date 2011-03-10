@@ -66,7 +66,7 @@ void GetCookieTreeNodeDictionary(const CookieTreeNode& node,
   // Use node's address as an id for WebUI to look it up.
   dict->SetString(kKeyId, PointerToHexString(&node));
   dict->SetString(kKeyTitle, node.GetTitle());
-  dict->SetBoolean(kKeyHasChildren, !!node.GetChildCount());
+  dict->SetBoolean(kKeyHasChildren, !!node.child_count());
 
   switch (node.GetDetailedInfo().node_type) {
     case CookieTreeNode::DetailedInfo::TYPE_ORIGIN: {

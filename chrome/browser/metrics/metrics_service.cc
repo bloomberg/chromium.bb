@@ -1763,7 +1763,7 @@ static void CountBookmarks(const BookmarkNode* node,
     (*bookmarks)++;
   else
     (*folders)++;
-  for (int i = 0; i < node->GetChildCount(); ++i)
+  for (int i = 0; i < node->child_count(); ++i)
     CountBookmarks(node->GetChild(i), bookmarks, folders);
 }
 

@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -63,7 +63,7 @@ void BookmarkMenuBridge::UpdateMenu(NSMenu* bookmark_menu) {
   // Add bookmark bar items, if any.
   const BookmarkNode* barNode = model->GetBookmarkBarNode();
   CHECK(barNode);
-  if (barNode->GetChildCount()) {
+  if (barNode->child_count()) {
     [bookmark_menu addItem:[NSMenuItem separatorItem]];
     AddNodeToMenu(barNode, bookmark_menu);
   }
@@ -187,7 +187,7 @@ void BookmarkMenuBridge::AddNodeAsSubmenu(NSMenu* menu,
 
 // TODO(jrg): limit the number of bookmarks in the menubar?
 void BookmarkMenuBridge::AddNodeToMenu(const BookmarkNode* node, NSMenu* menu) {
-  int child_count = node->GetChildCount();
+  int child_count = node->child_count();
   if (!child_count) {
     NSString* empty_string = l10n_util::GetNSString(IDS_MENU_EMPTY_SUBMENU);
     NSMenuItem* item = [[[NSMenuItem alloc] initWithTitle:empty_string

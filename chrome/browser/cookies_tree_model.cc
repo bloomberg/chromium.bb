@@ -631,7 +631,7 @@ void CookiesTreeModel::DeleteAllStoredObjects() {
   NotifyObserverBeginBatch();
   CookieTreeNode* root = GetRoot();
   root->DeleteStoredObjects();
-  int num_children = root->GetChildCount();
+  int num_children = root->child_count();
   for (int i = num_children - 1; i >= 0; --i)
     delete Remove(root, i);
   NotifyObserverTreeNodeChanged(root);
@@ -646,13 +646,13 @@ void CookiesTreeModel::DeleteCookieNode(CookieTreeNode* cookie_node) {
   CookieTreeNode* parent_node = cookie_node->parent();
   int cookie_node_index = parent_node->GetIndexOf(cookie_node);
   delete Remove(parent_node, cookie_node_index);
-  if (parent_node->GetChildCount() == 0)
+  if (parent_node->child_count() == 0)
     DeleteCookieNode(parent_node);
 }
 
 void CookiesTreeModel::UpdateSearchResults(const std::wstring& filter) {
   CookieTreeNode* root = GetRoot();
-  int num_children = root->GetChildCount();
+  int num_children = root->child_count();
   NotifyObserverBeginBatch();
   for (int i = num_children - 1; i >= 0; --i)
     delete Remove(root, i);

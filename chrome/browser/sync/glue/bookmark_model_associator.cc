@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -86,7 +86,7 @@ class BookmarkNodeFinder {
 
 BookmarkNodeFinder::BookmarkNodeFinder(const BookmarkNode* parent_node)
     : parent_node_(parent_node) {
-  for (int i = 0; i < parent_node_->GetChildCount(); ++i) {
+  for (int i = 0; i < parent_node_->child_count(); ++i) {
     child_nodes_.insert(parent_node_->GetChild(i));
   }
 }
@@ -146,7 +146,7 @@ void BookmarkNodeIdIndex::AddAll(const BookmarkNode* node) {
   if (!node->is_folder())
     return;
 
-  for (int i = 0; i < node->GetChildCount(); ++i)
+  for (int i = 0; i < node->child_count(); ++i)
     AddAll(node->GetChild(i));
 }
 
@@ -407,7 +407,7 @@ bool BookmarkModelAssociator::BuildAssociations() {
     // the right positions: from 0 to index - 1.
     // So the children starting from index in the parent bookmark node are the
     // ones that are not present in the parent sync node. So create them.
-    for (int i = index; i < parent_node->GetChildCount(); ++i) {
+    for (int i = index; i < parent_node->child_count(); ++i) {
       sync_child_id = BookmarkChangeProcessor::CreateSyncNode(
           parent_node, model, i, &trans, this, sync_service_);
       if (parent_node->GetChild(i)->is_folder())

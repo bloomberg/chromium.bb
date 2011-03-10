@@ -45,7 +45,7 @@ DictionaryValue* GetNodeDictionary(const BookmarkNode* node,
   }
 
   if (recurse && node->is_folder()) {
-    int childCount = node->GetChildCount();
+    int childCount = node->child_count();
     ListValue* children = new ListValue();
     for (int i = 0; i < childCount; ++i) {
       const BookmarkNode* child = node->GetChild(i);
@@ -95,7 +95,7 @@ bool RemoveNode(BookmarkModel* model,
     *error = keys::kModifySpecialError;
     return false;
   }
-  if (node->is_folder() && node->GetChildCount() > 0 && !recursive) {
+  if (node->is_folder() && node->child_count() > 0 && !recursive) {
     *error = keys::kFolderNotEmptyError;
     return false;
   }

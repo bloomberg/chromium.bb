@@ -655,10 +655,10 @@ int BookmarkBarView::OnPerformDrop(const DropTargetEvent& event) {
   const BookmarkNode* parent_node;
   if (is_over_other) {
     parent_node = root;
-    index = parent_node->GetChildCount();
+    index = parent_node->child_count();
   } else if (drop_on) {
     parent_node = root->GetChild(index);
-    index = parent_node->GetChildCount();
+    index = parent_node->child_count();
   } else {
     parent_node = root;
   }
@@ -933,7 +933,7 @@ void BookmarkBarView::Loaded(BookmarkModel* model) {
   const BookmarkNode* node = model_->GetBookmarkBarNode();
   DCHECK(node && model_->other_node());
   // Create a button for each of the children on the bookmark bar.
-  for (int i = 0, child_count = node->GetChildCount(); i < child_count; ++i)
+  for (int i = 0, child_count = node->child_count(); i < child_count; ++i)
     AddChildViewAt(CreateBookmarkButton(node->GetChild(i)), i);
   UpdateColors();
   UpdateOtherBookmarksVisibility();
@@ -1060,7 +1060,7 @@ void BookmarkBarView::BookmarkNodeChildrenReordered(BookmarkModel* model,
   }
 
   // Create the new buttons.
-  for (int i = 0, child_count = node->GetChildCount(); i < child_count; ++i)
+  for (int i = 0, child_count = node->child_count(); i < child_count; ++i)
     AddChildViewAt(CreateBookmarkButton(node->GetChild(i)), i);
   UpdateColors();
 
@@ -1466,7 +1466,7 @@ int BookmarkBarView::CalculateDropOperation(const DropTargetEvent& event,
                          model_->GetBookmarkBarNode()->GetChild(*index);
     int operation =
         bookmark_utils::BookmarkDropOperation(profile_, event, data, parent,
-                                              parent->GetChildCount());
+                                              parent->child_count());
     if (!operation && !data.has_single_url() &&
         data.GetFirstNode(profile_) == parent) {
       // Don't open a menu if the node being dragged is the the menu to
@@ -1588,7 +1588,7 @@ void BookmarkBarView::UpdateColors() {
 }
 
 void BookmarkBarView::UpdateOtherBookmarksVisibility() {
-  bool has_other_children = model_->other_node()->GetChildCount() > 0;
+  bool has_other_children = model_->other_node()->child_count() > 0;
   if (has_other_children == other_bookmarked_button_->IsVisible())
     return;
   other_bookmarked_button_->SetVisible(has_other_children);

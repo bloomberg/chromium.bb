@@ -168,7 +168,7 @@ int BookmarkMenuController::GetDropOperation(
     index_to_drop_at++;
   } else if (*position == DROP_ON) {
     drop_parent = node;
-    index_to_drop_at = node->GetChildCount();
+    index_to_drop_at = node->child_count();
   }
   DCHECK(drop_parent);
   return bookmark_utils::BookmarkDropOperation(
@@ -190,7 +190,7 @@ int BookmarkMenuController::OnPerformDrop(MenuItemView* menu,
   } else if (position == DROP_ON) {
     DCHECK(drop_node->is_folder());
     drop_parent = drop_node;
-    index_to_drop_at = drop_node->GetChildCount();
+    index_to_drop_at = drop_node->child_count();
   }
 
   int result = bookmark_utils::PerformBookmarkDrop(
@@ -326,9 +326,9 @@ void BookmarkMenuController::BuildMenu(const BookmarkNode* parent,
                                        int start_child_index,
                                        MenuItemView* menu,
                                        int* next_menu_id) {
-  DCHECK(!parent->GetChildCount() ||
-         start_child_index < parent->GetChildCount());
-  for (int i = start_child_index; i < parent->GetChildCount(); ++i) {
+  DCHECK(!parent->child_count() ||
+         start_child_index < parent->child_count());
+  for (int i = start_child_index; i < parent->child_count(); ++i) {
     const BookmarkNode* node = parent->GetChild(i);
     int id = *next_menu_id;
 

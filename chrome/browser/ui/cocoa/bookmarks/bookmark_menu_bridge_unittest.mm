@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -323,9 +323,9 @@ TEST_F(BookmarkMenuBridgeTest, TestGetMenuItemForNode) {
   EXPECT_TRUE(MenuItemForNode(bridge_.get(), root->GetChild(1)));
 
   const BookmarkNode* removed_node = root->GetChild(0);
-  EXPECT_EQ(2, root->GetChildCount());
+  EXPECT_EQ(2, root->child_count());
   model->Remove(root, 0);
-  EXPECT_EQ(1, root->GetChildCount());
+  EXPECT_EQ(1, root->child_count());
   bridge_->UpdateMenu(menu);
   EXPECT_FALSE(MenuItemForNode(bridge_.get(), removed_node));
   EXPECT_TRUE(MenuItemForNode(bridge_.get(), root->GetChild(0)));

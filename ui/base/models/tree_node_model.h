@@ -82,7 +82,7 @@ class TreeNode : public TreeModelNode {
   virtual void Add(int index, NodeType* child) {
     DCHECK(child);
     DCHECK_LE(0, index);
-    DCHECK_GE(GetChildCount(), index);
+    DCHECK_GE(child_count(), index);
     // If the node has a parent, remove it from its parent.
     NodeType* node_parent = child->parent();
     if (node_parent)
@@ -94,7 +94,7 @@ class TreeNode : public TreeModelNode {
   // Removes the node by index. This does NOT delete the specified node, it is
   // up to the caller to delete it when done.
   virtual NodeType* Remove(int index) {
-    DCHECK(index >= 0 && index < GetChildCount());
+    DCHECK(index >= 0 && index < child_count());
     NodeType* node = GetChild(index);
     node->parent_ = NULL;
     children_->erase(index + children_->begin());
@@ -109,9 +109,7 @@ class TreeNode : public TreeModelNode {
   }
 
   // Returns the number of children.
-  int GetChildCount() const {
-    return static_cast<int>(children_->size());
-  }
+  int child_count() const { return static_cast<int>(children_->size()); }
 
   // Returns the number of all nodes in teh subtree rooted at this node,
   // including this node.
@@ -124,14 +122,14 @@ class TreeNode : public TreeModelNode {
     return count;
   }
 
-  // Returns a child by index.
+  // Returns the node at |index|.
   NodeType* GetChild(int index) {
-    DCHECK(index >= 0 && index < GetChildCount());
+    DCHECK(index >= 0 && index < child_count());
     return children_[index];
   }
   const NodeType* GetChild(int index) const {
     DCHECK_LE(0, index);
-    DCHECK_GT(GetChildCount(), index);
+    DCHECK_GT(child_count(), index);
     return children_[index];
   }
 
@@ -179,9 +177,10 @@ class TreeNode : public TreeModelNode {
   // Title displayed in the tree.
   string16 title_;
 
+  // This node's parent.
   NodeType* parent_;
 
-  // Children.
+  // This node's children.
   ScopedVector<NodeType> children_;
 
   DISALLOW_COPY_AND_ASSIGN(TreeNode);
@@ -237,7 +236,7 @@ class TreeNodeModel : public TreeModel {
 
   virtual int GetChildCount(TreeModelNode* parent) {
     DCHECK(parent);
-    return AsNode(parent)->GetChildCount();
+    return AsNode(parent)->child_count();
   }
 
   virtual NodeType* GetChild(TreeModelNode* parent, int index) {
