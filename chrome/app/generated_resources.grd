@@ -11445,7 +11445,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
       </message>
 
       <message name="IDS_LOGIN_ERROR_WHITELIST" desc="Couldn't sign in because user is not whitelisted.">
-        Sorry, you are not allowed to sign in on this device.
+        Sorry, you don't have permission to sign in. Check with the notebook owner.
       </message>
       <message name="IDS_LOGIN_ERROR_AUTHENTICATING" desc="Couldn't sign in because password is invalid">
         Sorry, your password could not be verified. Please try again.
@@ -11454,16 +11454,16 @@ Keep your key file in a safe place. You will need it to create new versions of y
         Your password has changed. Please try again with your new password.
       </message>
       <message name="IDS_LOGIN_ERROR_RESTRICTED" desc="Couldn't log in because account is disabled/deleted or not signed up">
-        Couldn't validate your account. It has been either deleted or disabled. Please sign out.
+        Your account may have been deleted or disabled. Please sign out.
       </message>
       <message name="IDS_LOGIN_ERROR_AUTHENTICATING_NEW" desc="Couldn't sign in because username or password invalid">
         Sorry, your email or password could not be verified. Please try again.
       </message>
       <message name="IDS_LOGIN_ERROR_AUTHENTICATING_HOSTED" desc="Couldn't sign in because hosted account is used">
-        This type of account will not work with <ph name="PRODUCT_NAME">$1<ex>Google Chrome OS</ex></ph>.  Please contact your domain administrator or use an @gmail.com account to sign in.
+        Your account does not work on <ph name="PRODUCT_NAME">$1<ex>Google Chrome OS</ex></ph>. Please contact your domain administrator or use a regular Google Account to sign in.
       </message>
       <message name="IDS_LOGIN_ERROR_OFFLINE_FAILED_NETWORK_NOT_CONNECTED" desc="Couldn't sign in because offline sign-in has failed and network is not connected">
-        Offline sign-in failed and network not connected
+        Sorry, your email or password could not be verified. Try connecting to a network first.
       </message>
       <message name="IDS_LOGIN_ERROR_NO_NETWORK_LIBRARY" desc="Couldn't sign in because nework library couldn't be loaded">
         Can't access network library

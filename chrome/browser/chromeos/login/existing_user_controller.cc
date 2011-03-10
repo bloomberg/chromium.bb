@@ -268,11 +268,16 @@ void ExistingUserController::OnLoginFailure(const LoginFailure& failure) {
 
   // Check networking after trying to login in case user is
   // cached locally or the local admin account.
+  bool is_known_user =
+      UserManager::Get()->IsKnownUser(last_login_attempt_username_);
   NetworkLibrary* network = CrosLibrary::Get()->GetNetworkLibrary();
   if (!network || !CrosLibrary::Get()->EnsureLoaded()) {
     ShowError(IDS_LOGIN_ERROR_NO_NETWORK_LIBRARY, error);
   } else if (!network->Connected()) {
-    ShowError(IDS_LOGIN_ERROR_OFFLINE_FAILED_NETWORK_NOT_CONNECTED, error);
+    if (is_known_user)
+      ShowError(IDS_LOGIN_ERROR_AUTHENTICATING, error);
+    else
+      ShowError(IDS_LOGIN_ERROR_OFFLINE_FAILED_NETWORK_NOT_CONNECTED, error);
   } else {
     if (failure.reason() == LoginFailure::NETWORK_AUTH_FAILED &&
         failure.error().state() == GoogleServiceAuthError::CAPTCHA_REQUIRED) {
@@ -305,7 +310,7 @@ void ExistingUserController::OnLoginFailure(const LoginFailure& failure) {
       else
         ShowError(IDS_LOGIN_ERROR_CAPTIVE_PORTAL_NO_GUEST_MODE, error);
     } else {
-      if (!UserManager::Get()->IsKnownUser(last_login_attempt_username_))
+      if (!is_known_user)
         ShowError(IDS_LOGIN_ERROR_AUTHENTICATING_NEW, error);
       else
         ShowError(IDS_LOGIN_ERROR_AUTHENTICATING, error);
