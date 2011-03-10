@@ -32,10 +32,14 @@ typedef void (*PP_CompletionCallback_Func)(void* user_data, int32_t result);
 /**
  * Any method that takes a PP_CompletionCallback has the option of completing
  * asynchronously if the operation would block.  Such a method should return
- * PP_Error_WouldBlock to indicate when the method will complete
- * asynchronously.  If the completion callback is NULL, then the operation will
- * block if necessary to complete its work.  PP_BlockUntilComplete() provides a
- * convenient way to specify blocking behavior.
+ * PP_ERROR_WOULDBLOCK to indicate that the method will complete
+ * asynchronously.  In this case it will signal completion by invoking the
+ * supplied completion callback, which will always be invoked from the main
+ * PPAPI thread of execution.  If the method returns any other value,
+ * including PP_OK, the completion callback will not be invoked.  If the
+ * completion callback is NULL, then the method will block if necessary to
+ * complete its work.  PP_BlockUntilComplete() provides a convenient way to
+ * specify blocking behavior.
  *
  * The result parameter passes an int32_t that if negative indicates an error
  * code.  Otherwise the result value indicates success.  If it is a positive

@@ -103,6 +103,10 @@ struct PPB_Core {
    * callback. Many applications won't need this, but it allows a plugin to
    * emulate calls of some callbacks which do use this value.
    *
+   * NOTE: CallOnMainThread, even when used from the main thread with a delay
+   * of 0 milliseconds, will never directly invoke the callback.  Even in this
+   * case, the callback will be scheduled asynchronously.
+   *
    * NOTE: If the browser is shutting down or if the plugin has no instances,
    * then the callback function may not be called.
    *
