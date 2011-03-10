@@ -48,7 +48,7 @@ bool TabContentsObserver::OnMessageReceived(const IPC::Message& message) {
 }
 
 bool TabContentsObserver::Send(IPC::Message* message) {
-  if (!tab_contents_->render_view_host()) {
+  if (!tab_contents_ || !tab_contents_->render_view_host()) {
     delete message;
     return false;
   }
