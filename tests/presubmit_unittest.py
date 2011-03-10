@@ -1045,17 +1045,23 @@ class OuputApiUnittest(PresubmitTestsBase):
   def testOutputApiBasics(self):
     self.mox.ReplayAll()
     self.failUnless(presubmit.OutputApi.PresubmitError('').IsFatal())
+    self.failUnless(presubmit.OutputApi.PresubmitError('').IsMessage())
     self.failIf(presubmit.OutputApi.PresubmitError('').ShouldPrompt())
 
     self.failIf(presubmit.OutputApi.PresubmitPromptWarning('').IsFatal())
     self.failUnless(
         presubmit.OutputApi.PresubmitPromptWarning('').ShouldPrompt())
+    self.failUnless(
+        presubmit.OutputApi.PresubmitPromptWarning('').IsMessage())
 
     self.failIf(presubmit.OutputApi.PresubmitNotifyResult('').IsFatal())
     self.failIf(presubmit.OutputApi.PresubmitNotifyResult('').ShouldPrompt())
+    self.failUnless(
+        presubmit.OutputApi.PresubmitNotifyResult('foo').IsMessage())
 
     self.failIf(presubmit.OutputApi.PresubmitAddText('foo').IsFatal())
     self.failIf(presubmit.OutputApi.PresubmitAddText('foo').ShouldPrompt())
+    self.failIf(presubmit.OutputApi.PresubmitAddText('foo').IsMessage())
 
     # TODO(joi) Test MailTextResult once implemented.
 

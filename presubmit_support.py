@@ -154,11 +154,18 @@ class OutputApi(object):
       """Whether this presubmit result should result in a prompt warning."""
       return False
 
+    def IsMessage(self):
+      """Whether this result contains anything needing to be displayed."""
+      return True
+
   class PresubmitAddText(PresubmitResult):
     """Propagates a line of text back to the caller."""
     def __init__(self, message, items=None, long_text=''):
       super(OutputApi.PresubmitAddText, self).__init__("ADD: " + message,
           items, long_text)
+
+    def IsMessage(self):
+      return False
 
   class PresubmitError(PresubmitResult):
     """A hard presubmit error."""
@@ -1056,6 +1063,9 @@ def DoPresubmitChecks(change,
     if items:
       output_stream.write('** Presubmit %s **\n' % name)
       for item in items:
+        if not item.IsMessage():
+          continue
+
         # Access to a protected member XXX of a client class
         # pylint: disable=W0212
         if not item._Handle(output_stream, input_stream,
