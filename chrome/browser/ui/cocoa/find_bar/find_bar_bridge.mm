@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#import <Cocoa/Cocoa.h>
 #include "chrome/browser/ui/cocoa/find_bar/find_bar_bridge.h"
 
 #include "base/sys_string_conversions.h"
@@ -26,7 +27,6 @@ void FindBarBridge::SetFindBarController(
 }
 
 FindBarController* FindBarBridge::GetFindBarController() const {
-  DCHECK(find_bar_controller_);
   return find_bar_controller_;
 }
 
@@ -72,8 +72,7 @@ bool FindBarBridge::IsFindBarVisible() {
 
 void FindBarBridge::MoveWindowIfNecessary(const gfx::Rect& selection_rect,
                                           bool no_redraw) {
-  // http://crbug.com/11084
-  // http://crbug.com/22036
+  // See FindBarCocoaController moveFindBarToAvoidRect.
 }
 
 void FindBarBridge::StopAnimation() {
@@ -86,12 +85,14 @@ void FindBarBridge::RestoreSavedFocus() {
 
 bool FindBarBridge::GetFindBarWindowInfo(gfx::Point* position,
                                          bool* fully_visible) {
-  // TODO(rohitrao): Return the proper position.  http://crbug.com/22036
-  if (position)
-    *position = gfx::Point(0, 0);
-
   NSWindow* window = [[cocoa_controller_ view] window];
   bool window_visible = [window isVisible] ? true : false;
+  if (position) {
+    if (window_visible)
+      *position = [cocoa_controller_ findBarWindowPosition];
+    else
+      *position = gfx::Point(0, 0);
+  }
   if (fully_visible) {
     *fully_visible = window_visible &&
         [cocoa_controller_ isFindBarVisible] &&

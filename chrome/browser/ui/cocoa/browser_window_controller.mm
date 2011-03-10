@@ -1355,6 +1355,10 @@
       NSMinY([[bookmarkBarController_ view] frame]);
   CGFloat maxWidth = NSWidth([contentView frame]);
   [findBarCocoaController_ positionFindBarViewAtMaxY:maxY maxWidth:maxWidth];
+
+  // This allows the FindBarCocoaController to call |layoutSubviews| and get
+  // its position adjusted.
+  [findBarCocoaController_ setBrowserWindowController:self];
 }
 
 - (NSWindow*)createFullscreenWindow {
@@ -1679,6 +1683,14 @@
     if (RenderWidgetHostView* rwhv = contents->GetRenderWidgetHostView())
       rwhv->WindowFrameChanged();
   }
+
+  // The FindBar needs to know its own position to properly detect overlaps
+  // with find results. The position changes whenever the window is resized,
+  // and |layoutSubviews| computes the FindBar's position.
+  // TODO: calling |layoutSubviews| here is a waste, find a better way to
+  // do this.
+  if ([findBarCocoaController_ isFindBarVisible])
+    [self layoutSubviews];
 }
 
 // Handle the openLearnMoreAboutCrashLink: action from SadTabController when

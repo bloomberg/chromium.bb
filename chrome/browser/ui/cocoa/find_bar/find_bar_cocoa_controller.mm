@@ -6,7 +6,7 @@
 
 #include "base/mac/mac_util.h"
 #include "base/sys_string_conversions.h"
-#include "chrome/browser/ui/cocoa/browser_window_cocoa.h"
+#include "chrome/browser/ui/cocoa/browser_window_controller.h"
 #import "chrome/browser/ui/cocoa/find_bar/find_bar_cocoa_controller.h"
 #import "chrome/browser/ui/cocoa/find_bar/find_bar_bridge.h"
 #import "chrome/browser/ui/cocoa/find_bar/find_bar_text_field.h"
@@ -19,21 +19,36 @@
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/tab_contents/tab_contents.h"
+#include "content/browser/tab_contents/tab_contents_view.h"
 #import "third_party/GTM/AppKit/GTMNSAnimation+Duration.h"
 
-namespace {
 const float kFindBarOpenDuration = 0.2;
 const float kFindBarCloseDuration = 0.15;
-}
+const float kFindBarMoveDuration = 0.15;
+const float kRightEdgeOffset = 25;
 
 @interface FindBarCocoaController (PrivateMethods)
 // Returns the appropriate frame for a hidden find bar.
 - (NSRect)hiddenFindBarFrame;
 
+// Animates the given |view| to the given |endFrame| within |duration| seconds.
+// Returns a new NSViewAnimation.
+- (NSViewAnimation*)createAnimationForView:(NSView*)view
+                                   toFrame:(NSRect)endFrame
+                                  duration:(float)duration;
+
 // Sets the frame of |findBarView_|.  |duration| is ignored if |animate| is NO.
 - (void)setFindBarFrame:(NSRect)endFrame
                 animate:(BOOL)animate
                duration:(float)duration;
+
+// Returns the horizontal position the FindBar should use in order to avoid
+// overlapping with the current find result, if there's one.
+- (float)findBarHorizontalPosition;
+
+// Adjusts the horizontal position if necessary to avoid overlapping with the
+// current find result.
+- (void)moveFindBarIfNecessary:(BOOL)animate;
 
 // Optionally stops the current search, puts |text| into the find bar, and
 // enables the buttons, but doesn't start a new search for |text|.
@@ -57,7 +72,8 @@ const float kFindBarCloseDuration = 0.15;
 - (void)dealloc {
   // All animations should be explicitly stopped by the TabContents before a tab
   // is closed.
-  DCHECK(!currentAnimation_.get());
+  DCHECK(!showHideAnimation_.get());
+  DCHECK(!moveAnimation_.get());
   [[NSNotificationCenter defaultCenter] removeObserver:self];
   [super dealloc];
 }
@@ -65,6 +81,11 @@ const float kFindBarCloseDuration = 0.15;
 - (void)setFindBarBridge:(FindBarBridge*)findBarBridge {
   DCHECK(!findBarBridge_);  // should only be called once.
   findBarBridge_ = findBarBridge;
+}
+
+- (void)setBrowserWindowController:(BrowserWindowController*)controller {
+  DCHECK(!browserWindowController_); // should only be called once.
+  browserWindowController_ = controller;
 }
 
 - (void)awakeFromNib {
@@ -110,19 +131,30 @@ const float kFindBarCloseDuration = 0.15;
 }
 
 - (void)positionFindBarViewAtMaxY:(CGFloat)maxY maxWidth:(CGFloat)maxWidth {
-  static const CGFloat kRightEdgeOffset = 25;
   NSView* containerView = [self view];
   CGFloat containerHeight = NSHeight([containerView frame]);
   CGFloat containerWidth = NSWidth([containerView frame]);
 
   // Adjust where we'll actually place the find bar.
-  CGFloat maxX = maxWidth - kRightEdgeOffset;
-  DLOG_IF(WARNING, maxX < 0) << "Window too narrow for find bar";
   maxY += 1;
-
-  NSRect newFrame = NSMakeRect(maxX - containerWidth, maxY - containerHeight,
+  maxY_ = maxY;
+  CGFloat x = [self findBarHorizontalPosition];
+  NSRect newFrame = NSMakeRect(x, maxY - containerHeight,
                                containerWidth, containerHeight);
-  [containerView setFrame:newFrame];
+
+  if (moveAnimation_.get() != nil) {
+    NSRect frame = [containerView frame];
+    [moveAnimation_ stopAnimation];
+    // Restore to the X position before the animation was stopped. The Y
+    // position is immediately adjusted.
+    frame.origin.y = newFrame.origin.y;
+    [containerView setFrame:frame];
+    moveAnimation_.reset([self createAnimationForView:containerView
+                                              toFrame:newFrame
+                                             duration:kFindBarMoveDuration]);
+  } else {
+    [containerView setFrame:newFrame];
+  }
 }
 
 // NSControl delegate method.
@@ -217,6 +249,16 @@ const float kFindBarCloseDuration = 0.15;
     focusTracker_.reset(
         [[FocusTracker alloc] initWithWindow:[findBarView_ window]]);
 
+  // The browser window might have changed while the FindBar was hidden.
+  // Update its position now.
+  [browserWindowController_ layoutSubviews];
+
+  // Move to the correct horizontal position first, to prevent the FindBar
+  // from jumping around when switching tabs.
+  // Prevent jumping while the FindBar is animating (hiding, then showing) too.
+  if (![self isFindBarVisible])
+    [self moveFindBarIfNecessary:NO];
+
   // Animate the view into place.
   NSRect frame = [findBarView_ frame];
   frame.origin = NSMakePoint(0, 0);
@@ -229,9 +271,13 @@ const float kFindBarCloseDuration = 0.15;
 }
 
 - (void)stopAnimation {
-  if (currentAnimation_.get()) {
-    [currentAnimation_ stopAnimation];
-    currentAnimation_.reset(nil);
+  if (showHideAnimation_.get()) {
+    [showHideAnimation_ stopAnimation];
+    showHideAnimation_.reset(nil);
+  }
+  if (moveAnimation_.get()) {
+    [moveAnimation_ stopAnimation];
+    moveAnimation_.reset(nil);
   }
 }
 
@@ -303,6 +349,10 @@ const float kFindBarCloseDuration = 0.15;
   // restore focus to the tab contents.
   if (result.number_of_matches() > 0)
     focusTracker_.reset(nil);
+
+  // Adjust the FindBar position, even when there are no matches (so that it
+  // goes back to the default position, if required).
+  [self moveFindBarIfNecessary:[self isFindBarVisible]];
 }
 
 - (BOOL)isFindBarVisible {
@@ -311,19 +361,33 @@ const float kFindBarCloseDuration = 0.15;
 }
 
 - (BOOL)isFindBarAnimating {
-  return (currentAnimation_.get() != nil);
+  return (showHideAnimation_.get() != nil) || (moveAnimation_.get() != nil);
 }
 
 // NSAnimation delegate methods.
 - (void)animationDidEnd:(NSAnimation*)animation {
-  // Autorelease the animation (cannot use release because the animation object
+  // Autorelease the animations (cannot use release because the animation object
   // is still on the stack.
-  DCHECK(animation == currentAnimation_.get());
-  [currentAnimation_.release() autorelease];
+  if (animation == showHideAnimation_.get()) {
+    [showHideAnimation_.release() autorelease];
+  } else if (animation == moveAnimation_.get()) {
+    [moveAnimation_.release() autorelease];
+  } else {
+    NOTREACHED();
+  }
 
   // If the find bar is not visible, make it actually hidden, so it'll no longer
   // respond to key events.
   [findBarView_ setHidden:![self isFindBarVisible]];
+}
+
+- (gfx::Point)findBarWindowPosition {
+  gfx::Rect view_rect(NSRectToCGRect([[self view] frame]));
+  // Convert Cocoa coordinates (Y growing up) to Y growing down.
+  // Offset from |maxY_|, which represents the content view's top, instead
+  // of from the superview, which represents the whole browser window.
+  view_rect.set_y(maxY_ - view_rect.bottom());
+  return view_rect.origin();
 }
 
 @end
@@ -337,6 +401,23 @@ const float kFindBarCloseDuration = 0.15;
   return frame;
 }
 
+- (NSViewAnimation*)createAnimationForView:(NSView*)view
+                                   toFrame:(NSRect)endFrame
+                                  duration:(float)duration {
+  NSDictionary* dict = [NSDictionary dictionaryWithObjectsAndKeys:
+      view, NSViewAnimationTargetKey,
+      [NSValue valueWithRect:endFrame], NSViewAnimationEndFrameKey, nil];
+
+  NSViewAnimation* animation =
+      [[NSViewAnimation alloc]
+        initWithViewAnimations:[NSArray arrayWithObjects:dict, nil]];
+  [animation gtm_setDuration:duration
+                           eventMask:NSLeftMouseUpMask];
+  [animation setDelegate:self];
+  [animation startAnimation];
+  return animation;
+}
+
 - (void)setFindBarFrame:(NSRect)endFrame
                 animate:(BOOL)animate
                duration:(float)duration {
@@ -344,12 +425,12 @@ const float kFindBarCloseDuration = 0.15;
   NSRect startFrame = [findBarView_ frame];
 
   // Stop any existing animations.
-  [currentAnimation_ stopAnimation];
+  [showHideAnimation_ stopAnimation];
 
   if (!animate) {
     [findBarView_ setFrame:endFrame];
     [findBarView_ setHidden:![self isFindBarVisible]];
-    currentAnimation_.reset(nil);
+    showHideAnimation_.reset(nil);
     return;
   }
 
@@ -359,17 +440,73 @@ const float kFindBarCloseDuration = 0.15;
 
   // Reset the frame to what was saved above.
   [findBarView_ setFrame:startFrame];
-  NSDictionary* dict = [NSDictionary dictionaryWithObjectsAndKeys:
-      findBarView_, NSViewAnimationTargetKey,
-      [NSValue valueWithRect:endFrame], NSViewAnimationEndFrameKey, nil];
 
-  currentAnimation_.reset(
-      [[NSViewAnimation alloc]
-        initWithViewAnimations:[NSArray arrayWithObjects:dict, nil]]);
-  [currentAnimation_ gtm_setDuration:duration
-                           eventMask:NSLeftMouseUpMask];
-  [currentAnimation_ setDelegate:self];
-  [currentAnimation_ startAnimation];
+  showHideAnimation_.reset([self createAnimationForView:findBarView_
+                                                toFrame:endFrame
+                                               duration:duration]);
+}
+
+- (float)findBarHorizontalPosition {
+  // Get the rect of the FindBar.
+  NSView* view = [self view];
+  NSRect frame = [view frame];
+  gfx::Rect view_rect(NSRectToCGRect(frame));
+
+  if (!findBarBridge_ || !findBarBridge_->GetFindBarController())
+    return frame.origin.x;
+  TabContentsWrapper* contents =
+      findBarBridge_->GetFindBarController()->tab_contents();
+  if (!contents)
+    return frame.origin.x;
+
+  // Get the size of the container.
+  gfx::Rect container_rect(contents->view()->GetContainerSize());
+
+  // Position the FindBar on the top right corner.
+  view_rect.set_x(
+      container_rect.width() - view_rect.width() - kRightEdgeOffset);
+  // Convert from Cocoa coordinates (Y growing up) to Y growing down.
+  // Notice that the view frame's Y offset is relative to the whole window,
+  // while GetLocationForFindbarView() expects it relative to the
+  // content's boundaries. |maxY_| has the correct placement in Cocoa coords,
+  // so we just have to invert the Y coordinate.
+  view_rect.set_y(maxY_ - view_rect.bottom());
+
+  // Get the rect of the current find result, if there is one.
+  const FindNotificationDetails& find_result =
+      contents->find_tab_helper()->find_result();
+  if (find_result.number_of_matches() == 0)
+    return view_rect.x();
+  gfx::Rect selection_rect(find_result.selection_rect());
+
+  // Adjust |view_rect| to avoid the |selection_rect| within |container_rect|.
+  gfx::Rect new_pos = FindBarController::GetLocationForFindbarView(
+      view_rect, container_rect, selection_rect);
+
+  return new_pos.x();
+}
+
+- (void)moveFindBarIfNecessary:(BOOL)animate {
+  // Don't animate during tests.
+  if (FindBarBridge::disable_animations_during_testing_)
+    animate = NO;
+
+  NSView* view = [self view];
+  NSRect frame = [view frame];
+  float x = [self findBarHorizontalPosition];
+
+  if (animate) {
+    [moveAnimation_ stopAnimation];
+    // Restore to the position before the animation was stopped.
+    [view setFrame:frame];
+    frame.origin.x = x;
+    moveAnimation_.reset([self createAnimationForView:view
+                                              toFrame:frame
+                                             duration:kFindBarMoveDuration]);
+  } else {
+    frame.origin.x = x;
+    [view setFrame:frame];
+  }
 }
 
 - (void)prepopulateText:(NSString*)text stopSearch:(BOOL)stopSearch{

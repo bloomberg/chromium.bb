@@ -4,12 +4,11 @@
 
 #import <Cocoa/Cocoa.h>
 
-#import "chrome/browser/ui/cocoa/find_bar/find_bar_cocoa_controller.h"
-
 #include "base/scoped_nsobject.h"
 #include "base/string16.h"
+#include "ui/gfx/point.h"
 
-class BrowserWindowCocoa;
+@class BrowserWindowController;
 class FindBarBridge;
 @class FindBarTextField;
 class FindNotificationDetails;
@@ -31,23 +30,35 @@ class FindNotificationDetails;
   // Needed to call methods on FindBarController.
   FindBarBridge* findBarBridge_;  // weak
 
+  // Needed to request a layout of the FindBar view.
+  BrowserWindowController* browserWindowController_;  // weak
+
   scoped_nsobject<FocusTracker> focusTracker_;
 
-  // The currently-running animation.  This is defined to be non-nil if an
+  // The show/hide animation. This is defined to be non-nil if the
   // animation is running, and is always nil otherwise.  The
   // FindBarCocoaController should not be deallocated while an animation is
   // running (stopAnimation is currently called before the last tab in a
   // window is removed).
-  scoped_nsobject<NSViewAnimation> currentAnimation_;
+  scoped_nsobject<NSViewAnimation> showHideAnimation_;
+
+  // The horizontal-moving animation, to avoid occluding find results. This
+  // is nil when the animation is not running, and is also stopped by
+  // stopAnimation.
+  scoped_nsobject<NSViewAnimation> moveAnimation_;
 
   // If YES, do nothing as a result of find pasteboard update notifications.
   BOOL suppressPboardUpdateActions_;
+
+  // Vertical point of attachment of the FindBar.
+  CGFloat maxY_;
 };
 
 // Initializes a new FindBarCocoaController.
 - (id)init;
 
 - (void)setFindBarBridge:(FindBarBridge*)findBar;
+- (void)setBrowserWindowController:(BrowserWindowController*)controller;
 
 - (IBAction)close:(id)sender;
 
@@ -74,5 +85,9 @@ class FindNotificationDetails;
                      withText:(const string16&)findText;
 - (BOOL)isFindBarVisible;
 - (BOOL)isFindBarAnimating;
+
+// Returns the FindBar's position in the superview's coordinates, but with
+// the Y coordinate growing down.
+- (gfx::Point)findBarWindowPosition;
 
 @end

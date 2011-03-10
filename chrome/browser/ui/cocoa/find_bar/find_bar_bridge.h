@@ -9,7 +9,6 @@
 #include "base/logging.h"
 #include "chrome/browser/ui/find_bar/find_bar.h"
 
-class BrowserWindowCocoa;
 class FindBarController;
 
 // This class is included by find_bar_host_browsertest.cc, so it has to be

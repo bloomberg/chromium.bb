@@ -52,6 +52,11 @@ class FindBarCocoaControllerTest : public CocoaTest {
     [[test_window() contentView] addSubview:[controller_ view]];
   }
 
+  virtual void TearDown() {
+    CocoaTest::TearDown();
+    [controller_ stopAnimation];
+  }
+
  protected:
   scoped_nsobject<FindBarCocoaController> controller_;
 };

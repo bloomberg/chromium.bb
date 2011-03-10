@@ -633,16 +633,8 @@ IN_PROC_BROWSER_TEST_F(FindInPageControllerTest,
   EXPECT_FALSE(fully_visible);
 }
 
-// TODO(rohitrao): The FindMovesWhenObscuring test does not pass on mac.
-// http://crbug.com/22036
-#if defined(OS_MACOSX)
-#define MAYBE_FindMovesWhenObscuring FAILS_FindMovesWhenObscuring
-#else
-#define MAYBE_FindMovesWhenObscuring FindMovesWhenObscuring
-#endif
-
 // Make sure Find box moves out of the way if it is obscuring the active match.
-IN_PROC_BROWSER_TEST_F(FindInPageControllerTest, MAYBE_FindMovesWhenObscuring) {
+IN_PROC_BROWSER_TEST_F(FindInPageControllerTest, FindMovesWhenObscuring) {
   ASSERT_TRUE(test_server()->Start());
 
   GURL url = test_server()->GetURL(kMoveIfOver);
