@@ -37,6 +37,7 @@ class TransportSecurityState;
 namespace prerender {
 class PrerenderManager;
 };  // namespace prerender
+class ProtocolHandlerRegistry;
 namespace webkit_database {
 class DatabaseTracker;
 }  // webkit_database

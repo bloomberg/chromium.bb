@@ -144,7 +144,8 @@ void ProfileImplIOData::LazyInitializeInternal() const {
 
   network_delegate_.reset(new ChromeNetworkDelegate(
         io_thread_globals->extension_event_router_forwarder.get(),
-        profile_params.profile_id));
+        profile_params.profile_id,
+        profile_params.protocol_handler_registry));
   main_request_context_->set_network_delegate(network_delegate_.get());
   media_request_context_->set_network_delegate(network_delegate_.get());
 

@@ -11,6 +11,7 @@
 #include "base/logging.h"
 #include "base/string_number_conversions.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/custom_handlers/protocol_handler_registry.h"
 #include "chrome/browser/extensions/user_script_master.h"
 #include "chrome/browser/io_thread.h"
 #include "chrome/browser/net/chrome_cookie_notification_details.h"
@@ -256,8 +257,6 @@ void ProfileIOData::ApplyProfileParamsToContext(
   context->set_file_system_context(profile_params.file_system_context);
   context->set_extension_info_map(profile_params.extension_info_map);
   context->set_prerender_manager(profile_params.prerender_manager);
-  context->set_protocol_handler_registry(
-      profile_params.protocol_handler_registry);
 }
 
 // static

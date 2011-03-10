@@ -9,6 +9,7 @@
 #include "chrome/browser/net/chrome_url_request_context.h"
 #include "chrome/common/pref_names.h"
 #include "content/browser/child_process_security_policy.h"
+#include "net/base/network_delegate.h"
 #include "net/url_request/url_request_redirect_job.h"
 
 
@@ -79,29 +80,28 @@ bool ProtocolHandlerRegistry::IsAlreadyRegistered(
   return currentHandler && *currentHandler == *handler;
 }
 
-net::URLRequestJob* ProtocolHandlerRegistry::CreateJob(
-    net::URLRequest* request,
-    const std::string& scheme) const {
-  ProtocolHandler* handler = GetHandlerFor(scheme);
+net::URLRequestJob* ProtocolHandlerRegistry::Factory(net::URLRequest* request,
+    const std::string& scheme) {
+  return request->context()->network_delegate()->MaybeCreateURLRequestJob(
+      request);
+}
+
+
+net::URLRequestJob* ProtocolHandlerRegistry::MaybeCreateJob(
+    net::URLRequest* request) const {
+  ProtocolHandler* handler = GetHandlerFor(request->url().scheme());
 
   if (!handler) {
     return NULL;
   }
 
-  GURL translatedUrl(handler->TranslateUrl(request->url()));
+  GURL translated_url(handler->TranslateUrl(request->url()));
 
-  if (!translatedUrl.is_valid()) {
+  if (!translated_url.is_valid()) {
     return NULL;
   }
 
-  return new net::URLRequestRedirectJob(request, translatedUrl);
-}
-
-net::URLRequestJob* ProtocolHandlerRegistry::Factory(net::URLRequest* request,
-                                                const std::string& scheme) {
-  ChromeURLRequestContext* context =
-    static_cast<ChromeURLRequestContext*>(request->context());
-  return context->protocol_handler_registry()->CreateJob(request, scheme);
+  return new net::URLRequestRedirectJob(request, translated_url);
 }
 
 ProtocolHandlerRegistry::~ProtocolHandlerRegistry() {}
