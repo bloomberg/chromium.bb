@@ -84,15 +84,22 @@ class ConnectionTesterDelegate : public ConnectionTester::Delegate {
 class ConnectionTesterTest : public PlatformTest {
  public:
   ConnectionTesterTest()
-      : test_server_(net::TestServer::TYPE_HTTP,
+      : message_loop_(MessageLoop::TYPE_IO),
+        io_thread_(BrowserThread::IO, &message_loop_),
+        test_server_(net::TestServer::TYPE_HTTP,
             FilePath(FILE_PATH_LITERAL("net/data/url_request_unittest"))),
-        proxy_script_fetcher_context_(new net::URLRequestContext),
-        message_loop_(MessageLoop::TYPE_IO),
-        io_thread_(BrowserThread::IO, &message_loop_) {
+        proxy_script_fetcher_context_(new net::URLRequestContext) {
     InitializeRequestContext();
   }
 
  protected:
+  // Destroy last the MessageLoop last to give a chance for objects like
+  // ObserverListThreadSave to shut down properly.  For example,
+  // SSLClientAuthCache calls RemoveObserver when destroyed, but if the
+  // MessageLoop is already destroyed, then the RemoveObserver will be a
+  // no-op, and the ObserverList will contain invalid entries.
+  MessageLoop message_loop_;
+  BrowserThread io_thread_;
   net::TestServer test_server_;
   ConnectionTesterDelegate test_delegate_;
   net::MockHostResolver host_resolver_;
@@ -131,9 +138,6 @@ class ConnectionTesterTest : public PlatformTest {
     proxy_script_fetcher_context_->set_cookie_store(
         new net::CookieMonster(NULL, NULL));
   }
-
-  MessageLoop message_loop_;
-  BrowserThread io_thread_;
 };
 
 TEST_F(ConnectionTesterTest, RunAllTests) {
