@@ -188,8 +188,10 @@ void GpuChannel::OnCreateOffscreenCommandBuffer(
 
 void GpuChannel::OnDestroyCommandBuffer(int32 route_id) {
 #if defined(ENABLE_GPU)
-  router_.RemoveRoute(route_id);
-  stubs_.Remove(route_id);
+  if (router_.ResolveRoute(route_id)) {
+    router_.RemoveRoute(route_id);
+    stubs_.Remove(route_id);
+  }
 #endif
 }
 

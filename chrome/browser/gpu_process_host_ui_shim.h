@@ -178,9 +178,11 @@ class GpuProcessHostUIShim
 
   // Encapsulates surfaces that we acquire when creating view command buffers.
   // We assume that a render view has at most 1 such surface associated
-  // with it.
+  // with it.  Multimap is used to simulate reference counting, see comment in
+  // GpuProcessHostUIShim::CreateViewCommandBuffer.
   class ViewSurface;
-  std::map<ViewID, linked_ptr<ViewSurface> > acquired_surfaces_;
+  typedef std::multimap<ViewID, linked_ptr<ViewSurface> > ViewSurfaceMap;
+  ViewSurfaceMap acquired_surfaces_;
 
 };
 

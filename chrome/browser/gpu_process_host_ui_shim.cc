@@ -298,20 +298,23 @@ void GpuProcessHostUIShim::CreateViewCommandBuffer(
   linked_ptr<CreateCommandBufferCallback> wrapped_callback(callback);
   ViewID view_id(renderer_id, render_view_id);
 
-  // We assume that there can only be one such command buffer (for the
-  // compositor).
-  if (acquired_surfaces_.count(view_id) != 0) {
-    CreateCommandBufferError(wrapped_callback.release(), MSG_ROUTING_NONE);
-    return;
-  }
-
-  linked_ptr<ViewSurface> view_surface(new ViewSurface(view_id));
+  // There should only be one such command buffer (for the compositor).  In
+  // practice, if the GPU process lost a context, GraphicsContext3D with
+  // associated command buffer and view surface will not be gone until new
+  // one is in place and all layers are reattached.
+  linked_ptr<ViewSurface> view_surface;
+  ViewSurfaceMap::iterator it = acquired_surfaces_.find(view_id);
+  if (it != acquired_surfaces_.end())
+    view_surface = (*it).second;
+  else
+    view_surface.reset(new ViewSurface(view_id));
 
   if (view_surface->surface() != gfx::kNullPluginWindow &&
       Send(new GpuMsg_CreateViewCommandBuffer(
           view_surface->surface(), render_view_id, renderer_id, init_params))) {
     create_command_buffer_requests_.push(wrapped_callback);
-    acquired_surfaces_[view_id] = view_surface;
+    acquired_surfaces_.insert(std::pair<ViewID, linked_ptr<ViewSurface> >(
+        view_id, view_surface));
   } else {
     CreateCommandBufferError(wrapped_callback.release(), MSG_ROUTING_NONE);
   }
@@ -449,7 +452,9 @@ void GpuProcessHostUIShim::OnDestroyCommandBuffer(
     gfx::PluginWindowHandle window, int32 renderer_id,
     int32 render_view_id) {
   ViewID view_id(renderer_id, render_view_id);
-  acquired_surfaces_.erase(view_id);
+  ViewSurfaceMap::iterator it = acquired_surfaces_.find(view_id);
+  if (it != acquired_surfaces_.end())
+    acquired_surfaces_.erase(it);
 }
 
 void GpuProcessHostUIShim::OnGraphicsInfoCollected(const GPUInfo& gpu_info) {
