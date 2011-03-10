@@ -3939,28 +3939,11 @@
    fun:_Znw*
    fun:_ZN14NewTabObserver7ObserveE16NotificationTypeRK18NotificationSourceRK19NotificationDetails
 }
-
 {
    bug_75247
    Memcheck:Leak
    fun:_Znw*
    fun:*AutofillDownloadTestHelper*
-}
-{
-   bug_75372
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_ZN3net10URLRequest5StartEv
-   fun:_ZN10URLFetcher4Core15StartURLRequestEv
-   fun:_ZN10URLFetcher4Core30StartURLRequestWhenAppropriateEv
-   fun:_Z16DispatchToMethodIN10URLFetcher4CoreEMS1_FvvEEvPT_T0_RK6Tuple0
-   fun:_ZN14RunnableMethodIN10URLFetcher4CoreEMS1_FvvE6Tuple0E3RunEv
-   fun:_ZN11MessageLoop7RunTaskEP4Task
-   fun:_ZN11MessageLoop21DeferOrRunPendingTaskERKNS_11PendingTaskE
-   fun:_ZN11MessageLoop6DoWorkEv
-   fun:_ZN4base19MessagePumpLibevent3RunEPNS_11MessagePump8DelegateE
-   fun:_ZN11MessageLoop11RunInternalEv
-   fun:_ZN11MessageLoop10RunHandlerEv
 }
 
 #-----------------------------------------------------------------------
