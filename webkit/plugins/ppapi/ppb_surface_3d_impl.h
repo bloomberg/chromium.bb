@@ -50,10 +50,12 @@ class PPB_Surface3D_Impl : public Resource {
 
   void ViewInitiatedPaint();
   void ViewFlushedPaint();
+  void OnContextLost();
 
  private:
   // Called when SwapBuffers is complete.
   void OnSwapBuffers();
+  void SendContextLost();
 
   bool bound_to_instance_;
 

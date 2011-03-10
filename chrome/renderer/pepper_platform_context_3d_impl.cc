@@ -14,7 +14,8 @@
 #ifdef ENABLE_GPU
 PlatformContext3DImpl::PlatformContext3DImpl(ggl::Context* parent_context)
       : parent_context_(parent_context),
-        command_buffer_(NULL) {
+        command_buffer_(NULL),
+        callback_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)) {
 }
 
 PlatformContext3DImpl::~PlatformContext3DImpl() {
@@ -67,11 +68,13 @@ bool PlatformContext3DImpl::Init() {
   CommandBufferProxy* parent_command_buffer =
       ggl::GetCommandBufferProxy(parent_context_);
   command_buffer_ = channel_->CreateOffscreenCommandBuffer(
-        parent_command_buffer,
-        gfx::Size(1, 1),
-        "*",
-        attribs,
-        parent_texture_id_);
+      parent_command_buffer,
+      gfx::Size(1, 1),
+      "*",
+      attribs,
+      parent_texture_id_);
+  command_buffer_->SetChannelErrorCallback(callback_factory_.NewCallback(
+      &PlatformContext3DImpl::OnContextLost));
 
   if (!command_buffer_)
     return false;
@@ -89,9 +92,23 @@ unsigned PlatformContext3DImpl::GetBackingTextureId() {
   return parent_texture_id_;
 }
 
-gpu::CommandBuffer*
-    PlatformContext3DImpl::GetCommandBuffer() {
+gpu::CommandBuffer* PlatformContext3DImpl::GetCommandBuffer() {
   return command_buffer_;
+}
+
+void PlatformContext3DImpl::SetContextLostCallback(Callback0::Type* callback) {
+    context_lost_callback_.reset(callback);
+}
+
+void PlatformContext3DImpl::OnContextLost() {
+  DCHECK(command_buffer_);
+
+  // We will lose the parent context soon (it will be reallocated by the main
+  // page).
+  parent_context_ = NULL;
+  parent_texture_id_ = 0;
+  if (context_lost_callback_.get())
+    context_lost_callback_->Run();
 }
 
 #endif  // ENABLE_GPU

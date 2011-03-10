@@ -232,7 +232,8 @@ PPB_Context3D_Impl::PPB_Context3D_Impl(PluginInstance* instance)
       instance_(instance),
       transfer_buffer_id_(0),
       draw_surface_(NULL),
-      read_surface_(NULL) {
+      read_surface_(NULL),
+      callback_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)) {
 }
 
 PPB_Context3D_Impl::~PPB_Context3D_Impl() {
@@ -275,6 +276,8 @@ bool PPB_Context3D_Impl::InitRaw(PP_Config3D_Dev config,
     Destroy();
     return false;
   }
+  platform_context_->SetContextLostCallback(
+      callback_factory_.NewCallback(&PPB_Context3D_Impl::OnContextLost));
   return true;
 }
 
@@ -364,6 +367,13 @@ void PPB_Context3D_Impl::Destroy() {
 
   helper_.reset();
   platform_context_.reset();
+}
+
+void PPB_Context3D_Impl::OnContextLost() {
+  if (draw_surface_)
+    draw_surface_->OnContextLost();
+  if (read_surface_)
+    read_surface_->OnContextLost();
 }
 
 gpu::CommandBuffer *PPB_Context3D_Impl::command_buffer() {

@@ -162,6 +162,10 @@ class PluginDelegate {
     // that is constructed in Initialize() and is valid until this context is
     // destroyed.
     virtual gpu::CommandBuffer* GetCommandBuffer() = 0;
+
+    // Set an optional callback that will be invoked when the context is lost
+    // (e.g. gpu process crash). Takes ownership of the callback.
+    virtual void SetContextLostCallback(Callback0::Type* callback) = 0;
   };
 
   class PlatformAudio {

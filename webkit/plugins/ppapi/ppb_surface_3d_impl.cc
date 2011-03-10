@@ -4,10 +4,13 @@
 
 #include "webkit/plugins/ppapi/ppb_surface_3d_impl.h"
 
+#include "base/message_loop.h"
 #include "gpu/command_buffer/client/gles2_implementation.h"
 #include "gpu/command_buffer/common/command_buffer.h"
 #include "ppapi/c/dev/ppb_graphics_3d_dev.h"
+#include "ppapi/c/dev/ppp_graphics_3d_dev.h"
 #include "webkit/plugins/ppapi/common.h"
+#include "webkit/plugins/ppapi/plugin_module.h"
 #include "webkit/plugins/ppapi/ppapi_plugin_instance.h"
 #include "webkit/plugins/ppapi/ppb_context_3d_impl.h"
 
@@ -174,6 +177,25 @@ void PPB_Surface3D_Impl::OnSwapBuffers() {
     swap_initiated_ = false;
     PP_RunCompletionCallback(&callback, PP_OK);
   }
+}
+
+void PPB_Surface3D_Impl::OnContextLost() {
+  if (bound_to_instance_)
+    instance()->BindGraphics(0);
+
+  // Send context lost to plugin. This may have been caused by a PPAPI call, so
+  // avoid re-entering.
+  MessageLoop::current()->PostTask(FROM_HERE, NewRunnableMethod(
+      this, &PPB_Surface3D_Impl::SendContextLost));
+}
+
+void PPB_Surface3D_Impl::SendContextLost() {
+  const PPP_Graphics3D_Dev* ppp_graphics_3d =
+      static_cast<const PPP_Graphics3D_Dev*>(
+          instance()->module()->GetPluginInterface(
+              PPP_GRAPHICS_3D_DEV_INTERFACE));
+  if (ppp_graphics_3d)
+    ppp_graphics_3d->Graphics3DContextLost(instance()->pp_instance());
 }
 
 }  // namespace ppapi
