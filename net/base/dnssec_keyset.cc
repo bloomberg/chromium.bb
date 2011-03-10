@@ -8,7 +8,6 @@
 #include <cryptoht.h>
 #include <keyhi.h>
 
-#include "base/crypto/signature_verifier.h"
 #include "base/logging.h"
 #include "base/nss_util.h"
 #include "base/scoped_ptr.h"
