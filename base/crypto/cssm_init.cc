@@ -9,7 +9,6 @@
 #include "base/logging.h"
 #include "base/mac/scoped_cftyperef.h"
 #include "base/singleton.h"
-#include "base/synchronization/lock.h"
 #include "base/sys_string_conversions.h"
 
 // When writing crypto code for Mac OS X, you may find the following
@@ -154,28 +153,6 @@ class CSSMInitSingleton {
   friend struct DefaultSingletonTraits<CSSMInitSingleton>;
 };
 
-// This singleton is separate as it pertains to Apple's wrappers over
-// their own CSSM handles, as opposed to our own CSSM_CSP_HANDLE.
-class SecurityServicesSingleton {
- public:
-  static SecurityServicesSingleton* GetInstance() {
-    return Singleton<SecurityServicesSingleton,
-                     LeakySingletonTraits<SecurityServicesSingleton> >::get();
-  }
-
-  base::Lock& lock() { return lock_; }
-
- private:
-  friend struct DefaultSingletonTraits<SecurityServicesSingleton>;
-
-  SecurityServicesSingleton() {}
-  ~SecurityServicesSingleton() {}
-
-  base::Lock lock_;
-
-  DISALLOW_COPY_AND_ASSIGN(SecurityServicesSingleton);
-};
-
 }  // namespace
 
 namespace base {
@@ -211,10 +188,6 @@ void LogCSSMError(const char* fn_name, CSSM_RETURN err) {
       SecCopyErrorMessageString(err, NULL));
   LOG(ERROR) << fn_name << " returned " << err
              << " (" << SysCFStringRefToUTF8(cfstr) << ")";
-}
-
-base::Lock& GetMacSecurityServicesLock() {
-  return SecurityServicesSingleton::GetInstance()->lock();
 }
 
 ScopedCSSMData::ScopedCSSMData() {

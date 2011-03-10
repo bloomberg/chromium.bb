@@ -12,8 +12,6 @@
 
 namespace base {
 
-class Lock;
-
 // Initialize CSSM if it isn't already initialized.  This must be called before
 // any other CSSM functions.  This function is thread-safe, and CSSM will only
 // ever be initialized once.  CSSM will be properly shut down on program exit.
@@ -37,13 +35,6 @@ void LogCSSMError(const char *function_name, CSSM_RETURN err);
 // Utility functions to allocate and release CSSM memory.
 void* CSSMMalloc(CSSM_SIZE size);
 void CSSMFree(void* ptr);
-
-// The OS X certificate and key management wrappers over CSSM are not
-// thread-safe. In particular, code that accesses the CSSM database is
-// problematic.
-//
-// http://developer.apple.com/mac/library/documentation/Security/Reference/certifkeytrustservices/Reference/reference.html
-Lock& GetMacSecurityServicesLock();
 
 // Wrapper class for CSSM_DATA type. This should only be used when using the
 // CL/TP/CSP handles from above, since that's the only time we're guaranteed (or
