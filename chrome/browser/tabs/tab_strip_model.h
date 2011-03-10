@@ -11,9 +11,9 @@
 #include "base/observer_list.h"
 #include "chrome/browser/tabs/tab_strip_model_observer.h"
 #include "chrome/browser/tabs/tab_strip_selection_model.h"
-#include "chrome/common/notification_observer.h"
-#include "chrome/common/notification_registrar.h"
 #include "chrome/common/page_transition_types.h"
+#include "content/common/notification_observer.h"
+#include "content/common/notification_registrar.h"
 
 class NavigationController;
 class Profile;
