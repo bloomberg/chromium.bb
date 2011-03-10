@@ -39,6 +39,15 @@
 
 namespace examples {
 
+ExamplesMain::ExamplesMain()
+    : contents_(NULL), status_label_(NULL) {}
+
+ExamplesMain::~ExamplesMain() {}
+
+bool ExamplesMain::CanResize() const {
+  return true;
+}
+
 views::View* ExamplesMain::GetContentsView() {
   return contents_;
 }

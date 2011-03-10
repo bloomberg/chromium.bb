@@ -1,6 +1,9 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+
+#ifndef VIEWS_TEST_TEST_VIEWS_DELEGATE_H_
+#define VIEWS_TEST_TEST_VIEWS_DELEGATE_H_
 
 #include "base/scoped_ptr.h"
 #include "ui/base/clipboard/clipboard.h"
@@ -12,17 +15,11 @@ class Window;
 
 class TestViewsDelegate : public views::ViewsDelegate {
  public:
-  TestViewsDelegate() {}
-  virtual ~TestViewsDelegate() {}
+  TestViewsDelegate();
+  virtual ~TestViewsDelegate();
 
   // Overridden from views::ViewsDelegate:
-  virtual ui::Clipboard* GetClipboard() const {
-    if (!clipboard_.get()) {
-      // Note that we need a MessageLoop for the next call to work.
-      clipboard_.reset(new ui::Clipboard);
-    }
-    return clipboard_.get();
-  }
+  virtual ui::Clipboard* GetClipboard() const;
   virtual void SaveWindowPlacement(views::Window* window,
                                    const std::wstring& window_name,
                                    const gfx::Rect& bounds,
@@ -30,14 +27,10 @@ class TestViewsDelegate : public views::ViewsDelegate {
   }
   virtual bool GetSavedWindowBounds(views::Window* window,
                                     const std::wstring& window_name,
-                                    gfx::Rect* bounds) const {
-    return false;
-  }
+                                    gfx::Rect* bounds) const;
   virtual bool GetSavedMaximizedState(views::Window* window,
                                       const std::wstring& window_name,
-                                      bool* maximized) const {
-    return false;
-  }
+                                      bool* maximized) const;
   virtual void NotifyAccessibilityEvent(
       views::View* view, AccessibilityTypes::Event event_type) {}
   virtual void NotifyMenuItemFocused(
@@ -60,3 +53,4 @@ class TestViewsDelegate : public views::ViewsDelegate {
   DISALLOW_COPY_AND_ASSIGN(TestViewsDelegate);
 };
 
+#endif  // VIEWS_TEST_TEST_VIEWS_DELEGATE_H_

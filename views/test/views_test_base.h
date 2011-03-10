@@ -10,33 +10,17 @@
 
 #include "base/message_loop.h"
 
-#if defined(OS_WIN)
-#include <ole2.h>
-#endif
-
 namespace views {
 
 // A base class for views unit test. It creates a message loop necessary
 // to drive UI events and takes care of OLE initialization for windows.
 class ViewsTestBase : public testing::Test {
  public:
-  ViewsTestBase() {
-#if defined(OS_WIN)
-    OleInitialize(NULL);
-#endif
-  }
+  ViewsTestBase();
+  virtual ~ViewsTestBase();
 
-  virtual ~ViewsTestBase() {
-#if defined(OS_WIN)
-    OleUninitialize();
-#endif
-  }
-
-  virtual void TearDown() {
-    // Flush the message loop because we have pending release tasks
-    // and these tasks if un-executed would upset Valgrind.
-    RunPendingMessages();
-  }
+  // testing::Test:
+  virtual void TearDown();
 
   void RunPendingMessages() {
     message_loop_.RunAllPending();

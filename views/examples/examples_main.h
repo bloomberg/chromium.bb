@@ -21,11 +21,11 @@ namespace examples {
 // ExamplesMainBase creates all view examples and start event loop.
 class ExamplesMain : public views::WindowDelegate {
  public:
-  ExamplesMain() : contents_(NULL), status_label_(NULL) {}
-  virtual ~ExamplesMain() {}
+  ExamplesMain();
+  virtual ~ExamplesMain();
 
   // views::WindowDelegate implementation:
-  virtual bool CanResize() const { return true; }
+  virtual bool CanResize() const;
   virtual views::View* GetContentsView();
   virtual void WindowClosing();
 
