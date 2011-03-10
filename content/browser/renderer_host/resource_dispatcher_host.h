@@ -278,10 +278,6 @@ class ResourceDispatcherHost : public net::URLRequest::Delegate {
                            IncrementOutstandingRequestsMemoryCost);
   FRIEND_TEST_ALL_PREFIXES(ResourceDispatcherHostTest,
                            CalculateApproximateMemoryCost);
-  FRIEND_TEST_ALL_PREFIXES(ApplyExtensionLocalizationFilterTest, WrongScheme);
-  FRIEND_TEST_ALL_PREFIXES(ApplyExtensionLocalizationFilterTest, GoodScheme);
-  FRIEND_TEST_ALL_PREFIXES(ApplyExtensionLocalizationFilterTest,
-                           GoodSchemeWrongResourceType);
 
   class ShutdownTask;
 

@@ -980,25 +980,3 @@ class DummyResourceHandler : public ResourceHandler {
  private:
   DISALLOW_COPY_AND_ASSIGN(DummyResourceHandler);
 };
-
-class ApplyExtensionLocalizationFilterTest : public testing::Test {
- protected:
-  void SetUp() {
-    url_.reset(new GURL(
-        "chrome-extension://behllobkkfkfnphdnhnkndlbkcpglgmj/popup.html"));
-    resource_type_ = ResourceType::STYLESHEET;
-    resource_handler_.reset(new DummyResourceHandler());
-    request_info_.reset(CreateNewResourceRequestInfo());
-  }
-
-  ResourceDispatcherHostRequestInfo* CreateNewResourceRequestInfo() {
-    return new ResourceDispatcherHostRequestInfo(
-        resource_handler_.get(), ChildProcessInfo::RENDER_PROCESS, 0, 0, 0,
-        ResourceType::STYLESHEET, 0U, false, false, false, -1, -1);
-  }
-
-  scoped_ptr<GURL> url_;
-  ResourceType::Type resource_type_;
-  scoped_ptr<DummyResourceHandler> resource_handler_;
-  scoped_ptr<ResourceDispatcherHostRequestInfo> request_info_;
-};
