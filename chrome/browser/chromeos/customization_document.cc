@@ -7,6 +7,7 @@
 #include "base/file_util.h"
 #include "base/json/json_reader.h"
 #include "base/logging.h"
+#include "base/string_util.h"
 
 // Manifest attributes names.
 
@@ -16,8 +17,10 @@ const char kVersionAttr[] = "version";
 const char kDefaultAttr[] = "default";
 const char kInitialLocaleAttr[] = "initial_locale";
 const char kInitialTimezoneAttr[] = "initial_timezone";
+const char kKeyboardLayoutAttr[] = "keyboard_layout";
 const char kRegistrationUrlAttr[] = "registration_url";
-const char kHwidMapAttr[] = "hwidmap";
+const char kHwidMapAttr[] = "hwid_map";
+const char kHwidMaskAttr[] = "hwid_mask";
 const char kSetupContentAttr[] = "setup_content";
 const char kHelpPageAttr[] = "help_page";
 const char kEulaPageAttr[] = "eula_page";
@@ -96,25 +99,35 @@ bool StartupCustomizationDocument::LoadManifestFromString(
 
   root_->GetString(kInitialLocaleAttr, &initial_locale_);
   root_->GetString(kInitialTimezoneAttr, &initial_timezone_);
+  root_->GetString(kKeyboardLayoutAttr, &keyboard_layout_);
   root_->GetString(kRegistrationUrlAttr, &registration_url_);
 
   std::string hwid = GetHWID();
   if (!hwid.empty()) {
-    DictionaryValue* hwid_map = NULL;
-    if (root_->GetDictionary(kHwidMapAttr, &hwid_map)) {
-      DictionaryValue* hwid_dictionary = NULL;
-      if (hwid_map->GetDictionary(hwid, &hwid_dictionary)) {
-        // If HWID for this machine exists in the mapping, use HWID specific
-        // settings.
-        std::string result;
-        if (hwid_dictionary->GetString(kInitialLocaleAttr, &result))
-          initial_locale_ = result;
+    ListValue* hwid_list = NULL;
+    if (root_->GetList(kHwidMapAttr, &hwid_list)) {
+      for (size_t i = 0; i < hwid_list->GetSize(); ++i) {
+        DictionaryValue* hwid_dictionary = NULL;
+        std::string hwid_mask;
+        if (hwid_list->GetDictionary(i, &hwid_dictionary) &&
+            hwid_dictionary->GetString(kHwidMaskAttr, &hwid_mask)) {
+          if (MatchPattern(hwid, hwid_mask)) {
+            // If HWID for this machine matches some mask, use HWID specific
+            // settings.
+            std::string result;
+            if (hwid_dictionary->GetString(kInitialLocaleAttr, &result))
+              initial_locale_ = result;
 
-        if (hwid_dictionary->GetString(kInitialTimezoneAttr, &result))
-          initial_timezone_ = result;
-      } else {
-        LOG(WARNING) << "HWDI '" << hwid
-                     << "' is missing in startup customization manifest";
+            if (hwid_dictionary->GetString(kInitialTimezoneAttr, &result))
+              initial_timezone_ = result;
+
+            if (hwid_dictionary->GetString(kKeyboardLayoutAttr, &result))
+              keyboard_layout_ = result;
+          }
+          // Don't break here to allow other entires to be applied if match.
+        } else {
+          LOG(ERROR) << "Syntax error in customization manifest";
+        }
       }
     }
   } else {

@@ -46,6 +46,7 @@ class StartupCustomizationDocument : public CustomizationDocument {
 
   const std::string& initial_locale() const { return initial_locale_; }
   const std::string& initial_timezone() const { return initial_timezone_; }
+  const std::string& keyboard_layout() const { return keyboard_layout_; }
   const std::string& registration_url() const { return registration_url_; }
 
   std::string GetHelpPage(const std::string& locale) const;
@@ -57,6 +58,7 @@ class StartupCustomizationDocument : public CustomizationDocument {
 
   std::string initial_locale_;
   std::string initial_timezone_;
+  std::string keyboard_layout_;
   std::string registration_url_;
 
   DISALLOW_COPY_AND_ASSIGN(StartupCustomizationDocument);

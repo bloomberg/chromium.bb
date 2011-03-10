@@ -237,19 +237,32 @@ void SaveIntegerPreferenceForced(const char* pref_name, int value) {
   prefs->SavePersistentPrefs();
 }
 
-// Saves the hardware keyboard to "Locale State" from the locale code.
+// Determines the hardware keyboard from the given locale code
+// and the OEM layout information, and saves it to "Locale State".
 // The information will be used in input_method::GetHardwareInputMethodId().
-void SaveHardwareKeyboardFromLocaleCode(const std::string& locale) {
-  std::vector<std::string> input_method_ids;
-  if (chromeos::input_method::GetInputMethodIdsFromLanguageCode(
-          locale,
-          chromeos::input_method::kKeyboardLayoutsOnly,
-          &input_method_ids)) {
-    // The output list |input_method_ids| is sorted by popularity, hence
-    // input_method_ids[0] now contains the most popular keyboard layout
-    // for the given locale.
+void DetermineAndSaveHardwareKeyboard(const std::string& locale,
+                                      const std::string& oem_layout) {
+  std::string layout;
+  if (!oem_layout.empty()) {
+    // If the OEM layout information is provided, use it.
+    layout = oem_layout;
+  } else {
+    // Otherwise, determine the hardware keyboard from the locale.
+    std::vector<std::string> input_method_ids;
+    if (chromeos::input_method::GetInputMethodIdsFromLanguageCode(
+            locale,
+            chromeos::input_method::kKeyboardLayoutsOnly,
+            &input_method_ids)) {
+      // The output list |input_method_ids| is sorted by popularity, hence
+      // input_method_ids[0] now contains the most popular keyboard layout
+      // for the given locale.
+      layout = input_method_ids[0];
+    }
+  }
+
+  if (!layout.empty()) {
     PrefService* prefs = g_browser_process->local_state();
-    prefs->SetString(prefs::kHardwareKeyboardLayout, input_method_ids[0]);
+    prefs->SetString(prefs::kHardwareKeyboardLayout, layout);
     // This asks the file thread to save the prefs (i.e. doesn't block).
     // The latest values of Local State reside in memory so we can safely
     // get the value of kHardwareKeyboardLayout even if the data is not
@@ -1021,10 +1034,13 @@ void ShowLoginWizard(const std::string& first_screen_name,
     VLOG(1) << "Current locale: " << current_locale;
     if (current_locale.empty()) {
       locale = controller->GetCustomization()->initial_locale();
-      VLOG(1) << "Initial locale: " << locale;
+      std::string layout = controller->GetCustomization()->keyboard_layout();
+      VLOG(1) << "Initial locale: " << locale
+              << "keyboard layout " << layout;
       if (!locale.empty()) {
-        // Save the hardware keyboard from the locale code.
-        SaveHardwareKeyboardFromLocaleCode(locale);
+        // Determine keyboard layout from OEM customization (if provided) or
+        // initial locale and save it in preferences.
+        DetermineAndSaveHardwareKeyboard(locale, layout);
         // Then, enable the hardware keyboard.
         chromeos::input_method::EnableInputMethods(
             locale,

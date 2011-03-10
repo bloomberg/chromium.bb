@@ -13,6 +13,7 @@ const char kGoodStartupManifest[] =
     "  \"version\": \"1.0\","
     "  \"initial_locale\" : \"en-US\","
     "  \"initial_timezone\" : \"US/Pacific\","
+    "  \"keyboard_layout\" : \"xkb:us::eng\","
     "  \"registration_url\" : \"http://www.google.com\","
     "  \"setup_content\" : {"
     "    \"en-US\" : {"
@@ -28,16 +29,20 @@ const char kGoodStartupManifest[] =
     "      \"eula_page\" : \"file:///opt/oem/eula/en/eula.html\","
     "    },"
     "  },"
-    "  \"hwidmap\" : {"
-    "    \"Mario\" : {"
-    "      \"initial_locale\" : \"ru-RU\","
-    "      \"initial_timezone\" : \"Europe/Moscow\","
-    "    },"
-    "    \"ZGA\" : {"
+    "  \"hwid_map\" : ["
+    "    {"
+    "      \"hwid_mask\": \"ZGA*34\","
     "      \"initial_locale\" : \"ja\","
     "      \"initial_timezone\" : \"Asia/Tokyo\","
+    "      \"keyboard_layout\" : \"mozc-jp\","
     "    },"
-    "  },"
+    "    {"
+    "      \"hwid_mask\": \"Mario 1?3*\","
+    "      \"initial_locale\" : \"ru-RU\","
+    "      \"initial_timezone\" : \"Europe/Moscow\","
+    "      \"keyboard_layout\" : \"xkb:ru::rus\","
+    "    },"
+    "  ],"
     "}";
 
 const char kBadManifest[] = "{\"version\": \"1\"}";
@@ -64,7 +69,7 @@ const char kGoodServicesManifest[] =
 class TestDocument : public chromeos::StartupCustomizationDocument {
  private:
   virtual std::string GetHWID() const {
-    return "Mario";
+    return "Mario 123-456";
   }
 };
 
@@ -80,6 +85,7 @@ TEST_F(StartupCustomizationDocumentTest, Basic) {
   EXPECT_TRUE(customization_.LoadManifestFromString(kGoodStartupManifest));
   EXPECT_EQ(customization_.initial_locale(), "ru-RU");
   EXPECT_EQ(customization_.initial_timezone(), "Europe/Moscow");
+  EXPECT_EQ(customization_.keyboard_layout(), "xkb:ru::rus");
   EXPECT_EQ(customization_.registration_url(), "http://www.google.com");
 
   EXPECT_EQ(customization_.GetHelpPage("en-US"),
@@ -93,7 +99,7 @@ TEST_F(StartupCustomizationDocumentTest, Basic) {
             "file:///opt/oem/eula/en-US/eula.html");
   EXPECT_EQ(customization_.GetEULAPage("ru-RU"),
             "file:///opt/oem/eula/ru-RU/eula.html");
-  EXPECT_EQ(customization_.GetEULAPage("jp-JP"),
+  EXPECT_EQ(customization_.GetEULAPage("ja"),
             "file:///opt/oem/eula/en/eula.html");
 }
 
@@ -114,7 +120,7 @@ TEST_F(ServicesCustomizationDocumentTest, Basic) {
             "http://mario/promo");
   EXPECT_EQ(customization_.GetInitialStartPage("ru-RU"),
             "http://mario/ru/promo");
-  EXPECT_EQ(customization_.GetInitialStartPage("jp-JP"),
+  EXPECT_EQ(customization_.GetInitialStartPage("ja"),
             "http://mario/global/promo");
 
 
@@ -122,7 +128,7 @@ TEST_F(ServicesCustomizationDocumentTest, Basic) {
             "http://mario/us");
   EXPECT_EQ(customization_.GetSupportPage("ru-RU"),
             "http://mario/ru");
-  EXPECT_EQ(customization_.GetSupportPage("jp-JP"),
+  EXPECT_EQ(customization_.GetSupportPage("ja"),
             "http://mario/global");
 }
 
