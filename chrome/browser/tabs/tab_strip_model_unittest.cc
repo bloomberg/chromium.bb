@@ -1967,9 +1967,11 @@ TEST_F(TabStripModelTest, MoveSelectedTabsTo) {
 
     // With pinned tabs.
     { 6, 2, "2 3", 2, "0p 1p 2 3 4 5" },
-    { 6, 2, "0 4", 3, "1p 0p 2 4 3 5" },
+    { 6, 2, "0 4", 3, "1p 0p 2 3 4 5" },
     { 6, 3, "1 2 4", 0, "1p 2p 0p 4 3 5" },
-    { 8, 3, "1 3 4", 4, "0p 2p 1p 5 3 4 6 7" },
+    { 8, 3, "1 3 4", 4, "0p 2p 1p 5 6 3 4 7" },
+
+    { 7, 4, "2 3 4", 3, "0p 1p 2p 3p 5 4 6" },
   };
 
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(test_data); ++i) {

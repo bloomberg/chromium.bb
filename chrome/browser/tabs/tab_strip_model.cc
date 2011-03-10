@@ -268,31 +268,36 @@ void TabStripModel::MoveTabContentsAt(int index,
 }
 
 void TabStripModel::MoveSelectedTabsTo(int index) {
-  size_t selected_pinned_count = 0;
-  size_t selected_count = selection_model_.selected_indices().size();
-  for (size_t i = 0; i < selected_count &&
-           IsTabPinned(selection_model_.selected_indices()[i]); ++i) {
-    selected_pinned_count++;
+  int total_mini_count = IndexOfFirstNonMiniTab();
+  int selected_mini_count = 0;
+  int selected_count =
+      static_cast<int>(selection_model_.selected_indices().size());
+  for (int i = 0; i < selected_count &&
+           IsMiniTab(selection_model_.selected_indices()[i]); ++i) {
+    selected_mini_count++;
   }
 
-  size_t total_pinned_count = 0;
-  for (int i = 0; i < count() && IsTabPinned(i); ++i)
-    total_pinned_count++;
-
-  // To maintain that all pinned tabs occur before non-pinned tabs we move them
+  // To maintain that all mini-tabs occur before non-mini-tabs we move them
   // first.
-  if (selected_pinned_count > 0) {
+  if (selected_mini_count > 0) {
     MoveSelectedTabsToImpl(
-        std::min(static_cast<int>(total_pinned_count - selected_pinned_count),
-                 index), 0u, selected_pinned_count);
+        std::min(total_mini_count - selected_mini_count, index), 0u,
+        selected_mini_count);
+    if (index > total_mini_count - selected_mini_count) {
+      // We're being told to drag mini-tabs to an invalid location. Adjust the
+      // index such that non-mini-tabs end up at a location as though we could
+      // move the mini-tabs to index. See description in header for more
+      // details.
+      index += selected_mini_count;
+    }
   }
-  if (selected_pinned_count == selected_count)
+  if (selected_mini_count == selected_count)
     return;
 
   // Then move the non-pinned tabs.
-  MoveSelectedTabsToImpl(std::max(index, static_cast<int>(total_pinned_count)),
-                         selected_pinned_count,
-                         selected_count - selected_pinned_count);
+  MoveSelectedTabsToImpl(std::max(index, total_mini_count),
+                         selected_mini_count,
+                         selected_count - selected_mini_count);
 }
 
 TabContentsWrapper* TabStripModel::GetSelectedTabContents() const {

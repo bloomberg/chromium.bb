@@ -230,6 +230,18 @@ class TabStripModel : public NotificationObserver {
   // did not contain any of the selected tabs. For example, if the tabstrip
   // contains [A b c D E f] (upper case selected) and this is invoked with 1 the
   // result is [b A D E c f].
+  // This method maintains that all mini-tabs occur before non-mini-tabs.  When
+  // mini-tabs are selected the move is processed in two chunks: first mini-tabs
+  // are moved, then non-mini-tabs are moved. If the index is after
+  // (mini-tab-count - selected-mini-tab-count), then the index the non-mini
+  // selected tabs are moved to is (index + selected-mini-tab-count). For
+  // example, if the model consists of [A b c D E f] (A b c are mini) and this
+  // is inokved with 2, the result is [b c A D E f]. In this example nothing
+  // special happened because the target index was <= (mini-tab-count -
+  // selected-mini-tab-count). If the target index were 3, then the result would
+  // be [b c A f D F]. A, being mini, can move no further than index 2. The
+  // non-mini-tabs are moved to the target index + selected-mini-tab-count (3 +
+  // 1)
   void MoveSelectedTabsTo(int index);
 
   // Returns the currently selected TabContents, or NULL if there is none.
