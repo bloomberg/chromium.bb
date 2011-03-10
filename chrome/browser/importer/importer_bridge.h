@@ -42,6 +42,9 @@ class ImporterBridge : public base::RefCountedThreadSafe<ImporterBridge> {
                            bool unique_on_host_and_path) = 0;
   virtual void SetPasswordForm(const webkit_glue::PasswordForm& form) = 0;
 
+  // Notifies the coordinator that the import operation has begun.
+  virtual void NotifyStarted() = 0;
+
   // Notifies the coordinator that the collection of data for the specified
   // item has begun.
   virtual void NotifyItemStarted(importer::ImportItem item) = 0;
@@ -49,9 +52,6 @@ class ImporterBridge : public base::RefCountedThreadSafe<ImporterBridge> {
   // Notifies the coordinator that the collection of data for the specified
   // item has completed.
   virtual void NotifyItemEnded(importer::ImportItem item) = 0;
-
-  // Notifies the coordinator that the import operation has begun.
-  virtual void NotifyStarted() = 0;
 
   // Notifies the coordinator that the entire import operation has completed.
   virtual void NotifyEnded() = 0;
@@ -146,10 +146,11 @@ class ExternalProcessImporterBridge : public ImporterBridge {
                            bool unique_on_host_and_path);
   virtual void SetPasswordForm(const webkit_glue::PasswordForm& form);
 
+  virtual void NotifyStarted();
   virtual void NotifyItemStarted(importer::ImportItem item);
   virtual void NotifyItemEnded(importer::ImportItem item);
-  virtual void NotifyStarted();
   virtual void NotifyEnded();
+
   virtual std::wstring GetLocalizedString(int message_id);
 
  private:

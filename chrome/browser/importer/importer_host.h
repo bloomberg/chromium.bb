@@ -80,30 +80,24 @@ class ImporterHost : public base::RefCountedThreadSafe<ImporterHost>,
   // Cancel import.
   virtual void Cancel();
 
+  void SetObserver(importer::ImporterProgressObserver* observer);
+
+  // A series of functions invoked at the start, during and end of the import
+  // process. The middle functions are notifications that the a harvesting of a
+  // particular source of data (specified by |item|) is under way.
+  void NotifyImportStarted();
+  void NotifyImportItemStarted(importer::ImportItem item);
+  void NotifyImportItemEnded(importer::ImportItem item);
+  void NotifyImportEnded();
+
   // When in headless mode, the importer will not show the warning dialog and
   // the outcome is as if the user had canceled the import operation.
-  void set_headless() {
-    headless_ = true;
-  }
-
-  bool is_headless() const {
-    return headless_;
-  }
+  void set_headless() { headless_ = true; }
+  bool is_headless() const { return headless_; }
 
   void set_parent_window(gfx::NativeWindow parent_window) {
     parent_window_ = parent_window;
   }
-
-  void SetObserver(importer::ImporterProgressObserver* observer);
-
-  // A series of functions invoked at the start, during and end of the end
-  // of the import process. The middle functions are notifications that the
-  // harvesting of a particular source of data (specified by |item|) is under
-  // way.
-  virtual void ImportStarted();
-  virtual void ImportItemStarted(importer::ImportItem item);
-  virtual void ImportItemEnded(importer::ImportItem item);
-  virtual void ImportEnded();
 
  protected:
   friend class base::RefCountedThreadSafe<ImporterHost>;
@@ -129,7 +123,6 @@ class ImporterHost : public base::RefCountedThreadSafe<ImporterHost>,
   // Profile we're importing from.
   Profile* profile_;
 
-  importer::ImporterProgressObserver* observer_;
 
   // TODO(mirandac): task_ and importer_ should be private.  Can't just put
   // them there without changing the order of construct/destruct, so do this
@@ -181,6 +174,8 @@ class ImporterHost : public base::RefCountedThreadSafe<ImporterHost>,
   virtual void Observe(NotificationType type,
                        const NotificationSource& source,
                        const NotificationDetails& details) OVERRIDE;
+
+  importer::ImporterProgressObserver* observer_;
 
   DISALLOW_COPY_AND_ASSIGN(ImporterHost);
 };

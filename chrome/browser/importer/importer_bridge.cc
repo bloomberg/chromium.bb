@@ -92,28 +92,28 @@ void InProcessImporterBridge::SetPasswordForm(
       NewRunnableMethod(writer_, &ProfileWriter::AddPasswordForm, form));
 }
 
+void InProcessImporterBridge::NotifyStarted() {
+  BrowserThread::PostTask(
+      BrowserThread::UI, FROM_HERE,
+      NewRunnableMethod(host_, &ImporterHost::NotifyImportStarted));
+}
+
 void InProcessImporterBridge::NotifyItemStarted(importer::ImportItem item) {
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
-      NewRunnableMethod(host_, &ImporterHost::ImportItemStarted, item));
+      NewRunnableMethod(host_, &ImporterHost::NotifyImportItemStarted, item));
 }
 
 void InProcessImporterBridge::NotifyItemEnded(importer::ImportItem item) {
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
-      NewRunnableMethod(host_, &ImporterHost::ImportItemEnded, item));
-}
-
-void InProcessImporterBridge::NotifyStarted() {
-  BrowserThread::PostTask(
-      BrowserThread::UI, FROM_HERE,
-      NewRunnableMethod(host_, &ImporterHost::ImportStarted));
+      NewRunnableMethod(host_, &ImporterHost::NotifyImportItemEnded, item));
 }
 
 void InProcessImporterBridge::NotifyEnded() {
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
-      NewRunnableMethod(host_, &ImporterHost::ImportEnded));
+      NewRunnableMethod(host_, &ImporterHost::NotifyImportEnded));
 }
 
 std::wstring InProcessImporterBridge::GetLocalizedString(int message_id) {

@@ -34,14 +34,14 @@
 
 ImporterHost::ImporterHost()
     : profile_(NULL),
-      observer_(NULL),
       task_(NULL),
       importer_(NULL),
       waiting_for_bookmarkbar_model_(false),
       installed_bookmark_observer_(false),
       is_source_readable_(true),
       headless_(false),
-      parent_window_(NULL) {
+      parent_window_(NULL),
+      observer_(NULL) {
 }
 
 ImporterHost::~ImporterHost() {
@@ -81,7 +81,7 @@ void ImporterHost::OnLockViewEnd(bool is_continue) {
     delete task_;
     task_ = NULL;
     importer_ = NULL;
-    ImportEnded();
+    NotifyImportEnded();
   }
 }
 
@@ -101,7 +101,7 @@ void ImporterHost::StartImportSettings(
   importer_ = ImporterList::CreateImporterByType(profile_info.browser_type);
   // If we fail to create Importer, exit as we cannot do anything.
   if (!importer_) {
-    ImportEnded();
+    NotifyImportEnded();
     return;
   }
 
@@ -154,6 +154,28 @@ void ImporterHost::SetObserver(importer::ImporterProgressObserver* observer) {
   observer_ = observer;
 }
 
+void ImporterHost::NotifyImportStarted() {
+  if (observer_)
+    observer_->ImportStarted();
+}
+
+void ImporterHost::NotifyImportItemStarted(importer::ImportItem item) {
+  if (observer_)
+    observer_->ImportItemStarted(item);
+}
+
+void ImporterHost::NotifyImportItemEnded(importer::ImportItem item) {
+  if (observer_)
+    observer_->ImportItemEnded(item);
+}
+
+void ImporterHost::NotifyImportEnded() {
+  firefox_lock_.reset();  // Release the Firefox profile lock.
+  if (observer_)
+    observer_->ImportEnded();
+  Release();
+}
+
 void ImporterHost::InvokeTaskIfDone() {
   if (waiting_for_bookmarkbar_model_ || !registrar_.IsEmpty() ||
       !is_source_readable_)
@@ -184,28 +206,6 @@ void ImporterHost::Observe(NotificationType type,
   DCHECK(type == NotificationType::TEMPLATE_URL_MODEL_LOADED);
   registrar_.RemoveAll();
   InvokeTaskIfDone();
-}
-
-void ImporterHost::ImportItemStarted(importer::ImportItem item) {
-  if (observer_)
-    observer_->ImportItemStarted(item);
-}
-
-void ImporterHost::ImportItemEnded(importer::ImportItem item) {
-  if (observer_)
-    observer_->ImportItemEnded(item);
-}
-
-void ImporterHost::ImportStarted() {
-  if (observer_)
-    observer_->ImportStarted();
-}
-
-void ImporterHost::ImportEnded() {
-  firefox_lock_.reset();  // Release the Firefox profile lock.
-  if (observer_)
-    observer_->ImportEnded();
-  Release();
 }
 
 bool ImporterHost::ShouldImportToBookmarkBar(bool first_run) {
@@ -277,7 +277,7 @@ void ExternalProcessImporterHost::Cancel() {
   cancelled_ = true;
   if (import_process_launched_)
     client_->Cancel();
-  ImportEnded();  // Tells the observer that we're done, and releases us.
+  NotifyImportEnded();  // Tells the observer that we're done, and releases us.
 }
 
 void ExternalProcessImporterHost::StartImportSettings(
@@ -292,7 +292,7 @@ void ExternalProcessImporterHost::StartImportSettings(
   profile_info_ = &profile_info;
   items_ = items;
 
-  ImporterHost::AddRef();  // Balanced in ImporterHost::ImportEnded.
+  ImporterHost::AddRef();  // Balanced in ImporterHost::NotifyImportEnded.
 
   import_to_bookmark_bar_ = ShouldImportToBookmarkBar(first_run);
   CheckForFirefoxLock(profile_info, items, first_run);
@@ -337,7 +337,7 @@ ExternalProcessImporterClient::ExternalProcessImporterClient(
       bridge_(bridge),
       cancelled_(false) {
   bridge_->AddRef();
-  process_importer_host_->ImportStarted();
+  process_importer_host_->NotifyImportStarted();
 }
 
 ExternalProcessImporterClient::~ExternalProcessImporterClient() {
@@ -399,7 +399,7 @@ void ExternalProcessImporterClient::Cleanup() {
     return;
 
   if (process_importer_host_)
-    process_importer_host_->ImportEnded();
+    process_importer_host_->NotifyImportEnded();
   Release();
 }
 
