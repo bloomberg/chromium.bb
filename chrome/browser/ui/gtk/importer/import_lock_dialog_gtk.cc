@@ -62,10 +62,10 @@ ImportLockDialogGtk::~ImportLockDialogGtk() {}
 void ImportLockDialogGtk::OnResponse(GtkWidget* dialog, int response_id) {
   if (response_id == GTK_RESPONSE_ACCEPT) {
     MessageLoop::current()->PostTask(FROM_HERE, NewRunnableMethod(
-        importer_host_.get(), &ImporterHost::OnLockViewEnd, true));
+        importer_host_.get(), &ImporterHost::OnImportLockDialogEnd, true));
   } else {
     MessageLoop::current()->PostTask(FROM_HERE, NewRunnableMethod(
-        importer_host_.get(), &ImporterHost::OnLockViewEnd, false));
+        importer_host_.get(), &ImporterHost::OnImportLockDialogEnd, false));
   }
   gtk_widget_destroy(dialog_);
   delete this;

@@ -60,9 +60,10 @@ class ImporterHost : public base::RefCountedThreadSafe<ImporterHost>,
   // lock. They can retry or skip the importing process.
   void ShowWarningDialog();
 
-  // OnLockViewEnd() is called when user end the dialog by clicking a push
-  // button. |is_continue| is true when user clicked the "Continue" button.
-  void OnLockViewEnd(bool is_continue);
+  // This is called when when user ends the lock dialog by clicking on either
+  // the "Skip" or "Continue" buttons. |is_continue| is true when user clicked
+  // the "Continue" button.
+  void OnImportLockDialogEnd(bool is_continue);
 
   // Starts the process of importing the settings and data depending on what
   // the user selected.

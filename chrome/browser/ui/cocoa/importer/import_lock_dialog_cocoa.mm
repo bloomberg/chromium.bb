@@ -28,10 +28,10 @@ void ShowImportLockDialog(gfx::NativeWindow parent,
 
   if ([lock_alert runModal] == NSAlertFirstButtonReturn) {
     MessageLoop::current()->PostTask(FROM_HERE, NewRunnableMethod(
-        importer_host, &ImporterHost::OnLockViewEnd, true));
+        importer_host, &ImporterHost::OnImportLockDialogEnd, true));
   } else {
     MessageLoop::current()->PostTask(FROM_HERE, NewRunnableMethod(
-        importer_host, &ImporterHost::OnLockViewEnd, false));
+        importer_host, &ImporterHost::OnImportLockDialogEnd, false));
   }
 }
 

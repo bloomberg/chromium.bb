@@ -4,32 +4,25 @@
 
 #include "chrome/browser/importer/importer_host.h"
 
-#include "base/threading/thread.h"
 #include "base/utf_string_conversions.h"
-#include "base/values.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
 #include "chrome/browser/browser_list.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/importer/firefox_profile_lock.h"
 #include "chrome/browser/importer/importer_bridge.h"
 #include "chrome/browser/importer/importer_progress_observer.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search_engines/template_url.h"
 #include "chrome/browser/search_engines/template_url_model.h"
-#include "chrome/browser/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/browser_dialogs.h"
-#include "chrome/browser/ui/browser_navigator.h"
-#include "chrome/browser/webdata/web_data_service.h"
 #include "content/browser/browser_thread.h"
-#include "content/browser/browsing_instance.h"
-#include "content/browser/site_instance.h"
 #include "content/common/notification_source.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 
-// TODO(port): Port these files.
 #if defined(OS_WIN)
+// TODO(port): Port this file.
 #include "ui/base/message_box_win.h"
-#include "views/window/window.h"
 #endif
 
 ImporterHost::ImporterHost()
@@ -44,26 +37,15 @@ ImporterHost::ImporterHost()
       observer_(NULL) {
 }
 
-ImporterHost::~ImporterHost() {
-  if (NULL != importer_)
-    importer_->Release();
-
-  if (installed_bookmark_observer_) {
-    DCHECK(profile_);  // Only way for waiting_for_bookmarkbar_model_ to be true
-                       // is if we have a profile.
-    profile_->GetBookmarkModel()->RemoveObserver(this);
-  }
-}
-
 void ImporterHost::ShowWarningDialog() {
   if (headless_) {
-    OnLockViewEnd(false);
+    OnImportLockDialogEnd(false);
   } else {
     browser::ShowImportLockDialog(parent_window_, this);
   }
 }
 
-void ImporterHost::OnLockViewEnd(bool is_continue) {
+void ImporterHost::OnImportLockDialogEnd(bool is_continue) {
   if (is_continue) {
     // User chose to continue, then we check the lock again to make
     // sure that Firefox has been closed. Try to import the settings
@@ -133,7 +115,7 @@ void ImporterHost::StartImportSettings(
           url, PageTransition::TYPED);
 
       MessageLoop::current()->PostTask(FROM_HERE, NewRunnableMethod(
-          this, &ImporterHost::OnLockViewEnd, false));
+          this, &ImporterHost::OnImportLockDialogEnd, false));
 
       is_source_readable_ = false;
     }
@@ -174,6 +156,17 @@ void ImporterHost::NotifyImportEnded() {
   if (observer_)
     observer_->ImportEnded();
   Release();
+}
+
+ImporterHost::~ImporterHost() {
+  if (NULL != importer_)
+    importer_->Release();
+
+  if (installed_bookmark_observer_) {
+    DCHECK(profile_);  // Only way for waiting_for_bookmarkbar_model_ to be true
+                       // is if we have a profile.
+    profile_->GetBookmarkModel()->RemoveObserver(this);
+  }
 }
 
 void ImporterHost::InvokeTaskIfDone() {

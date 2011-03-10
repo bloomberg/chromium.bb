@@ -83,13 +83,13 @@ std::wstring ImportLockDialogView::GetWindowTitle() const {
 
 bool ImportLockDialogView::Accept() {
   MessageLoop::current()->PostTask(FROM_HERE, NewRunnableMethod(
-      importer_host_.get(), &ImporterHost::OnLockViewEnd, true));
+      importer_host_.get(), &ImporterHost::OnImportLockDialogEnd, true));
   return true;
 }
 
 bool ImportLockDialogView::Cancel() {
   MessageLoop::current()->PostTask(FROM_HERE, NewRunnableMethod(
-      importer_host_.get(), &ImporterHost::OnLockViewEnd, false));
+      importer_host_.get(), &ImporterHost::OnImportLockDialogEnd, false));
   return true;
 }
 
