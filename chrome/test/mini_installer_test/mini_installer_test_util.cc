@@ -10,6 +10,7 @@
 #include "base/file_util.h"
 #include "base/path_service.h"
 #include "base/process_util.h"
+#include "base/string_split.h"
 #include "base/string_util.h"
 #include "base/test/test_timeouts.h"
 #include "base/threading/platform_thread.h"
@@ -208,9 +209,12 @@ bool MiniInstallerTestUtil::GetPreviousFullInstaller(
   if (!GetPreviousBuildNumber(diff_path, &build_no))
     return false;
 
-  // Use the fifth and onward characters of the build version string
-  // to compose the full installer name.
-  std::wstring name = build_no.substr(4) +
+  std::vector<std::wstring> build_version;
+  base::SplitString(build_no, '.', &build_version);
+  if (build_version.size() < 4)
+    return false;
+
+  std::wstring name = build_version[2] + L"." + build_version[3] +
       mini_installer_constants::kFullInstallerPattern + L".exe";
 
   // Create the full installer path.
