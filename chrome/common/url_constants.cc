@@ -192,6 +192,7 @@ const char kContentSettingsSubPage[] = "content";
 const char kContentSettingsExceptionsSubPage[] = "contentExceptions";
 const char kDefaultOptionsSubPage[] =  "";
 const char kImportDataSubPage[] = "importData";
+const char kInstantConfirmPage[] = "instantConfirm";
 const char kPersonalOptionsSubPage[] =  "personal";
 const char kPasswordManagerSubPage[] =  "passwords";
 const char kSearchEnginesSubPage[] = "searchEngines";

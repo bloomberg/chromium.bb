@@ -278,6 +278,7 @@ class Browser : public TabHandlerDelegate,
   static void OpenOptionsWindow(Profile* profile);
   static void OpenClearBrowingDataDialogWindow(Profile* profile);
   static void OpenImportSettingsDialogWindow(Profile* profile);
+  static void OpenInstantConfirmDialogWindow(Profile* profile);
 #endif
 
   // Opens a window with the extensions tab in it - needed by long-lived
@@ -547,6 +548,7 @@ class Browser : public TabHandlerDelegate,
   void OpenRemotingSetupDialog();
 #endif
   void OpenImportSettingsDialog();
+  void OpenInstantConfirmDialog();
   void OpenAboutChromeDialog();
   void OpenUpdateChromeDialog();
   void OpenHelpTab();

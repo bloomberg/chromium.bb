@@ -1155,11 +1155,9 @@ namespace browser {
 
 void ShowInstantConfirmDialog(gfx::NativeWindow parent, Profile* profile) {
   if (Browser* browser = ActivateBrowser(profile)) {
-    // Show options tab in the active browser window.
-    browser->OpenOptionsDialog();
+    browser->OpenInstantConfirmDialog();
   } else {
-    // No browser window, so create one for the options tab.
-    Browser::OpenOptionsWindow(profile);
+    Browser::OpenInstantConfirmDialogWindow(profile);
   }
 }
 

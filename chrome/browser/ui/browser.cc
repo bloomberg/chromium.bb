@@ -718,6 +718,13 @@ void Browser::OpenImportSettingsDialogWindow(Profile* profile) {
   browser->OpenImportSettingsDialog();
   browser->window()->Show();
 }
+
+// static
+void Browser::OpenInstantConfirmDialogWindow(Profile* profile) {
+  Browser* browser = Browser::Create(profile);
+  browser->OpenInstantConfirmDialog();
+  browser->window()->Show();
+}
 #endif
 
 // static
@@ -1893,6 +1900,10 @@ void Browser::OpenPasswordManager() {
 void Browser::OpenImportSettingsDialog() {
   UserMetrics::RecordAction(UserMetricsAction("Import_ShowDlg"), profile_);
   ShowOptionsTab(chrome::kImportDataSubPage);
+}
+
+void Browser::OpenInstantConfirmDialog() {
+  ShowOptionsTab(chrome::kInstantConfirmPage);
 }
 
 void Browser::OpenSyncMyBookmarksDialog() {
