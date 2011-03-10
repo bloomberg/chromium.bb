@@ -127,16 +127,6 @@ bool PluginPpapi::Init(uint32_t argc, const char* argn[], const char* argv[]) {
       PLUGIN_PRINTF(("PluginPpapi::Init (src_attr=%s)\n", src_attr));
       if (src_attr != NULL) {
         status = SetSrcPropertyImpl(src_attr);
-      } else {
-        // If there was no "src" or "nacl" attributes, then look for a "nexes"
-        // attribute and try to load the ISA defined for this particular
-        // sandbox.
-        // TODO(dspringer): deprecate this.
-        const char* nexes_attr = LookupArgument(kNexesAttribute);
-        PLUGIN_PRINTF(("PluginPpapi::Init (nexes_attr=%s)\n", nexes_attr));
-        if (nexes_attr != NULL) {
-          status = SetNexesPropertyImpl(nexes_attr);
-        }
       }
     }
   }
@@ -375,6 +365,9 @@ void PluginPpapi::ShutdownProxy() {
 void PluginPpapi::NaClManifestFileDidOpen(int32_t pp_error) {
   PLUGIN_PRINTF(("PluginPpapi::NaClManifestFileDidOpen (pp_error=%"
                  NACL_PRId32")\n", pp_error));
+  // The manifest file was successfully opened.  Set the __nacl property on the
+  // plugin now, so that the full url is available to error handlers.
+  set_nacl_manifest_url(nexe_downloader_.url());
   int32_t file_desc = nexe_downloader_.GetPOSIXFileDescriptor();
   PLUGIN_PRINTF(("PluginPpapi::NaClManifestFileDidOpen (file_desc=%"
                  NACL_PRId32")\n", file_desc));

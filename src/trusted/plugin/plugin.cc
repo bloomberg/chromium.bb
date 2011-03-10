@@ -112,18 +112,23 @@ bool SetModuleReadyProperty(void* obj, plugin::SrpcParams* params) {
   return false;
 }
 
-bool GetNexesProperty(void* obj, plugin::SrpcParams* params) {
-  UNREFERENCED_PARAMETER(obj);
-  UNREFERENCED_PARAMETER(params);
-  params->set_exception_string("__nexes is a write-only property");
-  return false;
+bool GetNaclProperty(void* obj, plugin::SrpcParams* params) {
+  plugin::Plugin* plugin = reinterpret_cast<plugin::Plugin*>(obj);
+  const char* url = plugin->nacl_manifest_url().c_str();
+  PLUGIN_PRINTF(("GetNaclProperty ('__nacl'='%s')\n", url));
+  if (NACL_NO_URL != plugin->nacl_manifest_url()) {
+    params->outs()[0]->arrays.str = strdup(url);
+    return true;
+  } else {
+    // No url to set '__nacl' to.
+    return false;
+  }
 }
 
-// Update "nexes", a write-only property that computes a value to
-// assign to the "src" property based on the supported sandbox.
-bool SetNexesProperty(void* obj, plugin::SrpcParams* params) {
-  return reinterpret_cast<plugin::Plugin*>(obj)->
-      SetNexesPropertyImpl(params->ins()[0]->arrays.str);
+bool SetNaclProperty(void* obj, plugin::SrpcParams* params) {
+  UNREFERENCED_PARAMETER(obj);
+  params->set_exception_string("__nacl is a read-only property");
+  return false;
 }
 
 bool GetSrcProperty(void* obj, plugin::SrpcParams* params) {
@@ -285,8 +290,8 @@ void Plugin::LoadMethods() {
 #if defined(NACL_PPAPI)  // TODO(polina): do this for NPAPI as well.
   AddPropertyGet(GetHeightProperty, "__height", "i");
   AddPropertySet(SetHeightProperty, "__height", "i");
-  AddPropertyGet(GetNexesProperty, "__nexes", "s");
-  AddPropertySet(SetNexesProperty, "__nexes", "s");
+  AddPropertyGet(GetNaclProperty, "__nacl", "s");
+  AddPropertySet(SetNaclProperty, "__nacl", "s");
   AddPropertyGet(GetSrcProperty, "__src", "s");
   AddPropertySet(SetSrcProperty, "__src", "s");
   // TODO(polina): confirm that videoUpdateMode is irrelevant for PPAPI and
@@ -298,8 +303,6 @@ void Plugin::LoadMethods() {
 #else
   AddPropertyGet(GetHeightProperty, "height", "i");
   AddPropertySet(SetHeightProperty, "height", "i");
-  AddPropertyGet(GetNexesProperty, "nexes", "s");
-  AddPropertySet(SetNexesProperty, "nexes", "s");
   AddPropertyGet(GetSrcProperty, "src", "s");
   AddPropertySet(SetSrcProperty, "src", "s");
   AddPropertyGet(GetVideoUpdateModeProperty, "videoUpdateMode", "i");
@@ -332,21 +335,6 @@ bool Plugin::InitParamsEx(uintptr_t method_id,
     return false;
   }
   return socket_->handle()->InitParams(method_id, call_type, params);
-}
-
-
-bool Plugin::SetNexesPropertyImpl(const char* nexes_attr) {
-  PLUGIN_PRINTF(("Plugin::SetNexesPropertyImpl (nexes_attr='%s')\n",
-                 nexes_attr));
-  nacl::string result;
-  if (!GetNexeURL(nexes_attr, &result)) {
-    PLUGIN_PRINTF(("Plugin::SetNexesPropertyImpl (result='%s')\n",
-                   result.c_str()));
-    browser_interface()->AddToConsole(instance_id(), result);
-    return false;
-  } else {
-    return SetSrcPropertyImpl(result);
-  }
 }
 
 bool Plugin::SetSrcPropertyImpl(const nacl::string& url) {
@@ -418,22 +406,6 @@ bool Plugin::Init(BrowserInterface* browser_interface,
 
   // Set up the scriptable methods for the plugin.
   LoadMethods();
-
-// Firefox allows us to call NPN_GetUrlNotify during initialization, so if the
-// "src" property has not been specified, we choose a path from the "nexes"
-// list here and start downloading the right nexe immediately.
-#if defined(NACL_STANDALONE)
-  // If the <embed src='...'> attr was defined, the browser would have
-  // implicitly called GET on it, which calls LoadNaClModule() and
-  // set_nacl_module_url().
-  // In the absence of this attr, we use the "nexes" attribute if present.
-  if (NACL_NO_URL == nacl_module_url()) {
-    const char* nexes_attr = LookupArgument("nexes");
-    if (nexes_attr != NULL) {
-      SetNexesPropertyImpl(nexes_attr);
-    }
-  }
-#endif
 
   PLUGIN_PRINTF(("Plugin::Init (return 1)\n"));
   // Return success.

@@ -6,6 +6,7 @@
 
 #include <stdio.h>
 
+#include "native_client/src/include/nacl_string.h"
 #include "native_client/src/trusted/plugin/nexe_arch.h"
 #include "native_client/src/trusted/plugin/ppapi/dylib_unittest.h"
 

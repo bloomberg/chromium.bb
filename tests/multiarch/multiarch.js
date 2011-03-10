@@ -68,10 +68,18 @@ function OnNaClLoad() {
     return error;
   }
 
-  // Read back the src property to ensure correct nexe was chosen.
-  if (!embed.src.endsWith("/srpc_hw.nexe")) {
-    var error = "Wrong nexe: embed.src doesn't end with \"srpc_hw.nexe\" "
-        + "(" + embed.src + ")."
+  // Read back the __nacl property to ensure the manifest file was loaded.
+  if (!embed.__nacl.endsWith("/srpc_hw.nmf")) {
+    var error = "Wrong manifest: embed.__nacl doesn't end with \"srpc_hw.nmf\" "
+        + "(" + embed.__nacl + ")."
+    nacllib.setStatus("ERROR", error);
+    return error;
+  }
+
+  // Read back the __src property to ensure correct nexe was chosen.
+  if (!embed.__src.endsWith("/srpc_hw.nexe")) {
+    var error = "Wrong nexe: embed.__src doesn't end with \"srpc_hw.nexe\" "
+        + "(" + embed.__src + ")."
     nacllib.setStatus("ERROR", error);
     return error;
   }

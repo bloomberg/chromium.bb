@@ -85,8 +85,8 @@ class Plugin : public PortableHandle {
   nacl::string nacl_module_path() const { return nacl_module_path_; }
   void set_nacl_module_path(nacl::string path) { nacl_module_path_ = path; }
 
-  // The full URL of the NaCl module as defined by the "src" or
-  // "nexes" attribute (and thus seen by the user). Set by LoadNaclModule().
+  // The full URL of the NaCl module as defined by the "src" or (indirectly) by
+  // the "nacl" attribute (and thus seen by the user). Set by LoadNaclModule().
   nacl::string nacl_module_url() const { return nacl_module_url_; }
   void set_nacl_module_url(nacl::string url) { nacl_module_url_ = url; }
 
@@ -94,6 +94,13 @@ class Plugin : public PortableHandle {
   nacl::string nacl_module_origin() const { return nacl_module_origin_; }
   void set_nacl_module_origin(nacl::string origin) {
     nacl_module_origin_ = origin;
+  }
+
+  // The full URL of the manifest file as set by the "nacl" attribute.  This is
+  // a read-only property.
+  const nacl::string& nacl_manifest_url() const { return nacl_manifest_url_; }
+  void set_nacl_manifest_url(const nacl::string& manifest_url) {
+    nacl_manifest_url_ = manifest_url;
   }
 
   // Each nexe has a canonical socket address that it will respond to
@@ -130,7 +137,6 @@ class Plugin : public PortableHandle {
   nacl::DescWrapperFactory* wrapper_factory() const { return wrapper_factory_; }
 
   // Complex methods to set member data.
-  bool SetNexesPropertyImpl(const char* nexes_attrs);
   bool SetSrcPropertyImpl(const nacl::string &url);
 
   // Requesting a nacl module from a specified url.
@@ -185,6 +191,7 @@ class Plugin : public PortableHandle {
   nacl::string origin_;
   bool origin_valid_;
 
+  nacl::string nacl_manifest_url_;
   nacl::string nacl_module_path_;
   nacl::string nacl_module_url_;
   nacl::string nacl_module_origin_;
