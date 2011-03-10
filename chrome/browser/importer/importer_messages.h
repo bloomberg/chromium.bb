@@ -86,15 +86,13 @@ struct ParamTraits<history::URLRow> {
     int visit_count, typed_count;
     base::Time last_visit;
     bool hidden;
-    history::FavIconID favicon_id;
     if (!ReadParam(m, iter, &id) ||
         !ReadParam(m, iter, &url) ||
         !ReadParam(m, iter, &title) ||
         !ReadParam(m, iter, &visit_count) ||
         !ReadParam(m, iter, &typed_count) ||
         !ReadParam(m, iter, &last_visit) ||
-        !ReadParam(m, iter, &hidden) ||
-        !ReadParam(m, iter, &favicon_id))
+        !ReadParam(m, iter, &hidden))
       return false;
     *p = history::URLRow(url, id);
     p->set_title(title);
