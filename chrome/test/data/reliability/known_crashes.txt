@@ -202,3 +202,6 @@ PREFIX: webcore::inlinebox::logicalheight___webcore::inlineflowbox::maxyvisualov
 
 # 75490
 PREFIX: webcore::font::operator==___webcore::styleinheriteddata::operator==___webcore::dataref<webcore::styleinheriteddata>::operator==___webcore::renderstyle::operator==___webcore::node::diff___webcore::element::recalcstyle
+
+# 75582
+PREFIX : skclipstack::restore___skcanvas::internalrestore___webkit::webframeimpl::paintwithcontext
