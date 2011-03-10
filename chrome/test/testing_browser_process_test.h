@@ -11,8 +11,8 @@
 
 // Base class for tests that need |g_browser_process| to be initialized.
 class TestingBrowserProcessTest : public testing::Test {
- private:
-  ScopedTestingBrowserProcess browser_process_;
+ protected:
+  ScopedTestingBrowserProcess testing_browser_process_;
 };
 
 #endif  // CHROME_TEST_TESTING_BROWSER_PROCESS_TEST_H_

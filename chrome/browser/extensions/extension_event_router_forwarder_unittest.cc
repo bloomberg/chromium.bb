@@ -6,7 +6,7 @@
 
 #include "base/message_loop.h"
 #include "chrome/browser/profiles/profile_manager.h"
-#include "chrome/test/testing_browser_process.h"
+#include "chrome/test/testing_browser_process_test.h"
 #include "chrome/test/testing_profile.h"
 #include "chrome/test/thread_test_helper.h"
 #include "content/browser/browser_thread.h"
@@ -32,7 +32,7 @@ class MockExtensionEventRouterForwarder : public ExtensionEventRouterForwarder {
 
 }  // namespace
 
-class ExtensionEventRouterForwarderTest : public testing::Test {
+class ExtensionEventRouterForwarderTest : public TestingBrowserProcessTest {
  protected:
   ExtensionEventRouterForwarderTest()
       : ui_thread_(BrowserThread::UI, &message_loop_),
@@ -46,13 +46,14 @@ class ExtensionEventRouterForwarderTest : public testing::Test {
     // Inject a BrowserProcess with a ProfileManager.
     ASSERT_TRUE(io_thread_.Start());
 
-    browser_process_.get()->SetProfileManager(new ProfileManager);
+    TestingBrowserProcess* browser_process = testing_browser_process_.get();
+    browser_process->SetProfileManager(new ProfileManager);
 
     profile1_ = new TestingProfile();
     profile2_ = new TestingProfile();
 
-    browser_process_.get()->profile_manager()->RegisterProfile(profile1_);
-    browser_process_.get()->profile_manager()->RegisterProfile(profile2_);
+    browser_process->profile_manager()->RegisterProfile(profile1_);
+    browser_process->profile_manager()->RegisterProfile(profile2_);
   }
 
   TestingProfile* CreateIncognitoProfile(TestingProfile* base) {
@@ -66,7 +67,6 @@ class ExtensionEventRouterForwarderTest : public testing::Test {
   BrowserThread ui_thread_;
   BrowserThread io_thread_;
   ui::SystemMonitor dummy;
-  ScopedTestingBrowserProcess browser_process_;
   // Profiles are weak pointers, owned by ProfileManager in |browser_process_|.
   TestingProfile* profile1_;
   TestingProfile* profile2_;
