@@ -87,6 +87,9 @@ class ChromeInvalidationClient
 
   virtual void AllRegistrationsLost(invalidation::Closure* callback);
 
+  virtual void RegistrationLost(const invalidation::ObjectId& object_id,
+                                invalidation::Closure* callback);
+
   // StateWriter implementation.
   virtual void WriteState(const std::string& state);
 

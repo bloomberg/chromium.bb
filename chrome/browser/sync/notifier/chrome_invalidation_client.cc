@@ -159,8 +159,9 @@ void ChromeInvalidationClient::RegistrationStateChanged(
   }
 
   if (new_state != invalidation::RegistrationState_REGISTERED) {
-    // We don't care about |unknown_hint|; we let
-    // |registration_manager_| handle the registration backoff policy.
+    // TODO(akalin): Figure out something else to do if the failure
+    // isn't transient.  Even if it is transient, we may still want to
+    // add exponential back-off or limit the number of attempts.
     registration_manager_->MarkRegistrationLost(model_type);
   }
 }
@@ -171,6 +172,21 @@ void ChromeInvalidationClient::AllRegistrationsLost(
   DCHECK(invalidation::IsCallbackRepeatable(callback));
   VLOG(1) << "AllRegistrationsLost";
   registration_manager_->MarkAllRegistrationsLost();
+  RunAndDeleteClosure(callback);
+}
+
+void ChromeInvalidationClient::RegistrationLost(
+    const invalidation::ObjectId& object_id,
+    invalidation::Closure* callback) {
+  DCHECK(non_thread_safe_.CalledOnValidThread());
+  DCHECK(invalidation::IsCallbackRepeatable(callback));
+  VLOG(1) << "RegistrationLost: " << ObjectIdToString(object_id);
+  syncable::ModelType model_type;
+  if (ObjectIdToRealModelType(object_id, &model_type)) {
+    registration_manager_->MarkRegistrationLost(model_type);
+  } else {
+    LOG(WARNING) << "Could not get object id model type; ignoring";
+  }
   RunAndDeleteClosure(callback);
 }
 
