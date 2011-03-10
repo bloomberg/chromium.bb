@@ -22,15 +22,15 @@
   relative number of days prior to 'today' to which the final column
   value will be set during test setup. Beware: Do not set this number
   to be equal to kLowQualityMatchAgeLimitInDays.
-  
-  This test file contains 4 items which should not pass the quick history
-  provider filter: 1, 9-11.
+
+  The ordering, URLs and titles must be kept in sync with the unit tests found
+  in in_memory_url_index_unittest.cc.
 */
 INSERT INTO "urls" VALUES(1,'http://www.reuters.com/article/idUSN0839880620100708','UPDATE 1-US 30-yr mortgage rate drops to new record low | Reuters',3,1,2,0,29);
 INSERT INTO "urls" VALUES(2,'http://www.golfweek.com/news/2010/jul/08/goydos-opens-john-deere-classic-59/','Goydos opens John Deere Classic with 59',3,1,4,0,27);
 INSERT INTO "urls" VALUES(3,'http://www.businessandmedia.org/articles/2010/20100708120415.aspx','LeBronomics: Could High Taxes Influence James'' Team Decision?',4,1,2,0,28);
 INSERT INTO "urls" VALUES(4,'http://www.realclearmarkets.com/articles/2010/07/08/diversity_in_the_financial_sector_98562.html','RealClearMarkets - Racial, Gender Quotas in the Financial Bill?',4,1,4,0,0);
-INSERT INTO "urls" VALUES(5,'http://drudgereport.com/','DRUDGE REPORT 2010®',3,2,2,0,0);
+INSERT INTO "urls" VALUES(5,'http://drudgereport.com/','DRUDGE REPORT 2010',3,2,2,0,0);
 INSERT INTO "urls" VALUES(6,'http://totalfinder.binaryage.com/','TotalFinder brings tabs to your native Finder and more!',3,2,4,0,26);
 INSERT INTO "urls" VALUES(7,'http://www.clickgamer.com/products/pid_5269/screenshots/j2me/large/ingame5.png','ingame5.png 176×208 pixels',4,2,2,0,21);
 INSERT INTO "urls" VALUES(8,'http://getsharekit.com/','ShareKit : Drop-in Share Features for all iOS Apps',4,2,4,0,20);
@@ -57,5 +57,5 @@ INSERT INTO "urls" VALUES(28,'http://www.ddj.com/windows/184416623','Dr. Dobb''s
 INSERT INTO "urls" VALUES(29,'http://svcs.cnn.com/weather/getForecast?time=34&mode=json_html&zipCode=336736767676&locCode=EGLL&celcius=true&csiID=csi2','',6,6,0,1,0);
 INSERT INTO "urls" VALUES(30,'http://www.drudgery.com/','Life in the Slow Lane',3,2,2,0,0);
 INSERT INTO "urls" VALUES(31,'http://www.redrudgerydo.com/','Music of the Wild Landscape',0,0,6,0,0);
-INSERT INTO "urls" VALUES(32,'http://NearlyPerfectResult.com/','Practically Perfect Search Result',99,99,0,0,0);
+INSERT INTO "urls" VALUES(32,'https://NearlyPerfectResult.com/','Practically Perfect Search Result',99,99,0,0,0);
 INSERT INTO "urls" VALUES(33,'http://QuiteUselessSearchResultxyz.com/','Practically Useless Search Result',4,0,99,0,0);

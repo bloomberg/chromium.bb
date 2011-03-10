@@ -15,6 +15,7 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/autocomplete/autocomplete_match.h"
 #include "chrome/browser/history/history.h"
+#include "chrome/browser/history/in_memory_url_index.h"
 #include "chrome/browser/history/url_database.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/common/pref_names.h"
@@ -237,4 +238,53 @@ TEST_F(HistoryQuickProviderTest, RecencyMatch) {
   expected_urls.push_back("http://startest.com/y/e");
   expected_urls.push_back("http://startest.com/y/f");
   RunTest(text, expected_urls, "http://startest.com/y/a");
+}
+
+TEST_F(HistoryQuickProviderTest, Spans) {
+  // Test SpansFromTermMatch
+  history::TermMatches matches_a;
+  // Simulates matches: '.xx.xxx..xx...xxxxx..' which will test no match at
+  // either beginning or end as well as adjacent matches.
+  matches_a.push_back(history::TermMatch(1, 1, 2));
+  matches_a.push_back(history::TermMatch(2, 4, 3));
+  matches_a.push_back(history::TermMatch(3, 9, 1));
+  matches_a.push_back(history::TermMatch(3, 10, 1));
+  matches_a.push_back(history::TermMatch(4, 14, 5));
+  ACMatchClassifications spans_a =
+      HistoryQuickProvider::SpansFromTermMatch(matches_a, 20, 0);
+  // ACMatch spans should be: 'NM-NM---N-M-N--M----N-'
+  ASSERT_EQ(9U, spans_a.size());
+  EXPECT_EQ(0U, spans_a[0].offset);
+  EXPECT_EQ(ACMatchClassification::NONE, spans_a[0].style);
+  EXPECT_EQ(1U, spans_a[1].offset);
+  EXPECT_EQ(ACMatchClassification::MATCH, spans_a[1].style);
+  EXPECT_EQ(3U, spans_a[2].offset);
+  EXPECT_EQ(ACMatchClassification::NONE, spans_a[2].style);
+  EXPECT_EQ(4U, spans_a[3].offset);
+  EXPECT_EQ(ACMatchClassification::MATCH, spans_a[3].style);
+  EXPECT_EQ(7U, spans_a[4].offset);
+  EXPECT_EQ(ACMatchClassification::NONE, spans_a[4].style);
+  EXPECT_EQ(9U, spans_a[5].offset);
+  EXPECT_EQ(ACMatchClassification::MATCH, spans_a[5].style);
+  EXPECT_EQ(11U, spans_a[6].offset);
+  EXPECT_EQ(ACMatchClassification::NONE, spans_a[6].style);
+  EXPECT_EQ(14U, spans_a[7].offset);
+  EXPECT_EQ(ACMatchClassification::MATCH, spans_a[7].style);
+  EXPECT_EQ(19U, spans_a[8].offset);
+  EXPECT_EQ(ACMatchClassification::NONE, spans_a[8].style);
+  // Simulates matches: 'xx.xx' which will test matches at both beginning an
+  // end.
+  history::TermMatches matches_b;
+  matches_b.push_back(history::TermMatch(1, 0, 2));
+  matches_b.push_back(history::TermMatch(2, 3, 2));
+  ACMatchClassifications spans_b =
+      HistoryQuickProvider::SpansFromTermMatch(matches_b, 5, 0);
+  // ACMatch spans should be: 'M-NM-'
+  ASSERT_EQ(3U, spans_b.size());
+  EXPECT_EQ(0U, spans_b[0].offset);
+  EXPECT_EQ(ACMatchClassification::MATCH, spans_b[0].style);
+  EXPECT_EQ(2U, spans_b[1].offset);
+  EXPECT_EQ(ACMatchClassification::NONE, spans_b[1].style);
+  EXPECT_EQ(3U, spans_b[2].offset);
+  EXPECT_EQ(ACMatchClassification::MATCH, spans_b[2].style);
 }

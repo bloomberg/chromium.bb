@@ -7,6 +7,7 @@
 #include <algorithm>
 #include <iterator>
 #include <limits>
+#include <numeric>
 
 #include "base/file_util.h"
 #include "base/i18n/break_iterator.h"
@@ -17,6 +18,8 @@
 #include "chrome/browser/autocomplete/history_provider_util.h"
 #include "chrome/browser/history/url_database.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/common/url_constants.h"
+#include "googleurl/src/url_util.h"
 #include "net/base/escape.h"
 #include "net/base/net_util.h"
 #include "third_party/protobuf/src/google/protobuf/repeated_field.h"
@@ -24,8 +27,8 @@
 
 using google::protobuf::RepeatedField;
 using google::protobuf::RepeatedPtrField;
-
 using in_memory_url_index::InMemoryURLIndexCacheItem;
+
 namespace history {
 
 typedef imui::InMemoryURLIndexCacheItem_WordListItem WordListItem;
@@ -45,16 +48,28 @@ typedef imui::InMemoryURLIndexCacheItem_HistoryInfoMapItem_HistoryInfoMapEntry
 
 const size_t InMemoryURLIndex::kNoCachedResultForTerm = -1;
 
-ScoredHistoryMatch::ScoredHistoryMatch() : raw_score(0) {}
+const float kOrderMaxValue = 50.0;
+const float kStartMaxValue = 50.0;
+const size_t kMaxSignificantStart = 20;
+const float kCompleteMaxValue = 50.0;
+const float kLastVisitMaxValue = 50.0;
+const base::TimeDelta kMaxSignificantDay = base::TimeDelta::FromDays(30);
+const float kVisitCountMaxValue = 50.0;
+const int kMaxSignificantVisits = 20;
+const float kTypedCountMaxValue = 50.0;
+const int kMaxSignificantTyped = 20;
+const float kMaxRawScore = kOrderMaxValue + kStartMaxValue + kCompleteMaxValue +
+    kLastVisitMaxValue + kVisitCountMaxValue + kTypedCountMaxValue;
+const float kMaxNormalizedRawScore = 1000.0;
 
-ScoredHistoryMatch::ScoredHistoryMatch(const URLRow& url_info,
-                                       size_t input_location,
-                                       bool match_in_scheme,
-                                       bool innermost_match,
-                                       int score)
-    : HistoryMatch(url_info, input_location, match_in_scheme, innermost_match),
-      raw_score(score) {
-}
+ScoredHistoryMatch::ScoredHistoryMatch()
+    : raw_score(0),
+      prefix_adjust(0) {}
+
+ScoredHistoryMatch::ScoredHistoryMatch(const URLRow& url_info)
+    : HistoryMatch(url_info, 0, false, false),
+      raw_score(0),
+      prefix_adjust(0) {}
 
 struct InMemoryURLIndex::TermCharWordSet {
   TermCharWordSet()  // Required for STL resize().
@@ -75,6 +90,16 @@ struct InMemoryURLIndex::TermCharWordSet {
   WordIDSet word_id_set_;
   bool used_;  // true if this set has been used for the current term search.
 };
+
+// Comparison function for sorting TermMatches by their offsets.
+bool CompareMatchOffset(const TermMatch& m1, const TermMatch& m2) {
+  return m1.offset < m2.offset;
+}
+
+// std::accumulate helper function to add up TermMatches' lengths.
+int AccumulateMatchLength(int total, const TermMatch& match) {
+  return total + match.length;
+}
 
 InMemoryURLIndex::InMemoryURLIndex(const FilePath& history_dir)
     : history_dir_(history_dir),
@@ -109,11 +134,10 @@ bool InMemoryURLIndex::IndexRow(const URLRow& row) {
       UnescapeRule::SPACES | UnescapeRule::URL_SPECIAL_CHARS,
       NULL, NULL, NULL));
 
-  // TODO(mrossetti): Detect row_id > std::numeric_limits<HistoryID>::max().
   HistoryID history_id = static_cast<HistoryID>(row.id());
+  DCHECK_LT(row.id(), std::numeric_limits<HistoryID>::max());
 
   // Add the row for quick lookup in the history info store.
-  url = l10n_util::ToLower(url);
   URLRow new_row(GURL(url), row.id());
   new_row.set_visit_count(row.visit_count());
   new_row.set_typed_count(row.typed_count());
@@ -121,16 +145,18 @@ bool InMemoryURLIndex::IndexRow(const URLRow& row) {
   new_row.set_title(row.title());
   history_info_map_[history_id] = new_row;
 
-  // Split into individual, unique words.
-  String16Set words = WordSetFromString16(url);
+  // Split URL into individual, unique words then add in the title words.
+  url = l10n_util::ToLower(url);
+  String16Set url_words = WordSetFromString16(url);
+  String16Set title_words = WordSetFromString16(row.title());
+  String16Set words;
+  std::set_union(url_words.begin(), url_words.end(),
+                 title_words.begin(), title_words.end(),
+                 std::insert_iterator<String16Set>(words, words.begin()));
+  for (String16Set::iterator word_iter = words.begin();
+       word_iter != words.end(); ++word_iter)
+    AddWordToIndex(*word_iter, history_id);
 
-  // For each word, add a new entry into the word index referring to the
-  // associated history item.
-  for (String16Set::iterator iter = words.begin();
-       iter != words.end(); ++iter) {
-    String16Set::value_type uni_word = *iter;
-    AddWordToIndex(uni_word, history_id);
-  }
   ++history_item_count_;
   return true;
 }
@@ -292,14 +318,8 @@ ScoredHistoryMatches InMemoryURLIndex::HistoryItemsForTerms(
     // TODO(mrossetti): Another opportunity for a transform algorithm.
     String16Vector lower_terms;
     for (String16Vector::const_iterator term_iter = terms.begin();
-         term_iter != terms.end(); ++term_iter) {
-      String16Vector::value_type lower_string(*term_iter);
-      std::transform(lower_string.begin(),
-                     lower_string.end(),
-                     lower_string.begin(),
-                     tolower);
-      lower_terms.push_back(lower_string);
-    }
+         term_iter != terms.end(); ++term_iter)
+      lower_terms.push_back(l10n_util::ToLower(*term_iter));
 
     String16Vector::value_type all_terms(JoinString(lower_terms, ' '));
     HistoryIDSet history_id_set = HistoryIDSetFromWords(all_terms);
@@ -372,6 +392,13 @@ InMemoryURLIndex::HistoryIDSet InMemoryURLIndex::HistoryIDsForTerm(
   Char16Vector uni_chars = Char16VectorFromString16(uni_word);
   WordIDSet word_id_set(WordIDSetForTermChars(uni_chars));
 
+  // TODO(mrossetti): At this point, as a possible optimization, we could
+  // scan through all candidate words and make sure the |uni_word| is a
+  // substring within the candidate words, eliminating those which aren't.
+  // I'm not sure it would be worth the effort. And remember, we've got to do
+  // a final substring match in order to get the highlighting ranges later
+  // in the process in any case.
+
   // If any words resulted then we can compose a set of history IDs by unioning
   // the sets from each word.
   if (!word_id_set.empty()) {
@@ -395,12 +422,43 @@ InMemoryURLIndex::HistoryIDSet InMemoryURLIndex::HistoryIDsForTerm(
 // static
 InMemoryURLIndex::String16Set InMemoryURLIndex::WordSetFromString16(
     const string16& uni_string) {
-  String16Set words;
-  base::BreakIterator iter(&uni_string, base::BreakIterator::BREAK_WORD);
-  if (iter.Init()) {
-    while (iter.Advance()) {
+  String16Vector words = WordVectorFromString16(uni_string, false);
+  String16Set word_set;
+  for (String16Vector::const_iterator iter = words.begin(); iter != words.end();
+       ++iter)
+    word_set.insert(l10n_util::ToLower(*iter));
+  return word_set;
+}
+
+// static
+InMemoryURLIndex::String16Vector InMemoryURLIndex::WordVectorFromString16(
+    const string16& uni_string,
+    bool break_on_space) {
+  // TODO(mrossetti): Come back and update the following code if the
+  // BreakIterator is changed. Here are some comments:
+  // The iterator behaves differently depending on the breaking strategy. Its
+  // unit tests do not properly test this case as its basic word and space tests
+  // always use a test string starting with a space.
+  base::BreakIterator iter(&uni_string, break_on_space ?
+      base::BreakIterator::BREAK_SPACE : base::BreakIterator::BREAK_WORD);
+  String16Vector words;
+  if (break_on_space) {
+    if (iter.Init()) {
+      while (iter.Advance()) {
+        string16 word = iter.GetString();
+        TrimWhitespace(word, TRIM_ALL, &word);
+        if (!word.empty())
+          words.push_back(word);
+      }
+    }
+  } else {
+    if (iter.Init()) {
       if (iter.IsWord())
-        words.insert(iter.GetString());
+        words.push_back(iter.GetString());
+      while (iter.Advance()) {
+        if (iter.IsWord())
+          words.push_back(iter.GetString());
+      }
     }
   }
   return words;
@@ -546,67 +604,88 @@ size_t InMemoryURLIndex::CachedResultsIndexForTerm(
 }
 
 // static
-int InMemoryURLIndex::RawScoreForURL(const URLRow& row,
-                                     const String16Vector& terms,
-                                     size_t* first_term_location) {
+TermMatches InMemoryURLIndex::MatchTermInString(const string16& term,
+                                                const string16& string,
+                                                int term_num) {
+  TermMatches matches;
+  for (size_t location = string.find(term); location != string16::npos;
+       location = string.find(term, location + 1))
+    matches.push_back(TermMatch(term_num, location, term.size()));
+  return matches;
+}
+
+// static
+TermMatches InMemoryURLIndex::SortAndDeoverlap(const TermMatches& matches) {
+  if (matches.empty())
+    return matches;
+  TermMatches sorted_matches = matches;
+  std::sort(sorted_matches.begin(), sorted_matches.end(),
+            CompareMatchOffset);
+  TermMatches clean_matches;
+  TermMatch last_match = sorted_matches[0];
+  clean_matches.push_back(last_match);
+  for (TermMatches::const_iterator iter = sorted_matches.begin() + 1;
+       iter != sorted_matches.end(); ++iter) {
+    if (iter->offset >= last_match.offset + last_match.length) {
+      last_match = *iter;
+      clean_matches.push_back(last_match);
+    }
+  }
+  return clean_matches;
+}
+
+// static
+ScoredHistoryMatch InMemoryURLIndex::ScoredMatchForURL(
+    const URLRow& row,
+    const String16Vector& terms) {
+  ScoredHistoryMatch match(row);
   GURL gurl = row.url();
   if (!gurl.is_valid())
-    return 0;
+    return match;
 
-  string16 url = UTF8ToUTF16(gurl.spec());
+  // Figure out where each search term appears in the URL and/or page title
+  // so that we can score as well as provide autocomplete highlighting.
+  string16 url = l10n_util::ToLower(UTF8ToUTF16(gurl.spec()));
+  // Strip any 'http://' prefix before matching.
+  if (url_util::FindAndCompareScheme(url, chrome::kHttpScheme, NULL)) {
+    match.prefix_adjust = strlen(chrome::kHttpScheme) + 3;  // Allow for '://'.
+    url = url.substr(match.prefix_adjust);
+  }
 
-  // Collect all term start positions so we can see if they appear in order.
-  std::vector<size_t> term_locations;
-  int out_of_order = 0;  // Count the terms which are out of order.
-  size_t start_location_total = 0;
-  size_t term_length_total = 0;
+  string16 title = l10n_util::ToLower(row.title());
+  int term_num = 0;
   for (String16Vector::const_iterator iter = terms.begin(); iter != terms.end();
-       ++iter) {
+       ++iter, ++term_num) {
     string16 term = *iter;
-    size_t term_location = url.find(term);
-    if (term_location == string16::npos)
-      return 0;  // A term was not found.  This should not happen.
-    if (iter != terms.begin()) {
-      // See if this term is out-of-order.
-      for (std::vector<size_t>::const_iterator order_iter =
-               term_locations.begin(); order_iter != term_locations.end();
-               ++order_iter) {
-        if (term_location <= *order_iter)
-          ++out_of_order;
-      }
-    } else {
-      *first_term_location = term_location;
-    }
-    term_locations.push_back(term_location);
-    start_location_total += term_location;
-    term_length_total += term.size();
+    TermMatches url_term_matches = MatchTermInString(term, url, term_num);
+    TermMatches title_term_matches = MatchTermInString(term, title, term_num);
+    if (url_term_matches.empty() && title_term_matches.empty())
+      return match;  // A term was not found in either URL or title - reject.
+    match.url_matches.insert(match.url_matches.end(), url_term_matches.begin(),
+                             url_term_matches.end());
+    match.title_matches.insert(match.title_matches.end(),
+                               title_term_matches.begin(),
+                               title_term_matches.end());
   }
 
-  // Calculate a raw score.
-  // TODO(mrossetti): This is good enough for now but must be fine-tuned.
-  const float kOrderMaxValue = 10.0;
-  float order_value = 10.0;
-  if (terms.size() > 1) {
-    int max_possible_out_of_order = (terms.size() * (terms.size() - 1)) / 2;
-    order_value =
-        (static_cast<float>(max_possible_out_of_order - out_of_order) /
-         max_possible_out_of_order) * kOrderMaxValue;
-  }
+  // Sort matches by offset and eliminate any which overlap.
+  match.url_matches = SortAndDeoverlap(match.url_matches);
+  match.title_matches = SortAndDeoverlap(match.title_matches);
 
-  const float kStartMaxValue = 10.0;
-  const size_t kMaxSignificantStart = 20;
-  float start_value =
-      (static_cast<float>(kMaxSignificantStart -
-       std::min(kMaxSignificantStart, start_location_total / terms.size()))) /
-      static_cast<float>(kMaxSignificantStart) * kStartMaxValue;
+  // Get partial scores based on term matching. Note that the score for
+  // each of the URL and title are adjusted by the fraction of the
+  // terms appearing in each.
+  int url_score = RawScoreForMatches(match.url_matches, url.size()) *
+      match.url_matches.size() / terms.size();
+  int title_score = RawScoreForMatches(match.title_matches, title.size()) *
+      match.title_matches.size() / terms.size();
+  // Arbitrarily pick the best.
+  // TODO(mrossetti): It might make sense that a term which appears in both the
+  // URL and the Title should boost the score a bit.
+  int term_score = std::max(url_score, title_score);
 
-  const float kCompleteMaxValue = 10.0;
-  float complete_value =
-      (static_cast<float>(term_length_total) / static_cast<float>(url.size())) *
-      kStartMaxValue;
-
-  const float kLastVisitMaxValue = 10.0;
-  const base::TimeDelta kMaxSignificantDay = base::TimeDelta::FromDays(30);
+  // Factor in attributes of the URLRow.
+  // Items which have been visited recently score higher.
   int64 delta_time = (kMaxSignificantDay -
       std::min((base::Time::Now() - row.last_visit()),
                kMaxSignificantDay)).ToInternalValue();
@@ -615,37 +694,61 @@ int InMemoryURLIndex::RawScoreForURL(const URLRow& row,
        static_cast<float>(kMaxSignificantDay.ToInternalValue())) *
       kLastVisitMaxValue;
 
-  const float kVisitCountMaxValue = 10.0;
-  const int kMaxSignificantVisits = 10;
   float visit_count_value =
       (static_cast<float>(std::min(row.visit_count(),
        kMaxSignificantVisits))) / static_cast<float>(kMaxSignificantVisits) *
       kVisitCountMaxValue;
 
-  const float kTypedCountMaxValue = 20.0;
-  const int kMaxSignificantTyped = 10;
   float typed_count_value =
       (static_cast<float>(std::min(row.typed_count(),
        kMaxSignificantTyped))) / static_cast<float>(kMaxSignificantTyped) *
       kTypedCountMaxValue;
 
-  float raw_score = order_value + start_value + complete_value +
-      last_visit_value + visit_count_value + typed_count_value;
+  float raw_score = term_score + last_visit_value + visit_count_value +
+                    typed_count_value;
 
   // Normalize the score.
-  const float kMaxNormalizedRawScore = 1000.0;
-  raw_score =
-      (raw_score / (kOrderMaxValue + kStartMaxValue + kCompleteMaxValue +
-                    kLastVisitMaxValue + kVisitCountMaxValue +
-                    kTypedCountMaxValue)) *
-      kMaxNormalizedRawScore;
-  return static_cast<int>(raw_score);
+  match.raw_score = static_cast<int>((raw_score / kMaxRawScore) *
+                                     kMaxNormalizedRawScore);
+  return match;
 }
 
-// static
-base::Time InMemoryURLIndex::RecentThreshold() {
-  return base::Time::Now() -
-      base::TimeDelta::FromDays(kLowQualityMatchAgeLimitInDays);
+int InMemoryURLIndex::RawScoreForMatches(const TermMatches& matches,
+                                         size_t max_length) {
+  // TODO(mrossetti): This is good enough for now but must be fine-tuned.
+  if (matches.empty())
+    return 0;
+
+  // Search terms appearing in order score higher.
+  float order_value = 10.0;
+  if (matches.size() > 1) {
+    int max_possible_out_of_order = matches.size() - 1;
+    int out_of_order = 0;
+    for (size_t i = 1; i < matches.size(); ++i) {
+      if (matches[i - 1].term_num > matches[i].term_num)
+        ++out_of_order;
+    }
+    order_value =
+        (static_cast<float>(max_possible_out_of_order - out_of_order) /
+         max_possible_out_of_order) * kOrderMaxValue;
+  }
+
+  // Search terms which appear earlier score higher.
+  // No points if the first search term does not appear in the first
+  // kMaxSignificantStart chars.
+  float start_value =
+      (static_cast<float>(kMaxSignificantStart -
+       std::min(kMaxSignificantStart, matches[0].offset))) /
+      static_cast<float>(kMaxSignificantStart) * kStartMaxValue;
+
+  // Search terms which comprise a greater portion score higher.
+  size_t term_length_total = std::accumulate(matches.begin(), matches.end(),
+                                             0, AccumulateMatchLength);
+  float complete_value =
+      (static_cast<float>(term_length_total) / static_cast<float>(max_length)) *
+      kStartMaxValue;
+
+  return static_cast<int>(order_value + start_value + complete_value);
 }
 
 InMemoryURLIndex::AddHistoryMatch::AddHistoryMatch(
@@ -666,26 +769,17 @@ void InMemoryURLIndex::AddHistoryMatch::operator()(
   // deleted by the user or the item no longer qualifies as a quick result.
   if (hist_pos != index_.history_info_map_.end()) {
     const URLRow& hist_item = hist_pos->second;
-    // TODO(mrossetti): Accommodate multiple term highlighting.
-    size_t input_location = 0;
-    int score = InMemoryURLIndex::RawScoreForURL(
-        hist_item, lower_terms_, &input_location);
-    if (score != 0) {
+    ScoredHistoryMatch match(ScoredMatchForURL(hist_item, lower_terms_));
+    if (match.raw_score != 0) {
       // We only retain the top 10 highest scoring results so
       // see if this one fits into the top 10 and, if so, where.
       ScoredHistoryMatches::iterator scored_iter = scored_matches_.begin();
       while (scored_iter != scored_matches_.end() &&
-             (*scored_iter).raw_score > score)
+             (*scored_iter).raw_score > match.raw_score)
         ++scored_iter;
       if ((scored_matches_.size() < 10) ||
           (scored_iter != scored_matches_.end())) {
-        // Create and insert the new item.
-        // TODO(mrossetti): Properly set |match_in_scheme| and
-        // |innermost_match|.
-        bool match_in_scheme = false;
-        bool innermost_match = true;
-        ScoredHistoryMatch match(hist_item, input_location,
-            match_in_scheme, innermost_match, score);
+        // Insert the new item.
         if (!scored_matches_.empty())
           scored_matches_.insert(scored_iter, match);
         else

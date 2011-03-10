@@ -19,6 +19,7 @@
 #include "base/linked_ptr.h"
 #include "base/scoped_ptr.h"
 #include "base/string16.h"
+#include "chrome/browser/autocomplete/autocomplete_match.h"
 #include "chrome/browser/autocomplete/history_provider_util.h"
 #include "chrome/browser/history/history_types.h"
 #include "chrome/browser/history/in_memory_url_index_cache.pb.h"
@@ -40,20 +41,32 @@ namespace imui = in_memory_url_index;
 
 class URLDatabase;
 
+// Specifies where an omnibox term occurs within a string. Used for specifying
+// highlights in AutocompleteMatches (ACMatchClassifications) and to assist in
+// scoring a result.
+struct TermMatch {
+  TermMatch(int term_num, size_t offset, size_t length)
+      : term_num(term_num),
+        offset(offset),
+        length(length) {}
+
+  int term_num;  // The index of the term in the original search string.
+  size_t offset;  // The starting offset of the substring match.
+  size_t length;  // The length of the substring match.
+};
+typedef std::vector<TermMatch> TermMatches;
+
 // Used for intermediate history result operations.
 struct ScoredHistoryMatch : public HistoryMatch {
-  // Required for STL, we don't use this directly.
-  ScoredHistoryMatch();
-
-  ScoredHistoryMatch(const URLRow& url_info,
-                     size_t input_location,
-                     bool match_in_scheme,
-                     bool innermost_match,
-                     int score);
+  ScoredHistoryMatch();  // Required by STL.
+  explicit ScoredHistoryMatch(const URLRow& url_info);
 
   // An interim score taking into consideration location and completeness
   // of the match.
   int raw_score;
+  TermMatches url_matches;  // Term matches within the URL.
+  TermMatches title_matches;  // Term matches within the page title.
+  size_t prefix_adjust;  // The length of a prefix which should be ignored.
 };
 typedef std::vector<ScoredHistoryMatch> ScoredHistoryMatches;
 
@@ -114,11 +127,9 @@ class InMemoryURLIndex {
   // history index and return a vector with all scored, matching history items.
   // Each term must occur somewhere in the history item for the item to
   // qualify; however, the terms do not necessarily have to be adjacent.
-  // Results are sorted with higher scoring items first.
+  // Results are sorted with higher scoring items first. Each term from |terms|
+  // may contain punctuation but should not contain spaces.
   ScoredHistoryMatches HistoryItemsForTerms(const String16Vector& terms);
-
-  // Returns the date threshold for considering an history item as significant.
-  static base::Time RecentThreshold();
 
   // Updates or adds an history item to the index if it meets the minimum
   // 'quick' criteria.
@@ -129,13 +140,22 @@ class InMemoryURLIndex {
   // 'quick' criteria).
   void DeleteURL(URLID row_id);
 
+  // Breaks the |uni_string| string down into individual words and return
+  // a vector with the individual words in their original order. Break on
+  // whitespace if |break_on_space| also on special characters.
+  static String16Vector WordVectorFromString16(const string16& uni_string,
+                                               bool break_on_space);
+
  private:
   friend class AddHistoryMatch;
-  FRIEND_TEST_ALL_PREFIXES(InMemoryURLIndexTest, Initialization);
-  FRIEND_TEST_ALL_PREFIXES(InMemoryURLIndexTest, Char16Utilities);
-  FRIEND_TEST_ALL_PREFIXES(InMemoryURLIndexTest, TypedCharacterCaching);
+  FRIEND_TEST_ALL_PREFIXES(LimitedInMemoryURLIndexTest, Initialization);
   FRIEND_TEST_ALL_PREFIXES(InMemoryURLIndexTest, CacheFilePath);
   FRIEND_TEST_ALL_PREFIXES(InMemoryURLIndexTest, CacheSaveRestore);
+  FRIEND_TEST_ALL_PREFIXES(InMemoryURLIndexTest, Char16Utilities);
+  FRIEND_TEST_ALL_PREFIXES(InMemoryURLIndexTest, Scoring);
+  FRIEND_TEST_ALL_PREFIXES(InMemoryURLIndexTest, StaticFunctions);
+  FRIEND_TEST_ALL_PREFIXES(InMemoryURLIndexTest, TitleSearch);
+  FRIEND_TEST_ALL_PREFIXES(InMemoryURLIndexTest, TypedCharacterCaching);
 
   // Signals that there are no previously cached results for the typed term.
   static const size_t kNoCachedResultForTerm;
@@ -224,6 +244,14 @@ class InMemoryURLIndex {
   // same as the character of the first entry in term_char_word_set_cache_).
   size_t CachedResultsIndexForTerm(const Char16Vector& uni_chars);
 
+  // Creates a TermMatches which has an entry for each occurrence of the string
+  // |term| found in the string |string|. Mark each match with |term_num| so
+  // that the resulting TermMatches can be merged with other TermMatches for
+  // other terms.
+  static TermMatches MatchTermInString(const string16& term,
+                                       const string16& string,
+                                       int term_num);
+
   // URL History indexing support functions.
 
   // Indexes one URL history item.
@@ -276,11 +304,21 @@ class InMemoryURLIndex {
   // visit time, and 5) number of visits.
   // This raw score allows the results to be ordered and can be used
   // to influence the final score calculated by the client of this
-  // index. Return the starting location of the first term in
-  // |first_term_location|.
-  static int RawScoreForURL(const URLRow& row,
-                            const String16Vector& terms_vector,
-                            size_t* first_term_location);
+  // index. Returns a ScoredHistoryMatch structure with the raw score and
+  // substring matching metrics.
+  static ScoredHistoryMatch ScoredMatchForURL(
+      const URLRow& row,
+      const String16Vector& terms_vector);
+
+  // Calculates a partial raw score based on position, ordering and total
+  // substring match size using metrics recorded in |matches|. |max_length|
+  // is the length of the string against which the terms are being searched.
+  static int RawScoreForMatches(const TermMatches& matches,
+                                size_t max_length);
+
+  // Sorts and removes overlapping substring matches from |matches| and
+  // returns the cleaned up matches.
+  static TermMatches SortAndDeoverlap(const TermMatches& matches);
 
   // Utility functions supporting RestoreFromCache and SaveToCache.
 
