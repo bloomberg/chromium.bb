@@ -71,8 +71,8 @@ class WeakReference {
 
     void AddRef() const;
     void Release() const;
-    void Invalidate() { handle_ = NULL; }
-    bool is_valid() const { return handle_ != NULL; }
+    void Invalidate();
+    bool IsValid() const;
 
     void DetachFromThread() { base::NonThreadSafe::DetachFromThread(); }
 

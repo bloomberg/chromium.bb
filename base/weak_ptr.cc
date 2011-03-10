@@ -25,6 +25,16 @@ void WeakReference::Flag::Release() const {
   RefCounted<Flag>::Release();
 }
 
+void WeakReference::Flag::Invalidate() {
+  DCHECK(CalledOnValidThread());
+  handle_ = NULL;
+}
+
+bool WeakReference::Flag::IsValid() const {
+  DCHECK(CalledOnValidThread());
+  return handle_ != NULL;
+}
+
 WeakReference::WeakReference() {
 }
 
@@ -35,7 +45,7 @@ WeakReference::~WeakReference() {
 }
 
 bool WeakReference::is_valid() const {
-  return flag_ && flag_->is_valid();
+  return flag_ && flag_->IsValid();
 }
 
 WeakReferenceOwner::WeakReferenceOwner() : flag_(NULL) {
