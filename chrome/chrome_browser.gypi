@@ -1194,6 +1194,8 @@
         'browser/idle_win.cc',
         'browser/ime_input.cc',
         'browser/ime_input.h',
+        'browser/importer/external_process_importer_client.cc',
+        'browser/importer/external_process_importer_client.h',
         'browser/importer/firefox2_importer.cc',
         'browser/importer/firefox2_importer.h',
         'browser/importer/firefox3_importer.cc',
