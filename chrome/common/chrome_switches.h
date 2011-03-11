@@ -152,6 +152,7 @@ extern const char kEnableMemoryInfo[];
 extern const char kEnableNaCl[];
 extern const char kEnableNaClDebug[];
 extern const char kEnableP2PApi[];
+extern const char kEnablePanels[];
 extern const char kEnablePreconnect[];
 extern const char kEnablePrintPreview[];
 extern const char kEnableRemoting[];

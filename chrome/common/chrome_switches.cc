@@ -518,6 +518,9 @@ const char kEnableResourceContentSettings[] =
 // Enable Pepper and JavaScript P2P API.
 const char kEnableP2PApi[]                  = "enable-p2papi";
 
+// Enable panels (always on-top docked pop-up windows).
+const char kEnablePanels[]                  = "enable-panels";
+
 // Enable speculative TCP/IP preconnection.
 const char kEnablePreconnect[]              = "enable-preconnect";
 
