@@ -576,6 +576,8 @@ void HistoryURLProvider::RunAutocompletePasses(
     matches_.push_back(SuggestExactInput(input, trim_http));
 
   // We'll need the history service to run both passes, so try to obtain it.
+  if (!profile_)
+    return;
   HistoryService* const history_service =
       profile_->GetHistoryService(Profile::EXPLICIT_ACCESS);
   if (!history_service)
@@ -585,7 +587,7 @@ void HistoryURLProvider::RunAutocompletePasses(
   // onto the |params_| member for later deletion below if we need to run pass
   // 2.
   std::string languages(languages_);
-  if (languages.empty() && profile_) {
+  if (languages.empty()) {
     languages =
         profile_->GetPrefs()->GetString(prefs::kAcceptLanguages);
   }

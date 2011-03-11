@@ -46,6 +46,7 @@ static const wchar_t kDoneIframeXPath[] = L"//iframe[@id='setupdone']";
 // static
 CloudPrintSetupFlow* CloudPrintSetupFlow::OpenDialog(
     Profile* profile, Delegate* delegate, gfx::NativeWindow parent_window) {
+  DCHECK(profile);
   // Set the arguments for showing the gaia login page.
   DictionaryValue args;
   args.SetString("user", "");
@@ -72,7 +73,6 @@ CloudPrintSetupFlow* CloudPrintSetupFlow::OpenDialog(
     if (browser && browser->window())
       parent_window = browser->window()->GetNativeHandle();
   }
-  DCHECK(profile);
   browser::ShowHtmlDialog(parent_window, profile, flow);
   return flow;
 }

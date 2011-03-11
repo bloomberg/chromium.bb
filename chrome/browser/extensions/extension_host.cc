@@ -621,9 +621,7 @@ void ExtensionHost::ShowCreatedWindow(int route_id,
     browser = Browser::Create(contents->profile());
     browser->window()->Show();
   }
-
-  if (browser)
-    browser->AddTabContents(contents, disposition, initial_pos, user_gesture);
+  browser->AddTabContents(contents, disposition, initial_pos, user_gesture);
 }
 
 void ExtensionHost::ShowCreatedWidget(int route_id,

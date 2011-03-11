@@ -278,7 +278,6 @@ void RenderViewContextMenu::AppendExtensionItems(
   ExtensionService* service = profile_->GetExtensionService();
   ExtensionMenuManager* manager = service->menu_manager();
   const Extension* extension = service->GetExtensionById(extension_id, false);
-  bool can_cross_incognito = service->CanCrossIncognito(extension);
   DCHECK_GE(*index, 0);
   int max_index =
       IDC_EXTENSIONS_CONTEXT_CUSTOM_LAST - IDC_EXTENSIONS_CONTEXT_CUSTOM_FIRST;
@@ -289,6 +288,7 @@ void RenderViewContextMenu::AppendExtensionItems(
   const ExtensionMenuItem::List* all_items = manager->MenuItems(extension_id);
   if (!all_items || all_items->empty())
     return;
+  bool can_cross_incognito = service->CanCrossIncognito(extension);
   ExtensionMenuItem::List items =
       GetRelevantExtensionItems(*all_items, params_, profile_,
                                 can_cross_incognito);

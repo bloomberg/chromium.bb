@@ -14,6 +14,7 @@
 #ifdef ENABLE_GPU
 PlatformContext3DImpl::PlatformContext3DImpl(ggl::Context* parent_context)
       : parent_context_(parent_context),
+        parent_texture_id_(0),
         command_buffer_(NULL),
         callback_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)) {
 }

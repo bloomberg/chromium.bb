@@ -570,7 +570,8 @@ InstantLoader::InstantLoader(InstantLoaderDelegate* delegate, TemplateURLID id)
     : delegate_(delegate),
       template_url_id_(id),
       ready_(false),
-      last_transition_type_(PageTransition::LINK) {
+      last_transition_type_(PageTransition::LINK),
+      verbatim_(false) {
 }
 
 InstantLoader::~InstantLoader() {

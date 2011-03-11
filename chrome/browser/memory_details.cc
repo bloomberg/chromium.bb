@@ -156,6 +156,7 @@ void MemoryDetails::CollectChildInfoOnUIThread() {
 
         const RenderViewHost* host = static_cast<const RenderViewHost*>(widget);
         RenderViewHostDelegate* host_delegate = host->delegate();
+        DCHECK(host_delegate);
         GURL url = host_delegate->GetURL();
         ViewType::Type type = host_delegate->GetRenderViewType();
         if (host->enabled_bindings() & BindingsPolicy::WEB_UI) {
@@ -168,9 +169,7 @@ void MemoryDetails::CollectChildInfoOnUIThread() {
         } else if (host->enabled_bindings() & BindingsPolicy::EXTENSION) {
           process.renderer_type = ChildProcessInfo::RENDERER_EXTENSION;
         }
-        TabContents* contents = NULL;
-        if (host_delegate)
-          contents = host_delegate->GetAsTabContents();
+        TabContents* contents = host_delegate->GetAsTabContents();
         if (!contents) {
           if (host->is_extension_process()) {
             const Extension* extension =
