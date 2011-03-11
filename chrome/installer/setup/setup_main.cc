@@ -1137,9 +1137,21 @@ int WINAPI wWinMain(HINSTANCE instance, HINSTANCE prev_instance,
   // If --uninstall option is given, uninstall the identified product(s)
   if (is_uninstall) {
     const Products& products = installer_state.products();
-    for (size_t i = 0; i < products.size(); ++i) {
-      install_status = UninstallProduct(original_state, installer_state,
+    // InstallerState::Initialize always puts Chrome first, and we rely on that
+    // here for this reason: if Chrome is in-use, the user will be prompted to
+    // confirm uninstallation.  Upon cancel, we should not continue with the
+    // other products.
+    DCHECK(products.size() < 2 || products[0]->is_chrome());
+    install_status = installer::UNINSTALL_SUCCESSFUL;  // I'm an optimist.
+    installer::InstallStatus prod_status = installer::UNKNOWN_STATUS;
+    for (size_t i = 0;
+         install_status != installer::UNINSTALL_CANCELLED &&
+             i < products.size();
+         ++i) {
+      prod_status = UninstallProduct(original_state, installer_state,
           cmd_line, *products[i]);
+      if (prod_status != installer::UNINSTALL_SUCCESSFUL)
+        install_status = prod_status;
     }
   } else {
     // If --uninstall option is not specified, we assume it is install case.
