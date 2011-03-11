@@ -182,7 +182,8 @@ ProfileIOData::RequestContext::~RequestContext() {}
 
 ProfileIOData::ProfileParams::ProfileParams()
     : is_off_the_record(false),
-      clear_local_state_on_exit(false) {}
+      clear_local_state_on_exit(false),
+      profile_id(Profile::kInvalidProfileId) {}
 ProfileIOData::ProfileParams::~ProfileParams() {}
 
 ProfileIOData::ProfileIOData(bool is_off_the_record)
