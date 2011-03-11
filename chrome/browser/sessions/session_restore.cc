@@ -681,7 +681,7 @@ class SessionRestoreImpl : public NotificationObserver {
     browser->set_maximized_state(is_maximized ?
         Browser::MAXIMIZED_STATE_MAXIMIZED :
         Browser::MAXIMIZED_STATE_UNMAXIMIZED);
-    browser->CreateBrowserWindow();
+    browser->InitBrowserWindow();
     return browser;
   }
 

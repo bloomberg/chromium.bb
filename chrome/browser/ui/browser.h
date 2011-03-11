@@ -123,7 +123,7 @@ class Browser : public TabHandlerDelegate,
   // Constructors, Creation, Showing //////////////////////////////////////////
 
   // Creates a new browser of the given |type| and for the given |profile|. The
-  // Browser has a NULL window after its construction, CreateBrowserWindow must
+  // Browser has a NULL window after its construction, InitBrowserWindow must
   // be called after configuration for window() to be valid.
   // Avoid using this constructor directly if you can use one of the Create*()
   // methods below. This applies to almost all non-testing code.
@@ -171,7 +171,7 @@ class Browser : public TabHandlerDelegate,
   // Creates the Browser Window. Prefer to use the static helpers above where
   // possible. This does not show the window. You need to call window()->Show()
   // to show it.
-  void CreateBrowserWindow();
+  void InitBrowserWindow();
 
   // Accessors ////////////////////////////////////////////////////////////////
 
@@ -720,6 +720,11 @@ class Browser : public TabHandlerDelegate,
 
   // Figure out if there are tabs that have beforeunload handlers.
   bool TabsNeedBeforeUnloadFired();
+
+ protected:
+  // Wrapper for the factory method in BrowserWindow. This allows subclasses to
+  // set their own window.
+  virtual BrowserWindow* CreateBrowserWindow();
 
  private:
   FRIEND_TEST_ALL_PREFIXES(BrowserTest, NoTabsInPopups);

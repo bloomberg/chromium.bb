@@ -8,6 +8,7 @@
 #include "base/singleton.h"
 #include "base/string_piece.h"
 #include "base/values.h"
+#include "chrome/browser/chromeos/webui/login/browser/dom_browser.h"
 #include "chrome/browser/chromeos/webui/login/login_ui_helpers.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
@@ -17,9 +18,8 @@
 #include "content/browser/tab_contents/tab_contents.h"
 #include "views/screen.h"
 
-namespace {
-const char* kLoginURL = "chrome://login";
-}
+static const char kLoginURL[] = "chrome://login";
+
 namespace chromeos {
 
 // LoginContainerUIHTMLSource --------------------------------------------------
@@ -68,7 +68,7 @@ void LoginContainerUIHandler::RegisterMessages() {
 void LoginContainerUIHandler::HandleOpenLoginScreen(const ListValue* args) {
   Profile* profile = profile_operations_->GetDefaultProfileByPath();
   Browser* current_browser = browser_operations_->GetLoginBrowser(profile);
-  Browser* login_screen = browser_operations_->CreateBrowser(profile);
+  Browser* login_screen = DOMBrowser::CreateForDOM(profile);
   login_screen->AddSelectedTabWithURL(GURL(kLoginURL), PageTransition::LINK);
   login_screen->window()->Show();
   current_browser->CloseWindow();

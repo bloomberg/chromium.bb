@@ -44,7 +44,7 @@ TestingProfile* BrowserTestHelper::profile() const {
 }
 
 BrowserWindow* BrowserTestHelper::CreateBrowserWindow() {
-  browser_->CreateBrowserWindow();
+  browser_->InitBrowserWindow();
   return browser_->window();
 }
 

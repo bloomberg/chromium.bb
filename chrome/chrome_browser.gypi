@@ -708,6 +708,8 @@
         'browser/chromeos/webui/login/authenticator_facade_cros.h',
         'browser/chromeos/webui/login/authenticator_facade_cros_helpers.cc',
         'browser/chromeos/webui/login/authenticator_facade_cros_helpers.h',
+        'browser/chromeos/webui/login/browser/dom_browser.cc',
+        'browser/chromeos/webui/login/browser/dom_browser.h',
         'browser/chromeos/webui/login/login_ui.cc',
         'browser/chromeos/webui/login/login_ui.h',
         'browser/chromeos/webui/login/login_container_ui.cc',

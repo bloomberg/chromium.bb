@@ -326,7 +326,7 @@ Browser::~Browser() {
 // static
 Browser* Browser::Create(Profile* profile) {
   Browser* browser = new Browser(TYPE_NORMAL, profile);
-  browser->CreateBrowserWindow();
+  browser->InitBrowserWindow();
   return browser;
 }
 
@@ -338,7 +338,7 @@ Browser* Browser::CreateForPopup(Type type,
   DCHECK(type & TYPE_POPUP);
   Browser* browser = new Browser(type, profile);
   browser->set_override_bounds(initial_bounds);
-  browser->CreateBrowserWindow();
+  browser->InitBrowserWindow();
   TabContentsWrapper* wrapper = new TabContentsWrapper(new_contents);
   browser->tabstrip_model()->AppendTabContents(wrapper, true);
   return browser;
@@ -347,7 +347,7 @@ Browser* Browser::CreateForPopup(Type type,
 // static
 Browser* Browser::CreateForType(Type type, Profile* profile) {
   Browser* browser = new Browser(type, profile);
-  browser->CreateBrowserWindow();
+  browser->InitBrowserWindow();
   return browser;
 }
 
@@ -372,7 +372,7 @@ Browser* Browser::CreateForApp(const std::string& app_name,
     browser->set_override_bounds(initial_pos);
   }
 
-  browser->CreateBrowserWindow();
+  browser->InitBrowserWindow();
 
   return browser;
 }
@@ -381,14 +381,14 @@ Browser* Browser::CreateForApp(const std::string& app_name,
 Browser* Browser::CreateForDevTools(Profile* profile) {
   Browser* browser = new Browser(TYPE_DEVTOOLS, profile);
   browser->app_name_ = DevToolsWindow::kDevToolsApp;
-  browser->CreateBrowserWindow();
+  browser->InitBrowserWindow();
   return browser;
 }
 
-void Browser::CreateBrowserWindow() {
+void Browser::InitBrowserWindow() {
   DCHECK(!window_);
 
-  window_ = BrowserWindow::CreateBrowserWindow(this);
+  window_ = CreateBrowserWindow();
 
 #if defined(OS_WIN)
   {
@@ -1311,6 +1311,9 @@ void Browser::Home(WindowOpenDisposition disposition) {
 void Browser::OpenCurrentURL() {
   UserMetrics::RecordAction(UserMetricsAction("LoadURL"), profile_);
   LocationBar* location_bar = window_->GetLocationBar();
+  if (!location_bar)
+    return;
+
   WindowOpenDisposition open_disposition =
       location_bar->GetWindowOpenDisposition();
   if (OpenInstant(open_disposition))
@@ -2473,7 +2476,7 @@ Browser* Browser::CreateNewStripWithContents(
   browser->set_override_bounds(new_window_bounds);
   browser->set_maximized_state(
       maximize ? MAXIMIZED_STATE_MAXIMIZED : MAXIMIZED_STATE_UNMAXIMIZED);
-  browser->CreateBrowserWindow();
+  browser->InitBrowserWindow();
   browser->tabstrip_model()->AppendTabContents(detached_contents, true);
   // Make sure the loading state is updated correctly, otherwise the throbber
   // won't start if the page is loading.
@@ -2998,8 +3001,11 @@ void Browser::ContentsZoomChange(bool zoom_in) {
 }
 
 void Browser::OnContentSettingsChange(TabContents* source) {
-  if (source == GetSelectedTabContents())
-    window_->GetLocationBar()->UpdateContentSettingsIcons();
+  if (source == GetSelectedTabContents()) {
+    LocationBar* location_bar = window()->GetLocationBar();
+    if (location_bar)
+      location_bar->UpdateContentSettingsIcons();
+  }
 }
 
 void Browser::SetTabContentBlocked(TabContents* contents, bool blocked) {
@@ -3531,6 +3537,14 @@ gfx::Rect Browser::GetInstantBounds() {
 }
 
 ///////////////////////////////////////////////////////////////////////////////
+// Browser, protected:
+
+BrowserWindow* Browser::CreateBrowserWindow() {
+  return BrowserWindow::CreateBrowserWindow(this);
+}
+
+
+///////////////////////////////////////////////////////////////////////////////
 // Browser, Command and state updating (private):
 
 void Browser::InitCommandState() {
@@ -3888,9 +3902,11 @@ void Browser::ProcessPendingUIUpdates() {
     if (contents == GetSelectedTabContents()) {
       // Updates that only matter when the tab is selected go here.
 
-      if (flags & TabContents::INVALIDATE_PAGE_ACTIONS)
-        window()->GetLocationBar()->UpdatePageActions();
-
+      if (flags & TabContents::INVALIDATE_PAGE_ACTIONS) {
+        LocationBar* location_bar = window()->GetLocationBar();
+        if (location_bar)
+          location_bar->UpdatePageActions();
+      }
       // Updating the URL happens synchronously in ScheduleUIUpdate.
       if (flags & TabContents::INVALIDATE_LOAD && GetStatusBubble()) {
         GetStatusBubble()->SetStatus(
@@ -4217,8 +4233,11 @@ void Browser::TabDetachedAtImpl(TabContentsWrapper* contents, int index,
     // is the selected tab.  Because saving state can conditionally revert the
     // location bar, saving the current tab's location bar state to a
     // non-selected tab can corrupt both tabs.
-    if (contents == GetSelectedTabContentsWrapper())
-      window_->GetLocationBar()->SaveStateToContents(contents->tab_contents());
+    if (contents == GetSelectedTabContentsWrapper()) {
+      LocationBar* location_bar = window()->GetLocationBar();
+      if (location_bar)
+        location_bar->SaveStateToContents(contents->tab_contents());
+    }
 
     if (!tab_handler_->GetTabStripModel()->closing_all())
       SyncHistoryWithTabs(0);

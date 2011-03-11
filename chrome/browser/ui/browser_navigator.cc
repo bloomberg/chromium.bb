@@ -187,7 +187,7 @@ Browser* GetBrowserForDisposition(browser::NavigateParams* params) {
       if (profile) {
         Browser* browser = new Browser(type, profile);
         browser->set_override_bounds(params->window_bounds);
-        browser->CreateBrowserWindow();
+        browser->InitBrowserWindow();
         return browser;
       }
       return NULL;
@@ -196,7 +196,7 @@ Browser* GetBrowserForDisposition(browser::NavigateParams* params) {
       // Make a new normal browser window.
       if (profile) {
         Browser* browser = new Browser(Browser::TYPE_NORMAL, profile);
-        browser->CreateBrowserWindow();
+        browser->InitBrowserWindow();
         return browser;
       }
       return NULL;
