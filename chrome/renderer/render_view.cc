@@ -2153,13 +2153,9 @@ void RenderView::didAddMessageToConsole(
 }
 
 void RenderView::printPage(WebFrame* frame) {
+  // TODO(thestig) Handle print preview case. http://crbug.com/75505.
   DCHECK(frame);
-  if (CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnablePrintPreview)) {
-    print_helper_->PrintFrame(frame, true, true);
-  } else {
-    print_helper_->PrintFrame(frame, true, false);
-  }
+  print_helper_->ScriptInitiatedPrint(frame);
 }
 
 WebKit::WebNotificationPresenter* RenderView::notificationPresenter() {

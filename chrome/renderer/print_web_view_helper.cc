@@ -6,9 +6,11 @@
 
 #include <string>
 
+#include "base/command_line.h"
 #include "base/logging.h"
 #include "base/process_util.h"
 #include "base/utf_string_conversions.h"
+#include "chrome/common/chrome_switches.h"
 #include "chrome/common/render_messages.h"
 #include "chrome/common/render_messages_params.h"
 #include "chrome/renderer/render_view.h"
@@ -108,14 +110,14 @@ PrintWebViewHelper::PrintWebViewHelper(RenderView* render_view)
     : RenderViewObserver(render_view),
       print_web_view_(NULL),
       user_cancelled_scripted_print_count_(0) {
+  is_preview_ = CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kEnablePrintPreview);
 }
 
 PrintWebViewHelper::~PrintWebViewHelper() {}
 
-void PrintWebViewHelper::PrintFrame(WebFrame* frame,
-                                    bool script_initiated,
-                                    bool is_preview) {
-  Print(frame, NULL, script_initiated, is_preview);
+void PrintWebViewHelper::ScriptInitiatedPrint(WebFrame* frame) {
+  Print(frame, NULL, true);
 }
 
 bool PrintWebViewHelper::OnMessageReceived(const IPC::Message& message) {
@@ -135,6 +137,7 @@ bool PrintWebViewHelper::OnMessageReceived(const IPC::Message& message) {
 
 void PrintWebViewHelper::OnPrintForPrintPreview(
     const DictionaryValue& job_settings) {
+  DCHECK(is_preview_);
 #if defined(OS_MACOSX)
   // If still not finished with earlier print request simply ignore.
   if (print_web_view_)
@@ -172,21 +175,27 @@ void PrintWebViewHelper::OnPrintForPrintPreview(
 #endif
 }
 
-void PrintWebViewHelper::OnPrint(bool is_preview) {
+void PrintWebViewHelper::OnPrint() {
   DCHECK(render_view()->webview());
   if (!render_view()->webview())
     return;
 
   // If the user has selected text in the currently focused frame we print
   // only that frame (this makes print selection work for multiple frames).
-  if (render_view()->webview()->focusedFrame()->hasSelection())
-    PrintFrame(render_view()->webview()->focusedFrame(), false, is_preview);
-  else
-    PrintFrame(render_view()->webview()->mainFrame(), false, is_preview);
+  WebFrame* frame = render_view()->webview()->focusedFrame()->hasSelection() ?
+      render_view()->webview()->focusedFrame() :
+      render_view()->webview()->mainFrame();
+  Print(frame, NULL, false);
 }
 
 void PrintWebViewHelper::OnPrintPages() {
-  OnPrint(false);
+  DCHECK(!is_preview_);
+  OnPrint();
+}
+
+void PrintWebViewHelper::OnPrintPreview() {
+  DCHECK(is_preview_);
+  OnPrint();
 }
 
 void PrintWebViewHelper::OnPrintingDone(int document_cookie, bool success) {
@@ -195,26 +204,23 @@ void PrintWebViewHelper::OnPrintingDone(int document_cookie, bool success) {
   DidFinishPrinting(success);
 }
 
-void PrintWebViewHelper::OnPrintPreview() {
-  OnPrint(true);
-}
-
 void PrintWebViewHelper::OnPrintNodeUnderContextMenu() {
   if (render_view()->context_menu_node().isNull()) {
     NOTREACHED();
     return;
   }
 
+  // TODO(thestig) Handle print preview case. http://crbug.com/75505.
+
   // Make a copy of the node, since we will do a sync call to the browser and
   // during that time OnContextMenuClosed might reset context_menu_node_.
   WebNode context_menu_node(render_view()->context_menu_node());
-  Print(context_menu_node.document().frame(), &context_menu_node, false, false);
+  Print(context_menu_node.document().frame(), &context_menu_node, false);
 }
 
 void PrintWebViewHelper::Print(WebKit::WebFrame* frame,
                                WebNode* node,
-                               bool script_initiated,
-                               bool is_preview) {
+                               bool script_initiated) {
   // If still not finished with earlier print request simply ignore.
   if (print_web_view_)
     return;
@@ -243,7 +249,7 @@ void PrintWebViewHelper::Print(WebKit::WebFrame* frame,
 
   // Some full screen plugins can say they don't want to print.
   if (expected_pages_count) {
-    if (!is_preview) {
+    if (!is_preview_) {
       // Ask the browser to show UI to retrieve the final print settings.
       if (!GetPrintSettingsFromUser(frame, expected_pages_count,
                                     use_browser_overlays)) {
@@ -253,7 +259,7 @@ void PrintWebViewHelper::Print(WebKit::WebFrame* frame,
 
     // Render Pages for printing.
     if (!print_cancelled) {
-      if (is_preview)
+      if (is_preview_)
         RenderPagesForPreview(frame);
       else
         RenderPagesForPrint(frame, node);

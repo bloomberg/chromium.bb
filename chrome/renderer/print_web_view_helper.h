@@ -16,16 +16,15 @@
 #include "ui/gfx/size.h"
 
 class DictionaryValue;
+struct ViewMsg_Print_Params;
+struct ViewMsg_PrintPage_Params;
+struct ViewMsg_PrintPages_Params;
 
 #if defined(USE_X11)
 namespace skia {
 class VectorCanvas;
 }
 #endif
-
-struct ViewMsg_Print_Params;
-struct ViewMsg_PrintPage_Params;
-struct ViewMsg_PrintPages_Params;
 
 // Class that calls the Begin and End print functions on the frame and changes
 // the size of the view temporarily to support full page printing..
@@ -76,10 +75,8 @@ class PrintWebViewHelper : public RenderViewObserver ,
   explicit PrintWebViewHelper(RenderView* render_view);
   virtual ~PrintWebViewHelper();
 
-  // Prints |frame|.
-  void PrintFrame(WebKit::WebFrame* frame,
-                  bool script_initiated,
-                  bool is_preview);
+  // Prints |frame| which called window.print().
+  void ScriptInitiatedPrint(WebKit::WebFrame* frame);
 
  protected:
   // WebKit::WebViewClient override:
@@ -88,14 +85,9 @@ class PrintWebViewHelper : public RenderViewObserver ,
  private:
   friend class RenderViewTest_OnPrintPages_Test;
 
-#if defined(OS_WIN)
-  friend class RenderViewTest_DISABLED_PrintLayoutTest_Test;
-#elif defined(OS_MACOSX)
-  friend class RenderViewTest_PrintLayoutTest_Test;
-#endif  // defined(OS_WIN)
-
 #if defined(OS_WIN) || defined(OS_MACOSX)
-  friend class RenderViewTest_PrintWithIframe_Test;
+  FRIEND_TEST_ALL_PREFIXES(RenderViewTest, PrintLayoutTest);
+  FRIEND_TEST_ALL_PREFIXES(RenderViewTest, PrintWithIframe);
 #endif  // defined(OS_WIN) || defined(OS_MACOSX)
 
   // RenderViewObserver implementation.
@@ -103,9 +95,15 @@ class PrintWebViewHelper : public RenderViewObserver ,
 
   // Message handlers ---------------------------------------------------------
 
+  // Print the document or generate a print preview.
   void OnPrintPages();
-  void OnPrintNodeUnderContextMenu();
   void OnPrintPreview();
+
+  // Common method for OnPrintPages() and OnPrintPreview().
+  void OnPrint();
+
+  // Print / preview the node under the context menu.
+  void OnPrintNodeUnderContextMenu();
 
   // Print the pages for print preview. Do not display the native print dialog
   // for user settings. |job_settings| has new print job settings values.
@@ -113,15 +111,11 @@ class PrintWebViewHelper : public RenderViewObserver ,
 
   void OnPrintingDone(int document_cookie, bool success);
 
-  // Common method for OnPrintPages() and OnPrintPreview().
-  void OnPrint(bool is_preview);
-
   // Main printing code -------------------------------------------------------
 
   void Print(WebKit::WebFrame* frame,
              WebKit::WebNode* node,
-             bool script_initiated,
-             bool is_preview);
+             bool script_initiated);
 
   // Notification when printing is done - signal teardown.
   void DidFinishPrinting(bool success);
@@ -233,6 +227,7 @@ class PrintWebViewHelper : public RenderViewObserver ,
   scoped_ptr<ViewMsg_PrintPages_Params> print_pages_params_;
   base::Time last_cancelled_script_print_;
   int user_cancelled_scripted_print_count_;
+  bool is_preview_;
 
   DISALLOW_COPY_AND_ASSIGN(PrintWebViewHelper);
 };
