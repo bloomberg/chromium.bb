@@ -102,6 +102,7 @@ class RegistrationManager {
  private:
   struct RegistrationStatus {
     RegistrationStatus();
+    ~RegistrationStatus();
 
     // Calls registration_manager->DoRegister(model_type). (needed by
     // |registration_timer|).

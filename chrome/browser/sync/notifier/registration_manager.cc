@@ -21,6 +21,8 @@ RegistrationManager::RegistrationStatus::RegistrationStatus()
       registration_manager(NULL),
       state(invalidation::RegistrationState_UNREGISTERED) {}
 
+RegistrationManager::RegistrationStatus::~RegistrationStatus() {}
+
 void RegistrationManager::RegistrationStatus::DoRegister() {
   DCHECK_NE(model_type, syncable::UNSPECIFIED);
   DCHECK(registration_manager);
