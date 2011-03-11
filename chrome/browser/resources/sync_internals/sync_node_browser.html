@@ -1,73 +1,67 @@
+<!-- TODO(akalin): Move to a three-pane view; node tree on the left
+(minus leaf nodes), tree contents list on the upper right, selected
+item detail on the lower right. -->
+
+<div id="sync-node-main">
+  <!-- TODO(akalin): Figure out how to get this element to be as tall
+       as its container (style.height=100% doesn't work).  Also fix
+       behavior when tree is too tall (currently it makes you scroll the
+       entire page). -->
+  <div id="sync-node-tree-container">
+    <tree id="sync-node-tree"></tree>
+  </div>
+  <div id="sync-node-splitter"></div>
+  <div>
+    <table id="node-browser">
+      <tr>
+        <td>ID</td>
+        <td jscontent="id"></td>
+      </tr>
+      <tr>
+        <td>Modification Time</td>
+        <td jscontent="modificationTime"></td>
+      </tr>
+      <tr>
+        <td>Parent</td>
+        <td jsContent="parentId"></td>
+      </tr>
+      <tr>
+        <td>Is Folder</td>
+        <td jscontent="isFolder"></td>
+      </tr>
+      <tr>
+        <td>Title</td>
+        <td jscontent="title"></td>
+      </tr>
+      <tr>
+        <td>Type</td>
+        <td jscontent="type"></td>
+      </tr>
+      <tr>
+        <td>Specifics</td>
+        <td><pre jscontent="specifics"></pre></td>
+      </tr>
+      <tr>
+        <td>External ID</td>
+        <td jscontent="externalId"></td>
+      </tr>
+      <tr>
+        <td>Predecessor</td>
+        <td jscontent="predecessorId"></td>
+      </tr>
+      <tr>
+        <td>Successor</td>
+        <td jscontent="successorId"></td>
+      </tr>
+      <tr>
+        <td>First Child</td>
+        <td jscontent="firstChildId"></td>
+      </tr>
+    </table>
+  </div>
+</div>
+
 <script>
-(function() {
-function onLoad() {
-  chrome.sync.getRootNode(updateNodeBrowser);
-}
-
-document.addEventListener("DOMContentLoaded", onLoad, false);
-})();
-
-function updateNodeBrowser(nodeInfo) {
-  var nodeBrowser = document.getElementById('nodeBrowser');
-  nodeInfo.specifics = JSON.stringify(nodeInfo.specifics, null, 2);
-  jstProcess(new JsEvalContext(nodeInfo), nodeBrowser);
-}
-
-function processNodeLink(link) {
-  var id = link.text;
-  chrome.sync.getNodeById(id, updateNodeBrowser);
-}
+chrome.sync.decorateSyncNodeBrowser('sync-node-tree');
+cr.ui.decorate('#sync-node-splitter', cr.ui.Splitter);
 </script>
-
-<style>
-table#nodeBrowser tr:nth-child(odd) {
-  background: #eff3ff;
-}
-</style>
-
-<table id='nodeBrowser'>
-  <tr>
-    <td>ID</td>
-    <td jscontent='id'></td>
-  </tr>
-  <tr>
-    <td>Modification Time</td>
-    <td jscontent='modificationTime'></td>
-  </tr>
-  <tr>
-    <td>Parent</td>
-    <td><a jscontent='parentId' href="#" onclick="processNodeLink(this); return false"></a></td>
-  </tr>
-  <tr>
-    <td>Is Folder</td>
-    <td jscontent='isFolder'></td>
-  </tr>
-  <tr>
-    <td>Title</td>
-    <td jscontent='title'></td>
-  </tr>
-  <tr>
-    <td>Type</td>
-    <td jscontent='type'></td>
-  </tr>
-  <tr>
-    <td>Specifics</td>
-    <td><pre jscontent='specifics'></pre></td>
-  </tr>
-  <tr>
-    <td>External ID</td>
-    <td jscontent='externalId'></td>
-  </tr>
-  <tr>
-    <td>Predecessor</td>
-    <td><a jscontent='predecessorId' href="#" onclick="processNodeLink(this); return false"></a></td>
-  </tr>
-  <tr>
-    <td>Successor</td>
-    <td><a jscontent='successorId' href="#" onclick="processNodeLink(this); return false"></a></td>
-  </tr>
-  <tr>
-    <td>First Child</td>
-    <td><a jscontent='firstChildId' href="#" onclick="processNodeLink(this); return false"></a></td>
-  </tr>
-</table>

@@ -1,0 +1,47 @@
+/*
+Copyright (c) 2011 The Chromium Authors. All rights reserved.
+Use of this source code is governed by a BSD-style license that can be
+found in the LICENSE file.
+*/
+
+#sync-node-main {
+  display: -webkit-box;
+}
+
+#sync-node-tree-container {
+  width: 200px;
+  /* min-width and max-width are used by the split pane. */
+  min-width: 50px;
+  max-width: 50%;
+  overflow: auto;
+  box-sizing: border-box;
+  padding: 5px;
+  -webkit-padding-start: 10px;
+}
+
+#sync-node-tree {
+  min-width: 100%;
+  overflow: visible; /* let the container do the scrolling */
+  display: inline-block;
+}
+
+/* TODO(akalin): Find a better icon to use for leaf nodes. */
+#sync-node-tree .leaf .tree-label {
+  background-image: url("../shared/images/star_small.png");
+}
+
+#sync-node-splitter {
+  width: 5px;
+  background-color: #ebeff9;
+  cursor: col-resize;
+}
+
+/* Platform annotations are set in sync_node_browser.js. */
+/* TODO(akalin): Make the BMM also use this style. */
+html[os=win] #sync-node-splitter {
+  cursor: e-resize;
+}
+
+#node-browser tr:nth-child(odd) {
+  background: #eff3ff;
+}
