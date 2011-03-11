@@ -59,8 +59,9 @@
                   # find it.
                   'PATH=<(pkgconfigroot)/usr/bin:$PATH && '
                   # Configure it.
-                  'CFLAGS="-arch <(mac_gcc_arch)" ./configure '
-                      '--prefix=<(pkgconfigroot)/usr --disable-shared '
+                  'CFLAGS="-arch <(mac_gcc_arch) <(mac_gcc_debug_flag)" '
+                      './configure --prefix=<(pkgconfigroot)/usr '
+                      '--disable-shared '
                       # Disable things we don't need that have additional
                       # external dependencies.
                       '--disable-png --disable-svg --disable-ft && '

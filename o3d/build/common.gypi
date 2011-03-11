@@ -178,6 +178,20 @@
     ],
     ['OS == "mac"',
       {
+        'variables': {
+          # Ridiculously, it is impossible to define a GYP variable whose value
+          # depends on the choice of build configuration, so to get this to be
+          # -g only when building Debug we define it as a shell fragment that
+          # uses command substitution to evaluate to different things based on
+          # the Xcode "CONFIGURATION" environment variable. We further have to
+          # use `` instead of $() because GYP/Xcode mangles $().
+          'mac_gcc_debug_flag':
+              '`if [ "$CONFIGURATION" = Debug ]; then '
+                 'echo -g; '
+               'else '
+                 'echo -g0; '
+               'fi`'
+        },
         'conditions': [
           ['target_arch == "ia32"',
             {
