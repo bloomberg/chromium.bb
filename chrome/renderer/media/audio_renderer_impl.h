@@ -103,7 +103,7 @@ class AudioRendererImpl : public media::AudioRendererBase,
   // The following methods are tasks posted on the IO thread that needs to
   // be executed on that thread. They interact with AudioMessageFilter and
   // sends IPC messages on that thread.
-  void CreateStreamTask(AudioParameters params);
+  void CreateStreamTask(const AudioParameters& params);
   void PlayTask();
   void PauseTask();
   void SeekTask();

@@ -63,7 +63,7 @@ class AutofillProfileChangeProcessor : public ChangeProcessor,
     AutofillProfileChangeRecord(
         sync_api::SyncManager::ChangeRecord::Action action,
         int64 id,
-        const sync_pb::AutofillProfileSpecifics profile_specifics)
+        const sync_pb::AutofillProfileSpecifics& profile_specifics)
         : action_(action),
           id_(id),
           profile_specifics_(profile_specifics) {}

@@ -242,7 +242,7 @@ void AudioRendererImpl::OnVolume(double volume) {
   // pipeline.
 }
 
-void AudioRendererImpl::CreateStreamTask(AudioParameters audio_params) {
+void AudioRendererImpl::CreateStreamTask(const AudioParameters& audio_params) {
   DCHECK(MessageLoop::current() == io_loop_);
 
   base::AutoLock auto_lock(lock_);

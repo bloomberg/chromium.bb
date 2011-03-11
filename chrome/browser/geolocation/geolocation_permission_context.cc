@@ -236,8 +236,8 @@ struct GeolocationInfoBarQueueController::PendingInfoBarRequest {
   PendingInfoBarRequest(int render_process_id,
                         int render_view_id,
                         int bridge_id,
-                        GURL requesting_frame,
-                        GURL embedder);
+                        const GURL& requesting_frame,
+                        const GURL& embedder);
 
   bool IsForTab(int p_render_process_id, int p_render_view_id) const;
   bool IsForPair(const GURL& p_requesting_frame,
@@ -258,8 +258,8 @@ GeolocationInfoBarQueueController::PendingInfoBarRequest::PendingInfoBarRequest(
     int render_process_id,
     int render_view_id,
     int bridge_id,
-    GURL requesting_frame,
-    GURL embedder)
+    const GURL& requesting_frame,
+    const GURL& embedder)
     : render_process_id(render_process_id),
       render_view_id(render_view_id),
       bridge_id(bridge_id),
