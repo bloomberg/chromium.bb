@@ -29,6 +29,7 @@ CapturerMac::CapturerMac(MessageLoop* message_loop)
       CapturerMac::DisplaysReconfiguredCallback, this);
   DCHECK_EQ(err, kCGErrorSuccess);
   ScreenConfigurationChanged();
+  InvalidateScreen(gfx::Size(width_, height_));
 }
 
 CapturerMac::~CapturerMac() {
