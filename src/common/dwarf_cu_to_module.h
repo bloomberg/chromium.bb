@@ -158,6 +158,11 @@ class DwarfCUToModule: public dwarf2reader::RootDIEHandler {
     // covered by no function.
     virtual void UncoveredLine(const Module::Line &line);
 
+    // The DW_TAG_subprogram DIE at OFFSET has no name specified directly
+    // in the DIE, nor via a DW_AT_specification or DW_AT_abstract_origin
+    // link.
+    virtual void UnnamedFunction(uint64 offset);
+
    protected:
     string filename_;
     uint64 cu_offset_;

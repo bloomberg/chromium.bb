@@ -80,6 +80,7 @@ class MockWarningReporter: public DwarfCUToModule::WarningReporter {
   MOCK_METHOD1(BadLineInfoOffset, void(uint64 offset));
   MOCK_METHOD1(UncoveredFunction, void(const Module::Function &function));
   MOCK_METHOD1(UncoveredLine, void(const Module::Line &line));
+  MOCK_METHOD1(UnnamedFunction, void(uint64 offset));
 };
 
 // A fixture class including all the objects needed to handle a
@@ -135,6 +136,7 @@ class CUFixtureBase {
     EXPECT_CALL(reporter_, BadLineInfoOffset(_)).Times(0);
     EXPECT_CALL(reporter_, UncoveredFunction(_)).Times(0);
     EXPECT_CALL(reporter_, UncoveredLine(_)).Times(0);
+    EXPECT_CALL(reporter_, UnnamedFunction(_)).Times(0);
 
     // By default, expect the line program reader not to be invoked. We
     // may override this in StartCU.
@@ -776,6 +778,8 @@ TEST_F(SimpleCU, AbstractOriginNotInlined) {
 
 TEST_F(SimpleCU, UnknownAbstractOrigin) {
   EXPECT_CALL(reporter_, UnknownAbstractOrigin(_, 1ULL)).WillOnce(Return());
+  EXPECT_CALL(reporter_, UnnamedFunction(0x11c70f94c6e87ccdLL))
+    .WillOnce(Return());
   PushLine(0x1758a0f941b71efbULL, 0x1cf154f1f545e146ULL, "line-file", 75173118);
 
   StartCU();
@@ -786,8 +790,23 @@ TEST_F(SimpleCU, UnknownAbstractOrigin) {
   root_handler_.Finish();
 
   TestFunctionCount(1);
-  TestFunction(0, "",
+  TestFunction(0, "<name omitted>",
                0x1758a0f941b71efbULL, 0x1cf154f1f545e146ULL);
+}
+
+TEST_F(SimpleCU, UnnamedFunction) {
+  EXPECT_CALL(reporter_, UnnamedFunction(0xe34797c7e68590a8LL))
+    .WillOnce(Return());
+  PushLine(0x72b80e41a0ac1d40ULL, 0x537174f231ee181cULL, "line-file", 14044850);
+
+  StartCU();
+  DefineFunction(&root_handler_, "",
+                 0x72b80e41a0ac1d40ULL, 0x537174f231ee181cULL);
+  root_handler_.Finish();
+
+  TestFunctionCount(1);
+  TestFunction(0, "<name omitted>",
+               0x72b80e41a0ac1d40ULL, 0x537174f231ee181cULL);
 }
 
 // An address range.
@@ -1696,6 +1715,10 @@ TEST_F(Reporter, UncoveredLineEnabled) {
   reporter.UncoveredLine(line);
   EXPECT_TRUE(reporter.uncovered_warnings_enabled());
 }
+
+TEST_F(Reporter, UnnamedFunction) {
+  reporter.UnnamedFunction(0x90c0baff9dedb2d9ULL);
+}  
 
 // Would be nice to also test:
 // - overlapping lines, functions

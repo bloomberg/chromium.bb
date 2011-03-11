@@ -33,6 +33,7 @@
 
 #include "common/module.h"
 
+#include <assert.h>
 #include <errno.h>
 #include <string.h>
 
@@ -65,6 +66,9 @@ void Module::SetLoadAddress(Address address) {
 }
 
 void Module::AddFunction(Function *function) {
+  // FUNC lines must not hold an empty name, so catch the problem early if
+  // callers try to add one.
+  assert(!function->name.empty());
   std::pair<FunctionSet::iterator,bool> ret = functions_.insert(function);
   if (!ret.second) {
     // Free the duplicate that was not inserted because this Module

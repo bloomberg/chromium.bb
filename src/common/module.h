@@ -189,7 +189,7 @@ class Module {
   // Write is used.
   void SetLoadAddress(Address load_address);
 
-  // Add FUNCTION to the module.
+  // Add FUNCTION to the module. FUNCTION's name must not be empty.
   // This module owns all Function objects added with this function:
   // destroying the module destroys them as well.
   void AddFunction(Function *function);

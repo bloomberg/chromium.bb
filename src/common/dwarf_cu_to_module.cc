@@ -428,7 +428,14 @@ void DwarfCUToModule::FuncHandler::Finish() {
     // Create a Module::Function based on the data we've gathered, and
     // add it to the functions_ list.
     Module::Function *func = new Module::Function;
-    func->name = name_;
+    // Malformed DWARF may omit the name, but all Module::Functions must
+    // have names.
+    if (!name_.empty()) {
+      func->name = name_;
+    } else {
+      cu_context_->reporter->UnnamedFunction(offset_);
+      func->name = "<name omitted>";
+    }
     func->address = low_pc_;
     func->size = high_pc_ - low_pc_;
     func->parameter_size = 0;
@@ -541,6 +548,12 @@ void DwarfCUToModule::WarningReporter::UncoveredLine(const Module::Line &line) {
   fprintf(stderr, "    line%s: %s:%d at 0x%" PRIx64 "\n",
           (line.size == 0 ? " (zero-length)" : ""),
           line.file->name.c_str(), line.number, line.address);
+}
+
+void DwarfCUToModule::WarningReporter::UnnamedFunction(uint64 offset) {
+  CUHeading();
+  fprintf(stderr, "%s: warning: function at offset 0x%" PRIx64 " has no name\n",
+          filename_.c_str(), offset);
 }
 
 DwarfCUToModule::DwarfCUToModule(FileContext *file_context,
