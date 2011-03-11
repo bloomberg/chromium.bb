@@ -7,6 +7,7 @@
 #include <algorithm>
 
 #include "base/callback.h"
+#include "base/i18n/rtl.h"
 #include "chrome/browser/platform_util.h"
 #include "chrome/browser/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/browser.h"
@@ -458,8 +459,11 @@ int DraggedTabControllerGtk::GetInsertionIndexForDraggedBounds(
     const gfx::Rect& dragged_bounds,
     bool is_tab_attached) const {
   int right_tab_x = 0;
-
-  // TODO(jhawkins): Handle RTL layout.
+  int dragged_bounds_x = base::i18n::IsRTL() ? dragged_bounds.right() :
+                                               dragged_bounds.x();
+  dragged_bounds_x =
+      gtk_util::MirroredXCoordinate(attached_tabstrip_->widget(),
+                                    dragged_bounds_x);
 
   // Divides each tab into two halves to see if the dragged tab has crossed
   // the halfway boundary necessary to move past the next tab.
@@ -476,22 +480,22 @@ int DraggedTabControllerGtk::GetInsertionIndexForDraggedBounds(
 
     right_tab_x = right_half.right();
 
-    if (dragged_bounds.x() >= right_half.x() &&
-        dragged_bounds.x() < right_half.right()) {
+    if (dragged_bounds_x >= right_half.x() &&
+        dragged_bounds_x < right_half.right()) {
       index = i + 1;
       break;
-    } else if (dragged_bounds.x() >= left_half.x() &&
-               dragged_bounds.x() < left_half.right()) {
+    } else if (dragged_bounds_x >= left_half.x() &&
+               dragged_bounds_x < left_half.right()) {
       index = i;
       break;
     }
   }
 
   if (index == -1) {
-    if (dragged_bounds.right() > right_tab_x)
-      index = attached_tabstrip_->model()->count();
-    else
-      index = 0;
+    bool at_the_end = base::i18n::IsRTL() ?
+        dragged_bounds.x() < right_tab_x :
+        dragged_bounds.right() > right_tab_x;
+    index = at_the_end ? attached_tabstrip_->model()->count() : 0;
   }
 
   index = attached_tabstrip_->model()->ConstrainInsertionIndex(index, mini_);
