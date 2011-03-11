@@ -9,15 +9,20 @@
 #include "base/file_util.h"
 #include "base/logging.h"
 #include "base/string_util.h"
+#include "chrome/installer/util/installer_state.h"
 #include "chrome/installer/util/util_constants.h"
 #include "courgette/courgette.h"
 #include "third_party/bspatch/mbspatch.h"
 
 int installer::ApplyDiffPatch(const FilePath& src,
-                               const FilePath& patch,
-                               const FilePath& dest) {
+                              const FilePath& patch,
+                              const FilePath& dest,
+                              const InstallerState* installer_state) {
   VLOG(1) << "Applying patch " << patch.value() << " to file " << src.value()
           << " and generating file " << dest.value();
+
+  if (installer_state != NULL)
+    installer_state->UpdateStage(installer::ENSEMBLE_PATCHING);
 
   // Try Courgette first.  Courgette checks the patch file first and fails
   // quickly if the patch file does not have a valid Courgette header.
@@ -29,6 +34,10 @@ int installer::ApplyDiffPatch(const FilePath& src,
     return 0;
 
   VLOG(1) << "Failed to apply patch " << patch.value() << " using courgette.";
+
+  if (installer_state != NULL)
+    installer_state->UpdateStage(installer::BINARY_PATCHING);
+
   return ApplyBinaryPatch(src.value().c_str(), patch.value().c_str(),
                           dest.value().c_str());
 }

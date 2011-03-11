@@ -16,6 +16,7 @@
 #include "base/scoped_vector.h"
 #include "chrome/installer/util/browser_distribution.h"
 #include "chrome/installer/util/product.h"
+#include "chrome/installer/util/util_constants.h"
 
 #if defined(OS_WIN)
 #include <windows.h>  // NOLINT
@@ -157,6 +158,13 @@ class InstallerState {
   void AddComDllList(std::vector<FilePath>* com_dll_list) const;
 
   bool SetChannelFlags(bool set, ChannelInfo* channel_info) const;
+
+  // See InstallUtil::UpdateInstallerStage.
+  void UpdateStage(installer::InstallerStage stage) const;
+
+  // For a MULTI_INSTALL or MULTI_UPDATE operation, updates the Google Update
+  // "ap" values for all products being operated on.
+  void UpdateChannels() const;
 
  protected:
   FilePath GetDefaultProductInstallPath(BrowserDistribution* dist) const;

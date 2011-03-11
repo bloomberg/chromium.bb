@@ -91,6 +91,9 @@ DWORD UnPackArchive(const FilePath& archive,
                     const FilePath& output_directory,
                     installer::ArchiveType* archive_type) {
   DCHECK(archive_type);
+
+  installer_state.UpdateStage(installer::UNCOMPRESSING);
+
   // First uncompress the payload. This could be a differential
   // update (patch.7z) or full archive (chrome.7z). If this uncompress fails
   // return with error.
@@ -120,15 +123,18 @@ DWORD UnPackArchive(const FilePath& archive,
         archive_version->GetString()));
     existing_archive = existing_archive.Append(installer::kInstallerDir);
     existing_archive = existing_archive.Append(installer::kChromeArchive);
-    if (int i = installer::ApplyDiffPatch(FilePath(existing_archive),
+    if (int i = installer::ApplyDiffPatch(existing_archive,
                                           FilePath(unpacked_file),
-                                          FilePath(uncompressed_archive))) {
+                                          uncompressed_archive,
+                                          &installer_state)) {
       LOG(ERROR) << "Binary patching failed with error " << i;
       return i;
     }
   } else {
     *archive_type = installer::FULL_ARCHIVE_TYPE;
   }
+
+  installer_state.UpdateStage(installer::UNPACKING);
 
   // Unpack the uncompressed archive.
   return LzmaUtil::UnPackArchive(uncompressed_archive.value(),
@@ -671,16 +677,21 @@ installer::InstallStatus InstallProducts(
     const MasterPreferences& prefs,
     InstallerState* installer_state) {
   DCHECK(installer_state);
+  const bool system_install = installer_state->system_install();
   installer::InstallStatus install_status = installer::UNKNOWN_STATUS;
   installer::ArchiveType archive_type = installer::UNKNOWN_ARCHIVE_TYPE;
   bool incremental_install = false;
+  installer_state->UpdateStage(installer::PRECONDITIONS);
+  // The stage provides more fine-grained information than -multifail, so remove
+  // the -multifail suffix from the Google Update "ap" value.
+  BrowserDistribution::GetSpecificDistribution(installer_state->state_type())
+      ->UpdateInstallStatus(system_install, archive_type, install_status);
   if (CheckPreInstallConditions(original_state, installer_state,
                                 &install_status)) {
     install_status = InstallProductsHelper(
         original_state, cmd_line, prefs, *installer_state, &archive_type);
   }
 
-  const bool system_install = installer_state->system_install();
   const Products& products = installer_state->products();
 
   for (size_t i = 0; i < products.size(); ++i) {
@@ -693,6 +704,7 @@ installer::InstallStatus InstallProducts(
         system_install, archive_type, install_status);
   }
 
+  installer_state->UpdateStage(installer::NO_STAGE);
   return install_status;
 }
 
@@ -779,7 +791,8 @@ bool HandleNonInstallCmdLineOptions(const InstallationState& original_state,
             installer::switches::kNewSetupExe);
         if (!installer::ApplyDiffPatch(old_setup_exe,
                                        FilePath(uncompressed_patch),
-                                       new_setup_exe))
+                                       new_setup_exe,
+                                       installer_state))
           status = installer::NEW_VERSION_UPDATED;
       }
       if (!temp_path.Delete()) {

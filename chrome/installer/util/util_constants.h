@@ -9,6 +9,8 @@
 #define CHROME_INSTALLER_UTIL_UTIL_CONSTANTS_H_
 #pragma once
 
+#include "base/basictypes.h"
+
 namespace installer {
 
 // Return status of installer
@@ -79,6 +81,24 @@ enum ArchiveType {
   FULL_ARCHIVE_TYPE,        // Full chrome.7z archive.
   INCREMENTAL_ARCHIVE_TYPE  // Incremental or differential archive.
 };
+
+// Stages of an installation reported through Google Update on failure.
+enum InstallerStage {
+  NO_STAGE,                    // 0: No stage to report.
+  PRECONDITIONS,               // 1: Evaluating pre-install conditions.
+  UNCOMPRESSING,               // 2: Uncompressing chrome.packed.7z.
+  ENSEMBLE_PATCHING,           // 3: Patching chrome.7z using courgette.
+  BINARY_PATCHING,             // 4: Patching chrome.7z using bspatch.
+  UNPACKING,                   // 5: Unpacking chrome.7z.
+  BUILDING,                    // 6: Building the install work item list.
+  EXECUTING,                   // 7: Executing the install work item list.
+  ROLLINGBACK,                 // 8: Rolling-back the install work item list.
+  FINISHING,                   // 9: Finishing after the install work item list.
+  NUM_STAGES                   // 10: The number of stages.
+};
+
+COMPILE_ASSERT(FINISHING == 9,
+               never_ever_ever_change_InstallerStage_values_bang);
 
 namespace switches {
 extern const char kCeee[];

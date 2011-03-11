@@ -33,6 +33,36 @@
 using base::win::RegKey;
 using installer::ProductState;
 
+namespace {
+
+const wchar_t kStageBinaryPatching[] = L"binary_patching";
+const wchar_t kStageBuilding[] = L"building";
+const wchar_t kStageEnsemblePatching[] = L"ensemble_patching";
+const wchar_t kStageExecuting[] = L"executing";
+const wchar_t kStageFinishing[] = L"finishing";
+const wchar_t kStagePreconditions[] = L"preconditions";
+const wchar_t kStageRollingback[] = L"rollingback";
+const wchar_t kStageUncompressing[] = L"uncompressing";
+const wchar_t kStageUnpacking[] = L"unpacking";
+
+const wchar_t* const kStages[] = {
+  NULL,
+  kStagePreconditions,
+  kStageUncompressing,
+  kStageEnsemblePatching,
+  kStageBinaryPatching,
+  kStageUnpacking,
+  kStageBuilding,
+  kStageExecuting,
+  kStageRollingback,
+  kStageFinishing
+};
+
+COMPILE_ASSERT(installer::NUM_STAGES == arraysize(kStages),
+               kStages_disagrees_with_Stage_comma_they_must_match_bang);
+
+}  // namespace
+
 bool InstallUtil::ExecuteExeAsAdmin(const CommandLine& cmd, DWORD* exit_code) {
   FilePath::StringType program(cmd.GetProgram().value());
   DCHECK(!program.empty());
@@ -142,6 +172,31 @@ void InstallUtil::WriteInstallerResult(bool system_install,
   }
   if (!install_list->Do())
     LOG(ERROR) << "Failed to record installer error information in registry.";
+}
+
+void InstallUtil::UpdateInstallerStage(bool system_install,
+                                       const std::wstring& state_key_path,
+                                       installer::InstallerStage stage) {
+  DCHECK_LE(static_cast<installer::InstallerStage>(0), stage);
+  DCHECK_GT(installer::NUM_STAGES, stage);
+  const HKEY root = system_install ? HKEY_LOCAL_MACHINE : HKEY_CURRENT_USER;
+  RegKey state_key;
+  LONG result = state_key.Open(root, state_key_path.c_str(),
+                               KEY_QUERY_VALUE | KEY_SET_VALUE);
+  if (result == ERROR_SUCCESS) {
+    // TODO(grt): switch to using Google Update's new InstallerExtraCode1 value
+    // once it exists.  In the meantime, encode the stage into the channel name.
+    installer::ChannelInfo channel_info;
+    // This will return false if the "ap" value isn't present, which is fine.
+    channel_info.Initialize(state_key);
+    if (channel_info.SetStage(kStages[stage]) &&
+        !channel_info.Write(&state_key)) {
+      LOG(ERROR) << "Failed writing installer stage to " << state_key_path;
+    }
+  } else {
+    LOG(ERROR) << "Failed opening " << state_key_path
+               << " to update installer stage; result: " << result;
+  }
 }
 
 bool InstallUtil::IsPerUserInstall(const wchar_t* const exe_path) {

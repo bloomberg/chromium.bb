@@ -264,81 +264,12 @@ void AddGoogleUpdateWorkItems(const InstallationState& original_state,
     return;
   }
 
-  // Update the "ap" value for the product being installed/updated. We get
-  // this via GetNonVersionedProductState since the product whose ap value
-  // we are querying may be in the process of being installed for the first
-  // time.
-  BrowserDistribution::Type client_state_distribution =
-      installer_state.state_type();
-  const ProductState* target_product_state =
-      original_state.GetNonVersionedProductState(
-          installer_state.system_install(), client_state_distribution);
-  ChannelInfo channel_info(target_product_state->channel());
-
-  // This is a multi-install product.
-  bool modified = channel_info.SetMultiInstall(true);
-
-  // Add the appropriate modifiers for all products and their options.
-  modified |= installer_state.SetChannelFlags(true, &channel_info);
-
-  VLOG(1) << "ap: " << channel_info.value();
-
-  const HKEY reg_root = installer_state.root_key();
-  const std::wstring& key_path(installer_state.state_key());
-
-  // Write the results if needed.
-  if (modified) {
-    install_list->AddSetRegValueWorkItem(reg_root, key_path,
-                                         google_update::kRegApField,
-                                         channel_info.value(), true);
-  } else {
-    VLOG(1) << "Channel flags not modified";
-  }
-
-  // Synchronize the other products and the package with this one.
-  std::vector<std::wstring> state_key_paths;
-
-  state_key_paths.reserve(installer_state.products().size());
-  std::wstring multi_key(
-      installer_state.multi_package_binaries_distribution()->GetStateKey());
-  if (multi_key != key_path)
-    state_key_paths.push_back(multi_key);
-
-  std::wstring other_key;
-  Products::const_iterator scan = installer_state.products().begin();
-  Products::const_iterator end = installer_state.products().end();
-  for (; scan != end; ++scan) {
-    other_key = (*scan)->distribution()->GetStateKey();
-    if (other_key != key_path)
-      state_key_paths.push_back(other_key);
-  }
-
-  RegKey key;
-  ChannelInfo other_info;
-  std::vector<std::wstring>::const_iterator kscan = state_key_paths.begin();
-  std::vector<std::wstring>::const_iterator kend = state_key_paths.end();
-  for (; kscan != kend; ++kscan) {
-    // Handle the case where the ClientState key doesn't exist by creating it.
-    // This takes care of the multi-installer's package key, which is not
-    // created by Google Update for us.
-    if ((key.Open(reg_root, kscan->c_str(), KEY_QUERY_VALUE) != ERROR_SUCCESS)
-        || (!other_info.Initialize(key))) {
-      other_info.set_value(std::wstring());
-    }
-    if (!other_info.Equals(channel_info)) {
-      if (!key.Valid()) {
-        install_list->AddCreateRegKeyWorkItem(reg_root, *kscan);
-      }
-      install_list->AddSetRegValueWorkItem(reg_root, *kscan,
-                                           google_update::kRegApField,
-                                           channel_info.value(), true);
-    }
-  }
-
   // Creating the ClientState key for binaries, if we're migrating to multi then
   // copy over Chrome's brand code if it has one. Chrome Frame currently never
   // has a brand code.
-  if (multi_key != key_path) {
+  if (installer_state.state_type() != BrowserDistribution::CHROME_BINARIES) {
+    std::wstring multi_key(
+        installer_state.multi_package_binaries_distribution()->GetStateKey());
     const ProductState* chrome_product_state =
         original_state.GetNonVersionedProductState(
             installer_state.system_install(),
@@ -346,9 +277,11 @@ void AddGoogleUpdateWorkItems(const InstallationState& original_state,
 
     const std::wstring& brand(chrome_product_state->brand());
     if (!brand.empty()) {
+      install_list->AddCreateRegKeyWorkItem(installer_state.root_key(),
+                                            multi_key);
       // Write Chrome's brand code to the multi key. Never overwrite the value
       // if one is already present (although this shouldn't happen).
-      install_list->AddSetRegValueWorkItem(reg_root,
+      install_list->AddSetRegValueWorkItem(installer_state.root_key(),
                                            multi_key,
                                            google_update::kRegBrandField,
                                            brand,

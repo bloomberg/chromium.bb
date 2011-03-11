@@ -36,6 +36,7 @@ class BrowserDistribution {
     CHROME_BROWSER,
     CHROME_FRAME,
     CHROME_BINARIES,
+    NUM_TYPES
   };
 
   static BrowserDistribution* GetDistribution();

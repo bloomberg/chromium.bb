@@ -19,6 +19,7 @@ const wchar_t kModChrome[] = L"-chrome";
 const wchar_t kModChromeFrame[] = L"-chromeframe";
 const wchar_t kModMultiInstall[] = L"-multi";
 const wchar_t kModReadyMode[] = L"-readymode";
+const wchar_t kModStage[] = L"-stage:";
 const wchar_t kSfxFull[] = L"-full";
 const wchar_t kSfxMultiFail[] = L"-multifail";
 
@@ -28,6 +29,7 @@ const wchar_t* const kChannels[] = {
 };
 
 const wchar_t* const kModifiers[] = {
+  kModStage,
   kModMultiInstall,
   kModChrome,
   kModChromeFrame,
@@ -38,6 +40,7 @@ const wchar_t* const kModifiers[] = {
 };
 
 enum ModifierIndex {
+  MOD_STAGE,
   MOD_MULTI_INSTALL,
   MOD_CHROME,
   MOD_CHROME_FRAME,
@@ -52,29 +55,44 @@ COMPILE_ASSERT(NUM_MODIFIERS == arraysize(kModifiers),
     kModifiers_disagrees_with_ModifierIndex_comma_they_must_match_bang);
 
 // Returns true if the modifier is found, in which case |position| holds the
-// location at which the modifier was found.
+// location at which the modifier was found.  The number of characters in the
+// modifier is returned in |length|, if non-NULL.
 bool FindModifier(ModifierIndex index,
                   const std::wstring& ap_value,
-                  std::wstring::size_type* position) {
+                  std::wstring::size_type* position,
+                  std::wstring::size_type* length) {
   DCHECK(position != NULL);
+  std::wstring::size_type mod_position = std::wstring::npos;
   std::wstring::size_type mod_length =
       std::wstring::traits_type::length(kModifiers[index]);
-  for (std::wstring::size_type pos = 0; ; ) {
-    *position = ap_value.find(kModifiers[index], pos, mod_length);
-    if (*position == std::wstring::npos)
+  const bool mod_takes_arg = (kModifiers[index][mod_length - 1] == L':');
+  std::wstring::size_type pos = 0;
+  do {
+    mod_position = ap_value.find(kModifiers[index], pos, mod_length);
+    if (mod_position == std::wstring::npos)
+      return false;  // Modifier not found.
+    pos = mod_position + mod_length;
+    // Modifiers that take an argument gobble up to the next separator or to the
+    // end.
+    if (mod_takes_arg) {
+      pos = ap_value.find(L'-', pos);
+      if (pos == std::wstring::npos)
+        pos = ap_value.size();
       break;
-    // The modifier must be either at the end of the string or followed by -.
-    pos = *position + mod_length;
-    if (pos == ap_value.size() || ap_value[pos] == L'-')
-      return true;
-  }
-  return false;
+    }
+    // Regular modifiers must be followed by '-' or the end of the string.
+  } while (pos != ap_value.size() && ap_value[pos] != L'-');
+  DCHECK_NE(mod_position, std::wstring::npos);
+  *position = mod_position;
+  if (length != NULL)
+    *length = pos - mod_position;
+  return true;
 }
 
 bool HasModifier(ModifierIndex index, const std::wstring& ap_value) {
   DCHECK(index >= 0 && index < NUM_MODIFIERS);
   std::wstring::size_type position;
-  return FindModifier(index, ap_value, &position);
+  return FindModifier(index, ap_value, &position, NULL);
 }
 
 std::wstring::size_type FindInsertionPoint(ModifierIndex index,
@@ -83,7 +101,7 @@ std::wstring::size_type FindInsertionPoint(ModifierIndex index,
   std::wstring::size_type result;
 
   for (int scan = index + 1; scan < NUM_MODIFIERS; ++scan) {
-    if (FindModifier(static_cast<ModifierIndex>(scan), ap_value, &result))
+    if (FindModifier(static_cast<ModifierIndex>(scan), ap_value, &result, NULL))
       return result;
   }
 
@@ -95,7 +113,8 @@ bool SetModifier(ModifierIndex index, bool set, std::wstring* ap_value) {
   DCHECK(index >= 0 && index < NUM_MODIFIERS);
   DCHECK(ap_value);
   std::wstring::size_type position;
-  bool have_modifier = FindModifier(index, *ap_value, &position);
+  std::wstring::size_type length;
+  bool have_modifier = FindModifier(index, *ap_value, &position, &length);
   if (set) {
     if (!have_modifier) {
       ap_value->insert(FindInsertionPoint(index, *ap_value), kModifiers[index]);
@@ -103,8 +122,7 @@ bool SetModifier(ModifierIndex index, bool set, std::wstring* ap_value) {
     }
   } else {
     if (have_modifier) {
-      ap_value->erase(position,
-                      std::wstring::traits_type::length(kModifiers[index]));
+      ap_value->erase(position, length);
       return true;
     }
   }
@@ -120,8 +138,16 @@ bool ChannelInfo::Initialize(const RegKey& key) {
 }
 
 bool ChannelInfo::Write(RegKey* key) const {
-  return (key->WriteValue(google_update::kRegApField, value_.c_str()) ==
-      ERROR_SUCCESS);
+  DCHECK(key);
+  // Google Update deletes the value when it is empty, so we may as well, too.
+  LONG result = value_.empty() ?
+      key->DeleteValue(google_update::kRegApField) :
+      key->WriteValue(google_update::kRegApField, value_.c_str());
+  if (result != ERROR_SUCCESS) {
+    LOG(ERROR) << "Failed writing channel info; result: " << result;
+    return false;
+  }
+  return true;
 }
 
 bool ChannelInfo::GetChannelName(std::wstring* channel_name) const {
@@ -157,12 +183,12 @@ bool ChannelInfo::EqualsBaseOf(const ChannelInfo& other) const {
   std::wstring::size_type this_base_end;
   std::wstring::size_type other_base_end;
 
-  if (!FindModifier(MOD_MULTI_INSTALL, value_, &this_base_end))
-    this_base_end = FindInsertionPoint(MOD_MULTI_INSTALL, value_);
-  if (!FindModifier(MOD_MULTI_INSTALL, other.value_, &other_base_end))
-    other_base_end = FindInsertionPoint(MOD_MULTI_INSTALL, other.value_);
+  if (!FindModifier(MOD_STAGE, value_, &this_base_end, NULL))
+    this_base_end = FindInsertionPoint(MOD_STAGE, value_);
+  if (!FindModifier(MOD_STAGE, other.value_, &other_base_end, NULL))
+    other_base_end = FindInsertionPoint(MOD_STAGE, other.value_);
   return value_.compare(0, this_base_end,
-                        other.value_.c_str(), other_base_end) == 0;
+                        other.value_, 0, other_base_end) == 0;
 }
 
 bool ChannelInfo::IsCeee() const {
@@ -203,6 +229,44 @@ bool ChannelInfo::IsReadyMode() const {
 
 bool ChannelInfo::SetReadyMode(bool value) {
   return SetModifier(MOD_READY_MODE, value, &value_);
+}
+
+bool ChannelInfo::SetStage(const wchar_t* stage) {
+  std::wstring::size_type position;
+  std::wstring::size_type length;
+  bool have_modifier = FindModifier(MOD_STAGE, value_, &position, &length);
+  if (stage != NULL && *stage != L'\0') {
+    std::wstring stage_str(kModStage);
+    stage_str.append(stage);
+    if (!have_modifier) {
+      value_.insert(FindInsertionPoint(MOD_STAGE, value_), stage_str);
+      return true;
+    }
+    if (value_.compare(position, length, stage_str) != 0) {
+      value_.replace(position, length, stage_str);
+      return true;
+    }
+  } else {
+    if (have_modifier) {
+      value_.erase(position, length);
+      return true;
+    }
+  }
+  return false;
+}
+
+std::wstring ChannelInfo::GetStage() const {
+  std::wstring::size_type position;
+  std::wstring::size_type length;
+
+  if (FindModifier(MOD_STAGE, value_, &position, &length)) {
+    // Return the portion after the prefix.
+    std::wstring::size_type pfx_length =
+        std::wstring::traits_type::length(kModStage);
+    DCHECK_LE(pfx_length, length);
+    return value_.substr(position + pfx_length, length - pfx_length);
+  }
+  return std::wstring();
 }
 
 bool ChannelInfo::HasFullSuffix() const {

@@ -8,6 +8,7 @@
 #include "base/command_line.h"
 #include "base/win/registry.h"
 #include "chrome/installer/util/browser_distribution.h"
+#include "chrome/installer/util/google_update_constants.h"
 #include "chrome/installer/util/installation_state.h"
 #include "chrome/installer/util/installer_state.h"
 #include "chrome/installer/util/install_util.h"
@@ -120,4 +121,54 @@ TEST_F(InstallUtilTest, GetCurrentDate) {
     // Check if they make sense.
     EXPECT_TRUE(SystemTimeToFileTime(&systime, &ft));
   }
+}
+
+TEST_F(InstallUtilTest, UpdateInstallerStage) {
+  const bool system_level = false;
+  const HKEY root = system_level ? HKEY_LOCAL_MACHINE : HKEY_CURRENT_USER;
+  std::wstring state_key_path(L"PhonyClientState");
+
+  // Update the stage when there's no "ap" value.
+  {
+    TempRegKeyOverride override(root, L"root_inst_res");
+    RegKey(root, state_key_path.c_str(), KEY_SET_VALUE);
+    InstallUtil::UpdateInstallerStage(system_level, state_key_path,
+                                      installer::BUILDING);
+    std::wstring value;
+    EXPECT_EQ(ERROR_SUCCESS,
+              RegKey(root, state_key_path.c_str(), KEY_QUERY_VALUE)
+                  .ReadValue(google_update::kRegApField, &value));
+    EXPECT_EQ(L"-stage:building", value);
+  }
+  TempRegKeyOverride::DeleteAllTempKeys();
+
+  // Update the stage when there is an "ap" value.
+  {
+    TempRegKeyOverride override(root, L"root_inst_res");
+    RegKey(root, state_key_path.c_str(), KEY_SET_VALUE)
+        .WriteValue(google_update::kRegApField, L"2.0-dev");
+    InstallUtil::UpdateInstallerStage(system_level, state_key_path,
+                                      installer::BUILDING);
+    std::wstring value;
+    EXPECT_EQ(ERROR_SUCCESS,
+              RegKey(root, state_key_path.c_str(), KEY_QUERY_VALUE)
+                  .ReadValue(google_update::kRegApField, &value));
+    EXPECT_EQ(L"2.0-dev-stage:building", value);
+  }
+  TempRegKeyOverride::DeleteAllTempKeys();
+
+  // Clear the stage.
+  {
+    TempRegKeyOverride override(root, L"root_inst_res");
+    RegKey(root, state_key_path.c_str(), KEY_SET_VALUE)
+      .WriteValue(google_update::kRegApField, L"2.0-dev-stage:building");
+    InstallUtil::UpdateInstallerStage(system_level, state_key_path,
+                                      installer::NO_STAGE);
+    std::wstring value;
+    EXPECT_EQ(ERROR_SUCCESS,
+              RegKey(root, state_key_path.c_str(), KEY_QUERY_VALUE)
+                  .ReadValue(google_update::kRegApField, &value));
+    EXPECT_EQ(L"2.0-dev", value);
+  }
+  TempRegKeyOverride::DeleteAllTempKeys();
 }

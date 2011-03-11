@@ -49,11 +49,12 @@ TEST_F(SetupUtilTest, ApplyDiffPatchTest) {
   FilePath src = data_dir_.AppendASCII("archive1.7z");
   FilePath patch = data_dir_.AppendASCII("archive.diff");
   FilePath dest = work_dir.AppendASCII("archive2.7z");
-  EXPECT_EQ(installer::ApplyDiffPatch(src, patch, dest), 0);
+  EXPECT_EQ(installer::ApplyDiffPatch(src, patch, dest, NULL), 0);
   FilePath base = data_dir_.AppendASCII("archive2.7z");
   EXPECT_TRUE(file_util::ContentsEqual(dest, base));
 
-  EXPECT_EQ(installer::ApplyDiffPatch(FilePath(), FilePath(), FilePath()), 6);
+  EXPECT_EQ(installer::ApplyDiffPatch(FilePath(), FilePath(), FilePath(), NULL),
+            6);
 }
 
 // Test that we are parsing Chrome version correctly.

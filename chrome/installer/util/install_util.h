@@ -64,6 +64,13 @@ class InstallUtil {
                                    int string_resource_id,
                                    const std::wstring* const launch_cmd);
 
+  // Update the installer stage reported by Google Update.  |state_key_path|
+  // should be obtained via the state_key method of an InstallerState instance
+  // created before the machine state is modified by the installer.
+  static void UpdateInstallerStage(bool system_install,
+                                   const std::wstring& state_key_path,
+                                   installer::InstallerStage stage);
+
   // Returns true if this installation path is per user, otherwise returns
   // false (per machine install, meaning: the exe_path contains path to
   // Program Files).
