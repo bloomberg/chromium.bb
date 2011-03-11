@@ -25,6 +25,8 @@
 #include "ui/base/message_box_win.h"
 #endif
 
+// ImporterHost ----------------------------------------------------------------
+
 ImporterHost::ImporterHost()
     : profile_(NULL),
       task_(NULL),
@@ -246,24 +248,13 @@ void ImporterHost::CheckForLoadedModels(uint16 items) {
   }
 }
 
+// ExternalProcessImporterHost -------------------------------------------------
+
 ExternalProcessImporterHost::ExternalProcessImporterHost()
     : items_(0),
       import_to_bookmark_bar_(false),
       cancelled_(false),
       import_process_launched_(false) {
-}
-
-void ExternalProcessImporterHost::Loaded(BookmarkModel* model) {
-  DCHECK(model->IsLoaded());
-  model->RemoveObserver(this);
-  waiting_for_bookmarkbar_model_ = false;
-  installed_bookmark_observer_ = false;
-
-  // Because the import process is running externally, the decision whether
-  // to import to the bookmark bar must be stored here so that it can be
-  // passed to the importer when the import task is invoked.
-  import_to_bookmark_bar_ = (!model->HasBookmarks());
-  InvokeTaskIfDone();
 }
 
 void ExternalProcessImporterHost::Cancel() {
@@ -311,6 +302,21 @@ void ExternalProcessImporterHost::InvokeTaskIfDone() {
   import_process_launched_ = true;
   client_->Start();
 }
+
+void ExternalProcessImporterHost::Loaded(BookmarkModel* model) {
+  DCHECK(model->IsLoaded());
+  model->RemoveObserver(this);
+  waiting_for_bookmarkbar_model_ = false;
+  installed_bookmark_observer_ = false;
+
+  // Because the import process is running externally, the decision whether
+  // to import to the bookmark bar must be stored here so that it can be
+  // passed to the importer when the import task is invoked.
+  import_to_bookmark_bar_ = (!model->HasBookmarks());
+  InvokeTaskIfDone();
+}
+
+// ExternalProcessImporterClient -----------------------------------------------
 
 ExternalProcessImporterClient::ExternalProcessImporterClient(
     ExternalProcessImporterHost* importer_host,

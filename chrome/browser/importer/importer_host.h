@@ -13,7 +13,6 @@
 #include "base/compiler_specific.h"
 #include "base/ref_counted.h"
 #include "base/scoped_ptr.h"
-#include "build/build_config.h"
 #include "chrome/browser/bookmarks/base_bookmark_model_observer.h"
 #include "chrome/browser/importer/importer_data_types.h"
 #include "chrome/browser/importer/importer_list.h"
@@ -27,12 +26,10 @@ class ExternalProcessImporterClient;
 class FirefoxProfileLock;
 class GURL;
 class Importer;
-class ImporterBridge;
 class InProcessImporterBridge;
 class Profile;
 class Task;
 class TemplateURL;
-struct IE7PasswordInfo;
 
 namespace history {
 class URLRow;
@@ -124,7 +121,6 @@ class ImporterHost : public base::RefCountedThreadSafe<ImporterHost>,
   // Profile we're importing from.
   Profile* profile_;
 
-
   // TODO(mirandac): task_ and importer_ should be private.  Can't just put
   // them there without changing the order of construct/destruct, so do this
   // after main CL has been committed.
@@ -133,9 +129,6 @@ class ImporterHost : public base::RefCountedThreadSafe<ImporterHost>,
 
   // The importer used in the task;
   Importer* importer_;
-
-  // Writes data from the importer back to the profile.
-  scoped_refptr<ProfileWriter> writer_;
 
   // True if we're waiting for the model to finish loading.
   bool waiting_for_bookmarkbar_model_;
@@ -146,17 +139,11 @@ class ImporterHost : public base::RefCountedThreadSafe<ImporterHost>,
   // True if source profile is readable.
   bool is_source_readable_;
 
-  // True if UI is not to be shown.
-  bool headless_;
-
   // Receives notification when the TemplateURLModel has loaded.
   NotificationRegistrar registrar_;
 
-  // Parent Window to use when showing any modal dialog boxes.
-  gfx::NativeWindow parent_window_;
-
-  // Firefox profile lock.
-  scoped_ptr<FirefoxProfileLock> firefox_lock_;
+  // Writes data from the importer back to the profile.
+  scoped_refptr<ProfileWriter> writer_;
 
  private:
   // Launches the thread that starts the import task, unless bookmark or
@@ -176,7 +163,17 @@ class ImporterHost : public base::RefCountedThreadSafe<ImporterHost>,
                        const NotificationSource& source,
                        const NotificationDetails& details) OVERRIDE;
 
+  // True if UI is not to be shown.
+  bool headless_;
+
+  // Parent Window to use when showing any modal dialog boxes.
+  gfx::NativeWindow parent_window_;
+
+  // The observer that we need to notify about changes in the import process.
   importer::ImporterProgressObserver* observer_;
+
+  // Firefox profile lock.
+  scoped_ptr<FirefoxProfileLock> firefox_lock_;
 
   DISALLOW_COPY_AND_ASSIGN(ImporterHost);
 };
@@ -187,26 +184,19 @@ class ExternalProcessImporterHost : public ImporterHost {
  public:
   ExternalProcessImporterHost();
 
-  // Called when the BookmarkModel has finished loading. Calls InvokeTaskIfDone
-  // to start importing.
-  virtual void Loaded(BookmarkModel* model);
+  // ImporterHost:
+  virtual void Cancel() OVERRIDE;
 
-  // Methods inherited from ImporterHost.
+ private:
+  // ImporterHost:
   virtual void StartImportSettings(const importer::ProfileInfo& profile_info,
                                    Profile* target_profile,
                                    uint16 items,
                                    ProfileWriter* writer,
-                                   bool first_run);
+                                   bool first_run) OVERRIDE;
+  virtual void InvokeTaskIfDone() OVERRIDE;
+  virtual void Loaded(BookmarkModel* model) OVERRIDE;
 
-  virtual void Cancel();
-
- protected:
-  // Launches the ExternalProcessImporterClient unless bookmark or template
-  // model are not yet loaded.  If load is not detected, this method will be
-  // called when the loading observer sees that model loading is complete.
-  virtual void InvokeTaskIfDone();
-
- private:
   // Used to pass notifications from the browser side to the external process.
   ExternalProcessImporterClient* client_;
 
