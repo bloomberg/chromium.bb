@@ -528,6 +528,7 @@ wl_display_create(void)
 
 	display->objects = wl_hash_table_create();
 	if (display->objects == NULL) {
+		wl_event_loop_destroy(display->loop);
 		free(display);
 		return NULL;
 	}
@@ -544,6 +545,7 @@ wl_display_create(void)
 	wl_display_add_object(display, &display->object);
 	if (wl_display_add_global(display, &display->object, NULL)) {
 		wl_event_loop_destroy(display->loop);
+		wl_hash_table_destroy(display->objects);
 		free(display);
 		return NULL;
 	}
