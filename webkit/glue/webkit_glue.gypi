@@ -441,8 +441,6 @@
         'webmenuitem.h',
         'webmenurunner_mac.h',
         'webmenurunner_mac.mm',
-        'webpasswordautocompletelistener_impl.cc',
-        'webpasswordautocompletelistener_impl.h',
         'webpreferences.cc',
         'webpreferences.h',
         'websocketstreamhandle_bridge.h',

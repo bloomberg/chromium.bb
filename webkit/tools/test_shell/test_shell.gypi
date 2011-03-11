@@ -400,7 +400,6 @@
         '../../glue/webcursor_unittest.cc',
         '../../glue/webframe_unittest.cc',
         '../../glue/webkit_glue_unittest.cc',
-        '../../glue/webpasswordautocompletelistener_unittest.cc',
         '../../glue/webview_unittest.cc',
         '../../mocks/mock_resource_loader_bridge.h',
         '../../mocks/mock_webframe.cc',
