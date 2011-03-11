@@ -2143,11 +2143,14 @@ void TestingAutomationProvider::SendJSONRequest(int handle,
   handler_map["ActivateTab"] =
       &TestingAutomationProvider::ActivateTabJSON;
 #if defined(OS_CHROMEOS)
+  handler_map["GetLoginInfo"] = &TestingAutomationProvider::GetLoginInfo;
   handler_map["LoginAsGuest"] = &TestingAutomationProvider::LoginAsGuest;
   handler_map["Login"] = &TestingAutomationProvider::Login;
-  handler_map["Logout"] = &TestingAutomationProvider::Logout;
-  handler_map["ScreenLock"] = &TestingAutomationProvider::ScreenLock;
-  handler_map["ScreenUnlock"] = &TestingAutomationProvider::ScreenUnlock;
+
+  handler_map["LockScreen"] = &TestingAutomationProvider::LockScreen;
+  handler_map["UnlockScreen"] = &TestingAutomationProvider::UnlockScreen;
+  handler_map["SignoutInScreenLocker"] =
+      &TestingAutomationProvider::SignoutInScreenLocker;
 
   handler_map["GetNetworkInfo"] = &TestingAutomationProvider::GetNetworkInfo;
   handler_map["ConnectToWifiNetwork"] =

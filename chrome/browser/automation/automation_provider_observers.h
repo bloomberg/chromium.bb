@@ -665,6 +665,7 @@ class LoginManagerObserver : public NotificationObserver {
  public:
   LoginManagerObserver(AutomationProvider* automation,
                        IPC::Message* reply_message);
+  virtual ~LoginManagerObserver();
 
   // NotificationObserver interface.
   virtual void Observe(NotificationType type, const NotificationSource& source,
@@ -687,6 +688,7 @@ class ScreenLockUnlockObserver : public NotificationObserver {
   ScreenLockUnlockObserver(AutomationProvider* automation,
                            IPC::Message* reply_message,
                            bool lock_screen);
+  virtual ~ScreenLockUnlockObserver();
 
   // NotificationObserver interface.
   virtual void Observe(NotificationType type, const NotificationSource& source,

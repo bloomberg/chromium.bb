@@ -11,9 +11,11 @@
 #include "chrome/browser/chromeos/cros/network_library.h"
 #include "chrome/browser/chromeos/cros/screen_lock_library.h"
 #include "chrome/browser/chromeos/login/existing_user_controller.h"
+#include "chrome/browser/chromeos/login/screen_locker.h"
 
 using chromeos::CrosLibrary;
 using chromeos::NetworkLibrary;
+using chromeos::UserManager;
 
 namespace {
 
@@ -29,6 +31,26 @@ DictionaryValue* GetNetworkInfoDict(const chromeos::Network* network) {
 
 }  // namespace
 
+void TestingAutomationProvider::GetLoginInfo(DictionaryValue* args,
+                                             IPC::Message* reply_message) {
+  AutomationJSONReply reply(this, reply_message);
+  scoped_ptr<DictionaryValue> return_value(new DictionaryValue);
+
+  const UserManager* user_manager = UserManager::Get();
+  if (!user_manager)
+    reply.SendError("No user manager!");
+  const chromeos::ScreenLocker* screen_locker =
+      chromeos::ScreenLocker::default_screen_locker();
+
+  return_value->SetBoolean("is_logged_in", user_manager->user_is_logged_in());
+  return_value->SetBoolean("is_guest", user_manager->IsLoggedInAsGuest());
+  return_value->SetBoolean("is_screen_locked", screen_locker);
+
+  reply.SendSuccess(return_value.get());
+}
+
+// Logging in as guest will cause session_manager to restart Chrome with new
+// flags. If you used EnableChromeTesting, you will have to call it again.
 void TestingAutomationProvider::LoginAsGuest(DictionaryValue* args,
                                              IPC::Message* reply_message) {
   chromeos::ExistingUserController* controller =
@@ -55,30 +77,50 @@ void TestingAutomationProvider::Login(DictionaryValue* args,
   controller->Login(username, password);
 }
 
-// Logging out could have other undesirable side effects: session_manager is
-// killed, so its children, including chrome and the window manager will also
-// be killed. SSH connections might be closed, the test binary might be killed.
-void TestingAutomationProvider::Logout(DictionaryValue* args,
-                                       IPC::Message* reply_message) {
-  // Send success before stopping session because if we're a child of
-  // session manager then we'll die when the session is stopped.
-  AutomationJSONReply(this, reply_message).SendSuccess(NULL);
-  if (chromeos::CrosLibrary::Get()->EnsureLoaded())
-    chromeos::CrosLibrary::Get()->GetLoginLibrary()->StopSession("");
-}
-
-void TestingAutomationProvider::ScreenLock(DictionaryValue* args,
+void TestingAutomationProvider::LockScreen(DictionaryValue* args,
                                            IPC::Message* reply_message) {
+  if (!CrosLibrary::Get()->EnsureLoaded()) {
+    AutomationJSONReply(this, reply_message).SendError(
+        "Could not load cros library.");
+    return;
+  }
+
   new ScreenLockUnlockObserver(this, reply_message, true);
-  chromeos::CrosLibrary::Get()->GetScreenLockLibrary()->
+  CrosLibrary::Get()->GetScreenLockLibrary()->
       NotifyScreenLockRequested();
 }
 
-void TestingAutomationProvider::ScreenUnlock(DictionaryValue* args,
+void TestingAutomationProvider::UnlockScreen(DictionaryValue* args,
                                              IPC::Message* reply_message) {
+  if (!CrosLibrary::Get()->EnsureLoaded()) {
+    AutomationJSONReply(this, reply_message).SendError(
+        "Could not load cros library.");
+    return;
+  }
+
   new ScreenLockUnlockObserver(this, reply_message, false);
-  chromeos::CrosLibrary::Get()->GetScreenLockLibrary()->
+  CrosLibrary::Get()->GetScreenLockLibrary()->
       NotifyScreenUnlockRequested();
+}
+
+// Signing out could have undesirable side effects: session_manager is
+// killed, so its children, including chrome and the window manager, will
+// also be killed. Anything owned by chronos will probably be killed.
+void TestingAutomationProvider::SignoutInScreenLocker(
+    DictionaryValue* args, IPC::Message* reply_message) {
+  AutomationJSONReply reply(this, reply_message);
+  chromeos::ScreenLocker* screen_locker =
+      chromeos::ScreenLocker::default_screen_locker();
+  if (!screen_locker) {
+    reply.SendError(
+        "No default screen locker. Are you sure the screen is locked?");
+    return;
+  }
+
+  // Send success before stopping session because if we're a child of
+  // session manager then we'll die when the session is stopped.
+  reply.SendSuccess(NULL);
+  screen_locker->Signout();
 }
 
 void TestingAutomationProvider::GetNetworkInfo(DictionaryValue* args,
@@ -180,4 +222,3 @@ void TestingAutomationProvider::ConnectToWifiNetwork(
 
   reply.SendSuccess(NULL);
 }
-

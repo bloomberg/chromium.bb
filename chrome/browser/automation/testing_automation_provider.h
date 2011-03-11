@@ -968,15 +968,18 @@ class TestingAutomationProvider : public AutomationProvider,
   void ActivateTabJSON(DictionaryValue* args, IPC::Message* message);
 
 #if defined(OS_CHROMEOS)
+  void GetLoginInfo(DictionaryValue* args, IPC::Message* reply_message);
+
   void LoginAsGuest(DictionaryValue* args, IPC::Message* reply_message);
 
   void Login(DictionaryValue* args, IPC::Message* reply_message);
 
-  void Logout(DictionaryValue* args, IPC::Message* reply_message);
+  void LockScreen(DictionaryValue* args, IPC::Message* reply_message);
 
-  void ScreenLock(DictionaryValue* args, IPC::Message* reply_message);
+  void UnlockScreen(DictionaryValue* args, IPC::Message* reply_message);
 
-  void ScreenUnlock(DictionaryValue* args, IPC::Message* reply_message);
+  void SignoutInScreenLocker(DictionaryValue* args,
+                             IPC::Message* reply_message);
 
   void GetNetworkInfo(DictionaryValue* args, IPC::Message* reply_message);
 

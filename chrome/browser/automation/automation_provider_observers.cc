@@ -1270,6 +1270,8 @@ LoginManagerObserver::LoginManagerObserver(
                  NotificationService::AllSources());
 }
 
+LoginManagerObserver::~LoginManagerObserver() {}
+
 void LoginManagerObserver::Observe(NotificationType type,
                                    const NotificationSource& source,
                                    const NotificationDetails& details) {
@@ -1300,6 +1302,8 @@ ScreenLockUnlockObserver::ScreenLockUnlockObserver(
   registrar_.Add(this, NotificationType::SCREEN_LOCK_STATE_CHANGED,
                  NotificationService::AllSources());
 }
+
+ScreenLockUnlockObserver::~ScreenLockUnlockObserver() {}
 
 void ScreenLockUnlockObserver::Observe(NotificationType type,
                                        const NotificationSource& source,

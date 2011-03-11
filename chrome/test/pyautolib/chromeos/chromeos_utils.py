@@ -32,6 +32,7 @@ class ChromeosUtils(pyauto.PyUITest):
     username = creds[0]
     passwd = creds[1]
     self.Login(username, passwd)
+    assert self.GetLoginInfo()['is_logged_in']
     logging.info('Logged in as %s' % username)
 
 

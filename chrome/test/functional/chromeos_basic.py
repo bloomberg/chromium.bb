@@ -33,6 +33,14 @@ class ChromeosBasic(pyauto.PyUITest):
     self.assertTrue(result)
     logging.debug(result)
 
+  def testScreenLocker(self):
+    """Sanity check for screen locker functions."""
+    self.assertFalse(self.GetLoginInfo()['is_screen_locked'])
+    self.LockScreen()
+    self.assertTrue(self.GetLoginInfo()['is_screen_locked'])
+    self.UnlockScreen()
+    self.assertFalse(self.GetLoginInfo()['is_screen_locked'])
+
 
 if __name__ == '__main__':
   pyauto_functional.Main()

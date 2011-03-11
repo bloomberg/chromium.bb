@@ -2270,6 +2270,43 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
 
   ## ChromeOS section
 
+  def GetLoginInfo(self):
+    """Returns information about login and screen locker state.
+
+    This includes things like whether a user is logged in, the username
+    of the logged in user, and whether the screen is locked.
+
+    Returns:
+      A dictionary.
+      Sample:
+
+      { u'is_logged_in': True,
+        u'is_guest': False,
+        u'is_screen_locked': False}
+
+    Raises:
+      pyauto_errors.JSONInterfaceError if the automation call returns an error.
+    """
+    cmd_dict = { 'command': 'GetLoginInfo' }
+    return self._GetResultFromJSONRequest(cmd_dict)
+
+  def LoginAsGuest(self):
+    """Login to chromeos as a guest user.
+
+    Waits until logged in.
+    Should be displaying the login screen to work.
+
+    Raises:
+      pyauto_errors.JSONInterfaceError if the automation call returns an error.
+    """
+    cmd_dict = { 'command': 'LoginAsGuest' }
+    self._GetResultFromJSONRequest(cmd_dict, windex=-1)
+    # Currently, logging in as guest causes session_manager to restart
+    # Chrome with new parameters, which will close the testing channel.
+    # We need to call EnableChromeTesting again.
+    self.EnableChromeTestingOnChromeOS()
+    self.SetUp()
+
   def Login(self, username, password):
     """Login to chromeos.
 
@@ -2284,7 +2321,52 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
         'username': username,
         'password': password,
     }
-    return self._GetResultFromJSONRequest(cmd_dict, windex=-1)
+    self._GetResultFromJSONRequest(cmd_dict, windex=-1)
+
+  def Logout(self):
+    """Log out from chromeos.
+
+    May return before logout is complete and
+    gives no indication of success or failure.
+    Should be logged in to work.
+    """
+    self.ApplyAccelerator(IDC_EXIT)
+
+  def LockScreen(self):
+    """Locks the screen on chromeos.
+
+    Waits until screen is locked.
+    Should be logged in and screen should not be locked to work.
+
+    Raises:
+      pyauto_errors.JSONInterfaceError if the automation call returns an error.
+    """
+    cmd_dict = { 'command': 'LockScreen' }
+    self._GetResultFromJSONRequest(cmd_dict, windex=-1)
+
+  def UnlockScreen(self):
+    """Unlocks the screen on chromeos.
+
+    Waits until screen is unlocked.
+    Screen locker should be displayed to work.
+
+    Raises:
+      pyauto_errors.JSONInterfaceError if the automation call returns an error.
+    """
+    cmd_dict = { 'command': 'UnlockScreen' }
+    self._GetResultFromJSONRequest(cmd_dict, windex=-1)
+
+  def SignoutInScreenLocker(self):
+    """Signs out of chromeos using the screen locker's "Sign out" feature.
+
+    Effectively the same as clicking the "Sign out" link on the screen locker.
+    Screen should be locked for this to work.
+
+    Raises:
+      pyauto_errors.JSONInterfaceError if the automation call returns an error.
+    """
+    cmd_dict = { 'command': 'SignoutInScreenLocker' }
+    self._GetResultFromJSONRequest(cmd_dict, windex=-1)
 
   def GetNetworkInfo(self):
     """Get details about ethernet, wifi, and cellular networks on chromeos.
