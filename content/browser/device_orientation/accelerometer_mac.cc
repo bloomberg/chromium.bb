@@ -125,6 +125,9 @@ const AccelerometerMac::SensorDescriptor
   // Tested by adlr on a 13" MacBook.
   { "MacBook4,1",    NULL, { { 0, true  }, { 2, true  }, { 4, false } } },
 
+  // Tested by Adam Gerson (via avi) on a 13" MacBook.
+  { "MacBook5,2",    NULL, { { 0, false }, { 2, true  }, { 4, true  } } },
+
   // Tested by tommyw on a 13" MacBook.
   { "MacBook6,1",    NULL, { { 0, true  }, { 2, true  }, { 4, false } } },
 
@@ -198,7 +201,6 @@ const AccelerometerMac::SensorDescriptor
   // configuration may well have problems with inverted axes.
   // TODO(avi): Find these past models and test on them; test on future models.
   //  MacBook5,1
-  //  MacBook5,2
   //  MacBookPro1,2
   { "",              NULL, { { 0, true  }, { 2, true  }, { 4, false } } }
 };
