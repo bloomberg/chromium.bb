@@ -890,7 +890,8 @@ void BrowserInit::LaunchWithProfile::ProcessLaunchURLs(
     browser = BrowserList::GetLastActiveWithProfile(profile_);
 
   browser = OpenURLsInBrowser(browser, process_startup, adjust_urls);
-  AddInfoBarsIfNecessary(browser);
+  if (process_startup)
+    AddInfoBarsIfNecessary(browser);
 }
 
 bool BrowserInit::LaunchWithProfile::ProcessStartupURLs(

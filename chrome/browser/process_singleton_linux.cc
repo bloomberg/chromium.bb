@@ -648,7 +648,8 @@ void ProcessSingleton::LinuxWatcher::HandleMessage(
     // signalling process.
     FilePath current_dir_file_path(current_dir);
     BrowserInit::ProcessCommandLine(parsed_command_line, current_dir_file_path,
-                                    false, profile, NULL);
+                                    false /* not process startup */, profile,
+                                    NULL);
   }
 
   // Send back "ACK" message to prevent the client process from starting up.
