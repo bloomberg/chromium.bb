@@ -30,7 +30,7 @@ bool ExtensionResourceRequestPolicy::CanRequestResource(
   // launchers.
   std::string resource_root_relative_path =
       resource_url.path().empty() ? "" : resource_url.path().substr(1);
-  if (extension && extension->is_hosted_app() &&
+  if (extension->is_hosted_app() &&
       !extension->icons().ContainsPath(resource_root_relative_path)) {
     LOG(ERROR) << "Denying load of " << resource_url.spec() << " from "
                << "hosted app.";
