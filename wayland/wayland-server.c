@@ -659,8 +659,10 @@ wl_display_add_socket(struct wl_display *display, const char *name)
 		return -1;
 
 	s->fd = socket(PF_LOCAL, SOCK_STREAM, 0);
-	if (s->fd < 0)
+	if (s->fd < 0) {
+		free(s);
 		return -1;
+	}
 
 	runtime_dir = getenv("XDG_RUNTIME_DIR");
 	if (runtime_dir == NULL) {
@@ -682,15 +684,27 @@ wl_display_add_socket(struct wl_display *display, const char *name)
 	fprintf(stderr, "using socket %s\n", s->addr.sun_path);
 
 	size = offsetof (struct sockaddr_un, sun_path) + name_size;
-	if (bind(s->fd, (struct sockaddr *) &s->addr, size) < 0)
+	if (bind(s->fd, (struct sockaddr *) &s->addr, size) < 0) {
+		close(s->fd);
+		free(s);
 		return -1;
+	}
 
-	if (listen(s->fd, 1) < 0)
+	if (listen(s->fd, 1) < 0) {
+		close(s->fd);
+		unlink(s->addr.sun_path);
+		free(s);
 		return -1;
+	}
 
-	wl_event_loop_add_fd(display->loop, s->fd,
-			     WL_EVENT_READABLE,
-			     socket_data, display);
+	if (wl_event_loop_add_fd(display->loop, s->fd,
+				 WL_EVENT_READABLE,
+				 socket_data, display) == NULL) {
+		close(s->fd);
+		unlink(s->addr.sun_path);
+		free(s);
+		return -1;
+	}
 	wl_list_insert(display->socket_list.prev, &s->link);
 
 	return 0;
@@ -710,23 +724,26 @@ wl_compositor_init(struct wl_compositor *compositor,
 	compositor->argb_visual.object.interface = &wl_visual_interface;
 	compositor->argb_visual.object.implementation = NULL;
 	wl_display_add_object(display, &compositor->argb_visual.object);
-	wl_display_add_global(display, &compositor->argb_visual.object, NULL);
+	if (wl_display_add_global(display, &compositor->argb_visual.object, NULL))
+		return -1;
 
 	compositor->premultiplied_argb_visual.object.interface =
 		&wl_visual_interface;
 	compositor->premultiplied_argb_visual.object.implementation = NULL;
 	wl_display_add_object(display,
 			      &compositor->premultiplied_argb_visual.object);
-	wl_display_add_global(display,
-			      &compositor->premultiplied_argb_visual.object,
-			      NULL);
+	if (wl_display_add_global(display,
+				  &compositor->premultiplied_argb_visual.object,
+				  NULL))
+		return -1;
 
 	compositor->rgb_visual.object.interface = &wl_visual_interface;
 	compositor->rgb_visual.object.implementation = NULL;
 	wl_display_add_object(display,
 			      &compositor->rgb_visual.object);
-	wl_display_add_global(display,
-			      &compositor->rgb_visual.object, NULL);
+	if (wl_display_add_global(display,
+				  &compositor->rgb_visual.object, NULL))
+		return -1;
 
 	return 0;
 }
