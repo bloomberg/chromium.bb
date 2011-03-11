@@ -62,13 +62,16 @@ void SetGpuInfo(const GPUInfo& gpu_info) {
   snprintf(g_gpu_device_id, kGpuStringSize, "0x%04x", gpu_info.device_id);
   strncpy(g_gpu_driver_ver,
           gpu_info.driver_version.c_str(),
-          kGpuStringSize);
+          kGpuStringSize - 1);
+  g_gpu_driver_ver[kGpuStringSize - 1] = '\0';
   strncpy(g_gpu_ps_ver,
           base::UintToString(gpu_info.pixel_shader_version).c_str(),
-          kGpuStringSize);
+          kGpuStringSize - 1);
+  g_gpu_ps_ver[kGpuStringSize - 1] = '\0';
   strncpy(g_gpu_vs_ver,
           base::UintToString(gpu_info.vertex_shader_version).c_str(),
-          kGpuStringSize);
+          kGpuStringSize - 1);
+  g_gpu_vs_ver[kGpuStringSize - 1] = '\0';
 }
 
 void SetNumberOfViews(int number_of_views) {
