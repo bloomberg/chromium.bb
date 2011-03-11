@@ -13,6 +13,7 @@
 #include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/browser/chromeos/cros/network_library.h"
 #include "chrome/browser/chromeos/customization_document.h"
+#include "chrome/browser/chromeos/login/existing_user_controller.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "content/browser/browser_thread.h"
@@ -155,10 +156,15 @@ void ApplyServicesCustomization::Apply(const std::string& manifest) {
   std::string locale = g_browser_process->GetApplicationLocale();
   std::string initial_start_page = customization.GetInitialStartPage(locale);
   if (!initial_start_page.empty()) {
-    // Append partner's start page url to command line so it gets opened
-    // on browser startup.
-    CommandLine::ForCurrentProcess()->AppendArg(initial_start_page);
     VLOG(1) << "initial_start_page_url: " << initial_start_page;
+    ExistingUserController* current_controller =
+        ExistingUserController::current_controller();
+    if (current_controller) {
+      current_controller->set_initial_start_page(initial_start_page);
+    } else {
+      // Exit here to don't safe that manifest was applied.
+      return;
+    }
   }
   // TODO(dpolukhin): apply customized apps, exts and support page.
 

@@ -345,6 +345,12 @@ void ExistingUserController::OnLoginSuccess(
     CommandLine::ForCurrentProcess()->AppendArg(kGetStartedURL);
 #endif  // OFFICIAL_BUILD
 
+    if (!initial_start_page_.empty()) {
+      // If initial_start_page is not empty, add it as second tab.
+      // The tabs are opened in the same order as arguments in command line.
+      CommandLine::ForCurrentProcess()->AppendArg(initial_start_page_);
+    }
+
     if (credentials.two_factor) {
       // If we have a two factor error and and this is a new user,
       // load the personal settings page.
