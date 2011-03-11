@@ -17,7 +17,7 @@ import chromebinaries
 def FindChrome(src_dir, options):
   if options.browser_path:
     return options.browser_path
-  
+
   # List of places that chrome could live.
   # In theory we should be more careful about what platform we're actually
   # building for.
@@ -77,7 +77,7 @@ def BuildAndTest(options):
       bits = 64
     else:
       bits = 32
-    tool_bits = {32: 'x86', 64: 'x64'}[bits]
+    tools_bits = {32: 'x86', 64: 'x64'}[bits]
     msvs_path = ';'.join([
         r'c:\Program Files\Microsoft Visual Studio 9.0\VC',
         r'c:\Program Files (x86)\Microsoft Visual Studio 9.0\VC',
