@@ -58,7 +58,7 @@ the char.
 Counts the number of Unicode chars in <parameter>len</parameter> bytes of
 <parameter>src</parameter>.  Places that count in
 <parameter>nchar</parameter>.  <parameter>wchar</parameter> contains 1, 2 or
-4 depending on the number of bytes needed to hold the largest unicode char
+4 depending on the number of bytes needed to hold the largest Unicode char
 counted.  The return value indicates whether <parameter>src</parameter> is a
 well-formed UTF8 string.
 @@
@@ -92,7 +92,7 @@ Counts the number of Unicode chars in <parameter>len</parameter> bytes of
 combined into 16-bit units according to <parameter>endian</parameter>.
 Places that count in <parameter>nchar</parameter>.
 <parameter>wchar</parameter> contains 1, 2 or 4 depending on the number of
-bytes needed to hold the largest unicode char counted.  The return value
+bytes needed to hold the largest Unicode char counted.  The return value
 indicates whether <parameter>string</parameter> is a well-formed UTF16
 string.
 @@

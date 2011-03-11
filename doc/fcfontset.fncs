@@ -125,7 +125,7 @@ modify these patterns.  Instead, they should be passed, along with
 <parameter>pattern</parameter> to
 <function>FcFontRenderPrepare</function> which combines them into a complete pattern.
     </para><para>
-The FcFontSet returned by FcFontSetSort is destroyed by caling FcFontSetDestroy.
+The FcFontSet returned by FcFontSetSort is destroyed by calling FcFontSetDestroy.
 @@
 
 @RET@		

@@ -45,7 +45,7 @@ higher level functions.
 @FUNC@          FcFreeTypeCharSet 
 @TYPE1@         FT_Face%			@ARG1@          face      
 @TYPE2@         FcBlanks *			@ARG2@          blanks
-@PURPOSE@	compute unicode coverage
+@PURPOSE@	compute Unicode coverage
 @DESC@
 Scans a FreeType face and returns the set of encoded Unicode chars.  This scans
 several encoding tables to build as complete a list as possible.  
@@ -61,7 +61,7 @@ not in 'blanks' are not placed in the returned FcCharSet.
 @TYPE1@         FT_Face%			@ARG1@          face      
 @TYPE2@         FcBlanks *			@ARG2@          blanks
 @TYPE3@		int *				@ARG3@		spacing
-@PURPOSE@	compute unicode coverage and spacing type
+@PURPOSE@	compute Unicode coverage and spacing type
 @DESC@
 Scans a FreeType face and returns the set of encoded Unicode chars.
 This scans

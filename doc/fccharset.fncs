@@ -46,7 +46,7 @@ memory referenced is freed.
 @TYPE2@		FcChar32% 		@ARG2@		ucs4 
 @PURPOSE@	Add a character to a charset
 @DESC@
-<function>FcCharSetAddChar</function> adds a single unicode char to the set,
+<function>FcCharSetAddChar</function> adds a single Unicode char to the set,
 returning FcFalse on failure, either as a result of a constant set or from
 running out of memory. 
 @@
@@ -57,7 +57,7 @@ running out of memory.
 @TYPE2@		FcChar32% 		@ARG2@		ucs4 
 @PURPOSE@	Add a character to a charset
 @DESC@
-<function>FcCharSetDelChar</function> deletes a single unicode char from the set,
+<function>FcCharSetDelChar</function> deletes a single Unicode char from the set,
 returning FcFalse on failure, either as a result of a constant set or from
 running out of memory.
 @@
@@ -78,7 +78,7 @@ than increment the reference count on <parameter>src</parameter>.
 @PURPOSE@	Compare two charsets
 @DESC@
 Returns whether <parameter>a</parameter> and <parameter>b</parameter>
-contain the same set of unicode chars.
+contain the same set of Unicode chars.
 @@
 
 @RET@		FcCharSet *
@@ -138,7 +138,7 @@ Returns whether <parameter>fcs</parameter> contains the char <parameter>ucs4</pa
 @TYPE1@		const FcCharSet *	@ARG1@		a
 @PURPOSE@	Count entries in a charset
 @DESC@
-Returns the total number of unicode chars in <parameter>a</parameter>. 
+Returns the total number of Unicode chars in <parameter>a</parameter>. 
 @@
 
 @RET@		FcChar32
