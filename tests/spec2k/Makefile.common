@@ -172,13 +172,13 @@ $(IT).nacl.dyn.opt.x8664: $(SRC) $(CPPSRC)
 
 PNACL_ROOT=$(TC_ROOT)/linux_arm-untrusted
 PNACL_BIN=$(PNACL_ROOT)/bin
-TRANSLATOR_X8632=$(PNACL_BIN)/pnacl-translate --pnacl-sb -arch x86-32
-TRANSLATOR_X8664=$(PNACL_BIN)/pnacl-translate --pnacl-sb -arch x86-64
+PNACL_TRANSLATOR=$(TIME_CMD) $(PNACL_BIN)/pnacl-translate
+PNACL_TRANSLATOR_SB=$(TIME_CMD) $(PNACL_BIN)/pnacl-translate --pnacl-sb
 BC_GCC=$(PNACL_BIN)/pnacl-gcc
 BC_GPP=$(PNACL_BIN)/pnacl-g++
 BC_OPT=$(PNACL_BIN)/pnacl-bcopt -O3
-BC_LINK=$(PNACL_BIN)/pnacl-bclink
-BC_TRANSLATE=$(TIME_CMD) $(PNACL_BIN)/pnacl-ld
+BC_MERGE=$(PNACL_BIN)/pnacl-bclink
+BC_PRELINK=$(PNACL_BIN)/pnacl-ld
 
 PNACL_FLAGS=--pnacl-driver-verbose
 
@@ -202,95 +202,76 @@ $(IT).bc: $(SRC:%.c=%.bc) $(CPPSRC:%.cc=%.bc)
 	@$(call LOG_ZIP_SIZE,$@,$(IT))
 
 # optimized llvm bit code combined
+# NOTE: this is just a merged bitcode file and does not include the libraries
+#       we add this step so we can perform interprocedural optimization, c.f.
+#       $(IT).opt.bc, without the libs
 $(IT).preopt.bc: $(SRC:%.c=%.o.bc) $(CPPSRC:%.cc=%.o.bc)
-	$(BC_LINK) $^  -o $@
+	$(BC_MERGE) $^  -o $@
+	@$(call LOG_ZIP_SIZE,$@,$(IT))
+
+# llvm bit code pre-linked
+$(IT).preopt.pexe: $(IT).preopt.bc
+	$(BC_PRELINK) $^ -lm -o $@
 	@$(call LOG_ZIP_SIZE,$@,$(IT))
 
 # optimized llvm bit code combined and interprocedurally re-optimized
 $(IT).opt.bc: $(IT).preopt.bc
-	$(BC_OPT) $< -o $@
+	$(BC_OPT) $^ -o $@
 	@$(call LOG_ZIP_SIZE,$@,$(IT))
 
-######################################################################
-# BITCODE - BACKEND - ARM
-
-$(IT).pnacl.arm: $(IT).bc
-	$(BC_TRANSLATE) $(IT).bc  -arch arm $(PNACL_FLAGS) -o $@ -lm
-	@$(call LOG_TRANSLATE_TIME,$@,$(IT))
-
-$(IT).pnacl.opt.arm: $(IT).opt.bc
-	$(BC_TRANSLATE) $(IT).opt.bc -arch arm $(PNACL_FLAGS) -o $@ -lm
-	@$(call LOG_TRANSLATE_TIME,$@,$(IT))
-
-######################################################################
-# BITCODE - BACKEND - X8632
-
-$(IT).pnacl.x8632: $(IT).bc
-	$(BC_TRANSLATE) $(IT).bc -arch x86-32 $(PNACL_FLAGS) -o $@ -lm
-	@$(call LOG_TRANSLATE_TIME,$@,$(IT))
-
-$(IT).pnacl.opt.x8632: $(IT).opt.bc
-	$(BC_TRANSLATE) $(IT).opt.bc -arch x86-32 $(PNACL_FLAGS) -o $@ -lm
-	@$(call LOG_TRANSLATE_TIME,$@,$(IT))
-
-
-######################################################################
-# BITCODE - BACKEND - X8664
-
-$(IT).pnacl.x8664: $(IT).bc
-	$(BC_TRANSLATE) $(IT).bc -arch x86-64 $(PNACL_FLAGS) -o $@ -lm
-	@$(call LOG_TRANSLATE_TIME,$@,$(IT))
-
-$(IT).pnacl.opt.x8664: $(IT).opt.bc
-	$(BC_TRANSLATE) $(IT).opt.bc -arch x86-64 $(PNACL_FLAGS) -o $@ -lm
-	@$(call LOG_TRANSLATE_TIME,$@,$(IT))
-
-######################################################################
-# SANDBOXED TRANSLATOR
-# In order to use these the following setup is necessary:
-# tools/llvm/utman.sh build-sandboxed-translators
-# tools/llvm/utman.sh install-translators
-######################################################################
-BC_PRELINK=$(PNACL_BIN)/pnacl-ld
-
-# optimized llvm bit code combined and interprocedurally optimized
-$(IT).opt.prelinked.bc: $(IT).opt.bc
+# optimized llvm bit code pre-linked
+$(IT).opt.pexe: $(IT).opt.bc
 	$(BC_PRELINK) $^ -lm -o $@
 	@$(call LOG_ZIP_SIZE,$@,$(IT))
 
-# llvm bit code combined
-$(IT).prelinked.bc: $(IT).bc
-	$(BC_PRELINK) $^ -lm -o $@
-	@$(call LOG_ZIP_SIZE,$@,$(IT))
+# TODO(robertm): consider droping the merged files and generating pexe's
+#                right away
+######################################################################
+# BITCODE - BACKEND - ARM  (sandboxed and non-sandboxed translators)
+# TODO: sandboxed arm translators are not ready yet
 
-
-# TODO(abetul): the arm translator is not fully supported at this time
-#
-#BC_ARM_TRANSLATOR=$(TIME_CMD) ${TRANSLATOR_ROOT}/arm/translator
-#
-#$(IT).pnacl_translator.arm: $(IT).prelinked.bc
-#	$(BC_ARM_TRANSLATOR) $(IT).prelinked.bc $@
-#
-#$(IT).pnacl_translator.opt.arm: $(IT).opt.prelinked.bc
-#	$(BC_ARM_TRANSLATOR) $(IT).opt.prelinked.bc $@
-
-BC_X8632_TRANSLATOR=$(TIME_CMD) ${TRANSLATOR_X8632}
-
-$(IT).pnacl_translator.x8632: $(IT).prelinked.bc
-	$(BC_X8632_TRANSLATOR) $(PNACL_FLAGS) $(IT).prelinked.bc -o $@
+$(IT).pnacl.arm: $(IT).preopt.pexe
+	$(PNACL_TRANSLATOR) $(PNACL_FLAGS) $^ -o $@ -arch arm
 	@$(call LOG_TRANSLATE_TIME,$@,$(IT))
 
-$(IT).pnacl_translator.opt.x8632: $(IT).opt.prelinked.bc
-	$(BC_X8632_TRANSLATOR) $(PNACL_FLAGS) $(IT).opt.prelinked.bc -o $@
+$(IT).pnacl.opt.arm: $(IT).opt.pexe
+	$(PNACL_TRANSLATOR) $(PNACL_FLAGS) $^ -o $@ -arch arm
 	@$(call LOG_TRANSLATE_TIME,$@,$(IT))
 
+######################################################################
+# BITCODE - BACKEND - X8632 (sandboxed and non-sandboxed translators)
 
-BC_X8664_TRANSLATOR=$(TIME_CMD) ${TRANSLATOR_X8664}
-
-$(IT).pnacl_translator.x8664: $(IT).prelinked.bc
-	$(BC_X8664_TRANSLATOR) $(PNACL_FLAGS) $(IT).prelinked.bc -o $@
+$(IT).pnacl.x8632: $(IT).preopt.pexe
+	$(PNACL_TRANSLATOR) $(PNACL_FLAGS) $^ -o $@ -arch x86-32
 	@$(call LOG_TRANSLATE_TIME,$@,$(IT))
 
-$(IT).pnacl_translator.opt.x8664: $(IT).opt.prelinked.bc
-	$(BC_X8664_TRANSLATOR) $(PNACL_FLAGS) $(IT).opt.prelinked.bc -o $@
+$(IT).pnacl.opt.x8632: $(IT).opt.pexe
+	$(PNACL_TRANSLATOR) $(PNACL_FLAGS) $^ -o $@ -arch x86-32
+	@$(call LOG_TRANSLATE_TIME,$@,$(IT))
+
+$(IT).pnacl_translator.x8632: $(IT).preopt.pexe
+	$(PNACL_TRANSLATOR_SB) $(PNACL_FLAGS) $^ -o $@ -arch x86-32
+	@$(call LOG_TRANSLATE_TIME,$@,$(IT))
+
+$(IT).pnacl_translator.opt.x8632: $(IT).opt.pexe
+	$(PNACL_TRANSLATOR_SB) $(PNACL_FLAGS) $^ -o $@ -arch x86-32	
+	@$(call LOG_TRANSLATE_TIME,$@,$(IT))
+
+######################################################################
+# BITCODE - BACKEND - X8664 (sandboxed and non-sandboxed translators)
+
+$(IT).pnacl.x8664: $(IT).preopt.pexe
+	$(PNACL_TRANSLATOR) $(PNACL_FLAGS) $^ -o $@ -arch x86-64
+	@$(call LOG_TRANSLATE_TIME,$@,$(IT))
+
+$(IT).pnacl.opt.x8664: $(IT).opt.pexe
+	$(PNACL_TRANSLATOR) $(PNACL_FLAGS) $^ -o $@ -arch x86-64
+	@$(call LOG_TRANSLATE_TIME,$@,$(IT))
+
+$(IT).pnacl_translator.x8664: $(IT).preopt.pexe
+	$(PNACL_TRANSLATOR_SB) $(PNACL_FLAGS) $^ -o $@ -arch x86-64
+	@$(call LOG_TRANSLATE_TIME,$@,$(IT))
+
+$(IT).pnacl_translator.opt.x8664: $(IT).opt.pexe
+	$(PNACL_TRANSLATOR_SB) $(PNACL_FLAGS) $^ -o $@ -arch x86-64
 	@$(call LOG_TRANSLATE_TIME,$@,$(IT))
