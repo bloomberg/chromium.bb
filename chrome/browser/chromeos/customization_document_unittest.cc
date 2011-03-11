@@ -66,11 +66,34 @@ const char kGoodServicesManifest[] =
     "  },"
     "}";
 
+const char kHWID[] = "Mario 123-456";
+
+const char kVPD[] =
+    "\"initial_locale\"=\"ja\"\n"
+    "\"initial_timezone\"=\"Asia/Tokyo\"\n"
+    "\"keyboard_layout\"=\"mozc-jp\"\n";
+
 class TestDocument : public chromeos::StartupCustomizationDocument {
+ public:
+  TestDocument() : hwid_(kHWID), vpd_() {
+  }
+
+  void set_hwid(const std::string& hwid) { hwid_ = hwid; }
+  void set_vpd(const std::string& vpd) { vpd_ = vpd; }
+
  private:
   virtual std::string GetHWID() const {
-    return "Mario 123-456";
+    return hwid_;
   }
+
+  virtual std::string GetVPD() const {
+    return vpd_;
+  }
+
+  std::string hwid_;
+  std::string vpd_;
+
+  DISALLOW_COPY_AND_ASSIGN(TestDocument);
 };
 
 }  // anonymous namespace
@@ -101,6 +124,14 @@ TEST_F(StartupCustomizationDocumentTest, Basic) {
             "file:///opt/oem/eula/ru-RU/eula.html");
   EXPECT_EQ(customization_.GetEULAPage("ja"),
             "file:///opt/oem/eula/en/eula.html");
+}
+
+TEST_F(StartupCustomizationDocumentTest, VPD) {
+  customization_.set_vpd(kVPD);
+  EXPECT_TRUE(customization_.LoadManifestFromString(kGoodStartupManifest));
+  EXPECT_EQ(customization_.initial_locale(), "ja");
+  EXPECT_EQ(customization_.initial_timezone(), "Asia/Tokyo");
+  EXPECT_EQ(customization_.keyboard_layout(), "mozc-jp");
 }
 
 TEST_F(StartupCustomizationDocumentTest, BadManifest) {

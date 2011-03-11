@@ -53,8 +53,19 @@ class StartupCustomizationDocument : public CustomizationDocument {
   std::string GetEULAPage(const std::string& locale) const;
 
  private:
+  typedef std::map<std::string, std::string> VPDMap;
+
   // Returns HWID for the machine. Declared as virtual to override in tests.
   virtual std::string GetHWID() const;
+
+  // Returns VPD as string. Declared as virtual to override in tests.
+  virtual std::string GetVPD() const;
+
+  // Parse VPD file as string and initialize |vpd_map|.
+  bool ParseVPD(const std::string& vpd_string, VPDMap* vpd_map);
+
+  // If |attr| exists in |vpd_map|, assign it value to |value|;
+  void InitFromVPD(const VPDMap& vpd_map, const char* attr, std::string* value);
 
   std::string initial_locale_;
   std::string initial_timezone_;

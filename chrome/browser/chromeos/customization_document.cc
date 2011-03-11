@@ -7,6 +7,7 @@
 #include "base/file_util.h"
 #include "base/json/json_reader.h"
 #include "base/logging.h"
+#include "base/string_tokenizer.h"
 #include "base/string_util.h"
 
 // Manifest attributes names.
@@ -31,6 +32,7 @@ const char kSupportPageAttr[] = "support_page";
 const char kAcceptedManifestVersion[] = "1.0";
 
 const char kHWIDPath[] = "/sys/devices/platform/chromeos_acpi/HWID";
+const char kVPDPath[] = "/var/log/vpd_2.0.txt";
 
 }  // anonymous namespace
 
@@ -134,18 +136,85 @@ bool StartupCustomizationDocument::LoadManifestFromString(
     LOG(ERROR) << "Can't read HWID from " << kHWIDPath;
   }
 
-  // TODO(dpolukhin): read initial locale and timezone from VPD.
-  // http://crosbug.com/12355
+  VPDMap vpd_map;
+  if (ParseVPD(GetVPD(), &vpd_map)) {
+    InitFromVPD(vpd_map, kInitialLocaleAttr, &initial_locale_);
+    InitFromVPD(vpd_map, kInitialTimezoneAttr, &initial_timezone_);
+    InitFromVPD(vpd_map, kKeyboardLayoutAttr, &keyboard_layout_);
+  }
 
   return true;
 }
 
 std::string StartupCustomizationDocument::GetHWID() const {
+  // TODO(dpolukhin): move to SystemLibrary to be reusable.
   std::string hwid;
   FilePath hwid_file_path(kHWIDPath);
   if (!file_util::ReadFileToString(hwid_file_path, &hwid))
     LOG(ERROR) << "Can't read HWID from " << kHWIDPath;
   return hwid;
+}
+
+std::string StartupCustomizationDocument::GetVPD() const {
+  // TODO(dpolukhin): move to SystemLibrary to be reusable.
+  std::string vpd;
+  FilePath vpd_file_path(kVPDPath);
+  if (!file_util::ReadFileToString(vpd_file_path, &vpd))
+    LOG(ERROR) << "Can't read VPD from " << kVPDPath;
+  return vpd;
+}
+
+bool StartupCustomizationDocument::ParseVPD(const std::string& vpd_string,
+                                            VPDMap* vpd_map) {
+  // TODO(dpolukhin): move to SystemLibrary to be reusable.
+  const char kDelimiterChars[] = "= \n";
+  const char kQuotaChars[] = "\"\'";
+
+  StringTokenizer tok(vpd_string, kDelimiterChars);
+  tok.set_quote_chars(kQuotaChars);
+  tok.set_options(StringTokenizer::RETURN_DELIMS);
+  bool next_is_equal = false;
+  bool next_is_value = false;
+  std::string name;
+  std::string value;
+  while (tok.GetNext()) {
+    // Skip all delimiters that are not '='.
+    if (tok.token_is_delim() && tok.token() != "=")
+      continue;
+
+    if (next_is_equal) {
+      if (tok.token() != "=")
+        break;
+
+      next_is_equal = false;
+      next_is_value = true;
+    } else if (next_is_value) {
+      TrimString(tok.token(), kQuotaChars, &value);
+      next_is_value = false;
+
+      if (!vpd_map->insert(VPDMap::value_type(name, value)).second) {
+        LOG(ERROR) << "Identical keys in VPD " << name;
+        return false;
+      }
+    } else {
+      TrimString(tok.token(), kQuotaChars, &name);
+      next_is_equal = true;
+    }
+  }
+
+  if (next_is_equal || next_is_value) {
+    LOG(ERROR) << "Syntax error in VPD " << vpd_string;
+    return false;
+  }
+
+  return true;
+}
+
+void StartupCustomizationDocument::InitFromVPD(
+    const VPDMap& vpd_map, const char* attr, std::string* value) {
+  VPDMap::const_iterator it = vpd_map.find(attr);
+  if (it != vpd_map.end())
+    *value = it->second;
 }
 
 std::string StartupCustomizationDocument::GetHelpPage(
