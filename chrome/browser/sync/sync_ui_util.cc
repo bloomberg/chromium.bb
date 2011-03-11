@@ -36,8 +36,7 @@ void GetStatusLabelsForAuthError(const AuthError& auth_error,
     link_label->assign(l10n_util::GetStringUTF16(IDS_SYNC_RELOGIN_LINK_LABEL));
   if (auth_error.state() == AuthError::INVALID_GAIA_CREDENTIALS ||
       auth_error.state() == AuthError::ACCOUNT_DELETED ||
-      auth_error.state() == AuthError::ACCOUNT_DISABLED ||
-      auth_error.state() == AuthError::SERVICE_UNAVAILABLE) {
+      auth_error.state() == AuthError::ACCOUNT_DISABLED) {
     // If the user name is empty then the first login failed, otherwise the
     // credentials are out-of-date.
     if (service->GetAuthenticatedUsername().empty())
@@ -46,6 +45,10 @@ void GetStatusLabelsForAuthError(const AuthError& auth_error,
     else
       status_label->assign(
           l10n_util::GetStringUTF16(IDS_SYNC_LOGIN_INFO_OUT_OF_DATE));
+  } else if (auth_error.state() == AuthError::SERVICE_UNAVAILABLE) {
+    DCHECK (service->GetAuthenticatedUsername().empty());
+    status_label->assign(
+        l10n_util::GetStringUTF16(IDS_SYNC_SERVICE_UNAVAILABLE));
   } else if (auth_error.state() == AuthError::CONNECTION_FAILED) {
     // Note that there is little the user can do if the server is not
     // reachable. Since attempting to re-connect is done automatically by
