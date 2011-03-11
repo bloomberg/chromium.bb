@@ -103,6 +103,7 @@ bool FirefoxProfileLock::LockWithFcntl() {
   lock.l_len = 0;
   lock.l_type = F_WRLCK;
   lock.l_whence = SEEK_SET;
+  lock.l_pid = 0;
 
   struct flock testlock = lock;
   if (fcntl(lock_fd_, F_GETLK, &testlock) == -1) {
