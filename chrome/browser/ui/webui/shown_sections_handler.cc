@@ -120,7 +120,7 @@ void ShownSectionsHandler::MigrateUserPrefs(PrefService* pref_service,
   // Nothing to migrate for default kNTPShownSections value.
   const PrefService::Preference* shown_sections_pref =
       pref_service->FindPreference(prefs::kNTPShownSections);
-  if (shown_sections_pref->IsDefaultValue())
+  if (!shown_sections_pref || shown_sections_pref->IsDefaultValue())
     return;
 
   bool changed = false;
