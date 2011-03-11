@@ -436,7 +436,7 @@ struct LayoutMetrics {
       // If off the screen, switch direction.
       if ((x + windowWidth +
            bookmarks::kBookmarkHorizontalScreenPadding) >
-          NSMaxX([[[self window] screen] frame])) {
+          NSMaxX([[[self window] screen] visibleFrame])) {
         [self setSubFolderGrowthToRight:NO];
       } else {
         return x;
@@ -449,7 +449,7 @@ struct LayoutMetrics {
           bookmarks::kBookmarkMenuOverlap -
           windowWidth;
       // If off the screen, switch direction.
-      if (x < NSMinX([[[self window] screen] frame])) {
+      if (x < NSMinX([[[self window] screen] visibleFrame])) {
         [self setSubFolderGrowthToRight:YES];
       } else {
         return x;
@@ -457,7 +457,7 @@ struct LayoutMetrics {
     }
   }
   // Unhappy; do the best we can.
-  return NSMaxX([[[self window] screen] frame]) - windowWidth;
+  return NSMaxX([[[self window] screen] visibleFrame]) - windowWidth;
 }
 
 
@@ -487,7 +487,7 @@ struct LayoutMetrics {
     // Make sure the window is on-screen; if not, push left.  It is
     // intentional that top level folders "push left" slightly
     // different than subfolders.
-    NSRect screenFrame = [[[parentButton_ window] screen] frame];
+    NSRect screenFrame = [[[parentButton_ window] screen] visibleFrame];
     CGFloat spillOff = (newWindowTopLeft.x + windowWidth) - NSMaxX(screenFrame);
     if (spillOff > 0.0) {
       newWindowTopLeft.x = std::max(newWindowTopLeft.x - spillOff,
@@ -660,7 +660,8 @@ struct LayoutMetrics {
   } else {
     if (metrics.canScrollDown) {
       // Couldn't -> Can
-      metrics.deltaWindowHeight += (NSMaxY([[[self window] screen] frame]) -
+      metrics.deltaWindowHeight += (NSMaxY([[[self window] screen]
+                                    visibleFrame]) -
                                     NSMaxY(metrics.windowFrame));
       metrics.deltaVisibleHeight -= bookmarks::kScrollWindowVerticalMargin;
       metrics.deltaScrollerHeight -= verticalScrollArrowHeight_;

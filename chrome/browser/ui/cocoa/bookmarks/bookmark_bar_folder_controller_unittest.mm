@@ -450,7 +450,7 @@ TEST_F(BookmarkBarFolderControllerTest, ChildFolderWidth) {
 // Simple scrolling tests.
 TEST_F(BookmarkBarFolderControllerTest, SimpleScroll) {
   scoped_nsobject<BookmarkBarFolderController> bbfc;
-  NSRect screenFrame = [[NSScreen mainScreen] frame];
+  NSRect screenFrame = [[NSScreen mainScreen] visibleFrame];
   CGFloat screenHeight = NSHeight(screenFrame);
   int nodecount = AddLotsOfNodes();
   bbfc.reset(SimpleBookmarkBarFolderController());
@@ -506,7 +506,7 @@ TEST_F(BookmarkBarFolderControllerTest, SimpleScroll) {
   bool bothAtOnce = false;
   while ([bbfc canScrollUp]) {
     [bbfc performOneScroll:60];
-    EXPECT_TRUE(NSContainsRect(screenFrame, [window frame]));
+    EXPECT_TRUE(NSContainsRect([[NSScreen mainScreen] frame], [window frame]));
     // Make sure, sometime during our scroll, we have the ability to
     // scroll in either direction.
     if ([bbfc canScrollUp] &&
