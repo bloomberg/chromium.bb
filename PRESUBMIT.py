@@ -41,12 +41,6 @@ def NaclTopDir():
   return cwd[:pos + len(TOP_DIR)]
 
 
-sys.path.append(os.path.join(NaclTopDir(), 'tools'))
-sys.path.append(os.path.join(NaclTopDir(), 'build'))
-import code_hygiene
-import validate_chrome_revision
-
-
 def CheckEolStyle(input_api, output_api, affected_files):
   """Verifies the svn:eol-style is set to LF.
   Canned checks implementation can be found in depot_tools.
@@ -63,6 +57,18 @@ def CheckChangeOnUpload(input_api, output_api):
     input_api: the limited set of input modules allowed in presubmit.
     output_api: the limited set of output modules allowed in presubmit.
   """
+  # Apparently the commit queue doesn't like it when we muck with sys.path.
+  # Be clean.
+  old_sys_path = list(sys.path)
+  try:
+    sys.path.append(os.path.join(NaclTopDir(), 'tools'))
+    sys.path.append(os.path.join(NaclTopDir(), 'build'))
+    import code_hygiene
+    import validate_chrome_revision
+  finally:
+    sys.path = old_sys_path
+    del old_sys_path
+
   report = []
   affected_files = input_api.AffectedFiles(include_deletes=False)
   for filename in affected_files:
