@@ -20,6 +20,7 @@ import build
 
 
 def Main(args):
+  sys.stderr.write("@@@BUILD_STEP modular-build unit tests@@@\n")
   sys.stderr.write("Running the unit tests...\n")
   subprocess.check_call(["python", "test_all.py"])
 
@@ -28,12 +29,17 @@ def Main(args):
     # modified by hand on the trybots/buildbots, but if there are
     # any badly-behaved build steps that write to source trees
     # this cannot be corrected by hand.
+    sys.stderr.write("@@@BUILD_STEP main modular-build@@@\n")
     build.Main(["--allow-overwrite", "-b"])
+    if args == ["buildbot_incremental"]:
+      subprocess.check_call(["python", "publish_tarball.py"])
   elif args == ["buildbot_from_scratch"]:
     # --allow-overwrite would not hurt here, but is not needed
     # because we build from scratch.
+    sys.stderr.write("@@@BUILD_STEP clobber@@@\n")
     sys.stderr.write("Deleting the 'out' directory...\n")
     subprocess.check_call(["rm", "-rf", "out"])
+    sys.stderr.write("@@@BUILD_STEP main modular-build@@@\n")
     sys.stderr.write("Running the build...\n")
     build.Main(["-b"])
   else:
