@@ -49,7 +49,7 @@ INITIAL_ENV = {
   'USE_MC_ASM'  : '1',    # Use llvm-mc instead of nacl-as
   'MC_DIRECT'   : '1',    # Use MC direct object emission instead of
                           # producing an intermediate .s file
-  'WHICH_LD'    : 'GOLD', # Which ld to use for native linking: GOLD or BFD
+  'WHICH_LD'    : 'BFD',  # Which ld to use for native linking: GOLD or BFD
   'CLEANUP'     : '0',    # Clean up temporary files
                           # TODO(pdox): Enable for SDK version
   'SANDBOXED'   : '0',    # Use sandboxed toolchain for this arch.
