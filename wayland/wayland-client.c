@@ -373,6 +373,11 @@ wl_display_connect(const char *name)
 	}
 
 	display->objects = wl_hash_table_create();
+	if (display->objects == NULL) {
+		close(display->fd);
+		free(display);
+		return NULL;
+	}
 	wl_list_init(&display->global_listener_list);
 
 	display->proxy.object.interface = &wl_display_interface;
@@ -397,6 +402,7 @@ WL_EXPORT void
 wl_display_destroy(struct wl_display *display)
 {
 	wl_connection_destroy(display->connection);
+	wl_hash_table_destroy(display->objects);
 	close(display->fd);
 	free(display);
 }

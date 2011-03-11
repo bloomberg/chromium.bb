@@ -544,8 +544,8 @@ wl_display_create(void)
 	display->object.implementation = (void (**)(void)) &display_interface;
 	wl_display_add_object(display, &display->object);
 	if (wl_display_add_global(display, &display->object, NULL)) {
-		wl_event_loop_destroy(display->loop);
 		wl_hash_table_destroy(display->objects);
+		wl_event_loop_destroy(display->loop);
 		free(display);
 		return NULL;
 	}
