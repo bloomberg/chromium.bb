@@ -86,8 +86,9 @@ BrowserAccessibility* BrowserAccessibilityManager::GetFromChildID(
   }
 }
 
-void BrowserAccessibilityManager::Remove(int32 child_id) {
+void BrowserAccessibilityManager::Remove(int32 child_id, int32 renderer_id) {
   child_id_map_.erase(child_id);
+  renderer_id_to_child_id_map_.erase(renderer_id);
 }
 
 void BrowserAccessibilityManager::OnAccessibilityNotifications(

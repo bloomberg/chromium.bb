@@ -68,8 +68,8 @@ class BrowserAccessibilityManager {
   // Return a pointer to the root of the tree, does not make a new reference.
   BrowserAccessibility* GetRoot();
 
-  // Removes the BrowserAccessibility child_id from the manager.
-  void Remove(int32 child_id);
+  // Removes the BrowserAccessibility child_id and renderer_id from the manager.
+  void Remove(int32 child_id, int32 renderer_id);
 
   // Return a pointer to the object corresponding to the given child_id,
   // does not make a new reference.

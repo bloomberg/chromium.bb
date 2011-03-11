@@ -171,7 +171,7 @@ void BrowserAccessibility::InternalReleaseReference(bool recursive) {
   if (ref_count_ == 0) {
     instance_active_ = false;
     children_.clear();
-    manager_->Remove(child_id_);
+    manager_->Remove(child_id_, renderer_id_);
     NativeReleaseReference();
   }
 }
