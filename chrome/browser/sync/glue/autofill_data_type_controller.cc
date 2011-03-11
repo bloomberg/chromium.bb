@@ -39,6 +39,12 @@ AutofillDataTypeController::AutofillDataTypeController(
 
 AutofillDataTypeController::~AutofillDataTypeController() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  // TODO(zea): remove once crbug.com/61804 is resolved.
+  CHECK_EQ(state_, NOT_RUNNING) << "AutofillDataTypeController destroyed "
+                                << "without being stopped.";
+  CHECK(!change_processor_.get()) << "AutofillDataTypeController destroyed "
+                                  << "while holding a change processor.";
 }
 
 void AutofillDataTypeController::Start(StartCallback* start_callback) {
@@ -140,7 +146,12 @@ void AutofillDataTypeController::Stop() {
     // particular, during shutdown we may attempt to destroy the
     // profile_sync_service before we've removed its observers (BUG 61804).
     datatype_stopped_.Wait();
+  } else if (change_processor_.get()) {
+    // TODO(zea): remove once crbug.com/61804 is resolved.
+    LOG(FATAL) << "AutofillDataTypeController::Stop() called after DB thread"
+               << " killed.";
   }
+  CHECK(!change_processor_.get()) << "AutofillChangeProcessor not released.";
 }
 
 bool AutofillDataTypeController::enabled() {
