@@ -228,7 +228,7 @@ class LocationBarViewGtk : public AutocompleteEditController,
     // Called to notify the PageAction that it should determine whether to be
     // visible or hidden. |contents| is the TabContents that is active, |url|
     // is the current page URL.
-    void UpdateVisibility(TabContents* contents, GURL url);
+    void UpdateVisibility(TabContents* contents, const GURL& url);
 
     // A callback from ImageLoadingTracker for when the image has loaded.
     virtual void OnImageLoaded(

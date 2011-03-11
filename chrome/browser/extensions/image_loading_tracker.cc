@@ -47,7 +47,7 @@ class ImageLoadingTracker::ImageLoader
                           max_size, id));
   }
 
-  void LoadOnFileThread(ExtensionResource resource,
+  void LoadOnFileThread(const ExtensionResource& resource,
                         const gfx::Size& max_size,
                         int id) {
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));

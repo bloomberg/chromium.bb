@@ -200,7 +200,7 @@ static void GetAllChildren(const std::vector<Process>& processes,
 }
 
 void MemoryDetails::CollectProcessData(
-    std::vector<ProcessMemoryInformation> child_info) {
+    const std::vector<ProcessMemoryInformation>& child_info) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
 
   std::vector<Process> processes;

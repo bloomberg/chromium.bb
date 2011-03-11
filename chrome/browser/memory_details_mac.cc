@@ -84,7 +84,7 @@ ProcessData* MemoryDetails::ChromeBrowser() {
 }
 
 void MemoryDetails::CollectProcessData(
-    std::vector<ProcessMemoryInformation> child_info) {
+    const std::vector<ProcessMemoryInformation>& child_info) {
   // This must be run on the file thread to avoid jank (|ProcessInfoSnapshot|
   // runs /bin/ps, which isn't instantaneous).
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));

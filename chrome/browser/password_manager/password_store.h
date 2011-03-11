@@ -140,7 +140,7 @@ class PasswordStore : public base::RefCountedThreadSafe<PasswordStore> {
   // Notifies the consumer that a Get*Logins() request is complete.
   virtual void NotifyConsumer(
       GetLoginsRequest* request,
-      const std::vector<webkit_glue::PasswordForm*> forms);
+      const std::vector<webkit_glue::PasswordForm*>& forms);
 
  private:
   // Called by NotifyConsumer, but runs in the consumer's thread.  Will not
@@ -148,7 +148,7 @@ class PasswordStore : public base::RefCountedThreadSafe<PasswordStore> {
   // that PasswordStoreConsumer doesn't have to be reference counted (we assume
   // consumers will cancel their requests before they are destroyed).
   void NotifyConsumerImpl(PasswordStoreConsumer* consumer, int handle,
-                          const std::vector<webkit_glue::PasswordForm*> forms);
+                          const std::vector<webkit_glue::PasswordForm*>& forms);
 
   // Returns a new request handle tracked in pending_requests_.
   int GetNewRequestHandle();

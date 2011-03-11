@@ -122,7 +122,7 @@ class MemoryDetails : public base::RefCountedThreadSafe<MemoryDetails> {
   // Note - this function enumerates memory details from many processes
   // and is fairly expensive to run, hence it's run on the file thread.
   // The parameter holds information about processes from the IO thread.
-  void CollectProcessData(std::vector<ProcessMemoryInformation>);
+  void CollectProcessData(const std::vector<ProcessMemoryInformation>&);
 
 #if defined(OS_MACOSX)
   // A helper for |CollectProcessData()|, collecting data on the Chrome/Chromium

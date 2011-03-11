@@ -77,7 +77,7 @@ int PasswordStore::GetBlacklistLogins(PasswordStoreConsumer* consumer) {
 }
 
 void PasswordStore::NotifyConsumer(GetLoginsRequest* request,
-                                   const vector<PasswordForm*> forms) {
+                                   const vector<PasswordForm*>& forms) {
   scoped_ptr<GetLoginsRequest> request_ptr(request);
 
 #if !defined(OS_MACOSX)
@@ -91,7 +91,7 @@ void PasswordStore::NotifyConsumer(GetLoginsRequest* request,
 
 void PasswordStore::NotifyConsumerImpl(PasswordStoreConsumer* consumer,
                                        int handle,
-                                       const vector<PasswordForm*> forms) {
+                                       const vector<PasswordForm*>& forms) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   // Don't notify the consumer if the request was canceled.
   if (pending_requests_.find(handle) == pending_requests_.end()) {

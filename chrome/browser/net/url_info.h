@@ -123,9 +123,9 @@ class UrlInfo {
 
   void DLogResultsStats(const char* message) const;
 
-  static void GetHtmlTable(const UrlInfoTable host_infos,
+  static void GetHtmlTable(const UrlInfoTable& host_infos,
                            const char* description,
-                           const bool brief,
+                           bool brief,
                            std::string* output);
 
   // For testing, and use in printing tables of info, we sometimes need to

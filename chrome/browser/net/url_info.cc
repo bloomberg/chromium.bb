@@ -259,10 +259,10 @@ static std::string HoursMinutesSeconds(int seconds) {
 }
 
 // static
-void UrlInfo::GetHtmlTable(const UrlInfoTable host_infos,
-                               const char* description,
-                               const bool brief,
-                               std::string* output) {
+void UrlInfo::GetHtmlTable(const UrlInfoTable& host_infos,
+                           const char* description,
+                           bool brief,
+                           std::string* output) {
   if (0 == host_infos.size())
     return;
   output->append(description);

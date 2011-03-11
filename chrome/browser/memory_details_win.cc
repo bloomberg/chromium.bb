@@ -65,7 +65,7 @@ ProcessData* MemoryDetails::ChromeBrowser() {
 }
 
 void MemoryDetails::CollectProcessData(
-    std::vector<ProcessMemoryInformation> child_info) {
+    const std::vector<ProcessMemoryInformation>& child_info) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
 
   // Clear old data.
