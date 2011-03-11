@@ -38,34 +38,36 @@ bool FileUtilitiesMessageFilter::OnMessageReceived(const IPC::Message& message,
 
 void FileUtilitiesMessageFilter::OnGetFileSize(const FilePath& path,
                                                int64* result) {
+  *result = -1;
+
   // Get file size only when the child process has been granted permission to
   // upload the file.
   if (!ChildProcessSecurityPolicy::GetInstance()->CanReadFile(
       process_id_, path)) {
-    *result = -1;
     return;
   }
 
   base::PlatformFileInfo file_info;
   file_info.size = 0;
-  file_util::GetFileInfo(path, &file_info);
-  *result = file_info.size;
+  if (file_util::GetFileInfo(path, &file_info))
+    *result = file_info.size;
 }
 
 void FileUtilitiesMessageFilter::OnGetFileModificationTime(
     const FilePath& path, base::Time* result) {
+  *result = base::Time();
+
   // Get file modification time only when the child process has been granted
   // permission to upload the file.
   if (!ChildProcessSecurityPolicy::GetInstance()->CanReadFile(
       process_id_, path)) {
-    *result = base::Time();
     return;
   }
 
   base::PlatformFileInfo file_info;
   file_info.size = 0;
-  file_util::GetFileInfo(path, &file_info);
-  *result = file_info.last_modified;
+  if (file_util::GetFileInfo(path, &file_info))
+    *result = file_info.last_modified;
 }
 
 void FileUtilitiesMessageFilter::OnOpenFile(

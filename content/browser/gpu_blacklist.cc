@@ -584,8 +584,7 @@ bool GpuBlacklist::LoadGpuBlacklist(const DictionaryValue& parsed_json,
     return false;
 
   ListValue* list = NULL;
-  parsed_json.GetList("entries", &list);
-  if (list == NULL)
+  if (!parsed_json.GetList("entries", &list))
     return false;
 
   uint32 max_entry_id = 0;

@@ -1426,7 +1426,7 @@ void RenderViewHost::ForwardMouseEvent(
         view->HandleMouseDown();
         break;
       case WebInputEvent::MouseWheel:
-        if (ignore_input_events() && delegate_)
+        if (ignore_input_events())
           delegate_->OnIgnoredUIEvent();
         break;
       case WebInputEvent::MouseUp:
@@ -1447,7 +1447,7 @@ void RenderViewHost::OnMouseActivate() {
 void RenderViewHost::ForwardKeyboardEvent(
     const NativeWebKeyboardEvent& key_event) {
   if (ignore_input_events()) {
-    if (key_event.type == WebInputEvent::RawKeyDown && delegate_)
+    if (key_event.type == WebInputEvent::RawKeyDown)
       delegate_->OnIgnoredUIEvent();
     return;
   }
@@ -1665,7 +1665,11 @@ void RenderViewHost::OnUpdateZoomLimits(int minimum_percent,
 
 void RenderViewHost::OnScriptEvalResponse(int id, const ListValue& result) {
   Value* result_value;
-  result.Get(0, &result_value);
+  if (!result.Get(0, &result_value)) {
+    // Programming error or rogue renderer.
+    NOTREACHED() << "Got bad arguments for OnScriptEvalResponse";
+    return;
+  }
   std::pair<int, Value*> details(id, result_value);
   NotificationService::current()->Notify(
       NotificationType::EXECUTE_JAVASCRIPT_RESULT,
