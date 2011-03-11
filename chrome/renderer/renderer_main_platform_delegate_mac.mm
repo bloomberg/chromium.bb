@@ -7,9 +7,9 @@
 #import <Cocoa/Cocoa.h>
 
 #include "base/command_line.h"
-#import "chrome/common/chrome_application_mac.h"
 #include "chrome/common/chrome_switches.h"
-#include "chrome/common/sandbox_mac.h"
+#import "content/common/chrome_application_mac.h"
+#include "content/common/sandbox_mac.h"
 #include "third_party/WebKit/Source/WebKit/mac/WebCoreSupport/WebSystemInterface.h"
 
 RendererMainPlatformDelegate::RendererMainPlatformDelegate(

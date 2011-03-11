@@ -10,13 +10,13 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/hi_res_timer_manager.h"
 #include "chrome/common/logging_chrome.h"
-#include "chrome/common/main_function_params.h"
 #include "chrome/worker/worker_thread.h"
 #include "content/common/child_process.h"
+#include "content/common/main_function_params.h"
 #include "ui/base/system_monitor/system_monitor.h"
 
 #if defined(OS_WIN)
-#include "chrome/common/sandbox_init_wrapper.h"
+#include "content/common/sandbox_init_wrapper.h"
 #include "sandbox/src/sandbox.h"
 #endif
 

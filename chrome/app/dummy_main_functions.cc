@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/common/main_function_params.h"
 #include "chrome/common/result_codes.h"
+#include "content/common/main_function_params.h"
 
 // Native Client binary for 64-bit Windows can run only the NaCl loader or
 // the sandbox broker processes. Other process types are not supported.

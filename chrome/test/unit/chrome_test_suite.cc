@@ -23,7 +23,7 @@
 
 #if defined(OS_MACOSX)
 #include "base/mac/mac_util.h"
-#include "chrome/common/chrome_application_mac.h"
+#include "content/common/chrome_application_mac.h"
 #endif
 
 #if defined(OS_POSIX)

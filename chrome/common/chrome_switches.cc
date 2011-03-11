@@ -146,12 +146,6 @@ const char kDevicePolicyCacheDir[]          = "device-policy-cache-dir";
 // Triggers a pletora of diagnostic modes.
 const char kDiagnostics[]                   = "diagnostics";
 
-// Disables client-visible 3D APIs, in particular WebGL and Pepper 3D.
-// This is controlled by policy and is kept separate from the other
-// enable/disable switches to avoid accidentally regressing the policy
-// support for controlling access to these APIs.
-const char kDisable3DAPIs[]                 = "disable-3d-apis";
-
 // Disables accelerated compositing.
 const char kDisableAcceleratedCompositing[] =
     "disable-accelerated-compositing";
@@ -223,9 +217,6 @@ const char kDisableDeviceOrientation[]      = "disable-device-orientation";
 // which is determined by an exponential back-off algorithm. This switch
 // disables such behavior.
 const char kDisableEnforcedThrottling[]     = "disable-enforced-throttling";
-
-// Disable experimental WebGL support.
-const char kDisableExperimentalWebGL[]      = "disable-webgl";
 
 // Disable extensions.
 const char kDisableExtensions[]             = "disable-extensions";
@@ -594,9 +585,6 @@ const char kExperimentalSpellcheckerFeatures[] =
 // numbers.
 const char kExplicitlyAllowedPorts[]        = "explicitly-allowed-ports";
 
-// Causes the process to run as an extension subprocess.
-const char kExtensionProcess[]              = "extension";
-
 // Frequency in seconds for Extensions auto-update.
 const char kExtensionsUpdateFrequency[]     = "extensions-update-frequency";
 
@@ -698,9 +686,6 @@ const char kImportFromFile[]                = "import-from-file";
 // Runs plugins inside the renderer process
 const char kInProcessPlugins[]              = "in-process-plugins";
 
-// Runs WebGL inside the renderer process.
-const char kInProcessWebGL[]                = "in-process-webgl";
-
 // Causes the browser to launch directly in incognito mode.
 const char kIncognito[]                     = "incognito";
 
@@ -758,9 +743,6 @@ const char kNaClDebugPorts[]                = "nacl-debug-ports";
 // (used for launching NaCl loader processes on 64-bit Windows).
 const char kNaClBrokerProcess[]             = "nacl-broker";
 
-// Causes the process to run as a NativeClient loader.
-const char kNaClLoaderProcess[]             = "nacl-loader";
-
 // Causes the Native Client process to display a dialog on launch.
 const char kNaClStartupDialog[]             = "nacl-startup-dialog";
 
@@ -795,9 +777,6 @@ const char kNoPings[]                       = "no-pings";
 // Don't use a proxy server, always make direct connections. Overrides any
 // other proxy server flags that are passed.
 const char kNoProxyServer[]                 = "no-proxy-server";
-
-// Disables the sandbox for all process types that are normally sandboxed.
-const char kNoSandbox[]                     = "no-sandbox";
 
 // Disables the service process from adding itself as an autorun process. This
 // does not delete existing autorun registrations, it just prevents the service
@@ -858,9 +837,6 @@ const char kPrint[]                         = "print";
 // Output the product version information and quit. Used as an internal api to
 // detect the installed version of Chrome on Linux.
 const char kProductVersion[]                = "product-version";
-
-// Causes the process to run as a profile import subprocess.
-const char kProfileImportProcess[]          = "profile-import";
 
 // Starts the sampling based profiler for the browser process at
 // startup. This will only work if chrome has been built with
@@ -970,9 +946,6 @@ const char kSdchFilter[]                    = "enable-sdch";
 // Enables the showing of an info-bar instructing user they can search directly
 // from the omnibox.
 const char kSearchInOmniboxHint[]           = "search-in-omnibox-hint";
-
-// Causes the process to run as a service process.
-const char kServiceProcess[]                = "service";
 
 // The LSID of the account to use for the service process.
 const char kServiceAccountLsid[]            = "service-account-lsid";
@@ -1087,13 +1060,6 @@ const char kUserScriptsDir[]                = "user-scripts-dir";
 // process command line. Useful values might be "valgrind" or "xterm -e gdb
 // --args".
 const char kUtilityCmdPrefix[]              = "utility-cmd-prefix";
-
-// Causes the process to run as a utility subprocess.
-const char kUtilityProcess[]                = "utility";
-
-// The utility process is sandboxed, with access to one directory. This flag
-// specifies the directory that can be accessed.
-const char kUtilityProcessAllowedDir[]      = "utility-allowed-dir";
 
 // Print version information and quit.
 const char kVersion[]                       = "version";

@@ -8,7 +8,7 @@
 
 #ifdef __OBJC__
 
-#import "chrome/common/chrome_application_mac.h"
+#import "content/common/chrome_application_mac.h"
 
 @interface BrowserCrApplication : CrApplication
 // Our implementation of |-terminate:| only attempts to terminate the

@@ -10,7 +10,7 @@
 #include "base/logging.h"
 #include "base/native_library.h"
 #include "chrome/common/chrome_switches.h"
-#include "chrome/common/sandbox_mac.h"
+#include "content/common/sandbox_mac.h"
 
 NaClMainPlatformDelegate::NaClMainPlatformDelegate(
     const MainFunctionParams& parameters)

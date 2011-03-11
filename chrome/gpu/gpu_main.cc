@@ -14,14 +14,14 @@
 #include "base/stringprintf.h"
 #include "base/threading/platform_thread.h"
 #include "build/build_config.h"
-#include "chrome/common/main_function_params.h"
 #include "content/common/content_switches.h"
+#include "content/common/main_function_params.h"
 #include "chrome/gpu/gpu_config.h"
 #include "chrome/gpu/gpu_process.h"
 #include "chrome/gpu/gpu_thread.h"
 
 #if defined(OS_MACOSX)
-#include "chrome/common/chrome_application_mac.h"
+#include "content/common/chrome_application_mac.h"
 #endif
 
 #if defined(USE_X11)

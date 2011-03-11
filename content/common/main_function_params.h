@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,12 +6,12 @@
 // plugin) to shield the call sites from the differences between platforms
 // (e.g., POSIX doesn't need to pass any sandbox information).
 
-#ifndef CHROME_COMMON_MAIN_FUNCTION_PARAMS_H_
-#define CHROME_COMMON_MAIN_FUNCTION_PARAMS_H_
+#ifndef CONTENT_COMMON_MAIN_FUNCTION_PARAMS_H_
+#define CONTENT_COMMON_MAIN_FUNCTION_PARAMS_H_
 #pragma once
 
 #include "base/command_line.h"
-#include "chrome/common/sandbox_init_wrapper.h"
+#include "content/common/sandbox_init_wrapper.h"
 
 namespace base {
 namespace mac {
@@ -34,4 +34,4 @@ struct MainFunctionParams {
   Task* ui_task;
 };
 
-#endif  // CHROME_COMMON_MAIN_FUNCTION_PARAMS_H_
+#endif  // CONTENT_COMMON_MAIN_FUNCTION_PARAMS_H_

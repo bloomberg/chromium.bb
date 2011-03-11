@@ -1,8 +1,8 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/common/sandbox_mac_unittest_helper.h"
+#include "content/common/sandbox_mac_unittest_helper.h"
 
 extern "C" {
 #include <sandbox.h>
@@ -13,7 +13,7 @@ extern "C" {
 #include "base/file_path.h"
 #include "base/logging.h"
 #include "base/scoped_ptr.h"
-#include "chrome/common/sandbox_mac.h"
+#include "content/common/sandbox_mac.h"
 #include "testing/multiprocess_func_list.h"
 
 using sandbox::Sandbox;

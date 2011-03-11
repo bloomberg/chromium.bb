@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -9,8 +9,8 @@
 #include "base/mac/scoped_cftyperef.h"
 #include "base/scoped_ptr.h"
 #include "base/shared_memory.h"
-#include "chrome/common/font_loader_mac.h"
-#include "chrome/common/sandbox_mac_unittest_helper.h"
+#include "content/common/font_loader_mac.h"
+#include "content/common/sandbox_mac_unittest_helper.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace {

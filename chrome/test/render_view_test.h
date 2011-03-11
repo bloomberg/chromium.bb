@@ -10,14 +10,14 @@
 
 #include "base/command_line.h"
 #include "base/scoped_ptr.h"
-#include "chrome/common/main_function_params.h"
 #include "chrome/common/native_web_keyboard_event.h"
-#include "chrome/common/sandbox_init_wrapper.h"
 #include "chrome/renderer/mock_keyboard.h"
 #include "chrome/renderer/mock_render_thread.h"
 #include "chrome/renderer/render_view.h"
 #include "chrome/renderer/renderer_main_platform_delegate.h"
 #include "chrome/renderer/renderer_webkitclient_impl.h"
+#include "content/common/main_function_params.h"
+#include "content/common/sandbox_init_wrapper.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFrame.h"
 

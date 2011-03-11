@@ -1,9 +1,9 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_COMMON_CHROME_APPLICATION_MAC_H_
-#define CHROME_COMMON_CHROME_APPLICATION_MAC_H_
+#ifndef CONTENT_COMMON_CHROME_APPLICATION_MAC_H_
+#define CONTENT_COMMON_CHROME_APPLICATION_MAC_H_
 #pragma once
 
 #if defined(__OBJC__)
@@ -68,4 +68,4 @@ void RegisterCrApp();
 
 }  // namespace chrome_application_mac
 
-#endif  // CHROME_COMMON_CHROME_APPLICATION_MAC_H_
+#endif  // CONTENT_COMMON_CHROME_APPLICATION_MAC_H_

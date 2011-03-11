@@ -11,8 +11,8 @@
 #include "base/path_service.h"
 #import "base/mac/scoped_nsautorelease_pool.h"
 #import "base/scoped_nsobject.h"
-#import "chrome/common/chrome_application_mac.h"
 #include "chrome/common/chrome_constants.h"
+#import "content/common/chrome_application_mac.h"
 #include "testing/platform_test.h"
 
 // Background windows normally will not display things such as focus

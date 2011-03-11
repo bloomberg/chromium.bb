@@ -36,7 +36,6 @@
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
-#include "chrome/common/debug_flags.h"
 #include "chrome/common/logging_chrome.h"
 #include "chrome/common/json_value_serializer.h"
 #include "chrome/common/url_constants.h"
@@ -49,6 +48,7 @@
 #include "chrome/test/chrome_process_util.h"
 #include "chrome/test/test_launcher_utils.h"
 #include "chrome/test/test_switches.h"
+#include "content/common/debug_flags.h"
 #include "googleurl/src/gurl.h"
 #include "net/base/net_util.h"
 

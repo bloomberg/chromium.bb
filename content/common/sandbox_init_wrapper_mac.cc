@@ -1,14 +1,14 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/common/sandbox_init_wrapper.h"
+#include "content/common/sandbox_init_wrapper.h"
 
 #include "base/command_line.h"
 #include "base/file_path.h"
 #include "base/logging.h"
-#include "chrome/common/chrome_switches.h"
-#include "chrome/common/sandbox_mac.h"
+#include "content/common/content_switches.h"
+#include "content/common/sandbox_mac.h"
 
 bool SandboxInitWrapper::InitializeSandbox(const CommandLine& command_line,
                                            const std::string& process_type) {

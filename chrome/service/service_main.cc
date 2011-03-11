@@ -5,14 +5,14 @@
 #include "base/debug/debugger.h"
 #include "base/message_loop.h"
 #include "chrome/common/chrome_switches.h"
-#include "chrome/common/main_function_params.h"
 #include "chrome/common/service_process_util.h"
 #include "chrome/service/service_process.h"
+#include "content/common/main_function_params.h"
 
 #if defined(OS_WIN)
 #include "chrome/common/sandbox_policy.h"
 #elif defined(OS_MACOSX)
-#include "chrome/common/chrome_application_mac.h"
+#include "content/common/chrome_application_mac.h"
 #endif  // defined(OS_WIN)
 
 // Mainline routine for running as the service process.

@@ -38,7 +38,7 @@
 #endif
 
 #if defined(OS_MACOSX)
-#include "chrome/common/font_descriptor_mac.h"
+#include "content/common/font_descriptor_mac.h"
 #endif
 
 // TODO(mpcomplete): rename ViewMsg and ViewHostMsg to something that makes

@@ -24,7 +24,7 @@
 #include "webkit/plugins/npapi/webplugin.h"
 
 #if defined(OS_MACOSX)
-#include "chrome/common/font_descriptor_mac.h"
+#include "content/common/font_descriptor_mac.h"
 #endif
 
 #define IPC_MESSAGE_IMPL

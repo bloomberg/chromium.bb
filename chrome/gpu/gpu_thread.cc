@@ -22,8 +22,8 @@
 #include "ipc/ipc_channel_handle.h"
 
 #if defined(OS_MACOSX)
-#include "chrome/common/sandbox_init_wrapper.h"
-#include "chrome/common/sandbox_mac.h"
+#include "content/common/sandbox_init_wrapper.h"
+#include "content/common/sandbox_mac.h"
 #elif defined(OS_WIN)
 #include "sandbox/src/sandbox.h"
 #endif

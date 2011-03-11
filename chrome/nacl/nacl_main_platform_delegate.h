@@ -7,7 +7,7 @@
 #pragma once
 
 #include "base/native_library.h"
-#include "chrome/common/main_function_params.h"
+#include "content/common/main_function_params.h"
 
 typedef bool (*RunNaClLoaderTests)(void);
 const char kNaClLoaderTestCall[] = "RunNaClLoaderTests";

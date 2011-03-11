@@ -16,9 +16,18 @@ const char kAllowSandboxDebugging[]         = "allow-sandbox-debugging";
 // Path to the exe to run for the renderer and plugin subprocesses.
 const char kBrowserSubprocessPath[]         = "browser-subprocess-path";
 
+// Disables client-visible 3D APIs, in particular WebGL and Pepper 3D.
+// This is controlled by policy and is kept separate from the other
+// enable/disable switches to avoid accidentally regressing the policy
+// support for controlling access to these APIs.
+const char kDisable3DAPIs[]                 = "disable-3d-apis";
+
 // Disable limits on the number of backing stores. Can prevent blinking for
 // users with many windows/tabs and lots of memory.
 const char kDisableBackingStoreLimit[]      = "disable-backing-store-limit";
+
+// Disable experimental WebGL support.
+const char kDisableExperimentalWebGL[]      = "disable-webgl";
 
 // Disable FileSystem API.
 const char kDisableFileSystem[]             = "disable-file-system";
@@ -89,6 +98,9 @@ const char kExperimentalLocationFeatures[]  = "experimental-location-features";
 // Load NPAPI plugins from the specified directory.
 const char kExtraPluginDir[]                = "extra-plugin-dir";
 
+// Causes the process to run as an extension subprocess.
+const char kExtensionProcess[]              = "extension";
+
 // Extra command line options for launching the GPU process (normally used
 // for debugging). Use like renderer-cmd-prefix.
 const char kGpuLauncher[]                   = "gpu-launcher";
@@ -98,6 +110,9 @@ const char kGpuProcess[]                    = "gpu-process";
 
 // Causes the GPU process to display a dialog on launch.
 const char kGpuStartupDialog[]              = "gpu-startup-dialog";
+
+// Runs WebGL inside the renderer process.
+const char kInProcessWebGL[]                = "in-process-webgl";
 
 // Use LevelDB as back-end for Indexed Database API.
 const char kLevelDBIndexedDatabase[]        = "indexeddb-use-leveldb";
@@ -112,11 +127,17 @@ const char kLoggingLevel[]                  = "log-level";
 // Make plugin processes log their sent and received messages to VLOG(1).
 const char kLogPluginMessages[]             = "log-plugin-messages";
 
+// Causes the process to run as a NativeClient loader.
+const char kNaClLoaderProcess[]             = "nacl-loader";
+
 // Don't Sandbox the GPU process, does not affect other sandboxed processes.
 const char kNoGpuSandbox[]                  = "no-gpu-sandbox";
 
 // Don't send HTTP-Referer headers.
 const char kNoReferrers[]                   = "no-referrers";
+
+// Disables the sandbox for all process types that are normally sandboxed.
+const char kNoSandbox[]                     = "no-sandbox";
 
 // Specifies a command that should be used to launch the plugin process.  Useful
 // for running the plugin process through purify or quantify.  Ex:
@@ -168,6 +189,9 @@ const char kProcessPerTab[]                 = "process-per-tab";
 // renderer or plugin host.  If it's empty, it's the browser.
 const char kProcessType[]                   = "type";
 
+// Causes the process to run as a profile import subprocess.
+const char kProfileImportProcess[]          = "profile-import";
+
 // Register Pepper plugins (see pepper_plugin_registry.cc for its format).
 const char kRegisterPepperPlugins[]         = "register-pepper-plugins";
 
@@ -186,6 +210,9 @@ const char kRendererStartupDialog[]         = "renderer-startup-dialog";
 
 // Runs the plugin processes inside the sandbox.
 const char kSafePlugins[]                   = "safe-plugins";
+
+// Causes the process to run as a service process.
+const char kServiceProcess[]                = "service";
 
 // Runs the renderer and plugins in the same process as the browser
 const char kSingleProcess[]                 = "single-process";
@@ -206,6 +233,13 @@ const char kUnlimitedQuotaForIndexedDB[]    = "unlimited-quota-for-indexeddb";
 
 // A string used to override the default user agent with a custom one.
 const char kUserAgent[]                     = "user-agent";
+
+// Causes the process to run as a utility subprocess.
+const char kUtilityProcess[]                = "utility";
+
+// The utility process is sandboxed, with access to one directory. This flag
+// specifies the directory that can be accessed.
+const char kUtilityProcessAllowedDir[]      = "utility-allowed-dir";
 
 // Will add kWaitForDebugger to every child processes. If a value is passed, it
 // will be used as a filter to determine if the child process should have the

@@ -603,9 +603,11 @@
             '../content/common/content_client.cc',
             '../content/common/content_paths.cc',
             '../content/common/content_switches.cc',
+            '../content/common/debug_flags.cc',
             '../content/common/notification_details.cc',
             '../content/common/notification_service.cc',
             '../content/common/notification_source.cc',
+            '../content/common/sandbox_init_wrapper_win.cc',
           ],
           'msvs_settings': {
             'VCLinkerTool': {

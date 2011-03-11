@@ -17,7 +17,6 @@
 #include "chrome/common/automation_constants.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_switches.h"
-#include "chrome/common/debug_flags.h"
 #include "chrome/common/logging_chrome.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/test/chrome_process_util.h"
@@ -26,6 +25,7 @@
 #include "chrome/test/automation/automation_proxy.h"
 #include "chrome/test/ui/ui_test.h"
 #include "content/common/child_process_info.h"
+#include "content/common/debug_flags.h"
 
 namespace {
 

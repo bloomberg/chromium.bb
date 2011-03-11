@@ -1,8 +1,8 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/common/sandbox_mac.h"
+#include "content/common/sandbox_mac.h"
 
 #import <Cocoa/Cocoa.h>
 #import <OpenGL/OpenGL.h>
@@ -26,8 +26,8 @@ extern "C" {
 #include "base/sys_info.h"
 #include "base/sys_string_conversions.h"
 #include "base/utf_string_conversions.h"
-#include "chrome/common/chrome_application_mac.h"
-#include "chrome/common/chrome_switches.h"
+#include "content/common/chrome_application_mac.h"
+#include "content/common/content_switches.h"
 #include "unicode/uchar.h"
 
 namespace {

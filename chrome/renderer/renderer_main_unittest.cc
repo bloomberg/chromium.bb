@@ -8,7 +8,7 @@
 #include "base/test/multiprocess_test.h"
 #include "base/test/test_timeouts.h"
 #include "chrome/common/chrome_switches.h"
-#include "chrome/common/main_function_params.h"
+#include "content/common/main_function_params.h"
 #include "ipc/ipc_channel.h"
 #include "ipc/ipc_switches.h"
 #include "testing/gtest/include/gtest/gtest.h"

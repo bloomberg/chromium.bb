@@ -6,7 +6,7 @@
 #define CHROME_RENDERER_RENDERER_MAIN_PLATFORM_DELEGATE_H_
 #pragma once
 
-#include "chrome/common/main_function_params.h"
+#include "content/common/main_function_params.h"
 
 class RendererMainPlatformDelegate {
  public:
