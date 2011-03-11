@@ -255,9 +255,9 @@ TEST_F(PhishingDOMFeatureExtractorTest, Continuation) {
   response.append("<form action=\"http://host2.com/\"></form></body></html>");
   responses_["http://host.com/"] = response;
 
-  // Advance the clock 30 ms every 10 elements processed, 10 ms between chunks.
+  // Advance the clock 8 ms every 10 elements processed, 10 ms between chunks.
   // Note that this assumes kClockCheckGranularity = 10 and
-  // kMaxTimePerChunkMs = 50.
+  // kMaxTimePerChunkMs = 20.
   base::TimeTicks now = base::TimeTicks::Now();
   EXPECT_CALL(clock_, Now())
       // Time check at the start of extraction.
@@ -265,27 +265,27 @@ TEST_F(PhishingDOMFeatureExtractorTest, Continuation) {
       // Time check at the start of the first chunk of work.
       .WillOnce(Return(now))
       // Time check after the first 10 elements.
-      .WillOnce(Return(now + base::TimeDelta::FromMilliseconds(30)))
+      .WillOnce(Return(now + base::TimeDelta::FromMilliseconds(8)))
       // Time check after the next 10 elements.  This is over the chunk
       // time limit, so a continuation task will be posted.
-      .WillOnce(Return(now + base::TimeDelta::FromMilliseconds(60)))
+      .WillOnce(Return(now + base::TimeDelta::FromMilliseconds(16)))
       // Time check at the start of the second chunk of work.
-      .WillOnce(Return(now + base::TimeDelta::FromMilliseconds(70)))
+      .WillOnce(Return(now + base::TimeDelta::FromMilliseconds(26)))
       // Time check after resuming iteration for the second chunk.
-      .WillOnce(Return(now + base::TimeDelta::FromMilliseconds(72)))
+      .WillOnce(Return(now + base::TimeDelta::FromMilliseconds(28)))
       // Time check after the next 10 elements.
-      .WillOnce(Return(now + base::TimeDelta::FromMilliseconds(100)))
+      .WillOnce(Return(now + base::TimeDelta::FromMilliseconds(36)))
       // Time check after the next 10 elements.  This will trigger another
       // continuation task.
-      .WillOnce(Return(now + base::TimeDelta::FromMilliseconds(130)))
+      .WillOnce(Return(now + base::TimeDelta::FromMilliseconds(44)))
       // Time check at the start of the third chunk of work.
-      .WillOnce(Return(now + base::TimeDelta::FromMilliseconds(140)))
+      .WillOnce(Return(now + base::TimeDelta::FromMilliseconds(54)))
       // Time check after resuming iteration for the third chunk.
-      .WillOnce(Return(now + base::TimeDelta::FromMilliseconds(142)))
+      .WillOnce(Return(now + base::TimeDelta::FromMilliseconds(56)))
       // Time check after the last 10 elements.
-      .WillOnce(Return(now + base::TimeDelta::FromMilliseconds(170)))
+      .WillOnce(Return(now + base::TimeDelta::FromMilliseconds(64)))
       // A final time check for the histograms.
-      .WillOnce(Return(now + base::TimeDelta::FromMilliseconds(180)));
+      .WillOnce(Return(now + base::TimeDelta::FromMilliseconds(66)));
 
   FeatureMap expected_features;
   expected_features.AddBooleanFeature(features::kPageHasForms);

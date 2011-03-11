@@ -26,7 +26,7 @@ namespace safe_browsing {
 
 // This time should be short enough that it doesn't noticeably disrupt the
 // user's interaction with the page.
-const int PhishingDOMFeatureExtractor::kMaxTimePerChunkMs = 50;
+const int PhishingDOMFeatureExtractor::kMaxTimePerChunkMs = 20;
 
 // Experimenting shows that we get a reasonable gain in performance by
 // increasing this up to around 10, but there's not much benefit in
