@@ -6,6 +6,7 @@
 
 #include <vector>
 
+#include "app/app_switches.h"
 #include "base/command_line.h"
 #include "base/file_path.h"
 #include "base/file_util.h"
@@ -409,6 +410,8 @@ std::string LoginUtilsImpl::GetOffTheRecordCommandLine(
     CommandLine* command_line) {
   static const char* kForwardSwitches[] = {
       switches::kEnableLogging,
+      switches::kEnableAcceleratedPlugins,
+      switches::kUseGL,
       switches::kUserDataDir,
       switches::kScrollPixels,
       switches::kEnableGView,
