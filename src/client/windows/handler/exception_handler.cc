@@ -793,11 +793,11 @@ bool ExceptionHandler::WriteMinidumpWithException(
             // pointer, but settle for whatever's available up to the
             // boundaries of the memory region.
             const ULONG64 kIPMemorySize = 256;
-            context.memory_base = 
-              std::max(reinterpret_cast<ULONG64>(info.BaseAddress),
+            context.memory_base =
+              (std::max)(reinterpret_cast<ULONG64>(info.BaseAddress),
                        instruction_pointer - (kIPMemorySize / 2));
             ULONG64 end_of_range =
-              std::min(instruction_pointer + (kIPMemorySize / 2),
+              (std::min)(instruction_pointer + (kIPMemorySize / 2),
                        reinterpret_cast<ULONG64>(info.BaseAddress)
                        + info.RegionSize);
             context.memory_size =
