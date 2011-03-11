@@ -66,6 +66,7 @@ void PrintPreviewMessageHandler::OnPagesReadyForPreview(
       new base::SharedMemory(params.metafile_data_handle, true);
   if (!shared_buf->Map(params.data_size)) {
     NOTREACHED();
+    delete shared_buf;
     return;
   }
 
