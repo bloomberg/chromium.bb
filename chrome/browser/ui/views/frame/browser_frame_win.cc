@@ -47,7 +47,9 @@ BrowserFrame* BrowserFrame::Create(BrowserView* browser_view,
 BrowserFrameWin::BrowserFrameWin(BrowserView* browser_view, Profile* profile)
     : WindowWin(browser_view),
       browser_view_(browser_view),
-      root_view_(NULL) {
+      root_view_(NULL),
+      ALLOW_THIS_IN_INITIALIZER_LIST(delegate_(this)) {
+  set_native_browser_frame(this);
   browser_view_->set_frame(this);
   non_client_view()->SetFrameView(CreateFrameViewForWindow());
   // Don't focus anything on creation, selecting a tab will set the focus.
@@ -64,74 +66,6 @@ void BrowserFrameWin::InitBrowserFrame() {
 // static
 void BrowserFrameWin::SetShowState(int state) {
   explicit_show_state = state;
-}
-
-////////////////////////////////////////////////////////////////////////////////
-// BrowserFrameWin, BrowserFrame implementation:
-
-views::Window* BrowserFrameWin::GetWindow() {
-  return this;
-}
-
-int BrowserFrameWin::GetMinimizeButtonOffset() const {
-  TITLEBARINFOEX titlebar_info;
-  titlebar_info.cbSize = sizeof(TITLEBARINFOEX);
-  SendMessage(GetNativeView(), WM_GETTITLEBARINFOEX, 0, (WPARAM)&titlebar_info);
-
-  CPoint minimize_button_corner(titlebar_info.rgrect[2].left,
-                                titlebar_info.rgrect[2].top);
-  MapWindowPoints(HWND_DESKTOP, GetNativeView(), &minimize_button_corner, 1);
-
-  return minimize_button_corner.x;
-}
-
-gfx::Rect BrowserFrameWin::GetBoundsForTabStrip(views::View* tabstrip) const {
-  return browser_frame_view_->GetBoundsForTabStrip(tabstrip);
-}
-
-int BrowserFrameWin::GetHorizontalTabStripVerticalOffset(bool restored) const {
-  return browser_frame_view_->GetHorizontalTabStripVerticalOffset(restored);
-}
-
-void BrowserFrameWin::UpdateThrobber(bool running) {
-  browser_frame_view_->UpdateThrobber(running);
-}
-
-ThemeProvider* BrowserFrameWin::GetThemeProviderForFrame() const {
-  // This is implemented for a different interface than GetThemeProvider is,
-  // but they mean the same things.
-  return GetThemeProvider();
-}
-
-bool BrowserFrameWin::AlwaysUseNativeFrame() const {
-  // App panel windows draw their own frame.
-  if (browser_view_->IsBrowserTypePanel())
-    return false;
-
-  // We don't theme popup or app windows, so regardless of whether or not a
-  // theme is active for normal browser windows, we don't want to use the custom
-  // frame for popups/apps.
-  if (!browser_view_->IsBrowserTypeNormal() &&
-      views::WidgetWin::IsAeroGlassEnabled())
-    return true;
-
-  // Otherwise, we use the native frame when we're told we should by the theme
-  // provider (e.g. no custom theme is active).
-  return GetThemeProvider()->ShouldUseNativeFrame();
-}
-
-views::View* BrowserFrameWin::GetFrameView() const {
-  return browser_frame_view_;
-}
-
-void BrowserFrameWin::TabStripDisplayModeChanged() {
-  if (GetRootView()->has_children()) {
-    // Make sure the child of the root view gets Layout again.
-    GetRootView()->GetChildViewAt(0)->InvalidateLayout();
-  }
-  GetRootView()->Layout();
-
-  UpdateDWMFrame();
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -285,6 +219,78 @@ void BrowserFrameWin::UpdateFrameAfterFrameChange() {
 views::RootView* BrowserFrameWin::CreateRootView() {
   root_view_ = new BrowserRootView(browser_view_, this);
   return root_view_;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// BrowserFrameWin, NativeBrowserFrame implementation:
+
+views::NativeWindow* BrowserFrameWin::AsNativeWindow() {
+  return this;
+}
+
+const views::NativeWindow* BrowserFrameWin::AsNativeWindow() const {
+  return this;
+}
+
+int BrowserFrameWin::GetMinimizeButtonOffset() const {
+  TITLEBARINFOEX titlebar_info;
+  titlebar_info.cbSize = sizeof(TITLEBARINFOEX);
+  SendMessage(GetNativeView(), WM_GETTITLEBARINFOEX, 0, (WPARAM)&titlebar_info);
+
+  CPoint minimize_button_corner(titlebar_info.rgrect[2].left,
+                                titlebar_info.rgrect[2].top);
+  MapWindowPoints(HWND_DESKTOP, GetNativeView(), &minimize_button_corner, 1);
+
+  return minimize_button_corner.x;
+}
+
+gfx::Rect BrowserFrameWin::GetBoundsForTabStrip(views::View* tabstrip) const {
+  return browser_frame_view_->GetBoundsForTabStrip(tabstrip);
+}
+
+int BrowserFrameWin::GetHorizontalTabStripVerticalOffset(bool restored) const {
+  return browser_frame_view_->GetHorizontalTabStripVerticalOffset(restored);
+}
+
+void BrowserFrameWin::UpdateThrobber(bool running) {
+  browser_frame_view_->UpdateThrobber(running);
+}
+
+ui::ThemeProvider* BrowserFrameWin::GetThemeProviderForFrame() const {
+  // This is implemented for a different interface than GetThemeProvider is,
+  // but they mean the same things.
+  return GetThemeProvider();
+}
+
+bool BrowserFrameWin::AlwaysUseNativeFrame() const {
+  // App panel windows draw their own frame.
+  if (browser_view_->IsBrowserTypePanel())
+    return false;
+
+  // We don't theme popup or app windows, so regardless of whether or not a
+  // theme is active for normal browser windows, we don't want to use the custom
+  // frame for popups/apps.
+  if (!browser_view_->IsBrowserTypeNormal() &&
+      views::WidgetWin::IsAeroGlassEnabled())
+    return true;
+
+  // Otherwise, we use the native frame when we're told we should by the theme
+  // provider (e.g. no custom theme is active).
+  return GetThemeProvider()->ShouldUseNativeFrame();
+}
+
+views::View* BrowserFrameWin::GetFrameView() const {
+  return browser_frame_view_;
+}
+
+void BrowserFrameWin::TabStripDisplayModeChanged() {
+  if (GetRootView()->has_children()) {
+    // Make sure the child of the root view gets Layout again.
+    GetRootView()->GetChildViewAt(0)->InvalidateLayout();
+  }
+  GetRootView()->Layout();
+
+  UpdateDWMFrame();
 }
 
 ///////////////////////////////////////////////////////////////////////////////

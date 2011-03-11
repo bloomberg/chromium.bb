@@ -8,13 +8,15 @@
 
 #include "base/basictypes.h"
 #include "chrome/browser/ui/views/frame/browser_frame.h"
+#include "chrome/browser/ui/views/frame/native_browser_frame.h"
 #include "views/window/window_gtk.h"
 
 class BrowserNonClientFrameView;
 class BrowserRootView;
 
 class BrowserFrameGtk : public BrowserFrame,
-                        public views::WindowGtk {
+                        public views::WindowGtk,
+                        public NativeBrowserFrame {
  public:
   // Normally you will create this class by calling BrowserFrame::Create.
   // Init must be called before using this class, which Create will do for you.
@@ -27,23 +29,24 @@ class BrowserFrameGtk : public BrowserFrame,
   // constructor.
   virtual void InitBrowserFrame();
 
-  // Overridden from BrowserFrame:
-  virtual views::Window* GetWindow();
-  virtual int GetMinimizeButtonOffset() const;
-  virtual gfx::Rect GetBoundsForTabStrip(views::View* tabstrip) const;
-  virtual int GetHorizontalTabStripVerticalOffset(bool restored) const;
-  virtual void UpdateThrobber(bool running);
-  virtual ui::ThemeProvider* GetThemeProviderForFrame() const;
-  virtual bool AlwaysUseNativeFrame() const;
-  virtual views::View* GetFrameView() const;
-  virtual void TabStripDisplayModeChanged();
-
   // Overridden from views::Widget:
-  virtual ui::ThemeProvider* GetThemeProvider() const;
-  virtual void IsActiveChanged();
-  virtual void SetInitialFocus();
+  virtual ui::ThemeProvider* GetThemeProvider() const OVERRIDE;
+  virtual void IsActiveChanged() OVERRIDE;
+  virtual void SetInitialFocus() OVERRIDE;
 
  protected:
+  // Overridden from NativeBrowserFrame:
+  virtual views::NativeWindow* AsNativeWindow() OVERRIDE;
+  virtual const views::NativeWindow* AsNativeWindow() const OVERRIDE;
+  virtual int GetMinimizeButtonOffset() const OVERRIDE;
+  virtual gfx::Rect GetBoundsForTabStrip(views::View* tabstrip) const OVERRIDE;
+  virtual int GetHorizontalTabStripVerticalOffset(bool restored) const OVERRIDE;
+  virtual void UpdateThrobber(bool running) OVERRIDE;
+  virtual ui::ThemeProvider* GetThemeProviderForFrame() const OVERRIDE;
+  virtual bool AlwaysUseNativeFrame() const OVERRIDE;
+  virtual views::View* GetFrameView() const OVERRIDE;
+  virtual void TabStripDisplayModeChanged() OVERRIDE;
+
   void set_browser_frame_view(BrowserNonClientFrameView* browser_frame_view) {
     browser_frame_view_ = browser_frame_view;
   }
