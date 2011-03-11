@@ -30,7 +30,8 @@ class RendererWebIDBFactoryImpl : public WebKit::WebIDBFactory {
       const WebKit::WebSecurityOrigin& origin,
       WebKit::WebFrame* web_frame,
       const WebKit::WebString& data_dir,
-      unsigned long long maximum_size);
+      unsigned long long maximum_size,
+      WebKit::WebIDBFactory::BackingStoreType);
   virtual void deleteDatabase(
       const WebKit::WebString& name,
       WebKit::WebIDBCallbacks* callbacks,

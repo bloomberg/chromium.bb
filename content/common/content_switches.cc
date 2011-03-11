@@ -99,6 +99,9 @@ const char kGpuProcess[]                    = "gpu-process";
 // Causes the GPU process to display a dialog on launch.
 const char kGpuStartupDialog[]              = "gpu-startup-dialog";
 
+// Use LevelDB as back-end for Indexed Database API.
+const char kLevelDBIndexedDatabase[]        = "indexeddb-use-leveldb";
+
 // Load an NPAPI plugin from the specified path.
 const char kLoadPlugin[]                    = "load-plugin";
 

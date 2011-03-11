@@ -29,7 +29,8 @@ void RendererWebIDBFactoryImpl::open(
     const WebSecurityOrigin& origin,
     WebFrame* web_frame,
     const WebString& data_dir,
-    unsigned long long maximum_size) {
+    unsigned long long maximum_size,
+    WebKit::WebIDBFactory::BackingStoreType) {
   // Don't send the data_dir. We know what we want on the Browser side of
   // things.
   IndexedDBDispatcher* dispatcher =

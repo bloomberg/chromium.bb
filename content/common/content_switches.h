@@ -36,6 +36,7 @@ extern const char kExtraPluginDir[];
 extern const char kGpuLauncher[];
 extern const char kGpuProcess[];
 extern const char kGpuStartupDialog[];
+extern const char kLevelDBIndexedDatabase[];
 extern const char kLoadPlugin[];
 extern const char kLoggingLevel[];
 extern const char kLogPluginMessages[];
