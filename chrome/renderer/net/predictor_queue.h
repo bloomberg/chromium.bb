@@ -48,11 +48,7 @@ class DnsQueue {
   ~DnsQueue(void);
 
   size_t Size() const { return size_; }
-  void Clear() {
-    size_ = 0;
-    readable_ = writeable_;
-    Validate();
-  }
+  void Clear();
 
   // Push takes an unterminated string of the given length
   // and inserts it into the queue for later

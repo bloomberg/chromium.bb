@@ -22,6 +22,12 @@ DnsQueue::DnsQueue(BufferSize size)
 DnsQueue::~DnsQueue(void) {
 }
 
+void DnsQueue::Clear() {
+  size_ = 0;
+  readable_ = writeable_;
+  DCHECK(Validate());
+}
+
 // Push takes an unterminated string plus its length.
 // The string must not contain a null terminator.
 // Exactly length chars are written, or nothing is written.

@@ -74,11 +74,10 @@ bool PlatformContext3DImpl::Init() {
       "*",
       attribs,
       parent_texture_id_);
-  command_buffer_->SetChannelErrorCallback(callback_factory_.NewCallback(
-      &PlatformContext3DImpl::OnContextLost));
-
   if (!command_buffer_)
     return false;
+  command_buffer_->SetChannelErrorCallback(callback_factory_.NewCallback(
+      &PlatformContext3DImpl::OnContextLost));
 
   return true;
 }
@@ -113,4 +112,3 @@ void PlatformContext3DImpl::OnContextLost() {
 }
 
 #endif  // ENABLE_GPU
-

@@ -10,6 +10,7 @@
 #include "base/metrics/histogram.h"
 #include "base/scoped_vector.h"
 #include "net/base/file_stream.h"
+#include "net/base/net_errors.h"
 
 using base::TimeTicks;
 
@@ -365,10 +366,9 @@ void SessionBackend::ResetFile() {
 net::FileStream* SessionBackend::OpenAndWriteHeader(const FilePath& path) {
   DCHECK(!path.empty());
   scoped_ptr<net::FileStream> file(new net::FileStream());
-  file->Open(path, base::PLATFORM_FILE_CREATE_ALWAYS |
-             base::PLATFORM_FILE_WRITE | base::PLATFORM_FILE_EXCLUSIVE_WRITE |
-             base::PLATFORM_FILE_EXCLUSIVE_READ);
-  if (!file->IsOpen())
+  if (file->Open(path, base::PLATFORM_FILE_CREATE_ALWAYS |
+      base::PLATFORM_FILE_WRITE | base::PLATFORM_FILE_EXCLUSIVE_WRITE |
+      base::PLATFORM_FILE_EXCLUSIVE_READ) != net::OK)
     return NULL;
   FileHeader header;
   header.signature = kFileSignature;
