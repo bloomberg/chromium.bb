@@ -340,12 +340,6 @@ class RenderView : public RenderWidget,
   WebKit::WebPlugin* CreatePluginNoCheck(WebKit::WebFrame* frame,
                                          const WebKit::WebPluginParams& params);
 
-  // Asks the browser for the CPBrowsingContext associated with this renderer.
-  // This is an opaque identifier associated with the renderer for sending
-  // messages for the given "Chrome Plugin." The Chrome Plugin API is used
-  // only by gears and this function can be deleted when we remove gears.
-  uint32 GetCPBrowsingContext();
-
 #if defined(OS_MACOSX)
   // Informs the render view that the given plugin has gained or lost focus.
   void PluginFocusChanged(bool focused, int plugin_id);
@@ -636,11 +630,6 @@ class RenderView : public RenderWidget,
   virtual void DidMovePlugin(const webkit::npapi::WebPluginGeometry& move);
   virtual void DidStartLoadingForPlugin();
   virtual void DidStopLoadingForPlugin();
-  virtual void ShowModalHTMLDialogForPlugin(
-      const GURL& url,
-      const gfx::Size& size,
-      const std::string& json_arguments,
-      std::string* json_retval);
   virtual WebKit::WebCookieJar* GetCookieJar();
 
   // Please do not add your stuff randomly to the end here. If there is an

@@ -6,7 +6,6 @@
 #include "base/synchronization/waitable_event.h"
 #include "base/threading/thread.h"
 #include "build/build_config.h"
-#include "chrome/common/chrome_plugin_lib.h"
 #include "chrome/common/net/url_fetcher.h"
 #include "chrome/common/net/url_request_context_getter.h"
 #include "net/http/http_response_headers.h"
@@ -96,8 +95,6 @@ class URLFetcherTest : public testing::Test, public URLFetcher::Delegate {
 
     io_message_loop_proxy_ = base::MessageLoopProxy::CreateForCurrentThread();
 
-    // Ensure that any plugin operations done by other tests are cleaned up.
-    ChromePluginLib::UnloadAllPlugins();
 #if defined(USE_NSS)
     net::EnsureOCSPInit();
 #endif

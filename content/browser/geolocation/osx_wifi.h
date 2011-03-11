@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// The remainder of this file is copied from the Google Gear project:
+// The remainder of this file is copied from the Gears project:
 // http://code.google.com/p/gears/source/browse/trunk/gears/geolocation/osx_wifi.h
 
 // The contents of this file are taken from Apple80211.h from the iStumbler

@@ -25,11 +25,6 @@ class TestWebPluginPageDelegate : public webkit::npapi::WebPluginPageDelegate {
   virtual void DidMovePlugin(const webkit::npapi::WebPluginGeometry& move) {}
   virtual void DidStartLoadingForPlugin() {}
   virtual void DidStopLoadingForPlugin() {}
-  virtual void ShowModalHTMLDialogForPlugin(
-      const GURL& url,
-      const gfx::Size& size,
-      const std::string& json_arguments,
-      std::string* json_retval) {}
   virtual WebKit::WebCookieJar* GetCookieJar();
 };
 

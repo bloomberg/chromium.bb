@@ -101,6 +101,7 @@
 #include "media/base/media_switches.h"
 #include "ui/base/ui_base_switches.h"
 #include "webkit/fileapi/file_system_path_manager.h"
+#include "webkit/glue/resource_type.h"
 #include "webkit/plugins/plugin_switches.h"
 
 #if defined(OS_WIN)
@@ -247,12 +248,12 @@ class RendererURLRequestContextOverride
   }
 
   virtual net::URLRequestContext* GetRequestContext(
-      const ResourceHostMsg_Request& resource_request) {
+      ResourceType::Type resource_type) {
     URLRequestContextGetter* request_context = request_context_;
     // If the request has resource type of ResourceType::MEDIA, we use a request
     // context specific to media for handling it because these resources have
     // specific needs for caching.
-    if (resource_request.resource_type == ResourceType::MEDIA)
+    if (resource_type == ResourceType::MEDIA)
       request_context = media_request_context_;
     return request_context->GetURLRequestContext();
   }

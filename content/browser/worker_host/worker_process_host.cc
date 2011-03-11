@@ -39,6 +39,7 @@
 #include "net/base/mime_util.h"
 #include "ipc/ipc_switches.h"
 #include "net/base/registry_controlled_domain.h"
+#include "webkit/glue/resource_type.h"
 #include "webkit/fileapi/file_system_path_manager.h"
 
 namespace {
@@ -55,7 +56,7 @@ class URLRequestContextOverride
   virtual ~URLRequestContextOverride() {}
 
   virtual net::URLRequestContext* GetRequestContext(
-      const ResourceHostMsg_Request& resource_request) {
+      ResourceType::Type resource_type) {
     return url_request_context_;
   }
 

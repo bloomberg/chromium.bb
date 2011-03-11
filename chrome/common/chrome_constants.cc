@@ -82,7 +82,6 @@ const FilePath::CharType kMediaCacheDirname[] = FPL("Media Cache");
 const FilePath::CharType kOffTheRecordMediaCacheDirname[] =
     FPL("Incognito Media Cache");
 const FilePath::CharType kAppCacheDirname[] = FPL("Application Cache");
-const FilePath::CharType kChromePluginDataDirname[] = FPL("Plugin Data");
 const FilePath::CharType kThemePackFilename[] = FPL("Cached Theme.pak");
 const FilePath::CharType kCookieFilename[] = FPL("Cookies");
 const FilePath::CharType kExtensionsCookieFilename[] = FPL("Extension Cookies");

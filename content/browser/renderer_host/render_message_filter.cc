@@ -15,7 +15,7 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/automation/automation_resource_message_filter.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/chrome_plugin_browsing_context.h"
+#include "chrome/browser/clipboard_dispatcher.h"
 #include "chrome/browser/download/download_types.h"
 #include "chrome/browser/extensions/extension_message_service.h"
 #include "chrome/browser/metrics/histogram_synchronizer.h"
@@ -367,8 +367,6 @@ bool RenderMessageFilter::OnMessageReceived(const IPC::Message& message,
     IPC_MESSAGE_HANDLER(ViewHostMsg_CheckNotificationPermission,
                         OnCheckNotificationPermission)
     IPC_MESSAGE_HANDLER(ViewHostMsg_RevealFolderInOS, OnRevealFolderInOS)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_GetCPBrowsingContext,
-                        OnGetCPBrowsingContext)
     IPC_MESSAGE_HANDLER(ViewHostMsg_AllocateSharedMemoryBuffer,
                         OnAllocateSharedMemoryBuffer)
     IPC_MESSAGE_HANDLER(ViewHostMsg_ResourceTypeStats, OnResourceTypeStats)
@@ -771,13 +769,6 @@ void RenderMessageFilter::OnCheckNotificationPermission(
   // Fall back to the regular notification preferences, which works on an
   // origin basis.
   *result = notification_prefs_->HasPermission(source_url.GetOrigin());
-}
-
-void RenderMessageFilter::OnGetCPBrowsingContext(uint32* context) {
-  // Always allocate a new context when a plugin requests one, since it needs to
-  // be unique for that plugin instance.
-  *context = CPBrowsingContextManager::GetInstance()->Allocate(
-      request_context_->GetURLRequestContext());
 }
 
 void RenderMessageFilter::OnAllocateSharedMemoryBuffer(

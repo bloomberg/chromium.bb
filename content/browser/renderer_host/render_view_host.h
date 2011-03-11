@@ -314,10 +314,6 @@ class RenderViewHost : public RenderWidgetHost {
                                   bool success,
                                   const std::wstring& prompt);
 
-  // Notifies the RenderView that the modal html dialog has been closed.
-  void ModalHTMLDialogClosed(IPC::Message* reply_msg,
-                             const std::string& json_retval);
-
   // Send an action to the media player element located at |location|.
   void MediaPlayerActionAt(const gfx::Point& location,
                            const WebKit::WebMediaPlayerAction& action);
@@ -605,9 +601,6 @@ class RenderViewHost : public RenderWidgetHost {
   void OnMsgRunBeforeUnloadConfirm(const GURL& frame_url,
                                    const std::wstring& message,
                                    IPC::Message* reply_msg);
-  void OnMsgShowModalHTMLDialog(const GURL& url, int width, int height,
-                                const std::string& json_arguments,
-                                IPC::Message* reply_msg);
   void OnMsgStartDragging(const WebDropData& drop_data,
                           WebKit::WebDragOperationsMask operations_allowed,
                           const SkBitmap& image,

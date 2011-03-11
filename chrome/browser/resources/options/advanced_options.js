@@ -121,9 +121,6 @@ var OptionsPage = options.OptionsPage;
           chrome.send('useTLS1CheckboxAction',
               [String($('sslUseTLS1').checked)]);
         };
-        $('gearSettingsConfigureGearsButton').onclick = function(event) {
-          chrome.send('showGearsSettings');
-        };
       }
 
       // 'cloudPrintProxyEnabled' is true for Chrome branded builds on

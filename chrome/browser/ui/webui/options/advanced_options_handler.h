@@ -77,9 +77,6 @@ class AdvancedOptionsHandler
   // Callback for the "Use TLS1" checkbox.  This is needed so we can support
   // manual handling on Windows.
   void HandleUseTLS1Checkbox(const ListValue* args);
-
-  // Callback for the "Show Gears Settings" button.
-  void HandleShowGearsSettings(const ListValue* args);
 #endif
 
 #if !defined(OS_CHROMEOS)

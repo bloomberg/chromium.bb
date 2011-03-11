@@ -36,7 +36,6 @@ static bool ShouldAllowAllContent(const GURL& url) {
          url.SchemeIs(chrome::kChromeInternalScheme) ||
          url.SchemeIs(chrome::kChromeUIScheme) ||
          url.SchemeIs(chrome::kExtensionScheme) ||
-         url.SchemeIs(chrome::kGearsScheme) ||
          url.SchemeIs(chrome::kUserScriptScheme);
 }
 

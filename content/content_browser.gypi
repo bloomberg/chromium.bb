@@ -160,8 +160,6 @@
         'browser/in_process_webkit/webkit_thread.h',
         'browser/mime_registry_message_filter.cc',
         'browser/mime_registry_message_filter.h',
-        'browser/modal_html_dialog_delegate.cc',
-        'browser/modal_html_dialog_delegate.h',
         'browser/ppapi_plugin_process_host.cc',
         'browser/ppapi_plugin_process_host.h',
         'browser/plugin_process_host.cc',

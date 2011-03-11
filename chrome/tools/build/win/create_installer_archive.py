@@ -142,10 +142,10 @@ def GetPrevVersion(output_dir, temp_dir, last_chrome_installer):
   lzma_exec = GetLZMAExec(options.output_dir)
   prev_archive_file = os.path.join(options.last_chrome_installer,
                                    options.output_name + ARCHIVE_SUFFIX)
-  cmd = '%s x -o"%s" "%s" Chrome-bin/*/gears.dll' % (lzma_exec, temp_dir,
-                                                       prev_archive_file)
+  cmd = '%s x -o"%s" "%s" Chrome-bin/*/chrome.dll' % (lzma_exec, temp_dir,
+                                                      prev_archive_file)
   RunSystemCommand(cmd)
-  dll_path = glob.glob(os.path.join(temp_dir, 'Chrome-bin', '*', 'gears.dll'))
+  dll_path = glob.glob(os.path.join(temp_dir, 'Chrome-bin', '*', 'chrome.dll'))
   return os.path.split(os.path.split(dll_path[0])[0])[1]
 
 def MakeStagingDirectories(output_dir):

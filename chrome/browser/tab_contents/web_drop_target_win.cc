@@ -106,7 +106,7 @@ DWORD WebDropTarget::OnDragEnter(IDataObject* data_object,
 
   // TODO(tc): PopulateWebDropData can be slow depending on what is in the
   // IDataObject.  Maybe we can do this in a background thread.
-  WebDropData drop_data(GetDragIdentity());
+  WebDropData drop_data;
   WebDropData::PopulateWebDropData(data_object, &drop_data);
 
   if (drop_data.url.is_empty())

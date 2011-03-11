@@ -296,8 +296,7 @@ class ChromeFrameStartupTest : public ChromeFramePerfTestBase {
     chrome_frame_dll_ = dir_app_.Append(FILE_PATH_LITERAL("servers"));
     chrome_frame_dll_ = chrome_frame_dll_.Append(
         FilePath::FromWStringHack(kChromeFrameDllName));
-    icu_dll_ = dir_app_.Append(FILE_PATH_LITERAL("icudt.dll"));
-    gears_dll_ = dir_app_.Append(FILE_PATH_LITERAL("gears.dll"));
+    icu_dll_ = dir_app_.Append(FILE_PATH_LITERAL("icudt46.dll"));
     avcodec52_dll_ = dir_app_.Append(FILE_PATH_LITERAL("avcodec-52.dll"));
     avformat52_dll_ = dir_app_.Append(FILE_PATH_LITERAL("avformat-52.dll"));
     avutil50_dll_ = dir_app_.Append(FILE_PATH_LITERAL("avutil-50.dll"));
@@ -358,7 +357,6 @@ class ChromeFrameStartupTest : public ChromeFramePerfTestBase {
   FilePath chrome_exe_;
   FilePath chrome_frame_dll_;
   FilePath icu_dll_;
-  FilePath gears_dll_;
   FilePath avcodec52_dll_;
   FilePath avformat52_dll_;
   FilePath avutil50_dll_;
@@ -967,9 +965,10 @@ TEST_F(ChromeFrameBinariesLoadTest, PerfWarm) {
 
 TEST_F(ChromeFrameStartupTestActiveX, PerfCold) {
   SetConfigInt(L"PreRead", 0);
-  FilePath binaries_to_evict[] = { gears_dll_, avcodec52_dll_,
-      avformat52_dll_, avutil50_dll_, chrome_exe_, chrome_dll_,
-      chrome_frame_dll_};
+  FilePath binaries_to_evict[] = {
+    avcodec52_dll_, avformat52_dll_, avutil50_dll_, chrome_exe_, chrome_dll_,
+    chrome_frame_dll_
+  };
   RunStartupTest("cold", "t", "about:blank", true /* cold */,
                  arraysize(binaries_to_evict), binaries_to_evict,
                  false /* not important */, false);
@@ -978,9 +977,10 @@ TEST_F(ChromeFrameStartupTestActiveX, PerfCold) {
 
 TEST_F(ChromeFrameStartupTestActiveX, PerfColdPreRead) {
   SetConfigInt(L"PreRead", 1);
-  FilePath binaries_to_evict[] = { gears_dll_, avcodec52_dll_,
-      avformat52_dll_, avutil50_dll_, chrome_exe_, chrome_dll_,
-      chrome_frame_dll_};
+  FilePath binaries_to_evict[] = {
+    avcodec52_dll_, avformat52_dll_, avutil50_dll_, chrome_exe_, chrome_dll_,
+    chrome_frame_dll_
+  };
   RunStartupTest("cold_preread", "t", "about:blank", true /* cold */,
                  arraysize(binaries_to_evict), binaries_to_evict,
                  false /* not important */, false);

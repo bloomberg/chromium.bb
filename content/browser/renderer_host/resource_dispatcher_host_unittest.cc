@@ -7,7 +7,6 @@
 #include "base/file_path.h"
 #include "base/message_loop.h"
 #include "base/process_util.h"
-#include "chrome/common/chrome_plugin_lib.h"
 #include "chrome/common/render_messages.h"
 #include "chrome/common/render_messages_params.h"
 #include "content/browser/browser_thread.h"
@@ -76,8 +75,6 @@ static ResourceHostMsg_Request CreateResourceRequest(
   request.request_context = 0;
   request.appcache_host_id = appcache::kNoHostId;
   request.download_to_file = false;
-  request.host_renderer_id = -1;
-  request.host_render_view_id = -1;
   return request;
 }
 
@@ -192,10 +189,6 @@ class ResourceDispatcherHostTest : public testing::Test,
     host_.Shutdown();
 
     ChildProcessSecurityPolicy::GetInstance()->Remove(0);
-
-    // The plugin lib is automatically loaded during these test
-    // and we want a clean environment for other tests.
-    ChromePluginLib::UnloadAllPlugins();
 
     // Flush the message loop to make Purify happy.
     message_loop_.RunAllPending();

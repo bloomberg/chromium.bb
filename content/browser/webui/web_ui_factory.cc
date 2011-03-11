@@ -95,10 +95,6 @@ WebUI* NewWebUI<ExtensionWebUI>(TabContents* contents, const GURL& url) {
 // when invoked for a particular tab - see NewWebUI<ExtensionWebUI>.
 static WebUIFactoryFunction GetWebUIFactoryFunction(Profile* profile,
     const GURL& url) {
-  // Currently, any gears: URL means an HTML dialog.
-  if (url.SchemeIs(chrome::kGearsScheme))
-    return &NewWebUI<HtmlDialogUI>;
-
   if (url.host() == chrome::kChromeUIDialogHost ||
       url.host() == chrome::kChromeUICollectedCookiesHost) {
     return &NewWebUI<ConstrainedHtmlUI>;
@@ -115,7 +111,7 @@ static WebUIFactoryFunction GetWebUIFactoryFunction(Profile* profile,
     return &NewWebUI<ExternalHtmlDialogUI>;
 
   // This will get called a lot to check all URLs, so do a quick check of other
-  // schemes (gears was handled above) to filter out most URLs.
+  // schemes to filter out most URLs.
   if (!url.SchemeIs(chrome::kChromeDevToolsScheme) &&
       !url.SchemeIs(chrome::kChromeInternalScheme) &&
       !url.SchemeIs(chrome::kChromeUIScheme))

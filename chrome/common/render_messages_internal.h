@@ -1655,13 +1655,6 @@ IPC_MESSAGE_ROUTED3(ViewHostMsg_SendSerializedHtmlData,
                     std::string /* data buffer */,
                     int32 /* complete status */)
 
-IPC_SYNC_MESSAGE_ROUTED4_1(ViewHostMsg_ShowModalHTMLDialog,
-                           GURL /* url */,
-                           int /* width */,
-                           int /* height */,
-                           std::string /* json_arguments */,
-                           std::string /* json_retval */)
-
 IPC_MESSAGE_ROUTED2(ViewHostMsg_DidGetApplicationInfo,
                     int32 /* page_id */,
                     WebApplicationInfo)
@@ -1688,10 +1681,10 @@ IPC_MESSAGE_ROUTED4(ViewHostMsg_DidDownloadFavIcon,
                     bool /* true if there was a network error */,
                     SkBitmap /* image_data */)
 
-// Get the CPBrowsingContext associated with the renderer sending this
+// Sent when the renderer process is done processing a DataReceived
 // message.
-IPC_SYNC_MESSAGE_CONTROL0_1(ViewHostMsg_GetCPBrowsingContext,
-                            uint32 /* context */)
+IPC_MESSAGE_ROUTED1(ViewHostMsg_DataReceived_ACK,
+                    int /* request_id */)
 
 IPC_MESSAGE_CONTROL1(ViewHostMsg_RevealFolderInOS,
                      FilePath /* path */)

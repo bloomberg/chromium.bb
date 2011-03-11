@@ -44,7 +44,7 @@ class StartupTest : public UIPerfTest {
   };
 
   // Load a file on startup rather than about:blank.  This tests a longer
-  // startup path, including resource loading and the loading of gears.dll.
+  // startup path, including resource loading.
   void SetUpWithFileURL() {
     const FilePath file_url = ui_test_utils::GetTestFilePath(
         FilePath(FilePath::kCurrentDirectory),
@@ -140,15 +140,6 @@ class StartupTest : public UIPerfTest {
         // chrome.dll is windows specific.
         FilePath chrome_dll(dir_app.Append(FILE_PATH_LITERAL("chrome.dll")));
         ASSERT_TRUE(EvictFileFromSystemCacheWrapper(chrome_dll));
-#endif
-
-#if defined(OS_WIN)
-        // TODO(port): Re-enable once gears is working on mac/linux.
-        FilePath gears_dll;
-        ASSERT_TRUE(PathService::Get(chrome::FILE_GEARS_PLUGIN, &gears_dll));
-        ASSERT_TRUE(EvictFileFromSystemCacheWrapper(gears_dll));
-#else
-        NOTIMPLEMENTED() << "gears not enabled yet";
 #endif
       }
       UITest::SetUp();
@@ -369,21 +360,6 @@ TEST_F(StartupTest, MAYBE_PerfExtensionContentScript50) {
   RunStartupTest("warm", "extension_content_scripts50", WARM, NOT_IMPORTANT,
                  ProxyLauncher::DEFAULT_THEME, 1, 0);
 }
-
-#if defined(OS_WIN)
-// TODO(port): Enable gears tests on linux/mac once gears is working.
-TEST_F(StartupTest, PerfGears) {
-  SetUpWithFileURL();
-  RunStartupTest("warm", "gears", WARM, NOT_IMPORTANT,
-                 ProxyLauncher::DEFAULT_THEME, 1, 0);
-}
-
-TEST_F(StartupTest, PerfColdGears) {
-  SetUpWithFileURL();
-  RunStartupTest("cold", "gears", COLD, NOT_IMPORTANT,
-                 ProxyLauncher::DEFAULT_THEME, 1, 0);
-}
-#endif
 
 TEST_F(StartupTest, PerfComplexTheme) {
   RunStartupTest("warm", "t-theme", WARM, NOT_IMPORTANT,

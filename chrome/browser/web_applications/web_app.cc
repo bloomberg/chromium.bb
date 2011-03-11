@@ -27,7 +27,6 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_paths.h"
-#include "chrome/common/chrome_plugin_util.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/common/web_apps.h"
@@ -642,7 +641,7 @@ void UpdateShortcutWorker::UpdateShortcutsOnFileThread() {
       web_app::GetDataDir(profile_path_), shortcut_info_);
 
   // Ensure web_app_path exists. web_app_path could be missing for a legacy
-  // shortcut created by gears.
+  // shortcut created by Gears.
   if (!file_util::PathExists(web_app_path) &&
       !file_util::CreateDirectory(web_app_path)) {
     NOTREACHED();

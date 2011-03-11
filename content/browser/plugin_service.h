@@ -76,15 +76,6 @@ class PluginService
   // Returns the PluginService singleton.
   static PluginService* GetInstance();
 
-  // Load all the plugins that should be loaded for the lifetime of the browser
-  // (ie, with the LoadOnStartup flag set).
-  void LoadChromePlugins(ResourceDispatcherHost* resource_dispatcher_host);
-
-  // Sets/gets the data directory that Chrome plugins should use to store
-  // persistent data.
-  void SetChromePluginDataDir(const FilePath& data_dir);
-  const FilePath& GetChromePluginDataDir();
-
   // Gets the browser's UI locale.
   const std::string& GetUILocale();
 
@@ -137,8 +128,6 @@ class PluginService
     return resource_dispatcher_host_;
   }
 
-  static void EnableChromePlugins(bool enable);
-
  private:
   friend struct DefaultSingletonTraits<PluginService>;
 
@@ -184,9 +173,6 @@ class PluginService
   // The IO thread's resource dispatcher host.
   ResourceDispatcherHost* resource_dispatcher_host_;
 
-  // The data directory that Chrome plugins should use to store persistent data.
-  FilePath chrome_plugin_data_dir_;
-
   // The browser's UI locale.
   const std::string ui_locale_;
 
@@ -217,9 +203,6 @@ class PluginService
 #endif
 
   std::vector<PepperPluginInfo> ppapi_plugins_;
-
-  // Set to true if chrome plugins are enabled. Defaults to true.
-  static bool enable_chrome_plugins_;
 
   std::vector<OverriddenPlugin> overridden_plugins_;
   base::Lock overridden_plugins_lock_;

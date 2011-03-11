@@ -19,7 +19,6 @@ const char kExtensionScheme[] = "chrome-extension";
 const char kFileScheme[] = "file";
 const char kFileSystemScheme[] = "filesystem";
 const char kFtpScheme[] = "ftp";
-const char kGearsScheme[] = "gears";
 const char kHttpScheme[] = "http";
 const char kHttpsScheme[] = "https";
 const char kJavaScriptScheme[] = "javascript";
@@ -254,7 +253,6 @@ void RegisterChromeSchemes() {
   // the new tab page.
   url_util::AddStandardScheme(kChromeDevToolsScheme);
   url_util::AddStandardScheme(kChromeUIScheme);
-  url_util::AddStandardScheme(kGearsScheme);
   url_util::AddStandardScheme(kExtensionScheme);
   url_util::AddStandardScheme(kMetadataScheme);
 #if defined(OS_CHROMEOS)

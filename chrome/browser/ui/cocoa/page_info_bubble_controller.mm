@@ -382,8 +382,7 @@ void ShowPageInfoBubble(gfx::NativeWindow parent,
   scoped_refptr<net::X509Certificate> cert;
   CertStore::GetInstance()->RetrieveCert(certID_, &cert);
 
-  // Don't bother showing certificates if there isn't one. Gears runs
-  // with no OS root certificate.
+  // Don't bother showing certificates if there isn't one.
   if (!cert.get() || !cert->os_cert_handle()) {
     // This should only ever happen in unit tests.
     [certButton setEnabled:NO];

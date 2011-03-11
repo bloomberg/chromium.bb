@@ -315,7 +315,6 @@ include_rules = [
 skip_child_includes = [
   "breakpad",
   "chrome_frame",
-  "gears",
   "native_client",
   "o3d",
   "pdf",

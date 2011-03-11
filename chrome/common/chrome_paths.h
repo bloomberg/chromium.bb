@@ -63,7 +63,6 @@ enum {
   FILE_RECORDED_SCRIPT,         // Full path to the script.log file that
                                 // contains recorded browser events for
                                 // playback.
-  FILE_GEARS_PLUGIN,            // Full path to the gears.dll plugin file.
   FILE_FLASH_PLUGIN,            // Full path to the internal Flash plugin file.
   FILE_PDF_PLUGIN,              // Full path to the internal PDF plugin file.
   FILE_NACL_PLUGIN,             // Full path to the internal NaCl plugin file.

@@ -31,7 +31,7 @@
 
 //
 // Breakpad crash report uploader
-// (adapted from code in Google Gears)
+// (adapted from code in Gears)
 //
 
 

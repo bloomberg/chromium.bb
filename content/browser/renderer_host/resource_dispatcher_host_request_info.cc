@@ -19,9 +19,7 @@ ResourceDispatcherHostRequestInfo::ResourceDispatcherHostRequestInfo(
     uint64 upload_size,
     bool is_download,
     bool allow_download,
-    bool has_user_gesture,
-    int host_renderer_id,
-    int host_render_view_id)
+    bool has_user_gesture)
     : resource_handler_(handler),
       cross_site_handler_(NULL),
       process_type_(process_type),
@@ -42,9 +40,7 @@ ResourceDispatcherHostRequestInfo::ResourceDispatcherHostRequestInfo(
       is_paused_(false),
       called_on_response_started_(false),
       has_started_reading_(false),
-      paused_read_bytes_(0),
-      host_renderer_id_(host_renderer_id),
-      host_render_view_id_(host_render_view_id) {
+      paused_read_bytes_(0) {
 }
 
 ResourceDispatcherHostRequestInfo::~ResourceDispatcherHostRequestInfo() {

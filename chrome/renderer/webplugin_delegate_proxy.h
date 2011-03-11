@@ -145,15 +145,7 @@ class WebPluginDelegateProxy
                    const std::string& cookie);
   void OnGetCookies(const GURL& url, const GURL& first_party_for_cookies,
                     std::string* cookies);
-  void OnShowModalHTMLDialog(const GURL& url, int width, int height,
-                             const std::string& json_arguments,
-                             std::string* json_retval);
-  void OnGetDragData(const NPVariant_Param& event, bool add_data,
-                     std::vector<NPVariant_Param>* values, bool* success);
-  void OnSetDropEffect(const NPVariant_Param& event, int effect,
-                       bool* success);
   void OnMissingPluginStatus(int status);
-  void OnGetCPBrowsingContext(uint32* context);
   void OnCancelDocumentLoad();
   void OnInitiateHTTPRangeRequest(const std::string& url,
                                   const std::string& range_info,

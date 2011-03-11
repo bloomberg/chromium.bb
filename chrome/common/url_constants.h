@@ -22,7 +22,6 @@ extern const char kExtensionScheme[];
 extern const char kFileScheme[];
 extern const char kFileSystemScheme[];
 extern const char kFtpScheme[];
-extern const char kGearsScheme[];
 extern const char kHttpScheme[];
 extern const char kHttpsScheme[];
 extern const char kJavaScriptScheme[];

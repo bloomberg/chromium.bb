@@ -7,7 +7,7 @@
 namespace {
 // Sentinel values to mark invalid data. (WebKit carries companion is_valid
 // bools for this purpose; we may eventually follow that approach, but
-// sentinels worked OK in the gears code this is based on.)
+// sentinels worked OK in the Gears code this is based on.)
 const double kBadLatitudeLongitude = 200;
 // Lowest point on land is at approximately -400 meters.
 const int kBadAltitude = -10000;

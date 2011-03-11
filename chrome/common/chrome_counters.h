@@ -29,12 +29,6 @@ class Counters {
 
   // Time/Count of spellcheck lookups.
   static base::StatsRate& spellcheck_lookup();
-
-  // Time spent loading the Chrome plugins.
-  static base::StatsCounterTimer& plugin_load();
-
-  // Time/Count of plugin network interception.
-  static base::StatsRate& plugin_intercept();
 };
 
 }  // namespace chrome

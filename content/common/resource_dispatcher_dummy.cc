@@ -25,9 +25,7 @@ bool ResourceDispatcher::OnMessageReceived(const IPC::Message& message) {
 }
 
 webkit_glue::ResourceLoaderBridge* ResourceDispatcher::CreateBridge(
-    const webkit_glue::ResourceLoaderBridge::RequestInfo& request_info,
-    int host_renderer_id,
-    int host_render_view_id) {
+    const webkit_glue::ResourceLoaderBridge::RequestInfo& request_info) {
   // This function is used only by plugin and renderer code, so it should
   // never be called in a 64-bit Windows process.
   NOTREACHED();

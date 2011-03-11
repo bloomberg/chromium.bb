@@ -44,9 +44,7 @@ class ChildThread : public IPC::Channel::Listener,
   // Creates a ResourceLoaderBridge.
   // Tests can override this method if they want a custom loading behavior.
   virtual webkit_glue::ResourceLoaderBridge* CreateBridge(
-      const webkit_glue::ResourceLoaderBridge::RequestInfo& request_info,
-      int host_renderer_id,
-      int host_render_view_id);
+      const webkit_glue::ResourceLoaderBridge::RequestInfo& request_info);
 
   ResourceDispatcher* resource_dispatcher();
 

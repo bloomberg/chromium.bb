@@ -29,7 +29,7 @@ DWORD TestDropDelegate::OnDragEnter(IDataObject* data_object,
   POINT client_pt = cursor_position;
   ScreenToClient(GetHWND(), &client_pt);
   WebDragOperation op = webview_->dragTargetDragEnter(
-      drop_data.ToDragData(), drop_data.identity,
+      drop_data.ToDragData(), 0,  // web drag identity, unused.
       WebPoint(client_pt.x, client_pt.y),
       WebPoint(cursor_position.x, cursor_position.y),
       WebDragOperationCopy);

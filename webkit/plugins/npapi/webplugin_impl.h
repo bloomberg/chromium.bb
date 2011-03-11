@@ -124,9 +124,6 @@ class WebPluginImpl : public WebPlugin,
                          const std::string& cookie);
   virtual std::string GetCookies(const GURL& url,
                                  const GURL& first_party_for_cookies);
-  virtual void ShowModalHTMLDialog(const GURL& url, int width, int height,
-                                   const std::string& json_arguments,
-                                   std::string* json_retval);
   virtual void OnMissingPluginStatus(int status);
 
   virtual void URLRedirectResponse(bool allow, int resource_id);

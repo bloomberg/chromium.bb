@@ -14,12 +14,10 @@
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/chrome_plugin_host.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/plugin_updater.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_paths.h"
-#include "chrome/common/chrome_plugin_lib.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/default_plugin.h"
 #include "chrome/common/extensions/extension.h"
@@ -77,18 +75,12 @@ class PluginDirWatcherDelegate : public FilePathWatcher::Delegate {
 #endif
 
 // static
-bool PluginService::enable_chrome_plugins_ = true;
-
-// static
 void PluginService::InitGlobalInstance(Profile* profile) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   // We first group the plugins and then figure out which groups to
   // enable or disable.
   PluginUpdater::GetInstance()->UpdatePluginGroupsStateFromPrefs(profile);
-
-  // Have Chrome plugins write their data to the profile directory.
-  GetInstance()->SetChromePluginDataDir(profile->GetPath());
 }
 
 // static
@@ -96,19 +88,11 @@ PluginService* PluginService::GetInstance() {
   return Singleton<PluginService>::get();
 }
 
-// static
-void PluginService::EnableChromePlugins(bool enable) {
-  enable_chrome_plugins_ = enable;
-}
-
 PluginService::PluginService()
     : main_message_loop_(MessageLoop::current()),
       resource_dispatcher_host_(NULL),
       ui_locale_(g_browser_process->GetApplicationLocale()) {
   RegisterPepperPlugins();
-
-  // Have the NPAPI plugin list search for Chrome plugins as well.
-  ChromePluginLib::RegisterPluginsWithNPAPI();
 
   // Load any specified on the command line as well.
   const CommandLine* command_line = CommandLine::ForCurrentProcess();
@@ -216,23 +200,6 @@ PluginService::~PluginService() {
   if (hklm_event_.get())
     hklm_event_->Release();
 #endif
-}
-
-void PluginService::LoadChromePlugins(
-    ResourceDispatcherHost* resource_dispatcher_host) {
-  if (!enable_chrome_plugins_)
-    return;
-
-  resource_dispatcher_host_ = resource_dispatcher_host;
-  ChromePluginLib::LoadChromePlugins(GetCPBrowserFuncsForBrowser());
-}
-
-void PluginService::SetChromePluginDataDir(const FilePath& data_dir) {
-  chrome_plugin_data_dir_ = data_dir;
-}
-
-const FilePath& PluginService::GetChromePluginDataDir() {
-  return chrome_plugin_data_dir_;
 }
 
 const std::string& PluginService::GetUILocale() {

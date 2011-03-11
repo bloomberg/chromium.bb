@@ -52,15 +52,6 @@ class WebPluginPageDelegate {
   // Notifies the parent view that all loads are finished.
   virtual void DidStopLoadingForPlugin() = 0;
 
-  // Asks the browser to show a modal HTML dialog.  The dialog is passed the
-  // given arguments as a JSON string, and returns its result as a JSON string
-  // through json_retval.
-  virtual void ShowModalHTMLDialogForPlugin(
-      const GURL& url,
-      const gfx::Size& size,
-      const std::string& json_arguments,
-      std::string* json_retval) = 0;
-
   // The WebCookieJar to use for this plugin.
   virtual WebKit::WebCookieJar* GetCookieJar() = 0;
 };

@@ -27,11 +27,6 @@ IPC_MESSAGE_CONTROL2(PluginProcessMsg_CreateChannel,
                      int /* renderer_id */,
                      bool /* off_the_record */)
 
-// Allows a chrome plugin loaded in the browser process to send arbitrary
-// data to an instance of the same plugin loaded in a plugin process.
-IPC_MESSAGE_CONTROL1(PluginProcessMsg_PluginMessage,
-                     std::vector<uint8> /* opaque data */)
-
 // Tells the plugin process to notify every connected renderer of the pending
 // shutdown, so we don't mistake it for a crash.
 IPC_MESSAGE_CONTROL0(PluginProcessMsg_NotifyRenderersOfPendingShutdown)
@@ -47,30 +42,7 @@ IPC_MESSAGE_CONTROL1(PluginProcessHostMsg_ChannelCreated,
 IPC_SYNC_MESSAGE_CONTROL0_1(PluginProcessHostMsg_GetPluginFinderUrl,
                             std::string /* plugin finder URL */)
 
-// Allows a chrome plugin loaded in a plugin process to send arbitrary
-// data to an instance of the same plugin loaded in the browser process.
-IPC_MESSAGE_CONTROL1(PluginProcessHostMsg_PluginMessage,
-                     std::vector<uint8> /* opaque data */)
-
-// Allows a chrome plugin loaded in a plugin process to send arbitrary
-// data to an instance of the same plugin loaded in the browser process.
-IPC_SYNC_MESSAGE_CONTROL1_1(PluginProcessHostMsg_PluginSyncMessage,
-                            std::vector<uint8> /* opaque data */,
-                            std::vector<uint8> /* opaque data response */)
-
-// Used to get cookies for the given URL.  The request_context is a
-// CPBrowsingContext, but is passed as int32 to avoid compilation errors.
-IPC_SYNC_MESSAGE_CONTROL2_1(PluginProcessHostMsg_GetCookies,
-                            int32 /* request_context */,
-                            GURL /* url */,
-                            std::string /* cookies */)
-
-// Used by the plugin process to verify that its renderer |renderer_id| has
-// permission to access the given |files|.
-IPC_SYNC_MESSAGE_CONTROL2_1(PluginProcessHostMsg_AccessFiles,
-                            int /* renderer_id */,
-                            std::vector<std::string> /* files */,
-                            bool /* allowed */)
+IPC_MESSAGE_CONTROL0(PluginProcessHostMsg_ShutdownRequest)
 
 // Get the list of proxies to use for |url|, as a semicolon delimited list
 // of "<TYPE> <HOST>:<PORT>" | "DIRECT". See also ViewHostMsg_ResolveProxy
@@ -81,11 +53,6 @@ IPC_SYNC_MESSAGE_CONTROL1_2(PluginProcessHostMsg_ResolveProxy,
                             std::string /* proxy list */)
 
 #if defined(OS_WIN)
-// Creates a child window of the given parent window on the UI thread.
-IPC_SYNC_MESSAGE_CONTROL1_1(PluginProcessHostMsg_CreateWindow,
-                            HWND /* parent */,
-                            HWND /* child */)
-
 // Destroys the given window's parent on the UI thread.
 IPC_MESSAGE_CONTROL2(PluginProcessHostMsg_PluginWindowDestroyed,
                      HWND /* window */,
@@ -333,32 +300,8 @@ IPC_SYNC_MESSAGE_ROUTED2_1(PluginHostMsg_GetCookies,
                            GURL /* first_party_for_cookies */,
                            std::string /* cookies */)
 
-// Asks the browser to show a modal HTML dialog.  The dialog is passed the
-// given arguments as a JSON string, and returns its result as a JSON string
-// through json_retval.
-IPC_SYNC_MESSAGE_ROUTED4_1(PluginHostMsg_ShowModalHTMLDialog,
-                            GURL /* url */,
-                            int /* width */,
-                            int /* height */,
-                            std::string /* json_arguments */,
-                            std::string /* json_retval */)
-
-IPC_SYNC_MESSAGE_ROUTED2_2(PluginHostMsg_GetDragData,
-                           NPVariant_Param /* event */,
-                           bool /* add_data */,
-                           std::vector<NPVariant_Param> /* result_values */,
-                           bool /* result_success */)
-
-IPC_SYNC_MESSAGE_ROUTED2_1(PluginHostMsg_SetDropEffect,
-                           NPVariant_Param /* event */,
-                           int /* effect */,
-                           bool /* result_success */)
-
 IPC_MESSAGE_ROUTED1(PluginHostMsg_MissingPluginStatus,
                     int /* status */)
-
-IPC_SYNC_MESSAGE_ROUTED0_1(PluginHostMsg_GetCPBrowsingContext,
-                           uint32 /* context */)
 
 IPC_MESSAGE_ROUTED0(PluginHostMsg_CancelDocumentLoad)
 

@@ -1,4 +1,0 @@
-EXPORTS
-	CP_Initialize       @1
-	CP_Test		    @2
-	

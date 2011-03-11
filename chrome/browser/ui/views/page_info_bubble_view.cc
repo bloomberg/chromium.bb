@@ -98,9 +98,9 @@ PageInfoBubbleView::PageInfoBubbleView(gfx::NativeWindow parent_window,
   if (cert_id_ > 0) {
     scoped_refptr<net::X509Certificate> cert;
     CertStore::GetInstance()->RetrieveCert(cert_id_, &cert);
-    // When running with fake certificate (Chrome Frame) or Gears in offline
-    // mode, we have no os certificate, so there is no cert to show. Don't
-    // bother showing the cert info link in that case.
+    // When running with fake certificate (Chrome Frame), we have no os
+    // certificate, so there is no cert to show. Don't bother showing the cert
+    // info link in that case.
     if (!cert.get() || !cert->os_cert_handle())
       cert_id_ = 0;
   }

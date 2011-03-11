@@ -90,7 +90,6 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebString.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebView.h"
 #include "webkit/extensions/v8/benchmarking_extension.h"
-#include "webkit/extensions/v8/gears_extension.h"
 #include "webkit/extensions/v8/playback_extension.h"
 #include "webkit/glue/webkit_glue.h"
 #include "v8/include/v8.h"
@@ -908,10 +907,6 @@ void RenderThread::EnsureWebKitInitialized() {
   WebString extension_scheme(ASCIIToUTF16(chrome::kExtensionScheme));
   WebSecurityPolicy::registerURLSchemeAsSecure(extension_scheme);
 
-#if defined(OS_WIN)
-  // We don't yet support Gears on non-Windows, so don't tell pages that we do.
-  RegisterExtension(extensions_v8::GearsExtension::Get(), false);
-#endif
   RegisterExtension(extensions_v8::LoadTimesExtension::Get(), false);
   RegisterExtension(extensions_v8::ChromeAppExtension::Get(), false);
   RegisterExtension(extensions_v8::ExternalExtension::Get(), false);

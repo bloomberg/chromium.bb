@@ -229,7 +229,7 @@ bool IsProtocolSupportedForMedia(const GURL& url) {
 // static factory function
 ResourceLoaderBridge* ResourceLoaderBridge::Create(
     const ResourceLoaderBridge::RequestInfo& request_info) {
-  return ChildThread::current()->CreateBridge(request_info, -1, -1);
+  return ChildThread::current()->CreateBridge(request_info);
 }
 
 // static factory function

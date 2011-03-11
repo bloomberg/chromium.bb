@@ -42,17 +42,6 @@ class PluginServiceTest : public testing::Test {
   DISALLOW_COPY_AND_ASSIGN(PluginServiceTest);
 };
 
-TEST_F(PluginServiceTest, SetGetChromePluginDataDir) {
-  // Check that after setting the same plugin dir we just read it is set
-  // correctly.
-  FilePath plugin_data_dir = plugin_service_->GetChromePluginDataDir();
-  FilePath new_plugin_data_dir(FILE_PATH_LITERAL("/a/bogus/dir"));
-  plugin_service_->SetChromePluginDataDir(new_plugin_data_dir);
-  EXPECT_EQ(new_plugin_data_dir, plugin_service_->GetChromePluginDataDir());
-  plugin_service_->SetChromePluginDataDir(plugin_data_dir);
-  EXPECT_EQ(plugin_data_dir, plugin_service_->GetChromePluginDataDir());
-}
-
 TEST_F(PluginServiceTest, GetUILocale) {
   // Check for a non-empty locale string.
   EXPECT_NE("", plugin_service_->GetUILocale());

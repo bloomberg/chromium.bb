@@ -482,7 +482,6 @@ void ParamTraits<WebPreferences>::Log(const param_type& p, std::string* l) {
 }
 
 void ParamTraits<WebDropData>::Write(Message* m, const param_type& p) {
-  WriteParam(m, p.identity);
   WriteParam(m, p.url);
   WriteParam(m, p.url_title);
   WriteParam(m, p.download_metadata);
@@ -498,7 +497,6 @@ void ParamTraits<WebDropData>::Write(Message* m, const param_type& p) {
 bool ParamTraits<WebDropData>::Read(const Message* m, void** iter,
                                     param_type* p) {
   return
-      ReadParam(m, iter, &p->identity) &&
       ReadParam(m, iter, &p->url) &&
       ReadParam(m, iter, &p->url_title) &&
       ReadParam(m, iter, &p->download_metadata) &&

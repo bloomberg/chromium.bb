@@ -30,7 +30,6 @@
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/webui/chrome_url_data_manager.h"
 #include "chrome/common/chrome_paths.h"
-#include "chrome/common/chrome_plugin_lib.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/switch_utils.h"
@@ -120,11 +119,6 @@ void Shutdown() {
   // what thread they're on, so don't worry about it slowing down
   // shutdown.
   base::ThreadRestrictions::SetIOAllowed(true);
-
-  // Unload plugins. This needs to happen on the IO thread.
-  BrowserThread::PostTask(
-        BrowserThread::IO, FROM_HERE,
-        NewRunnableFunction(&ChromePluginLib::UnloadAllPlugins));
 
   // Shutdown all IPC channels to service processes.
   ServiceProcessControlManager::GetInstance()->Shutdown();

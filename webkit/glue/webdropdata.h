@@ -22,19 +22,12 @@ class WebDragData;
 }
 
 struct WebDropData {
-  // Construct with a given drag identity.  Note: identity is an int32 because
-  // it is passed over the renderer NPAPI interface to gears.
-  explicit WebDropData(int32 drag_identity);
-
   // Construct from a WebDragData object.
   explicit WebDropData(const WebKit::WebDragData&);
 
-  // For default constructions, use drag |identity| 0.
   WebDropData();
 
   ~WebDropData();
-
-  int32 identity;
 
   // User is dragging a link into the webview.
   GURL url;

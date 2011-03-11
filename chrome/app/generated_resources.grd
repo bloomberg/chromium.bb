@@ -2324,7 +2324,7 @@ Other platform defines such as use_titlecase are declared in build/common.gypi.
         Wait for downloads to finish
       </message>
 
-      <!-- Gears shortcut strings -->
+      <!-- "Create application shortcuts" menu item -->
       <if expr="not pp_ifdef('use_titlecase')">
         <message name="IDS_CREATE_SHORTCUTS" desc="Default installation menu label">
           Create application &amp;shortcuts...
@@ -2336,7 +2336,7 @@ Other platform defines such as use_titlecase are declared in build/common.gypi.
         </message>
       </if>
 
-      <!-- "Create application shortcuts" dialog (non-Gears) -->
+      <!-- "Create application shortcuts" dialog -->
       <if expr="not pp_ifdef('use_titlecase') or os != 'linux2'">
         <message name="IDS_CREATE_SHORTCUTS_TITLE" desc="Title of the dialog to create application shortcuts for current page.">
           Create application shortcuts
@@ -7062,13 +7062,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
           Clear auto-opening settings
         </message>
       </if>
-
-      <message name="IDS_OPTIONS_GEARSSETTINGS_GROUP_NAME" desc="The label of the 'Gears Settings' group">
-        Gears:
-      </message>
-      <message name="IDS_OPTIONS_GEARSSETTINGS_CONFIGUREGEARS_BUTTON" desc="The label of the 'configure gears' button">
-        Change Gears settings
-      </message>
 
       <message name="IDS_OPTIONS_TRANSLATE_ENABLE_TRANSLATE" desc="The label of the check-box that enables page translate">
         Offer to translate pages that aren't in a language I read

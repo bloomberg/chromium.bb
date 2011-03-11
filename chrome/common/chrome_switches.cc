@@ -817,10 +817,6 @@ const char kParentProfile[]                 = "parent-profile";
 // See kRecordMode.
 const char kPlaybackMode[]                  = "playback-mode";
 
-// Specifies the plugin data directory, which is where plugins (Gears
-// specifically) will store its state.
-const char kPluginDataDir[]                 = "plugin-data-dir";
-
 // Controls speculative prerendering of pages, and content prefetching.  Both
 // are dispatched from <link rel=prefetch href=...> elements.
 const char kPrerender[]                     = "prerender";
@@ -1187,9 +1183,6 @@ const char kDebugViewsPaint[]               = "debug-views-paint";
 // Clear the token service before using it.  This allows simulating
 // the expiration of credentials during testing.
 const char kClearTokenService[]             = "clear-token-service";
-
-// Debug only switch to specify which gears plugin dll to load.
-const char kGearsPluginPathOverride[]       = "gears-plugin-path";
 
 // Sets a token in the token service, for testing.
 const char kSetToken[]                      = "set-token";

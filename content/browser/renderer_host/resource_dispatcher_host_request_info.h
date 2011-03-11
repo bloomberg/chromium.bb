@@ -40,9 +40,7 @@ class ResourceDispatcherHostRequestInfo : public net::URLRequest::UserData {
       uint64 upload_size,
       bool is_download,
       bool allow_download,
-      bool has_user_gesture,
-      int host_renderer_id,
-      int host_render_view_id);
+      bool has_user_gesture);
   virtual ~ResourceDispatcherHostRequestInfo();
 
   // Top-level ResourceHandler servicing this request.
@@ -145,9 +143,6 @@ class ResourceDispatcherHostRequestInfo : public net::URLRequest::UserData {
   int memory_cost() const { return memory_cost_; }
   void set_memory_cost(int cost) { memory_cost_ = cost; }
 
-  int host_renderer_id() const { return host_renderer_id_; }
-  int host_render_view_id() const { return host_render_view_id_; }
-
   // We hold a reference to the requested blob data to ensure it doesn't
   // get finally released prior to the net::URLRequestJob being started.
   webkit_blob::BlobData* requested_blob_data() const {
@@ -215,14 +210,6 @@ class ResourceDispatcherHostRequestInfo : public net::URLRequest::UserData {
   bool called_on_response_started_;
   bool has_started_reading_;
   int paused_read_bytes_;
-
-  // The following two members are specified if the request is initiated by
-  // a plugin like Gears.
-
-  // Contains the id of the host renderer.
-  int host_renderer_id_;
-  // Contains the id of the host render view.
-  int host_render_view_id_;
 
   DISALLOW_COPY_AND_ASSIGN(ResourceDispatcherHostRequestInfo);
 };

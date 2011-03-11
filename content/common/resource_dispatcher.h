@@ -53,9 +53,7 @@ class ResourceDispatcher : public IPC::Channel::Listener {
   // this can be tested regardless of the ResourceLoaderBridge::Create
   // implementation.
   webkit_glue::ResourceLoaderBridge* CreateBridge(
-      const webkit_glue::ResourceLoaderBridge::RequestInfo& request_info,
-      int host_renderer_id,
-      int host_render_view_id);
+      const webkit_glue::ResourceLoaderBridge::RequestInfo& request_info);
 
   // Adds a request from the pending_requests_ list, returning the new
   // requests' ID

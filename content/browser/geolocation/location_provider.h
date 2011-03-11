@@ -3,8 +3,7 @@
 // found in the LICENSE file.
 
 // A location provider provides position information from a particular source
-// (GPS, network etc). The GearsGeolocation object uses a set of location
-// providers to obtain a position fix.
+// (GPS, network etc).
 //
 // This file declares a base class to be used by all location providers.
 // Primarily, this class declares interface methods to be implemented by

@@ -566,8 +566,6 @@
       'sources': [
         # All .cc, .h, .m, and .mm files under plugins except for tests and
         # mocks.
-        'plugin/chrome_plugin_host.cc',
-        'plugin/chrome_plugin_host.h',
         'plugin/npobject_base.h',
         'plugin/npobject_proxy.cc',
         'plugin/npobject_proxy.h',
@@ -1646,7 +1644,6 @@
 
             '../breakpad/breakpad.gyp:*',
             '../courgette/courgette.gyp:*',
-            '../gears/gears.gyp:*',
             '../rlz/rlz.gyp:*',
             '../sandbox/sandbox.gyp:*',
             '../tools/memory_watcher/memory_watcher.gyp:*',

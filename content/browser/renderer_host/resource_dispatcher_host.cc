@@ -362,7 +362,7 @@ void ResourceDispatcherHost::BeginRequest(
   int child_id = filter_->child_id();
 
   ChromeURLRequestContext* context = filter_->GetURLRequestContext(
-      request_data);
+      request_data.resource_type);
 
   // Might need to resolve the blob references in the upload data.
   if (request_data.upload_data && context) {
@@ -390,12 +390,6 @@ void ResourceDispatcherHost::BeginRequest(
     }
     return;
   }
-
-  // Ensure the Chrome plugins are loaded, as they may intercept network
-  // requests.  Does nothing if they are already loaded.
-  // TODO(mpcomplete): This takes 200 ms!  Investigate parallelizing this by
-  // starting the load earlier in a BG thread.
-  PluginService::GetInstance()->LoadChromePlugins(this);
 
   // Construct the event handler.
   scoped_refptr<ResourceHandler> handler;
@@ -520,9 +514,7 @@ void ResourceDispatcherHost::BeginRequest(
           upload_size,
           false,  // is download
           ResourceType::IsFrame(request_data.resource_type),  // allow_download
-          request_data.has_user_gesture,
-          request_data.host_renderer_id,
-          request_data.host_render_view_id);
+          request_data.has_user_gesture);
   SetRequestInfo(request, extra_info);  // Request takes ownership.
   chrome_browser_net::SetOriginPIDForRequest(
       request_data.origin_pid, request);
@@ -649,9 +641,7 @@ ResourceDispatcherHost::CreateRequestInfoForBrowserRequest(
                                                0,         // upload_size
                                                download,  // is_download
                                                download,  // allow_download
-                                               false,     // has_user_gesture
-                                               -1,        // host renderer id
-                                               -1);       // host render view id
+                                               false);    // has_user_gesture
 }
 
 void ResourceDispatcherHost::OnClosePageACK(
@@ -703,9 +693,6 @@ void ResourceDispatcherHost::BeginDownload(
       NewRunnableFunction(&download_util::NotifyDownloadInitiated,
                           child_id, route_id));
 
-  // Ensure the Chrome plugins are loaded, as they may intercept network
-  // requests.  Does nothing if they are already loaded.
-  PluginService::GetInstance()->LoadChromePlugins(this);
   net::URLRequest* request = new net::URLRequest(url, this);
 
   request_id_--;
@@ -755,10 +742,6 @@ void ResourceDispatcherHost::BeginSaveFile(
     net::URLRequestContext* request_context) {
   if (is_shutdown_)
     return;
-
-  // Ensure the Chrome plugins are loaded, as they may intercept network
-  // requests.  Does nothing if they are already loaded.
-  PluginService::GetInstance()->LoadChromePlugins(this);
 
   scoped_refptr<ResourceHandler> handler(
       new SaveFileResourceHandler(child_id,

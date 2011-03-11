@@ -187,10 +187,6 @@ void FakeExternalTab::Initialize() {
   DCHECK(g_browser_process == NULL);
   ui::SystemMonitor system_monitor;
 
-  // The gears plugin causes the PluginRequestInterceptor to kick in and it
-  // will cause problems when it tries to intercept URL requests.
-  PathService::Override(chrome::FILE_GEARS_PLUGIN, FilePath());
-
   icu_util::Initialize();
 
   app::RegisterPathProvider();
@@ -518,7 +514,6 @@ int main(int argc, char** argv) {
   watchdog.AddObserver(&credentials, "Windows Security", "");
   testing::InitGoogleTest(&argc, argv);
   FilterDisabledTests();
-  PluginService::EnableChromePlugins(false);
   test_suite.RunMainUIThread();
   return 0;
 }

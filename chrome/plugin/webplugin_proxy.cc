@@ -45,9 +45,6 @@ using webkit::npapi::WebPluginResourceClient;
 using webkit::npapi::WebPluginAcceleratedSurface;
 #endif
 
-typedef std::map<CPBrowsingContext, WebPluginProxy*> ContextMap;
-static base::LazyInstance<ContextMap> g_context_map(base::LINKER_INITIALIZED);
-
 WebPluginProxy::WebPluginProxy(
     PluginChannel* channel,
     int route_id,
@@ -56,7 +53,6 @@ WebPluginProxy::WebPluginProxy(
     int host_render_view_routing_id)
     : channel_(channel),
       route_id_(route_id),
-      cp_browsing_context_(0),
       window_npobject_(NULL),
       plugin_element_(NULL),
       delegate_(NULL),
@@ -88,9 +84,6 @@ WebPluginProxy::WebPluginProxy(
 }
 
 WebPluginProxy::~WebPluginProxy() {
-  if (cp_browsing_context_)
-    g_context_map.Get().erase(cp_browsing_context_);
-
 #if defined(USE_X11)
   if (windowless_shm_pixmap_ != None)
     XFreePixmap(ui::GetXDisplay(), windowless_shm_pixmap_);
@@ -246,35 +239,8 @@ std::string WebPluginProxy::GetCookies(const GURL& url,
   return cookies;
 }
 
-void WebPluginProxy::ShowModalHTMLDialog(const GURL& url, int width, int height,
-                                         const std::string& json_arguments,
-                                         std::string* json_retval) {
-  PluginHostMsg_ShowModalHTMLDialog* msg =
-      new PluginHostMsg_ShowModalHTMLDialog(
-          route_id_, url, width, height, json_arguments, json_retval);
-
-  // Pump messages while waiting for a response (which won't come until the
-  // dialog is closed).  This avoids a deadlock.
-  msg->EnableMessagePumping();
-  Send(msg);
-}
-
 void WebPluginProxy::OnMissingPluginStatus(int status) {
   Send(new PluginHostMsg_MissingPluginStatus(route_id_, status));
-}
-
-CPBrowsingContext WebPluginProxy::GetCPBrowsingContext() {
-  if (cp_browsing_context_ == 0) {
-    Send(new PluginHostMsg_GetCPBrowsingContext(route_id_,
-                                                &cp_browsing_context_));
-    g_context_map.Get()[cp_browsing_context_] = this;
-  }
-  return cp_browsing_context_;
-}
-
-WebPluginProxy* WebPluginProxy::FromCPBrowsingContext(
-    CPBrowsingContext context) {
-  return g_context_map.Get()[context];
 }
 
 WebPluginResourceClient* WebPluginProxy::GetResourceClient(int id) {
@@ -348,54 +314,6 @@ void WebPluginProxy::HandleURLRequest(const char* url,
   params.notify_redirects = notify_redirects;
 
   Send(new PluginHostMsg_URLRequest(route_id_, params));
-}
-
-bool WebPluginProxy::GetDragData(struct NPObject* event, bool add_data,
-                                 int32* identity, int32* event_id,
-                                 std::string* type, std::string* data) {
-  DCHECK(event);
-  NPObjectProxy* proxy = NPObjectProxy::GetProxy(event);
-  if (!proxy)  // NPObject* event should have/be a renderer proxy.
-    return false;
-
-  NPVariant_Param event_param;
-  event_param.type = NPVARIANT_PARAM_RECEIVER_OBJECT_ROUTING_ID;
-  event_param.npobject_routing_id = proxy->route_id();
-
-  std::vector<NPVariant_Param> values;
-  bool success = false;
-  Send(new PluginHostMsg_GetDragData(route_id_, event_param, add_data,
-                                     &values, &success));
-  if (!success)
-    return false;
-
-  DCHECK(values.size() == 4);
-  DCHECK(values[0].type == NPVARIANT_PARAM_INT);
-  *identity = static_cast<int32>(values[0].int_value);
-  DCHECK(values[1].type == NPVARIANT_PARAM_INT);
-  *event_id = static_cast<int32>(values[1].int_value);
-  DCHECK(values[2].type == NPVARIANT_PARAM_STRING);
-  type->swap(values[2].string_value);
-  if (add_data && (values[3].type == NPVARIANT_PARAM_STRING))
-    data->swap(values[3].string_value);
-
-  return true;
-}
-
-bool WebPluginProxy::SetDropEffect(struct NPObject* event, int effect) {
-  DCHECK(event);
-  NPObjectProxy* proxy = NPObjectProxy::GetProxy(event);
-  if (!proxy)  // NPObject* event should have/be a renderer proxy.
-    return false;
-
-  NPVariant_Param event_param;
-  event_param.type = NPVARIANT_PARAM_RECEIVER_OBJECT_ROUTING_ID;
-  event_param.npobject_routing_id = proxy->route_id();
-
-  bool success = false;
-  Send(new PluginHostMsg_SetDropEffect(route_id_, event_param, effect,
-                                       &success));
-  return success;
 }
 
 void WebPluginProxy::Paint(const gfx::Rect& rect) {
@@ -737,4 +655,3 @@ void WebPluginProxy::ResourceClientDeleted(
 void WebPluginProxy::URLRedirectResponse(bool allow, int resource_id) {
   Send(new PluginHostMsg_URLRedirectResponse(route_id_, allow, resource_id));
 }
-

@@ -8,10 +8,10 @@
 #include "base/scoped_ptr.h"
 #include "content/browser/browser_message_filter.h"
 #include "content/common/child_process_info.h"
+#include "webkit/glue/resource_type.h"
 
 class ChromeURLRequestContext;
 class ResourceDispatcherHost;
-struct ResourceHostMsg_Request;
 
 namespace net {
 class URLRequestContext;
@@ -31,7 +31,7 @@ class ResourceMessageFilter : public BrowserMessageFilter {
     URLRequestContextOverride() {}
 
     virtual net::URLRequestContext* GetRequestContext(
-        const ResourceHostMsg_Request& resource_request) = 0;
+        ResourceType::Type request_type) = 0;
 
    protected:
     friend class base::RefCountedThreadSafe<URLRequestContextOverride>;
@@ -51,7 +51,7 @@ class ResourceMessageFilter : public BrowserMessageFilter {
 
   // Returns the net::URLRequestContext for the given request.
   ChromeURLRequestContext* GetURLRequestContext(
-      const ResourceHostMsg_Request& resource_request);
+      ResourceType::Type request_type);
 
   void set_url_request_context_override(URLRequestContextOverride* u) {
     url_request_context_override_ = u;

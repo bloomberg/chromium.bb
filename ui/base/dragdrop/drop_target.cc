@@ -11,7 +11,6 @@
 namespace ui {
 
 IDropTargetHelper* DropTarget::cached_drop_target_helper_ = NULL;
-int32 DropTarget::drag_identity_ = 0;
 
 DropTarget::DropTarget(HWND hwnd)
     : hwnd_(hwnd),
@@ -54,10 +53,6 @@ HRESULT DropTarget::DragEnter(IDataObject* data_object,
     *effect = DROPEFFECT_NONE;
     return S_OK;
   }
-
-  // Update the drag identity, skipping 0.
-  if (++drag_identity_ == 0)
-    ++drag_identity_;
 
   current_data_object_ = data_object;
   POINT screen_pt = { cursor_position.x, cursor_position.y };

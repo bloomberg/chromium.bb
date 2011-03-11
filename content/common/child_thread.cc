@@ -119,11 +119,8 @@ IPC::Channel::Listener* ChildThread::ResolveRoute(int32 routing_id) {
 }
 
 webkit_glue::ResourceLoaderBridge* ChildThread::CreateBridge(
-    const webkit_glue::ResourceLoaderBridge::RequestInfo& request_info,
-    int host_renderer_id,
-    int host_render_view_id) {
-  return resource_dispatcher()->
-      CreateBridge(request_info, host_renderer_id, host_render_view_id);
+    const webkit_glue::ResourceLoaderBridge::RequestInfo& request_info) {
+  return resource_dispatcher()->CreateBridge(request_info);
 }
 
 ResourceDispatcher* ChildThread::resource_dispatcher() {

@@ -955,9 +955,6 @@ class TabContents : public PageNavigator,
                                     bool* did_suppress_message);
   virtual void RunBeforeUnloadConfirm(const std::wstring& message,
                                       IPC::Message* reply_msg);
-  virtual void ShowModalHTMLDialog(const GURL& url, int width, int height,
-                                   const std::string& json_arguments,
-                                   IPC::Message* reply_msg);
   virtual GURL GetAlternateErrorPageURL() const;
   virtual RendererPreferences GetRendererPrefs(Profile* profile) const;
   virtual WebPreferences GetWebkitPrefs();

@@ -160,7 +160,7 @@ class ResourceDispatcherTest : public testing::Test,
     request_info.appcache_host_id = appcache::kNoHostId;
     request_info.routing_id = 0;
 
-    return dispatcher_->CreateBridge(request_info, -1, -1);
+    return dispatcher_->CreateBridge(request_info);
   }
 
   std::vector<IPC::Message> message_queue_;

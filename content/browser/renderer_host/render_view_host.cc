@@ -589,15 +589,6 @@ void RenderViewHost::JavaScriptMessageBoxClosed(IPC::Message* reply_msg,
     delegate_->RendererUnresponsive(this, is_waiting);
 }
 
-void RenderViewHost::ModalHTMLDialogClosed(IPC::Message* reply_msg,
-                                           const std::string& json_retval) {
-  if (is_waiting_for_beforeunload_ack_ || is_waiting_for_unload_ack_)
-    StartHangMonitorTimeout(TimeDelta::FromMilliseconds(kUnloadTimeoutMS));
-
-  ViewHostMsg_ShowModalHTMLDialog::WriteReplyParams(reply_msg, json_retval);
-  Send(reply_msg);
-}
-
 void RenderViewHost::CopyImageAt(int x, int y) {
   Send(new ViewMsg_CopyImageAt(routing_id(), x, y));
 }
@@ -771,8 +762,6 @@ bool RenderViewHost::OnMessageReceived(const IPC::Message& msg) {
                                     OnMsgRunJavaScriptMessage)
     IPC_MESSAGE_HANDLER_DELAY_REPLY(ViewHostMsg_RunBeforeUnloadConfirm,
                                     OnMsgRunBeforeUnloadConfirm)
-    IPC_MESSAGE_HANDLER_DELAY_REPLY(ViewHostMsg_ShowModalHTMLDialog,
-                                    OnMsgShowModalHTMLDialog)
     IPC_MESSAGE_HANDLER(ViewHostMsg_StartDragging, OnMsgStartDragging)
     IPC_MESSAGE_HANDLER(ViewHostMsg_UpdateDragCursor, OnUpdateDragCursor)
     IPC_MESSAGE_HANDLER(ViewHostMsg_TakeFocus, OnTakeFocus)
@@ -1234,13 +1223,6 @@ void RenderViewHost::OnMsgRunBeforeUnloadConfirm(const GURL& frame_url,
   process()->set_ignore_input_events(true);
   StopHangMonitorTimeout();
   delegate_->RunBeforeUnloadConfirm(message, reply_msg);
-}
-
-void RenderViewHost::OnMsgShowModalHTMLDialog(
-    const GURL& url, int width, int height, const std::string& json_arguments,
-    IPC::Message* reply_msg) {
-  StopHangMonitorTimeout();
-  delegate_->ShowModalHTMLDialog(url, width, height, json_arguments, reply_msg);
 }
 
 void RenderViewHost::MediaPlayerActionAt(const gfx::Point& location,

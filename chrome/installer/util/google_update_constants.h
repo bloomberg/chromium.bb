@@ -10,10 +10,6 @@
 
 namespace google_update {
 
-// Strictly speaking Google Update doesn't care about this GUID but it is still
-// related to install as it is used by MSI to identify Gears.
-extern const wchar_t kGearsUpgradeCode[];
-
 // The GUID Google Update uses to keep track of Chrome upgrades.
 extern const wchar_t kChromeUpgradeCode[];
 

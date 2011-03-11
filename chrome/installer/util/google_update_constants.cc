@@ -6,7 +6,6 @@
 
 namespace google_update {
 
-const wchar_t kGearsUpgradeCode[] = L"{D92DBAED-3E3E-4530-B30D-072D16C7DDD0}";
 const wchar_t kChromeUpgradeCode[] = L"{8A69D345-D564-463C-AFF1-A69D9E530F96}";
 
 const wchar_t kRegPathClients[] = L"Software\\Google\\Update\\Clients";

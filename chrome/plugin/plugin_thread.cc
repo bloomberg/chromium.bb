@@ -19,11 +19,9 @@
 #include "base/lazy_instance.h"
 #include "base/process_util.h"
 #include "base/threading/thread_local.h"
-#include "chrome/common/chrome_plugin_lib.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/plugin_messages.h"
 #include "chrome/common/render_messages.h"
-#include "chrome/plugin/chrome_plugin_host.h"
 #include "chrome/plugin/npobject_util.h"
 #include "chrome/renderer/render_thread.h"
 #include "content/common/child_process.h"
@@ -84,8 +82,6 @@ PluginThread::PluginThread()
   // Preload the library to avoid loading, unloading then reloading
   preloaded_plugin_module_ = base::LoadNativeLibrary(plugin_path_);
 
-  ChromePluginLib::Create(plugin_path_, GetCPBrowserFuncsForPlugin());
-
   scoped_refptr<webkit::npapi::PluginLib> plugin(
       webkit::npapi::PluginLib::CreatePluginLib(plugin_path_));
   if (plugin.get()) {
@@ -116,7 +112,6 @@ PluginThread::~PluginThread() {
   }
   PluginChannelBase::CleanupChannels();
   webkit::npapi::PluginLib::UnloadAllPlugins();
-  ChromePluginLib::UnloadAllPlugins();
 
   if (webkit_glue::ShouldForcefullyTerminatePluginProcess())
     base::KillProcess(base::GetCurrentProcessHandle(), 0, /* wait= */ false);
@@ -132,7 +127,6 @@ bool PluginThread::OnControlMessageReceived(const IPC::Message& msg) {
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(PluginThread, msg)
     IPC_MESSAGE_HANDLER(PluginProcessMsg_CreateChannel, OnCreateChannel)
-    IPC_MESSAGE_HANDLER(PluginProcessMsg_PluginMessage, OnPluginMessage)
     IPC_MESSAGE_HANDLER(PluginProcessMsg_NotifyRenderersOfPendingShutdown,
                         OnNotifyRenderersOfPendingShutdown)
     IPC_MESSAGE_UNHANDLED(handled = false)
@@ -155,20 +149,6 @@ void PluginThread::OnCreateChannel(int renderer_id,
   }
 
   Send(new PluginProcessHostMsg_ChannelCreated(channel_handle));
-}
-
-void PluginThread::OnPluginMessage(const std::vector<unsigned char> &data) {
-  // We Add/Release ref here to ensure that something will trigger the
-  // shutdown mechanism for processes started in the absence of renderer's
-  // opening a plugin channel.
-  ChildProcess::current()->AddRefProcess();
-  ChromePluginLib *chrome_plugin = ChromePluginLib::Find(plugin_path_);
-  if (chrome_plugin) {
-    void *data_ptr = const_cast<void*>(reinterpret_cast<const void*>(&data[0]));
-    uint32 data_len = static_cast<uint32>(data.size());
-    chrome_plugin->functions().on_message(data_ptr, data_len);
-  }
-  ChildProcess::current()->ReleaseProcess();
 }
 
 void PluginThread::OnNotifyRenderersOfPendingShutdown() {

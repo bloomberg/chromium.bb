@@ -245,9 +245,8 @@ class BrowserWindow {
   // has confirmed.
   virtual void ConfirmBrowserCloseWithPendingDownloads() = 0;
 
-  // Shows a dialog box with HTML content, e.g. for Gears. |parent_window| is
-  // the window the dialog should be opened modal to and is a native window
-  // handle.
+  // Shows a dialog box with HTML content. |parent_window| is the window the
+  // dialog should be opened modal to and is a native window handle.
   virtual void ShowHTMLDialog(HtmlDialogUIDelegate* delegate,
                               gfx::NativeWindow parent_window) = 0;
 

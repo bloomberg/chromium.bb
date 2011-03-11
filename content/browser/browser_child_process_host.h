@@ -9,7 +9,6 @@
 #include <list>
 
 #include "content/browser/child_process_launcher.h"
-#include "content/browser/renderer_host/resource_message_filter.h"
 #include "content/common/child_process_host.h"
 #include "content/common/child_process_info.h"
 
@@ -57,16 +56,6 @@ class BrowserChildProcessHost : public ChildProcessHost,
   };
 
  protected:
-  // |resource_dispatcher_host| may be NULL to indicate none is needed for
-  // this process type.
-  // |url_request_context_getter| allows derived classes to override the
-  // net::URLRequestContext.
-  BrowserChildProcessHost(
-      ChildProcessInfo::ProcessType type,
-      ResourceDispatcherHost* resource_dispatcher_host,
-      ResourceMessageFilter::URLRequestContextOverride*
-          url_request_context_override);
-
   // A convenient constructor for those classes that want to use the default
   // net::URLRequestContext.
   BrowserChildProcessHost(
@@ -121,9 +110,6 @@ class BrowserChildProcessHost : public ChildProcessHost,
   }
 
  private:
-  void Initialize(ResourceMessageFilter::URLRequestContextOverride*
-      url_request_context_override);
-
   // By using an internal class as the ChildProcessLauncher::Client, we can
   // intercept OnProcessLaunched and do our own processing before
   // calling the subclass' implementation.

@@ -31,7 +31,7 @@
 
 //
 // Wrapper class for using the Breakpad crash reporting system.
-// (adapted from code in Google Gears)
+// (adapted from code in Gears)
 //
 
 #ifndef O3D_BREAKPAD_WIN_EXCEPTION_HANDLER_WIN32_H_

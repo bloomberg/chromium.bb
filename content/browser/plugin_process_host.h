@@ -106,17 +106,10 @@ class PluginProcessHost : public BrowserChildProcessHost,
   // for the given mime type.
   void RequestPluginChannel(Client* client);
 
-  virtual void OnProcessLaunched();
-
   // Message handlers.
   void OnChannelCreated(const IPC::ChannelHandle& channel_handle);
   void OnGetPluginFinderUrl(std::string* plugin_finder_url);
-  void OnGetCookies(uint32 request_context, const GURL& url,
-                    std::string* cookies);
-  void OnAccessFiles(int renderer_id, const std::vector<std::string>& files,
-                     bool* allowed);
   void OnResolveProxy(const GURL& url, IPC::Message* reply_msg);
-  void OnPluginMessage(const std::vector<uint8>& data);
 
 #if defined(OS_WIN)
   void OnPluginWindowDestroyed(HWND window, HWND parent);

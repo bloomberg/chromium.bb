@@ -27,7 +27,6 @@ NONESSENTIAL_DIRS = (
     'chrome/tools/test/reference_build',
     'courgette/testdata',
     'data',
-    'gears/binaries',
     'native_client/src/trusted/service_runtime/testdata',
     'native_client/tests',
     'net/data/cache_tests',

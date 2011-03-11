@@ -42,14 +42,4 @@ StatsRate& Counters::spellcheck_lookup() {
   return *ctr;
 }
 
-StatsCounterTimer& Counters::plugin_load() {
-  static StatsCounterTimer* ctr = new StatsCounterTimer("ChromePlugin.Load");
-  return *ctr;
-}
-
-StatsRate& Counters::plugin_intercept() {
-  static StatsRate* ctr = new StatsRate("ChromePlugin.Intercept");
-  return *ctr;
-}
-
 }  // namespace chrome

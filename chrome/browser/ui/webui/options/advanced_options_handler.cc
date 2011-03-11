@@ -45,7 +45,6 @@
 #endif
 
 #if defined(OS_WIN)
-#include "chrome/browser/gears_integration.h"
 #include "net/base/ssl_config_service_win.h"
 #endif
 
@@ -81,8 +80,6 @@ void AdvancedOptionsHandler::GetLocalizedValues(
       IDS_OPTIONS_OPEN_FILE_TYPES_AUTOMATICALLY },
     { "autoOpenFileTypesResetToDefault",
       IDS_OPTIONS_AUTOOPENFILETYPES_RESETTODEFAULT },
-    { "gearSettingsConfigureGearsButton",
-      IDS_OPTIONS_GEARSSETTINGS_CONFIGUREGEARS_BUTTON },
     { "translateEnableTranslate",
       IDS_OPTIONS_TRANSLATE_ENABLE_TRANSLATE },
     { "certificatesManageButton",
@@ -307,9 +304,6 @@ void AdvancedOptionsHandler::RegisterMessages() {
   web_ui_->RegisterMessageCallback("useTLS1CheckboxAction",
       NewCallback(this,
                   &AdvancedOptionsHandler::HandleUseTLS1Checkbox));
-  web_ui_->RegisterMessageCallback("showGearsSettings",
-      NewCallback(this,
-                  &AdvancedOptionsHandler::HandleShowGearsSettings));
 #endif
 }
 
@@ -432,12 +426,6 @@ void AdvancedOptionsHandler::HandleUseTLS1Checkbox(const ListValue* args) {
       (enabled ? "Options_TLS1_Enable" : "Options_TLS1_Disable");
   UserMetricsRecordAction(UserMetricsAction(metric.c_str()));
   net::SSLConfigServiceWin::SetTLS1Enabled(enabled);
-}
-
-void AdvancedOptionsHandler::HandleShowGearsSettings(const ListValue* args) {
-  UserMetricsRecordAction(UserMetricsAction("Options_GearsSettings"));
-  GearsSettingsPressed(
-      web_ui_->tab_contents()->view()->GetTopLevelNativeWindow());
 }
 #endif
 

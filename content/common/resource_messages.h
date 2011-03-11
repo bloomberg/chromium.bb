@@ -95,15 +95,6 @@ IPC_STRUCT_BEGIN(ResourceHostMsg_Request)
 
   // True if the request was user initiated.
   IPC_STRUCT_MEMBER(bool, has_user_gesture)
-
-  // The following two members are specified if the request is initiated by
-  // a plugin like Gears.
-
-  // Contains the id of the host renderer.
-  IPC_STRUCT_MEMBER(int, host_renderer_id)
-
-  // Contains the id of the host render view.
-  IPC_STRUCT_MEMBER(int, host_render_view_id)
 IPC_STRUCT_END()
 
 // Resource messages sent from the browser to the renderer.

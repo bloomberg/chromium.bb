@@ -232,7 +232,6 @@ extern const char kPackExtension[];
 extern const char kPackExtensionKey[];
 extern const char kParentProfile[];
 extern const char kPlaybackMode[];
-extern const char kPluginDataDir[];
 extern const char kPrerender[];
 extern const char kPrerenderSwitchValueAuto[];
 extern const char kPrerenderSwitchValueDisabled[];
@@ -354,7 +353,6 @@ extern const char kDebugViewsPaint[];
 
 #ifndef NDEBUG
 extern const char kClearTokenService[];
-extern const char kGearsPluginPathOverride[];
 extern const char kSetToken[];
 extern const char kWebSocketLiveExperimentHost[];
 #endif

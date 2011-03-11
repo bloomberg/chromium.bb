@@ -18,9 +18,9 @@ const int kPollPeriodStationaryMillis = kPollPeriodMovingMillis * 3;
 // Reading must differ by more than this amount to be considered movement.
 const int kMovementThresholdMeters = 20;
 
-// This algorithm is reused from the corresponding code in the gears project
+// This algorithm is reused from the corresponding code in the Gears project
 // and is also used in gps_location_provider_linux.cc
-// The arbitrary delta is decreased (gears used 100 meters); if we need to
+// The arbitrary delta is decreased (Gears used 100 meters); if we need to
 // decrease it any further we'll likely want to do some smarter filtering to
 // remove GPS location jitter noise.
 bool PositionsDifferSiginificantly(const Geoposition& position_1,

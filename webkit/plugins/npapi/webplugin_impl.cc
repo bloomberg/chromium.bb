@@ -780,15 +780,6 @@ std::string WebPluginImpl::GetCookies(const GURL& url,
   return UTF16ToUTF8(cookie_jar->cookies(url, first_party_for_cookies));
 }
 
-void WebPluginImpl::ShowModalHTMLDialog(const GURL& url, int width, int height,
-                                        const std::string& json_arguments,
-                                        std::string* json_retval) {
-  if (page_delegate_) {
-    page_delegate_->ShowModalHTMLDialogForPlugin(
-        url, gfx::Size(width, height), json_arguments, json_retval);
-  }
-}
-
 void WebPluginImpl::OnMissingPluginStatus(int status) {
   NOTREACHED();
 }

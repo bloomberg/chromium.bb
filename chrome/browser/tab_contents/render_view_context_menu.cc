@@ -1475,10 +1475,6 @@ bool RenderViewContextMenu::IsDevCommandEnabled(int id) const {
   if (active_entry->IsViewSourceMode())
     return false;
 
-  // Don't inspect HTML dialogs (doesn't work anyway).
-  if (active_entry->url().SchemeIs(chrome::kGearsScheme))
-    return false;
-
   // Don't inspect about:network, about:memory, etc.
   // However, we do want to inspect about:blank, which is often
   // used by ordinary web pages.

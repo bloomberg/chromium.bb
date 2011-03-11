@@ -518,10 +518,6 @@ class RenderViewHostDelegate : public IPC::Channel::Listener {
   virtual void RunBeforeUnloadConfirm(const std::wstring& message,
                                       IPC::Message* reply_msg) {}
 
-  virtual void ShowModalHTMLDialog(const GURL& url, int width, int height,
-                                   const std::string& json_arguments,
-                                   IPC::Message* reply_msg) {}
-
   // |url| is assigned to a server that can provide alternate error pages.  If
   // the returned URL is empty, the default error page built into WebKit will
   // be used.

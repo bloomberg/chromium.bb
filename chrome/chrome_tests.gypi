@@ -1198,7 +1198,6 @@
         'browser/browsing_data_indexed_db_helper_unittest.cc',
         'browser/browsing_data_local_storage_helper_unittest.cc',
         'browser/chrome_browser_application_mac_unittest.mm',
-        'browser/chrome_plugin_unittest.cc',
         'browser/chromeos/customization_document_unittest.cc',
         'browser/chromeos/external_metrics_unittest.cc',
         'browser/chromeos/gview_request_interceptor_unittest.cc',
@@ -1996,7 +1995,6 @@
             'installer_util_strings',
             '../third_party/iaccessible2/iaccessible2.gyp:iaccessible2',
             '../third_party/isimpledom/isimpledom.gyp:isimpledom',
-            'test_chrome_plugin',  # run time dependency
           ],
           'conditions': [
             ['win_use_allocator_shim==1', {
@@ -3439,28 +3437,6 @@
                 '<(allocator_target)',
               ],
             },],
-          ],
-        },
-        {
-          'target_name': 'test_chrome_plugin',
-          'type': 'shared_library',
-          'msvs_guid': '7F0A70F6-BE3F-4C19-B435-956AB8F30BA4',
-          'dependencies': [
-            '../base/base.gyp:base',
-            '../build/temp_gyp/googleurl.gyp:googleurl',
-          ],
-          'include_dirs': [
-            '..',
-          ],
-          'link_settings': {
-            'libraries': [
-              '-lwinmm.lib',
-            ],
-          },
-          'sources': [
-            'test/chrome_plugin/test_chrome_plugin.cc',
-            'test/chrome_plugin/test_chrome_plugin.def',
-            'test/chrome_plugin/test_chrome_plugin.h',
           ],
         },
       ]},  # 'targets'

@@ -1979,12 +1979,6 @@ void RenderView::OnAllowScriptToClose(bool script_can_close) {
   script_can_close_ = script_can_close;
 }
 
-uint32 RenderView::GetCPBrowsingContext() {
-  uint32 context = 0;
-  Send(new ViewHostMsg_GetCPBrowsingContext(&context));
-  return context;
-}
-
 void RenderView::AddSearchProvider(
     const std::string& url,
     const ViewHostMsg_PageHasOSDD_Type& provider_type) {
@@ -3465,7 +3459,6 @@ void RenderView::didClearWindowObject(WebFrame* frame) {
   GURL frame_url = frame->url();
   if (BindingsPolicy::is_web_ui_enabled(enabled_bindings_) &&
       (frame_url.SchemeIs(chrome::kChromeUIScheme) ||
-      frame_url.SchemeIs(chrome::kGearsScheme) ||
       frame_url.SchemeIs(chrome::kDataScheme))) {
     GetWebUIBindings()->set_message_sender(this);
     GetWebUIBindings()->set_routing_id(routing_id_);
@@ -3973,16 +3966,6 @@ void RenderView::DidStartLoadingForPlugin() {
 void RenderView::DidStopLoadingForPlugin() {
   // TODO(darin): Make is_loading_ be a counter!
   didStopLoading();
-}
-
-void RenderView::ShowModalHTMLDialogForPlugin(
-    const GURL& url,
-    const gfx::Size& size,
-    const std::string& json_arguments,
-    std::string* json_retval) {
-  SendAndRunNestedMessageLoop(new ViewHostMsg_ShowModalHTMLDialog(
-      routing_id_, url, size.width(), size.height(), json_arguments,
-      json_retval));
 }
 
 WebCookieJar* RenderView::GetCookieJar() {
@@ -4602,7 +4585,7 @@ void RenderView::OnDragTargetDragEnter(const WebDropData& drop_data,
                                        WebDragOperationsMask ops) {
   WebDragOperation operation = webview()->dragTargetDragEnter(
       drop_data.ToDragData(),
-      drop_data.identity,
+      0,  // drag identity, unused
       client_point,
       screen_point,
       ops);

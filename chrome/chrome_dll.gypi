@@ -87,7 +87,6 @@
                 '../third_party/cld/cld.gyp:cld',
                 '../views/views.gyp:views',
                 '../webkit/support/webkit_support.gyp:webkit_resources',
-                '../gears/gears.gyp:gears',
               ],
               'sources': [
                 'app/chrome_command_ids.h',

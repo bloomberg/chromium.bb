@@ -40,7 +40,6 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebDragData.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFrame.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebString.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebVector.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebView.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/blit.h"
@@ -64,7 +63,6 @@ using WebKit::WebCursorInfo;
 using WebKit::WebDragData;
 using WebKit::WebInputEvent;
 using WebKit::WebString;
-using WebKit::WebVector;
 using WebKit::WebView;
 
 // Proxy for WebPluginResourceClient.  The object owns itself after creation,
@@ -453,15 +451,9 @@ bool WebPluginDelegateProxy::OnMessageReceived(const IPC::Message& msg) {
                         OnGetPluginElement)
     IPC_MESSAGE_HANDLER(PluginHostMsg_SetCookie, OnSetCookie)
     IPC_MESSAGE_HANDLER(PluginHostMsg_GetCookies, OnGetCookies)
-    IPC_MESSAGE_HANDLER(PluginHostMsg_ShowModalHTMLDialog,
-                        OnShowModalHTMLDialog)
-    IPC_MESSAGE_HANDLER(PluginHostMsg_GetDragData, OnGetDragData);
-    IPC_MESSAGE_HANDLER(PluginHostMsg_SetDropEffect, OnSetDropEffect);
     IPC_MESSAGE_HANDLER(PluginHostMsg_MissingPluginStatus,
                         OnMissingPluginStatus)
     IPC_MESSAGE_HANDLER(PluginHostMsg_URLRequest, OnHandleURLRequest)
-    IPC_MESSAGE_HANDLER(PluginHostMsg_GetCPBrowsingContext,
-                        OnGetCPBrowsingContext)
     IPC_MESSAGE_HANDLER(PluginHostMsg_CancelDocumentLoad, OnCancelDocumentLoad)
     IPC_MESSAGE_HANDLER(PluginHostMsg_InitiateHTTPRangeRequest,
                         OnInitiateHTTPRangeRequest)
@@ -1152,135 +1144,9 @@ void WebPluginDelegateProxy::OnGetCookies(const GURL& url,
     *cookies = plugin_->GetCookies(url, first_party_for_cookies);
 }
 
-void WebPluginDelegateProxy::OnShowModalHTMLDialog(
-    const GURL& url, int width, int height, const std::string& json_arguments,
-    std::string* json_retval) {
-  DCHECK(json_retval);
-  if (render_view_) {
-    render_view_->ShowModalHTMLDialogForPlugin(
-        url, gfx::Size(width, height), json_arguments, json_retval);
-  }
-}
-
-static void EncodeDragData(const WebDragData& data, bool add_data,
-                           NPVariant* drag_type, NPVariant* drag_data) {
-  const NPString* np_drag_type;
-  if (data.containsFilenames()) {
-    static const NPString kFiles = { "Files", 5 };
-    np_drag_type = &kFiles;
-  } else {
-    static const NPString kEmpty = { "" , 0 };
-    np_drag_type = &kEmpty;
-    add_data = false;
-  }
-
-  STRINGN_TO_NPVARIANT(np_drag_type->UTF8Characters,
-                       np_drag_type->UTF8Length,
-                       *drag_type);
-  if (!add_data) {
-    VOID_TO_NPVARIANT(*drag_data);
-    return;
-  }
-
-  WebVector<WebString> files;
-  data.filenames(files);
-
-  static std::string utf8;
-  utf8.clear();
-  for (size_t i = 0; i < files.size(); ++i) {
-    static const char kBackspaceDelimiter('\b');
-    if (i != 0)
-      utf8.append(1, kBackspaceDelimiter);
-    utf8.append(files[i].utf8());
-  }
-
-  STRINGN_TO_NPVARIANT(utf8.data(), utf8.length(), *drag_data);
-}
-
-void WebPluginDelegateProxy::OnGetDragData(const NPVariant_Param& object,
-                                           bool add_data,
-                                           std::vector<NPVariant_Param>* values,
-                                           bool* success) {
-  DCHECK(values && success);
-  *success = false;
-
-  WebView* webview = NULL;
-  if (render_view_)
-    webview = render_view_->webview();
-  if (!webview)
-    return;
-
-  int event_id;
-  WebDragData data;
-
-  DCHECK(object.type == NPVARIANT_PARAM_RECEIVER_OBJECT_ROUTING_ID);
-  NPObjectBase* npobject_base =
-      channel_host_->GetNPObjectListenerForRoute(object.npobject_routing_id);
-  if (!npobject_base) {
-    DLOG(WARNING) << "Invalid routing id passed in"
-                  << object.npobject_routing_id;
-    return;
-  }
-
-  NPObject* event = npobject_base->GetUnderlyingNPObject();
-  DCHECK(event != NULL);
-
-  const int32 drag_id = webview->dragIdentity();
-  if (!drag_id || !WebBindings::getDragData(event, &event_id, &data))
-    return;
-
-  NPVariant results[4];
-  INT32_TO_NPVARIANT(drag_id, results[0]);
-  INT32_TO_NPVARIANT(event_id, results[1]);
-  EncodeDragData(data, add_data, &results[2], &results[3]);
-
-  for (size_t i = 0; i < arraysize(results); ++i) {
-    values->push_back(NPVariant_Param());
-    CreateNPVariantParam(
-        results[i], NULL, &values->back(), false, 0, page_url_);
-  }
-
-  *success = true;
-}
-
-void WebPluginDelegateProxy::OnSetDropEffect(const NPVariant_Param& object,
-                                             int effect,
-                                             bool* success) {
-  DCHECK(success);
-  *success = false;
-
-  WebView* webview = NULL;
-  if (render_view_)
-    webview = render_view_->webview();
-  if (!webview)
-    return;
-
-  DCHECK(object.type == NPVARIANT_PARAM_RECEIVER_OBJECT_ROUTING_ID);
-  NPObjectBase* npobject_base =
-      channel_host_->GetNPObjectListenerForRoute(object.npobject_routing_id);
-  if (!npobject_base) {
-    DLOG(WARNING) << "Invalid routing id passed in"
-                  << object.npobject_routing_id;
-    return;
-  }
-
-  NPObject* event = npobject_base->GetUnderlyingNPObject();
-  DCHECK(event != NULL);
-
-  const int32 drag_id = webview->dragIdentity();
-  if (!drag_id || !WebBindings::isDragEvent(event))
-    return;
-
-  *success = webview->setDropEffect(effect != 0);
-}
-
 void WebPluginDelegateProxy::OnMissingPluginStatus(int status) {
   if (render_view_)
     render_view_->OnMissingPluginStatus(this, status);
-}
-
-void WebPluginDelegateProxy::OnGetCPBrowsingContext(uint32* context) {
-  *context = render_view_ ? render_view_->GetCPBrowsingContext() : 0;
 }
 
 void WebPluginDelegateProxy::PaintSadPlugin(WebKit::WebCanvas* native_context,

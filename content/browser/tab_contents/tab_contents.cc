@@ -75,7 +75,6 @@
 #include "content/browser/child_process_security_policy.h"
 #include "content/browser/host_zoom_map.h"
 #include "content/browser/in_process_webkit/session_storage_namespace.h"
-#include "content/browser/modal_html_dialog_delegate.h"
 #include "content/browser/renderer_host/render_process_host.h"
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/renderer_host/render_widget_host_view.h"
@@ -2456,17 +2455,6 @@ void TabContents::RunBeforeUnloadConfirm(const std::wstring& message,
   }
   is_showing_before_unload_dialog_ = true;
   RunBeforeUnloadDialog(this, message, reply_msg);
-}
-
-void TabContents::ShowModalHTMLDialog(const GURL& url, int width, int height,
-                                      const std::string& json_arguments,
-                                      IPC::Message* reply_msg) {
-  if (delegate()) {
-    HtmlDialogUIDelegate* dialog_delegate =
-        new ModalHtmlDialogDelegate(url, width, height, json_arguments,
-                                    reply_msg, this);
-    delegate()->ShowHtmlDialog(dialog_delegate, NULL);
-  }
 }
 
 GURL TabContents::GetAlternateErrorPageURL() const {

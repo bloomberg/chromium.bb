@@ -21,7 +21,6 @@
 #include "base/scoped_ptr.h"
 #include "base/shared_memory.h"
 #include "base/timer.h"
-#include "chrome/common/chrome_plugin_api.h"
 #include "googleurl/src/gurl.h"
 #include "ipc/ipc_message.h"
 #include "webkit/plugins/npapi/webplugin.h"
@@ -75,27 +74,8 @@ class WebPluginProxy : public webkit::npapi::WebPlugin {
   virtual std::string GetCookies(const GURL& url,
                                  const GURL& first_party_for_cookies);
 
-  virtual void ShowModalHTMLDialog(const GURL& url, int width, int height,
-                                   const std::string& json_arguments,
-                                   std::string* json_retval);
-
-  // Called by gears over the CPAPI interface to verify that the given event is
-  // the current (javascript) drag event the browser is dispatching, and return
-  // the drag data, or control the drop effect (drag cursor), if so.
-  bool GetDragData(struct NPObject* event, bool add_data, int32* identity,
-                   int32* event_id, std::string* type, std::string* data);
-  bool SetDropEffect(struct NPObject* event, int effect);
-
   virtual void OnMissingPluginStatus(int status);
   // class-specific methods
-
-  // Retrieves the browsing context associated with the renderer this plugin
-  // is in.  Calling multiple times will return the same value.
-  CPBrowsingContext GetCPBrowsingContext();
-
-  // Retrieves the WebPluginProxy for the given context that was returned by
-  // GetCPBrowsingContext, or NULL if not found.
-  static WebPluginProxy* FromCPBrowsingContext(CPBrowsingContext context);
 
   // Returns a WebPluginResourceClient object given its id, or NULL if no
   // object with that id exists.
@@ -203,7 +183,6 @@ class WebPluginProxy : public webkit::npapi::WebPlugin {
 
   scoped_refptr<PluginChannel> channel_;
   int route_id_;
-  uint32 cp_browsing_context_;
   NPObject* window_npobject_;
   NPObject* plugin_element_;
   webkit::npapi::WebPluginDelegateImpl* delegate_;
