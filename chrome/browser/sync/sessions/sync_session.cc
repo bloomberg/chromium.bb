@@ -10,7 +10,7 @@ namespace browser_sync {
 namespace sessions {
 
 SyncSession::SyncSession(SyncSessionContext* context, Delegate* delegate,
-    SyncSourceInfo source,
+    const SyncSourceInfo& source,
     const ModelSafeRoutingInfo& routing_info,
     const std::vector<ModelSafeWorker*>& workers)
     : context_(context),

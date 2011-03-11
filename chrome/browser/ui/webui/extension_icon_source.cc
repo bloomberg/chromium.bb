@@ -180,7 +180,7 @@ void ExtensionIconSource::LoadDefaultImage(int request_id) {
   FinalizeImage(decoded, request_id);
 }
 
-void ExtensionIconSource::LoadExtensionImage(ExtensionResource icon,
+void ExtensionIconSource::LoadExtensionImage(const ExtensionResource& icon,
                                              int request_id) {
   ExtensionIconRequest* request = GetData(request_id);
   tracker_map_[next_tracker_id_++] = request_id;

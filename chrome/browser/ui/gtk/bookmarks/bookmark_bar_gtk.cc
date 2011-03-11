@@ -107,7 +107,7 @@ void SetToolBarStyle() {
       "widget \"*chrome-bookmark-toolbar\" style \"chrome-bookmark-toolbar\"");
 }
 
-void RecordAppLaunch(Profile* profile, GURL url) {
+void RecordAppLaunch(Profile* profile, const GURL& url) {
   DCHECK(profile->GetExtensionService());
   if (!profile->GetExtensionService()->IsInstalledApp(url))
     return;

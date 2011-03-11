@@ -46,7 +46,7 @@ namespace browser {
 void ShowExtensionInstalledBubble(
     const Extension* extension,
     Browser* browser,
-    SkBitmap icon,
+    const SkBitmap& icon,
     Profile* profile) {
   if ((extension->browser_action()) || !extension->omnibox_keyword().empty() ||
       (extension->page_action() &&

@@ -54,9 +54,9 @@ class P2PSocketDispatcher : public RenderViewObserver {
   base::MessageLoopProxy* message_loop();
 
   // Incoming message handlers.
-  void OnSocketCreated(int socket_id, P2PSocketAddress address);
+  void OnSocketCreated(int socket_id, const P2PSocketAddress& address);
   void OnError(int socket_id);
-  void OnDataReceived(int socket_id, P2PSocketAddress address,
+  void OnDataReceived(int socket_id, const P2PSocketAddress& address,
                       const std::vector<char>& data);
 
   P2PSocketClient* GetClient(int socket_id);

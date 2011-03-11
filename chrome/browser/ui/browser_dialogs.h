@@ -50,7 +50,7 @@ void ShowImportLockDialog(gfx::NativeWindow parent,
 // icon of the extension.
 void ShowExtensionInstalledBubble(const Extension* extension,
                                   Browser* browser,
-                                  SkBitmap icon,
+                                  const SkBitmap& icon,
                                   Profile* profile);
 
 // Shows or hide the hung renderer dialog for the given TabContents.

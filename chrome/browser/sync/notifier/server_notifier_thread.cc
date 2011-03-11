@@ -167,7 +167,8 @@ void ServerNotifierThread::StopInvalidationListener() {
   chrome_invalidation_client_.reset();
 }
 
-void ServerNotifierThread::SetRegisteredTypes(syncable::ModelTypeSet types) {
+void ServerNotifierThread::SetRegisteredTypes(
+    const syncable::ModelTypeSet& types) {
   registered_types_ = types;
 }
 

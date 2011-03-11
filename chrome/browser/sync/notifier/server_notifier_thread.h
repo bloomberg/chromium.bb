@@ -96,7 +96,7 @@ class ServerNotifierThread
 
   syncable::ModelTypeSet registered_types_;
 
-  void SetRegisteredTypes(syncable::ModelTypeSet types);
+  void SetRegisteredTypes(const syncable::ModelTypeSet& types);
 };
 
 }  // namespace sync_notifier

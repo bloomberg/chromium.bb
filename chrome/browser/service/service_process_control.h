@@ -95,7 +95,7 @@ class ServiceProcessControl : public IPC::Channel::Sender,
 
   // Message handlers
   void OnCloudPrintProxyIsEnabled(bool enabled, std::string email);
-  void OnRemotingHostInfo(remoting::ChromotingHostInfo host_info);
+  void OnRemotingHostInfo(const remoting::ChromotingHostInfo& host_info);
 
   // Send a shutdown message to the service process. IPC channel will be
   // destroyed after calling this method.

@@ -240,7 +240,7 @@ void ServiceProcessControl::OnCloudPrintProxyIsEnabled(bool enabled,
 }
 
 void ServiceProcessControl::OnRemotingHostInfo(
-    remoting::ChromotingHostInfo host_info) {
+    const remoting::ChromotingHostInfo& host_info) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   for (std::set<MessageHandler*>::iterator it = message_handlers_.begin();
        it != message_handlers_.end(); ++it) {

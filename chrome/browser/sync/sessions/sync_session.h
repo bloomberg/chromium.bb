@@ -82,7 +82,7 @@ class SyncSession {
 
   SyncSession(SyncSessionContext* context,
               Delegate* delegate,
-              SyncSourceInfo source,
+              const SyncSourceInfo& source,
               const ModelSafeRoutingInfo& routing_info,
               const std::vector<ModelSafeWorker*>& workers);
   ~SyncSession();
