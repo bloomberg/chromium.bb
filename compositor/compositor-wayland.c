@@ -163,19 +163,31 @@ frame_callback(void *data, uint32_t time)
 	wlsc_compositor_finish_frame(&c->base, time);
 }
 
+static int
+wayland_output_prepare_render(struct wlsc_output *output_base)
+{
+	struct wayland_output *output = (struct wayland_output *) output_base;
+	struct wlsc_compositor *ec = output->base.compositor;
+
+	if (!eglMakeCurrent(ec->display, output->egl_surface,
+			    output->egl_surface, ec->context)) {
+		fprintf(stderr, "failed to make current\n");
+		return -1;
+	}
+
+	return 0;
+}
+
 static void
 wayland_compositor_present(struct wlsc_compositor *base)
 {
 	struct wayland_compositor *c = (struct wayland_compositor *) base;
 	struct wayland_output *output;
 
-
 	wl_list_for_each(output, &base->output_list, base.link) {
-		if (!eglMakeCurrent(c->base.display, output->egl_surface,
-				    output->egl_surface, c->base.context)) {
-			fprintf(stderr, "failed to make current\n");
+		if (wayland_output_prepare_render(&output->base))
 			continue;
-		}
+
 		eglSwapBuffers(c->base.display, output->egl_surface);
 	}
 
@@ -229,6 +241,8 @@ wayland_compositor_create_output(struct wayland_compositor *c,
 	wl_surface_map_toplevel(output->parent.surface);
 
 	glClearColor(0, 0, 0, 0.5);
+
+	output->base.prepare_render = wayland_output_prepare_render;
 
 	wl_list_insert(c->base.output_list.prev, &output->base.link);
 

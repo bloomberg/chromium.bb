@@ -59,6 +59,22 @@ struct drm_output {
 	uint32_t current;	
 };
 
+static int
+drm_output_prepare_render(struct wlsc_output *output_base)
+{
+	struct drm_output *output = (struct drm_output *) output_base;
+
+	glFramebufferRenderbuffer(GL_FRAMEBUFFER,
+				  GL_COLOR_ATTACHMENT0,
+				  GL_RENDERBUFFER,
+				  output->rbo[output->current]);
+
+	if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
+		return -1;
+
+	return 0;
+}
+
 static void
 drm_compositor_present(struct wlsc_compositor *ec)
 {
@@ -66,13 +82,11 @@ drm_compositor_present(struct wlsc_compositor *ec)
 	struct drm_output *output;
 
 	wl_list_for_each(output, &ec->output_list, base.link) {
-		output->current ^= 1;
-
-		glFramebufferRenderbuffer(GL_FRAMEBUFFER,
-					  GL_COLOR_ATTACHMENT0,
-					  GL_RENDERBUFFER,
-					  output->rbo[output->current]);
+		if (drm_output_prepare_render(&output->base))
+			continue;
 		glFlush();
+
+		output->current ^= 1;
 
 		drmModePageFlip(c->drm.fd, output->crtc_id,
 				output->fb_id[output->current ^ 1],
@@ -88,8 +102,13 @@ page_flip_handler(int fd, unsigned int frame,
 	struct wlsc_compositor *compositor = output->compositor;
 	uint32_t msecs;
 
-	msecs = sec * 1000 + usec / 1000;
-	wlsc_compositor_finish_frame(compositor, msecs);
+	/* run synchronized to first output, ignore other pflip events.
+	 * FIXME: support per output/surface frame callbacks */
+	if (output == container_of(compositor->output_list.prev,
+				   struct wlsc_output, link)) {
+		msecs = sec * 1000 + usec / 1000;
+		wlsc_compositor_finish_frame(compositor, msecs);
+	}
 }
 
 static void
@@ -175,7 +194,8 @@ static drmModeModeInfo builtin_1024x768 = {
 static int
 create_output_for_connector(struct drm_compositor *ec,
 			    drmModeRes *resources,
-			    drmModeConnector *connector)
+			    drmModeConnector *connector,
+			    int x, int y)
 {
 	struct drm_output *output;
 	drmModeEncoder *encoder;
@@ -215,7 +235,7 @@ create_output_for_connector(struct drm_compositor *ec,
 	}
 
 	memset(output, 0, sizeof *output);
-	wlsc_output_init(&output->base, &ec->base, 0, 0,
+	wlsc_output_init(&output->base, &ec->base, x, y,
 			 mode->hdisplay, mode->vdisplay, 0);
 
 	ec->crtc_allocator |= (1 << i);
@@ -260,6 +280,8 @@ create_output_for_connector(struct drm_compositor *ec,
 		return -1;
 	}
 
+	output->base.prepare_render = drm_output_prepare_render;
+
 	wl_list_insert(ec->base.output_list.prev, &output->base.link);
 
 	return 0;
@@ -271,6 +293,7 @@ create_outputs(struct drm_compositor *ec, int option_connector)
 	drmModeConnector *connector;
 	drmModeRes *resources;
 	int i;
+	int x = 0, y = 0;
 
 	resources = drmModeGetResources(ec->drm.fd);
 	if (!resources) {
@@ -286,8 +309,12 @@ create_outputs(struct drm_compositor *ec, int option_connector)
 		if (connector->connection == DRM_MODE_CONNECTED &&
 		    (option_connector == 0 ||
 		     connector->connector_id == option_connector))
-			if (create_output_for_connector(ec, resources, connector) < 0)
+			if (create_output_for_connector(ec, resources,
+							connector, x, y) < 0)
 				return -1;
+
+		x += container_of(ec->base.output_list.prev, struct wlsc_output,
+				  link)->width;
 
 		drmModeFreeConnector(connector);
 	}

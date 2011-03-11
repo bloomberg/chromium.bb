@@ -47,6 +47,8 @@ struct wlsc_output {
 	struct wlsc_matrix matrix;
 	int32_t x, y, width, height;
 	pixman_region32_t previous_damage_region;
+
+	int (*prepare_render)(struct wlsc_output *output);
 };
 
 enum wlsc_pointer_type {

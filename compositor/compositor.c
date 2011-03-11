@@ -24,6 +24,7 @@
 #include <string.h>
 #include <stdlib.h>
 #include <stdint.h>
+#include <limits.h>
 #include <stdarg.h>
 #include <sys/ioctl.h>
 #include <fcntl.h>
@@ -493,6 +494,8 @@ wlsc_output_repaint(struct wlsc_output *output)
 	struct wlsc_input_device *eid;
 	pixman_region32_t new_damage, total_damage;
 
+	output->prepare_render(output);
+
 	glViewport(0, 0, output->width, output->height);
 
 	glUniformMatrix4fv(ec->proj_uniform, 1, GL_FALSE, output->matrix.d);
@@ -849,17 +852,40 @@ notify_motion(struct wl_input_device *device, uint32_t time, int x, int y)
 	const struct wl_grab_interface *interface;
 	struct wlsc_input_device *wd = (struct wlsc_input_device *) device;
 	int32_t sx, sy;
+	int x_valid = 0, y_valid = 0;
+	int min_x = INT_MAX, min_y = INT_MAX, max_x = INT_MIN, max_y = INT_MIN;
 
-	/* FIXME: We need some multi head love here. */
-	output = container_of(ec->output_list.next, struct wlsc_output, link);
-	if (x < output->x)
-		x = 0;
-	if (y < output->y)
-		y = 0;
-	if (x >= output->x + output->width)
-		x = output->x + output->width - 1;
-	if (y >= output->y + output->height)
-		y = output->y + output->height - 1;
+	wl_list_for_each(output, &ec->output_list, link) {
+		if (output->x <= x && x <= output->x + output->width)
+			x_valid = 1;
+
+		if (output->y <= y && y <= output->y + output->height)
+			y_valid = 1;
+
+		/* FIXME: calculate this only on output addition/deletion */
+		if (output->x < min_x)
+			min_x = output->x;
+		if (output->y < min_y)
+			min_y = output->y;
+
+		if (output->x + output->width > max_x)
+			max_x = output->x + output->width;
+		if (output->y + output->height > max_y)
+			max_y = output->y + output->height;
+	}
+	
+	if (!x_valid) {
+		if (x < min_x)
+			x = min_x;
+		else if (x >= max_x)
+			x = max_x;
+	}
+	if (!y_valid) {
+		if (y < min_y)
+			y = min_y;
+		else  if (y >= max_y)
+			y = max_y;
+	}
 
 	device->x = x;
 	device->y = y;

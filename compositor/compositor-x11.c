@@ -156,6 +156,21 @@ x11_compositor_init_egl(struct x11_compositor *c)
 	return 0;
 }
 
+static int
+x11_output_prepare_render(struct wlsc_output *output_base)
+{
+	struct x11_output *output = (struct x11_output *) output_base;
+	struct wlsc_compositor *ec = output->base.compositor;
+
+	if (!eglMakeCurrent(ec->display, output->egl_surface,
+			    output->egl_surface, ec->context)) {
+		fprintf(stderr, "failed to make current\n");
+		return -1;
+	}
+
+	return 0;
+}
+
 static void
 x11_compositor_present(struct wlsc_compositor *base)
 {
@@ -165,11 +180,9 @@ x11_compositor_present(struct wlsc_compositor *base)
 	uint32_t msec;
 
 	wl_list_for_each(output, &c->base.output_list, base.link) {
-		if (!eglMakeCurrent(c->base.display, output->egl_surface,
-				    output->egl_surface, c->base.context)) {
-			fprintf(stderr, "failed to make current\n");
+		if (x11_output_prepare_render(&output->base))
 			continue;
-		}
+
 		eglSwapBuffers(c->base.display, output->egl_surface);
 	}
 
@@ -323,6 +336,8 @@ x11_compositor_create_output(struct x11_compositor *c, int width, int height)
 		fprintf(stderr, "failed to make surface current\n");
 		return -1;
 	}
+
+	output->base.prepare_render = x11_output_prepare_render;
 
 	wl_list_insert(c->base.output_list.prev, &output->base.link);
 
