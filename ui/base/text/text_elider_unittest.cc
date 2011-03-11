@@ -16,9 +16,6 @@ namespace ui {
 
 namespace {
 
-// U+2026 in utf8
-const char kEllipsis[] = "\xe2\x80\xa6";
-
 struct Testcase {
   const std::string input;
   const std::string output;

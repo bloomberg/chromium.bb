@@ -1679,6 +1679,7 @@
         'browser/ui/tabs/tab_menu_model_unittest.cc',
         'browser/ui/tests/ui_gfx_image_unittest.cc',
         'browser/ui/tests/ui_gfx_image_unittest.mm',
+        'browser/ui/title_prefix_matcher_unittest.cc',
         'browser/ui/toolbar/back_forward_menu_model_unittest.cc',
         'browser/ui/toolbar/encoding_menu_controller_unittest.cc',
         'browser/ui/toolbar/wrench_menu_model_unittest.cc',

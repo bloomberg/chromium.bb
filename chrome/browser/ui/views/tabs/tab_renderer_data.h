@@ -40,6 +40,9 @@ struct TabRendererData {
   SkBitmap favicon;
   NetworkState network_state;
   string16 title;
+  // Identifies the number of chars at the beginning of the string
+  // that are common to other tab titles.
+  size_t common_prefix_length;
   bool loading;
   base::TerminationStatus crashed_status;
   bool off_the_record;

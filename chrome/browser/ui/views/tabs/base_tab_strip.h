@@ -191,6 +191,10 @@ class BaseTabStrip : public AbstractTabStripView,
     tab_data_[index].ideal_bounds = bounds;
   }
 
+  // Update the lengths of common title prefixes for all tabs. This needs
+  // to be done every time tabs are added/removed or when titles change.
+  virtual void UpdateCommonTitlePrefix();
+
   // Returns the index into |tab_data_| corresponding to the specified tab, or
   // -1 if the tab isn't in |tab_data_|.
   int TabIndexOfTab(BaseTab* tab) const;

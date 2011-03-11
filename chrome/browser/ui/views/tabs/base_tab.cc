@@ -21,6 +21,7 @@
 #include "ui/base/animation/throb_animation.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "ui/base/text/text_elider.h"
 #include "ui/base/theme_provider.h"
 #include "ui/gfx/canvas_skia.h"
 #include "ui/gfx/favicon_size.h"
@@ -442,6 +443,7 @@ void BaseTab::PaintIcon(gfx::Canvas* canvas) {
 
 void BaseTab::PaintTitle(gfx::Canvas* canvas, SkColor title_color) {
   // Paint the Title.
+  const gfx::Rect& title_bounds = GetTitleBounds();
   string16 title = data().title;
   if (title.empty()) {
     title = data().loading ?
@@ -449,8 +451,15 @@ void BaseTab::PaintTitle(gfx::Canvas* canvas, SkColor title_color) {
         TabContentsWrapper::GetDefaultTitle();
   } else {
     Browser::FormatTitleForDisplay(&title);
+    // If we'll need to truncate, check if we should also truncate
+    // a common prefix, but only if there is enough room for it.
+    // We arbitrarily choose to request enough room for 10 average chars.
+    if (data().common_prefix_length > 0 &&
+        font_->GetExpectedTextWidth(10) < title_bounds.width() &&
+        font_->GetStringWidth(title) > title_bounds.width()) {
+      title.replace(0, data().common_prefix_length, UTF8ToUTF16(ui::kEllipsis));
+    }
   }
-  const gfx::Rect& title_bounds = GetTitleBounds();
   canvas->DrawStringInt(title, *font_, title_color,
                         title_bounds.x(), title_bounds.y(),
                         title_bounds.width(), title_bounds.height());

@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/views/tabs/base_tab_strip.h"
 
 #include "base/logging.h"
+#include "chrome/browser/ui/title_prefix_matcher.h"
 #include "chrome/browser/ui/view_ids.h"
 #include "chrome/browser/ui/views/tabs/dragged_tab_controller.h"
 #include "chrome/browser/ui/views/tabs/tab_strip_controller.h"
@@ -137,6 +138,7 @@ void BaseTabStrip::AddTabAt(int model_index,
 
   TabData d = { tab, gfx::Rect() };
   tab_data_.insert(tab_data_.begin() + ModelIndexToTabIndex(model_index), d);
+  UpdateCommonTitlePrefix();
 
   AddChildView(tab);
 
@@ -167,6 +169,7 @@ void BaseTabStrip::SetTabData(int model_index, const TabRendererData& data) {
   BaseTab* tab = GetBaseTabAtModelIndex(model_index);
   bool mini_state_changed = tab->data().mini != data.mini;
   tab->SetData(data);
+  UpdateCommonTitlePrefix();
 
   if (mini_state_changed) {
     if (GetWindow() && GetWindow()->IsVisible())
@@ -425,6 +428,30 @@ void BaseTabStrip::RemoveAndDeleteTab(BaseTab* tab) {
   tab_data_.erase(tab_data_.begin() + tab_data_index);
 
   delete tab;
+  UpdateCommonTitlePrefix();
+}
+
+void BaseTabStrip::UpdateCommonTitlePrefix() {
+  std::vector<TitlePrefixMatcher::TitleInfo> tab_title_infos;
+  for (int tab_index = 0; tab_index < tab_count(); ++tab_index) {
+    DCHECK(tab_data_[tab_index].tab != NULL);
+    if (!tab_data_[tab_index].tab->data().mini &&
+        !tab_data_[tab_index].tab->data().title.empty()) {
+      tab_title_infos.push_back(TitlePrefixMatcher::TitleInfo(
+          &tab_data_[tab_index].tab->data().title, tab_index));
+    }
+  }
+  TitlePrefixMatcher::CalculatePrefixLengths(&tab_title_infos);
+  for (size_t title_index = 0; title_index < tab_title_infos.size();
+       ++title_index) {
+    int tab_index = tab_title_infos[title_index].caller_value;
+    TabRendererData data = tab_data_[tab_index].tab->data();
+    if (data.common_prefix_length !=
+        tab_title_infos[title_index].prefix_length) {
+      data.common_prefix_length = tab_title_infos[title_index].prefix_length;
+      tab_data_[tab_index].tab->SetData(data);
+    }
+  }
 }
 
 int BaseTabStrip::TabIndexOfTab(BaseTab* tab) const {

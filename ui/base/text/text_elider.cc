@@ -22,9 +22,10 @@
 
 namespace ui {
 
-namespace {
+// U+2026 in utf8
+const char kEllipsis[] = "\xE2\x80\xA6";
 
-const char* kEllipsis = "\xE2\x80\xA6";
+namespace {
 
 // Cuts |text| to be |length| characters long.  If |cut_in_middle| is true, the
 // middle of the string is removed to leave equal-length pieces from the

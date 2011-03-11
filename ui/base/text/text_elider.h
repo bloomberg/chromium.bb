@@ -18,6 +18,8 @@ class GURL;
 
 namespace ui {
 
+extern const char kEllipsis[];
+
 // This function takes a GURL object and elides it. It returns a string
 // which composed of parts from subdomain, domain, path, filename and query.
 // A "..." is added automatically at the end if the elided string is bigger
