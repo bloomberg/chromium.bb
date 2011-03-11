@@ -104,6 +104,7 @@ void DevToolsNetLogObserver::OnAddEntry(net::NetLog::EventType type,
       break;
     }
     default:
+      NOTREACHED();
       break;
   }
 }
