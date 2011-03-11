@@ -1399,3 +1399,55 @@
    ...
    fun:CGContextShowGlyphsWithAdvances
 }
+{
+   bug_75714_a
+   Memcheck:Addr8
+   fun:CGSColorMaskCopyARGB8888
+   fun:argb32_mark
+   fun:ripl_BltShape
+   fun:ripc_Render
+   fun:ripc_DrawPath
+   fun:CGContextDrawPath
+   fun:*
+   fun:-[NSBezierPath(NSBezierPathDevicePrimitives) _doUserPathWithOp:inContext:]
+   fun:*
+   fun:-[BubbleView drawRect:]
+   fun:-[NSView _drawRect:clip:]
+   fun:-[NSView _recursiveDisplayAllDirtyWithLockFocus:visRect:]
+   fun:-[NSView _recursiveDisplayAllDirtyWithLockFocus:visRect:]
+   fun:-[NSView _recursiveDisplayRectIfNeededIgnoringOpacity:isVisibleRect:rectIsVisibleRectForView:topView:]
+   fun:-[NSNextStepFrame _recursiveDisplayRectIfNeededIgnoringOpacity:isVisibleRect:rectIsVisibleRectForView:topView:]
+   fun:-[NSView _displayRectIgnoringOpacity:isVisibleRect:rectIsVisibleRectForView:]
+   fun:-[NSView displayIfNeeded]
+   fun:-[NSWindow _setFrameCommon:display:stashSize:]
+   fun:-[NSWindow setFrame:display:]
+   fun:-[NSWindow setValue:forKey:]
+   fun:-[NSObject(NSKeyValueCoding) setValue:forKeyPath:]
+   fun:-[NSInFlightAnimation advanceToTime:]
+}
+{
+   bug_75714_b
+   Memcheck:Addr8
+   fun:sseCGSFill8by1
+   fun:argb32_mark_constshape
+   fun:argb32_mark
+   fun:ripl_BltShape
+   fun:ripc_Render
+   fun:ripc_DrawRects
+   fun:CGContextFillRects
+   fun:CGContextFillRect
+   fun:NSRectFill
+   fun:-[NSView _drawRect:clip:]
+   fun:-[NSView _recursiveDisplayAllDirtyWithLockFocus:visRect:]
+   fun:-[NSView _recursiveDisplayRectIfNeededIgnoringOpacity:isVisibleRect:rectIsVisibleRectForView:topView:]
+   fun:-[NSNextStepFrame _recursiveDisplayRectIfNeededIgnoringOpacity:isVisibleRect:rectIsVisibleRectForView:topView:]
+   fun:-[NSView _displayRectIgnoringOpacity:isVisibleRect:rectIsVisibleRectForView:]
+   fun:-[NSView displayIfNeeded]
+   fun:-[NSWindow _setFrameCommon:display:stashSize:]
+   fun:-[NSWindow setFrame:display:]
+   fun:-[NSWindow setValue:forKey:]
+   fun:-[NSObject(NSKeyValueCoding) setValue:forKeyPath:]
+   fun:-[NSInFlightAnimation advanceToTime:]
+   fun:-[NSAnimationManager animationTimerFired:]
+   fun:__NSFireTimer
+}
