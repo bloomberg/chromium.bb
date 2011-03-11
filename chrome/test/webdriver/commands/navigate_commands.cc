@@ -24,7 +24,6 @@ void ForwardCommand::ExecutePost(Response* const response) {
     return;
   }
 
-  session_->set_current_frame_xpath("");
   response->SetStatus(kSuccess);
 }
 
@@ -48,7 +47,6 @@ void BackCommand::ExecutePost(Response* const response) {
     return;
   }
 
-  session_->set_current_frame_xpath("");
   response->SetStatus(kSuccess);
 }
 
@@ -72,7 +70,6 @@ void RefreshCommand::ExecutePost(Response* const response) {
     return;
   }
 
-  session_->set_current_frame_xpath("");
   response->SetStatus(kSuccess);
 }
 

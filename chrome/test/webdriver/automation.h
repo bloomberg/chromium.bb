@@ -28,6 +28,8 @@ class Point;
 
 namespace webdriver {
 
+class FramePath;
+
 // Creates and controls the Chrome instance.
 // This class should be created and accessed on a single thread.
 // Note: All member functions are void because they are invoked
@@ -48,7 +50,7 @@ class Automation {
   // Executes the given |script| in the specified frame of the current
   // tab. |result| will be set to the JSON result. Returns true on success.
   void ExecuteScript(int tab_id,
-                     const std::string& frame_xpath,
+                     const FramePath& frame_path,
                      const std::string& script,
                      std::string* result,
                      bool* success);

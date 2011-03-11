@@ -26,7 +26,7 @@ bool WindowHandleCommand::DoesGet() {
 void WindowHandleCommand::ExecuteGet(Response* const response) {
   response->SetStatus(kSuccess);
   response->SetValue(new StringValue(
-      base::IntToString(session_->current_window_id())));
+      base::IntToString(session_->current_target().window_id)));
 }
 
 WindowHandlesCommand::WindowHandlesCommand(
@@ -121,7 +121,7 @@ void SwitchFrameCommand::ExecutePost(Response* const response) {
       return;
     }
   } else if (IsNullParameter("id")) {
-    session_->set_current_frame_xpath("");
+    session_->SwitchToTopFrame();
   } else {
     SET_WEBDRIVER_ERROR(
         response, "Missing or invalid 'id' parameter", kBadRequest);

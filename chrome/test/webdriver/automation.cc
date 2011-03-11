@@ -25,6 +25,7 @@
 #include "chrome/test/automation/automation_json_requests.h"
 #include "chrome/test/automation/automation_proxy.h"
 #include "chrome/test/automation/proxy_launcher.h"
+#include "chrome/test/webdriver/frame_path.h"
 #include "googleurl/src/gurl.h"
 #include "ui/gfx/point.h"
 
@@ -156,7 +157,7 @@ void Automation::Terminate() {
 }
 
 void Automation::ExecuteScript(int tab_id,
-                               const std::string& frame_xpath,
+                               const FramePath& frame_path,
                                const std::string& script,
                                std::string* result,
                                bool* success) {
@@ -167,8 +168,9 @@ void Automation::ExecuteScript(int tab_id,
   }
 
   Value* unscoped_value;
-  if (!SendExecuteJavascriptJSONRequest(
-      automation(), windex, tab_index, frame_xpath, script, &unscoped_value)) {
+  if (!SendExecuteJavascriptJSONRequest(automation(), windex, tab_index,
+                                        frame_path.value(), script,
+                                        &unscoped_value)) {
     *success = false;
     return;
   }

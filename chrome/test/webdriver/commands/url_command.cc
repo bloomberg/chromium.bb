@@ -49,7 +49,6 @@ void URLCommand::ExecutePost(Response* const response) {
     return;
   }
 
-  session_->set_current_frame_xpath("");
   response->SetValue(new StringValue(url));
   response->SetStatus(kSuccess);
 }

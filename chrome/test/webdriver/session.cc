@@ -39,15 +39,27 @@
 #include "googleurl/src/gurl.h"
 #include "third_party/webdriver/atoms.h"
 #include "ui/gfx/point.h"
+#include "ui/gfx/rect.h"
+#include "ui/gfx/size.h"
 
 namespace webdriver {
+
+FrameId::FrameId(int window_id, const FramePath& frame_path)
+    : window_id(window_id),
+      frame_path(frame_path) {
+}
+
+FrameId& FrameId::operator=(const FrameId& other) {
+  window_id = other.window_id;
+  frame_path = other.frame_path;
+  return *this;
+}
 
 Session::Session()
     : id_(GenerateRandomID()),
       thread_(id_.c_str()),
       implicit_wait_(0),
-      current_frame_xpath_(""),
-      current_window_id_(0) {
+      current_target_(FrameId(0, FramePath())) {
   SessionManager::GetInstance()->Add(this);
 }
 
@@ -78,8 +90,7 @@ void Session::Terminate() {
   delete this;
 }
 
-ErrorCode Session::ExecuteScript(int window_id,
-                                 const std::string& frame_xpath,
+ErrorCode Session::ExecuteScript(const FrameId& frame_id,
                                  const std::string& script,
                                  const ListValue* const args,
                                  Value** value) {
@@ -98,15 +109,15 @@ ErrorCode Session::ExecuteScript(int window_id,
 
   // Should we also log the script that's being executed? It could be several KB
   // in size and will add lots of noise to the logs.
-  VLOG(1) << "Executing script in frame: " << current_frame_xpath_;
+  VLOG(1) << "Executing script in frame: " << frame_id.frame_path.value();
 
   std::string result;
   bool success = false;
   RunSessionTask(NewRunnableMethod(
       automation_.get(),
       &Automation::ExecuteScript,
-      window_id,
-      frame_xpath,
+      frame_id.window_id,
+      frame_id.frame_path,
       jscript,
       &result,
       &success));
@@ -158,8 +169,7 @@ ErrorCode Session::ExecuteScript(int window_id,
 ErrorCode Session::ExecuteScript(const std::string& script,
                                  const ListValue* const args,
                                  Value** value) {
-  return ExecuteScript(
-      current_window_id_, current_frame_xpath_, script, args, value);
+  return ExecuteScript(current_target_, script, args, value);
 }
 
 ErrorCode Session::SendKeys(const WebElementId& element, const string16& keys) {
@@ -191,9 +201,11 @@ bool Session::NavigateToURL(const std::string& url) {
   RunSessionTask(NewRunnableMethod(
       automation_.get(),
       &Automation::NavigateToURL,
-      current_window_id_,
+      current_target_.window_id,
       url,
       &success));
+  if (success)
+    current_target_.frame_path = FramePath();
   return success;
 }
 
@@ -202,8 +214,10 @@ bool Session::GoForward() {
   RunSessionTask(NewRunnableMethod(
       automation_.get(),
       &Automation::GoForward,
-      current_window_id_,
+      current_target_.window_id,
       &success));
+  if (success)
+    current_target_.frame_path = FramePath();
   return success;
 }
 
@@ -212,8 +226,10 @@ bool Session::GoBack() {
   RunSessionTask(NewRunnableMethod(
       automation_.get(),
       &Automation::GoBack,
-      current_window_id_,
+      current_target_.window_id,
       &success));
+  if (success)
+    current_target_.frame_path = FramePath();
   return success;
 }
 
@@ -222,8 +238,10 @@ bool Session::Reload() {
   RunSessionTask(NewRunnableMethod(
       automation_.get(),
       &Automation::Reload,
-      current_window_id_,
+      current_target_.window_id,
       &success));
+  if (success)
+    current_target_.frame_path = FramePath();
   return success;
 }
 
@@ -232,7 +250,7 @@ bool Session::GetURL(std::string* url) {
   RunSessionTask(NewRunnableMethod(
       automation_.get(),
       &Automation::GetURL,
-      current_window_id_,
+      current_target_.window_id,
       url,
       &success));
   return success;
@@ -243,7 +261,7 @@ bool Session::GetURL(GURL* gurl) {
   RunSessionTask(NewRunnableMethod(
       automation_.get(),
       &Automation::GetGURL,
-      current_window_id_,
+      current_target_.window_id,
       gurl,
       &success));
   return success;
@@ -254,7 +272,7 @@ bool Session::GetTabTitle(std::string* tab_title) {
   RunSessionTask(NewRunnableMethod(
       automation_.get(),
       &Automation::GetTabTitle,
-      current_window_id_,
+      current_target_.window_id,
       tab_title,
       &success));
   return success;
@@ -266,7 +284,7 @@ void Session::MouseClick(const gfx::Point& click,
   RunSessionTask(NewRunnableMethod(
       automation_.get(),
       &Automation::MouseClick,
-      current_window_id_,
+      current_target_.window_id,
       click,
       button,
       &success));
@@ -277,7 +295,7 @@ bool Session::MouseMove(const gfx::Point& location) {
   RunSessionTask(NewRunnableMethod(
       automation_.get(),
       &Automation::MouseMove,
-      current_window_id_,
+      current_target_.window_id,
       location,
       &success));
   return success;
@@ -289,7 +307,7 @@ bool Session::MouseDrag(const gfx::Point& start,
   RunSessionTask(NewRunnableMethod(
       automation_.get(),
       &Automation::MouseDrag,
-      current_window_id_,
+      current_target_.window_id,
       start,
       end,
       &success));
@@ -301,7 +319,7 @@ bool Session::GetCookies(const GURL& url, std::string* cookies) {
   RunSessionTask(NewRunnableMethod(
       automation_.get(),
       &Automation::GetCookies,
-      current_window_id_,
+      current_target_.window_id,
       url,
       cookies,
       &success));
@@ -332,7 +350,7 @@ bool Session::DeleteCookie(const GURL& url, const std::string& cookie_name) {
   RunSessionTask(NewRunnableMethod(
       automation_.get(),
       &Automation::DeleteCookie,
-      current_window_id_,
+      current_target_.window_id,
       url,
       cookie_name,
       &success));
@@ -344,7 +362,7 @@ bool Session::SetCookie(const GURL& url, const std::string& cookie) {
   RunSessionTask(NewRunnableMethod(
       automation_.get(),
       &Automation::SetCookie,
-      current_window_id_,
+      current_target_.window_id,
       url,
       cookie,
       &success));
@@ -389,8 +407,7 @@ ErrorCode Session::SwitchToWindow(const std::string& name) {
       ListValue empty_list;
       Value* unscoped_name_value;
       std::string window_name;
-      ErrorCode code = ExecuteScript(window_ids[i],
-                                     "",
+      ErrorCode code = ExecuteScript(FrameId(window_ids[i], FramePath()),
                                      "return window.name;",
                                      &empty_list,
                                      &unscoped_name_value);
@@ -406,8 +423,7 @@ ErrorCode Session::SwitchToWindow(const std::string& name) {
 
   if (!switch_to_id)
     return kNoSuchWindow;
-  current_window_id_ = switch_to_id;
-  current_frame_xpath_ = "";
+  current_target_ = FrameId(switch_to_id, FramePath());
   return kSuccess;
 }
 
@@ -452,12 +468,16 @@ ErrorCode Session::SwitchToFrameWithIndex(int index) {
   return SwitchToFrameWithJavaScriptLocatedFrame(script, &args);
 }
 
+void Session::SwitchToTopFrame() {
+  current_target_.frame_path = FramePath();
+}
+
 bool Session::CloseWindow() {
   bool success = false;
   RunSessionTask(NewRunnableMethod(
       automation_.get(),
       &Automation::CloseTab,
-      current_window_id_,
+      current_target_.window_id,
       &success));
 
   if (success) {
@@ -484,80 +504,148 @@ std::string Session::GetVersion() {
   return version;
 }
 
-ErrorCode Session::FindElementInFrame(int window_id,
-                                      const std::string& frame_xpath,
-                                      const WebElementId& root_element,
-                                      const std::string& locator,
-                                      const std::string& query,
-                                      WebElementId* element) {
+ErrorCode Session::FindElement(const FrameId& frame_id,
+                               const WebElementId& root_element,
+                               const std::string& locator,
+                               const std::string& query,
+                               WebElementId* element) {
   std::vector<WebElementId> elements;
   ErrorCode code = FindElementsHelper(
-      window_id, frame_xpath, root_element, locator, query, true, &elements);
+      frame_id, root_element, locator, query, true, &elements);
   if (code == kSuccess)
     *element = elements[0];
   return code;
 }
 
-ErrorCode Session::FindElement(const WebElementId& root_element,
-                               const std::string& locator,
-                               const std::string& query,
-                               WebElementId* element) {
-  return FindElementInFrame(current_window_id_,
-                            current_frame_xpath_,
-                            root_element,
-                            locator,
-                            query,
-                            element);
-}
-
-ErrorCode Session::FindElements(const WebElementId& root_element,
+ErrorCode Session::FindElements(const FrameId& frame_id,
+                                const WebElementId& root_element,
                                 const std::string& locator,
                                 const std::string& query,
                                 std::vector<WebElementId>* elements) {
-  return FindElementsHelper(current_window_id_,
-                            current_frame_xpath_,
-                            root_element,
-                            locator,
-                            query,
-                            false,
-                            elements);
+  return FindElementsHelper(
+      frame_id, root_element, locator, query, false, elements);
 }
 
 ErrorCode Session::GetElementLocationInView(
-    const WebElementId& element, int* x, int* y) {
+    const WebElementId& element, gfx::Point* location) {
   CHECK(element.is_valid());
 
-  // Bring the containing frame into view.
-  std::vector<std::string> xpaths;
-  if (current_frame_xpath_.length())
-    base::SplitString(current_frame_xpath_, '\n', &xpaths);
-  xpaths.insert(xpaths.begin(), "");
-  std::string frame_xpath;
-  int total_x = 0, total_y = 0;
-  for (size_t i = 0; i < xpaths.size() - 1; ++i) {
-    WebElementId frame_element;
-    ErrorCode code = FindElementInFrame(current_window_id_, frame_xpath,
-                                        WebElementId(""), LocatorType::kXpath,
-                                        xpaths[i + 1], &frame_element);
-    if (code != kSuccess) {
-      LOG(ERROR) << "Could not find frame element: " << xpaths[i + 1]
-                 << " in frame: " << frame_xpath;
-      return code;
-    }
-    code = GetLocationInViewHelper(current_window_id_, frame_xpath,
-                                   frame_element, &total_x, &total_y);
-    if (code != kSuccess)
-      return code;
-    frame_xpath += xpaths[i];
-  }
-
-  // Bring the element into view.
-  ErrorCode code = GetLocationInViewHelper(
-      current_window_id_, current_frame_xpath_, element, &total_x, &total_y);
+  gfx::Size elem_size;
+  ErrorCode code = GetElementSize(current_target_, element, &elem_size);
   if (code != kSuccess)
     return code;
-  *x = total_x;
-  *y = total_y;
+
+  gfx::Point elem_offset(0, 0);
+  code = GetLocationInViewHelper(
+      current_target_, element,
+      gfx::Rect(elem_offset, elem_size), &elem_offset);
+  if (code != kSuccess)
+    return code;
+
+  for (FramePath frame_path = current_target_.frame_path;
+       frame_path.IsSubframe();
+       frame_path = frame_path.Parent()) {
+    // Find the frame element for the current frame path.
+    FrameId frame_id(current_target_.window_id, frame_path.Parent());
+    WebElementId frame_element;
+    code = FindElement(
+        frame_id, WebElementId(""),
+        LocatorType::kXpath, frame_path.BaseName().value(), &frame_element);
+    if (code != kSuccess) {
+      LOG(ERROR) << "Could not find frame element: "
+                 << frame_path.BaseName().value()
+                 << " in frame: " << frame_path.Parent().value();
+      return code;
+    }
+    // Modify |elem_offset| by the frame's border.
+    int border_left, border_top;
+    code = GetElementBorder(
+        frame_id, frame_element, &border_left, &border_top);
+    if (code != kSuccess) {
+      LOG(ERROR) << "Could not get frame border width";
+      return code;
+    }
+    elem_offset.Offset(border_left, border_top);
+
+    code = GetLocationInViewHelper(
+        frame_id, frame_element,
+        gfx::Rect(elem_offset, elem_size), &elem_offset);
+    if (code != kSuccess)
+      return code;
+  }
+  *location = elem_offset;
+  return kSuccess;
+}
+
+ErrorCode Session::GetElementSize(const FrameId& frame_id,
+                                  const WebElementId& element,
+                                  gfx::Size* size) {
+  std::string script = base::StringPrintf(
+      "return (%s).apply(null, arguments);", atoms::GET_SIZE);
+  ListValue args;
+  args.Append(element.ToValue());
+
+  Value* unscoped_result = NULL;
+  ErrorCode code = ExecuteScript(frame_id, script, &args, &unscoped_result);
+  scoped_ptr<Value> result(unscoped_result);
+  if (code != kSuccess)
+    return code;
+  if (!result->IsType(Value::TYPE_DICTIONARY)) {
+    LOG(ERROR) << "GetSize atom returned non-dict type";
+    return kUnknownError;
+  }
+  DictionaryValue* dict = static_cast<DictionaryValue*>(result.get());
+  int width, height;
+  if (!dict->GetInteger("width", &width) ||
+      !dict->GetInteger("height", &height)) {
+    LOG(ERROR) << "GetSize atom returned dict without width and height keys";
+    return kUnknownError;
+  }
+  *size = gfx::Size(width, height);
+  return kSuccess;
+}
+
+ErrorCode Session::GetElementEffectiveStyle(
+    const FrameId& frame_id,
+    const WebElementId& element,
+    const std::string& prop,
+    std::string* value) {
+  std::string script = base::StringPrintf(
+      "return (%s).apply(null, arguments);", atoms::GET_EFFECTIVE_STYLE);
+  ListValue args;
+  args.Append(element.ToValue());
+  args.Append(Value::CreateStringValue(prop));
+  Value* unscoped_result = NULL;
+  ErrorCode code = ExecuteScript(
+      frame_id, script, &args, &unscoped_result);
+  scoped_ptr<Value> result(unscoped_result);
+  if (code != kSuccess) {
+    LOG(ERROR) << "GetEffectiveStyle atom failed for property: " << prop;
+    return code;
+  }
+
+  if (!result->GetAsString(value)) {
+    LOG(ERROR) << "GetEffectiveStyle atom returned non-string type for "
+               << "property: " << prop;
+    return kUnknownError;
+  }
+  return kSuccess;
+}
+
+ErrorCode Session::GetElementBorder(const FrameId& frame_id,
+                                    const WebElementId& element,
+                                    int* border_left,
+                                    int* border_top) {
+  std::string border_left_str, border_top_str;
+  ErrorCode code_left = GetElementEffectiveStyle(
+      frame_id, element, "border-left-width", &border_left_str);
+  ErrorCode code_top = GetElementEffectiveStyle(
+      frame_id, element, "border-top-width", &border_top_str);
+  if (code_left != kSuccess || code_top != kSuccess)
+    return code_left;
+
+  base::StringToInt(border_left_str, border_left);
+  base::StringToInt(border_top_str, border_top);
   return kSuccess;
 }
 
@@ -570,6 +658,10 @@ bool Session::WaitForAllTabsToStopLoading() {
       &Automation::WaitForAllTabsToStopLoading,
       &success));
   return success;
+}
+
+const FrameId& Session::current_target() const {
+  return current_target_;
 }
 
 void Session::RunSessionTask(Task* task) {
@@ -605,7 +697,7 @@ void Session::InitOnSessionThread(const FilePath& browser_dir, bool* success) {
     LOG(ERROR) << "No tab ids after initialization";
     *success = false;
   } else {
-    current_window_id_ = tab_ids[0];
+    current_target_ = FrameId(tab_ids[0], FramePath());
   }
 }
 
@@ -623,7 +715,7 @@ void Session::SendKeysOnSessionThread(const string16& keys,
   for (size_t i = 0; i < key_events.size(); ++i) {
     bool key_success = false;
     automation_->SendWebKeyEvent(
-        current_window_id_, key_events[i], &key_success);
+        current_target_.window_id, key_events[i], &key_success);
     if (!key_success) {
       LOG(ERROR) << "Failed to send key event. Event details:\n"
                  << "Type: " << key_events[i].type << "\n"
@@ -646,16 +738,13 @@ ErrorCode Session::SwitchToFrameWithJavaScriptLocatedFrame(
     return code;
   std::string xpath;
   if (result->GetAsString(&xpath)) {
-    if (current_frame_xpath_.length())
-      current_frame_xpath_ += "\n";
-    current_frame_xpath_ += xpath;
+    current_target_.frame_path = current_target_.frame_path.Append(xpath);
     return kSuccess;
   }
   return kNoSuchFrame;
 }
 
-ErrorCode Session::FindElementsHelper(int window_id,
-                                      const std::string& frame_xpath,
+ErrorCode Session::FindElementsHelper(const FrameId& frame_id,
                                       const WebElementId& root_element,
                                       const std::string& locator,
                                       const std::string& query,
@@ -694,8 +783,7 @@ ErrorCode Session::FindElementsHelper(int window_id,
   bool done = false;
   while (!done) {
     Value* unscoped_value;
-    code = ExecuteScript(window_id, frame_xpath, jscript, &jscript_args,
-                         &unscoped_value);
+    code = ExecuteScript(frame_id, jscript, &jscript_args, &unscoped_value);
     value.reset(unscoped_value);
     if (code == kSuccess) {
       // If searching for many elements, make sure we found at least one before
@@ -745,37 +833,39 @@ ErrorCode Session::FindElementsHelper(int window_id,
   return code;
 }
 
-ErrorCode Session::GetLocationInViewHelper(int window_id,
-                                           const std::string& frame_xpath,
+ErrorCode Session::GetLocationInViewHelper(const FrameId& frame_id,
                                            const WebElementId& element,
-                                           int* offset_x,
-                                           int* offset_y) {
+                                           const gfx::Rect& region,
+                                           gfx::Point* location) {
   std::string jscript = base::StringPrintf(
       "return (%s).apply(null, arguments);", atoms::GET_LOCATION_IN_VIEW);
   ListValue jscript_args;
   jscript_args.Append(element.ToValue());
+  DictionaryValue* elem_offset_dict = new DictionaryValue();
+  elem_offset_dict->SetInteger("left", region.x());
+  elem_offset_dict->SetInteger("top", region.y());
+  elem_offset_dict->SetInteger("width", region.width());
+  elem_offset_dict->SetInteger("height", region.height());
+  jscript_args.Append(elem_offset_dict);
   Value* unscoped_value = NULL;
-  ErrorCode code = ExecuteScript(window_id, frame_xpath, jscript, &jscript_args,
+  ErrorCode code = ExecuteScript(frame_id, jscript, &jscript_args,
                                  &unscoped_value);
   scoped_ptr<Value> value(unscoped_value);
-  if (code == kSuccess) {
-    if (value->IsType(Value::TYPE_DICTIONARY)) {
-      DictionaryValue* loc_dict = static_cast<DictionaryValue*>(value.get());
-      int temp_x = 0, temp_y = 0;
-      if (loc_dict->GetInteger("x", &temp_x) &&
-          loc_dict->GetInteger("y", &temp_y)) {
-        *offset_x += temp_x, *offset_y += temp_y;
-        code = kSuccess;
-      } else {
-        LOG(ERROR) << "Location atom returned bad coordinate dictionary";
-        code = kUnknownError;
-      }
-    } else {
-      LOG(ERROR) << "Location atom returned non-dictionary type";
-      code = kUnknownError;
-    }
+  if (code != kSuccess)
+    return code;
+  if (!value->IsType(Value::TYPE_DICTIONARY)) {
+    LOG(ERROR) << "Location atom returned non-dictionary type";
+    code = kUnknownError;
   }
-  return code;
+  DictionaryValue* loc_dict = static_cast<DictionaryValue*>(value.get());
+  int x = 0, y = 0;
+  if (!loc_dict->GetInteger("x", &x) ||
+      !loc_dict->GetInteger("y", &y)) {
+    LOG(ERROR) << "Location atom returned bad coordinate dictionary";
+    code = kUnknownError;
+  }
+  *location = gfx::Point(x, y);
+  return kSuccess;
 }
 
 }  // namespace webdriver

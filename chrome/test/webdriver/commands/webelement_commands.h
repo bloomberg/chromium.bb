@@ -28,8 +28,6 @@ class WebElementCommand : public WebDriverCommand {
   virtual bool Init(Response* const response);
 
  protected:
-  bool GetElementSize(int* width, int* height);
-
   const std::vector<std::string>& path_segments_;
   WebElementId element;
 
