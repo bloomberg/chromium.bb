@@ -1102,11 +1102,6 @@ void BrowserView::ShowRepostFormWarningDialog(TabContents* tab_contents) {
   browser::ShowRepostFormWarningDialog(GetNativeHandle(), tab_contents);
 }
 
-void BrowserView::ShowContentSettingsWindow(ContentSettingsType content_type,
-                                            Profile* profile) {
-  browser::ShowContentSettingsWindow(GetNativeHandle(), content_type, profile);
-}
-
 void BrowserView::ShowCollectedCookiesDialog(TabContents* tab_contents) {
   browser::ShowCollectedCookiesDialog(GetNativeHandle(), tab_contents);
 }

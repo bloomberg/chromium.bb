@@ -171,7 +171,7 @@ void TabContentsDelegate::ShowRepostFormWarningDialog(
     TabContents* tab_contents) {
 }
 
-void TabContentsDelegate::ShowContentSettingsWindow(
+void TabContentsDelegate::ShowContentSettingsPage(
     ContentSettingsType content_type) {
 }
 

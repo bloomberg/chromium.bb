@@ -3194,8 +3194,7 @@ void Browser::ShowRepostFormWarningDialog(TabContents *tab_contents) {
   window()->ShowRepostFormWarningDialog(tab_contents);
 }
 
-void Browser::ShowContentSettingsWindow(ContentSettingsType content_type) {
-  // TODO(jhawkins): Remove BrowserWindow::ShowContentSettingsWindow.
+void Browser::ShowContentSettingsPage(ContentSettingsType content_type) {
   ShowOptionsTab(
       chrome::kContentSettingsExceptionsSubPage + std::string(kHashMark) +
       ContentSettingsHandler::ContentSettingsTypeToGroupName(content_type));

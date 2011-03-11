@@ -14,8 +14,6 @@
 #include "chrome/browser/ui/gtk/collected_cookies_gtk.h"
 #include "chrome/browser/ui/gtk/edit_search_engine_dialog.h"
 #include "chrome/browser/ui/gtk/keyword_editor_view.h"
-#include "chrome/browser/ui/gtk/options/content_settings_window_gtk.h"
-#include "chrome/browser/ui/gtk/options/passwords_exceptions_window_gtk.h"
 #include "chrome/browser/ui/gtk/repost_form_warning_gtk.h"
 #include "chrome/browser/ui/gtk/task_manager_gtk.h"
 #include "chrome/browser/ui/options/options_window.h"
@@ -30,10 +28,6 @@ void ShowClearBrowsingDataView(views::Widget* parent,
                                Profile* profile) {
   ClearBrowsingDataDialogGtk::Show(GTK_WINDOW(parent->GetNativeView()),
                                    profile);
-}
-
-void ShowPasswordsExceptionsWindowView(Profile* profile) {
-  ShowPasswordsExceptionsWindow(profile);
 }
 
 void ShowKeywordEditorView(Profile* profile) {
@@ -58,12 +52,6 @@ void EditSearchEngine(gfx::NativeWindow parent,
 void ShowRepostFormWarningDialog(gfx::NativeWindow parent_window,
                                  TabContents* tab_contents) {
   new RepostFormWarningGtk(GTK_WINDOW(parent_window), tab_contents);
-}
-
-void ShowContentSettingsWindow(gfx::NativeWindow parent_window,
-                               ContentSettingsType content_type,
-                               Profile* profile) {
-  ContentSettingsWindowGtk::Show(parent_window, content_type, profile);
 }
 
 void ShowCollectedCookiesDialog(gfx::NativeWindow parent_window,

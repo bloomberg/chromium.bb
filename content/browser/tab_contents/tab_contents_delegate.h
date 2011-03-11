@@ -269,8 +269,8 @@ class TabContentsDelegate : public AutomationResourceRoutingDelegate {
   // Shows the repost form confirmation dialog box.
   virtual void ShowRepostFormWarningDialog(TabContents* tab_contents);
 
-  // Shows the Content Settings dialog for a given content type.
-  virtual void ShowContentSettingsWindow(ContentSettingsType content_type);
+  // Shows the Content Settings page for a given content type.
+  virtual void ShowContentSettingsPage(ContentSettingsType content_type);
 
   // Shows the cookies collected in the tab contents.
   virtual void ShowCollectedCookiesDialog(TabContents* tab_contents);

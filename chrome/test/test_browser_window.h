@@ -78,8 +78,6 @@ class TestBrowserWindow : public BrowserWindow {
   virtual DownloadShelf* GetDownloadShelf();
   virtual void ShowReportBugDialog() {}
   virtual void ShowRepostFormWarningDialog(TabContents* tab_contents) {}
-  virtual void ShowContentSettingsWindow(ContentSettingsType content_type,
-                                         Profile* profile) {}
   virtual void ShowCollectedCookiesDialog(TabContents* tab_contents) {}
   virtual void ShowProfileErrorDialog(int message_id) {}
   virtual void ShowThemeInstallBubble() {}

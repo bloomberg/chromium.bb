@@ -1422,10 +1422,8 @@ void RenderViewContextMenu::ExecuteCommand(int id) {
     }
 
     case IDC_CONTENT_CONTEXT_LANGUAGE_SETTINGS:
-      ShowFontsLanguagesWindow(
-          platform_util::GetTopLevel(
-              source_tab_contents_->GetContentNativeView()),
-          LANGUAGES_PAGE, profile_);
+      OpenURL(GURL(chrome::kLanguageOptionsSubPage), NEW_FOREGROUND_TAB,
+              PageTransition::LINK);
       break;
 
     case IDC_SPELLPANEL_TOGGLE:

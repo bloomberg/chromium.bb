@@ -328,12 +328,6 @@ void BrowserWindowCocoa::ShowRepostFormWarningDialog(
   RepostFormWarningMac::Create(GetNativeHandle(), tab_contents);
 }
 
-void BrowserWindowCocoa::ShowContentSettingsWindow(
-    ContentSettingsType settings_type,
-    Profile* profile) {
-  NOTIMPLEMENTED();
-}
-
 void BrowserWindowCocoa::ShowCollectedCookiesDialog(TabContents* tab_contents) {
   // Deletes itself on close.
   new CollectedCookiesMac(GetNativeHandle(), tab_contents);

@@ -98,8 +98,6 @@ class BrowserWindowGtk : public BrowserWindow,
   virtual bool IsDownloadShelfVisible() const;
   virtual DownloadShelf* GetDownloadShelf();
   virtual void ShowRepostFormWarningDialog(TabContents* tab_contents);
-  virtual void ShowContentSettingsWindow(ContentSettingsType content_type,
-                                         Profile* profile);
   virtual void ShowCollectedCookiesDialog(TabContents* tab_contents);
   virtual void ShowProfileErrorDialog(int message_id);
   virtual void ShowThemeInstallBubble();

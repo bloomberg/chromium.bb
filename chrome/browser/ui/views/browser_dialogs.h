@@ -71,10 +71,6 @@ views::Window* ShowAboutChromeView(gfx::NativeWindow parent,
 // Creates and returns a find bar for the given browser window. See FindBarWin.
 FindBar* CreateFindBar(BrowserView* browser_view);
 
-// Shows the "Save passwords and exceptions" dialog.
-// See PasswordsExceptionsWindowView.
-void ShowPasswordsExceptionsWindowView(Profile* profile);
-
 // Shows the keyword editor. See KeywordEditorView.
 void ShowKeywordEditorView(Profile* profile);
 
@@ -102,11 +98,6 @@ void EditSearchEngine(gfx::NativeWindow parent,
 // Shows the repost form confirmation dialog box.
 void ShowRepostFormWarningDialog(gfx::NativeWindow parent_window,
                                  TabContents* tab_contents);
-
-// Shows the content settings dialog box.
-void ShowContentSettingsWindow(gfx::NativeWindow parent_window,
-                               ContentSettingsType content_type,
-                               Profile* profile);
 
 // Shows the collected cookies dialog box.
 void ShowCollectedCookiesDialog(gfx::NativeWindow parent_window,

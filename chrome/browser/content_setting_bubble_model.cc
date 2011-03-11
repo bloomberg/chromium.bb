@@ -120,7 +120,7 @@ class ContentSettingTitleAndLinkModel : public ContentSettingBubbleModel {
 
   virtual void OnManageLinkClicked() {
     if (tab_contents())
-      tab_contents()->delegate()->ShowContentSettingsWindow(content_type());
+      tab_contents()->delegate()->ShowContentSettingsPage(content_type());
   }
 };
 

@@ -11,6 +11,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/notifications/balloon_collection.h"
+#include "chrome/browser/notifications/balloon_host.h"
 #include "chrome/browser/notifications/desktop_notification_service.h"
 #include "chrome/browser/notifications/notification.h"
 #include "chrome/browser/notifications/notification_ui_manager.h"
@@ -20,12 +21,9 @@
 #include "chrome/common/content_settings_types.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/url_constants.h"
+#include "content/browser/tab_contents/tab_contents.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
-
-#if defined(OS_WIN)
-#include "chrome/browser/ui/views/browser_dialogs.h"
-#endif  // OS_WIN
 
 // Menu commands
 const int kTogglePermissionCommand = 0;
@@ -154,8 +152,8 @@ bool NotificationOptionsMenuModel::IsItemForCommandIdDynamic(int command_id)
 
 string16 NotificationOptionsMenuModel::GetLabelForCommandId(int command_id)
     const {
-  // TODO(tfarina,johnnyg): Removed this code if we decide to close
-  // notifications after permissions are revoked.
+  // TODO(tfarina,johnnyg): Remove this code if we decide to close notifications
+  // after permissions are revoked.
   if (command_id == kTogglePermissionCommand ||
       command_id == kToggleExtensionCommand) {
     const Notification& notification = balloon_->notification();
@@ -236,21 +234,10 @@ void NotificationOptionsMenuModel::ExecuteCommand(int command_id) {
       break;
     }
     case kOpenContentSettingsCommand: {
-      Browser* browser = BrowserList::GetLastActive();
-      if (browser) {
-        static_cast<TabContentsDelegate*>(browser)->ShowContentSettingsWindow(
-            CONTENT_SETTINGS_TYPE_NOTIFICATIONS);
-      } else {
-#if defined(OS_WIN)
-        if (CommandLine::ForCurrentProcess()->HasSwitch(
-                switches::kChromeFrame)) {
-          // We may not have a browser if this is a chrome frame process.
-          browser::ShowContentSettingsWindow(NULL,
-                                             CONTENT_SETTINGS_TYPE_DEFAULT,
-                                             balloon_->profile());
-        }
-#endif  // OS_WIN
-      }
+      TabContents* tab_contents =
+          balloon_->view()->GetHost()->associated_tab_contents();
+      tab_contents->delegate()->ShowContentSettingsPage(
+          CONTENT_SETTINGS_TYPE_NOTIFICATIONS);
       break;
     }
     default:

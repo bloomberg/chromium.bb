@@ -284,8 +284,6 @@ class BrowserView : public BrowserBubbleHost,
   virtual bool IsDownloadShelfVisible() const OVERRIDE;
   virtual DownloadShelf* GetDownloadShelf() OVERRIDE;
   virtual void ShowRepostFormWarningDialog(TabContents* tab_contents) OVERRIDE;
-  virtual void ShowContentSettingsWindow(ContentSettingsType content_type,
-                                         Profile* profile) OVERRIDE;
   virtual void ShowCollectedCookiesDialog(TabContents* tab_contents) OVERRIDE;
   virtual void ShowProfileErrorDialog(int message_id) OVERRIDE;
   virtual void ShowThemeInstallBubble() OVERRIDE;
