@@ -62,8 +62,8 @@ void OmxVideoDecoder::Initialize(DemuxerStream* demuxer_stream,
   }
   AVStream* av_stream = av_stream_provider->GetAVStream();
 
-  int width = av_stream->codec->coded_width;
-  int height = av_stream->codec->coded_height;
+  int width = av_stream->codec->width;
+  int height = av_stream->codec->height;
   if (width > Limits::kMaxDimension ||
       height > Limits::kMaxDimension ||
       (width * height) > Limits::kMaxCanvas) {
@@ -72,12 +72,24 @@ void OmxVideoDecoder::Initialize(DemuxerStream* demuxer_stream,
     return;
   }
 
-  VideoCodecConfig config(CodecIDToVideoCodec(av_stream->codec->codec_id),
-                          width, height,
-                          av_stream->r_frame_rate.num,
-                          av_stream->r_frame_rate.den,
-                          av_stream->codec->extradata,
-                          av_stream->codec->extradata_size);
+  VideoCodecConfig config;
+  switch (av_stream->codec->codec_id) {
+    case CODEC_ID_VC1:
+      config.codec = kCodecVC1; break;
+    case CODEC_ID_H264:
+      config.codec = kCodecH264; break;
+    case CODEC_ID_THEORA:
+      config.codec = kCodecTheora; break;
+    case CODEC_ID_MPEG2VIDEO:
+      config.codec = kCodecMPEG2; break;
+    case CODEC_ID_MPEG4:
+      config.codec = kCodecMPEG4; break;
+    default:
+      NOTREACHED();
+  }
+  config.opaque_context = NULL;
+  config.width = width;
+  config.height = height;
   decode_engine_->Initialize(message_loop_, this, NULL, config);
 }
 

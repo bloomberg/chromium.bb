@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -23,8 +23,6 @@ static const int kDecoderId = 51;
 static const int kVideoFrames = 3;
 static const int kWidth = 320;
 static const int kHeight = 240;
-static const int kFrameRateNumerator = 25;
-static const int kFrameRateDenominator = 1;
 static const int kTransportBufferSize = 1024;
 
 ACTION_P(SimulateAllocateVideoFrames, frames) {
@@ -130,14 +128,10 @@ class GpuVideoDecoderHostTest : public testing::Test,
         .WillOnce(SendMessage(decoder_host_.get(), msg2));
     EXPECT_CALL(*this, OnInitializeComplete(_));
 
-    media::VideoCodecConfig config(
-        media::kCodecH264,
-        kWidth,
-        kHeight,
-        kFrameRateNumerator,
-        kFrameRateDenominator,
-        NULL,
-        0);
+    media::VideoCodecConfig config;
+    config.codec = media::kCodecH264;
+    config.width = kWidth;
+    config.height = kHeight;
     decoder_host_->Initialize(&message_loop_, this, &context_, config);
     message_loop_.RunAllPending();
   }

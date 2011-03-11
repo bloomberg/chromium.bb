@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -90,8 +90,8 @@ void OmxVideoDecodeEngine::Initialize(
   message_loop_ = message_loop;
   event_handler_ = event_handler;
 
-  width_ = config.width();
-  height_ = config.height();
+  width_ = config.width;
+  height_ = config.height;
 
   // TODO(wjia): Find the right way to determine the codec type.
   OmxConfigurator::MediaFormat input_format, output_format;
@@ -115,8 +115,8 @@ void OmxVideoDecodeEngine::Initialize(
       uses_egl_image_ ? VideoFrame::TYPE_GL_TEXTURE
                       : VideoFrame::TYPE_SYSTEM_MEMORY;
   info.stream_info.surface_format = GetSurfaceFormat();
-  info.stream_info.surface_width = config.width();
-  info.stream_info.surface_height = config.height();
+  info.stream_info.surface_width = config.width;
+  info.stream_info.surface_height = config.height;
   event_handler_->OnInitializeComplete(info);
 }
 

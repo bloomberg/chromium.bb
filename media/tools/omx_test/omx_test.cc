@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -170,15 +170,26 @@ class TestApp : public base::RefCountedThreadSafe<TestApp>,
   void Run() {
     StartProfiler();
 
-    media::VideoCodecConfig config(
-        media::CodecIDToVideoCodec(av_stream_->codec->codec_id),
-        av_stream_->codec->coded_width,
-        av_stream_->codec->coded_height,
-        av_stream_->r_frame_rate.num,
-        av_stream_->r_frame_rate.den,
-        av_stream_->codec->extradata,
-        av_stream_->codec->extradata_size);
-
+    // Setup the |engine_| with the message loop of the current thread. Also
+    // setup codec format and callbacks.
+    media::VideoCodecConfig config;
+    switch (av_stream_->codec->codec_id) {
+      case CODEC_ID_VC1:
+        config.codec = media::kCodecVC1; break;
+      case CODEC_ID_H264:
+        config.codec = media::kCodecH264; break;
+      case CODEC_ID_THEORA:
+        config.codec = media::kCodecTheora; break;
+      case CODEC_ID_MPEG2VIDEO:
+        config.codec = media::kCodecMPEG2; break;
+      case CODEC_ID_MPEG4:
+        config.codec = media::kCodecMPEG4; break;
+      default:
+        NOTREACHED(); break;
+    }
+    config.opaque_context = NULL;
+    config.width = av_stream_->codec->width;
+    config.height = av_stream_->codec->height;
     engine_.reset(new OmxVideoDecodeEngine());
     engine_->Initialize(&message_loop_, this, NULL, config);
 

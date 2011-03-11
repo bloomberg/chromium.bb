@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -14,6 +14,7 @@
 // FFmpeg types.
 struct AVCodecContext;
 struct AVFrame;
+struct AVStream;
 
 namespace media {
 
@@ -35,20 +36,20 @@ class FFmpegVideoDecodeEngine : public VideoDecodeEngine {
   virtual void Flush();
   virtual void Seek();
 
-  VideoFrame::Format GetSurfaceFormat() const;
+  virtual AVCodecContext* codec_context() const;
 
+  virtual void SetCodecContextForTest(AVCodecContext* context);
+
+  VideoFrame::Format GetSurfaceFormat() const;
  private:
   void DecodeFrame(scoped_refptr<Buffer> buffer);
   void ReadInput();
   void TryToFinishPendingFlush();
 
   AVCodecContext* codec_context_;
+  AVStream* av_stream_;
   scoped_ptr_malloc<AVFrame, ScopedPtrAVFree> av_frame_;
   VideoDecodeEngine::EventHandler* event_handler_;
-
-  // Frame rate of the video.
-  int frame_rate_numerator_;
-  int frame_rate_denominator_;
 
   // Whether direct rendering is used.
   bool direct_rendering_;

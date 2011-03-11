@@ -28,7 +28,6 @@ class MockFFmpeg {
   MOCK_METHOD1(AVCodecClose, int(AVCodecContext* avctx));
   MOCK_METHOD2(AVCodecThreadInit, int(AVCodecContext* avctx, int threads));
   MOCK_METHOD1(AVCodecFlushBuffers, void(AVCodecContext* avctx));
-  MOCK_METHOD0(AVCodecAllocContext, AVCodecContext*());
   MOCK_METHOD0(AVCodecAllocFrame, AVFrame*());
   MOCK_METHOD4(AVCodecDecodeVideo2,
                int(AVCodecContext* avctx, AVFrame* picture,

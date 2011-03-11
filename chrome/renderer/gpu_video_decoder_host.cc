@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -19,13 +19,12 @@ GpuVideoDecoderHost::GpuVideoDecoderHost(MessageRouter* router,
       message_loop_(NULL),
       event_handler_(NULL),
       context_(NULL),
-      width_(0),
-      height_(0),
       state_(kStateUninitialized),
       decoder_host_id_(decoder_host_id),
       decoder_id_(0),
       input_buffer_busy_(false),
       current_frame_id_(0) {
+  memset(&config_, 0, sizeof(config_));
 }
 
 GpuVideoDecoderHost::~GpuVideoDecoderHost() {}
@@ -66,21 +65,33 @@ bool GpuVideoDecoderHost::OnMessageReceived(const IPC::Message& msg) {
 void GpuVideoDecoderHost::Initialize(
     MessageLoop* message_loop, VideoDecodeEngine::EventHandler* event_handler,
     media::VideoDecodeContext* context, const media::VideoCodecConfig& config) {
+  if (MessageLoop::current() != message_loop) {
+    message_loop->PostTask(
+        FROM_HERE,
+        NewRunnableMethod(this, &GpuVideoDecoderHost::Initialize, message_loop,
+                          event_handler, context, config));
+    return;
+  }
+
+  // Initialization operations should be performed on the message loop assigned.
+  // Save the parameters and post a task to complete initialization.
   DCHECK_EQ(kStateUninitialized, state_);
   DCHECK(!message_loop_);
   message_loop_ = message_loop;
   event_handler_ = event_handler;
   context_ = context;
-  width_ = config.width();
-  height_ = config.height();
+  config_ = config;
 
-  if (MessageLoop::current() != message_loop) {
-    message_loop->PostTask(
-        FROM_HERE,
-        NewRunnableMethod(this, &GpuVideoDecoderHost::CreateVideoDecoder));
+  // Add the route so we'll receive messages.
+  router_->AddRoute(decoder_host_id_, this);
+
+  if (!ipc_sender_->Send(
+          new GpuChannelMsg_CreateVideoDecoder(context_route_id_,
+                                               decoder_host_id_))) {
+    LOG(ERROR) << "GpuChannelMsg_CreateVideoDecoder failed";
+    event_handler_->OnError();
     return;
   }
-  CreateVideoDecoder();
 }
 
 void GpuVideoDecoderHost::ConsumeVideoSample(scoped_refptr<Buffer> buffer) {
@@ -179,29 +190,14 @@ void GpuVideoDecoderHost::Seek() {
   }
 }
 
-void GpuVideoDecoderHost::CreateVideoDecoder() {
-  DCHECK_EQ(message_loop_, MessageLoop::current());
-
-  // Add the route so we'll receive messages.
-  router_->AddRoute(decoder_host_id_, this);
-
-  if (!ipc_sender_->Send(
-          new GpuChannelMsg_CreateVideoDecoder(context_route_id_,
-                                               decoder_host_id_))) {
-    LOG(ERROR) << "GpuChannelMsg_CreateVideoDecoder failed";
-    event_handler_->OnError();
-    return;
-  }
-}
-
 void GpuVideoDecoderHost::OnCreateVideoDecoderDone(int32 decoder_id) {
   DCHECK_EQ(message_loop_, MessageLoop::current());
   decoder_id_ = decoder_id;
 
   // TODO(hclam): Initialize |param| with the right values.
   GpuVideoDecoderInitParam param;
-  param.width = width_;
-  param.height = height_;
+  param.width = config_.width;
+  param.height = config_.height;
 
   if (!ipc_sender_->Send(
           new GpuVideoDecoderMsg_Initialize(decoder_id, param))) {
@@ -229,8 +225,8 @@ void GpuVideoDecoderHost::OnInitializeDone(
   // TODO(hclam): Need to fill in more information.
   media::VideoCodecInfo info;
   info.success = success;
-  info.stream_info.surface_width = width_;
-  info.stream_info.surface_height = height_;
+  info.stream_info.surface_width = config_.width;
+  info.stream_info.surface_height = config_.height;
   event_handler_->OnInitializeComplete(info);
 }
 

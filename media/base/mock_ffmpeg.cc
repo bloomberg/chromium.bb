@@ -120,10 +120,6 @@ void avcodec_flush_buffers(AVCodecContext* avctx) {
   return MockFFmpeg::get()->AVCodecFlushBuffers(avctx);
 }
 
-AVCodecContext* avcodec_alloc_context() {
-  return MockFFmpeg::get()->AVCodecAllocContext();
-}
-
 AVFrame* avcodec_alloc_frame() {
   return MockFFmpeg::get()->AVCodecAllocFrame();
 }

@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,7 +6,6 @@
 #define MEDIA_VIDEO_VIDEO_DECODE_ENGINE_H_
 
 #include "base/callback.h"
-#include "base/scoped_ptr.h"
 #include "media/base/video_frame.h"
 
 class MessageLoop;
@@ -19,7 +18,6 @@ class VideoDecodeContext;
 struct PipelineStatistics;
 
 enum VideoCodec {
-  kUnknown,
   kCodecH264,
   kCodecVC1,
   kCodecMPEG2,
@@ -28,38 +26,26 @@ enum VideoCodec {
   kCodecVP8,
 };
 
-class VideoCodecConfig {
- public:
-  VideoCodecConfig(VideoCodec codec, int width, int height,
-                   int frame_rate_numerator, int frame_rate_denominator,
-                   uint8* extra_data, size_t extra_data_size);
-  ~VideoCodecConfig();
+static const uint32 kProfileDoNotCare = static_cast<uint32>(-1);
+static const uint32 kLevelDoNotCare = static_cast<uint32>(-1);
 
-  VideoCodec codec() const;
-  int width() const;
-  int height() const;
-  int frame_rate_numerator() const;
-  int frame_rate_denominator() const;
-  uint8* extra_data() const;
-  size_t extra_data_size() const;
+struct VideoCodecConfig {
+  VideoCodecConfig();
 
- private:
-  VideoCodec codec_;
+  VideoCodec codec;
+
+  // TODO(jiesun): video profile and level are specific to individual codec.
+  // Define enum to.
+  uint32 profile;
+  uint32 level;
 
   // Container's concept of width and height of this video.
-  int width_;
-  int height_;
+  int32 width;
+  int32 height;  // TODO(jiesun): Do we allow height to be negative to
+                  // indicate output is upside-down?
 
-  // Frame rate in seconds expressed as a fraction.
-  // TODO(scherkus): fairly certain decoders don't require frame rates.
-  int frame_rate_numerator_;
-  int frame_rate_denominator_;
-
-  // Optional byte data requied to initialize video decoders.
-  scoped_array<uint8> extra_data_;
-  size_t extra_data_size_;
-
-  DISALLOW_COPY_AND_ASSIGN(VideoCodecConfig);
+  // FFMPEG's will use this to pass AVStream. Otherwise, we should remove this.
+  void* opaque_context;
 };
 
 struct VideoStreamInfo {

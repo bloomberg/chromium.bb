@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -75,9 +75,6 @@ class GpuVideoDecoderHost : public media::VideoDecodeEngine,
     kStateFlushing,
   };
 
-  // Takes care of sending IPC message to create a video decoder.
-  void CreateVideoDecoder();
-
   // Handlers for messages received from the GPU process.
   void OnCreateVideoDecoderDone(int32 decoder_id);
   void OnInitializeDone(const GpuVideoDecoderInitDoneParam& param);
@@ -127,9 +124,8 @@ class GpuVideoDecoderHost : public media::VideoDecodeEngine,
   // A Context for allocating video frame textures.
   media::VideoDecodeContext* context_;
 
-  // Dimensions of the video.
-  int width_;
-  int height_;
+  // Hold information about GpuVideoDecoder configuration.
+  media::VideoCodecConfig config_;
 
   // Current state of video decoder.
   GpuVideoDecoderHostState state_;

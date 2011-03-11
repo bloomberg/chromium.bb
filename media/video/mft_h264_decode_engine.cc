@@ -151,12 +151,11 @@ const GUID ConvertVideoFrameFormatToGuid(VideoFrame::Format format) {
 MftH264DecodeEngine::MftH264DecodeEngine(bool use_dxva)
     : use_dxva_(use_dxva),
       state_(kUninitialized),
-      width_(0),
-      height_(0),
       event_handler_(NULL),
       context_(NULL) {
   memset(&input_stream_info_, 0, sizeof(input_stream_info_));
   memset(&output_stream_info_, 0, sizeof(output_stream_info_));
+  memset(&config_, 0, sizeof(config_));
   memset(&info_, 0, sizeof(info_));
 }
 
@@ -178,6 +177,7 @@ void MftH264DecodeEngine::Initialize(
     return;
   }
   context_ = context;
+  config_ = config;
   event_handler_ = event_handler;
   info_.provides_buffers = true;
 
@@ -473,8 +473,8 @@ bool MftH264DecodeEngine::SetDecodeEngineOutputMediaType(const GUID subtype) {
       hr = MFGetAttributeSize(out_media_type, MF_MT_FRAME_SIZE,
           reinterpret_cast<UINT32*>(&info_.stream_info.surface_width),
           reinterpret_cast<UINT32*>(&info_.stream_info.surface_height));
-      width_ = info_.stream_info.surface_width;
-      height_ = info_.stream_info.surface_height;
+      config_.width = info_.stream_info.surface_width;
+      config_.height = info_.stream_info.surface_height;
       if (FAILED(hr)) {
         LOG(ERROR) << "Failed to SetOutputType to |subtype| or obtain "
                    << "width/height " << std::hex << hr;
