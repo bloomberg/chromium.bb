@@ -16,7 +16,7 @@ class P2PSocketHostPosix : public P2PSocketHost {
   virtual ~P2PSocketHostPosix();
 
   virtual bool Init();
-  virtual void Send(P2PSocketAddress socket_address,
+  virtual void Send(const P2PSocketAddress& socket_address,
                     const std::vector<char>& data);
 
  private:

@@ -68,7 +68,7 @@ void ProviderImpl::Stop() {
 }
 
 void ProviderImpl::DoInitializePollingThread(
-    std::vector<DataFetcherFactory> factories) {
+    const std::vector<DataFetcherFactory>& factories) {
   DCHECK(MessageLoop::current() == polling_thread_->message_loop());
 
   typedef std::vector<DataFetcherFactory>::const_iterator Iterator;

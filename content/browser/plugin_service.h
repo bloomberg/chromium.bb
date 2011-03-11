@@ -128,7 +128,7 @@ class PluginService
   bool PrivatePluginAllowedForURL(const FilePath& plugin_path, const GURL& url);
 
   // Safe to be called from any thread.
-  void OverridePluginForTab(OverriddenPlugin plugin);
+  void OverridePluginForTab(const OverriddenPlugin& plugin);
 
   // The UI thread's message loop
   MessageLoop* main_message_loop() { return main_message_loop_; }

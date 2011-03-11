@@ -157,7 +157,8 @@ class BrowserActionButton : public NotificationObserver,
   }
 
   // ImageLoadingTracker::Observer implementation.
-  void OnImageLoaded(SkBitmap* image, ExtensionResource resource, int index) {
+  void OnImageLoaded(SkBitmap* image, const ExtensionResource& resource,
+                     int index) {
     if (image) {
       default_skbitmap_ = *image;
       default_icon_ = gfx::GdkPixbufFromSkBitmap(image);

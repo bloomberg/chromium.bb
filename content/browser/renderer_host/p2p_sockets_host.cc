@@ -41,7 +41,7 @@ bool P2PSocketsHost::OnMessageReceived(const IPC::Message& message,
 
 void P2PSocketsHost::OnCreateSocket(
     const IPC::Message& msg, P2PSocketType type, int socket_id,
-    P2PSocketAddress remote_address) {
+    const P2PSocketAddress& remote_address) {
   if (sockets_.Lookup(socket_id)) {
     LOG(ERROR) << "Received P2PHostMsg_CreateSocket for socket "
         "that already exists.";
@@ -67,7 +67,7 @@ void P2PSocketsHost::OnCreateSocket(
 }
 
 void P2PSocketsHost::OnSend(const IPC::Message& msg, int socket_id,
-                            P2PSocketAddress socket_address,
+                            const P2PSocketAddress& socket_address,
                             const std::vector<char>& data) {
   P2PSocketHost* socket = sockets_.Lookup(socket_id);
   if (!socket) {

@@ -53,7 +53,8 @@ class ImageLoadingTracker : public NotificationObserver {
     // ExtensionResource where the |image| came from and the |index| represents
     // the index of the image just loaded (starts at 0 and increments every
     // time LoadImage is called).
-    virtual void OnImageLoaded(SkBitmap* image, ExtensionResource resource,
+    virtual void OnImageLoaded(SkBitmap* image,
+                               const ExtensionResource& resource,
                                int index) = 0;
   };
 

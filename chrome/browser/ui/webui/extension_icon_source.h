@@ -107,7 +107,7 @@ class ExtensionIconSource : public ChromeURLDataManager::DataSource,
 
   // ImageLoadingTracker::Observer
   virtual void OnImageLoaded(SkBitmap* image,
-                             ExtensionResource resource,
+                             const ExtensionResource& resource,
                              int id);
 
   // Called when the extension doesn't have an icon. We fall back to multiple

@@ -511,7 +511,7 @@ CreateChromeApplicationShortcutView::~CreateChromeApplicationShortcutView() {}
 
 // Called by tracker_ when the app's icon is loaded.
 void CreateChromeApplicationShortcutView::OnImageLoaded(
-    SkBitmap* image, ExtensionResource resource, int index) {
+    SkBitmap* image, const ExtensionResource& resource, int index) {
   if (image->isNull()) {
     NOTREACHED() << "Corrupt image in profile?";
     return;

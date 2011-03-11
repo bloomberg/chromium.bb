@@ -232,7 +232,7 @@ class LocationBarViewGtk : public AutocompleteEditController,
 
     // A callback from ImageLoadingTracker for when the image has loaded.
     virtual void OnImageLoaded(
-        SkBitmap* image, ExtensionResource resource, int index);
+        SkBitmap* image, const ExtensionResource& resource, int index);
 
     // Simulate left mouse click on the page action button.
     void TestActivatePageAction();

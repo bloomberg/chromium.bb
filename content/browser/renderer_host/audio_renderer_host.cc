@@ -12,20 +12,22 @@
 #include "content/browser/renderer_host/audio_sync_reader.h"
 #include "ipc/ipc_logging.h"
 
+namespace {
+
 // The minimum number of samples in a hardware packet.
 // This value is selected so that we can handle down to 5khz sample rate.
-static const int kMinSamplesPerHardwarePacket = 1024;
+const int kMinSamplesPerHardwarePacket = 1024;
 
 // The maximum number of samples in a hardware packet.
 // This value is selected so that we can handle up to 192khz sample rate.
-static const int kMaxSamplesPerHardwarePacket = 64 * 1024;
+const int kMaxSamplesPerHardwarePacket = 64 * 1024;
 
 // This constant governs the hardware audio buffer size, this value should be
 // chosen carefully.
 // This value is selected so that we have 8192 samples for 48khz streams.
-static const int kMillisecondsPerHardwarePacket = 170;
+const int kMillisecondsPerHardwarePacket = 170;
 
-static uint32 SelectSamplesPerPacket(AudioParameters params) {
+uint32 SelectSamplesPerPacket(const AudioParameters& params) {
   // Select the number of samples that can provide at least
   // |kMillisecondsPerHardwarePacket| worth of audio data.
   int samples = kMinSamplesPerHardwarePacket;
@@ -36,6 +38,8 @@ static uint32 SelectSamplesPerPacket(AudioParameters params) {
   }
   return samples;
 }
+
+}  // namespace
 
 AudioRendererHost::AudioEntry::AudioEntry()
     : render_view_id(0),

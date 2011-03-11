@@ -111,7 +111,7 @@ bool PageActionDecoration::OnMousePressed(NSRect frame) {
 }
 
 void PageActionDecoration::OnImageLoaded(
-    SkBitmap* image, ExtensionResource resource, int index) {
+    SkBitmap* image, const ExtensionResource& resource, int index) {
   // We loaded icons()->size() icons, plus one extra if the Page Action had
   // a default icon.
   int total_icons = static_cast<int>(page_action_->icon_paths()->size());

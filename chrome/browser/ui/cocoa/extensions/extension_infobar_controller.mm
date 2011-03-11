@@ -82,7 +82,7 @@ class InfobarBridge : public ExtensionInfoBarDelegate::DelegateObserver,
   // TODO(andybons): The infobar view implementations share a lot of the same
   // code. Come up with a strategy to share amongst them.
   virtual void OnImageLoaded(
-      SkBitmap* image, ExtensionResource resource, int index) {
+      SkBitmap* image, const ExtensionResource& resource, int index) {
     if (!delegate_)
       return;  // The delegate can go away while the image asynchronously loads.
 

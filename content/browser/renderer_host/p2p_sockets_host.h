@@ -24,9 +24,9 @@ class P2PSocketsHost : public BrowserMessageFilter {
 
  private:
   void OnCreateSocket(const IPC::Message& msg, P2PSocketType type,
-                      int socket_id, P2PSocketAddress remote_address);
+                      int socket_id, const P2PSocketAddress& remote_address);
   void OnSend(const IPC::Message& msg, int socket_id,
-              P2PSocketAddress socket_address,
+              const P2PSocketAddress& socket_address,
               const std::vector<char>& data);
   void OnDestroySocket(const IPC::Message& msg, int socket_id);
 

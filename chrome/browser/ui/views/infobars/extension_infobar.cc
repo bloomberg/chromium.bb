@@ -137,7 +137,7 @@ void ExtensionInfoBar::OnExtensionPreferredSizeChanged(ExtensionView* view) {
 }
 
 void ExtensionInfoBar::OnImageLoaded(SkBitmap* image,
-                                     ExtensionResource resource,
+                                     const ExtensionResource& resource,
                                      int index) {
   if (!GetDelegate())
     return;  // The delegate can go away while we asynchronously load images.

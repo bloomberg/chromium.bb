@@ -537,7 +537,7 @@ bool PluginService::PrivatePluginAllowedForURL(const FilePath& plugin_path,
           url.host() == required_url.host());
 }
 
-void PluginService::OverridePluginForTab(OverriddenPlugin plugin) {
+void PluginService::OverridePluginForTab(const OverriddenPlugin& plugin) {
   base::AutoLock auto_lock(overridden_plugins_lock_);
   overridden_plugins_.push_back(plugin);
 }

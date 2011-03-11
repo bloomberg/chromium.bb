@@ -23,7 +23,7 @@ class P2PSocketHost {
   virtual bool Init() = 0;
 
   // Sends |data| on the socket to |socket_address|.
-  virtual void Send(P2PSocketAddress socket_address,
+  virtual void Send(const P2PSocketAddress& socket_address,
                     const std::vector<char>& data) = 0;
 
  protected:

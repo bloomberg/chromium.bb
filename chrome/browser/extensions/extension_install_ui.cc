@@ -208,7 +208,7 @@ void ExtensionInstallUI::SetIcon(SkBitmap* image) {
 }
 
 void ExtensionInstallUI::OnImageLoaded(
-    SkBitmap* image, ExtensionResource resource, int index) {
+    SkBitmap* image, const ExtensionResource& resource, int index) {
   SetIcon(image);
 
   switch (prompt_type_) {

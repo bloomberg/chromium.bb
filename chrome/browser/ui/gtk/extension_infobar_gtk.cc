@@ -29,20 +29,19 @@ ExtensionInfoBarGtk::~ExtensionInfoBarGtk() {
 }
 
 void ExtensionInfoBarGtk::OnImageLoaded(
-    SkBitmap* image, ExtensionResource resource, int index) {
+    SkBitmap* image, const ExtensionResource& resource, int index) {
   if (!delegate_)
     return;  // The delegate can go away while we asynchronously load images.
 
-  ResourceBundle& rb = ResourceBundle::GetSharedInstance();
-
-  SkBitmap* icon;
-  if (!image || image->empty())
-    icon = rb.GetBitmapNamed(IDR_EXTENSIONS_SECTION);
-  else
-    icon = image;
-
-  // TODO(finnur): We now have the icon for the menu button, show the menu
-  // button and layout.
+  // ResourceBundle& rb = ResourceBundle::GetSharedInstance();
+  //
+  // SkBitmap* icon;
+  // if (!image || image->empty())
+  //  icon = rb.GetBitmapNamed(IDR_EXTENSIONS_SECTION);
+  // else
+  //  icon = image;
+  // TODO(finnur): Use the above code.
+  // We now have the icon for the menu button, show the menu button and layout.
 }
 
 void ExtensionInfoBarGtk::BuildWidgets() {

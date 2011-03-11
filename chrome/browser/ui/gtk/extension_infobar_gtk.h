@@ -25,7 +25,7 @@ class ExtensionInfoBarGtk : public InfoBar,
 
   // Overridden from ImageLoadingTracker::Observer:
   virtual void OnImageLoaded(
-      SkBitmap* image, ExtensionResource resource, int index);
+      SkBitmap* image, const ExtensionResource& resource, int index);
 
   // ExtensionViewGtk::Container implementation
   virtual void OnExtensionPreferredSizeChanged(ExtensionViewGtk* view,

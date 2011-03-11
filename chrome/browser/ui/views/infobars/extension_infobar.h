@@ -41,7 +41,7 @@ class ExtensionInfoBar : public InfoBarView,
 
   // ImageLoadingTracker::Observer:
   virtual void OnImageLoaded(SkBitmap* image,
-                             ExtensionResource resource,
+                             const ExtensionResource& resource,
                              int index);
 
   // ExtensionInfoBarDelegate::DelegateObserver:

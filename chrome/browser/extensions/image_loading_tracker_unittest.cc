@@ -28,7 +28,7 @@ class ImageLoadingTrackerTest : public testing::Test,
         io_thread_(BrowserThread::IO) {
   }
 
-  virtual void OnImageLoaded(SkBitmap* image, ExtensionResource resource,
+  virtual void OnImageLoaded(SkBitmap* image, const ExtensionResource& resource,
                              int index) {
     image_loaded_count_++;
     if (quit_in_image_loaded_)

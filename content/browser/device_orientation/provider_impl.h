@@ -43,7 +43,8 @@ class ProviderImpl : public Provider {
 
   // Method for finding a suitable DataFetcher and starting the polling.
   // Runs on the polling_thread_.
-  void DoInitializePollingThread(std::vector<DataFetcherFactory> factories);
+  void DoInitializePollingThread(
+      const std::vector<DataFetcherFactory>& factories);
   void ScheduleInitializePollingThread();
 
   // Method for polling a DataFetcher. Runs on the polling_thread_.

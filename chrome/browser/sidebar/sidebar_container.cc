@@ -112,7 +112,7 @@ bool SidebarContainer::IsPopup(const TabContents* source) const {
 }
 
 void SidebarContainer::OnImageLoaded(SkBitmap* image,
-                                     ExtensionResource resource,
+                                     const ExtensionResource& resource,
                                      int index) {
   if (image && use_default_icon_) {
     *icon_ = *image;

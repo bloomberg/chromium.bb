@@ -35,7 +35,7 @@ class PageActionDecoration : public ImageDecoration,
 
   // Overridden from |ImageLoadingTracker::Observer|.
   virtual void OnImageLoaded(
-      SkBitmap* image, ExtensionResource resource, int index);
+      SkBitmap* image, const ExtensionResource& resource, int index);
 
   // Called to notify the Page Action that it should determine whether
   // to be visible or hidden. |contents| is the TabContents that is

@@ -83,7 +83,7 @@ class ExtensionWebUIImageLoadingTracker : public ImageLoadingTracker::Observer {
     }
   }
 
-  virtual void OnImageLoaded(SkBitmap* image, ExtensionResource resource,
+  virtual void OnImageLoaded(SkBitmap* image, const ExtensionResource& resource,
                              int index) {
     if (image) {
       std::vector<unsigned char> image_data;

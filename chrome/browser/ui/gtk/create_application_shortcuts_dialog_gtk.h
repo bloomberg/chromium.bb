@@ -107,7 +107,7 @@ class CreateChromeApplicationShortcutsDialogGtk
   // load the app's icon.  This method recieves the icon, and adds
   // it to the "Create Shortcut" dailog box.
   virtual void OnImageLoaded(SkBitmap* image,
-                             ExtensionResource resource,
+                             const ExtensionResource& resource,
                              int index);
 
  private:

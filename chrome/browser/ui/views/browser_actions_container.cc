@@ -114,7 +114,7 @@ void BrowserActionButton::ButtonPressed(views::Button* sender,
 }
 
 void BrowserActionButton::OnImageLoaded(SkBitmap* image,
-                                        ExtensionResource resource,
+                                        const ExtensionResource& resource,
                                         int index) {
   if (image)
     default_icon_ = *image;

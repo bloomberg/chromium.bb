@@ -49,7 +49,7 @@ class PageActionImageView : public views::ImageView,
 
   // Overridden from ImageLoadingTracker.
   virtual void OnImageLoaded(
-      SkBitmap* image, ExtensionResource resource, int index);
+      SkBitmap* image, const ExtensionResource& resource, int index);
 
   // Overridden from ExtensionContextMenuModelModel::Delegate
   virtual void InspectPopup(ExtensionAction* action);

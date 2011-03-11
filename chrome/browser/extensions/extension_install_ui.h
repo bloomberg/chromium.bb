@@ -83,7 +83,7 @@ class ExtensionInstallUI : public ImageLoadingTracker::Observer {
 
   // ImageLoadingTracker::Observer overrides.
   virtual void OnImageLoaded(
-      SkBitmap* image, ExtensionResource resource, int index);
+      SkBitmap* image, const ExtensionResource& resource, int index);
 
   // Show an infobar for a newly-installed theme.  previous_theme_id
   // should be empty if the previous theme was the system/default

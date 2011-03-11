@@ -2787,7 +2787,8 @@ const Extension* TabContents::GetExtensionContaining(const GURL& url) {
       extension : extensions_service->GetExtensionByWebExtent(url);
 }
 
-void TabContents::OnImageLoaded(SkBitmap* image, ExtensionResource resource,
+void TabContents::OnImageLoaded(SkBitmap* image,
+                                const ExtensionResource& resource,
                                 int index) {
   if (image) {
     extension_app_icon_ = *image;

@@ -54,7 +54,7 @@ class BackgroundApplicationListModel::Application
 
   // Invoked when a request icon is available.
   virtual void OnImageLoaded(SkBitmap* image,
-                             ExtensionResource resource,
+                             const ExtensionResource& resource,
                              int index);
 
   // Uses the FILE thread to request this extension's icon, sized
@@ -120,7 +120,7 @@ BackgroundApplicationListModel::Application::Application(
 
 void BackgroundApplicationListModel::Application::OnImageLoaded(
     SkBitmap* image,
-    ExtensionResource resource,
+    const ExtensionResource& resource,
     int index) {
   if (!image)
     return;

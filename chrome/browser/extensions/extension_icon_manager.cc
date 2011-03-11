@@ -79,7 +79,7 @@ void ExtensionIconManager::RemoveIcon(const std::string& extension_id) {
 }
 
 void ExtensionIconManager::OnImageLoaded(SkBitmap* image,
-                                         ExtensionResource resource,
+                                         const ExtensionResource& resource,
                                          int index) {
   if (!image)
     return;

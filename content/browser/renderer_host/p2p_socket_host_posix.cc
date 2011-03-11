@@ -71,7 +71,8 @@ bool GetLocalAddress(sockaddr_in* addr) {
   return found;
 }
 
-bool SocketAddressToSockAddr(P2PSocketAddress address, sockaddr_in* addr) {
+bool SocketAddressToSockAddr(const P2PSocketAddress& address,
+                             sockaddr_in* addr) {
   // TODO(sergeyu): Add IPv6 support.
   if (address.address.size() != 4) {
     return false;
@@ -179,22 +180,19 @@ bool P2PSocketHostPosix::Init() {
 }
 
 void P2PSocketHostPosix::OnError() {
-  if (socket_ != 0) {
+  if (socket_ > 0)
     close(socket_);
-    socket_ = 0;
-  }
+  socket_ = 0;
 
-  if (state_ == STATE_UNINITIALIZED || state_ == STATE_OPEN) {
+  if (state_ == STATE_UNINITIALIZED || state_ == STATE_OPEN)
     host_->Send(new P2PMsg_OnError(routing_id_, id_));
-  }
 
   state_ = STATE_ERROR;
 }
 
 void P2PSocketHostPosix::DidCompleteRead() {
-  if (state_ != STATE_OPEN) {
+  if (state_ != STATE_OPEN)
     return;
-  }
 
   std::vector<char> data;
   data.resize(4096);
@@ -224,7 +222,7 @@ void P2PSocketHostPosix::DidCompleteRead() {
   }
 }
 
-void P2PSocketHostPosix::Send(P2PSocketAddress socket_address,
+void P2PSocketHostPosix::Send(const P2PSocketAddress& socket_address,
                               const std::vector<char>& data) {
   sockaddr_in addr;
   SocketAddressToSockAddr(socket_address, &addr);

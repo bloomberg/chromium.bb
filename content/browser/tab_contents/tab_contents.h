@@ -1024,7 +1024,7 @@ class TabContents : public PageNavigator,
   void UpdateExtensionAppIcon(const Extension* extension);
 
   // ImageLoadingTracker::Observer.
-  virtual void OnImageLoaded(SkBitmap* image, ExtensionResource resource,
+  virtual void OnImageLoaded(SkBitmap* image, const ExtensionResource& resource,
                              int index);
 
   // NetworkChangeNotifier::OnlineStateObserver:

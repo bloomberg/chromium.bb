@@ -34,7 +34,7 @@ class ExtensionIconManager : public ImageLoadingTracker::Observer {
   void RemoveIcon(const std::string& extension_id);
 
   // Implements the ImageLoadingTracker::Observer interface.
-  virtual void OnImageLoaded(SkBitmap* image, ExtensionResource resource,
+  virtual void OnImageLoaded(SkBitmap* image, const ExtensionResource& resource,
                              int index);
 
   void set_monochrome(bool value) { monochrome_ = value; }

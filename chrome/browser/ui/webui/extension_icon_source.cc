@@ -233,7 +233,7 @@ void ExtensionIconSource::OnFaviconDataAvailable(
 }
 
 void ExtensionIconSource::OnImageLoaded(SkBitmap* image,
-                                        ExtensionResource resource,
+                                        const ExtensionResource& resource,
                                         int index) {
   int request_id = tracker_map_[index];
   tracker_map_.erase(tracker_map_.find(index));

@@ -1542,7 +1542,7 @@ void LocationBarViewGtk::PageActionViewGtk::UpdateVisibility(
 }
 
 void LocationBarViewGtk::PageActionViewGtk::OnImageLoaded(
-    SkBitmap* image, ExtensionResource resource, int index) {
+    SkBitmap* image, const ExtensionResource& resource, int index) {
   // We loaded icons()->size() icons, plus one extra if the page action had
   // a default icon.
   int total_icons = static_cast<int>(page_action_->icon_paths()->size());

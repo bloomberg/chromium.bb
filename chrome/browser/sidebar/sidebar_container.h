@@ -117,7 +117,7 @@ class SidebarContainer
 
   // Overridden from ImageLoadingTracker::Observer.
   virtual void OnImageLoaded(SkBitmap* image,
-                             ExtensionResource resource,
+                             const ExtensionResource& resource,
                              int index);
 
   // Returns an extension this sidebar belongs to.
