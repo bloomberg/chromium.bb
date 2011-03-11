@@ -8,6 +8,7 @@
 #include "chrome/browser/bookmarks/bookmark_model.h"
 #include "chrome/browser/custom_handlers/protocol_handler_registry.h"
 #include "chrome/browser/custom_handlers/register_protocol_handler_infobar_delegate.h"
+#include "chrome/browser/file_select_helper.h"
 #include "chrome/browser/password_manager/password_manager.h"
 #include "chrome/browser/password_manager_delegate_impl.h"
 #include "chrome/browser/prefs/pref_service.h"
@@ -56,6 +57,8 @@ TabContentsWrapper::TabContentsWrapper(TabContents* contents)
   registrar_.Add(this, NotificationType::BOOKMARK_MODEL_LOADED,
                  NotificationService::AllSources());
 
+  // Create the per-tab observers.
+  file_select_observer_.reset(new FileSelectObserver(contents));
   prerender_observer_.reset(new prerender::PrerenderObserver(contents));
 }
 

@@ -31,7 +31,6 @@
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/external_protocol_handler.h"
 #include "chrome/browser/favicon_service.h"
-#include "chrome/browser/file_select_helper.h"
 #include "chrome/browser/google/google_util.h"
 #include "chrome/browser/history/history.h"
 #include "chrome/browser/history/history_types.h"
@@ -441,7 +440,6 @@ bool TabContents::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(ViewHostMsg_SetSuggestions, OnSetSuggestions)
     IPC_MESSAGE_HANDLER(ViewHostMsg_InstantSupportDetermined,
                         OnInstantSupportDetermined)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_RunFileChooser, OnRunFileChooser)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP_EX()
 
@@ -1977,14 +1975,6 @@ void TabContents::OnInstantSupportDetermined(int32 page_id, bool result) {
   if (delegate())
     delegate()->OnInstantSupportDetermined(page_id, result);
 }
-
-void TabContents::OnRunFileChooser(
-    const ViewHostMsg_RunFileChooser_Params& params) {
-  if (file_select_helper_.get() == NULL)
-    file_select_helper_.reset(new FileSelectHelper(profile()));
-  file_select_helper_->RunFileChooser(render_view_host(), params);
-}
-
 
 void TabContents::OnContentSettingsAccessed(bool content_was_blocked) {
   if (delegate_)

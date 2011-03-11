@@ -71,7 +71,6 @@ class WebUI;
 class DesktopNotificationHandlerForTC;
 class DownloadItem;
 class Extension;
-class FileSelectHelper;
 class InfoBarDelegate;
 class LoadNotificationDetails;
 class OmniboxSearchHint;
@@ -91,7 +90,6 @@ struct RendererPreferences;
 struct ThumbnailScore;
 struct ViewHostMsg_DomMessage_Params;
 struct ViewHostMsg_FrameNavigate_Params;
-struct ViewHostMsg_RunFileChooser_Params;
 struct WebPreferences;
 
 // Describes what goes in the main content area of a tab. TabContents is
@@ -801,7 +799,6 @@ class TabContents : public PageNavigator,
                         const std::vector<std::string>& suggestions,
                         InstantCompleteBehavior complete_behavior);
   void OnInstantSupportDetermined(int32 page_id, bool result);
-  void OnRunFileChooser(const ViewHostMsg_RunFileChooser_Params& params);
 
   // Changes the IsLoading state and notifies delegate as needed
   // |details| is used to provide details on the load that just finished
@@ -1081,9 +1078,6 @@ class TabContents : public PageNavigator,
 
   // TabContentsSSLHelper, lazily created.
   scoped_ptr<TabContentsSSLHelper> ssl_helper_;
-
-  // FileSelectHelper, lazily created.
-  scoped_ptr<FileSelectHelper> file_select_helper_;
 
   // Handles drag and drop event forwarding to extensions.
   BookmarkDrag* bookmark_drag_;

@@ -12,9 +12,11 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/platform_util.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/common/render_messages.h"
 #include "chrome/common/render_messages_params.h"
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/renderer_host/render_widget_host_view.h"
+#include "content/browser/tab_contents/tab_contents.h"
 #include "content/common/notification_details.h"
 #include "content/common/notification_source.h"
 #include "grit/generated_resources.h"
@@ -192,7 +194,7 @@ SelectFileDialog::FileTypeInfo* FileSelectHelper::GetFileTypesFromAcceptType(
 
 void FileSelectHelper::RunFileChooser(
     RenderViewHost* render_view_host,
-    const ViewHostMsg_RunFileChooser_Params &params) {
+    const ViewHostMsg_RunFileChooser_Params& params) {
   DCHECK(!render_view_host_);
   render_view_host_ = render_view_host;
   notification_registrar_.RemoveAll();
@@ -244,4 +246,29 @@ void FileSelectHelper::Observe(NotificationType type,
   DCHECK(type == NotificationType::RENDER_WIDGET_HOST_DESTROYED);
   DCHECK(Details<RenderViewHost>(details).ptr() == render_view_host_);
   render_view_host_ = NULL;
+}
+
+FileSelectObserver::FileSelectObserver(TabContents* tab_contents)
+    : TabContentsObserver(tab_contents) {
+}
+
+FileSelectObserver::~FileSelectObserver() {
+}
+
+bool FileSelectObserver::OnMessageReceived(const IPC::Message& message) {
+  bool handled = true;
+  IPC_BEGIN_MESSAGE_MAP(FileSelectObserver, message)
+    IPC_MESSAGE_HANDLER(ViewHostMsg_RunFileChooser, OnRunFileChooser)
+    IPC_MESSAGE_UNHANDLED(handled = false)
+  IPC_END_MESSAGE_MAP()
+
+  return handled;
+}
+
+void FileSelectObserver::OnRunFileChooser(
+    const ViewHostMsg_RunFileChooser_Params& params) {
+  if (!file_select_helper_.get())
+    file_select_helper_.reset(new FileSelectHelper(tab_contents()->profile()));
+  file_select_helper_->RunFileChooser(tab_contents()->render_view_host(),
+                                      params);
 }

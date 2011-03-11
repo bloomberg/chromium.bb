@@ -18,6 +18,7 @@ class PrerenderObserver;
 }
 
 class Extension;
+class FileSelectObserver;
 class FindTabHelper;
 class NavigationController;
 class PasswordManager;
@@ -134,6 +135,8 @@ class TabContentsWrapper : public NotificationObserver,
   bool is_starred_;
 
   // Tab Helpers ---------------------------------------------------------------
+  // (These provide API for callers and have a getter function listed in the
+  // "Tab Helpers" section in the member functions area, above.)
 
   scoped_ptr<FindTabHelper> find_tab_helper_;
 
@@ -142,9 +145,14 @@ class TabContentsWrapper : public NotificationObserver,
   scoped_ptr<PasswordManagerDelegate> password_manager_delegate_;
   scoped_ptr<PasswordManager> password_manager_;
 
-  scoped_ptr<prerender::PrerenderObserver> prerender_observer_;
-
   scoped_ptr<SearchEngineTabHelper> search_engine_tab_helper_;
+
+  // Per-tab observers ---------------------------------------------------------
+  // (These provide no API for callers; objects that need to exist 1:1 with tabs
+  // and silently do their thing live here.)
+
+  scoped_ptr<FileSelectObserver> file_select_observer_;
+  scoped_ptr<prerender::PrerenderObserver> prerender_observer_;
 
   // TabContents (MUST BE LAST) ------------------------------------------------
 

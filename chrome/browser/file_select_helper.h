@@ -8,7 +8,9 @@
 
 #include <vector>
 
+#include "base/compiler_specific.h"
 #include "chrome/browser/ui/shell_dialogs.h"
+#include "content/browser/tab_contents/tab_contents_observer.h"
 #include "content/common/notification_observer.h"
 #include "content/common/notification_registrar.h"
 #include "net/base/directory_lister.h"
@@ -25,26 +27,27 @@ class FileSelectHelper
   explicit FileSelectHelper(Profile* profile);
   ~FileSelectHelper();
 
-  // SelectFileDialog::Listener
-  virtual void FileSelected(const FilePath& path, int index, void* params);
-  virtual void MultiFilesSelected(const std::vector<FilePath>& files,
-                                  void* params);
-  virtual void FileSelectionCanceled(void* params);
-
-  // net::DirectoryLister::DirectoryListerDelegate
-  virtual void OnListFile(
-      const net::DirectoryLister::DirectoryListerData& data);
-  virtual void OnListDone(int error);
-
   // Show the file chooser dialog.
   void RunFileChooser(RenderViewHost* render_view_host,
                       const ViewHostMsg_RunFileChooser_Params& params);
 
  private:
-  // NotificationObserver implementation.
+  // SelectFileDialog::Listener overrides.
+  virtual void FileSelected(
+      const FilePath& path, int index, void* params) OVERRIDE;
+  virtual void MultiFilesSelected(const std::vector<FilePath>& files,
+                                  void* params) OVERRIDE;
+  virtual void FileSelectionCanceled(void* params) OVERRIDE;
+
+  // net::DirectoryLister::DirectoryListerDelegate overrides.
+  virtual void OnListFile(
+      const net::DirectoryLister::DirectoryListerData& data) OVERRIDE;
+  virtual void OnListDone(int error) OVERRIDE;
+
+  // NotificationObserver overrides.
   virtual void Observe(NotificationType type,
                        const NotificationSource& source,
-                       const NotificationDetails& details);
+                       const NotificationDetails& details) OVERRIDE;
 
   // Helper method for handling the SelectFileDialog::Listener callbacks.
   void DirectorySelected(const FilePath& path);
@@ -78,6 +81,24 @@ class FileSelectHelper
   NotificationRegistrar notification_registrar_;
 
   DISALLOW_COPY_AND_ASSIGN(FileSelectHelper);
+};
+
+class FileSelectObserver : public TabContentsObserver {
+ public:
+  explicit FileSelectObserver(TabContents* tab_contents);
+  ~FileSelectObserver();
+
+ private:
+  // TabContentsObserver overrides.
+  virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
+
+  // Called when a file selection is to be done.
+  void OnRunFileChooser(const ViewHostMsg_RunFileChooser_Params& params);
+
+  // FileSelectHelper, lazily created.
+  scoped_ptr<FileSelectHelper> file_select_helper_;
+
+  DISALLOW_COPY_AND_ASSIGN(FileSelectObserver);
 };
 
 #endif  // CHROME_BROWSER_FILE_SELECT_HELPER_H_
