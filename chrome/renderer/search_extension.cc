@@ -83,7 +83,7 @@ v8::Handle<v8::Value> SearchExtensionWrapper::SetSuggestResult(
 
   std::vector<std::string> suggestions;
   suggestions.push_back(std::string(*v8::String::Utf8Value(args[0])));
-  render_view->searchbox()->SetSuggestions(suggestions);
+  render_view->searchbox()->SetSuggestions(suggestions, INSTANT_COMPLETE_NOW);
   return v8::Undefined();
 }
 

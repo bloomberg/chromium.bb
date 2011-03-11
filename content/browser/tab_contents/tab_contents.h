@@ -21,6 +21,7 @@
 #include "chrome/browser/prefs/pref_change_registrar.h"
 #include "chrome/browser/tab_contents/tab_specific_content_settings.h"
 #include "chrome/browser/ui/app_modal_dialogs/js_modal_dialog.h"
+#include "chrome/common/instant_types.h"
 #include "chrome/common/renderer_preferences.h"
 #include "chrome/common/translate_errors.h"
 #include "chrome/common/web_apps.h"
@@ -797,7 +798,8 @@ class TabContents : public PageNavigator,
                         const std::string& translated_lang,
                         TranslateErrors::Type error_type);
   void OnSetSuggestions(int32 page_id,
-                        const std::vector<std::string>& suggestions);
+                        const std::vector<std::string>& suggestions,
+                        InstantCompleteBehavior complete_behavior);
   void OnInstantSupportDetermined(int32 page_id, bool result);
   void OnRunFileChooser(const ViewHostMsg_RunFileChooser_Params& params);
 

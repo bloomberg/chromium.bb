@@ -16,6 +16,7 @@
 #include "base/string16.h"
 #include "chrome/common/common_param_traits.h"
 #include "chrome/common/css_colors.h"
+#include "chrome/common/instant_types.h"
 #include "chrome/common/page_transition_types.h"
 #include "chrome/common/translate_errors.h"
 #include "chrome/common/view_types.h"
@@ -374,6 +375,11 @@ struct ParamTraits<webkit_glue::WebCookie> {
 
 template <>
 struct SimilarTypeTraits<TranslateErrors::Type> {
+  typedef int Type;
+};
+
+template <>
+struct SimilarTypeTraits<InstantCompleteBehavior> {
   typedef int Type;
 };
 

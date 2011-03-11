@@ -21,10 +21,12 @@ SearchBox::SearchBox(RenderView* render_view)
 SearchBox::~SearchBox() {
 }
 
-void SearchBox::SetSuggestions(const std::vector<std::string>& suggestions) {
+void SearchBox::SetSuggestions(const std::vector<std::string>& suggestions,
+                               InstantCompleteBehavior behavior) {
   // Explicitly allow empty vector to be sent to the browser.
   render_view()->Send(new ViewHostMsg_SetSuggestions(
-      render_view()->routing_id(), render_view()->page_id(), suggestions));
+      render_view()->routing_id(), render_view()->page_id(), suggestions,
+      behavior));
 }
 
 bool SearchBox::OnMessageReceived(const IPC::Message& message) {

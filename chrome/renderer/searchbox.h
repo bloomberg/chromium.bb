@@ -10,6 +10,7 @@
 
 #include "base/string16.h"
 #include "chrome/renderer/render_view_observer.h"
+#include "chrome/common/instant_types.h"
 #include "ui/gfx/rect.h"
 
 class SearchBox : public RenderViewObserver {
@@ -18,7 +19,8 @@ class SearchBox : public RenderViewObserver {
   ~SearchBox();
 
   // Sends ViewHostMsg_SetSuggestions to the browser.
-  void SetSuggestions(const std::vector<std::string>& suggestions);
+  void SetSuggestions(const std::vector<std::string>& suggestions,
+                      InstantCompleteBehavior behavior);
 
   const string16& value() { return value_; }
   bool verbatim() { return verbatim_; }

@@ -1967,9 +1967,10 @@ void TabContents::OnPageTranslated(int32 page_id,
 
 void TabContents::OnSetSuggestions(
     int32 page_id,
-    const std::vector<std::string>& suggestions) {
+    const std::vector<std::string>& suggestions,
+    InstantCompleteBehavior behavior) {
   if (delegate())
-    delegate()->OnSetSuggestions(page_id, suggestions);
+    delegate()->OnSetSuggestions(page_id, suggestions, behavior);
 }
 
 void TabContents::OnInstantSupportDetermined(int32 page_id, bool result) {

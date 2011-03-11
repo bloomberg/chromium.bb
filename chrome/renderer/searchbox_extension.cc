@@ -289,6 +289,7 @@ v8::Handle<v8::Value> SearchBoxExtensionWrapper::GetHeight(
 v8::Handle<v8::Value> SearchBoxExtensionWrapper::SetSuggestions(
     const v8::Arguments& args) {
   std::vector<std::string> suggestions;
+  InstantCompleteBehavior behavior = INSTANT_COMPLETE_NOW;
 
   if (args.Length() && args[0]->IsArray()) {
     // For backwards compatibility, also accept an array of strings.
@@ -329,10 +330,20 @@ v8::Handle<v8::Value> SearchBoxExtensionWrapper::SetSuggestions(
         suggestions.push_back(suggestion);
       }
     }
+    if (suggestion_json->Has(v8::String::New("complete_behavior"))) {
+      v8::Local<v8::Value> complete_value =
+          suggestion_json->Get(v8::String::New("complete_behavior"));
+      if (complete_value->IsString()) {
+        if (complete_value->Equals(v8::String::New("never")))
+          behavior = INSTANT_COMPLETE_NEVER;
+        else if (complete_value->Equals(v8::String::New("delayed")))
+          behavior = INSTANT_COMPLETE_DELAYED;
+      }
+    }
   }
 
   if (RenderView* render_view = GetRenderView())
-    render_view->searchbox()->SetSuggestions(suggestions);
+    render_view->searchbox()->SetSuggestions(suggestions, behavior);
   return v8::Undefined();
 }
 

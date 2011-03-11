@@ -18,6 +18,7 @@
 #include "chrome/common/content_settings.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/geoposition.h"
+#include "chrome/common/instant_types.h"
 #include "chrome/common/nacl_types.h"
 #include "chrome/common/page_zoom.h"
 #include "chrome/common/translate_errors.h"
@@ -2217,9 +2218,10 @@ IPC_MESSAGE_CONTROL1(ViewHostMsg_UnregisterBlobUrl, GURL /* url */)
 
 // Suggest results -----------------------------------------------------------
 
-IPC_MESSAGE_ROUTED2(ViewHostMsg_SetSuggestions,
+IPC_MESSAGE_ROUTED3(ViewHostMsg_SetSuggestions,
                     int32 /* page_id */,
-                    std::vector<std::string> /* suggestions */)
+                    std::vector<std::string> /* suggestions */,
+                    InstantCompleteBehavior)
 
 IPC_MESSAGE_ROUTED2(ViewHostMsg_InstantSupportDetermined,
                     int32 /* page_id */,

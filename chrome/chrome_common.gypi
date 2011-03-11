@@ -83,6 +83,7 @@
           'common/indexed_db_messages.h',
           'common/indexed_db_param_traits.cc',
           'common/indexed_db_param_traits.h',
+          'common/instant_types.h',
           'common/logging_chrome.cc',
           'common/logging_chrome.h',
           'common/main_function_params.h',

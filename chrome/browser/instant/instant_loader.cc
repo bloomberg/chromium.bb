@@ -214,7 +214,8 @@ class InstantLoader::TabContentsDelegateImpl
       NavigationType::Type navigation_type) OVERRIDE;
   virtual void OnSetSuggestions(
       int32 page_id,
-      const std::vector<std::string>& suggestions) OVERRIDE;
+      const std::vector<std::string>& suggestions,
+      InstantCompleteBehavior behavior) OVERRIDE;
   virtual void OnInstantSupportDetermined(int32 page_id, bool result) OVERRIDE;
   virtual bool ShouldShowHungRendererDialog() OVERRIDE;
 
@@ -521,14 +522,14 @@ bool InstantLoader::TabContentsDelegateImpl::ShouldAddNavigationToHistory(
 
 void InstantLoader::TabContentsDelegateImpl::OnSetSuggestions(
     int32 page_id,
-    const std::vector<std::string>& suggestions) {
+    const std::vector<std::string>& suggestions,
+    InstantCompleteBehavior behavior) {
   TabContentsWrapper* source = loader_->preview_contents();
   if (!source->controller().GetActiveEntry() ||
       page_id != source->controller().GetActiveEntry()->page_id())
     return;
 
-  // TODO: only allow for default search provider.
-  // TODO(sky): Handle multiple suggestions.
+  // TODO: pass in behavior to SetCompleteSuggestedText.
   if (suggestions.empty())
     loader_->SetCompleteSuggestedText(string16());
   else
@@ -778,6 +779,11 @@ void InstantLoader::CommitInstantLoader() {
 
 void InstantLoader::SetCompleteSuggestedText(
     const string16& complete_suggested_text) {
+  if (!is_showing_instant()) {
+    // We're not trying to use the instant API with this page. Ignore it.
+    return;
+  }
+
   ShowPreview();
 
   if (complete_suggested_text == complete_suggested_text_)
