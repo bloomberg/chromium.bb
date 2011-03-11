@@ -1744,7 +1744,7 @@ void Browser::FocusSearch() {
 
 void Browser::OpenFile() {
   UserMetrics::RecordAction(UserMetricsAction("OpenFile"), profile_);
-#if defined(OS_CHROMEOS)
+#if defined(OS_CHROMEOS) && !defined(FILE_MANAGER_EXTENSION)
   FileBrowseUI::OpenPopup(profile_,
                           "",
                           FileBrowseUI::kPopupWidth,

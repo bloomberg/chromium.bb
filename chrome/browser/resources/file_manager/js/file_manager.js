@@ -3,5 +3,11 @@
 // found in the LICENSE file.
 
 function onLoad() {
-  document.body.appendChild(document.createTextNode('Hello World'));
+  var args = '';
+  var argstr = decodeURIComponent(document.location.search.substr(1));
+  if (argstr)
+    args = JSON.parse(argstr);
+
+  document.body.appendChild(document.createTextNode(
+      'dialog arguments: ' + JSON.stringify(args)));
 }
