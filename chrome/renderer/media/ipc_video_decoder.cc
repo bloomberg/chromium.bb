@@ -52,8 +52,8 @@ void IpcVideoDecoder::Initialize(media::DemuxerStream* demuxer_stream,
 
   AVStream* av_stream = av_stream_provider->GetAVStream();
 
-  int width = av_stream->codec->width;
-  int height = av_stream->codec->height;
+  int width = av_stream->codec->coded_width;
+  int height = av_stream->codec->coded_height;
   if (width > media::Limits::kMaxDimension ||
       height > media::Limits::kMaxDimension ||
       (width * height) > media::Limits::kMaxCanvas) {
@@ -71,16 +71,18 @@ void IpcVideoDecoder::Initialize(media::DemuxerStream* demuxer_stream,
   // Create a hardware video decoder handle.
   decode_engine_.reset(ggl::CreateVideoDecodeEngine(ggl_context_));
 
-  // Initialize hardware decoder.
-  media::VideoCodecConfig param;
-  memset(&param, 0, sizeof(param));
-  param.width = width;
-  param.height = height;
+  media::VideoCodecConfig config(
+      media::CodecIDToVideoCodec(av_stream->codec->codec_id),
+      width, height,
+      av_stream->r_frame_rate.num,
+      av_stream->r_frame_rate.den,
+      av_stream->codec->extradata,
+      av_stream->codec->extradata_size);
 
   // VideoDecodeEngine will perform initialization on the message loop
   // given to it so it doesn't matter on which thread we are calling this.
   decode_engine_->Initialize(ChildProcess::current()->io_message_loop(), this,
-                             decode_context_.get(), param);
+                             decode_context_.get(), config);
 }
 
 const media::MediaFormat& IpcVideoDecoder::media_format() {

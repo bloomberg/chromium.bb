@@ -23,7 +23,7 @@ namespace media {
 
 static const int kWidth = 320;
 static const int kHeight = 240;
-static const AVRational kTimeBase = { 1, 100 };
+static const AVRational kFrameRate = { 100, 1 };
 
 static void InitializeFrame(uint8_t* data, int width, AVFrame* frame) {
   frame->data[0] = data;
@@ -35,7 +35,7 @@ static void InitializeFrame(uint8_t* data, int width, AVFrame* frame) {
 }
 
 ACTION_P(DecodeComplete, decoder) {
-  decoder->video_frame_ = arg0;
+  decoder->set_video_frame(arg0);
 }
 
 ACTION_P2(DemuxComplete, engine, buffer) {
@@ -43,33 +43,27 @@ ACTION_P2(DemuxComplete, engine, buffer) {
 }
 
 ACTION_P(SaveInitializeResult, engine) {
-  engine->info_ = arg0;
+  engine->set_video_codec_info(arg0);
 }
 
 class FFmpegVideoDecodeEngineTest : public testing::Test,
                                     public VideoDecodeEngine::EventHandler {
- protected:
-  FFmpegVideoDecodeEngineTest() {
+ public:
+  FFmpegVideoDecodeEngineTest()
+      : config_(kCodecH264, kWidth, kHeight,
+                kFrameRate.num, kFrameRate.den, NULL, 0) {
+
     // Setup FFmpeg structures.
     frame_buffer_.reset(new uint8[kWidth * kHeight]);
     memset(&yuv_frame_, 0, sizeof(yuv_frame_));
     InitializeFrame(frame_buffer_.get(), kWidth, &yuv_frame_);
 
     memset(&codec_context_, 0, sizeof(codec_context_));
-    codec_context_.width = kWidth;
-    codec_context_.height = kHeight;
-    codec_context_.time_base = kTimeBase;
-
     memset(&codec_, 0, sizeof(codec_));
-    memset(&stream_, 0, sizeof(stream_));
-    stream_.codec = &codec_context_;
-    stream_.r_frame_rate.num = kTimeBase.den;
-    stream_.r_frame_rate.den = kTimeBase.num;
 
     buffer_ = new DataBuffer(1);
 
     test_engine_.reset(new FFmpegVideoDecodeEngine());
-    test_engine_->SetCodecContextForTest(&codec_context_);
 
     VideoFrame::CreateFrame(VideoFrame::YV12,
                             kWidth,
@@ -84,7 +78,9 @@ class FFmpegVideoDecodeEngineTest : public testing::Test,
   }
 
   void Initialize() {
-    EXPECT_CALL(mock_ffmpeg_, AVCodecFindDecoder(CODEC_ID_NONE))
+    EXPECT_CALL(mock_ffmpeg_, AVCodecAllocContext())
+        .WillOnce(Return(&codec_context_));
+    EXPECT_CALL(mock_ffmpeg_, AVCodecFindDecoder(CODEC_ID_H264))
         .WillOnce(Return(&codec_));
     EXPECT_CALL(mock_ffmpeg_, AVCodecAllocFrame())
         .WillOnce(Return(&yuv_frame_));
@@ -92,13 +88,13 @@ class FFmpegVideoDecodeEngineTest : public testing::Test,
         .WillOnce(Return(0));
     EXPECT_CALL(mock_ffmpeg_, AVCodecOpen(&codec_context_, &codec_))
         .WillOnce(Return(0));
+    EXPECT_CALL(mock_ffmpeg_, AVCodecClose(&codec_context_))
+        .WillOnce(Return(0));
     EXPECT_CALL(mock_ffmpeg_, AVFree(&yuv_frame_))
         .Times(1);
+    EXPECT_CALL(mock_ffmpeg_, AVFree(&codec_context_))
+        .Times(1);
 
-    config_.codec = kCodecH264;
-    config_.opaque_context = &stream_;
-    config_.width = kWidth;
-    config_.height = kHeight;
     EXPECT_CALL(*this, OnInitializeComplete(_))
        .WillOnce(SaveInitializeResult(this));
     test_engine_->Initialize(MessageLoop::current(), this, NULL, config_);
@@ -126,7 +122,7 @@ class FFmpegVideoDecodeEngineTest : public testing::Test,
     codec_context_.height = height;
   }
 
- public:
+  // VideoDecodeEngine::EventHandler implementation.
   MOCK_METHOD2(ConsumeVideoFrame,
                void(scoped_refptr<VideoFrame> video_frame,
                     const PipelineStatistics& statistics));
@@ -140,20 +136,30 @@ class FFmpegVideoDecodeEngineTest : public testing::Test,
   MOCK_METHOD0(OnError, void());
   MOCK_METHOD1(OnFormatChange, void(VideoStreamInfo stream_info));
 
-  scoped_refptr<VideoFrame> video_frame_;
+  // Used by gmock actions.
+  void set_video_frame(scoped_refptr<VideoFrame> video_frame) {
+    video_frame_ = video_frame;
+  }
+
+  void set_video_codec_info(const VideoCodecInfo& info) {
+    info_ = info;
+  }
+
+ protected:
   VideoCodecConfig config_;
   VideoCodecInfo info_;
- protected:
+  scoped_refptr<VideoFrame> video_frame_;
   scoped_ptr<FFmpegVideoDecodeEngine> test_engine_;
   scoped_array<uint8_t> frame_buffer_;
   StrictMock<MockFFmpeg> mock_ffmpeg_;
 
   AVFrame yuv_frame_;
   AVCodecContext codec_context_;
-  AVStream stream_;
   AVCodec codec_;
   scoped_refptr<DataBuffer> buffer_;
 
+ private:
+  DISALLOW_COPY_AND_ASSIGN(FFmpegVideoDecodeEngineTest);
 };
 
 TEST_F(FFmpegVideoDecodeEngineTest, Initialize_Normal) {
@@ -162,17 +168,19 @@ TEST_F(FFmpegVideoDecodeEngineTest, Initialize_Normal) {
 
 TEST_F(FFmpegVideoDecodeEngineTest, Initialize_FindDecoderFails) {
   // Test avcodec_find_decoder() returning NULL.
-  EXPECT_CALL(mock_ffmpeg_, AVCodecFindDecoder(CODEC_ID_NONE))
+  EXPECT_CALL(mock_ffmpeg_, AVCodecAllocContext())
+      .WillOnce(Return(&codec_context_));
+  EXPECT_CALL(mock_ffmpeg_, AVCodecFindDecoder(CODEC_ID_H264))
       .WillOnce(ReturnNull());
   EXPECT_CALL(mock_ffmpeg_, AVCodecAllocFrame())
       .WillOnce(Return(&yuv_frame_));
+  EXPECT_CALL(mock_ffmpeg_, AVCodecClose(&codec_context_))
+      .WillOnce(Return(0));
   EXPECT_CALL(mock_ffmpeg_, AVFree(&yuv_frame_))
       .Times(1);
+  EXPECT_CALL(mock_ffmpeg_, AVFree(&codec_context_))
+      .Times(1);
 
-  config_.codec = kCodecH264;
-  config_.opaque_context = &stream_;
-  config_.width = kWidth;
-  config_.height = kHeight;
   EXPECT_CALL(*this, OnInitializeComplete(_))
      .WillOnce(SaveInitializeResult(this));
   test_engine_->Initialize(MessageLoop::current(), this, NULL, config_);
@@ -182,19 +190,21 @@ TEST_F(FFmpegVideoDecodeEngineTest, Initialize_FindDecoderFails) {
 // Note There are 2 threads for FFmpeg-mt.
 TEST_F(FFmpegVideoDecodeEngineTest, Initialize_InitThreadFails) {
   // Test avcodec_thread_init() failing.
-  EXPECT_CALL(mock_ffmpeg_, AVCodecFindDecoder(CODEC_ID_NONE))
+  EXPECT_CALL(mock_ffmpeg_, AVCodecAllocContext())
+      .WillOnce(Return(&codec_context_));
+  EXPECT_CALL(mock_ffmpeg_, AVCodecFindDecoder(CODEC_ID_H264))
       .WillOnce(Return(&codec_));
   EXPECT_CALL(mock_ffmpeg_, AVCodecAllocFrame())
       .WillOnce(Return(&yuv_frame_));
   EXPECT_CALL(mock_ffmpeg_, AVCodecThreadInit(&codec_context_, 2))
       .WillOnce(Return(-1));
+  EXPECT_CALL(mock_ffmpeg_, AVCodecClose(&codec_context_))
+      .WillOnce(Return(0));
   EXPECT_CALL(mock_ffmpeg_, AVFree(&yuv_frame_))
       .Times(1);
+  EXPECT_CALL(mock_ffmpeg_, AVFree(&codec_context_))
+      .Times(1);
 
-  config_.codec = kCodecH264;
-  config_.opaque_context = &stream_;
-  config_.width = kWidth;
-  config_.height = kHeight;
   EXPECT_CALL(*this, OnInitializeComplete(_))
      .WillOnce(SaveInitializeResult(this));
   test_engine_->Initialize(MessageLoop::current(), this, NULL, config_);
@@ -203,7 +213,9 @@ TEST_F(FFmpegVideoDecodeEngineTest, Initialize_InitThreadFails) {
 
 TEST_F(FFmpegVideoDecodeEngineTest, Initialize_OpenDecoderFails) {
   // Test avcodec_open() failing.
-  EXPECT_CALL(mock_ffmpeg_, AVCodecFindDecoder(CODEC_ID_NONE))
+  EXPECT_CALL(mock_ffmpeg_, AVCodecAllocContext())
+      .WillOnce(Return(&codec_context_));
+  EXPECT_CALL(mock_ffmpeg_, AVCodecFindDecoder(CODEC_ID_H264))
       .WillOnce(Return(&codec_));
   EXPECT_CALL(mock_ffmpeg_, AVCodecAllocFrame())
       .WillOnce(Return(&yuv_frame_));
@@ -211,13 +223,13 @@ TEST_F(FFmpegVideoDecodeEngineTest, Initialize_OpenDecoderFails) {
       .WillOnce(Return(0));
   EXPECT_CALL(mock_ffmpeg_, AVCodecOpen(&codec_context_, &codec_))
       .WillOnce(Return(-1));
+  EXPECT_CALL(mock_ffmpeg_, AVCodecClose(&codec_context_))
+      .WillOnce(Return(0));
   EXPECT_CALL(mock_ffmpeg_, AVFree(&yuv_frame_))
       .Times(1);
+  EXPECT_CALL(mock_ffmpeg_, AVFree(&codec_context_))
+      .Times(1);
 
-  config_.codec = kCodecH264;
-  config_.opaque_context = &stream_;
-  config_.width = kWidth;
-  config_.height = kHeight;
   EXPECT_CALL(*this, OnInitializeComplete(_))
      .WillOnce(SaveInitializeResult(this));
   test_engine_->Initialize(MessageLoop::current(), this, NULL, config_);
@@ -310,6 +322,8 @@ TEST_F(FFmpegVideoDecodeEngineTest, DecodeFrame_SmallerHeight) {
 }
 
 TEST_F(FFmpegVideoDecodeEngineTest, GetSurfaceFormat) {
+  Initialize();
+
   // YV12 formats.
   codec_context_.pix_fmt = PIX_FMT_YUV420P;
   EXPECT_EQ(VideoFrame::YV12, test_engine_->GetSurfaceFormat());

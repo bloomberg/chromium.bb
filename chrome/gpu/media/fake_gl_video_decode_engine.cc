@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -25,8 +25,8 @@ void FakeGlVideoDecodeEngine::Initialize(
     const media::VideoCodecConfig& config) {
   handler_ = event_handler;
   context_ = context;
-  width_ = config.width;
-  height_ = config.height;
+  width_ = config.width();
+  height_ = config.height();
 
   // Create an internal VideoFrame that we can write to. This is going to be
   // uploaded through VideoDecodeContext.
