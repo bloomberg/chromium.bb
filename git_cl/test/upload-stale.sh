@@ -17,7 +17,7 @@ setup_gitgit
   git config rietveld.server localhost:8080
 
   # Prevent the editor from coming up when you upload.
-  export EDITOR=/bin/true
+  export EDITOR=$(which true)
   test_expect_success "upload succeeds (needs a server running on localhost)" \
     "$GIT_CL upload -m test | grep -q 'Issue created'"
 

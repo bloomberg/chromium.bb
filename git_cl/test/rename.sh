@@ -18,7 +18,7 @@ setup_gitsvn
   git checkout -q -b rename
   git mv test test2
   git commit -q -m "renamed"
-  export EDITOR=/bin/true
+  export EDITOR=$(which true)
   test_expect_success "upload succeeds" \
     "$GIT_CL upload -m test master... | grep -q 'Issue created'"
 

@@ -28,7 +28,7 @@ setup_gitgit
   git add test; git commit -q -m "$DESC"
 
   # Try to upload the change to an unresolvable hostname; git-cl should fail.
-  export EDITOR=/bin/true
+  export EDITOR=$(which true)
   git config rietveld.server bogus.example.com:80
   test_expect_failure "uploading to bogus server" "$GIT_CL upload 2>/dev/null"
 

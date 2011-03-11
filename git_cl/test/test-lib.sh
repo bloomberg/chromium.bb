@@ -15,6 +15,9 @@ setup_initsvn() {
   rm -rf svnrepo
   svnadmin create svnrepo
 
+  # Need this in order for Mac SnowLeopard to work
+  echo "enable-rep-sharing = false" >> svnrepo/db/fsfs.conf
+
   rm -rf svn
   svn co -q $REPO_URL svn
   (
