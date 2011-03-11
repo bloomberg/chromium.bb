@@ -171,7 +171,7 @@ bool ShouldOpenAll(gfx::NativeWindow parent,
 
 // Comparison function that compares based on date modified of the two nodes.
 bool MoreRecentlyModified(const BookmarkNode* n1, const BookmarkNode* n2) {
-  return n1->date_group_modified() > n2->date_group_modified();
+  return n1->date_folder_modified() > n2->date_folder_modified();
 }
 
 // Returns true if |text| contains each string in |words|. This is used when
@@ -446,7 +446,7 @@ std::vector<const BookmarkNode*> GetMostRecentlyModifiedGroups(
   ui::TreeNodeIterator<const BookmarkNode> iterator(model->root_node());
   while (iterator.has_next()) {
     const BookmarkNode* parent = iterator.Next();
-    if (parent->is_folder() && parent->date_group_modified() > base::Time()) {
+    if (parent->is_folder() && parent->date_folder_modified() > base::Time()) {
       if (max_count == 0) {
         nodes.push_back(parent);
       } else {

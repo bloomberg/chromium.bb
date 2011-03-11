@@ -31,7 +31,7 @@ DictionaryValue* GetNodeDictionary(const BookmarkNode* node,
   } else {
     // Javascript Date wants milliseconds since the epoch, ToDoubleT is
     // seconds.
-    base::Time t = node->date_group_modified();
+    base::Time t = node->date_folder_modified();
     if (!t.is_null())
       dict->SetDouble(keys::kDateGroupModifiedKey, floor(t.ToDoubleT() * 1000));
   }

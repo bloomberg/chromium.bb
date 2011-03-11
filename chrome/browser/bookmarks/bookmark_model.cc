@@ -82,7 +82,7 @@ void BookmarkNode::Reset(const history::StarredEntry& entry) {
       NOTREACHED();
   }
   date_added_ = entry.date_added;
-  date_group_modified_ = entry.date_group_modified;
+  date_folder_modified_ = entry.date_folder_modified;
   SetTitle(entry.title);
 }
 
@@ -382,7 +382,7 @@ const BookmarkNode* BookmarkModel::AddGroup(const BookmarkNode* parent,
 
   BookmarkNode* new_node = new BookmarkNode(generate_next_node_id(),
                                             GURL());
-  new_node->set_date_group_modified(Time::Now());
+  new_node->set_date_folder_modified(Time::Now());
   new_node->SetTitle(title);
   new_node->set_type(BookmarkNode::FOLDER);
 
@@ -476,7 +476,7 @@ void BookmarkModel::SetURLStarred(const GURL& url,
 void BookmarkModel::SetDateGroupModified(const BookmarkNode* parent,
                                          const Time time) {
   DCHECK(parent);
-  AsMutable(parent)->set_date_group_modified(time);
+  AsMutable(parent)->set_date_folder_modified(time);
 
   if (store_.get())
     store_->ScheduleSave();

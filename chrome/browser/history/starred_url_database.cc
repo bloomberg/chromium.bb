@@ -35,7 +35,7 @@
 //   parent_id          Group ID of the parent this entry is contained in, if 0
 //                      entry is not in a group.
 //   date_modified      Time the group was last modified. See comments in
-//                      StarredEntry::date_group_modified
+//                      StarredEntry::date_folder_modified
 // NOTE: group_id and parent_id come from the UI, id is assigned by the
 // db.
 
@@ -77,7 +77,7 @@ void FillInStarredEntry(const sql::Statement& s, StarredEntry* entry) {
   entry->parent_group_id = s.ColumnInt64(5);
   entry->url_id = s.ColumnInt64(7);
   entry->group_id = s.ColumnInt64(8);
-  entry->date_group_modified = base::Time::FromInternalValue(s.ColumnInt64(9));
+  entry->date_folder_modified = base::Time::FromInternalValue(s.ColumnInt64(9));
 }
 
 }  // namespace
@@ -409,7 +409,7 @@ bool StarredURLDatabase::EnsureVisualOrder(
       entry.visual_order = i;
       LOG(WARNING) << "Bookmark visual order is wrong";
       if (!UpdateStarredEntryRow(entry.id, entry.title, entry.parent_group_id,
-                                 i, entry.date_group_modified)) {
+                                 i, entry.date_folder_modified)) {
         NOTREACHED() << "Unable to update visual order";
         return false;
       }
@@ -525,7 +525,7 @@ bool StarredURLDatabase::Move(StarredNode* source, StarredNode* new_parent) {
   entry.parent_group_id = new_parent->value.group_id;
   if (!UpdateStarredEntryRow(entry.id, entry.title,
                              entry.parent_group_id, entry.visual_order,
-                             entry.date_group_modified)) {
+                             entry.date_folder_modified)) {
     NOTREACHED() << "Unable to move folder";
     return false;
   }

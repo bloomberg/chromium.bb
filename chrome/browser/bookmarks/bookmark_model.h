@@ -74,21 +74,23 @@ class BookmarkNode : public ui::TreeNode<BookmarkNode> {
   BookmarkNode::Type type() const { return type_; }
   void set_type(BookmarkNode::Type type) { type_ = type; }
 
-  // Returns the time the bookmark/group was added.
+  // Returns the time the bookmark/folder was added.
   const base::Time& date_added() const { return date_added_; }
-  // Sets the time the bookmark/group was added.
+  // Sets the time the bookmark/folder was added.
   void set_date_added(const base::Time& date) { date_added_ = date; }
 
-  // Returns the last time the group was modified. This is only maintained
+  // Returns the last time the folder was modified. This is only maintained
   // for folders (including the bookmark and other folder).
-  const base::Time& date_group_modified() const { return date_group_modified_; }
-  // Sets the last time the group was modified.
-  void set_date_group_modified(const base::Time& date) {
-    date_group_modified_ = date;
+  const base::Time& date_folder_modified() const {
+    return date_folder_modified_;
+  }
+  // Sets the last time the folder was modified.
+  void set_date_folder_modified(const base::Time& date) {
+    date_folder_modified_ = date;
   }
 
-  // Convenience for testing if this nodes represents a group. A group is
-  // a node whose type is not URL.
+  // Convenience for testing if this nodes represents a folder. A folder is a
+  // node whose type is not URL.
   bool is_folder() const { return type_ != URL; }
 
   // Is this a URL?
@@ -151,8 +153,8 @@ class BookmarkNode : public ui::TreeNode<BookmarkNode> {
   // Date we were created.
   base::Time date_added_;
 
-  // Time last modified. Only used for groups.
-  base::Time date_group_modified_;
+  // Time last modified. Only used for folders.
+  base::Time date_folder_modified_;
 
   DISALLOW_COPY_AND_ASSIGN(BookmarkNode);
 };
@@ -160,7 +162,7 @@ class BookmarkNode : public ui::TreeNode<BookmarkNode> {
 // BookmarkModel --------------------------------------------------------------
 
 // BookmarkModel provides a directed acyclic graph of the starred entries
-// and groups. Two graphs are provided for the two entry points: those on
+// and folders. Two graphs are provided for the two entry points: those on
 // the bookmark bar, and those in the other folder.
 //
 // An observer may be attached to observer relevant events.
@@ -208,8 +210,7 @@ class BookmarkModel : public NotificationObserver, public BookmarkService {
   void BeginImportMode();
   void EndImportMode();
 
-
-  // Unstars or deletes the specified entry. Removing a group entry recursively
+  // Unstars or deletes the specified entry. Removing a folder entry recursively
   // unstars all nodes. Observers are notified immediately.
   void Remove(const BookmarkNode* parent, int index);
 

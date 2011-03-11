@@ -101,7 +101,7 @@ Value* BookmarkCodec::EncodeNode(const BookmarkNode* node) {
   } else {
     value->SetString(kTypeKey, kTypeFolder);
     value->SetString(kDateModifiedKey,
-                     base::Int64ToString(node->date_group_modified().
+                     base::Int64ToString(node->date_folder_modified().
                                    ToInternalValue()));
     UpdateChecksumWithFolderNode(id, title);
 
@@ -272,7 +272,7 @@ bool BookmarkCodec::DecodeNode(const DictionaryValue& value,
     node->set_type(BookmarkNode::FOLDER);
     int64 internal_time;
     base::StringToInt64(last_modified_date, &internal_time);
-    node->set_date_group_modified(Time::FromInternalValue(internal_time));
+    node->set_date_folder_modified(Time::FromInternalValue(internal_time));
 
     if (parent)
       parent->Add(parent->child_count(), node);

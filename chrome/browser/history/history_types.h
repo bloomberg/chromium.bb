@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -325,7 +325,7 @@ struct StarredEntry {
 
   // Time the entry was last modified. This is only used for groups and
   // indicates the last time a URL was added as a child to the group.
-  base::Time date_group_modified;
+  base::Time date_folder_modified;
 };
 
 // URLResult -------------------------------------------------------------------
