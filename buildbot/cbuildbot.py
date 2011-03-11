@@ -152,6 +152,8 @@ def main():
     traceback.print_exc()
     print '\n'
     print '\n'
+    # Made sure cbuildbot returns an error exit code if we are failing.
+    sys.exit(1)
   finally:
     print stages.BuilderStage.Results.Report()
 
