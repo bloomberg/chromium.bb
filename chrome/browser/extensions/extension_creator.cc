@@ -36,6 +36,13 @@ bool ExtensionCreator::InitializeInput(
     return false;
   }
 
+  FilePath absolute_extension_dir = extension_dir;
+  if (!file_util::AbsolutePath(&absolute_extension_dir)) {
+    error_message_ =
+        l10n_util::GetStringUTF8(IDS_EXTENSION_CANT_GET_ABSOLUTE_PATH);
+    return false;
+  }
+
   // Validate input |private_key| (if provided).
   if (!private_key_path.value().empty() &&
       !file_util::PathExists(private_key_path)) {
@@ -57,7 +64,7 @@ bool ExtensionCreator::InitializeInput(
   // Load the extension once. We don't really need it, but this does a lot of
   // useful validation of the structure.
   scoped_refptr<Extension> extension(
-      extension_file_util::LoadExtension(extension_dir,
+      extension_file_util::LoadExtension(absolute_extension_dir,
                                          Extension::INTERNAL,
                                          false,  // key not required
                                          true,  // enable strict error checks

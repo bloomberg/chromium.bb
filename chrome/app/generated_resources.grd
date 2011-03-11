@@ -3614,6 +3614,9 @@ Other platform defines such as use_titlecase are declared in build/common.gypi.
       </message>
 
       <!-- Extension/App error messages -->
+      <message name="IDS_EXTENSION_CANT_GET_ABSOLUTE_PATH" desc="Warning displayed in pack dialog when the absolute path to the extension directory can not be found.">
+        Can't find the absolute path to the directory to pack.
+      </message>
       <message name="IDS_EXTENSION_DIRECTORY_NO_EXISTS" desc="Warning displayed in pack dialog when the extension directory does not exist.">
         Input directory must exist.
       </message>
@@ -6181,7 +6184,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
         has detected that an ESET product is intercepting secure connections.
         This is typically not a security issue as the ESET software is
         usually running on the same computer. However, due to an intolerance
-        to specific aspects of 
+        to specific aspects of
         <ph name="PRODUCT_NAME">&lt;span jscontent="productName"&gt;&lt;/span&gt;<ex>Google Chrome</ex></ph>'s
         secure connections, ESET products have to be configured to not
         perform this interception. Click the 'Learn more' link for
