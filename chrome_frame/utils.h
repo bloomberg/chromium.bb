@@ -461,9 +461,9 @@ extern base::Lock g_ChromeFrameHistogramLock;
 // This structure contains the parameters sent over to initiate a download
 // request in the host browser.
 struct DownloadInHostParams {
-  IBindCtx* bind_ctx;
-  IMoniker* moniker;
-  IStream* post_data;
+  base::win::ScopedComPtr<IBindCtx> bind_ctx;
+  base::win::ScopedComPtr<IMoniker> moniker;
+  base::win::ScopedComPtr<IStream> post_data;
   std::string request_headers;
 };
 

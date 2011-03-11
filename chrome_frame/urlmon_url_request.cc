@@ -1073,18 +1073,15 @@ void UrlmonUrlRequestManager::BindTerminated(IMoniker* moniker,
                                              IBindCtx* bind_ctx,
                                              IStream* post_data,
                                              const char* request_headers) {
-  DownloadInHostParams download_params;
-  download_params.bind_ctx = bind_ctx;
-  download_params.moniker = moniker;
-  download_params.post_data = post_data;
+  DownloadInHostParams* download_params = new DownloadInHostParams;
+  download_params->bind_ctx = bind_ctx;
+  download_params->moniker = moniker;
+  download_params->post_data = post_data;
   if (request_headers) {
-    download_params.request_headers = request_headers;
+    download_params->request_headers = request_headers;
   }
-  // We use SendMessage and not PostMessage to make sure that if the
-  // notification window does not handle the message we won't leak
-  // the moniker.
-  ::SendMessage(notification_window_, WM_DOWNLOAD_IN_HOST,
-        reinterpret_cast<WPARAM>(&download_params), 0);
+  ::PostMessage(notification_window_, WM_DOWNLOAD_IN_HOST,
+        reinterpret_cast<WPARAM>(download_params), 0);
 }
 
 void UrlmonUrlRequestManager::GetCookiesForUrl(const GURL& url, int cookie_id) {

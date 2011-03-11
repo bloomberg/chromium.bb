@@ -477,6 +477,7 @@ END_MSG_MAP()
           UTF8ToWide(download_params->request_headers).c_str(),
           download_params->bind_ctx, NULL, download_params->post_data);
     }
+    delete download_params;
     return TRUE;
   }
 
