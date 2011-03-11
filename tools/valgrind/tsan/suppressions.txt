@@ -145,16 +145,6 @@
   fun:browser_sync::*
 }
 
-{
-  bug_75607
-  ThreadSanitizer:Race
-  fun:WebCore::ResourceResponseBase::~ResourceResponseBase*
-  fun:WebCore::ResourceResponse::~ResourceResponse*
-  ...
-  fun:WebCore::DocumentLoader::~DocumentLoader*
-  fun:WebKit::WebDataSourceImpl::~WebDataSourceImpl*
-}
-
 ############################
 # Benign races
 {
@@ -533,4 +523,21 @@
   tsanbug_62b
   ThreadSanitizer:Race
   fun:__GI_memcpy
+}
+
+{
+  bug_70085a
+  ThreadSanitizer:Race
+  fun:WebCore::ResourceResponseBase::~ResourceResponseBase*
+  fun:WebCore::ResourceResponse::~ResourceResponse*
+  ...
+  fun:WebCore::DocumentLoader::~DocumentLoader*
+  fun:WebKit::WebDataSourceImpl::~WebDataSourceImpl*
+}
+
+{
+  bug_70085b
+  ThreadSanitizer:Race
+  fun:WebCore::SecurityOrigin::~SecurityOrigin*
+  fun:WTF::ThreadSafeShared<WebCore::SecurityOrigin>::deref*
 }
