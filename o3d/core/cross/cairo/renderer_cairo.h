@@ -247,6 +247,9 @@ class RendererCairo : public Renderer {
 
   // Array of Layer
   LayerList layer_list_;
+
+  // Fullscreen mode.
+  bool fullscreen_;
 };
 
 }  // namespace o2d

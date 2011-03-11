@@ -68,7 +68,8 @@ RendererCairo::RendererCairo(ServiceLocator* service_locator)
 #elif defined(OS_WIN)
       hwnd_(NULL),
 #endif
-      main_surface_(NULL) {
+      main_surface_(NULL),
+      fullscreen_(false) {
   // Don't need to do anything.
 }
 
@@ -449,8 +450,21 @@ void RendererCairo::SetViewportInPixels(int left,
 // Returns true on success, false on failure.
 bool RendererCairo::GoFullscreen(const DisplayWindow& display,
                                  int mode_id) {
-  NOTIMPLEMENTED();
-  return false;
+  if (!fullscreen_) {
+    DLOG(INFO) << "RendererCairo entering fullscreen";
+#if defined(OS_WIN)
+    DEVMODE dev_mode;
+    if (hwnd_ != NULL &&
+        EnumDisplaySettings(NULL, ENUM_CURRENT_SETTINGS, &dev_mode)) {
+      int width = dev_mode.dmPelsWidth;
+      int height = dev_mode.dmPelsHeight;
+
+      fullscreen_ = true;
+      Resize(width, height);
+    }
+#endif
+  }
+  return fullscreen_;
 }
 
 // TODO(fransiskusx): Need to implement it later.
@@ -463,15 +477,24 @@ bool RendererCairo::GoFullscreen(const DisplayWindow& display,
 // Returns true on success, false on failure.
 bool RendererCairo::CancelFullscreen(const DisplayWindow& display,
                                      int width, int height) {
-  NOTIMPLEMENTED();
-  return false;
+#if defined(OS_WIN)
+  if (hwnd_ == NULL) {
+    // Not initialized.
+    return false;
+  }
+#endif
+  if (fullscreen_) {
+    DLOG(INFO) << "RendererCairo exiting fullscreen";
+    fullscreen_ = false;
+    Resize(width, height);
+  }
+  return true;
 }
 
 // TODO(fransiskusx): Need to implement it later.
 // Tells whether we're currently displayed fullscreen or not.
 bool RendererCairo::fullscreen() const {
-  NOTIMPLEMENTED();
-  return false;
+  return fullscreen_;
 }
 
 // TODO(fransiskusx): This function is not applicable to 2D rendering.
