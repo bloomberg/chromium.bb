@@ -47,6 +47,10 @@ def BuildArgParser():
                     default=5.0,
                     help='The maximum amount of time to wait for the browser to'
                     ' make a request. The timer resets with each request.')
+  parser.add_option('--allow_404', dest='allow_404', action='store_true',
+                    default=False,
+                    help='Allow 404s to occur without failing the test.')
+
   return parser
 
 
@@ -61,7 +65,7 @@ def Run(url, options):
   host, port = server.socket.getsockname()
 
   listener = browsertester.rpclistener.RPCListener(server.TestingEnded)
-  server.Configure(options.files, listener)
+  server.Configure(options, listener)
 
   browser = browsertester.browserlauncher.ChromeLauncher(options.browser_path,
                                                          options.debug)

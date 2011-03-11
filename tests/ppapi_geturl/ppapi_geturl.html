@@ -5,166 +5,81 @@
   <head>
     <META HTTP-EQUIV="Pragma" CONTENT="no-cache" />
     <META HTTP-EQUIV="Expires" CONTENT="-1" />
-    <style type="text/css">
-      pre.notrun { background-color: skyblue }
-      pre.pass { background-color: lime }
-      pre.fail { background-color: red }
-    </style>
-
-
   <title>PPAPI GetURL Test</title>
   </head>
-  <body onload="nacllib.waitForModulesAndRunTests();"
-        onunload="nacllib.cleanUp();" >
+  <body>
     <h1>PPAPI GetURL Test</h1>
 
-    <table border=5 cellpadding=5% summary=''>
-      <tr><td> <b>Load via Buffer</b>
-          <td> <b>Load via File</b>
-      <tr><td><pre id='Valid' class='notrun'></pre>
-          <td><pre id='Valid_File' class='notrun'></pre>
-      <tr><td><pre id='CrossOrigin' class='notrun'></pre>
-          <td><pre id='CrossOrigin_File' class='notrun'></pre>
-      <tr><td><pre id='Invalid' class='notrun'></pre>
-          <td><pre id='Invalid_File' class='notrun'></pre>
-    </table>
-
-    <div id="status">NO-STATUS</div>
-
     <embed type="application/x-nacl" id="nacl" name="nacl_module"
-           src="ppapi_geturl.nexe" width="0" height="0" />
+           nacl="ppapi_geturl.nmf" width="0" height="0" />
 
-    <script type="text/javascript" src="nacl_js_lib.js"></script>
+    <script type="text/javascript" src="nacltest.js"></script>
     <script type="text/javascript">
       //<![CDATA[
-var globalTestsStarted = [];
-var globalTestsFinishedGood = [];
-var globalTestsFinishedBad  = [];
+      var VALID_URL = 'ppapi_geturl_success.html';
+      var CROSSORIGIN_URL = 'http://www.google.com/robots.txt';
+      var INVALID_URL = 'ppapi_nonexistent_url.html';
 
+      function isMatch(actual, expected) {
+        return (0 <= actual.indexOf(expected));
+      }
 
-var VALID_URL = 'ppapi_geturl_success.html';
-var CROSSORIGIN_URL = 'http://www.google.com/robots.txt';
-var INVALID_URL = 'ppapi_nonexistent_url.html';
+      function setupTests(tester, plugin) {
+        // TODO(ncbray) replace with an asynchronous test framework
+        function makeTest(name, url, as_file, expected_data, expected_success) {
+          tester.addTest(name, function() {
+            // Variables to hold the response.
+            var responded = false;
+            var response_url = undefined;
+            var response_as_file = undefined;
+            var response_data = undefined;
+            var response_success = undefined;
 
+            // Intentionally sets a global variable
+            // This prevents running the tests in parallel...
+            ReportResult = function(url, as_file, data, success) {
+              response_url = url;
+              response_as_file = as_file;
+              response_data = data;
+              response_success = success;
+              responded = true;
+            }
 
-// List of tests in concise tuple/list representation.
-// tuple indices for readability
-var TEST_ID = 0;
-var TEST_TYPE = 1;
-var TEST_URL = 2;
-var TEST_EXPECTED = 3;
-var TEST_SUCCESS = 4;
-var TEST_USE_FILE = 5;
+            // Make the request.
+            plugin.loadUrl(url, as_file);
 
-var TESTS = [
-  // id, type, url, expected_result, expect_success, use_file (inst. of buffer)
-  ['Valid', 'valid', VALID_URL, 'TEST PASSED', true, false],
-  ['Valid_File', 'valid', VALID_URL, 'TEST PASSED', true, true],
-  ['CrossOrigin',
-   'cross-origin', CROSSORIGIN_URL, 'PP_ERROR_NOACCESS', false, false],
-  ['CrossOrigin_File',
-   'cross-origin', CROSSORIGIN_URL, 'PP_ERROR_NOACCESS', false, true],
-  ['Invalid', 'invalid', INVALID_URL, '404', false, false],
-  ['Invalid_File', 'invalid', INVALID_URL, '404', false, true],
-];
+            function wait() {
+              if (!responded) {
+                // Periodically poll until the results are ready.
+                halt_and_callback(5, wait);
+              } else {
+                // Validate the results.
+                assert(isMatch(response_url, url));
+                assertEqual(response_as_file, as_file);
+                tester.log(response_data);
+                assert(isMatch(response_data, expected_data));
+                assertEqual(response_success, expected_success);
+              }
+            }
+            wait();
+          });
+        }
 
-function $(id) {
-  return document.getElementById(id);
-}
+        makeTest('Valid', VALID_URL, false, 'TEST PASSED', true);
+        makeTest('Valid_File', VALID_URL, true, 'TEST PASSED', true);
+        makeTest('CrossOrigin', CROSSORIGIN_URL, false, 'PP_ERROR_NOACCESS',
+                 false);
+        makeTest('CrossOrigin_File', CROSSORIGIN_URL, true, 'PP_ERROR_NOACCESS',
+                 false);
+        makeTest('Invalid', INVALID_URL, false, '404', false);
+        makeTest('Invalid_File', INVALID_URL, true, '404', false);
+      }
 
-
-function isMatch(actual, expected) {
-  return (0 <= actual.indexOf(expected));
-}
-
-
-function logTestMessage(id, message) {
-  var logElement = $(id);
-  logElement.textContent += message + '\n';
-}
-
-
-// Validates the data loaded from the url. To be called by the plugin to
-// complete each test on both success and failure or the test will time out.
-function ReportResult(url, asFile, result, success) {
-  console.log('plugin callback: ' + success + ' ' + url + ' ' + asFile);
-  for (var i = 0; i < TESTS.length; i++) {
-    var test = TESTS[i];
-    if (test[TEST_USE_FILE] != asFile) continue;
-    if (!isMatch(url, test[TEST_URL])) continue;
-
-    var expectedSuccess = test[TEST_SUCCESS];
-    var isRightResult = isMatch(result, test[TEST_EXPECTED]);
-    var id = test[TEST_ID];;
-
-    logTestMessage(id, 'FULL URL   : ' + url);
-    logTestMessage(id, 'LOAD STATUS:' +
-                       ' success=' + success +
-                       ' expected=' + expectedSuccess +
-                       ' result=' + isRightResult);
-    logTestMessage(id, 'LOAD RESULT: ' + result);
-
-    var element = $(id);
-    if (success != expectedSuccess || !isRightResult) {
-      console.log('FAILURE');
-      element.className = 'fail';
-      globalTestsFinishedBad.push(id);
-    } else {
-      console.log('SUCCESS');
-      element.className = 'pass';
-      globalTestsFinishedGood.push(id);
-    }
-    return;
-  }
-  console.log('ERROR: no match found');
-}
-
-// Start tests asynchronously. Plugin must call ReportResult() above
-// to complete each test on success or failure or the test will time out.
-function startTests() {
-  var plugin = $('nacl');
-  for (var i = 0; i < TESTS.length; i++) {
-    var test = TESTS[i];
-    var url = test[TEST_URL];
-    var id = test[TEST_ID];
-    logTestMessage(id,  'Loading ' + test[TEST_TYPE] + ' URL ' + url);
-    plugin.loadUrl(url, test[TEST_USE_FILE]);
-    globalTestsStarted.push(id);
-  }
-}
-
-var nacllib = new NaclLib('nacl_module', 'status', 500);
-
-// Returns true (for "wait") to the NaclLib test driver until all of the
-// tests are complete.  I.e., either all of the file load callbacks have
-// completed successfully or an error has occurred.
-nacllib.wait = function() {
-  var completed =
-      globalTestsFinishedBad.length + globalTestsFinishedGood.length;
-  if (globalTestsStarted.length == 0) {
-      console.log('start tests');
-      startTests();
-      return 'tests started';
-  } else if (globalTestsStarted.length == completed) {
-     console.log('tests finished');
-     return '';
-  } else {
-    return 'waiting';
-  }
-}
-
-// Returns the test status to the NaclLib test driver.  This is called
-// by the NaclLib test driver after the wait() method has returned false.
-// I.e., this is called only after all tests are complete.
-nacllib.test = function() {
-  console.log('check results');
-  if (globalTestsFinishedGood.length == globalTestsStarted.length) {
-    return ''; // success
-  } else {
-    return 'ok:  [' + globalTestsFinishedGood.join(' ') + ']  ' +
-           'bad: [' + globalTestsFinishedBad.join(' ') + ']';
-  }
-}
+      // TODO(ncbray) allow the test to run in parallel
+      var tester = new Tester();
+      setupTests(tester, $('nacl'));
+      tester.waitFor($('nacl'));
+      tester.run();
       //]]>
     </script>
   </body>
