@@ -15,6 +15,7 @@
 #include "ppapi/c/dev/pp_video_dev.h"
 #include "ppapi/c/dev/ppb_buffer_dev.h"
 #include "ppapi/c/dev/ppb_char_set_dev.h"
+#include "ppapi/c/dev/ppb_console_dev.h"
 #include "ppapi/c/dev/ppb_context_3d_dev.h"
 #include "ppapi/c/dev/ppb_context_3d_trusted_dev.h"
 #include "ppapi/c/dev/ppb_cursor_control_dev.h"

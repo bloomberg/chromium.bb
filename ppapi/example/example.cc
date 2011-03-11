@@ -11,6 +11,7 @@
 
 #include <algorithm>
 
+#include "ppapi/c/dev/ppb_console_dev.h"
 #include "ppapi/c/dev/ppp_printing_dev.h"
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/c/pp_input_event.h"
@@ -175,6 +176,14 @@ class MyInstance : public pp::Instance, public MyFetcherClient {
     return true;
   }
 
+  void Log(PP_LogLevel_Dev level, const pp::Var& value) {
+    const PPB_Console_Dev* console = reinterpret_cast<const PPB_Console_Dev*>(
+        pp::Module::Get()->GetBrowserInterface(PPB_CONSOLE_DEV_INTERFACE));
+    if (!console)
+      return;
+    console->Log(pp_instance(), level, value.pp_var());
+  }
+
   virtual bool HandleDocumentLoad(const pp::URLLoader& loader) {
     fetcher_ = new MyFetcher();
     fetcher_->StartWithOpenedLoader(loader, this);
@@ -184,7 +193,7 @@ class MyInstance : public pp::Instance, public MyFetcherClient {
   virtual bool HandleInputEvent(const PP_InputEvent& event) {
     switch (event.type) {
       case PP_INPUTEVENT_TYPE_MOUSEDOWN:
-        //SayHello();
+        SayHello();
         return true;
       case PP_INPUTEVENT_TYPE_MOUSEMOVE:
         return true;
@@ -242,6 +251,7 @@ class MyInstance : public pp::Instance, public MyFetcherClient {
   }
 
   virtual void DidChangeView(const pp::Rect& position, const pp::Rect& clip) {
+    Log(PP_LOGLEVEL_LOG, "DidChangeView");
     if (position.size().width() == width_ &&
         position.size().height() == height_)
       return;  // We don't care about the position, only the size.
@@ -342,18 +352,6 @@ class MyInstance : public pp::Instance, public MyFetcherClient {
   }
 
  private:
-  void Log(const pp::Var& var) {
-    pp::Var doc = GetWindowObject().GetProperty("document");
-    if (console_.is_undefined()) {
-      pp::Var body = doc.GetProperty("body");
-      console_ = doc.Call("createElement", "pre");
-      console_.GetProperty("style").SetProperty("backgroundColor", "lightgray");
-      body.Call("appendChild", console_);
-    }
-    console_.Call("appendChild", doc.Call("createTextNode", var));
-    console_.Call("appendChild", doc.Call("createTextNode", "\n"));
-  }
-
   void SayHello() {
     pp::Var window = GetWindowObject();
     pp::Var doc = window.GetProperty("document");
@@ -362,20 +360,20 @@ class MyInstance : public pp::Instance, public MyFetcherClient {
     pp::Var obj(this, new MyScriptableObject(this));
 
     // Our object should have its toString method called.
-    Log("Testing MyScriptableObject::toString():");
-    Log(obj);
+    Log(PP_LOGLEVEL_LOG, "Testing MyScriptableObject::toString():");
+    Log(PP_LOGLEVEL_LOG, obj);
 
     // body.appendChild(body) should throw an exception
-    Log("\nCalling body.appendChild(body):");
+    Log(PP_LOGLEVEL_LOG, "Calling body.appendChild(body):");
     pp::Var exception;
     body.Call("appendChild", body, &exception);
-    Log(exception);
+    Log(PP_LOGLEVEL_LOG, exception);
 
-    Log("\nEnumeration of window properties:");
+    Log(PP_LOGLEVEL_LOG, "Enumeration of window properties:");
     std::vector<pp::Var> props;
     window.GetAllPropertyNames(&props);
     for (size_t i = 0; i < props.size(); ++i)
-      Log(props[i]);
+      Log(PP_LOGLEVEL_LOG, props[i]);
 
     pp::Var location = window.GetProperty("location");
     pp::Var href = location.GetProperty("href");
@@ -387,11 +385,11 @@ class MyInstance : public pp::Instance, public MyFetcherClient {
   }
 
   void DidFetch(bool success, const std::string& data) {
-    Log("\nDownloaded location.href:");
+    Log(PP_LOGLEVEL_LOG, "Downloaded location.href:");
     if (success) {
-      Log(data);
+      Log(PP_LOGLEVEL_LOG, data);
     } else {
-      Log("Failed to download.");
+      Log(PP_LOGLEVEL_ERROR, "Failed to download.");
     }
     delete fetcher_;
     fetcher_ = NULL;

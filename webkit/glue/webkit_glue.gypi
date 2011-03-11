@@ -283,6 +283,8 @@
         '../plugins/ppapi/ppb_buffer_impl.h',
         '../plugins/ppapi/ppb_char_set_impl.cc',
         '../plugins/ppapi/ppb_char_set_impl.h',
+        '../plugins/ppapi/ppb_console_impl.cc',
+        '../plugins/ppapi/ppb_console_impl.h',
         '../plugins/ppapi/ppb_context_3d_impl.cc',
         '../plugins/ppapi/ppb_context_3d_impl.h',
         '../plugins/ppapi/ppb_cursor_control_impl.cc',

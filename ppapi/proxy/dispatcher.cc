@@ -47,6 +47,7 @@
 #include "ppapi/proxy/ppb_audio_proxy.h"
 #include "ppapi/proxy/ppb_buffer_proxy.h"
 #include "ppapi/proxy/ppb_char_set_proxy.h"
+#include "ppapi/proxy/ppb_console_proxy.h"
 #include "ppapi/proxy/ppb_context_3d_proxy.h"
 #include "ppapi/proxy/ppb_core_proxy.h"
 #include "ppapi/proxy/ppb_cursor_control_proxy.h"
@@ -105,6 +106,7 @@ InterfaceList::InterfaceList() {
   AddPPB(PPB_Audio_Proxy::GetInfo());
   AddPPB(PPB_Buffer_Proxy::GetInfo());
   AddPPB(PPB_CharSet_Proxy::GetInfo());
+  AddPPB(PPB_Console_Proxy::GetInfo());
   AddPPB(PPB_Context3D_Proxy::GetInfo());
   AddPPB(PPB_Core_Proxy::GetInfo());
   AddPPB(PPB_CursorControl_Proxy::GetInfo());

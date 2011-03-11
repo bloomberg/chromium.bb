@@ -54,6 +54,9 @@ class Var : public base::RefCounted<Var> {
   // given module. A returned string will have a reference count of 1.
   static PP_Var NPIdentifierToPPVar(PluginModule* module, NPIdentifier id);
 
+  // Returns a string representing the given var for logging purposes.
+  static std::string PPVarToLogString(PP_Var var);
+
   // Provides access to the manual refcounting of a PP_Var from the plugin's
   // perspective. This is different than the AddRef/Release on this scoped
   // object. This uses the ResourceTracker, which keeps a separate "plugin

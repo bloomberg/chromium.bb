@@ -81,6 +81,8 @@
         'proxy/ppb_buffer_proxy.h',
         'proxy/ppb_char_set_proxy.cc',
         'proxy/ppb_char_set_proxy.h',
+        'proxy/ppb_console_proxy.cc',
+        'proxy/ppb_console_proxy.h',
         'proxy/ppb_context_3d_proxy.cc',
         'proxy/ppb_context_3d_proxy.h',
         'proxy/ppb_core_proxy.cc',

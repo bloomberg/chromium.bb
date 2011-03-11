@@ -8,6 +8,7 @@
 
 #include "base/logging.h"
 #include "base/scoped_ptr.h"
+#include "base/string_number_conversions.h"
 #include "base/string_util.h"
 #include "ppapi/c/dev/ppb_var_deprecated.h"
 #include "ppapi/c/ppb_var.h"
@@ -721,6 +722,38 @@ PP_Var Var::NPIdentifierToPPVar(PluginModule* module, NPIdentifier id) {
     return StringVar::StringToPPVar(module, string_value);
 
   return PP_MakeInt32(int_value);
+}
+
+// static
+std::string Var::PPVarToLogString(PP_Var var) {
+  switch (var.type) {
+    case PP_VARTYPE_UNDEFINED:
+      return "[Undefined]";
+    case PP_VARTYPE_NULL:
+      return "[Null]";
+    case PP_VARTYPE_BOOL:
+      return var.value.as_bool ? "[True]" : "[False]";
+    case PP_VARTYPE_INT32:
+      return base::IntToString(var.value.as_int);
+    case PP_VARTYPE_DOUBLE:
+      return base::DoubleToString(var.value.as_double);
+    case PP_VARTYPE_STRING: {
+      scoped_refptr<StringVar> string(StringVar::FromPPVar(var));
+      if (!string)
+        return "[Invalid string]";
+
+      // Since this is for logging, escape NULLs.
+      std::string result = string->value();
+      std::string null;
+      null.push_back(0);
+      ReplaceSubstringsAfterOffset(&result, 0, null, "\\0");
+      return result;
+    }
+    case PP_VARTYPE_OBJECT:
+      return "[Object]";
+    default:
+      return "[Invalid var]";
+  }
 }
 
 // static

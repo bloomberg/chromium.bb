@@ -216,6 +216,17 @@ IPC_SYNC_MESSAGE_ROUTED2_2(PpapiHostMsg_PPBBuffer_Create,
                            pp::proxy::HostResource /* result_resource */,
                            int32_t /* result_shm_handle */)
 
+// PPB_Console.
+IPC_MESSAGE_ROUTED3(PpapiHostMsg_PPBConsole_Log,
+                    PP_Instance /* instance */,
+                    int /* log_level */,
+                    pp::proxy::SerializedVar /* value */)
+IPC_MESSAGE_ROUTED4(PpapiHostMsg_PPBConsole_LogWithSource,
+                    PP_Instance /* instance */,
+                    int /* log_level */,
+                    pp::proxy::SerializedVar /* soruce */,
+                    pp::proxy::SerializedVar /* value */)
+
 // PPB_Context3D.
 IPC_SYNC_MESSAGE_ROUTED3_1(PpapiHostMsg_PPBContext3D_Create,
                            PP_Instance /* instance */,
