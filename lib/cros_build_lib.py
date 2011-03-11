@@ -28,8 +28,17 @@ class CommandResult(object):
 
 class RunCommandError(Exception):
   """Error caught in RunCommand() method."""
-  pass
+  def __init__(self, msg, cmd):
+    self.cmd = cmd
+    Exception.__init__(self, msg)
 
+  def __eq__(self, other):
+    return (type(self) == type(other) and
+            str(self) == str(other) and
+            self.cmd == other.cmd)
+
+  def __ne__(self, other):
+    return not self.__eq__(other)
 
 def RunCommand(cmd, print_cmd=True, error_ok=False, error_message=None,
                exit_code=False, redirect_stdout=False, redirect_stderr=False,
@@ -106,7 +115,7 @@ def RunCommand(cmd, print_cmd=True, error_ok=False, error_message=None,
     if not error_ok and proc.returncode:
       msg = ('Command "%s" failed.\n' % cmd_str +
              (error_message or cmd_result.error or cmd_result.output or ''))
-      raise RunCommandError(msg)
+      raise RunCommandError(msg, cmd)
   # TODO(sosa): is it possible not to use the catch-all Exception here?
   except Exception, e:
     if not error_ok:
@@ -285,7 +294,17 @@ def GetCallerName():
 
 class RunCommandException(Exception):
   """Raised when there is an error in OldRunCommand."""
-  pass
+  def __init__(self, msg, cmd):
+    self.cmd = cmd
+    Exception.__init__(self, msg)
+
+  def __eq__(self, other):
+    return (type(self) == type(other) and
+            str(self) == str(other) and
+            self.cmd == other.cmd)
+
+  def __ne__(self, other):
+    return not self.__eq__(other)
 
 
 def OldRunCommand(cmd, print_cmd=True, error_ok=False, error_message=None,
@@ -344,7 +363,8 @@ def OldRunCommand(cmd, print_cmd=True, error_ok=False, error_message=None,
         break
 
       raise RunCommandException('Command "%r" failed.\n' % (cmd) +
-                                (error_message or error or output or ''))
+                                (error_message or error or output or ''),
+                                cmd)
     except RunCommandException as e:
       if not error_ok and retry_count == num_retries:
         raise e

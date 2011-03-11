@@ -193,6 +193,23 @@ class TestRunCommand(unittest.TestCase):
                   rc_kv=dict(env=env, exit_code=True))
 
 
+  def testExceptionEquality(self):
+    """Verify equality methods for RunCommandError"""
+
+    e1 = cros_build_lib.RunCommandError('Message 1', ['ls', 'arg'])
+    e2 = cros_build_lib.RunCommandError('Message 1', ['ls', 'arg'])
+    e_diff_msg = cros_build_lib.RunCommandError('Message 2', ['ls', 'arg'])
+    e_diff_cmd = cros_build_lib.RunCommandError('Message 1', ['ls', 'arg1'])
+
+    self.assertTrue(e1 == e2)
+    self.assertFalse(e1 != e2)
+
+    self.assertFalse(e1 == e_diff_msg)
+    self.assertTrue(e1 != e_diff_msg)
+
+    self.assertFalse(e1 == e_diff_cmd)
+    self.assertTrue(e1 != e_diff_cmd)
+
 class TestListFiles(unittest.TestCase):
 
   def setUp(self):
@@ -244,6 +261,25 @@ class TestListFiles(unittest.TestCase):
       cros_build_lib.ListFiles('/me/no/existe')
     except OSError, err:
       self.assertEqual(err.errno, errno.ENOENT)
+
+class TestOldRunCommand(unittest.TestCase):
+  """Tests related to OldRunCommand."""
+
+  def testExceptionEquality(self):
+    """Verify equality methods for RunCommandException"""
+    e1 = cros_build_lib.RunCommandException('Message 1', ['ls', 'arg'])
+    e2 = cros_build_lib.RunCommandException('Message 1', ['ls', 'arg'])
+    e_diff_msg = cros_build_lib.RunCommandException('Message 2', ['ls', 'arg'])
+    e_diff_cmd = cros_build_lib.RunCommandException('Message 1', ['ls', 'arg1'])
+
+    self.assertTrue(e1 == e2)
+    self.assertFalse(e1 != e2)
+
+    self.assertFalse(e1 == e_diff_msg)
+    self.assertTrue(e1 != e_diff_msg)
+
+    self.assertFalse(e1 == e_diff_cmd)
+    self.assertTrue(e1 != e_diff_cmd)
 
 
 class HelperMethodMoxTests(unittest.TestCase):

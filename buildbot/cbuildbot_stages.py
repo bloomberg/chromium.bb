@@ -17,7 +17,6 @@ PUBLIC_OVERLAY = '%(buildroot)s/src/third_party/chromiumos-overlay'
 _CROS_ARCHIVE_URL = 'CROS_ARCHIVE_URL'
 OVERLAY_LIST_CMD = '%(buildroot)s/src/platform/dev/host/cros_overlay_list'
 
-
 class BuilderStage():
   """Parent class for stages to be performed by a builder."""
   name_stage_re = re.compile('(\w+)Stage')
@@ -30,6 +29,69 @@ class BuilderStage():
   rev_overlays = None
   push_overlays = None
   archive_url = None
+
+  class Results:
+    """Static class that collects the results of our BuildStages as they run."""
+
+    # List of results for all stages that's built up as we run. Members are of
+    #  the form ('name', None or e)
+    _results_log = []
+
+    @classmethod
+    def Clear(cls):
+      """Clear existing stage results."""
+      cls._results_log = []
+    
+    @classmethod
+    def Record(cls, name, exception=None):
+      """Store off an additional stage result."""
+      cls._results_log.append((name, exception))
+    
+    @classmethod
+    def Get(cls):
+      """Fetch stage results.
+    
+         Returns:
+           A list with one entry per stage run with members of the form
+          ('name', None or Exception)
+      """
+      return cls._results_log
+    
+    @classmethod
+    def Report(cls):
+      """Generate a user friendly text display of the results data."""
+      results = cls.Get() 
+    
+      line = '*' * 60 
+      edge = '*' * 2 
+    
+      report = []
+    
+      report.append(line)
+      report.append(edge + ' Stage Results')
+    
+      for name, result in results:
+        report.append(line)
+    
+        if result:
+          # If there was an error, describe it. If it was
+          # as RunCommand error, give the command that failed,
+          # or else just the exception name. Details are given
+          # when the actual stage failed.
+          if type(result) in (cros_lib.RunCommandException,
+                              cros_lib.RunCommandError):
+            report.append('%s %s failed in %s' %
+                          (edge, name, result.cmd[0]))
+          else:
+            report.append('%s %s failed with %s' %
+                          (edge, name, type(result).__name__))
+        else:
+          # If there wasn't an error, don't describe it. ;>
+          report.append('%s %s' % (edge, name))
+    
+      report.append(line)
+      return '\n'.join(report)
+
 
   def __init__(self, bot_id, options, build_config):
     self._bot_id = bot_id
@@ -137,6 +199,11 @@ class BuilderStage():
     self._Begin()
     try:
       self._PerformStage()
+    except Exception as e:
+      self.Results.Record(self._name, e)
+      raise
+    else:
+      self.Results.Record(self._name)
     finally:
       self._Finish()
 

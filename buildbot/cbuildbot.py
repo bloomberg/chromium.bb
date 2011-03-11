@@ -14,6 +14,7 @@ import errno
 import optparse
 import os
 import sys
+import traceback
 
 if __name__ == '__main__':
   import constants
@@ -38,6 +39,54 @@ def _GetConfig(config_name):
     sys.exit(1)
 
   return cbuildbot_config.config[config_name]
+
+
+def RunBuildStages(bot_id, options, build_config):
+  """Run the requested build stages."""
+  try:
+    if options.sync:
+      stages.SyncStage(bot_id, options, build_config).Run()
+
+    if options.build:
+      stages.BuildBoardStage(bot_id, options, build_config).Run()
+
+    if options.uprev:
+      stages.UprevStage(bot_id, options, build_config).Run()
+
+    if options.build:
+      stages.BuildTargetStage(bot_id, options, build_config).Run()
+
+    # TODO(sosa): We only want to archive artifacts if we have artifacts to
+    # archive.  Today this means we have at least built an image.  We should
+    # make this more general and have dependencies within stages themselves ...
+    # i.e. archive -> build_target ... however someday it might be
+    # archive->sync.
+    try:
+      if options.tests:
+        stages.TestStage(bot_id, options, build_config).Run()
+
+      # Control master / slave logic here.
+      if build_config['master']:
+        if cbuildbot_comm.HaveSlavesCompleted(cbuildbot_config.config):
+          stages.PushChangesStage(bot_id, options, build_config).Run()
+        else:
+          cros_lib.Die('One of the other slaves failed.')
+
+      elif build_config['important']:
+        cbuildbot_comm.PublishStatus(cbuildbot_comm.STATUS_BUILD_COMPLETE)
+
+    finally:
+      if options.archive:
+        stages.ArchiveStage(bot_id, options, build_config).Run()
+        cros_lib.Info('BUILD ARTIFACTS FOR THIS BUILD CAN BE FOUND AT:')
+        cros_lib.Info(stages.BuilderStage.archive_url)
+
+  except:
+    # Send failure to master.
+    if not build_config['master'] and build_config['important']:
+      cbuildbot_comm.PublishStatus(cbuildbot_comm.STATUS_BUILD_FAILED)
+
+    raise
 
 
 def main():
@@ -98,49 +147,13 @@ def main():
     parser.error('Invalid usage.  Use -h to see usage.')
 
   try:
-    if options.sync:
-      stages.SyncStage(bot_id, options, build_config).Run()
-
-    if options.build:
-      stages.BuildBoardStage(bot_id, options, build_config).Run()
-
-    if options.uprev:
-      stages.UprevStage(bot_id, options, build_config).Run()
-
-    if options.build:
-      stages.BuildTargetStage(bot_id, options, build_config).Run()
-
-    # TODO(sosa): We only want to archive artifacts if we have artifacts to
-    # archive.  Today this means we have at least built an image.  We should
-    # make this more general and have dependencies within stages themselves ...
-    # i.e. archive -> build_target ... however someday it might be
-    # archive->sync.
-    try:
-      if options.tests:
-        stages.TestStage(bot_id, options, build_config).Run()
-
-      # Control master / slave logic here.
-      if build_config['master']:
-        if cbuildbot_comm.HaveSlavesCompleted(cbuildbot_config.config):
-          stages.PushChangesStage(bot_id, options, build_config).Run()
-        else:
-          cros_lib.Die('One of the other slaves failed.')
-
-      elif build_config['important']:
-        cbuildbot_comm.PublishStatus(cbuildbot_comm.STATUS_BUILD_COMPLETE)
-
-    finally:
-      if options.archive:
-        stages.ArchiveStage(bot_id, options, build_config).Run()
-        cros_lib.Info('BUILD ARTIFACTS FOR THIS BUILD CAN BE FOUND AT:')
-        cros_lib.Info(stages.BuilderStage.archive_url)
-
-  except:
-    # Send failure to master.
-    if not build_config['master'] and build_config['important']:
-      cbuildbot_comm.PublishStatus(cbuildbot_comm.STATUS_BUILD_FAILED)
-
-    raise
+    RunBuildStages(bot_id, options, build_config)
+  except Exception as e:
+    traceback.print_exc()
+    print '\n'
+    print '\n'
+  finally:
+    print stages.BuilderStage.Results.Report()
 
 
 if __name__ == '__main__':

@@ -81,6 +81,102 @@ class BuilderStageTest(mox.MoxTestBase):
     self.mox.VerifyAll()
 
 
+class BuildStagesReportTest(BuilderStageTest):
+
+  def testStagesReport(self):
+    """Tests Stage results are properly gathered and reported."""
+
+    failException = Exception("FailStage needs to fail.")
+
+    class PassStage(stages.BuilderStage):
+      """PassStage always works"""
+      pass
+
+    class FailStage(stages.BuilderStage):
+      """FailStage always throws an exception"""
+
+      def _PerformStage(self):
+        """Throw the exception to make us fail."""
+        raise failException
+
+    class FailRunCommandStage(stages.BuilderStage):
+      """FailStage always throws an exception"""
+
+      def _PerformStage(self):
+        """Throw the exception to make us fail."""
+        cros_lib.RunCommand(['/bin/false', '/nosuchdir'],
+                            redirect_stdout=True,
+                            redirect_stderr=True)
+
+    class FailOldRunCommandStage(stages.BuilderStage):
+      """FailStage always throws an exception"""
+
+      def _PerformStage(self):
+        """Throw the exception to make us fail."""
+        cros_lib.OldRunCommand(['/bin/false', '/nosuchdir'],
+                               redirect_stdout=True,
+                               redirect_stderr=True)
+
+    stages.BuilderStage.Results.Clear()
+    self.assertEqual(stages.BuilderStage.Results.Get(), [])
+
+    # Run two stages
+    PassStage(self.bot_id, self.options, self.build_config).Run()
+
+    self.assertRaises(
+        Exception,
+        FailStage(self.bot_id, self.options, self.build_config).Run)
+
+    self.assertRaises(
+        cros_lib.RunCommandError,
+        FailRunCommandStage(self.bot_id, self.options, self.build_config).Run)
+
+    self.assertRaises(
+        cros_lib.RunCommandException,
+        FailOldRunCommandStage(self.bot_id,
+                               self.options,
+                               self.build_config).Run)
+
+    # Verify that the results are what we expect.
+    expectedResults = [
+        ('Pass', None),
+        ('Fail', failException),
+        ('FailRunCommand',
+         cros_lib.RunCommandError(
+             'Command "/bin/false /nosuchdir" failed.\n',
+             ['/bin/false', '/nosuchdir'])),
+        ('FailOldRunCommand',
+         cros_lib.RunCommandException(
+             'Command "[\'/bin/false\', \'/nosuchdir\']" failed.\n',
+             ['/bin/false', '/nosuchdir']))
+        ]
+
+    actualResults = stages.BuilderStage.Results.Get()
+    
+    # Break out the asserts to be per item to make debugging easier
+    self.assertEqual(len(expectedResults), len(actualResults))
+    for i in xrange(len(expectedResults)):
+      self.assertEqual(expectedResults[i], actualResults[i])
+
+    self.assertEqual(
+        stages.BuilderStage.Results.Report(),
+        "************************************************************\n"
+        "** Stage Results\n"
+        "************************************************************\n"
+        "** Pass\n"
+        "************************************************************\n"
+        "** Fail failed with Exception\n"
+        "************************************************************\n"
+        "** FailRunCommand failed in /bin/false\n"
+        "************************************************************\n"
+        "** FailOldRunCommand failed in /bin/false\n"
+        "************************************************************")
+
+    # Prove we really can clear it.
+    stages.BuilderStage.Results.Clear()
+    self.assertEqual(stages.BuilderStage.Results.Get(), [])
+
+
 class SyncStageTest(BuilderStageTest):
 
   def setUp(self):
