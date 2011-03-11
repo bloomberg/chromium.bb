@@ -664,25 +664,21 @@ int ChromeMain(int argc, char** argv) {
   if (command_line.HasSwitch(switches::kMessageLoopHistogrammer))
     MessageLoop::EnableHistogrammer(true);
 
-  bool single_process =
-#if defined (GOOGLE_CHROME_BUILD)
-    // This is an unsupported and not fully tested mode, so don't enable it for
-    // official Chrome builds.
-    false;
-#else
-    command_line.HasSwitch(switches::kSingleProcess);
-#endif
-  if (single_process)
+  // Single-process is an unsupported and not fully tested mode, so
+  // don't enable it for official Chrome builds.
+#if !defined(GOOGLE_CHROME_BUILD)
+  if (command_line.HasSwitch(switches::kSingleProcess)) {
     RenderProcessHost::set_run_renderer_in_process(true);
 #if defined(OS_MACOSX)
-  // TODO(port-mac): This is from renderer_main_platform_delegate.cc.
-  // shess tried to refactor things appropriately, but it sprawled out
-  // of control because different platforms needed different styles of
-  // initialization.  Try again once we understand the process
-  // architecture needed and where it should live.
-  if (single_process)
+    // TODO(port-mac): This is from renderer_main_platform_delegate.cc.
+    // shess tried to refactor things appropriately, but it sprawled out
+    // of control because different platforms needed different styles of
+    // initialization.  Try again once we understand the process
+    // architecture needed and where it should live.
     InitWebCoreSystemInterface();
 #endif
+  }
+#endif  // GOOGLE_CHROME_BUILD
 
   bool icu_result = icu_util::Initialize();
   CHECK(icu_result);
