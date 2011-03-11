@@ -12,10 +12,12 @@
 #include "content/browser/tab_contents/constrained_window.h"
 #include "content/common/notification_observer.h"
 #include "content/common/notification_registrar.h"
+#include "views/controls/tabbed_pane/tabbed_pane.h"
 #include "views/controls/tree/tree_view.h"
 #include "views/window/dialog_delegate.h"
 
 class ConstrainedWindow;
+class CookieInfoView;
 class CookiesTreeModel;
 class InfobarView;
 class TabContents;
@@ -31,6 +33,7 @@ class NativeButton;
 class CollectedCookiesWin : public ConstrainedDialogDelegate,
                                    NotificationObserver,
                                    views::ButtonListener,
+                                   views::TabbedPane::Listener,
                                    views::TreeViewController,
                                    views::View {
  public:
@@ -50,6 +53,9 @@ class CollectedCookiesWin : public ConstrainedDialogDelegate,
   // views::ButtonListener implementation.
   virtual void ButtonPressed(views::Button* sender, const views::Event& event);
 
+  // views::TabbedPane::Listener implementation.
+  virtual void TabSelectedAt(int index);
+
   // views::TreeViewController implementation.
   virtual void OnTreeViewSelectionChanged(views::TreeView* tree_view);
 
@@ -58,7 +64,13 @@ class CollectedCookiesWin : public ConstrainedDialogDelegate,
 
   void Init();
 
+  views::View* CreateAllowedPane();
+
+  views::View* CreateBlockedPane();
+
   void EnableControls();
+
+  void ShowCookieInfo();
 
   void AddContentException(views::TreeView* tree_view, ContentSetting setting);
 
@@ -87,6 +99,8 @@ class CollectedCookiesWin : public ConstrainedDialogDelegate,
 
   scoped_ptr<CookiesTreeModel> allowed_cookies_tree_model_;
   scoped_ptr<CookiesTreeModel> blocked_cookies_tree_model_;
+
+  CookieInfoView* cookie_info_view_;
 
   InfobarView* infobar_;
 

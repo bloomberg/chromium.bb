@@ -7533,6 +7533,12 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_COLLECTED_COOKIES_MULTIPLE_SESSION_RULES_CREATED" desc="A notification that is displayed when multiple content exceptions to allow cookies for session only were created.">
         Cookies from multiple sites allowed for session only.
       </message>
+      <message name="IDS_COLLECTED_COOKIES_ALLOWED_COOKIES_TAB_LABEL" desc="The label in a tabbed pane that holds the UI controls for the cookies allowed while loading the page.">
+        Allowed
+      </message>
+      <message name="IDS_COLLECTED_COOKIES_BLOCKED_COOKIES_TAB_LABEL" desc="The label in a tabbed pane that holds the UI controls for the cookies blocked while loading the page.">
+        Blocked
+      </message>
 
       <!-- Cookies Window -->
       <message name="IDS_COOKIES_WEBSITE_PERMISSIONS_WINDOW_TITLE" desc="The title of the redesigned Cookies Window that lets you manage cookies, storage quota for websites and other permissions per-website">

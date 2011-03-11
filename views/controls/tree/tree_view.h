@@ -178,6 +178,9 @@ class TreeView : public NativeControl, ui::TreeModelObserver {
   // Handles a variety of potential TreeView messages.
   virtual LRESULT OnNotify(int w_param, LPNMHDR l_param);
 
+  // Invoked when the native control send a WM_DESTROY message to its parent.
+  virtual void OnDestroy();
+
   // We pay attention to key down for two reasons: to circumvent VK_ENTER from
   // toggling the expaned state when processes_enter_ is false, and to have F2
   // start editting.
@@ -220,6 +223,15 @@ class TreeView : public NativeControl, ui::TreeModelObserver {
     // Whether the children have been loaded.
     bool loaded_children;
   };
+
+  // Cleanup all resources used by treeview.
+  void Cleanup();
+
+  // Make sure the tree view is observing the tree model.
+  void AddObserverToModel();
+
+  // Make sure the tree view is no longer observing the tree model.
+  void RemoveObserverFromModel();
 
   // Deletes the root items from the treeview. This is used when the model
   // changes.
@@ -315,6 +327,9 @@ class TreeView : public NativeControl, ui::TreeModelObserver {
   WNDPROC original_handler_;
 
   bool drag_enabled_;
+
+  // Has an observer been added to the model?
+  bool observer_added_;
 
   // Did the model return a non-empty set of icons from GetIcons?
   bool has_custom_icons_;

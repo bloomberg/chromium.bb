@@ -6,6 +6,7 @@
 
 #include "chrome/browser/cookies_tree_model.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/views/cookie_info_view.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/common/notification_details.h"
 #include "content/common/notification_source.h"
@@ -184,12 +185,56 @@ CollectedCookiesWin::~CollectedCookiesWin() {
 }
 
 void CollectedCookiesWin::Init() {
+  using views::GridLayout;
+
+  GridLayout* layout = GridLayout::CreatePanel(this);
+  SetLayoutManager(layout);
+
+  const int single_column_layout_id = 0;
+  views::ColumnSet* column_set = layout->AddColumnSet(single_column_layout_id);
+  column_set->AddColumn(GridLayout::FILL, GridLayout::FILL, 1,
+                        GridLayout::USE_PREF, 0, 0);
+
+  const int single_column_with_padding_layout_id = 1;
+  views::ColumnSet* column_set_with_padding = layout->AddColumnSet(
+      single_column_with_padding_layout_id);
+  column_set_with_padding->AddColumn(GridLayout::FILL, GridLayout::FILL, 1,
+                                     GridLayout::USE_PREF, 0, 0);
+  column_set_with_padding->AddPaddingColumn(0, 2);
+
+  layout->StartRow(0, single_column_layout_id);
+  views::TabbedPane* tabbed_pane = new views::TabbedPane();
+  layout->AddView(tabbed_pane);
+  // NOTE: the panes need to be added after the tabbed_pane has been added to
+  // its parent.
+  std::wstring label_allowed = UTF16ToWide(l10n_util::GetStringUTF16(
+      IDS_COLLECTED_COOKIES_ALLOWED_COOKIES_TAB_LABEL));
+  std::wstring label_blocked = UTF16ToWide(l10n_util::GetStringUTF16(
+      IDS_COLLECTED_COOKIES_BLOCKED_COOKIES_TAB_LABEL));
+  tabbed_pane->AddTab(label_allowed, CreateAllowedPane());
+  tabbed_pane->AddTab(label_blocked, CreateBlockedPane());
+  tabbed_pane->SelectTabAt(0);
+  tabbed_pane->SetListener(this);
+  layout->AddPaddingRow(0, views::kRelatedControlVerticalSpacing);
+
+  layout->StartRow(0, single_column_with_padding_layout_id);
+  cookie_info_view_ = new CookieInfoView(false);
+  layout->AddView(cookie_info_view_);
+  layout->AddPaddingRow(0, views::kRelatedControlVerticalSpacing);
+
+  layout->StartRow(0, single_column_with_padding_layout_id);
+  infobar_ = new InfobarView();
+  layout->AddView(infobar_);
+
+  EnableControls();
+  ShowCookieInfo();
+}
+
+views::View* CollectedCookiesWin::CreateAllowedPane() {
   TabSpecificContentSettings* content_settings =
       tab_contents_->GetTabSpecificContentSettings();
-  HostContentSettingsMap* host_content_settings_map =
-      tab_contents_->profile()->GetHostContentSettingsMap();
 
-  // Allowed Cookie list.
+  // Create the controls that go into the pane.
   allowed_label_ = new views::Label(UTF16ToWide(l10n_util::GetStringUTF16(
       IDS_COLLECTED_COOKIES_ALLOWED_COOKIES_LABEL)));
   allowed_cookies_tree_model_.reset(
@@ -202,7 +247,46 @@ void CollectedCookiesWin::Init() {
   allowed_cookies_tree_->set_lines_at_root(true);
   allowed_cookies_tree_->set_auto_expand_children(true);
 
-  // Blocked Cookie list.
+  block_allowed_button_ = new views::NativeButton(this, UTF16ToWide(
+      l10n_util::GetStringUTF16(IDS_COLLECTED_COOKIES_BLOCK_BUTTON)));
+
+  // Create the view that holds all the controls together.  This will be the
+  // pane added to the tabbed pane.
+  using views::GridLayout;
+
+  views::View* pane = new views::View();
+  GridLayout* layout = GridLayout::CreatePanel(pane);
+  pane->SetLayoutManager(layout);
+
+  const int single_column_layout_id = 0;
+  views::ColumnSet* column_set = layout->AddColumnSet(single_column_layout_id);
+  column_set->AddColumn(GridLayout::LEADING, GridLayout::FILL, 1,
+                        GridLayout::USE_PREF, 0, 0);
+
+  layout->StartRow(0, single_column_layout_id);
+  layout->AddView(allowed_label_);
+  layout->AddPaddingRow(0, views::kRelatedControlVerticalSpacing);
+
+  layout->StartRow(1, single_column_layout_id);
+  layout->AddView(allowed_cookies_tree_, 1, 1, GridLayout::FILL,
+                  GridLayout::FILL, kTreeViewWidth, kTreeViewHeight);
+  layout->AddPaddingRow(0, views::kRelatedControlVerticalSpacing);
+
+  layout->StartRow(0, single_column_layout_id);
+  layout->AddView(block_allowed_button_, 1, 1, GridLayout::LEADING,
+                  GridLayout::CENTER);
+
+  return pane;
+}
+
+views::View* CollectedCookiesWin::CreateBlockedPane() {
+  TabSpecificContentSettings* content_settings =
+      tab_contents_->GetTabSpecificContentSettings();
+
+  HostContentSettingsMap* host_content_settings_map =
+      tab_contents_->profile()->GetHostContentSettingsMap();
+
+  // Create the controls that go into the pane.
   blocked_label_ = new views::Label(
       UTF16ToWide(l10n_util::GetStringUTF16(
           host_content_settings_map->BlockThirdPartyCookies() ?
@@ -220,10 +304,18 @@ void CollectedCookiesWin::Init() {
   blocked_cookies_tree_->set_lines_at_root(true);
   blocked_cookies_tree_->set_auto_expand_children(true);
 
+  allow_blocked_button_ = new views::NativeButton(this, UTF16ToWide(
+      l10n_util::GetStringUTF16(IDS_COLLECTED_COOKIES_ALLOW_BUTTON)));
+  for_session_blocked_button_ = new views::NativeButton(this, UTF16ToWide(
+      l10n_util::GetStringUTF16(IDS_COLLECTED_COOKIES_SESSION_ONLY_BUTTON)));
+
+  // Create the view that holds all the controls together.  This will be the
+  // pane added to the tabbed pane.
   using views::GridLayout;
 
-  GridLayout* layout = GridLayout::CreatePanel(this);
-  SetLayoutManager(layout);
+  views::View* pane = new views::View();
+  GridLayout* layout = GridLayout::CreatePanel(pane);
+  pane->SetLayoutManager(layout);
 
   const int single_column_layout_id = 0;
   views::ColumnSet* column_set = layout->AddColumnSet(single_column_layout_id);
@@ -239,31 +331,9 @@ void CollectedCookiesWin::Init() {
                         GridLayout::USE_PREF, 0, 0);
 
   layout->StartRow(0, single_column_layout_id);
-  layout->AddView(allowed_label_);
-
-  layout->AddPaddingRow(0, views::kRelatedControlVerticalSpacing);
-  layout->StartRow(1, single_column_layout_id);
-  layout->AddView(
-      allowed_cookies_tree_, 1, 1, GridLayout::FILL, GridLayout::FILL,
-      kTreeViewWidth, kTreeViewHeight);
-  layout->AddPaddingRow(0, views::kRelatedControlVerticalSpacing);
-
-  layout->StartRow(0, single_column_layout_id);
-  block_allowed_button_ = new views::NativeButton(this, UTF16ToWide(
-      l10n_util::GetStringUTF16(IDS_COLLECTED_COOKIES_BLOCK_BUTTON)));
-  layout->AddView(
-      block_allowed_button_, 1, 1, GridLayout::LEADING, GridLayout::CENTER);
-  layout->AddPaddingRow(0, views::kUnrelatedControlVerticalSpacing);
-
-  layout->StartRow(0, single_column_layout_id);
-  layout->AddView(
-      new views::Separator(), 1, 1, GridLayout::FILL, GridLayout::FILL);
-  layout->AddPaddingRow(0, views::kUnrelatedControlVerticalSpacing);
-
-  layout->StartRow(0, single_column_layout_id);
   layout->AddView(blocked_label_, 1, 1, GridLayout::FILL, GridLayout::FILL);
-
   layout->AddPaddingRow(0, views::kRelatedControlVerticalSpacing);
+
   layout->StartRow(1, single_column_layout_id);
   layout->AddView(
       blocked_cookies_tree_, 1, 1, GridLayout::FILL, GridLayout::FILL,
@@ -271,18 +341,10 @@ void CollectedCookiesWin::Init() {
   layout->AddPaddingRow(0, views::kRelatedControlVerticalSpacing);
 
   layout->StartRow(0, three_columns_layout_id);
-  allow_blocked_button_ = new views::NativeButton(this, UTF16ToWide(
-      l10n_util::GetStringUTF16(IDS_COLLECTED_COOKIES_ALLOW_BUTTON)));
   layout->AddView(allow_blocked_button_);
-  for_session_blocked_button_ = new views::NativeButton(this, UTF16ToWide(
-      l10n_util::GetStringUTF16(IDS_COLLECTED_COOKIES_SESSION_ONLY_BUTTON)));
   layout->AddView(for_session_blocked_button_);
 
-  layout->StartRow(0, single_column_layout_id);
-  infobar_ = new InfobarView();
-  layout->AddView(infobar_, 1, 1, GridLayout::FILL, GridLayout::FILL);
-
-  EnableControls();
+  return pane;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -328,11 +390,20 @@ void CollectedCookiesWin::ButtonPressed(views::Button* sender,
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-// views::View implementation.
+// views::TabbedPane::Listener implementation.
+
+void CollectedCookiesWin::TabSelectedAt(int index) {
+  EnableControls();
+  ShowCookieInfo();
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// views::TreeViewController implementation.
 
 void CollectedCookiesWin::OnTreeViewSelectionChanged(
     views::TreeView* tree_view) {
   EnableControls();
+  ShowCookieInfo();
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -363,6 +434,29 @@ void CollectedCookiesWin::EnableControls() {
   }
   allow_blocked_button_->SetEnabled(enable_blocked_buttons);
   for_session_blocked_button_->SetEnabled(enable_blocked_buttons);
+}
+
+void CollectedCookiesWin::ShowCookieInfo() {
+  ui::TreeModelNode* node = allowed_cookies_tree_->GetSelectedNode();
+  if (!node)
+    node = blocked_cookies_tree_->GetSelectedNode();
+
+  if (node) {
+    CookieTreeNode* cookie_node = static_cast<CookieTreeNode*>(node);
+    const CookieTreeNode::DetailedInfo detailed_info =
+        cookie_node->GetDetailedInfo();
+
+    if (detailed_info.node_type == CookieTreeNode::DetailedInfo::TYPE_COOKIE) {
+      CookieTreeCookieNode* cookie_info_node =
+          static_cast<CookieTreeCookieNode*>(cookie_node);
+      cookie_info_view_->SetCookie(detailed_info.cookie->Domain(),
+                                   *detailed_info.cookie);
+    } else {
+      cookie_info_view_->ClearCookieDisplay();
+    }
+  } else {
+    cookie_info_view_->ClearCookieDisplay();
+  }
 }
 
 void CollectedCookiesWin::AddContentException(views::TreeView* tree_view,
