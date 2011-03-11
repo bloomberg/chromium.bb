@@ -10,18 +10,18 @@
 #include <vector>
 
 #include "base/basictypes.h"
+#include "base/compiler_specific.h"
 #include "base/logging.h"
 #include "base/observer_list.h"
 #include "base/scoped_ptr.h"
 #include "base/scoped_vector.h"
-#include "base/stl_util-inl.h"
 #include "base/string16.h"
 #include "ui/base/models/tree_model.h"
 
 namespace ui {
 
 // TreeNodeModel and TreeNodes provide an implementation of TreeModel around
-// TreeNodes. TreeNodes form a directed acyclic graph.
+// TreeNodes.
 //
 // TreeNodes own their children, so that deleting a node deletes all
 // descendants.
@@ -29,12 +29,11 @@ namespace ui {
 // TreeNodes do NOT maintain a pointer back to the model. As such, if you
 // are using TreeNodes with a TreeNodeModel you will need to notify the observer
 // yourself any time you make any change directly to the TreeNodes. For example,
-// if you directly invoke SetTitle on a node it does not notify the
-// observer, you will need to do it yourself. This includes the following
-// methods: SetTitle, Remove and Add. TreeNodeModel provides cover
-// methods that mutate the TreeNodes and notify the observer. If you are using
-// TreeNodes with a TreeNodeModel use the cover methods to save yourself the
-// headache.
+// if you directly invoke set_title on a node it does not notify the observer,
+// you will need to do it yourself. This includes the following methods: Add,
+// Remove and set_title. TreeNodeModel provides cover methods that mutate the
+// TreeNodes and notify the observer. If you are using TreeNodes with a
+// TreeNodeModel use the cover methods to save yourself the headache.
 //
 // The following example creates a TreeNode with two children and then
 // creates a TreeNodeModel from it:
@@ -62,21 +61,17 @@ namespace ui {
 // Regardless of which TreeNode you use, if you are using the nodes with a
 // TreeView take care to notify the observer when mutating the nodes.
 
-template <class NodeType>
-class TreeNodeModel;
-
 // TreeNode -------------------------------------------------------------------
 
 template <class NodeType>
 class TreeNode : public TreeModelNode {
  public:
-  TreeNode() : parent_(NULL) { }
+  TreeNode() : parent_(NULL) {}
 
   explicit TreeNode(const string16& title)
       : title_(title), parent_(NULL) {}
 
-  virtual ~TreeNode() {
-  }
+  virtual ~TreeNode() {}
 
   // Adds the specified child node.
   virtual void Add(int index, NodeType* child) {
@@ -148,17 +143,13 @@ class TreeNode : public TreeModelNode {
   }
 
   // Sets the title of the node.
-  void SetTitle(const string16& string) {
-    title_ = string;
-  }
+  void set_title(const string16& title) { title_ = title; }
 
-  // Returns the title of the node.
-  virtual const string16& GetTitle() const {
-    return title_;
-  }
+  // TreeModelNode:
+  virtual const string16& GetTitle() const OVERRIDE { return title_; }
 
   // Returns true if this is the root.
-  bool IsRoot() const { return (parent_ == NULL); }
+  bool IsRoot() const { return parent_ == NULL; }
 
   // Returns true if this == ancestor, or one of this nodes parents is
   // ancestor.
@@ -190,21 +181,20 @@ class TreeNode : public TreeModelNode {
 
 template <class ValueType>
 class TreeNodeWithValue : public TreeNode< TreeNodeWithValue<ValueType> > {
- private:
-  typedef TreeNode< TreeNodeWithValue<ValueType> > ParentType;
-
  public:
-  TreeNodeWithValue() { }
+  TreeNodeWithValue() {}
 
   explicit TreeNodeWithValue(const ValueType& value)
-      : ParentType(string16()), value(value) { }
+      : ParentType(string16()), value(value) {}
 
   TreeNodeWithValue(const string16& title, const ValueType& value)
-      : ParentType(title), value(value) { }
+      : ParentType(title), value(value) {}
 
   ValueType value;
 
  private:
+  typedef TreeNode< TreeNodeWithValue<ValueType> > ParentType;
+
   DISALLOW_COPY_AND_ASSIGN(TreeNodeWithValue);
 };
 
@@ -216,54 +206,11 @@ class TreeNodeModel : public TreeModel {
  public:
   // Creates a TreeNodeModel with the specified root node. The root is owned
   // by the TreeNodeModel.
-  explicit TreeNodeModel(NodeType* root)
-      : root_(root) {
-  }
-
+  explicit TreeNodeModel(NodeType* root) : root_(root) {}
   virtual ~TreeNodeModel() {}
-
-  // Observer methods, calls into ObserverList.
-  virtual void AddObserver(TreeModelObserver* observer) {
-    observer_list_.AddObserver(observer);
-  }
-
-  virtual void RemoveObserver(TreeModelObserver* observer) {
-    observer_list_.RemoveObserver(observer);
-  }
-
-  // TreeModel methods, all forward to the nodes.
-  virtual NodeType* GetRoot() { return root_.get(); }
-
-  virtual int GetChildCount(TreeModelNode* parent) {
-    DCHECK(parent);
-    return AsNode(parent)->child_count();
-  }
-
-  virtual NodeType* GetChild(TreeModelNode* parent, int index) {
-    DCHECK(parent);
-    return AsNode(parent)->GetChild(index);
-  }
-
-  virtual int GetIndexOf(TreeModelNode* parent, TreeModelNode* child) {
-    DCHECK(parent);
-    return AsNode(parent)->GetIndexOf(AsNode(child));
-  }
-
-  virtual TreeModelNode* GetParent(TreeModelNode* node) {
-    DCHECK(node);
-    return AsNode(node)->parent();
-  }
 
   NodeType* AsNode(TreeModelNode* model_node) {
     return static_cast<NodeType*>(model_node);
-  }
-
-  // Sets the title of the specified node.
-  virtual void SetTitle(TreeModelNode* node,
-                        const string16& title) {
-    DCHECK(node);
-    AsNode(node)->SetTitle(title);
-    NotifyObserverTreeNodeChanged(node);
   }
 
   void Add(NodeType* parent, int index, NodeType* child) {
@@ -291,18 +238,55 @@ class TreeNodeModel : public TreeModel {
                       TreeNodesRemoved(this, parent, start, count));
   }
 
-  virtual void NotifyObserverTreeNodeChanged(TreeModelNode* node) {
+  void NotifyObserverTreeNodeChanged(TreeModelNode* node) {
     FOR_EACH_OBSERVER(TreeModelObserver,
                       observer_list_,
                       TreeNodeChanged(this, node));
   }
 
- protected:
-  ObserverList<TreeModelObserver>& observer_list() { return observer_list_; }
+  // TreeModel:
+  virtual NodeType* GetRoot() OVERRIDE {
+    return root_.get();
+  }
+
+  virtual int GetChildCount(TreeModelNode* parent) OVERRIDE {
+    DCHECK(parent);
+    return AsNode(parent)->child_count();
+  }
+
+  virtual NodeType* GetChild(TreeModelNode* parent, int index) OVERRIDE {
+    DCHECK(parent);
+    return AsNode(parent)->GetChild(index);
+  }
+
+  virtual int GetIndexOf(TreeModelNode* parent, TreeModelNode* child) OVERRIDE {
+    DCHECK(parent);
+    return AsNode(parent)->GetIndexOf(AsNode(child));
+  }
+
+  virtual TreeModelNode* GetParent(TreeModelNode* node) OVERRIDE {
+    DCHECK(node);
+    return AsNode(node)->parent();
+  }
+
+  virtual void AddObserver(TreeModelObserver* observer) OVERRIDE {
+    observer_list_.AddObserver(observer);
+  }
+
+  virtual void RemoveObserver(TreeModelObserver* observer) OVERRIDE {
+    observer_list_.RemoveObserver(observer);
+  }
+
+  virtual void SetTitle(TreeModelNode* node, const string16& title) OVERRIDE {
+    DCHECK(node);
+    AsNode(node)->set_title(title);
+    NotifyObserverTreeNodeChanged(node);
+  }
 
  private:
   // The observers.
   ObserverList<TreeModelObserver> observer_list_;
+
   // The root.
   scoped_ptr<NodeType> root_;
 

@@ -83,7 +83,7 @@ void BookmarkNode::Reset(const history::StarredEntry& entry) {
   }
   date_added_ = entry.date_added;
   date_folder_modified_ = entry.date_folder_modified;
-  SetTitle(entry.title);
+  set_title(entry.title);
 }
 
 // BookmarkModel --------------------------------------------------------------
@@ -267,7 +267,7 @@ void BookmarkModel::SetTitle(const BookmarkNode* node, const string16& title) {
   // The title index doesn't support changing the title, instead we remove then
   // add it back.
   index_->Remove(node);
-  AsMutable(node)->SetTitle(title);
+  AsMutable(node)->set_title(title);
   index_->Add(node);
 
   if (store_.get())
@@ -383,7 +383,7 @@ const BookmarkNode* BookmarkModel::AddGroup(const BookmarkNode* parent,
   BookmarkNode* new_node = new BookmarkNode(generate_next_node_id(),
                                             GURL());
   new_node->set_date_folder_modified(Time::Now());
-  new_node->SetTitle(title);
+  new_node->set_title(title);
   new_node->set_type(BookmarkNode::FOLDER);
 
   return AddNode(AsMutable(parent), index, new_node, false);
@@ -413,7 +413,7 @@ const BookmarkNode* BookmarkModel::AddURLWithCreationTime(
   SetDateGroupModified(parent, creation_time);
 
   BookmarkNode* new_node = new BookmarkNode(generate_next_node_id(), url);
-  new_node->SetTitle(title);
+  new_node->set_title(title);
   new_node->set_date_added(creation_time);
   new_node->set_type(BookmarkNode::URL);
 
@@ -726,9 +726,9 @@ BookmarkNode* BookmarkModel::CreateRootNodeFromStarredEntry(
   BookmarkNode* node = new BookmarkNode(generate_next_node_id(), GURL());
   node->Reset(entry);
   if (entry.type == history::StarredEntry::BOOKMARK_BAR) {
-    node->SetTitle(l10n_util::GetStringUTF16(IDS_BOOMARK_BAR_FOLDER_NAME));
+    node->set_title(l10n_util::GetStringUTF16(IDS_BOOMARK_BAR_FOLDER_NAME));
   } else {
-    node->SetTitle(
+    node->set_title(
         l10n_util::GetStringUTF16(IDS_BOOMARK_BAR_OTHER_FOLDER_NAME));
   }
   return node;
