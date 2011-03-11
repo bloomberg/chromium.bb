@@ -104,6 +104,8 @@ void BlockedPlugin::ShowContextMenu(const WebKit::WebMouseEvent& event) {
 
   WebMenuItemInfo name_item;
   name_item.label = name_;
+  name_item.hasTextDirectionOverride = false;
+  name_item.textDirection =  WebKit::WebTextDirectionDefault;
   custom_items[0] = name_item;
 
   WebMenuItemInfo separator_item;
@@ -115,6 +117,8 @@ void BlockedPlugin::ShowContextMenu(const WebKit::WebMouseEvent& event) {
   run_item.enabled = true;
   run_item.label = WebString::fromUTF8(
       l10n_util::GetStringUTF8(IDS_CONTENT_CONTEXT_PLUGIN_RUN).c_str());
+  run_item.hasTextDirectionOverride = false;
+  run_item.textDirection =  WebKit::WebTextDirectionDefault;
   custom_items[2] = run_item;
 
   WebMenuItemInfo hide_item;
@@ -122,6 +126,8 @@ void BlockedPlugin::ShowContextMenu(const WebKit::WebMouseEvent& event) {
   hide_item.enabled = true;
   hide_item.label = WebString::fromUTF8(
       l10n_util::GetStringUTF8(IDS_CONTENT_CONTEXT_PLUGIN_HIDE).c_str());
+  hide_item.hasTextDirectionOverride = false;
+  hide_item.textDirection =  WebKit::WebTextDirectionDefault;
   custom_items[3] = hide_item;
 
   menu_data.customItems.swap(custom_items);
@@ -236,4 +242,3 @@ void BlockedPlugin::HidePlugin() {
     }
   }
 }
-
