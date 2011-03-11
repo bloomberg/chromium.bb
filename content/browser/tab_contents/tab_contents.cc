@@ -59,6 +59,7 @@
 #include "chrome/browser/ui/app_modal_dialogs/message_box_handler.h"
 #include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/common/bindings_policy.h"
+#include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/content_restriction.h"
 #include "chrome/common/extensions/extension.h"
@@ -151,12 +152,6 @@ namespace {
 const int kQueryStateDelay = 5000;
 
 const int kSyncWaitDelay = 40;
-
-// If another javascript message box is displayed within
-// kJavascriptMessageExpectedDelay of a previous javascript message box being
-// dismissed, display an option to suppress future message boxes from this
-// contents.
-const int kJavascriptMessageExpectedDelay = 1000;
 
 // The list of prefs we want to observe.
 const char* kPrefsToObserve[] = {
@@ -2446,7 +2441,8 @@ void TabContents::RunJavaScriptMessage(
     // Show a checkbox offering to suppress further messages if this message is
     // being displayed within kJavascriptMessageExpectedDelay of the last one.
     if (time_since_last_message <
-        base::TimeDelta::FromMilliseconds(kJavascriptMessageExpectedDelay))
+        base::TimeDelta::FromMilliseconds(
+            chrome::kJavascriptMessageExpectedDelay))
       show_suppress_checkbox = true;
 
     RunJavascriptMessageBox(profile(), this, frame_url, flags, message,

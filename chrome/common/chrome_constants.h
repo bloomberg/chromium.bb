@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -94,6 +94,12 @@ extern const int kMaxSessionHistoryEntries;
 // The language code used when the language of a page could not be detected.
 // (Matches what the CLD -Compact Language Detection- library reports.)
 extern const char* const kUnknownLanguageCode;
+
+// If another javascript message box is displayed within
+// kJavascriptMessageExpectedDelay of a previous javascript message box being
+// dismissed, display an option to suppress future message boxes from this
+// contents.
+extern const int kJavascriptMessageExpectedDelay;
 
 }  // namespace chrome
 

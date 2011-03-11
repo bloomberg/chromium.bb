@@ -26,6 +26,7 @@
 #include "chrome/browser/themes/browser_theme_provider.h"
 #include "chrome/browser/ui/app_modal_dialogs/message_box_handler.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/common/chrome_constants.h"
 #include "chrome/common/bindings_policy.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_constants.h"
@@ -131,7 +132,8 @@ ExtensionHost::ExtensionHost(const Extension* extension,
       document_element_available_(false),
       url_(url),
       extension_host_type_(host_type),
-      associated_tab_contents_(NULL) {
+      associated_tab_contents_(NULL),
+      suppress_javascript_messages_(false) {
   render_view_host_ = new RenderViewHost(site_instance, this, MSG_ROUTING_NONE,
                                          NULL);
   render_view_host_->set_is_extension_process(true);
@@ -431,12 +433,29 @@ void ExtensionHost::RunJavaScriptMessage(const std::wstring& message,
                                          const int flags,
                                          IPC::Message* reply_msg,
                                          bool* did_suppress_message) {
-  *did_suppress_message = false;
-  // Unlike for page alerts, navigations aren't a good signal for when to
-  // resume showing alerts, so we can't reasonably stop showing them even if
-  // the extension is spammy.
-  RunJavascriptMessageBox(profile_, this, frame_url, flags, message,
-                          default_prompt, false, reply_msg);
+  base::TimeDelta time_since_last_message(
+      base::TimeTicks::Now() - last_javascript_message_dismissal_);
+
+  *did_suppress_message = suppress_javascript_messages_;
+  if (!suppress_javascript_messages_) {
+    bool show_suppress_checkbox = false;
+    // Show a checkbox offering to suppress further messages if this message is
+    // being displayed within kJavascriptMessageExpectedDelay of the last one.
+    if (time_since_last_message <
+        base::TimeDelta::FromMilliseconds(
+            chrome::kJavascriptMessageExpectedDelay))
+      show_suppress_checkbox = true;
+
+    // Unlike for page alerts, navigations aren't a good signal for when to
+    // resume showing alerts, so we can't reasonably stop showing them even if
+    // the extension is spammy.
+    RunJavascriptMessageBox(profile_, this, frame_url, flags, message,
+                            default_prompt, show_suppress_checkbox, reply_msg);
+  } else {
+    // If we are suppressing messages, just reply as is if the user immediately
+    // pressed "Cancel".
+    OnMessageBoxClosed(reply_msg, false, std::wstring());
+  }
 }
 
 gfx::NativeWindow ExtensionHost::GetMessageBoxRootWindow() {
@@ -467,7 +486,12 @@ ExtensionHost* ExtensionHost::AsExtensionHost() {
 void ExtensionHost::OnMessageBoxClosed(IPC::Message* reply_msg,
                                        bool success,
                                        const std::wstring& prompt) {
+  last_javascript_message_dismissal_ = base::TimeTicks::Now();
   render_view_host()->JavaScriptMessageBoxClosed(reply_msg, success, prompt);
+}
+
+void ExtensionHost::SetSuppressMessageBoxes(bool suppress_message_boxes) {
+  suppress_javascript_messages_ = suppress_message_boxes;
 }
 
 void ExtensionHost::Close(RenderViewHost* render_view_host) {

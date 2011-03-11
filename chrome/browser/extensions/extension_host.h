@@ -191,7 +191,7 @@ class ExtensionHost : public RenderViewHostDelegate,
   virtual void OnMessageBoxClosed(IPC::Message* reply_msg,
                                   bool success,
                                   const std::wstring& prompt);
-  virtual void SetSuppressMessageBoxes(bool suppress_message_boxes) {}
+  virtual void SetSuppressMessageBoxes(bool suppress_message_boxes);
   virtual gfx::NativeWindow GetMessageBoxRootWindow();
   virtual TabContents* AsTabContents();
   virtual ExtensionHost* AsExtensionHost();
@@ -289,6 +289,12 @@ class ExtensionHost : public RenderViewHostDelegate,
 
   // Handles desktop notification IPCs.
   scoped_ptr<DesktopNotificationHandler> desktop_notification_handler_;
+
+  // The time that the last javascript message was dismissed.
+  base::TimeTicks last_javascript_message_dismissal_;
+
+  // Whether to suppress all javascript messages.
+  bool suppress_javascript_messages_;
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionHost);
 };
