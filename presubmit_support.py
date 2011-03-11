@@ -227,7 +227,10 @@ class InputApi(object):
       r"(|.*[\\\/])\.svn[\\\/].*",
   )
 
-  def __init__(self, change, presubmit_path, is_committing):
+  # TODO(dpranke): Update callers to pass in tbr, host_url, remove
+  # default arguments.
+  def __init__(self, change, presubmit_path, is_committing, tbr=False,
+    host_url='http://codereview.chromium.org'):
     """Builds an InputApi object.
 
     Args:
@@ -238,7 +241,9 @@ class InputApi(object):
     # Version number of the presubmit_support script.
     self.version = [int(x) for x in __version__.split('.')]
     self.change = change
+    self.host_url = host_url
     self.is_committing = is_committing
+    self.tbr = tbr
 
     # We expose various modules and functions as attributes of the input_api
     # so that presubmit scripts don't have to import them.
@@ -653,10 +658,6 @@ class Change(object):
     self._local_root = os.path.abspath(local_root)
     self.issue = issue
     self.patchset = patchset
-
-    # TODO(dpranke): implement - get from the patchset?
-    self.approvers = set()
-
     self.scm = ''
 
     # From the description text, build up a dictionary of key/value pairs

@@ -540,7 +540,7 @@ def RunPylint(input_api, output_api, white_list=None, black_list=None):
   finally:
     warnings.filterwarnings('default', category=DeprecationWarning)
 
-
+# TODO(dpranke): Get the host_url from the input_api instead
 def CheckRietveldTryJobExecution(input_api, output_api, host_url, platforms,
                                  owner):
   if not input_api.is_committing:
@@ -631,11 +631,14 @@ def CheckOwners(input_api, output_api, source_file_filter=None):
       input_api.change.AffectedFiles(source_file_filter)])
   owners_db = input_api.owners_db
 
-  if input_api.is_committing:
-    missing_files = owners_db.files_not_covered_by(affected_files,
-                                                input_api.change.approvers)
+  if input_api.is_committing and input_api.tbr:
+    return [output_api.PresubmitNotifyResult(
+        '--tbr was specified, skipping OWNERS check')]
+  elif input_api.is_committing:
+    approvers = _Approvers(input_api, owners_db.email_regexp)
+    missing_files = owners_db.files_not_covered_by(affected_files, approvers)
     if missing_files:
-      return [output_api.PresubmitError('Missing owner LGTM for: %s' %
+      return [output_api.PresubmitError('Missing LGTM from an OWNER for: %s' %
               ','.join(missing_files))]
     return []
   elif input_api.change.tags.get('R'):
@@ -643,3 +646,29 @@ def CheckOwners(input_api, output_api, source_file_filter=None):
 
   suggested_reviewers = owners_db.reviewers_for(affected_files)
   return [output_api.PresubmitAddText('R=%s' % ','.join(suggested_reviewers))]
+
+
+def _Approvers(input_api, email_regexp):
+  if not input_api.change.issue:
+    return []
+
+  path = '/api/%s?messages=true'
+  url = (input_api.host_url + path) % input_api.change.issue
+
+  f = input_api.urllib2.urlopen(url)
+  issue_props = input_api.json.load(f)
+  owner = input_api.re.escape(issue_props['owner'])
+
+  # TODO(dpranke): This mimics the logic in
+  # /tools/commit-queue/verifiers/reviewer_lgtm.py
+  # We should share the code and/or remove the check there where it is
+  # redundant (since the commit queue also enforces the presubmit checks).
+  def match_reviewer(r):
+    return email_regexp.match(r) and not input_api.re.match(owner, r)
+
+  approvers = []
+  for m in issue_props['messages']:
+    if 'lgtm' in m['text'].lower() and match_reviewer(m['sender']):
+      approvers.append(m['sender'])
+  return set(approvers)
+

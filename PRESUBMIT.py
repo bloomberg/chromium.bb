@@ -20,6 +20,7 @@ UNIT_TESTS = [
   'tests.watchlists_unittest',
 ]
 
+
 def CommonChecks(input_api, output_api):
   output = []
   # Verify that LocalPath() is local, e.g.:
@@ -31,9 +32,11 @@ def CommonChecks(input_api, output_api):
       # Return right away because it needs to be fixed first.
       return output
 
-  output.extend(input_api.canned_checks.CheckOwners(
-      input_api,
-      output_api))
+  # TODO(dpranke): uncomment and enable :).
+  #
+  # output.extend(input_api.canned_checks.CheckOwners(
+  #     input_api,
+  #     output_api))
 
   output.extend(input_api.canned_checks.RunPythonUnitTests(
       input_api,

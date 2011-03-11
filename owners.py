@@ -44,8 +44,7 @@ class Database(object):
     self.fopen = fopen
     self.os_path = os_path
 
-    # TODO: Figure out how to share the owners email addr format w/
-    # tools/commit-queue/projects.py, especially for per-repo whitelists.
+    # Pick a default email regexp to use; callers can override as desired.
     self.email_regexp = re.compile(BASIC_EMAIL_REGEXP)
 
     # Mapping of owners to the paths they own.

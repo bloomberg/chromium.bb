@@ -700,9 +700,10 @@ class InputApiUnittest(PresubmitTestsBase):
       'LocalToDepotPath',
       'PresubmitLocalPath', 'ReadFile', 'RightHandSideLines', 'ServerPaths',
       'basename', 'cPickle', 'cStringIO', 'canned_checks', 'change', 'environ',
-      'is_committing', 'json', 'marshal', 'os_path', 'owners_db', 'pickle',
-      'platform', 'python_executable', 're', 'subprocess', 'tempfile',
-      'traceback', 'unittest', 'urllib2', 'version',
+      'host_url', 'is_committing', 'json', 'marshal', 'os_path',
+      'owners_db', 'pickle', 'platform', 'python_executable', 're',
+      'subprocess', 'tbr', 'tempfile', 'traceback', 'unittest', 'urllib2',
+      'version',
     ]
     # If this test fails, you should add the relevant test.
     self.compareMembers(presubmit.InputApi(self.fake_change, './.', False),
@@ -1187,7 +1188,7 @@ class GclChangeUnittest(PresubmitTestsBase):
         'AbsoluteLocalPaths', 'AffectedFiles', 'AffectedTextFiles',
         'DescriptionText', 'FullDescriptionText', 'LocalPaths', 'Name',
         'RepositoryRoot', 'RightHandSideLines', 'ServerPaths',
-        'approvers', 'issue', 'patchset', 'scm', 'tags',
+        'issue', 'patchset', 'scm', 'tags',
     ]
     # If this test fails, you should add the relevant test.
     self.mox.ReplayAll()
@@ -1214,7 +1215,9 @@ class CannedChecksUnittest(PresubmitTestsBase):
     input_api.subprocess = self.mox.CreateMock(presubmit.subprocess)
 
     input_api.change = change
+    input_api.host_url = 'http://localhost'
     input_api.is_committing = committing
+    input_api.tbr = False
     input_api.python_executable = 'pyyyyython'
     return input_api
 
@@ -1857,7 +1860,7 @@ mac|success|blew
     self.assertEquals(results[0].__class__,
         presubmit.OutputApi.PresubmitNotifyResult)
 
-  def OwnersTest(self, is_committing, change_tags=None,
+  def OwnersTest(self, is_committing, tbr=False, change_tags=None,
       suggested_reviewers=None, approvers=None,
       uncovered_files=None, expected_results=None):
     affected_file = self.mox.CreateMock(presubmit.SvnAffectedFile)
@@ -1867,21 +1870,31 @@ mac|success|blew
 
     input_api = self.MockInputApi(change, False)
     fake_db = self.mox.CreateMock(owners.Database)
+    fake_db.email_regexp = input_api.re.compile(owners.BASIC_EMAIL_REGEXP)
     input_api.owners_db = fake_db
     input_api.is_committing = is_committing
+    input_api.tbr = tbr
 
-    if is_committing:
-      change.approvers = approvers
+    if is_committing and not tbr:
+      change.issue = '1'
+      messages = list('{"sender": "' + a + '","text": "lgtm"}' for
+                      a in approvers)
+      rietveld_response = ('{"owner": "john@example.com",'
+                          '"messages": [' + ','.join(messages) + ']}')
+      input_api.urllib2.urlopen(
+          input_api.host_url + '/api/1?messages=true').AndReturn(
+          StringIO.StringIO(rietveld_response))
+      input_api.json = presubmit.json
       fake_db.files_not_covered_by(set(['foo.cc']), approvers).AndReturn(
           uncovered_files)
-    else:
+    elif not is_committing:
       change.tags = change_tags
       if not change_tags.get('R'):
         fake_db.reviewers_for(set(['foo.cc'])).AndReturn(suggested_reviewers)
 
     self.mox.ReplayAll()
     results = presubmit_canned_checks.CheckOwners(input_api,
-        presubmit.OutputApi, None)
+        presubmit.OutputApi)
     self.assertEquals(len(results), len(expected_results))
     if results and expected_results:
       output = StringIO.StringIO()
@@ -1892,9 +1905,14 @@ mac|success|blew
   def testCannedCheckOwners_WithReviewer(self):
     self.OwnersTest(is_committing=False, change_tags={'R': 'ben@example.com'},
         expected_results=[])
+    self.OwnersTest(is_committing=False, tbr=True,
+        change_tags={'R': 'ben@example.com'}, expected_results=[])
 
   def testCannedCheckOwners_NoReviewer(self):
     self.OwnersTest(is_committing=False, change_tags={},
+        suggested_reviewers=['ben@example.com'],
+        expected_results=['ADD: R=ben@example.com\n'])
+    self.OwnersTest(is_committing=False, tbr=True, change_tags={},
         suggested_reviewers=['ben@example.com'],
         expected_results=['ADD: R=ben@example.com\n'])
 
@@ -1902,14 +1920,19 @@ mac|success|blew
     self.OwnersTest(is_committing=True,
         approvers=set(),
         uncovered_files=set(['foo.cc']),
-        expected_results=['Missing owner LGTM for: foo.cc\n'])
+        expected_results=['Missing LGTM from an OWNER for: foo.cc\n'])
 
   def testCannedCheckOwners_CommittingWithLGTMs(self):
     self.OwnersTest(is_committing=True,
-        approvers=set('ben@example.com'),
+        approvers=set(['ben@example.com']),
         uncovered_files=set(),
         expected_results=[])
 
+  def testCannedCheckOwners_TBR(self):
+    self.OwnersTest(is_committing=True, tbr=True,
+        approvers=set(),
+        uncovered_files=set(),
+        expected_results=['--tbr was specified, skipping OWNERS check\n'])
 
 if __name__ == '__main__':
   import unittest
