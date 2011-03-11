@@ -10,11 +10,11 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/importer/firefox_profile_lock.h"
 #include "chrome/browser/importer/importer_bridge.h"
+#include "chrome/browser/importer/importer_lock_dialog.h"
 #include "chrome/browser/importer/importer_progress_observer.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search_engines/template_url.h"
 #include "chrome/browser/search_engines/template_url_model.h"
-#include "chrome/browser/ui/browser_dialogs.h"
 #include "content/browser/browser_thread.h"
 #include "content/common/notification_source.h"
 #include "grit/generated_resources.h"
@@ -43,7 +43,7 @@ void ImporterHost::ShowWarningDialog() {
   if (headless_) {
     OnImportLockDialogEnd(false);
   } else {
-    browser::ShowImportLockDialog(parent_window_, this);
+    importer::ShowImportLockDialog(parent_window_, this);
   }
 }
 

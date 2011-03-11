@@ -8,20 +8,20 @@
 
 #include "base/message_loop.h"
 #include "chrome/browser/importer/importer_host.h"
-#include "chrome/browser/ui/browser_dialogs.h"
+#include "chrome/browser/importer/importer_lock_dialog.h"
 #include "chrome/browser/ui/gtk/gtk_util.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 
-namespace browser {
+namespace importer {
 
 void ShowImportLockDialog(gfx::NativeWindow parent,
                           ImporterHost* importer_host) {
   ImportLockDialogGtk::Show(parent, importer_host);
 }
 
-}  // namespace browser
+}  // namespace importer
 
 // static
 void ImportLockDialogGtk::Show(GtkWindow* parent, ImporterHost* importer_host) {

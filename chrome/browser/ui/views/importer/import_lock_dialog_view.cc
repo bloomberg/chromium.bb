@@ -7,6 +7,7 @@
 #include "base/message_loop.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/importer/importer_host.h"
+#include "chrome/browser/importer/importer_lock_dialog.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "grit/locale_settings.h"
@@ -19,14 +20,14 @@
 static const int kDefaultWindowWidth = 320;
 static const int kDefaultWindowHeight = 100;
 
-namespace browser {
+namespace importer {
 
 void ShowImportLockDialog(gfx::NativeWindow parent,
                           ImporterHost* importer_host) {
   ImportLockDialogView::Show(parent, importer_host);
 }
 
-}  // namespace browser
+}  // namespace importer
 
 // static
 void ImportLockDialogView::Show(gfx::NativeWindow parent,

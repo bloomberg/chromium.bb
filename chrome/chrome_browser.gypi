@@ -1219,6 +1219,7 @@
         'browser/importer/importer_host.h',
         'browser/importer/importer_list.cc',
         'browser/importer/importer_list.h',
+        'browser/importer/importer_lock_dialog.h',
         'browser/importer/importer_messages.cc',
         'browser/importer/importer_messages.h',
         'browser/importer/importer_messages_internal.h',

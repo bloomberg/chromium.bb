@@ -7,12 +7,12 @@
 #include "base/message_loop.h"
 #include "base/scoped_nsobject.h"
 #include "chrome/browser/importer/importer_host.h"
-#include "chrome/browser/ui/browser_dialogs.h"
+#include "chrome/browser/importer/importer_lock_dialog.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util_mac.h"
 
-namespace browser {
+namespace importer {
 
 void ShowImportLockDialog(gfx::NativeWindow parent,
                           ImporterHost* importer_host) {
@@ -35,4 +35,4 @@ void ShowImportLockDialog(gfx::NativeWindow parent,
   }
 }
 
-}  // namespace browser
+}  // namespace importer
