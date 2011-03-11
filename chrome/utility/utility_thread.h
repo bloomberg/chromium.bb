@@ -68,7 +68,6 @@ class UtilityThread : public ChildThread {
     const gfx::Rect& render_area,
     int render_dpi,
     const std::vector<printing::PageRange>& page_ranges,
-    printing::NativeMetafile* metafile,
     int* highest_rendered_page_number);
 #endif   // defined(OS_WIN)
 

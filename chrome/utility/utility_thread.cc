@@ -137,15 +137,12 @@ void UtilityThread::OnRenderPDFPagesToMetafile(
     const std::vector<printing::PageRange>& page_ranges) {
   bool succeeded = false;
 #if defined(OS_WIN)
-  scoped_ptr<printing::NativeMetafile> metafile(
-      printing::NativeMetafileFactory::CreateMetafile());
   int highest_rendered_page_number = 0;
   succeeded = RenderPDFToWinMetafile(pdf_file,
                                      metafile_path,
                                      render_area,
                                      render_dpi,
                                      page_ranges,
-                                     metafile.get(),
                                      &highest_rendered_page_number);
   if (succeeded) {
     Send(new UtilityHostMsg_RenderPDFPagesToMetafile_Succeeded(
@@ -211,7 +208,6 @@ bool UtilityThread::RenderPDFToWinMetafile(
     const gfx::Rect& render_area,
     int render_dpi,
     const std::vector<printing::PageRange>& page_ranges,
-    printing::NativeMetafile* metafile,
     int* highest_rendered_page_number) {
   *highest_rendered_page_number = -1;
   base::win::ScopedHandle file(pdf_file);
@@ -261,6 +257,8 @@ bool UtilityThread::RenderPDFToWinMetafile(
   if (!get_info_proc(&buffer.front(), buffer.size(), &total_page_count, NULL))
     return false;
 
+  scoped_ptr<printing::NativeMetafile> metafile(
+      printing::NativeMetafileFactory::CreateMetafile());
   metafile->CreateFileBackedDc(NULL, NULL, metafile_path);
   // Since we created the metafile using the screen DPI (but we actually want
   // the PDF DLL to print using the passed in render_dpi, we apply the following
