@@ -14,6 +14,8 @@
 
 namespace sync_notifier {
 
+RegistrationManager::PendingRegistrationInfo::PendingRegistrationInfo() {}
+
 RegistrationManager::RegistrationStatus::RegistrationStatus()
     : model_type(syncable::UNSPECIFIED),
       registration_manager(NULL),

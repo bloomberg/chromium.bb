@@ -40,6 +40,8 @@ class RegistrationManager {
 
   // Types used by testing functions.
   struct PendingRegistrationInfo {
+    PendingRegistrationInfo();
+
     // Last time a registration request was actually sent.
     base::Time last_registration_request;
     // Time the registration was attempted.
@@ -99,6 +101,12 @@ class RegistrationManager {
 
  private:
   struct RegistrationStatus {
+    RegistrationStatus();
+
+    // Calls registration_manager->DoRegister(model_type). (needed by
+    // |registration_timer|).
+    void DoRegister();
+
     // The model type for which this is the status.
     syncable::ModelType model_type;
     // The parent registration manager.
@@ -118,12 +126,6 @@ class RegistrationManager {
     base::TimeDelta next_delay;
     // The actual timer for registration.
     base::OneShotTimer<RegistrationStatus> registration_timer;
-
-    RegistrationStatus();
-
-    // Calls registration_manager->DoRegister(model_type). (needed by
-    // |registration_timer|).
-    void DoRegister();
   };
 
   // If |is_retry| is not set, registers the given type immediately
