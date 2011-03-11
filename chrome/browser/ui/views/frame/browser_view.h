@@ -228,162 +228,164 @@ class BrowserView : public BrowserBubbleHost,
   // when a new browser window is created.
   void RestoreFocus();
 
-  // Called when the activation of the frame changes.
-  virtual void ActivationChanged(bool activated);
-
   // Overridden from BrowserWindow:
-  virtual void Show();
-  virtual void SetBounds(const gfx::Rect& bounds);
-  virtual void Close();
-  virtual void Activate();
-  virtual void Deactivate();
-  virtual bool IsActive() const;
-  virtual void FlashFrame();
-  virtual gfx::NativeWindow GetNativeHandle();
-  virtual BrowserWindowTesting* GetBrowserWindowTesting();
-  virtual StatusBubble* GetStatusBubble();
-  virtual void SelectedTabToolbarSizeChanged(bool is_animating);
-  virtual void UpdateTitleBar();
-  virtual void ShelfVisibilityChanged();
-  virtual void UpdateDevTools();
-  virtual void UpdateLoadingAnimations(bool should_animate);
-  virtual void SetStarredState(bool is_starred);
-  virtual gfx::Rect GetRestoredBounds() const;
-  virtual gfx::Rect GetBounds() const;
-  virtual bool IsMaximized() const;
-  virtual void SetFullscreen(bool fullscreen);
-  virtual bool IsFullscreen() const;
-  virtual LocationBar* GetLocationBar() const;
-  virtual void SetFocusToLocationBar(bool select_all);
-  virtual void UpdateReloadStopState(bool is_loading, bool force);
+  virtual void Show() OVERRIDE;
+  virtual void SetBounds(const gfx::Rect& bounds) OVERRIDE;
+  virtual void Close() OVERRIDE;
+  virtual void Activate() OVERRIDE;
+  virtual void Deactivate() OVERRIDE;
+  virtual bool IsActive() const OVERRIDE;
+  virtual void FlashFrame() OVERRIDE;
+  virtual gfx::NativeWindow GetNativeHandle() OVERRIDE;
+  virtual BrowserWindowTesting* GetBrowserWindowTesting() OVERRIDE;
+  virtual StatusBubble* GetStatusBubble() OVERRIDE;
+  virtual void SelectedTabToolbarSizeChanged(bool is_animating) OVERRIDE;
+  virtual void UpdateTitleBar() OVERRIDE;
+  virtual void ShelfVisibilityChanged() OVERRIDE;
+  virtual void UpdateDevTools() OVERRIDE;
+  virtual void UpdateLoadingAnimations(bool should_animate) OVERRIDE;
+  virtual void SetStarredState(bool is_starred) OVERRIDE;
+  virtual gfx::Rect GetRestoredBounds() const OVERRIDE;
+  virtual gfx::Rect GetBounds() const OVERRIDE;
+  virtual bool IsMaximized() const OVERRIDE;
+  virtual void SetFullscreen(bool fullscreen) OVERRIDE;
+  virtual bool IsFullscreen() const OVERRIDE;
+  virtual LocationBar* GetLocationBar() const OVERRIDE;
+  virtual void SetFocusToLocationBar(bool select_all) OVERRIDE;
+  virtual void UpdateReloadStopState(bool is_loading, bool force) OVERRIDE;
   virtual void UpdateToolbar(TabContentsWrapper* contents,
-                             bool should_restore_state);
-  virtual void FocusToolbar();
-  virtual void FocusAppMenu();
-  virtual void FocusBookmarksToolbar();
-  virtual void FocusChromeOSStatus() {}
-  virtual void RotatePaneFocus(bool forwards);
-  virtual void DestroyBrowser();
-  virtual bool IsBookmarkBarVisible() const;
-  virtual bool IsBookmarkBarAnimating() const;
-  virtual bool IsTabStripEditable() const;
-  virtual bool IsToolbarVisible() const;
-  virtual void DisableInactiveFrame();
+                             bool should_restore_state) OVERRIDE;
+  virtual void FocusToolbar() OVERRIDE;
+  virtual void FocusAppMenu() OVERRIDE;
+  virtual void FocusBookmarksToolbar() OVERRIDE;
+  virtual void FocusChromeOSStatus() OVERRIDE {}
+  virtual void RotatePaneFocus(bool forwards) OVERRIDE;
+  virtual void DestroyBrowser() OVERRIDE;
+  virtual bool IsBookmarkBarVisible() const OVERRIDE;
+  virtual bool IsBookmarkBarAnimating() const OVERRIDE;
+  virtual bool IsTabStripEditable() const OVERRIDE;
+  virtual bool IsToolbarVisible() const OVERRIDE;
+  virtual void DisableInactiveFrame() OVERRIDE;
   virtual void ConfirmSetDefaultSearchProvider(
       TabContents* tab_contents,
       TemplateURL* template_url,
-      TemplateURLModel* template_url_model);
+      TemplateURLModel* template_url_model) OVERRIDE;
   virtual void ConfirmAddSearchProvider(const TemplateURL* template_url,
-                                        Profile* profile);
-  virtual void ToggleBookmarkBar();
-  virtual void ShowAboutChromeDialog();
-  virtual void ShowUpdateChromeDialog();
-  virtual void ShowTaskManager();
-  virtual void ShowBackgroundPages();
-  virtual void ShowBookmarkBubble(const GURL& url, bool already_bookmarked);
-  virtual void SetDownloadShelfVisible(bool visible);
-  virtual bool IsDownloadShelfVisible() const;
-  virtual DownloadShelf* GetDownloadShelf();
-  virtual void ShowRepostFormWarningDialog(TabContents* tab_contents);
+                                        Profile* profile) OVERRIDE;
+  virtual void ToggleBookmarkBar() OVERRIDE;
+  virtual void ShowAboutChromeDialog() OVERRIDE;
+  virtual void ShowUpdateChromeDialog() OVERRIDE;
+  virtual void ShowTaskManager() OVERRIDE;
+  virtual void ShowBackgroundPages() OVERRIDE;
+  virtual void ShowBookmarkBubble(const GURL& url, bool already_bookmarked)
+      OVERRIDE;
+  // TODO(beng): Not an override, move somewhere else.
+  void SetDownloadShelfVisible(bool visible);
+  virtual bool IsDownloadShelfVisible() const OVERRIDE;
+  virtual DownloadShelf* GetDownloadShelf() OVERRIDE;
+  virtual void ShowRepostFormWarningDialog(TabContents* tab_contents) OVERRIDE;
   virtual void ShowContentSettingsWindow(ContentSettingsType content_type,
-                                         Profile* profile);
-  virtual void ShowCollectedCookiesDialog(TabContents* tab_contents);
-  virtual void ShowProfileErrorDialog(int message_id);
-  virtual void ShowThemeInstallBubble();
-  virtual void ConfirmBrowserCloseWithPendingDownloads();
+                                         Profile* profile) OVERRIDE;
+  virtual void ShowCollectedCookiesDialog(TabContents* tab_contents) OVERRIDE;
+  virtual void ShowProfileErrorDialog(int message_id) OVERRIDE;
+  virtual void ShowThemeInstallBubble() OVERRIDE;
+  virtual void ConfirmBrowserCloseWithPendingDownloads() OVERRIDE;
   virtual void ShowHTMLDialog(HtmlDialogUIDelegate* delegate,
-                              gfx::NativeWindow parent_window);
-  virtual void UserChangedTheme();
-  virtual int GetExtraRenderViewHeight() const;
-  virtual void TabContentsFocused(TabContents* source);
+                              gfx::NativeWindow parent_window) OVERRIDE;
+  virtual void UserChangedTheme() OVERRIDE;
+  virtual int GetExtraRenderViewHeight() const OVERRIDE;
+  virtual void TabContentsFocused(TabContents* source) OVERRIDE;
   virtual void ShowPageInfo(Profile* profile,
                             const GURL& url,
                             const NavigationEntry::SSLStatus& ssl,
-                            bool show_history);
-  virtual void ShowAppMenu();
+                            bool show_history) OVERRIDE;
+  virtual void ShowAppMenu() OVERRIDE;
   virtual bool PreHandleKeyboardEvent(const NativeWebKeyboardEvent& event,
-                                      bool* is_keyboard_shortcut);
-  virtual void HandleKeyboardEvent(const NativeWebKeyboardEvent& event);
-  virtual void ShowCreateWebAppShortcutsDialog(TabContents* tab_contents);
-  virtual void ShowCreateChromeAppShortcutsDialog(Profile*,
-                                                  const Extension* app);
-  virtual void Cut();
-  virtual void Copy();
-  virtual void Paste();
-  virtual void ToggleTabStripMode();
-  virtual void PrepareForInstant();
-  virtual void ShowInstant(TabContents* preview_contents);
-  virtual void HideInstant(bool instant_is_active);
-  virtual gfx::Rect GetInstantBounds();
-
+                                      bool* is_keyboard_shortcut) OVERRIDE;
+  virtual void HandleKeyboardEvent(const NativeWebKeyboardEvent& event)
+      OVERRIDE;
+  virtual void ShowCreateWebAppShortcutsDialog(TabContents* tab_contents)
+      OVERRIDE;
+  virtual void ShowCreateChromeAppShortcutsDialog(
+      Profile*, const Extension* app) OVERRIDE;
+  virtual void Cut() OVERRIDE;
+  virtual void Copy() OVERRIDE;
+  virtual void Paste() OVERRIDE;
+  virtual void ToggleTabStripMode() OVERRIDE;
+  virtual void PrepareForInstant() OVERRIDE;
+  virtual void ShowInstant(TabContents* preview_contents) OVERRIDE;
+  virtual void HideInstant(bool instant_is_active) OVERRIDE;
+  virtual gfx::Rect GetInstantBounds() OVERRIDE;
 #if defined(OS_CHROMEOS)
-  virtual void ShowKeyboardOverlay(gfx::NativeWindow owning_window);
+  virtual void ShowKeyboardOverlay(gfx::NativeWindow owning_window) OVERRIDE;
 #endif
 
   // Overridden from BrowserWindowTesting:
-  virtual BookmarkBarView* GetBookmarkBarView() const;
-  virtual LocationBarView* GetLocationBarView() const;
-  virtual views::View* GetTabContentsContainerView() const;
-  virtual views::View* GetSidebarContainerView() const;
-  virtual ToolbarView* GetToolbarView() const;
+  virtual BookmarkBarView* GetBookmarkBarView() const OVERRIDE;
+  virtual LocationBarView* GetLocationBarView() const OVERRIDE;
+  virtual views::View* GetTabContentsContainerView() const OVERRIDE;
+  virtual views::View* GetSidebarContainerView() const OVERRIDE;
+  virtual ToolbarView* GetToolbarView() const OVERRIDE;
 
   // Overridden from NotificationObserver:
   virtual void Observe(NotificationType type,
                        const NotificationSource& source,
-                       const NotificationDetails& details);
+                       const NotificationDetails& details) OVERRIDE;
 
   // Overridden from TabStripModelObserver:
-  virtual void TabDetachedAt(TabContentsWrapper* contents, int index);
-  virtual void TabDeselected(TabContentsWrapper* contents);
+  virtual void TabDetachedAt(TabContentsWrapper* contents, int index) OVERRIDE;
+  virtual void TabDeselected(TabContentsWrapper* contents) OVERRIDE;
   virtual void TabSelectedAt(TabContentsWrapper* old_contents,
                              TabContentsWrapper* new_contents,
                              int index,
-                             bool user_gesture);
+                             bool user_gesture) OVERRIDE;
   virtual void TabReplacedAt(TabStripModel* tab_strip_model,
                              TabContentsWrapper* old_contents,
                              TabContentsWrapper* new_contents,
-                             int index);
-  virtual void TabStripEmpty();
+                             int index) OVERRIDE;
+  virtual void TabStripEmpty() OVERRIDE;
 
   // Overridden from ui::SimpleMenuModel::Delegate:
-  virtual bool IsCommandIdChecked(int command_id) const;
-  virtual bool IsCommandIdEnabled(int command_id) const;
-  virtual bool GetAcceleratorForCommandId(int command_id,
-                                          ui::Accelerator* accelerator);
-  virtual bool IsItemForCommandIdDynamic(int command_id) const;
-  virtual string16 GetLabelForCommandId(int command_id) const;
-  virtual void ExecuteCommand(int command_id);
+  virtual bool IsCommandIdChecked(int command_id) const OVERRIDE;
+  virtual bool IsCommandIdEnabled(int command_id) const OVERRIDE;
+  virtual bool GetAcceleratorForCommandId(
+      int command_id, ui::Accelerator* accelerator) OVERRIDE;
+  virtual bool IsItemForCommandIdDynamic(int command_id) const OVERRIDE;
+  virtual string16 GetLabelForCommandId(int command_id) const OVERRIDE;
+  virtual void ExecuteCommand(int command_id) OVERRIDE;
 
   // Overridden from views::WindowDelegate:
-  virtual bool CanResize() const;
-  virtual bool CanMaximize() const;
-  virtual bool IsModal() const;
-  virtual std::wstring GetWindowTitle() const;
-  virtual std::wstring GetAccessibleWindowTitle() const;
-  virtual views::View* GetInitiallyFocusedView();
-  virtual bool ShouldShowWindowTitle() const;
-  virtual SkBitmap GetWindowAppIcon();
-  virtual SkBitmap GetWindowIcon();
-  virtual bool ShouldShowWindowIcon() const;
-  virtual bool ExecuteWindowsCommand(int command_id);
-  virtual std::wstring GetWindowName() const;
+  virtual bool CanResize() const OVERRIDE;
+  virtual bool CanMaximize() const OVERRIDE;
+  virtual bool CanActivate() const OVERRIDE;
+  virtual bool IsModal() const OVERRIDE;
+  virtual std::wstring GetWindowTitle() const OVERRIDE;
+  virtual std::wstring GetAccessibleWindowTitle() const OVERRIDE;
+  virtual views::View* GetInitiallyFocusedView() OVERRIDE;
+  virtual bool ShouldShowWindowTitle() const OVERRIDE;
+  virtual SkBitmap GetWindowAppIcon() OVERRIDE;
+  virtual SkBitmap GetWindowIcon() OVERRIDE;
+  virtual bool ShouldShowWindowIcon() const OVERRIDE;
+  virtual bool ExecuteWindowsCommand(int command_id) OVERRIDE;
+  virtual std::wstring GetWindowName() const OVERRIDE;
   virtual void SaveWindowPlacement(const gfx::Rect& bounds,
-                                   bool maximized);
-  virtual bool GetSavedWindowBounds(gfx::Rect* bounds) const;
-  virtual bool GetSavedMaximizedState(bool* maximized) const;
-  virtual views::View* GetContentsView();
-  virtual views::ClientView* CreateClientView(views::Window* window);
+                                   bool maximized) OVERRIDE;
+  virtual bool GetSavedWindowBounds(gfx::Rect* bounds) const OVERRIDE;
+  virtual bool GetSavedMaximizedState(bool* maximized) const OVERRIDE;
+  virtual views::View* GetContentsView() OVERRIDE;
+  virtual views::ClientView* CreateClientView(views::Window* window) OVERRIDE;
+  virtual void OnWindowActivate(bool active) OVERRIDE;
 
   // Overridden from views::ClientView:
-  virtual bool CanClose();
-  virtual int NonClientHitTest(const gfx::Point& point);
-  virtual gfx::Size GetMinimumSize();
+  virtual bool CanClose() OVERRIDE;
+  virtual int NonClientHitTest(const gfx::Point& point) OVERRIDE;
+  virtual gfx::Size GetMinimumSize() OVERRIDE;
 
   // InfoBarContainer::Delegate overrides
-  virtual void InfoBarContainerSizeChanged(bool is_animating);
+  virtual void InfoBarContainerSizeChanged(bool is_animating) OVERRIDE;
 
   // views::SingleSplitView::Observer overrides:
-  virtual bool SplitHandleMoved(views::SingleSplitView* view);
+  virtual bool SplitHandleMoved(views::SingleSplitView* view) OVERRIDE;
 
  protected:
   // Appends to |toolbars| a pointer to each AccessiblePaneView that
@@ -400,14 +402,14 @@ class BrowserView : public BrowserBubbleHost,
   }
 
   // Overridden from views::View:
-  virtual std::string GetClassName() const;
-  virtual void Layout();
-  virtual void PaintChildren(gfx::Canvas* canvas);
+  virtual std::string GetClassName() const OVERRIDE;
+  virtual void Layout() OVERRIDE;
+  virtual void PaintChildren(gfx::Canvas* canvas) OVERRIDE;
   virtual void ViewHierarchyChanged(bool is_add,
                                     views::View* parent,
-                                    views::View* child);
-  virtual void ChildPreferredSizeChanged(View* child);
-  virtual AccessibilityTypes::Role GetAccessibleRole();
+                                    views::View* child) OVERRIDE;
+  virtual void ChildPreferredSizeChanged(View* child) OVERRIDE;
+  virtual AccessibilityTypes::Role GetAccessibleRole() OVERRIDE;
 
   // Factory Methods.
   // Returns a new LayoutManager for this browser view. A subclass may

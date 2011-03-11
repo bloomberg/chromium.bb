@@ -368,10 +368,6 @@ int WindowWin::GetShowState() const {
 ///////////////////////////////////////////////////////////////////////////////
 // WindowWin, WidgetWin overrides:
 
-void WindowWin::OnActivate(UINT action, BOOL minimized, HWND window) {
-  delegate_->OnNativeWindowActivationChanged(action == WA_ACTIVE);
-}
-
 void WindowWin::OnActivateApp(BOOL active, DWORD thread_id) {
   if (!active && thread_id != GetCurrentThreadId()) {
     // Another application was activated, we should reset any state that
@@ -471,6 +467,11 @@ void WindowWin::OnInitMenu(HMENU menu) {
                      !is_minimized);
 }
 
+LRESULT WindowWin::OnMouseActivate(UINT message, WPARAM w_param,
+                                   LPARAM l_param) {
+  return delegate_->CanActivate() ? MA_ACTIVATE : MA_NOACTIVATEANDEAT;
+}
+
 LRESULT WindowWin::OnMouseRange(UINT message, WPARAM w_param, LPARAM l_param) {
   if (message == WM_RBUTTONUP) {
     if (is_right_mouse_pressed_on_caption_) {
@@ -501,7 +502,11 @@ LRESULT WindowWin::OnMouseRange(UINT message, WPARAM w_param, LPARAM l_param) {
 
 
 LRESULT WindowWin::OnNCActivate(BOOL active) {
+  if (!delegate_->CanActivate())
+    return TRUE;
+
   is_active_ = !!active;
+  delegate_->OnNativeWindowActivationChanged(is_active_);
 
   // The frame may need to redraw as a result of the activation change.
   // We can get WM_NCACTIVATE before we're actually visible. If we're not
@@ -514,6 +519,7 @@ LRESULT WindowWin::OnNCActivate(BOOL active) {
   bool inactive_rendering_disabled = delegate_->IsInactiveRenderingDisabled();
   if (IsActive())
     delegate_->EnableInactiveRendering();
+
   return CallDefaultNCActivateHandler(inactive_rendering_disabled || active);
 }
 

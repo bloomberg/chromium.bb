@@ -46,6 +46,9 @@ class WindowDelegate {
   // Returns true if the window can ever be maximized.
   virtual bool CanMaximize() const;
 
+  // Returns true if the window can be activated.
+  virtual bool CanActivate() const;
+
   // Returns true if the dialog should be displayed modally to the window that
   // opened it. Only windows with WindowType == DIALOG can be modal.
   virtual bool IsModal() const;
@@ -112,6 +115,9 @@ class WindowDelegate {
   // after this point. The delegate can use this opportunity to delete itself at
   // this time if necessary.
   virtual void DeleteDelegate() {}
+
+  // Called when the window's activation state changes.
+  virtual void OnWindowActivate(bool active) {}
 
   // Returns the View that is contained within this Window.
   virtual View* GetContentsView();

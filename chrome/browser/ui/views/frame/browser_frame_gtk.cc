@@ -64,12 +64,6 @@ views::RootView* BrowserFrameGtk::CreateRootView() {
   return root_view_;
 }
 
-void BrowserFrameGtk::IsActiveChanged() {
-  GetRootView()->SchedulePaint();
-  browser_view_->ActivationChanged(IsActive());
-  views::WidgetGtk::IsActiveChanged();
-}
-
 void BrowserFrameGtk::SetInitialFocus() {
   browser_view_->RestoreFocus();
 }

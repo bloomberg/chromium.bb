@@ -56,12 +56,8 @@ class BrowserFrameWin : public BrowserFrame,
   virtual void OnInitMenuPopup(HMENU menu,
                                UINT position,
                                BOOL is_system_menu) OVERRIDE;
-  virtual LRESULT OnMouseActivate(UINT message,
-                                  WPARAM w_param,
-                                  LPARAM l_param) OVERRIDE;
   virtual void OnMove(const CPoint& point) OVERRIDE;
   virtual void OnMoving(UINT param, LPRECT new_bounds) OVERRIDE;
-  virtual LRESULT OnNCActivate(BOOL active) OVERRIDE;
   virtual LRESULT OnNCHitTest(const CPoint& pt) OVERRIDE;
   virtual void OnWindowPosChanged(WINDOWPOS* window_pos) OVERRIDE;
   virtual ui::ThemeProvider* GetThemeProvider() const OVERRIDE;

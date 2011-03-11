@@ -122,27 +122,12 @@ void BrowserFrameWin::OnInitMenuPopup(HMENU menu, UINT position,
   browser_view_->PrepareToRunSystemMenu(menu);
 }
 
-LRESULT BrowserFrameWin::OnMouseActivate(UINT message,
-                                         WPARAM w_param,
-                                         LPARAM l_param) {
-  return browser_view_->ActivateAppModalDialog() ? MA_NOACTIVATEANDEAT
-                                                 : MA_ACTIVATE;
-}
-
 void BrowserFrameWin::OnMove(const CPoint& point) {
   browser_view_->WindowMoved();
 }
 
 void BrowserFrameWin::OnMoving(UINT param, LPRECT new_bounds) {
   browser_view_->WindowMoved();
-}
-
-LRESULT BrowserFrameWin::OnNCActivate(BOOL active) {
-  if (browser_view_->ActivateAppModalDialog())
-    return TRUE;
-
-  browser_view_->ActivationChanged(!!active);
-  return WindowWin::OnNCActivate(active);
 }
 
 LRESULT BrowserFrameWin::OnNCHitTest(const CPoint& pt) {

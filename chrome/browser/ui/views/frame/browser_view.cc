@@ -649,11 +649,6 @@ bool BrowserView::ActivateAppModalDialog() const {
   return false;
 }
 
-void BrowserView::ActivationChanged(bool activated) {
-  if (activated)
-    BrowserList::SetLastActive(browser_.get());
-}
-
 TabContents* BrowserView::GetSelectedTabContents() const {
   return browser_->GetSelectedTabContents();
 }
@@ -1528,6 +1523,10 @@ bool BrowserView::CanMaximize() const {
   return true;
 }
 
+bool BrowserView::CanActivate() const {
+  return !ActivateAppModalDialog();
+}
+
 bool BrowserView::IsModal() const {
   return false;
 }
@@ -1653,6 +1652,11 @@ views::View* BrowserView::GetContentsView() {
 views::ClientView* BrowserView::CreateClientView(views::Window* window) {
   set_window(window);
   return this;
+}
+
+void BrowserView::OnWindowActivate(bool active) {
+  if (active)
+    BrowserList::SetLastActive(browser_.get());
 }
 
 ///////////////////////////////////////////////////////////////////////////////

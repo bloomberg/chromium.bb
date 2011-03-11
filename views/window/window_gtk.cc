@@ -218,6 +218,11 @@ gboolean WindowGtk::OnLeaveNotify(GtkWidget* widget, GdkEventCrossing* event) {
   return WidgetGtk::OnLeaveNotify(widget, event);
 }
 
+void WindowGtk::IsActiveChanged() {
+  WidgetGtk::IsActiveChanged();
+  delegate_->OnNativeWindowActivationChanged(IsActive());
+}
+
 void WindowGtk::SetInitialFocus() {
   View* v = GetWindow()->window_delegate()->GetInitiallyFocusedView();
   if (v) {

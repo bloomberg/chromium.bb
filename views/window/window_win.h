@@ -91,7 +91,6 @@ class WindowWin : public WidgetWin,
   virtual int GetShowState() const;
 
   // Overridden from WidgetWin:
-  virtual void OnActivate(UINT action, BOOL minimized, HWND window) OVERRIDE;
   virtual void OnActivateApp(BOOL active, DWORD thread_id) OVERRIDE;
   virtual LRESULT OnAppCommand(HWND window,
                                short app_command,
@@ -108,6 +107,8 @@ class WindowWin : public WidgetWin,
   virtual void OnFinalMessage(HWND window) OVERRIDE;
   virtual void OnGetMinMaxInfo(MINMAXINFO* minmax_info) OVERRIDE;
   virtual void OnInitMenu(HMENU menu) OVERRIDE;
+  virtual LRESULT OnMouseActivate(UINT message, WPARAM w_param, LPARAM l_param)
+      OVERRIDE;
   virtual LRESULT OnMouseRange(UINT message,
                                WPARAM w_param,
                                LPARAM l_param) OVERRIDE;

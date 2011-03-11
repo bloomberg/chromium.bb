@@ -238,6 +238,10 @@ const Widget* Window::AsWidget() const {
 ////////////////////////////////////////////////////////////////////////////////
 // Window, internal::NativeWindowDelegate implementation:
 
+bool Window::CanActivate() const {
+  return window_delegate_->CanActivate();
+}
+
 bool Window::IsInactiveRenderingDisabled() const {
   return disable_inactive_rendering_;
 }
@@ -292,6 +296,7 @@ void Window::OnNativeWindowCreated(const gfx::Rect& bounds) {
 void Window::OnNativeWindowActivationChanged(bool active) {
   if (!active)
     SaveWindowPosition();
+  window_delegate_->OnWindowActivate(active);
 }
 
 void Window::OnNativeWindowDestroying() {

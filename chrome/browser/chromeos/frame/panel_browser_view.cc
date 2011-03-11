@@ -83,16 +83,6 @@ void PanelBrowserView::UpdateTitleBar() {
     panel_controller_->UpdateTitleBar();
 }
 
-void PanelBrowserView::ActivationChanged(bool activated) {
-  ::BrowserView::ActivationChanged(activated);
-  if (panel_controller_.get()) {
-    if (activated)
-      panel_controller_->OnFocusIn();
-    else
-      panel_controller_->OnFocusOut();
-  }
-}
-
 void PanelBrowserView::SetCreatorView(PanelBrowserView* creator) {
   DCHECK(creator);
   GtkWindow* window = creator->GetNativeHandle();
@@ -104,6 +94,16 @@ bool PanelBrowserView::GetSavedWindowBounds(gfx::Rect* bounds) const {
   if (res)
     LimitBounds(bounds);
   return res;
+}
+
+void PanelBrowserView::OnWindowActivate(bool active) {
+  ::BrowserView::OnWindowActivate(active);
+  if (panel_controller_.get()) {
+    if (active)
+      panel_controller_->OnFocusIn();
+    else
+      panel_controller_->OnFocusOut();
+  }
 }
 
 ////////////////////////////////////////////////////////////////////////////////

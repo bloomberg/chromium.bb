@@ -41,6 +41,7 @@ class WindowGtk : public WidgetGtk, public NativeWindow, public Window {
   virtual gboolean OnWindowStateEvent(GtkWidget* widget,
                                       GdkEventWindowState* event);
   virtual gboolean OnLeaveNotify(GtkWidget* widget, GdkEventCrossing* event);
+  virtual void IsActiveChanged();
   virtual void SetInitialFocus();
 
  protected:

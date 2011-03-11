@@ -19,6 +19,9 @@ class NativeWindowDelegate {
  public:
   virtual ~NativeWindowDelegate() {}
 
+  // Returns true if the window can be activated.
+  virtual bool CanActivate() const = 0;
+
   virtual bool IsInactiveRenderingDisabled() const = 0;
   virtual void EnableInactiveRendering() = 0;
 

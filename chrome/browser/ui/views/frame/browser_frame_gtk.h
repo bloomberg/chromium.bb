@@ -31,7 +31,6 @@ class BrowserFrameGtk : public BrowserFrame,
 
   // Overridden from views::Widget:
   virtual ui::ThemeProvider* GetThemeProvider() const OVERRIDE;
-  virtual void IsActiveChanged() OVERRIDE;
   virtual void SetInitialFocus() OVERRIDE;
 
  protected:

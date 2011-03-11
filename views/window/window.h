@@ -202,6 +202,7 @@ class Window : public internal::NativeWindowDelegate {
   }
 
   // Overridden from NativeWindowDelegate:
+  virtual bool CanActivate() const OVERRIDE;
   virtual bool IsInactiveRenderingDisabled() const OVERRIDE;
   virtual void EnableInactiveRendering() OVERRIDE;
   virtual bool IsModal() const OVERRIDE;

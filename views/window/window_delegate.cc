@@ -28,6 +28,10 @@ bool WindowDelegate::CanMaximize() const {
   return false;
 }
 
+bool WindowDelegate::CanActivate() const {
+  return true;
+}
+
 bool WindowDelegate::IsModal() const {
   return false;
 }
