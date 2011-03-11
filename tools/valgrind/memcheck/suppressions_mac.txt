@@ -1451,3 +1451,13 @@
    fun:-[NSAnimationManager animationTimerFired:]
    fun:__NSFireTimer
 }
+{
+   bug_75741
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN4base21ScopedCallbackFactoryIN7fileapi18FileWriterDelegateEE11NewCallbackIiEEPN9Callback1IT_E4TypeEMS2_FvS6_E
+   fun:_ZN7fileapi18FileWriterDelegate5WriteEv
+   fun:_ZN7fileapi18FileWriterDelegate14OnDataReceivedEi
+   fun:_Z16DispatchToMethodIN7fileapi18FileWriterDelegateEMS1_FviEiEvPT_T0_RK6Tuple1IT1_E
+   fun:_ZN27ScopedRunnableMethodFactoryIN7fileapi18FileWriterDelegateEE14RunnableMethodIMS1_FviE6Tuple1IiEE3RunEv
+}
