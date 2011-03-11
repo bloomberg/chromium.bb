@@ -44,6 +44,11 @@
 #endif  // defined(TOOLKIT_GTK)
 
 PersonalOptionsHandler::PersonalOptionsHandler() {
+#if defined(OS_CHROMEOS)
+  registrar_.Add(this,
+                 NotificationType::LOGIN_USER_IMAGE_CHANGED,
+                 NotificationService::AllSources());
+#endif
 }
 
 PersonalOptionsHandler::~PersonalOptionsHandler() {
@@ -51,6 +56,10 @@ PersonalOptionsHandler::~PersonalOptionsHandler() {
       web_ui_->GetProfile()->GetProfileSyncService();
   if (sync_service)
     sync_service->RemoveObserver(this);
+#if defined(OS_CHROMEOS)
+  if (select_file_dialog_.get())
+    select_file_dialog_->ListenerDestroyed();
+#endif
 }
 
 void PersonalOptionsHandler::GetLocalizedValues(
@@ -162,6 +171,8 @@ void PersonalOptionsHandler::GetLocalizedValues(
       l10n_util::GetStringUTF16(IDS_OPTIONS_PERSONAL_ACCOUNT_GROUP_NAME));
   localized_strings->SetString("enableScreenlock",
       l10n_util::GetStringUTF16(IDS_OPTIONS_ENABLE_SCREENLOCKER_CHECKBOX));
+  localized_strings->SetString("changePicture",
+      l10n_util::GetStringUTF16(IDS_OPTIONS_CHANGE_PICTURE));
 #endif
 }
 
@@ -190,16 +201,24 @@ void PersonalOptionsHandler::RegisterMessages() {
   web_ui_->RegisterMessageCallback(
       "loadAccountPicture",
       NewCallback(this, &PersonalOptionsHandler::LoadAccountPicture));
+  web_ui_->RegisterMessageCallback(
+      "changeAccountPicture",
+      NewCallback(this, &PersonalOptionsHandler::ChangeAccountPicture));
 #endif
 }
 
 void PersonalOptionsHandler::Observe(NotificationType type,
                                      const NotificationSource& source,
                                      const NotificationDetails& details) {
-  if (type == NotificationType::BROWSER_THEME_CHANGED)
+  if (type == NotificationType::BROWSER_THEME_CHANGED) {
     ObserveThemeChanged();
-  else
+#if defined(OS_CHROMEOS)
+  } else if (type == NotificationType::LOGIN_USER_IMAGE_CHANGED) {
+    LoadAccountPicture(NULL);
+#endif
+  } else {
     OptionsPageUIHandler::Observe(type, source, details);
+  }
 }
 
 void PersonalOptionsHandler::OnStateChanged() {
@@ -396,5 +415,33 @@ void PersonalOptionsHandler::LoadAccountPicture(const ListValue* args) {
     web_ui_->CallJavascriptFunction("PersonalOptions.setAccountPicture",
                                     image_url);
   }
+}
+
+void PersonalOptionsHandler::ChangeAccountPicture(const ListValue* args) {
+  if (!select_file_dialog_.get())
+    select_file_dialog_ = SelectFileDialog::Create(this);
+
+  SelectFileDialog::FileTypeInfo file_type_info;
+  file_type_info.extensions.resize(1);
+  file_type_info.extensions[0].push_back(FILE_PATH_LITERAL("png"));
+
+  FilePath downloads_path;
+  if (!PathService::Get(chrome::DIR_DEFAULT_DOWNLOADS, &downloads_path))
+    NOTREACHED();
+  select_file_dialog_->SelectFile(
+      SelectFileDialog::SELECT_OPEN_FILE,
+      l10n_util::GetStringUTF16(IDS_DOWNLOAD_TITLE),
+      downloads_path,
+      &file_type_info,
+      0,
+      FILE_PATH_LITERAL(""),
+      NULL,
+      NULL);
+}
+
+void PersonalOptionsHandler::FileSelected(const FilePath& path,
+                                          int index,
+                                          void* params) {
+  chromeos::UserManager::Get()->LoadLoggedInUserImage(path);
 }
 #endif

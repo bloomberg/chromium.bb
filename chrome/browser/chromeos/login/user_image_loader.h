@@ -23,8 +23,11 @@ class UserImageLoader : public base::RefCountedThreadSafe<UserImageLoader> {
   class Delegate {
    public:
     // Invoked when user image has been read.
+    // |should_save_image| indicates if user image should be saved somewhere
+    // for later use.
     virtual void OnImageLoaded(const std::string& username,
-                               const SkBitmap& image) = 0;
+                               const SkBitmap& image,
+                               bool should_save_image) = 0;
 
    protected:
     virtual ~Delegate() {}
@@ -33,7 +36,10 @@ class UserImageLoader : public base::RefCountedThreadSafe<UserImageLoader> {
   explicit UserImageLoader(Delegate* delegate);
 
   // Start reading the image for |username| from |filepath| on the file thread.
-  void Start(const std::string& username, const std::string& filepath);
+  // |should_save_image| is passed to OnImageLoaded handler.
+  void Start(const std::string& username,
+             const std::string& filepath,
+             bool should_save_image);
 
   void set_delegate(Delegate* delegate) { delegate_ = delegate; }
 
@@ -53,6 +59,9 @@ class UserImageLoader : public base::RefCountedThreadSafe<UserImageLoader> {
 
   // Delegate to notify about finishing the load of the image.
   Delegate* delegate_;
+
+  // Should the delegate save the image.
+  bool should_save_image_;
 
   DISALLOW_COPY_AND_ASSIGN(UserImageLoader);
 };

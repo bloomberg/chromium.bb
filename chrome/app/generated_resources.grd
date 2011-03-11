@@ -9712,6 +9712,9 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_OPTIONS_ENABLE_SCREENLOCKER_CHECKBOX" desc="In the Personal Stuff settings tab, the text on the checkbox to enable screenlocker for current user.">
         Require password to wake from sleep
       </message>
+      <message name="IDS_OPTIONS_CHANGE_PICTURE" desc="In the Personal Stuff settings tab, the text on the button to change picture for the current user.">
+        Change picture...
+      </message>
       <message name="IDS_OPTIONS_SETTINGS_INTERNET_TAB_WIFI" desc="In settings Internet options, the title for buy cellular data plan button.">
         Wi-Fi
       </message>

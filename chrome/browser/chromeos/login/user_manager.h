@@ -92,13 +92,17 @@ class UserManager : public UserImageLoader::Delegate,
   // notification about the image changed via NotificationService.
   void SetLoggedInUserImage(const SkBitmap& image);
 
+  // Tries to load logged-in user image from disk and sets it for the user.
+  void LoadLoggedInUserImage(const FilePath& path);
+
   // Saves image to file and saves image path in local state preferences.
   void SaveUserImage(const std::string& username,
                      const SkBitmap& image);
 
   // chromeos::UserImageLoader::Delegate implementation.
   virtual void OnImageLoaded(const std::string& username,
-                             const SkBitmap& image);
+                             const SkBitmap& image,
+                             bool save_image);
 
   // NotificationObserver implementation.
   virtual void Observe(NotificationType type,

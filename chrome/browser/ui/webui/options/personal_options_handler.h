@@ -9,13 +9,20 @@
 #include "base/basictypes.h"
 #include "chrome/browser/browser_signin.h"
 #include "chrome/browser/sync/profile_sync_service.h"
+#include "chrome/browser/ui/shell_dialogs.h"
 #include "chrome/browser/ui/webui/options/options_ui.h"
+#if defined(OS_CHROMEOS)
+#include "content/common/notification_registrar.h"
+#endif
 
 class OptionsManagedBannerHandler;
 
 // Chrome personal options page UI handler.
 class PersonalOptionsHandler : public OptionsPageUIHandler,
                                public ProfileSyncServiceObserver,
+#if defined(OS_CHROMEOS)
+                               public SelectFileDialog::Listener,
+#endif
                                public BrowserSignin::SigninDelegate {
  public:
   PersonalOptionsHandler();
@@ -56,6 +63,13 @@ class PersonalOptionsHandler : public OptionsPageUIHandler,
 
 #if defined(OS_CHROMEOS)
   void LoadAccountPicture(const ListValue* args);
+  void ChangeAccountPicture(const ListValue* args);
+
+  // SelectFileDialog::Delegate implementation.
+  virtual void FileSelected(const FilePath& path, int index, void* params);
+
+  scoped_refptr<SelectFileDialog> select_file_dialog_;
+  NotificationRegistrar registrar_;
 #endif
 
   scoped_ptr<OptionsManagedBannerHandler> banner_handler_;

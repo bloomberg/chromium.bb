@@ -304,7 +304,7 @@ std::vector<UserManager::User> UserManager::GetUsers() const {
               // Insert the default image so we don't send another request if
               // GetUsers is called twice.
               user_images_[email] = user.image();
-              image_loader_->Start(email, image_path);
+              image_loader_->Start(email, image_path, false);
             }
           }
         } else {
@@ -439,7 +439,13 @@ void UserManager::SetLoggedInUserImage(const SkBitmap& image) {
   if (logged_in_user_.email().empty())
     return;
   logged_in_user_.set_image(image);
-  OnImageLoaded(logged_in_user_.email(), image);
+  OnImageLoaded(logged_in_user_.email(), image, false);
+}
+
+void UserManager::LoadLoggedInUserImage(const FilePath& path) {
+  if (logged_in_user_.email().empty())
+    return;
+  image_loader_->Start(logged_in_user_.email(), path.value(), true);
 }
 
 void UserManager::SaveUserImage(const std::string& username,
@@ -499,12 +505,15 @@ void UserManager::SetDefaultUserImage(const std::string& username) {
 }
 
 void UserManager::OnImageLoaded(const std::string& username,
-                                const SkBitmap& image) {
+                                const SkBitmap& image,
+                                bool should_save_image) {
   DVLOG(1) << "Loaded image for " << username;
   user_images_[username] = image;
   User user;
   user.set_email(username);
   user.set_image(image);
+  if (should_save_image)
+    SaveUserImage(username, image);
   NotificationService::current()->Notify(
       NotificationType::LOGIN_USER_IMAGE_CHANGED,
       Source<UserManager>(this),

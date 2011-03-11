@@ -15,15 +15,18 @@ namespace chromeos {
 
 UserImageLoader::UserImageLoader(Delegate* delegate)
     : target_message_loop_(NULL),
-      delegate_(delegate) {
+      delegate_(delegate),
+      should_save_image_(false) {
 }
 
 UserImageLoader::~UserImageLoader() {
 }
 
 void UserImageLoader::Start(const std::string& username,
-                            const std::string& filename) {
+                            const std::string& filename,
+                            bool should_save_image) {
   target_message_loop_ = MessageLoop::current();
+  should_save_image_ = should_save_image;
 
   BrowserThread::PostTask(BrowserThread::FILE,
                           FROM_HERE,
@@ -53,7 +56,7 @@ void UserImageLoader::LoadImage(const std::string& username,
 void UserImageLoader::NotifyDelegate(const std::string& username,
                                      const SkBitmap& image) {
   if (delegate_)
-    delegate_->OnImageLoaded(username, image);
+    delegate_->OnImageLoaded(username, image, should_save_image_);
 }
 
 }  // namespace chromeos
