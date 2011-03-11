@@ -10,24 +10,27 @@ set -e
 setup_initsvn
 setup_gitsvn
 
+setup_hooks() {
+  upload_retval = shift
+  dcommit_retval = shift
+
+  echo > PRESUBMIT.py <<END
+def CheckChangeOnUpload(input_api, output_api):
+  return $upload_retval
+
+def CheckChangeOnCommit(input_api, output_api):
+  return $dcommit_retval
+END
+}
+
 (
   set -e
   cd git-svn
 
-  # We need a server set up, but we don't use it.
-  git config rietveld.server localhost:1
+  # We need a server set up, but we don't use it.  git config rietveld.server localhost:1
 
-  # Install a pre-cl-upload hook.
-  echo "#!/bin/bash" > .git/hooks/pre-cl-upload
-  echo "echo 'sample preupload fail'" >> .git/hooks/pre-cl-upload
-  echo "exit 1" >> .git/hooks/pre-cl-upload
-  chmod 755 .git/hooks/pre-cl-upload
-
-  # Install a pre-cl-dcommit hook.
-  echo "#!/bin/bash" > .git/hooks/pre-cl-dcommit
-  echo "echo 'sample predcommit fail'" >> .git/hooks/pre-cl-dcommit
-  echo "exit 1" >> .git/hooks/pre-cl-dcommit
-  chmod 755 .git/hooks/pre-cl-dcommit
+  # Install hooks that will fail on upload and commit
+  setup_hooks 1 1
 
   echo "some work done" >> test
   git add test; git commit -q -m "work"
@@ -35,7 +38,7 @@ setup_gitsvn
   # Verify git cl upload fails.
   test_expect_failure "git-cl upload hook fails" "$GIT_CL upload master"
 
-  # Verify git cl upload fails.
+  # Verify git cl dcommit fails.
   test_expect_failure "git-cl dcommit hook fails" "$GIT_CL dcommit master"
 )
 SUCCESS=$?

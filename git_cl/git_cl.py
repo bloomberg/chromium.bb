@@ -21,7 +21,11 @@ except ImportError:
   pass
 
 try:
-  # Add the parent directory in case it's a depot_tools checkout.
+  # TODO(dpranke): We wrap this in a try block for a limited form of
+  # backwards-compatibility with older versions of git-cl that weren't
+  # dependent on depot_tools. This version should still work outside of
+  # depot_tools as long as --bypass-hooks is used. We should remove this
+  # once this has baked for a while and things seem safe.
   depot_tools_path = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
   sys.path.append(depot_tools_path)
   import breakpad
@@ -29,9 +33,7 @@ except ImportError:
   pass
 
 DEFAULT_SERVER = 'http://codereview.appspot.com'
-PREDCOMMIT_HOOK = '.git/hooks/pre-cl-dcommit'
 POSTUPSTREAM_HOOK_PATTERN = '.git/hooks/post-cl-%s'
-PREUPLOAD_HOOK = '.git/hooks/pre-cl-upload'
 DESCRIPTION_BACKUP_FILE = '~/.git_cl_description_backup'
 
 def DieWithError(message):
@@ -541,13 +543,6 @@ def LoadCodereviewSettingsFromFile(fileobj):
     RunGit(['config', keyvals['PUSH_URL_CONFIG'],
             keyvals['ORIGIN_URL_CONFIG']])
 
-  # Update the hooks if the local hook files aren't present already.
-  if GetProperty('GITCL_PREUPLOAD') and not os.path.isfile(PREUPLOAD_HOOK):
-    DownloadToFile(GetProperty('GITCL_PREUPLOAD'), PREUPLOAD_HOOK)
-  if GetProperty('GITCL_PREDCOMMIT') and not os.path.isfile(PREDCOMMIT_HOOK):
-    DownloadToFile(GetProperty('GITCL_PREDCOMMIT'), PREDCOMMIT_HOOK)
-  return 0
-
 
 @usage('[repo root containing codereview.settings]')
 def CMDconfig(parser, args):
@@ -669,13 +664,55 @@ def UserEditedLog(starting_text):
   return stripcomment_re.sub('', text).strip()
 
 
-def RunHook(hook, upstream_branch, error_ok=False):
-  """Run a given hook if it exists. By default, we fail on errors."""
-  hook = '%s/%s' % (settings.GetRoot(), hook)
-  if not os.path.exists(hook):
-    return
-  return RunCommand([hook, upstream_branch], error_ok=error_ok,
-                    redirect_stdout=False)
+def ConvertToInteger(inputval):
+  """Convert a string to integer, but returns either an int or None."""
+  try:
+    return int(inputval)
+  except (TypeError, ValueError):
+    return None
+
+
+def RunHook(committing, upstream_branch):
+  import presubmit_support
+  import scm
+  import watchlists
+
+  root = RunCommand(['git', 'rev-parse', '--show-cdup']).strip()
+  if not root:
+    root = "."
+  absroot = os.path.abspath(root)
+  if not root:
+    raise Exception("Could not get root directory.")
+
+  # We use the sha1 of HEAD as a name of this change.
+  name = RunCommand(['git', 'rev-parse', 'HEAD']).strip()
+  files = scm.GIT.CaptureStatus([root], upstream_branch)
+
+  cl = Changelist()
+  issue = ConvertToInteger(cl.GetIssue())
+  patchset = ConvertToInteger(cl.GetPatchset())
+  if issue:
+    description = cl.GetDescription()
+  else:
+    # If the change was never uploaded, use the log messages of all commits
+    # up to the branch point, as git cl upload will prefill the description
+    # with these log messages.
+    description = RunCommand(['git', 'log', '--pretty=format:%s%n%n%b',
+                             '%s...' % (upstream_branch)]).strip()
+  change = presubmit_support.GitChange(name, description, absroot, files,
+                                       issue, patchset)
+
+  # Apply watchlists on upload.
+  if not committing:
+    watchlist = watchlists.Watchlists(change.RepositoryRoot())
+    files = [f.LocalPath() for f in change.AffectedFiles()]
+    watchers = watchlist.GetWatchersForPaths(files)
+    RunCommand(['git', 'config', '--replace-all',
+               'rietveld.extracc', ','.join(watchers)])
+
+  return presubmit_support.DoPresubmitChecks(change, committing,
+      verbose=None, output_stream=sys.stdout, input_stream=sys.stdin,
+      default_presubmit=None, may_prompt=None)
 
 
 def CMDpresubmit(parser, args):
@@ -699,12 +736,10 @@ def CMDpresubmit(parser, args):
 
   if options.upload:
     print '*** Presubmit checks for UPLOAD would report: ***'
-    return not RunHook(PREUPLOAD_HOOK, upstream_branch=base_branch,
-        error_ok=True)
+    return RunHook(committing=False, upstream_branch=base_branch)
   else:
     print '*** Presubmit checks for DCOMMIT would report: ***'
-    return not RunHook(PREDCOMMIT_HOOK, upstream_branch=base_branch,
-        error_ok=True)
+    return RunHook(committing=True, upstream_branch=base_branch)
 
 
 @usage('[args to "git diff"]')
@@ -743,7 +778,7 @@ def CMDupload(parser, args):
     args = [base_branch + "..."]
 
   if not options.bypass_hooks:
-    RunHook(PREUPLOAD_HOOK, upstream_branch=base_branch, error_ok=False)
+    RunHook(committing=False, upstream_branch=base_branch)
 
   # --no-ext-diff is broken in some versions of Git, so try to work around
   # this by overriding the environment (but there is still a problem if the
@@ -900,7 +935,7 @@ def SendUpstream(parser, args, cmd):
       return 1
 
   if not options.force and not options.bypass_hooks:
-    RunHook(PREDCOMMIT_HOOK, upstream_branch=base_branch, error_ok=False)
+    RunHook(committing=False, upstream_branch=base_branch)
 
     if cmd == 'dcommit':
       # Check the tree status if the tree status URL is set.
