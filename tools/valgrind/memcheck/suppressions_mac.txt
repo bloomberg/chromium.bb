@@ -1448,8 +1448,30 @@
    fun:-[NSWindow setValue:forKey:]
    fun:-[NSObject(NSKeyValueCoding) setValue:forKeyPath:]
    fun:-[NSInFlightAnimation advanceToTime:]
-   fun:-[NSAnimationManager animationTimerFired:]
-   fun:__NSFireTimer
+}
+{
+   bug_75714_c
+   Memcheck:Addr4
+   fun:sseCGSFill8by1
+   fun:argb32_mark_constshape
+   fun:argb32_mark
+   fun:ripl_BltShape
+   fun:ripc_Render
+   fun:ripc_DrawRects
+   fun:CGContextFillRects
+   fun:CGContextFillRect
+   fun:NSRectFill
+   fun:-[NSView _drawRect:clip:]
+   fun:-[NSView _recursiveDisplayAllDirtyWithLockFocus:visRect:]
+   fun:-[NSView _recursiveDisplayRectIfNeededIgnoringOpacity:isVisibleRect:rectIsVisibleRectForView:topView:]
+   fun:-[NSNextStepFrame _recursiveDisplayRectIfNeededIgnoringOpacity:isVisibleRect:rectIsVisibleRectForView:topView:]
+   fun:-[NSView _displayRectIgnoringOpacity:isVisibleRect:rectIsVisibleRectForView:]
+   fun:-[NSView displayIfNeeded]
+   fun:-[NSWindow _setFrameCommon:display:stashSize:]
+   fun:-[NSWindow setFrame:display:]
+   fun:-[NSWindow setValue:forKey:]
+   fun:-[NSObject(NSKeyValueCoding) setValue:forKeyPath:]
+   fun:-[NSInFlightAnimation advanceToTime:]
 }
 {
    bug_75741
