@@ -301,9 +301,7 @@ TabSpecificContentSettings::LocalSharedObjectsContainer::
 }
 
 void TabSpecificContentSettings::LocalSharedObjectsContainer::Reset() {
-  cookies_->ValidateMap(prerender::PrerenderManager::GetMode());
-  cookies_->DeleteAll(false);
-  cookies_->ValidateMap(prerender::PrerenderManager::GetMode());
+  cookies_ = new net::CookieMonster(NULL, NULL);
   appcaches_->Reset();
   databases_->Reset();
   indexed_dbs_->Reset();
