@@ -394,7 +394,12 @@ wl_display_connect(const char *name)
 	display->connection = wl_connection_create(display->fd,
 						   connection_update,
 						   display);
-
+	if (display->connection == NULL) {
+		wl_hash_table_destroy(display->objects);
+		close(display->fd);
+		free(display);
+		return NULL;
+	}
 	return display;
 }
 

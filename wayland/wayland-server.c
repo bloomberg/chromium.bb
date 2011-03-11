@@ -226,6 +226,10 @@ wl_client_create(struct wl_display *display, int fd)
 					      wl_client_connection_data, client);
 	client->connection =
 		wl_connection_create(fd, wl_client_connection_update, client);
+	if (client->connection == NULL) {
+		free(client);
+		return NULL;
+	}
 
 	wl_list_init(&client->resource_list);
 
