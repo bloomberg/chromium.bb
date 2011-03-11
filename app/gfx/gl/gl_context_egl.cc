@@ -2,11 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <d3d11.h>
+#include <d3dcompiler.h>
+
 #include "app/gfx/gl/gl_context_egl.h"
 
-#include "build/build_config.h"
+#include "base/file_path.h"
 #include "base/logging.h"
+#include "base/native_library.h"
+#include "base/path_service.h"
 #include "base/scoped_ptr.h"
+#include "build/build_config.h"
 #include "third_party/angle/include/EGL/egl.h"
 
 // This header must come after the above third-party include, as
@@ -90,6 +96,15 @@ bool BaseEGLContext::InitializeOneOff() {
 #else
   EGLNativeDisplayType native_display = EGL_DEFAULT_DISPLAY;
 #endif
+
+#ifdef OS_WIN
+  FilePath module_path;
+  if (!PathService::Get(base::DIR_MODULE, &module_path))
+    return false;
+
+  base::LoadNativeLibrary(module_path.Append(D3DCOMPILER_DLL));
+#endif
+
   g_display = eglGetDisplay(native_display);
   if (!g_display) {
     LOG(ERROR) << "eglGetDisplay failed with error " << GetLastEGLErrorString();
