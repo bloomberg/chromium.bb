@@ -86,7 +86,9 @@ bool PrefProxyConfigTracker::ReadPrefConfig(net::ProxyConfig* config) {
   // Clear the configuration.
   *config = net::ProxyConfig();
 
-  ProxyConfigDictionary proxy_dict(pref_service_->GetDictionary(prefs::kProxy));
+  const DictionaryValue* dict = pref_service_->GetDictionary(prefs::kProxy);
+  DCHECK(dict);
+  ProxyConfigDictionary proxy_dict(dict);
 
   ProxyPrefs::ProxyMode mode;
   if (!proxy_dict.GetMode(&mode)) {

@@ -176,9 +176,10 @@ void MigrateBrowserPrefs(PrefService* user_prefs, PrefService* local_state) {
     local_state->RegisterDictionaryPref(prefs::kBrowserWindowPlacement);
     DCHECK(user_prefs->FindPreference(prefs::kBrowserWindowPlacement));
     if (local_state->HasPrefPath(prefs::kBrowserWindowPlacement)) {
-      user_prefs->Set(prefs::kBrowserWindowPlacement,
-          *(local_state->FindPreference(prefs::kBrowserWindowPlacement)->
-              GetValue()));
+      const PrefService::Preference* pref =
+          local_state->FindPreference(prefs::kBrowserWindowPlacement);
+      DCHECK(pref);
+      user_prefs->Set(prefs::kBrowserWindowPlacement, *(pref->GetValue()));
     }
     local_state->ClearPref(prefs::kBrowserWindowPlacement);
 

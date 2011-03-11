@@ -232,7 +232,9 @@ bool ExtensionMenuManager::RemoveContextMenuItem(
   if (!ContainsKey(items_by_id_, id))
     return false;
 
-  std::string extension_id = GetItemById(id)->extension_id();
+  ExtensionMenuItem* menu_item = GetItemById(id);
+  DCHECK(menu_item);
+  std::string extension_id = menu_item->extension_id();
   MenuItemMap::iterator i = context_items_.find(extension_id);
   if (i == context_items_.end()) {
     NOTREACHED();

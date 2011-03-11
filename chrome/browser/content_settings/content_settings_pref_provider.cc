@@ -736,7 +736,9 @@ void PrefProvider::MigrateObsoletePerhostPref(PrefService* prefs) {
   if (prefs->HasPrefPath(prefs::kPerHostContentSettings)) {
     const DictionaryValue* all_settings_dictionary =
         prefs->GetDictionary(prefs::kPerHostContentSettings);
-    for (DictionaryValue::key_iterator i(all_settings_dictionary->begin_keys());
+    DCHECK(all_settings_dictionary);
+    for (DictionaryValue::key_iterator
+         i(all_settings_dictionary->begin_keys());
          i != all_settings_dictionary->end_keys(); ++i) {
       const std::string& host(*i);
       ContentSettingsPattern pattern(

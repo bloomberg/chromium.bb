@@ -1,9 +1,10 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "chrome/common/badge_util.h"
 
+#include "base/logging.h"
 #include "base/utf_string_conversions.h"
 #include "third_party/skia/include/core/SkPaint.h"
 #include "third_party/skia/include/core/SkTypeface.h"
@@ -41,6 +42,7 @@ SkPaint* GetBadgeTextPaintSingleton() {
       const gfx::Font& base_font = rb.GetFont(ResourceBundle::BaseFont);
       typeface = SkTypeface::CreateFromName(
           UTF16ToUTF8(base_font.GetFontName()).c_str(), SkTypeface::kNormal);
+      DCHECK(typeface);
     }
 
     text_paint->setTypeface(typeface);

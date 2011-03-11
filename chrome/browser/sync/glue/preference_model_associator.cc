@@ -134,6 +134,7 @@ bool PreferenceModelAssociator::AssociateModels() {
        it != synced_preferences_.end(); ++it) {
     const PrefService::Preference* pref =
         pref_service->FindPreference((*it).c_str());
+    DCHECK(pref);
     InitPrefNodeAndAssociate(&trans, root, pref);
   }
   return true;

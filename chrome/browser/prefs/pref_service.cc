@@ -377,7 +377,10 @@ DictionaryValue* PrefService::GetPreferenceValues() const {
   DictionaryValue* out = new DictionaryValue;
   DefaultPrefStore::const_iterator i = default_store_->begin();
   for (; i != default_store_->end(); ++i) {
-    const Value* value = FindPreference(i->first.c_str())->GetValue();
+    const Preference* pref = FindPreference(i->first.c_str());
+    DCHECK(pref);
+    const Value* value = pref->GetValue();
+    DCHECK(value);
     out->Set(i->first, value->DeepCopy());
   }
   return out;
