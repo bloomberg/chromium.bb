@@ -32,7 +32,6 @@
 #include "chrome/browser/themes/browser_theme_provider.h"
 #include "chrome/browser/ui/find_bar/find_bar_state.h"
 #include "chrome/browser/ui/webui/chrome_url_data_manager.h"
-#include "chrome/browser/ui/webui/extension_icon_source.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
@@ -176,9 +175,6 @@ class OffTheRecordProfileImpl : public Profile,
 #if defined(OS_CHROMEOS)
     GetRequestContext();
 #endif  // defined(OS_CHROMEOS)
-
-    // Make the chrome//extension-icon/ resource available.
-    GetChromeURLDataManager()->AddDataSource(new ExtensionIconSource(this));
   }
 
   virtual ~OffTheRecordProfileImpl() {

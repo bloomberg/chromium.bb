@@ -393,8 +393,9 @@ void ProfileImpl::InitExtensions() {
     extensions_service_->LoadExtension(path);
   }
 
-  // Make the chrome://extension-icon/ resource available.
-  GetChromeURLDataManager()->AddDataSource(new ExtensionIconSource(this));
+  // Make the chrome://extension-icon/ resource is available.
+  ExtensionIconSource* icon_source = new ExtensionIconSource(this);
+  GetChromeURLDataManager()->AddDataSource(icon_source);
 }
 
 void ProfileImpl::RegisterComponentExtensions() {
