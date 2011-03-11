@@ -35,7 +35,7 @@ import urllib2  # Exposed through the API.
 from warnings import warn
 
 try:
-  import simplejson as json
+  import simplejson as json  # pylint: disable=F0401
 except ImportError:
   try:
     import json
@@ -47,7 +47,7 @@ except ImportError:
   except (ImportError, AttributeError):
     # Import the one included in depot_tools.
     sys.path.append(os.path.join(os.path.dirname(__file__), 'third_party'))
-    import simplejson as json
+    import simplejson as json  # pylint: disable=F0401
 
 # Local imports.
 import gclient_utils

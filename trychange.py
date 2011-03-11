@@ -22,7 +22,7 @@ import tempfile
 import urllib
 
 try:
-  import simplejson as json
+  import simplejson as json  # pylint: disable=F0401
 except ImportError:
   try:
     import json
