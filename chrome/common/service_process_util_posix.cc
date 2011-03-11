@@ -52,7 +52,10 @@ static void SigTermHandler(int sig, siginfo_t* info, void* uap) {
   }
 }
 
-ServiceProcessState::StateData::StateData() {}
+ServiceProcessState::StateData::StateData() : set_action_(false) {
+  memset(sockets_, -1, sizeof(sockets_));
+  memset(&old_action_, 0, sizeof(old_action_));
+}
 
 void ServiceProcessState::StateData::SignalReady() {
   CHECK(MessageLoopForIO::current()->WatchFileDescriptor(
@@ -81,13 +84,10 @@ void ServiceProcessState::StateData::SignalReady() {
 
 ServiceProcessState::StateData::~StateData() {}
 
-bool ServiceProcessState::InitializeState() {
+bool ServiceProcessState::CreateState() {
   CHECK(!state_);
   state_ = new StateData;
   state_->AddRef();
-  state_->sockets_[0] = -1;
-  state_->sockets_[1] = -1;
-  state_->set_action_ = false;
   return true;
 }
 

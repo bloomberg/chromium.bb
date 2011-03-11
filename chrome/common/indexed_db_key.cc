@@ -11,6 +11,7 @@ using WebKit::WebIDBKey;
 
 IndexedDBKey::IndexedDBKey()
     : type_(WebIDBKey::InvalidType),
+      date_(0),
       number_(0) {
 }
 

@@ -16,7 +16,8 @@
 namespace remoting {
 
 ChromotingHostManager::ChromotingHostManager(Observer* observer)
-    : observer_(observer) {
+    : observer_(observer),
+      main_message_loop_(NULL) {
 }
 
 void ChromotingHostManager::Initialize(

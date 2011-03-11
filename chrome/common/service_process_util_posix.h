@@ -56,6 +56,10 @@ struct ServiceProcessState::StateData
   // to be monitoring it.
   void SignalReady();
 
+
+  // TODO(jhawkins): Either make this a class or rename these public member
+  // variables to remove the trailing underscore.
+
 #if defined(OS_MACOSX)
   base::mac::ScopedCFTypeRef<CFDictionaryRef> launchd_conf_;
 #endif  // OS_MACOSX

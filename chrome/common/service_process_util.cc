@@ -185,7 +185,7 @@ void ServiceProcessState::SignalStopped() {
 
 #if !defined(OS_MACOSX)
 bool ServiceProcessState::Initialize() {
-  if (!InitializeState()) {
+  if (!CreateState()) {
     return false;
   }
   if (!TakeSingletonLock()) {

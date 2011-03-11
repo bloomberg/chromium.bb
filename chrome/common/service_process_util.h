@@ -105,8 +105,8 @@ class ServiceProcessState {
   bool TakeSingletonLock();
 #endif  // !OS_MACOSX
 
-  // Initialize the platform specific state.
-  bool InitializeState();
+  // Creates the platform specific state.
+  bool CreateState();
 
   // Tear down the platform specific state.
   void TearDownState();

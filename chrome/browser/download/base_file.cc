@@ -32,6 +32,7 @@ BaseFile::BaseFile(const FilePath& full_path,
       power_save_blocker_(true),
       calculate_hash_(false) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+  memset(sha256_hash_, 0, sizeof(sha256_hash_));
 }
 
 BaseFile::~BaseFile() {

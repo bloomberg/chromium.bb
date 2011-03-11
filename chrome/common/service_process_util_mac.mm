@@ -156,7 +156,7 @@ bool GetServiceProcessData(std::string* version, base::ProcessId* pid) {
 }
 
 bool ServiceProcessState::Initialize() {
-  if (!InitializeState()) {
+  if (!CreateState()) {
     return false;
   }
   CFErrorRef err = NULL;
