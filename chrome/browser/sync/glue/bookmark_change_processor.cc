@@ -410,7 +410,9 @@ void BookmarkChangeProcessor::ApplyChangesFromSyncModel(
       }
       DCHECK_EQ(dst->child_count(), 0) << "Node being deleted has children";
       model_associator_->Disassociate(changes[i].id);
-      model->Remove(parent, parent->GetIndexOf(dst));
+      int index = parent->GetIndexOf(dst);
+      if (index > -1)
+        model->Remove(parent, index);
       dst = NULL;
     } else {
       DCHECK_EQ((changes[i].action ==

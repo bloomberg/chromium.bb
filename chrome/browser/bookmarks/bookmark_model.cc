@@ -468,7 +468,9 @@ void BookmarkModel::SetURLStarred(const GURL& url,
     // Remove all the bookmarks.
     for (size_t i = 0; i < bookmarks.size(); ++i) {
       const BookmarkNode* node = bookmarks[i];
-      Remove(node->parent(), node->parent()->GetIndexOf(node));
+      int index = node->parent()->GetIndexOf(node);
+      if (index > -1)
+        Remove(node->parent(), index);
     }
   }
 }

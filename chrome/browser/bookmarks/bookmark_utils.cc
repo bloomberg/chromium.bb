@@ -403,8 +403,9 @@ void CopyToClipboard(BookmarkModel* model,
 
   if (remove_nodes) {
     for (size_t i = 0; i < nodes.size(); ++i) {
-      model->Remove(nodes[i]->parent(),
-                    nodes[i]->parent()->GetIndexOf(nodes[i]));
+      int index = nodes[i]->parent()->GetIndexOf(nodes[i]);
+      if (index > -1)
+        model->Remove(nodes[i]->parent(), index);
     }
   }
 }
