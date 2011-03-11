@@ -13,11 +13,6 @@
 // it brings in #defines that cause conflicts.
 #include "app/gfx/gl/gl_bindings.h"
 
-#if defined(OS_WIN)
-#include <d3d11.h>
-#include <d3dcompiler.h>
-#endif
-
 #if defined(OS_LINUX)
 extern "C" {
 #include <X11/Xlib.h>
@@ -95,15 +90,6 @@ bool BaseEGLContext::InitializeOneOff() {
 #else
   EGLNativeDisplayType native_display = EGL_DEFAULT_DISPLAY;
 #endif
-
-#if defined(OS_WIN)
-  FilePath module_path;
-  if (!PathService::Get(base::DIR_MODULE, &module_path))
-    return false;
-
-  base::LoadNativeLibrary(module_path.Append(D3DCOMPILER_DLL));
-#endif
-
   g_display = eglGetDisplay(native_display);
   if (!g_display) {
     LOG(ERROR) << "eglGetDisplay failed with error " << GetLastEGLErrorString();
