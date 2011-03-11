@@ -44,6 +44,9 @@ class ConstrainedHtmlDelegateGtk : public views::WidgetGtk,
     html_delegate_->OnDialogClosed("");
     tab_container_->ChangeTabContents(NULL);
   }
+  virtual bool ShouldHaveBorderPadding() const {
+    return false;
+  }
 
   // HtmlDialogTabContentsDelegate interface.
   void MoveContents(TabContents* source, const gfx::Rect& pos) {}

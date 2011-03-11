@@ -84,6 +84,7 @@ without changes to the corresponding grd file. etaa -->
       <include name="IDR_WEBSTORE_MANIFEST" file="resources\webstore_app\manifest.json" type="BINDATA" />
       <if expr="pp_ifdef('chromeos')">
         <include name="IDR_ABOUT_SYS_HTML" file="resources\about_sys.html" flattenhtml="true" type="BINDATA" />
+        <include name="IDR_COLLECTED_COOKIES_HTML" file="resources\collected_cookies.html" flattenhtml="true" type="BINDATA" />
         <include name="IDR_GUEST_SESSION_TAB_HTML" file="resources\guest_session_tab.html" flattenhtml="true" type="BINDATA" />
         <include name="IDR_FILEBROWSE_HTML" file="resources\filebrowse.html" flattenhtml="true" type="BINDATA" />
         <include name="IDR_HOST_REGISTRATION_PAGE_HTML" file="resources\host_registration_page.html" flattenhtml="true" type="BINDATA" />

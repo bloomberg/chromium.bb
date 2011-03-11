@@ -99,8 +99,10 @@ static WebUIFactoryFunction GetWebUIFactoryFunction(Profile* profile,
   if (url.SchemeIs(chrome::kGearsScheme))
     return &NewWebUI<HtmlDialogUI>;
 
-  if (url.host() == chrome::kChromeUIDialogHost)
+  if (url.host() == chrome::kChromeUIDialogHost ||
+      url.host() == chrome::kChromeUICollectedCookiesHost) {
     return &NewWebUI<ConstrainedHtmlUI>;
+  }
 
   ExtensionService* service = profile ? profile->GetExtensionService() : NULL;
   if (service && service->ExtensionBindingsAllowed(url))

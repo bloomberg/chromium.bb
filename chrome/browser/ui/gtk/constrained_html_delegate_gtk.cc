@@ -19,7 +19,7 @@ class ConstrainedHtmlDelegateGtk : public ConstrainedWindowGtkDelegate,
                                    public ConstrainedHtmlUIDelegate {
  public:
   ConstrainedHtmlDelegateGtk(Profile* profile,
-                           HtmlDialogUIDelegate* delegate);
+                             HtmlDialogUIDelegate* delegate);
 
   virtual ~ConstrainedHtmlDelegateGtk();
 

@@ -36,6 +36,9 @@ class ConstrainedWindowGtkDelegate {
 
   virtual bool GetBackgroundColor(GdkColor* color);
 
+  // Returns true if hosting ConstrainedWindowGtk should apply default padding.
+  virtual bool ShouldHaveBorderPadding() const;
+
  protected:
   virtual ~ConstrainedWindowGtkDelegate();
 };

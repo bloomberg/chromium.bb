@@ -24,6 +24,10 @@ bool ConstrainedWindowGtkDelegate::GetBackgroundColor(GdkColor* color) {
   return false;
 }
 
+bool ConstrainedWindowGtkDelegate::ShouldHaveBorderPadding() const {
+  return true;
+}
+
 ConstrainedWindowGtk::ConstrainedWindowGtk(
     TabContents* owner, ConstrainedWindowGtkDelegate* delegate)
     : owner_(owner),
@@ -41,9 +45,12 @@ ConstrainedWindowGtk::ConstrainedWindowGtk(
   gtk_frame_set_shadow_type(GTK_FRAME(frame), GTK_SHADOW_OUT);
 
   GtkWidget* alignment = gtk_alignment_new(0.0, 0.0, 1.0, 1.0);
-  gtk_alignment_set_padding(GTK_ALIGNMENT(alignment),
-      gtk_util::kContentAreaBorder, gtk_util::kContentAreaBorder,
-      gtk_util::kContentAreaBorder, gtk_util::kContentAreaBorder);
+  if (delegate->ShouldHaveBorderPadding()) {
+    gtk_alignment_set_padding(GTK_ALIGNMENT(alignment),
+        gtk_util::kContentAreaBorder, gtk_util::kContentAreaBorder,
+        gtk_util::kContentAreaBorder, gtk_util::kContentAreaBorder);
+  }
+
   GdkColor background;
   if (delegate->GetBackgroundColor(&background)) {
     gtk_widget_modify_base(ebox, GTK_STATE_NORMAL, &background);
