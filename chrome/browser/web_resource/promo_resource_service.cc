@@ -340,14 +340,14 @@ bool CanShowPromo(Profile* profile) {
   bool is_promo_build = false;
   if (prefs->HasPrefPath(prefs::kNTPPromoBuild)) {
     int builds_allowed = prefs->GetInteger(prefs::kNTPPromoBuild);
-    if (channel == "dev") {
+    if (channel == "dev" || channel == "dev-m") {
       is_promo_build = (DEV_BUILD & builds_allowed) != 0;
-    } else if (channel == "beta") {
+    } else if (channel == "beta" || channel == "beta-m") {
       is_promo_build = (BETA_BUILD & builds_allowed) != 0;
-    } else if (channel == "stable") {
+    } else if (channel == "" || channel == "m") {
       is_promo_build = (STABLE_BUILD & builds_allowed) != 0;
     } else {
-      is_promo_build = true;
+      is_promo_build = false;
     }
   }
 

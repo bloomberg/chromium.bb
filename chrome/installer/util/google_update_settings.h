@@ -88,7 +88,9 @@ class GoogleUpdateSettings {
 
   // Return a human readable modifier for the version string, e.g.
   // the channel (dev, beta, stable). Returns true if this operation succeeded,
-  // on success, channel contains one of "", "unknown", "dev" or "beta".
+  // on success, channel contains one of "", "unknown", "dev" or "beta" (unless
+  // it is a multi-install product, in which case it will return "m",
+  // "unknown-m", "dev-m", or "beta-m").
   static bool GetChromeChannel(bool system_install, std::wstring* channel);
 
   // This method changes the Google Update "ap" value to move the installation
