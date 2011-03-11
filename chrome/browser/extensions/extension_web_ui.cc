@@ -219,7 +219,8 @@ gfx::NativeWindow ExtensionWebUI::GetCustomFrameNativeWindow() {
 }
 
 gfx::NativeView ExtensionWebUI::GetNativeViewOfHost() {
-  return tab_contents()->GetRenderWidgetHostView()->GetNativeView();
+  RenderWidgetHostView* rwhv = tab_contents()->GetRenderWidgetHostView();
+  return rwhv ? rwhv->GetNativeView() : NULL;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
