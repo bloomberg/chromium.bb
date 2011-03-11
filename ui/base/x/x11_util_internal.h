@@ -44,7 +44,7 @@ namespace ui {
   // X11 Error handler because it queries the server to decode the
   // error message, which may trigger other errors. A suitable workaround
   // is to post a task in the error handler to call this function.
-  void LogErrorEventDescription(Display* dpy, XErrorEvent error_event);
+  void LogErrorEventDescription(Display* dpy, const XErrorEvent& error_event);
 
 }  // namespace ui
 

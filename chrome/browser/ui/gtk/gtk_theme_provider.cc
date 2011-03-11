@@ -1018,8 +1018,9 @@ SkBitmap* GtkThemeProvider::GenerateTabImage(int base_id) const {
       bg_tint, 0, 0, bg_tint.width(), bg_tint.height()));
 }
 
-SkBitmap* GtkThemeProvider::GenerateTintedIcon(int base_id,
-                                               color_utils::HSL tint) const {
+SkBitmap* GtkThemeProvider::GenerateTintedIcon(
+    int base_id,
+    const color_utils::HSL& tint) const {
   ResourceBundle& rb = ResourceBundle::GetSharedInstance();
   scoped_ptr<SkBitmap> button(new SkBitmap(*rb.GetBitmapNamed(base_id)));
   return new SkBitmap(SkBitmapOperations::CreateHSLShiftedBitmap(

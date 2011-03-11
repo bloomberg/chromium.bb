@@ -507,7 +507,7 @@ const LineProcessor kLineProcessors[kNumHOps][kNumSOps][kNumLOps] = {
 // static
 SkBitmap SkBitmapOperations::CreateHSLShiftedBitmap(
     const SkBitmap& bitmap,
-    color_utils::HSL hsl_shift) {
+    const color_utils::HSL& hsl_shift) {
   // Default to NOPs.
   HSLShift::OperationOnH H_op = HSLShift::kOpHNone;
   HSLShift::OperationOnS S_op = HSLShift::kOpSNone;

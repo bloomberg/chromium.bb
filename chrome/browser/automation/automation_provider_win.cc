@@ -147,11 +147,12 @@ class WindowDragResponseTask : public Task {
   DISALLOW_COPY_AND_ASSIGN(WindowDragResponseTask);
 };
 
-void AutomationProvider::WindowSimulateDrag(int handle,
-                                            std::vector<gfx::Point> drag_path,
-                                            int flags,
-                                            bool press_escape_en_route,
-                                            IPC::Message* reply_message) {
+void AutomationProvider::WindowSimulateDrag(
+    int handle,
+    const std::vector<gfx::Point>& drag_path,
+    int flags,
+    bool press_escape_en_route,
+    IPC::Message* reply_message) {
   if (browser_tracker_->ContainsHandle(handle) && (drag_path.size() > 1)) {
     gfx::NativeWindow window =
         browser_tracker_->GetResource(handle)->window()->GetNativeHandle();

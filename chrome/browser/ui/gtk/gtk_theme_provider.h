@@ -214,7 +214,8 @@ class GtkThemeProvider : public BrowserThemeProvider,
   SkBitmap* GenerateTabImage(int base_id) const;
 
   // Tints an icon based on tint.
-  SkBitmap* GenerateTintedIcon(int base_id, color_utils::HSL tint) const;
+  SkBitmap* GenerateTintedIcon(int base_id, 
+                               const color_utils::HSL& tint) const;
 
   // Returns the tint for buttons that contrasts with the normal window
   // background color.

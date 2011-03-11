@@ -224,7 +224,7 @@ class AutomationProvider
 
   // IPC Message callbacks.
   void WindowSimulateDrag(int handle,
-                          std::vector<gfx::Point> drag_path,
+                          const std::vector<gfx::Point>& drag_path,
                           int flags,
                           bool press_escape_en_route,
                           IPC::Message* reply_message);

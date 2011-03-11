@@ -103,11 +103,12 @@ class MouseMoveTask : public Task {
   DISALLOW_COPY_AND_ASSIGN(MouseMoveTask);
 };
 
-void AutomationProvider::WindowSimulateDrag(int handle,
-                                            std::vector<gfx::Point> drag_path,
-                                            int flags,
-                                            bool press_escape_en_route,
-                                            IPC::Message* reply_message) {
+void AutomationProvider::WindowSimulateDrag(
+    int handle,
+    const std::vector<gfx::Point>& drag_path,
+    int flags,
+    bool press_escape_en_route,
+    IPC::Message* reply_message) {
   // TODO(estade): don't ignore |flags| or |escape_en_route|.
   gfx::NativeWindow window =
       browser_tracker_->GetResource(handle)->window()->GetNativeHandle();

@@ -828,7 +828,7 @@ void SetX11ErrorHandlers(XErrorHandler error_handler,
 }
 
 void LogErrorEventDescription(Display* dpy,
-                              XErrorEvent error_event) {
+                              const XErrorEvent& error_event) {
   char error_str[256];
   char request_str[256];
 
