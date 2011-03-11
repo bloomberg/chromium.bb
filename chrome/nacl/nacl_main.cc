@@ -11,11 +11,6 @@
 #include "base/command_line.h"
 #include "base/message_loop.h"
 #include "base/string_util.h"
-
-#if defined(USE_LINUX_BREAKPAD)
-#include "chrome/app/breakpad_linux.h"
-#endif
-
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/hi_res_timer_manager.h"
@@ -95,10 +90,6 @@ static void HandleNaClTestParameters(const CommandLine& command_line) {
 
 // main() routine for the NaCl loader process.
 int NaClMain(const MainFunctionParams& parameters) {
-#if defined(USE_LINUX_BREAKPAD)
-  // Needs to be called after we have chrome::DIR_USER_DATA.
-  InitCrashReporter();
-#endif
   const CommandLine& parsed_command_line = parameters.command_line_;
 
   // This function allows pausing execution using the --nacl-startup-dialog

@@ -13,11 +13,11 @@
 #include "base/command_line.h"
 #include "base/threading/worker_pool.h"
 #include "build/build_config.h"
-#include "chrome/common/chrome_switches.h"
 #include "chrome/gpu/gpu_info_collector.h"
 #include "chrome/gpu/gpu_watchdog_thread.h"
 #include "content/common/child_process.h"
 #include "content/common/content_client.h"
+#include "content/common/content_switches.h"
 #include "content/common/gpu_messages.h"
 #include "ipc/ipc_channel_handle.h"
 

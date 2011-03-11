@@ -14,17 +14,11 @@
 #include "base/stringprintf.h"
 #include "base/threading/platform_thread.h"
 #include "build/build_config.h"
-#include "chrome/common/chrome_constants.h"
-#include "chrome/common/chrome_switches.h"
-#include "chrome/common/env_vars.h"
 #include "chrome/common/main_function_params.h"
+#include "content/common/content_switches.h"
 #include "chrome/gpu/gpu_config.h"
 #include "chrome/gpu/gpu_process.h"
 #include "chrome/gpu/gpu_thread.h"
-
-#if defined(USE_LINUX_BREAKPAD)
-#include "chrome/app/breakpad_linux.h"
-#endif
 
 #if defined(OS_MACOSX)
 #include "chrome/common/chrome_application_mac.h"
@@ -37,11 +31,6 @@
 // Main function for starting the Gpu process.
 int GpuMain(const MainFunctionParams& parameters) {
   base::Time start_time = base::Time::Now();
-
-#if defined(USE_LINUX_BREAKPAD)
-  // Needs to be called after we have chrome::DIR_USER_DATA.
-  InitCrashReporter();
-#endif
 
   const CommandLine& command_line = parameters.command_line_;
   if (command_line.HasSwitch(switches::kGpuStartupDialog)) {

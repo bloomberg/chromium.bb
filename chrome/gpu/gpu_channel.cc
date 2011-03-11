@@ -11,11 +11,10 @@
 #include "base/command_line.h"
 #include "base/process_util.h"
 #include "base/string_util.h"
-#include "chrome/common/chrome_constants.h"
-#include "chrome/common/chrome_switches.h"
 #include "chrome/gpu/gpu_thread.h"
 #include "chrome/gpu/gpu_video_service.h"
 #include "content/common/child_process.h"
+#include "content/common/content_switches.h"
 #include "content/common/gpu_messages.h"
 
 #if defined(OS_POSIX)

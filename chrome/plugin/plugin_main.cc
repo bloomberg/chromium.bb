@@ -31,10 +31,6 @@
 #include "ipc/ipc_descriptors.h"
 #endif
 
-#if defined(USE_LINUX_BREAKPAD)
-#include "chrome/app/breakpad_linux.h"
-#endif
-
 #if defined(OS_MACOSX)
 // Removes our Carbon library interposing from the environment so that it
 // doesn't carry into any processes that plugins might start.
@@ -83,11 +79,6 @@ int PreloadIMEForFlash() {
 
 // main() routine for running as the plugin process.
 int PluginMain(const MainFunctionParams& parameters) {
-#if defined(USE_LINUX_BREAKPAD)
-  // Needs to be called after we have chrome::DIR_USER_DATA.
-  InitCrashReporter();
-#endif
-
   // The main thread of the plugin services UI.
 #if defined(OS_MACOSX)
 #if !defined(__LP64__)

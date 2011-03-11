@@ -83,6 +83,10 @@
 #include "ui/base/x/x11_util.h"
 #endif
 
+#if defined(USE_LINUX_BREAKPAD)
+#include "chrome/app/breakpad_linux.h"
+#endif
+
 extern int BrowserMain(const MainFunctionParams&);
 extern int RendererMain(const MainFunctionParams&);
 extern int GpuMain(const MainFunctionParams&);
@@ -226,6 +230,11 @@ void CommonSubprocessInit() {
   // Note that this is not correct for plugin processes -- they can
   // surface UI -- but it's likely they get this wrong too so why not.
   setlocale(LC_NUMERIC, "C");
+#endif
+#if defined(USE_LINUX_BREAKPAD)
+  // Needs to be called after we have chrome::DIR_USER_DATA.  BrowserMain sets
+  // this up for the browser process in a different manner.
+  InitCrashReporter();
 #endif
 }
 
