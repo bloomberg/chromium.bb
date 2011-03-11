@@ -60,7 +60,6 @@ class WindowGtk : public WidgetGtk, public NativeWindow, public Window {
   virtual void SetAccessibleState(AccessibilityTypes::State state) OVERRIDE;
   virtual NativeWidget* AsNativeWidget() OVERRIDE;
   virtual const NativeWidget* AsNativeWidget() const OVERRIDE;
-  virtual Window* GetWindow() OVERRIDE;
   virtual void SetWindowBounds(const gfx::Rect& bounds,
                                gfx::NativeWindow other_window) OVERRIDE;
   virtual void HideWindow() OVERRIDE;

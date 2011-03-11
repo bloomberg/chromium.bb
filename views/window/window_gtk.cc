@@ -300,10 +300,6 @@ const NativeWidget* WindowGtk::AsNativeWidget() const {
   return this;
 }
 
-Window* WindowGtk::GetWindow() {
-  return this;
-}
-
 void WindowGtk::SetWindowBounds(const gfx::Rect& bounds,
                                 gfx::NativeWindow other_window) {
   // TODO: need to deal with other_window.

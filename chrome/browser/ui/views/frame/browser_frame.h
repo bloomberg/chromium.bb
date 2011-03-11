@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,32 +6,33 @@
 #define CHROME_BROWSER_UI_VIEWS_FRAME_BROWSER_FRAME_H_
 #pragma once
 
-#include "base/logging.h"
 #include "build/build_config.h"
-#include "chrome/browser/ui/views/frame/native_browser_frame_delegate.h"
+#include "views/window/non_client_view.h"
 
 class BrowserView;
-class NativeBrowserFrame;
 class Profile;
 
 namespace gfx {
 class Font;
 class Rect;
-}
+}  // namespace gfx
 
 namespace ui {
 class ThemeProvider;
 }
 
 namespace views {
-class View;
 class Window;
-}
+
+#if defined(OS_WIN)
+class WindowWin;
+#endif
+}  // namespace views
 
 // This is a virtual interface that allows system specific browser frames.
-class BrowserFrame : public NativeBrowserFrameDelegate {
+class BrowserFrame {
  public:
-  virtual ~BrowserFrame();
+  virtual ~BrowserFrame() {}
 
   // Creates the appropriate BrowserFrame for this platform. The returned
   // object is owned by the caller.
@@ -39,54 +40,40 @@ class BrowserFrame : public NativeBrowserFrameDelegate {
 
   static const gfx::Font& GetTitleFont();
 
-  // Returns the Window associated with this frame. Guaranteed non-NULL after
+  // Returns the Window associated with this frame. Guraranteed non-NULL after
   // construction.
-  views::Window* GetWindow();
+  virtual views::Window* GetWindow() = 0;
 
   // Determine the distance of the left edge of the minimize button from the
   // left edge of the window. Used in our Non-Client View's Layout.
-  int GetMinimizeButtonOffset() const;
+  virtual int GetMinimizeButtonOffset() const = 0;
 
   // Retrieves the bounds, in non-client view coordinates for the specified
   // TabStrip view.
-  gfx::Rect GetBoundsForTabStrip(views::View* tabstrip) const;
+  virtual gfx::Rect GetBoundsForTabStrip(views::View* tabstrip) const = 0;
 
   // Returns the y coordinate within the window at which the horizontal TabStrip
   // begins (or would begin).  If |restored| is true, this is calculated as if
   // we were in restored mode regardless of the current mode.
-  int GetHorizontalTabStripVerticalOffset(bool restored) const;
+  virtual int GetHorizontalTabStripVerticalOffset(bool restored) const = 0;
 
   // Tells the frame to update the throbber.
-  void UpdateThrobber(bool running);
+  virtual void UpdateThrobber(bool running) = 0;
 
   // Returns the theme provider for this frame.
-  ui::ThemeProvider* GetThemeProviderForFrame() const;
+  virtual ui::ThemeProvider* GetThemeProviderForFrame() const = 0;
 
   // Returns true if the window should use the native frame view. This is true
   // if there are no themes applied on Vista, or if there are themes applied and
   // this browser window is an app or popup.
-  bool AlwaysUseNativeFrame() const;
+  virtual bool AlwaysUseNativeFrame() const = 0;
 
   // Returns the NonClientFrameView of this frame.
-  views::View* GetFrameView() const;
+  virtual views::View* GetFrameView() const = 0;
 
   // Notifies the frame that the tab strip display mode changed so it can update
   // its frame treatment if necessary.
-  void TabStripDisplayModeChanged();
-
- protected:
-  // TODO(beng): Temporarily provided as a way to associate the subclass'
-  //             implementation of NativeBrowserFrame with this.
-  void set_native_browser_frame(NativeBrowserFrame* native_browser_frame) {
-    native_browser_frame_ = native_browser_frame;
-  }
-
-  BrowserFrame();
-
- private:
-  NativeBrowserFrame* native_browser_frame_;
-
-  DISALLOW_COPY_AND_ASSIGN(BrowserFrame);
+  virtual void TabStripDisplayModeChanged() = 0;
 };
 
 #endif  // CHROME_BROWSER_UI_VIEWS_FRAME_BROWSER_FRAME_H_

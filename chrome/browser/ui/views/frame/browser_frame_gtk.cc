@@ -38,7 +38,6 @@ BrowserFrameGtk::BrowserFrameGtk(BrowserView* browser_view, Profile* profile)
       browser_frame_view_(NULL),
       root_view_(NULL),
       profile_(profile) {
-  set_native_browser_frame(this);
   browser_view_->set_frame(this);
 }
 
@@ -55,33 +54,7 @@ void BrowserFrameGtk::InitBrowserFrame() {
   // Don't focus anything on creation, selecting a tab will set the focus.
 }
 
-ThemeProvider* BrowserFrameGtk::GetThemeProvider() const {
-  return profile_->GetThemeProvider();
-}
-
-views::RootView* BrowserFrameGtk::CreateRootView() {
-  root_view_ = new BrowserRootView(browser_view_, this);
-  return root_view_;
-}
-
-void BrowserFrameGtk::IsActiveChanged() {
-  GetRootView()->SchedulePaint();
-  browser_view_->ActivationChanged(IsActive());
-  views::WidgetGtk::IsActiveChanged();
-}
-
-void BrowserFrameGtk::SetInitialFocus() {
-  browser_view_->RestoreFocus();
-}
-
-////////////////////////////////////////////////////////////////////////////////
-// BrowserFrameGtk, NativeBrowserFrame implementation:
-
-views::NativeWindow* BrowserFrameGtk::AsNativeWindow() {
-  return this;
-}
-
-const views::NativeWindow* BrowserFrameGtk::AsNativeWindow() const {
+views::Window* BrowserFrameGtk::GetWindow() {
   return this;
 }
 
@@ -124,8 +97,24 @@ void BrowserFrameGtk::TabStripDisplayModeChanged() {
   GetRootView()->Layout();
 }
 
-////////////////////////////////////////////////////////////////////////////////
-// BrowserFrameGtk, private:
+ThemeProvider* BrowserFrameGtk::GetThemeProvider() const {
+  return profile_->GetThemeProvider();
+}
+
+views::RootView* BrowserFrameGtk::CreateRootView() {
+  root_view_ = new BrowserRootView(browser_view_, this);
+  return root_view_;
+}
+
+void BrowserFrameGtk::IsActiveChanged() {
+  GetRootView()->SchedulePaint();
+  browser_view_->ActivationChanged(IsActive());
+  views::WidgetGtk::IsActiveChanged();
+}
+
+void BrowserFrameGtk::SetInitialFocus() {
+  browser_view_->RestoreFocus();
+}
 
 bool BrowserFrameGtk::GetAccelerator(int cmd_id,
                                      ui::Accelerator* accelerator) {

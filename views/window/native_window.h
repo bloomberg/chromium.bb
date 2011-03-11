@@ -6,19 +6,10 @@
 #define VIEWS_WIDGET_NATIVE_WINDOW_H_
 #pragma once
 
-#include "ui/gfx/native_widget_types.h"
 #include "views/accessibility/accessibility_types.h"
-
-class SkBitmap;
-
-namespace gfx {
-class Rect;
-class Size;
-}
 
 namespace views {
 
-class NativeWidget;
 class NonClientFrameView;
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -34,8 +25,6 @@ class NativeWindow {
   };
 
   virtual ~NativeWindow() {}
-
-  virtual Window* GetWindow() = 0;
 
  protected:
   friend class Window;
