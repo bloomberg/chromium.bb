@@ -61,6 +61,8 @@
                     [NSCharacterSet newlineCharacterSet]];
   std::wstring newTitle = base::SysNSStringToWide(name);
   const BookmarkNode* newParentNode = [self selectedNode];
+  if (!newParentNode)
+    return [NSNumber numberWithBool:NO];
   int newIndex = newParentNode->child_count();
   // Create the new folder which will contain all of the tab URLs.
   NSString* newFolderName = [self displayName];
