@@ -4316,8 +4316,7 @@ bool Browser::OpenInstant(WindowOpenDisposition disposition) {
         preview_contents,
         -1,
         instant()->last_transition_type(),
-        disposition == NEW_FOREGROUND_TAB ? TabStripModel::ADD_SELECTED :
-                                            TabStripModel::ADD_NONE);
+        TabStripModel::ADD_SELECTED);
     instant()->CompleteRelease(preview_contents->tab_contents());
     return true;
   }
