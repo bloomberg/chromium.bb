@@ -148,6 +148,8 @@
       '-bookmark_bar.BookmarkBarTest.testBookmarkBarVisible',
       # you cannot resize browser window on chromeos
       '-browser.BrowserTest.testWindowResize',
+      # no codesign verification on chromeos
+      '-codesign',
       # crosbug.com/9499
       '-crash_reporter.CrashReporterTest.testRendererCrash',
       # crbug.com/64664
@@ -157,7 +159,6 @@
       '-find_in_page.FindMatchTests.testSearchInPDF',
       # Importer tests are invalid on chromeos since chrome is the only browser
       '-imports',
-      '-infobars.InfobarTest.testPluginCrashInfobar',
       # crbug.com/70694
       '-passwords.PasswordTest.testInfoBarDisappearByReload',
       '-passwords.PasswordTest.testNeverSavePasswords',
@@ -168,6 +169,7 @@
       '-browser.BrowserTest.testCanLoadFlash',
       '-browser.BrowserTest.testFlashLoadsAfterKill',
       '-browser.BrowserTest.testSingleFlashPluginProcess',
+      '-infobars.InfobarTest.testPluginCrashInfobar',
       '-ntp.NTPTest.testGetAppsWhenInstallApp',
       '-ntp.NTPTest.testGetAppsWhenInstallNonApps',
       '-pdf',
@@ -176,16 +178,15 @@
       # Local http server not working on chromeos.  crosbug.com/12641
       '-test_basic.SimpleTest.testHTTP',
 
+      # file:/// urls not prompting geolocation infobar on chromeos.
+      # crosbug.com/13009
+      '-infobars.InfobarTest.testGeolocationInfobar',
+      '-infobars.InfobarTest.testGeolocationInfobarInMultipleTabsAndWindows',
+      '-prefs.PrefsTest.testGeolocationPref',
+
       # Deal with i18n chars.  crosbug.com/12639
       '-downloads.DownloadsTest.testCrazyFilenames',
       '-omnibox.OmniboxTest.testCrazyFilenames',
-
-      # GetBrowserInfo() not working on chromeos.  crosbug.com/12642
-      '-browser',
-      '-codesign',
-      '-infobars',
-      '-notifications',
-      '-prefs.PrefsTest.testGeolocationPref',
 
       # Download shelf visibility automation broken on ChromeOS.
       # crosbug.com/12644
@@ -206,6 +207,8 @@
       '-autofill',
       '-bookmark_bar',
       '-bookmarks.BookmarksTest.testBookmarksPersistence',
+      '-browser.BrowserTest.testKillAndReloadSharedProcess',
+      '-browser.BrowserTest.testPopupSharesProcess',
       '-content.ContentTest.testHttpsPage',
       '-cookies.CookiesTest.testAllowCookiesForASessionUsingExceptions',
       '-cookies.CookiesTest.testAllowCookiesUsingExceptions',
@@ -216,6 +219,7 @@
       '-history.HistoryTest.testHttpsHistory',
       '-https.HTTPSTest.testSSLPageBasic',
       '-instant',
+      '-notifications',
       '-ntp.NTPTest.testGetAppsInNewProfile',
       '-ntp.NTPTest.testGetMenuModeInNewProfile',
       '-ntp.NTPTest.testGetThumbnailModeInNewProfile',
