@@ -297,7 +297,9 @@ gboolean InfoBar::OnBackgroundExpose(GtkWidget* sender,
   int x = browser_window ?
       browser_window->GetXPositionOfLocationIcon(sender) : 0;
 
-  arrow_model_.Paint(sender, event, gfx::Point(x, y), border_color);
+  size_t size = InfoBarArrowModel::kDefaultArrowSize;
+  gfx::Rect arrow_bounds(x - size, y - size, 2 * size, size);
+  arrow_model_.Paint(sender, event, arrow_bounds, border_color);
 
   return FALSE;
 }

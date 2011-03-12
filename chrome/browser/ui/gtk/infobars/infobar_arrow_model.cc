@@ -8,8 +8,10 @@
 #include "third_party/skia/include/effects/SkGradientShader.h"
 #include "ui/gfx/canvas_skia_paint.h"
 #include "ui/gfx/color_utils.h"
-#include "ui/gfx/point.h"
+#include "ui/gfx/rect.h"
 #include "ui/gfx/skia_utils_gtk.h"
+
+const size_t InfoBarArrowModel::kDefaultArrowSize = 12;
 
 InfoBarArrowModel::InfoBarArrowModel(Observer* observer)
     : observer_(observer),
@@ -68,28 +70,26 @@ void InfoBarArrowModel::ShowArrowFor(InfoBar* bar, bool animate) {
 
 void InfoBarArrowModel::Paint(GtkWidget* widget,
                               GdkEventExpose* expose,
-                              const gfx::Point& origin,
+                              const gfx::Rect& bounds,
                               const GdkColor& border_color) {
   if (!NeedToDrawInfoBarArrow())
     return;
 
-  // The size of the arrow (its height; also half its width).
-  const int kArrowSize = 10;
-
   SkPath path;
-  path.moveTo(SkPoint::Make(origin.x() - kArrowSize, origin.y()));
-  path.rLineTo(kArrowSize, -kArrowSize);
-  path.rLineTo(kArrowSize, kArrowSize);
+  path.moveTo(bounds.x() + 0.5, bounds.bottom() + 0.5);
+  path.rLineTo(bounds.width() / 2.0, -bounds.height());
+  path.lineTo(bounds.right() + 0.5, bounds.bottom() + 0.5);
   path.close();
 
   SkPaint paint;
   paint.setStrokeWidth(1);
   paint.setStyle(SkPaint::kFill_Style);
+  paint.setAntiAlias(true);
 
   SkPoint grad_points[2];
-  grad_points[0].set(SkIntToScalar(0), SkIntToScalar(origin.y()));
+  grad_points[0].set(SkIntToScalar(0), SkIntToScalar(bounds.bottom()));
   grad_points[1].set(SkIntToScalar(0),
-                     SkIntToScalar(origin.y() + InfoBar::kInfoBarHeight));
+                     SkIntToScalar(bounds.bottom() + InfoBar::kInfoBarHeight));
 
   InfoBarColors colors = CurrentInfoBarColors();
   SkColor grad_colors[2];

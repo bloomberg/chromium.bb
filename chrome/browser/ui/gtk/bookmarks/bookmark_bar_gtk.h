@@ -21,7 +21,9 @@
 #include "chrome/browser/ui/gtk/view_id_util.h"
 #include "content/common/notification_observer.h"
 #include "content/common/notification_registrar.h"
+#include "ui/base/animation/animation.h"
 #include "ui/base/animation/animation_delegate.h"
+#include "ui/base/animation/slide_animation.h"
 #include "ui/base/gtk/gtk_signal.h"
 #include "ui/gfx/point.h"
 #include "ui/gfx/size.h"
@@ -35,10 +37,6 @@ class MenuGtk;
 class PageNavigator;
 class Profile;
 class TabstripOriginProvider;
-
-namespace ui {
-class SlideAnimation;
-}
 
 class BookmarkBarGtk : public ui::AnimationDelegate,
                        public ProfileSyncServiceObserver,
@@ -113,6 +111,8 @@ class BookmarkBarGtk : public ui::AnimationDelegate,
 
   // BookmarkContextMenuController::Delegate implementation --------------------
   virtual void CloseMenu();
+
+  const ui::Animation* animation() { return &slide_animation_; }
 
  private:
   FRIEND_TEST_ALL_PREFIXES(BookmarkBarGtkUnittest, DisplaysHelpMessageOnEmpty);
@@ -379,7 +379,7 @@ class BookmarkBarGtk : public ui::AnimationDelegate,
   // displayed yet.
   scoped_ptr<BookmarkMenuController> current_menu_;
 
-  scoped_ptr<ui::SlideAnimation> slide_animation_;
+  ui::SlideAnimation slide_animation_;
 
   // Whether we are currently configured as floating (detached from the
   // toolbar). This reflects our actual state, and can be out of sync with

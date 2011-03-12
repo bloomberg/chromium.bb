@@ -1834,11 +1834,33 @@ gboolean BrowserWindowGtk::OnExposeDrawInfobarBits(GtkWidget* sender,
   if (GTK_WIDGET_NO_WINDOW(sender))
     y += sender->allocation.y;
 
+  // x, y is the bottom middle of the arrow. Now we need to create the bounding
+  // rectangle.
+  gfx::Size arrow_size = GetInfobarArrowSize();
+  gfx::Rect bounds(
+      gfx::Point(x - arrow_size.width() / 2.0, y - arrow_size.height()),
+      arrow_size);
+
   Profile* profile = browser()->profile();
   infobar_arrow_model_.Paint(
-      sender, expose, gfx::Point(x, y),
+      sender, expose, bounds,
       GtkThemeProvider::GetFrom(profile)->GetBorderColor());
   return FALSE;
+}
+
+gfx::Size BrowserWindowGtk::GetInfobarArrowSize() {
+  static const size_t kDefaultWidth =
+      2 * InfoBarArrowModel::kDefaultArrowSize;
+  static const size_t kDefaultHeight = InfoBarArrowModel::kDefaultArrowSize;
+  static const size_t kMaxWidth = 30;
+  static const size_t kMaxHeight = 24;
+
+  double progress = bookmark_bar_.get() && !bookmark_bar_is_floating_ ?
+      bookmark_bar_->animation()->GetCurrentValue() : 0.0;
+  size_t width = kDefaultWidth + (kMaxWidth - kDefaultWidth) * progress;
+  size_t height = kDefaultHeight + (kMaxHeight - kDefaultHeight) * progress;
+
+  return gfx::Size(width, height);
 }
 
 gboolean BrowserWindowGtk::OnBookmarkBarExpose(GtkWidget* sender,
@@ -1857,7 +1879,7 @@ void BrowserWindowGtk::OnBookmarkBarSizeAllocate(GtkWidget* sender,
   // The size of the bookmark bar affects how the infobar arrow is drawn on
   // the toolbar.
   if (infobar_arrow_model_.NeedToDrawInfoBarArrow())
-    gtk_widget_queue_draw(toolbar_->widget());
+    InvalidateInfoBarBits();
 }
 
 // static

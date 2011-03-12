@@ -314,6 +314,10 @@ class BrowserWindowGtk : public BrowserWindow,
   // has changed.
   void InvalidateInfoBarBits();
 
+  // Gets the size (width and height) of the infobar arrow. The size depends on
+  // the state of the bookmark bar.
+  gfx::Size GetInfobarArrowSize();
+
   // When the location icon moves, we have to redraw the arrow.
   CHROMEGTK_CALLBACK_1(BrowserWindowGtk, void, OnLocationIconSizeAllocate,
                        GtkAllocation*);

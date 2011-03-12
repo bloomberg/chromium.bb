@@ -43,7 +43,6 @@
 #include "grit/app_resources.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
-#include "ui/base/animation/slide_animation.h"
 #include "ui/base/dragdrop/gtk_dnd_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/canvas_skia_paint.h"
@@ -138,6 +137,7 @@ BookmarkBarGtk::BookmarkBarGtk(BrowserWindowGtk* window,
       theme_provider_(GtkThemeProvider::GetFrom(profile)),
       show_instructions_(true),
       menu_bar_helper_(this),
+      slide_animation_(this),
       floating_(false),
       last_allocation_width_(-1),
       throbbing_widget_(NULL),
@@ -289,8 +289,6 @@ void BookmarkBarGtk::Init(Profile* profile) {
 
   gtk_widget_set_size_request(event_box_.get(), -1, kBookmarkBarMinimumHeight);
 
-  slide_animation_.reset(new ui::SlideAnimation(this));
-
   ViewIDUtil::SetID(other_bookmarks_button_, VIEW_ID_OTHER_BOOKMARKS);
   ViewIDUtil::SetID(widget(), VIEW_ID_BOOKMARK_BAR);
 
@@ -305,10 +303,10 @@ void BookmarkBarGtk::Show(bool animate) {
   // TODO(estade): animate the transition between floating and non.
   animate = animate && (old_floating == floating_);
   if (animate) {
-    slide_animation_->Show();
+    slide_animation_.Show();
   } else {
-    slide_animation_->Reset(1);
-    AnimationProgressed(slide_animation_.get());
+    slide_animation_.Reset(1);
+    AnimationProgressed(&slide_animation_);
   }
 
   // Hide out behind the findbar. This is rather fragile code, it could
@@ -358,12 +356,12 @@ void BookmarkBarGtk::Hide(bool animate) {
   gtk_widget_show(widget());
   // Sometimes we get called without a matching call to open. If that happens
   // then force hide.
-  if (slide_animation_->IsShowing() && animate) {
-    slide_animation_->Hide();
+  if (slide_animation_.IsShowing() && animate) {
+    slide_animation_.Hide();
   } else {
     gtk_widget_hide(bookmark_hbox_);
-    slide_animation_->Reset(0);
-    AnimationProgressed(slide_animation_.get());
+    slide_animation_.Reset(0);
+    AnimationProgressed(&slide_animation_);
   }
 }
 
@@ -391,7 +389,7 @@ int BookmarkBarGtk::GetHeight() {
 }
 
 bool BookmarkBarGtk::IsAnimating() {
-  return slide_animation_->is_animating();
+  return slide_animation_.is_animating();
 }
 
 bool BookmarkBarGtk::OnNewTabPage() {
@@ -797,7 +795,7 @@ bool BookmarkBarGtk::IsAlwaysShown() {
 }
 
 void BookmarkBarGtk::AnimationProgressed(const ui::Animation* animation) {
-  DCHECK_EQ(animation, slide_animation_.get());
+  DCHECK_EQ(animation, &slide_animation_);
 
   int max_height = ShouldBeFloating() ?
                    kBookmarkBarNTPHeight : kBookmarkBarHeight;
@@ -809,9 +807,9 @@ void BookmarkBarGtk::AnimationProgressed(const ui::Animation* animation) {
 }
 
 void BookmarkBarGtk::AnimationEnded(const ui::Animation* animation) {
-  DCHECK_EQ(animation, slide_animation_.get());
+  DCHECK_EQ(animation, &slide_animation_);
 
-  if (!slide_animation_->IsShowing()) {
+  if (!slide_animation_.IsShowing()) {
     gtk_widget_hide(bookmark_hbox_);
 
     // We can be windowless during unit tests.

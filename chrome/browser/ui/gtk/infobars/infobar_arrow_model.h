@@ -13,7 +13,7 @@
 #include "ui/base/animation/slide_animation.h"
 
 namespace gfx {
-class Point;
+class Rect;
 }
 
 class InfoBar;
@@ -38,17 +38,20 @@ class InfoBarArrowModel : public ui::AnimationDelegate {
   // Returns true if the arrow is showing at all.
   bool NeedToDrawInfoBarArrow();
 
-  // Paints the arrow on |widget|, in response to |expose|, with the bottom
-  // center of the arrow at |origin|, drawing a border with |border_color|.
+  // Paints the arrow on |widget|, in response to |expose|, in an area bounded
+  // by |bounds|, drawing a border with |border_color|.
   void Paint(GtkWidget* widget,
              GdkEventExpose* expose,
-             const gfx::Point& origin,
+             const gfx::Rect& bounds,
              const GdkColor& border_color);
 
   // Overridden from ui::AnimationDelegate.
   virtual void AnimationEnded(const ui::Animation* animation);
   virtual void AnimationProgressed(const ui::Animation* animation);
   virtual void AnimationCanceled(const ui::Animation* animation);
+
+  // The size of the default arrow (its height; also half its width).
+  static const size_t kDefaultArrowSize;
 
  private:
   // A pair of colors used to draw a gradient for an arrow.
