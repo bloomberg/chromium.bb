@@ -13,7 +13,6 @@
 #include "media/base/media_switches.h"
 #include "media/base/pipeline.h"
 #include "media/ffmpeg/ffmpeg_common.h"
-#include "media/ffmpeg/ffmpeg_util.h"
 #include "media/filters/ffmpeg_demuxer.h"
 #include "media/video/ffmpeg_video_allocator.h"
 
