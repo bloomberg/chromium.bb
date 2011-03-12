@@ -179,7 +179,7 @@ TEST_F(MiniInstallTest,
 }
 #endif
 
-TEST_F(MiniInstallTest, InstallMiniInstallerSys) {
+TEST_F(MiniInstallTest, DISABLED_InstallMiniInstallerSys) {
   sys_inst_->Install();
 }
 
