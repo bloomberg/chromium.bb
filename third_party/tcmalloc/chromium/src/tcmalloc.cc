@@ -150,13 +150,6 @@ using tcmalloc::ThreadCache;
 # define __THROW   // __THROW is just an optimization, so ok to make it ""
 #endif
 
-// ---- Double freee debug declarations
-static size_t ExcludeSpaceForMark(size_t size);
-static void AddRoomForMark(size_t* size);
-static void MarkAllocatedRegion(void* ptr);
-static void ValidateAllocatedRegion(void* ptr);
-// ---- End Double freee debug declarations
-
 DECLARE_int64(tcmalloc_sample_parameter);
 DECLARE_double(tcmalloc_release_rate);
 
@@ -976,8 +969,6 @@ inline void* do_malloc_pages(ThreadCache* heap, size_t size) {
 }
 
 inline void* do_malloc(size_t size) {
-  AddRoomForMark(&size);
-
   void* ret = NULL;
 
   // The following call forces module initialization
@@ -997,7 +988,6 @@ inline void* do_malloc(size_t size) {
     ret = do_malloc_pages(heap, size);
   }
   if (ret == NULL) errno = ENOMEM;
-  MarkAllocatedRegion(ret);
   return ret;
 }
 
@@ -1026,8 +1016,6 @@ inline void do_free_with_callback(void* ptr, void (*invalid_free_fn)(void*)) {
   const PageID p = reinterpret_cast<uintptr_t>(ptr) >> kPageShift;
   Span* span = NULL;
   size_t cl = Static::pageheap()->GetSizeClassIfCached(p);
-
-  ValidateAllocatedRegion(ptr);
 
   if (cl == 0) {
     span = Static::pageheap()->GetDescriptor(p);
@@ -1101,7 +1089,6 @@ inline void* do_realloc_with_callback(
     void* old_ptr, size_t new_size,
     void (*invalid_free_fn)(void*),
     size_t (*invalid_get_size_fn)(void*)) {
-  AddRoomForMark(&new_size);  // May get 2 extra bytes when calling malloc.
   // Get the size of the old entry
   const size_t old_size = GetSizeWithCallback(old_ptr, invalid_get_size_fn);
 
@@ -1134,7 +1121,6 @@ inline void* do_realloc_with_callback(
     // that we already know the sizeclass of old_ptr.  The benefit
     // would be small, so don't bother.
     do_free_with_callback(old_ptr, invalid_free_fn);
-    MarkAllocatedRegion(new_ptr);  // In case memcpy trashed it.
     return new_ptr;
   } else {
     // We still need to call hooks to report the updated size:
@@ -1361,8 +1347,7 @@ void* cpp_memalign(size_t align, size_t size) {
 
 // As promised, the definition of this function, declared above.
 size_t TCMallocImplementation::GetAllocatedSize(void* ptr) {
-  return ExcludeSpaceForMark(
-      GetSizeWithCallback(ptr, &InvalidGetAllocatedSize));
+  return GetSizeWithCallback(ptr, &InvalidGetAllocatedSize);
 }
 
 void TCMallocImplementation::MarkThreadBusy() {
@@ -1579,87 +1564,3 @@ static void *MemalignOverride(size_t align, size_t size, const void *caller)
 }
 void *(*__memalign_hook)(size_t, size_t, const void *) = MemalignOverride;
 #endif  // #ifndef TCMALLOC_FOR_DEBUGALLOCATION
-
-// ---Double free() debugging implementation -----------------------------------
-
-#define TCMALLOC_VALIDATION
-
-#if !defined(TCMALLOC_VALIDATION)
-
-static size_t ExcludeSpaceForMark(size_t size) { return size; }
-static void AddRoomForMark(size_t* size) {}
-static void MarkAllocatedRegion(void* ptr) {}
-static void ValidateAllocatedRegion(void* ptr) {}
-
-#else  // TCMALLOC_VALIDATION
-
-static void DieFromDoubleFree() {
-  char* p = NULL;
-  p++;
-  *p += 1;  // Segv.
-}
-
-static size_t DieFromBadFreePointer(void* unused) {
-  char* p = NULL;
-  p += 2;
-  *p += 2;  // Segv.
-  return 0;
-}
-
-static void DieFromMemoryCorruption() {
-  char* p = NULL;
-  p += 3;
-  *p += 3;  // Segv.
-}
-
-//  #define TCMALLOC_SMALL_VALIDATION
-#if defined (TCMALLOC_SMALL_VALIDATION)
-
-typedef char MarkType;  // char saves memory... int is more complete.
-static const MarkType kAllocationMarkMask = static_cast<MarkType>(0x36);
-
-#else 
-
-typedef int MarkType;  // char saves memory... int is more complete.
-static const MarkType kAllocationMarkMask = static_cast<MarkType>(0xE1AB9536);
-
-#endif
-
-inline static MarkType* GetMarkLocation(void* ptr) {
-  size_t size = GetSizeWithCallback(ptr, DieFromBadFreePointer);
-  size_t last_index = (size / sizeof(kAllocationMarkMask)) - 1;
-  return static_cast<MarkType*>(ptr) + last_index;
-}
-
-inline static MarkType GetMarkValue(void* ptr) {
-  size_t offset = static_cast<char*>(ptr) - static_cast<char*>(NULL);
-  return static_cast<MarkType>(offset) ^ kAllocationMarkMask;
-}
-
-static void AddRoomForMark(size_t* size) {
-  *size += sizeof(kAllocationMarkMask);
-}
-
-static size_t ExcludeSpaceForMark(size_t size) {
-  return size - sizeof(kAllocationMarkMask);  // Lie about size when asked.
-}
-
-static void ValidateAllocatedRegion(void* ptr) {
-  if (ptr == NULL) return;
-  MarkType* mark = GetMarkLocation(ptr);
-  MarkType current_mark = *mark;
-  MarkType allocated_mark = GetMarkValue(ptr);
-
-  if (current_mark == ~allocated_mark)
-    DieFromDoubleFree();
-  if (current_mark != allocated_mark)
-    DieFromMemoryCorruption();
-  *mark = ~allocated_mark;  //  Distinctively not allocated.
-}
-
-static void MarkAllocatedRegion(void* ptr) {
-  if (ptr == NULL) return;
-  *GetMarkLocation(ptr) = GetMarkValue(ptr);
-}
-
-#endif  // TCMALLOC_VALIDATION
