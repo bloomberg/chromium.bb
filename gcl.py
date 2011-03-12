@@ -1063,9 +1063,10 @@ def CMDchange(args):
   os.write(handle, text)
   os.close(handle)
 
+  result = None
   try:
     if not silent:
-      subprocess.check_call(['env', GetEditor(), filename])
+      subprocess.check_call(['env', GetEditor(), filename], shell=True)
     result = gclient_utils.FileRead(filename, 'r')
   finally:
     os.remove(filename)

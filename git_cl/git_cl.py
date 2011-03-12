@@ -710,8 +710,9 @@ def UserEditedLog(starting_text):
   fileobj.write(starting_text)
   fileobj.close()
 
+  result = None
   try:
-    subprocess.check_call(['env', editor, filename])
+    subprocess.check_call(['env', editor, filename], shell=True)
     fileobj = open(filename)
     result = fileobj.read()
     fileobj.close()
