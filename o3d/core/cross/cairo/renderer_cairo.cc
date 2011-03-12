@@ -452,7 +452,19 @@ bool RendererCairo::GoFullscreen(const DisplayWindow& display,
                                  int mode_id) {
   if (!fullscreen_) {
     DLOG(INFO) << "RendererCairo entering fullscreen";
-#if defined(OS_WIN)
+#if defined(OS_LINUX)
+    const DisplayWindowLinux &display_platform =
+        static_cast<const DisplayWindowLinux&>(display);
+    display_ = display_platform.display();
+    window_ = display_platform.window();
+    XWindowAttributes window_attributes;
+    if (XGetWindowAttributes(display_, window_, &window_attributes)) {
+      fullscreen_ = true;
+      SetClientSize(window_attributes.width, window_attributes.height);
+      DestroyCairoSurface();
+      CreateCairoSurface();
+    }
+#elif defined(OS_WIN)
     DEVMODE dev_mode;
     if (hwnd_ != NULL &&
         EnumDisplaySettings(NULL, ENUM_CURRENT_SETTINGS, &dev_mode)) {
@@ -477,16 +489,26 @@ bool RendererCairo::GoFullscreen(const DisplayWindow& display,
 // Returns true on success, false on failure.
 bool RendererCairo::CancelFullscreen(const DisplayWindow& display,
                                      int width, int height) {
-#if defined(OS_WIN)
-  if (hwnd_ == NULL) {
-    // Not initialized.
-    return false;
-  }
-#endif
   if (fullscreen_) {
     DLOG(INFO) << "RendererCairo exiting fullscreen";
+#if defined(OS_LINUX)
+    const DisplayWindowLinux &display_platform =
+        static_cast<const DisplayWindowLinux&>(display);
+    display_ = display_platform.display();
+    window_ = display_platform.window();
+
+    fullscreen_ = false;
+    SetClientSize(width, height);
+    DestroyCairoSurface();
+    CreateCairoSurface();
+#elif defined(OS_WIN)
+    if (hwnd_ == NULL) {
+      // Not initialized.
+      return false;
+    }
     fullscreen_ = false;
     Resize(width, height);
+#endif
   }
   return true;
 }
