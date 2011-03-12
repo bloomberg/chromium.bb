@@ -720,7 +720,7 @@ def UserEditedLog(starting_text):
 
   if not result:
     return
-  
+
   stripcomment_re = re.compile(r'^#.*$', re.MULTILINE)
   return stripcomment_re.sub('', result).strip()
 
@@ -775,15 +775,26 @@ def RunHook(committing, upstream_branch, rietveld_server, tbr, may_prompt):
   output = StringIO.StringIO()
   res = presubmit_support.DoPresubmitChecks(change, committing,
       verbose=None, output_stream=output, input_stream=sys.stdin,
-      default_presubmit=None, may_prompt=may_prompt, tbr=tbr,
+      default_presubmit=None, may_prompt=False, tbr=tbr,
       host_url=cl.GetRietveldServer())
   hook_results = HookResults(output.getvalue())
   if hook_results.output:
     print hook_results.output
 
   # TODO(dpranke): We should propagate the error out instead of calling exit().
-  if not res:
-    sys.exit(1)
+  if not res and ('** Presubmit ERRORS **' in hook_results.output or
+                  '** Presubmit WARNINGS **' in hook_results.output):
+    res = True
+
+  if res:
+    if may_prompt:
+      response = raw_input('Are you sure you want to continue? (y/N): ')
+      if not response.lower().startswith('y'):
+        sys.exit(1)
+    else:
+      sys.exit(1)
+
+
   return hook_results
 
 
