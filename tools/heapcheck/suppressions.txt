@@ -1219,3 +1219,13 @@
    fun:AutofillDownloadTestHelper
    fun:AutoFillDownloadTest_*Test_Test::TestBody
 }
+{
+   bug_75917
+   Heapcheck:Leak
+   fun:FilePathWatcher
+   fun:PluginService
+   fun:DefaultSingletonTraits::New
+   fun:Singleton::get
+   fun:PluginService::GetInstance
+   fun:::PluginServiceTest::SetUp
+}
