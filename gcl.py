@@ -1063,11 +1063,18 @@ def CMDchange(args):
   os.write(handle, text)
   os.close(handle)
 
-  if not silent:
-    os.system(GetEditor() + " " + filename)
-
-  result = gclient_utils.FileRead(filename, 'r')
-  os.remove(filename)
+  # Open up the default editor in the system to get the CL description.
+  cmd = [GetEditor(), filename]
+  if sys.platform == 'win32' and 'mingw\\bin' in os.environ['PATH']:
+    # Msysgit requires the usage of 'env' to be present. The only way to
+    # accomplish that is by reading the environment variable for mingw\bin.
+    cmd.insert(0, 'env')
+  try:
+    if not silent:
+      subprocess.check_call(cmd)
+    result = gclient_utils.FileRead(filename, 'r')
+  finally:
+    os.remove(filename)
 
   if not result:
     return 0

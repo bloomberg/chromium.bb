@@ -710,9 +710,14 @@ def UserEditedLog(starting_text):
   fileobj.write(starting_text)
   fileobj.close()
 
-  result = None
+  # Open up the default editor in the system to get the CL description.
+  cmd = [editor, filename]
+  if sys.platform == 'win32' and 'mingw\\bin' in os.environ['PATH']:
+    # Msysgit requires the usage of 'env' to be present. The only way to
+    # accomplish that is by reading the environment variable for mingw\bin.
+    cmd.insert(0, 'env')
   try:
-    subprocess.check_call(['env', editor, filename], shell=True)
+    subprocess.check_call(cmd)
     fileobj = open(filename)
     result = fileobj.read()
     fileobj.close()
