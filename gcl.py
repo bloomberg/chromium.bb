@@ -1063,11 +1063,13 @@ def CMDchange(args):
   os.write(handle, text)
   os.close(handle)
 
-  if not silent:
-    os.system(GetEditor() + " " + filename)
-
-  result = gclient_utils.FileRead(filename, 'r')
-  os.remove(filename)
+  result = None
+  try:
+    if not silent:
+      subprocess.check_call(['env', GetEditor(), filename], shell=True)
+    result = gclient_utils.FileRead(filename, 'r')
+  finally:
+    os.remove(filename)
 
   if not result:
     return 0
