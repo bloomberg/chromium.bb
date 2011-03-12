@@ -79,14 +79,6 @@ class ExtensionHelper {
 };
 
 bool FeatureInfo::Initialize(const char* allowed_features) {
-  disallowed_extensions_ = DisallowedExtensions();
-  AddFeatures(allowed_features);
-  return true;
-}
-
-bool FeatureInfo::Initialize(const DisallowedExtensions& disallowed_extensions,
-                             const char* allowed_features) {
-  disallowed_extensions_ = disallowed_extensions;
   AddFeatures(allowed_features);
   return true;
 }
@@ -283,8 +275,7 @@ void FeatureInfo::AddFeatures(const char* desired_features) {
   }
 
   // Check for multisample support
-  if (!disallowed_extensions_.multisampling &&
-      ext.Desire("GL_CHROMIUM_framebuffer_multisample") &&
+  if (ext.Desire("GL_CHROMIUM_framebuffer_multisample") &&
       (ext.Have("GL_EXT_framebuffer_multisample") ||
        ext.Have("GL_ANGLE_framebuffer_multisample"))) {
     feature_flags_.chromium_framebuffer_multisample = true;

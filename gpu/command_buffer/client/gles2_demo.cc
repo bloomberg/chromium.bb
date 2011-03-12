@@ -59,7 +59,6 @@ bool GLES2Demo::Setup(void* hwnd, int32 size) {
   GPUProcessor* gpu_processor = new GPUProcessor(command_buffer.get(), NULL);
   if (!gpu_processor->Initialize(reinterpret_cast<HWND>(hwnd),
                                  gfx::Size(),
-                                 gpu::gles2::DisallowedExtensions(),
                                  NULL,
                                  std::vector<int32>(),
                                  NULL,

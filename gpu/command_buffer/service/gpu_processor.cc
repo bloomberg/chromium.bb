@@ -52,14 +52,12 @@ GPUProcessor::~GPUProcessor() {
   Destroy();
 }
 
-bool GPUProcessor::InitializeCommon(
-    gfx::GLContext* context,
-    const gfx::Size& size,
-    const gles2::DisallowedExtensions& disallowed_extensions,
-    const char* allowed_extensions,
-    const std::vector<int32>& attribs,
-    gles2::GLES2Decoder* parent_decoder,
-    uint32 parent_texture_id) {
+bool GPUProcessor::InitializeCommon(gfx::GLContext* context,
+                                    const gfx::Size& size,
+                                    const char* allowed_extensions,
+                                    const std::vector<int32>& attribs,
+                                    gles2::GLES2Decoder* parent_decoder,
+                                    uint32 parent_texture_id) {
   DCHECK(context);
 
   if (!context->MakeCurrent())
@@ -92,7 +90,6 @@ bool GPUProcessor::InitializeCommon(
   // Initialize the decoder with either the view or pbuffer GLContext.
   if (!decoder_->Initialize(context,
                             size,
-                            disallowed_extensions,
                             allowed_extensions,
                             attribs,
                             parent_decoder,

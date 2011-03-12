@@ -670,7 +670,6 @@ class GLES2DecoderImpl : public base::SupportsWeakPtr<GLES2DecoderImpl>,
   // Overridden from GLES2Decoder.
   virtual bool Initialize(gfx::GLContext* context,
                           const gfx::Size& size,
-                          const DisallowedExtensions& disallowed_extensions,
                           const char* allowed_extensions,
                           const std::vector<int32>& attribs,
                           GLES2Decoder* parent,
@@ -1443,8 +1442,6 @@ class GLES2DecoderImpl : public base::SupportsWeakPtr<GLES2DecoderImpl>,
   scoped_ptr<ShaderTranslator> vertex_translator_;
   scoped_ptr<ShaderTranslator> fragment_translator_;
 
-  DisallowedExtensions disallowed_extensions_;
-
   // Cached from ContextGroup
   const Validators* validators_;
   FeatureInfo* feature_info_;
@@ -1790,14 +1787,12 @@ GLES2DecoderImpl::GLES2DecoderImpl(ContextGroup* group)
   }
 }
 
-bool GLES2DecoderImpl::Initialize(
-    gfx::GLContext* context,
-    const gfx::Size& size,
-    const DisallowedExtensions& disallowed_extensions,
-    const char* allowed_extensions,
-    const std::vector<int32>& attribs,
-    GLES2Decoder* parent,
-    uint32 parent_client_texture_id) {
+bool GLES2DecoderImpl::Initialize(gfx::GLContext* context,
+                                  const gfx::Size& size,
+                                  const char* allowed_extensions,
+                                  const std::vector<int32>& attribs,
+                                  GLES2Decoder* parent,
+                                  uint32 parent_client_texture_id) {
   DCHECK(context);
   DCHECK(!context_.get());
 
@@ -1816,7 +1811,7 @@ bool GLES2DecoderImpl::Initialize(
     return false;
   }
 
-  if (!group_->Initialize(disallowed_extensions, allowed_extensions)) {
+  if (!group_->Initialize(allowed_extensions)) {
     LOG(ERROR) << "GPUProcessor::InitializeCommon failed because group "
                << "failed to initialize.";
     Destroy();
@@ -1824,7 +1819,6 @@ bool GLES2DecoderImpl::Initialize(
   }
 
   CHECK_GL_ERROR();
-  disallowed_extensions_ = disallowed_extensions;
 
   vertex_attrib_manager_.Initialize(group_->max_vertex_attribs());
 
@@ -6174,7 +6168,7 @@ error::Error GLES2DecoderImpl::HandleGetRequestableExtensionsCHROMIUM(
     const gles2::GetRequestableExtensionsCHROMIUM& c) {
   Bucket* bucket = CreateBucket(c.bucket_id);
   scoped_ptr<FeatureInfo> info(new FeatureInfo());
-  info->Initialize(disallowed_extensions_, NULL);
+  info->Initialize(NULL);
   bucket->SetFromString(info->extensions().c_str());
   return error::kNoError;
 }

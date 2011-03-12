@@ -25,10 +25,6 @@ namespace gles2 {
 class ContextGroup;
 class GLES2Util;
 
-struct DisallowedExtensions {
-  bool multisampling;
-};
-
 // This class implements the AsyncAPIInterface interface, decoding GLES2
 // commands and calling GL.
 class GLES2Decoder : public CommonDecoder {
@@ -65,7 +61,6 @@ class GLES2Decoder : public CommonDecoder {
   //   true if successful.
   virtual bool Initialize(gfx::GLContext* context,
                           const gfx::Size& size,
-                          const DisallowedExtensions& disallowed_extensions,
                           const char* allowed_extensions,
                           const std::vector<int32>& attribs,
                           GLES2Decoder* parent,

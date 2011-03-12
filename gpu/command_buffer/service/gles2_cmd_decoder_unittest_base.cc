@@ -57,10 +57,9 @@ void GLES2DecoderTestBase::InitDecoder(
 
   InSequence sequence;
 
-  TestHelper::SetupContextGroupInitExpectations(gl_.get(),
-      DisallowedExtensions(), extensions);
+  TestHelper::SetupContextGroupInitExpectations(gl_.get(), extensions);
 
-  EXPECT_TRUE(group_->Initialize(DisallowedExtensions(), extensions));
+  EXPECT_TRUE(group_->Initialize(extensions));
 
   EXPECT_CALL(*gl_, GetIntegerv(GL_ALPHA_BITS, _))
       .WillOnce(SetArgumentPointee<1>(has_alpha_backbuffer ? 8 : 0))
@@ -130,8 +129,7 @@ void GLES2DecoderTestBase::InitDecoder(
 
   decoder_.reset(GLES2Decoder::Create(group_.get()));
   decoder_->Initialize(
-      context_, context_->GetSize(), DisallowedExtensions(),
-      NULL, std::vector<int32>(), NULL, 0);
+      context_, context_->GetSize(), NULL, std::vector<int32>(), NULL, 0);
   decoder_->set_engine(engine_.get());
 
   EXPECT_CALL(*gl_, GenBuffersARB(_, _))

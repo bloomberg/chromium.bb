@@ -27,18 +27,16 @@ class GpuCommandBufferStub
       public IPC::Message::Sender,
       public base::SupportsWeakPtr<GpuCommandBufferStub> {
  public:
-  GpuCommandBufferStub(
-      GpuChannel* channel,
-      gfx::PluginWindowHandle handle,
-      GpuCommandBufferStub* parent,
-      const gfx::Size& size,
-      const gpu::gles2::DisallowedExtensions& disallowed_extensions,
-      const std::string& allowed_extensions,
-      const std::vector<int32>& attribs,
-      uint32 parent_texture_id,
-      int32 route_id,
-      int32 renderer_id,
-      int32 render_view_id);
+  GpuCommandBufferStub(GpuChannel* channel,
+                       gfx::PluginWindowHandle handle,
+                       GpuCommandBufferStub* parent,
+                       const gfx::Size& size,
+                       const std::string& allowed_extensions,
+                       const std::vector<int32>& attribs,
+                       uint32 parent_texture_id,
+                       int32 route_id,
+                       int32 renderer_id,
+                       int32 render_view_id);
 
   virtual ~GpuCommandBufferStub();
 
@@ -108,7 +106,6 @@ class GpuCommandBufferStub
   gfx::PluginWindowHandle handle_;
   base::WeakPtr<GpuCommandBufferStub> parent_;
   gfx::Size initial_size_;
-  gpu::gles2::DisallowedExtensions disallowed_extensions_;
   std::string allowed_extensions_;
   std::vector<int32> requested_attribs_;
   uint32 parent_texture_id_;

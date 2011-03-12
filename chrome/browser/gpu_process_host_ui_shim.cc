@@ -124,13 +124,10 @@ GpuProcessHostUIShim* GpuProcessHostUIShim::GetForRenderer(int renderer_id) {
 
   // If Init succeeds, post a task to create the corresponding GpuProcessHost.
   // The GpuProcessHost will take ownership of the GpuProcessHostUIShim.
-  BrowserThread::PostTask(
-      BrowserThread::IO,
-      FROM_HERE,
-      NewRunnableFunction(
-          &GpuProcessHost::Create,
-          ui_shim->host_id_,
-          GpuDataManager::GetInstance()->GetGpuFeatureFlags()));
+  BrowserThread::PostTask(BrowserThread::IO,
+                          FROM_HERE,
+                          NewRunnableFunction(&GpuProcessHost::Create,
+                                              ui_shim->host_id_));
 
   return ui_shim;
 }
