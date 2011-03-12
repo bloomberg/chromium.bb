@@ -154,18 +154,11 @@ class OutputApi(object):
       """Whether this presubmit result should result in a prompt warning."""
       return False
 
-    def IsMessage(self):
-      """Whether this result contains anything needing to be displayed."""
-      return True
-
   class PresubmitAddText(PresubmitResult):
     """Propagates a line of text back to the caller."""
     def __init__(self, message, items=None, long_text=''):
       super(OutputApi.PresubmitAddText, self).__init__("ADD: " + message,
           items, long_text)
-
-    def IsMessage(self):
-      return False
 
   class PresubmitError(PresubmitResult):
     """A hard presubmit error."""
@@ -229,14 +222,15 @@ class InputApi(object):
 
   # TODO(dpranke): Update callers to pass in tbr, host_url, remove
   # default arguments.
-  def __init__(self, change, presubmit_path, is_committing, tbr=False,
-    host_url='http://codereview.chromium.org'):
+  def __init__(self, change, presubmit_path, is_committing, tbr, host_url=None):
     """Builds an InputApi object.
 
     Args:
       change: A presubmit.Change object.
       presubmit_path: The path to the presubmit script being processed.
       is_committing: True if the change is about to be committed.
+      tbr: True if '--tbr' was passed to skip any reviewer/owner checks
+      host_url: scheme, host, and path of rietveld instance
     """
     # Version number of the presubmit_support script.
     self.version = [int(x) for x in __version__.split('.')]
@@ -244,6 +238,7 @@ class InputApi(object):
     self.host_url = host_url
     self.is_committing = is_committing
     self.tbr = tbr
+    self.host_url = host_url or 'http://codereview.chromium.org'
 
     # We expose various modules and functions as attributes of the input_api
     # so that presubmit scripts don't have to import them.
@@ -935,14 +930,19 @@ def DoGetTrySlaves(changed_files,
 
 
 class PresubmitExecuter(object):
-  def __init__(self, change, committing):
+  def __init__(self, change, committing, tbr, host_url):
     """
     Args:
       change: The Change object.
       committing: True if 'gcl commit' is running, False if 'gcl upload' is.
+      tbr: True if '--tbr' was passed to skip any reviewer/owner checks
+      host_url: scheme, host, and path of rietveld instance
+          (or None for default)
     """
     self.change = change
     self.committing = committing
+    self.tbr = tbr
+    self.host_url = host_url
 
   def ExecPresubmitScript(self, script_text, presubmit_path):
     """Executes a single presubmit script.
@@ -961,7 +961,8 @@ class PresubmitExecuter(object):
     os.chdir(os.path.dirname(presubmit_path))
 
     # Load the presubmit script into context.
-    input_api = InputApi(self.change, presubmit_path, self.committing)
+    input_api = InputApi(self.change, presubmit_path, self.committing,
+                         self.tbr, self.host_url)
     context = {}
     exec script_text in context
 
@@ -992,14 +993,16 @@ class PresubmitExecuter(object):
     os.chdir(main_path)
     return result
 
-
+# TODO(dpranke): make all callers pass in tbr, host_url?
 def DoPresubmitChecks(change,
                       committing,
                       verbose,
                       output_stream,
                       input_stream,
                       default_presubmit,
-                      may_prompt):
+                      may_prompt,
+                      tbr=False,
+                      host_url=None):
   """Runs all presubmit checks that apply to the files in the change.
 
   This finds all PRESUBMIT.py files in directories enclosing the files in the
@@ -1017,6 +1020,9 @@ def DoPresubmitChecks(change,
     input_stream: A stream to read input from the user.
     default_presubmit: A default presubmit script to execute in any case.
     may_prompt: Enable (y/n) questions on warning or error.
+    tbr: was --tbr specified to skip any reviewer/owner checks?
+    host_url: scheme, host, and port of host to use for rietveld-related
+        checks
 
   Warning:
     If may_prompt is true, output_stream SHOULD be sys.stdout and input_stream
@@ -1032,7 +1038,7 @@ def DoPresubmitChecks(change,
   if not presubmit_files and verbose:
     output_stream.write("Warning, no presubmit.py found.\n")
   results = []
-  executer = PresubmitExecuter(change, committing)
+  executer = PresubmitExecuter(change, committing, tbr, host_url)
   if default_presubmit:
     if verbose:
       output_stream.write("Running default presubmit script.\n")
@@ -1064,9 +1070,6 @@ def DoPresubmitChecks(change,
     if items:
       output_stream.write('** Presubmit %s **\n' % name)
       for item in items:
-        if not item.IsMessage():
-          continue
-
         # Access to a protected member XXX of a client class
         # pylint: disable=W0212
         if not item._Handle(output_stream, input_stream,

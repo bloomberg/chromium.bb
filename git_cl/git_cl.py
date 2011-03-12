@@ -7,6 +7,7 @@ import logging
 import optparse
 import os
 import re
+import StringIO
 import subprocess
 import sys
 import tempfile
@@ -37,7 +38,7 @@ POSTUPSTREAM_HOOK_PATTERN = '.git/hooks/post-cl-%s'
 DESCRIPTION_BACKUP_FILE = '~/.git_cl_description_backup'
 
 def DieWithError(message):
-  print >>sys.stderr, message
+  print >> sys.stderr, message
   sys.exit(1)
 
 
@@ -481,6 +482,76 @@ def GetCodereviewSettingsInteractively():
   # svn-based hackery.
 
 
+class HookResults(object):
+  """Contains the parsed output of the presubmit hooks."""
+  def __init__(self, output_from_hooks=None):
+    self.reviewers = []
+    self.output = None
+    self._ParseOutputFromHooks(output_from_hooks)
+
+  def _ParseOutputFromHooks(self, output_from_hooks):
+    if not output_from_hooks:
+      return
+    lines = []
+    reviewers = []
+    reviewer_regexp = re.compile('ADD: R=(.+)')
+    for l in output_from_hooks.splitlines():
+      m = reviewer_regexp.match(l)
+      if m:
+        reviewers.extend(m.group(1).split(','))
+      else:
+        lines.append(l)
+    self.output = '\n'.join(lines)
+    self.reviewers = ','.join(reviewers)
+
+
+class ChangeDescription(object):
+  """Contains a parsed form of the change description."""
+  def __init__(self, subject, log_desc, reviewers):
+    self.subject = subject
+    self.log_desc = log_desc
+    self.reviewers = reviewers
+    self.description = self.log_desc
+
+  def Update(self):
+    initial_text = """# Enter a description of the change.
+# This will displayed on the codereview site.
+# The first line will also be used as the subject of the review.
+"""
+    initial_text += self.description
+    if 'R=' not in self.description and self.reviewers:
+      initial_text += '\nR=' + self.reviewers
+    if 'BUG=' not in self.description:
+      initial_text += '\nBUG='
+    if 'TEST=' not in self.description:
+      initial_text += '\nTEST='
+    self._ParseDescription(UserEditedLog(initial_text))
+
+  def _ParseDescription(self, description):
+    if not description:
+      self.description = description
+      return
+
+    parsed_lines = []
+    reviewers_regexp = re.compile('\s*R=(.+)')
+    reviewers = ''
+    subject = ''
+    for l in description.splitlines():
+      if not subject:
+        subject = l
+      matched_reviewers = reviewers_regexp.match(l)
+      if matched_reviewers:
+        reviewers = matched_reviewers.group(1)
+      parsed_lines.append(l)
+
+    self.description = '\n'.join(parsed_lines) + '\n'
+    self.subject = subject
+    self.reviewers = reviewers
+
+  def IsEmpty(self):
+    return not self.description
+
+
 def FindCodereviewSettingsFile(filename='codereview.settings'):
   """Finds the given file starting in the cwd and going up.
 
@@ -503,24 +574,12 @@ def FindCodereviewSettingsFile(filename='codereview.settings'):
 
 def LoadCodereviewSettingsFromFile(fileobj):
   """Parse a codereview.settings file and updates hooks."""
-  def DownloadToFile(url, filename):
-    filename = os.path.join(settings.GetRoot(), filename)
-    contents = urllib2.urlopen(url).read()
-    fileobj = open(filename, 'w')
-    fileobj.write(contents)
-    fileobj.close()
-    os.chmod(filename, 0755)
-    return 0
-
   keyvals = {}
   for line in fileobj.read().splitlines():
     if not line or line.startswith("#"):
       continue
     k, v = line.split(": ", 1)
     keyvals[k] = v
-
-  def GetProperty(name):
-    return keyvals.get(name)
 
   def SetProperty(name, setting, unset_error_ok=False):
     fullname = 'rietveld.' + name
@@ -672,7 +731,8 @@ def ConvertToInteger(inputval):
     return None
 
 
-def RunHook(committing, upstream_branch):
+def RunHook(committing, upstream_branch, rietveld_server, tbr, may_prompt):
+  """Calls sys.exit() if the hook fails; returns a HookResults otherwise."""
   import presubmit_support
   import scm
   import watchlists
@@ -710,9 +770,19 @@ def RunHook(committing, upstream_branch):
     RunCommand(['git', 'config', '--replace-all',
                'rietveld.extracc', ','.join(watchers)])
 
-  return presubmit_support.DoPresubmitChecks(change, committing,
-      verbose=None, output_stream=sys.stdout, input_stream=sys.stdin,
-      default_presubmit=None, may_prompt=None)
+  output = StringIO.StringIO()
+  res = presubmit_support.DoPresubmitChecks(change, committing,
+      verbose=None, output_stream=output, input_stream=sys.stdin,
+      default_presubmit=None, may_prompt=may_prompt, tbr=tbr,
+      host_url=cl.GetRietveldServer())
+  hook_results = HookResults(output.getvalue())
+  if hook_results.output:
+    print hook_results.output
+
+  # TODO(dpranke): We should propagate the error out instead of calling exit().
+  if not res:
+    sys.exit(1)
+  return hook_results
 
 
 def CMDpresubmit(parser, args):
@@ -728,18 +798,25 @@ def CMDpresubmit(parser, args):
     print 'Cannot presubmit with a dirty tree.  You must commit locally first.'
     return 1
 
+  cl = Changelist()
   if args:
     base_branch = args[0]
   else:
     # Default to diffing against the "upstream" branch.
-    base_branch = Changelist().GetUpstreamBranch()
+    base_branch = cl.GetUpstreamBranch()
 
   if options.upload:
     print '*** Presubmit checks for UPLOAD would report: ***'
-    return RunHook(committing=False, upstream_branch=base_branch)
+    RunHook(committing=False, upstream_branch=base_branch,
+            rietveld_server=cl.GetRietveldServer(), tbr=False,
+            may_prompt=False)
+    return 0
   else:
     print '*** Presubmit checks for DCOMMIT would report: ***'
-    return RunHook(committing=True, upstream_branch=base_branch)
+    RunHook(committing=True, upstream_branch=base_branch,
+            rietveld_server=cl.GetRietveldServer, tbr=False,
+            may_prompt=False)
+    return 0
 
 
 @usage('[args to "git diff"]')
@@ -747,6 +824,8 @@ def CMDupload(parser, args):
   """upload the current changelist to codereview"""
   parser.add_option('--bypass-hooks', action='store_true', dest='bypass_hooks',
                     help='bypass upload presubmit hook')
+  parser.add_option('-f', action='store_true', dest='force',
+                    help="force yes to questions (don't prompt)")
   parser.add_option('-m', dest='message', help='message for patch')
   parser.add_option('-r', '--reviewers',
                     help='reviewer email addresses')
@@ -778,7 +857,14 @@ def CMDupload(parser, args):
     args = [base_branch + "..."]
 
   if not options.bypass_hooks:
-    RunHook(committing=False, upstream_branch=base_branch)
+    hook_results = RunHook(committing=False, upstream_branch=base_branch,
+                           rietveld_server=cl.GetRietveldServer(), tbr=False,
+                           may_prompt=(not options.force))
+  else:
+    hook_results = HookResults()
+
+  if not options.reviewers and hook_results.reviewers:
+    options.reviewers = hook_results.reviewers
 
   # --no-ext-diff is broken in some versions of Git, so try to work around
   # this by overriding the environment (but there is still a problem if the
@@ -791,8 +877,6 @@ def CMDupload(parser, args):
 
   upload_args = ['--assume_yes']  # Don't ask about untracked files.
   upload_args.extend(['--server', cl.GetRietveldServer()])
-  if options.reviewers:
-    upload_args.extend(['--reviewers', options.reviewers])
   if options.emulate_svn_auto_props:
     upload_args.append('--emulate_svn_auto_props')
   if options.send_mail:
@@ -813,28 +897,19 @@ def CMDupload(parser, args):
            "Adding patch to that issue." % cl.GetIssue())
   else:
     log_desc = CreateDescriptionFromLog(args)
-    if options.from_logs:
-      # Uses logs as description and message as subject.
-      subject = options.message
-      change_desc = subject + '\n\n' + log_desc
-    else:
-      initial_text = """# Enter a description of the change.
-# This will displayed on the codereview site.
-# The first line will also be used as the subject of the review.
-"""
-      if 'BUG=' not in log_desc:
-        log_desc += '\nBUG='
-      if 'TEST=' not in log_desc:
-        log_desc += '\nTEST='
-      change_desc = UserEditedLog(initial_text + log_desc)
-      subject = ''
-      if change_desc:
-        subject = change_desc.splitlines()[0]
-    if not change_desc:
+    change_desc = ChangeDescription(options.message, log_desc,
+                                    options.reviewers)
+    if not options.from_logs:
+      change_desc.Update()
+
+    if change_desc.IsEmpty():
       print "Description is empty; aborting."
       return 1
-    upload_args.extend(['--message', subject])
-    upload_args.extend(['--description', change_desc])
+
+    upload_args.extend(['--message', change_desc.subject])
+    upload_args.extend(['--description', change_desc.description])
+    if change_desc.reviewers:
+      upload_args.extend(['--reviewers', change_desc.reviewers])
     cc = ','.join(filter(None, (settings.GetCCList(), options.cc)))
     if cc:
       upload_args.extend(['--cc', cc])
@@ -866,7 +941,7 @@ def CMDupload(parser, args):
       print '\nGot exception while uploading -- saving description to %s\n' \
           % backup_path
       backup_file = open(backup_path, 'w')
-      backup_file.write(change_desc)
+      backup_file.write(change_desc.description)
       backup_file.close()
     raise
 
@@ -934,9 +1009,12 @@ def SendUpstream(parser, args, cmd):
              'before attempting to %s.' % (base_branch, cmd))
       return 1
 
-  if not options.force and not options.bypass_hooks:
-    RunHook(committing=False, upstream_branch=base_branch)
+  if not options.bypass_hooks:
+    RunHook(committing=True, upstream_branch=base_branch,
+            rietveld_server=cl.GetRietveldServer(), tbr=options.tbr,
+            may_prompt=(not options.force))
 
+  if not options.force and not options.bypass_hooks:
     if cmd == 'dcommit':
       # Check the tree status if the tree status URL is set.
       status = GetTreeStatus()
@@ -975,6 +1053,7 @@ def SendUpstream(parser, args, cmd):
       if cl.GetIssue():
         description = cl.GetDescription()
 
+      # TODO(dpranke): Update to use ChangeDescription object.
       if not description:
         description = """# Enter a description of the change.
 # This will be used as the change log for the commit.
@@ -1066,7 +1145,7 @@ def SendUpstream(parser, args, cmd):
   if retcode == 0:
     hook = POSTUPSTREAM_HOOK_PATTERN % cmd
     if os.path.isfile(hook):
-      RunHook(hook, upstream_branch=base_branch, error_ok=True)
+      RunCommand([hook, base_branch], error_ok=True)
 
   return 0
 
@@ -1202,8 +1281,8 @@ def GetTreeStatus():
     elif status.find('open') != -1 or status == '1':
       return 'open'
     return 'unknown'
-
   return 'unset'
+
 
 def GetTreeStatusReason():
   """Fetches the tree status from a json url and returns the message
@@ -1229,6 +1308,7 @@ def GetTreeStatusReason():
   status = json.loads(connection.read())
   connection.close()
   return status['message']
+
 
 def CMDtree(parser, args):
   """show the status of the tree"""

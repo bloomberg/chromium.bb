@@ -626,10 +626,13 @@ def CheckBuildbotPendingBuilds(input_api, output_api, url, max_pendings,
   return []
 
 
-def CheckOwners(input_api, output_api, source_file_filter=None):
+def CheckOwners(input_api, output_api, email_regexp=None,
+    source_file_filter=None):
   affected_files = set([f.LocalPath() for f in
       input_api.change.AffectedFiles(source_file_filter)])
   owners_db = input_api.owners_db
+  if email_regexp:
+    owners_db.email_regexp = input_api.re.compile(email_regexp)
 
   if input_api.is_committing and input_api.tbr:
     return [output_api.PresubmitNotifyResult(
