@@ -50,7 +50,7 @@ base::MessageLoopProxy* P2PSocketDispatcher::message_loop() {
 }
 
 void P2PSocketDispatcher::OnSocketCreated(
-    int socket_id, const P2PSocketAddress& address) {
+    int socket_id, const net::IPEndPoint& address) {
   P2PSocketClient* client = GetClient(socket_id);
   if (client) {
     client->OnSocketCreated(address);
@@ -65,7 +65,7 @@ void P2PSocketDispatcher::OnError(int socket_id) {
 }
 
 void P2PSocketDispatcher::OnDataReceived(
-    int socket_id, const P2PSocketAddress& address,
+    int socket_id, const net::IPEndPoint& address,
     const std::vector<char>& data) {
   P2PSocketClient* client = GetClient(socket_id);
   if (client) {

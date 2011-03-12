@@ -316,6 +316,25 @@ void ParamTraits<scoped_refptr<net::HttpResponseHeaders> >::Log(
   l->append("<HttpResponseHeaders>");
 }
 
+void ParamTraits<net::IPEndPoint>::Write(Message* m, const param_type& p) {
+  WriteParam(m, p.address());
+  WriteParam(m, p.port());
+}
+
+bool ParamTraits<net::IPEndPoint>::Read(const Message* m, void** iter,
+                                        param_type* p) {
+  net::IPAddressNumber address;
+  int port;
+  if (!ReadParam(m, iter, &address) || !ReadParam(m, iter, &port))
+    return false;
+  *p = net::IPEndPoint(address, port);
+  return true;
+}
+
+void ParamTraits<net::IPEndPoint>::Log(const param_type& p, std::string* l) {
+  LogParam("IPEndPoint:" + p.ToString(), l);
+}
+
 void ParamTraits<webkit_glue::ResourceLoadTimingInfo>::Write(
     Message* m, const param_type& p) {
   WriteParam(m, p.base_time.is_null());

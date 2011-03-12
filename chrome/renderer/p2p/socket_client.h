@@ -9,6 +9,7 @@
 
 #include "base/ref_counted.h"
 #include "content/common/p2p_sockets.h"
+#include "net/base/ip_endpoint.h"
 
 namespace base {
 class MessageLoopProxy;
@@ -29,9 +30,9 @@ class P2PSocketClient : public base::RefCountedThreadSafe<P2PSocketClient> {
    public:
     virtual ~Delegate() { }
 
-    virtual void OnOpen(const P2PSocketAddress& address) = 0;
+    virtual void OnOpen(const net::IPEndPoint& address) = 0;
     virtual void OnError() = 0;
-    virtual void OnDataReceived(const P2PSocketAddress& address,
+    virtual void OnDataReceived(const net::IPEndPoint& address,
                                 const std::vector<char>& data) = 0;
   };
 
@@ -40,12 +41,12 @@ class P2PSocketClient : public base::RefCountedThreadSafe<P2PSocketClient> {
   // Initialize socket of the specified |type| and connected to the
   // specified |address|. |address| matters only when |type| is set to
   // P2P_SOCKET_TCP_CLIENT.
-  void Init(P2PSocketType type, const P2PSocketAddress& address,
+  void Init(P2PSocketType type, const net::IPEndPoint& address,
             Delegate* delegate,
             scoped_refptr<base::MessageLoopProxy> delegate_loop);
 
   // Send the |data| to the |address|.
-  void Send(const P2PSocketAddress& address, const std::vector<char>& data);
+  void Send(const net::IPEndPoint& address, const std::vector<char>& data);
 
   // Must be called before the socket is destroyed. The delegate may
   // not be called after |closed_task| is executed.
@@ -70,15 +71,15 @@ class P2PSocketClient : public base::RefCountedThreadSafe<P2PSocketClient> {
   virtual ~P2PSocketClient();
 
   // Message handlers that run on IPC thread.
-  void OnSocketCreated(const P2PSocketAddress& address);
+  void OnSocketCreated(const net::IPEndPoint& address);
   void OnError();
-  void OnDataReceived(const P2PSocketAddress& address,
+  void OnDataReceived(const net::IPEndPoint& address,
                       const std::vector<char>& data);
 
   // Proxy methods that deliver messages to the delegate thread.
-  void DeliverOnSocketCreated(const P2PSocketAddress& address);
+  void DeliverOnSocketCreated(const net::IPEndPoint& address);
   void DeliverOnError();
-  void DeliverOnDataReceived(const P2PSocketAddress& address,
+  void DeliverOnDataReceived(const net::IPEndPoint& address,
                              const std::vector<char>& data);
 
   // Scheduled on the IPC thread to finish closing the connection.

@@ -18,6 +18,7 @@
 #include "base/ref_counted.h"
 #include "googleurl/src/gurl.h"
 #include "ipc/ipc_message_utils.h"
+#include "net/base/ip_endpoint.h"
 #include "net/url_request/url_request_status.h"
 // !!! WARNING: DO NOT ADD NEW WEBKIT DEPENDENCIES !!!
 //
@@ -97,6 +98,14 @@ struct ParamTraits<scoped_refptr<net::HttpResponseHeaders> > {
   typedef scoped_refptr<net::HttpResponseHeaders> param_type;
   static void Write(Message* m, const param_type& p);
   static bool Read(const Message* m, void** iter, param_type* r);
+  static void Log(const param_type& p, std::string* l);
+};
+
+template <>
+struct ParamTraits<net::IPEndPoint> {
+  typedef net::IPEndPoint param_type;
+  static void Write(Message* m, const param_type& p);
+  static bool Read(const Message* m, void** iter, param_type* p);
   static void Log(const param_type& p, std::string* l);
 };
 

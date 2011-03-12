@@ -8,6 +8,7 @@
 #include "base/id_map.h"
 #include "content/browser/browser_message_filter.h"
 #include "content/common/p2p_sockets.h"
+#include "net/base/ip_endpoint.h"
 
 class P2PSocketHost;
 
@@ -24,9 +25,9 @@ class P2PSocketsHost : public BrowserMessageFilter {
 
  private:
   void OnCreateSocket(const IPC::Message& msg, P2PSocketType type,
-                      int socket_id, const P2PSocketAddress& remote_address);
+                      int socket_id, const net::IPEndPoint& remote_address);
   void OnSend(const IPC::Message& msg, int socket_id,
-              const P2PSocketAddress& socket_address,
+              const net::IPEndPoint& socket_address,
               const std::vector<char>& data);
   void OnDestroySocket(const IPC::Message& msg, int socket_id);
 

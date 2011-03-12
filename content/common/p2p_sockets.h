@@ -8,16 +8,6 @@
 #ifndef CONTENT_COMMON_P2P_SOCKETS_H_
 #define CONTENT_COMMON_P2P_SOCKETS_H_
 
-#include "net/base/net_util.h"
-
-// Pair of IP address and port number.
-struct P2PSocketAddress {
-  P2PSocketAddress();
-  ~P2PSocketAddress();
-  net::IPAddressNumber address;
-  int port;
-};
-
 // Type of P2P Socket.
 enum P2PSocketType {
   P2P_SOCKET_UDP,

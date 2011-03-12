@@ -22,7 +22,7 @@ P2PSocketClient::~P2PSocketClient() {
 }
 
 void P2PSocketClient::Init(
-    P2PSocketType type, const P2PSocketAddress& address,
+    P2PSocketType type, const net::IPEndPoint& address,
     P2PSocketClient::Delegate* delegate,
     scoped_refptr<base::MessageLoopProxy> delegate_loop) {
   if (!ipc_message_loop_->BelongsToCurrentThread()) {
@@ -41,7 +41,7 @@ void P2PSocketClient::Init(
       new P2PHostMsg_CreateSocket(0, type, socket_id_, address));
 }
 
-void P2PSocketClient::Send(const P2PSocketAddress& address,
+void P2PSocketClient::Send(const net::IPEndPoint& address,
                            const std::vector<char>& data) {
   if (!ipc_message_loop_->BelongsToCurrentThread()) {
     ipc_message_loop_->PostTask(
@@ -76,7 +76,7 @@ void P2PSocketClient::DoClose() {
   state_ = STATE_CLOSED;
 }
 
-void P2PSocketClient::OnSocketCreated(const P2PSocketAddress& address) {
+void P2PSocketClient::OnSocketCreated(const net::IPEndPoint& address) {
   DCHECK(ipc_message_loop_->BelongsToCurrentThread());
   DCHECK_EQ(state_, STATE_OPENING);
   state_ = STATE_OPEN;
@@ -85,7 +85,7 @@ void P2PSocketClient::OnSocketCreated(const P2PSocketAddress& address) {
       this, &P2PSocketClient::DeliverOnSocketCreated, address));
 }
 
-void P2PSocketClient::DeliverOnSocketCreated(const P2PSocketAddress& address) {
+void P2PSocketClient::DeliverOnSocketCreated(const net::IPEndPoint& address) {
   if (delegate_)
     delegate_->OnOpen(address);
 }
@@ -103,7 +103,7 @@ void P2PSocketClient::DeliverOnError() {
     delegate_->OnError();
 }
 
-void P2PSocketClient::OnDataReceived(const P2PSocketAddress& address,
+void P2PSocketClient::OnDataReceived(const net::IPEndPoint& address,
                                      const std::vector<char>& data) {
   DCHECK(ipc_message_loop_->BelongsToCurrentThread());
   DCHECK_EQ(STATE_OPEN, state_);
@@ -111,7 +111,7 @@ void P2PSocketClient::OnDataReceived(const P2PSocketAddress& address,
       this, &P2PSocketClient::DeliverOnDataReceived, address, data));
 }
 
-void P2PSocketClient::DeliverOnDataReceived(const P2PSocketAddress& address,
+void P2PSocketClient::DeliverOnDataReceived(const net::IPEndPoint& address,
                                             const std::vector<char>& data) {
   if (delegate_)
     delegate_->OnDataReceived(address, data);

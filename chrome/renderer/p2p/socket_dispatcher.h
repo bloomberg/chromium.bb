@@ -38,7 +38,8 @@ class P2PSocketDispatcher : public RenderViewObserver {
   explicit P2PSocketDispatcher(RenderView* render_view);
   virtual ~P2PSocketDispatcher();
 
-  P2PSocketClient* CreateSocket(P2PSocketType type, P2PSocketAddress address,
+  P2PSocketClient* CreateSocket(P2PSocketType type,
+                                const net::IPEndPoint& address,
                                 P2PSocketClient::Delegate* delegate);
 
   // RenderViewObserver overrides.
@@ -54,9 +55,9 @@ class P2PSocketDispatcher : public RenderViewObserver {
   base::MessageLoopProxy* message_loop();
 
   // Incoming message handlers.
-  void OnSocketCreated(int socket_id, const P2PSocketAddress& address);
+  void OnSocketCreated(int socket_id, const net::IPEndPoint& address);
   void OnError(int socket_id);
-  void OnDataReceived(int socket_id, const P2PSocketAddress& address,
+  void OnDataReceived(int socket_id, const net::IPEndPoint& address,
                       const std::vector<char>& data);
 
   P2PSocketClient* GetClient(int socket_id);

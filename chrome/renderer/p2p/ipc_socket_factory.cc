@@ -17,24 +17,25 @@ const size_t kIPv4AddressSize = 4;
 // Chromium and libjingle represent socket addresses differently. The
 // following two functions are used to convert addresses from one
 // representation to another.
-bool ChromeToLibjingleSocketAddress(const P2PSocketAddress& address_chrome,
+bool ChromeToLibjingleSocketAddress(const net::IPEndPoint& address_chrome,
                                     talk_base::SocketAddress* address_lj) {
-  if (address_chrome.address.size() != kIPv4AddressSize) {
+  if (address_chrome.GetFamily() != AF_INET) {
     LOG(ERROR) << "Only IPv4 addresses are supported.";
     return false;
   }
   uint32 ip_as_int = ntohl(*reinterpret_cast<const uint32*>(
-      &address_chrome.address[0]));
-  *address_lj =  talk_base::SocketAddress(ip_as_int, address_chrome.port);
+      &address_chrome.address()[0]));
+  *address_lj =  talk_base::SocketAddress(ip_as_int, address_chrome.port());
   return true;
 }
 
-bool LibjingleToChromeSocketAddress(const talk_base::SocketAddress& address_lj,
-                                    P2PSocketAddress* address_chrome) {
+bool LibjingleToIPEndPoint(const talk_base::SocketAddress& address_lj,
+                           net::IPEndPoint* address_chrome) {
   uint32 ip = htonl(address_lj.ip());
-  address_chrome->address.resize(kIPv4AddressSize);
-  memcpy(&address_chrome->address[0], &ip, kIPv4AddressSize);
-  address_chrome->port = address_lj.port();
+  net::IPAddressNumber address;
+  address.resize(kIPv4AddressSize);
+  memcpy(&address[0], &ip, kIPv4AddressSize);
+  *address_chrome = net::IPEndPoint(address, address_lj.port());
   return true;
 }
 
@@ -64,9 +65,9 @@ class IpcPacketSocket : public talk_base::AsyncPacketSocket,
   virtual void SetError(int error);
 
   // P2PSocketClient::Delegate
-  virtual void OnOpen(const P2PSocketAddress& address);
+  virtual void OnOpen(const net::IPEndPoint& address);
   virtual void OnError();
-  virtual void OnDataReceived(const P2PSocketAddress& address,
+  virtual void OnDataReceived(const net::IPEndPoint& address,
                               const std::vector<char>& data);
 
  private:
@@ -124,8 +125,8 @@ bool IpcPacketSocket::Init(P2PSocketType type, P2PSocketClient* client,
   remote_address_ = address;
   state_ = STATE_OPENING;
 
-  P2PSocketAddress address_chrome;
-  if (!LibjingleToChromeSocketAddress(address, &address_chrome)) {
+  net::IPEndPoint address_chrome;
+  if (!LibjingleToIPEndPoint(address, &address_chrome)) {
     return false;
   }
 
@@ -177,8 +178,8 @@ int IpcPacketSocket::SendTo(const void *data, size_t data_size,
   const char* data_char = reinterpret_cast<const char*>(data);
   std::vector<char> data_vector(data_char, data_char + data_size);
 
-  P2PSocketAddress address_chrome;
-  if (!LibjingleToChromeSocketAddress(address, &address_chrome)) {
+  net::IPEndPoint address_chrome;
+  if (!LibjingleToIPEndPoint(address, &address_chrome)) {
     // Just drop the packet if we failed to convert the address.
     return 0;
   }
@@ -244,7 +245,7 @@ void IpcPacketSocket::SetError(int error) {
   error_ = error;
 }
 
-void IpcPacketSocket::OnOpen(const P2PSocketAddress& address) {
+void IpcPacketSocket::OnOpen(const net::IPEndPoint& address) {
   DCHECK_EQ(MessageLoop::current(), message_loop_);
 
   if (!ChromeToLibjingleSocketAddress(address, &local_address_)) {
@@ -262,7 +263,7 @@ void IpcPacketSocket::OnError() {
   error_ = ECONNABORTED;
 }
 
-void IpcPacketSocket::OnDataReceived(const P2PSocketAddress& address,
+void IpcPacketSocket::OnDataReceived(const net::IPEndPoint& address,
                                      const std::vector<char>& data) {
   DCHECK_EQ(MessageLoop::current(), message_loop_);
 

@@ -71,34 +71,6 @@ bool GetLocalAddress(sockaddr_in* addr) {
   return found;
 }
 
-bool SocketAddressToSockAddr(const P2PSocketAddress& address,
-                             sockaddr_in* addr) {
-  // TODO(sergeyu): Add IPv6 support.
-  if (address.address.size() != 4) {
-    return false;
-  }
-
-  addr->sin_family = AF_INET;
-  memcpy(&addr->sin_addr, &address.address[0], 4);
-  addr->sin_port = htons(address.port);
-  return true;
-}
-
-bool SockAddrToSocketAddress(sockaddr_in* addr,
-                             P2PSocketAddress* address) {
-  if (addr->sin_family != AF_INET) {
-    LOG(ERROR) << "SockAddrToSocketAddress: only IPv4 addresses are supported";
-    // TODO(sergeyu): Add IPv6 support.
-    return false;
-  }
-
-  address->address.resize(4);
-  memcpy(&address->address[0], &addr->sin_addr, 4);
-  address->port = ntohs(addr->sin_port);
-
-  return true;
-}
-
 }  // namespace
 
 P2PSocketHostPosix::P2PSocketHostPosix(
@@ -161,16 +133,14 @@ bool P2PSocketHostPosix::Init() {
     return false;
   }
 
-  P2PSocketAddress address;
-  if (!SockAddrToSocketAddress(&addr, &address)) {
+  net::IPEndPoint address;
+  if (!address.FromSockAddr(reinterpret_cast<sockaddr*>(&addr), addrlen)) {
     OnError();
     return false;
   }
 
   VLOG(1) << "getsockname() returned "
-          << net::NetAddressToString(
-              reinterpret_cast<sockaddr*>(&addr), sizeof(addr))
-          << ":" << address.port;
+          << address.ToString();
 
   state_ = STATE_OPEN;
 
@@ -196,23 +166,23 @@ void P2PSocketHostPosix::DidCompleteRead() {
 
   std::vector<char> data;
   data.resize(4096);
-  sockaddr_in addr;
-  socklen_t addr_len = sizeof(addr);
-  int result = recvfrom(socket_, &data[0], data.size(), 0,
-                          reinterpret_cast<sockaddr*>(&addr), &addr_len);
+  sockaddr_storage addr_storage;
+  sockaddr* addr = reinterpret_cast<sockaddr*>(&addr_storage);
+  socklen_t addr_len = sizeof(addr_storage);
+  int result = recvfrom(socket_, &data[0], data.size(), 0, addr, &addr_len);
   if (result > 0) {
     data.resize(result);
-    VLOG(2) << "received " << result << " bytes from "
-            << net::NetAddressToString(
-                reinterpret_cast<sockaddr*>(&addr), sizeof(addr))
-            << ":" << ntohs(addr.sin_port);
-    P2PSocketAddress address;
-    if (!SockAddrToSocketAddress(&addr, &address)) {
-      // Address conversion fails only if we receive a non-IPv4
-      // packet, which should never happen because the socket is IPv4.
+
+    net::IPEndPoint address;
+    if (!address.FromSockAddr(addr, addr_len) ||
+        address.GetFamily() != AF_INET) {
+      // We should never receive IPv6 packet on IPv4 packet.
       NOTREACHED();
       return;
     }
+
+    VLOG(2) << "received " << result << " bytes from "
+            << address.ToString();
 
     host_->Send(new P2PMsg_OnDataReceived(routing_id_, id_,
                                                address, data));
@@ -222,19 +192,18 @@ void P2PSocketHostPosix::DidCompleteRead() {
   }
 }
 
-void P2PSocketHostPosix::Send(const P2PSocketAddress& socket_address,
+void P2PSocketHostPosix::Send(const net::IPEndPoint& socket_address,
                               const std::vector<char>& data) {
-  sockaddr_in addr;
-  SocketAddressToSockAddr(socket_address, &addr);
-  int result = sendto(socket_, &data[0], data.size(), 0,
-                      reinterpret_cast<sockaddr*>(&addr), sizeof(addr));
+  sockaddr_storage addr_storage;
+  sockaddr* addr = reinterpret_cast<sockaddr*>(&addr_storage);
+  size_t addr_len = sizeof(addr_storage);
+  socket_address.ToSockAddr(addr, &addr_len);
+  int result = sendto(socket_, &data[0], data.size(), 0, addr, addr_len);
   if (result < 0) {
     LOG(ERROR) << "Send failed.";
   } else {
     VLOG(2) << "Sent " << result << " bytes to "
-            << net::NetAddressToString(
-                reinterpret_cast<sockaddr*>(&addr), sizeof(addr))
-            << ":" <<  ntohs(addr.sin_port);
+            << socket_address.ToString();
   }
 }
 

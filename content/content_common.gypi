@@ -73,7 +73,6 @@
         'common/notification_source.h',
         'common/notification_type.h',
         'common/p2p_messages.h',
-        'common/p2p_sockets.cc',
         'common/p2p_sockets.h',
         'common/property_bag.cc',
         'common/property_bag.h',
