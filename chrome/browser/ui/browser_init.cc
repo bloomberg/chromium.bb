@@ -6,6 +6,7 @@
 
 #include <algorithm>   // For max().
 
+#include "base/compiler_specific.h"
 #include "base/environment.h"
 #include "base/event_recorder.h"
 #include "base/file_path.h"
@@ -141,14 +142,14 @@ class DefaultBrowserInfoBarDelegate : public ConfirmInfoBarDelegate {
 
   // ConfirmInfoBarDelegate:
   virtual bool ShouldExpire(
-      const NavigationController::LoadCommittedDetails& details) const;
-  virtual void InfoBarClosed();
-  virtual SkBitmap* GetIcon() const;
-  virtual string16 GetMessageText() const;
-  virtual string16 GetButtonLabel(InfoBarButton button) const;
-  virtual bool NeedElevation(InfoBarButton button) const;
-  virtual bool Accept();
-  virtual bool Cancel();
+      const NavigationController::LoadCommittedDetails& details) const OVERRIDE;
+  virtual void InfoBarClosed() OVERRIDE;
+  virtual SkBitmap* GetIcon() const OVERRIDE;
+  virtual string16 GetMessageText() const OVERRIDE;
+  virtual string16 GetButtonLabel(InfoBarButton button) const OVERRIDE;
+  virtual bool NeedElevation(InfoBarButton button) const OVERRIDE;
+  virtual bool Accept() OVERRIDE;
+  virtual bool Cancel() OVERRIDE;
 
   // The Profile that we restore sessions from.
   Profile* profile_;
@@ -305,13 +306,12 @@ class SessionCrashedInfoBarDelegate : public ConfirmInfoBarDelegate {
   virtual ~SessionCrashedInfoBarDelegate();
 
   // ConfirmInfoBarDelegate:
-  virtual void InfoBarClosed();
-  virtual SkBitmap* GetIcon() const;
-  virtual Type GetInfoBarType() const;
-  virtual string16 GetMessageText() const;
-  virtual int GetButtons() const;
-  virtual string16 GetButtonLabel(InfoBarButton button) const;
-  virtual bool Accept();
+  virtual void InfoBarClosed() OVERRIDE;
+  virtual SkBitmap* GetIcon() const OVERRIDE;
+  virtual string16 GetMessageText() const OVERRIDE;
+  virtual int GetButtons() const OVERRIDE;
+  virtual string16 GetButtonLabel(InfoBarButton button) const OVERRIDE;
+  virtual bool Accept() OVERRIDE;
 
   // The Profile that we restore sessions from.
   Profile* profile_;
@@ -335,10 +335,6 @@ void SessionCrashedInfoBarDelegate::InfoBarClosed() {
 SkBitmap* SessionCrashedInfoBarDelegate::GetIcon() const {
   return ResourceBundle::GetSharedInstance().GetBitmapNamed(
       IDR_INFOBAR_RESTORE_SESSION);
-}
-
-InfoBarDelegate::Type SessionCrashedInfoBarDelegate::GetInfoBarType() const {
-  return PAGE_ACTION_TYPE;
 }
 
 string16 SessionCrashedInfoBarDelegate::GetMessageText() const {
