@@ -140,7 +140,7 @@ void ProfileWriter::AddBookmarkEntry(
   for (std::set<const BookmarkNode*>::const_iterator i =
           groups_added_to.begin();
        i != groups_added_to.end(); ++i) {
-    model->ResetDateGroupModified(*i);
+    model->ResetDateFolderModified(*i);
   }
 
   if (import_mode) {

@@ -73,7 +73,7 @@ void CloneBookmarkNode(BookmarkModel* model,
                        const BookmarkNode* parent,
                        int index_to_add_at);
 
-// Begins dragging a group of bookmarks.
+// Begins dragging a folder of bookmarks.
 void DragBookmarks(Profile* profile,
                    const std::vector<const BookmarkNode*>& nodes,
                    gfx::NativeView view);
@@ -118,11 +118,11 @@ bool CanPasteFromClipboard(const BookmarkNode* node);
 string16 GetNameForURL(const GURL& url);
 
 // Returns a vector containing up to |max_count| of the most recently modified
-// groups. This never returns an empty vector.
+// folders. This never returns an empty vector.
 std::vector<const BookmarkNode*> GetMostRecentlyModifiedGroups(
     BookmarkModel* model, size_t max_count);
 
-// Returns the most recently added bookmarks. This does not return groups,
+// Returns the most recently added bookmarks. This does not return folders,
 // only nodes of type url.
 void GetMostRecentlyAddedEntries(BookmarkModel* model,
                                  size_t count,

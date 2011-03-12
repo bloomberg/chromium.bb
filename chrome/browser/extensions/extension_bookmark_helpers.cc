@@ -33,7 +33,8 @@ DictionaryValue* GetNodeDictionary(const BookmarkNode* node,
     // seconds.
     base::Time t = node->date_folder_modified();
     if (!t.is_null())
-      dict->SetDouble(keys::kDateGroupModifiedKey, floor(t.ToDoubleT() * 1000));
+      dict->SetDouble(keys::kDateFolderModifiedKey,
+                      floor(t.ToDoubleT() * 1000));
   }
 
   dict->SetString(keys::kTitleKey, node->GetTitle());

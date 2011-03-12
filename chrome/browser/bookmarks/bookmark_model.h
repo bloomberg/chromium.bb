@@ -293,12 +293,12 @@ class BookmarkModel : public NotificationObserver, public BookmarkService {
                      bool is_starred);
 
   // Sets the date modified time of the specified node.
-  void SetDateGroupModified(const BookmarkNode* parent, const base::Time time);
+  void SetDateFolderModified(const BookmarkNode* parent, const base::Time time);
 
   // Resets the 'date modified' time of the node to 0. This is used during
-  // importing to exclude the newly created groups from showing up in the
-  // combobox of most recently modified groups.
-  void ResetDateGroupModified(const BookmarkNode* node);
+  // importing to exclude the newly created folders from showing up in the
+  // combobox of most recently modified folders.
+  void ResetDateFolderModified(const BookmarkNode* node);
 
   void GetBookmarksWithTitlesMatching(
       const string16& text,

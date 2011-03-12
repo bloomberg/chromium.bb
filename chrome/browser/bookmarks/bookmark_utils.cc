@@ -116,7 +116,7 @@ int DescendantURLCount(const BookmarkNode* node) {
 }
 
 // Implementation of OpenAll. Opens all nodes of type URL and recurses for
-// groups. |navigator| is the PageNavigator used to open URLs. After the first
+// folders. |navigator| is the PageNavigator used to open URLs. After the first
 // url is opened |opened_url| is set to true and |navigator| is set to the
 // PageNavigator of the last active tab. This is done to handle a window
 // disposition of new window, in which case we want subsequent tabs to open in
@@ -268,7 +268,7 @@ int PerformBookmarkDrop(Profile* profile,
     }
     return ui::DragDropTypes::DRAG_NONE;
   }
-  // Dropping a group from different profile. Always accept.
+  // Dropping a folder from different profile. Always accept.
   bookmark_utils::CloneBookmarkNode(model, data.elements, parent_node, index);
   return ui::DragDropTypes::DRAG_COPY;
 }
@@ -554,7 +554,7 @@ static const BookmarkNode* CreateNewNode(BookmarkModel* model,
       model->AddURL(node, node->child_count(), details.urls[i].second,
                     details.urls[i].first);
     }
-    model->SetDateGroupModified(parent, Time::Now());
+    model->SetDateFolderModified(parent, Time::Now());
   } else {
     NOTREACHED();
     return NULL;

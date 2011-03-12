@@ -51,7 +51,7 @@ struct BookmarkNodeData {
     // The URL, only valid if is_url is true.
     GURL url;
 
-    // Title of the entry, used for both urls and groups/folders.
+    // Title of the entry, used for both urls and folders.
     string16 title;
 
     // Children, only used for non-URL nodes.

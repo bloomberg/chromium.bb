@@ -191,7 +191,7 @@ void BookmarkModel::Move(const BookmarkNode* node,
     return;
   }
 
-  SetDateGroupModified(new_parent, Time::Now());
+  SetDateFolderModified(new_parent, Time::Now());
 
   const BookmarkNode* old_parent = node->parent();
   int old_index = old_parent->GetIndexOf(node);
@@ -230,7 +230,7 @@ void BookmarkModel::Copy(const BookmarkNode* node,
     return;
   }
 
-  SetDateGroupModified(new_parent, Time::Now());
+  SetDateFolderModified(new_parent, Time::Now());
   BookmarkNodeData drag_data_(node);
   std::vector<BookmarkNodeData::Element> elements(drag_data_.elements);
   // CloneBookmarkNode will use BookmarkModel methods to do the job, so we
@@ -410,7 +410,7 @@ const BookmarkNode* BookmarkModel::AddURLWithCreationTime(
 
   bool was_bookmarked = IsBookmarked(url);
 
-  SetDateGroupModified(parent, creation_time);
+  SetDateFolderModified(parent, creation_time);
 
   BookmarkNode* new_node = new BookmarkNode(generate_next_node_id(), url);
   new_node->set_title(title);
@@ -475,8 +475,8 @@ void BookmarkModel::SetURLStarred(const GURL& url,
   }
 }
 
-void BookmarkModel::SetDateGroupModified(const BookmarkNode* parent,
-                                         const Time time) {
+void BookmarkModel::SetDateFolderModified(const BookmarkNode* parent,
+                                          const Time time) {
   DCHECK(parent);
   AsMutable(parent)->set_date_folder_modified(time);
 
@@ -484,8 +484,8 @@ void BookmarkModel::SetDateGroupModified(const BookmarkNode* parent,
     store_->ScheduleSave();
 }
 
-void BookmarkModel::ResetDateGroupModified(const BookmarkNode* node) {
-  SetDateGroupModified(node, Time());
+void BookmarkModel::ResetDateFolderModified(const BookmarkNode* node) {
+  SetDateFolderModified(node, Time());
 }
 
 void BookmarkModel::GetBookmarksWithTitlesMatching(

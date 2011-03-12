@@ -17,7 +17,7 @@ const char kChildrenKey[] = "children";
 const char kChildIdsKey[] = "childIds";
 const char kRecursiveKey[] = "recursive";
 const char kDateAddedKey[] = "dateAdded";
-const char kDateGroupModifiedKey[] = "dateGroupModified";
+const char kDateFolderModifiedKey[] = "dateGroupModified";
 // TODO(arv): Move bookmark manager related constants out of this file.
 const char kSameProfileKey[] = "sameProfile";
 const char kElementsKey[] = "elements";
