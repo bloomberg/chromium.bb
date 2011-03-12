@@ -27,3 +27,6 @@ BUG_MMALY : fast/js/mozilla/strict/15.5.5.1.html = PASS TEXT
 
 BUGCR75867 : svg/css/composite-shadow-text.svg = IMAGE
 BUG_LOISLO : fast/dom/prototype-inheritance.html = TEXT
+
+// v8 roll to 3.2.1.1
+BUGCR75875 DEBUG : fast/canvas/webgl/uninitialized-test.html = TIMEOUT
