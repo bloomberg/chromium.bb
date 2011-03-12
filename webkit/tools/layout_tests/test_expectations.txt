@@ -24,3 +24,6 @@ BUGWK44797 SKIP : fullscreen = PASS FAIL TIMEOUT
 
 // Until new baselines land in WebKit.
 BUG_MMALY : fast/js/mozilla/strict/15.5.5.1.html = PASS TEXT
+
+BUGCR75867 : svg/css/composite-shadow-text.svg = IMAGE
+BUG_LOISLO : fast/dom/prototype-inheritance.html = TEXT
