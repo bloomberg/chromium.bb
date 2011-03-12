@@ -35,7 +35,7 @@ chrome.dll: %(VersionDir)s\
 nacl64.exe: %(VersionDir)s\
 nacl64.dll: %(VersionDir)s\
 ppGoogleNaClPluginChrome.dll: %(VersionDir)s\
-icudt46.dll: %(VersionDir)s\
+icudt.dll: %(VersionDir)s\
 resources.pak: %(VersionDir)s\
 locales\*.dll: %(VersionDir)s\Locales
 Resources\Inspector\*.*: %(VersionDir)s\Resources\Inspector
