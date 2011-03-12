@@ -30,3 +30,10 @@ BUG_LOISLO : fast/dom/prototype-inheritance.html = TEXT
 
 // v8 roll to 3.2.1.1
 BUGCR75875 DEBUG : fast/canvas/webgl/uninitialized-test.html = TIMEOUT
+
+BUG_LOISLO LINUX DEBUG : fast/block/positioning/vertical-lr/003.html = CRASH PASS
+
+// are failing after roll 80582 -> 80608
+BUG_LOISLO MAC : fast/text/justify-ideograph-vertical.html = IMAGE
+
+BUG_LOISLO MAC DEBUG : fast/text/font-size-zero.html = TEXT
