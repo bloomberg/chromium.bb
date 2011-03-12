@@ -4,6 +4,7 @@
 
 #ifndef IPC_PARAM_TRAITS_LOG_MACROS_H_
 #define IPC_PARAM_TRAITS_LOG_MACROS_H_
+#pragma once
 
 #include <string>
 
