@@ -500,7 +500,7 @@ void WorkerProcessHost::DocumentDetached(WorkerMessageFilter* filter,
 WorkerProcessHost::WorkerInstance::WorkerInstance(
     const GURL& url,
     bool shared,
-    bool off_the_record,
+    bool incognito,
     const string16& name,
     int worker_route_id,
     int parent_process_id,
@@ -509,7 +509,7 @@ WorkerProcessHost::WorkerInstance::WorkerInstance(
     URLRequestContextGetter* request_context)
     : url_(url),
       shared_(shared),
-      off_the_record_(off_the_record),
+      incognito_(incognito),
       closed_(false),
       name_(name),
       worker_route_id_(worker_route_id),
@@ -530,13 +530,13 @@ WorkerProcessHost::WorkerInstance::~WorkerInstance() {
 // b) the names are both empty, and the urls are equal
 bool WorkerProcessHost::WorkerInstance::Matches(
     const GURL& match_url, const string16& match_name,
-    bool off_the_record) const {
+    bool incognito) const {
   // Only match open shared workers.
   if (!shared_ || closed_)
     return false;
 
   // Incognito workers don't match non-incognito workers.
-  if (off_the_record_ != off_the_record)
+  if (incognito_ != incognito)
     return false;
 
   if (url_.GetOrigin() != match_url.GetOrigin())

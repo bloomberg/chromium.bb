@@ -31,7 +31,7 @@ class WorkerProcessHost : public BrowserChildProcessHost {
    public:
     WorkerInstance(const GURL& url,
                    bool shared,
-                   bool off_the_record,
+                   bool incognito,
                    const string16& name,
                    int worker_route_id,
                    int parent_process_id,
@@ -60,7 +60,7 @@ class WorkerProcessHost : public BrowserChildProcessHost {
     // (per the comparison algorithm in the WebWorkers spec). This API only
     // applies to shared workers.
     bool Matches(
-        const GURL& url, const string16& name, bool off_the_record) const;
+        const GURL& url, const string16& name, bool incognito) const;
 
     // Shares the passed instance's WorkerDocumentSet with this instance. This
     // instance's current WorkerDocumentSet is dereferenced (and freed if this
@@ -71,7 +71,7 @@ class WorkerProcessHost : public BrowserChildProcessHost {
 
     // Accessors
     bool shared() const { return shared_; }
-    bool off_the_record() const { return off_the_record_; }
+    bool incognito() const { return incognito_; }
     bool closed() const { return closed_; }
     void set_closed(bool closed) { closed_ = closed; }
     const GURL& url() const { return url_; }
@@ -93,7 +93,7 @@ class WorkerProcessHost : public BrowserChildProcessHost {
     // Set of all filters (clients) associated with this worker.
     GURL url_;
     bool shared_;
-    bool off_the_record_;
+    bool incognito_;
     bool closed_;
     string16 name_;
     int worker_route_id_;

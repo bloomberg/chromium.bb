@@ -102,13 +102,13 @@ void WorkerService::LookupSharedWorker(
     const ViewHostMsg_CreateWorker_Params& params,
     int route_id,
     WorkerMessageFilter* filter,
-    bool off_the_record,
+    bool incognito,
     bool* exists,
     bool* url_mismatch) {
 
   *exists = true;
   WorkerProcessHost::WorkerInstance* instance = FindSharedWorkerInstance(
-      params.url, params.name, off_the_record);
+      params.url, params.name, incognito);
 
   if (!instance) {
     // If no worker instance currently exists, we need to create a pending
@@ -116,7 +116,7 @@ void WorkerService::LookupSharedWorker(
     // mismatched URL get the appropriate url_mismatch error at lookup time.
     // Having named shared workers was a Really Bad Idea due to details like
     // this.
-    instance = CreatePendingInstance(params.url, params.name, off_the_record);
+    instance = CreatePendingInstance(params.url, params.name, incognito);
     *exists = false;
   }
 
@@ -248,7 +248,7 @@ bool WorkerService::CreateWorkerFromInstance(
     // See if a worker with this name already exists.
     WorkerProcessHost::WorkerInstance* existing_instance =
         FindSharedWorkerInstance(
-            instance.url(), instance.name(), instance.off_the_record());
+            instance.url(), instance.name(), instance.incognito());
     WorkerProcessHost::WorkerInstance::FilterInfo filter_info =
         instance.GetFilter();
     // If this worker is already running, no need to create a new copy. Just
@@ -265,7 +265,7 @@ bool WorkerService::CreateWorkerFromInstance(
 
     // Look to see if there's a pending instance.
     WorkerProcessHost::WorkerInstance* pending = FindPendingInstance(
-        instance.url(), instance.name(), instance.off_the_record());
+        instance.url(), instance.name(), instance.incognito());
     // If there's no instance *and* no pending instance (or there is a pending
     // instance but it does not contain our filter info), then it means the
     // worker started up and exited already. Log a warning because this should
@@ -287,14 +287,14 @@ bool WorkerService::CreateWorkerFromInstance(
       instance.AddFilter(i->first, i->second);
     }
     RemovePendingInstances(
-        instance.url(), instance.name(), instance.off_the_record());
+        instance.url(), instance.name(), instance.incognito());
 
     // Remove any queued instances of this worker and copy over the filter to
     // this instance.
     for (WorkerProcessHost::Instances::iterator iter = queued_workers_.begin();
          iter != queued_workers_.end();) {
       if (iter->Matches(instance.url(), instance.name(),
-                        instance.off_the_record())) {
+                        instance.incognito())) {
         DCHECK(iter->NumFilters() == 1);
         WorkerProcessHost::WorkerInstance::FilterInfo filter_info =
             iter->GetFilter();
@@ -494,7 +494,7 @@ const WorkerProcessHost::WorkerInstance* WorkerService::FindWorkerInstance(
 
 WorkerProcessHost::WorkerInstance*
 WorkerService::FindSharedWorkerInstance(const GURL& url, const string16& name,
-                                        bool off_the_record) {
+                                        bool incognito) {
   for (BrowserChildProcessHost::Iterator iter(ChildProcessInfo::WORKER_PROCESS);
        !iter.Done(); ++iter) {
     WorkerProcessHost* worker = static_cast<WorkerProcessHost*>(*iter);
@@ -502,7 +502,7 @@ WorkerService::FindSharedWorkerInstance(const GURL& url, const string16& name,
              worker->mutable_instances().begin();
          instance_iter != worker->mutable_instances().end();
          ++instance_iter) {
-      if (instance_iter->Matches(url, name, off_the_record))
+      if (instance_iter->Matches(url, name, incognito))
         return &(*instance_iter);
     }
   }
@@ -511,13 +511,13 @@ WorkerService::FindSharedWorkerInstance(const GURL& url, const string16& name,
 
 WorkerProcessHost::WorkerInstance*
 WorkerService::FindPendingInstance(const GURL& url, const string16& name,
-                                   bool off_the_record) {
+                                   bool incognito) {
   // Walk the pending instances looking for a matching pending worker.
   for (WorkerProcessHost::Instances::iterator iter =
            pending_shared_workers_.begin();
        iter != pending_shared_workers_.end();
        ++iter) {
-    if (iter->Matches(url, name, off_the_record)) {
+    if (iter->Matches(url, name, incognito)) {
       return &(*iter);
     }
   }
@@ -527,12 +527,12 @@ WorkerService::FindPendingInstance(const GURL& url, const string16& name,
 
 void WorkerService::RemovePendingInstances(const GURL& url,
                                            const string16& name,
-                                           bool off_the_record) {
+                                           bool incognito) {
   // Walk the pending instances looking for a matching pending worker.
   for (WorkerProcessHost::Instances::iterator iter =
            pending_shared_workers_.begin();
        iter != pending_shared_workers_.end(); ) {
-    if (iter->Matches(url, name, off_the_record)) {
+    if (iter->Matches(url, name, incognito)) {
       iter = pending_shared_workers_.erase(iter);
     } else {
       ++iter;
@@ -543,16 +543,16 @@ void WorkerService::RemovePendingInstances(const GURL& url,
 WorkerProcessHost::WorkerInstance*
 WorkerService::CreatePendingInstance(const GURL& url,
                                      const string16& name,
-                                     bool off_the_record) {
+                                     bool incognito) {
   // Look for an existing pending shared worker.
   WorkerProcessHost::WorkerInstance* instance =
-      FindPendingInstance(url, name, off_the_record);
+      FindPendingInstance(url, name, incognito);
   if (instance)
     return instance;
 
   // No existing pending worker - create a new one.
   WorkerProcessHost::WorkerInstance pending(
-      url, true, off_the_record, name, MSG_ROUTING_NONE, 0, 0, 0, NULL);
+      url, true, incognito, name, MSG_ROUTING_NONE, 0, 0, 0, NULL);
   pending_shared_workers_.push_back(pending);
   return &pending_shared_workers_.back();
 }
