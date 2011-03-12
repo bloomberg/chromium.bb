@@ -177,8 +177,6 @@ void PopulateResourceResponse(net::URLRequest* request,
   response->response_head.was_fetched_via_spdy =
       request->was_fetched_via_spdy();
   response->response_head.was_npn_negotiated = request->was_npn_negotiated();
-  response->response_head.was_alternate_protocol_available =
-      request->was_alternate_protocol_available();
   response->response_head.was_fetched_via_proxy =
       request->was_fetched_via_proxy();
   response->response_head.socket_address = request->GetSocketAddress();
