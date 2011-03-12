@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -110,12 +110,6 @@ class ExtensionInstallUI : public ImageLoadingTracker::Observer {
   static InfoBarDelegate* GetNewThemeInstalledInfoBarDelegate(
       TabContents* tab_contents, const Extension* new_theme,
       const std::string& previous_theme_id, bool previous_use_system_theme);
-
-  // Implements the showing of the install/uninstall dialog prompt.
-  // NOTE: The implementations of this function is platform-specific.
-  static void ShowExtensionInstallUIPromptImpl(
-      Profile* profile, Delegate* delegate, const Extension* extension,
-      SkBitmap* icon, PromptType type);
 
   // Implements the showing of the new install dialog. The implementations of
   // this function are platform-specific.

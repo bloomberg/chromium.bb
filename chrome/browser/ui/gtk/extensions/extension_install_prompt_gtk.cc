@@ -11,7 +11,7 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/browser_list.h"
 #include "chrome/browser/browser_window.h"
-#include "chrome/browser/extensions/extension_install_ui.h"
+#include "chrome/browser/extensions/extension_install_dialog.h"
 #include "chrome/browser/ui/gtk/browser_window_gtk.h"
 #include "chrome/browser/ui/gtk/gtk_util.h"
 #include "chrome/common/extensions/extension.h"
@@ -37,7 +37,8 @@ void OnResponse(GtkWidget* dialog, int response_id,
   gtk_widget_destroy(dialog);
 }
 
-void ShowInstallPromptDialog(GtkWindow* parent, SkBitmap* skia_icon,
+void ShowInstallPromptDialog(GtkWindow* parent,
+                             SkBitmap* skia_icon,
                              const Extension* extension,
                              ExtensionInstallUI::Delegate *delegate,
                              ExtensionInstallUI::PromptType type) {
@@ -86,12 +87,11 @@ void ShowInstallPromptDialog(GtkWindow* parent, SkBitmap* skia_icon,
 
 }  // namespace
 
-void ExtensionInstallUI::ShowExtensionInstallUIPromptImpl(
-    Profile* profile,
-    Delegate* delegate,
-    const Extension* extension,
-    SkBitmap* icon,
-    ExtensionInstallUI::PromptType type) {
+void ShowExtensionInstallDialog(Profile* profile,
+                                ExtensionInstallUI::Delegate* delegate,
+                                const Extension* extension,
+                                SkBitmap* icon,
+                                ExtensionInstallUI::PromptType type) {
   Browser* browser = BrowserList::GetLastActiveWithProfile(profile);
   if (!browser) {
     delegate->InstallUIAbort();

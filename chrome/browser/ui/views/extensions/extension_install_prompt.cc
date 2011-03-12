@@ -7,7 +7,8 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/browser_list.h"
 #include "chrome/browser/browser_window.h"
-#include "chrome/browser/extensions/extension_install_ui.h"
+#include "chrome/browser/extensions/extension_install_dialog.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/views/window.h"
 #include "chrome/common/extensions/extension.h"
 #include "grit/generated_resources.h"
@@ -20,8 +21,6 @@
 #include "views/view.h"
 #include "views/window/dialog_delegate.h"
 #include "views/window/window.h"
-
-class Profile;
 
 namespace {
 
@@ -140,13 +139,11 @@ class InstallDialogContent : public views::View, public views::DialogDelegate {
 
 }  // namespace
 
-// static
-void ExtensionInstallUI::ShowExtensionInstallUIPromptImpl(
-    Profile* profile,
-    Delegate* delegate,
-    const Extension* extension,
-    SkBitmap* icon,
-    PromptType type) {
+void ShowExtensionInstallDialog(Profile* profile,
+                                ExtensionInstallUI::Delegate* delegate,
+                                const Extension* extension,
+                                SkBitmap* icon,
+                                ExtensionInstallUI::PromptType type) {
   Browser* browser = BrowserList::GetLastActiveWithProfile(profile);
   if (!browser) {
     delegate->InstallUIAbort();
@@ -160,6 +157,5 @@ void ExtensionInstallUI::ShowExtensionInstallUIPromptImpl(
   }
 
   browser::CreateViewsWindow(window->GetNativeHandle(), gfx::Rect(),
-      new InstallDialogContent(delegate, extension, icon,
-                               type))->Show();
+      new InstallDialogContent(delegate, extension, icon, type))->Show();
 }

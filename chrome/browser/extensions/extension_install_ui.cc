@@ -14,6 +14,7 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/browser_list.h"
 #include "chrome/browser/browser_window.h"
+#include "chrome/browser/extensions/extension_install_dialog.h"
 #include "chrome/browser/extensions/theme_installed_infobar_delegate.h"
 #include "chrome/browser/platform_util.h"
 #include "chrome/browser/profiles/profile.h"
@@ -227,8 +228,8 @@ void ExtensionInstallUI::OnImageLoaded(
       break;
     }
     case UNINSTALL_PROMPT: {
-      ShowExtensionInstallUIPromptImpl(profile_, delegate_, extension_, &icon_,
-                                       UNINSTALL_PROMPT);
+      ShowExtensionInstallDialog(
+          profile_, delegate_, extension_, &icon_, UNINSTALL_PROMPT);
       break;
     }
     default:

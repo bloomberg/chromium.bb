@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -8,7 +8,8 @@
 
 #include "base/sys_string_conversions.h"
 #include "base/utf_string_conversions.h"
-#include "chrome/browser/extensions/extension_install_ui.h"
+#include "chrome/browser/extensions/extension_install_dialog.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/common/extensions/extension.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
@@ -16,14 +17,11 @@
 #include "ui/base/l10n/l10n_util_mac.h"
 #include "ui/base/resource/resource_bundle.h"
 
-class Profile;
-
-void ExtensionInstallUI::ShowExtensionInstallUIPromptImpl(
-    Profile* profile,
-    Delegate* delegate,
-    const Extension* extension,
-    SkBitmap* icon,
-    ExtensionInstallUI::PromptType type) {
+void ShowExtensionInstallDialog(Profile* profile,
+                                ExtensionInstallUI::Delegate* delegate,
+                                const Extension* extension,
+                                SkBitmap* icon,
+                                ExtensionInstallUI::PromptType type) {
   NSAlert* alert = [[[NSAlert alloc] init] autorelease];
 
   NSButton* continueButton = [alert addButtonWithTitle:l10n_util::GetNSString(
