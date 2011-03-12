@@ -111,13 +111,10 @@ void ImportantFileWriter::WriteNow(const std::string& data) {
     // Posting the task to background message loop is not expected
     // to fail, but if it does, avoid losing data and just hit the disk
     // on the current thread.
-    // TODO(phajdan.jr): Fix test failures on Win and enable code below.
-#if !defined(OS_WIN)
     NOTREACHED();
 
     WriteToDiskTask write_task(path_, data);
     write_task.Run();
-#endif
   }
 }
 

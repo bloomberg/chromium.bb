@@ -22,9 +22,9 @@ using base::TimeDelta;
 class BookmarkEditorViewTest : public testing::Test {
  public:
   BookmarkEditorViewTest()
-      : model_(NULL),
-        ui_thread_(BrowserThread::UI, &message_loop_),
-        file_thread_(BrowserThread::FILE, &message_loop_) {
+      : ui_thread_(BrowserThread::UI, &message_loop_),
+        file_thread_(BrowserThread::FILE, &message_loop_),
+        model_(NULL) {
   }
 
   virtual void SetUp() {
@@ -42,10 +42,6 @@ class BookmarkEditorViewTest : public testing::Test {
   }
 
  protected:
-  MessageLoopForUI message_loop_;
-  BookmarkModel* model_;
-  scoped_ptr<TestingProfile> profile_;
-
   std::string base_path() const { return "file:///c:/tmp/"; }
 
   const BookmarkNode* GetNode(const std::string& name) {
@@ -89,6 +85,13 @@ class BookmarkEditorViewTest : public testing::Test {
     return editor_->url_tf_.parent();
   }
 
+  MessageLoopForUI message_loop_;
+  BrowserThread ui_thread_;
+  BrowserThread file_thread_;
+
+  BookmarkModel* model_;
+  scoped_ptr<TestingProfile> profile_;
+
  private:
   // Creates the following structure:
   // bookmark bar node
@@ -123,8 +126,6 @@ class BookmarkEditorViewTest : public testing::Test {
   }
 
   scoped_ptr<BookmarkEditorView> editor_;
-  BrowserThread ui_thread_;
-  BrowserThread file_thread_;
 };
 
 // Makes sure the tree model matches that of the bookmark bar model.
