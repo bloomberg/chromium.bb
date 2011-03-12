@@ -216,9 +216,12 @@ def rmtree(path):
 
   if sys.platform == 'win32':
     # Some people don't have the APIs installed. In that case we'll do without.
+    win32api = None
+    win32con = None
     try:
-      win32api = __import__('win32api')
-      win32con = __import__('win32con')
+      # Unable to import 'XX'
+      # pylint: disable=F0401
+      import win32api, win32con
     except ImportError:
       pass
   else:
