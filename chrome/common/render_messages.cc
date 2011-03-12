@@ -2,33 +2,36 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/values.h"
-#include "chrome/common/edit_command.h"
-#include "chrome/common/extensions/extension_extent.h"
-#include "chrome/common/extensions/url_pattern.h"
-#include "chrome/common/render_messages_params.h"
-#include "chrome/common/thumbnail_score.h"
-#include "chrome/common/web_apps.h"
-#include "content/common/resource_response.h"
-#include "ipc/ipc_channel_handle.h"
-#include "media/audio/audio_buffers_state.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebCompositionUnderline.h"
-#include "third_party/skia/include/core/SkBitmap.h"
-#include "ui/gfx/rect.h"
-#include "webkit/appcache/appcache_interfaces.h"
-#include "webkit/blob/blob_data.h"
-#include "webkit/glue/webaccessibility.h"
-#include "webkit/glue/webcookie.h"
-#include "webkit/glue/webcursor.h"
-#include "webkit/glue/webmenuitem.h"
-#include "webkit/plugins/npapi/webplugin.h"
-
-#if defined(OS_MACOSX)
-#include "content/common/font_descriptor_mac.h"
-#endif
-
+// Get basic type definitions.
 #define IPC_MESSAGE_IMPL
 #include "chrome/common/render_messages.h"
+#include "chrome/common/common_param_traits.h"
+
+// Generate constructors.
+#include "ipc/struct_constructor_macros.h"
+#include "chrome/common/render_messages.h"
+
+// Generate destructors.
+#include "ipc/struct_destructor_macros.h"
+#include "chrome/common/render_messages.h"
+
+// Generate param traits write methods.
+#include "ipc/param_traits_write_macros.h"
+namespace IPC {
+#include "chrome/common/render_messages.h"
+}  // namespace IPC
+
+// Generate param traits read methods.
+#include "ipc/param_traits_read_macros.h"
+namespace IPC {
+#include "chrome/common/render_messages.h"
+}  // namespace IPC
+
+// Generate param traits log methods.
+#include "ipc/param_traits_log_macros.h"
+namespace IPC {
+#include "chrome/common/render_messages.h"
+}  // namespace IPC
 
 namespace IPC {
 
