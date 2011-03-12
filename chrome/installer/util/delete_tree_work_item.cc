@@ -104,18 +104,23 @@ bool DeleteTreeWorkItem::Do() {
 
   // Now that we've taken care of the key files, take care of the rest.
   if (!root_path_.empty() && file_util::PathExists(root_path_)) {
-    if (!backup_path_.CreateUniqueTempDirUnderPath(temp_path_)) {
-      PLOG(ERROR) << "Failed to get backup path in folder "
-                  << temp_path_.value();
-      return ignore_failure_;
-    } else {
-      FilePath backup = backup_path_.path().Append(root_path_.BaseName());
-      if (!file_util::CopyDirectory(root_path_, backup, true) ||
-          !file_util::Delete(root_path_, true)) {
-        LOG(ERROR) << "can not delete " << root_path_.value()
-                   << " OR copy it to backup path " << backup.value();
-        return ignore_failure_;
+    if (!ignore_failure_) {
+      if (!backup_path_.CreateUniqueTempDirUnderPath(temp_path_)) {
+        PLOG(ERROR) << "Failed to get backup path in folder "
+                    << temp_path_.value();
+        return false;
+      } else {
+        FilePath backup = backup_path_.path().Append(root_path_.BaseName());
+        if (!file_util::CopyDirectory(root_path_, backup, true)) {
+          LOG(ERROR) << "can not copy " << root_path_.value()
+                     << " to backup path " << backup.value();
+          return false;
+        }
       }
+    }
+    if (!file_util::Delete(root_path_, true)) {
+      LOG(ERROR) << "can not delete " << root_path_.value();
+      return ignore_failure_;
     }
   }
 

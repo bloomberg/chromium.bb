@@ -488,10 +488,20 @@ void AddInstallWorkItems(const InstallationState& original_state,
   install_list->AddCreateDirWorkItem(temp_path);
   install_list->AddCreateDirWorkItem(target_path);
 
+  if (current_version != NULL && current_version->get() != NULL) {
+    // Delete the archive from an existing install to save some disk space.  We
+    // make this an unconditional work item since there's no need to roll this
+    // back; if installation fails we'll be moved to the "-full" channel anyway.
+    FilePath old_installer_dir(
+        installer_state.GetInstallerDirectory(**current_version));
+    FilePath old_archive(old_installer_dir.Append(archive_path.BaseName()));
+    install_list->AddDeleteTreeWorkItem(old_archive, temp_path)
+        ->set_ignore_failure(true);
+  }
+
   // Delete any new_chrome.exe if present (we will end up creating a new one
   // if required) and then copy chrome.exe
-  FilePath new_chrome_exe(
-      target_path.Append(installer::kChromeNewExe));
+  FilePath new_chrome_exe(target_path.Append(installer::kChromeNewExe));
 
   install_list->AddDeleteTreeWorkItem(new_chrome_exe, temp_path);
   install_list->AddCopyTreeWorkItem(
