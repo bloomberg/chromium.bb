@@ -483,9 +483,13 @@ bool FocusManager::IsTabTraversalKeyEvent(const KeyEvent& key_event) {
   return key_event.key_code() == ui::VKEY_TAB && !key_event.IsControlDown();
 }
 
-void FocusManager::ViewRemoved(View* parent, View* removed) {
-  if (focused_view_ && focused_view_ == removed)
-    ClearFocus();
+void FocusManager::ViewRemoved(View* removed) {
+  // If the view being removed contains (or is) the focused view,
+  // clear the focus.  However, it's not safe to call ClearFocus()
+  // (and in turn ClearNativeFocus()) here because ViewRemoved() can
+  // be called while the top level widget is being destroyed.
+  if (focused_view_ && removed && removed->Contains(focused_view_))
+    SetFocusedView(NULL);
 }
 
 void FocusManager::AddFocusChangeListener(FocusChangeListener* listener) {

@@ -60,13 +60,22 @@ void Widget::ViewHierarchyChanged(bool is_add, View* parent, View* child) {
       dragged_view_ = NULL;
 
     FocusManager* focus_manager = GetFocusManager();
-    if (focus_manager) {
-      if (focus_manager->GetFocusedView() == child)
-        focus_manager->SetFocusedView(NULL);
-      focus_manager->ViewRemoved(parent, child);
-    }
+    if (focus_manager)
+      focus_manager->ViewRemoved(child);
     ViewStorage::GetInstance()->ViewRemoved(parent, child);
   }
+}
+
+void Widget::NotifyNativeViewHierarchyChanged(bool attached,
+                                              gfx::NativeView native_view) {
+  if (!attached) {
+    FocusManager* focus_manager = GetFocusManager();
+    // We are being removed from a window hierarchy.  Treat this as
+    // the root_view_ being removed.
+    if (focus_manager)
+      focus_manager->ViewRemoved(root_view_.get());
+  }
+  root_view_->NotifyNativeViewHierarchyChanged(attached, native_view);
 }
 
 // Converted methods (see header) ----------------------------------------------

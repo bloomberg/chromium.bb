@@ -254,10 +254,11 @@ class FocusManager {
   // Returns true if an accelerator was activated.
   bool ProcessAccelerator(const Accelerator& accelerator);
 
-  // Called by a RootView when a view within its hierarchy is removed from its
-  // parent. This will only be called by a RootView in a hierarchy of Widgets
-  // that this FocusManager is attached to the parent Widget of.
-  void ViewRemoved(View* parent, View* removed);
+  // Called by a RootView when a view within its hierarchy is removed
+  // from its parent. This will only be called by a RootView in a
+  // hierarchy of Widgets that this FocusManager is attached to the
+  // parent Widget of.
+  void ViewRemoved(View* removed);
 
   // Adds/removes a listener.  The FocusChangeListener is notified every time
   // the focused view is about to change.

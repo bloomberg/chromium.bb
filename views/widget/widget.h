@@ -130,6 +130,10 @@ class Widget : public internal::NativeWidgetDelegate,
   // Forwarded from the RootView so that the widget can do any cleanup.
   virtual void ViewHierarchyChanged(bool is_add, View* parent, View* child);
 
+  // Performs any necessary cleanup and forwards to RootView.
+  virtual void NotifyNativeViewHierarchyChanged(bool attached,
+                                                gfx::NativeView native_view);
+
   // Converted methods ---------------------------------------------------------
 
   // TODO(beng):

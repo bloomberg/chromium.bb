@@ -38,9 +38,13 @@ void NativeTabContentsContainerWin::AttachContents(TabContents* contents) {
 }
 
 void NativeTabContentsContainerWin::DetachContents(TabContents* contents) {
-  // TODO(brettw) should this move to NativeViewHost::Detach which is called
-  // below?
-  // It needs cleanup regardless.
+  // Detach the TabContents.  Do this before we unparent the
+  // TabContentsViewWin so that the window hierarchy is intact for any
+  // cleanup during Detach().
+  Detach();
+
+  // TODO(brettw) should this move to NativeViewHost::Detach?  It
+  // needs cleanup regardless.
   HWND container_hwnd = contents->GetNativeView();
   if (container_hwnd) {
     // Hide the contents before adjusting its parent to avoid a full desktop
@@ -50,9 +54,6 @@ void NativeTabContentsContainerWin::DetachContents(TabContents* contents) {
     // Reset the parent to NULL to ensure hidden tabs don't receive messages.
     static_cast<TabContentsViewWin*>(contents->view())->Unparent();
   }
-
-  // Now detach the TabContents.
-  Detach();
 }
 
 void NativeTabContentsContainerWin::SetFastResize(bool fast_resize) {

@@ -43,7 +43,7 @@ void NativeViewHostWin::NativeViewAttached() {
   NativeWidget::GetAllNativeWidgets(host_->native_view(), &widgets);
   for (NativeWidget::NativeWidgets::iterator it = widgets.begin();
        it != widgets.end(); ++it) {
-    (*it)->GetWidget()->GetRootView()->NotifyNativeViewHierarchyChanged(
+    (*it)->GetWidget()->NotifyNativeViewHierarchyChanged(
         true,
         host_->GetWidget()->GetNativeView());
   }
@@ -58,7 +58,7 @@ void NativeViewHostWin::NativeViewDetaching(bool destroyed) {
   NativeWidget::GetAllNativeWidgets(host_->native_view(), &widgets);
   for (NativeWidget::NativeWidgets::iterator it = widgets.begin();
        it != widgets.end(); ++it) {
-    (*it)->GetWidget()->GetRootView()->NotifyNativeViewHierarchyChanged(
+    (*it)->GetWidget()->NotifyNativeViewHierarchyChanged(
         false,
         host_->GetWidget()->GetNativeView());
   }
