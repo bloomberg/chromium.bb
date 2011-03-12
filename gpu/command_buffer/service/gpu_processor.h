@@ -52,6 +52,7 @@ class GPUProcessor : public CommandBufferEngine {
   // Perform platform specific and common initialization.
   bool Initialize(gfx::PluginWindowHandle hwnd,
                   const gfx::Size& size,
+                  const gles2::DisallowedExtensions& disallowed_extensions,
                   const char* allowed_extensions,
                   const std::vector<int32>& attribs,
                   GPUProcessor* parent,
@@ -116,12 +117,14 @@ class GPUProcessor : public CommandBufferEngine {
 
  protected:
   // Perform common initialization. Takes ownership of GLContext.
-  bool InitializeCommon(gfx::GLContext* context,
-                        const gfx::Size& size,
-                        const char* allowed_extensions,
-                        const std::vector<int32>& attribs,
-                        gles2::GLES2Decoder* parent_decoder,
-                        uint32 parent_texture_id);
+  bool InitializeCommon(
+      gfx::GLContext* context,
+      const gfx::Size& size,
+      const gles2::DisallowedExtensions& disallowed_extensions,
+      const char* allowed_extensions,
+      const std::vector<int32>& attribs,
+      gles2::GLES2Decoder* parent_decoder,
+      uint32 parent_texture_id);
 
 
  private:

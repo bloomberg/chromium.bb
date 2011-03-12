@@ -120,6 +120,7 @@ class GpuChannel : public IPC::Channel::Listener,
 #endif  // defined (ENABLE_GPU)
 
   bool log_messages_;  // True if we should log sent and received messages.
+  gpu::gles2::DisallowedExtensions disallowed_extensions_;
 
   DISALLOW_COPY_AND_ASSIGN(GpuChannel);
 };

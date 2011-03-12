@@ -7,6 +7,7 @@
 #include "gpu/command_buffer/common/id_allocator.h"
 #include "gpu/command_buffer/service/buffer_manager.h"
 #include "gpu/command_buffer/service/framebuffer_manager.h"
+#include "gpu/command_buffer/service/gles2_cmd_decoder.h"
 #include "gpu/command_buffer/service/program_manager.h"
 #include "gpu/command_buffer/service/renderbuffer_manager.h"
 #include "gpu/command_buffer/service/shader_manager.h"
@@ -38,12 +39,13 @@ static void GetIntegerv(GLenum pname, uint32* var) {
   *var = value;
 }
 
-bool ContextGroup::Initialize(const char* allowed_features) {
+bool ContextGroup::Initialize(const DisallowedExtensions& disallowed_extensions,
+                              const char* allowed_features) {
   if (initialized_) {
     return true;
   }
 
-  if (!feature_info_.Initialize(allowed_features)) {
+  if (!feature_info_.Initialize(disallowed_extensions, allowed_features)) {
     LOG(ERROR) << "ContextGroup::Initialize failed because FeatureInfo "
                << "initialization failed.";
     return false;

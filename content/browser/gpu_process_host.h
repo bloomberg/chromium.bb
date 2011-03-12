@@ -7,6 +7,7 @@
 #pragma once
 
 #include "base/threading/non_thread_safe.h"
+#include "chrome/common/gpu_feature_flags.h"
 #include "content/browser/browser_child_process_host.h"
 
 namespace IPC {
@@ -19,7 +20,9 @@ class GpuProcessHost : public BrowserChildProcessHost,
 
   // Create a GpuProcessHost with the given ID. The object can be found using
   // FromID with the same id.
-  static GpuProcessHost* Create(int host_id);
+  static GpuProcessHost* Create(
+      int host_id,
+      const GpuFeatureFlags& gpu_feature_flags);
 
   // Get the GPU process host for the GPU process with the given ID. Returns
   // null if the process no longer exists.
@@ -31,7 +34,9 @@ class GpuProcessHost : public BrowserChildProcessHost,
   virtual bool OnMessageReceived(const IPC::Message& message);
 
  private:
-  explicit GpuProcessHost(int host_id);
+  explicit GpuProcessHost(
+      int host_id,
+      const GpuFeatureFlags& gpu_feature_flags);
   virtual ~GpuProcessHost();
   bool Init();
 
@@ -48,6 +53,8 @@ class GpuProcessHost : public BrowserChildProcessHost,
 
   // The serial number of the GpuProcessHost / GpuProcessHostUIShim pair.
   int host_id_;
+
+  GpuFeatureFlags gpu_feature_flags_;
 
   DISALLOW_COPY_AND_ASSIGN(GpuProcessHost);
 };

@@ -102,10 +102,12 @@ class GpuMainThread : public base::Thread {
 };
 
 // static
-GpuProcessHost* GpuProcessHost::Create(int host_id) {
+GpuProcessHost* GpuProcessHost::Create(
+    int host_id,
+    const GpuFeatureFlags& gpu_feature_flags) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 
-  GpuProcessHost* host = new GpuProcessHost(host_id);
+  GpuProcessHost* host = new GpuProcessHost(host_id, gpu_feature_flags);
   if (!host->Init()) {
     delete host;
     return NULL;
@@ -124,9 +126,12 @@ GpuProcessHost* GpuProcessHost::FromID(int host_id) {
   return g_hosts_by_id.Lookup(host_id);
 }
 
-GpuProcessHost::GpuProcessHost(int host_id)
+GpuProcessHost::GpuProcessHost(
+    int host_id,
+    const GpuFeatureFlags& gpu_feature_flags)
     : BrowserChildProcessHost(GPU_PROCESS, NULL),
-      host_id_(host_id) {
+      host_id_(host_id),
+      gpu_feature_flags_(gpu_feature_flags) {
   g_hosts_by_id.AddWithID(this, host_id_);
 }
 
@@ -296,9 +301,14 @@ bool GpuProcessHost::LaunchGpuProcess() {
     switches::kLoggingLevel,
     switches::kNoGpuSandbox,
     switches::kNoSandbox,
+    switches::kDisableGLMultisampling,
   };
   cmd_line->CopySwitchesFrom(browser_command_line, kSwitchNames,
                              arraysize(kSwitchNames));
+
+  if (gpu_feature_flags_.flags() & GpuFeatureFlags::kGpuFeatureMultisampling) {
+    cmd_line->AppendSwitch(switches::kDisableGLMultisampling);
+  }
 
   // If specified, prepend a launcher program to the command line.
   if (!gpu_launcher.empty())
