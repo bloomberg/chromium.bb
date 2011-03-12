@@ -13,7 +13,6 @@
 #include "chrome/common/safebrowsing_messages.h"
 #include "chrome/common/speech_input_messages.h"
 #include "chrome/common/utility_messages.h"
-#include "chrome/common/worker_messages.h"
 
 #if 0  // This feature is not yet enabled for these files.
 

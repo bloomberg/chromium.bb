@@ -19,7 +19,7 @@
 #include "chrome/common/devtools_messages.h"
 #include "chrome/common/plugin_messages.h"
 #include "chrome/common/render_messages.h"
-#include "chrome/common/worker_messages.h"
+#include "content/common/worker_messages.h"
 #endif
 
 #if defined(OS_WIN)

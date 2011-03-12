@@ -91,6 +91,7 @@
         'common/socket_stream_dispatcher.cc',
         'common/socket_stream_dispatcher.h',
         'common/socket_stream_messages.h',
+        'common/worker_messages.h',
       ],
       'conditions': [
         ['OS=="win"', {

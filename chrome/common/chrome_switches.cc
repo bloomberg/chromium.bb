@@ -159,9 +159,6 @@ const char kDisableAcceleratedVideo[]       = "disable-accelerated-video";
 // Disables the alternate window station for the renderer.
 const char kDisableAltWinstation[]          = "disable-winsta";
 
-// Disable the ApplicationCache.
-const char kDisableApplicationCache[]       = "disable-application-cache";
-
 // Replaces the audio IPC layer for <audio> and <video> with a mock audio
 // device, useful when using remote desktop or machines without sound cards.
 // This is temporary until we fix the underlying problem.
@@ -199,12 +196,6 @@ const char kDisableConnectBackupJobs[]      = "disable-connect-backup-jobs";
 
 // Disables the custom JumpList on Windows 7.
 const char kDisableCustomJumpList[]         = "disable-custom-jumplist";
-
-// Disables HTML5 DB support.
-const char kDisableDatabases[]              = "disable-databases";
-
-// Disables desktop notifications (default enabled on windows).
-const char kDisableDesktopNotifications[]   = "disable-desktop-notifications";
 
 // Browser flag to disable the web inspector for all renderers.
 const char kDisableDevTools[]               = "disable-dev-tools";

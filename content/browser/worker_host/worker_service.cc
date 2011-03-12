@@ -12,9 +12,9 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/render_messages.h"
 #include "chrome/common/render_messages_params.h"
-#include "chrome/common/worker_messages.h"
 #include "content/browser/worker_host/worker_message_filter.h"
 #include "content/browser/worker_host/worker_process_host.h"
+#include "content/common/worker_messages.h"
 #include "net/base/registry_controlled_domain.h"
 
 const int WorkerService::kMaxWorkerProcessesWhenSharing = 10;

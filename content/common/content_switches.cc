@@ -22,15 +22,31 @@ const char kBrowserSubprocessPath[]         = "browser-subprocess-path";
 // support for controlling access to these APIs.
 const char kDisable3DAPIs[]                 = "disable-3d-apis";
 
+// Disable the ApplicationCache.
+const char kDisableApplicationCache[]       = "disable-application-cache";
+
 // Disable limits on the number of backing stores. Can prevent blinking for
 // users with many windows/tabs and lots of memory.
 const char kDisableBackingStoreLimit[]      = "disable-backing-store-limit";
+
+// Disables HTML5 DB support.
+const char kDisableDatabases[]              = "disable-databases";
+
+// Disables desktop notifications (default enabled on windows).
+const char kDisableDesktopNotifications[]   = "disable-desktop-notifications";
 
 // Disable experimental WebGL support.
 const char kDisableExperimentalWebGL[]      = "disable-webgl";
 
 // Disable FileSystem API.
 const char kDisableFileSystem[]             = "disable-file-system";
+
+// Disable the GPU process sandbox.
+const char kDisableGpuSandbox[]             = "disable-gpu-sandbox";
+
+// Disable the thread that crashes the GPU process if it stops responding to
+// messages.
+const char kDisableGpuWatchdog[]            = "disable-gpu-watchdog";
 
 // Temporary flag to disable hole punching for accelerated surfaces. This is
 // here to aid debugging eventual problems, it can be removed once hole punching
@@ -40,13 +56,6 @@ const char kDisableHolePunching[]           = "disable-hole-punching";
 // Force logging to be disabled.  Logging is enabled by default in debug
 // builds.
 const char kDisableLogging[]                = "disable-logging";
-
-// Disable the GPU process sandbox.
-const char kDisableGpuSandbox[]             = "disable-gpu-sandbox";
-
-// Disable the thread that crashes the GPU process if it stops responding to
-// messages.
-const char kDisableGpuWatchdog[]            = "disable-gpu-watchdog";
 
 // Prevent plugins from running.
 const char kDisablePlugins[]                = "disable-plugins";

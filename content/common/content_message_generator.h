@@ -10,3 +10,4 @@
 #include "content/common/gpu_messages.h"
 #include "content/common/resource_messages.h"
 #include "content/common/socket_stream_messages.h"
+#include "content/common/worker_messages.h"

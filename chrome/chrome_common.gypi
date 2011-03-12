@@ -323,7 +323,6 @@
         'common/webmessageportchannel_impl.h',
         'common/window_container_type.cc',
         'common/window_container_type.h',
-        'common/worker_messages.h',
         'common/worker_thread_ticker.cc',
         'common/worker_thread_ticker.h',
         'common/zip.cc',  # Requires zlib directly.

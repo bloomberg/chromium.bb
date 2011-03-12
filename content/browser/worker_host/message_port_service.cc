@@ -4,8 +4,8 @@
 
 #include "content/browser/worker_host/message_port_service.h"
 
-#include "chrome/common/worker_messages.h"
 #include "content/browser/worker_host/worker_message_filter.h"
+#include "content/common/worker_messages.h"
 
 struct MessagePortService::MessagePort {
   // |filter| and |route_id| are what we need to send messages to the port.

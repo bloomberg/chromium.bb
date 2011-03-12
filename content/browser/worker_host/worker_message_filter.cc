@@ -8,9 +8,9 @@
 #include "chrome/common/net/url_request_context_getter.h"
 #include "chrome/common/render_messages.h"
 #include "chrome/common/render_messages_params.h"
-#include "chrome/common/worker_messages.h"
 #include "content/browser/worker_host/message_port_service.h"
 #include "content/browser/worker_host/worker_service.h"
+#include "content/common/worker_messages.h"
 
 WorkerMessageFilter::WorkerMessageFilter(
     int render_process_id,

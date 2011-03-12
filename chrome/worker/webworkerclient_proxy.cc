@@ -6,15 +6,18 @@
 
 #include "base/command_line.h"
 #include "base/message_loop.h"
-#include "chrome/common/chrome_switches.h"
 #include "chrome/common/webmessageportchannel_impl.h"
-#include "chrome/common/worker_messages.h"
-#include "chrome/renderer/webworker_proxy.h"
 #include "chrome/worker/webworker_stub_base.h"
 #include "chrome/worker/worker_thread.h"
 #include "chrome/worker/worker_webapplicationcachehost_impl.h"
+#include "content/common/content_switches.h"
 #include "content/common/file_system/file_system_dispatcher.h"
 #include "content/common/file_system/webfilesystem_callback_dispatcher.h"
+#include "content/common/worker_messages.h"
+// TODO(jam): uncomment this and WebWorkerClientProxy::createWorker when the
+// renderer worker code moves to content. This code isn't used now since we
+// don't support nested workers anyways.
+//#include "content/renderer/webworker_proxy.h"
 #include "ipc/ipc_logging.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFileSystemCallbacks.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFrame.h"
@@ -113,8 +116,10 @@ void WebWorkerClientProxy::workerContextDestroyed() {
 
 WebKit::WebWorker* WebWorkerClientProxy::createWorker(
     WebKit::WebWorkerClient* client) {
-  return new WebWorkerProxy(client, WorkerThread::current(),
-                            0, appcache_host_id_);
+  // TODO(jam): see comment at top of file
+  //return new WebWorkerProxy(client, WorkerThread::current(),
+  //                          0, appcache_host_id_);
+  return NULL;
 }
 
 WebKit::WebNotificationPresenter*
