@@ -111,7 +111,7 @@ class BasicTest(unittest.TestCase):
   def testCanStartChromeDriverOnSpecificPort(self):
     launcher = ChromeDriverLauncher(port=9520)
     self.assertEquals(9520, launcher.GetPort())
-    driver = WebDriver(launcher.GetURL(), 'chrome', 'any')
+    driver = WebDriver(launcher.GetURL(), {})
     driver.quit()
     launcher.Kill()
 
@@ -123,7 +123,7 @@ class CookieTest(unittest.TestCase):
 
   def setUp(self):
     self._launcher = ChromeDriverLauncher()
-    self._driver = WebDriver(self._launcher.GetURL(), 'chrome', 'any')
+    self._driver = WebDriver(self._launcher.GetURL(), {})
 
   def tearDown(self):
     self._driver.quit()
@@ -174,7 +174,7 @@ class SessionTest(unittest.TestCase):
     self.assertEquals(data['sessionId'], url_parts[2])
 
   def testShouldBeGivenCapabilitiesWhenStartingASession(self):
-    driver = WebDriver(self._launcher.GetURL(), 'chrome', 'any')
+    driver = WebDriver(self._launcher.GetURL(), {})
     capabilities = driver.capabilities
 
     self.assertEquals('chrome', capabilities['browserName'])
@@ -201,16 +201,16 @@ class SessionTest(unittest.TestCase):
     driver.quit()
 
   def testSessionCreationDeletion(self):
-    driver = WebDriver(self._launcher.GetURL(), 'chrome', 'any')
+    driver = WebDriver(self._launcher.GetURL(), {})
     driver.quit()
 
   def testMultipleSessionCreationDeletion(self):
     for i in range(10):
-      driver = WebDriver(self._launcher.GetURL(), 'chrome', 'any')
+      driver = WebDriver(self._launcher.GetURL(), {})
       driver.quit()
 
   def testSessionCommandsAfterSessionDeletionReturn404(self):
-    driver = WebDriver(self._launcher.GetURL(), 'chrome', 'any')
+    driver = WebDriver(self._launcher.GetURL(), {})
     session_id = driver.session_id
     driver.quit()
     try:
@@ -223,7 +223,7 @@ class SessionTest(unittest.TestCase):
   def testMultipleConcurrentSessions(self):
     drivers = []
     for i in range(10):
-      drivers += [WebDriver(self._launcher.GetURL(), 'chrome', 'any')]
+      drivers += [WebDriver(self._launcher.GetURL(), {})]
     for driver in drivers:
       driver.quit()
 
@@ -233,7 +233,7 @@ class MouseTest(unittest.TestCase):
 
   def setUp(self):
     self._launcher = ChromeDriverLauncher(root_path=os.path.dirname(__file__))
-    self._driver = WebDriver(self._launcher.GetURL(), 'chrome', 'any')
+    self._driver = WebDriver(self._launcher.GetURL(), {})
 
   def tearDown(self):
     self._driver.quit()

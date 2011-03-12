@@ -31,26 +31,10 @@
 #   'executing_async_javascript_test',
     'executing_javascript_test',
     'form_handling_tests',
-    # The following require the click command.
-    '-form_handling_tests.FormHandlingTests.testClickingOnUnclickableElementsDoesNothing',
-    '-form_handling_tests.FormHandlingTests.testShouldBeAbleToClickImageButtons',
-    '-form_handling_tests.FormHandlingTests.testShouldBeAbleToSelectARadioButtonByClickingOnIt',
+    # This test is flaky, probably because of form submission race.
     '-form_handling_tests.FormHandlingTests.testShouldClickOnSubmitInputElements',
-    # The following are all suppressed because the submit command currently does
-    # not wait for post-submit navigation events to complete.
-    '-form_handling_tests.FormHandlingTests.testShouldBeAbleToSubmitForms',
-    '-form_handling_tests.FormHandlingTests.testShouldSubmitAFormWhenAnyElementWihinThatFormIsSubmitted',
-    '-form_handling_tests.FormHandlingTests.testShouldSubmitAFormWhenAnyInputElementWithinThatFormIsSubmitted',
-    # Test fails from a bug in the WebDriver python bindings. This bug has been
-    # fixed in the WebDriver tree:
-    # http://code.google.com/p/selenium/source/detail?r=11480
-    '-form_handling_tests.FormHandlingTests.testShouldThrowAnExceptionWhenSelectingAnUnselectableElement',
     'frame_switching_tests',
     'implicit_waits_tests',
-    # Depends on click.
-    '-implicit_waits_tests.ImplicitWaitTest.testShouldImplicitlyWaitForASingleElement',
-    '-implicit_waits_tests.ImplicitWaitTest.testShouldImplicitlyWaitUntilAtLeastOneElementIsFoundWhenSearchingForMany',
-    '-implicit_waits_tests.ImplicitWaitTest.testShouldReturnAfterFirstAttemptToFindManyAfterDisablingImplicitWaits',
     'page_loading_tests',
     # testShouldReturnWhenGettingAUrlThatDoesNotResolve causes the test after
     # to fail when run in xvfb: crbug.com/72027.
@@ -69,13 +53,10 @@
     '-rendered_webelement_tests.RenderedWebElementTests.testShouldPickUpStyleOfAnElement',
     'select_element_handling_tests',
     'stale_reference_tests',
-    # Test requires click command.
-    '-stale_reference_tests.StaleReferenceTests.testOldPage',
 #   'text_handling_tests',
     'typing_tests',
     'visibility_tests',
-    # Depends on click.
-    '-visibility_tests.VisibilityTests.testShouldModifyTheVisibilityOfAnElementDynamically',
+    # Bug in clicking: element is not verified before clicking.
     '-visibility_tests.VisibilityTests.testShouldNotBeAbleToClickOnAnElementThatIsNotDisplayed',
     # Bug in typing: element is not verified before typing.
     '-visibility_tests.VisibilityTests.testShouldNotBeAbleToTypeAnElementThatIsNotDisplayed',

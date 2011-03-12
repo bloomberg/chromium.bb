@@ -251,7 +251,7 @@ class Main(object):
     # properties.
     launcher = ChromeDriverLauncher(self._options.driver_exe,
                                     chromedriver_paths.WEBDRIVER_TEST_DATA)
-    driver = WebDriver(launcher.GetURL(), 'chrome', 'any')
+    driver = WebDriver(launcher.GetURL(), {})
     # The tests expect a webserver. Since ChromeDriver also operates as one,
     # just pass this dummy class with the right info.
     class DummyWebserver:
