@@ -394,8 +394,9 @@ void InstantLoader::TabContentsDelegateImpl::NavigationStateChanged(
     // committed before waiting on paint as there is always an initial paint
     // when a new renderer is created from the resize so that if we showed the
     // preview after the first paint we would end up with a white rect.
-    RegisterForPaintNotifications(
-        source->GetRenderWidgetHostView()->GetRenderWidgetHost());
+    RenderWidgetHostView *rwhv = source->GetRenderWidgetHostView();
+    if (rwhv)
+      RegisterForPaintNotifications(rwhv->GetRenderWidgetHost());
   } else if (source->is_crashed()) {
     PreviewPainted();
   }
