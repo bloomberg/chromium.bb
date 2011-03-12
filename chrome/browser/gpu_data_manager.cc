@@ -15,8 +15,8 @@
 #include "chrome/common/child_process_logging.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
-#include "chrome/gpu/gpu_info_collector.h"
 #include "content/browser/gpu_blacklist.h"
+#include "content/gpu/gpu_info_collector.h"
 #include "grit/browser_resources.h"
 #include "ui/base/resource/resource_bundle.h"
 
