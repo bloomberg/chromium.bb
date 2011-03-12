@@ -710,17 +710,20 @@ def UserEditedLog(starting_text):
   fileobj.write(starting_text)
   fileobj.close()
 
-  ret = subprocess.call(editor + ' ' + filename, shell=True)
-  if ret != 0:
+  result = None
+  try:
+    subprocess.check_call(['env', editor, filename], shell=True)
+    fileobj = open(filename)
+    result = fileobj.read()
+    fileobj.close()
+  finally:
     os.remove(filename)
-    return
 
-  fileobj = open(filename)
-  text = fileobj.read()
-  fileobj.close()
-  os.remove(filename)
+  if not result:
+    return
+  
   stripcomment_re = re.compile(r'^#.*$', re.MULTILINE)
-  return stripcomment_re.sub('', text).strip()
+  return stripcomment_re.sub('', result).strip()
 
 
 def ConvertToInteger(inputval):
