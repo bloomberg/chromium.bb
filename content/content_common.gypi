@@ -10,6 +10,7 @@
       'dependencies': [
         '../ipc/ipc.gyp:ipc',
         '../third_party/icu/icu.gyp:icuuc',
+        '../third_party/WebKit/Source/WebKit/chromium/WebKit.gyp:webkit',
         '../webkit/support/webkit_support.gyp:fileapi',
       ],
       'include_dirs': [
