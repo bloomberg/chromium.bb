@@ -5,6 +5,7 @@
 #include "chrome/browser/importer/external_process_importer_client.h"
 
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/importer/external_process_importer_host.h"
 #include "chrome/browser/importer/importer_bridge.h"
 #include "chrome/browser/importer/importer_host.h"
 #include "chrome/browser/search_engines/template_url.h"

@@ -7,6 +7,7 @@
 #include "base/compiler_specific.h"
 #include "base/mac/mac_util.h"
 #include "base/sys_string_conversions.h"
+#include "chrome/browser/importer/external_process_importer_host.h"
 #include "chrome/browser/importer/importer_data_types.h"
 #include "chrome/browser/importer/importer_list.h"
 #include "chrome/browser/importer/importer_progress_dialog.h"
