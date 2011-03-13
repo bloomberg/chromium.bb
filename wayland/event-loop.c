@@ -171,13 +171,10 @@ wl_event_source_timer_remove(struct wl_event_source *source)
 {
 	struct wl_event_source_timer *timer_source =
 		(struct wl_event_source_timer *) source;
-	struct wl_event_loop *loop = source->loop;
-	int fd;
 
-	fd = timer_source->fd;
+	close(timer_source->fd);
 	free(source);
-
-	return epoll_ctl(loop->epoll_fd, EPOLL_CTL_DEL, fd, NULL);
+	return 0;
 }
 
 struct wl_event_source_interface timer_source_interface = {
@@ -215,6 +212,7 @@ wl_event_loop_add_timer(struct wl_event_loop *loop,
 	ep.data.ptr = source;
 
 	if (epoll_ctl(loop->epoll_fd, EPOLL_CTL_ADD, source->fd, &ep) < 0) {
+		close(source->fd);
 		free(source);
 		return NULL;
 	}
