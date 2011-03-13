@@ -297,6 +297,7 @@ wl_event_loop_add_signal(struct wl_event_loop *loop,
 
 	source->base.interface = &signal_source_interface;
 	source->base.loop = loop;
+	source->signal_number = signal_number;
 
 	sigemptyset(&mask);
 	sigaddset(&mask, signal_number);
