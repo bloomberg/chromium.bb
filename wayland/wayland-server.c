@@ -360,19 +360,21 @@ wl_input_device_set_pointer_focus(struct wl_input_device *device,
 				     &device->object,
 				     WL_INPUT_DEVICE_POINTER_FOCUS,
 				     time, NULL, 0, 0, 0, 0);
-	if (surface)
+	if (device->pointer_focus)
+		wl_list_remove(&device->pointer_focus_listener.link);
+
+	if (surface) {
 		wl_client_post_event(surface->client,
 				     &device->object,
 				     WL_INPUT_DEVICE_POINTER_FOCUS,
 				     time, surface, x, y, sx, sy);
+		wl_list_insert(surface->destroy_listener_list.prev,
+			       &device->pointer_focus_listener.link);
+	}
 
 	device->pointer_focus = surface;
 	device->pointer_focus_time = time;
 
-	wl_list_remove(&device->pointer_focus_listener.link);
-	if (surface)
-		wl_list_insert(surface->destroy_listener_list.prev,
-			       &device->pointer_focus_listener.link);
 }
 
 WL_EXPORT void
@@ -389,20 +391,20 @@ wl_input_device_set_keyboard_focus(struct wl_input_device *device,
 				     &device->object,
 				     WL_INPUT_DEVICE_KEYBOARD_FOCUS,
 				     time, NULL, &device->keys);
+	if (device->keyboard_focus)
+		wl_list_remove(&device->keyboard_focus_listener.link);
 
-	if (surface)
+	if (surface) {
 		wl_client_post_event(surface->client,
 				     &device->object,
 				     WL_INPUT_DEVICE_KEYBOARD_FOCUS,
 				     time, surface, &device->keys);
+		wl_list_insert(surface->destroy_listener_list.prev,
+			       &device->keyboard_focus_listener.link);
+	}
 
 	device->keyboard_focus = surface;
 	device->keyboard_focus_time = time;
-
-	wl_list_remove(&device->keyboard_focus_listener.link);
-	if (surface)
-		wl_list_insert(surface->destroy_listener_list.prev,
-			       &device->keyboard_focus_listener.link);
 }
 
 WL_EXPORT void
