@@ -193,7 +193,7 @@ AutocompleteEditViewMac::AutocompleteEditViewMac(
       layoutManager([[NSLayoutManager alloc] init]);
   [layoutManager setUsesScreenFonts:YES];
   line_height_ = [layoutManager defaultLineHeightForFont:GetFieldFont()];
-  DCHECK(line_height_ > 0);
+  DCHECK_GT(line_height_, 0);
 }
 
 AutocompleteEditViewMac::~AutocompleteEditViewMac() {

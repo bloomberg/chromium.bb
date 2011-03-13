@@ -139,7 +139,7 @@ void Connection::Preload() {
 
 bool Connection::BeginTransaction() {
   if (needs_rollback_) {
-    DCHECK(transaction_nesting_ > 0);
+    DCHECK_GT(transaction_nesting_, 0);
 
     // When we're going to rollback, fail on this begin and don't actually
     // mark us as entering the nested transaction.
