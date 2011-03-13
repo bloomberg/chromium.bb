@@ -1,11 +1,11 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/common/database_util.h"
+#include "content/common/database_util.h"
 
-#include "chrome/common/database_messages.h"
 #include "content/common/child_thread.h"
+#include "content/common/database_messages.h"
 #include "ipc/ipc_sync_message_filter.h"
 #include "third_party/sqlite/sqlite3.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebString.h"

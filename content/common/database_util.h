@@ -1,9 +1,9 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_COMMON_DATABASE_UTIL_H_
-#define CHROME_COMMON_DATABASE_UTIL_H_
+#ifndef CONTENT_COMMON_DATABASE_UTIL_H_
+#define CONTENT_COMMON_DATABASE_UTIL_H_
 #pragma once
 
 #include "webkit/glue/webkitclient_impl.h"
@@ -20,4 +20,4 @@ class DatabaseUtil {
   static long long databaseGetFileSize(const WebKit::WebString& vfs_file_name);
 };
 
-#endif  // CHROME_COMMON_DATABASE_UTIL_H_
+#endif  // CONTENT_COMMON_DATABASE_UTIL_H_

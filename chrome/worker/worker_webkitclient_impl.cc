@@ -6,12 +6,12 @@
 
 #include "base/logging.h"
 #include "base/utf_string_conversions.h"
-#include "chrome/common/database_util.h"
 #include "chrome/common/render_messages.h"
 #include "chrome/common/render_messages_params.h"
 #include "chrome/common/webblobregistry_impl.h"
 #include "chrome/common/webmessageportchannel_impl.h"
 #include "chrome/worker/worker_thread.h"
+#include "content/common/database_util.h"
 #include "content/common/file_system/webfilesystem_impl.h"
 #include "content/common/file_utilities_messages.h"
 #include "content/common/mime_registry_messages.h"

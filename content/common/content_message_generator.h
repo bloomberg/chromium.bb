@@ -5,6 +5,7 @@
 // Multiply-included file, hence no include guard.
 
 #include "content/common/child_process_messages.h"
+#include "content/common/database_messages.h"
 #include "content/common/file_system_messages.h"
 #include "content/common/file_utilities_messages.h"
 #include "content/common/p2p_messages.h"
