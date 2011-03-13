@@ -4,7 +4,7 @@
 
 #include "content/browser/mime_registry_message_filter.h"
 
-#include "chrome/common/mime_registry_messages.h"
+#include "content/common/mime_registry_messages.h"
 #include "net/base/mime_util.h"
 
 MimeRegistryMessageFilter::MimeRegistryMessageFilter() {

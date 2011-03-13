@@ -16,10 +16,10 @@
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/default_plugin.h"
-#include "chrome/common/hi_res_timer_manager.h"
 #include "chrome/common/logging_chrome.h"
 #include "chrome/plugin/plugin_thread.h"
 #include "content/common/child_process.h"
+#include "content/common/hi_res_timer_manager.h"
 #include "content/common/main_function_params.h"
 #include "ui/base/system_monitor/system_monitor.h"
 

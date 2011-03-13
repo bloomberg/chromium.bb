@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,8 +6,10 @@
 
 #include "content/common/child_process_messages.h"
 #include "content/common/file_system_messages.h"
+#include "content/common/file_utilities_messages.h"
 #include "content/common/p2p_messages.h"
 #include "content/common/gpu_messages.h"
+#include "content/common/mime_registry_messages.h"
 #include "content/common/resource_messages.h"
 #include "content/common/socket_stream_messages.h"
 #include "content/common/worker_messages.h"

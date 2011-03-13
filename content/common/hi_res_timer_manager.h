@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_COMMON_HI_RES_TIMER_MANAGER_H_
-#define CHROME_COMMON_HI_RES_TIMER_MANAGER_H_
+#ifndef CONTENT_COMMON_HI_RES_TIMER_MANAGER_H_
+#define CONTENT_COMMON_HI_RES_TIMER_MANAGER_H_
 #pragma once
 
 #include "ui/base/system_monitor/system_monitor.h"
@@ -27,4 +27,4 @@ class HighResolutionTimerManager : public ui::SystemMonitor::PowerObserver {
   DISALLOW_COPY_AND_ASSIGN(HighResolutionTimerManager);
 };
 
-#endif  // CHROME_COMMON_HI_RES_TIMER_MANAGER_H_
+#endif  // CONTENT_COMMON_HI_RES_TIMER_MANAGER_H_

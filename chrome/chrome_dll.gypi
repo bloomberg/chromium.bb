@@ -603,6 +603,7 @@
             '../content/common/content_paths.cc',
             '../content/common/content_switches.cc',
             '../content/common/debug_flags.cc',
+            '../content/common/hi_res_timer_manager_win.cc',
             '../content/common/notification_details.cc',
             '../content/common/notification_service.cc',
             '../content/common/notification_source.cc',

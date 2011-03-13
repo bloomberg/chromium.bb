@@ -7,9 +7,9 @@
 #include "base/message_loop.h"
 #include "base/string_util.h"
 #include "base/threading/platform_thread.h"
-#include "chrome/common/hi_res_timer_manager.h"
 #include "chrome/worker/worker_thread.h"
 #include "content/common/child_process.h"
+#include "content/common/hi_res_timer_manager.h"
 #include "content/common/main_function_params.h"
 #include "ui/base/system_monitor/system_monitor.h"
 
