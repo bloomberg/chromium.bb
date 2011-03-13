@@ -778,7 +778,7 @@ def RunHook(committing, upstream_branch, rietveld_server, tbr, may_prompt):
                'rietveld.extracc', ','.join(watchers)])
 
   output = StringIO.StringIO()
-  res = presubmit_support.DoPresubmitChecks(change, committing,
+  should_continue = presubmit_support.DoPresubmitChecks(change, committing,
       verbose=None, output_stream=output, input_stream=sys.stdin,
       default_presubmit=None, may_prompt=False, tbr=tbr,
       host_url=cl.GetRietveldServer())
@@ -787,11 +787,12 @@ def RunHook(committing, upstream_branch, rietveld_server, tbr, may_prompt):
     print hook_results.output
 
   # TODO(dpranke): We should propagate the error out instead of calling exit().
-  if not res and ('** Presubmit ERRORS **' in hook_results.output or
-                  '** Presubmit WARNINGS **' in hook_results.output):
-    res = True
+  if should_continue and hook_results.output and (
+      '** Presubmit ERRORS **\n' in hook_results.output or
+      '** Presubmit WARNINGS **\n' in hook_results.output):
+    should_continue = False
 
-  if res:
+  if not should_continue:
     if may_prompt:
       response = raw_input('Are you sure you want to continue? (y/N): ')
       if not response.lower().startswith('y'):
