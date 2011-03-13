@@ -1065,9 +1065,8 @@ def CMDchange(args):
 
   # Open up the default editor in the system to get the CL description.
   cmd = [GetEditor(), filename]
-  if sys.platform == 'win32' and 'mingw\\bin' in os.environ['PATH']:
-    # Msysgit requires the usage of 'env' to be present. The only way to
-    # accomplish that is by reading the environment variable for mingw\bin.
+  if sys.platform == 'win32' and os.environ['TERM'] == 'msys':
+    # Msysgit requires the usage of 'env' to be present.
     cmd.insert(0, 'env')
   try:
     if not silent:
