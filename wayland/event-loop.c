@@ -231,8 +231,8 @@ wl_event_source_timer_update(struct wl_event_source *source, int ms_delay)
 
 	its.it_interval.tv_sec = 0;
 	its.it_interval.tv_nsec = 0;
-	its.it_value.tv_sec = 0;
-	its.it_value.tv_nsec = ms_delay * 1000 * 1000;
+	its.it_value.tv_sec = ms_delay / 1000;
+	its.it_value.tv_nsec = (ms_delay % 1000) * 1000 * 1000;
 	if (timerfd_settime(timer_source->fd, 0, &its, NULL) < 0) {
 		fprintf(stderr, "could not set timerfd\n: %m");
 		return -1;
