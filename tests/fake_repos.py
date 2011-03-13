@@ -7,6 +7,7 @@
 
 import atexit
 import datetime
+import errno
 import logging
 import os
 import pprint
@@ -15,6 +16,7 @@ import socket
 import subprocess
 import sys
 import tempfile
+import time
 
 # trial_dir must be first for non-system libraries.
 from tests import trial_dir
@@ -237,7 +239,11 @@ class FakeReposBase(object):
   def tear_down_svn(self):
     if self.svnserve:
       logging.debug('Killing svnserve pid %s' % self.svnserve.pid)
-      self.svnserve.kill()
+      try:
+        self.svnserve.kill()
+      except OSError, e:
+        if e.errno != errno.ESRCH:   # no such process
+          raise
       self.wait_for_port_to_free(self.svn_port)
       self.svnserve = None
       if not self.trial.SHOULD_LEAK:
@@ -302,6 +308,12 @@ class FakeReposBase(object):
     text = '[users]\n'
     text += ''.join('%s = %s\n' % (usr, pwd) for usr, pwd in self.USERS)
     write(join(self.svn_repo, 'conf', 'passwd'), text)
+
+    # Mac 10.6 ships with a buggy subversion build and we need this line
+    # to work around the bug.
+    write(join(self.svn_repo, 'db', 'fsfs.conf'),
+        '[rep-sharing]\n'
+        'enable-rep-sharing = false\n')
 
     # Start the daemon.
     cmd = ['svnserve', '-d', '--foreground', '-r', self.root_dir]
@@ -376,6 +388,14 @@ class FakeReposBase(object):
 
   def wait_for_port_to_bind(self, port, process):
     sock = socket.socket()
+
+    if sys.platform == 'darwin':
+      # On Mac SnowLeopard, if we attempt to connect to the socket
+      # immediately, it fails with EINVAL and never gets a chance to
+      # connect (putting us into a hard spin and then failing).
+      # Linux doesn't need this.
+      time.sleep(0.1)
+
     try:
       start = datetime.datetime.utcnow()
       maxdelay = datetime.timedelta(seconds=30)

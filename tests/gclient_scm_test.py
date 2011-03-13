@@ -692,7 +692,7 @@ from :3
     if not self.enabled:
       return
     options = self.Options(verbose=True)
-    root_dir = tempfile.mkdtemp()
+    root_dir = gclient_scm.os.path.realpath(tempfile.mkdtemp())
     relpath = 'foo'
     base_path = join(root_dir, relpath)
     url = join(self.base_path, '.git')
@@ -725,6 +725,7 @@ from :3
           join(gclient_scm.os.path.realpath(root_dir), 'foo'))
     out = sys.stdout.getvalue()
     sys.stdout.close()
+    sys.stdout = self._old_stdout
     self.assertTrue(out in (msg1, msg2), (out, msg1, msg2))
 
   def testUpdateUpdate(self):
