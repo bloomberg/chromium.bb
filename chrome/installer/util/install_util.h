@@ -22,12 +22,6 @@
 class Version;
 class WorkItemList;
 
-namespace base {
-namespace win {
-class RegKey;
-}  // namespace win
-}  // namespace base
-
 // This is a utility class that provides common installation related
 // utility methods that can be used by installer and also unit tested
 // independently.
@@ -103,8 +97,7 @@ class InstallUtil {
                                        WorkItemList* registration_list);
 
   // Deletes the registry key at path key_path under the key given by root_key.
-  static bool DeleteRegistryKey(base::win::RegKey& root_key,
-                                const std::wstring& key_path);
+  static bool DeleteRegistryKey(HKEY root_key, const std::wstring& key_path);
 
   // Deletes the registry value named value_name at path key_path under the key
   // given by reg_root.

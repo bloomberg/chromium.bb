@@ -9,6 +9,7 @@
 
 #include <shellapi.h>
 #include <shlobj.h>
+#include <shlwapi.h>
 
 #include <algorithm>
 
@@ -253,10 +254,10 @@ bool InstallUtil::BuildDLLRegistrationList(const std::wstring& install_path,
 // This method tries to delete a registry key and logs an error message
 // in case of failure. It returns true if deletion is successful,
 // otherwise false.
-bool InstallUtil::DeleteRegistryKey(RegKey& root_key,
+bool InstallUtil::DeleteRegistryKey(HKEY root_key,
                                     const std::wstring& key_path) {
   VLOG(1) << "Deleting registry key " << key_path;
-  LONG result = root_key.DeleteKey(key_path.c_str());
+  LONG result = ::SHDeleteKey(root_key, key_path.c_str());
   if (result != ERROR_SUCCESS && result != ERROR_FILE_NOT_FOUND) {
     LOG(ERROR) << "Failed to delete registry key: " << key_path
                << " error: " << result;
