@@ -27,7 +27,7 @@ const float kFindBarCloseDuration = 0.15;
 const float kFindBarMoveDuration = 0.15;
 const float kRightEdgeOffset = 25;
 
-@interface FindBarCocoaController (PrivateMethods)
+@interface FindBarCocoaController (PrivateMethods) <NSAnimationDelegate>
 // Returns the appropriate frame for a hidden find bar.
 - (NSRect)hiddenFindBarFrame;
 
