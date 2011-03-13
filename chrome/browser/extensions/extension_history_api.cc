@@ -120,6 +120,12 @@ void ExtensionHistoryEventRouter::HistoryUrlVisited(
 
   std::string json_args;
   base::JSONWriter::Write(&args, false, &json_args);
+
+  // Logging to discover if this happens after search on XP in
+  // ExtensionHistoryTest.*.
+  LOG(WARNING) << "ExtensionHistoryEventRouter::HistoryUrlVisited(): "
+               << json_args;
+
   DispatchEvent(profile, keys::kOnVisited, json_args);
 }
 
@@ -140,6 +146,12 @@ void ExtensionHistoryEventRouter::HistoryUrlsRemoved(
 
   std::string json_args;
   base::JSONWriter::Write(&args, false, &json_args);
+
+  // Logging to discover if this happens after search on XP in
+  // ExtensionHistoryTest.*.
+  LOG(WARNING) << "ExtensionHistoryEventRouter::HistoryUrlRemoved(): "
+               << json_args;
+
   DispatchEvent(profile, keys::kOnVisitRemoved, json_args);
 }
 
