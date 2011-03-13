@@ -59,6 +59,7 @@ class HostDispatcher : public Dispatcher {
 
   // Dispatcher overrides.
   virtual bool IsPlugin() const;
+  virtual bool Send(IPC::Message* msg);
 
   // IPC::Channel::Listener.
   virtual bool OnMessageReceived(const IPC::Message& msg);
@@ -77,6 +78,12 @@ class HostDispatcher : public Dispatcher {
   //
   // Will return NULL if an interface isn't supported.
   InterfaceProxy* GetOrCreatePPBInterfaceProxy(InterfaceID id);
+
+  // See the value below. Call this when processing a scripting message from
+  // the plugin that can be reentered.
+  void set_allow_plugin_reentrancy() {
+    allow_plugin_reentrancy_ = true;
+  }
 
   // Returns the proxy interface for talking to the implementation.
   const PPB_Proxy_Private* ppb_proxy() const { return ppb_proxy_; }
@@ -103,6 +110,13 @@ class HostDispatcher : public Dispatcher {
 
   // Guaranteed non-NULL.
   const PPB_Proxy_Private* ppb_proxy_;
+
+  // Set to true when the plugin is in a state that it can be reentered by a
+  // sync message from the host. We allow reentrancy only when we're processing
+  // a sync message from the renderer that is a scripting command. When the
+  // plugin is in this state, it needs to accept reentrancy since scripting may
+  // ultimately call back into the plugin.
+  bool allow_plugin_reentrancy_;
 
   DISALLOW_COPY_AND_ASSIGN(HostDispatcher);
 };

@@ -41,6 +41,20 @@ PP_Bool ReserveInstanceID(PP_Module module, PP_Instance instance) {
   return BoolToPPBool(usable);
 }
 
+// Saves the state of the given bool and puts it back when it goes out of
+// scope.
+class BoolRestorer {
+ public:
+  BoolRestorer(bool* var) : var_(var), old_value_(*var) {
+  }
+  ~BoolRestorer() {
+    *var_ = old_value_;
+  }
+ private:
+  bool* var_;
+  bool old_value_;
+};
+
 }  // namespace
 
 HostDispatcher::HostDispatcher(base::ProcessHandle remote_process_handle,
@@ -105,7 +119,27 @@ bool HostDispatcher::IsPlugin() const {
   return false;
 }
 
+bool HostDispatcher::Send(IPC::Message* msg) {
+  // Normal sync messages are set to unblock, which would normally cause the
+  // plugin to be reentered to process them. We only want to do this when we
+  // know the plugin is in a state to accept reentrancy. Since the plugin side
+  // never clears this flag on messages it sends, we can't get deadlock, but we
+  // may still get reentrancy in the host as a result.
+  if (!allow_plugin_reentrancy_)
+    msg->set_unblock(false);
+  return Dispatcher::Send(msg);
+}
+
 bool HostDispatcher::OnMessageReceived(const IPC::Message& msg) {
+  // We only want to allow reentrancy when the most recent message from the
+  // plugin was a scripting message. We save the old state of the flag on the
+  // stack in case we're (we are the host) being reentered ourselves. The flag
+  // is set to false here for all messages, and then the scripting API will
+  // explicitly set it to true during processing of those messages that can be
+  // reentered.
+  BoolRestorer restorer(&allow_plugin_reentrancy_);
+  allow_plugin_reentrancy_ = false;
+
   // Handle common control messages.
   if (Dispatcher::OnMessageReceived(msg))
     return true;

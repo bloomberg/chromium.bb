@@ -87,6 +87,9 @@ class PPB_Var_Deprecated_Proxy : public InterfaceProxy {
                                    int64 ppp_class,
                                    int64 ppp_class_data,
                                    SerializedVarReturnValue result);
+
+  // Call in the host for messages that can be reentered.
+  void SetAllowPluginReentrancy();
 };
 
 }  // namespace proxy

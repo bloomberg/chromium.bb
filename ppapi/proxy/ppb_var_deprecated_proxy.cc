@@ -10,6 +10,7 @@
 #include "ppapi/c/dev/ppb_var_deprecated.h"
 #include "ppapi/c/pp_var.h"
 #include "ppapi/c/ppb_core.h"
+#include "ppapi/proxy/host_dispatcher.h"
 #include "ppapi/proxy/plugin_dispatcher.h"
 #include "ppapi/proxy/plugin_var_tracker.h"
 #include "ppapi/proxy/ppapi_messages.h"
@@ -347,6 +348,7 @@ void PPB_Var_Deprecated_Proxy::OnMsgHasProperty(
     SerializedVarReceiveInput name,
     SerializedVarOutParam exception,
     PP_Bool* result) {
+  SetAllowPluginReentrancy();
   *result = BoolToPPBool(ppb_var_target()->HasProperty(
       var.Get(dispatcher()),
       name.Get(dispatcher()),
@@ -358,6 +360,7 @@ void PPB_Var_Deprecated_Proxy::OnMsgHasMethodDeprecated(
     SerializedVarReceiveInput name,
     SerializedVarOutParam exception,
     PP_Bool* result) {
+  SetAllowPluginReentrancy();
   *result = BoolToPPBool(ppb_var_target()->HasMethod(
       var.Get(dispatcher()),
       name.Get(dispatcher()),
@@ -369,6 +372,7 @@ void PPB_Var_Deprecated_Proxy::OnMsgGetProperty(
     SerializedVarReceiveInput name,
     SerializedVarOutParam exception,
     SerializedVarReturnValue result) {
+  SetAllowPluginReentrancy();
   result.Return(dispatcher(), ppb_var_target()->GetProperty(
       var.Get(dispatcher()), name.Get(dispatcher()),
       exception.OutParam(dispatcher())));
@@ -378,6 +382,7 @@ void PPB_Var_Deprecated_Proxy::OnMsgEnumerateProperties(
     SerializedVarReceiveInput var,
     SerializedVarVectorOutParam props,
     SerializedVarOutParam exception) {
+  SetAllowPluginReentrancy();
   ppb_var_target()->GetAllPropertyNames(var.Get(dispatcher()),
       props.CountOutParam(), props.ArrayOutParam(dispatcher()),
       exception.OutParam(dispatcher()));
@@ -388,6 +393,7 @@ void PPB_Var_Deprecated_Proxy::OnMsgSetPropertyDeprecated(
     SerializedVarReceiveInput name,
     SerializedVarReceiveInput value,
     SerializedVarOutParam exception) {
+  SetAllowPluginReentrancy();
   ppb_var_target()->SetProperty(var.Get(dispatcher()),
                                 name.Get(dispatcher()),
                                 value.Get(dispatcher()),
@@ -399,6 +405,7 @@ void PPB_Var_Deprecated_Proxy::OnMsgDeleteProperty(
     SerializedVarReceiveInput name,
     SerializedVarOutParam exception,
     PP_Bool* result) {
+  SetAllowPluginReentrancy();
   ppb_var_target()->RemoveProperty(var.Get(dispatcher()),
                                    name.Get(dispatcher()),
                                    exception.OutParam(dispatcher()));
@@ -413,6 +420,7 @@ void PPB_Var_Deprecated_Proxy::OnMsgCallDeprecated(
     SerializedVarVectorReceiveInput arg_vector,
     SerializedVarOutParam exception,
     SerializedVarReturnValue result) {
+  SetAllowPluginReentrancy();
   uint32_t arg_count = 0;
   PP_Var* args = arg_vector.Get(dispatcher(), &arg_count);
   result.Return(dispatcher(), ppb_var_target()->Call(
@@ -427,6 +435,7 @@ void PPB_Var_Deprecated_Proxy::OnMsgConstruct(
     SerializedVarVectorReceiveInput arg_vector,
     SerializedVarOutParam exception,
     SerializedVarReturnValue result) {
+  SetAllowPluginReentrancy();
   uint32_t arg_count = 0;
   PP_Var* args = arg_vector.Get(dispatcher(), &arg_count);
   result.Return(dispatcher(), ppb_var_target()->Construct(
@@ -447,8 +456,16 @@ void PPB_Var_Deprecated_Proxy::OnMsgCreateObjectDeprecated(
     int64 ppp_class,
     int64 class_data,
     SerializedVarReturnValue result) {
+  SetAllowPluginReentrancy();
   result.Return(dispatcher(), PPP_Class_Proxy::CreateProxiedObject(
       ppb_var_target(), dispatcher(), instance, ppp_class, class_data));
+}
+
+void PPB_Var_Deprecated_Proxy::SetAllowPluginReentrancy() {
+  if (dispatcher()->IsPlugin())
+    NOTREACHED();
+  else
+    static_cast<HostDispatcher*>(dispatcher())->set_allow_plugin_reentrancy();
 }
 
 }  // namespace proxy

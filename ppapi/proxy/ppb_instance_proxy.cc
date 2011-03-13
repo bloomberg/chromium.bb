@@ -6,6 +6,7 @@
 
 #include "ppapi/c/pp_var.h"
 #include "ppapi/c/ppb_instance.h"
+#include "ppapi/proxy/host_dispatcher.h"
 #include "ppapi/proxy/plugin_dispatcher.h"
 #include "ppapi/proxy/plugin_resource.h"
 #include "ppapi/proxy/plugin_resource_tracker.h"
@@ -167,6 +168,11 @@ void PPB_Instance_Proxy::OnMsgExecuteScript(
     SerializedVarReceiveInput script,
     SerializedVarOutParam out_exception,
     SerializedVarReturnValue result) {
+  if (dispatcher()->IsPlugin())
+    NOTREACHED();
+  else
+    static_cast<HostDispatcher*>(dispatcher())->set_allow_plugin_reentrancy();
+
   result.Return(dispatcher(), ppb_instance_target()->ExecuteScript(
       instance,
       script.Get(dispatcher()),
