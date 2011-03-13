@@ -31,21 +31,21 @@ class ExtensionHistoryApiTest : public ExtensionApiTest {
 };
 
 // Flaky, http://crbug.com/26296.
-IN_PROC_BROWSER_TEST_F(ExtensionHistoryApiTest, FLAKY_MiscSearch) {
+IN_PROC_BROWSER_TEST_F(ExtensionHistoryApiTest, MiscSearch) {
   ASSERT_TRUE(RunExtensionSubtest("history", "misc_search.html")) << message_;
 }
 
 // Flaky, http://crbug.com/26296.
-IN_PROC_BROWSER_TEST_F(ExtensionHistoryApiTest, FLAKY_TimedSearch) {
+IN_PROC_BROWSER_TEST_F(ExtensionHistoryApiTest, TimedSearch) {
   ASSERT_TRUE(RunExtensionSubtest("history", "timed_search.html")) << message_;
 }
 
 // Flaky, http://crbug.com/26296.
-IN_PROC_BROWSER_TEST_F(ExtensionHistoryApiTest, FLAKY_Delete) {
+IN_PROC_BROWSER_TEST_F(ExtensionHistoryApiTest, Delete) {
   ASSERT_TRUE(RunExtensionSubtest("history", "delete.html")) << message_;
 }
 
 // Flaky, http://crbug.com/26296.
-IN_PROC_BROWSER_TEST_F(ExtensionHistoryApiTest, FLAKY_GetVisits) {
+IN_PROC_BROWSER_TEST_F(ExtensionHistoryApiTest, GetVisits) {
   ASSERT_TRUE(RunExtensionSubtest("history", "get_visits.html")) << message_;
 }

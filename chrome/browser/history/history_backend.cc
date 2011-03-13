@@ -504,6 +504,7 @@ void HistoryBackend::AddPage(scoped_refptr<HistoryAddPageArgs> request) {
   }
 
   if (text_database_.get()) {
+    LOG(WARNING) << "text_database_->AddPageURL( "<< request->url.posibly_invalid_spec() << " );";
     text_database_->AddPageURL(request->url, last_ids.first, last_ids.second,
                                last_recorded_time_);
   }
@@ -1208,15 +1209,15 @@ void HistoryBackend::QueryHistoryBasic(URLDatabase* url_db,
 
     // Add a result row for this visit, get the URL info from the DB.
     if (!url_db->GetURLRow(visit.url_id, &url_result)) {
-      VLOG(0) << "Failed to get id " << visit.url_id
-              << " from history.urls.";
+      LOG(WARNING) << "Failed to get id " << visit.url_id
+                   << " from history.urls.";
       continue;  // DB out of sync and URL doesn't exist, try to recover.
     }
 
     if (!url_result.url().is_valid()) {
-      VLOG(0) << "Got invalid URL from history.urls with id "
-              << visit.url_id << ":  "
-              << url_result.url().possibly_invalid_spec();
+      LOG(WARNING) << "Got invalid URL from history.urls with id "
+                   << visit.url_id << ":  "
+                   << url_result.url().possibly_invalid_spec();
       continue;  // Don't report invalid URLs in case of corruption.
     }
 
