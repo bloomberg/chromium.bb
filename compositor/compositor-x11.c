@@ -243,7 +243,6 @@ x11_compositor_create_output(struct x11_compositor *c, int width, int height)
 	static const char class[] = "wayland-1\0Wayland Compositor";
 	struct x11_output *output;
 	xcb_screen_iterator_t iter;
-	xcb_rectangle_t rectangle;
 	struct wm_normal_hints normal_hints;
 	uint32_t mask = XCB_CW_EVENT_MASK | XCB_CW_CURSOR;
 	uint32_t values[2] = { 
@@ -310,11 +309,6 @@ x11_compositor_create_output(struct x11_compositor *c, int width, int height)
 
 	xcb_map_window(c->conn, output->window);
 
-	rectangle.x = 0;
-	rectangle.y = 0;
-	rectangle.width = width;
-	rectangle.height = height;
-
 	x11_output_set_wm_protocols(output);
 
 	output->egl_surface = 
@@ -354,7 +348,6 @@ x11_compositor_handle_event(int fd, uint32_t mask, void *data)
 	struct x11_compositor *c = data;
 	struct x11_output *output;
         xcb_generic_event_t *event;
-	struct wl_event_loop *loop;
 	xcb_client_message_event_t *client_message;
 	xcb_motion_notify_event_t *motion_notify;
 	xcb_enter_notify_event_t *enter_notify;
@@ -362,12 +355,10 @@ x11_compositor_handle_event(int fd, uint32_t mask, void *data)
 	xcb_button_press_event_t *button_press;
 	xcb_keymap_notify_event_t *keymap_notify;
 	xcb_focus_in_event_t *focus_in;
-	xcb_expose_event_t *expose;
 	xcb_atom_t atom;
 	uint32_t *k;
 	int i, set;
 
-	loop = wl_display_get_event_loop(c->base.wl_display);
         while (event = xcb_poll_for_event (c->conn), event != NULL) {
 		switch (event->response_type & ~0x80) {
 
@@ -403,8 +394,6 @@ x11_compositor_handle_event(int fd, uint32_t mask, void *data)
 			break;
 
 		case XCB_EXPOSE:
-			expose = (xcb_expose_event_t *) event;
-			
 			/* FIXME: schedule output repaint */
 			/* output = x11_compositor_find_output(c, expose->window); */
 
