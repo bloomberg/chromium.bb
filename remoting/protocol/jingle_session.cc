@@ -6,6 +6,7 @@
 
 #include "base/crypto/rsa_private_key.h"
 #include "base/message_loop.h"
+#include "net/base/cert_status_flags.h"
 #include "net/base/cert_verifier.h"
 #include "net/base/host_port_pair.h"
 #include "net/base/net_errors.h"
@@ -59,7 +60,7 @@ net::SSLClientSocket* CreateSSLClientSocket(
 
   // Certificate provided by the host doesn't need authority.
   net::SSLConfig::CertAndStatus cert_and_status;
-  cert_and_status.cert_status = net::ERR_CERT_AUTHORITY_INVALID;
+  cert_and_status.cert_status = net::CERT_STATUS_AUTHORITY_INVALID;
   cert_and_status.cert = cert;
   ssl_config.allowed_bad_certs.push_back(cert_and_status);
 
