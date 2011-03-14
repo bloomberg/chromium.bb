@@ -178,8 +178,6 @@ class PageCyclerTest : public UIPerfTest {
     // Expose garbage collection for the page cycler tests.
     launch_arguments_.AppendSwitchASCII(switches::kJavaScriptFlags,
                                         "--expose_gc");
-    // Enable experimental extension APIs for webrequest tests.
-    launch_arguments_.AppendSwitch(switches::kEnableExperimentalExtensionApis);
 #if defined(OS_MACOSX)
     static rlim_t initial_fd_limit = GetFileDescriptorLimit();
     fd_limit_ = initial_fd_limit;
@@ -371,6 +369,13 @@ class PageCyclerExtensionTest : public PageCyclerTest {
 };
 
 class PageCyclerExtensionWebRequestTest : public PageCyclerExtensionTest {
+ public:
+  PageCyclerExtensionWebRequestTest()
+      : PageCyclerExtensionTest()
+  {
+    // Enable experimental extension APIs for webrequest tests.
+    launch_arguments_.AppendSwitch(switches::kEnableExperimentalExtensionApis);
+  }
 };
 
 static FilePath GetDatabaseDataPath(const char* name) {
