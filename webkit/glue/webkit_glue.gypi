@@ -368,6 +368,8 @@
         'media/video_renderer_impl.h',
         'media/web_data_source.cc',
         'media/web_data_source.h',
+        'media/web_data_source_factory.cc',
+        'media/web_data_source_factory.h',
         'media/web_video_renderer.h',
         'alt_error_page_resource_fetcher.cc',
         'alt_error_page_resource_fetcher.h',

@@ -8,6 +8,7 @@
 
 #include "base/callback.h"
 #include "base/command_line.h"
+#include "media/base/composite_data_source_factory.h"
 #include "media/base/filter_collection.h"
 #include "media/base/limits.h"
 #include "media/base/media_format.h"
@@ -113,10 +114,10 @@ void WebMediaPlayerImpl::Proxy::SetVideoRenderer(
   video_renderer_ = video_renderer;
 }
 
-void WebMediaPlayerImpl::Proxy::AddDataSource(
-    scoped_refptr<WebDataSource> data_source) {
-  base::AutoLock auto_lock(data_sources_lock_);
-  data_sources_.push_back(data_source);
+WebDataSourceBuildObserverHack* WebMediaPlayerImpl::Proxy::GetBuildObserver() {
+  if (!build_observer_.get())
+    build_observer_.reset(NewCallback(this, &Proxy::AddDataSource));
+  return build_observer_.get();
 }
 
 void WebMediaPlayerImpl::Proxy::Paint(skia::PlatformCanvas* canvas,
@@ -193,6 +194,11 @@ void WebMediaPlayerImpl::Proxy::PipelineErrorCallback() {
 void WebMediaPlayerImpl::Proxy::NetworkEventCallback() {
   render_loop_->PostTask(FROM_HERE, NewRunnableMethod(this,
       &WebMediaPlayerImpl::Proxy::NetworkEventTask));
+}
+
+void WebMediaPlayerImpl::Proxy::AddDataSource(WebDataSource* data_source) {
+  base::AutoLock auto_lock(data_sources_lock_);
+  data_sources_.push_back(make_scoped_refptr(data_source));
 }
 
 void WebMediaPlayerImpl::Proxy::RepaintTask() {
@@ -309,21 +315,27 @@ bool WebMediaPlayerImpl::Initialize(
                   &WebMediaPlayerImpl::Proxy::NetworkEventCallback));
 
   // A simple data source that keeps all data in memory.
-  scoped_refptr<SimpleDataSource> simple_data_source(
-    new SimpleDataSource(MessageLoop::current(), frame));
+  scoped_ptr<media::DataSourceFactory> simple_data_source_factory(
+      SimpleDataSource::CreateFactory(MessageLoop::current(), frame,
+                                      proxy_->GetBuildObserver()));
 
   // A sophisticated data source that does memory caching.
-  scoped_refptr<BufferedDataSource> buffered_data_source(
-      new BufferedDataSource(MessageLoop::current(), frame));
-  proxy_->AddDataSource(buffered_data_source);
+  scoped_ptr<media::DataSourceFactory> buffered_data_source_factory(
+      BufferedDataSource::CreateFactory(MessageLoop::current(), frame,
+                                        proxy_->GetBuildObserver()));
+
+  scoped_ptr<media::CompositeDataSourceFactory> data_source_factory(
+      new media::CompositeDataSourceFactory());
 
   if (use_simple_data_source) {
-    filter_collection_->AddDataSource(simple_data_source);
-    filter_collection_->AddDataSource(buffered_data_source);
+    data_source_factory->AddFactory(simple_data_source_factory.release());
+    data_source_factory->AddFactory(buffered_data_source_factory.release());
   } else {
-    filter_collection_->AddDataSource(buffered_data_source);
-    filter_collection_->AddDataSource(simple_data_source);
+    data_source_factory->AddFactory(buffered_data_source_factory.release());
+    data_source_factory->AddFactory(simple_data_source_factory.release());
   }
+
+  filter_collection_->SetDataSourceFactory(data_source_factory.release());
 
   // Add in the default filter factories.
   filter_collection_->AddDemuxer(new media::FFmpegDemuxer(
@@ -797,6 +809,7 @@ void WebMediaPlayerImpl::OnPipelineError() {
     case media::DEMUXER_ERROR_COULD_NOT_PARSE:
     case media::DEMUXER_ERROR_NO_SUPPORTED_STREAMS:
     case media::DEMUXER_ERROR_COULD_NOT_CREATE_THREAD:
+    case media::DATASOURCE_ERROR_URL_NOT_SUPPORTED:
       // Format error.
       SetNetworkState(WebMediaPlayer::FormatError);
       break;

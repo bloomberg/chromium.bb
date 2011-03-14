@@ -244,7 +244,7 @@ void BufferedResourceLoader::willSendRequest(
     return;
   }
 
-    // Only allow |single_origin_| if we haven't seen a different origin yet.
+  // Only allow |single_origin_| if we haven't seen a different origin yet.
   if (single_origin_)
     single_origin_ = url_.GetOrigin() == GURL(newRequest.url()).GetOrigin();
 

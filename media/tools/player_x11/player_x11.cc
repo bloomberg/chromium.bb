@@ -23,7 +23,7 @@
 #include "media/filters/ffmpeg_audio_decoder.h"
 #include "media/filters/ffmpeg_demuxer.h"
 #include "media/filters/ffmpeg_video_decoder.h"
-#include "media/filters/file_data_source.h"
+#include "media/filters/file_data_source_factory.h"
 #include "media/filters/null_audio_renderer.h"
 #include "media/filters/omx_video_decoder.h"
 
@@ -103,7 +103,7 @@ bool InitPipeline(MessageLoop* message_loop,
   // Create our filter factories.
   scoped_ptr<media::FilterCollection> collection(
       new media::FilterCollection());
-  collection->AddDataSource(new media::FileDataSource());
+  collection->SetDataSourceFactory(new media::FileDataSourceFactory());
   collection->AddDemuxer(new media::FFmpegDemuxer(
       message_loop_factory->GetMessageLoop("DemuxThread")));
   collection->AddAudioDecoder(new media::FFmpegAudioDecoder(

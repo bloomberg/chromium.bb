@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -67,6 +67,7 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebMediaPlayerClient.h"
 #include "ui/gfx/rect.h"
 #include "ui/gfx/size.h"
+#include "webkit/glue/media/web_data_source.h"
 
 class GURL;
 
@@ -77,7 +78,6 @@ class WebFrame;
 namespace webkit_glue {
 
 class MediaResourceLoaderBridgeFactory;
-class WebDataSource;
 class WebVideoRenderer;
 
 class WebMediaPlayerImpl : public WebKit::WebMediaPlayer,
@@ -99,7 +99,7 @@ class WebMediaPlayerImpl : public WebKit::WebMediaPlayer,
     // Methods for Filter -> WebMediaPlayerImpl communication.
     void Repaint();
     void SetVideoRenderer(scoped_refptr<WebVideoRenderer> video_renderer);
-    void AddDataSource(scoped_refptr<WebDataSource> data_source);
+    WebDataSourceBuildObserverHack* GetBuildObserver();
 
     // Methods for WebMediaPlayerImpl -> Filter communication.
     void Paint(skia::PlatformCanvas* canvas, const gfx::Rect& dest_rect);
@@ -124,6 +124,9 @@ class WebMediaPlayerImpl : public WebKit::WebMediaPlayer,
     friend class base::RefCountedThreadSafe<Proxy>;
 
     virtual ~Proxy();
+
+    // Adds a data source to data_sources_.
+    void AddDataSource(WebDataSource* data_source);
 
     // Invoke |webmediaplayer_| to perform a repaint.
     void RepaintTask();
@@ -150,6 +153,7 @@ class WebMediaPlayerImpl : public WebKit::WebMediaPlayer,
     base::Lock data_sources_lock_;
     typedef std::list<scoped_refptr<WebDataSource> > DataSourceList;
     DataSourceList data_sources_;
+    scoped_ptr<WebDataSourceBuildObserverHack> build_observer_;
 
     scoped_refptr<WebVideoRenderer> video_renderer_;
 

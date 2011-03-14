@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -14,7 +14,7 @@
 #include "media/filters/ffmpeg_audio_decoder.h"
 #include "media/filters/ffmpeg_demuxer.h"
 #include "media/filters/ffmpeg_video_decoder.h"
-#include "media/filters/file_data_source.h"
+#include "media/filters/file_data_source_factory.h"
 #include "media/filters/null_audio_renderer.h"
 #include "media/tools/player_wtl/wtl_renderer.h"
 
@@ -22,7 +22,7 @@ using media::AudioRendererImpl;
 using media::FFmpegAudioDecoder;
 using media::FFmpegDemuxer;
 using media::FFmpegVideoDecoder;
-using media::FileDataSource;
+using media::FileDataSourceFactory;
 using media::FilterCollection;
 using media::PipelineImpl;
 
@@ -65,7 +65,7 @@ bool Movie::Open(const wchar_t* url, WtlVideoRenderer* video_renderer) {
 
   // Create filter collection.
   scoped_ptr<FilterCollection> collection(new FilterCollection());
-  collection->AddDataSource(new FileDataSource());
+  collection->SetDataSourceFactory(new FileDataSourceFactory());
   collection->AddAudioDecoder(new FFmpegAudioDecoder(
       message_loop_factory_->GetMessageLoop("AudioDecoderThread")));
   collection->AddDemuxer(new FFmpegDemuxer(

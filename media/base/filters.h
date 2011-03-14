@@ -112,12 +112,6 @@ class DataSource : public Filter {
   typedef Callback1<size_t>::Type ReadCallback;
   static const size_t kReadError = static_cast<size_t>(-1);
 
-  virtual bool IsUrlSupported(const std::string& url);
-
-  // Initialize a DataSource for the given URL, executing the callback upon
-  // completion.
-  virtual void Initialize(const std::string& url, FilterCallback* callback) = 0;
-
   // Reads |size| bytes from |position| into |data|. And when the read is done
   // or failed, |read_callback| is called with the number of bytes read or
   // kReadError in case of error.

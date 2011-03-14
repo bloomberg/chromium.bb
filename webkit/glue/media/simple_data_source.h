@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -15,6 +15,7 @@
 
 #include "base/message_loop.h"
 #include "base/scoped_ptr.h"
+#include "media/base/filter_factories.h"
 #include "media/base/filters.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFrame.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebURLLoader.h"
@@ -31,15 +32,20 @@ namespace webkit_glue {
 class SimpleDataSource : public WebDataSource,
                          public WebKit::WebURLLoaderClient {
  public:
+  // Creates a DataSourceFactory for building SimpleDataSource objects.
+  static media::DataSourceFactory* CreateFactory(
+      MessageLoop* render_loop,
+      WebKit::WebFrame* frame,
+      WebDataSourceBuildObserverHack* build_observer);
+
   SimpleDataSource(MessageLoop* render_loop, WebKit::WebFrame* frame);
   virtual ~SimpleDataSource();
 
   // media::Filter implementation.
+  virtual void set_host(media::FilterHost* host);
   virtual void Stop(media::FilterCallback* callback);
 
   // media::DataSource implementation.
-  virtual void Initialize(const std::string& url,
-                          media::FilterCallback* callback);
   virtual const media::MediaFormat& media_format();
   virtual void Read(int64 position, size_t size,
                     uint8* data, ReadCallback* read_callback);
@@ -79,6 +85,9 @@ class SimpleDataSource : public WebDataSource,
       const WebKit::WebURLError&);
 
   // webkit_glue::WebDataSource implementation.
+  virtual void Initialize(const std::string& url,
+                          media::PipelineStatusCallback* callback);
+  virtual void CancelInitialize();
   virtual bool HasSingleOrigin();
   virtual void Abort();
 
@@ -94,6 +103,9 @@ class SimpleDataSource : public WebDataSource,
 
   // Perform initialization completion tasks under a lock.
   void DoneInitialization_Locked(bool success);
+
+  // Update host() stats like total bytes & buffered bytes.
+  void UpdateHostState();
 
   // Primarily used for asserting the bridge is loading on the render thread.
   MessageLoop* render_loop_;
@@ -123,7 +135,7 @@ class SimpleDataSource : public WebDataSource,
   base::Lock lock_;
 
   // Filter callbacks.
-  scoped_ptr<media::FilterCallback> initialize_callback_;
+  scoped_ptr<media::PipelineStatusCallback> initialize_callback_;
 
   // Used to ensure mocks for unittests are used instead of reset in Start().
   bool keep_test_loader_;

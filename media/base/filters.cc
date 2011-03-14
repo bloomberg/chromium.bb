@@ -66,10 +66,6 @@ void Filter::Seek(base::TimeDelta time, FilterCallback* callback) {
 void Filter::OnAudioRendererDisabled() {
 }
 
-bool DataSource::IsUrlSupported(const std::string& url) {
-  return true;
-}
-
 void* DemuxerStream::QueryInterface(const char* interface_id) {
   return NULL;
 }
