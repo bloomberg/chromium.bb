@@ -69,12 +69,12 @@ void GpuDataManager::RequestCompleteGpuInfoIfNeeded() {
 
   GpuProcessHostUIShim* ui_shim = GpuProcessHostUIShim::GetForRenderer(0);
   if (ui_shim)
-    ui_shim->CollectGpuInfoAsynchronously(GPUInfo::kComplete);
+    ui_shim->CollectGpuInfoAsynchronously();
 }
 
 void GpuDataManager::UpdateGpuInfo(const GPUInfo& gpu_info) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  if (gpu_info_.level >= gpu_info.level)
+  if (gpu_info_.finalized)
     return;
   gpu_info_ = gpu_info;
   child_process_logging::SetGpuInfo(gpu_info);
@@ -108,13 +108,20 @@ const ListValue& GpuDataManager::log_messages() const {
 GpuFeatureFlags GpuDataManager::GetGpuFeatureFlags() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   UpdateGpuFeatureFlags();
-  // We only need to return the bits that are not in the preliminary
-  // gpu feature flags because the latter work through renderer
-  // commandline switches.
-  uint32 mask = ~(preliminary_gpu_feature_flags_.flags());
-  GpuFeatureFlags masked_flags;
-  masked_flags.set_flags(gpu_feature_flags_.flags() & mask);
-  return masked_flags;
+  return gpu_feature_flags_;
+}
+
+bool GpuDataManager::GpuAccessAllowed() {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  UpdateGpuFeatureFlags();
+  // We only need to block GPU process if more features are disallowed other
+  // than those in the preliminary gpu feature flags because the latter work
+  // through renderer commandline switches.
+  // However, if accelerated_compositing is not allowed, then we should always
+  // deny gpu access.
+  uint32 mask = (~(preliminary_gpu_feature_flags_.flags())) |
+                GpuFeatureFlags::kGpuFeatureAcceleratedCompositing;
+  return (gpu_feature_flags_.flags() & mask) == 0;
 }
 
 void GpuDataManager::AddGpuInfoUpdateCallback(Callback0::Type* callback) {
@@ -157,12 +164,6 @@ void GpuDataManager::AppendRendererCommandLine(
         command_line->AppendSwitch(switches[i]);
     }
   }
-}
-
-bool GpuDataManager::GpuFeatureAllowed(uint32 feature) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  UpdateGpuFeatureFlags();
-  return ((gpu_feature_flags_.flags() & feature) == 0);
 }
 
 void GpuDataManager::RunGpuInfoUpdateCallbacks() {
@@ -228,8 +229,6 @@ bool GpuDataManager::UpdateGpuBlacklist() {
 
 void GpuDataManager::UpdateGpuFeatureFlags() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  if (gpu_info_.level == GPUInfo::kUninitialized)
-    return;
 
   // Need to call this before checking gpu_feature_flags_set_ because it might
   // be reset if a newer version of GPU blacklist is downloaed.
@@ -249,7 +248,7 @@ void GpuDataManager::UpdateGpuFeatureFlags() {
     uint32 max_entry_id = gpu_blacklist->max_entry_id();
     if (gpu_feature_flags_.flags() != 0) {
       // If gpu is blacklisted, no further GPUInfo will be collected.
-      gpu_info_.level = GPUInfo::kComplete;
+      gpu_info_.finalized = true;
 
       // Notify clients that GpuInfo state has changed
       RunGpuInfoUpdateCallbacks();

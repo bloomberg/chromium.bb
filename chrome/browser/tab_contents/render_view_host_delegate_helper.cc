@@ -326,14 +326,12 @@ WebPreferences RenderViewHostDelegateHelper::GetWebkitPrefs(
   {  // Certain GPU features might have been blacklisted.
     GpuDataManager* gpu_data_manager = GpuDataManager::GetInstance();
     DCHECK(gpu_data_manager);
-    if (!gpu_data_manager->GpuFeatureAllowed(
-            GpuFeatureFlags::kGpuFeatureAcceleratedCompositing))
+    uint32 blacklist_flags = gpu_data_manager->GetGpuFeatureFlags().flags();
+    if (blacklist_flags & GpuFeatureFlags::kGpuFeatureAcceleratedCompositing)
       web_prefs.accelerated_compositing_enabled = false;
-    if (!gpu_data_manager->GpuFeatureAllowed(
-            GpuFeatureFlags::kGpuFeatureWebgl))
+    if (blacklist_flags & GpuFeatureFlags::kGpuFeatureWebgl)
       web_prefs.experimental_webgl_enabled = false;
-    if (!gpu_data_manager->GpuFeatureAllowed(
-            GpuFeatureFlags::kGpuFeatureMultisampling))
+    if (blacklist_flags & GpuFeatureFlags::kGpuFeatureMultisampling)
       web_prefs.gl_multisampling_enabled = false;
   }
 

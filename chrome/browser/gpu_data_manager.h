@@ -28,7 +28,7 @@ class GpuDataManager {
   // Requests complete GPUinfo if it has not already been requested
   void RequestCompleteGpuInfoIfNeeded();
 
-  // Only update if the level is higher than the cached GPUInfo level.
+  // Only update if the current GPUInfo is not finalized.
   void UpdateGpuInfo(const GPUInfo& gpu_info);
 
   const GPUInfo& gpu_info() const;
@@ -44,6 +44,13 @@ class GpuDataManager {
   // If necessary, compute the flags before returning them.
   GpuFeatureFlags GetGpuFeatureFlags();
 
+  // This indicator might change because we could collect more GPU info or
+  // because the GPU blacklist could be updated.
+  // If this returns false, any further GPU access, including launching GPU
+  // process, establish GPU channel, and GPU info collection, should be
+  // blocked.
+  bool GpuAccessAllowed();
+
   // Add a callback.
   void AddGpuInfoUpdateCallback(Callback0::Type* callback);
 
@@ -54,9 +61,6 @@ class GpuDataManager {
   // Inserting disable-feature switches into renderer process command-line
   // in correspondance to preliminary gpu feature flags.
   void AppendRendererCommandLine(CommandLine* command_line);
-
-  // If necessary, compute the flags before checking if a feature is allowed
-  bool GpuFeatureAllowed(uint32 feature);
 
  private:
   friend struct DefaultSingletonTraits<GpuDataManager>;

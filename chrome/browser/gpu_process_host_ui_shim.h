@@ -49,6 +49,7 @@ class GpuProcessHostUIShim
   // Returns null on failure. It is not safe to store the pointer once control
   // has returned to the message loop as it can be destroyed. Instead store the
   // associated GPU host ID. A renderer ID of zero means the browser process.
+  // This could return NULL if GPU access is not allowed (blacklisted).
   static GpuProcessHostUIShim* GetForRenderer(int renderer_id);
 
   // Destroy the GpuProcessHostUIShim with the given host ID. This can only
@@ -113,7 +114,7 @@ class GpuProcessHostUIShim
 
   // Sends a message to the browser process to collect the information from the
   // graphics card.
-  void CollectGpuInfoAsynchronously(GPUInfo::Level level);
+  void CollectGpuInfoAsynchronously();
 
   // Tells the GPU process to crash. Useful for testing.
   void SendAboutGpuCrash();

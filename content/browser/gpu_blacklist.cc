@@ -631,9 +631,6 @@ GpuFeatureFlags GpuBlacklist::DetermineGpuFeatureFlags(
     const GPUInfo& gpu_info) {
   active_entries_.clear();
   GpuFeatureFlags flags;
-  // No need to go through blacklist entries if GPUInfo isn't available.
-  if (gpu_info.level == GPUInfo::kUninitialized)
-    return flags;
 
   if (os == kOsAny)
     os = GetOsType();

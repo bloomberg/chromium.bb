@@ -49,14 +49,12 @@ bool CollectGraphicsInfo(GPUInfo* gpu_info) {
 
   gpu_info->can_lose_context =
       (gfx::GetGLImplementation() == gfx::kGLImplementationEGLGLES2);
-  gpu_info-> level = GPUInfo::kComplete;
+  gpu_info->finalized = true;
   return CollectGraphicsInfoGL(gpu_info);
 }
 
 bool CollectPreliminaryGraphicsInfo(GPUInfo* gpu_info) {
   DCHECK(gpu_info);
-
-  gpu_info->level = GPUInfo::kPartial;
 
   bool rt = true;
   if (!CollectVideoCardInfo(gpu_info))

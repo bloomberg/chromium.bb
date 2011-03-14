@@ -155,13 +155,13 @@ void SetGpuInfoImpl(const GPUInfo& gpu_info,
                  gpu_info.driver_version,
                  set_key_func);
   SetGpuKeyValue(kGPUPixelShaderVersionParamName,
-                 base::UintToString(gpu_info.pixel_shader_version),
+                 gpu_info.pixel_shader_version,
                  set_key_func);
   SetGpuKeyValue(kGPUVertexShaderVersionParamName,
-                 base::UintToString(gpu_info.vertex_shader_version),
+                 gpu_info.vertex_shader_version,
                  set_key_func);
   SetGpuKeyValue(kGPUGLVersionParamName,
-                 base::UintToString(gpu_info.gl_version),
+                 gpu_info.gl_version,
                  set_key_func);
 }
 

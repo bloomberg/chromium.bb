@@ -58,7 +58,7 @@ class GpuThread : public ChildThread {
   void OnEstablishChannel(int renderer_id);
   void OnCloseChannel(const IPC::ChannelHandle& channel_handle);
   void OnSynchronize();
-  void OnCollectGraphicsInfo(GPUInfo::Level level);
+  void OnCollectGraphicsInfo();
   void OnCreateViewCommandBuffer(
       gfx::PluginWindowHandle window,
       int32 render_view_id,
@@ -89,6 +89,9 @@ class GpuThread : public ChildThread {
 #if defined(OS_WIN)
   // Windows specific client sandbox interface.
   sandbox::TargetServices* target_services_;
+
+  // Indicates whether DirectX Diagnostics collection is ongoing.
+  bool collecting_dx_diagnostics_;
 #endif
 
   DISALLOW_COPY_AND_ASSIGN(GpuThread);

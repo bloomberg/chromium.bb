@@ -112,6 +112,11 @@ GpuProcessHostUIShim::GpuProcessHostUIShim()
 GpuProcessHostUIShim* GpuProcessHostUIShim::GetForRenderer(int renderer_id) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
+  // Don't grant further access to GPU if it is not allowed.
+  GpuDataManager* gpu_data_manager = GpuDataManager::GetInstance();
+  if (gpu_data_manager != NULL && !gpu_data_manager->GpuAccessAllowed())
+    return NULL;
+
   // The current policy is to ignore the renderer ID and use a single GPU
   // process for all renderers. Later this will be extended to allow the
   // use of multiple GPU processes.
@@ -267,7 +272,7 @@ void GpuProcessHostUIShim::EstablishGpuChannel(
   linked_ptr<EstablishChannelCallback> wrapped_callback(callback);
 
   // If GPU features are already blacklisted, no need to establish the channel.
-  if (gpu_data_manager_->GetGpuFeatureFlags().flags() != 0) {
+  if (!gpu_data_manager_->GpuAccessAllowed()) {
     EstablishChannelError(
         wrapped_callback.release(), IPC::ChannelHandle(), NULL, GPUInfo());
     return;
@@ -332,14 +337,9 @@ void GpuProcessHostUIShim::DidDestroyAcceleratedSurface(int renderer_id,
 
 #endif
 
-void GpuProcessHostUIShim::CollectGpuInfoAsynchronously(
-    GPUInfo::Level level) {
+void GpuProcessHostUIShim::CollectGpuInfoAsynchronously() {
   DCHECK(CalledOnValidThread());
-
-  // If GPU is already blacklisted, no more info will be collected.
-  if (gpu_data_manager_->GetGpuFeatureFlags().flags() != 0)
-    return;
-  Send(new GpuMsg_CollectGraphicsInfo(level));
+  Send(new GpuMsg_CollectGraphicsInfo());
 }
 
 void GpuProcessHostUIShim::SendAboutGpuCrash() {
@@ -416,7 +416,7 @@ void GpuProcessHostUIShim::OnChannelEstablished(
   // Currently if any of the GPU features are blacklisted, we don't establish a
   // GPU channel.
   if (!channel_handle.name.empty() &&
-      gpu_data_manager_->GetGpuFeatureFlags().flags() != 0) {
+      !gpu_data_manager_->GpuAccessAllowed()) {
     Send(new GpuMsg_CloseChannel(channel_handle));
     EstablishChannelError(callback.release(),
                           IPC::ChannelHandle(),

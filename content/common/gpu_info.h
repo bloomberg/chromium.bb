@@ -18,19 +18,9 @@
 
 struct GPUInfo {
   GPUInfo();
-  ~GPUInfo();
 
-  enum Level {
-    kUninitialized,
-    kPreliminary,
-    kPartial,
-    kCompleting,
-    kComplete,
-  };
-
-  // Whether this GPUInfo has been partially or fully initialized with
-  // information.
-  Level level;
+  // Whether more GPUInfo fields might be collected in the future.
+  bool finalized;
 
   // The amount of time taken to get from the process starting to the message
   // loop being pumped.
@@ -52,23 +42,15 @@ struct GPUInfo {
   // The date of the graphics driver currently installed.
   std::string driver_date;
 
-  // The version of the pixel/fragment shader used by the gpu.  Major version in
-  // the second lowest 8 bits, minor in the lowest 8 bits, eg version 2.5 would
-  // be 0x00000205.
-  uint32 pixel_shader_version;
+  // The version of the pixel/fragment shader used by the gpu.
+  std::string pixel_shader_version;
 
-  // The version of the vertex shader used by the gpu.  Major version in the
-  // second lowest 8 bits, minor in the lowest 8 bits, eg version 2.5 would be
-  // 0x00000205.
-  uint32 vertex_shader_version;
+  // The version of the vertex shader used by the gpu.
+  std::string vertex_shader_version;
 
   // The version of OpenGL we are using.
-  // Major version in the second lowest 8 bits, minor in the lowest 8 bits,
-  // eg version 2.5 would be 0x00000205.
-  // Returns 0 if we're not using OpenGL, say because we're going through
-  // D3D instead.
   // TODO(zmo): should be able to tell if it's GL or GLES.
-  uint32 gl_version;
+  std::string gl_version;
 
   // The GL_VERSION string.  "" if we are not using OpenGL.
   std::string gl_version_string;
@@ -85,11 +67,6 @@ struct GPUInfo {
   // The device semantics, i.e. whether the Vista and Windows 7 specific
   // semantics are available.
   bool can_lose_context;
-
-  // True if there was an error at any stage of collecting GPUInfo data.
-  // If there was an error, then the GPUInfo fields may be incomplete or set
-  // to default values such as 0 or empty string.
-  bool collection_error;
 
 #if defined(OS_WIN)
   // The information returned by the DirectX Diagnostics Tool.

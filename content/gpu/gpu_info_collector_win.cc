@@ -20,6 +20,19 @@
 #include "libEGL/main.h"
 #include "libEGL/Display.h"
 
+namespace {
+
+// The version number stores the major and minor version in the least 16 bits;
+// for example, 2.5 is 0x00000205.
+// Returned string is in the format of "major.minor".
+std::string VersionNumberToString(uint32 version_number) {
+  int hi = (version_number >> 8) & 0xff;
+  int low = version_number & 0xff;
+  return base::IntToString(hi) + "." + base::IntToString(low);
+}
+
+}  // namespace anonymous
+
 // Setup API functions
 typedef HDEVINFO (WINAPI*SetupDiGetClassDevsWFunc)(
     CONST GUID *ClassGuid,
@@ -51,12 +64,9 @@ bool CollectGraphicsInfo(GPUInfo* gpu_info) {
   DCHECK(gpu_info);
 
   if (gfx::GetGLImplementation() != gfx::kGLImplementationEGLGLES2) {
-    gpu_info->level = GPUInfo::kComplete;
+    gpu_info->finalized = true;
     return CollectGraphicsInfoGL(gpu_info);
   }
-
-  // Set to partial now in case this function returns false below.
-  gpu_info->level = GPUInfo::kPartial;
 
   // TODO(zmo): the following code only works if running on top of ANGLE.
   // Need to handle the case when running on top of real EGL/GLES2 drivers.
@@ -91,8 +101,6 @@ bool CollectGraphicsInfo(GPUInfo* gpu_info) {
 bool CollectPreliminaryGraphicsInfo(GPUInfo* gpu_info) {
   DCHECK(gpu_info);
 
-  gpu_info->level = GPUInfo::kPreliminary;
-
   bool rt = true;
   if (!CollectVideoCardInfo(gpu_info))
     rt = false;
@@ -111,8 +119,10 @@ bool CollectGraphicsInfoD3D(IDirect3D9* d3d, GPUInfo* gpu_info) {
   if (d3d->GetDeviceCaps(D3DADAPTER_DEFAULT,
                          D3DDEVTYPE_HAL,
                          &d3d_caps) == D3D_OK) {
-    gpu_info->pixel_shader_version = d3d_caps.PixelShaderVersion;
-    gpu_info->vertex_shader_version = d3d_caps.VertexShaderVersion;
+    gpu_info->pixel_shader_version =
+        VersionNumberToString(d3d_caps.PixelShaderVersion);
+    gpu_info->vertex_shader_version =
+        VersionNumberToString(d3d_caps.VertexShaderVersion);
   } else {
     LOG(ERROR) << "d3d->GetDeviceCaps() failed";
     succeed = false;

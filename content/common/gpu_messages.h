@@ -88,10 +88,8 @@ IPC_STRUCT_TRAITS_BEGIN(DxDiagNode)
   IPC_STRUCT_TRAITS_MEMBER(children)
 IPC_STRUCT_TRAITS_END()
 
-IPC_ENUM_TRAITS(GPUInfo::Level)
-
 IPC_STRUCT_TRAITS_BEGIN(GPUInfo)
-  IPC_STRUCT_TRAITS_MEMBER(level)
+  IPC_STRUCT_TRAITS_MEMBER(finalized)
   IPC_STRUCT_TRAITS_MEMBER(initialization_time)
   IPC_STRUCT_TRAITS_MEMBER(vendor_id)
   IPC_STRUCT_TRAITS_MEMBER(device_id)
@@ -106,7 +104,6 @@ IPC_STRUCT_TRAITS_BEGIN(GPUInfo)
   IPC_STRUCT_TRAITS_MEMBER(gl_renderer)
   IPC_STRUCT_TRAITS_MEMBER(gl_extensions)
   IPC_STRUCT_TRAITS_MEMBER(can_lose_context)
-  IPC_STRUCT_TRAITS_MEMBER(collection_error)
 #if defined(OS_WIN)
   IPC_STRUCT_TRAITS_MEMBER(dx_diagnostics)
 #endif
@@ -153,8 +150,7 @@ IPC_MESSAGE_CONTROL4(GpuMsg_CreateViewCommandBuffer,
 
 // Tells the GPU process to create a context for collecting graphics card
 // information.
-IPC_MESSAGE_CONTROL1(GpuMsg_CollectGraphicsInfo,
-                     GPUInfo::Level /* level */)
+IPC_MESSAGE_CONTROL0(GpuMsg_CollectGraphicsInfo)
 
 #if defined(OS_MACOSX)
 // Tells the GPU process that the browser process handled the swap

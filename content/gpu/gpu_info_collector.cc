@@ -55,8 +55,8 @@ std::string GetGLString(unsigned int pname) {
   return "";
 }
 
-uint32 GetVersionNumberFromString(const std::string& version_string) {
-  int major = 0, minor = 0;
+// Return a version string in the format of "major.minor".
+std::string GetVersionFromString(const std::string& version_string) {
   size_t begin = version_string.find_first_of("0123456789");
   if (begin != std::string::npos) {
     size_t end = version_string.find_first_not_of("01234567890.", begin);
@@ -67,12 +67,10 @@ uint32 GetVersionNumberFromString(const std::string& version_string) {
       sub_string = version_string.substr(begin);
     std::vector<std::string> pieces;
     base::SplitString(sub_string, '.', &pieces);
-    if (pieces.size() >= 2) {
-      base::StringToInt(pieces[0], &major);
-      base::StringToInt(pieces[1], &minor);
-    }
+    if (pieces.size() >= 2)
+      return pieces[0] + "." + pieces[1];
   }
-  return ((major << 8) + minor);
+  return "";
 }
 
 }  // namespace anonymous
@@ -107,10 +105,9 @@ bool CollectGLVersionInfo(GPUInfo* gpu_info) {
   std::string glsl_version_string =
       GetGLString(GL_SHADING_LANGUAGE_VERSION);
 
-  uint32 gl_version = GetVersionNumberFromString(gl_version_string);
-  gpu_info->gl_version = gl_version;
+  gpu_info->gl_version = GetVersionFromString(gl_version_string);
 
-  uint32 glsl_version = GetVersionNumberFromString(glsl_version_string);
+  std::string glsl_version = GetVersionFromString(glsl_version_string);
   gpu_info->pixel_shader_version = glsl_version;
   gpu_info->vertex_shader_version = glsl_version;
 

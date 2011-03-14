@@ -304,12 +304,6 @@ ListValue* DxDiagNodeToList(const DxDiagNode& node) {
 
 #endif  // OS_WIN
 
-std::string VersionNumberToString(uint32 value) {
-  int hi = (value >> 8) & 0xff;
-  int low = value & 0xff;
-  return base::IntToString(hi) + "." + base::IntToString(low);
-}
-
 DictionaryValue* GpuInfoToDict(const GPUInfo& gpu_info) {
   ListValue* basic_info = new ListValue();
   basic_info->Append(NewDescriptionValuePair("Initialization time",
@@ -325,11 +319,11 @@ DictionaryValue* GpuInfoToDict(const GPUInfo& gpu_info) {
   basic_info->Append(NewDescriptionValuePair("Driver date",
       gpu_info.driver_date));
   basic_info->Append(NewDescriptionValuePair("Pixel shader version",
-      VersionNumberToString(gpu_info.pixel_shader_version)));
+      gpu_info.pixel_shader_version));
   basic_info->Append(NewDescriptionValuePair("Vertex shader version",
-      VersionNumberToString(gpu_info.vertex_shader_version)));
+      gpu_info.vertex_shader_version));
   basic_info->Append(NewDescriptionValuePair("GL version",
-      VersionNumberToString(gpu_info.gl_version)));
+      gpu_info.gl_version));
   basic_info->Append(NewDescriptionValuePair("GL_VENDOR",
       gpu_info.gl_vendor));
   basic_info->Append(NewDescriptionValuePair("GL_RENDERER",
@@ -343,10 +337,8 @@ DictionaryValue* GpuInfoToDict(const GPUInfo& gpu_info) {
   info->Set("basic_info", basic_info);
 
 #if defined(OS_WIN)
-  if (gpu_info.level == GPUInfo::kComplete) {
-    ListValue* dx_info = DxDiagNodeToList(gpu_info.dx_diagnostics);
-    info->Set("diagnostics", dx_info);
-  }
+  ListValue* dx_info = DxDiagNodeToList(gpu_info.dx_diagnostics);
+  info->Set("diagnostics", dx_info);
 #endif
 
   return info;
@@ -360,8 +352,6 @@ Value* GpuMessageHandler::OnRequestLogMessages(const ListValue*) {
 
 void GpuMessageHandler::OnGpuInfoUpdate() {
   const GPUInfo& gpu_info = gpu_data_manager_->gpu_info();
-  if (gpu_info.level == GPUInfo::kUninitialized)
-    return;
 
   // Get GPU Info.
   DictionaryValue* gpu_info_val = GpuInfoToDict(gpu_info);
@@ -370,7 +360,6 @@ void GpuMessageHandler::OnGpuInfoUpdate() {
   Value* blacklisting_reasons = gpu_data_manager_->GetBlacklistingReasons();
   if (blacklisting_reasons)
     gpu_info_val->Set("blacklistingReasons", blacklisting_reasons);
-
 
   // Send GPU Info to javascript.
   web_ui_->CallJavascriptFunction("browserBridge.onGpuInfoUpdate",

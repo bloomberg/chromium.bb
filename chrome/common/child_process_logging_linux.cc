@@ -65,11 +65,11 @@ void SetGpuInfo(const GPUInfo& gpu_info) {
           kGpuStringSize - 1);
   g_gpu_driver_ver[kGpuStringSize - 1] = '\0';
   strncpy(g_gpu_ps_ver,
-          base::UintToString(gpu_info.pixel_shader_version).c_str(),
+          gpu_info.pixel_shader_version.c_str(),
           kGpuStringSize - 1);
   g_gpu_ps_ver[kGpuStringSize - 1] = '\0';
   strncpy(g_gpu_vs_ver,
-          base::UintToString(gpu_info.vertex_shader_version).c_str(),
+          gpu_info.vertex_shader_version.c_str(),
           kGpuStringSize - 1);
   g_gpu_vs_ver[kGpuStringSize - 1] = '\0';
 }
