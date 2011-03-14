@@ -39,6 +39,10 @@ class Transform;
 }
 using ui::ThemeProvider;
 
+#if defined(OS_WIN)
+class NativeViewAccessibilityWin;
+#endif
+
 namespace views {
 
 class Background;
@@ -50,10 +54,6 @@ class RootView;
 class ScrollView;
 class Widget;
 class Window;
-
-#if defined(OS_WIN)
-class NativeViewAccessibilityWin;
-#endif
 
 // ContextMenuController is responsible for showing the context menu for a
 // View. To use a ContextMenuController invoke SetContextMenuController on a

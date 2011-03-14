@@ -13,9 +13,9 @@
 using ui::AccessibilityTypes;
 
 namespace views {
-
 const char kViewsNativeHostPropForAccessibility[] =
     "Views_NativeViewHostHWNDForAccessibility";
+}
 
 // static
 scoped_refptr<NativeViewAccessibilityWin> NativeViewAccessibilityWin::Create(
@@ -732,7 +732,7 @@ HRESULT NativeViewAccessibilityWin::GetNativeIAccessibleInterface(
 
   HWND native_view_window = static_cast<HWND>(
       ui::ViewProp::GetValue(native_host->native_view(),
-                             kViewsNativeHostPropForAccessibility));
+                             views::kViewsNativeHostPropForAccessibility));
   if (!IsWindow(native_view_window)) {
     native_view_window = native_host->native_view();
   }
@@ -752,5 +752,3 @@ HRESULT NativeViewAccessibilityWin::GetNativeIAccessibleInterface(
 
   return E_FAIL;
 }
-
-}  // namespace views

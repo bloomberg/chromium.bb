@@ -17,6 +17,10 @@
 #include "views/view.h"
 
 namespace views {
+extern const char kViewsNativeHostPropForAccessibility[];
+// Note: do not put NativeViewAccessibilityWin in the namespace "views";
+// Visual Studio 2005 does not allow an ATL::CComObject symbol in a namespace.
+}
 
 ////////////////////////////////////////////////////////////////////////////////
 //
@@ -162,9 +166,5 @@ class ATL_NO_VTABLE NativeViewAccessibilityWin
 
   DISALLOW_COPY_AND_ASSIGN(NativeViewAccessibilityWin);
 };
-
-extern const char kViewsNativeHostPropForAccessibility[];
-
-}  // namespace views
 
 #endif  // VIEWS_ACCESSIBILITY_NATIVE_VIEW_ACCESSIBILITY_WIN_H_

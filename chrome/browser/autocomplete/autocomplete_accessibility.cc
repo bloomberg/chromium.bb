@@ -59,7 +59,7 @@ STDMETHODIMP AutocompleteAccessibility::get_accParent(IDispatch** disp_parent) {
   }
 
   // Retrieve the IDispatch interface for the parent view.
-  *disp_parent = views::NativeViewAccessibilityWin::GetAccessibleForView(
+  *disp_parent = NativeViewAccessibilityWin::GetAccessibleForView(
       edit_box_->parent_view());
   // Increment the reference count for the retrieved interface.
   (*disp_parent)->AddRef();
