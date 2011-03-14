@@ -1199,19 +1199,15 @@ void DraggedTabController::ResetSelection(TabStripModel* model) {
   for (size_t i = 0; i < drag_data_.size(); ++i) {
     // |contents| is NULL if a tab was deleted out from under us.
     if (drag_data_[i].contents) {
-      if (!has_one_valid_tab) {
-        // Reset the active/lead to the first tab. If the source tab is still
-        // valid we'll reset these again later on.
-        selection_model.set_active(i);
-        selection_model.set_anchor(i);
-      }
-      has_one_valid_tab = true;
       int index = model->GetIndexOfTabContents(drag_data_[i].contents);
       DCHECK_NE(-1, index);
       selection_model.AddIndexToSelection(index);
-      if (i == source_tab_index_) {
-        selection_model.set_active(i);
-        selection_model.set_anchor(i);
+      if (!has_one_valid_tab || i == source_tab_index_) {
+        // Reset the active/lead to the first tab. If the source tab is still
+        // valid we'll reset these again later on.
+        selection_model.set_active(index);
+        selection_model.set_anchor(index);
+        has_one_valid_tab = true;
       }
     }
   }
