@@ -25,6 +25,7 @@ ContentClient* GetContentClient();
 class ContentClient {
  public:
   ContentClient();
+  ~ContentClient();
 
   // Gets or sets the embedder API for participating in browser logic.
   // The client must be set early, before any content code is called.
