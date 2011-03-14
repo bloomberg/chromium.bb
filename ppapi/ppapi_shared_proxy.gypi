@@ -70,7 +70,6 @@
         'proxy/plugin_var_tracker.h',
         'proxy/ppapi_messages.cc',
         'proxy/ppapi_messages.h',
-        'proxy/ppapi_messages_internal.h',
         'proxy/ppapi_param_traits.cc',
         'proxy/ppapi_param_traits.h',
         'proxy/ppb_audio_config_proxy.cc',
