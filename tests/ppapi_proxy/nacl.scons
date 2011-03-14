@@ -93,5 +93,4 @@ node = env.SelUniversalTest(
 
 env.AddNodeToTestSuite(node,
                        ['small_tests', 'sel_ldr_tests'],
-                       'run_ppapi_event_test',
-                       is_broken=env.Bit('host_windows'))
+                       'run_ppapi_event_test')

@@ -82,10 +82,6 @@ for suffix in ['valid', 'invalid']:
       filter_inverse='true',
       )
 
-  # Note: we use the sysv shm feature in sel_universal which is only available
-  # on linux.
-  is_broken = not env.Bit('host_linux')
   env.AddNodeToTestSuite(node,
                          ['small_tests', 'sel_ldr_tests'],
-                         'run_' + basename + '_test',
-                         is_broken=is_broken)
+                         'run_' + basename + '_test')
