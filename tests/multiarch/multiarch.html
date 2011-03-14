@@ -1,14 +1,21 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+          "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html>
-  <body>
-    <div id="status">NO-STATUS</div>
-    <embed id="embed"
-           name="embed"
-           type="application/x-nacl"
-           hidden="true"
-           onload="OnNaClLoad()"
-           onfail="OnNaClFail()"
-           nacl="/tests/prebuilt/srpc_hw.nmf"
-           />
-    <script type="text/javascript" src="multiarch.js"></script>
-    </body>
+<!-- Copyright 2011 Native Client Authors.  All rights reserved. -->
+<head>
+  <title> Multi-arch Nexe loading test </title>
+  <META HTTP-EQUIV="Pragma" CONTENT="no-cache" />
+  <META HTTP-EQUIV="Expires" CONTENT="-1" />
+  <script type="text/javascript" src="multiarch.js"></script>
+  <script type="text/javascript" src="nacltest.js"></script>
+</head>
+<body>
+  <embed id="nacl_module"
+         name="nacl_module"
+         type="application/x-nacl"
+         hidden="true"
+         onload="OnNaClLoad()"
+         nacl="multiarch.nmf"
+         />
+  </body>
 </html>

@@ -1,11 +1,10 @@
 # -*- python -*-
-# Copyright 2010 The Native Client Authors.  All rights reserved.
+# Copyright 2011 The Native Client Authors.  All rights reserved.
 # Use of this source code is governed by a BSD-style license that can
 # be found in the LICENSE file.
 
 # Test of selection of the most appropriate nexe for a given CPU
-# architecture.  In the interests of test portability, we only build a
-# single nexe for the current target, and use dummies for all others.
+# architecture.
 
 Import('env')
 
@@ -14,15 +13,18 @@ if env.Bit('target_arm'):
   Return()
 
 # Use pre-built "Hello, World!" executables for several architectures.
-node = env.BrowserTester(
+node = env.PPAPIBrowserTester(
     'multiarch_test.out',
     url='multiarch.html',
-    files=['${SCONSTRUCT_DIR}/tests/prebuilt/x86/srpc_hw.nexe',
-           '${SCONSTRUCT_DIR}/tests/prebuilt/x64/srpc_hw.nexe',
-           '${SCONSTRUCT_DIR}/tests/prebuilt/arm/srpc_hw.nexe',
-           '${SCONSTRUCT_DIR}/tests/prebuilt/srpc_hw.nmf',
-           env.File('multiarch.html'),
+    files=[env.File('multiarch.html'),
            env.File('multiarch.js'),
-           ],
-    )
-env.AddNodeToTestSuite(node, ['browser_tests'], 'run_multiarch_test')
+           env.File('multiarch.nmf'),
+           env.File('${SCONSTRUCT_DIR}/tests/multiarch/srpc_hw_x86_32.nexe'),
+           env.File('${SCONSTRUCT_DIR}/tests/multiarch/srpc_hw_x86_64.nexe'),
+           env.File('${SCONSTRUCT_DIR}/tests/multiarch/srpc_hw_ARM.nexe'),
+    ])
+
+env.AddNodeToTestSuite(node,
+                       ['chrome_browser_tests'],
+                       'run_multiarch_test',
+                       is_broken=env.PPAPIBrowserTesterIsBroken())

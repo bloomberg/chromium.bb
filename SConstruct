@@ -2156,9 +2156,7 @@ if nacl_env.Bit('build_av_apps'):
       'tests/earth/nacl.scons',
       'tests/mandel_nav/nacl.scons',
       'tests/many/nacl.scons',
-      # TODO(polina,dspringer): *** Add this test back in when URLLoader
-      # works! ***
-      # 'tests/multiarch/nacl.scons',
+      'tests/multiarch/nacl.scons',
       ])
 
 nacl_env.Append(
