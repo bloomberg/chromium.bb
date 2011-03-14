@@ -239,13 +239,13 @@ typedef struct _FcExpr {
     union {
 	int	    ival;
 	double	    dval;
-	FcChar8	    *sval;
+	const FcChar8	    *sval;
 	FcMatrix    *mval;
 	FcBool	    bval;
 	FcCharSet   *cval;
 	FcLangSet   *lval;
 	FcObject    object;
-	FcChar8	    *constant;
+	const FcChar8	    *constant;
 	struct {
 	    struct _FcExpr *left, *right;
 	} tree;
