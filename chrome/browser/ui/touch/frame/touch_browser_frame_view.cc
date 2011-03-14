@@ -18,6 +18,7 @@
 #include "content/common/notification_type.h"
 #include "ui/base/animation/slide_animation.h"
 #include "ui/gfx/rect.h"
+#include "views/controls/button/image_button.h"
 #include "views/controls/textfield/textfield.h"
 
 namespace {
@@ -172,6 +173,26 @@ TouchBrowserFrameView::VirtualKeyboardType
       return GENERIC;
   }
   return NONE;
+}
+
+bool TouchBrowserFrameView::HitTest(const gfx::Point& point) const {
+  if (OpaqueBrowserFrameView::HitTest(point))
+    return true;
+
+  if (close_button()->IsVisible() &&
+      close_button()->GetMirroredBounds().Contains(point))
+    return true;
+  if (restore_button()->IsVisible() &&
+      restore_button()->GetMirroredBounds().Contains(point))
+    return true;
+  if (maximize_button()->IsVisible() &&
+      maximize_button()->GetMirroredBounds().Contains(point))
+    return true;
+  if (minimize_button()->IsVisible() &&
+      minimize_button()->GetMirroredBounds().Contains(point))
+    return true;
+
+  return false;
 }
 
 void TouchBrowserFrameView::TabSelectedAt(TabContentsWrapper* old_contents,

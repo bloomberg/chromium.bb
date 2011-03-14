@@ -38,6 +38,10 @@ class OpaqueBrowserFrameView : public BrowserNonClientFrameView,
 
  protected:
   BrowserView* browser_view() const { return browser_view_; }
+  views::ImageButton* minimize_button() const { return minimize_button_; }
+  views::ImageButton* maximize_button() const { return maximize_button_; }
+  views::ImageButton* restore_button() const { return restore_button_; }
+  views::ImageButton* close_button() const { return close_button_; }
 
   // Used to allow subclasses to reserve height for other components they
   // will add.  The space is reserved below the ClientView.

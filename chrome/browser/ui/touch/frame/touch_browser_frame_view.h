@@ -56,6 +56,9 @@ class TouchBrowserFrameView : public OpaqueBrowserFrameView,
   virtual void UpdateKeyboardAndLayout(bool should_show_keyboard);
   virtual VirtualKeyboardType DecideKeyboardStateForView(views::View* view);
 
+  // Overridden from views::View
+  virtual bool HitTest(const gfx::Point& point) const OVERRIDE;
+
   // Overrridden from TabStripModelObserver.
   virtual void TabSelectedAt(TabContentsWrapper* old_contents,
                              TabContentsWrapper* new_contents,

@@ -6,7 +6,9 @@
 
 #include "chrome/browser/ui/touch/tabs/touch_tab.h"
 #include "chrome/browser/ui/view_ids.h"
+#include "chrome/browser/ui/views/tabs/browser_tab_strip_controller.h"
 #include "ui/gfx/canvas_skia.h"
+#include "views/metrics.h"
 #include "views/window/non_client_view.h"
 #include "views/window/window.h"
 
@@ -16,7 +18,9 @@ static const int kTouchTabHeight = 64;
 
 TouchTabStrip::TouchTabStrip(TabStripController* controller)
     : BaseTabStrip(controller, BaseTabStrip::HORIZONTAL_TAB_STRIP),
-      in_tab_close_(false) {
+      in_tab_close_(false),
+      last_tap_time_(base::Time::FromInternalValue(0)),
+      last_tapped_view_(NULL) {
   Init();
 }
 
@@ -36,15 +40,7 @@ TouchTabStrip::~TouchTabStrip() {
 // TouchTabStrip, AbstractTabStripView implementation:
 
 bool TouchTabStrip::IsPositionInWindowCaption(const gfx::Point& point) {
-  views::View* v = GetEventHandlerForPoint(point);
-
-  // If there is no control at this location, claim the hit was in the title
-  // bar to get a move action.
-  if (v == this)
-    return true;
-
-  // All other regions, should be considered part of the containing Window's
-  // client area so that regular events can be processed for them.
+  // The entire tabstrip is mine. No part of it belongs to the window caption.
   return false;
 }
 
@@ -152,8 +148,19 @@ int TouchTabStrip::GetSizeNeededForTabs(const std::vector<BaseTab*>& tabs) {
   return 0;
 }
 
+TouchTab* TouchTabStrip::GetTabAtTabDataIndex(int tab_data_index) const {
+  return static_cast<TouchTab*>(base_tab_at_tab_index(tab_data_index));
+}
+
 ////////////////////////////////////////////////////////////////////////////////
-// TouchTabStrip, views::View overrides:
+// TouchTabStrip, private:
+
+void TouchTabStrip::Init() {
+  SetID(VIEW_ID_TAB_STRIP);
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// TouchTabStrip, views::View overrides, private:
 
 gfx::Size TouchTabStrip::GetPreferredSize() {
   return gfx::Size(0, kTouchTabStripHeight);
@@ -198,14 +205,39 @@ void TouchTabStrip::PaintChildren(gfx::Canvas* canvas) {
     dragging_tab->Paint(canvas);
 }
 
-TouchTab* TouchTabStrip::GetTabAtTabDataIndex(int tab_data_index) const {
-  return static_cast<TouchTab*>(base_tab_at_tab_index(tab_data_index));
+views::View::TouchStatus TouchTabStrip::OnTouchEvent(
+    const views::TouchEvent& event) {
+  if (event.type() != ui::ET_TOUCH_PRESSED)
+    return TOUCH_STATUS_UNKNOWN;
+
+  views::View* view = GetEventHandlerForPoint(event.location());
+  if (view && view != this && view->GetID() != VIEW_ID_TAB)
+    return TOUCH_STATUS_UNKNOWN;
+
+  base::TimeDelta delta = event.time_stamp() - last_tap_time_;
+
+  if (delta.InMilliseconds() < views::GetDoubleClickInterval() &&
+      view == last_tapped_view_) {
+    // If double tapped the empty space, open a new tab. If double tapped a tab,
+    // close it.
+    if (view == this)
+      controller()->CreateNewTab();
+    else
+      CloseTab(static_cast<BaseTab*>(view));
+
+    last_tap_time_ = base::Time::FromInternalValue(0);
+    last_tapped_view_ = NULL;
+    return TOUCH_STATUS_END;
+  }
+
+  last_tap_time_ = event.time_stamp();
+  last_tapped_view_ = view;
+  return TOUCH_STATUS_UNKNOWN;
 }
 
-////////////////////////////////////////////////////////////////////////////////
-// TouchTabStrip, private:
-
-void TouchTabStrip::Init() {
-  SetID(VIEW_ID_TAB_STRIP);
+void TouchTabStrip::ViewHierarchyChanged(bool is_add,
+                                         View* parent,
+                                         View* child) {
+  if (!is_add && last_tapped_view_ == child)
+    last_tapped_view_ = NULL;
 }
-

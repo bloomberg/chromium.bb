@@ -46,10 +46,6 @@ class TouchTabStrip : public BaseTabStrip {
                                    const gfx::Point& location);
   virtual int GetSizeNeededForTabs(const std::vector<BaseTab*>& tabs);
 
-  // views::View overrides
-  virtual gfx::Size GetPreferredSize();
-  virtual void PaintChildren(gfx::Canvas* canvas);
-
   // Retrieves the Tab at the specified index. Remember, the specified index
   // is in terms of tab_data, *not* the model.
   TouchTab* GetTabAtTabDataIndex(int tab_data_index) const;
@@ -57,9 +53,24 @@ class TouchTabStrip : public BaseTabStrip {
  private:
   void Init();
 
+  // Overridden from views::View.
+  virtual gfx::Size GetPreferredSize() OVERRIDE;
+  virtual void PaintChildren(gfx::Canvas* canvas) OVERRIDE;
+  virtual views::View::TouchStatus OnTouchEvent(
+      const views::TouchEvent& event) OVERRIDE;
+  virtual void ViewHierarchyChanged(bool is_add,
+                                    View* parent,
+                                    View* child) OVERRIDE;
+
   // True if PrepareForCloseAt has been invoked. When true remove animations
   // preserve current tab bounds.
   bool in_tab_close_;
+
+  // Last time the tabstrip was tapped.
+  base::Time last_tap_time_;
+
+  // The view that was tapped last.
+  View* last_tapped_view_;
 
   DISALLOW_COPY_AND_ASSIGN(TouchTabStrip);
 };
