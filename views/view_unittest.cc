@@ -6,11 +6,14 @@
 
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "ui/base/clipboard/clipboard.h"
 #include "ui/base/keycodes/keyboard_codes.h"
+#include "ui/base/models/simple_menu_model.h"
 #include "ui/gfx/canvas_skia.h"
 #include "ui/gfx/path.h"
 #include "views/background.h"
+#include "views/controls/button/button_dropdown.h"
 #include "views/controls/button/checkbox.h"
 #include "views/controls/native/native_view_host.h"
 #include "views/controls/scroll_view.h"
@@ -37,6 +40,7 @@
 #include "views/touchui/gesture_manager.h"
 #endif
 
+using ::testing::_;
 using namespace views;
 
 namespace {
@@ -1213,14 +1217,47 @@ TEST_F(ViewTest, DISABLED_RerouteMouseWheelTest) {
 // Dialogs' default button
 ////////////////////////////////////////////////////////////////////////////////
 
+namespace ui {
+class MockMenuModel : public MenuModel {
+ public:
+  MOCK_CONST_METHOD0(HasIcons, bool());
+  MOCK_CONST_METHOD1(GetFirstItemIndex, int(gfx::NativeMenu native_menu));
+  MOCK_CONST_METHOD0(GetItemCount, int());
+  MOCK_CONST_METHOD1(GetTypeAt, ItemType(int index));
+  MOCK_CONST_METHOD1(GetCommandIdAt, int(int index));
+  MOCK_CONST_METHOD1(GetLabelAt, string16(int index));
+  MOCK_CONST_METHOD1(IsItemDynamicAt, bool(int index));
+  MOCK_CONST_METHOD1(GetLabelFontAt, const gfx::Font* (int index));
+  MOCK_CONST_METHOD2(GetAcceleratorAt, bool(int index,
+      ui::Accelerator* accelerator));
+  MOCK_CONST_METHOD1(IsItemCheckedAt, bool(int index));
+  MOCK_CONST_METHOD1(GetGroupIdAt, int(int index));
+  MOCK_CONST_METHOD2(GetIconAt, bool(int index, SkBitmap* icon));
+  MOCK_CONST_METHOD1(GetButtonMenuItemAt, ButtonMenuItemModel*(int index));
+  MOCK_CONST_METHOD1(IsEnabledAt, bool(int index));
+  MOCK_CONST_METHOD1(IsVisibleAt, bool(int index));
+  MOCK_CONST_METHOD1(GetSubmenuModelAt, MenuModel*(int index));
+  MOCK_METHOD1(HighlightChangedTo, void(int index));
+  MOCK_METHOD1(ActivatedAt, void(int index));
+  MOCK_METHOD2(ActivatedAtWithDisposition, void(int index,
+      int disposition));
+  MOCK_METHOD0(MenuWillShow, void());
+  MOCK_METHOD0(MenuClosed, void());
+  MOCK_METHOD3(GetModelAndIndexForCommandId, bool(int command_id,
+      MenuModel** model, int* index));
+};
+}
+
 class TestDialog : public DialogDelegate, public ButtonListener {
  public:
-  TestDialog()
+  explicit TestDialog(ui::MockMenuModel* mock_menu_model)
       : contents_(NULL),
         button1_(NULL),
         button2_(NULL),
         checkbox_(NULL),
+        button_drop_(NULL),
         last_pressed_button_(NULL),
+        mock_menu_model_(mock_menu_model),
         canceled_(false),
         oked_(false) {
   }
@@ -1236,9 +1273,11 @@ class TestDialog : public DialogDelegate, public ButtonListener {
       button1_ = new NativeButton(this, L"Button1");
       button2_ = new NativeButton(this, L"Button2");
       checkbox_ = new Checkbox(L"My checkbox");
+      button_drop_ = new ButtonDropDown(this, mock_menu_model_);
       contents_->AddChildView(button1_);
       contents_->AddChildView(button2_);
       contents_->AddChildView(checkbox_);
+      contents_->AddChildView(button_drop_);
     }
     return contents_;
   }
@@ -1265,11 +1304,24 @@ class TestDialog : public DialogDelegate, public ButtonListener {
     last_pressed_button_ = NULL;
   }
 
+  // Set up expectations for methods that are called when an (empty) menu is
+  // shown from a drop down button.
+  void ExpectShowDropMenu() {
+    if (mock_menu_model_) {
+      EXPECT_CALL(*mock_menu_model_, HasIcons());
+      EXPECT_CALL(*mock_menu_model_, GetFirstItemIndex(_));
+      EXPECT_CALL(*mock_menu_model_, GetItemCount());
+      EXPECT_CALL(*mock_menu_model_, MenuClosed());
+    }
+  }
+
   View* contents_;
   NativeButton* button1_;
   NativeButton* button2_;
   NativeButton* checkbox_;
+  ButtonDropDown* button_drop_;
   Button* last_pressed_button_;
+  ui::MockMenuModel* mock_menu_model_;
 
   bool canceled_;
   bool oked_;
@@ -1293,7 +1345,7 @@ class DefaultButtonTest : public ViewTest {
   }
 
   virtual void SetUp() {
-    test_dialog_ = new TestDialog();
+    test_dialog_ = new TestDialog(NULL);
     views::Window* window =
         views::Window::CreateChromeWindow(NULL, gfx::Rect(0, 0, 100, 100),
                                           test_dialog_);
@@ -1306,7 +1358,7 @@ class DefaultButtonTest : public ViewTest {
     cancel_button_ = client_view_->cancel_button();
   }
 
-  void SimularePressingEnterAndCheckDefaultButton(ButtonID button_id) {
+  void SimulatePressingEnterAndCheckDefaultButton(ButtonID button_id) {
     KeyEvent event(ui::ET_KEY_PRESSED, ui::VKEY_RETURN, 0);
     focus_manager_->OnKeyEvent(event);
     switch (button_id) {
@@ -1349,14 +1401,14 @@ TEST_F(DefaultButtonTest, DialogDefaultButtonTest) {
   EXPECT_TRUE(ok_button_->is_default());
 
   // Simulate pressing enter, that should trigger the OK button.
-  SimularePressingEnterAndCheckDefaultButton(OK);
+  SimulatePressingEnterAndCheckDefaultButton(OK);
 
   // Simulate focusing another button, it should become the default button.
   client_view_->FocusWillChange(ok_button_, test_dialog_->button1_);
   EXPECT_FALSE(ok_button_->is_default());
   EXPECT_TRUE(test_dialog_->button1_->is_default());
   // Simulate pressing enter, that should trigger button1.
-  SimularePressingEnterAndCheckDefaultButton(BUTTON1);
+  SimulatePressingEnterAndCheckDefaultButton(BUTTON1);
 
   // Now select something that is not a button, the OK should become the default
   // button again.
@@ -1364,7 +1416,7 @@ TEST_F(DefaultButtonTest, DialogDefaultButtonTest) {
                                 test_dialog_->checkbox_);
   EXPECT_TRUE(ok_button_->is_default());
   EXPECT_FALSE(test_dialog_->button1_->is_default());
-  SimularePressingEnterAndCheckDefaultButton(OK);
+  SimulatePressingEnterAndCheckDefaultButton(OK);
 
   // Select yet another button.
   client_view_->FocusWillChange(test_dialog_->checkbox_,
@@ -1372,14 +1424,14 @@ TEST_F(DefaultButtonTest, DialogDefaultButtonTest) {
   EXPECT_FALSE(ok_button_->is_default());
   EXPECT_FALSE(test_dialog_->button1_->is_default());
   EXPECT_TRUE(test_dialog_->button2_->is_default());
-  SimularePressingEnterAndCheckDefaultButton(BUTTON2);
+  SimulatePressingEnterAndCheckDefaultButton(BUTTON2);
 
   // Focus nothing.
   client_view_->FocusWillChange(test_dialog_->button2_, NULL);
   EXPECT_TRUE(ok_button_->is_default());
   EXPECT_FALSE(test_dialog_->button1_->is_default());
   EXPECT_FALSE(test_dialog_->button2_->is_default());
-  SimularePressingEnterAndCheckDefaultButton(OK);
+  SimulatePressingEnterAndCheckDefaultButton(OK);
 
   // Focus the cancel button.
   client_view_->FocusWillChange(NULL, cancel_button_);
@@ -1387,11 +1439,66 @@ TEST_F(DefaultButtonTest, DialogDefaultButtonTest) {
   EXPECT_TRUE(cancel_button_->is_default());
   EXPECT_FALSE(test_dialog_->button1_->is_default());
   EXPECT_FALSE(test_dialog_->button2_->is_default());
-  SimularePressingEnterAndCheckDefaultButton(CANCEL);
+  SimulatePressingEnterAndCheckDefaultButton(CANCEL);
 }
 
+class ButtonDropDownTest : public ViewTest {
+ public:
+  ButtonDropDownTest()
+      : test_dialog_(NULL),
+        button_as_view_(NULL) {
+  }
+
+  virtual void SetUp() {
+    test_dialog_ = new TestDialog(&mock_menu_model_);
+    views::Window* window =
+        views::Window::CreateChromeWindow(NULL, gfx::Rect(0, 0, 100, 100),
+                                          test_dialog_);
+    window->Show();
+    test_dialog_->button_drop_->SetBounds(0, 0, 100, 100);
+    // We have to cast the button back into a View in order to invoke it's
+    // OnMouseReleased method.
+    button_as_view_ = static_cast<View*>(test_dialog_->button_drop_);
+  }
+
+  TestDialog* test_dialog_;
+  ui::MockMenuModel mock_menu_model_;
+  // This is owned by test_dialog_.
+  View* button_as_view_;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(ButtonDropDownTest);
+};
+
+// Ensure that regular clicks on the drop down button still work. (i.e. - the
+// click events are processed and the listener gets the click)
+TEST_F(ButtonDropDownTest, RegularClickTest) {
+  MouseEvent press_event(ui::ET_MOUSE_PRESSED, 1, 1, ui::EF_LEFT_BUTTON_DOWN);
+  MouseEvent release_event(ui::ET_MOUSE_RELEASED, 1, 1,
+                           ui::EF_LEFT_BUTTON_DOWN);
+  button_as_view_->OnMousePressed(press_event);
+  button_as_view_->OnMouseReleased(release_event, false);
+  EXPECT_EQ(test_dialog_->last_pressed_button_, test_dialog_->button_drop_);
+}
+
+#if defined(OS_WIN)
+// Ensure that dragging downwards on the button shows the menu while keeping the
+// button depressed.
+TEST_F(ButtonDropDownTest, DragMenuTest) {
+  test_dialog_->last_pressed_button_ = NULL;
+  MouseEvent press_event(ui::ET_MOUSE_PRESSED, 1, 1, ui::EF_LEFT_BUTTON_DOWN);
+  MouseEvent drag_event(ui::ET_MOUSE_DRAGGED, 1, 99, ui::EF_LEFT_BUTTON_DOWN);
+  test_dialog_->ExpectShowDropMenu();
+  button_as_view_->OnMousePressed(press_event);
+  button_as_view_->OnMouseDragged(drag_event);
+  // The button should not get a press event as a result of the drag. This would
+  // revert the button into an unpressed state while the menu is open.
+  EXPECT_TRUE(test_dialog_->last_pressed_button_ == NULL);
+}
+#endif
+
 ////////////////////////////////////////////////////////////////////////////////
-// View hierachy / Visibility changes
+// View hierarchy / Visibility changes
 ////////////////////////////////////////////////////////////////////////////////
 /*
 TEST_F(ViewTest, ChangeVisibility) {

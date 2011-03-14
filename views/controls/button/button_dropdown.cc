@@ -58,8 +58,10 @@ bool ButtonDropDown::OnMousePressed(const MouseEvent& e) {
 }
 
 void ButtonDropDown::OnMouseReleased(const MouseEvent& e, bool canceled) {
-  if (IsTriggerableEvent(e) ||
-      (e.IsRightMouseButton() && !HitTest(e.location()))) {
+  // Showing the drop down results in a MouseReleased with a canceled drag, we
+  // need to ignore it.
+  if (!canceled && (IsTriggerableEvent(e) ||
+      (e.IsRightMouseButton() && !HitTest(e.location())))) {
     ImageButton::OnMouseReleased(e, canceled);
   }
 
@@ -72,9 +74,6 @@ void ButtonDropDown::OnMouseReleased(const MouseEvent& e, bool canceled) {
   if (IsEnabled() && e.IsRightMouseButton() && HitTest(e.location())) {
     show_menu_factory_.RevokeAll();
     ShowDropDownMenu(GetWidget()->GetNativeView());
-    // Set the state back to normal after the drop down menu is closed.
-    if (state_ != BS_DISABLED)
-      SetState(BS_NORMAL);
   }
 }
 
@@ -111,12 +110,6 @@ void ButtonDropDown::OnMouseExited(const MouseEvent& e) {
 void ButtonDropDown::ShowContextMenu(const gfx::Point& p,
                                      bool is_mouse_gesture) {
   show_menu_factory_.RevokeAll();
-  // Make the button look depressed while the menu is open.
-  // NOTE: SetState() schedules a paint, but it won't occur until after the
-  //       context menu message loop has terminated, so we PaintNow() to
-  //       update the appearance synchronously.
-  SetState(BS_PUSHED);
-  PaintNow();
   ShowDropDownMenu(GetWidget()->GetNativeView());
   SetState(BS_HOT);
 }
@@ -150,6 +143,8 @@ void ButtonDropDown::ShowDropDownMenu(gfx::NativeView window) {
     if (menu_position.x() < left_bound)
       menu_position.set_x(left_bound);
 
+    // Make the button look depressed while the menu is open.
+    SetState(BS_PUSHED);
     menu_.reset(new Menu2(model_));
     menu_->RunMenuAt(menu_position, Menu2::ALIGN_TOPLEFT);
 
@@ -157,6 +152,10 @@ void ButtonDropDown::ShowDropDownMenu(gfx::NativeView window) {
     // properly after the menu finishes running. If we don't do this, then
     // the first click to other parts of the UI is eaten.
     SetMouseHandler(NULL);
+
+    // Set the state back to normal after the drop down menu is closed.
+    if (state_ != BS_DISABLED)
+      SetState(BS_NORMAL);
   }
 }
 
