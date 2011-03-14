@@ -508,11 +508,10 @@ int main(int argc, char** argv) {
   // Initialize the content client which that code uses to talk to Chrome.
   chrome::ChromeContentClient chrome_content_client;
   content::SetContentClient(&chrome_content_client);
-
-  chrome::ChromeContentBrowserClient content_browser_client;
   // Override the default ContentBrowserClient to let Chrome participate in
   // content logic.  Must be done before any tabs are created.
-  content::GetContentClient()->set_browser_client(&content_browser_client);
+  content::GetContentClient()->set_browser_client(
+      new chrome::ChromeContentBrowserClient);
 
   // TODO(tommi): Stuff be broke. Needs a fixin'.
   // This is awkward: the TestSuite derived CFUrlRequestUnittestRunner contains
