@@ -29,11 +29,17 @@ class HostStub {
   virtual void BeginSessionRequest(
       const LocalLoginCredentials* credentials, Task* done) = 0;
 
+  // TODO(lambroslambrou): Remove OnAuthenticated() and OnClosed() when stubs
+  // are refactored not to store authentication state.
+
   // Called when the client has authenticated with the host to enable the
   // client->host control channel.
   // Before this is called, only a limited set of control messages will be
   // processed.
   void OnAuthenticated();
+
+  // Called when the client is no longer connected.
+  void OnClosed();
 
   // Has the client successfully authenticated with the host?
   // I.e., should we be processing control events?

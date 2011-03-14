@@ -21,6 +21,10 @@ void InputStub::OnAuthenticated() {
   authenticated_ = true;
 }
 
+void InputStub::OnClosed() {
+  authenticated_ = false;
+}
+
 bool InputStub::authenticated() {
   return authenticated_;
 }

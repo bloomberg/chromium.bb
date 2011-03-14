@@ -121,6 +121,16 @@ void ConnectionToClient::StateChangeTask(protocol::Session::State state) {
 
 // OnClosed() is used as a callback for protocol::Session::Close().
 void ConnectionToClient::OnClosed() {
+  client_authenticated_ = false;
+
+  // TODO(lambroslambrou): Remove these when stubs are refactored not to
+  // store authentication state.
+  if (input_stub_)
+    input_stub_->OnClosed();
+  if (host_stub_)
+    host_stub_->OnClosed();
+  if (client_stub_.get())
+    client_stub_->OnClosed();
 }
 
 void ConnectionToClient::OnClientAuthenticated() {

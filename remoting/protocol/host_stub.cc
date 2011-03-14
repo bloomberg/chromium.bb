@@ -21,6 +21,10 @@ void HostStub::OnAuthenticated() {
   authenticated_ = true;
 }
 
+void HostStub::OnClosed() {
+  authenticated_ = false;
+}
+
 bool HostStub::authenticated() {
   return authenticated_;
 }

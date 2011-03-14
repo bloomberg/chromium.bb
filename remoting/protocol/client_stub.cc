@@ -22,6 +22,10 @@ void ClientStub::OnAuthenticated() {
   authenticated_ = true;
 }
 
+void ClientStub::OnClosed() {
+  authenticated_ = false;
+}
+
 bool ClientStub::authenticated() {
   return authenticated_;
 }
