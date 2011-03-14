@@ -15,6 +15,33 @@
 #import "chrome/browser/ui/cocoa/toolbar/toolbar_controller.h"
 #include "ui/base/l10n/l10n_util_mac.h"
 
+namespace {
+
+// When too much data is put into a single-line text field, things get
+// janky due to the cost of computing the blink rect.  Sometimes users
+// accidentally paste large amounts, so place a limit on what will be
+// accepted.
+//
+// 10k characters was arbitrarily chosen by seeing how much a text
+// field could handle in a single line before it started getting too
+// janky to recover from (jankiness was detectable around 5k).
+// www.google.com returns an error for searches around 2k characters,
+// so this is conservative.
+const NSUInteger kMaxPasteLength = 10000;
+
+// Returns |YES| if too much text would be pasted.
+BOOL ThePasteboardIsTooDamnBig() {
+  NSPasteboard* pb = [NSPasteboard generalPasteboard];
+  NSString* type =
+      [pb availableTypeFromArray:[NSArray arrayWithObject:NSStringPboardType]];
+  if (!type)
+    return NO;
+
+  return [[pb stringForType:type] length] > kMaxPasteLength;
+}
+
+}  // namespace
+
 @implementation AutocompleteTextFieldEditor
 
 - (id)initWithFrame:(NSRect)frameRect {
@@ -90,6 +117,11 @@
 }
 
 - (void)paste:(id)sender {
+  if (ThePasteboardIsTooDamnBig()) {
+    NSBeep();
+    return;
+  }
+
   AutocompleteTextFieldObserver* observer = [self observer];
   DCHECK(observer);
   if (observer) {
@@ -98,6 +130,11 @@
 }
 
 - (void)pasteAndGo:sender {
+  if (ThePasteboardIsTooDamnBig()) {
+    NSBeep();
+    return;
+  }
+
   AutocompleteTextFieldObserver* observer = [self observer];
   DCHECK(observer);
   if (observer) {
