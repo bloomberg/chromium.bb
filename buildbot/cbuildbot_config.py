@@ -143,6 +143,16 @@ config['x86-mario-pre-flight-queue'].update({
   'push_overlays': 'private',
 })
 
+config['x86-alex-pre-flight-branch'] = default.copy()
+config['x86-alex-pre-flight-branch'].update({
+  'board' : 'x86-alex',
+  'master' : True,
+
+  'uprev' : False,
+  'rev_overlays': 'both',
+  'push_overlays': 'both',
+})
+
 config['x86-mario-pre-flight-branch'] = default.copy()
 config['x86-mario-pre-flight-branch'].update({
   'board' : 'x86-mario',
