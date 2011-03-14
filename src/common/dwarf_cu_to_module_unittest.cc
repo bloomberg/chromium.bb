@@ -1490,9 +1490,9 @@ TEST_F(Specifications, BadOffset) {
 
   StartCU();
   DeclarationDIE(&root_handler_, 0xefd7f7752c27b7e4ULL,
-                 dwarf2reader::DW_TAG_subprogram, "function");
+                 dwarf2reader::DW_TAG_subprogram, "");
   DefinitionDIE(&root_handler_, dwarf2reader::DW_TAG_subprogram,
-                0x2be953efa6f9a996ULL, "",
+                0x2be953efa6f9a996ULL, "function",
                 0xa0277efd7ce83771ULL, 0x149554a184c730c1ULL);
   root_handler_.Finish();
 }
