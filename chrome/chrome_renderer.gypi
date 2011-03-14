@@ -15,6 +15,7 @@
         'chrome_resources',
         'chrome_strings',
         'safe_browsing_proto',
+        '../content/content.gyp:content_common',
         '../ppapi/ppapi.gyp:ppapi_proxy',
         '../printing/printing.gyp:printing',
         '../skia/skia.gyp:skia',
