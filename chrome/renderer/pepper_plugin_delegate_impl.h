@@ -13,9 +13,7 @@
 #include "base/id_map.h"
 #include "base/ref_counted.h"
 #include "base/weak_ptr.h"
-#include "ppapi/c/pp_errors.h"
 #include "webkit/plugins/ppapi/plugin_delegate.h"
-#include "webkit/plugins/ppapi/ppapi_plugin_instance.h"
 #include "webkit/plugins/ppapi/ppb_flash_menu_impl.h"
 
 class FilePath;

@@ -5,6 +5,7 @@
 #include "chrome/renderer/pepper_plugin_delegate_impl.h"
 
 #include <cmath>
+#include <queue>
 
 #include "app/surface/transport_dib.h"
 #include "base/callback.h"
@@ -53,14 +54,6 @@
 #include "webkit/plugins/ppapi/ppapi_plugin_instance.h"
 #include "webkit/plugins/ppapi/ppb_flash_impl.h"
 #include "webkit/plugins/ppapi/ppb_flash_net_connector_impl.h"
-
-#if defined(OS_MACOSX)
-#include "chrome/renderer/render_thread.h"
-#endif
-
-#if defined(OS_POSIX)
-#include "ipc/ipc_channel_posix.h"
-#endif
 
 using WebKit::WebView;
 
@@ -265,6 +258,8 @@ class PlatformVideoDecoderImpl
       return false;
 
     // TODO(wjia): Create video decoder in GPU process.
+    // Meanwhile, delete |dib| to free the resource.
+    delete dib;
 
     return true;
   }
@@ -580,7 +575,6 @@ PepperPluginDelegateImpl::CreateAudio(
   scoped_refptr<PlatformAudioImpl> audio(
       new PlatformAudioImpl(render_view_->audio_message_filter()));
   if (audio->Initialize(sample_rate, sample_count, client)) {
-
     // Also note ReleaseSoon invoked in PlatformAudioImpl::ShutDown().
     return audio.release();
   } else {
