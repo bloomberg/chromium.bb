@@ -197,6 +197,11 @@ class BaseTabStrip : public AbstractTabStripView,
     tab_data_[index].ideal_bounds = bounds;
   }
 
+  // Identifies whether we should ignore title prefix eliding or not
+  // for the specified tab. This allows derived class like the one
+  // for side tabs to make a different choice (e.g., for mini tabs).
+  virtual bool IgnoreTitlePrefixEliding(BaseTab* tab);
+
   // Update the lengths of common title prefixes for all tabs. This needs
   // to be done every time tabs are added/removed or when titles change.
   virtual void UpdateCommonTitlePrefix();

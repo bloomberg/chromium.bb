@@ -464,12 +464,16 @@ void BaseTabStrip::RemoveAndDeleteTab(BaseTab* tab) {
   UpdateCommonTitlePrefix();
 }
 
+bool BaseTabStrip::IgnoreTitlePrefixEliding(BaseTab* tab) {
+  DCHECK(tab != NULL);
+  return tab->data().mini || tab->data().title.empty();
+}
+
 void BaseTabStrip::UpdateCommonTitlePrefix() {
   std::vector<TitlePrefixMatcher::TitleInfo> tab_title_infos;
   for (int tab_index = 0; tab_index < tab_count(); ++tab_index) {
     DCHECK(tab_data_[tab_index].tab != NULL);
-    if (!tab_data_[tab_index].tab->data().mini &&
-        !tab_data_[tab_index].tab->data().title.empty()) {
+    if (!IgnoreTitlePrefixEliding(tab_data_[tab_index].tab)) {
       tab_title_infos.push_back(TitlePrefixMatcher::TitleInfo(
           &tab_data_[tab_index].tab->data().title, tab_index));
     }

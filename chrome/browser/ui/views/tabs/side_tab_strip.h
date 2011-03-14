@@ -37,6 +37,7 @@ class SideTabStrip : public BaseTabStrip {
  protected:
   // BaseTabStrip overrides:
   virtual BaseTab* CreateTab() OVERRIDE;
+  virtual bool IgnoreTitlePrefixEliding(BaseTab* tab) OVERRIDE;
   virtual void GenerateIdealBounds() OVERRIDE;
   virtual void StartInsertTabAnimation(int model_index,
                                        bool foreground) OVERRIDE;

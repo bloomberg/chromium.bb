@@ -154,6 +154,11 @@ BaseTab* SideTabStrip::CreateTab() {
   return new SideTab(this);
 }
 
+bool SideTabStrip::IgnoreTitlePrefixEliding(BaseTab* tab) {
+  DCHECK(tab != NULL);
+  return tab->data().title.empty();
+}
+
 void SideTabStrip::GenerateIdealBounds() {
   gfx::Rect layout_rect = GetContentsBounds();
   layout_rect.Inset(kTabStripInset, kTabStripInset);
