@@ -293,9 +293,8 @@ void AutoFillAgent::ShowSuggestions(const WebInputElement& element,
                                     bool autofill_on_empty_values,
                                     bool requires_caret_at_end,
                                     bool display_warning_if_disabled) {
-  if (!element.isEnabledFormControl() || !element.isTextField() ||
-      element.isPasswordField() || element.isReadOnly() ||
-      !element.autoComplete())
+  if (!element.isEnabled() || element.isReadOnly() || !element.autoComplete() ||
+      !element.isTextField() || element.isPasswordField())
     return;
 
   // If the field has no name, then we won't have values.

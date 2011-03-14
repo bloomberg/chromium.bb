@@ -137,6 +137,10 @@ void FindFormElements(WebKit::WebView* view,
   }
 }
 
+bool IsElementEditable(const WebKit::WebInputElement& element) {
+  return element.isEnabled() && !element.isReadOnly();
+}
+
 bool FillForm(FormElements* fe, const webkit_glue::FormData& data) {
   if (!fe->form_element.autoComplete())
     return false;
@@ -157,10 +161,9 @@ bool FillForm(FormElements* fe, const webkit_glue::FormData& data) {
        it != fe->input_elements.end(); ++it) {
     WebKit::WebInputElement element = it->second;
     DCHECK(element.value().isEmpty());
-    if (element.isPasswordField() &&
-        (!element.isEnabledFormControl() || element.hasAttribute("readonly"))) {
-      continue;  // Don't fill uneditable password fields.
-    }
+    if (!IsElementEditable(element))
+      continue;  // Don't fill uneditable fields.
+
     // TODO(tkent): Check maxlength and pattern.
     element.setValue(data_map[it->first]);
     element.setAutofilled(true);
@@ -168,10 +171,6 @@ bool FillForm(FormElements* fe, const webkit_glue::FormData& data) {
   }
 
   return false;
-}
-
-bool IsElementEditable(const WebKit::WebInputElement& element) {
-  return element.isEnabledFormControl() && !element.hasAttribute("readonly");
 }
 
 void SetElementAutofilled(WebKit::WebInputElement* element, bool autofilled) {
@@ -253,9 +252,9 @@ bool PasswordAutofillManager::TextDidChangeInTextField(
   if (iter->second.fill_data.wait_for_username)
     return false;
 
-  if (!element.isEnabledFormControl() ||
+  if (!IsElementEditable(element) ||
       !element.isText() ||
-      !element.autoComplete() || element.isReadOnly()) {
+      !element.autoComplete()) {
     return false;
   }
 
