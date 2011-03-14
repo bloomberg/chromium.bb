@@ -1,20 +1,20 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/worker/worker_thread.h"
+#include "content/worker/worker_thread.h"
 
 #include "base/command_line.h"
 #include "base/lazy_instance.h"
 #include "base/threading/thread_local.h"
-#include "chrome/worker/webworker_stub.h"
-#include "chrome/worker/websharedworker_stub.h"
-#include "chrome/worker/worker_webkitclient_impl.h"
 #include "content/common/appcache/appcache_dispatcher.h"
 #include "content/common/content_switches.h"
 #include "content/common/db_message_filter.h"
 #include "content/common/web_database_observer_impl.h"
 #include "content/common/worker_messages.h"
+#include "content/worker/webworker_stub.h"
+#include "content/worker/websharedworker_stub.h"
+#include "content/worker/worker_webkitclient_impl.h"
 #include "ipc/ipc_sync_channel.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebBlobRegistry.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebDatabase.h"

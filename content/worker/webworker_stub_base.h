@@ -1,14 +1,14 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_WORKER_WEBWORKER_STUB_BASE_H_
-#define CHROME_WORKER_WEBWORKER_STUB_BASE_H_
+#ifndef CONTENT_WORKER_WEBWORKER_STUB_BASE_H_
+#define CONTENT_WORKER_WEBWORKER_STUB_BASE_H_
 #pragma once
 
 #include "base/scoped_ptr.h"
-#include "chrome/worker/webworkerclient_proxy.h"
-#include "chrome/worker/worker_webapplicationcachehost_impl.h"
+#include "content/worker/webworkerclient_proxy.h"
+#include "content/worker/worker_webapplicationcachehost_impl.h"
 #include "ipc/ipc_channel.h"
 
 // This class is the common base class for both WebWorkerStub and
@@ -45,4 +45,4 @@ class WebWorkerStubBase : public IPC::Channel::Listener {
   DISALLOW_COPY_AND_ASSIGN(WebWorkerStubBase);
 };
 
-#endif  // CHROME_WORKER_WEBWORKER_STUB_BASE_H_
+#endif  // CONTENT_WORKER_WEBWORKER_STUB_BASE_H_

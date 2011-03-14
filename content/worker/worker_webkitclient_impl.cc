@@ -1,18 +1,18 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/worker/worker_webkitclient_impl.h"
+#include "content/worker/worker_webkitclient_impl.h"
 
 #include "base/logging.h"
 #include "base/utf_string_conversions.h"
-#include "chrome/worker/worker_thread.h"
 #include "content/common/database_util.h"
 #include "content/common/file_system/webfilesystem_impl.h"
 #include "content/common/file_utilities_messages.h"
 #include "content/common/mime_registry_messages.h"
 #include "content/common/webblobregistry_impl.h"
 #include "content/common/webmessageportchannel_impl.h"
+#include "content/worker/worker_thread.h"
 #include "ipc/ipc_sync_message_filter.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebBlobRegistry.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebString.h"

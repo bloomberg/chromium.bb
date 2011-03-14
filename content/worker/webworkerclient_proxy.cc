@@ -1,14 +1,11 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/worker/webworkerclient_proxy.h"
+#include "content/worker/webworkerclient_proxy.h"
 
 #include "base/command_line.h"
 #include "base/message_loop.h"
-#include "chrome/worker/webworker_stub_base.h"
-#include "chrome/worker/worker_thread.h"
-#include "chrome/worker/worker_webapplicationcachehost_impl.h"
 #include "content/common/content_switches.h"
 #include "content/common/file_system/file_system_dispatcher.h"
 #include "content/common/file_system/webfilesystem_callback_dispatcher.h"
@@ -18,6 +15,9 @@
 // renderer worker code moves to content. This code isn't used now since we
 // don't support nested workers anyways.
 //#include "content/renderer/webworker_proxy.h"
+#include "content/worker/webworker_stub_base.h"
+#include "content/worker/worker_thread.h"
+#include "content/worker/worker_webapplicationcachehost_impl.h"
 #include "ipc/ipc_logging.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFileSystemCallbacks.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFrame.h"

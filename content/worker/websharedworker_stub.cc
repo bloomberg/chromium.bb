@@ -1,8 +1,8 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/worker/websharedworker_stub.h"
+#include "content/worker/websharedworker_stub.h"
 
 #include "content/common/child_thread.h"
 #include "content/common/file_system/file_system_dispatcher.h"

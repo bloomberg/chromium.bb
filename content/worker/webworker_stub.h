@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_WORKER_WEBWORKER_STUB_H_
-#define CHROME_WORKER_WEBWORKER_STUB_H_
+#ifndef CONTENT_WORKER_WEBWORKER_STUB_H_
+#define CONTENT_WORKER_WEBWORKER_STUB_H_
 #pragma once
 
-#include "chrome/worker/webworker_stub_base.h"
-#include "chrome/worker/webworkerclient_proxy.h"
+#include "content/worker/webworker_stub_base.h"
+#include "content/worker/webworkerclient_proxy.h"
 #include "googleurl/src/gurl.h"
 
 namespace WebKit {
@@ -41,4 +41,4 @@ class WebWorkerStub : public WebWorkerStubBase {
   DISALLOW_COPY_AND_ASSIGN(WebWorkerStub);
 };
 
-#endif  // CHROME_WORKER_WEBWORKER_STUB_H_
+#endif  // CONTENT_WORKER_WEBWORKER_STUB_H_

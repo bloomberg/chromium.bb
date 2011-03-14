@@ -81,7 +81,7 @@
                 'chrome_dll_version',
                 'chrome_resources',
                 'installer_util_strings',
-                'worker',
+                '../content/content.gyp:content_worker',
                 '../printing/printing.gyp:printing',
                 '../net/net.gyp:net_resources',
                 '../third_party/cld/cld.gyp:cld',

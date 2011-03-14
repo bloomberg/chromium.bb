@@ -1,9 +1,9 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_WORKER_WORKER_WEBKITCLIENT_IMPL_H_
-#define CHROME_WORKER_WORKER_WEBKITCLIENT_IMPL_H_
+#ifndef CONTENT_WORKER_WORKER_WEBKITCLIENT_IMPL_H_
+#define CONTENT_WORKER_WORKER_WEBKITCLIENT_IMPL_H_
 #pragma once
 
 #include "base/scoped_ptr.h"
@@ -86,4 +86,4 @@ class WorkerWebKitClientImpl : public webkit_glue::WebKitClientImpl,
   scoped_ptr<WebFileSystemImpl> web_file_system_;
 };
 
-#endif  // CHROME_WORKER_WORKER_WEBKITCLIENT_IMPL_H_
+#endif  // CONTENT_WORKER_WORKER_WEBKITCLIENT_IMPL_H_

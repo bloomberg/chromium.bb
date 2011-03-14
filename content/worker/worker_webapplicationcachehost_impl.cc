@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/worker/worker_webapplicationcachehost_impl.h"
+#include "content/worker/worker_webapplicationcachehost_impl.h"
 
-#include "chrome/worker/worker_thread.h"
 #include "content/common/appcache/appcache_dispatcher.h"
+#include "content/worker/worker_thread.h"
 
 WorkerWebApplicationCacheHostImpl::WorkerWebApplicationCacheHostImpl(
     const WorkerAppCacheInitInfo& init_info,
