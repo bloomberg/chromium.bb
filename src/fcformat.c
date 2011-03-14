@@ -610,7 +610,7 @@ interpret_enumerate (FcFormatContext *c,
     {
 	FcLangSet *langset;
 	if (FcResultMatch ==
-	    FcPatternGetLangSet (pat, os->objects[0], idx, &langset))
+	    FcPatternGetLangSet (pat, os->objects[0], 0, &langset))
 	{
 	    FcStrSet *ss;
 	    if (!(ss = FcLangSetGetLangs (langset)) ||
