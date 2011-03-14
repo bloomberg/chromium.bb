@@ -28,6 +28,14 @@ TCPSocketParams::TCPSocketParams(const HostPortPair& host_port_pair,
   Initialize(priority, referrer, disable_resolver_cache);
 }
 
+// TODO(willchan): Update all unittests so we don't need this.
+TCPSocketParams::TCPSocketParams(const std::string& host, int port,
+                                 RequestPriority priority, const GURL& referrer,
+                                 bool disable_resolver_cache)
+    : destination_(HostPortPair(host, port)) {
+  Initialize(priority, referrer, disable_resolver_cache);
+}
+
 TCPSocketParams::~TCPSocketParams() {}
 
 void TCPSocketParams::Initialize(RequestPriority priority,

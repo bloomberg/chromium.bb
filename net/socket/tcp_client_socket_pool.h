@@ -28,6 +28,10 @@ class TCPSocketParams : public base::RefCounted<TCPSocketParams> {
   TCPSocketParams(const HostPortPair& host_port_pair, RequestPriority priority,
                   const GURL& referrer, bool disable_resolver_cache);
 
+  // TODO(willchan): Update all unittests so we don't need this.
+  TCPSocketParams(const std::string& host, int port, RequestPriority priority,
+                  const GURL& referrer, bool disable_resolver_cache);
+
   const HostResolver::RequestInfo& destination() const { return destination_; }
 
  private:
