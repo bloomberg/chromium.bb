@@ -71,9 +71,6 @@ const int64 kRetryGrabIntervalMs = 500;
 // giving up.  If we hit the limit, Chrome exits and the session is terminated.
 const int kMaxGrabFailures = kMaxGrabFailureSec * 1000 / kRetryGrabIntervalMs;
 
-// Each keyboard layout has a dummy input method ID which starts with "xkb:".
-const char kValidInputMethodPrefix[] = "xkb:";
-
 // A idle time to show the screen saver in seconds.
 const int kScreenSaverIdleTimeout = 15;
 
@@ -143,9 +140,8 @@ class ScreenLockObserver : public chromeos::ScreenLockLibrary::Observer,
       for (size_t i = 0; i < active_input_method_list->size(); ++i) {
         const std::string& input_method_id = active_input_method_list->at(i).id;
         saved_active_input_method_list_.push_back(input_method_id);
-        // |active_input_method_list| contains both input method descriptions
-        // and keyboard layout descriptions.
-        if (!StartsWithASCII(input_method_id, kValidInputMethodPrefix, true))
+        // Skip if it's not a keyboard layout.
+        if (!chromeos::input_method::IsKeyboardLayout(input_method_id))
           continue;
         value.string_list_value.push_back(input_method_id);
         if (input_method_id == hardware_keyboard_id) {
