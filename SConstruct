@@ -2106,6 +2106,7 @@ nacl_env.Append(
     'tests/null/nacl.scons',
     'tests/nullptr/nacl.scons',
     'tests/pnacl_abi/nacl.scons',
+    'tests/pnacl_client_translator/nacl.scons',
     'tests/ppapi_bad/nacl.scons',
     'tests/ppapi_core/nacl.scons',
     'tests/ppapi_example_2d/nacl.scons',

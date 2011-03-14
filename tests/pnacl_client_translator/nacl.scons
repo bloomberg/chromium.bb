@@ -1,0 +1,116 @@
+# -*- python -*-
+# Copyright 2011 The Native Client Authors.  All rights reserved.
+# Use of this source code is governed by a BSD-style license that can
+# be found in the LICENSE file.
+
+import platform
+import re # For StripArchFromLDCommand hack.
+
+Import('env')
+
+# Browser tests for the pnacl translator.
+
+# TODO(jvoung): allow pnacl to reuse normal NaCl browser tests.
+if (not env.Bit('bitcode')):
+  Return()
+
+# We don't have the ports to run on these platforms in the browser yet.
+no_ports_broken = env.Bit('target_arm') or \
+    env.Bit('host_windows') or \
+    env.Bit('host_mac')
+
+#----------------------------------------------------------------------
+# Get list of translator files
+
+def TranslatorArchDir():
+  if env.Bit('target_x86_32'):
+    return "x8632"
+  elif env.Bit('target_x86_64'):
+    return "x8664"
+  elif env.Bit('target_arm'):
+    return "arm"
+  else:
+    raise Exception('unknown architecture')
+
+def GetTranslatorBinaries():
+  # Pick the exact arch-specific LLC/LD that you need.
+  # TODO(jvoung): install the native files to a location that will mirror
+  # more closely how a developer will lay out files on a server.
+  # This currently installs only the arch-specific files instead
+  # of every possibility.
+  arch_str = TranslatorArchDir()
+
+  # TODO(jvoung): allow this to work on other hosts (besides linux).
+  # We need to build the pnacl frontend and translators for the other
+  # hosts first.
+  # TODO(jvoung): rename the "arm-untrusted" part to "pnacl-untrusted"
+  # since that is what it really should be.
+  toolchain_dir = '${SCONSTRUCT_DIR}/toolchain/linux_arm-untrusted'
+  toolchain_bin = '%s/tools-sb/%s/srpc/bin/' % (toolchain_dir,
+                                                arch_str)
+  toolchain_ldscript = '%s/tools-sb/%s/script/ld_script' % (toolchain_dir,
+                                                            arch_str)
+  toolchain_lib_dir = '%s/libs-%s/' % (toolchain_dir, arch_str)
+  toolchain_native_libs = [ env.File(toolchain_lib_dir + x)
+                            for x in ['crt1.o',
+                                      'crtbegin.o',
+                                      'crtend.o',
+                                      'crti.o',
+                                      'crtn.o',
+                                      'libcrt_platform.a',
+                                      'libgcc.a',
+                                      'libgcc_eh.a']]
+  return toolchain_native_libs + [env.File(toolchain_bin + 'llc'),
+                                  env.File(toolchain_bin + 'ld'),
+                                  env.File(toolchain_ldscript)]
+
+pnacl_js_lib = env.File('pnacl_coordinator.js')
+
+#----------------------------------------------------------------------
+# SRPC
+
+# Usually the scons link step produces a nexe. We massage the commandline
+# here to generate pexes, i.e. fully linked bitcode files.
+# TODO(pdox): Clean this up if/when scons leaves a bitcode artifact more
+# naturally for testing the translator inside and outside the browser.
+def StripArchFromLDCommand(env):
+  bitcode_env = env.Clone()
+  old_link = bitcode_env.get('LINK')
+  new_link = re.sub('-arch [\w\d-]+', '', old_link)
+  bitcode_env.Replace(LINK=new_link)
+  return bitcode_env
+
+bitcode_env = StripArchFromLDCommand(env)
+
+# Specify the object file to prevent junk from getting left over
+# in source directory (tests/srpc_hw/). SCons will default to point "-o"
+# to the source directory if it is an absolute directory.
+pnacl_srpc_hello_world_obj = bitcode_env.ComponentObject('pnacl_srpc_hw',
+                                 '${SCONSTRUCT_DIR}/tests/srpc_hw/srpc_hw.c')
+
+pnacl_srpc_hello_world_pexe = bitcode_env.ComponentProgram('pnacl_srpc_hw.pexe',
+    [ pnacl_srpc_hello_world_obj ],
+    EXTRA_LIBS=['srpc',
+                'imc',
+                'pthread'])
+
+pnacl_srpc_hello_world_assets = GetTranslatorBinaries() + [
+    pnacl_srpc_hello_world_pexe,
+    bitcode_env.File('pnacl_srpc_hw.html'),
+    pnacl_js_lib]
+
+node = bitcode_env.PPAPIBrowserTester(
+    'pnacl_srpc_hw.out',
+     url='pnacl_srpc_hw.html',
+     files=pnacl_srpc_hello_world_assets)
+
+bitcode_env.AddNodeToTestSuite(node,
+                       ['chrome_browser_tests'],
+                       'run_pnacl_srpc_hw_browser_test',
+                               is_broken=no_ports_broken or \
+             # http://code.google.com/p/nativeclient/issues/detail?id=1521 \
+                                 env.Bit('target_x86_64') or \
+                                 bitcode_env.PPAPIBrowserTesterIsBroken())
+
+
+# TODO(jvoung) Add a PPAPI example like pi_generator.
