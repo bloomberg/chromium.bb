@@ -24,27 +24,23 @@
 
   <section>
     <h3 i18n-content="pagesLabel"></h3>
-    <div>
-      <div>
-        <div class="radio">
-          <label>
-            <input id="all-pages" type="radio" name="pages-group" checked>
-            <span i18n-content="optionAllPages"></span>
-          </label>
-        </div>
-        <div class="radio">
-          <input id="print-pages" type="radio" name="pages-group"
-              i18n-values="aria-label:pageRangeRadio">
-          <input id="pages" type="text"
+    <div class="option">
+      <div class="radio">
+        <input id="all-pages" type="radio" name="pages-group" checked>
+        <label for="all-pages" i18n-content="optionAllPages"></label>
+      </div>
+      <div class="pages-option radio">
+        <input id="print-pages" type="radio" name="pages-group"
+            i18n-values="aria-label:pageRangeRadio">
+        <div>
+          <input id="pages" type="text" class="validating"
               i18n-values="aria-label:pageRangeTextBox">
-          <div id="example-text-div" i18n-content="examplePageRangeText"></div>
+          <div id="example-text" i18n-content="examplePageRangeText"></div>
         </div>
       </div>
       <div>
-        <label>
-          <input id="two-sided" type="checkbox">
-          <span i18n-content="optionTwoSided"></span>
-        </label>
+        <input id="two-sided" type="checkbox">
+        <label for="two-sided" i18n-content="optionTwoSided"></label>
       </div>
     </div>
   </section>

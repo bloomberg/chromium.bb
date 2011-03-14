@@ -5,6 +5,7 @@
 var localStrings = new LocalStrings();
 var hasPDFPlugin = true;
 var expectedPageCount = 0;
+var pageRangesInfo = [];
 
 /**
  * Window onload handler, sets up the page.
@@ -20,59 +21,76 @@ function load() {
   });
 
   $('pages').addEventListener('input', selectPageRange);
+  $('pages').addEventListener('blur', validatePageRangeInfo);
+  $('all-pages').addEventListener('click', handlePrintAllPages);
+  $('print-pages').addEventListener('click', validatePageRangeInfo);
+
   chrome.send('getPrinters');
   chrome.send('getPreview');
 };
 
 /**
- * Page range text validation.
- * Returns true if |printFromText| and |printToText| are valid page numbers.
- * TODO (kmadhusu): Get the expected page count and validate the page range
- * with total number of pages.
+ * Validates the 'from' and 'to' values of page range.
+ * @param {string} printFromText The 'from' value of page range.
+ * @param {string} printToText The 'to' value of page range.
+ * @return {boolean} true if the page range is valid else returns false.
  */
 function isValidPageRange(printFromText, printToText) {
   var numericExp = /^[0-9]+$/;
   if (numericExp.test(printFromText) && numericExp.test(printToText)) {
     var printFrom = Number(printFromText);
     var printTo = Number(printToText);
-    if (printFrom <= printTo && printFrom != 0 && printTo != 0)
+    if (printFrom <= printTo && printFrom != 0 && printTo != 0 &&
+        printTo <= expectedPageCount) {
       return true;
+    }
   }
   return false;
 }
 
 /**
- * Parse page range text.
- * Eg: If page range is specified as '1-3,7-9,8'. Create an array with three
- * elements. Each array element contains the range information.
- * [{from:1, to:3}, {from:7, to:9}, {from:8, to:8}]
- * TODO (kmadhusu): Handle invalid characters.
+ * Parses the given page range text and populates |pageRangesInfo| array.
+ *
+ * If the page range text is valid, this function populates the |pageRangesInfo|
+ * array with page range objects and returns true. Each page range object has
+ * 'from' and 'to' fields with values.
+ *
+ * If the page range text is invalid, returns false.
+ *
+ * E.g.: If the page range text is specified as '1-3,7-9,8', create an array
+ * with three objects [{from:1, to:3}, {from:7, to:9}, {from:8, to:8}].
+ *
+ * @return {boolean} true if page range text parsing is successful else false.
  */
-function getPageRanges() {
-  var pageRangesInfo = [];
+function parsePageRanges() {
   var pageRangeText = $('pages').value;
   var pageRangeList = pageRangeText.replace(/\s/g, '').split(',');
+  pageRangesInfo = [];
   for (var i = 0; i < pageRangeList.length; i++) {
     var tempRange = pageRangeList[i].split('-');
+    var tempRangeLen = tempRange.length;
     var printFrom = tempRange[0];
     var printTo;
-    if (tempRange.length > 1)
+    if (tempRangeLen > 2)
+      return false;  // Invalid page range (E.g.: 1-2-3).
+    else if (tempRangeLen > 1)
       printTo = tempRange[1];
     else
       printTo = tempRange[0];
+
     // Validate the page range information.
-    if (isValidPageRange(printFrom, printTo)) {
-      pageRangesInfo.push({'from': parseInt(printFrom, 10),
-                           'to': parseInt(printTo, 10)});
-    }
+    if (!isValidPageRange(printFrom, printTo))
+      return false;
+
+    pageRangesInfo.push({'from': parseInt(printFrom, 10),
+                         'to': parseInt(printTo, 10)});
   }
-  return pageRangesInfo;
+  return true;
 }
 
 function printFile() {
   var selectedPrinter = $('printer-list').selectedIndex;
   var printerName = $('printer-list').options[selectedPrinter].textContent;
-  var pageRanges = getPageRanges();
   var printAll = $('all-pages').checked;
   var twoSided = $('two-sided').checked;
   var copies = $('copies').value;
@@ -81,7 +99,7 @@ function printFile() {
   var color = ($('color').options[$('color').selectedIndex].value == "1");
 
   var jobSettings = JSON.stringify({'printerName': printerName,
-                                    'pageRange': pageRanges,
+                                    'pageRange': pageRangesInfo,
                                     'printAll': printAll,
                                     'twoSided': twoSided,
                                     'copies': copies,
@@ -93,6 +111,7 @@ function printFile() {
 
 /**
  * Fill the printer list drop down.
+ * @param {array} printers Array of printer names.
  */
 function setPrinters(printers) {
   if (printers.length > 0) {
@@ -115,6 +134,8 @@ function onPDFLoad() {
 
 /**
  * Create the PDF plugin or reload the existing one.
+ * @param {string} url The PdfPlugin data url.
+ * @param {number} pagesCount The expected total pages count.
  */
 function createPDFPlugin(url, pagesCount) {
   if (!hasPDFPlugin) {
@@ -157,6 +178,55 @@ function createPDFPlugin(url, pagesCount) {
 
 function selectPageRange() {
   $('print-pages').checked = true;
+}
+
+/**
+ * Validates the page range text.
+ *
+ * If the page range text is an empty string, initializes the text value to
+ * a default page range and updates the state of print button.
+ *
+ * If the page range text is not an empty string, parses the page range text
+ * for validation. If the specified page range text is valid, |pageRangesInfo|
+ * array will have the page ranges information.
+ * If the specified page range is invalid, displays an invalid warning icon on
+ * the text box and sets the error message as the title message of text box.
+ */
+function validatePageRangeInfo() {
+  var pageRangeField = $('pages');
+  var pageRangeText = pageRangeField.value.replace(/\s/g, '');
+
+  if (pageRangeText == '')
+    pageRangeField.value = '1-' + expectedPageCount;
+
+  if ($('print-pages').checked) {
+    var message = '';
+    if (!parsePageRanges())
+      message = localStrings.getString('pageRangeInvalidTitleToolTip');
+    pageRangeField.setCustomValidity(message);
+    pageRangeField.title = message;
+  }
+  updatePrintButtonState();
+}
+
+/**
+ * Handles the 'All' pages option click event.
+ */
+function handlePrintAllPages() {
+  pageRangesInfo = [];
+  updatePrintButtonState();
+}
+
+/**
+ * Updates the state of print button depending on the user selection.
+ *
+ * If the user has selected 'All' pages option, enables the print button.
+ * If the user has selected a page range, depending on the validity of page
+ * range text enables/disables the print button.
+ */
+function updatePrintButtonState() {
+  $('print-button').disabled = !($('all-pages').checked ||
+                                 $('pages').checkValidity());
 }
 
 window.addEventListener('DOMContentLoaded', load);

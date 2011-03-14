@@ -61,6 +61,8 @@ void SetLocalizedStrings(DictionaryValue* localized_strings) {
       l10n_util::GetStringUTF8(IDS_PRINT_PREVIEW_PAGE_RANGE_TEXT));
   localized_strings->SetString(std::string("pageRangeRadio"),
       l10n_util::GetStringUTF8(IDS_PRINT_PREVIEW_PAGE_RANGE_RADIO));
+  localized_strings->SetString(std::string("pageRangeInvalidTitleToolTip"),
+      l10n_util::GetStringUTF8(IDS_PRINT_PREVIEW_PAGE_RANGE_INVALID_TOOL_TIP));
 }
 
 }  // namespace

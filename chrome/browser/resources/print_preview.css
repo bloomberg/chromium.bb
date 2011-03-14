@@ -26,11 +26,11 @@ body {
   width: 295px;
   height: 100%;
   overflow: auto;
+  padding: 18px;
 }
 
 #destination-container {
   background-color: #fff;
-  padding: 10px;
 }
 
 #destination-container > h1 {
@@ -62,7 +62,6 @@ section {
 }
 
 section > h3 {
-  -webkit-padding-start: 10px;
   font-size: 100%;
   font-weight: normal;
   margin: 0;
@@ -75,6 +74,7 @@ section > h3 {
 
 select {
   margin: 0;
+  width: 100%;
 }
 
 .link-button {
@@ -92,7 +92,43 @@ select {
   padding: 0;
 }
 
-#example-text-div {
-  -webkit-margin-start: 26px;
+#example-text {
   color: gray;
+}
+
+#pages {
+  width: 100%;
+  -webkit-box-flex: 1;
+}
+
+input.validating {
+  box-sizing: border-box;
+}
+
+input.validating:invalid {
+  -webkit-padding-end: 24px;
+  background-image: url('../../app/theme/input_invalid_warning.png');
+  background-position: right;
+  background-repeat: no-repeat;
+}
+
+html[dir='rtl'] input.validating:invalid {
+  background-position: left;
+}
+
+.option {
+  -webkit-box-flex: 1;
+}
+
+.pages-option {
+  -webkit-box-orient: horizontal;
+  display: -webkit-box;
+}
+
+.pages-option > * {
+  display: block;
+}
+
+.pages-option > :last-child {
+  -webkit-box-flex: 1;
 }
