@@ -155,27 +155,19 @@ function addUrlsWithTimeline(urls, callback) {
     // to pass to the callback.
     chrome.history.search({text: ''}, function(historyItems) {
       // Check that both URLs were added.
-      console.log(" 1: historyItems = " + JSON.stringify(historyItems, null, 2));
+      assertEq(urls.length, historyItems.length);
 
-      waitAFewSeconds(1, function() {
-        chrome.history.search({text: ''}, function(historyItems) {
-          console.log(" 2: historyItems = " + JSON.stringify(historyItems, null, 2));
+      // Don't assume anything about the order of history records in
+      // |historyItems|.
+      var firstUrlTime = Math.min(historyItems[0].lastVisitTime,
+                                  historyItems[1].lastVisitTime);
+      var secondUrlTime = Math.max(historyItems[0].lastVisitTime,
+                                   historyItems[1].lastVisitTime);
 
-          assertEq(urls.length, historyItems.length);
-
-          // Don't assume anything about the order of history records in
-          // |historyItems|.
-          var firstUrlTime = Math.min(historyItems[0].lastVisitTime,
-                                      historyItems[1].lastVisitTime);
-          var secondUrlTime = Math.max(historyItems[0].lastVisitTime,
-                                       historyItems[1].lastVisitTime);
-
-          callback({
-            before: firstUrlTime - 100.0,
-            between: (firstUrlTime + secondUrlTime) / 2.0,
-            after: secondUrlTime + 100.0
-          });
-        });
+      callback({
+        before: firstUrlTime - 100.0,
+        between: (firstUrlTime + secondUrlTime) / 2.0,
+        after: secondUrlTime + 100.0
       });
     });
   });
