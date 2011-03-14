@@ -41,12 +41,12 @@ class BuilderStage():
     def Clear(cls):
       """Clear existing stage results."""
       cls._results_log = []
-    
+
     @classmethod
     def Record(cls, name, exception=None):
       """Store off an additional stage result."""
       cls._results_log.append((name, exception))
-    
+
     @classmethod
     def Get(cls):
       """Fetch stage results.
@@ -56,23 +56,23 @@ class BuilderStage():
           ('name', None or Exception)
       """
       return cls._results_log
-    
+
     @classmethod
     def Report(cls):
       """Generate a user friendly text display of the results data."""
-      results = cls.Get() 
-    
-      line = '*' * 60 
-      edge = '*' * 2 
-    
+      results = cls.Get()
+
+      line = '*' * 60
+      edge = '*' * 2
+
       report = []
-    
+
       report.append(line)
       report.append(edge + ' Stage Results')
-    
+
       for name, result in results:
         report.append(line)
-    
+
         if result:
           # If there was an error, describe it. If it was
           # as RunCommand error, give the command that failed,
@@ -88,7 +88,7 @@ class BuilderStage():
         else:
           # If there wasn't an error, don't describe it. ;>
           report.append('%s %s' % (edge, name))
-    
+
       report.append(line)
       return '\n'.join(report)
 

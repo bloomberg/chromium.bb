@@ -240,6 +240,8 @@ def RunAUTestSuite(buildroot, board, results_dir, full=True):
   cwd = os.path.join(buildroot, 'src', 'scripts')
   image_path = os.path.join(buildroot, 'src', 'build', 'images', board,
                             'latest', 'chromiumos_test_image.bin')
+  results_dir = results_dir.lstrip('/')
+  full_results_dir = os.path.join(buildroot, 'chroot', results_dir)
 
   if full:
     cmd = ['bin/ctest',
@@ -248,7 +250,7 @@ def RunAUTestSuite(buildroot, board, results_dir, full=True):
            '--zipbase=http://chromeos-images.corp.google.com',
            '--type=vm',
            '--no_graphics',
-           '--test_results_root=%s' % results_dir, ]
+           '--test_results_root=%s' % full_results_dir, ]
   else:
     cmd = ['bin/cros_au_test_harness',
            '--no_graphics',
@@ -258,7 +260,7 @@ def RunAUTestSuite(buildroot, board, results_dir, full=True):
            '--verbose',
            '--base_image=%s' % image_path,
            '--target_image=%s' % image_path,
-           '--test_results_root=%s' % results_dir, ]
+           '--test_results_root=%s' % full_results_dir, ]
 
   cros_lib.OldRunCommand(cmd, cwd=cwd, error_ok=False)
 
