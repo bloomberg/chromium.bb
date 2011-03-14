@@ -90,7 +90,7 @@ is enabled, and NULL otherwise.
 See also <function>FcConfigEnableHome</function>).
 @@
 
-@RET@		FcBol
+@RET@		FcBool
 @FUNC@		FcConfigEnableHome
 @TYPE1@		FcBool%				@ARG1@		enable
 @PURPOSE@	controls use of the home directory.
@@ -309,7 +309,7 @@ by the return value from multiple FcFontSort calls, applications must not
 modify these patterns.  Instead, they should be passed, along with <parameter>p</parameter> to
 <function>FcFontRenderPrepare</function> which combines them into a complete pattern.
     </para><para>
-The FcFontSet returned by FcFontSort is destroyed by caling FcFontSetDestroy.
+The FcFontSet returned by FcFontSort is destroyed by calling FcFontSetDestroy.
 If <parameter>config</parameter> is NULL, the current configuration is used.
 @@
 

@@ -97,11 +97,11 @@ matrix:
 @DESC@
 <function>FcMatrixScale</function> multiplies <parameter>matrix</parameter>
 x values by <parameter>sx</parameter> and y values by
-<parameter>sy</parameter>.  This is done by multiplying by
+<parameter>dy</parameter>.  This is done by multiplying by
 the matrix:
 <programlisting>
    sx  0
-   0   sy
+   0   dy
 </programlisting>
 @@
 

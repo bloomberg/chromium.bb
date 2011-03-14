@@ -35,7 +35,7 @@ Creates an empty set.
 @TYPE2@		const char *			@ARG2@		object
 @PURPOSE@	Add to an object set
 @DESC@
-Adds a proprety name to the set. Returns FcFalse if the property name cannot be
+Adds a property name to the set. Returns FcFalse if the property name cannot be
 inserted into the set (due to allocation failure). Otherwise returns FcTrue.
 @@
 

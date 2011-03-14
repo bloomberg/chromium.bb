@@ -53,7 +53,7 @@ been loaded, this routine does nothing and returns FcTrue.
 @RET@		void
 @FUNC@		FcFini
 @TYPE1@		void
-@PURPOSE@	finalize fonconfig library
+@PURPOSE@	finalize fontconfig library
 @DESC@
 Frees all data structures allocated by previous calls to fontconfig
 functions. Fontconfig returns to an uninitialized state, requiring a
