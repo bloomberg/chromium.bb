@@ -89,6 +89,19 @@ def RunBuildStages(bot_id, options, build_config):
     raise
 
 
+def RunBuildStagesWithReport(bot_id, options, build_config):
+  try:
+    RunBuildStages(bot_id, options, build_config)
+  except Exception as e:
+    traceback.print_exc()
+    print '\n'
+    print '\n'
+    # Made sure cbuildbot returns an error exit code if we are failing.
+    sys.exit(1)
+  finally:
+    print stages.BuilderStage.Results.Report()
+  
+
 def main():
   # Parse options
   usage = "usage: %prog [options] cbuildbot_config"
@@ -146,16 +159,7 @@ def main():
   else:
     parser.error('Invalid usage.  Use -h to see usage.')
 
-  try:
-    RunBuildStages(bot_id, options, build_config)
-  except Exception as e:
-    traceback.print_exc()
-    print '\n'
-    print '\n'
-    # Made sure cbuildbot returns an error exit code if we are failing.
-    sys.exit(1)
-  finally:
-    print stages.BuilderStage.Results.Report()
+  RunBuildStagesWithReport(bot_id, options, build_config)
 
 
 if __name__ == '__main__':
