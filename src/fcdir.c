@@ -30,7 +30,7 @@ FcFileIsDir (const FcChar8 *file)
 {
     struct stat	    statb;
 
-    if (FcStat ((const char *) file, &statb) != 0)
+    if (FcStat (file, &statb) != 0)
 	return FcFalse;
     return S_ISDIR(statb.st_mode);
 }
@@ -243,7 +243,7 @@ FcDirCacheScan (const FcChar8 *dir, FcConfig *config)
     if (FcDebug () & FC_DBG_FONTSET)
 	printf ("cache scan dir %s\n", dir);
 
-    if (FcStat ((char *) dir, &dir_stat) < 0)
+    if (FcStat (dir, &dir_stat) < 0)
     {
 	if (errno != ENOENT)
 	    ret = FcFalse;

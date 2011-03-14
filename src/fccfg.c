@@ -131,7 +131,7 @@ FcConfigNewestFile (FcStrSet *files)
     if (list)
     {
 	while ((file = FcStrListNext (list)))
-	    if (FcStat ((char *) file, &statb) == 0)
+	    if (FcStat (file, &statb) == 0)
 		if (!newest.set || statb.st_mtime - newest.time > 0)
 		{
 		    newest.set = FcTrue;

@@ -132,6 +132,15 @@ FcStat (const char *file, struct stat *statb)
 
     return 0;
 }
+
+#else
+
+int
+FcStat (const char *file, struct stat *statb)
+{
+  return stat ((char *) file, statb);
+}
+
 #endif
 
 static const char bin2hex[] = { '0', '1', '2', '3',
@@ -234,7 +243,7 @@ FcDirCacheProcess (FcConfig *config, const FcChar8 *dir,
     struct stat file_stat, dir_stat;
     FcBool	ret = FcFalse;
 
-    if (FcStat ((char *) dir, &dir_stat) < 0)
+    if (FcStat (dir, &dir_stat) < 0)
         return FcFalse;
 
     FcDirCacheBasename (dir, cache_base);
@@ -516,7 +525,7 @@ FcCacheTimeValid (FcCache *cache, struct stat *dir_stat)
 
     if (!dir_stat)
     {
-	if (FcStat ((const char *) FcCacheDir (cache), &dir_static) < 0)
+	if (FcStat (FcCacheDir (cache), &dir_static) < 0)
 	    return FcFalse;
 	dir_stat = &dir_static;
     }
