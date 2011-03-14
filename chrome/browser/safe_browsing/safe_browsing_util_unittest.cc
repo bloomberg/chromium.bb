@@ -335,11 +335,14 @@ TEST(SafeBrowsingUtilTest, ListIdVerification) {
   EXPECT_EQ(1, safe_browsing_util::BINHASH % 2);
 }
 
-TEST(SafeBrowsingUtilTest, StringToSBFullHash) {
+TEST(SafeBrowsingUtilTest, StringToSBFullHashAndSBFullHashToString) {
   // 31 chars plus the last \0 as full_hash.
   const std::string hash_in = "12345678902234567890323456789012";
   SBFullHash hash_out;
   safe_browsing_util::StringToSBFullHash(hash_in, &hash_out);
   EXPECT_EQ(0x34333231, hash_out.prefix);
   EXPECT_EQ(0, memcmp(hash_in.data(), hash_out.full_hash, sizeof(SBFullHash)));
+
+  std::string hash_final = safe_browsing_util::SBFullHashToString(hash_out);
+  EXPECT_EQ(hash_in, hash_final);
 }

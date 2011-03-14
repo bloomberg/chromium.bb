@@ -320,7 +320,7 @@ GURL GeneratePhishingReportUrl(const std::string& report_page,
                                const std::string& url_to_report);
 
 void StringToSBFullHash(const std::string& hash_in, SBFullHash* hash_out);
-
+std::string SBFullHashToString(const SBFullHash& hash_out);
 }  // namespace safe_browsing_util
 
 #endif  // CHROME_BROWSER_SAFE_BROWSING_SAFE_BROWSING_UTIL_H_

@@ -524,4 +524,8 @@ void StringToSBFullHash(const std::string& hash_in, SBFullHash* hash_out) {
   memcpy(hash_out->full_hash, hash_in.data(), base::SHA256_LENGTH);
 }
 
+std::string SBFullHashToString(const SBFullHash& hash) {
+  DCHECK_EQ(static_cast<size_t>(base::SHA256_LENGTH), sizeof(hash.full_hash));
+  return std::string(hash.full_hash, sizeof(hash.full_hash));
+}
 }  // namespace safe_browsing_util

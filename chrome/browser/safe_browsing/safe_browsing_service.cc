@@ -138,7 +138,9 @@ void SafeBrowsingService::Client::OnSafeBrowsingResult(
     OnBrowseUrlCheckResult(*(check.url), check.result);
     OnDownloadUrlCheckResult(*(check.url), check.result);
   } else if (check.full_hash.get()) {
-    OnDownloadHashCheckResult(check.full_hash->full_hash, check.result);
+    OnDownloadHashCheckResult(
+        safe_browsing_util::SBFullHashToString(*check.full_hash),
+        check.result);
   } else {
     NOTREACHED();
   }
