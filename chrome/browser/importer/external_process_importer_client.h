@@ -92,7 +92,7 @@ class ExternalProcessImporterClient
           OVERRIDE;
 
   // First message received when importing favicons. |total_fav_icons_size|
-  // gives the total number of fav icons to be imported.
+  // gives the total number of favicons to be imported.
   virtual void OnFavIconsImportStart(size_t total_fav_icons_count) OVERRIDE;
 
   // Called when a group of favicons has been received.
@@ -132,7 +132,7 @@ class ExternalProcessImporterClient
   // Total number of history items to import.
   size_t total_history_rows_count_;
 
-  // Total number of fav icons to import.
+  // Total number of favicons to import.
   size_t total_fav_icons_count_;
 
   // Notifications received from the ProfileImportProcessHost are passed back

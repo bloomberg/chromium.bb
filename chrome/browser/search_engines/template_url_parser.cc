@@ -486,7 +486,7 @@ void EndElementImpl(void *ctx, const xmlChar *name) {
       if (image_url.SchemeIs(chrome::kDataScheme)) {
         // TODO (jcampan): bug 1169256: when dealing with data URL, we need to
         // decode the data URL in the renderer. For now, we'll just point to the
-        // fav icon from the URL.
+        // favicon from the URL.
         context->set_derive_image_from_url(true);
       } else {
         context->SetImageURL(image_url);

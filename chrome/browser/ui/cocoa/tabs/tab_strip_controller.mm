@@ -1211,7 +1211,7 @@ private:
   [delegate_ onTabDetachedWithContents:contents->tab_contents()];
 }
 
-// A helper routine for creating an NSImageView to hold the fav icon or app icon
+// A helper routine for creating an NSImageView to hold the favicon or app icon
 // for |contents|.
 - (NSImageView*)iconImageViewForContents:(TabContents*)contents {
   BOOL isApp = contents->is_app();

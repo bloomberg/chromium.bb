@@ -17,7 +17,7 @@
 #include "base/string16.h"
 #include "chrome/browser/download/save_package.h"
 #include "chrome/browser/extensions/image_loading_tracker.h"
-#include "chrome/browser/fav_icon_helper.h"
+#include "chrome/browser/favicon_helper.h"
 #include "chrome/browser/prefs/pref_change_registrar.h"
 #include "chrome/browser/tab_contents/tab_specific_content_settings.h"
 #include "chrome/browser/ui/app_modal_dialogs/js_modal_dialog.h"
@@ -181,8 +181,8 @@ class TabContents : public PageNavigator,
     return view_.get();
   }
 
-  // Returns the FavIconHelper of this TabContents.
-  FavIconHelper& fav_icon_helper() {
+  // Returns the FaviconHelper of this TabContents.
+  FaviconHelper& fav_icon_helper() {
     return *fav_icon_helper_.get();
   }
 
@@ -1080,7 +1080,7 @@ class TabContents : public PageNavigator,
   BookmarkDrag* bookmark_drag_;
 
   // Handles downloading favicons.
-  scoped_ptr<FavIconHelper> fav_icon_helper_;
+  scoped_ptr<FaviconHelper> fav_icon_helper_;
 
   // Cached web app info data.
   WebApplicationInfo web_app_info_;

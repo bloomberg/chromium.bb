@@ -52,7 +52,7 @@ void WmOverviewFavIcon::Init(WmOverviewSnapshot* snapshot) {
 
 
 void WmOverviewFavIcon::SetFavIcon(const SkBitmap& image) {
-  CHECK(fav_icon_view_) << "Init not called before setting fav icon.";
+  CHECK(fav_icon_view_) << "Init not called before setting favicon.";
   SkBitmap icon;
   if (image.width() && image.height()) {
     float aspect_ratio = static_cast<float>(image.width()) / image.height();

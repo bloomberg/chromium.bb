@@ -45,7 +45,7 @@ namespace {
 
 // COM interfaces used in this file.
 // These interface declarations are copied from Windows SDK 7.0.
-// TODO(hbono): Bug 16903: to be deleted them when we use Windows SDK 7.0.
+// TODO(hbono): Bug 16903: delete them when we use Windows SDK 7.0.
 #ifndef __IObjectArray_INTERFACE_DEFINED__
 #define __IObjectArray_INTERFACE_DEFINED__
 
@@ -117,7 +117,7 @@ ICustomDestinationList : public IUnknown {
 // Class IDs used in this file.
 // These class IDs must be defined in an anonymous namespace to avoid
 // conflicts with ones defined in "shell32.lib" of Visual Studio 2008.
-// TODO(hbono): Bug 16903: to be deleted them when we use Windows SDK 7.0.
+// TODO(hbono): Bug 16903: delete them when we use Windows SDK 7.0.
 const CLSID CLSID_DestinationList = {
   0x77f10cf0, 0x3db5, 0x4966, {0xb5, 0x20, 0xb7, 0xc5, 0x4f, 0xd3, 0x5e, 0xd6}
 };
@@ -682,8 +682,8 @@ bool JumpList::StartLoadingFavIcon() {
   if (icon_urls_.empty())
     return false;
 
-  // Ask FaviconService if it has a fav icon of a URL.
-  // When FaviocnService has one, it will call OnFavIconDataAvailable().
+  // Ask FaviconService if it has a favicon of a URL.
+  // When FaviconService has one, it will call OnFavIconDataAvailable().
   GURL url(icon_urls_.front().first);
   FaviconService* favicon_service =
       profile_->GetFaviconService(Profile::EXPLICIT_ACCESS);
@@ -747,7 +747,7 @@ void JumpList::OnSegmentUsageAvailable(
     }
   }
 
-  // Send a query that retrieves the first fav icon.
+  // Send a query that retrieves the first favicon.
   StartLoadingFavIcon();
 }
 
@@ -764,13 +764,13 @@ void JumpList::OnFavIconDataAvailable(
       icon_urls_.front().second->SetIconData(data);
   }
 
-  // if we need to load more fav icons, we send another query and exit.
+  // if we need to load more favicons, we send another query and exit.
   if (!icon_urls_.empty())
     icon_urls_.pop_front();
   if (StartLoadingFavIcon())
     return;
 
-  // Finished Loading all fav icons needed by the application JumpList.
+  // Finished loading all favicons needed by the application JumpList.
   // We create a JumpListUpdateTask that creates icon files, and we post it to
   // the file thread.
   BrowserThread::PostTask(

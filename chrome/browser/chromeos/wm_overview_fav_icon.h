@@ -18,17 +18,17 @@ namespace chromeos {
 
 class WmOverviewSnapshot;
 
-// A single fav icon displayed by WmOverviewController.
+// A single favicon displayed by WmOverviewController.
 class WmOverviewFavIcon : public views::WidgetGtk {
  public:
   static const int kIconSize;
 
   WmOverviewFavIcon();
 
-  // Initializes the fav icon to 0x0 size.
+  // Initializes the favicon to 0x0 size.
   void Init(WmOverviewSnapshot* snapshot);
 
-  // Setting the FavIcon sets the bounds to the size of the given
+  // Setting the favicon sets the bounds to the size of the given
   // image.
   void SetFavIcon(const SkBitmap& image);
 

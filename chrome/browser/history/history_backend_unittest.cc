@@ -845,7 +845,7 @@ TEST_F(HistoryBackendTest, SetFavIconMapping) {
 
   const GURL icon_url("http://www.google.com/icon");
   std::vector<unsigned char> data(blob1, blob1 + sizeof(blob1));
-  // Add a fav icon
+  // Add a favicon
   backend_->SetFavIcon(
       url1, icon_url, RefCountedBytes::TakeVector(&data), FAV_ICON);
   EXPECT_TRUE(backend_->thumbnail_db_->GetIconMappingForPageURL(

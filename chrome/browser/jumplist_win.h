@@ -142,23 +142,23 @@ class JumpList : public TabRestoreServiceObserver {
                  ShellLinkItemList* list,
                  size_t max_items);
 
-  // Starts loading a fav icon for each URL in |icon_urls_|.
+  // Starts loading a favicon for each URL in |icon_urls_|.
   // This function just sends a query to HistoryService.
   bool StartLoadingFavIcon();
 
   // A callback function for HistoryService that notify when the "Most Visited"
   // list is available.
   // This function updates the ShellLinkItemList objects and send another query
-  // that retrieves a fav icon for each URL in the list.
+  // that retrieves a favicon for each URL in the list.
   void OnSegmentUsageAvailable(CancelableRequestProvider::Handle handle,
                                std::vector<PageUsageData*>* data);
 
-  // a callback function for HistoryService that notify when a requested fav
-  // icon is available.
+  // A callback function for HistoryService that notify when a requested favicon
+  // is available.
   // To avoid file operations, this function just attaches the given data to
   // a ShellLinkItem object.
-  // When finishing loading all fav icons, this function posts a task that
-  // decompresses collected fav icons and updates a JumpList.
+  // When finishing loading all favicons, this function posts a task that
+  // decompresses collected favicons and updates a JumpList.
   void OnFavIconDataAvailable(HistoryService::Handle handle,
                               bool know_favicon,
                               scoped_refptr<RefCountedMemory> data,
@@ -185,7 +185,7 @@ class JumpList : public TabRestoreServiceObserver {
   // Items in the "Recently Closed" category of the application JumpList.
   ShellLinkItemList recently_closed_pages_;
 
-  // A list of URLs we need to retrieve their fav icons.
+  // A list of URLs we need to retrieve their favicons.
   typedef std::pair<std::string, scoped_refptr<ShellLinkItem> > URLPair;
   std::list<URLPair> icon_urls_;
 };

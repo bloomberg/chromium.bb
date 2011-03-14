@@ -8,7 +8,7 @@
 #include "base/metrics/histogram.h"
 #include "base/time.h"
 #include "base/utf_string_conversions.h"
-#include "chrome/browser/fav_icon_helper.h"
+#include "chrome/browser/favicon_helper.h"
 #include "chrome/browser/prerender/prerender_contents.h"
 #include "chrome/browser/prerender/prerender_final_status.h"
 #include "chrome/common/render_messages.h"
@@ -165,7 +165,7 @@ bool PrerenderManager::MaybeUsePreloadedPage(TabContents* tc, const GURL& url) {
 
   GURL icon_url = pc->icon_url();
   if (!icon_url.is_empty())
-    tc->fav_icon_helper().OnUpdateFavIconURL(pc->page_id(), icon_url);
+    tc->fav_icon_helper().OnUpdateFaviconURL(pc->page_id(), icon_url);
 
   if (pc->has_stopped_loading())
     tc->DidStopLoading();
