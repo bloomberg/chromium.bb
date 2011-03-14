@@ -173,29 +173,6 @@ void PluginPpapi::DidChangeView(const pp::Rect& position,
   PLUGIN_PRINTF(("PluginPpapi::DidChangeView (this=%p)\n",
                  static_cast<void*>(this)));
 
-  // TODO(neb): Remove this hack when it stops being required.
-  // <HACK>
-  static bool first_time = true;
-  if (first_time || ppapi_proxy_ == NULL) {
-    PLUGIN_PRINTF(("HACKITYHACK: Binding fake 3D.\n"));
-    pp::Surface3D_Dev surface;
-    context_ = pp::Context3D_Dev(*this, 0, pp::Context3D_Dev(), NULL);
-    if (!context_.is_null()) {
-      surface = pp::Surface3D_Dev(*this, 0, NULL);
-      if (!surface.is_null()) {
-        context_.BindSurfaces(surface, surface);
-        BindGraphics(surface);
-        PLUGIN_PRINTF(("HACKITYHACK: Bound 3D!.\n"));
-      } else {
-        PLUGIN_PRINTF(("HACKITYHACK: Failed to create the surface.\n"));
-      }
-    } else {
-      PLUGIN_PRINTF(("HACKITYHACK: Failed to create the context.\n"));
-    }
-    first_time = false;
-  }
-  // </HACK>
-
   if (ppapi_proxy_ == NULL) {
     // Store this event and replay it when the proxy becomes available.
     replayDidChangeView = true;
@@ -334,14 +311,6 @@ void PluginPpapi::StartProxiedExecution(NaClSrpcChannel* srpc_channel) {
   // Replay missed events.
   if (replayDidChangeView) {
     replayDidChangeView = false;
-
-    // TODO(neb): Remove this hack when it stops being required.
-    // <HACK>
-    PLUGIN_PRINTF(("HACKITYHACK: Unbinding surfaces!\n"));
-    BindGraphics(pp::Surface3D_Dev());
-    context_.BindSurfaces(pp::Surface3D_Dev(), pp::Surface3D_Dev());
-    // </HACK>
-
     DidChangeView(replayDidChangeViewPosition, replayDidChangeViewClip);
   }
 }

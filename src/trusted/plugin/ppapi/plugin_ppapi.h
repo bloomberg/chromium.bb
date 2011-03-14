@@ -22,13 +22,6 @@
 #include "ppapi/cpp/rect.h"
 #include "ppapi/cpp/var.h"
 
-// TODO(neb): Remove this hack when it stops being required.
-// http://code.google.com/p/nativeclient/issues/detail?id=1421
-// <HACK>
-#include "ppapi/cpp/dev/context_3d_dev.h"
-#include "ppapi/cpp/dev/surface_3d_dev.h"
-// </HACK>
-
 struct NaClSrpcChannel;
 struct NaClDesc;
 namespace ppapi_proxy {
@@ -189,9 +182,6 @@ class PluginPpapi : public pp::Instance, public Plugin {
   // Keep track of file descriptors opened by StreamAsFile().
   // These are owned by the browser.
   std::map<nacl::string, int32_t> url_fd_map_;
-
-  // TODO(neb): Remove this hack.
-  pp::Context3D_Dev context_;
 };
 
 }  // namespace plugin
