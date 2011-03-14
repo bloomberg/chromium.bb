@@ -711,20 +711,18 @@ def UserEditedLog(starting_text):
   fileobj.close()
 
   # Open up the default editor in the system to get the CL description.
-  result = None
-  try:
-    subprocess.check_call(['env', editor, filename], shell=True)
-    fileobj = open(filename)
-    result = fileobj.read()
-    fileobj.close()
-  finally:
+  ret = subprocess.call(editor + ' ' + filename, shell=True)
+  if ret != 0:
     os.remove(filename)
-
-  if not result:
     return
+  fileobj = open(filename)
+  text = fileobj.read()
+  fileobj.close()
+
+  os.remove(filename)
 
   stripcomment_re = re.compile(r'^#.*$', re.MULTILINE)
-  return stripcomment_re.sub('', result).strip()
+  return stripcomment_re.sub('', text).strip()
 
 
 def ConvertToInteger(inputval):
