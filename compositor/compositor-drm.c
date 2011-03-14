@@ -79,23 +79,24 @@ drm_output_prepare_render(struct wlsc_output *output_base)
 	return 0;
 }
 
-static void
-drm_compositor_present(struct wlsc_compositor *ec)
+static int
+drm_output_present(struct wlsc_output *output_base)
 {
-	struct drm_compositor *c = (struct drm_compositor *) ec;
-	struct drm_output *output;
+	struct drm_output *output = (struct drm_output *) output_base;
+	struct drm_compositor *c =
+		(struct drm_compositor *) output->base.compositor;
 
-	wl_list_for_each(output, &ec->output_list, base.link) {
-		if (drm_output_prepare_render(&output->base))
-			continue;
-		glFlush();
+	if (drm_output_prepare_render(&output->base))
+		return -1;
+	glFlush();
 
-		output->current ^= 1;
+	output->current ^= 1;
 
-		drmModePageFlip(c->drm.fd, output->crtc_id,
-				output->fb_id[output->current ^ 1],
-				DRM_MODE_PAGE_FLIP_EVENT, output);
-	}	
+	drmModePageFlip(c->drm.fd, output->crtc_id,
+			output->fb_id[output->current ^ 1],
+			DRM_MODE_PAGE_FLIP_EVENT, output);
+
+	return 0;
 }
 
 static void
@@ -103,16 +104,10 @@ page_flip_handler(int fd, unsigned int frame,
 		  unsigned int sec, unsigned int usec, void *data)
 {
 	struct wlsc_output *output = data;
-	struct wlsc_compositor *compositor = output->compositor;
 	uint32_t msecs;
 
-	/* run synchronized to first output, ignore other pflip events.
-	 * FIXME: support per output/surface frame callbacks */
-	if (output == container_of(compositor->output_list.prev,
-				   struct wlsc_output, link)) {
-		msecs = sec * 1000 + usec / 1000;
-		wlsc_compositor_finish_frame(compositor, msecs);
-	}
+	msecs = sec * 1000 + usec / 1000;
+	wlsc_output_finish_frame(output, msecs);
 }
 
 static void
@@ -287,6 +282,7 @@ create_output_for_connector(struct drm_compositor *ec,
 	}
 
 	output->base.prepare_render = drm_output_prepare_render;
+	output->base.present = drm_output_present;
 
 	wl_list_insert(ec->base.output_list.prev, &output->base.link);
 
@@ -523,7 +519,6 @@ drm_compositor_create(struct wl_display *display, int connector)
 	}
 
 	ec->base.destroy = drm_destroy;
-	ec->base.present = drm_compositor_present;
 	ec->base.create_buffer = wlsc_shm_buffer_create;
 	ec->base.focus = 1;
 
