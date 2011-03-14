@@ -2857,8 +2857,6 @@
         'browser/ui/views/dropdown_bar_host_gtk.cc',
         'browser/ui/views/dropdown_bar_host_win.cc',
         'browser/ui/views/dropdown_bar_view.h',
-        'browser/ui/views/edit_search_engine_dialog.cc',
-        'browser/ui/views/edit_search_engine_dialog.h',
         'browser/ui/views/event_utils.cc',
         'browser/ui/views/event_utils.h',
         'browser/ui/views/extensions/browser_action_drag_data.cc',
