@@ -102,7 +102,7 @@ static net::URLRequestJob* BlobURLRequestJobFactory(net::URLRequest* request,
   return new webkit_blob::BlobURLRequestJob(
       request,
       blob_storage_controller->GetBlobDataFromUrl(request->url()),
-      NULL);
+      SimpleResourceLoaderBridge::GetIoThread());
 }
 
 TestShellRequestContextParams* g_request_context_params = NULL;

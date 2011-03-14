@@ -12,6 +12,7 @@
 #include "base/message_loop_proxy.h"
 #include "base/string_number_conversions.h"
 #include "base/threading/thread_restrictions.h"
+#include "net/base/file_stream.h"
 #include "net/base/io_buffer.h"
 #include "net/base/net_errors.h"
 #include "net/http/http_request_headers.h"
@@ -41,6 +42,10 @@ static const char kHTTPRequestedRangeNotSatisfiableText[] =
     "Requested Range Not Satisfiable";
 static const char kHTTPInternalErrorText[] = "Internal Server Error";
 
+static const int kFileOpenFlags = base::PLATFORM_FILE_OPEN |
+                                  base::PLATFORM_FILE_READ |
+                                  base::PLATFORM_FILE_ASYNC;
+
 BlobURLRequestJob::BlobURLRequestJob(
     net::URLRequest* request,
     BlobData* blob_data,
@@ -58,13 +63,18 @@ BlobURLRequestJob::BlobURLRequestJob(
       read_buf_offset_(0),
       read_buf_size_(0),
       read_buf_remaining_bytes_(0),
+      bytes_to_read_(0),
       error_(false),
       headers_set_(false),
       byte_range_set_(false),
       ALLOW_THIS_IN_INITIALIZER_LIST(method_factory_(this)) {
+  DCHECK(file_thread_proxy_);
 }
 
 BlobURLRequestJob::~BlobURLRequestJob() {
+  // FileStream's destructor won't close it for us because we passed in our own
+  // file handle.
+  CloseStream();
 }
 
 void BlobURLRequestJob::Start() {
@@ -90,8 +100,15 @@ void BlobURLRequestJob::DidStart() {
   CountSize();
 }
 
+void BlobURLRequestJob::CloseStream() {
+  if (stream_ != NULL) {
+    stream_->Close();
+    stream_.reset(NULL);
+  }
+}
+
 void BlobURLRequestJob::Kill() {
-  stream_.Close();
+  CloseStream();
 
   net::URLRequestJob::Kill();
   callback_factory_.RevokeAll();
@@ -99,28 +116,10 @@ void BlobURLRequestJob::Kill() {
 }
 
 void BlobURLRequestJob::ResolveFile(const FilePath& file_path) {
-  // If the file thread proxy is provided, we can use it get the file info.
-  if (file_thread_proxy_) {
-    base::FileUtilProxy::GetFileInfo(
-          file_thread_proxy_,
-          file_path,
-          callback_factory_.NewCallback(&BlobURLRequestJob::DidResolve));
-    return;
-  }
-
-  // Otherwise, we use current thread, i.e. IO thread, as this is the case when
-  // we run the unittest or test shell.
-  // TODO(jianli): Consider using the proxy of current thread.
-  base::PlatformFileInfo file_info;
-  bool exists = file_util::GetFileInfo(file_path, &file_info);
-
-  // Continue asynchronously.
-  MessageLoop::current()->PostTask(
-      FROM_HERE,
-      method_factory_.NewRunnableMethod(
-          &BlobURLRequestJob::DidResolve,
-          exists ? base::PLATFORM_FILE_OK : base::PLATFORM_FILE_ERROR_NOT_FOUND,
-          file_info));
+  base::FileUtilProxy::GetFileInfo(
+        file_thread_proxy_,
+        file_path,
+        callback_factory_.NewCallback(&BlobURLRequestJob::DidResolve));
 }
 
 void BlobURLRequestJob::DidResolve(base::PlatformFileError rv,
@@ -255,6 +254,17 @@ bool BlobURLRequestJob::ReadLoop(int* bytes_read) {
   return true;
 }
 
+int BlobURLRequestJob::ComputeBytesToRead() const {
+  int64 current_item_remaining_bytes =
+      item_length_list_[item_index_] - current_item_offset_;
+  int bytes_to_read = (read_buf_remaining_bytes_ > current_item_remaining_bytes)
+      ? static_cast<int>(current_item_remaining_bytes)
+      : read_buf_remaining_bytes_;
+  if (bytes_to_read > remaining_bytes_)
+    bytes_to_read = static_cast<int>(remaining_bytes_);
+  return bytes_to_read;
+}
+
 bool BlobURLRequestJob::ReadItem() {
   // Are we done with reading all the blob data?
   if (remaining_bytes_ == 0)
@@ -267,77 +277,85 @@ bool BlobURLRequestJob::ReadItem() {
     return false;
   }
 
-  const BlobData::Item& item = blob_data_->items().at(item_index_);
-
   // Compute the bytes to read for current item.
-  int64 current_item_remaining_bytes =
-      item_length_list_[item_index_] - current_item_offset_;
-  int bytes_to_read = (read_buf_remaining_bytes_ > current_item_remaining_bytes)
-      ? static_cast<int>(current_item_remaining_bytes)
-      : read_buf_remaining_bytes_;
-  if (bytes_to_read > remaining_bytes_)
-    bytes_to_read = static_cast<int>(remaining_bytes_);
+  bytes_to_read_ = ComputeBytesToRead();
 
   // If nothing to read for current item, advance to next item.
-  if (bytes_to_read == 0) {
+  if (bytes_to_read_ == 0) {
     AdvanceItem();
     return ReadItem();
   }
 
   // Do the reading.
+  const BlobData::Item& item = blob_data_->items().at(item_index_);
   switch (item.type()) {
     case BlobData::TYPE_DATA:
-      return ReadBytes(item, bytes_to_read);
+      return ReadBytes(item);
     case BlobData::TYPE_FILE:
-      return ReadFile(item, bytes_to_read);
+      return DispatchReadFile(item);
     default:
       DCHECK(false);
       return false;
   }
 }
 
-bool BlobURLRequestJob::ReadBytes(const BlobData::Item& item,
-                                  int bytes_to_read) {
-  DCHECK(read_buf_remaining_bytes_ >= bytes_to_read);
+bool BlobURLRequestJob::ReadBytes(const BlobData::Item& item) {
+  DCHECK(read_buf_remaining_bytes_ >= bytes_to_read_);
 
   memcpy(read_buf_->data() + read_buf_offset_,
          &item.data().at(0) + item.offset() + current_item_offset_,
-         bytes_to_read);
+         bytes_to_read_);
 
-  AdvanceBytesRead(bytes_to_read);
+  AdvanceBytesRead(bytes_to_read_);
   return true;
 }
 
-bool BlobURLRequestJob::ReadFile(const BlobData::Item& item,
-                                 int bytes_to_read) {
-  DCHECK(read_buf_remaining_bytes_ >= bytes_to_read);
+bool BlobURLRequestJob::DispatchReadFile(const BlobData::Item& item) {
+  // If the stream already exists, keep reading from it.
+  if (stream_ != NULL)
+    return ReadFile(item);
 
-  // Open the file if not yet.
-  if (!stream_.IsOpen()) {
-    // stream_.Open() and stream_.Seek() block the IO thread.
-    // See http://crbug.com/75548.
+  base::FileUtilProxy::CreateOrOpen(
+      file_thread_proxy_, item.file_path(), kFileOpenFlags,
+      callback_factory_.NewCallback(&BlobURLRequestJob::DidOpen));
+  SetStatus(net::URLRequestStatus(net::URLRequestStatus::IO_PENDING, 0));
+  return false;
+}
+
+void BlobURLRequestJob::DidOpen(base::PlatformFileError rv,
+                                base::PassPlatformFile file,
+                                bool created) {
+  if (rv != base::PLATFORM_FILE_OK) {
+    NotifyFailure(net::ERR_FAILED);
+    return;
+  }
+
+  DCHECK(!stream_.get());
+  stream_.reset(new net::FileStream(file.ReleaseValue(), kFileOpenFlags));
+
+  const BlobData::Item& item = blob_data_->items().at(item_index_);
+  {
+    // stream_.Seek() blocks the IO thread, see http://crbug.com/75548.
     base::ThreadRestrictions::ScopedAllowIO allow_io;
-    int rv = stream_.Open(item.file_path(), base::PLATFORM_FILE_OPEN |
-        base::PLATFORM_FILE_READ | base::PLATFORM_FILE_ASYNC);
-    if (rv != net::OK) {
-      NotifyFailure(net::ERR_FAILED);
-      return false;
-    }
-
-    // Seek the file if needed.
     int64 offset = current_item_offset_ + static_cast<int64>(item.offset());
-    if (offset > 0) {
-      if (offset != stream_.Seek(net::FROM_BEGIN, offset)) {
-        NotifyFailure(net::ERR_FAILED);
-        return false;
-      }
+    if (offset > 0 && offset != stream_->Seek(net::FROM_BEGIN, offset)) {
+      NotifyFailure(net::ERR_FAILED);
+      return;
     }
   }
 
+  ReadFile(item);
+}
+
+bool BlobURLRequestJob::ReadFile(const BlobData::Item& item) {
+  DCHECK(stream_.get());
+  DCHECK(stream_->IsOpen());
+  DCHECK(read_buf_remaining_bytes_ >= bytes_to_read_);
+
   // Start the asynchronous reading.
-  int rv = stream_.Read(read_buf_->data() + read_buf_offset_,
-                        bytes_to_read,
-                        &io_callback_);
+  int rv = stream_->Read(read_buf_->data() + read_buf_offset_,
+                         bytes_to_read_,
+                         &io_callback_);
 
   // If I/O pending error is returned, we just need to wait.
   if (rv == net::ERR_IO_PENDING) {
@@ -352,7 +370,11 @@ bool BlobURLRequestJob::ReadFile(const BlobData::Item& item,
   }
 
   // Otherwise, data is immediately available.
-  AdvanceBytesRead(rv);
+  if (GetStatus().is_io_pending())
+    DidRead(rv);
+  else
+    AdvanceBytesRead(rv);
+
   return true;
 }
 
@@ -380,8 +402,7 @@ void BlobURLRequestJob::DidRead(int result) {
 
 void BlobURLRequestJob::AdvanceItem() {
   // Close the stream if the current item is a file.
-  if (stream_.IsOpen())
-    stream_.Close();
+  CloseStream();
 
   // Advance to the next item.
   item_index_++;

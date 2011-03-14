@@ -11,7 +11,6 @@
 #include "base/scoped_ptr.h"
 #include "base/task.h"
 #include "net/base/completion_callback.h"
-#include "net/base/file_stream.h"
 #include "net/http/http_byte_range.h"
 #include "net/url_request/url_request_job.h"
 #include "webkit/blob/blob_data.h"
@@ -19,6 +18,10 @@
 namespace base {
 class MessageLoopProxy;
 struct PlatformFileInfo;
+}
+
+namespace net {
+class FileStream;
 }
 
 namespace webkit_blob {
@@ -41,15 +44,18 @@ class BlobURLRequestJob : public net::URLRequestJob {
   virtual void SetExtraRequestHeaders(const net::HttpRequestHeaders& headers);
 
  private:
+  void CloseStream();
   void ResolveFile(const FilePath& file_path);
   void CountSize();
   void Seek(int64 offset);
   void AdvanceItem();
   void AdvanceBytesRead(int result);
+  int ComputeBytesToRead() const;
   bool ReadLoop(int* bytes_read);
   bool ReadItem();
-  bool ReadBytes(const BlobData::Item& item, int bytes_to_read);
-  bool ReadFile(const BlobData::Item& item, int bytes_to_read);
+  bool ReadBytes(const BlobData::Item& item);
+  bool DispatchReadFile(const BlobData::Item& item);
+  bool ReadFile(const BlobData::Item& item);
   void HeadersCompleted(int status_code, const std::string& status_txt);
   int ReadCompleted();
   void NotifySuccess();
@@ -58,6 +64,9 @@ class BlobURLRequestJob : public net::URLRequestJob {
   void DidStart();
   void DidResolve(base::PlatformFileError rv,
                   const base::PlatformFileInfo& file_info);
+  void DidOpen(base::PlatformFileError rv,
+               base::PassPlatformFile file,
+               bool created);
   void DidRead(int result);
 
   base::ScopedCallbackFactory<BlobURLRequestJob> callback_factory_;
@@ -65,7 +74,7 @@ class BlobURLRequestJob : public net::URLRequestJob {
   scoped_refptr<base::MessageLoopProxy> file_thread_proxy_;
   net::CompletionCallbackImpl<BlobURLRequestJob> io_callback_;
   std::vector<int64> item_length_list_;
-  net::FileStream stream_;
+  scoped_ptr<net::FileStream> stream_;
   size_t item_index_;
   int64 total_size_;
   int64 current_item_offset_;
@@ -74,6 +83,7 @@ class BlobURLRequestJob : public net::URLRequestJob {
   int read_buf_offset_;
   int read_buf_size_;
   int read_buf_remaining_bytes_;
+  int bytes_to_read_;
   bool error_;
   bool headers_set_;
   bool byte_range_set_;

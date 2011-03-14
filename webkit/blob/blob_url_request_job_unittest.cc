@@ -7,6 +7,7 @@
 
 #include "base/file_path.h"
 #include "base/file_util.h"
+#include "base/message_loop_proxy.h"
 #include "base/scoped_temp_dir.h"
 #include "base/task.h"
 #include "base/threading/thread.h"
@@ -249,8 +250,10 @@ class BlobURLRequestJobTest : public testing::Test {
     request_.reset(new net::URLRequest(GURL("blob:blah"),
                                        url_request_delegate_.get()));
     request_->set_method(method);
-    blob_url_request_job_ = new BlobURLRequestJob(request_.get(),
-                                                  blob_data, NULL);
+    blob_url_request_job_ = new BlobURLRequestJob(
+        request_.get(),
+        blob_data,
+        base::MessageLoopProxy::CreateForCurrentThread());
 
     // Start the request.
     if (!extra_headers.IsEmpty())
@@ -281,6 +284,20 @@ class BlobURLRequestJobTest : public testing::Test {
     scoped_refptr<BlobData> blob_data(new BlobData());
     blob_data->AppendFile(temp_file1_, 0, -1, base::Time());
     TestSuccessRequest(blob_data, kTestFileData1);
+  }
+
+  void TestGetLargeFileRequest() {
+    scoped_refptr<BlobData> blob_data(new BlobData());
+    FilePath large_temp_file = temp_dir_.path().AppendASCII("LargeBlob.dat");
+    std::string large_data;
+    large_data.reserve(kBufferSize * 5);
+    for (int i = 0; i < kBufferSize * 5; ++i)
+      large_data.append(1, static_cast<char>(i % 256));
+    ASSERT_EQ(static_cast<int>(large_data.size()),
+              file_util::WriteFile(large_temp_file, large_data.data(),
+                                   large_data.size()));
+    blob_data->AppendFile(large_temp_file, 0, -1, base::Time());
+    TestSuccessRequest(blob_data, large_data);
   }
 
   void TestGetNonExistentFileRequest() {
@@ -407,6 +424,10 @@ TEST_F(BlobURLRequestJobTest, TestGetSimpleDataRequest) {
 
 TEST_F(BlobURLRequestJobTest, TestGetSimpleFileRequest) {
   RunTestOnIOThread(&BlobURLRequestJobTest::TestGetSimpleFileRequest);
+}
+
+TEST_F(BlobURLRequestJobTest, TestGetLargeFileRequest) {
+  RunTestOnIOThread(&BlobURLRequestJobTest::TestGetLargeFileRequest);
 }
 
 TEST_F(BlobURLRequestJobTest, TestGetSlicedDataRequest) {
