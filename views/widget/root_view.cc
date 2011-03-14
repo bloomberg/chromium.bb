@@ -369,27 +369,25 @@ View::TouchStatus RootView::OnTouchEvent(const TouchEvent& event) {
     TouchEvent touch_event(e, this, touch_pressed_handler_);
     status = touch_pressed_handler_->ProcessTouchEvent(touch_event);
 
-    // If the touch didn't initiate a touch-sequence, then reset the touch event
-    // handler.
-    if (status != TOUCH_STATUS_START)
-      touch_pressed_handler_ = NULL;
-
     // The view could have removed itself from the tree when handling
     // OnTouchEvent(). So handle as per OnMousePressed. NB: we
     // assume that the RootView itself cannot be so removed.
-    //
-    // NOTE: Don't return true here, because we don't want the frame to
-    // forward future events to us when there's no handler.
     if (!touch_pressed_handler_)
       break;
 
-    // If the view handled the event, leave touch_pressed_handler_ set and
-    // return true, which will cause subsequent drag/release events to get
-    // forwarded to that view.
-    if (status != TOUCH_STATUS_UNKNOWN) {
-      gesture_manager_->ProcessTouchEventForGesture(e, this, status);
-      return status;
-    }
+    // The touch event wasn't processed. Go up the view hierarchy and dispatch
+    // the touch event.
+    if (status == TOUCH_STATUS_UNKNOWN)
+      continue;
+
+    // If the touch didn't initiate a touch-sequence, then reset the touch event
+    // handler. Otherwise, leave it set so that subsequent touch events are
+    // dispatched to the same handler.
+    if (status != TOUCH_STATUS_START)
+      touch_pressed_handler_ = NULL;
+
+    gesture_manager_->ProcessTouchEventForGesture(e, this, status);
+    return status;
   }
 
   // Reset touch_pressed_handler_ to indicate that no processing is occurring.

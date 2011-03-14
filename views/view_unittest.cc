@@ -217,6 +217,16 @@ class MockGestureManager : public GestureManager {
   DISALLOW_COPY_AND_ASSIGN(MockGestureManager);
 };
 
+// A view subclass that ignores all touch events for testing purposes.
+class TestViewIgnoreTouch : public TestView {
+ public:
+  TestViewIgnoreTouch() : TestView() {
+  }
+
+  virtual ~TestViewIgnoreTouch() {}
+ private:
+  virtual TouchStatus OnTouchEvent(const TouchEvent& event);
+};
 #endif
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -450,6 +460,10 @@ View::TouchStatus TestView::OnTouchEvent(const TouchEvent& event) {
                                          TOUCH_STATUS_UNKNOWN;
 }
 
+View::TouchStatus TestViewIgnoreTouch::OnTouchEvent(const TouchEvent& event) {
+  return TOUCH_STATUS_UNKNOWN;
+}
+
 TEST_F(ViewTest, TouchEvent) {
   MockGestureManager* gm = new MockGestureManager();
 
@@ -458,6 +472,9 @@ TEST_F(ViewTest, TouchEvent) {
 
   TestView* v2 = new TestView();
   v2->SetBounds(100, 100, 100, 100);
+
+  TestView* v3 = new TestViewIgnoreTouch();
+  v3->SetBounds(0, 0, 100, 100);
 
   scoped_ptr<Widget> window(CreateWidget());
 #if defined(OS_WIN)
@@ -473,6 +490,10 @@ TEST_F(ViewTest, TouchEvent) {
   root->AddChildView(v1);
   root->SetGestureManager(gm);
   v1->AddChildView(v2);
+  v2->AddChildView(v3);
+
+  // |v3| completely obscures |v2|, but all the touch events on |v3| should
+  // reach |v2| because |v3| doesn't process any touch events.
 
   // Make sure if none of the views handle the touch event, the gesture manager
   // does.
