@@ -670,7 +670,7 @@ def _Approvers(input_api, email_regexp):
     return email_regexp.match(r) and not input_api.re.match(owner, r)
 
   approvers = []
-  for m in issue_props['messages']:
+  for m in issue_props.get('messages', []):
     if 'lgtm' in m['text'].lower() and match_reviewer(m['sender']):
       approvers.append(m['sender'])
   return set(approvers)
