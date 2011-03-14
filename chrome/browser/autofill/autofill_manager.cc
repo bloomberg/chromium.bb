@@ -295,7 +295,7 @@ void AutofillManager::OnFormSubmitted(const FormData& form) {
     return;
 
   DeterminePossibleFieldTypesForUpload(&submitted_form);
-  LogMetricsAboutSubmittedForm(form, &submitted_form);
+  LogMetricsAboutSubmittedForm(form, submitted_form);
 
   UploadFormData(submitted_form);
 
@@ -576,84 +576,14 @@ void AutofillManager::DeterminePossibleFieldTypesForUpload(
 
 void AutofillManager::LogMetricsAboutSubmittedForm(
     const FormData& form,
-    const FormStructure* submitted_form) {
+    const FormStructure& submitted_form) const {
   FormStructure* cached_submitted_form;
   if (!FindCachedForm(form, &cached_submitted_form)) {
     NOTREACHED();
     return;
   }
 
-  // Map from field signatures to cached fields.
-  std::map<std::string, const AutofillField*> cached_fields;
-  for (size_t i = 0; i < cached_submitted_form->field_count(); ++i) {
-    const AutofillField* field = cached_submitted_form->field(i);
-    cached_fields[field->FieldSignature()] = field;
-  }
-
-  std::string experiment_id = cached_submitted_form->server_experiment_id();
-  for (size_t i = 0; i < submitted_form->field_count(); ++i) {
-    const AutofillField* field = submitted_form->field(i);
-    FieldTypeSet field_types;
-    personal_data_->GetPossibleFieldTypes(field->value, &field_types);
-    DCHECK(!field_types.empty());
-
-    if (field->form_control_type == ASCIIToUTF16("select-one")) {
-      // TODO(isherman): <select> fields don't support |is_autofilled|. Since
-      // this is heavily relied upon by our metrics, we just don't log anything
-      // for all <select> fields. Better to have less data than misleading data.
-      continue;
-    }
-
-    // Log various quality metrics.
-    metric_logger_->Log(AutofillMetrics::FIELD_SUBMITTED, experiment_id);
-    if (field_types.find(EMPTY_TYPE) == field_types.end() &&
-        field_types.find(UNKNOWN_TYPE) == field_types.end()) {
-      if (field->is_autofilled) {
-        metric_logger_->Log(AutofillMetrics::FIELD_AUTOFILLED, experiment_id);
-      } else {
-        metric_logger_->Log(AutofillMetrics::FIELD_AUTOFILL_FAILED,
-                            experiment_id);
-
-        AutofillFieldType heuristic_type = UNKNOWN_TYPE;
-        AutofillFieldType server_type = NO_SERVER_DATA;
-        std::map<std::string, const AutofillField*>::const_iterator
-            cached_field = cached_fields.find(field->FieldSignature());
-        if (cached_field != cached_fields.end()) {
-          heuristic_type = cached_field->second->heuristic_type();
-          server_type = cached_field->second->server_type();
-        }
-
-        if (heuristic_type == UNKNOWN_TYPE) {
-          metric_logger_->Log(AutofillMetrics::FIELD_HEURISTIC_TYPE_UNKNOWN,
-                              experiment_id);
-        } else if (field_types.count(heuristic_type)) {
-          metric_logger_->Log(AutofillMetrics::FIELD_HEURISTIC_TYPE_MATCH,
-                              experiment_id);
-        } else {
-          metric_logger_->Log(AutofillMetrics::FIELD_HEURISTIC_TYPE_MISMATCH,
-                              experiment_id);
-        }
-
-        if (server_type == NO_SERVER_DATA) {
-          metric_logger_->Log(AutofillMetrics::FIELD_SERVER_TYPE_UNKNOWN,
-                              experiment_id);
-        } else if (field_types.count(server_type)) {
-          metric_logger_->Log(AutofillMetrics::FIELD_SERVER_TYPE_MATCH,
-                              experiment_id);
-        } else {
-          metric_logger_->Log(AutofillMetrics::FIELD_SERVER_TYPE_MISMATCH,
-                              experiment_id);
-        }
-      }
-
-      // TODO(isherman): Other things we might want to log here:
-      // * Per Vadim's email, a combination of (1) whether heuristics fired,
-      //   (2) whether the server returned something interesting, (3) whether
-      //   the user filled the field
-      // * Whether the server type matches the heursitic type
-      //   - Perhaps only if at least one of the types is not unknown/no data.
-    }
-  }
+  submitted_form.LogQualityMetrics(*cached_submitted_form, *metric_logger_);
 }
 
 void AutofillManager::ImportFormData(const FormStructure& submitted_form) {
@@ -722,7 +652,7 @@ void AutofillManager::set_metric_logger(
 
 bool AutofillManager::GetHost(const std::vector<AutofillProfile*>& profiles,
                               const std::vector<CreditCard*>& credit_cards,
-                              RenderViewHost** host) {
+                              RenderViewHost** host) const {
   if (!IsAutoFillEnabled())
     return false;
 
@@ -738,7 +668,7 @@ bool AutofillManager::GetHost(const std::vector<AutofillProfile*>& profiles,
 }
 
 bool AutofillManager::FindCachedForm(const FormData& form,
-                                     FormStructure** form_structure) {
+                                     FormStructure** form_structure) const {
   // Find the FormStructure that corresponds to |form|.
   *form_structure = NULL;
   for (std::vector<FormStructure*>::const_iterator iter =

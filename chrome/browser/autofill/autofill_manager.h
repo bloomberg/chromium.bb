@@ -119,12 +119,12 @@ class AutofillManager : public TabContentsObserver,
   // Returns false if Autofill is disabled or if the host is unavailable.
   bool GetHost(const std::vector<AutofillProfile*>& profiles,
                const std::vector<CreditCard*>& credit_cards,
-               RenderViewHost** host) WARN_UNUSED_RESULT;
+               RenderViewHost** host) const WARN_UNUSED_RESULT;
 
   // Fills |form_structure| cached element corresponding to |form|.
   // Returns false if the cached element was not found.
   bool FindCachedForm(const webkit_glue::FormData& form,
-                      FormStructure** form_structure) WARN_UNUSED_RESULT;
+                      FormStructure** form_structure) const WARN_UNUSED_RESULT;
 
   // Fills |form_structure| and |autofill_field| with the cached elements
   // corresponding to |form| and |field|. Returns false if the cached elements
@@ -180,8 +180,10 @@ class AutofillManager : public TabContentsObserver,
   // |submitted_form|.
   void DeterminePossibleFieldTypesForUpload(FormStructure* submitted_form);
 
+  // Logs quality metrics for the submitted |form|, which should be logically
+  // equivalent to |submitted_form| -- both are passed for internal efficiency.
   void LogMetricsAboutSubmittedForm(const webkit_glue::FormData& form,
-                                    const FormStructure* submitted_form);
+                                    const FormStructure& submitted_form) const;
 
   // The personal data manager, used to save and load personal data to/from the
   // web database.  This is overridden by the AutofillManagerTest.

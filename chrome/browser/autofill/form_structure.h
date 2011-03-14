@@ -83,6 +83,13 @@ class FormStructure {
   // |require_method_post| is true.
   bool ShouldBeParsed(bool require_method_post) const;
 
+  // Logs quality metrics for |this|, which should be a user-submitted form.
+  // |cached_form| should be the browser-side cached form corresponding to
+  // |this|. This method should only be called after the possible field types
+  // have been set for each field.
+  void LogQualityMetrics(const FormStructure& cached_form,
+                         const AutofillMetrics& metric_logger) const;
+
   // Sets the possible types for the field at |index|.
   void set_possible_types(int index, const FieldTypeSet& types);
 

@@ -57,8 +57,8 @@ class TabContentsObserver : public IPC::Channel::Listener {
   // IPC::Message::Sender implementation.
   virtual bool Send(IPC::Message* message);
 
-  TabContents* tab_contents() { return tab_contents_; }
-  int routing_id() { return routing_id_; }
+  TabContents* tab_contents() const { return tab_contents_; }
+  int routing_id() const { return routing_id_; }
 
  private:
   friend class TabContents;
