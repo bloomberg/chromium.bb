@@ -26,6 +26,23 @@ class SettingLevelBubble : public InfoBubbleDelegate,
   void ShowBubble(int percent);
   void HideBubble();
 
+  // Update the bubble's current level without showing the bubble onscreen.
+  // We _do_ still animate the level moving to |percent| in case the bubble is
+  // still visible from a previous call to ShowBubble().
+  //
+  // This can be used when the setting has been changed automatically and we
+  // want to make sure that it's animated from the correct position the next
+  // time that the bubble is shown.  For example:
+  //
+  // 1. Brightness is at 50%.
+  // 2. Power manager dims brightness to 25% automatically.
+  // 3. User hits the "increase brightness" button, setting brightness to 30%.
+  //
+  // If we didn't update our internal state to 25% after 2), then the animation
+  // displayed in response to 3) would show the bubble animating from 50% down
+  // to 30%, rather than from 25% up to 30%.
+  void UpdateWithoutShowingBubble(int percent);
+
  protected:
   explicit SettingLevelBubble(SkBitmap* increase_icon,
                               SkBitmap* decrease_icon,

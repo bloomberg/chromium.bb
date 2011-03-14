@@ -37,31 +37,33 @@ class BrightnessLibraryImpl : public BrightnessLibrary {
 
  private:
   static void BrightnessChangedHandler(void* object,
-                                       int brightness_level) {
+                                       int brightness_level,
+                                       bool user_initiated) {
     BrightnessLibraryImpl* self = static_cast<BrightnessLibraryImpl*>(object);
-    self->OnBrightnessChanged(brightness_level);
+    self->OnBrightnessChanged(brightness_level, user_initiated);
   }
 
   void Init() {
     DCHECK(!brightness_connection_) << "Already intialized";
     brightness_connection_ =
-        chromeos::MonitorBrightness(&BrightnessChangedHandler, this);
+        chromeos::MonitorBrightnessV2(&BrightnessChangedHandler, this);
   }
 
-  void OnBrightnessChanged(int brightness_level) {
+  void OnBrightnessChanged(int brightness_level, bool user_initiated) {
     // Make sure we run on the UI thread.
     if (!BrowserThread::CurrentlyOn(BrowserThread::UI)) {
       BrowserThread::PostTask(
           BrowserThread::UI, FROM_HERE,
           NewRunnableMethod(this,
                             &BrightnessLibraryImpl::OnBrightnessChanged,
-                            brightness_level));
+                            brightness_level,
+                            user_initiated));
       return;
     }
 
     FOR_EACH_OBSERVER(Observer,
                       observers_,
-                      BrightnessChanged(brightness_level));
+                      BrightnessChanged(brightness_level, user_initiated));
   }
 
   chromeos::BrightnessConnection brightness_connection_;

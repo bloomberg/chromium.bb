@@ -20,7 +20,7 @@ class BrightnessObserver : public BrightnessLibrary::Observer {
 
  private:
   // BrightnessLibrary::Observer implementation.
-  virtual void BrightnessChanged(int level);
+  virtual void BrightnessChanged(int level, bool user_initiated);
 
   DISALLOW_COPY_AND_ASSIGN(BrightnessObserver);
 };

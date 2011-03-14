@@ -14,7 +14,7 @@ class BrightnessLibrary {
  public:
   class Observer {
    public:
-    virtual void BrightnessChanged(int level) = 0;
+    virtual void BrightnessChanged(int level, bool user_initiated) = 0;
   };
 
   virtual ~BrightnessLibrary() {}

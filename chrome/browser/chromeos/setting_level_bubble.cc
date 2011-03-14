@@ -26,6 +26,14 @@ const double kBubbleXRatio = 0.5;
 // Vertical gap from the bottom of the screen in pixels.
 const int kBubbleBottomGap = 30;
 
+int LimitPercent(int percent) {
+  if (percent < 0)
+    percent = 0;
+  else if (percent > 100)
+    percent = 100;
+  return percent;
+}
+
 }  // namespace
 
 namespace chromeos {
@@ -67,10 +75,7 @@ SettingLevelBubble::SettingLevelBubble(SkBitmap* increase_icon,
 }
 
 void SettingLevelBubble::ShowBubble(int percent) {
-  if (percent < 0)
-    percent = 0;
-  if (percent > 100)
-    percent = 100;
+  percent = LimitPercent(percent);
   if (previous_percent_ == -1)
     previous_percent_ = percent;
   current_percent_ = percent;
@@ -117,6 +122,23 @@ void SettingLevelBubble::ShowBubble(int percent) {
 void SettingLevelBubble::HideBubble() {
   if (bubble_)
     bubble_->Close();
+}
+
+void SettingLevelBubble::UpdateWithoutShowingBubble(int percent) {
+  percent = LimitPercent(percent);
+
+  previous_percent_ =
+      animation_.is_animating() ?
+      animation_.GetCurrentValue() :
+      current_percent_;
+  if (previous_percent_ < 0)
+    previous_percent_ = percent;
+  current_percent_ = percent;
+
+  if (animation_.is_animating())
+    animation_.End();
+  animation_.Reset();
+  animation_.Show();
 }
 
 void SettingLevelBubble::OnTimeout() {
