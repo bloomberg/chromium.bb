@@ -163,7 +163,6 @@
         '../third_party/libxml/libxml.gyp:libxml',
         '../third_party/sqlite/sqlite.gyp:sqlite',
         '../third_party/zlib/zlib.gyp:zlib',
-        '../third_party/npapi/npapi.gyp:npapi',
         '../webkit/support/webkit_support.gyp:glue',
       ],
       'sources': [
@@ -249,9 +248,6 @@
         'common/pepper_plugin_registry.h',
         'common/plugin_carbon_interpose_constants_mac.cc',
         'common/plugin_carbon_interpose_constants_mac.h',
-        'common/plugin_messages.cc',
-        'common/plugin_messages.h',
-        'common/plugin_messages_internal.h',
         'common/persistent_pref_store.h',
         'common/pref_store.cc',
         'common/pref_store.h',
@@ -506,7 +502,6 @@
             '../third_party/libxml/libxml.gyp:libxml',
           ],
           'include_dirs': [
-            '../third_party/npapi',
             '../third_party/icu/public/i18n',
             '../third_party/icu/public/common',
             # We usually get these skia directories by adding a dependency on

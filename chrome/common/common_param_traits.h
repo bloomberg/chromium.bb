@@ -12,7 +12,6 @@
 #define CHROME_COMMON_COMMON_PARAM_TRAITS_H_
 #pragma once
 
-#include "app/surface/transport_dib.h"
 #include "base/file_util.h"
 #include "base/ref_counted.h"
 #include "chrome/common/content_settings.h"
@@ -27,7 +26,6 @@
 //
 // TODO(erg): The following headers are historical and only work because
 // their definitions are inlined, which also needs to be fixed.
-#include "webkit/glue/webcursor.h"
 #include "webkit/glue/window_open_disposition.h"
 
 // Forward declarations.
@@ -37,7 +35,6 @@ class DictionaryValue;
 class ListValue;
 struct ThumbnailScore;
 struct WebApplicationInfo;
-class WebCursor;
 
 namespace printing {
 struct PageRange;
@@ -135,22 +132,6 @@ struct ParamTraits<WindowOpenDisposition> {
   }
 };
 
-
-template <>
-struct ParamTraits<WebCursor> {
-  typedef WebCursor param_type;
-  static void Write(Message* m, const param_type& p) {
-    p.Serialize(m);
-  }
-  static bool Read(const Message* m, void** iter, param_type* r)  {
-    return r->Deserialize(m, iter);
-  }
-  static void Log(const param_type& p, std::string* l) {
-    l->append("<WebCursor>");
-  }
-};
-
-
 template <>
 struct ParamTraits<WebApplicationInfo> {
   typedef WebApplicationInfo param_type;
@@ -158,29 +139,6 @@ struct ParamTraits<WebApplicationInfo> {
   static bool Read(const Message* m, void** iter, param_type* r);
   static void Log(const param_type& p, std::string* l);
 };
-
-
-#if defined(OS_WIN)
-template<>
-struct ParamTraits<TransportDIB::Id> {
-  typedef TransportDIB::Id param_type;
-  static void Write(Message* m, const param_type& p) {
-    WriteParam(m, p.handle);
-    WriteParam(m, p.sequence_num);
-  }
-  static bool Read(const Message* m, void** iter, param_type* r) {
-    return (ReadParam(m, iter, &r->handle) &&
-            ReadParam(m, iter, &r->sequence_num));
-  }
-  static void Log(const param_type& p, std::string* l) {
-    l->append("TransportDIB(");
-    LogParam(p.handle, l);
-    l->append(", ");
-    LogParam(p.sequence_num, l);
-    l->append(")");
-  }
-};
-#endif
 
 template<>
 struct ParamTraits<ThumbnailScore> {

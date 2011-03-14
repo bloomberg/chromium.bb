@@ -5,10 +5,10 @@
 #include "chrome/plugin/npobject_stub.h"
 
 #include "chrome/common/child_process_logging.h"
-#include "chrome/common/plugin_messages.h"
 #include "chrome/plugin/npobject_util.h"
 #include "chrome/plugin/plugin_channel_base.h"
 #include "chrome/plugin/plugin_thread.h"
+#include "content/common/plugin_messages.h"
 #include "third_party/npapi/bindings/npapi.h"
 #include "third_party/npapi/bindings/npruntime.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebBindings.h"

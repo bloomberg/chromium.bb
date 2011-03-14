@@ -17,8 +17,8 @@
 #if defined(OS_POSIX) && defined(IPC_MESSAGE_LOG_ENABLED)
 #define IPC_MESSAGE_MACROS_LOG_ENABLED
 #include "chrome/common/devtools_messages.h"
-#include "chrome/common/plugin_messages.h"
 #include "chrome/common/render_messages.h"
+#include "content/common/plugin_messages.h"
 #include "content/common/worker_messages.h"
 #endif
 

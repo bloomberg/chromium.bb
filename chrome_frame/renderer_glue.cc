@@ -4,13 +4,23 @@
 
 #include "chrome/common/chrome_version_info.h"
 
+class GURL;
+
+bool IsPluginProcess() {
+  return false;
+}
+
 namespace webkit_glue {
 
 void AppendToLog(const char* filename, int line, const char* message) {
 }
 
-bool IsPluginRunningInRendererProcess() {
-  return true;
+bool IsDefaultPluginEnabled() {
+  return false;
+}
+
+bool FindProxyForUrl(const GURL& url, std::string* proxy_list) {
+  return false;
 }
 
 // This function is called from BuildUserAgent so we have our own version
@@ -25,4 +35,3 @@ std::string GetProductVersion() {
 }
 
 }  // end namespace webkit_glue
-

@@ -5,9 +5,9 @@
 #include "chrome/plugin/npobject_util.h"
 
 #include "base/string_util.h"
-#include "chrome/common/plugin_messages.h"
 #include "chrome/plugin/npobject_proxy.h"
 #include "chrome/plugin/plugin_channel_base.h"
+#include "content/common/plugin_messages.h"
 #include "third_party/npapi/bindings/nphostapi.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebBindings.h"
 #include "webkit/plugins/npapi/plugin_host.h"

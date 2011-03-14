@@ -19,7 +19,6 @@
 #include "chrome/common/nacl_messages.h"
 #include "chrome/common/pepper_file_messages.h"
 #include "chrome/common/pepper_messages.h"
-#include "chrome/common/plugin_messages.h"
 #include "chrome/common/render_messages.h"
 #include "chrome/common/service_messages.h"
 

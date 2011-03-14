@@ -7,8 +7,8 @@
 #import <AppKit/AppKit.h>
 #import <objc/runtime.h>
 
-#include "chrome/common/plugin_messages.h"
 #include "chrome/plugin/plugin_thread.h"
+#include "content/common/plugin_messages.h"
 #include "webkit/plugins/npapi/webplugin_delegate_impl.h"
 
 namespace mac_plugin_interposing {

@@ -1,11 +1,16 @@
 // Copyright (c) 2009 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+//
+// Multiply-included message file, hence no include guard.
 
 #include "base/shared_memory.h"
 #include "build/build_config.h"
+#include "content/common/common_param_traits.h"
+#include "ipc/ipc_channel_handle.h"
 #include "ipc/ipc_message_macros.h"
 #include "ui/gfx/native_widget_types.h"
+#include "ui/gfx/rect.h"
 #include "webkit/glue/webcursor.h"
 
 #if defined(OS_POSIX)
@@ -13,6 +18,51 @@
 #endif
 
 #define IPC_MESSAGE_START PluginMsgStart
+
+IPC_STRUCT_BEGIN(PluginMsg_Init_Params)
+  IPC_STRUCT_MEMBER(gfx::NativeViewId, containing_window)
+  IPC_STRUCT_MEMBER(GURL,  url)
+  IPC_STRUCT_MEMBER(GURL,  page_url)
+  IPC_STRUCT_MEMBER(std::vector<std::string>, arg_names)
+  IPC_STRUCT_MEMBER(std::vector<std::string>, arg_values)
+  IPC_STRUCT_MEMBER(bool, load_manually)
+  IPC_STRUCT_MEMBER(int, host_render_view_routing_id)
+IPC_STRUCT_END()
+
+IPC_STRUCT_BEGIN(PluginHostMsg_URLRequest_Params)
+  IPC_STRUCT_MEMBER(std::string, url)
+  IPC_STRUCT_MEMBER(std::string, method)
+  IPC_STRUCT_MEMBER(std::string, target)
+  IPC_STRUCT_MEMBER(std::vector<char>, buffer)
+  IPC_STRUCT_MEMBER(int, notify_id)
+  IPC_STRUCT_MEMBER(bool, popups_allowed)
+  IPC_STRUCT_MEMBER(bool, notify_redirects)
+IPC_STRUCT_END()
+
+IPC_STRUCT_BEGIN(PluginMsg_DidReceiveResponseParams)
+  IPC_STRUCT_MEMBER(unsigned long, id)
+  IPC_STRUCT_MEMBER(std::string, mime_type)
+  IPC_STRUCT_MEMBER(std::string, headers)
+  IPC_STRUCT_MEMBER(uint32, expected_length)
+  IPC_STRUCT_MEMBER(uint32, last_modified)
+  IPC_STRUCT_MEMBER(bool, request_is_seekable)
+IPC_STRUCT_END()
+
+IPC_STRUCT_BEGIN(PluginMsg_UpdateGeometry_Param)
+  IPC_STRUCT_MEMBER(gfx::Rect, window_rect)
+  IPC_STRUCT_MEMBER(gfx::Rect, clip_rect)
+  IPC_STRUCT_MEMBER(bool, transparent)
+  IPC_STRUCT_MEMBER(TransportDIB::Handle, windowless_buffer)
+  IPC_STRUCT_MEMBER(TransportDIB::Handle, background_buffer)
+
+#if defined(OS_MACOSX)
+  // This field contains a key that the plug-in process is expected to return
+  // to the renderer in its ACK message, unless the value is -1, in which case
+  // no ACK message is required.  Other than the special -1 value, the values
+  // used in ack_key are opaque to the plug-in process.
+  IPC_STRUCT_MEMBER(int, ack_key)
+#endif
+IPC_STRUCT_END()
 
 //-----------------------------------------------------------------------------
 // PluginProcess messages

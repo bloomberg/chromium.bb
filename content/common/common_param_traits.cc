@@ -8,8 +8,27 @@
 #include "net/base/host_port_pair.h"
 #include "net/base/upload_data.h"
 #include "net/http/http_response_headers.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebBindings.h"
 #include "ui/gfx/rect.h"
 #include "webkit/glue/resource_loader_bridge.h"
+
+NPIdentifier_Param::NPIdentifier_Param()
+    : identifier() {
+}
+
+NPIdentifier_Param::~NPIdentifier_Param() {
+}
+
+NPVariant_Param::NPVariant_Param()
+    : type(NPVARIANT_PARAM_VOID),
+      bool_value(false),
+      int_value(0),
+      double_value(0),
+      npobject_routing_id(-1) {
+}
+
+NPVariant_Param::~NPVariant_Param() {
+}
 
 namespace IPC {
 
@@ -653,6 +672,93 @@ bool ParamTraits<scoped_refptr<webkit_blob::BlobData> >::Read(
 void ParamTraits<scoped_refptr<webkit_blob::BlobData> >::Log(
     const param_type& p, std::string* l) {
   l->append("<webkit_blob::BlobData>");
+}
+
+void ParamTraits<NPVariant_Param>::Write(Message* m, const param_type& p) {
+  WriteParam(m, static_cast<int>(p.type));
+  if (p.type == NPVARIANT_PARAM_BOOL) {
+    WriteParam(m, p.bool_value);
+  } else if (p.type == NPVARIANT_PARAM_INT) {
+    WriteParam(m, p.int_value);
+  } else if (p.type == NPVARIANT_PARAM_DOUBLE) {
+    WriteParam(m, p.double_value);
+  } else if (p.type == NPVARIANT_PARAM_STRING) {
+    WriteParam(m, p.string_value);
+  } else if (p.type == NPVARIANT_PARAM_SENDER_OBJECT_ROUTING_ID ||
+             p.type == NPVARIANT_PARAM_RECEIVER_OBJECT_ROUTING_ID) {
+    // This is the routing id used to connect NPObjectProxy in the other
+    // process with NPObjectStub in this process or to identify the raw
+    // npobject pointer to be used in the callee process.
+    WriteParam(m, p.npobject_routing_id);
+  } else {
+    DCHECK(p.type == NPVARIANT_PARAM_VOID || p.type == NPVARIANT_PARAM_NULL);
+  }
+}
+
+bool ParamTraits<NPVariant_Param>::Read(const Message* m,
+                                        void** iter,
+                                        param_type* r) {
+  int type;
+  if (!ReadParam(m, iter, &type))
+    return false;
+
+  bool result = false;
+  r->type = static_cast<NPVariant_ParamEnum>(type);
+  if (r->type == NPVARIANT_PARAM_BOOL) {
+    result = ReadParam(m, iter, &r->bool_value);
+  } else if (r->type == NPVARIANT_PARAM_INT) {
+    result = ReadParam(m, iter, &r->int_value);
+  } else if (r->type == NPVARIANT_PARAM_DOUBLE) {
+    result = ReadParam(m, iter, &r->double_value);
+  } else if (r->type == NPVARIANT_PARAM_STRING) {
+    result = ReadParam(m, iter, &r->string_value);
+  } else if (r->type == NPVARIANT_PARAM_SENDER_OBJECT_ROUTING_ID ||
+             r->type == NPVARIANT_PARAM_RECEIVER_OBJECT_ROUTING_ID) {
+    result = ReadParam(m, iter, &r->npobject_routing_id);
+  } else if ((r->type == NPVARIANT_PARAM_VOID) ||
+             (r->type == NPVARIANT_PARAM_NULL)) {
+    result = true;
+  } else {
+    NOTREACHED();
+  }
+
+  return result;
+}
+
+void ParamTraits<NPVariant_Param>::Log(const param_type& p, std::string* l) {
+  if (p.type == NPVARIANT_PARAM_BOOL) {
+    LogParam(p.bool_value, l);
+  } else if (p.type == NPVARIANT_PARAM_INT) {
+    LogParam(p.int_value, l);
+  } else if (p.type == NPVARIANT_PARAM_DOUBLE) {
+    LogParam(p.double_value, l);
+  } else if (p.type == NPVARIANT_PARAM_STRING) {
+    LogParam(p.string_value, l);
+  } else if (p.type == NPVARIANT_PARAM_SENDER_OBJECT_ROUTING_ID ||
+             p.type == NPVARIANT_PARAM_RECEIVER_OBJECT_ROUTING_ID) {
+    LogParam(p.npobject_routing_id, l);
+  }
+}
+
+void ParamTraits<NPIdentifier_Param>::Write(Message* m, const param_type& p) {
+  webkit_glue::SerializeNPIdentifier(p.identifier, m);
+}
+
+bool ParamTraits<NPIdentifier_Param>::Read(const Message* m,
+                                           void** iter,
+                                           param_type* r) {
+  return webkit_glue::DeserializeNPIdentifier(*m, iter, &r->identifier);
+}
+
+void ParamTraits<NPIdentifier_Param>::Log(const param_type& p, std::string* l) {
+  if (WebKit::WebBindings::identifierIsString(p.identifier)) {
+    NPUTF8* str = WebKit::WebBindings::utf8FromIdentifier(p.identifier);
+    l->append(str);
+    NPN_MemFree(str);
+  } else {
+    l->append(base::IntToString(
+        WebKit::WebBindings::intFromIdentifier(p.identifier)));
+  }
 }
 
 }  // namespace IPC

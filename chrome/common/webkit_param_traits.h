@@ -30,7 +30,6 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebContextMenuData.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebDragOperation.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFileError.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebInputEvent.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebPopupType.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebTextCheckingResult.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebTextDirection.h"
@@ -78,57 +77,6 @@ struct ParamTraits<WebKit::WebFindOptions> {
   static void Write(Message* m, const param_type& p);
   static bool Read(const Message* m, void** iter, param_type* p);
   static void Log(const param_type& p, std::string* l);
-};
-
-template <>
-struct ParamTraits<WebKit::WebInputEvent::Type> {
-  typedef WebKit::WebInputEvent::Type param_type;
-  static void Write(Message* m, const param_type& p) {
-    m->WriteInt(p);
-  }
-  static bool Read(const Message* m, void** iter, param_type* p) {
-    int type;
-    if (!m->ReadInt(iter, &type))
-      return false;
-    *p = static_cast<WebKit::WebInputEvent::Type>(type);
-    return true;
-  }
-  static void Log(const param_type& p, std::string* l) {
-    const char* type;
-    switch (p) {
-     case WebKit::WebInputEvent::MouseDown:
-      type = "MouseDown";
-      break;
-     case WebKit::WebInputEvent::MouseUp:
-      type = "MouseUp";
-      break;
-     case WebKit::WebInputEvent::MouseMove:
-      type = "MouseMove";
-      break;
-     case WebKit::WebInputEvent::MouseLeave:
-      type = "MouseLeave";
-      break;
-     case WebKit::WebInputEvent::MouseEnter:
-      type = "MouseEnter";
-      break;
-     case WebKit::WebInputEvent::MouseWheel:
-      type = "MouseWheel";
-      break;
-     case WebKit::WebInputEvent::RawKeyDown:
-      type = "RawKeyDown";
-      break;
-     case WebKit::WebInputEvent::KeyDown:
-      type = "KeyDown";
-      break;
-     case WebKit::WebInputEvent::KeyUp:
-      type = "KeyUp";
-      break;
-     default:
-      type = "None";
-      break;
-    }
-    LogParam(std::string(type), l);
-  }
 };
 
 template <>

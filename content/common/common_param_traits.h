@@ -14,27 +14,20 @@
 #define CONTENT_COMMON_COMMON_PARAM_TRAITS_H_
 #pragma once
 
+#include "app/surface/transport_dib.h"
 #include "base/platform_file.h"
 #include "base/ref_counted.h"
+#include "base/string_number_conversions.h"
 #include "googleurl/src/gurl.h"
 #include "ipc/ipc_message_utils.h"
 #include "net/base/ip_endpoint.h"
 #include "net/url_request/url_request_status.h"
-// !!! WARNING: DO NOT ADD NEW WEBKIT DEPENDENCIES !!!
-
-//
-// That means don't add #includes to any file in 'webkit/' or
-// 'third_party/WebKit/'. Chrome Frame and NACL build parts of base/ and
-// content/common/ for a mini-library that doesn't depend on webkit.
-
-// TODO(erg): The following headers are historical and only work because
-// their definitions are inlined, which also needs to be fixed.
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebInputEvent.h"
 #include "ui/gfx/native_widget_types.h"
 #include "webkit/blob/blob_data.h"
+#include "webkit/glue/npruntime_util.h"
 #include "webkit/glue/resource_type.h"
-
-// Forward declarations.
-class GURL;
+#include "webkit/glue/webcursor.h"
 
 namespace gfx {
 class Point;
@@ -52,6 +45,43 @@ namespace webkit_glue {
 struct ResourceDevToolsInfo;
 struct ResourceLoadTimingInfo;
 }
+
+// Define the NPVariant_Param struct and its enum here since it needs manual
+// serialization code.
+enum NPVariant_ParamEnum {
+  NPVARIANT_PARAM_VOID,
+  NPVARIANT_PARAM_NULL,
+  NPVARIANT_PARAM_BOOL,
+  NPVARIANT_PARAM_INT,
+  NPVARIANT_PARAM_DOUBLE,
+  NPVARIANT_PARAM_STRING,
+  // Used when when the NPObject is running in the caller's process, so we
+  // create an NPObjectProxy in the other process.
+  NPVARIANT_PARAM_SENDER_OBJECT_ROUTING_ID,
+  // Used when the NPObject we're sending is running in the callee's process
+  // (i.e. we have an NPObjectProxy for it).  In that case we want the callee
+  // to just use the raw pointer.
+  NPVARIANT_PARAM_RECEIVER_OBJECT_ROUTING_ID,
+};
+
+struct NPVariant_Param {
+  NPVariant_Param();
+  ~NPVariant_Param();
+
+  NPVariant_ParamEnum type;
+  bool bool_value;
+  int int_value;
+  double double_value;
+  std::string string_value;
+  int npobject_routing_id;
+};
+
+struct NPIdentifier_Param {
+  NPIdentifier_Param();
+  ~NPIdentifier_Param();
+
+  NPIdentifier identifier;
+};
 
 namespace IPC {
 
@@ -203,6 +233,150 @@ struct ParamTraits<scoped_refptr<webkit_blob::BlobData > > {
   static bool Read(const Message* m, void** iter, param_type* r);
   static void Log(const param_type& p, std::string* l);
 };
+
+template <>
+struct ParamTraits<NPVariant_Param> {
+  typedef NPVariant_Param param_type;
+  static void Write(Message* m, const param_type& p);
+  static bool Read(const Message* m, void** iter, param_type* r);
+  static void Log(const param_type& p, std::string* l);
+};
+
+template <>
+struct ParamTraits<NPIdentifier_Param> {
+  typedef NPIdentifier_Param param_type;
+  static void Write(Message* m, const param_type& p);
+  static bool Read(const Message* m, void** iter, param_type* r);
+  static void Log(const param_type& p, std::string* l);
+};
+
+template <>
+struct ParamTraits<WebCursor> {
+  typedef WebCursor param_type;
+  static void Write(Message* m, const param_type& p) {
+    p.Serialize(m);
+  }
+  static bool Read(const Message* m, void** iter, param_type* r)  {
+    return r->Deserialize(m, iter);
+  }
+  static void Log(const param_type& p, std::string* l) {
+    l->append("<WebCursor>");
+  }
+};
+
+
+template <>
+struct ParamTraits<WebKit::WebInputEvent::Type> {
+  typedef WebKit::WebInputEvent::Type param_type;
+  static void Write(Message* m, const param_type& p) {
+    m->WriteInt(p);
+  }
+  static bool Read(const Message* m, void** iter, param_type* p) {
+    int type;
+    if (!m->ReadInt(iter, &type))
+      return false;
+    *p = static_cast<WebKit::WebInputEvent::Type>(type);
+    return true;
+  }
+  static void Log(const param_type& p, std::string* l) {
+    const char* type;
+    switch (p) {
+     case WebKit::WebInputEvent::MouseDown:
+      type = "MouseDown";
+      break;
+     case WebKit::WebInputEvent::MouseUp:
+      type = "MouseUp";
+      break;
+     case WebKit::WebInputEvent::MouseMove:
+      type = "MouseMove";
+      break;
+     case WebKit::WebInputEvent::MouseLeave:
+      type = "MouseLeave";
+      break;
+     case WebKit::WebInputEvent::MouseEnter:
+      type = "MouseEnter";
+      break;
+     case WebKit::WebInputEvent::MouseWheel:
+      type = "MouseWheel";
+      break;
+     case WebKit::WebInputEvent::RawKeyDown:
+      type = "RawKeyDown";
+      break;
+     case WebKit::WebInputEvent::KeyDown:
+      type = "KeyDown";
+      break;
+     case WebKit::WebInputEvent::KeyUp:
+      type = "KeyUp";
+      break;
+     default:
+      type = "None";
+      break;
+    }
+    LogParam(std::string(type), l);
+  }
+};
+
+typedef const WebKit::WebInputEvent* WebInputEventPointer;
+template <>
+struct ParamTraits<WebInputEventPointer> {
+  typedef WebInputEventPointer param_type;
+  static void Write(Message* m, const param_type& p) {
+    m->WriteData(reinterpret_cast<const char*>(p), p->size);
+  }
+  // Note: upon read, the event has the lifetime of the message.
+  static bool Read(const Message* m, void** iter, param_type* r) {
+    const char* data;
+    int data_length;
+    if (!m->ReadData(iter, &data, &data_length)) {
+      NOTREACHED();
+      return false;
+    }
+    if (data_length < static_cast<int>(sizeof(WebKit::WebInputEvent))) {
+      NOTREACHED();
+      return false;
+    }
+    param_type event = reinterpret_cast<param_type>(data);
+    // Check that the data size matches that of the event (we check the latter
+    // in the delegate).
+    if (data_length != static_cast<int>(event->size)) {
+      NOTREACHED();
+      return false;
+    }
+    *r = event;
+    return true;
+  }
+  static void Log(const param_type& p, std::string* l) {
+    l->append("(");
+    LogParam(p->size, l);
+    l->append(", ");
+    LogParam(p->type, l);
+    l->append(", ");
+    LogParam(p->timeStampSeconds, l);
+    l->append(")");
+  }
+};
+
+#if defined(OS_WIN)
+template<>
+struct ParamTraits<TransportDIB::Id> {
+  typedef TransportDIB::Id param_type;
+  static void Write(Message* m, const param_type& p) {
+    WriteParam(m, p.handle);
+    WriteParam(m, p.sequence_num);
+  }
+  static bool Read(const Message* m, void** iter, param_type* r) {
+    return (ReadParam(m, iter, &r->handle) &&
+            ReadParam(m, iter, &r->sequence_num));
+  }
+  static void Log(const param_type& p, std::string* l) {
+    l->append("TransportDIB(");
+    LogParam(p.handle, l);
+    l->append(", ");
+    LogParam(p.sequence_num, l);
+    l->append(")");
+  }
+};
+#endif
 
 }  // namespace IPC
 
