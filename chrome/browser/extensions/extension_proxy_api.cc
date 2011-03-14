@@ -269,7 +269,7 @@ Value* ProxyPreferenceTransformer::BrowserToExtensionPref(
   ProxyPrefs::ProxyMode mode;
   if (!dict.GetMode(&mode)) {
     LOG(ERROR) << "Cannot determine proxy mode.";
-    return false;
+    return NULL;
   }
 
   scoped_ptr<DictionaryValue> extension_pref(new DictionaryValue);
