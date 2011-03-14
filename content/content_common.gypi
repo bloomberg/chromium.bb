@@ -109,6 +109,9 @@
         'common/socket_stream_dispatcher.cc',
         'common/socket_stream_dispatcher.h',
         'common/socket_stream_messages.h',
+        'common/webblobregistry_impl.cc',
+        'common/webblobregistry_impl.h',
+        'common/webblob_messages.h',
         'common/worker_messages.h',
       ],
       'conditions': [
