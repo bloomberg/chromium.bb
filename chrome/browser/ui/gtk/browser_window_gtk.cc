@@ -260,6 +260,15 @@ BrowserWindowGtk::BrowserWindowGtk(Browser* browser)
        suppress_window_raise_(false),
        accel_group_(NULL),
        infobar_arrow_model_(this) {
+}
+
+BrowserWindowGtk::~BrowserWindowGtk() {
+  ui::ActiveWindowWatcherX::RemoveObserver(this);
+
+  browser_->tabstrip_model()->RemoveObserver(this);
+}
+
+void BrowserWindowGtk::Init() {
   // We register first so that other views like the toolbar can use the
   // is_active() function in their ActiveWindowChanged() handlers.
   ui::ActiveWindowWatcherX::AddObserver(this);
@@ -315,12 +324,6 @@ BrowserWindowGtk::BrowserWindowGtk(Browser* browser)
 
   registrar_.Add(this, NotificationType::BOOKMARK_BAR_VISIBILITY_PREF_CHANGED,
                  NotificationService::AllSources());
-}
-
-BrowserWindowGtk::~BrowserWindowGtk() {
-  ui::ActiveWindowWatcherX::RemoveObserver(this);
-
-  browser_->tabstrip_model()->RemoveObserver(this);
 }
 
 gboolean BrowserWindowGtk::OnCustomFrameExpose(GtkWidget* widget,
