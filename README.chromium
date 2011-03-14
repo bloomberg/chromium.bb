@@ -1,7 +1,9 @@
 Name: libjpeg-turbo
 URL: http://sourceforge.net/projects/libjpeg-turbo/
+Version: 1.0.1
 License File: LICENSE.txt
 
+Description:
 This consists of three components:
 * A partial copy of libjpeg-turbo-1.0.1 with one small additional fix - r324 from
   https://libjpeg-turbo.svn.sourceforge.net/svnroot/libjpeg-turbo/branches/1.0.x
