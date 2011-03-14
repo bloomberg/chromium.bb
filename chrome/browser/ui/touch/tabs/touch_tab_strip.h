@@ -42,6 +42,9 @@ class TouchTabStrip : public BaseTabStrip {
   virtual void AnimateToIdealBounds();
   virtual bool ShouldHighlightCloseButtonAfterRemove();
   virtual void GenerateIdealBounds();
+  virtual void LayoutDraggedTabsAt(const std::vector<BaseTab*>& tabs,
+                                   const gfx::Point& location);
+  virtual int GetSizeNeededForTabs(const std::vector<BaseTab*>& tabs);
 
   // views::View overrides
   virtual gfx::Size GetPreferredSize();

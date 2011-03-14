@@ -140,6 +140,18 @@ void TouchTabStrip::GenerateIdealBounds() {
   }
 }
 
+void TouchTabStrip::LayoutDraggedTabsAt(const std::vector<BaseTab*>& tabs,
+                                        const gfx::Point& location) {
+  // Not needed as dragging isn't supported.
+  NOTIMPLEMENTED();
+}
+
+int TouchTabStrip::GetSizeNeededForTabs(const std::vector<BaseTab*>& tabs) {
+  // Not needed as dragging isn't supported.
+  NOTIMPLEMENTED();
+  return 0;
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // TouchTabStrip, views::View overrides:
 
