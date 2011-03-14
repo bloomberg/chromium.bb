@@ -73,6 +73,15 @@ class SignedSettings : public base::RefCountedThreadSafe<SignedSettings>,
       const std::string& name,
       SignedSettings::Delegate<std::string>* d);
 
+  // These are both "policy" operations, and only one instance of
+  // one type can be in flight at a time.
+  static SignedSettings* CreateStorePolicyOp(
+      const std::string& value,
+      SignedSettings::Delegate<bool>* d);
+
+  static SignedSettings* CreateRetrievePolicyOp(
+      SignedSettings::Delegate<std::string>* d);
+
   static ReturnCode MapKeyOpCode(OwnerManager::KeyOpCode code);
 
   virtual void Execute() = 0;

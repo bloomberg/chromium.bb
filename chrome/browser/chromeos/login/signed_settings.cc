@@ -105,6 +105,36 @@ class RetrievePropertyOp : public SignedSettings {
   SignedSettings::Delegate<std::string>* d_;
 };
 
+class StorePolicyOp : public SignedSettings, public LoginLibrary::Delegate {
+ public:
+  StorePolicyOp(const std::string& value, SignedSettings::Delegate<bool>* d);
+  virtual ~StorePolicyOp();
+  void Execute();
+  // Implementation of OwnerManager::Delegate::OnKeyOpComplete()
+  void OnKeyOpComplete(const OwnerManager::KeyOpCode return_code,
+                       const std::vector<uint8>& payload);
+  // Implementation of LoginLibrary::Delegate::OnComplete()
+  void OnComplete(bool value);
+
+ private:
+  std::string value_;
+  SignedSettings::Delegate<bool>* d_;
+};
+
+class RetrievePolicyOp : public SignedSettings {
+ public:
+  RetrievePolicyOp(SignedSettings::Delegate<std::string>* d);
+  virtual ~RetrievePolicyOp();
+  void Execute();
+  // Implementation of OwnerManager::Delegate::OnKeyOpComplete()
+  void OnKeyOpComplete(const OwnerManager::KeyOpCode return_code,
+                       const std::vector<uint8>& payload);
+
+ private:
+  std::string value_;
+  SignedSettings::Delegate<std::string>* d_;
+};
+
 // static
 SignedSettings* SignedSettings::CreateCheckWhitelistOp(
     const std::string& email,
@@ -139,6 +169,21 @@ SignedSettings* SignedSettings::CreateRetrievePropertyOp(
     SignedSettings::Delegate<std::string>* d) {
   DCHECK(d != NULL);
   return new RetrievePropertyOp(name, d);
+}
+
+// static
+SignedSettings* SignedSettings::CreateStorePolicyOp(
+    const std::string& value,
+    SignedSettings::Delegate<bool>* d) {
+  DCHECK(d != NULL);
+  return new StorePolicyOp(value, d);
+}
+
+// static
+SignedSettings* SignedSettings::CreateRetrievePolicyOp(
+    SignedSettings::Delegate<std::string>* d) {
+  DCHECK(d != NULL);
+  return new RetrievePolicyOp(d);
 }
 
 CheckWhitelistOp::CheckWhitelistOp(const std::string& email,
@@ -341,6 +386,86 @@ void RetrievePropertyOp::OnKeyOpComplete(
         BrowserThread::UI, FROM_HERE,
         NewRunnableMethod(this,
                           &RetrievePropertyOp::OnKeyOpComplete,
+                          return_code, payload));
+    return;
+  }
+  // Now, sure we're on the UI thread.
+  if (return_code == OwnerManager::SUCCESS)
+    d_->OnSettingsOpCompleted(SUCCESS, value_);
+  else
+    d_->OnSettingsOpCompleted(SignedSettings::MapKeyOpCode(return_code),
+                              std::string());
+}
+
+StorePolicyOp::StorePolicyOp(const std::string& value,
+                             SignedSettings::Delegate<bool>* d)
+    : value_(value),
+      d_(d) {
+}
+
+StorePolicyOp::~StorePolicyOp() {}
+
+void StorePolicyOp::Execute() {
+  // Just a stub for now.
+  // TODO(cmasone): wire this to the real API after http://crosbug.com/12670
+  d_->OnSettingsOpCompleted(SUCCESS, true);
+}
+
+void StorePolicyOp::OnKeyOpComplete(const OwnerManager::KeyOpCode return_code,
+                                    const std::vector<uint8>& payload) {
+  // TODO(cmasone): wire this to the real API after http://crosbug.com/12670
+  NOTREACHED();
+  // Ensure we're on the UI thread, due to the need to send DBus traffic.
+  if (!BrowserThread::CurrentlyOn(BrowserThread::UI)) {
+    BrowserThread::PostTask(
+        BrowserThread::UI, FROM_HERE,
+        NewRunnableMethod(this,
+                          &StorePolicyOp::OnKeyOpComplete,
+                          return_code, payload));
+    return;
+  }
+  VLOG(2) << "StorePolicyOp::OnKeyOpComplete return_code = " << return_code;
+  // Now, sure we're on the UI thread.
+  if (return_code == OwnerManager::SUCCESS) {
+    // TODO(cmasone): wire this to the real API after http://crosbug.com/12670
+    // OnComplete() will be called by this call, if it succeeds.
+    // if (!CrosLibrary::Get()->GetLoginLibrary()->StorePolicyAsync(value_,
+    //                                                              payload,
+    //                                                              this)) {
+    //   d_->OnSettingsOpCompleted(OPERATION_FAILED, false);
+    // }
+  } else {
+    d_->OnSettingsOpCompleted(SignedSettings::MapKeyOpCode(return_code), false);
+  }
+}
+
+void StorePolicyOp::OnComplete(bool value) {
+  // TODO(cmasone): wire this to the real API after http://crosbug.com/12670
+  NOTREACHED();
+}
+
+RetrievePolicyOp::RetrievePolicyOp(SignedSettings::Delegate<std::string>* d)
+    : d_(d) {
+}
+
+RetrievePolicyOp::~RetrievePolicyOp() {}
+
+void RetrievePolicyOp::Execute() {
+  // Just a stub for now.
+  // TODO(cmasone): wire this to the real API after http://crosbug.com/12670
+  d_->OnSettingsOpCompleted(SUCCESS, std::string());
+}
+
+void RetrievePolicyOp::OnKeyOpComplete(
+    const OwnerManager::KeyOpCode return_code,
+    const std::vector<uint8>& payload) {
+  // TODO(cmasone): wire this to the real API after http://crosbug.com/12670
+  NOTREACHED();
+  if (!BrowserThread::CurrentlyOn(BrowserThread::UI)) {
+    BrowserThread::PostTask(
+        BrowserThread::UI, FROM_HERE,
+        NewRunnableMethod(this,
+                          &RetrievePolicyOp::OnKeyOpComplete,
                           return_code, payload));
     return;
   }

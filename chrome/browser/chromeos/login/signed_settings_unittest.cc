@@ -340,4 +340,13 @@ TEST_F(SignedSettingsTest, RetrievePropertyFailed) {
   FailingRetrievePropertyOp(OwnerManager::OPERATION_FAILED);
 }
 
+TEST_F(SignedSettingsTest, StorePolicy) {
+  DummyDelegate<bool> d(true);
+  d.expect_success();
+  scoped_refptr<SignedSettings> s(
+      SignedSettings::CreateStorePolicyOp(fake_value_, &d));
+  s->Execute();
+  message_loop_.RunAllPending();
+}
+
 }  // namespace chromeos
