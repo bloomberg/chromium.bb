@@ -619,7 +619,6 @@ void RenderWidgetHostViewGtk::WasHidden() {
 }
 
 void RenderWidgetHostViewGtk::SetSize(const gfx::Size& size) {
-  // This is called when webkit has sent us a Move message.
   int width = std::min(size.width(), kMaxWindowWidth);
   int height = std::min(size.height(), kMaxWindowHeight);
   if (IsPopup()) {
@@ -633,12 +632,23 @@ void RenderWidgetHostViewGtk::SetSize(const gfx::Size& size) {
     gtk_widget_set_size_request(view_.get(), width, height);
 #endif
   }
+
   // Update the size of the RWH.
   if (requested_size_.width() != width ||
       requested_size_.height() != height) {
     requested_size_ = gfx::Size(width, height);
     host_->WasResized();
   }
+}
+
+void RenderWidgetHostViewGtk::SetBounds(const gfx::Rect& rect) {
+  // This is called when webkit has sent us a Move message.
+  if (IsPopup()) {
+    gtk_window_move(GTK_WINDOW(gtk_widget_get_toplevel(view_.get())),
+                    rect.x(), rect.y());
+  }
+
+  SetSize(rect.size());
 }
 
 gfx::NativeView RenderWidgetHostViewGtk::GetNativeView() {

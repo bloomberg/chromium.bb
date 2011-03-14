@@ -672,6 +672,14 @@ void RenderWidgetHostViewMac::WasHidden() {
 }
 
 void RenderWidgetHostViewMac::SetSize(const gfx::Size& size) {
+  gfx::Rect rect = GetViewBounds();
+  rect.set_size(size);
+  SetBounds(rect);
+}
+
+void RenderWidgetHostViewMac::SetBounds(const gfx::Rect& rect) {
+  // |rect.size()| is view coordinates, |rect.origin| is screen coordinates,
+  // TODO(thakis): fix, http://crbug.com/73362
   if (is_hidden_)
     return;
 
@@ -682,20 +690,26 @@ void RenderWidgetHostViewMac::SetSize(const gfx::Size& size) {
   // again. On Cocoa, we rely on the Cocoa view struture and resizer flags to
   // keep things sized properly. On the other hand, if the size is not empty
   // then this is a valid request for a pop-up.
-  if (size.IsEmpty())
+  if (rect.size().IsEmpty())
     return;
 
-  // Do conversions to upper-left origin, as "set size" means keep the
-  // upper-left corner pinned. If the new size is valid, this is a popup whose
-  // superview is another RenderWidgetHostViewCocoa, but even if it's directly
-  // in a TabContentsViewCocoa, they're both BaseViews.
-  DCHECK([[cocoa_view_ superview] isKindOfClass:[BaseView class]]);
-  gfx::Rect rect =
-      [(BaseView*)[cocoa_view_ superview] flipNSRectToRect:[cocoa_view_ frame]];
-  rect.set_width(size.width());
-  rect.set_height(size.height());
-  [cocoa_view_ setFrame:
-      [(BaseView*)[cocoa_view_ superview] flipRectToNSRect:rect]];
+  // The position of |rect| is screen coordnate system and we have to consider
+  // Cocoa coordinate system is upside-down and also muti screen.
+  NSPoint global_origin = NSPointFromCGPoint(rect.origin().ToCGPoint());
+  if ([[NSScreen screens] count] > 0) {
+    NSSize size = NSMakeSize(rect.width(), rect.height());
+    size = [cocoa_view_ convertSize:size toView:nil];
+    NSScreen* screen =
+        static_cast<NSScreen*>([[NSScreen screens] objectAtIndex:0]);
+    global_origin.y = NSHeight([screen frame]) - size.height - global_origin.y;
+  }
+
+  // Then |global_origin| is converted to client coordinate system.
+  NSPoint window_origin =
+      [[cocoa_view_ window] convertScreenToBase:global_origin];
+  NSRect frame = NSMakeRect(window_origin.x, window_origin.y,
+                            rect.width(), rect.height());
+  [cocoa_view_ setFrame:frame];
 }
 
 gfx::NativeView RenderWidgetHostViewMac::GetNativeView() {

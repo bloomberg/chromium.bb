@@ -96,6 +96,10 @@ class RenderWidgetHostView {
   // Tells the View to size itself to the specified size.
   virtual void SetSize(const gfx::Size& size) = 0;
 
+  // Tells the View to size and move itself to the specified size and point in
+  // screen space.
+  virtual void SetBounds(const gfx::Rect& rect) = 0;
+
   // Retrieves the native view used to contain plugins and identify the
   // renderer in IPC messages.
   virtual gfx::NativeView GetNativeView() = 0;

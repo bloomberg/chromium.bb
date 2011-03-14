@@ -386,19 +386,28 @@ void RenderWidgetHostViewWin::WasHidden() {
 }
 
 void RenderWidgetHostViewWin::SetSize(const gfx::Size& size) {
+  SetBounds(gfx::Rect(GetViewBounds().origin(), size));
+}
+
+void RenderWidgetHostViewWin::SetBounds(const gfx::Rect& rect) {
   if (is_hidden_)
     return;
 
-  // No SWP_NOREDRAW as autofill popups can resize and the underneath window
+  // No SWP_NOREDRAW as autofill popups can move and the underneath window
   // should redraw in that case.
   UINT swp_flags = SWP_NOSENDCHANGING | SWP_NOOWNERZORDER | SWP_NOCOPYBITS |
-      SWP_NOMOVE | SWP_NOZORDER | SWP_NOACTIVATE | SWP_DEFERERASE;
-  SetWindowPos(NULL, 0, 0, size.width(), size.height(), swp_flags);
+      SWP_NOZORDER | SWP_NOACTIVATE | SWP_DEFERERASE;
+
+  // If the style is not popup, you have to convert the point to client
+  // coordinate.
+  POINT point = { rect.x(), rect.y() };
+  if (GetStyle() & WS_CHILD)
+    ScreenToClient(&point);
+
+  SetWindowPos(NULL, point.x, point.y, rect.width(), rect.height(), swp_flags);
   if (compositor_host_window_) {
-    ::SetWindowPos(compositor_host_window_,
-        NULL,
-        0, 0,
-        size.width(), size.height(),
+    ::SetWindowPos(compositor_host_window_, NULL, point.x, point.y,
+        rect.width(), rect.height(),
         SWP_NOSENDCHANGING | SWP_NOCOPYBITS | SWP_NOZORDER | SWP_NOACTIVATE);
   }
   render_widget_host_->WasResized();
