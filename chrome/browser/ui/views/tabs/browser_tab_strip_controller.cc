@@ -58,19 +58,19 @@ class BrowserTabStripController::TabContextMenuContents
   }
 
   // Overridden from ui::SimpleMenuModel::Delegate:
-  virtual bool IsCommandIdChecked(int command_id) const {
+  virtual bool IsCommandIdChecked(int command_id) const OVERRIDE {
     return controller_->IsCommandCheckedForTab(
         static_cast<TabStripModel::ContextMenuCommand>(command_id),
         tab_);
   }
-  virtual bool IsCommandIdEnabled(int command_id) const {
+  virtual bool IsCommandIdEnabled(int command_id) const OVERRIDE {
     return controller_->IsCommandEnabledForTab(
         static_cast<TabStripModel::ContextMenuCommand>(command_id),
         tab_);
   }
   virtual bool GetAcceleratorForCommandId(
       int command_id,
-      ui::Accelerator* accelerator) {
+      ui::Accelerator* accelerator) OVERRIDE {
     int browser_cmd;
     return TabStripModel::ContextMenuCommandToBrowserCommand(command_id,
                                                              &browser_cmd) ?
@@ -78,12 +78,12 @@ class BrowserTabStripController::TabContextMenuContents
                                                             accelerator) :
         false;
   }
-  virtual void CommandIdHighlighted(int command_id) {
+  virtual void CommandIdHighlighted(int command_id) OVERRIDE {
     controller_->StopHighlightTabsForCommand(last_command_, tab_);
     last_command_ = static_cast<TabStripModel::ContextMenuCommand>(command_id);
     controller_->StartHighlightTabsForCommand(last_command_, tab_);
   }
-  virtual void ExecuteCommand(int command_id) {
+  virtual void ExecuteCommand(int command_id) OVERRIDE {
     // Executing the command destroys |this|, and can also end up destroying
     // |controller_| (e.g. for |CommandUseVerticalTabs|). So stop the highlights
     // before executing the command.
@@ -91,6 +91,11 @@ class BrowserTabStripController::TabContextMenuContents
     controller_->ExecuteCommandForTab(
         static_cast<TabStripModel::ContextMenuCommand>(command_id),
         tab_);
+  }
+
+  virtual void MenuClosed() OVERRIDE {
+    if (controller_)
+      controller_->tabstrip_->StopAllHighlighting();
   }
 
  private:
