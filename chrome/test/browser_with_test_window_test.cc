@@ -8,6 +8,7 @@
 #include <ole2.h>
 #endif  // defined(OS_WIN)
 
+#include "chrome/browser/chrome_content_browser_client.h"
 #include "chrome/browser/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_navigator.h"
@@ -18,6 +19,7 @@
 #include "content/browser/tab_contents/navigation_controller.h"
 #include "content/browser/tab_contents/navigation_entry.h"
 #include "content/browser/tab_contents/tab_contents.h"
+#include "content/common/content_client.h"
 
 BrowserWithTestWindowTest::BrowserWithTestWindowTest()
     : ui_thread_(BrowserThread::UI, message_loop()),
@@ -35,6 +37,8 @@ void BrowserWithTestWindowTest::SetUp() {
   // NOTE: I have a feeling we're going to want virtual methods for creating
   // these, as such they're in SetUp instead of the constructor.
   profile_.reset(new TestingProfile());
+  content::GetContentClient()->set_browser_client(
+      new chrome::ChromeContentBrowserClient());
   browser_.reset(new Browser(Browser::TYPE_NORMAL, profile()));
   window_.reset(new TestBrowserWindow(browser()));
   browser_->set_window(window_.get());

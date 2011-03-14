@@ -7,6 +7,7 @@
 #pragma once
 
 #include "base/basictypes.h"
+#include "base/scoped_ptr.h"
 #include "content/browser/content_browser_client.h"
 
 class GURL;
@@ -28,10 +29,10 @@ class ContentClient {
   // Gets or sets the embedder API for participating in browser logic.
   // The client must be set early, before any content code is called.
   ContentBrowserClient* browser_client() {
-    return browser_client_;
+    return browser_client_.get();
   }
   void set_browser_client(ContentBrowserClient* client) {
-    browser_client_ = client;
+    browser_client_.reset(client);
   }
 
   // Sets the URL that is logged if the child process crashes. Use GURL() to
@@ -42,7 +43,7 @@ class ContentClient {
   virtual void SetGpuInfo(const GPUInfo& gpu_info) {}
 
  private:
-  ContentBrowserClient* browser_client_;
+  scoped_ptr<ContentBrowserClient> browser_client_;
 };
 
 }  // namespace content
