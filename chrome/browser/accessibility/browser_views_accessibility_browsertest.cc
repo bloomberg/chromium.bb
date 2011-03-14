@@ -256,7 +256,7 @@ IN_PROC_BROWSER_TEST_F(BrowserViewsAccessibilityTest,
   EXPECT_STREQ(
       about_chrome_window->window_delegate()->GetWindowTitle().c_str(),
       UTF16ToWide(l10n_util::GetStringUTF16(IDS_ABOUT_CHROME_TITLE)).c_str());
-  EXPECT_EQ(about_chrome_window->window_delegate()->GetAccessibleRole(),
+  EXPECT_EQ(about_chrome_window->window_delegate()->GetAccessibleWindowRole(),
             ui::AccessibilityTypes::ROLE_DIALOG);
 
   // Also test the accessibility object directly.

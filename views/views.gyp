@@ -68,6 +68,7 @@
         '../skia/skia.gyp:skia',
         '../third_party/icu/icu.gyp:icui18n',
         '../third_party/icu/icu.gyp:icuuc',
+        '../ui/ui.gyp:ui_base',
         '../ui/base/strings/ui_strings.gyp:ui_strings',
       ],
       'sources': [
