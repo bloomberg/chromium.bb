@@ -91,10 +91,10 @@ void WorkerMessageFilter::OnLookupSharedWorker(
     bool* url_error) {
   *route_id = next_routing_id_->Run();
 
-  bool off_the_record = static_cast<ChromeURLRequestContext*>(
+  bool incognito = static_cast<ChromeURLRequestContext*>(
       request_context_->GetURLRequestContext())->is_off_the_record();
   WorkerService::GetInstance()->LookupSharedWorker(
-      params, *route_id, this, off_the_record, exists, url_error);
+      params, *route_id, this, incognito, exists, url_error);
 }
 
 void WorkerMessageFilter::OnCancelCreateDedicatedWorker(int route_id) {

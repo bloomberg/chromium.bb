@@ -260,7 +260,7 @@ class TabRendererGtk : public ui::AnimationDelegate,
         : is_default_favicon(false),
           loading(false),
           crashed(false),
-          off_the_record(false),
+          incognito(false),
           show_icon(true),
           mini(false),
           blocked(false),
@@ -273,7 +273,7 @@ class TabRendererGtk : public ui::AnimationDelegate,
     string16 title;
     bool loading;
     bool crashed;
-    bool off_the_record;
+    bool incognito;
     bool show_icon;
     bool mini;
     bool blocked;

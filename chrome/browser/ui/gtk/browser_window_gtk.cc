@@ -540,12 +540,12 @@ int BrowserWindowGtk::GetVerticalOffset() {
 }
 
 int BrowserWindowGtk::GetThemeFrameResource() {
-  bool off_the_record = browser()->profile()->IsOffTheRecord();
+  bool incognito = browser()->profile()->IsOffTheRecord();
   int image_name;
   if (IsActive()) {
-    image_name = off_the_record ? IDR_THEME_FRAME_INCOGNITO : IDR_THEME_FRAME;
+    image_name = incognito ? IDR_THEME_FRAME_INCOGNITO : IDR_THEME_FRAME;
   } else {
-    image_name = off_the_record ? IDR_THEME_FRAME_INCOGNITO_INACTIVE :
+    image_name = incognito ? IDR_THEME_FRAME_INCOGNITO_INACTIVE :
                  IDR_THEME_FRAME_INACTIVE;
   }
 

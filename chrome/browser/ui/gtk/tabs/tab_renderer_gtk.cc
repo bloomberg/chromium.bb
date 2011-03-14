@@ -289,7 +289,7 @@ void TabRendererGtk::UpdateData(TabContents* contents,
 
   if (!loading_only) {
     data_.title = contents->GetTitle();
-    data_.off_the_record = contents->profile()->IsOffTheRecord();
+    data_.incognito = contents->profile()->IsOffTheRecord();
     data_.crashed = contents->is_crashed();
 
     SkBitmap* app_icon = contents->GetExtensionAppIcon();
@@ -386,7 +386,7 @@ void TabRendererGtk::PaintFavIconArea(GdkEventExpose* event) {
   if (IsSelected()) {
     theme_id = IDR_THEME_TOOLBAR;
   } else {
-    if (!data_.off_the_record) {
+    if (!data_.incognito) {
       theme_id = IDR_THEME_TAB_BACKGROUND;
     } else {
       theme_id = IDR_THEME_TAB_BACKGROUND_INCOGNITO;
@@ -889,13 +889,12 @@ void TabRendererGtk::PaintTabBackground(gfx::Canvas* canvas) {
 }
 
 void TabRendererGtk::PaintInactiveTabBackground(gfx::Canvas* canvas) {
-  bool is_otr = data_.off_the_record;
 
   // The tab image needs to be lined up with the background image
   // so that it feels partially transparent.
   int offset_x = background_offset_x_;
 
-  int tab_id = is_otr ?
+  int tab_id = data_.incognito ?
       IDR_THEME_TAB_BACKGROUND_INCOGNITO : IDR_THEME_TAB_BACKGROUND;
 
   SkBitmap* tab_bg = theme_provider_->GetBitmapNamed(tab_id);
