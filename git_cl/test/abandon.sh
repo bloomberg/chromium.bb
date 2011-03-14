@@ -20,7 +20,7 @@ setup_gitsvn
   git add test; git commit -q -m "branch work"
   export EDITOR=$(which true)
   test_expect_success "upload succeeds" \
-    "$GIT_CL upload -m test master... | grep -q 'Issue created'"
+    "$GIT_CL upload -m test master  | grep -q 'Issue created'"
 
   # Switch back to master, delete the branch.
   git checkout master

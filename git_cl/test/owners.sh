@@ -32,7 +32,7 @@ END
     "$GIT_CL status | grep -q 'R=ben@chromium.org'"
 
   test_expect_failure "git-cl dcommit fails w/ missing LGTM" \
-    "$GIT_CL dcommit"
+    "$GIT_CL dcommit -f"
 
   test_expect_success "git-cl dcommit --tbr succeeds" \
     "$GIT_CL dcommit --tbr -f | grep -q -- '--tbr was specified'"

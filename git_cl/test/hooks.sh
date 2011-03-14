@@ -11,8 +11,8 @@ setup_initsvn
 setup_gitsvn
 
 setup_hooks() {
-  upload_retval = shift
-  dcommit_retval = shift
+  upload_retval=$1
+  dcommit_retval=$2
 
   echo > PRESUBMIT.py <<END
 def CheckChangeOnUpload(input_api, output_api):

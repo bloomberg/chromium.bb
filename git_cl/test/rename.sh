@@ -20,7 +20,7 @@ setup_gitsvn
   git commit -q -m "renamed"
   export EDITOR=$(which true)
   test_expect_success "upload succeeds" \
-    "$GIT_CL upload -m test master... | grep -q 'Issue created'"
+    "$GIT_CL upload -m test master | grep -q 'Issue created'"
 
   # Look at the uploaded patch and verify it is a rename patch.
   echo "Rename test not fully implemented yet.  :("
