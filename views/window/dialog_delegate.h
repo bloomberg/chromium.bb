@@ -110,7 +110,7 @@ class DialogDelegate : public WindowDelegate {
 
  protected:
   // Overridden from WindowDelegate:
-  virtual ui::AccessibilityTypes::Role GetAccessibleRole() const OVERRIDE;
+  virtual ui::AccessibilityTypes::Role GetAccessibleWindowRole() const OVERRIDE;
 };
 
 }  // namespace views

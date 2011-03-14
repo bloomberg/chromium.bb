@@ -59,6 +59,7 @@
       'sources': [
         'accessibility/accessibility_types.h',
         'accessibility/accessible_view_state.h',
+        'accessibility/accessible_view_state.cc',
         'animation/animation.cc',
         'animation/animation.h',
         'animation/animation_container.cc',

@@ -98,7 +98,7 @@ DialogClientView* DialogDelegate::GetDialogClientView() const {
   return window()->client_view()->AsDialogClientView();
 }
 
-ui::AccessibilityTypes::Role DialogDelegate::GetAccessibleRole() const {
+ui::AccessibilityTypes::Role DialogDelegate::GetAccessibleWindowRole() const {
   return ui::AccessibilityTypes::ROLE_DIALOG;
 }
 
