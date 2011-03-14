@@ -41,6 +41,12 @@ class TabStripController {
   // Select the tab at the specified index in the model.
   virtual void SelectTab(int index) = 0;
 
+  // Extends the selection from the anchor to the specified index in the model.
+  virtual void ExtendSelectionTo(int index) = 0;
+
+  // Toggles the selection of the specified index in the model.
+  virtual void ToggleSelected(int index) = 0;
+
   // Closes the tab at the specified index in the model.
   virtual void CloseTab(int index) = 0;
 

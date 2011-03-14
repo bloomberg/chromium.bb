@@ -288,13 +288,24 @@ bool BaseTab::OnMousePressed(const views::MouseEvent& event) {
     return false;
 
   if (event.IsOnlyLeftMouseButton()) {
-    // Store whether or not we were selected just now... we only want to be
-    // able to drag foreground tabs, so we don't start dragging the tab if
-    // it was in the background.
-    bool just_selected = !IsSelected();
-    if (just_selected)
+    if (CommandLine::ForCurrentProcess()->HasSwitch(
+            switches::kEnableMultiTabSelection)) {
+      if (event.IsShiftDown()) {
+        controller()->ExtendSelectionTo(this);
+      } else if (event.IsControlDown()) {
+        controller()->ToggleSelected(this);
+        if (!IsSelected()) {
+          // Don't allow dragging non-selected tabs.
+          return false;
+        }
+      } else if (!IsSelected()) {
+        controller()->SelectTab(this);
+      }
+      controller()->MaybeStartDrag(this, event);
+    } else {
       controller()->SelectTab(this);
-    controller()->MaybeStartDrag(this, event);
+      controller()->MaybeStartDrag(this, event);
+    }
   }
   return true;
 }
@@ -332,6 +343,13 @@ void BaseTab::OnMouseReleased(const views::MouseEvent& event, bool canceled) {
       if (closest_tab)
         controller()->CloseTab(closest_tab);
     }
+  } else if (CommandLine::ForCurrentProcess()->HasSwitch(
+                 switches::kEnableMultiTabSelection) &&
+             event.IsOnlyLeftMouseButton() && !event.IsShiftDown() &&
+             !event.IsControlDown()) {
+    // If the tab was already selected mouse pressed doesn't change the
+    // selection. Reset it now.
+    controller()->SelectTab(this);
   }
 }
 

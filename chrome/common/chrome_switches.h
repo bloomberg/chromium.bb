@@ -146,6 +146,7 @@ extern const char kEnableHistoryQuickProvider[];
 extern const char kEnableInBrowserThumbnailing[];
 extern const char kEnableIPv6[];
 extern const char kEnableMemoryInfo[];
+extern const char kEnableMultiTabSelection[];
 extern const char kEnableNaCl[];
 extern const char kEnableNaClDebug[];
 extern const char kEnableP2PApi[];

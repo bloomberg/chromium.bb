@@ -6,6 +6,8 @@
 #define CHROME_BROWSER_UI_VIEWS_TABS_DRAGGED_TAB_VIEW_H_
 #pragma once
 
+#include <vector>
+
 #include "build/build_config.h"
 #include "ui/gfx/point.h"
 #include "ui/gfx/size.h"
@@ -27,9 +29,9 @@ class TabRenderer;
 
 class DraggedTabView : public views::View {
  public:
-  // Creates a new DraggedTabView using |renderer| as the View. DraggedTabView
-  // takes ownership of |renderer|.
-  DraggedTabView(views::View* renderer,
+  // Creates a new DraggedTabView using |renderers| as the Views. DraggedTabView
+  // takes ownership of the views in |renderers|.
+  DraggedTabView(const std::vector<views::View*>& renderers,
                  const gfx::Point& mouse_tab_offset,
                  const gfx::Size& contents_size,
                  const gfx::Size& min_size);
@@ -76,7 +78,7 @@ class DraggedTabView : public views::View {
 #endif
 
   // The renderer that paints the Tab shape.
-  scoped_ptr<views::View> renderer_;
+  std::vector<views::View*> renderers_;
 
   // True if "Show window contents while dragging" is enabled.
   bool show_contents_on_drag_;

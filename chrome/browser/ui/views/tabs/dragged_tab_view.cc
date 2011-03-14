@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/views/tabs/dragged_tab_view.h"
 
+#include "base/stl_util-inl.h"
 #include "chrome/browser/ui/views/tabs/native_view_photobooth.h"
 #include "third_party/skia/include/core/SkShader.h"
 #include "ui/gfx/canvas_skia.h"
@@ -25,11 +26,11 @@ static const SkColor kDraggedTabBorderColor = SkColorSetRGB(103, 129, 162);
 ////////////////////////////////////////////////////////////////////////////////
 // DraggedTabView, public:
 
-DraggedTabView::DraggedTabView(views::View* renderer,
+DraggedTabView::DraggedTabView(const std::vector<views::View*>& renderers,
                                const gfx::Point& mouse_tab_offset,
                                const gfx::Size& contents_size,
                                const gfx::Size& min_size)
-    : renderer_(renderer),
+    : renderers_(renderers),
       show_contents_on_drag_(true),
       mouse_tab_offset_(mouse_tab_offset),
       tab_size_(min_size),
@@ -64,6 +65,7 @@ DraggedTabView::DraggedTabView(views::View* renderer,
 DraggedTabView::~DraggedTabView() {
   parent()->RemoveChildView(this);
   container_->CloseNow();
+  STLDeleteElements(&renderers_);
 }
 
 void DraggedTabView::MoveTo(const gfx::Point& screen_point) {
@@ -74,7 +76,7 @@ void DraggedTabView::MoveTo(const gfx::Point& screen_point) {
     // window position differently.
     gfx::Size ps = GetPreferredSize();
     x = screen_point.x() - ScaleValue(ps.width()) + mouse_tab_offset_.x() +
-        ScaleValue(renderer_->GetMirroredXInView(mouse_tab_offset_.x()));
+        ScaleValue(renderers_[0]->GetMirroredXInView(mouse_tab_offset_.x()));
   } else {
     x = screen_point.x() + mouse_tab_offset_.x() -
         ScaleValue(mouse_tab_offset_.x());
@@ -126,7 +128,7 @@ void DraggedTabView::Layout() {
   // The renderer_'s width should be tab_size_.width() in both LTR and RTL
   // locales. Wrong width will cause the wrong positioning of the tab view in
   // dragging. Please refer to http://crbug.com/6223 for details.
-  renderer_->SetBounds(left, 0, tab_size_.width(), tab_size_.height());
+  renderers_[0]->SetBounds(left, 0, tab_size_.width(), tab_size_.height());
 }
 
 gfx::Size DraggedTabView::GetPreferredSize() {
@@ -158,7 +160,7 @@ void DraggedTabView::PaintDetachedView(gfx::Canvas* canvas) {
   photobooth_->PaintScreenshotIntoCanvas(
       &scale_canvas,
       gfx::Rect(image_x, image_y, image_w, image_h));
-  renderer_->Paint(&scale_canvas);
+  renderers_[0]->Paint(&scale_canvas);
 
   SkIRect subset;
   subset.set(0, 0, ps.width(), ps.height());

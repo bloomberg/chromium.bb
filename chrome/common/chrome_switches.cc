@@ -491,6 +491,9 @@ const char kEnableIPv6[]                    = "enable-ipv6";
 // Allows reporting memory info (JS heap size) to page.
 const char kEnableMemoryInfo[]              = "enable-memory-info";
 
+// Enables multi-tab selection in the tabstrip.
+const char kEnableMultiTabSelection[]       = "enable-multi-tab-selection";
+
 // Runs the Native Client inside the renderer process and enables GPU plugin
 // (internally adds lEnableGpuPlugin to the command line).
 const char kEnableNaCl[]                    = "enable-nacl";

@@ -269,8 +269,8 @@ BaseTab* TabStrip::CreateTabForDragging() {
 
 void TabStrip::PaintChildren(gfx::Canvas* canvas) {
   // Tabs are painted in reverse order, so they stack to the left.
-  Tab* selected_tab = NULL;
-  Tab* dragging_tab = NULL;
+  std::vector<Tab*> selected_tabs;
+  std::vector<Tab*> tabs_dragging;
 
   for (int i = tab_count() - 1; i >= 0; --i) {
     Tab* tab = GetTabAtTabDataIndex(i);
@@ -278,11 +278,11 @@ void TabStrip::PaintChildren(gfx::Canvas* canvas) {
     // the model will be different to this object, e.g. when a Tab is being
     // removed after its TabContents has been destroyed.
     if (tab->dragging()) {
-      dragging_tab = tab;
+      tabs_dragging.push_back(tab);
     } else if (!tab->IsSelected()) {
       tab->Paint(canvas);
     } else {
-      selected_tab = tab;
+      selected_tabs.push_back(tab);
     }
   }
 
@@ -297,16 +297,20 @@ void TabStrip::PaintChildren(gfx::Canvas* canvas) {
         paint);
   }
 
-  // Paint the selected tab last, so it overlaps all the others.
-  if (selected_tab)
-    selected_tab->Paint(canvas);
+  // Next comes selected tabs.
+  for (std::vector<Tab*>::reverse_iterator i = selected_tabs.rbegin();
+       i != selected_tabs.rend(); ++i) {
+    (*i)->Paint(canvas);
+  }
 
   // Paint the New Tab button.
   newtab_button_->Paint(canvas);
 
-  // And the dragged tab.
-  if (dragging_tab)
-    dragging_tab->Paint(canvas);
+  // And the dragged tabs.
+  for (std::vector<Tab*>::reverse_iterator i = tabs_dragging.rbegin();
+       i != tabs_dragging.rend(); ++i) {
+    (*i)->Paint(canvas);
+  }
 }
 
 // Overridden to support automation. See automation_proxy_uitest.cc.
@@ -447,6 +451,36 @@ void TabStrip::DoLayout() {
   BaseTabStrip::DoLayout();
 
   newtab_button_->SetBoundsRect(newtab_button_bounds_);
+}
+
+void TabStrip::LayoutDraggedTabsAt(const std::vector<BaseTab*>& tabs,
+                                   const gfx::Point& location) {
+  int x = location.x();
+  for (size_t i = 0; i < tabs.size(); ++i) {
+    BaseTab* tab = tabs[i];
+    tab->SchedulePaint();
+    gfx::Rect new_bounds = tab->bounds();
+    new_bounds.set_x(x);
+    tab->SetX(GetMirroredXForRect(new_bounds));
+    tab->SetY(location.y());
+    tab->SchedulePaint();
+    x += tab->width() + kTabHOffset;
+    if (i > 0 && tab->data().mini != tabs[i - 1]->data().mini)
+      x += mini_to_non_mini_gap_;
+  }
+}
+
+int TabStrip::GetSizeNeededForTabs(const std::vector<BaseTab*>& tabs) {
+  int width = 0;
+  for (size_t i = 0; i < tabs.size(); ++i) {
+    BaseTab* tab = tabs[i];
+    width += tab->width();
+    if (i > 0 && tab->data().mini != tabs[i - 1]->data().mini)
+      width += mini_to_non_mini_gap_;
+  }
+  if (tabs.size() > 0)
+    width += kTabHOffset * static_cast<int>(tabs.size() - 1);
+  return width;
 }
 
 void TabStrip::ViewHierarchyChanged(bool is_add,

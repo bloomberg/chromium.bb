@@ -129,8 +129,9 @@ gfx::Size SideTabStrip::GetPreferredSize() {
 }
 
 void SideTabStrip::PaintChildren(gfx::Canvas* canvas) {
-  // Make sure the dragged tab appears on top of all others by paint it last.
-  BaseTab* dragging_tab = NULL;
+  // Make sure any tabs being dragged appear on top of all others by painting
+  // them last.
+  std::vector<BaseTab*> dragging_tabs;
 
   // Paint the new tab and separator first so that any tabs animating appear on
   // top.
@@ -140,13 +141,13 @@ void SideTabStrip::PaintChildren(gfx::Canvas* canvas) {
   for (int i = tab_count() - 1; i >= 0; --i) {
     BaseTab* tab = base_tab_at_tab_index(i);
     if (tab->dragging())
-      dragging_tab = tab;
+      dragging_tabs.push_back(tab);
     else
       tab->Paint(canvas);
   }
 
-  if (dragging_tab)
-    dragging_tab->Paint(canvas);
+  for (size_t i = 0; i < dragging_tabs.size(); ++i)
+    dragging_tabs[i]->Paint(canvas);
 }
 
 BaseTab* SideTabStrip::CreateTab() {
@@ -231,4 +232,23 @@ void SideTabStrip::DoLayout() {
   newtab_button_->SetBoundsRect(newtab_button_bounds_);
 
   separator_->SetBoundsRect(separator_bounds_);
+}
+
+void SideTabStrip::LayoutDraggedTabsAt(const std::vector<BaseTab*>& tabs,
+                                       const gfx::Point& location) {
+  gfx::Rect layout_rect = GetContentsBounds();
+  layout_rect.Inset(kTabStripInset, kTabStripInset);
+  int y = location.y();
+  for (size_t i = 0; i < tabs.size(); ++i) {
+    BaseTab* tab = tabs[i];
+    tab->SchedulePaint();
+    tab->SetBounds(layout_rect.x(), y, layout_rect.width(),
+                   tab->GetPreferredSize().height());
+    tab->SchedulePaint();
+    y += tab->height();
+  }
+}
+
+int SideTabStrip::GetSizeNeededForTabs(const std::vector<BaseTab*>& tabs) {
+  return static_cast<int>(tabs.size()) * SideTab::GetPreferredHeight();
 }

@@ -246,6 +246,18 @@ void BaseTabStrip::SelectTab(BaseTab* tab) {
     controller_->SelectTab(model_index);
 }
 
+void BaseTabStrip::ExtendSelectionTo(BaseTab* tab) {
+  int model_index = GetModelIndexOfBaseTab(tab);
+  if (IsValidModelIndex(model_index))
+    controller_->ExtendSelectionTo(model_index);
+}
+
+void BaseTabStrip::ToggleSelected(BaseTab* tab) {
+  int model_index = GetModelIndexOfBaseTab(tab);
+  if (IsValidModelIndex(model_index))
+    controller_->ToggleSelected(model_index);
+}
+
 void BaseTabStrip::CloseTab(BaseTab* tab) {
   // Find the closest model index. We do this so that the user can rapdily close
   // tabs and have the close click close the next tab.
@@ -302,8 +314,29 @@ void BaseTabStrip::MaybeStartDrag(BaseTab* tab,
     CHECK(false);
     return;
   }
-  drag_controller_.reset(new DraggedTabController(tab, this));
-  drag_controller_->CaptureDragInfo(tab, event.location());
+  drag_controller_.reset(new DraggedTabController());
+  std::vector<BaseTab*> tabs;
+  int size_to_selected = 0;
+  int x = event.x();
+  int y = event.y();
+  // Build the set of selected tabs to drag and calculate the offset from the
+  // first selected tab.
+  for (int i = 0; i < tab_count(); ++i) {
+    BaseTab* other_tab = base_tab_at_tab_index(i);
+    if (IsTabSelected(other_tab) && !other_tab->closing()) {
+      tabs.push_back(other_tab);
+      if (other_tab == tab) {
+        size_to_selected = GetSizeNeededForTabs(tabs);
+        if (type() == HORIZONTAL_TAB_STRIP)
+          x = size_to_selected - tab->width() + x;
+        else
+          y = size_to_selected - tab->height() + y;
+      }
+    }
+  }
+  DCHECK(!tabs.empty());
+  DCHECK(std::find(tabs.begin(), tabs.end(), tab) != tabs.end());
+  drag_controller_->Init(this, tab, tabs, gfx::Point(x, y), event.x());
 }
 
 void BaseTabStrip::ContinueDrag(const views::MouseEvent& event) {
@@ -477,47 +510,34 @@ void BaseTabStrip::DestroyDragController() {
     drag_controller_.reset(NULL);
 }
 
-void BaseTabStrip::StartedDraggingTab(BaseTab* tab) {
+void BaseTabStrip::StartedDraggingTabs(const std::vector<BaseTab*>& tabs) {
   PrepareForAnimation();
 
-  // Reset the dragging state of all other tabs. We do this as the painting code
-  // only handles one tab being dragged at a time. If another tab is marked as
-  // dragging, it should also be closing.
+  // Reset dragging state of existing tabs.
   for (int i = 0; i < tab_count(); ++i)
     base_tab_at_tab_index(i)->set_dragging(false);
 
-  tab->set_dragging(true);
+  for (size_t i = 0; i < tabs.size(); ++i) {
+    tabs[i]->set_dragging(true);
+    bounds_animator_.StopAnimatingView(tabs[i]);
+  }
 
-  // Stop any animations on the tab.
-  bounds_animator_.StopAnimatingView(tab);
-
-  // Move the tab to its ideal bounds.
+  // Move the dragged tabs to their ideal bounds.
   GenerateIdealBounds();
-  int tab_data_index = TabIndexOfTab(tab);
-  DCHECK(tab_data_index != -1);
-  tab->SetBoundsRect(ideal_bounds(tab_data_index));
+
+  // Sets the bounds of the dragged tabs.
+  for (size_t i = 0; i < tabs.size(); ++i) {
+    int tab_data_index = TabIndexOfTab(tabs[i]);
+    DCHECK(tab_data_index != -1);
+    tabs[i]->SetBoundsRect(ideal_bounds(tab_data_index));
+  }
   SchedulePaint();
 }
 
-void BaseTabStrip::StoppedDraggingTab(BaseTab* tab) {
-  int tab_data_index = TabIndexOfTab(tab);
-  if (tab_data_index == -1) {
-    // The tab was removed before the drag completed. Don't do anything.
-    return;
-  }
-
-  PrepareForAnimation();
-
-  // Animate the view back to its correct position.
-  GenerateIdealBounds();
-  AnimateToIdealBounds();
-  bounds_animator_.AnimateViewTo(tab, ideal_bounds(TabIndexOfTab(tab)));
-
-  // Install a delegate to reset the dragging state when done. We have to leave
-  // dragging true for the tab otherwise it'll draw beneath the new tab button.
-  bounds_animator_.SetAnimationDelegate(tab,
-                                        new ResetDraggingStateDelegate(tab),
-                                        true);
+void BaseTabStrip::StoppedDraggingTabs(const std::vector<BaseTab*>& tabs) {
+  bool is_first_tab = true;
+  for (size_t i = 0; i < tabs.size(); ++i)
+    StoppedDraggingTab(tabs[i], &is_first_tab);
 }
 
 void BaseTabStrip::PrepareForAnimation() {
@@ -542,4 +562,26 @@ void BaseTabStrip::DoLayout() {
     tab_data_[i].tab->SetBoundsRect(tab_data_[i].ideal_bounds);
 
   SchedulePaint();
+}
+
+void BaseTabStrip::StoppedDraggingTab(BaseTab* tab, bool* is_first_tab) {
+  int tab_data_index = TabIndexOfTab(tab);
+  if (tab_data_index == -1) {
+    // The tab was removed before the drag completed. Don't do anything.
+    return;
+  }
+
+  if (*is_first_tab) {
+    *is_first_tab = false;
+    PrepareForAnimation();
+
+    // Animate the view back to its correct position.
+    GenerateIdealBounds();
+    AnimateToIdealBounds();
+  }
+  bounds_animator_.AnimateViewTo(tab, ideal_bounds(TabIndexOfTab(tab)));
+  // Install a delegate to reset the dragging state when done. We have to leave
+  // dragging true for the tab otherwise it'll draw beneath the new tab button.
+  bounds_animator_.SetAnimationDelegate(
+      tab, new ResetDraggingStateDelegate(tab), true);
 }

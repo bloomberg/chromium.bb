@@ -36,11 +36,15 @@ class SideTabStrip : public BaseTabStrip {
 
  protected:
   // BaseTabStrip overrides:
-  virtual BaseTab* CreateTab();
-  virtual void GenerateIdealBounds();
-  virtual void StartInsertTabAnimation(int model_index, bool foreground);
-  virtual void AnimateToIdealBounds();
-  virtual void DoLayout();
+  virtual BaseTab* CreateTab() OVERRIDE;
+  virtual void GenerateIdealBounds() OVERRIDE;
+  virtual void StartInsertTabAnimation(int model_index,
+                                       bool foreground) OVERRIDE;
+  virtual void AnimateToIdealBounds() OVERRIDE;
+  virtual void DoLayout() OVERRIDE;
+  virtual void LayoutDraggedTabsAt(const std::vector<BaseTab*>& tabs,
+                                   const gfx::Point& location) OVERRIDE;
+  virtual int GetSizeNeededForTabs(const std::vector<BaseTab*>& tabs) OVERRIDE;
 
  private:
   // The "New Tab" button.

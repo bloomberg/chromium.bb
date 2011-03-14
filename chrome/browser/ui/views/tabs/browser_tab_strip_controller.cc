@@ -143,10 +143,8 @@ void BrowserTabStripController::InitFromModel(BaseTabStrip* tabstrip) {
   tabstrip_ = tabstrip;
   // Walk the model, calling our insertion observer method for each item within
   // it.
-  for (int i = 0; i < model_->count(); ++i) {
-    TabInsertedAt(model_->GetTabContentsAt(i), i,
-                  i == model_->selected_index());
-  }
+  for (int i = 0; i < model_->count(); ++i)
+    TabInsertedAt(model_->GetTabContentsAt(i), i, model_->IsTabSelected(i));
 }
 
 bool BrowserTabStripController::IsCommandEnabledForTab(
@@ -186,7 +184,7 @@ bool BrowserTabStripController::IsValidIndex(int index) const {
 }
 
 bool BrowserTabStripController::IsTabSelected(int model_index) const {
-  return model_->selected_index() == model_index;
+  return model_->IsTabSelected(model_index);
 }
 
 bool BrowserTabStripController::IsTabPinned(int model_index) const {
@@ -206,6 +204,14 @@ bool BrowserTabStripController::IsNewTabPage(int model_index) const {
 
 void BrowserTabStripController::SelectTab(int model_index) {
   model_->SelectTabContentsAt(model_index, true);
+}
+
+void BrowserTabStripController::ExtendSelectionTo(int model_index) {
+  model_->ExtendSelectionTo(model_index);
+}
+
+void BrowserTabStripController::ToggleSelected(int model_index) {
+  model_->ToggleSelectionAt(model_index);
 }
 
 void BrowserTabStripController::CloseTab(int model_index) {

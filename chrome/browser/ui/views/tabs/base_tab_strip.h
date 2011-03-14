@@ -123,6 +123,8 @@ class BaseTabStrip : public AbstractTabStripView,
 
   // TabController overrides:
   virtual void SelectTab(BaseTab* tab);
+  virtual void ExtendSelectionTo(BaseTab* tab);
+  virtual void ToggleSelected(BaseTab* tab);
   virtual void CloseTab(BaseTab* tab);
   virtual void ShowContextMenuForTab(BaseTab* tab, const gfx::Point& p);
   virtual bool IsTabSelected(const BaseTab* tab) const;
@@ -141,7 +143,6 @@ class BaseTabStrip : public AbstractTabStripView,
       int* formats,
       std::set<OSExchangeData::CustomFormat>* custom_formats);
   virtual bool CanDrop(const OSExchangeData& data);
-
 
  protected:
   // The Tabs we contain, and their last generated "good" bounds.
@@ -187,6 +188,11 @@ class BaseTabStrip : public AbstractTabStripView,
   // Resets the bounds of all non-closing tabs.
   virtual void GenerateIdealBounds() = 0;
 
+  // Invoked during drag to layout the tabs being dragged in |tabs| at
+  // |location|.
+  virtual void LayoutDraggedTabsAt(const std::vector<BaseTab*>& tabs,
+                                   const gfx::Point& location) = 0;
+
   void set_ideal_bounds(int index, const gfx::Rect& bounds) {
     tab_data_[index].ideal_bounds = bounds;
   }
@@ -206,9 +212,13 @@ class BaseTabStrip : public AbstractTabStripView,
   // Destroys the active drag controller.
   void DestroyDragController();
 
-  // Used by DraggedTabController when the user starts or stops dragging a tab.
-  void StartedDraggingTab(BaseTab* tab);
-  void StoppedDraggingTab(BaseTab* tab);
+  // Used by DraggedTabController when the user starts or stops dragging tabs.
+  void StartedDraggingTabs(const std::vector<BaseTab*>& tabs);
+  void StoppedDraggingTabs(const std::vector<BaseTab*>& tabs);
+
+  // Returns the size needed for the specified tabs. This is invoked during drag
+  // and drop to calculate offsets and positioning.
+  virtual int GetSizeNeededForTabs(const std::vector<BaseTab*>& tabs) = 0;
 
   // See description above field for details.
   bool attaching_dragged_tab() const { return attaching_dragged_tab_; }
@@ -229,6 +239,10 @@ class BaseTabStrip : public AbstractTabStripView,
   class RemoveTabDelegate;
 
   friend class DraggedTabController;
+
+  // Invoked from StoppedDraggingTabs to cleanup |tab|. If |tab| is known
+  // |is_first_tab| is set to true.
+  void StoppedDraggingTab(BaseTab* tab, bool* is_first_tab);
 
   // See description above field for details.
   void set_attaching_dragged_tab(bool value) { attaching_dragged_tab_ = value; }

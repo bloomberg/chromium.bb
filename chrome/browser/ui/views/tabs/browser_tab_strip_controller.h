@@ -47,6 +47,8 @@ class BrowserTabStripController : public TabStripController,
   virtual bool IsTabCloseable(int model_index) const;
   virtual bool IsNewTabPage(int model_index) const;
   virtual void SelectTab(int model_index);
+  virtual void ExtendSelectionTo(int model_index);
+  virtual void ToggleSelected(int model_index);
   virtual void CloseTab(int model_index);
   virtual void ShowContextMenuForTab(BaseTab* tab, const gfx::Point& p);
   virtual void UpdateLoadingAnimations();
