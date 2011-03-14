@@ -5322,7 +5322,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
         Pattern
       </message>
       <message name="IDS_EXCEPTIONS_ACTION_HEADER" desc="A column header for the action column of the cookie/image/javascript/plugins exceptions dialog">
-        Action
+        Behavior
       </message>
       <message name="IDS_EXCEPTIONS_OTR_HEADER" desc="A column header for the incognito column of the cookie/image/javascript/plugins exceptions dialog">
         Incognito
