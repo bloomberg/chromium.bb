@@ -38,6 +38,10 @@ function test_git_svn {
   fi
 }
 
+# Get the current SVN revision.
+get_svn_revision() {
+  echo `svn info | awk '{ if ($1 == "Revision:") { print $2 }}'`
+}
 
 # Update git checkouts prior the cygwin check, we don't want to use msysgit.
 if [ "X$DEPOT_TOOLS_UPDATE" != "X0" -a -e "$base_dir/.git" ]
@@ -57,5 +61,10 @@ if [ "X$DEPOT_TOOLS_UPDATE" != "X0" -a -e "$base_dir/.svn" ]
 then
   # Update the bootstrap directory to stay up-to-date with the latest
   # depot_tools.
+  BEFORE_REVISION=$(get_svn_revision)
   svn -q up "$base_dir"
+  AFTER_REVISION=$(get_svn_revision)
+  if [[ "$BEFORE_REVISION" != "$AFTER_REVISION" ]]; then
+    echo "Depot Tools has been updated to revision $AFTER_REVISION."
+  fi
 fi
