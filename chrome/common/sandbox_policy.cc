@@ -36,9 +36,7 @@ const wchar_t* const kTroublesomeDlls[] = {
   L"avgrsstx.dll",                // AVG 8.
   L"btkeyind.dll",                // Widcomm Bluetooth.
   L"cmcsyshk.dll",                // CMC Internet Security.
-  L"cutildll.dll",                // Citrix
   L"dockshellhook.dll",           // Stardock Objectdock.
-  L"emulatetermsrv.dll",          // Citrix
   L"GoogleDesktopNetwork3.DLL",   // Google Desktop Search v5.
   L"fwhook.dll",                  // PC Tools Firewall Plus.
   L"hookprocesscreation.dll",     // Blumentals Program protector.
@@ -70,7 +68,6 @@ const wchar_t* const kTroublesomeDlls[] = {
   L"sahook.dll",                  // McAfee Site Advisor.
   L"sbrige.dll",                  // Unknown.
   L"sc2hook.dll",                 // Supercopier 2.
-  L"sehook20.dll",                // Citrix
   L"sguard.dll",                  // Iolo (System Guard).
   L"smum32.dll",                  // Spyware Doctor version 6.
   L"smumhook.dll",                // Spyware Doctor version 5.
