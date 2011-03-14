@@ -1,0 +1,28 @@
+<!doctype html>
+<html>
+  <head>
+    <title>Proxy Configuration Extension Background Page</title>
+  </head>
+  <body>
+    <!--
+      Here, we'll hook into the proxy extension API's `onProxyError`
+      event, and use it to set a warning badge on the browser action's icon.
+      Additionally, we'll store proxy settings locally, and reset them when the
+      background page initializes.  This is essential, as incognito settings
+      are wiped on restart.
+    -->
+    <script src="./proxy_form_controller.js"></script>
+    <script src="./proxy_error_handler.js"></script>
+    <script>
+      var errorHandler = new ProxyErrorHandler();
+
+      // If this extension has already set the proxy settings, then reset it
+      // once as the background page initializes.  This is essential, as
+      // incognito settings are wiped on restart.
+      var persistedSettings = ProxyFormController.getPersistedSettings();
+      if (persistedSettings !== null) {
+        chrome.experimental.proxy.settings.set({'value': persistedSettings});
+      }
+    </script>
+  </body>
+</html>

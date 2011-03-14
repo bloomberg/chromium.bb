@@ -1378,6 +1378,46 @@
     }, 
     {
       "api_calls": [
+        "chrome.browserAction.setBadgeBackgroundColor", 
+        "chrome.browserAction.setBadgeText", 
+        "chrome.browserAction.setTitle", 
+        "chrome.experimental.proxy.onProxyError", 
+        "chrome.extension.onRequest", 
+        "chrome.extension.sendRequest", 
+        "chrome.i18n.getMessage"
+      ], 
+      "description": "Set Chrome-specific proxies; a demonstration of Chrome's Proxy API", 
+      "features": [
+        "TTS", 
+        "background_page", 
+        "browser_action", 
+        "experimental", 
+        "popup", 
+        "proxy"
+      ], 
+      "icon": null, 
+      "id": "3e8e226d87e431296bb110b4f6eb7eec2ca7a826", 
+      "name": "Proxy Settings", 
+      "path": "examples/extensions/proxy_configuration/", 
+      "protocols": [], 
+      "search_string": "PROXY SETTINGS SET CHROME-SPECIFIC PROXIES; A DEMONSTRATION OF CHROMES PROXY API TTS BACKGROUND_PAGE BROWSER_ACTION EXPERIMENTAL POPUP PROXY CHROME.BROWSERACTION.SETBADGEBACKGROUNDCOLOR CHROME.BROWSERACTION.SETBADGETEXT CHROME.BROWSERACTION.SETTITLE CHROME.EXPERIMENTAL.PROXY.ONPROXYERROR CHROME.EXTENSION.ONREQUEST CHROME.EXTENSION.SENDREQUEST CHROME.I18N.GETMESSAGE", 
+      "source_files": [
+        "_locales/en/messages.json", 
+        "background.html", 
+        "manifest.json", 
+        "popup.html", 
+        "proxy_error_handler.js", 
+        "proxy_form_controller.js", 
+        "test/jsunittest.js", 
+        "test/proxy_form_controller_test.html", 
+        "test/proxy_form_controller_test.js", 
+        "test/unittest.css"
+      ], 
+      "source_hash": "866078e5f0611065ef9ef26225a7c38abaa32509", 
+      "zip_path": "examples/extensions/proxy_configuration.zip"
+    }, 
+    {
+      "api_calls": [
         "chrome.browserAction.onClicked", 
         "chrome.browserAction.setIcon", 
         "chrome.extension.getBackgroundPage", 
