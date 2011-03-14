@@ -71,8 +71,9 @@ TEST_F(ContextGroupTest, Basic) {
 }
 
 TEST_F(ContextGroupTest, InitializeNoExtensions) {
-  TestHelper::SetupContextGroupInitExpectations(gl_.get(), "");
-  group_->Initialize("");
+  TestHelper::SetupContextGroupInitExpectations(gl_.get(),
+      DisallowedExtensions(), "");
+  group_->Initialize(DisallowedExtensions(), "");
   EXPECT_EQ(static_cast<uint32>(TestHelper::kNumVertexAttribs),
             group_->max_vertex_attribs());
   EXPECT_EQ(static_cast<uint32>(TestHelper::kNumTextureUnits),

@@ -9,12 +9,14 @@ using ::base::SharedMemory;
 
 namespace gpu {
 
-bool GPUProcessor::Initialize(gfx::PluginWindowHandle window,
-                              const gfx::Size& size,
-                              const char* allowed_extensions,
-                              const std::vector<int32>& attribs,
-                              GPUProcessor* parent,
-                              uint32 parent_texture_id) {
+bool GPUProcessor::Initialize(
+    gfx::PluginWindowHandle window,
+    const gfx::Size& size,
+    const gles2::DisallowedExtensions& disallowed_extensions,
+    const char* allowed_extensions,
+    const std::vector<int32>& attribs,
+    GPUProcessor* parent,
+    uint32 parent_texture_id) {
   // Get the parent decoder and the GLContext to share IDs with, if any.
   gles2::GLES2Decoder* parent_decoder = NULL;
   gfx::GLContext* parent_context = NULL;
@@ -53,6 +55,7 @@ bool GPUProcessor::Initialize(gfx::PluginWindowHandle window,
 
   return InitializeCommon(context.release(),
                           size,
+                          disallowed_extensions,
                           allowed_extensions,
                           attribs,
                           parent_decoder,

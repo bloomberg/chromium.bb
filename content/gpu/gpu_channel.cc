@@ -31,6 +31,8 @@ GpuChannel::GpuChannel(GpuThread* gpu_thread,
   DCHECK(renderer_id);
   const CommandLine* command_line = CommandLine::ForCurrentProcess();
   log_messages_ = command_line->HasSwitch(switches::kLogPluginMessages);
+  disallowed_extensions_.multisampling =
+      command_line->HasSwitch(switches::kDisableGLMultisampling);
 }
 
 GpuChannel::~GpuChannel() {
@@ -94,7 +96,8 @@ void GpuChannel::CreateViewCommandBuffer(
 #if defined(ENABLE_GPU)
   *route_id = GenerateRouteID();
   scoped_ptr<GpuCommandBufferStub> stub(new GpuCommandBufferStub(
-      this, window, NULL, gfx::Size(), init_params.allowed_extensions,
+      this, window, NULL, gfx::Size(), disallowed_extensions_,
+      init_params.allowed_extensions,
       init_params.attribs, 0, *route_id, renderer_id_, render_view_id));
   router_.AddRoute(*route_id, stub.get());
   stubs_.AddWithID(stub.release(), *route_id);
@@ -173,6 +176,7 @@ void GpuChannel::OnCreateOffscreenCommandBuffer(
       gfx::kNullPluginWindow,
       parent_stub,
       size,
+      disallowed_extensions_,
       init_params.allowed_extensions,
       init_params.attribs,
       parent_texture_id,

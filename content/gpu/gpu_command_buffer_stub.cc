@@ -24,6 +24,7 @@ GpuCommandBufferStub::GpuCommandBufferStub(
     gfx::PluginWindowHandle handle,
     GpuCommandBufferStub* parent,
     const gfx::Size& size,
+    const gpu::gles2::DisallowedExtensions& disallowed_extensions,
     const std::string& allowed_extensions,
     const std::vector<int32>& attribs,
     uint32 parent_texture_id,
@@ -35,6 +36,7 @@ GpuCommandBufferStub::GpuCommandBufferStub(
       parent_(
           parent ? parent->AsWeakPtr() : base::WeakPtr<GpuCommandBufferStub>()),
       initial_size_(size),
+      disallowed_extensions_(disallowed_extensions),
       allowed_extensions_(allowed_extensions),
       requested_attribs_(attribs),
       parent_texture_id_(parent_texture_id),
@@ -236,6 +238,7 @@ void GpuCommandBufferStub::OnInitialize(
     if (processor_->Initialize(
         output_window_handle,
         initial_size_,
+        disallowed_extensions_,
         allowed_extensions_.c_str(),
         requested_attribs_,
         parent_processor,

@@ -11,6 +11,8 @@
 namespace gpu {
 namespace gles2 {
 
+struct DisallowedExtensions;
+
 class TestHelper {
  public:
   static const GLuint kServiceBlackTexture2dId = 701;
@@ -34,7 +36,9 @@ class TestHelper {
   static const GLint kMaxVertexUniformComponents = kMaxVertexUniformVectors * 4;
 
   static void SetupContextGroupInitExpectations(
-      ::gfx::MockGLInterface* gl, const char* extensions);
+      ::gfx::MockGLInterface* gl,
+      const DisallowedExtensions& disallowed_extensions,
+      const char* extensions);
   static void SetupFeatureInfoInitExpectations(
       ::gfx::MockGLInterface* gl, const char* extensions);
   static void SetupTextureManagerInitExpectations(::gfx::MockGLInterface* gl);
