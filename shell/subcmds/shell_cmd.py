@@ -93,6 +93,7 @@ class ShellCmd(subcmd.ChromiteCmd):
 
     # Enter the chroot if needed...
     if not cros_lib.IsInsideChroot():
+      self._oper.Info('ENTERING THE CHROOT')
       utils.EnterChroot(chroot_config, (self, 'Run'), raw_argv)
     else:
       # We'll put CWD as src/scripts when running the command.  Since everyone
@@ -120,5 +121,8 @@ class ShellCmd(subcmd.ChromiteCmd):
           env.update(user_env)
 
       # Don't show anything special for errors; we'll let the shell report them.
+      # TODO(sjg) We don't use RunScript() here since this may become an
+      # interactive shell. Would prefer that this becomes its own command to
+      # avoid this problem.
       cros_lib.RunCommand(argv, cwd=cwd, env=env, error_ok=True,
                           ignore_sigint=True)
