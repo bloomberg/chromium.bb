@@ -32,34 +32,30 @@ namespace safe_browsing {
 // This class is instantiated each time a new toplevel URL loads, and
 // asynchronously checks whether the phishing classifier should run for this
 // URL.  If so, it notifies the renderer with a StartPhishingDetection IPC.
-class ClientSideDetectionHost::ShouldClassifyUrlRequest
-    : public NotificationObserver {
+// Objects of this class must have a shorter lifetime than |tab_contents|,
+// |service|, and |host|. This is currently enforced because |tab_contents|
+// owns |host| which owns this.
+class ClientSideDetectionHost::ShouldClassifyUrlRequest {
  public:
   ShouldClassifyUrlRequest(const ViewHostMsg_FrameNavigate_Params& params,
                            TabContents* tab_contents,
-                           ClientSideDetectionService* service)
+                           ClientSideDetectionService* service,
+                           ClientSideDetectionHost* host)
       : params_(params),
         tab_contents_(tab_contents),
         service_(service),
+        host_(host),
         ALLOW_THIS_IN_INITIALIZER_LIST(method_factory_(this)) {
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
     DCHECK(tab_contents_);
     DCHECK(service_);
-    registrar_.Add(this,
-                   NotificationType::TAB_CONTENTS_DESTROYED,
-                   Source<TabContents>(tab_contents));
+    DCHECK(host_);
   }
 
-  virtual void Observe(NotificationType type,
-                       const NotificationSource& source,
-                       const NotificationDetails& details) {
-    switch (type.value) {
-      case NotificationType::TAB_CONTENTS_DESTROYED:
-        Finish(false);
-        break;
-      default:
-        NOTREACHED();
-    };
+  ~ShouldClassifyUrlRequest() {
+    // TODO(gcasto): Uncomment this once we can delete this object on the UI
+    // thread in testing.
+    // DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   }
 
   void Start() {
@@ -74,10 +70,9 @@ class ClientSideDetectionHost::ShouldClassifyUrlRequest
   }
 
  private:
-  // This object always deletes itself, so make the destructor private.
-  virtual ~ShouldClassifyUrlRequest() {}
-
   void Run() {
+    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
     // Don't run the phishing classifier if the URL came from a private
     // network, since we don't want to ping back in this case.  We also need
     // to check whether the connection was proxied -- if so, we won't have the
@@ -86,7 +81,6 @@ class ClientSideDetectionHost::ShouldClassifyUrlRequest
       VLOG(1) << "Skipping phishing classification for URL: " << params_.url
               << " because it was fetched via a proxy.";
       UMA_HISTOGRAM_COUNTS("SBClientPhishing.NoClassifyProxyFetch", 1);
-      Finish(false);
       return;
     }
     if (service_->IsPrivateIPAddress(params_.socket_address.host())) {
@@ -94,27 +88,45 @@ class ClientSideDetectionHost::ShouldClassifyUrlRequest
               << " because of hosting on private IP: "
               << params_.socket_address.host();
       UMA_HISTOGRAM_COUNTS("SBClientPhishing.NoClassifyPrivateIP", 1);
-      Finish(false);
       return;
     }
 
-    Finish(true);
-  }
-
-  void Finish(bool should_classify) {
-    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-    if (should_classify) {
-      RenderViewHost* rvh = tab_contents_->render_view_host();
-      rvh->Send(new ViewMsg_StartPhishingDetection(
-          rvh->routing_id(), params_.url));
+    // If result is cached, we don't want to run classification again
+    bool is_phishing;
+    if (service_->GetValidCachedResult(params_.url, &is_phishing)) {
+      VLOG(1) << "Satisfying request for " << params_.url << " from cache";
+      UMA_HISTOGRAM_COUNTS("SBClientPhishing.RequestSatisfiedFromCache", 1);
+      // Since we are already on the UI thread, this is safe.
+      host_->MaybeShowPhishingWarning(params_.url, is_phishing);
+      return;
     }
-    delete this;
+
+    // We want to limit the number of requests, though we will ignore the
+    // limit for urls in the cache.  We don't want to start classifying
+    // too many pages as phishing, but for those that we already think are
+    // phishing we want to give ourselves a chance to fix false positives.
+    if (service_->IsInCache(params_.url)) {
+      VLOG(1) << "Reporting limit skipped for " << params_.url
+              << " as it was in the cache.";
+      UMA_HISTOGRAM_COUNTS("SBClientPhishing.ReportLimitSkipped", 1);
+    } else if (service_->OverReportLimit()) {
+      VLOG(1) << "Too many report phishing requests sent recently, "
+              << "not running classification for " << params_.url;
+      UMA_HISTOGRAM_COUNTS("SBClientPhishing.TooManyReports", 1);
+      return;
+    }
+
+    // Everything checks out, so start classification.
+    // |tab_contents_| is safe to call as we will be destructed before it is.
+    RenderViewHost* rvh = tab_contents_->render_view_host();
+    rvh->Send(new ViewMsg_StartPhishingDetection(
+        rvh->routing_id(), params_.url));
   }
 
   ViewHostMsg_FrameNavigate_Params params_;
   TabContents* tab_contents_;
   ClientSideDetectionService* service_;
-  NotificationRegistrar registrar_;
+  ClientSideDetectionHost* host_;
   ScopedRunnableMethodFactory<ShouldClassifyUrlRequest> method_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(ShouldClassifyUrlRequest);
@@ -195,9 +207,9 @@ void ClientSideDetectionHost::DidNavigateMainFramePostCommit(
 
   if (service_) {
     // Notify the renderer if it should classify this URL.
-    ShouldClassifyUrlRequest* request =
-        new ShouldClassifyUrlRequest(params, tab_contents(), service_);
-    request->Start();
+    classification_request_.reset(
+        new ShouldClassifyUrlRequest(params, tab_contents(), service_, this));
+    classification_request_->Start();
   }
 }
 

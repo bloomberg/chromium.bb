@@ -260,31 +260,6 @@ void ClientSideDetectionService::StartClientReportPhishingRequest(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   scoped_ptr<ClientReportPhishingRequestCallback> cb(callback);
 
-  bool is_phishing;
-  if (GetCachedResult(phishing_url, &is_phishing)) {
-    VLOG(1) << "Satisfying request for " << phishing_url << " from cache";
-    UMA_HISTOGRAM_COUNTS("SBClientPhishing.RequestSatisfiedFromCache", 1);
-    cb->Run(phishing_url, is_phishing);
-    return;
-  }
-
-  // We limit the number of distinct pings to kMaxReports, but we don't count
-  // urls already in the cache against this number. We don't want to start
-  // classifying too many pages as phishing, but for those that we already
-  // think are phishing we want to give ourselves a chance to fix false
-  // positives.
-  if (cache_.find(phishing_url) != cache_.end()) {
-    VLOG(1) << "Refreshing cache for " << phishing_url;
-    UMA_HISTOGRAM_COUNTS("SBClientPhishing.CacheRefresh", 1);
-  } else if (GetNumReports() > kMaxReportsPerInterval) {
-    VLOG(1) << "Too many report phishing requests sent in the last "
-            << kReportsInterval.InHours() << " hours, not checking "
-            << phishing_url;
-    UMA_HISTOGRAM_COUNTS("SBClientPhishing.RequestNotSent", 1);
-    cb->Run(phishing_url, false);
-    return;
-  }
-
   ClientPhishingRequest request;
   request.set_url(phishing_url.spec());
   request.set_client_score(static_cast<float>(score));
@@ -372,8 +347,14 @@ void ClientSideDetectionService::HandlePhishingVerdict(
   delete source;
 }
 
-bool ClientSideDetectionService::GetCachedResult(const GURL& url,
-                                                 bool* is_phishing) {
+bool ClientSideDetectionService::IsInCache(const GURL& url) {
+  UpdateCache();
+
+  return cache_.find(url) != cache_.end();
+}
+
+bool ClientSideDetectionService::GetValidCachedResult(const GURL& url,
+                                                      bool* is_phishing) {
   UpdateCache();
 
   PhishingCache::iterator it = cache_.find(url);
@@ -413,6 +394,10 @@ void ClientSideDetectionService::UpdateCache() {
       cache_.erase(it++);
     }
   }
+}
+
+bool ClientSideDetectionService::OverReportLimit() {
+  return GetNumReports() > kMaxReportsPerInterval;
 }
 
 int ClientSideDetectionService::GetNumReports() {

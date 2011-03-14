@@ -100,6 +100,16 @@ class ClientSideDetectionService : public URLFetcher::Delegate {
   // address.
   virtual bool IsPrivateIPAddress(const std::string& ip_address) const;
 
+  // Returns true and sets is_phishing if url is in the cache and valid.
+  virtual bool GetValidCachedResult(const GURL& url, bool* is_phishing);
+
+  // Returns true if the url is in the cache.
+  virtual bool IsInCache(const GURL& url);
+
+  // Returns true if we have sent more than kMaxReportsPerInterval in the last
+  // kReportsInterval.
+  virtual bool OverReportLimit();
+
  protected:
   // Use Create() method to create an instance of this object.
   ClientSideDetectionService(const FilePath& model_path,
@@ -195,9 +205,6 @@ class ClientSideDetectionService : public URLFetcher::Delegate {
                              int response_code,
                              const ResponseCookies& cookies,
                              const std::string& data);
-
-  // Returns true and sets is_phishing if url is in the cache and valid.
-  bool GetCachedResult(const GURL& url, bool* is_phishing);
 
   // Invalidate cache results which are no longer useful.
   void UpdateCache();

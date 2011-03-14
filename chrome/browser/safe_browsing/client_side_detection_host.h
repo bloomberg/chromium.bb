@@ -9,6 +9,7 @@
 #include "base/basictypes.h"
 #include "base/ref_counted.h"
 #include "base/scoped_callback_factory.h"
+#include "base/scoped_ptr.h"
 #include "chrome/browser/safe_browsing/safe_browsing_service.h"
 #include "content/browser/tab_contents/tab_contents_observer.h"
 #include "googleurl/src/gurl.h"
@@ -44,12 +45,13 @@ class ClientSideDetectionHost : public TabContentsObserver {
  private:
   friend class ClientSideDetectionHostTest;
   class ShouldClassifyUrlRequest;
+  friend class ShouldClassifyUrlRequest;
 
   void OnDetectedPhishingSite(const GURL& phishing_url, double phishing_score);
 
   // Callback that is called when the server ping back is
   // done. Display an interstitial if |is_phishing| is true.
-  // Otherwise, we do nothgin.  Called in UI thread.
+  // Otherwise, we do nothing.  Called in UI thread.
   void MaybeShowPhishingWarning(GURL phishing_url, bool is_phishing);
 
   // Used for testing.  This function does not take ownership of the service
@@ -64,6 +66,9 @@ class ClientSideDetectionHost : public TabContentsObserver {
   ClientSideDetectionService* service_;
   // This pointer may be NULL if SafeBrowsing is disabled.
   scoped_refptr<SafeBrowsingService> sb_service_;
+  // Keep a handle to the latest classification request so that we can cancel
+  // it if necessary.
+  scoped_ptr<ShouldClassifyUrlRequest> classification_request_;
 
   base::ScopedCallbackFactory<ClientSideDetectionHost> cb_factory_;
 
