@@ -711,12 +711,9 @@ def UserEditedLog(starting_text):
   fileobj.close()
 
   # Open up the default editor in the system to get the CL description.
-  cmd = [editor, filename]
-  if sys.platform == 'win32' and os.environ.get('TERM') == 'msys':
-    # Msysgit requires the usage of 'env' to be present.
-    cmd.insert(0, 'env')
+  result = None
   try:
-    subprocess.check_call(cmd)
+    subprocess.check_call(['env', editor, filename], shell=True)
     fileobj = open(filename)
     result = fileobj.read()
     fileobj.close()

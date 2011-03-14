@@ -1064,13 +1064,10 @@ def CMDchange(args):
   os.close(handle)
 
   # Open up the default editor in the system to get the CL description.
-  cmd = [GetEditor(), filename]
-  if sys.platform == 'win32' and os.environ.get('TERM') == 'msys':
-    # Msysgit requires the usage of 'env' to be present.
-    cmd.insert(0, 'env')
+  result = None
   try:
     if not silent:
-      subprocess.check_call(cmd)
+      os.system(GetEditor() + " " + filename)
     result = gclient_utils.FileRead(filename, 'r')
   finally:
     os.remove(filename)
