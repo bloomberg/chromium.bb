@@ -77,6 +77,7 @@ void SpeechInputBubbleImpl::Show() {
                 anchoredAt:anchor]);
 
   UpdateLayout();
+  [window_.get() show];
 }
 
 void SpeechInputBubbleImpl::Hide() {
