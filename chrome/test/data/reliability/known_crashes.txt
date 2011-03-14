@@ -193,3 +193,12 @@ PREFIX: webcore::font::operator==___webcore::styleinheriteddata::operator==___we
 
 # 75582
 PREFIX : skclipstack::restore___skcanvas::internalrestore___webkit::webframeimpl::paintwithcontext
+
+# 76029
+PREFIX: webcore::rendertable::cellafter___webcore::rendertablecell::collapsedendborder___webcore::rendertablecell::borderhalfend___webcore::rendertablecell::borderright___webcore::renderbox::clientwidth___webcore::renderbox::contentlogicalwidth___webcore::renderblock::layoutblock
+
+# 76030
+PREFIX: webcore::renderblock::marginbeforeforchild___webcore::renderblock::addoverflowfromfloats___webcore::renderblock::computeoverflow___webcore::renderblock::layoutblock
+
+# 76031
+PREFIX: webcore::renderlineboxlist::deletelineboxes___webcore::renderblock::layoutinlinechildren___webcore::renderblock::layoutblock
