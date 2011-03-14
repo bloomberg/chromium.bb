@@ -159,11 +159,7 @@ PluginPpapi::~PluginPpapi() {
   NaClHandlePassBrowserDtor();
 #endif
 
-  std::set<FileDownloader*>::iterator i;
-  for (i = url_downloaders_.begin(); i != url_downloaders_.end(); ++i) {
-    std::set<FileDownloader*>::iterator current = i;
-    url_downloaders_.erase(current);
-  }
+  url_downloaders_.erase(url_downloaders_.begin(), url_downloaders_.end());
 
   ShutdownProxy();
   ScriptableHandle* scriptable_handle_ = scriptable_handle();
