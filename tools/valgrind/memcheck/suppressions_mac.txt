@@ -1420,6 +1420,7 @@
    fun:-[NSObject(NSKeyValueCoding) setValue:forKeyPath:]
    fun:-[NSInFlightAnimation advanceToTime:]
 }
+{
    bug_75714_b
    Memcheck:Addr4
    ...
