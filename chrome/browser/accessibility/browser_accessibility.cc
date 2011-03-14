@@ -78,6 +78,7 @@ void BrowserAccessibility::DetachTree(
   for (size_t i = 0; i < children_.size(); i++)
     children_[i]->DetachTree(nodes);
   children_.clear();
+  parent_ = NULL;
 }
 
 void BrowserAccessibility::UpdateParent(BrowserAccessibility* parent,

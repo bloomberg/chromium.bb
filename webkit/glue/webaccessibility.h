@@ -198,9 +198,12 @@ struct WebAccessibility {
             WebKit::WebAccessibilityCache* cache,
             bool include_children);
 
-  // Returns true if |ancestor| is an ancestor of |child|.
-  bool IsAncestorOf(const WebKit::WebAccessibilityObject& ancestor,
-                    const WebKit::WebAccessibilityObject& child);
+  // Returns true if |ancestor| is the first unignored parent of |child|,
+  // which means that when walking up the parent chain from |child|,
+  // |ancestor| is the *first* ancestor that isn't marked as
+  // accessibilityIsIgnored().
+  bool IsParentUnignoredOf(const WebKit::WebAccessibilityObject& ancestor,
+                           const WebKit::WebAccessibilityObject& child);
 
  public:
   // This is a simple serializable struct. All member variables should be

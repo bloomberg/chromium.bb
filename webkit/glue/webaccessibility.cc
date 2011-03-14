@@ -395,10 +395,10 @@ void WebAccessibility::Init(const WebKit::WebAccessibilityObject& src,
 
       // Some nodes appear in the tree in more than one place: for example,
       // a cell in a table appears as a child of both a row and a column.
-      // Only recursively add child nodes that have this node as one of its
-      // ancestors. For child nodes that are actually parented to something
-      // else, store only the ID.
-      if (IsAncestorOf(src, child)) {
+      // Only recursively add child nodes that have this node as its
+      // unignored parent. For child nodes that are actually parented to
+      // somethinng else, store only the ID.
+      if (IsParentUnignoredOf(src, child)) {
         children.push_back(WebAccessibility(child, cache, include_children));
       } else {
         indirect_child_ids.push_back(cache->addOrGetId(child));
@@ -407,11 +407,11 @@ void WebAccessibility::Init(const WebKit::WebAccessibilityObject& src,
   }
 }
 
-bool WebAccessibility::IsAncestorOf(
+bool WebAccessibility::IsParentUnignoredOf(
     const WebKit::WebAccessibilityObject& ancestor,
     const WebKit::WebAccessibilityObject& child) {
   WebKit::WebAccessibilityObject parent = child.parentObject();
-  while (!parent.isNull() && !parent.equals(ancestor))
+  while (!parent.isNull() && parent.accessibilityIsIgnored())
     parent = parent.parentObject();
   return parent.equals(ancestor);
 }

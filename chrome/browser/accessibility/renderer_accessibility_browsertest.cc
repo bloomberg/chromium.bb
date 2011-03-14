@@ -44,6 +44,15 @@ class RendererAccessibilityBrowserTest : public InProcessBrowserTest {
     return view_host->accessibility_tree();
   }
 
+  // Make sure each node in the tree has an unique id.
+  void RecursiveAssertUniqueIds(
+      const WebAccessibility& node, base::hash_set<int>* ids) {
+    ASSERT_TRUE(ids->find(node.id) == ids->end());
+    ids->insert(node.id);
+    for (size_t i = 0; i < node.children.size(); i++)
+      RecursiveAssertUniqueIds(node.children[i], ids);
+  }
+
   // InProcessBrowserTest
   void SetUpInProcessBrowserTestFixture();
   void TearDownInProcessBrowserTestFixture();
@@ -235,6 +244,28 @@ IN_PROC_BROWSER_TEST_F(RendererAccessibilityBrowserTest,
   EXPECT_EQ(0U, column2.children.size());
   EXPECT_EQ(1U, column2.indirect_child_ids.size());
   EXPECT_EQ(cell2.id, column2.indirect_child_ids[0]);
+}
+
+IN_PROC_BROWSER_TEST_F(RendererAccessibilityBrowserTest,
+                       CrossPlatformMultipleInheritanceAccessibility2) {
+  // Here's another html snippet where WebKit puts the same node as a child
+  // of two different parents. Instead of checking the exact output, just
+  // make sure that no id is reused in the resulting tree.
+  const char url_str[] =
+      "data:text/html,"
+      "<!doctype html>"
+      "<script>\n"
+      "  document.writeln('<q><section></section></q><q><li>');\n"
+      "  setTimeout(function() {\n"
+      "    document.close();\n"
+      "  }, 1);\n"
+      "</script>";
+  GURL url(url_str);
+  browser()->OpenURL(url, GURL(), CURRENT_TAB, PageTransition::TYPED);
+
+  const WebAccessibility& tree = GetWebAccessibilityTree();
+  base::hash_set<int> ids;
+  RecursiveAssertUniqueIds(tree, &ids);
 }
 
 }  // namespace

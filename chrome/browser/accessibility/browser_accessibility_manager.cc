@@ -325,6 +325,12 @@ BrowserAccessibility* BrowserAccessibilityManager::CreateAccessibilityTree(
     instance = NULL;
 
   if (instance) {
+    // If we're reusing a node, it should already be detached from a parent
+    // and any children. If not, that means we have a serious bug somewhere,
+    // like the same child is reachable from two places in the same tree.
+    DCHECK_EQ(static_cast<BrowserAccessibility*>(NULL), instance->parent());
+    DCHECK_EQ(0U, instance->child_count());
+
     // If we're reusing a node, update its parent and increment its
     // reference count.
     instance->UpdateParent(parent, index_in_parent);
