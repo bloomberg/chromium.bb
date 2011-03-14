@@ -61,7 +61,7 @@ def _ExtractFailingTests(build):
         prefix = text.find(_TEST_PREFIX)
         suffix = text.find(_TEST_SUFFIX)
         if prefix != -1 and suffix != -1:
-          return text[prefix + len(_TEST_PREFIX): suffix].split(",")
+          return sorted(text[prefix + len(_TEST_PREFIX): suffix].split(","))
 
 
 def _RetrieveBuildResult(builder, max_builds):
