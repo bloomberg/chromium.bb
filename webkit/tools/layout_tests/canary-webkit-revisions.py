@@ -141,8 +141,9 @@ def _PrintFailingRevisions(results):
   print "**** Failing revisions *****"
   for result in results:
     if result.last_run_revision and result.failing_tests:
-      print ('The last run was at r%d on "%s" and the following tests failed' %
-             (result.last_run_revision, result.builder))
+      print ('The last run was at r%d on "%s" and the following %d tests'
+             ' failed' % (result.last_run_revision, result.builder,
+                          len(result.failing_tests)))
       for test in result.failing_tests:
         print "  " + test
 
