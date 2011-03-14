@@ -33,6 +33,7 @@
 #include <unistd.h>
 #include <signal.h>
 #include <stdint.h>
+#include <sys/mman.h>
 #include <sys/poll.h>
 #include <sys/types.h>
 
@@ -47,6 +48,24 @@ using namespace google_breakpad;
 
 namespace {
 typedef testing::Test LinuxDumperTest;
+
+string GetHelperBinary() {
+  // Locate helper binary next to the current binary.
+  char self_path[PATH_MAX];
+  if (readlink("/proc/self/exe", self_path, sizeof(self_path) - 1) == -1) {
+    return "";
+  }
+  string helper_path(self_path);
+  size_t pos = helper_path.rfind('/');
+  if (pos == string::npos) {
+    return "";
+  }
+  helper_path.erase(pos + 1);
+  helper_path += "linux_dumper_unittest_helper";
+
+  return helper_path;
+}
+
 }
 
 TEST(LinuxDumperTest, Setup) {
@@ -76,6 +95,79 @@ TEST(LinuxDumperTest, ThreadList) {
   }
 }
 
+// Helper stack class to close a file descriptor and unmap
+// a mmap'ed mapping.
+class StackHelper {
+public:
+  StackHelper(int fd, char* mapping, size_t size)
+    : fd_(fd), mapping_(mapping), size_(size) {}
+  ~StackHelper() {
+    munmap(mapping_, size_);
+    close(fd_);
+  }
+
+private:
+  int fd_;
+  char* mapping_;
+  size_t size_;
+};
+
+TEST(LinuxDumperTest, MergedMappings) {
+  string helper_path(GetHelperBinary());
+  if (helper_path.empty()) {
+    FAIL() << "Couldn't find helper binary";
+    exit(1);
+  }
+
+  // mmap two segments out of the helper binary, one
+  // enclosed in the other, but with different protections.
+  const size_t kPageSize = sysconf(_SC_PAGESIZE);
+  const size_t kMappingSize = 3 * kPageSize;
+  int fd = open(helper_path.c_str(), O_RDONLY);
+  ASSERT_NE(-1, fd);
+  char* mapping =
+    reinterpret_cast<char*>(mmap(NULL,
+                                 kMappingSize,
+                                 PROT_READ,
+                                 MAP_SHARED,
+                                 fd,
+                                 0));
+  ASSERT_TRUE(mapping);
+
+  const u_int64_t kMappingAddress = reinterpret_cast<u_int64_t>(mapping);
+
+  // Ensure that things get cleaned up.
+  StackHelper helper(fd, mapping, kMappingSize);
+
+  // Carve a page out of the first mapping with different permissions.
+  char* inside_mapping =  reinterpret_cast<char*>(mmap(mapping + 2 *kPageSize,
+                                 kPageSize,
+                                 PROT_NONE,
+                                 MAP_SHARED | MAP_FIXED,
+                                 fd,
+                                 // Map a different offset just to
+                                 // better test real-world conditions.
+                                 kPageSize));
+  ASSERT_TRUE(inside_mapping);
+
+  // Now check that LinuxDumper interpreted the mappings properly.
+  LinuxDumper dumper(getpid());
+  ASSERT_TRUE(dumper.Init());
+  int mapping_count = 0;
+  for (unsigned i = 0; i < dumper.mappings().size(); ++i) {
+    const MappingInfo& mapping = *dumper.mappings()[i];
+    if (strcmp(mapping.name, helper_path.c_str()) == 0) {
+      // This mapping should encompass the entire original mapped
+      // range.
+      EXPECT_EQ(kMappingAddress, mapping.start_addr);
+      EXPECT_EQ(kMappingSize, mapping.size);
+      EXPECT_EQ(0, mapping.offset);
+      mapping_count++;
+    }
+  }
+  EXPECT_EQ(1, mapping_count);
+}
+
 TEST(LinuxDumperTest, VerifyStackReadWithMultipleThreads) {
   static const int kNumberOfThreadsInHelperProgram = 5;
   char kNumberOfThreadsArgument[2];
@@ -89,20 +181,11 @@ TEST(LinuxDumperTest, VerifyStackReadWithMultipleThreads) {
     // In child process.
     close(fds[0]);
 
-    // Locate helper binary next to the current binary.
-    char self_path[PATH_MAX];
-    if (readlink("/proc/self/exe", self_path, sizeof(self_path) - 1) == -1) {
-      FAIL() << "readlink failed: " << strerror(errno);
+    string helper_path(GetHelperBinary());
+    if (helper_path.empty()) {
+      FAIL() << "Couldn't find helper binary";
       exit(1);
     }
-    string helper_path(self_path);
-    size_t pos = helper_path.rfind('/');
-    if (pos == string::npos) {
-      FAIL() << "no trailing slash in path: " << helper_path;
-      exit(1);
-    }
-    helper_path.erase(pos + 1);
-    helper_path += "linux_dumper_unittest_helper";
 
     // Pass the pipe fd and the number of threads as arguments.
     char pipe_fd_string[8];
