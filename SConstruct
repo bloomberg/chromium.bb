@@ -2258,9 +2258,6 @@ if nacl_extra_sdk_env.Bit('disable_nosys_linker_warnings'):
                   'stub_warning(n)=struct xyzzy',
                   'link_warning(n,m)=struct xyzzy',
                   ])
-# TODO(robertm): figure out why the extra sdk does not like bc files
-if nacl_extra_sdk_env.Bit('bitcode'):
-  nacl_extra_sdk_env.Replace(OBJSUFFIX=".o")
 # TODO(robertm): remove this work-around for an llvm debug info bug
 # http://code.google.com/p/nativeclient/issues/detail?id=235
 if nacl_extra_sdk_env.Bit('target_arm'):
