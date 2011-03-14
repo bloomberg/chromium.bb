@@ -63,6 +63,13 @@
 #define MAYBE_ScrollButtonScrolls ScrollButtonScrolls
 #endif
 
+#if defined(OS_CHROMEOS)
+// See bug http://crbug.com/76023 for details.
+#define MAYBE_MenuStaysVisibleAfterDelete DISABLED_MenuStaysVisibleAfterDelete
+#else
+#define MAYBE_MenuStaysVisibleAfterDelete MenuStaysVisibleAfterDelete
+#endif
+
 namespace {
 
 class ViewsDelegateImpl : public views::ViewsDelegate {
@@ -1334,7 +1341,7 @@ class BookmarkBarViewTest15 : public BookmarkBarViewEventTestBase {
   ContextMenuNotificationObserver observer_;
 };
 
-VIEW_TEST(BookmarkBarViewTest15, MenuStaysVisibleAfterDelete)
+VIEW_TEST(BookmarkBarViewTest15, MAYBE_MenuStaysVisibleAfterDelete)
 
 // Tests that we don't crash or get stuck if the parent of a menu is closed.
 class BookmarkBarViewTest16 : public BookmarkBarViewEventTestBase {
