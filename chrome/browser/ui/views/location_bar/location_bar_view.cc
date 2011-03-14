@@ -969,14 +969,15 @@ std::string LocationBarView::GetClassName() const {
   return kViewClassName;
 }
 
-bool LocationBarView::SkipDefaultKeyEventProcessing(const views::KeyEvent& e) {
+bool LocationBarView::SkipDefaultKeyEventProcessing(
+    const views::KeyEvent& event) {
 #if defined(OS_WIN)
-  if (views::FocusManager::IsTabTraversalKeyEvent(e)) {
+  if (views::FocusManager::IsTabTraversalKeyEvent(event)) {
     if (HasValidSuggestText()) {
       // Return true so that the edit sees the tab and commits the suggestion.
       return true;
     }
-    if (keyword_hint_view_->IsVisible() && !e.IsShiftDown()) {
+    if (keyword_hint_view_->IsVisible() && !event.IsShiftDown()) {
       // Return true so the edit gets the tab event and enters keyword mode.
       return true;
     }
@@ -992,7 +993,7 @@ bool LocationBarView::SkipDefaultKeyEventProcessing(const views::KeyEvent& e) {
       return true;
   }
 
-  return location_entry_->SkipDefaultKeyEventProcessing(e);
+  return location_entry_->SkipDefaultKeyEventProcessing(event);
 #else
   // This method is not used for Linux ports. See FocusManager::OnKeyEvent() in
   // src/views/focus/focus_manager.cc for details.

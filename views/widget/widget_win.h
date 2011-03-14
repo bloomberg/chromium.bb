@@ -400,7 +400,7 @@ class WidgetWin : public ui::WindowImpl,
   bool ProcessMousePressed(UINT message, WPARAM w_param, LPARAM l_param);
   bool ProcessMouseReleased(UINT message, WPARAM w_param, LPARAM l_param);
   bool ProcessMouseMoved(UINT message, WPARAM w_param, LPARAM l_param);
-  void ProcessMouseExited();
+  void ProcessMouseExited(UINT message, WPARAM w_param, LPARAM l_param);
 
   // Called when a MSAA screen reader client is detected.
   virtual void OnScreenReaderDetected();

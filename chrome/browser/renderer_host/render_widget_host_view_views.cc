@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -130,14 +130,14 @@ void UpdateTouchPointPosition(const views::TouchEvent* event,
   tpoint->screenPosition.y = tpoint->position.y + origin.y();
 }
 
-void InitializeWebMouseEventFromViewsEvent(const views::LocatedEvent& e,
+void InitializeWebMouseEventFromViewsEvent(const views::LocatedEvent& event,
                                            const gfx::Point& origin,
                                            WebKit::WebMouseEvent* wmevent) {
   wmevent->timeStampSeconds = base::Time::Now().ToDoubleT();
-  wmevent->modifiers = WebInputEventFlagsFromViewsEvent(e);
+  wmevent->modifiers = WebInputEventFlagsFromViewsEvent(event);
 
-  wmevent->windowX = wmevent->x = e.x();
-  wmevent->windowY = wmevent->y = e.y();
+  wmevent->windowX = wmevent->x = event.x();
+  wmevent->windowY = wmevent->y = event.y();
   wmevent->globalX = wmevent->x + origin.x();
   wmevent->globalY = wmevent->y + origin.y();
 }
@@ -681,30 +681,31 @@ void RenderWidgetHostViewViews::OnMouseExited(const views::MouseEvent& event) {
   // Already generated synthetically by webkit.
 }
 
-bool RenderWidgetHostViewViews::OnMouseWheel(const views::MouseWheelEvent& e) {
+bool RenderWidgetHostViewViews::OnMouseWheel(
+    const views::MouseWheelEvent& event) {
   WebMouseWheelEvent wmwe;
-  InitializeWebMouseEventFromViewsEvent(e, GetMirroredPosition(), &wmwe);
+  InitializeWebMouseEventFromViewsEvent(event, GetMirroredPosition(), &wmwe);
 
   wmwe.type = WebKit::WebInputEvent::MouseWheel;
   wmwe.button = WebKit::WebMouseEvent::ButtonNone;
 
   // TODO(sadrul): How do we determine if it's a horizontal scroll?
-  wmwe.deltaY = e.offset();
+  wmwe.deltaY = event.offset();
   wmwe.wheelTicksY = wmwe.deltaY > 0 ? 1 : -1;
 
   GetRenderWidgetHost()->ForwardWheelEvent(wmwe);
   return true;
 }
 
-bool RenderWidgetHostViewViews::OnKeyPressed(const views::KeyEvent& e) {
-  if (!ime_context_->FilterKeyEvent(e))
-    ForwardKeyEvent(e);
+bool RenderWidgetHostViewViews::OnKeyPressed(const views::KeyEvent& event) {
+  if (!ime_context_->FilterKeyEvent(event))
+    ForwardKeyEvent(event);
   return TRUE;
 }
 
-bool RenderWidgetHostViewViews::OnKeyReleased(const views::KeyEvent& e) {
-  if (!ime_context_->FilterKeyEvent(e))
-    ForwardKeyEvent(e);
+bool RenderWidgetHostViewViews::OnKeyReleased(const views::KeyEvent& event) {
+  if (!ime_context_->FilterKeyEvent(event))
+    ForwardKeyEvent(event);
   return TRUE;
 }
 
@@ -861,18 +862,18 @@ void RenderWidgetHostViewViews::ForwardWebKeyboardEvent(
 }
 
 views::View::TouchStatus RenderWidgetHostViewViews::OnTouchEvent(
-    const views::TouchEvent& e) {
+    const views::TouchEvent& event) {
   // Update the list of touch points first.
   WebKit::WebTouchPoint* point = NULL;
   TouchStatus status = TOUCH_STATUS_UNKNOWN;
 
-  switch (e.type()) {
+  switch (event.type()) {
     case ui::ET_TOUCH_PRESSED:
       // Add a new touch point.
       if (touch_event_.touchPointsLength <
           WebTouchEvent::touchPointsLengthCap) {
         point = &touch_event_.touchPoints[touch_event_.touchPointsLength++];
-        point->id = e.identity();
+        point->id = event.identity();
 
         if (touch_event_.touchPointsLength == 1) {
           // A new touch sequence has started.
@@ -892,7 +893,7 @@ views::View::TouchStatus RenderWidgetHostViewViews::OnTouchEvent(
       // simple loop should be sufficient.
       for (int i = 0; i < touch_event_.touchPointsLength; ++i) {
         point = touch_event_.touchPoints + i;
-        if (point->id == e.identity()) {
+        if (point->id == event.identity()) {
           break;
         }
         point = NULL;
@@ -900,7 +901,7 @@ views::View::TouchStatus RenderWidgetHostViewViews::OnTouchEvent(
       break;
     }
     default:
-      DLOG(WARNING) << "Unknown touch event " << e.type();
+      DLOG(WARNING) << "Unknown touch event " << event.type();
       break;
   }
 
@@ -911,16 +912,16 @@ views::View::TouchStatus RenderWidgetHostViewViews::OnTouchEvent(
     status = TOUCH_STATUS_CONTINUE;
 
   // Update the location and state of the point.
-  point->state = TouchPointStateFromEvent(&e);
+  point->state = TouchPointStateFromEvent(&event);
   if (point->state == WebKit::WebTouchPoint::StateMoved) {
     // It is possible for badly written touch drivers to emit Move events even
     // when the touch location hasn't changed. In such cases, consume the event
     // and pretend nothing happened.
-    if (point->position.x == e.x() && point->position.y == e.y()) {
+    if (point->position.x == event.x() && point->position.y == event.y()) {
       return status;
     }
   }
-  UpdateTouchPointPosition(&e, GetMirroredPosition(), point);
+  UpdateTouchPointPosition(&event, GetMirroredPosition(), point);
 
   // Mark the rest of the points as stationary.
   for (int i = 0; i < touch_event_.touchPointsLength; ++i) {
@@ -931,14 +932,14 @@ views::View::TouchStatus RenderWidgetHostViewViews::OnTouchEvent(
   }
 
   // Update the type of the touch event.
-  touch_event_.type = TouchEventTypeFromEvent(&e);
+  touch_event_.type = TouchEventTypeFromEvent(&event);
   touch_event_.timeStampSeconds = base::Time::Now().ToDoubleT();
 
   // The event and all the touches have been updated. Dispatch.
   host_->ForwardTouchEvent(touch_event_);
 
   // If the touch was released, then remove it from the list of touch points.
-  if (e.type() == ui::ET_TOUCH_RELEASED) {
+  if (event.type() == ui::ET_TOUCH_RELEASED) {
     --touch_event_.touchPointsLength;
     for (int i = point - touch_event_.touchPoints;
          i < touch_event_.touchPointsLength;
@@ -947,7 +948,7 @@ views::View::TouchStatus RenderWidgetHostViewViews::OnTouchEvent(
     }
     if (touch_event_.touchPointsLength == 0)
       status = TOUCH_STATUS_END;
-  } else if (e.type() == ui::ET_TOUCH_CANCELLED) {
+  } else if (event.type() == ui::ET_TOUCH_CANCELLED) {
     status = TOUCH_STATUS_CANCEL;
   }
 

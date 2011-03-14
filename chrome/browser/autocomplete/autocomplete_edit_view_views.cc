@@ -53,13 +53,14 @@ class AutocompleteTextfield : public views::Textfield {
     autocomplete_edit_view_->HandleFocusOut();
   }
 
-  virtual bool OnKeyPressed(const views::KeyEvent& e) OVERRIDE {
-    bool handled = views::Textfield::OnKeyPressed(e);
-    return autocomplete_edit_view_->HandleAfterKeyEvent(e, handled) || handled;
+  virtual bool OnKeyPressed(const views::KeyEvent& event) OVERRIDE {
+    bool handled = views::Textfield::OnKeyPressed(event);
+    return autocomplete_edit_view_->HandleAfterKeyEvent(event, handled) ||
+        handled;
   }
 
-  virtual bool OnKeyReleased(const views::KeyEvent& e) OVERRIDE {
-    return autocomplete_edit_view_->HandleKeyReleaseEvent(e);
+  virtual bool OnKeyReleased(const views::KeyEvent& event) OVERRIDE {
+    return autocomplete_edit_view_->HandleKeyReleaseEvent(event);
   }
 
   virtual bool IsFocusable() const OVERRIDE {

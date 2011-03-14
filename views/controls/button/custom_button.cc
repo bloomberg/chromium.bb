@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -125,8 +125,8 @@ CustomButton::CustomButton(ButtonListener* listener)
   hover_animation_->SetSlideDuration(kHoverFadeDurationMs);
 }
 
-bool CustomButton::IsTriggerableEvent(const MouseEvent& e) {
-  return (triggerable_event_flags_ & e.flags()) != 0;
+bool CustomButton::IsTriggerableEvent(const MouseEvent& event) {
+  return (triggerable_event_flags_ & event.flags()) != 0;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -143,9 +143,9 @@ bool CustomButton::AcceleratorPressed(const Accelerator& accelerator) {
   return true;
 }
 
-bool CustomButton::OnMousePressed(const MouseEvent& e) {
+bool CustomButton::OnMousePressed(const MouseEvent& event) {
   if (state_ != BS_DISABLED) {
-    if (ShouldEnterPushedState(e) && HitTest(e.location()))
+    if (ShouldEnterPushedState(event) && HitTest(event.location()))
       SetState(BS_PUSHED);
     if (request_focus_on_press_)
       RequestFocus();
@@ -153,74 +153,74 @@ bool CustomButton::OnMousePressed(const MouseEvent& e) {
   return true;
 }
 
-bool CustomButton::OnMouseDragged(const MouseEvent& e) {
+bool CustomButton::OnMouseDragged(const MouseEvent& event) {
   if (state_ != BS_DISABLED) {
-    if (HitTest(e.location()))
-      SetState(ShouldEnterPushedState(e) ? BS_PUSHED : BS_HOT);
+    if (HitTest(event.location()))
+      SetState(ShouldEnterPushedState(event) ? BS_PUSHED : BS_HOT);
     else
       SetState(BS_NORMAL);
   }
   return true;
 }
 
-void CustomButton::OnMouseReleased(const MouseEvent& e, bool canceled) {
+void CustomButton::OnMouseReleased(const MouseEvent& event, bool canceled) {
   // Starting a drag results in a MouseReleased, we need to ignore it.
   if ((state_ == BS_DISABLED) || InDrag())
     return;
 
-  if (!HitTest(e.location())) {
+  if (!HitTest(event.location())) {
     SetState(BS_NORMAL);
     return;
   }
 
   SetState(BS_HOT);
-  if (!canceled && IsTriggerableEvent(e)) {
-    NotifyClick(e);
+  if (!canceled && IsTriggerableEvent(event)) {
+    NotifyClick(event);
     // NOTE: We may be deleted at this point (by the listener's notification
     // handler).
   }
 }
 
-void CustomButton::OnMouseEntered(const MouseEvent& e) {
+void CustomButton::OnMouseEntered(const MouseEvent& event) {
   if (state_ != BS_DISABLED)
     SetState(BS_HOT);
 }
 
-void CustomButton::OnMouseMoved(const MouseEvent& e) {
+void CustomButton::OnMouseMoved(const MouseEvent& event) {
   if (state_ != BS_DISABLED)
-    SetState(HitTest(e.location()) ? BS_HOT : BS_NORMAL);
+    SetState(HitTest(event.location()) ? BS_HOT : BS_NORMAL);
 }
 
-void CustomButton::OnMouseExited(const MouseEvent& e) {
+void CustomButton::OnMouseExited(const MouseEvent& event) {
   // Starting a drag results in a MouseExited, we need to ignore it.
   if (state_ != BS_DISABLED && !InDrag())
     SetState(BS_NORMAL);
 }
 
-bool CustomButton::OnKeyPressed(const KeyEvent& e) {
+bool CustomButton::OnKeyPressed(const KeyEvent& event) {
   if (state_ == BS_DISABLED)
     return false;
 
   // Space sets button state to pushed. Enter clicks the button. This matches
   // the Windows native behavior of buttons, where Space clicks the button on
   // KeyRelease and Enter clicks the button on KeyPressed.
-  if (e.key_code() == ui::VKEY_SPACE) {
+  if (event.key_code() == ui::VKEY_SPACE) {
     SetState(BS_PUSHED);
-  } else if (e.key_code() == ui::VKEY_RETURN) {
+  } else if (event.key_code() == ui::VKEY_RETURN) {
     SetState(BS_NORMAL);
-    NotifyClick(e);
+    NotifyClick(event);
   } else {
     return false;
   }
   return true;
 }
 
-bool CustomButton::OnKeyReleased(const KeyEvent& e) {
-  if ((state_ == BS_DISABLED) || (e.key_code() != ui::VKEY_SPACE))
+bool CustomButton::OnKeyReleased(const KeyEvent& event) {
+  if ((state_ == BS_DISABLED) || (event.key_code() != ui::VKEY_SPACE))
     return false;
 
   SetState(BS_NORMAL);
-  NotifyClick(e);
+  NotifyClick(event);
   return true;
 }
 
@@ -271,8 +271,8 @@ void CustomButton::AnimationProgressed(const ui::Animation* animation) {
   SchedulePaint();
 }
 
-bool CustomButton::ShouldEnterPushedState(const MouseEvent& e) {
-  return IsTriggerableEvent(e);
+bool CustomButton::ShouldEnterPushedState(const MouseEvent& event) {
+  return IsTriggerableEvent(event);
 }
 
 }  // namespace views

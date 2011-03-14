@@ -350,8 +350,8 @@ bool Tab::GetTooltipTextOrigin(const gfx::Point& p, gfx::Point* origin) {
   return true;
 }
 
-void Tab::OnMouseMoved(const views::MouseEvent& e) {
-  hover_point_ = e.location();
+void Tab::OnMouseMoved(const views::MouseEvent& event) {
+  hover_point_ = event.location();
   // We need to redraw here because otherwise the hover glow does not update
   // and follow the new mouse position.
   SchedulePaint();

@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -87,18 +87,18 @@ class CustomButton : public Button,
 
   // Returns true if the event is one that can trigger notifying the listener.
   // This implementation returns true if the left mouse button is down.
-  virtual bool IsTriggerableEvent(const MouseEvent& e);
+  virtual bool IsTriggerableEvent(const MouseEvent& event);
 
   // Overridden from View:
   virtual bool AcceleratorPressed(const Accelerator& accelerator) OVERRIDE;
-  virtual bool OnMousePressed(const MouseEvent& e) OVERRIDE;
-  virtual bool OnMouseDragged(const MouseEvent& e) OVERRIDE;
-  virtual void OnMouseReleased(const MouseEvent& e, bool canceled) OVERRIDE;
-  virtual void OnMouseEntered(const MouseEvent& e) OVERRIDE;
-  virtual void OnMouseMoved(const MouseEvent& e) OVERRIDE;
-  virtual void OnMouseExited(const MouseEvent& e) OVERRIDE;
-  virtual bool OnKeyPressed(const KeyEvent& e) OVERRIDE;
-  virtual bool OnKeyReleased(const KeyEvent& e) OVERRIDE;
+  virtual bool OnMousePressed(const MouseEvent& event) OVERRIDE;
+  virtual bool OnMouseDragged(const MouseEvent& event) OVERRIDE;
+  virtual void OnMouseReleased(const MouseEvent& event, bool canceled) OVERRIDE;
+  virtual void OnMouseEntered(const MouseEvent& event) OVERRIDE;
+  virtual void OnMouseMoved(const MouseEvent& event) OVERRIDE;
+  virtual void OnMouseExited(const MouseEvent& event) OVERRIDE;
+  virtual bool OnKeyPressed(const KeyEvent& event) OVERRIDE;
+  virtual bool OnKeyReleased(const KeyEvent& event) OVERRIDE;
   virtual void OnDragDone() OVERRIDE;
   virtual void ShowContextMenu(const gfx::Point& p,
                                bool is_mouse_gesture) OVERRIDE;
@@ -114,8 +114,8 @@ class CustomButton : public Button,
 
   // Returns true if the button should become pressed when the user
   // holds the mouse down over the button. For this implementation,
-  // we simply return IsTriggerableEvent(e).
-  virtual bool ShouldEnterPushedState(const MouseEvent& e);
+  // we simply return IsTriggerableEvent(event).
+  virtual bool ShouldEnterPushedState(const MouseEvent& event);
 
   // The button state (defined in implementation)
   ButtonState state_;

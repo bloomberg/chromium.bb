@@ -613,50 +613,6 @@ gfx::Rect View::ConvertRectToParent(const gfx::Rect& rect) const {
   return x_rect;
 }
 
-bool View::ConvertPointForAncestor(const View* ancestor,
-                                   gfx::Point* point) const {
-  scoped_ptr<ui::Transform> trans(ui::Transform::Create());
-
-  // TODO(sad): Have some way of caching the transformation results.
-
-  const View* v = this;
-  for (; v && v != ancestor; v = v->parent()) {
-    if (v->GetTransform().HasChange()) {
-      if (!trans->ConcatTransform(v->GetTransform()))
-        return false;
-    }
-    trans->ConcatTranslate(static_cast<float>(v->GetMirroredX()),
-                           static_cast<float>(v->y()));
-  }
-
-  if (trans->HasChange()) {
-    trans->TransformPoint(point);
-  }
-
-  return v == ancestor;
-}
-
-bool View::ConvertPointFromAncestor(const View* ancestor,
-                                    gfx::Point* point) const {
-  scoped_ptr<ui::Transform> trans(ui::Transform::Create());
-
-  const View* v = this;
-  for (; v && v != ancestor; v = v->parent()) {
-    if (v->GetTransform().HasChange()) {
-      if (!trans->ConcatTransform(v->GetTransform()))
-        return false;
-    }
-    trans->ConcatTranslate(static_cast<float>(v->GetMirroredX()),
-                           static_cast<float>(v->y()));
-  }
-
-  if (trans->HasChange()) {
-    trans->TransformPointReverse(point);
-  }
-
-  return v == ancestor;
-}
-
 // Painting --------------------------------------------------------------------
 
 void View::SchedulePaint() {
@@ -781,24 +737,24 @@ bool View::HitTest(const gfx::Point& l) const {
   return false;
 }
 
-bool View::OnMousePressed(const MouseEvent& e) {
+bool View::OnMousePressed(const MouseEvent& event) {
   return false;
 }
 
-bool View::OnMouseDragged(const MouseEvent& e) {
+bool View::OnMouseDragged(const MouseEvent& event) {
   return false;
 }
 
-void View::OnMouseReleased(const MouseEvent& e, bool canceled) {
+void View::OnMouseReleased(const MouseEvent& event, bool canceled) {
 }
 
-void View::OnMouseMoved(const MouseEvent& e) {
+void View::OnMouseMoved(const MouseEvent& event) {
 }
 
-void View::OnMouseEntered(const MouseEvent& e) {
+void View::OnMouseEntered(const MouseEvent& event) {
 }
 
-void View::OnMouseExited(const MouseEvent& e) {
+void View::OnMouseExited(const MouseEvent& event) {
 }
 
 #if defined(TOUCH_UI)
@@ -814,15 +770,15 @@ void View::SetMouseHandler(View *new_mouse_handler) {
     parent_->SetMouseHandler(new_mouse_handler);
 }
 
-bool View::OnKeyPressed(const KeyEvent& e) {
+bool View::OnKeyPressed(const KeyEvent& event) {
   return false;
 }
 
-bool View::OnKeyReleased(const KeyEvent& e) {
+bool View::OnKeyReleased(const KeyEvent& event) {
   return false;
 }
 
-bool View::OnMouseWheel(const MouseWheelEvent& e) {
+bool View::OnMouseWheel(const MouseWheelEvent& event) {
   return false;
 }
 
@@ -927,7 +883,7 @@ void View::RequestFocus() {
     focus_manager->SetFocusedView(this);
 }
 
-bool View::SkipDefaultKeyEventProcessing(const KeyEvent& e) {
+bool View::SkipDefaultKeyEventProcessing(const KeyEvent& event) {
   return false;
 }
 
@@ -1437,42 +1393,87 @@ void View::ConvertPointToView(const View* src,
   }
 }
 
+bool View::ConvertPointForAncestor(const View* ancestor,
+                                   gfx::Point* point) const {
+  scoped_ptr<ui::Transform> trans(ui::Transform::Create());
+
+  // TODO(sad): Have some way of caching the transformation results.
+
+  const View* v = this;
+  for (; v && v != ancestor; v = v->parent()) {
+    if (v->GetTransform().HasChange()) {
+      if (!trans->ConcatTransform(v->GetTransform()))
+        return false;
+    }
+    trans->ConcatTranslate(static_cast<float>(v->GetMirroredX()),
+                           static_cast<float>(v->y()));
+  }
+
+  if (trans->HasChange()) {
+    trans->TransformPoint(point);
+  }
+
+  return v == ancestor;
+}
+
+bool View::ConvertPointFromAncestor(const View* ancestor,
+                                    gfx::Point* point) const {
+  scoped_ptr<ui::Transform> trans(ui::Transform::Create());
+
+  const View* v = this;
+  for (; v && v != ancestor; v = v->parent()) {
+    if (v->GetTransform().HasChange()) {
+      if (!trans->ConcatTransform(v->GetTransform()))
+        return false;
+    }
+    trans->ConcatTranslate(static_cast<float>(v->GetMirroredX()),
+                           static_cast<float>(v->y()));
+  }
+
+  if (trans->HasChange()) {
+    trans->TransformPointReverse(point);
+  }
+
+  return v == ancestor;
+}
+
 // Input -----------------------------------------------------------------------
 
-bool View::ProcessMousePressed(const MouseEvent& e, DragInfo* drag_info) {
+bool View::ProcessMousePressed(const MouseEvent& event, DragInfo* drag_info) {
   const bool enabled = IsEnabled();
   int drag_operations =
-      (enabled && e.IsOnlyLeftMouseButton() && HitTest(e.location())) ?
-      GetDragOperations(e.location()) : 0;
-  ContextMenuController* context_menu_controller = e.IsRightMouseButton() ?
+      (enabled && event.IsOnlyLeftMouseButton() && HitTest(event.location())) ?
+      GetDragOperations(event.location()) : 0;
+  ContextMenuController* context_menu_controller = event.IsRightMouseButton() ?
       context_menu_controller_ : 0;
 
-  const bool result = OnMousePressed(e);
+  const bool result = OnMousePressed(event);
   // WARNING: we may have been deleted, don't use any View variables.
 
   if (!enabled)
     return result;
 
   if (drag_operations != ui::DragDropTypes::DRAG_NONE) {
-    drag_info->PossibleDrag(e.location());
+    drag_info->PossibleDrag(event.location());
     return true;
   }
   return !!context_menu_controller || result;
 }
 
-bool View::ProcessMouseDragged(const MouseEvent& e, DragInfo* drag_info) {
+bool View::ProcessMouseDragged(const MouseEvent& event, DragInfo* drag_info) {
   // Copy the field, that way if we're deleted after drag and drop no harm is
   // done.
   ContextMenuController* context_menu_controller = context_menu_controller_;
   const bool possible_drag = drag_info->possible_drag;
-  if (possible_drag && ExceededDragThreshold(drag_info->start_pt.x() - e.x(),
-                                             drag_info->start_pt.y() - e.y())) {
+  if (possible_drag && ExceededDragThreshold(
+      drag_info->start_pt.x() - event.x(),
+      drag_info->start_pt.y() - event.y())) {
     if (!drag_controller_ ||
         drag_controller_->CanStartDragForView(
-            this, drag_info->start_pt, e.location()))
-      DoDrag(e, drag_info->start_pt);
+            this, drag_info->start_pt, event.location()))
+      DoDrag(event, drag_info->start_pt);
   } else {
-    if (OnMouseDragged(e))
+    if (OnMouseDragged(event))
       return true;
     // Fall through to return value based on context menu controller.
   }
@@ -1480,27 +1481,27 @@ bool View::ProcessMouseDragged(const MouseEvent& e, DragInfo* drag_info) {
   return (context_menu_controller != NULL) || possible_drag;
 }
 
-void View::ProcessMouseReleased(const MouseEvent& e, bool canceled) {
-  if (!canceled && context_menu_controller_ && e.IsOnlyRightMouseButton()) {
+void View::ProcessMouseReleased(const MouseEvent& event, bool canceled) {
+  if (!canceled && context_menu_controller_ && event.IsOnlyRightMouseButton()) {
     // Assume that if there is a context menu controller we won't be deleted
     // from mouse released.
-    gfx::Point location(e.location());
-    OnMouseReleased(e, canceled);
+    gfx::Point location(event.location());
+    OnMouseReleased(event, canceled);
     if (HitTest(location)) {
       ConvertPointToScreen(this, &location);
       ShowContextMenu(location, true);
     }
   } else {
-    OnMouseReleased(e, canceled);
+    OnMouseReleased(event, canceled);
   }
   // WARNING: we may have been deleted.
 }
 
 #if defined(TOUCH_UI)
-View::TouchStatus View::ProcessTouchEvent(const TouchEvent& e) {
+View::TouchStatus View::ProcessTouchEvent(const TouchEvent& event) {
   // TODO(rjkroege): Implement a grab scheme similar to as
   // as is found in MousePressed.
-  return OnTouchEvent(e);
+  return OnTouchEvent(event);
 }
 #endif
 
@@ -1635,7 +1636,7 @@ void View::UpdateTooltip() {
 
 // Drag and drop ---------------------------------------------------------------
 
-void View::DoDrag(const MouseEvent& e, const gfx::Point& press_pt) {
+void View::DoDrag(const MouseEvent& event, const gfx::Point& press_pt) {
   int drag_operations = GetDragOperations(press_pt);
   if (drag_operations == ui::DragDropTypes::DRAG_NONE)
     return;

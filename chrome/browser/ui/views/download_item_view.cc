@@ -891,12 +891,13 @@ bool DownloadItemView::OnMouseDragged(const views::MouseEvent& event) {
   return true;
 }
 
-bool DownloadItemView::OnKeyPressed(const views::KeyEvent& e) {
+bool DownloadItemView::OnKeyPressed(const views::KeyEvent& event) {
   // Key press should not activate us in dangerous mode.
   if (IsDangerousMode())
     return true;
 
-  if (e.key_code() == ui::VKEY_SPACE || e.key_code() == ui::VKEY_RETURN) {
+  if (event.key_code() == ui::VKEY_SPACE ||
+      event.key_code() == ui::VKEY_RETURN) {
     OpenDownload();
     return true;
   }

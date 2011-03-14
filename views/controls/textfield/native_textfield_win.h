@@ -82,8 +82,8 @@ class NativeTextfieldWin
   virtual void GetSelectedRange(TextRange* range) const OVERRIDE;
   virtual void SelectRange(const TextRange& range) OVERRIDE;
   virtual size_t GetCursorPosition() const OVERRIDE;
-  virtual bool HandleKeyPressed(const views::KeyEvent& e) OVERRIDE;
-  virtual bool HandleKeyReleased(const views::KeyEvent& e) OVERRIDE;
+  virtual bool HandleKeyPressed(const views::KeyEvent& event) OVERRIDE;
+  virtual bool HandleKeyReleased(const views::KeyEvent& event) OVERRIDE;
   virtual void HandleFocus() OVERRIDE;
   virtual void HandleBlur() OVERRIDE;
 

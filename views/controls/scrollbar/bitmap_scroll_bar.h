@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -95,33 +95,34 @@ class BitmapScrollBar : public ScrollBar,
   void ScrollByContentsOffset(int contents_offset);
 
   // View overrides:
-  virtual gfx::Size GetPreferredSize();
-  virtual void OnPaint(gfx::Canvas* canvas);
-  virtual void Layout();
-  virtual bool OnMousePressed(const MouseEvent& event);
-  virtual void OnMouseReleased(const MouseEvent& event, bool canceled);
-  virtual bool OnMouseWheel(const MouseWheelEvent& event);
-  virtual bool OnKeyPressed(const KeyEvent& event);
+  virtual gfx::Size GetPreferredSize() OVERRIDE;
+  virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE;
+  virtual void Layout() OVERRIDE;
+  virtual bool OnMousePressed(const MouseEvent& event) OVERRIDE;
+  virtual void OnMouseReleased(const MouseEvent& event, bool canceled) OVERRIDE;
+  virtual bool OnMouseWheel(const MouseWheelEvent& event) OVERRIDE;
+  virtual bool OnKeyPressed(const KeyEvent& event) OVERRIDE;
 
   // BaseButton::ButtonListener overrides:
-  virtual void ButtonPressed(Button* sender, const views::Event& event);
+  virtual void ButtonPressed(Button* sender,
+                             const views::Event& event) OVERRIDE;
 
   // ScrollBar overrides:
   virtual void Update(int viewport_size,
                       int content_size,
-                      int contents_scroll_offset);
-  virtual int GetLayoutSize() const;
-  virtual int GetPosition() const;
+                      int contents_scroll_offset) OVERRIDE;
+  virtual int GetLayoutSize() const OVERRIDE;
+  virtual int GetPosition() const OVERRIDE;
 
   // ContextMenuController overrides.
   virtual void ShowContextMenuForView(View* source,
                                       const gfx::Point& p,
-                                      bool is_mouse_gesture);
+                                      bool is_mouse_gesture) OVERRIDE;
 
   // Menu::Delegate overrides:
-  virtual std::wstring GetLabel(int id) const;
-  virtual bool IsCommandEnabled(int id) const;
-  virtual void ExecuteCommand(int id);
+  virtual std::wstring GetLabel(int id) const OVERRIDE;
+  virtual bool IsCommandEnabled(int id) const OVERRIDE;
+  virtual void ExecuteCommand(int id) OVERRIDE;
 
  private:
   // Called when the mouse is pressed down in the track area.

@@ -77,12 +77,13 @@ class AutocompletePopupContentsView : public views::View,
   virtual void PaintChildren(gfx::Canvas* canvas);
   virtual void Layout();
   virtual void LayoutChildren();
-  virtual void OnMouseEntered(const views::MouseEvent& event);
-  virtual void OnMouseMoved(const views::MouseEvent& event);
-  virtual void OnMouseExited(const views::MouseEvent& event);
-  virtual bool OnMousePressed(const views::MouseEvent& event);
-  virtual void OnMouseReleased(const views::MouseEvent& event, bool canceled);
-  virtual bool OnMouseDragged(const views::MouseEvent& event);
+  virtual void OnMouseEntered(const views::MouseEvent& event) OVERRIDE;
+  virtual void OnMouseMoved(const views::MouseEvent& event) OVERRIDE;
+  virtual void OnMouseExited(const views::MouseEvent& event) OVERRIDE;
+  virtual bool OnMousePressed(const views::MouseEvent& event) OVERRIDE;
+  virtual void OnMouseReleased(const views::MouseEvent& event,
+                               bool canceled) OVERRIDE;
+  virtual bool OnMouseDragged(const views::MouseEvent& event) OVERRIDE;
   virtual views::View* GetEventHandlerForPoint(const gfx::Point& point);
 
  protected:

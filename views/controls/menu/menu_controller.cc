@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -1025,13 +1025,14 @@ void MenuController::Accept(MenuItemView* item, int mouse_event_flags) {
   result_mouse_event_flags_ = mouse_event_flags;
 }
 
-bool MenuController::ShowSiblingMenu(SubmenuView* source, const MouseEvent& e) {
+bool MenuController::ShowSiblingMenu(SubmenuView* source,
+                                     const MouseEvent& event) {
   if (!menu_stack_.empty() || !menu_button_)
     return false;
 
   View* source_view = source->GetScrollViewContainer();
-  if (e.x() >= 0 && e.x() < source_view->width() && e.y() >= 0 &&
-      e.y() < source_view->height()) {
+  if (event.x() >= 0 && event.x() < source_view->width() && event.y() >= 0 &&
+      event.y() < source_view->height()) {
     // The mouse is over the menu, no need to continue.
     return false;
   }
@@ -1042,7 +1043,7 @@ bool MenuController::ShowSiblingMenu(SubmenuView* source, const MouseEvent& e) {
 
   // The user moved the mouse outside the menu and over the owning window. See
   // if there is a sibling menu we should show.
-  gfx::Point screen_point(e.location());
+  gfx::Point screen_point(event.location());
   View::ConvertPointToScreen(source_view, &screen_point);
   MenuItemView::AnchorPosition anchor;
   bool has_mnemonics;
@@ -1787,10 +1788,9 @@ void MenuController::UpdateActiveMouseView(SubmenuView* event_source,
   }
   if (target != active_mouse_view_) {
     if (active_mouse_view_) {
+      // TODO(msw): Revise api and uses with OnMouseCaptureLost (like ui/views).
       // Send a mouse release with cancel set to true.
-      MouseEvent release_event(ui::ET_MOUSE_RELEASED, -1, -1, 0);
-      active_mouse_view_->OnMouseReleased(release_event, true);
-
+      active_mouse_view_->OnMouseReleased(event, true);
       active_mouse_view_ = NULL;
     }
     active_mouse_view_ = target;

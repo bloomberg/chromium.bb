@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -238,7 +238,7 @@ class MenuController : public MessageLoopForUI::Dispatcher {
   // when blocking. This schedules the loop to quit.
   void Accept(MenuItemView* item, int mouse_event_flags);
 
-  bool ShowSiblingMenu(SubmenuView* source, const MouseEvent& e);
+  bool ShowSiblingMenu(SubmenuView* source, const MouseEvent& event);
 
   // Closes all menus, including any menus of nested invocations of Run.
   void CloseAllNestedMenus();

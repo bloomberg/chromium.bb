@@ -675,7 +675,7 @@ LRESULT WidgetWin::OnMouseActivate(UINT message,
 
 LRESULT WidgetWin::OnMouseLeave(UINT message, WPARAM w_param, LPARAM l_param) {
   tooltip_manager_->OnMouseLeave();
-  ProcessMouseExited();
+  ProcessMouseExited(message, w_param, l_param);
   return 0;
 }
 
@@ -747,7 +747,7 @@ LRESULT WidgetWin::OnNCHitTest(const CPoint& pt) {
 LRESULT WidgetWin::OnNCMouseLeave(UINT message,
                                   WPARAM w_param,
                                   LPARAM l_param) {
-  ProcessMouseExited();
+  ProcessMouseExited(message, w_param, l_param);
   return 0;
 }
 
@@ -977,9 +977,14 @@ bool WidgetWin::ProcessMouseMoved(UINT message,
   return true;
 }
 
-void WidgetWin::ProcessMouseExited() {
+void WidgetWin::ProcessMouseExited(UINT message,
+                                   WPARAM w_param,
+                                   LPARAM l_param) {
   last_mouse_event_was_move_ = false;
-  GetRootView()->ProcessOnMouseExited();
+  MSG msg;
+  MakeMSG(&msg, message, w_param, l_param, 0, GET_X_LPARAM(l_param),
+          GET_Y_LPARAM(l_param));
+  GetRootView()->OnMouseExited(MouseEvent(msg));
   // Reset our tracking flag so that future mouse movement over this WidgetWin
   // results in a new tracking session.
   active_mouse_tracking_flags_ = 0;

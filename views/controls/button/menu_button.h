@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -51,17 +51,17 @@ class MenuButton : public TextButton {
 
   // These methods are overriden to implement a simple push button
   // behavior.
-  virtual bool OnMousePressed(const MouseEvent& e);
-  virtual void OnMouseReleased(const MouseEvent& e, bool canceled);
-  virtual void OnMouseExited(const MouseEvent& event);
-  virtual bool OnKeyPressed(const KeyEvent& e);
-  virtual bool OnKeyReleased(const KeyEvent& e);
+  virtual bool OnMousePressed(const MouseEvent& event) OVERRIDE;
+  virtual void OnMouseReleased(const MouseEvent& event, bool canceled) OVERRIDE;
+  virtual void OnMouseExited(const MouseEvent& event) OVERRIDE;
+  virtual bool OnKeyPressed(const KeyEvent& event) OVERRIDE;
+  virtual bool OnKeyReleased(const KeyEvent& event) OVERRIDE;
 
   // Accessibility accessors, overridden from View.
   virtual void GetAccessibleState(ui::AccessibleViewState* state) OVERRIDE;
 
   // Returns views/MenuButton.
-  virtual std::string GetClassName() const;
+  virtual std::string GetClassName() const OVERRIDE;
 
   // Accessors for menu_offset_.
   const gfx::Point& menu_offset() const {

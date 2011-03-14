@@ -115,7 +115,7 @@ void ReloadButton::ButtonPressed(views::Button* /* button */,
 ////////////////////////////////////////////////////////////////////////////////
 // ReloadButton, View overrides:
 
-void ReloadButton::OnMouseExited(const views::MouseEvent& e) {
+void ReloadButton::OnMouseExited(const views::MouseEvent& event) {
   ChangeMode(intended_mode_, true);
   if (state() != BS_DISABLED)
     SetState(BS_NORMAL);

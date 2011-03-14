@@ -1007,12 +1007,13 @@ void AutocompleteEditViewWin::PasteAndGo(const string16& text) {
 }
 
 bool AutocompleteEditViewWin::SkipDefaultKeyEventProcessing(
-    const views::KeyEvent& e) {
-  ui::KeyboardCode key = e.key_code();
+    const views::KeyEvent& event) {
+  ui::KeyboardCode key = event.key_code();
   // We don't process ALT + numpad digit as accelerators, they are used for
   // entering special characters.  We do translate alt-home.
-  if (e.IsAltDown() && (key != ui::VKEY_HOME) &&
-      views::NativeTextfieldWin::IsNumPadDigit(key, views::IsExtendedKey(e)))
+  if (event.IsAltDown() && (key != ui::VKEY_HOME) &&
+      views::NativeTextfieldWin::IsNumPadDigit(key,
+                                               views::IsExtendedKey(event)))
     return true;
 
   // Skip accelerators for key combinations omnibox wants to crack. This list
@@ -1033,15 +1034,16 @@ bool AutocompleteEditViewWin::SkipDefaultKeyEventProcessing(
 
     case ui::VKEY_UP:
     case ui::VKEY_DOWN:
-      return !e.IsAltDown();
+      return !event.IsAltDown();
 
     case ui::VKEY_DELETE:
     case ui::VKEY_INSERT:
-      return !e.IsAltDown() && e.IsShiftDown() && !e.IsControlDown();
+      return !event.IsAltDown() && event.IsShiftDown() &&
+          !event.IsControlDown();
 
     case ui::VKEY_X:
     case ui::VKEY_V:
-      return !e.IsAltDown() && e.IsControlDown();
+      return !event.IsAltDown() && event.IsControlDown();
 
     case ui::VKEY_BACK:
     case ui::VKEY_OEM_PLUS:

@@ -75,31 +75,37 @@ class BrowserActionButton : public views::MenuButton,
   const SkBitmap& default_icon() const { return default_icon_; }
 
   // Overridden from views::View:
-  virtual void ViewHierarchyChanged(bool is_add, View* parent, View* child);
+  virtual void ViewHierarchyChanged(bool is_add,
+                                    View* parent,
+                                    View* child) OVERRIDE;
 
   // Overridden from views::ButtonListener:
-  virtual void ButtonPressed(views::Button* sender, const views::Event& event);
+  virtual void ButtonPressed(views::Button* sender,
+                             const views::Event& event) OVERRIDE;
 
   // Overridden from ImageLoadingTracker.
-  virtual void OnImageLoaded(
-      SkBitmap* image, const ExtensionResource& resource, int index);
+  virtual void OnImageLoaded(SkBitmap* image,
+                             const ExtensionResource& resource,
+                             int index) OVERRIDE;
 
   // Overridden from NotificationObserver:
   virtual void Observe(NotificationType type,
                        const NotificationSource& source,
-                       const NotificationDetails& details);
+                       const NotificationDetails& details) OVERRIDE;
 
   // MenuButton behavior overrides.  These methods all default to TextButton
   // behavior unless this button is a popup.  In that case, it uses MenuButton
   // behavior.  MenuButton has the notion of a child popup being shown where the
   // button will stay in the pushed state until the "menu" (a popup in this
   // case) is dismissed.
-  virtual bool Activate();
-  virtual bool OnMousePressed(const views::MouseEvent& e);
-  virtual void OnMouseReleased(const views::MouseEvent& e, bool canceled);
-  virtual bool OnKeyReleased(const views::KeyEvent& e);
-  virtual void OnMouseExited(const views::MouseEvent& event);
-  virtual void ShowContextMenu(const gfx::Point& p, bool is_mouse_gesture);
+  virtual bool Activate() OVERRIDE;
+  virtual bool OnMousePressed(const views::MouseEvent& event) OVERRIDE;
+  virtual void OnMouseReleased(const views::MouseEvent& event,
+                               bool canceled) OVERRIDE;
+  virtual bool OnKeyReleased(const views::KeyEvent& event) OVERRIDE;
+  virtual void OnMouseExited(const views::MouseEvent& event) OVERRIDE;
+  virtual void ShowContextMenu(const gfx::Point& p,
+                               bool is_mouse_gesture) OVERRIDE;
 
   // Does this button's action have a popup?
   virtual bool IsPopup();

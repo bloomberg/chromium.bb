@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -122,32 +122,32 @@ void Checkbox::OnPaintFocusBorder(gfx::Canvas* canvas) {
   // Our focus border is rendered by the label, so we don't do anything here.
 }
 
-void Checkbox::OnMouseEntered(const MouseEvent& e) {
-  native_wrapper_->SetPushed(HitTestLabel(e));
+void Checkbox::OnMouseEntered(const MouseEvent& event) {
+  native_wrapper_->SetPushed(HitTestLabel(event));
 }
 
-void Checkbox::OnMouseMoved(const MouseEvent& e) {
-  native_wrapper_->SetPushed(HitTestLabel(e));
+void Checkbox::OnMouseMoved(const MouseEvent& event) {
+  native_wrapper_->SetPushed(HitTestLabel(event));
 }
 
-void Checkbox::OnMouseExited(const MouseEvent& e) {
+void Checkbox::OnMouseExited(const MouseEvent& event) {
   native_wrapper_->SetPushed(false);
 }
 
-bool Checkbox::OnMousePressed(const MouseEvent& e) {
-  native_wrapper_->SetPushed(HitTestLabel(e));
+bool Checkbox::OnMousePressed(const MouseEvent& event) {
+  native_wrapper_->SetPushed(HitTestLabel(event));
   return true;
 }
 
-void Checkbox::OnMouseReleased(const MouseEvent& e, bool canceled) {
+void Checkbox::OnMouseReleased(const MouseEvent& event, bool canceled) {
   native_wrapper_->SetPushed(false);
-  if (!canceled && HitTestLabel(e)) {
+  if (!canceled && HitTestLabel(event)) {
     SetChecked(!checked());
     ButtonPressed();
   }
 }
 
-bool Checkbox::OnMouseDragged(const MouseEvent& e) {
+bool Checkbox::OnMouseDragged(const MouseEvent& event) {
   return false;
 }
 
@@ -193,8 +193,8 @@ void Checkbox::SetLabel(const std::wstring& label) {
 ////////////////////////////////////////////////////////////////////////////////
 // Checkbox, protected:
 
-bool Checkbox::HitTestLabel(const MouseEvent& e) {
-  gfx::Point tmp(e.location());
+bool Checkbox::HitTestLabel(const MouseEvent& event) {
+  gfx::Point tmp(event.location());
   ConvertPointToView(this, label_, &tmp);
   return label_->HitTest(tmp);
 }

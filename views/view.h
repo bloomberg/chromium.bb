@@ -625,7 +625,7 @@ class View : public AcceleratorTarget {
   // The event is in the receiver's coordinate system.
   //
   // Default implementation does nothing. Override as needed.
-  virtual void OnMouseMoved(const MouseEvent& e);
+  virtual void OnMouseMoved(const MouseEvent& event);
 
   // This method is invoked when the mouse enters this control.
   //
@@ -667,14 +667,14 @@ class View : public AcceleratorTarget {
   // Subclasser should return true if the event has been processed and false
   // otherwise. If the event has not been processed, the parent will be given a
   // chance.
-  virtual bool OnKeyPressed(const KeyEvent& e);
-  virtual bool OnKeyReleased(const KeyEvent& e);
+  virtual bool OnKeyPressed(const KeyEvent& event);
+  virtual bool OnKeyReleased(const KeyEvent& event);
 
   // Invoked when the user uses the mousewheel. Implementors should return true
   // if the event has been processed and false otherwise. This message is sent
   // if the view is focused. If the event has not been processed, the parent
   // will be given a chance.
-  virtual bool OnMouseWheel(const MouseWheelEvent& e);
+  virtual bool OnMouseWheel(const MouseWheelEvent& event);
 
   // Accelerators --------------------------------------------------------------
 
@@ -756,7 +756,7 @@ class View : public AcceleratorTarget {
   // have it processed as an accelerator (if any) or as a tab traversal (if the
   // key event is for the TAB key).  In that case, OnKeyPressed will
   // subsequently be invoked for that event.
-  virtual bool SkipDefaultKeyEventProcessing(const KeyEvent& e);
+  virtual bool SkipDefaultKeyEventProcessing(const KeyEvent& event);
 
   // Subclasses that contain traversable children that are not directly
   // accessible through the children hierarchy should return the associated
@@ -1215,14 +1215,14 @@ class View : public AcceleratorTarget {
 
   // RootView invokes these. These in turn invoke the appropriate OnMouseXXX
   // method. If a drag is detected, DoDrag is invoked.
-  bool ProcessMousePressed(const MouseEvent& e, DragInfo* drop_info);
-  bool ProcessMouseDragged(const MouseEvent& e, DragInfo* drop_info);
-  void ProcessMouseReleased(const MouseEvent& e, bool canceled);
+  bool ProcessMousePressed(const MouseEvent& event, DragInfo* drop_info);
+  bool ProcessMouseDragged(const MouseEvent& event, DragInfo* drop_info);
+  void ProcessMouseReleased(const MouseEvent& event, bool canceled);
 
 #if defined(TOUCH_UI)
   // RootView will invoke this with incoming TouchEvents. Returns the
   // the result of OnTouchEvent.
-  TouchStatus ProcessTouchEvent(const TouchEvent& e);
+  TouchStatus ProcessTouchEvent(const TouchEvent& event);
 #endif
 
   // Accelerators --------------------------------------------------------------
@@ -1266,7 +1266,7 @@ class View : public AcceleratorTarget {
   // Starts a drag and drop operation originating from this view. This invokes
   // WriteDragData to write the data and GetDragOperations to determine the
   // supported drag operations. When done, OnDragDone is invoked.
-  void DoDrag(const MouseEvent& e, const gfx::Point& press_pt);
+  void DoDrag(const MouseEvent& event, const gfx::Point& press_pt);
 
   //////////////////////////////////////////////////////////////////////////////
 

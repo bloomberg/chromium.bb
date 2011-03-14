@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -188,13 +188,13 @@ bool MenuButton::Activate() {
   return true;
 }
 
-bool MenuButton::OnMousePressed(const MouseEvent& e) {
+bool MenuButton::OnMousePressed(const MouseEvent& event) {
   RequestFocus();
   if (state() != BS_DISABLED) {
     // If we're draggable (GetDragOperations returns a non-zero value), then
     // don't pop on press, instead wait for release.
-    if (e.IsOnlyLeftMouseButton() && HitTest(e.location()) &&
-        GetDragOperations(e.location()) == ui::DragDropTypes::DRAG_NONE) {
+    if (event.IsOnlyLeftMouseButton() && HitTest(event.location()) &&
+        GetDragOperations(event.location()) == ui::DragDropTypes::DRAG_NONE) {
       TimeDelta delta = Time::Now() - menu_closed_time_;
       int64 delta_in_milliseconds = delta.InMilliseconds();
       if (delta_in_milliseconds > kMinimumTimeBetweenButtonClicks) {
@@ -205,23 +205,22 @@ bool MenuButton::OnMousePressed(const MouseEvent& e) {
   return true;
 }
 
-void MenuButton::OnMouseReleased(const MouseEvent& e,
-                                 bool canceled) {
+void MenuButton::OnMouseReleased(const MouseEvent& event, bool canceled) {
   // Explicitly test for left mouse button to show the menu. If we tested for
   // !IsTriggerableEvent it could lead to a situation where we end up showing
   // the menu and context menu (this would happen if the right button is not
   // triggerable and there's a context menu).
-  if (GetDragOperations(e.location()) != ui::DragDropTypes::DRAG_NONE &&
+  if (GetDragOperations(event.location()) != ui::DragDropTypes::DRAG_NONE &&
       state() != BS_DISABLED && !canceled && !InDrag() &&
-      e.IsOnlyLeftMouseButton() && HitTest(e.location())) {
+      event.IsOnlyLeftMouseButton() && HitTest(event.location())) {
     Activate();
   } else {
-    TextButton::OnMouseReleased(e, canceled);
+    TextButton::OnMouseReleased(event, canceled);
   }
 }
 
-bool MenuButton::OnKeyPressed(const KeyEvent& e) {
-  switch (e.key_code()) {
+bool MenuButton::OnKeyPressed(const KeyEvent& event) {
+  switch (event.key_code()) {
     case ui::VKEY_SPACE:
     case ui::VKEY_RETURN:
     case ui::VKEY_UP:
@@ -237,7 +236,7 @@ bool MenuButton::OnKeyPressed(const KeyEvent& e) {
   return false;
 }
 
-bool MenuButton::OnKeyReleased(const KeyEvent& e) {
+bool MenuButton::OnKeyReleased(const KeyEvent& event) {
   // Override CustomButton's implementation, which presses the button when
   // you press space and clicks it when you release space.  For a MenuButton
   // we always activate the menu on key press.

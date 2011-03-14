@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -39,11 +39,12 @@ class ReloadButton : public views::ToggleImageButton,
 
   // Overridden from views::ButtonListener:
   virtual void ButtonPressed(views::Button* /* button */,
-                             const views::Event& event);
+                             const views::Event& event) OVERRIDE;
 
   // Overridden from views::View:
-  virtual void OnMouseExited(const views::MouseEvent& e);
-  virtual bool GetTooltipText(const gfx::Point& p, std::wstring* tooltip);
+  virtual void OnMouseExited(const views::MouseEvent& event) OVERRIDE;
+  virtual bool GetTooltipText(const gfx::Point& p,
+                              std::wstring* tooltip) OVERRIDE;
 
  private:
   friend class ReloadButtonTest;

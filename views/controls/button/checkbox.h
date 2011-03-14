@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -47,12 +47,12 @@ class Checkbox : public NativeButton {
   virtual void Layout() OVERRIDE;
   virtual void SetEnabled(bool enabled) OVERRIDE;
   virtual void OnPaintFocusBorder(gfx::Canvas* canvas) OVERRIDE;
-  virtual void OnMouseEntered(const MouseEvent& e) OVERRIDE;
-  virtual void OnMouseMoved(const MouseEvent& e) OVERRIDE;
-  virtual void OnMouseExited(const MouseEvent& e) OVERRIDE;
-  virtual bool OnMousePressed(const MouseEvent& e) OVERRIDE;
-  virtual void OnMouseReleased(const MouseEvent& e, bool canceled) OVERRIDE;
-  virtual bool OnMouseDragged(const MouseEvent& e) OVERRIDE;
+  virtual void OnMouseEntered(const MouseEvent& event) OVERRIDE;
+  virtual void OnMouseMoved(const MouseEvent& event) OVERRIDE;
+  virtual void OnMouseExited(const MouseEvent& event) OVERRIDE;
+  virtual bool OnMousePressed(const MouseEvent& event) OVERRIDE;
+  virtual void OnMouseReleased(const MouseEvent& event, bool canceled) OVERRIDE;
+  virtual bool OnMouseDragged(const MouseEvent& event) OVERRIDE;
   virtual void OnFocus() OVERRIDE;
   virtual void OnBlur() OVERRIDE;
 
@@ -71,7 +71,7 @@ class Checkbox : public NativeButton {
 
   // Returns true if the event (in Checkbox coordinates) is within the bounds of
   // the label.
-  bool HitTestLabel(const MouseEvent& e);
+  bool HitTestLabel(const MouseEvent& event);
 
  private:
   // Called from the constructor to create and configure the checkbox label.

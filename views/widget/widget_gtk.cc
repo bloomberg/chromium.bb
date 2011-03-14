@@ -1074,8 +1074,10 @@ gboolean WidgetGtk::OnEnterNotify(GtkWidget* widget, GdkEventCrossing* event) {
 
 gboolean WidgetGtk::OnLeaveNotify(GtkWidget* widget, GdkEventCrossing* event) {
   last_mouse_event_was_move_ = false;
-  if (!has_capture_ && !is_mouse_down_)
-    GetRootView()->ProcessOnMouseExited();
+  if (!has_capture_ && !is_mouse_down_) {
+    MouseEvent mouse_event(reinterpret_cast<GdkEvent*>(event));
+    GetRootView()->OnMouseExited(mouse_event);
+  }
   return false;
 }
 

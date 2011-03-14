@@ -209,10 +209,10 @@ bool BrowserActionButton::Activate() {
   return false;
 }
 
-bool BrowserActionButton::OnMousePressed(const views::MouseEvent& e) {
-  if (!e.IsRightMouseButton()) {
+bool BrowserActionButton::OnMousePressed(const views::MouseEvent& event) {
+  if (!event.IsRightMouseButton()) {
     return IsPopup() ?
-        MenuButton::OnMousePressed(e) : TextButton::OnMousePressed(e);
+        MenuButton::OnMousePressed(event) : TextButton::OnMousePressed(event);
   }
 
   // Get the top left point of this button in screen coordinates.
@@ -226,27 +226,27 @@ bool BrowserActionButton::OnMousePressed(const views::MouseEvent& e) {
   return false;
 }
 
-void BrowserActionButton::OnMouseReleased(const views::MouseEvent& e,
+void BrowserActionButton::OnMouseReleased(const views::MouseEvent& event,
                                           bool canceled) {
   if (IsPopup() || showing_context_menu_) {
     // TODO(erikkay) this never actually gets called (probably because of the
     // loss of focus).
-    MenuButton::OnMouseReleased(e, canceled);
+    MenuButton::OnMouseReleased(event, canceled);
   } else {
-    TextButton::OnMouseReleased(e, canceled);
+    TextButton::OnMouseReleased(event, canceled);
   }
 }
 
-bool BrowserActionButton::OnKeyReleased(const views::KeyEvent& e) {
+bool BrowserActionButton::OnKeyReleased(const views::KeyEvent& event) {
   return IsPopup() ?
-      MenuButton::OnKeyReleased(e) : TextButton::OnKeyReleased(e);
+      MenuButton::OnKeyReleased(event) : TextButton::OnKeyReleased(event);
 }
 
-void BrowserActionButton::OnMouseExited(const views::MouseEvent& e) {
+void BrowserActionButton::OnMouseExited(const views::MouseEvent& event) {
   if (IsPopup() || showing_context_menu_)
-    MenuButton::OnMouseExited(e);
+    MenuButton::OnMouseExited(event);
   else
-    TextButton::OnMouseExited(e);
+    TextButton::OnMouseExited(event);
 }
 
 void BrowserActionButton::ShowContextMenu(const gfx::Point& p,

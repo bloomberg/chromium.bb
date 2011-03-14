@@ -63,10 +63,6 @@ class RootView : public View,
   // the system. Invokes OnMouseReleased with a value of true for canceled.
   void ProcessMouseDragCanceled();
 
-  // Invoked by the Widget instance when the mouse moves outside of the Widget
-  // bounds.
-  virtual void ProcessOnMouseExited();
-
   // Process a key event. Send the event to the focused view and up the focus
   // path, and finally to the default keyboard handler, until someone consumes
   // it.  Returns whether anyone consumed the event.
@@ -106,14 +102,15 @@ class RootView : public View,
   virtual void SchedulePaintInRect(const gfx::Rect& rect) OVERRIDE;
   virtual const Widget* GetWidget() const OVERRIDE;
   virtual Widget* GetWidget() OVERRIDE;
-  virtual bool OnMousePressed(const MouseEvent& e) OVERRIDE;
-  virtual bool OnMouseDragged(const MouseEvent& e) OVERRIDE;
-  virtual void OnMouseReleased(const MouseEvent& e, bool canceled) OVERRIDE;
-  virtual void OnMouseMoved(const MouseEvent& e) OVERRIDE;
+  virtual void OnMouseExited(const MouseEvent& event) OVERRIDE;
+  virtual bool OnMousePressed(const MouseEvent& event) OVERRIDE;
+  virtual bool OnMouseDragged(const MouseEvent& event) OVERRIDE;
+  virtual void OnMouseReleased(const MouseEvent& event, bool canceled) OVERRIDE;
+  virtual void OnMouseMoved(const MouseEvent& event) OVERRIDE;
   virtual void SetMouseHandler(View* new_mouse_handler) OVERRIDE;
-  virtual bool OnMouseWheel(const MouseWheelEvent& e) OVERRIDE;
+  virtual bool OnMouseWheel(const MouseWheelEvent& event) OVERRIDE;
 #if defined(TOUCH_UI)
-  virtual TouchStatus OnTouchEvent(const TouchEvent& e) OVERRIDE;
+  virtual TouchStatus OnTouchEvent(const TouchEvent& event) OVERRIDE;
 #endif
   virtual bool IsVisibleInRootView() const OVERRIDE;
   virtual std::string GetClassName() const OVERRIDE;
@@ -148,12 +145,12 @@ class RootView : public View,
   // cursor during drag operations. The location of the mouse should be in the
   // current coordinate system (i.e. any necessary transformation should be
   // applied to the point prior to calling this).
-  void UpdateCursor(const MouseEvent& e);
+  void UpdateCursor(const MouseEvent& event);
 
   // Updates the last_mouse_* fields from e. The location of the mouse should be
   // in the current coordinate system (i.e. any necessary transformation should
   // be applied to the point prior to calling this).
-  void SetMouseLocationAndFlags(const MouseEvent& e);
+  void SetMouseLocationAndFlags(const MouseEvent& event);
 
   //////////////////////////////////////////////////////////////////////////////
 

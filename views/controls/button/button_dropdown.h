@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -30,22 +30,22 @@ class ButtonDropDown : public ImageButton {
 
  private:
   // Overridden from CustomButton
-  virtual bool OnMousePressed(const MouseEvent& e);
-  virtual void OnMouseReleased(const MouseEvent& e, bool canceled);
-  virtual bool OnMouseDragged(const MouseEvent& e);
-  virtual void OnMouseExited(const MouseEvent& e);
+  virtual bool OnMousePressed(const MouseEvent& event) OVERRIDE;
+  virtual void OnMouseReleased(const MouseEvent& event, bool canceled) OVERRIDE;
+  virtual bool OnMouseDragged(const MouseEvent& event) OVERRIDE;
+  virtual void OnMouseExited(const MouseEvent& event) OVERRIDE;
 
   // Overridden from View. Used to display the right-click menu, as triggered
   // by the keyboard, for instance. Using the member function ShowDropDownMenu
   // for the actual display.
   virtual void ShowContextMenu(const gfx::Point& p,
-                               bool is_mouse_gesture);
+                               bool is_mouse_gesture) OVERRIDE;
 
   // Overridden from CustomButton. Returns true if the button should become
   // pressed when a user holds the mouse down over the button. For this
   // implementation, both left and right mouse buttons can trigger a change
   // to the PUSHED state.
-  virtual bool ShouldEnterPushedState(const MouseEvent& e);
+  virtual bool ShouldEnterPushedState(const MouseEvent& event) OVERRIDE;
 
   // Internal function to show the dropdown menu
   void ShowDropDownMenu(gfx::NativeView window);

@@ -352,11 +352,11 @@ size_t NativeTextfieldWin::GetCursorPosition() const {
   return 0U;
 }
 
-bool NativeTextfieldWin::HandleKeyPressed(const views::KeyEvent& e) {
+bool NativeTextfieldWin::HandleKeyPressed(const views::KeyEvent& event) {
   return false;
 }
 
-bool NativeTextfieldWin::HandleKeyReleased(const views::KeyEvent& e) {
+bool NativeTextfieldWin::HandleKeyReleased(const views::KeyEvent& event) {
   return false;
 }
 

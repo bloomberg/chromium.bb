@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -200,8 +200,8 @@ bool Label::GetTooltipText(const gfx::Point& p, std::wstring* tooltip) {
   return false;
 }
 
-void Label::OnMouseMoved(const MouseEvent& e) {
-  UpdateContainsMouse(e);
+void Label::OnMouseMoved(const MouseEvent& event) {
+  UpdateContainsMouse(event);
 }
 
 void Label::OnMouseEntered(const MouseEvent& event) {

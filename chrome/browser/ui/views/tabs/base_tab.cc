@@ -49,7 +49,7 @@ class TabCloseButton : public views::ImageButton {
   }
   virtual ~TabCloseButton() {}
 
-  virtual bool OnMousePressed(const views::MouseEvent& event) {
+  virtual bool OnMousePressed(const views::MouseEvent& event) OVERRIDE {
     bool handled = ImageButton::OnMousePressed(event);
     // Explicitly mark midle-mouse clicks as non-handled to ensure the tab
     // sees them.
@@ -59,12 +59,12 @@ class TabCloseButton : public views::ImageButton {
   // We need to let the parent know about mouse state so that it
   // can highlight itself appropriately. Note that Exit events
   // fire before Enter events, so this works.
-  virtual void OnMouseEntered(const views::MouseEvent& event) {
+  virtual void OnMouseEntered(const views::MouseEvent& event) OVERRIDE {
     CustomButton::OnMouseEntered(event);
     parent()->OnMouseEntered(event);
   }
 
-  virtual void OnMouseExited(const views::MouseEvent& event) {
+  virtual void OnMouseExited(const views::MouseEvent& event) OVERRIDE {
     CustomButton::OnMouseExited(event);
     parent()->OnMouseExited(event);
   }
@@ -268,7 +268,7 @@ bool BaseTab::IsCloseable() const {
   return controller() ? controller()->IsTabCloseable(this) : true;
 }
 
-void BaseTab::OnMouseEntered(const views::MouseEvent& e) {
+void BaseTab::OnMouseEntered(const views::MouseEvent& event) {
   if (!hover_animation_.get()) {
     hover_animation_.reset(new ui::SlideAnimation(this));
     hover_animation_->SetContainer(animation_container_.get());
@@ -278,7 +278,7 @@ void BaseTab::OnMouseEntered(const views::MouseEvent& e) {
   hover_animation_->Show();
 }
 
-void BaseTab::OnMouseExited(const views::MouseEvent& e) {
+void BaseTab::OnMouseExited(const views::MouseEvent& event) {
   hover_animation_->SetTweenType(ui::Tween::EASE_IN);
   hover_animation_->Hide();
 }

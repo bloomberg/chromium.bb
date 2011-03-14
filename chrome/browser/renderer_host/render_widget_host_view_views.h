@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -101,14 +101,14 @@ class RenderWidgetHostViewViews : public RenderWidgetHostView,
   virtual bool OnMouseDragged(const views::MouseEvent& event) OVERRIDE;
   virtual void OnMouseReleased(const views::MouseEvent& event,
                                bool canceled) OVERRIDE;
-  virtual void OnMouseMoved(const views::MouseEvent& e) OVERRIDE;
+  virtual void OnMouseMoved(const views::MouseEvent& event) OVERRIDE;
   virtual void OnMouseEntered(const views::MouseEvent& event) OVERRIDE;
   virtual void OnMouseExited(const views::MouseEvent& event) OVERRIDE;
-  virtual bool OnMouseWheel(const views::MouseWheelEvent& e) OVERRIDE;
+  virtual bool OnMouseWheel(const views::MouseWheelEvent& event) OVERRIDE;
 
   // Views keyboard events, overridden from views::View.
-  virtual bool OnKeyPressed(const views::KeyEvent &e) OVERRIDE;
-  virtual bool OnKeyReleased(const views::KeyEvent &e) OVERRIDE;
+  virtual bool OnKeyPressed(const views::KeyEvent& event) OVERRIDE;
+  virtual bool OnKeyReleased(const views::KeyEvent& event) OVERRIDE;
 
   virtual void OnFocus() OVERRIDE;
   virtual void OnBlur() OVERRIDE;
@@ -120,7 +120,8 @@ class RenderWidgetHostViewViews : public RenderWidgetHostView,
   void ForwardKeyEvent(const views::KeyEvent& event);
 
   // Views touch events, overridden from views::View.
-  virtual View::TouchStatus OnTouchEvent(const views::TouchEvent& e) OVERRIDE;
+  virtual View::TouchStatus OnTouchEvent(
+      const views::TouchEvent& event) OVERRIDE;
 
  private:
   friend class RenderWidgetHostViewViewsWidget;
