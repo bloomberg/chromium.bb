@@ -17,34 +17,16 @@ BUGJAMESR : fast/filesystem/op-get-entry.html = PASS TEXT
 BUG_ANTONM MAC : http/tests/security/xss-DENIED-xml-external-entity.xhtml = TEXT
 BUG_ANTONM MAC : http/tests/security/xss-DENIED-xsl-external-entity.xml = TEXT
 
-BUG_TONYG MAC : svg/text/font-size-below-point-five.svg = TEXT
-
 // Skip these tests until the test_expecitations can be updated after this Chromium patch lands.
 BUGWK44797 SKIP : fullscreen = PASS FAIL TIMEOUT
 
 // Until new baselines land in WebKit.
 BUG_MMALY : fast/js/mozilla/strict/15.5.5.1.html = PASS TEXT
 
-BUGCR75867 : svg/css/composite-shadow-text.svg = IMAGE
-BUG_LOISLO : fast/dom/prototype-inheritance.html = TEXT
-
 // v8 roll to 3.2.1.1
 BUGCR75875 DEBUG : fast/canvas/webgl/uninitialized-test.html = TIMEOUT
-
-BUG_LOISLO LINUX : fast/block/positioning/vertical-lr/003.html = CRASH PASS
 
 // are failing after roll 80582 -> 80608
 BUG_LOISLO MAC : fast/text/justify-ideograph-vertical.html = IMAGE
 
 BUG_LOISLO MAC DEBUG : fast/text/font-size-zero.html = TEXT
-BUG_LOISLO LINUX RELEASE : svg/W3C-SVG-1.1/text-text-03-b.svg = CRASH PASS
-
-BUG_LEVIN MAC : css2.1/t1008-c44-ln-box-02-d-ag.html = IMAGE
-BUG_LEVIN MAC : css2.1/t100801-c544-valgn-03-d-agi.html = IMAGE
-BUG_LEVIN MAC : editing/selection/caret-ltr-2-left.html = IMAGE
-BUG_LEVIN MAC : editing/selection/caret-ltr-2.html = IMAGE
-BUG_LEVIN MAC : editing/selection/caret-ltr-right.html = IMAGE
-BUG_LEVIN MAC : editing/selection/caret-ltr.html = IMAGE
-BUG_LEVIN MAC : fast/block/margin-collapse/103.html = IMAGE
-BUG_LEVIN MAC : tables/mozilla/bugs/bug1318.html = IMAGE
-BUG_LEVIN MAC : tables/mozilla/bugs/bug4527.html = IMAGE
