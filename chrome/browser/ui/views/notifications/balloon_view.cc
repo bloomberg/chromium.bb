@@ -139,11 +139,11 @@ void BalloonViewImpl::RunMenu(views::View* source, const gfx::Point& pt) {
   RunOptionsMenu(pt);
 }
 
-void BalloonViewImpl::OnDisplayChanged() {
+void BalloonViewImpl::DisplayChanged() {
   collection_->DisplayChanged();
 }
 
-void BalloonViewImpl::OnWorkAreaChanged() {
+void BalloonViewImpl::WorkAreaChanged() {
   collection_->DisplayChanged();
 }
 

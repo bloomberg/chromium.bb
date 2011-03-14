@@ -4,12 +4,7 @@
 
 #include "chrome/browser/ui/views/frame/browser_frame.h"
 
-#include "chrome/browser/ui/views/frame/browser_non_client_frame_view.h"
-#include "chrome/browser/ui/views/frame/browser_root_view.h"
-#include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/frame/native_browser_frame.h"
-#include "views/widget/native_widget.h"
-#include "views/widget/widget.h"
 #include "views/window/native_window.h"
 #include "views/window/window.h"
 
@@ -28,15 +23,15 @@ int BrowserFrame::GetMinimizeButtonOffset() const {
 }
 
 gfx::Rect BrowserFrame::GetBoundsForTabStrip(views::View* tabstrip) const {
-  return browser_frame_view_->GetBoundsForTabStrip(tabstrip);
+  return native_browser_frame_->GetBoundsForTabStrip(tabstrip);
 }
 
 int BrowserFrame::GetHorizontalTabStripVerticalOffset(bool restored) const {
-  return browser_frame_view_->GetHorizontalTabStripVerticalOffset(restored);
+  return native_browser_frame_->GetHorizontalTabStripVerticalOffset(restored);
 }
 
 void BrowserFrame::UpdateThrobber(bool running) {
-  browser_frame_view_->UpdateThrobber(running);
+  native_browser_frame_->UpdateThrobber(running);
 }
 
 ui::ThemeProvider* BrowserFrame::GetThemeProviderForFrame() const {
@@ -48,7 +43,7 @@ bool BrowserFrame::AlwaysUseNativeFrame() const {
 }
 
 views::View* BrowserFrame::GetFrameView() const {
-  return browser_frame_view_;
+  return native_browser_frame_->GetFrameView();
 }
 
 void BrowserFrame::TabStripDisplayModeChanged() {
@@ -56,28 +51,7 @@ void BrowserFrame::TabStripDisplayModeChanged() {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// BrowserFrame, NativeBrowserFrameDelegate implementation:
-
-views::RootView* BrowserFrame::DelegateCreateRootView() {
-  root_view_ = new BrowserRootView(
-      browser_view_,
-      native_browser_frame_->AsNativeWindow()->AsNativeWidget()->GetWidget());
-  return root_view_;
-}
-
-views::NonClientFrameView* BrowserFrame::DelegateCreateFrameViewForWindow() {
-  browser_frame_view_ =
-      native_browser_frame_->CreateBrowserNonClientFrameView();
-  return browser_frame_view_;
-}
-
-
-////////////////////////////////////////////////////////////////////////////////
 // BrowserFrame, protected:
 
-BrowserFrame::BrowserFrame(BrowserView* browser_view)
-    : native_browser_frame_(NULL),
-      root_view_(NULL),
-      browser_frame_view_(NULL),
-      browser_view_(browser_view) {
+BrowserFrame::BrowserFrame() : native_browser_frame_(NULL) {
 }

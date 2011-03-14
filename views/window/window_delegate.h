@@ -10,7 +10,6 @@
 
 #include "base/scoped_ptr.h"
 #include "ui/base/accessibility/accessibility_types.h"
-#include "views/widget/widget_delegate.h"
 
 class SkBitmap;
 
@@ -34,7 +33,7 @@ class Window;
 //  it should be displayed and notify the delegate object of certain events.
 //
 ///////////////////////////////////////////////////////////////////////////////
-class WindowDelegate : public WidgetDelegate {
+class WindowDelegate {
  public:
   WindowDelegate();
   virtual ~WindowDelegate();
@@ -118,11 +117,7 @@ class WindowDelegate : public WidgetDelegate {
   virtual void DeleteDelegate() {}
 
   // Called when the window's activation state changes.
-  virtual void OnWindowActivationChanged(bool active) {}
-
-  // Called when the user begins/ends to change the bounds of the window.
-  virtual void OnWindowBeginUserBoundsChange() {}
-  virtual void OnWindowEndUserBoundsChange() {}
+  virtual void OnWindowActivate(bool active) {}
 
   // Returns the View that is contained within this Window.
   virtual View* GetContentsView();

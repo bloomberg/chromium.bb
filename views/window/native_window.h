@@ -37,9 +37,6 @@ class NativeWindow {
 
   virtual Window* GetWindow() = 0;
 
-  virtual NativeWidget* AsNativeWidget() = 0;
-  virtual const NativeWidget* AsNativeWidget() const = 0;
-
  protected:
   friend class Window;
 
@@ -77,6 +74,9 @@ class NativeWindow {
   virtual void SetAccessibleName(const std::wstring& name) = 0;
   virtual void SetAccessibleRole(ui::AccessibilityTypes::Role role) = 0;
   virtual void SetAccessibleState(ui::AccessibilityTypes::State state) = 0;
+
+  virtual NativeWidget* AsNativeWidget() = 0;
+  virtual const NativeWidget* AsNativeWidget() const = 0;
 
   // Window pass-thrus ---------------------------------------------------------
   // See documentation in window.h

@@ -29,36 +29,55 @@ class BrowserFrameGtk : public BrowserFrame,
   // constructor.
   virtual void InitBrowserFrame();
 
+  // Overridden from views::Widget:
+  virtual ui::ThemeProvider* GetThemeProvider() const OVERRIDE;
+  virtual void SetInitialFocus() OVERRIDE;
+
  protected:
   // Overridden from NativeBrowserFrame:
   virtual views::NativeWindow* AsNativeWindow() OVERRIDE;
   virtual const views::NativeWindow* AsNativeWindow() const OVERRIDE;
-  virtual BrowserNonClientFrameView* CreateBrowserNonClientFrameView() OVERRIDE;
   virtual int GetMinimizeButtonOffset() const OVERRIDE;
+  virtual gfx::Rect GetBoundsForTabStrip(views::View* tabstrip) const OVERRIDE;
+  virtual int GetHorizontalTabStripVerticalOffset(bool restored) const OVERRIDE;
+  virtual void UpdateThrobber(bool running) OVERRIDE;
   virtual ui::ThemeProvider* GetThemeProviderForFrame() const OVERRIDE;
   virtual bool AlwaysUseNativeFrame() const OVERRIDE;
+  virtual views::View* GetFrameView() const OVERRIDE;
   virtual void TabStripDisplayModeChanged() OVERRIDE;
 
-  // Overridden from views::WindowGtk:
-  virtual ui::ThemeProvider* GetThemeProvider() const OVERRIDE;
-  virtual void SetInitialFocus() OVERRIDE;
+  void set_browser_frame_view(BrowserNonClientFrameView* browser_frame_view) {
+    browser_frame_view_ = browser_frame_view;
+  }
+
+  // Overridden from views::WidgetGtk:
   virtual views::RootView* CreateRootView();
   virtual bool GetAccelerator(int cmd_id, ui::Accelerator* accelerator);
-  virtual views::NonClientFrameView* CreateFrameViewForWindow() OVERRIDE;
+
+  // Overriden from views::WindowGtk:
   virtual gboolean OnWindowStateEvent(GtkWidget* widget,
                                       GdkEventWindowState* event);
   virtual gboolean OnConfigureEvent(GtkWidget* widget,
                                     GdkEventConfigure* event);
 
+ protected:
   BrowserView* browser_view() const {
     return browser_view_;
   }
 
  private:
-  NativeBrowserFrameDelegate* delegate_;
-
   // The BrowserView is our ClientView. This is a pointer to it.
   BrowserView* browser_view_;
+
+  // A pointer to our NonClientFrameView as a BrowserNonClientFrameView.
+  BrowserNonClientFrameView* browser_frame_view_;
+
+  // An unowning reference to the root view associated with the window. We save
+  // a copy as a BrowserRootView to avoid evil casting later, when we need to
+  // call functions that only exist on BrowserRootView (versus RootView).
+  BrowserRootView* root_view_;
+
+  Profile* profile_;
 
   DISALLOW_COPY_AND_ASSIGN(BrowserFrameGtk);
 };

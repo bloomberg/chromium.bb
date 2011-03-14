@@ -104,8 +104,6 @@ class WindowWin : public WidgetWin,
   virtual LRESULT OnDwmCompositionChanged(UINT msg,
                                           WPARAM w_param,
                                           LPARAM l_param) OVERRIDE;
-  virtual void OnEnterSizeMove() OVERRIDE;
-  virtual void OnExitSizeMove() OVERRIDE;
   virtual void OnFinalMessage(HWND window) OVERRIDE;
   virtual void OnGetMinMaxInfo(MINMAXINFO* minmax_info) OVERRIDE;
   virtual void OnInitMenu(HMENU menu) OVERRIDE;
@@ -137,8 +135,6 @@ class WindowWin : public WidgetWin,
   virtual const Window* GetWindow() const OVERRIDE { return this; }
 
   // Overridden from NativeWindow:
-  virtual NativeWidget* AsNativeWidget() OVERRIDE;
-  virtual const NativeWidget* AsNativeWidget() const OVERRIDE;
   virtual gfx::Rect GetRestoredBounds() const OVERRIDE;
   virtual void ShowNativeWindow(ShowState state) OVERRIDE;
   virtual void BecomeModal() OVERRIDE;
@@ -152,6 +148,8 @@ class WindowWin : public WidgetWin,
   virtual void SetAccessibleName(const std::wstring& name) OVERRIDE;
   virtual void SetAccessibleRole(ui::AccessibilityTypes::Role role) OVERRIDE;
   virtual void SetAccessibleState(ui::AccessibilityTypes::State state) OVERRIDE;
+  virtual NativeWidget* AsNativeWidget() OVERRIDE;
+  virtual const NativeWidget* AsNativeWidget() const OVERRIDE;
   virtual void SetWindowBounds(const gfx::Rect& bounds,
                                gfx::NativeWindow other_window) OVERRIDE;
   virtual void HideWindow() OVERRIDE;

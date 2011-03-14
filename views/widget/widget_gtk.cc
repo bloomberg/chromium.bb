@@ -423,7 +423,7 @@ void WidgetGtk::DoDrag(const OSExchangeData& data, int operation) {
 
 void WidgetGtk::IsActiveChanged() {
   if (widget_delegate())
-    widget_delegate()->OnWidgetActivated(IsActive());
+    widget_delegate()->IsActiveChanged(IsActive());
 }
 
 void WidgetGtk::ResetDropTarget() {

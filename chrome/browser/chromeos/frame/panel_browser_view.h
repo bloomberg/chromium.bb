@@ -32,7 +32,7 @@ class PanelBrowserView : public ::BrowserView,
   virtual void UpdateTitleBar();
   virtual void SetCreatorView(PanelBrowserView* creator);
   virtual bool GetSavedWindowBounds(gfx::Rect* bounds) const;
-  virtual void OnWindowActivationChanged(bool active);
+  virtual void OnWindowActivate(bool active);
 
   // PanelController::Delegate overrides
   virtual string16 GetPanelTitle();

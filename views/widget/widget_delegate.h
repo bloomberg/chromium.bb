@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2006-2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -14,20 +14,15 @@ class WidgetDelegate {
  public:
   virtual ~WidgetDelegate() {}
 
-  // Called whenever the widget is activated or deactivated.
-  // TODO(beng): This should be consolidated with
-  //             WindowDelegate::OnWindowActivationChanged().
-  virtual void OnWidgetActivated(bool active) {}
-
-  // Called whenever the widget's position changes.
-  virtual void OnWidgetMove() {}
-
   // Called with the display changes (color depth or resolution).
-  virtual void OnDisplayChanged() {}
+  virtual void DisplayChanged() {}
 
-  // Called when the work area (the desktop area minus task bars,
-  // menu bars, etc.) changes in size.
-  virtual void OnWorkAreaChanged() {}
+  // Called when widget active state has changed.
+  virtual void IsActiveChanged(bool active) {}
+
+  // Called when the work area (the desktop area minus taskbars,
+  // menubars, etc.) changes in size.
+  virtual void WorkAreaChanged() {}
 };
 
 }  // namespace views

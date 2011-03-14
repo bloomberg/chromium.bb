@@ -233,14 +233,6 @@ void WindowGtk::SetInitialFocus() {
 ////////////////////////////////////////////////////////////////////////////////
 // WindowGtk, NativeWindow implementation:
 
-NativeWidget* WindowGtk::AsNativeWidget() {
-  return this;
-}
-
-const NativeWidget* WindowGtk::AsNativeWidget() const {
-  return this;
-}
-
 gfx::Rect WindowGtk::GetRestoredBounds() const {
   // We currently don't support tiling, so this doesn't matter.
   return GetWindowScreenBounds();
@@ -303,6 +295,14 @@ void WindowGtk::SetAccessibleRole(ui::AccessibilityTypes::Role role) {
 }
 
 void WindowGtk::SetAccessibleState(ui::AccessibilityTypes::State state) {
+}
+
+NativeWidget* WindowGtk::AsNativeWidget() {
+  return this;
+}
+
+const NativeWidget* WindowGtk::AsNativeWidget() const {
+  return this;
 }
 
 Window* WindowGtk::GetWindow() {

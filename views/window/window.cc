@@ -298,15 +298,7 @@ void Window::OnNativeWindowCreated(const gfx::Rect& bounds) {
 void Window::OnNativeWindowActivationChanged(bool active) {
   if (!active)
     SaveWindowPosition();
-  window_delegate_->OnWindowActivationChanged(active);
-}
-
-void Window::OnNativeWindowBeginUserBoundsChange() {
-  window_delegate_->OnWindowBeginUserBoundsChange();
-}
-
-void Window::OnNativeWindowEndUserBoundsChange() {
-  window_delegate_->OnWindowEndUserBoundsChange();
+  window_delegate_->OnWindowActivate(active);
 }
 
 void Window::OnNativeWindowDestroying() {

@@ -102,6 +102,14 @@ class BrowserView : public BrowserBubbleHost,
   // Returns a Browser instance of this view.
   Browser* browser() const { return browser_.get(); }
 
+  // Called by the frame to notify the BrowserView that it was moved, and that
+  // any dependent popup windows should be repositioned.
+  void WindowMoved();
+
+  // Called by the frame to notify the BrowserView that a move or resize was
+  // initiated.
+  void WindowMoveOrResizeStarted();
+
   // Returns the apparent bounds of the toolbar, in BrowserView coordinates.
   // These differ from |toolbar_.bounds()| in that they match where the toolbar
   // background image is drawn -- slightly outside the "true" bounds
@@ -364,9 +372,7 @@ class BrowserView : public BrowserBubbleHost,
   virtual bool GetSavedMaximizedState(bool* maximized) const OVERRIDE;
   virtual views::View* GetContentsView() OVERRIDE;
   virtual views::ClientView* CreateClientView(views::Window* window) OVERRIDE;
-  virtual void OnWindowActivationChanged(bool active) OVERRIDE;
-  virtual void OnWindowBeginUserBoundsChange() OVERRIDE;
-  virtual void OnWidgetMove() OVERRIDE;
+  virtual void OnWindowActivate(bool active) OVERRIDE;
 
   // Overridden from views::ClientView:
   virtual bool CanClose() OVERRIDE;

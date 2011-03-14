@@ -14,13 +14,14 @@
 #include "chrome/browser/browser_list.h"
 #include "chrome/browser/themes/browser_theme_provider.h"
 #include "chrome/browser/ui/views/frame/browser_non_client_frame_view.h"
+#include "chrome/browser/ui/views/frame/browser_root_view.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/frame/glass_browser_frame_view.h"
 #include "grit/theme_resources.h"
 #include "ui/gfx/font.h"
 #include "views/screen.h"
-#include "views/widget/root_view.h"
 #include "views/widget/widget_win.h"
+#include "views/window/window_delegate.h"
 #include "views/window/window_win.h"
 
 // static
@@ -45,8 +46,8 @@ BrowserFrame* BrowserFrame::Create(BrowserView* browser_view,
 
 BrowserFrameWin::BrowserFrameWin(BrowserView* browser_view, Profile* profile)
     : WindowWin(browser_view),
-      BrowserFrame(browser_view),
       browser_view_(browser_view),
+      root_view_(NULL),
       ALLOW_THIS_IN_INITIALIZER_LIST(delegate_(this)) {
   set_native_browser_frame(this);
   browser_view_->set_frame(this);
@@ -108,9 +109,37 @@ void BrowserFrameWin::OnEndSession(BOOL ending, UINT logoff) {
   BrowserList::SessionEnding();
 }
 
+void BrowserFrameWin::OnEnterSizeMove() {
+  browser_view_->WindowMoveOrResizeStarted();
+}
+
+void BrowserFrameWin::OnExitSizeMove() {
+  views::WidgetWin::OnExitSizeMove();
+}
+
 void BrowserFrameWin::OnInitMenuPopup(HMENU menu, UINT position,
                                       BOOL is_system_menu) {
   browser_view_->PrepareToRunSystemMenu(menu);
+}
+
+void BrowserFrameWin::OnMove(const CPoint& point) {
+  browser_view_->WindowMoved();
+}
+
+void BrowserFrameWin::OnMoving(UINT param, LPRECT new_bounds) {
+  browser_view_->WindowMoved();
+}
+
+LRESULT BrowserFrameWin::OnNCHitTest(const CPoint& pt) {
+  // Only do DWM hit-testing when we are using the native frame.
+  if (non_client_view()->UseNativeFrame()) {
+    LRESULT result;
+    if (DwmDefWindowProc(GetNativeView(), WM_NCHITTEST, 0,
+                         MAKELPARAM(pt.x, pt.y), &result)) {
+      return result;
+    }
+  }
+  return WindowWin::OnNCHitTest(pt);
 }
 
 void BrowserFrameWin::OnWindowPosChanged(WINDOWPOS* window_pos) {
@@ -156,6 +185,15 @@ void BrowserFrameWin::Activate() {
   WindowWin::Activate();
 }
 
+views::NonClientFrameView* BrowserFrameWin::CreateFrameViewForWindow() {
+  if (AlwaysUseNativeFrame())
+    browser_frame_view_ = new GlassBrowserFrameView(this, browser_view_);
+  else
+    browser_frame_view_ =
+        browser::CreateBrowserNonClientFrameView(this, browser_view_);
+  return browser_frame_view_;
+}
+
 void BrowserFrameWin::UpdateFrameAfterFrameChange() {
   // We need to update the glass region on or off before the base class adjusts
   // the window region.
@@ -164,11 +202,8 @@ void BrowserFrameWin::UpdateFrameAfterFrameChange() {
 }
 
 views::RootView* BrowserFrameWin::CreateRootView() {
-  return delegate_->DelegateCreateRootView();
-}
-
-views::NonClientFrameView* BrowserFrameWin::CreateFrameViewForWindow() {
-  return delegate_->DelegateCreateFrameViewForWindow();
+  root_view_ = new BrowserRootView(browser_view_, this);
+  return root_view_;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -182,12 +217,6 @@ const views::NativeWindow* BrowserFrameWin::AsNativeWindow() const {
   return this;
 }
 
-BrowserNonClientFrameView* BrowserFrameWin::CreateBrowserNonClientFrameView() {
-  if (AlwaysUseNativeFrame())
-    return new GlassBrowserFrameView(this, browser_view_);
-  return browser::CreateBrowserNonClientFrameView(this, browser_view_);
-}
-
 int BrowserFrameWin::GetMinimizeButtonOffset() const {
   TITLEBARINFOEX titlebar_info;
   titlebar_info.cbSize = sizeof(TITLEBARINFOEX);
@@ -198,6 +227,18 @@ int BrowserFrameWin::GetMinimizeButtonOffset() const {
   MapWindowPoints(HWND_DESKTOP, GetNativeView(), &minimize_button_corner, 1);
 
   return minimize_button_corner.x;
+}
+
+gfx::Rect BrowserFrameWin::GetBoundsForTabStrip(views::View* tabstrip) const {
+  return browser_frame_view_->GetBoundsForTabStrip(tabstrip);
+}
+
+int BrowserFrameWin::GetHorizontalTabStripVerticalOffset(bool restored) const {
+  return browser_frame_view_->GetHorizontalTabStripVerticalOffset(restored);
+}
+
+void BrowserFrameWin::UpdateThrobber(bool running) {
+  browser_frame_view_->UpdateThrobber(running);
 }
 
 ui::ThemeProvider* BrowserFrameWin::GetThemeProviderForFrame() const {
@@ -221,6 +262,10 @@ bool BrowserFrameWin::AlwaysUseNativeFrame() const {
   // Otherwise, we use the native frame when we're told we should by the theme
   // provider (e.g. no custom theme is active).
   return GetThemeProvider()->ShouldUseNativeFrame();
+}
+
+views::View* BrowserFrameWin::GetFrameView() const {
+  return browser_frame_view_;
 }
 
 void BrowserFrameWin::TabStripDisplayModeChanged() {

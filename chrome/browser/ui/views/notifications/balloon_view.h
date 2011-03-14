@@ -74,8 +74,8 @@ class BalloonViewImpl : public BalloonView,
   virtual void RunMenu(views::View* source, const gfx::Point& pt) OVERRIDE;
 
   // views::WidgetDelegate interface.
-  virtual void OnDisplayChanged() OVERRIDE;
-  virtual void OnWorkAreaChanged() OVERRIDE;
+  virtual void DisplayChanged() OVERRIDE;
+  virtual void WorkAreaChanged() OVERRIDE;
 
   // views::ButtonListener interface.
   virtual void ButtonPressed(

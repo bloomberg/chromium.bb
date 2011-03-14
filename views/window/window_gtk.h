@@ -46,8 +46,6 @@ class WindowGtk : public WidgetGtk, public NativeWindow, public Window {
 
  protected:
   // Overridden from NativeWindow:
-  virtual NativeWidget* AsNativeWidget() OVERRIDE;
-  virtual const NativeWidget* AsNativeWidget() const OVERRIDE;
   virtual gfx::Rect GetRestoredBounds() const OVERRIDE;
   virtual void ShowNativeWindow(ShowState state) OVERRIDE;
   virtual void BecomeModal() OVERRIDE;
@@ -61,6 +59,8 @@ class WindowGtk : public WidgetGtk, public NativeWindow, public Window {
   virtual void SetAccessibleName(const std::wstring& name) OVERRIDE;
   virtual void SetAccessibleRole(ui::AccessibilityTypes::Role role) OVERRIDE;
   virtual void SetAccessibleState(ui::AccessibilityTypes::State state) OVERRIDE;
+  virtual NativeWidget* AsNativeWidget() OVERRIDE;
+  virtual const NativeWidget* AsNativeWidget() const OVERRIDE;
   virtual Window* GetWindow() OVERRIDE;
   virtual void SetWindowBounds(const gfx::Rect& bounds,
                                gfx::NativeWindow other_window) OVERRIDE;
