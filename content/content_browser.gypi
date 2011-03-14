@@ -51,6 +51,7 @@
         'browser/child_process_security_policy.h',
         'browser/chrome_blob_storage_context.cc',
         'browser/chrome_blob_storage_context.h',
+        'browser/content_browser_client.h',
         'browser/cross_site_request_manager.cc',
         'browser/cross_site_request_manager.h',
         'browser/device_orientation/accelerometer_mac.cc',

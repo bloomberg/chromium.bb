@@ -13,6 +13,7 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/common/chrome_constants.h"
+#include "chrome/common/chrome_content_client.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/test/testing_browser_process.h"
@@ -95,6 +96,9 @@ void ChromeTestSuite::Initialize() {
   base::mac::ScopedNSAutoreleasePool autorelease_pool;
 
   base::TestSuite::Initialize();
+
+  // Initialize the content client which that code uses to talk to Chrome.
+  content::SetContentClient(&chrome_content_client_);
 
   chrome::RegisterChromeSchemes();
   host_resolver_proc_ = new LocalHostResolverProc();

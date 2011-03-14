@@ -16,4 +16,7 @@ ContentClient* GetContentClient() {
   return g_client;
 }
 
+ContentClient::ContentClient() :
+    browser_client_(NULL) {}
+
 }  // namespace content

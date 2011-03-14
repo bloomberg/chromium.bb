@@ -32,6 +32,7 @@
 #include "build/build_config.h"
 #include "chrome/browser/about_flags.h"
 #include "chrome/browser/browser_main_win.h"
+#include "chrome/browser/chrome_content_browser_client.h"
 #include "chrome/browser/defaults.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_process_impl.h"
@@ -90,6 +91,7 @@
 #include "content/browser/plugin_service.h"
 #include "content/browser/renderer_host/resource_dispatcher_host.h"
 #include "content/common/child_process.h"
+#include "content/common/content_client.h"
 #include "content/common/hi_res_timer_manager.h"
 #include "content/common/main_function_params.h"
 #include "grit/app_locale_settings.h"
@@ -1472,6 +1474,11 @@ int BrowserMain(const MainFunctionParams& parameters) {
 
   PrefService* user_prefs = profile->GetPrefs();
   DCHECK(user_prefs);
+
+  // Override the default ContentBrowserClient to let Chrome participate in
+  // content logic.  Must be done before any tabs are created.
+  content::GetContentClient()->set_browser_client(
+      new chrome::ChromeContentBrowserClient());
 
   // Tests should be able to tune login manager before showing it.
   // Thus only show login manager in normal (non-testing) mode.

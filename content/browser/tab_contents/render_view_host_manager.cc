@@ -6,7 +6,6 @@
 
 #include "base/command_line.h"
 #include "base/logging.h"
-#include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/render_messages.h"
@@ -22,6 +21,7 @@
 #include "content/browser/tab_contents/tab_contents_view.h"
 #include "content/browser/webui/web_ui.h"
 #include "content/browser/webui/web_ui_factory.h"
+#include "content/common/content_client.h"
 #include "content/common/notification_service.h"
 #include "content/common/notification_type.h"
 
@@ -485,11 +485,10 @@ bool RenderViewHostManager::InitRenderView(RenderViewHost* render_view_host,
   if (pending_web_ui_.get())
     render_view_host->AllowBindings(pending_web_ui_->bindings());
 
-  // Tell the RenderView whether it will be used for an extension process.
+  // Give the embedder a chance to initialize the render view.
   Profile* profile = delegate_->GetControllerForRenderManager().profile();
-  bool is_extension_process = profile->GetExtensionService() &&
-      profile->GetExtensionService()->ExtensionBindingsAllowed(entry.url());
-  render_view_host->set_is_extension_process(is_extension_process);
+  content::GetContentClient()->browser_client()->OnRenderViewCreation(
+      render_view_host, profile, entry.url());
 
   return delegate_->CreateRenderViewForRenderManager(render_view_host);
 }

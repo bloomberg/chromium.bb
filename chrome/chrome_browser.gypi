@@ -344,6 +344,8 @@
         'browser/character_encoding.h',
         'browser/chrome_browser_application_mac.h',
         'browser/chrome_browser_application_mac.mm',
+        'browser/chrome_content_browser_client.cc',
+        'browser/chrome_content_browser_client.h',
         'browser/chromeos/audio_handler.cc',
         'browser/chromeos/audio_handler.h',
         'browser/chromeos/audio_mixer.h',

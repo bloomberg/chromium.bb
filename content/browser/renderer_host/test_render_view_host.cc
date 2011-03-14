@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "chrome/browser/browser_url_handler.h"
+#include "chrome/browser/chrome_content_browser_client.h"
 #include "chrome/common/dom_storage_common.h"
 #include "chrome/common/render_messages.h"
 #include "chrome/common/render_messages_params.h"
@@ -12,6 +13,7 @@
 #include "content/browser/site_instance.h"
 #include "content/browser/tab_contents/navigation_controller.h"
 #include "content/browser/tab_contents/test_tab_contents.h"
+#include "content/common/content_client.h"
 #include "ui/gfx/rect.h"
 #include "webkit/glue/webkit_glue.h"
 #include "webkit/glue/webpreferences.h"
@@ -338,6 +340,10 @@ void RenderViewHostTestHarness::Reload() {
 }
 
 void RenderViewHostTestHarness::SetUp() {
+  // Initialize Chrome's ContentBrowserClient here, since we won't go through
+  // BrowserMain.
+  content::GetContentClient()->set_browser_client(
+      new chrome::ChromeContentBrowserClient());
   contents_.reset(CreateTestTabContents());
 }
 

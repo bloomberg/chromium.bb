@@ -15,6 +15,7 @@
 #include "base/ref_counted.h"
 #include "base/test/test_suite.h"
 #include "chrome/app/scoped_ole_initializer.h"
+#include "chrome/common/chrome_content_client.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "net/base/mock_host_resolver.h"
 #include "net/base/net_util.h"
@@ -51,6 +52,9 @@ class ChromeTestSuite : public base::TestSuite {
   void SetBrowserDirectory(const FilePath& browser_dir) {
     browser_dir_ = browser_dir;
   }
+
+  // Client for embedding content in Chrome.
+  chrome::ChromeContentClient chrome_content_client_;
 
   base::StatsTable* stats_table_;
 
