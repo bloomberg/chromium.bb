@@ -18,6 +18,7 @@
          animations.  The notification will only be posted for one
          frame unless requested again. -->
     <request name="frame">
+      <arg name="surface" type="object" interface="surface"/>
       <arg name="key" type="uint"/>
     </request>
 

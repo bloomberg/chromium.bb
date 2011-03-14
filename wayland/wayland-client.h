@@ -35,7 +35,8 @@ extern "C" {
 
 typedef int (*wl_display_update_func_t)(uint32_t mask, void *data);
 typedef void (*wl_display_sync_func_t)(void *data);
-typedef void (*wl_display_frame_func_t)(void *data, uint32_t time);
+typedef void (*wl_display_frame_func_t)(struct wl_surface *surface,
+					void *data, uint32_t time);
 
 struct wl_display *wl_display_connect(const char *name);
 void wl_display_destroy(struct wl_display *display);
@@ -46,6 +47,7 @@ void wl_display_iterate(struct wl_display *display, uint32_t mask);
 int wl_display_sync_callback(struct wl_display *display,
 			     wl_display_sync_func_t func, void *data);
 int wl_display_frame_callback(struct wl_display *display,
+			      struct wl_surface *surface,
 			      wl_display_frame_func_t func, void *data);
 
 struct wl_global_listener;
