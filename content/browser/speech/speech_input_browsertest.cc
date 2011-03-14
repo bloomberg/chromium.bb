@@ -114,20 +114,12 @@ class SpeechInputBrowserTest : public InProcessBrowserTest {
     // events at that coordinate to trigger speech recognition.
     GURL test_url = testUrl(filename);
     ui_test_utils::NavigateToURL(browser(), test_url);
-    std::string coords = browser()->GetSelectedTabContents()->GetURL().ref();
-    VLOG(1) << "Coordinates given by script: " << coords;
-    int comma_pos = coords.find(',');
-    ASSERT_NE(-1, comma_pos);
-    int x = 0;
-    ASSERT_TRUE(base::StringToInt(coords.substr(0, comma_pos).c_str(), &x));
-    int y = 0;
-    ASSERT_TRUE(base::StringToInt(coords.substr(comma_pos + 1).c_str(), &y));
 
     WebKit::WebMouseEvent mouse_event;
     mouse_event.type = WebKit::WebInputEvent::MouseDown;
     mouse_event.button = WebKit::WebMouseEvent::ButtonLeft;
-    mouse_event.x = x;
-    mouse_event.y = y;
+    mouse_event.x = 0;
+    mouse_event.y = 0;
     mouse_event.clickCount = 1;
     TabContents* tab_contents = browser()->GetSelectedTabContents();
     tab_contents->render_view_host()->ForwardMouseEvent(mouse_event);
@@ -183,8 +175,6 @@ SpeechInputManager* SpeechInputBrowserTest::speech_input_manager_ = NULL;
 // Marked as DISABLED due to http://crbug.com/71227
 #if defined(GOOGLE_CHROME_BUILD)
 #define MAYBE_TestBasicRecognition DISABLED_TestBasicRecognition
-#elif defined(OS_WIN)
-#define MAYBE_TestBasicRecognition DISABLED_TestBasicRecognition
 #else
 #define MAYBE_TestBasicRecognition TestBasicRecognition
 #endif
@@ -197,8 +187,6 @@ IN_PROC_BROWSER_TEST_F(SpeechInputBrowserTest, MAYBE_TestBasicRecognition) {
 // Marked as DISALBED due to http://crbug.com/71227
 #if defined(GOOGLE_CHROME_BUILD)
 #define MAYBE_GrammarAttribute DISABLED_GrammarAttribute
-#elif defined(OS_WIN)
-#define MAYBE_GrammarAttribute FLAKY_GrammarAttribute
 #else
 #define MAYBE_GrammarAttribute GrammarAttribute
 #endif

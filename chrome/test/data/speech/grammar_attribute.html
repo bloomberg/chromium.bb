@@ -10,22 +10,14 @@
           document.location = '#fail';
         }
       }
-      function run() {
-        // Calculate a point inside the speech button and pass that to the
-        // c++ test code through the URL fragment. This calculation must
-        // get updated if the speech button rendering changes.
-        var inputField = document.getElementById('inputField');
-        var x = inputField.offsetLeft + inputField.offsetWidth - 10;
-        var y = inputField.offsetTop + Math.floor(inputField.offsetHeight / 2);
-        document.location = document.location + '#' + x + ',' + y;
-      }
     </script>
   </head>
-  <body onLoad="run()">
+  <body style="padding:0; margin:0;">
     <input id='inputField' x-webkit-speech
            x-webkit-grammar="http://example.com/grammar.xml"
            onwebkitspeechchange="onspeechresult(this.value);"
-           onchange="onspeechresult(this.value);">
+           onchange="onspeechresult(this.value);"
+           style="position:absolute; margin:0; padding:0; border:0; width:10px;">
     <br>
     <div id="status">FAIL</div>
   </body>
