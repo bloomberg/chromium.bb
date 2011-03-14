@@ -132,11 +132,6 @@ class DataSource : public Filter {
 
 class Demuxer : public Filter {
  public:
-  // Initialize a Demuxer with the given DataSource, executing the callback upon
-  // completion.
-  virtual void Initialize(DataSource* data_source,
-                          FilterCallback* callback) = 0;
-
   // Returns the number of streams available
   virtual size_t GetNumberOfStreams() = 0;
 

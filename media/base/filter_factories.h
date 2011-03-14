@@ -30,6 +30,24 @@ class DataSourceFactory {
   virtual DataSourceFactory* Clone() const = 0;
 };
 
+class Demuxer;
+
+// Asynchronous factory interface for building Demuxer objects.
+class DemuxerFactory {
+ public:
+  // Ownership of the Demuxer is transferred through this callback.
+  typedef Callback2<PipelineError, Demuxer*>::Type BuildCallback;
+
+  virtual ~DemuxerFactory();
+
+  // Builds a Demuxer for |url| and returns it via |callback|.
+  virtual void Build(const std::string& url, BuildCallback* callback) = 0;
+
+  // Makes a copy of this factory.
+  // NOTE: Pending requests are not cloned.
+  virtual DemuxerFactory* Clone() const = 0;
+};
+
 }  // namespace media
 
 #endif  // MEDIA_BASE_FILTER_FACTORIES_H_

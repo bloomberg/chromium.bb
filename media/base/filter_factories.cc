@@ -8,4 +8,6 @@ namespace media {
 
 DataSourceFactory::~DataSourceFactory() {}
 
+DemuxerFactory::~DemuxerFactory() {}
+
 }  // namespace media

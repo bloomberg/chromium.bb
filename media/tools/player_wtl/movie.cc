@@ -12,7 +12,7 @@
 #include "media/base/pipeline_impl.h"
 #include "media/filters/audio_renderer_impl.h"
 #include "media/filters/ffmpeg_audio_decoder.h"
-#include "media/filters/ffmpeg_demuxer.h"
+#include "media/filters/ffmpeg_demuxer_factory.h"
 #include "media/filters/ffmpeg_video_decoder.h"
 #include "media/filters/file_data_source_factory.h"
 #include "media/filters/null_audio_renderer.h"
@@ -20,7 +20,7 @@
 
 using media::AudioRendererImpl;
 using media::FFmpegAudioDecoder;
-using media::FFmpegDemuxer;
+using media::FFmpegDemuxerFactory;
 using media::FFmpegVideoDecoder;
 using media::FileDataSourceFactory;
 using media::FilterCollection;
@@ -63,13 +63,16 @@ bool Movie::Open(const wchar_t* url, WtlVideoRenderer* video_renderer) {
 
   message_loop_factory_.reset(new media::MessageLoopFactoryImpl());
 
+  MessageLoop* pipeline_loop =
+      message_loop_factory_->GetMessageLoop("PipelineThread");
+  pipeline_ = new PipelineImpl(pipeline_loop);
+
   // Create filter collection.
   scoped_ptr<FilterCollection> collection(new FilterCollection());
-  collection->SetDataSourceFactory(new FileDataSourceFactory());
+  collection->SetDemuxerFactory(new FFmpegDemuxerFactory(
+      new FileDataSourceFactory(), pipeline_loop));
   collection->AddAudioDecoder(new FFmpegAudioDecoder(
       message_loop_factory_->GetMessageLoop("AudioDecoderThread")));
-  collection->AddDemuxer(new FFmpegDemuxer(
-      message_loop_factory_->GetMessageLoop("DemuxThread")));
   collection->AddVideoDecoder(new FFmpegVideoDecoder(
       message_loop_factory_->GetMessageLoop("VideoDecoderThread"), NULL));
 
@@ -79,9 +82,6 @@ bool Movie::Open(const wchar_t* url, WtlVideoRenderer* video_renderer) {
     collection->AddAudioRenderer(new media::NullAudioRenderer());
   }
   collection->AddVideoRenderer(video_renderer);
-
-  pipeline_ = new PipelineImpl(
-      message_loop_factory_->GetMessageLoop("PipelineThread"));
 
   // Create and start our pipeline.
   pipeline_->Start(collection.release(), WideToUTF8(std::wstring(url)), NULL);

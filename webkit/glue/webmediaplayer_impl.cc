@@ -16,7 +16,7 @@
 #include "media/base/pipeline_impl.h"
 #include "media/base/video_frame.h"
 #include "media/filters/ffmpeg_audio_decoder.h"
-#include "media/filters/ffmpeg_demuxer.h"
+#include "media/filters/ffmpeg_demuxer_factory.h"
 #include "media/filters/ffmpeg_video_decoder.h"
 #include "media/filters/null_audio_renderer.h"
 #include "skia/ext/platform_canvas.h"
@@ -335,11 +335,12 @@ bool WebMediaPlayerImpl::Initialize(
     data_source_factory->AddFactory(simple_data_source_factory.release());
   }
 
-  filter_collection_->SetDataSourceFactory(data_source_factory.release());
+  scoped_ptr<media::DemuxerFactory> demuxer_factory(
+      new media::FFmpegDemuxerFactory(data_source_factory.release(),
+                                      pipeline_message_loop));
+  filter_collection_->SetDemuxerFactory(demuxer_factory.release());
 
   // Add in the default filter factories.
-  filter_collection_->AddDemuxer(new media::FFmpegDemuxer(
-      message_loop_factory_->GetMessageLoop("DemuxThread")));
   filter_collection_->AddAudioDecoder(new media::FFmpegAudioDecoder(
       message_loop_factory_->GetMessageLoop("AudioDecoderThread")));
   filter_collection_->AddVideoDecoder(new media::FFmpegVideoDecoder(
