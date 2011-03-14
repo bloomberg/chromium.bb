@@ -4001,6 +4001,11 @@
    fun:_Z16DispatchToMethodI14SessionBackendMS0_FvPSt6vectorIP14SessionCommandSaIS3_EEbES6_bEvPT_T0_RK6Tuple2IT1_T2_E
    fun:_ZN14RunnableMethodI14SessionBackendMS0_FvPSt6vectorIP14SessionCommandSaIS3_EEbE6Tuple2IS6_bEE3RunEv
 }
+{
+   bug_76038
+   Memcheck:Cond
+   fun:_ZN7WebCore15StorageAreaSync4syncEbRKN3WTF7HashMapINS1_6StringES3_NS1_10StringHashENS1_10HashTraitsIS3_EES6_EE
+}
 
 #-----------------------------------------------------------------------
 # These only occur on our Google workstations
