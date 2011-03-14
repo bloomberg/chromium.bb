@@ -192,7 +192,7 @@ scan (FILE *f, char *file, FcCharSetFreezer *freezer)
 		fatal (file, lineno, "out of memory");
 	}
     }
-    n = FcCharSetFreeze (freezer, c);
+    n = (FcCharSet *) FcCharSetFreeze (freezer, c);
     FcCharSetDestroy (c);
     return n;
 }
