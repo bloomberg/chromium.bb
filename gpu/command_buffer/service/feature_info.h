@@ -34,6 +34,7 @@ class FeatureInfo {
   };
 
   FeatureInfo();
+  ~FeatureInfo();
 
   // If allowed features = NULL or "*", all features are allowed. Otherwise
   // only features that match the strings in allowed_features are allowed.

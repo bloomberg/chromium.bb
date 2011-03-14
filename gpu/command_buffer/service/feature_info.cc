@@ -15,6 +15,9 @@ namespace gles2 {
 FeatureInfo::FeatureInfo() {
 }
 
+FeatureInfo::~FeatureInfo() {
+}
+
 // Helps query for extensions.
 class ExtensionHelper {
  public:
