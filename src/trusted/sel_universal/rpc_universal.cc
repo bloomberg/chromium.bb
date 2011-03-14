@@ -505,50 +505,60 @@ NaClCommandLoop::NaClCommandLoop(NaClSrpcService* service,
 }
 
 
-bool NaClCommandLoop::ProcessCommands(const vector<string>& commands) {
+// return codes:
+// 0  - ok
+// -1 - failure
+// 1  - stop processing
+int NaClCommandLoop::ProcessOneCommand(const string command) {
   vector<string> tokens;
+  Tokenize(command, &tokens);
+
+  if (tokens.size() == 0) {
+    return 0;
+  }
+
+  if (tokens[0][0] == '#') {
+    return 0;
+  }
+
+  if (tokens[0] == "quit") {
+    return 1;
+  }
+
+  for (size_t i = 0; i < tokens.size(); ++i) {
+    tokens[i] = SubstituteVars(tokens[i], this);
+  }
+
+  if (handlers_.find(tokens[0]) == handlers_.end()) {
+      NaClLog(LOG_ERROR, "Unknown command [%s].\n", tokens[0].c_str());
+      return -1;
+  }
+
+  if (!handlers_[tokens[0]](this, tokens)) {
+    NaClLog(LOG_ERROR, "Command [%s] failed.\n", tokens[0].c_str());
+    return -1;
+  }
+
+  return 0;
+}
+
+bool NaClCommandLoop::ProcessCommands(const vector<string>& commands) {
   NaClLog(1, "entering processing commands\n");
   for (size_t i = 0; i < commands.size(); ++i) {
     fflush(stdout);
     fflush(stderr);
 
-    tokens.clear();
-    Tokenize(commands[i], &tokens);
-
-    if (tokens.size() == 0) {
-      continue;
-    }
-
-    if (tokens[0][0] == '#') {
-      continue;
-    }
-
-    if (tokens[0] == "quit") {
-      break;
-    }
-
-    for (size_t i = 0; i < tokens.size(); ++i) {
-      tokens[i] = SubstituteVars(tokens[i], this);
-    }
-
-    if (handlers_.find(tokens[0])  == handlers_.end()) {
-      NaClLog(LOG_ERROR, "Unknown command [%s].\n", tokens[0].c_str());
-      return false;
-    }
-
-    if (!handlers_[tokens[0]](this, tokens)) {
-      NaClLog(LOG_ERROR, "Command [%s] failed.\n", tokens[0].c_str());
-      return false;
-    }
+    int result = ProcessOneCommand(commands[i]);
+    if (result == 1) return true;
+    if (result == -1) return false;
   }
 
   return true;
 }
 
 
-bool NaClCommandLoop::StartInteractiveLoop() {
+bool NaClCommandLoop::StartInteractiveLoop(bool abort_on_error) {
   int command_count = 0;
-  vector<string> tokens;
 
   NaClLog(1, "entering print eval loop\n");
   for (;;) {
@@ -563,33 +573,9 @@ bool NaClCommandLoop::StartInteractiveLoop() {
     if (!fgets(buffer, sizeof(buffer), stdin))
       break;
 
-    tokens.clear();
-    Tokenize(buffer, &tokens);
-
-    if (tokens.size() == 0) {
-      continue;
-    }
-
-    if (tokens[0][0] == '#') {
-      continue;
-    }
-
-    if (tokens[0] == "quit") {
-      break;
-    }
-
-    for (size_t i = 0; i < tokens.size(); ++i) {
-      tokens[i] = SubstituteVars(tokens[i], this);
-    }
-
-    if (handlers_.find(tokens[0])  == handlers_.end()) {
-      NaClLog(LOG_ERROR, "Unknown command [%s].\n", tokens[0].c_str());
-      continue;
-    }
-
-    if (!handlers_[tokens[0]](this, tokens)) {
-      NaClLog(LOG_ERROR, "Command [%s] failed.\n", tokens[0].c_str());
-    }
+    int result = ProcessOneCommand(buffer);
+    if (result == 1) break;
+    if (result == -1 && abort_on_error) return false;
   }
   NaClLog(1, "exiting print eval loop\n");
   return true;

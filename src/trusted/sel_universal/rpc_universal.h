@@ -40,7 +40,8 @@ class NaClCommandLoop {
   void DumpArgsAndResults(NaClSrpcArg* inv[], NaClSrpcArg* outv[]);
   bool InvokeNexeRpc(string signature, NaClSrpcArg** in, NaClSrpcArg** out);
 
-  bool StartInteractiveLoop();
+  int ProcessOneCommand(const string command);
+  bool StartInteractiveLoop(bool abort_on_error);
   bool ProcessCommands(const vector<string>& commands);
 
  private:
@@ -58,6 +59,7 @@ class NaClCommandLoop {
                                      const vector<string>& args);
   static bool HandleEcho(NaClCommandLoop* ncl,
                          const vector<string>& args);
+
   int desc_count_;
   NaClSrpcService* service_;
   NaClSrpcChannel* channel_;

@@ -54,7 +54,7 @@ static NaClSrpcChannel channel;
 // variables set via command line
 static map<string, string> initial_vars;
 static vector<string> initial_commands;
-
+static bool abort_on_error = false;
 // When given argc and argv this function (a) extracts the nacl_file argument,
 // (b) populates sel_ldr_argv with sel_ldr arguments, and (c) populates
 // app_argv with nexe module args. Also see kUsage above for details.
@@ -78,9 +78,8 @@ static nacl::string ProcessArguments(int argc,
       exit(0);
     } else if (flag == "--debug") {
       NaClLogSetVerbosity(1);
-    } else if (flag == "--script_mode") {
-      // TODO(robertm): eliminate this once the pnacl TC does not need it
-      // anymore
+    } else if (flag == "--abort_on_error") {
+      abort_on_error = true;
     } else if (flag == "--command_file") {
       if (argc <= i + 1) {
         NaClLog(LOG_FATAL,
@@ -209,7 +208,7 @@ bool HandlerEventLoop(NaClCommandLoop* ncl, const vector<string>& args);
 
   const bool success = initial_commands.size() > 0 ?
                        loop.ProcessCommands(initial_commands) :
-                       loop.StartInteractiveLoop();
+                       loop.StartInteractiveLoop(abort_on_error);
 
   // Close the connections to sel_ldr.
   NaClSrpcDtor(&command_channel);
