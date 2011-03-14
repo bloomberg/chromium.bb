@@ -1,7 +1,9 @@
 Name: libsrtp
 URL: http://srtp.sourceforge.net
+Version: unknown
 License File: LICENSE
 
+Description:
 Contains sources of libSRTP used by Chrome.
 The current version contains copy of the libsrtp CVS from 2010-09-20. Command
 used to obtain this copy:
