@@ -5,7 +5,7 @@
 #include "chrome/renderer/websharedworker_proxy.h"
 
 #include "chrome/common/render_messages.h"
-#include "chrome/common/webmessageportchannel_impl.h"
+#include "content/common/webmessageportchannel_impl.h"
 #include "content/common/worker_messages.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebURL.h"
 

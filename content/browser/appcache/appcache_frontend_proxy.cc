@@ -4,7 +4,7 @@
 
 #include "content/browser/appcache/appcache_frontend_proxy.h"
 
-#include "chrome/common/render_messages.h"
+#include "content/common/appcache_messages.h"
 
 AppCacheFrontendProxy::AppCacheFrontendProxy(IPC::Message::Sender* sender)
     : sender_(sender) {

@@ -8,8 +8,8 @@
 #include "chrome/browser/metrics/user_metrics.h"
 #include "chrome/browser/net/chrome_url_request_context.h"
 #include "chrome/browser/renderer_host/browser_render_process_host.h"
-#include "chrome/common/render_messages.h"
 #include "content/browser/appcache/chrome_appcache_service.h"
+#include "content/common/appcache_messages.h"
 
 AppCacheDispatcherHost::AppCacheDispatcherHost(
     net::URLRequestContext* request_context,
@@ -61,18 +61,19 @@ bool AppCacheDispatcherHost::OnMessageReceived(const IPC::Message& message,
                                                bool* message_was_ok) {
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP_EX(AppCacheDispatcherHost, message, *message_was_ok)
-    IPC_MESSAGE_HANDLER(AppCacheMsg_RegisterHost, OnRegisterHost)
-    IPC_MESSAGE_HANDLER(AppCacheMsg_UnregisterHost, OnUnregisterHost)
-    IPC_MESSAGE_HANDLER(AppCacheMsg_GetResourceList, OnGetResourceList)
-    IPC_MESSAGE_HANDLER(AppCacheMsg_SelectCache, OnSelectCache)
-    IPC_MESSAGE_HANDLER(AppCacheMsg_SelectCacheForWorker,
+    IPC_MESSAGE_HANDLER(AppCacheHostMsg_RegisterHost, OnRegisterHost)
+    IPC_MESSAGE_HANDLER(AppCacheHostMsg_UnregisterHost, OnUnregisterHost)
+    IPC_MESSAGE_HANDLER(AppCacheHostMsg_GetResourceList, OnGetResourceList)
+    IPC_MESSAGE_HANDLER(AppCacheHostMsg_SelectCache, OnSelectCache)
+    IPC_MESSAGE_HANDLER(AppCacheHostMsg_SelectCacheForWorker,
                         OnSelectCacheForWorker)
-    IPC_MESSAGE_HANDLER(AppCacheMsg_SelectCacheForSharedWorker,
+    IPC_MESSAGE_HANDLER(AppCacheHostMsg_SelectCacheForSharedWorker,
                         OnSelectCacheForSharedWorker)
-    IPC_MESSAGE_HANDLER(AppCacheMsg_MarkAsForeignEntry, OnMarkAsForeignEntry)
-    IPC_MESSAGE_HANDLER_DELAY_REPLY(AppCacheMsg_GetStatus, OnGetStatus)
-    IPC_MESSAGE_HANDLER_DELAY_REPLY(AppCacheMsg_StartUpdate, OnStartUpdate)
-    IPC_MESSAGE_HANDLER_DELAY_REPLY(AppCacheMsg_SwapCache, OnSwapCache)
+    IPC_MESSAGE_HANDLER(AppCacheHostMsg_MarkAsForeignEntry,
+                        OnMarkAsForeignEntry)
+    IPC_MESSAGE_HANDLER_DELAY_REPLY(AppCacheHostMsg_GetStatus, OnGetStatus)
+    IPC_MESSAGE_HANDLER_DELAY_REPLY(AppCacheHostMsg_StartUpdate, OnStartUpdate)
+    IPC_MESSAGE_HANDLER_DELAY_REPLY(AppCacheHostMsg_SwapCache, OnSwapCache)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP_EX()
 
@@ -218,20 +219,20 @@ void AppCacheDispatcherHost::GetStatusCallback(
     appcache::Status status, void* param) {
   IPC::Message* reply_msg = reinterpret_cast<IPC::Message*>(param);
   DCHECK_EQ(pending_reply_msg_.get(), reply_msg);
-  AppCacheMsg_GetStatus::WriteReplyParams(reply_msg, status);
+  AppCacheHostMsg_GetStatus::WriteReplyParams(reply_msg, status);
   Send(pending_reply_msg_.release());
 }
 
 void AppCacheDispatcherHost::StartUpdateCallback(bool result, void* param) {
   IPC::Message* reply_msg = reinterpret_cast<IPC::Message*>(param);
   DCHECK_EQ(pending_reply_msg_.get(), reply_msg);
-  AppCacheMsg_StartUpdate::WriteReplyParams(reply_msg, result);
+  AppCacheHostMsg_StartUpdate::WriteReplyParams(reply_msg, result);
   Send(pending_reply_msg_.release());
 }
 
 void AppCacheDispatcherHost::SwapCacheCallback(bool result, void* param) {
   IPC::Message* reply_msg = reinterpret_cast<IPC::Message*>(param);
   DCHECK_EQ(pending_reply_msg_.get(), reply_msg);
-  AppCacheMsg_SwapCache::WriteReplyParams(reply_msg, result);
+  AppCacheHostMsg_SwapCache::WriteReplyParams(reply_msg, result);
   Send(pending_reply_msg_.release());
 }

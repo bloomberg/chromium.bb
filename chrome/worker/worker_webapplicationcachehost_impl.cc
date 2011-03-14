@@ -1,11 +1,11 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "chrome/worker/worker_webapplicationcachehost_impl.h"
 
-#include "chrome/common/appcache/appcache_dispatcher.h"
 #include "chrome/worker/worker_thread.h"
+#include "content/common/appcache/appcache_dispatcher.h"
 
 WorkerWebApplicationCacheHostImpl::WorkerWebApplicationCacheHostImpl(
     const WorkerAppCacheInitInfo& init_info,

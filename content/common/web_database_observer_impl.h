@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_COMMON_WEB_DATABASE_OBSERVER_IMPL_H_
-#define CHROME_COMMON_WEB_DATABASE_OBSERVER_IMPL_H_
+#ifndef CONTENT_COMMON_WEB_DATABASE_OBSERVER_IMPL_H_
+#define CONTENT_COMMON_WEB_DATABASE_OBSERVER_IMPL_H_
 #pragma once
 
 #include "ipc/ipc_message.h"
@@ -26,4 +26,4 @@ class WebDatabaseObserverImpl : public WebKit::WebDatabaseObserver {
   webkit_database::DatabaseConnections database_connections_;
 };
 
-#endif  // CHROME_COMMON_WEB_DATABASE_OBSERVER_IMPL_H_
+#endif  // CONTENT_COMMON_WEB_DATABASE_OBSERVER_IMPL_H_

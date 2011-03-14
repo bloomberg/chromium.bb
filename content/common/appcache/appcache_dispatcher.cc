@@ -1,10 +1,10 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/common/appcache/appcache_dispatcher.h"
+#include "content/common/appcache/appcache_dispatcher.h"
 
-#include "chrome/common/render_messages.h"
+#include "content/common/appcache_messages.h"
 #include "webkit/appcache/web_application_cache_host_impl.h"
 
 bool AppCacheDispatcher::OnMessageReceived(const IPC::Message& msg) {
