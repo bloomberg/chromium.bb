@@ -10,6 +10,25 @@
 
 #include "chrome/browser/extensions/extension_function.h"
 
+class Value;
+
+class PreferenceTransformerInterface {
+ public:
+  // Converts the representation of a preference as seen by the extension
+  // into a representation that is used in the pref stores of the browser.
+  // Returns the pref store representation in case of success or sets
+  // |error| and returns NULL otherwise.
+  // The ownership of the returned value is passed to the caller.
+  virtual Value* ExtensionToBrowserPref(const Value* extension_pref,
+                                        std::string* error) = 0;
+
+  // Converts the representation of the preference as stored in the browser
+  // into a representation that is used by the extension.
+  // Returns the extension representation in case of success or NULL otherwise.
+  // The ownership of the returned value is passed to the caller.
+  virtual Value* BrowserToExtensionPref(const Value* browser_pref) = 0;
+};
+
 class GetPreferenceFunction : public SyncExtensionFunction {
  public:
   virtual ~GetPreferenceFunction();
