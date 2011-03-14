@@ -14,6 +14,7 @@
 #include "chrome/browser/notifications/notification.h"
 #include "chrome/browser/notifications/notification_ui_manager.h"
 #include "chrome/browser/prefs/pref_service.h"
+#include "chrome/browser/printing/cloud_print/cloud_print_setup_flow.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/service/service_process_control.h"
 #include "chrome/browser/service/service_process_control_manager.h"
@@ -120,7 +121,9 @@ void CloudPrintProxyService::OnTokenExpiredNotificationClick() {
   // Clear the cached cloud print email pref so that the cloud print setup
   // flow happens.
   profile_->GetPrefs()->SetString(prefs::kCloudPrintEmail, std::string());
-  CloudPrintSetupFlow::OpenDialog(profile_, this, NULL);
+  cloud_print_setup_handler_.reset(new CloudPrintSetupHandler(this));
+  CloudPrintSetupFlow::OpenDialog(
+      profile_, cloud_print_setup_handler_->AsWeakPtr(), NULL);
 }
 
 void CloudPrintProxyService::TokenExpiredNotificationDone(bool keep_alive) {
@@ -133,7 +136,7 @@ void CloudPrintProxyService::TokenExpiredNotificationDone(bool keep_alive) {
   }
 }
 
-void CloudPrintProxyService::OnDialogClosed() {
+void CloudPrintProxyService::OnCloudPrintSetupClosed() {
   MessageLoop::current()->PostTask(
       FROM_HERE, NewRunnableFunction(&BrowserList::EndKeepAlive));
 }

@@ -45,7 +45,8 @@ static const wchar_t kDoneIframeXPath[] = L"//iframe[@id='setupdone']";
 
 // static
 CloudPrintSetupFlow* CloudPrintSetupFlow::OpenDialog(
-    Profile* profile, Delegate* delegate, gfx::NativeWindow parent_window) {
+    Profile* profile, const base::WeakPtr<Delegate>& delegate,
+    gfx::NativeWindow parent_window) {
   DCHECK(profile);
   // Set the arguments for showing the gaia login page.
   DictionaryValue args;
@@ -77,10 +78,11 @@ CloudPrintSetupFlow* CloudPrintSetupFlow::OpenDialog(
   return flow;
 }
 
-CloudPrintSetupFlow::CloudPrintSetupFlow(const std::string& args,
-                                         Profile* profile,
-                                         Delegate* delegate,
-                                         bool setup_done)
+CloudPrintSetupFlow::CloudPrintSetupFlow(
+    const std::string& args,
+    Profile* profile,
+    const base::WeakPtr<Delegate>& delegate,
+    bool setup_done)
     : web_ui_(NULL),
       dialog_start_args_(args),
       setup_done_(setup_done),

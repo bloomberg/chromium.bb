@@ -41,6 +41,7 @@
 
 #if !defined(OS_CHROMEOS)
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/printing/cloud_print/cloud_print_setup_handler.h"
 #include "chrome/browser/ui/webui/options/advanced_options_utils.h"
 #endif
 
@@ -358,7 +359,7 @@ void AdvancedOptionsHandler::FileSelected(const FilePath& path, int index,
   SetupDownloadLocationPath();
 }
 
-void AdvancedOptionsHandler::OnDialogClosed() {
+void AdvancedOptionsHandler::OnCloudPrintSetupClosed() {
 #if !defined(OS_CHROMEOS)
   if (cloud_print_proxy_ui_enabled_)
     SetupCloudPrintProxySection();
@@ -446,8 +447,9 @@ void AdvancedOptionsHandler::ShowManageSSLCertificates(const ListValue* args) {
 #if !defined(OS_CHROMEOS)
 void AdvancedOptionsHandler::ShowCloudPrintSetupDialog(const ListValue* args) {
   UserMetricsRecordAction(UserMetricsAction("Options_EnableCloudPrintProxy"));
+  cloud_print_setup_handler_.reset(new CloudPrintSetupHandler(this));
   CloudPrintSetupFlow::OpenDialog(
-      web_ui_->GetProfile(), this,
+      web_ui_->GetProfile(), cloud_print_setup_handler_->AsWeakPtr(),
       web_ui_->tab_contents()->GetMessageBoxRootWindow());
 }
 

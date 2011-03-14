@@ -1614,6 +1614,8 @@
         'browser/printing/cloud_print/cloud_print_proxy_service.h',
         'browser/printing/cloud_print/cloud_print_setup_flow.cc',
         'browser/printing/cloud_print/cloud_print_setup_flow.h',
+        'browser/printing/cloud_print/cloud_print_setup_handler.cc',
+        'browser/printing/cloud_print/cloud_print_setup_handler.h',
         'browser/printing/cloud_print/cloud_print_setup_message_handler.cc',
         'browser/printing/cloud_print/cloud_print_setup_message_handler.h',
         'browser/printing/cloud_print/cloud_print_setup_source.cc',

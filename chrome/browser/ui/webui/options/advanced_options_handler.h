@@ -8,18 +8,19 @@
 
 #include "chrome/browser/prefs/pref_member.h"
 #include "chrome/browser/prefs/pref_set_observer.h"
-#include "chrome/browser/printing/cloud_print/cloud_print_setup_flow.h"
+#include "chrome/browser/printing/cloud_print/cloud_print_setup_handler.h"
 #include "chrome/browser/remoting/remoting_options_handler.h"
 #include "chrome/browser/ui/shell_dialogs.h"
 #include "chrome/browser/ui/webui/options/options_ui.h"
 
 class OptionsManagedBannerHandler;
+class CloudPrintSetupHandler;
 
 // Chrome advanced options page UI handler.
 class AdvancedOptionsHandler
     : public OptionsPageUIHandler,
       public SelectFileDialog::Listener,
-      public CloudPrintSetupFlow::Delegate {
+      public CloudPrintSetupHandler::Delegate {
  public:
   AdvancedOptionsHandler();
   virtual ~AdvancedOptionsHandler();
@@ -40,8 +41,8 @@ class AdvancedOptionsHandler
   // SelectFileDialog::Listener implementation
   virtual void FileSelected(const FilePath& path, int index, void* params);
 
-  // CloudPrintSetupFlow::Delegate implementation.
-  virtual void OnDialogClosed();
+  // CloudPrintSetupHandler::Delegate implementation.
+  virtual void OnCloudPrintSetupClosed();
 
  private:
   // Callback for the "selectDownloadLocation" message.  This will prompt
@@ -160,6 +161,7 @@ class AdvancedOptionsHandler
   StringPrefMember cloud_print_proxy_email_;
   BooleanPrefMember cloud_print_proxy_enabled_;
   bool cloud_print_proxy_ui_enabled_;
+  scoped_ptr<CloudPrintSetupHandler> cloud_print_setup_handler_;
 #endif
 
 #if defined(ENABLE_REMOTING) && !defined(OS_CHROMEOS)

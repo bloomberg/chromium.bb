@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "base/time.h"
+#include "base/weak_ptr.h"
 #include "chrome/browser/ui/webui/html_dialog_ui.h"
 #include "chrome/common/net/gaia/gaia_auth_consumer.h"
 #include "chrome/common/net/gaia/gaia_auth_fetcher.h"
@@ -53,8 +54,10 @@ class CloudPrintSetupFlow : public HtmlDialogUIDelegate,
   // Runs a flow from |start| to |end|, and does the work of actually showing
   // the HTML dialog.  |container| is kept up-to-date with the lifetime of the
   // flow (e.g it is emptied on dialog close).
-  static CloudPrintSetupFlow* OpenDialog(Profile* service, Delegate* delegate,
-                                         gfx::NativeWindow parent_window);
+  static CloudPrintSetupFlow* OpenDialog(
+      Profile* service,
+      const base::WeakPtr<Delegate>& delegate,
+      gfx::NativeWindow parent_window);
 
   // Focuses the dialog.  This is useful in cases where the dialog has been
   // obscured by a browser window.
@@ -84,7 +87,7 @@ class CloudPrintSetupFlow : public HtmlDialogUIDelegate,
 
   // Use static Run method to get an instance.
   CloudPrintSetupFlow(const std::string& args, Profile* profile,
-                      Delegate* delegate, bool setup_done);
+                      const base::WeakPtr<Delegate>& delegate, bool setup_done);
 
   // Called CloudPrintSetupMessageHandler when a DOM is attached. This method
   // is called when the HTML page is fully loaded. We then operate on this
@@ -128,7 +131,7 @@ class CloudPrintSetupFlow : public HtmlDialogUIDelegate,
 
   // Handle to the ServiceProcessControl which talks to the service process.
   ServiceProcessControl* process_control_;
-  Delegate* delegate_;
+  base::WeakPtr<Delegate> delegate_;
 
   DISALLOW_COPY_AND_ASSIGN(CloudPrintSetupFlow);
 };

@@ -11,14 +11,14 @@
 #include "base/basictypes.h"
 #include "base/observer_list.h"
 #include "base/ref_counted.h"
-#include "chrome/browser/printing/cloud_print/cloud_print_setup_flow.h"
+#include "chrome/browser/printing/cloud_print/cloud_print_setup_handler.h"
 
 class Profile;
 
 // Layer between the browser user interface and the cloud print proxy code
 // running in the service process.
 class CloudPrintProxyService
-    : public CloudPrintSetupFlow::Delegate,
+    : public CloudPrintSetupHandler::Delegate,
       public base::RefCountedThreadSafe<CloudPrintProxyService> {
  public:
   explicit CloudPrintProxyService(Profile* profile);
@@ -38,8 +38,8 @@ class CloudPrintProxyService
 
   bool ShowTokenExpiredNotification();
 
-  // CloudPrintSetupFlow::Delegate implementation.
-  virtual void OnDialogClosed();
+  // CloudPrintSetupHandler::Delegate implementation.
+  virtual void OnCloudPrintSetupClosed();
 
  private:
   // NotificationDelegate implementation for the token expired notification.
@@ -48,6 +48,7 @@ class CloudPrintProxyService
 
   Profile* profile_;
   scoped_refptr<TokenExpiredNotificationDelegate> token_expired_delegate_;
+  scoped_ptr<CloudPrintSetupHandler> cloud_print_setup_handler_;
 
   // Methods that send an IPC to the service.
   void RefreshCloudPrintProxyStatus();
@@ -65,7 +66,6 @@ class CloudPrintProxyService
   void OnTokenExpiredNotificationClosed(bool by_user);
   void OnTokenExpiredNotificationClick();
   void TokenExpiredNotificationDone(bool keep_alive);
-
 
   DISALLOW_COPY_AND_ASSIGN(CloudPrintProxyService);
 };
