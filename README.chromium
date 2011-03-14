@@ -1,7 +1,9 @@
 Name: flac
 URL: http://sourceforge.net/projects/flac/files/flac-src/flac-1.2.1-src/flac-1.2.1.tar.gz/download
+Version: 1.2.1
 License File: COPYING.Xiph
 
+Description:
 This contains a copy of flac-1.2.1
 
 This library is required for the browser to compress and encode recorded audio
