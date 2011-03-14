@@ -9,6 +9,7 @@
 
 #include "base/scoped_ptr.h"
 #include "base/singleton.h"
+#include "base/stl_util-inl.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
@@ -353,6 +354,7 @@ class CountryNames {
 
  private:
   CountryNames();
+  ~CountryNames();
   friend struct DefaultSingletonTraits<CountryNames>;
 
   // Populates |locales_to_localized_names_| with the mapping of country names
@@ -366,8 +368,8 @@ class CountryNames {
                                                    const std::string& locale);
 
   // Returns an ICU collator -- i.e. string comparator -- appropriate for the
-  // given |locale|. The caller owns the returned value.
-  icu::Collator* GetCollatorForLocale(const icu::Locale& locale) const;
+  // given |locale|.
+  icu::Collator* GetCollatorForLocale(const std::string& locale);
 
   // Returns the ICU sort key corresponding to |str| for the given |collator|.
   // Uses |buffer| as temporary storage, and might resize |buffer| as a side-
@@ -390,6 +392,9 @@ class CountryNames {
   // to the target localized country name.
   std::map<std::string, std::map<std::string, std::string> >
       locales_to_localized_names_;
+
+  // Maps ICU locale names to their corresponding collators.
+  std::map<std::string, icu::Collator*> collators_;
 
   DISALLOW_COPY_AND_ASSIGN(CountryNames);
 };
@@ -420,6 +425,11 @@ CountryNames::CountryNames() {
   common_names_.insert(std::make_pair("DEUTSCHLAND", "DE"));
 }
 
+CountryNames::~CountryNames() {
+  STLDeleteContainerPairSecondPointers(collators_.begin(),
+                                       collators_.end());
+}
+
 const std::string CountryNames::GetCountryCode(const string16& country,
                                                const std::string& locale) {
   // First, check common country names, including 2- and 3-letter country codes.
@@ -447,7 +457,7 @@ void CountryNames::AddLocalizedNamesForLocale(const std::string& locale) {
   std::map<std::string, std::string> localized_names;
 
   icu::Locale icu_locale(locale.c_str());
-  scoped_ptr<icu::Collator> collator(GetCollatorForLocale(icu_locale));
+  const icu::Collator* collator = GetCollatorForLocale(locale);
 
   int32_t buffer_size = 1000;
   scoped_array<uint8_t> buffer(new uint8_t[buffer_size]);
@@ -460,7 +470,7 @@ void CountryNames::AddLocalizedNamesForLocale(const std::string& locale) {
     icu::Locale country_locale(NULL, country_code.c_str());
     icu::UnicodeString country_name;
     country_locale.getDisplayName(icu_locale, country_name);
-    std::string sort_key = GetSortKey(*collator.get(),
+    std::string sort_key = GetSortKey(*collator,
                                       country_name,
                                       &buffer,
                                       &buffer_size);
@@ -476,15 +486,14 @@ const std::string CountryNames::GetCountryCodeForLocalizedName(
     const std::string& locale) {
   AddLocalizedNamesForLocale(locale);
 
-  const icu::Locale icu_locale(locale.c_str());
-  scoped_ptr<icu::Collator> collator(GetCollatorForLocale(icu_locale));
+  icu::Collator* collator = GetCollatorForLocale(locale);
 
   // As recommended[1] by ICU, initialize the buffer size to four times the
   // source string length.
   // [1] http://userguide.icu-project.org/collation/api#TOC-Examples
   int32_t buffer_size = country_name.size() * 4;
   scoped_array<uint8_t> buffer(new uint8_t[buffer_size]);
-  std::string sort_key = GetSortKey(*collator.get(),
+  std::string sort_key = GetSortKey(*collator,
                                     country_name.c_str(),
                                     &buffer,
                                     &buffer_size);
@@ -500,19 +509,22 @@ const std::string CountryNames::GetCountryCodeForLocalizedName(
   return std::string();
 }
 
+icu::Collator* CountryNames::GetCollatorForLocale(const std::string& locale) {
+  if (!collators_.count(locale)) {
+    icu::Locale icu_locale(locale.c_str());
+    UErrorCode ignored = U_ZERO_ERROR;
+    icu::Collator* collator(icu::Collator::createInstance(icu_locale, ignored));
 
-icu::Collator* CountryNames::GetCollatorForLocale(
-    const icu::Locale& locale) const {
-  UErrorCode ignored = U_ZERO_ERROR;
-  icu::Collator* collator(icu::Collator::createInstance(locale, ignored));
+    // Compare case-insensitively and ignoring punctuation.
+    ignored = U_ZERO_ERROR;
+    collator->setAttribute(UCOL_STRENGTH, UCOL_SECONDARY, ignored);
+    ignored = U_ZERO_ERROR;
+    collator->setAttribute(UCOL_ALTERNATE_HANDLING, UCOL_SHIFTED, ignored);
 
-  // Compare case-insensitively and ignoring punctuation.
-  ignored = U_ZERO_ERROR;
-  collator->setAttribute(UCOL_STRENGTH, UCOL_SECONDARY, ignored);
-  ignored = U_ZERO_ERROR;
-  collator->setAttribute(UCOL_ALTERNATE_HANDLING, UCOL_SHIFTED, ignored);
+    collators_.insert(std::make_pair(locale, collator));
+  }
 
-  return collator;
+  return collators_[locale];
 }
 
 const std::string CountryNames::GetSortKey(const icu::Collator& collator,
