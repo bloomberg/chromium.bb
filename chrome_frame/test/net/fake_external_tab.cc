@@ -22,12 +22,14 @@
 #include "base/threading/platform_thread.h"
 #include "base/win/scoped_handle.h"
 #include "chrome/browser/automation/automation_provider_list.h"
+#include "chrome/browser/chrome_content_browser_client.h"
 #include "chrome/browser/prefs/browser_prefs.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/process_singleton.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/renderer_host/web_cache_manager.h"
 #include "chrome/common/chrome_constants.h"
+#include "chrome/common/chrome_content_client.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_paths_internal.h"
 #include "chrome/common/chrome_switches.h"
@@ -39,6 +41,7 @@
 #include "chrome_frame/utils.h"
 #include "content/browser/plugin_service.h"
 #include "content/browser/renderer_host/render_process_host.h"
+#include "content/common/content_client.h"
 #include "content/common/content_paths.h"
 #include "content/common/notification_service.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -501,6 +504,15 @@ int main(int argc, char** argv) {
     LOG(INFO) << "Not running ChromeFrame net tests on IE9";
     return 0;
   }
+
+  // Initialize the content client which that code uses to talk to Chrome.
+  chrome::ChromeContentClient chrome_content_client;
+  content::SetContentClient(&chrome_content_client);
+
+  chrome::ChromeContentBrowserClient content_browser_client;
+  // Override the default ContentBrowserClient to let Chrome participate in
+  // content logic.  Must be done before any tabs are created.
+  content::GetContentClient()->set_browser_client(&content_browser_client);
 
   // TODO(tommi): Stuff be broke. Needs a fixin'.
   // This is awkward: the TestSuite derived CFUrlRequestUnittestRunner contains
