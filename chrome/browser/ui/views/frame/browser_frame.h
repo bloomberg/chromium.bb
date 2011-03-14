@@ -6,12 +6,17 @@
 #define CHROME_BROWSER_UI_VIEWS_FRAME_BROWSER_FRAME_H_
 #pragma once
 
+#include "base/compiler_specific.h"
 #include "base/logging.h"
 #include "build/build_config.h"
 #include "chrome/browser/ui/views/frame/native_browser_frame_delegate.h"
 
+class AeroGlassNonClientView;
+class BrowserNonClientFrameView;
+class BrowserRootView;
 class BrowserView;
 class NativeBrowserFrame;
+class NonClientFrameView;
 class Profile;
 
 namespace gfx {
@@ -75,16 +80,32 @@ class BrowserFrame : public NativeBrowserFrameDelegate {
   void TabStripDisplayModeChanged();
 
  protected:
+  // Overridden from NativeBrowserFrameDelegate:
+  virtual views::RootView* DelegateCreateRootView() OVERRIDE;
+  virtual views::NonClientFrameView* DelegateCreateFrameViewForWindow()
+      OVERRIDE;
+
   // TODO(beng): Temporarily provided as a way to associate the subclass'
   //             implementation of NativeBrowserFrame with this.
   void set_native_browser_frame(NativeBrowserFrame* native_browser_frame) {
     native_browser_frame_ = native_browser_frame;
   }
 
-  BrowserFrame();
+  explicit BrowserFrame(BrowserView* browser_view);
 
  private:
   NativeBrowserFrame* native_browser_frame_;
+
+  // A weak reference to the root view associated with the window. We save a
+  // copy as a BrowserRootView to avoid evil casting later, when we need to call
+  // functions that only exist on BrowserRootView (versus RootView).
+  BrowserRootView* root_view_;
+
+  // A pointer to our NonClientFrameView as a BrowserNonClientFrameView.
+  BrowserNonClientFrameView* browser_frame_view_;
+
+  // The BrowserView is our ClientView. This is a pointer to it.
+  BrowserView* browser_view_;
 
   DISALLOW_COPY_AND_ASSIGN(BrowserFrame);
 };

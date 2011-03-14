@@ -103,22 +103,22 @@ class UserController : public views::WidgetDelegate,
   void UpdateUserCount(int index, int total_user_count);
 
   // views::WidgetDelegate implementation:
-  virtual void IsActiveChanged(bool active);
+  virtual void OnWidgetActivated(bool active) OVERRIDE;
 
   // NewUserView::Delegate implementation:
   virtual void OnLogin(const std::string& username,
-                       const std::string& password);
-  virtual void OnLoginAsGuest();
-  virtual void OnCreateAccount();
-  virtual void ClearErrors();
-  virtual void NavigateAway();
+                       const std::string& password) OVERRIDE;
+  virtual void OnLoginAsGuest() OVERRIDE;
+  virtual void OnCreateAccount() OVERRIDE;
+  virtual void ClearErrors() OVERRIDE;
+  virtual void NavigateAway() OVERRIDE;
 
   // UserView::Delegate implementation:
-  virtual void OnRemoveUser();
-  virtual bool IsUserSelected() const { return is_user_selected_; }
+  virtual void OnRemoveUser() OVERRIDE;
+  virtual bool IsUserSelected() const OVERRIDE { return is_user_selected_; }
 
   // UsernameView::Delegate implementation:
-  virtual void OnLocaleChanged();
+  virtual void OnLocaleChanged() OVERRIDE;
 
   // Padding between the user windows.
   static const int kPadding;

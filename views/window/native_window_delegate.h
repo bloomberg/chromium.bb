@@ -51,6 +51,10 @@ class NativeWindowDelegate {
   // Called when the activation state of a window has changed.
   virtual void OnNativeWindowActivationChanged(bool active) = 0;
 
+  // Called when the user begins/ends to change the bounds of the window.
+  virtual void OnNativeWindowBeginUserBoundsChange() = 0;
+  virtual void OnNativeWindowEndUserBoundsChange() = 0;
+
   // Called just before the native window is destroyed. This is the delegate's
   // last chance to do anything with the native window handle.
   virtual void OnNativeWindowDestroying() = 0;

@@ -268,7 +268,7 @@ void UserController::UpdateUserCount(int index, int total_user_count) {
 ////////////////////////////////////////////////////////////////////////////////
 // UserController, WidgetDelegate implementation:
 //
-void UserController::IsActiveChanged(bool active) {
+void UserController::OnWidgetActivated(bool active) {
   is_user_selected_ = active;
   if (active) {
     delegate_->OnUserSelected(this);
