@@ -67,6 +67,9 @@ class PepperView : public ChromotingView,
 
   pp::Graphics2D graphics2d_;
 
+  // A backing store that saves the current desktop image.
+  scoped_ptr<pp::ImageData> backing_store_;
+
   int viewport_width_;
   int viewport_height_;
 
