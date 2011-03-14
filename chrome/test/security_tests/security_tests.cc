@@ -6,8 +6,8 @@
 #include <string>
 
 #define TEST_INJECTION_DLL
-#include "chrome/test/injection_test_dll.h"
 #include "chrome/test/security_tests/ipc_security_tests.h"
+#include "content/common/injection_test_dll.h"
 #include "sandbox/tests/common/controller.h"
 #include "sandbox/tests/validation_tests/commands.h"
 

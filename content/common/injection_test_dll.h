@@ -1,9 +1,9 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_TEST_INJECTION_TEST_DLL_H__
-#define CHROME_TEST_INJECTION_TEST_DLL_H__
+#ifndef CONTENT_COMMON_INJECTION_TEST_DLL_H_
+#define CONTENT_COMMON_INJECTION_TEST_DLL_H_
 #pragma once
 
 // This file defines the entry points for any DLL that can be loaded into the
@@ -24,4 +24,4 @@ typedef BOOL (__cdecl *RunPluginTests)(int* test_count);
 #endif
 }
 
-#endif  // CHROME_TEST_INJECTION_TEST_DLL_H__
+#endif  // CONTENT_COMMON_INJECTION_TEST_DLL_H_

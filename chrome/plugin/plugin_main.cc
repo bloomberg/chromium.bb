@@ -24,7 +24,7 @@
 #include "ui/base/system_monitor/system_monitor.h"
 
 #if defined(OS_WIN)
-#include "chrome/test/injection_test_dll.h"
+#include "content/common/injection_test_dll.h"
 #include "sandbox/src/sandbox.h"
 #elif defined(OS_POSIX) && !defined(OS_MACOSX)
 #include "base/global_descriptors_posix.h"
@@ -143,7 +143,7 @@ int PluginMain(const MainFunctionParams& parameters) {
       }
     }
     if (sandbox_test_module) {
-      RunRendererTests run_security_tests =
+      RunPluginTests run_security_tests =
           reinterpret_cast<RunPluginTests>(GetProcAddress(sandbox_test_module,
                                                           kPluginTestCall));
       DCHECK(run_security_tests);

@@ -3384,10 +3384,10 @@
             '..',
           ],
           'sources': [
-            'test/injection_test_dll.h',
             'test/security_tests/ipc_security_tests.cc',
             'test/security_tests/ipc_security_tests.h',
             'test/security_tests/security_tests.cc',
+            '../content/common/injection_test_dll.h',
             '../sandbox/tests/validation_tests/commands.cc',
             '../sandbox/tests/validation_tests/commands.h',
           ],

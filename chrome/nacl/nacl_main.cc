@@ -25,7 +25,6 @@
 
 #if defined(OS_WIN)
 #include "chrome/nacl/broker_thread.h"
-#include "chrome/test/injection_test_dll.h"
 #include "sandbox/src/sandbox.h"
 #endif
 
