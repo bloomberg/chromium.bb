@@ -211,6 +211,14 @@ bool InstallUtil::IsPerUserInstall(const wchar_t* const exe_path) {
   return true;
 }
 
+bool InstallUtil::IsMultiInstall(BrowserDistribution* dist,
+                                 bool system_install) {
+  DCHECK(dist);
+  ProductState state;
+  return state.Initialize(system_install, dist->GetType()) &&
+         state.is_multi_install();
+}
+
 bool CheckIsChromeSxSProcess() {
   CommandLine* command_line = CommandLine::ForCurrentProcess();
   CHECK(command_line);

@@ -10,6 +10,7 @@
 #include "base/environment.h"
 #include "base/file_util.h"
 #include "base/logging.h"
+#include "base/win/registry.h"
 #include "base/scoped_ptr.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
@@ -20,6 +21,7 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/result_codes.h"
 #include "chrome/installer/util/browser_distribution.h"
+#include "chrome/installer/util/channel_info.h"
 #include "chrome/installer/util/install_util.h"
 #include "chrome/installer/util/google_update_constants.h"
 #include "chrome/installer/util/util_constants.h"
@@ -30,45 +32,33 @@ typedef int (*DLL_MAIN)(HINSTANCE, sandbox::SandboxInterfaceInfo*, wchar_t*);
 
 typedef void (*RelaunchChromeBrowserWithNewCommandLineIfNeededFunc)();
 
-// Not generic, we only handle strings up to 128 chars.
-bool ReadRegistryStr(HKEY key, const wchar_t* name, std::wstring* value) {
-  BYTE out[128 * sizeof(wchar_t)];
-  DWORD size = sizeof(out);
-  DWORD type = 0;
-  if (ERROR_SUCCESS != ::RegQueryValueExW(key, name, NULL, &type, out, &size))
-    return false;
-  if (type != REG_SZ)
-    return false;
-  value->assign(reinterpret_cast<wchar_t*>(out));
-
-  return true;
-}
-
 // Gets chrome version according to the load path. |exe_path| must be the
 // backslash terminated directory of the current chrome.exe.
 bool GetVersion(const wchar_t* exe_path, const wchar_t* key_path,
                 std::wstring* version) {
   HKEY reg_root = InstallUtil::IsPerUserInstall(exe_path) ? HKEY_CURRENT_USER :
                                                             HKEY_LOCAL_MACHINE;
-  HKEY key;
-  if (::RegOpenKeyEx(reg_root, key_path, 0, KEY_READ, &key) != ERROR_SUCCESS)
-    return false;
+  bool success = false;
 
-  // If 'new_chrome.exe' is present it means chrome was auto-updated while
-  // running. We need to consult the opv value so we can load the old dll.
-  // TODO(cpu) : This is solving the same problem as the environment variable
-  // so one of them will eventually be deprecated.
-  std::wstring new_chrome_exe(exe_path);
-  new_chrome_exe.append(installer::kChromeNewExe);
-  if (::PathFileExistsW(new_chrome_exe.c_str()) &&
-      ReadRegistryStr(key, google_update::kRegOldVersionField, version)) {
-    ::RegCloseKey(key);
-    return true;
+  base::win::RegKey key(reg_root, key_path, KEY_QUERY_VALUE);
+  if (key.Valid()) {
+    // If 'new_chrome.exe' is present it means chrome was auto-updated while
+    // running. We need to consult the opv value so we can load the old dll.
+    // TODO(cpu) : This is solving the same problem as the environment variable
+    // so one of them will eventually be deprecated.
+    std::wstring new_chrome_exe(exe_path);
+    new_chrome_exe.append(installer::kChromeNewExe);
+    if (::PathFileExistsW(new_chrome_exe.c_str()) &&
+        key.ReadValue(google_update::kRegOldVersionField,
+                      version) == ERROR_SUCCESS) {
+      success = true;
+    } else {
+      success = (key.ReadValue(google_update::kRegVersionField,
+                               version) == ERROR_SUCCESS);
+    }
   }
 
-  bool ret = ReadRegistryStr(key, google_update::kRegVersionField, version);
-  ::RegCloseKey(key);
-  return ret;
+  return success;
 }
 
 // Gets the path of the current exe with a trailing backslash.
@@ -131,18 +121,13 @@ HMODULE LoadChromeWithDirectory(std::wstring* dir) {
     DWORD pre_read_step_size = kStepSize;
     DWORD pre_read = 1;
 
-    HKEY key = NULL;
-    if (::RegOpenKeyEx(HKEY_CURRENT_USER, L"Software\\Google\\ChromeFrame",
-                       0, KEY_QUERY_VALUE, &key) == ERROR_SUCCESS) {
-      DWORD unused = sizeof(pre_read_size);
-      RegQueryValueEx(key, L"PreReadSize", NULL, NULL,
-                      reinterpret_cast<LPBYTE>(&pre_read_size), &unused);
-      RegQueryValueEx(key, L"PreReadStepSize", NULL, NULL,
-                      reinterpret_cast<LPBYTE>(&pre_read_step_size), &unused);
-      RegQueryValueEx(key, L"PreRead", NULL, NULL,
-                      reinterpret_cast<LPBYTE>(&pre_read), &unused);
-      RegCloseKey(key);
-      key = NULL;
+    base::win::RegKey key(HKEY_CURRENT_USER, L"Software\\Google\\ChromeFrame",
+                          KEY_QUERY_VALUE);
+    if (key.Valid()) {
+      key.ReadValueDW(L"PreReadSize", &pre_read_size);
+      key.ReadValueDW(L"PreReadStepSize", &pre_read_step_size);
+      key.ReadValueDW(L"PreRead", &pre_read);
+      key.Close();
     }
     if (pre_read) {
       TRACE_EVENT_BEGIN("PreReadImage", 0, "");
@@ -156,33 +141,56 @@ HMODULE LoadChromeWithDirectory(std::wstring* dir) {
                           LOAD_WITH_ALTERED_SEARCH_PATH);
 }
 
-// Set did_run "dr" in omaha's client state for this product.
-bool SetDidRunState(const wchar_t* guid, const wchar_t* value) {
-  std::wstring key_path(google_update::kRegPathClientState);
-  key_path.append(L"\\").append(guid);
-  HKEY reg_key;
-  if (::RegCreateKeyExW(HKEY_CURRENT_USER, key_path.c_str(), 0, NULL,
-                        REG_OPTION_NON_VOLATILE, KEY_WRITE, NULL,
-                        &reg_key, NULL) == ERROR_SUCCESS) {
-    // Note that the length here must be in bytes and must account for the
-    // terminating null char.
-    ::RegSetValueExW(reg_key, google_update::kRegDidRunField, 0, REG_SZ,
-                     reinterpret_cast<const BYTE *>(value),
-                     (::lstrlenW(value) + 1) * sizeof(wchar_t));
-    ::RegCloseKey(reg_key);
-    return true;
+// Set did_run "dr" to |value| in Google Update's client state key for the
+// product associated with |dist|, creating the client state key if necessary.
+bool SetDidRunState(BrowserDistribution* dist, const wchar_t* value) {
+  DCHECK(dist);
+  DCHECK(value);
+  bool wrote_dr = false;
+  std::wstring product_key_path(dist->GetStateKey());
+  base::win::RegKey reg_key;
+  if (reg_key.Create(HKEY_CURRENT_USER, product_key_path.c_str(),
+                     KEY_SET_VALUE) == ERROR_SUCCESS) {
+    if (reg_key.WriteValue(google_update::kRegDidRunField,
+                           value) == ERROR_SUCCESS) {
+      wrote_dr = true;
+    }
   }
-  return false;
+  return wrote_dr;
 }
 
-bool RecordDidRun(const wchar_t* guid) {
-  return SetDidRunState(guid, L"1");
+
+void RecordDidRun(const std::wstring& dll_path) {
+  static const wchar_t kSet[] = L"1";
+  BrowserDistribution* product_dist = BrowserDistribution::GetDistribution();
+  SetDidRunState(product_dist, kSet);
+
+  // If this is a multi-install, also write the did_run value under the
+  // multi key.
+  bool system_level = !InstallUtil::IsPerUserInstall(dll_path.c_str());
+  if (InstallUtil::IsMultiInstall(product_dist, system_level)) {
+    BrowserDistribution* multi_dist =
+        BrowserDistribution::GetSpecificDistribution(
+            BrowserDistribution::CHROME_BINARIES);
+    SetDidRunState(multi_dist, kSet);
+  }
 }
 
-bool ClearDidRun(const wchar_t* guid) {
-  return SetDidRunState(guid, L"0");
-}
+void ClearDidRun(const std::wstring& dll_path) {
+  static const wchar_t kCleared[] = L"0";
+  BrowserDistribution* product_dist = BrowserDistribution::GetDistribution();
+  SetDidRunState(product_dist, kCleared);
 
+  // If this is a multi-install, also clear the did_run value under the
+  // multi key.
+  bool system_level = !InstallUtil::IsPerUserInstall(dll_path.c_str());
+  if (InstallUtil::IsMultiInstall(product_dist, system_level)) {
+    BrowserDistribution* multi_dist =
+        BrowserDistribution::GetSpecificDistribution(
+            BrowserDistribution::CHROME_BINARIES);
+    SetDidRunState(multi_dist, kCleared);
+  }
+}
 }
 //=============================================================================
 
@@ -270,7 +278,7 @@ int MainDllLoader::Launch(HINSTANCE instance,
   env->SetVar(chrome::kChromeVersionEnvVar, WideToUTF8(version));
 
   InitCrashReporterWithDllPath(file);
-  OnBeforeLaunch();
+  OnBeforeLaunch(file);
 
   DLL_MAIN entry_point =
       reinterpret_cast<DLL_MAIN>(::GetProcAddress(dll_, "ChromeMain"));
@@ -278,7 +286,7 @@ int MainDllLoader::Launch(HINSTANCE instance,
     return ResultCodes::BAD_PROCESS_TYPE;
 
   int rc = entry_point(instance, sbox_info, ::GetCommandLineW());
-  return OnBeforeExit(rc);
+  return OnBeforeExit(rc, file);
 }
 
 void MainDllLoader::RelaunchChromeBrowserWithNewCommandLineIfNeeded() {
@@ -305,18 +313,16 @@ class ChromeDllLoader : public MainDllLoader {
     return key;
   }
 
-  virtual void OnBeforeLaunch() {
-    BrowserDistribution* dist = BrowserDistribution::GetDistribution();
-    RecordDidRun(dist->GetAppGuid().c_str());
+  virtual void OnBeforeLaunch(const std::wstring& dll_path) {
+    RecordDidRun(dll_path);
   }
 
-  virtual int OnBeforeExit(int return_code) {
+  virtual int OnBeforeExit(int return_code, const std::wstring& dll_path) {
     // NORMAL_EXIT_CANCEL is used for experiments when the user cancels
     // so we need to reset the did_run signal so omaha does not count
     // this run as active usage.
     if (ResultCodes::NORMAL_EXIT_CANCEL == return_code) {
-      BrowserDistribution* dist = BrowserDistribution::GetDistribution();
-      ClearDidRun(dist->GetAppGuid().c_str());
+      ClearDidRun(dll_path);
     }
     return return_code;
   }
