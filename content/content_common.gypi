@@ -13,6 +13,7 @@
         '../third_party/WebKit/Source/WebKit/chromium/WebKit.gyp:webkit',
         '../webkit/support/webkit_support.gyp:appcache',
         '../webkit/support/webkit_support.gyp:blob',
+        '../webkit/support/webkit_support.gyp:database',
         '../webkit/support/webkit_support.gyp:fileapi',
       ],
       'include_dirs': [
