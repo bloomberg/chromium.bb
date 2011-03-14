@@ -20,11 +20,6 @@ if env.IsRunningUnderValgrind():
 if env.Bit('nacl_glibc'):
   Return()
 
-
-# TODO(robertm): temporarily disabled until we switch pnacl away from gold
-if env.Bit('target_arm'):
-  Return()
-
 # ----------------------------------------------------------
 # Tests that require a NaCl module
 # ----------------------------------------------------------
@@ -41,7 +36,6 @@ else:
 def NewAsmEnv(env, defines, rodata_address, rwdata_address):
 
   asm_env = env.Clone()
-  elf_patcher_addenda = ''
   if asm_env.Bit('bitcode'):
     asm_env.Replace(CC=env['CC_OTHER'], OBJSUFFIX='.o')
 
@@ -56,8 +50,6 @@ def NewAsmEnv(env, defines, rodata_address, rwdata_address):
     link_cmd += ' -marmelf_nacl'
   else:
     raise Exception('unknown architecture')
-
-  #link_cmd += elf_patcher_addenda
 
   asm_env['LINKCOM'] = link_cmd
 
