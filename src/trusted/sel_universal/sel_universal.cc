@@ -11,12 +11,13 @@
 
 #include <fstream>
 #include <map>
+#include <sstream>
 #include <string>
 #include <vector>
-
 #include "native_client/src/include/nacl_string.h"
 #include "native_client/src/include/nacl_macros.h"
 #include "native_client/src/include/portability.h"
+#include "native_client/src/include/portability_io.h"
 #include "native_client/src/shared/platform/nacl_log.h"
 #include "native_client/src/shared/srpc/nacl_srpc.h"
 #include "native_client/src/trusted/desc/nacl_desc_wrapper.h"
@@ -55,6 +56,7 @@ static NaClSrpcChannel channel;
 static map<string, string> initial_vars;
 static vector<string> initial_commands;
 static bool abort_on_error = false;
+static bool silenence_nexe = false;
 // When given argc and argv this function (a) extracts the nacl_file argument,
 // (b) populates sel_ldr_argv with sel_ldr arguments, and (c) populates
 // app_argv with nexe module args. Also see kUsage above for details.
@@ -80,6 +82,8 @@ static nacl::string ProcessArguments(int argc,
       NaClLogSetVerbosity(1);
     } else if (flag == "--abort_on_error") {
       abort_on_error = true;
+    } else if (flag == "--silenence_nexe") {
+      silenence_nexe = true;
     } else if (flag == "--command_file") {
       if (argc <= i + 1) {
         NaClLog(LOG_FATAL,
@@ -149,7 +153,19 @@ int main(int argc, char* argv[]) {
   // Add '-X 5' to sel_ldr arguments to create communication socket
   sel_ldr_argv.push_back("-X");
   sel_ldr_argv.push_back("5");
+  if (silenence_nexe) {
+    // redirect stdout/stderr in the nexe to /dev/null
+    std::stringstream ss_stdout;
+    std::stringstream ss_stderr;
 
+    int fd = open(PORTABLE_DEV_NULL, O_RDWR);
+    sel_ldr_argv.push_back("-w");
+    ss_stdout << "1:" << fd;
+    sel_ldr_argv.push_back(ss_stdout.str());
+    sel_ldr_argv.push_back("-w");
+    ss_stderr << "2:" << fd;
+    sel_ldr_argv.push_back(ss_stderr.str());
+  }
   // Start sel_ldr with the given application and arguments.
   nacl::SelLdrLauncher launcher;
   if (!launcher.StartFromCommandLine(app_name, 5, sel_ldr_argv, app_argv)) {

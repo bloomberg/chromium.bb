@@ -13,8 +13,6 @@ input 0:  i(0)
 input 1:  i(4444)
 input 2:  h(pepper_desc)
 input 3:  @LENGTHY_SERIVE_STRING
---- PPP_InitializeModule
---- Module::Module
 replaying PPB_GetInterface:s:i:
 input 0:  s("PPB_Core;0.3")
 output 0:  i(1)
@@ -32,15 +30,12 @@ rpc call intiated PPP_Instance_DidChangeView:iII:
 input 0:  i(5555)
 input 1:  I(4,8,79,400,400)
 input 2:  I(4,0,0,400,400)
---- PPP_GetInterface(PPP_Instance;0.4)
---- Module::GetPluginInterface(PPP_Instance;0.4)
 rpc call complete PPP_Instance_DidChangeView:iII:
 
 
 "*** GET INSTANCE OBJECT"
 rpc call intiated PPP_Instance_GetInstanceObject:i:C
 input 0:  i(5555)
---- Instance_GetInstanceObject
 rpc call complete PPP_Instance_GetInstanceObject:i:C
 
 
@@ -51,8 +46,6 @@ input 1:  C(16,\x05\x00\x00\x00\x07\x00\x00\x00loadUrl\x00)
 input 2:  i(2)
 input 3:  C(48,\x05\x00\x00\x00 \x00\x00\x00http://www.google.com/robots.txt\x02\x00\x00\x00\x00\x00\x00\x00)
 input 4:  C(8,\x00\x00\x00\x00\x00\x00\x00\x00)
---- ScriptableObject::LoadUrl('http://www.google.com/robots.txt')
---- UrlLoadRequest::Load(as_file=0, 'http://www.google.com/robots.txt')
 replaying PPB_GetInterface:s:i:
 input 0:  s("PPB_URLRequestInfo;0.2")
 output 0:  i(1)
@@ -71,7 +64,6 @@ output 0:  i(44)
 replaying PPB_GetInterface:s:i:
 input 0:  s("PPB_FileIO(Dev\x29;0.3")
 output 0:  i(1)
---- TestIsInterface: PPB_URLRequestInfo;0.2
 replaying PPB_FileIO_Dev_Create:i:i:
 input 0:  i(5555)
 output 0:  i(35)
@@ -84,7 +76,6 @@ output 0:  i(1)
 replaying PPB_URLResponseInfo_IsURLResponseInfo:i:i:
 input 0:  i(40)
 output 0:  i(0)
---- TestIsInterface: PPB_URLLoader;0.1
 replaying PPB_URLLoader_IsURLLoader:i:i:
 input 0:  i(40)
 output 0:  i(0)
@@ -97,7 +88,6 @@ output 0:  i(0)
 replaying PPB_URLResponseInfo_IsURLResponseInfo:i:i:
 input 0:  i(44)
 output 0:  i(0)
---- TestIsInterface: PPB_FileIO(Dev);0.3
 replaying PPB_URLLoader_IsURLLoader:i:i:
 input 0:  i(44)
 output 0:  i(1)
@@ -128,7 +118,6 @@ input 0:  i(40)
 input 1:  i(3)
 input 2:  C(8,\x02\x00\x00\x00\x00\x00\x00\x00)
 output 0:  i(1)
---- ReportResult('http://www.google.com/robots.txt', as_file=0, 'PPB_URLLoader::Open: PP_ERROR_NOACCESS', success=0)
 replaying PPB_URLLoader_Open:iii:i:
 input 0:  i(44)
 input 1:  i(40)
@@ -158,6 +147,5 @@ output 1:  C(8,\x00\x00\x00\x00\x00\x00\x00\x00)
 
 "*** DONE"
 rpc call intiated PPP_ShutdownModule::
---- PPP_ShutdownModule
 rpc call complete PPP_ShutdownModule::
 

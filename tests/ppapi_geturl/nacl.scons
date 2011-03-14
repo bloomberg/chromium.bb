@@ -69,7 +69,8 @@ for suffix in ['valid', 'invalid']:
   basename = 'ppapi_geturl_' + suffix
   node = env.SelUniversalTest(
       basename + '.out',
-      sel_universal_flags=['--command_file',
+      sel_universal_flags=['--silenence_nexe',
+                           '--command_file',
                            env.File('${SCONSTRUCT_DIR}/tests/ppapi_proxy'
                                     '/sel_universal_ppapi_replay_prolog.stdin'),
                            '--command_file',
@@ -84,8 +85,6 @@ for suffix in ['valid', 'invalid']:
 
   # Note: we use the sysv shm feature in sel_universal which is only available
   # on linux.
-  is_broken = not env.Bit('host_linux')
   env.AddNodeToTestSuite(node,
                          ['small_tests', 'sel_ldr_tests'],
-                         'run_' + basename + '_test',
-                         is_broken=is_broken)
+                         'run_' + basename + '_test')
