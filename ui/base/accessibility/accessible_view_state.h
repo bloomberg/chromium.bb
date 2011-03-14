@@ -22,9 +22,13 @@ namespace ui {
 ////////////////////////////////////////////////////////////////////////////////
 struct AccessibleViewState {
  public:
-  AccessibleViewState();
-
-  ~AccessibleViewState();
+  AccessibleViewState()
+      : role(AccessibilityTypes::ROLE_CLIENT),
+        state(0),
+        selection_start(-1),
+        selection_end(-1),
+        index(-1),
+        count(-1) { }
 
   // The view's role, like button or list box.
   AccessibilityTypes::Role role;

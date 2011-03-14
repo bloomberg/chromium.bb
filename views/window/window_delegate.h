@@ -53,9 +53,9 @@ class WindowDelegate {
   // opened it. Only windows with WindowType == DIALOG can be modal.
   virtual bool IsModal() const;
 
-  virtual ui::AccessibilityTypes::Role GetAccessibleWindowRole() const;
+  virtual ui::AccessibilityTypes::Role GetAccessibleRole() const;
 
-  virtual ui::AccessibilityTypes::State GetAccessibleWindowState() const;
+  virtual ui::AccessibilityTypes::State GetAccessibleState() const;
 
   // Returns the title to be read with screen readers.
   virtual std::wstring GetAccessibleWindowTitle() const;

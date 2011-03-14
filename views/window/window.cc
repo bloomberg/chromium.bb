@@ -287,10 +287,8 @@ void Window::OnNativeWindowCreated(const gfx::Rect& bounds) {
       non_client_view_);
 
   UpdateWindowTitle();
-  native_window_->SetAccessibleRole(
-      window_delegate_->GetAccessibleWindowRole());
-  native_window_->SetAccessibleState(
-      window_delegate_->GetAccessibleWindowState());
+  native_window_->SetAccessibleRole(window_delegate_->GetAccessibleRole());
+  native_window_->SetAccessibleState(window_delegate_->GetAccessibleState());
 
   SetInitialBounds(bounds);
 }
