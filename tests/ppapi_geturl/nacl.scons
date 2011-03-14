@@ -19,7 +19,7 @@ Import('env')
 env.Prepend(CPPDEFINES=['XP_UNIX'])
 
 ppapi_geturl_target = 'ppapi_geturl_%s.nexe' % env.get('TARGET_FULLARCH')
-env.Alias('ppapi_basic_object.nexe', ['$STAGING_DIR/%s' % ppapi_geturl_target])
+env.Alias('ppapi_geturl.nexe', ['$STAGING_DIR/%s' % ppapi_geturl_target])
 
 ppapi_geturl_nexe = env.ComponentProgram(ppapi_geturl_target,
                                          ['nacl_file_main.cc',
