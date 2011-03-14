@@ -26,13 +26,15 @@ push_overlays -- Select what overlays to push at. This should be a subset of
                  not a master.  There should only be one master bot pushing
                  changes to each overlay per branch.
 
+chrome_tests -- runs chrome testing binaries in a vm.
+
 unittests -- Runs unittests for packages.
 quick_unit -- If unittests is true, only run the unit tests for packages which
               have changed since the previous build.
 
 vm_tests -- Runs the smoke suite and au test harness in a qemu-based VM
             using KVM.
-quick_vm -- If vm_tests is true, run a minimal au test harness suite.            
+quick_vm -- If vm_tests is true, run a minimal au test harness suite.
 
 usepkg -- Use binary packages to bootstrap, when possible. (emerge --usepkg)
 chroot_replace -- wipe and replace chroot, but not source.
@@ -57,6 +59,8 @@ default = {
   'uprev' : False,
   'rev_overlays': 'public',
   'push_overlays': None,
+
+  'chrome_tests' : False,
 
   'unittests' : True,
   'quick_unit' : True,
@@ -123,6 +127,7 @@ config['x86-generic-chrome-pre-flight-queue'].update({
 
   'build_type': 'chrome',
   'uprev' : False,
+  'chrome_tests' : True,
   'rev_overlays': 'public',
   'push_overlays': 'public',
 })

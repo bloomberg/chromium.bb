@@ -321,6 +321,11 @@ class TestStage(BuilderStage):
                                 os.path.join(test_results_dir,
                                              'au_test_harness'),
                                 full=(not self._build_config['quick_vm']))
+
+        if self._build_config['chrome_tests']:
+          commands.RunChromeSuite(self._build_root,
+                                  os.path.join(test_results_dir,
+                                               'chrome_results'))
       finally:
         BuilderStage.test_tarball = commands.ArchiveTestResults(
             self._build_root, test_results_dir)

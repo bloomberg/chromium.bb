@@ -217,6 +217,24 @@ def RunSmokeSuite(buildroot, results_dir):
                          ], cwd=cwd, error_ok=False)
 
 
+def RunChromeSuite(buildroot, results_dir):
+  results_dir_in_chroot = os.path.join(buildroot, 'chroot',
+                                       results_dir.lstrip('/'))
+  if os.path.exists(results_dir_in_chroot):
+    shutil.rmtree(results_dir_in_chroot)
+
+  cwd = os.path.join(buildroot, 'src', 'scripts')
+  # TODO(cmasone): make this look for ALL desktopui_BrowserTest control files.
+  cros_lib.OldRunCommand(['bin/cros_run_parallel_vm_tests',
+                          '--quiet',
+                          '--results_dir_root=%s' % results_dir,
+                          'desktopui_BrowserTest.control$',
+                          'desktopui_BrowserTest.control.one',
+                          'desktopui_BrowserTest.control.two',
+                          'desktopui_BrowserTest.control.three',
+                         ], cwd=cwd, error_ok=True)
+
+
 def RunAUTestSuite(buildroot, board, results_dir, full=True):
   """Runs the au test harness suite."""
   cwd = os.path.join(buildroot, 'src', 'scripts')
