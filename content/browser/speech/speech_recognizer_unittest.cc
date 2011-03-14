@@ -366,14 +366,14 @@ TEST_F(SpeechRecognizerTest, SetInputVolumeCallback) {
   controller->event_handler()->OnData(controller, &audio_packet_[0],
                                       audio_packet_.size());
   MessageLoop::current()->RunAllPending();
-  EXPECT_FLOAT_EQ(0.51877826f, volume_);
+  EXPECT_FLOAT_EQ(0.74939233f, volume_);
 
   FillPacketWithTestWaveform();
   controller->event_handler()->OnData(controller, &audio_packet_[0],
                                       audio_packet_.size());
   MessageLoop::current()->RunAllPending();
-  EXPECT_FLOAT_EQ(0.81907868f, volume_);
-  EXPECT_FLOAT_EQ(0.52143687f, noise_volume_);
+  EXPECT_FLOAT_EQ(0.89926866f, volume_);
+  EXPECT_FLOAT_EQ(0.75071919f, noise_volume_);
 
   EXPECT_EQ(SpeechRecognizer::RECOGNIZER_NO_ERROR, error_);
   EXPECT_FALSE(recording_complete_);

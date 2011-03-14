@@ -81,6 +81,11 @@ TEST_F(SpeechRecognitionRequestTest, BasicTest) {
   EXPECT_EQ(ASCIIToUTF16("123456"), result_[1].utterance);
   EXPECT_EQ(0.5, result_[1].confidence);
 
+  // Zero results.
+  CreateAndTestRequest(true, "{\"hypotheses\":[]}");
+  EXPECT_FALSE(error_);
+  EXPECT_EQ(0U, result_.size());
+
   // Http failure case.
   CreateAndTestRequest(false, "");
   EXPECT_TRUE(error_);

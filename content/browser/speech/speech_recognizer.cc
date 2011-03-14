@@ -24,7 +24,7 @@ const float kDownSmoothingFactor = 0.7f;
 const float kAudioMeterMaxDb = 90.31f;
 // This value corresponds to RMS dB for int16 with 6 most-significant-bits = 0.
 // Values lower than this will display as empty level-meter.
-const float kAudioMeterMinDb = 60.21f;
+const float kAudioMeterMinDb = 30.0f;
 const float kAudioMeterDbRange = kAudioMeterMaxDb - kAudioMeterMinDb;
 
 // Maximum level to draw to display unclipped meter. (1.0f displays clipping.)

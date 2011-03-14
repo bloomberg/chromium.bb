@@ -19,7 +19,7 @@
 namespace {
 
 const char* const kDefaultSpeechRecognitionUrl =
-    "https://www.google.com/speech-api/v1/recognize?client=chromium&";
+    "https://www.google.com/speech-api/v1/recognize?xjerr=1&client=chromium&";
 const char* const kHypothesesString = "hypotheses";
 const char* const kUtteranceString = "utterance";
 const char* const kConfidenceString = "confidence";
@@ -62,10 +62,6 @@ bool ParseServerResponse(const std::string& response_body,
     return false;
   }
   const ListValue* hypotheses_list = static_cast<ListValue*>(hypotheses_value);
-  if (hypotheses_list->GetSize() == 0) {
-    VLOG(1) << "ParseServerResponse: hypotheses list is empty.";
-    return false;
-  }
 
   size_t index = 0;
   for (; index < hypotheses_list->GetSize(); ++index) {
