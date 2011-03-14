@@ -11,6 +11,7 @@
         '../ipc/ipc.gyp:ipc',
         '../third_party/icu/icu.gyp:icuuc',
         '../third_party/WebKit/Source/WebKit/chromium/WebKit.gyp:webkit',
+        '../webkit/support/webkit_support.gyp:blob',
         '../webkit/support/webkit_support.gyp:fileapi',
       ],
       'include_dirs': [
@@ -102,6 +103,9 @@
         'common/socket_stream_dispatcher.cc',
         'common/socket_stream_dispatcher.h',
         'common/socket_stream_messages.h',
+        'common/webblobregistry_impl.cc',
+        'common/webblobregistry_impl.h',
+        'common/webblob_messages.h',
         'common/worker_messages.h',
       ],
       'conditions': [

@@ -21,6 +21,7 @@
 #include "net/base/ip_endpoint.h"
 #include "net/url_request/url_request_status.h"
 // !!! WARNING: DO NOT ADD NEW WEBKIT DEPENDENCIES !!!
+
 //
 // That means don't add #includes to any file in 'webkit/' or
 // 'third_party/WebKit/'. Chrome Frame and NACL build parts of base/ and
@@ -29,6 +30,7 @@
 // TODO(erg): The following headers are historical and only work because
 // their definitions are inlined, which also needs to be fixed.
 #include "ui/gfx/native_widget_types.h"
+#include "webkit/blob/blob_data.h"
 #include "webkit/glue/resource_type.h"
 
 // Forward declarations.
@@ -192,6 +194,14 @@ struct ParamTraits<gfx::NativeWindow> {
   static void Log(const param_type& p, std::string* l) {
     l->append("<gfx::NativeWindow>");
   }
+};
+
+template <>
+struct ParamTraits<scoped_refptr<webkit_blob::BlobData > > {
+  typedef scoped_refptr<webkit_blob::BlobData> param_type;
+  static void Write(Message* m, const param_type& p);
+  static bool Read(const Message* m, void** iter, param_type* r);
+  static void Log(const param_type& p, std::string* l);
 };
 
 }  // namespace IPC

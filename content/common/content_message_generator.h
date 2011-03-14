@@ -13,4 +13,5 @@
 #include "content/common/mime_registry_messages.h"
 #include "content/common/resource_messages.h"
 #include "content/common/socket_stream_messages.h"
+#include "content/common/webblob_messages.h"
 #include "content/common/worker_messages.h"

@@ -55,7 +55,6 @@
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/gfx/rect.h"
 #include "webkit/appcache/appcache_interfaces.h"  // enum appcache::Status
-#include "webkit/blob/blob_data.h"
 #include "webkit/glue/context_menu.h"
 #include "webkit/glue/webaccessibility.h"
 #include "webkit/glue/webcookie.h"
@@ -399,14 +398,6 @@ struct ParamTraits<webkit_glue::WebAccessibility> {
   typedef webkit_glue::WebAccessibility param_type;
   static void Write(Message* m, const param_type& p);
   static bool Read(const Message* m, void** iter, param_type* p);
-  static void Log(const param_type& p, std::string* l);
-};
-
-template <>
-struct ParamTraits<scoped_refptr<webkit_blob::BlobData> > {
-  typedef scoped_refptr<webkit_blob::BlobData> param_type;
-  static void Write(Message* m, const param_type& p);
-  static bool Read(const Message* m, void** iter, param_type* r);
   static void Log(const param_type& p, std::string* l);
 };
 
@@ -2543,23 +2534,6 @@ IPC_MESSAGE_CONTROL1(ViewHostMsg_DeviceOrientation_StartUpdating,
 // A RenderView requests to stop receiving device orientation updates.
 IPC_MESSAGE_CONTROL1(ViewHostMsg_DeviceOrientation_StopUpdating,
                      int /* render_view_id */)
-
-//---------------------------------------------------------------------------
-// Blob messages:
-
-// Registers a blob URL referring to the specified blob data.
-IPC_MESSAGE_CONTROL2(ViewHostMsg_RegisterBlobUrl,
-                     GURL /* url */,
-                     scoped_refptr<webkit_blob::BlobData> /* blob_data */)
-
-// Registers a blob URL referring to the blob data identified by the specified
-// source URL.
-IPC_MESSAGE_CONTROL2(ViewHostMsg_RegisterBlobUrlFrom,
-                     GURL /* url */,
-                     GURL /* src_url */)
-
-// Unregister a blob URL.
-IPC_MESSAGE_CONTROL1(ViewHostMsg_UnregisterBlobUrl, GURL /* url */)
 
 // Suggest results -----------------------------------------------------------
 

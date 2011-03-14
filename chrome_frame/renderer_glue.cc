@@ -6,6 +6,13 @@
 
 namespace webkit_glue {
 
+void AppendToLog(const char* filename, int line, const char* message) {
+}
+
+bool IsPluginRunningInRendererProcess() {
+  return true;
+}
+
 // This function is called from BuildUserAgent so we have our own version
 // here instead of pulling in the whole renderer lib where this function
 // is implemented for Chrome.

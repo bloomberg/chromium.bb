@@ -1,12 +1,12 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "content/browser/renderer_host/blob_message_filter.h"
 
-#include "chrome/common/render_messages.h"
 #include "content/browser/child_process_security_policy.h"
 #include "content/browser/chrome_blob_storage_context.h"
+#include "content/common/webblob_messages.h"
 #include "googleurl/src/gurl.h"
 #include "webkit/blob/blob_data.h"
 #include "webkit/blob/blob_storage_controller.h"
@@ -38,9 +38,9 @@ bool BlobMessageFilter::OnMessageReceived(const IPC::Message& message,
 
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP_EX(BlobMessageFilter, message, *message_was_ok)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_RegisterBlobUrl, OnRegisterBlobUrl)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_RegisterBlobUrlFrom, OnRegisterBlobUrlFrom)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_UnregisterBlobUrl, OnUnregisterBlobUrl)
+    IPC_MESSAGE_HANDLER(BlobHostMsg_RegisterBlobUrl, OnRegisterBlobUrl)
+    IPC_MESSAGE_HANDLER(BlobHostMsg_RegisterBlobUrlFrom, OnRegisterBlobUrlFrom)
+    IPC_MESSAGE_HANDLER(BlobHostMsg_UnregisterBlobUrl, OnUnregisterBlobUrl)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
