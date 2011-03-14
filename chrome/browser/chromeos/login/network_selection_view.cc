@@ -130,7 +130,8 @@ class NotifyingMenuButton : public DropDownButton {
   // Overridden from View:
   virtual void OnFocus() OVERRIDE {
     delegate_->ClearErrors();
-    NotifyAccessibilityEvent(AccessibilityTypes::EVENT_FOCUS);
+    GetWidget()->NotifyAccessibilityEvent(
+        this, ui::AccessibilityTypes::EVENT_FOCUS, true);
   }
 
  private:
@@ -340,8 +341,6 @@ void NetworkSelectionView::UpdateLocalizedStrings() {
       UTF16ToWide(delegate_->keyboard_switch_menu()->GetCurrentKeyboardName()));
   welcome_label_->SetText(
       UTF16ToWide(l10n_util::GetStringUTF16(IDS_NETWORK_SELECTION_TITLE)));
-  this->SetAccessibleName(
-      l10n_util::GetStringUTF16(IDS_NETWORK_SELECTION_TITLE));
   select_language_label_->SetText(
       UTF16ToWide(l10n_util::GetStringUTF16(IDS_LANGUAGE_SELECTION_SELECT)));
   languages_menubutton_->SetAccessibleName(

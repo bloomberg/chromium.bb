@@ -158,6 +158,10 @@ class WidgetGtk : public Widget,
   virtual const Window* GetWindow() const;
   virtual void ViewHierarchyChanged(bool is_add, View *parent,
                                     View *child);
+  virtual void NotifyAccessibilityEvent(
+      View* view,
+      ui::AccessibilityTypes::Event event_type,
+      bool send_native_event);
 
   // Clears the focus on the native widget having the focus.
   virtual void ClearNativeFocus();

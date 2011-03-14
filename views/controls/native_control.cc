@@ -12,6 +12,7 @@
 
 #include "base/logging.h"
 #include "base/scoped_ptr.h"
+#include "ui/base/accessibility/accessibility_types.h"
 #include "ui/base/keycodes/keyboard_codes.h"
 #include "ui/base/keycodes/keyboard_code_conversion_win.h"
 #include "ui/base/l10n/l10n_util_win.h"
@@ -281,7 +282,10 @@ void NativeControl::OnFocus() {
   if (container_) {
     DCHECK(container_->GetControl());
     ::SetFocus(container_->GetControl());
-    NotifyAccessibilityEvent(AccessibilityTypes::EVENT_FOCUS, false);
+    if (GetWidget()) {
+      GetWidget()->NotifyAccessibilityEvent(
+          this, ui::AccessibilityTypes::EVENT_FOCUS, false);
+    }
   }
 }
 

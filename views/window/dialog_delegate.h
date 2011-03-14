@@ -6,8 +6,8 @@
 #define VIEWS_WINDOW_DIALOG_DELEGATE_H_
 #pragma once
 
+#include "ui/base/accessibility/accessibility_types.h"
 #include "ui/base/message_box_flags.h"
-#include "views/accessibility/accessibility_types.h"
 #include "views/window/dialog_client_view.h"
 #include "views/window/window_delegate.h"
 
@@ -108,9 +108,9 @@ class DialogDelegate : public WindowDelegate {
   // delegate's Window.
   DialogClientView* GetDialogClientView() const;
 
- private:
+ protected:
   // Overridden from WindowDelegate:
-  virtual AccessibilityTypes::Role accessible_role() const;
+  virtual ui::AccessibilityTypes::Role GetAccessibleRole() const OVERRIDE;
 };
 
 }  // namespace views

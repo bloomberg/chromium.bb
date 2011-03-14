@@ -5,11 +5,13 @@
 #include "views/controls/tabbed_pane/tabbed_pane.h"
 
 #include "base/logging.h"
+#include "ui/base/accessibility/accessible_view_state.h"
 // TODO(avi): remove when not needed
 #include "base/utf_string_conversions.h"
 #include "ui/base/keycodes/keyboard_codes.h"
 #include "views/controls/native/native_view_host.h"
 #include "views/controls/tabbed_pane/native_tabbed_pane_wrapper.h"
+#include "views/widget/widget.h"
 
 namespace views {
 
@@ -38,7 +40,6 @@ void TabbedPane::AddTabAtIndex(int index,
                                bool select_if_first_tab) {
   native_tabbed_pane_->AddTabAtIndex(index, title, contents,
                                      select_if_first_tab);
-  contents->SetAccessibleName(WideToUTF16Hack(title));
   PreferredSizeChanged();
 }
 
@@ -58,6 +59,10 @@ View* TabbedPane::RemoveTabAtIndex(int index) {
 
 void TabbedPane::SelectTabAt(int index) {
   native_tabbed_pane_->SelectTabAt(index);
+}
+
+void TabbedPane::SetAccessibleName(const string16& name) {
+  accessible_name_ = name;
 }
 
 int TabbedPane::GetTabCount() {
@@ -118,8 +123,10 @@ void TabbedPane::OnFocus() {
     native_tabbed_pane_->SetFocus();
 
     View* selected_tab = GetSelectedTab();
-    if (selected_tab)
-       selected_tab->NotifyAccessibilityEvent(AccessibilityTypes::EVENT_FOCUS);
+    if (selected_tab) {
+      selected_tab->GetWidget()->NotifyAccessibilityEvent(
+          selected_tab, ui::AccessibilityTypes::EVENT_FOCUS, true);
+    }
   }
   else
     View::OnFocus();  // Will focus the RootView window (so we still get
@@ -131,8 +138,9 @@ void TabbedPane::OnPaintFocusBorder(gfx::Canvas* canvas) {
     View::OnPaintFocusBorder(canvas);
 }
 
-AccessibilityTypes::Role TabbedPane::GetAccessibleRole() {
-  return AccessibilityTypes::ROLE_PAGETABLIST;
+void TabbedPane::GetAccessibleState(ui::AccessibleViewState* state) {
+  state->role = ui::AccessibilityTypes::ROLE_PAGETABLIST;
+  state->name = accessible_name_;
 }
 
 gfx::Size TabbedPane::GetPreferredSize() {

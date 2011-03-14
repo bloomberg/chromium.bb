@@ -407,7 +407,7 @@ class BrowserView : public BrowserBubbleHost,
                                     views::View* parent,
                                     views::View* child) OVERRIDE;
   virtual void ChildPreferredSizeChanged(View* child) OVERRIDE;
-  virtual AccessibilityTypes::Role GetAccessibleRole() OVERRIDE;
+  virtual void GetAccessibleState(ui::AccessibleViewState* state) OVERRIDE;
 
   // Factory Methods.
   // Returns a new LayoutManager for this browser view. A subclass may

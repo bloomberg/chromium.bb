@@ -488,8 +488,6 @@ static bool PublishTitleIfReady(const TabContents* contents,
   if (contents != eula_view->tab_contents())
     return false;
   eula_label->SetText(UTF16ToWide(eula_view->tab_contents()->GetTitle()));
-  eula_label->parent()->SetAccessibleName(
-      eula_view->tab_contents()->GetTitle());
   return true;
 }
 

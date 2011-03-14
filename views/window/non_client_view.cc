@@ -4,6 +4,7 @@
 
 #include "views/window/non_client_view.h"
 
+#include "ui/base/accessibility/accessible_view_state.h"
 #include "views/widget/root_view.h"
 #include "views/widget/widget.h"
 #include "views/window/client_view.h"
@@ -126,6 +127,10 @@ void NonClientView::LayoutFrameView() {
   frame_view_->Layout();
 }
 
+void NonClientView::SetAccessibleName(const string16& name) {
+  accessible_name_ = name;
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // NonClientView, View overrides:
 
@@ -179,8 +184,9 @@ views::View* NonClientView::GetEventHandlerForPoint(const gfx::Point& point) {
   return View::GetEventHandlerForPoint(point);
 }
 
-AccessibilityTypes::Role NonClientView::GetAccessibleRole() {
-  return AccessibilityTypes::ROLE_WINDOW;
+void NonClientView::GetAccessibleState(ui::AccessibleViewState* state) {
+  state->role = ui::AccessibilityTypes::ROLE_WINDOW;
+  state->name = accessible_name_;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -256,8 +262,8 @@ bool NonClientFrameView::ShouldPaintAsActive() const {
   return GetWindow()->IsActive() || paint_as_active_;
 }
 
-AccessibilityTypes::Role NonClientFrameView::GetAccessibleRole() {
-  return AccessibilityTypes::ROLE_WINDOW;
+void NonClientFrameView::GetAccessibleState(ui::AccessibleViewState* state) {
+  state->role = ui::AccessibilityTypes::ROLE_WINDOW;
 }
 
 void NonClientFrameView::OnBoundsChanged(const gfx::Rect& previous_bounds) {

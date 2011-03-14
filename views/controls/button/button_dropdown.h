@@ -26,9 +26,7 @@ class ButtonDropDown : public ImageButton {
   virtual ~ButtonDropDown();
 
   // Accessibility accessors, overridden from View.
-  virtual string16 GetAccessibleDefaultAction() OVERRIDE;
-  virtual AccessibilityTypes::Role GetAccessibleRole() OVERRIDE;
-  virtual AccessibilityTypes::State GetAccessibleState() OVERRIDE;
+  virtual void GetAccessibleState(ui::AccessibleViewState* state) OVERRIDE;
 
  private:
   // Overridden from CustomButton

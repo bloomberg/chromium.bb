@@ -204,12 +204,7 @@ class LocationBarView : public LocationBar,
   // Overridden from views::View:
   virtual std::string GetClassName() const OVERRIDE;
   virtual bool SkipDefaultKeyEventProcessing(const views::KeyEvent& e) OVERRIDE;
-  virtual AccessibilityTypes::Role GetAccessibleRole() OVERRIDE;
-  virtual string16 GetAccessibleValue() OVERRIDE;
-
-  // TODO(dmazzoni): Remove this when refactoring views accessibility code.
-  // http://crbug.com/74988
-  void GetSelectionBounds(int* start_index, int* end_index);
+  virtual void GetAccessibleState(ui::AccessibleViewState* state) OVERRIDE;
 
   // Overridden from views::DragController:
   virtual void WriteDragDataForView(View* sender,

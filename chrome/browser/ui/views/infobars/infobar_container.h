@@ -66,14 +66,14 @@ class InfoBarContainer : public AccessiblePaneView,
   typedef std::set<InfoBarView*> InfoBars;
 
   // AccessiblePaneView:
-  virtual gfx::Size GetPreferredSize();
-  virtual void Layout();
-  virtual AccessibilityTypes::Role GetAccessibleRole();
+  virtual gfx::Size GetPreferredSize() OVERRIDE;
+  virtual void Layout() OVERRIDE;
+  virtual void GetAccessibleState(ui::AccessibleViewState* state) OVERRIDE;
 
   // NotificationObserver:
   virtual void Observe(NotificationType type,
                        const NotificationSource& source,
-                       const NotificationDetails& details);
+                       const NotificationDetails& details) OVERRIDE;
 
   // Return the maximum vertical overlap of the InfoBarContainer's children,
   // and, when |total_height| is non-NULL, set the |*total_height| of the

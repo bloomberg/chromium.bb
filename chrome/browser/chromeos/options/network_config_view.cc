@@ -12,6 +12,7 @@
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "grit/locale_settings.h"
+#include "ui/base/accessibility/accessible_view_state.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "views/layout/grid_layout.h"
 #include "views/layout/layout_constants.h"
@@ -35,8 +36,6 @@ NetworkConfigView::NetworkConfigView()
           l10n_util::GetStringUTF16(IDS_OPTIONS_SETTINGS_OTHER_NETWORKS))),
       wificonfig_view_(new WifiConfigView(this)),
       delegate_(NULL) {
-  SetAccessibleName(
-      l10n_util::GetStringUTF16(IDS_OPTIONS_SETTINGS_OTHER_NETWORKS));
 }
 
 gfx::NativeWindow NetworkConfigView::GetNativeWindow() const {
@@ -75,6 +74,12 @@ bool NetworkConfigView::Accept() {
 
 std::wstring NetworkConfigView::GetWindowTitle() const {
   return title_;
+}
+
+void NetworkConfigView::GetAccessibleState(ui::AccessibleViewState* state) {
+  state->name =
+      l10n_util::GetStringUTF16(IDS_OPTIONS_SETTINGS_OTHER_NETWORKS);
+  state->role = ui::AccessibilityTypes::ROLE_DIALOG;
 }
 
 void NetworkConfigView::Layout() {

@@ -9,7 +9,7 @@
 #include <string>
 
 #include "base/scoped_ptr.h"
-#include "views/accessibility/accessibility_types.h"
+#include "ui/base/accessibility/accessibility_types.h"
 
 class SkBitmap;
 
@@ -53,9 +53,9 @@ class WindowDelegate {
   // opened it. Only windows with WindowType == DIALOG can be modal.
   virtual bool IsModal() const;
 
-  virtual AccessibilityTypes::Role accessible_role() const;
+  virtual ui::AccessibilityTypes::Role GetAccessibleRole() const;
 
-  virtual AccessibilityTypes::State accessible_state() const;
+  virtual ui::AccessibilityTypes::State GetAccessibleState() const;
 
   // Returns the title to be read with screen readers.
   virtual std::wstring GetAccessibleWindowTitle() const;

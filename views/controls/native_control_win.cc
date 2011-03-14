@@ -7,10 +7,12 @@
 #include <windowsx.h>
 
 #include "base/logging.h"
+#include "ui/base/accessibility/accessibility_types.h"
 #include "ui/base/l10n/l10n_util_win.h"
 #include "ui/base/view_prop.h"
 #include "ui/base/win/hwnd_util.h"
 #include "views/focus/focus_manager.h"
+#include "views/widget/widget.h"
 
 using ui::ViewProp;
 
@@ -112,8 +114,10 @@ void NativeControlWin::OnFocus() {
       parent_view->HasFocus();
 
   // Send the accessibility focus notification.
-  parent_view->NotifyAccessibilityEvent(AccessibilityTypes::EVENT_FOCUS,
-                                        send_native_event);
+  if (parent_view->GetWidget()) {
+    parent_view->GetWidget()->NotifyAccessibilityEvent(
+        parent_view, ui::AccessibilityTypes::EVENT_FOCUS, send_native_event);
+  }
 }
 
 ////////////////////////////////////////////////////////////////////////////////

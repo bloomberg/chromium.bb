@@ -1222,8 +1222,8 @@ gboolean AutocompleteEditViewGtk::HandleKeyPress(GtkWidget* widget,
   }
 
 #if defined(TOOLKIT_VIEWS)
-  location_bar_view_->NotifyAccessibilityEvent(
-      AccessibilityTypes::EVENT_TEXT_CHANGED);
+  location_bar_view_->GetWidget()->NotifyAccessibilityEvent(
+      location_bar_view_, ui::AccessibilityTypes::EVENT_TEXT_CHANGED, true);
 #endif
 
   return result;

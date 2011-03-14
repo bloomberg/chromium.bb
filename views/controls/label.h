@@ -76,7 +76,7 @@ class Label : public View {
   virtual void OnPaintBackground(gfx::Canvas* canvas) OVERRIDE;
 
   // Set the font.
-  void SetFont(const gfx::Font& font);
+  virtual void SetFont(const gfx::Font& font);
 
   // Set the label text.
   void SetText(const std::wstring& text);
@@ -177,8 +177,7 @@ class Label : public View {
   void SizeToFit(int max_width);
 
   // Accessibility accessors, overridden from View.
-  virtual AccessibilityTypes::Role GetAccessibleRole() OVERRIDE;
-  virtual AccessibilityTypes::State GetAccessibleState() OVERRIDE;
+  virtual void GetAccessibleState(ui::AccessibleViewState* state) OVERRIDE;
 
   // Gets/sets the flag to determine whether the label should be collapsed when
   // it's hidden (not visible). If this flag is true, the label will return a

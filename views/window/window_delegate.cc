@@ -36,11 +36,11 @@ bool WindowDelegate::IsModal() const {
   return false;
 }
 
-AccessibilityTypes::Role WindowDelegate::accessible_role() const {
-  return AccessibilityTypes::ROLE_WINDOW;
+ui::AccessibilityTypes::Role WindowDelegate::GetAccessibleRole() const {
+  return ui::AccessibilityTypes::ROLE_WINDOW;
 }
 
-AccessibilityTypes::State WindowDelegate::accessible_state() const {
+ui::AccessibilityTypes::State WindowDelegate::GetAccessibleState() const {
   return 0;
 }
 

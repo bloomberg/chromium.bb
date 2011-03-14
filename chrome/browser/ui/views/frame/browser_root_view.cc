@@ -14,6 +14,7 @@
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/tabs/tab_strip.h"
 #include "grit/chromium_strings.h"
+#include "ui/base/accessibility/accessible_view_state.h"
 #include "ui/base/dragdrop/drag_drop_types.h"
 #include "ui/base/dragdrop/os_exchange_data.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -22,9 +23,7 @@ BrowserRootView::BrowserRootView(BrowserView* browser_view,
                                  views::Widget* widget)
     : views::RootView(widget),
       browser_view_(browser_view),
-      forwarding_to_tab_strip_(false) {
-  SetAccessibleName(l10n_util::GetStringUTF16(IDS_PRODUCT_NAME));
-}
+      forwarding_to_tab_strip_(false) { }
 
 bool BrowserRootView::GetDropFormats(
       int* formats,
@@ -107,6 +106,11 @@ int BrowserRootView::OnPerformDrop(const views::DropTargetEvent& event) {
   scoped_ptr<views::DropTargetEvent> mapped_event(
       MapEventToTabStrip(event, mapped_data));
   return tabstrip()->OnPerformDrop(*mapped_event);
+}
+
+void BrowserRootView::GetAccessibleState(ui::AccessibleViewState* state) {
+  RootView::GetAccessibleState(state);
+  state->name = l10n_util::GetStringUTF16(IDS_PRODUCT_NAME);
 }
 
 bool BrowserRootView::ShouldForwardToTabStrip(

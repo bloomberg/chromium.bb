@@ -433,7 +433,8 @@ gboolean NativeTextfieldGtk::OnChanged() {
   TextfieldController* controller = textfield_->GetController();
   if (controller)
     controller->ContentsChanged(textfield_, GetText());
-  textfield_->NotifyAccessibilityEvent(AccessibilityTypes::EVENT_TEXT_CHANGED);
+  textfield_->GetWidget()->NotifyAccessibilityEvent(
+      textfield_, ui::AccessibilityTypes::EVENT_TEXT_CHANGED, true);
   return false;
 }
 
@@ -448,7 +449,8 @@ gboolean NativeTextfieldGtk::OnMoveCursorHandler(
 }
 
 gboolean NativeTextfieldGtk::OnMoveCursor() {
-  textfield_->NotifyAccessibilityEvent(AccessibilityTypes::EVENT_TEXT_CHANGED);
+  textfield_->GetWidget()->NotifyAccessibilityEvent(
+      textfield_, ui::AccessibilityTypes::EVENT_TEXT_CHANGED, true);
   return false;
 }
 
@@ -461,7 +463,8 @@ gboolean NativeTextfieldGtk::OnMouseUpHandler(
 }
 
 gboolean NativeTextfieldGtk::OnMouseUp() {
-  textfield_->NotifyAccessibilityEvent(AccessibilityTypes::EVENT_TEXT_CHANGED);
+  textfield_->GetWidget()->NotifyAccessibilityEvent(
+      textfield_, ui::AccessibilityTypes::EVENT_TEXT_CHANGED, true);
   return false;
 }
 

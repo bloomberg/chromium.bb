@@ -6,8 +6,8 @@
 #define VIEWS_WIDGET_NATIVE_WINDOW_H_
 #pragma once
 
+#include "ui/base/accessibility/accessibility_types.h"
 #include "ui/gfx/native_widget_types.h"
-#include "views/accessibility/accessibility_types.h"
 
 class SkBitmap;
 
@@ -72,8 +72,8 @@ class NativeWindow {
 
   // Update native accessibility properties on the native window.
   virtual void SetAccessibleName(const std::wstring& name) = 0;
-  virtual void SetAccessibleRole(AccessibilityTypes::Role role) = 0;
-  virtual void SetAccessibleState(AccessibilityTypes::State state) = 0;
+  virtual void SetAccessibleRole(ui::AccessibilityTypes::Role role) = 0;
+  virtual void SetAccessibleState(ui::AccessibilityTypes::State state) = 0;
 
   virtual NativeWidget* AsNativeWidget() = 0;
   virtual const NativeWidget* AsNativeWidget() const = 0;

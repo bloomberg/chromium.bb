@@ -7,7 +7,9 @@
 #include <gtk/gtk.h>
 
 #include "base/logging.h"
+#include "ui/base/accessibility/accessibility_types.h"
 #include "views/focus/focus_manager.h"
+#include "views/widget/widget.h"
 
 namespace views {
 
@@ -66,8 +68,8 @@ void NativeControlGtk::VisibilityChanged(View* starting_from, bool is_visible) {
 void NativeControlGtk::OnFocus() {
   DCHECK(native_view());
   gtk_widget_grab_focus(native_view());
-
-  parent()->NotifyAccessibilityEvent(AccessibilityTypes::EVENT_FOCUS);
+  GetWidget()->NotifyAccessibilityEvent(
+      parent(), ui::AccessibilityTypes::EVENT_FOCUS, true);
 }
 
 void NativeControlGtk::NativeControlCreated(GtkWidget* native_control) {

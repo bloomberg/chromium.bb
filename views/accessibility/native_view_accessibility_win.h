@@ -1,9 +1,9 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef VIEWS_ACCESSIBILITY_VIEW_ACCESSIBILITY_H_
-#define VIEWS_ACCESSIBILITY_VIEW_ACCESSIBILITY_H_
+#ifndef VIEWS_ACCESSIBILITY_NATIVE_VIEW_ACCESSIBILITY_WIN_H_
+#define VIEWS_ACCESSIBILITY_NATIVE_VIEW_ACCESSIBILITY_WIN_H_
 #pragma once
 
 #include <atlbase.h>
@@ -12,34 +12,37 @@
 #include <oleacc.h>
 
 #include "base/scoped_ptr.h"
+#include "ui/base/accessibility/accessible_view_state.h"
 #include "views/controls/native/native_view_host.h"
 #include "views/view.h"
 
+namespace views {
+
 ////////////////////////////////////////////////////////////////////////////////
 //
-// ViewAccessibility
+// NativeViewAccessibilityWin
 //
 // Class implementing the MSAA IAccessible COM interface for a generic View,
 // providing accessibility to be used by screen readers and other assistive
 // technology (AT).
 //
 ////////////////////////////////////////////////////////////////////////////////
-class ATL_NO_VTABLE ViewAccessibility
+class ATL_NO_VTABLE NativeViewAccessibilityWin
   : public CComObjectRootEx<CComMultiThreadModel>,
     public IDispatchImpl<IAccessible, &IID_IAccessible, &LIBID_Accessibility> {
  public:
-  BEGIN_COM_MAP(ViewAccessibility)
+  BEGIN_COM_MAP(NativeViewAccessibilityWin)
     COM_INTERFACE_ENTRY2(IDispatch, IAccessible)
     COM_INTERFACE_ENTRY(IAccessible)
   END_COM_MAP()
 
   // Create method for view accessibility.
-  static scoped_refptr<ViewAccessibility> Create(views::View* view);
+  static scoped_refptr<NativeViewAccessibilityWin> Create(views::View* view);
 
   // Returns the IAccessible interface for a view.
   static IAccessible* GetAccessibleForView(views::View* view);
 
-  virtual ~ViewAccessibility();
+  virtual ~NativeViewAccessibilityWin();
 
   void set_view(views::View* view) { view_ = view; }
 
@@ -112,18 +115,18 @@ class ATL_NO_VTABLE ViewAccessibility
 
   // Returns a conversion from the event (as defined in accessibility_types.h)
   // to an MSAA event.
-  static int32 MSAAEvent(AccessibilityTypes::Event event);
+  static int32 MSAAEvent(ui::AccessibilityTypes::Event event);
 
   // Returns a conversion from the Role (as defined in accessibility_types.h)
   // to an MSAA role.
-  static int32 MSAARole(AccessibilityTypes::Role role);
+  static int32 MSAARole(ui::AccessibilityTypes::Role role);
 
   // Returns a conversion from the State (as defined in accessibility_types.h)
   // to MSAA states set.
-  static int32 MSAAState(AccessibilityTypes::State state);
+  static int32 MSAAState(ui::AccessibilityTypes::State state);
 
  private:
-  ViewAccessibility();
+  NativeViewAccessibilityWin();
 
   // Determines navigation direction for accNavigate, based on left, up and
   // previous being mapped all to previous and right, down, next being mapped
@@ -157,9 +160,11 @@ class ATL_NO_VTABLE ViewAccessibility
   // Member View needed for view-specific calls.
   views::View* view_;
 
-  DISALLOW_COPY_AND_ASSIGN(ViewAccessibility);
+  DISALLOW_COPY_AND_ASSIGN(NativeViewAccessibilityWin);
 };
 
 extern const char kViewsNativeHostPropForAccessibility[];
 
-#endif  // VIEWS_ACCESSIBILITY_VIEW_ACCESSIBILITY_H_
+}  // namespace views
+
+#endif  // VIEWS_ACCESSIBILITY_NATIVE_VIEW_ACCESSIBILITY_WIN_H_

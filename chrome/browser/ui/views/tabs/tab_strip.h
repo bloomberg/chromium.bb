@@ -60,46 +60,49 @@ class TabStrip : public BaseTabStrip,
   virtual void SetBackgroundOffset(const gfx::Point& offset);
 
   // BaseTabStrip implementation:
-  virtual void PrepareForCloseAt(int model_index);
-  virtual void RemoveTabAt(int model_index);
-  virtual void SelectTabAt(int old_model_index, int new_model_index);
-  virtual void TabTitleChangedNotLoading(int model_index);
-  virtual void StartHighlight(int model_index);
-  virtual void StopAllHighlighting();
-  virtual BaseTab* CreateTabForDragging();
+  virtual void PrepareForCloseAt(int model_index) OVERRIDE;
+  virtual void RemoveTabAt(int model_index) OVERRIDE;
+  virtual void SelectTabAt(int old_model_index, int new_model_index) OVERRIDE;
+  virtual void TabTitleChangedNotLoading(int model_index) OVERRIDE;
+  virtual void StartHighlight(int model_index) OVERRIDE;
+  virtual void StopAllHighlighting() OVERRIDE;
+  virtual BaseTab* CreateTabForDragging() OVERRIDE;
 
   // views::View overrides:
-  virtual void PaintChildren(gfx::Canvas* canvas);
-  virtual const views::View* GetViewByID(int id) const;
-  virtual gfx::Size GetPreferredSize();
-  // NOTE: the drag and drop methods are invoked from FrameView. This is done to
-  // allow for a drop region that extends outside the bounds of the TabStrip.
-  virtual void OnDragEntered(const views::DropTargetEvent& event);
-  virtual int OnDragUpdated(const views::DropTargetEvent& event);
-  virtual void OnDragExited();
-  virtual int OnPerformDrop(const views::DropTargetEvent& event);
-  virtual AccessibilityTypes::Role GetAccessibleRole();
-  virtual views::View* GetEventHandlerForPoint(const gfx::Point& point);
-  virtual void OnThemeChanged();
+  virtual void PaintChildren(gfx::Canvas* canvas) OVERRIDE;
+  virtual const views::View* GetViewByID(int id) const OVERRIDE;
+  virtual gfx::Size GetPreferredSize() OVERRIDE;
+  // NOTE: the drag and drop methods are invoked from FrameView. This is done
+  // to allow for a drop region that extends outside the bounds of the TabStrip.
+  virtual void OnDragEntered(const views::DropTargetEvent& event) OVERRIDE;
+  virtual int OnDragUpdated(const views::DropTargetEvent& event) OVERRIDE;
+  virtual void OnDragExited() OVERRIDE;
+  virtual int OnPerformDrop(const views::DropTargetEvent& event) OVERRIDE;
+  virtual void GetAccessibleState(ui::AccessibleViewState* state) OVERRIDE;
+  virtual views::View* GetEventHandlerForPoint(const gfx::Point& point)
+      OVERRIDE;
+  virtual void OnThemeChanged() OVERRIDE;
 
  protected:
   // BaseTabStrip overrides:
-  virtual BaseTab* CreateTab();
-  virtual void StartInsertTabAnimation(int model_index, bool foreground);
-  virtual void AnimateToIdealBounds();
-  virtual bool ShouldHighlightCloseButtonAfterRemove();
-  virtual void DoLayout();
+  virtual BaseTab* CreateTab() OVERRIDE;
+  virtual void StartInsertTabAnimation(int model_index, bool foreground)
+      OVERRIDE;
+  virtual void AnimateToIdealBounds() OVERRIDE;
+  virtual bool ShouldHighlightCloseButtonAfterRemove() OVERRIDE;
+  virtual void DoLayout() OVERRIDE;
 
   // views::View implementation:
   virtual void ViewHierarchyChanged(bool is_add,
                                     views::View* parent,
-                                    views::View* child);
+                                    views::View* child) OVERRIDE;
 
   // TabController overrides.
-  virtual bool IsTabSelected(const BaseTab* btr) const;
+  virtual bool IsTabSelected(const BaseTab* btr) const OVERRIDE;
 
   // views::ButtonListener implementation:
-  virtual void ButtonPressed(views::Button* sender, const views::Event& event);
+  virtual void ButtonPressed(views::Button* sender, const views::Event& event)
+      OVERRIDE;
 
   // Horizontal gap between mini and non-mini-tabs.
   static const int mini_to_non_mini_gap_;

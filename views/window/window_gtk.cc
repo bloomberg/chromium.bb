@@ -291,10 +291,10 @@ void WindowGtk::SetWindowIcons(const SkBitmap& window_icon,
 void WindowGtk::SetAccessibleName(const std::wstring& name) {
 }
 
-void WindowGtk::SetAccessibleRole(AccessibilityTypes::Role role) {
+void WindowGtk::SetAccessibleRole(ui::AccessibilityTypes::Role role) {
 }
 
-void WindowGtk::SetAccessibleState(AccessibilityTypes::State state) {
+void WindowGtk::SetAccessibleState(ui::AccessibilityTypes::State state) {
 }
 
 NativeWidget* WindowGtk::AsNativeWidget() {

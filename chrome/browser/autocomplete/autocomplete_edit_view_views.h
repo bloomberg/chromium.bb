@@ -68,6 +68,7 @@ class AutocompleteEditViewViews : public views::View,
   // Implements views::View
   virtual bool OnMousePressed(const views::MouseEvent& event);
   virtual void Layout();
+  virtual void GetAccessibleState(ui::AccessibleViewState* state) OVERRIDE;
 
   // Implement the AutocompleteEditView interface.
   virtual AutocompleteEditModel* model();

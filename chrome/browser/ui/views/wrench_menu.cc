@@ -570,7 +570,6 @@ WrenchMenu::WrenchMenu(Browser* browser)
 void WrenchMenu::Init(ui::MenuModel* model) {
   DCHECK(!root_.get());
   root_.reset(new MenuItemView(this));
-  root_->SetAccessibleName(l10n_util::GetStringUTF16(IDS_ACCNAME_APP));
   root_->set_has_icons(true);  // We have checks, radios and icons, set this
                                // so we get the taller menu style.
   int next_id = 1;

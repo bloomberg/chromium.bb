@@ -5,6 +5,7 @@
 #include "base/i18n/rtl.h"
 #include "base/utf_string_conversions.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/base/accessibility/accessible_view_state.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/canvas.h"
 #include "views/border.h"
@@ -159,13 +160,11 @@ TEST(LabelTest, Accessibility) {
   string16 test_text(ASCIIToUTF16("My special text."));
   label.SetText(UTF16ToWideHack(test_text));
 
-  EXPECT_EQ(AccessibilityTypes::ROLE_STATICTEXT, label.GetAccessibleRole());
-
-  string16 name;
-  EXPECT_TRUE(label.GetAccessibleName(&name));
-  EXPECT_EQ(test_text, name);
-
-  EXPECT_TRUE(AccessibilityTypes::STATE_READONLY & label.GetAccessibleState());
+  ui::AccessibleViewState state;
+  label.GetAccessibleState(&state);
+  EXPECT_EQ(ui::AccessibilityTypes::ROLE_STATICTEXT, state.role);
+  EXPECT_EQ(test_text, state.name);
+  EXPECT_TRUE(ui::AccessibilityTypes::STATE_READONLY & state.state);
 }
 
 TEST(LabelTest, SingleLineSizing) {

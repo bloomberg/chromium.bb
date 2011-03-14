@@ -117,7 +117,7 @@ class RootView : public View,
 #endif
   virtual bool IsVisibleInRootView() const OVERRIDE;
   virtual std::string GetClassName() const OVERRIDE;
-  virtual AccessibilityTypes::Role GetAccessibleRole() OVERRIDE;
+  virtual void GetAccessibleState(ui::AccessibleViewState* state) OVERRIDE;
 
  protected:
   // Overridden from View:

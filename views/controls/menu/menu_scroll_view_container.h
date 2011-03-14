@@ -27,8 +27,7 @@ class MenuScrollViewContainer : public View {
   virtual void OnPaintBackground(gfx::Canvas* canvas) OVERRIDE;
   virtual void Layout() OVERRIDE;
   virtual gfx::Size GetPreferredSize() OVERRIDE;
-  virtual AccessibilityTypes::Role GetAccessibleRole() OVERRIDE;
-  virtual AccessibilityTypes::State GetAccessibleState() OVERRIDE;
+  virtual void GetAccessibleState(ui::AccessibleViewState* state) OVERRIDE;
 
  protected:
   // View override.
@@ -43,6 +42,9 @@ class MenuScrollViewContainer : public View {
 
   // The scroll view.
   MenuScrollView* scroll_view_;
+
+  // The content view.
+  SubmenuView* content_view_;
 
   DISALLOW_COPY_AND_ASSIGN(MenuScrollViewContainer);
 };

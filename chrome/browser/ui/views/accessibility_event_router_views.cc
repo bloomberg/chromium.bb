@@ -14,7 +14,7 @@
 #include "chrome/browser/ui/views/location_bar/location_bar_view.h"
 #include "content/common/notification_type.h"
 #include "ui/base/models/combobox_model.h"
-#include "views/accessibility/accessibility_types.h"
+#include "ui/base/accessibility/accessible_view_state.h"
 #include "views/controls/button/custom_button.h"
 #include "views/controls/button/menu_button.h"
 #include "views/controls/button/native_button.h"
@@ -44,38 +44,38 @@ AccessibilityEventRouterViews* AccessibilityEventRouterViews::GetInstance() {
 }
 
 void AccessibilityEventRouterViews::HandleAccessibilityEvent(
-    views::View* view, AccessibilityTypes::Event event_type) {
+    views::View* view, ui::AccessibilityTypes::Event event_type) {
   if (!ExtensionAccessibilityEventRouter::GetInstance()->
       IsAccessibilityEnabled()) {
     return;
   }
 
   switch (event_type) {
-    case AccessibilityTypes::EVENT_FOCUS:
+    case ui::AccessibilityTypes::EVENT_FOCUS:
       DispatchAccessibilityNotification(
           view, NotificationType::ACCESSIBILITY_CONTROL_FOCUSED);
       break;
-    case AccessibilityTypes::EVENT_MENUSTART:
-    case AccessibilityTypes::EVENT_MENUPOPUPSTART:
+    case ui::AccessibilityTypes::EVENT_MENUSTART:
+    case ui::AccessibilityTypes::EVENT_MENUPOPUPSTART:
       DispatchAccessibilityNotification(
           view, NotificationType::ACCESSIBILITY_MENU_OPENED);
       break;
-    case AccessibilityTypes::EVENT_MENUEND:
-    case AccessibilityTypes::EVENT_MENUPOPUPEND:
+    case ui::AccessibilityTypes::EVENT_MENUEND:
+    case ui::AccessibilityTypes::EVENT_MENUPOPUPEND:
       DispatchAccessibilityNotification(
           view, NotificationType::ACCESSIBILITY_MENU_CLOSED);
       break;
-    case AccessibilityTypes::EVENT_TEXT_CHANGED:
-    case AccessibilityTypes::EVENT_SELECTION_CHANGED:
+    case ui::AccessibilityTypes::EVENT_TEXT_CHANGED:
+    case ui::AccessibilityTypes::EVENT_SELECTION_CHANGED:
       DispatchAccessibilityNotification(
           view, NotificationType::ACCESSIBILITY_TEXT_CHANGED);
       break;
-    case AccessibilityTypes::EVENT_VALUE_CHANGED:
+    case ui::AccessibilityTypes::EVENT_VALUE_CHANGED:
       DispatchAccessibilityNotification(
           view, NotificationType::ACCESSIBILITY_CONTROL_ACTION);
       break;
-    case AccessibilityTypes::EVENT_ALERT:
-    case AccessibilityTypes::EVENT_NAME_CHANGED:
+    case ui::AccessibilityTypes::EVENT_ALERT:
+    case ui::AccessibilityTypes::EVENT_NAME_CHANGED:
       // TODO(dmazzoni): re-evaluate this list later and see
       // if supporting any of these would be useful feature requests or
       // they'd just be superfluous.
@@ -113,9 +113,9 @@ void AccessibilityEventRouterViews::HandleMenuItemFocused(
 //
 
 std::string AccessibilityEventRouterViews::GetViewName(views::View* view) {
-  string16 wname;
-  view->GetAccessibleName(&wname);
-  return UTF16ToUTF8(wname);
+  ui::AccessibleViewState state;
+  view->GetAccessibleState(&state);
+  return UTF16ToUTF8(state.name);
 }
 
 void AccessibilityEventRouterViews::DispatchAccessibilityNotification(
@@ -231,9 +231,11 @@ bool AccessibilityEventRouterViews::IsMenuEvent(
     return true;
 
   while (view) {
-    AccessibilityTypes::Role role = view->GetAccessibleRole();
-    if (role == AccessibilityTypes::ROLE_MENUITEM ||
-        role == AccessibilityTypes::ROLE_MENUPOPUP) {
+    ui::AccessibleViewState state;
+    view->GetAccessibleState(&state);
+    ui::AccessibilityTypes::Role role = state.role;
+    if (role == ui::AccessibilityTypes::ROLE_MENUITEM ||
+        role == ui::AccessibilityTypes::ROLE_MENUPOPUP) {
       return true;
     }
     view = view->parent();
@@ -244,39 +246,35 @@ bool AccessibilityEventRouterViews::IsMenuEvent(
 
 void AccessibilityEventRouterViews::SendLocationBarNotification(
     views::View* view, NotificationType type, Profile* profile) {
-  std::string name = GetViewName(view);
-  LocationBarView* location_bar = static_cast<LocationBarView*>(view);
-  int start_index = -1;
-  int end_index = -1;
-  location_bar->GetSelectionBounds(&start_index, &end_index);
+  ui::AccessibleViewState state;
+  view->GetAccessibleState(&state);
+  std::string name = UTF16ToUTF8(state.name);
   AccessibilityTextBoxInfo info(profile, name, false);
-  std::string value = UTF16ToUTF8(location_bar->GetAccessibleValue());
-  info.SetValue(value, start_index, end_index);
+  std::string value = UTF16ToUTF8(state.value);
+  info.SetValue(value, state.selection_start, state.selection_end);
   SendAccessibilityNotification(type, &info);
 }
 
 void AccessibilityEventRouterViews::SendTextfieldNotification(
     views::View* view, NotificationType type, Profile* profile) {
-  std::string name = GetViewName(view);
+  ui::AccessibleViewState state;
+  view->GetAccessibleState(&state);
+  std::string name = UTF16ToUTF8(state.name);
   views::Textfield* textfield = static_cast<views::Textfield*>(view);
-  int start_index = -1;
-  int end_index = -1;
-  textfield->GetSelectionBounds(&start_index, &end_index);
   bool password = textfield->IsPassword();
   AccessibilityTextBoxInfo info(profile, name, password);
-  std::string value = UTF16ToUTF8(textfield->GetAccessibleValue());
-  info.SetValue(value, start_index, end_index);
+  std::string value = UTF16ToUTF8(state.value);
+  info.SetValue(value, state.selection_start, state.selection_end);
   SendAccessibilityNotification(type, &info);
 }
 
 void AccessibilityEventRouterViews::SendComboboxNotification(
     views::View* view, NotificationType type, Profile* profile) {
-  std::string name = GetViewName(view);
-  views::Combobox* combobox = static_cast<views::Combobox*>(view);
-  std::string value = UTF16ToUTF8(combobox->GetAccessibleValue());
-  int selected_item = combobox->selected_item();
-  int item_count = combobox->model()->GetItemCount();
+  ui::AccessibleViewState state;
+  view->GetAccessibleState(&state);
+  std::string name = UTF16ToUTF8(state.name);
+  std::string value = UTF16ToUTF8(state.value);
   AccessibilityComboBoxInfo info(
-      profile, name, value, selected_item, item_count);
+      profile, name, value, state.index, state.count);
   SendAccessibilityNotification(type, &info);
 }

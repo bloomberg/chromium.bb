@@ -98,8 +98,8 @@ DialogClientView* DialogDelegate::GetDialogClientView() const {
   return window()->client_view()->AsDialogClientView();
 }
 
-AccessibilityTypes::Role DialogDelegate::accessible_role() const {
-  return AccessibilityTypes::ROLE_DIALOG;
+ui::AccessibilityTypes::Role DialogDelegate::GetAccessibleRole() const {
+  return ui::AccessibilityTypes::ROLE_DIALOG;
 }
 
 }  // namespace views

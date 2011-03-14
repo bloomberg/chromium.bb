@@ -58,7 +58,8 @@ class NetworkConfigView : public views::View,
   virtual views::View* GetContentsView() { return this; }
 
   // views::View overrides.
-  virtual std::wstring GetWindowTitle() const;
+  virtual std::wstring GetWindowTitle() const OVERRIDE;
+  virtual void GetAccessibleState(ui::AccessibleViewState* state) OVERRIDE;
 
   // Getter/setter for browser mode.
   void set_browser_mode(bool value) {

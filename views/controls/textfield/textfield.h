@@ -183,6 +183,9 @@ class Textfield : public View {
   // only and has to be called after the wrapper is created.
   size_t GetCursorPosition() const;
 
+  // Set the accessible name of the text field.
+  void SetAccessibleName(const string16& name);
+
 #ifdef UNIT_TEST
   gfx::NativeView GetTestingHandle() const {
     return native_wrapper_ ? native_wrapper_->GetTestingHandle() : NULL;
@@ -205,13 +208,7 @@ class Textfield : public View {
   virtual bool OnKeyReleased(const views::KeyEvent& e) OVERRIDE;
   virtual void OnFocus() OVERRIDE;
   virtual void OnBlur() OVERRIDE;
-  virtual AccessibilityTypes::Role GetAccessibleRole() OVERRIDE;
-  virtual AccessibilityTypes::State GetAccessibleState() OVERRIDE;
-  virtual string16 GetAccessibleValue() OVERRIDE;
-
-  // TODO(dmazzoni): Remove this when refactoring views accessibility code.
-  // http://crbug.com/74988
-  void GetSelectionBounds(int* start_index, int* end_index);
+  virtual void GetAccessibleState(ui::AccessibleViewState* state) OVERRIDE;
 
  protected:
   virtual void ViewHierarchyChanged(bool is_add, View* parent,
@@ -278,6 +275,9 @@ class Textfield : public View {
 
   // Text to display when empty.
   string16 text_to_display_when_empty_;
+
+  // The accessible name of the text field.
+  string16 accessible_name_;
 
   DISALLOW_COPY_AND_ASSIGN(Textfield);
 };

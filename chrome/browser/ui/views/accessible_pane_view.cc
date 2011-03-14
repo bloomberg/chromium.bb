@@ -7,6 +7,7 @@
 #include "chrome/browser/ui/views/accessible_pane_view.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/location_bar/location_bar_view.h"
+#include "ui/base/accessibility/accessible_view_state.h"
 #include "views/controls/button/menu_button.h"
 #include "views/controls/native/native_view_host.h"
 #include "views/focus/focus_search.h"
@@ -196,8 +197,8 @@ void AccessiblePaneView::SetVisible(bool flag) {
   View::SetVisible(flag);
 }
 
-AccessibilityTypes::Role AccessiblePaneView::GetAccessibleRole() {
-  return AccessibilityTypes::ROLE_PANE;
+void AccessiblePaneView::GetAccessibleState(ui::AccessibleViewState* state) {
+  state->role = ui::AccessibilityTypes::ROLE_PANE;
 }
 
 ////////////////////////////////////////////////////////////////////////////////

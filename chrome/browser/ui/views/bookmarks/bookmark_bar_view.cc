@@ -40,6 +40,7 @@
 #include "grit/app_resources.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
+#include "ui/base/accessibility/accessible_view_state.h"
 #include "ui/base/animation/slide_animation.h"
 #include "ui/base/dragdrop/os_exchange_data.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -293,7 +294,7 @@ class BookmarkBarView::ButtonSeparatorView : public views::View {
   ButtonSeparatorView() {}
   virtual ~ButtonSeparatorView() {}
 
-  virtual void OnPaint(gfx::Canvas* canvas) {
+  virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE {
     DetachableToolbarView::PaintVerticalDivider(
         canvas, kSeparatorStartX, height(), 1,
         DetachableToolbarView::kEdgeDividerColor,
@@ -301,14 +302,15 @@ class BookmarkBarView::ButtonSeparatorView : public views::View {
         GetThemeProvider()->GetColor(BrowserThemeProvider::COLOR_TOOLBAR));
   }
 
-  virtual gfx::Size GetPreferredSize() {
+  virtual gfx::Size GetPreferredSize() OVERRIDE {
     // We get the full height of the bookmark bar, so that the height returned
     // here doesn't matter.
     return gfx::Size(kSeparatorWidth, 1);
   }
 
-  virtual AccessibilityTypes::Role GetAccessibleRole() {
-    return AccessibilityTypes::ROLE_SEPARATOR;
+  virtual void GetAccessibleState(ui::AccessibleViewState* state) OVERRIDE {
+    state->name = l10n_util::GetStringUTF16(IDS_ACCNAME_SEPARATOR);
+    state->role = ui::AccessibilityTypes::ROLE_SEPARATOR;
   }
 
  private:
@@ -671,12 +673,9 @@ void BookmarkBarView::ShowContextMenu(const gfx::Point& p,
   ShowContextMenuForView(this, p, is_mouse_gesture);
 }
 
-bool BookmarkBarView::IsAccessibleViewTraversable(views::View* view) {
-  return view != bookmarks_separator_view_ && view != instructions_;
-}
-
-AccessibilityTypes::Role BookmarkBarView::GetAccessibleRole() {
-  return AccessibilityTypes::ROLE_TOOLBAR;
+void BookmarkBarView::GetAccessibleState(ui::AccessibleViewState* state) {
+  state->role = ui::AccessibilityTypes::ROLE_TOOLBAR;
+  state->name = l10n_util::GetStringUTF16(IDS_ACCNAME_BOOKMARKS);
 }
 
 void BookmarkBarView::OnStateChanged() {
@@ -876,8 +875,6 @@ void BookmarkBarView::Init() {
   AddChildView(other_bookmarked_button_);
 
   bookmarks_separator_view_ = new ButtonSeparatorView();
-  bookmarks_separator_view_->SetAccessibleName(
-      l10n_util::GetStringUTF16(IDS_ACCNAME_SEPARATOR));
   AddChildView(bookmarks_separator_view_);
 
   instructions_ = new BookmarkBarInstructionsView(this);

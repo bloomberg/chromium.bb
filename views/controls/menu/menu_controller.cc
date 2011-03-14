@@ -766,8 +766,10 @@ void MenuController::SetSelection(MenuItemView* menu_item,
   // Notify an accessibility focus event on all menu items except for the root.
   if (menu_item &&
       (MenuDepth(menu_item) != 1 ||
-          menu_item->GetType() != MenuItemView::SUBMENU))
-    menu_item->NotifyAccessibilityEvent(AccessibilityTypes::EVENT_FOCUS);
+       menu_item->GetType() != MenuItemView::SUBMENU)) {
+    menu_item->GetWidget()->NotifyAccessibilityEvent(
+        menu_item, ui::AccessibilityTypes::EVENT_FOCUS, true);
+  }
 }
 
 // static

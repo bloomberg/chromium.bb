@@ -180,7 +180,8 @@ std::string NativeViewHost::GetClassName() const {
 
 void NativeViewHost::OnFocus() {
   native_wrapper_->SetFocus();
-  NotifyAccessibilityEvent(AccessibilityTypes::EVENT_FOCUS);
+  GetWidget()->NotifyAccessibilityEvent(
+      this, ui::AccessibilityTypes::EVENT_FOCUS, true);
 }
 
 bool NativeViewHost::ContainsNativeView(gfx::NativeView native_view) const {

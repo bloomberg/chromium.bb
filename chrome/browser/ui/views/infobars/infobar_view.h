@@ -103,12 +103,12 @@ class InfoBarView : public InfoBar,
 
   // views::View:
   virtual void Layout() OVERRIDE;
-  virtual void ViewHierarchyChanged(
-      bool is_add, View* parent, View* child) OVERRIDE;
+  virtual void ViewHierarchyChanged(bool is_add, View* parent, View* child)
+      OVERRIDE;
 
   // views::ButtonListener:
-  virtual void ButtonPressed(
-      views::Button* sender, const views::Event& event) OVERRIDE;
+  virtual void ButtonPressed(views::Button* sender, const views::Event& event)
+      OVERRIDE;
 
   // ui::AnimationDelegate:
   virtual void AnimationProgressed(const ui::Animation* animation) OVERRIDE;
@@ -146,7 +146,7 @@ class InfoBarView : public InfoBar,
   static const int kTabWidth;
 
   // views::View:
-  virtual AccessibilityTypes::Role GetAccessibleRole() OVERRIDE;
+  virtual void GetAccessibleState(ui::AccessibleViewState* state) OVERRIDE;
   virtual gfx::Size GetPreferredSize() OVERRIDE;
   virtual void OnBoundsChanged(const gfx::Rect& previous_bounds) OVERRIDE;
   virtual void PaintChildren(gfx::Canvas* canvas) OVERRIDE;

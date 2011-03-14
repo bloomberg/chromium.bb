@@ -37,6 +37,7 @@
 #include "content/common/notification_service.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
+#include "ui/base/accessibility/accessible_view_state.h"
 #include "ui/base/dragdrop/drag_drop_types.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -171,8 +172,6 @@ void LocationBarView::Init() {
 
   location_entry_view_ = location_entry_->AddToView(this);
   location_entry_view_->SetID(VIEW_ID_AUTOCOMPLETE);
-  location_entry_view_->SetAccessibleName(
-      l10n_util::GetStringUTF16(IDS_ACCNAME_LOCATION));
 
   selected_keyword_view_ = new SelectedKeywordView(
       kSelectedKeywordBackgroundImages, IDR_KEYWORD_SEARCH_MAGNIFIER,
@@ -203,8 +202,6 @@ void LocationBarView::Init() {
     AddChildView(star_view_);
     star_view_->SetVisible(true);
   }
-
-  SetAccessibleName(l10n_util::GetStringUTF16(IDS_ACCNAME_LOCATION));
 
   // Initialize the location entry. We do this to avoid a black flash which is
   // visible when the location entry has just been initialized.
@@ -315,7 +312,8 @@ void LocationBarView::InvalidatePageActions() {
 void LocationBarView::OnFocus() {
   // Focus the location entry native view.
   location_entry_->SetFocus();
-  NotifyAccessibilityEvent(AccessibilityTypes::EVENT_FOCUS);
+  GetWidget()->NotifyAccessibilityEvent(
+      this, ui::AccessibilityTypes::EVENT_FOCUS, true);
 }
 
 void LocationBarView::SetProfile(Profile* profile) {
@@ -1002,20 +1000,16 @@ bool LocationBarView::SkipDefaultKeyEventProcessing(const views::KeyEvent& e) {
 #endif
 }
 
-AccessibilityTypes::Role LocationBarView::GetAccessibleRole() {
-  return AccessibilityTypes::ROLE_GROUPING;
-}
+void LocationBarView::GetAccessibleState(ui::AccessibleViewState* state) {
+  state->role = ui::AccessibilityTypes::ROLE_GROUPING;
+  state->name = l10n_util::GetStringUTF16(IDS_ACCNAME_LOCATION);
+  state->value = location_entry_->GetText();
 
-string16 LocationBarView::GetAccessibleValue() {
-  return location_entry_->GetText();
-}
-
-void LocationBarView::GetSelectionBounds(int* start_index, int* end_index) {
   string16::size_type entry_start;
   string16::size_type entry_end;
   location_entry_->GetSelectionBounds(&entry_start, &entry_end);
-  *start_index = entry_start;
-  *end_index = entry_end;
+  state->selection_start = entry_start;
+  state->selection_end = entry_end;
 }
 
 void LocationBarView::WriteDragDataForView(views::View* sender,

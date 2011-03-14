@@ -18,6 +18,7 @@
 #include "content/browser/tab_contents/page_navigator.h"
 #include "content/common/notification_service.h"
 #include "grit/generated_resources.h"
+#include "ui/base/accessibility/accessibility_types.h"
 #include "ui/base/clipboard/clipboard.h"
 #include "ui/base/keycodes/keyboard_codes.h"
 #include "views/controls/button/menu_button.h"
@@ -84,7 +85,7 @@ class ViewsDelegateImpl : public views::ViewsDelegate {
   }
 
   virtual void NotifyAccessibilityEvent(
-      views::View* view, AccessibilityTypes::Event event_type) {}
+      views::View* view, ui::AccessibilityTypes::Event event_type) {}
   virtual void NotifyMenuItemFocused(
       const std::wstring& menu_name,
       const std::wstring& menu_item_name,

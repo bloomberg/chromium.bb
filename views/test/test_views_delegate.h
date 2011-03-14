@@ -6,6 +6,7 @@
 #define VIEWS_TEST_TEST_VIEWS_DELEGATE_H_
 
 #include "base/scoped_ptr.h"
+#include "ui/base/accessibility/accessibility_types.h"
 #include "ui/base/clipboard/clipboard.h"
 #include "views/views_delegate.h"
 
@@ -23,16 +24,18 @@ class TestViewsDelegate : public views::ViewsDelegate {
   virtual void SaveWindowPlacement(views::Window* window,
                                    const std::wstring& window_name,
                                    const gfx::Rect& bounds,
-                                   bool maximized) {
-  }
+                                   bool maximized) OVERRIDE { }
   virtual bool GetSavedWindowBounds(views::Window* window,
                                     const std::wstring& window_name,
                                     gfx::Rect* bounds) const;
+
   virtual bool GetSavedMaximizedState(views::Window* window,
                                       const std::wstring& window_name,
                                       bool* maximized) const;
+
   virtual void NotifyAccessibilityEvent(
-      views::View* view, AccessibilityTypes::Event event_type) {}
+      views::View* view, ui::AccessibilityTypes::Event event_type) OVERRIDE {}
+
   virtual void NotifyMenuItemFocused(
       const std::wstring& menu_name,
       const std::wstring& menu_item_name,
@@ -40,12 +43,13 @@ class TestViewsDelegate : public views::ViewsDelegate {
       int item_count,
       bool has_submenu) {}
 #if defined(OS_WIN)
-  virtual HICON GetDefaultWindowIcon() const {
+  virtual HICON GetDefaultWindowIcon() const OVERRIDE {
     return NULL;
   }
 #endif
-  virtual void AddRef() {}
-  virtual void ReleaseRef() {}
+
+  virtual void AddRef() OVERRIDE {}
+  virtual void ReleaseRef() OVERRIDE {}
 
  private:
   mutable scoped_ptr<ui::Clipboard> clipboard_;

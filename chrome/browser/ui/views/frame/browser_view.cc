@@ -74,6 +74,7 @@
 #include "grit/locale_settings.h"
 #include "grit/theme_resources.h"
 #include "grit/webkit_resources.h"
+#include "ui/base/accessibility/accessible_view_state.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/canvas_skia.h"
@@ -1788,8 +1789,9 @@ void BrowserView::ChildPreferredSizeChanged(View* child) {
   Layout();
 }
 
-AccessibilityTypes::Role BrowserView::GetAccessibleRole() {
-  return AccessibilityTypes::ROLE_CLIENT;
+void BrowserView::GetAccessibleState(ui::AccessibleViewState* state) {
+  state->name = l10n_util::GetStringUTF16(IDS_PRODUCT_NAME);
+  state->role = ui::AccessibilityTypes::ROLE_CLIENT;
 }
 
 void BrowserView::InfoBarContainerSizeChanged(bool is_animating) {
@@ -1815,8 +1817,6 @@ void BrowserView::InitTabStrip(TabStripModel* model) {
     tabstrip_->parent()->RemoveChildView(tabstrip_);
 
   tabstrip_ = CreateTabStrip(browser_.get(), model, UseVerticalTabs());
-
-  tabstrip_->SetAccessibleName(l10n_util::GetStringUTF16(IDS_ACCNAME_TABSTRIP));
   AddChildView(tabstrip_);
 }
 
@@ -1842,14 +1842,12 @@ void BrowserView::Init() {
   }
 
   LoadAccelerators();
-  SetAccessibleName(l10n_util::GetStringUTF16(IDS_PRODUCT_NAME));
 
   InitTabStrip(browser_->tabstrip_model());
 
   toolbar_ = new ToolbarView(browser_.get());
   AddChildView(toolbar_);
   toolbar_->Init(browser_->profile());
-  toolbar_->SetAccessibleName(l10n_util::GetStringUTF16(IDS_ACCNAME_TOOLBAR));
 
   infobar_container_ = new InfoBarContainer(this);
   AddChildView(infobar_container_);
@@ -1980,8 +1978,6 @@ bool BrowserView::MaybeShowBookmarkBar(TabContentsWrapper* contents) {
       bookmark_bar_view_->SetProfile(contents->profile());
     }
     bookmark_bar_view_->SetPageNavigator(contents->tab_contents());
-    bookmark_bar_view_->SetAccessibleName(
-        l10n_util::GetStringUTF16(IDS_ACCNAME_BOOKMARKS));
     new_bookmark_bar_view = bookmark_bar_view_.get();
   }
   return UpdateChildViewAndLayout(new_bookmark_bar_view, &active_bookmark_bar_);

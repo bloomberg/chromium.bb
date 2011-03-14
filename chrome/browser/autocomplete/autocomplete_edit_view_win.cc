@@ -736,8 +736,10 @@ void AutocompleteEditViewWin::ClosePopup() {
 
 void AutocompleteEditViewWin::SetFocus() {
   ::SetFocus(m_hWnd);
-  parent_view_->
-      NotifyAccessibilityEvent(AccessibilityTypes::EVENT_FOCUS, false);
+  parent_view_->GetWidget()->NotifyAccessibilityEvent(
+      parent_view_,
+      ui::AccessibilityTypes::EVENT_FOCUS,
+      false);
 }
 
 IAccessible* AutocompleteEditViewWin::GetIAccessible() {
@@ -907,12 +909,12 @@ bool AutocompleteEditViewWin::OnAfterPossibleChangeInternal(
   if (text_differs) {
     // Note that a TEXT_CHANGED event implies that the cursor/selection
     // probably changed too, so we don't need to send both.
-    parent_view_->NotifyAccessibilityEvent(
-        AccessibilityTypes::EVENT_TEXT_CHANGED);
+    parent_view_->GetWidget()->NotifyAccessibilityEvent(
+        parent_view_, ui::AccessibilityTypes::EVENT_TEXT_CHANGED, true);
   } else if (selection_differs) {
     // Notify assistive technology that the cursor or selection changed.
-    parent_view_->NotifyAccessibilityEvent(
-        AccessibilityTypes::EVENT_SELECTION_CHANGED);
+    parent_view_->GetWidget()->NotifyAccessibilityEvent(
+        parent_view_, ui::AccessibilityTypes::EVENT_SELECTION_CHANGED, true);
   } else if (delete_at_end_pressed_) {
     model_->OnChanged();
   }

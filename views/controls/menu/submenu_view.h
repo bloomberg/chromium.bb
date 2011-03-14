@@ -54,7 +54,7 @@ class SubmenuView : public View {
   virtual gfx::Size GetPreferredSize() OVERRIDE;
 
   // Override from View.
-  virtual AccessibilityTypes::Role GetAccessibleRole() OVERRIDE;
+  virtual void GetAccessibleState(ui::AccessibleViewState* state) OVERRIDE;
 
   // Painting.
   virtual void PaintChildren(gfx::Canvas* canvas) OVERRIDE;
@@ -64,7 +64,7 @@ class SubmenuView : public View {
       int* formats,
       std::set<OSExchangeData::CustomFormat>* custom_formats) OVERRIDE;
   virtual bool AreDropTypesRequired() OVERRIDE;
-  virtual bool CanDrop(const OSExchangeData& data);
+  virtual bool CanDrop(const OSExchangeData& data) OVERRIDE;
   virtual void OnDragEntered(const DropTargetEvent& event) OVERRIDE;
   virtual int OnDragUpdated(const DropTargetEvent& event) OVERRIDE;
   virtual void OnDragExited() OVERRIDE;

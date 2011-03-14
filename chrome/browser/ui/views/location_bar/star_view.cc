@@ -11,6 +11,7 @@
 #include "chrome/browser/ui/views/browser_dialogs.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
+#include "ui/base/accessibility/accessible_view_state.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 
@@ -27,16 +28,13 @@ StarView::~StarView() {
 void StarView::SetToggled(bool on) {
   SetTooltipText(UTF16ToWide(l10n_util::GetStringUTF16(
       on ? IDS_TOOLTIP_STARRED : IDS_TOOLTIP_STAR)));
-  // Since StarView is an ImageView, the SetTooltipText changes the accessible
-  // name. To keep the accessible name unchanged, we need to set the accessible
-  // name right after we modify the tooltip text for this view.
-  SetAccessibleName(l10n_util::GetStringUTF16(IDS_ACCNAME_STAR));
   SetImage(ResourceBundle::GetSharedInstance().GetBitmapNamed(
       on ? IDR_STAR_LIT : IDR_STAR));
 }
 
-AccessibilityTypes::Role StarView::GetAccessibleRole() {
-  return AccessibilityTypes::ROLE_PUSHBUTTON;
+void StarView::GetAccessibleState(ui::AccessibleViewState* state) {
+  state->name = l10n_util::GetStringUTF16(IDS_ACCNAME_STAR);
+  state->role = ui::AccessibilityTypes::ROLE_PUSHBUTTON;
 }
 
 bool StarView::GetTooltipText(const gfx::Point& p, std::wstring* tooltip) {

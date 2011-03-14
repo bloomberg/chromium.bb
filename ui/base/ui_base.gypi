@@ -57,6 +57,8 @@
         '../third_party/icu/icu.gyp:icuuc',
       ],
       'sources': [
+        'accessibility/accessibility_types.h',
+        'accessibility/accessible_view_state.h',
         'animation/animation.cc',
         'animation/animation.h',
         'animation/animation_container.cc',

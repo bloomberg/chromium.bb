@@ -12,6 +12,7 @@
 #include "base/string_split.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
+#include "ui/base/accessibility/accessible_view_state.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/text/text_elider.h"
 #include "ui/gfx/canvas_skia.h"
@@ -106,7 +107,6 @@ void Label::SetText(const std::wstring& text) {
   text_ = WideToUTF16Hack(text);
   url_set_ = false;
   text_size_valid_ = false;
-  SetAccessibleName(WideToUTF16Hack(text));
   PreferredSizeChanged();
   SchedulePaint();
 }
@@ -258,12 +258,10 @@ void Label::SizeToFit(int max_width) {
   SizeToPreferredSize();
 }
 
-AccessibilityTypes::Role Label::GetAccessibleRole() {
-  return AccessibilityTypes::ROLE_STATICTEXT;
-}
-
-AccessibilityTypes::State Label::GetAccessibleState() {
-  return AccessibilityTypes::STATE_READONLY;
+void Label::GetAccessibleState(ui::AccessibleViewState* state) {
+  state->role = ui::AccessibilityTypes::ROLE_STATICTEXT;
+  state->state = ui::AccessibilityTypes::STATE_READONLY;
+  state->name = text_;
 }
 
 void Label::SetHasFocusBorder(bool has_focus_border) {
