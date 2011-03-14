@@ -22,6 +22,7 @@ import tempfile
 import time
 
 import common
+import subprocess
 
 import drmemory_analyze
 import memcheck_analyze
@@ -696,16 +697,73 @@ class DrMemory(BaseTool):
     parser.add_option("", "--suppressions", default=[],
                       action="append",
                       help="path to a drmemory suppression file")
+    parser.add_option("", "--follow_python", action="store_true",
+                      default=False, dest="follow_python",
+                      help="Monitor python child processes.  If off, neither "
+                      "python children nor any children of python children "
+                      "will be monitored.")
+    parser.add_option("", "--use_debug", action="store_true",
+                      default=False, dest="use_debug",
+                      help="Run Dr. Memory debug build")
+    # TODO(bruening): I want to add --extraops that can take extra
+    # args that are passed through to Dr. Memory, but the
+    # chrome_tests.bat and chrome_tests.py layers combined w/
+    # chrome_tests.py parsing makes it not work out in practice.  We
+    # should change chrome_tests.py to pass all unknown options
+    # through to valgrind_test.py so we don't need to use --tool_flags
+    # and quote it, and ditto w/ valgrind_test.py passing unknown
+    # options through to its tool.
 
   def ToolCommand(self):
-    """Get the valgrind command to run."""
+    """Get the tool command to run."""
     tool_name = self.ToolName()
 
-    pin_cmd = os.getenv("DRMEMORY_COMMAND")
-    if not pin_cmd:
+    # WINHEAP is what Dr. Memory supports as there are issues w/ both
+    # jemalloc (http://code.google.com/p/drmemory/issues/detail?id=320) and
+    # tcmalloc (http://code.google.com/p/drmemory/issues/detail?id=314)
+    add_env = {
+      "CHROME_ALLOCATOR" : "WINHEAP",
+    }
+    for k,v in add_env.iteritems():
+      logging.info("export %s=%s", k, v)
+      os.putenv(k, v)
+
+    drmem_cmd = os.getenv("DRMEMORY_COMMAND")
+    if not drmem_cmd:
       raise RuntimeError, "Please set DRMEMORY_COMMAND environment variable " \
                           "with the path to drmemory.exe"
-    proc = pin_cmd.split(" ")
+    proc = drmem_cmd.split(" ")
+
+    # By default, don't run python (this will exclude python's children as well)
+    # to reduce runtime.  We're not really interested in spending time finding
+    # bugs in the python implementation.
+    # With file-based config we must update the file every time, and
+    # it will affect simultaneous drmem uses by this user.  While file-based
+    # config has many advantages, here we may want this-instance-only
+    # (http://code.google.com/p/drmemory/issues/detail?id=334).
+    drconfig_cmd = [ proc[0].replace("drmemory.exe", "drconfig.exe") ]
+    drconfig_cmd += ["-quiet"] # suppress errors about no 64-bit libs
+    run_drconfig = True
+    if self._options.follow_python:
+      logging.info("Following python children")
+      # -unreg fails if not already registered so query for that first
+      query_cmd = drconfig_cmd + ["-isreg", "python.exe"]
+      query_proc = subprocess.Popen(query_cmd, stdout=subprocess.PIPE,
+                                    shell=True)
+      (query_out, query_err) = query_proc.communicate()
+      if re.search("exe not registered", query_out):
+        run_drconfig = False # all set
+      else:
+        drconfig_cmd += ["-unreg", "python.exe"]
+    else:
+      logging.info("Excluding python children")
+      drconfig_cmd += ["-reg", "python.exe", "-norun"]
+    if run_drconfig:
+      drconfig_retcode = common.RunSubprocess(drconfig_cmd, self._timeout)
+      if drconfig_retcode:
+        logging.error("Configuring whether to follow python children failed " \
+                      "with %d.", drconfig_retcode)
+        raise RuntimeError, "Configuring python children failed "
 
     suppression_count = 0
     for suppression_file in self._options.suppressions:
@@ -720,6 +778,9 @@ class DrMemory(BaseTool):
 
     # Un-comment to dump Dr.Memory events on error
     #proc += ["-dr_ops", "-dumpcore_mask 0x8bff"]
+
+    if self._options.use_debug:
+      proc += ["-debug"]
 
     proc += ["-logdir", self.log_dir]
     proc += ["-batch", "-quiet"]

@@ -1,0 +1,16 @@
+##################################################
+# known Dr. Memory bugs:
+
+# http://code.google.com/p/drmemory/issues/detail?id=318
+AudioRendererHostTest.*
+
+# http://code.google.com/p/dynamorio/issues/detail?id=394
+JsonSchemaTest.*
+
+##################################################
+# un-analyzed Dr. Memory bugs:
+
+# test fails, but no visible reason
+# http://code.google.com/p/drmemory/issues/detail?id=330
+TemplateURLTest.Suggestions
+
