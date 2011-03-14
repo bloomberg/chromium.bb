@@ -741,10 +741,10 @@ def RunHook(committing, upstream_branch, rietveld_server, tbr, may_prompt):
 
   root = RunCommand(['git', 'rev-parse', '--show-cdup']).strip()
   if not root:
-    root = "."
+    root = '.'
   absroot = os.path.abspath(root)
   if not root:
-    raise Exception("Could not get root directory.")
+    raise Exception('Could not get root directory.')
 
   # We use the sha1 of HEAD as a name of this change.
   name = RunCommand(['git', 'rev-parse', 'HEAD']).strip()
@@ -760,7 +760,7 @@ def RunHook(committing, upstream_branch, rietveld_server, tbr, may_prompt):
     # up to the branch point, as git cl upload will prefill the description
     # with these log messages.
     description = RunCommand(['git', 'log', '--pretty=format:%s%n%n%b',
-                             '%s...' % (upstream_branch)]).strip()
+                              '%s...' % (upstream_branch)]).strip()
   change = presubmit_support.GitChange(name, description, absroot, files,
                                        issue, patchset)
 
@@ -770,7 +770,7 @@ def RunHook(committing, upstream_branch, rietveld_server, tbr, may_prompt):
     files = [f.LocalPath() for f in change.AffectedFiles()]
     watchers = watchlist.GetWatchersForPaths(files)
     RunCommand(['git', 'config', '--replace-all',
-               'rietveld.extracc', ','.join(watchers)])
+                'rietveld.extracc', ','.join(watchers)])
 
   output = StringIO.StringIO()
   should_continue = presubmit_support.DoPresubmitChecks(change, committing,
