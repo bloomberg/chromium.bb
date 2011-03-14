@@ -22,14 +22,15 @@ using WebKit::WebFrame;
 using WebKit::WebNode;
 
 void PrintWebViewHelper::CreatePreviewDocument(
-    const ViewMsg_PrintPages_Params& params, WebFrame* frame) {
+    const ViewMsg_PrintPages_Params& params, WebKit::WebFrame* frame,
+    WebKit::WebNode* node) {
   // We only can use PDF in the renderer because Cairo needs to create a
   // temporary file for a PostScript surface.
   scoped_ptr<printing::NativeMetafile> metafile(
       printing::NativeMetafileFactory::CreateMetafile());
   int page_count = 0;
 
-  if (!RenderPages(params, frame, false, &page_count, metafile.get()))
+  if (!RenderPages(params, frame, node, false, &page_count, metafile.get()))
     return;
 
   // Get the size of the resulting metafile.
@@ -64,7 +65,7 @@ void PrintWebViewHelper::PrintPages(const ViewMsg_PrintPages_Params& params,
       true;
 #endif  // defined(OS_CHROMEOS)
 
-  if (!RenderPages(params, frame, send_expected_page_count, &page_count,
+  if (!RenderPages(params, frame, node, send_expected_page_count, &page_count,
                    metafile.get())) {
     return;
   }
@@ -142,7 +143,8 @@ void PrintWebViewHelper::PrintPages(const ViewMsg_PrintPages_Params& params,
 }
 
 bool PrintWebViewHelper::RenderPages(const ViewMsg_PrintPages_Params& params,
-                                     WebFrame* frame,
+                                     WebKit::WebFrame* frame,
+                                     WebKit::WebNode* node,
                                      bool send_expected_page_count,
                                      int* page_count,
                                      printing::NativeMetafile* metafile) {
@@ -157,7 +159,7 @@ bool PrintWebViewHelper::RenderPages(const ViewMsg_PrintPages_Params& params,
     // story.
     PrepareFrameAndViewForPrint prep_frame_view(printParams,
                                                 frame,
-                                                NULL,
+                                                node,
                                                 frame->view());
     *page_count = prep_frame_view.GetExpectedPageCount();
     if (send_expected_page_count) {

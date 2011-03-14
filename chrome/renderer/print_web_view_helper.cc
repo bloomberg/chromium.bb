@@ -260,7 +260,7 @@ void PrintWebViewHelper::Print(WebKit::WebFrame* frame,
     // Render Pages for printing.
     if (!print_cancelled) {
       if (is_preview_)
-        RenderPagesForPreview(frame);
+        RenderPagesForPreview(frame, node);
       else
         RenderPagesForPrint(frame, node);
 
@@ -571,10 +571,11 @@ void PrintWebViewHelper::RenderPagesForPrint(WebFrame* frame,
   }
 }
 
-void PrintWebViewHelper::RenderPagesForPreview(WebFrame *frame) {
+void PrintWebViewHelper::RenderPagesForPreview(WebKit::WebFrame* frame,
+                                               WebKit::WebNode* node) {
   ViewMsg_PrintPages_Params print_settings = *print_pages_params_;
   // TODO(kmadhusu): Handle print selection.
-  CreatePreviewDocument(print_settings, frame);
+  CreatePreviewDocument(print_settings, frame, node);
 }
 
 #if defined(OS_POSIX)

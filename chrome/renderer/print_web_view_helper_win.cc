@@ -119,11 +119,12 @@ void PrintWebViewHelper::PrintPage(const ViewMsg_PrintPage_Params& params,
 }
 
 void PrintWebViewHelper::CreatePreviewDocument(
-    const ViewMsg_PrintPages_Params& params, WebFrame* frame) {
+    const ViewMsg_PrintPages_Params& params, WebKit::WebFrame* frame,
+    WebKit::WebNode* node) {
   int page_count = 0;
   ViewMsg_Print_Params print_params = params.params;
-  UpdatePrintableSizeInPrintParameters(frame, NULL, &print_params);
-  PrepareFrameAndViewForPrint prep_frame_view(print_params, frame, NULL,
+  UpdatePrintableSizeInPrintParameters(frame, node, &print_params);
+  PrepareFrameAndViewForPrint prep_frame_view(print_params, frame, node,
                                               frame->view());
   page_count = prep_frame_view.GetExpectedPageCount();
   if (!page_count)

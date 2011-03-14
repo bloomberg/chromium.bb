@@ -159,17 +159,16 @@ class PrintWebViewHelper : public RenderViewObserver ,
 #endif
 
   // Render the frame for printing.
-  void RenderPagesForPrint(WebKit::WebFrame* frame,
-                           WebKit::WebNode* node);
+  void RenderPagesForPrint(WebKit::WebFrame* frame, WebKit::WebNode* node);
 
   // Render the frame for preview.
-  void RenderPagesForPreview(WebKit::WebFrame* frame);
+  void RenderPagesForPreview(WebKit::WebFrame* frame, WebKit::WebNode* node);
 
   // Renders all the pages listed in |params| for preview.
-  // On Success, Send ViewHostMsg_PagesReadyForPreview message with a
+  // On success, Send ViewHostMsg_PagesReadyForPreview message with a
   // valid metafile data handle.
   void CreatePreviewDocument(const ViewMsg_PrintPages_Params& params,
-      WebKit::WebFrame* frame);
+      WebKit::WebFrame* frame, WebKit::WebNode* node);
 
   // Platform specific helper function for rendering page(s) to |metafile|.
 #if defined(OS_WIN)
@@ -183,6 +182,7 @@ class PrintWebViewHelper : public RenderViewObserver ,
 #elif defined(OS_POSIX)
   bool RenderPages(const ViewMsg_PrintPages_Params& params,
                    WebKit::WebFrame* frame,
+                   WebKit::WebNode* node,
                    bool send_expected_page_count,
                    int* page_count,
                    printing::NativeMetafile* metafile);
