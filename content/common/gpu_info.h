@@ -18,6 +18,7 @@
 
 struct GPUInfo {
   GPUInfo();
+  ~GPUInfo();
 
   // Whether more GPUInfo fields might be collected in the future.
   bool finalized;

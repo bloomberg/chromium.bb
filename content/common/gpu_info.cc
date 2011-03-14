@@ -10,3 +10,5 @@ GPUInfo::GPUInfo()
       device_id(0),
       can_lose_context(false) {
 }
+
+GPUInfo::~GPUInfo() { }
