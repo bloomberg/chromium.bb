@@ -69,7 +69,7 @@ var chrome = chrome || {};
           return "Event validation error during " + opt_eventName + " -- " +
                  exception;
         }
-      }
+      };
     }
   };
 
@@ -106,7 +106,7 @@ var chrome = chrome || {};
   chromeHidden.Event.hasListener = function(name) {
     return (attachedNamedEvents[name] &&
             attachedNamedEvents[name].listeners_.length > 0);
-  }
+  };
 
   // Registers a callback to be called when this event is dispatched.
   chrome.Event.prototype.addListener = function(cb) {
@@ -204,6 +204,12 @@ var chrome = chrome || {};
     delete attachedNamedEvents[this.eventName_];
   };
 
+  chrome.Event.prototype.destroy_ = function() {
+    this.listeners_ = [];
+    this.validate_ = [];
+    this.detach_();
+  };
+
   // Special load events: we don't use the DOM unload because that slows
   // down tab shutdown.  On the other hand, onUnload might not always fire,
   // since Chrome will terminate renderers on shutdown (SuddenTermination).
@@ -212,7 +218,7 @@ var chrome = chrome || {};
 
   chromeHidden.dispatchOnLoad = function(extensionId) {
     chromeHidden.onLoad.dispatch(extensionId);
-  }
+  };
 
   chromeHidden.dispatchOnUnload = function() {
     chromeHidden.onUnload.dispatch();
@@ -221,9 +227,9 @@ var chrome = chrome || {};
       if (event)
         event.detach_();
     }
-  }
+  };
 
   chromeHidden.dispatchError = function(msg) {
     console.error(msg);
-  }
+  };
 })();

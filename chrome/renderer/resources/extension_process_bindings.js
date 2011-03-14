@@ -652,9 +652,13 @@ var chrome = chrome || {};
           responseCallback();
       });
       port.onMessage.addListener(function(response) {
-        if (responseCallback)
-          responseCallback(response);
-        port.disconnect();
+        try {
+          if (responseCallback)
+            responseCallback(response);
+        } finally {
+          port.disconnect();
+          port = null;
+        }
       });
     };
 
