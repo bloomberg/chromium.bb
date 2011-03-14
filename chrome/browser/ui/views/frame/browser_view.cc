@@ -500,29 +500,6 @@ BrowserView* BrowserView::GetBrowserViewForNativeWindow(
   return NULL;
 }
 
-void BrowserView::WindowMoved() {
-  // Cancel any tabstrip animations, some of them may be invalidated by the
-  // window being repositioned.
-  // Comment out for one cycle to see if this fixes dist tests.
-  // tabstrip_->DestroyDragController();
-
-  status_bubble_->Reposition();
-
-  BrowserBubbleHost::WindowMoved();
-
-  browser::HideBookmarkBubbleView();
-
-  // Close the omnibox popup, if any.
-  if (toolbar_->location_bar())
-    toolbar_->location_bar()->location_entry()->ClosePopup();
-}
-
-void BrowserView::WindowMoveOrResizeStarted() {
-  TabContents* tab_contents = GetSelectedTabContents();
-  if (tab_contents)
-    tab_contents->WindowMoveOrResizeStarted();
-}
-
 gfx::Rect BrowserView::GetToolbarBounds() const {
   gfx::Rect toolbar_bounds(toolbar_->bounds());
   if (toolbar_bounds.IsEmpty())
@@ -1650,9 +1627,32 @@ views::ClientView* BrowserView::CreateClientView(views::Window* window) {
   return this;
 }
 
-void BrowserView::OnWindowActivate(bool active) {
+void BrowserView::OnWindowActivationChanged(bool active) {
   if (active)
     BrowserList::SetLastActive(browser_.get());
+}
+
+void BrowserView::OnWindowBeginUserBoundsChange() {
+  TabContents* tab_contents = GetSelectedTabContents();
+  if (tab_contents)
+    tab_contents->WindowMoveOrResizeStarted();
+}
+
+void BrowserView::OnWidgetMove() {
+  // Cancel any tabstrip animations, some of them may be invalidated by the
+  // window being repositioned.
+  // Comment out for one cycle to see if this fixes dist tests.
+  // tabstrip_->DestroyDragController();
+
+  status_bubble_->Reposition();
+
+  BrowserBubbleHost::WindowMoved();
+
+  browser::HideBookmarkBubbleView();
+
+  // Close the omnibox popup, if any.
+  if (toolbar_->location_bar())
+    toolbar_->location_bar()->location_entry()->ClosePopup();
 }
 
 ///////////////////////////////////////////////////////////////////////////////

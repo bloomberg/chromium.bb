@@ -213,6 +213,8 @@ class Window : public internal::NativeWindowDelegate {
   virtual bool ExecuteCommand(int command_id) OVERRIDE;
   virtual void OnNativeWindowCreated(const gfx::Rect& bounds) OVERRIDE;
   virtual void OnNativeWindowActivationChanged(bool active) OVERRIDE;
+  virtual void OnNativeWindowBeginUserBoundsChange() OVERRIDE;
+  virtual void OnNativeWindowEndUserBoundsChange() OVERRIDE;
   virtual void OnNativeWindowDestroying() OVERRIDE;
   virtual void OnNativeWindowDestroyed() OVERRIDE;
   virtual void OnNativeWindowBoundsChanged() OVERRIDE;

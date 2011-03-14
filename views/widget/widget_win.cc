@@ -564,7 +564,7 @@ void WidgetWin::OnDestroy() {
 
 void WidgetWin::OnDisplayChange(UINT bits_per_pixel, CSize screen_size) {
   if (widget_delegate())
-    widget_delegate()->DisplayChanged();
+    widget_delegate()->OnDisplayChanged();
 }
 
 LRESULT WidgetWin::OnDwmCompositionChanged(UINT msg,
@@ -723,10 +723,12 @@ LRESULT WidgetWin::OnMouseWheel(UINT message, WPARAM w_param, LPARAM l_param) {
 }
 
 void WidgetWin::OnMove(const CPoint& point) {
+  widget_delegate()->OnWidgetMove();
   SetMsgHandled(FALSE);
 }
 
 void WidgetWin::OnMoving(UINT param, const LPRECT new_bounds) {
+  widget_delegate()->OnWidgetMove();
 }
 
 LRESULT WidgetWin::OnNCActivate(BOOL active) {
@@ -851,7 +853,7 @@ LRESULT WidgetWin::OnSetText(const wchar_t* text) {
 
 void WidgetWin::OnSettingChange(UINT flags, const wchar_t* section) {
   if (flags == SPI_SETWORKAREA && widget_delegate())
-    widget_delegate()->WorkAreaChanged();
+    widget_delegate()->OnWorkAreaChanged();
   SetMsgHandled(FALSE);
 }
 

@@ -11,11 +11,7 @@
 #include "chrome/browser/ui/views/frame/native_browser_frame.h"
 #include "views/window/window_win.h"
 
-class AeroGlassNonClientView;
-class BrowserNonClientFrameView;
-class BrowserRootView;
 class BrowserView;
-class NonClientFrameView;
 class Profile;
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -51,14 +47,9 @@ class BrowserFrameWin : public BrowserFrame,
   virtual bool GetAccelerator(int cmd_id,
                               ui::Accelerator* accelerator) OVERRIDE;
   virtual void OnEndSession(BOOL ending, UINT logoff) OVERRIDE;
-  virtual void OnEnterSizeMove() OVERRIDE;
-  virtual void OnExitSizeMove() OVERRIDE;
   virtual void OnInitMenuPopup(HMENU menu,
                                UINT position,
                                BOOL is_system_menu) OVERRIDE;
-  virtual void OnMove(const CPoint& point) OVERRIDE;
-  virtual void OnMoving(UINT param, LPRECT new_bounds) OVERRIDE;
-  virtual LRESULT OnNCHitTest(const CPoint& pt) OVERRIDE;
   virtual void OnWindowPosChanged(WINDOWPOS* window_pos) OVERRIDE;
   virtual ui::ThemeProvider* GetThemeProvider() const OVERRIDE;
   virtual void OnScreenReaderDetected() OVERRIDE;
@@ -66,38 +57,27 @@ class BrowserFrameWin : public BrowserFrame,
   // Overridden from views::Window:
   virtual void Activate() OVERRIDE;
   virtual bool IsAppWindow() const OVERRIDE { return true; }
-  virtual views::NonClientFrameView* CreateFrameViewForWindow() OVERRIDE;
   virtual void UpdateFrameAfterFrameChange() OVERRIDE;
   virtual views::RootView* CreateRootView() OVERRIDE;
+  virtual views::NonClientFrameView* CreateFrameViewForWindow() OVERRIDE;
 
   // Overridden from NativeBrowserFrame:
   virtual views::NativeWindow* AsNativeWindow() OVERRIDE;
   virtual const views::NativeWindow* AsNativeWindow() const OVERRIDE;
+  virtual BrowserNonClientFrameView* CreateBrowserNonClientFrameView() OVERRIDE;
   virtual int GetMinimizeButtonOffset() const OVERRIDE;
-  virtual gfx::Rect GetBoundsForTabStrip(views::View* tabstrip) const OVERRIDE;
-  virtual int GetHorizontalTabStripVerticalOffset(bool restored) const OVERRIDE;
-  virtual void UpdateThrobber(bool running) OVERRIDE;
   virtual ui::ThemeProvider* GetThemeProviderForFrame() const OVERRIDE;
   virtual bool AlwaysUseNativeFrame() const OVERRIDE;
-  virtual views::View* GetFrameView() const OVERRIDE;
   virtual void TabStripDisplayModeChanged() OVERRIDE;
 
  private:
   // Updates the DWM with the frame bounds.
   void UpdateDWMFrame();
 
+  NativeBrowserFrameDelegate* delegate_;
+
   // The BrowserView is our ClientView. This is a pointer to it.
   BrowserView* browser_view_;
-
-  // A pointer to our NonClientFrameView as a BrowserNonClientFrameView.
-  BrowserNonClientFrameView* browser_frame_view_;
-
-  // A weak reference to the root view associated with the window. We save a
-  // copy as a BrowserRootView to avoid evil casting later, when we need to call
-  // functions that only exist on BrowserRootView (versus RootView).
-  BrowserRootView* root_view_;
-
-  NativeBrowserFrameDelegate* delegate_;
 
   DISALLOW_COPY_AND_ASSIGN(BrowserFrameWin);
 };

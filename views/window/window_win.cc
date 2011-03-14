@@ -142,6 +142,13 @@ void EnableMenuItem(HMENU menu, UINT command, bool enabled) {
   EnableMenuItem(menu, command, flags);
 }
 
+bool IsDwmRenderingWindowControls(HWND window) {
+  DWMNCRENDERINGPOLICY policy;
+  DwmGetWindowAttribute(window, DWMWA_NCRENDERING_POLICY, &policy,
+                        sizeof(policy));
+  return policy == DWMNCRP_ENABLED;
+}
+
 // If the hung renderer warning doesn't fit on screen, the amount of padding to
 // be left between the edge of the window and the edge of the nearest monitor,
 // after the window is nudged back on screen. Pixels.
@@ -432,6 +439,16 @@ LRESULT WindowWin::OnDwmCompositionChanged(UINT msg, WPARAM w_param,
   return 0;
 }
 
+void WindowWin::OnEnterSizeMove() {
+  WidgetWin::OnEnterSizeMove();
+  delegate_->OnNativeWindowBeginUserBoundsChange();
+}
+
+void WindowWin::OnExitSizeMove() {
+  WidgetWin::OnExitSizeMove();
+  delegate_->OnNativeWindowEndUserBoundsChange();
+}
+
 void WindowWin::OnFinalMessage(HWND window) {
   delegate_->OnNativeWindowDestroyed();
   WidgetWin::OnFinalMessage(window);
@@ -605,9 +622,19 @@ LRESULT WindowWin::OnNCCalcSize(BOOL mode, LPARAM l_param) {
 }
 
 LRESULT WindowWin::OnNCHitTest(const CPoint& point) {
+  // If the DWM is rendering the window controls, we need to give the DWM's
+  // default window procedure first chance to handle hit testing.
+  if (IsDwmRenderingWindowControls(GetNativeView())) {
+    LRESULT result;
+    if (DwmDefWindowProc(GetNativeView(), WM_NCHITTEST, 0,
+                         MAKELPARAM(point.x, point.y), &result)) {
+      return result;
+    }
+  }
+
   // First, give the NonClientView a chance to test the point to see if it
   // provides any of the non-client area.
-  CPoint temp = point;
+  POINT temp = point;
   MapWindowPoints(HWND_DESKTOP, GetNativeView(), &temp, 1);
   int component = delegate_->GetNonClientComponent(gfx::Point(temp));
   if (component != HTNOWHERE)
@@ -852,6 +879,14 @@ void WindowWin::OnWindowPosChanging(WINDOWPOS* window_pos) {
 ////////////////////////////////////////////////////////////////////////////////
 // WindowWin, NativeWindow implementation:
 
+NativeWidget* WindowWin::AsNativeWidget() {
+  return this;
+}
+
+const NativeWidget* WindowWin::AsNativeWidget() const {
+  return this;
+}
+
 gfx::Rect WindowWin::GetRestoredBounds() const {
   // If we're in fullscreen mode, we've changed the normal bounds to the monitor
   // rect, so return the saved bounds instead.
@@ -982,14 +1017,6 @@ void WindowWin::SetAccessibleState(ui::AccessibilityTypes::State state) {
                                          CHILDID_SELF, PROPID_ACC_STATE, var);
     }
   }
-}
-
-NativeWidget* WindowWin::AsNativeWidget() {
-  return this;
-}
-
-const NativeWidget* WindowWin::AsNativeWidget() const {
-  return this;
 }
 
 void WindowWin::SetWindowBounds(const gfx::Rect& bounds,

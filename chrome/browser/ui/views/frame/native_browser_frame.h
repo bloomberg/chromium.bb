@@ -6,6 +6,8 @@
 #define CHROME_BROWSER_UI_VIEWS_FRAME_NATIVE_BROWSER_FRAME_H_
 #pragma once
 
+class BrowserNonClientFrameView;
+
 namespace gfx {
 class Rect;
 }
@@ -29,15 +31,13 @@ class NativeBrowserFrame {
  protected:
   friend class BrowserFrame;
 
+  virtual BrowserNonClientFrameView* CreateBrowserNonClientFrameView() = 0;
+
   // BrowserFrame pass-thrus ---------------------------------------------------
   // See browser_frame.h for documentation:
   virtual int GetMinimizeButtonOffset() const = 0;
-  virtual gfx::Rect GetBoundsForTabStrip(views::View* tabstrip) const = 0;
-  virtual int GetHorizontalTabStripVerticalOffset(bool restored) const = 0;
-  virtual void UpdateThrobber(bool running) = 0;
   virtual ui::ThemeProvider* GetThemeProviderForFrame() const = 0;
   virtual bool AlwaysUseNativeFrame() const = 0;
-  virtual views::View* GetFrameView() const = 0;
   virtual void TabStripDisplayModeChanged() = 0;
 };
 
