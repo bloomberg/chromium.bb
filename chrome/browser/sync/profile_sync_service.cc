@@ -14,8 +14,6 @@
 #include "base/metrics/histogram.h"
 #include "base/stl_util-inl.h"
 #include "base/string16.h"
-#include "base/string_number_conversions.h"
-#include "base/string_util.h"
 #include "base/task.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/utf_string_conversions.h"
@@ -44,7 +42,6 @@
 #include "content/common/notification_type.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
-#include "jingle/notifier/communicator/const_communicator.h"
 #include "net/base/cookie_monster.h"
 #include "ui/base/l10n/l10n_util.h"
 
@@ -262,32 +259,6 @@ void ProfileSyncService::GetDataTypeControllerStates(
       (*state_map)[iter->first] = iter->second.get()->state();
 }
 
-namespace {
-
-// TODO(akalin): Figure out whether this should be a method of
-// HostPortPair.
-net::HostPortPair StringToHostPortPair(const std::string& host_port_str,
-                                       uint16 default_port) {
-  std::string::size_type colon_index = host_port_str.find(':');
-  if (colon_index == std::string::npos) {
-    return net::HostPortPair(host_port_str, default_port);
-  }
-
-  std::string host = host_port_str.substr(0, colon_index);
-  std::string port_str = host_port_str.substr(colon_index + 1);
-  int port = default_port;
-  if (!base::StringToInt(port_str, &port) ||
-      (port <= 0) || (port > kuint16max)) {
-    LOG(WARNING) << "Could not parse valid port from " << port_str
-                 << "; using port " << default_port;
-    return net::HostPortPair(host, default_port);
-  }
-
-  return net::HostPortPair(host, port);
-}
-
-}  // namespace
-
 void ProfileSyncService::InitSettings() {
   const CommandLine& command_line = *CommandLine::ForCurrentProcess();
 
@@ -305,42 +276,6 @@ void ProfileSyncService::InitSettings() {
                      << "is invalid: " << value;
       }
     }
-  }
-
-  // Override the notification server host from the command-line, if provided.
-  if (command_line.HasSwitch(switches::kSyncNotificationHost)) {
-    std::string value(command_line.GetSwitchValueASCII(
-        switches::kSyncNotificationHost));
-    if (!value.empty()) {
-      notifier_options_.xmpp_host_port =
-          StringToHostPortPair(value, notifier::kDefaultXmppPort);
-    }
-    VLOG(1) << "Using " << notifier_options_.xmpp_host_port.ToString()
-            << " for test sync notification server.";
-  }
-
-  notifier_options_.try_ssltcp_first =
-      command_line.HasSwitch(switches::kSyncTrySsltcpFirstForXmpp);
-  if (notifier_options_.try_ssltcp_first)
-    VLOG(1) << "Trying SSL/TCP port before XMPP port for notifications.";
-
-  notifier_options_.invalidate_xmpp_login =
-      command_line.HasSwitch(switches::kSyncInvalidateXmppLogin);
-  if (notifier_options_.invalidate_xmpp_login) {
-    VLOG(1) << "Invalidating sync XMPP login.";
-  }
-
-  notifier_options_.allow_insecure_connection =
-      command_line.HasSwitch(switches::kSyncAllowInsecureXmppConnection);
-  if (notifier_options_.allow_insecure_connection) {
-    VLOG(1) << "Allowing insecure XMPP connections.";
-  }
-
-  if (command_line.HasSwitch(switches::kSyncNotificationMethod)) {
-    const std::string notification_method_str(
-        command_line.GetSwitchValueASCII(switches::kSyncNotificationMethod));
-    notifier_options_.notification_method =
-        notifier::StringToNotificationMethod(notification_method_str);
   }
 }
 
@@ -424,8 +359,7 @@ void ProfileSyncService::InitializeBackend(bool delete_sync_data_folder) {
                        types,
                        profile_->GetRequestContext(),
                        credentials,
-                       delete_sync_data_folder,
-                       notifier_options_);
+                       delete_sync_data_folder);
 }
 
 void ProfileSyncService::CreateBackend() {

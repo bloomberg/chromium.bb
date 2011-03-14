@@ -631,8 +631,7 @@ class SyncManagerTest : public testing::Test,
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
     sync_manager_.Init(temp_dir_.path(), "bogus", 0, false,
                        new TestHttpPostProviderFactory(), this, "bogus",
-                       SyncCredentials(), notifier::NotifierOptions(),
-                       "", true /* setup_for_test_mode */);
+                       SyncCredentials(), "", true /* setup_for_test_mode */);
     sync_manager_.AddObserver(&observer_);
     ModelSafeRoutingInfo routes;
     GetModelSafeRoutingInfo(&routes);

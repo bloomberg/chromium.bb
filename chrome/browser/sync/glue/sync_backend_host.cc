@@ -91,8 +91,7 @@ void SyncBackendHost::Initialize(
     const syncable::ModelTypeSet& types,
     URLRequestContextGetter* baseline_context_getter,
     const SyncCredentials& credentials,
-    bool delete_sync_data_folder,
-    const notifier::NotifierOptions& notifier_options) {
+    bool delete_sync_data_folder) {
   if (!core_thread_.Start())
     return;
 
@@ -145,7 +144,6 @@ void SyncBackendHost::Initialize(
       MakeHttpBridgeFactory(baseline_context_getter),
       credentials,
       delete_sync_data_folder,
-      notifier_options,
       RestoreEncryptionBootstrapToken(),
       false));
 }
@@ -591,14 +589,12 @@ SyncBackendHost::Core::DoInitializeOptions::DoInitializeOptions(
     sync_api::HttpPostProviderFactory* http_bridge_factory,
     const sync_api::SyncCredentials& credentials,
     bool delete_sync_data_folder,
-    const notifier::NotifierOptions& notifier_options,
     std::string restored_key_for_bootstrapping,
     bool setup_for_test_mode)
     : service_url(service_url),
       http_bridge_factory(http_bridge_factory),
       credentials(credentials),
       delete_sync_data_folder(delete_sync_data_folder),
-      notifier_options(notifier_options),
       restored_key_for_bootstrapping(restored_key_for_bootstrapping),
       setup_for_test_mode(setup_for_test_mode) {
 }
@@ -716,7 +712,6 @@ void SyncBackendHost::Core::DoInitialize(const DoInitializeOptions& options) {
       host_,  // ModelSafeWorkerRegistrar.
       MakeUserAgentForSyncapi().c_str(),
       options.credentials,
-      options.notifier_options,
       options.restored_key_for_bootstrapping,
       options.setup_for_test_mode);
   DCHECK(success) << "Syncapi initialization failed!";

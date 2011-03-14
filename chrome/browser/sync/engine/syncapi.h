@@ -65,10 +65,6 @@ struct SyncSessionSnapshot;
 }
 }
 
-namespace notifier {
-struct NotifierOptions;
-}
-
 // Forward declarations of internal class types so that sync API objects
 // may have opaque pointers to these types.
 namespace syncable {
@@ -853,7 +849,6 @@ class SyncManager {
             browser_sync::ModelSafeWorkerRegistrar* registrar,
             const char* user_agent,
             const SyncCredentials& credentials,
-            const notifier::NotifierOptions& notifier_options,
             const std::string& restored_key_for_bootstrapping,
             bool setup_for_test_mode);
 

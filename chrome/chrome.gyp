@@ -950,6 +950,12 @@
         'browser/sync/notifier/server_notifier_thread.cc',
         'browser/sync/notifier/server_notifier_thread.h',
         'browser/sync/notifier/state_writer.h',
+        'browser/sync/notifier/sync_notifier.h',
+        'browser/sync/notifier/sync_notifier_factory.h',
+        'browser/sync/notifier/sync_notifier_factory.cc',
+        'browser/sync/notifier/sync_notifier_impl.h',
+        'browser/sync/notifier/sync_notifier_impl.cc',
+        'browser/sync/notifier/sync_notifier_callback.h',
       ],
       'include_dirs': [
         '..',

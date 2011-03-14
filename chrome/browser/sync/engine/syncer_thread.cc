@@ -16,7 +16,6 @@
 #include "chrome/browser/sync/engine/net/server_connection_manager.h"
 #include "chrome/browser/sync/engine/syncer.h"
 #include "chrome/browser/sync/sessions/sync_session.h"
-#include "jingle/notifier/listener/notification_constants.h"
 
 #if defined(OS_MACOSX)
 #include <CoreFoundation/CFNumber.h>

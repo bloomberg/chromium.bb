@@ -31,7 +31,6 @@
 #include "content/common/notification_observer.h"
 #include "content/common/notification_registrar.h"
 #include "googleurl/src/gurl.h"
-#include "jingle/notifier/base/notifier_options.h"
 
 class NotificationDetails;
 class NotificationSource;
@@ -596,10 +595,6 @@ class ProfileSyncService : public browser_sync::SyncFrontend,
   // A message sent when an unrecoverable error occurred.
   std::string unrecoverable_error_message_;
   scoped_ptr<tracked_objects::Location> unrecoverable_error_location_;
-
-  // Contains options specific to how sync clients send and listen to
-  // notifications.
-  notifier::NotifierOptions notifier_options_;
 
   // Manages the start and stop of the various data types.
   scoped_ptr<browser_sync::DataTypeManager> data_type_manager_;

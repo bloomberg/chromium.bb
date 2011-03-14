@@ -28,14 +28,9 @@
 #include "chrome/common/net/gaia/google_service_auth_error.h"
 #include "chrome/common/net/url_request_context_getter.h"
 #include "googleurl/src/gurl.h"
-#include "jingle/notifier/base/notifier_options.h"
 
 class CancelableTask;
 class Profile;
-
-namespace notifier {
-struct NotifierOptions;
-}
 
 namespace browser_sync {
 
@@ -128,8 +123,7 @@ class SyncBackendHost : public browser_sync::ModelSafeWorkerRegistrar {
                   const syncable::ModelTypeSet& types,
                   URLRequestContextGetter* baseline_context_getter,
                   const sync_api::SyncCredentials& credentials,
-                  bool delete_sync_data_folder,
-                  const notifier::NotifierOptions& notifier_options);
+                  bool delete_sync_data_folder);
 
   // Called from |frontend_loop| to update SyncCredentials.
   void UpdateCredentials(const sync_api::SyncCredentials& credentials);
@@ -308,7 +302,6 @@ class SyncBackendHost : public browser_sync::ModelSafeWorkerRegistrar {
           sync_api::HttpPostProviderFactory* http_bridge_factory,
           const sync_api::SyncCredentials& credentials,
           bool delete_sync_data_folder,
-          const notifier::NotifierOptions& notifier_options,
           std::string restored_key_for_bootstrapping,
           bool setup_for_test_mode);
       ~DoInitializeOptions();
@@ -318,7 +311,6 @@ class SyncBackendHost : public browser_sync::ModelSafeWorkerRegistrar {
       sync_api::SyncCredentials credentials;
       std::string lsid;
       bool delete_sync_data_folder;
-      notifier::NotifierOptions notifier_options;
       std::string restored_key_for_bootstrapping;
       bool setup_for_test_mode;
     };
@@ -409,7 +401,7 @@ class SyncBackendHost : public browser_sync::ModelSafeWorkerRegistrar {
       credentials.sync_token = "token";
       DoInitialize(DoInitializeOptions(GURL(), factory, credentials,
                                        delete_sync_data_folder,
-                                       notifier::NotifierOptions(), "", true));
+                                       "", true));
     }
 #endif
 
