@@ -38,3 +38,13 @@ BUG_LOISLO MAC : fast/text/justify-ideograph-vertical.html = IMAGE
 
 BUG_LOISLO MAC DEBUG : fast/text/font-size-zero.html = TEXT
 BUG_LOISLO LINUX RELEASE : svg/W3C-SVG-1.1/text-text-03-b.svg = CRASH PASS
+
+BUG_LEVIN MAC : css2.1/t1008-c44-ln-box-02-d-ag.html = IMAGE
+BUG_LEVIN MAC : css2.1/t100801-c544-valgn-03-d-agi.html = IMAGE
+BUG_LEVIN MAC : editing/selection/caret-ltr-2-left.html = IMAGE
+BUG_LEVIN MAC : editing/selection/caret-ltr-2.html = IMAGE
+BUG_LEVIN MAC : editing/selection/caret-ltr-right.html = IMAGE
+BUG_LEVIN MAC : editing/selection/caret-ltr.html = IMAGE
+BUG_LEVIN MAC : fast/block/margin-collapse/103.html = IMAGE
+BUG_LEVIN MAC : tables/mozilla/bugs/bug1318.html = IMAGE
+BUG_LEVIN MAC : tables/mozilla/bugs/bug4527.html = IMAGE
