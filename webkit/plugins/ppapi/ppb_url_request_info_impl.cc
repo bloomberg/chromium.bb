@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -103,21 +103,27 @@ PP_Bool SetProperty(PP_Resource request_id,
   if (!request)
     return PP_FALSE;
 
-  if (var.type == PP_VARTYPE_BOOL) {
-    return BoolToPPBool(
-        request->SetBooleanProperty(property,
-                                    PPBoolToBool(var.value.as_bool)));
-  }
-
-  if (var.type == PP_VARTYPE_STRING) {
-    scoped_refptr<StringVar> string(StringVar::FromPPVar(var));
-    if (string) {
-      return BoolToPPBool(request->SetStringProperty(property,
-                                                     string->value()));
+  PP_Bool result = PP_FALSE;
+  switch (var.type) {
+    case PP_VARTYPE_UNDEFINED:
+      result = BoolToPPBool(request->SetUndefinedProperty(property));
+      break;
+    case PP_VARTYPE_BOOL:
+      result = BoolToPPBool(
+          request->SetBooleanProperty(property,
+                                      PPBoolToBool(var.value.as_bool)));
+      break;
+    case PP_VARTYPE_STRING: {
+      scoped_refptr<StringVar> string(StringVar::FromPPVar(var));
+      if (string)
+        result = BoolToPPBool(request->SetStringProperty(property,
+                                                         string->value()));
+      break;
     }
+    default:
+      break;
   }
-
-  return PP_FALSE;
+  return result;
 }
 
 PP_Bool AppendDataToBody(PP_Resource request_id,
@@ -192,7 +198,8 @@ PPB_URLRequestInfo_Impl::PPB_URLRequestInfo_Impl(PluginInstance* instance)
       stream_to_file_(false),
       follow_redirects_(true),
       record_download_progress_(false),
-      record_upload_progress_(false) {
+      record_upload_progress_(false),
+      has_custom_referrer_url_(false) {
 }
 
 PPB_URLRequestInfo_Impl::~PPB_URLRequestInfo_Impl() {
@@ -205,6 +212,18 @@ const PPB_URLRequestInfo* PPB_URLRequestInfo_Impl::GetInterface() {
 
 PPB_URLRequestInfo_Impl* PPB_URLRequestInfo_Impl::AsPPB_URLRequestInfo_Impl() {
   return this;
+}
+
+bool PPB_URLRequestInfo_Impl::SetUndefinedProperty(
+    PP_URLRequestProperty property) {
+  switch (property) {
+    case PP_URLREQUESTPROPERTY_CUSTOMREFERRERURL:
+      has_custom_referrer_url_ = false;
+      custom_referrer_url_ = std::string();
+      return true;
+    default:
+      return false;
+  }
 }
 
 bool PPB_URLRequestInfo_Impl::SetBooleanProperty(PP_URLRequestProperty property,
@@ -241,6 +260,10 @@ bool PPB_URLRequestInfo_Impl::SetStringProperty(PP_URLRequestProperty property,
       if (!AreValidHeaders(value))
         return false;
       headers_ = value;
+      return true;
+    case PP_URLREQUESTPROPERTY_CUSTOMREFERRERURL:
+      has_custom_referrer_url_ = true;
+      custom_referrer_url_ = value;
       return true;
     default:
       return false;
@@ -311,10 +334,19 @@ WebURLRequest PPB_URLRequestInfo_Impl::ToWebURLRequest(WebFrame* frame) const {
     web_request.setHTTPBody(http_body);
   }
 
-  frame->setReferrerForRequest(web_request, WebURL());  // Use default.
+  if (has_custom_referrer_url_) {
+    if (!custom_referrer_url_.empty())
+      frame->setReferrerForRequest(web_request, GURL(custom_referrer_url_));
+  } else {
+    frame->setReferrerForRequest(web_request, WebURL());  // Use default.
+  }
+
   return web_request;
+}
+
+bool PPB_URLRequestInfo_Impl::RequiresUniversalAccess() const {
+  return has_custom_referrer_url_;
 }
 
 }  // namespace ppapi
 }  // namespace webkit
-

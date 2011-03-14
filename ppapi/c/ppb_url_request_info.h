@@ -41,7 +41,17 @@ typedef enum {
   // URLLoader.GetUploadProgress function.
   //
   // Boolean (default = PP_FALSE).
-  PP_URLREQUESTPROPERTY_RECORDUPLOADPROGRESS
+  PP_URLREQUESTPROPERTY_RECORDUPLOADPROGRESS,
+
+  // Set to a String to set a custom referrer (if empty, the referrer header
+  // will be omitted), or to an Undefined Var to use the default referrer. Only
+  // loaders with universal access (only available on trusted implementations)
+  // will accept URLRequestInfo objects which try to set a custom referrer; if
+  // given to a loader without universal access, PP_ERROR_BADARGUMENT will
+  // result.
+  //
+  // Undefined/String (default = Undefined)
+  PP_URLREQUESTPROPERTY_CUSTOMREFERRERURL
 } PP_URLRequestProperty;
 PP_COMPILE_ASSERT_SIZE_IN_BYTES(PP_URLRequestProperty, 4);
 /**

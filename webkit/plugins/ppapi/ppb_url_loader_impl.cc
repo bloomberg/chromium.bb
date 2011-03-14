@@ -242,6 +242,9 @@ int32_t PPB_URLLoader_Impl::Open(PPB_URLRequestInfo_Impl* request,
   if (rv != PP_OK)
     return rv;
 
+  if (request->RequiresUniversalAccess() && !has_universal_access_)
+    return PP_ERROR_BADARGUMENT;
+
   if (loader_.get())
     return PP_ERROR_INPROGRESS;
 

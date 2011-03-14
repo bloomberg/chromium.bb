@@ -51,6 +51,10 @@ class URLRequestInfo : public Resource {
   bool SetRecordUploadProgress(bool enable) {
     return SetProperty(PP_URLREQUESTPROPERTY_RECORDUPLOADPROGRESS, enable);
   }
+  // To use the default referrer, set url_string to an Undefined Var.
+  bool SetCustomReferrerURL(const Var& url_string) {
+    return SetProperty(PP_URLREQUESTPROPERTY_CUSTOMREFERRERURL, url_string);
+  }
 };
 
 }  // namespace pp

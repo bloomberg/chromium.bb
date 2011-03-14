@@ -35,6 +35,7 @@ class PPB_URLRequestInfo_Impl : public Resource {
   virtual PPB_URLRequestInfo_Impl* AsPPB_URLRequestInfo_Impl();
 
   // PPB_URLRequestInfo implementation.
+  bool SetUndefinedProperty(PP_URLRequestProperty property);
   bool SetBooleanProperty(PP_URLRequestProperty property, bool value);
   bool SetStringProperty(PP_URLRequestProperty property,
                          const std::string& value);
@@ -45,6 +46,9 @@ class PPB_URLRequestInfo_Impl : public Resource {
                         PP_Time expected_last_modified_time);
 
   WebKit::WebURLRequest ToWebURLRequest(WebKit::WebFrame* frame) const;
+
+  // Whether universal access is required to use this request.
+  bool RequiresUniversalAccess() const;
 
   bool follow_redirects() { return follow_redirects_; }
 
@@ -64,6 +68,13 @@ class PPB_URLRequestInfo_Impl : public Resource {
   bool follow_redirects_;
   bool record_download_progress_;
   bool record_upload_progress_;
+
+  // |has_custom_referrer_url_| is set to false if a custom referrer hasn't been
+  // set (or has been set to an Undefined Var) and the default referrer should
+  // be used. (Setting the custom referrer to an empty string indicates that no
+  // referrer header should be generated.)
+  bool has_custom_referrer_url_;
+  std::string custom_referrer_url_;
 
   DISALLOW_COPY_AND_ASSIGN(PPB_URLRequestInfo_Impl);
 };
