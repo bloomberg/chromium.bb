@@ -36,12 +36,12 @@ void UpdatePrerenderHistograms(NavigationState* navigation_state,
                                const TimeDelta& begin_to_finish_all_loads) {
   // Load time for non-prerendered pages.
   static bool use_prerender_histogram =
-      base::FieldTrialList::Find("Prerender") &&
-      !base::FieldTrialList::Find("Prerender")->group_name().empty();
+      base::FieldTrialList::Find("Prefetch") &&
+      !base::FieldTrialList::Find("Prefetch")->group_name().empty();
   if (!navigation_state->was_started_as_prerender()) {
     if (use_prerender_histogram) {
       PLT_HISTOGRAM(base::FieldTrial::MakeName(
-          "PLT.PerceivedLoadTime", "Prerender"),
+          "PLT.PerceivedLoadTime", "Prefetch"),
           begin_to_finish_all_loads);
     }
     return;
@@ -66,10 +66,10 @@ void UpdatePrerenderHistograms(NavigationState* navigation_state,
   PLT_HISTOGRAM("PLT.PerceivedLoadTime_PrerenderLoad", perceived_load_time);
   if (use_prerender_histogram) {
     PLT_HISTOGRAM(base::FieldTrial::MakeName(
-                  "PLT.PerceivedLoadTime_PrerenderLoad", "Prerender"),
+                  "PLT.PerceivedLoadTime_PrerenderLoad", "Prefetch"),
                   perceived_load_time);
     PLT_HISTOGRAM(base::FieldTrial::MakeName(
-                  "PLT.PerceivedLoadTime", "Prerender"),
+                  "PLT.PerceivedLoadTime", "Prefetch"),
                   perceived_load_time);
   }
 }
