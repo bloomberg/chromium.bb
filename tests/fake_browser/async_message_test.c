@@ -44,25 +44,53 @@ int receive_message(int sock_fd, char *buffer, size_t buffer_size,
   return received;
 }
 
+/* The NaCl plugin blocks waiting for us to accept an SRPC connection.
+   If we reject the connection, the "onload" Javascript hook is not run.
+   See http://code.google.com/p/nativeclient/issues/detail?id=1501
+   Since it is currently not practical to link libsrpc into the dynamic
+   linker, we have to hard-code the response.  Encoding the response here
+   is a precursor to putting this into the dynamic linker.
+   TODO(mseaborn): Fix the plugin's process startup interface so that we
+   do not have to send it the SRPC connection acceptance message below. */
 const uint8_t srpc_reply_message[] = {
+  /* struct LengthHeader[2]: */
+  11 * 4, 0, 0, 0, /* total byte_count */
+  0, 0, 0, 0,      /* total desc_count */
+  11 * 4, 0, 0, 0, /* this fragment's byte_count */
+  0, 0, 0, 0,      /* this fragment's desc_count */
+
+  /* struct NACL_SRPC_RPC_SERIALIZED_FIELDS: */
   /* protocol_version (fixed, kNaClSrpcProtocolVersion) */
-  2, 0, 0xad, 0xc0,
-  /* request_id (sequence number) */
-  0, 0, 0, 0, 0, 0, 0, 0,
+  2, 0, 0xda, 0xc0,
+  /* request_id */
+  0, 0, 0, 0,
   /* is_request */
-  0,
+  0, 0, 0, 0,
   /* rpc_number (method number): 0 for service_discovery */
   0, 0, 0, 0,
-  /* app_error (return code): 256 (NACL_SRPC_RESULT_OK) */
+  /* result (return code): 256 (NACL_SRPC_RESULT_OK) */
   0, 1, 0, 0,
-  /* number of return values: 1 */
+  /* value_len (for a reply, the number of result values): 1 */
   1, 0, 0, 0,
+  /* template_len (not meaningful for a reply): 0 */
+  0, 0, 0, 0,
+
+  /* struct NACL_SRPC_ARG_SERIALIZED_FIELDS: */
   /* argument 1 type: NACL_SRPC_ARG_TYPE_CHAR_ARRAY */
-  'C',
+  'C', 0, 0, 0,
+  /* pad to 8 byte alignment */
+  0, 0, 0, 0,
   /* argument 1 length: 0 (empty method list) */
+  0, 0, 0, 0,
+  /* pad up to union size */
   0, 0, 0, 0,
 };
 
+/* The NaCl plugin blocks waiting for us to accept an SRPC connection.
+   If we reject the connection, the "onload" Javascript hook is not run.
+   See http://code.google.com/p/nativeclient/issues/detail?id=1501
+   TODO(mseaborn): Fix the plugin's process startup interface so that it
+   does not block. */
 int keep_plugin_happy() {
   int sock_fd;
   char buf[100];

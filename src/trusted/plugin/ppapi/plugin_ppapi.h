@@ -165,6 +165,10 @@ class PluginPpapi : public pp::Instance, public Plugin {
   // so this function can be used as a return value.
   bool Failure(const nacl::string& error);
 
+  // Handles the __setAsyncCallback() method.  Spawns a thread to receive
+  // IMC messages from the NaCl process and pass them on to Javascript.
+  static bool SetAsyncCallback(void* obj, SrpcParams* params);
+
   // A pointer to the browser end of a proxy pattern connecting the
   // NaCl plugin to the PPAPI .nexe's PPP interface
   // (InitializeModule, Shutdown, and GetInterface).

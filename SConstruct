@@ -2105,6 +2105,7 @@ nacl_env.Append(
     'tests/nthread_nice/nacl.scons',
     'tests/null/nacl.scons',
     'tests/nullptr/nacl.scons',
+    'tests/plugin_async_messaging/nacl.scons',
     'tests/pnacl_abi/nacl.scons',
     'tests/pnacl_client_translator/nacl.scons',
     'tests/ppapi_bad/nacl.scons',

@@ -56,6 +56,7 @@
     'ppapi_sources': [
       # PPAPI specific code
       'ppapi/array_ppapi.cc',
+      'ppapi/async_receive.cc',
       'ppapi/browser_interface_ppapi.cc',
       'ppapi/plugin_ppapi.cc',
       'ppapi/module_ppapi.cc',

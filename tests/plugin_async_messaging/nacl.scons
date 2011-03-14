@@ -1,0 +1,34 @@
+# -*- python -*-
+# Copyright 2011 The Native Client Authors.  All rights reserved.
+# Use of this source code is governed by a BSD-style license that can
+# be found in the LICENSE file.
+
+Import('env')
+
+dest_copy = env.Replicate('${STAGING_DIR}', 'async_messaging.html')
+env.Replicate('${STAGING_DIR}',
+              '${SCONSTRUCT_DIR}/tools/browser_tester/browserdata/nacltest.js')
+test_files = [
+    env.File('${STAGING_DIR}/nacltest.js'),
+    env.File('${STAGING_DIR}/async_message_test.nexe'),
+    ]
+# These are not true dependencies: They are not needed for the .html
+# file to be replicated to "staging", but they are needed for the
+# .html file to work when run.
+# TODO(mseaborn): Similar logic is duplicated in
+# tests/inbrowser_test_runner/nacl.scons.  Reduce the duplication.
+env.Depends(dest_copy, test_files)
+env.Alias('async_messaging.html', dest_copy)
+
+node = env.PPAPIBrowserTester(
+    'async_messaging_chrome_browser_test.out',
+    url='async_messaging.html',
+    files=[env.File('async_messaging.html')] + test_files)
+
+# Disabled for ARM because Chrome binaries for ARM are not available.
+# TODO(ncbray): Enable this on Windows.
+tester_is_broken = env.Bit('target_arm') or env.Bit('host_windows')
+env.AddNodeToTestSuite(node,
+                       ['chrome_browser_tests'],
+                       'run_async_messaging_test',
+                       is_broken=tester_is_broken)

@@ -20,6 +20,7 @@
 #include "native_client/src/trusted/handle_pass/browser_handle.h"
 #include "native_client/src/trusted/plugin/desc_based_handle.h"
 #include "native_client/src/trusted/plugin/nexe_arch.h"
+#include "native_client/src/trusted/plugin/ppapi/async_receive.h"
 #include "native_client/src/trusted/plugin/ppapi/browser_interface_ppapi.h"
 #include "native_client/src/trusted/plugin/ppapi/scriptable_handle_ppapi.h"
 #include "native_client/src/trusted/plugin/scriptable_handle.h"
@@ -65,6 +66,40 @@ bool UrlAsNaClDesc(void* obj, plugin::SrpcParams* params) {
 }
 
 }  // namespace
+
+bool PluginPpapi::SetAsyncCallback(void* obj, SrpcParams* params) {
+  PluginPpapi* plugin =
+      static_cast<PluginPpapi*>(reinterpret_cast<Plugin*>(obj));
+  if (plugin->service_runtime_ == NULL) {
+    params->set_exception_string("No subprocess running");
+    return false;
+  }
+  if (plugin->receive_thread_running_) {
+    params->set_exception_string("A callback has already been registered");
+    return false;
+  }
+  AsyncNaClToJSThreadArgs* args = new(std::nothrow) AsyncNaClToJSThreadArgs;
+  if (args == NULL) {
+    params->set_exception_string("Memory allocation failed");
+    return false;
+  }
+  args->callback = *reinterpret_cast<pp::Var*>(params->ins()[0]->arrays.oval);
+  nacl::DescWrapper* socket = plugin->service_runtime_->async_receive_desc();
+  NaClDescRef(socket->desc());
+  // The MakeGeneric() call is necessary because the new DescWrapper
+  // has a separate lifetime from the one returned by
+  // async_receive_desc().  The new DescWrapper exists for the
+  // lifetime of the child thread.
+  args->socket.reset(plugin->wrapper_factory()->MakeGeneric(socket->desc()));
+
+  // It would be nice if the thread interface did not require us to
+  // specify a stack size.  This is fairly arbitrary.
+  size_t stack_size = 128 << 10;
+  NaClThreadCreateJoinable(&plugin->receive_thread_, AsyncNaClToJSThread, args,
+                           stack_size);
+  plugin->receive_thread_running_ = true;
+  return true;
+}
 
 PluginPpapi* PluginPpapi::New(PP_Instance pp_instance) {
   PLUGIN_PRINTF(("PluginPpapi::New (pp_instance=%"NACL_PRId32")\n",
@@ -132,6 +167,7 @@ bool PluginPpapi::Init(uint32_t argc, const char* argn[], const char* argv[]) {
   }
 
   AddMethodCall(plugin::UrlAsNaClDesc, "__urlAsNaClDesc", "so", "");
+  AddMethodCall(SetAsyncCallback, "__setAsyncCallback", "o", "");
 
   PLUGIN_PRINTF(("PluginPpapi::Init (status=%d)\n", status));
   return status;
