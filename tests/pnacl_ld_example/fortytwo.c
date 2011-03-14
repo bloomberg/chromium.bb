@@ -3,7 +3,7 @@
  * be found in the LICENSE file.
  */
 
-#include "native_client/tests/pnacl_ld_example/simple.h"
+#include "simple.h"
 
 int fortytwo() {
   return 42;

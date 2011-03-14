@@ -10,35 +10,57 @@
 # This is intended to demonstrate how we might use ld on the platform until
 # llc produces .so files directly.
 
-CFLAGS=-Wall -fPIC
+ARCH ?= -m64
 
-SIMPLE_OBJECTS=hello.o fortytwo.o
+CFLAGS = -Wall -fPIC $(ARCH)
+LIBFLAGS = -shared $(ARCH) -Wl,-soname,libsimple$(ARCH).so
 
-EMPTY_OBJECTS=empty.o
-
-MAIN_OBJECTS=main.o
-MAIN_LINK_FLAGS=-Wl,--unresolved-symbols=ignore-all
+SIMPLE_OBJECTS = hello$(ARCH).o fortytwo$(ARCH).o
+EMPTY_OBJECTS = empty$(ARCH).o
+MAIN_OBJECTS = main$(ARCH).o
 
 all: run
 
-#libsimple is the real shared library.
-libsimple.so: $(SIMPLE_OBJECTS)
-	gcc -o $@ -shared -Wl,-soname,libsimple.so $(SIMPLE_OBJECTS)
 
-# libempty.so simply embeds "soname=libsimple.so".  It is otherwise empty.
-libempty.so: $(EMPTY_OBJECTS)
-	ld -o $@ -shared -soname=libsimple.so --strip-all $(EMPTY_OBJECTS)
+######################################################################
+# libempty$(ARCH).so simply embeds "soname=libsimple$(ARCH).so".
+# It is otherwise empty.
+libempty$(ARCH).so: $(EMPTY_OBJECTS)
+	${CC} ${LIBFLAGS} -o $@ --strip-all $(EMPTY_OBJECTS)
 
+empty$(ARCH).o: empty.c
+	${CC} -c ${CFLAGS} -o $@ $<
+
+
+######################################################################
+#libsimple$(ARCH) is the real shared library.
+libsimple$(ARCH).so: $(SIMPLE_OBJECTS)
+	${CC} ${LIBFLAGS} -o $@ $(SIMPLE_OBJECTS)
+
+fortytwo$(ARCH).o: fortytwo.c
+	${CC} -c ${CFLAGS} -o $@ $<
+
+hello$(ARCH).o: hello.c
+	${CC} -c ${CFLAGS} -o $@ $<
+
+
+######################################################################
 # main is made to depend on libsimple.so by linking with libempty.so
-main: $(MAIN_OBJECTS) libempty.so
-	gcc -o main $(MAIN_LINK_FLAGS) -L. -lempty $(MAIN_OBJECTS)
+MAIN_LD_FLAGS = -Wl,--unresolved-symbols=ignore-all ${CFLAGS}
 
-run: main libsimple.so
-	LD_LIBRARY_PATH="." ./main
+main$(ARCH): $(MAIN_OBJECTS) libempty$(ARCH).so
+	${CC} -o main$(ARCH) $(MAIN_LD_FLAGS) -L. -lempty$(ARCH) $(MAIN_OBJECTS)
 
+main$(ARCH).o: main.c
+	${CC} -c ${CFLAGS} -o $@ $<
+
+
+######################################################################
+# Run the requested architecture binary using libsimple$(ARCH).so
+run: main$(ARCH) libsimple$(ARCH).so
+	LD_LIBRARY_PATH="." ./main$(ARCH)
+
+
+######################################################################
 clean:
-	rm main
-	rm libsimple.so libempty.so
-	rm $(SIMPLE_OBJECTS)
-	rm $(EMPTY_OBJECTS)
-	rm $(MAIN_OBJECTS)
+	rm -f main-* *.ll *.s *.o *.so
