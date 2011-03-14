@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/ppapi_plugin/ppapi_thread.h"
+#include "content/ppapi_plugin/ppapi_thread.h"
 
 #include <limits>
 
 #include "base/process_util.h"
 #include "base/rand_util.h"
-#include "chrome/ppapi_plugin/plugin_process_dispatcher.h"
 #include "content/common/child_process.h"
+#include "content/ppapi_plugin/plugin_process_dispatcher.h"
 #include "ipc/ipc_channel_handle.h"
 #include "ipc/ipc_sync_channel.h"
 #include "ppapi/c/pp_errors.h"

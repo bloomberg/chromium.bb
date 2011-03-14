@@ -1,9 +1,9 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_PPAPI_PLUGIN_PPAPI_THREAD_H_
-#define CHROME_PPAPI_PLUGIN_PPAPI_THREAD_H_
+#ifndef CONTENT_PPAPI_PLUGIN_PPAPI_THREAD_H_
+#define CONTENT_PPAPI_PLUGIN_PPAPI_THREAD_H_
 #pragma once
 
 #include "base/basictypes.h"
@@ -71,4 +71,4 @@ class PpapiThread : public ChildThread,
   DISALLOW_COPY_AND_ASSIGN(PpapiThread);
 };
 
-#endif  // CHROME_PPAPI_PLUGIN_PPAPI_THREAD_H_
+#endif  // CONTENT_PPAPI_PLUGIN_PPAPI_THREAD_H_

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_PPAPI_PLUGIN_PLUGIN_PROCESS_DISPATCHER_H_
-#define CHROME_PPAPI_PLUGIN_PLUGIN_PROCESS_DISPATCHER_H_
+#ifndef CONTENT_PPAPI_PLUGIN_PLUGIN_PROCESS_DISPATCHER_H_
+#define CONTENT_PPAPI_PLUGIN_PLUGIN_PROCESS_DISPATCHER_H_
 
 #include "base/basictypes.h"
 #include "ppapi/proxy/plugin_dispatcher.h"
@@ -21,4 +21,4 @@ class PluginProcessDispatcher : public pp::proxy::PluginDispatcher {
   DISALLOW_COPY_AND_ASSIGN(PluginProcessDispatcher);
 };
 
-#endif  // CHROME_PPAPI_PLUGIN_PLUGIN_PROCESS_DISPATCHER_H_
+#endif  // CONTENT_PPAPI_PLUGIN_PLUGIN_PROCESS_DISPATCHER_H_

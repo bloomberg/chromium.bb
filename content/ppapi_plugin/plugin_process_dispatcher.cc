@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/ppapi_plugin/plugin_process_dispatcher.h"
+#include "content/ppapi_plugin/plugin_process_dispatcher.h"
 
 #include "content/common/child_process.h"
 
