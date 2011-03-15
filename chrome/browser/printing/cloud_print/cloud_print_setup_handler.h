@@ -37,4 +37,7 @@ class CloudPrintSetupHandler
   DISALLOW_COPY_AND_ASSIGN(CloudPrintSetupHandler);
 };
 
+// Workaround for MSVC 2005 not handling inheritance from nested classes well.
+typedef CloudPrintSetupHandler::Delegate CloudPrintSetupHandlerDelegate;
+
 #endif  // CHROME_BROWSER_PRINTING_CLOUD_PRINT_CLOUD_PRINT_SETUP_HANDLER_H_

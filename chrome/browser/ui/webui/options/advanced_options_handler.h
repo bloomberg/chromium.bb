@@ -20,7 +20,7 @@ class CloudPrintSetupHandler;
 class AdvancedOptionsHandler
     : public OptionsPageUIHandler,
       public SelectFileDialog::Listener,
-      public CloudPrintSetupHandler::Delegate {
+      public CloudPrintSetupHandlerDelegate {
  public:
   AdvancedOptionsHandler();
   virtual ~AdvancedOptionsHandler();

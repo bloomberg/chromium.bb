@@ -18,7 +18,7 @@ class Profile;
 // Layer between the browser user interface and the cloud print proxy code
 // running in the service process.
 class CloudPrintProxyService
-    : public CloudPrintSetupHandler::Delegate,
+    : public CloudPrintSetupHandlerDelegate,
       public base::RefCountedThreadSafe<CloudPrintProxyService> {
  public:
   explicit CloudPrintProxyService(Profile* profile);
