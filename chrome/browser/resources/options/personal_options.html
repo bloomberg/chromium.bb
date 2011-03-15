@@ -48,18 +48,17 @@
     <div>
       <div class="radio">
         <label>
-          <input id="passwords-offersave"
-              pref="profile.password_manager_enabled"
-              type="radio" value="true" metric="Options_PasswordManager">
+          <input id="passwords-offersave" type="radio" name="passwords_radio"
+              value="true" pref="profile.password_manager_enabled"
+              metric="Options_PasswordManager">
           <span i18n-content="passwordsAskToSave"></span>
         </label>
       </div>
       <div class="radio">
         <label>
-          <input id="passwords-neversave"
-              name="passwords_radio"
-              pref="profile.password_manager_enabled"
-              type="radio" value="false" metric="Options_PasswordManager">
+          <input id="passwords-neversave" type="radio" name="passwords_radio"
+              value="false" pref="profile.password_manager_enabled"
+              metric="Options_PasswordManager">
           <span i18n-content="passwordsNeverSave"></span>
         </label>
       </div>
