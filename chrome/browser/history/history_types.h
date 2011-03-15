@@ -40,7 +40,7 @@ typedef std::vector<GURL> RedirectList;
 typedef int64 StarID;  // Unique identifier for star entries.
 typedef int64 UIStarID;  // Identifier for star entries that come from the UI.
 typedef int64 DownloadID;   // Identifier for a download.
-typedef int64 FavIconID;  // For FavIcons.
+typedef int64 FaviconID;  // For favicons.
 typedef int64 SegmentID;  // URL segments for the most visited view.
 typedef int64 IconMappingID; // For page url and icon mapping.
 
@@ -697,7 +697,7 @@ struct IconMapping {
   GURL page_url;
 
   // The unique id of the icon.
-  FavIconID icon_id;
+  FaviconID icon_id;
 
   // The type of icon.
   IconType icon_type;

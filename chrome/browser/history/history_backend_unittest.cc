@@ -130,7 +130,7 @@ class HistoryBackendTest : public testing::Test {
     return test_dir_;
   }
 
-  FavIconID GetFavicon(const GURL& url, IconType icon_type) {
+  FaviconID GetFavicon(const GURL& url, IconType icon_type) {
     IconMapping icon_mapping;
     if (backend_->thumbnail_db_->GetIconMappingForPageURL(url, icon_type,
                                                           &icon_mapping))
@@ -216,9 +216,9 @@ TEST_F(HistoryBackendTest, DeleteAll) {
   // deleted. This way we can test that updating works properly.
   GURL favicon_url1("http://www.google.com/favicon.ico");
   GURL favicon_url2("http://news.google.com/favicon.ico");
-  FavIconID favicon2 = backend_->thumbnail_db_->AddFavIcon(favicon_url2,
+  FaviconID favicon2 = backend_->thumbnail_db_->AddFavIcon(favicon_url2,
                                                            FAVICON);
-  FavIconID favicon1 = backend_->thumbnail_db_->AddFavIcon(favicon_url1,
+  FaviconID favicon1 = backend_->thumbnail_db_->AddFavIcon(favicon_url1,
                                                            FAVICON);
 
   std::vector<unsigned char> data;
@@ -322,10 +322,10 @@ TEST_F(HistoryBackendTest, DeleteAll) {
 
   // We should have a favicon for the first URL only. We look them up by favicon
   // URL since the IDs may hav changed.
-  FavIconID out_favicon1 = backend_->thumbnail_db_->
+  FaviconID out_favicon1 = backend_->thumbnail_db_->
       GetFaviconIDForFaviconURL(favicon_url1, FAVICON, NULL);
   EXPECT_TRUE(out_favicon1);
-  FavIconID out_favicon2 = backend_->thumbnail_db_->
+  FaviconID out_favicon2 = backend_->thumbnail_db_->
       GetFaviconIDForFaviconURL(favicon_url2, FAVICON, NULL);
   EXPECT_FALSE(out_favicon2) << "Favicon not deleted";
 
@@ -349,9 +349,9 @@ TEST_F(HistoryBackendTest, DeleteAll) {
 TEST_F(HistoryBackendTest, URLsNoLongerBookmarked) {
   GURL favicon_url1("http://www.google.com/favicon.ico");
   GURL favicon_url2("http://news.google.com/favicon.ico");
-  FavIconID favicon2 = backend_->thumbnail_db_->AddFavIcon(favicon_url2,
+  FaviconID favicon2 = backend_->thumbnail_db_->AddFavIcon(favicon_url2,
                                                            FAVICON);
-  FavIconID favicon1 = backend_->thumbnail_db_->AddFavIcon(favicon_url1,
+  FaviconID favicon1 = backend_->thumbnail_db_->AddFavIcon(favicon_url1,
                                                            FAVICON);
 
   std::vector<unsigned char> data;
@@ -522,7 +522,7 @@ TEST_F(HistoryBackendTest, ImportedFaviconsTest) {
   // Setup test data - two Urls in the history, one with favicon assigned and
   // one without.
   GURL favicon_url1("http://www.google.com/favicon.ico");
-  FavIconID favicon1 = backend_->thumbnail_db_->AddFavIcon(favicon_url1,
+  FaviconID favicon1 = backend_->thumbnail_db_->AddFavIcon(favicon_url1,
                                                            FAVICON);
   std::vector<unsigned char> data;
   data.push_back('1');
@@ -893,7 +893,7 @@ TEST_F(HistoryBackendTest, SetFaviconMapping) {
   const GURL icon_url2("http://www.google.com/icon2");
   backend_->SetFavicon(
       url1, icon_url2, RefCountedBytes::TakeVector(&data), FAVICON);
-  FavIconID icon_id = backend_->thumbnail_db_->GetFaviconIDForFaviconURL(
+  FaviconID icon_id = backend_->thumbnail_db_->GetFaviconIDForFaviconURL(
       icon_url2, FAVICON, NULL);
   EXPECT_NE(0, icon_id);
   std::vector<IconMapping> icon_mapping;
@@ -913,11 +913,11 @@ TEST_F(HistoryBackendTest, AddOrUpdateIconMapping) {
 
   backend_->SetFavicon(
       url, icon_url, RefCountedBytes::TakeVector(&data), FAVICON);
-  FavIconID icon_id = backend_->thumbnail_db_->GetFaviconIDForFaviconURL(
+  FaviconID icon_id = backend_->thumbnail_db_->GetFaviconIDForFaviconURL(
       icon_url, FAVICON, NULL);
 
   // Add the same mapping
-  FavIconID replaced;
+  FaviconID replaced;
   EXPECT_FALSE(backend_->AddOrUpdateIconMapping(
       url, icon_id, FAVICON, &replaced));
   EXPECT_EQ(0, replaced);

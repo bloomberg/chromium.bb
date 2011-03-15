@@ -199,7 +199,7 @@ class ExpireHistoryBackend {
 
   // Deletes the favicons listed in the set if unused. Fails silently (we don't
   // care about favicons so much, so don't want to stop everything if it fails).
-  void DeleteFaviconsIfPossible(const std::set<FavIconID>& favicon_id);
+  void DeleteFaviconsIfPossible(const std::set<FaviconID>& favicon_id);
 
   // Broadcast the URL deleted notification.
   void BroadcastDeleteNotifications(DeleteDependencies* dependencies);

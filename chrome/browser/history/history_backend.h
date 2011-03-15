@@ -457,18 +457,18 @@ class HistoryBackend : public base::RefCountedThreadSafe<HistoryBackend>,
   // Sets the favicon url id for page_url to id. This will also broadcast
   // notifications as necessary.
   void SetFaviconMapping(const GURL& page_url,
-                         FavIconID id,
+                         FaviconID id,
                          IconType icon_type);
 
-  // Updates the FavIconID associated with the url of a page. If there is an
+  // Updates the FaviconID associated with the url of a page. If there is an
   // existing mapping between |page_url| and |id| this does nothing and returns
   // false. If the mapping needs to be added or updated, true is returned. If
   // there is an existing mapping but it does not map to |id|, then the |id| of
-  // the replaced FavIconID is set in |replaced_icon_id|.
+  // the replaced FaviconID is set in |replaced_icon_id|.
   bool AddOrUpdateIconMapping(const GURL& page_url,
-                              FavIconID id,
+                              FaviconID id,
                               IconType icon_type,
-                              FavIconID* replaced_icon_id);
+                              FaviconID* replaced_icon_id);
 
   // Generic stuff -------------------------------------------------------------
 

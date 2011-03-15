@@ -235,7 +235,7 @@ TEST_F(URLDatabaseTest, IconMappingEnumerator) {
   URLID url_id1 = AddURL(url_info1);
   ASSERT_TRUE(url_id1 != 0);
 
-  FavIconID icon_id = 1;
+  FaviconID icon_id = 1;
   sql::Statement statement(GetDB().GetCachedStatement(
       SQL_FROM_HERE,
       "UPDATE urls SET favicon_id =? WHERE id=?"));

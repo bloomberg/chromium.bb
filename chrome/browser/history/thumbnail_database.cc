@@ -387,7 +387,7 @@ bool ThumbnailDatabase::SetFavicon(URLID icon_id,
   }
 }
 
-bool ThumbnailDatabase::SetFaviconLastUpdateTime(FavIconID icon_id,
+bool ThumbnailDatabase::SetFaviconLastUpdateTime(FaviconID icon_id,
                                                  base::Time time) {
   sql::Statement statement(db_.GetCachedStatement(SQL_FROM_HERE,
       "UPDATE favicons SET last_updated=? WHERE id=?"));
@@ -399,7 +399,7 @@ bool ThumbnailDatabase::SetFaviconLastUpdateTime(FavIconID icon_id,
   return statement.Run();
 }
 
-FavIconID ThumbnailDatabase::GetFaviconIDForFaviconURL(const GURL& icon_url,
+FaviconID ThumbnailDatabase::GetFaviconIDForFaviconURL(const GURL& icon_url,
                                                        int required_icon_type,
                                                        IconType* icon_type) {
   sql::Statement statement(db_.GetCachedStatement(SQL_FROM_HERE,
@@ -419,7 +419,7 @@ FavIconID ThumbnailDatabase::GetFaviconIDForFaviconURL(const GURL& icon_url,
 }
 
 bool ThumbnailDatabase::GetFavicon(
-    FavIconID icon_id,
+    FaviconID icon_id,
     base::Time* last_updated,
     std::vector<unsigned char>* png_icon_data,
     GURL* icon_url) {
@@ -444,7 +444,7 @@ bool ThumbnailDatabase::GetFavicon(
   return true;
 }
 
-FavIconID ThumbnailDatabase::AddFavIcon(const GURL& icon_url,
+FaviconID ThumbnailDatabase::AddFavIcon(const GURL& icon_url,
                                         IconType icon_type) {
 
   sql::Statement statement(db_.GetCachedStatement(SQL_FROM_HERE,
@@ -459,7 +459,7 @@ FavIconID ThumbnailDatabase::AddFavIcon(const GURL& icon_url,
   return db_.GetLastInsertRowId();
 }
 
-bool ThumbnailDatabase::DeleteFavIcon(FavIconID id) {
+bool ThumbnailDatabase::DeleteFavIcon(FaviconID id) {
   sql::Statement statement(db_.GetCachedStatement(SQL_FROM_HERE,
       "DELETE FROM favicons WHERE id = ?"));
   if (!statement)
@@ -517,12 +517,12 @@ bool ThumbnailDatabase::GetIconMappingsForPageURL(
 }
 
 IconMappingID ThumbnailDatabase::AddIconMapping(const GURL& page_url,
-                                                FavIconID icon_id) {
+                                                FaviconID icon_id) {
   return AddIconMapping(page_url, icon_id, false);
 }
 
 bool ThumbnailDatabase::UpdateIconMapping(IconMappingID mapping_id,
-                                          FavIconID icon_id) {
+                                          FaviconID icon_id) {
   sql::Statement statement(db_.GetCachedStatement(SQL_FROM_HERE,
       "UPDATE icon_mapping SET icon_id=? WHERE id=?"));
   if (!statement)
@@ -543,7 +543,7 @@ bool ThumbnailDatabase::DeleteIconMappings(const GURL& page_url) {
   return statement.Run();
 }
 
-bool ThumbnailDatabase::HasMappingFor(FavIconID id) {
+bool ThumbnailDatabase::HasMappingFor(FaviconID id) {
   sql::Statement statement(db_.GetCachedStatement(SQL_FROM_HERE,
       "SELECT id FROM icon_mapping "
       "WHERE icon_id=?"));
@@ -569,7 +569,7 @@ bool ThumbnailDatabase::MigrateIconMappingData(URLDatabase* url_db) {
 }
 
 IconMappingID ThumbnailDatabase::AddToTemporaryIconMappingTable(
-    const GURL& page_url, const FavIconID icon_id) {
+    const GURL& page_url, const FaviconID icon_id) {
   return AddIconMapping(page_url, icon_id, true);
 }
 
@@ -588,7 +588,7 @@ bool ThumbnailDatabase::CommitTemporaryIconMappingTable() {
   return true;
 }
 
-FavIconID ThumbnailDatabase::CopyToTemporaryFavIconTable(FavIconID source) {
+FaviconID ThumbnailDatabase::CopyToTemporaryFavIconTable(FaviconID source) {
   sql::Statement statement(db_.GetCachedStatement(SQL_FROM_HERE,
       "INSERT INTO temp_favicons (url, last_updated, image_data, icon_type)"
       "SELECT url, last_updated, image_data, icon_type "
@@ -721,7 +721,7 @@ void ThumbnailDatabase::InitIconMappingIndex() {
 }
 
 IconMappingID ThumbnailDatabase::AddIconMapping(const GURL& page_url,
-                                                FavIconID icon_id,
+                                                FaviconID icon_id,
                                                 bool is_temporary) {
   const char* name = is_temporary ? "temp_icon_mapping" : "icon_mapping";
   const char* statement_name =

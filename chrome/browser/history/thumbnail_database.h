@@ -98,12 +98,12 @@ class ThumbnailDatabase {
   // Sets the bits for a favicon. This should be png encoded data.
   // The time indicates the access time, and is used to detect when the favicon
   // should be refreshed.
-  bool SetFavicon(FavIconID icon_id,
+  bool SetFavicon(FaviconID icon_id,
                   scoped_refptr<RefCountedMemory> icon_data,
                   base::Time time);
 
   // Sets the time the favicon was last updated.
-  bool SetFaviconLastUpdateTime(FavIconID icon_id, base::Time time);
+  bool SetFaviconLastUpdateTime(FaviconID icon_id, base::Time time);
 
   // Returns the id of the entry in the favicon database with the specified url
   // and icon type. If |required_icon_type| contains multiple icon types and
@@ -112,22 +112,22 @@ class ThumbnailDatabase {
   // FAVICON, and the icon type is returned in icon_type parameter if it is not
   // NULL.
   // Returns 0 if no entry exists for the specified url.
-  FavIconID GetFaviconIDForFaviconURL(const GURL& icon_url,
+  FaviconID GetFaviconIDForFaviconURL(const GURL& icon_url,
                                       int required_icon_type,
                                       IconType* icon_type);
 
   // Gets the png encoded favicon and last updated time for the specified
   // favicon id.
-  bool GetFavicon(FavIconID icon_id,
+  bool GetFavicon(FaviconID icon_id,
                   base::Time* last_updated,
                   std::vector<unsigned char>* png_icon_data,
                   GURL* icon_url);
 
   // Adds the favicon URL and icon type to the favicon db, returning its id.
-  FavIconID AddFavIcon(const GURL& icon_url, IconType icon_type);
+  FaviconID AddFavIcon(const GURL& icon_url, IconType icon_type);
 
   // Delete the favicon with the provided id. Returns false on failure
-  bool DeleteFavIcon(FavIconID id);
+  bool DeleteFavIcon(FaviconID id);
 
   // Icon Mapping --------------------------------------------------------------
   //
@@ -147,19 +147,19 @@ class ThumbnailDatabase {
 
   // Adds a mapping between the given page_url and icon_id.
   // Returns the new mapping id if the adding succeeds, otherwise 0 is returned.
-  IconMappingID AddIconMapping(const GURL& page_url, FavIconID icon_id);
+  IconMappingID AddIconMapping(const GURL& page_url, FaviconID icon_id);
 
   // Updates the page and icon mapping for the given mapping_id with the given
   // icon_id.
   // Returns true if the update succeeded.
-  bool UpdateIconMapping(IconMappingID mapping_id, FavIconID icon_id);
+  bool UpdateIconMapping(IconMappingID mapping_id, FaviconID icon_id);
 
   // Deletes the icon mapping entries for the given page url.
   // Returns true if the deletion succeeded.
   bool DeleteIconMappings(const GURL& page_url);
 
   // Checks whether a favicon is used by any URLs in the database.
-  bool HasMappingFor(FavIconID id);
+  bool HasMappingFor(FaviconID id);
 
   // Temporary IconMapping -----------------------------------------------------
   //
@@ -180,7 +180,7 @@ class ThumbnailDatabase {
   // The ID of the favicon will change when this copy takes place. The new ID
   // is returned, or 0 on failure.
   IconMappingID AddToTemporaryIconMappingTable(const GURL& page_url,
-                                               const FavIconID icon_id);
+                                               const FaviconID icon_id);
 
   // Replaces the main icon mapping table with the temporary table created by
   // InitTemporaryIconMappingTable(). This will mean all icon mapping not copied
@@ -203,7 +203,7 @@ class ThumbnailDatabase {
   //
   // The ID of the favicon will change when this copy takes place. The new ID
   // is returned, or 0 on failure.
-  FavIconID CopyToTemporaryFavIconTable(FavIconID source);
+  FaviconID CopyToTemporaryFavIconTable(FaviconID source);
 
   // Replaces the main URL table with the temporary table created by
   // InitTemporaryFavIconsTable(). This will mean all favicons not copied over
@@ -267,7 +267,7 @@ class ThumbnailDatabase {
   // added to temp_icon_mapping table if is_temporary is true.
   // Returns the new mapping id if the adding succeeds, otherwise 0 is returned.
   IconMappingID AddIconMapping(const GURL& page_url,
-                               FavIconID icon_id,
+                               FaviconID icon_id,
                                bool is_temporary);
 
   sql::Connection db_;

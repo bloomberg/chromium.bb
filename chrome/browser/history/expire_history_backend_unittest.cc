@@ -65,10 +65,10 @@ class ExpireHistoryTest : public testing::Test,
   void AddExampleSourceData(const GURL& url, URLID* id);
 
   // Returns true if the given favicon/thumanil has an entry in the DB.
-  bool HasFavIcon(FavIconID favicon_id);
+  bool HasFavIcon(FaviconID favicon_id);
   bool HasThumbnail(URLID url_id);
 
-  FavIconID GetFavicon(const GURL& page_url, IconType icon_type);
+  FaviconID GetFavicon(const GURL& page_url, IconType icon_type);
 
   // Returns the number of text matches for the given URL in the example data
   // added by AddExampleData.
@@ -200,9 +200,9 @@ void ExpireHistoryTest::AddExampleData(URLID url_ids[3], Time visit_times[4]) {
 
   // Two favicons. The first two URLs will share the same one, while the last
   // one will have a unique favicon.
-  FavIconID favicon1 = thumb_db_->AddFavIcon(GURL("http://favicon/url1"),
+  FaviconID favicon1 = thumb_db_->AddFavIcon(GURL("http://favicon/url1"),
                                              FAVICON);
-  FavIconID favicon2 = thumb_db_->AddFavIcon(GURL("http://favicon/url2"),
+  FaviconID favicon2 = thumb_db_->AddFavIcon(GURL("http://favicon/url2"),
                                              FAVICON);
 
   // Three URLs.
@@ -310,7 +310,7 @@ void ExpireHistoryTest::AddExampleSourceData(const GURL& url, URLID* id) {
   main_db_->AddVisit(&visit_row4, SOURCE_FIREFOX_IMPORTED);
 }
 
-bool ExpireHistoryTest::HasFavIcon(FavIconID favicon_id) {
+bool ExpireHistoryTest::HasFavIcon(FaviconID favicon_id) {
   if (!thumb_db_.get() || favicon_id == 0)
     return false;
   Time last_updated;
@@ -320,7 +320,7 @@ bool ExpireHistoryTest::HasFavIcon(FavIconID favicon_id) {
                                &icon_url);
 }
 
-FavIconID ExpireHistoryTest::GetFavicon(const GURL& page_url,
+FaviconID ExpireHistoryTest::GetFavicon(const GURL& page_url,
                                         IconType icon_type) {
   IconMapping icon_mapping;
   thumb_db_->GetIconMappingForPageURL(page_url, icon_type, &icon_mapping);
@@ -413,12 +413,12 @@ void ExpireHistoryTest::EnsureURLInfoGone(const URLRow& row) {
 TEST_F(ExpireHistoryTest, DeleteFaviconsIfPossible) {
   // Add a favicon record.
   const GURL favicon_url("http://www.google.com/favicon.ico");
-  FavIconID icon_id = thumb_db_->AddFavIcon(favicon_url, FAVICON);
+  FaviconID icon_id = thumb_db_->AddFavIcon(favicon_url, FAVICON);
   EXPECT_TRUE(icon_id);
   EXPECT_TRUE(HasFavIcon(icon_id));
 
   // The favicon should be deletable with no users.
-  std::set<FavIconID> favicon_set;
+  std::set<FaviconID> favicon_set;
   favicon_set.insert(icon_id);
   expirer_.DeleteFaviconsIfPossible(favicon_set);
   EXPECT_FALSE(HasFavIcon(icon_id));
@@ -460,7 +460,7 @@ TEST_F(ExpireHistoryTest, FLAKY_DeleteURLAndFavicon) {
   // Verify things are the way we expect with a URL row, favicon, thumbnail.
   URLRow last_row;
   ASSERT_TRUE(main_db_->GetURLRow(url_ids[2], &last_row));
-  FavIconID favicon_id = GetFavicon(last_row.url(), FAVICON);
+  FaviconID favicon_id = GetFavicon(last_row.url(), FAVICON);
   EXPECT_TRUE(HasFavIcon(favicon_id));
   // TODO(sky): fix this, see comment in HasThumbnail.
   // EXPECT_TRUE(HasThumbnail(url_ids[2]));
@@ -524,7 +524,7 @@ TEST_F(ExpireHistoryTest, DeleteURLWithoutFavicon) {
   // Verify things are the way we expect with a URL row, favicon, thumbnail.
   URLRow last_row;
   ASSERT_TRUE(main_db_->GetURLRow(url_ids[1], &last_row));
-  FavIconID favicon_id = GetFavicon(last_row.url(), FAVICON);
+  FaviconID favicon_id = GetFavicon(last_row.url(), FAVICON);
   EXPECT_TRUE(HasFavIcon(favicon_id));
   // TODO(sky): fix this, see comment in HasThumbnail.
   // EXPECT_TRUE(HasThumbnail(url_ids[1]));
@@ -562,7 +562,7 @@ TEST_F(ExpireHistoryTest, DontDeleteStarredURL) {
   ASSERT_TRUE(main_db_->GetRowForURL(url, &url_row));
 
   // And the favicon should exist.
-  FavIconID favicon_id = GetFavicon(url_row.url(), FAVICON);
+  FaviconID favicon_id = GetFavicon(url_row.url(), FAVICON);
   EXPECT_TRUE(HasFavIcon(favicon_id));
 
   // But there should be no fts.
@@ -632,13 +632,13 @@ TEST_F(ExpireHistoryTest, FlushRecentURLsUnstarred) {
   EXPECT_EQ(0, temp_row.typed_count());
 
   // Verify that the middle URL's favicon and thumbnail is still there.
-  FavIconID favicon_id = GetFavicon(url_row1.url(), FAVICON);
+  FaviconID favicon_id = GetFavicon(url_row1.url(), FAVICON);
   EXPECT_TRUE(HasFavIcon(favicon_id));
   // TODO(sky): fix this, see comment in HasThumbnail.
   // EXPECT_TRUE(HasThumbnail(url_row1.id()));
 
   // Verify that the last URL was deleted.
-  FavIconID favicon_id2 = GetFavicon(url_row2.url(), FAVICON);
+  FaviconID favicon_id2 = GetFavicon(url_row2.url(), FAVICON);
   EnsureURLInfoGone(url_row2);
   EXPECT_FALSE(HasFavIcon(favicon_id2));
 }
@@ -691,7 +691,7 @@ TEST_F(ExpireHistoryTest, FlushRecentURLsUnstarredRestricted) {
   EXPECT_EQ(0, temp_row.typed_count());
 
   // Verify that the middle URL's favicon and thumbnail is still there.
-  FavIconID favicon_id = GetFavicon(url_row1.url(), FAVICON);
+  FaviconID favicon_id = GetFavicon(url_row1.url(), FAVICON);
   EXPECT_TRUE(HasFavIcon(favicon_id));
   // TODO(sky): fix this, see comment in HasThumbnail.
   // EXPECT_TRUE(HasThumbnail(url_row1.id()));
@@ -740,7 +740,7 @@ TEST_F(ExpireHistoryTest, FlushRecentURLsStarred) {
   // that may have been updated since the time threshold. Since the URL still
   // exists in history, this should not be a privacy problem, we only update
   // the visit counts in this case for consistency anyway.
-  FavIconID favicon_id = GetFavicon(url_row1.url(), FAVICON);
+  FaviconID favicon_id = GetFavicon(url_row1.url(), FAVICON);
   EXPECT_TRUE(HasFavIcon(favicon_id));
   // TODO(sky): fix this, see comment in HasThumbnail.
   // EXPECT_TRUE(HasThumbnail(new_url_row1.id()));

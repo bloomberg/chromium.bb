@@ -153,7 +153,7 @@ struct ExpireHistoryBackend::DeleteDependencies {
   // The list of all favicon IDs that the affected URLs had. Favicons will be
   // shared between all URLs with the same favicon, so this is the set of IDs
   // that we will need to check when the delete operations are complete.
-  std::set<FavIconID> affected_favicons;
+  std::set<FaviconID> affected_favicons;
 
   // Tracks the set of databases that have changed so we can optimize when
   // when we're done.
@@ -316,11 +316,11 @@ void ExpireHistoryBackend::StartArchivingOldStuff(
 }
 
 void ExpireHistoryBackend::DeleteFaviconsIfPossible(
-    const std::set<FavIconID>& favicon_set) {
+    const std::set<FaviconID>& favicon_set) {
   if (!thumb_db_)
     return;
 
-  for (std::set<FavIconID>::const_iterator i = favicon_set.begin();
+  for (std::set<FaviconID>::const_iterator i = favicon_set.begin();
        i != favicon_set.end(); ++i) {
     if (!thumb_db_->HasMappingFor(*i))
       thumb_db_->DeleteFavIcon(*i);
@@ -644,9 +644,9 @@ bool ExpireHistoryBackend::ArchiveSomeOldHistory(
 
   // Create a union of all affected favicons (we don't store favicons for
   // archived URLs) and delete them.
-  std::set<FavIconID> affected_favicons(
+  std::set<FaviconID> affected_favicons(
       archived_dependencies.affected_favicons);
-  for (std::set<FavIconID>::const_iterator i =
+  for (std::set<FaviconID>::const_iterator i =
            deleted_dependencies.affected_favicons.begin();
        i != deleted_dependencies.affected_favicons.end(); ++i) {
     affected_favicons.insert(*i);
