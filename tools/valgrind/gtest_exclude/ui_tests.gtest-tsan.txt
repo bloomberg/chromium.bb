@@ -15,6 +15,7 @@ UnloadTest.CrossSiteInfiniteUnloadSync
 
 # ErrorPageTest hang flakily, see http://crbug.com/46643
 ErrorPageTest.DNSError_Basic
+ErrorPageTest.DNSError_GoBack2
 
 # These tests fail due to timeouts under TSan and hang the UI test runner,
 # http://crbug.com/61579

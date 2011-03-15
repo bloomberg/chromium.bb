@@ -83,7 +83,7 @@ fetch_logs() {
 
       REPORT_URLS=$(grep -o "[0-9]\+/steps/memory.*/logs/[0-9A-F]\{16\}" \
                     "$TMPFILE" || true)  # `true` is to succeed on empty output
-      FAILED_TESTS=$(grep -o "[0-9]\+/steps/memory.*/logs/[A-Za-z0-9.]\+" \
+      FAILED_TESTS=$(grep -o "[0-9]\+/steps/memory.*/logs/[A-Za-z0-9_.]\+" \
                      "$TMPFILE" | grep -v "[0-9A-F]\{16\}" | grep -v "stdio" \
                      || true)
 
