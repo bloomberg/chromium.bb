@@ -56,6 +56,9 @@ output 0:  i(1)
 replaying PPB_Audio_IsAudio:i:i:
 input 0:  i(34)
 output 0:  i(1)
+replaying PPB_Audio_GetCurrentConfig:i:i:
+input 0:  i(34)
+output 0:  i(30)
 replaying PPB_AudioConfig_GetSampleRate:i:i:
 input 0:  i(30)
 output 0:  i(44100)

@@ -119,6 +119,12 @@ class MyInstance : public pp::Instance {
       DebugPrintf("example: failed on IsAudio(audio_resource\n");
       return false;
     }
+    PP_Resource audio_config_resource_via_get_current =
+        audio_interface->GetCurrentConfig(audio_resource);
+    if (audio_config_resource_via_get_current != audio_config_resource) {
+      DebugPrintf("example: failed on comparing audio configure resources!\n");
+      return false;
+    }
     if (audio_config_interface->GetSampleRate(audio_config_resource) !=
         config.sample_rate()) {
       DebugPrintf("example: GetSampleRate(audio_config_resource) !=\n");

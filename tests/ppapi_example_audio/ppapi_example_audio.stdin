@@ -40,6 +40,7 @@ replay 1 PPB_GetInterface:s:i s("PPB_Audio;0.5") * i(1)
 replay 1 PPB_Audio_Create:ii:i ${INSTANCE} ${HANDLE_CFG} * ${HANDLE_AUDIO}
 replay 1 PPB_Audio_IsAudio:i:i ${HANDLE_AUDIO} * i(1)
 replay 1 PPB_AudioConfig_IsAudioConfig:i:i ${HANDLE_CFG} * i(1)
+replay 1 PPB_Audio_GetCurrentConfig:i:i ${HANDLE_AUDIO} * ${HANDLE_CFG}
 replay 1 PPB_AudioConfig_GetSampleRate:i:i  ${HANDLE_CFG} * i(44100)
 replay 1 PPB_AudioConfig_GetSampleFrameCount:i:i  ${HANDLE_CFG} * i(${NUM_FRAMES})
 replay 1 PPB_Audio_StartPlayback:i:i ${HANDLE_AUDIO} * i(1)
