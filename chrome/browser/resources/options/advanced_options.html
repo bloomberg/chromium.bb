@@ -175,8 +175,8 @@
     <div>
       <div><button id="certificatesManageButton"
           i18n-content="certificatesManageButton"></button></div>
-<if expr="os == 'win32'">
-      <!-- Configure these options for manual handling on windows -->
+<if expr="os == 'win32' or os == 'linux2' or os.find('bsd') != -1">
+      <!-- Configure these options for manual handling on windows/Linux/CrOS/BSD -->
       <div class="checkbox">
         <label>
           <input id="sslCheckRevocation" type="checkbox">
@@ -192,30 +192,6 @@
       <div class="checkbox">
         <label>
           <input id="sslUseTLS1" type="checkbox">
-          <span i18n-content="sslUseTLS1"></span>
-        </label>
-      </div>
-</if>
-<if expr="os == 'linux2' or os.find('bsd') != -1">
-      <!-- Configure these options for CrOS/Linux/BSD as preference keys -->
-      <div class="checkbox">
-        <label>
-          <input id="sslCheckRevocation" pref="ssl.rev_checking.enabled"
-              metric="Options_CheckCertRevocation" type="checkbox">
-          <span i18n-content="sslCheckRevocation"></span>
-        </label>
-      </div>
-      <div class="checkbox">
-        <label>
-          <input id="sslUseSSL3" pref="ssl.ssl3.enabled" metric="Options_SSL3"
-              type="checkbox">
-          <span i18n-content="sslUseSSL3"></span>
-        </label>
-      </div>
-      <div class="checkbox">
-        <label>
-          <input id="sslUseTLS1" pref="ssl.tls1.enabled" metric="Options_TLS1"
-              type="checkbox">
           <span i18n-content="sslUseTLS1"></span>
         </label>
       </div>

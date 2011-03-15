@@ -9,7 +9,6 @@
 #include "chrome/browser/net/ssl_config_service_manager.h"
 #include "chrome/browser/prefs/pref_member.h"
 #include "chrome/browser/prefs/pref_service.h"
-#include "chrome/browser/profiles/profile.h"
 #include "chrome/common/pref_names.h"
 #include "content/common/notification_details.h"
 #include "content/common/notification_source.h"
@@ -63,13 +62,21 @@ class SSLConfigServiceManagerPref
     : public SSLConfigServiceManager,
       public NotificationObserver {
  public:
-  explicit SSLConfigServiceManagerPref(Profile* profile);
+  SSLConfigServiceManagerPref(PrefService* user_prefs,
+                              PrefService* local_state);
   virtual ~SSLConfigServiceManagerPref() {}
 
   virtual net::SSLConfigService* Get();
 
  private:
-  static void RegisterUserPrefs(PrefService* user_prefs);
+  // Register user_prefs and local_state SSL preferences.
+  static void RegisterPrefs(PrefService* prefs);
+
+  // Copy pref values to local_state from user_prefs if local_state doesn't have
+  // the pref value and user_prefs has the pref value. Remove them from
+  // user_prefs.
+  static void MigrateUserPrefs(PrefService* local_state,
+                               PrefService* user_prefs);
 
   // Callback for preference changes.  This will post the changes to the IO
   // thread with SetNewSSLConfig.
@@ -91,14 +98,22 @@ class SSLConfigServiceManagerPref
   DISALLOW_COPY_AND_ASSIGN(SSLConfigServiceManagerPref);
 };
 
-SSLConfigServiceManagerPref::SSLConfigServiceManagerPref(Profile* profile)
+SSLConfigServiceManagerPref::SSLConfigServiceManagerPref(
+    PrefService* user_prefs, PrefService* local_state)
     : ssl_config_service_(new SSLConfigServicePref()) {
-  RegisterUserPrefs(profile->GetPrefs());
+  DCHECK(user_prefs);
+  DCHECK(local_state);
+
+  RegisterPrefs(user_prefs);
+  RegisterPrefs(local_state);
+
+  // TODO(rtenneti): remove migration code after 6 months.
+  MigrateUserPrefs(local_state, user_prefs);
 
   rev_checking_enabled_.Init(prefs::kCertRevocationCheckingEnabled,
-                             profile->GetPrefs(), this);
-  ssl3_enabled_.Init(prefs::kSSL3Enabled, profile->GetPrefs(), this);
-  tls1_enabled_.Init(prefs::kTLS1Enabled, profile->GetPrefs(), this);
+                             local_state, this);
+  ssl3_enabled_.Init(prefs::kSSL3Enabled, local_state, this);
+  tls1_enabled_.Init(prefs::kTLS1Enabled, local_state, this);
 
   // Initialize from UI thread.  This is okay as there shouldn't be anything on
   // the IO thread trying to access it yet.
@@ -106,14 +121,49 @@ SSLConfigServiceManagerPref::SSLConfigServiceManagerPref(Profile* profile)
 }
 
 // static
-void SSLConfigServiceManagerPref::RegisterUserPrefs(PrefService* user_prefs) {
+void SSLConfigServiceManagerPref::RegisterPrefs(PrefService* prefs) {
   net::SSLConfig default_config;
-  user_prefs->RegisterBooleanPref(prefs::kCertRevocationCheckingEnabled,
-                                  default_config.rev_checking_enabled);
-  user_prefs->RegisterBooleanPref(prefs::kSSL3Enabled,
-                                  default_config.ssl3_enabled);
-  user_prefs->RegisterBooleanPref(prefs::kTLS1Enabled,
-                                  default_config.tls1_enabled);
+  if (!prefs->FindPreference(prefs::kCertRevocationCheckingEnabled)) {
+    prefs->RegisterBooleanPref(prefs::kCertRevocationCheckingEnabled,
+                               default_config.rev_checking_enabled);
+  }
+  if (!prefs->FindPreference(prefs::kSSL3Enabled)) {
+    prefs->RegisterBooleanPref(prefs::kSSL3Enabled,
+                               default_config.ssl3_enabled);
+  }
+  if (!prefs->FindPreference(prefs::kTLS1Enabled)) {
+    prefs->RegisterBooleanPref(prefs::kTLS1Enabled,
+                               default_config.tls1_enabled);
+  }
+}
+
+// static
+void SSLConfigServiceManagerPref::MigrateUserPrefs(PrefService* local_state,
+                                                   PrefService* user_prefs) {
+  if (user_prefs->HasPrefPath(prefs::kCertRevocationCheckingEnabled)) {
+    if (!local_state->HasPrefPath(prefs::kCertRevocationCheckingEnabled)) {
+      // Migrate the kCertRevocationCheckingEnabled preference.
+      local_state->SetBoolean(prefs::kCertRevocationCheckingEnabled,
+          user_prefs->GetBoolean(prefs::kCertRevocationCheckingEnabled));
+    }
+    user_prefs->ClearPref(prefs::kCertRevocationCheckingEnabled);
+  }
+  if (user_prefs->HasPrefPath(prefs::kSSL3Enabled)) {
+    if (!local_state->HasPrefPath(prefs::kSSL3Enabled)) {
+      // Migrate the kSSL3Enabled preference.
+      local_state->SetBoolean(prefs::kSSL3Enabled,
+          user_prefs->GetBoolean(prefs::kSSL3Enabled));
+    }
+    user_prefs->ClearPref(prefs::kSSL3Enabled);
+  }
+  if (user_prefs->HasPrefPath(prefs::kTLS1Enabled)) {
+    if (!local_state->HasPrefPath(prefs::kTLS1Enabled)) {
+      // Migrate the kTLS1Enabled preference.
+      local_state->SetBoolean(prefs::kTLS1Enabled,
+          user_prefs->GetBoolean(prefs::kTLS1Enabled));
+    }
+    user_prefs->ClearPref(prefs::kTLS1Enabled);
+  }
 }
 
 net::SSLConfigService* SSLConfigServiceManagerPref::Get() {
@@ -152,6 +202,7 @@ void SSLConfigServiceManagerPref::GetSSLConfigFromPrefs(
 
 // static
 SSLConfigServiceManager* SSLConfigServiceManager::CreateDefaultManager(
-    Profile* profile) {
-  return new SSLConfigServiceManagerPref(profile);
+    PrefService* user_prefs,
+    PrefService* local_state) {
+  return new SSLConfigServiceManagerPref(user_prefs, local_state);
 }
