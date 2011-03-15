@@ -194,9 +194,12 @@ ConfirmQuitPanelController* g_confirmQuitPanelController = nil;
   BOOL willQuit = NO;
   NSEvent* nextEvent = nil;
   do {
-    // Dequeue events until a key up is received.
-    // TODO(rsesek): Explore using |untilDate| with |targetDate|.
-    nextEvent = [self pumpEventQueueForKeyUp:app untilDate:nil];
+    // Dequeue events until a key up is received. To avoid busy waiting, figure
+    // out the amount of time that the thread can sleep before taking further
+    // action.
+    NSDate* waitDate = [NSDate dateWithTimeIntervalSinceNow:
+        kTimeToConfirmQuit - kTimeDeltaFuzzFactor];
+    nextEvent = [self pumpEventQueueForKeyUp:app untilDate:waitDate];
 
     // Wait for the time expiry to happen. Once past the hold threshold,
     // commit to quitting and hide all the open windows.
