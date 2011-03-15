@@ -247,6 +247,7 @@ void SpeechInputManagerImpl::StartRecognitionForRequest(int caller_id) {
     recording_caller_id_ = caller_id;
     requests_[caller_id].is_active = true;
     requests_[caller_id].recognizer->StartRecording();
+    bubble_controller_->SetBubbleRecordingMode(caller_id);
   }
 }
 
@@ -336,10 +337,6 @@ void SpeechInputManagerImpl::OnRecognizerError(
 void SpeechInputManagerImpl::DidCompleteEnvironmentEstimation(int caller_id) {
   DCHECK(HasPendingRequest(caller_id));
   DCHECK(recording_caller_id_ == caller_id);
-
-  // Speech recognizer has gathered enough background audio so we can ask the
-  // user to start speaking.
-  bubble_controller_->SetBubbleRecordingMode(caller_id);
 }
 
 void SpeechInputManagerImpl::SetInputVolume(int caller_id, float volume,
