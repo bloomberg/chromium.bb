@@ -27,16 +27,8 @@ class KeyboardLibrary {
   // Remaps modifier keys.  Returns true on success.
   virtual bool RemapModifierKeys(const ModifierMap& modifier_map) = 0;
 
-  // Gets the current auto-repeat mode of the keyboard. The result is stored in
-  // |enabled|. Returns true on success.
-  virtual bool GetAutoRepeatEnabled(bool* enabled) const = 0;
-
   // Turns on and off the auto-repeat of the keyboard. Returns true on success.
   virtual bool SetAutoRepeatEnabled(bool enabled) = 0;
-
-  // Gets the current auto-repeat rate of the keyboard. The result is stored in
-  // |out_rate|. Returns true on success.
-  virtual bool GetAutoRepeatRate(AutoRepeatRate* out_rate) const = 0;
 
   // Sets the auto-repeat rate of the keyboard, initial delay in ms, and repeat
   // interval in ms.  Returns true on success.
