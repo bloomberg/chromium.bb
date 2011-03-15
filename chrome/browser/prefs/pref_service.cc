@@ -16,8 +16,7 @@
 #include "base/stl_util-inl.h"
 #include "base/string_number_conversions.h"
 #include "base/string_util.h"
-#include "base/sys_string_conversions.h"
-#include "base/utf_string_conversions.h"
+#include "base/value_conversions.h"
 #include "build/build_config.h"
 #include "chrome/browser/extensions/extension_pref_store.h"
 #include "chrome/browser/policy/configuration_policy_pref_store.h"
@@ -362,7 +361,7 @@ FilePath PrefService::GetFilePath(const char* path) const {
     NOTREACHED() << "Trying to read an unregistered pref: " << path;
     return FilePath(result);
   }
-  bool rv = pref->GetValue()->GetAsFilePath(&result);
+  bool rv = base::GetValueAsFilePath(*pref->GetValue(), &result);
   DCHECK(rv);
   return result;
 }
@@ -521,7 +520,7 @@ void PrefService::SetString(const char* path, const std::string& value) {
 }
 
 void PrefService::SetFilePath(const char* path, const FilePath& value) {
-  SetUserPrefValue(path, Value::CreateFilePathValue(value));
+  SetUserPrefValue(path, base::CreateFilePathValue(value));
 }
 
 void PrefService::SetInt64(const char* path, int64 value) {

@@ -23,6 +23,7 @@
 #include "base/threading/thread_restrictions.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
+#include "base/value_conversions.h"
 #include "base/win/windows_version.h"
 #include "chrome/browser/download/download_extensions.h"
 #include "chrome/browser/download/download_item.h"
@@ -571,7 +572,7 @@ DictionaryValue* CreateDownloadItemValue(DownloadItem* download, int id) {
       base::TimeFormatShortDate(download->start_time()));
   file_value->SetInteger("id", id);
   file_value->Set("file_path",
-                  Value::CreateFilePathValue(download->GetTargetFilePath()));
+                  base::CreateFilePathValue(download->GetTargetFilePath()));
   // Keep file names as LTR.
   string16 file_name = download->GetFileNameToReportUser().LossyDisplayName();
   file_name = base::i18n::GetDisplayStringInLTRDirectionality(file_name);

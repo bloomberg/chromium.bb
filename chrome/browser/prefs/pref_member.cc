@@ -5,8 +5,7 @@
 #include "chrome/browser/prefs/pref_member.h"
 
 #include "base/logging.h"
-#include "base/sys_string_conversions.h"
-#include "base/utf_string_conversions.h"
+#include "base/value_conversions.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "content/common/notification_type.h"
 
@@ -166,6 +165,6 @@ void PrefMember<FilePath>::UpdatePref(const FilePath& value) {
 template <>
 bool PrefMember<FilePath>::Internal::UpdateValueInternal(const Value& value)
     const {
-  return value.GetAsFilePath(&value_);
+  return base::GetValueAsFilePath(value, &value_);
 }
 
