@@ -36,14 +36,14 @@
 // This means hosting a dialog containing HTML/JavaScript and using
 // the published cloud print user interface integration APIs to get
 // page setup settings from the dialog contents and provide the
-// generated print data to the dialog contents for uploading to the
+// generated print PDF to the dialog contents for uploading to the
 // cloud print service.
 
 // Currently, the flow between these classes is as follows:
 
-// PrintDialogCloud::CreatePrintDialogForFile is called from
+// PrintDialogCloud::CreatePrintDialogForPdf is called from
 // resource_message_filter_gtk.cc once the renderer has informed the
-// renderer host that print data generation into the renderer host provided
+// renderer host that PDF generation into the renderer host provided
 // temp file has been completed.  That call is on the FILE thread.
 // That, in turn, hops over to the UI thread to create an instance of
 // PrintDialogCloud.
@@ -57,7 +57,7 @@
 
 // CloudPrintHtmlDialogDelegate also temporarily owns a
 // CloudPrintFlowHandler, a class which is responsible for the actual
-// interactions with the dialog contents, including handing in the
+// interactions with the dialog contents, including handing in the PDF
 // print data and getting any page setup parameters that the dialog
 // contents provides.  As part of bringing up the dialog,
 // HtmlDialogUI::RenderViewCreated is called (an override of
@@ -75,11 +75,11 @@
 // the window.  In addition, the pending URL is redirected to the
 // actual cloud print service URL.  The flow controller also registers
 // for notification of when the dialog contents finish loading, which
-// is currently used to send the data to the dialog contents.
+// is currently used to send the PDF data to the dialog contents.
 
-// In order to send the data to the dialog contents, the flow
+// In order to send the PDF data to the dialog contents, the flow
 // handler uses a CloudPrintDataSender.  It creates one, letting it
-// know the name of the temporary file containing the data, and
+// know the name of the temporary file containing the PDF data, and
 // posts the task of reading the file
 // (CloudPrintDataSender::ReadPrintDataFile) to the file thread.  That
 // routine reads in the file, and then hops over to the IO thread to
@@ -92,7 +92,7 @@
 
 // TODO(scottbyer):
 // http://code.google.com/p/chromium/issues/detail?id=44093 The
-// high-level flow (where the data is generated before even
+// high-level flow (where the PDF data is generated before even
 // bringing up the dialog) isn't what we want.
 
 namespace internal_cloud_print_helpers {
@@ -155,36 +155,32 @@ void CloudPrintDataSender::CancelPrintDataFile() {
 }
 
 CloudPrintDataSender::CloudPrintDataSender(CloudPrintDataSenderHelper* helper,
-                                           const string16& print_job_title,
-                                           const std::string& file_type)
+                                           const string16& print_job_title)
     : helper_(helper),
-      print_job_title_(print_job_title),
-      file_type_(file_type) {
+      print_job_title_(print_job_title) {
 }
 
 CloudPrintDataSender::~CloudPrintDataSender() {}
 
-// Grab the raw file contents and massage them into shape for
+// Grab the raw PDF file contents and massage them into shape for
 // sending to the dialog contents (and up to the cloud print server)
 // by encoding it and prefixing it with the appropriate mime type.
 // Once that is done, kick off the next part of the task on the IO
 // thread.
-void CloudPrintDataSender::ReadPrintDataFile(const FilePath& path_to_file) {
+void CloudPrintDataSender::ReadPrintDataFile(const FilePath& path_to_pdf) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
   int64 file_size = 0;
-  if (file_util::GetFileSize(path_to_file, &file_size) && file_size != 0) {
+  if (file_util::GetFileSize(path_to_pdf, &file_size) && file_size != 0) {
     std::string file_data;
     if (file_size < kuint32max) {
       file_data.reserve(static_cast<unsigned int>(file_size));
     } else {
       DLOG(WARNING) << " print data file too large to reserve space";
     }
-    if (helper_ && file_util::ReadFileToString(path_to_file, &file_data)) {
+    if (helper_ && file_util::ReadFileToString(path_to_pdf, &file_data)) {
       std::string base64_data;
       base::Base64Encode(file_data, &base64_data);
-      std::string header("data:");
-      header.append(file_type_);
-      header.append(";base64,");
+      std::string header("data:application/pdf;base64,");
       base64_data.insert(0, header);
       scoped_ptr<StringValue> new_data(new StringValue(base64_data));
       print_data_.swap(new_data);
@@ -219,12 +215,10 @@ void CloudPrintDataSender::SendPrintDataFile() {
 }
 
 
-CloudPrintFlowHandler::CloudPrintFlowHandler(const FilePath& path_to_file,
-                                             const string16& print_job_title,
-                                             const std::string& file_type)
-    : path_to_file_(path_to_file),
-      print_job_title_(print_job_title),
-      file_type_(file_type) {
+CloudPrintFlowHandler::CloudPrintFlowHandler(const FilePath& path_to_pdf,
+                                             const string16& print_job_title)
+    : path_to_pdf_(path_to_pdf),
+      print_job_title_(print_job_title) {
 }
 
 CloudPrintFlowHandler::~CloudPrintFlowHandler() {
@@ -325,9 +319,7 @@ scoped_refptr<CloudPrintDataSender>
 CloudPrintFlowHandler::CreateCloudPrintDataSender() {
   DCHECK(web_ui_);
   print_data_helper_.reset(new CloudPrintDataSenderHelper(web_ui_));
-  return new CloudPrintDataSender(print_data_helper_.get(),
-                                  print_job_title_,
-                                  file_type_);
+  return new CloudPrintDataSender(print_data_helper_.get(), print_job_title_);
 }
 
 void CloudPrintFlowHandler::HandleSendPrintData(const ListValue* args) {
@@ -343,7 +335,7 @@ void CloudPrintFlowHandler::HandleSendPrintData(const ListValue* args) {
                             NewRunnableMethod(
                                 print_data_sender_.get(),
                                 &CloudPrintDataSender::ReadPrintDataFile,
-                                path_to_file_));
+                                path_to_pdf_));
   }
 }
 
@@ -385,7 +377,7 @@ void CloudPrintFlowHandler::HandleSetPageParameters(const ListValue* args) {
 
   // TODO(scottbyer) - Here is where we would kick the originating
   // renderer thread with these new parameters in order to get it to
-  // re-generate the PDF data and hand it back to us.  window.print() is
+  // re-generate the PDF and hand it back to us.  window.print() is
   // currently synchronous, so there's a lot of work to do to get to
   // that point.
 }
@@ -401,15 +393,12 @@ void CloudPrintFlowHandler::StoreDialogClientSize() const {
 }
 
 CloudPrintHtmlDialogDelegate::CloudPrintHtmlDialogDelegate(
-    const FilePath& path_to_file,
+    const FilePath& path_to_pdf,
     int width, int height,
     const std::string& json_arguments,
     const string16& print_job_title,
-    const std::string& file_type,
     bool modal)
-    : flow_handler_(new CloudPrintFlowHandler(path_to_file,
-                                              print_job_title,
-                                              file_type)),
+    : flow_handler_(new CloudPrintFlowHandler(path_to_pdf, print_job_title)),
       modal_(modal),
       owns_flow_handler_(true) {
   Init(width, height, json_arguments);
@@ -512,9 +501,8 @@ bool CloudPrintHtmlDialogDelegate::ShouldShowDialogTitle() const {
 // TODO(scottbyer): The signature here will need to change as the
 // workflow through the printing code changes to allow for dynamically
 // changing page setup parameters while the dialog is active.
-void PrintDialogCloud::CreatePrintDialogForFile(const FilePath& path_to_file,
+void PrintDialogCloud::CreatePrintDialogForPdf(const FilePath& path_to_pdf,
                                                const string16& print_job_title,
-                                               const std::string& file_type,
                                                bool modal) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE) ||
          BrowserThread::CurrentlyOn(BrowserThread::UI));
@@ -522,36 +510,32 @@ void PrintDialogCloud::CreatePrintDialogForFile(const FilePath& path_to_file,
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
       NewRunnableFunction(&PrintDialogCloud::CreateDialogImpl,
-                          path_to_file,
+                          path_to_pdf,
                           print_job_title,
-                          file_type,
                           modal));
 }
 
 // static, called from the UI thread.
-void PrintDialogCloud::CreateDialogImpl(const FilePath& path_to_file,
+void PrintDialogCloud::CreateDialogImpl(const FilePath& path_to_pdf,
                                         const string16& print_job_title,
-                                        const std::string& file_type,
                                         bool modal) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  new PrintDialogCloud(path_to_file, print_job_title, file_type, modal);
+  new PrintDialogCloud(path_to_pdf, print_job_title, modal);
 }
 
 // Initialize the print dialog.  Called on the UI thread.
-PrintDialogCloud::PrintDialogCloud(const FilePath& path_to_file,
+PrintDialogCloud::PrintDialogCloud(const FilePath& path_to_pdf,
                                    const string16& print_job_title,
-                                   const std::string& file_type,
                                    bool modal)
     : browser_(BrowserList::GetLastActive()) {
-  Init(path_to_file, print_job_title, file_type, modal);
+  Init(path_to_pdf, print_job_title, modal);
 }
 
 PrintDialogCloud::~PrintDialogCloud() {
 }
 
-void PrintDialogCloud::Init(const FilePath& path_to_file,
+void PrintDialogCloud::Init(const FilePath& path_to_pdf,
                             const string16& print_job_title,
-                            const std::string& file_type,
                             bool modal) {
   // TODO(scottbyer): Verify GAIA login valid, execute GAIA login if not (should
   // be distilled out of bookmark sync.)
@@ -584,8 +568,7 @@ void PrintDialogCloud::Init(const FilePath& path_to_file,
 
   HtmlDialogUIDelegate* dialog_delegate =
       new internal_cloud_print_helpers::CloudPrintHtmlDialogDelegate(
-          path_to_file, width, height, std::string(), job_title, file_type,
-          modal);
+          path_to_pdf, width, height, std::string(), job_title, modal);
   if (modal) {
     DCHECK(browser_);
     browser_->BrowserShowHtmlDialog(dialog_delegate, NULL);

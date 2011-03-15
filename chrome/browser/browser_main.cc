@@ -1741,18 +1741,12 @@ int BrowserMain(const MainFunctionParams& parameters) {
           switches::kCloudPrintJobTitle);
       print_job_title = string16(native_job_title);
 #elif defined(OS_POSIX)
-      // TODO(abodenha@chromium.org) Implement this for OS_POSIX
+      // TODO(abodenha@google.com) Implement this for OS_POSIX
       // Command line string types are different
 #endif
     }
-      std::string file_type = "application/pdf";
-      if (parsed_command_line.HasSwitch(switches::kCloudPrintFileType)) {
-        file_type = parsed_command_line.GetSwitchValueASCII(
-            switches::kCloudPrintFileType);
-      }
-      PrintDialogCloud::CreatePrintDialogForFile(cloud_print_file,
+      PrintDialogCloud::CreatePrintDialogForPdf(cloud_print_file,
                                                 print_job_title,
-                                                file_type,
                                                 false);
     }
   }

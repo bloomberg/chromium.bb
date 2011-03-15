@@ -202,7 +202,6 @@ class PrintDialogCloudTest : public InProcessBrowserTest {
         NewRunnableFunction(&PrintDialogCloud::CreateDialogImpl,
                             path_to_pdf,
                             string16(),
-                            std::string("application/pdf"),
                             true));
   }
 
