@@ -97,6 +97,7 @@ ResourceDispatcherTest.RespectNoSniffDirective
 
 # Valgrind internal error: received SIGSEGV. http://crbug.com/51716
 AutomatedUITestBase.Navigate
+AutomatedUITestBase.IncognitoWindow
 AutomationProxyTest.AcceleratorDownloads
 AutomationProxyTest2.GetActiveTabIndex
 AutomationProxyTest5.TestLifetimeOfDomAutomationController
@@ -107,8 +108,9 @@ MetricsServiceTest.CrashRenderers
 PPAPITest.Buffer
 PPAPITest.FileIO
 PreferenceServiceTest.PreservedWindowPlacementIsLoaded
+ViewSourceTest.DoesBrowserConsumeViewSourcePrefix
 
-# Valgrind dies on assertion, see http://crbug.com/58145
+# Valgrind dies on bszB assertion, see http://crbug.com/58145
 AutomatedUITestBase.Home
 AutomationProxyTest.GetTabCount
 AutomationProxyTest3.FrameDocumentCanBeAccessed
@@ -116,6 +118,9 @@ DromaeoTest.DOMCorePerf
 LoginPromptTest.CancelRedundantAuths
 MetricsServiceTest.CloseRenderersNormally
 SunSpiderTest.Perf
+
+# Valgrind dies on arena assertion, see http://crbug.com/58146
+LoginPromptTest.TestTwoAuths
 
 # Can't load a nib under Valgrind, see http://crbug.com/58124
 ImagesTest.AnimatedGIFs
