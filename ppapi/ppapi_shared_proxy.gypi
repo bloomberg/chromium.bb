@@ -10,6 +10,7 @@
       'dependencies': [
         'ppapi_c',
         '../base/base.gyp:base',
+        '../third_party/icu/icu.gyp:icuuc',
       ],
       'include_dirs': [
         '..',
@@ -17,6 +18,8 @@
       'sources': [
         'shared_impl/audio_impl.cc',
         'shared_impl/audio_impl.h',
+        'shared_impl/char_set_impl.cc',
+        'shared_impl/char_set_impl.h',
         'shared_impl/image_data_impl.cc',
         'shared_impl/image_data_impl.h',
       ],

@@ -300,20 +300,6 @@ IPC_MESSAGE_ROUTED1(PpapiHostMsg_PPBCore_ReleaseResource,
                     pp::proxy::HostResource)
 
 // PPB_CharSet.
-IPC_SYNC_MESSAGE_ROUTED4_2(PpapiHostMsg_PPBCharSet_UTF16ToCharSet,
-                           PP_Instance /* instance */,
-                           string16 /* utf16 */,
-                           std::string /* char_set */,
-                           int32_t /* on_error */,
-                           std::string /* output */,
-                           bool /* output_is_success */)
-IPC_SYNC_MESSAGE_ROUTED4_2(PpapiHostMsg_PPBCharSet_CharSetToUTF16,
-                           PP_Instance /* instance */,
-                           std::string /* input */,
-                           std::string /* char_set */,
-                           int32_t /* on_error */,
-                           string16 /* output */,
-                           bool /* output_is_success */)
 IPC_SYNC_MESSAGE_ROUTED1_1(PpapiHostMsg_PPBCharSet_GetDefaultCharSet,
                            PP_Instance /* instance */,
                            pp::proxy::SerializedVar /* result */)
