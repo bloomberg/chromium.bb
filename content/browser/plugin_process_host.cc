@@ -50,7 +50,7 @@
 
 #if defined(OS_MACOSX)
 #include "base/mac/mac_util.h"
-#include "chrome/common/plugin_carbon_interpose_constants_mac.h"
+#include "content/common/plugin_carbon_interpose_constants_mac.h"
 #include "ui/gfx/rect.h"
 #endif
 
