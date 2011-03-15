@@ -127,18 +127,16 @@ if __name__ == '__main__':
 
   # If no GRD files were given, default them:
   if len(grd_files) == 0:
-    app_res_dir = os.path.join(src_dir, 'app', 'resources')
     chrome_dir = os.path.join(src_dir, 'chrome')
     chrome_app_dir = os.path.join(chrome_dir, 'app')
     chrome_app_res_dir = os.path.join(chrome_app_dir, 'resources')
+    ui_base_dir = os.path.join(src_dir, 'ui', 'base', 'strings')
     grd_files = [
-      os.path.join(app_res_dir, 'app_locale_settings.grd'),
-      os.path.join(app_res_dir, 'app_resources.grd'),
-      os.path.join(app_res_dir, 'app_strings.grd'),
       os.path.join(chrome_app_dir, 'chromium_strings.grd'),
       os.path.join(chrome_app_dir, 'generated_resources.grd'),
       os.path.join(chrome_app_dir, 'google_chrome_strings.grd'),
       os.path.join(chrome_app_res_dir, 'locale_settings.grd'),
+      os.path.join(chrome_app_res_dir, 'locale_settings_cros.grd'),
       os.path.join(chrome_app_res_dir, 'locale_settings_linux.grd'),
       os.path.join(chrome_app_res_dir, 'locale_settings_mac.grd'),
       os.path.join(chrome_app_res_dir, 'locale_settings_win.grd'),
@@ -146,13 +144,19 @@ if __name__ == '__main__':
       os.path.join(chrome_dir, 'browser', 'browser_resources.grd'),
       os.path.join(chrome_dir, 'common', 'common_resources.grd'),
       os.path.join(chrome_dir, 'renderer', 'renderer_resources.grd'),
+      os.path.join(src_dir, 'app', 'resources', 'app_resources.grd'),
+      os.path.join(src_dir, 'ui', 'gfx', 'gfx_resources.grd'),
+      os.path.join(ui_base_dir, 'app_locale_settings.grd'),
+      os.path.join(ui_base_dir, 'app_strings.grd'),
     ]
 
   # If no source directories were given, default them:
   if len(src_dirs) == 0:
     src_dirs = [
       os.path.join(src_dir, 'app'),
+      os.path.join(src_dir, 'content'),
       os.path.join(src_dir, 'chrome'),
+      os.path.join(src_dir, 'ui'),
       os.path.join(src_dir, 'views'),
       # nsNSSCertHelper.cpp has a bunch of ids
       os.path.join(src_dir, 'third_party', 'mozilla_security_manager'),
