@@ -1600,7 +1600,7 @@ bool HistoryBackend::GetThumbnailFromOlderRedirect(
   return success;
 }
 
-void HistoryBackend::GetFavIcon(scoped_refptr<GetFavIconRequest> request,
+void HistoryBackend::GetFavicon(scoped_refptr<GetFavIconRequest> request,
                                 const GURL& icon_url,
                                 int icon_types) {
   UpdateFavIconMappingAndFetchImpl(NULL, icon_url, request, icon_types);
@@ -1717,7 +1717,7 @@ void HistoryBackend::UpdateFavIconMappingAndFetchImpl(
       data = new RefCountedBytes;
       know_favicon = true;
       Time last_updated;
-      if (thumbnail_db_->GetFavIcon(favicon_id, &last_updated, &data->data,
+      if (thumbnail_db_->GetFavicon(favicon_id, &last_updated, &data->data,
                                     NULL)) {
         expired = (Time::Now() - last_updated) >
             TimeDelta::FromDays(kFavIconRefetchDays);
@@ -1756,7 +1756,7 @@ void HistoryBackend::GetFavIconForURL(
     Time last_updated;
     if (thumbnail_db_->GetIconMappingsForPageURL(page_url, &icon_mappings) &&
         (icon_mappings.front().icon_type & icon_types) &&
-        thumbnail_db_->GetFavIcon(icon_mappings.front().icon_id, &last_updated,
+        thumbnail_db_->GetFavicon(icon_mappings.front().icon_id, &last_updated,
                                   &data->data, &icon_url)) {
       know_favicon = true;
       expired = (Time::Now() - last_updated) >

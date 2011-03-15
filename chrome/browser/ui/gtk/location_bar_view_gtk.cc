@@ -559,8 +559,8 @@ void LocationBarViewGtk::OnSetFocus() {
   OnChanged();
 }
 
-SkBitmap LocationBarViewGtk::GetFavIcon() const {
-  return GetTabContents()->GetFavIcon();
+SkBitmap LocationBarViewGtk::GetFavicon() const {
+  return GetTabContents()->GetFavicon();
 }
 
 string16 LocationBarViewGtk::GetTitle() const {
@@ -1086,7 +1086,7 @@ void LocationBarViewGtk::OnIconDragData(GtkWidget* sender,
 
 void LocationBarViewGtk::OnIconDragBegin(GtkWidget* sender,
                                          GdkDragContext* context) {
-  SkBitmap favicon = GetFavIcon();
+  SkBitmap favicon = GetFavicon();
   GdkPixbuf* pixbuf = gfx::GdkPixbufFromSkBitmap(&favicon);
   if (!pixbuf)
     return;

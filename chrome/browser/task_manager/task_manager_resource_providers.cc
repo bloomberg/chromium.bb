@@ -199,7 +199,7 @@ string16 TaskManagerTabContentsResource::GetTitle() const {
 }
 
 SkBitmap TaskManagerTabContentsResource::GetIcon() const {
-  return tab_contents_->GetFavIcon();
+  return tab_contents_->GetFavicon();
 }
 
 TabContents* TaskManagerTabContentsResource::GetTabContents() const {

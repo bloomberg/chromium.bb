@@ -292,7 +292,7 @@ void BookmarkMenuController::BookmarkNodeFavIconLoaded(
        i != node_to_menu_map_.end(); ++i) {
     MenuItemView* menu_item = i->second->GetMenuItemByID(menu_pair->second);
     if (menu_item) {
-      menu_item->SetIcon(model->GetFavIcon(node));
+      menu_item->SetIcon(model->GetFavicon(node));
       return;
     }
   }
@@ -334,7 +334,7 @@ void BookmarkMenuController::BuildMenu(const BookmarkNode* parent,
 
     (*next_menu_id)++;
     if (node->is_url()) {
-      SkBitmap icon = profile_->GetBookmarkModel()->GetFavIcon(node);
+      SkBitmap icon = profile_->GetBookmarkModel()->GetFavicon(node);
       if (icon.width() == 0) {
         icon = *ResourceBundle::GetSharedInstance().
             GetBitmapNamed(IDR_DEFAULT_FAVICON);

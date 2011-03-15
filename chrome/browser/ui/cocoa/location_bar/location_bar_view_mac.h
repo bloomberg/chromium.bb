@@ -134,7 +134,7 @@ class LocationBarViewMac : public AutocompleteEditController,
   virtual void OnInputInProgress(bool in_progress);
   virtual void OnKillFocus();
   virtual void OnSetFocus();
-  virtual SkBitmap GetFavIcon() const;
+  virtual SkBitmap GetFavicon() const;
   virtual string16 GetTitle() const;
   virtual InstantController* GetInstant();
   virtual TabContentsWrapper* GetTabContentsWrapper();

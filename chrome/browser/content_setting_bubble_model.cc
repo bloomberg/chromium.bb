@@ -382,7 +382,7 @@ class ContentSettingPopupBubbleModel : public ContentSettingSingleRadioGroup {
         title = l10n_util::GetStringUTF8(IDS_TAB_LOADING_TITLE);
       PopupItem popup_item;
       popup_item.title = title;
-      popup_item.bitmap = (*i)->GetFavIcon();
+      popup_item.bitmap = (*i)->GetFavicon();
       popup_item.tab_contents = (*i);
       add_popup(popup_item);
     }

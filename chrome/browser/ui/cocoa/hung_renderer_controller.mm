@@ -146,7 +146,7 @@ HungRendererController* g_instance = NULL;
 
       // TabContents can return a null SkBitmap if it has no favicon.  If this
       // happens, use the default favicon.
-      const SkBitmap& bitmap = it->GetFavIcon();
+      const SkBitmap& bitmap = it->GetFavicon();
       if (!bitmap.isNull()) {
         [favicons addObject:gfx::SkBitmapToNSImage(bitmap)];
       } else {

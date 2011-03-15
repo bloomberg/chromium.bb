@@ -162,8 +162,8 @@ GdkPixbuf* GetPixbufForNode(const BookmarkNode* node, BookmarkModel* model,
   GdkPixbuf* pixbuf;
 
   if (node->is_url()) {
-    if (model->GetFavIcon(node).width() != 0) {
-      pixbuf = gfx::GdkPixbufFromSkBitmap(&model->GetFavIcon(node));
+    if (model->GetFavicon(node).width() != 0) {
+      pixbuf = gfx::GdkPixbufFromSkBitmap(&model->GetFavicon(node));
     } else {
       pixbuf = GtkThemeProvider::GetDefaultFavicon(native);
       g_object_ref(pixbuf);

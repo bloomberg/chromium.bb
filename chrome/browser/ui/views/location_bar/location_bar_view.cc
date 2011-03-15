@@ -805,8 +805,8 @@ void LocationBarView::OnSetFocus() {
   focus_manager->SetFocusedView(this);
 }
 
-SkBitmap LocationBarView::GetFavIcon() const {
-  return GetTabContentsFromDelegate(delegate_)->GetFavIcon();
+SkBitmap LocationBarView::GetFavicon() const {
+  return GetTabContentsFromDelegate(delegate_)->GetFavicon();
 }
 
 string16 LocationBarView::GetTitle() const {
@@ -1023,7 +1023,7 @@ void LocationBarView::WriteDragDataForView(views::View* sender,
   DCHECK(tab_contents);
   drag_utils::SetURLAndDragImage(tab_contents->GetURL(),
                                  UTF16ToWideHack(tab_contents->GetTitle()),
-                                 tab_contents->GetFavIcon(), data);
+                                 tab_contents->GetFavicon(), data);
 }
 
 int LocationBarView::GetDragOperationsForView(views::View* sender,

@@ -418,7 +418,7 @@ FavIconID ThumbnailDatabase::GetFavIconIDForFavIconURL(const GURL& icon_url,
   return statement.ColumnInt64(0);
 }
 
-bool ThumbnailDatabase::GetFavIcon(
+bool ThumbnailDatabase::GetFavicon(
     FavIconID icon_id,
     base::Time* last_updated,
     std::vector<unsigned char>* png_icon_data,

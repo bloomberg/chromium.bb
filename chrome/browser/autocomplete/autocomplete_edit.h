@@ -69,7 +69,7 @@ class AutocompleteEditController {
   virtual void OnSetFocus() = 0;
 
   // Returns the favicon of the current page.
-  virtual SkBitmap GetFavIcon() const = 0;
+  virtual SkBitmap GetFavicon() const = 0;
 
   // Returns the title of the current page.
   virtual string16 GetTitle() const = 0;

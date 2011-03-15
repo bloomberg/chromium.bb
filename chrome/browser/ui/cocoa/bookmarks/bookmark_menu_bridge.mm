@@ -275,7 +275,7 @@ void BookmarkMenuBridge::ConfigureMenuItem(const BookmarkNode* node,
   NSImage* favicon = nil;
   BookmarkModel* model = GetBookmarkModel();
   if (model) {
-    const SkBitmap& bitmap = model->GetFavIcon(node);
+    const SkBitmap& bitmap = model->GetFavicon(node);
     if (!bitmap.isNull())
       favicon = gfx::SkBitmapToNSImage(bitmap);
   }

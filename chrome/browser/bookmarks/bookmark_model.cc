@@ -241,7 +241,7 @@ void BookmarkModel::Copy(const BookmarkNode* node,
     store_->ScheduleSave();
 }
 
-const SkBitmap& BookmarkModel::GetFavIcon(const BookmarkNode* node) {
+const SkBitmap& BookmarkModel::GetFavicon(const BookmarkNode* node) {
   DCHECK(node);
   if (!node->is_favicon_loaded()) {
     BookmarkNode* mutable_node = AsMutable(node);

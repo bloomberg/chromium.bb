@@ -296,7 +296,7 @@ void TabRendererGtk::UpdateData(TabContents* contents,
     if (app_icon)
       data_.favicon = *app_icon;
     else
-      data_.favicon = contents->GetFavIcon();
+      data_.favicon = contents->GetFavicon();
 
     data_.app = app;
     // This is kind of a hacky way to determine whether our icon is the default

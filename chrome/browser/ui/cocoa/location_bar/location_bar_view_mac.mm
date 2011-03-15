@@ -273,7 +273,7 @@ void LocationBarViewMac::OnKillFocus() {
   // Do nothing.
 }
 
-SkBitmap LocationBarViewMac::GetFavIcon() const {
+SkBitmap LocationBarViewMac::GetFavicon() const {
   NOTIMPLEMENTED();
   return SkBitmap();
 }

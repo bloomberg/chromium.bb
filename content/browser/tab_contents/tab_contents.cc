@@ -575,7 +575,7 @@ bool TabContents::ShouldDisplayURL() {
   return true;
 }
 
-SkBitmap TabContents::GetFavIcon() const {
+SkBitmap TabContents::GetFavicon() const {
   // Like GetTitle(), we also want to use the favicon for the last committed
   // entry rather than a pending navigation entry.
   NavigationEntry* entry = controller_.GetTransientEntry();

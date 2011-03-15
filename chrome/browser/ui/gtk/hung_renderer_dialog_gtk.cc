@@ -153,7 +153,7 @@ void HungRendererDialogGtk::ShowForTabContents(TabContents* hung_contents) {
       std::string title = UTF16ToUTF8(it->GetTitle());
       if (title.empty())
         title = UTF16ToUTF8(TabContentsWrapper::GetDefaultTitle());
-      SkBitmap favicon = it->GetFavIcon();
+      SkBitmap favicon = it->GetFavicon();
 
       GdkPixbuf* pixbuf = NULL;
       if (favicon.width() > 0)

@@ -509,7 +509,7 @@ void RecordAppLaunch(Profile* profile, GURL url) {
   if (node->is_folder())
     return folderImage_;
 
-  const SkBitmap& favIcon = bookmarkModel_->GetFavIcon(node);
+  const SkBitmap& favIcon = bookmarkModel_->GetFavicon(node);
   if (!favIcon.isNull())
     return gfx::SkBitmapToNSImage(favIcon);
 

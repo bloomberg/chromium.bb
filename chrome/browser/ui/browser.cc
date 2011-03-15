@@ -807,7 +807,7 @@ SkBitmap Browser::GetCurrentPageIcon() const {
   TabContents* contents = GetSelectedTabContents();
   // |contents| can be NULL since GetCurrentPageIcon() is called by the window
   // during the window's creation (before tabs have been added).
-  return contents ? contents->GetFavIcon() : SkBitmap();
+  return contents ? contents->GetFavicon() : SkBitmap();
 }
 
 string16 Browser::GetWindowTitleForCurrentTab() const {

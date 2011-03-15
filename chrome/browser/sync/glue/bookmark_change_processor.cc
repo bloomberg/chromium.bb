@@ -61,7 +61,7 @@ void BookmarkChangeProcessor::UpdateSyncNodeProperties(
 void BookmarkChangeProcessor::EncodeFavicon(const BookmarkNode* src,
                                             BookmarkModel* model,
                                             std::vector<unsigned char>* dst) {
-  const SkBitmap& favicon = model->GetFavIcon(src);
+  const SkBitmap& favicon = model->GetFavicon(src);
 
   dst->clear();
 

@@ -97,7 +97,7 @@ class PageUsageData {
     favicon_pending_ = pending;
   }
 
-  const SkBitmap* GetFavIcon() const {
+  const SkBitmap* GetFavicon() const {
     return favicon_;
   }
 

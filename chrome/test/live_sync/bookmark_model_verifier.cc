@@ -48,7 +48,7 @@ class FaviconLoadObserver : public BookmarkModelObserver {
   virtual void BookmarkNodeChanged(BookmarkModel* model,
                                    const BookmarkNode* node) {
     if (model == model_ && node == node_)
-      model->GetFavIcon(node);
+      model->GetFavicon(node);
   }
   virtual void BookmarkNodeChildrenReordered(BookmarkModel* model,
                                              const BookmarkNode* node) {}
@@ -106,8 +106,8 @@ bool BookmarkModelVerifier::ModelsMatch(BookmarkModel* model_a,
     EXPECT_TRUE(iterator_b.has_next());
     const BookmarkNode* node_b = iterator_b.Next();
     ret_val = ret_val && NodesMatch(node_a, node_b);
-    const SkBitmap& bitmap_a = model_a->GetFavIcon(node_a);
-    const SkBitmap& bitmap_b = model_b->GetFavIcon(node_b);
+    const SkBitmap& bitmap_a = model_a->GetFavicon(node_a);
+    const SkBitmap& bitmap_b = model_b->GetFavicon(node_b);
     ret_val = ret_val && FaviconsMatch(bitmap_a, bitmap_b);
   }
   ret_val = ret_val && (!iterator_b.has_next());

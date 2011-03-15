@@ -243,7 +243,7 @@ class TabContents : public PageNavigator,
   // Returns the favicon for this tab, or an isNull() bitmap if the tab does not
   // have a favicon. The default implementation uses the current navigation
   // entry.
-  SkBitmap GetFavIcon() const;
+  SkBitmap GetFavicon() const;
 
   // Returns true if we are not using the default favicon.
   bool FavIconIsValid() const;

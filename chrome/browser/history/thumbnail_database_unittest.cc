@@ -127,7 +127,7 @@ TEST_F(ThumbnailDatabaseTest, GetFaviconAfterMigrationToTopSites) {
   base::Time time_out;
   std::vector<unsigned char> favicon_out;
   GURL url_out;
-  EXPECT_TRUE(db.GetFavIcon(id, &time_out, &favicon_out, &url_out));
+  EXPECT_TRUE(db.GetFavicon(id, &time_out, &favicon_out, &url_out));
   EXPECT_EQ(url, url_out);
   EXPECT_EQ(time.ToTimeT(), time_out.ToTimeT());
   ASSERT_EQ(data.size(), favicon_out.size());
@@ -429,7 +429,7 @@ TEST_F(IconMappingMigrationTest, TestIconMappingMigration) {
   base::Time time;
   std::vector<unsigned char> out_data;
   GURL out_icon_url;
-  ASSERT_TRUE(db.GetFavIcon(
+  ASSERT_TRUE(db.GetFavicon(
       icon_mappings[0].icon_id, &time, &out_data, &out_icon_url));
   EXPECT_EQ(icon1, out_icon_url);
 
@@ -450,7 +450,7 @@ TEST_F(IconMappingMigrationTest, TestIconMappingMigration) {
   EXPECT_EQ(FAV_ICON, icon_mappings[0].icon_type);
   EXPECT_EQ(page_url2, icon_mappings[0].page_url);
   EXPECT_EQ(2, icon_mappings[0].icon_id);
-  ASSERT_TRUE(db.GetFavIcon(
+  ASSERT_TRUE(db.GetFavicon(
       icon_mappings[0].icon_id, &time, &out_data, &out_icon_url));
   EXPECT_EQ(icon2, out_icon_url);
 

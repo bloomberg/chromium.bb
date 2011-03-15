@@ -494,7 +494,7 @@ SkBitmap Tile::favicon() const {
     if (icon)
       return *icon;
   }
-  return contents_->GetFavIcon();
+  return contents_->GetFavicon();
 }
 
 NSRect Tile::GetTitleStartRectRelativeTo(const Tile& tile) const {

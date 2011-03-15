@@ -234,7 +234,7 @@ void AutocompleteEditModel::GetDataForURLExport(GURL* url,
   if (*url == URLFixerUpper::FixupURL(UTF16ToUTF8(permanent_text_),
                                       std::string())) {
     *title = controller_->GetTitle();
-    *favicon = controller_->GetFavIcon();
+    *favicon = controller_->GetFavicon();
   }
 }
 

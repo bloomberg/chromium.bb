@@ -1224,7 +1224,7 @@ private:
     if (icon)
       image = gfx::SkBitmapToNSImageWithColorSpace(*icon, colorSpace);
   } else {
-    image = gfx::SkBitmapToNSImageWithColorSpace(contents->GetFavIcon(),
+    image = gfx::SkBitmapToNSImageWithColorSpace(contents->GetFavicon(),
                                                  colorSpace);
   }
 

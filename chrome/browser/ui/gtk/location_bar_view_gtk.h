@@ -101,7 +101,7 @@ class LocationBarViewGtk : public AutocompleteEditController,
   virtual void OnKillFocus() OVERRIDE;
   virtual void OnSetFocus() OVERRIDE;
   virtual void OnInputInProgress(bool in_progress) OVERRIDE;
-  virtual SkBitmap GetFavIcon() const OVERRIDE;
+  virtual SkBitmap GetFavicon() const OVERRIDE;
   virtual string16 GetTitle() const OVERRIDE;
   virtual InstantController* GetInstant() OVERRIDE;
   virtual TabContentsWrapper* GetTabContentsWrapper() OVERRIDE;

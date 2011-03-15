@@ -104,7 +104,7 @@ string16 HungPagesTableModel::GetText(int row, int column_id) {
 
 SkBitmap HungPagesTableModel::GetIcon(int row) {
   DCHECK(row >= 0 && row < RowCount());
-  return tab_contentses_.at(row)->GetFavIcon();
+  return tab_contentses_.at(row)->GetFavicon();
 }
 
 void HungPagesTableModel::SetObserver(ui::TableModelObserver* observer) {

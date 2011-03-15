@@ -226,7 +226,7 @@ class BookmarkModel : public NotificationObserver, public BookmarkService {
 
   // Returns the favicon for |node|. If the favicon has not yet been
   // loaded it is loaded and the observer of the model notified when done.
-  const SkBitmap& GetFavIcon(const BookmarkNode* node);
+  const SkBitmap& GetFavicon(const BookmarkNode* node);
 
   // Sets the title of the specified node.
   void SetTitle(const BookmarkNode* node, const string16& title);

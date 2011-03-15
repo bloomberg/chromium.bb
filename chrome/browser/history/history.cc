@@ -450,7 +450,7 @@ HistoryService::Handle HistoryService::GetPageThumbnail(
 
 void HistoryService::GetFavicon(FaviconService::GetFaviconRequest* request,
                                 const GURL& icon_url) {
-  Schedule(PRIORITY_NORMAL, &HistoryBackend::GetFavIcon, NULL, request,
+  Schedule(PRIORITY_NORMAL, &HistoryBackend::GetFavicon, NULL, request,
            icon_url, history::FAV_ICON);
 }
 

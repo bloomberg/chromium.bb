@@ -209,7 +209,7 @@ class HistoryBackend : public base::RefCountedThreadSafe<HistoryBackend>,
 
   // Favicon -------------------------------------------------------------------
 
-  void GetFavIcon(scoped_refptr<GetFavIconRequest> request,
+  void GetFavicon(scoped_refptr<GetFavIconRequest> request,
                   const GURL& icon_url,
                   int icon_types);
 
@@ -443,7 +443,7 @@ class HistoryBackend : public base::RefCountedThreadSafe<HistoryBackend>,
 
   // Favicons ------------------------------------------------------------------
 
-  // Used by both UpdateFavIconMappingAndFetch and GetFavIcon.
+  // Used by both UpdateFavIconMappingAndFetch and GetFavicon.
   // If page_url is non-null and SetFavIcon has previously been invoked for
   // icon_url the favicon url for page_url (and all redirects) is set to
   // icon_url.

@@ -118,7 +118,7 @@ class ThumbnailDatabase {
 
   // Gets the png encoded favicon and last updated time for the specified
   // favicon id.
-  bool GetFavIcon(FavIconID icon_id,
+  bool GetFavicon(FavIconID icon_id,
                   base::Time* last_updated,
                   std::vector<unsigned char>* png_icon_data,
                   GURL* icon_url);

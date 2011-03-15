@@ -82,7 +82,7 @@ class TestingAutocompleteEditController : public AutocompleteEditController {
   virtual void OnInputInProgress(bool in_progress) OVERRIDE {}
   virtual void OnKillFocus() OVERRIDE {}
   virtual void OnSetFocus() OVERRIDE {}
-  virtual SkBitmap GetFavIcon() const OVERRIDE { return SkBitmap(); }
+  virtual SkBitmap GetFavicon() const OVERRIDE { return SkBitmap(); }
   virtual string16 GetTitle() const OVERRIDE { return string16(); }
   virtual InstantController* GetInstant() OVERRIDE { return NULL; }
   virtual TabContentsWrapper* GetTabContentsWrapper() OVERRIDE {

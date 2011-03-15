@@ -391,7 +391,7 @@ void BrowserTabStripController::SetTabRendererDataFromModel(
   if (app_icon)
     data->favicon = *app_icon;
   else
-    data->favicon = contents->GetFavIcon();
+    data->favicon = contents->GetFavicon();
   data->network_state = TabContentsNetworkState(contents);
   data->title = contents->GetTitle();
   data->loading = contents->is_loading();

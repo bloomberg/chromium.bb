@@ -130,7 +130,7 @@ class HistoryBackendTest : public testing::Test {
     return test_dir_;
   }
 
-  FavIconID GetFavIcon(const GURL& url, IconType icon_type) {
+  FavIconID GetFavicon(const GURL& url, IconType icon_type) {
     IconMapping icon_mapping;
     if (backend_->thumbnail_db_->GetIconMappingForPageURL(url, icon_type,
                                                           &icon_mapping))
@@ -331,7 +331,7 @@ TEST_F(HistoryBackendTest, DeleteAll) {
 
   // The remaining URL should still reference the same favicon, even if its
   // ID has changed.
-  EXPECT_EQ(out_favicon1, GetFavIcon(outrow1.url(), FAV_ICON));
+  EXPECT_EQ(out_favicon1, GetFavicon(outrow1.url(), FAV_ICON));
 
   // The first URL should still be bookmarked.
   EXPECT_TRUE(bookmark_model_.IsBookmarked(row1.url()));
@@ -543,8 +543,8 @@ TEST_F(HistoryBackendTest, ImportedFaviconsTest) {
   URLRow url_row1, url_row2;
   EXPECT_FALSE(backend_->db_->GetRowForURL(row1.url(), &url_row1) == 0);
   EXPECT_FALSE(backend_->db_->GetRowForURL(row2.url(), &url_row2) == 0);
-  EXPECT_FALSE(GetFavIcon(row1.url(), FAV_ICON) == 0);
-  EXPECT_TRUE(GetFavIcon(row2.url(), FAV_ICON) == 0);
+  EXPECT_FALSE(GetFavicon(row1.url(), FAV_ICON) == 0);
+  EXPECT_TRUE(GetFavicon(row2.url(), FAV_ICON) == 0);
 
   // Now provide one imported favicon for both URLs already in the registry.
   // The new favicon should only be used with the URL that doesn't already have
@@ -559,10 +559,10 @@ TEST_F(HistoryBackendTest, ImportedFaviconsTest) {
   backend_->SetImportedFavicons(favicons);
   EXPECT_FALSE(backend_->db_->GetRowForURL(row1.url(), &url_row1) == 0);
   EXPECT_FALSE(backend_->db_->GetRowForURL(row2.url(), &url_row2) == 0);
-  EXPECT_FALSE(GetFavIcon(row1.url(), FAV_ICON) == 0);
-  EXPECT_FALSE(GetFavIcon(row2.url(), FAV_ICON) == 0);
-  EXPECT_FALSE(GetFavIcon(row1.url(), FAV_ICON) ==
-      GetFavIcon(row2.url(), FAV_ICON));
+  EXPECT_FALSE(GetFavicon(row1.url(), FAV_ICON) == 0);
+  EXPECT_FALSE(GetFavicon(row2.url(), FAV_ICON) == 0);
+  EXPECT_FALSE(GetFavicon(row1.url(), FAV_ICON) ==
+      GetFavicon(row2.url(), FAV_ICON));
 
   // A URL should not be added to history (to store favicon), if
   // the URL is not bookmarked.

@@ -789,7 +789,7 @@ void GetShortcutInfoForTab(TabContents* tab_contents,
                                           tab_contents->GetTitle()) :
       app_info.title;
   info->description = app_info.description;
-  info->favicon = tab_contents->GetFavIcon();
+  info->favicon = tab_contents->GetFavicon();
 }
 
 void UpdateShortcutForTabContents(TabContents* tab_contents) {

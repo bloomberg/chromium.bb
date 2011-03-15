@@ -1069,7 +1069,7 @@ void AeroPeekManager::CreateAeroPeekWindowIfNecessary(TabContentsWrapper* tab,
                          GetTabID(tab->tab_contents()),
                          foreground,
                          tab->tab_contents()->GetTitle(),
-                         tab->tab_contents()->GetFavIcon());
+                         tab->tab_contents()->GetFavicon());
   tab_list_.push_back(window);
 }
 
@@ -1174,7 +1174,7 @@ void AeroPeekManager::TabChangedAt(TabContentsWrapper* contents,
   // hurting the rendering performance. (These functions just save the
   // information needed for handling update requests from Windows.)
   window->SetTitle(contents->tab_contents()->GetTitle());
-  window->SetFavIcon(contents->tab_contents()->GetFavIcon());
+  window->SetFavIcon(contents->tab_contents()->GetFavicon());
   window->Update(contents->tab_contents()->is_loading());
 }
 
