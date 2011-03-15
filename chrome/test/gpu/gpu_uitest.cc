@@ -35,7 +35,7 @@ class GPUUITest : public UITest {
   FilePath gpu_test_dir_;
 };
 
-#if defined(OS_CHROMEOS)
+#if !defined(OS_WIN) && defined(TOOLKIT_VIEWS)
 #define UITestCanLaunchWithOSMesa DISABLED_UITestCanLaunchWithOSMesa
 // http://crbug.com/76217
 #endif
