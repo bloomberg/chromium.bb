@@ -71,18 +71,10 @@ class BrowserLauncher(object):
   WAIT_STEPS = 40
   SLEEP_TIME = float(WAIT_TIME) / WAIT_STEPS
 
-  def __init__(self, path, debug):
-    self.path = path
-    self.debug = debug
-    self.reader = None
-    self.ppapi_plugin = None
-    self.sel_ldr = None
-
-  def SetPPAPIPlugin(self, path):
-    self.ppapi_plugin = path
-
-  def SetSelLdr(self, path):
-    self.sel_ldr = path
+  def __init__(self, options):
+    self.options = options
+    self.profile = None
+    self.binary = None
 
   def KnownPath(self):
     raise NotImplementedError
@@ -97,8 +89,8 @@ class BrowserLauncher(object):
     raise NotImplementedError
 
   def FindBinary(self):
-    if self.path:
-      return self.path
+    if self.options.browser_path:
+      return self.options.browser_path
     else:
       path = self.KnownPath()
       if path is None or not os.path.exists(path):
@@ -152,8 +144,8 @@ class BrowserLauncher(object):
     if not os.access(browser_path, os.X_OK):
       raise LaunchFailure('Browser cannot be executed %r (Is this binary on an '
                           'NFS volume?)' % browser_path)
-    if self.sel_ldr:
-      env['NACL_SEL_LDR'] = self.sel_ldr
+    if self.options.sel_ldr:
+      env['NACL_SEL_LDR'] = self.options.sel_ldr
     print 'ENV:', ' '.join(['='.join(pair) for pair in env.iteritems()])
     print 'LAUNCHING: %s' % ' '.join(cmd)
     sys.stdout.flush()
@@ -167,7 +159,7 @@ class BrowserLauncher(object):
     self.binary = EscapeSpaces(self.FindBinary())
     self.profile = self.CreateProfile()
     cmd = self.MakeCmd(url)
-    self.Launch(cmd, MakeEnv(self.debug))
+    self.Launch(cmd, MakeEnv(self.options.debug))
 
 
 def EnsureDirectory(path):
@@ -225,11 +217,15 @@ class ChromeLauncher(BrowserLauncher):
             '--log-level=1',
             '--safebrowsing-disable-auto-update',
             '--user-data-dir=%s' % self.profile]
-    if self.ppapi_plugin is None:
+    if self.options.ppapi_plugin is None:
       cmd.append('--enable-nacl')
     else:
       cmd.append('--register-pepper-plugins=%s;application/x-nacl'
-                 % self.ppapi_plugin)
+                 % self.options.ppapi_plugin)
       cmd.append('--no-sandbox')
+    if self.options.browser_extensions:
+      for extension in self.options.browser_extensions:
+        cmd.append('--load-extension=%s' % extension)
+      cmd.append('--enable-experimental-extension-apis')
     cmd.append(url)
     return cmd

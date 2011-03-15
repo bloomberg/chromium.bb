@@ -1083,7 +1083,13 @@ def GetPPAPIPluginPath(env):
     return env.File('${STAGING_DIR}/${SHLIBPREFIX}ppNaClPlugin${SHLIBSUFFIX}')
 
 
-def PPAPIBrowserTester(env, target, url, files, log_verbosity=2, args=[]):
+def PPAPIBrowserTester(env,
+                       target,
+                       url,
+                       files,
+                       extensions=None,
+                       log_verbosity=2,
+                       args=[]):
   if 'TRUSTED_ENV' not in env:
     return []
 
@@ -1103,6 +1109,9 @@ def PPAPIBrowserTester(env, target, url, files, log_verbosity=2, args=[]):
     command.extend(['--sel_ldr', GetSelLdr(env)])
   for dep_file in files:
     command.extend(['--file', dep_file])
+  if extensions is not None:
+    for extension in extensions:
+      command.extend(['--extension', extension])
   command.extend(args)
   return env.AutoDepsCommand(target, command)
 

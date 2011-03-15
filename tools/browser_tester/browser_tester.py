@@ -1,5 +1,5 @@
 #!/usr/bin/python
-# Copyright 2010 The Native Client Authors.  All rights reserved.
+# Copyright 2011 The Native Client Authors.  All rights reserved.
 # Use of this source code is governed by a BSD-style license that can
 # be found in the LICENSE file.
 
@@ -50,6 +50,11 @@ def BuildArgParser():
   parser.add_option('--allow_404', dest='allow_404', action='store_true',
                     default=False,
                     help='Allow 404s to occur without failing the test.')
+  parser.add_option('--extension', dest='browser_extensions', action='append',
+                    type='string', default=[],
+                    help='Load the browser extensions located at the list of '
+                    'paths.  Note: this currently only works with the Chrome '
+                    'browser.')
 
   return parser
 
@@ -67,12 +72,7 @@ def Run(url, options):
   listener = browsertester.rpclistener.RPCListener(server.TestingEnded)
   server.Configure(options, listener)
 
-  browser = browsertester.browserlauncher.ChromeLauncher(options.browser_path,
-                                                         options.debug)
-  if options.ppapi_plugin is not None:
-    browser.SetPPAPIPlugin(options.ppapi_plugin)
-  if options.sel_ldr is not None:
-    browser.SetSelLdr(options.sel_ldr)
+  browser = browsertester.browserlauncher.ChromeLauncher(options)
 
   browser.Run('http://%s:%d/%s' % (host, port, url))
   server.TestingBegun(0.125)
@@ -120,8 +120,9 @@ def RunFromCommandLine():
     if not os.path.exists(root_file):
       parser.error('\'%s\' does not exist.' % root_file)
 
-  sys.exit(Run(url, options))
+  return Run(url, options)
 
 
 if __name__ == '__main__':
-  RunFromCommandLine()
+  sys.exit(RunFromCommandLine())
+
