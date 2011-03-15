@@ -47,6 +47,7 @@ class RenderWidgetHostViewViews : public RenderWidgetHostView,
   virtual void DidBecomeSelected() OVERRIDE;
   virtual void WasHidden() OVERRIDE;
   virtual void SetSize(const gfx::Size& size) OVERRIDE;
+  virtual void SetBounds(const gfx::Rect& rect) OVERRIDE;
   virtual gfx::NativeView GetNativeView() OVERRIDE;
   virtual void MovePluginWindows(
       const std::vector<webkit::npapi::WebPluginGeometry>& moves) OVERRIDE;

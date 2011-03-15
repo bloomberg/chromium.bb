@@ -360,9 +360,13 @@ void RenderWidgetHostViewViews::SetSize(const gfx::Size& size) {
   if (requested_size_.width() != width ||
       requested_size_.height() != height) {
     requested_size_ = gfx::Size(width, height);
-    SetBounds(x(), y(), width, height);
+    views::View::SetBounds(x(), y(), width, height);
     host_->WasResized();
   }
+}
+
+void RenderWidgetHostViewViews::SetBounds(const gfx::Rect& rect) {
+  NOTIMPLEMENTED();
 }
 
 void RenderWidgetHostViewViews::MovePluginWindows(
