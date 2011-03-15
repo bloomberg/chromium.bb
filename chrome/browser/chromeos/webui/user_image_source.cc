@@ -40,7 +40,10 @@ UserImageSource::~UserImageSource() {}
 void UserImageSource::StartDataRequest(const std::string& path,
                                        bool is_off_the_record,
                                        int request_id) {
-  SendResponse(request_id, new RefCountedBytes(GetUserImage(path)));
+  // Strip the query param value - we only use it as a hack to ensure our
+  // image gets reloaded instead of being pulled from the browser cache
+  std::string email = path.substr(0, path.find_first_of("?"));
+  SendResponse(request_id, new RefCountedBytes(GetUserImage(email)));
 }
 
 std::string UserImageSource::GetMimeType(const std::string&) const {

@@ -10,6 +10,8 @@
 #include "base/callback.h"
 #include "base/path_service.h"
 #include "base/stl_util-inl.h"
+#include "base/stringprintf.h"
+#include "base/time.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
 #include "build/build_config.h"
@@ -402,9 +404,17 @@ void PersonalOptionsHandler::OnPreferredDataTypesUpdated(
 
 #if defined(OS_CHROMEOS)
 void PersonalOptionsHandler::LoadAccountPicture(const ListValue* args) {
-  std::string email = chromeos::UserManager::Get()->logged_in_user().email();
+  const chromeos::UserManager::User& user =
+      chromeos::UserManager::Get()->logged_in_user();
+  std::string email = user.email();
   if (!email.empty()) {
-    StringValue image_url(chrome::kChromeUIUserImageURL + email);
+    // int64 is either long or long long, but we need a certain format specifier.
+    long long timestamp = base::TimeTicks::Now().ToInternalValue();
+    StringValue image_url(
+        StringPrintf("%s%s?id=%lld",
+                     chrome::kChromeUIUserImageURL,
+                     email.c_str(),
+                     timestamp));
     web_ui_->CallJavascriptFunction("PersonalOptions.setAccountPicture",
                                     image_url);
   }
