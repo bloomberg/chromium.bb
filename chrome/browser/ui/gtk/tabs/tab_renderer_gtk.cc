@@ -450,7 +450,7 @@ gfx::Size TabRendererGtk::GetMinimumUnselectedSize() {
 // static
 gfx::Size TabRendererGtk::GetMinimumSelectedSize() {
   gfx::Size minimum_size = GetMinimumUnselectedSize();
-  minimum_size.set_width(kLeftPadding + kFavIconSize + kRightPadding);
+  minimum_size.set_width(kLeftPadding + kFaviconSize + kRightPadding);
   return minimum_size;
 }
 
@@ -470,7 +470,7 @@ int TabRendererGtk::GetMiniWidth() {
 int TabRendererGtk::GetContentHeight() {
   // The height of the content of the Tab is the largest of the favicon,
   // the title text and the close button graphic.
-  int content_height = std::max(kFavIconSize, title_font_height_);
+  int content_height = std::max(kFaviconSize, title_font_height_);
   return std::max(content_height, close_button_height_);
 }
 
@@ -671,15 +671,15 @@ void TabRendererGtk::Layout() {
   // Size the Favicon.
   showing_icon_ = ShouldShowIcon();
   if (showing_icon_) {
-    int favicon_top = kTopPadding + (content_height - kFavIconSize) / 2;
+    int favicon_top = kTopPadding + (content_height - kFaviconSize) / 2;
     favicon_bounds_.SetRect(local_bounds.x(), favicon_top,
-                            kFavIconSize, kFavIconSize);
+                            kFaviconSize, kFaviconSize);
     if ((mini() || data_.animating_mini_change) &&
         bounds_.width() < kMiniTabRendererAsNormalTabWidth) {
       int mini_delta = kMiniTabRendererAsNormalTabWidth - GetMiniWidth();
       int ideal_delta = bounds_.width() - GetMiniWidth();
       if (ideal_delta < mini_delta) {
-        int ideal_x = (GetMiniWidth() - kFavIconSize) / 2;
+        int ideal_x = (GetMiniWidth() - kFaviconSize) / 2;
         int x = favicon_bounds_.x() + static_cast<int>(
             (1 - static_cast<float>(ideal_delta) /
              static_cast<float>(mini_delta)) *
@@ -833,7 +833,7 @@ void TabRendererGtk::PaintIcon(gfx::Canvas* canvas) {
                             crashed_fav_icon->height(),
                             favicon_bounds_.x(),
                             favicon_bounds_.y() + fav_icon_hiding_offset_,
-                            kFavIconSize, kFavIconSize,
+                            kFaviconSize, kFaviconSize,
                             true);
     } else {
       if (!data_.favicon.isNull()) {
@@ -847,9 +847,9 @@ void TabRendererGtk::PaintIcon(gfx::Canvas* canvas) {
           // larger than the standard favicon.
           int favIconHeightOffset = data_.app ? -2 : 0;
           int favIconWidthDelta = data_.app ?
-              data_.favicon.width() - kFavIconSize : 0;
+              data_.favicon.width() - kFaviconSize : 0;
           int favIconHeightDelta = data_.app ?
-              data_.favicon.height() - kFavIconSize : 0;
+              data_.favicon.height() - kFaviconSize : 0;
 
           // TODO(pkasting): Use code in tab_icon_view.cc:PaintIcon() (or switch
           // to using that class to render the favicon).
@@ -860,8 +860,8 @@ void TabRendererGtk::PaintIcon(gfx::Canvas* canvas) {
                                 favicon_bounds_.y() + favIconHeightOffset
                                     - favIconHeightDelta/2
                                     + fav_icon_hiding_offset_,
-                                kFavIconSize + favIconWidthDelta,
-                                kFavIconSize + favIconHeightDelta,
+                                kFaviconSize + favIconWidthDelta,
+                                kFaviconSize + favIconHeightDelta,
                                 true);
         }
       }
@@ -979,7 +979,7 @@ void TabRendererGtk::PaintLoadingAnimation(gfx::Canvas* canvas) {
 int TabRendererGtk::IconCapacity() const {
   if (height() < GetMinimumUnselectedSize().height())
     return 0;
-  return (width() - kLeftPadding - kRightPadding) / kFavIconSize;
+  return (width() - kLeftPadding - kRightPadding) / kFaviconSize;
 }
 
 bool TabRendererGtk::ShouldShowCloseBox() const {

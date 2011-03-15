@@ -54,7 +54,7 @@ void ExtensionIconManager::LoadIcon(const Extension* extension) {
     pending_icons_.insert(extension->id());
     image_tracker_.LoadImage(extension,
                              icon_resource,
-                             gfx::Size(kFavIconSize, kFavIconSize),
+                             gfx::Size(kFaviconSize, kFaviconSize),
                              ImageLoadingTracker::CACHE);
   }
 }
@@ -68,8 +68,8 @@ const SkBitmap& ExtensionIconManager::GetIcon(const std::string& extension_id) {
     result = &default_icon_;
   }
   DCHECK(result);
-  DCHECK_EQ(kFavIconSize + padding_.width(), result->width());
-  DCHECK_EQ(kFavIconSize + padding_.height(), result->height());
+  DCHECK_EQ(kFaviconSize + padding_.width(), result->width());
+  DCHECK_EQ(kFaviconSize + padding_.height(), result->height());
   return *result;
 }
 
@@ -106,10 +106,10 @@ void ExtensionIconManager::EnsureDefaultIcon() {
 SkBitmap ExtensionIconManager::ApplyTransforms(const SkBitmap& source) {
   SkBitmap result = source;
 
-  if (result.width() != kFavIconSize || result.height() != kFavIconSize) {
+  if (result.width() != kFaviconSize || result.height() != kFaviconSize) {
     result = skia::ImageOperations::Resize(
         result, skia::ImageOperations::RESIZE_LANCZOS3,
-        kFavIconSize, kFavIconSize);
+        kFaviconSize, kFaviconSize);
   }
 
   if (monochrome_) {

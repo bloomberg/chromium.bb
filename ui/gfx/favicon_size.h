@@ -9,7 +9,7 @@
 #include "base/compiler_specific.h"
 
 // Size (along each axis) of the favicon.
-const int kFavIconSize = 16;
+const int kFaviconSize = 16;
 
 // If the width or height is bigger than the favicon size, a new width/height
 // is calculated and returned in width/height that maintains the aspect
@@ -18,14 +18,14 @@ static void calc_favicon_target_size(int* width, int* height) ALLOW_UNUSED;
 
 // static
 void calc_favicon_target_size(int* width, int* height) {
-  if (*width > kFavIconSize || *height > kFavIconSize) {
+  if (*width > kFaviconSize || *height > kFaviconSize) {
     // Too big, resize it maintaining the aspect ratio.
     float aspect_ratio = static_cast<float>(*width) /
                          static_cast<float>(*height);
-    *height = kFavIconSize;
+    *height = kFaviconSize;
     *width = static_cast<int>(aspect_ratio * *height);
-    if (*width > kFavIconSize) {
-      *width = kFavIconSize;
+    if (*width > kFaviconSize) {
+      *width = kFaviconSize;
       *height = static_cast<int>(*width / aspect_ratio);
     }
   }

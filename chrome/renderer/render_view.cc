@@ -4042,7 +4042,7 @@ SkBitmap RenderView::ImageFromDataUrl(const GURL& url) const {
   std::string mime_type, char_set, data;
   if (net::DataURL::Parse(url, &mime_type, &char_set, &data) && !data.empty()) {
     // Decode the favicon using WebKit's image decoder.
-    webkit_glue::ImageDecoder decoder(gfx::Size(kFavIconSize, kFavIconSize));
+    webkit_glue::ImageDecoder decoder(gfx::Size(kFaviconSize, kFaviconSize));
     const unsigned char* src_data =
         reinterpret_cast<const unsigned char*>(&data[0]);
 

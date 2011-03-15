@@ -172,12 +172,12 @@ void TouchTab::PaintIcon(gfx::Canvas* canvas) {
 
   if (base::i18n::IsRTL()) {
     x = width() - x -
-        (data().favicon.isNull() ? kFavIconSize : data().favicon.width());
+        (data().favicon.isNull() ? kFaviconSize : data().favicon.width());
   }
 
   int favicon_x = x;
-  if (!data().favicon.isNull() && data().favicon.width() != kFavIconSize)
-    favicon_x += (data().favicon.width() - kFavIconSize) / 2;
+  if (!data().favicon.isNull() && data().favicon.width() != kFaviconSize)
+    favicon_x += (data().favicon.width() - kFaviconSize) / 2;
 
   if (data().network_state != TabRendererData::NETWORK_STATE_NONE) {
     ThemeProvider* tp = GetThemeProvider();

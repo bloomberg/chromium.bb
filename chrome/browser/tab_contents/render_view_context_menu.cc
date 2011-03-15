@@ -401,8 +401,8 @@ void RenderViewContextMenu::SetExtensionIcon(const std::string& extension_id) {
   DCHECK_GE(index, 0);
 
   const SkBitmap& icon = menu_manager->GetIconForExtension(extension_id);
-  DCHECK(icon.width() == kFavIconSize);
-  DCHECK(icon.height() == kFavIconSize);
+  DCHECK(icon.width() == kFaviconSize);
+  DCHECK(icon.height() == kFaviconSize);
 
   menu_model_.SetIcon(index, icon);
 }

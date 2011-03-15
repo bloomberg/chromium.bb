@@ -240,7 +240,7 @@ class ExtensionMenuManager : public NotificationObserver {
                       const ContextMenuParams& params,
                       const ExtensionMenuItem::Id& menuItemId);
 
-  // This returns a bitmap of width/height kFavIconSize, loaded either from an
+  // This returns a bitmap of width/height kFaviconSize, loaded either from an
   // entry specified in the extension's 'icon' section of the manifest, or a
   // default extension icon.
   const SkBitmap& GetIconForExtension(const std::string& extension_id);

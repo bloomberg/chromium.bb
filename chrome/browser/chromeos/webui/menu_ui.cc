@@ -64,7 +64,7 @@ std::string GetFontShorthand(const gfx::Font* font) {
   // used in webkit. Figure out the reason.
   out.append(base::IntToString(font->GetFontSize() + 4));
   out.append("px/");
-  out.append(base::IntToString(std::max(kFavIconSize, font->GetHeight())));
+  out.append(base::IntToString(std::max(kFaviconSize, font->GetHeight())));
   out.append("px \"");
   out.append(UTF16ToUTF8(font->GetFontName()));
   out.append("\",sans-serif");

@@ -418,9 +418,9 @@ void BaseTab::PaintIcon(gfx::Canvas* canvas) {
   if (bounds.IsEmpty())
     return;
 
-  // The size of bounds has to be kFavIconSize x kFavIconSize.
-  DCHECK_EQ(kFavIconSize, bounds.width());
-  DCHECK_EQ(kFavIconSize, bounds.height());
+  // The size of bounds has to be kFaviconSize x kFaviconSize.
+  DCHECK_EQ(kFaviconSize, bounds.width());
+  DCHECK_EQ(kFaviconSize, bounds.height());
 
   bounds.set_x(GetMirroredXForRect(bounds));
 

@@ -76,7 +76,7 @@ class ExtensionWebUIImageLoadingTracker : public ImageLoadingTracker::Observer {
                                       ExtensionIconSet::MATCH_EXACTLY);
 
       tracker_.LoadImage(extension_, icon_resource,
-                         gfx::Size(kFavIconSize, kFavIconSize),
+                         gfx::Size(kFaviconSize, kFaviconSize),
                          ImageLoadingTracker::DONT_CACHE);
     } else {
       ForwardResult(NULL);

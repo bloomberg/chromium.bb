@@ -143,7 +143,7 @@ gfx::Size Tab::GetMinimumUnselectedSize() {
 // static
 gfx::Size Tab::GetMinimumSelectedSize() {
   gfx::Size minimum_size = GetMinimumUnselectedSize();
-  minimum_size.set_width(kLeftPadding + kFavIconSize + kRightPadding);
+  minimum_size.set_width(kLeftPadding + kFaviconSize + kRightPadding);
   return minimum_size;
 }
 
@@ -227,7 +227,7 @@ void Tab::Layout() {
 
   // The height of the content of the Tab is the largest of the favicon,
   // the title text and the close button graphic.
-  int content_height = std::max(kFavIconSize, font_height());
+  int content_height = std::max(kFaviconSize, font_height());
   gfx::Size close_button_size(close_button()->GetPreferredSize());
   content_height = std::max(content_height, close_button_size.height());
 
@@ -235,17 +235,17 @@ void Tab::Layout() {
   showing_icon_ = ShouldShowIcon();
   if (showing_icon_) {
     // Use the size of the favicon as apps use a bigger favicon size.
-    int favicon_top = kTopPadding + content_height / 2 - kFavIconSize / 2;
+    int favicon_top = kTopPadding + content_height / 2 - kFaviconSize / 2;
     int favicon_left = lb.x();
     favicon_bounds_.SetRect(favicon_left, favicon_top,
-                            kFavIconSize, kFavIconSize);
+                            kFaviconSize, kFaviconSize);
     if (data().mini && width() < kMiniTabRendererAsNormalTabWidth) {
       // Adjust the location of the favicon when transitioning from a normal
       // tab to a mini-tab.
       int mini_delta = kMiniTabRendererAsNormalTabWidth - GetMiniWidth();
       int ideal_delta = width() - GetMiniWidth();
       if (ideal_delta < mini_delta) {
-        int ideal_x = (GetMiniWidth() - kFavIconSize) / 2;
+        int ideal_x = (GetMiniWidth() - kFaviconSize) / 2;
         int x = favicon_bounds_.x() + static_cast<int>(
             (1 - static_cast<float>(ideal_delta) /
              static_cast<float>(mini_delta)) *
@@ -607,7 +607,7 @@ SkBitmap Tab::DrawHoverGlowBitmap(int width_input, int height_input) {
 int Tab::IconCapacity() const {
   if (height() < GetMinimumUnselectedSize().height())
     return 0;
-  return (width() - kLeftPadding - kRightPadding) / kFavIconSize;
+  return (width() - kLeftPadding - kRightPadding) / kFaviconSize;
 }
 
 bool Tab::ShouldShowIcon() const {

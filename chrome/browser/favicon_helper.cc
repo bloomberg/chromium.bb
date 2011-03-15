@@ -77,7 +77,7 @@ void FaviconHelper::SetFavicon(
     const GURL& image_url,
     const SkBitmap& image) {
   const SkBitmap& sized_image =
-      (image.width() == kFavIconSize && image.height() == kFavIconSize)
+      (image.width() == kFaviconSize && image.height() == kFaviconSize)
       ? image : ConvertToFaviconSize(image);
 
   if (GetFaviconService() && ShouldSaveFavicon(url)) {
@@ -227,7 +227,7 @@ void FaviconHelper::DownloadFaviconOrAskHistory(NavigationEntry* entry) {
   DCHECK(entry);  // We should only get here if entry is valid.
   if (favicon_expired_) {
     // We have the mapping, but the favicon is out of date. Download it now.
-    ScheduleDownload(entry->url(), entry->favicon().url(), kFavIconSize, NULL);
+    ScheduleDownload(entry->url(), entry->favicon().url(), kFaviconSize, NULL);
   } else if (GetFaviconService()) {
     // We don't know the favicon, but we may have previously downloaded the
     // favicon for another page that shares the same favicon. Ask for the
@@ -274,7 +274,7 @@ void FaviconHelper::OnFaviconData(
 
   if (!know_favicon || expired) {
     // We don't know the favicon, or it is out of date. Request the current one.
-    ScheduleDownload(entry->url(), entry->favicon().url(), kFavIconSize, NULL);
+    ScheduleDownload(entry->url(), entry->favicon().url(), kFaviconSize, NULL);
   }
 }
 

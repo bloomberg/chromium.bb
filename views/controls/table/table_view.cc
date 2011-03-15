@@ -1262,7 +1262,7 @@ LRESULT TableView::OnCustomDraw(NMLVCUSTOMDRAW* draw_info) {
               // view when they are 16x16 so we get an extra pixel of padding).
               canvas.DrawBitmapInt(image, 0, 0,
                                    image.width(), image.height(),
-                                   1, 1, kFavIconSize, kFavIconSize, true);
+                                   1, 1, kFaviconSize, kFaviconSize, true);
 
               // Only paint the visible region of the icon.
               RECT to_draw = { intersection.left - icon_rect.left,

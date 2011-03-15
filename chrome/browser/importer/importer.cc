@@ -30,12 +30,12 @@ bool Importer::ReencodeFavicon(const unsigned char* src_data,
                                size_t src_len,
                                std::vector<unsigned char>* png_data) {
   // Decode the favicon using WebKit's image decoder.
-  webkit_glue::ImageDecoder decoder(gfx::Size(kFavIconSize, kFavIconSize));
+  webkit_glue::ImageDecoder decoder(gfx::Size(kFaviconSize, kFaviconSize));
   SkBitmap decoded = decoder.Decode(src_data, src_len);
   if (decoded.empty())
     return false;  // Unable to decode.
 
-  if (decoded.width() != kFavIconSize || decoded.height() != kFavIconSize) {
+  if (decoded.width() != kFaviconSize || decoded.height() != kFaviconSize) {
     // The bitmap is not the correct size, re-sample.
     int new_width = decoded.width();
     int new_height = decoded.height();
