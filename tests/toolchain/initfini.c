@@ -20,11 +20,14 @@ typedef void (*FUN_PTR) (void);
 #define MAKE_FUN(name) void name() { printf(#name "\n");}
 
 
+#if 0
+/* .ctors and .dtors are not supported in PNaCl. */
 MAKE_FUN(fun_ctor)
 ADD_FUN_PTR_TO_SEC(array_ctor[1], ".ctors", fun_ctor);
 
 MAKE_FUN(fun_dtor)
 ADD_FUN_PTR_TO_SEC(array_dtor[1], ".dtors", fun_dtor);
+#endif  /* 0 */
 
 MAKE_FUN(fun_preinit)
 ADD_FUN_PTR_TO_SEC(array_preinit[1], ".preinit_array", fun_preinit);

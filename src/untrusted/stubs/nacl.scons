@@ -53,4 +53,5 @@ tls = [env.StaticObject('tls.o', ['tls_%s.c' % platform])]
 
 crt_platform = env.StaticLibrary('crt_platform', tls + setjmp)
 
+# TODO(sehr): remove crti, crtn from the SDK.
 env.AddObjectToSdk([crt1, crti, crtn, crt_platform], is_platform=True)

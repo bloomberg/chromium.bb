@@ -96,3 +96,15 @@ __aeabi_read_tp:
     bic lr, lr, #NACL_CONTROL_FLOW_MASK
     bx lr
 
+/* ====================================================================== */
+/* BEGIN .tdata section */
+/* ====================================================================== */
+    /* ensure we have space for a tdb at the very beginning of the tls area */
+    /* NOTE: this is different from x86 where we put the tdb at the end */
+    /* See tls.c for details. */
+/* TODO(robertm): this should really be sizeof(nc_thread_descriptor_t) */
+    .set TDB_SIZE, 128
+    .section .tdata
+    .global __tdb
+__tdb:
+    .fill TDB_SIZE, 1, -1

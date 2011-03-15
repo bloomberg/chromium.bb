@@ -37,16 +37,25 @@ void *__dso_handle = 0;
 
 /* add start markers to the beginnings of .ctors, etc. */
 /* similar stop markers are added in crtend.c */
+#if !defined(__pnacl__)
+/* The pnacl toolchain places ctors directly in .init_array rather than .ctors
+ * and dtors in .fini_array rather than .dtors, so it does not need these
+ * two sections.
+ * TODO(sehr,khim): remove this when nacl-gcc follows this precedent.
+ */
 ADD_FUN_PTR_TO_SEC(__CTOR_LIST__[1], ".ctors", FUN_PTR_BEGIN_MARKER);
 ADD_FUN_PTR_TO_SEC(__DTOR_LIST__[1], ".dtors", FUN_PTR_BEGIN_MARKER);
+#endif  /* !defined(__pnacl__) */
 ADD_FUN_PTR_TO_SEC(__EH_FRAME_BEGIN__[0], ".eh_frame",);
 
 
 static void ATTR_USED __do_global_dtors_aux (void) {
+#if !defined(__pnacl__)
   FUN_PTR *fun;
   for (fun = __DTOR_LIST__ + 1; FUN_PTR_END_MARKER != *fun; ++fun) {
     (*fun)();
   }
+#endif  /* !defined(__pnacl__) */
 
 #ifdef HAVE_EH
   __deregister_frame_info (__EH_FRAME_BEGIN__);

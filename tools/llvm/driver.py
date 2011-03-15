@@ -222,12 +222,10 @@ INITIAL_ENV = {
   'BCLD_FLAGS': '${GOLD_PLUGIN_ARGS} ${LD_SEARCH_DIRS}',
 
 
-  'STDLIB_NATIVE_PREFIX': '${ROOT_%arch%}/crt1.o ${ROOT_%arch%}/crti.o ' +
-                          '${ROOT_%arch%}/crtbegin.o',
+  'STDLIB_NATIVE_PREFIX': '${ROOT_%arch%}/crt1.o',
 
   'STDLIB_NATIVE_SUFFIX': '${ROOT_%arch%}/libcrt_platform.a ' +
-                          '-L${ROOT_%arch%} -lgcc_eh -lgcc ' +
-                          '${ROOT_%arch%}/crtend.o ${ROOT_%arch%}/crtn.o',
+                          '-L${ROOT_%arch%} -lgcc_eh -lgcc ',
 
 
   'STDLIB_BC_PREFIX': '${ROOT_BC}/nacl_startup.bc',
