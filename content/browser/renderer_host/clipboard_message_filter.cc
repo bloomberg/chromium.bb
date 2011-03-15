@@ -38,7 +38,7 @@ ClipboardMessageFilter::ClipboardMessageFilter() {
 void ClipboardMessageFilter::OverrideThreadForMessage(
     const IPC::Message& message, BrowserThread::ID* thread) {
 #if defined(USE_X11)
-  if (message.type() == ViewHostMsg_ClipboardHostMsg_ReadImage::ID)
+  if (message.type() == ClipboardHostMsg_ReadImage::ID)
     *thread = BrowserThread::BACKGROUND_X11;
   else if (IPC_MESSAGE_CLASS(message) == ClipboardMsgStart)
     *thread = BrowserThread::UI;
