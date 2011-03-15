@@ -105,6 +105,7 @@ extern const char kDisableSyncAutofill[];
 extern const char kDisableSyncAutofillProfile[];
 extern const char kDisableSyncBookmarks[];
 extern const char kDisableSyncExtensions[];
+extern const char kDisableSyncPasswords[];
 extern const char kDisableSyncPreferences[];
 extern const char kDisableSyncThemes[];
 extern const char kDisableTabCloseableStateWatcher[];
@@ -331,14 +332,6 @@ extern const char kNoProcessSingletonDialog[];
 #if !defined(OS_MACOSX) && !defined(OS_CHROMEOS)
 extern const char kPasswordStore[];
 #endif
-#endif
-
-#if defined(OS_POSIX) && !defined(OS_MACOSX) && !defined(OS_CHROMEOS)
-// Linux, mostly, but also BSDs and such. Password syncing and GNOME Keyring
-// don't play together at the moment so we require explicit opt-in for it.
-extern const char kEnableSyncPasswords[];
-#else
-extern const char kDisableSyncPasswords[];
 #endif
 
 #if !defined(OS_MACOSX)

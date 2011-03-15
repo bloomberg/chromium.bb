@@ -325,13 +325,8 @@ const char kDisableSyncBookmarks[]          = "disable-sync-bookmarks";
 // Disable syncing of extensions.
 const char kDisableSyncExtensions[]         = "disable-sync-extensions";
 
-#if defined(OS_POSIX) && !defined(OS_MACOSX) && !defined(OS_CHROMEOS)
-// Enable syncing browser passwords.
-const char kEnableSyncPasswords[]           = "enable-sync-passwords";
-#else
 // Disable syncing browser passwords.
 const char kDisableSyncPasswords[]          = "disable-sync-passwords";
-#endif
 
 // Disable syncing of preferences.
 const char kDisableSyncPreferences[]        = "disable-sync-preferences";

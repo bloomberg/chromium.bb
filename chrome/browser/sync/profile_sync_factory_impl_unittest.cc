@@ -42,11 +42,7 @@ class ProfileSyncFactoryImplTest : public testing::Test {
     datatypes.push_back(syncable::EXTENSIONS);
     datatypes.push_back(syncable::APPS);
     datatypes.push_back(syncable::AUTOFILL_PROFILE);
-// TODO(mdm): re-enable this test on Linux/BSD/etc. once we make password sync
-// compatible with GNOME Keyring.
-#if !defined(OS_POSIX) || defined(OS_MACOSX) || defined(OS_CHROMEOS)
     datatypes.push_back(syncable::PASSWORDS);
-#endif
     return datatypes;
   }
 
@@ -137,11 +133,7 @@ TEST_F(ProfileSyncFactoryImplTest, CreatePSSDisableAutofillProfile) {
                          syncable::AUTOFILL_PROFILE);
 }
 
-// TODO(mdm): re-enable this test on Linux/BSD/etc. once we make password sync
-// compatible with GNOME Keyring.
-#if !defined(OS_POSIX) || defined(OS_MACOSX) || defined(OS_CHROMEOS)
 TEST_F(ProfileSyncFactoryImplTest, CreatePSSDisablePasswords) {
   TestSwitchDisablesType(switches::kDisableSyncPasswords,
                          syncable::PASSWORDS);
 }
-#endif

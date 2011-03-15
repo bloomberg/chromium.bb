@@ -183,9 +183,6 @@ void LiveSyncTest::SetUpCommandLine(CommandLine* cl) {
   // See http://code.google.com/p/chromium/wiki/LinuxPasswordStorage.
   if (!cl->HasSwitch(switches::kPasswordStore))
     cl->AppendSwitchASCII(switches::kPasswordStore, "basic");
-  // TODO(mdm): Remove this once password sync is enabled on Linux.
-  if (!cl->HasSwitch(switches::kEnableSyncPasswords))
-    cl->AppendSwitch(switches::kEnableSyncPasswords);
 #endif
 }
 
