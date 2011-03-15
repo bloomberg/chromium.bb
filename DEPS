@@ -249,7 +249,7 @@ deps_os = {
 
     # Dependencies used by libjpeg-turbo
     "src/third_party/yasm/binaries":
-      "/trunk/deps/third_party/yasm/binaries@66803",
+      "/trunk/deps/third_party/yasm/binaries@74228",
   },
   "mac": {
     "src/chrome/tools/test/reference_build/chrome_mac":
