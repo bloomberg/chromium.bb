@@ -18,7 +18,6 @@
       'dependencies': [
         'gfx',
         'gfx_resources',
-        '../../app/app.gyp:app_base',
         '../../base/base.gyp:test_support_base',
         '../../skia/skia.gyp:skia',
         '../../testing/gtest.gyp:gtest',
@@ -69,6 +68,7 @@
         }],
         ['OS=="linux" or OS=="freebsd" or OS=="openbsd"', {
           'dependencies': [
+            '../../app/app.gyp:app_base',
             '../../build/linux/system.gyp:gtk',
           ],
         }],

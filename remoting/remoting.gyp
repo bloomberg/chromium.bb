@@ -509,7 +509,6 @@
         'chromoting_host',
         'chromoting_jingle_glue',
         'chromoting_protocol',
-        '../app/app.gyp:app_base',
         '../base/base.gyp:base',
         '../base/base.gyp:base_i18n',
         '../base/base.gyp:test_support_base',
@@ -576,6 +575,7 @@
         }],
         ['OS=="linux"', {
           'dependencies': [
+            '../app/app.gyp:app_base',
             # Needed for the following #include chain:
             #   base/run_all_unittests.cc
             #   ../base/test_suite.h
