@@ -26,9 +26,8 @@ class PrefService;
 
 #if defined(OS_CHROMEOS)
 namespace chromeos {
-class EnterpriseExtensionObserver;
-class LocaleChangeGuard;
 class Preferences;
+class LocaleChangeGuard;
 }
 #endif
 
@@ -140,6 +139,7 @@ class ProfileImpl : public Profile,
 #if defined(OS_CHROMEOS)
   virtual void ChangeAppLocale(const std::string& locale, AppLocaleChangedVia);
   virtual void OnLogin();
+  virtual chromeos::ProxyConfigServiceImpl* GetChromeOSProxyConfigServiceImpl();
   virtual void SetupChromeOSEnterpriseExtensionObserver();
   virtual void InitChromeOSPreferences();
 #endif  // defined(OS_CHROMEOS)
@@ -302,6 +302,9 @@ class ProfileImpl : public Profile,
 
 #if defined(OS_CHROMEOS)
   scoped_ptr<chromeos::Preferences> chromeos_preferences_;
+
+  scoped_refptr<chromeos::ProxyConfigServiceImpl>
+      chromeos_proxy_config_service_impl_;
 
   scoped_ptr<chromeos::EnterpriseExtensionObserver>
       chromeos_enterprise_extension_observer_;

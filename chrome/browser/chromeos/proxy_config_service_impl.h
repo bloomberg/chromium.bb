@@ -39,9 +39,9 @@ class ProxyConfigServiceImpl
       public SignedSettings::Delegate<std::string> {
  public:
   // ProxyConfigServiceImpl is created on the UI thread in
-  // chrome/browser/net/proxy_service_factory.cc::CreateProxyConfigService
-  // via BrowserProcess::chromeos_proxy_config_service_impl, and stored in
-  // g_browser_process as a scoped_refptr (because it's RefCountedThreadSafe).
+  // chrome/browser/net/chrome_url_request_context.cc::CreateProxyConfigService
+  // via ProfileImpl::GetChromeOSProxyConfigServiceImpl, and stored in Profile
+  // as a scoped_refptr (because it's RefCountedThreadSafe).
   //
   // Past that point, it can be accessed from the IO or UI threads.
   //
@@ -50,7 +50,7 @@ class ProxyConfigServiceImpl
   // (GetLatestProxyConfig, AddObserver, RemoveObserver).
   //
   // From the UI thread, it is accessed via
-  // BrowserProcess::chromeos_proxy_config_service_impl to allow user to read
+  // WebUI::GetProfile::GetChromeOSProxyConfigServiceImpl to allow user to read
   // or modify the proxy configuration via UIGetProxyConfig or
   // UISetProxyConfigTo* respectively.
   // The new modified proxy config is posted to the IO thread through

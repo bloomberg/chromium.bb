@@ -1348,8 +1348,6 @@
         'browser/net/predictor_api.h',
         'browser/net/pref_proxy_config_service.cc',
         'browser/net/pref_proxy_config_service.h',
-        'browser/net/proxy_service_factory.cc',
-        'browser/net/proxy_service_factory.h',
         'browser/net/quoted_printable.cc',
         'browser/net/quoted_printable.h',
         'browser/net/referrer.cc',

@@ -15,7 +15,6 @@
 #include <vector>
 
 #include "base/basictypes.h"
-#include "base/ref_counted.h"
 #include "ipc/ipc_message.h"
 
 class AutomationProviderList;
@@ -41,19 +40,12 @@ class ResourceDispatcherHost;
 class SidebarManager;
 class TabCloseableStateWatcher;
 class ThumbnailGenerator;
-class URLRequestContextGetter;
 class WatchDogThread;
 
 namespace base {
 class Thread;
 class WaitableEvent;
 }
-
-#if defined(OS_CHROMEOS)
-namespace chromeos {
-class ProxyConfigServiceImpl;
-}
-#endif  // defined(OS_CHROMEOS)
 
 namespace printing {
 class PrintJobManager;
@@ -90,14 +82,6 @@ class BrowserProcess {
   virtual DevToolsManager* devtools_manager() = 0;
   virtual SidebarManager* sidebar_manager() = 0;
   virtual ui::Clipboard* clipboard() = 0;
-  virtual URLRequestContextGetter* system_request_context() = 0;
-
-#if defined(OS_CHROMEOS)
-  // Returns ChromeOS's ProxyConfigServiceImpl, creating if not yet created.
-  virtual chromeos::ProxyConfigServiceImpl*
-      chromeos_proxy_config_service_impl() = 0;
-#endif  // defined(OS_CHROMEOS)
-
   virtual ExtensionEventRouterForwarder*
       extension_event_router_forwarder() = 0;
 

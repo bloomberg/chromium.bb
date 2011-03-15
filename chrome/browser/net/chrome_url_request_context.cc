@@ -25,6 +25,12 @@
 #include "net/ocsp/nss_ocsp.h"
 #endif
 
+#if defined(OS_CHROMEOS)
+#include "chrome/browser/chromeos/cros/cros_library.h"
+#include "chrome/browser/chromeos/cros/libcros_service_library.h"
+#include "chrome/browser/chromeos/proxy_config_service.h"
+#endif  // defined(OS_CHROMEOS)
+
 class ChromeURLRequestContextFactory {
  public:
   ChromeURLRequestContextFactory() {}

@@ -80,13 +80,6 @@ class TestingBrowserProcess : public BrowserProcess {
   virtual safe_browsing::ClientSideDetectionService*
       safe_browsing_detection_service();
 
-  virtual URLRequestContextGetter* system_request_context();
-
-#if defined(OS_CHROMEOS)
-  virtual chromeos::ProxyConfigServiceImpl*
-      chromeos_proxy_config_service_impl();
-#endif  // defined(OS_CHROMEOS)
-
   virtual ui::Clipboard* clipboard();
 
   virtual ExtensionEventRouterForwarder* extension_event_router_forwarder();

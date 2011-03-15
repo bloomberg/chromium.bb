@@ -7,7 +7,8 @@
 #include "base/command_line.h"
 #include "base/string_util.h"
 #include "chrome/browser/browser_list.h"
-#include "chrome/browser/browser_process.h"
+#include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/common/chrome_switches.h"
 
 namespace chromeos {
@@ -291,7 +292,12 @@ bool ProxyCrosSettingsProvider::HandlesSetting(const std::string& path) {
 
 chromeos::ProxyConfigServiceImpl*
     ProxyCrosSettingsProvider::GetConfigService() const {
-  return g_browser_process->chromeos_proxy_config_service_impl();
+  Browser* browser = BrowserList::GetLastActive();
+  // browser is NULL at OOBE/login stage.
+  Profile* profile = browser ?
+      browser->profile() :
+      ProfileManager::GetDefaultProfile();
+  return profile->GetChromeOSProxyConfigServiceImpl();
 }
 
 void ProxyCrosSettingsProvider::AppendPortIfValid(

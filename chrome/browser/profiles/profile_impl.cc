@@ -113,6 +113,7 @@
 #include "chrome/browser/password_manager/password_store_mac.h"
 #elif defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/enterprise_extension_observer.h"
+#include "chrome/browser/chromeos/proxy_config_service_impl.h"
 #elif defined(OS_POSIX) && !defined(OS_CHROMEOS)
 #include "base/nix/xdg_util.h"
 #if defined(USE_GNOME_KEYRING)
@@ -1504,6 +1505,15 @@ void ProfileImpl::ChangeAppLocale(
 
 void ProfileImpl::OnLogin() {
   locale_change_guard_.reset(new chromeos::LocaleChangeGuard(this));
+}
+
+chromeos::ProxyConfigServiceImpl*
+    ProfileImpl::GetChromeOSProxyConfigServiceImpl() {
+  if (!chromeos_proxy_config_service_impl_) {
+    chromeos_proxy_config_service_impl_ =
+        new chromeos::ProxyConfigServiceImpl();
+  }
+  return chromeos_proxy_config_service_impl_;
 }
 
 void ProfileImpl::SetupChromeOSEnterpriseExtensionObserver() {

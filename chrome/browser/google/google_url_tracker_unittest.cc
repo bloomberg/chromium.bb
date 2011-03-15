@@ -8,6 +8,7 @@
 #include "base/message_loop.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/prefs/browser_prefs.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/tab_contents/confirm_infobar_delegate.h"
 #include "chrome/common/net/test_url_fetcher_factory.h"
 #include "chrome/common/net/url_fetcher.h"
@@ -15,6 +16,7 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/test/testing_browser_process.h"
 #include "chrome/test/testing_pref_service.h"
+#include "chrome/test/testing_profile.h"
 #include "content/browser/browser_thread.h"
 #include "content/common/notification_service.h"
 #include "net/url_request/url_request.h"
@@ -108,6 +110,7 @@ class GoogleURLTrackerTest : public testing::Test {
   virtual void SetUp();
   virtual void TearDown();
 
+  void CreateRequestContext();
   TestURLFetcher* GetFetcherByID(int expected_id);
   void MockSearchDomainCheckResponse(int expected_id,
                                      const std::string& domain);
@@ -134,24 +137,31 @@ class GoogleURLTrackerTest : public testing::Test {
   BrowserThread* io_thread_;
   scoped_ptr<net::NetworkChangeNotifier> network_change_notifier_;
   TestingPrefService local_state_;
+  scoped_ptr<TestingProfile> testing_profile_;
 
   TestURLFetcherFactory fetcher_factory_;
   NotificationRegistrar registrar_;
+
+  URLRequestContextGetter* original_default_request_context_;
 };
 
 GoogleURLTrackerTest::GoogleURLTrackerTest()
     : observer_(new TestNotificationObserver),
       message_loop_(NULL),
-      io_thread_(NULL) {
+      io_thread_(NULL),
+      original_default_request_context_(NULL) {
 }
 
 GoogleURLTrackerTest::~GoogleURLTrackerTest() {
 }
 
 void GoogleURLTrackerTest::SetUp() {
+  original_default_request_context_ = Profile::GetDefaultRequestContext();
+  Profile::set_default_request_context(NULL);
   message_loop_ = new MessageLoop(MessageLoop::TYPE_IO);
   io_thread_ = new BrowserThread(BrowserThread::IO, message_loop_);
   network_change_notifier_.reset(net::NetworkChangeNotifier::CreateMock());
+  testing_profile_.reset(new TestingProfile);
   browser::RegisterLocalState(&local_state_);
   TestingBrowserProcess* testing_browser_process =
       static_cast<TestingBrowserProcess*>(g_browser_process);
@@ -172,9 +182,20 @@ void GoogleURLTrackerTest::TearDown() {
       static_cast<TestingBrowserProcess*>(g_browser_process);
   testing_browser_process->SetGoogleURLTracker(NULL);
   testing_browser_process->SetPrefService(NULL);
+  testing_profile_.reset();
   network_change_notifier_.reset();
   delete io_thread_;
   delete message_loop_;
+  Profile::set_default_request_context(original_default_request_context_);
+  original_default_request_context_ = NULL;
+}
+
+void GoogleURLTrackerTest::CreateRequestContext() {
+  testing_profile_->CreateRequestContext();
+  Profile::set_default_request_context(testing_profile_->GetRequestContext());
+  NotificationService::current()->Notify(
+      NotificationType::DEFAULT_REQUEST_CONTEXT_AVAILABLE,
+      NotificationService::AllSources(), NotificationService::NoDetails());
 }
 
 TestURLFetcher* GoogleURLTrackerTest::GetFetcherByID(int expected_id) {
@@ -295,6 +316,7 @@ void GoogleURLTrackerTest::ExpectDefaultURLs() {
 // Tests ----------------------------------------------------------------------
 
 TEST_F(GoogleURLTrackerTest, DontFetchWhenNoOneRequestsCheck) {
+  CreateRequestContext();
   ExpectDefaultURLs();
   FinishSleep();
   // No one called RequestServerCheck() so nothing should have happened.
@@ -304,6 +326,7 @@ TEST_F(GoogleURLTrackerTest, DontFetchWhenNoOneRequestsCheck) {
 }
 
 TEST_F(GoogleURLTrackerTest, UpdateOnFirstRun) {
+  CreateRequestContext();
   RequestServerCheck();
   EXPECT_FALSE(GetFetcherByID(0));
   ExpectDefaultURLs();
@@ -318,6 +341,7 @@ TEST_F(GoogleURLTrackerTest, UpdateOnFirstRun) {
 }
 
 TEST_F(GoogleURLTrackerTest, DontUpdateWhenUnchanged) {
+  CreateRequestContext();
   SetLastPromptedGoogleURL(GURL("http://www.google.co.uk/"));
 
   RequestServerCheck();
@@ -336,6 +360,7 @@ TEST_F(GoogleURLTrackerTest, DontUpdateWhenUnchanged) {
 }
 
 TEST_F(GoogleURLTrackerTest, UpdatePromptedURLOnReturnToPreviousLocation) {
+  CreateRequestContext();
   SetLastPromptedGoogleURL(GURL("http://www.google.co.jp/"));
   SetGoogleURL(GURL("http://www.google.co.uk/"));
   RequestServerCheck();
@@ -348,6 +373,7 @@ TEST_F(GoogleURLTrackerTest, UpdatePromptedURLOnReturnToPreviousLocation) {
 }
 
 TEST_F(GoogleURLTrackerTest, RefetchOnIPAddressChange) {
+  CreateRequestContext();
   RequestServerCheck();
   FinishSleep();
   MockSearchDomainCheckResponse(0, ".google.co.uk");
@@ -365,6 +391,7 @@ TEST_F(GoogleURLTrackerTest, RefetchOnIPAddressChange) {
 }
 
 TEST_F(GoogleURLTrackerTest, DontRefetchWhenNoOneRequestsCheck) {
+  CreateRequestContext();
   FinishSleep();
   NotifyIPAddressChanged();
   // No one called RequestServerCheck() so nothing should have happened.
@@ -374,6 +401,7 @@ TEST_F(GoogleURLTrackerTest, DontRefetchWhenNoOneRequestsCheck) {
 }
 
 TEST_F(GoogleURLTrackerTest, FetchOnLateRequest) {
+  CreateRequestContext();
   FinishSleep();
   NotifyIPAddressChanged();
 
@@ -387,6 +415,7 @@ TEST_F(GoogleURLTrackerTest, FetchOnLateRequest) {
 }
 
 TEST_F(GoogleURLTrackerTest, SearchingDoesNothingIfNoNeedToPrompt) {
+  CreateRequestContext();
   RequestServerCheck();
   FinishSleep();
   MockSearchDomainCheckResponse(0, ".google.co.uk");
@@ -406,6 +435,7 @@ TEST_F(GoogleURLTrackerTest, SearchingDoesNothingIfNoNeedToPrompt) {
 }
 
 TEST_F(GoogleURLTrackerTest, InfobarClosed) {
+  CreateRequestContext();
   SetLastPromptedGoogleURL(GURL("http://www.google.co.uk/"));
   RequestServerCheck();
   FinishSleep();
@@ -424,6 +454,7 @@ TEST_F(GoogleURLTrackerTest, InfobarClosed) {
 }
 
 TEST_F(GoogleURLTrackerTest, InfobarRefused) {
+  CreateRequestContext();
   SetLastPromptedGoogleURL(GURL("http://www.google.co.uk/"));
   RequestServerCheck();
   FinishSleep();
@@ -443,6 +474,7 @@ TEST_F(GoogleURLTrackerTest, InfobarRefused) {
 }
 
 TEST_F(GoogleURLTrackerTest, InfobarAccepted) {
+  CreateRequestContext();
   SetLastPromptedGoogleURL(GURL("http://www.google.co.uk/"));
   RequestServerCheck();
   FinishSleep();

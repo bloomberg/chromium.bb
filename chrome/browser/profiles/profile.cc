@@ -596,6 +596,11 @@ class OffTheRecordProfileImpl : public Profile,
   }
 
 #if defined(OS_CHROMEOS)
+  virtual chromeos::ProxyConfigServiceImpl*
+      GetChromeOSProxyConfigServiceImpl() {
+    return profile_->GetChromeOSProxyConfigServiceImpl();
+  }
+
   virtual void SetupChromeOSEnterpriseExtensionObserver() {
     profile_->SetupChromeOSEnterpriseExtensionObserver();
   }

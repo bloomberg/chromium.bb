@@ -12,9 +12,9 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/prefs/pref_service.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search_engines/template_url.h"
 #include "chrome/common/chrome_switches.h"
-#include "chrome/common/net/url_request_context_getter.h"
 #include "chrome/common/pref_names.h"
 #include "content/browser/tab_contents/navigation_controller.h"
 #include "content/browser/tab_contents/tab_contents.h"
@@ -98,9 +98,13 @@ GoogleURLTracker::GoogleURLTracker()
       in_startup_sleep_(true),
       already_fetched_(false),
       need_to_fetch_(false),
+      request_context_available_(!!Profile::GetDefaultRequestContext()),
       need_to_prompt_(false),
       controller_(NULL),
       infobar_(NULL) {
+  registrar_.Add(this, NotificationType::DEFAULT_REQUEST_CONTEXT_AVAILABLE,
+                 NotificationService::AllSources());
+
   net::NetworkChangeNotifier::AddIPAddressObserver(this);
 
   MessageLoop::current()->PostTask(FROM_HERE,
@@ -177,7 +181,8 @@ void GoogleURLTracker::StartFetchIfDesirable() {
   //
   // See comments in header on the class, on RequestServerCheck(), and on the
   // various members here for more detail on exactly what the conditions are.
-  if (in_startup_sleep_ || already_fetched_ || !need_to_fetch_)
+  if (in_startup_sleep_ || already_fetched_ || !need_to_fetch_ ||
+      !request_context_available_)
     return;
 
   if (CommandLine::ForCurrentProcess()->HasSwitch(
@@ -188,12 +193,12 @@ void GoogleURLTracker::StartFetchIfDesirable() {
   fetcher_.reset(URLFetcher::Create(fetcher_id_, GURL(kSearchDomainCheckURL),
                                     URLFetcher::GET, this));
   ++fetcher_id_;
-  // We don't want this fetch to affect existing state in local_state.  For
+  // We don't want this fetch to affect existing state in the profile.  For
   // example, if a user has no Google cookies, this automatic check should not
   // cause one to be set, lest we alarm the user.
   fetcher_->set_load_flags(net::LOAD_DISABLE_CACHE |
                            net::LOAD_DO_NOT_SAVE_COOKIES);
-  fetcher_->set_request_context(g_browser_process->system_request_context());
+  fetcher_->set_request_context(Profile::GetDefaultRequestContext());
 
   // Configure to max_retries at most kMaxRetries times for 5xx errors.
   static const int kMaxRetries = 5;
@@ -293,6 +298,14 @@ void GoogleURLTracker::Observe(NotificationType type,
                                const NotificationSource& source,
                                const NotificationDetails& details) {
   switch (type.value) {
+    case NotificationType::DEFAULT_REQUEST_CONTEXT_AVAILABLE:
+      registrar_.Remove(this,
+                        NotificationType::DEFAULT_REQUEST_CONTEXT_AVAILABLE,
+                        NotificationService::AllSources());
+      request_context_available_ = true;
+      StartFetchIfDesirable();
+      break;
+
     case NotificationType::NAV_ENTRY_PENDING: {
       NavigationController* controller =
           Source<NavigationController>(source).ptr();
