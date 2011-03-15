@@ -131,6 +131,7 @@ INITIAL_ENV = {
 
   'SEL_UNIVERSAL_X8632' : '${SCONS_STAGING_X8632}/sel_universal',
   'SEL_UNIVERSAL_X8664' : '${SCONS_STAGING_X8664}/sel_universal',
+  'SEL_UNIVERSAL_FLAGS' : '--abort_on_error',
 
   'SEL_LDR_X8632' : '${SCONS_STAGING_X8632}/sel_ldr',
   'SEL_LDR_X8664' : '${SCONS_STAGING_X8664}/sel_ldr',
@@ -1666,7 +1667,8 @@ def RunLLCSRPC():
   flags = shell.split(env.get("LLC_FLAGS"))
   script = MakeSelUniversalScriptForLLC(infile, outfile, flags)
 
-  RunWithLog('"${SEL_UNIVERSAL_%arch%}" -- "${LLC_SRPC_%arch%}"',
+  RunWithLog('"${SEL_UNIVERSAL_%arch%}" ${SEL_UNIVERSAL_FLAGS} ' +
+             '-- "${LLC_SRPC_%arch%}"',
              stdin=script, silent = True)
 
 
@@ -1707,36 +1709,56 @@ def LinkerFiles(args):
       ret.append(f)
   return ret
 
-def MakeSelUniversalScriptForLD(main_input, files, outfile):
+def MakeSelUniversalScriptForFile(filename):
+  """ Return sel_universal script text for sending a commandline argument
+      representing an input file to LD.nexe. """
+  script = []
+  basename = os.path.basename(filename)
+  # A nice name for making a sel_universal variable.
+  # Hopefully this does not clash...
+  nicename = basename.replace('.','_').replace('-','_')
+  script.append('echo "adding %s"' % basename)
+  script.append('readonly_file %s %s' % (nicename, filename))
+  script.append('rpc AddFile s("%s") h(%s) *' % (basename, nicename))
+  script.append('rpc AddArg s("%s") *' % basename)
+  return script
+
+def MakeSelUniversalScriptForLD(ld_flags, ld_script, main_input, files, outfile):
+  """ Return sel_universal script text for invoking LD.nexe with the
+      given ld_flags, main_input (which is treated specially), and
+      other input files. If ld_script is part of the ld_flags, it must be
+      treated it as input file. The output will be written to outfile.  """
   script = []
 
-  # Provide every file that the linker will expect to open.
-  main_basename = os.path.basename(main_input)
-  for f in files:
-    basename = os.path.basename(f)
-    nicename = basename.replace('.','_').replace('-','_')
-
-    # The "main" input file is passed via a memory map
-    # instead of AddFile. Skip it here.
-    if basename == main_basename:
-      continue
-    script.append('echo "adding %s"' % (basename,))
-    script.append('readonly_file %s %s' % (nicename, f))
-    script.append('rpc AddFile s("%s") h(%s) *' % (basename, nicename))
+  # Go through all the arguments and add them.
+  # Based on the format of RUN_LD, the order of arguments is:
+  # ld_flags, then input files (which are more sensitive to order).
+  # Omit the "-o" for output so that it will use "a.out" internally.
+  # We will take the fd from "a.out" and write it to the proper -o filename.
+  for flag in ld_flags:
+    if flag == ld_script:
+      # Virtualize the file.
+      script += MakeSelUniversalScriptForFile(ld_script)
+    else:
+      script.append('rpc AddArg s("%s") *' % flag)
     script.append('')
 
-  ld_script = env.eval("${LD_SCRIPT_%arch%}")
-  script.append('echo "adding ld_script"')
-  script.append('readonly_file ld_script %s' % ld_script)
-  script.append('rpc AddFile s("ld_script") h(ld_script) *')
-  script.append('')
+  # We need to virtualize these files.
+  for f in files:
+    if f == main_input:
+      # Reload the temporary main_input object file into a new shmem region.
+      basename = os.path.basename(f)
+      script.append('file_size %s in_size' % f)
+      script.append('shmem in_file in_addr ${in_size}')
+      script.append('load_from_file %s ${in_addr} 0 ${in_size}' % f)
+      script.append('rpc AddFileWithSize s("%s") h(in_file) i(${in_size}) *' %
+                    basename)
+      script.append('rpc AddArg s("%s") *' % basename)
+    else:
+      script += MakeSelUniversalScriptForFile(f)
+    script.append('')
 
-  # Reload the temporary object file into a new shmem region
-  script.append('file_size %s in_size' % main_input)
-  script.append('shmem in_file in_addr ${in_size}')
-  script.append('load_from_file %s ${in_addr} 0 ${in_size}' % main_input)
-  script.append('')
-  script.append('rpc Link h(in_file) i(${in_size}) * h() i()')
+  script.append('rpc Link * h() i()')
   script.append('set_variable out_file ${result0}')
   script.append('set_variable out_size ${result1}')
   script.append('map_shmem ${out_file} out_addr')
@@ -1748,16 +1770,22 @@ def MakeSelUniversalScriptForLD(main_input, files, outfile):
 def RunLDSRPC():
   CheckPresenceSelUniversal()
   # The "main" input file is the application's combined object file.
-  main_input = env.get("inputs")
-  all_inputs = env.get("LD_INPUTS")
-  outfile = env.get("output")
+  main_input = env.get('inputs')
+  all_inputs = env.get('LD_INPUTS')
+  outfile = env.get('output')
 
   assert(len(shell.split(main_input)) == 1)
   files = LinkerFiles(shell.split(all_inputs))
+  ld_flags = shell.split(env.get('LD_FLAGS') + ' ' + env.get('LD_BFD_FLAGS'))
+  ld_script = env.eval('${LD_SCRIPT_%arch%}')
 
-  script = MakeSelUniversalScriptForLD(main_input, files, outfile)
+  script = MakeSelUniversalScriptForLD(ld_flags,
+                                       ld_script,
+                                       main_input,
+                                       files,
+                                       outfile)
 
-  RunWithLog('"${SEL_UNIVERSAL_%arch%}" -- ' +
+  RunWithLog('"${SEL_UNIVERSAL_%arch%}" ${SEL_UNIVERSAL_FLAGS} -- ' +
              '"${LD_SRPC_%arch%}"', stdin=script, silent = True)
 
 
