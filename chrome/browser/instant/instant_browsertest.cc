@@ -5,6 +5,7 @@
 #include "base/command_line.h"
 #include "base/stringprintf.h"
 #include "base/utf_string_conversions.h"
+#include "chrome/browser/autocomplete/autocomplete_edit.h"
 #include "chrome/browser/autocomplete/autocomplete_edit_view.h"
 #include "chrome/browser/browser_list.h"
 #include "chrome/browser/browser_window.h"
@@ -689,4 +690,38 @@ IN_PROC_BROWSER_TEST_F(InstantTest, ShowAboutCrash) {
 
   // If we get here it means the preview was shown. If we time out, it means the
   // preview was never shown.
+}
+
+IN_PROC_BROWSER_TEST_F(InstantTest, InstantCompleteNever) {
+  ASSERT_TRUE(test_server()->Start());
+  EnableInstant();
+  ASSERT_NO_FATAL_FAILURE(SetupInstantProvider("search.html"));
+  ASSERT_NO_FATAL_FAILURE(SetupLocationBar());
+  ASSERT_NO_FATAL_FAILURE(SetupPreview());
+
+  SetSuggestionsJavascriptArgument(
+      preview_,
+      "{suggestions:[{value:'defghij'}],complete_behavior:'never'}");
+  ASSERT_NO_FATAL_FAILURE(SetLocationBarText("def"));
+  EXPECT_STR_EQ("defghij", GetSuggestion());
+  AutocompleteEditModel* edit_model = location_bar_->location_entry()->model();
+  EXPECT_EQ(INSTANT_COMPLETE_NEVER, edit_model->instant_complete_behavior());
+  ASSERT_EQ(ASCIIToUTF16("def"), location_bar_->location_entry()->GetText());
+}
+
+IN_PROC_BROWSER_TEST_F(InstantTest, InstantCompleteDelayed) {
+  ASSERT_TRUE(test_server()->Start());
+  EnableInstant();
+  ASSERT_NO_FATAL_FAILURE(SetupInstantProvider("search.html"));
+  ASSERT_NO_FATAL_FAILURE(SetupLocationBar());
+  ASSERT_NO_FATAL_FAILURE(SetupPreview());
+
+  SetSuggestionsJavascriptArgument(
+      preview_,
+      "{suggestions:[{value:'defghij'}],complete_behavior:'delayed'}");
+  ASSERT_NO_FATAL_FAILURE(SetLocationBarText("def"));
+  EXPECT_STR_EQ("defghij", GetSuggestion());
+  AutocompleteEditModel* edit_model = location_bar_->location_entry()->model();
+  EXPECT_EQ(INSTANT_COMPLETE_DELAYED, edit_model->instant_complete_behavior());
+  ASSERT_EQ(ASCIIToUTF16("def"), location_bar_->location_entry()->GetText());
 }

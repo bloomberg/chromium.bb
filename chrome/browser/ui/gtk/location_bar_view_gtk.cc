@@ -583,8 +583,9 @@ void LocationBarViewGtk::ShowFirstRunBubble(FirstRun::BubbleType bubble_type) {
   MessageLoop::current()->PostTask(FROM_HERE, task);
 }
 
-void LocationBarViewGtk::SetSuggestedText(const string16& text) {
-  location_entry_->model()->SetSuggestedText(text);
+void LocationBarViewGtk::SetSuggestedText(const string16& text,
+                                          InstantCompleteBehavior behavior) {
+  location_entry_->model()->SetSuggestedText(text, behavior);
 }
 
 std::wstring LocationBarViewGtk::GetInputString() const {

@@ -389,15 +389,40 @@ gfx::Point LocationBarView::GetLocationEntryOrigin() const {
   return origin;
 }
 
-string16 LocationBarView::GetInstantSuggestion() const {
 #if defined(OS_WIN)
-  return HasValidSuggestText() ? suggested_text_view_->GetText() : string16();
-#else
-  // On linux the edit shows the suggested text.
-  NOTREACHED();
-  return string16();
-#endif
+void LocationBarView::SetInstantSuggestion(const string16& text,
+                                           bool animate_to_complete) {
+  // Don't show the suggested text if inline autocomplete is prevented.
+  if (!text.empty()) {
+    if (!suggested_text_view_) {
+      suggested_text_view_ = new SuggestedTextView(location_entry_->model());
+      suggested_text_view_->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
+      suggested_text_view_->SetColor(
+          GetColor(ToolbarModel::NONE,
+                   LocationBarView::DEEMPHASIZED_TEXT));
+      suggested_text_view_->SetText(UTF16ToWide(text));
+      suggested_text_view_->SetFont(location_entry_->GetFont());
+      AddChildView(suggested_text_view_);
+    } else if (suggested_text_view_->GetText() != UTF16ToWide(text)) {
+      suggested_text_view_->SetText(UTF16ToWide(text));
+    }
+    if (animate_to_complete && !location_entry_->IsImeComposing())
+      suggested_text_view_->StartAnimation();
+  } else if (suggested_text_view_) {
+    delete suggested_text_view_;
+    suggested_text_view_ = NULL;
+  } else {
+    return;
+  }
+
+  Layout();
+  SchedulePaint();
 }
+
+string16 LocationBarView::GetInstantSuggestion() const {
+  return HasValidSuggestText() ? suggested_text_view_->GetText() : string16();
+}
+#endif
 
 gfx::Size LocationBarView::GetPreferredSize() {
   return gfx::Size(0, GetThemeProvider()->GetBitmapNamed(mode_ == POPUP ?
@@ -1057,8 +1082,9 @@ void LocationBarView::ShowFirstRunBubble(FirstRun::BubbleType bubble_type) {
   ShowFirstRunBubbleInternal(bubble_type);
 }
 
-void LocationBarView::SetSuggestedText(const string16& text) {
-  location_entry_->model()->SetSuggestedText(text);
+void LocationBarView::SetSuggestedText(const string16& text,
+                                       InstantCompleteBehavior behavior) {
+  location_entry_->model()->SetSuggestedText(text, behavior);
 }
 
 std::wstring LocationBarView::GetInputString() const {

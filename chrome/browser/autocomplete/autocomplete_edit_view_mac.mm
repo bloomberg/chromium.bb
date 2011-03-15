@@ -604,7 +604,7 @@ void AutocompleteEditViewMac::OnStartingIME() {
   // Reset the suggest text just before starting an IME composition session,
   // otherwise the IME composition may be interrupted when the suggest text
   // gets reset by the IME composition change.
-  SetInstantSuggestion(string16());
+  SetInstantSuggestion(string16(), false);
 }
 
 bool AutocompleteEditViewMac::OnInlineAutocompleteTextMaybeChanged(
@@ -703,7 +703,8 @@ CommandUpdater* AutocompleteEditViewMac::GetCommandUpdater() {
 }
 
 void AutocompleteEditViewMac::SetInstantSuggestion(
-    const string16& suggest_text) {
+    const string16& suggest_text,
+    bool animate_to_complete) {
   NSString* text = GetNonSuggestTextSubstring();
   bool needs_update = (suggest_text_length_ > 0);
 
@@ -769,7 +770,7 @@ bool AutocompleteEditViewMac::OnDoCommandBySelector(SEL cmd) {
     // Reset the suggest text for any change other than key right or tab.
     // TODO(rohitrao): This is here to prevent complications when editing text.
     // See if this can be removed.
-    SetInstantSuggestion(string16());
+    SetInstantSuggestion(string16(), false);
   }
 
   if (cmd == @selector(deleteForward:))

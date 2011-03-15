@@ -761,7 +761,8 @@ CommandUpdater* AutocompleteEditViewGtk::GetCommandUpdater() {
   return command_updater_;
 }
 
-void AutocompleteEditViewGtk::SetInstantSuggestion(const string16& suggestion) {
+void AutocompleteEditViewGtk::SetInstantSuggestion(const string16& suggestion,
+                                                   bool animate_to_complete) {
   std::string suggestion_utf8 = UTF16ToUTF8(suggestion);
 
   gtk_label_set_text(GTK_LABEL(instant_view_), suggestion_utf8.c_str());
@@ -772,7 +773,7 @@ void AutocompleteEditViewGtk::SetInstantSuggestion(const string16& suggestion) {
     gtk_widget_hide(instant_view_);
     return;
   }
-  if (InstantController::IsEnabled(model_->profile())
+  if (animate_to_complete
 #if GTK_CHECK_VERSION(2, 20, 0)
       && preedit_.empty()
 #endif

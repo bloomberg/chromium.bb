@@ -56,7 +56,8 @@ class TestingAutocompleteEditView : public AutocompleteEditView {
   virtual bool OnAfterPossibleChange() { return false; }
   virtual gfx::NativeView GetNativeView() const { return 0; }
   virtual CommandUpdater* GetCommandUpdater() { return NULL; }
-  virtual void SetInstantSuggestion(const string16& input) {}
+  virtual void SetInstantSuggestion(const string16& input,
+                                    bool animate_to_complete) {}
   virtual string16 GetInstantSuggestion() const { return string16(); }
   virtual int TextWidth() const { return 0; }
   virtual bool IsImeComposing() const { return false; }

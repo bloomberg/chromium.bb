@@ -10,6 +10,7 @@
 #include "base/string16.h"
 #include "chrome/browser/autocomplete/autocomplete_controller_delegate.h"
 #include "chrome/browser/autocomplete/autocomplete_match.h"
+#include "chrome/common/instant_types.h"
 #include "chrome/common/page_transition_types.h"
 #include "googleurl/src/gurl.h"
 #include "ui/gfx/native_widget_types.h"
@@ -191,7 +192,8 @@ class AutocompleteEditModel : public AutocompleteControllerDelegate {
                             bool skip_inline_autocomplete);
 
   // Sets the suggestion text.
-  void SetSuggestedText(const string16& text);
+  void SetSuggestedText(const string16& text,
+                        InstantCompleteBehavior behavior);
 
   // Commits the suggested text. If |skip_inline_autocomplete| is true then the
   // suggested text will be committed as final text as if it's inputted by the
@@ -332,6 +334,12 @@ class AutocompleteEditModel : public AutocompleteControllerDelegate {
 
   // Invoked when the popup is going to change its bounds to |bounds|.
   void PopupBoundsChangedTo(const gfx::Rect& bounds);
+
+#if defined(UNIT_TEST)
+  InstantCompleteBehavior instant_complete_behavior() const {
+    return instant_complete_behavior_;
+  }
+#endif
 
  private:
   enum PasteState {
@@ -522,6 +530,9 @@ class AutocompleteEditModel : public AutocompleteControllerDelegate {
   // to update instant in this case, so we use the flag to determine if this is
   // happening.
   bool update_instant_;
+
+  // Last value of InstantCompleteBehavior supplied to |SetSuggestedText|.
+  InstantCompleteBehavior instant_complete_behavior_;
 
   DISALLOW_COPY_AND_ASSIGN(AutocompleteEditModel);
 };

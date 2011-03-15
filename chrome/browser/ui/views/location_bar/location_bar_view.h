@@ -152,8 +152,14 @@ class LocationBarView : public LocationBar,
   // appears, not where the icons are shown).
   gfx::Point GetLocationEntryOrigin() const;
 
+#if defined(OS_WIN)
+  // Invoked from AutocompleteEditViewWin to show the instant suggestion.
+  void SetInstantSuggestion(const string16& text,
+                            bool animate_to_complete);
+
   // Returns the current instant suggestion text.
   string16 GetInstantSuggestion() const;
+#endif
 
   // Sizing functions
   virtual gfx::Size GetPreferredSize() OVERRIDE;
@@ -218,7 +224,8 @@ class LocationBarView : public LocationBar,
 
   // Overridden from LocationBar:
   virtual void ShowFirstRunBubble(FirstRun::BubbleType bubble_type) OVERRIDE;
-  virtual void SetSuggestedText(const string16& text) OVERRIDE;
+  virtual void SetSuggestedText(const string16& text,
+                                InstantCompleteBehavior behavior) OVERRIDE;
   virtual std::wstring GetInputString() const OVERRIDE;
   virtual WindowOpenDisposition GetWindowOpenDisposition() const OVERRIDE;
   virtual PageTransition::Type GetPageTransition() const OVERRIDE;

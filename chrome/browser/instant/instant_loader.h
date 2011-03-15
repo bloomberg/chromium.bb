@@ -12,6 +12,7 @@
 #include "base/timer.h"
 #include "chrome/browser/instant/instant_commit_type.h"
 #include "chrome/browser/search_engines/template_url_id.h"
+#include "chrome/common/instant_types.h"
 #include "chrome/common/page_transition_types.h"
 #include "content/common/notification_observer.h"
 #include "content/common/notification_registrar.h"
@@ -103,7 +104,8 @@ class InstantLoader : public NotificationObserver {
   // Invoked when the page wants to update the suggested text. If |user_text_|
   // starts with |suggested_text|, then the delegate is notified of the change,
   // which results in updating the omnibox.
-  void SetCompleteSuggestedText(const string16& suggested_text);
+  void SetCompleteSuggestedText(const string16& suggested_text,
+                                InstantCompleteBehavior behavior);
 
   // Invoked when the page paints.
   void PreviewPainted();

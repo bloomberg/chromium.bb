@@ -137,8 +137,9 @@ std::wstring LocationBarViewMac::GetInputString() const {
   return location_input_;
 }
 
-void LocationBarViewMac::SetSuggestedText(const string16& text) {
-  edit_view_->model()->SetSuggestedText(text);
+void LocationBarViewMac::SetSuggestedText(const string16& text,
+                                          InstantCompleteBehavior behavior) {
+  edit_view_->model()->SetSuggestedText(text, behavior);
 }
 
 WindowOpenDisposition LocationBarViewMac::GetWindowOpenDisposition() const {

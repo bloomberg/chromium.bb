@@ -840,12 +840,13 @@ class Browser : public TabHandlerDelegate,
   virtual void OnStateChanged();
 
   // Overriden from InstantDelegate:
-  virtual void PrepareForInstant();
-  virtual void ShowInstant(TabContentsWrapper* preview_contents);
-  virtual void HideInstant();
-  virtual void CommitInstant(TabContentsWrapper* preview_contents);
-  virtual void SetSuggestedText(const string16& text);
-  virtual gfx::Rect GetInstantBounds();
+  virtual void PrepareForInstant() OVERRIDE;
+  virtual void ShowInstant(TabContentsWrapper* preview_contents) OVERRIDE;
+  virtual void HideInstant() OVERRIDE;
+  virtual void CommitInstant(TabContentsWrapper* preview_contents) OVERRIDE;
+  virtual void SetSuggestedText(const string16& text,
+                                InstantCompleteBehavior behavior) OVERRIDE;
+  virtual gfx::Rect GetInstantBounds() OVERRIDE;
 
   // Command and state updating ///////////////////////////////////////////////
 

@@ -3527,8 +3527,9 @@ void Browser::CommitInstant(TabContentsWrapper* preview_contents) {
   }
 }
 
-void Browser::SetSuggestedText(const string16& text) {
-  window()->GetLocationBar()->SetSuggestedText(text);
+void Browser::SetSuggestedText(const string16& text,
+                               InstantCompleteBehavior behavior) {
+  window()->GetLocationBar()->SetSuggestedText(text, behavior);
 }
 
 gfx::Rect Browser::GetInstantBounds() {

@@ -108,7 +108,8 @@ class LocationBarViewGtk : public AutocompleteEditController,
 
   // Implement the LocationBar interface.
   virtual void ShowFirstRunBubble(FirstRun::BubbleType bubble_type);
-  virtual void SetSuggestedText(const string16& text);
+  virtual void SetSuggestedText(const string16& text,
+                                InstantCompleteBehavior behavior);
   virtual std::wstring GetInputString() const;
   virtual WindowOpenDisposition GetWindowOpenDisposition() const;
   virtual PageTransition::Type GetPageTransition() const;

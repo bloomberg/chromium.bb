@@ -930,9 +930,9 @@ CommandUpdater* AutocompleteEditViewWin::GetCommandUpdater() {
   return command_updater_;
 }
 
-void AutocompleteEditViewWin::SetInstantSuggestion(const string16& suggestion) {
-  // On Windows, we shows the suggestion in LocationBarView.
-  NOTREACHED();
+void AutocompleteEditViewWin::SetInstantSuggestion(const string16& suggestion,
+                                                   bool animate_to_complete) {
+  parent_view_->SetInstantSuggestion(suggestion, animate_to_complete);
 }
 
 int AutocompleteEditViewWin::TextWidth() const {

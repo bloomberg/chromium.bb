@@ -388,10 +388,12 @@ void InstantController::ShowInstantLoader(InstantLoader* loader) {
       NotificationService::NoDetails());
 }
 
-void InstantController::SetSuggestedTextFor(InstantLoader* loader,
-                                            const string16& text) {
+void InstantController::SetSuggestedTextFor(
+    InstantLoader* loader,
+    const string16& text,
+    InstantCompleteBehavior behavior) {
   if (loader_manager_->current_loader() == loader)
-    delegate_->SetSuggestedText(text);
+    delegate_->SetSuggestedText(text, behavior);
 }
 
 gfx::Rect InstantController::GetInstantBounds() {

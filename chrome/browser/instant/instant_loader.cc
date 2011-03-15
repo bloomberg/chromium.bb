@@ -530,11 +530,10 @@ void InstantLoader::TabContentsDelegateImpl::OnSetSuggestions(
       page_id != source->controller().GetActiveEntry()->page_id())
     return;
 
-  // TODO: pass in behavior to SetCompleteSuggestedText.
   if (suggestions.empty())
-    loader_->SetCompleteSuggestedText(string16());
+    loader_->SetCompleteSuggestedText(string16(), behavior);
   else
-    loader_->SetCompleteSuggestedText(UTF8ToUTF16(suggestions[0]));
+    loader_->SetCompleteSuggestedText(UTF8ToUTF16(suggestions[0]), behavior);
 }
 
 void InstantLoader::TabContentsDelegateImpl::OnInstantSupportDetermined(
@@ -779,7 +778,8 @@ void InstantLoader::CommitInstantLoader() {
 }
 
 void InstantLoader::SetCompleteSuggestedText(
-    const string16& complete_suggested_text) {
+    const string16& complete_suggested_text,
+    InstantCompleteBehavior behavior) {
   if (!is_showing_instant()) {
     // We're not trying to use the instant API with this page. Ignore it.
     return;
@@ -804,18 +804,25 @@ void InstantLoader::SetCompleteSuggestedText(
                               0, user_text_lower.size())) {
     // The user text no longer contains the suggested text, ignore it.
     complete_suggested_text_.clear();
-    delegate_->SetSuggestedTextFor(this, string16());
+    delegate_->SetSuggestedTextFor(this, string16(), behavior);
     return;
   }
 
   complete_suggested_text_ = complete_suggested_text;
-  // We are effectively showing complete_suggested_text_ now. Update user_text_
-  // so we don't notify the page again if Update happens to be invoked (which is
-  // more than likely if this callback completes before the omnibox is done).
-  string16 suggestion = complete_suggested_text_.substr(user_text_.size());
-  user_text_ = complete_suggested_text_;
-  last_suggestion_.clear();
-  delegate_->SetSuggestedTextFor(this, suggestion);
+  if (behavior == INSTANT_COMPLETE_NOW) {
+    // We are effectively showing complete_suggested_text_ now. Update
+    // user_text_ so we don't notify the page again if Update happens to be
+    // invoked (which is more than likely if this callback completes before the
+    // omnibox is done).
+    string16 suggestion = complete_suggested_text_.substr(user_text_.size());
+    user_text_ = complete_suggested_text_;
+    delegate_->SetSuggestedTextFor(this, suggestion, behavior);
+  } else {
+    DCHECK((behavior == INSTANT_COMPLETE_DELAYED) ||
+           (behavior == INSTANT_COMPLETE_NEVER));
+    last_suggestion_ = complete_suggested_text_.substr(user_text_.size());
+    delegate_->SetSuggestedTextFor(this, last_suggestion_, behavior);
+  }
 }
 
 void InstantLoader::PreviewPainted() {

@@ -541,7 +541,8 @@ CommandUpdater* AutocompleteEditViewViews::GetCommandUpdater() {
   return command_updater_;
 }
 
-void AutocompleteEditViewViews::SetInstantSuggestion(const string16& input) {
+void AutocompleteEditViewViews::SetInstantSuggestion(const string16& input,
+                                                     bool animate_to_complete) {
   NOTIMPLEMENTED();
 }
 

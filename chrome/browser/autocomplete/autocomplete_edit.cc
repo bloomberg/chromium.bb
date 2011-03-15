@@ -79,7 +79,8 @@ AutocompleteEditModel::AutocompleteEditModel(
       is_keyword_hint_(false),
       paste_and_go_transition_(PageTransition::TYPED),
       profile_(profile),
-      update_instant_(true) {
+      update_instant_(true),
+      instant_complete_behavior_(INSTANT_COMPLETE_DELAYED) {
 }
 
 AutocompleteEditModel::~AutocompleteEditModel() {
@@ -172,13 +173,20 @@ void AutocompleteEditModel::FinalizeInstantQuery(
   }
 }
 
-void AutocompleteEditModel::SetSuggestedText(const string16& text) {
-  // This method is internally invoked to reset suggest text, so we only do
-  // anything if the text isn't empty.
-  // TODO: if we keep autocomplete, make it so this isn't invoked with empty
-  // text.
-  if (!text.empty())
-    FinalizeInstantQuery(view_->GetText(), text, false);
+void AutocompleteEditModel::SetSuggestedText(
+    const string16& text,
+    InstantCompleteBehavior behavior) {
+  instant_complete_behavior_ = behavior;
+  if (instant_complete_behavior_ == INSTANT_COMPLETE_NOW) {
+    if (!text.empty())
+      FinalizeInstantQuery(view_->GetText(), text, false);
+    else
+      view_->SetInstantSuggestion(text, false);
+  } else {
+    DCHECK((behavior == INSTANT_COMPLETE_DELAYED) ||
+           (behavior == INSTANT_COMPLETE_NEVER));
+    view_->SetInstantSuggestion(text, behavior == INSTANT_COMPLETE_DELAYED);
+  }
 }
 
 bool AutocompleteEditModel::CommitSuggestedText(bool skip_inline_autocomplete) {
@@ -201,6 +209,7 @@ void AutocompleteEditModel::OnChanged() {
   InstantController* instant = controller_->GetInstant();
   string16 suggested_text;
   TabContentsWrapper* tab = controller_->GetTabContentsWrapper();
+  bool might_support_instant = false;
   if (update_instant_ && instant && tab) {
     if (user_input_in_progress() && popup_->IsOpen()) {
       AutocompleteMatch current_match = CurrentMatch();
@@ -216,11 +225,18 @@ void AutocompleteEditModel::OnChanged() {
     } else {
       instant->DestroyPreviewContents();
     }
-    if (!instant->MightSupportInstant())
-      FinalizeInstantQuery(string16(), string16(), false);
+    might_support_instant = instant->MightSupportInstant();
   }
 
-  SetSuggestedText(suggested_text);
+  if (!might_support_instant) {
+    // Hide any suggestions we might be showing.
+    view_->SetInstantSuggestion(string16(), false);
+
+    // No need to wait any longer for instant.
+    FinalizeInstantQuery(string16(), string16(), false);
+  } else {
+    SetSuggestedText(suggested_text, instant_complete_behavior_);
+  }
 
   controller_->OnChanged();
 }
@@ -568,7 +584,7 @@ void AutocompleteEditModel::OnSetFocus(bool control_down) {
 
 void AutocompleteEditModel::OnWillKillFocus(
     gfx::NativeView view_gaining_focus) {
-  SetSuggestedText(string16());
+  SetSuggestedText(string16(), INSTANT_COMPLETE_NOW);
 
   InstantController* instant = controller_->GetInstant();
   if (instant)

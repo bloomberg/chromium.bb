@@ -18,6 +18,7 @@
 #include "chrome/browser/instant/instant_commit_type.h"
 #include "chrome/browser/instant/instant_loader_delegate.h"
 #include "chrome/browser/search_engines/template_url_id.h"
+#include "chrome/common/instant_types.h"
 #include "chrome/common/page_transition_types.h"
 #include "googleurl/src/gurl.h"
 #include "ui/gfx/native_widget_types.h"
@@ -174,7 +175,8 @@ class InstantController : public InstantLoaderDelegate {
   // InstantLoaderDelegate
   virtual void ShowInstantLoader(InstantLoader* loader) OVERRIDE;
   virtual void SetSuggestedTextFor(InstantLoader* loader,
-                                   const string16& text) OVERRIDE;
+                                   const string16& text,
+                                   InstantCompleteBehavior behavior) OVERRIDE;
   virtual gfx::Rect GetInstantBounds() OVERRIDE;
   virtual bool ShouldCommitInstantOnMouseUp() OVERRIDE;
   virtual void CommitInstantLoader(InstantLoader* loader) OVERRIDE;

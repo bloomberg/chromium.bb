@@ -7,6 +7,7 @@
 #pragma once
 
 #include "base/string16.h"
+#include "chrome/common/instant_types.h"
 
 class GURL;
 
@@ -23,8 +24,10 @@ class InstantLoaderDelegate {
   virtual void ShowInstantLoader(InstantLoader* loader) = 0;
 
   // Invoked when the loader has suggested text.
-  virtual void SetSuggestedTextFor(InstantLoader* loader,
-                                   const string16& text) = 0;
+  virtual void SetSuggestedTextFor(
+      InstantLoader* loader,
+      const string16& text,
+      InstantCompleteBehavior behavior) = 0;
 
   // Returns the bounds of instant.
   virtual gfx::Rect GetInstantBounds() = 0;

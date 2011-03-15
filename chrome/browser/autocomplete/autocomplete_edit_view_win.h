@@ -134,7 +134,8 @@ class AutocompleteEditViewWin
   virtual bool OnAfterPossibleChange();
   virtual gfx::NativeView GetNativeView() const;
   virtual CommandUpdater* GetCommandUpdater();
-  virtual void SetInstantSuggestion(const string16& suggestion);
+  virtual void SetInstantSuggestion(const string16& suggestion,
+                                    bool animate_to_complete);
   virtual int TextWidth() const;
   virtual string16 GetInstantSuggestion() const;
   virtual bool IsImeComposing() const;

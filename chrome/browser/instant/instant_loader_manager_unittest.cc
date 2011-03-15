@@ -14,26 +14,29 @@ class InstantLoaderDelegateImpl : public InstantLoaderDelegate {
  public:
   InstantLoaderDelegateImpl() {}
 
-  virtual void ShowInstantLoader(InstantLoader* loader) {}
+  virtual void ShowInstantLoader(InstantLoader* loader) OVERRIDE {}
 
   virtual void SetSuggestedTextFor(InstantLoader* loader,
-                                   const string16& text) {}
+                                   const string16& text,
+                                   InstantCompleteBehavior behavior) OVERRIDE {}
 
-  virtual gfx::Rect GetInstantBounds() {
+  virtual gfx::Rect GetInstantBounds() OVERRIDE {
     return gfx::Rect();
   }
 
-  virtual bool ShouldCommitInstantOnMouseUp() {
+  virtual bool ShouldCommitInstantOnMouseUp() OVERRIDE {
     return false;
   }
 
-  virtual void CommitInstantLoader(InstantLoader* loader) {
+  virtual void CommitInstantLoader(InstantLoader* loader) OVERRIDE {
   }
 
-  virtual void InstantLoaderDoesntSupportInstant(InstantLoader* loader) {
+  virtual void InstantLoaderDoesntSupportInstant(
+      InstantLoader* loader) OVERRIDE {
   }
 
-  virtual void AddToBlacklist(InstantLoader* loader, const GURL& url) {
+  virtual void AddToBlacklist(InstantLoader* loader,
+                              const GURL& url) OVERRIDE {
   }
 
  private:

@@ -797,7 +797,7 @@ class TabContents : public PageNavigator,
                         TranslateErrors::Type error_type);
   void OnSetSuggestions(int32 page_id,
                         const std::vector<std::string>& suggestions,
-                        InstantCompleteBehavior complete_behavior);
+                        InstantCompleteBehavior behavior);
   void OnInstantSupportDetermined(int32 page_id, bool result);
 
   // Changes the IsLoading state and notifies delegate as needed

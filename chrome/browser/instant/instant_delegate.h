@@ -7,6 +7,7 @@
 #pragma once
 
 #include "base/string16.h"
+#include "chrome/common/instant_types.h"
 
 class TabContentsWrapper;
 
@@ -37,7 +38,8 @@ class InstantDelegate {
   virtual void CommitInstant(TabContentsWrapper* preview_contents) = 0;
 
   // Invoked when the suggested text is to change to |text|.
-  virtual void SetSuggestedText(const string16& text) = 0;
+  virtual void SetSuggestedText(const string16& text,
+                                InstantCompleteBehavior behavior) = 0;
 
   // Returns the bounds instant will be placed at in screen coordinates.
   virtual gfx::Rect GetInstantBounds() = 0;
