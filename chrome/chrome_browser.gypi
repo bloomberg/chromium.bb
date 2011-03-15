@@ -1225,7 +1225,6 @@
         'browser/importer/importer_lock_dialog.h',
         'browser/importer/importer_messages.cc',
         'browser/importer/importer_messages.h',
-        'browser/importer/importer_messages_internal.h',
         'browser/importer/importer_observer.h',
         'browser/importer/importer_progress_dialog.h',
         'browser/importer/importer_progress_observer.h',
