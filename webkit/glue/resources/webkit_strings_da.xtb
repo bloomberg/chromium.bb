@@ -4,6 +4,8 @@
 <translation id="4519964825805946997">Installation af plugin fra <ph name="URL"/> mislykkedes</translation>
 <translation id="9186171386827445984">Indlæser dokument: <ph name="PAGE_NUMBER"/>/<ph name="NUMBER_OF_PAGES"/> sider...</translation>
 <translation id="1235745349614807883">Slet nylige søgninger</translation>
+<translation id="1171774979989969504">Angiv en e-mail-adresse.</translation>
+<translation id="709897737746224366">Find et match til det anmodede format.</translation>
 <translation id="5048533449481078685">listemarkering</translation>
 <translation id="372362261556059955">Ekstra plugin påkrævet</translation>
 <translation id="4202807286478387388">hop</translation>
@@ -16,30 +18,40 @@
 <translation id="370665806235115550">Indlæser ...</translation>
 <translation id="6845533974506654842">tryk</translation>
 <translation id="8244226242650769279">billedekort</translation>
+<translation id="310520048233152454">Angiv en webadresse.</translation>
 <translation id="2548326553472216322">Ingen nylige søgninger</translation>
+<translation id="7263440858009898357">Vælg et punkt på listen.</translation>
+<translation id="5164977714490026579">Værdien skal være større end eller lig med <ph name="MINIMUM"/>.</translation>
 <translation id="5944544982112848342">2048 (Høj klasse)</translation>
 <translation id="3040011195152428237">link</translation>
 <translation id="2745343197843472802">Hent plugin</translation>
+<translation id="8451268428117625855">Vælg en fil.</translation>
 <translation id="5776402066334188252">Bekræft, at du gerne vil installere dette plugin. Du skal kun installere plugins, som du har tillid til.</translation>
-<translation id="4003986561708175844">Det krævede plugin er ikke installeret</translation>
 <translation id="3018094406922859308">Downloader plugin...</translation>
 <translation id="7364796246159120393">Vælg fil</translation>
+<translation id="2761667185364618470">Marker dette felt, hvis du vil fortsætte.</translation>
 <translation id="8964020114565522021">Træk filer hertil</translation>
 <translation id="838869780401515933">marker</translation>
 <translation id="2846343701378493991">1024 (Mellemklasse)</translation>
 <translation id="5476505524087279545">fjern markering</translation>
 <translation id="3789841737615482174">Installer</translation>
+<translation id="2507943997699731163">Udfyld dette felt.</translation>
 <translation id="5253117816378681419">Bekræft, at du vil installere dette <ph name="PLUGIN"/>-plugin. Du skal kun installere plugins, som du har tillid til.</translation>
 <translation id="6663448176199120256">Nylige søgninger</translation>
 <translation id="2597378329261239068">Dette dokument er adgangskodebeskyttet. Indtast en adgangskode.</translation>
+<translation id="5466621249238537318">Vælg en eller flere filer.</translation>
+<translation id="8750798805984357768">Vælg en af disse muligheder.</translation>
 <translation id="7740050170769002709">HTML-indhold</translation>
+<translation id="2226276347425096477">Forkort denne tekst til <ph name="MAX_CHARACTERS"/> tegn eller færre (du bruger i øjeblikket <ph name="CURRENT_LENGTH"/> tegn).</translation>
+<translation id="2908441821576996758">Angiv en kommasepareret liste over e-mail-adresser.</translation>
 <translation id="5939518447894949180">Nulstil</translation>
+<translation id="835897206747267392">Ugyldig værdi.</translation>
 <translation id="1842960171412779397">vælg</translation>
+<translation id="3450233048674729344">Værdien skal være mindre end eller lig med <ph name="MAXIMUM"/>.</translation>
 <translation id="7638452146404718955">Klik her for at downloade plugin</translation>
 <translation id="6119846243427417423">aktiver</translation>
 <translation id="8444882422881193423"><ph name="NUMBER_OF_FILES"/> filer</translation>
-<translation id="4470547978413275879"><ph name="PLUGIN"/>-plugin er ikke installeret</translation>
-<translation id="6765711848403622008">Intet tilgængeligt plugin kan vise dette indhold</translation>
+<translation id="3934680773876859118">PDF-dokumentet kunne ikke indlæses</translation>
 <translation id="8597182159515967513">overskrift</translation>
 <translation id="2653659639078652383">Indsend</translation>
 <translation id="8475551193147984329"><ph name="PLUGIN"/>-plugin er påkrævet</translation>

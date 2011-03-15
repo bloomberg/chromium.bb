@@ -1,10 +1,14 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="vi">
+<translation id="6074963268421707432">Không cho phép bất kỳ trang web nào hiển thị thông báo trên màn hình</translation>
 <translation id="1426410128494586442">Đồng ý</translation>
 <translation id="6786747875388722282">Phần mở rộng</translation>
 <translation id="4250680216510889253">Không</translation>
 <translation id="3866249974567520381">Mô tả</translation>
+<translation id="402759845255257575">Không cho phép bất kỳ trang web nào chạy JavaScript</translation>
+<translation id="2805707493867224476">Cho phép tất cả các trang web hiển thị cửa sổ bật lên</translation>
 <translation id="5765780083710877561">Mô tả:</translation>
+<translation id="7006788746334555276">Cài đặt Nội dung</translation>
 <translation id="3891357445869647828">Bật JavaScript</translation>
 </translationbundle>

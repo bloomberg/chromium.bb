@@ -4,6 +4,8 @@
 <translation id="4519964825805946997">Installation des Plug-ins von <ph name="URL"/> fehlgeschlagen</translation>
 <translation id="9186171386827445984">Dokument wird geladen <ph name="PAGE_NUMBER"/>/<ph name="NUMBER_OF_PAGES"/> Seiten...</translation>
 <translation id="1235745349614807883">Vor kurzem durchgeführte Suchanfragen löschen</translation>
+<translation id="1171774979989969504">Geben Sie eine E-Mail-Adresse ein.</translation>
+<translation id="709897737746224366">Ihre Eingabe muss mit dem geforderten Format übereinstimmen.</translation>
 <translation id="5048533449481078685">Listenmarkierung</translation>
 <translation id="372362261556059955">Zusätzliches Plug-in erforderlich</translation>
 <translation id="4202807286478387388">springen</translation>
@@ -16,30 +18,40 @@
 <translation id="370665806235115550">Wird geladen...</translation>
 <translation id="6845533974506654842">klicken</translation>
 <translation id="8244226242650769279">Imagemap</translation>
+<translation id="310520048233152454">Geben Sie eine URL ein.</translation>
 <translation id="2548326553472216322">Keine vor kurzem durchgeführte Suchanfragen</translation>
+<translation id="7263440858009898357">Wählen Sie ein Element in der Liste aus.</translation>
+<translation id="5164977714490026579">Wert muss größer als oder gleich <ph name="MINIMUM"/> sein.</translation>
 <translation id="5944544982112848342">2048 (High Grade)</translation>
 <translation id="3040011195152428237">Link</translation>
 <translation id="2745343197843472802">Plug-in abrufen</translation>
+<translation id="8451268428117625855">Wählen Sie eine Datei aus.</translation>
 <translation id="5776402066334188252">Bitte bestätigen Sie, dass Sie dieses Plug-in installieren möchten. Installieren Sie nur Plug-ins, denen Sie vertrauen.</translation>
-<translation id="4003986561708175844">Das erforderliche Plug-in ist nicht installiert.</translation>
 <translation id="3018094406922859308">Plug-in wird heruntergeladen...</translation>
 <translation id="7364796246159120393">Datei auswählen</translation>
+<translation id="2761667185364618470">Aktivieren Sie dieses Kontrollkästchen, wenn Sie fortfahren möchten.</translation>
 <translation id="8964020114565522021">Datei hier ablegen</translation>
 <translation id="838869780401515933">auswählen</translation>
 <translation id="2846343701378493991">1024 (mittlere Stufe)</translation>
 <translation id="5476505524087279545">Auswahl aufheben</translation>
 <translation id="3789841737615482174">Installieren</translation>
+<translation id="2507943997699731163">Füllen Sie dieses Feld aus.</translation>
 <translation id="5253117816378681419">Bitte bestätigen Sie, dass Sie das Plug-in <ph name="PLUGIN"/> installieren möchten. Installieren Sie nur Plug-ins, denen Sie vertrauen.</translation>
 <translation id="6663448176199120256">Vor kurzem durchgeführte Suchanfragen</translation>
 <translation id="2597378329261239068">Dieses Dokument ist passwortgeschützt. Geben Sie ein Passwort ein.</translation>
+<translation id="5466621249238537318">Wählen Sie eine oder mehrere Dateien aus.</translation>
+<translation id="8750798805984357768">Wählen Sie eine dieser Optionen aus.</translation>
 <translation id="7740050170769002709">HTML-Inhalte</translation>
+<translation id="2226276347425096477">Kürzen Sie diesen Text auf max. <ph name="MAX_CHARACTERS"/> Zeichen. Derzeit verwenden Sie <ph name="CURRENT_LENGTH"/> Zeichen.</translation>
+<translation id="2908441821576996758">Geben Sie eine durch Kommas getrennte Liste der E-Mail-Adressen ein.</translation>
 <translation id="5939518447894949180">Zurücksetzen</translation>
+<translation id="835897206747267392">Ungültiger Wert.</translation>
 <translation id="1842960171412779397">auswählen</translation>
+<translation id="3450233048674729344">Wert muss kleiner als oder gleich <ph name="MAXIMUM"/> sein.</translation>
 <translation id="7638452146404718955">Hier klicken, um das Plug-in herunterzuladen</translation>
 <translation id="6119846243427417423">aktivieren</translation>
 <translation id="8444882422881193423"><ph name="NUMBER_OF_FILES"/> Dateien</translation>
-<translation id="4470547978413275879">Plug-in <ph name="PLUGIN"/> nicht installiert</translation>
-<translation id="6765711848403622008">Kein Plug-in zum Anzeigen dieses Contents verfügbar</translation>
+<translation id="3934680773876859118">Fehler beim Laden des PDF-Dokuments</translation>
 <translation id="8597182159515967513">Kopfzeile</translation>
 <translation id="2653659639078652383">Senden</translation>
 <translation id="8475551193147984329">Plug-in <ph name="PLUGIN"/> ist erforderlich</translation>

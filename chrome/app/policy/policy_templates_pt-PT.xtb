@@ -1,10 +1,14 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="pt-PT">
+<translation id="6074963268421707432">Não permitir que nenhum site mostre notificações do ambiente de trabalho</translation>
 <translation id="1426410128494586442">Sim</translation>
 <translation id="6786747875388722282">Extensões</translation>
 <translation id="4250680216510889253">Não</translation>
 <translation id="3866249974567520381">Descrição</translation>
+<translation id="402759845255257575">Não permitir que nenhum site execute JavaScript</translation>
+<translation id="2805707493867224476">Permitir que todos os sites mostrem pop-ups</translation>
 <translation id="5765780083710877561">Descrição:</translation>
+<translation id="7006788746334555276">Definições de conteúdo</translation>
 <translation id="3891357445869647828">Activar JavaScript</translation>
 </translationbundle>

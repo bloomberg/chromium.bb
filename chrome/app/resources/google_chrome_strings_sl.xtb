@@ -11,45 +11,41 @@
 <translation id="7781002470561365167">Na voljo je nova različica brskalnika Google Chrome.</translation>
 <translation id="7101265395643981223">Zaženi Google Chrome</translation>
 <translation id="647902066410369402">Datoteka z nastavitvami je poškodovana ali neveljavna.\n\nGoogle Chrome ne more obnoviti vaših nastavitev.</translation>
+<translation id="2879385160622431163">Google Chrome Dinamično</translation>
 <translation id="2370289711218562573">Google Chrome zdaj uvaža Priljubljene/Zaznamke.</translation>
 <translation id="8970027151245482499">Google Chrome ni nameščen ali pa mu ni uspelo najti namestitvenega imenika. Ponovno prenesite program Google Chrome.</translation>
+<translation id="1761870329818521071">Ni mogoče namestiti različice programa Google Chrome Frame, enake tisti, ki se trenutno izvaja. Zaprite Google Chrome Frame in poskusite znova.</translation>
 <translation id="2040709530900803995">Upodabljalnik za Google Chrome</translation>
 <translation id="4281844954008187215">Pogoji storitve</translation>
+<translation id="1779550429052479749">V sistemu je bila odkrita namestitev Google Chroma ali vtičnika Google Chrome Frame, ki je v sporu. Odstranite ga in poskusite znova.</translation>
 <translation id="3555616473548901994">Odstranitev je končana.</translation>
 <translation id="8556340503434111824">Na voljo je nova različica Google Chroma, ki je najhitrejša doslej.</translation>
-<translation id="1826297811907343327">Če zdaj prekinete, ne bodo uvoženi vsi elementi. Pozneje jih lahko znova uvozite iz menija brskalnika Google Chrome.</translation>
 <translation id="4728575227883772061">Namestitev ni bila izvedena zaradi nedoločene napake. Če je Google Chrome trenutno vklopljen, ga zaprite in poskusite znova.</translation>
 <translation id="4149882025268051530">Namestitvenemu programu ni uspelo razširiti arhiva. Ponovno prenesite program Google Chrome.</translation>
 <translation id="6989339256997917931">Google Chrome je posodobljen, a ga niste uporabljali že vsaj 30 dni.</translation>
 <translation id="5744005218040929396">Orodje za Google Chrome</translation>
 <translation id="4343226815564935778">Videti je, da je namestitveni imenik za Google Chrome že v uporabi. Ponovno zaženite računalnik in poskusite znova.</translation>
-<translation id="6817660909204164466">Pomagajte izboljšati Chrome s samodejnim pošiljanjem statistike uporabe in poročil o zrušitvah Googlu</translation>
 <translation id="8227755444512189073">Google Chrome mora zagnati zunanjo aplikacijo, da bo lahko obravnaval povezave <ph name="SCHEME"/>. Zahtevana povezava je <ph name="PROTOLINK"/>.</translation>
 <translation id="1281036569101707544">Google Chrome <ph name="TERMS_OF_SERVICE_LINK"/></translation>
-<translation id="8815061062167142136">Opa! Google Chrome se je zrušil. Ponovno zaženem?</translation>
 <translation id="1697213158865901863">Google Chrome Frame</translation>
-<translation id="4200560168962230927">Chrome Frame je posodobljen. Znova zaženite brskalnik. Različica brskalnika Chrome: <ph name="TODO_0001"/>, različica vtičnika Chrome Frame: <ph name="TODO_0002"/></translation>
-<translation id="126024305903398738">Uvoznik profilov za Google Chrome</translation>
 <translation id="2653935705142821164">Upodabljalnik za Chrome</translation>
-<translation id="7241541963706135274">Google Chrome bo opravil naslednje naloge:</translation>
 <translation id="8446794773162156990">Google Chrome se vede neprimerno</translation>
 <translation id="3889417619312448367">Odstrani Google Chrome</translation>
 <translation id="6169866489629082767"><ph name="PAGE_TITLE"/> – Google Chrome</translation>
 <translation id="3089968997497233615">Na voljo je nova, varnejša različica Google Chroma.</translation>
 <translation id="8810218179782551669">Jezik za Google Chrome:</translation>
-<translation id="7001386529596391893">Bližnjice za Google Chrome ustvarite na naslednjih lokacijah:</translation>
-<translation id="7461436095086637522">Uvoznik profilov za Chrome</translation>
+<translation id="7451721381978275812">Neveljavni argumenti. Vtičnika Google Chrome Frame ni mogoče namestiti v načinu pripravljenosti brez namestitve Google Chroma.</translation>
+<translation id="5809236835374558741">V tem računalniku je že nameščena novejša različica programa Google Chrome Frame. Če programska oprema ne deluje, odstranite Google Chrome Frame in ga znova prenesite.</translation>
 <translation id="4357846314885556934">Google Chrome se vede neprimerno</translation>
 <translation id="4561681684759837226"><ph name="PAGE_TITLE"/></translation>
+<translation id="4331809312908958774">Chrome OS</translation>
 <translation id="1195935957447623558">Google Chrome se ni pravilno zaustavil. Če želite ponovno odpreti strani, ki ste jih že odprli, kliknite »Obnovi«.</translation>
-<translation id="2499193704281978000">Google Chrome se ne odziva. Ponovno zaženem?</translation>
 <translation id="2580411288591421699">Ni mogoče namestiti različice Google Chroma, enake tisti, ki se trenutno izvaja. Zaprite Google Chrome in poskusite znova.</translation>
 <translation id="7747138024166251722">Namestitvenemu programu ni uspelo ustvariti začasnega imenika. Preverite, ali je na disku dovolj prostora in ali imate dovoljenje za namestitev programske opreme.</translation>
 <translation id="6008953001134414503">Odjavite se iz sistema Google Chrome in se znova prijavite, da bodo te spremembe uveljavljene.</translation>
-<translation id="6009537148180854585">Poskušali ste priti do &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, vendar pa certifikat, ki ga je predložil strežnik, vsebuje napake. Google Chrome ne more uporabiti certifikata z napakami in ne more preveriti identitete spletnega mesta, s katerim ste se poskušali povezati. Vaša povezava ni varna, zato vam priporočamo, da ne nadaljujete.</translation>
+<translation id="6009537148180854585">Poskušali ste priti do &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, vendar pa potrdilo, ki ga je predložil strežnik, vsebuje napake. Google Chrome ne more uporabiti potrdila z napakami in ne more preveriti identitete spletnega mesta, s katerim ste se poskušali povezati. Vaša povezava ni varna, zato vam priporočamo, da ne nadaljujete.</translation>
 <translation id="8738921060445980047">Neznana različica</translation>
 <translation id="2485422356828889247">Odstranjevanje</translation>
-<translation id="8899050679030089927">Zaprite vsa okna brskalnika Google Chrome in ga znova zaženite, da uveljavite spremembe.</translation>
 <translation id="3324235665723428530">Vašega profila ni mogoče uporabiti, ker je iz novejše različice brskalnika Google Chrome.\n\nNekatere funkcije morda ne bodo na voljo. Prosimo vas, da navedete drug imenik profila ali pa uporabite novejšo različico brskalnika Chrome.</translation>
 <translation id="7214670531148488183">Google Chrome lahko za zagotavljanje karseda prijetne izkušnje brskanja uporabi spletne storitve. Če želite, jih lahko onemogočite.</translation>
 <translation id="1759842336958782510">Chrome</translation>
@@ -57,37 +53,43 @@
 <translation id="911206726377975832">Ali želite izbrisati tudi podatke brskanja?</translation>
 <translation id="2044287590254833138">Orodna vrstica za Google Chrome</translation>
 <translation id="5074344184765391290">Gostitelj za vtičnike za Chrome</translation>
-<translation id="6481075104394517441">Poskušali ste priti do &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, vendar pa je strežnik predložil certifikat, ki še ni veljaven. Na voljo niso nobene informacije o tem, ali je certifikat vreden zaupanja. Google Chrome ne more zagotoviti, da komunicirate z &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt; in ne z napadalcem. Prepričajte se, ali sta ura in časovni pas v vašem računalniku pravilno nastavljena. Če nista, popravite nastavitve in osvežite to stran. Če sta nastavitvi pravilni, vam priporočamo, da ne nadaljujete.</translation>
+<translation id="6481075104394517441">Poskušali ste priti do &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, vendar pa je strežnik predložil potrdilo, ki še ni veljavno. Na voljo niso nobene informacije o tem, ali je potrdilo vredno zaupanja. Google Chrome ne more zagotoviti, da komunicirate z &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt; in ne z napadalcem. Prepričajte se, ali sta ura in časovni pas v vašem računalniku pravilno nastavljena. Če nista, popravite nastavitve in osvežite to stran. Če sta nastavitvi pravilni, vam priporočamo, da ne nadaljujete.</translation>
 <translation id="8862326446509486874">Nimate ustreznih pravic za namestitev na ravni sistema. Poskusite znova zagnati namestitveni program kot skrbnik.</translation>
 <translation id="595871952790078940">Orodje za Chrome</translation>
 <translation id="2874156562296220396">Brskalnik Google Chrome omogoča odprtokodni projekt <ph name="BEGIN_LINK_CHROMIUM"/>Chromium<ph name="END_LINK_CHROMIUM"/> in druga <ph name="BEGIN_LINK_OSS"/>odprtokodna programska oprema<ph name="END_LINK_OSS"/>.</translation>
-<translation id="6921913858457830952">Google Chrome je pripravljen, da dokonča namestitev.</translation>
+<translation id="3847841918622877581">Google Chrome lahko za boljšo izkušnjo brskanja uporablja spletne storitve.</translation>
 <translation id="7436949144778751379">Google Chrome zahteva Windows XP ali novejšo različico. Nekatere funkcije morda ne bodo delovale.</translation>
 <translation id="7100330187273168372">Google Chrome ne more prebrati ali pisati v imenik s podatki:\n\n<ph name="USER_DATA_DIRECTORY"/></translation>
 <translation id="6757767188268205357">Ne nadleguj me</translation>
 <translation id="2290095356545025170">Ali ste prepričani, da želite odstraniti Google Chrome?</translation>
 <translation id="6087062680442281307">Google Chrome je spletni brskalnik, ki bliskovito izvaja spletne strani in programe. Je hiter, stabilen in preprost za uporabo. V Google Chrome je vgrajena zaščita pred zlonamerno programsko opremo in lažnim predstavljanjem, kar omogoča varnejše brskanje v spletu.</translation>
-<translation id="2115751172320447278">Copyright © 2006–2010 Google Inc. Vse pravice pridržane.</translation>
 <translation id="5941830788786076944">Nastavi Google Chrome kot privzeti brskalnik</translation>
+<translation id="3612333635265770873">Modul z istim imenom je že bil v sporu z Google Chromom.</translation>
 <translation id="5947389362804196214">Ni mogoče prebrati vaših nastavitev.\n\nNekatere funkcije morda niso na voljo in spremembe nastavitev ne bodo shranjene.</translation>
-<translation id="4127951844153999091">V tem primeru se naslov, ki je naveden na certifikatu, ne ujema z naslovom spletnega mesta, na katero je poskušal priti vaš brskalnik. Eden od možnih razlogov za to je, da je vašo komunikacijo prestregel napadalec, ki je predložil certifikat za drugo spletno mesto, zaradi česar je prišlo do neskladja. Drugi razlog je lahko ta, da je strežnik nastavljen tako, da vrne isti certifikat za več različnih spletnih mest, vključno s tem, ki ga želite obiskati, čeprav certifikat za vsa ta spletna mesta ni veljaven. Google Chrome lahko potrdi, da ste prišli na &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt;, vendar pa ne more preveriti, ali gre za isto spletno mesto kot &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, na katero ste želeli priti. Če nadaljujete, Chrome ne bo preveril nadaljnjih neskladij glede imen. Na splošno vam priporočamo, da ne nadaljujete.</translation>
+<translation id="6650142020817594541">To spletno mesto priporoča vtičnik Google Chrome Frame (že nameščen).</translation>
+<translation id="8778247165111716037">Operacijski sistem Google Chrome omogoča dodatna <ph name="BEGIN_LINK_CROS_OSS"/>odprtokodna programska oprema<ph name="END_LINK_CROS_OSS"/>.</translation>
+<translation id="4127951844153999091">V tem primeru se naslov, ki je naveden na potrdilu, ne ujema z naslovom spletnega mesta, na katero je poskušal priti vaš brskalnik. Eden od možnih razlogov za to je, da je vašo komunikacijo prestregel napadalec, ki je predložil potrdilo za drugo spletno mesto, zaradi česar je prišlo do neskladja. Drugi razlog je lahko ta, da je strežnik nastavljen tako, da vrne isto potrdilo za več različnih spletnih mest, vključno s tem, ki ga želite obiskati, čeprav potrdilo za vsa ta spletna mesta ni veljavno. Google Chrome lahko potrdi, da ste prišli na &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt;, vendar pa ne more preveriti, ali gre za isto spletno mesto kot &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, na katero ste želeli priti. Če nadaljujete, Chrome ne bo preveril nadaljnjih neskladij glede imen. Na splošno vam priporočamo, da ne nadaljujete.</translation>
 <translation id="2712549016134575851">Zaznan je bil spor z drugim nameščenim programom.</translation>
 <translation id="7018032895891496381">Google Chrome uporablja privzet iskalnik, ki je trenutno <ph name="PAGE_TITLE"/>. Ali želite obdržati privzet iskalnik?</translation>
 <translation id="7161904924553537242">Dobrodošli v brskalniku Google Chrome</translation>
 <translation id="8669527147644353129">Pomočnik za Google Chrome</translation>
+<translation id="2681064822612051220">V sistemu je bila odkrita namestitev Google Chroma v sporu. Odstranite ga in poskusite znova.</translation>
 <translation id="5318056482164160049">Gostitelj za vtičnike za Google Chrome</translation>
 <translation id="6126631249883707068">Ali želite, da Google Chrome shrani vaše geslo?</translation>
 <translation id="5046764976540625289">Izhod iz brskalnika Chrome</translation>
 <translation id="9039578207253536065">Google Chrome Worker</translation>
+<translation id="9171640504251796339">http://www.google.com/support/chrome/bin/answer.py?hl=<ph name="GRITLANGCODE_1"/>&amp;answer=161796</translation>
 <translation id="8865765905101981392">Internetni brskalnik</translation>
 <translation id="8776515774046280928">Google Chrome je že nameščen in na voljo vsem uporabnikom tega računalnika. Če želite namestiti Google Chrome na uporabniški ravni, morate najprej odstraniti sistemsko različico, ki jo je namestil skrbnik.</translation>
 <translation id="2189123953385179981">Google ChromeOS ne podpira zagona zunanjega programa za obdelavo povezav <ph name="SCHEME"/>. Zahtevana povezava je <ph name="PROTOLINK"/>.</translation>
+<translation id="8205111949707227942">Izbirno: Pomagajte nam narediti Chrome OS boljši, tako da Googlu samodejno pošiljate statistične podatke o uporabi in poročila o zrušitvah.</translation>
 <translation id="7196020411877309443">Zakaj je to prikazano?</translation>
 <translation id="2769762047821873045">Google Chrome ni privzeti brskalnik.</translation>
 <translation id="7825851276765848807">Namestitev ni uspela zaradi nenavedene napake. Znova prenesite Google Chrome.</translation>
 <translation id="3335672657969596251">Google Chrome ne podpira OS <ph name="OS_NAME"/>.</translation>
 <translation id="473183893665420670">Ko ponastavite možnosti brskalnika Google Chrome, se vse možnosti nastavijo na privzete vrednosti. Ali želite ponastaviti možnosti brskalnika?</translation>
 <translation id="3636771339108070045">V tem računalniku je že nameščena novejša različica programa Google Chrome. Če programska oprema ne deluje, odstranite program Google Chrome in ga ponovno prenesite.</translation>
+<translation id="5334545119300433702">Za ta modul je znano, da je v sporu z Google Chromom.</translation>
 <translation id="3360895254066713204">Pomočnik za Chrome</translation>
 <translation id="1001534784610492198">Arhiv namestitvenega programa je poškodovan ali neveljaven. Ponovno prenesite program Google Chrome.</translation>
 <translation id="6626317981028933585">Žal nastavitve brskalnika Mozilla Firefox niso na voljo, medtem ko ga uporabljate. Če želite te nastavitve uvoziti v Google Chrome, shranite delo in zaprite vsa okna brskalnika Firefox. Nato kliknite »Naprej«.</translation>
@@ -97,11 +99,12 @@
 <translation id="7123348595797445166">Preskusite (že nameščeno)</translation>
 <translation id="3870154837782082782">Google Inc.</translation>
 <translation id="1446473746922165495">Spremenite jezik, ki je uporabljen v menijih, pogovornih oknih in opisih orodja za Google Chrome.</translation>
-<translation id="9189723490960700326">Poskušali ste priti do &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, vendar pa je strežnik predložil certifikat, ki je potekel. Na voljo niso nobene informacije o tem, ali je bil certifikat po preteku ogrožen. To pomeni, da Google Chrome ne more zagotoviti, da komunicirate z &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt; in ne z napadalcem. Priporočamo vam, da ne nadaljujete.</translation>
+<translation id="9189723490960700326">Poskušali ste priti do &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, vendar pa je strežnik predložil potrdilo, ki je poteklo. Na voljo niso nobene informacije o tem, ali je bilo potrdilo po preteku ogroženo. To pomeni, da Google Chrome ne more zagotoviti, da komunicirate z &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt; in ne z napadalcem. Priporočamo vam, da ne nadaljujete.</translation>
 <translation id="7106741999175697885">Upravitelj opravil – Google Chrome</translation>
 <translation id="8449380764213232436">Google Chrome zdaj uvaža naslednje elemente iz komponente <ph name="BROWSER_COMPONENT"/>:</translation>
 <translation id="852884188147941900">Chrome Worker</translation>
 <translation id="3396977131400919238">Med namestitvijo je prišlo do napake v operacijskem sistemu. Ponovno prenesite program Google Chrome.</translation>
-<translation id="2618799103663374905">Dodajte bližnjice za Google Chrome na namizje, v vrstico za hitri zagon in meni »Start«</translation>
-<translation id="1144950271450340860">Poskušali ste priti do &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, vendar pa je strežnik predložil certifikat, ki ga je izdala entiteta, ki ji operacijski sistem vašega računalnika ne zaupa. To lahko pomeni, da je strežnik ustvaril svoje varnostne poverilnice, na katere se Google Chrome ne more zanesti za informacije o identiteti, ali pa poskuša vašo komunikacijo prestreči napadalec. Priporočamo vam, da ne nadaljujete, &lt;strong&gt;še posebno&lt;/strong&gt; če za to spletno mesto še nikoli niste videli tega opozorila.</translation>
+<translation id="5495581687705680288">Moduli, naloženi v Google Chrome</translation>
+<translation id="3586272666307004550">Copyright © 2006–2011 Google Inc. Vse pravice pridržane.</translation>
+<translation id="1144950271450340860">Poskušali ste priti do &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, vendar pa je strežnik predložil potrdilo, ki ga je izdala entiteta, ki ji operacijski sistem vašega računalnika ne zaupa. To lahko pomeni, da je strežnik ustvaril svoje varnostne poverilnice, na katere se Google Chrome ne more zanesti za informacije o identiteti, ali pa poskuša vašo komunikacijo prestreči napadalec. Priporočamo vam, da ne nadaljujete, &lt;strong&gt;še posebno&lt;/strong&gt; če za to spletno mesto še nikoli niste videli tega opozorila.</translation>
 </translationbundle>

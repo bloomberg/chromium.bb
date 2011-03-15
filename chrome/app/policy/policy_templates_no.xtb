@@ -1,10 +1,14 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="no">
+<translation id="6074963268421707432">Ikke tillat nettsteder å vise skrivebordsvarsler</translation>
 <translation id="1426410128494586442">Ja</translation>
 <translation id="6786747875388722282">Utvidelser</translation>
 <translation id="4250680216510889253">Nei</translation>
 <translation id="3866249974567520381">Beskrivelse</translation>
+<translation id="402759845255257575">Ikke tillat nettsteder å kjøre JavaScript</translation>
+<translation id="2805707493867224476">Tillat alle nettsteder å vise forgrunnsvinduer</translation>
 <translation id="5765780083710877561">Beskrivelse:</translation>
+<translation id="7006788746334555276">Innstillinger for innhold</translation>
 <translation id="3891357445869647828">Aktiver JavaScript</translation>
 </translationbundle>

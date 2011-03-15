@@ -1,10 +1,14 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="es">
+<translation id="6074963268421707432">No permitir que los sitios muestren notificaciones de escritorio</translation>
 <translation id="1426410128494586442">Sí</translation>
 <translation id="6786747875388722282">Extensiones</translation>
 <translation id="4250680216510889253">No</translation>
 <translation id="3866249974567520381">Descripción</translation>
+<translation id="402759845255257575">No permitir que ningún sitio ejecute JavaScript</translation>
+<translation id="2805707493867224476">Permitir que todos los sitios muestren pop-ups</translation>
 <translation id="5765780083710877561">Descripción:</translation>
+<translation id="7006788746334555276">Configuración de contenido</translation>
 <translation id="3891357445869647828">Habilitar JavaScript</translation>
 </translationbundle>

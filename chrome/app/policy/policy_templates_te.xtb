@@ -1,10 +1,14 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="te">
+<translation id="6074963268421707432">డెస్క్‌టాప్ నోటిఫికేషన్‌లను చూపించడానికి ఏ సైట్‌ను అనుమతించవద్దు</translation>
 <translation id="1426410128494586442">అవును</translation>
 <translation id="6786747875388722282">ఎక్స్‌టెన్షన్స్‌ను</translation>
 <translation id="4250680216510889253">కాదు</translation>
 <translation id="3866249974567520381">వివరణ</translation>
+<translation id="402759845255257575">JavaScriptను అమలు చేయడానికి ఏ సైట్‌నూ అనుమతించవద్దు</translation>
+<translation id="2805707493867224476">పాప్-అప్‌లను చూపించడానికి అన్ని సైట్‌లను అనుమతించు</translation>
 <translation id="5765780083710877561">వివరణ:</translation>
+<translation id="7006788746334555276">కంటెంట్ సెట్టింగ్‌లు</translation>
 <translation id="3891357445869647828">JavaScriptను  ఎనేబుల్ చెయ్యి</translation>
 </translationbundle>

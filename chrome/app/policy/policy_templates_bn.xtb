@@ -1,10 +1,14 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="bn">
+<translation id="6074963268421707432">ডেস্কটপ বিজ্ঞপ্তিগুলি দেখানোর জন্য কোনও সাইটকে মঞ্জুরি দেবেন না</translation>
 <translation id="1426410128494586442">হ্যাঁ</translation>
 <translation id="6786747875388722282">এক্সটেনশনস</translation>
 <translation id="4250680216510889253">না</translation>
 <translation id="3866249974567520381">বর্ণনা</translation>
+<translation id="402759845255257575">JavaScript চালানোর জন্য কোনও সাইটকে মঞ্জুরি দেবেন না</translation>
+<translation id="2805707493867224476"> পপ-আপগুলি দেখানোর জন্য সমস্ত সাইটকে মঞ্জুরি দিন</translation>
 <translation id="5765780083710877561">বর্ণনা:</translation>
+<translation id="7006788746334555276">সামগ্রী সেটিংস</translation>
 <translation id="3891357445869647828">JavaScript সক্ষম করুন</translation>
 </translationbundle>

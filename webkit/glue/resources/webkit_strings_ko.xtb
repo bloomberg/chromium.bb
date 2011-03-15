@@ -4,6 +4,8 @@
 <translation id="4519964825805946997"><ph name="URL"/>의 플러그인 설치 실패</translation>
 <translation id="9186171386827445984">문서 로드 중: <ph name="PAGE_NUMBER"/>/<ph name="NUMBER_OF_PAGES"/>페이지</translation>
 <translation id="1235745349614807883">최근 검색 삭제</translation>
+<translation id="1171774979989969504">이메일 주소를 입력하세요.</translation>
+<translation id="709897737746224366">요청한 형식과 일치시키세요.</translation>
 <translation id="5048533449481078685">목록 표시기</translation>
 <translation id="372362261556059955">추가 플러그인 필요</translation>
 <translation id="4202807286478387388">건너뛰기</translation>
@@ -16,30 +18,40 @@
 <translation id="370665806235115550">로드 중...</translation>
 <translation id="6845533974506654842">누르기</translation>
 <translation id="8244226242650769279">이미지 지도</translation>
+<translation id="310520048233152454">URL을 입력하세요.</translation>
 <translation id="2548326553472216322">최근 수행된 검색 없음</translation>
+<translation id="7263440858009898357">목록에서 항목을 선택하세요.</translation>
+<translation id="5164977714490026579">값은 <ph name="MINIMUM"/> 이상이어야 합니다.</translation>
 <translation id="5944544982112848342">2048(높은 등급)</translation>
 <translation id="3040011195152428237">링크</translation>
 <translation id="2745343197843472802">플러그인 가져오기</translation>
+<translation id="8451268428117625855">파일을 선택하세요.</translation>
 <translation id="5776402066334188252">플러그인을 설치할지 여부를 확인하시기 바랍니다. 신뢰할 수 있는 플러그인만 설치해야 합니다.</translation>
-<translation id="4003986561708175844">필수 플러그인이 설치되지 않음</translation>
 <translation id="3018094406922859308"> 플러그인 다운로드 중...</translation>
 <translation id="7364796246159120393">파일 선택</translation>
+<translation id="2761667185364618470">계속하려면 이 확인란을 선택하세요.</translation>
 <translation id="8964020114565522021">여기로 파일 드래그</translation>
 <translation id="838869780401515933">선택</translation>
 <translation id="2846343701378493991">1024(중간 등급)</translation>
 <translation id="5476505524087279545">선택취소</translation>
 <translation id="3789841737615482174">설치</translation>
+<translation id="2507943997699731163">이 입력란을 작성하세요.</translation>
 <translation id="5253117816378681419"><ph name="PLUGIN"/> 플러그인을 설치할지 여부를 확인하시기 바랍니다. 신뢰할 수 있는 플러그인만 설치해야 합니다.</translation>
 <translation id="6663448176199120256">최근 수행된 검색</translation>
 <translation id="2597378329261239068">문서가 비밀번호로 보호되고 있습니다. 비밀번호를 입력하세요.</translation>
+<translation id="5466621249238537318">파일을 한 개 이상 선택하세요.</translation>
+<translation id="8750798805984357768">다음 옵션 중 하나를 선택하세요.</translation>
 <translation id="7740050170769002709">HTML 콘텐츠</translation>
+<translation id="2226276347425096477">이 텍스트를 <ph name="MAX_CHARACTERS"/>자 이하로 줄이세요(현재 <ph name="CURRENT_LENGTH"/>자 사용 중).</translation>
+<translation id="2908441821576996758">이메일 주소를 쉼표로 구분하여 입력하세요.</translation>
 <translation id="5939518447894949180">재설정</translation>
+<translation id="835897206747267392">값이 잘못되었습니다.</translation>
 <translation id="1842960171412779397">선택</translation>
+<translation id="3450233048674729344">값은 <ph name="MAXIMUM"/> 이하여야 합니다.</translation>
 <translation id="7638452146404718955">여기를 클릭하여 플러그인 다운로드</translation>
 <translation id="6119846243427417423">활성화</translation>
 <translation id="8444882422881193423">파일 <ph name="NUMBER_OF_FILES"/>개</translation>
-<translation id="4470547978413275879"><ph name="PLUGIN"/> 플러그인이 설치되지 않음</translation>
-<translation id="6765711848403622008">이 콘텐츠를 표시하는 데 사용할 플러그인 없음</translation>
+<translation id="3934680773876859118">PDF 문서를 로드하지 못했습니다.</translation>
 <translation id="8597182159515967513">항목</translation>
 <translation id="2653659639078652383">제출</translation>
 <translation id="8475551193147984329"><ph name="PLUGIN"/> 플러그인 필요</translation>

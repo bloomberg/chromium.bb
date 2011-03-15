@@ -1,10 +1,14 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="ja">
+<translation id="6074963268421707432">どのサイトにもデスクトップ通知の表示を許可しない</translation>
 <translation id="1426410128494586442">はい</translation>
 <translation id="6786747875388722282">拡張機能</translation>
 <translation id="4250680216510889253">いいえ</translation>
 <translation id="3866249974567520381">説明</translation>
+<translation id="402759845255257575">すべてのサイトで Javascript の実行を許可しない</translation>
+<translation id="2805707493867224476">すべてのサイトのポップアップ表示を許可する</translation>
 <translation id="5765780083710877561">説明:</translation>
+<translation id="7006788746334555276">コンテンツの設定</translation>
 <translation id="3891357445869647828">JavaScript を有効にする</translation>
 </translationbundle>

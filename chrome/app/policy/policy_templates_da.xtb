@@ -1,10 +1,14 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="da">
+<translation id="6074963268421707432">Tillad ikke, at websteder viser meddelelser på skrivebordet</translation>
 <translation id="1426410128494586442">Ja</translation>
 <translation id="6786747875388722282">Udvidelser</translation>
 <translation id="4250680216510889253">Nej</translation>
 <translation id="3866249974567520381">Beskrivelse</translation>
+<translation id="402759845255257575">Tillad ikke, at websteder kører JavaScript</translation>
+<translation id="2805707493867224476">Tillad, at alle websteder viser popups</translation>
 <translation id="5765780083710877561">Beskrivelse:</translation>
+<translation id="7006788746334555276">Indstillinger for indhold</translation>
 <translation id="3891357445869647828">Aktiver JavaScript</translation>
 </translationbundle>

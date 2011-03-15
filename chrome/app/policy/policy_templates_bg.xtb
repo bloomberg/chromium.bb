@@ -1,10 +1,14 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="bg">
+<translation id="6074963268421707432">Да не се разрешава на сайтовете да показват известия на работния плот</translation>
 <translation id="1426410128494586442">Да</translation>
 <translation id="6786747875388722282">Разширения</translation>
 <translation id="4250680216510889253">Не</translation>
 <translation id="3866249974567520381">Описание</translation>
+<translation id="402759845255257575">Да не се разрешава на сайтовете да изпълняват JavaScript</translation>
+<translation id="2805707493867224476">Да се разреши на всички сайтове да показват изскачащи прозорци</translation>
 <translation id="5765780083710877561">Описание:</translation>
+<translation id="7006788746334555276">Настройки за съдържанието</translation>
 <translation id="3891357445869647828">Активиране на JavaScript</translation>
 </translationbundle>

@@ -1,10 +1,14 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="zh-TW">
+<translation id="6074963268421707432">不允許任何網站顯示桌面通知</translation>
 <translation id="1426410128494586442">是</translation>
 <translation id="6786747875388722282">擴充功能</translation>
 <translation id="4250680216510889253">否</translation>
 <translation id="3866249974567520381">描述</translation>
+<translation id="402759845255257575">不允許任何網站執行 JavaScript</translation>
+<translation id="2805707493867224476">允許所有網站顯示彈出式視窗</translation>
 <translation id="5765780083710877561">描述：</translation>
+<translation id="7006788746334555276">內容設定</translation>
 <translation id="3891357445869647828">啟用 JavaScript</translation>
 </translationbundle>

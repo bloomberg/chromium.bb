@@ -1,10 +1,14 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="ar">
+<translation id="6074963268421707432">عدم السماح لأي موقع بعرض تنبيهات سطح المكتب</translation>
 <translation id="1426410128494586442">نعم</translation>
 <translation id="6786747875388722282">الإضافات</translation>
 <translation id="4250680216510889253">لا</translation>
 <translation id="3866249974567520381">وصف</translation>
+<translation id="402759845255257575">عدم السماح لأي موقع بتشغيل جافا سكريبت</translation>
+<translation id="2805707493867224476">السماح لجميع المواقع بعرض النوافذ المنبثقة</translation>
 <translation id="5765780083710877561">وصف:</translation>
+<translation id="7006788746334555276">إعدادات المحتوى</translation>
 <translation id="3891357445869647828">تمكين جافا سكريبت</translation>
 </translationbundle>

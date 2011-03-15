@@ -1,10 +1,14 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="sr">
+<translation id="6074963268421707432">Не дозволи ниједном сајту да приказује обавештења на радној површини</translation>
 <translation id="1426410128494586442">Да</translation>
 <translation id="6786747875388722282">Тип датотеке</translation>
 <translation id="4250680216510889253">Ne</translation>
 <translation id="3866249974567520381">Опис</translation>
+<translation id="402759845255257575">Не дозволи ниједном сајту да покреће JavaScript</translation>
+<translation id="2805707493867224476">Дозволи свим сајтовима да приказују искачуће прозоре</translation>
 <translation id="5765780083710877561">Опис:</translation>
+<translation id="7006788746334555276">Подешавања садржаја</translation>
 <translation id="3891357445869647828">Омогући JavaScript</translation>
 </translationbundle>

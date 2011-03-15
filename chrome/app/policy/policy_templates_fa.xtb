@@ -1,9 +1,13 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="fa">
+<translation id="6074963268421707432">به هیچ سایتی برای نمایش اعلام های دسک تاپ اجازه داده نشود</translation>
 <translation id="1426410128494586442">بله</translation>
 <translation id="6786747875388722282">برنامه های افزودنی</translation>
 <translation id="4250680216510889253">خیر</translation>
 <translation id="3866249974567520381">توصیف</translation>
+<translation id="402759845255257575">به هیچ سایتی برای اجرای جاوا اسکریپت اجازه داده نشود</translation>
+<translation id="2805707493867224476">به همه سایتها برای نمایش پنجره های بازشو اجازه داده شود</translation>
 <translation id="5765780083710877561">توصیف:</translation>
+<translation id="7006788746334555276">تنظیمات محتوا</translation>
 </translationbundle>

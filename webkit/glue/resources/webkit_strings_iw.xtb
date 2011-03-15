@@ -4,6 +4,8 @@
 <translation id="4519964825805946997">התקנת הפלאגין מתוך <ph name="URL"/> נכשלה</translation>
 <translation id="9186171386827445984">טוען מסמך: דפים <ph name="NUMBER_OF_PAGES"/>/<ph name="PAGE_NUMBER"/>...</translation>
 <translation id="1235745349614807883">הסר חיפושים אחרונים</translation>
+<translation id="1171774979989969504">הזן כתובת דוא&quot;ל.</translation>
+<translation id="709897737746224366">התאם את הפורמט המבוקש.</translation>
 <translation id="5048533449481078685">סמן רשימה</translation>
 <translation id="372362261556059955">פלאגין נוסף נחוץ</translation>
 <translation id="4202807286478387388">קפוץ</translation>
@@ -16,30 +18,40 @@
 <translation id="370665806235115550">טוען...</translation>
 <translation id="6845533974506654842">לחץ</translation>
 <translation id="8244226242650769279">מפת תמונות</translation>
+<translation id="310520048233152454">הזן כתובת אתר.</translation>
 <translation id="2548326553472216322">אין חיפושים אחרונים</translation>
+<translation id="7263440858009898357">בחר פריט מהרשימה.</translation>
+<translation id="5164977714490026579">הערך חייב להיות גדול מ-<ph name="MINIMUM"/> או שווה לו.</translation>
 <translation id="5944544982112848342">2048 (High Grade)</translation>
 <translation id="3040011195152428237">קישור</translation>
 <translation id="2745343197843472802">השג פלאגין</translation>
+<translation id="8451268428117625855">בחר קובץ.</translation>
 <translation id="5776402066334188252">אשר שברצונך להתקין פלאגין זה. יש להתקין רכיבי פלאגין שאתה בוטח בהם בלבד.</translation>
-<translation id="4003986561708175844">הפלאגין הדרוש אינו מותקן</translation>
 <translation id="3018094406922859308">מוריד פלאגין...</translation>
 <translation id="7364796246159120393">בחר קובץ</translation>
+<translation id="2761667185364618470">סמן תיבה זו אם אתה רוצה להמשיך.</translation>
 <translation id="8964020114565522021">גרור את הקובץ לכאן</translation>
 <translation id="838869780401515933">סמן</translation>
 <translation id="2846343701378493991">1024 (Medium Grade)</translation>
 <translation id="5476505524087279545">בטל סימון</translation>
 <translation id="3789841737615482174">התקן</translation>
+<translation id="2507943997699731163">מלא שדה זה.</translation>
 <translation id="5253117816378681419">אשר שברצונך להתקין את הפלאגין <ph name="PLUGIN"/>. יש להתקין רכיבי פלאגין שאתה בוטח בהם בלבד.</translation>
 <translation id="6663448176199120256">חיפושים אחרונים</translation>
 <translation id="2597378329261239068">מסמך זה מוגן באמצעות סיסמה. הזן סיסמה.</translation>
+<translation id="5466621249238537318">בחר קובץ אחד או יותר.</translation>
+<translation id="8750798805984357768">בחר אחת מהאפשרויות הבאות.</translation>
 <translation id="7740050170769002709">תוכן HTML</translation>
+<translation id="2226276347425096477">קצר טקסט זה ל-<ph name="MAX_CHARACTERS"/> תווים או פחות (אתה משתמש כעת ב-<ph name="CURRENT_LENGTH"/> תווים).</translation>
+<translation id="2908441821576996758">הזן רשימה של כתובות דוא&quot;ל המופרדות באמצעות פסיקים.</translation>
 <translation id="5939518447894949180">אפס</translation>
+<translation id="835897206747267392">ערך לא חוקי.</translation>
 <translation id="1842960171412779397">בחר</translation>
+<translation id="3450233048674729344">הערך חייב להיות קטן מ-<ph name="MAXIMUM"/> או שווה לו.</translation>
 <translation id="7638452146404718955">לחץ כאן להורדת פלאגין</translation>
 <translation id="6119846243427417423">הפעל</translation>
 <translation id="8444882422881193423"><ph name="NUMBER_OF_FILES"/> קבצים</translation>
-<translation id="4470547978413275879">הפלאגין <ph name="PLUGIN"/> אינו מותקן</translation>
-<translation id="6765711848403622008">אין פלאגין זמין להצגת תוכן זה</translation>
+<translation id="3934680773876859118">הטעינה של מסמך PDF נכשלה</translation>
 <translation id="8597182159515967513">כותרת</translation>
 <translation id="2653659639078652383">שלח</translation>
 <translation id="8475551193147984329">הפלאגין <ph name="PLUGIN"/> דרוש</translation>

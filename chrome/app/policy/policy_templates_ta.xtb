@@ -1,10 +1,14 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="ta">
+<translation id="6074963268421707432">டெஸ்க்டாப் அறிவிக்கைகளைக் காண்பிக்க எந்த தளத்தையும் அனுமதிக்காதே</translation>
 <translation id="1426410128494586442">ஆம்</translation>
 <translation id="6786747875388722282">நீட்சிகள்</translation>
 <translation id="4250680216510889253">இல்லை</translation>
 <translation id="3866249974567520381">விவரம்</translation>
+<translation id="402759845255257575">JavaScript ஐ இயக்குவதற்கு எந்த தளத்தையும் அனுமதிக்க வேண்டாம்</translation>
+<translation id="2805707493867224476">பாப்-அப்களைக் காண்பிக்க அனைத்து தளங்களையும் அனுமதி</translation>
 <translation id="5765780083710877561">விவரம்:</translation>
+<translation id="7006788746334555276">உள்ளடக்க அமைப்புகள்</translation>
 <translation id="3891357445869647828">JavaScript ஐ செயலாக்குக</translation>
 </translationbundle>

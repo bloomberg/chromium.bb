@@ -1,10 +1,14 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="mr">
+<translation id="6074963268421707432">कोणत्याही साइटला डेस्कटॉप सूचना दर्शविण्याची परवानगी देऊ नका</translation>
 <translation id="1426410128494586442">होय</translation>
 <translation id="6786747875388722282">विस्तार</translation>
 <translation id="4250680216510889253">नाही</translation>
 <translation id="3866249974567520381">वर्णन</translation>
+<translation id="402759845255257575">कोणत्याही साइटला JavaScript चालविण्याची परवानगी देऊ नका</translation>
+<translation id="2805707493867224476">पॉप-अप दर्शविण्यासाठी सर्व साइटना परवानगी द्या</translation>
 <translation id="5765780083710877561">वर्णन:</translation>
+<translation id="7006788746334555276">सामग्री सेटिंग्ज</translation>
 <translation id="3891357445869647828">JavaScript सक्षम करा</translation>
 </translationbundle>

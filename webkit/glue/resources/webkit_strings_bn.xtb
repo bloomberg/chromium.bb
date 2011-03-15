@@ -4,6 +4,8 @@
 <translation id="4519964825805946997"><ph name="URL"/>-এর থেকে প্ল্যাগ-ইন ইনস্টল করতে ব্যর্থ হয়েছে</translation>
 <translation id="9186171386827445984">নথি লোড হচ্ছে: <ph name="PAGE_NUMBER"/>/<ph name="NUMBER_OF_PAGES"/> পৃষ্ঠা...</translation>
 <translation id="1235745349614807883">সাম্প্রতিক অনুসন্ধানগুলি সাফ করুন</translation>
+<translation id="1171774979989969504">দয়া করে কোন ইমেল ঠিকানা প্রবেশ করান:</translation>
+<translation id="709897737746224366">দয়া করে অনুরোধ হওয়া বিন্যাসটি মেলান৷</translation>
 <translation id="5048533449481078685">তালিকা নির্দেশক</translation>
 <translation id="372362261556059955">অতিরিক্ত প্লাগ-ইন দরকার</translation>
 <translation id="4202807286478387388">লাফ দিন</translation>
@@ -16,30 +18,40 @@
 <translation id="370665806235115550">লোড হচ্ছে...</translation>
 <translation id="6845533974506654842">টিপুন</translation>
 <translation id="8244226242650769279">ছবি মানচিত্র</translation>
+<translation id="310520048233152454">দয়া করে একটি বৈধ URL প্রবেশ করুন৷</translation>
 <translation id="2548326553472216322">কোন সাম্প্রতিক অনুসন্ধান নেই</translation>
+<translation id="7263440858009898357">তালিকা থেকে একটি আইটেম নির্বাচন করুন৷ </translation>
+<translation id="5164977714490026579">মানটি অবশ্যই <ph name="MINIMUM"/>এর চেয়ে বেশি বা সমান হবে৷</translation>
 <translation id="5944544982112848342">2048 (উচ্চ গ্রেড)</translation>
 <translation id="3040011195152428237">লিঙ্ক</translation>
 <translation id="2745343197843472802">প্লাগ-ইন পান</translation>
+<translation id="8451268428117625855">দয়া করে একটি ফাইল নির্বাচন করুন৷</translation>
 <translation id="5776402066334188252">আপনি প্ল্যাগ-ইন ইনস্টল করতে চান কি না দয়া করে নিশ্চিত করুন৷ আপনার কেবল সেই প্ল্যাগ-ইনগুলি ইনস্টল করা উচিত যা আপনি বিশ্বাস করেন৷</translation>
-<translation id="4003986561708175844">প্রয়োজনীয় প্ল্যাগ-ইন ইনস্টল করা নেই</translation>
 <translation id="3018094406922859308">প্লাগ-ইন ডাউনলোড হচ্ছে...</translation>
 <translation id="7364796246159120393">ফাইল চয়ন করুন</translation>
+<translation id="2761667185364618470">আপনি যদি এগিয়ে যেতে চান তবে দয়া করে এই বাক্সটি পরীক্ষা করুন৷</translation>
 <translation id="8964020114565522021">ফাইল এখানে টেনে আনুন</translation>
 <translation id="838869780401515933">চেক করুন</translation>
 <translation id="2846343701378493991">1024 (মধ্যম গ্রেড)</translation>
 <translation id="5476505524087279545">আনচেক</translation>
 <translation id="3789841737615482174">ইনস্টল করুন</translation>
+<translation id="2507943997699731163">দয়া করে এই ক্ষেত্রটি পূরণ করুন৷</translation>
 <translation id="5253117816378681419">আপনি <ph name="PLUGIN"/> প্ল্যাগ-ইনটি ইনস্টল করতে চান কি না দয়া করে নিশ্চিত করুন৷ আপনার কেবল সেই প্ল্যাগ-ইনগুলি ইনস্টল করার উচিত যেগুলিকে আপনি বিশ্বাস করেন৷</translation>
 <translation id="6663448176199120256">সাম্প্রতিক অনুসন্ধানগুলি</translation>
 <translation id="2597378329261239068">এই দস্তাবেজটি পাসওয়ার্ড সুরক্ষিত৷  দয়া করে একটি পাসওয়ার্ড লিখুন৷</translation>
+<translation id="5466621249238537318">দয়া করে এক বা একাধিক ফাইল নির্বাচন করুন৷</translation>
+<translation id="8750798805984357768">দয়া করে বিকল্পগুলির একটি নির্বাচন করুন৷</translation>
 <translation id="7740050170769002709">HTML সামগ্রী</translation>
+<translation id="2226276347425096477">দয়া করে এই পাঠ্যটি <ph name="MAX_CHARACTERS"/>টি অক্ষর বা তার কমে (আপনি বর্তমানে <ph name="CURRENT_LENGTH"/>টি অক্ষর ব্যবহার করছেন) সংক্ষিপ্ত করুন৷</translation>
+<translation id="2908441821576996758">দয়া করে ইমেল ঠিকানাগুলির একটি কমা দিয়ে আলাদা করা মান প্রবেশ করান৷</translation>
 <translation id="5939518447894949180">রিসেট করুন</translation>
+<translation id="835897206747267392">অকার্যকর মান৷</translation>
 <translation id="1842960171412779397">নির্বাচন করুন</translation>
+<translation id="3450233048674729344">মানটি অবশ্যই <ph name="MAXIMUM"/>এর চেয়ে কম বা সমান হবে৷</translation>
 <translation id="7638452146404718955">প্ল্যাগ-ইন ডাউনলোড করার জন্য এখানে ক্লিক করুন</translation>
 <translation id="6119846243427417423">সক্রিয় করুন</translation>
 <translation id="8444882422881193423"><ph name="NUMBER_OF_FILES"/> টি ফাইল</translation>
-<translation id="4470547978413275879"><ph name="PLUGIN"/> প্লাগ-ইন ইনস্টল নেই</translation>
-<translation id="6765711848403622008">এই সামগ্রী প্রদর্শন করার জন্য কোনও প্ল্যাগ-ইন উপলব্ধ নেই</translation>
+<translation id="3934680773876859118">PDF  দস্তাবেজ লোড হতে ব্যর্থ</translation>
 <translation id="8597182159515967513">শিরোনামা</translation>
 <translation id="2653659639078652383">জমা</translation>
 <translation id="8475551193147984329"><ph name="PLUGIN"/> প্লাগ-ইন প্রয়োজন</translation>

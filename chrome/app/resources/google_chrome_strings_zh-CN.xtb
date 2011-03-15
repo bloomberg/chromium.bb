@@ -1,107 +1,110 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="zh-CN">
-<translation id="8000275528373650868">谷歌浏览器要求操作系统必须为 Windows Vista 或者 Windows XP SP2 或更高版本。</translation>
+<translation id="8000275528373650868">Google Chrome 浏览器要求操作系统必须为 Windows Vista 或者 Windows XP SP2 或更高版本。</translation>
 <translation id="6676384891291319759">访问互联网</translation>
-<translation id="2383457833405848421">关于谷歌浏览器内嵌框架...</translation>
-<translation id="386202838227397562">请关闭所有谷歌浏览器窗口，然后重试。</translation>
+<translation id="2383457833405848421">关于 Chrome 浏览器内嵌框架...</translation>
+<translation id="386202838227397562">请关闭所有 Google Chrome 浏览器窗口，然后重试。</translation>
 <translation id="2770231113462710648">将默认浏览器更改为：</translation>
-<translation id="698670068493841342">已为此用户安装了谷歌浏览器。如果该软件无法正常运行，请卸载谷歌浏览器并重新下载。</translation>
-<translation id="7400722733683201933">关于谷歌浏览器</translation>
-<translation id="7781002470561365167">谷歌浏览器现已推出新版本。</translation>
-<translation id="7101265395643981223">启动谷歌浏览器</translation>
-<translation id="647902066410369402">您的偏好设置文件已损坏或无效。\n\n谷歌浏览器无法恢复您的设置。</translation>
-<translation id="2370289711218562573">谷歌浏览器正在导入收藏夹/书签。</translation>
-<translation id="8970027151245482499">未安装谷歌浏览器或无法找到安装目录。请重新下载谷歌浏览器。</translation>
-<translation id="2040709530900803995">谷歌浏览器呈现器</translation>
+<translation id="698670068493841342">已为此用户安装了 Google Chrome 浏览器。如果该软件无法正常运行，请卸载 Google Chrome 浏览器并重新下载。</translation>
+<translation id="7400722733683201933">关于 Google Chrome 浏览器</translation>
+<translation id="7781002470561365167">Google Chrome 浏览器现已推出新版本。</translation>
+<translation id="7101265395643981223">启动 Google Chrome 浏览器</translation>
+<translation id="647902066410369402">您的偏好设置文件已损坏或无效。\n\nGoogle Chrome 浏览器无法恢复您的设置。</translation>
+<translation id="2879385160622431163">Google Chrome 浏览器即搜即得</translation>
+<translation id="2370289711218562573">Google Chrome 浏览器正在导入收藏夹/书签。</translation>
+<translation id="8970027151245482499">未安装 Google Chrome 浏览器或无法找到安装目录。请重新下载 Google Chrome 浏览器。</translation>
+<translation id="1761870329818521071">无法安装与当前运行版本相同的 Google Chrome 浏览器内嵌框架。请关闭 Google Chrome 浏览器内嵌框架，然后重试。</translation>
+<translation id="2040709530900803995">Google Chrome 浏览器呈现器</translation>
 <translation id="4281844954008187215">服务条款</translation>
+<translation id="1779550429052479749">在系统中安装“Google Chrome 浏览器”或“Google Chrome 浏览器内嵌框架”时发现已存在其他版本，请先卸载然后重试。</translation>
 <translation id="3555616473548901994">卸载已完成。</translation>
-<translation id="8556340503434111824">谷歌浏览器现已推出速度更快的新版本。</translation>
-<translation id="1826297811907343327">如果立即取消，则无法导入所有内容。您可以稍后再次从谷歌浏览器菜单中导入。</translation>
-<translation id="4728575227883772061">未知错误导致安装失败。如果谷歌浏览器正在运行，请将其关闭，然后重试。</translation>
-<translation id="4149882025268051530">安装程序无法解压缩存档文件。请重新下载谷歌浏览器。</translation>
-<translation id="6989339256997917931">谷歌浏览器已更新，但您已经至少 30 天未使用它了。</translation>
-<translation id="5744005218040929396">谷歌浏览器实用工具</translation>
-<translation id="4343226815564935778">谷歌浏览器的安装目录正在使用中。请重新启动计算机并重试。</translation>
-<translation id="6817660909204164466">将使用情况统计信息和崩溃报告自动发送给谷歌，帮助我们完善谷歌浏览器</translation>
-<translation id="8227755444512189073">谷歌浏览器必须启动外部应用程序才能处理 <ph name="SCHEME"/> 链接。请求的链接是 <ph name="PROTOLINK"/>。</translation>
-<translation id="1281036569101707544">谷歌浏览器<ph name="TERMS_OF_SERVICE_LINK"/></translation>
-<translation id="8815061062167142136">喔！谷歌浏览器崩溃了。是否立即重新启动？</translation>
-<translation id="1697213158865901863">谷歌浏览器内嵌框架</translation>
-<translation id="4200560168962230927">谷歌浏览器内嵌框架已更新。请重新启动您的浏览器。谷歌浏览器版本：<ph name="TODO_0001"/>，谷歌浏览器内嵌框架版本：<ph name="TODO_0002"/></translation>
-<translation id="126024305903398738">谷歌浏览器个人资料导入应用程序</translation>
-<translation id="2653935705142821164">浏览器呈现器</translation>
-<translation id="7241541963706135274">谷歌浏览器会执行以下任务：</translation>
-<translation id="8446794773162156990">谷歌浏览器功能失常</translation>
-<translation id="3889417619312448367">卸载谷歌浏览器</translation>
-<translation id="6169866489629082767"><ph name="PAGE_TITLE"/> - 谷歌浏览器</translation>
-<translation id="3089968997497233615">谷歌浏览器现已推出更安全的新版本。</translation>
-<translation id="8810218179782551669">谷歌浏览器语言：</translation>
-<translation id="7001386529596391893">在这些位置创建谷歌浏览器快捷方式：</translation>
-<translation id="7461436095086637522">浏览器个人资料导入应用程序</translation>
-<translation id="4357846314885556934">谷歌浏览器功能失常</translation>
+<translation id="8556340503434111824">Google Chrome 浏览器现已推出速度更快的新版本。</translation>
+<translation id="4728575227883772061">未知错误导致安装失败。如果 Google Chrome 浏览器正在运行，请将其关闭，然后重试。</translation>
+<translation id="4149882025268051530">安装程序无法解压缩存档文件。请重新下载 Google Chrome 浏览器。</translation>
+<translation id="6989339256997917931">Google Chrome 浏览器已更新，但您已经至少 30 天未使用它了。</translation>
+<translation id="5744005218040929396">Google Chrome 浏览器实用工具</translation>
+<translation id="4343226815564935778">Google Chrome 浏览器的安装目录正在使用中。请重新启动计算机并重试。</translation>
+<translation id="8227755444512189073">Google Chrome 浏览器必须启动外部应用程序才能处理 <ph name="SCHEME"/> 链接。请求的链接是 <ph name="PROTOLINK"/>。</translation>
+<translation id="1281036569101707544">Google Chrome 浏览器<ph name="TERMS_OF_SERVICE_LINK"/></translation>
+<translation id="1697213158865901863">Google Chrome 浏览器内嵌框架</translation>
+<translation id="2653935705142821164">Chrome 浏览器呈现器</translation>
+<translation id="8446794773162156990">Google Chrome 浏览器功能失常</translation>
+<translation id="3889417619312448367">卸载 Google Chrome 浏览器</translation>
+<translation id="6169866489629082767"><ph name="PAGE_TITLE"/> - Google Chrome 浏览器</translation>
+<translation id="3089968997497233615">Google Chrome 浏览器现已推出更安全的新版本。</translation>
+<translation id="8810218179782551669">Google Chrome 浏览器语言：</translation>
+<translation id="7451721381978275812">参数无效。在准备模式下，“Google Chrome 浏览器内嵌框架”必须与“Google Chrome 浏览器”同时安装。</translation>
+<translation id="5809236835374558741">该计算机已经有了更高版本的 Google Chrome 浏览器内嵌框架。如果该软件无法正常运行，请卸载 Google Chrome 浏览器内嵌框架并重新下载。</translation>
+<translation id="4357846314885556934">Google Chrome 浏览器功能失常</translation>
 <translation id="4561681684759837226"><ph name="PAGE_TITLE"/></translation>
-<translation id="1195935957447623558">谷歌浏览器未正确关闭。要重新打开曾经打开过的网页，请点击“恢复”。</translation>
-<translation id="2499193704281978000">谷歌浏览器没有响应。是否立即重新启动？</translation>
-<translation id="2580411288591421699">无法安装与当前运行版本相同的谷歌浏览器。请关闭谷歌浏览器，然后重试。</translation>
+<translation id="4331809312908958774">Chrome 操作系统</translation>
+<translation id="1195935957447623558">Google Chrome 浏览器未正确关闭。要重新打开曾经打开过的网页，请点击“恢复”。</translation>
+<translation id="2580411288591421699">无法安装与当前运行版本相同的 Google Chrome 浏览器。请关闭 Google Chrome 浏览器，然后重试。</translation>
 <translation id="7747138024166251722">安装程序无法创建临时目录。请检查您是否有足够的磁盘空间和权限来安装该软件。</translation>
-<translation id="6008953001134414503">请先退出谷歌浏览器操作系统，然后重新登录，以应用此更改。</translation>
-<translation id="6009537148180854585">您尝试访问 &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;，但服务器出示的证书有误。谷歌浏览器无法使用有错误的证书，也无法验证所尝试连接的网站的身份。您的连接不安全，应该停止操作。</translation>
+<translation id="6008953001134414503">请先退出 Google Chrome 操作系统，然后重新登录，以应用此更改。</translation>
+<translation id="6009537148180854585">您尝试访问 &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;，但服务器出示的证书有误。Google Chrome 浏览器无法使用有错误的证书，也无法验证所尝试连接的网站的身份。您的连接不安全，应该停止操作。</translation>
 <translation id="8738921060445980047">版本未知。</translation>
 <translation id="2485422356828889247">卸载</translation>
-<translation id="8899050679030089927">请关闭所有谷歌浏览器窗口，然后重新启动谷歌浏览器，以便使这项更改生效。</translation>
-<translation id="3324235665723428530">您的配置文件来自新版谷歌浏览器，因此无法使用。\n\n某些功能可能不能使用。请指定其他配置文件目录，或使用新版谷歌浏览器。</translation>
-<translation id="7214670531148488183">谷歌浏览器可能会使用网络服务以改善您的浏览体验。您可自行停用这些服务。</translation>
+<translation id="3324235665723428530">您的配置文件来自新版 Google Chrome 浏览器，因此无法使用。\n\n某些功能可能不能使用。请指定其他配置文件目录，或使用新版 Chrome 浏览器。</translation>
+<translation id="7214670531148488183">Google Chrome 浏览器可能会使用网络服务以改善您的浏览体验。您可自行停用这些服务。</translation>
 <translation id="1759842336958782510">Chrome 浏览器</translation>
-<translation id="5008136264574452501">谷歌浏览器 Canary 版</translation>
+<translation id="5008136264574452501">Google Chrome 浏览器 Canary 版</translation>
 <translation id="911206726377975832">同时删除您的浏览数据吗？</translation>
-<translation id="2044287590254833138">谷歌浏览器工具栏</translation>
-<translation id="5074344184765391290">浏览器插件主程序</translation>
-<translation id="6481075104394517441">尝试访问的是 &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;，但服务器出示的证书尚未生效。没有信息可以表明证书是否受信任。谷歌浏览器无法保证您正在与 &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt; 进行通信，也无法保证该网站不是攻击网站。您应该确保计算机中的时钟和时区设置无误，否则就应该更正所有问题，然后刷新本页。如果时钟和时区设置无误，则应该停止操作。</translation>
+<translation id="2044287590254833138">Google Chrome 浏览器工具栏</translation>
+<translation id="5074344184765391290">Chrome 浏览器插件主程序</translation>
+<translation id="6481075104394517441">尝试访问的是 &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;，但服务器出示的证书尚未生效。没有信息可以表明证书是否受信任。Google Chrome 浏览器无法保证您正在与 &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt; 进行通信，也无法保证该网站不是攻击网站。您应该确保计算机中的时钟和时区设置无误，否则就应该更正所有问题，然后刷新本页。如果时钟和时区设置无误，则应该停止操作。</translation>
 <translation id="8862326446509486874">您的权限不足，无法进行系统级安装。请尝试以管理员身份再次运行安装程序。</translation>
-<translation id="595871952790078940">浏览器实用工具</translation>
-<translation id="2874156562296220396">谷歌浏览器的诞生离不开 <ph name="BEGIN_LINK_CHROMIUM"/>Chromium<ph name="END_LINK_CHROMIUM"/> 开源项目以及其他<ph name="BEGIN_LINK_OSS"/>开源软件<ph name="END_LINK_OSS"/>。</translation>
-<translation id="6921913858457830952">谷歌浏览器已做好安装准备。</translation>
-<translation id="7436949144778751379">您需要在 Windows XP 或更高版本的操作系统中运行谷歌浏览器，否则可能无法正常使用某些功能。</translation>
-<translation id="7100330187273168372">谷歌浏览器无法对其数据目录进行读写操作：\n\n<ph name="USER_DATA_DIRECTORY"/></translation>
+<translation id="595871952790078940">Chrome 浏览器实用工具</translation>
+<translation id="2874156562296220396">Google Chrome 浏览器的诞生离不开 <ph name="BEGIN_LINK_CHROMIUM"/>Chromium<ph name="END_LINK_CHROMIUM"/> 开源项目以及其他<ph name="BEGIN_LINK_OSS"/>开源软件<ph name="END_LINK_OSS"/>。</translation>
+<translation id="3847841918622877581">“Google Chrome 浏览器”可能会使用网络服务改善您的浏览体验。</translation>
+<translation id="7436949144778751379">您需要在 Windows XP 或更高版本的操作系统中运行 Google Chrome 浏览器，否则可能无法正常使用某些功能。</translation>
+<translation id="7100330187273168372">Google Chrome 浏览器无法对其数据目录进行读写操作：\n\n<ph name="USER_DATA_DIRECTORY"/></translation>
 <translation id="6757767188268205357">谢绝打扰</translation>
-<translation id="2290095356545025170">确定要卸载谷歌浏览器吗？</translation>
-<translation id="6087062680442281307">谷歌浏览器是一款可高速运行网页和应用程序的网络浏览器。它快捷、稳定且易于使用。谷歌浏览器内置的恶意软件和网上诱骗防护功能可让您更加安全地浏览网页。</translation>
-<translation id="2115751172320447278">版权 © 2006-2010 Google Inc. 保留所有权利。</translation>
-<translation id="5941830788786076944">将谷歌浏览器设为默认浏览器</translation>
+<translation id="2290095356545025170">确定要卸载 Google Chrome 浏览器吗？</translation>
+<translation id="6087062680442281307">Google Chrome 浏览器是一款可高速运行网页和应用程序的网络浏览器。它快捷、稳定且易于使用。Google Chrome 浏览器内置的恶意软件和网上诱骗防护功能可让您更加安全地浏览网页。</translation>
+<translation id="5941830788786076944">将 Google Chrome 浏览器设为默认浏览器</translation>
+<translation id="3612333635265770873">已发现一个同名的模块与 Google Chrome 浏览器存在冲突。</translation>
 <translation id="5947389362804196214">系统无法读取您的偏好设置。\n\n某些功能可能无法使用，并且对偏好设置进行的更改不会保存。</translation>
-<translation id="4127951844153999091">在这种情况下，列在证书中的地址与浏览器尝试显示的网站的地址不相符。引发这种情况的一个可能原因是，您的通信内容正被攻击者拦截，攻击者出示的是其他网站的证书，这就会引发网站地址不符的情况。另一可能引发这种情况的原因是，服务器已设置为对多个网站（包括您试图访问的网站）返回同一证书，即使此证书并不是对所有这些网站都有效。谷歌浏览器确定访问的是 &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt;，但无法证实该网站就是所要访问的网站 &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;。如果继续操作，则谷歌浏览器不会检查是否还有名称不相符的情况。一般而言，最好不要继续操作。</translation>
+<translation id="6650142020817594541">此网站建议使用“Google Chrome 浏览器内嵌框架”（已安装）。</translation>
+<translation id="8778247165111716037">“Google Chrome 操作系统”是借助于其他<ph name="BEGIN_LINK_CROS_OSS"/>开源软件<ph name="END_LINK_CROS_OSS"/>实现的。</translation>
+<translation id="4127951844153999091">在这种情况下，列在证书中的地址与浏览器尝试显示的网站的地址不相符。引发这种情况的一个可能原因是，您的通信内容正被攻击者拦截，攻击者出示的是其他网站的证书，这就会引发网站地址不符的情况。另一可能引发这种情况的原因是，服务器已设置为对多个网站（包括您试图访问的网站）返回同一证书，即使此证书并不是对所有这些网站都有效。Google Chrome 浏览器确定访问的是 &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt;，但无法证实该网站就是所要访问的网站 &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;。如果继续操作，则 Chrome 浏览器不会检查是否还有名称不相符的情况。一般而言，最好不要继续操作。</translation>
 <translation id="2712549016134575851">检测到与另一个已安装的应用程序存在冲突。</translation>
-<translation id="7018032895891496381">谷歌浏览器会使用您的默认搜索引擎（目前设置为<ph name="PAGE_TITLE"/>）。您想要保留自己的默认搜索引擎吗？</translation>
-<translation id="7161904924553537242">欢迎使用谷歌浏览器</translation>
-<translation id="8669527147644353129">谷歌浏览器帮助程序</translation>
-<translation id="5318056482164160049">谷歌浏览器插件主程序</translation>
-<translation id="6126631249883707068">想让谷歌浏览器保存您的密码吗？</translation>
-<translation id="5046764976540625289">退出谷歌浏览器</translation>
-<translation id="9039578207253536065">谷歌浏览器工作应用程序</translation>
+<translation id="7018032895891496381">Google Chrome 浏览器会使用您的默认搜索引擎（目前设置为<ph name="PAGE_TITLE"/>）。您想要保留自己的默认搜索引擎吗？</translation>
+<translation id="7161904924553537242">欢迎使用 Google Chrome 浏览器</translation>
+<translation id="8669527147644353129">Google Chrome 浏览器帮助程序</translation>
+<translation id="2681064822612051220">在系统中安装“Google Chrome 浏览器”时发现已存在其他版本，请先卸载然后重试。</translation>
+<translation id="5318056482164160049">Google Chrome 浏览器插件主程序</translation>
+<translation id="6126631249883707068">想让 Google Chrome 浏览器保存您的密码吗？</translation>
+<translation id="5046764976540625289">退出 Chrome 浏览器</translation>
+<translation id="9039578207253536065">Google Chrome 浏览器工作应用程序</translation>
+<translation id="9171640504251796339">http://www.google.com/support/chrome/bin/answer.py?hl=<ph name="GRITLANGCODE_1"/>&amp;answer=161796</translation>
 <translation id="8865765905101981392">互联网浏览器</translation>
-<translation id="8776515774046280928">此计算机已经安装了谷歌浏览器，并且所有用户均可使用它。若要安装仅供个别用户使用的谷歌浏览器，必须先卸载由管理员安装的供所有用户使用的版本。</translation>
-<translation id="2189123953385179981">谷歌浏览器操作系统不支持启动外部应用程序处理 <ph name="SCHEME"/> 链接。请求的链接是 <ph name="PROTOLINK"/>。</translation>
+<translation id="8776515774046280928">此计算机已经安装了 Google Chrome 浏览器，并且所有用户均可使用它。若要安装仅供个别用户使用的 Google Chrome 浏览器，必须先卸载由管理员安装的供所有用户使用的版本。</translation>
+<translation id="2189123953385179981">Google Chrome 操作系统不支持启动外部应用程序处理 <ph name="SCHEME"/> 链接。请求的链接是 <ph name="PROTOLINK"/>。</translation>
+<translation id="8205111949707227942">可选：将使用统计信息和崩溃报告自动发送给 Google，帮助我们完善 Chrome 操作系统。</translation>
 <translation id="7196020411877309443">为何会出现这个窗口？</translation>
-<translation id="2769762047821873045">谷歌浏览器不是您的默认浏览器。</translation>
-<translation id="7825851276765848807">由于未指定的错误导致安装失败。请重新下载谷歌浏览器。</translation>
-<translation id="3335672657969596251">谷歌浏览器不支持 <ph name="OS_NAME"/>。</translation>
-<translation id="473183893665420670">如果您重置谷歌浏览器选项，您所做的所有更改将还原为默认设置。您是否还希望执行此操作？</translation>
-<translation id="3636771339108070045">该计算机已经安装了更高版本的谷歌浏览器。如果该软件无法正常运行，请卸载谷歌浏览器并重新下载。</translation>
-<translation id="3360895254066713204">浏览器帮助应用程序</translation>
-<translation id="1001534784610492198">安装程序存档文件损坏或无效。请重新下载谷歌浏览器。</translation>
-<translation id="6626317981028933585">抱歉，无法在 Mozilla Firefox 浏览器运行时获取其设置。要将其设置导入谷歌浏览器，请保存您手头的工作并关闭所有 Firefox 窗口，然后点击“继续”。</translation>
-<translation id="8540666473246803645">谷歌浏览器</translation>
-<translation id="3419750618886995598">谷歌浏览器内嵌框架更新。</translation>
-<translation id="6049075767726609708">管理员已为该系统安装了谷歌浏览器，并且所有用户均可使用它。因此，原来针对个别用户安装的浏览器现在可供系统上的所有用户使用。</translation>
+<translation id="2769762047821873045">Google Chrome 浏览器不是您的默认浏览器。</translation>
+<translation id="7825851276765848807">由于未指定的错误导致安装失败。请重新下载 Google Chrome 浏览器。</translation>
+<translation id="3335672657969596251">Google Chrome 浏览器不支持 <ph name="OS_NAME"/>。</translation>
+<translation id="473183893665420670">如果您重置 Google Chrome 浏览器选项，您所做的所有更改将还原为默认设置。您是否还希望执行此操作？</translation>
+<translation id="3636771339108070045">该计算机已经安装了更高版本的 Google Chrome 浏览器。如果该软件无法正常运行，请卸载 Google Chrome 浏览器并重新下载。</translation>
+<translation id="5334545119300433702">已知此模块与 Google Chrome 浏览器存在冲突。</translation>
+<translation id="3360895254066713204">Chrome 浏览器帮助应用程序</translation>
+<translation id="1001534784610492198">安装程序存档文件损坏或无效。请重新下载 Google Chrome 浏览器。</translation>
+<translation id="6626317981028933585">抱歉，无法在 Mozilla Firefox 浏览器运行时获取其设置。要将其设置导入 Google Chrome 浏览器，请保存您手头的工作并关闭所有 Firefox 窗口，然后点击“继续”。</translation>
+<translation id="8540666473246803645">Google Chrome 浏览器</translation>
+<translation id="3419750618886995598">Chrome 浏览器内嵌框架更新。</translation>
+<translation id="6049075767726609708">管理员已为该系统安装了 Google Chrome 浏览器，并且所有用户均可使用它。因此，原来针对个别用户安装的浏览器现在可供系统上的所有用户使用。</translation>
 <translation id="7123348595797445166">试用（已安装）</translation>
 <translation id="3870154837782082782">Google Inc.</translation>
-<translation id="1446473746922165495">更改用于谷歌浏览器菜单、对话框和工具提示的语言。</translation>
-<translation id="9189723490960700326">您尝试访问 &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;，但服务器出示的证书已过期。没有信息可表明该证书是否已在过期后受损。这说明谷歌浏览器无法保证正在与 &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt; 而不是攻击者进行通信。您应该停止操作。</translation>
-<translation id="7106741999175697885">任务管理器 - 谷歌浏览器</translation>
-<translation id="8449380764213232436">谷歌浏览器正在从<ph name="BROWSER_COMPONENT"/>中导入以下内容：</translation>
-<translation id="852884188147941900">浏览器工作应用程序</translation>
-<translation id="3396977131400919238">安装过程中出现操作系统错误。请重新下载谷歌浏览器。</translation>
-<translation id="2618799103663374905">将谷歌浏览器快捷方式添加到桌面、快速启动栏和“开始”菜单中</translation>
-<translation id="1144950271450340860">尝试访问的是 &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;，但服务器出示的证书由您计算机的操作系统不信任的实体颁发。这可能表明服务器自行生成了安全凭据，谷歌浏览器认为其中的身份信息不可靠；也可能表明攻击者正尝试拦截您的通信内容。您应该停止操作，如果以前从来没有看到过针对此网站的警告，则&lt;strong&gt;更应特别&lt;/strong&gt;留意。</translation>
+<translation id="1446473746922165495">更改用于 Google Chrome 浏览器菜单、对话框和工具提示的语言。</translation>
+<translation id="9189723490960700326">您尝试访问 &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;，但服务器出示的证书已过期。没有信息可表明该证书是否已在过期后受损。这说明 Google Chrome 浏览器无法保证正在与 &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt; 而不是攻击者进行通信。您应该停止操作。</translation>
+<translation id="7106741999175697885">任务管理器 - Google Chrome 浏览器</translation>
+<translation id="8449380764213232436">Google Chrome 浏览器正在从<ph name="BROWSER_COMPONENT"/>中导入以下内容：</translation>
+<translation id="852884188147941900">Chrome 浏览器工作应用程序</translation>
+<translation id="3396977131400919238">安装过程中出现操作系统错误。请重新下载 Google Chrome 浏览器。</translation>
+<translation id="5495581687705680288">模块已载入到 Google Chrome 浏览器中</translation>
+<translation id="3586272666307004550">版权 © 2006-2011 Google Inc. 保留所有权利。</translation>
+<translation id="1144950271450340860">尝试访问的是 &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;，但服务器出示的证书由您计算机的操作系统不信任的实体颁发。这可能表明服务器自行生成了安全凭据，Google Chrome 浏览器认为其中的身份信息不可靠；也可能表明攻击者正尝试拦截您的通信内容。您应该停止操作，如果以前从来没有看到过针对此网站的警告，则&lt;strong&gt;更应特别&lt;/strong&gt;留意。</translation>
 </translationbundle>

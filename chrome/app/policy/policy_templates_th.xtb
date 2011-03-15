@@ -1,10 +1,14 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="th">
+<translation id="6074963268421707432">ไม่อนุญาตให้ไซต์ใดๆ แสดงการแจ้งเตือนบนเดสก์ท็อป</translation>
 <translation id="1426410128494586442">ใช่</translation>
 <translation id="6786747875388722282">ส่วนขยาย</translation>
 <translation id="4250680216510889253">ไม่</translation>
 <translation id="3866249974567520381">คำอธิบาย</translation>
+<translation id="402759845255257575">ไม่อนุญาตให้ไซต์ใดๆ เรียกใช้ JavaScript</translation>
+<translation id="2805707493867224476">อนุญาตให้ไซต์ทั้งหมดแสดงป๊อปอัป</translation>
 <translation id="5765780083710877561">คำอธิบาย:</translation>
+<translation id="7006788746334555276">การตั้งค่าเนื้อหา</translation>
 <translation id="3891357445869647828">เปิดใช้งาน JavaScript</translation>
 </translationbundle>

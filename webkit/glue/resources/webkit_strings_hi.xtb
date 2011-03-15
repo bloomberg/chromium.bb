@@ -1,46 +1,58 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="hi">
-<translation id="4519964825805946997"><ph name="URL"/> से प्लग-इन स्थापित करने में विफल हुआ</translation>
+<translation id="4519964825805946997"><ph name="URL"/> से प्लग-इन स्थापित करने में विफल</translation>
 <translation id="9186171386827445984">दस्तावेज़ लोड कर रहा है: <ph name="PAGE_NUMBER"/>/<ph name="NUMBER_OF_PAGES"/> पृष्ठ...</translation>
 <translation id="1235745349614807883">हाल ही की खोजें साफ़ करें</translation>
+<translation id="1171774979989969504">कृपया ई-मेल पता दर्ज करें.</translation>
+<translation id="709897737746224366">कृपया अनुरोधित प्रारूप का मिलान करें.</translation>
 <translation id="5048533449481078685">सूची चिन्हक</translation>
 <translation id="372362261556059955">अतिरिक्त प्‍लग-इन की आवश्यकता है</translation>
-<translation id="4202807286478387388">जाएँ</translation>
+<translation id="4202807286478387388">जाएं</translation>
 <translation id="4611115858363067980"><ph name="FILENAME"/><ph name="WIDTH"/>×<ph name="HEIGHT"/></translation>
 <translation id="7658239707568436148">रद्द करें</translation>
 <translation id="795667975304826397">कोई फाइल नहीं चुनी गई</translation>
-<translation id="1416462845279468967">प्लग-इन स्थापना विफल हुई</translation>
-<translation id="8141602879876242471">यह एक खोजने योग्य इंडेक्स है. खोज कुंजीशब्द प्रविष्ट करें :</translation>
+<translation id="1416462845279468967">प्लग-इन स्थापना विफल</translation>
+<translation id="8141602879876242471">इस अनुक्रमणिका को खोजा जा सकता है. खोज कुंजीशब्द प्रविष्ट करें:</translation>
 <translation id="5650795167354946011">प्लग-इन स्थापित करने के बाद, रीफ़्रेश करने के लिए यहां क्लिक करें</translation>
-<translation id="370665806235115550">लोड हो रहा है ...</translation>
-<translation id="6845533974506654842">दबाएँ</translation>
-<translation id="8244226242650769279">चित्र मैप</translation>
-<translation id="2548326553472216322">हाल ही में कोई खोज नहीं</translation>
+<translation id="370665806235115550">लोड हो रहा है...</translation>
+<translation id="6845533974506654842">दबाएं</translation>
+<translation id="8244226242650769279">छवि मानचित्र</translation>
+<translation id="310520048233152454">कृपया URL लिखें.</translation>
+<translation id="2548326553472216322">हाल ही कोई खोज नहीं</translation>
+<translation id="7263440858009898357">कृपया सूची में किसी आइटम का चयन करें.</translation>
+<translation id="5164977714490026579">मान <ph name="MINIMUM"/> से कम या इसके बराबर होना चाहिए.</translation>
 <translation id="5944544982112848342">2048 (उच्च ग्रेड)</translation>
-<translation id="3040011195152428237">लिंक</translation>
+<translation id="3040011195152428237">संपर्क</translation>
 <translation id="2745343197843472802">प्‍लग-इन प्राप्त करें</translation>
+<translation id="8451268428117625855">कृपया किसी फ़ाइल का चयन करें.</translation>
 <translation id="5776402066334188252">कृपया पुष्टि करें कि आप यह प्लग-इन स्थापित करना चाहेंगे. आपको केवल वे प्लग-इन स्थापित करने चाहिए जिन पर आप विश्वास करते हैं.</translation>
-<translation id="4003986561708175844">आवश्यक प्लग-इन स्थापित नहीं है</translation>
-<translation id="3018094406922859308">प्लग-इन डाउनलोड किया जा रहा है...</translation>
+<translation id="3018094406922859308">प्लग-इन डाउनलोड कर रहा है...</translation>
 <translation id="7364796246159120393">फ़ाइल चुनें</translation>
-<translation id="8964020114565522021">फाइल खींचकर यहाँ लाएं</translation>
+<translation id="2761667185364618470">यदि आप आगे बढ़ना चाहते हैं तो इस बॉक्‍स को चेक करें.</translation>
+<translation id="8964020114565522021">यहां फाइल खींचकर लाएं</translation>
 <translation id="838869780401515933">चेक करें</translation>
 <translation id="2846343701378493991">1024 (मध्यम ग्रेड)</translation>
 <translation id="5476505524087279545">अनचेक करें</translation>
 <translation id="3789841737615482174">स्थापित करें</translation>
+<translation id="2507943997699731163">कृपया इस फ़ील्ड को भरें.</translation>
 <translation id="5253117816378681419">कृपया पुष्टि करें कि आप <ph name="PLUGIN"/> प्लग-इन स्थापित करना चाहेंगे. आपको केवल वे प्लग-इन स्थापित करने चाहिए जिन पर आप विश्वास करते हैं.</translation>
 <translation id="6663448176199120256">हाल ही में की गई खोजें</translation>
-<translation id="2597378329261239068">यह दस्तावेज़ पासवर्ड सुरक्षित है.  कृपया एक पासवर्ड दर्ज करें.</translation>
+<translation id="2597378329261239068">यह दस्तावेज़ पासवर्ड सुरक्षित है.  कृपया पासवर्ड दर्ज करें.</translation>
+<translation id="5466621249238537318">कृपया एक या अधिक फ़ाइल का चयन करें.</translation>
+<translation id="8750798805984357768">कृपया इनमें से कोई विकल्प चुनें.</translation>
 <translation id="7740050170769002709">HTML सामग्री</translation>
-<translation id="5939518447894949180">पुन: सेट करें</translation>
-<translation id="1842960171412779397">चुनें</translation>
+<translation id="2226276347425096477">कृपया इस टेक्स्ट को <ph name="MAX_CHARACTERS"/> वर्णों या कम तक छोटा करें (वर्तमान में आप <ph name="CURRENT_LENGTH"/> वर्णों का उपयोग कर रहे हैं).</translation>
+<translation id="2908441821576996758">कृपया ईमेल पतों की अल्पविराम द्वारा विभाजित सूची दर्ज करें.</translation>
+<translation id="5939518447894949180">रीसेट करें</translation>
+<translation id="835897206747267392">अमान्य मान.</translation>
+<translation id="1842960171412779397">चयन करें</translation>
+<translation id="3450233048674729344">मान <ph name="MAXIMUM"/> से कम या इसके बराबर होना चाहिए.</translation>
 <translation id="7638452146404718955">प्लग-इन डाउनलोड करने के लिए यहां क्लिक करें</translation>
 <translation id="6119846243427417423">सक्रिय करें</translation>
-<translation id="8444882422881193423"><ph name="NUMBER_OF_FILES"/> फ़ाइलें</translation>
-<translation id="4470547978413275879"><ph name="PLUGIN"/> प्लग-इन स्थापित नहीं है</translation>
-<translation id="6765711848403622008">इस सामग्री को प्रदर्शित करने के लिए कोई प्लग-इन उपलब्ध नहीं है</translation>
+<translation id="8444882422881193423"><ph name="NUMBER_OF_FILES"/> फ़ाइल</translation>
+<translation id="3934680773876859118">PDF दस्तावेज़ लोड करने में विफल</translation>
 <translation id="8597182159515967513">हेडिंग</translation>
-<translation id="2653659639078652383">जमा करें</translation>
+<translation id="2653659639078652383">सबमिट करें</translation>
 <translation id="8475551193147984329"><ph name="PLUGIN"/> प्लग-इन की आवश्यकता है</translation>
 </translationbundle>

@@ -1,10 +1,14 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="sk">
+<translation id="6074963268421707432">Nepovoliť žiadnym webovým stránkam zobrazovať upozornenia na pracovnej ploche</translation>
 <translation id="1426410128494586442">Áno</translation>
 <translation id="6786747875388722282">Rozšírenia</translation>
 <translation id="4250680216510889253">Nie</translation>
 <translation id="3866249974567520381">Popis</translation>
+<translation id="402759845255257575">Nepovoliť žiadnym webovým stránkam spustiť kód JavaScript</translation>
+<translation id="2805707493867224476">Povoliť všetkým webovým stránkam zobrazovať kontextové okná</translation>
 <translation id="5765780083710877561">Popis:</translation>
+<translation id="7006788746334555276">Nastavenia obsahu</translation>
 <translation id="3891357445869647828">Povoliť jazyk JavaScript</translation>
 </translationbundle>

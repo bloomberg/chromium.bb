@@ -1,10 +1,14 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="fi">
+<translation id="6074963268421707432">Älä anna sivustojen näyttää työpöytäilmoituksia</translation>
 <translation id="1426410128494586442">Kyllä</translation>
 <translation id="6786747875388722282">Laajennukset</translation>
 <translation id="4250680216510889253">Ei</translation>
 <translation id="3866249974567520381">Kuvaus</translation>
+<translation id="402759845255257575">Älä salli sivustojen käyttää JavaScriptiä</translation>
+<translation id="2805707493867224476">Salli kaikkien sivustojen näyttää ponnahdusikkunoita</translation>
 <translation id="5765780083710877561">Kuvaus:</translation>
+<translation id="7006788746334555276">Sisältöasetukset</translation>
 <translation id="3891357445869647828">Aktivoi JavaScript</translation>
 </translationbundle>

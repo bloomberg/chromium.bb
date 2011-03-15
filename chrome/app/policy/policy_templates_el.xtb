@@ -1,10 +1,14 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="el">
+<translation id="6074963268421707432">Να μην επιτρέπεται σε κανέναν ιστότοπο η εμφάνιση ειδοποιήσεων επιφάνειας εργασίας</translation>
 <translation id="1426410128494586442">Ναι</translation>
 <translation id="6786747875388722282">Επεκτάσεις</translation>
 <translation id="4250680216510889253">Όχι</translation>
 <translation id="3866249974567520381">Περιγραφή</translation>
+<translation id="402759845255257575">Να μην επιτρέπεται σε κανέναν ιστότοπο η εκτέλεση JavaScript</translation>
+<translation id="2805707493867224476">Να επιτρέπεται σε όλους τους ιστότοπους η εμφάνιση αναδυόμενων παραθύρων</translation>
 <translation id="5765780083710877561">Περιγραφή:</translation>
+<translation id="7006788746334555276">Ρυθμίσεις περιεχομένου</translation>
 <translation id="3891357445869647828">Ενεργοποίηση JavaScript</translation>
 </translationbundle>

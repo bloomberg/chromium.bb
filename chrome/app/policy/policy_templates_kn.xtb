@@ -1,10 +1,14 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="kn">
+<translation id="6074963268421707432">ಯಾವುದೇ ಸೈಟ್‌ ಪಾಪ್-ಅಪ್‌ಗಳನ್ನು ತೋರಿಸಲು ಅನುಮತಿಸಬೇಡ</translation>
 <translation id="1426410128494586442">ಹೌದು</translation>
 <translation id="6786747875388722282">ವಿಸ್ತರಣೆಗಳು</translation>
 <translation id="4250680216510889253">ಇಲ್ಲ</translation>
 <translation id="3866249974567520381">ವಿವರಣೆ</translation>
+<translation id="402759845255257575">JavaScript ಚಲಿಸಲು ಯಾವುದೇ ಸೈಟ್ ಅನ್ನು ಅನುಮತಿಸಬೇಡ</translation>
+<translation id="2805707493867224476">ಪಾಪ್-ಅಪ್‌ಗಳನ್ನು ತೋರಿಸಲು ಎಲ್ಲಾ ಸೈಟ್‌ಗಳನ್ನು ಅನುಮತಿಸಿ</translation>
 <translation id="5765780083710877561">ವಿವರಣೆ:</translation>
+<translation id="7006788746334555276">ವಿಷಯ ಸೆಟ್ಟಿಂಗ್‌ಗಳು</translation>
 <translation id="3891357445869647828">JavaScript ಸಕ್ರಿಯಗೊಳಿಸಿ.</translation>
 </translationbundle>

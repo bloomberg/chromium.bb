@@ -4,6 +4,8 @@
 <translation id="4519964825805946997">Η εγκατάσταση της προσθήκης από τη διεύθυνση <ph name="URL"/> απέτυχε</translation>
 <translation id="9186171386827445984">Φόρτωση εγγράφου: <ph name="PAGE_NUMBER"/>/<ph name="NUMBER_OF_PAGES"/> σελίδες...</translation>
 <translation id="1235745349614807883">Εκκαθάριση πρόσφατων αναζητήσεων</translation>
+<translation id="1171774979989969504">Εισαγάγετε μια διεύθυνση ηλεκτρονικού ταχυδρομείου.</translation>
+<translation id="709897737746224366">Αντιστοιχίστε τη ζητούμενη μορφή.</translation>
 <translation id="5048533449481078685">δείκτης λίστας</translation>
 <translation id="372362261556059955">Απαιτείται επιπλέον προσθήκη</translation>
 <translation id="4202807286478387388">μεταπήδηση</translation>
@@ -16,30 +18,40 @@
 <translation id="370665806235115550">Φόρτωση...</translation>
 <translation id="6845533974506654842">πατήστε</translation>
 <translation id="8244226242650769279">χάρτης εικόνας</translation>
+<translation id="310520048233152454">Εισαγάγετε μια διεύθυνση URL.</translation>
 <translation id="2548326553472216322">Δεν υπάρχουν πρόσφατες αναζητήσεις</translation>
+<translation id="7263440858009898357">Επιλέξτε ένα στοιχείο από τη λίστα.</translation>
+<translation id="5164977714490026579">Η τιμή πρέπει να είναι μεγαλύτερη ή ίση του <ph name="MINIMUM"/>.</translation>
 <translation id="5944544982112848342">2048 (Υψηλός βαθμός)</translation>
 <translation id="3040011195152428237">σύνδεσμος</translation>
 <translation id="2745343197843472802">Λήψη προσθήκης</translation>
+<translation id="8451268428117625855">Επιλέξτε ένα αρχείο.</translation>
 <translation id="5776402066334188252">Επιβεβαιώστε ότι θέλετε να εγκαταστήσετε αυτή την προσθήκη. Πρέπει να εγκαθιστάτε μόνο προσθήκες που θεωρείτε αξιόπιστες.</translation>
-<translation id="4003986561708175844">Η απαιτούμενη προσθήκη δεν έχει εγκατασταθεί</translation>
 <translation id="3018094406922859308">Λήψη προσθήκης...</translation>
 <translation id="7364796246159120393">Επιλογή αρχείου</translation>
+<translation id="2761667185364618470">Αν θέλετε να συνεχίσετε, επιλέξτε αυτό το πλαίσιο.</translation>
 <translation id="8964020114565522021">Σύρετε το αρχείο εδώ</translation>
 <translation id="838869780401515933">ενεργοποίηση</translation>
 <translation id="2846343701378493991">1024 (Μέτριος βαθμός)</translation>
 <translation id="5476505524087279545">απενεργοποίηση</translation>
 <translation id="3789841737615482174">Εγκατάσταση</translation>
+<translation id="2507943997699731163">Συμπληρώστε αυτό το πεδίο.</translation>
 <translation id="5253117816378681419">Επιβεβαιώστε ότι θέλετε να εγκαταστήσετε την προσθήκη <ph name="PLUGIN"/>. Πρέπει να εγκαθιστάτε μόνο προσθήκες που θεωρείτε αξιόπιστες.</translation>
 <translation id="6663448176199120256">Πρόσφατες αναζητήσεις</translation>
 <translation id="2597378329261239068">Αυτό το έγγραφο προστατεύεται με κωδικό πρόσβασης.  Πληκτρολογήστε έναν κωδικό πρόσβασης.</translation>
+<translation id="5466621249238537318">Επιλέξτε ένα ή περισσότερα αρχεία.</translation>
+<translation id="8750798805984357768">Ορίστε μία από αυτές τις επιλογές.</translation>
 <translation id="7740050170769002709">Περιεχόμενο HTML</translation>
+<translation id="2226276347425096477">Κάντε πιο σύντομο αυτό το κείμενο ώστε να έχει το πολύ <ph name="MAX_CHARACTERS"/> χαρακτήρες (αυτήν τη στιγμή χρησιμοποιείτε <ph name="CURRENT_LENGTH"/> χαρακτήρες).</translation>
+<translation id="2908441821576996758">Εισαγάγετε μια λίστα διευθύνσεων ηλεκτρονικού ταχυδρομείου διαχωρισμένη με κόμματα.</translation>
 <translation id="5939518447894949180">Επαναφορά</translation>
+<translation id="835897206747267392">Μη έγκυρη τιμή.</translation>
 <translation id="1842960171412779397">επιλογή</translation>
+<translation id="3450233048674729344">Η τιμή πρέπει να είναι μικρότερη ή ίση του <ph name="MAXIMUM"/>.</translation>
 <translation id="7638452146404718955">Κάντε κλικ εδώ για να κάνετε λήψη της προσθήκης</translation>
 <translation id="6119846243427417423">ενεργοποίηση</translation>
 <translation id="8444882422881193423"><ph name="NUMBER_OF_FILES"/> αρχεία</translation>
-<translation id="4470547978413275879">Η προσθήκη <ph name="PLUGIN"/> δεν έχει εγκατασταθεί</translation>
-<translation id="6765711848403622008">Δεν υπάρχει διαθέσιμη προσθήκη για την εμφάνιση αυτού του περιεχομένου</translation>
+<translation id="3934680773876859118">Δεν ήταν δυνατή η φόρτωση του εγγράφου PDF</translation>
 <translation id="8597182159515967513">επικεφαλίδα</translation>
 <translation id="2653659639078652383">Υποβολή</translation>
 <translation id="8475551193147984329">Απαιτείται η προσθήκη <ph name="PLUGIN"/></translation>

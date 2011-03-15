@@ -1,10 +1,14 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="sl">
+<translation id="6074963268421707432">Nobenemu spletnemu mestu ne dovoli, da pokaže namizna obvestila</translation>
 <translation id="1426410128494586442">Da</translation>
 <translation id="6786747875388722282">Razširitve</translation>
 <translation id="4250680216510889253">Ne</translation>
 <translation id="3866249974567520381">Opis</translation>
+<translation id="402759845255257575">Nobenem mestu ne dovoli izvajanja JavaScripta</translation>
+<translation id="2805707493867224476">Dovoli vsem mestom, da pokažejo pojavna okna</translation>
 <translation id="5765780083710877561">Opis:</translation>
+<translation id="7006788746334555276">Nastavitve vsebine</translation>
 <translation id="3891357445869647828">Omogoči JavaScript</translation>
 </translationbundle>

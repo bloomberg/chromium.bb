@@ -4,6 +4,8 @@
 <translation id="4519964825805946997">Nie można zainstalować wtyczki dostępnej pod adresem <ph name="URL"/></translation>
 <translation id="9186171386827445984">Wczytywanie dokumentu: <ph name="PAGE_NUMBER"/>/<ph name="NUMBER_OF_PAGES"/> stron...</translation>
 <translation id="1235745349614807883">Wyczyść ostatnie wyszukiwania</translation>
+<translation id="1171774979989969504">Wprowadź adres e-mail.</translation>
+<translation id="709897737746224366">Podaj wartość w wymaganym formacie.</translation>
 <translation id="5048533449481078685">znacznik listy</translation>
 <translation id="372362261556059955">Potrzebna jest dodatkowa wtyczka</translation>
 <translation id="4202807286478387388">przejdź</translation>
@@ -16,30 +18,40 @@
 <translation id="370665806235115550">Ładowanie...</translation>
 <translation id="6845533974506654842">naciśnij</translation>
 <translation id="8244226242650769279">mapa grafiki</translation>
+<translation id="310520048233152454">Wprowadź adres URL.</translation>
 <translation id="2548326553472216322">Brak ostatnich wyszukiwań</translation>
+<translation id="7263440858009898357">Wybierz element z listy.</translation>
+<translation id="5164977714490026579">Wartość nie może być mniejsza niż <ph name="MINIMUM"/>.</translation>
 <translation id="5944544982112848342">2048 (wysoki poziom)</translation>
 <translation id="3040011195152428237">link</translation>
 <translation id="2745343197843472802">Pobierz wtyczkę</translation>
+<translation id="8451268428117625855">Wybierz plik.</translation>
 <translation id="5776402066334188252">Potwierdź zamiar zainstalowania tej wtyczki. Należy instalować wyłącznie zaufane wtyczki.</translation>
-<translation id="4003986561708175844">Wymagana wtyczka nie jest zainstalowana</translation>
 <translation id="3018094406922859308">Trwa pobieranie wtyczki...</translation>
 <translation id="7364796246159120393">Wybierz plik</translation>
+<translation id="2761667185364618470">Zaznacz to pole, jeśli chcesz kontynuować.</translation>
 <translation id="8964020114565522021">Przeciągnij plik tutaj</translation>
 <translation id="838869780401515933">zaznacz</translation>
 <translation id="2846343701378493991">1024 (średni poziom)</translation>
 <translation id="5476505524087279545">odznacz</translation>
 <translation id="3789841737615482174">Zainstaluj</translation>
+<translation id="2507943997699731163">Wypełnij to pole.</translation>
 <translation id="5253117816378681419">Potwierdź zamiar zainstalowania wtyczki <ph name="PLUGIN"/>. Należy instalować wyłącznie zaufane wtyczki.</translation>
 <translation id="6663448176199120256">Ostatnie wyszukiwania</translation>
 <translation id="2597378329261239068">Ten dokument jest chroniony hasłem. Wprowadź hasło.</translation>
+<translation id="5466621249238537318">Wybierz jeden lub kilka plików.</translation>
+<translation id="8750798805984357768">Wybierz jedną z opcji.</translation>
 <translation id="7740050170769002709">Treść HTML</translation>
+<translation id="2226276347425096477">Skróć ten tekst do maksymalnie <ph name="MAX_CHARACTERS"/> znaków (w tej chwili korzystasz z <ph name="CURRENT_LENGTH"/> znaków).</translation>
+<translation id="2908441821576996758">Podaj listę adresów e-mail rozdzielonych przecinkami.</translation>
 <translation id="5939518447894949180">Resetuj</translation>
+<translation id="835897206747267392">Nieprawidłowa wartość.</translation>
 <translation id="1842960171412779397">wybierz</translation>
+<translation id="3450233048674729344">Wartość nie może być większa niż <ph name="MAXIMUM"/>.</translation>
 <translation id="7638452146404718955">Kliknij tutaj, aby pobrać wtyczkę</translation>
 <translation id="6119846243427417423">aktywuj</translation>
 <translation id="8444882422881193423">Liczba plików: <ph name="NUMBER_OF_FILES"/></translation>
-<translation id="4470547978413275879">Wtyczka <ph name="PLUGIN"/> nie jest zainstalowana</translation>
-<translation id="6765711848403622008">Brak dostępnej wtyczki umożliwiającej wyświetlenie tej treści</translation>
+<translation id="3934680773876859118">Nie można wczytać dokumentu PDF</translation>
 <translation id="8597182159515967513">nagłówek</translation>
 <translation id="2653659639078652383">Prześlij</translation>
 <translation id="8475551193147984329">Potrzebna jest wtyczka <ph name="PLUGIN"/></translation>

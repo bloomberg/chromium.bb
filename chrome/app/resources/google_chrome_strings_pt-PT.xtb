@@ -11,45 +11,41 @@
 <translation id="7781002470561365167">Está disponível uma versão nova do Google Chrome.</translation>
 <translation id="7101265395643981223">Iniciar o Google Chrome</translation>
 <translation id="647902066410369402">O ficheiro de preferências está danificado ou é inválido.n\n\O Google Chrome não consegue recuperar as suas definições.</translation>
+<translation id="2879385160622431163">Google Chrome Instantâneo</translation>
 <translation id="2370289711218562573">O Google Chrome está neste momento a importar Favoritos/Marcadores.</translation>
 <translation id="8970027151245482499">O Google Chrome não está instalado ou não foi possível localizar o directório de instalação. Transfira de novo o Google Chrome.</translation>
+<translation id="1761870329818521071">Não é possível instalar a mesma versão do Google Chrome actualmente em execução. Feche o Google Chrome Frame e tente novamente.</translation>
 <translation id="2040709530900803995">Processador do Google Chrome</translation>
 <translation id="4281844954008187215">Termos de utilização</translation>
+<translation id="1779550429052479749">Foi encontrada uma instalação do Google Chrome ou Google Chrome Frame em conflito no sistema. Desinstale-a e tente novamente.</translation>
 <translation id="3555616473548901994">Desinstalação concluída.</translation>
 <translation id="8556340503434111824">Está disponível uma nova versão do Google Chrome, mais rápida do que nunca.</translation>
-<translation id="1826297811907343327">Se cancelar agora, não serão importados todos os itens. Pode importar novamente mais tarde a partir do menu do Google Chrome.</translation>
 <translation id="4728575227883772061">Houve uma falha na instalação devido a um erro não especificado. Se o Google Chrome estiver actualmente em execução, feche-o e tente de novo.</translation>
 <translation id="4149882025268051530">Houve uma falha no programa de instalação ao descompactar o arquivo. Transfira de novo o Google Chrome.</translation>
 <translation id="6989339256997917931">O Google Chrome foi actualizado, mas já não o utiliza há, pelo menos, 30 dias.</translation>
 <translation id="5744005218040929396">Utilitário do Google Chrome</translation>
 <translation id="4343226815564935778">O directório para instalação do Google Chrome parece estar a ser utilizado. Reinicie o computador e tente de novo.</translation>
-<translation id="6817660909204164466">Ajude a melhorar o Google Chrome enviando automaticamente estatísticas de utilização e relatórios de falhas para a Google</translation>
 <translation id="8227755444512189073">O Google Chrome precisa de executar uma aplicação externa para processar links <ph name="SCHEME"/>. O link solicitado é <ph name="PROTOLINK"/>.</translation>
 <translation id="1281036569101707544">Google Chrome <ph name="TERMS_OF_SERVICE_LINK"/></translation>
-<translation id="8815061062167142136">Uau! O Google Chrome falhou. Reiniciar agora?</translation>
 <translation id="1697213158865901863">Google Chrome Frame</translation>
-<translation id="4200560168962230927">O Chrome Frame foi actualizado. Reinicie o seu navegador. Versão do Chrome: <ph name="TODO_0001"/>, Versão do Chrome Frame: <ph name="TODO_0002"/></translation>
-<translation id="126024305903398738">Importador de perfis do Google Chrome</translation>
 <translation id="2653935705142821164">Processador do Chrome</translation>
-<translation id="7241541963706135274">O Google Chrome efectuará as seguintes tarefas:</translation>
 <translation id="8446794773162156990">O Google Chrome está a portar-se mal</translation>
 <translation id="3889417619312448367">Desinstalar o Google Chrome</translation>
 <translation id="6169866489629082767"><ph name="PAGE_TITLE"/> - Google Chrome</translation>
 <translation id="3089968997497233615">Está disponível uma versão nova e mais segura do Google Chrome.</translation>
 <translation id="8810218179782551669">Idioma do Google Chrome:</translation>
-<translation id="7001386529596391893">Criar atalhos do Google Chrome nestes locais:</translation>
-<translation id="7461436095086637522">Importador de perfis do Chrome</translation>
+<translation id="7451721381978275812">Argumentos inválidos. Não é possível instalar o Google Chrome Frame no modo de prontidão sem instalar o Google Chrome.</translation>
+<translation id="5809236835374558741">Este computador já tem uma versão mais recente do Google Chrome Frame. Se o software não estiver a funcionar, desinstale o Google Chrome Frame e transfira-o de novo.</translation>
 <translation id="4357846314885556934">O Google Chrome está a portar-se mal</translation>
 <translation id="4561681684759837226"><ph name="PAGE_TITLE"/></translation>
+<translation id="4331809312908958774">Chrome OS</translation>
 <translation id="1195935957447623558">O Google Chrome não foi correctamente encerrado. Para abrir novamente as páginas que estavam abertas, clique em Restaurar.</translation>
-<translation id="2499193704281978000">O Google Chrome não está a responder Reiniciar agora?</translation>
 <translation id="2580411288591421699">Não é possível instalar a mesma versão do Google Chrome actualmente em execução. Feche o Google Chrome e tente novamente.</translation>
 <translation id="7747138024166251722">O programa de instalação não conseguiu criar um directório temporário. Verifique se há espaço livre no disco e permissão para a instalação do software.</translation>
 <translation id="6008953001134414503">Termine sessão no Google Chrome SO e reinicie-a, para que a alteração seja aplicada.</translation>
 <translation id="6009537148180854585">Tentou aceder a &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, mas o certificado apresentado pelo servidor contém erros. O Google Chrome não pode utilizar um certificado com erros e não pode validar a identidade do site ao qual tentou ligar-se. A sua ligação não é segura pelo que não deve prosseguir.</translation>
 <translation id="8738921060445980047">Versão desconhecida.</translation>
 <translation id="2485422356828889247">Desinstalar</translation>
-<translation id="8899050679030089927">Feche todas as janelas do Google Chrome e reinicie-o para que esta alteração tenha efeito.</translation>
 <translation id="3324235665723428530">O seu perfil não pode ser utilizado pois pertence a uma versão mais recente do Google Chrome.\n\n Alguns recursos podem não estar disponíveis. Especifique um directório de perfil diferente ou utilize uma versão mais recente do Google Chrome.</translation>
 <translation id="7214670531148488183">O Google Chrome pode utilizar serviços da Web para optimizar a sua experiência de navegação. Se pretender, pode desactivar estes serviços.</translation>
 <translation id="1759842336958782510">Chrome</translation>
@@ -61,33 +57,39 @@
 <translation id="8862326446509486874">Não tem os direitos adequados para uma instalação ao nível do sistema. Tente executar o programa de instalação novamente como Administrador.</translation>
 <translation id="595871952790078940">Utilitário do Chrome</translation>
 <translation id="2874156562296220396">O Google Chrome foi concretizado graças ao projecto open source (código fonte aberto) <ph name="BEGIN_LINK_CHROMIUM"/>Chromium<ph name="END_LINK_CHROMIUM"/>, assim como a outro <ph name="BEGIN_LINK_OSS"/>software open source<ph name="END_LINK_OSS"/>.</translation>
-<translation id="6921913858457830952">O Google Chrome está pronto a completar a instalação.</translation>
+<translation id="3847841918622877581">O Google Chrome pode utilizar serviços Web para melhorar a sua experiência de navegação.</translation>
 <translation id="7436949144778751379">O Google Chrome requer o Windows XP ou mais recente. Algumas funcionalidades poderão não funcionar.</translation>
 <translation id="7100330187273168372">O Google Chrome não consegue ler ou escrever no seu directório de dados: \n\n<ph name="USER_DATA_DIRECTORY"/></translation>
 <translation id="6757767188268205357">Não incomodar</translation>
 <translation id="2290095356545025170">Tem a certeza de que pretende desinstalar o Google Chrome?</translation>
 <translation id="6087062680442281307">O Google Chrome é um navegador de internet que executa aplicações e páginas Web de forma extremamente rápida. É rápido, estável e fácil de utilizar. Navegue na Web com mais segurança com protecção contra phishing e software malicioso incorporada no Google Chrome.</translation>
-<translation id="2115751172320447278">Copyright © 2006-2010 Google Inc. Todos os direitos reservados.</translation>
 <translation id="5941830788786076944">Tornar o Google Chrome no browser padrão.</translation>
+<translation id="3612333635265770873">É conhecido um módulo com o mesmo nome que entra em conflito com o Google Chrome.</translation>
 <translation id="5947389362804196214">Não é possível ler as suas preferências.\n\nAlgumas funcionalidades poderão estar indisponíveis e as alterações efectuadas às preferências não serão guardadas.</translation>
+<translation id="6650142020817594541">Este Web site recomenda o Google Chrome Frame (já instalado).</translation>
+<translation id="8778247165111716037">O Google Chrome SO é tornado possível através de <ph name="BEGIN_LINK_CROS_OSS"/>software de código aberto<ph name="END_LINK_CROS_OSS"/> adicional.</translation>
 <translation id="4127951844153999091">Neste caso, o endereço listado no certificado não corresponde ao endereço do Web site a que o browser tentou aceder. Uma explicação possível reside no facto de as suas comunicações estarem a ser interceptadas por um utilizador mal intencionado que está a apresentar um certificado para um Web site diferente, o que causaria uma incompatibilidade. Outra explicação plausível consiste na possibilidade de o servidor estar configurado para devolver o mesmo certificado para vários Web sites, incluindo aquele que está a tentar visitar, apesar de esse certificado não ser válido para todos esses Web sites. O Google Chrome pode afirmar com certeza que acedeu a &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt;, mas não consegue verificar que se trata do mesmo site que  &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, ao qual tentou aceder. Se prosseguir, o Chrome deixará de verificar correspondências de nomes. Em geral, o melhor é não prosseguir para além deste ponto.</translation>
 <translation id="2712549016134575851">Foi detectado um conflito com outra aplicação instalada.</translation>
 <translation id="7018032895891496381">O Google Chrome utiliza o motor de pesquisa predefinido, que está actualmente definido como <ph name="PAGE_TITLE"/>. Pretende manter o motor de pesquisa predefinido?</translation>
 <translation id="7161904924553537242">Bem-vindo ao Google Chrome</translation>
 <translation id="8669527147644353129">Ajudante do Google Chrome</translation>
+<translation id="2681064822612051220">Foi encontrada uma instalação do Google Chrome em conflito no sistema. Desinstale-a e tente novamente.</translation>
 <translation id="5318056482164160049">Anfitrião do plug-in do Google Chrome</translation>
 <translation id="6126631249883707068">Pretende que o Google Chrome guarde a sua palavra-passe?</translation>
 <translation id="5046764976540625289">Sair do Chrome</translation>
 <translation id="9039578207253536065">Google Chrome Worker</translation>
+<translation id="9171640504251796339">http://www.google.com/support/chrome/bin/answer.py?hl=<ph name="GRITLANGCODE_1"/>&amp;answer=161796</translation>
 <translation id="8865765905101981392">Browser da Internet</translation>
 <translation id="8776515774046280928">O Google Chrome já está instalado e disponível para todos os utilizadores deste computador. Se pretender instalar o Google Chrome ao nível do utilizador, desinstale primeiro a versão ao nível do sistema instalada pelo administrador.</translation>
 <translation id="2189123953385179981">O Google ChromeOS não suporta a inicialização de uma aplicação externa para processar links de <ph name="SCHEME"/>. O link solicitado é <ph name="PROTOLINK"/>.</translation>
+<translation id="8205111949707227942">Opcional: Ajude a melhorar o Chrome OS enviando automaticamente estatísticas de utilização e relatórios de falhas para a Google.</translation>
 <translation id="7196020411877309443">Por que motivo estou a ver esta caixa de diálogo?</translation>
 <translation id="2769762047821873045">O Google Chrome não é o seu browser predefinido.</translation>
 <translation id="7825851276765848807">Ocorreu uma falha na instalação devido a um erro não especificado. Transfira novamente o Google Chrome.</translation>
 <translation id="3335672657969596251">O Google Chrome não suporta o <ph name="OS_NAME"/>.</translation>
 <translation id="473183893665420670">Ao repor as opções do Google Chrome, perderá·todas·as·alterações·que·tenha·efectuado·e·serão·repostos·os·valores·predefinidos. Deseja repor as opções do Chrome?</translation>
 <translation id="3636771339108070045">Este computador já tem uma versão mais recente do Google Chrome. Se o software não estiver a funcionar, desinstale o Google Chrome e transfira-o de novo.</translation>
+<translation id="5334545119300433702">Este módulo é conhecido por entrar em conflito com o Google Chrome.</translation>
 <translation id="3360895254066713204">Ajudante do Chrome</translation>
 <translation id="1001534784610492198">O arquivo do programa de instalação está corrompido ou é inválido. Transfira de novo o Google Chrome.</translation>
 <translation id="6626317981028933585">Infelizmente, as suas definições do Mozilla Firefox não estão disponíveis enquanto esse browser estiver aberto. Para importar essas definições para o Google Chrome, guarde o seu trabalho e feche todas as janelas do Firefox. De seguida clique em Continuar.</translation>
@@ -102,6 +104,7 @@
 <translation id="8449380764213232436">O Google Chrome está neste momento a importar os seguintes itens do <ph name="BROWSER_COMPONENT"/>:</translation>
 <translation id="852884188147941900">Chrome Worker</translation>
 <translation id="3396977131400919238">Ocorreu um erro no sistema operativo durante a instalação. Transfira de novo o Google Chrome.</translation>
-<translation id="2618799103663374905">Adicione atalhos do Google Chrome ao ambiente de trabalho, à Barra de início rápido e ao menu Iniciar</translation>
+<translation id="5495581687705680288">Módulos carregados no Google Chrome</translation>
+<translation id="3586272666307004550">Copyright © 2006-2011 Google Inc. Todos os direitos reservados.</translation>
 <translation id="1144950271450340860">Tentou aceder a &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, mas o servidor apresentou um certificado emitido por uma entidade que não é considerada fidedigna pelo sistema operativo do seu computador. Isto poderá significar que o servidor gerou as suas próprias credenciais de segurança, nas quais o Google Chrome não pode confiar para obter informações de identidade, ou que um utilizador mal intencionado poderá estar a tentar interceptar as suas comunicações. Não deve prosseguir, &lt;strong&gt;especialmente&lt;/strong&gt; se nunca tiver visto anteriormente este aviso relativamente a esse site.</translation>
 </translationbundle>

@@ -8,48 +8,44 @@
 <translation id="2770231113462710648">既定のブラウザを変更:</translation>
 <translation id="698670068493841342">Google Chrome は既にこのユーザー用にインストールされています。アプリケーションが動作しない場合は、アンインストールしてからダウンロードし直してください。</translation>
 <translation id="7400722733683201933">Google Chrome について</translation>
-<translation id="7781002470561365167">Google Chrome の最新バージョンをぜひお試しください</translation>
+<translation id="7781002470561365167">Google クロームブラウザの最新バージョンを是非お試しください。</translation>
 <translation id="7101265395643981223">Google Chrome を起動</translation>
 <translation id="647902066410369402">ユーザー設定ファイルが壊れているか無効です。\n\n設定を復元できません。</translation>
+<translation id="2879385160622431163">Google Chrome インスタント検索</translation>
 <translation id="2370289711218562573">Google Chrome にお気に入り/ブックマークをインポートしています。</translation>
 <translation id="8970027151245482499">Google Chrome がインストールされていないか、インストールされたディレクトリが見つかりません。Google Chrome をダウンロードし直してください。</translation>
+<translation id="1761870329818521071">実行中の Google Chrome Frame と同じバージョンをインストールすることはできません。Google Chrome Frame を閉じてからもう一度お試しください。</translation>
 <translation id="2040709530900803995">Google Chrome Renderer</translation>
 <translation id="4281844954008187215">利用規約</translation>
+<translation id="1779550429052479749">システム上に競合している Google Chrome または Google Chrome Frame が見つかりました。こちらをアンインストールしてからもう一度お試しください。</translation>
 <translation id="3555616473548901994">アンインストールが完了しました。</translation>
-<translation id="8556340503434111824">さらに高速になった Google Chrome の最新バージョンをぜひお試しください。</translation>
-<translation id="1826297811907343327">キャンセルすると一部のアイテムはインポートされません。Google Chrome のメニューから後で再度インポートすることができます。</translation>
+<translation id="8556340503434111824">Google クロームブラウザがバージョンアップ！是非お試しください。</translation>
 <translation id="4728575227883772061">原因不明のエラーによりインストールが失敗しました。実行中の Google Chrome を終了してからやり直してください。</translation>
 <translation id="4149882025268051530">インストーラー アーカイブを解凍できませんでした。Google Chrome をダウンロードし直してください。</translation>
 <translation id="6989339256997917931">Google Chrome が更新されましたが、30 日間以上使用されていません。</translation>
 <translation id="5744005218040929396">Google Chrome Utility</translation>
 <translation id="4343226815564935778">Google Chrome のインストール先ディレクトリが現在使用中です。パソコンを再起動して、もう一度やり直してください。</translation>
-<translation id="6817660909204164466">使用統計データや障害レポートを Google に自動送信して Google Chrome の機能向上に役立てる</translation>
 <translation id="8227755444512189073"><ph name="SCHEME"/> リンクを処理するには外部アプリケーションの起動が必要です。リクエストされたリンクは <ph name="PROTOLINK"/> です。</translation>
 <translation id="1281036569101707544">Google Chrome <ph name="TERMS_OF_SERVICE_LINK"/></translation>
-<translation id="8815061062167142136">Google Chrome がクラッシュしました。再起動しますか？</translation>
 <translation id="1697213158865901863">Google Chrome フレーム</translation>
-<translation id="4200560168962230927">Chrome フレームが更新されました。ブラウザを再起動してください。Chrome バージョン: <ph name="TODO_0001"/>、Chrome フレーム バージョン: <ph name="TODO_0002"/></translation>
-<translation id="126024305903398738">Google Chrome Profile Importer</translation>
 <translation id="2653935705142821164">Chrome Renderer</translation>
-<translation id="7241541963706135274">Google Chrome で次の処理が行われます:</translation>
 <translation id="8446794773162156990">Google Chrome の動作がおかしい</translation>
 <translation id="3889417619312448367">Google Chrome をアンインストール</translation>
 <translation id="6169866489629082767"><ph name="PAGE_TITLE"/> - Google Chrome</translation>
-<translation id="3089968997497233615">安全性がさらに向上した Google Chrome の最新バージョンをぜひお試しください。</translation>
+<translation id="3089968997497233615">Google クロームブラウザがより速く、さらに便利に。いますぐトライ！</translation>
 <translation id="8810218179782551669">Google Chrome の言語:</translation>
-<translation id="7001386529596391893">Google Chrome のショートカットを作成する場所:</translation>
-<translation id="7461436095086637522">Chrome Profile Importer</translation>
+<translation id="7451721381978275812">引数が無効です。Google Chrome Frame を準備完了モードでインストールするには、一緒に Google Chrome をインストールする必要があります。</translation>
+<translation id="5809236835374558741">新しいバージョンの Google Chrome Frame が既にインストールされています。Google Chrome Frame が動作しない場合は、アンインストールしてから新しくダウンロードし直してください。</translation>
 <translation id="4357846314885556934">Google Chrome の動作がおかしい</translation>
 <translation id="4561681684759837226"><ph name="PAGE_TITLE"/></translation>
+<translation id="4331809312908958774">Chrome OS</translation>
 <translation id="1195935957447623558">前回のセッション中に Google Chrome は強制終了されました。開いていたページをすべて復元するには、[復元] をクリックしてください。</translation>
-<translation id="2499193704281978000">Google Chrome の応答がありません。再起動しますか？</translation>
 <translation id="2580411288591421699">実行中の Google Chrome と同じバージョンをインストールすることはできません。Google Chrome を閉じてからもう一度お試しください。</translation>
 <translation id="7747138024166251722">インストーラーの一時ディレクトリを作成できませんでした。ディスクの空き領域とソフトウェアのインストール許可があることを確認してください。</translation>
 <translation id="6008953001134414503">この変更を反映するには、Google Chrome OS からログアウトし、もう一度ログインしてください。</translation>
 <translation id="6009537148180854585">&lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt; にアクセスしようとしましたが、サーバーの証明書にエラーが含まれています。エラーのある証明書は Google Chrome で使用できないため、接続しようとしているサイトの身元を検証することができません。この接続は安全でないため、ここで操作を止めてください。</translation>
 <translation id="8738921060445980047">バージョンが不明です。</translation>
 <translation id="2485422356828889247">アンインストール</translation>
-<translation id="8899050679030089927">この変更を反映するには、すべての Google Chrome ウィンドウを終了してからもう一度起動してください。</translation>
 <translation id="3324235665723428530">バージョンが新しい Google Chrome のプロフィールは使用できません。\n\n一部の機能が使用できない可能性があります。別の場所のプロフィールを指定するか、新しいバージョンの Chrome をご使用ください</translation>
 <translation id="7214670531148488183">Google Chrome は、より快適なブラウジングを提供する目的でウェブサービスを使用することがあります。これらは無効にすることもできます。</translation>
 <translation id="1759842336958782510">Chrome</translation>
@@ -61,33 +57,39 @@
 <translation id="8862326446509486874">権限が不十分なためシステムレベルのインストールができません。管理者権限でインストールしてください。</translation>
 <translation id="595871952790078940">Chrome Utility</translation>
 <translation id="2874156562296220396">Google Chrome はオープンソース プロジェクト <ph name="BEGIN_LINK_CHROMIUM"/>Chromium<ph name="END_LINK_CHROMIUM"/> やその他の<ph name="BEGIN_LINK_OSS"/>オープンソース ソフトウェア<ph name="END_LINK_OSS"/>によって実現しました。</translation>
-<translation id="6921913858457830952">Google Chrome をインストールする準備ができました。</translation>
+<translation id="3847841918622877581">Google Chrome は、より快適なブラウジングを提供する目的でウェブサービスを使用することがあります。</translation>
 <translation id="7436949144778751379">Google Chrome では Windows XP 以降が必要です。機能の一部が動作しない可能性があります。</translation>
 <translation id="7100330187273168372">このディレクトリには Google Chrome はアクセスできません:\n\n<ph name="USER_DATA_DIRECTORY"/></translation>
 <translation id="6757767188268205357">今後は表示しない</translation>
 <translation id="2290095356545025170">Google Chrome をアンインストールしてもよろしいですか？</translation>
 <translation id="6087062680442281307">Google Chrome は、ウェブページやウェブ アプリケーションを高速に実行できるスピードと、高い安定性を兼ね備えた非常に使いやすいウェブ ブラウザです。不正なソフトウェアやフィッシングに対する保護機能が組み込まれており、ウェブを安全にブラウジングできます。</translation>
-<translation id="2115751172320447278">Copyright © 2006-2010 Google Inc. All Rights Reserved.</translation>
 <translation id="5941830788786076944">Google Chrome を既定のブラウザにする</translation>
+<translation id="3612333635265770873">同じ名前のモジュールは Google Chrome と競合することがわかっています。</translation>
 <translation id="5947389362804196214">ユーザー設定ファイルを読み込むことができません。\n\n一部の機能が利用できない可能性があります。また、設定への変更は保存されません。</translation>
+<translation id="6650142020817594541">このサイトでは Google Chrome Frame（インストール済み）が推奨されています。</translation>
+<translation id="8778247165111716037">Google Chrome OS は、追加の<ph name="BEGIN_LINK_CROS_OSS"/>オープンソース ソフトウェア<ph name="END_LINK_CROS_OSS"/>によって実現しました。</translation>
 <translation id="4127951844153999091">証明書のアドレスと、実際にアクセスしようとしているウェブサイトのアドレスが一致していません。これには、悪意のあるユーザーによって通信が傍受されているか、または複数のサイトで同じ証明書を返すようサーバーで設定しているにも関わらず、証明書が有効になっていないサイトが含まれている可能性があります。Google Chrome で検出されたアクセスは &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt; で、それが &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt; と同じサイトであるかどうかは確認できません。名前の不一致を無視してこのまま続行することもできますが、通常はここで操作を止めることをおすすめします。</translation>
 <translation id="2712549016134575851">インストールされている別のアプリケーションとの競合が検出されました。</translation>
 <translation id="7018032895891496381">Google Chrome は既定の検索エンジンを使用します。現在は <ph name="PAGE_TITLE"/> に設定されています。この検索エンジンを使用しますか？</translation>
 <translation id="7161904924553537242">Google Chrome へようこそ</translation>
 <translation id="8669527147644353129">Google Chrome Helper</translation>
+<translation id="2681064822612051220">システム上に競合している Google Chrome が見つかりました。これをアンインストールしてからもう一度お試しください。</translation>
 <translation id="5318056482164160049">Google Chrome Plug-In Host</translation>
 <translation id="6126631249883707068">Google Chrome でパスワードを保存しますか？</translation>
 <translation id="5046764976540625289">Chrome を終了</translation>
 <translation id="9039578207253536065">Google Chrome Worker</translation>
+<translation id="9171640504251796339">http://www.google.com/support/chrome/bin/answer.py?hl=<ph name="GRITLANGCODE_1"/>&amp;answer=161796</translation>
 <translation id="8865765905101981392">インターネット ブラウザ</translation>
 <translation id="8776515774046280928">このコンピュータには既に Google Chrome がインストールされており、コンピュータのすべてのユーザーが使用できます。ユーザー レベルで Google Chrome をインストールする場合は、管理者がインストールしたシステム レベルの Google Chrome を最初にアンインストールする必要があります。</translation>
 <translation id="2189123953385179981">Google Chrome OS では、<ph name="SCHEME"/> リンクの処理に必要な外部アプリケーションの起動がサポートされていません。リクエストされたリンクは <ph name="PROTOLINK"/> です。</translation>
+<translation id="8205111949707227942">オプション: 使用状況データと障害レポートを Google に自動送信して Chrome OS の機能向上に役立てる。</translation>
 <translation id="7196020411877309443">このウィンドウが表示される理由</translation>
 <translation id="2769762047821873045">Google Chromeはデフォルトのブラウザとして設定されていません。</translation>
 <translation id="7825851276765848807">原因不明のエラーによりインストールに失敗しました。Google Chrome をもう一度ダウンロードしてください。</translation>
 <translation id="3335672657969596251">Google Chrome は <ph name="OS_NAME"/> に対応していません。</translation>
 <translation id="473183893665420670">Google Chrome オプションをリセットすると、これまでの変更がすべて消去され既定の設定に戻ります。Chrome オプションをリセットしますか？</translation>
 <translation id="3636771339108070045">より新しいバージョンの Google Chrome が既にインストールされています。Google Chrome が動作しない場合は、それをアンインストールしてから新しくダウンロードし直してください。</translation>
+<translation id="5334545119300433702">このモジュールは Google Chrome と競合することがわかっています。</translation>
 <translation id="3360895254066713204">Chrome Helper</translation>
 <translation id="1001534784610492198">インストーラー アーカイブが壊れているか無効です。Google Chrome をダウンロードし直してください。</translation>
 <translation id="6626317981028933585">Mozilla Firefox の設定を Google Chrome にインポートするには、まず Firefox のウィンドウをすべて閉じてください。その後 [続行] をクリックしてください。</translation>
@@ -102,6 +104,7 @@
 <translation id="8449380764213232436"><ph name="BROWSER_COMPONENT"/> から Google Chrome にインポートしています:</translation>
 <translation id="852884188147941900">Chrome Worker</translation>
 <translation id="3396977131400919238">インストール中にオペレーティング システム エラーが発生しました。Google Chrome をダウンロード直してください。</translation>
-<translation id="2618799103663374905">Google Chrome のショートカットをデスクトップ、クイック起動バー、スタート メニューに追加</translation>
+<translation id="5495581687705680288">Google Chrome に読み込まれているモジュール</translation>
+<translation id="3586272666307004550">Copyright © 2006-2011 Google Inc. All Rights Reserved.</translation>
 <translation id="1144950271450340860">&lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt; にアクセスしようとしましたが、この証明書の発行元は、ご使用のオペレーティング システムで信頼されていません。サーバーのセキュリティ認証が独特なため Google Chrome で身元を特定できないか、または侵入者によって通信が傍受されている可能性があります。前にもこのサイトにアクセスしたことがあるのに&lt;strong&gt;今回初めて警告が表示された場合は&lt;/strong&gt;特に疑わしいため、ここで操作を止めてください。</translation>
 </translationbundle>

@@ -4,6 +4,8 @@
 <translation id="4519964825805946997">Inštalácia doplnku z adresy <ph name="URL"/> zlyhala</translation>
 <translation id="9186171386827445984">Prebieha načítavanie dokumentu: <ph name="PAGE_NUMBER"/>/<ph name="NUMBER_OF_PAGES"/> stránok...</translation>
 <translation id="1235745349614807883">Vyčistiť posledné vyhľadávania</translation>
+<translation id="1171774979989969504">Zadajte e-mailovú adresu.</translation>
+<translation id="709897737746224366">Zadajte hodnotu zodpovedajúcu požadovanému formátu.</translation>
 <translation id="5048533449481078685">ukazovateľ v zozname</translation>
 <translation id="372362261556059955">Vyžaduje sa ďalší doplnok</translation>
 <translation id="4202807286478387388">skok</translation>
@@ -16,30 +18,40 @@
 <translation id="370665806235115550">Načítava sa...</translation>
 <translation id="6845533974506654842">stlačiť</translation>
 <translation id="8244226242650769279">mapa obrázka</translation>
+<translation id="310520048233152454">Zadajte adresu URL.</translation>
 <translation id="2548326553472216322">Žiadne posledné vyhľadávania</translation>
+<translation id="7263440858009898357">Vyberte položku zo zoznamu.</translation>
+<translation id="5164977714490026579">Hodnota musí byť väčšia alebo rovná hodnote <ph name="MINIMUM"/>.</translation>
 <translation id="5944544982112848342">2048 (vysoký stupeň)</translation>
 <translation id="3040011195152428237">odkaz</translation>
 <translation id="2745343197843472802">Získať doplnok</translation>
+<translation id="8451268428117625855">Vyberte súbor.</translation>
 <translation id="5776402066334188252">Potvrďte, že chcete nainštalovať tento doplnok. Mali by ste inštalovať len doplnky, ktorým dôverujete.</translation>
-<translation id="4003986561708175844">Vyžadovaný doplnok nie je nainštalovaný</translation>
 <translation id="3018094406922859308">Prebieha preberanie doplnku...</translation>
 <translation id="7364796246159120393">Vybrať súbor</translation>
+<translation id="2761667185364618470">Ak chcete pokračovať, začiarknite toto políčko.</translation>
 <translation id="8964020114565522021">Súbor presunúť sem</translation>
 <translation id="838869780401515933">označiť</translation>
 <translation id="2846343701378493991">1024 (stredný stupeň)</translation>
 <translation id="5476505524087279545">zrušiť označenie</translation>
 <translation id="3789841737615482174">Inštalovať</translation>
+<translation id="2507943997699731163">Vyplňte toto pole.</translation>
 <translation id="5253117816378681419">Potvrďte, že chcete nainštalovať doplnok <ph name="PLUGIN"/>. Mali by ste inštalovať len doplnky, ktorým dôverujete.</translation>
 <translation id="6663448176199120256">Posledné vyhľadávania</translation>
 <translation id="2597378329261239068">Tento dokument je chránený heslom. Zadajte heslo.</translation>
+<translation id="5466621249238537318">Vyberte jeden alebo viac súborov.</translation>
+<translation id="8750798805984357768">Vyberte jednu z týchto možností.</translation>
 <translation id="7740050170769002709">Obsah HTML</translation>
+<translation id="2226276347425096477">Tento text musíte skrátiť na <ph name="MAX_CHARACTERS"/> znakov alebo menej (súčasný počet znakov: <ph name="CURRENT_LENGTH"/>).</translation>
+<translation id="2908441821576996758">Zadajte zoznam e-mailových adries oddelených čiarkou.</translation>
 <translation id="5939518447894949180">Vynulovať</translation>
+<translation id="835897206747267392">Neplatná hodnota.</translation>
 <translation id="1842960171412779397">vybrať</translation>
+<translation id="3450233048674729344">Hodnota musí byť menšia alebo rovná hodnote <ph name="MAXIMUM"/>.</translation>
 <translation id="7638452146404718955">Kliknutím sem prevezmete doplnok</translation>
 <translation id="6119846243427417423">aktivovať</translation>
 <translation id="8444882422881193423">Počet súborov: <ph name="NUMBER_OF_FILES"/></translation>
-<translation id="4470547978413275879">Nie je nainštalovaný doplnok <ph name="PLUGIN"/></translation>
-<translation id="6765711848403622008">Na zobrazenie tohto obsahu nie je k dispozícii žiadny doplnok</translation>
+<translation id="3934680773876859118">Načítanie dokumentu PDF zlyhalo</translation>
 <translation id="8597182159515967513">nadpis</translation>
 <translation id="2653659639078652383">Odoslať</translation>
 <translation id="8475551193147984329">Vyžaduje sa doplnok <ph name="PLUGIN"/></translation>

@@ -1,10 +1,14 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="fr">
+<translation id="6074963268421707432">Interdire à tous les sites d'afficher des notifications sur le Bureau</translation>
 <translation id="1426410128494586442">Oui</translation>
 <translation id="6786747875388722282">Extensions</translation>
 <translation id="4250680216510889253">Non</translation>
 <translation id="3866249974567520381">Description</translation>
+<translation id="402759845255257575">Interdire à tous les sites d'exécuter JavaScript</translation>
+<translation id="2805707493867224476">Autoriser tous les sites à afficher des fenêtres pop-up</translation>
 <translation id="5765780083710877561">Description :</translation>
+<translation id="7006788746334555276">Paramètres de contenu</translation>
 <translation id="3891357445869647828">Activer JavaScript</translation>
 </translationbundle>

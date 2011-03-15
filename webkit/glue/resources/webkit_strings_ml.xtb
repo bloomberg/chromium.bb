@@ -4,6 +4,8 @@
 <translation id="4519964825805946997"><ph name="URL"/> എന്നതില്‍‌ നിന്നുള്ള പ്ലഗ്-ഇന്‍‌ ഇന്‍‌സ്റ്റാളുചെയ്യുന്നതിന് പരാജയപ്പെട്ടു</translation>
 <translation id="9186171386827445984">പ്രമാണങ്ങള്‍ ലോഡുചെയ്യുന്നു: <ph name="PAGE_NUMBER"/>/<ph name="NUMBER_OF_PAGES"/> പേജുകള്‍...</translation>
 <translation id="1235745349614807883">അടുത്തിടെയുള്ള തിരയലുകള്‍ മായ്ക്കുക</translation>
+<translation id="1171774979989969504">ദയവായി ഒരു ഇമെയില്‍ വിലാസം നല്‍കുക.</translation>
+<translation id="709897737746224366">അഭ്യര്‍ത്ഥി ച്ചഫോര്‍മാറ്റ് ദയവായി പൊരുത്തപ്പെടുത്തുക.</translation>
 <translation id="5048533449481078685">പട്ടിക മാര്‍ക്കര്‍</translation>
 <translation id="372362261556059955">കൂടുതല്‍‌ പ്ലഗ്-ഇന്‍‌ ആവശ്യമുണ്ട്‌‌</translation>
 <translation id="4202807286478387388">jump</translation>
@@ -16,30 +18,40 @@
 <translation id="370665806235115550">ലോഡ്ചെയ്യുന്നു...</translation>
 <translation id="6845533974506654842">അമര്‍ത്തുക</translation>
 <translation id="8244226242650769279">ഇമേജ് മാപ്പ്</translation>
+<translation id="310520048233152454">ദയവായി ഒരു URL നല്‍കുക.</translation>
 <translation id="2548326553472216322">സമീപകാല തിരയലുകള്‍ ഇല്ല</translation>
+<translation id="7263440858009898357">പട്ടികയിലെ ഒരു ഇനം ദയവായി തിരഞ്ഞെടുക്കുക</translation>
+<translation id="5164977714490026579">മൂല്യം <ph name="MINIMUM"/> എന്നതില്‍ കൂടുതലോ സമമോ ആയിരിക്കണം.</translation>
 <translation id="5944544982112848342">2048 (High Grade)</translation>
 <translation id="3040011195152428237">ലിങ്ക്</translation>
 <translation id="2745343197843472802">പ്ലഗ്-ഇന്‍‌ നേടുക</translation>
+<translation id="8451268428117625855">ദയവായി ഒരു ഫയല്‍ തരം തിരഞ്ഞെടുക്കുക.</translation>
 <translation id="5776402066334188252">നിങ്ങള്‍‌ ഈ പ്ലഗ്-ഇന്‍‌ ഇന്‍‌സ്റ്റാളുചെയ്യാന്‍‌ താല്‍‌പ്പര്യപ്പെടുന്നുവെന്നത് ദയവായി സ്ഥിരീകരിക്കുക. നിങ്ങള്‍‌ വിശ്വസിക്കുന്ന പ്ലഗ്-ഇനുകള്‍‌ മാത്രമേ ഇന്‍‌സ്റ്റാള്‍‌ ചെയ്യാവൂ.</translation>
-<translation id="4003986561708175844">ആവശ്യമായ പ്ലഗ്-ഇന്‍‌ ഇന്‍‌സ്റ്റാളുചെയ്തില്ല</translation>
 <translation id="3018094406922859308">പ്ലഗ്-ഇന്‍‌ ഡൌണ്‍‌ലോഡുചെയ്യുന്നു...</translation>
 <translation id="7364796246159120393">ഫയല്‍ തിരഞ്ഞെടുക്കൂ</translation>
+<translation id="2761667185364618470">നിങ്ങള്‍ തുടരാന്‍ താല്‍പ്പര്യപ്പെടുന്നെങ്കില്‍ ഈ ബോക്സ് ദയവായി പരിശോധിക്കുക.</translation>
 <translation id="8964020114565522021">ഇവിടെ ഫയല്‍ ഇഴയ്ക്കുക</translation>
 <translation id="838869780401515933">പരിശോധിക്കൂ</translation>
 <translation id="2846343701378493991">1024 (മീഡിയം ഗ്രേഡ്)</translation>
 <translation id="5476505524087279545">അണ്‍ചെക്ക് ചെയ്യുക</translation>
 <translation id="3789841737615482174">ഇന്‍സ്റ്റോള്‍ ചെയ്യുക</translation>
+<translation id="2507943997699731163">ദയവായി ഈ ഫീല്‍ഡ് പൂരിപ്പിക്കുക.</translation>
 <translation id="5253117816378681419">നിങ്ങള്‍‌ ഈ <ph name="PLUGIN"/> പ്ലഗ്-ഇന്‍‌ ഇന്‍‌സ്റ്റാളുചെയ്യാന്‍‌ താല്‍‌പ്പര്യപ്പെടുന്നുവെന്നത് ദയവായി സ്ഥിരീകരിക്കുക. നിങ്ങള്‍‌ വിശ്വസിക്കുന്ന പ്ലഗ്-ഇനുകള്‍‌ മാത്രമേ ഇന്‍‌സ്റ്റാള്‍‌ ചെയ്യാവൂ.</translation>
 <translation id="6663448176199120256">സമീപകാല തിരയലുകള്‍</translation>
 <translation id="2597378329261239068">ഈ പ്രമാണം പാസ്‌വേഡ് പരിരക്ഷിതമാണ്.  ദയവായി ഒരു പാസ്‌വേഡ് നല്‍‌കുക.</translation>
+<translation id="5466621249238537318">ഒന്നോ അതില്‍ക്കൂടുതലോ ഫയലുകള്‍ ദയവായി തിരഞ്ഞെടുക്കുക.</translation>
+<translation id="8750798805984357768">ഈ ഓപ്ഷനുകളിലൊന്ന് ദയവായി തിരഞ്ഞെടുക്കുക.</translation>
 <translation id="7740050170769002709">HTML ഉള്ളടക്കം</translation>
+<translation id="2226276347425096477">ഈ വാചകത്തെ <ph name="MAX_CHARACTERS"/> അല്ലെങ്കില്‍ അതില്‍‌ക്കുറവ് പ്രതീകങ്ങളായി ദയവായി കുറയ്ക്കുക (നിങ്ങള്‍ നിലവില്‍ <ph name="CURRENT_LENGTH"/> പ്രതീകങ്ങള്‍ ഉപയോഗിക്കുകയാണ്).</translation>
+<translation id="2908441821576996758">ഇമെയില്‍ വിലാസങ്ങളുടെ കോമയാല്‍ വേര്‍തിരിച്ച ഒരു പട്ടിക ദയവായി നല്‍കുക.</translation>
 <translation id="5939518447894949180">വീണ്ടും സജ്ജീകരിക്കുക</translation>
+<translation id="835897206747267392">അസാധുവായ മൂല്യം.</translation>
 <translation id="1842960171412779397">തിരഞ്ഞെടുക്കൂ</translation>
+<translation id="3450233048674729344">മൂല്യം <ph name="MAXIMUM"/> എന്നതില്‍ കുറവോ സമമോ ആയിരിക്കണം.</translation>
 <translation id="7638452146404718955">പ്ലഗ്-ഇന്‍‌ ഡൌണ്‍‌ലോഡുചെയ്യുന്നതിന് ഇവിടെ ക്ലിക്കുചെയ്യുക</translation>
 <translation id="6119846243427417423">ആക്റ്റിവേറ്റ് ചെയ്യുക</translation>
 <translation id="8444882422881193423"><ph name="NUMBER_OF_FILES"/> ഫയലുകള്‍</translation>
-<translation id="4470547978413275879"><ph name="PLUGIN"/> പ്ലഗ്-ഇന്‍‌ ഇന്‍‌സ്റ്റാളുചെയ്തില്ല</translation>
-<translation id="6765711848403622008">ഈ ഉള്ളടക്കം പ്രദര്‍‌ശിപ്പിക്കുന്നതിന് പ്ലഗ്-ഇന്നൊന്നും ലഭ്യമല്ല</translation>
+<translation id="3934680773876859118">PDF പ്രമാണം ലോഡുചെയ്യുന്നത് പരാജയപ്പെട്ടു</translation>
 <translation id="8597182159515967513">തലക്കെട്ട്</translation>
 <translation id="2653659639078652383">സമര്‍പ്പിക്കൂ</translation>
 <translation id="8475551193147984329"><ph name="PLUGIN"/> പ്ലഗ്-ഇന്‍‌ ആവശ്യമുണ്ട്</translation>

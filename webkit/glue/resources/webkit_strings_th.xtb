@@ -4,6 +4,8 @@
 <translation id="4519964825805946997">การติดตั้งปลั๊กอินจาก <ph name="URL"/> ล้มเหลว</translation>
 <translation id="9186171386827445984">กำลังโหลดเอกสาร: <ph name="PAGE_NUMBER"/>/<ph name="NUMBER_OF_PAGES"/> หน้า...</translation>
 <translation id="1235745349614807883">ลบการค้นหาล่าสุด</translation>
+<translation id="1171774979989969504">โปรดป้อนที่อยู่อีเมล</translation>
+<translation id="709897737746224366">โปรดจับคู่รูปแบบที่ร้องขอ</translation>
 <translation id="5048533449481078685">ผู้สร้างรายการ</translation>
 <translation id="372362261556059955">ต้องการปลั๊กอินเพิ่มเติม</translation>
 <translation id="4202807286478387388">ข้าม</translation>
@@ -16,30 +18,40 @@
 <translation id="370665806235115550">กำลังโหลด...</translation>
 <translation id="6845533974506654842">กด</translation>
 <translation id="8244226242650769279">แผนที่รูปภาพ</translation>
+<translation id="310520048233152454">โปรดป้อน URL</translation>
 <translation id="2548326553472216322">ไม่พบการค้นหาล่าสุด</translation>
+<translation id="7263440858009898357">โปรดเลือกรายการจากหน้ารายการ</translation>
+<translation id="5164977714490026579">ค่าต้องมากกว่าหรือเท่ากับ <ph name="MINIMUM"/></translation>
 <translation id="5944544982112848342">2048 (เกรดสูง)</translation>
 <translation id="3040011195152428237">ลิงก์</translation>
 <translation id="2745343197843472802">รับปลั๊กอิน</translation>
+<translation id="8451268428117625855">โปรดเลือกไฟล์</translation>
 <translation id="5776402066334188252">โปรดยืนยันว่าคุณต้องการติดตั้งปลั๊กอินนี้ คุณควรติดตั้งเฉพาะปลั๊กอินที่คุณไว้ใจเท่านั้น </translation>
-<translation id="4003986561708175844">ไม่ได้ติดตั้งปลั๊กอินที่จำเป็น</translation>
 <translation id="3018094406922859308">กำลังดาวน์โหลดปลั๊กอิน...</translation>
 <translation id="7364796246159120393">เลือกไฟล์</translation>
+<translation id="2761667185364618470">โปรดเลือกช่องนี้หากคุณต้องการดำเนินการต่อ</translation>
 <translation id="8964020114565522021">ลากไฟล์มาที่นี่</translation>
 <translation id="838869780401515933">ทำเครื่องหมาย</translation>
 <translation id="2846343701378493991">1024 (เกรดปานกลาง)</translation>
 <translation id="5476505524087279545">ยกเลิกการทำเครื่องหมาย</translation>
 <translation id="3789841737615482174">ติดตั้ง</translation>
+<translation id="2507943997699731163">โปรดกรอกฟิลด์นี้</translation>
 <translation id="5253117816378681419">โปรดยืนยันว่าคุณต้องการติดตั้งปลั๊กอิน <ph name="PLUGIN"/> คุณควรติดตั้งเฉพาะปลั๊กอินที่คุณไว้ใจเท่านั้น</translation>
 <translation id="6663448176199120256">การค้นหาล่าสุด</translation>
 <translation id="2597378329261239068">เอกสารนี้ได้รับการป้องกันด้วยรหัสผ่าน โปรดป้อนรหัสผ่าน</translation>
+<translation id="5466621249238537318">โปรดเลือกอย่างน้อยหนึ่งไฟล์</translation>
+<translation id="8750798805984357768">โปรดเลือกตัวเลือกอย่างหนึ่งอย่างใดเหล่านี้</translation>
 <translation id="7740050170769002709">เนื้อหา HTML</translation>
+<translation id="2226276347425096477">โปรดย่อข้อความนี้ให้เหลือไม่เกิน <ph name="MAX_CHARACTERS"/> อักขระ (ขณะนี้ข้อความของคุณมี <ph name="CURRENT_LENGTH"/> อักขระ)</translation>
+<translation id="2908441821576996758">โปรดป้อนรายการที่อยู่อีเมลโดยคั่นด้วยเครื่องหมายจุลภาค</translation>
 <translation id="5939518447894949180">ตั้งค่าใหม่</translation>
+<translation id="835897206747267392">ค่าไม่ถูกต้อง</translation>
 <translation id="1842960171412779397">เลือก</translation>
+<translation id="3450233048674729344">ค่าต้องน้อยกว่าหรือเท่ากับ <ph name="MAXIMUM"/></translation>
 <translation id="7638452146404718955">คลิกที่นี่เพื่อดาวน์โหลดปลั๊กอิน</translation>
 <translation id="6119846243427417423">เปิดใช้งาน</translation>
 <translation id="8444882422881193423"><ph name="NUMBER_OF_FILES"/> ไฟล์</translation>
-<translation id="4470547978413275879">ไม่ได้ติดตั้งปลั๊กอิน <ph name="PLUGIN"/></translation>
-<translation id="6765711848403622008">ไม่มีปลั๊กอินที่จะแสดงเนื้อหานี้</translation>
+<translation id="3934680773876859118">โหลดเอกสาร PDF ล้มเหลว</translation>
 <translation id="8597182159515967513">ส่วนหัว</translation>
 <translation id="2653659639078652383">ส่ง</translation>
 <translation id="8475551193147984329">ต้องการปลั๊กอิน <ph name="PLUGIN"/></translation>

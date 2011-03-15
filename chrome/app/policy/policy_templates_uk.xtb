@@ -1,10 +1,14 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="uk">
+<translation id="6074963268421707432">Заборонити всім сайтам відображати сповіщення на робочому столі</translation>
 <translation id="1426410128494586442">Так</translation>
 <translation id="6786747875388722282">Розширення</translation>
 <translation id="4250680216510889253">Ні</translation>
 <translation id="3866249974567520381">Опис</translation>
+<translation id="402759845255257575">Заборонити всім сайтам запускати JavaScript</translation>
+<translation id="2805707493867224476">Дозволити всім сайтам відображати спливаючі вікна</translation>
 <translation id="5765780083710877561">Опис:</translation>
+<translation id="7006788746334555276">Налаштування вмісту</translation>
 <translation id="3891357445869647828">Активувати JavaScript</translation>
 </translationbundle>

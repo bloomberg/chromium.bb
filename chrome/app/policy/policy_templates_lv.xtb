@@ -1,10 +1,14 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="lv">
+<translation id="6074963268421707432">Neļaut nevienai vietnei rādīt paziņojumus darbvirsmā</translation>
 <translation id="1426410128494586442">Jā</translation>
 <translation id="6786747875388722282">Paplašinājumi</translation>
 <translation id="4250680216510889253">Nē</translation>
 <translation id="3866249974567520381">Apraksts</translation>
+<translation id="402759845255257575">Neļaut nevienai vietnei izmantot JavaScript</translation>
+<translation id="2805707493867224476">Atļaut visām vietnēm rādīt uznirstošos logus</translation>
 <translation id="5765780083710877561">Apraksts:</translation>
+<translation id="7006788746334555276">Satura iestatījumi</translation>
 <translation id="3891357445869647828">Iespējot JavaScript</translation>
 </translationbundle>

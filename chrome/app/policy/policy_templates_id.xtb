@@ -1,10 +1,14 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="id">
+<translation id="6074963268421707432">Jangan izinkan situs apa pun menampilkan pemberitahuan</translation>
 <translation id="1426410128494586442">Ya</translation>
 <translation id="6786747875388722282">Ekstensi</translation>
 <translation id="4250680216510889253">Tidak</translation>
 <translation id="3866249974567520381">Keterangan</translation>
+<translation id="402759845255257575">Jangan izinkan situs apa pun menjalankan JavaScript</translation>
+<translation id="2805707493867224476">Izinkan semua situs menampilkan munculan</translation>
 <translation id="5765780083710877561">Keterangan:</translation>
+<translation id="7006788746334555276">Setelan Konten</translation>
 <translation id="3891357445869647828">Aktifkan Javascript</translation>
 </translationbundle>

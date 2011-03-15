@@ -1,10 +1,14 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="fil">
+<translation id="6074963268421707432">Huwag payagan ang anumang site na magpakita ng mga abiso sa deskstop</translation>
 <translation id="1426410128494586442">Oo</translation>
 <translation id="6786747875388722282">Mga extension</translation>
 <translation id="4250680216510889253">Hindi</translation>
 <translation id="3866249974567520381">Paglalarawan</translation>
+<translation id="402759845255257575">Huwag hayaan ang anumang site na magpatakbo ng JavaScript</translation>
+<translation id="2805707493867224476">Hayaan ang lahat ng mga site na magpakita ng mga pop-up</translation>
 <translation id="5765780083710877561">Paglalarawan:</translation>
+<translation id="7006788746334555276">Mga Setting ng Nilalaman</translation>
 <translation id="3891357445869647828">Pinaganang JavaScript</translation>
 </translationbundle>

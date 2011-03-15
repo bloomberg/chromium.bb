@@ -11,45 +11,41 @@
 <translation id="7781002470561365167">Tersedia Google Chrome versi baru.</translation>
 <translation id="7101265395643981223">Aktifkan Google Chrome</translation>
 <translation id="647902066410369402">Berkas preferensi Anda rusak atau tidak valid.\n\nGoogle Chrome tidak dapat memulihkan setelan Anda.</translation>
+<translation id="2879385160622431163">Google Chrome Sekejap</translation>
 <translation id="2370289711218562573">Kini Google Chrome mengimpor Favorites/Bookmark.</translation>
 <translation id="8970027151245482499">Google Chrome tidak terinstal atau gagal menemukan direktori penginstalan. Unduh kembali Google Chrome.</translation>
+<translation id="1761870329818521071">Tidak dapat memasang versi Google Chrome Frame yang sama dengan yang sedang dijalankan. Tutup Google Chrome Frame dan coba lagi.</translation>
 <translation id="2040709530900803995">Pengaju Google Chrome</translation>
 <translation id="4281844954008187215">Persyaratan Layanan</translation>
+<translation id="1779550429052479749">Terjadi konflik pemasangan Google Chrome atau Google Chrome Frame pada sistem. Hapus pemasangan dan coba lagi.</translation>
 <translation id="3555616473548901994">Pencopotan pemasangan selesai.</translation>
 <translation id="8556340503434111824">Tersedia versi Google Chrome yang baru, dan versi ini lebih cepat dari sebelumnya.</translation>
-<translation id="1826297811907343327">Jika Anda membatalkan sekarang, tidak semua item akan diimpor. Anda dapat mengimpor lagi nanti dari menu Google Chrome.</translation>
 <translation id="4728575227883772061">Penginstalan gagal karena galat yang tidak diketahui. Jika Google Chrome sedang berjalan; tutup, lalu ulang kembali.</translation>
 <translation id="4149882025268051530">Instalatur gagal mendekompresi arsip. Unduh kembali Google Chrome.</translation>
 <translation id="6989339256997917931">Google Chrome telah diperbarui, tetapi Anda belum menggunakannya selama setidaknya 30 hari.</translation>
 <translation id="5744005218040929396">Utilitas Google Chrome</translation>
 <translation id="4343226815564935778">Direktori instalasi Google Chrome kelihatannya sedang digunakan. Nyalakan ulang komputer dan coba lagi.</translation>
-<translation id="6817660909204164466">Bantu Google Chrome menjadi lebih baik dengan mengirim statistik penggunaan dan laporan kerusakan secara otomatis ke Google</translation>
 <translation id="8227755444512189073">Google Chrome harus menjalankan aplikasi eksternal untuk menangani link <ph name="SCHEME"/>. Link yang diminta adalah <ph name="PROTOLINK"/>.</translation>
 <translation id="1281036569101707544">Google Chrome <ph name="TERMS_OF_SERVICE_LINK"/></translation>
-<translation id="8815061062167142136">Aduh! Google Chrome mengalami gangguan. Aktifkan ulang sekarang?</translation>
 <translation id="1697213158865901863">Google Chrome Frame</translation>
-<translation id="4200560168962230927">Chrome Frame telah dimutakhirkan. Mulai ulang peramban Anda. Versi Chrome: <ph name="TODO_0001"/>, versi Chrome Frame: <ph name="TODO_0002"/></translation>
-<translation id="126024305903398738">Pengimpor Profil Google Chrome</translation>
 <translation id="2653935705142821164">Pengurai Chrome</translation>
-<translation id="7241541963706135274">Berikut adalah tugas yang dilakukan Google Chrome:</translation>
 <translation id="8446794773162156990">Google Chrome mengalami kesalahan</translation>
 <translation id="3889417619312448367">Hapus Penginstalan Google Chrome</translation>
 <translation id="6169866489629082767"><ph name="PAGE_TITLE"/> - Google Chrome</translation>
 <translation id="3089968997497233615">Tersedia versi Google Chrome yang baru dan lebih aman.</translation>
 <translation id="8810218179782551669">Bahasa Google Chrome:</translation>
-<translation id="7001386529596391893">Buat cara pintas Google Chrome di lokasi ini:</translation>
-<translation id="7461436095086637522">Pengimpor Profil Chrome</translation>
+<translation id="7451721381978275812">Parameter tidak valid. Google Chrome Frame tidak dapat dipasang dalam modus siap bila Google Chrome belum dipasang.</translation>
+<translation id="5809236835374558741">Komputer ini telah memasang versi Google Chrome yang lebih baru. Jika perangkat lunak tidak berfungsi, hapus pemasangan Google Chrome Frame dan unduh kembali.</translation>
 <translation id="4357846314885556934">Google Chrome Lagi Ngambek</translation>
 <translation id="4561681684759837226"><ph name="PAGE_TITLE"/></translation>
+<translation id="4331809312908958774">OS Chrome</translation>
 <translation id="1195935957447623558">Google Chrome tidak dinonaktifkan dengan benar. Untuk membuka kembali halaman yang pernah dibuka, klik Kembalikan.</translation>
-<translation id="2499193704281978000">Google Chrome tidak merespons. Aktifkan ulang sekarang?</translation>
 <translation id="2580411288591421699">Tak dapat memasang Google Chrome dengan versi yang sama dengan yang sedang aktif. Tutup dulu, baru coba lagi.</translation>
 <translation id="7747138024166251722">Instalatur tidak dapat membuat direktori sementara. Periksa kapasitas kosong pada disk dan izin untuk menginstal perangkat lunak.</translation>
 <translation id="6008953001134414503">Keluar dari Google Chrome OS dan masuk lagi agar perubahan diterapkan.</translation>
 <translation id="6009537148180854585">Anda berupaya membuka &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, namun sertifikat yang diberikan oleh server berisi kesalahan. Google Chrome dapat menggunakan sertifikat yang berisi kesalahan dan tidak dapat memvalidasi identitas situs yang akan dibuka. Sambungan tidak aman dan Anda tidak boleh melanjutkan.</translation>
 <translation id="8738921060445980047">Versi tidak diketahui.</translation>
 <translation id="2485422356828889247">Copot instalasi</translation>
-<translation id="8899050679030089927">Tutup semua jendela Google Chrome dan mulai ulang Google Chrome agar perubahan diterapkan.</translation>
 <translation id="3324235665723428530">Profil Anda tidak dapat digunakan karena berasal dari versi Google Chrome yang lebih baru.\n\nBeberapa fitur mungkin tidak tersedia. Tentukan direktori profil yang berbeda atau gunakan versi Chrome terbaru.</translation>
 <translation id="7214670531148488183">Google Chrome mungkin akan menggunakan layanan web untuk meningkatkan pengalaman perambanan. Anda dapat menonaktifkan layanan ini.</translation>
 <translation id="1759842336958782510">Chrome</translation>
@@ -61,33 +57,39 @@
 <translation id="8862326446509486874">Anda tidak memiliki hak yang diperlukan untuk penginstalan tingkat sistem. Coba jalankan lagi penginstal saat masuk sebagai Administrator.</translation>
 <translation id="595871952790078940">Utilitas Chrome</translation>
 <translation id="2874156562296220396">Google Chrome hadir berkat proyek sumber terbuka<ph name="BEGIN_LINK_CHROMIUM"/>Chromium<ph name="END_LINK_CHROMIUM"/> dan <ph name="BEGIN_LINK_OSS"/>perangkat lunak sumber terbuka <ph name="END_LINK_OSS"/> lainnya.</translation>
-<translation id="6921913858457830952">Google Chrome siap menyelesaikan penginstalan.</translation>
+<translation id="3847841918622877581">Google Chrome dapat menggunakan layanan web guna meningkatkan pengalaman meramban Anda.</translation>
 <translation id="7436949144778751379">Google Chrome memerlukan Windows XP atau yang lebih baru. Sebagian fitur mungkin tidak berfungsi.</translation>
 <translation id="7100330187273168372">Google Chrome tidak dapat membaca dan menulis ke direktori data:\n\n<ph name="USER_DATA_DIRECTORY"/></translation>
 <translation id="6757767188268205357">Jangan ganggu saya</translation>
 <translation id="2290095356545025170">Apakah Anda yakin ingin mencopot penginstalan Google Chrome?</translation>
 <translation id="6087062680442281307">Google Chrome adalah peramban web yang menjalankan laman dan aplikasi web dengan kecepatan kilat. Cepat, stabil, dan mudah digunakan. Ramban web secara lebih aman dengan perlindungan terhadap perangkat lunak jahat dan phishing yang disertakan dalam Google Chrome.</translation>
-<translation id="2115751172320447278">Hak Cipta © 2006-2010 Google Inc. Semua Hak Dilindungi Undang-Undang.</translation>
 <translation id="5941830788786076944">Jadikan Google Chrome sebagai browser default</translation>
+<translation id="3612333635265770873">Modul dengan nama yang sama biasanya konflik dengan Google Chrome.</translation>
 <translation id="5947389362804196214">Preferensi Anda tidak dapat dibaca.\n\nSebagian fitur mungkin tidak tersedia dan pengubahan pada preferensi tidak akan disimpan.</translation>
+<translation id="6650142020817594541">Situs ini merekomendasikan Google Chrome Frame (sudah terpasang).</translation>
+<translation id="8778247165111716037">Sistem operasi Google Chrome terwujud karena <ph name="BEGIN_LINK_CROS_OSS"/>perangkat lunak sumber terbuka<ph name="END_LINK_CROS_OSS"/> tambahan.</translation>
 <translation id="4127951844153999091">Jika demikian, alamat yang tercantum dalam sertifikat tidak cocok dengan alamat situs Web yang akan diakses browser Anda. Salah satu kemungkinan alasannya adalah komunikasi terhenti oleh pengganggu yang memberikan sertifikat untuk situs Web lain, sehingga dapat mengakibatkan ketidakcocokan. Kemungkinan alasan lainnya adalah bahwa server dikonfigurasi untuk menampilkan sertifikat yang sama bagi beberapa situs Web, termasuk yang akan dikunjungi, meskipun sertifikat tersebut tidak valid untuk semua situs Web. Google Chrome dapat memastikan bahwa Anda akan membuka &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt;, namun tidak dapat memverifikasi bahwa situs tersebut sama seperti &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt; yang ingin Anda buka. Jika Anda melanjutkan, Chrome tidak akan memeriksa ketidakcocokan nama lebih lanjut. Secara umum, sebaiknya jangan lanjutkan.</translation>
 <translation id="2712549016134575851">Terdeteksi konflik dengan aplikasi terinstal lain.</translation>
 <translation id="7018032895891496381">Google Chrome menggunakan mesin telusur bawaan, yang saat ini disetel ke <ph name="PAGE_TITLE"/>. Anda ingin mempertahankan mesin telusur bawaan?</translation>
 <translation id="7161904924553537242">Selamat Datang di Google Chrome</translation>
 <translation id="8669527147644353129">Pembantu Google Chrome</translation>
+<translation id="2681064822612051220">Terjadi konflik pemasangan Google Chrome pada sistem. Hapus pemasangan dan coba lagi.</translation>
 <translation id="5318056482164160049">Inang Pengaya Google Chrome</translation>
 <translation id="6126631249883707068">Ingin Google Chrome menyimpan sandi Anda?</translation>
 <translation id="5046764976540625289">Keluar dari Chrome</translation>
 <translation id="9039578207253536065">Pekerja Google Chrome</translation>
+<translation id="9171640504251796339">http://www.google.com/support/chrome/bin/answer.py?hl=<ph name="GRITLANGCODE_1"/>&amp;answer=161796</translation>
 <translation id="8865765905101981392">Peramban Internet</translation>
 <translation id="8776515774046280928">Google Chrome telah terinstal dan tersedia bagi seluruh pengguna komputer ini. Jika Anda ingin menginstal Google Chrome pada tingkat pengguna, Anda harus terlebih dulu menghapus penginstalan versi tingkat sistem yang diinstal oleh administrator.</translation>
 <translation id="2189123953385179981">Google ChromeOS tidak mendukung peluncuran aplikasi eksternal untuk menangani tautan <ph name="SCHEME"/>. Tautan yang diminta adalah <ph name="PROTOLINK"/>.</translation>
+<translation id="8205111949707227942">Opsional: Bantu kami membuat OS Chrome lebih baik dengan mengirim statistik penggunaan dan laporan kerusakan ke Google secara otomatis.</translation>
 <translation id="7196020411877309443">Mengapa saya melihat ini?</translation>
 <translation id="2769762047821873045">Google Chrome bukan peramban bawaan.</translation>
 <translation id="7825851276765848807">Instalasi gagal karena galat yang tidak ditentukan. Silakan unduh Google Chrome lagi.</translation>
 <translation id="3335672657969596251">Google Chrome tidak mendukung <ph name="OS_NAME"/>.</translation>
 <translation id="473183893665420670">Saat Anda menyetel ulang Opsi Google Chrome, perubahan apa pun yang Anda lakukan akan dikembalikan ke setelan bawaan. Apakah Anda ingin menyetel ulang opsi Chrome?</translation>
 <translation id="3636771339108070045">Komputer ini telah menginstal versi Google Chrome yang lebih baru. Jika perangkat lunak tidak berfungsi, hapus penginstalan Google Chrome, kemudian unduh kembali.</translation>
+<translation id="5334545119300433702">Modul ini biasanya konflik dengan Google Chrome.</translation>
 <translation id="3360895254066713204">Pembantu Chrome</translation>
 <translation id="1001534784610492198">Arsip instalatur rusak atau tidak valid. Unduh kembali Google Chrome.</translation>
 <translation id="6626317981028933585">Sayangnya, pengaturan Mozilla Firefox tidak tersedia sewaktu browser berjalan. Untuk mengimpor pengaturan ke Google Chrome, simpan pekerjaan dan tutup semua jendela Firefox. Kemudian klik Lanjutkan.</translation>
@@ -102,6 +104,7 @@
 <translation id="8449380764213232436">Kini Google Chrome mengimpor item berikut dari <ph name="BROWSER_COMPONENT"/>:</translation>
 <translation id="852884188147941900">Pekerja Chrome</translation>
 <translation id="3396977131400919238">Terjadi galat pada sistem operasi saat penginstalan berlangsung. Unduh kembali Google Chrome.</translation>
-<translation id="2618799103663374905">Tambahkan cara pintas Google Chrome ke desktop, panel pengaktifan cepat, dan menu Start</translation>
+<translation id="5495581687705680288">Modul dimuat ke dalam Google Chrome</translation>
+<translation id="3586272666307004550">Hak Cipta © 2006-2011 Google Inc. Semua Hak Dilindungi Undang-Undang.</translation>
 <translation id="1144950271450340860">Anda berupaya membuka &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, namun server memberikan sertifikat yang diterbitkan oleh entitas yang tidak dipercaya oleh sistem operasi komputer Anda. Artinya, server mungkin telah membuat kredensial keamanan sendiri yang informasi identitasnya tidak dapat diandalkan oleh Google Chrome, atau pengganggu mungkin berupaya menghentikan komunikasi Anda. Anda tidak boleh melanjutkan, &lt;strong&gt;khususnya&lt;/strong&gt; jika peringatan ini belum pernah ditampilkan untuk situs ini.</translation>
 </translationbundle>

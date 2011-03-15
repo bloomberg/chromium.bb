@@ -1,10 +1,14 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="et">
+<translation id="6074963268421707432">Ära luba ühelgi saidil kuvada töölaua teatisi</translation>
 <translation id="1426410128494586442">Jah</translation>
 <translation id="6786747875388722282">Laiendused</translation>
 <translation id="4250680216510889253">Pole</translation>
 <translation id="3866249974567520381">Kirjeldus</translation>
+<translation id="402759845255257575">Ära luba ühelgi saidil JavaScripti käitada</translation>
+<translation id="2805707493867224476">Luba kõigil saitidel hüpikaknaid kuvada</translation>
 <translation id="5765780083710877561">Kirjeldus:</translation>
+<translation id="7006788746334555276">Sisu seaded</translation>
 <translation id="3891357445869647828">Luba JavaScript</translation>
 </translationbundle>

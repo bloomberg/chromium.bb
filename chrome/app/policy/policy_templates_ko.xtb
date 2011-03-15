@@ -1,10 +1,14 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="ko">
+<translation id="6074963268421707432">모든 사이트에서 데스크톱 알림 표시 허용 안함</translation>
 <translation id="1426410128494586442">예</translation>
 <translation id="6786747875388722282">확장 프로그램</translation>
 <translation id="4250680216510889253">아니요</translation>
 <translation id="3866249974567520381">설명</translation>
+<translation id="402759845255257575">사이트에서 자바스크립트 실행 허용 안함</translation>
+<translation id="2805707493867224476">모든 사이트에서 팝업 표시 허용</translation>
 <translation id="5765780083710877561">설명:</translation>
+<translation id="7006788746334555276">콘텐츠 설정</translation>
 <translation id="3891357445869647828">자바스크립트 사용</translation>
 </translationbundle>

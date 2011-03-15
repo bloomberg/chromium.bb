@@ -1,10 +1,14 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="tr">
+<translation id="6074963268421707432">Hiçbir sitenin masaüstü bildirimi göstermesine izin verme</translation>
 <translation id="1426410128494586442">Evet</translation>
 <translation id="6786747875388722282">Uzantılar</translation>
 <translation id="4250680216510889253">Hayır</translation>
 <translation id="3866249974567520381">Açıklama</translation>
+<translation id="402759845255257575">Hiçbir sitenin JavaScript çalıştırmasına izin verme</translation>
+<translation id="2805707493867224476">Tüm sitelerde pop-up'lara izin ver</translation>
 <translation id="5765780083710877561">Açıklama:</translation>
+<translation id="7006788746334555276">İçerik Ayarları</translation>
 <translation id="3891357445869647828">JavaScript'i etkinleştir</translation>
 </translationbundle>

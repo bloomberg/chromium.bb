@@ -1,10 +1,14 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="gu">
+<translation id="6074963268421707432">કોઈ પણ સાઇટને ડેસ્કટૉપ સૂચનાઓ બતાવવાની મંજૂરી આપશો નહીં</translation>
 <translation id="1426410128494586442">હા</translation>
 <translation id="6786747875388722282">એક્સ્ટેન્શન્સ</translation>
 <translation id="4250680216510889253">નહીં</translation>
 <translation id="3866249974567520381">વર્ણન</translation>
+<translation id="402759845255257575">કોઈ પણ સાઇટને JavaScript ચલાવવાની મંજૂરી આપશો નહીં</translation>
+<translation id="2805707493867224476">બધી સાઇટ્સને પૉપ-અપ્સ બતાવવાની મંજૂરી આપો</translation>
 <translation id="5765780083710877561">વર્ણન:</translation>
+<translation id="7006788746334555276">સામગ્રી સેટિંગ્સ</translation>
 <translation id="3891357445869647828">JavaScript સક્ષમ કરો</translation>
 </translationbundle>

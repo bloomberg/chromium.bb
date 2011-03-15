@@ -1,10 +1,14 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="nl">
+<translation id="6074963268421707432">Niet toestaan dat sites bureaubladmeldingen weergeven</translation>
 <translation id="1426410128494586442">Ja</translation>
 <translation id="6786747875388722282">Extensies</translation>
 <translation id="4250680216510889253">Nee</translation>
 <translation id="3866249974567520381">Beschrijving</translation>
+<translation id="402759845255257575">Sites niet toestaan JavaScript uit te voeren</translation>
+<translation id="2805707493867224476">Alle sites toestaan pop-ups weer te geven</translation>
 <translation id="5765780083710877561">Beschrijving:</translation>
+<translation id="7006788746334555276">Instellingen voor inhoud</translation>
 <translation id="3891357445869647828">JavaScript inschakelen</translation>
 </translationbundle>

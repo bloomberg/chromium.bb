@@ -1,107 +1,110 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="zh-TW">
-<translation id="8000275528373650868">「Google 瀏覽器」需要 Windows Vista，或者 Windows XP SP2 或更新版本。</translation>
+<translation id="8000275528373650868">Google Chrome 支援的作業系統為 Windows Vista 或 Windows XP SP2 以上版本。</translation>
 <translation id="6676384891291319759">連線到網際網路</translation>
-<translation id="2383457833405848421">關於 Google 內嵌瀏覽框...</translation>
-<translation id="386202838227397562">請關閉所有 Google 瀏覽器視窗，並再試一次</translation>
+<translation id="2383457833405848421">關於 Chrome 內嵌框架...</translation>
+<translation id="386202838227397562">請關閉所有 Google Chrome 視窗，並再試一次</translation>
 <translation id="2770231113462710648">將預設瀏覽器變更為：</translation>
-<translation id="698670068493841342">已安裝「Google 瀏覽器」供此使用者使用。如果軟體無法順利運作，請移除「Google 瀏覽器」，然後重新下載一次。</translation>
-<translation id="7400722733683201933">關於 Google 瀏覽器</translation>
-<translation id="7781002470561365167">Google 瀏覽器已推出新版。</translation>
-<translation id="7101265395643981223">開啟 Google 瀏覽器</translation>
-<translation id="647902066410369402">您的偏好設定檔已毀損或無效。\n\nGoogle 瀏覽器無法復原您的設定。</translation>
-<translation id="2370289711218562573">「Google 瀏覽器」現正匯入 [我的最愛/書籤]。</translation>
-<translation id="8970027151245482499">「Google 瀏覽器」並未安裝或找不到安裝目錄，請再次下載「Google 瀏覽器」。</translation>
-<translation id="2040709530900803995">Google 瀏覽器成像器</translation>
+<translation id="698670068493841342">已安裝 Google Chrome 供此使用者使用。如果軟體無法順利運作，請移除 Google Chrome，然後重新下載一次。</translation>
+<translation id="7400722733683201933">關於 Google Chrome</translation>
+<translation id="7781002470561365167">Google Chrome 已推出新版。</translation>
+<translation id="7101265395643981223">開啟 Google Chrome</translation>
+<translation id="647902066410369402">您的偏好設定檔已毀損或無效。\n\nGoogle Chrome 無法復原您的設定。</translation>
+<translation id="2879385160622431163">Google Chrome 互動智慧搜尋</translation>
+<translation id="2370289711218562573">Google Chrome 現正匯入 [我的最愛/書籤]。</translation>
+<translation id="8970027151245482499">Google Chrome 並未安裝或找不到安裝目錄，請再次下載 Google Chrome。</translation>
+<translation id="1761870329818521071">無法安裝這個版本的「Google Chrome 內嵌框架」，因為相同的版本目前正在執行中。請關閉「Google Chrome 內嵌框架」，然後再試一次。</translation>
+<translation id="2040709530900803995">Google Chrome 成像器</translation>
 <translation id="4281844954008187215">服務條款</translation>
+<translation id="1779550429052479749">系統在安裝 Google Chrome 或「Google Chrome 內嵌框架」時發生衝突問題，請先解除安裝，然後再試一次。</translation>
 <translation id="3555616473548901994">解除安裝已完成。</translation>
-<translation id="8556340503434111824">Google 瀏覽器推出全新版本，速度更勝以往。</translation>
-<translation id="1826297811907343327">如果您現在取消，即不會匯入所有項目。您之後可在「Google 瀏覽器」功能表中再次匯入。</translation>
-<translation id="4728575227883772061">安裝因不明錯誤而失敗。如果「Google 瀏覽器」目前正在執行中，請將其關閉然後再試一次。</translation>
-<translation id="4149882025268051530">安裝程式無法解壓縮封存檔案，請再次下載「Google 瀏覽器」。</translation>
-<translation id="6989339256997917931">「Google 瀏覽器」已更新，但您至少已有 30 天未使用該瀏覽器。</translation>
-<translation id="5744005218040929396">Google 瀏覽器公用程式</translation>
-<translation id="4343226815564935778">「Google 瀏覽器」安裝目錄使用中。請重新啟動電腦，然後再試一次。</translation>
-<translation id="6817660909204164466">只要自動傳送使用統計資料及當機報告給 Google，就能助我們一臂之力，讓 Google 瀏覽器更臻完美。</translation>
-<translation id="8227755444512189073">Google 瀏覽器需要啟動外部應用程式以處理 <ph name="SCHEME"/> 連結。所要求的連結為 <ph name="PROTOLINK"/>。</translation>
-<translation id="1281036569101707544">Google 瀏覽器 <ph name="TERMS_OF_SERVICE_LINK"/></translation>
-<translation id="8815061062167142136">不得了! Google 瀏覽器已經損毀。要重新啟動嗎?</translation>
-<translation id="1697213158865901863">Google 內嵌瀏覽框</translation>
-<translation id="4200560168962230927">內嵌瀏覽框已更新，請重新開啟您的瀏覽器。Google 瀏覽器版本︰<ph name="TODO_0001"/>，Google 內嵌瀏覽框版本︰<ph name="TODO_0002"/></translation>
-<translation id="126024305903398738">Google 瀏覽器設定檔匯入工具</translation>
-<translation id="2653935705142821164">瀏覽器成像器</translation>
-<translation id="7241541963706135274">Google 瀏覽器會執行這些工作：</translation>
-<translation id="8446794773162156990">Google 瀏覽器反應異常</translation>
-<translation id="3889417619312448367">解除安裝 Google 瀏覽器</translation>
-<translation id="6169866489629082767"><ph name="PAGE_TITLE"/> - Google 瀏覽器</translation>
-<translation id="3089968997497233615">Google 瀏覽器推出全新版本，安全性更勝以往。</translation>
-<translation id="8810218179782551669">Google 瀏覽器語言：</translation>
-<translation id="7001386529596391893">在下列位置建立 Google 瀏覽器捷徑：</translation>
-<translation id="7461436095086637522">瀏覽器設定檔匯入工具</translation>
-<translation id="4357846314885556934">Google 瀏覽器反應異常</translation>
+<translation id="8556340503434111824">Google Chrome 推出全新版本，速度更勝以往。</translation>
+<translation id="4728575227883772061">安裝因不明錯誤而失敗。如果 Google Chrome 目前正在執行中，請將其關閉然後再試一次。</translation>
+<translation id="4149882025268051530">安裝程式無法解壓縮封存檔案，請再次下載 Google Chrome。</translation>
+<translation id="6989339256997917931">Google Chrome 已更新，但您至少已有 30 天未使用該瀏覽器。</translation>
+<translation id="5744005218040929396">Google Chrome 公用程式</translation>
+<translation id="4343226815564935778">Google Chrome 安裝目錄使用中。請重新啟動電腦，然後再試一次。</translation>
+<translation id="8227755444512189073">Google Chrome 需要啟動外部應用程式以處理 <ph name="SCHEME"/> 連結。所要求的連結為 <ph name="PROTOLINK"/>。 </translation>
+<translation id="1281036569101707544">Google Chrome <ph name="TERMS_OF_SERVICE_LINK"/></translation>
+<translation id="1697213158865901863">Google Chrome 內嵌框架</translation>
+<translation id="2653935705142821164">Chrome 成像器</translation>
+<translation id="8446794773162156990">Google Chrome 反應異常</translation>
+<translation id="3889417619312448367">解除安裝 Google Chrome</translation>
+<translation id="6169866489629082767"><ph name="PAGE_TITLE"/> - Google Chrome</translation>
+<translation id="3089968997497233615">Google Chrome 推出全新版本，安全性更勝以往。</translation>
+<translation id="8810218179782551669">Google Chrome 語言：</translation>
+<translation id="7451721381978275812">無效的引數。您必須安裝 Google Chrome，才能在就緒模式中安裝「Google Chrome 內嵌框架」。</translation>
+<translation id="5809236835374558741">這台電腦已安裝較新的「Google Chrome 內嵌框架」版本，如果該軟體無法順利運作，請解除安裝「Google Chrome 內嵌框架」，然後重新下載。</translation>
+<translation id="4357846314885556934">Google Chrome 反應異常</translation>
 <translation id="4561681684759837226"><ph name="PAGE_TITLE"/></translation>
-<translation id="1195935957447623558">Google 瀏覽器上一次未正確關閉。如果要重新開啟之前的網頁，請按一下 [還原]。</translation>
-<translation id="2499193704281978000">Google 瀏覽器沒有回應。 是否要立即重新啟動？</translation>
-<translation id="2580411288591421699">您無法安裝這個版本的「Google 瀏覽器」，因為相同的版本目前正在執行中。請關閉「Google 瀏覽器」然後再試一次。</translation>
+<translation id="4331809312908958774">Chrome OS</translation>
+<translation id="1195935957447623558">Google Chrome 上次執行時並未正確關閉。如果要重新開啟您之前瀏覽的網頁，請按一下 [還原]。</translation>
+<translation id="2580411288591421699">您無法安裝這個版本的 Google Chrome，因為相同的版本目前正在執行中。請關閉 Google Chrome 然後再試一次。</translation>
 <translation id="7747138024166251722">安裝程式無法建立暫時目錄，請檢查可用磁碟空間與權限，以順利安裝軟體。</translation>
 <translation id="6008953001134414503">請先登出「Google Chrome 作業系統」，然後再次登入，這項變更才會生效。</translation>
-<translation id="6009537148180854585">您嘗試到達 &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;，但是伺服器提供的憑證包含錯誤資訊。Google 瀏覽器無法使用包含錯誤資訊的憑證，也無法驗證您要連結的網站的身份。您的連線不安全，所以您必須就此停住。您的連線不安全，所以您必須就此停住。</translation>
+<translation id="6009537148180854585">您嘗試前往 &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;，但是伺服器提供的憑證包含錯誤資訊。Google Chrome 無法使用含有錯誤資訊的憑證，也無法驗證您要連結的網站的身分。您的連線並不安全，建議您就此停住。</translation>
 <translation id="8738921060445980047">未知版本。</translation>
 <translation id="2485422356828889247">解除安裝</translation>
-<translation id="8899050679030089927">為使這項變更生效，請關閉所有「Google 瀏覽器」視窗並重新啟動瀏覽器。</translation>
-<translation id="3324235665723428530">您的設定檔由於來自較新版本的 Google 瀏覽器，所以無法使用。\n\n某些功能可能無法提供。請指定另一個設定檔目錄，或使用較新版本的 Google 瀏覽器。</translation>
-<translation id="7214670531148488183">「Google 瀏覽器」會使用網頁服務來改善瀏覽功能，當然您也可以選擇停用這些服務。</translation>
-<translation id="1759842336958782510">瀏覽器</translation>
+<translation id="3324235665723428530">由於您的設定檔是來自較新版本的 Google Chrome，所以系統無法使用該檔案。\n\n這表示您可以無法使用某些功能。請指定另一個設定檔目錄，或使用較新版本的 Google Chrome。</translation>
+<translation id="7214670531148488183">Google Chrome 會使用網頁服務來改善瀏覽功能，當然您也可以選擇停用這些服務。</translation>
+<translation id="1759842336958782510">Chrome</translation>
 <translation id="5008136264574452501">Google Chrome Canary 版本</translation>
 <translation id="911206726377975832">您要一併刪除瀏覽資料嗎？</translation>
-<translation id="2044287590254833138">Google 瀏覽器工具列</translation>
+<translation id="2044287590254833138">Google Chrome 工具列</translation>
 <translation id="5074344184765391290">Chrome Plug-In Host</translation>
-<translation id="6481075104394517441">您嘗試到達 &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;，但伺服器所提供的憑證尚未生效。沒有任何資訊顯示憑證是否可靠。Google 瀏覽器無法確切保證您聯絡的對象是 &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt; 而非攻擊者。您必須確保您的電腦已正確設定時間和時區。如果設定不正確，請修改設定，然後重新整理本網頁。如果設定正確，您必須就此停住。</translation>
+<translation id="6481075104394517441">您嘗試前往 &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;，但伺服器所提供的憑證尚未生效，我們無法根據任何資訊判斷該憑證是否可靠。Google Chrome 無法保證您連線的對象是 &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt; 而非攻擊者。您必須確保您的電腦已正確設定時間和時區。如果設定不正確，請修改設定，然後重新整理本網頁。如果設定正確，建議您就此停住。</translation>
 <translation id="8862326446509486874">您沒有在系統層級進行安裝的權限，請以管理員的身分執行安裝檔。</translation>
-<translation id="595871952790078940">瀏覽器公用程式</translation>
-<translation id="2874156562296220396">「Google 瀏覽器」的開發仰賴 <ph name="BEGIN_LINK_CHROMIUM"/>Chromium<ph name="END_LINK_CHROMIUM"/> 開放原始碼計畫與其他<ph name="BEGIN_LINK_OSS"/>開放原始碼軟體<ph name="END_LINK_OSS"/>的協助才得以完成。</translation>
-<translation id="6921913858457830952">Google 瀏覽器已準備好完成您的安裝。</translation>
-<translation id="7436949144778751379">「Google 瀏覽器」需要 Windows XP 或更新版本的作業系統。某些功能可能無法執行。</translation>
-<translation id="7100330187273168372">Google 瀏覽器無法讀取或寫入資料目錄:\n\n<ph name="USER_DATA_DIRECTORY"/></translation>
+<translation id="595871952790078940">Chrome 公用程式</translation>
+<translation id="2874156562296220396">Google Chrome 的開發仰賴 <ph name="BEGIN_LINK_CHROMIUM"/>Chromium<ph name="END_LINK_CHROMIUM"/> 開放原始碼計畫與其他<ph name="BEGIN_LINK_OSS"/>開放原始碼軟體<ph name="END_LINK_OSS"/>的協助才得以完成。</translation>
+<translation id="3847841918622877581">Google Chrome 會使用網路服務來改善瀏覽品質。</translation>
+<translation id="7436949144778751379">Google Chrome 需要 Windows XP 或更新版本的作業系統。某些功能可能無法執行。</translation>
+<translation id="7100330187273168372">Google Chrome 無法讀取或寫入資料目錄:\n\n<ph name="USER_DATA_DIRECTORY"/></translation>
 <translation id="6757767188268205357">不要再問我</translation>
-<translation id="2290095356545025170">您是否確定要解除安裝「Google 瀏覽器」？</translation>
-<translation id="6087062680442281307">「Google 瀏覽器」開啟網頁和執行應用程式的速度奇快無比！除了執行速度快、穩定且容易使用之外，它還內建防護機制，讓您安心瀏覽網頁，無需擔心受到網路釣魚與惡意軟體的威脅。</translation>
-<translation id="2115751172320447278">版權所有 © 2006-2010 Google Inc。保留所有權利。</translation>
-<translation id="5941830788786076944">將 Google 瀏覽器設為我的預設瀏覽器</translation>
+<translation id="2290095356545025170">您是否確定要解除安裝 Google Chrome？</translation>
+<translation id="6087062680442281307">Google Chrome 開啟網頁和執行應用程式的速度奇快無比！除了執行速度快、穩定且容易使用之外，它還內建防護機制，讓您安心瀏覽網頁，無需擔心受到網路釣魚與惡意軟體的威脅。</translation>
+<translation id="5941830788786076944">使用 Google Chrome 作為我的預設瀏覽器</translation>
+<translation id="3612333635265770873">依據名稱判斷，這個模組可能會與 Google Chrome 衝突。</translation>
 <translation id="5947389362804196214">系統無法讀取您的偏好設定。\n\n部分功能可能無法使用，且系統也不會儲存任何偏好設定的變更。</translation>
-<translation id="4127951844153999091">在這個情況下，憑證所列的網址與瀏覽器嘗試前往的網址不符。憑證不符的其中一個可能原因是，攻擊者欄截了您的通訊，並且出示另一個網站的憑證。另一個可能的原因是，伺服器已設定為不同的網站傳回相同的憑證 (其中包括您嘗試造訪的網站)，而這個憑證可能對其中一些網站無效。Google 瀏覽器可以確定您已經到達 &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt;，但是無法驗證這與您嘗試前往的 &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt; 是同一個網站。如果您繼續，瀏覽器將不再檢查任何名稱不符的情況。一般而言，建議您就此停住。</translation>
+<translation id="6650142020817594541">建議您使用「Google Chrome 內嵌框架」(已安裝) 瀏覽這個網站。</translation>
+<translation id="8778247165111716037">「Google Chrome 作業系統」的開發仰賴其他<ph name="BEGIN_LINK_CROS_OSS"/>開放原始碼軟體<ph name="END_LINK_CROS_OSS"/>的協助才得以完成。</translation>
+<translation id="4127951844153999091">在這個情況下，憑證所列的網址與瀏覽器嘗試前往的網址不符。憑證不符的其中一個可能原因是，攻擊者欄截了您的通訊，並且出示另一個網站的憑證。另一個可能的原因是，伺服器已設定為不同的網站傳回相同的憑證 (其中包括您嘗試造訪的網站)，即便該憑證並不適用於某些網站。Google Chrome 可以確定您已經到達 &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt;，但是無法驗證這與您嘗試前往的 &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt; 是同一個網站。如果您繼續，Chrome 將不再檢查任何名稱不符的情況。一般而言，建議您就此停住。</translation>
 <translation id="2712549016134575851">偵測到與其他已安裝的應用程式互相衝突。</translation>
-<translation id="7018032895891496381">「Google 瀏覽器」使用您目前預設的搜尋引擎 <ph name="PAGE_TITLE"/>，要保留目前預設的搜尋引擎嗎？</translation>
-<translation id="7161904924553537242">歡迎使用 Google 瀏覽器</translation>
-<translation id="8669527147644353129">Google 瀏覽器小幫手</translation>
-<translation id="5318056482164160049">Google 瀏覽器外掛程式主控中心</translation>
-<translation id="6126631249883707068">您希望「Google 瀏覽器」儲存密碼嗎？</translation>
-<translation id="5046764976540625289">結束 Google 瀏覽器</translation>
-<translation id="9039578207253536065">Google 瀏覽器作業工具</translation>
+<translation id="7018032895891496381">Google Chrome 使用您目前預設的搜尋引擎 <ph name="PAGE_TITLE"/>，要保留目前預設的搜尋引擎嗎？</translation>
+<translation id="7161904924553537242">觀迎使用 Google Chrome</translation>
+<translation id="8669527147644353129">Google Chrome 小幫手</translation>
+<translation id="2681064822612051220">系統在安裝 Google Chrome 時發生衝突問題，請先解除安裝，然後再試一次。</translation>
+<translation id="5318056482164160049">Google Chrome 外掛程式主控中心</translation>
+<translation id="6126631249883707068">您希望 Google Chrome 儲存密碼嗎？</translation>
+<translation id="5046764976540625289">結束 Chrome</translation>
+<translation id="9039578207253536065">Google Chrome 作業工具</translation>
+<translation id="9171640504251796339">http://www.google.com/support/chrome/bin/answer.py?hl=<ph name="GRITLANGCODE_1"/>&amp;answer=161796</translation>
 <translation id="8865765905101981392">網際網路瀏覽器</translation>
-<translation id="8776515774046280928">「Google 瀏覽器」已經安裝並提供此電腦的所有使用者使用。如果您想要於使用者層級安裝「Google 瀏覽器」，必須先移除由管理員安裝的系統層級版本。</translation>
+<translation id="8776515774046280928">Google Chrome 已經安裝並提供此電腦的所有使用者使用。如果您想於使用者層級安裝 Google Chrome，必須先移除由管理員安裝的系統層級版本。</translation>
 <translation id="2189123953385179981">「Google Chrome 作業系統」未支援啟動外部應用程式以處理 <ph name="SCHEME"/> 連結；要求的連結為 <ph name="PROTOLINK"/>。</translation>
+<translation id="8205111949707227942">選擇性：只要自動將使用統計資料及當機報告傳送給 Google OS，就能助我們一臂之力，讓瀏覽器更臻完美。</translation>
 <translation id="7196020411877309443">為何出現這個對話框？</translation>
-<translation id="2769762047821873045">「Google 瀏覽器」並非您的預設瀏覽器。</translation>
-<translation id="7825851276765848807">不明錯誤導致安裝失敗，請再次下載「Google 瀏覽器」。</translation>
-<translation id="3335672657969596251">Google 瀏覽器不支援 <ph name="OS_NAME"/>。</translation>
-<translation id="473183893665420670">重設「Google 瀏覽器」選項時，先前的變更將返回預設設定。確定要重設「Google 瀏覽器」選項嗎？</translation>
-<translation id="3636771339108070045">此電腦已有更新的「Google 瀏覽器」版本可供使用，如果軟體無法順利運作，請移除「Google 瀏覽器」，然後重新下載一次。</translation>
-<translation id="3360895254066713204">瀏覽器小幫手</translation>
-<translation id="1001534784610492198">安裝程式封存檔案已經損壞或無效，請再次下載「Google 瀏覽器」。</translation>
-<translation id="6626317981028933585">抱歉，我們無法在 Mozilla Firefox 執行時取得其設定。如果要匯入這些設定至 Google 瀏覽器，請儲存您的工作，並關閉所有 Firefox 視窗。然後按一下 [繼續]。</translation>
-<translation id="8540666473246803645">Google 瀏覽器</translation>
-<translation id="3419750618886995598">內嵌瀏覽框更新。</translation>
-<translation id="6049075767726609708">管理員已經在此系統安裝「Google 瀏覽器」，且供所有使用者使用。系統層級的「Google 瀏覽器」現在將取代使用者層級的版本。</translation>
+<translation id="2769762047821873045">Google Chrome 並非您的預設瀏覽器。</translation>
+<translation id="7825851276765848807">不明錯誤導致安裝失敗，請再次下載 Google Chrome。</translation>
+<translation id="3335672657969596251">Google Chrome 不支援 <ph name="OS_NAME"/>。</translation>
+<translation id="473183893665420670">重設 Google Chrome 選項時，先前的變更將返回預設設定。確定要重設 Google Chrome 選項嗎？</translation>
+<translation id="3636771339108070045">此電腦已有更新的 Google Chrome 版本可供使用，如果軟體無法順利運作，請移除 Google Chrome，然後重新下載一次。</translation>
+<translation id="5334545119300433702">已知這個模組與 Google Chrome 衝突。</translation>
+<translation id="3360895254066713204">Chrome 小幫手</translation>
+<translation id="1001534784610492198">安裝程式封存檔案已經損壞或無效，請再次下載 Google Chrome。</translation>
+<translation id="6626317981028933585">抱歉，我們無法在 Mozilla Firefox 執行時取得其設定。如果要將這些設定匯入到 Google Chrome，請儲存您的工作，並關閉所有 Firefox 視窗。然後按一下 [繼續]。</translation>
+<translation id="8540666473246803645">Google Chrome</translation>
+<translation id="3419750618886995598">Chrome 內嵌框架更新。</translation>
+<translation id="6049075767726609708">管理員已經在此系統安裝 Google Chrome，且供所有使用者使用。系統層級的 Google Chrome 將取代使用者層級的版本。</translation>
 <translation id="7123348595797445166">立即使用 (已安裝)</translation>
 <translation id="3870154837782082782">Google Inc.</translation>
-<translation id="1446473746922165495">為 Google 瀏覽器功能表、對話方塊及工具提示等變更語言選項。</translation>
-<translation id="9189723490960700326">您嘗試到達 &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;，但伺服器提供逾期的憑證。由於憑證逾期所以沒有足夠資訊供我們辨別其可靠性。因此 Google 瀏覽器無法保證您的聯絡對象是 &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt; 而非攻擊者。您必須就止停住。</translation>
-<translation id="7106741999175697885">工作管理員 - Google 瀏覽器</translation>
-<translation id="8449380764213232436">Google 瀏覽器正從 <ph name="BROWSER_COMPONENT"/> 匯入下列項目：</translation>
-<translation id="852884188147941900">瀏覽器作業工具</translation>
-<translation id="3396977131400919238">安裝過程中發生作業系統錯誤，請再次下載「Google 瀏覽器」。</translation>
-<translation id="2618799103663374905">新增 Google 瀏覽器捷徑至您的桌面、快速啟動列及開始功能表</translation>
-<translation id="1144950271450340860">您嘗試到達 &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;，但伺服器提供的憑證由您電腦作業系統不信任的實體簽發。這可能表示伺服器自行產生安全性憑證，因此 Google 瀏覽器無法憑其辨認身份；或者有攻擊者試圖欄截您的通訊。您必須就此停住。&lt;strong&gt;尤其&lt;/strong&gt;如果您從未在這個網站接過這種警告，就更不應該繼續。</translation>
+<translation id="1446473746922165495">為 Google Chrome 功能表、對話方塊及工具提示等變更語言選項。</translation>
+<translation id="9189723490960700326">您嘗試前往 &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;，但伺服器提供了逾期的憑證。在憑證逾期的情況下，我們沒有足夠資訊判斷憑證是否可靠，因此 Google Chrome 無法保證您的連線對象是 &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt;，而非攻擊者，建議您就此停住。</translation>
+<translation id="7106741999175697885">工作管理員 - Google Chrome</translation>
+<translation id="8449380764213232436">Google Chrome 正從 <ph name="BROWSER_COMPONENT"/> 匯入下列項目:</translation>
+<translation id="852884188147941900">Chrome 作業工具</translation>
+<translation id="3396977131400919238">安裝過程中發生作業系統錯誤，請再次下載 Google Chrome。</translation>
+<translation id="5495581687705680288">已載入到 Google Chrome 中的模組</translation>
+<translation id="3586272666307004550">版權所有 © 2006-2011 Google Inc。保留所有權利。</translation>
+<translation id="1144950271450340860">您嘗試前往 &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;，但伺服器提供的憑證由您電腦作業系統不信任的實體簽署。這可能表示伺服器自行產生安全性憑證，因此 Google Chrome 無法憑其辨認身份；或者有攻擊者試圖攔截您的通訊。&lt;strong&gt;尤其&lt;/strong&gt;如果您從未在這個網站看過這種警告，就更不應該繼續瀏覽。</translation>
 </translationbundle>

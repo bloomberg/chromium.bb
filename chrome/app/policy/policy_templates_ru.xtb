@@ -1,10 +1,14 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="ru">
+<translation id="6074963268421707432">Блокировать оповещения на всех сайтах</translation>
 <translation id="1426410128494586442">Да</translation>
 <translation id="6786747875388722282">Расширения</translation>
 <translation id="4250680216510889253">Нет</translation>
 <translation id="3866249974567520381">Описание</translation>
+<translation id="402759845255257575">Блокировать JavaScript на всех сайтах</translation>
+<translation id="2805707493867224476">Разрешить всплывающие окна для всех сайтов</translation>
 <translation id="5765780083710877561">Описание:</translation>
+<translation id="7006788746334555276">Настройки содержания</translation>
 <translation id="3891357445869647828">Включить JavaScript</translation>
 </translationbundle>

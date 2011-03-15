@@ -1,10 +1,14 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="pl">
+<translation id="6074963268421707432">Nie zezwalaj żadnej witrynie na pokazywanie powiadomień na pulpicie</translation>
 <translation id="1426410128494586442">Tak</translation>
 <translation id="6786747875388722282">Rozszerzenia</translation>
 <translation id="4250680216510889253">Nie</translation>
 <translation id="3866249974567520381">Opis</translation>
+<translation id="402759845255257575">Nie zezwalaj na wykonywanie kodu JavaScript w żadnej witrynie</translation>
+<translation id="2805707493867224476">Zezwalaj na pokazywanie wyskakujących okienek we wszystkich witrynach</translation>
 <translation id="5765780083710877561">Opis:</translation>
+<translation id="7006788746334555276">Ustawienia treści</translation>
 <translation id="3891357445869647828">Włącz obsługę JavaScript</translation>
 </translationbundle>
