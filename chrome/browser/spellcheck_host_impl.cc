@@ -29,14 +29,10 @@
 namespace {
 
 FilePath GetFirstChoiceFilePath(const std::string& language) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+
   FilePath dict_dir;
-  {
-    // This should not do blocking IO from the UI thread!
-    // Temporarily allow it for now.
-    //   http://code.google.com/p/chromium/issues/detail?id=60643
-    base::ThreadRestrictions::ScopedAllowIO allow_io;
-    PathService::Get(chrome::DIR_APP_DICTIONARIES, &dict_dir);
-  }
+  PathService::Get(chrome::DIR_APP_DICTIONARIES, &dict_dir);
   return SpellCheckCommon::GetVersionedFileName(language, dict_dir);
 }
 
@@ -94,8 +90,6 @@ SpellCheckHostImpl::SpellCheckHostImpl(
   PathService::Get(chrome::DIR_USER_DATA, &personal_file_directory);
   custom_dictionary_file_ =
       personal_file_directory.Append(chrome::kCustomDictionaryFileName);
-
-  bdict_file_path_ = GetFirstChoiceFilePath(language);
 }
 
 SpellCheckHostImpl::~SpellCheckHostImpl() {
@@ -148,6 +142,11 @@ void SpellCheckHostImpl::AddWord(const std::string& word) {
 
 void SpellCheckHostImpl::InitializeDictionaryLocation() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+
+  // Initialize the BDICT path. This initialization should be in the FILE thread
+  // because it checks if there is a "Dictionaries" directory and create it.
+  if (bdict_file_path_.empty())
+    bdict_file_path_ = GetFirstChoiceFilePath(language_);
 
 #if defined(OS_WIN)
   // Check if the dictionary exists in the fallback location. If so, use it
