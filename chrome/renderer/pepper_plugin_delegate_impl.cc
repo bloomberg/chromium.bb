@@ -124,7 +124,8 @@ class PlatformAudioImpl
   }
 
   virtual ~PlatformAudioImpl() {
-    // Make sure we have been shut down.
+    // Make sure we have been shut down. Warning: this will usually happen on
+    // the I/O thread!
     DCHECK_EQ(0, stream_id_);
     DCHECK(!client_);
   }
@@ -134,24 +135,24 @@ class PlatformAudioImpl
   bool Initialize(uint32_t sample_rate, uint32_t sample_count,
        webkit::ppapi::PluginDelegate::PlatformAudio::Client* client);
 
-  virtual bool StartPlayback() {
-    return filter_ && filter_->Send(
-        new ViewHostMsg_PlayAudioStream(0, stream_id_));
-  }
-
-  virtual bool StopPlayback() {
-    return filter_ && filter_->Send(
-        new ViewHostMsg_PauseAudioStream(0, stream_id_));
-  }
-
+  // PlatformAudio implementation (called on main thread).
+  virtual bool StartPlayback();
+  virtual bool StopPlayback();
   virtual void ShutDown();
 
  private:
+  // I/O thread backends to above functions.
+  void InitializeOnIOThread(
+      const ViewHostMsg_Audio_CreateStream_Params& params);
+  void StartPlaybackOnIOThread();
+  void StopPlaybackOnIOThread();
+  void ShutDownOnIOThread();
+
   virtual void OnRequestPacket(AudioBuffersState buffers_state) {
     LOG(FATAL) << "Should never get OnRequestPacket in PlatformAudioImpl";
   }
 
-  virtual void OnStateChanged(const ViewMsg_AudioStreamState_Params& state) { }
+  virtual void OnStateChanged(const ViewMsg_AudioStreamState_Params& state) {}
 
   virtual void OnCreated(base::SharedMemoryHandle handle, uint32 length) {
     LOG(FATAL) << "Should never get OnCreated in PlatformAudioImpl";
@@ -161,13 +162,18 @@ class PlatformAudioImpl
                                    base::SyncSocket::Handle socket_handle,
                                    uint32 length);
 
-  virtual void OnVolume(double volume) { }
+  virtual void OnVolume(double volume) {}
 
-  // The client to notify when the stream is created.
+  // The client to notify when the stream is created. THIS MUST ONLY BE
+  // ACCESSED ON THE MAIN THREAD.
   webkit::ppapi::PluginDelegate::PlatformAudio::Client* client_;
-  // MessageFilter used to send/receive IPC.
+
+  // MessageFilter used to send/receive IPC. THIS MUST ONLY BE ACCESSED ON THE
+  // I/O thread except to send messages and get the message loop.
   scoped_refptr<AudioMessageFilter> filter_;
-  // Our ID on the MessageFilter.
+
+  // Our ID on the MessageFilter. THIS MUST ONLY BE ACCESSED ON THE I/O THREAD
+  // or else you could race with the initialize function which sets it.
   int32 stream_id_;
 
   MessageLoop* main_message_loop_;
@@ -192,9 +198,65 @@ bool PlatformAudioImpl::Initialize(
   params.params.bits_per_sample = 16;
   params.params.samples_per_packet = sample_count;
 
+  filter_->message_loop()->PostTask(FROM_HERE,
+      NewRunnableMethod(this, &PlatformAudioImpl::InitializeOnIOThread,
+                        params));
+  return true;
+}
+
+bool PlatformAudioImpl::StartPlayback() {
+  if (filter_) {
+    filter_->message_loop()->PostTask(FROM_HERE,
+        NewRunnableMethod(this, &PlatformAudioImpl::StartPlaybackOnIOThread));
+    return true;
+  }
+  return false;
+}
+
+bool PlatformAudioImpl::StopPlayback() {
+  if (filter_) {
+    filter_->message_loop()->PostTask(FROM_HERE,
+        NewRunnableMethod(this, &PlatformAudioImpl::StopPlaybackOnIOThread));
+    return true;
+  }
+  return false;
+}
+
+void PlatformAudioImpl::ShutDown() {
+  // Called on the main thread to stop all audio callbacks. We must only change
+  // the client on the main thread, and the delegates from the I/O thread.
+  client_ = NULL;
+  filter_->message_loop()->PostTask(FROM_HERE,
+      NewRunnableMethod(this, &PlatformAudioImpl::ShutDownOnIOThread));
+}
+
+void PlatformAudioImpl::InitializeOnIOThread(
+    const ViewHostMsg_Audio_CreateStream_Params& params) {
   stream_id_ = filter_->AddDelegate(this);
-  return filter_->Send(new ViewHostMsg_CreateAudioStream(0, stream_id_, params,
-                                                         true));
+  filter_->Send(new ViewHostMsg_CreateAudioStream(0, stream_id_, params, true));
+}
+
+void PlatformAudioImpl::StartPlaybackOnIOThread() {
+  if (stream_id_)
+    filter_->Send(new ViewHostMsg_PlayAudioStream(0, stream_id_));
+}
+
+void PlatformAudioImpl::StopPlaybackOnIOThread() {
+  if (stream_id_)
+    filter_->Send(new ViewHostMsg_PauseAudioStream(0, stream_id_));
+}
+
+void PlatformAudioImpl::ShutDownOnIOThread() {
+  // Make sure we don't call shutdown more than once.
+  if (!stream_id_)
+    return;
+
+  filter_->Send(new ViewHostMsg_CloseAudioStream(0, stream_id_));
+  filter_->RemoveDelegate(stream_id_);
+  stream_id_ = 0;
+
+  Release();  // Release for the delegate, balances out the reference taken in
+              // PepperPluginDelegateImpl::CreateAudio.
 }
 
 void PlatformAudioImpl::OnLowLatencyCreated(
@@ -210,29 +272,15 @@ void PlatformAudioImpl::OnLowLatencyCreated(
   DCHECK(length);
 
   if (MessageLoop::current() == main_message_loop_) {
-    if (client_) {
+    // Must dereference the client only on the main thread. Shutdown may have
+    // occurred while the request was in-flight, so we need to NULL check.
+    if (client_)
       client_->StreamCreated(handle, length, socket_handle);
-    }
   } else {
     main_message_loop_->PostTask(FROM_HERE,
         NewRunnableMethod(this, &PlatformAudioImpl::OnLowLatencyCreated,
                           handle, socket_handle, length));
   }
-}
-
-void PlatformAudioImpl::ShutDown() {
-  // Make sure we don't call shutdown more than once.
-  if (!stream_id_) {
-    return;
-  }
-  filter_->Send(new ViewHostMsg_CloseAudioStream(0, stream_id_));
-  filter_->RemoveDelegate(stream_id_);
-  stream_id_ = 0;
-  client_ = NULL;
-
-  // Release on the IO thread so that we avoid race problems with
-  // OnLowLatencyCreated.
-  filter_->message_loop()->ReleaseSoon(FROM_HERE, this);
 }
 
 // Implements the VideoDecoder.
@@ -575,7 +623,7 @@ PepperPluginDelegateImpl::CreateAudio(
   scoped_refptr<PlatformAudioImpl> audio(
       new PlatformAudioImpl(render_view_->audio_message_filter()));
   if (audio->Initialize(sample_rate, sample_count, client)) {
-    // Also note ReleaseSoon invoked in PlatformAudioImpl::ShutDown().
+    // Balanced by Release invoked in PlatformAudioImpl::ShutDownOnIOThread().
     return audio.release();
   } else {
     return NULL;
