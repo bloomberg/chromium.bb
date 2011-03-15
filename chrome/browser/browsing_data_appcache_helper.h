@@ -56,6 +56,11 @@ class CannedBrowsingDataAppCacheHelper : public BrowsingDataAppCacheHelper {
  public:
   explicit CannedBrowsingDataAppCacheHelper(Profile* profile);
 
+  // Return a copy of the appcache helper. Only one consumer can use the
+  // StartFetching method at a time, so we need to create a copy of the helper
+  // everytime we instantiate a cookies tree model for it.
+  CannedBrowsingDataAppCacheHelper* Clone();
+
   // Add an appcache to the set of canned caches that is returned by this
   // helper.
   void AddAppCache(const GURL& manifest_url);
@@ -72,6 +77,8 @@ class CannedBrowsingDataAppCacheHelper : public BrowsingDataAppCacheHelper {
 
  private:
   virtual ~CannedBrowsingDataAppCacheHelper();
+
+  Profile* profile_;
 
   DISALLOW_COPY_AND_ASSIGN(CannedBrowsingDataAppCacheHelper);
 };

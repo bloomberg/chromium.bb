@@ -85,6 +85,11 @@ class CannedBrowsingDataIndexedDBHelper
  public:
   explicit CannedBrowsingDataIndexedDBHelper(Profile* profile);
 
+  // Return a copy of the IndexedDB helper. Only one consumer can use the
+  // StartFetching method at a time, so we need to create a copy of the helper
+  // everytime we instantiate a cookies tree model for it.
+  CannedBrowsingDataIndexedDBHelper* Clone();
+
   // Add a indexed database to the set of canned indexed databases that is
   // returned by this helper.
   void AddIndexedDB(const GURL& origin,

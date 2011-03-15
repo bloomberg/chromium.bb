@@ -147,7 +147,20 @@ void BrowsingDataLocalStorageHelper::DeleteLocalStorageFileInWebKitThread(
 
 CannedBrowsingDataLocalStorageHelper::CannedBrowsingDataLocalStorageHelper(
     Profile* profile)
-    : BrowsingDataLocalStorageHelper(profile) {
+    : BrowsingDataLocalStorageHelper(profile),
+      profile_(profile) {
+}
+
+CannedBrowsingDataLocalStorageHelper*
+CannedBrowsingDataLocalStorageHelper::Clone() {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  CannedBrowsingDataLocalStorageHelper* clone =
+      new CannedBrowsingDataLocalStorageHelper(profile_);
+
+  base::AutoLock auto_lock(lock_);
+  clone->pending_local_storage_info_ = pending_local_storage_info_;
+  clone->local_storage_info_ = local_storage_info_;
+  return clone;
 }
 
 void CannedBrowsingDataLocalStorageHelper::AddLocalStorage(

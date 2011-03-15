@@ -208,6 +208,17 @@ CannedBrowsingDataIndexedDBHelper::CannedBrowsingDataIndexedDBHelper(
   DCHECK(profile);
 }
 
+CannedBrowsingDataIndexedDBHelper* CannedBrowsingDataIndexedDBHelper::Clone() {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  CannedBrowsingDataIndexedDBHelper* clone =
+      new CannedBrowsingDataIndexedDBHelper(profile_);
+
+  base::AutoLock auto_lock(lock_);
+  clone->pending_indexed_db_info_ = pending_indexed_db_info_;
+  clone->indexed_db_info_ = indexed_db_info_;
+  return clone;
+}
+
 void CannedBrowsingDataIndexedDBHelper::AddIndexedDB(
     const GURL& origin, const string16& description) {
   base::AutoLock auto_lock(lock_);

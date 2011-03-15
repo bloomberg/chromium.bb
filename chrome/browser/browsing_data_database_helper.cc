@@ -157,7 +157,19 @@ CannedBrowsingDataDatabaseHelper::PendingDatabaseInfo::~PendingDatabaseInfo() {}
 
 CannedBrowsingDataDatabaseHelper::CannedBrowsingDataDatabaseHelper(
     Profile* profile)
-    : BrowsingDataDatabaseHelper(profile) {
+    : BrowsingDataDatabaseHelper(profile),
+      profile_(profile) {
+}
+
+CannedBrowsingDataDatabaseHelper* CannedBrowsingDataDatabaseHelper::Clone() {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  CannedBrowsingDataDatabaseHelper* clone =
+      new CannedBrowsingDataDatabaseHelper(profile_);
+
+  base::AutoLock auto_lock(lock_);
+  clone->pending_database_info_ = pending_database_info_;
+  clone->database_info_ = database_info_;
+  return clone;
 }
 
 void CannedBrowsingDataDatabaseHelper::AddDatabase(

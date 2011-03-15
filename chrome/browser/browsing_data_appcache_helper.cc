@@ -103,8 +103,18 @@ ChromeAppCacheService* BrowsingDataAppCacheHelper::GetAppCacheService() {
 
 CannedBrowsingDataAppCacheHelper::CannedBrowsingDataAppCacheHelper(
     Profile* profile)
-    : BrowsingDataAppCacheHelper(profile) {
+    : BrowsingDataAppCacheHelper(profile),
+      profile_(profile) {
   info_collection_ = new appcache::AppCacheInfoCollection;
+}
+
+CannedBrowsingDataAppCacheHelper* CannedBrowsingDataAppCacheHelper::Clone() {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  CannedBrowsingDataAppCacheHelper* clone =
+      new CannedBrowsingDataAppCacheHelper(profile_);
+
+  clone->info_collection_->infos_by_origin = info_collection_->infos_by_origin;
+  return clone;
 }
 
 void CannedBrowsingDataAppCacheHelper::AddAppCache(const GURL& manifest_url) {

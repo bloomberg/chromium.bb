@@ -316,9 +316,9 @@ void TabSpecificContentSettings::LocalSharedObjectsContainer::Reset() {
 CookiesTreeModel*
 TabSpecificContentSettings::LocalSharedObjectsContainer::GetCookiesTreeModel() {
   return new CookiesTreeModel(cookies_,
-                              databases_,
-                              local_storages_,
-                              session_storages_,
-                              appcaches_,
-                              indexed_dbs_);
+                              databases_->Clone(),
+                              local_storages_->Clone(),
+                              session_storages_->Clone(),
+                              appcaches_->Clone(),
+                              indexed_dbs_->Clone());
 }
