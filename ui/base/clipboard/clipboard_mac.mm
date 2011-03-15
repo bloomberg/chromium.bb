@@ -222,6 +222,14 @@ void Clipboard::ReadHTML(Clipboard::Buffer buffer, string16* markup,
     src_url->clear();
 }
 
+void Clipboard::ReadImage(Buffer buffer, std::string* data) const {
+  DCHECK_EQ(buffer, BUFFER_STANDARD);
+  if (!data) {
+    NOTREACHED();
+    return;
+  }
+}
+
 void Clipboard::ReadBookmark(string16* title, std::string* url) const {
   NSPasteboard* pb = GetPasteboard();
 
