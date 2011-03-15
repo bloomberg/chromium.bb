@@ -2064,6 +2064,8 @@
         'browser/ui/browser_list_win.cc',
         'browser/ui/browser_navigator.cc',
         'browser/ui/browser_navigator.h',
+        'browser/ui/browser_tab_restore_service_delegate.cc',
+        'browser/ui/browser_tab_restore_service_delegate.h',
         'browser/ui/browser_window.h',
         'browser/ui/cocoa/about_ipc_controller.h',
         'browser/ui/cocoa/about_ipc_controller.mm',

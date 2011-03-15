@@ -21,6 +21,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sessions/session_types.h"
 #include "chrome/browser/sessions/tab_restore_service.h"
+#include "chrome/browser/sessions/tab_restore_service_delegate.h"
 #include "chrome/browser/sessions/tab_restore_service_observer.h"
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/themes/browser_theme_provider.h"
@@ -114,14 +115,15 @@ RecentlyClosedTabsHandler::~RecentlyClosedTabsHandler() {
 }
 
 void RecentlyClosedTabsHandler::HandleReopenTab(const ListValue* args) {
-  Browser* browser = Browser::GetBrowserForController(
+  TabRestoreServiceDelegate* delegate =
+      TabRestoreServiceDelegate::FindDelegateForController(
       &web_ui_->tab_contents()->controller(), NULL);
-  if (!browser)
+  if (!delegate)
     return;
 
   int session_to_restore;
   if (ExtractIntegerValue(args, &session_to_restore))
-    tab_restore_service_->RestoreEntryById(browser, session_to_restore, true);
+    tab_restore_service_->RestoreEntryById(delegate, session_to_restore, true);
   // The current tab has been nuked at this point; don't touch any member
   // variables.
 }

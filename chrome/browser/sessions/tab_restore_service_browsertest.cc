@@ -123,7 +123,7 @@ TEST_F(TabRestoreServiceTest, Basic) {
   AddThreeNavigations();
 
   // Have the service record the tab.
-  service_->CreateHistoricalTab(&controller());
+  service_->CreateHistoricalTab(&controller(), -1);
 
   // Make sure an entry was created.
   ASSERT_EQ(1U, service_->entries().size());
@@ -145,7 +145,7 @@ TEST_F(TabRestoreServiceTest, Basic) {
   NavigateToIndex(1);
 
   // And check again.
-  service_->CreateHistoricalTab(&controller());
+  service_->CreateHistoricalTab(&controller(), -1);
 
   // There should be two entries now.
   ASSERT_EQ(2U, service_->entries().size());
@@ -167,7 +167,7 @@ TEST_F(TabRestoreServiceTest, Basic) {
 // Make sure TabRestoreService doesn't create an entry for a tab with no
 // navigations.
 TEST_F(TabRestoreServiceTest, DontCreateEmptyTab) {
-  service_->CreateHistoricalTab(&controller());
+  service_->CreateHistoricalTab(&controller(), -1);
   EXPECT_TRUE(service_->entries().empty());
 }
 
@@ -176,7 +176,7 @@ TEST_F(TabRestoreServiceTest, Restore) {
   AddThreeNavigations();
 
   // Have the service record the tab.
-  service_->CreateHistoricalTab(&controller());
+  service_->CreateHistoricalTab(&controller(), -1);
 
   // Recreate the service and have it load the tabs.
   RecreateService();
@@ -203,7 +203,7 @@ TEST_F(TabRestoreServiceTest, RestorePinnedAndApp) {
   AddThreeNavigations();
 
   // Have the service record the tab.
-  service_->CreateHistoricalTab(&controller());
+  service_->CreateHistoricalTab(&controller(), -1);
 
   // One entry should be created.
   ASSERT_EQ(1U, service_->entries().size());
@@ -244,7 +244,7 @@ TEST_F(TabRestoreServiceTest, DontPersistPostData) {
   controller().GetEntryAtIndex(2)->set_has_post_data(true);
 
   // Have the service record the tab.
-  service_->CreateHistoricalTab(&controller());
+  service_->CreateHistoricalTab(&controller(), -1);
   ASSERT_EQ(1U, service_->entries().size());
 
   // Recreate the service and have it load the tabs.
@@ -271,7 +271,7 @@ TEST_F(TabRestoreServiceTest, DontLoadTwice) {
   AddThreeNavigations();
 
   // Have the service record the tab.
-  service_->CreateHistoricalTab(&controller());
+  service_->CreateHistoricalTab(&controller(), -1);
   ASSERT_EQ(1U, service_->entries().size());
 
   // Recreate the service and have it load the tabs.
@@ -340,7 +340,7 @@ TEST_F(TabRestoreServiceTest, LoadPreviousSessionAndTabs) {
 
   AddThreeNavigations();
 
-  service_->CreateHistoricalTab(&controller());
+  service_->CreateHistoricalTab(&controller(), -1);
 
   RecreateService();
 
@@ -382,7 +382,7 @@ TEST_F(TabRestoreServiceTest, LoadPreviousSessionAndTabsPinned) {
 
   AddThreeNavigations();
 
-  service_->CreateHistoricalTab(&controller());
+  service_->CreateHistoricalTab(&controller(), -1);
 
   RecreateService();
 
@@ -425,7 +425,7 @@ TEST_F(TabRestoreServiceTest, ManyWindowsInSessionService) {
 
   AddThreeNavigations();
 
-  service_->CreateHistoricalTab(&controller());
+  service_->CreateHistoricalTab(&controller(), -1);
 
   RecreateService();
 
@@ -454,7 +454,7 @@ TEST_F(TabRestoreServiceTest, TimestampSurvivesRestore) {
   AddThreeNavigations();
 
   // Have the service record the tab.
-  service_->CreateHistoricalTab(&controller());
+  service_->CreateHistoricalTab(&controller(), -1);
 
   // Make sure an entry was created.
   ASSERT_EQ(1U, service_->entries().size());

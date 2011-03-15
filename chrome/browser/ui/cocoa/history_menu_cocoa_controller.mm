@@ -11,6 +11,7 @@
 #include "chrome/browser/history/history_types.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_tab_restore_service_delegate.h"
 #include "chrome/browser/ui/cocoa/event_utils.h"
 #include "webkit/glue/window_open_disposition.h"
 
@@ -39,7 +40,8 @@
   // just load the URL.
   TabRestoreService* service = bridge_->profile()->GetTabRestoreService();
   if (node->session_id && service) {
-    service->RestoreEntryById(browser, node->session_id, false);
+    service->RestoreEntryById(browser->tab_restore_service_delegate(),
+        node->session_id, false);
   } else {
     DCHECK(node->url.is_valid());
     browser->OpenURL(node->url, GURL(), disposition,

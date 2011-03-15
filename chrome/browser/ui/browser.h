@@ -40,6 +40,7 @@
 #include "content/common/notification_registrar.h"
 #include "ui/gfx/rect.h"
 
+class BrowserTabRestoreServiceDelegate;
 class BrowserWindow;
 class Extension;
 class FindBarController;
@@ -201,6 +202,9 @@ class Browser : public TabHandlerDelegate,
   const SessionID& session_id() const { return session_id_; }
   CommandUpdater* command_updater() { return &command_updater_; }
   bool block_command_execution() const { return block_command_execution_; }
+  BrowserTabRestoreServiceDelegate* tab_restore_service_delegate() {
+    return tab_restore_service_delegate_.get();
+  }
 
   // Get the FindBarController for this browser, creating it if it does not
   // yet exist.
@@ -349,6 +353,7 @@ class Browser : public TabHandlerDelegate,
   TabContents* GetSelectedTabContents() const;
   TabContents* GetTabContentsAt(int index) const;
   void SelectTabContentsAt(int index, bool user_gesture);
+  bool IsTabPinned(int index) const;
   void CloseAllTabs();
 
   // Tab adding/showing functions /////////////////////////////////////////////
@@ -1158,6 +1163,9 @@ class Browser : public TabHandlerDelegate,
   // The profile's tab restore service. The service is owned by the profile,
   // and we install ourselves as an observer.
   TabRestoreService* tab_restore_service_;
+
+  // Helper which implements the TabRestoreServiceDelegate interface.
+  scoped_ptr<BrowserTabRestoreServiceDelegate> tab_restore_service_delegate_;
 
   scoped_ptr<InstantController> instant_;
   scoped_ptr<InstantUnloadHandler> instant_unload_handler_;

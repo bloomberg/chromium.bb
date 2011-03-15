@@ -17,9 +17,9 @@
 #include "chrome/browser/sessions/session_types.h"
 #include "content/browser/in_process_webkit/session_storage_namespace.h"
 
-class Browser;
 class NavigationController;
 class Profile;
+class TabRestoreServiceDelegate;
 class TabRestoreServiceObserver;
 struct SessionWindow;
 
@@ -127,15 +127,15 @@ class TabRestoreService : public BaseSessionService {
 
   // Creates a Tab to represent |tab| and notifies observers the list of
   // entries has changed.
-  void CreateHistoricalTab(NavigationController* tab);
+  void CreateHistoricalTab(NavigationController* tab, int index);
 
-  // Invoked when a browser is closing. If |browser| is a tabbed browser with
+  // Invoked when a browser is closing. If |delegate| is a tabbed browser with
   // at least one tab, a Window is created, added to entries and observers are
   // notified.
-  void BrowserClosing(Browser* browser);
+  void BrowserClosing(TabRestoreServiceDelegate* delegate);
 
   // Invoked when the browser is done closing.
-  void BrowserClosed(Browser* browser);
+  void BrowserClosed(TabRestoreServiceDelegate* delegate);
 
   // Removes all entries from the list and notifies observers the list
   // of tabs has changed.
@@ -147,14 +147,14 @@ class TabRestoreService : public BaseSessionService {
 
   // Restores the most recently closed entry. Does nothing if there are no
   // entries to restore. If the most recently restored entry is a tab, it is
-  // added to |browser|.
-  void RestoreMostRecentEntry(Browser* browser);
+  // added to |delegate|.
+  void RestoreMostRecentEntry(TabRestoreServiceDelegate* delegate);
 
   // Restores an entry by id. If there is no entry with an id matching |id|,
   // this does nothing. If |replace_existing_tab| is true and id identifies a
-  // tab, the newly created tab replaces the selected tab in |browser|. If
-  // |browser| is NULL, this creates a new window for the entry.
-  void RestoreEntryById(Browser* browser,
+  // tab, the newly created tab replaces the selected tab in |delegate|. If
+  // |delegate| is NULL, this creates a new window for the entry.
+  void RestoreEntryById(TabRestoreServiceDelegate* delegate,
                         SessionID::id_type id,
                         bool replace_existing_tab);
 
@@ -194,9 +194,10 @@ class TabRestoreService : public BaseSessionService {
   };
 
   // Populates the tab's navigations from the NavigationController, and its
-  // browser_id and tabstrip_index from the browser.
+  // browser_id and pinned state from the browser.
   void PopulateTab(Tab* tab,
-                   Browser* browser,
+                   int index,
+                   TabRestoreServiceDelegate* delegate,
                    NavigationController* controller);
 
   // Notifies observers the tabs have changed.
@@ -259,11 +260,12 @@ class TabRestoreService : public BaseSessionService {
 
   // This is a helper function for RestoreEntryById() for restoring a single
   // tab. If |replace_existing_tab| is true, the newly created tab replaces the
-  // selected tab in |browser|. If |browser| is NULL, this creates a new window
-  // for the entry. This returns the Browser into which the tab was restored.
-  Browser* RestoreTab(const Tab& tab,
-                      Browser* browser,
-                      bool replace_existing_tab);
+  // selected tab in |delegate|. If |delegate| is NULL, this creates a new
+  // window for the entry. This returns the TabRestoreServiceDelegate into which
+  // the tab was restored.
+  TabRestoreServiceDelegate* RestoreTab(const Tab& tab,
+                                        TabRestoreServiceDelegate* delegate,
+                                        bool replace_existing_tab);
 
   // Returns true if |tab| has more than one navigation. If |tab| has more
   // than one navigation |tab->current_navigation_index| is constrained based
@@ -320,10 +322,10 @@ class TabRestoreService : public BaseSessionService {
 
   ObserverList<TabRestoreServiceObserver> observer_list_;
 
-  // Set of tabs that we've received a BrowserClosing method for but no
-  // corresponding BrowserClosed. We cache the set of browsers closing to
+  // Set of delegates that we've received a BrowserClosing method for but no
+  // corresponding BrowserClosed. We cache the set of delegates closing to
   // avoid creating historical tabs for them.
-  std::set<Browser*> closing_browsers_;
+  std::set<TabRestoreServiceDelegate*> closing_delegates_;
 
   // Used when loading previous tabs/session.
   CancelableRequestConsumer load_consumer_;
@@ -340,4 +342,3 @@ class TabRestoreService : public BaseSessionService {
 };
 
 #endif  // CHROME_BROWSER_SESSIONS_TAB_RESTORE_SERVICE_H_
-

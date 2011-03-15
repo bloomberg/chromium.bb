@@ -69,6 +69,7 @@
 #include "chrome/browser/tab_contents/simple_alert_infobar_delegate.h"
 #include "chrome/browser/tabs/tab_finder.h"
 #include "chrome/browser/tabs/tab_strip_model.h"
+#include "chrome/browser/ui/browser_tab_restore_service_delegate.h"
 #include "chrome/browser/ui/find_bar/find_bar.h"
 #include "chrome/browser/ui/find_bar/find_bar_controller.h"
 #include "chrome/browser/ui/find_bar/find_tab_helper.h"
@@ -206,7 +207,10 @@ Browser::Browser(Type type, Profile* profile)
       block_command_execution_(false),
       last_blocked_command_id_(-1),
       last_blocked_command_disposition_(CURRENT_TAB),
-      pending_web_app_action_(NONE) {
+      pending_web_app_action_(NONE),
+      ALLOW_THIS_IN_INITIALIZER_LIST(
+          tab_restore_service_delegate_(
+              new BrowserTabRestoreServiceDelegate(this))) {
   registrar_.Add(this, NotificationType::SSL_VISIBLE_STATE_CHANGED,
                  NotificationService::AllSources());
   registrar_.Add(this, NotificationType::EXTENSION_UPDATE_DISABLED,
@@ -299,7 +303,7 @@ Browser::~Browser() {
 
   TabRestoreService* tab_restore_service = profile()->GetTabRestoreService();
   if (tab_restore_service)
-    tab_restore_service->BrowserClosed(this);
+    tab_restore_service->BrowserClosed(tab_restore_service_delegate());
 
   encoding_auto_detect_.Destroy();
   printing_enabled_.Destroy();
@@ -901,8 +905,8 @@ void Browser::OnWindowClosing() {
     session_service->WindowClosing(session_id());
 
   TabRestoreService* tab_restore_service = profile()->GetTabRestoreService();
-  if (tab_restore_service)
-    tab_restore_service->BrowserClosing(this);
+  if (tab_restore_service && type() == TYPE_NORMAL && tab_count())
+    tab_restore_service->BrowserClosing(tab_restore_service_delegate());
 
   // TODO(sky): convert session/tab restore to use notification.
   NotificationService::current()->Notify(
@@ -971,6 +975,10 @@ TabContents* Browser::GetTabContentsAt(int index) const {
 
 void Browser::SelectTabContentsAt(int index, bool user_gesture) {
   tab_handler_->GetTabStripModel()->SelectTabContentsAt(index, user_gesture);
+}
+
+bool Browser::IsTabPinned(int index) const {
+  return tabstrip_model()->IsTabPinned(index);
 }
 
 void Browser::CloseAllTabs() {
@@ -1466,7 +1474,7 @@ void Browser::RestoreTab() {
   if (!service)
     return;
 
-  service->RestoreMostRecentEntry(this);
+  service->RestoreMostRecentEntry(tab_restore_service_delegate());
 }
 
 void Browser::WriteCurrentURLToClipboard() {
@@ -2583,7 +2591,8 @@ void Browser::CreateHistoricalTab(TabContentsWrapper* contents) {
   // We only create historical tab entries for tabbed browser windows.
   if (CanSupportWindowFeature(FEATURE_TABSTRIP)) {
     profile()->GetTabRestoreService()->CreateHistoricalTab(
-        &contents->controller());
+        &contents->controller(),
+        tab_handler_->GetTabStripModel()->GetIndexOfTabContents(contents));
   }
 }
 
