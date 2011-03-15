@@ -194,6 +194,11 @@ class CookieMonster : public CookieStore {
   // function must be called before initialization.
   void SetExpiryAndKeyScheme(ExpiryAndKeyScheme key_scheme);
 
+  // Instructs the cookie monster to not delete expired cookies. This is used
+  // in cases where the cookie monster is used as a data structure to keep
+  // arbitrary cookies.
+  void SetKeepExpiredCookies();
+
   // Delegates the call to set the |clear_local_store_on_exit_| flag of the
   // PersistentStore if it exists.
   void SetClearPersistentStoreOnExit(bool clear_local_store);
@@ -236,6 +241,10 @@ class CookieMonster : public CookieStore {
   // Argument |arg| is to allow retaining of arbitrary data if the CHECKs
   // in the function trip.  TODO(rdsmith):Remove hack.
   void ValidateMap(int arg);
+
+  // The default list of schemes the cookie monster can handle.
+  static const char* kDefaultCookieableSchemes[];
+  static const int kDefaultCookieableSchemesCount;
 
  private:
   // Testing support.
@@ -499,6 +508,8 @@ class CookieMonster : public CookieStore {
   base::Lock lock_;
 
   base::Time last_statistic_record_time_;
+
+  bool keep_expired_cookies_;
 
   static bool enable_file_scheme_;
 

@@ -293,6 +293,10 @@ TabSpecificContentSettings::LocalSharedObjectsContainer::
       indexed_dbs_(new CannedBrowsingDataIndexedDBHelper(profile)),
       local_storages_(new CannedBrowsingDataLocalStorageHelper(profile)),
       session_storages_(new CannedBrowsingDataLocalStorageHelper(profile)) {
+  cookies_->SetCookieableSchemes(
+      net::CookieMonster::kDefaultCookieableSchemes,
+      net::CookieMonster::kDefaultCookieableSchemesCount);
+  cookies_->SetKeepExpiredCookies();
 }
 
 TabSpecificContentSettings::LocalSharedObjectsContainer::
