@@ -547,3 +547,18 @@ TEST_F(ExtensionManifestTest, ForbidPortsInPermissions) {
   // to flag this case.
   LoadStrictAndExpectSuccess("forbid_ports_in_permissions.json");
 }
+
+TEST_F(ExtensionManifestTest, IsolatedApps) {
+  // Requires --enable-experimental-app-manifests
+  scoped_refptr<Extension> extension(
+      LoadAndExpectSuccess("isolated_app_valid.json"));
+  EXPECT_FALSE(extension->is_storage_isolated());
+
+  CommandLine old_command_line = *CommandLine::ForCurrentProcess();
+  CommandLine::ForCurrentProcess()->AppendSwitch(
+      switches::kEnableExperimentalAppManifests);
+  scoped_refptr<Extension> extension2(
+      LoadAndExpectSuccess("isolated_app_valid.json"));
+  EXPECT_TRUE(extension2->is_storage_isolated());
+  *CommandLine::ForCurrentProcess() = old_command_line;
+}

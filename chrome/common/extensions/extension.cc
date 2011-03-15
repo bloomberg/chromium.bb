@@ -1140,6 +1140,43 @@ bool Extension::LoadLaunchContainer(const DictionaryValue* manifest,
   return true;
 }
 
+bool Extension::LoadAppIsolation(const DictionaryValue* manifest,
+                                 std::string* error) {
+  // Only parse app isolation features if this switch is present.
+  if (!CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnableExperimentalAppManifests))
+    return true;
+
+  Value* temp = NULL;
+  if (!manifest->Get(keys::kIsolation, &temp))
+    return true;
+
+  if (temp->GetType() != Value::TYPE_LIST) {
+    *error = errors::kInvalidIsolation;
+    return false;
+  }
+
+  ListValue* isolation_list = static_cast<ListValue*>(temp);
+  for (size_t i = 0; i < isolation_list->GetSize(); ++i) {
+    std::string isolation_string;
+    if (!isolation_list->GetString(i, &isolation_string)) {
+      *error = ExtensionErrorUtils::FormatErrorMessage(
+          errors::kInvalidIsolationValue,
+          base::UintToString(i));
+      return false;
+    }
+
+    // Check for isolated storage.
+    if (isolation_string == values::kIsolatedStorage) {
+      is_storage_isolated_ = true;
+    } else {
+      LOG(WARNING) << "Did not recognize isolation type: "
+                   << isolation_string;
+    }
+  }
+  return true;
+}
+
 bool Extension::EnsureNotHybridApp(const DictionaryValue* manifest,
                                    std::string* error) {
   if (web_extent().is_empty())
@@ -1165,6 +1202,7 @@ Extension::Extension(const FilePath& path, Location location)
       converted_from_user_script_(false),
       is_theme_(false),
       is_app_(false),
+      is_storage_isolated_(false),
       launch_container_(extension_misc::LAUNCH_TAB),
       launch_width_(0),
       launch_height_(0) {
@@ -1803,7 +1841,8 @@ bool Extension::InitFromValue(const DictionaryValue& source, bool require_key,
                   parse_strictness, error) ||
       !EnsureNotHybridApp(manifest_value_.get(), error) ||
       !LoadLaunchURL(manifest_value_.get(), error) ||
-      !LoadLaunchContainer(manifest_value_.get(), error)) {
+      !LoadLaunchContainer(manifest_value_.get(), error) ||
+      !LoadAppIsolation(manifest_value_.get(), error)) {
     return false;
   }
 

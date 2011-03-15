@@ -18,6 +18,7 @@
 #include "base/scoped_ptr.h"
 #include "base/string_util.h"
 #include "base/threading/thread.h"
+#include "base/threading/thread_restrictions.h"
 #include "chrome/browser/diagnostics/sqlite_diagnostics.h"
 #include "content/browser/browser_thread.h"
 #include "googleurl/src/gurl.h"
@@ -155,6 +156,17 @@ bool SQLitePersistentCookieStore::Backend::Load(
     std::vector<net::CookieMonster::CanonicalCookie*>* cookies) {
   // This function should be called only once per instance.
   DCHECK(!db_.get());
+
+  // Ensure the parent directory for storing cookies is created before reading
+  // from it.  We make an exception to allow IO on the UI thread here because
+  // we are going to disk anyway in db_->Open.  (This code will be moved to the
+  // DB thread as part of http://crbug.com/52909.)
+  {
+    base::ThreadRestrictions::ScopedAllowIO allow_io;
+    const FilePath dir = path_.DirName();
+    if (!file_util::PathExists(dir) && !file_util::CreateDirectory(dir))
+      return false;
+  }
 
   db_.reset(new sql::Connection);
   if (!db_->Open(path_)) {

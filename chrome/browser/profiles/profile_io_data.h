@@ -57,12 +57,15 @@ class DatabaseTracker;
 // accessor.
 class ProfileIOData : public base::RefCountedThreadSafe<ProfileIOData> {
  public:
-  // These should only be called at most once each. Ownership is reversed they
-  // get called, from ProfileIOData owning ChromeURLRequestContext to vice
+  // These should only be called at most once each. Ownership is reversed when
+  // they get called, from ProfileIOData owning ChromeURLRequestContext to vice
   // versa.
   scoped_refptr<ChromeURLRequestContext> GetMainRequestContext() const;
   scoped_refptr<ChromeURLRequestContext> GetMediaRequestContext() const;
   scoped_refptr<ChromeURLRequestContext> GetExtensionsRequestContext() const;
+  scoped_refptr<ChromeURLRequestContext> GetIsolatedAppRequestContext(
+      scoped_refptr<ChromeURLRequestContext> main_context,
+      const std::string& app_id) const;
 
  protected:
   friend class base::RefCountedThreadSafe<ProfileIOData>;
@@ -139,9 +142,15 @@ class ProfileIOData : public base::RefCountedThreadSafe<ProfileIOData> {
   // Virtual interface for subtypes to implement:
   // --------------------------------------------
 
-  // Does that actual initialization of the ProfileIOData subtype. Subtypes
+  // Does the actual initialization of the ProfileIOData subtype. Subtypes
   // should use the static helper functions above to implement this.
   virtual void LazyInitializeInternal() const = 0;
+
+  // Does an on-demand initialization of a RequestContext for the given
+  // isolated app.
+  virtual scoped_refptr<RequestContext> InitializeAppRequestContext(
+      scoped_refptr<ChromeURLRequestContext> main_context,
+      const std::string& app_id) const = 0;
 
   // These functions are used to transfer ownership of the lazily initialized
   // context from ProfileIOData to the URLRequestContextGetter.
@@ -151,6 +160,10 @@ class ProfileIOData : public base::RefCountedThreadSafe<ProfileIOData> {
       AcquireMediaRequestContext() const = 0;
   virtual scoped_refptr<ChromeURLRequestContext>
       AcquireExtensionsRequestContext() const = 0;
+  virtual scoped_refptr<ChromeURLRequestContext>
+      AcquireIsolatedAppRequestContext(
+          scoped_refptr<ChromeURLRequestContext> main_context,
+          const std::string& app_id) const = 0;
 
   mutable bool initialized_;
 

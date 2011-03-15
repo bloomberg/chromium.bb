@@ -84,6 +84,7 @@ const FilePath::CharType kAppCacheDirname[] = FPL("Application Cache");
 const FilePath::CharType kThemePackFilename[] = FPL("Cached Theme.pak");
 const FilePath::CharType kCookieFilename[] = FPL("Cookies");
 const FilePath::CharType kExtensionsCookieFilename[] = FPL("Extension Cookies");
+const FilePath::CharType kIsolatedAppStateDirname[] = FPL("Isolated Apps");
 const FilePath::CharType kFaviconsFilename[] = FPL("Favicons");
 const FilePath::CharType kHistoryFilename[] = FPL("History");
 const FilePath::CharType kLocalStateFilename[] = FPL("Local State");

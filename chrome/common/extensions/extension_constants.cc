@@ -23,6 +23,7 @@ const char* kHomepageURL = "homepage_url";
 const char* kIcons = "icons";
 const char* kIncognito = "incognito";
 const char* kIncludeGlobs = "include_globs";
+const char* kIsolation = "app.isolation";
 const char* kJs = "js";
 const char* kLaunch = "app.launch";
 const char* kLaunchContainer = "app.launch.container";
@@ -80,6 +81,7 @@ const char* kWebURLs = "app.urls";
 namespace extension_manifest_values {
 const char* kIncognitoSplit = "split";
 const char* kIncognitoSpanning = "spanning";
+const char* kIsolatedStorage = "storage";
 const char* kRunAtDocumentStart = "document_start";
 const char* kRunAtDocumentEnd = "document_end";
 const char* kRunAtDocumentIdle = "document_idle";
@@ -153,6 +155,10 @@ const char* kInvalidIcons =
     "Invalid value for 'icons'.";
 const char* kInvalidIncognitoBehavior =
     "Invalid value for 'incognito'.";
+const char* kInvalidIsolation =
+    "Invalid value for 'app.isolation'.";
+const char* kInvalidIsolationValue =
+    "Invalid value for 'app.isolation[*]'.";
 const char* kInvalidJs =
     "Invalid value for 'content_scripts[*].js[*]'.";
 const char* kInvalidJsList =

@@ -28,6 +28,7 @@ namespace extension_manifest_keys {
   extern const char* kIcons;
   extern const char* kIncognito;
   extern const char* kIncludeGlobs;
+  extern const char* kIsolation;
   extern const char* kJs;
   extern const char* kLaunch;
   extern const char* kLaunchContainer;
@@ -86,6 +87,7 @@ namespace extension_manifest_keys {
 namespace extension_manifest_values {
   extern const char* kIncognitoSplit;
   extern const char* kIncognitoSpanning;
+  extern const char* kIsolatedStorage;
   extern const char* kLaunchContainerPanel;
   extern const char* kLaunchContainerTab;
   extern const char* kLaunchContainerWindow;
@@ -128,6 +130,8 @@ namespace extension_manifest_errors {
   extern const char* kInvalidIconPath;
   extern const char* kInvalidIcons;
   extern const char* kInvalidIncognitoBehavior;
+  extern const char* kInvalidIsolation;
+  extern const char* kInvalidIsolationValue;
   extern const char* kInvalidJs;
   extern const char* kInvalidJsList;
   extern const char* kInvalidKey;

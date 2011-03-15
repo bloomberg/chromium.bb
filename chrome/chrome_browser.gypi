@@ -203,6 +203,8 @@
         'browser/automation/automation_autocomplete_edit_tracker.h',
         'browser/automation/automation_browser_tracker.cc',
         'browser/automation/automation_browser_tracker.h',
+        'browser/automation/automation_util.cc',
+        'browser/automation/automation_util.h',
         'browser/automation/automation_extension_function.cc',
         'browser/automation/automation_extension_function.h',
         'browser/automation/automation_extension_tracker.cc',

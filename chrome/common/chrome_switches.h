@@ -139,6 +139,7 @@ extern const char kEnableDataTransferItems[];
 extern const char kEnableDeviceMotion[];
 extern const char kEnableDNSCertProvenanceChecking[];
 extern const char kEnableDNSSECCerts[];
+extern const char kEnableExperimentalAppManifests[];
 extern const char kEnableExperimentalExtensionApis[];
 extern const char kEnableExtensionTimelineApi[];
 extern const char kEnableFastback[];

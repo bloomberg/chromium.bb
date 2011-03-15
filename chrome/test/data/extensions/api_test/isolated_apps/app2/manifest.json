@@ -1,0 +1,16 @@
+{
+  "name": "isolated_app2",
+  "version": "0.1",
+  "description": "Tests isolation of stored data for apps.",
+  "app": {
+    "urls": [
+      "http://localhost/files/extensions/api_test/isolated_apps/app2"
+    ],
+    "launch": {
+      "web_url": "http://localhost/files/extensions/api_test/isolated_apps/app2/main.html"
+    },
+    "isolation": [
+      "storage"
+    ]
+  }
+}

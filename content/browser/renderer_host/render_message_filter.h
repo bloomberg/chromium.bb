@@ -61,6 +61,7 @@ class RenderMessageFilter : public BrowserMessageFilter {
   RenderMessageFilter(int render_process_id,
                       PluginService* plugin_service,
                       Profile* profile,
+                      URLRequestContextGetter* request_context,
                       RenderWidgetHelper* render_widget_helper);
 
   // BrowserMessageFilter methods:

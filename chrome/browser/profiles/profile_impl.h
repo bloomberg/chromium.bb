@@ -86,8 +86,12 @@ class ProfileImpl : public Profile,
   virtual BrowserThemeProvider* GetThemeProvider();
   virtual bool HasCreatedDownloadManager() const;
   virtual URLRequestContextGetter* GetRequestContext();
+  virtual URLRequestContextGetter* GetRequestContextForPossibleApp(
+      const Extension* installed_app);
   virtual URLRequestContextGetter* GetRequestContextForMedia();
   virtual URLRequestContextGetter* GetRequestContextForExtensions();
+  virtual URLRequestContextGetter* GetRequestContextForIsolatedApp(
+      const std::string& app_id);
   virtual void RegisterExtensionWithRequestContexts(const Extension* extension);
   virtual void UnregisterExtensionWithRequestContexts(
       const Extension* extension);

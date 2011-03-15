@@ -6,6 +6,7 @@
 
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/renderer_host/browser_render_process_host.h"
 #include "chrome/common/bindings_policy.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_resource.h"
@@ -32,6 +33,12 @@ SidebarContainer::SidebarContainer(TabContents* tab,
   sidebar_contents_.reset(
       new TabContents(tab->profile(), NULL, MSG_ROUTING_NONE, NULL, NULL));
   sidebar_contents_->render_view_host()->set_is_extension_process(true);
+  const Extension* extension = GetExtension();
+  if (extension && extension->is_app()) {
+    BrowserRenderProcessHost* process = static_cast<BrowserRenderProcessHost*>(
+        sidebar_contents_->render_view_host()->process());
+    process->set_installed_app(extension);
+  }
   sidebar_contents_->render_view_host()->AllowBindings(
       BindingsPolicy::EXTENSION);
   sidebar_contents_->set_delegate(this);

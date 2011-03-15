@@ -6,6 +6,7 @@
 
 #include "base/command_line.h"
 #include "base/logging.h"
+#include "base/stl_util-inl.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/io_thread.h"
@@ -14,6 +15,7 @@
 #include "chrome/browser/net/chrome_net_log.h"
 #include "chrome/browser/net/chrome_network_delegate.h"
 #include "chrome/browser/net/chrome_url_request_context.h"
+#include "chrome/common/extensions/extension.h"
 #include "chrome/common/url_constants.h"
 #include "content/browser/browser_thread.h"
 #include "net/ftp/ftp_network_layer.h"
@@ -37,6 +39,14 @@ OffTheRecordProfileIOData::Handle::~Handle() {
     main_request_context_getter_->CleanupOnUIThread();
   if (extensions_request_context_getter_)
     extensions_request_context_getter_->CleanupOnUIThread();
+
+  // Clean up all isolated app request contexts.
+  for (ChromeURLRequestContextGetterMap::iterator iter =
+           app_request_context_getter_map_.begin();
+       iter != app_request_context_getter_map_.end();
+       ++iter) {
+    iter->second->CleanupOnUIThread();
+  }
 }
 
 scoped_refptr<ChromeURLRequestContextGetter>
@@ -66,6 +76,27 @@ OffTheRecordProfileIOData::Handle::GetExtensionsRequestContextGetter() const {
   return extensions_request_context_getter_;
 }
 
+scoped_refptr<ChromeURLRequestContextGetter>
+OffTheRecordProfileIOData::Handle::GetIsolatedAppRequestContextGetter(
+    const std::string& app_id) const {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(!app_id.empty());
+  LazyInitialize();
+
+  // Keep a map of request context getters, one per requested app ID.
+  ChromeURLRequestContextGetterMap::iterator iter =
+      app_request_context_getter_map_.find(app_id);
+  if (iter != app_request_context_getter_map_.end())
+    return iter->second;
+
+  ChromeURLRequestContextGetter* context =
+      ChromeURLRequestContextGetter::CreateOffTheRecordForIsolatedApp(
+          profile_, io_data_, app_id);
+  app_request_context_getter_map_[app_id] = context;
+
+  return context;
+}
+
 void OffTheRecordProfileIOData::Handle::LazyInitialize() const {
   if (!initialized_) {
     InitializeProfileParams(profile_, &io_data_->lazy_params_->profile_params);
@@ -79,7 +110,9 @@ OffTheRecordProfileIOData::LazyParams::~LazyParams() {}
 OffTheRecordProfileIOData::OffTheRecordProfileIOData()
     : ProfileIOData(true),
       initialized_(false) {}
-OffTheRecordProfileIOData::~OffTheRecordProfileIOData() {}
+OffTheRecordProfileIOData::~OffTheRecordProfileIOData() {
+  STLDeleteValues(&app_http_factory_map_);
+}
 
 void OffTheRecordProfileIOData::LazyInitializeInternal() const {
   main_request_context_ = new RequestContext;
@@ -164,6 +197,37 @@ void OffTheRecordProfileIOData::LazyInitializeInternal() const {
       new net::FtpNetworkLayer(main_request_context_->host_resolver()));
 }
 
+scoped_refptr<ProfileIOData::RequestContext>
+OffTheRecordProfileIOData::InitializeAppRequestContext(
+    scoped_refptr<ChromeURLRequestContext> main_context,
+    const std::string& app_id) const {
+  scoped_refptr<ProfileIOData::RequestContext> context = new RequestContext;
+
+  // Copy most state from the main context.
+  context->CopyFrom(main_context);
+
+  // Use a separate in-memory cookie store for the app.
+  // TODO(creis): We should have a cookie delegate for notifying the cookie
+  // extensions API, but we need to update it to understand isolated apps first.
+  context->set_cookie_store(
+      new net::CookieMonster(NULL, NULL));
+
+  // Use a separate in-memory cache for the app.
+  net::HttpCache::BackendFactory* app_backend =
+      net::HttpCache::DefaultBackend::InMemory(0);
+  net::HttpNetworkSession* main_network_session =
+      main_http_factory_->GetSession();
+  net::HttpCache* app_http_cache =
+      new net::HttpCache(main_network_session, app_backend);
+
+  // Keep track of app_http_cache to delete it when we go away.
+  DCHECK(!app_http_factory_map_[app_id]);
+  app_http_factory_map_[app_id] = app_http_cache;
+  context->set_http_transaction_factory(app_http_cache);
+
+  return context;
+}
+
 scoped_refptr<ChromeURLRequestContext>
 OffTheRecordProfileIOData::AcquireMainRequestContext() const {
   DCHECK(main_request_context_);
@@ -186,4 +250,16 @@ OffTheRecordProfileIOData::AcquireExtensionsRequestContext() const {
   extensions_request_context_->set_profile_io_data(this);
   extensions_request_context_ = NULL;
   return context;
+}
+
+scoped_refptr<ChromeURLRequestContext>
+OffTheRecordProfileIOData::AcquireIsolatedAppRequestContext(
+    scoped_refptr<ChromeURLRequestContext> main_context,
+    const std::string& app_id) const {
+  // We create per-app contexts on demand, unlike the others above.
+  scoped_refptr<RequestContext> app_request_context =
+      InitializeAppRequestContext(main_context, app_id);
+  DCHECK(app_request_context);
+  app_request_context->set_profile_io_data(this);
+  return app_request_context;
 }

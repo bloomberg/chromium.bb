@@ -243,8 +243,10 @@ namespace {
 class RendererURLRequestContextOverride
     : public ResourceMessageFilter::URLRequestContextOverride {
  public:
-  explicit RendererURLRequestContextOverride(Profile* profile)
-      : request_context_(profile->GetRequestContext()),
+  RendererURLRequestContextOverride(Profile* profile,
+                                    const Extension* installed_app)
+      : request_context_(profile->GetRequestContextForPossibleApp(
+                             installed_app)),
         media_request_context_(profile->GetRequestContextForMedia()) {
   }
 
@@ -440,11 +442,13 @@ void BrowserRenderProcessHost::CreateMessageFilters() {
       new RenderMessageFilter(id(),
                               PluginService::GetInstance(),
                               profile(),
+                              profile()->GetRequestContextForPossibleApp(
+                                  installed_app_),
                               widget_helper_));
   channel_->AddFilter(render_message_filter);
 
   scoped_refptr<RendererURLRequestContextOverride> url_request_context_override(
-      new RendererURLRequestContextOverride(profile()));
+      new RendererURLRequestContextOverride(profile(), installed_app_));
 
   ResourceMessageFilter* resource_message_filter = new ResourceMessageFilter(
       id(), ChildProcessInfo::RENDER_PROCESS,

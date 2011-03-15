@@ -201,6 +201,8 @@ class TestingProfile : public Profile {
   // getter is currently only capable of returning a Context that helps test
   // the CookieMonster. See implementation comments for more details.
   virtual URLRequestContextGetter* GetRequestContext();
+  virtual URLRequestContextGetter* GetRequestContextForPossibleApp(
+      const Extension* installed_app);
   void CreateRequestContext();
   // Clears out the created request context (which must be done before shutting
   // down the IO thread to avoid leaks).
@@ -208,6 +210,8 @@ class TestingProfile : public Profile {
 
   virtual URLRequestContextGetter* GetRequestContextForMedia();
   virtual URLRequestContextGetter* GetRequestContextForExtensions();
+  virtual URLRequestContextGetter* GetRequestContextForIsolatedApp(
+      const std::string& app_id);
 
   virtual net::SSLConfigService* GetSSLConfigService();
   virtual UserStyleSheetWatcher* GetUserStyleSheetWatcher();

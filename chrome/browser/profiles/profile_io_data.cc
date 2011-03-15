@@ -229,6 +229,17 @@ ProfileIOData::GetExtensionsRequestContext() const {
   return context;
 }
 
+scoped_refptr<ChromeURLRequestContext>
+ProfileIOData::GetIsolatedAppRequestContext(
+    scoped_refptr<ChromeURLRequestContext> main_context,
+    const std::string& app_id) const {
+  LazyInitialize();
+  scoped_refptr<ChromeURLRequestContext> context =
+      AcquireIsolatedAppRequestContext(main_context, app_id);
+  DCHECK(context);
+  return context;
+}
+
 void ProfileIOData::LazyInitialize() const {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   if (initialized_)

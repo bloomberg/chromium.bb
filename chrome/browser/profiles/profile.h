@@ -346,6 +346,14 @@ class Profile {
   // happen on the UI thread.
   virtual URLRequestContextGetter* GetRequestContext() = 0;
 
+  // Returns the request context appropriate for the given app. If installed_app
+  // is null or installed_app->is_storage_isolated() returns false, this is
+  // equivalent to calling GetRequestContext().
+  // TODO(creis): After isolated app storage is no longer an experimental
+  // feature, consider making this the default contract for GetRequestContext.
+  virtual URLRequestContextGetter* GetRequestContextForPossibleApp(
+      const Extension* installed_app) = 0;
+
   // Returns the request context for media resources asociated with this
   // profile.
   virtual URLRequestContextGetter* GetRequestContextForMedia() = 0;
@@ -353,6 +361,11 @@ class Profile {
   // Returns the request context used for extension-related requests.  This
   // is only used for a separate cookie store currently.
   virtual URLRequestContextGetter* GetRequestContextForExtensions() = 0;
+
+  // Returns the request context used within an installed app that has
+  // requested isolated storage.
+  virtual URLRequestContextGetter* GetRequestContextForIsolatedApp(
+      const std::string& app_id) = 0;
 
   // Called by the ExtensionService that lives in this profile. Gives the
   // profile a chance to react to the load event before the EXTENSION_LOADED

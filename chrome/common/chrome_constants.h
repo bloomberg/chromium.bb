@@ -46,6 +46,7 @@ extern const FilePath::CharType kAppCacheDirname[];
 extern const FilePath::CharType kThemePackFilename[];
 extern const FilePath::CharType kCookieFilename[];
 extern const FilePath::CharType kExtensionsCookieFilename[];
+extern const FilePath::CharType kIsolatedAppStateDirname[];
 extern const FilePath::CharType kFaviconsFilename[];
 extern const FilePath::CharType kHistoryFilename[];
 extern const FilePath::CharType kLocalStateFilename[];

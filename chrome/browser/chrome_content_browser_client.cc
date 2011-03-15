@@ -6,6 +6,7 @@
 
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/extensions/extension_service.h"
+#include "chrome/browser/renderer_host/browser_render_process_host.h"
 #include "content/browser/renderer_host/render_view_host.h"
 
 namespace chrome {
@@ -19,6 +20,10 @@ void ChromeContentBrowserClient::OnRenderViewCreation(
   if (service) {
     bool is_extension_process = service->ExtensionBindingsAllowed(url);
     render_view_host->set_is_extension_process(is_extension_process);
+
+    const Extension* installed_app = service->GetInstalledApp(url);
+    static_cast<BrowserRenderProcessHost*>(render_view_host->process())->
+        set_installed_app(installed_app);
   }
 }
 

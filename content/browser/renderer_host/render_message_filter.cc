@@ -279,11 +279,13 @@ RenderMessageFilter::RenderMessageFilter(
     int render_process_id,
     PluginService* plugin_service,
     Profile* profile,
+    URLRequestContextGetter* request_context,
     RenderWidgetHelper* render_widget_helper)
     : resource_dispatcher_host_(g_browser_process->resource_dispatcher_host()),
       plugin_service_(plugin_service),
       profile_(profile),
       content_settings_(profile->GetHostContentSettingsMap()),
+      request_context_(request_context),
       extensions_request_context_(profile->GetRequestContextForExtensions()),
       render_widget_helper_(render_widget_helper),
       notification_prefs_(
@@ -292,7 +294,6 @@ RenderMessageFilter::RenderMessageFilter(
       off_the_record_(profile->IsOffTheRecord()),
       webkit_context_(profile->GetWebKitContext()),
       render_process_id_(render_process_id) {
-  request_context_ = profile_->GetRequestContext();
   DCHECK(request_context_);
 
   render_widget_helper_->Init(render_process_id_, resource_dispatcher_host_);

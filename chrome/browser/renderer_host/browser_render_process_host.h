@@ -16,6 +16,7 @@
 #include "base/scoped_callback_factory.h"
 #include "base/scoped_ptr.h"
 #include "base/timer.h"
+#include "chrome/common/extensions/extension.h"
 #include "content/browser/child_process_launcher.h"
 #include "content/browser/renderer_host/render_process_host.h"
 #include "content/common/notification_observer.h"
@@ -51,6 +52,12 @@ class BrowserRenderProcessHost : public RenderProcessHost,
  public:
   explicit BrowserRenderProcessHost(Profile* profile);
   ~BrowserRenderProcessHost();
+
+  // Whether this process is associated with an installed app.
+  const Extension* installed_app() const { return installed_app_; }
+  void set_installed_app(const Extension* installed_app) {
+    installed_app_ = installed_app;
+  }
 
   // RenderProcessHost implementation (public portion).
   virtual bool Init(bool is_accessibility_enabled, bool is_extensions_process);
@@ -199,7 +206,10 @@ class BrowserRenderProcessHost : public RenderProcessHost,
   // when running in single-process mode.
   bool extension_process_;
 
-  // Usedt to launch and terminate the process without blocking the UI thread.
+  // The Extension for the hosted or packaged app if any, NULL otherwise.
+  scoped_refptr<const Extension> installed_app_;
+
+  // Used to launch and terminate the process without blocking the UI thread.
   scoped_ptr<ChildProcessLauncher> child_process_;
 
   // Messages we queue while waiting for the process handle.  We queue them here

@@ -563,6 +563,14 @@ URLRequestContextGetter* TestingProfile::GetRequestContext() {
   return request_context_.get();
 }
 
+URLRequestContextGetter* TestingProfile::GetRequestContextForPossibleApp(
+    const Extension* installed_app) {
+  if (installed_app != NULL && installed_app->is_storage_isolated())
+    return GetRequestContextForIsolatedApp(installed_app->id());
+
+  return GetRequestContext();
+}
+
 void TestingProfile::CreateRequestContext() {
   if (!request_context_)
     request_context_ = new TestURLRequestContextGetter();
@@ -588,6 +596,13 @@ net::SSLConfigService* TestingProfile::GetSSLConfigService() {
 
 UserStyleSheetWatcher* TestingProfile::GetUserStyleSheetWatcher() {
   return NULL;
+}
+
+URLRequestContextGetter* TestingProfile::GetRequestContextForIsolatedApp(
+    const std::string& app_id) {
+  // We don't test isolated app storage here yet, so returning the same dummy
+  // context is sufficient for now.
+  return GetRequestContext();
 }
 
 FindBarState* TestingProfile::GetFindBarState() {

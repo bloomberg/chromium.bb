@@ -341,10 +341,13 @@ ProfileImpl::ProfileImpl(const FilePath& path)
   extensions_cookie_path =
       extensions_cookie_path.Append(chrome::kExtensionsCookieFilename);
 
+  FilePath app_path = GetPath().Append(chrome::kIsolatedAppStateDirname);
+
   // Make sure we initialize the ProfileIOData after everything else has been
   // initialized that we might be reading from the IO thread.
   io_data_.Init(cookie_path, cache_path, cache_max_size,
-                media_cache_path, media_cache_max_size, extensions_cookie_path);
+                media_cache_path, media_cache_max_size, extensions_cookie_path,
+                app_path);
 
   // Initialize the ProfilePolicyConnector after |io_data_| since it requires
   // the URLRequestContextGetter to be initialized.
@@ -821,6 +824,17 @@ URLRequestContextGetter* ProfileImpl::GetRequestContext() {
   return request_context;
 }
 
+URLRequestContextGetter* ProfileImpl::GetRequestContextForPossibleApp(
+    const Extension* installed_app) {
+  if (CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnableExperimentalAppManifests) &&
+      installed_app != NULL &&
+      installed_app->is_storage_isolated())
+    return GetRequestContextForIsolatedApp(installed_app->id());
+
+  return GetRequestContext();
+}
+
 URLRequestContextGetter* ProfileImpl::GetRequestContextForMedia() {
   return io_data_.GetMediaRequestContextGetter();
 }
@@ -836,6 +850,11 @@ FaviconService* ProfileImpl::GetFaviconService(ServiceAccessType sat) {
 
 URLRequestContextGetter* ProfileImpl::GetRequestContextForExtensions() {
   return io_data_.GetExtensionsRequestContextGetter();
+}
+
+URLRequestContextGetter* ProfileImpl::GetRequestContextForIsolatedApp(
+    const std::string& app_id) {
+  return io_data_.GetIsolatedAppRequestContextGetter(app_id);
 }
 
 void ProfileImpl::RegisterExtensionWithRequestContexts(

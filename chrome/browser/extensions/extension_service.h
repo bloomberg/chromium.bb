@@ -108,6 +108,9 @@ class ExtensionService
   // Used to test if we need to show the "Loading" dialog for themes.
   static bool IsDownloadFromMiniGallery(const GURL& download_url);
 
+  // Returns the Extension of hosted or packaged apps, NULL otherwise.
+  const Extension* GetInstalledApp(const GURL& url);
+
   // Returns whether the URL is from either a hosted or packaged app.
   bool IsInstalledApp(const GURL& url);
 

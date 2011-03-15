@@ -6,9 +6,11 @@
 
 #include "chrome/browser/browser_list.h"
 #include "chrome/browser/extensions/extension_process_manager.h"
+#include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/notifications/balloon.h"
 #include "chrome/browser/notifications/notification.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/renderer_host/browser_render_process_host.h"
 #include "chrome/browser/renderer_preferences_util.h"
 #include "chrome/common/bindings_policy.h"
 #include "chrome/common/render_messages.h"
@@ -201,6 +203,11 @@ void BalloonHost::Init() {
   if (extension_function_dispatcher_.get()) {
     rvh->AllowBindings(BindingsPolicy::EXTENSION);
     rvh->set_is_extension_process(true);
+    const Extension* installed_app =
+        GetProfile()->GetExtensionService()->GetInstalledApp(
+            balloon_->notification().content_url());
+    static_cast<BrowserRenderProcessHost*>(rvh->process())->set_installed_app(
+        installed_app);
   } else if (enable_web_ui_) {
     rvh->AllowBindings(BindingsPolicy::WEB_UI);
   }

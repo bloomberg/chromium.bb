@@ -47,6 +47,9 @@ class ChromeURLRequestContext : public net::URLRequestContext {
  public:
   ChromeURLRequestContext();
 
+  // Copies the state from |other| into this context.
+  void CopyFrom(ChromeURLRequestContext* other);
+
   // Gets the path to the directory user scripts are stored in.
   FilePath user_script_dir_path() const {
     return user_script_dir_path_;
@@ -140,6 +143,11 @@ class ChromeURLRequestContext : public net::URLRequestContext {
   virtual ~ChromeURLRequestContext();
 
  private:
+  // ---------------------------------------------------------------------------
+  // Important: When adding any new members below, consider whether they need to
+  // be added to CopyFrom.
+  // ---------------------------------------------------------------------------
+
   // Path to the directory user scripts are stored in.
   FilePath user_script_dir_path_;
 
@@ -157,6 +165,11 @@ class ChromeURLRequestContext : public net::URLRequestContext {
   scoped_ptr<ChromeURLDataManagerBackend> chrome_url_data_manager_backend_;
 
   bool is_incognito_;
+
+  // ---------------------------------------------------------------------------
+  // Important: When adding any new members above, consider whether they need to
+  // be added to CopyFrom.
+  // ---------------------------------------------------------------------------
 
   DISALLOW_COPY_AND_ASSIGN(ChromeURLRequestContext);
 };
@@ -213,6 +226,13 @@ class ChromeURLRequestContextGetter : public URLRequestContextGetter,
   static ChromeURLRequestContextGetter* CreateOriginalForExtensions(
       Profile* profile, const ProfileIOData* profile_io_data);
 
+  // Create an instance for an original profile for an app with isolated
+  // storage. This is expected to get called on UI thread.
+  static ChromeURLRequestContextGetter* CreateOriginalForIsolatedApp(
+      Profile* profile,
+      const ProfileIOData* profile_io_data,
+      const std::string& app_id);
+
   // Create an instance for use with an OTR profile. This is expected to get
   // called on the UI thread.
   static ChromeURLRequestContextGetter* CreateOffTheRecord(
@@ -222,6 +242,13 @@ class ChromeURLRequestContextGetter : public URLRequestContextGetter,
   // to get called on UI thread.
   static ChromeURLRequestContextGetter* CreateOffTheRecordForExtensions(
       Profile* profile, const ProfileIOData* profile_io_data);
+
+  // Create an instance for an OTR profile for an app with isolated storage.
+  // This is expected to get called on UI thread.
+  static ChromeURLRequestContextGetter* CreateOffTheRecordForIsolatedApp(
+      Profile* profile,
+      const ProfileIOData* profile_io_data,
+      const std::string& app_id);
 
   // Clean up UI thread resources. This is expected to get called on the UI
   // thread before the instance is deleted on the IO thread.

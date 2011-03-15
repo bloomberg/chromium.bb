@@ -21,6 +21,7 @@
 #include "chrome/browser/file_select_helper.h"
 #include "chrome/browser/platform_util.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/renderer_host/browser_render_process_host.h"
 #include "chrome/browser/renderer_preferences_util.h"
 #include "chrome/browser/tab_contents/popup_menu_helper_mac.h"
 #include "chrome/browser/themes/browser_theme_provider.h"
@@ -137,6 +138,11 @@ ExtensionHost::ExtensionHost(const Extension* extension,
   render_view_host_ = new RenderViewHost(site_instance, this, MSG_ROUTING_NONE,
                                          NULL);
   render_view_host_->set_is_extension_process(true);
+  if (extension->is_app()) {
+    BrowserRenderProcessHost* process = static_cast<BrowserRenderProcessHost*>(
+        render_view_host_->process());
+    process->set_installed_app(extension);
+  }
   render_view_host_->AllowBindings(BindingsPolicy::EXTENSION);
   if (enable_dom_automation_)
     render_view_host_->AllowBindings(BindingsPolicy::DOM_AUTOMATION);

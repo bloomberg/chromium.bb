@@ -35,6 +35,7 @@
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/common/extensions/extension.h"
 #include "chrome/common/json_pref_store.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/render_messages.h"
@@ -419,6 +420,17 @@ class OffTheRecordProfileImpl : public Profile,
     return io_data_.GetMainRequestContextGetter();
   }
 
+  virtual URLRequestContextGetter* GetRequestContextForPossibleApp(
+      const Extension* installed_app) {
+    if (CommandLine::ForCurrentProcess()->HasSwitch(
+            switches::kEnableExperimentalAppManifests) &&
+        installed_app != NULL &&
+        installed_app->is_storage_isolated())
+      return GetRequestContextForIsolatedApp(installed_app->id());
+
+    return GetRequestContext();
+  }
+
   virtual URLRequestContextGetter* GetRequestContextForMedia() {
     // In OTR mode, media request context is the same as the original one.
     return io_data_.GetMainRequestContextGetter();
@@ -426,6 +438,11 @@ class OffTheRecordProfileImpl : public Profile,
 
   URLRequestContextGetter* GetRequestContextForExtensions() {
     return io_data_.GetExtensionsRequestContextGetter();
+  }
+
+  URLRequestContextGetter* GetRequestContextForIsolatedApp(
+      const std::string& app_id) {
+    return io_data_.GetIsolatedAppRequestContextGetter(app_id);
   }
 
   virtual net::SSLConfigService* GetSSLConfigService() {

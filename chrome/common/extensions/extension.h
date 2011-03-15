@@ -483,6 +483,7 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
   bool is_app() const { return is_app_; }
   bool is_hosted_app() const { return is_app() && !web_extent().is_empty(); }
   bool is_packaged_app() const { return is_app() && web_extent().is_empty(); }
+  bool is_storage_isolated() const { return is_app() && is_storage_isolated_; }
   const ExtensionExtent& web_extent() const { return extent_; }
   const std::string& launch_local_path() const { return launch_local_path_; }
   const std::string& launch_web_url() const { return launch_web_url_; }
@@ -574,6 +575,7 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
                   std::string* error);
   bool LoadLaunchContainer(const DictionaryValue* manifest, std::string* error);
   bool LoadLaunchURL(const DictionaryValue* manifest, std::string* error);
+  bool LoadAppIsolation(const DictionaryValue* manifest, std::string* error);
   bool EnsureNotHybridApp(const DictionaryValue* manifest, std::string* error);
 
   // Helper method to load an ExtensionAction from the page_action or
@@ -735,6 +737,9 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
 
   // Whether this extension uses app features.
   bool is_app_;
+
+  // Whether this extension requests isolated storage.
+  bool is_storage_isolated_;
 
   // The local path inside the extension to use with the launcher.
   std::string launch_local_path_;

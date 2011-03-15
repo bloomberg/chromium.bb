@@ -457,6 +457,10 @@ const char kEnableDNSCertProvenanceChecking[] =
 
 const char kEnableDNSSECCerts[]             = "enable-dnssec-certs";
 
+// Enables app manifest features that are in development.
+const char kEnableExperimentalAppManifests[] =
+    "enable-experimental-app-manifests";
+
 // Enables extension APIs that are in development.
 const char kEnableExperimentalExtensionApis[] =
     "enable-experimental-extension-apis";
