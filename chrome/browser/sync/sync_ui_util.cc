@@ -11,6 +11,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/options/options_window.h"
 #include "chrome/common/net/gaia/google_service_auth_error.h"
 #include "chrome/common/url_constants.h"
@@ -46,7 +47,7 @@ void GetStatusLabelsForAuthError(const AuthError& auth_error,
       status_label->assign(
           l10n_util::GetStringUTF16(IDS_SYNC_LOGIN_INFO_OUT_OF_DATE));
   } else if (auth_error.state() == AuthError::SERVICE_UNAVAILABLE) {
-    DCHECK (service->GetAuthenticatedUsername().empty());
+    DCHECK(service->GetAuthenticatedUsername().empty());
     status_label->assign(
         l10n_util::GetStringUTF16(IDS_SYNC_SERVICE_UNAVAILABLE));
   } else if (auth_error.state() == AuthError::CONNECTION_FAILED) {

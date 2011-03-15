@@ -22,6 +22,7 @@
 #include "chrome/browser/metrics/user_metrics.h"
 #include "chrome/browser/printing/print_job_manager.h"
 #include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/browser/sessions/session_service.h"
 #include "chrome/browser/sessions/tab_restore_service.h"
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/sync/sync_ui_util.h"

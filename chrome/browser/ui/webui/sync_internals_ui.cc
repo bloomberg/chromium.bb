@@ -16,6 +16,7 @@
 #include "chrome/browser/sync/js_frontend.h"
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/sync/sync_ui_util.h"
+#include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/browser/ui/webui/chrome_url_data_manager.h"
 #include "chrome/browser/ui/webui/sync_internals_html_source.h"
 #include "chrome/common/render_messages_params.h"

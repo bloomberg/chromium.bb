@@ -22,6 +22,7 @@
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "third_party/skia/include/core/SkBitmap.h"
+#include "webkit/glue/form_field.h"
 #include "webkit/glue/password_form.h"
 
 ////////////////////////////////////////////////////////////////////////////////

@@ -17,7 +17,6 @@
 #include "views/controls/menu/menu_item_view.h"
 
 class BookmarkBarView;
-class BookmarkContextMenu;
 class BookmarkNode;
 class Browser;
 class PageNavigator;

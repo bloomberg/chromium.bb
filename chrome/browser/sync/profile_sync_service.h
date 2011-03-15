@@ -19,7 +19,6 @@
 #include "chrome/browser/sync/engine/syncapi.h"
 #include "chrome/browser/sync/glue/data_type_controller.h"
 #include "chrome/browser/sync/glue/data_type_manager.h"
-#include "chrome/browser/sync/glue/session_model_associator.h"
 #include "chrome/browser/sync/glue/sync_backend_host.h"
 #include "chrome/browser/sync/js_event_handler_list.h"
 #include "chrome/browser/sync/profile_sync_service_observer.h"
@@ -41,6 +40,7 @@ class TabContents;
 class TokenMigrator;
 
 namespace browser_sync {
+class SessionModelAssociator;
 class JsFrontend;
 }  // namespace browser_sync
 

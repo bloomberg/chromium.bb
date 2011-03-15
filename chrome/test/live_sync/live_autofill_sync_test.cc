@@ -13,6 +13,8 @@
 #include "chrome/browser/webdata/autofill_entry.h"
 #include "chrome/browser/webdata/web_database.h"
 #include "chrome/test/thread_observer_helper.h"
+#include "webkit/glue/form_field.h"
+
 
 using base::WaitableEvent;
 using testing::_;

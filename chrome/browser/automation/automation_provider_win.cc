@@ -18,6 +18,7 @@
 #include "chrome/browser/extensions/extension_event_router.h"
 #include "chrome/browser/external_tab_container_win.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/views/bookmarks/bookmark_bar_view.h"
 #include "chrome/common/automation_messages.h"
 #include "chrome/common/page_zoom.h"

@@ -20,6 +20,7 @@
 #include "grit/app_resources.h"
 #include "grit/browser_resources.h"
 #include "grit/chromium_strings.h"
+#include "grit/generated_resources.h"
 #include "grit/locale_settings.h"
 #include "ui/base/resource/resource_bundle.h"
 

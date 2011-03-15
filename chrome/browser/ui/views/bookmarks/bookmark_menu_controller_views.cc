@@ -11,6 +11,7 @@
 #include "chrome/browser/bookmarks/bookmark_utils.h"
 #include "chrome/browser/metrics/user_metrics.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/views/bookmarks/bookmark_bar_view.h"
 #include "chrome/browser/ui/views/event_utils.h"
 #include "chrome/common/page_transition_types.h"

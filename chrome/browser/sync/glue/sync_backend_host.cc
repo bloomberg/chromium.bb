@@ -37,7 +37,6 @@
 #include "content/browser/browser_thread.h"
 #include "content/common/notification_service.h"
 #include "content/common/notification_type.h"
-#include "webkit/glue/webkit_glue.h"
 
 static const int kSaveChangesIntervalSeconds = 10;
 static const FilePath::CharType kSyncDataFolderName[] =

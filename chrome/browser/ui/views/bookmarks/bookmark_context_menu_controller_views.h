@@ -12,7 +12,6 @@
 #include "chrome/browser/bookmarks/base_bookmark_model_observer.h"
 #include "ui/gfx/native_widget_types.h"
 
-class Browser;
 class PageNavigator;
 class Profile;
 
@@ -43,8 +42,9 @@ class BookmarkContextMenuControllerViewsDelegate {
 class BookmarkContextMenuControllerViews : public BaseBookmarkModelObserver {
  public:
   // Creates the bookmark context menu.
+  // |parent_window| is the window that this menu should be added to.
+  // |delegate| is described above.
   // |profile| is used for opening urls as well as enabling 'open incognito'.
-  // |browser| is used to determine the PageNavigator and may be null.
   // |navigator| is used if |browser| is null, and is provided for testing.
   // |parent| is the parent for newly created nodes if |selection| is empty.
   // |selection| is the nodes the context menu operates on and may be empty.

@@ -16,7 +16,6 @@
 #include "base/synchronization/lock.h"
 #include "chrome/browser/search_engines/template_url_id.h"
 #include "content/browser/browser_thread.h"
-#include "webkit/glue/form_field.h"
 
 class AutofillChange;
 class AutofillProfile;
@@ -36,6 +35,7 @@ class Thread;
 }
 
 namespace webkit_glue {
+struct FormField;
 struct PasswordForm;
 }
 
