@@ -30,49 +30,6 @@ namespace {
 // a url string, and these need to be updated when the URL is converted from
 // UTF8 to UTF16. Instead of this after-the-fact adjustment, we should parse it
 // in the correct string format to begin with.
-url_parse::Component UTF8ComponentToWideComponent(
-    const std::string& text_utf8,
-    const url_parse::Component& component_utf8) {
-  if (component_utf8.len == -1)
-    return url_parse::Component();
-
-  std::string before_component_string =
-      text_utf8.substr(0, component_utf8.begin);
-  std::string component_string = text_utf8.substr(component_utf8.begin,
-                                                  component_utf8.len);
-  std::wstring before_component_string_w = UTF8ToWide(before_component_string);
-  std::wstring component_string_w = UTF8ToWide(component_string);
-  url_parse::Component component_w(before_component_string_w.length(),
-                                   component_string_w.length());
-  return component_w;
-}
-
-void UTF8PartsToWideParts(const std::string& text_utf8,
-                          const url_parse::Parsed& parts_utf8,
-                          url_parse::Parsed* parts) {
-  if (IsStringASCII(text_utf8)) {
-    *parts = parts_utf8;
-    return;
-  }
-
-  parts->scheme =
-      UTF8ComponentToWideComponent(text_utf8, parts_utf8.scheme);
-  parts ->username =
-      UTF8ComponentToWideComponent(text_utf8, parts_utf8.username);
-  parts->password =
-      UTF8ComponentToWideComponent(text_utf8, parts_utf8.password);
-  parts->host =
-      UTF8ComponentToWideComponent(text_utf8, parts_utf8.host);
-  parts->port =
-      UTF8ComponentToWideComponent(text_utf8, parts_utf8.port);
-  parts->path =
-      UTF8ComponentToWideComponent(text_utf8, parts_utf8.path);
-  parts->query =
-      UTF8ComponentToWideComponent(text_utf8, parts_utf8.query);
-  parts->ref =
-      UTF8ComponentToWideComponent(text_utf8, parts_utf8.ref);
-}
-#if defined(WCHAR_T_IS_UTF32)
 url_parse::Component UTF8ComponentToUTF16Component(
     const std::string& text_utf8,
     const url_parse::Component& component_utf8) {
@@ -115,7 +72,6 @@ void UTF8PartsToUTF16Parts(const std::string& text_utf8,
   parts->ref =
       UTF8ComponentToUTF16Component(text_utf8, parts_utf8.ref);
 }
-#endif
 
 TrimPositions TrimWhitespaceUTF8(const std::string& input,
                                  TrimPositions positions,
@@ -616,16 +572,6 @@ GURL URLFixerUpper::FixupRelativeFile(const FilePath& base_dir,
   return FixupURL(text_utf8, std::string());
 }
 
-// Deprecated functions. To be removed when all callers are updated.
-std::wstring URLFixerUpper::SegmentURL(const std::wstring& text,
-                                       url_parse::Parsed* parts) {
-  std::string text_utf8 = WideToUTF8(text);
-  url_parse::Parsed parts_utf8;
-  std::string scheme_utf8 = SegmentURL(text_utf8, &parts_utf8);
-  UTF8PartsToWideParts(text_utf8, parts_utf8, parts);
-  return UTF8ToWide(scheme_utf8);
-}
-#if defined(WCHAR_T_IS_UTF32)
 string16 URLFixerUpper::SegmentURL(const string16& text,
                                    url_parse::Parsed* parts) {
   std::string text_utf8 = UTF16ToUTF8(text);
@@ -633,12 +579,6 @@ string16 URLFixerUpper::SegmentURL(const string16& text,
   std::string scheme_utf8 = SegmentURL(text_utf8, &parts_utf8);
   UTF8PartsToUTF16Parts(text_utf8, parts_utf8, parts);
   return UTF8ToUTF16(scheme_utf8);
-}
-#endif
-GURL URLFixerUpper::FixupRelativeFile(const std::wstring& base_dir,
-                                      const std::wstring& text) {
-  return FixupRelativeFile(FilePath::FromWStringHack(base_dir),
-                           FilePath::FromWStringHack(text));
 }
 
 void URLFixerUpper::OffsetComponent(int offset, url_parse::Component* part) {

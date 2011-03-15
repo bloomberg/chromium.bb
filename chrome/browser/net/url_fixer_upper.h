@@ -30,11 +30,7 @@ namespace URLFixerUpper {
   // Returns the canonicalized scheme, or the empty string when |text| is only
   // whitespace.
   std::string SegmentURL(const std::string& text, url_parse::Parsed* parts);
-  // Deprecated temporary compatibility functions.
-  std::wstring SegmentURL(const std::wstring& text, url_parse::Parsed* parts);
-#if defined(WCHAR_T_IS_UTF32)
   string16 SegmentURL(const string16& text, url_parse::Parsed* parts);
-#endif
 
   // Converts |text| to a fixed-up URL and returns it. Attempts to make
   // some "smart" adjustments to obviously-invalid input where possible.
@@ -63,9 +59,6 @@ namespace URLFixerUpper {
   // should use FixupURL() directly.  This function should only be used when
   // relative path handling is desired, as for command line processing.
   GURL FixupRelativeFile(const FilePath& base_dir, const FilePath& text);
-  // Deprecated temporary compatibility function.
-  GURL FixupRelativeFile(const std::wstring& base_dir,
-                         const std::wstring& text);
 
   // Offsets the beginning index of |part| by |offset|, which is allowed to be
   // negative.  In some cases, the desired component does not exist at the given
