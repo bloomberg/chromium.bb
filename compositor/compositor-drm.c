@@ -40,10 +40,14 @@ struct drm_compositor {
 	struct udev *udev;
 	struct wl_event_source *drm_source;
 
+	struct udev_monitor *udev_monitor;
+	struct wl_event_source *udev_drm_source;
+
 	struct {
 		int fd;
 	} drm;
 	uint32_t crtc_allocator;
+	uint32_t connector_allocator;
 	struct tty *tty;
 };
 
@@ -226,7 +230,7 @@ create_output_for_connector(struct drm_compositor *ec,
 
 	for (i = 0; i < resources->count_crtcs; i++) {
 		if (encoder->possible_crtcs & (1 << i) &&
-		    !(ec->crtc_allocator & (1 << i)))
+		    !(ec->crtc_allocator & (1 << resources->crtcs[i])))
 			break;
 	}
 	if (i == resources->count_crtcs) {
@@ -238,9 +242,11 @@ create_output_for_connector(struct drm_compositor *ec,
 	wlsc_output_init(&output->base, &ec->base, x, y,
 			 mode->hdisplay, mode->vdisplay, 0);
 
-	ec->crtc_allocator |= (1 << i);
 	output->crtc_id = resources->crtcs[i];
+	ec->crtc_allocator |= (1 << output->crtc_id);
+
 	output->connector_id = connector->connector_id;
+	ec->connector_allocator |= (1 << output->connector_id);
 	output->mode = *mode;
 
 	drmModeFreeEncoder(encoder);
@@ -329,6 +335,139 @@ create_outputs(struct drm_compositor *ec, int option_connector)
 	return 0;
 }
 
+static int
+destroy_output(struct drm_output *output)
+{
+	struct drm_compositor *ec =
+		(struct drm_compositor *) output->base.compositor;
+	int i;
+
+	glFramebufferRenderbuffer(GL_FRAMEBUFFER,
+				  GL_COLOR_ATTACHMENT0,
+				  GL_RENDERBUFFER,
+				  0);
+
+	glBindRenderbuffer(GL_RENDERBUFFER, 0);
+	glDeleteRenderbuffers(2, output->rbo);
+
+	for (i = 0; i < 2; i++) {
+		eglDestroyImageKHR(ec->base.display, output->image[i]);
+		drmModeRmFB(ec->drm.fd, output->fb_id[i]);
+	}
+	
+	ec->crtc_allocator &= ~(1 << output->crtc_id);
+	ec->connector_allocator &= ~(1 << output->connector_id);
+
+	wlsc_output_destroy(&output->base);
+	wl_list_remove(&output->base.link);
+
+	free(output);
+
+	return 0;
+}
+
+static void
+update_outputs(struct drm_compositor *ec)
+{
+	drmModeConnector *connector;
+	drmModeRes *resources;
+	struct drm_output *output, *next;
+	int x = 0, y = 0;
+	int x_offset = 0, y_offset = 0;
+	uint32_t connected = 0, disconnects = 0;
+	int i;
+
+	resources = drmModeGetResources(ec->drm.fd);
+	if (!resources) {
+		fprintf(stderr, "drmModeGetResources failed\n");
+		return;
+	}
+
+	/* collect new connects */
+	for (i = 0; i < resources->count_connectors; i++) {
+		connector =
+			drmModeGetConnector(ec->drm.fd,
+					    resources->connectors[i]);
+		if (connector == NULL ||
+		    connector->connection != DRM_MODE_CONNECTED)
+			continue;
+
+		connected |= (1 << connector->connector_id);
+		
+		if (!(ec->connector_allocator & (1 << connector->connector_id))) {
+			struct wlsc_output *last_output =
+				container_of(ec->base.output_list.prev,
+					     struct wlsc_output, link);
+
+			/* XXX: not yet needed, we die with 0 outputs */
+			if (!wl_list_empty(&ec->base.output_list))
+				x = last_output->x + last_output->width;
+			else
+				x = 0;
+			y = 0;
+			create_output_for_connector(ec, resources,
+						    connector, x, y);
+			printf("connector %d connected\n",
+			       connector->connector_id);
+				
+		}
+		drmModeFreeConnector(connector);
+	}
+	drmModeFreeResources(resources);
+
+	disconnects = ec->connector_allocator & ~connected;
+	if (disconnects) {
+		wl_list_for_each_safe(output, next, &ec->base.output_list,
+				      base.link) {
+			if (x_offset != 0 || y_offset != 0) {
+				wlsc_output_move(&output->base,
+						 output->base.x - x_offset,
+						 output->base.y - y_offset);
+			}
+
+			if (disconnects & (1 << output->connector_id)) {
+				disconnects &= ~(1 << output->connector_id);
+				printf("connector %d disconnected\n",
+				       output->connector_id);
+				x_offset += output->base.width;
+				destroy_output(output);
+			}
+		}
+	}
+
+	/* FIXME: handle zero outputs, without terminating */	
+	if (ec->connector_allocator == 0)
+		wl_display_terminate(ec->base.wl_display);
+}
+
+static int
+udev_event_is_hotplug(struct udev_device *device)
+{
+	struct udev_list_entry *list, *hotplug_entry;
+	
+	list = udev_device_get_properties_list_entry(device);
+
+	hotplug_entry = udev_list_entry_get_by_name(list, "HOTPLUG");
+	if (hotplug_entry == NULL)
+		return 0;
+
+	return strcmp(udev_list_entry_get_value(hotplug_entry), "1") == 0;
+}
+
+static void
+udev_drm_event(int fd, uint32_t mask, void *data)
+{
+	struct drm_compositor *ec = data;
+	struct udev_device *event;
+
+	event = udev_monitor_receive_device(ec->udev_monitor);
+	
+	if (udev_event_is_hotplug(event))
+		update_outputs(ec);
+
+	udev_device_unref(event);
+}
+
 static void
 drm_destroy(struct wlsc_compositor *ec)
 {
@@ -407,6 +546,22 @@ drm_compositor_create(struct wl_display *display, int connector)
 		wl_event_loop_add_fd(loop, ec->drm.fd,
 				     WL_EVENT_READABLE, on_drm_input, ec);
 	ec->tty = tty_create(&ec->base);
+
+	ec->udev_monitor = udev_monitor_new_from_netlink(ec->udev, "udev");
+	if (ec->udev_monitor == NULL) {
+		fprintf(stderr, "failed to intialize udev monitor\n");
+		return NULL;
+	}
+	udev_monitor_filter_add_match_subsystem_devtype(ec->udev_monitor,
+							"drm", NULL);
+	ec->udev_drm_source =
+		wl_event_loop_add_fd(loop, udev_monitor_get_fd(ec->udev_monitor),
+				     WL_EVENT_READABLE, udev_drm_event, ec);
+
+	if (udev_monitor_enable_receiving(ec->udev_monitor) < 0) {
+		fprintf(stderr, "failed to enable udev-monitor receiving\n");
+		return NULL;
+	}
 
 	return &ec->base;
 }

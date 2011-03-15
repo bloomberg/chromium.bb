@@ -1313,40 +1313,61 @@ init_shaders(struct wlsc_compositor *ec)
 }
 
 void
-wlsc_output_init(struct wlsc_output *output, struct wlsc_compositor *c,
-		 int x, int y, int width, int height, uint32_t flags)
+wlsc_output_destroy(struct wlsc_output *output)
 {
+	destroy_surface(&output->background->surface.resource, NULL);
+}
+
+void
+wlsc_output_move(struct wlsc_output *output, int x, int y)
+{
+	struct wlsc_compositor *c = output->compositor;
 	int flip;
 
-	output->compositor = c;
 	output->x = x;
 	output->y = y;
-	output->width = width;
-	output->height = height;
+
+	output->background->x = x;
+	output->background->y = y;
+	wlsc_surface_update_matrix(output->background);
 
 	pixman_region32_init(&output->previous_damage_region);
-
-	output->background =
-		background_create(output, option_background);
 
 	wlsc_matrix_init(&output->matrix);
 	wlsc_matrix_translate(&output->matrix,
 			      -output->x - output->width / 2.0,
 			      -output->y - output->height / 2.0, 0);
 
-	flip = (flags & WL_OUTPUT_FLIPPED) ? -1 : 1;
+	flip = (output->flags & WL_OUTPUT_FLIPPED) ? -1 : 1;
 	wlsc_matrix_scale(&output->matrix,
 			  2.0 / output->width,
 			  flip * 2.0 / output->height, 1);
+
+	pixman_region32_union_rect(&c->damage_region,
+				   &c->damage_region,
+				   x, y, output->width, output->height);
+}
+
+void
+wlsc_output_init(struct wlsc_output *output, struct wlsc_compositor *c,
+		 int x, int y, int width, int height, uint32_t flags)
+{
+	output->compositor = c;
+	output->x = x;
+	output->y = y;
+	output->width = width;
+	output->height = height;
+
+	output->background =
+		background_create(output, option_background);
+
+	output->flags = flags;
+	wlsc_output_move(output, x, y);
 
 	output->object.interface = &wl_output_interface;
 	wl_display_add_object(c->wl_display, &output->object);
 	wl_display_add_global(c->wl_display, &output->object,
 			      wlsc_output_post_geometry);
-
-	pixman_region32_union_rect(&c->damage_region,
-				   &c->damage_region,
-				   x, y, width, height);
 }
 
 int

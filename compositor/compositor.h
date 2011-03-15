@@ -47,6 +47,7 @@ struct wlsc_output {
 	struct wlsc_matrix matrix;
 	int32_t x, y, width, height;
 	pixman_region32_t previous_damage_region;
+	uint32_t flags;
 
 	int (*prepare_render)(struct wlsc_output *output);
 };
@@ -213,8 +214,13 @@ wlsc_shm_buffer_create(struct wlsc_compositor *ec,
 int
 wlsc_compositor_init(struct wlsc_compositor *ec, struct wl_display *display);
 void
+wlsc_output_move(struct wlsc_output *output, int x, int y);
+void
 wlsc_output_init(struct wlsc_output *output, struct wlsc_compositor *c,
 		 int x, int y, int width, int height, uint32_t flags);
+void
+wlsc_output_destroy(struct wlsc_output *output);
+
 void
 wlsc_input_device_init(struct wlsc_input_device *device,
 		       struct wlsc_compositor *ec);
