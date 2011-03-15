@@ -27,14 +27,12 @@ class WebUIMenuWidget : public views::WidgetGtk {
   virtual ~WebUIMenuWidget();
 
   // WidgetGtk overrides:
-  virtual void Init(gfx::NativeView parent, const gfx::Rect& bounds) OVERRIDE;
-  virtual void Hide() OVERRIDE;
-  virtual void Close() OVERRIDE;
-  virtual void ReleaseNativeCapture() OVERRIDE;
-  virtual gboolean OnGrabBrokeEvent(GtkWidget* widget, GdkEvent* event)
-      OVERRIDE;
-  virtual void OnSizeAllocate(GtkWidget* widget, GtkAllocation* allocation)
-      OVERRIDE;
+  virtual void Init(gfx::NativeView parent, const gfx::Rect& bounds);
+  virtual void Hide();
+  virtual void Close();
+  virtual void ReleaseGrab();
+  virtual gboolean OnGrabBrokeEvent(GtkWidget* widget, GdkEvent* event);
+  virtual void OnSizeAllocate(GtkWidget* widget, GtkAllocation* allocation);
 
   // Returns NativeMenuWebUI that owns this widget.
   NativeMenuWebUI* webui_menu() const {

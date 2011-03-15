@@ -134,6 +134,7 @@ WidgetWin::WidgetWin()
     : ALLOW_THIS_IN_INITIALIZER_LIST(delegate_(this)),
       close_widget_factory_(this),
       active_mouse_tracking_flags_(0),
+      has_capture_(false),
       use_layered_buffer_(false),
       layered_alpha_(255),
       delete_on_destroy_(true),
@@ -266,19 +267,6 @@ TooltipManager* WidgetWin::GetTooltipManager() const {
 
 bool WidgetWin::IsScreenReaderActive() const {
   return screen_reader_active_;
-}
-
-void WidgetWin::SetNativeCapture() {
-  DCHECK(!HasNativeCapture());
-  SetCapture(hwnd());
-}
-
-void WidgetWin::ReleaseNativeCapture() {
-  ReleaseCapture();
-}
-
-bool WidgetWin::HasNativeCapture() const {
-  return GetCapture() == hwnd();
 }
 
 gfx::Rect WidgetWin::GetWindowScreenBounds() const {
@@ -501,9 +489,12 @@ void WidgetWin::OnCancelMode() {
 }
 
 void WidgetWin::OnCaptureChanged(HWND hwnd) {
-  if (is_mouse_down_)
-    GetRootView()->ProcessMouseDragCanceled();
-  is_mouse_down_ = false;
+  if (has_capture_) {
+    if (is_mouse_down_)
+      GetRootView()->ProcessMouseDragCanceled();
+    is_mouse_down_ = false;
+    has_capture_ = false;
+  }
 }
 
 void WidgetWin::OnClose() {
@@ -936,8 +927,10 @@ bool WidgetWin::ProcessMousePressed(UINT message,
           GET_Y_LPARAM(l_param));
   if (GetRootView()->OnMousePressed(MouseEvent(msg))) {
     is_mouse_down_ = true;
-    if (!HasNativeCapture())
-      SetNativeCapture();
+    if (!has_capture_) {
+      SetCapture();
+      has_capture_ = true;
+    }
     return true;
   }
   return false;
@@ -950,8 +943,10 @@ bool WidgetWin::ProcessMouseReleased(UINT message,
 
   // Release the capture first, that way we don't get confused if
   // OnMouseReleased blocks.
-  if (HasNativeCapture() && ReleaseCaptureOnMouseReleased())
-    ReleaseNativeCapture();
+  if (has_capture_ && ReleaseCaptureOnMouseReleased()) {
+    has_capture_ = false;
+    ReleaseCapture();
+  }
   is_mouse_down_ = false;
 
   MSG msg;
@@ -967,13 +962,13 @@ bool WidgetWin::ProcessMouseMoved(UINT message,
   // Windows only fires WM_MOUSELEAVE events if the application begins
   // "tracking" mouse events for a given HWND during WM_MOUSEMOVE events.
   // We need to call |TrackMouseEvents| to listen for WM_MOUSELEAVE.
-  if (!HasNativeCapture())
+  if (!has_capture_)
     TrackMouseEvents((message == WM_NCMOUSEMOVE) ?
         TME_NONCLIENT | TME_LEAVE : TME_LEAVE);
   MSG msg;
   MakeMSG(&msg, message, w_param, l_param, 0, GET_X_LPARAM(l_param),
           GET_Y_LPARAM(l_param));
-  if (HasNativeCapture() && is_mouse_down_)
+  if (has_capture_ && is_mouse_down_)
     GetRootView()->OnMouseDragged(MouseEvent(msg));
   else if (!last_mouse_event_was_move_ ||
       (last_mouse_move_x_ != GET_X_LPARAM(l_param) ||
