@@ -150,7 +150,7 @@ void WebUIMenuWidget::Init(gfx::NativeView parent, const gfx::Rect& bounds) {
 }
 
 void WebUIMenuWidget::Hide() {
-  ReleaseGrab();
+  ReleaseNativeCapture();
   WidgetGtk::Hide();
   // Clears the content.
   ExecuteJavascript(L"updateModel({'items':[]})");
@@ -168,8 +168,8 @@ void WebUIMenuWidget::Close() {
   views::WidgetGtk::Close();
 }
 
-void WebUIMenuWidget::ReleaseGrab() {
-  WidgetGtk::ReleaseGrab();
+void WebUIMenuWidget::ReleaseNativeCapture() {
+  WidgetGtk::ReleaseNativeCapture();
   if (did_input_grab_) {
     did_input_grab_ = false;
     gdk_pointer_ungrab(GDK_CURRENT_TIME);

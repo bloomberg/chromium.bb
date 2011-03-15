@@ -265,7 +265,6 @@ WidgetGtk::WidgetGtk(Type type)
       widget_(NULL),
       window_contents_(NULL),
       is_mouse_down_(false),
-      has_capture_(false),
       last_mouse_event_was_move_(false),
       ALLOW_THIS_IN_INITIALIZER_LIST(close_widget_factory_(this)),
       delete_on_destroy_(true),
@@ -725,6 +724,22 @@ bool WidgetGtk::IsScreenReaderActive() const {
   return false;
 }
 
+void WidgetGtk::SetNativeCapture() {
+  DCHECK(!HasNativeCapture());
+  gtk_grab_add(window_contents_);
+}
+
+void WidgetGtk::ReleaseNativeCapture() {
+  if (HasNativeCapture())
+    gtk_grab_remove(window_contents_);
+}
+
+bool WidgetGtk::HasNativeCapture() const {
+  // TODO(beng): Should be able to use gtk_widget_has_grab() here but the
+  //             trybots don't have Gtk 2.18.
+  return GTK_WIDGET_HAS_GRAB(window_contents_);
+}
+
 gfx::Rect WidgetGtk::GetWindowScreenBounds() const {
   // Client == Window bounds on Gtk.
   return GetClientAreaScreenBounds();
@@ -1041,7 +1056,7 @@ gboolean WidgetGtk::OnEnterNotify(GtkWidget* widget, GdkEventCrossing* event) {
     return false;
   }
 
-  if (has_capture_ && event->mode == GDK_CROSSING_GRAB) {
+  if (HasNativeCapture() && event->mode == GDK_CROSSING_GRAB) {
     // Doing a grab results an async enter event, regardless of where the mouse
     // is. We don't want to generate a mouse move in this case.
     return false;
@@ -1074,7 +1089,7 @@ gboolean WidgetGtk::OnEnterNotify(GtkWidget* widget, GdkEventCrossing* event) {
 
 gboolean WidgetGtk::OnLeaveNotify(GtkWidget* widget, GdkEventCrossing* event) {
   last_mouse_event_was_move_ = false;
-  if (!has_capture_ && !is_mouse_down_) {
+  if (!HasNativeCapture() && !is_mouse_down_) {
     MouseEvent mouse_event(reinterpret_cast<GdkEvent*>(event));
     GetRootView()->OnMouseExited(mouse_event);
   }
@@ -1085,7 +1100,7 @@ gboolean WidgetGtk::OnMotionNotify(GtkWidget* widget, GdkEventMotion* event) {
   int x = 0, y = 0;
   GetContainedWidgetEventCoordinates(event, &x, &y);
 
-  if (has_capture_ && is_mouse_down_) {
+  if (HasNativeCapture() && is_mouse_down_) {
     last_mouse_event_was_move_ = false;
     int flags = Event::GetFlagsFromGdkState(event->state);
     MouseEvent mouse_drag(ui::ET_MOUSE_DRAGGED, x, y, flags);
@@ -1242,25 +1257,10 @@ bool WidgetGtk::ReleaseCaptureOnMouseReleased() {
   return true;
 }
 
-void WidgetGtk::DoGrab() {
-  has_capture_ = true;
-  gtk_grab_add(window_contents_);
-}
-
-void WidgetGtk::ReleaseGrab() {
-  if (has_capture_) {
-    has_capture_ = false;
-    gtk_grab_remove(window_contents_);
-  }
-}
-
 void WidgetGtk::HandleGrabBroke() {
-  if (has_capture_) {
-    if (is_mouse_down_)
-      GetRootView()->ProcessMouseDragCanceled();
-    is_mouse_down_ = false;
-    has_capture_ = false;
-  }
+  if (is_mouse_down_)
+    GetRootView()->ProcessMouseDragCanceled();
+  is_mouse_down_ = false;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -1307,8 +1307,8 @@ bool WidgetGtk::ProcessMousePressed(GdkEventButton* event) {
 
   if (GetRootView()->OnMousePressed(mouse_pressed)) {
     is_mouse_down_ = true;
-    if (!has_capture_)
-      DoGrab();
+    if (!HasNativeCapture())
+      SetNativeCapture();
     return true;
   }
 
@@ -1325,8 +1325,8 @@ void WidgetGtk::ProcessMouseReleased(GdkEventButton* event) {
                       GetFlagsForEventButton(*event));
   // Release the capture first, that way we don't get confused if
   // OnMouseReleased blocks.
-  if (has_capture_ && ReleaseCaptureOnMouseReleased())
-    ReleaseGrab();
+  if (HasNativeCapture() && ReleaseCaptureOnMouseReleased())
+    ReleaseNativeCapture();
   is_mouse_down_ = false;
   // GTK generates a mouse release at the end of dnd. We need to ignore it.
   if (!drag_data_)

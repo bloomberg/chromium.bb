@@ -117,8 +117,7 @@ bool MenuHostWin::ReleaseCaptureOnMouseReleased() {
 
 void MenuHostWin::DoCapture() {
   owns_capture_ = true;
-  SetCapture();
-  has_capture_ = true;
+  SetNativeCapture();
 }
 
 }  // namespace views
