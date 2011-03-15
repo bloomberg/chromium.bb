@@ -38,6 +38,31 @@ namespace {
 // Whether to use accelerated compositing when necessary (e.g. when a view has a
 // transformation).
 bool use_acceleration_when_possible = true;
+
+// Saves the drawing state, and restores the state when going out of scope.
+class ScopedCanvas {
+ public:
+  explicit ScopedCanvas(gfx::Canvas* canvas) : canvas_(canvas) {
+    if (canvas_)
+      canvas_->Save();
+  }
+  ~ScopedCanvas() {
+    if (canvas_)
+      canvas_->Restore();
+  }
+  void SetCanvas(gfx::Canvas* canvas) {
+    if (canvas_)
+      canvas_->Restore();
+    canvas_ = canvas;
+    canvas_->Save();
+  }
+
+ private:
+  gfx::Canvas* canvas_;
+
+  DISALLOW_COPY_AND_ASSIGN(ScopedCanvas);
+};
+
 }
 
 namespace views {
@@ -645,6 +670,7 @@ void View::Paint(gfx::Canvas* canvas) {
   if (!IsVisible())
     return;
 
+  ScopedCanvas scoped_canvas(NULL);
   if (use_acceleration_when_possible &&
       transform_.get() && transform_->HasChange()) {
     // This view has a transformation. So this maintains its own canvas.
@@ -654,7 +680,7 @@ void View::Paint(gfx::Canvas* canvas) {
     canvas = canvas_.get();
   } else {
     // We're going to modify the canvas, save its state first.
-    canvas->Save();
+    scoped_canvas.SetCanvas(canvas);
 
     // Paint this View and its children, setting the clip rect to the bounds
     // of this View and translating the origin to the local bounds' top left
@@ -666,7 +692,6 @@ void View::Paint(gfx::Canvas* canvas) {
     if (!canvas->ClipRectInt(GetMirroredX(), y(),
                             width() - static_cast<int>(clip_x_),
                             height() - static_cast<int>(clip_y_))) {
-      canvas->Restore();
       return;
     }
     // Non-empty clip, translate the graphics such that 0,0 corresponds to
@@ -677,20 +702,21 @@ void View::Paint(gfx::Canvas* canvas) {
       canvas->Transform(*transform_.get());
   }
 
-  // If the View we are about to paint requested the canvas to be flipped, we
-  // should change the transform appropriately.
-  canvas->Save();
-  if (FlipCanvasOnPaintForRTLUI()) {
-    canvas->TranslateInt(width(), 0);
-    canvas->ScaleInt(-1, 1);
+  {
+    // If the View we are about to paint requested the canvas to be flipped, we
+    // should change the transform appropriately.
+    // The canvas mirroring is undone once the View is done painting so that we
+    // don't pass the canvas with the mirrored transform to Views that didn't
+    // request the canvas to be flipped.
+
+    ScopedCanvas scoped(canvas);
+    if (FlipCanvasOnPaintForRTLUI()) {
+      canvas->TranslateInt(width(), 0);
+      canvas->ScaleInt(-1, 1);
+    }
+
+    OnPaint(canvas);
   }
-
-  OnPaint(canvas);
-
-  // We must undo the canvas mirroring once the View is done painting so that
-  // we don't pass the canvas with the mirrored transform to Views that
-  // didn't request the canvas to be flipped.
-  canvas->Restore();
 
   PaintChildren(canvas);
 
@@ -698,9 +724,6 @@ void View::Paint(gfx::Canvas* canvas) {
     texture_id_ = canvas->GetTextureID();
 
     // TODO(sadrul): Make sure the Widget's compositor tree updates itself?
-  } else {
-    // Restore the canvas's original transform.
-    canvas->Restore();
   }
 }
 
