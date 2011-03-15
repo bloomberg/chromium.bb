@@ -58,6 +58,9 @@ gflags.DEFINE_string('set_activex_hostcontrol_name', '',
 gflags.DEFINE_string('set_activex_typelib_name', '',
                      'Sets the ActiveX TypeLib\'s name to use.')
 
+gflags.DEFINE_string('set_o3d_plugin_breakpad_url', '',
+                     'Sets the o3d Crash Dump Upload URL to use.')
+
 def DoReplace(in_filename, out_filename, replacements):
   '''Replace the version placeholders in the given filename with the
      replacements.'''
@@ -99,6 +102,7 @@ def main(argv):
   O3D_PLUGIN_ACTIVEX_TYPELIB_CLSID = FLAGS.set_activex_typelib_clsid
   O3D_PLUGIN_ACTIVEX_HOSTCONTROL_NAME = FLAGS.set_activex_hostcontrol_name
   O3D_PLUGIN_ACTIVEX_TYPELIB_NAME = FLAGS.set_activex_typelib_name
+  O3D_PLUGIN_BREAKPAD_URL = FLAGS.set_o3d_plugin_breakpad_url
 
   if FLAGS.description:
     print '%s' % O3D_PLUGIN_DESCRIPTION
@@ -121,6 +125,7 @@ def main(argv):
       ('@@@PluginActiveXHostControlName@@@',
            O3D_PLUGIN_ACTIVEX_HOSTCONTROL_NAME),
       ('@@@PluginActiveXTypeLibName@@@', O3D_PLUGIN_ACTIVEX_TYPELIB_NAME),
+      ('@@@PluginBreakpadURL@@@', O3D_PLUGIN_BREAKPAD_URL),
   ]
 
   if len(files) == 2:

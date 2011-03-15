@@ -624,28 +624,50 @@
                       'outputs': [
                         '<(SHARED_INTERMEDIATE_DIR)/plugin/Info.plist',
                       ],
+                      'variables': {
+                        # Ridiculously, it is impossible to define a GYP 
+                        # variable whose value depends on the choice of build
+                        # configuration, so to get this to be the staging URL
+                        # when building Debug we define it as a shell fragment
+                        # that uses command substitution to evaluate to
+                        # different things based on the Xcode "CONFIGURATION" 
+                        # environment variable. We further have to use ``
+                        # instead of $() because GYP/Xcode mangles $().
+                        'o3d_plugin_breakpad_url':
+                          '`if [ "$CONFIGURATION" = Debug ]; then '
+                            'echo https://clients2.google.com/cr/staging_report; '
+                          'else '
+                            'echo https://clients2.google.com/cr/report; '
+                          'fi`'
+                      },
                       'conditions': [
                         ['"<(plugin_npapi_filename)" == "npo3dautoplugin"',
                           {
                             # The unbranded Mac plugin's name is a special case.
-                            'action': ['python',
-                              'version_info.py',
-                              '--set_name=<(plugin_name)',
-                              '--set_version=<(plugin_version)',
-                              '--set_npapi_filename=O3D',
-                              '--set_npapi_mimetype=<(plugin_npapi_mimetype)',
-                              'mac/Info.plist',
-                              '<(SHARED_INTERMEDIATE_DIR)/plugin/Info.plist',
+                            'action': ['sh',
+                              '-c',
+                              'python '
+                              'version_info.py '
+                              '--set_name="<(plugin_name)" '
+                              '--set_version="<(plugin_version)" '
+                              '--set_npapi_filename="O3D" '
+                              '--set_npapi_mimetype="<(plugin_npapi_mimetype)" '
+                              '--set_o3d_plugin_breakpad_url="<(o3d_plugin_breakpad_url)" '
+                              '"mac/Info.plist" '
+                              '"<(SHARED_INTERMEDIATE_DIR)/plugin/Info.plist"',
                             ],
                           },
                           {
-                            'action': ['python',
-                              'version_info.py',
-                              '--set_name=<(plugin_name)',
-                              '--set_version=<(plugin_version)',
-                              '--set_npapi_filename=<(plugin_npapi_filename)',
-                              '--set_npapi_mimetype=<(plugin_npapi_mimetype)',
-                              'mac/Info.plist',
+                            'action': ['sh',
+                              '-c',
+                              'python '
+                              'version_info.py '
+                              '--set_name=<(plugin_name) '
+                              '--set_version=<(plugin_version) '
+                              '--set_npapi_filename=<(plugin_npapi_filename) '
+                              '--set_npapi_mimetype=<(plugin_npapi_mimetype) '
+                              '--set_o3d_plugin_breakpad_url=<(o3d_plugin_breakpad_url) ' 
+                              'mac/Info.plist '
                               '<(SHARED_INTERMEDIATE_DIR)/plugin/Info.plist',
                             ],
                           },

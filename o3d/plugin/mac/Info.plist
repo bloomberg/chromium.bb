@@ -40,7 +40,6 @@
 	<string>@@@PluginName@@@</string>
 	<key>O3DForceSoftwareRenderer</key>
 	<false/>
-
 	<key>BreakpadInspectorLocation</key>
 	<string>/Library/Internet Plug-Ins/@@@PluginNpapiFilename@@@.plugin/Contents/Resources/crash_inspector</string>
 	<key>BreakpadReporterExeLocation</key>
@@ -58,7 +57,6 @@
 	<key>BreakpadReportInterval</key>
 	<string>3600</string>
 	<key>BreakpadURL</key>
-	<string>https://clients2.google.com/cr/report</string>
-
+	<string>@@@PluginBreakpadURL@@@</string>
 </dict>
 </plist>
