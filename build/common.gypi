@@ -113,7 +113,7 @@
       'conditions': [
         ['OS=="win"', {
           'python_exe': [
-            '<(DEPTH)/native_client/tools/win_py.cmd'
+            'call <(DEPTH)/native_client/tools/win_py.cmd'
           ],
         }, {
           'python_exe': [
