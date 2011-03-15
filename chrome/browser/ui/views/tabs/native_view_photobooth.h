@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_UI_VIEWS_TABS_NATIVE_VIEW_PHOTOBOOTH_H_
 #pragma once
 
+#include "base/compiler_specific.h"
 #include "ui/gfx/native_widget_types.h"
 
 namespace gfx {

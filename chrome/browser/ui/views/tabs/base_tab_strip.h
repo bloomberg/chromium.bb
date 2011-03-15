@@ -115,32 +115,33 @@ class BaseTabStrip : public AbstractTabStripView,
   bool IsActiveDropTarget() const;
 
   // AbstractTabStripView implementation
-  virtual bool IsTabStripEditable() const;
-  virtual bool IsTabStripCloseable() const;
-  virtual void UpdateLoadingAnimations();
+  virtual bool IsTabStripEditable() const OVERRIDE;
+  virtual bool IsTabStripCloseable() const OVERRIDE;
+  virtual void UpdateLoadingAnimations() OVERRIDE;
 
   // TabController overrides:
-  virtual void SelectTab(BaseTab* tab);
-  virtual void ExtendSelectionTo(BaseTab* tab);
-  virtual void ToggleSelected(BaseTab* tab);
-  virtual void CloseTab(BaseTab* tab);
-  virtual void ShowContextMenuForTab(BaseTab* tab, const gfx::Point& p);
-  virtual bool IsTabSelected(const BaseTab* tab) const;
-  virtual bool IsTabPinned(const BaseTab* tab) const;
-  virtual bool IsTabCloseable(const BaseTab* tab) const;
+  virtual void SelectTab(BaseTab* tab) OVERRIDE;
+  virtual void ExtendSelectionTo(BaseTab* tab) OVERRIDE;
+  virtual void ToggleSelected(BaseTab* tab) OVERRIDE;
+  virtual void CloseTab(BaseTab* tab) OVERRIDE;
+  virtual void ShowContextMenuForTab(BaseTab* tab,
+                                     const gfx::Point& p) OVERRIDE;
+  virtual bool IsTabSelected(const BaseTab* tab) const OVERRIDE;
+  virtual bool IsTabPinned(const BaseTab* tab) const OVERRIDE;
+  virtual bool IsTabCloseable(const BaseTab* tab) const OVERRIDE;
   virtual void MaybeStartDrag(BaseTab* tab,
-                              const views::MouseEvent& event);
-  virtual void ContinueDrag(const views::MouseEvent& event);
-  virtual bool EndDrag(bool canceled);
+                              const views::MouseEvent& event) OVERRIDE;
+  virtual void ContinueDrag(const views::MouseEvent& event) OVERRIDE;
+  virtual bool EndDrag(bool canceled) OVERRIDE;
   virtual BaseTab* GetTabAt(BaseTab* tab,
-                            const gfx::Point& tab_in_tab_coordinates);
+                            const gfx::Point& tab_in_tab_coordinates) OVERRIDE;
 
   // View overrides:
-  virtual void Layout();
+  virtual void Layout() OVERRIDE;
   virtual bool GetDropFormats(
       int* formats,
-      std::set<OSExchangeData::CustomFormat>* custom_formats);
-  virtual bool CanDrop(const OSExchangeData& data);
+      std::set<OSExchangeData::CustomFormat>* custom_formats) OVERRIDE;
+  virtual bool CanDrop(const OSExchangeData& data) OVERRIDE;
 
  protected:
   // The Tabs we contain, and their last generated "good" bounds.
@@ -150,9 +151,9 @@ class BaseTabStrip : public AbstractTabStripView,
   };
 
   // View overrides.
-  virtual bool OnMouseDragged(const views::MouseEvent& event);
+  virtual bool OnMouseDragged(const views::MouseEvent& event) OVERRIDE;
   virtual void OnMouseReleased(const views::MouseEvent& event,
-                               bool canceled);
+                               bool canceled) OVERRIDE;
 
   // Creates and returns a new tab. The caller owners the returned tab.
   virtual BaseTab* CreateTab() = 0;

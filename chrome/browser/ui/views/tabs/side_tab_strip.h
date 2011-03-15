@@ -19,20 +19,20 @@ class SideTabStrip : public BaseTabStrip {
   virtual ~SideTabStrip();
 
   // AbstractTabStripView implementation:
-  virtual bool IsPositionInWindowCaption(const gfx::Point& point);
-  virtual void SetBackgroundOffset(const gfx::Point& offset);
+  virtual bool IsPositionInWindowCaption(const gfx::Point& point) OVERRIDE;
+  virtual void SetBackgroundOffset(const gfx::Point& offset) OVERRIDE;
 
   // BaseTabStrip implementation:
-  virtual void StartHighlight(int model_index);
-  virtual void StopAllHighlighting();
-  virtual BaseTab* CreateTabForDragging();
-  virtual void RemoveTabAt(int model_index);
-  virtual void SelectTabAt(int old_model_index, int new_model_index);
-  virtual void TabTitleChangedNotLoading(int model_index);
+  virtual void StartHighlight(int model_index) OVERRIDE;
+  virtual void StopAllHighlighting() OVERRIDE;
+  virtual BaseTab* CreateTabForDragging() OVERRIDE;
+  virtual void RemoveTabAt(int model_index) OVERRIDE;
+  virtual void SelectTabAt(int old_model_index, int new_model_index) OVERRIDE;
+  virtual void TabTitleChangedNotLoading(int model_index) OVERRIDE;
 
   // views::View overrides:
-  virtual gfx::Size GetPreferredSize();
-  virtual void PaintChildren(gfx::Canvas* canvas);
+  virtual gfx::Size GetPreferredSize() OVERRIDE;
+  virtual void PaintChildren(gfx::Canvas* canvas) OVERRIDE;
 
  protected:
   // BaseTabStrip overrides:

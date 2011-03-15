@@ -35,12 +35,13 @@ class NativeViewPhotoboothWin : public NativeViewPhotobooth {
   virtual ~NativeViewPhotoboothWin();
 
   // Replaces the view in the photo booth with the specified one.
-  virtual void Replace(gfx::NativeView new_view);
+  virtual void Replace(gfx::NativeView new_view) OVERRIDE;
 
   // Paints the current display image of the window into |canvas|, clipped to
   // |target_bounds|.
-  virtual void PaintScreenshotIntoCanvas(gfx::Canvas* canvas,
-                                         const gfx::Rect& target_bounds);
+  virtual void PaintScreenshotIntoCanvas(
+      gfx::Canvas* canvas,
+      const gfx::Rect& target_bounds) OVERRIDE;
 
  private:
   // Creates a mostly off-screen window to contain the HWND to be captured.

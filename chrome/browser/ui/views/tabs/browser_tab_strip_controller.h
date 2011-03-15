@@ -40,52 +40,57 @@ class BrowserTabStripController : public TabStripController,
   bool IsTabPinned(BaseTab* tab) const;
 
   // TabStripController implementation:
-  virtual int GetCount() const;
-  virtual bool IsValidIndex(int model_index) const;
-  virtual bool IsTabSelected(int model_index) const;
-  virtual bool IsTabPinned(int model_index) const;
-  virtual bool IsTabCloseable(int model_index) const;
-  virtual bool IsNewTabPage(int model_index) const;
-  virtual void SelectTab(int model_index);
-  virtual void ExtendSelectionTo(int model_index);
-  virtual void ToggleSelected(int model_index);
-  virtual void CloseTab(int model_index);
-  virtual void ShowContextMenuForTab(BaseTab* tab, const gfx::Point& p);
-  virtual void UpdateLoadingAnimations();
-  virtual int HasAvailableDragActions() const;
-  virtual void PerformDrop(bool drop_before, int index, const GURL& url);
-  virtual bool IsCompatibleWith(BaseTabStrip* other) const;
-  virtual void CreateNewTab();
+  virtual int GetCount() const OVERRIDE;
+  virtual bool IsValidIndex(int model_index) const OVERRIDE;
+  virtual bool IsTabSelected(int model_index) const OVERRIDE;
+  virtual bool IsTabPinned(int model_index) const OVERRIDE;
+  virtual bool IsTabCloseable(int model_index) const OVERRIDE;
+  virtual bool IsNewTabPage(int model_index) const OVERRIDE;
+  virtual void SelectTab(int model_index) OVERRIDE;
+  virtual void ExtendSelectionTo(int model_index) OVERRIDE;
+  virtual void ToggleSelected(int model_index) OVERRIDE;
+  virtual void CloseTab(int model_index) OVERRIDE;
+  virtual void ShowContextMenuForTab(BaseTab* tab,
+                                     const gfx::Point& p) OVERRIDE;
+  virtual void UpdateLoadingAnimations() OVERRIDE;
+  virtual int HasAvailableDragActions() const OVERRIDE;
+  virtual void PerformDrop(bool drop_before,
+                           int index,
+                           const GURL& url) OVERRIDE;
+  virtual bool IsCompatibleWith(BaseTabStrip* other) const OVERRIDE;
+  virtual void CreateNewTab() OVERRIDE;
 
   // TabStripModelObserver implementation:
   virtual void TabInsertedAt(TabContentsWrapper* contents,
                              int model_index,
-                             bool active);
-  virtual void TabDetachedAt(TabContentsWrapper* contents, int model_index);
+                             bool active) OVERRIDE;
+  virtual void TabDetachedAt(TabContentsWrapper* contents,
+                             int model_index) OVERRIDE;
   virtual void TabSelectedAt(TabContentsWrapper* old_contents,
                              TabContentsWrapper* contents,
                              int model_index,
-                             bool user_gesture);
+                             bool user_gesture) OVERRIDE;
   virtual void TabMoved(TabContentsWrapper* contents,
                         int from_model_index,
-                        int to_model_index);
+                        int to_model_index) OVERRIDE;
   virtual void TabChangedAt(TabContentsWrapper* contents,
                             int model_index,
-                            TabChangeType change_type);
+                            TabChangeType change_type) OVERRIDE;
   virtual void TabReplacedAt(TabStripModel* tab_strip_model,
                              TabContentsWrapper* old_contents,
                              TabContentsWrapper* new_contents,
-                             int model_index);
+                             int model_index) OVERRIDE;
   virtual void TabPinnedStateChanged(TabContentsWrapper* contents,
-                                     int model_index);
+                                     int model_index) OVERRIDE;
   virtual void TabMiniStateChanged(TabContentsWrapper* contents,
-                                   int model_index);
+                                   int model_index) OVERRIDE;
   virtual void TabBlockedStateChanged(TabContentsWrapper* contents,
-                                      int model_index);
+                                      int model_index) OVERRIDE;
 
   // NotificationObserver implementation:
-  virtual void Observe(NotificationType type, const NotificationSource& source,
-                       const NotificationDetails& details);
+  virtual void Observe(NotificationType type,
+                       const NotificationSource& source,
+                       const NotificationDetails& details) OVERRIDE;
 
  private:
   class TabContextMenuContents;

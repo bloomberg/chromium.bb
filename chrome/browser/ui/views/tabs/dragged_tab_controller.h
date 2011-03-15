@@ -133,34 +133,36 @@ class DraggedTabController : public TabContentsDelegate,
                               const GURL& url,
                               const GURL& referrer,
                               WindowOpenDisposition disposition,
-                              PageTransition::Type transition);
+                              PageTransition::Type transition) OVERRIDE;
   virtual void NavigationStateChanged(const TabContents* source,
-                                      unsigned changed_flags);
+                                      unsigned changed_flags) OVERRIDE;
   virtual void AddNewContents(TabContents* source,
                               TabContents* new_contents,
                               WindowOpenDisposition disposition,
                               const gfx::Rect& initial_pos,
-                              bool user_gesture);
-  virtual void ActivateContents(TabContents* contents);
-  virtual void DeactivateContents(TabContents* contents);
-  virtual void LoadingStateChanged(TabContents* source);
-  virtual void CloseContents(TabContents* source);
-  virtual void MoveContents(TabContents* source, const gfx::Rect& pos);
-  virtual void ToolbarSizeChanged(TabContents* source, bool is_animating);
-  virtual void UpdateTargetURL(TabContents* source, const GURL& url);
+                              bool user_gesture) OVERRIDE;
+  virtual void ActivateContents(TabContents* contents) OVERRIDE;
+  virtual void DeactivateContents(TabContents* contents) OVERRIDE;
+  virtual void LoadingStateChanged(TabContents* source) OVERRIDE;
+  virtual void CloseContents(TabContents* source) OVERRIDE;
+  virtual void MoveContents(TabContents* source,
+                            const gfx::Rect& pos) OVERRIDE;
+  virtual void ToolbarSizeChanged(TabContents* source,
+                                  bool is_animating) OVERRIDE;
+  virtual void UpdateTargetURL(TabContents* source, const GURL& url) OVERRIDE;
 
   // Overridden from NotificationObserver:
   virtual void Observe(NotificationType type,
                        const NotificationSource& source,
-                       const NotificationDetails& details);
+                       const NotificationDetails& details) OVERRIDE;
 
   // Overridden from MessageLoop::Observer:
 #if defined(OS_WIN)
-  virtual void WillProcessMessage(const MSG& msg);
-  virtual void DidProcessMessage(const MSG& msg);
+  virtual void WillProcessMessage(const MSG& msg) OVERRIDE;
+  virtual void DidProcessMessage(const MSG& msg) OVERRIDE;
 #else
-  virtual void WillProcessEvent(GdkEvent* event);
-  virtual void DidProcessEvent(GdkEvent* event);
+  virtual void WillProcessEvent(GdkEvent* event) OVERRIDE;
+  virtual void DidProcessEvent(GdkEvent* event) OVERRIDE;
 #endif
 
   // Initialize the offset used to calculate the position to create windows

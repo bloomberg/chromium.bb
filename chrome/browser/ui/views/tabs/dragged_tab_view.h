@@ -54,9 +54,9 @@ class DraggedTabView : public views::View {
 
  private:
   // Overridden from views::View:
-  virtual void OnPaint(gfx::Canvas* canvas);
-  virtual void Layout();
-  virtual gfx::Size GetPreferredSize();
+  virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE;
+  virtual void Layout() OVERRIDE;
+  virtual gfx::Size GetPreferredSize() OVERRIDE;
 
   // Paint the view, when it's not attached to any TabStrip.
   void PaintDetachedView(gfx::Canvas* canvas);
