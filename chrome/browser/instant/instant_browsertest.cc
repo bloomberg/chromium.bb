@@ -728,7 +728,13 @@ IN_PROC_BROWSER_TEST_F(InstantTest, InstantCompleteDelayed) {
 }
 
 // Make sure the renderer doesn't crash if javascript is blocked.
-IN_PROC_BROWSER_TEST_F(InstantTest, DontCrashOnBlockedJS) {
+// Disabled on max/linuc, see 76283.
+#if defined(OS_MACOSX) || defined(OS_LINUX)
+#define MAYBE_DontCrashOnBlockedJS DISABLED_DontCrashOnBlockedJS
+#else
+#define MAYBE_DontCrashOnBlockedJS DontCrashOnBlockedJS
+#endif
+IN_PROC_BROWSER_TEST_F(InstantTest, MAYBE_DontCrashOnBlockedJS) {
   browser()->profile()->GetHostContentSettingsMap()->SetDefaultContentSetting(
       CONTENT_SETTINGS_TYPE_JAVASCRIPT, CONTENT_SETTING_BLOCK);
   ASSERT_TRUE(test_server()->Start());
