@@ -44,7 +44,8 @@ int VP8InitFrame(VP8Decoder* const dec, VP8Io* io) {
     dec->mem_size_ = 0;
     dec->mem_ = (uint8_t*)malloc(needed);
     if (dec->mem_ == NULL) {
-      return VP8SetError(dec, 1, "no memory during frame initialization.");
+      return VP8SetError(dec, VP8_STATUS_OUT_OF_MEMORY,
+                         "no memory during frame initialization.");
     }
     dec->mem_size_ = needed;
   }
@@ -125,6 +126,9 @@ static void DoFilter(VP8Decoder* const dec, int mb_x, int mb_y) {
   const int level = mb->f_level_;
   const int ilevel = mb->f_ilevel_;
   const int limit = 2 * level + ilevel;
+  if (level == 0) {
+    return;
+  }
   if (dec->filter_type_ == 1) {   // simple
     if (mb_x > 0) {
       VP8SimpleHFilter16(y_dst, y_bps, limit + 4);
@@ -210,7 +214,7 @@ void VP8StoreBlock(VP8Decoder* const dec) {
   }
 }
 
-void VP8FinishRow(VP8Decoder* const dec, VP8Io* io) {
+int VP8FinishRow(VP8Decoder* const dec, VP8Io* io) {
   const int extra_y_rows = kFilterExtraRows[dec->filter_type_];
   const int ysize = extra_y_rows * dec->cache_y_stride_;
   const int uvsize = (extra_y_rows / 2) * dec->cache_uv_stride_;
@@ -246,7 +250,9 @@ void VP8FinishRow(VP8Decoder* const dec, VP8Io* io) {
     }
     io->mb_y = y_start;
     io->mb_h = y_end - y_start;
-    io->put(io);
+    if (!io->put(io)) {
+      return 0;
+    }
   }
     // rotate top samples
   if (!last_row) {
@@ -254,6 +260,7 @@ void VP8FinishRow(VP8Decoder* const dec, VP8Io* io) {
     memcpy(udst, udst + 8 * dec->cache_uv_stride_, uvsize);
     memcpy(vdst, vdst + 8 * dec->cache_uv_stride_, uvsize);
   }
+  return 1;
 }
 
 //-----------------------------------------------------------------------------
@@ -350,7 +357,7 @@ void VP8ReconstructBlock(VP8Decoder* const dec) {
       for (n = 0; n < 16; n++) {
         uint8_t* const dst = y_dst + kScan[n];
         VP8PredLuma4[dec->imodes_[n]](dst);
-        if (dec->non_zero_ & (1 << n)) {
+        if (dec->non_zero_ac_ & (1 << n)) {
           VP8Transform(coeffs + n * 16, dst);
         } else if (dec->non_zero_ & (1 << n)) {  // only DC is present
           VP8TransformDC(coeffs + n * 16, dst);
