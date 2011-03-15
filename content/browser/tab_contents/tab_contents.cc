@@ -588,7 +588,7 @@ SkBitmap TabContents::GetFavicon() const {
   return SkBitmap();
 }
 
-bool TabContents::FavIconIsValid() const {
+bool TabContents::FaviconIsValid() const {
   NavigationEntry* entry = controller_.GetTransientEntry();
   if (entry)
     return entry->favicon().is_valid();
@@ -600,7 +600,7 @@ bool TabContents::FavIconIsValid() const {
   return false;
 }
 
-bool TabContents::ShouldDisplayFavIcon() {
+bool TabContents::ShouldDisplayFavicon() {
   // Always display a throbber during pending loads.
   if (controller_.GetLastCommittedEntry() && controller_.pending_entry())
     return true;

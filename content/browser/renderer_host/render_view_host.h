@@ -292,10 +292,10 @@ class RenderViewHost : public RenderWidgetHost {
   void SelectAll();
   void ToggleSpellPanel(bool is_currently_visible);
 
-  // Downloads an image notifying the FavIcon delegate appropriately. The
+  // Downloads an image notifying the favicon delegate appropriately. The
   // returned integer uniquely identifies the download for the lifetime of the
   // browser.
-  int DownloadFavIcon(const GURL& url, int image_size);
+  int DownloadFavicon(const GURL& url, int image_size);
 
   // Requests application info for the specified page. This is an asynchronous
   // request. The delegate is notified by way of OnDidGetApplicationInfo when
@@ -572,8 +572,8 @@ class RenderViewHost : public RenderWidgetHost {
   void OnMsgDocumentAvailableInMainFrame();
   void OnMsgDocumentOnLoadCompletedInMainFrame(int32 page_id);
   void OnExecuteCodeFinished(int request_id, bool success);
-  void OnMsgUpdateFavIconURL(int32 page_id, const GURL& icon_url);
-  void OnMsgDidDownloadFavIcon(int id,
+  void OnMsgUpdateFaviconURL(int32 page_id, const GURL& icon_url);
+  void OnMsgDidDownloadFavicon(int id,
                                const GURL& image_url,
                                bool errored,
                                const SkBitmap& image_data);

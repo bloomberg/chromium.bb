@@ -142,8 +142,8 @@ void FaviconHelper::OnUpdateFaviconURL(int32 page_id, const GURL& icon_url) {
 bool FaviconHelper::OnMessageReceived(const IPC::Message& message) {
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(FaviconHelper, message)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_UpdateFavIconURL, OnUpdateFaviconURL)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_DidDownloadFavIcon, OnDidDownloadFavicon)
+    IPC_MESSAGE_HANDLER(ViewHostMsg_UpdateFaviconURL, OnUpdateFaviconURL)
+    IPC_MESSAGE_HANDLER(ViewHostMsg_DidDownloadFavicon, OnDidDownloadFavicon)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
@@ -263,7 +263,7 @@ void FaviconHelper::OnFaviconData(
     return;
 
   // No need to update the favicon url. By the time we get here
-  // UpdateFavIconURL will have set the favicon url.
+  // UpdateFaviconURL will have set the favicon url.
 
   if (know_favicon && data.get() && data->size()) {
     // There is a favicon, set it now. If expired we'll download the current
@@ -282,7 +282,7 @@ int FaviconHelper::ScheduleDownload(const GURL& url,
                                     const GURL& image_url,
                                     int image_size,
                                     ImageDownloadCallback* callback) {
-  const int download_id = tab_contents()->render_view_host()->DownloadFavIcon(
+  const int download_id = tab_contents()->render_view_host()->DownloadFavicon(
       image_url, image_size);
 
   if (download_id) {

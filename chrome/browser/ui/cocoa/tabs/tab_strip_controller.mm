@@ -1260,7 +1260,7 @@ private:
   TabController* tabController = [tabArray_ objectAtIndex:index];
 
   bool oldHasIcon = [tabController iconView] != nil;
-  bool newHasIcon = contents->ShouldDisplayFavIcon() ||
+  bool newHasIcon = contents->ShouldDisplayFavicon() ||
       tabStripModel_->IsMiniTab(modelIndex);  // Always show icon if mini.
 
   TabLoadingState oldState = [tabController loadingState];

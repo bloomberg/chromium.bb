@@ -826,7 +826,7 @@ class RenderView : public RenderWidget,
   void OnDisableScrollbarsForSmallWindows(
       const gfx::Size& disable_scrollbars_size_limit);
   void OnDisassociateFromPopupCount();
-  void OnDownloadFavIcon(int id, const GURL& image_url, int image_size);
+  void OnDownloadFavicon(int id, const GURL& image_url, int image_size);
   void OnDragSourceEndedOrMoved(const gfx::Point& client_point,
                                 const gfx::Point& screen_point,
                                 bool ended,

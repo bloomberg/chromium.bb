@@ -543,14 +543,14 @@ void RenderViewHost::ToggleSpellPanel(bool is_currently_visible) {
   Send(new ViewMsg_ToggleSpellPanel(routing_id(), is_currently_visible));
 }
 
-int RenderViewHost::DownloadFavIcon(const GURL& url, int image_size) {
+int RenderViewHost::DownloadFavicon(const GURL& url, int image_size) {
   if (!url.is_valid()) {
     NOTREACHED();
     return 0;
   }
   static int next_id = 1;
   int id = next_id++;
-  Send(new ViewMsg_DownloadFavIcon(routing_id(), id, url, image_size));
+  Send(new ViewMsg_DownloadFavicon(routing_id(), id, url, image_size));
   return id;
 }
 

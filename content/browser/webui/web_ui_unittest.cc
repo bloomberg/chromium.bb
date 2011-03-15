@@ -33,7 +33,7 @@ class WebUITest : public RenderViewHostTestHarness {
 
     // Check the things the pending Web UI should have set.
     EXPECT_FALSE(contents->ShouldDisplayURL());
-    EXPECT_FALSE(contents->ShouldDisplayFavIcon());
+    EXPECT_FALSE(contents->ShouldDisplayFavicon());
     EXPECT_TRUE(contents->ShouldShowBookmarkBar());
     EXPECT_TRUE(contents->FocusLocationBarByDefault());
 
@@ -43,7 +43,7 @@ class WebUITest : public RenderViewHostTestHarness {
 
     // The same flags should be set as before now that the load has committed.
     EXPECT_FALSE(contents->ShouldDisplayURL());
-    EXPECT_FALSE(contents->ShouldDisplayFavIcon());
+    EXPECT_FALSE(contents->ShouldDisplayFavicon());
     EXPECT_TRUE(contents->ShouldShowBookmarkBar());
     EXPECT_TRUE(contents->FocusLocationBarByDefault());
 
@@ -54,7 +54,7 @@ class WebUITest : public RenderViewHostTestHarness {
     // Check the flags. Some should reflect the new page (URL, title), some
     // should reflect the old one (bookmark bar) until it has committed.
     EXPECT_TRUE(contents->ShouldDisplayURL());
-    EXPECT_TRUE(contents->ShouldDisplayFavIcon());
+    EXPECT_TRUE(contents->ShouldDisplayFavicon());
     EXPECT_TRUE(contents->ShouldShowBookmarkBar());
     EXPECT_FALSE(contents->FocusLocationBarByDefault());
 
@@ -74,7 +74,7 @@ class WebUITest : public RenderViewHostTestHarness {
 
     // The state should now reflect a regular page.
     EXPECT_TRUE(contents->ShouldDisplayURL());
-    EXPECT_TRUE(contents->ShouldDisplayFavIcon());
+    EXPECT_TRUE(contents->ShouldDisplayFavicon());
     EXPECT_FALSE(contents->ShouldShowBookmarkBar());
     EXPECT_FALSE(contents->FocusLocationBarByDefault());
   }
@@ -112,7 +112,7 @@ TEST_F(WebUITest, WebUIToWebUI) {
 
   // The flags should be the same as the non-pending state.
   EXPECT_FALSE(contents()->ShouldDisplayURL());
-  EXPECT_FALSE(contents()->ShouldDisplayFavIcon());
+  EXPECT_FALSE(contents()->ShouldDisplayFavicon());
   EXPECT_TRUE(contents()->ShouldShowBookmarkBar());
   EXPECT_TRUE(contents()->FocusLocationBarByDefault());
 }
@@ -125,14 +125,14 @@ TEST_F(WebUITest, StandardToWebUI) {
 
   // The state should now reflect the default.
   EXPECT_TRUE(contents()->ShouldDisplayURL());
-  EXPECT_TRUE(contents()->ShouldDisplayFavIcon());
+  EXPECT_TRUE(contents()->ShouldDisplayFavicon());
   EXPECT_FALSE(contents()->ShouldShowBookmarkBar());
   EXPECT_FALSE(contents()->FocusLocationBarByDefault());
 
   // Commit the load, the state should be the same.
   rvh()->SendNavigate(1, std_url);
   EXPECT_TRUE(contents()->ShouldDisplayURL());
-  EXPECT_TRUE(contents()->ShouldDisplayFavIcon());
+  EXPECT_TRUE(contents()->ShouldDisplayFavicon());
   EXPECT_FALSE(contents()->ShouldShowBookmarkBar());
   EXPECT_FALSE(contents()->FocusLocationBarByDefault());
 
@@ -140,7 +140,7 @@ TEST_F(WebUITest, StandardToWebUI) {
   GURL new_tab_url(chrome::kChromeUINewTabURL);
   controller().LoadURL(new_tab_url, GURL(), PageTransition::LINK);
   EXPECT_FALSE(contents()->ShouldDisplayURL());
-  EXPECT_TRUE(contents()->ShouldDisplayFavIcon());
+  EXPECT_TRUE(contents()->ShouldDisplayFavicon());
   EXPECT_FALSE(contents()->ShouldShowBookmarkBar());
   EXPECT_TRUE(contents()->FocusLocationBarByDefault());
 

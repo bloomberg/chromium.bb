@@ -1038,7 +1038,7 @@ bool RenderView::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(ViewMsg_ResetPageEncodingToDefault,
                         OnResetPageEncodingToDefault)
     IPC_MESSAGE_HANDLER(ViewMsg_SetupDevToolsClient, OnSetupDevToolsClient)
-    IPC_MESSAGE_HANDLER(ViewMsg_DownloadFavIcon, OnDownloadFavIcon)
+    IPC_MESSAGE_HANDLER(ViewMsg_DownloadFavicon, OnDownloadFavicon)
     IPC_MESSAGE_HANDLER(ViewMsg_ScriptEvalRequest, OnScriptEvalRequest)
     IPC_MESSAGE_HANDLER(ViewMsg_CSSInsertRequest, OnCSSInsertRequest)
     IPC_MESSAGE_HANDLER(ViewMsg_AddMessageToConsole, OnAddMessageToConsole)
@@ -2185,7 +2185,7 @@ void RenderView::didStopLoading() {
   // The feed discovery code would also benefit from access to the head.
   GURL favicon_url(webview()->mainFrame()->favIconURL());
   if (!favicon_url.is_empty())
-    Send(new ViewHostMsg_UpdateFavIconURL(routing_id_, page_id_, favicon_url));
+    Send(new ViewHostMsg_UpdateFaviconURL(routing_id_, page_id_, favicon_url));
 
   AddGURLSearchProvider(webview()->mainFrame()->openSearchDescriptionURL(),
                         ViewHostMsg_PageHasOSDD_Type::Autodetected());
@@ -3494,7 +3494,7 @@ void RenderView::didReceiveTitle(WebFrame* frame, const WebString& title) {
 
 void RenderView::didChangeIcons(WebFrame* frame) {
   if (!frame->parent()) {
-    Send(new ViewHostMsg_UpdateFavIconURL(
+    Send(new ViewHostMsg_UpdateFaviconURL(
         routing_id_,
         page_id_,
         frame->favIconURL()));
@@ -3999,7 +3999,7 @@ bool RenderView::DownloadImage(int id, const GURL& image_url, int image_size) {
 void RenderView::DidDownloadImage(ImageResourceFetcher* fetcher,
                                   const SkBitmap& image) {
   // Notify requester of image download status.
-  Send(new ViewHostMsg_DidDownloadFavIcon(routing_id_,
+  Send(new ViewHostMsg_DidDownloadFavicon(routing_id_,
                                           fetcher->id(),
                                           fetcher->image_url(),
                                           image.isNull(),
@@ -4018,7 +4018,7 @@ void RenderView::DidDownloadImage(ImageResourceFetcher* fetcher,
   MessageLoop::current()->DeleteSoon(FROM_HERE, fetcher);
 }
 
-void RenderView::OnDownloadFavIcon(int id,
+void RenderView::OnDownloadFavicon(int id,
                                    const GURL& image_url,
                                    int image_size) {
   bool data_image_failed = false;
@@ -4026,14 +4026,14 @@ void RenderView::OnDownloadFavIcon(int id,
     SkBitmap data_image = ImageFromDataUrl(image_url);
     data_image_failed = data_image.empty();
     if (!data_image_failed) {
-      Send(new ViewHostMsg_DidDownloadFavIcon(routing_id_, id, image_url, false,
+      Send(new ViewHostMsg_DidDownloadFavicon(routing_id_, id, image_url, false,
                                               data_image));
     }
   }
 
   if (data_image_failed ||
       !DownloadImage(id, image_url, image_size)) {
-    Send(new ViewHostMsg_DidDownloadFavIcon(routing_id_, id, image_url, true,
+    Send(new ViewHostMsg_DidDownloadFavicon(routing_id_, id, image_url, true,
                                             SkBitmap()));
   }
 }

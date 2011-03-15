@@ -779,8 +779,8 @@ IPC_MESSAGE_ROUTED3(ViewMsg_GetSerializedHtmlDataForCurrentPageWithLocalLinks,
 IPC_MESSAGE_ROUTED1(ViewMsg_GetApplicationInfo, int32 /*page_id*/)
 
 // Requests the renderer to download the specified favicon image encode it as
-// PNG and send the PNG data back ala ViewHostMsg_DidDownloadFavIcon.
-IPC_MESSAGE_ROUTED3(ViewMsg_DownloadFavIcon,
+// PNG and send the PNG data back ala ViewHostMsg_DidDownloadFavicon.
+IPC_MESSAGE_ROUTED3(ViewMsg_DownloadFavicon,
                     int /* identifier for the request */,
                     GURL /* URL of the image */,
                     int /* Size of the image. Normally 0, but set if you have
@@ -1549,7 +1549,7 @@ IPC_MESSAGE_ROUTED1(ViewHostMsg_Snapshot,
                     SkBitmap /* bitmap */)
 
 // Notification that the url for the favicon of a site has been determined.
-IPC_MESSAGE_ROUTED2(ViewHostMsg_UpdateFavIconURL,
+IPC_MESSAGE_ROUTED2(ViewHostMsg_UpdateFaviconURL,
                     int32 /* page_id */,
                     GURL /* url of the favicon */)
 
@@ -1868,7 +1868,7 @@ IPC_MESSAGE_ROUTED1(ViewHostMsg_ShouldClose_ACK,
 IPC_MESSAGE_ROUTED1(ViewHostMsg_ClosePage_ACK,
                     ViewMsg_ClosePage_Params)
 
-IPC_MESSAGE_ROUTED4(ViewHostMsg_DidDownloadFavIcon,
+IPC_MESSAGE_ROUTED4(ViewHostMsg_DidDownloadFavicon,
                     int /* Identifier of the request */,
                     GURL /* URL of the image */,
                     bool /* true if there was a network error */,

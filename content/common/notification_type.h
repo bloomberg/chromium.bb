@@ -682,7 +682,7 @@ class NotificationType {
     HISTORY_KEYWORD_SEARCH_TERM_UPDATED,
 
     // Sent by history when the favicon of a URL changes.  The source is the
-    // profile, and the details is history::FavIconChangeDetails (see
+    // profile, and the details is history::FaviconChangeDetails (see
     // history_notifications.h).
     FAVICON_CHANGED,
 
