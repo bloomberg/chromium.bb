@@ -10,6 +10,7 @@
 #include "googleurl/src/gurl.h"
 #include "net/base/escape.h"
 #include "third_party/skia/include/core/SkBitmap.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebData.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebImage.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebSize.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebString.h"
@@ -24,6 +25,7 @@
 #endif
 
 using WebKit::WebClipboard;
+using WebKit::WebData;
 using WebKit::WebImage;
 using WebKit::WebString;
 using WebKit::WebURL;
@@ -122,6 +124,16 @@ WebString WebClipboardImpl::readHTML(Buffer buffer, WebURL* source_url) {
   ClipboardReadHTML(buffer_type, &html_stdstr, &gurl);
   *source_url = gurl;
   return html_stdstr;
+}
+
+WebData WebClipboardImpl::readImage(Buffer buffer) {
+  ui::Clipboard::Buffer buffer_type;
+  if (!ConvertBufferType(buffer, &buffer_type))
+    return WebData();
+
+  std::string png_data;
+  ClipboardReadImage(buffer_type, &png_data);
+  return WebData(png_data);
 }
 
 void WebClipboardImpl::writeHTML(

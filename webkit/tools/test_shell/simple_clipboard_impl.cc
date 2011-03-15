@@ -52,6 +52,10 @@ void ClipboardReadHTML(ui::Clipboard::Buffer buffer, string16* markup,
     *url = GURL(url_str);
 }
 
+void ClipboardReadImage(ui::Clipboard::Buffer buffer, std::string* data) {
+  ClipboardGetClipboard()->ReadImage(buffer, data);
+}
+
 // TODO(dcheng): Implement.
 bool ClipboardReadAvailableTypes(ui::Clipboard::Buffer buffer,
                                  std::vector<string16>* types,

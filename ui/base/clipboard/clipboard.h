@@ -148,6 +148,10 @@ class Clipboard {
   // Reads HTML from the clipboard, if available.
   void ReadHTML(Buffer buffer, string16* markup, std::string* src_url) const;
 
+  // Reads an image from the clipboard, if available. The returned data will be
+  // encoded in PNG format.
+  void ReadImage(Buffer buffer, std::string* data) const;
+
   // Reads a bookmark from the clipboard, if available.
   void ReadBookmark(string16* title, std::string* url) const;
 

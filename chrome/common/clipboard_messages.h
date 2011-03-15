@@ -7,7 +7,6 @@
 #include <string>
 #include <vector>
 
-// #include "chrome/common/common_param_traits.h"
 #include "content/common/common_param_traits.h"
 #include "ipc/ipc_message_macros.h"
 #include "ipc/ipc_param_traits.h"
@@ -42,6 +41,9 @@ IPC_SYNC_MESSAGE_CONTROL1_2(ClipboardHostMsg_ReadHTML,
                             ui::Clipboard::Buffer  /* buffer */,
                             string16 /* markup */,
                             GURL /* url */)
+IPC_SYNC_MESSAGE_CONTROL1_1(ClipboardHostMsg_ReadImage,
+                            ui::Clipboard::Buffer /* buffer */,
+                            std::string /* PNG-encoded image */)
 #if defined(OS_MACOSX)
 IPC_MESSAGE_CONTROL1(ClipboardHostMsg_FindPboardWriteStringAsync,
                      string16 /* text */)
