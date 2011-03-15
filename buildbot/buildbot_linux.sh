@@ -1,0 +1,102 @@
+#!/bin/bash
+
+# Script assumed to be run in native_client/
+if [[ $(pwd) != */native_client ]]; then
+  echo "ERROR: must be run in native_client!"
+  exit 1
+fi
+
+if [ $# -ne 2 ]; then
+  echo "USAGE: $0 dbg/opt 32/64"
+  exit 2
+fi
+
+set -x
+set -e
+set -u
+
+# Pick dbg or opt
+MODE=$1
+# Pick 32 or 64
+BITS=$2
+
+RETCODE=0
+
+if [[ $MODE == dbg ]]; then
+  GYPMODE=Debug
+else
+  GYPMODE=Release
+fi
+
+echo @@@BUILD_STEP gclient_runhooks@@@
+gclient runhooks --force
+
+echo @@@BUILD_STEP clobber@@@
+rm -rf scons-out toolchain compiler hg ../xcodebuild ../sconsbuild ../out \
+    src/third_party/nacl_sdk/arm-newlib
+
+echo @@@BUILD_STEP partial_sdk@@@
+./scons --verbose --mode=nacl_extra_sdk platform=x86-${BITS} --download \
+extra_sdk_update_header install_libpthread extra_sdk_update
+
+echo @@@BUILD_STEP gyp_compile@@@
+cd .. && make -k -j12 V=1 BUILDTYPE=${GYPMODE} && cd native_client
+
+echo @@@BUILD_STEP gyp_tests@@@
+python trusted_test.py --config ${GYPMODE}
+
+echo @@@BUILD_STEP scons_compile@@@
+./scons -j 8 DOXYGEN=../third_party/doxygen/linux/doxygen -k --verbose \
+    --mode=${MODE}-linux,nacl,doc platform=x86-${BITS}
+
+echo @@@BUILD_STEP small_tests@@@
+./scons DOXYGEN=../third_party/doxygen/linux/doxygen -k --verbose \
+    --mode=${MODE}-linux,nacl,doc small_tests platform=x86-${BITS} || \
+    (RETCODE=$? && echo @@@BUILD_FAILED@@@)
+
+echo @@@BUILD_STEP medium_tests@@@
+./scons DOXYGEN=../third_party/doxygen/linux/doxygen -k --verbose \
+    --mode=${MODE}-linux,nacl,doc medium_tests platform=x86-${BITS} || \
+    (RETCODE=$? && echo @@@BUILD_FAILED@@@)
+
+echo @@@BUILD_STEP large_tests@@@
+./scons DOXYGEN=../third_party/doxygen/linux/doxygen -k --verbose \
+    --mode=${MODE}-linux,nacl,doc large_tests platform=x86-${BITS} || \
+    (RETCODE=$? && echo @@@BUILD_FAILED@@@)
+
+echo @@@BUILD_STEP start_vncserver@@@
+vncserver -kill :20 || true
+sleep 2 ; vncserver :20 -geometry 1500x1000 -depth 24 ; sleep 10
+
+echo @@@BUILD_STEP chrome_browser_tests@@@
+DISPLAY=localhost:20 XAUTHORITY=/home/chrome-bot/.Xauthority \
+    ./scons DOXYGEN=../third_party/doxygen/linux/doxygen -k --verbose \
+    --mode=${MODE}-linux,nacl,doc SILENT=1 platform=x86-${BITS} \
+    chrome_browser_tests || \
+    (RETCODE=$? && echo @@@BUILD_FAILED@@@)
+
+echo @@@BUILD_STEP backup_plugin@@@
+./scons DOXYGEN=../third_party/doxygen/linux/doxygen -k --verbose \
+    --mode=${MODE}-linux,nacl,doc SILENT=1 platform=x86-${BITS} \
+    firefox_install_backup
+
+echo @@@BUILD_STEP install_plugin@@@
+./scons DOXYGEN=../third_party/doxygen/linux/doxygen -k --verbose \
+    --mode=${MODE}-linux,nacl,doc SILENT=1 platform=x86-${BITS} firefox_install
+
+echo @@@BUILD_STEP selenium@@@
+DISPLAY=localhost:20 XAUTHORITY=/home/chrome-bot/.Xauthority \
+    ./scons DOXYGEN=../third_party/doxygen/linux/doxygen -k --verbose \
+    --mode=${MODE}-linux,nacl,doc SILENT=1 platform=x86-${BITS} \
+    browser_tests || \
+    (RETCODE=$? && echo @@@BUILD_FAILED@@@)
+
+echo @@@BUILD_STEP restore_plugin@@@
+./scons DOXYGEN=../third_party/doxygen/linux/doxygen -k --verbose \
+    --mode=${MODE}-linux,nacl,doc SILENT=1 platform=x86-${BITS} \
+    firefox_install_restore
+
+echo @@@BUILD_STEP stop_vncserver@@@
+vncserver -kill :20
+
+exit ${RETCODE}
