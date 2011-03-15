@@ -150,14 +150,6 @@ using tcmalloc::ThreadCache;
 # define __THROW   // __THROW is just an optimization, so ok to make it ""
 #endif
 
-// ---- Double free debug declarations
-static size_t ExcludeSpaceForMark(size_t size);
-static void AddRoomForMark(size_t* size);
-static void ExcludeMarkFromSize(size_t* new_size);
-static void MarkAllocatedRegion(void* ptr);
-static void ValidateAllocatedRegion(void* ptr, size_t cl);
-// ---- End Double free debug declarations
-
 DECLARE_int64(tcmalloc_sample_parameter);
 DECLARE_double(tcmalloc_release_rate);
 
@@ -858,7 +850,6 @@ static inline bool CheckCachedSizeClass(void *ptr) {
 
 static inline void* CheckedMallocResult(void *result) {
   ASSERT(result == NULL || CheckCachedSizeClass(result));
-  MarkAllocatedRegion(result);
   return result;
 }
 
@@ -978,8 +969,6 @@ inline void* do_malloc_pages(ThreadCache* heap, size_t size) {
 }
 
 inline void* do_malloc(size_t size) {
-  AddRoomForMark(&size);
-
   void* ret = NULL;
 
   // The following call forces module initialization
@@ -990,7 +979,6 @@ inline void* do_malloc(size_t size) {
 
     if ((FLAGS_tcmalloc_sample_parameter > 0) && heap->SampleAllocation(size)) {
       ret = DoSampledAllocation(size);
-      MarkAllocatedRegion(ret);
     } else {
       // The common case, and also the simplest. This just pops the
       // size-appropriate freelist, after replenishing it if it's empty.
@@ -998,7 +986,6 @@ inline void* do_malloc(size_t size) {
     }
   } else {
     ret = do_malloc_pages(heap, size);
-    MarkAllocatedRegion(ret);
   }
   if (ret == NULL) errno = ENOMEM;
   return ret;
@@ -1046,9 +1033,6 @@ inline void do_free_with_callback(void* ptr, void (*invalid_free_fn)(void*)) {
     cl = span->sizeclass;
     Static::pageheap()->CacheSizeClass(p, cl);
   }
-
-  ValidateAllocatedRegion(ptr, cl);
-
   if (cl != 0) {
     ASSERT(!Static::pageheap()->GetDescriptor(p)->sample);
     ThreadCache* heap = GetCacheIfPresent();
@@ -1105,12 +1089,6 @@ inline void* do_realloc_with_callback(
     void* old_ptr, size_t new_size,
     void (*invalid_free_fn)(void*),
     size_t (*invalid_get_size_fn)(void*)) {
-  // do_malloc will really add room for the mark, but by doing it here, we
-  // don't have to hack up this function more.  There will be an extra space
-  // when we call do_malloc_or_cpp_alloc.  If we want to be perfect, we could
-  // remove the excess before calling do_malloc_or_cpp_alloc... but it seems
-  // hardly worth it, since realloc tends to over-allocate anyway.
-  AddRoomForMark(&new_size);  // May get 2 extra marks when calling malloc.
   // Get the size of the old entry
   const size_t old_size = GetSizeWithCallback(old_ptr, invalid_get_size_fn);
 
@@ -1136,7 +1114,6 @@ inline void* do_realloc_with_callback(
     if (new_ptr == NULL) {
       return NULL;
     }
-    ExcludeMarkFromSize(&new_size);
     MallocHook::InvokeNewHook(new_ptr, new_size);
     memcpy(new_ptr, old_ptr, ((old_size < new_size) ? old_size : new_size));
     MallocHook::InvokeDeleteHook(old_ptr);
@@ -1148,7 +1125,6 @@ inline void* do_realloc_with_callback(
   } else {
     // We still need to call hooks to report the updated size:
     MallocHook::InvokeDeleteHook(old_ptr);
-    ExcludeMarkFromSize(&new_size);
     MallocHook::InvokeNewHook(old_ptr, new_size);
     return old_ptr;
   }
@@ -1169,7 +1145,6 @@ inline void* do_realloc(void* old_ptr, size_t new_size) {
 void* do_memalign(size_t align, size_t size) {
   ASSERT((align & (align - 1)) == 0);
   ASSERT(align > 0);
-  AddRoomForMark(&size);
   if (size + align < size) return NULL;         // Overflow
 
   if (Static::pageheap() == NULL) ThreadCache::InitModule();
@@ -1372,8 +1347,7 @@ void* cpp_memalign(size_t align, size_t size) {
 
 // As promised, the definition of this function, declared above.
 size_t TCMallocImplementation::GetAllocatedSize(void* ptr) {
-  return ExcludeSpaceForMark(
-      GetSizeWithCallback(ptr, &InvalidGetAllocatedSize));
+  return GetSizeWithCallback(ptr, &InvalidGetAllocatedSize);
 }
 
 void TCMallocImplementation::MarkThreadBusy() {
@@ -1590,161 +1564,3 @@ static void *MemalignOverride(size_t align, size_t size, const void *caller)
 }
 void *(*__memalign_hook)(size_t, size_t, const void *) = MemalignOverride;
 #endif  // #ifndef TCMALLOC_FOR_DEBUGALLOCATION
-
-// ---Double free() debugging implementation -----------------------------------
-// We will put a mark at the extreme end of each allocation block.  We make
-// sure that we always allocate enough "extra memory" that we can fit in the
-// mark, and still provide the requested usable region.  If ever that mark is
-// not as expected, then we know that the user is corrupting memory beyond their
-// request size, or that they have called free a second time without having
-// the memory allocated (again).  This allows us to spot most double free()s,
-// but some can "slip by" or confuse our logic if the caller reallocates memory
-// (for a second use) before performing an evil double-free of a first
-// allocation
-
-// This code can be optimized, but for now, it is written to be most easily
-// understood, and flexible (since it is evolving a bit). Potential
-// optimizations include using other calculated data, such as class size, or
-// allocation size, which is known in the code above, but then is recalculated
-// below.  Another potential optimization would be careful manual inlining of
-// code, but I *think* that the compile will probably do this for me, and I've
-// been careful to avoid aliasing issues that might make a compiler back-off.
-
-// Evolution includes experimenting with different marks, to minimize the chance
-// that a mark would be misunderstood (missed corruption).  The marks are meant
-// to be hashed encoding of the location, so that they can't be copied over a
-// different region (by accident) without being detected (most of the time).
-
-#define TCMALLOC_VALIDATION
-
-#if !defined(TCMALLOC_VALIDATION)
-
-static size_t ExcludeSpaceForMark(size_t size) { return size; (}
-static void AddRoomForMark(size_t* size) {}
-static void ExcludeMarkFromSize(size_t* new_size) {}
-static void MarkAllocatedRegion(void* ptr) {}
-static void ValidateAllocatedRegion(void* ptr, size_t cl) {}
-
-#else  // TCMALLOC_VALIDATION
-
-static void DieFromDoubleFree() {
-  char* p = NULL;
-  p++;
-  *p += 1;  // Segv.
-}
-
-static size_t DieFromBadFreePointer(void* unused) {
-  char* p = NULL;
-  p += 2;
-  *p += 2;  // Segv.
-  return 0;
-}
-
-static void DieFromMemoryCorruption() {
-  char* p = NULL;
-  p += 3;
-  *p += 3;  // Segv.
-}
-
-// We can either do byte marking, or whole word marking based on the following
-// define.  char is as small as we can get, and word marking probably provides
-// more than enough bits that we won't miss a corruption. Any sized integral
-// type can be used, but we just define two examples.
-
-//  #define TCMALLOC_SMALL_VALIDATION
-#if defined (TCMALLOC_SMALL_VALIDATION)
-
-typedef char MarkType;  // char saves memory... int is more complete.
-static const MarkType kAllocationMarkMask = static_cast<MarkType>(0x36);
-
-#else 
-
-typedef int MarkType;  // char saves memory... int is more complete.
-static const MarkType kAllocationMarkMask = static_cast<MarkType>(0xE1AB9536);
-
-#endif
-
-// TODO(jar): See if use of reference rather than pointer gets better inlining,
-// or if macro is needed.  My fear is that taking address map preclude register
-// allocation :-(.
-inline static void AddRoomForMark(size_t* size) {
-  *size += sizeof(kAllocationMarkMask);
-}
-
-inline static void ExcludeMarkFromSize(size_t* new_size) {
-  *new_size -= sizeof(kAllocationMarkMask);
-}
-
-inline static size_t ExcludeSpaceForMark(size_t size) {
-  return size - sizeof(kAllocationMarkMask);  // Lie about size when asked.
-}
-
-inline static MarkType* GetMarkLocation(void* ptr) {
-  size_t class_size = GetSizeWithCallback(ptr, DieFromBadFreePointer);
-  ASSERT(class_size % sizeof(kAllocationMarkMask) == 0);
-  size_t last_index = (class_size / sizeof(kAllocationMarkMask)) - 1;
-  return static_cast<MarkType*>(ptr) + last_index;
-}
-
-// We hash in the mark location plus the pointer so that we effectively mix in
-// the size of the block.  This means that if a span is used for different sizes
-// that the mark will be different. It would be good to hash in the size (which
-// we effectively get by using both mark location and pointer), but even better
-// would be to also include the class, as it concisely contains the entropy
-// found in the size (when we don't have large allocation), and there is less
-// risk of losing those bits to truncation. It would probably be good to combine
-// the high bits of size (capturing info about large blocks) with the class
-// (which is a 6 bit number).
-inline static MarkType GetMarkValue(void* ptr, MarkType* mark) {
-  void* ptr2 = static_cast<void*>(mark);
-  size_t offset1 = static_cast<char*>(ptr) - static_cast<char*>(NULL);
-  size_t offset2 = static_cast<char*>(ptr2) - static_cast<char*>(NULL);
-  static const int kDeadBits = 2;
-  ASSERT((offset1 >> kDeadBits) << kDeadBits == offset1);
-  ASSERT((offset2 >> kDeadBits) << kDeadBits == offset2);
-  // Note: low bits of both offsets are invariants due to alignment.  High bits
-  // of both offsets are the same (unless we have a large allocation).  Avoid
-  // XORing high bits together, as they will cancel for most small allocations.
-
-  MarkType ret = kAllocationMarkMask;
-  // Using a little shift, we can safely XOR together both offsets.
-  ret ^= static_cast<MarkType>(offset1 >> kDeadBits) ^
-         static_cast<MarkType>(offset2);
-  if (sizeof(ret) == 1) {
-    // Try to bring some high level bits into the mix.
-    ret += static_cast<MarkType>(offset1 >> 8) ^
-           static_cast<MarkType>(offset1 >> 16) ^
-           static_cast<MarkType>(offset1 >> 24) ;
-  }
-  // Hash in high bits on a 65 bit architecture.
-  if (sizeof(size_t) == 8 && sizeof(ret) == 4)
-    ret += offset1 >> 16;
-  if (ret == 0)
-    ret = kAllocationMarkMask;  // Avoid common pattern of all zeros.
-  return ret;
-}
-
-// TODO(jar): Use the passed in TCmalloc Class Index to calculate mark location
-// faster.  The current implementation calls general functions, which have to
-// recalculate this in order to get the Class Size.  This is a slow and wasteful
-// recomputation... but it is much more readable this way (for now).
-static void ValidateAllocatedRegion(void* ptr, size_t cl) {
-  if (ptr == NULL) return;
-  MarkType* mark = GetMarkLocation(ptr);
-  MarkType allocated_mark = GetMarkValue(ptr, mark);
-  MarkType current_mark = *mark;
-
-  if (current_mark == ~allocated_mark)
-    DieFromDoubleFree();
-  if (current_mark != allocated_mark)
-    DieFromMemoryCorruption();
-  *mark = ~allocated_mark;  //  Distinctively not allocated.
-}
-
-static void MarkAllocatedRegion(void* ptr) {
-  if (ptr == NULL) return;
-  MarkType* mark = GetMarkLocation(ptr);
-  *mark = GetMarkValue(ptr, mark);
-}
-
-#endif  // TCMALLOC_VALIDATION
