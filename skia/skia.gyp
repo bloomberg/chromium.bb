@@ -774,6 +774,7 @@
           '../third_party/skia/include/core',
           '../third_party/skia/include/effects',
           '../third_party/skia/include/gpu',
+          '../third_party/skia/include/ports',
           '../third_party/skia/gpu/include',
           'ext',
         ],
