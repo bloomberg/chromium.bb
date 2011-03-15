@@ -5,9 +5,9 @@
 #include "base/environment.h"
 #include "base/scoped_ptr.h"
 #include "base/string_util.h"
-#include "chrome/common/plugin_carbon_interpose_constants_mac.h"
 #include "chrome/plugin/plugin_interpose_util_mac.h"
 #include "content/common/chrome_application_mac.h"
+#include "content/common/plugin_carbon_interpose_constants_mac.h"
 
 #if !defined(__LP64__)
 void TrimInterposeEnvironment() {

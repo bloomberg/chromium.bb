@@ -246,8 +246,6 @@
         'common/page_zoom.h',
         'common/pepper_plugin_registry.cc',
         'common/pepper_plugin_registry.h',
-        'common/plugin_carbon_interpose_constants_mac.cc',
-        'common/plugin_carbon_interpose_constants_mac.h',
         'common/persistent_pref_store.h',
         'common/pref_store.cc',
         'common/pref_store.h',

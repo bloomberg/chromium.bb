@@ -94,6 +94,8 @@
         'common/notification_type.h',
         'common/p2p_messages.h',
         'common/p2p_sockets.h',
+        'common/plugin_carbon_interpose_constants_mac.cc',
+        'common/plugin_carbon_interpose_constants_mac.h',
         'common/plugin_messages.h',
         'common/property_bag.cc',
         'common/property_bag.h',

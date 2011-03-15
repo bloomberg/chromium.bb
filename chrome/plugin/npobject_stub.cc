@@ -1,13 +1,13 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "chrome/plugin/npobject_stub.h"
 
-#include "chrome/common/child_process_logging.h"
 #include "chrome/plugin/npobject_util.h"
 #include "chrome/plugin/plugin_channel_base.h"
 #include "chrome/plugin/plugin_thread.h"
+#include "content/common/content_client.h"
 #include "content/common/plugin_messages.h"
 #include "third_party/npapi/bindings/npapi.h"
 #include "third_party/npapi/bindings/npruntime.h"
@@ -63,7 +63,7 @@ IPC::Channel::Listener* NPObjectStub::GetChannelListener() {
 }
 
 bool NPObjectStub::OnMessageReceived(const IPC::Message& msg) {
-  child_process_logging::SetActiveURL(page_url_);
+  content::GetContentClient()->SetActiveURL(page_url_);
 
   if (!npobject_) {
     if (msg.is_sync()) {

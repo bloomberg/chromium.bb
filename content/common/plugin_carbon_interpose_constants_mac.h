@@ -1,9 +1,9 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_COMMON_PLUGIN_CARBON_INTERPOSE_CONSTANTS_MAC_H_
-#define CHROME_COMMON_PLUGIN_CARBON_INTERPOSE_CONSTANTS_MAC_H_
+#ifndef CONTENT_COMMON_PLUGIN_CARBON_INTERPOSE_CONSTANTS_MAC_H_
+#define CONTENT_COMMON_PLUGIN_CARBON_INTERPOSE_CONSTANTS_MAC_H_
 #pragma once
 
 #if !defined(__LP64__)
@@ -18,4 +18,4 @@ extern const char kInterposeLibraryPath[];
 
 #endif  // !__LP64__
 
-#endif  // CHROME_BROWSER_PLUGIN_CARBON_INTERPOSE_CONSTANTS_MAC_H_
+#endif  // CONTENT_COMMON_PLUGIN_CARBON_INTERPOSE_CONSTANTS_MAC_H_

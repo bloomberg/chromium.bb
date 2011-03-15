@@ -10,12 +10,11 @@
 #include "base/scoped_handle.h"
 #include "base/shared_memory.h"
 #include "build/build_config.h"
-#include "chrome/common/child_process_logging.h"
-#include "chrome/common/url_constants.h"
 #include "chrome/plugin/npobject_proxy.h"
 #include "chrome/plugin/npobject_util.h"
 #include "chrome/plugin/plugin_channel.h"
 #include "chrome/plugin/plugin_thread.h"
+#include "content/common/content_client.h"
 #include "content/common/plugin_messages.h"
 #include "skia/ext/platform_device.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebBindings.h"
@@ -290,9 +289,9 @@ void WebPluginProxy::HandleURLRequest(const char* url,
         webkit::npapi::WebPluginDelegateImpl::
             PLUGIN_QUIRK_BLOCK_NONSTANDARD_GETURL_REQUESTS) {
       GURL request_url(url);
-      if (!request_url.SchemeIs(chrome::kHttpScheme) &&
-          !request_url.SchemeIs(chrome::kHttpsScheme) &&
-          !request_url.SchemeIs(chrome::kFtpScheme)) {
+      if (!request_url.SchemeIs("http") &&
+          !request_url.SchemeIs("https") &&
+          !request_url.SchemeIs("ftp")) {
         return;
       }
     }
@@ -628,7 +627,7 @@ void WebPluginProxy::FreeSurfaceDIB(TransportDIB::Id dib_id) {
 #endif
 
 void WebPluginProxy::OnPaint(const gfx::Rect& damaged_rect) {
-  child_process_logging::SetActiveURL(page_url_);
+  content::GetContentClient()->SetActiveURL(page_url_);
 
   Paint(damaged_rect);
   Send(new PluginHostMsg_InvalidateRect(route_id_, damaged_rect));
