@@ -897,10 +897,13 @@ bool RenderViewContextMenu::IsCommandIdEnabled(int id) const {
           source_tab_contents_->language_state().original_language();
       std::string target_lang = g_browser_process->GetApplicationLocale();
       target_lang = TranslateManager::GetLanguageCode(target_lang);
+      // Note that we intentionally enable the menu even if the original and
+      // target languages are identical.  This is to give a way to user to
+      // translate a page that might contains text fragments in a different
+      // language.
       return !!(params_.edit_flags & WebContextMenuData::CanTranslate) &&
              source_tab_contents_->language_state().page_translatable() &&
              !original_lang.empty() &&  // Did we receive the page language yet?
-             original_lang != target_lang &&
              // Only allow translating languages we explitly support and the
              // unknown language (in which case the page language is detected on
              // the server side).
