@@ -360,15 +360,6 @@ void Clipboard::ReadHTML(Clipboard::Buffer buffer, string16* markup,
   gtk_selection_data_free(data);
 }
 
-void Clipboard::ReadImage(Buffer buffer, std::string* data) const {
-  // TODO(dcheng): implement this.
-  NOTIMPLEMENTED();
-  if (!data) {
-    NOTREACHED();
-    return;
-  }
-}
-
 void Clipboard::ReadBookmark(string16* title, std::string* url) const {
   // TODO(estade): implement this.
   NOTIMPLEMENTED();

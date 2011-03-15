@@ -38,9 +38,7 @@ ClipboardMessageFilter::ClipboardMessageFilter() {
 void ClipboardMessageFilter::OverrideThreadForMessage(
     const IPC::Message& message, BrowserThread::ID* thread) {
 #if defined(USE_X11)
-  if (message.type() == ClipboardHostMsg_ReadImage::ID)
-    *thread = BrowserThread::BACKGROUND_X11;
-  else if (IPC_MESSAGE_CLASS(message) == ClipboardMsgStart)
+  if (IPC_MESSAGE_CLASS(message) == ClipboardMsgStart)
     *thread = BrowserThread::UI;
 #endif
 }
@@ -55,7 +53,6 @@ bool ClipboardMessageFilter::OnMessageReceived(const IPC::Message& message,
     IPC_MESSAGE_HANDLER(ClipboardHostMsg_ReadText, OnReadText)
     IPC_MESSAGE_HANDLER(ClipboardHostMsg_ReadAsciiText, OnReadAsciiText)
     IPC_MESSAGE_HANDLER(ClipboardHostMsg_ReadHTML, OnReadHTML)
-    IPC_MESSAGE_HANDLER(ClipboardHostMsg_ReadImage, OnReadImage)
 #if defined(OS_MACOSX)
     IPC_MESSAGE_HANDLER(ClipboardHostMsg_FindPboardWriteStringAsync,
                         OnFindPboardWriteString)
@@ -133,11 +130,6 @@ void ClipboardMessageFilter::OnReadHTML(
   std::string src_url_str;
   GetClipboard()->ReadHTML(buffer, markup, &src_url_str);
   *url = GURL(src_url_str);
-}
-
-void ClipboardMessageFilter::OnReadImage(
-    ui::Clipboard::Buffer buffer, std::string* data) {
-  GetClipboard()->ReadImage(buffer, data);
 }
 
 void ClipboardMessageFilter::OnReadAvailableTypes(

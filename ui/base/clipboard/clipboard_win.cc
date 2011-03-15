@@ -404,14 +404,6 @@ void Clipboard::ReadHTML(Clipboard::Buffer buffer, string16* markup,
     markup->assign(UTF8ToWide(markup_utf8));
 }
 
-void Clipboard::ReadImage(Buffer buffer, std::string* data) const {
-  DCHECK_EQ(buffer, BUFFER_STANDARD);
-  if (!data) {
-    NOTREACHED();
-    return;
-  }
-}
-
 void Clipboard::ReadBookmark(string16* title, std::string* url) const {
   if (title)
     title->clear();

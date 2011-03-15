@@ -167,22 +167,19 @@ bool ClipboardIsFormatAvailable(const ui::Clipboard::FormatType& format,
 }
 
 void ClipboardReadText(ui::Clipboard::Buffer buffer, string16* result) {
-  RenderThread::current()->Send(new ClipboardHostMsg_ReadText(buffer, result));
+  RenderThread::current()->Send(new ClipboardHostMsg_ReadText(buffer,
+                                                                  result));
 }
 
 void ClipboardReadAsciiText(ui::Clipboard::Buffer buffer, std::string* result) {
-  RenderThread::current()->Send(
-      new ClipboardHostMsg_ReadAsciiText(buffer, result));
+  RenderThread::current()->Send(new ClipboardHostMsg_ReadAsciiText(buffer,
+                                                                       result));
 }
 
 void ClipboardReadHTML(ui::Clipboard::Buffer buffer, string16* markup,
                        GURL* url) {
-  RenderThread::current()->Send(
-      new ClipboardHostMsg_ReadHTML(buffer, markup, url));
-}
-
-void ClipboardReadImage(ui::Clipboard::Buffer buffer, std::string* data) {
-  RenderThread::current()->Send(new ClipboardHostMsg_ReadImage(buffer, data));
+  RenderThread::current()->Send(new ClipboardHostMsg_ReadHTML(buffer,
+                                                                  markup, url));
 }
 
 bool ClipboardReadAvailableTypes(ui::Clipboard::Buffer buffer,

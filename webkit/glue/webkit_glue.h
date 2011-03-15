@@ -198,8 +198,6 @@ void ClipboardReadAsciiText(ui::Clipboard::Buffer buffer, std::string* result);
 void ClipboardReadHTML(ui::Clipboard::Buffer buffer, string16* markup,
                        GURL* url);
 
-void ClipboardReadImage(ui::Clipboard::Buffer buffer, std::string* data);
-
 // Reads the available types from the clipboard, if available.
 bool ClipboardReadAvailableTypes(ui::Clipboard::Buffer buffer,
                                  std::vector<string16>* types,
