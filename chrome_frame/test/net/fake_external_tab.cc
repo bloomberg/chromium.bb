@@ -25,6 +25,7 @@
 #include "chrome/browser/chrome_content_browser_client.h"
 #include "chrome/browser/prefs/browser_prefs.h"
 #include "chrome/browser/prefs/pref_service.h"
+#include "chrome/browser/prefs/proxy_config_dictionary.h"
 #include "chrome/browser/process_singleton.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/renderer_host/web_cache_manager.h"
@@ -214,11 +215,7 @@ void FakeExternalTab::Initialize() {
   browser_process_.reset(new BrowserProcessImpl(*cmd));
   // BrowserProcessImpl's constructor should set g_browser_process.
   DCHECK(g_browser_process);
-  // Set the app locale and create the child threads.
   g_browser_process->SetApplicationLocale("en-US");
-  g_browser_process->db_thread();
-  g_browser_process->file_thread();
-  g_browser_process->io_thread();
 
   RenderProcessHost::set_run_renderer_in_process(true);
 
@@ -234,14 +231,16 @@ void FakeExternalTab::Initialize() {
   PrefService* prefs = profile->GetPrefs();
   DCHECK(prefs != NULL);
   WebCacheManager::RegisterPrefs(prefs);
-
   // Override some settings to avoid hitting some preferences that have not
   // been registered.
   prefs->SetBoolean(prefs::kPasswordManagerEnabled, false);
   prefs->SetBoolean(prefs::kAlternateErrorPagesEnabled, false);
   prefs->SetBoolean(prefs::kSafeBrowsingEnabled, false);
-
-  profile->InitExtensions();
+  prefs->Set(prefs::kProxy, *ProxyConfigDictionary::CreateDirect());
+  // Create the child threads.
+  g_browser_process->db_thread();
+  g_browser_process->file_thread();
+  g_browser_process->io_thread();
 }
 
 void FakeExternalTab::Shutdown() {
