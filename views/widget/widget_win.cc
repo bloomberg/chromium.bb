@@ -1124,7 +1124,7 @@ void WidgetWin::ClientAreaSizeChanged() {
 }
 
 gfx::AcceleratedWidget WidgetWin::GetAcceleratedWidget() {
-  NOTIMPLEMENTED();
+  // TODO(beng):
   return gfx::kNullAcceleratedWidget;
 }
 
