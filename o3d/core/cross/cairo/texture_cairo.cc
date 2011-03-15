@@ -49,6 +49,13 @@ Texture::RGBASwizzleIndices g_gl_abgr32f_swizzle_indices = {0, 1, 2, 3};
 
 namespace o2d {
 
+// This is equivalent to the CAIRO_FORMAT_INVALID enum value, but we can't refer
+// to that because it was only recently added to the Cairo headers and thus it
+// is not present on the Linux buildbots (where we use the OS version of Cairo
+// rather than the one in third_party).
+static const cairo_format_t kCairoFormatInvalid =
+    static_cast<cairo_format_t>(-1);
+
 static cairo_format_t CairoFormatFromO3DFormat(
     Texture::Format format) {
   switch (format) {
@@ -57,7 +64,7 @@ static cairo_format_t CairoFormatFromO3DFormat(
     case Texture::XRGB8:
       return CAIRO_FORMAT_RGB24;
     default:
-      return CAIRO_FORMAT_INVALID;
+      return kCairoFormatInvalid;
   }
   // Cairo also supports two other pure-alpha formats, but we don't expose those
   // capabilities.
@@ -91,7 +98,7 @@ TextureCairo* TextureCairo::Create(ServiceLocator* service_locator,
   cairo_format_t cairo_format = CairoFormatFromO3DFormat(format);
   cairo_surface_t* image_surface;
   cairo_status_t status;
-  if (CAIRO_FORMAT_INVALID == cairo_format) {
+  if (kCairoFormatInvalid == cairo_format) {
     DLOG(ERROR) << "Texture format " << format << " not supported by Cairo";
     goto fail0;
   }

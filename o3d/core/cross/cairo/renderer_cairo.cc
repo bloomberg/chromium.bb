@@ -506,8 +506,8 @@ bool RendererCairo::GoFullscreen(const DisplayWindow& display,
     if (XGetWindowAttributes(display_, window_, &window_attributes)) {
       fullscreen_ = true;
       SetClientSize(window_attributes.width, window_attributes.height);
-      DestroyCairoSurface();
-      CreateCairoSurface();
+      DestroyDisplaySurface();
+      CreateDisplaySurface();
     }
 #elif defined(OS_WIN)
     DEVMODE dev_mode;
@@ -544,8 +544,8 @@ bool RendererCairo::CancelFullscreen(const DisplayWindow& display,
 
     fullscreen_ = false;
     SetClientSize(width, height);
-    DestroyCairoSurface();
-    CreateCairoSurface();
+    DestroyDisplaySurface();
+    CreateDisplaySurface();
 #elif defined(OS_WIN)
     if (hwnd_ == NULL) {
       // Not initialized.
