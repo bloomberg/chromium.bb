@@ -14,10 +14,6 @@
 #include "base/string16.h"
 #include "ui/gfx/native_widget_types.h"
 
-namespace gfx {
-class Font;
-}
-
 // This function is declared extern such that it is accessible for unit tests
 // in /chrome/browser/ui/views/shell_dialogs_win_unittest.cc
 extern std::wstring AppendExtensionIfNeeded(const std::wstring& filename,
@@ -140,63 +136,6 @@ class SelectFileDialog
   friend class base::RefCountedThreadSafe<SelectFileDialog>;
   SelectFileDialog();
   virtual ~SelectFileDialog();
-};
-
-// Shows a dialog box for selecting a font.
-class SelectFontDialog
-    : public base::RefCountedThreadSafe<SelectFontDialog>,
-      public BaseShellDialog {
- public:
-
-  // An interface implemented by a Listener object wishing to know about the
-  // the result of the Select Font action. These callbacks must be
-  // re-entrant.
-  class Listener {
-   public:
-    // Notifies the Listener that a font selection has been made. The font
-    // details are supplied in |font|. |params| is contextual passed to
-    // SelectFont.
-    virtual void FontSelected(const gfx::Font& font, void* params) = 0;
-
-    // Notifies the Listener that the font selection was aborted (via the user
-    // canceling or closing the selection dialog box, for example). |params| is
-    // contextual passed to SelectFont.
-    virtual void FontSelectionCanceled(void* params) {}
-
-   protected:
-    virtual ~Listener() {}
-  };
-
-  // Creates a dialog box helper. This object is ref-counted, but the returned
-  // object will have no reference (refcount is 0).
-  static SelectFontDialog* Create(Listener* listener);
-
-  // Selects a font. This will start displaying the dialog box. This will also
-  // block the calling window until the dialog box is complete. The listener
-  // associated with this object will be notified when the selection is
-  // complete.
-  // |owning_window| is the window the dialog is modal to, or NULL for a
-  // modeless dialog.
-  // |params| is data from the calling context which will be passed through to
-  // the listener. Can be NULL.
-  // NOTE: only one instance of any shell dialog can be shown per owning_window
-  //       at a time (for obvious reasons).
-  // TODO(beng): support specifying the default font selected in the list when
-  //             the dialog appears.
-  virtual void SelectFont(gfx::NativeWindow owning_window,
-                          void* params) = 0;
-
-  // Same as above - also support specifying the default font selected in the
-  // list when the dialog appears.
-  virtual void SelectFont(gfx::NativeWindow owning_window,
-                          void* params,
-                          const std::wstring& font_name,
-                          int font_size) = 0;
-
- protected:
-  friend class base::RefCountedThreadSafe<SelectFontDialog>;
-  SelectFontDialog();
-  virtual ~SelectFontDialog();
 };
 
 #endif  // CHROME_BROWSER_UI_SHELL_DIALOGS_H_

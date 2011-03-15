@@ -11,7 +11,3 @@ SelectFileDialog::FileTypeInfo::~FileTypeInfo() {}
 SelectFileDialog::SelectFileDialog() {}
 
 SelectFileDialog::~SelectFileDialog() {}
-
-SelectFontDialog::SelectFontDialog() {}
-
-SelectFontDialog::~SelectFontDialog() {}
