@@ -125,7 +125,7 @@ SimpleFileSystem::SimpleFileSystem() {
         file_system_dir_.path(),
         false /* incognito */,
         true /* allow_file_access */,
-        false /* unlimited_quota */);
+        true /* unlimited_quota */);
   } else {
     LOG(WARNING) << "Failed to create a temp dir for the filesystem."
                     "FileSystem feature will be disabled.";
