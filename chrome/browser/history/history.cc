@@ -458,7 +458,7 @@ void HistoryService::UpdateFaviconMappingAndFetch(
     FaviconService::GetFaviconRequest* request,
     const GURL& page_url,
     const GURL& icon_url) {
-  Schedule(PRIORITY_NORMAL, &HistoryBackend::UpdateFavIconMappingAndFetch, NULL,
+  Schedule(PRIORITY_NORMAL, &HistoryBackend::UpdateFaviconMappingAndFetch, NULL,
            request, page_url, icon_url, history::FAVICON);
 }
 
@@ -487,7 +487,7 @@ void HistoryService::SetFaviconOutOfDateForPage(const GURL& page_url) {
 }
 
 void HistoryService::SetImportedFavicons(
-    const std::vector<history::ImportedFavIconUsage>& favicon_usage) {
+    const std::vector<history::ImportedFaviconUsage>& favicon_usage) {
   ScheduleAndForget(PRIORITY_NORMAL,
                     &HistoryBackend::SetImportedFavicons, favicon_usage);
 }

@@ -234,9 +234,9 @@ typedef std::vector<VisitRow> VisitVector;
 // Favicons -------------------------------------------------------------------
 
 // Used by the importer to set favicons for imported bookmarks.
-struct ImportedFavIconUsage {
-  ImportedFavIconUsage();
-  ~ImportedFavIconUsage();
+struct ImportedFaviconUsage {
+  ImportedFaviconUsage();
+  ~ImportedFaviconUsage();
 
   // The URL of the favicon.
   GURL favicon_url;

@@ -380,7 +380,7 @@ void HistoryMenuBridge::OnVisitedHistoryResults(
     HistoryItem* item = new HistoryItem();
     item->title = history_item->GetTitle();
     item->url = history_item->GetURL();
-    if (history_item->HasFavIcon()) {
+    if (history_item->HasFavicon()) {
       const SkBitmap* icon = history_item->GetFavicon();
       item->icon.reset([gfx::SkBitmapToNSImage(*icon) retain]);
     } else {

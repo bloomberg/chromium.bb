@@ -70,7 +70,7 @@ class Firefox3Importer : public Importer {
   // and converts it into FaviconUsage structures.
   void LoadFavicons(sqlite3* db,
                     const FaviconMap& favicon_map,
-                    std::vector<history::ImportedFavIconUsage>* favicons);
+                    std::vector<history::ImportedFaviconUsage>* favicons);
 
   FilePath source_path_;
   FilePath app_path_;

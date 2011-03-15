@@ -91,10 +91,10 @@ VisitRow::~VisitRow() {
 
 // Favicons -------------------------------------------------------------------
 
-ImportedFavIconUsage::ImportedFavIconUsage() {
+ImportedFaviconUsage::ImportedFaviconUsage() {
 }
 
-ImportedFavIconUsage::~ImportedFavIconUsage() {
+ImportedFaviconUsage::~ImportedFaviconUsage() {
 }
 
 // StarredEntry ----------------------------------------------------------------

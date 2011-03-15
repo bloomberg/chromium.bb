@@ -162,10 +162,10 @@ struct ParamTraits<ProfileWriter::BookmarkEntry> {
   }
 };  // ParamTraits<ProfileWriter::BookmarkEntry>
 
-// Traits for history::ImportedFavIconUsage.
+// Traits for history::ImportedFaviconUsage.
 template <>
-struct ParamTraits<history::ImportedFavIconUsage> {
-  typedef history::ImportedFavIconUsage param_type;
+struct ParamTraits<history::ImportedFaviconUsage> {
+  typedef history::ImportedFaviconUsage param_type;
   static void Write(Message* m, const param_type& p) {
     WriteParam(m, p.favicon_url);
     WriteParam(m, p.png_data);
@@ -186,7 +186,7 @@ struct ParamTraits<history::ImportedFavIconUsage> {
     LogParam(p.urls, l);
     l->append(")");
   }
-};  // ParamTraits<history::ImportedFavIconUsage
+};  // ParamTraits<history::ImportedFaviconUsage
 
 // Traits for TemplateURLRef
 template <>
@@ -425,7 +425,7 @@ IPC_MESSAGE_CONTROL1(ProfileImportProcessHostMsg_NotifyFavIconsImportStart,
                      int  /* total number of FavIcons */)
 
 IPC_MESSAGE_CONTROL1(ProfileImportProcessHostMsg_NotifyFavIconsImportGroup,
-                     std::vector<history::ImportedFavIconUsage> )
+                     std::vector<history::ImportedFaviconUsage> )
 
 IPC_MESSAGE_CONTROL1(ProfileImportProcessHostMsg_NotifyPasswordFormReady,
                      webkit_glue::PasswordForm )

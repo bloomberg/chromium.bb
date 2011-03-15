@@ -58,7 +58,7 @@ void InProcessImporterBridge::AddIE7PasswordInfo(
 #endif  // OS_WIN
 
 void InProcessImporterBridge::SetFavicons(
-    const std::vector<history::ImportedFavIconUsage>& favicons) {
+    const std::vector<history::ImportedFaviconUsage>& favicons) {
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
       NewRunnableMethod(writer_, &ProfileWriter::AddFavicons, favicons));
@@ -152,7 +152,7 @@ void ExternalProcessImporterBridge::AddIE7PasswordInfo(
 #endif
 
 void ExternalProcessImporterBridge::SetFavicons(
-    const std::vector<history::ImportedFavIconUsage>& favicons) {
+    const std::vector<history::ImportedFaviconUsage>& favicons) {
   profile_import_thread_->NotifyFavIconsImportReady(favicons);
 }
 

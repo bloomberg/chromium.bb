@@ -51,7 +51,7 @@ class Firefox2Importer : public Importer {
       Importer* importer,
       std::vector<ProfileWriter::BookmarkEntry>* bookmarks,
       std::vector<TemplateURL*>* template_urls,
-      std::vector<history::ImportedFavIconUsage>* favicons);
+      std::vector<history::ImportedFaviconUsage>* favicons);
 
  private:
   FRIEND_TEST_ALL_PREFIXES(FirefoxImporterTest, Firefox2BookmarkParse);
@@ -136,7 +136,7 @@ class Firefox2Importer : public Importer {
   static void DataURLToFaviconUsage(
       const GURL& link_url,
       const GURL& favicon_data,
-      std::vector<history::ImportedFavIconUsage>* favicons);
+      std::vector<history::ImportedFaviconUsage>* favicons);
 
   FilePath source_path_;
   FilePath app_path_;

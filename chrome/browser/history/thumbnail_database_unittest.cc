@@ -119,7 +119,7 @@ TEST_F(ThumbnailDatabaseTest, GetFaviconAfterMigrationToTopSites) {
   scoped_refptr<RefCountedBytes> favicon(new RefCountedBytes(data));
 
   GURL url("http://google.com");
-  FaviconID id = db.AddFavIcon(url, FAVICON);
+  FaviconID id = db.AddFavicon(url, FAVICON);
   base::Time time = base::Time::Now();
   db.SetFavicon(id, favicon, time);
   EXPECT_TRUE(db.RenameAndDropThumbnails(file_name_, new_file_name_));
@@ -145,7 +145,7 @@ TEST_F(ThumbnailDatabaseTest, AddIconMapping) {
   scoped_refptr<RefCountedBytes> favicon(new RefCountedBytes(data));
 
   GURL url("http://google.com");
-  FaviconID id = db.AddFavIcon(url, TOUCH_ICON);
+  FaviconID id = db.AddFavicon(url, TOUCH_ICON);
   EXPECT_NE(0, id);
   base::Time time = base::Time::Now();
   db.SetFavicon(id, favicon, time);
@@ -167,7 +167,7 @@ TEST_F(ThumbnailDatabaseTest, UpdateIconMapping) {
   scoped_refptr<RefCountedBytes> favicon(new RefCountedBytes(data));
 
   GURL url("http://google.com");
-  FaviconID id = db.AddFavIcon(url, TOUCH_ICON);
+  FaviconID id = db.AddFavicon(url, TOUCH_ICON);
   base::Time time = base::Time::Now();
   db.SetFavicon(id, favicon, time);
 
@@ -179,7 +179,7 @@ TEST_F(ThumbnailDatabaseTest, UpdateIconMapping) {
   EXPECT_EQ(id, icon_mapping.front().icon_id);
 
   GURL url1("http://www.google.com/");
-  FaviconID new_id = db.AddFavIcon(url1, TOUCH_ICON);
+  FaviconID new_id = db.AddFavicon(url1, TOUCH_ICON);
   EXPECT_TRUE(db.UpdateIconMapping(icon_mapping.front().mapping_id, new_id));
 
   icon_mapping.clear();
@@ -199,12 +199,12 @@ TEST_F(ThumbnailDatabaseTest, DeleteIconMappings) {
   scoped_refptr<RefCountedBytes> favicon(new RefCountedBytes(data));
 
   GURL url("http://google.com");
-  FaviconID id = db.AddFavIcon(url, TOUCH_ICON);
+  FaviconID id = db.AddFavicon(url, TOUCH_ICON);
   base::Time time = base::Time::Now();
   db.SetFavicon(id, favicon, time);
   EXPECT_TRUE(0 < db.AddIconMapping(url, id));
 
-  FaviconID id2 = db.AddFavIcon(url, FAVICON);
+  FaviconID id2 = db.AddFavicon(url, FAVICON);
   db.SetFavicon(id2, favicon, time);
   EXPECT_TRUE(0 < db.AddIconMapping(url, id2));
   ASSERT_NE(id, id2);
@@ -231,12 +231,12 @@ TEST_F(ThumbnailDatabaseTest, GetIconMappingsForPageURL) {
 
   GURL url("http://google.com");
 
-  FaviconID id1 = db.AddFavIcon(url, TOUCH_ICON);
+  FaviconID id1 = db.AddFavicon(url, TOUCH_ICON);
   base::Time time = base::Time::Now();
   db.SetFavicon(id1, favicon, time);
   EXPECT_TRUE(0 < db.AddIconMapping(url, id1));
 
-  FaviconID id2 = db.AddFavIcon(url, FAVICON);
+  FaviconID id2 = db.AddFavicon(url, FAVICON);
   EXPECT_NE(id1, id2);
   db.SetFavicon(id2, favicon, time);
   EXPECT_TRUE(0 < db.AddIconMapping(url, id2));
@@ -275,7 +275,7 @@ TEST_F(ThumbnailDatabaseTest, UpgradeToVersion4) {
   scoped_refptr<RefCountedBytes> favicon(new RefCountedBytes(data));
 
   GURL url("http://google.com");
-  FaviconID id = db.AddFavIcon(url, TOUCH_ICON);
+  FaviconID id = db.AddFavicon(url, TOUCH_ICON);
   base::Time time = base::Time::Now();
   db.SetFavicon(id, favicon, time);
 
@@ -299,7 +299,7 @@ TEST_F(ThumbnailDatabaseTest, TemporayIconMapping) {
   scoped_refptr<RefCountedBytes> favicon(new RefCountedBytes(data));
 
   GURL url("http://google.com");
-  FaviconID id = db.AddFavIcon(url, FAVICON);
+  FaviconID id = db.AddFavicon(url, FAVICON);
   base::Time time = base::Time::Now();
   db.SetFavicon(id, favicon, time);
 
@@ -321,7 +321,7 @@ TEST_F(ThumbnailDatabaseTest, GetIconMappingsForPageURLForReturnOrder) {
   scoped_refptr<RefCountedBytes> favicon(new RefCountedBytes(data));
 
   GURL url("http://google.com");
-  FaviconID id = db.AddFavIcon(url, FAVICON);
+  FaviconID id = db.AddFavicon(url, FAVICON);
   base::Time time = base::Time::Now();
   db.SetFavicon(id, favicon, time);
 
@@ -337,7 +337,7 @@ TEST_F(ThumbnailDatabaseTest, GetIconMappingsForPageURLForReturnOrder) {
   std::vector<unsigned char> data2(blob2, blob2 + sizeof(blob2));
   scoped_refptr<RefCountedBytes> favicon2(new RefCountedBytes(data));
 
-  FaviconID id2 = db.AddFavIcon(url, TOUCH_ICON);
+  FaviconID id2 = db.AddFavicon(url, TOUCH_ICON);
   db.SetFavicon(id2, favicon2, time);
   EXPECT_NE(0, db.AddIconMapping(url, id2));
 
@@ -351,7 +351,7 @@ TEST_F(ThumbnailDatabaseTest, GetIconMappingsForPageURLForReturnOrder) {
   // Add a touch precomposed icon
   scoped_refptr<RefCountedBytes> favicon3(new RefCountedBytes(data2));
 
-  FaviconID id3 = db.AddFavIcon(url, TOUCH_PRECOMPOSED_ICON);
+  FaviconID id3 = db.AddFavicon(url, TOUCH_PRECOMPOSED_ICON);
   db.SetFavicon(id3, favicon3, time);
   EXPECT_NE(0, db.AddIconMapping(url, id3));
 
@@ -372,19 +372,19 @@ TEST_F(ThumbnailDatabaseTest, HasMappingFor) {
   scoped_refptr<RefCountedBytes> favicon(new RefCountedBytes(data));
 
   // Add a favicon which will have icon_mappings
-  FaviconID id1 = db.AddFavIcon(GURL("http://google.com"), FAVICON);
+  FaviconID id1 = db.AddFavicon(GURL("http://google.com"), FAVICON);
   EXPECT_NE(id1, 0);
   base::Time time = base::Time::Now();
   db.SetFavicon(id1, favicon, time);
 
   // Add another type of favicon
-  FaviconID id2 = db.AddFavIcon(GURL("http://www.google.com/icon"), TOUCH_ICON);
+  FaviconID id2 = db.AddFavicon(GURL("http://www.google.com/icon"), TOUCH_ICON);
   EXPECT_NE(id2, 0);
   time = base::Time::Now();
   db.SetFavicon(id2, favicon, time);
 
   // Add 3rd favicon
-  FaviconID id3 = db.AddFavIcon(GURL("http://www.google.com/icon"), TOUCH_ICON);
+  FaviconID id3 = db.AddFavicon(GURL("http://www.google.com/icon"), TOUCH_ICON);
   EXPECT_NE(id3, 0);
   time = base::Time::Now();
   db.SetFavicon(id3, favicon, time);

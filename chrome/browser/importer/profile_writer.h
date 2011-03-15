@@ -21,7 +21,7 @@ class TemplateURL;
 struct IE7PasswordInfo;
 
 namespace history {
-struct ImportedFavIconUsage;
+struct ImportedFaviconUsage;
 class URLRow;
 }
 
@@ -95,7 +95,7 @@ class ProfileWriter : public base::RefCountedThreadSafe<ProfileWriter> {
                                 const std::wstring& first_folder_name,
                                 int options);
   virtual void AddFavicons(
-      const std::vector<history::ImportedFavIconUsage>& favicons);
+      const std::vector<history::ImportedFaviconUsage>& favicons);
   // Add the TemplateURLs in |template_urls| to the local store and make the
   // TemplateURL at |default_keyword_index| the default keyword (does not set
   // a default keyword if it is -1).  The local store becomes the owner of the

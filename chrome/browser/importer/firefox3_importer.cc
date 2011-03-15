@@ -299,7 +299,7 @@ void Firefox3Importer::ImportBookmarks() {
     STLDeleteContainerPointers(template_urls.begin(), template_urls.end());
   }
   if (!favicon_map.empty() && !cancelled()) {
-    std::vector<history::ImportedFavIconUsage> favicons;
+    std::vector<history::ImportedFaviconUsage> favicons;
     LoadFavicons(db.get(), favicon_map, &favicons);
     bridge_->SetFavicons(favicons);
   }
@@ -550,7 +550,7 @@ void Firefox3Importer::GetWholeBookmarkFolder(sqlite3* db, BookmarkList* list,
 void Firefox3Importer::LoadFavicons(
     sqlite3* db,
     const FaviconMap& favicon_map,
-    std::vector<history::ImportedFavIconUsage>* favicons) {
+    std::vector<history::ImportedFaviconUsage>* favicons) {
   SQLStatement s;
   const char* stmt = "SELECT url, data FROM moz_favicons WHERE id=?";
   if (s.prepare(db, stmt) != SQLITE_OK)
@@ -560,7 +560,7 @@ void Firefox3Importer::LoadFavicons(
        i != favicon_map.end(); ++i) {
     s.bind_int64(0, i->first);
     if (s.step() == SQLITE_ROW) {
-      history::ImportedFavIconUsage usage;
+      history::ImportedFaviconUsage usage;
 
       usage.favicon_url = GURL(s.column_string(0));
       if (!usage.favicon_url.is_valid())

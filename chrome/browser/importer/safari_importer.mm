@@ -118,7 +118,7 @@ void SafariImporter::ImportBookmarks() {
   ImportFavIconURLs(db.get(), &favicon_map);
   // Write favicons into profile.
   if (!favicon_map.empty() && !cancelled()) {
-    std::vector<history::ImportedFavIconUsage> favicons;
+    std::vector<history::ImportedFaviconUsage> favicons;
     LoadFaviconData(db.get(), favicon_map, &favicons);
     bridge_->SetFavicons(favicons);
   }
@@ -156,7 +156,7 @@ void SafariImporter::ImportFavIconURLs(sqlite3* db, FaviconMap* favicon_map) {
 
 void SafariImporter::LoadFaviconData(sqlite3* db,
                                      const FaviconMap& favicon_map,
-                        std::vector<history::ImportedFavIconUsage>* favicons) {
+                        std::vector<history::ImportedFaviconUsage>* favicons) {
   SQLStatement s;
   const char* stmt = "SELECT i.url, d.data "
                      "FROM IconInfo i JOIN IconData d "
@@ -169,7 +169,7 @@ void SafariImporter::LoadFaviconData(sqlite3* db,
        i != favicon_map.end(); ++i) {
     s.bind_int64(0, i->first);
     if (s.step() == SQLITE_ROW) {
-      history::ImportedFavIconUsage usage;
+      history::ImportedFaviconUsage usage;
 
       usage.favicon_url = GURL(s.column_string(0));
       if (!usage.favicon_url.is_valid())

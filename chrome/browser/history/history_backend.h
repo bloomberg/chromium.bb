@@ -222,7 +222,7 @@ class HistoryBackend : public base::RefCountedThreadSafe<HistoryBackend>,
                   scoped_refptr<RefCountedMemory> data,
                   IconType icon_type);
 
-  void UpdateFavIconMappingAndFetch(scoped_refptr<GetFaviconRequest> request,
+  void UpdateFaviconMappingAndFetch(scoped_refptr<GetFaviconRequest> request,
                                     const GURL& page_url,
                                     const GURL& icon_url,
                                     IconType icon_type);
@@ -230,7 +230,7 @@ class HistoryBackend : public base::RefCountedThreadSafe<HistoryBackend>,
   void SetFaviconOutOfDateForPage(const GURL& page_url);
 
   void SetImportedFavicons(
-      const std::vector<ImportedFavIconUsage>& favicon_usage);
+      const std::vector<ImportedFaviconUsage>& favicon_usage);
 
   // Downloads -----------------------------------------------------------------
 
@@ -443,12 +443,12 @@ class HistoryBackend : public base::RefCountedThreadSafe<HistoryBackend>,
 
   // Favicons ------------------------------------------------------------------
 
-  // Used by both UpdateFavIconMappingAndFetch and GetFavicon.
+  // Used by both UpdateFaviconMappingAndFetch and GetFavicon.
   // If page_url is non-null and SetFavicon has previously been invoked for
   // icon_url the favicon url for page_url (and all redirects) is set to
   // icon_url.
   // Only a single type can be given in icon_type when page_url is specified.
-  void UpdateFavIconMappingAndFetchImpl(
+  void UpdateFaviconMappingAndFetchImpl(
       const GURL* page_url,
       const GURL& icon_url,
       scoped_refptr<GetFaviconRequest> request,

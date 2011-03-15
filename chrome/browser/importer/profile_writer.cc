@@ -152,7 +152,7 @@ void ProfileWriter::AddBookmarkEntry(
 }
 
 void ProfileWriter::AddFavicons(
-    const std::vector<history::ImportedFavIconUsage>& favicons) {
+    const std::vector<history::ImportedFaviconUsage>& favicons) {
   profile_->GetFaviconService(Profile::EXPLICIT_ACCESS)->
       SetImportedFavicons(favicons);
 }

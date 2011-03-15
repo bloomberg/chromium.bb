@@ -785,7 +785,7 @@ void BookmarkModel::Observe(NotificationType type,
   switch (type.value) {
     case NotificationType::FAVICON_CHANGED: {
       // Prevent the observers from getting confused for multiple favicon loads.
-      Details<history::FavIconChangeDetails> favicon_details(details);
+      Details<history::FaviconChangeDetails> favicon_details(details);
       for (std::set<GURL>::const_iterator i = favicon_details->urls.begin();
            i != favicon_details->urls.end(); ++i) {
         std::vector<const BookmarkNode*> nodes;

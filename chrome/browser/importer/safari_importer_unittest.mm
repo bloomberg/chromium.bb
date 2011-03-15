@@ -120,13 +120,13 @@ TEST_F(SafariImporterTest, FavIconImport) {
   SafariImporter::FaviconMap favicon_map;
   importer->ImportFavIconURLs(db.get(), &favicon_map);
 
-  std::vector<history::ImportedFavIconUsage> favicons;
+  std::vector<history::ImportedFaviconUsage> favicons;
   importer->LoadFaviconData(db.get(), favicon_map, &favicons);
 
   size_t num_favicons = favicons.size();
   ASSERT_EQ(num_favicons, 2U);
 
-  history::ImportedFavIconUsage &fav0 = favicons[0];
+  history::ImportedFaviconUsage &fav0 = favicons[0];
   EXPECT_EQ("http://s.ytimg.com/yt/favicon-vfl86270.ico",
             fav0.favicon_url.spec());
   EXPECT_GT(fav0.png_data.size(), 0U);
@@ -134,7 +134,7 @@ TEST_F(SafariImporterTest, FavIconImport) {
   EXPECT_TRUE(fav0.urls.find(GURL("http://www.youtube.com/"))
       != fav0.urls.end());
 
-  history::ImportedFavIconUsage &fav1 = favicons[1];
+  history::ImportedFaviconUsage &fav1 = favicons[1];
   EXPECT_EQ("http://www.opensearch.org/favicon.ico",
             fav1.favicon_url.spec());
   EXPECT_GT(fav1.png_data.size(), 0U);

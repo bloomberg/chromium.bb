@@ -93,7 +93,7 @@ class ThumbnailDatabase {
   // Returns true on success.
   bool RecreateThumbnailTable();
 
-  // FavIcons ------------------------------------------------------------------
+  // Favicons ------------------------------------------------------------------
 
   // Sets the bits for a favicon. This should be png encoded data.
   // The time indicates the access time, and is used to detect when the favicon
@@ -124,10 +124,10 @@ class ThumbnailDatabase {
                   GURL* icon_url);
 
   // Adds the favicon URL and icon type to the favicon db, returning its id.
-  FaviconID AddFavIcon(const GURL& icon_url, IconType icon_type);
+  FaviconID AddFavicon(const GURL& icon_url, IconType icon_type);
 
   // Delete the favicon with the provided id. Returns false on failure
-  bool DeleteFavIcon(FaviconID id);
+  bool DeleteFavicon(FaviconID id);
 
   // Icon Mapping --------------------------------------------------------------
   //
@@ -187,28 +187,28 @@ class ThumbnailDatabase {
   // over will be deleted. Returns true on success.
   bool CommitTemporaryIconMappingTable();
 
-  // Temporary FavIcons --------------------------------------------------------
+  // Temporary Favicons --------------------------------------------------------
 
   // Create a temporary table to store favicons. Favicons will be copied to
-  // this table by CopyToTemporaryFavIconTable() and then the original table
+  // this table by CopyToTemporaryFaviconTable() and then the original table
   // will be dropped, leaving only those copied favicons remaining. This is
   // used to quickly delete most of the favicons when clearing history.
-  bool InitTemporaryFavIconsTable() {
-    return InitFavIconsTable(&db_, true);
+  bool InitTemporaryFaviconsTable() {
+    return InitFaviconsTable(&db_, true);
   }
 
   // Copies the given favicon from the "main" favicon table to the temporary
-  // one. This is only valid in between calls to InitTemporaryFavIconsTable()
-  // and CommitTemporaryFavIconTable().
+  // one. This is only valid in between calls to InitTemporaryFaviconsTable()
+  // and CommitTemporaryFaviconTable().
   //
   // The ID of the favicon will change when this copy takes place. The new ID
   // is returned, or 0 on failure.
-  FaviconID CopyToTemporaryFavIconTable(FaviconID source);
+  FaviconID CopyToTemporaryFaviconTable(FaviconID source);
 
   // Replaces the main URL table with the temporary table created by
-  // InitTemporaryFavIconsTable(). This will mean all favicons not copied over
+  // InitTemporaryFaviconsTable(). This will mean all favicons not copied over
   // will be deleted. Returns true on success.
-  bool CommitTemporaryFavIconTable();
+  bool CommitTemporaryFaviconTable();
 
   // Returns true iff the thumbnails table exists.
   // Migrating to TopSites is dropping the thumbnails table.
@@ -234,7 +234,7 @@ class ThumbnailDatabase {
   // |db| is the connection to use for initializing the table.
   // A different connection is used in RenameAndDropThumbnails, when we
   // need to copy the favicons between two database files.
-  bool InitFavIconsTable(sql::Connection* db, bool is_temporary);
+  bool InitFaviconsTable(sql::Connection* db, bool is_temporary);
 
   // Adds support for the new metadata on web page thumbnails.
   bool UpgradeToVersion3();
@@ -250,7 +250,7 @@ class ThumbnailDatabase {
   // initialization after the table is created. This is a separate function
   // because it is used by SwapFaviconTables to create an index over the
   // newly-renamed favicons table (formerly the temporary table with no index).
-  void InitFavIconsIndex();
+  void InitFaviconsIndex();
 
   // Creates the icon_map table, return true if the table already exists or was
   // successfully created.

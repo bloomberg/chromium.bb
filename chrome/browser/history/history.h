@@ -598,7 +598,6 @@ class HistoryService : public CancelableRequestProvider,
   template<typename Info, typename Callback> friend class DownloadRequest;
   friend class PageUsageRequest;
   friend class RedirectRequest;
-  friend class FavIconRequest;
   friend class TestingProfile;
 
   // Implementation of NotificationObserver.
@@ -635,7 +634,7 @@ class HistoryService : public CancelableRequestProvider,
   // notification (NOTIFY_HISTORY_LOADED) and sets backend_loaded_ to true.
   void OnDBLoaded();
 
-  // FavIcon -------------------------------------------------------------------
+  // Favicon -------------------------------------------------------------------
 
   // These favicon methods are exposed to the FaviconService. Instead of calling
   // these methods directly you should call the respective method on the
@@ -663,7 +662,7 @@ class HistoryService : public CancelableRequestProvider,
   // once. The pages must exist, any favicon sets for unknown pages will be
   // discarded. Existing favicons will not be overwritten.
   void SetImportedFavicons(
-      const std::vector<history::ImportedFavIconUsage>& favicon_usage);
+      const std::vector<history::ImportedFaviconUsage>& favicon_usage);
 
   // Used by the FaviconService to set the favicon for a page on the history
   // backend.

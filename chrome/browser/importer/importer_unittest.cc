@@ -655,7 +655,7 @@ class FirefoxObserver : public ProfileWriter,
     STLDeleteContainerPointers(template_urls.begin(), template_urls.end());
   }
 
-  void AddFavicons(const std::vector<history::ImportedFavIconUsage>& favicons) {
+  void AddFavicons(const std::vector<history::ImportedFaviconUsage>& favicons) {
   }
 
  private:
@@ -865,7 +865,7 @@ class Firefox3Observer : public ProfileWriter,
     STLDeleteContainerPointers(template_urls.begin(), template_urls.end());
   }
 
-  void AddFavicons(const std::vector<history::ImportedFavIconUsage>& favicons) {
+  void AddFavicons(const std::vector<history::ImportedFaviconUsage>& favicons) {
   }
 
  private:

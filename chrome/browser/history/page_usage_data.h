@@ -85,7 +85,7 @@ class PageUsageData {
 
   void SetFavicon(SkBitmap* img);
 
-  bool HasFavIcon() const {
+  bool HasFavicon() const {
     return favicon_set_;
   }
 

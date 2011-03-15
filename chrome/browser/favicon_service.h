@@ -79,7 +79,7 @@ class FaviconService : public CancelableRequestProvider,
   // must exist, any favicon sets for unknown pages will be discarded. Existing
   // favicons will not be overwritten.
   void SetImportedFavicons(
-      const std::vector<history::ImportedFavIconUsage>& favicon_usage);
+      const std::vector<history::ImportedFaviconUsage>& favicon_usage);
 
   // Sets the favicon for a page.
   void SetFavicon(const GURL& page_url,

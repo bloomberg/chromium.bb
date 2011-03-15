@@ -157,15 +157,15 @@ void ProfileImportThread::NotifyBookmarksImportReady(
 }
 
 void ProfileImportThread::NotifyFavIconsImportReady(
-    const std::vector<history::ImportedFavIconUsage>& favicons) {
+    const std::vector<history::ImportedFaviconUsage>& favicons) {
   Send(new ProfileImportProcessHostMsg_NotifyFavIconsImportStart(
     favicons.size()));
 
-  std::vector<history::ImportedFavIconUsage>::const_iterator it;
+  std::vector<history::ImportedFaviconUsage>::const_iterator it;
   for (it = favicons.begin(); it < favicons.end();
        it = it + kNumFavIconsToSend) {
-    std::vector<history::ImportedFavIconUsage> favicons_group;
-    std::vector<history::ImportedFavIconUsage>::const_iterator end_group =
+    std::vector<history::ImportedFaviconUsage> favicons_group;
+    std::vector<history::ImportedFaviconUsage>::const_iterator end_group =
         std::min(it + kNumFavIconsToSend, favicons.end());
     favicons_group.assign(it, end_group);
 

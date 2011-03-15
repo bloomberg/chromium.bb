@@ -78,12 +78,12 @@ sql::InitStatus ThumbnailDatabase::Init(
   if (!meta_table_.Init(&db_, kCurrentVersionNumber,
                         kCompatibleVersionNumber) ||
       !InitThumbnailTable() ||
-      !InitFavIconsTable(&db_, false) ||
+      !InitFaviconsTable(&db_, false) ||
       !InitIconMappingTable(&db_, false)) {
     db_.Close();
     return sql::INIT_FAILURE;
   }
-  InitFavIconsIndex();
+  InitFaviconsIndex();
   InitIconMappingIndex();
 
   // Version check. We should not encounter a database too old for us to handle
@@ -190,7 +190,7 @@ bool ThumbnailDatabase::RecreateThumbnailTable() {
   return InitThumbnailTable();
 }
 
-bool ThumbnailDatabase::InitFavIconsTable(sql::Connection* db,
+bool ThumbnailDatabase::InitFaviconsTable(sql::Connection* db,
                                           bool is_temporary) {
   // Note: if you update the schema, don't forget to update
   // CopyToTemporaryFaviconTable as well.
@@ -214,7 +214,7 @@ bool ThumbnailDatabase::InitFavIconsTable(sql::Connection* db,
   return true;
 }
 
-void ThumbnailDatabase::InitFavIconsIndex() {
+void ThumbnailDatabase::InitFaviconsIndex() {
   // Add an index on the url column. We ignore errors. Since this is always
   // called during startup, the index will normally already exist.
   db_.Execute("CREATE INDEX favicons_url ON favicons(url)");
@@ -444,7 +444,7 @@ bool ThumbnailDatabase::GetFavicon(
   return true;
 }
 
-FaviconID ThumbnailDatabase::AddFavIcon(const GURL& icon_url,
+FaviconID ThumbnailDatabase::AddFavicon(const GURL& icon_url,
                                         IconType icon_type) {
 
   sql::Statement statement(db_.GetCachedStatement(SQL_FROM_HERE,
@@ -459,7 +459,7 @@ FaviconID ThumbnailDatabase::AddFavIcon(const GURL& icon_url,
   return db_.GetLastInsertRowId();
 }
 
-bool ThumbnailDatabase::DeleteFavIcon(FaviconID id) {
+bool ThumbnailDatabase::DeleteFavicon(FaviconID id) {
   sql::Statement statement(db_.GetCachedStatement(SQL_FROM_HERE,
       "DELETE FROM favicons WHERE id = ?"));
   if (!statement)
@@ -588,7 +588,7 @@ bool ThumbnailDatabase::CommitTemporaryIconMappingTable() {
   return true;
 }
 
-FaviconID ThumbnailDatabase::CopyToTemporaryFavIconTable(FaviconID source) {
+FaviconID ThumbnailDatabase::CopyToTemporaryFaviconTable(FaviconID source) {
   sql::Statement statement(db_.GetCachedStatement(SQL_FROM_HERE,
       "INSERT INTO temp_favicons (url, last_updated, image_data, icon_type)"
       "SELECT url, last_updated, image_data, icon_type "
@@ -603,7 +603,7 @@ FaviconID ThumbnailDatabase::CopyToTemporaryFavIconTable(FaviconID source) {
   return db_.GetLastInsertRowId();
 }
 
-bool ThumbnailDatabase::CommitTemporaryFavIconTable() {
+bool ThumbnailDatabase::CommitTemporaryFaviconTable() {
   // Delete the old favicons table.
   if (!db_.Execute("DROP TABLE favicons"))
     return false;
@@ -613,7 +613,7 @@ bool ThumbnailDatabase::CommitTemporaryFavIconTable() {
     return false;
 
   // The renamed table needs the index (the temporary table doesn't have one).
-  InitFavIconsIndex();
+  InitFaviconsIndex();
   return true;
 }
 
@@ -628,7 +628,7 @@ bool ThumbnailDatabase::RenameAndDropThumbnails(const FilePath& old_db_file,
   if (OpenDatabase(&favicons, new_db_file) != sql::INIT_OK)
     return false;
 
-  if (!InitFavIconsTable(&favicons, false) ||
+  if (!InitFaviconsTable(&favicons, false) ||
       !InitIconMappingTable(&favicons, false)) {
     NOTREACHED() << "Couldn't init favicons and icon-mapping table.";
     favicons.Close();
@@ -687,7 +687,7 @@ bool ThumbnailDatabase::RenameAndDropThumbnails(const FilePath& old_db_file,
 
   file_util::Delete(old_db_file, false);
 
-  InitFavIconsIndex();
+  InitFaviconsIndex();
 
   // Reopen the transaction.
   BeginTransaction();

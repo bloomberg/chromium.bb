@@ -95,7 +95,7 @@ class SafariImporter : public Importer {
   // Loads and reencodes the individual favicons.
   void LoadFaviconData(sqlite3* db,
                        const FaviconMap& favicon_map,
-                       std::vector<history::ImportedFavIconUsage>* favicons);
+                       std::vector<history::ImportedFaviconUsage>* favicons);
 
   FilePath library_dir_;
 

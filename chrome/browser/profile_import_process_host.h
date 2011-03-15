@@ -64,7 +64,7 @@ class ProfileImportProcessHost : public BrowserChildProcessHost {
 
     virtual void OnFavIconsImportStart(size_t total_favicons_count) {}
     virtual void OnFavIconsImportGroup(
-        const std::vector<history::ImportedFavIconUsage>& favicons_group) {}
+        const std::vector<history::ImportedFaviconUsage>& favicons_group) {}
 
     virtual void OnPasswordFormImportReady(
         const webkit_glue::PasswordForm& form) {}

@@ -323,7 +323,7 @@ void ExpireHistoryBackend::DeleteFaviconsIfPossible(
   for (std::set<FaviconID>::const_iterator i = favicon_set.begin();
        i != favicon_set.end(); ++i) {
     if (!thumb_db_->HasMappingFor(*i))
-      thumb_db_->DeleteFavIcon(*i);
+      thumb_db_->DeleteFavicon(*i);
   }
 }
 

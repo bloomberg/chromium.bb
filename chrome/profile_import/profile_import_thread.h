@@ -49,7 +49,7 @@ class ProfileImportThread : public ChildThread {
       const std::vector<ProfileWriter::BookmarkEntry>& bookmarks,
           const std::wstring& first_folder_name, int options);
   void NotifyFavIconsImportReady(
-      const std::vector<history::ImportedFavIconUsage>& favicons);
+      const std::vector<history::ImportedFaviconUsage>& favicons);
   void NotifyPasswordFormReady(const webkit_glue::PasswordForm& form);
   void NotifyKeywordsReady(const std::vector<TemplateURL*>& template_urls,
       int default_keyword_index, bool unique_on_host_and_path);

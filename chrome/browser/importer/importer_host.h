@@ -32,7 +32,7 @@ class TemplateURL;
 
 namespace history {
 class URLRow;
-struct ImportedFavIconUsage;
+struct ImportedFaviconUsage;
 }
 
 namespace importer {

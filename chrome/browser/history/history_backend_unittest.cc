@@ -216,9 +216,9 @@ TEST_F(HistoryBackendTest, DeleteAll) {
   // deleted. This way we can test that updating works properly.
   GURL favicon_url1("http://www.google.com/favicon.ico");
   GURL favicon_url2("http://news.google.com/favicon.ico");
-  FaviconID favicon2 = backend_->thumbnail_db_->AddFavIcon(favicon_url2,
+  FaviconID favicon2 = backend_->thumbnail_db_->AddFavicon(favicon_url2,
                                                            FAVICON);
-  FaviconID favicon1 = backend_->thumbnail_db_->AddFavIcon(favicon_url1,
+  FaviconID favicon1 = backend_->thumbnail_db_->AddFavicon(favicon_url1,
                                                            FAVICON);
 
   std::vector<unsigned char> data;
@@ -349,9 +349,9 @@ TEST_F(HistoryBackendTest, DeleteAll) {
 TEST_F(HistoryBackendTest, URLsNoLongerBookmarked) {
   GURL favicon_url1("http://www.google.com/favicon.ico");
   GURL favicon_url2("http://news.google.com/favicon.ico");
-  FaviconID favicon2 = backend_->thumbnail_db_->AddFavIcon(favicon_url2,
+  FaviconID favicon2 = backend_->thumbnail_db_->AddFavicon(favicon_url2,
                                                            FAVICON);
-  FaviconID favicon1 = backend_->thumbnail_db_->AddFavIcon(favicon_url1,
+  FaviconID favicon1 = backend_->thumbnail_db_->AddFavicon(favicon_url1,
                                                            FAVICON);
 
   std::vector<unsigned char> data;
@@ -522,7 +522,7 @@ TEST_F(HistoryBackendTest, ImportedFaviconsTest) {
   // Setup test data - two Urls in the history, one with favicon assigned and
   // one without.
   GURL favicon_url1("http://www.google.com/favicon.ico");
-  FaviconID favicon1 = backend_->thumbnail_db_->AddFavIcon(favicon_url1,
+  FaviconID favicon1 = backend_->thumbnail_db_->AddFavicon(favicon_url1,
                                                            FAVICON);
   std::vector<unsigned char> data;
   data.push_back('1');
@@ -549,8 +549,8 @@ TEST_F(HistoryBackendTest, ImportedFaviconsTest) {
   // Now provide one imported favicon for both URLs already in the registry.
   // The new favicon should only be used with the URL that doesn't already have
   // a favicon.
-  std::vector<history::ImportedFavIconUsage> favicons;
-  history::ImportedFavIconUsage favicon;
+  std::vector<history::ImportedFaviconUsage> favicons;
+  history::ImportedFaviconUsage favicon;
   favicon.favicon_url = GURL("http://news.google.com/favicon.ico");
   favicon.png_data.push_back('2');
   favicon.urls.insert(row1.url());

@@ -24,9 +24,9 @@ URLsStarredDetails::URLsStarredDetails(bool being_starred)
 
 URLsStarredDetails::~URLsStarredDetails() {}
 
-FavIconChangeDetails::FavIconChangeDetails() {}
+FaviconChangeDetails::FaviconChangeDetails() {}
 
-FavIconChangeDetails::~FavIconChangeDetails() {}
+FaviconChangeDetails::~FaviconChangeDetails() {}
 
 KeywordSearchTermDetails::KeywordSearchTermDetails() : keyword_id(0) {}
 

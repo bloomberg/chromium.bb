@@ -77,9 +77,9 @@ struct URLsStarredDetails : public HistoryDetails {
 };
 
 // Details for NOTIFY_FAVICON_CHANGED.
-struct FavIconChangeDetails : public HistoryDetails {
-  FavIconChangeDetails();
-  virtual ~FavIconChangeDetails();
+struct FaviconChangeDetails : public HistoryDetails {
+  FaviconChangeDetails();
+  virtual ~FaviconChangeDetails();
 
   std::set<GURL> urls;
 };

@@ -144,7 +144,7 @@ void Firefox2Importer::ImportBookmarksFile(
     Importer* importer,
     std::vector<ProfileWriter::BookmarkEntry>* bookmarks,
     std::vector<TemplateURL*>* template_urls,
-    std::vector<history::ImportedFavIconUsage>* favicons) {
+    std::vector<history::ImportedFaviconUsage>* favicons) {
   std::string content;
   file_util::ReadFileToString(file_path, &content);
   std::vector<std::string> lines;
@@ -289,7 +289,7 @@ void Firefox2Importer::ImportBookmarks() {
   // Parse the bookmarks.html file.
   std::vector<ProfileWriter::BookmarkEntry> bookmarks, toolbar_bookmarks;
   std::vector<TemplateURL*> template_urls;
-  std::vector<history::ImportedFavIconUsage> favicons;
+  std::vector<history::ImportedFaviconUsage> favicons;
   FilePath file = source_path_;
   if (!parsing_bookmarks_html_file_)
     file = file.AppendASCII("bookmarks.html");
@@ -654,7 +654,7 @@ void Firefox2Importer::FindXMLFilesInDir(
 void Firefox2Importer::DataURLToFaviconUsage(
     const GURL& link_url,
     const GURL& favicon_data,
-    std::vector<history::ImportedFavIconUsage>* favicons) {
+    std::vector<history::ImportedFaviconUsage>* favicons) {
   if (!link_url.is_valid() || !favicon_data.is_valid() ||
       !favicon_data.SchemeIs(chrome::kDataScheme))
     return;
@@ -665,7 +665,7 @@ void Firefox2Importer::DataURLToFaviconUsage(
       data.empty())
     return;
 
-  history::ImportedFavIconUsage usage;
+  history::ImportedFaviconUsage usage;
   if (!ReencodeFavicon(reinterpret_cast<const unsigned char*>(&data[0]),
                        data.size(), &usage.png_data))
     return;  // Unable to decode.

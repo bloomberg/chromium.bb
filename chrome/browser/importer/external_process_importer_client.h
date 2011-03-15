@@ -19,7 +19,7 @@ class InProcessImporterBridge;
 
 namespace history {
 class URLRow;
-struct ImportedFavIconUsage;
+struct ImportedFaviconUsage;
 }
 
 namespace importer {
@@ -97,7 +97,7 @@ class ExternalProcessImporterClient
 
   // Called when a group of favicons has been received.
   virtual void OnFavIconsImportGroup(
-      const std::vector<history::ImportedFavIconUsage>& favicons_group)
+      const std::vector<history::ImportedFaviconUsage>& favicons_group)
           OVERRIDE;
 
   // Called when the passwordform has been received.
@@ -117,7 +117,7 @@ class ExternalProcessImporterClient
   // entire group has been collected and is ready to be written to the profile.
   std::vector<history::URLRow> history_rows_;
   std::vector<ProfileWriter::BookmarkEntry> bookmarks_;
-  std::vector<history::ImportedFavIconUsage> favicons_;
+  std::vector<history::ImportedFaviconUsage> favicons_;
 
   // Usually some variation on IDS_BOOKMARK_GROUP_...; the name of the folder
   // under which imported bookmarks will be placed.
