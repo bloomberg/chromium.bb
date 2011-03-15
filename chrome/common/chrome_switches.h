@@ -48,6 +48,7 @@ extern const char kChromeFrame[];
 extern const char kChromeVersion[];
 extern const char kCloudPrintFile[];
 extern const char kCloudPrintJobTitle[];
+extern const char kCloudPrintFileType[];
 extern const char kCloudPrintProxyId[];
 extern const char kCloudPrintServiceURL[];
 extern const char kConflictingModulesCheck[];
