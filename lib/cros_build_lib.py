@@ -154,14 +154,14 @@ def Warning(message):
 # It is left here for the moment so people are aware what happened.
 # The reason is that this is not aware of the terminal output restrictions such
 # as verbose, quiet and subprocess output. You should not be calling this.
-# def Info(message):
-#  """Emits a blue informational message and continues execution.
-#
-#  Args:
-#    message: The message to be emitted.
-#  """
-#  print >> sys.stderr, (
-#      Color(_STDOUT_IS_TTY).Color(Color.BLUE, '\nINFO: ' + message))
+def Info(message):
+  """Emits a blue informational message and continues execution.
+
+  Args:
+    message: The message to be emitted.
+  """
+  print >> sys.stderr, (
+      Color(_STDOUT_IS_TTY).Color(Color.BLUE, '\nINFO: ' + message))
 
 
 def ListFiles(base_dir):
