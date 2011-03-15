@@ -71,7 +71,6 @@ extern const char kChromeUIAppLauncherURL[];
 extern const char kChromeUIBookmarksURL[];
 extern const char kChromeUIBugReportURL[];
 extern const char kChromeUIConflictsURL[];
-extern const char kChromeUICollectedCookiesURL[];
 extern const char kChromeUIConstrainedHTMLTestURL[];
 extern const char kChromeUICrashesURL[];
 extern const char kChromeUIDevToolsURL[];
@@ -93,6 +92,7 @@ extern const char kChromeUITextfieldsURL[];
 #if defined(OS_CHROMEOS)
 extern const char kChromeUIAboutOSCreditsURL[];
 extern const char kChromeUIActivationMessage[];
+extern const char kChromeUICollectedCookiesURL[];
 extern const char kChromeUIFileBrowseURL[];
 extern const char kChromeUIImageBurnerURL[];
 extern const char kChromeUIKeyboardOverlayURL[];
@@ -110,7 +110,6 @@ extern const char kChromeUIBookmarksHost[];
 extern const char kChromeUIBugReportHost[];
 extern const char kChromeUIConflictsHost[];
 extern const char kChromeUICrashesHost[];
-extern const char kChromeUICollectedCookiesHost[];
 extern const char kChromeUIDevToolsHost[];
 extern const char kChromeUIDialogHost[];
 extern const char kChromeUIDownloadsHost[];
@@ -139,6 +138,7 @@ extern const char kChromeUIThumbnailPath[];
 
 #if defined(OS_CHROMEOS)
 extern const char kChromeUIActivationMessageHost[];
+extern const char kChromeUICollectedCookiesHost[];
 extern const char kChromeUIFileBrowseHost[];
 extern const char kChromeUIImageBurnerHost[];
 extern const char kChromeUIKeyboardOverlayHost[];

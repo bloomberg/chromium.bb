@@ -95,10 +95,8 @@ WebUI* NewWebUI<ExtensionWebUI>(TabContents* contents, const GURL& url) {
 // when invoked for a particular tab - see NewWebUI<ExtensionWebUI>.
 static WebUIFactoryFunction GetWebUIFactoryFunction(Profile* profile,
     const GURL& url) {
-  if (url.host() == chrome::kChromeUIDialogHost ||
-      url.host() == chrome::kChromeUICollectedCookiesHost) {
+  if (url.host() == chrome::kChromeUIDialogHost)
     return &NewWebUI<ConstrainedHtmlUI>;
-  }
 
   ExtensionService* service = profile ? profile->GetExtensionService() : NULL;
   if (service && service->ExtensionBindingsAllowed(url))
@@ -182,6 +180,8 @@ static WebUIFactoryFunction GetWebUIFactoryFunction(Profile* profile,
 #endif
 
 #if defined(OS_CHROMEOS)
+  if (url.host() == chrome::kChromeUICollectedCookiesHost)
+    return &NewWebUI<ConstrainedHtmlUI>;
   if (url.host() == chrome::kChromeUIFileBrowseHost)
     return &NewWebUI<FileBrowseUI>;
   if (url.host() == chrome::kChromeUIImageBurnerHost)
