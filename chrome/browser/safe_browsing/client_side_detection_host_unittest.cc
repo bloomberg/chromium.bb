@@ -22,9 +22,11 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gmock/include/gmock/gmock-actions.h"
 #include "testing/gmock/include/gmock/gmock-generated-nice-strict.h"
+#include "testing/gmock/include/gmock/gmock-more-actions.h"
 #include "testing/gmock/include/gmock/gmock-spec-builders.h"
 
 using ::testing::_;
+using ::testing::DeleteArg;
 using ::testing::DoAll;
 using ::testing::Mock;
 using ::testing::NotNull;
@@ -403,7 +405,9 @@ TEST_F(ClientSideDetectionHostTest, ShouldClassifyUrl) {
           DoAll(SetArgumentPointee<1>(true),
                 Return(true)));
   EXPECT_CALL(*sb_service_,
-              DisplayBlockingPage(_, _, _, _, _, _, _, _)).Times(1);
+              DisplayBlockingPage(_, _, _, _, _, _, _, _))
+      .WillOnce(DeleteArg<5>());
+
   NavigateAndCommit(GURL("http://host4.com/"));
   FlushIOMessageLoop();
   msg = process()->sink().GetFirstMessageMatching(
