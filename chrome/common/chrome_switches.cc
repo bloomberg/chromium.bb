@@ -117,6 +117,11 @@ const char kCloudPrintFile[]                = "cloud-print-file";
 // job.
 const char kCloudPrintJobTitle[]            = "cloud-print-job-title";
 
+// Specifies the mime type to be used when uploading data from the
+// file referenced by cloud-print-file.
+// Defaults to "application/pdf" if unspecified.
+const char kCloudPrintFileType[]            = "cloud-print-file-type";
+
 // The URL of the cloud print service to use, overrides any value
 // stored in preferences, and the default.  Only used if the cloud
 // print service has been enabled (see enable-cloud-print).
