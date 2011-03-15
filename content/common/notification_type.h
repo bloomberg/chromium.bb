@@ -1293,6 +1293,11 @@ class NotificationType {
     // Sent each time the InstantController shows the InstantLoader.
     INSTANT_CONTROLLER_SHOWN,
 
+    // Sent when the instant loader determines whether the page supports the
+    // instant API or not. The details is a boolean indicating if the page
+    // supports instant. The source is not used.
+    INSTANT_SUPPORT_DETERMINED,
+
     // Password Store ----------------------------------------------------------
     // This notification is sent whenenever login entries stored in the password
     // store are changed. The detail of this notification is a list of changes

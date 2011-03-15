@@ -544,6 +544,12 @@ void InstantLoader::TabContentsDelegateImpl::OnInstantSupportDetermined(
       page_id != source->controller().GetActiveEntry()->page_id())
     return;
 
+  Details<const bool> details(&result);
+  NotificationService::current()->Notify(
+      NotificationType::INSTANT_SUPPORT_DETERMINED,
+      NotificationService::AllSources(),
+      details);
+
   if (result)
     loader_->PageFinishedLoading();
   else

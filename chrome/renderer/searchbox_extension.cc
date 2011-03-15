@@ -354,6 +354,8 @@ bool Dispatch(WebFrame* frame, const std::string& event_name) {
 
   v8::HandleScope handle_scope;
   v8::Local<v8::Context> context = frame->mainWorldScriptContext();
+  if (context.IsEmpty())
+    return false;
   v8::Context::Scope context_scope(context);
 
   v8::Local<v8::Value> value =
@@ -408,8 +410,9 @@ bool SearchBoxExtension::PageSupportsInstant(WebFrame* frame) {
   DCHECK(frame) << "PageSupportsInstant requires frame";
   if (!frame) return false;
 
-  bool supports_deprecated_api = frame->executeScriptAndReturnValue(
-      WebScriptSource(kSupportsInstantScript))->BooleanValue();
+  v8::Handle<v8::Value> v = frame->executeScriptAndReturnValue(
+      WebScriptSource(kSupportsInstantScript));
+  bool supports_deprecated_api = !v.IsEmpty() && v->BooleanValue();
   // TODO(tonyg): Add way of detecting instant support to SearchBox API.
   bool supports_searchbox_api = supports_deprecated_api;
 

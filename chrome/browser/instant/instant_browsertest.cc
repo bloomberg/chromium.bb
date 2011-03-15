@@ -9,6 +9,7 @@
 #include "chrome/browser/autocomplete/autocomplete_edit_view.h"
 #include "chrome/browser/browser_list.h"
 #include "chrome/browser/browser_window.h"
+#include "chrome/browser/content_settings/host_content_settings_map.h"
 #include "chrome/browser/instant/instant_controller.h"
 #include "chrome/browser/instant/instant_loader.h"
 #include "chrome/browser/instant/instant_loader_manager.h"
@@ -724,4 +725,18 @@ IN_PROC_BROWSER_TEST_F(InstantTest, InstantCompleteDelayed) {
   AutocompleteEditModel* edit_model = location_bar_->location_entry()->model();
   EXPECT_EQ(INSTANT_COMPLETE_DELAYED, edit_model->instant_complete_behavior());
   ASSERT_EQ(ASCIIToUTF16("def"), location_bar_->location_entry()->GetText());
+}
+
+// Make sure the renderer doesn't crash if javascript is blocked.
+IN_PROC_BROWSER_TEST_F(InstantTest, DontCrashOnBlockedJS) {
+  browser()->profile()->GetHostContentSettingsMap()->SetDefaultContentSetting(
+      CONTENT_SETTINGS_TYPE_JAVASCRIPT, CONTENT_SETTING_BLOCK);
+  ASSERT_TRUE(test_server()->Start());
+  EnableInstant();
+  ASSERT_NO_FATAL_FAILURE(SetupInstantProvider("search.html"));
+  ASSERT_NO_FATAL_FAILURE(SetupLocationBar());
+  // Wait for notification that the instant API has been determined.
+  ui_test_utils::WaitForNotification(
+      NotificationType::INSTANT_SUPPORT_DETERMINED);
+  // As long as we get the notification we're good (the renderer didn't crash).
 }
