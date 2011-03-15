@@ -2,25 +2,73 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_COMMON_SERVICE_MESSAGES_H_
-#define CHROME_COMMON_SERVICE_MESSAGES_H_
+// Multiply-included message file, no traditional include guard.
+#include <string>
 
-#include "chrome/common/service_messages_internal.h"
+#include "chrome/common/remoting/chromoting_host_info.h"
+#include "ipc/ipc_channel_handle.h"
+#include "ipc/ipc_message_macros.h"
 
-namespace remoting {
-struct ChromotingHostInfo;
-}  // namespace remoting
+#define IPC_MESSAGE_START ServiceMsgStart
 
-namespace IPC {
+IPC_STRUCT_TRAITS_BEGIN(remoting::ChromotingHostInfo)
+  IPC_STRUCT_TRAITS_MEMBER(host_id)
+  IPC_STRUCT_TRAITS_MEMBER(hostname)
+  IPC_STRUCT_TRAITS_MEMBER(public_key)
+  IPC_STRUCT_TRAITS_MEMBER(enabled)
+  IPC_STRUCT_TRAITS_MEMBER(login)
+IPC_STRUCT_TRAITS_END()
 
-template <>
-struct ParamTraits<remoting::ChromotingHostInfo> {
-  typedef remoting::ChromotingHostInfo param_type;
-  static void Write(Message* m, const param_type& p);
-  static bool Read(const Message* m, void** iter, param_type* p);
-  static void Log(const param_type& p, std::string* l);
-};
+//-----------------------------------------------------------------------------
+// Service process messages:
+// These are messages from the browser to the service process.
+// Tell the service process to enable the cloud proxy passing in the lsid
+// of the account to be used.
+IPC_MESSAGE_CONTROL1(ServiceMsg_EnableCloudPrintProxy,
+                     std::string /* lsid */)
+// Tell the service process to enable the cloud proxy passing in specific
+// tokens to be used.
+IPC_MESSAGE_CONTROL2(ServiceMsg_EnableCloudPrintProxyWithTokens,
+                     std::string, /* token for cloudprint service */
+                     std::string  /* token for Google Talk service */)
+// Tell the service process to disable the cloud proxy.
+IPC_MESSAGE_CONTROL0(ServiceMsg_DisableCloudPrintProxy)
 
-}  // namespace IPC
+// Requests a message back on whether the cloud print proxy is
+// enabled.
+IPC_MESSAGE_CONTROL0(ServiceMsg_IsCloudPrintProxyEnabled)
 
-#endif  // CHROME_COMMON_SERVICE_MESSAGES_H_
+// Set credentials used by the RemotingHost.
+IPC_MESSAGE_CONTROL2(ServiceMsg_SetRemotingHostCredentials,
+                     std::string, /* username */
+                     std::string  /* token for XMPP */)
+
+// Enabled remoting host.
+IPC_MESSAGE_CONTROL0(ServiceMsg_EnableRemotingHost)
+
+// Disable remoting host.
+IPC_MESSAGE_CONTROL0(ServiceMsg_DisableRemotingHost)
+
+// Get remoting host status information.
+IPC_MESSAGE_CONTROL0(ServiceMsg_GetRemotingHostInfo)
+
+// Tell the service process to shutdown.
+IPC_MESSAGE_CONTROL0(ServiceMsg_Shutdown)
+
+// Tell the service process that an update is available.
+IPC_MESSAGE_CONTROL0(ServiceMsg_UpdateAvailable)
+
+//-----------------------------------------------------------------------------
+// Service process host messages:
+// These are messages from the service process to the browser.
+// Sent when the cloud print proxy has an authentication error.
+IPC_MESSAGE_CONTROL0(ServiceHostMsg_CloudPrintProxy_AuthError)
+
+// Sent as a response to a request for enablement status.
+IPC_MESSAGE_CONTROL2(ServiceHostMsg_CloudPrintProxy_IsEnabled,
+                     bool,       /* Is the proxy enabled? */
+                     std::string /* Email address of account */)
+
+IPC_MESSAGE_CONTROL1(ServiceHostMsg_RemotingHost_HostInfo,
+                     remoting::ChromotingHostInfo /* host_info */)
+
