@@ -8,6 +8,7 @@
 
 #include <vector>
 
+#include "base/ref_counted.h"
 #include "base/scoped_ptr.h"
 #include "ui/base/accessibility/accessibility_types.h"
 #include "ui/gfx/native_widget_types.h"
@@ -15,6 +16,7 @@
 #include "views/widget/native_widget_delegate.h"
 
 namespace gfx {
+class Canvas;
 class Path;
 class Point;
 class Rect;
@@ -22,6 +24,7 @@ class Rect;
 
 namespace ui {
 class Accelerator;
+class Compositor;
 class OSExchangeData;
 class ThemeProvider;
 }
@@ -272,6 +275,7 @@ class Widget : public internal::NativeWidgetDelegate,
   virtual void OnNativeWidgetCreated() OVERRIDE;
   virtual void OnSizeChanged(const gfx::Size& new_size) OVERRIDE;
   virtual bool HasFocusManager() const OVERRIDE;
+  virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE;
 
   // Overridden from FocusTraversable:
   virtual FocusSearch* GetFocusSearch() OVERRIDE;
@@ -299,6 +303,14 @@ class Widget : public internal::NativeWidgetDelegate,
   void ReplaceFocusManager(FocusManager* focus_manager);
 
  private:
+  // Refresh the compositor tree. This is called by a View whenever its texture
+  // is updated.
+  void RefreshCompositeTree();
+
+  // Try to create a compositor if one hasn't been created yet. Returns false if
+  // a compositor couldn't be created.
+  bool EnsureCompositor();
+
   NativeWidget* native_widget_;
 
   // Non-owned pointer to the Widget's delegate.  May be NULL if no delegate is
@@ -322,6 +334,9 @@ class Widget : public internal::NativeWidgetDelegate,
   // Valid for the lifetime of RunShellDrag(), indicates the view the drag
   // started from.
   View* dragged_view_;
+
+  // The compositor for accelerated drawing.
+  scoped_refptr<ui::Compositor> compositor_;
 
   DISALLOW_COPY_AND_ASSIGN(Widget);
 };

@@ -14,6 +14,7 @@
 #include "ui/base/accessibility/accessibility_types.h"
 #include "ui/base/dragdrop/drag_drop_types.h"
 #include "ui/gfx/canvas_skia.h"
+#include "ui/gfx/compositor.h"
 #include "ui/gfx/path.h"
 #include "ui/gfx/transform.h"
 #include "views/background.h"
@@ -32,6 +33,12 @@
 #if defined(OS_LINUX)
 #include "ui/base/gtk/scoped_handle_gtk.h"
 #endif
+
+namespace {
+// Whether to use accelerated compositing when necessary (e.g. when a view has a
+// transformation).
+bool use_acceleration_when_possible = true;
+}
 
 namespace views {
 
@@ -75,6 +82,7 @@ View::View()
       clip_y_(0.0),
       needs_layout_(true),
       flip_canvas_on_paint_for_rtl_ui_(false),
+      texture_id_(0),  // TODO(sadrul): 0 can be a valid texture id.
       accelerator_registration_delayed_(false),
       accelerator_focus_manager_(NULL),
       registered_accelerator_count_(0),
@@ -423,6 +431,7 @@ void View::ConcatTranslate(float x, float y) {
 void View::ResetTransform() {
   transform_.reset(NULL);
   clip_x_ = clip_y_ = 0.0;
+  canvas_.reset();
 }
 
 
@@ -636,46 +645,63 @@ void View::Paint(gfx::Canvas* canvas) {
   if (!IsVisible())
     return;
 
-  // We're going to modify the canvas, save its state first.
-  canvas->Save();
+  if (use_acceleration_when_possible &&
+      transform_.get() && transform_->HasChange()) {
+    // This view has a transformation. So this maintains its own canvas.
+    if (!canvas_.get())
+      canvas_.reset(gfx::Canvas::CreateCanvas(width(), height(), false));
 
-  // Paint this View and its children, setting the clip rect to the bounds
-  // of this View and translating the origin to the local bounds' top left
-  // point.
-  //
-  // Note that the X (or left) position we pass to ClipRectInt takes into
-  // consideration whether or not the view uses a right-to-left layout so that
-  // we paint our view in its mirrored position if need be.
-  if (canvas->ClipRectInt(GetMirroredX(), y(),
-                          width() - static_cast<int>(clip_x_),
-                          height() - static_cast<int>(clip_y_))) {
+    canvas = canvas_.get();
+  } else {
+    // We're going to modify the canvas, save its state first.
+    canvas->Save();
+
+    // Paint this View and its children, setting the clip rect to the bounds
+    // of this View and translating the origin to the local bounds' top left
+    // point.
+    //
+    // Note that the X (or left) position we pass to ClipRectInt takes into
+    // consideration whether or not the view uses a right-to-left layout so that
+    // we paint our view in its mirrored position if need be.
+    if (!canvas->ClipRectInt(GetMirroredX(), y(),
+                            width() - static_cast<int>(clip_x_),
+                            height() - static_cast<int>(clip_y_))) {
+      canvas->Restore();
+      return;
+    }
     // Non-empty clip, translate the graphics such that 0,0 corresponds to
     // where this view is located (related to its parent).
     canvas->TranslateInt(GetMirroredX(), y());
 
     if (transform_.get() && transform_->HasChange())
       canvas->Transform(*transform_.get());
-
-    // If the View we are about to paint requested the canvas to be flipped, we
-    // should change the transform appropriately.
-    canvas->Save();
-    if (FlipCanvasOnPaintForRTLUI()) {
-      canvas->TranslateInt(width(), 0);
-      canvas->ScaleInt(-1, 1);
-    }
-
-    OnPaint(canvas);
-
-    // We must undo the canvas mirroring once the View is done painting so that
-    // we don't pass the canvas with the mirrored transform to Views that
-    // didn't request the canvas to be flipped.
-    canvas->Restore();
-
-    PaintChildren(canvas);
   }
 
-  // Restore the canvas's original transform.
+  // If the View we are about to paint requested the canvas to be flipped, we
+  // should change the transform appropriately.
+  canvas->Save();
+  if (FlipCanvasOnPaintForRTLUI()) {
+    canvas->TranslateInt(width(), 0);
+    canvas->ScaleInt(-1, 1);
+  }
+
+  OnPaint(canvas);
+
+  // We must undo the canvas mirroring once the View is done painting so that
+  // we don't pass the canvas with the mirrored transform to Views that
+  // didn't request the canvas to be flipped.
   canvas->Restore();
+
+  PaintChildren(canvas);
+
+  if (canvas == canvas_.get()) {
+    texture_id_ = canvas->GetTextureID();
+
+    // TODO(sadrul): Make sure the Widget's compositor tree updates itself?
+  } else {
+    // Restore the canvas's original transform.
+    canvas->Restore();
+  }
 }
 
 void View::PaintNow() {
@@ -691,6 +717,13 @@ void View::PaintNow() {
 ThemeProvider* View::GetThemeProvider() const {
   const Widget* widget = GetWidget();
   return widget ? widget->GetThemeProvider() : NULL;
+}
+
+// Accelerated Painting --------------------------------------------------------
+
+// static
+void View::set_use_acceleration_when_possible(bool use) {
+  use_acceleration_when_possible = use;
 }
 
 // Input -----------------------------------------------------------------------
@@ -1069,6 +1102,23 @@ void View::OnPaintFocusBorder(gfx::Canvas* canvas) {
     canvas->DrawFocusRect(0, 0, width(), height());
 }
 
+// Accelerated Painting --------------------------------------------------------
+
+void View::PaintComposite(ui::Compositor* compositor) {
+  compositor->SaveTransform();
+
+  // TODO(sad): Push a transform matrix for the offset and bounds of the view?
+  if (texture_id_)
+    compositor->DrawTextureWithTransform(texture_id_, GetTransform());
+
+  for (int i = 0, count = child_count(); i < count; ++i) {
+    View* child = GetChildViewAt(i);
+    child->PaintComposite(compositor);
+  }
+
+  compositor->RestoreTransform();
+}
+
 // Input -----------------------------------------------------------------------
 
 bool View::HasHitTestMask() const {
@@ -1274,6 +1324,9 @@ void View::VisibilityChangedImpl(View* starting_from, bool is_visible) {
 }
 
 void View::BoundsChanged(const gfx::Rect& previous_bounds) {
+  if (canvas_.get())
+    canvas_.reset(gfx::Canvas::CreateCanvas(width(), height(), false));
+
   if (parent_) {
     parent_->SchedulePaintInRect(previous_bounds);
     parent_->SchedulePaintInRect(bounds_);

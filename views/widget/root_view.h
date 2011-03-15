@@ -124,6 +124,7 @@ class RootView : public View,
 
  private:
   friend class View;
+  friend class Widget;
 
 #if defined(TOUCH_UI)
   // Required so the GestureManager can call the Process* entry points

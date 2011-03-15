@@ -140,6 +140,7 @@ class CanvasSkia : public skia::PlatformCanvas,
   virtual gfx::NativeDrawingContext BeginPlatformPaint();
   virtual void EndPlatformPaint();
   virtual void Transform(const ui::Transform& transform);
+  virtual ui::TextureID GetTextureID();
   virtual CanvasSkia* AsCanvasSkia();
   virtual const CanvasSkia* AsCanvasSkia() const;
 

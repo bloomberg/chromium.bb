@@ -287,7 +287,11 @@ class WidgetGtk : public Widget,
   class DropObserver;
   friend class DropObserver;
 
-  virtual RootView* CreateRootView();
+  // Overridden from Widget
+  virtual RootView* CreateRootView() OVERRIDE;
+
+  // Overridden from NativeWidget
+  virtual gfx::AcceleratedWidget GetAcceleratedWidget() OVERRIDE;
 
   CHROMEGTK_CALLBACK_1(WidgetGtk, gboolean, OnWindowPaint, GdkEventExpose*);
 

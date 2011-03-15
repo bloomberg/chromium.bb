@@ -86,4 +86,9 @@ void CanvasSkia::DrawStringInt(const string16& text,
   endPlatformPaint();
 }
 
+ui::TextureID CanvasSkia::GetTextureID() {
+  // TODO(wjmaclean)
+  return 0;
+}
+
 }  // namespace gfx

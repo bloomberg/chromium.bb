@@ -6,6 +6,7 @@
 
 #include "base/logging.h"
 #include "base/message_loop.h"
+#include "ui/gfx/compositor.h"
 #include "views/focus/view_storage.h"
 #include "views/widget/default_theme_provider.h"
 #include "views/widget/root_view.h"
@@ -264,6 +265,11 @@ bool Widget::HasFocusManager() const {
   return !!focus_manager_.get();
 }
 
+void Widget::OnPaint(gfx::Canvas* canvas) {
+  GetRootView()->Paint(canvas);
+  RefreshCompositeTree();
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // Widget, FocusTraversable implementation:
 
@@ -309,6 +315,31 @@ void Widget::DestroyRootView() {
 
 void Widget::ReplaceFocusManager(FocusManager* focus_manager) {
   focus_manager_.reset(focus_manager);
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// Widget, private:
+
+void Widget::RefreshCompositeTree() {
+  if (!EnsureCompositor())
+    return;
+
+  compositor_->NotifyStart();
+  root_view_->PaintComposite(compositor_.get());
+  compositor_->NotifyEnd();
+}
+
+bool Widget::EnsureCompositor() {
+  if (compositor_.get())
+    return true;
+
+  // TODO(sad): If there is a parent Widget, then use the same compositor
+  //            instead of creating a new one here.
+  gfx::AcceleratedWidget widget = native_widget_->GetAcceleratedWidget();
+  if (widget != gfx::kNullAcceleratedWidget)
+    compositor_ = ui::Compositor::Create(widget);
+
+  return compositor_.get() != NULL;
 }
 
 }  // namespace views

@@ -72,6 +72,10 @@ class NativeWidget {
  protected:
   friend class Widget;
 
+  // Returns a handle for the underlying native widget that can be used for
+  // accelerated drawing.
+  virtual gfx::AcceleratedWidget GetAcceleratedWidget() = 0;
+
   // Widget pass-thrus, private to Views. --------------------------------------
   // See method documentation in Widget.
   virtual gfx::Rect GetWindowScreenBounds() const = 0;

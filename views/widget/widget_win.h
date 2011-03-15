@@ -456,6 +456,9 @@ class WidgetWin : public ui::WindowImpl,
   // or subsequently.
   void ClientAreaSizeChanged();
 
+  // Overridden from NativeWidget.
+  virtual gfx::AcceleratedWidget GetAcceleratedWidget() OVERRIDE;
+
   // A delegate implementation that handles events received here.
   internal::NativeWidgetDelegate* delegate_;
 

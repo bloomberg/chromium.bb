@@ -34,8 +34,11 @@ class Path;
 
 namespace ui {
 struct AccessibleViewState;
+class Compositor;
 class ThemeProvider;
 class Transform;
+
+typedef unsigned int TextureID;
 }
 using ui::ThemeProvider;
 
@@ -562,6 +565,11 @@ class View : public AcceleratorTarget {
     flip_canvas_on_paint_for_rtl_ui_ = enable;
   }
 
+  // Accelerated painting ------------------------------------------------------
+
+  // Enable/Disable accelerated compositing.
+  static void set_use_acceleration_when_possible(bool use);
+
   // Input ---------------------------------------------------------------------
   // The points (and mouse locations) in the following functions are in the
   // view's coordinates, except for a RootView.
@@ -1016,6 +1024,11 @@ class View : public AcceleratorTarget {
   // relevant contents.
   virtual void OnPaintFocusBorder(gfx::Canvas* canvas);
 
+  // Accelerated painting ------------------------------------------------------
+
+  // Performs accelerated painting using the compositor.
+  virtual void PaintComposite(ui::Compositor* compositor);
+
   // Input ---------------------------------------------------------------------
 
   // Called by HitTest to see if this View has a custom hit test mask. If the
@@ -1332,6 +1345,16 @@ class View : public AcceleratorTarget {
   // is going to be flipped horizontally (using the appropriate transform) on
   // right-to-left locales for this View.
   bool flip_canvas_on_paint_for_rtl_ui_;
+
+  // Accelerated painting ------------------------------------------------------
+
+  // Each transformed view will maintain its own canvas.
+  scoped_ptr<gfx::Canvas> canvas_;
+
+  // Texture ID used for accelerated painting.
+  // TODO(sadrul): This will eventually be replaced by an abstract texture
+  //               object.
+  ui::TextureID texture_id_;
 
   // Accelerators --------------------------------------------------------------
 

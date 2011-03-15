@@ -171,6 +171,18 @@ NativeViewId IdFromNativeView(NativeView view);
   const PluginWindowHandle kNullPluginWindow = 0;
 #endif
 
+// AcceleratedWidget provides a surface to compositors to paint pixels.
+#if defined(OS_WIN)
+typedef HWND AcceleratedWidget;
+const AcceleratedWidget kNullAcceleratedWidget = NULL;
+#elif defined(USE_X11)
+typedef unsigned long AcceleratedWidget;
+const AcceleratedWidget kNullAcceleratedWidget = 0;
+#else
+typedef void* AcceleratedWidget;
+const AcceleratedWidget kNullAcceleratedWidget = NULL;
+#endif
+
 }  // namespace gfx
 
 #endif  // UI_GFX_NATIVE_WIDGET_TYPES_H_

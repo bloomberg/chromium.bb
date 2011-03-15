@@ -345,6 +345,11 @@ void CanvasDirect2D::Transform(const ui::Transform& transform) {
   NOTIMPLEMENTED();
 }
 
+ui::TextureID CanvasDirect2D::GetTextureID() {
+  NOTIMPLEMENTED();
+  return 0;
+}
+
 CanvasSkia* CanvasDirect2D::AsCanvasSkia() {
   return NULL;
 }

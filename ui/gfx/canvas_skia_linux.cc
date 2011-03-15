@@ -384,4 +384,9 @@ void CanvasSkia::DrawGdkPixbuf(GdkPixbuf* pixbuf, int x, int y) {
   cairo_paint(cr);
 }
 
+ui::TextureID CanvasSkia::GetTextureID() {
+  // TODO(wjmaclean)
+  return 0;
+}
+
 }  // namespace gfx

@@ -955,7 +955,7 @@ gboolean WidgetGtk::OnPaint(GtkWidget* widget, GdkEventExpose* event) {
   gfx::CanvasSkiaPaint canvas(event);
   if (!canvas.is_empty()) {
     canvas.set_composite_alpha(is_transparent());
-    GetRootView()->Paint(&canvas);
+    delegate_->OnPaint(&canvas);
   }
   return false;  // False indicates other widgets should get the event as well.
 }
@@ -1268,6 +1268,11 @@ void WidgetGtk::HandleGrabBroke() {
 
 RootView* WidgetGtk::CreateRootView() {
   return new RootView(this);
+}
+
+gfx::AcceleratedWidget WidgetGtk::GetAcceleratedWidget() {
+  DCHECK(window_contents_ && window_contents_->window);
+  return GDK_WINDOW_XID(window_contents_->window);
 }
 
 gboolean WidgetGtk::OnWindowPaint(GtkWidget* widget, GdkEventExpose* event) {

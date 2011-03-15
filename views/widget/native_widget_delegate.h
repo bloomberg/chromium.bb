@@ -7,6 +7,7 @@
 #pragma once
 
 namespace gfx {
+class Canvas;
 class Size;
 }
 
@@ -35,6 +36,10 @@ class NativeWidgetDelegate {
 
   // Returns true if the delegate has a FocusManager.
   virtual bool HasFocusManager() const = 0;
+
+  // Paints the rootview in the canvas. This will also refresh the compositor
+  // tree if necessary when accelerated painting is enabled.
+  virtual void OnPaint(gfx::Canvas* canvas) = 0;
 };
 
 }  // namespace internal

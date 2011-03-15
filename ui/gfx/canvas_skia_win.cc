@@ -298,4 +298,9 @@ void CanvasSkia::DrawStringWithHalo(const string16& text,
   DrawBitmapInt(text_bitmap, x - 1, y - 1);
 }
 
+ui::TextureID CanvasSkia::GetTextureID() {
+  // TODO(wjmaclean)
+  return 0;
+}
+
 }  // namespace gfx
