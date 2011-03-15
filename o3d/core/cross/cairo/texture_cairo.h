@@ -105,8 +105,6 @@ class TextureCairo : public Texture2D {
                int height,
                bool enable_render_surfaces);
 
-  // The 2d renderer object to be used by client.
-  RendererCairo* renderer_;
   // The Cairo image for this texture.
   cairo_surface_t* image_surface_;
 };

@@ -29,7 +29,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-// Renderer that is using 2D Library Cairo.
+// A 2D renderer that uses the Cairo library.
 
 #include "core/cross/cairo/renderer_cairo.h"
 
@@ -68,7 +68,10 @@ RendererCairo::RendererCairo(ServiceLocator* service_locator)
 #elif defined(OS_WIN)
       hwnd_(NULL),
 #endif
-      main_surface_(NULL),
+      display_surface_(NULL),
+#ifdef COMPOSITING_TO_IMAGE
+      image_surface_(NULL),
+#endif
       fullscreen_(false) {
   // Don't need to do anything.
 }
@@ -85,8 +88,11 @@ RendererCairo* RendererCairo::CreateDefault(ServiceLocator* service_locator) {
 void RendererCairo::Destroy() {
   DLOG(INFO) << "To Destroy";
 
+#ifdef COMPOSITING_TO_IMAGE
+  DestroyImageSurface();
+#endif
 #if defined(OS_LINUX) || defined(OS_WIN)
-  DestroyCairoSurface();
+  DestroyDisplaySurface();
 #endif
 
 #if defined(OS_LINUX)
@@ -106,24 +112,32 @@ bool LayerZValueLessThan(const Layer* first, const Layer* second) {
 
 void RendererCairo::Paint() {
 #ifdef OS_MACOSX
-  // On OSX we can't persist the Cairo surface across Paint() calls because
+  // On OSX we can't persist the display surface across Paint() calls because
   // of issues in Safari with unbalanced CGContextSaveGState/RestoreGState calls
   // causing crashes, so we have to create and destroy the surface for every
   // frame.
-  CreateCairoSurface();
+  CreateDisplaySurface();
 #endif
 
-  if (!main_surface_) {
+  if (!display_surface_) {
     DLOG(INFO) << "No target surface, cannot paint";
     return;
   }
 
   // TODO(tschmelcher): Don't keep creating and destroying the drawing context.
-  cairo_t* current_drawing = cairo_create(main_surface_);
+  cairo_t* current_drawing = cairo_create(
+#ifdef COMPOSITING_TO_IMAGE
+      image_surface_
+#else
+      display_surface_
+#endif
+      );
 
+#ifndef COMPOSITING_TO_IMAGE
   // Redirect drawing to an off-screen surface (holding only colour information,
   // without an alpha channel).
   cairo_push_group_with_content(current_drawing, CAIRO_CONTENT_COLOR);
+#endif
 
   // Set fill (and clip) rule.
   cairo_set_fill_rule(current_drawing, CAIRO_FILL_RULE_EVEN_ODD);
@@ -203,17 +217,26 @@ void RendererCairo::Paint() {
     cairo_restore(current_drawing);
   }
 
+#ifdef COMPOSITING_TO_IMAGE
+  // Finish drawing to the image and set up a new context for painting the image
+  // to the screen.
+  cairo_destroy(current_drawing);
+  current_drawing = cairo_create(display_surface_);
+  cairo_set_source_surface(current_drawing, image_surface_, 0, 0);
+  cairo_set_operator(current_drawing, CAIRO_OPERATOR_SOURCE);
+#else
   // Finish off-screen drawing and make the off-screen surface the source for
   // paints to the screen.
   cairo_pop_group_to_source(current_drawing);
+#endif
 
-  // Paint the off-screen surface to the screen.
+  // Paint to the screen.
   cairo_paint(current_drawing);
 
   cairo_destroy(current_drawing);
 
 #ifdef OS_MACOSX
-  DestroyCairoSurface();
+  DestroyDisplaySurface();
 #endif
 }
 
@@ -245,17 +268,20 @@ void RendererCairo::RemoveLayer(Layer* image) {
 
 void RendererCairo::InitCommon() {
 #if defined(OS_LINUX) || defined(OS_WIN)
-  CreateCairoSurface();
+  CreateDisplaySurface();
+#endif
+#ifdef COMPOSITING_TO_IMAGE
+  CreateImageSurface();
 #endif
 }
 
-void RendererCairo::CreateCairoSurface() {
+void RendererCairo::CreateDisplaySurface() {
 #if defined(OS_LINUX)
-  main_surface_ = cairo_xlib_surface_create(display_,
-                                            window_,
-                                            XDefaultVisual(display_, 0),
-                                            display_width(),
-                                            display_height());
+  display_surface_ = cairo_xlib_surface_create(display_,
+                                               window_,
+                                               XDefaultVisual(display_, 0),
+                                               display_width(),
+                                               display_height());
 #elif defined(OS_MACOSX)
   if (!mac_cg_context_ref_) {
     // Can't create the surface until we get a valid CGContextRef. If we don't
@@ -270,34 +296,34 @@ void RendererCairo::CreateCairoSurface() {
   // Normally this function requires the caller to transform the CG coordinate
   // space to match Cairo's origin convention, but in NPAPI it happens to
   // already be that way.
-  main_surface_ = cairo_quartz_surface_create_for_cg_context(
+  display_surface_ = cairo_quartz_surface_create_for_cg_context(
       mac_cg_context_ref_,
       display_width(),
       display_height());
 #elif defined(OS_WIN)
   HDC hdc = GetDC(hwnd_);
 
-  main_surface_ = cairo_win32_surface_create(hdc);
+  display_surface_ = cairo_win32_surface_create(hdc);
 
   // Check the surface to make sure it has the correct clip box.
   cairo_win32_surface_t* cairo_surface =
-      reinterpret_cast<cairo_win32_surface_t*>(main_surface_);
+      reinterpret_cast<cairo_win32_surface_t*>(display_surface_);
   if (cairo_surface->extents.width != display_width() ||
       cairo_surface->extents.height != display_height()) {
     // The clip box doesn't have the right info.  Need to do the following:
     // 1. Update the surface parameters to the right rectangle.
     // 2. Try to update the DC clip region.
-    DLOG(WARNING) << "CreateCairoSurface updates clip box from (0,0,"
+    DLOG(WARNING) << "CreateDisplaySurface updates clip box from (0,0,"
                   << cairo_surface->extents.width << ","
                   << cairo_surface->extents.height << ") to (0,0,"
                   << display_width() << "," << display_height() << ").";
     HRGN hRegion = CreateRectRgn(0, 0, display_width(), display_height());
     int result = SelectClipRgn(hdc, hRegion);
     if (result == ERROR) {
-      LOG(ERROR) << "CreateCairoSurface SelectClipRgn returns ERROR";
+      LOG(ERROR) << "CreateDisplaySurface SelectClipRgn returns ERROR";
     } else if (result == NULLREGION) {
       // This should not happen since the ShowWindow is called.
-      LOG(ERROR) << "CreateCairoSurface SelectClipRgn returns NULLREGION";
+      LOG(ERROR) << "CreateDisplaySurface SelectClipRgn returns NULLREGION";
     }
     DeleteObject(hRegion);
     cairo_surface->extents.width = display_width();
@@ -308,12 +334,27 @@ void RendererCairo::CreateCairoSurface() {
 #endif
 }
 
-void RendererCairo::DestroyCairoSurface() {
-  if (main_surface_ != NULL) {
-    cairo_surface_destroy(main_surface_);
-    main_surface_ = NULL;
+void RendererCairo::DestroyDisplaySurface() {
+  if (display_surface_ != NULL) {
+    cairo_surface_destroy(display_surface_);
+    display_surface_ = NULL;
   }
 }
+
+#ifdef COMPOSITING_TO_IMAGE
+void RendererCairo::CreateImageSurface() {
+  image_surface_ = cairo_image_surface_create(CAIRO_FORMAT_RGB24,
+                                              display_width(),
+                                              display_height());
+}
+
+void RendererCairo::DestroyImageSurface() {
+  if (image_surface_) {
+    cairo_surface_destroy(image_surface_);
+    image_surface_ = NULL;
+  }
+}
+#endif
 
 void RendererCairo::UninitCommon() {
   // Don't need to do anything.
@@ -358,10 +399,14 @@ void RendererCairo::Resize(int width, int height) {
 
 #if defined(OS_LINUX)
   // Resize the mainSurface and buffer
-  cairo_xlib_surface_set_size(main_surface_, width, height);
+  cairo_xlib_surface_set_size(display_surface_, width, height);
 #elif defined(OS_WIN)
-  DestroyCairoSurface();
-  CreateCairoSurface();
+  DestroyDisplaySurface();
+  CreateDisplaySurface();
+#endif
+#ifdef COMPOSITING_TO_IMAGE
+  DestroyImageSurface();
+  CreateImageSurface();
 #endif
 }
 

@@ -43,6 +43,17 @@
 #include "core/cross/renderer.h"
 #include "core/cross/cairo/layer.h"
 
+#ifdef OS_MACOSX
+// As of OS X 10.6.4, the Quartz 2D drawing API has hardware acceleration
+// disabled by default, and if you force-enable it then it actually hurts
+// performance instead of improving it (really, go google it). It also turns out
+// that the performance of the software implementation in Pixman is about 12%
+// faster than the OS X software implementation (measured as CPU usage per
+// rendered frame), so we do all compositing with Pixman via an image surface
+// and only use the OS to paint the final frame to the screen.
+#define COMPOSITING_TO_IMAGE 1
+#endif
+
 namespace o3d {
 
 namespace o2d {
@@ -228,8 +239,13 @@ class RendererCairo : public Renderer {
   void ClipArea(cairo_t* cr, LayerList::iterator it);
 
  private:
-  void CreateCairoSurface();
-  void DestroyCairoSurface();
+  void CreateDisplaySurface();
+  void DestroyDisplaySurface();
+
+#ifdef COMPOSITING_TO_IMAGE
+  void CreateImageSurface();
+  void DestroyImageSurface();
+#endif
 
 #if defined(OS_LINUX)
   // Linux Client Display
@@ -242,8 +258,13 @@ class RendererCairo : public Renderer {
   HWND hwnd_;
 #endif
 
-  // Main surface to render cairo
-  cairo_surface_t* main_surface_;
+  // The OS-specific cairo surface for our display window.
+  cairo_surface_t* display_surface_;
+#ifdef COMPOSITING_TO_IMAGE
+  // An image surface for compositing the frame before drawing to the display
+  // surface.
+  cairo_surface_t* image_surface_;
+#endif
 
   // Array of Layer
   LayerList layer_list_;

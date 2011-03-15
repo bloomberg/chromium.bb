@@ -49,7 +49,7 @@ Texture::RGBASwizzleIndices g_gl_abgr32f_swizzle_indices = {0, 1, 2, 3};
 
 namespace o2d {
 
-static int CairoFormatFromO3DFormat(
+static cairo_format_t CairoFormatFromO3DFormat(
     Texture::Format format) {
   switch (format) {
     case Texture::ARGB8:
@@ -57,7 +57,7 @@ static int CairoFormatFromO3DFormat(
     case Texture::XRGB8:
       return CAIRO_FORMAT_RGB24;
     default:
-      return -1;
+      return CAIRO_FORMAT_INVALID;
   }
   // Cairo also supports two other pure-alpha formats, but we don't expose those
   // capabilities.
@@ -76,8 +76,6 @@ TextureCairo::TextureCairo(ServiceLocator* service_locator,
                 format,
                 levels,
                 enable_render_surfaces),
-      renderer_(static_cast<RendererCairo*>(
-          service_locator->GetService<Renderer>())),
       image_surface_(image_surface) {
   DLOG(INFO) << "Texture2D Construct";
   DCHECK_NE(format, Texture::UNKNOWN_FORMAT);
@@ -90,15 +88,15 @@ TextureCairo* TextureCairo::Create(ServiceLocator* service_locator,
                                    int width,
                                    int height,
                                    bool enable_render_surfaces) {
-  int cairo_format = CairoFormatFromO3DFormat(format);
+  cairo_format_t cairo_format = CairoFormatFromO3DFormat(format);
   cairo_surface_t* image_surface;
   cairo_status_t status;
-  if (-1 == cairo_format) {
+  if (CAIRO_FORMAT_INVALID == cairo_format) {
     DLOG(ERROR) << "Texture format " << format << " not supported by Cairo";
     goto fail0;
   }
   image_surface = cairo_image_surface_create(
-      static_cast<cairo_format_t>(cairo_format),
+      cairo_format,
       width,
       height);
   status = cairo_surface_status(image_surface);
@@ -129,7 +127,6 @@ const Texture::RGBASwizzleIndices& TextureCairo::GetABGR32FSwizzleIndices() {
 
 TextureCairo::~TextureCairo() {
   cairo_surface_destroy(image_surface_);
-  renderer_ = NULL;
   DLOG(INFO) << "Texture2DCairo Destruct";
 }
 
