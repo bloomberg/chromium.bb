@@ -25,10 +25,7 @@ node = env.PPAPIBrowserTester(
     url='async_messaging.html',
     files=[env.File('async_messaging.html')] + test_files)
 
-# Disabled for ARM because Chrome binaries for ARM are not available.
-# TODO(ncbray): Enable this on Windows.
-tester_is_broken = env.Bit('target_arm') or env.Bit('host_windows')
 env.AddNodeToTestSuite(node,
                        ['chrome_browser_tests'],
                        'run_async_messaging_test',
-                       is_broken=tester_is_broken)
+                       is_broken=env.PPAPIBrowserTesterIsBroken())
