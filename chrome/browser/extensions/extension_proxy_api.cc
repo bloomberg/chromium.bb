@@ -144,13 +144,13 @@ void ExtensionProxyEventRouter::OnProxyError(
   }
 }
 
-ProxyPreferenceTransformer::ProxyPreferenceTransformer() {
+ProxyPrefTransformer::ProxyPrefTransformer() {
 }
 
-ProxyPreferenceTransformer::~ProxyPreferenceTransformer() {
+ProxyPrefTransformer::~ProxyPrefTransformer() {
 }
 
-Value* ProxyPreferenceTransformer::ExtensionToBrowserPref(
+Value* ProxyPrefTransformer::ExtensionToBrowserPref(
     const Value* extension_pref,
     std::string* error) {
   CHECK(extension_pref->IsType(Value::TYPE_DICTIONARY));
@@ -261,7 +261,7 @@ Value* ProxyPreferenceTransformer::ExtensionToBrowserPref(
   return result_proxy_config;
 }
 
-Value* ProxyPreferenceTransformer::BrowserToExtensionPref(
+Value* ProxyPrefTransformer::BrowserToExtensionPref(
     const Value* browser_pref) {
   CHECK(browser_pref->IsType(Value::TYPE_DICTIONARY));
   ProxyConfigDictionary dict(static_cast<const DictionaryValue*>(browser_pref));
@@ -339,7 +339,7 @@ Value* ProxyPreferenceTransformer::BrowserToExtensionPref(
   return extension_pref.release();
 }
 
-bool ProxyPreferenceTransformer::GetProxyServer(
+bool ProxyPrefTransformer::GetProxyServer(
     const DictionaryValue* dict,
     net::ProxyServer::Scheme default_scheme,
     net::ProxyServer* proxy_server,
@@ -378,7 +378,7 @@ bool ProxyPreferenceTransformer::GetProxyServer(
   return true;
 }
 
-bool ProxyPreferenceTransformer::GetProxyRules(DictionaryValue* proxy_rules,
+bool ProxyPrefTransformer::GetProxyRules(DictionaryValue* proxy_rules,
                                                std::string* out,
                                                std::string* error) {
   if (!proxy_rules)
@@ -440,10 +440,10 @@ bool ProxyPreferenceTransformer::GetProxyRules(DictionaryValue* proxy_rules,
   return true;
 }
 
-bool ProxyPreferenceTransformer::JoinUrlList(ListValue* list,
-                                             const std::string& joiner,
-                                             std::string* out,
-                                             std::string* error) {
+bool ProxyPrefTransformer::JoinUrlList(ListValue* list,
+                                       const std::string& joiner,
+                                       std::string* out,
+                                       std::string* error) {
   std::string result;
   for (size_t i = 0; i < list->GetSize(); ++i) {
     if (!result.empty())
@@ -465,9 +465,9 @@ bool ProxyPreferenceTransformer::JoinUrlList(ListValue* list,
   return true;
 }
 
-bool ProxyPreferenceTransformer::GetBypassList(DictionaryValue* proxy_rules,
-                                               std::string* out,
-                                               std::string* error) {
+bool ProxyPrefTransformer::GetBypassList(DictionaryValue* proxy_rules,
+                                         std::string* out,
+                                         std::string* error) {
   if (!proxy_rules)
     return false;
 
@@ -484,8 +484,8 @@ bool ProxyPreferenceTransformer::GetBypassList(DictionaryValue* proxy_rules,
   return JoinUrlList(bypass_list, ",", out, error);
 }
 
-bool ProxyPreferenceTransformer::ParseRules(const std::string& rules,
-                                            DictionaryValue* out) const {
+bool ProxyPrefTransformer::ParseRules(const std::string& rules,
+                                      DictionaryValue* out) const {
   net::ProxyConfig::ProxyRules config;
   config.ParseFromString(rules);
   switch (config.type) {
@@ -520,7 +520,7 @@ bool ProxyPreferenceTransformer::ParseRules(const std::string& rules,
   return true;
 }
 
-DictionaryValue* ProxyPreferenceTransformer::ConvertToDictionary(
+DictionaryValue* ProxyPrefTransformer::ConvertToDictionary(
     const net::ProxyServer& proxy) const {
   DictionaryValue* out = new DictionaryValue;
   switch (proxy.scheme()) {
@@ -544,51 +544,4 @@ DictionaryValue* ProxyPreferenceTransformer::ConvertToDictionary(
   out->SetString(kProxyCfgRuleHost, proxy.host_port_pair().host());
   out->SetInteger(kProxyCfgRulePort, proxy.host_port_pair().port());
   return out;
-}
-
-SetProxySettingsFunction::~SetProxySettingsFunction() {
-}
-
-bool SetProxySettingsFunction::RunImpl() {
-  DictionaryValue* details = NULL;
-  EXTENSION_FUNCTION_VALIDATE(args_->GetDictionary(1, &details));
-
-  DictionaryValue* proxy_config = NULL;
-  EXTENSION_FUNCTION_VALIDATE(details->GetDictionary("value", &proxy_config));
-
-  Value* result_proxy_config =
-      transformer.ExtensionToBrowserPref(proxy_config, &error_);
-
-  if (!result_proxy_config)
-    return false;
-
-  details->Set("value", result_proxy_config);
-  return SetPreferenceFunction::RunImpl();
-}
-
-GetProxySettingsFunction::~GetProxySettingsFunction() {
-}
-
-bool GetProxySettingsFunction::RunImpl() {
-  if (!GetPreferenceFunction::RunImpl())
-    return false;
-
-  DCHECK(result_->IsType(Value::TYPE_DICTIONARY));
-
-  DictionaryValue* result_dict_ = static_cast<DictionaryValue*>(result_.get());
-
-  // This is how it is stored in the PrefStores:
-  DictionaryValue* proxy_prefs = NULL;
-  if (!result_dict_->GetDictionary(kProxyCfgValue, &proxy_prefs)) {
-    LOG(ERROR) << "Received invalid configuration.";
-    return false;
-  }
-
-  Value* result_proxy_config = transformer.BrowserToExtensionPref(proxy_prefs);
-
-  if (!result_proxy_config)
-    return false;
-
-  result_dict_->Set(kProxyCfgValue, result_proxy_config);
-  return true;
 }

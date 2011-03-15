@@ -258,10 +258,6 @@ void FactoryRegistry::ResetFunctions() {
   RegisterFunction<OmniboxSendSuggestionsFunction>();
   RegisterFunction<OmniboxSetDefaultSuggestionFunction>();
 
-  // Proxies.
-  RegisterFunction<SetProxySettingsFunction>();
-  RegisterFunction<GetProxySettingsFunction>();
-
   // Sidebar.
   RegisterFunction<CollapseSidebarFunction>();
   RegisterFunction<ExpandSidebarFunction>();

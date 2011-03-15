@@ -12,8 +12,10 @@
 
 class Value;
 
-class PreferenceTransformerInterface {
+class PrefTransformerInterface {
  public:
+  virtual ~PrefTransformerInterface() {}
+
   // Converts the representation of a preference as seen by the extension
   // into a representation that is used in the pref stores of the browser.
   // Returns the pref store representation in case of success or sets

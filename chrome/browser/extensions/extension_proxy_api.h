@@ -8,7 +8,6 @@
 #include <string>
 
 #include "base/singleton.h"
-#include "chrome/browser/extensions/extension_function.h"
 #include "chrome/browser/extensions/extension_preference_api.h"
 #include "chrome/browser/profiles/profile.h"
 #include "net/proxy/proxy_config.h"
@@ -16,12 +15,12 @@
 class DictionaryValue;
 class ExtensionEventRouterForwarder;
 
-class ProxyPreferenceTransformer : public PreferenceTransformerInterface {
+class ProxyPrefTransformer : public PrefTransformerInterface {
  public:
-  ProxyPreferenceTransformer();
-  virtual ~ProxyPreferenceTransformer();
+  ProxyPrefTransformer();
+  virtual ~ProxyPrefTransformer();
 
-  // Implementation of PreferenceTransformerInterface.
+  // Implementation of PrefTransformerInterface.
   virtual Value* ExtensionToBrowserPref(const Value* extension_pref,
                                         std::string* error);
   virtual Value* BrowserToExtensionPref(const Value* browser_pref);
@@ -69,7 +68,7 @@ class ProxyPreferenceTransformer : public PreferenceTransformerInterface {
   bool ParseRules(const std::string& rules, DictionaryValue* out) const;
   DictionaryValue* ConvertToDictionary(const net::ProxyServer& proxy) const;
 
-  DISALLOW_COPY_AND_ASSIGN(ProxyPreferenceTransformer);
+  DISALLOW_COPY_AND_ASSIGN(ProxyPrefTransformer);
 };
 
 // This class observes proxy error events and routes them to the appropriate
@@ -90,28 +89,6 @@ class ExtensionProxyEventRouter {
   ~ExtensionProxyEventRouter();
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionProxyEventRouter);
-};
-
-class SetProxySettingsFunction : public SetPreferenceFunction {
- public:
-  virtual ~SetProxySettingsFunction();
-  virtual bool RunImpl();
-
-  DECLARE_EXTENSION_FUNCTION_NAME("experimental.proxy.set")
-
- private:
-  ProxyPreferenceTransformer transformer;
-};
-
-class GetProxySettingsFunction : public GetPreferenceFunction {
- public:
-  virtual ~GetProxySettingsFunction();
-  virtual bool RunImpl();
-
-  DECLARE_EXTENSION_FUNCTION_NAME("experimental.proxy.get")
-
- private:
-  ProxyPreferenceTransformer transformer;
 };
 
 #endif  // CHROME_BROWSER_EXTENSIONS_EXTENSION_PROXY_API_H_

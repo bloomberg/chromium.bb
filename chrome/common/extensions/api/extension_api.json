@@ -3779,11 +3779,7 @@
         "description": "Proxy settings to be used. The value of this preference is a ProxyConfig object.",
         "value": [
           "proxy",
-          {"$ref": "ProxyConfig"},
-          {
-            "get": "experimental.proxy.get",
-            "set": "experimental.proxy.set"
-          }
+          {"$ref": "ProxyConfig"}
         ]
       }
     },
