@@ -77,13 +77,6 @@ class PdfPsMetafile : public NativeMetafile  {
   // This function should ONLY be called after PDF file is closed.
   virtual bool SaveTo(const base::FileDescriptor& fd) const;
 
-  // The hardcoded margins, in points. These values are based on 72 dpi,
-  // with 0.25 margins on top, left, and right, and 0.56 on bottom.
-  static const double kTopMarginInInch;
-  static const double kRightMarginInInch;
-  static const double kBottomMarginInInch;
-  static const double kLeftMarginInInch;
-
   // Returns the PdfPsMetafile object that owns the given context. Returns NULL
   // if the context was not created by a PdfPsMetafile object.
   static PdfPsMetafile* FromCairoContext(cairo_t* context);

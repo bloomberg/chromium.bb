@@ -24,6 +24,13 @@ class PrintSettingsInitializerGtk {
                                 bool print_selection_only,
                                 PrintSettings* print_settings);
 
+  // The default margins, in points. These values are based on 72 dpi,
+  // with 0.25 margins on top, left, and right, and 0.56 on bottom.
+  static const double kTopMarginInInch;
+  static const double kRightMarginInInch;
+  static const double kBottomMarginInInch;
+  static const double kLeftMarginInInch;
+
  private:
   DISALLOW_IMPLICIT_CONSTRUCTORS(PrintSettingsInitializerGtk);
 };

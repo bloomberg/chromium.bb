@@ -257,9 +257,4 @@ void PdfPsMetafile::CleanUpAll() {
   skia::VectorPlatformDevice::ClearFontCache();
 }
 
-const double PdfPsMetafile::kTopMarginInInch = 0.25;
-const double PdfPsMetafile::kBottomMarginInInch = 0.56;
-const double PdfPsMetafile::kLeftMarginInInch = 0.25;
-const double PdfPsMetafile::kRightMarginInInch = 0.25;
-
 }  // namespace printing

@@ -51,9 +51,7 @@ void PrintSettingsInitializerGtk::InitPrintSettings(
         gtk_page_setup_get_page_width(page_setup, GTK_UNIT_INCH) * dpi,
         gtk_page_setup_get_page_height(page_setup, GTK_UNIT_INCH) * dpi);
   } else {
-    // Use dummy values if we cannot get valid values.
-    // TODO(jhawkins) Remove this hack when the Linux printing refactoring
-    // finishes.
+    // Use default values if we cannot get valid values from the print dialog.
     dpi = kPixelsPerInch;
     double page_width_in_pixel = 8.5 * dpi;
     double page_height_in_pixel = 11.0 * dpi;
@@ -61,16 +59,10 @@ void PrintSettingsInitializerGtk::InitPrintSettings(
         static_cast<int>(page_width_in_pixel),
         static_cast<int>(page_height_in_pixel));
     printable_area_device_units.SetRect(
-        static_cast<int>(
-            PdfPsMetafile::kLeftMarginInInch * dpi),
-        static_cast<int>(
-            PdfPsMetafile::kTopMarginInInch * dpi),
-        page_width_in_pixel -
-            (PdfPsMetafile::kLeftMarginInInch +
-             PdfPsMetafile::kRightMarginInInch) * dpi,
-        page_height_in_pixel -
-            (PdfPsMetafile::kTopMarginInInch +
-             PdfPsMetafile::kBottomMarginInInch) * dpi);
+        static_cast<int>(kLeftMarginInInch * dpi),
+        static_cast<int>(kTopMarginInInch * dpi),
+        page_width_in_pixel - (kLeftMarginInInch + kRightMarginInInch) * dpi,
+        page_height_in_pixel - (kTopMarginInInch + kBottomMarginInInch) * dpi);
   }
 
   print_settings->set_dpi(dpi);
@@ -78,5 +70,10 @@ void PrintSettingsInitializerGtk::InitPrintSettings(
                                           printable_area_device_units,
                                           dpi);
 }
+
+const double PrintSettingsInitializerGtk::kTopMarginInInch = 0.25;
+const double PrintSettingsInitializerGtk::kBottomMarginInInch = 0.56;
+const double PrintSettingsInitializerGtk::kLeftMarginInInch = 0.25;
+const double PrintSettingsInitializerGtk::kRightMarginInInch = 0.25;
 
 }  // namespace printing
