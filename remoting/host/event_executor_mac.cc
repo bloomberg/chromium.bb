@@ -22,7 +22,8 @@ using protocol::KeyEvent;
 EventExecutorMac::EventExecutorMac(
     MessageLoopForUI* message_loop, Capturer* capturer)
     : message_loop_(message_loop),
-      capturer_(capturer), last_x_(0), last_y_(0), modifiers_(0) {
+      capturer_(capturer), last_x_(0), last_y_(0), modifiers_(0),
+      mouse_buttons_(0) {
 }
 
 EventExecutorMac::~EventExecutorMac() {
@@ -230,8 +231,6 @@ void EventExecutorMac::InjectKeyEvent(const KeyEvent* event, Task* done) {
 }
 
 void EventExecutorMac::InjectMouseEvent(const MouseEvent* event, Task* done) {
-  CGEventType event_type = kCGEventNull;
-
   if (event->has_x() && event->has_y()) {
     // TODO(wez): Checking the validity of the MouseEvent should be done in core
     // cross-platform code, not here!
@@ -241,51 +240,47 @@ void EventExecutorMac::InjectMouseEvent(const MouseEvent* event, Task* done) {
     gfx::Size size = capturer_->size_most_recent();
     if (event->x() >= 0 || event->y() >= 0 ||
         event->x() < size.width() || event->y() < size.height()) {
-
       VLOG(3) << "Moving mouse to " << event->x() << "," << event->y();
-
-      event_type = kCGEventMouseMoved;
       last_x_ = event->x();
       last_y_ = event->y();
-    }
-  }
-
-  CGPoint position = CGPointMake(last_x_, last_y_);
-  CGMouseButton mouse_button = 0;
-
-  if (event->has_button() && event->has_button_down()) {
-
-    VLOG(2) << "Button " << event->button()
-            << (event->button_down() ? " down" : " up");
-
-    event_type = event->button_down() ? kCGEventOtherMouseDown
-                                      : kCGEventOtherMouseUp;
-    if (MouseEvent::BUTTON_LEFT == event->button()) {
-      event_type = event->button_down() ? kCGEventLeftMouseDown
-                                        : kCGEventLeftMouseUp;
-      mouse_button = kCGMouseButtonLeft; // not strictly necessary
-    } else if (MouseEvent::BUTTON_RIGHT == event->button()) {
-      event_type = event->button_down() ? kCGEventRightMouseDown
-                                        : kCGEventRightMouseUp;
-      mouse_button = kCGMouseButtonRight; // not strictly necessary
-    } else if (MouseEvent::BUTTON_MIDDLE == event->button()) {
-      mouse_button = kCGMouseButtonCenter;
     } else {
-      VLOG(1) << "Unknown mouse button!" << event->button();
+      VLOG(1) << "Invalid mouse position " << event->x() << "," << event->y();
     }
   }
+  if (event->has_button() && event->has_button_down()) {
+    if (event->button() >= 1 && event->button() <= 3) {
+      VLOG(2) << "Button " << event->button()
+              << (event->button_down() ? " down" : " up");
+      int button_change = 1 << (event->button() - 1);
+      if (event->button_down())
+        mouse_buttons_ |= button_change;
+      else
+        mouse_buttons_ &= ~button_change;
+    } else {
+      VLOG(1) << "Unknown mouse button: " << event->button();
+    }
+  }
+  // We use the deprecated CGPostMouseEvent API because we receive low-level
+  // mouse events, whereas CGEventCreateMouseEvent is for injecting higher-level
+  // events. For example, the deprecated APIs will detect double-clicks or drags
+  // in a way that is consistent with how they would be generated using a local
+  // mouse, whereas the new APIs expect us to inject these higher-level events
+  // directly.
+  CGPoint position = CGPointMake(last_x_, last_y_);
+  enum {
+    LeftBit = 1 << (MouseEvent::BUTTON_LEFT - 1),
+    MiddleBit = 1 << (MouseEvent::BUTTON_MIDDLE - 1),
+    RightBit = 1 << (MouseEvent::BUTTON_RIGHT - 1)
+  };
+  CGPostMouseEvent(position, true, 3,
+                   (mouse_buttons_ & LeftBit) != 0,
+                   (mouse_buttons_ & RightBit) != 0,
+                   (mouse_buttons_ & MiddleBit) != 0);
 
   if (event->has_wheel_offset_x() && event->has_wheel_offset_y()) {
-    // TODO(wez): Should set event_type == kCGEventScrollWheel and
-    // populate fields for a CGEventCreateScrollWheelEvent() here.
+    // TODO(jamiewalch): Use either CGPostScrollWheelEvent() or
+    // CGEventCreateScrollWheelEvent() to inject scroll events.
     NOTIMPLEMENTED() << "No scroll wheel support yet.";
-  }
-
-  if (event_type != kCGEventNull) {
-    base::mac::ScopedCFTypeRef<CGEventRef>  mouse_event(
-        CGEventCreateMouseEvent(NULL, event_type, position, mouse_button));
-    CGEventSetFlags(mouse_event, modifiers_);
-    CGEventPost(kCGSessionEventTap, mouse_event);
   }
 
   done->Run();
