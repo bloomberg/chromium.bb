@@ -832,6 +832,16 @@ void RenderWidgetHostViewViews::ForwardKeyEvent(
     wke.text[0] = wke.unmodifiedText[0] =
         static_cast<unsigned short>(gdk_keyval_to_unicode(keyval));
 
+    // Due to a bug in GDK, gdk_keyval_to_unicode(keyval) returns 0 if keyval
+    // is GDK_Return. It should instead return '\r'. This is causing
+    // http://code.google.com/p/chromium/issues/detail?id=75779
+    // Hence, the ugly hack below.
+    // TODO(varunjain): remove the hack when the GDK bug
+    // https://bugzilla.gnome.org/show_bug.cgi?id=644836 gets sorted out.
+    if (event.key_code() == ui::VKEY_RETURN) {
+      wke.text[0] = wke.unmodifiedText[0] = '\r';
+    }
+
     wke.modifiers = WebInputEventFlagsFromViewsEvent(event);
 
     ForwardWebKeyboardEvent(wke);
