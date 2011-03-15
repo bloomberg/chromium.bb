@@ -15,6 +15,7 @@
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/renderer_host/render_widget_host_view.h"
 #include "content/common/gpu_messages.h"
+#include "gpu/common/gpu_trace_event.h"
 
 #if defined(OS_LINUX)
 // These two #includes need to come after gpu_messages.h.
@@ -269,6 +270,7 @@ void GpuProcessHostUIShim::EstablishGpuChannel(
     int renderer_id,
     EstablishChannelCallback *callback) {
   DCHECK(CalledOnValidThread());
+  GPU_TRACE_EVENT0("gpu", "GpuProcessHostUIShim::EstablishGpuChannel");
   linked_ptr<EstablishChannelCallback> wrapped_callback(callback);
 
   // If GPU features are already blacklisted, no need to establish the channel.
@@ -539,4 +541,3 @@ void GpuProcessHostUIShim::OnScheduleComposite(int renderer_id,
 }
 
 #endif
-

@@ -35,6 +35,7 @@
 #include "chrome/common/url_constants.h"
 #include "content/browser/browser_thread.h"
 #include "content/browser/gpu_process_host.h"
+#include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "grit/browser_resources.h"
 #include "grit/generated_resources.h"
@@ -75,6 +76,8 @@ class GpuMessageHandler
   virtual void RegisterMessages();
 
   // Mesages
+  void OnBeginTracing(const ListValue* list);
+  void OnEndTracingAsync(const ListValue* list);
   void OnBrowserBridgeInitialized(const ListValue* list);
   void OnCallAsync(const ListValue* list);
 
@@ -82,6 +85,8 @@ class GpuMessageHandler
   Value* OnRequestClientInfo(const ListValue* list);
   Value* OnRequestLogMessages(const ListValue* list);
 
+  // Callbacks.
+  void OnTraceDataCollected(const std::string& json_events);
   void OnGpuInfoUpdate();
 
   // Executes the javascript function |function_name| in the renderer, passing
@@ -95,7 +100,11 @@ class GpuMessageHandler
   // Cache the Singleton for efficiency.
   GpuDataManager* gpu_data_manager_;
 
+  void OnEndTracingComplete();
+
   Callback0::Type* gpu_info_update_callback_;
+
+  bool trace_enabled_;
 };
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -141,7 +150,9 @@ std::string GpuHTMLSource::GetMimeType(const std::string&) const {
 //
 ////////////////////////////////////////////////////////////////////////////////
 
-GpuMessageHandler::GpuMessageHandler() : gpu_info_update_callback_(NULL) {
+GpuMessageHandler::GpuMessageHandler()
+  : gpu_info_update_callback_(NULL)
+  , trace_enabled_(false) {
   gpu_data_manager_ = GpuDataManager::GetInstance();
   DCHECK(gpu_data_manager_);
 }
@@ -151,6 +162,9 @@ GpuMessageHandler::~GpuMessageHandler() {
     gpu_data_manager_->RemoveGpuInfoUpdateCallback(gpu_info_update_callback_);
     delete gpu_info_update_callback_;
   }
+
+  if (trace_enabled_)
+    OnEndTracingAsync(NULL);
 }
 
 WebUIMessageHandler* GpuMessageHandler::Attach(WebUI* web_ui) {
@@ -163,6 +177,12 @@ WebUIMessageHandler* GpuMessageHandler::Attach(WebUI* web_ui) {
 void GpuMessageHandler::RegisterMessages() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
+  web_ui_->RegisterMessageCallback(
+      "beginTracing",
+      NewCallback(this, &GpuMessageHandler::OnBeginTracing));
+  web_ui_->RegisterMessageCallback(
+      "endTracingAsync",
+      NewCallback(this, &GpuMessageHandler::OnEndTracingAsync));
   web_ui_->RegisterMessageCallback(
       "browserBridgeInitialized",
       NewCallback(this, &GpuMessageHandler::OnBrowserBridgeInitialized));
@@ -368,6 +388,38 @@ void GpuMessageHandler::OnGpuInfoUpdate() {
   delete gpu_info_val;
 }
 
+void GpuMessageHandler::OnBeginTracing(const ListValue* args) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  trace_enabled_ = true;
+  // TODO(jbates): TracingController::BeginTracing()
+}
+
+void GpuMessageHandler::OnEndTracingAsync(const ListValue* list) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(trace_enabled_);
+
+  // TODO(jbates): TracingController::OnEndTracingAsync(new
+  // Callback(this, GpuMessageHandler::OnEndTracingComplete))
+}
+
+void GpuMessageHandler::OnEndTracingComplete() {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  trace_enabled_ = false;
+  web_ui_->CallJavascriptFunction("tracingController.onEndTracingComplete");
+}
+
+void GpuMessageHandler::OnTraceDataCollected(const std::string& json_events) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  std::wstring javascript;
+  javascript += L"tracingController.onTraceDataCollected(";
+  javascript += UTF8ToWide(json_events);
+  javascript += L");";
+
+  web_ui_->GetRenderViewHost()->ExecuteJavascriptInWebFrame(string16(),
+      WideToUTF16Hack(javascript));
+}
+
 }  // namespace
 
 
@@ -385,4 +437,3 @@ GpuInternalsUI::GpuInternalsUI(TabContents* contents) : WebUI(contents) {
   // Set up the chrome://gpu/ source.
   contents->profile()->GetChromeURLDataManager()->AddDataSource(html_source);
 }
-

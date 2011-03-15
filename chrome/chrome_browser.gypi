@@ -28,6 +28,7 @@
         'userfeedback_proto',
         '../app/app.gyp:app_resources',
         '../content/content.gyp:content_browser',
+        '../gpu/gpu.gyp:gpu_common',
         '../media/media.gyp:media',
         '../ppapi/ppapi.gyp:ppapi_proxy',  # For PpapiMsg_LoadPlugin
         '../printing/printing.gyp:printing',

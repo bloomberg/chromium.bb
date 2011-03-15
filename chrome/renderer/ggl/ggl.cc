@@ -15,11 +15,13 @@
 #include "chrome/renderer/render_widget.h"
 #include "ipc/ipc_channel_handle.h"
 
+
 #if defined(ENABLE_GPU)
 #include "gpu/command_buffer/client/gles2_cmd_helper.h"
 #include "gpu/command_buffer/client/gles2_implementation.h"
 #include "gpu/command_buffer/client/gles2_lib.h"
 #include "gpu/command_buffer/common/constants.h"
+#include "gpu/common/gpu_trace_event.h"
 #include "gpu/GLES2/gles2_command_buffer.h"
 #endif  // ENABLE_GPU
 
@@ -387,6 +389,7 @@ bool Context::MakeCurrent(Context* context) {
 }
 
 bool Context::SwapBuffers() {
+  GPU_TRACE_EVENT0("gpu", "Context::SwapBuffers");
   // Don't request latest error status from service. Just use the locally cached
   // information from the last flush.
   if (command_buffer_->GetLastState().error != gpu::error::kNoError)

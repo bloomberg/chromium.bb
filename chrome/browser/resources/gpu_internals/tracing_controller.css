@@ -26,8 +26,7 @@ found in the LICENSE file.
   border-top-right-radius: 8px;
   border-top-left-radius: 8px;
   background-clip: border-box;
-  background: rgb(255,0,0);
-  border-left: 1px solid black;
-  border-top: 1px solid black;
-  border-right: 1px solid black;
+  background: rgb(255, 0, 0);
+  border: 1px solid black;
+  border-bottom: 0;
 }

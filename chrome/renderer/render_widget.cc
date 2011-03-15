@@ -17,6 +17,7 @@
 #include "chrome/renderer/render_process.h"
 #include "chrome/renderer/render_thread.h"
 #include "chrome/renderer/renderer_webkitclient_impl.h"
+#include "gpu/common/gpu_trace_event.h"
 #include "ipc/ipc_sync_message.h"
 #include "skia/ext/platform_canvas.h"
 #include "third_party/skia/include/core/SkShader.h"
@@ -546,6 +547,8 @@ void RenderWidget::CallDoDeferredUpdate() {
 }
 
 void RenderWidget::DoDeferredUpdate() {
+  GPU_TRACE_EVENT0("render_widget", "DoDeferredUpdate");
+
   if (!webwidget_ || update_reply_pending())
     return;
 

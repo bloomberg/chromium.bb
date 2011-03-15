@@ -29,6 +29,7 @@ body {
 <link rel="stylesheet" href="gpu_internals/timeline_view.css">
 <link rel="stylesheet" href="gpu_internals/timeline.css">
 <link rel="stylesheet" href="gpu_internals/tracing_controller.css">
+<link rel="stylesheet" href="gpu_internals/raw_events_view.css">
 <script src="chrome://resources/js/cr.js"></script>
 <script src="chrome://resources/js/cr/event_target.js"></script>
 <script src="chrome://resources/js/cr/ui.js"></script>
@@ -44,6 +45,7 @@ body {
 <script src="gpu_internals/timeline_track.js"></script>
 <script src="gpu_internals/fast_rect_renderer.js"></script>
 <script src="gpu_internals/timeline_view.js"></script>
+<script src="gpu_internals/raw_events_view.js"></script>
 <script src="gpu_internals/simulated_trace_data.js"></script>
 
 <script>
@@ -61,6 +63,12 @@ function onLoad() {
 
   // Create the views.
   cr.ui.decorate('#info-view', gpu.InfoView);
+
+  var rawEventsView = $('raw-events-view');
+  if (browserBridge.debugMode)
+    cr.ui.decorate('#raw-events-view', gpu.RawEventsView);
+  else
+    rawEventsView.parentNode.removeChild(rawEventsView);
 
   timelineView = $('timeline-view');
   if (browserBridge.debugMode)
@@ -100,9 +108,8 @@ document.addEventListener('DOMContentLoaded', onLoad);
   <!-- Tabs -->
   <div id="main-tabs">
     <include src="gpu_internals/info_view.html">
+    <include src="gpu_internals/raw_events_view.html">
     <include src="gpu_internals/timeline_view.html">
   </div>
-
-  <include src="gpu_internals/tracing_controller.html">
 </body>
 </html>

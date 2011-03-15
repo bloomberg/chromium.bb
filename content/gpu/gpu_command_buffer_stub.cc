@@ -12,6 +12,7 @@
 #include "content/gpu/gpu_channel.h"
 #include "content/gpu/gpu_command_buffer_stub.h"
 #include "content/gpu/gpu_thread.h"
+#include "gpu/common/gpu_trace_event.h"
 
 using gpu::Buffer;
 
@@ -351,6 +352,7 @@ void GpuCommandBufferStub::OnResizeOffscreenFrameBuffer(const gfx::Size& size) {
 }
 
 void GpuCommandBufferStub::OnSwapBuffers() {
+  GPU_TRACE_EVENT0("gpu", "GpuCommandBufferStub::OnSwapBuffers");
   Send(new GpuCommandBufferMsg_SwapBuffers(route_id_));
 }
 

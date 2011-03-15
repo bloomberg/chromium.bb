@@ -25,6 +25,20 @@
   },
   'targets': [
     {
+      'target_name': 'gpu_common',
+      'type': 'static_library',
+      'dependencies': [
+        '../base/base.gyp:base',
+      ],
+      'include_dirs': [
+        '..',
+      ],
+      'sources': [
+        'common/gpu_trace_event.cc',
+        'common/gpu_trace_event.h',
+      ],
+    },
+    {
       'target_name': 'command_buffer_common',
       'type': 'static_library',
       'include_dirs': [
@@ -163,6 +177,7 @@
       },
       'dependencies': [
         'command_buffer_common',
+        'gpu_common',
         '../app/app.gyp:app_base',
         '../base/base.gyp:base',
         '../ui/gfx/gfx.gyp:gfx',
@@ -231,6 +246,7 @@
         'command_buffer_client',
         'command_buffer_common',
         'command_buffer_service',
+        'gpu_common',
         'gpu_unittest_utils',
         'gles2_implementation_client_side_arrays',
         'gles2_cmd_helper',

@@ -9,6 +9,7 @@
 #include "base/compiler_specific.h"
 #include "base/message_loop.h"
 #include "app/gfx/gl/gl_context.h"
+#include "gpu/common/gpu_trace_event.h"
 
 using ::base::SharedMemory;
 
@@ -124,6 +125,7 @@ const unsigned int kMaxOutstandingSwapBuffersCallsPerOnscreenContext = 1;
 #endif
 
 void GPUProcessor::ProcessCommands() {
+  GPU_TRACE_EVENT0("gpu", "GPUProcessor:ProcessCommands");
   CommandBuffer::State state = command_buffer_->GetState();
   if (state.error != error::kNoError)
     return;

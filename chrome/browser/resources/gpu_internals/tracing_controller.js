@@ -7,20 +7,29 @@
  * @fileoverview State and UI for trace data collection.
  */
 cr.define('gpu', function() {
+
   function TracingController() {
-    this.overlay_ = $('gpu-tracing-overlay-template').cloneNode(true);
-    this.overlay_.removeAttribute('id');
+    this.startButton_ = document.createElement('div');
+    this.startButton_.className = 'gpu-tracing-start-button';
+    this.startButton_.textContent = 'Start tracing';
+    this.startButton_.onclick = this.beginTracing.bind(this);
+    document.body.appendChild(this.startButton_);
+
+    this.overlay_ = document.createElement('div');
+    this.overlay_.className = 'gpu-tracing-overlay';
+
     cr.ui.decorate(this.overlay_, gpu.Overlay);
 
-    this.traceEvents_ = [];
+    var statusDiv = document.createElement('div');
+    statusDiv.textContent = 'Tracing active.';
+    this.overlay_.appendChild(statusDiv);
 
-    var startButton = $('gpu-tracing-start-button-template').cloneNode(true);
-    startButton.removeAttribute('id');
-    document.body.appendChild(startButton);
-    startButton.onclick = this.beginTracing.bind(this);
-
-    var stopButton = this.overlay_.querySelector('.gpu-tracing-stop-button');
+    var stopButton = document.createElement('button');
     stopButton.onclick = this.endTracing.bind(this);
+    stopButton.innerText = 'Stop tracing';
+    this.overlay_.appendChild(stopButton);
+
+    this.traceEvents_ = [];
   }
 
   TracingController.prototype = {
@@ -93,17 +102,18 @@ cr.define('gpu', function() {
 
       console.log('Finishing trace');
       if (!browserBridge.debugMode) {
-        chrome.send('beginToEndTracing');
+        chrome.send('endTracingAsync');
       } else {
-        var events = getTimelineTestData1();
+        var events = window.getTimelineTestData1 ?
+          getTimelineTestData1() : [];
         this.onTraceDataCollected(events);
         window.setTimeout(this.onEndTracingComplete.bind(this), 250);
       }
     },
 
+
     /**
-     * Called by the browser when all processes ack tracing
-     * having completed.
+     * Called by the browser when all processes complete tracing.
      */
     onEndTracingComplete: function() {
       this.overlay_.visible = false;
