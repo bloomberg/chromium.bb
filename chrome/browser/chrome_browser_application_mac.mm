@@ -76,6 +76,13 @@ static IMP gOriginalInitIMP = NULL;
       }
     }
 
+    // Mostly "unrecognized selector sent to (instance|class)".  A
+    // very small number of things like nil being passed to an
+    // inappropriate receiver.
+    if (aName == NSInvalidArgumentException) {
+      fatal = YES;
+    }
+
     // Dear reader: Something you just did provoked an NSException.
     // NSException is implemented in terms of setjmp()/longjmp(),
     // which does poor things when combined with C++ scoping
@@ -115,17 +122,25 @@ size_t BinForException(NSException* exception) {
   // determine where they live in the histogram, so never move them
   // around, only add to the end.
   static NSString* const kKnownNSExceptionNames[] = {
-    // ???
+    // Grab-bag exception, not very common.  CFArray (or other
+    // container) mutated while being enumerated is one case seen in
+    // production.
     NSGenericException,
 
-    // Out-of-range on NSString or NSArray.
+    // Out-of-range on NSString or NSArray.  Quite common.
     NSRangeException,
 
-    // Invalid arg to method, unrecognized selector.
+    // Invalid arg to method, unrecognized selector.  Quite common.
     NSInvalidArgumentException,
 
-    // malloc() returned null in object creation, I think.
+    // malloc() returned null in object creation, I think.  Turns out
+    // to be very uncommon in production, because of the OOM killer.
     NSMallocException,
+
+    // This contains things like windowserver errors, trying to draw
+    // views which aren't in windows, unable to read nib files.  By
+    // far the most common exception seen on the crash server.
+    NSInternalInconsistencyException,
 
     nil
   };
