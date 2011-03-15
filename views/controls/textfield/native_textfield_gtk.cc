@@ -9,13 +9,13 @@
 
 #include "base/logging.h"
 #include "base/utf_string_conversions.h"
+#include "ui/base/range/range.h"
 #include "ui/gfx/gtk_util.h"
 #include "ui/gfx/insets.h"
 #include "ui/gfx/skia_utils_gtk.h"
 #include "views/controls/textfield/gtk_views_entry.h"
 #include "views/controls/textfield/gtk_views_textview.h"
 #include "views/controls/textfield/native_textfield_views.h"
-#include "views/controls/textfield/text_range.h"
 #include "views/controls/textfield/textfield.h"
 #include "views/controls/textfield/textfield_controller.h"
 #include "views/widget/widget_gtk.h"
@@ -345,15 +345,15 @@ bool NativeTextfieldGtk::IsIMEComposing() const {
   return false;
 }
 
-void NativeTextfieldGtk::GetSelectedRange(TextRange* range) const {
+void NativeTextfieldGtk::GetSelectedRange(ui::Range* range) const {
   gint start_pos;
   gint end_pos;
   gtk_editable_get_selection_bounds(
       GTK_EDITABLE(native_view()), &start_pos, &end_pos);
-  range->SetRange(start_pos, end_pos);
+  *range = ui::Range(start_pos, end_pos);
 }
 
-void NativeTextfieldGtk::SelectRange(const TextRange& range) {
+void NativeTextfieldGtk::SelectRange(const ui::Range& range) {
   NOTREACHED();
 }
 

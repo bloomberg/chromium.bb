@@ -13,11 +13,14 @@ namespace gfx {
 class Insets;
 }  // namespace gfx
 
+namespace ui {
+class Range;
+}  // namespace ui
+
 namespace views {
 
 class KeyEvent;
 class Textfield;
-class TextRange;
 class View;
 
 // An interface implemented by an object that provides a platform-native
@@ -93,10 +96,10 @@ class NativeTextfieldWrapper {
   virtual bool IsIMEComposing() const = 0;
 
   // Gets the selected range.
-  virtual void GetSelectedRange(TextRange* range) const = 0;
+  virtual void GetSelectedRange(ui::Range* range) const = 0;
 
   // Selects the text given by |range|.
-  virtual void SelectRange(const TextRange& range) = 0;
+  virtual void SelectRange(const ui::Range& range) = 0;
 
   // Returns the currnet cursor position.
   virtual size_t GetCursorPosition() const = 0;

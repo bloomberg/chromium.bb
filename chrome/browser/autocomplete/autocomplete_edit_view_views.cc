@@ -77,12 +77,12 @@ class AutocompleteTextfield : public views::Textfield {
 
 // Stores omnibox state for each tab.
 struct ViewState {
-  explicit ViewState(const views::TextRange& selection_range)
+  explicit ViewState(const ui::Range& selection_range)
       : selection_range(selection_range) {
   }
 
   // Range of selected text.
-  views::TextRange selection_range;
+  ui::Range selection_range;
 };
 
 struct AutocompleteEditState {
@@ -295,7 +295,7 @@ void AutocompleteEditViewViews::SaveStateToTab(TabContents* tab) {
 
   // NOTE: GetStateForTabSwitch may affect GetSelection, so order is important.
   AutocompleteEditModel::State model_state = model_->GetStateForTabSwitch();
-  views::TextRange selection;
+  ui::Range selection;
   textfield_->GetSelectedRange(&selection);
   GetStateAccessor()->SetProperty(
       tab->property_bag(),
@@ -378,7 +378,7 @@ void AutocompleteEditViewViews::SetUserText(const string16& text,
 void AutocompleteEditViewViews::SetWindowTextAndCaretPos(
     const string16& text,
     size_t caret_pos) {
-  const views::TextRange range(caret_pos, caret_pos);
+  const ui::Range range(caret_pos, caret_pos);
   SetTextAndSelectedRange(text, range);
 }
 
@@ -404,7 +404,7 @@ bool AutocompleteEditViewViews::DeleteAtEndPressed() {
 void AutocompleteEditViewViews::GetSelectionBounds(
     string16::size_type* start,
     string16::size_type* end) {
-  views::TextRange range;
+  ui::Range range;
   textfield_->GetSelectedRange(&range);
   *start = static_cast<size_t>(range.end());
   *end = static_cast<size_t>(range.start());
@@ -430,7 +430,7 @@ void AutocompleteEditViewViews::UpdatePopup() {
 
   // Don't inline autocomplete when the caret/selection isn't at the end of
   // the text, or in the middle of composition.
-  views::TextRange sel;
+  ui::Range sel;
   textfield_->GetSelectedRange(&sel);
   bool no_inline_autocomplete = sel.GetMax() < GetTextLength();
 
@@ -463,7 +463,7 @@ bool AutocompleteEditViewViews::OnInlineAutocompleteTextMaybeChanged(
     size_t user_text_length) {
   if (display_text == GetText())
     return false;
-  views::TextRange range(display_text.size(), user_text_length);
+  ui::Range range(display_text.size(), user_text_length);
   SetTextAndSelectedRange(display_text, range);
   TextChanged();
   return true;
@@ -489,7 +489,7 @@ bool AutocompleteEditViewViews::OnAfterPossibleChange() {
     content_maybe_changed_by_key_press_ = true;
     return false;
   }
-  views::TextRange new_sel;
+  ui::Range new_sel;
   textfield_->GetSelectedRange(&new_sel);
 
   size_t length = GetTextLength();
@@ -639,7 +639,7 @@ void AutocompleteEditViewViews::TextChanged() {
 
 void AutocompleteEditViewViews::SetTextAndSelectedRange(
     const string16& text,
-    const views::TextRange& range) {
+    const ui::Range& range) {
   if (text != GetText())
     textfield_->SetText(text);
   textfield_->SelectRange(range);
@@ -651,7 +651,7 @@ string16 AutocompleteEditViewViews::GetSelectedText() const {
 }
 
 void AutocompleteEditViewViews::SelectRange(size_t caret, size_t end) {
-  const views::TextRange range(caret, end);
+  const ui::Range range(caret, end);
   textfield_->SelectRange(range);
 }
 

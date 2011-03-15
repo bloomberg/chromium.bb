@@ -14,7 +14,7 @@
 #include "chrome/browser/ui/toolbar/toolbar_model.h"
 #include "chrome/common/page_transition_types.h"
 #include "content/common/notification_observer.h"
-#include "views/controls/textfield/text_range.h"
+#include "ui/base/range/range.h"
 #include "views/controls/textfield/textfield_controller.h"
 #include "views/view.h"
 #include "webkit/glue/window_open_disposition.h"
@@ -145,7 +145,7 @@ class AutocompleteEditViewViews : public views::View,
 
   // Update the field with |text| and set the selection.
   void SetTextAndSelectedRange(const string16& text,
-                               const views::TextRange& range);
+                               const ui::Range& range);
 
   // Returns the selected text.
   string16 GetSelectedText() const;
@@ -175,11 +175,11 @@ class AutocompleteEditViewViews : public views::View,
 
   // Selection at the point where the user started using the
   // arrows to move around in the popup.
-  views::TextRange saved_temporary_selection_;
+  ui::Range saved_temporary_selection_;
 
   // Tracking state before and after a possible change.
   string16 text_before_change_;
-  views::TextRange sel_before_change_;
+  ui::Range sel_before_change_;
 
   // TODO(oshima): following flags are copied from gtk implementation.
   // It should be possible to refactor this class to simplify flags and

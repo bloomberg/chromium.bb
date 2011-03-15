@@ -19,13 +19,13 @@
 #include "ui/base/keycodes/keyboard_codes.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/l10n/l10n_util_win.h"
+#include "ui/base/range/range.h"
 #include "ui/gfx/native_theme_win.h"
 #include "views/controls/label.h"
 #include "views/controls/menu/menu_2.h"
 #include "views/controls/menu/menu_win.h"
 #include "views/controls/native/native_view_host.h"
 #include "views/controls/textfield/native_textfield_views.h"
-#include "views/controls/textfield/text_range.h"
 #include "views/controls/textfield/textfield.h"
 #include "views/controls/textfield/textfield_controller.h"
 #include "views/focus/focus_manager.h"
@@ -339,11 +339,11 @@ bool NativeTextfieldWin::IsIMEComposing() const {
   return composition_size > 0;
 }
 
-void NativeTextfieldWin::GetSelectedRange(TextRange* range) const {
+void NativeTextfieldWin::GetSelectedRange(ui::Range* range) const {
   NOTREACHED();
 }
 
-void NativeTextfieldWin::SelectRange(const TextRange& range) {
+void NativeTextfieldWin::SelectRange(const ui::Range& range) {
   NOTREACHED();
 }
 

@@ -16,9 +16,11 @@ namespace gfx {
 class Font;
 }  // namespace gfx
 
-namespace views {
+namespace ui {
+class Range;
+}  // namespace ui
 
-class TextRange;
+namespace views {
 
 // A model that represents a text content for TextfieldViews.
 // It supports editing, selection and cursor manipulation.
@@ -116,9 +118,9 @@ class TextfieldViewsModel {
   // Returns the selected text.
   string16 GetSelectedText() const;
 
-  void GetSelectedRange(TextRange* range) const;
+  void GetSelectedRange(ui::Range* range) const;
 
-  void SelectRange(const TextRange& range);
+  void SelectRange(const ui::Range& range);
 
   // Selects all text.
   void SelectAll();

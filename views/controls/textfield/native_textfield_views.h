@@ -27,7 +27,6 @@ namespace views {
 class KeyEvent;
 class Menu2;
 class TextfieldViewsModel;
-class TextRange;
 
 // A views/skia only implementation of NativeTextfieldWrapper.
 // No platform specific code is used.
@@ -86,8 +85,8 @@ class NativeTextfieldViews : public views::View,
   virtual View* GetView() OVERRIDE;
   virtual gfx::NativeView GetTestingHandle() const OVERRIDE;
   virtual bool IsIMEComposing() const OVERRIDE;
-  virtual void GetSelectedRange(TextRange* range) const OVERRIDE;
-  virtual void SelectRange(const TextRange& range) OVERRIDE;
+  virtual void GetSelectedRange(ui::Range* range) const OVERRIDE;
+  virtual void SelectRange(const ui::Range& range) OVERRIDE;
   virtual size_t GetCursorPosition() const OVERRIDE;
   virtual bool HandleKeyPressed(const views::KeyEvent& e) OVERRIDE;
   virtual bool HandleKeyReleased(const views::KeyEvent& e) OVERRIDE;

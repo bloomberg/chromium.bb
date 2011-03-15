@@ -12,13 +12,13 @@
 #include "base/utf_string_conversions.h"
 #include "grit/app_strings.h"
 #include "ui/base/clipboard/clipboard.h"
+#include "ui/base/range/range.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/canvas_skia.h"
 #include "ui/gfx/insets.h"
 #include "views/background.h"
 #include "views/border.h"
 #include "views/controls/menu/menu_2.h"
-#include "views/controls/textfield/text_range.h"
 #include "views/controls/textfield/textfield.h"
 #include "views/controls/textfield/textfield_controller.h"
 #include "views/controls/textfield/textfield_views_model.h"
@@ -278,11 +278,11 @@ bool NativeTextfieldViews::IsIMEComposing() const {
   return false;
 }
 
-void NativeTextfieldViews::GetSelectedRange(TextRange* range) const {
+void NativeTextfieldViews::GetSelectedRange(ui::Range* range) const {
   model_->GetSelectedRange(range);
 }
 
-void NativeTextfieldViews::SelectRange(const TextRange& range) {
+void NativeTextfieldViews::SelectRange(const ui::Range& range) {
   model_->SelectRange(range);
   UpdateCursorBoundsAndTextOffset();
   SchedulePaint();

@@ -11,8 +11,8 @@
 #include "base/utf_string_conversions.h"
 #include "ui/base/clipboard/clipboard.h"
 #include "ui/base/clipboard/scoped_clipboard_writer.h"
+#include "ui/base/range/range.h"
 #include "ui/gfx/font.h"
-#include "views/controls/textfield/text_range.h"
 #include "views/controls/textfield/textfield.h"
 #include "views/views_delegate.h"
 
@@ -221,11 +221,11 @@ string16 TextfieldViewsModel::GetSelectedText() const {
       std::abs(static_cast<long>(cursor_pos_ - selection_begin_)));
 }
 
-void TextfieldViewsModel::GetSelectedRange(TextRange* range) const {
-  range->SetRange(selection_begin_, cursor_pos_);
+void TextfieldViewsModel::GetSelectedRange(ui::Range* range) const {
+  *range = ui::Range(selection_begin_, cursor_pos_);
 }
 
-void TextfieldViewsModel::SelectRange(const TextRange& range) {
+void TextfieldViewsModel::SelectRange(const ui::Range& range) {
   selection_begin_ = GetSafePosition(range.start());
   cursor_pos_ = GetSafePosition(range.end());
 }

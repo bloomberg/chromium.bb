@@ -14,10 +14,10 @@
 #include "base/utf_string_conversions.h"
 #include "ui/base/accessibility/accessible_view_state.h"
 #include "ui/base/keycodes/keyboard_codes.h"
+#include "ui/base/range/range.h"
 #include "ui/gfx/insets.h"
 #include "views/controls/native/native_view_host.h"
 #include "views/controls/textfield/native_textfield_wrapper.h"
-#include "views/controls/textfield/text_range.h"
 #include "views/controls/textfield/textfield_controller.h"
 #include "views/widget/widget.h"
 
@@ -245,12 +245,12 @@ bool Textfield::IsIMEComposing() const {
   return native_wrapper_ && native_wrapper_->IsIMEComposing();
 }
 
-void Textfield::GetSelectedRange(TextRange* range) const {
+void Textfield::GetSelectedRange(ui::Range* range) const {
   DCHECK(native_wrapper_);
   native_wrapper_->GetSelectedRange(range);
 }
 
-void Textfield::SelectRange(const TextRange& range) {
+void Textfield::SelectRange(const ui::Range& range) {
   DCHECK(native_wrapper_);
   native_wrapper_->SelectRange(range);
 }
@@ -354,7 +354,7 @@ void Textfield::GetAccessibleState(ui::AccessibleViewState* state) {
   state->value = text_;
 
   DCHECK(native_wrapper_);
-  TextRange range;
+  ui::Range range;
   native_wrapper_->GetSelectedRange(&range);
   state->selection_start = range.start();
   state->selection_end = range.end();

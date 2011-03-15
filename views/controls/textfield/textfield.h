@@ -30,12 +30,15 @@
 #include "views/controls/textfield/native_textfield_wrapper.h"
 #endif
 
+namespace ui {
+class Range;
+}  // namespace ui
+
 namespace views {
 
 class KeyEvent;
 class NativeTextfieldWrapper;
 class TextfieldController;
-class TextRange;
 
 // This class implements a View that wraps a native text (edit) field.
 class Textfield : public View {
@@ -173,11 +176,11 @@ class Textfield : public View {
 
   // Gets the selected range. This is views-implementation only and
   // has to be called after the wrapper is created.
-  void GetSelectedRange(TextRange* range) const;
+  void GetSelectedRange(ui::Range* range) const;
 
   // Selects the text given by |range|. This is views-implementation only and
   // has to be called after the wrapper is created.
-  void SelectRange(const TextRange& range);
+  void SelectRange(const ui::Range& range);
 
   // Returns the current cursor position. This is views-implementation
   // only and has to be called after the wrapper is created.

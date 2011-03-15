@@ -9,7 +9,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/clipboard/clipboard.h"
 #include "ui/base/clipboard/scoped_clipboard_writer.h"
-#include "views/controls/textfield/text_range.h"
+#include "ui/base/range/range.h"
 #include "views/controls/textfield/textfield.h"
 #include "views/controls/textfield/textfield_views_model.h"
 #include "views/test/test_views_delegate.h"
@@ -106,7 +106,7 @@ TEST_F(TextfieldViewsModelTest, Selection) {
   model.SelectAll();
   EXPECT_STR_EQ("HELLO", model.GetSelectedText());
   // SelectAll should select towards the end.
-  TextRange range;
+  ui::Range range;
   model.GetSelectedRange(&range);
   EXPECT_EQ(0U, range.start());
   EXPECT_EQ(5U, range.end());
@@ -409,7 +409,7 @@ TEST_F(TextfieldViewsModelTest, RangeTest) {
   TextfieldViewsModel model;
   model.Append(ASCIIToUTF16("HELLO WORLD"));
   model.MoveCursorToStart(false);
-  TextRange range;
+  ui::Range range;
   model.GetSelectedRange(&range);
   EXPECT_TRUE(range.is_empty());
   EXPECT_EQ(0U, range.start());
@@ -418,7 +418,7 @@ TEST_F(TextfieldViewsModelTest, RangeTest) {
   model.MoveCursorToNextWord(true);
   model.GetSelectedRange(&range);
   EXPECT_FALSE(range.is_empty());
-  EXPECT_FALSE(range.is_reverse());
+  EXPECT_FALSE(range.is_reversed());
   EXPECT_EQ(0U, range.start());
   EXPECT_EQ(5U, range.end());
 
@@ -444,14 +444,14 @@ TEST_F(TextfieldViewsModelTest, RangeTest) {
   model.MoveCursorToPreviousWord(true);
   model.GetSelectedRange(&range);
   EXPECT_FALSE(range.is_empty());
-  EXPECT_TRUE(range.is_reverse());
+  EXPECT_TRUE(range.is_reversed());
   EXPECT_EQ(11U, range.start());
   EXPECT_EQ(6U, range.end());
 
   model.MoveCursorRight(true);
   model.GetSelectedRange(&range);
   EXPECT_FALSE(range.is_empty());
-  EXPECT_TRUE(range.is_reverse());
+  EXPECT_TRUE(range.is_reversed());
   EXPECT_EQ(11U, range.start());
   EXPECT_EQ(7U, range.end());
 
@@ -465,7 +465,7 @@ TEST_F(TextfieldViewsModelTest, RangeTest) {
   model.MoveCursorToStart(true);
   model.GetSelectedRange(&range);
   EXPECT_FALSE(range.is_empty());
-  EXPECT_TRUE(range.is_reverse());
+  EXPECT_TRUE(range.is_reversed());
   EXPECT_EQ(11U, range.start());
   EXPECT_EQ(0U, range.end());
 }
@@ -473,42 +473,42 @@ TEST_F(TextfieldViewsModelTest, RangeTest) {
 TEST_F(TextfieldViewsModelTest, SelectRangeTest) {
   TextfieldViewsModel model;
   model.Append(ASCIIToUTF16("HELLO WORLD"));
-  TextRange range(0, 6);
-  EXPECT_FALSE(range.is_reverse());
+  ui::Range range(0, 6);
+  EXPECT_FALSE(range.is_reversed());
   model.SelectRange(range);
   EXPECT_STR_EQ("HELLO ", model.GetSelectedText());
 
-  range.SetRange(6, 1);
-  EXPECT_TRUE(range.is_reverse());
+  range = ui::Range(6, 1);
+  EXPECT_TRUE(range.is_reversed());
   model.SelectRange(range);
   EXPECT_STR_EQ("ELLO ", model.GetSelectedText());
 
-  range.SetRange(2, 1000);
-  EXPECT_FALSE(range.is_reverse());
+  range = ui::Range(2, 1000);
+  EXPECT_FALSE(range.is_reversed());
   model.SelectRange(range);
   EXPECT_STR_EQ("LLO WORLD", model.GetSelectedText());
 
-  range.SetRange(1000, 3);
-  EXPECT_TRUE(range.is_reverse());
+  range = ui::Range(1000, 3);
+  EXPECT_TRUE(range.is_reversed());
   model.SelectRange(range);
   EXPECT_STR_EQ("LO WORLD", model.GetSelectedText());
 
-  range.SetRange(0, 0);
+  range = ui::Range(0, 0);
   EXPECT_TRUE(range.is_empty());
   model.SelectRange(range);
   EXPECT_TRUE(model.GetSelectedText().empty());
 
-  range.SetRange(3, 3);
+  range = ui::Range(3, 3);
   EXPECT_TRUE(range.is_empty());
   model.SelectRange(range);
   EXPECT_TRUE(model.GetSelectedText().empty());
 
-  range.SetRange(1000, 100);
+  range = ui::Range(1000, 100);
   EXPECT_FALSE(range.is_empty());
   model.SelectRange(range);
   EXPECT_TRUE(model.GetSelectedText().empty());
 
-  range.SetRange(1000, 1000);
+  range = ui::Range(1000, 1000);
   EXPECT_TRUE(range.is_empty());
   model.SelectRange(range);
   EXPECT_TRUE(model.GetSelectedText().empty());
