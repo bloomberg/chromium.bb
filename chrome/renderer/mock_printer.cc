@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -28,20 +28,21 @@ MockPrinterPage::MockPrinterPage(const void* source_data,
 MockPrinterPage::~MockPrinterPage() {}
 
 MockPrinter::MockPrinter()
-  : printable_width_(0),
-    printable_height_(0),
-    dpi_(printing::kPointsPerInch),
+  : dpi_(printing::kPointsPerInch),
     max_shrink_(2.0),
     min_shrink_(1.25),
-    desired_dpi_(72),
+    desired_dpi_(printing::kPointsPerInch),
     selection_only_(false),
     document_cookie_(-1),
     current_document_cookie_(0),
     printer_status_(PRINTER_READY),
     number_pages_(0),
     page_number_(0) {
-  printable_width_ = static_cast<int>(dpi_ * 8.5);
-  printable_height_ = static_cast<int>(dpi_ * 11.0);
+  page_size_.SetSize(static_cast<int>(8.5 * dpi_),
+                     static_cast<int>(11.0 * dpi_));
+  printable_size_.SetSize(static_cast<int>((7.5 * dpi_)),
+                          static_cast<int>((10.0 * dpi_)));
+  margin_left_ = margin_top_ = static_cast<int>(0.5 * dpi_);
 }
 
 MockPrinter::~MockPrinter() {
@@ -66,8 +67,10 @@ void MockPrinter::GetDefaultPrintSettings(ViewMsg_Print_Params* params) {
   params->desired_dpi = desired_dpi_;
   params->selection_only = selection_only_;
   params->document_cookie = document_cookie_;
-  params->printable_size.set_width(printable_width_);
-  params->printable_size.set_height(printable_height_);
+  params->page_size = page_size_;
+  params->printable_size = printable_size_;
+  params->margin_left = margin_left_;
+  params->margin_top = margin_top_;
 }
 
 void MockPrinter::SetDefaultPrintSettings(const ViewMsg_Print_Params& params) {
@@ -76,8 +79,10 @@ void MockPrinter::SetDefaultPrintSettings(const ViewMsg_Print_Params& params) {
   min_shrink_ = params.min_shrink;
   desired_dpi_ = params.desired_dpi;
   selection_only_ = params.selection_only;
-  printable_width_ = params.printable_size.width();
-  printable_height_ = params.printable_size.height();
+  page_size_ = params.page_size;
+  printable_size_ = params.printable_size;
+  margin_left_ = params.margin_left;
+  margin_top_ = params.margin_top;
 }
 
 void MockPrinter::ScriptedPrint(int cookie,
@@ -94,8 +99,8 @@ void MockPrinter::ScriptedPrint(int cookie,
   settings->params.desired_dpi = desired_dpi_;
   settings->params.selection_only = selection_only_;
   settings->params.document_cookie = document_cookie_;
-  settings->params.printable_size.set_width(printable_width_);
-  settings->params.printable_size.set_height(printable_height_);
+  settings->params.page_size = page_size_;
+  settings->params.printable_size = printable_size_;
   printer_status_ = PRINTER_PRINTING;
 }
 

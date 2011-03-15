@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -13,6 +13,7 @@
 #include "base/ref_counted.h"
 #include "base/scoped_ptr.h"
 #include "printing/image.h"
+#include "ui/gfx/size.h"
 
 struct ViewMsg_Print_Params;
 struct ViewMsg_PrintPages_Params;
@@ -99,8 +100,10 @@ class MockPrinter {
 
  private:
   // In pixels according to dpi_x and dpi_y.
-  int printable_width_;
-  int printable_height_;
+  gfx::Size page_size_;
+  gfx::Size printable_size_;
+  int margin_left_;
+  int margin_top_;
 
   // Specifies dots per inch.
   double dpi_;
