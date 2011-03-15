@@ -16,6 +16,7 @@
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/google/google_util.h"
+#include "chrome/browser/metrics/user_metrics.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/themes/browser_theme_provider.h"
@@ -386,6 +387,7 @@ void NTPResourceCache::CreateNewTabHTML() {
                     profile_->GetPrefs()->GetDouble(prefs::kNTPPromoEnd)) ?
                     profile_->GetPrefs()->GetString(prefs::kNTPPromoLine) :
                                                     std::string());
+    UserMetrics::RecordAction(UserMetricsAction("NTPPromoShown"));
   }
 
   base::StringPiece new_tab_html(ResourceBundle::GetSharedInstance().

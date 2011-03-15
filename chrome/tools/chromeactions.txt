@@ -841,6 +841,7 @@
 0x9372bb835cd720fb	MoveWordForward
 0x002e07cb5223cd33	MoveWordLeft
 0xd55f7c4e520b18a4	MoveWordRight
+0x0cdd043c5d63d234	NTPPromoShown
 0xdcf1af37de1d8dd0	NativeUI_Applications
 0x3c6e0d9310ba3a20	NewIncognitoWindow
 0xeddaa38a10bf8374	NewProfileWindowByIndex
