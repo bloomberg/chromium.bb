@@ -241,7 +241,7 @@ void ProfileIOData::LazyInitialize() const {
 void ProfileIOData::ApplyProfileParamsToContext(
     const ProfileParams& profile_params,
     ChromeURLRequestContext* context) {
-  context->set_is_off_the_record(profile_params.is_off_the_record);
+  context->set_is_incognito(profile_params.is_off_the_record);
   context->set_accept_language(profile_params.accept_language);
   context->set_accept_charset(profile_params.accept_charset);
   context->set_referrer_charset(profile_params.referrer_charset);

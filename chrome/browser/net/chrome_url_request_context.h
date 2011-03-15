@@ -73,8 +73,8 @@ class ChromeURLRequestContext : public net::URLRequestContext {
     return file_system_context_.get();
   }
 
-  bool is_off_the_record() const {
-    return is_off_the_record_;
+  bool is_incognito() const {
+    return is_incognito_;
   }
 
   virtual const std::string& GetUserAgent(const GURL& url) const;
@@ -101,8 +101,8 @@ class ChromeURLRequestContext : public net::URLRequestContext {
   void set_user_script_dir_path(const FilePath& path) {
     user_script_dir_path_ = path;
   }
-  void set_is_off_the_record(bool is_off_the_record) {
-    is_off_the_record_ = is_off_the_record;
+  void set_is_incognito(bool is_incognito) {
+    is_incognito_ = is_incognito;
   }
   void set_host_content_settings_map(
       HostContentSettingsMap* host_content_settings_map) {
@@ -156,7 +156,7 @@ class ChromeURLRequestContext : public net::URLRequestContext {
   scoped_refptr<prerender::PrerenderManager> prerender_manager_;
   scoped_ptr<ChromeURLDataManagerBackend> chrome_url_data_manager_backend_;
 
-  bool is_off_the_record_;
+  bool is_incognito_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeURLRequestContext);
 };

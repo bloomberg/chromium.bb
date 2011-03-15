@@ -83,7 +83,7 @@ void WorkerService::CreateWorker(const ViewHostMsg_CreateWorker_Params& params,
   WorkerProcessHost::WorkerInstance instance(
       params.url,
       params.is_shared,
-      context->is_off_the_record(),
+      context->is_incognito(),
       params.name,
       next_worker_route_id(),
       params.is_shared ? 0 : filter->render_process_id(),

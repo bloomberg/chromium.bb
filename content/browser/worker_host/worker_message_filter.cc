@@ -92,7 +92,7 @@ void WorkerMessageFilter::OnLookupSharedWorker(
   *route_id = next_routing_id_->Run();
 
   bool incognito = static_cast<ChromeURLRequestContext*>(
-      request_context_->GetURLRequestContext())->is_off_the_record();
+      request_context_->GetURLRequestContext())->is_incognito();
   WorkerService::GetInstance()->LookupSharedWorker(
       params, *route_id, this, incognito, exists, url_error);
 }

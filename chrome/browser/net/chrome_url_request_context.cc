@@ -320,7 +320,7 @@ void ChromeURLRequestContextGetter::GetCookieStoreAsyncHelper(
 // ----------------------------------------------------------------------------
 
 ChromeURLRequestContext::ChromeURLRequestContext()
-    : is_off_the_record_(false) {
+    : is_incognito_(false) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 }
 

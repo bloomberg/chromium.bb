@@ -207,7 +207,7 @@ bool ChromeURLDataManagerBackend::StartRequest(const GURL& url,
     // The DataSource is agnostic to which thread StartDataRequest is called
     // on for this path.  Call directly into it from this thread, the IO
     // thread.
-    source->StartDataRequest(path, context->is_off_the_record(), request_id);
+    source->StartDataRequest(path, context->is_incognito(), request_id);
   } else {
     // The DataSource wants StartDataRequest to be called on a specific thread,
     // usually the UI thread, for this path.
@@ -215,7 +215,7 @@ bool ChromeURLDataManagerBackend::StartRequest(const GURL& url,
         FROM_HERE,
         NewRunnableMethod(source,
                           &ChromeURLDataManager::DataSource::StartDataRequest,
-                          path, context->is_off_the_record(), request_id));
+                          path, context->is_incognito(), request_id));
   }
   return true;
 }

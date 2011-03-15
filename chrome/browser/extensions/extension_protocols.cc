@@ -86,7 +86,7 @@ bool AllowExtensionResourceLoad(net::URLRequest* request,
   // Don't allow toplevel navigations to extension resources in incognito mode.
   // This is because an extension must run in a single process, and an
   // incognito tab prevents that.
-  if (context->is_off_the_record() &&
+  if (context->is_incognito() &&
       info->resource_type() == ResourceType::MAIN_FRAME &&
       !context->extension_info_map()->
           ExtensionCanLoadInIncognito(request->url().host())) {
