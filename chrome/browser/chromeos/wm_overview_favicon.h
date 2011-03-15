@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_CHROMEOS_WM_OVERVIEW_FAV_ICON_H_
-#define CHROME_BROWSER_CHROMEOS_WM_OVERVIEW_FAV_ICON_H_
+#ifndef CHROME_BROWSER_CHROMEOS_WM_OVERVIEW_FAVICON_H_
+#define CHROME_BROWSER_CHROMEOS_WM_OVERVIEW_FAVICON_H_
 #pragma once
 
 #include "views/widget/widget_gtk.h"
@@ -19,11 +19,11 @@ namespace chromeos {
 class WmOverviewSnapshot;
 
 // A single favicon displayed by WmOverviewController.
-class WmOverviewFavIcon : public views::WidgetGtk {
+class WmOverviewFavicon : public views::WidgetGtk {
  public:
   static const int kIconSize;
 
-  WmOverviewFavIcon();
+  WmOverviewFavicon();
 
   // Initializes the favicon to 0x0 size.
   void Init(WmOverviewSnapshot* snapshot);
@@ -34,11 +34,11 @@ class WmOverviewFavIcon : public views::WidgetGtk {
 
  private:
   // This control is the contents view for this widget.
-  views::ImageView* fav_icon_view_;
+  views::ImageView* favicon_view_;
 
-  DISALLOW_COPY_AND_ASSIGN(WmOverviewFavIcon);
+  DISALLOW_COPY_AND_ASSIGN(WmOverviewFavicon);
 };
 
 }  // namespace chromeos
 
-#endif  // CHROME_BROWSER_CHROMEOS_WM_OVERVIEW_FAV_ICON_H_
+#endif  // CHROME_BROWSER_CHROMEOS_WM_OVERVIEW_FAVICON_H_

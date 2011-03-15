@@ -79,7 +79,7 @@ class BookmarkFaviconFetcher: public NotificationObserver {
   std::list<std::string> bookmark_urls_;
 
   // Consumer for requesting favicons.
-  CancelableRequestConsumer fav_icon_consumer_;
+  CancelableRequestConsumer favicon_consumer_;
 
   // Map that stores favicon per URL.
   scoped_ptr<URLFaviconMap> favicons_map_;

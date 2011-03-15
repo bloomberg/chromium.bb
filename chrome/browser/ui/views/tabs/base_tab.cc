@@ -144,7 +144,7 @@ BaseTab::BaseTab(TabController* controller)
     : controller_(controller),
       closing_(false),
       dragging_(false),
-      fav_icon_hiding_offset_(0),
+      favicon_hiding_offset_(0),
       loading_animation_frame_(0),
       should_display_crashed_favicon_(false),
       throbber_disabled_(false),
@@ -439,11 +439,11 @@ void BaseTab::PaintIcon(gfx::Canvas* canvas) {
     canvas->ClipRectInt(0, 0, width(), height());
     if (should_display_crashed_favicon_) {
       ResourceBundle& rb = ResourceBundle::GetSharedInstance();
-      SkBitmap crashed_fav_icon(*rb.GetBitmapNamed(IDR_SAD_FAVICON));
-      bounds.set_y(bounds.y() + fav_icon_hiding_offset_);
-      DrawIconCenter(canvas, crashed_fav_icon, 0,
-                     crashed_fav_icon.width(),
-                     crashed_fav_icon.height(), bounds, true);
+      SkBitmap crashed_favicon(*rb.GetBitmapNamed(IDR_SAD_FAVICON));
+      bounds.set_y(bounds.y() + favicon_hiding_offset_);
+      DrawIconCenter(canvas, crashed_favicon, 0,
+                     crashed_favicon.width(),
+                     crashed_favicon.height(), bounds, true);
     } else {
       if (!data().favicon.isNull()) {
         // TODO(pkasting): Use code in tab_icon_view.cc:PaintIcon() (or switch
@@ -514,12 +514,12 @@ bool BaseTab::should_display_crashed_favicon() const {
   return should_display_crashed_favicon_;
 }
 
-int BaseTab::fav_icon_hiding_offset() const {
-  return fav_icon_hiding_offset_;
+int BaseTab::favicon_hiding_offset() const {
+  return favicon_hiding_offset_;
 }
 
 void BaseTab::SetFaviconHidingOffset(int offset) {
-  fav_icon_hiding_offset_ = offset;
+  favicon_hiding_offset_ = offset;
   ScheduleIconPaint();
 }
 

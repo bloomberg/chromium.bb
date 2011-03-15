@@ -77,7 +77,7 @@ const SkScalar kTabBottomCurveWidth = 3;
 const int kCloseButtonVertFuzz = 0;
 const int kCloseButtonHorzFuzz = 5;
 
-SkBitmap* crashed_fav_icon = NULL;
+SkBitmap* crashed_favicon = NULL;
 
 // Gets the bounds of |widget| relative to |parent|.
 gfx::Rect GetWidgetBoundsRelativeToParent(GtkWidget* parent,
@@ -249,7 +249,7 @@ class TabRendererGtk::FavIconCrashAnimation : public ui::LinearAnimation,
 TabRendererGtk::TabRendererGtk(ui::ThemeProvider* theme_provider)
     : showing_icon_(false),
       showing_close_button_(false),
-      fav_icon_hiding_offset_(0),
+      favicon_hiding_offset_(0),
       should_display_crashed_favicon_(false),
       loading_animation_(theme_provider),
       background_offset_x_(0),
@@ -605,7 +605,7 @@ bool TabRendererGtk::IsPerformingCrashAnimation() const {
 }
 
 void TabRendererGtk::SetFaviconHidingOffset(int offset) {
-  fav_icon_hiding_offset_ = offset;
+  favicon_hiding_offset_ = offset;
   SchedulePaint();
 }
 
@@ -828,11 +828,11 @@ void TabRendererGtk::PaintIcon(gfx::Canvas* canvas) {
     canvas->Save();
     canvas->ClipRectInt(0, 0, width(), height() - kFavIconTitleSpacing);
     if (should_display_crashed_favicon_) {
-      canvas->DrawBitmapInt(*crashed_fav_icon, 0, 0,
-                            crashed_fav_icon->width(),
-                            crashed_fav_icon->height(),
+      canvas->DrawBitmapInt(*crashed_favicon, 0, 0,
+                            crashed_favicon->width(),
+                            crashed_favicon->height(),
                             favicon_bounds_.x(),
-                            favicon_bounds_.y() + fav_icon_hiding_offset_,
+                            favicon_bounds_.y() + favicon_hiding_offset_,
                             kFaviconSize, kFaviconSize,
                             true);
     } else {
@@ -841,7 +841,7 @@ void TabRendererGtk::PaintIcon(gfx::Canvas* canvas) {
           GdkPixbuf* favicon = GtkThemeProvider::GetDefaultFavicon(true);
           canvas->AsCanvasSkia()->DrawGdkPixbuf(
               favicon, favicon_bounds_.x(),
-              favicon_bounds_.y() + fav_icon_hiding_offset_);
+              favicon_bounds_.y() + favicon_hiding_offset_);
         } else {
           // If the favicon is an app icon, it is allowed to be drawn slightly
           // larger than the standard favicon.
@@ -859,7 +859,7 @@ void TabRendererGtk::PaintIcon(gfx::Canvas* canvas) {
                                 favicon_bounds_.x() - favIconWidthDelta/2,
                                 favicon_bounds_.y() + favIconHeightOffset
                                     - favIconHeightDelta/2
-                                    + fav_icon_hiding_offset_,
+                                    + favicon_hiding_offset_,
                                 kFaviconSize + favIconWidthDelta,
                                 kFaviconSize + favIconHeightDelta,
                                 true);
@@ -1083,7 +1083,7 @@ void TabRendererGtk::InitResources() {
   title_font_ = new gfx::Font(base_font.GetFontName(), kFontPixelSize);
   title_font_height_ = title_font_->GetHeight();
 
-  crashed_fav_icon = rb.GetBitmapNamed(IDR_SAD_FAVICON);
+  crashed_favicon = rb.GetBitmapNamed(IDR_SAD_FAVICON);
 
   initialized_ = true;
 }

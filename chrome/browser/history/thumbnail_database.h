@@ -109,7 +109,7 @@ class ThumbnailDatabase {
   // and icon type. If |required_icon_type| contains multiple icon types and
   // there are more than one matched icon in database, only one icon will be
   // returned in the priority of TOUCH_PRECOMPOSED_ICON, TOUCH_ICON, and
-  // FAV_ICON, and the icon type is returned in icon_type parameter if it is not
+  // FAVICON, and the icon type is returned in icon_type parameter if it is not
   // NULL.
   // Returns 0 if no entry exists for the specified url.
   FavIconID GetFavIconIDForFavIconURL(const GURL& icon_url,

@@ -10,7 +10,7 @@
 #include "base/linked_ptr.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/wm_ipc.h"
-#include "chrome/browser/chromeos/wm_overview_fav_icon.h"
+#include "chrome/browser/chromeos/wm_overview_favicon.h"
 #include "chrome/browser/chromeos/wm_overview_snapshot.h"
 #include "chrome/browser/chromeos/wm_overview_title.h"
 #include "chrome/browser/tab_contents/thumbnail_generator.h"
@@ -165,7 +165,7 @@ class BrowserListener : public TabStripModelObserver {
   struct SnapshotNode {
     WmOverviewSnapshot* snapshot;  // Not owned
     WmOverviewTitle* title;  // Not owned
-    WmOverviewFavIcon* fav_icon;  // Not owned
+    WmOverviewFavicon* favicon;  // Not owned
   };
   typedef std::vector<SnapshotNode> SnapshotVector;
   SnapshotVector snapshots_;
@@ -238,7 +238,7 @@ void BrowserListener::TabChangedAt(
   if (change_type != TabStripModelObserver::LOADING_ONLY) {
     snapshots_[index].title->SetTitle(contents->tab_contents()->GetTitle());
     snapshots_[index].title->SetUrl(contents->tab_contents()->GetURL());
-    snapshots_[index].fav_icon->SetFavicon(
+    snapshots_[index].favicon->SetFavicon(
         contents->tab_contents()->GetFavicon());
     if (change_type != TabStripModelObserver::TITLE_NOT_LOADING)
       MarkSnapshotAsDirty(index);
@@ -316,8 +316,8 @@ void BrowserListener::ShowSnapshots() {
       node.snapshot->Show();
     if (!snapshots_[i].title->IsVisible())
       node.title->Show();
-    if (!snapshots_[i].fav_icon->IsVisible())
-      node.fav_icon->Show();
+    if (!snapshots_[i].favicon->IsVisible())
+      node.favicon->Show();
   }
 }
 
@@ -422,13 +422,13 @@ void BrowserListener::InsertSnapshot(int index) {
   gfx::Size cell_size = CalculateCellSize();
   node.snapshot->Init(cell_size, browser_, index);
 
-  node.fav_icon = new WmOverviewFavIcon;
-  node.fav_icon->Init(node.snapshot);
-  node.fav_icon->SetFavicon(browser_->GetTabContentsAt(index)->GetFavicon());
+  node.favicon = new WmOverviewFavicon;
+  node.favicon->Init(node.snapshot);
+  node.favicon->SetFavicon(browser_->GetTabContentsAt(index)->GetFavicon());
 
   node.title = new WmOverviewTitle;
   node.title->Init(gfx::Size(std::max(0, cell_size.width() -
-                                      WmOverviewFavIcon::kIconSize -
+                                      WmOverviewFavicon::kIconSize -
                                       kFavIconPadding),
                              kTitleHeight), node.snapshot);
   node.title->SetTitle(browser_->GetTabContentsAt(index)->GetTitle());
@@ -442,7 +442,7 @@ void BrowserListener::InsertSnapshot(int index) {
 void BrowserListener::ClearSnapshot(int index) {
   snapshots_[index].snapshot->CloseNow();
   snapshots_[index].title->CloseNow();
-  snapshots_[index].fav_icon->CloseNow();
+  snapshots_[index].favicon->CloseNow();
   snapshots_.erase(snapshots_.begin() + index);
 }
 

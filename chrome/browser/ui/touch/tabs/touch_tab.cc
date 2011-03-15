@@ -193,15 +193,15 @@ void TouchTab::PaintIcon(gfx::Canvas* canvas) {
     canvas->ClipRectInt(0, 0, width(), height());
     if (should_display_crashed_favicon()) {
       ResourceBundle& rb = ResourceBundle::GetSharedInstance();
-      SkBitmap crashed_fav_icon(*rb.GetBitmapNamed(IDR_SAD_FAVICON));
-      canvas->DrawBitmapInt(crashed_fav_icon, 0, 0, crashed_fav_icon.width(),
-          crashed_fav_icon.height(), x, y + fav_icon_hiding_offset(),
+      SkBitmap crashed_favicon(*rb.GetBitmapNamed(IDR_SAD_FAVICON));
+      canvas->DrawBitmapInt(crashed_favicon, 0, 0, crashed_favicon.width(),
+          crashed_favicon.height(), x, y + favicon_hiding_offset(),
           kTouchFaviconSize, kTouchFaviconSize, true);
     } else {
       if (!data().favicon.isNull()) {
         canvas->DrawBitmapInt(data().favicon, 0, 0,
                               data().favicon.width(), data().favicon.height(),
-                              x, y + fav_icon_hiding_offset(),
+                              x, y + favicon_hiding_offset(),
                               kTouchFaviconSize, kTouchFaviconSize, true);
       }
     }

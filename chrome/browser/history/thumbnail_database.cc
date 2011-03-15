@@ -204,7 +204,7 @@ bool ThumbnailDatabase::InitFavIconsTable(sql::Connection* db,
                "url LONGVARCHAR NOT NULL,"
                "last_updated INTEGER DEFAULT 0,"
                "image_data BLOB,"
-               "icon_type INTEGER DEFAULT 1)"); // Set the default as FAV_ICON
+               "icon_type INTEGER DEFAULT 1)"); // Set the default as FAVICON
                                                 // to be consistent with table
                                                 // upgrade in
                                                 // UpgradeToVersion4().

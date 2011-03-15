@@ -69,9 +69,9 @@ class CustomHomePagesTableModel : public ui::TableModel {
                   history::VisitVector* visits);
 
   // Callback from history service. Updates the icon of the Entry whose
-  // |fav_icon_handle| matches |handle| and notifies the observer of the change.
+  // |favicon_handle| matches |handle| and notifies the observer of the change.
   void OnGotFavIcon(FaviconService::Handle handle,
-                    bool know_fav_icon,
+                    bool know_favicon,
                     scoped_refptr<RefCountedMemory> image_data,
                     bool is_expired,
                     GURL icon_url);
@@ -82,7 +82,7 @@ class CustomHomePagesTableModel : public ui::TableModel {
                               CancelableRequestProvider::Handle handle,
                               int* entry_index);
 
-  // Returns the entry whose |fav_icon_handle| matches |handle| and sets
+  // Returns the entry whose |favicon_handle| matches |handle| and sets
   // |entry_index| to the index of the entry.
   Entry* GetEntryByFavIconHandle(FaviconService::Handle handle,
                                  int* entry_index);

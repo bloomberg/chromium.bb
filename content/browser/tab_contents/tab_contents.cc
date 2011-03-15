@@ -389,7 +389,7 @@ TabContents::~TabContents() {
 void TabContents::AddObservers() {
   printing_.reset(new printing::PrintViewManager(this));
   print_preview_.reset(new printing::PrintPreviewMessageHandler(this));
-  fav_icon_helper_.reset(new FaviconHelper(this));
+  favicon_helper_.reset(new FaviconHelper(this));
   autofill_manager_.reset(new AutofillManager(this));
   autocomplete_history_manager_.reset(new AutocompleteHistoryManager(this));
   desktop_notification_handler_.reset(
@@ -1667,7 +1667,7 @@ void TabContents::DidNavigateMainFramePostCommit(
   received_page_title_ = false;
 
   // Get the favicon, either from history or request it from the net.
-  fav_icon_helper_->FetchFavicon(details.entry->url());
+  favicon_helper_->FetchFavicon(details.entry->url());
 
   // Clear all page actions, blocked content notifications and browser actions
   // for this tab, unless this is an in-page navigation.

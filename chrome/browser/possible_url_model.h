@@ -37,7 +37,7 @@ class PossibleURLModel : public ui::TableModel {
   const std::wstring& GetTitle(int row);
 
   virtual void OnFavIconAvailable(FaviconService::Handle h,
-                                  bool fav_icon_available,
+                                  bool favicon_available,
                                   scoped_refptr<RefCountedMemory> data,
                                   bool expired,
                                   GURL icon_url);
@@ -65,7 +65,7 @@ class PossibleURLModel : public ui::TableModel {
 
   // Map Result::index -> Favicon.
   typedef std::map<size_t, SkBitmap> FavIconMap;
-  FavIconMap fav_icon_map_;
+  FavIconMap favicon_map_;
 
   DISALLOW_COPY_AND_ASSIGN(PossibleURLModel);
 };

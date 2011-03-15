@@ -1641,11 +1641,11 @@ void HistoryBackend::SetImportedFavicons(
 
   for (size_t i = 0; i < favicon_usage.size(); i++) {
     FavIconID favicon_id = thumbnail_db_->GetFavIconIDForFavIconURL(
-        favicon_usage[i].favicon_url, history::FAV_ICON, NULL);
+        favicon_usage[i].favicon_url, history::FAVICON, NULL);
     if (!favicon_id) {
       // This favicon doesn't exist yet, so we create it using the given data.
       favicon_id = thumbnail_db_->AddFavIcon(favicon_usage[i].favicon_url,
-                                             history::FAV_ICON);
+                                             history::FAVICON);
       if (!favicon_id)
         continue;  // Unable to add the favicon.
       thumbnail_db_->SetFavicon(favicon_id,
@@ -1674,7 +1674,7 @@ void HistoryBackend::SetImportedFavicons(
           favicons_changed.insert(*url);
         }
       } else {
-        if (!thumbnail_db_->GetIconMappingForPageURL(*url, FAV_ICON, NULL)) {
+        if (!thumbnail_db_->GetIconMappingForPageURL(*url, FAVICON, NULL)) {
           // URL is present in history, update the favicon *only* if it is not
           // set already.
           thumbnail_db_->AddIconMapping(*url, favicon_id);
@@ -1698,7 +1698,7 @@ void HistoryBackend::UpdateFavIconMappingAndFetchImpl(
     scoped_refptr<GetFavIconRequest> request,
     int icon_types) {
   // Check only a single type was given when the page_url was specified.
-  DCHECK(!page_url || (page_url && (icon_types == FAV_ICON ||
+  DCHECK(!page_url || (page_url && (icon_types == FAVICON ||
       icon_types == TOUCH_ICON || icon_types == TOUCH_PRECOMPOSED_ICON)));
 
   if (request->canceled())

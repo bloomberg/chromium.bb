@@ -24,7 +24,7 @@
 #include "ui/gfx/codec/png_codec.h"
 
 struct CustomHomePagesTableModel::Entry {
-  Entry() : title_handle(0), fav_icon_handle(0) {}
+  Entry() : title_handle(0), favicon_handle(0) {}
 
   // URL of the page.
   GURL url;
@@ -39,7 +39,7 @@ struct CustomHomePagesTableModel::Entry {
   HistoryService::Handle title_handle;
 
   // If non-zero, indicates we're loading the favicon for the page.
-  FaviconService::Handle fav_icon_handle;
+  FaviconService::Handle favicon_handle;
 };
 
 CustomHomePagesTableModel::CustomHomePagesTableModel(Profile* profile)
@@ -86,11 +86,11 @@ void CustomHomePagesTableModel::Remove(int index) {
     if (history_service)
       history_service->CancelRequest(entry->title_handle);
   }
-  if (entry->fav_icon_handle) {
+  if (entry->favicon_handle) {
     FaviconService* favicon_service =
         profile_->GetFaviconService(Profile::EXPLICIT_ACCESS);
     if (favicon_service)
-      favicon_service->CancelRequest(entry->fav_icon_handle);
+      favicon_service->CancelRequest(entry->favicon_handle);
   }
   entries_.erase(entries_.begin() + static_cast<size_t>(index));
   if (observer_)
@@ -163,7 +163,7 @@ void CustomHomePagesTableModel::LoadTitleAndFavIcon(Entry* entry) {
   FaviconService* favicon_service =
       profile_->GetFaviconService(Profile::EXPLICIT_ACCESS);
   if (favicon_service) {
-    entry->fav_icon_handle = favicon_service->GetFaviconForURL(entry->url,
+    entry->favicon_handle = favicon_service->GetFaviconForURL(entry->url,
         &query_consumer_,
         NewCallback(this, &CustomHomePagesTableModel::OnGotFavIcon));
   }
@@ -190,19 +190,19 @@ void CustomHomePagesTableModel::OnGotTitle(HistoryService::Handle handle,
 
 void CustomHomePagesTableModel::OnGotFavIcon(
     FaviconService::Handle handle,
-    bool know_fav_icon,
+    bool know_favicon,
     scoped_refptr<RefCountedMemory> image_data,
     bool is_expired,
     GURL icon_url) {
   int entry_index;
   Entry* entry =
-      GetEntryByLoadHandle(&Entry::fav_icon_handle, handle, &entry_index);
+      GetEntryByLoadHandle(&Entry::favicon_handle, handle, &entry_index);
   if (!entry) {
     // The URLs changed before we were called back.
     return;
   }
-  entry->fav_icon_handle = 0;
-  if (know_fav_icon && image_data.get() && image_data->size()) {
+  entry->favicon_handle = 0;
+  if (know_favicon && image_data.get() && image_data->size()) {
     int width, height;
     std::vector<unsigned char> decoded_data;
     if (gfx::PNGCodec::Decode(image_data->front(),

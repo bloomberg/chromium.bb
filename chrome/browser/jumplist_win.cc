@@ -688,7 +688,7 @@ bool JumpList::StartLoadingFavIcon() {
   FaviconService* favicon_service =
       profile_->GetFaviconService(Profile::EXPLICIT_ACCESS);
   FaviconService::Handle handle = favicon_service->GetFaviconForURL(
-      url, &fav_icon_consumer_,
+      url, &favicon_consumer_,
       NewCallback(this, &JumpList::OnFavIconDataAvailable));
   return true;
 }

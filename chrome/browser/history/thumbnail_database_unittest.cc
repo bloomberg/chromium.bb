@@ -119,7 +119,7 @@ TEST_F(ThumbnailDatabaseTest, GetFaviconAfterMigrationToTopSites) {
   scoped_refptr<RefCountedBytes> favicon(new RefCountedBytes(data));
 
   GURL url("http://google.com");
-  FavIconID id = db.AddFavIcon(url, FAV_ICON);
+  FavIconID id = db.AddFavIcon(url, FAVICON);
   base::Time time = base::Time::Now();
   db.SetFavicon(id, favicon, time);
   EXPECT_TRUE(db.RenameAndDropThumbnails(file_name_, new_file_name_));
@@ -204,7 +204,7 @@ TEST_F(ThumbnailDatabaseTest, DeleteIconMappings) {
   db.SetFavicon(id, favicon, time);
   EXPECT_TRUE(0 < db.AddIconMapping(url, id));
 
-  FavIconID id2 = db.AddFavIcon(url, FAV_ICON);
+  FavIconID id2 = db.AddFavIcon(url, FAVICON);
   db.SetFavicon(id2, favicon, time);
   EXPECT_TRUE(0 < db.AddIconMapping(url, id2));
   ASSERT_NE(id, id2);
@@ -213,12 +213,12 @@ TEST_F(ThumbnailDatabaseTest, DeleteIconMappings) {
   EXPECT_TRUE(db.GetIconMappingsForPageURL(url, &icon_mapping));
   ASSERT_EQ(2u, icon_mapping.size());
   EXPECT_EQ(icon_mapping.front().icon_type, TOUCH_ICON);
-  EXPECT_TRUE(db.GetIconMappingForPageURL(url, FAV_ICON, NULL));
+  EXPECT_TRUE(db.GetIconMappingForPageURL(url, FAVICON, NULL));
 
   db.DeleteIconMappings(url);
 
   EXPECT_FALSE(db.GetIconMappingsForPageURL(url, NULL));
-  EXPECT_FALSE(db.GetIconMappingForPageURL(url, FAV_ICON, NULL));
+  EXPECT_FALSE(db.GetIconMappingForPageURL(url, FAVICON, NULL));
 }
 
 TEST_F(ThumbnailDatabaseTest, GetIconMappingsForPageURL) {
@@ -236,7 +236,7 @@ TEST_F(ThumbnailDatabaseTest, GetIconMappingsForPageURL) {
   db.SetFavicon(id1, favicon, time);
   EXPECT_TRUE(0 < db.AddIconMapping(url, id1));
 
-  FavIconID id2 = db.AddFavIcon(url, FAV_ICON);
+  FavIconID id2 = db.AddFavIcon(url, FAVICON);
   EXPECT_NE(id1, id2);
   db.SetFavicon(id2, favicon, time);
   EXPECT_TRUE(0 < db.AddIconMapping(url, id2));
@@ -299,14 +299,14 @@ TEST_F(ThumbnailDatabaseTest, TemporayIconMapping) {
   scoped_refptr<RefCountedBytes> favicon(new RefCountedBytes(data));
 
   GURL url("http://google.com");
-  FavIconID id = db.AddFavIcon(url, FAV_ICON);
+  FavIconID id = db.AddFavIcon(url, FAVICON);
   base::Time time = base::Time::Now();
   db.SetFavicon(id, favicon, time);
 
   db.AddToTemporaryIconMappingTable(url, id);
   db.CommitTemporaryIconMappingTable();
   IconMapping icon_mapping;
-  EXPECT_TRUE(db.GetIconMappingForPageURL(url, FAV_ICON, &icon_mapping));
+  EXPECT_TRUE(db.GetIconMappingForPageURL(url, FAVICON, &icon_mapping));
   EXPECT_EQ(id, icon_mapping.icon_id);
   EXPECT_EQ(url, icon_mapping.page_url);
 }
@@ -321,7 +321,7 @@ TEST_F(ThumbnailDatabaseTest, GetIconMappingsForPageURLForReturnOrder) {
   scoped_refptr<RefCountedBytes> favicon(new RefCountedBytes(data));
 
   GURL url("http://google.com");
-  FavIconID id = db.AddFavIcon(url, FAV_ICON);
+  FavIconID id = db.AddFavIcon(url, FAVICON);
   base::Time time = base::Time::Now();
   db.SetFavicon(id, favicon, time);
 
@@ -331,7 +331,7 @@ TEST_F(ThumbnailDatabaseTest, GetIconMappingsForPageURLForReturnOrder) {
 
   EXPECT_EQ(url, icon_mapping.front().page_url);
   EXPECT_EQ(id, icon_mapping.front().icon_id);
-  EXPECT_EQ(FAV_ICON, icon_mapping.front().icon_type);
+  EXPECT_EQ(FAVICON, icon_mapping.front().icon_type);
 
   // Add a touch icon
   std::vector<unsigned char> data2(blob2, blob2 + sizeof(blob2));
@@ -372,7 +372,7 @@ TEST_F(ThumbnailDatabaseTest, HasMappingFor) {
   scoped_refptr<RefCountedBytes> favicon(new RefCountedBytes(data));
 
   // Add a favicon which will have icon_mappings
-  FavIconID id1 = db.AddFavIcon(GURL("http://google.com"), FAV_ICON);
+  FavIconID id1 = db.AddFavIcon(GURL("http://google.com"), FAVICON);
   EXPECT_NE(id1, 0);
   base::Time time = base::Time::Now();
   db.SetFavicon(id1, favicon, time);
@@ -423,7 +423,7 @@ TEST_F(IconMappingMigrationTest, TestIconMappingMigration) {
   std::vector<IconMapping> icon_mappings;
   EXPECT_TRUE(db.GetIconMappingsForPageURL(page_url1, &icon_mappings));
   ASSERT_EQ(1u, icon_mappings.size());
-  EXPECT_EQ(FAV_ICON, icon_mappings[0].icon_type);
+  EXPECT_EQ(FAVICON, icon_mappings[0].icon_type);
   EXPECT_EQ(page_url1, icon_mappings[0].page_url);
   EXPECT_EQ(1, icon_mappings[0].icon_id);
   base::Time time;
@@ -438,7 +438,7 @@ TEST_F(IconMappingMigrationTest, TestIconMappingMigration) {
   icon_mappings.clear();
   EXPECT_TRUE(db.GetIconMappingsForPageURL(page_url3, &icon_mappings));
   ASSERT_EQ(1u, icon_mappings.size());
-  EXPECT_EQ(FAV_ICON, icon_mappings[0].icon_type);
+  EXPECT_EQ(FAVICON, icon_mappings[0].icon_type);
   EXPECT_EQ(page_url3, icon_mappings[0].page_url);
   EXPECT_EQ(1, icon_mappings[0].icon_id);
 
@@ -447,7 +447,7 @@ TEST_F(IconMappingMigrationTest, TestIconMappingMigration) {
   icon_mappings.clear();
   EXPECT_TRUE(db.GetIconMappingsForPageURL(page_url2, &icon_mappings));
   ASSERT_EQ(1u, icon_mappings.size());
-  EXPECT_EQ(FAV_ICON, icon_mappings[0].icon_type);
+  EXPECT_EQ(FAVICON, icon_mappings[0].icon_type);
   EXPECT_EQ(page_url2, icon_mappings[0].page_url);
   EXPECT_EQ(2, icon_mappings[0].icon_id);
   ASSERT_TRUE(db.GetFavicon(

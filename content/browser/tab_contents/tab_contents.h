@@ -182,8 +182,8 @@ class TabContents : public PageNavigator,
   }
 
   // Returns the FaviconHelper of this TabContents.
-  FaviconHelper& fav_icon_helper() {
-    return *fav_icon_helper_.get();
+  FaviconHelper& favicon_helper() {
+    return *favicon_helper_.get();
   }
 
   // App extensions ------------------------------------------------------------
@@ -1080,7 +1080,7 @@ class TabContents : public PageNavigator,
   BookmarkDrag* bookmark_drag_;
 
   // Handles downloading favicons.
-  scoped_ptr<FaviconHelper> fav_icon_helper_;
+  scoped_ptr<FaviconHelper> favicon_helper_;
 
   // Cached web app info data.
   WebApplicationInfo web_app_info_;

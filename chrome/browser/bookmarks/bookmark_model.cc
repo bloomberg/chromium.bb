@@ -740,15 +740,15 @@ void BookmarkModel::OnFavIconDataAvailable(
     scoped_refptr<RefCountedMemory> data,
     bool expired,
     GURL icon_url) {
-  SkBitmap fav_icon;
+  SkBitmap favicon;
   BookmarkNode* node =
       load_consumer_.GetClientData(
           profile_->GetFaviconService(Profile::EXPLICIT_ACCESS), handle);
   DCHECK(node);
   node->set_favicon_load_handle(0);
   if (know_favicon && data.get() && data->size() &&
-      gfx::PNGCodec::Decode(data->front(), data->size(), &fav_icon)) {
-    node->set_favicon(fav_icon);
+      gfx::PNGCodec::Decode(data->front(), data->size(), &favicon)) {
+    node->set_favicon(favicon);
     FavIconLoaded(node);
   }
 }

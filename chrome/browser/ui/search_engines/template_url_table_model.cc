@@ -52,8 +52,8 @@ class ModelEntry {
   SkBitmap GetIcon() {
     if (load_state_ == NOT_LOADED)
       LoadFavIcon();
-    if (!fav_icon_.isNull())
-      return fav_icon_;
+    if (!favicon_.isNull())
+      return favicon_;
     return *default_icon;
   }
 
@@ -61,7 +61,7 @@ class ModelEntry {
   // fetched again. This should be invoked if the url is modified.
   void ResetIcon() {
     load_state_ = NOT_LOADED;
-    fav_icon_ = SkBitmap();
+    favicon_ = SkBitmap();
   }
 
  private:
@@ -79,19 +79,19 @@ class ModelEntry {
             Profile::EXPLICIT_ACCESS);
     if (!favicon_service)
       return;
-    GURL fav_icon_url = template_url().GetFavIconURL();
-    if (!fav_icon_url.is_valid()) {
+    GURL favicon_url = template_url().GetFavIconURL();
+    if (!favicon_url.is_valid()) {
       // The favicon url isn't always set. Guess at one here.
       if (template_url_.url() && template_url_.url()->IsValid()) {
         GURL url = GURL(template_url_.url()->url());
         if (url.is_valid())
-          fav_icon_url = TemplateURL::GenerateFaviconURL(url);
+          favicon_url = TemplateURL::GenerateFaviconURL(url);
       }
-      if (!fav_icon_url.is_valid())
+      if (!favicon_url.is_valid())
         return;
     }
     load_state_ = LOADING;
-    favicon_service->GetFavicon(fav_icon_url,
+    favicon_service->GetFavicon(favicon_url,
                    &request_consumer_,
                    NewCallback(this, &ModelEntry::OnFavIconDataAvailable));
   }
@@ -104,13 +104,13 @@ class ModelEntry {
       GURL icon_url) {
     load_state_ = LOADED;
     if (know_favicon && data.get() &&
-        gfx::PNGCodec::Decode(data->front(), data->size(), &fav_icon_)) {
+        gfx::PNGCodec::Decode(data->front(), data->size(), &favicon_)) {
       model_->FavIconAvailable(this);
     }
   }
 
   const TemplateURL& template_url_;
-  SkBitmap fav_icon_;
+  SkBitmap favicon_;
   LoadState load_state_;
   TemplateURLTableModel* model_;
   CancelableRequestConsumer request_consumer_;

@@ -91,13 +91,13 @@ class ExternalProcessImporterClient
       const std::vector<ProfileWriter::BookmarkEntry>& bookmarks_group)
           OVERRIDE;
 
-  // First message received when importing favicons. |total_fav_icons_size|
+  // First message received when importing favicons. |total_favicons_size|
   // gives the total number of favicons to be imported.
-  virtual void OnFavIconsImportStart(size_t total_fav_icons_count) OVERRIDE;
+  virtual void OnFavIconsImportStart(size_t total_favicons_count) OVERRIDE;
 
   // Called when a group of favicons has been received.
   virtual void OnFavIconsImportGroup(
-      const std::vector<history::ImportedFavIconUsage>& fav_icons_group)
+      const std::vector<history::ImportedFavIconUsage>& favicons_group)
           OVERRIDE;
 
   // Called when the passwordform has been received.
@@ -117,7 +117,7 @@ class ExternalProcessImporterClient
   // entire group has been collected and is ready to be written to the profile.
   std::vector<history::URLRow> history_rows_;
   std::vector<ProfileWriter::BookmarkEntry> bookmarks_;
-  std::vector<history::ImportedFavIconUsage> fav_icons_;
+  std::vector<history::ImportedFavIconUsage> favicons_;
 
   // Usually some variation on IDS_BOOKMARK_GROUP_...; the name of the folder
   // under which imported bookmarks will be placed.
@@ -133,7 +133,7 @@ class ExternalProcessImporterClient
   size_t total_history_rows_count_;
 
   // Total number of favicons to import.
-  size_t total_fav_icons_count_;
+  size_t total_favicons_count_;
 
   // Notifications received from the ProfileImportProcessHost are passed back
   // to process_importer_host_, which calls the ProfileWriter to record the

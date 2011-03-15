@@ -120,7 +120,7 @@ class TemplateURLModelTest : public testing::Test {
                                   bool autogenerate_keyword,
                                   const std::string& url,
                                   const std::string& suggest_url,
-                                  const std::string& fav_icon_url,
+                                  const std::string& favicon_url,
                                   const std::string& encodings,
                                   const std::string& short_name,
                                   bool safe_for_autoreplace,
@@ -128,7 +128,7 @@ class TemplateURLModelTest : public testing::Test {
     TemplateURL* template_url = new TemplateURL();
     template_url->SetURL(url, 0, 0);
     template_url->SetSuggestionsURL(suggest_url, 0, 0);
-    template_url->SetFaviconURL(GURL(fav_icon_url));
+    template_url->SetFaviconURL(GURL(favicon_url));
     template_url->set_keyword(UTF8ToUTF16(keyword));
     template_url->set_autogenerate_keyword(autogenerate_keyword);
     template_url->set_short_name(UTF8ToUTF16(short_name));

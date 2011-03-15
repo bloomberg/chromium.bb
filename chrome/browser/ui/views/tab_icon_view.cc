@@ -25,7 +25,7 @@
 #endif
 
 static bool g_initialized = false;
-static SkBitmap* g_default_fav_icon = NULL;
+static SkBitmap* g_default_favicon = NULL;
 
 // static
 void TabIconView::InitializeIfNeeded() {
@@ -36,11 +36,11 @@ void TabIconView::InitializeIfNeeded() {
     // The default window icon is the application icon, not the default
     // favicon.
     HICON app_icon = GetAppIcon();
-    g_default_fav_icon =
+    g_default_favicon =
         IconUtil::CreateSkBitmapFromHICON(app_icon, gfx::Size(16, 16));
     DestroyIcon(app_icon);
 #else
-    g_default_fav_icon =
+    g_default_favicon =
         ResourceBundle::GetSharedInstance().GetBitmapNamed(IDR_PRODUCT_LOGO_16);
 #endif
   }
@@ -147,7 +147,7 @@ void TabIconView::OnPaint(gfx::Canvas* canvas) {
   }
 
   if (!rendered)
-    PaintFavIcon(canvas, *g_default_fav_icon);
+    PaintFavIcon(canvas, *g_default_favicon);
 }
 
 gfx::Size TabIconView::GetPreferredSize() {

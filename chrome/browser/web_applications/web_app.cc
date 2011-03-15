@@ -553,7 +553,7 @@ void UpdateShortcutWorker::DownloadIcon() {
     return;
   }
 
-  tab_contents_->fav_icon_helper().DownloadImage(
+  tab_contents_->favicon_helper().DownloadImage(
       unprocessed_icons_.back().url,
       std::max(unprocessed_icons_.back().width,
                unprocessed_icons_.back().height),

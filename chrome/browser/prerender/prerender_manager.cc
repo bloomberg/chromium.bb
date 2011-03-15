@@ -165,7 +165,7 @@ bool PrerenderManager::MaybeUsePreloadedPage(TabContents* tc, const GURL& url) {
 
   GURL icon_url = pc->icon_url();
   if (!icon_url.is_empty())
-    tc->fav_icon_helper().OnUpdateFaviconURL(pc->page_id(), icon_url);
+    tc->favicon_helper().OnUpdateFaviconURL(pc->page_id(), icon_url);
 
   if (pc->has_stopped_loading())
     tc->DidStopLoading();

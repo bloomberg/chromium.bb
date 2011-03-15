@@ -439,7 +439,7 @@ bool BookmarkFaviconFetcher::FetchNextFavicon() {
     if (favicons_map_->end() == iter) {
       FaviconService* favicon_service =
           profile_->GetFaviconService(Profile::EXPLICIT_ACCESS);
-      favicon_service->GetFaviconForURL(GURL(url), &fav_icon_consumer_,
+      favicon_service->GetFaviconForURL(GURL(url), &favicon_consumer_,
           NewCallback(this, &BookmarkFaviconFetcher::OnFavIconDataAvailable));
       return true;
     } else {

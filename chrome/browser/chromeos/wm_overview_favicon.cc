@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/chromeos/wm_overview_fav_icon.h"
+#include "chrome/browser/chromeos/wm_overview_favicon.h"
 
 #include <vector>
 
@@ -24,21 +24,21 @@ using std::vector;
 
 namespace chromeos {
 
-const int WmOverviewFavIcon::kIconSize = 32;
+const int WmOverviewFavicon::kIconSize = 32;
 
-WmOverviewFavIcon::WmOverviewFavIcon()
+WmOverviewFavicon::WmOverviewFavicon()
     : WidgetGtk(TYPE_WINDOW),
-      fav_icon_view_(NULL) {
+      favicon_view_(NULL) {
 }
 
-void WmOverviewFavIcon::Init(WmOverviewSnapshot* snapshot) {
+void WmOverviewFavicon::Init(WmOverviewSnapshot* snapshot) {
   MakeTransparent();
 
-  fav_icon_view_ = new views::ImageView();
+  favicon_view_ = new views::ImageView();
 
   WidgetGtk::Init(NULL, gfx::Rect(0, 0, 0, 0));
 
-  SetContentsView(fav_icon_view_);
+  SetContentsView(favicon_view_);
 
   // Set the window type
   vector<int> params;
@@ -51,8 +51,8 @@ void WmOverviewFavIcon::Init(WmOverviewSnapshot* snapshot) {
 }
 
 
-void WmOverviewFavIcon::SetFavicon(const SkBitmap& image) {
-  CHECK(fav_icon_view_) << "Init not called before setting favicon.";
+void WmOverviewFavicon::SetFavicon(const SkBitmap& image) {
+  CHECK(favicon_view_) << "Init not called before setting favicon.";
   SkBitmap icon;
   if (image.width() && image.height()) {
     float aspect_ratio = static_cast<float>(image.width()) / image.height();
@@ -70,7 +70,7 @@ void WmOverviewFavIcon::SetFavicon(const SkBitmap& image) {
     }
   }
 
-  fav_icon_view_->SetImage(icon);
+  favicon_view_->SetImage(icon);
 
   // Reset the bounds to the size of the image.
   SetBounds(gfx::Rect(icon.width(), icon.height()));

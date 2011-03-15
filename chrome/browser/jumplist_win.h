@@ -168,7 +168,7 @@ class JumpList : public TabRestoreServiceObserver {
  private:
   // Our consumers for HistoryService.
   CancelableRequestConsumer most_visited_consumer_;
-  CancelableRequestConsumer fav_icon_consumer_;
+  CancelableRequestConsumer favicon_consumer_;
 
   // The Profile object used for listening its events.
   Profile* profile_;

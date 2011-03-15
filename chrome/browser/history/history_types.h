@@ -680,7 +680,7 @@ bool RowQualifiesAsSignificant(const URLRow& row, const base::Time& threshold);
 // table.
 enum IconType {
   INVALID_ICON = 0x0,
-  FAV_ICON = 1 << 0,
+  FAVICON = 1 << 0,
   TOUCH_ICON = 1 << 1,
   TOUCH_PRECOMPOSED_ICON = 1 << 2
 };

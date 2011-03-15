@@ -27,7 +27,7 @@ using base::TimeDelta;
 namespace {
 
 // The default favicon.
-SkBitmap* default_fav_icon = NULL;
+SkBitmap* default_favicon = NULL;
 
 // How long we query entry points for.
 const int kPossibleURLTimeScope = 30;
@@ -40,7 +40,7 @@ struct PossibleURLModel::Result {
 
   GURL url;
   // Index of this Result in results_. This is used as the key into
-  // fav_icon_map_ to lookup the favicon for the url, as well as the index
+  // favicon_map_ to lookup the favicon for the url, as well as the index
   // into results_ when the favicon is received.
   size_t index;
   ui::SortedDisplayURL display_url;
@@ -51,9 +51,9 @@ struct PossibleURLModel::Result {
 PossibleURLModel::PossibleURLModel()
     : profile_(NULL),
       observer_(NULL) {
-  if (!default_fav_icon) {
+  if (!default_favicon) {
     ResourceBundle& rb = ResourceBundle::GetSharedInstance();
-    default_fav_icon = rb.GetBitmapNamed(IDR_DEFAULT_FAVICON);
+    default_favicon = rb.GetBitmapNamed(IDR_DEFAULT_FAVICON);
   }
 }
 
@@ -99,7 +99,7 @@ void PossibleURLModel::OnHistoryQueryComplete(HistoryService::Handle h,
   // service, but I think they should be implemented here because that was
   // pretty specific behavior that shouldn't be generally exposed.
 
-  fav_icon_map_.clear();
+  favicon_map_.clear();
   if (observer_)
     observer_->OnModelChanged();
 }
@@ -148,12 +148,12 @@ string16 PossibleURLModel::GetText(int row, int col_id) {
 SkBitmap PossibleURLModel::GetIcon(int row) {
   if (row < 0 || row >= RowCount()) {
     NOTREACHED();
-    return *default_fav_icon;
+    return *default_favicon;
   }
 
   Result& result = results_[row];
-  FavIconMap::iterator i = fav_icon_map_.find(result.index);
-  if (i != fav_icon_map_.end()) {
+  FavIconMap::iterator i = favicon_map_.find(result.index);
+  if (i != favicon_map_.end()) {
     // We already requested the favicon, return it.
     if (!i->second.isNull())
       return i->second;
@@ -168,10 +168,10 @@ SkBitmap PossibleURLModel::GetIcon(int row) {
       consumer_.SetClientData(favicon_service, h, result.index);
       // Add an entry to the map so that we don't attempt to request the
       // favicon again.
-      fav_icon_map_[result.index] = SkBitmap();
+      favicon_map_[result.index] = SkBitmap();
     }
   }
-  return *default_fav_icon;
+  return *default_favicon;
 }
 
 int PossibleURLModel::CompareValues(int row1, int row2, int column_id) {
@@ -184,7 +184,7 @@ int PossibleURLModel::CompareValues(int row1, int row2, int column_id) {
 
 void PossibleURLModel::OnFavIconAvailable(
     FaviconService::Handle h,
-    bool fav_icon_available,
+    bool favicon_available,
     scoped_refptr<RefCountedMemory> data,
     bool expired,
     GURL icon_url) {
@@ -192,13 +192,13 @@ void PossibleURLModel::OnFavIconAvailable(
     FaviconService* favicon_service =
         profile_->GetFaviconService(Profile::EXPLICIT_ACCESS);
     size_t index = consumer_.GetClientData(favicon_service, h);
-    if (fav_icon_available) {
+    if (favicon_available) {
       // The decoder will leave our bitmap empty on error.
       gfx::PNGCodec::Decode(data->front(), data->size(),
-                            &(fav_icon_map_[index]));
+                            &(favicon_map_[index]));
 
       // Notify the observer.
-      if (!fav_icon_map_[index].isNull() && observer_)
+      if (!favicon_map_[index].isNull() && observer_)
         observer_->OnItemsChanged(static_cast<int>(index), 1);
     }
   }

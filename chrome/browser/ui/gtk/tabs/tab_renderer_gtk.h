@@ -407,7 +407,7 @@ class TabRendererGtk : public ui::AnimationDelegate,
   bool showing_close_button_;
 
   // The offset used to animate the favicon location.
-  int fav_icon_hiding_offset_;
+  int favicon_hiding_offset_;
 
   // The animation object used to swap the favicon with the sad tab icon.
   scoped_ptr<FavIconCrashAnimation> crash_animation_;

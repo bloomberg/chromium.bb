@@ -21,7 +21,7 @@ ExternalProcessImporterClient::ExternalProcessImporterClient(
     : bookmarks_options_(0),
       total_bookmarks_count_(0),
       total_history_rows_count_(0),
-      total_fav_icons_count_(0),
+      total_favicons_count_(0),
       process_importer_host_(importer_host),
       profile_import_process_host_(NULL),
       profile_info_(profile_info),
@@ -192,23 +192,23 @@ void ExternalProcessImporterClient::OnBookmarksImportGroup(
 }
 
 void ExternalProcessImporterClient::OnFavIconsImportStart(
-    size_t total_fav_icons_count) {
+    size_t total_favicons_count) {
   if (cancelled_)
     return;
 
-  total_fav_icons_count_ = total_fav_icons_count;
-  fav_icons_.reserve(total_fav_icons_count);
+  total_favicons_count_ = total_favicons_count;
+  favicons_.reserve(total_favicons_count);
 }
 
 void ExternalProcessImporterClient::OnFavIconsImportGroup(
-    const std::vector<history::ImportedFavIconUsage>& fav_icons_group) {
+    const std::vector<history::ImportedFavIconUsage>& favicons_group) {
   if (cancelled_)
     return;
 
-  fav_icons_.insert(fav_icons_.end(), fav_icons_group.begin(),
-                    fav_icons_group.end());
-  if (fav_icons_.size() == total_fav_icons_count_)
-    bridge_->SetFavicons(fav_icons_);
+  favicons_.insert(favicons_.end(), favicons_group.begin(),
+                    favicons_group.end());
+  if (favicons_.size() == total_favicons_count_)
+    bridge_->SetFavicons(favicons_);
 }
 
 void ExternalProcessImporterClient::OnPasswordFormImportReady(

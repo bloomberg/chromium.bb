@@ -139,7 +139,7 @@ class BaseTab : public ui::AnimationDelegate,
 
   virtual int loading_animation_frame() const;
   virtual bool should_display_crashed_favicon() const;
-  virtual int fav_icon_hiding_offset() const;
+  virtual int favicon_hiding_offset() const;
 
   static gfx::Font* font() { return font_; }
   static int font_height() { return font_height_; }
@@ -181,7 +181,7 @@ class BaseTab : public ui::AnimationDelegate,
 
   // The offset used to animate the favicon location. This is used when the tab
   // crashes.
-  int fav_icon_hiding_offset_;
+  int favicon_hiding_offset_;
 
   // The current index of the loading animation.
   int loading_animation_frame_;
