@@ -436,31 +436,18 @@ InMemoryURLIndex::String16Set InMemoryURLIndex::WordSetFromString16(
 InMemoryURLIndex::String16Vector InMemoryURLIndex::WordVectorFromString16(
     const string16& uni_string,
     bool break_on_space) {
-  // TODO(mrossetti): Come back and update the following code if the
-  // BreakIterator is changed. Here are some comments:
-  // The iterator behaves differently depending on the breaking strategy. Its
-  // unit tests do not properly test this case as its basic word and space tests
-  // always use a test string starting with a space.
   base::BreakIterator iter(&uni_string, break_on_space ?
       base::BreakIterator::BREAK_SPACE : base::BreakIterator::BREAK_WORD);
   String16Vector words;
-  if (break_on_space) {
-    if (iter.Init()) {
-      while (iter.Advance()) {
-        string16 word = iter.GetString();
+  if (!iter.Init())
+    return words;
+  while (iter.Advance()) {
+    if (break_on_space || iter.IsWord()) {
+      string16 word = iter.GetString();
+      if (break_on_space)
         TrimWhitespace(word, TRIM_ALL, &word);
-        if (!word.empty())
-          words.push_back(word);
-      }
-    }
-  } else {
-    if (iter.Init()) {
-      if (iter.IsWord())
-        words.push_back(iter.GetString());
-      while (iter.Advance()) {
-        if (iter.IsWord())
-          words.push_back(iter.GetString());
-      }
+      if (!word.empty())
+        words.push_back(word);
     }
   }
   return words;

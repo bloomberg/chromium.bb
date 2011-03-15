@@ -142,8 +142,17 @@ class InMemoryURLIndex {
   void DeleteURL(URLID row_id);
 
   // Breaks the |uni_string| string down into individual words and return
-  // a vector with the individual words in their original order. Break on
-  // whitespace if |break_on_space| also on special characters.
+  // a vector with the individual words in their original order. If
+  // |break_on_space| is false then the resulting list will contain only words
+  // containing alpha-numeric characters. If |break_on_space| is true then the
+  // resulting list will contain strings broken at whitespace.
+  //
+  // Example:
+  //   Given: |uni_string|: "http://www.google.com/ harry the rabbit."
+  //   With |break_on_space| false the returned list will contain:
+  //    "http", "www", "google", "com", "harry", "the", "rabbit"
+  //   With |break_on_space| true the returned list will contain:
+  //    "http://", "www.google.com/", "harry", "the", "rabbit."
   static String16Vector WordVectorFromString16(const string16& uni_string,
                                                bool break_on_space);
 

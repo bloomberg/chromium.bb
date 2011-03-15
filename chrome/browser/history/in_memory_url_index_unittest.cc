@@ -260,7 +260,7 @@ TEST_F(InMemoryURLIndexTest, StaticFunctions) {
   string16 string_a(ASCIIToUTF16("http://www.google.com/ frammy the brammy"));
   InMemoryURLIndex::String16Vector string_vec =
       InMemoryURLIndex::WordVectorFromString16(string_a, false);
-  EXPECT_EQ(7U, string_vec.size());
+  ASSERT_EQ(7U, string_vec.size());
   // See if we got the words we expected.
   EXPECT_EQ(UTF8ToUTF16("http"), string_vec[0]);
   EXPECT_EQ(UTF8ToUTF16("www"), string_vec[1]);
@@ -271,7 +271,7 @@ TEST_F(InMemoryURLIndexTest, StaticFunctions) {
   EXPECT_EQ(UTF8ToUTF16("brammy"), string_vec[6]);
 
   string_vec = InMemoryURLIndex::WordVectorFromString16(string_a, true);
-  EXPECT_EQ(5U, string_vec.size());
+  ASSERT_EQ(5U, string_vec.size());
   EXPECT_EQ(UTF8ToUTF16("http://"), string_vec[0]);
   EXPECT_EQ(UTF8ToUTF16("www.google.com/"), string_vec[1]);
   EXPECT_EQ(UTF8ToUTF16("frammy"), string_vec[2]);
