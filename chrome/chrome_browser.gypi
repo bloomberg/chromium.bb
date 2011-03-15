@@ -3100,8 +3100,6 @@
         'browser/ui/views/uninstall_view.h',
         'browser/ui/views/update_recommended_message_box.cc',
         'browser/ui/views/update_recommended_message_box.h',
-        'browser/ui/views/url_picker.cc',
-        'browser/ui/views/url_picker.h',
         'browser/ui/views/user_data_dir_dialog.cc',
         'browser/ui/views/user_data_dir_dialog.h',
         'browser/ui/views/window.cc',
