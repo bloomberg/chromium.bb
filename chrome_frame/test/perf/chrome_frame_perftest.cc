@@ -290,16 +290,14 @@ class ChromeFrameStartupTest : public ChromeFramePerfTestBase {
   virtual void SetUp() {
     ASSERT_TRUE(PathService::Get(chrome::DIR_APP, &dir_app_));
 
-    chrome_dll_ = dir_app_.Append(FILE_PATH_LITERAL("chrome.dll"));
-    chrome_exe_ = dir_app_.Append(
-        FilePath::FromWStringHack(chrome::kBrowserProcessExecutableName));
-    chrome_frame_dll_ = dir_app_.Append(FILE_PATH_LITERAL("servers"));
-    chrome_frame_dll_ = chrome_frame_dll_.Append(
-        FilePath::FromWStringHack(kChromeFrameDllName));
-    icu_dll_ = dir_app_.Append(FILE_PATH_LITERAL("icudt.dll"));
-    avcodec52_dll_ = dir_app_.Append(FILE_PATH_LITERAL("avcodec-52.dll"));
-    avformat52_dll_ = dir_app_.Append(FILE_PATH_LITERAL("avformat-52.dll"));
-    avutil50_dll_ = dir_app_.Append(FILE_PATH_LITERAL("avutil-50.dll"));
+    chrome_dll_ = dir_app_.Append(L"chrome.dll");
+    chrome_exe_ = dir_app_.Append(chrome::kBrowserProcessExecutableName);
+    chrome_frame_dll_ = dir_app_.Append(L"servers");
+    chrome_frame_dll_ = chrome_frame_dll_.Append(kChromeFrameDllName);
+    icu_dll_ = dir_app_.Append(L"icudt.dll");
+    avcodec52_dll_ = dir_app_.Append(L"avcodec-52.dll");
+    avformat52_dll_ = dir_app_.Append(L"avformat-52.dll");
+    avutil50_dll_ = dir_app_.Append(L"avutil-50.dll");
   }
 
   // TODO(iyengar)
@@ -1113,7 +1111,7 @@ TEST_F(FlashCreationTest, PerfCold) {
   ASSERT_EQ(ERROR_SUCCESS, flash_key.ReadValue(L"", &plugin_path));
   ASSERT_FALSE(plugin_path.empty());
 
-  FilePath flash_path = FilePath::FromWStringHack(plugin_path);
+  FilePath flash_path = FilePath(plugin_path);
   FilePath binaries_to_evict[] = {flash_path};
 
   RunStartupTest("creation_cold", "t_flash", "", true /* cold */,
@@ -1134,7 +1132,7 @@ TEST_F(SilverlightCreationTest, DISABLED_PerfCold) {
   ASSERT_EQ(ERROR_SUCCESS, silverlight_key.ReadValue(L"", &plugin_path));
   ASSERT_FALSE(plugin_path.empty());
 
-  FilePath silverlight_path = FilePath::FromWStringHack(plugin_path);
+  FilePath silverlight_path = FilePath(plugin_path);
   FilePath binaries_to_evict[] = {silverlight_path};
 
   RunStartupTest("creation_cold", "t_silverlight", "", true /* cold */,
