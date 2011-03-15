@@ -1414,11 +1414,6 @@
    fun:-[NSNextStepFrame _recursiveDisplayRectIfNeededIgnoringOpacity:isVisibleRect:rectIsVisibleRectForView:topView:]
    fun:-[NSView _displayRectIgnoringOpacity:isVisibleRect:rectIsVisibleRectForView:]
    fun:-[NSView displayIfNeeded]
-   fun:-[NSWindow _setFrameCommon:display:stashSize:]
-   fun:-[NSWindow setFrame:display:]
-   fun:-[NSWindow setValue:forKey:]
-   fun:-[NSObject(NSKeyValueCoding) setValue:forKeyPath:]
-   fun:-[NSInFlightAnimation advanceToTime:]
 }
 {
    bug_75714_b
@@ -1435,9 +1430,4 @@
    fun:-[NSNextStepFrame _recursiveDisplayRectIfNeededIgnoringOpacity:isVisibleRect:rectIsVisibleRectForView:topView:]
    fun:-[NSView _displayRectIgnoringOpacity:isVisibleRect:rectIsVisibleRectForView:]
    fun:-[NSView displayIfNeeded]
-   fun:-[NSWindow _setFrameCommon:display:stashSize:]
-   fun:-[NSWindow setFrame:display:]
-   fun:-[NSWindow setValue:forKey:]
-   fun:-[NSObject(NSKeyValueCoding) setValue:forKeyPath:]
-   fun:-[NSInFlightAnimation advanceToTime:]
 }
