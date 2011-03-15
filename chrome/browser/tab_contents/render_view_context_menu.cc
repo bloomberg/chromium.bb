@@ -1421,10 +1421,12 @@ void RenderViewContextMenu::ExecuteCommand(int id) {
       break;
     }
 
-    case IDC_CONTENT_CONTEXT_LANGUAGE_SETTINGS:
-      OpenURL(GURL(chrome::kLanguageOptionsSubPage), NEW_FOREGROUND_TAB,
-              PageTransition::LINK);
+    case IDC_CONTENT_CONTEXT_LANGUAGE_SETTINGS: {
+      std::string url = std::string(chrome::kChromeUISettingsURL) +
+          chrome::kLanguageOptionsSubPage;
+      OpenURL(GURL(url), NEW_FOREGROUND_TAB, PageTransition::LINK);
       break;
+    }
 
     case IDC_SPELLPANEL_TOGGLE:
       source_tab_contents_->render_view_host()->ToggleSpellPanel(
