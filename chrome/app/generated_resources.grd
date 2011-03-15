@@ -6863,17 +6863,13 @@ Keep your key file in a safe place. You will need it to create new versions of y
       </message>
 
 
-      <!-- Views displays group titles and their contents side-by-side -->
-      <!-- and includes a colon as a result (Mac needs this too).  GTK -->
-      <!-- uses title case and displays the titles above the contents, -->
-      <!-- so we omit the colon. -->
-      <if expr="not pp_ifdef('use_titlecase') or os != 'linux2'">
+      <if expr="not pp_ifdef('use_titlecase')">
         <message name="IDS_OPTIONS_STARTUP_GROUP_NAME" desc="The title of the startup group">
-          On startup:
+          On startup
         </message>
       </if>
-      <if expr="pp_ifdef('use_titlecase') and os == 'linux2'">
-        <message name="IDS_OPTIONS_STARTUP_GROUP_NAME" desc="In Title Case and without trailing colon: The title of the startup group">
+      <if expr="pp_ifdef('use_titlecase')">
+        <message name="IDS_OPTIONS_STARTUP_GROUP_NAME" desc="In Title Case: The title of the startup group">
           On Startup
         </message>
       </if>
@@ -6925,18 +6921,20 @@ Keep your key file in a safe place. You will need it to create new versions of y
         </message>
       </if>
 
-      <message name="IDS_OPTIONS_TOOLBAR_GROUP_NAME" desc="The title of the toolbar group">
-        Toolbar
-      </message>
-
-      <if expr="not pp_ifdef('use_titlecase') or os != 'linux2'">
+      <if expr="not pp_ifdef('use_titlecase')">
         <message name="IDS_OPTIONS_HOMEPAGE_GROUP_NAME" desc="The title of the home pages group">
-          Home page:
+          Home page
+        </message>
+        <message name="IDS_OPTIONS_TOOLBAR_GROUP_NAME" desc="The title of the toolbar group">
+          Toolbar
         </message>
       </if>
-      <if expr="pp_ifdef('use_titlecase') and os == 'linux2'">
-        <message name="IDS_OPTIONS_HOMEPAGE_GROUP_NAME" desc="In Title Case and without trailing colon: The title of the home pages group">
+      <if expr="pp_ifdef('use_titlecase')">
+        <message name="IDS_OPTIONS_HOMEPAGE_GROUP_NAME" desc="In Title Case: The title of the home pages group">
           Home Page
+        </message>
+        <message name="IDS_OPTIONS_TOOLBAR_GROUP_NAME" desc="In Title Case: The title of the toolbar group">
+          Toolbar
         </message>
       </if>
       <message name="IDS_OPTIONS_HOMEPAGE_USE_NEWTAB" desc="The title of the 'Use the New Tab page' for the home page radio">
@@ -6962,20 +6960,13 @@ Keep your key file in a safe place. You will need it to create new versions of y
         </message>
       </if>
 
-      <if expr="os == 'darwin'">
-        <!-- Mac has a Toolbar group (IDS_OPTIONS_HOMEPAGE_SHOW_BUTTON moved in this group) -->
-        <message name="IDS_OPTIONS_TOOLBAR_GROUP_NAME" desc="The title of the toolbar group">
-          Toolbar:
-        </message>
-      </if>
-
-      <if expr="not pp_ifdef('use_titlecase') or os != 'linux2'">
+      <if expr="not pp_ifdef('use_titlecase')">
         <message name="IDS_OPTIONS_DEFAULTSEARCH_GROUP_NAME" desc="The title of the default search engine group">
-          Search:
+          Search
         </message>
       </if>
-      <if expr="pp_ifdef('use_titlecase') and os == 'linux2'">
-        <message name="IDS_OPTIONS_DEFAULTSEARCH_GROUP_NAME" desc="In Title Case and without trailing colon: The title of the default search engine group">
+      <if expr="pp_ifdef('use_titlecase')">
+        <message name="IDS_OPTIONS_DEFAULTSEARCH_GROUP_NAME" desc="In Title Case: The title of the default search engine group">
           Search
         </message>
       </if>
@@ -6994,13 +6985,13 @@ Keep your key file in a safe place. You will need it to create new versions of y
         URL with %s in place of query
       </message>
 
-      <if expr="not pp_ifdef('use_titlecase') or os != 'linux2'">
+      <if expr="not pp_ifdef('use_titlecase')">
         <message name="IDS_OPTIONS_DEFAULTBROWSER_GROUP_NAME" desc="The title of the default browser group">
-          Default browser:
+          Default browser
         </message>
       </if>
-      <if expr="pp_ifdef('use_titlecase') and os == 'linux2'">
-        <message name="IDS_OPTIONS_DEFAULTBROWSER_GROUP_NAME" desc="In Title Case and without trailing colon: The title of the default browser group">
+      <if expr="pp_ifdef('use_titlecase')">
+        <message name="IDS_OPTIONS_DEFAULTBROWSER_GROUP_NAME" desc="In Title Case: The title of the default browser group">
           Default Browser
         </message>
       </if>
@@ -7021,16 +7012,19 @@ Keep your key file in a safe place. You will need it to create new versions of y
         <message name="IDS_OPTIONS_DEFAULTBROWSER_USEASDEFAULT" desc="In Title Case: The label of the 'Use Chrome as default' browser button">
           Make <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> My Default Browser
         </message>
+        <message name="IDS_OPTIONS_DOWNLOADLOCATION_GROUP_NAME" desc="The title of the download location group">
+          Downloads
+        </message>
       </if>
       <if expr="not pp_ifdef('use_titlecase')">
         <message name="IDS_OPTIONS_DEFAULTBROWSER_USEASDEFAULT" desc="In sentence case: The label of the 'Use Chrome as default' browser button">
           Make <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> my default browser
         </message>
+        <message name="IDS_OPTIONS_DOWNLOADLOCATION_GROUP_NAME" desc="In Title Case: The title of the download location group">
+          Downloads
+        </message>
       </if>
 
-      <message name="IDS_OPTIONS_DOWNLOADLOCATION_GROUP_NAME" desc="The title of the download location group">
-        Downloads
-      </message>
       <!-- TODO(tfarina): Remove this message when the platform-specific dialogs are removed. -->
       <message name="IDS_OPTIONS_DOWNLOADLOCATION_BROWSE_BUTTON" desc="The label of the 'Browse...' button">
         Br&amp;owse...
@@ -7097,19 +7091,19 @@ Keep your key file in a safe place. You will need it to create new versions of y
           Manage saved passwords...
         </message>
       </if>
-      <if expr="not pp_ifdef('use_titlecase') or os != 'linux2'">
+      <if expr="not pp_ifdef('use_titlecase')">
         <message name="IDS_AUTOFILL_SETTING_WINDOWS_GROUP_NAME" desc="The title of the form Autofill group">
-          Form autofill:
+          Form autofill
         </message>
         <message name="IDS_OPTIONS_PASSWORDS_GROUP_NAME" desc="The title of the 'Passwords' group">
-          Passwords:
+          Passwords
         </message>
       </if>
-      <if expr="pp_ifdef('use_titlecase') and os == 'linux2'">
-        <message name="IDS_AUTOFILL_SETTING_WINDOWS_GROUP_NAME" desc="In Title Case and without trailing colon: The title of the form Autofill group">
+      <if expr="pp_ifdef('use_titlecase')">
+        <message name="IDS_AUTOFILL_SETTING_WINDOWS_GROUP_NAME" desc="In Title Case: The title of the form Autofill group">
           Form Autofill
         </message>
-        <message name="IDS_OPTIONS_PASSWORDS_GROUP_NAME" desc="In Title Case and without trailing colon: The title of the 'Passwords' group">
+        <message name="IDS_OPTIONS_PASSWORDS_GROUP_NAME" desc="In Title Case: The title of the 'Passwords' group">
           Passwords
         </message>
       </if>
@@ -7205,17 +7199,18 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_AUTOFILL_USE_MAC_ADDRESS_BOOK" desc="Checkbox label to enable Address Book on Mac.">
         Include addresses from my Address Book card
       </message>
-      <message name="IDS_AUTOFILL_ADDRESSES_GROUP_NAME" desc="The name of the Addresses group of the Autofill dialog.">
-        Addresses
-      </message>
-      <message name="IDS_AUTOFILL_CREDITCARDS_GROUP_NAME" desc="The name of the Credit Cards group of the Autofill dialog.">
-        Credit Cards
-      </message>
+
       <message name="IDS_AUTOFILL_EDIT_BUTTON"
                desc="Text of the edit button in the Autofill editor">
         Edit...
       </message>
       <if expr="not pp_ifdef('use_titlecase')">
+        <message name="IDS_AUTOFILL_ADDRESSES_GROUP_NAME" desc="In sentence case: The name of the Addresses group of the Autofill dialog.">
+          Addresses
+        </message>
+        <message name="IDS_AUTOFILL_CREDITCARDS_GROUP_NAME" desc="In sentence case: The name of the Credit Cards group of the Autofill dialog.">
+          Credit cards
+        </message>
         <message name="IDS_AUTOFILL_EDIT_ADDRESS_CAPTION" desc="In sentence case: The caption on the edit Autofill address dialog.">
           Edit address
         </message>
@@ -7230,6 +7225,12 @@ Keep your key file in a safe place. You will need it to create new versions of y
         </message>
       </if>
       <if expr="pp_ifdef('use_titlecase')">
+        <message name="IDS_AUTOFILL_ADDRESSES_GROUP_NAME" desc="In Title Case: The name of the Addresses group of the Autofill dialog.">
+          Addresses
+        </message>
+        <message name="IDS_AUTOFILL_CREDITCARDS_GROUP_NAME" desc="In Title Case: The name of the Credit Cards group of the Autofill dialog.">
+          Credit Cards
+        </message>
         <message name="IDS_AUTOFILL_EDIT_ADDRESS_CAPTION" desc="In Title Case: The caption on the edit Autofill address dialog.">
           Edit Address
         </message>
@@ -7347,11 +7348,19 @@ Keep your key file in a safe place. You will need it to create new versions of y
         About Autofill
       </message>
 
-      <message name="IDS_THEMES_GROUP_NAME" desc="The title of the themes group">
-        Themes:
-      </message>
+      <if expr="not pp_ifdef('use_titlecase')">
+        <message name="IDS_THEMES_GROUP_NAME" desc="In sentence case: The title of the themes group">
+          Themes
+        </message>
+      </if>
+      <if expr="pp_ifdef('use_titlecase')">
+        <message name="IDS_THEMES_GROUP_NAME" desc="In Title Case: The title of the themes group">
+          Themes
+        </message>
+      </if>
+
       <if expr="os == 'linux2' or os.find('bsd') != -1">
-        <message name="IDS_APPEARANCE_GROUP_NAME" desc="In Title Case and without trailing colon: The title of the themes group">
+        <message name="IDS_APPEARANCE_GROUP_NAME" desc="In Title Case: The title of the themes group">
           Appearance
         </message>
         <message name="IDS_THEMES_GTK_BUTTON" desc="The button to choose GTK colors and icons as the current theme.">
@@ -7418,13 +7427,13 @@ Keep your key file in a safe place. You will need it to create new versions of y
         Use TLS 1.0
       </message>
 
-      <if expr="not pp_ifdef('use_titlecase') or os != 'linux2'">
+      <if expr="not pp_ifdef('use_titlecase')">
         <message name="IDS_OPTIONS_BROWSING_DATA_GROUP_NAME" desc="The title of the 'Browsing data' group.">
-          Browsing data:
+          Browsing data
         </message>
       </if>
-      <if expr="pp_ifdef('use_titlecase') and os == 'linux2'">
-        <message name="IDS_OPTIONS_BROWSING_DATA_GROUP_NAME" desc="In Title Case and without trailing colon: The title of the 'Browsing data' group.">
+      <if expr="pp_ifdef('use_titlecase')">
+        <message name="IDS_OPTIONS_BROWSING_DATA_GROUP_NAME" desc="In Title Case: The title of the 'Browsing data' group.">
           Browsing Data
         </message>
       </if>
@@ -8425,13 +8434,13 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <!-- Sync strings -->
 
       <!-- Sync options dialog strings -->
-      <if expr="not pp_ifdef('use_titlecase') or os != 'linux2'">
+      <if expr="not pp_ifdef('use_titlecase')">
         <message name="IDS_SYNC_OPTIONS_GROUP_NAME" desc="The name of the sync group in the options dialog.">
-          Sync:
+          Sync
         </message>
       </if>
-      <if expr="pp_ifdef('use_titlecase') and os == 'linux2'">
-        <message name="IDS_SYNC_OPTIONS_GROUP_NAME" desc="In Title Case and without trailing colon: The name of the sync group in the options dialog.">
+      <if expr="pp_ifdef('use_titlecase')">
+        <message name="IDS_SYNC_OPTIONS_GROUP_NAME" desc="In Title Case: The name of the sync group in the options dialog.">
           Sync
         </message>
       </if>
@@ -9715,7 +9724,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_OPTIONS_ACCOUNTS_OWNER_ONLY" desc="In the Accounts settings tab, the warning text noticing that only the owner can modify these settings.">
         These settings may only be modified by the owner:
       </message>
-      <message name="IDS_OPTIONS_PERSONAL_ACCOUNT_GROUP_NAME" desc="In the Personal Stuff settings tab, the title text for Account section.">
+      <message name="IDS_OPTIONS_PERSONAL_ACCOUNT_GROUP_NAME" desc="In sentence case: In the Personal Stuff settings tab, the title text for Account section.">
         Account
       </message>
       <message name="IDS_OPTIONS_ENABLE_SCREENLOCKER_CHECKBOX" desc="In the Personal Stuff settings tab, the text on the checkbox to enable screenlocker for current user.">

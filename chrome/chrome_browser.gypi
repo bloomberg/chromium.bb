@@ -3196,8 +3196,6 @@
         'browser/ui/webui/options/cookies_view_handler.h',
         'browser/ui/webui/options/core_options_handler.cc',
         'browser/ui/webui/options/core_options_handler.h',
-        'browser/ui/webui/options/dom_options_util.cc',
-        'browser/ui/webui/options/dom_options_util.h',
         'browser/ui/webui/options/font_settings_fonts_list_loader.cc',
         'browser/ui/webui/options/font_settings_fonts_list_loader.h',
         'browser/ui/webui/options/font_settings_handler.cc',

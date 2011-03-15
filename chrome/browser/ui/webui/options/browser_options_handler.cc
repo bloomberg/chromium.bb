@@ -22,7 +22,6 @@
 #include "chrome/browser/search_engines/template_url_model.h"
 #include "chrome/browser/ui/options/options_window.h"
 #include "chrome/browser/ui/webui/favicon_source.h"
-#include "chrome/browser/ui/webui/options/dom_options_util.h"
 #include "chrome/browser/ui/webui/options/options_managed_banner_handler.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/installer/util/browser_distribution.h"
@@ -50,25 +49,25 @@ void BrowserOptionsHandler::GetLocalizedValues(
   DCHECK(localized_strings);
 
   static OptionsStringResource resources[] = {
-    { "startupGroupName", IDS_OPTIONS_STARTUP_GROUP_NAME, true },
+    { "startupGroupName", IDS_OPTIONS_STARTUP_GROUP_NAME },
     { "startupShowDefaultAndNewTab",
       IDS_OPTIONS_STARTUP_SHOW_DEFAULT_AND_NEWTAB},
     { "startupShowLastSession", IDS_OPTIONS_STARTUP_SHOW_LAST_SESSION },
     { "startupShowPages", IDS_OPTIONS_STARTUP_SHOW_PAGES },
     { "startupAddButton", IDS_OPTIONS_STARTUP_ADD_BUTTON },
     { "startupUseCurrent", IDS_OPTIONS_STARTUP_USE_CURRENT },
-    { "homepageGroupName", IDS_OPTIONS_HOMEPAGE_GROUP_NAME, true },
+    { "homepageGroupName", IDS_OPTIONS_HOMEPAGE_GROUP_NAME },
     { "homepageUseNewTab", IDS_OPTIONS_HOMEPAGE_USE_NEWTAB },
     { "homepageUseURL", IDS_OPTIONS_HOMEPAGE_USE_URL },
-    { "toolbarGroupName", IDS_OPTIONS_TOOLBAR_GROUP_NAME, true },
+    { "toolbarGroupName", IDS_OPTIONS_TOOLBAR_GROUP_NAME },
     { "toolbarShowHomeButton", IDS_OPTIONS_TOOLBAR_SHOW_HOME_BUTTON },
-    { "defaultSearchGroupName", IDS_OPTIONS_DEFAULTSEARCH_GROUP_NAME, true },
+    { "defaultSearchGroupName", IDS_OPTIONS_DEFAULTSEARCH_GROUP_NAME },
     { "defaultSearchManageEngines", IDS_OPTIONS_DEFAULTSEARCH_MANAGE_ENGINES },
     { "instantName", IDS_INSTANT_PREF },
     { "instantWarningText", IDS_INSTANT_PREF_WARNING },
     { "instantConfirmTitle", IDS_INSTANT_OPT_IN_TITLE },
     { "instantConfirmMessage", IDS_INSTANT_OPT_IN_MESSAGE },
-    { "defaultBrowserGroupName", IDS_OPTIONS_DEFAULTBROWSER_GROUP_NAME, true },
+    { "defaultBrowserGroupName", IDS_OPTIONS_DEFAULTBROWSER_GROUP_NAME },
   };
 
   RegisterStrings(localized_strings, resources, arraysize(resources));

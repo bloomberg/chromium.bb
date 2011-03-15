@@ -75,9 +75,6 @@ class OptionsPageUIHandler : public WebUIMessageHandler,
     const char* name;
     // The .grd ID for the resource (IDS_*).
     int id;
-    // True if the trailing colon should be stripped on platforms that
-    // don't want trailing colons.
-    bool strip_colon;
   };
   // A helper for simplifying the process of registering strings in WebUI.
   static void RegisterStrings(DictionaryValue* localized_strings,

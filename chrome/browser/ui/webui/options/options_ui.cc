@@ -28,7 +28,6 @@
 #include "chrome/browser/ui/webui/options/content_settings_handler.h"
 #include "chrome/browser/ui/webui/options/cookies_view_handler.h"
 #include "chrome/browser/ui/webui/options/core_options_handler.h"
-#include "chrome/browser/ui/webui/options/dom_options_util.h"
 #include "chrome/browser/ui/webui/options/font_settings_handler.h"
 #include "chrome/browser/ui/webui/options/import_data_handler.h"
 #include "chrome/browser/ui/webui/options/language_options_handler.h"
@@ -136,10 +135,8 @@ void OptionsPageUIHandler::RegisterStrings(
     const OptionsStringResource* resources,
     size_t length) {
   for (size_t i = 0; i < length; ++i) {
-    const string16& value = l10n_util::GetStringUTF16(resources[i].id);
     localized_strings->SetString(
-        resources[i].name,
-        resources[i].strip_colon ? dom_options_util::StripColon(value) : value);
+        resources[i].name, l10n_util::GetStringUTF16(resources[i].id));
   }
 }
 

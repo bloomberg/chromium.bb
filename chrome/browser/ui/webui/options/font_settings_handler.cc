@@ -15,7 +15,6 @@
 #include "chrome/browser/character_encoding.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/ui/webui/options/dom_options_util.h"
 #include "chrome/browser/ui/webui/options/font_settings_utils.h"
 #include "chrome/common/pref_names.h"
 #include "content/common/notification_details.h"
@@ -39,9 +38,9 @@ void FontSettingsHandler::GetLocalizedValues(
 
   static OptionsStringResource resources[] = {
     { "fontSettingsStandard",
-      IDS_FONT_LANGUAGE_SETTING_FONT_SELECTOR_STANDARD_LABEL, true },
+      IDS_FONT_LANGUAGE_SETTING_FONT_SELECTOR_STANDARD_LABEL },
     { "fontSettingsFixedWidth",
-      IDS_FONT_LANGUAGE_SETTING_FONT_SELECTOR_FIXED_WIDTH_LABEL, true },
+      IDS_FONT_LANGUAGE_SETTING_FONT_SELECTOR_FIXED_WIDTH_LABEL },
     { "fontSettingsMinimumSize",
       IDS_FONT_LANGUAGE_SETTING_MINIMUM_FONT_SIZE_TITLE },
     { "fontSettingsEncoding",

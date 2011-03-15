@@ -25,7 +25,6 @@
 #include "chrome/browser/service/service_process_control_manager.h"
 #include "chrome/browser/ui/options/options_util.h"
 #include "chrome/browser/ui/options/options_window.h"
-#include "chrome/browser/ui/webui/options/dom_options_util.h"
 #include "chrome/browser/ui/webui/options/options_managed_banner_handler.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
