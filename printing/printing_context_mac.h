@@ -7,6 +7,7 @@
 
 #include <string>
 
+#include "base/scoped_nsobject.h"
 #include "printing/printing_context.h"
 
 #ifdef __OBJC__
@@ -43,7 +44,7 @@ class PrintingContextMac : public PrintingContext {
   void ParsePrintInfo(NSPrintInfo* print_info);
 
   // The native print info object.
-  NSPrintInfo* print_info_;
+  scoped_nsobject<NSPrintInfo> print_info_;
 
   // The current page's context; only valid between NewPage and PageDone call
   // pairs.

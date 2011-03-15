@@ -21,7 +21,6 @@ PrintingContext* PrintingContext::Create(const std::string& app_locale) {
 
 PrintingContextMac::PrintingContextMac(const std::string& app_locale)
     : PrintingContext(app_locale),
-      print_info_(NULL),
       context_(NULL) {
 }
 
@@ -95,9 +94,9 @@ PrintingContext::Result PrintingContextMac::UpdatePrintSettings(
 
 void PrintingContextMac::ParsePrintInfo(NSPrintInfo* print_info) {
   ResetSettings();
-  print_info_ = [print_info retain];
+  print_info_.reset([print_info retain]);
   PageRanges page_ranges;
-  NSDictionary* print_info_dict = [print_info_ dictionary];
+  NSDictionary* print_info_dict = [print_info_.get() dictionary];
   if (![[print_info_dict objectForKey:NSPrintAllPages] boolValue]) {
     PageRange range;
     range.from = [[print_info_dict objectForKey:NSPrintFirstPage] intValue] - 1;
@@ -105,9 +104,9 @@ void PrintingContextMac::ParsePrintInfo(NSPrintInfo* print_info) {
     page_ranges.push_back(range);
   }
   PMPrintSession print_session =
-      static_cast<PMPrintSession>([print_info_ PMPrintSession]);
+      static_cast<PMPrintSession>([print_info_.get() PMPrintSession]);
   PMPageFormat page_format =
-      static_cast<PMPageFormat>([print_info_ PMPageFormat]);
+      static_cast<PMPageFormat>([print_info_.get() PMPageFormat]);
   PMPrinter printer;
   PMSessionGetCurrentPrinter(print_session, &printer);
 
@@ -133,11 +132,11 @@ PrintingContext::Result PrintingContextMac::NewDocument(
   in_print_job_ = true;
 
   PMPrintSession print_session =
-      static_cast<PMPrintSession>([print_info_ PMPrintSession]);
+      static_cast<PMPrintSession>([print_info_.get() PMPrintSession]);
   PMPrintSettings print_settings =
-      static_cast<PMPrintSettings>([print_info_ PMPrintSettings]);
+      static_cast<PMPrintSettings>([print_info_.get() PMPrintSettings]);
   PMPageFormat page_format =
-      static_cast<PMPageFormat>([print_info_ PMPageFormat]);
+      static_cast<PMPageFormat>([print_info_.get() PMPageFormat]);
 
   base::mac::ScopedCFTypeRef<CFStringRef> job_title(
       base::SysUTF16ToCFStringRef(document_name));
@@ -159,9 +158,9 @@ PrintingContext::Result PrintingContextMac::NewPage() {
   DCHECK(!context_);
 
   PMPrintSession print_session =
-      static_cast<PMPrintSession>([print_info_ PMPrintSession]);
+      static_cast<PMPrintSession>([print_info_.get() PMPrintSession]);
   PMPageFormat page_format =
-      static_cast<PMPageFormat>([print_info_ PMPageFormat]);
+      static_cast<PMPageFormat>([print_info_.get() PMPageFormat]);
   OSStatus status;
   status = PMSessionBeginPageNoDialog(print_session, page_format, NULL);
   if (status != noErr)
@@ -180,7 +179,7 @@ PrintingContext::Result PrintingContextMac::PageDone() {
   DCHECK(context_);
 
   PMPrintSession print_session =
-      static_cast<PMPrintSession>([print_info_ PMPrintSession]);
+      static_cast<PMPrintSession>([print_info_.get() PMPrintSession]);
   OSStatus status = PMSessionEndPageNoDialog(print_session);
   if (status != noErr)
     OnError();
@@ -195,7 +194,7 @@ PrintingContext::Result PrintingContextMac::DocumentDone() {
   DCHECK(in_print_job_);
 
   PMPrintSession print_session =
-      static_cast<PMPrintSession>([print_info_ PMPrintSession]);
+      static_cast<PMPrintSession>([print_info_.get() PMPrintSession]);
   OSStatus status = PMSessionEndDocumentNoDialog(print_session);
   if (status != noErr)
     OnError();
@@ -210,16 +209,13 @@ void PrintingContextMac::Cancel() {
   context_ = NULL;
 
   PMPrintSession print_session =
-      static_cast<PMPrintSession>([print_info_ PMPrintSession]);
+      static_cast<PMPrintSession>([print_info_.get() PMPrintSession]);
   PMSessionEndPageNoDialog(print_session);
 }
 
 void PrintingContextMac::ReleaseContext() {
-  if (print_info_) {
-    [print_info_ autorelease];
-    print_info_ = nil;
-    context_ = NULL;
-  }
+  print_info_.reset();
+  context_ = NULL;
 }
 
 gfx::NativeDrawingContext PrintingContextMac::context() const {
