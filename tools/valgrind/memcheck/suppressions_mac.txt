@@ -1405,7 +1405,8 @@
    ...
    fun:argb32_mark
    fun:ripl_BltShape
-   fun:ripc_Render
+   ...
+   fun:ripc_Render*
    ...
    fun:-[NSView _drawRect:clip:]
    fun:-[NSView _recursiveDisplayAllDirtyWithLockFocus:visRect:]

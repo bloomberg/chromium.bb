@@ -3991,6 +3991,32 @@
    fun:_Z16DispatchToMethodI14SessionBackendMS0_FvPSt6vectorIP14SessionCommandSaIS3_EEbES6_bEvPT_T0_RK6Tuple2IT1_T2_E
    fun:_ZN14RunnableMethodI14SessionBackendMS0_FvPSt6vectorIP14SessionCommandSaIS3_EEbE6Tuple2IS6_bEE3RunEv
 }
+{
+   bug_76197
+   Memcheck:Addr4
+   fun:sqlite3DbFree
+   fun:releaseMemArray
+   fun:sqlite3VdbeDelete
+   fun:sqlite3VdbeFinalize
+   fun:sqlite3_finalize
+   fun:_ZN3sql10Connection12StatementRef5CloseEv
+   fun:_ZN3sql10Connection12StatementRefD2Ev
+   fun:_ZN3sql10Connection12StatementRefD1Ev
+   fun:_ZNK4base10RefCountedIN3sql10Connection12StatementRefEE7ReleaseEv
+   fun:_ZN13scoped_refptrIN3sql10Connection12StatementRefEED2Ev
+   fun:_ZN13scoped_refptrIN3sql10Connection12StatementRefEED1Ev
+   fun:_ZNSt4pairIKN3sql11StatementIDE13scoped_refptrINS0_10Connection12StatementRefEEED2Ev
+   fun:_ZNSt4pairIKN3sql11StatementIDE13scoped_refptrINS0_10Connection12StatementRefEEED1Ev
+   fun:_ZN9__gnu_cxx13new_allocatorISt4pairIKN3sql11StatementIDE13scoped_refptrINS2_10Connection12StatementRefEEEE7destroyEPS9_
+   fun:_ZNSt8_Rb_treeIN3sql11StatementIDESt4pairIKS1_13scoped_refptrINS0_10Connection12StatementRefEEESt10_Select1stIS8_ESt4lessIS1_ESaIS8_EE12destroy_nodeEPSt13_Rb_tree_nodeIS8_E
+   fun:_ZNSt8_Rb_treeIN3sql11StatementIDESt4pairIKS1_13scoped_refptrINS0_10Connection12StatementRefEEESt10_Select1stIS8_ESt4lessIS1_ESaIS8_EE8_M_eraseEPSt13_Rb_tree_nodeIS8_E
+   fun:_ZNSt8_Rb_treeIN3sql11StatementIDESt4pairIKS1_13scoped_refptrINS0_10Connection12StatementRefEEESt10_Select1stIS8_ESt4lessIS1_ESaIS8_EE5clearEv
+   fun:_ZNSt3mapIN3sql11StatementIDE13scoped_refptrINS0_10Connection12StatementRefEESt4lessIS1_ESaISt4pairIKS1_S5_EEE5clearEv
+   fun:_ZN3sql10Connection5CloseEv
+   fun:_ZN3sql10ConnectionD2Ev
+   fun:_ZN3sql10ConnectionD1Ev
+   fun:_ZN7history16InMemoryDatabaseD0Ev
+}
 
 #-----------------------------------------------------------------------
 # These only occur on our Google workstations
