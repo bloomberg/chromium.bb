@@ -54,6 +54,7 @@
 #include "chrome/common/extensions/extension_l10n_util.h"
 #include "chrome/common/extensions/extension_resource.h"
 #include "chrome/common/json_pref_store.h"
+#include "chrome/common/net/url_request_context_getter.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/switch_utils.h"
 #include "chrome/common/url_constants.h"
@@ -76,6 +77,10 @@
 #if defined(IPC_MESSAGE_LOG_ENABLED)
 #include "content/common/child_process_messages.h"
 #endif
+
+#if defined(OS_CHROMEOS)
+#include "chrome/browser/chromeos/proxy_config_service_impl.h"
+#endif  // defined(OS_CHROMEOS)
 
 #if (defined(OS_WIN) || defined(OS_LINUX)) && !defined(OS_CHROMEOS)
 // How often to check if the persistent instance of Chrome needs to restart
@@ -437,6 +442,23 @@ ui::Clipboard* BrowserProcessImpl::clipboard() {
   DCHECK(CalledOnValidThread());
   return clipboard_.get();
 }
+
+URLRequestContextGetter* BrowserProcessImpl::system_request_context() {
+  DCHECK(CalledOnValidThread());
+  return io_thread()->system_url_request_context_getter();
+}
+
+#if defined(OS_CHROMEOS)
+chromeos::ProxyConfigServiceImpl*
+BrowserProcessImpl::chromeos_proxy_config_service_impl() {
+  DCHECK(CalledOnValidThread());
+  if (!chromeos_proxy_config_service_impl_) {
+    chromeos_proxy_config_service_impl_ =
+        new chromeos::ProxyConfigServiceImpl();
+  }
+  return chromeos_proxy_config_service_impl_;
+}
+#endif  // defined(OS_CHROMEOS)
 
 ExtensionEventRouterForwarder*
 BrowserProcessImpl::extension_event_router_forwarder() {

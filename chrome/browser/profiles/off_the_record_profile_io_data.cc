@@ -14,6 +14,7 @@
 #include "chrome/browser/net/chrome_net_log.h"
 #include "chrome/browser/net/chrome_network_delegate.h"
 #include "chrome/browser/net/chrome_url_request_context.h"
+#include "chrome/browser/net/proxy_service_factory.h"
 #include "chrome/common/url_constants.h"
 #include "content/browser/browser_thread.h"
 #include "net/ftp/ftp_network_layer.h"
@@ -123,7 +124,7 @@ void OffTheRecordProfileIOData::LazyInitializeInternal() const {
   main_request_context_->set_dns_cert_checker(dns_cert_checker_.get());
 
   main_request_context_->set_proxy_service(
-      CreateProxyService(
+      ProxyServiceFactory::CreateProxyService(
           io_thread->net_log(),
           io_thread_globals->proxy_script_fetcher_context.get(),
           lazy_params_->profile_params.proxy_config_service.release(),

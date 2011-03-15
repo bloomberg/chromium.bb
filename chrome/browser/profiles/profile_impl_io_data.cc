@@ -12,6 +12,7 @@
 #include "chrome/browser/net/chrome_dns_cert_provenance_checker_factory.h"
 #include "chrome/browser/net/chrome_net_log.h"
 #include "chrome/browser/net/chrome_network_delegate.h"
+#include "chrome/browser/net/proxy_service_factory.h"
 #include "chrome/browser/net/sqlite_persistent_cookie_store.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_switches.h"
@@ -173,7 +174,7 @@ void ProfileImplIOData::LazyInitializeInternal() const {
   media_request_context_->set_dns_cert_checker(dns_cert_checker_.get());
 
   net::ProxyService* proxy_service =
-      CreateProxyService(
+      ProxyServiceFactory::CreateProxyService(
           io_thread->net_log(),
           io_thread_globals->proxy_script_fetcher_context.get(),
           lazy_params_->profile_params.proxy_config_service.release(),

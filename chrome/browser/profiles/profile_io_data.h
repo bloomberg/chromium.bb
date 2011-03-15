@@ -122,12 +122,6 @@ class ProfileIOData : public base::RefCountedThreadSafe<ProfileIOData> {
   static void InitializeProfileParams(Profile* profile, ProfileParams* params);
   static void ApplyProfileParamsToContext(const ProfileParams& profile_params,
                                           ChromeURLRequestContext* context);
-  static net::ProxyConfigService* CreateProxyConfigService(Profile* profile);
-  static net::ProxyService* CreateProxyService(
-    net::NetLog* net_log,
-    net::URLRequestContext* context,
-    net::ProxyConfigService* proxy_config_service,
-    const CommandLine& command_line);
 
   // Lazy initializes the ProfileIOData object the first time a request context
   // is requested. The lazy logic is implemented here. The actual initialization

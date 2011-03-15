@@ -37,7 +37,6 @@ class PrefService;
 // redirection is in place, the returned GURL will be empty.
 class IntranetRedirectDetector
     : public URLFetcher::Delegate,
-      public NotificationObserver,
       public net::NetworkChangeNotifier::IPAddressObserver {
  public:
   // Only the main browser process loop should call this, when setting up
@@ -66,9 +65,6 @@ class IntranetRedirectDetector
   // switch sleep has finished.  Runs any pending fetch.
   void FinishSleep();
 
-  // Starts the fetches to determine the redirect URL if we can currently do so.
-  void StartFetchesIfPossible();
-
   // URLFetcher::Delegate
   virtual void OnURLFetchComplete(const URLFetcher* source,
                                   const GURL& url,
@@ -77,15 +73,9 @@ class IntranetRedirectDetector
                                   const ResponseCookies& cookies,
                                   const std::string& data);
 
-  // NotificationObserver
-  virtual void Observe(NotificationType type,
-                       const NotificationSource& source,
-                       const NotificationDetails& details);
-
   // NetworkChangeNotifier::IPAddressObserver
   virtual void OnIPAddressChanged();
 
-  NotificationRegistrar registrar_;
   GURL redirect_origin_;
   ScopedRunnableMethodFactory<IntranetRedirectDetector> fetcher_factory_;
   Fetchers fetchers_;
@@ -93,10 +83,6 @@ class IntranetRedirectDetector
   bool in_sleep_;  // True if we're in the seven-second "no fetching" period
                    // that begins at browser start, or the one-second "no
                    // fetching" period that begins after network switches.
-  bool request_context_available_;
-                           // True when the profile has been loaded and the
-                           // default request context created, so we can
-                           // actually do the fetch with the right data.
 
   DISALLOW_COPY_AND_ASSIGN(IntranetRedirectDetector);
 };

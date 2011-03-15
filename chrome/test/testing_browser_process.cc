@@ -13,6 +13,7 @@
 #include "chrome/browser/policy/dummy_configuration_policy_provider.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/common/net/url_request_context_getter.h"
 #include "ui/base/clipboard/clipboard.h"
 
 TestingBrowserProcess::TestingBrowserProcess()
@@ -112,6 +113,17 @@ safe_browsing::ClientSideDetectionService*
 TestingBrowserProcess::safe_browsing_detection_service() {
   return NULL;
 }
+
+URLRequestContextGetter* TestingBrowserProcess::system_request_context() {
+  return NULL;
+}
+
+#if defined(OS_CHROMEOS)
+chromeos::ProxyConfigServiceImpl*
+TestingBrowserProcess::chromeos_proxy_config_service_impl() {
+  return NULL;
+}
+#endif  // defined(OS_CHROMEOS)
 
 ui::Clipboard* TestingBrowserProcess::clipboard() {
   if (!clipboard_.get()) {

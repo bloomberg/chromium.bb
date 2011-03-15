@@ -63,6 +63,11 @@ class BrowserProcessImpl : public BrowserProcess,
   virtual DevToolsManager* devtools_manager();
   virtual SidebarManager* sidebar_manager();
   virtual ui::Clipboard* clipboard();
+  virtual URLRequestContextGetter* system_request_context();
+#if defined(OS_CHROMEOS)
+  virtual chromeos::ProxyConfigServiceImpl*
+      chromeos_proxy_config_service_impl();
+#endif  // defined(OS_CHROMEOS)
   virtual ExtensionEventRouterForwarder* extension_event_router_forwarder();
   virtual NotificationUIManager* notification_ui_manager();
   virtual policy::BrowserPolicyConnector* browser_policy_connector();
@@ -274,6 +279,11 @@ class BrowserProcessImpl : public BrowserProcess,
   bool CanAutorestartForUpdate() const;
   void RestartPersistentInstance();
 #endif  // defined(OS_WIN) || defined(OS_LINUX)
+
+#if defined(OS_CHROMEOS)
+  scoped_refptr<chromeos::ProxyConfigServiceImpl>
+      chromeos_proxy_config_service_impl_;
+#endif
 
   DISALLOW_COPY_AND_ASSIGN(BrowserProcessImpl);
 };

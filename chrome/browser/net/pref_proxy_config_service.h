@@ -33,7 +33,6 @@ class PrefProxyConfigTracker
   };
 
   explicit PrefProxyConfigTracker(PrefService* pref_service);
-  virtual ~PrefProxyConfigTracker();
 
   // Observer manipulation is only valid on the IO thread.
   void AddObserver(Observer* observer);
@@ -50,6 +49,9 @@ class PrefProxyConfigTracker
   void DetachFromPrefService();
 
  private:
+  friend class base::RefCountedThreadSafe<PrefProxyConfigTracker>;
+  virtual ~PrefProxyConfigTracker();
+
   // NotificationObserver implementation:
   virtual void Observe(NotificationType type,
                        const NotificationSource& source,
