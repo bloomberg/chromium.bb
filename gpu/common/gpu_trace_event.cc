@@ -57,6 +57,13 @@ const char* GetPhaseStr(TraceEventPhase phase) {
 }
 }
 
+TraceEvent::TraceEvent() {
+}
+
+TraceEvent::~TraceEvent() {
+}
+
+
 void TraceEvent::AppendAsJSON(std::string* out,
     const std::vector<TraceEvent>& events) {
   *out += "[";

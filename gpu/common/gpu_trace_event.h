@@ -187,7 +187,8 @@ enum TraceEventPhase {
 struct TraceEvent {
   static void AppendAsJSON(std::string* out,
       const std::vector<TraceEvent>& events);
-  TraceEvent() { }
+  TraceEvent();
+  ~TraceEvent();
   void AppendAsJSON(std::string* out) const;
 
 
