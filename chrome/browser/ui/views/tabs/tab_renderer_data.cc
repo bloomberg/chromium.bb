@@ -9,7 +9,7 @@ TabRendererData::TabRendererData()
       common_prefix_length(0),
       loading(false),
       crashed_status(base::TERMINATION_STATUS_STILL_RUNNING),
-      off_the_record(false),
+      incognito(false),
       show_icon(true),
       mini(false),
       blocked(false),
@@ -28,7 +28,7 @@ bool TabRendererData::Equals(const TabRendererData& data) {
       common_prefix_length == data.common_prefix_length &&
       loading == data.loading &&
       crashed_status == data.crashed_status &&
-      off_the_record == data.off_the_record &&
+      incognito == data.incognito &&
       show_icon == data.show_icon &&
       mini == data.mini &&
       blocked == data.blocked &&

@@ -45,7 +45,7 @@ struct TabRendererData {
   size_t common_prefix_length;
   bool loading;
   base::TerminationStatus crashed_status;
-  bool off_the_record;
+  bool incognito;
   bool show_icon;
   bool mini;
   bool blocked;

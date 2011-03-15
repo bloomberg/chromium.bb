@@ -436,8 +436,6 @@ void Tab::PaintInactiveTabBackgroundWithTitleChange(gfx::Canvas* canvas) {
 }
 
 void Tab::PaintInactiveTabBackground(gfx::Canvas* canvas) {
-  bool is_otr = data().off_the_record;
-
   // The tab image needs to be lined up with the background image
   // so that it feels partially transparent.  These offsets represent the tab
   // position within the frame background image.
@@ -448,8 +446,8 @@ void Tab::PaintInactiveTabBackground(gfx::Canvas* canvas) {
       GetWidget()->GetWindow()->non_client_view()->UseNativeFrame()) {
     tab_id = IDR_THEME_TAB_BACKGROUND_V;
   } else {
-    tab_id = is_otr ? IDR_THEME_TAB_BACKGROUND_INCOGNITO :
-                      IDR_THEME_TAB_BACKGROUND;
+    tab_id = data().incognito ? IDR_THEME_TAB_BACKGROUND_INCOGNITO :
+                                IDR_THEME_TAB_BACKGROUND;
   }
 
   SkBitmap* tab_bg = GetThemeProvider()->GetBitmapNamed(tab_id);
