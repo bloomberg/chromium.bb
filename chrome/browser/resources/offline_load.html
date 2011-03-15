@@ -8,56 +8,32 @@ html {
   height: 100%;
 }
 body {
-  border: green 1px solid;
   color: #000;
-  font-family: Helvetica, Arial, sans-serif;
+  font-family: arial, sans-serif;
   background-image: -webkit-linear-gradient(white 50%, rgb(236, 244, 255));
+  width: 100%;
   height: 100%;
   padding: 0;
   margin: 0;
   display: -webkit-box;
   -webkit-box-orient: vertical;
-  -webkit-box-pack: center;
-  -webkit-box-align: center;
+  -webkit-box-align: stretch;
+  visibility: hidden;
+  -webkit-user-select: none;
 }
 
 .upper {
-  width: 60%;
-  height: 50%;
-}
-
-.upper_main {
   position: relative;
   width: 100%;
-  bottom: -35%;
+  -webkit-box-flex: 0.8;
 }
 
-.lower {
-  height: 50%;
-  width: 100%;
-  display: -webkit-box;
-  -webkit-box-pack: center;
-  -webkit-box-orient: horizontal;
-}
-
-.lower_left {
-  height: 100%;
-  width: 24%;
-  background-image: -webkit-linear-gradient(-100deg, rgb(230, 230, 230),  rgb(230, 230, 230) 3px, rgb(240, 240, 240) 3px, rgba(240, 240, 240, 0) 20%);
-}
-
-.lower_right {
-  height: 100%;
-  width: 24%;
-  background-image: -webkit-linear-gradient(-80deg, rgb(230, 230, 230),  rgb(230, 230, 230) 3px, rgb(240, 240, 240) 3px, rgba(240, 240, 240, 0) 20%);
-}
-
-.lower_main {
+#lower {
   position: relative;
-  height: 100%;
-  width: 50%;
-  padding-top: 20px;
-  background-image: -webkit-linear-gradient(rgb(230, 230, 230),  rgb(230, 230, 230) 3px, rgb(240, 240, 240) 3px, rgba(240, 240, 240, 0) 20%);
+  margin-top: 0;
+  width: 100%;
+  -webkit-box-flex: 1;
+  background-image: -webkit-gradient(radial, 50% -20%, 700, 50% -70%, 0, from(#FFF), color-stop(.7, #EEE), to(#EEE));
 }
 
 .icon {
@@ -66,7 +42,7 @@ body {
   overflow: visible;
 }
 
-.title {
+.h3 {
   float: left;
   height: 10%;
   width: 80%;
@@ -85,59 +61,95 @@ body {
   float: left;
   clear: both;
   padding: 3px;
+  font-weight: bold;
 }
 
-.activation_button {
-  float: left;
-  clear both;
+.offline_message {
+  position: absolute;
+  width: 600px;
+  height: 49%;
+  top: 50%;
+  left: 50%;
+  margin-left: -300px;
+  margin-top: -20%;
 }
 
+.activation_message {
+  position: absolute;
+  width: 500px;
+  top: 0;
+  margin-top: 0;
+  left: 50%;
+  margin-left: -250px;
+  min-height: 380px;
+}
+
+#carrierPage {
+  padding-top: 10px;
+  width: 500px;
+  height: 380px;
+  overflow-x: none;
+  overflow-y: none;
+}
+
+.hidden {
+  display: none;
+}
+
+.splitter {
+  border-top: 1px solid #DDD;
+  height: 1px;
+}
 </style>
+<script src="shared/js/local_strings.js"></script>
+
 <script>
+var localStrings = new LocalStrings();
+
 function sendCommand(cmd) {
   window.domAutomationController.setAutomationId(1);
   window.domAutomationController.send(cmd);
 }
+
 // Show the offline page.
 function showPage() {
   document.body.style.visibility = 'visible';
 }
-// Start the timer to show the page.
-function startTimer(time) {
-  // wait 2.5 seconds before showing 'load now', 'go back' button.
-  setTimeout('showPage()', time);
-}
+
+document.addEventListener('DOMContentLoaded', function() {
+  var time_to_wait = localStrings.getString('time_to_wait');
+  var show_activation = localStrings.getString('show_activation') == 'true';
+  window.setTimeout(showPage, time_to_wait);
+  var lower = document.getElementById('lower');
+  if (show_activation)
+    lower.style.display = 'block';
+});
 </script>
 
 <body oncontextmenu="return false;">
   <div class="upper" i18n-values=".title:url">
-    <div class="upper_main">
+    <div class="offline_message">
       <div class="icon" i18n-values=".src:icon;.style.display:display_icon"></div>
-      <div class="title" i18n-content="heading"> </div>
-      <div class="message" i18n-values=".innerHTML:msg"> </div>
+      <h3 i18n-content="heading"></h3>
+      <div class="message" i18n-values=".innerHTML:msg"></div>
       <div class="link"><a href="chrome://settings/internet"
-         onclick="sendCommand('proceed')"
-         i18n-content="try_loading">
-      </a> </div>
-      <div class="link">
-      <a href="chrome://settings/internet"
-        onclick="sendCommand('open_network_settings')"
-         i18n-content="network_settings">
-      </a>
+           onclick="sendCommand('proceed')"
+           i18n-content="try_loading"></a> 
+      </div>
+      <div class="link"><a href="chrome://settings/internet"
+           onclick="sendCommand('open_network_settings')"
+           i18n-content="network_settings"></a>
       </div>
     </div>
   </div>
-  <div class="lower" i18n-values=".style.display:display_activation">
-    <div class="lower_left"> </div>
-    <div class="lower_main">
-      <img class="icon" src="activate_broadband_info.png"></img>
-      <div class="title" i18n-content="activation_heading"></div>
-      <div class="message" i18n-content="activation_msg"></div>
-      <button class="activation_button" i18n-content="activation_button"
-              onclick="sendCommand('open_activate_broadband')">
-      </button>
+  <div id="lower" class="hidden">
+    <div class="activation_message">
+      <iframe src="chrome-extension://iadeocfgjdjdmpenejdbfeaocpbikmab/activation_in_offline.tml"
+              id="carrierPage" frameborder="0"></iframe>
+      <div class="splitter"> </div>
+      <iframe src="http://www/~oshima/activation/activation.html"
+              id="carrierPage" frameborder="0"></iframe>
     </div>
-    <div class="lower_right"> </div>
   </div>
 </body>
 </html>

@@ -7868,15 +7868,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
         <message name="IDS_OFFLINE_NETWORK_SETTINGS">
           Network settings
         </message>
-        <message name="IDS_OFFLINE_ACTIVATION_HEADLINE">
-          Free Data from Verizon Wireless
-        </message>
-        <message name="IDS_OFFLINE_ACTIVATION_MESSAGE">
-          As a Cr-48 pilot user you get 100MB free from Verizon Wireless every 30 days for 2 years. Just sign up and you're online!
-        </message>
-        <message name="IDS_OFFLINE_ACTIVATION_BUTTON">
-          Connect to Verizon Wireless
-        </message>
       </if>
 
       <!-- Multiprofile -->

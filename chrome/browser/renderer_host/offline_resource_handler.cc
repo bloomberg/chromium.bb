@@ -100,7 +100,8 @@ bool OfflineResourceHandler::OnWillStart(int request_id,
   if (ShouldShowOfflinePage(url)) {
     deferred_request_id_ = request_id;
     deferred_url_ = url;
-    DVLOG(1) << "WillStart: this=" << this << ", request id=" << request_id;
+    DVLOG(1) << "OnWillStart: this=" << this << ", request id=" << request_id
+             << ", url=" << url;
     AddRef();  //  Balanced with OnCanHandleOfflineComplete
     DCHECK(!appcache_completion_callback_);
     appcache_completion_callback_ =
