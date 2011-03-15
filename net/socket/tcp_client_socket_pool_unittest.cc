@@ -353,8 +353,9 @@ TEST_F(TCPClientSocketPoolTest, InitHostResolutionFailure) {
   host_resolver_->rules()->AddSimulatedFailure("unresolvable.host.name");
   TestCompletionCallback callback;
   ClientSocketHandle handle;
+  HostPortPair host_port_pair("unresolvable.host.name", 80);
   scoped_refptr<TCPSocketParams> dest(new TCPSocketParams(
-          "unresolvable.host.name", 80, kDefaultPriority, GURL(), false));
+          host_port_pair, kDefaultPriority, GURL(), false));
   EXPECT_EQ(ERR_IO_PENDING,
             handle.Init("a", dest, kDefaultPriority, &callback, &pool_,
                         BoundNetLog()));
