@@ -200,7 +200,7 @@ void SideTabStrip::GenerateIdealBounds() {
   }
 }
 
-void SideTabStrip::StartInsertTabAnimation(int model_index, bool foreground) {
+void SideTabStrip::StartInsertTabAnimation(int model_index) {
   PrepareForAnimation();
 
   GenerateIdealBounds();

@@ -148,8 +148,10 @@ void BrowserTabStripController::InitFromModel(BaseTabStrip* tabstrip) {
   tabstrip_ = tabstrip;
   // Walk the model, calling our insertion observer method for each item within
   // it.
-  for (int i = 0; i < model_->count(); ++i)
-    TabInsertedAt(model_->GetTabContentsAt(i), i, model_->IsTabSelected(i));
+  for (int i = 0; i < model_->count(); ++i) {
+    TabInsertedAt(model_->GetTabContentsAt(i), i,
+                  model_->selected_index() == i);
+  }
 }
 
 bool BrowserTabStripController::IsCommandEnabledForTab(
@@ -292,7 +294,7 @@ void BrowserTabStripController::CreateNewTab() {
 
 void BrowserTabStripController::TabInsertedAt(TabContentsWrapper* contents,
                                               int model_index,
-                                              bool foreground) {
+                                              bool active) {
   DCHECK(contents);
   DCHECK(model_index == TabStripModel::kNoTab ||
          model_->ContainsIndex(model_index));
@@ -303,7 +305,7 @@ void BrowserTabStripController::TabInsertedAt(TabContentsWrapper* contents,
 
   TabRendererData data;
   SetTabRendererDataFromModel(contents->tab_contents(), model_index, &data);
-  tabstrip_->AddTabAt(model_index, foreground, data);
+  tabstrip_->AddTabAt(model_index, data);
 }
 
 void BrowserTabStripController::TabDetachedAt(TabContentsWrapper* contents,

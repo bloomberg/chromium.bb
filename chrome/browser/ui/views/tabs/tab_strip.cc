@@ -409,7 +409,7 @@ BaseTab* TabStrip::CreateTab() {
   return tab;
 }
 
-void TabStrip::StartInsertTabAnimation(int model_index, bool foreground) {
+void TabStrip::StartInsertTabAnimation(int model_index) {
   PrepareForAnimation();
 
   // The TabStrip can now use its entire width to lay out Tabs.
@@ -488,14 +488,6 @@ void TabStrip::ViewHierarchyChanged(bool is_add,
                                     views::View* child) {
   if (is_add && child == this)
     InitTabStripButtons();
-}
-
-///////////////////////////////////////////////////////////////////////////////
-// TabStrip, Tab::Delegate implementation:
-
-bool TabStrip::IsTabSelected(const BaseTab* btr) const {
-  const Tab* tab = static_cast<const Tab*>(btr);
-  return !tab->closing() && BaseTabStrip::IsTabSelected(btr);
 }
 
 ///////////////////////////////////////////////////////////////////////////////

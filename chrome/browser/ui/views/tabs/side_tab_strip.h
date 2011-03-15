@@ -39,8 +39,7 @@ class SideTabStrip : public BaseTabStrip {
   virtual BaseTab* CreateTab() OVERRIDE;
   virtual bool IgnoreTitlePrefixEliding(BaseTab* tab) OVERRIDE;
   virtual void GenerateIdealBounds() OVERRIDE;
-  virtual void StartInsertTabAnimation(int model_index,
-                                       bool foreground) OVERRIDE;
+  virtual void StartInsertTabAnimation(int model_index) OVERRIDE;
   virtual void AnimateToIdealBounds() OVERRIDE;
   virtual void DoLayout() OVERRIDE;
   virtual void LayoutDraggedTabsAt(const std::vector<BaseTab*>& tabs,

@@ -86,8 +86,7 @@ class TabStrip : public BaseTabStrip,
  protected:
   // BaseTabStrip overrides:
   virtual BaseTab* CreateTab() OVERRIDE;
-  virtual void StartInsertTabAnimation(int model_index,
-                                       bool foreground) OVERRIDE;
+  virtual void StartInsertTabAnimation(int model_index) OVERRIDE;
   virtual void AnimateToIdealBounds() OVERRIDE;
   virtual bool ShouldHighlightCloseButtonAfterRemove() OVERRIDE;
   virtual void DoLayout() OVERRIDE;
@@ -99,9 +98,6 @@ class TabStrip : public BaseTabStrip,
   virtual void ViewHierarchyChanged(bool is_add,
                                     views::View* parent,
                                     views::View* child) OVERRIDE;
-
-  // TabController overrides.
-  virtual bool IsTabSelected(const BaseTab* btr) const OVERRIDE;
 
   // views::ButtonListener implementation:
   virtual void ButtonPressed(views::Button* sender, const views::Event& event)

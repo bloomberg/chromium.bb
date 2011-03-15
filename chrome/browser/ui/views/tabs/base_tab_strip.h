@@ -53,9 +53,7 @@ class BaseTabStrip : public AbstractTabStripView,
   virtual BaseTab* CreateTabForDragging() = 0;
 
   // Adds a tab at the specified index.
-  void AddTabAt(int model_index,
-                bool foreground,
-                const TabRendererData& data);
+  void AddTabAt(int model_index, const TabRendererData& data);
 
   // Invoked from the controller when the close initiates from the TabController
   // (the user clicked the tab close button or middle clicked the tab). This is
@@ -161,7 +159,7 @@ class BaseTabStrip : public AbstractTabStripView,
 
   // Invoked from |AddTabAt| after the newly created tab has been inserted.
   // Subclasses should either start an animation, or layout.
-  virtual void StartInsertTabAnimation(int model_index, bool foreground) = 0;
+  virtual void StartInsertTabAnimation(int model_index) = 0;
 
   // Invoked from |MoveTab| after |tab_data_| has been updated to animate the
   // move.

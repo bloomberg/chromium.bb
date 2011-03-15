@@ -130,9 +130,7 @@ bool BaseTabStrip::IsAnimating() const {
   return bounds_animator_.IsAnimating();
 }
 
-void BaseTabStrip::AddTabAt(int model_index,
-                            bool foreground,
-                            const TabRendererData& data) {
+void BaseTabStrip::AddTabAt(int model_index, const TabRendererData& data) {
   BaseTab* tab = CreateTab();
   tab->SetData(data);
 
@@ -145,7 +143,7 @@ void BaseTabStrip::AddTabAt(int model_index,
   // Don't animate the first tab, it looks weird, and don't animate anything
   // if the containing window isn't visible yet.
   if (tab_count() > 1 && GetWindow() && GetWindow()->IsVisible())
-    StartInsertTabAnimation(model_index, foreground);
+    StartInsertTabAnimation(model_index);
   else
     DoLayout();
 }
@@ -190,6 +188,8 @@ int BaseTabStrip::GetModelIndexOfBaseTab(const BaseTab* tab) const {
       if (current_tab == tab)
         return model_index;
       model_index++;
+    } else if (current_tab == tab) {
+      return -1;
     }
   }
   return -1;

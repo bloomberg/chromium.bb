@@ -60,7 +60,7 @@ class BrowserTabStripController : public TabStripController,
   // TabStripModelObserver implementation:
   virtual void TabInsertedAt(TabContentsWrapper* contents,
                              int model_index,
-                             bool foreground);
+                             bool active);
   virtual void TabDetachedAt(TabContentsWrapper* contents, int model_index);
   virtual void TabSelectedAt(TabContentsWrapper* old_contents,
                              TabContentsWrapper* contents,

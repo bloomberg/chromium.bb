@@ -38,7 +38,7 @@ class TouchTabStrip : public BaseTabStrip {
   virtual void SelectTabAt(int old_model_index, int new_model_index);
   virtual void TabTitleChangedNotLoading(int model_index);
   virtual BaseTab* CreateTab();
-  virtual void StartInsertTabAnimation(int model_index, bool foreground);
+  virtual void StartInsertTabAnimation(int model_index);
   virtual void AnimateToIdealBounds();
   virtual bool ShouldHighlightCloseButtonAfterRemove();
   virtual void GenerateIdealBounds();

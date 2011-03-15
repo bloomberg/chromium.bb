@@ -87,7 +87,7 @@ BaseTab* TouchTabStrip::CreateTab() {
   return new TouchTab(this);
 }
 
-void TouchTabStrip::StartInsertTabAnimation(int model_index, bool foreground) {
+void TouchTabStrip::StartInsertTabAnimation(int model_index) {
   PrepareForAnimation();
 
   in_tab_close_ = false;
