@@ -49,5 +49,5 @@ FilePath DiagnosticTest::GetUserDefaultProfileDir() {
   FilePath path;
   if (!PathService::Get(chrome::DIR_USER_DATA, &path))
     return FilePath();
-  return path.Append(FilePath::FromWStringHack(chrome::kNotSignedInProfile));
+  return path.AppendASCII(chrome::kNotSignedInProfile);
 }

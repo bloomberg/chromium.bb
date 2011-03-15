@@ -73,8 +73,8 @@ ProfileManager::~ProfileManager() {
 FilePath ProfileManager::GetDefaultProfileDir(
     const FilePath& user_data_dir) {
   FilePath default_profile_dir(user_data_dir);
-  default_profile_dir = default_profile_dir.Append(
-      FilePath::FromWStringHack(chrome::kNotSignedInProfile));
+  default_profile_dir =
+      default_profile_dir.AppendASCII(chrome::kNotSignedInProfile);
   return default_profile_dir;
 }
 
@@ -103,8 +103,8 @@ FilePath ProfileManager::GetCurrentProfileDir() {
     return relative_profile_dir;
   }
 #endif
-  relative_profile_dir = relative_profile_dir.Append(
-      FilePath::FromWStringHack(chrome::kNotSignedInProfile));
+  relative_profile_dir =
+      relative_profile_dir.AppendASCII(chrome::kNotSignedInProfile);
   return relative_profile_dir;
 }
 

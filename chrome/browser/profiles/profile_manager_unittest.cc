@@ -84,7 +84,7 @@ TEST_F(ProfileManagerTest, DefaultProfileDir) {
   cl->AppendSwitch(switches::kTestType);
 
   FilePath expected_default =
-      FilePath::FromWStringHack(chrome::kNotSignedInProfile);
+      FilePath().AppendASCII(chrome::kNotSignedInProfile);
   EXPECT_EQ(expected_default.value(),
             profile_manager.GetCurrentProfileDir().value());
 }
@@ -101,7 +101,7 @@ TEST_F(ProfileManagerTest, LoggedInProfileDir) {
   cl->AppendSwitch(switches::kTestType);
 
   FilePath expected_default =
-      FilePath::FromWStringHack(chrome::kNotSignedInProfile);
+      FilePath().AppendASCII(chrome::kNotSignedInProfile);
   EXPECT_EQ(expected_default.value(),
             profile_manager.GetCurrentProfileDir().value());
 
