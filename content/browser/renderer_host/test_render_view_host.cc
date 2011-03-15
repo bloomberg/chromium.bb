@@ -3,7 +3,6 @@
 // found in the LICENSE file.
 
 #include "chrome/browser/browser_url_handler.h"
-#include "chrome/browser/chrome_content_browser_client.h"
 #include "chrome/common/dom_storage_common.h"
 #include "chrome/common/render_messages.h"
 #include "chrome/common/render_messages_params.h"
@@ -342,8 +341,7 @@ void RenderViewHostTestHarness::Reload() {
 void RenderViewHostTestHarness::SetUp() {
   // Initialize Chrome's ContentBrowserClient here, since we won't go through
   // BrowserMain.
-  content::GetContentClient()->set_browser_client(
-      new chrome::ChromeContentBrowserClient());
+  content::GetContentClient()->set_browser_client(&browser_client_);
   contents_.reset(CreateTestTabContents());
 }
 

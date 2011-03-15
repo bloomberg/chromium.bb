@@ -7,6 +7,7 @@
 #pragma once
 
 #include "base/message_loop.h"
+#include "chrome/browser/chrome_content_browser_client.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/test/test_browser_window.h"
 #include "chrome/test/testing_browser_process_test.h"
@@ -94,6 +95,7 @@ class BrowserWithTestWindowTest : public TestingBrowserProcessTest {
   BrowserThread file_thread_;
 
   scoped_ptr<TestingProfile> profile_;
+  chrome::ChromeContentBrowserClient browser_client_;
   scoped_ptr<TestBrowserWindow> window_;
   scoped_ptr<Browser> browser_;
 

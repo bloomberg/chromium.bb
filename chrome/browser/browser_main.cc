@@ -1477,8 +1477,8 @@ int BrowserMain(const MainFunctionParams& parameters) {
 
   // Override the default ContentBrowserClient to let Chrome participate in
   // content logic.  Must be done before any tabs are created.
-  content::GetContentClient()->set_browser_client(
-      new chrome::ChromeContentBrowserClient());
+  chrome::ChromeContentBrowserClient browser_client;
+  content::GetContentClient()->set_browser_client(&browser_client);
 
   // Tests should be able to tune login manager before showing it.
   // Thus only show login manager in normal (non-testing) mode.

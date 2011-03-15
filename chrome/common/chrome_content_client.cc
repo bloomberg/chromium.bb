@@ -15,4 +15,7 @@ void ChromeContentClient::SetGpuInfo(const GPUInfo& gpu_info) {
   child_process_logging::SetGpuInfo(gpu_info);
 }
 
+void ChromeContentClient::PluginProcessStarted() {
+}
+
 }  // namespace chrome

@@ -7,6 +7,11 @@ include_rules = [
   # When the src\content refactoring is complete, this will be unnecessary (and
   # in fact, a layering violation).
   "+chrome",
+  
+  # The subdirectories in content/ will manually allow their own include
+  # directories in content/ so we disallow all of them.
+  "-content",
+  "+content/common",
 
   "+grit",
   "+gpu",

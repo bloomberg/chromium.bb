@@ -8,8 +8,8 @@
 
 #include "base/basictypes.h"
 #include "base/scoped_ptr.h"
-#include "content/browser/content_browser_client.h"
 
+class ContentBrowserClient;
 class GURL;
 struct GPUInfo;
 
@@ -30,10 +30,10 @@ class ContentClient {
   // Gets or sets the embedder API for participating in browser logic.
   // The client must be set early, before any content code is called.
   ContentBrowserClient* browser_client() {
-    return browser_client_.get();
+    return browser_client_;
   }
   void set_browser_client(ContentBrowserClient* client) {
-    browser_client_.reset(client);
+    browser_client_ = client;
   }
 
   // Sets the URL that is logged if the child process crashes. Use GURL() to
@@ -43,8 +43,11 @@ class ContentClient {
   // Sets the data on the gpu to send along with crash reports.
   virtual void SetGpuInfo(const GPUInfo& gpu_info) {}
 
+  // Notifies that a plugin process has started.
+  virtual void PluginProcessStarted() {}
+
  private:
-  scoped_ptr<ContentBrowserClient> browser_client_;
+  ContentBrowserClient* browser_client_;
 };
 
 }  // namespace content

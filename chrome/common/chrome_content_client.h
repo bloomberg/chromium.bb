@@ -12,12 +12,9 @@ namespace chrome {
 
 class ChromeContentClient : public content::ContentClient {
  public:
-  // Sets the URL that is logged if the child process crashes. Use GURL() to
-  // clear the URL.
   virtual void SetActiveURL(const GURL& url);
-
-  // Sets the data on the gpu to send along with crash reports.
   virtual void SetGpuInfo(const GPUInfo& gpu_info);
+  virtual void PluginProcessStarted();
 };
 
 }  // namespace chrome
