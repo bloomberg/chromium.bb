@@ -863,7 +863,9 @@ class SVN(object):
     """
     for file_status in SVN.CaptureStatus(repo_root):
       file_path = os.path.join(repo_root, file_status[1])
-      if ignore_externals and file_status[0][0] == 'X':
+      if (ignore_externals and
+          file_status[0][0] == 'X' and
+          file_status[0][1:].isspace()):
         # Ignore externals.
         logging.info('Ignoring external %s' % file_status[1])
         continue
@@ -871,14 +873,25 @@ class SVN(object):
       if callback:
         callback(file_status)
 
-      if file_status[0].isspace():
-        # Try reverting the file since it's probably a property change.
-        gclient_utils.CheckCall(
-            ['svn', 'revert', file_status[1]], cwd=repo_root)
+      if os.path.exists(file_path):
+        # svn revert is really stupid. It fails on inconsistent line-endings,
+        # on switched directories, etc. So take no chance and delete everything!
+        # In theory, it wouldn't be necessary for property-only change but then
+        # it'd have to look for switched directories, etc so it's not worth
+        # optimizing this use case.
+        if os.path.isfile(file_path) or os.path.islink(file_path):
+          logging.info('os.remove(%s)' % file_path)
+          os.remove(file_path)
+        elif os.path.isdir(file_path):
+          logging.info('gclient_utils.RemoveDirectory(%s)' % file_path)
+          gclient_utils.RemoveDirectory(file_path)
+        else:
+          logging.critical(
+            ('No idea what is %s.\nYou just found a bug in gclient'
+              ', please ping maruel@chromium.org ASAP!') % file_path)
 
-      # svn revert is really stupid. It fails on inconsistent line-endings,
-      # on switched directories, etc. So take no chance and delete everything!
-      if file_status[0][0] in ('D', 'A', '!') or file_status[0][2] != ' ':
+      if (file_status[0][0] in ('D', 'A', '!') or
+          not file_status[0][1:].isspace()):
         # Added, deleted file requires manual intervention and require calling
         # revert, like for properties.
         try:
@@ -887,17 +900,3 @@ class SVN(object):
           if not os.path.exists(file_path):
             continue
           raise
-
-      if not os.path.exists(file_path):
-        continue
-
-      if os.path.isfile(file_path) or os.path.islink(file_path):
-        logging.info('os.remove(%s)' % file_path)
-        os.remove(file_path)
-      elif os.path.isdir(file_path):
-        logging.info('gclient_utils.RemoveDirectory(%s)' % file_path)
-        gclient_utils.RemoveDirectory(file_path)
-      else:
-        logging.critical(
-          ('No idea what is %s.\nYou just found a bug in gclient'
-            ', please ping maruel@chromium.org ASAP!') % file_path)

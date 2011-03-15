@@ -267,26 +267,43 @@ class RealSvnTest(fake_repos.FakeReposTestBase):
     # - Delete a file
     # - svn delete a file
     # - svn move a directory and svn rename files in it
+    # - add a directory tree.
+    def join(*args):
+      return scm.os.path.join(self.svn_root, *args)
     self._capture(['move', 'foo', 'foo2'])
     self._capture(
         ['move',
          scm.os.path.join('foo2', 'origin'),
          scm.os.path.join('foo2', 'o')])
-    scm.os.remove(scm.os.path.join(self.svn_root, 'origin'))
-    self._capture(
-        ['propset', 'foo', 'bar',
-         scm.os.path.join(self.svn_root, 'prout', 'origin')])
-    fake_repos.gclient_utils.rmtree(scm.os.path.join(self.svn_root, 'prout'))
-    with open(scm.os.path.join(self.svn_root, 'faa'), 'w') as f:
+    scm.os.remove(join('origin'))
+    self._capture(['propset', 'foo', 'bar', join('prout', 'origin')])
+    fake_repos.gclient_utils.rmtree(join('prout'))
+    with open(join('faa'), 'w') as f:
       f.write('eh')
-    with open(scm.os.path.join(self.svn_root, 'faala'), 'w') as f:
+    with open(join('faala'), 'w') as f:
       f.write('oh')
-    self._capture(['add', scm.os.path.join(self.svn_root, 'faala')])
-    added_and_removed = scm.os.path.join(self.svn_root, 'added_and_removed')
+    self._capture(['add', join('faala')])
+    added_and_removed = join('added_and_removed')
     with open(added_and_removed, 'w') as f:
       f.write('oh')
     self._capture(['add', added_and_removed])
     scm.os.remove(added_and_removed)
+    # Make sure a tree of directories can be removed.
+    scm.os.makedirs(join('new_dir', 'subdir'))
+    with open(join('new_dir', 'subdir', 'newfile'), 'w') as f:
+      f.write('ah!')
+    self._capture(['add', join('new_dir')])
+    self._capture(['add', join('new_dir', 'subdir')])
+    self._capture(['add', join('new_dir', 'subdir', 'newfile')])
+    # A random file in an added directory confuses svn.
+    scm.os.makedirs(join('new_dir2', 'subdir'))
+    with open(join('new_dir2', 'subdir', 'newfile'), 'w') as f:
+      f.write('ah!')
+    self._capture(['add', join('new_dir2')])
+    self._capture(['add', join('new_dir2', 'subdir')])
+    self._capture(['add', join('new_dir2', 'subdir', 'newfile')])
+    with open(join('new_dir2', 'subdir', 'unversionedfile'), 'w') as f:
+      f.write('unadded file!')
 
     scm.SVN.Revert(self.svn_root)
     self._capture(['update', '--revision', 'base'])
