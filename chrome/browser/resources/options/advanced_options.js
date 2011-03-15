@@ -108,7 +108,7 @@ var OptionsPage = options.OptionsPage;
         };
       }
 
-      if (cr.isWindows || navigator.platform.match(/linux|BSD/i)) {
+      if (cr.isWindows) {
         $('sslCheckRevocation').onclick = function(event) {
           chrome.send('checkRevocationCheckboxAction',
               [String($('sslCheckRevocation').checked)]);

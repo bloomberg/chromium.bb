@@ -5,6 +5,8 @@
 #include "chrome/browser/net/ssl_config_service_manager.h"
 #include "net/base/ssl_config_service.h"
 
+class Profile;
+
 ////////////////////////////////////////////////////////////////////////////////
 //  SSLConfigServiceManagerSystem
 
@@ -34,7 +36,6 @@ class SSLConfigServiceManagerSystem
 
 // static
 SSLConfigServiceManager* SSLConfigServiceManager::CreateDefaultManager(
-    PrefService* user_prefs,
-    PrefService* local_state) {
+    Profile* profile) {
   return new SSLConfigServiceManagerSystem();
 }
