@@ -3858,16 +3858,6 @@
    fun:_ZN27ScopedRunnableMethodFactoryI13ThreadWatcherE14RunnableMethodIMS0_FvvE6Tuple0E3RunEv
 }
 {
-  bug_74850
-  Memcheck:Leak
-  fun:_Znw*
-  fun:_Z11NewCallbackIN8remoting15HeartbeatSenderEPKN4buzz10XmlElementEEPN9Callback1IT0_E4TypeEPT_MSB_FvS7_E
-  fun:_ZN8remoting15HeartbeatSender5StartEv
-  fun:_ZN8remoting37HeartbeatSenderTest_DoSendStanza_Test8TestBodyEv
-  fun:_ZN7testing8internal38HandleSehExceptionsInMethodIfSupportedINS_4TestEvEET0_PT_MS4_FS3_vEPKc
-  fun:_ZN7testing8internal35HandleExceptionsInMethodIfSupportedINS_4TestEvEET0_PT_MS4_FS3_vEPKc
-}
-{
    bug_75019
    Memcheck:Leak
    fun:_Znw*

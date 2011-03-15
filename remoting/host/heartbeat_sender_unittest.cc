@@ -25,6 +25,7 @@ using buzz::XmlElement;
 using testing::_;
 using testing::DeleteArg;
 using testing::DoAll;
+using testing::Invoke;
 using testing::NotNull;
 using testing::Return;
 
@@ -52,6 +53,20 @@ class MockIqRequest : public IqRequest {
                             const std::string& addressee,
                             XmlElement* iq_body));
   MOCK_METHOD1(set_callback, void(IqRequest::ReplyCallback*));
+
+  // Ensure this takes ownership of the pointer, as the real IqRequest object
+  // would, to avoid memory-leak.
+  void set_callback_hook(IqRequest::ReplyCallback* callback) {
+    callback_.reset(callback);
+  }
+
+  void Init() {
+    ON_CALL(*this, set_callback(_))
+        .WillByDefault(Invoke(this, &MockIqRequest::set_callback_hook));
+  }
+
+ private:
+  scoped_ptr<IqRequest::ReplyCallback> callback_;
 };
 
 class HeartbeatSenderTest : public testing::Test {
@@ -81,6 +96,8 @@ class HeartbeatSenderTest : public testing::Test {
 TEST_F(HeartbeatSenderTest, DoSendStanza) {
   // |iq_request| is freed by HeartbeatSender.
   MockIqRequest* iq_request = new MockIqRequest();
+  iq_request->Init();
+
   EXPECT_CALL(*iq_request, set_callback(_)).Times(1);
 
   scoped_refptr<HeartbeatSender> heartbeat_sender(
