@@ -51,7 +51,7 @@ void WmOverviewFavIcon::Init(WmOverviewSnapshot* snapshot) {
 }
 
 
-void WmOverviewFavIcon::SetFavIcon(const SkBitmap& image) {
+void WmOverviewFavIcon::SetFavicon(const SkBitmap& image) {
   CHECK(fav_icon_view_) << "Init not called before setting favicon.";
   SkBitmap icon;
   if (image.width() && image.height()) {

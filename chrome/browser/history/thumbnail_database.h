@@ -98,12 +98,12 @@ class ThumbnailDatabase {
   // Sets the bits for a favicon. This should be png encoded data.
   // The time indicates the access time, and is used to detect when the favicon
   // should be refreshed.
-  bool SetFavIcon(FavIconID icon_id,
+  bool SetFavicon(FavIconID icon_id,
                   scoped_refptr<RefCountedMemory> icon_data,
                   base::Time time);
 
   // Sets the time the favicon was last updated.
-  bool SetFavIconLastUpdateTime(FavIconID icon_id, base::Time time);
+  bool SetFaviconLastUpdateTime(FavIconID icon_id, base::Time time);
 
   // Returns the id of the entry in the favicon database with the specified url
   // and icon type. If |required_icon_type| contains multiple icon types and

@@ -650,7 +650,7 @@ bool TemplateURL::ShowInDefaultList() const {
   return show_in_default_list() && url() && url()->SupportsReplacement();
 }
 
-void TemplateURL::SetFavIconURL(const GURL& url) {
+void TemplateURL::SetFaviconURL(const GURL& url) {
   for (std::vector<ImageRef>::iterator i = image_refs_.begin();
        i != image_refs_.end(); ++i) {
     if (i->type == "image/x-icon" &&

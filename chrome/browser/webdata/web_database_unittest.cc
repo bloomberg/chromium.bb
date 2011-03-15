@@ -323,7 +323,7 @@ TEST_F(WebDatabaseTest, Keywords) {
   template_url.set_keyword(ASCIIToUTF16("keyword"));
   GURL favicon_url("http://favicon.url/");
   GURL originating_url("http://google.com/");
-  template_url.SetFavIconURL(favicon_url);
+  template_url.SetFaviconURL(favicon_url);
   template_url.SetURL("http://url/", 0, 0);
   template_url.set_safe_for_autoreplace(true);
   base::Time created_time = Time::Now();
@@ -416,7 +416,7 @@ TEST_F(WebDatabaseTest, UpdateKeyword) {
   template_url.set_keyword(ASCIIToUTF16("keyword"));
   GURL favicon_url("http://favicon.url/");
   GURL originating_url("http://originating.url/");
-  template_url.SetFavIconURL(favicon_url);
+  template_url.SetFaviconURL(favicon_url);
   template_url.SetURL("http://url/", 0, 0);
   template_url.set_safe_for_autoreplace(true);
   template_url.set_show_in_default_list(true);

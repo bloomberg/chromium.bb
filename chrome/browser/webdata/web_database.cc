@@ -1116,7 +1116,7 @@ bool WebDatabase::GetKeywords(std::vector<TemplateURL*>* urls) {
 
     tmp = s.ColumnString(3);
     if (!tmp.empty())
-      template_url->SetFavIconURL(GURL(tmp));
+      template_url->SetFaviconURL(GURL(tmp));
 
     template_url->SetURL(s.ColumnString(4), 0, 0);
 

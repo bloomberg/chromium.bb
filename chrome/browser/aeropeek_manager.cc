@@ -588,7 +588,7 @@ class AeroPeekWindow : public ui::WindowImpl {
   // saves a copy of the given bitmap since it takes time to create a Windows
   // icon from this bitmap set it as the window icon. We will create a Windows
   // when Windows sends a WM_GETICON message to retrieve it.
-  void SetFavIcon(const SkBitmap& favicon);
+  void SetFavicon(const SkBitmap& favicon);
 
   // Returns the tab ID associated with this window.
   int tab_id() { return tab_id_; }
@@ -805,7 +805,7 @@ void AeroPeekWindow::SetTitle(const std::wstring& title) {
   title_ = title;
 }
 
-void AeroPeekWindow::SetFavIcon(const SkBitmap& favicon) {
+void AeroPeekWindow::SetFavicon(const SkBitmap& favicon) {
   favicon_bitmap_ = favicon;
 }
 
@@ -1174,7 +1174,7 @@ void AeroPeekManager::TabChangedAt(TabContentsWrapper* contents,
   // hurting the rendering performance. (These functions just save the
   // information needed for handling update requests from Windows.)
   window->SetTitle(contents->tab_contents()->GetTitle());
-  window->SetFavIcon(contents->tab_contents()->GetFavicon());
+  window->SetFavicon(contents->tab_contents()->GetFavicon());
   window->Update(contents->tab_contents()->is_loading());
 }
 

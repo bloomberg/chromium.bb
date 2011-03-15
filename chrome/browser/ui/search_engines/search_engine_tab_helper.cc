@@ -186,14 +186,14 @@ void SearchEngineTabHelper::GenerateKeywordIfNecessary(
   const GURL& favicon_url =
       controller.GetLastCommittedEntry()->favicon().url();
   if (favicon_url.is_valid()) {
-    new_url->SetFavIconURL(favicon_url);
+    new_url->SetFaviconURL(favicon_url);
   } else {
     // The favicon url isn't valid. This means there really isn't a favicon,
     // or the favicon url wasn't obtained before the load started. This assumes
     // the later.
     // TODO(sky): Need a way to set the favicon that doesn't involve generating
     // its url.
-    new_url->SetFavIconURL(TemplateURL::GenerateFaviconURL(params.referrer));
+    new_url->SetFaviconURL(TemplateURL::GenerateFaviconURL(params.referrer));
   }
   new_url->set_safe_for_autoreplace(true);
   url_model->Add(new_url);

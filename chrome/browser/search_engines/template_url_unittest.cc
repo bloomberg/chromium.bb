@@ -243,15 +243,15 @@ TEST_F(TemplateURLTest, URLRefTermToWide) {
   }
 }
 
-TEST_F(TemplateURLTest, SetFavIcon) {
+TEST_F(TemplateURLTest, SetFavicon) {
   TemplateURL url;
   GURL favicon_url("http://favicon.url");
-  url.SetFavIconURL(favicon_url);
+  url.SetFaviconURL(favicon_url);
   ASSERT_EQ(1U, url.image_refs().size());
   ASSERT_TRUE(favicon_url == url.GetFavIconURL());
 
   GURL favicon_url2("http://favicon2.url");
-  url.SetFavIconURL(favicon_url2);
+  url.SetFaviconURL(favicon_url2);
   ASSERT_EQ(1U, url.image_refs().size());
   ASSERT_TRUE(favicon_url2 == url.GetFavIconURL());
 }

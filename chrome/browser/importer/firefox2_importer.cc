@@ -318,7 +318,7 @@ void Firefox2Importer::ImportBookmarks() {
     STLDeleteContainerPointers(template_urls.begin(), template_urls.end());
   }
   if (!favicons.empty()) {
-    bridge_->SetFavIcons(favicons);
+    bridge_->SetFavicons(favicons);
   }
 }
 

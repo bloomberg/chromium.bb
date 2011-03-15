@@ -119,11 +119,11 @@ class BaseTab::FavIconCrashAnimation : public ui::LinearAnimation,
     const double kHidingOffset = 27;
 
     if (state < .5) {
-      target_->SetFavIconHidingOffset(
+      target_->SetFaviconHidingOffset(
           static_cast<int>(floor(kHidingOffset * 2.0 * state)));
     } else {
       target_->DisplayCrashedFavIcon();
-      target_->SetFavIconHidingOffset(
+      target_->SetFaviconHidingOffset(
           static_cast<int>(
               floor(kHidingOffset - ((state - .5) * 2.0 * kHidingOffset))));
     }
@@ -131,7 +131,7 @@ class BaseTab::FavIconCrashAnimation : public ui::LinearAnimation,
 
   // ui::AnimationDelegate overrides:
   virtual void AnimationCanceled(const ui::Animation* animation) {
-    target_->SetFavIconHidingOffset(0);
+    target_->SetFaviconHidingOffset(0);
   }
 
  private:
@@ -518,7 +518,7 @@ int BaseTab::fav_icon_hiding_offset() const {
   return fav_icon_hiding_offset_;
 }
 
-void BaseTab::SetFavIconHidingOffset(int offset) {
+void BaseTab::SetFaviconHidingOffset(int offset) {
   fav_icon_hiding_offset_ = offset;
   ScheduleIconPaint();
 }

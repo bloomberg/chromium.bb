@@ -392,7 +392,7 @@ void TemplateURLModel::ResetTemplateURL(const TemplateURL* url,
       (!new_url.url() && !search_url.empty()) ||
       (new_url.url() && new_url.url()->url() != search_url)) {
     // The urls have changed, reset the favicon url.
-    new_url.SetFavIconURL(GURL());
+    new_url.SetFaviconURL(GURL());
     new_url.SetURL(search_url, 0, 0);
   }
   new_url.set_safe_for_autoreplace(false);
@@ -850,7 +850,7 @@ bool TemplateURLModel::LoadDefaultSearchProviderFromPrefs(
   (*default_provider)->SetSuggestionsURL(suggest_url, 0, 0);
   (*default_provider)->SetInstantURL(instant_url, 0, 0);
   (*default_provider)->set_keyword(keyword);
-  (*default_provider)->SetFavIconURL(GURL(icon_url));
+  (*default_provider)->SetFaviconURL(GURL(icon_url));
   std::vector<std::string> encodings_vector;
   base::SplitString(encodings, ';', &encodings_vector);
   (*default_provider)->set_input_encodings(encodings_vector);

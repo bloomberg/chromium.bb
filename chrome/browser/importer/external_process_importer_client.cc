@@ -208,7 +208,7 @@ void ExternalProcessImporterClient::OnFavIconsImportGroup(
   fav_icons_.insert(fav_icons_.end(), fav_icons_group.begin(),
                     fav_icons_group.end());
   if (fav_icons_.size() == total_fav_icons_count_)
-    bridge_->SetFavIcons(fav_icons_);
+    bridge_->SetFavicons(fav_icons_);
 }
 
 void ExternalProcessImporterClient::OnPasswordFormImportReady(

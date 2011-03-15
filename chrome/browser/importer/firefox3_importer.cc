@@ -301,7 +301,7 @@ void Firefox3Importer::ImportBookmarks() {
   if (!favicon_map.empty() && !cancelled()) {
     std::vector<history::ImportedFavIconUsage> favicons;
     LoadFavicons(db.get(), favicon_map, &favicons);
-    bridge_->SetFavIcons(favicons);
+    bridge_->SetFavicons(favicons);
   }
 }
 

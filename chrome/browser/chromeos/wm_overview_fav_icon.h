@@ -30,7 +30,7 @@ class WmOverviewFavIcon : public views::WidgetGtk {
 
   // Setting the favicon sets the bounds to the size of the given
   // image.
-  void SetFavIcon(const SkBitmap& image);
+  void SetFavicon(const SkBitmap& image);
 
  private:
   // This control is the contents view for this widget.

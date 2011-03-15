@@ -98,7 +98,7 @@ static TemplateURL* CreatePreloadedTemplateURL() {
   t_url->set_short_name(ASCIIToUTF16("unittest"));
   t_url->set_safe_for_autoreplace(true);
   GURL favicon_url("http://favicon.url");
-  t_url->SetFavIconURL(favicon_url);
+  t_url->SetFaviconURL(favicon_url);
   t_url->set_date_created(Time::FromTimeT(100));
   t_url->set_prepopulate_id(999999);
   return t_url;
@@ -128,7 +128,7 @@ class TemplateURLModelTest : public testing::Test {
     TemplateURL* template_url = new TemplateURL();
     template_url->SetURL(url, 0, 0);
     template_url->SetSuggestionsURL(suggest_url, 0, 0);
-    template_url->SetFavIconURL(GURL(fav_icon_url));
+    template_url->SetFaviconURL(GURL(fav_icon_url));
     template_url->set_keyword(UTF8ToUTF16(keyword));
     template_url->set_autogenerate_keyword(autogenerate_keyword);
     template_url->set_short_name(UTF8ToUTF16(short_name));
@@ -392,7 +392,7 @@ TEST_F(TemplateURLModelTest, AddUpdateRemove) {
   t_url->set_keyword(ASCIIToUTF16("keyword"));
   t_url->set_short_name(ASCIIToUTF16("google"));
   GURL favicon_url("http://favicon.url");
-  t_url->SetFavIconURL(favicon_url);
+  t_url->SetFaviconURL(favicon_url);
   t_url->set_date_created(Time::FromTimeT(100));
   t_url->set_safe_for_autoreplace(true);
   model()->Add(t_url);
@@ -558,7 +558,7 @@ TEST_F(TemplateURLModelTest, Reset) {
   t_url->set_keyword(ASCIIToUTF16("keyword"));
   t_url->set_short_name(ASCIIToUTF16("google"));
   GURL favicon_url("http://favicon.url");
-  t_url->SetFavIconURL(favicon_url);
+  t_url->SetFaviconURL(favicon_url);
   t_url->set_date_created(Time::FromTimeT(100));
   model()->Add(t_url);
 
@@ -1132,7 +1132,7 @@ TEST_F(TemplateURLModelTest, TestManagedDefaultSearch) {
   // Verify that the default manager we are getting is the managed one.
   scoped_ptr<TemplateURL> expected_managed_default1(new TemplateURL());
   expected_managed_default1->SetURL(kSearchURL, 0, 0);
-  expected_managed_default1->SetFavIconURL(GURL(kIconURL));
+  expected_managed_default1->SetFaviconURL(GURL(kIconURL));
   expected_managed_default1->set_short_name(ASCIIToUTF16("test1"));
   std::vector<std::string> encodings_vector;
   base::SplitString(kEncodings, ';', &encodings_vector);

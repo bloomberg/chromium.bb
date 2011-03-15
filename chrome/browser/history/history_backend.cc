@@ -1614,7 +1614,7 @@ void HistoryBackend::UpdateFavIconMappingAndFetch(
   UpdateFavIconMappingAndFetchImpl(&page_url, icon_url, request, icon_type);
 }
 
-void HistoryBackend::SetFavIconOutOfDateForPage(const GURL& page_url) {
+void HistoryBackend::SetFaviconOutOfDateForPage(const GURL& page_url) {
   std::vector<IconMapping> icon_mappings;
 
   if (!thumbnail_db_.get() ||
@@ -1624,7 +1624,7 @@ void HistoryBackend::SetFavIconOutOfDateForPage(const GURL& page_url) {
 
   for (std::vector<IconMapping>::iterator m = icon_mappings.begin();
        m != icon_mappings.end(); ++m) {
-    thumbnail_db_->SetFavIconLastUpdateTime(m->icon_id, Time());
+    thumbnail_db_->SetFaviconLastUpdateTime(m->icon_id, Time());
   }
   ScheduleCommit();
 }
@@ -1648,7 +1648,7 @@ void HistoryBackend::SetImportedFavicons(
                                              history::FAV_ICON);
       if (!favicon_id)
         continue;  // Unable to add the favicon.
-      thumbnail_db_->SetFavIcon(favicon_id,
+      thumbnail_db_->SetFavicon(favicon_id,
           new RefCountedBytes(favicon_usage[i].png_data), now);
     }
 
@@ -1724,10 +1724,10 @@ void HistoryBackend::UpdateFavIconMappingAndFetchImpl(
       }
 
       if (page_url)
-        SetFavIconMapping(*page_url, favicon_id, returned_icon_type);
+        SetFaviconMapping(*page_url, favicon_id, returned_icon_type);
     }
     // else case, haven't cached entry yet. Caller is responsible for
-    // downloading the favicon and invoking SetFavIcon.
+    // downloading the favicon and invoking SetFavicon.
   }
   request->ForwardResult(GetFavIconRequest::TupleType(
                              request->handle(), know_favicon, data, expired,
@@ -1772,7 +1772,7 @@ void HistoryBackend::GetFavIconForURL(
                                    expired, icon_url));
 }
 
-void HistoryBackend::SetFavIcon(
+void HistoryBackend::SetFavicon(
     const GURL& page_url,
     const GURL& icon_url,
     scoped_refptr<RefCountedMemory> data,
@@ -1787,12 +1787,12 @@ void HistoryBackend::SetFavIcon(
     id = thumbnail_db_->AddFavIcon(icon_url, icon_type);
 
   // Set the image data.
-  thumbnail_db_->SetFavIcon(id, data, Time::Now());
+  thumbnail_db_->SetFavicon(id, data, Time::Now());
 
-  SetFavIconMapping(page_url, id, icon_type);
+  SetFaviconMapping(page_url, id, icon_type);
 }
 
-void HistoryBackend::SetFavIconMapping(const GURL& page_url,
+void HistoryBackend::SetFaviconMapping(const GURL& page_url,
                                        FavIconID id,
                                        IconType icon_type) {
   if (!thumbnail_db_.get())

@@ -36,7 +36,7 @@ class TabContents;
 // first depends upon who is faster): notification from the history
 // db on our request for the favicon (OnFaviconDataForInitialURL),
 // or a message from the renderer giving us the URL of the favicon for
-// the page (SetFavIconURL).
+// the page (SetFaviconURL).
 // . If the history db has a valid up to date favicon for the page, we update
 //   the NavigationEntry and use the favicon.
 // . When we receive the favicon url if it matches that of the NavigationEntry
@@ -61,7 +61,7 @@ class TabContents;
 // db knew about the favicon), or requests the renderer to download the
 // favicon.
 //
-// When the renderer downloads the favicon SetFavIconImageData is invoked,
+// When the renderer downloads the favicon SetFaviconImageData is invoked,
 // at which point we update the favicon of the NavigationEntry and notify
 // the database to save the favicon.
 

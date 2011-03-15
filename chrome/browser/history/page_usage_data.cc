@@ -32,7 +32,7 @@ void PageUsageData::SetThumbnail(SkBitmap* img) {
   thumbnail_set_ = true;
 }
 
-void PageUsageData::SetFavIcon(SkBitmap* img) {
+void PageUsageData::SetFavicon(SkBitmap* img) {
   if (favicon_ && favicon_ != img)
     delete favicon_;
   favicon_ = img;

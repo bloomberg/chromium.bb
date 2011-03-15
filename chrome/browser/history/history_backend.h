@@ -217,7 +217,7 @@ class HistoryBackend : public base::RefCountedThreadSafe<HistoryBackend>,
                         const GURL& page_url,
                         int icon_types);
 
-  void SetFavIcon(const GURL& page_url,
+  void SetFavicon(const GURL& page_url,
                   const GURL& icon_url,
                   scoped_refptr<RefCountedMemory> data,
                   IconType icon_type);
@@ -227,7 +227,7 @@ class HistoryBackend : public base::RefCountedThreadSafe<HistoryBackend>,
                                     const GURL& icon_url,
                                     IconType icon_type);
 
-  void SetFavIconOutOfDateForPage(const GURL& page_url);
+  void SetFaviconOutOfDateForPage(const GURL& page_url);
 
   void SetImportedFavicons(
       const std::vector<ImportedFavIconUsage>& favicon_usage);
@@ -342,7 +342,7 @@ class HistoryBackend : public base::RefCountedThreadSafe<HistoryBackend>,
   FRIEND_TEST_ALL_PREFIXES(HistoryBackendTest, RemoveVisitsSource);
   FRIEND_TEST_ALL_PREFIXES(HistoryBackendTest, MigrationVisitSource);
   FRIEND_TEST_ALL_PREFIXES(HistoryBackendTest, MigrationIconMapping);
-  FRIEND_TEST_ALL_PREFIXES(HistoryBackendTest, SetFavIconMapping);
+  FRIEND_TEST_ALL_PREFIXES(HistoryBackendTest, SetFaviconMapping);
   FRIEND_TEST_ALL_PREFIXES(HistoryBackendTest, AddOrUpdateIconMapping);
 
   friend class ::TestingProfile;
@@ -444,7 +444,7 @@ class HistoryBackend : public base::RefCountedThreadSafe<HistoryBackend>,
   // Favicons ------------------------------------------------------------------
 
   // Used by both UpdateFavIconMappingAndFetch and GetFavicon.
-  // If page_url is non-null and SetFavIcon has previously been invoked for
+  // If page_url is non-null and SetFavicon has previously been invoked for
   // icon_url the favicon url for page_url (and all redirects) is set to
   // icon_url.
   // Only a single type can be given in icon_type when page_url is specified.
@@ -456,7 +456,7 @@ class HistoryBackend : public base::RefCountedThreadSafe<HistoryBackend>,
 
   // Sets the favicon url id for page_url to id. This will also broadcast
   // notifications as necessary.
-  void SetFavIconMapping(const GURL& page_url,
+  void SetFaviconMapping(const GURL& page_url,
                          FavIconID id,
                          IconType icon_type);
 

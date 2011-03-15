@@ -360,7 +360,7 @@ bool ThumbnailDatabase::ThumbnailScoreForId(URLID id,
   return false;
 }
 
-bool ThumbnailDatabase::SetFavIcon(URLID icon_id,
+bool ThumbnailDatabase::SetFavicon(URLID icon_id,
                                    scoped_refptr<RefCountedMemory> icon_data,
                                    base::Time time) {
   DCHECK(icon_id);
@@ -387,7 +387,7 @@ bool ThumbnailDatabase::SetFavIcon(URLID icon_id,
   }
 }
 
-bool ThumbnailDatabase::SetFavIconLastUpdateTime(FavIconID icon_id,
+bool ThumbnailDatabase::SetFaviconLastUpdateTime(FavIconID icon_id,
                                                  base::Time time) {
   sql::Statement statement(db_.GetCachedStatement(SQL_FROM_HERE,
       "UPDATE favicons SET last_updated=? WHERE id=?"));

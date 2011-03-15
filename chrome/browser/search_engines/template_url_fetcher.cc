@@ -228,7 +228,7 @@ void TemplateURLFetcher::RequestDelegate::AddSearchProvider() {
 
   // The page may have specified a URL to use for favicons, if not, set it.
   if (!template_url_->GetFavIconURL().is_valid())
-    template_url_->SetFavIconURL(favicon_url_);
+    template_url_->SetFaviconURL(favicon_url_);
 
   switch (provider_type_) {
     case AUTODETECTED_PROVIDER:

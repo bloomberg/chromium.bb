@@ -120,7 +120,7 @@ void SafariImporter::ImportBookmarks() {
   if (!favicon_map.empty() && !cancelled()) {
     std::vector<history::ImportedFavIconUsage> favicons;
     LoadFaviconData(db.get(), favicon_map, &favicons);
-    bridge_->SetFavIcons(favicons);
+    bridge_->SetFavicons(favicons);
   }
 }
 

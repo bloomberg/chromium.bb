@@ -223,11 +223,11 @@ TEST_F(HistoryBackendTest, DeleteAll) {
 
   std::vector<unsigned char> data;
   data.push_back('1');
-  EXPECT_TRUE(backend_->thumbnail_db_->SetFavIcon(favicon1,
+  EXPECT_TRUE(backend_->thumbnail_db_->SetFavicon(favicon1,
       new RefCountedBytes(data), Time::Now()));
 
   data[0] = '2';
-  EXPECT_TRUE(backend_->thumbnail_db_->SetFavIcon(
+  EXPECT_TRUE(backend_->thumbnail_db_->SetFavicon(
                   favicon2, new RefCountedBytes(data), Time::Now()));
 
   // First visit two URLs.
@@ -356,11 +356,11 @@ TEST_F(HistoryBackendTest, URLsNoLongerBookmarked) {
 
   std::vector<unsigned char> data;
   data.push_back('1');
-  EXPECT_TRUE(backend_->thumbnail_db_->SetFavIcon(
+  EXPECT_TRUE(backend_->thumbnail_db_->SetFavicon(
                   favicon1, new RefCountedBytes(data), Time::Now()));
 
   data[0] = '2';
-  EXPECT_TRUE(backend_->thumbnail_db_->SetFavIcon(
+  EXPECT_TRUE(backend_->thumbnail_db_->SetFavicon(
                   favicon2, new RefCountedBytes(data), Time::Now()));
 
   // First visit two URLs.
@@ -526,7 +526,7 @@ TEST_F(HistoryBackendTest, ImportedFaviconsTest) {
                                                            FAV_ICON);
   std::vector<unsigned char> data;
   data.push_back('1');
-  EXPECT_TRUE(backend_->thumbnail_db_->SetFavIcon(favicon1,
+  EXPECT_TRUE(backend_->thumbnail_db_->SetFavicon(favicon1,
       RefCountedBytes::TakeVector(&data), Time::Now()));
   URLRow row1(GURL("http://www.google.com/"));
   row1.set_visit_count(1);
@@ -820,7 +820,7 @@ TEST_F(HistoryBackendTest, MigrationVisitSource) {
   EXPECT_FALSE(s.Step());
 }
 
-TEST_F(HistoryBackendTest, SetFavIconMapping) {
+TEST_F(HistoryBackendTest, SetFaviconMapping) {
   // Init recent_redirects_
   const GURL url1("http://www.google.com");
   const GURL url2("http://www.google.com/m");
@@ -846,7 +846,7 @@ TEST_F(HistoryBackendTest, SetFavIconMapping) {
   const GURL icon_url("http://www.google.com/icon");
   std::vector<unsigned char> data(blob1, blob1 + sizeof(blob1));
   // Add a favicon
-  backend_->SetFavIcon(
+  backend_->SetFavicon(
       url1, icon_url, RefCountedBytes::TakeVector(&data), FAV_ICON);
   EXPECT_TRUE(backend_->thumbnail_db_->GetIconMappingForPageURL(
       url1, FAV_ICON, NULL));
@@ -854,7 +854,7 @@ TEST_F(HistoryBackendTest, SetFavIconMapping) {
       url2, FAV_ICON, NULL));
 
   // Add a touch_icon
-  backend_->SetFavIcon(
+  backend_->SetFavicon(
       url1, icon_url, RefCountedBytes::TakeVector(&data), TOUCH_ICON);
   EXPECT_TRUE(backend_->thumbnail_db_->GetIconMappingForPageURL(
       url1, TOUCH_ICON, NULL));
@@ -864,7 +864,7 @@ TEST_F(HistoryBackendTest, SetFavIconMapping) {
       url1, FAV_ICON, NULL));
 
   // Add a TOUCH_PRECOMPOSED_ICON
-  backend_->SetFavIcon(url1,
+  backend_->SetFavicon(url1,
                        icon_url,
                        RefCountedBytes::TakeVector(&data),
                        TOUCH_PRECOMPOSED_ICON);
@@ -879,7 +879,7 @@ TEST_F(HistoryBackendTest, SetFavIconMapping) {
       url2, TOUCH_PRECOMPOSED_ICON, NULL));
 
   // Add a touch_icon
-  backend_->SetFavIcon(
+  backend_->SetFavicon(
       url1, icon_url, RefCountedBytes::TakeVector(&data), TOUCH_ICON);
   EXPECT_TRUE(backend_->thumbnail_db_->GetIconMappingForPageURL(
       url1, TOUCH_ICON, NULL));
@@ -891,7 +891,7 @@ TEST_F(HistoryBackendTest, SetFavIconMapping) {
 
   // Add a fav_icon
   const GURL icon_url2("http://www.google.com/icon2");
-  backend_->SetFavIcon(
+  backend_->SetFavicon(
       url1, icon_url2, RefCountedBytes::TakeVector(&data), FAV_ICON);
   FavIconID icon_id = backend_->thumbnail_db_->GetFavIconIDForFavIconURL(
       icon_url2, FAV_ICON, NULL);
@@ -906,12 +906,12 @@ TEST_F(HistoryBackendTest, SetFavIconMapping) {
 
 TEST_F(HistoryBackendTest, AddOrUpdateIconMapping) {
   // Test the same icon and page mapping will not be added twice. other case
-  // should be covered in TEST_F(HistoryBackendTest, SetFavIconMapping)
+  // should be covered in TEST_F(HistoryBackendTest, SetFaviconMapping)
   const GURL url("http://www.google.com/");
   const GURL icon_url("http://www.google.com/icon");
   std::vector<unsigned char> data(blob1, blob1 + sizeof(blob1));
 
-  backend_->SetFavIcon(
+  backend_->SetFavicon(
       url, icon_url, RefCountedBytes::TakeVector(&data), FAV_ICON);
   FavIconID icon_id = backend_->thumbnail_db_->GetFavIconIDForFavIconURL(
       icon_url, FAV_ICON, NULL);

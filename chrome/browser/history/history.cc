@@ -475,7 +475,7 @@ void HistoryService::SetFavicon(const GURL& page_url,
   if (!CanAddURL(page_url))
     return;
 
-  ScheduleAndForget(PRIORITY_NORMAL, &HistoryBackend::SetFavIcon,
+  ScheduleAndForget(PRIORITY_NORMAL, &HistoryBackend::SetFavicon,
       page_url, icon_url,
       scoped_refptr<RefCountedMemory>(new RefCountedBytes(image_data)),
       history::FAV_ICON);
@@ -483,7 +483,7 @@ void HistoryService::SetFavicon(const GURL& page_url,
 
 void HistoryService::SetFaviconOutOfDateForPage(const GURL& page_url) {
   ScheduleAndForget(PRIORITY_NORMAL,
-                    &HistoryBackend::SetFavIconOutOfDateForPage, page_url);
+                    &HistoryBackend::SetFaviconOutOfDateForPage, page_url);
 }
 
 void HistoryService::SetImportedFavicons(

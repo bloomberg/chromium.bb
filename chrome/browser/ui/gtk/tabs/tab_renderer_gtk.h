@@ -304,7 +304,7 @@ class TabRendererGtk : public ui::AnimationDelegate,
   bool IsPerformingCrashAnimation() const;
 
   // Set the temporary offset for the favicon. This is used during animation.
-  void SetFavIconHidingOffset(int offset);
+  void SetFaviconHidingOffset(int offset);
 
   void DisplayCrashedFavIcon();
   void ResetCrashedFavIcon();

@@ -79,11 +79,11 @@ class PageUsageData {
     thumbnail_pending_ = pending;
   }
 
-  void SetFavIconMissing() {
+  void SetFaviconMissing() {
     favicon_set_ = true;
   }
 
-  void SetFavIcon(SkBitmap* img);
+  void SetFavicon(SkBitmap* img);
 
   bool HasFavIcon() const {
     return favicon_set_;

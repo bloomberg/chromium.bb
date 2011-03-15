@@ -409,7 +409,7 @@ class TemplateURL {
   // a situation GetFavIconURL returns an invalid url.
   //
   // If url is empty and there is an image ref for a favicon, it is removed.
-  void SetFavIconURL(const GURL& url);
+  void SetFaviconURL(const GURL& url);
   GURL GetFavIconURL() const;
 
   // Set of languages supported. This may be empty.

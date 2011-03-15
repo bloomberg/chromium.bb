@@ -3374,7 +3374,7 @@ TemplateURL* MakePrepopulatedTemplateURL(const wchar_t* name,
   TemplateURL* new_turl = new TemplateURL();
   new_turl->SetURL(WideToUTF8(search_url), 0, 0);
   if (favicon_url)
-    new_turl->SetFavIconURL(GURL(favicon_url));
+    new_turl->SetFaviconURL(GURL(favicon_url));
   if (suggest_url)
     new_turl->SetSuggestionsURL(WideToUTF8(suggest_url), 0, 0);
   if (instant_url)

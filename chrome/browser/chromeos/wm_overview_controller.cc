@@ -238,7 +238,7 @@ void BrowserListener::TabChangedAt(
   if (change_type != TabStripModelObserver::LOADING_ONLY) {
     snapshots_[index].title->SetTitle(contents->tab_contents()->GetTitle());
     snapshots_[index].title->SetUrl(contents->tab_contents()->GetURL());
-    snapshots_[index].fav_icon->SetFavIcon(
+    snapshots_[index].fav_icon->SetFavicon(
         contents->tab_contents()->GetFavicon());
     if (change_type != TabStripModelObserver::TITLE_NOT_LOADING)
       MarkSnapshotAsDirty(index);
@@ -424,7 +424,7 @@ void BrowserListener::InsertSnapshot(int index) {
 
   node.fav_icon = new WmOverviewFavIcon;
   node.fav_icon->Init(node.snapshot);
-  node.fav_icon->SetFavIcon(browser_->GetTabContentsAt(index)->GetFavicon());
+  node.fav_icon->SetFavicon(browser_->GetTabContentsAt(index)->GetFavicon());
 
   node.title = new WmOverviewTitle;
   node.title->Init(gfx::Size(std::max(0, cell_size.width() -

@@ -33,7 +33,7 @@ class ImporterBridge : public base::RefCountedThreadSafe<ImporterBridge> {
   virtual void AddIE7PasswordInfo(const IE7PasswordInfo password_info) = 0;
 #endif
 
-  virtual void SetFavIcons(
+  virtual void SetFavicons(
       const std::vector<history::ImportedFavIconUsage>& fav_icons) = 0;
   virtual void SetHistoryItems(const std::vector<history::URLRow> &rows,
                                history::VisitSource visit_source) = 0;
@@ -91,7 +91,7 @@ class InProcessImporterBridge : public ImporterBridge {
   virtual void AddIE7PasswordInfo(const IE7PasswordInfo password_info);
 #endif
 
-  virtual void SetFavIcons(
+  virtual void SetFavicons(
       const std::vector<history::ImportedFavIconUsage>& fav_icons);
   virtual void SetHistoryItems(const std::vector<history::URLRow> &rows,
                                history::VisitSource visit_source);
@@ -137,7 +137,7 @@ class ExternalProcessImporterBridge : public ImporterBridge {
   virtual void AddIE7PasswordInfo(const IE7PasswordInfo password_info);
 #endif
 
-  virtual void SetFavIcons(
+  virtual void SetFavicons(
       const std::vector<history::ImportedFavIconUsage>& fav_icons);
   virtual void SetHistoryItems(const std::vector<history::URLRow> &rows,
                                history::VisitSource visit_source);
