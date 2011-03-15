@@ -509,6 +509,7 @@
         'chromoting_host',
         'chromoting_jingle_glue',
         'chromoting_protocol',
+        '../app/app.gyp:app_base',
         '../base/base.gyp:base',
         '../base/base.gyp:base_i18n',
         '../base/base.gyp:test_support_base',
