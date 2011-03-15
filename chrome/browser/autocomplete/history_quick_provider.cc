@@ -7,7 +7,10 @@
 #include "base/basictypes.h"
 #include "base/i18n/break_iterator.h"
 #include "base/logging.h"
+#include "base/metrics/histogram.h"
+#include "base/string_number_conversions.h"
 #include "base/string_util.h"
+#include "base/time.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/history/history.h"
 #include "chrome/browser/history/in_memory_url_index.h"
@@ -62,7 +65,16 @@ void HistoryQuickProvider::Start(const AutocompleteInput& input,
   // someone unloads the history backend, we'll get inconsistent inline
   // autocomplete behavior here.
   if (GetIndex()) {
+    base::TimeTicks start_time = base::TimeTicks::Now();
     DoAutocomplete();
+    if (input.text().size() < 6) {
+      base::TimeTicks end_time = base::TimeTicks::Now();
+      std::string name = "HistoryQuickProvider.QueryIndexTime." +
+          base::IntToString(input.text().size());
+      scoped_refptr<base::Histogram> counter = base::Histogram::FactoryGet(
+          name, 1, 1000, 50, base::Histogram::kUmaTargetedHistogramFlag);
+      counter->Add(static_cast<int>((end_time - start_time).InMilliseconds()));
+    }
     UpdateStarredStateOfMatches();
   }
 }

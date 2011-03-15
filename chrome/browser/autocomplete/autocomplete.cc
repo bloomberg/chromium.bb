@@ -9,6 +9,7 @@
 #include "base/basictypes.h"
 #include "base/command_line.h"
 #include "base/i18n/number_formatting.h"
+#include "base/metrics/histogram.h"
 #include "base/string_number_conversions.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
@@ -852,11 +853,19 @@ void AutocompleteController::Start(const string16& text,
 
   // Start the new query.
   in_start_ = true;
+  base::TimeTicks start_time = base::TimeTicks::Now();
   for (ACProviders::iterator i(providers_.begin()); i != providers_.end();
        ++i) {
     (*i)->Start(input_, minimal_changes);
     if (synchronous_only)
       DCHECK((*i)->done());
+  }
+  if (!synchronous_only && text.size() < 6) {
+    base::TimeTicks end_time = base::TimeTicks::Now();
+    std::string name = "Omnibox.QueryTime." + base::IntToString(text.size());
+    scoped_refptr<base::Histogram> counter = base::Histogram::FactoryGet(
+        name, 1, 1000, 50, base::Histogram::kUmaTargetedHistogramFlag);
+    counter->Add(static_cast<int>((end_time - start_time).InMilliseconds()));
   }
   in_start_ = false;
   CheckIfDone();
