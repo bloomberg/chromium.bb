@@ -86,6 +86,9 @@
         'clipboard/clipboard_win.cc',
         'clipboard/scoped_clipboard_writer.cc',
         'clipboard/scoped_clipboard_writer.h',
+        'range/range.cc',
+        'range/range.h',
+        'range/range.mm',
       ],
       'conditions': [
         ['OS=="linux" or OS=="freebsd" or OS=="openbsd"', {
@@ -113,6 +116,8 @@
         'animation/multi_animation_unittest.cc',
         'animation/slide_animation_unittest.cc',
         'clipboard/clipboard_unittest.cc',
+        'range/range_unittest.cc',
+        'range/range_unittest.mm',
         'run_all_unittests.cc',
         'test_suite.h',
       ],
