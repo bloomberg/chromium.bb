@@ -228,6 +228,20 @@ void Clipboard::ReadImage(Buffer buffer, std::string* data) const {
     NOTREACHED();
     return;
   }
+
+  scoped_nsobject<NSImage> image(
+      [[NSImage alloc] initWithPasteboard:GetPasteboard()]);
+  if (image.get()) {
+    NSArray* reps = [image representations];
+    NSData* png_data = [NSBitmapImageRep
+        representationOfImageRepsInArray:reps
+                               usingType:NSPNGFileType
+                              properties:[NSDictionary dictionary]];
+    if (png_data) {
+      data->assign(static_cast<const char*>([png_data bytes]),
+                   [png_data length]);
+    }
+  }
 }
 
 void Clipboard::ReadBookmark(string16* title, std::string* url) const {
