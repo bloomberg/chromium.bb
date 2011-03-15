@@ -8,14 +8,6 @@ cr.define('options', function() {
   // The GUID of the loaded credit card.
   var guid_;
 
-  // The CC number of the profile, used to check for changes to the input field.
-  var storedCCNumber_;
-
-  // Set to true if the user has edited the CC number field. When saving the
-  // CC profile after editing, the stored CC number is saved if the input field
-  // has not been modified.
-  var hasEditedNumber_;
-
   /**
    * AutoFillEditCreditCardOverlay class
    * Encapsulated handling of the 'Add Page' overlay page.
@@ -48,7 +40,6 @@ cr.define('options', function() {
       }
 
       self.guid_ = '';
-      self.storedCCNumber_ = '';
       self.hasEditedNumber_ = false;
       self.clearInputFields_();
       self.connectInputEvents_();
@@ -62,7 +53,6 @@ cr.define('options', function() {
     dismissOverlay_: function() {
       this.clearInputFields_();
       this.guid_ = '';
-      this.storedCCNumber_ = '';
       this.hasEditedNumber_ = false;
       OptionsPage.closeOverlay();
     },
@@ -76,14 +66,9 @@ cr.define('options', function() {
       var creditCard = new Array(5);
       creditCard[0] = this.guid_;
       creditCard[1] = $('name-on-card').value;
+      creditCard[2] = $('credit-card-number').value;
       creditCard[3] = $('expiration-month').value;
       creditCard[4] = $('expiration-year').value;
-
-      if (this.hasEditedNumber_)
-        creditCard[2] = $('credit-card-number').value;
-      else
-        creditCard[2] = this.storedCCNumber_;
-
       chrome.send('setCreditCard', creditCard);
     },
 
@@ -94,7 +79,8 @@ cr.define('options', function() {
      * @private
      */
     connectInputEvents_: function() {
-      $('name-on-card').oninput = $('credit-card-number').oninput =
+      var ccNumber = $('credit-card-number');
+      $('name-on-card').oninput = ccNumber.oninput =
           $('expiration-month').onchange = $('expiration-year').onchange =
               this.inputFieldChanged_.bind(this);
     },
@@ -106,19 +92,8 @@ cr.define('options', function() {
      * @private
      */
     inputFieldChanged_: function(opt_event) {
-      var ccNumber = $('credit-card-number');
-      var disabled = !$('name-on-card').value && !ccNumber.value;
+      var disabled = !$('name-on-card').value && !$('credit-card-number');
       $('autofill-edit-credit-card-apply-button').disabled = disabled;
-
-      if (opt_event && opt_event.target == ccNumber) {
-        // If the user hasn't edited the text yet, delete it all on edit.
-        if (!this.hasEditedNumber_ && this.storedCCNumber_.length &&
-            ccNumber.value != this.storedCCNumber_) {
-          ccNumber.value = '';
-        }
-
-        this.hasEditedNumber_ = true;
-      }
     },
 
     /**
@@ -175,7 +150,7 @@ cr.define('options', function() {
      */
     setInputFields_: function(creditCard) {
       $('name-on-card').value = creditCard['nameOnCard'];
-      $('credit-card-number').value = creditCard['obfuscatedCardNumber'];
+      $('credit-card-number').value = creditCard['creditCardNumber'];
 
       // The options for the year select control may be out-dated at this point,
       // e.g. the user opened the options page before midnight on New Year's Eve
@@ -205,7 +180,6 @@ cr.define('options', function() {
       this.setInputFields_(creditCard);
       this.inputFieldChanged_();
       this.guid_ = creditCard['guid'];
-      this.storedCCNumber_ = creditCard['creditCardNumber'];
     },
   };
 

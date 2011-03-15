@@ -321,8 +321,6 @@ void AutoFillOptionsHandler::LoadCreditCardEditor(const ListValue* args) {
   credit_card_data.SetString(
       "creditCardNumber",
       credit_card->GetFieldText(AutofillType(CREDIT_CARD_NUMBER)));
-  credit_card_data.SetString("obfuscatedCardNumber",
-                             credit_card->ObfuscatedNumber());
   credit_card_data.SetString(
       "expirationMonth",
       credit_card->GetFieldText(AutofillType(CREDIT_CARD_EXP_MONTH)));
