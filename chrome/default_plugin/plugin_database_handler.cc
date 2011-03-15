@@ -48,7 +48,7 @@ bool PluginDatabaseHandler::DownloadPluginsFileIfNeeded(
   plugins_file_ = module_path.Append(L"chrome_plugins_file.xml").value();
 
   bool initiate_download = false;
-  if (!file_util::PathExists(FilePath::FromWStringHack(plugins_file_))) {
+  if (!file_util::PathExists(FilePath(plugins_file_))) {
     initiate_download = true;
   } else {
     SYSTEMTIME creation_system_time = {0};
