@@ -78,8 +78,6 @@ INITIAL_ENV = {
   # Special settings needed to tweak behavior
   'SKIP_OPT'    : '0',  # Don't run OPT. This is used in cases where
                         # OPT might break things.
-  'PRELINKED'   : '0',  # Controls whether an input .bc file should be
-                        # considered pre-linked or post-linked.
 
   'BASE_NACL'       : '', # Filled in later
   'BASE'            : '${BASE_NACL}/toolchain/linux_arm-untrusted',
@@ -719,9 +717,6 @@ def Incarnation_translate(argv):
   AssertParseComplete()
   PrepareCompile()
 
-  # TODO(pdox): Fix this by arranging for combined bitcode file
-  #             to have extension .pexe instead of .bc or .o
-  env.set('PRELINKED', '1')
   env.set('SKIP_OPT', '1')
   inputs = shell.split(env.get('INPUTS'))
   output = env.get('OUTPUT')
@@ -730,7 +725,7 @@ def Incarnation_translate(argv):
   if len(inputs) != 1:
     Log.Fatal('Expecting one input file')
 
-  if FileType(inputs[0]) != 'bc':
+  if FileType(inputs[0]) not in ('bc', 'pexe'):
     Log.Fatal('Expecting input to be a bitcode file')
 
   if output == '':
@@ -921,49 +916,69 @@ def Compile(arch, inputs, output, output_type):
 
   Log.Fatal('Unexpected output type')
 
+
+def IsPrelinked(inputs):
+  '''Determine if a pexe is present and return it or None.
+  '''
+  pexe = None
+  for i in inputs:
+    intype = FileType(i)
+    if intype == 'pexe':
+      assert pexe is None
+      pexe = i
+  return pexe
+
+
+def ExtractNonBitcodeFiles(inputs):
+  return [f for f in inputs if FileType(f) not in ('bc','bclib')]
+
+
 def LinkAll(arch, inputs, output):
-  if not env.getbool('PRELINKED'):
-    combined_bitcode = LinkBC(inputs)
+  '''Link a bunch of input files together into a native executable.
+  If necessary run the llc backend.
+  If necessary run the bitcode linking phase.
+  '''
+  if IsPrelinked(inputs):
+    pexe_obj = CompileOne(arch, 'o', IsPrelinked(inputs))
+    LinkNative(arch, [pexe_obj] + ExtractNonBitcodeFiles(inputs), output)
+  elif NeedsBCLinking(inputs):
+    pexe = LinkBC(inputs)
+    pexe_obj = CompileOne(arch, 'o', pexe)
+    LinkNative(arch, [pexe_obj] + ExtractNonBitcodeFiles(inputs), output)
   else:
-    assert(len(inputs) == 1)
-    combined_bitcode = inputs[0]
+    LinkNative(arch, inputs, output)
 
-  if combined_bitcode:
-    # Translate it to an object
-    combined_obj = CompileOne(arch, 'o', combined_bitcode)
 
-    # Substitute this object for the bitcode objects in the
-    # native linker input
-    inputs = [f for f in inputs if FileType(f) not in ('bc','bclib')]
-    inputs = [combined_obj] + inputs
+def NeedsBCLinking(inputs):
+  '''Determine if any bc files are present
+  Also make sure our inputs are only .bc, .o, and -l
+  '''
+  needs_linking = False
+  for i in inputs:
+    intype = FileType(i)
+    # TODO(robertm): disallow .pexe and .o
+    assert(intype in ('bc', 'o', 'bclib', 'nlib'))
+    if intype == 'bc':
+      needs_linking = True
+  return needs_linking
 
-  # Finally, link to nexe
-  LinkNative(arch, inputs, output)
 
-# Input: a bunch of bc/o/lib input files
-# Output: a combined & optimized bitcode file
 def LinkBC(inputs, output = None):
+  '''Input: a bunch of bc/o/lib input files
+     Output: a combined & optimized bitcode file
+     if output == None, a new temporary name will be chosen
+     and returned.
+  '''
   assert(output is None or output != '')
 
-  # Make sure our inputs are only .bc, .o, and -l
-  NeedsLinking = False
-  for i in xrange(0, len(inputs)):
-    intype = FileType(inputs[i])
-    assert(intype in ('bc', 'pexe', 'o', 'bclib', 'nlib'))
-    if intype == 'bc':
-      NeedsLinking = True
-
-  if not NeedsLinking:
-    return None
-
-  SkipOpt = env.getbool('SKIP_OPT')
-  if SkipOpt:
+  skip_opt = env.getbool('SKIP_OPT')
+  if skip_opt:
     if output is None:
-      output = TempNameForOutput('bc')
+      output = TempNameForOutput('pexe')
     bcld_output = output
   else:
     if output is None:
-      output = TempNameForOutput('opt.bc')
+      output = TempNameForOutput('opt.pexe')
     bcld_output = TempNameForOutput('bc')
 
   # Produce combined bitcode file
@@ -978,7 +993,7 @@ def LinkBC(inputs, output = None):
              inputs = shell.join(inputs),
              output = bcld_output)
 
-  if not SkipOpt:
+  if not skip_opt:
     OptimizeBC(bcld_output, output)
 
   return output
@@ -1282,7 +1297,8 @@ def FileType(filename):
     return 'nlib'
 
   # Auto-detect bitcode files, since we can't rely on extensions
-  if IsBitcode(filename):
+  ext = filename.split('.')[-1]
+  if ext in ('o', 'so') and IsBitcode(filename):
     return 'bc'
 
   # File Extension -> Type string
@@ -1302,7 +1318,6 @@ def FileType(filename):
     'os'  : 'o',
     'nexe': 'nexe'
   }
-  ext = filename.split('.')[-1]
   if ext not in ExtensionMap:
     Log.Fatal('Unknown file extension: %s' % filename)
 
