@@ -21,6 +21,7 @@
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/net/resolve_proxy_msg_helper.h"
 #include "chrome/browser/net/url_request_tracking.h"
 #include "chrome/browser/plugin_download_helper.h"
 #include "chrome/browser/profiles/profile.h"
@@ -95,8 +96,7 @@ void PluginProcessHost::OnMapNativeViewId(gfx::NativeViewId id,
 PluginProcessHost::PluginProcessHost()
     : BrowserChildProcessHost(
           PLUGIN_PROCESS,
-          PluginService::GetInstance()->resource_dispatcher_host()),
-      ALLOW_THIS_IN_INITIALIZER_LIST(resolve_proxy_msg_helper_(this, NULL))
+          PluginService::GetInstance()->resource_dispatcher_host())
 #if defined(OS_MACOSX)
       , plugin_cursor_visible_(true)
 #endif
@@ -245,6 +245,8 @@ bool PluginProcessHost::Init(const webkit::npapi::WebPluginInfo& info,
 #endif
       cmd_line);
 
+  AddFilter(new ResolveProxyMsgHelper(NULL));
+
   return true;
 }
 
@@ -260,8 +262,6 @@ bool PluginProcessHost::OnMessageReceived(const IPC::Message& msg) {
     IPC_MESSAGE_HANDLER(PluginProcessHostMsg_ChannelCreated, OnChannelCreated)
     IPC_MESSAGE_HANDLER(PluginProcessHostMsg_GetPluginFinderUrl,
                         OnGetPluginFinderUrl)
-    IPC_MESSAGE_HANDLER_DELAY_REPLY(PluginProcessHostMsg_ResolveProxy,
-                                    OnResolveProxy)
 #if defined(OS_WIN)
     IPC_MESSAGE_HANDLER(PluginProcessHostMsg_PluginWindowDestroyed,
                         OnPluginWindowDestroyed)
@@ -328,19 +328,6 @@ void PluginProcessHost::OpenChannelToPlugin(Client* client) {
 
   // We already have an open channel, send a request right away to plugin.
   RequestPluginChannel(client);
-}
-
-void PluginProcessHost::OnResolveProxy(const GURL& url,
-                                       IPC::Message* reply_msg) {
-  resolve_proxy_msg_helper_.Start(url, reply_msg);
-}
-
-void PluginProcessHost::OnResolveProxyCompleted(IPC::Message* reply_msg,
-                                                int result,
-                                                const std::string& proxy_list) {
-  PluginProcessHostMsg_ResolveProxy::WriteReplyParams(
-      reply_msg, result, proxy_list);
-  Send(reply_msg);
 }
 
 void PluginProcessHost::RequestPluginChannel(Client* client) {

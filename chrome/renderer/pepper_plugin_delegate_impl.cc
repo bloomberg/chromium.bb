@@ -29,6 +29,7 @@
 #include "chrome/renderer/render_view.h"
 #include "chrome/renderer/webgraphicscontext3d_command_buffer_impl.h"
 #include "chrome/renderer/webplugin_delegate_proxy.h"
+#include "content/common/child_process_messages.h"
 #include "content/common/child_thread.h"
 #include "content/common/file_system/file_system_dispatcher.h"
 #include "grit/locale_settings.h"
@@ -930,9 +931,8 @@ void PepperPluginDelegateImpl::ZoomLimitsChanged(double minimum_factor,
 std::string PepperPluginDelegateImpl::ResolveProxy(const GURL& url) {
   int net_error;
   std::string proxy_result;
-  IPC::Message* msg =
-      new ViewHostMsg_ResolveProxy(url, &net_error, &proxy_result);
-  RenderThread::current()->Send(msg);
+  RenderThread::current()->Send(
+      new ChildProcessHostMsg_ResolveProxy(url, &net_error, &proxy_result));
   return proxy_result;
 }
 

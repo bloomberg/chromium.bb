@@ -284,7 +284,6 @@ RenderMessageFilter::RenderMessageFilter(
       plugin_service_(plugin_service),
       profile_(profile),
       content_settings_(profile->GetHostContentSettingsMap()),
-      ALLOW_THIS_IN_INITIALIZER_LIST(resolve_proxy_msg_helper_(this, NULL)),
       extensions_request_context_(profile->GetRequestContextForExtensions()),
       render_widget_helper_(render_widget_helper),
       notification_prefs_(
@@ -372,7 +371,6 @@ bool RenderMessageFilter::OnMessageReceived(const IPC::Message& message,
     IPC_MESSAGE_HANDLER(ViewHostMsg_ResourceTypeStats, OnResourceTypeStats)
     IPC_MESSAGE_HANDLER(ViewHostMsg_V8HeapStats, OnV8HeapStats)
     IPC_MESSAGE_HANDLER(ViewHostMsg_DidZoomURL, OnDidZoomURL)
-    IPC_MESSAGE_HANDLER_DELAY_REPLY(ViewHostMsg_ResolveProxy, OnResolveProxy)
 #if defined(OS_MACOSX)
     IPC_MESSAGE_HANDLER(ViewHostMsg_AllocTransportDIB, OnAllocTransportDIB)
     IPC_MESSAGE_HANDLER(ViewHostMsg_FreeTransportDIB, OnFreeTransportDIB)
@@ -865,19 +863,6 @@ void RenderMessageFilter::UpdateHostZoomLevelsOnUIThread(
     host_zoom_map_->SetTemporaryZoomLevel(
         render_process_id, render_view_id, zoom_level);
   }
-}
-
-void RenderMessageFilter::OnResolveProxy(const GURL& url,
-                                         IPC::Message* reply_msg) {
-  resolve_proxy_msg_helper_.Start(url, reply_msg);
-}
-
-void RenderMessageFilter::OnResolveProxyCompleted(
-    IPC::Message* reply_msg,
-    int result,
-    const std::string& proxy_list) {
-  ViewHostMsg_ResolveProxy::WriteReplyParams(reply_msg, result, proxy_list);
-  Send(reply_msg);
 }
 
 ChromeURLRequestContext* RenderMessageFilter::GetRequestContextForURL(

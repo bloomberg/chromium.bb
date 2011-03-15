@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -7,19 +7,30 @@
 #include "base/compiler_specific.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/net/url_request_context_getter.h"
+#include "content/common/child_process_messages.h"
 #include "net/base/net_errors.h"
 #include "net/url_request/url_request_context.h"
 
-ResolveProxyMsgHelper::ResolveProxyMsgHelper(Delegate* delegate,
-                                             net::ProxyService* proxy_service)
+ResolveProxyMsgHelper::ResolveProxyMsgHelper(net::ProxyService* proxy_service)
     : proxy_service_(NULL),
       ALLOW_THIS_IN_INITIALIZER_LIST(callback_(
           this, &ResolveProxyMsgHelper::OnResolveProxyCompleted)),
-      delegate_(delegate),
       proxy_service_override_(proxy_service) {
 }
 
-void ResolveProxyMsgHelper::Start(const GURL& url, IPC::Message* reply_msg) {
+bool ResolveProxyMsgHelper::OnMessageReceived(const IPC::Message& message,
+                                              bool* message_was_ok) {
+  bool handled = true;
+  IPC_BEGIN_MESSAGE_MAP_EX(ResolveProxyMsgHelper, message, *message_was_ok)
+    IPC_MESSAGE_HANDLER_DELAY_REPLY(ChildProcessHostMsg_ResolveProxy,
+                                    OnResolveProxy)
+    IPC_MESSAGE_UNHANDLED(handled = false)
+  IPC_END_MESSAGE_MAP()
+  return handled;
+}
+
+void ResolveProxyMsgHelper::OnResolveProxy(const GURL& url,
+                                           IPC::Message* reply_msg) {
   // Enqueue the pending request.
   pending_requests_.push_back(PendingRequest(url, reply_msg));
 
@@ -31,11 +42,10 @@ void ResolveProxyMsgHelper::Start(const GURL& url, IPC::Message* reply_msg) {
 void ResolveProxyMsgHelper::OnResolveProxyCompleted(int result) {
   CHECK(!pending_requests_.empty());
 
-  // Notify the delegate of completion.
   const PendingRequest& completed_req = pending_requests_.front();
-  delegate_->OnResolveProxyCompleted(completed_req.reply_msg,
-                                     result,
-                                     proxy_info_.ToPacString());
+  ChildProcessHostMsg_ResolveProxy::WriteReplyParams(
+      completed_req.reply_msg, result, proxy_info_.ToPacString());
+  Send(completed_req.reply_msg);
 
   // Clear the current (completed) request.
   pending_requests_.pop_front();

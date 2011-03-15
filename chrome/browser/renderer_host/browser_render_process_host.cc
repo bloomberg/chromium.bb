@@ -37,6 +37,7 @@
 #include "chrome/browser/history/history.h"
 #include "chrome/browser/io_thread.h"
 #include "chrome/browser/metrics/user_metrics.h"
+#include "chrome/browser/net/resolve_proxy_msg_helper.h"
 #include "chrome/browser/platform_util.h"
 #include "chrome/browser/printing/printing_message_filter.h"
 #include "chrome/browser/profiles/profile.h"
@@ -493,6 +494,8 @@ void BrowserRenderProcessHost::CreateMessageFilters() {
 
   if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kEnableP2PApi))
     channel_->AddFilter(new P2PSocketsHost());
+
+  channel_->AddFilter(new ResolveProxyMsgHelper(NULL));
 }
 
 int BrowserRenderProcessHost::GetNextRoutingID() {

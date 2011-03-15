@@ -15,7 +15,6 @@
 
 #include "base/basictypes.h"
 #include "base/ref_counted.h"
-#include "chrome/browser/net/resolve_proxy_msg_helper.h"
 #include "content/browser/browser_child_process_host.h"
 #include "ui/gfx/native_widget_types.h"
 #include "webkit/plugins/npapi/webplugininfo.h"
@@ -38,8 +37,7 @@ class GURL;
 // starting the plugin process when a plugin is created that doesn't already
 // have a process.  After that, most of the communication is directly between
 // the renderer and plugin processes.
-class PluginProcessHost : public BrowserChildProcessHost,
-                          public ResolveProxyMsgHelper::Delegate {
+class PluginProcessHost : public BrowserChildProcessHost {
  public:
   class Client {
    public:
@@ -70,11 +68,6 @@ class PluginProcessHost : public BrowserChildProcessHost,
   virtual void OnChannelConnected(int32 peer_pid);
   virtual void OnChannelError();
 
-  // ResolveProxyMsgHelper::Delegate implementation:
-  virtual void OnResolveProxyCompleted(IPC::Message* reply_msg,
-                                       int result,
-                                       const std::string& proxy_list);
-
   // Tells the plugin process to create a new channel for communication with a
   // renderer.  When the plugin process responds with the channel name,
   // OnChannelOpened in the client is called.
@@ -100,8 +93,6 @@ class PluginProcessHost : public BrowserChildProcessHost,
 #endif
 
  private:
-  friend class PluginResolveProxyHelper;
-
   // Sends a message to the plugin process to request creation of a new channel
   // for the given mime type.
   void RequestPluginChannel(Client* client);
@@ -109,7 +100,6 @@ class PluginProcessHost : public BrowserChildProcessHost,
   // Message handlers.
   void OnChannelCreated(const IPC::ChannelHandle& channel_handle);
   void OnGetPluginFinderUrl(std::string* plugin_finder_url);
-  void OnResolveProxy(const GURL& url, IPC::Message* reply_msg);
 
 #if defined(OS_WIN)
   void OnPluginWindowDestroyed(HWND window, HWND parent);
@@ -144,10 +134,6 @@ class PluginProcessHost : public BrowserChildProcessHost,
 
   // Information about the plugin.
   webkit::npapi::WebPluginInfo info_;
-
-  // Helper class for handling PluginProcessHost_ResolveProxy messages (manages
-  // the requests to the proxy service).
-  ResolveProxyMsgHelper resolve_proxy_msg_helper_;
 
 #if defined(OS_WIN)
   // Tracks plugin parent windows created on the UI thread.

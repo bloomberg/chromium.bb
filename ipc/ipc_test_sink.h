@@ -46,7 +46,7 @@ class Message;
 //
 //   IPC::Message* msg = test_sink.GetUniqueMessageMatching(IPC_REPLY_ID);
 //   ASSERT_TRUE(msg);
-//   TupleTypes<ViewHostMsg_Foo::ReplyParam>::ValueType reply_data;
+//   TupleTypes<ViewHostMsg_Foo::ReplyParam>::ValueTuple reply_data;
 //   EXPECT_TRUE(ViewHostMsg_Foo::ReadReplyParam(msg, &reply_data));
 //
 // You can also register to be notified when messages are posted to the sink.

@@ -15,6 +15,7 @@
 #include "base/process_util.h"
 #include "base/string_number_conversions.h"
 #include "base/string_util.h"
+#include "base/synchronization/waitable_event.h"
 #include "base/threading/thread.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/time.h"

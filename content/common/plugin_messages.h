@@ -92,16 +92,6 @@ IPC_MESSAGE_CONTROL1(PluginProcessHostMsg_ChannelCreated,
 IPC_SYNC_MESSAGE_CONTROL0_1(PluginProcessHostMsg_GetPluginFinderUrl,
                             std::string /* plugin finder URL */)
 
-IPC_MESSAGE_CONTROL0(PluginProcessHostMsg_ShutdownRequest)
-
-// Get the list of proxies to use for |url|, as a semicolon delimited list
-// of "<TYPE> <HOST>:<PORT>" | "DIRECT". See also ViewHostMsg_ResolveProxy
-// which does the same thing.
-IPC_SYNC_MESSAGE_CONTROL1_2(PluginProcessHostMsg_ResolveProxy,
-                            GURL /* url */,
-                            int /* network error */,
-                            std::string /* proxy list */)
-
 #if defined(OS_WIN)
 // Destroys the given window's parent on the UI thread.
 IPC_MESSAGE_CONTROL2(PluginProcessHostMsg_PluginWindowDestroyed,

@@ -1938,14 +1938,6 @@ IPC_SYNC_MESSAGE_ROUTED1_1(ViewHostMsg_GetRootWindowRect,
                            gfx::NativeViewId /* window */,
                            gfx::Rect /* Out: Window location */)
 
-// Get the list of proxies to use for |url|, as a semicolon delimited list
-// of "<TYPE> <HOST>:<PORT>" | "DIRECT". See also
-// PluginProcessHostMsg_ResolveProxy which does the same thing.
-IPC_SYNC_MESSAGE_CONTROL1_2(ViewHostMsg_ResolveProxy,
-                            GURL /* url */,
-                            int /* network error */,
-                            std::string /* proxy list */)
-
 // Request that got sent to browser for creating an audio output stream
 IPC_MESSAGE_ROUTED3(ViewHostMsg_CreateAudioStream,
                     int /* stream_id */,

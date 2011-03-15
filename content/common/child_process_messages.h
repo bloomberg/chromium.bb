@@ -5,6 +5,7 @@
 // Common IPC messages used for child processes.
 // Multiply-included message file, hence no include guard.
 
+#include "googleurl/src/gurl.h"
 #include "ipc/ipc_message_macros.h"
 
 #define IPC_MESSAGE_START ChildProcessMsgStart
@@ -27,3 +28,10 @@ IPC_MESSAGE_CONTROL1(ChildProcessMsg_SetIPCLoggingEnabled,
 // Messages sent from the child process to the browser.
 
 IPC_MESSAGE_CONTROL0(ChildProcessHostMsg_ShutdownRequest)
+
+// Get the list of proxies to use for |url|, as a semicolon delimited list
+// of "<TYPE> <HOST>:<PORT>" | "DIRECT".
+IPC_SYNC_MESSAGE_CONTROL1_2(ChildProcessHostMsg_ResolveProxy,
+                            GURL /* url */,
+                            int /* network error */,
+                            std::string /* proxy list */)

@@ -20,7 +20,6 @@
 #include "base/string16.h"
 #include "base/task.h"
 #include "build/build_config.h"
-#include "chrome/browser/net/resolve_proxy_msg_helper.h"
 #include "chrome/common/content_settings.h"
 #include "content/browser/browser_message_filter.h"
 #include "content/browser/in_process_webkit/webkit_context.h"
@@ -56,8 +55,7 @@ class CookieStore;
 
 // This class filters out incoming IPC messages for the renderer process on the
 // IPC thread.
-class RenderMessageFilter : public BrowserMessageFilter,
-                            public ResolveProxyMsgHelper::Delegate {
+class RenderMessageFilter : public BrowserMessageFilter {
  public:
   // Create the filter.
   RenderMessageFilter(int render_process_id,
@@ -215,11 +213,6 @@ class RenderMessageFilter : public BrowserMessageFilter,
 
   void OnResolveProxy(const GURL& url, IPC::Message* reply_msg);
 
-  // ResolveProxyMsgHelper::Delegate implementation:
-  virtual void OnResolveProxyCompleted(IPC::Message* reply_msg,
-                                       int result,
-                                       const std::string& proxy_list);
-
   // Browser side transport DIB allocation
   void OnAllocTransportDIB(size_t size,
                            bool cache_in_browser,
@@ -296,10 +289,6 @@ class RenderMessageFilter : public BrowserMessageFilter,
   // The host content settings map. Stored separately from the profile so we can
   // access it on other threads.
   HostContentSettingsMap* content_settings_;
-
-  // Helper class for handling PluginProcessHost_ResolveProxy messages (manages
-  // the requests to the proxy service).
-  ResolveProxyMsgHelper resolve_proxy_msg_helper_;
 
   // Contextual information to be used for requests created here.
   scoped_refptr<URLRequestContextGetter> request_context_;
