@@ -972,9 +972,11 @@ ListValue* InternetOptionsHandler::GetWirelessList() {
         chromeos::NetworkMenu::IconForNetworkStrength(*it, true);
     const SkBitmap* badge =
         chromeos::NetworkMenu::BadgeForNetworkTechnology(*it);
+    const SkBitmap* roaming_badge =
+        chromeos::NetworkMenu::BadgeForRoamingStatus(*it);
     list->Append(GetNetwork(
         (*it)->service_path(),
-        chromeos::NetworkMenu::IconForDisplay(icon, badge),
+        chromeos::NetworkMenu::IconForDisplay(icon, badge, roaming_badge),
         (*it)->name(),
         (*it)->connecting(),
         (*it)->connected(),

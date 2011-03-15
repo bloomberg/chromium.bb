@@ -141,10 +141,22 @@ class NetworkMenu : public views::ViewMenuDelegate,
   // Returns NULL if not badge is needed.
   static const SkBitmap* BadgeForNetworkTechnology(
       const CellularNetwork* cellular);
+  // Returns the Badge for a given network roaming status.
+  // This returns "R" badge if network is in roaming state, otherwise
+  // returns NULL. Badge is supposed to be shown on top right of the icon.
+  static const SkBitmap* BadgeForRoamingStatus(const CellularNetwork* cellular);
   // This method will convert the |icon| bitmap to the correct size for display.
   // |icon| must be non-NULL.
   // If the |badge| icon is not NULL, it will draw that on top of the icon.
   static SkBitmap IconForDisplay(const SkBitmap* icon, const SkBitmap* badge);
+
+  // This method will convert the |icon| bitmap to the correct size for display.
+  // |icon| must be non-NULL.
+  // If one of the |bottom_right_badge| or |top_left_badge| icons are not NULL,
+  // they will be drawn on top of the icon.
+  static SkBitmap IconForDisplay(const SkBitmap* icon,
+                                 const SkBitmap* bottom_right_badge,
+                                 const SkBitmap* top_left_badge);
 
  protected:
   virtual bool IsBrowserMode() const = 0;

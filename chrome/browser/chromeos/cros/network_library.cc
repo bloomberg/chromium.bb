@@ -2815,6 +2815,7 @@ class NetworkLibraryImpl : public NetworkLibrary  {
     cellular1->set_payment_url(std::string("http://www.google.com"));
     cellular1->set_usage_url(std::string("http://www.google.com"));
     cellular1->set_network_technology(NETWORK_TECHNOLOGY_EVDO);
+    cellular1->set_roaming_state(ROAMING_STATE_ROAMING);
 
     CellularDataPlan* base_plan = new CellularDataPlan();
     base_plan->plan_name = "Base plan";

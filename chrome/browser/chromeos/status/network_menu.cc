@@ -483,19 +483,42 @@ const SkBitmap* NetworkMenu::BadgeForNetworkTechnology(
 }
 
 // static
+const SkBitmap* NetworkMenu::BadgeForRoamingStatus(
+    const CellularNetwork* cellular) {
+  // TODO(nkostylev): Return "R" badge, http://crosbug.com/12010.
+  if (cellular->roaming_state() == ROAMING_STATE_ROAMING)
+    return NULL;
+  else
+    return NULL;
+}
+
+// static
 SkBitmap NetworkMenu::IconForDisplay(const SkBitmap* icon,
                                      const SkBitmap* badge) {
+  return IconForDisplay(icon, badge, NULL);
+}
+
+// static
+SkBitmap NetworkMenu::IconForDisplay(const SkBitmap* icon,
+                                     const SkBitmap* bottom_right_badge,
+                                     const SkBitmap* top_left_badge) {
   DCHECK(icon);
-  if (badge == NULL)
+  if (bottom_right_badge == NULL && top_left_badge == NULL)
     return *icon;
 
-  // Draw badge at (14,14).
-  static const int kBadgeX = 14;
-  static const int kBadgeY = 14;
+  static const int kTopLeftBadgeX = 0;
+  static const int kTopLeftBadgeY = 0;
+  static const int kBottomRightBadgeX = 14;
+  static const int kBottomRightBadgeY = 14;
 
   gfx::CanvasSkia canvas(icon->width(), icon->height(), false);
   canvas.DrawBitmapInt(*icon, 0, 0);
-  canvas.DrawBitmapInt(*badge, kBadgeX, kBadgeY);
+  if (bottom_right_badge != NULL)
+    canvas.DrawBitmapInt(*bottom_right_badge,
+                         kBottomRightBadgeX,
+                         kBottomRightBadgeY);
+  if (top_left_badge != NULL)
+    canvas.DrawBitmapInt(*top_left_badge, kTopLeftBadgeX, kTopLeftBadgeY);
   return canvas.ExtractBitmap();
 }
 
@@ -656,6 +679,7 @@ void NetworkMenu::InitMenuItems() {
 
       const SkBitmap* icon = IconForNetworkStrength(cell_networks[i], true);
       const SkBitmap* badge = BadgeForNetworkTechnology(cell_networks[i]);
+      const SkBitmap* roaming_badge = BadgeForRoamingStatus(cell_networks[i]);
       int flag = FLAG_CELLULAR;
       if (!cell_networks[i]->connectable())
         flag |= FLAG_DISABLED;
@@ -666,7 +690,7 @@ void NetworkMenu::InitMenuItems() {
         flag |= FLAG_ASSOCIATED;
       menu_items_.push_back(
           MenuItem(ui::MenuModel::TYPE_COMMAND, label,
-                   IconForDisplay(icon, badge),
+                   IconForDisplay(icon, badge, roaming_badge),
                    cell_networks[i]->service_path(), flag));
       if (isActive) {
         label.clear();
