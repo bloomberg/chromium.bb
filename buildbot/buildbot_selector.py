@@ -9,6 +9,7 @@ import sys
 
 
 BOT_ASSIGNMENT = {
+    # Buildbots.
     'xp-m32-n32-opt': 'buildbot\\buildbot_win.bat opt 32',
     'vista64-m64-n64-dbg': 'buildbot\\buildbot_win.bat dbg 64',
     'vista64-m64-n64-opt': 'buildbot\\buildbot_win.bat opt 64',
@@ -32,10 +33,27 @@ BOT_ASSIGNMENT = {
     'hardy64-marm-narm-opt': 'bash buildbot/buildbot_arm.sh opt',
     'arm-marm-narm-test-dbg': 'bash buildbot/buildbot_arm_hw.sh dbg',
     'arm-marm-narm-test-opt': 'bash buildbot/buildbot_arm_hw.sh opt',
+    'lucid64-pnacl1': 'bash buidlbot/buidlbot_linux.sh opt 64',
+    'lucid64-pnacl2': 'bash buidlbot/buidlbot_linux.sh opt 64',
 
-    # This is for the trybot, but lives here for the moment because a builder
-    # can only be marked Tester or Trybot, but not both.
+    # Trybots.
     'nacl-arm_hw_opt': 'bash buildbot/buildbot_arm_hw.sh opt',
+    'nacl-win32_opt': 'buildbot\\buildbot_win.bat opt 32',
+    'nacl-win64_dbg': 'buildbot\\buildbot_win.bat dbg 64',
+    'nacl-win64_opt': 'buildbot\\buildbot_win.bat opt 64',
+    'nacl-mac10.5_opt': 'bash buildbot/buildbot_mac.sh opt',
+    'nacl-mac_opt': 'bash buildbot/buildbot_mac.sh opt',
+    'nacl-hardy32_m32_n32_opt': 'bash buildbot/buildbot_linux.sh opt 32',
+    'nacl-lucid32_m32_n32_dbg': 'bash buildbot/buildbot_linux.sh dbg 32',
+    'nacl-lucid32_m32_n32_opt': 'bash buildbot/buildbot_linux.sh opt 32',
+    'nacl-hardy64_m32_n32_opt': 'bash buildbot/buildbot_linux.sh opt 32',
+    'nacl-lucid64_m32_n32_opt': 'bash buildbot/buildbot_linux.sh opt 32',
+    'nacl-hardy64_m64_n64_opt': 'bash buildbot/buildbot_linux.sh opt 64',
+    'nacl-lucid64_m64_n64_dbg': 'bash buildbot/buildbot_linux.sh dbg 64',
+    'nacl-lucid64_m64_n64_opt': 'bash buildbot/buildbot_linux.sh opt 64',
+    'nacl-arm_opt': 'bash buildbot/buildbot_arm.sh opt',
+    'nacl-lucid64-pnacl1': 'bash buildbot/buildbot_linux.sh opt 64',
+    'nacl-lucid64-pnacl2': 'bash buildbot/buildbot_linux.sh opt 64',
 }
 
 
