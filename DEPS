@@ -38,7 +38,7 @@ deps = {
     (Var("googlecode_url") % "googlemock") + "/trunk@359",
 
   "src/third_party/angle":
-    (Var("googlecode_url") % "angleproject") + "/trunk@567",
+    (Var("googlecode_url") % "angleproject") + "/trunk@571",
 
   # Note that this is *not* where we check out WebKit -- this just
   # puts some extra files into place for the real WebKit checkout to

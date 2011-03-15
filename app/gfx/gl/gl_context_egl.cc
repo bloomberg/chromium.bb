@@ -4,22 +4,14 @@
 
 #include "app/gfx/gl/gl_context_egl.h"
 
-#include "base/file_path.h"
-#include "base/logging.h"
-#include "base/native_library.h"
-#include "base/path_service.h"
-#include "base/scoped_ptr.h"
 #include "build/build_config.h"
+#include "base/logging.h"
+#include "base/scoped_ptr.h"
 #include "third_party/angle/include/EGL/egl.h"
 
 // This header must come after the above third-party include, as
 // it brings in #defines that cause conflicts.
 #include "app/gfx/gl/gl_bindings.h"
-
-#if defined(OS_WIN)
-#include <d3d11.h>
-#include <d3dcompiler.h>
-#endif
 
 #if defined(OS_LINUX)
 extern "C" {
@@ -98,18 +90,6 @@ bool BaseEGLContext::InitializeOneOff() {
 #else
   EGLNativeDisplayType native_display = EGL_DEFAULT_DISPLAY;
 #endif
-
-#if defined(OS_WIN)
-  FilePath module_path;
-  if (!PathService::Get(base::DIR_MODULE, &module_path))
-    return false;
-
-  if (!base::LoadNativeLibrary(module_path.Append(D3DCOMPILER_DLL))) {
-    LOG(ERROR) << "Could not load " << D3DCOMPILER_DLL;
-    return false;
-  }
-#endif
-
   g_display = eglGetDisplay(native_display);
   if (!g_display) {
     LOG(ERROR) << "eglGetDisplay failed with error " << GetLastEGLErrorString();
