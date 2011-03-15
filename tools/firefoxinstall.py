@@ -351,6 +351,13 @@ def Restore(args):
     RemoveFilesOrDirs(tmp_dir, files_to_copy)
 
 
+def Remove(args):
+  plugin_dir = GetPluginDir(args)
+  if os.path.exists(plugin_dir):
+    files_to_remove = GetFilesToCopy(plugin_dir)
+    RemoveFilesOrDirs(plugin_dir, files_to_remove)
+
+
 def main(argv):
   args, files = ParseArgv(argv)
   if args is None:
@@ -365,8 +372,12 @@ def main(argv):
     Restore(args)
     return 0
 
+  if args['MODE'] == 'REMOVE':
+    Remove(args)
+    return 0
+
   if args['MODE'] != 'INSTALL':
-    FatalError('Error: MODE must be one of BACKUP, RESTORE, INSTALL')
+    FatalError('Error: MODE must be one of BACKUP, RESTORE, REMOVE, INSTALL')
     return -1
 
   use_sandbox = int(args.get('USE_SANDBOX', '0'))

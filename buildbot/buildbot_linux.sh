@@ -64,9 +64,12 @@ echo @@@BUILD_STEP large_tests@@@
     --mode=${MODE}-linux,nacl,doc large_tests platform=x86-${BITS} || \
     (RETCODE=$? && echo @@@BUILD_FAILED@@@)
 
-echo @@@BUILD_STEP start_vncserver@@@
+echo @@@BUILD_STEP begin_browser_testing@@@
 vncserver -kill :20 || true
 sleep 2 ; vncserver :20 -geometry 1500x1000 -depth 24 ; sleep 10
+./scons DOXYGEN=../third_party/doxygen/linux/doxygen -k --verbose \
+    --mode=${MODE}-linux,nacl,doc SILENT=1 platform=x86-${BITS} \
+    firefox_remove
 
 echo @@@BUILD_STEP chrome_browser_tests@@@
 DISPLAY=localhost:20 XAUTHORITY=/home/chrome-bot/.Xauthority \
@@ -74,11 +77,6 @@ DISPLAY=localhost:20 XAUTHORITY=/home/chrome-bot/.Xauthority \
     --mode=${MODE}-linux,nacl,doc SILENT=1 platform=x86-${BITS} \
     chrome_browser_tests || \
     (RETCODE=$? && echo @@@BUILD_FAILED@@@)
-
-echo @@@BUILD_STEP backup_plugin@@@
-./scons DOXYGEN=../third_party/doxygen/linux/doxygen -k --verbose \
-    --mode=${MODE}-linux,nacl,doc SILENT=1 platform=x86-${BITS} \
-    firefox_install_backup
 
 echo @@@BUILD_STEP install_plugin@@@
 ./scons DOXYGEN=../third_party/doxygen/linux/doxygen -k --verbose \
@@ -91,12 +89,10 @@ DISPLAY=localhost:20 XAUTHORITY=/home/chrome-bot/.Xauthority \
     browser_tests || \
     (RETCODE=$? && echo @@@BUILD_FAILED@@@)
 
-echo @@@BUILD_STEP restore_plugin@@@
+echo @@@BUILD_STEP end_browser_testing@@@
+vncserver -kill :20
 ./scons DOXYGEN=../third_party/doxygen/linux/doxygen -k --verbose \
     --mode=${MODE}-linux,nacl,doc SILENT=1 platform=x86-${BITS} \
-    firefox_install_restore
-
-echo @@@BUILD_STEP stop_vncserver@@@
-vncserver -kill :20
+    firefox_remove
 
 exit ${RETCODE}

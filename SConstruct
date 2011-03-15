@@ -800,6 +800,12 @@ n = pre_base_env.Alias(target='firefox_install_backup',
 AlwaysBuild(n)
 
 
+n = pre_base_env.Alias(target='firefox_remove',
+                       source=[],
+                       action=' '.join(INSTALL_COMMAND + ['MODE=REMOVE']))
+AlwaysBuild(n)
+
+
 # ----------------------------------------------------------
 def HasSuffix(item, suffix):
   if isinstance(item, str):
