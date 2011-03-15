@@ -1,28 +1,5 @@
-/*
- * TODO(xiyuan): Remove the section overrides when options_page.css uses the
- * new style.
- */
-#inetTitle {
+#detailsInternetTitle {
   border: none;
-}
-
-#internetPage > section > h3 {
-  font-size: 100%;
-  width: auto;
-}
-
-#internetPage > section[hidden] {
-  display: none;
-}
-
-#networkingControls {
-  display: -webkit-box;
-  -webkit-margin-start: 10px;
-}
-
-.networks {
-  -webkit-margin-start: 15px;
-  padding: 2px;
 }
 
 .network-password {
@@ -88,7 +65,6 @@
 html[dir='rtl'] .network-item-text {
   background: right center no-repeat;
 }
-
 
 .network-item[connected] > * > .network-name-label {
   font-weight: bold;

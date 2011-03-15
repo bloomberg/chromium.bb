@@ -273,10 +273,12 @@ cr.define('options', function() {
     }
     if (data.connected) {
       page.setAttribute('connected', data.connected);
-      $('inetTitle').textContent = localStrings.getString('inetStatus');
+      $('detailsInternetTitle').textContent =
+          localStrings.getString('inetStatus');
     } else {
       page.removeAttribute('connected');
-      $('inetTitle').textContent = localStrings.getString('inetConnect');
+      $('detailsInternetTitle').textContent =
+          localStrings.getString('inetConnect');
       $('detailsInternetLogin').classList.remove('hidden');
     }
     $('connectionState').textContent = data.connectionState;
