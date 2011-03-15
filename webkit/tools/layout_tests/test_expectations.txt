@@ -4,29 +4,3 @@
 //
 // Only add expectations here to temporarily suppress messages on the bots
 // until the changes can be landed upstream.
-
-// Skip an overly restrictive cross-origin HTTPS test
-BUGCR69594 SKIP : http/tests/appcache/different-https-origin-resource-main.html = FAIL
-
-BUGV8_1203 DEBUG : fast/canvas/webgl/gl-get-calls.html = PASS CRASH
-
-// WebKit fix is at r79797, but since we had to revert the WebKit roll adding the failing expectation back.
-BUGJAMESR : fast/filesystem/op-get-entry.html = PASS TEXT
-
-// Need a rebaseline.
-BUG_ANTONM MAC : http/tests/security/xss-DENIED-xml-external-entity.xhtml = TEXT
-BUG_ANTONM MAC : http/tests/security/xss-DENIED-xsl-external-entity.xml = TEXT
-
-// Skip these tests until the test_expecitations can be updated after this Chromium patch lands.
-BUGWK44797 SKIP : fullscreen = PASS FAIL TIMEOUT
-
-// Until new baselines land in WebKit.
-BUG_MMALY : fast/js/mozilla/strict/15.5.5.1.html = PASS TEXT
-
-// v8 roll to 3.2.1.1
-BUGCR75875 DEBUG : fast/canvas/webgl/uninitialized-test.html = TIMEOUT
-
-// are failing after roll 80582 -> 80608
-BUG_LOISLO MAC : fast/text/justify-ideograph-vertical.html = IMAGE
-
-BUG_LOISLO MAC DEBUG : fast/text/font-size-zero.html = TEXT
