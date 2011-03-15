@@ -188,6 +188,17 @@
    ...
    fun:-[NSPopUpButtonCell _drawIndicatorWithFrame:inView:]
 }
+{
+   # Capturer on Mac uses OpenGL driver, which triggers several warnings.
+   # The check has to be quite generic, as different hardware graphics cards
+   # will cause different sets of warnings.
+   bug_75037
+   Memcheck:Cond
+   ...
+   fun:gl*
+   ...
+   fun:_ZN8remoting11CapturerMac*
+}
 
 # 2. Intentional unit test errors, stuff that is somehow a false positive
 # in our own code, or stuff that is so trivial it's not worth fixing.
@@ -647,53 +658,6 @@
    fun:CGContextFillRect
    fun:NSRectFill
    fun:_ZN18FocusIndicationFix40currentOSHasSetFocusRingStyleInBitmapBugEv
-}
-{
-   bug_49250_a
-   Memcheck:Cond
-   fun:gleUpdateFogData
-   fun:gleUpdateState
-   fun:_ZN8remoting11CapturerMac12CaptureRectsERKSt6vectorIN3gfx4RectESaIS3_EEP14CallbackRunnerI6Tuple1I13scoped_refptrINS_8Capturer11CaptureDataEEEE
-   fun:_ZN8remoting8Capturer19CaptureInvalidRectsEP14CallbackRunnerI6Tuple1I13scoped_refptrINS0_11CaptureDataEEEE
-   fun:_ZN8remoting28CapturerMacTest_Capture_Test8TestBodyEv
-}
-{
-   bug_49250_b
-   Memcheck:Cond
-   fun:gleUpdateFogData
-   fun:gleUpdateState
-   fun:_ZN8remoting11CapturerMac12CaptureRectsERKSt6vectorIN3gfx4RectESaIS3_EEP14CallbackRunnerI6Tuple1I13scoped_refptrINS_8Capturer11CaptureDataEEEE
-   fun:_ZN8remoting8Capturer19CaptureInvalidRectsEP14CallbackRunnerI6Tuple1I13scoped_refptrINS0_11CaptureDataEEEE
-   fun:_ZN8remoting28CapturerMacTest_Capture_Test8TestBodyEv
-}
-{
-   bug_49250_c
-   Memcheck:Cond
-   fun:gleUpdateFogData
-   fun:gleUpdateState
-   fun:_ZN8remoting11CapturerMac12CaptureRectsERKSt3setIN3gfx4RectESt4lessIS3_ESaIS3_EEP14CallbackRunnerI6Tuple1I13scoped_refptrINS_11CaptureDataEEEE
-   fun:_ZN8remoting8Capturer19CaptureInvalidRectsEP14CallbackRunnerI6Tuple1I13scoped_refptrINS_11CaptureDataEEEE
-   fun:_ZN8remoting28CapturerMacTest_Capture_Test8TestBodyEv
-}
-{
-   bug_49250_d
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_ZN8remoting12TraceContext3GetEv
-   fun:_ZN8remoting12TraceContext6tracerEv
-   fun:_ZN8remoting8Capturer19CaptureInvalidRectsEP14CallbackRunnerI6Tuple1I13scoped_refptrINS_11CaptureDataEEEE
-   fun:_ZN8remoting28CapturerMacTest_Capture_Test8TestBodyEv
-}
-{
-   bug_49250_e
-   Memcheck:Cond
-   ...
-   fun:gleUpdateState
-   fun:gleInitializeContext
-   fun:gliCreateContext
-   fun:CGLRestoreDispatchFunction
-   fun:CGLCreateContext
-   fun:_ZN8remoting11CapturerMac26ScreenConfigurationChangedEv
 }
 {
    bug_50286
