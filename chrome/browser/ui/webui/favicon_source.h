@@ -34,7 +34,7 @@ class FavIconSource : public ChromeURLDataManager::DataSource {
 
  private:
   // Called when favicon data is available from the history backend.
-  void OnFavIconDataAvailable(FaviconService::Handle request_handle,
+  void OnFaviconDataAvailable(FaviconService::Handle request_handle,
                               bool know_favicon,
                               scoped_refptr<RefCountedMemory> data,
                               bool expired,

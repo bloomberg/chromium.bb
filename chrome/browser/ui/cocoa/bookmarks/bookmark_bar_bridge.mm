@@ -62,9 +62,9 @@ void BookmarkBarBridge::BookmarkNodeChanged(BookmarkModel* model,
   [controller_ nodeChanged:model node:node];
 }
 
-void BookmarkBarBridge::BookmarkNodeFavIconLoaded(BookmarkModel* model,
+void BookmarkBarBridge::BookmarkNodeFaviconLoaded(BookmarkModel* model,
                                                   const BookmarkNode* node) {
-  [controller_ nodeFavIconLoaded:model node:node];
+  [controller_ nodeFaviconLoaded:model node:node];
 }
 
 void BookmarkBarBridge::BookmarkNodeChildrenReordered(

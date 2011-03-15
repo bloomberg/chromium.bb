@@ -355,7 +355,7 @@ TEST_F(BookmarkMenuBridgeTest, TestAddNodeToOther) {
   EXPECT_NSEQ(@"http://foo/", [[[other submenu] itemAtIndex:0] title]);
 }
 
-TEST_F(BookmarkMenuBridgeTest, TestFavIconLoading) {
+TEST_F(BookmarkMenuBridgeTest, TestFaviconLoading) {
   NSMenu* menu = bridge_->menu_;
 
   BookmarkModel* model = bridge_->GetBookmarkModel();
@@ -369,7 +369,7 @@ TEST_F(BookmarkMenuBridgeTest, TestFavIconLoading) {
   NSMenuItem* item = [menu itemWithTitle:@"Test Item"];
   EXPECT_TRUE([item image]);
   [item setImage:nil];
-  bridge_->BookmarkNodeFavIconLoaded(model, node);
+  bridge_->BookmarkNodeFaviconLoaded(model, node);
   EXPECT_TRUE([item image]);
 }
 

@@ -51,7 +51,7 @@ class ModelEntry {
 
   SkBitmap GetIcon() {
     if (load_state_ == NOT_LOADED)
-      LoadFavIcon();
+      LoadFavicon();
     if (!favicon_.isNull())
       return favicon_;
     return *default_icon;
@@ -72,7 +72,7 @@ class ModelEntry {
     LOADED
   };
 
-  void LoadFavIcon() {
+  void LoadFavicon() {
     load_state_ = LOADED;
     FaviconService* favicon_service =
         model_->template_url_model()->profile()->GetFaviconService(
@@ -93,10 +93,10 @@ class ModelEntry {
     load_state_ = LOADING;
     favicon_service->GetFavicon(favicon_url,
                    &request_consumer_,
-                   NewCallback(this, &ModelEntry::OnFavIconDataAvailable));
+                   NewCallback(this, &ModelEntry::OnFaviconDataAvailable));
   }
 
-  void OnFavIconDataAvailable(
+  void OnFaviconDataAvailable(
       FaviconService::Handle handle,
       bool know_favicon,
       scoped_refptr<RefCountedMemory> data,

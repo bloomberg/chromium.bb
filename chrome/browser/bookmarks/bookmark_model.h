@@ -347,7 +347,7 @@ class BookmarkModel : public NotificationObserver, public BookmarkService {
   bool IsBookmarkedNoLock(const GURL& url);
 
   // Overriden to notify the observer the favicon has been loaded.
-  void FavIconLoaded(const BookmarkNode* node);
+  void FaviconLoaded(const BookmarkNode* node);
 
   // Removes the node from internal maps and recurses through all children. If
   // the node is a url, its url is added to removed_urls.
@@ -392,7 +392,7 @@ class BookmarkModel : public NotificationObserver, public BookmarkService {
 
   // Notification that a favicon has finished loading. If we can decode the
   // favicon, FaviconLoaded is invoked.
-  void OnFavIconDataAvailable(
+  void OnFaviconDataAvailable(
       FaviconService::Handle handle,
       bool know_favicon,
       scoped_refptr<RefCountedMemory> data,
@@ -401,10 +401,10 @@ class BookmarkModel : public NotificationObserver, public BookmarkService {
 
   // Invoked from the node to load the favicon. Requests the favicon from the
   // favicon service.
-  void LoadFavIcon(BookmarkNode* node);
+  void LoadFavicon(BookmarkNode* node);
 
   // If we're waiting on a favicon for node, the load request is canceled.
-  void CancelPendingFavIconLoadRequests(BookmarkNode* node);
+  void CancelPendingFaviconLoadRequests(BookmarkNode* node);
 
   // NotificationObserver.
   virtual void Observe(NotificationType type,

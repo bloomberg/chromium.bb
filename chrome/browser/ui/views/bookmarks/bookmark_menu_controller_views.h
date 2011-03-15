@@ -119,7 +119,7 @@ class BookmarkMenuController : public BaseBookmarkModelObserver,
 
   // BookmarkModelObserver methods.
   virtual void BookmarkModelChanged();
-  virtual void BookmarkNodeFavIconLoaded(BookmarkModel* model,
+  virtual void BookmarkNodeFaviconLoaded(BookmarkModel* model,
                                          const BookmarkNode* node);
 
   // BookmarkContextMenu::Observer methods.

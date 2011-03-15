@@ -927,7 +927,7 @@ TEST_F(BookmarkBarControllerTest, DeleteBookmark) {
   EXPECT_EQ(parent->GetChild(1)->GetURL(), GURL(urls[2]));
 }
 
-// TODO(jrg): write a test to confirm that nodeFavIconLoaded calls
+// TODO(jrg): write a test to confirm that nodeFaviconLoaded calls
 // checkForBookmarkButtonGrowth:.
 
 TEST_F(BookmarkBarControllerTest, Cell) {

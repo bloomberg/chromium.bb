@@ -127,7 +127,7 @@ private:
 - (void)addSubviewToPermanentList:(NSView*)aView;
 - (void)regenerateSubviewList;
 - (NSInteger)indexForContentsView:(NSView*)view;
-- (void)updateFavIconForContents:(TabContents*)contents
+- (void)updateFaviconForContents:(TabContents*)contents
                          atIndex:(NSInteger)modelIndex;
 - (void)layoutTabsWithAnimation:(BOOL)animate
              regenerateSubviews:(BOOL)doUpdate;
@@ -304,7 +304,7 @@ private:
     permanentSubviews_.reset([[NSMutableArray alloc] init]);
 
     ResourceBundle& rb = ResourceBundle::GetSharedInstance();
-    defaultFavIcon_.reset([rb.GetNativeImageNamed(IDR_DEFAULT_FAVICON) retain]);
+    defaultFavicon_.reset([rb.GetNativeImageNamed(IDR_DEFAULT_FAVICON) retain]);
 
     [self setIndentForControls:[[self class] defaultIndentForControls]];
 
@@ -1021,7 +1021,7 @@ private:
   // dragging a tab out into a new window, we have to put the tab's favicon
   // into the right state up front as we won't be told to do it from anywhere
   // else.
-  [self updateFavIconForContents:contents->tab_contents() atIndex:modelIndex];
+  [self updateFaviconForContents:contents->tab_contents() atIndex:modelIndex];
 
   // Send a broadcast that the number of tabs have changed.
   [[NSNotificationCenter defaultCenter]
@@ -1231,7 +1231,7 @@ private:
   // Either we don't have a valid favicon or there was some issue converting it
   // from an SkBitmap. Either way, just show the default.
   if (!image)
-    image = defaultFavIcon_.get();
+    image = defaultFavicon_.get();
   NSRect frame = NSMakeRect(0, 0, kIconWidthAndHeight, kIconWidthAndHeight);
   NSImageView* view = [[[NSImageView alloc] initWithFrame:frame] autorelease];
   [view setImage:image];
@@ -1240,7 +1240,7 @@ private:
 
 // Updates the current loading state, replacing the icon view with a favicon,
 // a throbber, the default icon, or nothing at all.
-- (void)updateFavIconForContents:(TabContents*)contents
+- (void)updateFaviconForContents:(TabContents*)contents
                          atIndex:(NSInteger)modelIndex {
   if (!contents)
     return;
@@ -1332,7 +1332,7 @@ private:
   if (change != TabStripModelObserver::LOADING_ONLY)
     [self setTabTitle:tabController withContents:contents->tab_contents()];
 
-  [self updateFavIconForContents:contents->tab_contents() atIndex:modelIndex];
+  [self updateFaviconForContents:contents->tab_contents() atIndex:modelIndex];
 
   TabContentsController* updatedController =
       [tabContentsArray_ objectAtIndex:index];
@@ -1383,7 +1383,7 @@ private:
   [tabController setMini:tabStripModel_->IsMiniTab(modelIndex)];
   [tabController setPinned:tabStripModel_->IsTabPinned(modelIndex)];
   [tabController setApp:tabStripModel_->IsAppTab(modelIndex)];
-  [self updateFavIconForContents:contents->tab_contents() atIndex:modelIndex];
+  [self updateFaviconForContents:contents->tab_contents() atIndex:modelIndex];
   // If the tab is being restored and it's pinned, the mini state is set after
   // the tab has already been rendered, so re-layout the tabstrip. In all other
   // cases, the state is set before the tab is rendered so this isn't needed.

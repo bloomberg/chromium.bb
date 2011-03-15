@@ -350,7 +350,7 @@ class BookmarkBarView : public DetachableToolbarView,
   // Invoked when the favicon is available. If the node is a child of the
   // root node, the appropriate button is updated. If a menu is showing, the
   // call is forwarded to the menu to allow for it to update the icon.
-  virtual void BookmarkNodeFavIconLoaded(BookmarkModel* model,
+  virtual void BookmarkNodeFaviconLoaded(BookmarkModel* model,
                                          const BookmarkNode* node);
 
   // DragController method. Determines the node representing sender and invokes

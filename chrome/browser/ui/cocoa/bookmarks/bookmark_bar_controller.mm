@@ -1911,7 +1911,7 @@ static BOOL ValueInRangeInclusive(CGFloat low, CGFloat value, CGFloat high) {
 // this looks bad I may need to change widthForBookmarkButtonCell to
 // add space for an image even if not there on the assumption that
 // favicons will eventually load.
-- (void)nodeFavIconLoaded:(BookmarkModel*)model
+- (void)nodeFaviconLoaded:(BookmarkModel*)model
                      node:(const BookmarkNode*)node {
   for (BookmarkButton* button in buttons_.get()) {
     const BookmarkNode* cellnode = [button bookmarkNode];

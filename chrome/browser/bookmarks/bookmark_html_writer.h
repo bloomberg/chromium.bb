@@ -65,7 +65,7 @@ class BookmarkFaviconFetcher: public NotificationObserver {
 
   // Favicon fetch callback. After all favicons are fetched executes
   // html output on the file thread.
-  void OnFavIconDataAvailable(FaviconService::Handle handle,
+  void OnFaviconDataAvailable(FaviconService::Handle handle,
                               bool know_favicon,
                               scoped_refptr<RefCountedMemory> data,
                               bool expired,

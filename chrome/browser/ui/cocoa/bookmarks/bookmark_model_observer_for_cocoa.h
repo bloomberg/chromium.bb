@@ -66,7 +66,7 @@ class BookmarkModelObserverForCocoa : public BookmarkModelObserver {
                                  const BookmarkNode* parent,
                                  int index) {
   }
-  virtual void BookmarkNodeFavIconLoaded(BookmarkModel* model,
+  virtual void BookmarkNodeFaviconLoaded(BookmarkModel* model,
                                          const BookmarkNode* node) {
   }
   virtual void BookmarkNodeChildrenReordered(BookmarkModel* model,

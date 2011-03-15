@@ -45,7 +45,7 @@ class BookmarkModelObserver {
                                    const BookmarkNode* node) = 0;
 
   // Invoked when a favicon has finished loading.
-  virtual void BookmarkNodeFavIconLoaded(BookmarkModel* model,
+  virtual void BookmarkNodeFaviconLoaded(BookmarkModel* model,
                                          const BookmarkNode* node) = 0;
 
   // Invoked when the children (just direct children, not descendants) of

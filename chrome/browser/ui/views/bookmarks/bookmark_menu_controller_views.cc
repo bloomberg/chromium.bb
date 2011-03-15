@@ -282,7 +282,7 @@ void BookmarkMenuController::BookmarkModelChanged() {
   menu_->Cancel();
 }
 
-void BookmarkMenuController::BookmarkNodeFavIconLoaded(
+void BookmarkMenuController::BookmarkNodeFaviconLoaded(
     BookmarkModel* model, const BookmarkNode* node) {
   NodeToMenuIDMap::iterator menu_pair = node_to_menu_id_map_.find(node);
   if (menu_pair == node_to_menu_id_map_.end())

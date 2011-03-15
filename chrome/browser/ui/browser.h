@@ -298,7 +298,7 @@ class Browser : public TabHandlerDelegate,
   gfx::Rect GetSavedWindowBounds() const;
   bool GetSavedMaximizedState() const;
 
-  // Gets the FavIcon of the page in the selected tab.
+  // Gets the Favicon of the page in the selected tab.
   SkBitmap GetCurrentPageIcon() const;
 
   // Gets the title of the window based on the selected tab's title.

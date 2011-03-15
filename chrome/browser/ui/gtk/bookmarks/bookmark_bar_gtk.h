@@ -226,7 +226,7 @@ class BookmarkBarGtk : public ui::AnimationDelegate,
   virtual void BookmarkNodeChanged(BookmarkModel* model,
                                    const BookmarkNode* node);
   // Invoked when a favicon has finished loading.
-  virtual void BookmarkNodeFavIconLoaded(BookmarkModel* model,
+  virtual void BookmarkNodeFaviconLoaded(BookmarkModel* model,
                                          const BookmarkNode* node);
   virtual void BookmarkNodeChildrenReordered(BookmarkModel* model,
                                              const BookmarkNode* node);

@@ -360,7 +360,7 @@ willAnimateFromState:(bookmarks::VisualState)oldState
         newParent:(const BookmarkNode*)newParent newIndex:(int)newIndex;
 - (void)nodeRemoved:(BookmarkModel*)model
              parent:(const BookmarkNode*)oldParent index:(int)index;
-- (void)nodeFavIconLoaded:(BookmarkModel*)model
+- (void)nodeFaviconLoaded:(BookmarkModel*)model
                      node:(const BookmarkNode*)node;
 - (void)nodeChildrenReordered:(BookmarkModel*)model
                          node:(const BookmarkNode*)node;

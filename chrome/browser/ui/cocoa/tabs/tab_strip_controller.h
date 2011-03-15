@@ -132,7 +132,7 @@ class ToolbarModel;
   scoped_nsobject<NSMutableArray> permanentSubviews_;
 
   // The default favicon, so we can use one copy for all buttons.
-  scoped_nsobject<NSImage> defaultFavIcon_;
+  scoped_nsobject<NSImage> defaultFavicon_;
 
   // The amount by which to indent the tabs on the left (to make room for the
   // red/yellow/green buttons).

@@ -683,13 +683,13 @@ bool JumpList::StartLoadingFavIcon() {
     return false;
 
   // Ask FaviconService if it has a favicon of a URL.
-  // When FaviconService has one, it will call OnFavIconDataAvailable().
+  // When FaviconService has one, it will call OnFaviconDataAvailable().
   GURL url(icon_urls_.front().first);
   FaviconService* favicon_service =
       profile_->GetFaviconService(Profile::EXPLICIT_ACCESS);
   FaviconService::Handle handle = favicon_service->GetFaviconForURL(
       url, &favicon_consumer_,
-      NewCallback(this, &JumpList::OnFavIconDataAvailable));
+      NewCallback(this, &JumpList::OnFaviconDataAvailable));
   return true;
 }
 
@@ -707,7 +707,7 @@ void JumpList::OnSegmentUsageAvailable(
   //   The title of a PageUsageData object. If this string is empty, we use
   //   the URL as our "Most Visited" page does.
   // * icon
-  //   An empty string. This value is to be updated in OnFavIconDataAvailable().
+  //   An empty string. This value is to be updated in OnFaviconDataAvailable().
   most_visited_pages_.clear();
   for (std::vector<PageUsageData*>::const_iterator page = data->begin();
        page != data->end(); ++page) {
@@ -728,7 +728,7 @@ void JumpList::OnSegmentUsageAvailable(
   // * title
   //   The title of the last URL.
   // * icon
-  //   An empty string. This value is to be updated in OnFavIconDataAvailable().
+  //   An empty string. This value is to be updated in OnFaviconDataAvailable().
   // This code is copied from
   // RecentlyClosedTabsHandler::TabRestoreServiceChanged() to emulate it.
   const int kRecentlyClosedCount = 4;
@@ -751,7 +751,7 @@ void JumpList::OnSegmentUsageAvailable(
   StartLoadingFavIcon();
 }
 
-void JumpList::OnFavIconDataAvailable(
+void JumpList::OnFaviconDataAvailable(
     FaviconService::Handle handle,
     bool know_favicon,
     scoped_refptr<RefCountedMemory> data,

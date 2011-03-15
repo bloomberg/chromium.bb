@@ -34,12 +34,12 @@ void FavIconSource::StartDataRequest(const std::string& path,
       handle = favicon_service->GetFavicon(
           GURL(path.substr(8)),
           &cancelable_consumer_,
-          NewCallback(this, &FavIconSource::OnFavIconDataAvailable));
+          NewCallback(this, &FavIconSource::OnFaviconDataAvailable));
     } else {
       handle = favicon_service->GetFaviconForURL(
           GURL(path),
           &cancelable_consumer_,
-          NewCallback(this, &FavIconSource::OnFavIconDataAvailable));
+          NewCallback(this, &FavIconSource::OnFaviconDataAvailable));
     }
     // Attach the ChromeURLDataManager request ID to the history request.
     cancelable_consumer_.SetClientData(favicon_service, handle, request_id);
@@ -60,7 +60,7 @@ bool FavIconSource::ShouldReplaceExistingSource() const {
   return false;
 }
 
-void FavIconSource::OnFavIconDataAvailable(
+void FavIconSource::OnFaviconDataAvailable(
     FaviconService::Handle request_handle,
     bool know_favicon,
     scoped_refptr<RefCountedMemory> data,

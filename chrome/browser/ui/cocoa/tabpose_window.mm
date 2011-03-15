@@ -1071,10 +1071,10 @@ void AnimateCALayerOpacityFromTo(
   // Either we don't have a valid favicon or there was some issue converting
   // it from an SkBitmap. Either way, just show the default.
   if (!nsFavicon) {
-    NSImage* defaultFavIcon =
+    NSImage* defaultFavicon =
         ResourceBundle::GetSharedInstance().GetNativeImageNamed(
             IDR_DEFAULT_FAVICON);
-    nsFavicon = defaultFavIcon;
+    nsFavicon = defaultFavicon;
   }
   base::mac::ScopedCFTypeRef<CGImageRef> favicon(
       base::mac::CopyNSImageToCGImage(nsFavicon));

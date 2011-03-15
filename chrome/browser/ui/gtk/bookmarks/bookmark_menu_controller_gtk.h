@@ -50,7 +50,7 @@ class BookmarkMenuController : public BaseBookmarkModelObserver,
 
   // Overridden from BaseBookmarkModelObserver:
   virtual void BookmarkModelChanged();
-  virtual void BookmarkNodeFavIconLoaded(BookmarkModel* model,
+  virtual void BookmarkNodeFaviconLoaded(BookmarkModel* model,
                                          const BookmarkNode* node);
 
   // Overridden from BookmarkContextMenuController::Delegate:

@@ -1065,7 +1065,7 @@ void BookmarkBarView::BookmarkNodeChildrenReordered(BookmarkModel* model,
   SchedulePaint();
 }
 
-void BookmarkBarView::BookmarkNodeFavIconLoaded(BookmarkModel* model,
+void BookmarkBarView::BookmarkNodeFaviconLoaded(BookmarkModel* model,
                                                 const BookmarkNode* node) {
   BookmarkNodeChangedImpl(model, node);
 }

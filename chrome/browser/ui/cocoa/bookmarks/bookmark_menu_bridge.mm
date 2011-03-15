@@ -115,7 +115,7 @@ void BookmarkMenuBridge::BookmarkNodeChanged(BookmarkModel* model,
     ConfigureMenuItem(node, item, true);
 }
 
-void BookmarkMenuBridge::BookmarkNodeFavIconLoaded(BookmarkModel* model,
+void BookmarkMenuBridge::BookmarkNodeFaviconLoaded(BookmarkModel* model,
                                                    const BookmarkNode* node) {
   NSMenuItem* item = MenuItemForNode(node);
   if (item)

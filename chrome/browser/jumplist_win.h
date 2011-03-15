@@ -159,7 +159,7 @@ class JumpList : public TabRestoreServiceObserver {
   // a ShellLinkItem object.
   // When finishing loading all favicons, this function posts a task that
   // decompresses collected favicons and updates a JumpList.
-  void OnFavIconDataAvailable(HistoryService::Handle handle,
+  void OnFaviconDataAvailable(HistoryService::Handle handle,
                               bool know_favicon,
                               scoped_refptr<RefCountedMemory> data,
                               bool expired,

@@ -129,7 +129,7 @@ class BookmarkModelTest : public TestingBrowserProcessTest,
     reordered_count_++;
   }
 
-  virtual void BookmarkNodeFavIconLoaded(BookmarkModel* model,
+  virtual void BookmarkNodeFaviconLoaded(BookmarkModel* model,
                                          const BookmarkNode* node) {
     // We never attempt to load favicons, so that this method never
     // gets invoked.
@@ -743,7 +743,7 @@ class BookmarkModelTestWithProfile : public TestingBrowserProcessTest,
                                    const BookmarkNode* node) {}
   virtual void BookmarkNodeChildrenReordered(BookmarkModel* model,
                                              const BookmarkNode* node) {}
-  virtual void BookmarkNodeFavIconLoaded(BookmarkModel* model,
+  virtual void BookmarkNodeFaviconLoaded(BookmarkModel* model,
                                          const BookmarkNode* node) {}
 
   MessageLoopForUI message_loop_;

@@ -218,7 +218,7 @@ void ExtensionBookmarkEventRouter::BookmarkNodeChanged(
   DispatchEvent(model->profile(), keys::kOnBookmarkChanged, json_args);
 }
 
-void ExtensionBookmarkEventRouter::BookmarkNodeFavIconLoaded(
+void ExtensionBookmarkEventRouter::BookmarkNodeFaviconLoaded(
     BookmarkModel* model, const BookmarkNode* node) {
   // TODO(erikkay) anything we should do here?
 }

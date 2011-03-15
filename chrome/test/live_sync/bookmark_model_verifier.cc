@@ -52,7 +52,7 @@ class FaviconLoadObserver : public BookmarkModelObserver {
   }
   virtual void BookmarkNodeChildrenReordered(BookmarkModel* model,
                                              const BookmarkNode* node) {}
-  virtual void BookmarkNodeFavIconLoaded(BookmarkModel* model,
+  virtual void BookmarkNodeFaviconLoaded(BookmarkModel* model,
                                          const BookmarkNode* node) {
     if (model == model_ && node == node_)
       MessageLoopForUI::current()->Quit();

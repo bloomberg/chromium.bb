@@ -126,7 +126,7 @@ class BookmarkEditorBaseControllerBridge : public BookmarkModelObserver {
       [controller_ modelChangedPreserveSelection:YES];
   }
 
-  virtual void BookmarkNodeFavIconLoaded(BookmarkModel* model,
+  virtual void BookmarkNodeFaviconLoaded(BookmarkModel* model,
                                          const BookmarkNode* node) {
     // I care nothing for these 'favicons': I only show folders.
   }

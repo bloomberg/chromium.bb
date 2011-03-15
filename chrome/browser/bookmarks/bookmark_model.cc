@@ -246,7 +246,7 @@ const SkBitmap& BookmarkModel::GetFavicon(const BookmarkNode* node) {
   if (!node->is_favicon_loaded()) {
     BookmarkNode* mutable_node = AsMutable(node);
     mutable_node->set_favicon_loaded(true);
-    LoadFavIcon(mutable_node);
+    LoadFavicon(mutable_node);
   }
   return node->favicon();
 }
@@ -293,7 +293,7 @@ void BookmarkModel::SetURL(const BookmarkNode* node, const GURL& url) {
     return;
 
   AsMutable(node)->InvalidateFavicon();
-  CancelPendingFavIconLoadRequests(AsMutable(node));
+  CancelPendingFaviconLoadRequests(AsMutable(node));
 
   {
     base::AutoLock url_lock(url_lock_);
@@ -509,10 +509,10 @@ bool BookmarkModel::IsBookmarkedNoLock(const GURL& url) {
           nodes_ordered_by_url_set_.end());
 }
 
-void BookmarkModel::FavIconLoaded(const BookmarkNode* node) {
+void BookmarkModel::FaviconLoaded(const BookmarkNode* node) {
   // Send out notification to the observer.
   FOR_EACH_OBSERVER(BookmarkModelObserver, observers_,
-                    BookmarkNodeFavIconLoaded(this, node));
+                    BookmarkNodeFaviconLoaded(this, node));
 }
 
 void BookmarkModel::RemoveNode(BookmarkNode* node,
@@ -537,7 +537,7 @@ void BookmarkModel::RemoveNode(BookmarkNode* node,
     index_->Remove(node);
   }
 
-  CancelPendingFavIconLoadRequests(node);
+  CancelPendingFaviconLoadRequests(node);
 
   // Recurse through children.
   for (int i = node->child_count() - 1; i >= 0; --i)
@@ -734,7 +734,7 @@ BookmarkNode* BookmarkModel::CreateRootNodeFromStarredEntry(
   return node;
 }
 
-void BookmarkModel::OnFavIconDataAvailable(
+void BookmarkModel::OnFaviconDataAvailable(
     FaviconService::Handle handle,
     bool know_favicon,
     scoped_refptr<RefCountedMemory> data,
@@ -749,11 +749,11 @@ void BookmarkModel::OnFavIconDataAvailable(
   if (know_favicon && data.get() && data->size() &&
       gfx::PNGCodec::Decode(data->front(), data->size(), &favicon)) {
     node->set_favicon(favicon);
-    FavIconLoaded(node);
+    FaviconLoaded(node);
   }
 }
 
-void BookmarkModel::LoadFavIcon(BookmarkNode* node) {
+void BookmarkModel::LoadFavicon(BookmarkNode* node) {
   if (node->type() != BookmarkNode::URL)
     return;
 
@@ -764,12 +764,12 @@ void BookmarkModel::LoadFavIcon(BookmarkNode* node) {
     return;
   FaviconService::Handle handle = favicon_service->GetFaviconForURL(
       node->GetURL(), &load_consumer_,
-      NewCallback(this, &BookmarkModel::OnFavIconDataAvailable));
+      NewCallback(this, &BookmarkModel::OnFaviconDataAvailable));
   load_consumer_.SetClientData(favicon_service, handle, node);
   node->set_favicon_load_handle(handle);
 }
 
-void BookmarkModel::CancelPendingFavIconLoadRequests(BookmarkNode* node) {
+void BookmarkModel::CancelPendingFaviconLoadRequests(BookmarkNode* node) {
   if (node->favicon_load_handle()) {
     FaviconService* favicon_service =
         profile_->GetFaviconService(Profile::EXPLICIT_ACCESS);
@@ -794,7 +794,7 @@ void BookmarkModel::Observe(NotificationType type,
           // Got an updated favicon, for a URL, do a new request.
           BookmarkNode* node = AsMutable(nodes[i]);
           node->InvalidateFavicon();
-          CancelPendingFavIconLoadRequests(node);
+          CancelPendingFaviconLoadRequests(node);
           FOR_EACH_OBSERVER(BookmarkModelObserver, observers_,
                             BookmarkNodeChanged(this, node));
         }

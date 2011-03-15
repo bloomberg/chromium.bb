@@ -728,7 +728,7 @@ class AutomationProviderBookmarkModelObserver : BookmarkModelObserver {
                                    const BookmarkNode* node) {}
   virtual void BookmarkNodeChanged(BookmarkModel* model,
                                    const BookmarkNode* node) {}
-  virtual void BookmarkNodeFavIconLoaded(BookmarkModel* model,
+  virtual void BookmarkNodeFaviconLoaded(BookmarkModel* model,
                                          const BookmarkNode* node) {}
   virtual void BookmarkNodeChildrenReordered(BookmarkModel* model,
                                              const BookmarkNode* node) {}

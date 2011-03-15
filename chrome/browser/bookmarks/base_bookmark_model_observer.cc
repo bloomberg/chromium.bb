@@ -39,7 +39,7 @@ void BaseBookmarkModelObserver::BookmarkNodeChanged(BookmarkModel* model,
   BookmarkModelChanged();
 }
 
-void BaseBookmarkModelObserver::BookmarkNodeFavIconLoaded(
+void BaseBookmarkModelObserver::BookmarkNodeFaviconLoaded(
     BookmarkModel* model,
     const BookmarkNode* node) {
 }

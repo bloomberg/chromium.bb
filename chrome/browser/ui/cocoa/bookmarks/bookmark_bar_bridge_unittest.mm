@@ -67,7 +67,7 @@ typedef std::pair<GURL,WindowOpenDisposition> OpenInfo;
   [callbacks_ addObject:[NSNumber numberWithInt:4]];
 }
 
-- (void)nodeFavIconLoaded:(BookmarkModel*)model
+- (void)nodeFaviconLoaded:(BookmarkModel*)model
                      node:(const BookmarkNode*)node {
   [callbacks_ addObject:[NSNumber numberWithInt:5]];
 }
@@ -121,7 +121,7 @@ TEST_F(BookmarkBarBridgeTest, TestRedirect) {
   bridge->BookmarkNodeMoved(NULL, NULL, 0, NULL, 0);
   bridge->BookmarkNodeAdded(NULL, NULL, 0);
   bridge->BookmarkNodeChanged(NULL, NULL);
-  bridge->BookmarkNodeFavIconLoaded(NULL, NULL);
+  bridge->BookmarkNodeFaviconLoaded(NULL, NULL);
   bridge->BookmarkNodeChildrenReordered(NULL, NULL);
   bridge->BookmarkNodeRemoved(NULL, NULL, 0, NULL);
 
