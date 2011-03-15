@@ -512,9 +512,11 @@ uint32 GLES2Util::GetChannelsForFormat(int format) {
     case GL_LUMINANCE_ALPHA:
       return 0x000F;
     case GL_RGB:
+    case GL_RGB8_OES:
     case GL_RGB565:
       return 0x0007;
     case GL_RGBA:
+    case GL_RGBA8_OES:
     case GL_RGBA4:
     case GL_RGB5_A1:
       return 0x000F;
