@@ -820,7 +820,7 @@ LRESULT WidgetWin::OnNotify(int w_param, NMHDR* l_param) {
 void WidgetWin::OnPaint(HDC dc) {
   scoped_ptr<gfx::CanvasPaint> canvas(
       gfx::CanvasPaint::CreateCanvasPaint(hwnd()));
-  delegate_->OnPaint(canvas->AsCanvas());
+  delegate_->OnNativeWidgetPaint(canvas->AsCanvas());
 }
 
 LRESULT WidgetWin::OnPowerBroadcast(DWORD power_event, DWORD data) {

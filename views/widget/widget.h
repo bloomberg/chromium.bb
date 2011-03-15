@@ -275,7 +275,7 @@ class Widget : public internal::NativeWidgetDelegate,
   virtual void OnNativeWidgetCreated() OVERRIDE;
   virtual void OnSizeChanged(const gfx::Size& new_size) OVERRIDE;
   virtual bool HasFocusManager() const OVERRIDE;
-  virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE;
+  virtual void OnNativeWidgetPaint(gfx::Canvas* canvas) OVERRIDE;
 
   // Overridden from FocusTraversable:
   virtual FocusSearch* GetFocusSearch() OVERRIDE;

@@ -955,7 +955,7 @@ gboolean WidgetGtk::OnPaint(GtkWidget* widget, GdkEventExpose* event) {
   gfx::CanvasSkiaPaint canvas(event);
   if (!canvas.is_empty()) {
     canvas.set_composite_alpha(is_transparent());
-    delegate_->OnPaint(&canvas);
+    delegate_->OnNativeWidgetPaint(&canvas);
   }
   return false;  // False indicates other widgets should get the event as well.
 }

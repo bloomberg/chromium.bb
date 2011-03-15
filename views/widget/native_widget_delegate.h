@@ -39,7 +39,7 @@ class NativeWidgetDelegate {
 
   // Paints the rootview in the canvas. This will also refresh the compositor
   // tree if necessary when accelerated painting is enabled.
-  virtual void OnPaint(gfx::Canvas* canvas) = 0;
+  virtual void OnNativeWidgetPaint(gfx::Canvas* canvas) = 0;
 };
 
 }  // namespace internal

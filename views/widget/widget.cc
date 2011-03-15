@@ -265,7 +265,7 @@ bool Widget::HasFocusManager() const {
   return !!focus_manager_.get();
 }
 
-void Widget::OnPaint(gfx::Canvas* canvas) {
+void Widget::OnNativeWidgetPaint(gfx::Canvas* canvas) {
   GetRootView()->Paint(canvas);
   RefreshCompositeTree();
 }
