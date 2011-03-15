@@ -73,7 +73,7 @@ class OpaqueBrowserFrameView : public BrowserNonClientFrameView,
 
   // Overridden from TabIconView::TabIconViewModel:
   virtual bool ShouldTabIconViewAnimate() const OVERRIDE;
-  virtual SkBitmap GetFavIconForTabIconView() OVERRIDE;
+  virtual SkBitmap GetFaviconForTabIconView() OVERRIDE;
 
  private:
   // Returns the thickness of the border that makes up the window frame edges.

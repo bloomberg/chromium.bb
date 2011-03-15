@@ -670,7 +670,7 @@ void TemplateURL::SetFaviconURL(const GURL& url) {
   }
 }
 
-GURL TemplateURL::GetFavIconURL() const {
+GURL TemplateURL::GetFaviconURL() const {
   for (std::vector<ImageRef>::const_iterator i = image_refs_.begin();
        i != image_refs_.end(); ++i) {
     if ((i->type == "image/x-icon" || i->type == "image/vnd.microsoft.icon")

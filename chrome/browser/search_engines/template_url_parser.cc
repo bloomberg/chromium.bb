@@ -200,7 +200,7 @@ class ParsingContext {
   // set.
   void DeriveImageFromURL() {
     if (derive_image_from_url_ &&
-        url_->GetFavIconURL().is_empty() && url_->url()) {
+        url_->GetFaviconURL().is_empty() && url_->url()) {
       GURL url(url_->url()->url());  // More url's please...
       url_->SetFaviconURL(TemplateURL::GenerateFaviconURL(url));
     }

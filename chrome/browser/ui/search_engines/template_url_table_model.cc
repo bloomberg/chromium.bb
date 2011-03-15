@@ -79,7 +79,7 @@ class ModelEntry {
             Profile::EXPLICIT_ACCESS);
     if (!favicon_service)
       return;
-    GURL favicon_url = template_url().GetFavIconURL();
+    GURL favicon_url = template_url().GetFaviconURL();
     if (!favicon_url.is_valid()) {
       // The favicon url isn't always set. Guess at one here.
       if (template_url_.url() && template_url_.url()->IsValid()) {

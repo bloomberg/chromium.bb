@@ -783,7 +783,7 @@ void TemplateURLModel::SaveDefaultSearchProviderToPrefs(
       suggest_url = t_url->suggestions_url()->url();
     if (t_url->instant_url())
       instant_url = t_url->instant_url()->url();
-    GURL icon_gurl = t_url->GetFavIconURL();
+    GURL icon_gurl = t_url->GetFaviconURL();
     if (!icon_gurl.is_empty())
       icon_url = icon_gurl.spec();
     encodings = JoinString(t_url->input_encodings(), ';');
@@ -879,7 +879,7 @@ static bool TemplateURLsHaveSamePrefs(const TemplateURL* url1,
       TemplateURLRef::SameUrlRefs(url1->url(), url2->url()) &&
       TemplateURLRef::SameUrlRefs(url1->suggestions_url(),
                                   url2->suggestions_url()) &&
-      url1->GetFavIconURL() == url2->GetFavIconURL() &&
+      url1->GetFaviconURL() == url2->GetFaviconURL() &&
       url1->safe_for_autoreplace() == url2->safe_for_autoreplace() &&
       url1->show_in_default_list() == url2->show_in_default_list() &&
       url1->input_encodings() == url2->input_encodings();

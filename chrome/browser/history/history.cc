@@ -465,7 +465,7 @@ void HistoryService::UpdateFaviconMappingAndFetch(
 void HistoryService::GetFaviconForURL(
     FaviconService::GetFaviconRequest* request,
     const GURL& page_url) {
-  Schedule(PRIORITY_NORMAL, &HistoryBackend::GetFavIconForURL, NULL, request,
+  Schedule(PRIORITY_NORMAL, &HistoryBackend::GetFaviconForURL, NULL, request,
            page_url, history::FAVICON);
 }
 

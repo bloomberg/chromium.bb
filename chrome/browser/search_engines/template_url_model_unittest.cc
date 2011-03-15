@@ -160,7 +160,7 @@ class TemplateURLModelTest : public testing::Test {
     ASSERT_EQ(expected.short_name(), actual.short_name());
     ASSERT_EQ(JoinString(expected.input_encodings(), ';'),
               JoinString(actual.input_encodings(), ';'));
-    ASSERT_TRUE(expected.GetFavIconURL() == actual.GetFavIconURL());
+    ASSERT_TRUE(expected.GetFaviconURL() == actual.GetFaviconURL());
     ASSERT_EQ(expected.id(), actual.id());
     ASSERT_EQ(expected.safe_for_autoreplace(), actual.safe_for_autoreplace());
     ASSERT_EQ(expected.show_in_default_list(), actual.show_in_default_list());
@@ -179,7 +179,7 @@ class TemplateURLModelTest : public testing::Test {
     EXPECT_EQ(expected->short_name(), actual->short_name());
     EXPECT_EQ(JoinString(expected->input_encodings(), ';'),
               JoinString(actual->input_encodings(), ';'));
-    EXPECT_TRUE(expected->GetFavIconURL() == actual->GetFavIconURL());
+    EXPECT_TRUE(expected->GetFaviconURL() == actual->GetFaviconURL());
     EXPECT_EQ(expected->safe_for_autoreplace(), actual->safe_for_autoreplace());
     EXPECT_EQ(expected->show_in_default_list(), actual->show_in_default_list());
   }

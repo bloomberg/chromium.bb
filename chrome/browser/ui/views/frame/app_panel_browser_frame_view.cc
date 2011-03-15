@@ -255,7 +255,7 @@ bool AppPanelBrowserFrameView::ShouldTabIconViewAnimate() const {
   return current_tab ? current_tab->is_loading() : false;
 }
 
-SkBitmap AppPanelBrowserFrameView::GetFavIconForTabIconView() {
+SkBitmap AppPanelBrowserFrameView::GetFaviconForTabIconView() {
   return frame_->GetWindow()->window_delegate()->GetWindowIcon();
 }
 

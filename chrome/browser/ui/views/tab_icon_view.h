@@ -25,7 +25,7 @@ class TabIconView : public views::View {
     virtual bool ShouldTabIconViewAnimate() const = 0;
 
     // Returns the favicon to display in the icon view
-    virtual SkBitmap GetFavIconForTabIconView() = 0;
+    virtual SkBitmap GetFaviconForTabIconView() = 0;
   };
 
   static void InitializeIfNeeded();

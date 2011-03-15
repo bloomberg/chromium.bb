@@ -209,11 +209,11 @@ class HistoryBackend : public base::RefCountedThreadSafe<HistoryBackend>,
 
   // Favicon -------------------------------------------------------------------
 
-  void GetFavicon(scoped_refptr<GetFavIconRequest> request,
+  void GetFavicon(scoped_refptr<GetFaviconRequest> request,
                   const GURL& icon_url,
                   int icon_types);
 
-  void GetFavIconForURL(scoped_refptr<GetFavIconRequest> request,
+  void GetFaviconForURL(scoped_refptr<GetFaviconRequest> request,
                         const GURL& page_url,
                         int icon_types);
 
@@ -222,7 +222,7 @@ class HistoryBackend : public base::RefCountedThreadSafe<HistoryBackend>,
                   scoped_refptr<RefCountedMemory> data,
                   IconType icon_type);
 
-  void UpdateFavIconMappingAndFetch(scoped_refptr<GetFavIconRequest> request,
+  void UpdateFavIconMappingAndFetch(scoped_refptr<GetFaviconRequest> request,
                                     const GURL& page_url,
                                     const GURL& icon_url,
                                     IconType icon_type);
@@ -451,7 +451,7 @@ class HistoryBackend : public base::RefCountedThreadSafe<HistoryBackend>,
   void UpdateFavIconMappingAndFetchImpl(
       const GURL* page_url,
       const GURL& icon_url,
-      scoped_refptr<GetFavIconRequest> request,
+      scoped_refptr<GetFaviconRequest> request,
       int icon_type);
 
   // Sets the favicon url id for page_url to id. This will also broadcast

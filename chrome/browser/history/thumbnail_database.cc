@@ -399,7 +399,7 @@ bool ThumbnailDatabase::SetFaviconLastUpdateTime(FavIconID icon_id,
   return statement.Run();
 }
 
-FavIconID ThumbnailDatabase::GetFavIconIDForFavIconURL(const GURL& icon_url,
+FavIconID ThumbnailDatabase::GetFaviconIDForFaviconURL(const GURL& icon_url,
                                                        int required_icon_type,
                                                        IconType* icon_type) {
   sql::Statement statement(db_.GetCachedStatement(SQL_FROM_HERE,

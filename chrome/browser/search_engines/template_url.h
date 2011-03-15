@@ -406,11 +406,11 @@ class TemplateURL {
 
   // Convenience methods for getting/setting an ImageRef that points to a
   // favicon. A TemplateURL need not have an ImageRef for a favicon. In such
-  // a situation GetFavIconURL returns an invalid url.
+  // a situation GetFaviconURL returns an invalid url.
   //
   // If url is empty and there is an image ref for a favicon, it is removed.
   void SetFaviconURL(const GURL& url);
-  GURL GetFavIconURL() const;
+  GURL GetFaviconURL() const;
 
   // Set of languages supported. This may be empty.
   void add_language(const string16& language) {

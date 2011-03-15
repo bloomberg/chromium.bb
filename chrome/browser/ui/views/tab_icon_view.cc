@@ -139,7 +139,7 @@ void TabIconView::OnPaint(gfx::Canvas* canvas) {
     rendered = true;
     PaintThrobber(canvas);
   } else {
-    SkBitmap favicon = model_->GetFavIconForTabIconView();
+    SkBitmap favicon = model_->GetFaviconForTabIconView();
     if (!favicon.isNull()) {
       rendered = true;
       PaintFavIcon(canvas, favicon);

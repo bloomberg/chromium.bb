@@ -208,12 +208,12 @@ const size_t kMaxDataLength = 1024;
 void BindURLToStatement(const TemplateURL& url, sql::Statement* s) {
   s->BindString(0, UTF16ToUTF8(url.short_name()));
   s->BindString(1, UTF16ToUTF8(url.keyword()));
-  GURL favicon_url = url.GetFavIconURL();
+  GURL favicon_url = url.GetFaviconURL();
   if (!favicon_url.is_valid()) {
     s->BindString(2, std::string());
   } else {
     s->BindString(2, history::HistoryDatabase::GURLToDatabaseURL(
-                       url.GetFavIconURL()));
+                       url.GetFaviconURL()));
   }
   s->BindString(3, url.url() ? url.url()->url() : std::string());
   s->BindInt(4, url.safe_for_autoreplace() ? 1 : 0);

@@ -353,7 +353,7 @@ TEST_F(WebDatabaseTest, Keywords) {
 
   EXPECT_FALSE(restored_url->autogenerate_keyword());
 
-  EXPECT_TRUE(favicon_url == restored_url->GetFavIconURL());
+  EXPECT_TRUE(favicon_url == restored_url->GetFaviconURL());
 
   EXPECT_TRUE(restored_url->safe_for_autoreplace());
 
@@ -447,7 +447,7 @@ TEST_F(WebDatabaseTest, UpdateKeyword) {
 
   EXPECT_TRUE(restored_url->autogenerate_keyword());
 
-  EXPECT_TRUE(favicon_url == restored_url->GetFavIconURL());
+  EXPECT_TRUE(favicon_url == restored_url->GetFaviconURL());
 
   EXPECT_TRUE(restored_url->safe_for_autoreplace());
 
@@ -497,7 +497,7 @@ TEST_F(WebDatabaseTest, KeywordWithNoFavicon) {
 
   EXPECT_EQ(template_url.short_name(), restored_url->short_name());
   EXPECT_EQ(template_url.keyword(), restored_url->keyword());
-  EXPECT_TRUE(!restored_url->GetFavIconURL().is_valid());
+  EXPECT_TRUE(!restored_url->GetFaviconURL().is_valid());
   EXPECT_TRUE(restored_url->safe_for_autoreplace());
   EXPECT_EQ(GetID(&template_url), GetID(restored_url));
   delete restored_url;

@@ -437,7 +437,7 @@ bool OpaqueBrowserFrameView::ShouldTabIconViewAnimate() const {
   return current_tab ? current_tab->is_loading() : false;
 }
 
-SkBitmap OpaqueBrowserFrameView::GetFavIconForTabIconView() {
+SkBitmap OpaqueBrowserFrameView::GetFaviconForTabIconView() {
   views::WindowDelegate* delegate = frame_->GetWindow()->window_delegate();
   if (!delegate) {
     LOG(WARNING) << "delegate is NULL, returning safe default.";

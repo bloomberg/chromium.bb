@@ -248,12 +248,12 @@ TEST_F(TemplateURLTest, SetFavicon) {
   GURL favicon_url("http://favicon.url");
   url.SetFaviconURL(favicon_url);
   ASSERT_EQ(1U, url.image_refs().size());
-  ASSERT_TRUE(favicon_url == url.GetFavIconURL());
+  ASSERT_TRUE(favicon_url == url.GetFaviconURL());
 
   GURL favicon_url2("http://favicon2.url");
   url.SetFaviconURL(favicon_url2);
   ASSERT_EQ(1U, url.image_refs().size());
-  ASSERT_TRUE(favicon_url2 == url.GetFavIconURL());
+  ASSERT_TRUE(favicon_url2 == url.GetFaviconURL());
 }
 
 TEST_F(TemplateURLTest, DisplayURLToURLRef) {

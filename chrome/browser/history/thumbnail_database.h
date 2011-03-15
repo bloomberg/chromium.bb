@@ -112,7 +112,7 @@ class ThumbnailDatabase {
   // FAVICON, and the icon type is returned in icon_type parameter if it is not
   // NULL.
   // Returns 0 if no entry exists for the specified url.
-  FavIconID GetFavIconIDForFavIconURL(const GURL& icon_url,
+  FavIconID GetFaviconIDForFaviconURL(const GURL& icon_url,
                                       int required_icon_type,
                                       IconType* icon_type);
 

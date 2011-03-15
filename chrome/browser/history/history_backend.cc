@@ -1600,14 +1600,14 @@ bool HistoryBackend::GetThumbnailFromOlderRedirect(
   return success;
 }
 
-void HistoryBackend::GetFavicon(scoped_refptr<GetFavIconRequest> request,
+void HistoryBackend::GetFavicon(scoped_refptr<GetFaviconRequest> request,
                                 const GURL& icon_url,
                                 int icon_types) {
   UpdateFavIconMappingAndFetchImpl(NULL, icon_url, request, icon_types);
 }
 
 void HistoryBackend::UpdateFavIconMappingAndFetch(
-    scoped_refptr<GetFavIconRequest> request,
+    scoped_refptr<GetFaviconRequest> request,
     const GURL& page_url,
     const GURL& icon_url,
     IconType icon_type) {
@@ -1640,7 +1640,7 @@ void HistoryBackend::SetImportedFavicons(
   std::set<GURL> favicons_changed;
 
   for (size_t i = 0; i < favicon_usage.size(); i++) {
-    FavIconID favicon_id = thumbnail_db_->GetFavIconIDForFavIconURL(
+    FavIconID favicon_id = thumbnail_db_->GetFaviconIDForFaviconURL(
         favicon_usage[i].favicon_url, history::FAVICON, NULL);
     if (!favicon_id) {
       // This favicon doesn't exist yet, so we create it using the given data.
@@ -1695,7 +1695,7 @@ void HistoryBackend::SetImportedFavicons(
 void HistoryBackend::UpdateFavIconMappingAndFetchImpl(
     const GURL* page_url,
     const GURL& icon_url,
-    scoped_refptr<GetFavIconRequest> request,
+    scoped_refptr<GetFaviconRequest> request,
     int icon_types) {
   // Check only a single type was given when the page_url was specified.
   DCHECK(!page_url || (page_url && (icon_types == FAVICON ||
@@ -1711,7 +1711,7 @@ void HistoryBackend::UpdateFavIconMappingAndFetchImpl(
   if (thumbnail_db_.get()) {
     IconType returned_icon_type;
     const FavIconID favicon_id =
-        thumbnail_db_->GetFavIconIDForFavIconURL(
+        thumbnail_db_->GetFaviconIDForFaviconURL(
             icon_url, icon_types, &returned_icon_type);
     if (favicon_id) {
       data = new RefCountedBytes;
@@ -1729,13 +1729,13 @@ void HistoryBackend::UpdateFavIconMappingAndFetchImpl(
     // else case, haven't cached entry yet. Caller is responsible for
     // downloading the favicon and invoking SetFavicon.
   }
-  request->ForwardResult(GetFavIconRequest::TupleType(
+  request->ForwardResult(GetFaviconRequest::TupleType(
                              request->handle(), know_favicon, data, expired,
                              icon_url));
 }
 
-void HistoryBackend::GetFavIconForURL(
-    scoped_refptr<GetFavIconRequest> request,
+void HistoryBackend::GetFaviconForURL(
+    scoped_refptr<GetFaviconRequest> request,
     const GURL& page_url,
     int icon_types) {
   if (request->canceled())
@@ -1763,12 +1763,12 @@ void HistoryBackend::GetFavIconForURL(
           TimeDelta::FromDays(kFavIconRefetchDays);
     }
 
-    UMA_HISTOGRAM_TIMES("History.GetFavIconForURL",
+    UMA_HISTOGRAM_TIMES("History.GetFavIconForURL",  // historical name
                         TimeTicks::Now() - beginning_time);
   }
 
   request->ForwardResult(
-      GetFavIconRequest::TupleType(request->handle(), know_favicon, data,
+      GetFaviconRequest::TupleType(request->handle(), know_favicon, data,
                                    expired, icon_url));
 }
 
@@ -1781,7 +1781,7 @@ void HistoryBackend::SetFavicon(
   if (!thumbnail_db_.get() || !db_.get())
     return;
 
-  FavIconID id = thumbnail_db_->GetFavIconIDForFavIconURL(
+  FavIconID id = thumbnail_db_->GetFaviconIDForFaviconURL(
       icon_url, icon_type, NULL);
   if (!id)
     id = thumbnail_db_->AddFavIcon(icon_url, icon_type);
