@@ -43,7 +43,7 @@
 {
   "name": "software rendering list",
   // Please update the version number whenever you change this file.
-  "version": "1.6",
+  "version": "1.7",
   "entries": [
     {
       "id": 1,
@@ -203,7 +203,7 @@
     },
     {
       "id": 13,
-      "description": "ATI drivers older thn 10.6 on Windows XP are assumed to be buggy.",
+      "description": "ATI drivers older than 10.6 on Windows XP are assumed to be buggy.",
       "cr_bugs": [74212],
       "os": {
         "type": "win",
@@ -223,7 +223,7 @@
     },
     {
       "id": 14,
-      "description": "NVIDIA drivers older thn 257.21 on Windows XP are assumed to be buggy.",
+      "description": "NVIDIA drivers older than 257.21 on Windows XP are assumed to be buggy.",
       "cr_bugs": [74212],
       "os": {
         "type": "win",
@@ -243,7 +243,7 @@
     },
     {
       "id": 15,
-      "description": "Intel drivers older thn 14.42.7.5294 on Windows XP are assumed to be buggy.",
+      "description": "Intel drivers older than 14.42.7.5294 on Windows XP are assumed to be buggy.",
       "cr_bugs": [74212],
       "os": {
         "type": "win",
@@ -263,7 +263,7 @@
     },
     {
       "id": 16,
-      "description": "Multiampling is buggy in ATI Mac drivers.",
+      "description": "Multisampling is buggy in ATI Mac drivers.",
       "cr_bugs": [67752],
       "os": {
         "type": "macosx"
