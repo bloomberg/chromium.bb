@@ -666,7 +666,7 @@
                               '--set_version=<(plugin_version) '
                               '--set_npapi_filename=<(plugin_npapi_filename) '
                               '--set_npapi_mimetype=<(plugin_npapi_mimetype) '
-                              '--set_o3d_plugin_breakpad_url=<(o3d_plugin_breakpad_url) ' 
+                              '--set_o3d_plugin_breakpad_url="<(o3d_plugin_breakpad_url)" ' 
                               'mac/Info.plist '
                               '<(SHARED_INTERMEDIATE_DIR)/plugin/Info.plist',
                             ],
