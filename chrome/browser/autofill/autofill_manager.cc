@@ -875,6 +875,8 @@ void AutofillManager::ParseForms(const std::vector<FormData>& forms) {
     if (!form_structure->ShouldBeParsed(false))
       continue;
 
+    form_structure->DetermineHeuristicTypes();
+
     // Set aside forms with method GET so that they are not included in the
     // query to the server.
     if (form_structure->ShouldBeParsed(true))

@@ -68,7 +68,6 @@ FormStructure::FormStructure(const FormData& form)
 
   // Terminate the vector with a NULL item.
   fields_.push_back(NULL);
-  GetHeuristicAutofillTypes();
 
   std::string method = UTF16ToUTF8(form.method);
   if (StringToLowerASCII(method) == kFormMethodPost) {
@@ -81,6 +80,37 @@ FormStructure::FormStructure(const FormData& form)
 }
 
 FormStructure::~FormStructure() {}
+
+void FormStructure::DetermineHeuristicTypes() {
+  has_credit_card_field_ = false;
+  has_autofillable_field_ = false;
+  autofill_count_ = 0;
+
+  FieldTypeMap field_type_map;
+  GetHeuristicFieldInfo(&field_type_map);
+
+  for (size_t index = 0; index < field_count(); index++) {
+    AutofillField* field = fields_[index];
+    DCHECK(field);
+    FieldTypeMap::iterator iter = field_type_map.find(field->unique_name());
+
+    AutofillFieldType heuristic_auto_fill_type;
+    if (iter == field_type_map.end()) {
+      heuristic_auto_fill_type = UNKNOWN_TYPE;
+    } else {
+      heuristic_auto_fill_type = iter->second;
+      ++autofill_count_;
+    }
+
+    field->set_heuristic_type(heuristic_auto_fill_type);
+
+    AutofillType autofill_type(field->type());
+    if (autofill_type.group() == AutofillType::CREDIT_CARD)
+      has_credit_card_field_ = true;
+    if (autofill_type.field_type() != UNKNOWN_TYPE)
+      has_autofillable_field_ = true;
+  }
+}
 
 bool FormStructure::EncodeUploadRequest(bool auto_fill_used,
                                         std::string* encoded_xml) const {
@@ -431,36 +461,6 @@ std::string FormStructure::Hash64Bit(const std::string& str) {
                    ((static_cast<uint64>(hash_bin[7])) & 0xFF);
 
   return base::Uint64ToString(hash64);
-}
-
-void FormStructure::GetHeuristicAutofillTypes() {
-  has_credit_card_field_ = false;
-  has_autofillable_field_ = false;
-
-  FieldTypeMap field_type_map;
-  GetHeuristicFieldInfo(&field_type_map);
-
-  for (size_t index = 0; index < field_count(); index++) {
-    AutofillField* field = fields_[index];
-    DCHECK(field);
-    FieldTypeMap::iterator iter = field_type_map.find(field->unique_name());
-
-    AutofillFieldType heuristic_auto_fill_type;
-    if (iter == field_type_map.end()) {
-      heuristic_auto_fill_type = UNKNOWN_TYPE;
-    } else {
-      heuristic_auto_fill_type = iter->second;
-      ++autofill_count_;
-    }
-
-    field->set_heuristic_type(heuristic_auto_fill_type);
-
-    AutofillType autofill_type(field->type());
-    if (autofill_type.group() == AutofillType::CREDIT_CARD)
-      has_credit_card_field_ = true;
-    if (autofill_type.field_type() != UNKNOWN_TYPE)
-      has_autofillable_field_ = true;
-  }
 }
 
 void FormStructure::GetHeuristicFieldInfo(FieldTypeMap* field_type_map) {

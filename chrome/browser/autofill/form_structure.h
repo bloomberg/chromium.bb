@@ -40,6 +40,10 @@ class FormStructure {
   explicit FormStructure(const webkit_glue::FormData& form);
   virtual ~FormStructure();
 
+  // Runs several heuristics against the form fields to determine their possible
+  // types.
+  void DetermineHeuristicTypes();
+
   // Encodes the XML upload request from this FormStructure.
   bool EncodeUploadRequest(bool auto_fill_used, std::string* encoded_xml) const;
 
@@ -127,10 +131,6 @@ class FormStructure {
     QUERY,
     UPLOAD,
   };
-
-  // Runs several heuristics against the form fields to determine their possible
-  // types.
-  void GetHeuristicAutofillTypes();
 
   // Associates the field with the heuristic type for each of the field views.
   void GetHeuristicFieldInfo(FieldTypeMap* field_types_map);
