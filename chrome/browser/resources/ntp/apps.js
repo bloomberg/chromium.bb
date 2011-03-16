@@ -31,6 +31,9 @@ function getAppsCallback(data) {
       $('apps-create-shortcut-command-separator').hidden =
           data.disableCreateAppShortcut;
 
+  // Hide the context menu, if there is any open.
+  cr.ui.contextMenuHandler.hideMenu();
+
   appsMiniview.textContent = '';
   appsSectionContent.textContent = '';
 
