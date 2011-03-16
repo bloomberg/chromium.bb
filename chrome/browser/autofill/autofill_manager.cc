@@ -118,10 +118,13 @@ void FindSectionBounds(const FormStructure& form,
     // Forms often ask for multiple phone numbers -- e.g. both a daytime and
     // evening phone number.  Our phone and fax number detection is also
     // generally a little off.  Hence, ignore both field types as a signal here.
+    // Likewise, forms often ask for multiple email addresses, so ignore this
+    // field type as well.
     AutofillType::FieldTypeGroup current_type_group =
         AutofillType(current_type).group();
     if (current_type_group == AutofillType::PHONE_HOME ||
-        current_type_group == AutofillType::PHONE_FAX)
+        current_type_group == AutofillType::PHONE_FAX ||
+        current_type_group == AutofillType::EMAIL)
       already_saw_current_type = false;
 
     // If we are filling credit card data, the relevant section should include

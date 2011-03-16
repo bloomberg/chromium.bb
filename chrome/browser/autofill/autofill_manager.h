@@ -230,6 +230,7 @@ class AutofillManager : public TabContentsObserver,
   FRIEND_TEST_ALL_PREFIXES(AutofillManagerTest, FillAddressForm);
   FRIEND_TEST_ALL_PREFIXES(AutofillManagerTest, FillAddressAndCreditCardForm);
   FRIEND_TEST_ALL_PREFIXES(AutofillManagerTest, FillFormWithMultipleSections);
+  FRIEND_TEST_ALL_PREFIXES(AutofillManagerTest, FillFormWithMultipleEmails);
   FRIEND_TEST_ALL_PREFIXES(AutofillManagerTest, FillAutoFilledForm);
   FRIEND_TEST_ALL_PREFIXES(AutofillManagerTest, FillPhoneNumber);
   FRIEND_TEST_ALL_PREFIXES(AutofillManagerTest, FormChangesRemoveField);

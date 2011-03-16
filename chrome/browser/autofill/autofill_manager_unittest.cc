@@ -1539,6 +1539,37 @@ TEST_F(AutofillManagerTest, FillFormWithMultipleSections) {
   }
 }
 
+// Test that we correctly fill a form that has a single logical section with
+// multiple email address fields.
+TEST_F(AutofillManagerTest, FillFormWithMultipleEmails) {
+  // Set up our form data.
+  FormData form;
+  CreateTestAddressFormData(&form);
+  FormField field;
+  autofill_test::CreateTestFormField(
+      "Confirm email", "email2", "", "text", &field);
+  form.fields.push_back(field);
+
+  std::vector<FormData> forms(1, form);
+  FormsSeen(forms);
+
+  // Fill the form.
+  std::string guid = "00000000-0000-0000-0000-000000000001";
+  FillAutoFillFormData(kDefaultPageID, form, form.fields[0],
+                       autofill_manager_->PackGUIDs(std::string(), guid));
+
+  int page_id = 0;
+  FormData results;
+  EXPECT_TRUE(GetAutoFillFormDataFilledMessage(&page_id, &results));
+
+  // The second email address should be filled.
+  EXPECT_EQ(ASCIIToUTF16("theking@gmail.com"), results.fields.back().value);
+
+  // The remainder of the form should be filled as usual.
+  results.fields.pop_back();
+  ExpectFilledAddressFormElvis(page_id, results, kDefaultPageID, false);
+}
+
 // Test that we correctly fill a previously auto-filled form.
 TEST_F(AutofillManagerTest, FillAutoFilledForm) {
   // Set up our form data.
