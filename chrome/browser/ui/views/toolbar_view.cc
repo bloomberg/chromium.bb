@@ -40,7 +40,6 @@
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/browser/chromeos/cros/update_library.h"
-#include "chrome/browser/chromeos/webui/wrench_menu_ui.h"
 #include "views/controls/menu/menu_2.h"
 #endif
 #include "chrome/browser/ui/views/wrench_menu.h"
@@ -136,12 +135,6 @@ void ToolbarView::Init(Profile* profile) {
   forward_menu_model_.reset(new BackForwardMenuModel(
       browser_, BackForwardMenuModel::FORWARD_MENU));
   wrench_menu_model_.reset(new WrenchMenuModel(this, browser_));
-#if defined(OS_CHROMEOS)
-  if (chromeos::MenuUI::IsEnabled()) {
-      wrench_menu_2_.reset(
-          chromeos::WrenchMenuUI::CreateMenu2(wrench_menu_model_.get()));
-  }
-#endif
   back_ = new views::ButtonDropDown(this, back_menu_model_.get());
   back_->set_triggerable_event_flags(ui::EF_LEFT_BUTTON_DOWN |
                                      ui::EF_MIDDLE_BUTTON_DOWN);
@@ -268,24 +261,10 @@ bool ToolbarView::IsAppMenuFocused() {
 }
 
 void ToolbarView::AddMenuListener(views::MenuListener* listener) {
-#if defined(OS_CHROMEOS)
-  if (chromeos::MenuUI::IsEnabled()) {
-    DCHECK(wrench_menu_2_.get());
-    wrench_menu_2_->AddMenuListener(listener);
-    return;
-  }
-#endif
   menu_listeners_.push_back(listener);
 }
 
 void ToolbarView::RemoveMenuListener(views::MenuListener* listener) {
-#if defined(OS_CHROMEOS)
-  if (chromeos::MenuUI::IsEnabled()) {
-    DCHECK(wrench_menu_2_.get());
-    wrench_menu_2_->RemoveMenuListener(listener);
-    return;
-  }
-#endif
   for (std::vector<views::MenuListener*>::iterator i(menu_listeners_.begin());
        i != menu_listeners_.end(); ++i) {
     if (*i == listener) {
@@ -327,20 +306,6 @@ void ToolbarView::RunMenu(views::View* source, const gfx::Point& /* pt */) {
 
   bool destroyed_flag = false;
   destroyed_flag_ = &destroyed_flag;
-#if defined(OS_CHROMEOS)
-  if (chromeos::MenuUI::IsEnabled()) {
-    gfx::Point screen_loc;
-    views::View::ConvertPointToScreen(app_menu_, &screen_loc);
-    gfx::Rect bounds(screen_loc, app_menu_->size());
-    if (base::i18n::IsRTL())
-      bounds.set_x(bounds.x() - app_menu_->size().width());
-    wrench_menu_2_->RunMenuAt(gfx::Point(bounds.right(), bounds.bottom()),
-                              views::Menu2::ALIGN_TOPRIGHT);
-    // TODO(oshima): nuke this once we made decision about go or no go
-    // for WebUI menu.
-    goto cleanup;
-  }
-#endif
   wrench_menu_ = new WrenchMenu(browser_);
   wrench_menu_->Init(wrench_menu_model_.get());
 
@@ -349,9 +314,6 @@ void ToolbarView::RunMenu(views::View* source, const gfx::Point& /* pt */) {
 
   wrench_menu_->RunMenu(app_menu_);
 
-#if defined(OS_CHROMEOS)
- cleanup:
-#endif
   if (destroyed_flag)
     return;
   destroyed_flag_ = NULL;

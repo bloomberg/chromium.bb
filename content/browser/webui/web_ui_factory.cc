@@ -40,12 +40,9 @@
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/webui/imageburner_ui.h"
 #include "chrome/browser/chromeos/webui/keyboard_overlay_ui.h"
-#include "chrome/browser/chromeos/webui/menu_ui.h"
 #include "chrome/browser/chromeos/webui/mobile_setup_ui.h"
-#include "chrome/browser/chromeos/webui/network_menu_ui.h"
 #include "chrome/browser/chromeos/webui/register_page_ui.h"
 #include "chrome/browser/chromeos/webui/system_info_ui.h"
-#include "chrome/browser/chromeos/webui/wrench_menu_ui.h"
 #include "chrome/browser/ui/webui/filebrowse_ui.h"
 #include "chrome/browser/ui/webui/mediaplayer_ui.h"
 #endif
@@ -200,12 +197,6 @@ static WebUIFactoryFunction GetWebUIFactoryFunction(Profile* profile,
     return &NewWebUI<SlideshowUI>;
   if (url.host() == chrome::kChromeUISystemInfoHost)
     return &NewWebUI<SystemInfoUI>;
-  if (url.host() == chrome::kChromeUIMenu)
-    return &NewWebUI<chromeos::MenuUI>;
-  if (url.host() == chrome::kChromeUIWrenchMenu)
-    return &NewWebUI<chromeos::WrenchMenuUI>;
-  if (url.host() == chrome::kChromeUINetworkMenu)
-    return &NewWebUI<chromeos::NetworkMenuUI>;
 #else
   if (url.host() == chrome::kChromeUISettingsHost)
     return &NewWebUI<OptionsUI>;

@@ -9,7 +9,6 @@
 #include "base/stringprintf.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
-#include "chrome/browser/chromeos/webui/network_menu_ui.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/common/url_constants.h"
@@ -89,7 +88,7 @@ SkBitmap NetworkMenu::kAnimatingImagesBlack[kNumAnimatingImages];
 
 NetworkMenu::NetworkMenu()
     : min_width_(-1) {
-  network_menu_.reset(NetworkMenuUI::CreateMenu2(this));
+  network_menu_.reset(new views::Menu2(this));
 }
 
 NetworkMenu::~NetworkMenu() {
@@ -249,15 +248,7 @@ bool NetworkMenu::ConnectToNetworkAt(int index,
       // TODO(stevenjb): Show notification.
     }
   } else if (flags & FLAG_OTHER_NETWORK) {
-    if (MenuUI::IsEnabled()) {
-      // default is true
-      bool auto_connect_bool = auto_connect == 0 ? false : true;
-      cros->ConnectToWifiNetwork(
-          passphrase.empty() ? SECURITY_NONE : SECURITY_UNKNOWN,
-          ssid, passphrase, std::string(), std::string(), auto_connect_bool);
-    } else {
-      ShowOther();
-    }
+    ShowOther();
   }
   return true;
 }
@@ -773,7 +764,7 @@ void NetworkMenu::InitMenuItems() {
   if (!oobe) {
     menu_items_.push_back(MenuItem());  // Separator
 
-    if (!MenuUI::IsEnabled() && connected) {
+    if (connected) {
       std::string ip_address = cros->IPAddress();
       if (!ip_address.empty()) {
         menu_items_.push_back(MenuItem(ui::MenuModel::TYPE_COMMAND,
@@ -823,17 +814,7 @@ void NetworkMenu::ActivateCellular(const CellularNetwork* cellular) const {
 }
 
 void NetworkMenu::ShowOther() const {
-  if (MenuUI::IsEnabled()) {
-    Browser* browser = BrowserList::GetLastActive();
-    if (browser) {
-      std::string page = StringPrintf("%s?networkType=%d",
-                                      chrome::kInternetOptionsSubPage,
-                                      chromeos::TYPE_WIFI);
-      browser->ShowOptionsTab(page);
-    }
-  } else {
-    ShowNetworkConfigView(new NetworkConfigView());
-  }
+  ShowNetworkConfigView(new NetworkConfigView());
 }
 
 }  // namespace chromeos
