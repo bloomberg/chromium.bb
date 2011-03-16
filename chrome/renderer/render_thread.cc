@@ -389,16 +389,26 @@ bool RenderThread::Send(IPC::Message* msg) {
     if (msg->is_caller_pumping_messages()) {
       pumping_events = true;
     } else {
-      switch (msg->type()) {
-        case ViewHostMsg_GetCookies::ID:
-        case ViewHostMsg_GetRawCookies::ID:
-        case ViewHostMsg_CookiesEnabled::ID:
-        case DOMStorageHostMsg_SetItem::ID:
-        case ResourceHostMsg_SyncLoad::ID:
-        case DatabaseHostMsg_Allow::ID:
-          may_show_cookie_prompt = true;
-          pumping_events = true;
-          break;
+      // We only need to pump events for chrome frame processes as the
+      // cookie policy is controlled by the host browser (IE). If the
+      // policy is set to prompt then the host would put up UI which
+      // would require plugins if any to also pump to ensure that we
+      // don't have a deadlock.
+      if (CommandLine::ForCurrentProcess()->HasSwitch(
+              switches::kChromeFrame)) {
+        switch (msg->type()) {
+          case ViewHostMsg_GetCookies::ID:
+          case ViewHostMsg_GetRawCookies::ID:
+          case ViewHostMsg_CookiesEnabled::ID:
+          case DOMStorageHostMsg_SetItem::ID:
+          case ResourceHostMsg_SyncLoad::ID:
+          case DatabaseHostMsg_Allow::ID:
+            may_show_cookie_prompt = true;
+            pumping_events = true;
+            break;
+          default:
+            break;
+        }
       }
     }
   }
