@@ -585,7 +585,7 @@ struct LayoutMetrics {
     effectiveFolderY -= metrics.windowSize.height;
   metrics.canScrollUp = effectiveFolderY < metrics.minimumY;
   CGFloat maximumY =
-      NSMaxY([screen frame]) - bookmarks::kScrollWindowVerticalMargin;
+      NSMaxY([screen visibleFrame]) - bookmarks::kScrollWindowVerticalMargin;
   metrics.canScrollDown = metrics.folderTop > maximumY;
 
   // Accommodate changes in the bottom of the menu.
@@ -895,7 +895,7 @@ struct LayoutMetrics {
       delta = MIN(delta, maxUpDelta);
     } else {
       // Scrolling down.
-      NSRect screenFrame =  [screen frame];
+      NSRect screenFrame =  [screen visibleFrame];
       CGFloat topOfScreen = NSMaxY(screenFrame);
       NSRect folderFrame = [folderView_ frame];
       CGFloat folderHeight = NSHeight(folderFrame);

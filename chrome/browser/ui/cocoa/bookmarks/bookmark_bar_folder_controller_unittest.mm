@@ -125,8 +125,8 @@ class BookmarkBarFolderControllerTest : public CocoaTest {
  public:
   BrowserTestHelper helper_;
   scoped_nsobject<BookmarkBarControllerChildFolderRedirect> bar_;
-  const BookmarkNode* folderA_;  // owned by model
-  const BookmarkNode* longTitleNode_;  // owned by model
+  const BookmarkNode* folderA_;  // Owned by model.
+  const BookmarkNode* longTitleNode_;  // Owned by model.
 
   BookmarkBarFolderControllerTest() {
     BookmarkModel* model = helper_.profile()->GetBookmarkModel();
@@ -136,7 +136,7 @@ class BookmarkBarFolderControllerTest : public CocoaTest {
                                                   ASCIIToUTF16("group"));
     folderA_ = folderA;
     model->AddGroup(parent, parent->child_count(),
-                    ASCIIToUTF16("sibbling group"));
+                    ASCIIToUTF16("sibling group"));
     const BookmarkNode* folderB = model->AddGroup(folderA,
                                                   folderA->child_count(),
                                                   ASCIIToUTF16("subgroup 1"));
@@ -449,7 +449,7 @@ TEST_F(BookmarkBarFolderControllerTest, ChildFolderWidth) {
 
 // Simple scrolling tests.
 // Currently flaky due to a changed definition of the correct menu boundaries.
-TEST_F(BookmarkBarFolderControllerTest, DISABLED_SimpleScroll) {
+TEST_F(BookmarkBarFolderControllerTest, SimpleScroll) {
   scoped_nsobject<BookmarkBarFolderController> bbfc;
   NSRect screenFrame = [[NSScreen mainScreen] visibleFrame];
   CGFloat screenHeight = NSHeight(screenFrame);
@@ -475,7 +475,7 @@ TEST_F(BookmarkBarFolderControllerTest, DISABLED_SimpleScroll) {
   NSScrollView* scrollView = [bbfc scrollView];
 
   // Find the next-to-last button showing at the bottom of the window and
-  // us its center for hit testing.
+  // use its center for hit testing.
   BookmarkButton* targetButton = nil;
   NSPoint scrollPoint = [scrollView documentVisibleRect].origin;
   for (BookmarkButton* button in [bbfc buttons]) {
@@ -520,6 +520,8 @@ TEST_F(BookmarkBarFolderControllerTest, DISABLED_SimpleScroll) {
   EXPECT_FALSE([bbfc canScrollUp]);
   EXPECT_TRUE([bbfc canScrollDown]);
 
+  NSRect wholeScreenRect = [[NSScreen mainScreen] frame];
+
   // Now scroll down and make sure the window size does not change.
   // Also confirm we never scroll the window off the screen the other
   // way.
@@ -528,14 +530,11 @@ TEST_F(BookmarkBarFolderControllerTest, DISABLED_SimpleScroll) {
     // Once we can no longer scroll down the window height changes.
     if (![bbfc canScrollDown])
       break;
-    EXPECT_EQ(screenHeight, NSHeight([window frame]));
-    EXPECT_TRUE(NSContainsRect(screenFrame, [window frame]));
+    EXPECT_TRUE(NSContainsRect(wholeScreenRect, [window frame]));
   }
-  // The final height should be offset from the top of the screen and still
-  // within the screen.
-  CGFloat height = screenHeight - bookmarks::kScrollWindowVerticalMargin;
-  EXPECT_CGFLOAT_EQ(height, NSHeight([window frame]));
-  EXPECT_TRUE(NSContainsRect(screenFrame, [window frame]));
+
+  EXPECT_GT(NSHeight(wholeScreenRect), NSHeight([window frame]));
+  EXPECT_TRUE(NSContainsRect(wholeScreenRect, [window frame]));
 }
 
 // Folder menu sizing and placement while deleting bookmarks
