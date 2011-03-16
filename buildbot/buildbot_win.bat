@@ -41,6 +41,18 @@ call vcvarsall.bat %VCBITS% && call scons.bat -j 8 ^
  -k --verbose --mode=%MODE%-win,nacl,doc platform=x86-%BITS%
 if %ERRORLEVEL% neq 0 exit /b %ERRORLEVEL%
 
+if %BITS% neq 64 goto SkipArchive
+if %BUILDBOT_SLAVE_TYPE% neq BuilderTester goto SkipArchive
+echo @@@BUILD_STEP archive_build@@@
+tar cvfz build.tgz scons-out/
+if %ERRORLEVEL% neq 0 exit /b %ERRORLEVEL%
+set HOME=c:\Users\chrome-bot
+\b\build\scripts\slave\gsutil -h Cache-Control:no-cache ^
+ cp -a public-read build.tgz ^
+ gs://nativeclient-archive2/between_builders/vista64_%MODE%/rev_%BUILDBOT_GOT_REVISION%/build.tgz
+if %ERRORLEVEL% neq 0 exit /b %ERRORLEVEL%
+:SkipArchive
+
 echo @@@BUILD_STEP small_tests@@@
 call vcvarsall.bat %VCBITS% && call scons.bat ^
  DOXYGEN=..\third_party\doxygen\win\doxygen ^
