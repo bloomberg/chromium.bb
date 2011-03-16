@@ -1396,3 +1396,15 @@
    fun:-[NSView _displayRectIgnoringOpacity:isVisibleRect:rectIsVisibleRectForView:]
    fun:-[NSView displayIfNeeded]
 }
+{
+   bug_76370
+   Memcheck:Addr4
+   fun:get_bits
+   ...
+   fun:read_huffman_tree
+   fun:theora_decode_tables
+   fun:theora_decode_init
+   fun:avcodec_open
+   fun:_ZN5media23FFmpegVideoDecodeEngine10InitializeEP11MessageLoopPNS_17VideoDecodeEngine12EventHandlerEPNS_18VideoDecodeContextERKNS_16VideoCodecConfigE
+   fun:_ZN5media18FFmpegVideoDecoder10InitializeEPNS_13DemuxerStreamEP14CallbackRunnerI6Tuple0EPS3_I6Tuple1IRKNS_18PipelineStatisticsEEE
+}
