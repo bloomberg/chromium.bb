@@ -115,13 +115,6 @@ class AppCacheURLRequestJob : public net::URLRequestJob,
   // This is how we get informed of range-requests.
   virtual void SetExtraRequestHeaders(const net::HttpRequestHeaders& headers);
 
-  // TODO(michaeln): does this apply to our cached responses?
-  // The payload we store should have been fully decoded prior to
-  // us storing it. Maybe we should strip the content-encoding headers
-  // when writing the response to the cache.
-  // virtual bool GetContentEncodings(
-  //    std::vector<Filter::FilterType>* encoding_types);
-
   // FilterContext methods
   virtual bool GetMimeType(std::string* mime_type) const;
   virtual int GetResponseCode() const;
