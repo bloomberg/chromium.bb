@@ -306,6 +306,12 @@ void InternetOptionsHandler::GetLocalizedValues(
   localized_strings->SetBoolean("networkUseSettingsUI", use_settings_ui_);
 }
 
+void InternetOptionsHandler::Initialize() {
+  chromeos::NetworkLibrary* cros =
+      chromeos::CrosLibrary::Get()->GetNetworkLibrary();
+  cros->RequestNetworkScan();
+}
+
 void InternetOptionsHandler::RegisterMessages() {
   // Setup handlers specific to this panel.
   DCHECK(web_ui_);
@@ -843,7 +849,7 @@ void InternetOptionsHandler::RefreshCellularPlanCallback(
   const chromeos::CellularNetwork* cellular =
       cros->FindCellularNetworkByPath(service_path);
   if (cellular)
-    cros->RefreshCellularDataPlans(cellular);
+    cellular->RefreshDataPlansIfNeeded();
 }
 
 ListValue* InternetOptionsHandler::GetNetwork(

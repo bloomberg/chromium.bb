@@ -348,7 +348,15 @@ class CellularNetwork : public WirelessNetwork {
   // Starts device activation process. Returns false if the device state does
   // not permit activation.
   bool StartActivation() const;
+  // Requests data plans if the network is conencted and activated.
+  // Plan data will be passed through Network::Observer::CellularDataPlanChanged
+  // callback.
+  void RefreshDataPlansIfNeeded() const;
+
   const ActivationState activation_state() const { return activation_state_; }
+  bool activated() const {
+    return activation_state() == ACTIVATION_STATE_ACTIVATED;
+  }
   const NetworkTechnology network_technology() const {
     return network_technology_;
   }
@@ -357,8 +365,7 @@ class CellularNetwork : public WirelessNetwork {
     return connectivity_state() == CONN_STATE_RESTRICTED;
   }
   bool needs_new_plan() const {
-    return restricted_pool() && connected() &&
-        activation_state() == ACTIVATION_STATE_ACTIVATED;
+    return restricted_pool() && connected() && activated();
   }
   const std::string& operator_name() const { return operator_name_; }
   const std::string& operator_code() const { return operator_code_; }
@@ -709,7 +716,7 @@ class NetworkLibrary {
       const std::string& path) const = 0;
 
   // Request a scan for new wifi networks.
-  virtual void RequestWifiScan() = 0;
+  virtual void RequestNetworkScan() = 0;
 
   // Reads out the results of the last wifi scan. These results are not
   // pre-cached in the library, so the call may block whilst the results are
@@ -739,10 +746,6 @@ class NetworkLibrary {
 
   // Connect to the specified cellular network.
   virtual void ConnectToCellularNetwork(const CellularNetwork* network) = 0;
-
-  // Initiates cellular data plan refresh. Plan data will be passed through
-  // Network::Observer::CellularDataPlanChanged callback.
-  virtual void RefreshCellularDataPlans(const CellularNetwork* network) = 0;
 
   // Records information that cellular play payment had happened.
   virtual void SignalCellularPlanPayment() = 0;

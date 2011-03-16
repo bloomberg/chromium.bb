@@ -702,9 +702,6 @@ bool Network::ParseValue(int index, const Value* value) {
           // State changed, so refresh IP address.
           // Note: blocking DBus call. TODO(stevenjb): refactor this.
           InitIPAddress();
-          // If cellular state has just changed to connected request data plans.
-          if (type_ == TYPE_CELLULAR && connected())
-            RequestCellularDataPlanUpdate(service_path_.c_str());
         }
         return true;
       }
@@ -1026,7 +1023,10 @@ bool CellularNetwork::ParseValue(int index, const Value* value) {
     case PROPERTY_INDEX_ACTIVATION_STATE: {
       std::string activation_state_string;
       if (value->GetAsString(&activation_state_string)) {
+        ActivationState prev_state = activation_state_;
         activation_state_ = ParseActivationState(activation_state_string);
+        if (activation_state_ != prev_state)
+          RefreshDataPlansIfNeeded();
         return true;
       }
       break;
@@ -1055,6 +1055,26 @@ bool CellularNetwork::ParseValue(int index, const Value* value) {
       return value->GetAsString(&payment_url_);
     case PROPERTY_INDEX_USAGE_URL:
       return value->GetAsString(&usage_url_);
+    case PROPERTY_INDEX_STATE: {
+      // Save previous state before calling WirelessNetwork::ParseValue.
+      ConnectionState prev_state = state_;
+      if (WirelessNetwork::ParseValue(index, value)) {
+        if (state_ != prev_state)
+          RefreshDataPlansIfNeeded();
+        return true;
+      }
+      break;
+    }
+    case PROPERTY_INDEX_CONNECTIVITY_STATE: {
+      // Save previous state before calling WirelessNetwork::ParseValue.
+      ConnectivityState prev_state = connectivity_state_;
+      if (WirelessNetwork::ParseValue(index, value)) {
+        if (connectivity_state_ != prev_state)
+          RefreshDataPlansIfNeeded();
+        return true;
+      }
+      break;
+    }
     default:
       return WirelessNetwork::ParseValue(index, value);
   }
@@ -1065,6 +1085,13 @@ bool CellularNetwork::StartActivation() const {
   if (!EnsureCrosLoaded())
     return false;
   return ActivateCellularModem(service_path().c_str(), NULL);
+}
+
+void CellularNetwork::RefreshDataPlansIfNeeded() const {
+  if (!EnsureCrosLoaded())
+    return;
+  if (connected() && activated())
+    RequestCellularDataPlanUpdate(service_path().c_str());
 }
 
 std::string CellularNetwork::GetNetworkTechnologyString() const {
@@ -1424,7 +1451,6 @@ class NetworkLibraryImpl : public NetworkLibrary  {
   virtual bool cellular_connected() const {
     return active_cellular_ ? active_cellular_->connected() : false;
   }
-
   virtual const VirtualNetwork* virtual_network() const {
     return active_virtual_;
   }
@@ -1510,11 +1536,15 @@ class NetworkLibraryImpl : public NetworkLibrary  {
     return NULL;
   }
 
-  virtual void RequestWifiScan() {
-    if (EnsureCrosLoaded() && wifi_enabled()) {
-      wifi_scanning_ = true;  // Cleared when updates are received.
-      RequestNetworkScan(kTypeWifi);
-      RequestRememberedNetworksUpdate();
+  virtual void RequestNetworkScan() {
+    if (EnsureCrosLoaded()) {
+      if (wifi_enabled()) {
+        wifi_scanning_ = true;  // Cleared when updates are received.
+        chromeos::RequestNetworkScan(kTypeWifi);
+        RequestRememberedNetworksUpdate();
+      }
+      if (cellular_network())
+        cellular_network()->RefreshDataPlansIfNeeded();
     }
   }
 
@@ -1670,14 +1700,6 @@ class NetworkLibraryImpl : public NetworkLibrary  {
 
     RequestNetworkServiceConnect(network->service_path().c_str(),
                                  WirelessConnectCallback, this);
-  }
-
-  virtual void RefreshCellularDataPlans(const CellularNetwork* network) {
-    DCHECK(network);
-    if (!EnsureCrosLoaded() || !network)
-      return;
-    VLOG(1) << " Requesting data plan for: " << network->service_path();
-    RequestCellularDataPlanUpdate(network->service_path().c_str());
   }
 
   // Records information that cellular play payment had happened.
@@ -2394,7 +2416,7 @@ class NetworkLibraryImpl : public NetworkLibrary  {
 
   Network* CreateNewNetwork(ConnectionType type,
                             const std::string& service_path) {
-    switch(type) {
+    switch (type) {
       case TYPE_ETHERNET: {
         EthernetNetwork* ethernet = new EthernetNetwork(service_path);
         return ethernet;
@@ -2717,6 +2739,7 @@ class NetworkLibraryImpl : public NetworkLibrary  {
 
   void UpdateCellularDataPlan(const std::string& service_path,
                               const CellularDataPlanList* data_plan_list) {
+    VLOG(1) << "Updating cellular data plans for: " << service_path;
     CellularDataPlanVector* data_plans = NULL;
     // Find and delete any existing data plans associated with |service_path|.
     CellularDataPlanMap::iterator found = data_plan_map_.find(service_path);
@@ -2729,7 +2752,10 @@ class NetworkLibraryImpl : public NetworkLibrary  {
     }
     for (size_t i = 0; i < data_plan_list->plans_size; i++) {
       const CellularDataPlanInfo* info(data_plan_list->GetCellularDataPlan(i));
-      data_plans->push_back(new CellularDataPlan(*info));
+      CellularDataPlan* plan = new CellularDataPlan(*info);
+      data_plans->push_back(plan);
+      VLOG(2) << " Plan: " << plan->GetPlanDesciption()
+              << " : " << plan->GetDataRemainingDesciption();
     }
     // Now, update any matching cellular network's cached data
     CellularNetwork* cellular = GetCellularNetworkByPath(service_path);
@@ -2740,6 +2766,8 @@ class NetworkLibraryImpl : public NetworkLibrary  {
         data_left = CellularNetwork::DATA_NONE;
       else
         data_left = GetDataLeft(data_plans);
+      VLOG(2) << " Data left: " << data_left
+              << " Need plan: " << cellular->needs_new_plan();
       cellular->set_data_left(data_left);
     }
     NotifyCellularDataPlanChanged();
@@ -3042,7 +3070,7 @@ class NetworkLibraryStubImpl : public NetworkLibrary {
   virtual const CellularDataPlan* GetSignificantDataPlan(
       const std::string& path) const { return NULL; }
 
-  virtual void RequestWifiScan() {}
+  virtual void RequestNetworkScan() {}
   virtual bool GetWifiAccessPoints(WifiAccessPointVector* result) {
     return false;
   }
@@ -3056,7 +3084,6 @@ class NetworkLibraryStubImpl : public NetworkLibrary {
                                     const std::string& certpath,
                                     bool auto_connect) {}
   virtual void ConnectToCellularNetwork(const CellularNetwork* network) {}
-  virtual void RefreshCellularDataPlans(const CellularNetwork* network) {}
   virtual void SignalCellularPlanPayment() {}
   virtual bool HasRecentCellularPlanPayment() { return false; }
   virtual void DisconnectFromWirelessNetwork(const WirelessNetwork* network) {}

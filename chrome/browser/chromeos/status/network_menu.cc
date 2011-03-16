@@ -528,7 +528,7 @@ SkBitmap NetworkMenu::IconForDisplay(const SkBitmap* icon,
 void NetworkMenu::RunMenu(views::View* source, const gfx::Point& pt) {
   refreshing_menu_ = true;
   NetworkLibrary* cros = CrosLibrary::Get()->GetNetworkLibrary();
-  cros->RequestWifiScan();
+  cros->RequestNetworkScan();
 
   // Build initial menu items. They will be updated when UpdateMenu is
   // called from NetworkChanged.
