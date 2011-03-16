@@ -457,6 +457,8 @@ TEST_F(ProgramManagerWithShaderTest, AttachDetachShader) {
   EXPECT_FALSE(program_info->CanLink());
   fshader->SetStatus(true, "", NULL);
   EXPECT_TRUE(program_info->CanLink());
+  EXPECT_TRUE(program_info->DetachShader(&shader_manager, fshader));
+  EXPECT_FALSE(program_info->DetachShader(&shader_manager, fshader));
   shader_manager.Destroy(false);
 }
 

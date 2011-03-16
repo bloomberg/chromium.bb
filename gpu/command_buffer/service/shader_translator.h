@@ -62,7 +62,7 @@ class ShaderTranslatorInterface {
 class ShaderTranslator : public ShaderTranslatorInterface {
  public:
   ShaderTranslator();
-  ~ShaderTranslator();
+  virtual ~ShaderTranslator();
 
   // Overridden from ShaderTranslatorInterface.
   virtual bool Init(

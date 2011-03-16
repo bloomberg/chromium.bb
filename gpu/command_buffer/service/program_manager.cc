@@ -377,13 +377,17 @@ bool ProgramManager::ProgramInfo::AttachShader(
   return true;
 }
 
-void ProgramManager::ProgramInfo::DetachShader(
+bool ProgramManager::ProgramInfo::DetachShader(
     ShaderManager* shader_manager,
     ShaderManager::ShaderInfo* info) {
   DCHECK(shader_manager);
   DCHECK(info);
+  if (attached_shaders_[ShaderTypeToIndex(info->shader_type())].get() != info) {
+    return false;
+  }
   attached_shaders_[ShaderTypeToIndex(info->shader_type())] = NULL;
   shader_manager->UnuseShader(info);
+  return true;
 }
 
 void ProgramManager::ProgramInfo::DetachShaders(ShaderManager* shader_manager) {

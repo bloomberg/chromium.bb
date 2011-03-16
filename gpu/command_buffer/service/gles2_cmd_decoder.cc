@@ -4455,8 +4455,12 @@ void GLES2DecoderImpl::DoDetachShader(
   if (!shader_info) {
     return;
   }
+  if (!program_info->DetachShader(shader_manager(), shader_info)) {
+    SetGLError(GL_INVALID_OPERATION,
+               "glDetachShader: shader not attached to program");
+    return;
+  }
   glDetachShader(program_info->service_id(), shader_info->service_id());
-  program_info->DetachShader(shader_manager(), shader_info);
 }
 
 void GLES2DecoderImpl::DoValidateProgram(GLuint program_client_id) {
