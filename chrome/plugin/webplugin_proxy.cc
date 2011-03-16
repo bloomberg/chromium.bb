@@ -29,7 +29,7 @@
 #endif
 
 #if defined(OS_WIN)
-#include "chrome/common/section_util_win.h"
+#include "content/common/section_util_win.h"
 #include "ui/gfx/gdi_util.h"
 #endif
 

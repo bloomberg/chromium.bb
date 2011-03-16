@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/common/section_util_win.h"
+#include "content/common/section_util_win.h"
 
 namespace chrome {
 

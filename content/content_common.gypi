@@ -110,6 +110,8 @@
         'common/sandbox_init_wrapper_win.cc',
         'common/sandbox_mac.h',
         'common/sandbox_mac.mm',
+        'common/section_util_win.cc',
+        'common/section_util_win.h',
         'common/socket_stream.h',
         'common/socket_stream_dispatcher.cc',
         'common/socket_stream_dispatcher.h',

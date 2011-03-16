@@ -31,7 +31,7 @@
 #include "ui/gfx/skbitmap_operations.h"
 
 #if defined(OS_WIN)
-#include "chrome/common/section_util_win.h"
+#include "content/common/section_util_win.h"
 #endif
 
 // Overview

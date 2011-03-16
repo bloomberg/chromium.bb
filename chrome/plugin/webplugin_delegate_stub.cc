@@ -7,12 +7,12 @@
 #include "build/build_config.h"
 
 #include "base/command_line.h"
-#include "chrome/common/chrome_switches.h"
 #include "chrome/plugin/npobject_stub.h"
 #include "chrome/plugin/plugin_channel.h"
 #include "chrome/plugin/plugin_thread.h"
 #include "chrome/plugin/webplugin_proxy.h"
 #include "content/common/content_client.h"
+#include "content/common/content_switches.h"
 #include "content/common/plugin_messages.h"
 #include "third_party/npapi/bindings/npapi.h"
 #include "third_party/npapi/bindings/npruntime.h"

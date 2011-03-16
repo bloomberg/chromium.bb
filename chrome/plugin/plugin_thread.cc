@@ -19,10 +19,11 @@
 #include "base/lazy_instance.h"
 #include "base/process_util.h"
 #include "base/threading/thread_local.h"
-#include "chrome/common/chrome_switches.h"
 #include "chrome/plugin/npobject_util.h"
 #include "chrome/renderer/render_thread.h"
 #include "content/common/child_process.h"
+#include "content/common/content_client.h"
+#include "content/common/content_switches.h"
 #include "content/common/child_process_messages.h"
 #include "content/common/plugin_messages.h"
 #include "ipc/ipc_channel_handle.h"
@@ -37,12 +38,6 @@
 
 #if defined(USE_X11)
 #include "ui/base/x/x11_util.h"
-#elif defined(OS_MACOSX)
-#include "base/mac/mac_util.h"
-#include "base/mac/scoped_cftyperef.h"
-#include "base/sys_string_conversions.h"
-#include "grit/chromium_strings.h"
-#include "ui/base/l10n/l10n_util.h"
 #endif
 
 static base::LazyInstance<base::ThreadLocalPointer<PluginThread> > lazy_tls(
@@ -84,21 +79,11 @@ PluginThread::PluginThread()
 
   scoped_refptr<webkit::npapi::PluginLib> plugin(
       webkit::npapi::PluginLib::CreatePluginLib(plugin_path_));
-  if (plugin.get()) {
+  if (plugin.get())
     plugin->NP_Initialize();
 
-#if defined(OS_MACOSX)
-    base::mac::ScopedCFTypeRef<CFStringRef> plugin_name(
-        base::SysUTF16ToCFStringRef(plugin->plugin_info().name));
-    base::mac::ScopedCFTypeRef<CFStringRef> app_name(
-        base::SysUTF16ToCFStringRef(
-            l10n_util::GetStringUTF16(IDS_SHORT_PLUGIN_APP_NAME)));
-    base::mac::ScopedCFTypeRef<CFStringRef> process_name(
-        CFStringCreateWithFormat(kCFAllocatorDefault, NULL, CFSTR("%@ (%@)"),
-                                 plugin_name.get(), app_name.get()));
-    base::mac::SetProcessName(process_name);
-#endif
-  }
+  content::GetContentClient()->PluginProcessStarted(
+      plugin.get() ? plugin->plugin_info().name : string16());
 
   // Certain plugins, such as flash, steal the unhandled exception filter
   // thus we never get crash reports when they fault. This call fixes it.

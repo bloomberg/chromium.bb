@@ -107,7 +107,7 @@
 
 #if defined(OS_WIN)
 #include <objbase.h>
-#include "chrome/common/section_util_win.h"
+#include "content/common/section_util_win.h"
 #endif
 
 using WebKit::WebCache;

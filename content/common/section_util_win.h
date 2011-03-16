@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_COMMON_SECTION_UTIL_WIN_H_
-#define CHROME_COMMON_SECTION_UTIL_WIN_H_
+#ifndef CONTENT_COMMON_SECTION_UTIL_WIN_H_
+#define CONTENT_COMMON_SECTION_UTIL_WIN_H_
 #pragma once
 
 #include <windows.h>
@@ -20,4 +20,4 @@ HANDLE GetSectionForProcess(HANDLE section, HANDLE process, bool read_only);
 
 }  // namespace chrome
 
-#endif  // CHROME_COMMON_SECTION_UTIL_WIN_H_
+#endif  // CONTENT_COMMON_SECTION_UTIL_WIN_H_

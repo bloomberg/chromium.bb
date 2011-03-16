@@ -8,6 +8,7 @@
 
 #include "base/basictypes.h"
 #include "base/scoped_ptr.h"
+#include "base/string16.h"
 
 class ContentBrowserClient;
 class GURL;
@@ -44,7 +45,7 @@ class ContentClient {
   virtual void SetGpuInfo(const GPUInfo& gpu_info) {}
 
   // Notifies that a plugin process has started.
-  virtual void PluginProcessStarted() {}
+  virtual void PluginProcessStarted(const string16& plugin_name) {}
 
  private:
   ContentBrowserClient* browser_client_;
