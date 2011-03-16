@@ -8,6 +8,7 @@
 
 #include "chrome/browser/cookies_tree_model.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/gtk/gtk_chrome_cookie_view.h"
 #include "chrome/browser/ui/gtk/gtk_util.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/common/notification_source.h"
@@ -18,6 +19,10 @@ namespace {
 // Width and height of the cookie tree view.
 const int kTreeViewWidth = 450;
 const int kTreeViewHeight = 150;
+
+// The page numbers of the pages in the notebook.
+const gint kAllowedPageNumber = 0;
+const gint kBlockedPageNumber = 1;
 
 // Padding within the banner box.
 const int kBannerPadding = 3;
@@ -79,9 +84,6 @@ CollectedCookiesGtk::CollectedCookiesGtk(GtkWindow* parent,
 }
 
 void CollectedCookiesGtk::Init() {
-  HostContentSettingsMap* host_content_settings_map =
-      tab_contents_->profile()->GetHostContentSettingsMap();
-
   dialog_ = gtk_vbox_new(FALSE, gtk_util::kContentAreaSpacing);
   gtk_box_set_spacing(GTK_BOX(dialog_), gtk_util::kContentAreaSpacing);
 
@@ -89,15 +91,82 @@ void CollectedCookiesGtk::Init() {
       l10n_util::GetStringUTF8(IDS_COLLECTED_COOKIES_DIALOG_TITLE).c_str());
   gtk_box_pack_start(GTK_BOX(dialog_), label, TRUE, TRUE, 0);
 
-  // Allowed Cookie list.
-  GtkWidget* cookie_list_vbox = gtk_vbox_new(FALSE, gtk_util::kControlSpacing);
-  gtk_box_pack_start(GTK_BOX(dialog_), cookie_list_vbox, TRUE, TRUE, 0);
+  notebook_ = gtk_notebook_new();
+  gtk_notebook_set_tab_pos(GTK_NOTEBOOK(notebook_), GTK_POS_TOP);
+  gtk_box_pack_start(GTK_BOX(dialog_), notebook_, TRUE, TRUE, 0);
 
+  GtkWidget* allowed_pane = CreateAllowedPane();
   label = gtk_label_new(
+      l10n_util::GetStringUTF8(IDS_COLLECTED_COOKIES_ALLOWED_COOKIES_TAB_LABEL)
+          .c_str());
+  gtk_widget_show(label);
+  gtk_notebook_insert_page(GTK_NOTEBOOK(notebook_), allowed_pane, label,
+                           kAllowedPageNumber);
+
+  GtkWidget* blocked_pane = CreateBlockedPane();
+  label = gtk_label_new(
+      l10n_util::GetStringUTF8(IDS_COLLECTED_COOKIES_BLOCKED_COOKIES_TAB_LABEL)
+          .c_str());
+  gtk_widget_show(label);
+  gtk_notebook_insert_page(GTK_NOTEBOOK(notebook_), blocked_pane, label,
+                           kBlockedPageNumber);
+  // Hook up the signal only after all pages are inserted, otherwise not
+  // all member variables used in OnSwitchPage() will be properly initialized.
+  g_signal_connect(notebook_, "switch-page", G_CALLBACK(OnSwitchPageThunk),
+                   this);
+
+  // Cookie info view.
+  cookie_info_view_ = gtk_chrome_cookie_view_new(false);
+  gtk_box_pack_start(GTK_BOX(dialog_), cookie_info_view_, TRUE, TRUE, 0);
+  gtk_chrome_cookie_view_clear(GTK_CHROME_COOKIE_VIEW(cookie_info_view_));
+  gtk_widget_show_all(cookie_info_view_);
+
+  // Infobar.
+  infobar_ = gtk_frame_new(NULL);
+  GtkWidget* infobar_contents = gtk_hbox_new(FALSE, kBannerPadding);
+  gtk_container_set_border_width(GTK_CONTAINER(infobar_contents),
+                                 kBannerPadding);
+  gtk_container_add(GTK_CONTAINER(infobar_), infobar_contents);
+  GtkWidget* info_image =
+      gtk_image_new_from_stock(GTK_STOCK_DIALOG_INFO,
+                               GTK_ICON_SIZE_SMALL_TOOLBAR);
+  gtk_box_pack_start(GTK_BOX(infobar_contents), info_image, FALSE, FALSE, 0);
+  infobar_label_ = gtk_label_new(NULL);
+  gtk_box_pack_start(
+      GTK_BOX(infobar_contents), infobar_label_, FALSE, FALSE, 0);
+  gtk_widget_show_all(infobar_);
+  gtk_widget_set_no_show_all(infobar_, TRUE);
+  gtk_widget_hide(infobar_);
+  gtk_box_pack_start(GTK_BOX(dialog_), infobar_, TRUE, TRUE, 0);
+
+  // Close button.
+  GtkWidget* button_box = gtk_hbutton_box_new();
+  gtk_button_box_set_layout(GTK_BUTTON_BOX(button_box), GTK_BUTTONBOX_END);
+  gtk_box_set_spacing(GTK_BOX(button_box), gtk_util::kControlSpacing);
+  gtk_box_pack_end(GTK_BOX(dialog_), button_box, FALSE, TRUE, 0);
+  close_button_ = gtk_button_new_from_stock(GTK_STOCK_CLOSE);
+  gtk_button_set_label(GTK_BUTTON(close_button_),
+                       l10n_util::GetStringUTF8(IDS_CLOSE).c_str());
+  g_signal_connect(close_button_, "clicked", G_CALLBACK(OnCloseThunk), this);
+  gtk_box_pack_end(GTK_BOX(button_box), close_button_, FALSE, TRUE, 0);
+
+  // Show the dialog.
+  allowed_cookies_tree_adapter_->Init();
+  blocked_cookies_tree_adapter_->Init();
+  EnableControls();
+  ShowCookieInfo(gtk_notebook_get_current_page(GTK_NOTEBOOK(notebook_)));
+  window_ = tab_contents_->CreateConstrainedDialog(this);
+}
+
+GtkWidget* CollectedCookiesGtk::CreateAllowedPane() {
+  GtkWidget* cookie_list_vbox = gtk_vbox_new(FALSE, gtk_util::kControlSpacing);
+
+  GtkWidget* label = gtk_label_new(
       l10n_util::GetStringUTF8(IDS_COLLECTED_COOKIES_ALLOWED_COOKIES_LABEL).
           c_str());
   gtk_misc_set_alignment(GTK_MISC(label), 0, 0.5);
-  gtk_box_pack_start(GTK_BOX(cookie_list_vbox), label, FALSE, FALSE, 0);
+  gtk_box_pack_start(GTK_BOX(cookie_list_vbox), label, FALSE, FALSE,
+                     gtk_util::kControlSpacing);
 
   GtkWidget* scroll_window = gtk_scrolled_window_new(NULL, NULL);
   gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(scroll_window),
@@ -145,21 +214,29 @@ void CollectedCookiesGtk::Init() {
   GtkWidget* button_box = gtk_hbutton_box_new();
   gtk_button_box_set_layout(GTK_BUTTON_BOX(button_box), GTK_BUTTONBOX_START);
   gtk_box_set_spacing(GTK_BOX(button_box), gtk_util::kControlSpacing);
-  gtk_box_pack_start(GTK_BOX(dialog_), button_box, FALSE, FALSE, 0);
+  gtk_box_pack_start(GTK_BOX(cookie_list_vbox), button_box, FALSE, FALSE,
+                     gtk_util::kControlSpacing);
   block_allowed_cookie_button_ = gtk_button_new_with_label(
       l10n_util::GetStringUTF8(IDS_COLLECTED_COOKIES_BLOCK_BUTTON).c_str());
   g_signal_connect(block_allowed_cookie_button_, "clicked",
                    G_CALLBACK(OnBlockAllowedButtonClickedThunk), this);
   gtk_container_add(GTK_CONTAINER(button_box), block_allowed_cookie_button_);
 
-  GtkWidget* separator = gtk_hseparator_new();
-  gtk_box_pack_start(GTK_BOX(dialog_), separator, TRUE, TRUE, 0);
+  // Wrap the vbox inside an hbox so that we can specify padding along the
+  // horizontal axis.
+  GtkWidget* box = gtk_hbox_new(FALSE, 0);
+  gtk_box_pack_start(GTK_BOX(box), cookie_list_vbox, TRUE, TRUE,
+                     gtk_util::kControlSpacing);
+  return box;
+}
 
-  // Blocked Cookie list.
-  cookie_list_vbox = gtk_vbox_new(FALSE, gtk_util::kControlSpacing);
-  gtk_box_pack_start(GTK_BOX(dialog_), cookie_list_vbox, TRUE, TRUE, 0);
+GtkWidget* CollectedCookiesGtk::CreateBlockedPane() {
+  HostContentSettingsMap* host_content_settings_map =
+      tab_contents_->profile()->GetHostContentSettingsMap();
 
-  label = gtk_label_new(
+  GtkWidget* cookie_list_vbox = gtk_vbox_new(FALSE, gtk_util::kControlSpacing);
+
+  GtkWidget* label = gtk_label_new(
       l10n_util::GetStringUTF8(
           host_content_settings_map->BlockThirdPartyCookies() ?
               IDS_COLLECTED_COOKIES_BLOCKED_THIRD_PARTY_BLOCKING_ENABLED :
@@ -167,15 +244,19 @@ void CollectedCookiesGtk::Init() {
   gtk_widget_set_size_request(label, kTreeViewWidth, -1);
   gtk_label_set_line_wrap(GTK_LABEL(label), TRUE);
   gtk_misc_set_alignment(GTK_MISC(label), 0, 0.5);
-  gtk_box_pack_start(GTK_BOX(cookie_list_vbox), label, TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(cookie_list_vbox), label, TRUE, TRUE,
+                     gtk_util::kControlSpacing);
 
-  scroll_window = gtk_scrolled_window_new(NULL, NULL);
+  GtkWidget* scroll_window = gtk_scrolled_window_new(NULL, NULL);
   gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(scroll_window),
                                  GTK_POLICY_AUTOMATIC,
                                  GTK_POLICY_AUTOMATIC);
   gtk_scrolled_window_set_shadow_type(GTK_SCROLLED_WINDOW(scroll_window),
                                       GTK_SHADOW_ETCHED_IN);
   gtk_box_pack_start(GTK_BOX(cookie_list_vbox), scroll_window, TRUE, TRUE, 0);
+
+  TabSpecificContentSettings* content_settings =
+      tab_contents_->GetTabSpecificContentSettings();
 
   blocked_cookies_tree_model_.reset(
       content_settings->GetBlockedCookiesTreeModel());
@@ -188,12 +269,12 @@ void CollectedCookiesGtk::Init() {
   gtk_tree_view_set_enable_tree_lines(GTK_TREE_VIEW(blocked_tree_), TRUE);
   gtk_container_add(GTK_CONTAINER(scroll_window), blocked_tree_);
 
-  title_column = gtk_tree_view_column_new();
-  pixbuf_renderer = gtk_cell_renderer_pixbuf_new();
+  GtkTreeViewColumn* title_column = gtk_tree_view_column_new();
+  GtkCellRenderer* pixbuf_renderer = gtk_cell_renderer_pixbuf_new();
   gtk_tree_view_column_pack_start(title_column, pixbuf_renderer, FALSE);
   gtk_tree_view_column_add_attribute(title_column, pixbuf_renderer, "pixbuf",
                                      gtk_tree::TreeAdapter::COL_ICON);
-  title_renderer = gtk_cell_renderer_text_new();
+  GtkCellRenderer* title_renderer = gtk_cell_renderer_text_new();
   gtk_tree_view_column_pack_start(title_column, title_renderer, TRUE);
   gtk_tree_view_column_add_attribute(title_column, title_renderer, "text",
                                      gtk_tree::TreeAdapter::COL_TITLE);
@@ -209,10 +290,11 @@ void CollectedCookiesGtk::Init() {
   g_signal_connect(blocked_selection_, "changed",
                    G_CALLBACK(OnTreeViewSelectionChangeThunk), this);
 
-  button_box = gtk_hbutton_box_new();
+  GtkWidget* button_box = gtk_hbutton_box_new();
   gtk_button_box_set_layout(GTK_BUTTON_BOX(button_box), GTK_BUTTONBOX_START);
   gtk_box_set_spacing(GTK_BOX(button_box), gtk_util::kControlSpacing);
-  gtk_box_pack_start(GTK_BOX(dialog_), button_box, FALSE, FALSE, 0);
+  gtk_box_pack_start(GTK_BOX(cookie_list_vbox), button_box, FALSE, FALSE,
+                     gtk_util::kControlSpacing);
   allow_blocked_cookie_button_ = gtk_button_new_with_label(
       l10n_util::GetStringUTF8(IDS_COLLECTED_COOKIES_ALLOW_BUTTON).c_str());
   g_signal_connect(allow_blocked_cookie_button_, "clicked",
@@ -226,40 +308,48 @@ void CollectedCookiesGtk::Init() {
   gtk_container_add(GTK_CONTAINER(button_box),
                     for_session_blocked_cookie_button_);
 
-  // Infobar.
-  infobar_ = gtk_frame_new(NULL);
-  GtkWidget* infobar_contents = gtk_hbox_new(FALSE, kBannerPadding);
-  gtk_container_set_border_width(GTK_CONTAINER(infobar_contents),
-                                 kBannerPadding);
-  gtk_container_add(GTK_CONTAINER(infobar_), infobar_contents);
-  GtkWidget* info_image =
-      gtk_image_new_from_stock(GTK_STOCK_DIALOG_INFO,
-                               GTK_ICON_SIZE_SMALL_TOOLBAR);
-  gtk_box_pack_start(GTK_BOX(infobar_contents), info_image, FALSE, FALSE, 0);
-  infobar_label_ = gtk_label_new(NULL);
-  gtk_box_pack_start(
-      GTK_BOX(infobar_contents), infobar_label_, FALSE, FALSE, 0);
-  gtk_widget_show_all(infobar_);
-  gtk_widget_set_no_show_all(infobar_, TRUE);
-  gtk_widget_hide(infobar_);
-  gtk_box_pack_start(GTK_BOX(dialog_), infobar_, TRUE, TRUE, 0);
+  // Wrap the vbox inside an hbox so that we can specify padding along the
+  // horizontal axis.
+  GtkWidget* box = gtk_hbox_new(FALSE, 0);
+  gtk_box_pack_start(GTK_BOX(box), cookie_list_vbox, TRUE, TRUE,
+                     gtk_util::kControlSpacing);
+  return box;
+}
 
-  // Close button.
-  button_box = gtk_hbutton_box_new();
-  gtk_button_box_set_layout(GTK_BUTTON_BOX(button_box), GTK_BUTTONBOX_END);
-  gtk_box_set_spacing(GTK_BOX(button_box), gtk_util::kControlSpacing);
-  gtk_box_pack_end(GTK_BOX(dialog_), button_box, FALSE, TRUE, 0);
-  close_button_ = gtk_button_new_from_stock(GTK_STOCK_CLOSE);
-  gtk_button_set_label(GTK_BUTTON(close_button_),
-                       l10n_util::GetStringUTF8(IDS_CLOSE).c_str());
-  g_signal_connect(close_button_, "clicked", G_CALLBACK(OnCloseThunk), this);
-  gtk_box_pack_end(GTK_BOX(button_box), close_button_, FALSE, TRUE, 0);
+void CollectedCookiesGtk::ShowCookieInfo(gint current_page) {
+  if (current_page == kAllowedPageNumber) {
+    ShowSelectionInfo(allowed_selection_, allowed_cookies_tree_adapter_.get());
+  } else if (current_page == kBlockedPageNumber) {
+    ShowSelectionInfo(blocked_selection_, blocked_cookies_tree_adapter_.get());
+  }
+}
 
-  // Show the dialog.
-  allowed_cookies_tree_adapter_->Init();
-  blocked_cookies_tree_adapter_->Init();
-  EnableControls();
-  window_ = tab_contents_->CreateConstrainedDialog(this);
+void CollectedCookiesGtk::ShowSelectionInfo(GtkTreeSelection* selection,
+                                            gtk_tree::TreeAdapter* adapter) {
+  // Check if one "cookie" node is selected.  Don't allow more than one.
+  GtkTreeModel* model;
+  GList* paths = gtk_tree_selection_get_selected_rows(selection, &model);
+  if (g_list_length(paths) == 1) {
+    GList* item = g_list_first(paths);
+    GtkTreeIter iter;
+    gtk_tree_model_get_iter(model, &iter,
+                            reinterpret_cast<GtkTreePath*>(item->data));
+    CookieTreeNode* node =
+        static_cast<CookieTreeNode*>(adapter->GetNode(&iter));
+    const CookieTreeNode::DetailedInfo detailed_info = node->GetDetailedInfo();
+    if (detailed_info.node_type == CookieTreeNode::DetailedInfo::TYPE_COOKIE) {
+      gtk_chrome_cookie_view_display_cookie(
+          GTK_CHROME_COOKIE_VIEW(cookie_info_view_),
+          detailed_info.cookie->Domain(),
+          *detailed_info.cookie);
+    } else {
+      gtk_chrome_cookie_view_clear(GTK_CHROME_COOKIE_VIEW(cookie_info_view_));
+    }
+  } else {
+    gtk_chrome_cookie_view_clear(GTK_CHROME_COOKIE_VIEW(cookie_info_view_));
+  }
+
+  g_list_free(paths);
 }
 
 CollectedCookiesGtk::~CollectedCookiesGtk() {
@@ -389,9 +479,16 @@ void CollectedCookiesGtk::OnForSessionBlockedButtonClicked(GtkWidget* button) {
                 CONTENT_SETTING_SESSION_ONLY);
 }
 
+void CollectedCookiesGtk::OnSwitchPage(GtkWidget* notebook,
+                                       gpointer page,
+                                       guint page_num) {
+  EnableControls();
+  ShowCookieInfo(page_num);
+}
+
 void CollectedCookiesGtk::OnTreeViewRowExpanded(GtkWidget* tree_view,
-                                        GtkTreeIter* iter,
-                                        GtkTreePath* path) {
+                                                GtkTreeIter* iter,
+                                                GtkTreePath* path) {
   // When a row in the tree is expanded, expand all the children too.
   g_signal_handlers_block_by_func(
       tree_view, reinterpret_cast<gpointer>(OnTreeViewRowExpandedThunk), this);
@@ -402,4 +499,5 @@ void CollectedCookiesGtk::OnTreeViewRowExpanded(GtkWidget* tree_view,
 
 void CollectedCookiesGtk::OnTreeViewSelectionChange(GtkWidget* selection) {
   EnableControls();
+  ShowCookieInfo(gtk_notebook_get_current_page(GTK_NOTEBOOK(notebook_)));
 }
