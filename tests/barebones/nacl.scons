@@ -52,11 +52,6 @@ for basename in ['addr_modes',
                  'vtable',
                  'vaarg',
                  ]:
-  # http://code.google.com/p/nativeclient/issues/detail?id=1541
-  if basename == 'only_bss':
-    other_broken = True
-  else:
-    other_broken = False
 
   # c.f. http://code.google.com/p/nativeclient/issues/detail?id=783
   if env.Bit('build_arm') and basename == 'vaarg': continue
@@ -81,7 +76,7 @@ for basename in ['addr_modes',
   env.AddNodeToTestSuite(node,
                          ['small_tests', 'sel_ldr_tests', 'barebones_tests'],
                          test,
-                         is_broken=is_broken or other_broken)
+                         is_broken=is_broken)
 
 
 # a test that the validador can handle an empty segment after the last

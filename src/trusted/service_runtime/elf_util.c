@@ -492,6 +492,12 @@ NaClErrorCode NaClElfImageLoad(struct NaClElfImage *image,
     }
 
     NaClLog(2, "loading segment %d\n", segnum);
+
+    if (0 == php->p_filesz) {
+      NaClLog(4, "zero-sized segment.  ignoring...\n");
+      continue;
+    }
+
     end_vaddr = php->p_vaddr + php->p_filesz;
     /* integer overflow? */
     if (end_vaddr < php->p_vaddr) {
