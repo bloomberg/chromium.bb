@@ -522,6 +522,17 @@ void AppLauncherHandler::PromptToEnableApp(std::string extension_id) {
       extensions_service_->GetExtensionById(extension_id, true);
   CHECK(extension);
 
+  ExtensionPrefs* extension_prefs = extensions_service_->extension_prefs();
+  if (!extension_prefs->DidExtensionEscalatePermissions(extension_id)) {
+    // Enable the extension immediately if its privileges weren't escalated.
+    extensions_service_->EnableExtension(extension_id);
+
+    // Launch app asynchronously so the image will update.
+    StringValue* app_id = Value::CreateStringValue(extension->id());
+    web_ui_->CallJavascriptFunction("launchAppAfterEnable", *app_id);
+    return;
+  }
+
   if (!extension_id_prompting_.empty())
     return;  // Only one prompt at a time.
 
