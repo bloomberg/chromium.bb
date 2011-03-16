@@ -822,16 +822,90 @@ void CookieMonster::ValidateMap(int arg) {
   ValidateMapWhileLockHeld(arg);
 }
 
+// TODO(eroman): Get rid of this once 74585 is fixed.
+void AskUserToReportIssue() {
+#if defined(OS_WIN)
+  MessageBox(
+      NULL,
+      L"Chrome has crashed due to issue 74585.\n"
+      L"Please help us fix the problem by adding a comment on:\n\n"
+      L"    http://crbug.com/74585\n\n"
+      L"(which explains how you triggered this.) Thanks!",
+      L"OOPS!",
+      MB_ICONERROR | MB_SETFOREGROUND | MB_TOPMOST);
+#endif  // defined(OS_WIN)
+}
+
+
 void CookieMonster::ValidateMapWhileLockHeld(int arg) {
   lock_.AssertAcquired();
 
   // Skipping InitIfNecessary() to allow validation before first use.
   CHECK_EQ(kMonsterAlive, monster_alive_);
-  for (CookieMap::iterator it = cookies_.begin(); it != cookies_.end(); ++it)
-    CHECK(it->second);
-  // Keep routine from optimizing away.
-  VLOG(1) << "ValidateMap arg was " << arg;
+
+  // Check if any of the pointers in the map are NULL (they shouldn't be).
+  CookieMap::iterator it = cookies_.begin();
+  int i = 0;
+
+  for (; it != cookies_.end(); ++it, ++i) {
+    if (!it->second) {
+      // The map is invalid!
+      AskUserToReportIssue();
+      CrashBecauseCookieMapIsInvalid(cookies_, it, i);
+    }
+  }
 }
+
+// Disable optimizations so that our variables will be stack-resident in the
+// minidumps.
+#if defined(OS_WIN)
+#pragma warning (disable: 4748)
+#pragma optimize( "", off )
+#endif
+
+// TODO(eroman): Get rid of this once 74585 is fixed.
+void CookieMonster::CrashBecauseCookieMapIsInvalid(
+    const CookieMap& cookies,
+    const CookieMap::iterator& null_value_it,
+    int null_value_pos) {
+  int num_null_values = 0;
+
+  // Check how many other NULL values the map contains (in case there is more
+  // than one).
+  for (CookieMap::const_iterator it = cookies.begin(); it != cookies.end();
+       ++it) {
+    if (!it->second) {
+      num_null_values += 1;
+    }
+  }
+
+  // Keep track of how big the map was.
+  int size = cookies.size();
+
+  // Check that the non-NULL pointers are not garbage memory. If they are,
+  // the following loop will likely crash when calling IsEquivalent()
+  CanonicalCookie cc(
+      GURL("http://bogus-cc/"), "bogus name", "bogus value", "bogus domain",
+      "path", true, true, base::Time(), base::Time(), false, base::Time());
+  for (CookieMap::const_iterator it = cookies.begin(); it != cookies.end();
+       ++it) {
+    if (it->second) {
+      CHECK(!cc.IsEquivalent(*it->second));
+    }
+  }
+
+  // Crash!
+  CHECK(false);
+
+  // The following shouldn't be necessary since we disabled optimizations, but
+  // it can't hurt ;)
+  LOG(INFO) << num_null_values << " " << size << " " << null_value_pos;
+}
+
+#if defined(OS_WIN)
+#pragma optimize( "", on )
+#pragma warning (default: 4748)
+#endif
 
 CookieMonster::~CookieMonster() {
   DeleteAll(false);

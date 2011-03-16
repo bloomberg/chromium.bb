@@ -288,9 +288,13 @@ class CookieMonster : public CookieStore {
     DELETE_COOKIE_LAST_ENTRY
   };
 
-  // Debugging method
-  // TODO(eroman): Delete this when 74585 is sorted out.
+  // Debugging methods
+  // TODO(eroman): Delete these when 74585 is sorted out.
   void ValidateMapWhileLockHeld(int arg);
+  static void CrashBecauseCookieMapIsInvalid(
+      const CookieMap& cookies,
+      const CookieMap::iterator& null_value_it,
+      int null_value_pos);
 
   // Cookie garbage collection thresholds.  Based off of the Mozilla defaults.
   // When the number of cookies gets to k{Domain,}MaxCookies
