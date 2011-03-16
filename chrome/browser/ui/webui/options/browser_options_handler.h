@@ -6,18 +6,21 @@
 #define CHROME_BROWSER_UI_WEBUI_OPTIONS_BROWSER_OPTIONS_HANDLER_H_
 #pragma once
 
+#include "chrome/browser/autocomplete/autocomplete_controller_delegate.h"
 #include "chrome/browser/prefs/pref_member.h"
 #include "chrome/browser/search_engines/template_url_model_observer.h"
 #include "chrome/browser/shell_integration.h"
 #include "chrome/browser/ui/webui/options/options_ui.h"
 #include "ui/base/models/table_model_observer.h"
 
+class AutocompleteController;
 class CustomHomePagesTableModel;
 class OptionsManagedBannerHandler;
 class TemplateURLModel;
 
 // Chrome browser options page UI handler.
 class BrowserOptionsHandler : public OptionsPageUIHandler,
+                              public AutocompleteControllerDelegate,
                               public ShellIntegration::DefaultBrowserObserver,
                               public TemplateURLModelObserver,
                               public ui::TableModelObserver {
@@ -30,6 +33,9 @@ class BrowserOptionsHandler : public OptionsPageUIHandler,
   // OptionsPageUIHandler implementation.
   virtual void GetLocalizedValues(DictionaryValue* localized_strings);
   virtual void RegisterMessages();
+
+  // AutocompleteControllerDelegate implementation.
+  virtual void OnResultChanged(bool default_match_changed);
 
   // ShellIntegration::DefaultBrowserObserver implementation.
   virtual void SetDefaultBrowserUIState(
@@ -73,6 +79,10 @@ class BrowserOptionsHandler : public OptionsPageUIHandler,
   // Sets the startup page set to the current pages. Called from WebUI.
   void SetStartupPagesToCurrentPages(const ListValue* args);
 
+  // Gets autocomplete suggestions asychronously for the given string.
+  // Called from WebUI.
+  void RequestAutocompleteSuggestions(const ListValue* args);
+
   // Returns the string ID for the given default browser state.
   int StatusStringIdForState(ShellIntegration::DefaultBrowserState state);
 
@@ -104,6 +114,8 @@ class BrowserOptionsHandler : public OptionsPageUIHandler,
   // TemplateURLModel.
   scoped_ptr<CustomHomePagesTableModel> startup_custom_pages_table_model_;
   scoped_ptr<OptionsManagedBannerHandler> banner_handler_;
+
+  scoped_ptr<AutocompleteController> autocomplete_controller_;
 
   DISALLOW_COPY_AND_ASSIGN(BrowserOptionsHandler);
 };

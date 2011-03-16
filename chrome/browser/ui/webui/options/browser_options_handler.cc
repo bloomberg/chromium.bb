@@ -10,6 +10,8 @@
 #include "base/string_number_conversions.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
+#include "chrome/browser/autocomplete/autocomplete.h"
+#include "chrome/browser/autocomplete/autocomplete_match.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/custom_home_pages_table_model.h"
 #include "chrome/browser/instant/instant_confirm_dialog.h"
@@ -106,6 +108,10 @@ void BrowserOptionsHandler::RegisterMessages() {
   web_ui_->RegisterMessageCallback(
       "setStartupPagesToCurrentPages",
       NewCallback(this, &BrowserOptionsHandler::SetStartupPagesToCurrentPages));
+  web_ui_->RegisterMessageCallback(
+      "requestAutocompleteSuggestions",
+      NewCallback(this,
+                  &BrowserOptionsHandler::RequestAutocompleteSuggestions));
 }
 
 void BrowserOptionsHandler::Initialize() {
@@ -126,6 +132,8 @@ void BrowserOptionsHandler::Initialize() {
       new OptionsManagedBannerHandler(web_ui_,
                                       ASCIIToUTF16("BrowserOptions"),
                                       OPTIONS_PAGE_GENERAL));
+
+  autocomplete_controller_.reset(new AutocompleteController(profile, this));
 }
 
 void BrowserOptionsHandler::SetHomePage(const ListValue* args) {
@@ -412,4 +420,37 @@ void BrowserOptionsHandler::SaveStartupPagesPref() {
   pref.urls = startup_custom_pages_table_model_->GetURLs();
 
   SessionStartupPref::SetStartupPref(prefs, pref);
+}
+
+void BrowserOptionsHandler::RequestAutocompleteSuggestions(
+    const ListValue* args) {
+  string16 input;
+  if (args->GetSize() != 1 || !args->GetString(0, &input))
+    CHECK(false);
+
+  autocomplete_controller_->Start(input, string16(),
+                                  true, false, false, false);
+}
+
+void BrowserOptionsHandler::OnResultChanged(bool default_match_changed) {
+  const AutocompleteResult& result = autocomplete_controller_->result();
+  ListValue suggestions;
+  for (size_t i = 0; i < result.size(); ++i) {
+    const AutocompleteMatch& match = result.match_at(i);
+    AutocompleteMatch::Type type = match.type;
+    if (type != AutocompleteMatch::HISTORY_URL &&
+        type != AutocompleteMatch::HISTORY_TITLE &&
+        type != AutocompleteMatch::HISTORY_BODY &&
+        type != AutocompleteMatch::HISTORY_KEYWORD &&
+        type != AutocompleteMatch::NAVSUGGEST)
+      continue;
+    DictionaryValue* entry = new DictionaryValue();
+    entry->SetString("title", match.description);
+    entry->SetString("displayURL", match.contents);
+    entry->SetString("url", match.destination_url.spec());
+    suggestions.Append(entry);
+  }
+
+  web_ui_->CallJavascriptFunction(
+      "BrowserOptions.updateAutocompleteSuggestions", suggestions);
 }

@@ -39,6 +39,13 @@ cr.define('options', function() {
       'managed': false
     },
 
+    /**
+     * At autocomplete list that can be attached to a text field during editing.
+     * @type {HTMLElement}
+     * @private
+     */
+    autocompleteList_: null,
+
     // The cached value of the instant.confirm_dialog_shown preference.
     instantConfirmDialogShown_: false,
 
@@ -83,6 +90,12 @@ cr.define('options', function() {
           this.handleHomepageUseURLButtonChange_.bind(this);
       homepageField.onchange = this.handleHomepageURLChange_.bind(this);
       homepageField.oninput = this.handleHomepageURLChange_.bind(this);
+      homepageField.addEventListener('focus', function(event) {
+        self.autocompleteList_.attachToInput(homepageField);
+      });
+      homepageField.addEventListener('blur', function(event) {
+        self.autocompleteList_.detach();
+      });
 
       // Ensure that changes are committed when closing the page.
       window.addEventListener('unload', function() {
@@ -125,6 +138,15 @@ cr.define('options', function() {
 
         this.updateCustomStartupPageControlStates_();
       }
+
+      var suggestionList = new options.AutocompleteList();
+      suggestionList.autoExpands = true;
+      suggestionList.addEventListener('change', function(e) {
+        if (!suggestionList.targetInput || !suggestionList.selectedItem)
+          return;
+        suggestionList.targetInput.value = suggestionList.selectedItem['url'];
+      });
+      this.autocompleteList_ = suggestionList;
     },
 
     /**
@@ -227,8 +249,13 @@ cr.define('options', function() {
      * @private
      */
     handleHomepageURLChange_: function(event) {
+      var homepageField = $('homepageURL');
       var doFixup = event.type == 'change' ? '1' : '0';
-      chrome.send('setHomePage', [$('homepageURL').value, doFixup]);
+      chrome.send('setHomePage', [homepageField.value, doFixup]);
+
+      if (!this.autocompleteList_.targetInput)
+        this.autocompleteList_.attachToInput(homepageField);
+      chrome.send('requestAutocompleteSuggestions', [homepageField.value]);
     },
 
     /**
@@ -402,6 +429,21 @@ cr.define('options', function() {
           $('startupPagesList').selectionModel.selectedIndex;
       chrome.send('addStartupPage', [url, String(selectedIndex)]);
     },
+
+    /**
+     * Updates the autocomplete suggestion list with the given entries.
+     * @param {Array} pages List of autocomplete suggestions.
+     * @private
+     */
+    updateAutocompleteSuggestions_: function(suggestions) {
+      var list = this.autocompleteList_;
+      // If the trigger for this update was a value being selected from the
+      // current list, do nothing.
+      if (list.targetInput && list.selectedItem &&
+          list.selectedItem['url'] == list.targetInput.value)
+        return;
+      list.suggestions = suggestions;
+    },
   };
 
   BrowserOptions.updateDefaultBrowserState = function(statusString, isDefault,
@@ -423,6 +465,10 @@ cr.define('options', function() {
 
   BrowserOptions.addStartupPage = function(url) {
     BrowserOptions.getInstance().addStartupPage_(url);
+  };
+
+  BrowserOptions.updateAutocompleteSuggestions = function(suggestions) {
+    BrowserOptions.getInstance().updateAutocompleteSuggestions_(suggestions);
   };
 
   // Export

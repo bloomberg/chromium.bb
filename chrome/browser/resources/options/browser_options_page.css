@@ -22,8 +22,9 @@
 }
 
 #customHomePageGroup > :last-child {
-  -webkit-padding-start: 1ex;
+  -webkit-margin-start: 1ex;
   -webkit-box-flex: 1;
+  position: relative;
 }
 
 #homepageURL {
