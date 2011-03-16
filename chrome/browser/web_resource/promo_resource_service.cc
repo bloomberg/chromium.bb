@@ -36,6 +36,7 @@ static const int kMaxTimeSliceHours = 24 * 7 * 4;
 
 // Used to determine which build type should be shown a given promo.
 enum BuildType {
+  NO_BUILD = 0,
   DEV_BUILD = 1,
   BETA_BUILD = 1 << 1,
   STABLE_BUILD = 1 << 2,
@@ -200,10 +201,8 @@ void PromoResourceService::UnpackPromoSignal(
               prefs_->SetInteger(prefs::kNTPPromoGroupTimeSlice,
                                  time_slice_hrs);
             } else {
-              // If no time data or bad time data are set, show promo on all
-              // builds with no time slicing.
-              prefs_->SetInteger(prefs::kNTPPromoBuild,
-                                 DEV_BUILD | BETA_BUILD | STABLE_BUILD);
+              // If no time data or bad time data are set, do not show promo.
+              prefs_->SetInteger(prefs::kNTPPromoBuild, NO_BUILD);
               prefs_->SetInteger(prefs::kNTPPromoGroupTimeSlice, 0);
             }
             a_dic->GetString("inproduct", &promo_start_string);
@@ -340,6 +339,8 @@ bool CanShowPromo(Profile* profile) {
   bool is_promo_build = false;
   if (prefs->HasPrefPath(prefs::kNTPPromoBuild)) {
     int builds_allowed = prefs->GetInteger(prefs::kNTPPromoBuild);
+    if (builds_allowed == NO_BUILD)
+      return false;
     if (channel == "dev" || channel == "dev-m") {
       is_promo_build = (DEV_BUILD & builds_allowed) != 0;
     } else if (channel == "beta" || channel == "beta-m") {
