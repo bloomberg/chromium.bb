@@ -69,6 +69,10 @@ const int kNewTabCaptionMaximizedSpacing = 16;
 const int kMenuDisplayOffset = 7;
 // Y position for profile button inside the frame.
 const int kProfileButtonYPosition = 2;
+// Y position for profile tag inside the frame.
+const int kProfileTagYPosition = 1;
+// Offset y position of profile button and tag by this amount when maximized.
+const int kProfileElementMaximizedYOffset = 6;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -129,9 +133,14 @@ gfx::Rect GlassBrowserFrameView::GetBoundsForTabStrip(
       tabstrip_x += otr_avatar_bounds_.x();
     minimize_button_offset = width();
   }
+  int maximized_spacing =
+      kNewTabCaptionMaximizedSpacing +
+      (show_profile_button() && profile_button_->IsVisible() ?
+          profile_button_->GetPreferredSize().width() +
+              views::ProfileMenuButton::kProfileTagHorizontalSpacing : 0);
   int tabstrip_width = minimize_button_offset - tabstrip_x -
       (frame_->GetWindow()->IsMaximized() ?
-          kNewTabCaptionMaximizedSpacing : kNewTabCaptionRestoredSpacing);
+          maximized_spacing : kNewTabCaptionRestoredSpacing);
   return gfx::Rect(tabstrip_x, GetHorizontalTabStripVerticalOffset(false),
                    std::max(0, tabstrip_width),
                    tabstrip->GetPreferredSize().height());
@@ -251,6 +260,18 @@ void GlassBrowserFrameView::Layout() {
   LayoutOTRAvatar();
   LayoutClientView();
   LayoutProfileTag();
+}
+
+bool GlassBrowserFrameView::HitTest(const gfx::Point& l) const {
+  // The ProfileMenuButton intrudes into the client area when the window is
+  // maximized.
+  if (frame_->GetWindow()->IsMaximized() && show_profile_button() &&
+       profile_button_->IsVisible() &&
+       profile_button_->GetMirroredBounds().Contains(l)) {
+    return true;
+  } else {
+    return !GetWindow()->client_view()->bounds().Contains(l);
+  }
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -504,13 +525,17 @@ void GlassBrowserFrameView::LayoutProfileTag() {
             profile_button_->GetPreferredSize().width();
     profile_button_->SetBounds(
         x_tag,
-        kProfileButtonYPosition,
+        kProfileButtonYPosition +
+            (frame_->GetWindow()->IsMaximized() ?
+                kProfileElementMaximizedYOffset : 0),
         profile_button_->GetPreferredSize().width(),
         profile_button_->GetPreferredSize().height());
     profile_tag_->SetVisible(true);
     profile_tag_->SetBounds(
         x_tag,
-        1,
+        kProfileTagYPosition +
+            (frame_->GetWindow()->IsMaximized() ?
+                kProfileElementMaximizedYOffset : 0),
         profile_button_->GetPreferredSize().width(),
         views::ProfileTagView::kProfileTagHeight);
   } else {
