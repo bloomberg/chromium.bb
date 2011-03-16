@@ -2,10 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/common/common_param_traits.h"
-
 #define IPC_MESSAGE_IMPL
-#include "chrome/common/pepper_file_messages.h"
+#include "content/common/pepper_file_messages.h"
 
 namespace IPC {
 

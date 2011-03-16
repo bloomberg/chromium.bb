@@ -12,7 +12,7 @@
 #include "base/ref_counted.h"
 #include "base/scoped_ptr.h"
 #include "chrome/common/net/url_fetcher.h"
-#include "chrome/common/speech_input_result.h"
+#include "content/common/speech_input_result.h"
 #include "googleurl/src/gurl.h"
 
 class URLFetcher;

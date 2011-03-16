@@ -6,10 +6,10 @@
 
 #include "base/file_util.h"
 #include "base/logging.h"
-#include "chrome/common/indexed_db_key.h"
-#include "chrome/common/serialized_script_value.h"
 #include "content/browser/in_process_webkit/dom_storage_message_filter.h"
 #include "content/browser/in_process_webkit/indexed_db_key_utility_client.h"
+#include "content/common/indexed_db_key.h"
+#include "content/common/serialized_script_value.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebData.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebSerializedScriptValue.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebString.h"

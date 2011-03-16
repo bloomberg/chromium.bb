@@ -2,11 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/common/common_param_traits.h"
 #include "ppapi/c/private/ppb_flash_net_connector.h"
 
 #define IPC_MESSAGE_IMPL
-#include "chrome/common/pepper_messages.h"
+#include "content/common/pepper_messages.h"
 
 namespace IPC {
 

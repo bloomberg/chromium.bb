@@ -6,8 +6,7 @@
 
 #include <string>
 
-#include "chrome/common/common_param_traits.h"
-#include "chrome/common/speech_input_result.h"
+#include "content/common/speech_input_result.h"
 #include "ipc/ipc_message_macros.h"
 #include "ipc/ipc_param_traits.h"
 #include "ui/gfx/rect.h"

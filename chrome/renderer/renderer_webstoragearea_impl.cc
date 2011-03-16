@@ -4,9 +4,9 @@
 
 #include "chrome/renderer/renderer_webstoragearea_impl.h"
 
-#include "chrome/common/dom_storage_messages.h"
 #include "chrome/renderer/render_thread.h"
 #include "chrome/renderer/render_view.h"
+#include "content/common/dom_storage_messages.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFrame.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebURL.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebView.h"

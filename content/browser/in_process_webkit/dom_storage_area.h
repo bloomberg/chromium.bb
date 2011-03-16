@@ -11,7 +11,7 @@
 #include "base/ref_counted.h"
 #include "base/scoped_ptr.h"
 #include "base/string16.h"
-#include "chrome/common/dom_storage_common.h"
+#include "content/common/dom_storage_common.h"
 #include "googleurl/src/gurl.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebStorageArea.h"
 

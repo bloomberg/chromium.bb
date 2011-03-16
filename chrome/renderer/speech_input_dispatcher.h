@@ -6,8 +6,8 @@
 #define CHROME_RENDERER_SPEECH_INPUT_DISPATCHER_H_
 
 #include "base/basictypes.h"
-#include "chrome/common/speech_input_result.h"
 #include "chrome/renderer/render_view_observer.h"
+#include "content/common/speech_input_result.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebSpeechInputController.h"
 
 class GURL;

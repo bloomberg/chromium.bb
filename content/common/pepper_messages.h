@@ -3,15 +3,14 @@
 // found in the LICENSE file.
 
 // Multiply-included message file, no traditional include guard
-#include "chrome/common/common_param_traits.h"
 #include "ipc/ipc_message_macros.h"
 #include "ipc/ipc_param_traits.h"
 #include "ipc/ipc_platform_file.h"
 #include "ppapi/c/private/ppb_flash_net_connector.h"
 
 // Singly-included section, not yet converted.
-#ifndef CHROME_COMMON_PEPPER_MESSAGES_H_
-#define CHROME_COMMON_PEPPER_MESSAGES_H_
+#ifndef CONTENT_COMMON_PEPPER_MESSAGES_H_
+#define CONTENT_COMMON_PEPPER_MESSAGES_H_
 
 namespace IPC {
 
@@ -25,9 +24,9 @@ struct ParamTraits<PP_Flash_NetAddress> {
 
 }  // namespace IPC
 
-#define IPC_MESSAGE_START PepperMsgStart
+#endif  // CONTENT_COMMON_PEPPER_MESSAGES_H_
 
-#endif  // CHROME_COMMON_PEPPER_MESSAGES_H_
+#define IPC_MESSAGE_START PepperMsgStart
 
 // Pepper (non-file-system) messages sent from the browser to the renderer.
 

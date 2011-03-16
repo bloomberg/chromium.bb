@@ -6,9 +6,9 @@
 
 #include <vector>
 
-#include "chrome/common/indexed_db_key.h"
-#include "chrome/common/indexed_db_param_traits.h"
-#include "chrome/common/serialized_script_value.h"
+#include "content/common/indexed_db_key.h"
+#include "content/common/indexed_db_param_traits.h"
+#include "content/common/serialized_script_value.h"
 #include "ipc/ipc_message_macros.h"
 #include "ipc/ipc_param_traits.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebExceptionCode.h"

@@ -10,11 +10,10 @@
 #include "base/ref_counted.h"
 #include "base/tracked.h"
 #include "chrome/browser/content_settings/host_content_settings_map.h"
-#include "chrome/common/dom_storage_common.h"
 #include "content/browser/browser_message_filter.h"
 #include "content/browser/in_process_webkit/dom_storage_area.h"
 #include "content/browser/in_process_webkit/webkit_context.h"
-#include "ipc/ipc_message.h"
+#include "content/common/dom_storage_common.h"
 
 class DOMStorageContext;
 class GURL;

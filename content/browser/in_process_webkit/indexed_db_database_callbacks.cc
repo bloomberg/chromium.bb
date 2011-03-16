@@ -4,8 +4,8 @@
 
 #include "content/browser/in_process_webkit/indexed_db_database_callbacks.h"
 
-#include "chrome/common/indexed_db_messages.h"
 #include "content/browser/in_process_webkit/indexed_db_dispatcher_host.h"
+#include "content/common/indexed_db_messages.h"
 
 IndexedDBDatabaseCallbacks::IndexedDBDatabaseCallbacks(
     IndexedDBDispatcherHost* dispatcher_host,

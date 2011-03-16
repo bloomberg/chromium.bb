@@ -4,10 +4,10 @@
 
 #include "chrome/renderer/renderer_webidbtransaction_impl.h"
 
-#include "chrome/common/indexed_db_messages.h"
 #include "chrome/renderer/indexed_db_dispatcher.h"
 #include "chrome/renderer/render_thread.h"
 #include "chrome/renderer/renderer_webidbobjectstore_impl.h"
+#include "content/common/indexed_db_messages.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebIDBObjectStore.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebIDBTransactionCallbacks.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebString.h"

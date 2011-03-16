@@ -6,8 +6,8 @@
 #define CHROME_RENDERER_RENDERER_WEBIDBCURSOR_IMPL_H_
 
 #include "base/basictypes.h"
-#include "chrome/common/indexed_db_key.h"
-#include "chrome/common/serialized_script_value.h"
+#include "content/common/indexed_db_key.h"
+#include "content/common/serialized_script_value.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebIDBCallbacks.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebIDBCursor.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebIDBKey.h"

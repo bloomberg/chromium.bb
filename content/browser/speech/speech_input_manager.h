@@ -6,7 +6,7 @@
 #define CONTENT_BROWSER_SPEECH_SPEECH_INPUT_MANAGER_H_
 
 #include "base/basictypes.h"
-#include "chrome/common/speech_input_result.h"
+#include "content/common/speech_input_result.h"
 #include "ui/gfx/rect.h"
 
 namespace speech_input {

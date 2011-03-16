@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 // Multiply-included message file, no traditional include guard.
-#include "chrome/common/dom_storage_common.h"
+#include "content/common/dom_storage_common.h"
 #include "googleurl/src/gurl.h"
 #include "ipc/ipc_message_macros.h"
 #include "ipc/ipc_param_traits.h"

@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/common/indexed_db_param_traits.h"
+#include "content/common/indexed_db_param_traits.h"
 
-#include "chrome/common/indexed_db_key.h"
-#include "chrome/common/serialized_script_value.h"
+#include "content/common/indexed_db_key.h"
+#include "content/common/serialized_script_value.h"
 #include "ipc/ipc_message_utils.h"
 
 namespace IPC {

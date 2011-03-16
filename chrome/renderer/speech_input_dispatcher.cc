@@ -5,8 +5,8 @@
 #include "chrome/renderer/speech_input_dispatcher.h"
 
 #include "base/utf_string_conversions.h"
-#include "chrome/common/speech_input_messages.h"
 #include "chrome/renderer/render_view.h"
+#include "content/common/speech_input_messages.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFrame.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebSize.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebSecurityOrigin.h"

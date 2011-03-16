@@ -8,8 +8,8 @@
 #include "base/synchronization/waitable_event.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/utility_process_host.h"
-#include "chrome/common/indexed_db_key.h"
-#include "chrome/common/serialized_script_value.h"
+#include "content/common/indexed_db_key.h"
+#include "content/common/serialized_script_value.h"
 
 // This class is used to obtain IndexedDBKeys from SerializedScriptValues
 // given an IDBKeyPath. It uses UtilityProcess to do this inside a sandbox

@@ -4,7 +4,7 @@
 
 #include "content/browser/in_process_webkit/indexed_db_callbacks.h"
 
-#include "chrome/common/indexed_db_messages.h"
+#include "content/common/indexed_db_messages.h"
 
 IndexedDBCallbacksBase::IndexedDBCallbacksBase(
     IndexedDBDispatcherHost* dispatcher_host,

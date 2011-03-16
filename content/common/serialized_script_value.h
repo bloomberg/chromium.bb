@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_COMMON_SERIALIZED_SCRIPT_VALUE_H_
-#define CHROME_COMMON_SERIALIZED_SCRIPT_VALUE_H_
+#ifndef CONTENT_COMMON_SERIALIZED_SCRIPT_VALUE_H_
+#define CONTENT_COMMON_SERIALIZED_SCRIPT_VALUE_H_
 #pragma once
 
 #include "base/string16.h"
@@ -38,4 +38,4 @@ class SerializedScriptValue {
   string16 data_; // The wire string format of the serialized script value.
 };
 
-#endif  // CHROME_COMMON_SERIALIZED_SCRIPT_VALUE_H_
+#endif  // CONTENT_COMMON_SERIALIZED_SCRIPT_VALUE_H_
