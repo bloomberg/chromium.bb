@@ -142,16 +142,6 @@ void EnableMenuItem(HMENU menu, UINT command, bool enabled) {
   EnableMenuItem(menu, command, flags);
 }
 
-bool IsDwmRenderingWindowControls(HWND window) {
-  if (base::win::GetVersion() < base::win::VERSION_VISTA)
-    return false;
-
-  DWMNCRENDERINGPOLICY policy;
-  DwmGetWindowAttribute(window, DWMWA_NCRENDERING_POLICY, &policy,
-                        sizeof(policy));
-  return policy == DWMNCRP_ENABLED;
-}
-
 // If the hung renderer warning doesn't fit on screen, the amount of padding to
 // be left between the edge of the window and the edge of the nearest monitor,
 // after the window is nudged back on screen. Pixels.
@@ -627,7 +617,7 @@ LRESULT WindowWin::OnNCCalcSize(BOOL mode, LPARAM l_param) {
 LRESULT WindowWin::OnNCHitTest(const CPoint& point) {
   // If the DWM is rendering the window controls, we need to give the DWM's
   // default window procedure first chance to handle hit testing.
-  if (IsDwmRenderingWindowControls(GetNativeView())) {
+  if (ShouldUseNativeFrame()) {
     LRESULT result;
     if (DwmDefWindowProc(GetNativeView(), WM_NCHITTEST, 0,
                          MAKELPARAM(point.x, point.y), &result)) {
