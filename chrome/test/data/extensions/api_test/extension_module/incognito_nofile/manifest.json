@@ -1,0 +1,6 @@
+{
+  "name": "chrome.extension",
+  "version": "0.1",
+  "description": "end-to-end browser test for some chrome.extension API: incognito mode",
+  "background_page": "test.html"
+}

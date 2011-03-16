@@ -191,6 +191,42 @@
         }
       },
       {
+        "name": "isAllowedIncognitoAccess",
+        "type": "function",
+        "description": "Retrieves the state of the extension's access to Incognito-mode (as determined by the user-controlled 'Allowed in Incognito' checkbox.",
+        "parameters": [
+          {
+            "type": "function",
+            "name": "callback",
+            "parameters": [
+              {
+                "name": "isAllowedAccess",
+                "type": "boolean",
+                "description": "True if the extension has access to Incognito mode, false otherwise."
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "name": "isAllowedFileSchemeAccess",
+        "type": "function",
+        "description": "Retrieves the state of the extension's access to the 'file://' scheme (as determined by the user-controlled 'Allow access to File URLs' checkbox.",
+        "parameters": [
+          {
+            "type": "function",
+            "name": "callback",
+            "parameters": [
+              {
+                "name": "isAllowedAccess",
+                "type": "boolean",
+                "description": "True if the extension can access the 'file://' scheme, false otherwise."
+              }
+            ]
+          }
+        ]
+      },
+      {
         "name": "setUpdateUrlData",
         "type": "function",
         "description": "Sets the value of the ap CGI parameter used in the extension's update URL.  This value is ignored for extensions that are hosted in the Chrome Extension Gallery.",

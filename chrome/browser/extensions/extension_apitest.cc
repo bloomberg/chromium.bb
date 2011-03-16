@@ -100,17 +100,26 @@ void ExtensionApiTest::TearDownInProcessBrowserTestFixture() {
 }
 
 bool ExtensionApiTest::RunExtensionTest(const char* extension_name) {
-  return RunExtensionTestImpl(extension_name, "", false);
+  return RunExtensionTestImpl(extension_name, "", false, true);
 }
 
 bool ExtensionApiTest::RunExtensionTestIncognito(const char* extension_name) {
-  return RunExtensionTestImpl(extension_name, "", true);
+  return RunExtensionTestImpl(extension_name, "", true, true);
 }
 
+bool ExtensionApiTest::RunExtensionTestNoFileAccess(
+    const char* extension_name) {
+  return RunExtensionTestImpl(extension_name, "", false, false);
+}
+
+bool ExtensionApiTest::RunExtensionTestIncognitoNoFileAccess(
+    const char* extension_name) {
+  return RunExtensionTestImpl(extension_name, "", true, false);
+}
 bool ExtensionApiTest::RunExtensionSubtest(const char* extension_name,
                                            const std::string& page_url) {
   DCHECK(!page_url.empty()) << "Argument page_url is required.";
-  return RunExtensionTestImpl(extension_name, page_url, false);
+  return RunExtensionTestImpl(extension_name, page_url, false, true);
 }
 
 bool ExtensionApiTest::RunPageTest(const std::string& page_url) {
@@ -121,15 +130,24 @@ bool ExtensionApiTest::RunPageTest(const std::string& page_url) {
 // PASSED or FAILED notification.
 bool ExtensionApiTest::RunExtensionTestImpl(const char* extension_name,
                                             const std::string& page_url,
-                                            bool enable_incognito) {
+                                            bool enable_incognito,
+                                            bool enable_fileaccess) {
   ResultCatcher catcher;
   DCHECK(!std::string(extension_name).empty() || !page_url.empty()) <<
       "extension_name and page_url cannot both be empty";
 
   if (!std::string(extension_name).empty()) {
-    bool loaded = enable_incognito ?
+    bool loaded;
+    if (enable_incognito) {
+      loaded = enable_fileaccess ?
         LoadExtensionIncognito(test_data_dir_.AppendASCII(extension_name)) :
-        LoadExtension(test_data_dir_.AppendASCII(extension_name));
+        LoadExtensionIncognitoNoFileAccess(
+            test_data_dir_.AppendASCII(extension_name));
+    } else {
+      loaded = enable_fileaccess ?
+        LoadExtension(test_data_dir_.AppendASCII(extension_name)) :
+        LoadExtensionNoFileAccess(test_data_dir_.AppendASCII(extension_name));
+    }
     if (!loaded) {
       message_ = "Failed to load extension.";
       return false;

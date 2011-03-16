@@ -283,6 +283,8 @@ void FactoryRegistry::ResetFunctions() {
 
   // Extension module.
   RegisterFunction<SetUpdateUrlDataFunction>();
+  RegisterFunction<IsAllowedIncognitoAccessFunction>();
+  RegisterFunction<IsAllowedFileSchemeAccessFunction>();
 
   // WebstorePrivate.
   RegisterFunction<GetBrowserLoginFunction>();

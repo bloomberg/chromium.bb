@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 // extension api test
-// browser_tests.exe --gtest_filter=ExtensionModuleApiTest.Basics
+// browser_tests.exe --gtest_filter=ExtensionModuleApiTest.CognitoFile
 
 chrome.test.runTests([
   function testUpdateUrlData() {
@@ -39,5 +39,15 @@ chrome.test.runTests([
 
     chrome.extension.setUpdateUrlData('a=1&b=2&foo');
     chrome.test.succeed();
+  },
+  function testPermissions() {
+    chrome.extension.isAllowedIncognitoAccess(
+        chrome.test.callbackPass(function(hasAccess) {
+          chrome.test.assertFalse(hasAccess);
+        }));
+    chrome.extension.isAllowedFileSchemeAccess(
+        chrome.test.callbackPass(function(hasAccess) {
+          chrome.test.assertTrue(hasAccess);
+        }));
   }
 ]);

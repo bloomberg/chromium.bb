@@ -58,7 +58,8 @@ void ExtensionBrowserTest::SetUpCommandLine(CommandLine* command_line) {
 }
 
 bool ExtensionBrowserTest::LoadExtensionImpl(const FilePath& path,
-                                             bool incognito_enabled) {
+                                             bool incognito_enabled,
+                                             bool fileaccess_enabled) {
   ExtensionService* service = browser()->profile()->GetExtensionService();
   {
     NotificationRegistrar registrar;
@@ -83,24 +84,31 @@ bool ExtensionBrowserTest::LoadExtensionImpl(const FilePath& path,
   if (!extension)
     return false;
 
-  if (incognito_enabled) {
-    // Enable the incognito bit in the extension prefs. The call to
-    // OnExtensionInstalled ensures the other extension prefs are set up with
-    // the defaults.
-    service->extension_prefs()->OnExtensionInstalled(
-        extension, Extension::ENABLED, false);
-    service->SetIsIncognitoEnabled(extension, true);
-  }
+  // The call to OnExtensionInstalled ensures the other extension prefs
+  // are set up with the defaults.
+  service->extension_prefs()->OnExtensionInstalled(
+      extension, Extension::ENABLED, false);
+  service->SetIsIncognitoEnabled(extension, incognito_enabled);
+  service->SetAllowFileAccess(extension, fileaccess_enabled);
 
   return WaitForExtensionHostsToLoad();
 }
 
 bool ExtensionBrowserTest::LoadExtension(const FilePath& path) {
-  return LoadExtensionImpl(path, false);
+  return LoadExtensionImpl(path, false, true);
 }
 
 bool ExtensionBrowserTest::LoadExtensionIncognito(const FilePath& path) {
-  return LoadExtensionImpl(path, true);
+  return LoadExtensionImpl(path, true, true);
+}
+
+bool ExtensionBrowserTest::LoadExtensionNoFileAccess(const FilePath& path) {
+  return LoadExtensionImpl(path, false, false);
+}
+
+bool ExtensionBrowserTest::LoadExtensionIncognitoNoFileAccess(
+    const FilePath& path) {
+  return LoadExtensionImpl(path, true, false);
 }
 
 FilePath ExtensionBrowserTest::PackExtension(const FilePath& dir_path) {
@@ -163,7 +171,7 @@ class MockAbortExtensionInstallUI : public ExtensionInstallUI {
 
 class MockAutoConfirmExtensionInstallUI : public ExtensionInstallUI {
  public:
-  MockAutoConfirmExtensionInstallUI(Profile* profile) :
+  explicit MockAutoConfirmExtensionInstallUI(Profile* profile) :
       ExtensionInstallUI(profile) {}
 
   // Proceed without confirmation prompt.

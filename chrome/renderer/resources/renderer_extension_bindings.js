@@ -331,6 +331,8 @@ var chrome = chrome || {};
       "extension.getExtensionTabs",
       "extension.getToolstrips",
       "extension.getViews",
+      "extension.isAllowedIncognitoAccess",
+      "extension.isAllowedFileSchemeAccess",
       "extension.onConnectExternal",
       "extension.onRequestExternal",
       "extension.setUpdateUrlData",

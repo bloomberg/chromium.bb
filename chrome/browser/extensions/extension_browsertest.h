@@ -28,6 +28,13 @@ class ExtensionBrowserTest
   // Same as above, but enables the extension in incognito mode first.
   bool LoadExtensionIncognito(const FilePath& path);
 
+  // By default, unpacked extensions have file access: this loads them with
+  // that permission removed.
+  bool LoadExtensionNoFileAccess(const FilePath& path);
+
+  // Same as above, but enables the extension in incognito mode first.
+  bool LoadExtensionIncognitoNoFileAccess(const FilePath& path);
+
   // Pack the extension in |dir_path| into a crx file and return its path.
   // Return an empty FilePath if there were errors.
   FilePath PackExtension(const FilePath& dir_path);
@@ -128,7 +135,8 @@ class ExtensionBrowserTest
                                 InstallUIType ui_type,
                                 int expected_change,
                                 Profile* profile);
-  bool LoadExtensionImpl(const FilePath& path, bool incognito_enabled);
+  bool LoadExtensionImpl(const FilePath& path, bool incognito_enabled,
+                         bool fileaccess_enabled);
 
   bool WaitForExtensionHostsToLoad();
 

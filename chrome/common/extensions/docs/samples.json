@@ -78,6 +78,8 @@
     "chrome.extension.getToolstrips": "extension.html#method-getToolstrips", 
     "chrome.extension.getURL": "extension.html#method-getURL", 
     "chrome.extension.getViews": "extension.html#method-getViews", 
+    "chrome.extension.isAllowedFileSchemeAccess": "extension.html#method-isAllowedFileSchemeAccess", 
+    "chrome.extension.isAllowedIncognitoAccess": "extension.html#method-isAllowedIncognitoAccess", 
     "chrome.extension.onConnect": "extension.html#event-onConnect", 
     "chrome.extension.onConnectExternal": "extension.html#event-onConnectExternal", 
     "chrome.extension.onRequest": "extension.html#event-onRequest", 

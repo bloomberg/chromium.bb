@@ -12,9 +12,22 @@ class ExtensionPrefs;
 
 class SetUpdateUrlDataFunction : public SyncExtensionFunction {
  protected:
-  ExtensionPrefs* extension_prefs();
   virtual bool RunImpl();
   DECLARE_EXTENSION_FUNCTION_NAME("extension.setUpdateUrlData");
+
+ private:
+  ExtensionPrefs* extension_prefs();
 };
 
+class IsAllowedIncognitoAccessFunction : public SyncExtensionFunction {
+ protected:
+  virtual bool RunImpl();
+  DECLARE_EXTENSION_FUNCTION_NAME("extension.isAllowedIncognitoAccess");
+};
+
+class IsAllowedFileSchemeAccessFunction : public SyncExtensionFunction {
+ protected:
+  virtual bool RunImpl();
+  DECLARE_EXTENSION_FUNCTION_NAME("extension.isAllowedFileSchemeAccess");
+};
 #endif  // CHROME_BROWSER_EXTENSIONS_EXTENSION_MODULE_H__

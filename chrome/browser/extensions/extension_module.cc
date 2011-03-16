@@ -21,3 +21,21 @@ bool SetUpdateUrlDataFunction::RunImpl() {
   extension_prefs()->SetUpdateUrlData(extension_id(), data);
   return true;
 }
+
+bool IsAllowedIncognitoAccessFunction::RunImpl() {
+  ExtensionService* ext_service = profile()->GetExtensionService();
+  const Extension* extension = GetExtension();
+
+  result_.reset(Value::CreateBooleanValue(
+        ext_service->IsIncognitoEnabled(extension)));
+  return true;
+}
+
+bool IsAllowedFileSchemeAccessFunction::RunImpl() {
+  ExtensionService* ext_service = profile()->GetExtensionService();
+  const Extension* extension = GetExtension();
+
+  result_.reset(Value::CreateBooleanValue(
+        ext_service->AllowFileAccess(extension)));
+  return true;
+}

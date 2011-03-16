@@ -7,6 +7,21 @@
 class ExtensionModuleApiTest : public ExtensionApiTest {
 };
 
-IN_PROC_BROWSER_TEST_F(ExtensionModuleApiTest, Basics) {
-  ASSERT_TRUE(RunExtensionTest("extension_module")) << message_;
+IN_PROC_BROWSER_TEST_F(ExtensionModuleApiTest, CognitoFile) {
+  ASSERT_TRUE(RunExtensionTest("extension_module/cognito_file")) << message_;
+}
+
+IN_PROC_BROWSER_TEST_F(ExtensionModuleApiTest, IncognitoFile) {
+  ASSERT_TRUE(RunExtensionTestIncognito(
+      "extension_module/incognito_file")) << message_;
+}
+
+IN_PROC_BROWSER_TEST_F(ExtensionModuleApiTest, CognitoNoFile) {
+  ASSERT_TRUE(RunExtensionTestNoFileAccess(
+      "extension_module/cognito_nofile")) << message_;
+}
+
+IN_PROC_BROWSER_TEST_F(ExtensionModuleApiTest, IncognitoNoFile) {
+  ASSERT_TRUE(RunExtensionTestIncognitoNoFileAccess(
+      "extension_module/incognito_nofile")) << message_;
 }
