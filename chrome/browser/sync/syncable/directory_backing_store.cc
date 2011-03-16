@@ -437,7 +437,7 @@ DirOpenResult DirectoryBackingStore::InitializeTables() {
     return FAILED_DISK_FULL;
   }
   int version_on_disk = GetVersion();
-  int last_result = SQLITE_OK;
+  int last_result = SQLITE_DONE;
 
   // Upgrade from version 67. Version 67 was widely distributed as the original
   // Bookmark Sync release. Version 68 removed unique naming.
@@ -504,14 +504,10 @@ DirOpenResult DirectoryBackingStore::InitializeTables() {
     // Fallback (re-sync everything) migration path.
     VLOG(1) << "Old/null sync database, version " << version_on_disk;
     // Delete the existing database (if any), and create a fresh one.
-    if (SQLITE_OK == last_result) {
-      DropAllTables();
-      if (SQLITE_DONE == CreateTables()) {
-        last_result = SQLITE_OK;
-      }
-    }
+    DropAllTables();
+    last_result = CreateTables();
   }
-  if (SQLITE_OK == last_result) {
+  if (SQLITE_DONE == last_result) {
     {
       SQLStatement statement;
       statement.prepare(load_dbhandle_,
@@ -943,11 +939,11 @@ bool DirectoryBackingStore::MigrateVersion70To71() {
       CreateShareInfoTableVersion71(kCreateAsTempShareInfo);
   if (result != SQLITE_DONE)
     return false;
-  ExecQuery(load_dbhandle_,
-            "INSERT INTO temp_share_info (id, name, store_birthday, "
-            "db_create_version, db_create_time, next_id, cache_guid) "
-            "SELECT id, name, store_birthday, db_create_version, "
-            "db_create_time, next_id, cache_guid FROM share_info");
+  result = ExecQuery(load_dbhandle_,
+                     "INSERT INTO temp_share_info (id, name, store_birthday, "
+                     "db_create_version, db_create_time, next_id, cache_guid) "
+                     "SELECT id, name, store_birthday, db_create_version, "
+                     "db_create_time, next_id, cache_guid FROM share_info");
   if (result != SQLITE_DONE)
     return false;
   SafeDropTable("share_info");
