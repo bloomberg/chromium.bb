@@ -628,6 +628,20 @@ html[os=mac] input[type='submit']:focus {
   outline-offset: -2px;
 }
 
+/* LIST */
+html:not([os=mac]) list[hasElementFocus] {
+  outline: 1px solid rgba(0, 128, 256, 0.5);
+  outline-offset: -2px;
+}
+
+/* This matches the native list outline on Mac */
+html[os=mac] list[hasElementFocus] {
+  outline-color: #759ad9;
+  outline-offset: -1px;
+  outline-style: auto;
+  outline-width: 5px;
+}
+
 /* TEXT */
 input[type='password'],
 input[type='text'],
