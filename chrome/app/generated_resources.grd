@@ -304,9 +304,6 @@ Other platform defines such as use_titlecase are declared in build/common.gypi.
       <message name="IDS_CANCEL" desc="Used for Cancel on buttons">
         Cancel
       </message>
-      <message name="IDS_DELETE" desc="A delete button or menu">
-        &amp;Delete
-      </message>
       <message name="IDS_EDIT" desc="Edit menu item">
         &amp;Edit
       </message>
@@ -7553,17 +7550,14 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_COOKIES_SEARCH_LABEL" desc="The label of the 'Search:' label in the Cookies window">
         Search:
       </message>
-      <message name="IDS_COOKIES_CLEAR_SEARCH_LABEL" desc="The label of the 'Clear' button in the Cookies window">
-        C&amp;lear
-      </message>
       <message name="IDS_COOKIES_INFO_LABEL" desc="The content of the description text above the cookies list in the Cookies window">
         The following cookies are stored on your computer:
       </message>
       <message name="IDS_COOKIES_REMOVE_LABEL" desc="The label of the 'Remove' button in the Cookies Window">
-        &amp;Remove
+        Remove
       </message>
       <message name="IDS_COOKIES_REMOVE_ALL_LABEL" desc="The label of the 'Remove All' button in the Cookies Window">
-        Remove &amp;All
+        Remove All
       </message>
       <message name="IDS_COOKIES_COOKIE_NAME_LABEL" desc="The Cookie Name label">
         Name:
@@ -11680,7 +11674,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
     <message name="IDS_READER_OUT_OF_DATE_BLOCKING_PAGE_CANCEL" desc="Cancel button text of the Adobe Reader out of date blocking page.">
       Cancel
     </message>
-    <message name="EXPORT_BOOKMARKS_DEFAULT_FILENAME" desc="Filename that pre-populates the filename field when user clicks attempts to export his bookmarks.">
+    <message name="IDS_EXPORT_BOOKMARKS_DEFAULT_FILENAME" desc="Filename that pre-populates the filename field when user clicks attempts to export his bookmarks.">
       bookmarks_<ph name="DATESTAMP">$1<ex>02_11_11</ex></ph>.html
     </message>
 

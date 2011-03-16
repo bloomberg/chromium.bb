@@ -274,68 +274,6 @@
         en-US
       </message>
 
-      <!-- The width of the title column of the Options dialog box, in characters (see -->
-      <!-- above for defn of character width) -->
-      <message name="IDS_OPTIONS_DIALOG_LEFT_COLUMN_WIDTH_CHARS" use_name_for_id="true">
-        23
-      </message>
-
-      <!-- The width of the Options Reset confirmation box, in characters (see -->
-      <!-- above for defn of character width) -->
-      <message name="IDS_OPTIONS_RESET_CONFIRM_BOX_WIDTH_CHARS" use_name_for_id="true">
-        80
-      </message>
-
-      <!-- The width of the Content Settings dialog box, in characters (character width = -->
-      <!-- average character width for default dialog box font) -->
-      <message name="IDS_CONTENT_SETTINGS_DIALOG_WIDTH_CHARS" use_name_for_id="true">
-        76
-      </message>
-
-      <!-- The height of the Content Settings dialog box, in lines (line height = character -->
-      <!-- height for default dialog box font) -->
-      <message name="IDS_CONTENT_SETTINGS_DIALOG_HEIGHT_LINES" use_name_for_id="true">
-        24
-      </message>
-
-      <!-- The width of the list box in the Content Settings dialog box, in characters (character width = -->
-      <!-- average character width for default list box font) -->
-      <message name="IDS_CONTENT_SETTINGS_DIALOG_LISTBOX_WIDTH_CHARS" use_name_for_id="true">
-        18
-      </message>
-
-      <!-- The width and height of the URL picker dialog box in characters and lines -->
-      <!-- (See above). -->
-      <message name="IDS_URLPICKER_DIALOG_WIDTH_CHARS" use_name_for_id="true">
-        80
-      </message>
-      <message name="IDS_URLPICKER_DIALOG_HEIGHT_LINES" use_name_for_id="true">
-        30
-      </message>
-
-      <!-- The width of the page column of the URL picker dialog box, in characters.  -->
-      <message name="IDS_URLPICKER_DIALOG_LEFT_COLUMN_WIDTH_CHARS" use_name_for_id="true">
-        33
-      </message>
-
-      <!-- The width and height of the Passwords and Exceptions dialog box in -->
-      <!-- characters and lines (See above). -->
-      <message name="IDS_PASSWORDS_DIALOG_WIDTH_CHARS" use_name_for_id="true">
-        106
-      </message>
-      <message name="IDS_PASSWORDS_DIALOG_HEIGHT_LINES" use_name_for_id="true">
-        27
-      </message>
-
-      <!-- The width and height of the Clear Browsing Data dialog box in characters and -->
-      <!-- lines (See above). -->
-      <message name="IDS_CLEARDATA_DIALOG_WIDTH_CHARS" use_name_for_id="true">
-        63
-      </message>
-      <message name="IDS_CLEARDATA_DIALOG_HEIGHT_LINES" use_name_for_id="true">
-        17
-      </message>
-
       <!-- The width and height of the Import dialog box in characters and lines (See -->
       <!-- above). -->
       <message name="IDS_IMPORT_DIALOG_WIDTH_CHARS" use_name_for_id="true">
@@ -352,15 +290,6 @@
       </message>
       <message name="IDS_ABOUT_DIALOG_MINIMUM_HEIGHT_LINES" use_name_for_id="true">
         4
-      </message>
-
-      <!-- The width and height of the Fonts and Languages dialog box in characters and -->
-      <!-- lines (See above). -->
-      <message name="IDS_FONTSLANG_DIALOG_WIDTH_CHARS" use_name_for_id="true">
-        96
-      </message>
-      <message name="IDS_FONTSLANG_DIALOG_HEIGHT_LINES" use_name_for_id="true">
-        26
       </message>
 
       <!-- The width and height of the Page Info dialog box in characters and lines -->
@@ -414,15 +343,6 @@
           14
         </message>
       </if>
-
-      <!-- The width and height of the Cookies dialog box in characters and lines -->
-      <!-- (See above). -->
-      <message name="IDS_COOKIES_DIALOG_WIDTH_CHARS" use_name_for_id="true">
-        80
-      </message>
-      <message name="IDS_COOKIES_DIALOG_HEIGHT_LINES" use_name_for_id="true">
-        29
-      </message>
 
       <!-- The width and height of the Import Progress dialog box in characters and -->
       <!-- lines (See above). -->
@@ -567,14 +487,6 @@
         5
       </message>
 
-      <!-- The default width/height for the stop syncing confirmation dialog. -->
-      <message name="IDS_CONFIRM_STOP_SYNCING_DIALOG_WIDTH_CHARS" use_name_for_id="true">
-        60
-      </message>
-      <message name="IDS_CONFIRM_STOP_SYNCING_DIALOG_HEIGHT_LINES" use_name_for_id="true">
-        8
-      </message>
-
       <!-- The default width and min height for the 'download_in_progress' dialog. -->
       <message name="IDS_DOWNLOAD_IN_PROGRESS_WIDTH_CHARS" use_name_for_id="true">
         67
@@ -626,24 +538,6 @@
       <!-- The height of the AutoFill edit Credit Card dialog in lines. -->
       <message name="IDS_AUTOFILL_DIALOG_EDIT_CCARD_HEIGHT_LINES" use_name_for_id="true">
         10
-      </message>
-
-      <!-- The width and height of the Content Settings Exceptions dialog box in -->
-      <!-- characters and lines (See above). -->
-      <message name="IDS_CONTENT_EXCEPTION_DIALOG_WIDTH_CHARS" use_name_for_id="true">
-        90
-      </message>
-      <message name="IDS_CONTENT_EXCEPTION_DIALOG_HEIGHT_LINES" use_name_for_id="true">
-        16
-      </message>
-
-      <!-- The width and height of the Simple Content Settings Exceptions -->
-      <!-- dialog box in characters and lines (See above). -->
-      <message name="IDS_SIMPLE_CONTENT_EXCEPTION_DIALOG_WIDTH_CHARS" use_name_for_id="true">
-        90
-      </message>
-      <message name="IDS_SIMPLE_CONTENT_EXCEPTION_DIALOG_HEIGHT_LINES" use_name_for_id="true">
-        16
       </message>
 
       <!-- The width of the Instant confirm dialog box in characters. -->

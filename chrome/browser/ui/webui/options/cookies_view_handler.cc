@@ -15,18 +15,6 @@
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 
-namespace {
-
-// TODO(xiyuan): Remove this function when strings are updated.
-// Remove "&" in button label for WebUI.
-string16 CleanButtonLabel(const string16& text) {
-  string16 out(text);
-  ReplaceFirstSubstringAfterOffset(&out, 0, ASCIIToUTF16("&"), string16());
-  return out;
-}
-
-}  // namespace
-
 CookiesViewHandler::CookiesViewHandler() : batch_update_(false) {
 }
 
@@ -68,18 +56,13 @@ void CookiesViewHandler::GetLocalizedValues(
     { "cookie_indexed_db", IDS_COOKIES_INDEXED_DB },
     { "cookie_local_storage", IDS_COOKIES_LOCAL_STORAGE },
     { "cookie_session_storage", IDS_COOKIES_SESSION_STORAGE },
+    { "remove_cookie", IDS_COOKIES_REMOVE_LABEL },
+    { "remove_all_cookie", IDS_COOKIES_REMOVE_ALL_LABEL },
   };
 
   RegisterStrings(localized_strings, resources, arraysize(resources));
   RegisterTitle(localized_strings, "cookiesViewPage",
                 IDS_COOKIES_WEBSITE_PERMISSIONS_WINDOW_TITLE);
-
-  // TODO(mdm): add these to the array above when we can get rid of
-  // the calls to CleanButtonLabel().
-  localized_strings->SetString("remove_cookie", CleanButtonLabel(
-      l10n_util::GetStringUTF16(IDS_COOKIES_REMOVE_LABEL)));
-  localized_strings->SetString("remove_all_cookie", CleanButtonLabel(
-      l10n_util::GetStringUTF16(IDS_COOKIES_REMOVE_ALL_LABEL)));
 }
 
 void CookiesViewHandler::RegisterMessages() {

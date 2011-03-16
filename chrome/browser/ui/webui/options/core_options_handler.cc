@@ -59,22 +59,10 @@ void CoreOptionsHandler::GetLocalizedValues(
       l10n_util::GetStringUTF16(IDS_OK));
   localized_strings->SetString("cancel",
       l10n_util::GetStringUTF16(IDS_CANCEL));
-  localized_strings->SetString("delete",
-      l10n_util::GetStringUTF16(IDS_DELETE));
-  localized_strings->SetString("edit",
-      l10n_util::GetStringUTF16(IDS_EDIT));
   localized_strings->SetString("learnMore",
       l10n_util::GetStringUTF16(IDS_LEARN_MORE));
-  localized_strings->SetString("abort",
-      l10n_util::GetStringUTF16(IDS_ABORT));
   localized_strings->SetString("close",
       l10n_util::GetStringUTF16(IDS_CLOSE));
-  localized_strings->SetString("done",
-      l10n_util::GetStringUTF16(IDS_DONE));
-  localized_strings->SetString("yesButtonLabel",
-      l10n_util::GetStringUTF16(IDS_CONFIRM_MESSAGEBOX_YES_BUTTON_LABEL));
-  localized_strings->SetString("noButtonLabel",
-      l10n_util::GetStringUTF16(IDS_CONFIRM_MESSAGEBOX_NO_BUTTON_LABEL));
 }
 
 void CoreOptionsHandler::Uninitialize() {
