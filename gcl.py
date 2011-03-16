@@ -764,7 +764,7 @@ def OptionallyDoPresubmitChecks(change_info, committing, args):
 
 
 def suggest_reviewers(change_info, affected_files):
-  owners_db = owners.Database(change_info.LocalRoot(), fopen=file,
+  owners_db = owners.Database(change_info.GetLocalRoot(), fopen=file,
                               os_path=os.path)
   return owners_db.reviewers_for(affected_files)
 
