@@ -241,7 +241,7 @@ void BrowsingDataRemover::Remove(int remove_mask) {
     // Tell the renderers to clear their cache.
     WebCacheManager::GetInstance()->ClearCache();
 
-    // Invoke ClearBrowsingDataView::ClearCache on the IO thread.
+    // Invoke DoClearCache on the IO thread.
     waiting_for_clear_cache_ = true;
     UserMetrics::RecordAction(UserMetricsAction("ClearBrowsingData_Cache"),
                               profile_);

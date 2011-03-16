@@ -10,7 +10,6 @@
 #include "base/logging.h"
 #include "chrome/browser/fonts_languages_window.h"
 #include "chrome/browser/ui/gtk/about_chrome_dialog.h"
-#include "chrome/browser/ui/gtk/clear_browsing_data_dialog_gtk.h"
 #include "chrome/browser/ui/gtk/collected_cookies_gtk.h"
 #include "chrome/browser/ui/gtk/edit_search_engine_dialog.h"
 #include "chrome/browser/ui/gtk/keyword_editor_view.h"
@@ -23,12 +22,6 @@
 #include "views/widget/widget.h"
 
 namespace browser {
-
-void ShowClearBrowsingDataView(views::Widget* parent,
-                               Profile* profile) {
-  ClearBrowsingDataDialogGtk::Show(GTK_WINDOW(parent->GetNativeView()),
-                                   profile);
-}
 
 void ShowKeywordEditorView(Profile* profile) {
   KeywordEditorView::Show(profile);

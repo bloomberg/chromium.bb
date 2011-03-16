@@ -43,7 +43,6 @@
 #include "chrome/browser/ui/gtk/browser_titlebar.h"
 #include "chrome/browser/ui/gtk/browser_toolbar_gtk.h"
 #include "chrome/browser/ui/gtk/cairo_cached_surface.h"
-#include "chrome/browser/ui/gtk/clear_browsing_data_dialog_gtk.h"
 #include "chrome/browser/ui/gtk/collected_cookies_gtk.h"
 #include "chrome/browser/ui/gtk/create_application_shortcuts_dialog_gtk.h"
 #include "chrome/browser/ui/gtk/download_in_progress_dialog_gtk.h"
