@@ -9,6 +9,35 @@
 #include <string>
 
 #include "chrome/browser/extensions/extension_function.h"
+#include "chrome/browser/prefs/pref_change_registrar.h"
+#include "content/common/notification_observer.h"
+
+class ExtensionPreferenceEventRouter : public NotificationObserver {
+ public:
+  explicit ExtensionPreferenceEventRouter(Profile* profile);
+  virtual ~ExtensionPreferenceEventRouter();
+
+ private:
+  // NotificationObserver implementation.
+  virtual void Observe(NotificationType type,
+                       const NotificationSource& source,
+                       const NotificationDetails& details);
+
+  void OnPrefChanged(PrefService* pref_service, const std::string& pref_key);
+
+  // This method dispatches events to the extension message service.
+  void DispatchEvent(const std::string& extension_id,
+                     const std::string& event_name,
+                     const std::string& json_args);
+
+  PrefChangeRegistrar registrar_;
+  PrefChangeRegistrar incognito_registrar_;
+
+  // Weak, owns us (transitively via ExtensionService).
+  Profile* profile_;
+
+  DISALLOW_COPY_AND_ASSIGN(ExtensionPreferenceEventRouter);
+};
 
 class Value;
 
@@ -36,12 +65,6 @@ class GetPreferenceFunction : public SyncExtensionFunction {
   virtual ~GetPreferenceFunction();
   virtual bool RunImpl();
   DECLARE_EXTENSION_FUNCTION_NAME("experimental.preferences.get")
-
- private:
-  // Returns a string constant (defined in API) indicating the level of
-  // control this extension has on the specified preference.
-  const char* GetLevelOfControl(const std::string& browser_pref,
-                                bool incognito) const;
 };
 
 class SetPreferenceFunction : public SyncExtensionFunction {

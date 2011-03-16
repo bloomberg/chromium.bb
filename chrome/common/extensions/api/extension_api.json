@@ -4685,6 +4685,34 @@
               }
             ]
           }
+        ],
+        "events": [
+          {
+            "name": "onChange",
+            "description": "Fired when the value of the preference changes.",
+            "parameters": [
+              {
+                "type": "object",
+                "name": "details",
+                "properties": {
+                  "value": {
+                    "description": "The value of the preference.",
+                    "type": "any"
+                  },
+                  "levelOfControl": {
+                    "description": "One of<br><var>NotControllable</var>: cannot be controlled by any extension<br><var>ControlledByOtherExtensions</var>: controlled by extensions with higher precedence<br><var>ControllableByThisExtension</var>: can be controlled by this extension<br><var>ControlledByThisExtension</var>: controlled by this extension",
+                    "type": "string",
+                    "enum": ["NotControllable", "ControlledByOtherExtensions", "ControllableByThisExtension", "ControlledByThisExtension"]
+                  },
+                  "incognitoSpecific": {
+                    "description": "Whether the value that has changed is specific to the incognito session.<br>This property will <em>only</em> be present if the user has enabled the extension in incognito mode.",
+                    "type": "boolean",
+                    "optional": true
+                  }
+                }
+              }
+            ]
+          }
         ]
       }
     ]

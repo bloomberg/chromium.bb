@@ -74,3 +74,14 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, ContentSettingsClear) {
   EXPECT_FALSE(pref->IsExtensionControlled());
   EXPECT_EQ(true, pref_service->GetBoolean(prefs::kBlockThirdPartyCookies));
 }
+
+IN_PROC_BROWSER_TEST_F(ExtensionApiTest, ContentSettingsOnChange) {
+  CommandLine::ForCurrentProcess()->AppendSwitch(
+      switches::kEnableExperimentalExtensionApis);
+
+  PrefService* prefs = browser()->profile()->GetPrefs();
+  prefs->SetBoolean(prefs::kBlockThirdPartyCookies, false);
+
+  EXPECT_TRUE(RunExtensionTestIncognito("content_settings/onchange")) <<
+      message_;
+}

@@ -37,6 +37,7 @@
 #include "content/common/property_bag.h"
 
 class ExtensionBrowserEventRouter;
+class ExtensionPreferenceEventRouter;
 class ExtensionServiceBackend;
 class ExtensionToolbarModel;
 class ExtensionUpdater;
@@ -563,6 +564,8 @@ class ExtensionService
   bool event_routers_initialized_;
 
   scoped_ptr<ExtensionBrowserEventRouter> browser_event_router_;
+
+  scoped_ptr<ExtensionPreferenceEventRouter> preference_event_router_;
 
   // A collection of external extension providers.  Each provider reads
   // a source of external extension information.  Examples include the

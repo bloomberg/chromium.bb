@@ -34,6 +34,7 @@
 #include "chrome/browser/extensions/extension_history_api.h"
 #include "chrome/browser/extensions/extension_host.h"
 #include "chrome/browser/extensions/extension_management_api.h"
+#include "chrome/browser/extensions/extension_preference_api.h"
 #include "chrome/browser/extensions/extension_process_manager.h"
 #include "chrome/browser/extensions/extension_processes_api.h"
 #include "chrome/browser/extensions/extension_special_storage_policy.h"
@@ -460,6 +461,7 @@ void ExtensionService::InitEventRouters() {
   ExtensionAccessibilityEventRouter::GetInstance()->ObserveProfile(profile_);
   browser_event_router_.reset(new ExtensionBrowserEventRouter(profile_));
   browser_event_router_->Init();
+  preference_event_router_.reset(new ExtensionPreferenceEventRouter(profile_));
   ExtensionBookmarkEventRouter::GetInstance()->Observe(
       profile_->GetBookmarkModel());
   ExtensionCookiesEventRouter::GetInstance()->Init();
@@ -1103,6 +1105,7 @@ void ExtensionService::DestroyingProfile() {
     updater_->Stop();
   }
   browser_event_router_.reset();
+  preference_event_router_.reset();
   pref_change_registrar_.RemoveAll();
   profile_ = NULL;
   toolbar_model_.DestroyingProfile();
