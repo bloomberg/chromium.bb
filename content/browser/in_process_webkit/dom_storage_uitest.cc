@@ -155,8 +155,7 @@ class DomStorageEmptyDatabaseTest : public UITest {
   }
 };
 
-// Fails, see http://crbug.com/76008
-TEST_F(DomStorageEmptyDatabaseTest, FAILS_EmptyDirAfterClear) {
+TEST_F(DomStorageEmptyDatabaseTest, EmptyDirAfterClear) {
   NavigateToURL(TestUrl());
   ASSERT_TRUE(StorageDirIsEmpty());
 
