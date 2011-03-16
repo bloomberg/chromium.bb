@@ -148,10 +148,6 @@ class GoogleURLTracker : public URLFetcher::Delegate,
                            // bother to fetch anything.
                            // Consumers should observe
                            // NotificationType::GOOGLE_URL_UPDATED.
-  bool request_context_available_;
-                           // True when the profile has been loaded and the
-                           // default request context created, so we can
-                           // actually do the fetch with the right data.
   bool need_to_prompt_;    // True if the last fetched Google URL is not
                            // matched with current user's default Google URL
                            // nor the last prompted Google URL.

@@ -260,7 +260,7 @@ void LoginUtilsImpl::CompleteLogin(
       new PrefProxyConfigService(
           profile->GetProxyConfigTracker(),
           new chromeos::ProxyConfigService(
-              profile->GetChromeOSProxyConfigServiceImpl()));
+              g_browser_process->chromeos_proxy_config_service_impl()));
   BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
                           new ResetDefaultProxyConfigServiceTask(
                               proxy_config_service));

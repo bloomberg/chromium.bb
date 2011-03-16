@@ -10,8 +10,8 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/prefs/pref_service.h"
-#include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/common/net/url_request_context_getter.h"
 #include "chrome/common/pref_names.h"
 #include "content/common/notification_service.h"
 #include "net/base/load_flags.h"
@@ -25,11 +25,7 @@ IntranetRedirectDetector::IntranetRedirectDetector()
     : redirect_origin_(g_browser_process->local_state()->GetString(
           prefs::kLastKnownIntranetRedirectOrigin)),
       ALLOW_THIS_IN_INITIALIZER_LIST(fetcher_factory_(this)),
-      in_sleep_(true),
-      request_context_available_(Profile::GetDefaultRequestContext() != NULL) {
-  registrar_.Add(this, NotificationType::DEFAULT_REQUEST_CONTEXT_AVAILABLE,
-                 NotificationService::AllSources());
-
+      in_sleep_(true) {
   // Because this function can be called during startup, when kicking off a URL
   // fetch can eat up 20 ms of time, we delay seven seconds, which is hopefully
   // long enough to be after startup, but still get results back quickly.
@@ -70,16 +66,6 @@ void IntranetRedirectDetector::FinishSleep() {
   STLDeleteElements(&fetchers_);
   resulting_origins_.clear();
 
-  StartFetchesIfPossible();
-}
-
-void IntranetRedirectDetector::StartFetchesIfPossible() {
-  // Bail if a fetch isn't appropriate right now.  This function will be called
-  // again each time one of the preconditions changes, so we'll fetch
-  // immediately once all of them are met.
-  if (in_sleep_ || !request_context_available_)
-    return;
-
   // The detector is not needed in Chrome Frame since we have no omnibox there.
   const CommandLine* cmd_line = CommandLine::ForCurrentProcess();
   if (cmd_line->HasSwitch(switches::kDisableBackgroundNetworking) ||
@@ -98,7 +84,7 @@ void IntranetRedirectDetector::StartFetchesIfPossible() {
     // We don't want these fetches to affect existing state in the profile.
     fetcher->set_load_flags(net::LOAD_DISABLE_CACHE |
                             net::LOAD_DO_NOT_SAVE_COOKIES);
-    fetcher->set_request_context(Profile::GetDefaultRequestContext());
+    fetcher->set_request_context(g_browser_process->system_request_context());
     fetcher->Start();
     fetchers_.insert(fetcher);
   }
@@ -156,14 +142,6 @@ void IntranetRedirectDetector::OnURLFetchComplete(
   g_browser_process->local_state()->SetString(
       prefs::kLastKnownIntranetRedirectOrigin, redirect_origin_.is_valid() ?
           redirect_origin_.spec() : std::string());
-}
-
-void IntranetRedirectDetector::Observe(NotificationType type,
-                                       const NotificationSource& source,
-                                       const NotificationDetails& details) {
-  DCHECK_EQ(NotificationType::DEFAULT_REQUEST_CONTEXT_AVAILABLE, type.value);
-  request_context_available_ = true;
-  StartFetchesIfPossible();
 }
 
 void IntranetRedirectDetector::OnIPAddressChanged() {

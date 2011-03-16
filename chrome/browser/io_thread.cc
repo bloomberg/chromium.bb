@@ -23,6 +23,8 @@
 #include "chrome/browser/net/connect_interceptor.h"
 #include "chrome/browser/net/passive_log_collector.h"
 #include "chrome/browser/net/predictor_api.h"
+#include "chrome/browser/net/pref_proxy_config_service.h"
+#include "chrome/browser/net/proxy_service_factory.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/net/raw_host_resolver_proc.h"
@@ -39,6 +41,7 @@
 #include "net/base/host_resolver_impl.h"
 #include "net/base/mapped_host_resolver.h"
 #include "net/base/net_util.h"
+#include "net/proxy/proxy_config_service.h"
 #include "net/http/http_auth_filter.h"
 #include "net/http/http_auth_handler_factory.h"
 #include "net/http/http_network_layer.h"
@@ -199,7 +202,63 @@ ConstructProxyScriptFetcherContext(IOThread::Globals* globals,
   return context;
 }
 
+scoped_refptr<net::URLRequestContext>
+ConstructSystemRequestContext(IOThread::Globals* globals,
+                              net::NetLog* net_log) {
+  scoped_refptr<net::URLRequestContext> context(new net::URLRequestContext);
+  context->set_net_log(net_log);
+  context->set_host_resolver(globals->host_resolver.get());
+  context->set_cert_verifier(globals->cert_verifier.get());
+  context->set_dnsrr_resolver(globals->dnsrr_resolver.get());
+  context->set_http_auth_handler_factory(
+      globals->http_auth_handler_factory.get());
+  context->set_proxy_service(globals->system_proxy_service.get());
+  context->set_http_transaction_factory(
+      globals->system_http_transaction_factory.get());
+  // In-memory cookie store.
+  context->set_cookie_store(new net::CookieMonster(NULL, NULL));
+  return context;
+}
+
 }  // namespace
+
+class SystemURLRequestContextGetter : public URLRequestContextGetter {
+ public:
+  explicit SystemURLRequestContextGetter(IOThread* io_thread);
+  virtual ~SystemURLRequestContextGetter();
+
+  // Implementation for UrlRequestContextGetter.
+  virtual net::URLRequestContext* GetURLRequestContext();
+  virtual scoped_refptr<base::MessageLoopProxy> GetIOMessageLoopProxy() const;
+
+ private:
+  IOThread* const io_thread_;  // Weak pointer, owned by BrowserProcess.
+  scoped_refptr<base::MessageLoopProxy> io_message_loop_proxy_;
+
+  base::debug::LeakTracker<SystemURLRequestContextGetter> leak_tracker_;
+};
+
+SystemURLRequestContextGetter::SystemURLRequestContextGetter(
+    IOThread* io_thread)
+    : io_thread_(io_thread),
+      io_message_loop_proxy_(io_thread->message_loop_proxy()) {
+}
+
+SystemURLRequestContextGetter::~SystemURLRequestContextGetter() {}
+
+net::URLRequestContext* SystemURLRequestContextGetter::GetURLRequestContext() {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+
+  if (!io_thread_->globals()->system_request_context)
+    io_thread_->InitSystemRequestContext();
+
+  return io_thread_->globals()->system_request_context;
+}
+
+scoped_refptr<base::MessageLoopProxy>
+SystemURLRequestContextGetter::GetIOMessageLoopProxy() const {
+  return io_message_loop_proxy_;
+}
 
 // The IOThread object must outlive any tasks posted to the IO thread before the
 // Quit task.
@@ -233,9 +292,12 @@ IOThread::IOThread(
   auth_delegate_whitelist_ = local_state->GetString(
       prefs::kAuthNegotiateDelegateWhitelist);
   gssapi_library_name_ = local_state->GetString(prefs::kGSSAPILibraryName);
+  pref_proxy_config_tracker_ = new PrefProxyConfigTracker(local_state);
 }
 
 IOThread::~IOThread() {
+  if (pref_proxy_config_tracker_)
+    pref_proxy_config_tracker_->DetachFromPrefService();
   // We cannot rely on our base class to stop the thread since we want our
   // CleanUp function to run.
   Stop();
@@ -300,6 +362,18 @@ void IOThread::ChangedToOnTheRecord() {
       NewRunnableMethod(
           this,
           &IOThread::ChangedToOnTheRecordOnIOThread));
+}
+
+URLRequestContextGetter* IOThread::system_url_request_context_getter() {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  if (!system_url_request_context_getter_) {
+    system_proxy_config_service_.reset(
+        ProxyServiceFactory::CreateProxyConfigService(
+            pref_proxy_config_tracker_));
+    system_url_request_context_getter_ =
+        new SystemURLRequestContextGetter(this);
+  }
+  return system_url_request_context_getter_;
 }
 
 void IOThread::ClearNetworkingHistory() {
@@ -401,6 +475,8 @@ void IOThread::CleanUp() {
     getter->ReleaseURLRequestContext();
   }
 
+  system_url_request_context_getter_ = NULL;
+
   // Step 2: Release objects that the net::URLRequestContext could have been
   // pointing to.
 
@@ -427,11 +503,15 @@ void IOThread::CleanUp() {
     globals_->host_resolver.get()->GetAsHostResolverImpl()->Shutdown();
   }
 
+  system_proxy_config_service_.reset();
+
   delete globals_;
   globals_ = NULL;
 
   // net::URLRequest instances must NOT outlive the IO thread.
   base::debug::LeakTracker<net::URLRequest>::CheckForLeaks();
+
+  base::debug::LeakTracker<SystemURLRequestContextGetter>::CheckForLeaks();
 
   // This will delete the |notification_service_|.  Make sure it's done after
   // anything else can reference it.
@@ -531,4 +611,35 @@ void IOThread::ClearHostCache() {
     if (host_cache)
       host_cache->clear();
   }
+}
+
+void IOThread::InitSystemRequestContext() {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK(!globals_->system_proxy_service);
+  DCHECK(system_proxy_config_service_.get());
+
+  const CommandLine& command_line = *CommandLine::ForCurrentProcess();
+  globals_->system_proxy_service =
+      ProxyServiceFactory::CreateProxyService(
+          net_log_,
+          globals_->proxy_script_fetcher_context,
+          system_proxy_config_service_.release(),
+          command_line);
+  net::HttpNetworkSession::Params system_params;
+  system_params.host_resolver = globals_->host_resolver.get();
+  system_params.cert_verifier = globals_->cert_verifier.get();
+  system_params.dnsrr_resolver = globals_->dnsrr_resolver.get();
+  system_params.dns_cert_checker = NULL;
+  system_params.ssl_host_info_factory = NULL;
+  system_params.proxy_service = globals_->system_proxy_service.get();
+  system_params.ssl_config_service = globals_->ssl_config_service.get();
+  system_params.http_auth_handler_factory =
+      globals_->http_auth_handler_factory.get();
+  system_params.network_delegate = globals_->system_network_delegate.get();
+  system_params.net_log = net_log_;
+  globals_->system_http_transaction_factory.reset(
+      new net::HttpNetworkLayer(
+          new net::HttpNetworkSession(system_params)));
+  globals_->system_request_context =
+      ConstructSystemRequestContext(globals_, net_log_);
 }

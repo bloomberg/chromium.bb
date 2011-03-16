@@ -15,13 +15,6 @@ namespace base {
 class Time;
 }
 
-#if defined(OS_CHROMEOS)
-namespace chromeos {
-class EnterpriseExtensionObserver;
-class ProxyConfigServiceImpl;
-}
-#endif
-
 namespace fileapi {
 class FileSystemContext;
 class SandboxedFileSystemContext;
@@ -543,16 +536,11 @@ class Profile {
   // Called after login.
   virtual void OnLogin() = 0;
 
-  // Returns ChromeOS's ProxyConfigServiceImpl, creating if not yet created.
-  virtual chromeos::ProxyConfigServiceImpl*
-      GetChromeOSProxyConfigServiceImpl() = 0;
-
   // Creates ChromeOS's EnterpriseExtensionListener.
   virtual void SetupChromeOSEnterpriseExtensionObserver() = 0;
 
   // Initializes Chrome OS's preferences.
   virtual void InitChromeOSPreferences() = 0;
-
 #endif  // defined(OS_CHROMEOS)
 
   // Returns the helper object that provides the proxy configuration service
