@@ -139,6 +139,10 @@ void PrintedDocument::RenderPrintedPage(
   DCHECK(old_font != NULL);
   // We don't want a white square around the text ever if overflowing.
   SetBkMode(context, TRANSPARENT);
+  // Disabling printing the header/footer on Windows for now to make the
+  // behavior consistent with Mac/Linux.
+  // TODO(thestig) re-enable this for print preview.
+#if 0
   PrintHeaderFooter(context, page, PageOverlays::LEFT, PageOverlays::TOP,
                     font);
   PrintHeaderFooter(context, page, PageOverlays::CENTER, PageOverlays::TOP,
@@ -151,6 +155,7 @@ void PrintedDocument::RenderPrintedPage(
                     font);
   PrintHeaderFooter(context, page, PageOverlays::RIGHT, PageOverlays::BOTTOM,
                     font);
+#endif
   int res = RestoreDC(context, saved_state);
   DCHECK_NE(res, 0);
 }
