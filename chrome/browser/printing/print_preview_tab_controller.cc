@@ -63,8 +63,6 @@ TabContents* PrintPreviewTabController::GetPrintPreviewForTab(
 void PrintPreviewTabController::Observe(NotificationType type,
                                         const NotificationSource& source,
                                         const NotificationDetails& details) {
-  TabContents* initiator_tab = NULL;
-  TabContents* preview_tab = NULL;
   TabContents* source_tab = NULL;
   NavigationController::LoadCommittedDetails* detail_info = NULL;
 
@@ -83,18 +81,14 @@ void PrintPreviewTabController::Observe(NotificationType type,
     }
     default: {
       NOTREACHED();
-      return;
+      break;
     }
   }
 
   DCHECK(source_tab);
-  preview_tab = GetPrintPreviewForTab(source_tab);
 
-  // |source_tab| is preview tab.
-  if (preview_tab == source_tab)
-    initiator_tab = GetInitiatorTab(source_tab);
-  else
-    initiator_tab = source_tab;
+  TabContents* preview_tab = GetPrintPreviewForTab(source_tab);
+  bool source_tab_is_preview_tab = (source_tab == preview_tab);
 
   if (detail_info) {
     PageTransition::Type transition_type =
@@ -111,32 +105,32 @@ void PrintPreviewTabController::Observe(NotificationType type,
     if (waiting_for_new_preview_page_ &&
         transition_type == PageTransition::LINK &&
         nav_type == NavigationType::NEW_PAGE &&
-        source_tab == preview_tab) {
+        source_tab_is_preview_tab) {
       waiting_for_new_preview_page_ = false;
       return;
     }
 
     // User navigated to a preview tab using forward/back button.
-    if (IsPrintPreviewTab(source_tab) &&
+    if (source_tab_is_preview_tab &&
         transition_type == PageTransition::FORWARD_BACK &&
         nav_type == NavigationType::EXISTING_PAGE) {
       return;
     }
   }
 
-  // If |source_tab| is |initiator_tab|, update the map entry.
-  if (source_tab == initiator_tab) {
+  if (source_tab_is_preview_tab) {
+    // Remove the initiator tab's observers before erasing the mapping.
+    TabContents* initiator_tab = GetInitiatorTab(source_tab);
+    if (initiator_tab)
+      RemoveObservers(initiator_tab);
+
+    // Erase the map entry.
+    preview_tab_map_.erase(source_tab);
+  } else {
+    // |source_tab| is an initiator tab, update the map entry.
     preview_tab_map_[preview_tab] = NULL;
   }
-
-  // If |source_tab| is |preview_tab|, erase the map entry.
-  if (source_tab == preview_tab) {
-    preview_tab_map_.erase(preview_tab);
-    RemoveObservers(preview_tab);
-  }
-
-  if (initiator_tab)
-    RemoveObservers(initiator_tab);
+  RemoveObservers(source_tab);
 }
 
 // static
