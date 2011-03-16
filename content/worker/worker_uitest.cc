@@ -311,7 +311,8 @@ TEST_F(WorkerTest, WorkerMultiPort) {
   RunWorkerFastLayoutTest("worker-multi-port.html");
 }
 
-TEST_F(WorkerTest, WorkerNavigator) {
+// Flaky, http://crbug.com/76426.
+TEST_F(WorkerTest, FLAKY_WorkerNavigator) {
   RunWorkerFastLayoutTest("worker-navigator.html");
 }
 
