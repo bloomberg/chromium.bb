@@ -36,6 +36,10 @@ class UpdateLibraryImpl : public UpdateLibrary {
     observers_.RemoveObserver(observer);
   }
 
+  bool HasObserver(Observer* observer) {
+    return observers_.HasObserver(observer);
+  }
+
   void RequestUpdateCheck(chromeos::UpdateCallback callback, void* user_data) {
     if (CrosLibrary::Get()->EnsureLoaded())
       chromeos::RequestUpdateCheck(callback, user_data);
@@ -48,18 +52,15 @@ class UpdateLibraryImpl : public UpdateLibrary {
     return RebootIfUpdated();
   }
 
-  bool SetReleaseTrack(const std::string& track) {
-    if (!CrosLibrary::Get()->EnsureLoaded())
-      return false;
-
-    return chromeos::SetTrack(track);
+  void SetReleaseTrack(const std::string& track) {
+    if (CrosLibrary::Get()->EnsureLoaded())
+      chromeos::SetUpdateTrack(track);
   }
 
-  std::string GetReleaseTrack() {
-    if (!CrosLibrary::Get()->EnsureLoaded())
-      return "";
-
-    return chromeos::GetTrack();
+  void GetReleaseTrack(chromeos::UpdateTrackCallback callback,
+                       void* user_data) {
+    if (CrosLibrary::Get()->EnsureLoaded())
+      chromeos::RequestUpdateTrack(callback, user_data);
   }
 
   const UpdateLibrary::Status& status() const {
@@ -117,13 +118,18 @@ class UpdateLibraryStubImpl : public UpdateLibrary {
   ~UpdateLibraryStubImpl() {}
   void AddObserver(Observer* observer) {}
   void RemoveObserver(Observer* observer) {}
+  bool HasObserver(Observer* observer) { return false; }
   void RequestUpdateCheck(chromeos::UpdateCallback callback, void* user_data) {
     if (callback)
       callback(user_data, UPDATE_RESULT_FAILED, "stub update");
   }
   bool RebootAfterUpdate() { return false; }
-  bool SetReleaseTrack(const std::string& track) { return false; }
-  std::string GetReleaseTrack() { return "beta-channel"; }
+  void SetReleaseTrack(const std::string& track) { }
+  void GetReleaseTrack(chromeos::UpdateTrackCallback callback,
+                       void* user_data) {
+    if (callback)
+      callback(user_data, "beta-channel");
+  }
   const UpdateLibrary::Status& status() const {
     return status_;
   }

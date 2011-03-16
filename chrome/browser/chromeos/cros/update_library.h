@@ -61,6 +61,7 @@ class UpdateLibrary {
   virtual ~UpdateLibrary() {}
   virtual void AddObserver(Observer* observer) = 0;
   virtual void RemoveObserver(Observer* observer) = 0;
+  virtual bool HasObserver(Observer* observer) = 0;
 
   // Requests an update check and calls |callback| when completed.
   virtual void RequestUpdateCheck(chromeos::UpdateCallback callback,
@@ -71,11 +72,12 @@ class UpdateLibrary {
 
   // Sets the release track (channel). |track| should look like
   // "beta-channel" and "dev-channel". Returns true on success.
-  virtual bool SetReleaseTrack(const std::string& track) = 0;
+  virtual void SetReleaseTrack(const std::string& track) = 0;
 
-  // Returns the release track (channel). On error, returns an empty
-  // string.
-  virtual std::string GetReleaseTrack() = 0;
+  // Calls |callback| with the release track (channel). On error, calls
+  // |callback| with NULL.
+  virtual void GetReleaseTrack(chromeos::UpdateTrackCallback callback,
+                               void* user_data) = 0;
 
   virtual const Status& status() const = 0;
 

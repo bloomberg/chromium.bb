@@ -72,6 +72,8 @@ class AboutPageHandler::UpdateObserver
   explicit UpdateObserver(AboutPageHandler* handler) : page_handler_(handler) {}
   virtual ~UpdateObserver() {}
 
+  AboutPageHandler* page_handler() const { return page_handler_; }
+
  private:
   virtual void UpdateStatusChanged(chromeos::UpdateLibrary* object) {
     page_handler_->UpdateStatus(object->status());
@@ -277,12 +279,6 @@ void AboutPageHandler::PageReady(const ListValue* args) {
   chromeos::UpdateLibrary* update_library =
       chromeos::CrosLibrary::Get()->GetUpdateLibrary();
 
-  // Update the channel information.
-  std::string channel = update_library->GetReleaseTrack();
-  scoped_ptr<Value> channel_string(Value::CreateStringValue(channel));
-  web_ui_->CallJavascriptFunction("AboutPage.updateSelectedOptionCallback",
-                                  *channel_string);
-
   update_observer_.reset(new UpdateObserver(this));
   update_library->AddObserver(update_observer_.get());
 
@@ -294,6 +290,11 @@ void AboutPageHandler::PageReady(const ListValue* args) {
   // already complete, update_observer_ won't receive a notification.
   // This is why we manually update the WebUI page above.
   CheckNow(NULL);
+
+  // Request the channel information. Use the observer to track the about
+  // page handler and ensure it does not get deleted before the callback.
+  update_library->GetReleaseTrack(UpdateSelectedChannel,
+                                  update_observer_.get());
 #endif
 }
 
@@ -417,4 +418,23 @@ void AboutPageHandler::OnOSVersion(chromeos::VersionLoader::Handle handle,
                                     *version_string);
   }
 }
-#endif
+
+// Callback from UpdateEngine with channel information.
+// static
+void AboutPageHandler::UpdateSelectedChannel(void* user_data,
+                                             const char* channel) {
+  if (!user_data || !channel) {
+    LOG(WARNING) << "UpdateSelectedChannel returned NULL.";
+    return;
+  }
+  UpdateObserver* observer = static_cast<UpdateObserver*>(user_data);
+  if (chromeos::CrosLibrary::Get()->GetUpdateLibrary()->HasObserver(observer)) {
+    // If UpdateLibrary still has the observer, then the page handler is valid.
+    AboutPageHandler* handler = observer->page_handler();
+    scoped_ptr<Value> channel_string(Value::CreateStringValue(channel));
+    handler->web_ui_->CallJavascriptFunction(
+        "AboutPage.updateSelectedOptionCallback", *channel_string);
+  }
+}
+
+#endif  // defined(OS_CHROMEOS)

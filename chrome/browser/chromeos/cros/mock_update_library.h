@@ -18,10 +18,11 @@ class MockUpdateLibrary : public UpdateLibrary {
   virtual ~MockUpdateLibrary() {}
   MOCK_METHOD1(AddObserver, void(Observer*));  // NOLINT
   MOCK_METHOD1(RemoveObserver, void(Observer*));  // NOLINT
+  MOCK_METHOD1(HasObserver, bool(Observer*));
   MOCK_METHOD2(RequestUpdateCheck, void(chromeos::UpdateCallback, void*));
   MOCK_METHOD0(RebootAfterUpdate, bool(void));
-  MOCK_METHOD1(SetReleaseTrack, bool(const std::string&));
-  MOCK_METHOD0(GetReleaseTrack, std::string());
+  MOCK_METHOD1(SetReleaseTrack, void(const std::string&));
+  MOCK_METHOD2(GetReleaseTrack, void(chromeos::UpdateTrackCallback, void*));
   MOCK_CONST_METHOD0(status, const Status&(void));
 
  private:
