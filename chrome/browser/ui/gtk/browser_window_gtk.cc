@@ -56,7 +56,6 @@
 #include "chrome/browser/ui/gtk/info_bubble_gtk.h"
 #include "chrome/browser/ui/gtk/infobars/infobar_container_gtk.h"
 #include "chrome/browser/ui/gtk/infobars/infobar_gtk.h"
-#include "chrome/browser/ui/gtk/keyword_editor_view.h"
 #include "chrome/browser/ui/gtk/location_bar_view_gtk.h"
 #include "chrome/browser/ui/gtk/nine_box.h"
 #include "chrome/browser/ui/gtk/reload_button_gtk.h"
