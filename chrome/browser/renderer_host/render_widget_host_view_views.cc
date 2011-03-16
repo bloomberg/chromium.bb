@@ -687,7 +687,6 @@ void RenderWidgetHostViewViews::OnMouseExited(const views::MouseEvent& event) {
   // Already generated synthetically by webkit.
 }
 
-#if defined(TOUCH_UI)
 views::View::TouchStatus RenderWidgetHostViewViews::OnTouchEvent(
     const views::TouchEvent& event) {
   // Update the list of touch points first.
@@ -781,7 +780,6 @@ views::View::TouchStatus RenderWidgetHostViewViews::OnTouchEvent(
 
   return status;
 }
-#endif
 
 bool RenderWidgetHostViewViews::OnKeyPressed(const views::KeyEvent& event) {
   if (!ime_context_->FilterKeyEvent(event))

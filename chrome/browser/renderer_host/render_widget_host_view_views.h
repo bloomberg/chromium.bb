@@ -105,10 +105,8 @@ class RenderWidgetHostViewViews : public RenderWidgetHostView,
   virtual void OnMouseMoved(const views::MouseEvent& event) OVERRIDE;
   virtual void OnMouseEntered(const views::MouseEvent& event) OVERRIDE;
   virtual void OnMouseExited(const views::MouseEvent& event) OVERRIDE;
-#if defined(TOUCH_UI)
   virtual View::TouchStatus OnTouchEvent(
       const views::TouchEvent& event) OVERRIDE;
-#endif
   virtual bool OnKeyPressed(const views::KeyEvent& event) OVERRIDE;
   virtual bool OnKeyReleased(const views::KeyEvent& event) OVERRIDE;
   virtual bool OnMouseWheel(const views::MouseWheelEvent& event) OVERRIDE;
