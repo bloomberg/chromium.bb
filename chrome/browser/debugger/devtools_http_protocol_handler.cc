@@ -135,9 +135,9 @@ void DevToolsHttpProtocolHandler::OnHttpRequest(
     return;
   }
 
-  // Proxy static files from chrome://devtools/*.
+  // Proxy static files from chrome-devtools://devtools/*.
   net::URLRequest* request = new net::URLRequest(
-      GURL("chrome:/" + info.path), this);
+      GURL("chrome-devtools:/" + info.path), this);
   Bind(request, connection_id);
   request->set_context(
       Profile::GetDefaultRequestContext()->GetURLRequestContext());
