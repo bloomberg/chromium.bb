@@ -38,8 +38,11 @@ if env.Bit('bitcode'):
 else:
   crt1 = env.ComponentObject('crt1', ['crt1_x86.S'])
 
-crti = env.ComponentObject('crti', ['crti_%s.S' % platform])
-crtn = env.ComponentObject('crtn', ['crtn_%s.S' % platform])
+if env.Bit('bitcode'):
+  bookends = []
+else:
+  bookends = [env.ComponentObject('crti', ['crti_%s.S' % platform]),
+              env.ComponentObject('crtn', ['crtn_%s.S' % platform])]
 
 
 # NOTE: we only provide setjmp/longjmp for pnacl, nacl-gcc obtains
@@ -53,5 +56,4 @@ tls = [env.StaticObject('tls.o', ['tls_%s.c' % platform])]
 
 crt_platform = env.StaticLibrary('crt_platform', tls + setjmp)
 
-# TODO(sehr): remove crti, crtn from the SDK.
-env.AddObjectToSdk([crt1, crti, crtn, crt_platform], is_platform=True)
+env.AddObjectToSdk([crt1, crt_platform] + bookends, is_platform=True)
