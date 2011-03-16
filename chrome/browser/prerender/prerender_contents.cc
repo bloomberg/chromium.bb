@@ -66,7 +66,8 @@ PrerenderContents::PrerenderContents(PrerenderManager* prerender_manager,
       profile_(profile),
       page_id_(0),
       has_stopped_loading_(false),
-      final_status_(FINAL_STATUS_MAX) {
+      final_status_(FINAL_STATUS_MAX),
+      prerendering_has_started_(false) {
   DCHECK(prerender_manager != NULL);
   if (!AddAliasURL(prerender_url_))
     LOG(DFATAL) << "PrerenderContents given invalid URL " << prerender_url_;
@@ -85,6 +86,8 @@ PrerenderContents::Factory* PrerenderContents::CreateFactory() {
 
 void PrerenderContents::StartPrerendering() {
   DCHECK(profile_ != NULL);
+  DCHECK(!prerendering_has_started_);
+  prerendering_has_started_ = true;
   SiteInstance* site_instance = SiteInstance::CreateSiteInstance(profile_);
   render_view_host_ = new RenderViewHost(site_instance, this, MSG_ROUTING_NONE,
                                          NULL);
@@ -153,7 +156,10 @@ FinalStatus PrerenderContents::final_status() const {
 
 PrerenderContents::~PrerenderContents() {
   DCHECK(final_status_ != FINAL_STATUS_MAX);
-  RecordFinalStatus(final_status_);
+  // If we haven't even started prerendering, we were just in the control
+  // group, which means we do not want to record the status.
+  if (prerendering_has_started())
+    RecordFinalStatus(final_status_);
 
   if (!render_view_host_)   // Will be null for unit tests.
     return;

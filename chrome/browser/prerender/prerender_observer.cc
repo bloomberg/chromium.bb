@@ -36,8 +36,8 @@ bool PrerenderObserver::OnMessageReceived(const IPC::Message& message) {
 }
 
 void PrerenderObserver::OnDidStartProvisionalLoadForFrame(int64 frame_id,
-                                                             bool is_main_frame,
-                                                             const GURL& url) {
+                                                          bool is_main_frame,
+                                                          const GURL& url) {
   if (is_main_frame) {
     // Record the beginning of a new PPLT navigation.
     pplt_load_start_ = base::TimeTicks::Now();
@@ -48,7 +48,7 @@ void PrerenderObserver::DidStopLoading() {
   // Compute the PPLT metric and report it in a histogram, if needed.
   if (!pplt_load_start_.is_null()) {
     PrerenderManager::RecordPerceivedPageLoadTime(
-        base::TimeTicks::Now() - pplt_load_start_);
+        base::TimeTicks::Now() - pplt_load_start_, tab_contents());
   }
 
   // Reset the PPLT metric.

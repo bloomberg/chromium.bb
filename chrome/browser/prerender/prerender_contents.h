@@ -82,6 +82,7 @@ class PrerenderContents : public RenderViewHostDelegate,
   int32 page_id() const { return page_id_; }
   GURL icon_url() const { return icon_url_; }
   bool has_stopped_loading() const { return has_stopped_loading_; }
+  bool prerendering_has_started() const { return prerendering_has_started_; }
 
   // Set the final status for how the PrerenderContents was used. This
   // should only be called once, and should be called before the prerender
@@ -252,6 +253,8 @@ class PrerenderContents : public RenderViewHostDelegate,
   bool has_stopped_loading_;
 
   FinalStatus final_status_;
+
+  bool prerendering_has_started_;
 
   // Time at which we started to load the URL.  This is used to compute
   // the time elapsed from initiating a prerender until the time the

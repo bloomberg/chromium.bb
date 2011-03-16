@@ -75,7 +75,8 @@ class PrerenderManager : public base::RefCounted<PrerenderManager> {
   PrerenderContents* GetEntry(const GURL& url);
 
   // The following two methods should only be called from the UI thread.
-  static void RecordPerceivedPageLoadTime(base::TimeDelta pplt);
+  static void RecordPerceivedPageLoadTime(base::TimeDelta pplt,
+                                          TabContents* tc);
   void RecordTimeUntilUsed(base::TimeDelta time_until_used);
 
   base::TimeDelta max_prerender_age() const { return max_prerender_age_; }
@@ -86,6 +87,7 @@ class PrerenderManager : public base::RefCounted<PrerenderManager> {
   static PrerenderManagerMode GetMode();
   static void SetMode(PrerenderManagerMode mode);
   static bool IsPrerenderingEnabled();
+  static bool IsControlGroup();
 
   // The following static method can be called from any thread, but will result
   // in posting a task to the UI thread if we are not in the UI thread.
@@ -94,8 +96,10 @@ class PrerenderManager : public base::RefCounted<PrerenderManager> {
   // Maintaining and querying the set of TabContents belonging to this
   // PrerenderManager that are currently showing prerendered pages.
   void MarkTabContentsAsPrerendered(TabContents* tc);
+  void MarkTabContentsAsWouldBePrerendered(TabContents* tc);
   void MarkTabContentsAsNotPrerendered(TabContents* tc);
   bool IsTabContentsPrerendered(TabContents* tc) const;
+  bool WouldTabContentsBePrerendered(TabContents* tc) const;
 
  protected:
   virtual ~PrerenderManager();
@@ -146,6 +150,10 @@ class PrerenderManager : public base::RefCounted<PrerenderManager> {
 
   // Set of TabContents which are currently displaying a prerendered page.
   base::hash_set<TabContents*> prerendered_tc_set_;
+
+  // Set of TabContents which would be displaying a prerendered page
+  // (for the control group).
+  base::hash_set<TabContents*> would_be_prerendered_tc_set_;
 
   // Default maximum permitted elements to prerender.
   static const unsigned int kDefaultMaxPrerenderElements = 1;

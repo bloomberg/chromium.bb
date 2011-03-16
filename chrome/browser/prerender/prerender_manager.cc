@@ -11,6 +11,7 @@
 #include "chrome/browser/favicon_helper.h"
 #include "chrome/browser/prerender/prerender_contents.h"
 #include "chrome/browser/prerender/prerender_final_status.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/common/render_messages.h"
 #include "content/browser/browser_thread.h"
 #include "content/browser/renderer_host/render_view_host.h"
@@ -41,7 +42,13 @@ void PrerenderManager::SetMode(PrerenderManagerMode mode) {
 bool PrerenderManager::IsPrerenderingEnabled() {
   return
       GetMode() == PRERENDER_MODE_ENABLED ||
-      GetMode() == PRERENDER_MODE_EXPERIMENT_PRERENDER_GROUP;
+      GetMode() == PRERENDER_MODE_EXPERIMENT_PRERENDER_GROUP ||
+      GetMode() == PRERENDER_MODE_EXPERIMENT_CONTROL_GROUP;
+}
+
+// static
+bool PrerenderManager::IsControlGroup() {
+  return GetMode() == PRERENDER_MODE_EXPERIMENT_CONTROL_GROUP;
 }
 
 struct PrerenderManager::PrerenderContentsData {
@@ -89,14 +96,17 @@ bool PrerenderManager::AddPreload(const GURL& url,
   // TODO(tburkard): Figure out how to cancel prerendering in the opposite
   // case, when a new tab is added to a process used for prerendering.
   if (RenderProcessHost::ShouldTryToUseExistingProcessHost()) {
-    RecordFinalStatus(FINAL_STATUS_TOO_MANY_PROCESSES);
+    // Only record the status if we are not in the control group.
+    if (!IsControlGroup())
+      RecordFinalStatus(FINAL_STATUS_TOO_MANY_PROCESSES);
     return false;
   }
   // TODO(cbentzel): Move invalid checks here instead of PrerenderContents?
   PrerenderContentsData data(CreatePrerenderContents(url, alias_urls, referrer),
                              GetCurrentTime());
   prerender_list_.push_back(data);
-  data.contents_->StartPrerendering();
+  if (!IsControlGroup())
+    data.contents_->StartPrerendering();
   while (prerender_list_.size() > max_elements_) {
     data = prerender_list_.front();
     prerender_list_.pop_front();
@@ -141,6 +151,14 @@ bool PrerenderManager::MaybeUsePreloadedPage(TabContents* tc, const GURL& url) {
   scoped_ptr<PrerenderContents> pc(GetEntry(url));
   if (pc.get() == NULL)
     return false;
+
+  // If we are just in the control group (which can be detected by noticing
+  // that prerendering hasn't even started yet), record that this TC now would
+  // be showing a prerendered contents, but otherwise, don't do anything.
+  if (!pc->prerendering_has_started()) {
+    MarkTabContentsAsWouldBePrerendered(tc);
+    return false;
+  }
 
   if (!pc->load_start_time().is_null())
     RecordTimeUntilUsed(base::TimeTicks::Now() - pc->load_start_time());
@@ -204,8 +222,10 @@ PrerenderContents* PrerenderManager::CreatePrerenderContents(
 }
 
 // static
-void PrerenderManager::RecordPerceivedPageLoadTime(base::TimeDelta pplt) {
+void PrerenderManager::RecordPerceivedPageLoadTime(base::TimeDelta pplt,
+                                                   TabContents* tc) {
   bool record_windowed_pplt = ShouldRecordWindowedPPLT();
+  PrerenderManager* pm = tc->profile()->GetPrerenderManager();
   switch (mode_) {
     case PRERENDER_MODE_EXPERIMENT_CONTROL_GROUP:
       UMA_HISTOGRAM_MEDIUM_TIMES(
@@ -215,6 +235,11 @@ void PrerenderManager::RecordPerceivedPageLoadTime(base::TimeDelta pplt) {
             "Prerender.PerceivedPageLoadTime_WindowControl",
             pplt);
       }
+      if (pm && pm->WouldTabContentsBePrerendered(tc)) {
+        UMA_HISTOGRAM_MEDIUM_TIMES(
+            "Prerender.PerceivedPageLoadTime_PrerenderMatchControl",
+            pplt);
+      }
       break;
     case PRERENDER_MODE_EXPERIMENT_PRERENDER_GROUP:
       UMA_HISTOGRAM_MEDIUM_TIMES(
@@ -222,6 +247,11 @@ void PrerenderManager::RecordPerceivedPageLoadTime(base::TimeDelta pplt) {
       if (record_windowed_pplt) {
         UMA_HISTOGRAM_MEDIUM_TIMES(
             "Prerender.PerceivedPageLoadTime_WindowTreatment",
+            pplt);
+      }
+      if (pm && pm->IsTabContentsPrerendered(tc)) {
+        UMA_HISTOGRAM_MEDIUM_TIMES(
+            "Prerender.PerceivedPageLoadTime_PrerenderMatchTreatment",
             pplt);
       }
       break;
@@ -321,12 +351,21 @@ void PrerenderManager::MarkTabContentsAsPrerendered(TabContents* tc) {
   prerendered_tc_set_.insert(tc);
 }
 
+void PrerenderManager::MarkTabContentsAsWouldBePrerendered(TabContents* tc) {
+  would_be_prerendered_tc_set_.insert(tc);
+}
+
 void PrerenderManager::MarkTabContentsAsNotPrerendered(TabContents* tc) {
   prerendered_tc_set_.erase(tc);
+  would_be_prerendered_tc_set_.erase(tc);
 }
 
 bool PrerenderManager::IsTabContentsPrerendered(TabContents* tc) const {
   return prerendered_tc_set_.count(tc) > 0;
+}
+
+bool PrerenderManager::WouldTabContentsBePrerendered(TabContents* tc) const {
+  return would_be_prerendered_tc_set_.count(tc) > 0;
 }
 
 }  // namespace prerender
