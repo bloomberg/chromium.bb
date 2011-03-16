@@ -14,12 +14,13 @@
  *
  */
 
-var USE_DEVTOOLS_SCHEMA = /\.webInspector\.[^/]*\.html/.test(location.href);
 var API_TEMPLATE = "template/api_template.html";
 var WEBKIT_PATH = "../../../../third_party/WebKit";
-var SCHEMA = USE_DEVTOOLS_SCHEMA ?
-    WEBKIT_PATH + "/Source/WebCore/inspector/front-end/ExtensionAPISchema.json"
-    : "../api/extension_api.json";
+var SCHEMA = "../api/extension_api.json";
+var DEVTOOLS_SCHEMA = WEBKIT_PATH +
+  "/Source/WebCore/inspector/front-end/ExtensionAPISchema.json";
+var USE_DEVTOOLS_SCHEMA =
+  /\.webInspector\.[^/]*\.html/.test(location.pathname);
 var API_MODULE_PREFIX = USE_DEVTOOLS_SCHEMA ? "" : "chrome.";
 var SAMPLES = "samples.json";
 var REQUEST_TIMEOUT = 2000;
@@ -101,7 +102,6 @@ function fetchStatic() {
   fetchContent(staticResource(pageBase), function(overviewContent) {
     document.getElementById("static").innerHTML = overviewContent;
     fetchSchema();
-
   }, function(error) {
     // Not fatal. Some api pages may not have matching static content.
     fetchSchema();
@@ -111,16 +111,34 @@ function fetchStatic() {
 function fetchSchema() {
   // Now the page is composed with the authored content, we fetch the schema
   // and populate the templates.
-  fetchContent(SCHEMA, function(schemaContent) {
-    schema = JSON.parse(schemaContent);
+  var is_experimental_index = /\/experimental\.html$/.test(location.pathname);
+
+  var schemas_to_retrieve = [];
+  if (!USE_DEVTOOLS_SCHEMA || is_experimental_index)
+    schemas_to_retrieve.push(SCHEMA);
+  if (USE_DEVTOOLS_SCHEMA || is_experimental_index)
+    schemas_to_retrieve.push(DEVTOOLS_SCHEMA);
+
+  var schemas_retrieved = 0;
+  schema = [];
+
+  function onSchemaContent(content) {
+    schema = schema.concat(JSON.parse(content));
+    if (++schemas_retrieved < schemas_to_retrieve.length)
+      return;
     if (pageName.toLowerCase() == "samples") {
       fetchSamples();
     } else {
       renderTemplate();
     }
-  }, function(error) {
-    alert("Failed to load " + SCHEMA);
-  });
+  }
+
+  for (var i = 0; i < schemas_to_retrieve.length; ++i) {
+    var schema_path = schemas_to_retrieve[i];
+    fetchContent(schema_path, onSchemaContent, function(error) {
+      alert("Failed to load " + schema_path);
+    });
+  }
 }
 
 function fetchSamples() {
