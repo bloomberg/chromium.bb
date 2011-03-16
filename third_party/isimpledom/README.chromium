@@ -1,5 +1,7 @@
 Name: ISimpleDOM COM interfaces for accessibility
+Short Name: ISimpleDOM
 URL: http://www.mozilla.org/access/windows/at-apis
+Version: unknown
 
 Description:
   This directory contains the ISimpleDOM API, which is needed

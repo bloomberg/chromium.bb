@@ -1,5 +1,7 @@
 Name: Cocoa extension code from Camino
+Short Name: camino
 URL: http://caminobrowser.org/
+Version: unknown
 
 Description:
   This directory contains the following files come from (Mozilla) Camino

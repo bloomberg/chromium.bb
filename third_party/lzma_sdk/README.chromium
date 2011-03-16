@@ -1,6 +1,9 @@
 Name: LZMA SDK
+Short Name: lzma
 URL: http://www.7-zip.org/sdk.html
+Version: 4.49
 
+Description:
 This contains a part of LZMA SDK 4.49.
 
 Only the C code required to open 7z archive files and uncompress LZMA

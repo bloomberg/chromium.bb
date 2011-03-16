@@ -1,6 +1,8 @@
 Name: codesighs
 URL: http://hg.mozilla.org/mozilla-central/tools/codesighs
+Version: unknown
 
+Description:
 This is Chromium's copy of the Mozilla codesighs tool.
 
 Originally obtained from Mozilla's Mercurial repository

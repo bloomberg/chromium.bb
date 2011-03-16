@@ -1,7 +1,9 @@
-Name: pyftpdlib
+Name: Python FTP server library
+Short Name: pyftpdlib
 URL: http://code.google.com/p/pyftpdlib/
 Version: 0.5.0
 
+Description:
 Chromium-specific changes are in chromium.patch file. Currently it removes the
 delay after invalid login (which helps protect against brute-force attacks),
 which is slowing down some tests.

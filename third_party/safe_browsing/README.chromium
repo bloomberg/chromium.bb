@@ -1,5 +1,6 @@
-Name: Google Safe Browsing
+Name: google-safe-browsing
 URL: http://code.google.com/p/google-safe-browsing/
+Version: unknown
 License: Apache 2.0
 License File: testing/LICENSE
 

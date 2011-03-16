@@ -1,2 +1,4 @@
-Name: npapi
+Name: Netscape Plugin Application Programming Interface (NPAPI)
+Short Name: npapi
 URL: http://mxr.mozilla.org/mozilla-central/source/modules/plugin/base/public/
+Version: unknown

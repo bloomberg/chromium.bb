@@ -1,6 +1,10 @@
 Name: tcmalloc
+Short Name: google-perftools
 URL: http://google-perftools.googlecode.com/
+Version: unknown
+Revision: 93
 
+Description:
 This contains Chromium's locally patched copy of tcmalloc.
 
 Contents:

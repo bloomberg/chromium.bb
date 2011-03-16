@@ -1,6 +1,8 @@
 Name: bzip2
 URL: http://www.bzip.org/downloads.html
+Version: 1.0.5
 
+Description:
 This is a copy of the parts of the bzip-1.0.5 distribution needed to build
 the bzip2 library.
 

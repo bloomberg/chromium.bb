@@ -1,5 +1,6 @@
 Name: bsdiff
 URL: http://lxr.mozilla.org/mozilla/source/other-licenses/bsdiff/bsdiff.c
+Version: unknown
 
 This is Chrome's locally patched copy of Colin Percival's bsdiff tool
 (see ../bspatch for the corresponding bspatch tool).

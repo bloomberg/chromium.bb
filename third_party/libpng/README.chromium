@@ -1,6 +1,8 @@
 Name: libpng
 URL: http://libpng.org/
+Version: 1.2.44
 
+Description:
 Our custom configuration options are defined in pngusr.h. This was previously
 called mozpngconf.h, which was copied from Mozilla and modified by Apple (hence
 the webkit_* names).

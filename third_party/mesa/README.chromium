@@ -1,8 +1,9 @@
-Name: MesaLib
-Current version: 7.9
+Name: mesa
+Version: 7.9
 URL: http://www.mesa3d.org/
 License File: MesaLib/docs/COPYING
 
+Description:
 This directory contains a copy of these MesaLib components:
 
 Main Mesa code    src/mesa/

@@ -1,5 +1,6 @@
 Name: talloc
 URL: http://talloc.samba.org/talloc/doc/html/index.html
+Version: 2.0.1
 
 The talloc library is only being used by a portion of the Mesa
 software renderer, in ../mesa/MesaLib, and is only linked in to the

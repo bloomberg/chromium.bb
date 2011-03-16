@@ -1,6 +1,8 @@
 Name: libsrtp
 URL: http://srtp.sourceforge.net
+Version: unknown
 License File: src/LICENSE
 
+Description:
 Chromoting uses libSRTP to encrypt video stream.
 See source/README.chromium for about current revision.

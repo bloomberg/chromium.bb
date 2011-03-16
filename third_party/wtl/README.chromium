@@ -1,5 +1,6 @@
-Name: WTL 8.0
+Name: wtl
 URL: http://www.microsoft.com/downloads/details.aspx?FamilyID=e5ba5ba4-6e6b-462a-b24c-61115e846f0c
+Version: 8.0
 License File: Ms-PL.txt
 
 With min and max replaced respectively with __min and __max. See below for an explanation.

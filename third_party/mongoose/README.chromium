@@ -1,9 +1,9 @@
-Name: Mongoose
+Name: mongoose
 URL: http://code.google.com/p/mongoose/
 LICENSE: MIT
 Version: 2.8
 
-From the website:
+Description:
 Mongoose is an easy to use web server. It can be embedded into existing
 application to provide a web interface to it.
 

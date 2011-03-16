@@ -1,4 +1,5 @@
-Name: expat
+Name: Expat XML Parser
+Short Name: expat
 URL: http://sourceforge.net/projects/expat/
 Version: 2.7.0
 License: MIT

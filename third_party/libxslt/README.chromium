@@ -1,6 +1,8 @@
 Name: libxslt
 URL: http://xmlsoft.org/XSLT
+Version: 1.1.26
 
+Description:
 This directory contains a partial snapshot of the libxslt library
 with the following modification:
 

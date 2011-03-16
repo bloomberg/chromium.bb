@@ -1,5 +1,6 @@
 Name: yasm
 URL: http://www.tortall.net/projects/yasm/
+Version: 1.1.0
 License File: source/patched-yasm/COPYING
 
 See also the yasm.gyp file for a description of the yasm build process.

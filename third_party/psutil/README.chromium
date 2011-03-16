@@ -1,4 +1,5 @@
-Name: psutil
+Name: Python process utilities
+Short Name: psutil
 URL: http://code.google.com/p/psutil/
 Version: 0.2.0
 License: BSD

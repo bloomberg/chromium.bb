@@ -1,6 +1,9 @@
 Name: Webdriver
+Short Name: selenium
 URL: http://selenium.googlecode.com/svn/trunk/py
      http://selenium.googlecode.com/svn/trunk/common/src/web
+Version: unknown
+Revision: 11446
 
 Description:
   WebDriver is a clean, fast framework for automated testing of webapps.
