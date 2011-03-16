@@ -6,10 +6,13 @@
 
 #include "base/synchronization/lock.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
+#include "chrome/browser/profiles/profile.h"
+#include "chrome/common/net/url_request_context_getter.h"
 #include "content/browser/browser_thread.h"
 #include "cros/chromeos_libcros_service.h"
 #include "net/base/net_errors.h"
 #include "net/proxy/proxy_service.h"
+#include "net/url_request/url_request_context.h"
 
 namespace chromeos {
 
@@ -45,10 +48,6 @@ class LibCrosServiceLibraryImpl : public LibCrosServiceLibrary {
     explicit NetworkProxyLibrary(LibCrosServiceConnection connection);
     virtual ~NetworkProxyLibrary();
 
-    // Sets the ProxyService that will handle network proxy requests, e.g.
-    // proxy resolution for a url.
-    void SetHandler(net::ProxyService* handler);
-
    private:
     // Data being used in one proxy resolution.
     class Request {
@@ -74,16 +73,12 @@ class LibCrosServiceLibraryImpl : public LibCrosServiceLibrary {
     // Static callback passed to LibCrosService to be invoked when ChromeOS
     // clients send network proxy resolution requests to the service running in
     // chrome executable.  Called on UI thread from dbus request.
-    static void ResolveProxyHandler(void* object,
-                                    const char* source_url);
+    static void ResolveProxyHandler(void* object, const char* source_url);
 
     void ResolveProxy(const std::string& source_url);
 
     // Wrapper on UI thread to call LibCrosService::NotifyNetworkProxyResolved.
     void NotifyProxyResolved(Request* request);
-
-    // ProxyService to call ResolveProxy on.
-    scoped_refptr<net::ProxyService> proxy_service_;
 
     std::vector<Request*> all_requests_;
 
@@ -94,12 +89,11 @@ class LibCrosServiceLibraryImpl : public LibCrosServiceLibrary {
   virtual ~LibCrosServiceLibraryImpl();
 
   // LibCrosServiceLibrary implementation.
-  virtual void RegisterNetworkProxyHandler(net::ProxyService* handler);
+
+  // Starts LibCrosService running on dbus if not already started.
+  virtual void StartService();
 
  private:
-  // Starts LibCrosService running on dbus if not already started.
-  bool StartService();
-
   // Connection to LibCrosService.
   LibCrosServiceConnection service_connection_;
 
@@ -131,40 +125,26 @@ LibCrosServiceLibraryImpl::~LibCrosServiceLibraryImpl() {
   }
 }
 
-// Called on UI thread to register network proxy handler for LibCrosService.
-void LibCrosServiceLibraryImpl::RegisterNetworkProxyHandler(
-    net::ProxyService* handler) {
+// Called on UI thread to start service for LibCrosService.
+void LibCrosServiceLibraryImpl::StartService() {
   // Make sure we're running on UI thread.
   if (!BrowserThread::CurrentlyOn(BrowserThread::UI)) {
-    scoped_refptr<net::ProxyService> ref_handler(handler);
     BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
         NewRunnableMethod(this,
-            &LibCrosServiceLibraryImpl::RegisterNetworkProxyHandler,
-            ref_handler));
+                          &LibCrosServiceLibraryImpl::StartService));
     return;
   }
-  if (StartService()) {
-    if (!network_proxy_lib_.get())
-      network_proxy_lib_.reset(new NetworkProxyLibrary(service_connection_));
-    network_proxy_lib_->SetHandler(handler);
-  }
-}
-
-//---------------- LibCrosServiceLibraryImpl: private --------------------------
-
-bool LibCrosServiceLibraryImpl::StartService() {
   if (service_connection_)  // Service has already been started.
-    return true;
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+    return;
   // Starts LibCrosService; the returned connection is used for future
   // interactions with the service.
   service_connection_ = StartLibCrosService();
-  if (service_connection_) {
-    VLOG(1) << "LibCrosService started.";
-    return true;
+  if (!service_connection_) {
+    LOG(WARNING) << "Error starting LibCrosService";
+    return;
   }
-  LOG(WARNING) << "Error starting LibCrosService";
-  return false;
+  network_proxy_lib_.reset(new NetworkProxyLibrary(service_connection_));
+  VLOG(1) << "LibCrosService started.";
 }
 
 //------------- LibCrosServiceLibraryImpl::ServicingLibrary: public ------------
@@ -203,15 +183,6 @@ LibCrosServiceLibraryImpl::NetworkProxyLibrary::~NetworkProxyLibrary() {
   }
 }
 
-// Called on UI thread to register handler for LibCrosService's network proxy
-// requests.
-void LibCrosServiceLibraryImpl::NetworkProxyLibrary::SetHandler(
-    net::ProxyService* handler) {
-  base::AutoLock lock(data_lock_);
-  DCHECK(service_connection_);
-  proxy_service_ = handler;
-}
-
 //----------- LibCrosServiceLibraryImpl::NetworkProxyLibrary: private ----------
 
 // Static, called on UI thread from LibCrosService::ResolveProxy via dbus.
@@ -231,23 +202,33 @@ void LibCrosServiceLibraryImpl::NetworkProxyLibrary::ResolveProxy(
   // Make sure we're running on IO thread.
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 
+  // Create a request slot for this proxy resolution request.
   Request* request = new Request(source_url);
   request->notify_task_ = NewRunnableMethod(this,
       &NetworkProxyLibrary::NotifyProxyResolved, request);
-  {
+
+  // Retrieve ProxyService from profile's request context.
+  URLRequestContextGetter* getter = Profile::GetDefaultRequestContext();
+  net::ProxyService* proxy_service = NULL;
+  if (getter)
+    proxy_service = getter->GetURLRequestContext()->proxy_service();
+
+  // Check that we have valid proxy service and service_connection.
+  if (!proxy_service) {
+     request->error_ = "No proxy service in chrome";
+  } else {
     base::AutoLock lock(data_lock_);
+    // Queue request slot.
     all_requests_.push_back(request);
     if (!service_connection_)
       request->error_ = "LibCrosService not started";
-    else if (!proxy_service_)
-      request->error_ = "Network proxy resolver not registered";
   }
-  if (request->error_ != "") {
+  if (request->error_ != "") {  // Error string was just set.
     LOG(ERROR) << request->error_;
     request->result_ = net::OK;  // Set to OK since error string is set.
   } else {
     VLOG(1) << "Starting networy proxy resolution for " << request->source_url_;
-    request->result_ = proxy_service_->ResolveProxy(
+    request->result_ = proxy_service->ResolveProxy(
         GURL(request->source_url_), &request->proxy_info_,
         &request->completion_callback_, NULL, net::BoundNetLog());
   }
@@ -310,7 +291,7 @@ class LibCrosServiceLibraryStubImpl : public LibCrosServiceLibrary {
   virtual ~LibCrosServiceLibraryStubImpl() {}
 
   // LibCrosServiceLibrary overrides.
-  virtual void RegisterNetworkProxyHandler(net::ProxyService* handler) {}
+  virtual void StartService() {}
 
   DISALLOW_COPY_AND_ASSIGN(LibCrosServiceLibraryStubImpl);
 };

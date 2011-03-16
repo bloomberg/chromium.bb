@@ -16,9 +16,8 @@ class LibCrosServiceLibrary {
  public:
   virtual ~LibCrosServiceLibrary() {}
 
-  // Registers the ProxyService that will handle network proxy requests, e.g.
-  // proxy resolution for a url.
-  virtual void RegisterNetworkProxyHandler(net::ProxyService* handler) = 0;
+  // Starts dbus service for LibCrosService.
+  virtual void StartService() = 0;
 
   // Factory function, creates a new instance and returns ownership.
   // For normal usage, access the singleton via CrosLibrary::Get().
