@@ -11,7 +11,7 @@ import os
 import re
 import socket # for gethostname
 import xml.dom
-import xml.dom.minidom
+import xml_fix
 
 
 #------------------------------------------------------------------------------

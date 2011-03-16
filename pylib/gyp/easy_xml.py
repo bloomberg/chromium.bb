@@ -5,8 +5,7 @@
 # found in the LICENSE file.
 
 import xml.dom
-import xml.dom.minidom
-
+import xml_fix
 import common
 
 class EasyXml(object):
@@ -112,7 +111,9 @@ class EasyXml(object):
   def WriteIfChanged(self, path):
     """ Writes the XML doc but don't touch the file if unchanged. """
     f = common.WriteOnDiff(path)
+    fix = xml_fix.XmlFix()
     self.doc.writexml(f, encoding='utf-8', addindent='', newl='')
+    fix.Cleanup()
     f.close()
 
   def __str__(self):

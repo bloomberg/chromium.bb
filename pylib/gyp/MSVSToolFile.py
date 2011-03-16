@@ -8,7 +8,7 @@
 
 import common
 import xml.dom
-import xml.dom.minidom
+import xml_fix
 
 
 #------------------------------------------------------------------------------
@@ -73,7 +73,9 @@ class Writer(object):
   def Write(self, writer=common.WriteOnDiff):
     """Writes the tool file."""
     f = writer(self.tool_file_path)
+    fix = xml_fix.XmlFix()
     self.doc.writexml(f, encoding='Windows-1252', addindent='  ', newl='\r\n')
+    fix.Cleanup()
     f.close()
 
 #------------------------------------------------------------------------------
