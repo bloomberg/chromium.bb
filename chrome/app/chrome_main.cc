@@ -231,11 +231,6 @@ void CommonSubprocessInit() {
   // surface UI -- but it's likely they get this wrong too so why not.
   setlocale(LC_NUMERIC, "C");
 #endif
-#if defined(USE_LINUX_BREAKPAD)
-  // Needs to be called after we have chrome::DIR_USER_DATA.  BrowserMain sets
-  // this up for the browser process in a different manner.
-  InitCrashReporter();
-#endif
 }
 
 // Returns true if this subprocess type needs the ResourceBundle initialized
@@ -411,6 +406,12 @@ int RunZygote(const MainFunctionParams& main_function_params) {
   // Get the new process type from the new command line.
   std::string process_type =
       command_line.GetSwitchValueASCII(switches::kProcessType);
+
+#if defined(USE_LINUX_BREAKPAD)
+  // Needs to be called after we have chrome::DIR_USER_DATA.  BrowserMain sets
+  // this up for the browser process in a different manner.
+  InitCrashReporter();
+#endif
 
   for (size_t i = 0; i < arraysize(kMainFunctions); ++i) {
     if (process_type == kMainFunctions[i].name)
