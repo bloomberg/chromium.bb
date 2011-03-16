@@ -327,6 +327,12 @@ void DataTypeManagerImpl::Stop() {
   if (state_ == CONFIGURING) {
     state_ = STOPPING;
     current_dtc_->Stop();
+
+    // By this point, the datatype should have invoked the start callback,
+    // triggering FinishStop to be called, and the state to reach STOPPED. If we
+    // aren't STOPPED, it means that a datatype controller didn't call the start
+    // callback appropriately.
+    DCHECK_EQ(STOPPED, state_);
     return;
   }
 

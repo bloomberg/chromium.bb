@@ -52,7 +52,10 @@ TypedUrlDataTypeController::TypedUrlDataTypeController(
     : profile_sync_factory_(profile_sync_factory),
       profile_(profile),
       sync_service_(sync_service),
-      state_(NOT_RUNNING) {
+      state_(NOT_RUNNING),
+      abort_association_(false),
+      abort_association_complete_(false, false),
+      datatype_stopped_(false, false) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(profile_sync_factory);
   DCHECK(profile);
@@ -74,6 +77,7 @@ void TypedUrlDataTypeController::Start(StartCallback* start_callback) {
   }
 
   start_callback_.reset(start_callback);
+  abort_association_ = false;
 
   HistoryService* history = profile_->GetHistoryServiceWithoutCreating();
   if (history) {
@@ -100,19 +104,44 @@ void TypedUrlDataTypeController::Observe(NotificationType type,
   history_service_->ScheduleDBTask(new ControlTask(this, true), this);
 }
 
+// TODO(sync): Blocking the UI thread at shutdown is bad. If we had a way of
+// distinguishing chrome shutdown from sync shutdown, we should be able to avoid
+// this (http://crbug.com/55662). Further, all this functionality should be
+// abstracted to a higher layer, where we could ensure all datatypes are doing
+// the same thing (http://crbug.com/76232).
 void TypedUrlDataTypeController::Stop() {
   VLOG(1) << "Stopping typed_url data type controller.";
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
+  // If Stop() is called while Start() is waiting for association to
+  // complete, we need to abort the association and wait for the DB
+  // thread to finish the StartImpl() task.
+  if (state_ == ASSOCIATING) {
+    {
+      base::AutoLock lock(abort_association_lock_);
+      abort_association_ = true;
+      if (model_associator_.get())
+        model_associator_->AbortAssociation();
+    }
+    // Wait for the model association to abort.
+    abort_association_complete_.Wait();
+    StartDoneImpl(ABORTED, STOPPING);
+  }
+
+  // If Stop() is called while Start() is waiting for the history service to
+  // load, abort the start.
+  if (state_ == MODEL_STARTING)
+    StartDoneImpl(ABORTED, STOPPING);
+
+  DCHECK(!start_callback_.get());
+
   if (change_processor_ != NULL)
     sync_service_->DeactivateDataType(this, change_processor_.get());
-
-  if (model_associator_ != NULL)
-    model_associator_->DisassociateModels();
 
   set_state(NOT_RUNNING);
   DCHECK(history_service_.get());
   history_service_->ScheduleDBTask(new ControlTask(this, false), this);
+  datatype_stopped_.Wait();
 }
 
 bool TypedUrlDataTypeController::enabled() {
@@ -140,13 +169,20 @@ void TypedUrlDataTypeController::StartImpl(history::HistoryBackend* backend) {
   VLOG(1) << "TypedUrl data type controller StartImpl called.";
   // No additional services need to be started before we can proceed
   // with model association.
-  ProfileSyncFactory::SyncComponents sync_components =
-      profile_sync_factory_->CreateTypedUrlSyncComponents(
-          sync_service_,
-          backend,
-          this);
-  model_associator_.reset(sync_components.model_associator);
-  change_processor_.reset(sync_components.change_processor);
+  {
+    base::AutoLock lock(abort_association_lock_);
+    if (abort_association_) {
+      abort_association_complete_.Signal();
+      return;
+    }
+    ProfileSyncFactory::SyncComponents sync_components =
+        profile_sync_factory_->CreateTypedUrlSyncComponents(
+            sync_service_,
+            backend,
+            this);
+    model_associator_.reset(sync_components.model_associator);
+    change_processor_.reset(sync_components.change_processor);
+  }
 
   bool sync_has_nodes = false;
   if (!model_associator_->SyncModelHasUserCreatedNodes(&sync_has_nodes)) {
@@ -171,12 +207,17 @@ void TypedUrlDataTypeController::StartDone(
     DataTypeController::StartResult result,
     DataTypeController::State new_state) {
   VLOG(1) << "TypedUrl data type controller StartDone called.";
-  BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-                         NewRunnableMethod(
-                             this,
-                             &TypedUrlDataTypeController::StartDoneImpl,
-                             result,
-                             new_state));
+
+  abort_association_complete_.Signal();
+  base::AutoLock lock(abort_association_lock_);
+  if (!abort_association_) {
+    BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
+                           NewRunnableMethod(
+                               this,
+                               &TypedUrlDataTypeController::StartDoneImpl,
+                               result,
+                               new_state));
+  }
 }
 
 void TypedUrlDataTypeController::StartDoneImpl(
@@ -198,10 +239,13 @@ void TypedUrlDataTypeController::StartDoneImpl(
 void TypedUrlDataTypeController::StopImpl() {
   VLOG(1) << "TypedUrl data type controller StopImpl called.";
 
+  if (model_associator_ != NULL)
+    model_associator_->DisassociateModels();
+
   change_processor_.reset();
   model_associator_.reset();
 
-  state_ = NOT_RUNNING;
+  datatype_stopped_.Signal();
 }
 
 void TypedUrlDataTypeController::StartFailed(StartResult result) {

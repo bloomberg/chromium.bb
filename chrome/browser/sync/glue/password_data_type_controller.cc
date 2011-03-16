@@ -25,7 +25,10 @@ PasswordDataTypeController::PasswordDataTypeController(
     : profile_sync_factory_(profile_sync_factory),
       profile_(profile),
       sync_service_(sync_service),
-      state_(NOT_RUNNING) {
+      state_(NOT_RUNNING),
+      abort_association_(false),
+      abort_association_complete_(false, false),
+      datatype_stopped_(false, false) {
   DCHECK(profile_sync_factory);
   DCHECK(profile);
   DCHECK(sync_service);
@@ -46,7 +49,7 @@ void PasswordDataTypeController::Start(StartCallback* start_callback) {
   password_store_ = profile_->GetPasswordStore(Profile::EXPLICIT_ACCESS);
   if (!password_store_.get()) {
     LOG(ERROR) << "PasswordStore not initialized, password datatype controller"
-        << " aborting.";
+               << " aborting.";
     state_ = NOT_RUNNING;
     start_callback->Run(ABORTED);
     delete start_callback;
@@ -60,24 +63,50 @@ void PasswordDataTypeController::Start(StartCallback* start_callback) {
   }
 
   start_callback_.reset(start_callback);
+  abort_association_ = false;
   set_state(ASSOCIATING);
   password_store_->ScheduleTask(
       NewRunnableMethod(this, &PasswordDataTypeController::StartImpl));
 }
 
+// TODO(sync): Blocking the UI thread at shutdown is bad. If we had a way of
+// distinguishing chrome shutdown from sync shutdown, we should be able to avoid
+// this (http://crbug.com/55662). Further, all this functionality should be
+// abstracted to a higher layer, where we could ensure all datatypes are doing
+// the same thing (http://crbug.com/76232).
 void PasswordDataTypeController::Stop() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
+  // If Stop() is called while Start() is waiting for association to
+  // complete, we need to abort the association and wait for the PASSWORD
+  // thread to finish the StartImpl() task.
+  if (state_ == ASSOCIATING) {
+    {
+      base::AutoLock lock(abort_association_lock_);
+      abort_association_ = true;
+      if (model_associator_.get())
+        model_associator_->AbortAssociation();
+    }
+    // Wait for the model association to abort.
+    abort_association_complete_.Wait();
+    StartDoneImpl(ABORTED, STOPPING);
+  }
+
+  // If Stop() is called while Start() is waiting for another service to load,
+  // abort the start.
+  if (state_ == MODEL_STARTING)
+    StartDoneImpl(ABORTED, STOPPING);
+
+  DCHECK(!start_callback_.get());
+
   if (change_processor_ != NULL)
     sync_service_->DeactivateDataType(this, change_processor_.get());
-
-  if (model_associator_ != NULL)
-    model_associator_->DisassociateModels();
 
   set_state(NOT_RUNNING);
   DCHECK(password_store_.get());
   password_store_->ScheduleTask(
       NewRunnableMethod(this, &PasswordDataTypeController::StopImpl));
+  datatype_stopped_.Wait();
 }
 
 bool PasswordDataTypeController::enabled() {
@@ -104,13 +133,20 @@ DataTypeController::State PasswordDataTypeController::state() {
 void PasswordDataTypeController::StartImpl() {
   // No additional services need to be started before we can proceed
   // with model association.
-  ProfileSyncFactory::SyncComponents sync_components =
-      profile_sync_factory_->CreatePasswordSyncComponents(
-          sync_service_,
-          password_store_.get(),
-          this);
-  model_associator_.reset(sync_components.model_associator);
-  change_processor_.reset(sync_components.change_processor);
+  {
+    base::AutoLock lock(abort_association_lock_);
+    if (abort_association_) {
+      abort_association_complete_.Signal();
+      return;
+    }
+    ProfileSyncFactory::SyncComponents sync_components =
+        profile_sync_factory_->CreatePasswordSyncComponents(
+            sync_service_,
+            password_store_.get(),
+            this);
+    model_associator_.reset(sync_components.model_associator);
+    change_processor_.reset(sync_components.change_processor);
+  }
 
   bool sync_has_nodes = false;
   if (!model_associator_->SyncModelHasUserCreatedNodes(&sync_has_nodes)) {
@@ -134,12 +170,16 @@ void PasswordDataTypeController::StartImpl() {
 void PasswordDataTypeController::StartDone(
     DataTypeController::StartResult result,
     DataTypeController::State new_state) {
-  BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-                          NewRunnableMethod(
-                              this,
-                              &PasswordDataTypeController::StartDoneImpl,
-                              result,
-                              new_state));
+  abort_association_complete_.Signal();
+  base::AutoLock lock(abort_association_lock_);
+  if (!abort_association_) {
+    BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
+                            NewRunnableMethod(
+                                this,
+                                &PasswordDataTypeController::StartDoneImpl,
+                                result,
+                                new_state));
+  }
 }
 
 void PasswordDataTypeController::StartDoneImpl(
@@ -152,10 +192,13 @@ void PasswordDataTypeController::StartDoneImpl(
 }
 
 void PasswordDataTypeController::StopImpl() {
+  if (model_associator_ != NULL)
+    model_associator_->DisassociateModels();
+
   change_processor_.reset();
   model_associator_.reset();
 
-  state_ = NOT_RUNNING;
+  datatype_stopped_.Signal();
 }
 
 void PasswordDataTypeController::StartFailed(StartResult result) {

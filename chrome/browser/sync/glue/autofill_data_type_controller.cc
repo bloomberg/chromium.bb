@@ -106,6 +106,11 @@ void AutofillDataTypeController::Observe(NotificationType type,
                               &AutofillDataTypeController::StartImpl));
 }
 
+// TODO(sync): Blocking the UI thread at shutdown is bad. If we had a way of
+// distinguishing chrome shutdown from sync shutdown, we should be able to avoid
+// this (http://crbug.com/55662). Further, all this functionality should be
+// abstracted to a higher layer, where we could ensure all datatypes are doing
+// the same thing (http://crbug.com/76232).
 void AutofillDataTypeController::Stop() {
   VLOG(1) << "Stopping autofill data type controller.";
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
@@ -129,6 +134,8 @@ void AutofillDataTypeController::Stop() {
   // data manager or web data service to load, abort the start.
   if (state_ == MODEL_STARTING)
     StartDoneImpl(ABORTED, STOPPING);
+
+  DCHECK(!start_callback_.get());
 
   // Deactivate the change processor on the UI thread. We dont want to listen
   // for any more changes or process them from server.

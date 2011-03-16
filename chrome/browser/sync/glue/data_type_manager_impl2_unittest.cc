@@ -43,6 +43,11 @@ ACTION_P(InvokeCallback, callback_result) {
   delete arg0;
 }
 
+ACTION_P2(InvokeCallbackPointer, callback, argument) {
+  callback->Run(argument);
+  delete callback;
+}
+
 class DataTypeManagerImpl2Test : public testing::Test {
  public:
   DataTypeManagerImpl2Test()
@@ -348,7 +353,6 @@ TEST_F(DataTypeManagerImpl2Test, StopWhileInFlight) {
   DataTypeController::StartCallback* callback;
   EXPECT_CALL(*preference_dtc, Start(_)).
       WillOnce(SaveArg<0>(&callback));
-  EXPECT_CALL(*preference_dtc, Stop()).Times(1);
   EXPECT_CALL(*preference_dtc, state()).
       WillRepeatedly(Return(DataTypeController::NOT_RUNNING));
   controllers_[syncable::PREFERENCES] = preference_dtc;
@@ -366,9 +370,9 @@ TEST_F(DataTypeManagerImpl2Test, StopWhileInFlight) {
   EXPECT_EQ(DataTypeManager::CONFIGURING, dtm.state());
 
   // Call stop before the preference callback is invoked.
+  EXPECT_CALL(*preference_dtc, Stop()).
+      WillOnce(InvokeCallbackPointer(callback, DataTypeController::ABORTED));
   dtm.Stop();
-  callback->Run(DataTypeController::ABORTED);
-  delete callback;
   EXPECT_EQ(DataTypeManager::STOPPED, dtm.state());
 }
 

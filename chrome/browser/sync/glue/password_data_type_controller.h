@@ -10,6 +10,7 @@
 
 #include "base/basictypes.h"
 #include "base/scoped_ptr.h"
+#include "base/synchronization/waitable_event.h"
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/sync/glue/data_type_controller.h"
 
@@ -75,6 +76,14 @@ class PasswordDataTypeController : public DataTypeController {
   scoped_ptr<ChangeProcessor> change_processor_;
   scoped_ptr<StartCallback> start_callback_;
   scoped_refptr<PasswordStore> password_store_;
+
+  base::Lock abort_association_lock_;
+  bool abort_association_;
+  base::WaitableEvent abort_association_complete_;
+
+  // Barrier to ensure that the datatype has been stopped on the DB thread
+  // from the UI thread.
+  base::WaitableEvent datatype_stopped_;
 
   DISALLOW_COPY_AND_ASSIGN(PasswordDataTypeController);
 };

@@ -73,6 +73,10 @@ void ThemeDataTypeController::Start(StartCallback* start_callback) {
 void ThemeDataTypeController::Stop() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
+  if (state_ == MODEL_STARTING || state_ == ASSOCIATING)
+    FinishStart(ABORTED);
+  DCHECK(!start_callback_.get());
+
   if (change_processor_ != NULL)
     sync_service_->DeactivateDataType(this, change_processor_.get());
 
@@ -81,7 +85,6 @@ void ThemeDataTypeController::Stop() {
 
   change_processor_.reset();
   model_associator_.reset();
-  start_callback_.reset();
 
   state_ = NOT_RUNNING;
 }
