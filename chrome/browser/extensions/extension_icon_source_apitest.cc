@@ -3,10 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/logging.h"
-#include "chrome/browser/browser_list.h"
 #include "chrome/browser/extensions/extension_apitest.h"
-#include "chrome/browser/extensions/extension_service.h"
-#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/test/ui_test_utils.h"
 #include "content/browser/tab_contents/tab_contents.h"
@@ -40,40 +37,6 @@ IN_PROC_BROWSER_TEST_F(ExtensionIconSourceTest, IconsLoaded) {
       GURL("chrome-extension://apocjbpjpkghdepdngjlknfpmabcmlao/index.html"));
   ASSERT_TRUE(ui_test_utils::ExecuteJavaScriptAndExtractString(
       browser()->GetSelectedTabContents()->render_view_host(), L"",
-      L"window.domAutomationController.send(document.title)",
-      &result));
-  EXPECT_EQ(result, "Not Loaded");
-}
-
-IN_PROC_BROWSER_TEST_F(ExtensionIconSourceTest, IconsLoadedIncognito) {
-  FilePath basedir = test_data_dir_.AppendASCII("icons");
-  ASSERT_TRUE(LoadExtensionIncognito(
-      basedir.AppendASCII("extension_with_permission")));
-  ASSERT_TRUE(LoadExtensionIncognito(
-      basedir.AppendASCII("extension_no_permission")));
-  std::string result;
-
-  // Test that the icons are loaded and that the chrome://extension-icon
-  // parameters work correctly.
-  ui_test_utils::OpenURLOffTheRecord(
-      browser()->profile(),
-      GURL("chrome-extension://gbmgkahjioeacddebbnengilkgbkhodg/index.html"));
-  Browser* otr_browser = BrowserList::FindBrowserWithType(
-      browser()->profile()->GetOffTheRecordProfile(), Browser::TYPE_NORMAL,
-      false);
-  ASSERT_TRUE(ui_test_utils::ExecuteJavaScriptAndExtractString(
-      otr_browser->GetSelectedTabContents()->render_view_host(), L"",
-      L"window.domAutomationController.send(document.title)",
-      &result));
-  EXPECT_EQ(result, "Loaded");
-
-  // Verify that the an extension can't load chrome://extension-icon icons
-  // without the management permission.
-  ui_test_utils::OpenURLOffTheRecord(
-      browser()->profile(),
-      GURL("chrome-extension://apocjbpjpkghdepdngjlknfpmabcmlao/index.html"));
-  ASSERT_TRUE(ui_test_utils::ExecuteJavaScriptAndExtractString(
-      otr_browser->GetSelectedTabContents()->render_view_host(), L"",
       L"window.domAutomationController.send(document.title)",
       &result));
   EXPECT_EQ(result, "Not Loaded");
