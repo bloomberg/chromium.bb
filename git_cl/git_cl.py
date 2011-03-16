@@ -688,15 +688,21 @@ def UserEditedLog(starting_text):
   fileobj.close()
 
   # Open up the default editor in the system to get the CL description.
-  ret = subprocess.call(editor + ' ' + filename, shell=True)
-  if ret != 0:
+  try:
+    cmd = '%s %s' % (editor, filename)
+    if sys.platform == 'win32' and os.environ.get('TERM') == 'msys':
+      # Msysgit requires the usage of 'env' to be present.
+      cmd = 'env ' + cmd
+    # shell=True to allow the shell to handle all forms of quotes in $EDITOR.
+    subprocess.check_call(cmd, shell=True)
+    fileobj = open(filename)
+    text = fileobj.read()
+    fileobj.close()
+  finally:
     os.remove(filename)
-    return
-  fileobj = open(filename)
-  text = fileobj.read()
-  fileobj.close()
 
-  os.remove(filename)
+  if not text:
+    return
 
   stripcomment_re = re.compile(r'^#.*$', re.MULTILINE)
   return stripcomment_re.sub('', text).strip()

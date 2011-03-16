@@ -1123,10 +1123,14 @@ def CMDchange(args):
   os.close(handle)
 
   # Open up the default editor in the system to get the CL description.
-  result = None
   try:
     if not silent:
-      os.system(GetEditor() + " " + filename)
+      cmd = '%s %s' % (GetEditor(), filename)
+      if sys.platform == 'win32' and os.environ.get('TERM') == 'msys':
+        # Msysgit requires the usage of 'env' to be present.
+        cmd = 'env ' + cmd
+      # shell=True to allow the shell to handle all forms of quotes in $EDITOR.
+      subprocess.check_call(cmd, shell=True)
     result = gclient_utils.FileRead(filename, 'r')
   finally:
     os.remove(filename)
