@@ -7,11 +7,3 @@
 
 // Skip these tests until the test_expectations can be updated after this Chromium patch lands.
 BUGWK44797 SKIP : fullscreen = PASS FAIL TIMEOUT
-
-BUG_LEVIN MAC : fast/table/relative-position-containment.html = IMAGE
-BUG_LEVIN MAC : fast/table/relative-position-offsets.html = IMAGE
-BUG_LEVIN MAC : fast/table/relative-position-stacking.html = IMAGE
-BUG_LEVIN MAC : svg/custom/mouse-move-on-svg-container-standalone.svg = IMAGE
-BUG_LEVIN MAC : svg/custom/mouse-move-on-svg-container.xhtml = IMAGE
-BUG_LEVIN MAC : svg/custom/mouse-move-on-svg-root-standalone.svg = IMAGE
-BUG_LEVIN MAC : svg/custom/mouse-move-on-svg-root.xhtml = IMAGE
