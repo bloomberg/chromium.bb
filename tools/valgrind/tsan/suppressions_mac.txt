@@ -139,6 +139,13 @@
   fun:ImageLoaderMachO::doTermination*
 }
 
+{
+  bug_55946
+  ThreadSanitizer:Race
+  ...
+  fun:OSAtomicAdd32
+  fun:base::subtle::Barrier_AtomicIncrement*
+}
 #-----------------------------------------------------------------------
 # 2. Intentional unit test errors, or stuff that is somehow a false positive
 # in our own code, or stuff that is so trivial it's not worth fixing
@@ -155,9 +162,3 @@
 # Periodically we should sweep this file and the bug tracker clean by
 # running overnight and removing outdated bugs/suppressions.
 
-{
-  bug_55946
-  ThreadSanitizer:Race
-  ...
-  fun:DiskCacheBackendTest_NewEvictionDisableSuccess4_Test*
-}
