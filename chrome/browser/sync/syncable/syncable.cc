@@ -921,9 +921,7 @@ void Directory::CheckTreeInvariants(syncable::BaseTransaction* trans,
 void Directory::CheckTreeInvariants(syncable::BaseTransaction* trans,
                                     const MetahandleSet& handles,
                                     const IdFilter& idfilter) {
-  int64 max_ms = kInvariantCheckMaxMs;
-  if (max_ms < 0)
-    max_ms = std::numeric_limits<int64>::max();
+  const int64 max_ms = kInvariantCheckMaxMs;
   PerfTimer check_timer;
   MetahandleSet::const_iterator i;
   int entries_done = 0;
