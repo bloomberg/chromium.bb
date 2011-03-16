@@ -19,6 +19,8 @@
         'object_suffix': 'o',
       }],
     ],
+
+    'use_system_yasm%': 0,
   },
   'conditions': [
     [ 'use_system_libjpeg==0', {
@@ -155,36 +157,20 @@
             }],
 
             # Build rules for an asm file.
-            # On Windows, we use the precompiled yasm binary. On Linux and Mac,
-            # we build yasm and use it as ffmpeg does.
+            # On Windows, we use the precompiled yasm binary. On Linux, we build
+            # our patched yasm and use it except when use_system_yasm is 1. On
+            # Mac, we always build our patched yasm and use it because of
+            # <http://www.tortall.net/projects/yasm/ticket/236>.
             [ 'OS=="win"', {
               'variables': {
                 'yasm_path': '../yasm/binaries/win/yasm<(EXECUTABLE_SUFFIX)',
+                'yasm_format': '-fwin32',
+                'yasm_flags': [
+                  '-DWIN32',
+                  '-DMSVC',
+                  '-Iwin/'
+                ],
               },
-              'rules': [
-                {
-                  'rule_name': 'assemble',
-                  'extension': 'asm',
-                  'inputs': [ '<(RULE_INPUT_PATH)', ],
-                  'outputs': [
-                    '<(shared_generated_dir)/<(RULE_INPUT_ROOT).<(object_suffix)',
-                  ],
-                  'action': [
-                    '<(yasm_path)',
-                    '-fwin32',
-                    '-DWIN32',
-                    '-DMSVC',
-                    '-DRGBX_FILLER_0XFF',
-                    '-DSTRICT_MEMORY_ACCESS',
-                    '-Iwin/',
-                    '-Isimd/',
-                    '-o', '<(shared_generated_dir)/<(RULE_INPUT_ROOT).<(object_suffix)',
-                    '<(RULE_INPUT_PATH)',
-                  ],
-                  'process_outputs_as_sources': 1,
-                  'message': 'Building <(RULE_INPUT_ROOT).<(object_suffix)',
-                },
-              ],
             }],
             [ 'OS=="mac"', {
               'dependencies': [
@@ -192,72 +178,70 @@
               ],
               'variables': {
                 'yasm_path': '<(PRODUCT_DIR)/yasm',
+                'yasm_format': '-fmacho',
+                'yasm_flags': [
+                  '-DMACHO',
+                  '-Imac/'
+                ],
               },
-              'rules': [
-                {
-                  'rule_name': 'assemble',
-                  'extension': 'asm',
-                  'inputs': [ '<(yasm_path)', ],
-                  'outputs': [
-                    '<(shared_generated_dir)/<(RULE_INPUT_ROOT).<(object_suffix)',
-                  ],
-                  'action': [
-                    '<(yasm_path)',
-                    '-fmacho',
-                    '-DMACHO',
-                    '-DRGBX_FILLER_0XFF',
-                    '-DSTRICT_MEMORY_ACCESS',
-                    '-Imac/',
-                    '-Isimd/',
-                    '-o', '<(shared_generated_dir)/<(RULE_INPUT_ROOT).<(object_suffix)',
-                    '<(RULE_INPUT_PATH)',
-                  ],
-                  'process_outputs_as_sources': 1,
-                  'message': 'Building <(RULE_INPUT_ROOT).<(object_suffix)',
-                },
-              ],
             }],
             [ 'OS=="linux"', {
-              'dependencies': [
-                '../yasm/yasm.gyp:yasm#host',
+              'conditions': [
+                [ 'use_system_yasm==0', {
+                  'dependencies': [
+                    '../yasm/yasm.gyp:yasm#host',
+                  ],
+                }],
               ],
               'variables': {
-                'yasm_path': '<(PRODUCT_DIR)/yasm',
                 'conditions': [
+                  [ 'use_system_yasm==1', {
+                    'yasm_path': '<!(which yasm)',
+                  }, {
+                    'yasm_path': '<(PRODUCT_DIR)/yasm',
+                  }],
                   [ 'target_arch=="ia32"', {
                     'yasm_format': '-felf',
                     'yasm_flag': '-D__X86__',
+                    'yasm_flags': [
+                      '-D__x86__',
+                      '-DELF',
+                      '-Ilinux/'
+                    ],
                   }, {
                     'yasm_format': '-felf64',
                     'yasm_flag': '-D__x86_64__',
+                    'yasm_flags': [
+                      '-D__x86_64__',
+                      '-DELF',
+                      '-Ilinux/'
+                    ],
                   }],
                 ],
               },
-              'rules': [
-                {
-                  'rule_name': 'assemble',
-                  'extension': 'asm',
-                  'inputs': [ '<(RULE_INPUT_PATH)', ],
-                  'outputs': [
-                    '<(shared_generated_dir)/<(RULE_INPUT_ROOT).<(object_suffix)',
-                  ],
-                  'action': [
-                    '<(yasm_path)',
-                    '<(yasm_format)',
-                    '-DELF',
-                    '<(yasm_flag)',
-                    '-DRGBX_FILLER_0XFF',
-                    '-DSTRICT_MEMORY_ACCESS',
-                    '-Ilinux/',
-                    '-Isimd/',
-                    '-o', '<(shared_generated_dir)/<(RULE_INPUT_ROOT).<(object_suffix)',
-                    '<(RULE_INPUT_PATH)',
-                  ],
-                  'process_outputs_as_sources': 1,
-                  'message': 'Building <(RULE_INPUT_ROOT).<(object_suffix)',
-                },
-              ],
             }],
+          ],
+          'rules': [
+            {
+              'rule_name': 'assemble',
+              'extension': 'asm',
+              'inputs': [ '<(yasm_path)', ],
+              'outputs': [
+                '<(shared_generated_dir)/<(RULE_INPUT_ROOT).<(object_suffix)',
+              ],
+              'action': [
+                '<(yasm_path)',
+                '<(yasm_format)',
+                '<@(yasm_flags)',
+                '-DRGBX_FILLER_0XFF',
+                '-DSTRICT_MEMORY_ACCESS',
+                '-Isimd/',
+                '-o', '<(shared_generated_dir)/<(RULE_INPUT_ROOT).<(object_suffix)',
+                '<(RULE_INPUT_PATH)',
+              ],
+              'process_outputs_as_sources': 1,
+              'message': 'Building <(RULE_INPUT_ROOT).<(object_suffix)',
+            },
           ],
         },
       ],
