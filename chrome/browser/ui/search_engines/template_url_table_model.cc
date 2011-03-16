@@ -105,7 +105,7 @@ class ModelEntry {
     load_state_ = LOADED;
     if (know_favicon && data.get() &&
         gfx::PNGCodec::Decode(data->front(), data->size(), &favicon_)) {
-      model_->FavIconAvailable(this);
+      model_->FaviconAvailable(this);
     }
   }
 
@@ -369,7 +369,7 @@ void TemplateURLTableModel::NotifyChanged(int index) {
   }
 }
 
-void TemplateURLTableModel::FavIconAvailable(ModelEntry* entry) {
+void TemplateURLTableModel::FaviconAvailable(ModelEntry* entry) {
   std::vector<ModelEntry*>::iterator i =
       find(entries_.begin(), entries_.end(), entry);
   DCHECK(i != entries_.end());

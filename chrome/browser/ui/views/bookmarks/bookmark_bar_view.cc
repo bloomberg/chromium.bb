@@ -87,7 +87,7 @@ static const int kButtonPadding = 0;
 static const int kAlwaysShowCommandID = 1;
 
 // Icon to display when one isn't found for the page.
-static SkBitmap* kDefaultFavIcon = NULL;
+static SkBitmap* kDefaultFavicon = NULL;
 
 // Icon used for folders.
 static SkBitmap* kFolderIcon = NULL;
@@ -860,8 +860,8 @@ void BookmarkBarView::Init() {
 
   ResourceBundle& rb = ResourceBundle::GetSharedInstance();
 
-  if (!kDefaultFavIcon)
-    kDefaultFavIcon = rb.GetBitmapNamed(IDR_DEFAULT_FAVICON);
+  if (!kDefaultFavicon)
+    kDefaultFavicon = rb.GetBitmapNamed(IDR_DEFAULT_FAVICON);
 
   // Child views are traversed in the order they are added. Make sure the order
   // they are added matches the visual order.
@@ -1268,7 +1268,7 @@ void BookmarkBarView::ConfigureButton(const BookmarkNode* node,
     if (model_->GetFavicon(node).width() != 0)
       button->SetIcon(model_->GetFavicon(node));
     else
-      button->SetIcon(*kDefaultFavIcon);
+      button->SetIcon(*kDefaultFavicon);
   }
   button->set_max_width(kMaxButtonWidth);
 }

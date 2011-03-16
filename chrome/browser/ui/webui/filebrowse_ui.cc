@@ -446,7 +446,7 @@ WebUIMessageHandler* FilebrowseHandler::Attach(WebUI* web_ui) {
   // Create our favicon data source.
   profile_ = web_ui->GetProfile();
   profile_->GetChromeURLDataManager()->AddDataSource(
-      new FavIconSource(profile_));
+      new FaviconSource(profile_));
   tab_contents_ = web_ui->tab_contents();
   return WebUIMessageHandler::Attach(web_ui);
 }

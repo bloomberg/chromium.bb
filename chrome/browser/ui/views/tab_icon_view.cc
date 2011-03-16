@@ -96,7 +96,7 @@ void TabIconView::PaintThrobber(gfx::Canvas* canvas) {
             image_size, false);
 }
 
-void TabIconView::PaintFavIcon(gfx::Canvas* canvas, const SkBitmap& bitmap) {
+void TabIconView::PaintFavicon(gfx::Canvas* canvas, const SkBitmap& bitmap) {
   PaintIcon(canvas, bitmap, 0, 0, bitmap.width(), bitmap.height(), true);
 }
 
@@ -142,12 +142,12 @@ void TabIconView::OnPaint(gfx::Canvas* canvas) {
     SkBitmap favicon = model_->GetFaviconForTabIconView();
     if (!favicon.isNull()) {
       rendered = true;
-      PaintFavIcon(canvas, favicon);
+      PaintFavicon(canvas, favicon);
     }
   }
 
   if (!rendered)
-    PaintFavIcon(canvas, *g_default_favicon);
+    PaintFavicon(canvas, *g_default_favicon);
 }
 
 gfx::Size TabIconView::GetPreferredSize() {

@@ -211,7 +211,7 @@ WebUIMessageHandler* MediaplayerHandler::Attach(WebUI* web_ui) {
   // Create our favicon data source.
   Profile* profile = web_ui->GetProfile();
   profile->GetChromeURLDataManager()->AddDataSource(
-      new FavIconSource(profile));
+      new FaviconSource(profile));
 
   return WebUIMessageHandler::Attach(web_ui);
 }

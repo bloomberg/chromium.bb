@@ -93,7 +93,7 @@ class TemplateURLTableModel : public ui::TableModel,
   friend class ModelEntry;
 
   // Notification that a model entry has fetched its icon.
-  void FavIconAvailable(ModelEntry* entry);
+  void FaviconAvailable(ModelEntry* entry);
 
   // TemplateURLModelObserver notification.
   virtual void OnTemplateURLModelChanged();

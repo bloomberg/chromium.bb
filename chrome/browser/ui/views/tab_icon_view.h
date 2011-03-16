@@ -45,7 +45,7 @@ class TabIconView : public views::View {
 
  private:
   void PaintThrobber(gfx::Canvas* canvas);
-  void PaintFavIcon(gfx::Canvas* canvas, const SkBitmap& bitmap);
+  void PaintFavicon(gfx::Canvas* canvas, const SkBitmap& bitmap);
   void PaintIcon(gfx::Canvas* canvas,
                  const SkBitmap& bitmap,
                  int src_x,

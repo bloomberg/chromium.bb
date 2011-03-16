@@ -105,14 +105,14 @@ int BaseTab::font_height_ = 0;
 // FaviconCrashAnimation
 //
 //  A custom animation subclass to manage the favicon crash animation.
-class BaseTab::FavIconCrashAnimation : public ui::LinearAnimation,
+class BaseTab::FaviconCrashAnimation : public ui::LinearAnimation,
                                        public ui::AnimationDelegate {
  public:
-  explicit FavIconCrashAnimation(BaseTab* target)
+  explicit FaviconCrashAnimation(BaseTab* target)
       : ALLOW_THIS_IN_INITIALIZER_LIST(ui::LinearAnimation(1000, 25, this)),
         target_(target) {
   }
-  virtual ~FavIconCrashAnimation() {}
+  virtual ~FaviconCrashAnimation() {}
 
   // ui::Animation overrides:
   virtual void AnimateToState(double state) {
@@ -122,7 +122,7 @@ class BaseTab::FavIconCrashAnimation : public ui::LinearAnimation,
       target_->SetFaviconHidingOffset(
           static_cast<int>(floor(kHidingOffset * 2.0 * state)));
     } else {
-      target_->DisplayCrashedFavIcon();
+      target_->DisplayCrashedFavicon();
       target_->SetFaviconHidingOffset(
           static_cast<int>(
               floor(kHidingOffset - ((state - .5) * 2.0 * kHidingOffset))));
@@ -137,7 +137,7 @@ class BaseTab::FavIconCrashAnimation : public ui::LinearAnimation,
  private:
   BaseTab* target_;
 
-  DISALLOW_COPY_AND_ASSIGN(FavIconCrashAnimation);
+  DISALLOW_COPY_AND_ASSIGN(FaviconCrashAnimation);
 };
 
 BaseTab::BaseTab(TabController* controller)
@@ -211,7 +211,7 @@ void BaseTab::SetData(const TabRendererData& data) {
   } else {
     if (IsPerformingCrashAnimation())
       StopCrashAnimation();
-    ResetCrashedFavIcon();
+    ResetCrashedFavicon();
   }
 
   DataChanged(old);
@@ -523,17 +523,17 @@ void BaseTab::SetFaviconHidingOffset(int offset) {
   ScheduleIconPaint();
 }
 
-void BaseTab::DisplayCrashedFavIcon() {
+void BaseTab::DisplayCrashedFavicon() {
   should_display_crashed_favicon_ = true;
 }
 
-void BaseTab::ResetCrashedFavIcon() {
+void BaseTab::ResetCrashedFavicon() {
   should_display_crashed_favicon_ = false;
 }
 
 void BaseTab::StartCrashAnimation() {
   if (!crash_animation_.get())
-    crash_animation_.reset(new FavIconCrashAnimation(this));
+    crash_animation_.reset(new FaviconCrashAnimation(this));
   crash_animation_->Stop();
   crash_animation_->Start();
 }

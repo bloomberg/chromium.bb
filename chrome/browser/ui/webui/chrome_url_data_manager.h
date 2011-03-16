@@ -147,7 +147,7 @@ class ChromeURLDataManager {
   // as there are no other references to it. |DataSource| uses the
   // |DeleteOnUIThread| trait to insure that the destructor is called on the UI
   // thread. This is necessary as some |DataSource|s notably |FileIconSource|
-  // and |FavIconSource|, have members that will DCHECK if they are not
+  // and |FaviconSource|, have members that will DCHECK if they are not
   // destructed in the same thread as they are constructed (the UI thread).
   void AddDataSource(DataSource* source);
 

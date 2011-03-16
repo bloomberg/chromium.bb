@@ -113,7 +113,7 @@ void BrowserOptionsHandler::Initialize() {
 
   // Create our favicon data source.
   profile->GetChromeURLDataManager()->AddDataSource(
-      new FavIconSource(profile));
+      new FaviconSource(profile));
 
   homepage_.Init(prefs::kHomePage, profile->GetPrefs(), NULL);
   default_browser_policy_.Init(prefs::kDefaultBrowserSettingEnabled,

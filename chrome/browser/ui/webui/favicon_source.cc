@@ -10,15 +10,15 @@
 #include "grit/app_resources.h"
 #include "ui/base/resource/resource_bundle.h"
 
-FavIconSource::FavIconSource(Profile* profile)
-    : DataSource(chrome::kChromeUIFavIconHost, MessageLoop::current()),
+FaviconSource::FaviconSource(Profile* profile)
+    : DataSource(chrome::kChromeUIFaviconHost, MessageLoop::current()),
       profile_(profile->GetOriginalProfile()) {
 }
 
-FavIconSource::~FavIconSource() {
+FaviconSource::~FaviconSource() {
 }
 
-void FavIconSource::StartDataRequest(const std::string& path,
+void FaviconSource::StartDataRequest(const std::string& path,
                                      bool is_off_the_record,
                                      int request_id) {
   FaviconService* favicon_service =
@@ -34,12 +34,12 @@ void FavIconSource::StartDataRequest(const std::string& path,
       handle = favicon_service->GetFavicon(
           GURL(path.substr(8)),
           &cancelable_consumer_,
-          NewCallback(this, &FavIconSource::OnFaviconDataAvailable));
+          NewCallback(this, &FaviconSource::OnFaviconDataAvailable));
     } else {
       handle = favicon_service->GetFaviconForURL(
           GURL(path),
           &cancelable_consumer_,
-          NewCallback(this, &FavIconSource::OnFaviconDataAvailable));
+          NewCallback(this, &FaviconSource::OnFaviconDataAvailable));
     }
     // Attach the ChromeURLDataManager request ID to the history request.
     cancelable_consumer_.SetClientData(favicon_service, handle, request_id);
@@ -48,19 +48,19 @@ void FavIconSource::StartDataRequest(const std::string& path,
   }
 }
 
-std::string FavIconSource::GetMimeType(const std::string&) const {
+std::string FaviconSource::GetMimeType(const std::string&) const {
   // We need to explicitly return a mime type, otherwise if the user tries to
   // drag the image they get no extension.
   return "image/png";
 }
 
-bool FavIconSource::ShouldReplaceExistingSource() const {
+bool FaviconSource::ShouldReplaceExistingSource() const {
   // Leave the existing DataSource in place, otherwise we'll drop any pending
   // requests on the floor.
   return false;
 }
 
-void FavIconSource::OnFaviconDataAvailable(
+void FaviconSource::OnFaviconDataAvailable(
     FaviconService::Handle request_handle,
     bool know_favicon,
     scoped_refptr<RefCountedMemory> data,
@@ -79,7 +79,7 @@ void FavIconSource::OnFaviconDataAvailable(
   }
 }
 
-void FavIconSource::SendDefaultResponse(int request_id) {
+void FaviconSource::SendDefaultResponse(int request_id) {
   if (!default_favicon_.get()) {
     default_favicon_ =
         ResourceBundle::GetSharedInstance().LoadDataResourceBytes(

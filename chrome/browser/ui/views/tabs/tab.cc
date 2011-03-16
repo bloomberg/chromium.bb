@@ -34,7 +34,7 @@ static const int kRightPadding = 15;
 static const int kBottomPadding = 5;
 static const int kDropShadowHeight = 2;
 static const int kToolbarOverlap = 1;
-static const int kFavIconTitleSpacing = 4;
+static const int kFaviconTitleSpacing = 4;
 static const int kTitleCloseButtonSpacing = 5;
 static const int kStandardTitleWidth = 175;
 static const int kCloseButtonVertFuzz = 0;
@@ -151,7 +151,7 @@ gfx::Size Tab::GetMinimumSelectedSize() {
 gfx::Size Tab::GetStandardSize() {
   gfx::Size standard_size = GetMinimumUnselectedSize();
   standard_size.set_width(
-      standard_size.width() + kFavIconTitleSpacing + kStandardTitleWidth);
+      standard_size.width() + kFaviconTitleSpacing + kStandardTitleWidth);
   return standard_size;
 }
 
@@ -272,7 +272,7 @@ void Tab::Layout() {
     close_button()->SetVisible(false);
   }
 
-  int title_left = favicon_bounds_.right() + kFavIconTitleSpacing;
+  int title_left = favicon_bounds_.right() + kFaviconTitleSpacing;
   int title_top = kTopPadding + (content_height - font_height()) / 2;
   // Size the Title text to fill the remaining space.
   if (!data().mini || width() >= kMiniTabRendererAsNormalTabWidth) {

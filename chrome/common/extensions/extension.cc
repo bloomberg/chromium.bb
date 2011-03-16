@@ -2307,7 +2307,7 @@ bool Extension::CanSpecifyHostPermission(const URLPattern& pattern) const {
       pattern.MatchesScheme(chrome::kChromeUIScheme)) {
     // Only allow access to chrome://favicon to regular extensions. Component
     // extensions can have access to all of chrome://*.
-    return (pattern.host() == chrome::kChromeUIFavIconHost ||
+    return (pattern.host() == chrome::kChromeUIFaviconHost ||
             CanExecuteScriptEverywhere());
   }
 

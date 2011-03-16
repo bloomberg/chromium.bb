@@ -91,7 +91,7 @@ int CompareGdkRectangles(const void* p1, const void* p2) {
   return 1;
 }
 
-bool GdkRectMatchesTabFavIconBounds(const GdkRectangle& gdk_rect, TabGtk* tab) {
+bool GdkRectMatchesTabFaviconBounds(const GdkRectangle& gdk_rect, TabGtk* tab) {
   gfx::Rect favicon_bounds = tab->favicon_bounds();
   return gdk_rect.x == favicon_bounds.x() + tab->x() &&
       gdk_rect.y == favicon_bounds.y() + tab->y() &&
@@ -1874,8 +1874,8 @@ gboolean TabStripGtk::OnExpose(GtkWidget* widget, GdkEventExpose* event) {
   qsort(rects, num_rects, sizeof(GdkRectangle), CompareGdkRectangles);
   std::vector<int> tabs_to_repaint;
   if (!IsDragSessionActive() &&
-      CanPaintOnlyFavIcons(rects, num_rects, &tabs_to_repaint)) {
-    PaintOnlyFavIcons(event, tabs_to_repaint);
+      CanPaintOnlyFavicons(rects, num_rects, &tabs_to_repaint)) {
+    PaintOnlyFavicons(event, tabs_to_repaint);
     g_free(rects);
     return TRUE;
   }
@@ -2025,7 +2025,7 @@ void TabStripGtk::SetTabBounds(TabGtk* tab, const gfx::Rect& bounds) {
                  bds.x(), bds.y());
 }
 
-bool TabStripGtk::CanPaintOnlyFavIcons(const GdkRectangle* rects,
+bool TabStripGtk::CanPaintOnlyFavicons(const GdkRectangle* rects,
     int num_rects, std::vector<int>* tabs_to_paint) {
   // |rects| are sorted so we just need to scan from left to right and compare
   // it to the tab favicon positions from left to right.
@@ -2033,7 +2033,7 @@ bool TabStripGtk::CanPaintOnlyFavIcons(const GdkRectangle* rects,
   for (int r = 0; r < num_rects; ++r) {
     while (t < GetTabCount()) {
       TabGtk* tab = GetTabAt(t);
-      if (GdkRectMatchesTabFavIconBounds(rects[r], tab) &&
+      if (GdkRectMatchesTabFaviconBounds(rects[r], tab) &&
           tab->ShouldShowIcon()) {
         tabs_to_paint->push_back(t);
         ++t;
@@ -2045,10 +2045,10 @@ bool TabStripGtk::CanPaintOnlyFavIcons(const GdkRectangle* rects,
   return static_cast<int>(tabs_to_paint->size()) == num_rects;
 }
 
-void TabStripGtk::PaintOnlyFavIcons(GdkEventExpose* event,
+void TabStripGtk::PaintOnlyFavicons(GdkEventExpose* event,
                                     const std::vector<int>& tabs_to_paint) {
   for (size_t i = 0; i < tabs_to_paint.size(); ++i)
-    GetTabAt(tabs_to_paint[i])->PaintFavIconArea(event);
+    GetTabAt(tabs_to_paint[i])->PaintFaviconArea(event);
 }
 
 CustomDrawButton* TabStripGtk::MakeNewTabButton() {

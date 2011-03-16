@@ -164,7 +164,7 @@ SkBitmap PossibleURLModel::GetIcon(int row) {
       CancelableRequestProvider::Handle h =
           favicon_service->GetFaviconForURL(
               result.url, &consumer_,
-              NewCallback(this, &PossibleURLModel::OnFavIconAvailable));
+              NewCallback(this, &PossibleURLModel::OnFaviconAvailable));
       consumer_.SetClientData(favicon_service, h, result.index);
       // Add an entry to the map so that we don't attempt to request the
       // favicon again.
@@ -182,7 +182,7 @@ int PossibleURLModel::CompareValues(int row1, int row2, int column_id) {
   return ui::TableModel::CompareValues(row1, row2, column_id);
 }
 
-void PossibleURLModel::OnFavIconAvailable(
+void PossibleURLModel::OnFaviconAvailable(
     FaviconService::Handle h,
     bool favicon_available,
     scoped_refptr<RefCountedMemory> data,

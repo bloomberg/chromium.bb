@@ -392,10 +392,10 @@ ExtensionFunctionDispatcher::ExtensionFunctionDispatcher(
                                 render_view_host->process()->id());
 
   // If the extension has permission to load chrome://favicon/ resources we need
-  // to make sure that the FavIconSource is registered with the
+  // to make sure that the FaviconSource is registered with the
   // ChromeURLDataManager.
   if (extension->HasHostPermission(GURL(chrome::kChromeUIFavIconURL))) {
-    FavIconSource* favicon_source = new FavIconSource(profile_);
+    FaviconSource* favicon_source = new FaviconSource(profile_);
     profile_->GetChromeURLDataManager()->AddDataSource(favicon_source);
   }
 

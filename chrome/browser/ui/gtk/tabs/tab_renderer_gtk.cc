@@ -38,7 +38,7 @@ const int kTopPadding = 6;
 const int kRightPadding = 15;
 const int kBottomPadding = 5;
 const int kDropShadowHeight = 2;
-const int kFavIconTitleSpacing = 4;
+const int kFaviconTitleSpacing = 4;
 const int kTitleCloseButtonSpacing = 5;
 const int kStandardTitleWidth = 175;
 const int kDropShadowOffset = 2;
@@ -208,14 +208,14 @@ void TabRendererGtk::LoadingAnimation::Observe(
 // FaviconCrashAnimation
 //
 //  A custom animation subclass to manage the favicon crash animation.
-class TabRendererGtk::FavIconCrashAnimation : public ui::LinearAnimation,
+class TabRendererGtk::FaviconCrashAnimation : public ui::LinearAnimation,
                                               public ui::AnimationDelegate {
  public:
-  explicit FavIconCrashAnimation(TabRendererGtk* target)
+  explicit FaviconCrashAnimation(TabRendererGtk* target)
       : ALLOW_THIS_IN_INITIALIZER_LIST(ui::LinearAnimation(1000, 25, this)),
         target_(target) {
   }
-  virtual ~FavIconCrashAnimation() {}
+  virtual ~FaviconCrashAnimation() {}
 
   // ui::Animation overrides:
   virtual void AnimateToState(double state) {
@@ -225,7 +225,7 @@ class TabRendererGtk::FavIconCrashAnimation : public ui::LinearAnimation,
       target_->SetFaviconHidingOffset(
           static_cast<int>(floor(kHidingOffset * 2.0 * state)));
     } else {
-      target_->DisplayCrashedFavIcon();
+      target_->DisplayCrashedFavicon();
       target_->SetFaviconHidingOffset(
           static_cast<int>(
               floor(kHidingOffset - ((state - .5) * 2.0 * kHidingOffset))));
@@ -240,7 +240,7 @@ class TabRendererGtk::FavIconCrashAnimation : public ui::LinearAnimation,
  private:
   TabRendererGtk* target_;
 
-  DISALLOW_COPY_AND_ASSIGN(FavIconCrashAnimation);
+  DISALLOW_COPY_AND_ASSIGN(FaviconCrashAnimation);
 };
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -327,7 +327,7 @@ void TabRendererGtk::UpdateFromModel() {
   } else {
     if (IsPerformingCrashAnimation())
       StopCrashAnimation();
-    ResetCrashedFavIcon();
+    ResetCrashedFavicon();
   }
 }
 
@@ -364,7 +364,7 @@ bool TabRendererGtk::ValidateLoadingAnimation(AnimationState animation_state) {
   return loading_animation_.ValidateLoadingAnimation(animation_state);
 }
 
-void TabRendererGtk::PaintFavIconArea(GdkEventExpose* event) {
+void TabRendererGtk::PaintFaviconArea(GdkEventExpose* event) {
   DCHECK(ShouldShowIcon());
 
   // The paint area is the favicon bounds, but we're painting into the gdk
@@ -457,7 +457,7 @@ gfx::Size TabRendererGtk::GetMinimumSelectedSize() {
 // static
 gfx::Size TabRendererGtk::GetStandardSize() {
   gfx::Size standard_size = GetMinimumUnselectedSize();
-  standard_size.Enlarge(kFavIconTitleSpacing + kStandardTitleWidth, 0);
+  standard_size.Enlarge(kFaviconTitleSpacing + kStandardTitleWidth, 0);
   return standard_size;
 }
 
@@ -589,7 +589,7 @@ void TabRendererGtk::AnimationEnded(const ui::Animation* animation) {
 
 void TabRendererGtk::StartCrashAnimation() {
   if (!crash_animation_.get())
-    crash_animation_.reset(new FavIconCrashAnimation(this));
+    crash_animation_.reset(new FaviconCrashAnimation(this));
   crash_animation_->Stop();
   crash_animation_->Start();
 }
@@ -609,11 +609,11 @@ void TabRendererGtk::SetFaviconHidingOffset(int offset) {
   SchedulePaint();
 }
 
-void TabRendererGtk::DisplayCrashedFavIcon() {
+void TabRendererGtk::DisplayCrashedFavicon() {
   should_display_crashed_favicon_ = true;
 }
 
-void TabRendererGtk::ResetCrashedFavIcon() {
+void TabRendererGtk::ResetCrashedFavicon() {
   should_display_crashed_favicon_ = false;
 }
 
@@ -719,7 +719,7 @@ void TabRendererGtk::Layout() {
 
   if (!mini() || width() >= kMiniTabRendererAsNormalTabWidth) {
     // Size the Title text to fill the remaining space.
-    int title_left = favicon_bounds_.right() + kFavIconTitleSpacing;
+    int title_left = favicon_bounds_.right() + kFaviconTitleSpacing;
     int title_top = kTopPadding;
 
     // If the user has big fonts, the title will appear rendered too far down
@@ -826,7 +826,7 @@ void TabRendererGtk::PaintIcon(gfx::Canvas* canvas) {
     PaintLoadingAnimation(canvas);
   } else {
     canvas->Save();
-    canvas->ClipRectInt(0, 0, width(), height() - kFavIconTitleSpacing);
+    canvas->ClipRectInt(0, 0, width(), height() - kFaviconTitleSpacing);
     if (should_display_crashed_favicon_) {
       canvas->DrawBitmapInt(*crashed_favicon, 0, 0,
                             crashed_favicon->width(),

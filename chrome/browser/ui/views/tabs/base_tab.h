@@ -146,14 +146,14 @@ class BaseTab : public ui::AnimationDelegate,
 
  private:
   // The animation object used to swap the favicon with the sad tab icon.
-  class FavIconCrashAnimation;
+  class FaviconCrashAnimation;
 
   // Set the temporary offset for the favicon. This is used during the crash
   // animation.
   void SetFaviconHidingOffset(int offset);
 
-  void DisplayCrashedFavIcon();
-  void ResetCrashedFavIcon();
+  void DisplayCrashedFavicon();
+  void ResetCrashedFavicon();
 
   // Starts/Stops the crash animation.
   void StartCrashAnimation();
@@ -195,7 +195,7 @@ class BaseTab : public ui::AnimationDelegate,
   scoped_ptr<ui::SlideAnimation> hover_animation_;
 
   // Crash animation.
-  scoped_ptr<FavIconCrashAnimation> crash_animation_;
+  scoped_ptr<FaviconCrashAnimation> crash_animation_;
 
   scoped_refptr<ui::AnimationContainer> animation_container_;
 

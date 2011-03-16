@@ -172,7 +172,7 @@ class TabRendererGtk : public ui::AnimationDelegate,
   bool ValidateLoadingAnimation(AnimationState animation_state);
 
   // Repaint only the area of the tab that contains the favicon.
-  void PaintFavIconArea(GdkEventExpose* event);
+  void PaintFaviconArea(GdkEventExpose* event);
 
   // Returns whether the Tab should display a favicon.
   bool ShouldShowIcon() const;
@@ -239,7 +239,7 @@ class TabRendererGtk : public ui::AnimationDelegate,
                        GdkEventCrossing*);
 
  private:
-  class FavIconCrashAnimation;
+  class FaviconCrashAnimation;
 
   // The data structure used to hold cached bitmaps.  We need to manually free
   // the bitmap in CachedBitmap when we remove it from |cached_bitmaps_|.  We
@@ -306,8 +306,8 @@ class TabRendererGtk : public ui::AnimationDelegate,
   // Set the temporary offset for the favicon. This is used during animation.
   void SetFaviconHidingOffset(int offset);
 
-  void DisplayCrashedFavIcon();
-  void ResetCrashedFavIcon();
+  void DisplayCrashedFavicon();
+  void ResetCrashedFavicon();
 
   // Generates the bounds for the interior items of the tab.
   void Layout();
@@ -410,7 +410,7 @@ class TabRendererGtk : public ui::AnimationDelegate,
   int favicon_hiding_offset_;
 
   // The animation object used to swap the favicon with the sad tab icon.
-  scoped_ptr<FavIconCrashAnimation> crash_animation_;
+  scoped_ptr<FaviconCrashAnimation> crash_animation_;
 
   // Set when the crashed favicon should be displayed.
   bool should_display_crashed_favicon_;

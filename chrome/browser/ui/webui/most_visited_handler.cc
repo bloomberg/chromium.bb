@@ -73,7 +73,7 @@ WebUIMessageHandler* MostVisitedHandler::Attach(WebUI* web_ui) {
   ThumbnailSource* thumbnail_src = new ThumbnailSource(profile);
   profile->GetChromeURLDataManager()->AddDataSource(thumbnail_src);
 
-  FavIconSource* favicon_src = new FavIconSource(profile);
+  FaviconSource* favicon_src = new FaviconSource(profile);
   profile->GetChromeURLDataManager()->AddDataSource(favicon_src);
 
   // Get notifications when history is cleared.
