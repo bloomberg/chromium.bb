@@ -4017,6 +4017,16 @@
    fun:_ZN3sql10ConnectionD1Ev
    fun:_ZN7history16InMemoryDatabaseD0Ev
 }
+{
+   bug_76354
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN3IPC16MessageWithReplyI6Tuple1I4GURLE6Tuple*
+   ...
+   fun:_ZN32ChildProcessHostMsg_ResolveProxyC1ERK4GURLPiPSs
+   fun:_ZN25ResolveProxyMsgHelperTest13GenerateReplyEv
+   fun:_ZN*ResolveProxyMsgHelperTest_*_Test8TestBodyEv
+}
 
 #-----------------------------------------------------------------------
 # These only occur on our Google workstations
