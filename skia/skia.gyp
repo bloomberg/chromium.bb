@@ -17,6 +17,7 @@
         '../third_party/skia/gpu/src/GrContext.cpp',
         '../third_party/skia/gpu/src/GrDrawTarget.cpp',
         '../third_party/skia/gpu/src/GrGLIndexBuffer.cpp',
+        '../third_party/skia/gpu/src/GrGLInterface.cpp',
         '../third_party/skia/gpu/src/GrGLTexture.cpp',
         '../third_party/skia/gpu/src/GrGLUtil.cpp',
         '../third_party/skia/gpu/src/GrGLVertexBuffer.cpp',
