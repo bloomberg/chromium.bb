@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/plugin/webplugin_proxy.h"
+#include "content/plugin/webplugin_proxy.h"
 
 #include "build/build_config.h"
 
@@ -10,12 +10,12 @@
 #include "base/scoped_handle.h"
 #include "base/shared_memory.h"
 #include "build/build_config.h"
-#include "chrome/plugin/npobject_proxy.h"
-#include "chrome/plugin/npobject_util.h"
-#include "chrome/plugin/plugin_channel.h"
-#include "chrome/plugin/plugin_thread.h"
 #include "content/common/content_client.h"
 #include "content/common/plugin_messages.h"
+#include "content/plugin/npobject_proxy.h"
+#include "content/plugin/npobject_util.h"
+#include "content/plugin/plugin_channel.h"
+#include "content/plugin/plugin_thread.h"
 #include "skia/ext/platform_device.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebBindings.h"
 #include "ui/gfx/blit.h"
@@ -25,7 +25,7 @@
 #if defined(OS_MACOSX)
 #include "base/mac/mac_util.h"
 #include "base/mac/scoped_cftyperef.h"
-#include "chrome/plugin/webplugin_accelerated_surface_proxy_mac.h"
+#include "content/plugin/webplugin_accelerated_surface_proxy_mac.h"
 #endif
 
 #if defined(OS_WIN)

@@ -3060,15 +3060,6 @@
         'test/data/resource.rc',
       ],
       'conditions': [
-        # Plugin code.
-        ['OS=="linux" or OS=="win"', {
-          'dependencies': [
-            'plugin',
-           ],
-          'export_dependent_settings': [
-            'plugin',
-          ],
-        }],
         ['OS=="linux"', {
            'dependencies': [
              '../build/linux/system.gyp:gtk',

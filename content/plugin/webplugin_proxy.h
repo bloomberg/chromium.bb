@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_PLUGIN_WEBPLUGIN_PROXY_H_
-#define CHROME_PLUGIN_WEBPLUGIN_PROXY_H_
+#ifndef CONTENT_PLUGIN_WEBPLUGIN_PROXY_H_
+#define CONTENT_PLUGIN_WEBPLUGIN_PROXY_H_
 #pragma once
 
 #include <string>
@@ -222,4 +222,4 @@ class WebPluginProxy : public webkit::npapi::WebPlugin {
   ScopedRunnableMethodFactory<WebPluginProxy> runnable_method_factory_;
 };
 
-#endif  // CHROME_PLUGIN_WEBPLUGIN_PROXY_H_
+#endif  // CONTENT_PLUGIN_WEBPLUGIN_PROXY_H_

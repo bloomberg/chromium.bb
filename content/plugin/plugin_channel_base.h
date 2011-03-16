@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_PLUGIN_PLUGIN_CHANNEL_BASE_H_
-#define CHROME_PLUGIN_PLUGIN_CHANNEL_BASE_H_
+#ifndef CONTENT_PLUGIN_PLUGIN_CHANNEL_BASE_H_
+#define CONTENT_PLUGIN_PLUGIN_CHANNEL_BASE_H_
 #pragma once
 
 #include <string>
@@ -13,8 +13,8 @@
 #include "base/message_loop.h"
 #include "base/ref_counted.h"
 #include "base/scoped_ptr.h"
-#include "chrome/plugin/npobject_base.h"
 #include "content/common/message_router.h"
+#include "content/plugin/npobject_base.h"
 #include "ipc/ipc_channel_handle.h"
 #include "ipc/ipc_sync_channel.h"
 #include "ui/gfx/native_widget_types.h"
@@ -146,4 +146,4 @@ class PluginChannelBase : public IPC::Channel::Listener,
   DISALLOW_COPY_AND_ASSIGN(PluginChannelBase);
 };
 
-#endif  // CHROME_PLUGIN_PLUGIN_CHANNEL_BASE_H_
+#endif  // CONTENT_PLUGIN_PLUGIN_CHANNEL_BASE_H_

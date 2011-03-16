@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_PLUGIN_WEBPLUGIN_ACCELERATED_SURFACE_PROXY_H_
-#define CHROME_PLUGIN_WEBPLUGIN_ACCELERATED_SURFACE_PROXY_H_
+#ifndef CONTENT_PLUGIN_WEBPLUGIN_ACCELERATED_SURFACE_PROXY_H_
+#define CONTENT_PLUGIN_WEBPLUGIN_ACCELERATED_SURFACE_PROXY_H_
 #pragma once
 
 #include "webkit/plugins/npapi/webplugin_accelerated_surface_mac.h"
@@ -36,4 +36,4 @@ class WebPluginAcceleratedSurfaceProxy
   DISALLOW_COPY_AND_ASSIGN(WebPluginAcceleratedSurfaceProxy);
 };
 
-#endif  // CHROME_PLUGIN_WEBPLUGIN_ACCELERATED_SURFACE_PROXY_H_
+#endif  // CONTENT_PLUGIN_WEBPLUGIN_ACCELERATED_SURFACE_PROXY_H_

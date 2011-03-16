@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_PLUGIN_WEBPLUGIN_DELEGATE_STUB_H_
-#define CHROME_PLUGIN_WEBPLUGIN_DELEGATE_STUB_H_
+#ifndef CONTENT_PLUGIN_WEBPLUGIN_DELEGATE_STUB_H_
+#define CONTENT_PLUGIN_WEBPLUGIN_DELEGATE_STUB_H_
 #pragma once
 
 #include <string>
@@ -132,4 +132,4 @@ class WebPluginDelegateStub : public IPC::Channel::Listener,
   DISALLOW_IMPLICIT_CONSTRUCTORS(WebPluginDelegateStub);
 };
 
-#endif  // CHROME_PLUGIN_WEBPLUGIN_DELEGATE_STUB_H_
+#endif  // CONTENT_PLUGIN_WEBPLUGIN_DELEGATE_STUB_H_

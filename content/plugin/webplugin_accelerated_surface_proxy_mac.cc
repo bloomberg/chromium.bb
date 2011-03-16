@@ -4,11 +4,11 @@
 
 #import <OpenGL/OpenGL.h>
 
-#include "chrome/plugin/webplugin_accelerated_surface_proxy_mac.h"
+#include "content/plugin/webplugin_accelerated_surface_proxy_mac.h"
 
 #include "app/surface/accelerated_surface_mac.h"
 #include "app/surface/transport_dib.h"
-#include "chrome/plugin/webplugin_proxy.h"
+#include "content/plugin/webplugin_proxy.h"
 
 WebPluginAcceleratedSurfaceProxy::WebPluginAcceleratedSurfaceProxy(
     WebPluginProxy* plugin_proxy)

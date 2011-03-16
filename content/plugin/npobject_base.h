@@ -4,8 +4,8 @@
 //
 // Base interface implemented by NPObjectProxy and NPObjectStub
 
-#ifndef CHROME_PLUGIN_NPOBJECT_BASE_H_
-#define CHROME_PLUGIN_NPOBJECT_BASE_H_
+#ifndef CONTENT_PLUGIN_NPOBJECT_BASE_H_
+#define CONTENT_PLUGIN_NPOBJECT_BASE_H_
 #pragma once
 
 #include "ipc/ipc_channel.h"
@@ -24,5 +24,4 @@ class NPObjectBase {
   virtual IPC::Channel::Listener* GetChannelListener() = 0;
 };
 
-#endif  // CHROME_PLUGIN_NPOBJECT_BASE_H_
-
+#endif  // CONTENT_PLUGIN_NPOBJECT_BASE_H_

@@ -11,10 +11,10 @@
       'dependencies': [
         'common',
         'common_net',
-        'plugin',
         'chrome_resources',
         'chrome_strings',
         'safe_browsing_proto',
+        '../content/content.gyp:content_plugin',
         '../ppapi/ppapi.gyp:ppapi_proxy',
         '../printing/printing.gyp:printing',
         '../skia/skia.gyp:skia',

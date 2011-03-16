@@ -13,11 +13,11 @@
 #include "base/message_loop.h"
 #include "base/string_util.h"
 #include "base/threading/platform_thread.h"
-#include "chrome/plugin/plugin_thread.h"
 #include "content/common/child_process.h"
 #include "content/common/content_switches.h"
 #include "content/common/hi_res_timer_manager.h"
 #include "content/common/main_function_params.h"
+#include "content/plugin/plugin_thread.h"
 #include "ui/base/system_monitor/system_monitor.h"
 
 #if defined(OS_WIN)

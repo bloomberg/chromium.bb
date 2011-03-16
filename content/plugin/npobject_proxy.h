@@ -5,12 +5,12 @@
 // A proxy for NPObject that sends all calls to the object to an NPObjectStub
 // running in a different process.
 
-#ifndef CHROME_PLUGIN_NPOBJECT_PROXY_H_
-#define CHROME_PLUGIN_NPOBJECT_PROXY_H_
+#ifndef CONTENT_PLUGIN_NPOBJECT_PROXY_H_
+#define CONTENT_PLUGIN_NPOBJECT_PROXY_H_
 #pragma once
 
 #include "base/ref_counted.h"
-#include "chrome/plugin/npobject_base.h"
+#include "content/plugin/npobject_base.h"
 #include "googleurl/src/gurl.h"
 #include "ipc/ipc_channel.h"
 #include "third_party/npapi/bindings/npruntime.h"
@@ -120,4 +120,4 @@ class NPObjectProxy : public IPC::Channel::Listener,
   GURL page_url_;
 };
 
-#endif  // CHROME_PLUGIN_NPOBJECT_PROXY_H_
+#endif  // CONTENT_PLUGIN_NPOBJECT_PROXY_H_

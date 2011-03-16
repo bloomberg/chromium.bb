@@ -10,7 +10,7 @@
 #include "build/build_config.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
-#include "chrome/plugin/npobject_util.h"
+#include "content/plugin/npobject_util.h"
 #include "googleurl/src/url_util.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/ui_base_switches.h"

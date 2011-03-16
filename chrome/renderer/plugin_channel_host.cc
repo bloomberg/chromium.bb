@@ -4,8 +4,8 @@
 
 #include "chrome/renderer/plugin_channel_host.h"
 
-#include "chrome/plugin/npobject_base.h"
 #include "content/common/plugin_messages.h"
+#include "content/plugin/npobject_base.h"
 
 #if defined(OS_POSIX)
 #include "ipc/ipc_channel_posix.h"

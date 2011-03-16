@@ -2,16 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_PLUGIN_PLUGIN_CHANNEL_H_
-#define CHROME_PLUGIN_PLUGIN_CHANNEL_H_
+#ifndef CONTENT_PLUGIN_PLUGIN_CHANNEL_H_
+#define CONTENT_PLUGIN_PLUGIN_CHANNEL_H_
 #pragma once
 
 #include <vector>
 #include "base/ref_counted.h"
 #include "base/scoped_handle.h"
 #include "build/build_config.h"
-#include "chrome/plugin/plugin_channel_base.h"
-#include "chrome/plugin/webplugin_delegate_stub.h"
+#include "content/plugin/plugin_channel_base.h"
+#include "content/plugin/webplugin_delegate_stub.h"
 
 namespace base {
 class WaitableEvent;
@@ -96,4 +96,4 @@ class PluginChannel : public PluginChannelBase {
   DISALLOW_COPY_AND_ASSIGN(PluginChannel);
 };
 
-#endif  // CHROME_PLUGIN_PLUGIN_CHANNEL_H_
+#endif  // CONTENT_PLUGIN_PLUGIN_CHANNEL_H_

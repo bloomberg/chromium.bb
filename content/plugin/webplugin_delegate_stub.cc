@@ -2,18 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/plugin/webplugin_delegate_stub.h"
+#include "content/plugin/webplugin_delegate_stub.h"
 
 #include "build/build_config.h"
 
 #include "base/command_line.h"
-#include "chrome/plugin/npobject_stub.h"
-#include "chrome/plugin/plugin_channel.h"
-#include "chrome/plugin/plugin_thread.h"
-#include "chrome/plugin/webplugin_proxy.h"
 #include "content/common/content_client.h"
 #include "content/common/content_switches.h"
 #include "content/common/plugin_messages.h"
+#include "content/plugin/npobject_stub.h"
+#include "content/plugin/plugin_channel.h"
+#include "content/plugin/plugin_thread.h"
+#include "content/plugin/webplugin_proxy.h"
 #include "third_party/npapi/bindings/npapi.h"
 #include "third_party/npapi/bindings/npruntime.h"
 #include "skia/ext/platform_device.h"

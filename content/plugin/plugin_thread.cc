@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/plugin/plugin_thread.h"
+#include "content/plugin/plugin_thread.h"
 
 #include "build/build_config.h"
 
@@ -19,13 +19,12 @@
 #include "base/lazy_instance.h"
 #include "base/process_util.h"
 #include "base/threading/thread_local.h"
-#include "chrome/plugin/npobject_util.h"
-#include "chrome/renderer/render_thread.h"
 #include "content/common/child_process.h"
 #include "content/common/content_client.h"
 #include "content/common/content_switches.h"
 #include "content/common/child_process_messages.h"
 #include "content/common/plugin_messages.h"
+#include "content/plugin/npobject_util.h"
 #include "ipc/ipc_channel_handle.h"
 #include "net/base/net_errors.h"
 #include "webkit/glue/webkit_glue.h"

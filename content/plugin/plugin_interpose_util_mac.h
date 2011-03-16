@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_PLUGIN_PLUGIN_INTERPOSE_UTIL_MAC_H_
-#define CHROME_PLUGIN_PLUGIN_INTERPOSE_UTIL_MAC_H_
+#ifndef CONTENT_PLUGIN_PLUGIN_INTERPOSE_UTIL_MAC_H_
+#define CONTENT_PLUGIN_PLUGIN_INTERPOSE_UTIL_MAC_H_
 #pragma once
 
 #include <Carbon/Carbon.h>
@@ -54,4 +54,4 @@ bool GetPluginWindowHasFocus(const OpaquePluginRef delegate);
 
 }  // namespace MacPluginInterpose
 
-#endif  // CHROME_PLUGIN_PLUGIN_INTERPOSE_UTIL_MAC_H_
+#endif  // CONTENT_PLUGIN_PLUGIN_INTERPOSE_UTIL_MAC_H_

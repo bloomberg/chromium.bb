@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_PLUGIN_PLUGIN_THREAD_H_
-#define CHROME_PLUGIN_PLUGIN_THREAD_H_
+#ifndef CONTENT_PLUGIN_PLUGIN_THREAD_H_
+#define CONTENT_PLUGIN_PLUGIN_THREAD_H_
 #pragma once
 
 #include "base/file_path.h"
 #include "base/native_library.h"
 #include "build/build_config.h"
-#include "chrome/plugin/plugin_channel.h"
 #include "content/common/child_thread.h"
+#include "content/plugin/plugin_channel.h"
 #include "webkit/plugins/npapi/plugin_lib.h"
 
 #if defined(OS_POSIX)
@@ -51,4 +51,4 @@ class PluginThread : public ChildThread {
   DISALLOW_COPY_AND_ASSIGN(PluginThread);
 };
 
-#endif  // CHROME_PLUGIN_PLUGIN_THREAD_H_
+#endif  // CONTENT_PLUGIN_PLUGIN_THREAD_H_

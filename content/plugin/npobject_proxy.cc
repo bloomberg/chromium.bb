@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/plugin/npobject_proxy.h"
+#include "content/plugin/npobject_proxy.h"
 
-#include "chrome/plugin/npobject_util.h"
-#include "chrome/plugin/plugin_channel.h"
 #include "content/common/plugin_messages.h"
+#include "content/plugin/npobject_util.h"
+#include "content/plugin/plugin_channel.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebBindings.h"
 #include "webkit/glue/webkit_glue.h"
 #include "webkit/plugins/npapi/plugin_instance.h"

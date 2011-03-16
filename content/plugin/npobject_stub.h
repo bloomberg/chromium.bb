@@ -5,15 +5,15 @@
 // A class that receives IPC messages from an NPObjectProxy and calls the real
 // NPObject.
 
-#ifndef CHROME_PLUGIN_NPOBJECT_STUB_H_
-#define CHROME_PLUGIN_NPOBJECT_STUB_H_
+#ifndef CONTENT_PLUGIN_NPOBJECT_STUB_H_
+#define CONTENT_PLUGIN_NPOBJECT_STUB_H_
 #pragma once
 
 #include <vector>
 
 #include "base/ref_counted.h"
 #include "base/weak_ptr.h"
-#include "chrome/plugin/npobject_base.h"
+#include "content/plugin/npobject_base.h"
 #include "googleurl/src/gurl.h"
 #include "ipc/ipc_channel.h"
 #include "ui/gfx/native_widget_types.h"
@@ -92,4 +92,4 @@ class NPObjectStub : public IPC::Channel::Listener,
   GURL page_url_;
 };
 
-#endif  // CHROME_PLUGIN_NPOBJECT_STUB_H_
+#endif  // CONTENT_PLUGIN_NPOBJECT_STUB_H_

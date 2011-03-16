@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/plugin/plugin_interpose_util_mac.h"
+#include "content/plugin/plugin_interpose_util_mac.h"
 
 #import <AppKit/AppKit.h>
 #import <objc/runtime.h>
 
-#include "chrome/plugin/plugin_thread.h"
 #include "content/common/plugin_messages.h"
+#include "content/plugin/plugin_thread.h"
 #include "webkit/plugins/npapi/webplugin_delegate_impl.h"
 
 namespace mac_plugin_interposing {

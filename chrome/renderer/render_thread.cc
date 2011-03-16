@@ -32,7 +32,6 @@
 #include "chrome/common/render_messages_params.h"
 #include "chrome/common/renderer_preferences.h"
 #include "chrome/common/url_constants.h"
-#include "chrome/plugin/npobject_util.h"
 #include "chrome/renderer/automation/dom_automation_v8_extension.h"
 #include "chrome/renderer/cookie_message_filter.h"
 #include "chrome/renderer/devtools_agent_filter.h"
@@ -69,6 +68,7 @@
 #include "content/common/resource_dispatcher.h"
 #include "content/common/resource_messages.h"
 #include "content/common/web_database_observer_impl.h"
+#include "content/plugin/npobject_util.h"
 #include "ipc/ipc_channel_handle.h"
 #include "ipc/ipc_platform_file.h"
 #include "net/base/net_errors.h"
@@ -96,10 +96,10 @@
 
 // TODO(port)
 #if defined(OS_WIN)
-#include "chrome/plugin/plugin_channel.h"
+#include "content/plugin/plugin_channel.h"
 #else
 #include "base/scoped_handle.h"
-#include "chrome/plugin/plugin_channel_base.h"
+#include "content/plugin/plugin_channel_base.h"
 #endif
 
 #if defined(OS_WIN)

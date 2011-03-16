@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/plugin/plugin_channel.h"
+#include "content/plugin/plugin_channel.h"
 
 #include "base/command_line.h"
 #include "base/process_util.h"
@@ -10,12 +10,12 @@
 #include "base/synchronization/lock.h"
 #include "base/synchronization/waitable_event.h"
 #include "build/build_config.h"
-#include "chrome/plugin/plugin_thread.h"
-#include "chrome/plugin/webplugin_delegate_stub.h"
-#include "chrome/plugin/webplugin_proxy.h"
 #include "content/common/child_process.h"
 #include "content/common/content_switches.h"
 #include "content/common/plugin_messages.h"
+#include "content/plugin/plugin_thread.h"
+#include "content/plugin/webplugin_delegate_stub.h"
+#include "content/plugin/webplugin_proxy.h"
 #include "webkit/plugins/npapi/plugin_instance.h"
 
 #if defined(OS_POSIX)

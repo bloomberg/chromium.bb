@@ -7,7 +7,7 @@
 #pragma once
 
 #include "base/hash_tables.h"
-#include "chrome/plugin/plugin_channel_base.h"
+#include "content/plugin/plugin_channel_base.h"
 #include "ipc/ipc_channel_handle.h"
 
 class IsListeningFilter;
