@@ -773,19 +773,11 @@ def Incarnation_bclink(argv):
              output=output)
   return 0
 
+# TODO(jvoung): remove this in favor of Incarnation_opt once all dependencies
+# have been removed (e.g., from spec2k). It was the same except that one
+# of them handled Incarnation_opt also handled ".ll" files.
 def Incarnation_bcopt(argv):
-  ParseArgs(argv, GCCPatterns)
-  AssertParseComplete()
-  PrepareCompile()
-
-  inputs = shell.split(env.get('INPUTS'))
-  output = env.get('OUTPUT')
-  if len(inputs) != 1:
-    Log.Fatal('Expected exactly one input')
-  if output == '':
-    Log.Fatal('Please specify output name')
-  OptimizeBC(inputs[0], output)
-  return 0
+  return Incarnation_opt(argv)
 
 def Incarnation_dis(argv):
   ParseArgs(argv, GCCPatterns)

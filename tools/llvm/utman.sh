@@ -2352,8 +2352,9 @@ driver-install() {
   mkdir -p "${INSTALL_BIN}"
   rm -f "${INSTALL_BIN}/pnacl-*"
   cp tools/llvm/driver.py "${INSTALL_BIN}"
+  # TODO(jvoung): remove incarnation bcopt in favor of opt.
   for s in gcc g++ as arm-as i686-as x86_64-as \
-           bclink bcopt dis ld translate illegal nop \
+           bclink bcopt opt dis ld translate illegal nop \
            ar nm ranlib ; do
     local t="pnacl-$s"
     ln -fs driver.py "${INSTALL_BIN}/$t"
