@@ -139,21 +139,6 @@ void PersonalDataManager::OnWebDataServiceRequestDone(
 /////////////////////////////////////////////////////////////////////////////
 // PersonalDataManager,
 // views::ButtonListener implementations
-void PersonalDataManager::OnAutoFillDialogApply(
-    std::vector<AutofillProfile>* profiles,
-    std::vector<CreditCard>* credit_cards) {
-  // |profiles| may be NULL.
-  // |credit_cards| may be NULL.
-  if (profiles) {
-    CancelPendingQuery(&pending_profiles_query_);
-    SetProfiles(profiles);
-  }
-  if (credit_cards) {
-    CancelPendingQuery(&pending_creditcards_query_);
-    SetCreditCards(credit_cards);
-  }
-}
-
 void PersonalDataManager::SetObserver(PersonalDataManager::Observer* observer) {
   // TODO: RemoveObserver is for compatibility with old code, it should be
   // nuked.

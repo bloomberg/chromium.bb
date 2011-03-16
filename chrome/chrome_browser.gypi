@@ -149,14 +149,8 @@
         'browser/autofill/autofill_cc_infobar_delegate.h',
         'browser/autofill/autofill_country.cc',
         'browser/autofill/autofill_country.h',
-        'browser/autofill/autofill_dialog.h',
-        'browser/autofill/autofill_dialog_gtk.cc',
-        'browser/autofill/autofill_dialog_mac.mm',
-        # Windows version of autofill dialog is defined in
-        # 'browser/ui/views/autofill_profiles_view_win.cc'
         'browser/autofill/autofill_download.cc',
         'browser/autofill/autofill_download.h',
-        'browser/autofill/autofill_editor_gtk.cc',
         'browser/autofill/autofill_field.cc',
         'browser/autofill/autofill_field.h',
         'browser/autofill/autofill_ie_toolbar_import_win.cc',
@@ -2790,8 +2784,6 @@
         'browser/ui/views/autocomplete/autocomplete_result_view.h',
         'browser/ui/views/autocomplete/touch_autocomplete_popup_contents_view.cc',
         'browser/ui/views/autocomplete/touch_autocomplete_popup_contents_view.h',
-        'browser/ui/views/autofill_profiles_view_win.cc',
-        'browser/ui/views/autofill_profiles_view_win.h',
         'browser/ui/views/bookmarks/bookmark_bar_instructions_view.cc',
         'browser/ui/views/bookmarks/bookmark_bar_instructions_view.h',
         'browser/ui/views/bookmarks/bookmark_bar_view.cc',

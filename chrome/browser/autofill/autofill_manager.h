@@ -13,7 +13,6 @@
 #include "base/gtest_prod_util.h"
 #include "base/scoped_ptr.h"
 #include "base/scoped_vector.h"
-#include "chrome/browser/autofill/autofill_dialog.h"
 #include "chrome/browser/autofill/autofill_download.h"
 #include "chrome/browser/autofill/personal_data_manager.h"
 #include "content/browser/tab_contents/tab_contents_observer.h"

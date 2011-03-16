@@ -3955,8 +3955,10 @@ void TestingAutomationProvider::FillAutofillProfile(
     PersonalDataManager* pdm = tab_contents->profile()
         ->GetPersonalDataManager();
     if (pdm) {
-      pdm->OnAutoFillDialogApply(profiles? &autofill_profiles : NULL,
-                                 cards? &credit_cards : NULL);
+      if (profiles)
+        pdm->SetProfiles(&autofill_profiles);
+      if (cards)
+        pdm->SetCreditCards(&credit_cards);
     } else {
       reply.SendError("No PersonalDataManager.");
       return;
