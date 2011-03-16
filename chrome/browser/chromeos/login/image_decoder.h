@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_CHROMEOS_LOGIN_IMAGE_DECODER_H_
 #pragma once
 
+#include <string>
 #include <vector>
 
 #include "chrome/browser/utility_process_host.h"
@@ -20,14 +21,21 @@ class ImageDecoder : public UtilityProcessHost::Client {
   class Delegate {
    public:
     // Called when image is decoded.
-    virtual void OnImageDecoded(const SkBitmap& decoded_image) = 0;
+    // |decoder| is used to identify the image in case of decoding several
+    // images simultaneously.
+    virtual void OnImageDecoded(const ImageDecoder* decoder,
+                                const SkBitmap& decoded_image) = 0;
+
+    // Called when decoding image failed. Delegate can do some cleanup in
+    // this handler.
+    virtual void OnDecodeImageFailed(const ImageDecoder* decoder) {}
 
    protected:
     virtual ~Delegate() {}
   };
 
   ImageDecoder(Delegate* delegate,
-               const std::vector<unsigned char>& image_data);
+               const std::string& image_data);
 
   // Starts image decoding.
   void Start();
@@ -38,6 +46,7 @@ class ImageDecoder : public UtilityProcessHost::Client {
 
   // Overidden from UtilityProcessHost::Client:
   virtual void OnDecodeImageSucceeded(const SkBitmap& decoded_image);
+  virtual void OnDecodeImageFailed();
 
   // Launches sandboxed process that will decode the image.
   void DecodeImageInSandbox(ResourceDispatcherHost* rdh,
@@ -45,6 +54,7 @@ class ImageDecoder : public UtilityProcessHost::Client {
 
   Delegate* delegate_;
   std::vector<unsigned char> image_data_;
+  BrowserThread::ID target_thread_id_;
 
   DISALLOW_COPY_AND_ASSIGN(ImageDecoder);
 };

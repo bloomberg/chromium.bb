@@ -57,7 +57,8 @@ class CaptchaView : public views::View,
                               const views::KeyEvent& key_event);
 
   // ImageDownloader::Delegate:
-  virtual void OnImageDecoded(const SkBitmap& decoded_image);
+  virtual void OnImageDecoded(const ImageDecoder* decoder,
+                              const SkBitmap& decoded_image);
 
   // views::ButtonListener:
   virtual void ButtonPressed(views::Button* sender, const views::Event& event);

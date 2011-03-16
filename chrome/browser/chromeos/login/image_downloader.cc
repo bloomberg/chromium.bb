@@ -54,9 +54,7 @@ void ImageDownloader::OnURLFetchComplete(const URLFetcher* source,
   }
 
   VLOG(1) << "Decoding the image...";
-  std::vector<unsigned char> image_data(data.begin(), data.end());
-  scoped_refptr<ImageDecoder> image_decoder = new ImageDecoder(delegate_,
-                                                               image_data);
+  scoped_refptr<ImageDecoder> image_decoder = new ImageDecoder(delegate_, data);
   image_decoder->Start();
   MessageLoop::current()->DeleteSoon(FROM_HERE, this);
 }

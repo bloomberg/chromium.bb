@@ -425,12 +425,20 @@ void PersonalOptionsHandler::ChangeAccountPicture(const ListValue* args) {
     select_file_dialog_ = SelectFileDialog::Create(this);
 
   SelectFileDialog::FileTypeInfo file_type_info;
-  file_type_info.extensions.resize(1);
-  file_type_info.extensions[0].push_back(FILE_PATH_LITERAL("png"));
+  file_type_info.extensions.resize(5);
+  file_type_info.extensions[0].push_back(FILE_PATH_LITERAL("bmp"));
+  file_type_info.extensions[1].push_back(FILE_PATH_LITERAL("gif"));
+  file_type_info.extensions[2].push_back(FILE_PATH_LITERAL("jpg"));
+  file_type_info.extensions[2].push_back(FILE_PATH_LITERAL("jpeg"));
+  file_type_info.extensions[3].push_back(FILE_PATH_LITERAL("png"));
+  file_type_info.extensions[4].push_back(FILE_PATH_LITERAL("tif"));
+  file_type_info.extensions[4].push_back(FILE_PATH_LITERAL("tiff"));
 
   FilePath downloads_path;
-  if (!PathService::Get(chrome::DIR_DEFAULT_DOWNLOADS, &downloads_path))
+  if (!PathService::Get(chrome::DIR_DEFAULT_DOWNLOADS, &downloads_path)) {
     NOTREACHED();
+    return;
+  }
   select_file_dialog_->SelectFile(
       SelectFileDialog::SELECT_OPEN_FILE,
       l10n_util::GetStringUTF16(IDS_DOWNLOAD_TITLE),

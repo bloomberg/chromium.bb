@@ -10,13 +10,17 @@
 namespace chromeos {
 
 ImageDecoder::ImageDecoder(Delegate* delegate,
-                           const std::vector<unsigned char>& image_data)
+                           const std::string& image_data)
     : delegate_(delegate),
-      image_data_(image_data) {
+      image_data_(image_data.begin(), image_data.end()),
+      target_thread_id_(BrowserThread::UI) {
 }
 
 void ImageDecoder::Start() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  if (!BrowserThread::GetCurrentThreadIdentifier(&target_thread_id_)) {
+    NOTREACHED();
+    return;
+  }
   BrowserThread::PostTask(
      BrowserThread::IO, FROM_HERE,
      NewRunnableMethod(
@@ -26,9 +30,15 @@ void ImageDecoder::Start() {
 }
 
 void ImageDecoder::OnDecodeImageSucceeded(const SkBitmap& decoded_image) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(BrowserThread::CurrentlyOn(target_thread_id_));
   if (delegate_)
-    delegate_->OnImageDecoded(decoded_image);
+    delegate_->OnImageDecoded(this, decoded_image);
+}
+
+void ImageDecoder::OnDecodeImageFailed() {
+  DCHECK(BrowserThread::CurrentlyOn(target_thread_id_));
+  if (delegate_)
+    delegate_->OnDecodeImageFailed(this);
 }
 
 void ImageDecoder::DecodeImageInSandbox(
@@ -38,7 +48,7 @@ void ImageDecoder::DecodeImageInSandbox(
   UtilityProcessHost* utility_process_host =
       new UtilityProcessHost(rdh,
                              this,
-                             BrowserThread::UI);
+                             target_thread_id_);
   utility_process_host->StartImageDecoding(image_data);
 }
 

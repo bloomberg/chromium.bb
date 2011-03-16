@@ -134,7 +134,8 @@ bool CaptchaView::HandleKeyEvent(views::Textfield* sender,
   return false;
 }
 
-void CaptchaView::OnImageDecoded(const SkBitmap& decoded_image) {
+void CaptchaView::OnImageDecoded(const ImageDecoder*,
+                                 const SkBitmap& decoded_image) {
   captcha_image_->SetImage(decoded_image);
   captcha_textfield_->RequestFocus();
   Layout();
