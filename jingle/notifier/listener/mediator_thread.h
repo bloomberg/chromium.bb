@@ -31,8 +31,7 @@ class MediatorThread {
 
     virtual void OnSubscriptionStateChange(bool subscribed) = 0;
 
-    virtual void OnIncomingNotification(
-        const IncomingNotificationData& notification_data) = 0;
+    virtual void OnIncomingNotification(const Notification& notification) = 0;
 
     virtual void OnOutgoingNotification() = 0;
   };
@@ -47,10 +46,9 @@ class MediatorThread {
   virtual void Login(const buzz::XmppClientSettings& settings) = 0;
   virtual void Logout() = 0;
   virtual void Start() = 0;
-  virtual void SubscribeForUpdates(
-      const std::vector<std::string>& subscribed_services_list) = 0;
+  virtual void SubscribeForUpdates(const SubscriptionList& subscriptions) = 0;
   virtual void ListenForUpdates() = 0;
-  virtual void SendNotification(const OutgoingNotificationData& data) = 0;
+  virtual void SendNotification(const Notification& data) = 0;
 };
 
 }  // namespace notifier

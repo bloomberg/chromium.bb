@@ -43,9 +43,9 @@ class TalkMediatorImpl
   virtual bool Login();
   virtual bool Logout();
 
-  virtual bool SendNotification(const OutgoingNotificationData& data);
+  virtual bool SendNotification(const Notification& data);
 
-  virtual void AddSubscribedServiceUrl(const std::string& service_url);
+  virtual void AddSubscription(const Subscription& subscription);
 
   // MediatorThread::Delegate implementation.
 
@@ -53,8 +53,7 @@ class TalkMediatorImpl
 
   virtual void OnSubscriptionStateChange(bool subscribed);
 
-  virtual void OnIncomingNotification(
-      const IncomingNotificationData& notification_data);
+  virtual void OnIncomingNotification(const Notification& notification);
 
   virtual void OnOutgoingNotification();
 
@@ -90,7 +89,7 @@ class TalkMediatorImpl
   const bool invalidate_xmpp_auth_token_;
   const bool allow_insecure_connection_;
 
-  std::vector<std::string> subscribed_services_list_;
+  SubscriptionList subscriptions_;
 
   FRIEND_TEST_ALL_PREFIXES(TalkMediatorImplTest, SetAuthTokenWithBadInput);
   FRIEND_TEST_ALL_PREFIXES(TalkMediatorImplTest, SetAuthTokenWithGoodInput);

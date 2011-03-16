@@ -6,7 +6,6 @@
 
 namespace notifier {
 
-const char kNotifierNamespace[] = "google:notifier";
 const char kPushNotificationsNamespace[] = "google:push";
 
 }  // namespace notifier

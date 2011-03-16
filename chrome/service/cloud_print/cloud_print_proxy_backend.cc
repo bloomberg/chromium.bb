@@ -24,7 +24,7 @@
 #include "googleurl/src/gurl.h"
 #include "grit/generated_resources.h"
 #include "jingle/notifier/base/notifier_options.h"
-#include "jingle/notifier/listener/push_notifications_thread.h"
+#include "jingle/notifier/listener/mediator_thread_impl.h"
 #include "jingle/notifier/listener/talk_mediator_impl.h"
 #include "net/url_request/url_request_status.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -87,7 +87,7 @@ class CloudPrintProxyBackend::Core
   virtual void OnNotificationStateChange(
       bool notifications_enabled);
   virtual void OnIncomingNotification(
-      const IncomingNotificationData& notification_data);
+      const notifier::Notification& notification);
   virtual void OnOutgoingNotification();
 
  private:
@@ -375,15 +375,15 @@ void CloudPrintProxyBackend::Core::DoInitializeWithToken(
     const bool kInvalidateXmppAuthToken = false;
     const bool kAllowInsecureXmppConnection = false;
     talk_mediator_.reset(new notifier::TalkMediatorImpl(
-        new notifier::PushNotificationsThread(
-            kNotifierOptions,
-            kCloudPrintPushNotificationsSource),
+        new notifier::MediatorThreadImpl(kNotifierOptions),
         kInvalidateXmppAuthToken,
         kAllowInsecureXmppConnection));
-    push_notifications_channel_ = kCloudPrintPushNotificationsSource;
-    push_notifications_channel_.append("/proxy/");
-    push_notifications_channel_.append(proxy_id);
-    talk_mediator_->AddSubscribedServiceUrl(push_notifications_channel_);
+    notifier::Subscription subscription;
+    subscription.channel = kCloudPrintPushNotificationsSource;
+    subscription.channel.append("/proxy/");
+    subscription.channel.append(proxy_id);
+    subscription.from = kCloudPrintPushNotificationsSource;
+    talk_mediator_->AddSubscription(subscription);
     talk_mediator_->SetDelegate(this);
     talk_mediator_->SetAuthToken(email, cloud_print_xmpp_token,
                                  kSyncGaiaServiceId);
@@ -902,12 +902,12 @@ void CloudPrintProxyBackend::Core::OnNotificationStateChange(
 
 
 void CloudPrintProxyBackend::Core::OnIncomingNotification(
-    const IncomingNotificationData& notification_data) {
+    const notifier::Notification& notification) {
   DCHECK(MessageLoop::current() == backend_->core_thread_.message_loop());
   VLOG(1) << "CP_PROXY: Incoming notification.";
   if (0 == base::strcasecmp(push_notifications_channel_.c_str(),
-                            notification_data.service_url.c_str()))
-    HandlePrinterNotification(notification_data.service_specific_data);
+                            notification.channel.c_str()))
+    HandlePrinterNotification(notification.data);
 }
 
 void CloudPrintProxyBackend::Core::OnOutgoingNotification() {}

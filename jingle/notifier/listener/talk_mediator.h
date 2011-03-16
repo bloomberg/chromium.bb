@@ -31,11 +31,9 @@ class TalkMediator {
    public:
     virtual ~Delegate() {}
 
-    virtual void OnNotificationStateChange(
-        bool notifications_enabled) = 0;
+    virtual void OnNotificationStateChange(bool notifications_enabled) = 0;
 
-    virtual void OnIncomingNotification(
-        const IncomingNotificationData& notification_data) = 0;
+    virtual void OnIncomingNotification(const Notification& notification) = 0;
 
     virtual void OnOutgoingNotification() = 0;
   };
@@ -52,10 +50,10 @@ class TalkMediator {
 
   // Method for the owner of this object to notify peers that an update has
   // occurred.
-  virtual bool SendNotification(const OutgoingNotificationData& data) = 0;
+  virtual bool SendNotification(const Notification& data) = 0;
 
-  // Add a URL to subscribe to for notifications.
-  virtual void AddSubscribedServiceUrl(const std::string& service_url) = 0;
+  // Add a subscription to subscribe to.
+  virtual void AddSubscription(const Subscription& subscription) = 0;
 };
 
 }  // namespace notifier

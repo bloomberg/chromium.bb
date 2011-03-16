@@ -243,9 +243,9 @@ class HandshakeTask(object):
   # The id attribute is filled in later.
   _IQ_RESPONSE_STANZA = ParseXml('<iq id="" type="result"/>')
 
-  def __init__(self, connection, id_generator, resource_prefix):
+  def __init__(self, connection, resource_prefix):
     self._connection = connection
-    self._id_generator = id_generator
+    self._id_generator = IdGenerator(resource_prefix)
     self._username = ''
     self._domain = ''
     self._jid = None
@@ -357,18 +357,10 @@ class XmppConnection(asynchat.async_chat):
   Google notification protocol.
   """
 
-  # We use this XML template for subscription responses as well as
-  # notifications (conveniently enough, the same template works
-  # for both).
+  # Used for acknowledgements to the client.
   #
-  # The from, to, id, and type attributes are filled in later.
-  _NOTIFIER_STANZA = ParseXml(
-    """<iq from="" to="" id="" type="">
-         <not:getAll xmlns:not="google:notifier">
-           <Result xmlns=""/>
-         </not:getAll>
-       </iq>
-    """)
+  # The from and id attributes are filled in later.
+  _IQ_RESPONSE_STANZA = ParseXml('<iq from="" id="" type="result"/>')
 
   def __init__(self, sock, socket_map, delegate, addr):
     """Starts up the xmpp connection.
@@ -398,9 +390,7 @@ class XmppConnection(asynchat.async_chat):
 
     self._addr = addr
     addr_str = AddrString(self._addr)
-    self._id_generator = IdGenerator(addr_str)
-    self._handshake_task = (
-      HandshakeTask(self, self._id_generator, addr_str))
+    self._handshake_task = HandshakeTask(self, addr_str)
     print 'Starting connection to %s' % self
 
   def __str__(self):
@@ -427,8 +417,12 @@ class XmppConnection(asynchat.async_chat):
   def FeedStanza(self, stanza):
     if self._handshake_task:
       self._handshake_task.FeedStanza(stanza)
-    elif stanza.tagName == 'iq':
-      self._HandleIq(stanza)
+    elif stanza.tagName == 'iq' and stanza.getAttribute('type') == 'result':
+      # Ignore all client acks.
+      pass
+    elif (stanza.firstChild and
+          stanza.firstChild.namespaceURI == 'google:push'):
+      self._HandlePushCommand(stanza)
     else:
       raise UnexpectedXml(stanza)
 
@@ -439,36 +433,20 @@ class XmppConnection(asynchat.async_chat):
     self._delegate.OnXmppHandshakeDone(self)
     print "Handshake done for %s" % self
 
-  def _HandleIq(self, iq):
-    if (iq.firstChild and
-        iq.firstChild.namespaceURI == 'google:notifier'):
-      iq_id = iq.getAttribute('id')
-      self._HandleNotifierCommand(iq_id, iq.firstChild)
-    elif iq.getAttribute('type') == 'result':
-      # Ignore all client acks.
-      pass
-    else:
-      raise UnexpectedXml(iq)
-
-  def _HandleNotifierCommand(self, id, command_xml):
-    command = command_xml.tagName
-    if command == 'getAll':
+  def _HandlePushCommand(self, stanza):
+    if stanza.tagName == 'iq' and stanza.firstChild.tagName == 'subscribe':
       # Subscription request.
-      if not command_xml.getElementsByTagName('SubscribedServiceUrl'):
-        raise UnexpectedXml(command_xml)
-      self._SendNotifierStanza(id, 'result')
-    elif command == 'set':
+      self._SendIqResponseStanza(stanza)
+    elif stanza.tagName == 'message' and stanza.firstChild.tagName == 'push':
       # Send notification request.
-      self._delegate.SendNotification(self)
+      self._delegate.ForwardNotification(self, stanza)
     else:
       raise UnexpectedXml(command_xml)
 
-  def _SendNotifierStanza(self, id, type):
-    stanza = CloneXml(self._NOTIFIER_STANZA)
+  def _SendIqResponseStanza(self, iq):
+    stanza = CloneXml(self._IQ_RESPONSE_STANZA)
     stanza.setAttribute('from', str(self._jid.GetBareJid()))
-    stanza.setAttribute('to', str(self._jid))
-    stanza.setAttribute('id', id)
-    stanza.setAttribute('type', type)
+    stanza.setAttribute('id', iq.getAttribute('id'))
     self.SendStanza(stanza)
 
   def SendStanza(self, stanza, unlink=True):
@@ -490,10 +468,11 @@ class XmppConnection(asynchat.async_chat):
     # (some minidom library functions return unicode strings).
     self.push(data.encode('ascii'))
 
-  def SendNotification(self):
-    """Sends a notification to the client."""
-    next_id = self._id_generator.GetNextId()
-    self._SendNotifierStanza(next_id, 'set')
+  def ForwardNotification(self, notification_stanza):
+    """Forwards a notification to the client."""
+    notification_stanza.setAttribute('from', str(self._jid.GetBareJid()))
+    notification_stanza.setAttribute('to', str(self._jid))
+    self.SendStanza(notification_stanza, False)
 
 
 class XmppServer(asyncore.dispatcher):
@@ -539,7 +518,7 @@ class XmppServer(asyncore.dispatcher):
     self._connections.discard(xmpp_connection)
     self._handshake_done_connections.discard(xmpp_connection)
 
-  def SendNotification(self, unused_xmpp_connection):
+  def ForwardNotification(self, unused_xmpp_connection, notification_stanza):
     for connection in self._handshake_done_connections:
       print 'Sending notification to %s' % connection
-      connection.SendNotification()
+      connection.ForwardNotification(notification_stanza)

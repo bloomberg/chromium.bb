@@ -10,9 +10,7 @@
 #include "jingle/notifier/communicator/connection_options.h"
 #include "jingle/notifier/communicator/const_communicator.h"
 #include "jingle/notifier/communicator/xmpp_connection_generator.h"
-#include "jingle/notifier/listener/listen_task.h"
-#include "jingle/notifier/listener/send_update_task.h"
-#include "jingle/notifier/listener/subscribe_task.h"
+#include "jingle/notifier/listener/push_notifications_send_update_task.h"
 #include "net/base/cert_verifier.h"
 #include "net/base/host_port_pair.h"
 #include "net/base/host_resolver.h"
@@ -20,7 +18,8 @@
 
 namespace notifier {
 
-MediatorThreadImpl::MediatorThreadImpl(const NotifierOptions& notifier_options)
+MediatorThreadImpl::MediatorThreadImpl(
+    const NotifierOptions& notifier_options)
     : observers_(new ObserverListThreadSafe<Observer>()),
       parent_message_loop_(MessageLoop::current()),
       notifier_options_(notifier_options),
@@ -78,20 +77,23 @@ void MediatorThreadImpl::ListenForUpdates() {
   DCHECK_EQ(MessageLoop::current(), parent_message_loop_);
   worker_message_loop()->PostTask(
       FROM_HERE,
-      NewRunnableMethod(this, &MediatorThreadImpl::DoListenForUpdates));
+      NewRunnableMethod(this,
+                        &MediatorThreadImpl::ListenForPushNotifications));
 }
 
 void MediatorThreadImpl::SubscribeForUpdates(
-    const std::vector<std::string>& subscribed_services_list) {
+    const SubscriptionList& subscriptions) {
   DCHECK_EQ(MessageLoop::current(), parent_message_loop_);
   worker_message_loop()->PostTask(
       FROM_HERE,
-      NewRunnableMethod(this, &MediatorThreadImpl::DoSubscribeForUpdates,
-          subscribed_services_list));
+      NewRunnableMethod(
+          this,
+          &MediatorThreadImpl::SubscribeForPushNotifications,
+          subscriptions));
 }
 
 void MediatorThreadImpl::SendNotification(
-    const OutgoingNotificationData& data) {
+    const Notification& data) {
   DCHECK_EQ(MessageLoop::current(), parent_message_loop_);
   worker_message_loop()->PostTask(
       FROM_HERE,
@@ -170,59 +172,58 @@ void MediatorThreadImpl::DoDisconnect() {
   base_task_.reset();
 }
 
-void MediatorThreadImpl::DoSubscribeForUpdates(
-    const std::vector<std::string>& subscribed_services_list) {
+void MediatorThreadImpl::ListenForPushNotifications() {
   DCHECK_EQ(MessageLoop::current(), worker_message_loop());
-  if (!base_task_.get()) {
+  if (!base_task_.get())
     return;
-  }
-  // Owned by |base_task_|.
-  SubscribeTask* subscription =
-      new SubscribeTask(base_task_, subscribed_services_list);
-  subscription->SignalStatusUpdate.connect(
-      this,
-      &MediatorThreadImpl::OnSubscriptionStateChange);
-  subscription->Start();
-}
-
-void MediatorThreadImpl::DoListenForUpdates() {
-  DCHECK_EQ(MessageLoop::current(), worker_message_loop());
-  if (!base_task_.get()) {
-    return;
-  }
-  // Owned by |base_task_|.
-  ListenTask* listener = new ListenTask(base_task_);
-  listener->SignalUpdateAvailable.connect(
-      this,
-      &MediatorThreadImpl::OnIncomingNotification);
+  PushNotificationsListenTask* listener =
+      new PushNotificationsListenTask(base_task_, this);
   listener->Start();
 }
 
+void MediatorThreadImpl::SubscribeForPushNotifications(
+    const SubscriptionList& subscriptions) {
+  DCHECK_EQ(MessageLoop::current(), worker_message_loop());
+  if (!base_task_.get())
+    return;
+  DCHECK_EQ(MessageLoop::current(), worker_message_loop());
+  PushNotificationsSubscribeTask* subscribe_task =
+      new PushNotificationsSubscribeTask(base_task_, subscriptions, this);
+  subscribe_task->Start();
+}
+
+void MediatorThreadImpl::OnSubscribed() {
+  DCHECK_EQ(MessageLoop::current(), worker_message_loop());
+  observers_->Notify(&Observer::OnSubscriptionStateChange, true);
+}
+
+void MediatorThreadImpl::OnSubscriptionError() {
+  DCHECK_EQ(MessageLoop::current(), worker_message_loop());
+  observers_->Notify(&Observer::OnSubscriptionStateChange, false);
+}
+
+void MediatorThreadImpl::OnNotificationReceived(
+    const Notification& notification) {
+  OnIncomingNotification(notification);
+}
+
 void MediatorThreadImpl::DoSendNotification(
-    const OutgoingNotificationData& data) {
+    const Notification& data) {
   DCHECK_EQ(MessageLoop::current(), worker_message_loop());
   if (!base_task_.get()) {
     return;
   }
   // Owned by |base_task_|.
-  SendUpdateTask* task = new SendUpdateTask(base_task_, data);
-  task->SignalStatusUpdate.connect(
-      this,
-      &MediatorThreadImpl::OnOutgoingNotification);
+  PushNotificationsSendUpdateTask* task =
+      new PushNotificationsSendUpdateTask(base_task_, data);
   task->Start();
+  observers_->Notify(&Observer::OnOutgoingNotification);
 }
 
 void MediatorThreadImpl::OnIncomingNotification(
-    const IncomingNotificationData& notification_data) {
+    const Notification& notification) {
   DCHECK_EQ(MessageLoop::current(), worker_message_loop());
-  observers_->Notify(&Observer::OnIncomingNotification, notification_data);
-}
-
-void MediatorThreadImpl::OnOutgoingNotification(bool success) {
-  DCHECK_EQ(MessageLoop::current(), worker_message_loop());
-  if (success) {
-    observers_->Notify(&Observer::OnOutgoingNotification);
-  }
+  observers_->Notify(&Observer::OnIncomingNotification, notification);
 }
 
 void MediatorThreadImpl::OnConnect(base::WeakPtr<talk_base::Task> base_task) {
@@ -235,11 +236,6 @@ void MediatorThreadImpl::OnDisconnect() {
   DCHECK_EQ(MessageLoop::current(), worker_message_loop());
   base_task_.reset();
   observers_->Notify(&Observer::OnConnectionStateChange, false);
-}
-
-void MediatorThreadImpl::OnSubscriptionStateChange(bool success) {
-  DCHECK_EQ(MessageLoop::current(), worker_message_loop());
-  observers_->Notify(&Observer::OnSubscriptionStateChange, success);
 }
 
 }  // namespace notifier

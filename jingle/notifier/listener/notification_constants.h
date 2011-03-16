@@ -7,7 +7,6 @@
 
 namespace notifier {
 
-extern const char kNotifierNamespace[];
 extern const char kPushNotificationsNamespace[];
 
 }  // namespace notifier

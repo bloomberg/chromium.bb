@@ -59,7 +59,7 @@ bool TalkMediatorImpl::Logout() {
   return false;
 }
 
-bool TalkMediatorImpl::SendNotification(const OutgoingNotificationData& data) {
+bool TalkMediatorImpl::SendNotification(const Notification& data) {
   DCHECK(non_thread_safe_.CalledOnValidThread());
   if (state_.logged_in && state_.subscribed) {
     mediator_thread_->SendNotification(data);
@@ -101,13 +101,12 @@ bool TalkMediatorImpl::SetAuthToken(const std::string& email,
   return true;
 }
 
-void TalkMediatorImpl::AddSubscribedServiceUrl(
-    const std::string& service_url) {
+void TalkMediatorImpl::AddSubscription(const Subscription& subscription) {
   DCHECK(non_thread_safe_.CalledOnValidThread());
-  subscribed_services_list_.push_back(service_url);
+  subscriptions_.push_back(subscription);
   if (state_.logged_in) {
     VLOG(1) << "Resubscribing for updates, a new service got added";
-    mediator_thread_->SubscribeForUpdates(subscribed_services_list_);
+    mediator_thread_->SubscribeForUpdates(subscriptions_);
   }
 }
 
@@ -122,7 +121,7 @@ void TalkMediatorImpl::OnConnectionStateChange(bool logged_in) {
     // SubscribeForUpdates.
     mediator_thread_->ListenForUpdates();
     // Now subscribe for updates to all the services we are interested in
-    mediator_thread_->SubscribeForUpdates(subscribed_services_list_);
+    mediator_thread_->SubscribeForUpdates(subscriptions_);
   } else {
     VLOG(1) << "P2P: Logged off.";
     OnSubscriptionStateChange(false);
@@ -138,11 +137,11 @@ void TalkMediatorImpl::OnSubscriptionStateChange(bool subscribed) {
 }
 
 void TalkMediatorImpl::OnIncomingNotification(
-    const IncomingNotificationData& notification_data) {
+    const Notification& notification) {
   DCHECK(non_thread_safe_.CalledOnValidThread());
   VLOG(1) << "P2P: Updates are available on the server.";
   if (delegate_)
-    delegate_->OnIncomingNotification(notification_data);
+    delegate_->OnIncomingNotification(notification);
 }
 
 void TalkMediatorImpl::OnOutgoingNotification() {

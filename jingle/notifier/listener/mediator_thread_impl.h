@@ -33,7 +33,8 @@
 #include "jingle/notifier/base/notifier_options.h"
 #include "jingle/notifier/communicator/login.h"
 #include "jingle/notifier/listener/mediator_thread.h"
-#include "talk/base/sigslot.h"
+#include "jingle/notifier/listener/push_notifications_listen_task.h"
+#include "jingle/notifier/listener/push_notifications_subscribe_task.h"
 
 class MessageLoop;
 
@@ -52,7 +53,8 @@ namespace notifier {
 typedef Login::Delegate LoginDelegate;
 
 class MediatorThreadImpl : public MediatorThread, public LoginDelegate,
-                           public sigslot::has_slots<> {
+                           public PushNotificationsListenTaskDelegate,
+                           public PushNotificationsSubscribeTaskDelegate {
  public:
   explicit MediatorThreadImpl(const NotifierOptions& notifier_options);
   virtual ~MediatorThreadImpl();
@@ -68,13 +70,19 @@ class MediatorThreadImpl : public MediatorThread, public LoginDelegate,
   virtual void Login(const buzz::XmppClientSettings& settings);
   virtual void Logout();
   virtual void ListenForUpdates();
-  virtual void SubscribeForUpdates(
-      const std::vector<std::string>& subscribed_services_list);
-  virtual void SendNotification(const OutgoingNotificationData& data);
+  virtual void SubscribeForUpdates(const SubscriptionList& subscriptions);
+  virtual void SendNotification(const Notification& data);
 
   // Login::Delegate implementation.
   virtual void OnConnect(base::WeakPtr<talk_base::Task> base_task);
   virtual void OnDisconnect();
+
+  // PushNotificationsListenTaskDelegate implementation.
+  virtual void OnNotificationReceived(
+      const Notification& notification);
+  // PushNotificationsSubscribeTaskDelegate implementation.
+  virtual void OnSubscribed();
+  virtual void OnSubscriptionError();
 
  protected:
   // Should only be called after Start().
@@ -84,8 +92,7 @@ class MediatorThreadImpl : public MediatorThread, public LoginDelegate,
   // world.  These are all called from the worker thread. They are protected
   // so they can be used by subclasses.
   void OnIncomingNotification(
-      const IncomingNotificationData& notification_data);
-  void OnOutgoingNotification(bool success);
+      const Notification& notification);
   void OnSubscriptionStateChange(bool success);
 
   scoped_refptr<ObserverListThreadSafe<Observer> > observers_;
@@ -95,11 +102,14 @@ class MediatorThreadImpl : public MediatorThread, public LoginDelegate,
  private:
   void DoLogin(const buzz::XmppClientSettings& settings);
   void DoDisconnect();
-  void DoSubscribeForUpdates(
-      const std::vector<std::string>& subscribed_services_list);
-  void DoListenForUpdates();
+
+  // Helpers invoked on worker thread.
+  void ListenForPushNotifications();
+  void SubscribeForPushNotifications(
+      const SubscriptionList& subscriptions);
+
   void DoSendNotification(
-      const OutgoingNotificationData& data);
+      const Notification& data);
 
   const NotifierOptions notifier_options_;
 

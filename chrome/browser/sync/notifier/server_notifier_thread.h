@@ -50,21 +50,20 @@ class ServerNotifierThread
   // (i.e., notifications) are on.  Must be called only after a call
   // to ListenForUpdates().
   virtual void SubscribeForUpdates(
-      const std::vector<std::string>& subscribed_services_list);
+      const notifier::SubscriptionList& subscriptions);
 
   // Overridden to stop listening to server notifications.
   virtual void Logout();
 
-  // Must not be called.
-  virtual void SendNotification(const OutgoingNotificationData& data);
+  virtual void SendNotification(const notifier::Notification& data);
 
   // ChromeInvalidationClient::Listener implementation.
   // We pass on two pieces of information to observers through the
-  // IncomingNotificationData.
-  // - the model type being invalidated, through IncomingNotificationData's
-  //       service_url.
-  // - the invalidation payload for that model type, through
-  //       IncomingNotificationData's service_specific_data.
+  // Notification.
+  // - the model type being invalidated, through the Notification's
+  //       |channel| member.
+  // - the invalidation payload for that model type, through the
+  //       Notification's |data| member.
   virtual void OnInvalidate(syncable::ModelType model_type,
                             const std::string& payload);
   virtual void OnInvalidateAll();

@@ -20,10 +20,10 @@ namespace notifier {
 
 PushNotificationsSubscribeTask::PushNotificationsSubscribeTask(
     TaskParent* parent,
-    const std::vector<PushSubscriptionInfo>& channels_list,
+    const SubscriptionList& subscriptions,
     Delegate* delegate)
     : XmppTask(parent, buzz::XmppEngine::HL_SINGLE),
-      channels_list_(channels_list), delegate_(delegate) {
+      subscriptions_(subscriptions), delegate_(delegate) {
 }
 
 PushNotificationsSubscribeTask::~PushNotificationsSubscribeTask() {
@@ -40,7 +40,7 @@ bool PushNotificationsSubscribeTask::HandleStanza(
 int PushNotificationsSubscribeTask::ProcessStart() {
   VLOG(1) << "Push notifications: Subscription task started.";
   scoped_ptr<buzz::XmlElement> iq_stanza(
-      MakeSubscriptionMessage(channels_list_, GetClient()->jid(),
+      MakeSubscriptionMessage(subscriptions_, GetClient()->jid(),
                               task_id()));
   std::string stanza_str = XmlElementToString(*iq_stanza.get());
   VLOG(1) << "Push notifications: Subscription stanza: "
@@ -77,7 +77,7 @@ int PushNotificationsSubscribeTask::ProcessResponse() {
 }
 
 buzz::XmlElement* PushNotificationsSubscribeTask::MakeSubscriptionMessage(
-    const std::vector<PushSubscriptionInfo>& channels_list,
+    const SubscriptionList& subscriptions,
     const buzz::Jid& jid, const std::string& task_id) {
   DCHECK(jid.IsFull());
   static const buzz::QName kQnSubscribe(
@@ -95,8 +95,8 @@ buzz::XmlElement* PushNotificationsSubscribeTask::MakeSubscriptionMessage(
   buzz::XmlElement* subscribe = new buzz::XmlElement(kQnSubscribe, true);
   iq->AddElement(subscribe);
 
-  for (std::vector<PushSubscriptionInfo>::const_iterator iter =
-           channels_list.begin(); iter != channels_list.end(); ++iter) {
+  for (SubscriptionList::const_iterator iter =
+           subscriptions.begin(); iter != subscriptions.end(); ++iter) {
     buzz::XmlElement* item = new buzz::XmlElement(
         buzz::QName(kPushNotificationsNamespace, "item"));
     item->AddAttr(buzz::QName(buzz::STR_EMPTY, "channel"),

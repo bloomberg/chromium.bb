@@ -40,7 +40,7 @@ void ServerNotifierThread::ListenForUpdates() {
 }
 
 void ServerNotifierThread::SubscribeForUpdates(
-    const std::vector<std::string>& subscribed_services_list) {
+    const notifier::SubscriptionList& subscriptions) {
   DCHECK_EQ(MessageLoop::current(), parent_message_loop_);
   worker_message_loop()->PostTask(
       FROM_HERE,
@@ -81,7 +81,7 @@ void ServerNotifierThread::Logout() {
 }
 
 void ServerNotifierThread::SendNotification(
-    const OutgoingNotificationData& data) {
+    const notifier::Notification& notification) {
   DCHECK_EQ(MessageLoop::current(), parent_message_loop_);
   NOTREACHED() << "Shouldn't send notifications if ServerNotifierThread is "
                   "used";
@@ -97,10 +97,10 @@ void ServerNotifierThread::OnInvalidate(
 
   syncable::ModelTypeBitSet model_types;
   model_types[model_type] = true;
-  IncomingNotificationData notification_data;
-  notification_data.service_url = model_types.to_string();
-  notification_data.service_specific_data = payload;
-  observers_->Notify(&Observer::OnIncomingNotification, notification_data);
+  notifier::Notification notification;
+  notification.channel = model_types.to_string();
+  notification.data = payload;
+  observers_->Notify(&Observer::OnIncomingNotification, notification);
 }
 
 void ServerNotifierThread::OnInvalidateAll() {
@@ -109,10 +109,10 @@ void ServerNotifierThread::OnInvalidateAll() {
 
   syncable::ModelTypeBitSet model_types;
   model_types.set();  // InvalidateAll, so set all datatypes to true.
-  IncomingNotificationData notification_data;
-  notification_data.service_url = model_types.to_string();
-  notification_data.service_specific_data = std::string();  // No payload.
-  observers_->Notify(&Observer::OnIncomingNotification, notification_data);
+  notifier::Notification notification;
+  notification.channel = model_types.to_string();
+  notification.data = std::string();  // No payload.
+  observers_->Notify(&Observer::OnIncomingNotification, notification);
 }
 
 void ServerNotifierThread::WriteState(const std::string& state) {

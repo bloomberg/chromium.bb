@@ -66,7 +66,7 @@ void SyncNotifierImpl::OnNotificationStateChange(bool notifications_enabled) {
 }
 
 void SyncNotifierImpl::OnIncomingNotification(
-    const IncomingNotificationData& notification_data) {
+    const notifier::Notification& notification) {
   browser_sync::sessions::TypePayloadMap model_types_with_payloads;
 
   // Check if the service url is a sync URL.  An empty service URL is
@@ -75,12 +75,10 @@ void SyncNotifierImpl::OnIncomingNotification(
   if (notifier_options_.notification_method ==
       notifier::NOTIFICATION_SERVER) {
     VLOG(1) << "Sync received server notification from " <<
-        notification_data.service_url << ": " <<
-        notification_data.service_specific_data;
+        notification.channel << ": " << notification.data;
     syncable::ModelTypeBitSet model_types;
-    const std::string& model_type_list = notification_data.service_url;
-    const std::string& notification_payload =
-        notification_data.service_specific_data;
+    const std::string& model_type_list = notification.channel;
+    const std::string& notification_payload = notification.data;
 
     if (!syncable::ModelTypeBitSetFromString(model_type_list, &model_types)) {
       LOG(DFATAL) << "Could not extract model types from server data.";
@@ -90,11 +88,7 @@ void SyncNotifierImpl::OnIncomingNotification(
     model_types_with_payloads =
         browser_sync::sessions::MakeTypePayloadMapFromBitSet(model_types,
             notification_payload);
-  } else if (notification_data.service_url.empty() ||
-             (notification_data.service_url ==
-              browser_sync::kSyncLegacyServiceUrl) ||
-             (notification_data.service_url ==
-              browser_sync::kSyncServiceUrl)) {
+  } else if (notification.channel == browser_sync::kSyncNotificationChannel) {
     VLOG(1) << "Sync received P2P notification.";
 
     // Catch for sync integration tests (uses p2p). Just set all enabled
@@ -104,7 +98,7 @@ void SyncNotifierImpl::OnIncomingNotification(
             syncable::ModelTypeBitSetFromSet(enabled_types_), std::string());
   } else {
     LOG(WARNING) << "Notification fron unexpected source: "
-                 << notification_data.service_url;
+                 << notification.channel;
   }
 
   FOR_EACH_OBSERVER(SyncNotifierObserver, observer_list_,
@@ -144,7 +138,13 @@ void SyncNotifierImpl::UpdateCredentials(
         new TalkMediatorImpl(mediator_thread,
                              notifier_options_.invalidate_xmpp_login,
                              notifier_options_.allow_insecure_connection));
-    talk_mediator_->AddSubscribedServiceUrl(browser_sync::kSyncServiceUrl);
+    notifier::Subscription subscription;
+    subscription.channel = browser_sync::kSyncNotificationChannel;
+    // There may be some subtle issues around case sensitivity of the
+    // from field, but it doesn't matter too much since this is only
+    // used in p2p mode (which is only used in testing).
+    subscription.from = email;
+    talk_mediator_->AddSubscription(subscription);
     server_notifier_thread_ = NULL;
   }
   talk_mediator_->SetDelegate(this);
@@ -176,16 +176,10 @@ void SyncNotifierImpl::SendNotification() {
   }
 
   VLOG(1) << "Sending XMPP notification...";
-  OutgoingNotificationData notification_data;
-  notification_data.service_id = browser_sync::kSyncServiceId;
-  notification_data.service_url = browser_sync::kSyncServiceUrl;
-  notification_data.send_content = true;
-  notification_data.priority = browser_sync::kSyncPriority;
-  notification_data.write_to_cache_only = true;
-  notification_data.service_specific_data =
-      browser_sync::kSyncServiceSpecificData;
-  notification_data.require_subscription = true;
-  bool success = talk_mediator_->SendNotification(notification_data);
+  notifier::Notification notification;
+  notification.channel = browser_sync::kSyncNotificationChannel;
+  notification.data = browser_sync::kSyncNotificationData;
+  bool success = talk_mediator_->SendNotification(notification);
   if (success) {
     VLOG(1) << "Sent XMPP notification";
   } else {

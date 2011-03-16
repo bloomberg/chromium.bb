@@ -19,9 +19,9 @@ namespace buzz {
 class XmlElement;
 }
 
-struct IncomingNotificationData;
-
 namespace notifier {
+
+struct Notification;
 
 class PushNotificationsListenTask : public buzz::XmppTask {
  public:
@@ -29,7 +29,7 @@ class PushNotificationsListenTask : public buzz::XmppTask {
    public:
      virtual ~Delegate() {}
      virtual void OnNotificationReceived(
-        const IncomingNotificationData& notification) = 0;
+        const Notification& notification) = 0;
   };
 
   explicit PushNotificationsListenTask(Task* parent, Delegate* delegate);

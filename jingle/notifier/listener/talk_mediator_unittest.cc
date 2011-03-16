@@ -26,7 +26,7 @@ class MockTalkMediatorDelegate : public TalkMediator::Delegate {
   MOCK_METHOD1(OnNotificationStateChange,
                void(bool notification_changed));
   MOCK_METHOD1(OnIncomingNotification,
-               void(const IncomingNotificationData& data));
+               void(const Notification& data));
   MOCK_METHOD0(OnOutgoingNotification, void());
 
  private:
@@ -126,7 +126,7 @@ TEST_F(TalkMediatorImplTest, SendNotification) {
   scoped_ptr<TalkMediatorImpl> talk1(NewMockedTalkMediator(mock));
 
   // Failure due to not being logged in.
-  OutgoingNotificationData data;
+  Notification data;
   EXPECT_FALSE(talk1->SendNotification(data));
   EXPECT_EQ(0, mock->send_calls);
 
@@ -175,13 +175,13 @@ TEST_F(TalkMediatorImplTest, MediatorThreadCallbacks) {
 
   // After subscription success is receieved, the talk mediator will allow
   // sending of notifications.
-  OutgoingNotificationData outgoing_data;
+  Notification outgoing_data;
   EXPECT_TRUE(talk1->SendNotification(outgoing_data));
   EXPECT_EQ(1, mock->send_calls);
 
-  IncomingNotificationData incoming_data;
-  incoming_data.service_url = "service_url";
-  incoming_data.service_specific_data = "service_data";
+  Notification incoming_data;
+  incoming_data.channel = "service_url";
+  incoming_data.data = "service_data";
   mock->ReceiveNotification(incoming_data);
 
   // Shouldn't trigger a call to the delegate since we disconnect

@@ -110,9 +110,8 @@ class HandshakeTaskTest(unittest.TestCase):
   def DoHandshake(self, resource_prefix, resource, username,
                   initial_stream_domain, auth_domain, auth_stream_domain):
     self.data_received = 0
-    id_generator = xmppserver.IdGenerator('foo')
     handshake_task = (
-      xmppserver.HandshakeTask(self, id_generator, resource_prefix))
+      xmppserver.HandshakeTask(self, resource_prefix))
     stream_xml = xmppserver.ParseXml('<stream:stream xmlns:stream="foo"/>')
     stream_xml.setAttribute('to', initial_stream_domain)
     self.assertEqual(self.data_received, 0)
@@ -195,9 +194,9 @@ class XmppConnectionTest(unittest.TestCase):
   def OnXmppConnectionClosed(self, xmpp_connection):
     self.connections.discard(xmpp_connection)
 
-  def SendNotification(self, unused_xmpp_connection):
+  def ForwardNotification(self, unused_xmpp_connection, notification_stanza):
     for connection in self.connections:
-      connection.SendNotification()
+      connection.ForwardNotification(notification_stanza)
 
   def testBasic(self):
     socket_map = {}
@@ -212,8 +211,7 @@ class XmppConnectionTest(unittest.TestCase):
     # Test subscription request.
     self.assertEqual(len(self.data), 0)
     xmpp_connection.collect_incoming_data(
-      '<iq><getAll xmlns="google:notifier">'
-      '<SubscribedServiceUrl/></getAll></iq>')
+      '<iq><subscribe xmlns="google:push"></subscribe></iq>')
     self.assertEqual(len(self.data), 1)
 
     # Test acks.
@@ -222,7 +220,7 @@ class XmppConnectionTest(unittest.TestCase):
 
     # Test notification.
     xmpp_connection.collect_incoming_data(
-      '<iq><set xmlns="google:notifier"/></iq>')
+      '<message><push xmlns="google:push"/></message>')
     self.assertEqual(len(self.data), 2)
 
     # Test unexpected stanza.

@@ -129,7 +129,7 @@ TEST_F(ServerNotifierThreadTest, Basic) {
   server_notifier_thread.Login(buzz::XmppClientSettings());
   server_notifier_thread.SimulateConnect();
   server_notifier_thread.ListenForUpdates();
-  server_notifier_thread.SubscribeForUpdates(std::vector<std::string>());
+  server_notifier_thread.SubscribeForUpdates(notifier::SubscriptionList());
   server_notifier_thread.Logout();
 }
 
@@ -139,7 +139,7 @@ TEST_F(ServerNotifierThreadTest, DisconnectBeforeListen) {
   server_notifier_thread.Start();
   server_notifier_thread.Login(buzz::XmppClientSettings());
   server_notifier_thread.ListenForUpdates();
-  server_notifier_thread.SubscribeForUpdates(std::vector<std::string>());
+  server_notifier_thread.SubscribeForUpdates(notifier::SubscriptionList());
   server_notifier_thread.Logout();
 }
 
@@ -151,7 +151,7 @@ TEST_F(ServerNotifierThreadTest, Disconnected) {
   server_notifier_thread.SimulateConnect();
   server_notifier_thread.SimulateDisconnect();
   server_notifier_thread.ListenForUpdates();
-  server_notifier_thread.SubscribeForUpdates(std::vector<std::string>());
+  server_notifier_thread.SubscribeForUpdates(notifier::SubscriptionList());
   server_notifier_thread.Logout();
 }
 

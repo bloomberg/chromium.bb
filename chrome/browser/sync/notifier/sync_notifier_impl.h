@@ -34,7 +34,7 @@ class SyncNotifierImpl
   virtual void OnNotificationStateChange(bool notifications_enabled);
 
   virtual void OnIncomingNotification(
-    const IncomingNotificationData& notification_data);
+      const notifier::Notification& notification);
 
   virtual void OnOutgoingNotification() {}
 

@@ -19,11 +19,11 @@
 #include "chrome/browser/sync/notifier/chrome_system_resources.h"
 #include "chrome/browser/sync/sync_constants.h"
 #include "jingle/notifier/base/xmpp_connection.h"
-#include "jingle/notifier/listener/listen_task.h"
 #include "jingle/notifier/listener/notification_constants.h"
 #include "jingle/notifier/listener/notification_defines.h"
-#include "jingle/notifier/listener/send_update_task.h"
-#include "jingle/notifier/listener/subscribe_task.h"
+#include "jingle/notifier/listener/push_notifications_listen_task.h"
+#include "jingle/notifier/listener/push_notifications_send_update_task.h"
+#include "jingle/notifier/listener/push_notifications_subscribe_task.h"
 #include "jingle/notifier/listener/xml_element_util.h"
 #include "net/base/cert_verifier.h"
 #include "net/base/ssl_config_service.h"
@@ -40,6 +40,9 @@
 // This is a simple utility that logs into an XMPP server, subscribes
 // to Sync notifications, and prints out any such notifications that
 // are received.
+//
+// TODO(akalin): Rewrite this utility to use
+// sync_notifier::SyncNotifier et al.
 
 namespace {
 
@@ -104,46 +107,67 @@ class XmppNotificationClient : public notifier::XmppConnection::Delegate {
 // Delegate for legacy notifications.
 class LegacyNotifierDelegate
     : public XmppNotificationClient::Observer,
+      public notifier::PushNotificationsListenTask::Delegate,
+      public notifier::PushNotificationsSubscribeTask::Delegate,
       public sigslot::has_slots<> {
  public:
-  explicit LegacyNotifierDelegate(bool send_initial_update)
-      : send_initial_update_(send_initial_update) {}
+  LegacyNotifierDelegate(const buzz::Jid& jid, bool send_initial_update)
+      : jid_(jid), send_initial_update_(send_initial_update) {}
 
   virtual ~LegacyNotifierDelegate() {}
 
+  // XmppNotificationClient::Observer implementation.
   virtual void OnConnect(base::WeakPtr<talk_base::Task> base_task) {
     LOG(INFO) << "Logged in";
-    std::vector<std::string> subscribed_services_list;
-    subscribed_services_list.push_back(browser_sync::kSyncServiceUrl);
+    notifier::SubscriptionList subscriptions;
+    notifier::Subscription subscription;
+    subscription.channel = browser_sync::kSyncNotificationChannel;
+    subscription.from = jid_.Str();
+    subscriptions.push_back(subscription);
     // Owned by base_task.
-    notifier::SubscribeTask* subscribe_task =
-        new notifier::SubscribeTask(base_task, subscribed_services_list);
+    notifier::PushNotificationsSubscribeTask* subscribe_task =
+        new notifier::PushNotificationsSubscribeTask(
+            base_task, subscriptions, this);
     subscribe_task->Start();
     // Owned by xmpp_client.
-    notifier::ListenTask* listen_task =
-        new notifier::ListenTask(base_task);
-    listen_task->SignalUpdateAvailable.connect(
-        this, &LegacyNotifierDelegate::OnUpdateAvailable);
+    notifier::PushNotificationsListenTask* listen_task =
+        new notifier::PushNotificationsListenTask(base_task, this);
     listen_task->Start();
     if (send_initial_update_) {
+      notifier::Notification notification;
+      notification.channel = browser_sync::kSyncNotificationChannel;
+      notification.data = browser_sync::kSyncNotificationData;
       // Owned by xmpp_client.
-      notifier::SendUpdateTask* send_update_task =
-          new notifier::SendUpdateTask(base_task,
-                                       OutgoingNotificationData());
+      notifier::PushNotificationsSendUpdateTask* send_update_task =
+          new notifier::PushNotificationsSendUpdateTask(
+              base_task, notification);
       send_update_task->Start();
     }
   }
 
-  virtual void OnError() {}
+  virtual void OnError() {
+    LOG(WARNING) << "XMPP error";
+  }
 
-  void OnUpdateAvailable(
-      const IncomingNotificationData& notification_data) {
+  // notifier::PushNotificationsListenTask::Delegate implementation.
+  virtual void OnNotificationReceived(
+      const notifier::Notification& notification) {
     LOG(INFO) << "Notification received: "
-              << notification_data.service_url << " "
-              << notification_data.service_specific_data;
+              << notification.channel << " " << notification.data;
+  }
+
+  // notifier::PushNotificationsSubscribeTask::Delegate
+  // implementation.
+  virtual void OnSubscribed() {
+    LOG(INFO) << "Subscribed";
+  }
+
+  virtual void OnSubscriptionError() {
+    LOG(WARNING) << "Subscription error";
   }
 
  private:
+  buzz::Jid jid_;
   bool send_initial_update_;
 };
 
@@ -311,7 +335,7 @@ int main(int argc, char* argv[]) {
   ServerNotifierDelegate server_notifier_delegate(
       server_notifier_state);
   LegacyNotifierDelegate legacy_notifier_delegate(
-      legacy_notifier_send_initial_update);
+      jid, legacy_notifier_send_initial_update);
   std::vector<XmppNotificationClient::Observer*> observers;
   if (use_legacy_notifier) {
     observers.push_back(&legacy_notifier_delegate);

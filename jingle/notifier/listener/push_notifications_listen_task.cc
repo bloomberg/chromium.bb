@@ -56,16 +56,16 @@ int PushNotificationsListenTask::ProcessResponse() {
   const buzz::XmlElement* push_element =
       stanza->FirstNamed(buzz::QName(kPushNotificationsNamespace, "push"));
   if (push_element) {
-    IncomingNotificationData notification_data;
-    notification_data.service_url =
+    Notification notification;
+    notification.channel =
         push_element->Attr(buzz::QName(buzz::STR_EMPTY, "channel"));
     const buzz::XmlElement* data_element = push_element->FirstNamed(
         buzz::QName(kPushNotificationsNamespace, "data"));
     if (data_element) {
       base::Base64Decode(data_element->BodyText(),
-                         &notification_data.service_specific_data);
+                         &notification.data);
     }
-    delegate_->OnNotificationReceived(notification_data);
+    delegate_->OnNotificationReceived(notification);
   } else {
     LOG(WARNING) <<
         "Push notifications: No push element found in response stanza";

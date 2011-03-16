@@ -6,12 +6,8 @@
 
 namespace browser_sync {
 
-const char kSyncLegacyServiceUrl[] = "google:notifier";
-const char kSyncServiceUrl[] = "http://www.google.com/chrome/sync";
-const char kSyncLegacyServiceId[] = "notification";
-const char kSyncServiceId[] = "sync-ping";
-const int kSyncPriority = 200;
-const char kSyncServiceSpecificData[] = "sync-ping-p2p";
+const char kSyncNotificationChannel[] = "http://www.google.com/chrome/sync";
+const char kSyncNotificationData[] = "sync-ping-p2p";
 
 }  // namespace browser_sync
 

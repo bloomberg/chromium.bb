@@ -11,6 +11,7 @@
 #include <vector>
 
 #include "base/gtest_prod_util.h"
+#include "jingle/notifier/listener/notification_defines.h"
 #include "talk/xmllite/xmlelement.h"
 #include "talk/xmpp/xmpptask.h"
 
@@ -24,13 +25,8 @@ class PushNotificationsSubscribeTask : public buzz::XmppTask {
      virtual void OnSubscriptionError() = 0;
   };
 
-  struct PushSubscriptionInfo {
-    std::string channel;
-    std::string from;
-  };
-
   PushNotificationsSubscribeTask(TaskParent* parent,
-      const std::vector<PushSubscriptionInfo>& channels_list,
+      const SubscriptionList& subscriptions,
       Delegate* delegate);
   virtual ~PushNotificationsSubscribeTask();
 
@@ -42,10 +38,10 @@ class PushNotificationsSubscribeTask : public buzz::XmppTask {
  private:
   // Assembles an Xmpp stanza which can be sent to subscribe to notifications.
   static buzz::XmlElement* MakeSubscriptionMessage(
-      const std::vector<PushSubscriptionInfo>& channels_list,
+      const SubscriptionList& subscriptions,
       const buzz::Jid& jid, const std::string& task_id);
 
-  std::vector<PushSubscriptionInfo> channels_list_;
+  SubscriptionList subscriptions_;
   Delegate* delegate_;
 
   FRIEND_TEST_ALL_PREFIXES(PushNotificationsSubscribeTaskTest,

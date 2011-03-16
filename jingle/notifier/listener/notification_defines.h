@@ -6,28 +6,28 @@
 #define JINGLE_NOTIFIER_LISTENER_NOTIFICATION_DEFINES_H_
 
 #include <string>
+#include <vector>
 
-struct IncomingNotificationData {
-  std::string service_url;
-  std::string service_specific_data;
+namespace notifier {
+
+struct Subscription {
+  // The name of the channel to subscribe to; usually but not always
+  // a URL.
+  std::string channel;
+  // A sender, which could be a domain or a bare JID, from which we
+  // will accept pushes.
+  std::string from;
 };
 
-struct OutgoingNotificationData {
-  OutgoingNotificationData();
-  ~OutgoingNotificationData();
+typedef std::vector<Subscription> SubscriptionList;
 
-  // Id values
-  std::string service_url;
-  std::string service_id;
-  // This bool signifies whether the content fields should be
-  // sent with the outgoing data.
-  bool send_content;
-  // Content values.
-  std::string service_specific_data;
-  int priority;
-  bool require_subscription;
-  bool write_to_cache_only;
+struct Notification {
+  // The channel the notification is coming in on.
+  std::string channel;
+  // The notification data payload.
+  std::string data;
 };
+
+}  // namespace notifier
 
 #endif  // JINGLE_NOTIFIER_LISTENER_NOTIFICATION_DEFINES_H_
-

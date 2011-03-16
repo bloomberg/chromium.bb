@@ -167,8 +167,8 @@ class CacheInvalidationSendMessageTask : public buzz::XmppTask {
     iq->AddElement(cache_invalidation_iq_packet);
     cache_invalidation_iq_packet->SetAttr(kQnSeq, base::IntToString(seq));
     cache_invalidation_iq_packet->SetAttr(kQnSid, sid);
-    cache_invalidation_iq_packet->SetAttr(kQnServiceUrl,
-                                          browser_sync::kSyncServiceUrl);
+    cache_invalidation_iq_packet->SetAttr(
+        kQnServiceUrl, browser_sync::kSyncNotificationChannel);
     cache_invalidation_iq_packet->SetBodyText(msg);
     return iq;
   }
