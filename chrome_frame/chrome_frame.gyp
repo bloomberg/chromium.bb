@@ -53,6 +53,7 @@
       '../skia/skia.gyp:skia',
       '../third_party/npapi/npapi.gyp:npapi',
     ],
+    'defines': [ 'ISOLATION_AWARE_ENABLED=1' ],
     'include_dirs': [
       # all our own includes are relative to src/
       '..',
@@ -1020,6 +1021,10 @@
               'BaseAddress': '0x33000000',
               # Set /SUBSYSTEM:WINDOWS (for consistency).
               'SubSystem': '2',
+            },
+            'VCManifestTool': {
+              'AdditionalManifestFiles':
+                  '$(ProjectDir)\\resources\\npchrome_frame.dll.manifest',
             },
           },
         }],

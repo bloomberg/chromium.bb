@@ -28,9 +28,12 @@ ReadyPromptWindow::ReadyPromptWindow(
     : frame_(frame),
       ready_mode_state_(ready_mode_state),
       url_launcher_(url_launcher),
+      icon_(NULL),
       weak_ptr_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)) {
 }
 ReadyPromptWindow::~ReadyPromptWindow() {
+  if (icon_)
+    ::DestroyIcon(icon_);
 }
 
 base::WeakPtr<ReadyPromptWindow> ReadyPromptWindow::CreateInstance(
@@ -57,6 +60,16 @@ base::WeakPtr<ReadyPromptWindow> ReadyPromptWindow::CreateInstance(
   instance->link_->SubclassWindow(rte);
   instance->link_->SetHyperLinkExtendedStyle(HLINK_NOTIFYBUTTON,
                                              HLINK_NOTIFYBUTTON);
+
+  CStatic icon_control(instance->GetDlgItem(IDC_PROMPT_ICON));
+
+  instance->icon_ = static_cast<HICON>(
+      ::LoadImage(_AtlBaseModule.GetResourceInstance(),
+                  MAKEINTRESOURCE(IDI_CHROME_FRAME_ICON),
+                  IMAGE_ICON, 16, 16, 0));
+
+  if (instance->icon_)
+    icon_control.SetIcon(instance->icon_);
 
   return instance;
 }

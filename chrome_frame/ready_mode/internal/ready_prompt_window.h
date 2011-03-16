@@ -99,6 +99,7 @@ class ReadyPromptWindow
   scoped_ptr<WTL::CHyperLink> link_;
   scoped_ptr<UrlLauncher> url_launcher_;
 
+  HICON icon_;
   base::WeakPtrFactory<ReadyPromptWindow> weak_ptr_factory_;
   DISALLOW_COPY_AND_ASSIGN(ReadyPromptWindow);
 };  // class ReadyPromptWindow
