@@ -132,12 +132,15 @@ PP_Bool IsGraphics2D(PP_Resource resource) {
 }
 
 PP_Bool Describe(PP_Resource graphics_2d,
-              PP_Size* size,
-              PP_Bool* is_always_opaque) {
+                 PP_Size* size,
+                 PP_Bool* is_always_opaque) {
   scoped_refptr<PPB_Graphics2D_Impl> context(
       Resource::GetAs<PPB_Graphics2D_Impl>(graphics_2d));
-  if (!context)
+  if (!context) {
+    *size = PP_MakeSize(0, 0);
+    *is_always_opaque = PP_FALSE;
     return PP_FALSE;
+  }
   return context->Describe(size, is_always_opaque);
 }
 
@@ -680,4 +683,3 @@ bool PPB_Graphics2D_Impl::HasPendingFlush() const {
 
 }  // namespace ppapi
 }  // namespace webkit
-
