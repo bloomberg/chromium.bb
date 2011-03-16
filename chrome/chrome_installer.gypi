@@ -341,6 +341,9 @@
           # below into a separate lib and then link both setup.exe and
           # setup_unittests.exe against that.
           'sources': [
+            'installer/mini_installer/mini_string.cc',
+            'installer/mini_installer/mini_string.h',
+            'installer/mini_installer/mini_string_test.cc',
             'installer/setup/install_worker.cc',    # Move to lib
             'installer/setup/install_worker.h',     # Move to lib
             'installer/setup/install_worker_unittest.cc',

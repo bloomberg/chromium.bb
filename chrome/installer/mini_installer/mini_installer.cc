@@ -31,16 +31,24 @@
 #include <windows.h>
 #include <setupapi.h>
 #include <shellapi.h>
-#include <shlwapi.h>
 
 #include "chrome/installer/mini_installer/appid.h"
 #include "chrome/installer/mini_installer/mini_installer.h"
+#include "chrome/installer/mini_installer/mini_string.h"
 #include "chrome/installer/mini_installer/pe_resource.h"
+
+// arraysize borrowed from basictypes.h
+template <typename T, size_t N>
+char (&ArraySizeHelper(T (&array)[N]))[N];
+#define arraysize(array) (sizeof(ArraySizeHelper(array)))
 
 // Required linker symbol. See remarks above.
 extern "C" unsigned int __sse2_available = 0;
 
 namespace mini_installer {
+
+typedef StackString<MAX_PATH> PathString;
+typedef StackString<MAX_PATH * 4> CommandString;
 
 // This structure passes data back and forth for the processing
 // of resource callbacks.
@@ -48,13 +56,9 @@ struct Context {
   // Input to the call back method. Specifies the dir to save resources.
   const wchar_t* base_path;
   // First output from call back method. Full path of Chrome archive.
-  wchar_t* chrome_resource_path;
-  // Size of chrome_resource_path buffer
-  size_t chrome_resource_path_size;
+  PathString* chrome_resource_path;
   // Second output from call back method. Full path of Setup archive/exe.
-  wchar_t* setup_resource_path;
-  // Size of setup_resource_path buffer
-  size_t setup_resource_path_size;
+  PathString* setup_resource_path;
 };
 
 // A helper class used to manipulate the Windows registry.  Typically, members
@@ -134,97 +138,6 @@ void RegKey::Close() {
   }
 }
 
-// Returns true if the given two ASCII characters are same (ignoring case).
-bool EqualASCIICharI(wchar_t a, wchar_t b) {
-  if (a >= L'A' && a <= L'Z')
-    a = a + (L'a' - L'A');
-  if (b >= L'A' && b <= L'Z')
-    b = b + (L'a' - L'A');
-  return (a == b);
-}
-
-// Takes the path to file and returns a pointer to the filename component. For
-// exmaple for input of c:\full\path\to\file.ext it returns pointer to file.ext.
-// It returns NULL if extension or path separator is not found.
-wchar_t* GetNameFromPathExt(wchar_t* path, size_t size) {
-  if (size <= 1)
-    return NULL;
-
-  wchar_t* current = &path[size - 1];
-  while (current != path && L'\\' != *current)
-    --current;
-
-  return (current == path) ? NULL : (current + 1);
-}
-
-
-// Simple replacement for CRT string copy method that does not overflow.
-// Returns true if the source was copied successfully otherwise returns false.
-// Parameter src is assumed to be NULL terminated and the NULL character is
-// copied over to string dest.
-bool SafeStrCopy(wchar_t* dest, size_t dest_size, const wchar_t* src) {
-  for (size_t length = 0; length < dest_size; ++dest, ++src, ++length) {
-    *dest = *src;
-    if (L'\0' == *src)
-      return true;
-  }
-  return false;
-}
-
-// Safer replacement for lstrcat function.
-bool SafeStrCat(wchar_t* dest, size_t dest_size, const wchar_t* src) {
-  int str_len = ::lstrlen(dest);
-  return SafeStrCopy(dest + str_len, dest_size - str_len, src);
-}
-
-// Function to check if a string (specified by str) ends with another string
-// (specified by end_str).
-bool StrEndsWith(const wchar_t* str, const wchar_t* end_str) {
-  if (str == NULL || end_str == NULL)
-    return false;
-
-  for (int i = lstrlen(str) - 1, j = lstrlen(end_str) - 1; j >= 0; --i, --j) {
-    if (i < 0 || !EqualASCIICharI(str[i], end_str[j]))
-      return false;
-  }
-
-  return true;
-}
-
-// Function to check if a string (specified by str) starts with another string
-// (specified by start_str).
-bool StrStartsWith(const wchar_t* str, const wchar_t* start_str) {
-  if (str == NULL || start_str == NULL)
-    return false;
-
-  for (int i = 0; start_str[i] != L'\0'; ++i) {
-    if (!EqualASCIICharI(str[i], start_str[i]))
-      return false;
-  }
-
-  return true;
-}
-
-// Searches for |tag| within |str|.  Returns true if |tag| is found and is
-// immediately followed by '-' or is at the end of the string.  If |position|
-// is non-NULL, the location of the tag is returned in |*position| on success.
-bool FindTagInStr(const wchar_t* str,
-                  const wchar_t* tag,
-                  const wchar_t** position) {
-  int tag_length = ::lstrlen(tag);
-  const wchar_t* scan = str;
-  for (const wchar_t* tag_start = StrStrI(scan, tag); tag_start != NULL;
-       tag_start = StrStrI(scan, tag)) {
-    scan = tag_start + tag_length;
-    if (*scan == L'-' || *scan == L'\0') {
-      if (position != NULL)
-        *position = tag_start;
-      return true;
-    }
-  }
-  return false;
-}
-
 // Helper function to read a value from registry. Returns true if value
 // is read successfully and stored in parameter value. Returns false otherwise.
 // |size| is measured in wchar_t units.
@@ -243,12 +156,10 @@ bool ReadValueFromRegistry(HKEY root_key, const wchar_t *sub_key,
 // Opens the Google Update ClientState key for a product.
 bool OpenClientStateKey(HKEY root_key, const wchar_t* app_guid, REGSAM access,
                         RegKey* key) {
-  wchar_t client_state_key[128];
-
-  return SafeStrCopy(client_state_key, _countof(client_state_key),
-                     kApRegistryKeyBase) &&
-         SafeStrCat(client_state_key, _countof(client_state_key), app_guid) &&
-         (key->Open(root_key, client_state_key, access) == ERROR_SUCCESS);
+  PathString client_state_key;
+  return client_state_key.assign(kApRegistryKeyBase) &&
+         client_state_key.append(app_guid) &&
+         (key->Open(root_key, client_state_key.get(), access) == ERROR_SUCCESS);
 }
 
 // TODO(grt): Write a unit test for this that uses registry virtualization.
@@ -258,7 +169,7 @@ void SetInstallerFlagsHelper(int args_num, const wchar_t* const* args) {
   const REGSAM key_access = KEY_QUERY_VALUE | KEY_SET_VALUE;
   const wchar_t* app_guid = google_update::kAppGuid;
   HKEY root_key = HKEY_CURRENT_USER;
-  wchar_t value[128];
+  StackString<128> value;
   LONG ret;
 
   for (int i = 1; i < args_num; ++i) {
@@ -287,10 +198,10 @@ void SetInstallerFlagsHelper(int args_num, const wchar_t* const* args) {
   if (multi_install) {
     if (OpenClientStateKey(root_key, app_guid, key_access, &key)) {
       // The app is installed.  See if it's a single-install.
-      ret = key.ReadValue(kApRegistryValueName, value, _countof(value));
+      ret = key.ReadValue(kApRegistryValueName, value.get(), value.capacity());
       if (ret != ERROR_FILE_NOT_FOUND &&
           (ret != ERROR_SUCCESS ||
-           FindTagInStr(value, kMultiInstallTag, NULL))) {
+           FindTagInStr(value.get(), kMultiInstallTag, NULL))) {
         // Error or case 2: modify the multi-installer's value.
         key.Close();
         app_guid = google_update::kMultiInstallAppGuid;
@@ -306,7 +217,8 @@ void SetInstallerFlagsHelper(int args_num, const wchar_t* const* args) {
     if (!OpenClientStateKey(root_key, app_guid, key_access, &key))
       return;
 
-    ret = key.ReadValue(kApRegistryValueName, value, _countof(value));
+    value.clear();
+    ret = key.ReadValue(kApRegistryValueName, value.get(), value.capacity());
   }
 
   // The conditions below are handling two cases:
@@ -316,24 +228,25 @@ void SetInstallerFlagsHelper(int args_num, const wchar_t* const* args) {
   //    tags.
   if ((ret == ERROR_SUCCESS) || (ret == ERROR_FILE_NOT_FOUND)) {
     if (ret == ERROR_FILE_NOT_FOUND)
-      value[0] = L'\0';
+      value.clear();
 
     bool success = true;
 
     if (multi_install &&
-        !FindTagInStr(value, kMultifailInstallerSuffix, NULL)) {
+        !FindTagInStr(value.get(), kMultifailInstallerSuffix, NULL)) {
       // We want -multifail to immediately precede -full.  Chop off the latter
       // if it's already present so that we can simply do two appends.
-      if (StrEndsWith(value, kFullInstallerSuffix)) {
-        int suffix_len = ::lstrlen(kFullInstallerSuffix);
-        int value_len = ::lstrlen(value);
-        value[value_len - suffix_len] = L'\0';
+      if (StrEndsWith(value.get(), kFullInstallerSuffix)) {
+        size_t suffix_len = (arraysize(kFullInstallerSuffix) - 1);
+        size_t value_len = value.length();
+        value.truncate_at(value_len - suffix_len);
       }
-      success = SafeStrCat(value, _countof(value), kMultifailInstallerSuffix);
+      success = value.append(kMultifailInstallerSuffix);
     }
-    if (success && !StrEndsWith(value, kFullInstallerSuffix) &&
-        (SafeStrCat(value, _countof(value), kFullInstallerSuffix)))
-      key.WriteValue(kApRegistryValueName, value);
+    if (success && !StrEndsWith(value.get(), kFullInstallerSuffix) &&
+        (value.append(kFullInstallerSuffix))) {
+      key.WriteValue(kApRegistryValueName, value.get());
+    }
   }
 }
 
@@ -355,7 +268,7 @@ void SetInstallerFlags() {
 // Gets the setup.exe path from Registry by looking the value of Uninstall
 // string, strips the arguments for uninstall and returns only the full path
 // to setup.exe.  |size| is measured in wchar_t units.
-bool GetSetupExePathFromRegistry(wchar_t *path, size_t size) {
+bool GetSetupExePathFromRegistry(wchar_t* path, size_t size) {
   if (!ReadValueFromRegistry(HKEY_CURRENT_USER, kUninstallRegistryKey,
       kUninstallRegistryValueName, path, size)) {
     if (!ReadValueFromRegistry(HKEY_LOCAL_MACHINE, kUninstallRegistryKey,
@@ -363,7 +276,7 @@ bool GetSetupExePathFromRegistry(wchar_t *path, size_t size) {
       return false;
     }
   }
-  wchar_t *tmp = StrStr(path, L" --");
+  wchar_t* tmp = const_cast<wchar_t*>(SearchStringI(path, L" --"));
   if (tmp) {
     *tmp = L'\0';
   } else {
@@ -373,7 +286,6 @@ bool GetSetupExePathFromRegistry(wchar_t *path, size_t size) {
   return true;
 }
 
-
 // Calls CreateProcess with good default parameters and waits for the process
 // to terminate returning the process exit code.
 bool RunProcessAndWait(const wchar_t* exe_path, wchar_t* cmdline,
@@ -381,21 +293,25 @@ bool RunProcessAndWait(const wchar_t* exe_path, wchar_t* cmdline,
   STARTUPINFOW si = {sizeof(si)};
   PROCESS_INFORMATION pi = {0};
   if (!::CreateProcess(exe_path, cmdline, NULL, NULL, FALSE, CREATE_NO_WINDOW,
-                        NULL, NULL, &si, &pi))
-      return false;
-
-  DWORD wr = ::WaitForSingleObject(pi.hProcess, INFINITE);
-  if (WAIT_OBJECT_0 != wr)
+                       NULL, NULL, &si, &pi)) {
     return false;
+  }
+
+  ::CloseHandle(pi.hThread);
 
   bool ret = true;
-  if (exit_code) {
+  DWORD wr = ::WaitForSingleObject(pi.hProcess, INFINITE);
+  if (WAIT_OBJECT_0 != wr) {
+    ret = false;
+  } else if (exit_code) {
     if (!::GetExitCodeProcess(pi.hProcess,
-                              reinterpret_cast<DWORD*>(exit_code)))
+                              reinterpret_cast<DWORD*>(exit_code))) {
       ret = false;
+    }
   }
+
   ::CloseHandle(pi.hProcess);
-  ::CloseHandle(pi.hThread);
+
   return ret;
 }
 
@@ -406,9 +322,9 @@ bool RunProcessAndWait(const wchar_t* exe_path, wchar_t* cmdline,
 // other name is treated as an error.
 BOOL CALLBACK OnResourceFound(HMODULE module, const wchar_t* type,
                               wchar_t* name, LONG_PTR context) {
-  if (NULL == context) {
+  if (NULL == context)
     return FALSE;
-  }
+
   Context* ctx = reinterpret_cast<Context*>(context);
 
   PEResource resource(name, type, module);
@@ -418,22 +334,20 @@ BOOL CALLBACK OnResourceFound(HMODULE module, const wchar_t* type,
     return FALSE;
   }
 
-  wchar_t full_path[MAX_PATH];
-  if (!SafeStrCopy(full_path, _countof(full_path), ctx->base_path) ||
-      !SafeStrCat(full_path, _countof(full_path), name) ||
-      !resource.WriteToDisk(full_path))
+  PathString full_path;
+  if (!full_path.assign(ctx->base_path) ||
+      !full_path.append(name) ||
+      !resource.WriteToDisk(full_path.get()))
     return FALSE;
 
   if (StrStartsWith(name, kChromePrefix)) {
-    if (!SafeStrCopy(ctx->chrome_resource_path,
-                     ctx->chrome_resource_path_size, full_path))
+    if (!ctx->chrome_resource_path->assign(full_path.get()))
       return FALSE;
   } else if (StrStartsWith(name, kSetupPrefix)) {
-    if (!SafeStrCopy(ctx->setup_resource_path,
-                     ctx->setup_resource_path_size, full_path))
+    if (!ctx->setup_resource_path->assign(full_path.get()))
       return FALSE;
   } else {
-    // Resources should either start with 'chrome' or 'setup'. We dont handle
+    // Resources should either start with 'chrome' or 'setup'. We don't handle
     // anything else.
     return FALSE;
   }
@@ -449,108 +363,121 @@ BOOL CALLBACK OnResourceFound(HMODULE module, const wchar_t* type,
 // - Resource type 'BN', uncompressed (*.exe)
 // If setup.exe is present in more than one form, the precedence order is
 // BN < BL < B7
+// For more details see chrome/tools/build/win/create_installer_archive.py.
 bool UnpackBinaryResources(HMODULE module, const wchar_t* base_path,
-                           wchar_t* archive_path, size_t archive_path_size,
-                           wchar_t* setup_path, size_t setup_path_size) {
-  // Prepare the input to OnResourceFound method that needs a location where
-  // it will write all the resources.
-  Context context = {base_path, archive_path, archive_path_size,
-                                setup_path, setup_path_size};
-
-  // Get the resources of type 'B7'.
-  // We need a chrome archive to do the installation. So if there
-  // is a problem in fetching B7 resource, just return error.
-  if ((!::EnumResourceNames(module, kLZMAResourceType, OnResourceFound,
-                            LONG_PTR(&context))) ||
-      (::lstrlen(archive_path) <= 0))
+                           PathString* archive_path, PathString* setup_path) {
+  // Generate the setup.exe path where we patch/uncompress setup resource.
+  PathString setup_dest_path;
+  if (!setup_dest_path.assign(base_path) ||
+      !setup_dest_path.append(kSetupName))
     return false;
 
-  // Generate the setup.exe path where we patch/uncompress setup resource.
-  wchar_t setup_dest_path[MAX_PATH] = {0};
-  if (!SafeStrCopy(setup_dest_path, _countof(setup_dest_path),
-                   context.base_path) ||
-      !SafeStrCat(setup_dest_path, _countof(setup_dest_path), kSetupName))
+  // Prepare the input to OnResourceFound method that needs a location where
+  // it will write all the resources.
+  Context context = {
+    base_path,
+    archive_path,
+    setup_path,
+  };
+
+  // Get the resources of type 'B7' (7zip archive).
+  // We need a chrome archive to do the installation. So if there
+  // is a problem in fetching B7 resource, just return an error.
+  if (!::EnumResourceNames(module, kLZMAResourceType, OnResourceFound,
+                           reinterpret_cast<LONG_PTR>(&context)) ||
+      archive_path->length() == 0)
     return false;
 
   // If we found setup 'B7' resource, handle it.
-  if (::lstrlen(setup_path) > 0) {
-    wchar_t cmd_line[MAX_PATH * 3] = {0};
+  if (setup_path->length() > 0) {
+    CommandString cmd_line;
     // Get the path to setup.exe first.
-    if (!GetSetupExePathFromRegistry(cmd_line, _countof(cmd_line)))
-      return false;
-
-    if (!SafeStrCat(cmd_line, _countof(cmd_line), kCmdUpdateSetupExe) ||
-        !SafeStrCat(cmd_line, _countof(cmd_line), L"=\"") ||
-        !SafeStrCat(cmd_line, _countof(cmd_line), setup_path) ||
-        !SafeStrCat(cmd_line, _countof(cmd_line), L"\"") ||
-        !SafeStrCat(cmd_line, _countof(cmd_line), kCmdNewSetupExe) ||
-        !SafeStrCat(cmd_line, _countof(cmd_line), L"=\"") ||
-        !SafeStrCat(cmd_line, _countof(cmd_line), setup_dest_path) ||
-        !SafeStrCat(cmd_line, _countof(cmd_line), L"\""))
-      return false;
+    bool success = true;
+    if (!GetSetupExePathFromRegistry(cmd_line.get(), cmd_line.capacity()) ||
+        !cmd_line.append(kCmdUpdateSetupExe) ||
+        !cmd_line.append(L"=\"") ||
+        !cmd_line.append(setup_path->get()) ||
+        !cmd_line.append(L"\"") ||
+        !cmd_line.append(kCmdNewSetupExe) ||
+        !cmd_line.append(L"=\"") ||
+        !cmd_line.append(setup_dest_path.get()) ||
+        !cmd_line.append(L"\"")) {
+      success = false;
+    }
 
     int exit_code = 0;
-    if (!RunProcessAndWait(NULL, cmd_line, &exit_code) ||
-        (exit_code != 0))
-      return false;
+    if (success &&
+        (!RunProcessAndWait(NULL, cmd_line.get(), &exit_code) ||
+         exit_code != ERROR_SUCCESS)) {
+      success = false;
+    }
 
-    if (!SafeStrCopy(setup_path, setup_path_size, setup_dest_path))
-      return false;
+    if (!success)
+      DeleteFile(setup_path->get());
 
-    return true;
+    return success && setup_path->assign(setup_dest_path.get());
   }
 
   // setup.exe wasn't sent as 'B7', lets see if it was sent as 'BL'
-  if ((!::EnumResourceNames(module, kLZCResourceType, OnResourceFound,
-                            LONG_PTR(&context))) &&
-      (::GetLastError() != ERROR_RESOURCE_TYPE_NOT_FOUND))
+  // (compressed setup).
+  if (!::EnumResourceNames(module, kLZCResourceType, OnResourceFound,
+                           reinterpret_cast<LONG_PTR>(&context)) &&
+      ::GetLastError() != ERROR_RESOURCE_TYPE_NOT_FOUND)
     return false;
 
-  if (::lstrlen(setup_path) > 0) {
+  if (setup_path->length() > 0) {
     // Uncompress LZ compressed resource. Setup is packed with 'MSCF'
     // as opposed to old DOS way of 'SZDD'. Hence use SetupInstallFile
     // instead of LZCopy.
     // Note that the API will automatically delete the original file
     // if the extraction was successful.
-    if (!SetupInstallFile(NULL, NULL, setup_path, NULL, setup_dest_path,
+    // TODO(tommi): Use the cabinet API directly.
+    if (!SetupInstallFile(NULL, NULL, setup_path->get(), NULL,
+                          setup_dest_path.get(),
                           SP_COPY_DELETESOURCE | SP_COPY_SOURCE_ABSOLUTE,
-                          NULL, NULL))
+                          NULL, NULL)) {
+      DeleteFile(setup_path->get());
       return false;
+    }
 
-    if (!SafeStrCopy(setup_path, setup_path_size, setup_dest_path))
-      return false;
-
-    return true;
+    return setup_path->assign(setup_dest_path.get());
   }
 
-  // setup.exe still not found. So finally check is it was sent as 'BN'
-  if ((!::EnumResourceNames(module, kBinResourceType, OnResourceFound,
-                            LONG_PTR(&context))) &&
-      (::GetLastError() != ERROR_RESOURCE_TYPE_NOT_FOUND))
+  // setup.exe still not found. So finally check if it was sent as 'BN'
+  // (uncompressed setup).
+  // TODO(tommi): We don't need BN anymore so let's remove it (and remove
+  // it from create_installer_archive.py).
+  if (!::EnumResourceNames(module, kBinResourceType, OnResourceFound,
+                           reinterpret_cast<LONG_PTR>(&context)) &&
+      ::GetLastError() != ERROR_RESOURCE_TYPE_NOT_FOUND)
     return false;
 
-  if (::lstrlen(setup_path) > 0) {
-    if (!::lstrcmpi(setup_path, setup_dest_path)) {
-      ::CopyFile(setup_path, setup_dest_path, false);
-      if (!SafeStrCopy(setup_path, setup_path_size, setup_dest_path))
-        return false;
+  if (setup_path->length() > 0) {
+    if (setup_path->comparei(setup_dest_path.get()) != 0) {
+      if (!::MoveFileEx(setup_path->get(), setup_dest_path.get(),
+                        MOVEFILE_COPY_ALLOWED | MOVEFILE_REPLACE_EXISTING)) {
+        ::DeleteFile(setup_path->get());
+        setup_path->clear();
+      } else if (!setup_path->assign(setup_dest_path.get())) {
+        ::DeleteFile(setup_dest_path.get());
+      }
     }
-    return true;
   }
 
-  return true;
+  return setup_path->length() > 0;
 }
 
 // Append any command line params passed to mini_installer to the given buffer
 // so that they can be passed on to setup.exe. We do not return any error from
 // this method and simply skip making any changes in case of error.
-void AppendCommandLineFlags(wchar_t* buffer, int size) {
-  wchar_t full_exe_path[MAX_PATH];
-  int len = ::GetModuleFileName(NULL, full_exe_path, _countof(full_exe_path));
-  if (len <= 0 || len >= _countof(full_exe_path))
+void AppendCommandLineFlags(CommandString* buffer) {
+  PathString full_exe_path;
+  size_t len = ::GetModuleFileName(NULL, full_exe_path.get(),
+                                   full_exe_path.capacity());
+  if (!len || len >= full_exe_path.capacity())
     return;
 
-  wchar_t* exe_name = GetNameFromPathExt(full_exe_path, len);
+  const wchar_t* exe_name = GetNameFromPathExt(full_exe_path.get(), len);
   if (exe_name == NULL)
     return;
 
@@ -560,19 +487,18 @@ void AppendCommandLineFlags(wchar_t* buffer, int size) {
   if (args_num <= 0)
     return;
 
-  wchar_t* cmd_to_append = L"";
+  const wchar_t* cmd_to_append = L"";
   if (!StrEndsWith(args[0], exe_name)) {
     // Current executable name not in the command line so just append
     // the whole command line.
     cmd_to_append = cmd_line;
   } else if (args_num > 1) {
-    wchar_t* tmp = StrStr(cmd_line, exe_name);
-    tmp = StrStr(tmp, L" ");
+    const wchar_t* tmp = SearchStringI(cmd_line, exe_name);
+    tmp = SearchStringI(tmp, L" ");
     cmd_to_append = tmp;
   }
 
-  if (size > ::lstrlen(cmd_to_append))
-    ::lstrcat(buffer, cmd_to_append);
+  buffer->append(cmd_to_append);
 
   LocalFree(args);
 }
@@ -583,30 +509,31 @@ bool RunSetup(const wchar_t* archive_path, const wchar_t* setup_path,
   // There could be three full paths in the command line for setup.exe (path
   // to exe itself, path to archive and path to log file), so we declare
   // total size as three + one additional to hold command line options.
-  wchar_t cmd_line[MAX_PATH * 4];
+  CommandString cmd_line;
 
   // Get the path to setup.exe first.
   if (::lstrlen(setup_path) > 0) {
-    if (!SafeStrCopy(cmd_line, _countof(cmd_line), L"\"") ||
-        !SafeStrCat(cmd_line, _countof(cmd_line), setup_path) ||
-        !SafeStrCat(cmd_line, _countof(cmd_line), L"\""))
+    if (!cmd_line.assign(L"\"") ||
+        !cmd_line.append(setup_path) ||
+        !cmd_line.append(L"\""))
       return false;
-  } else if (!GetSetupExePathFromRegistry(cmd_line, _countof(cmd_line))) {
+  } else if (!GetSetupExePathFromRegistry(cmd_line.get(),
+                                          cmd_line.capacity())) {
     return false;
   }
 
   // Append the command line param for chrome archive file
-  if (!SafeStrCat(cmd_line, _countof(cmd_line), kCmdInstallArchive) ||
-      !SafeStrCat(cmd_line, _countof(cmd_line), L"=\"") ||
-      !SafeStrCat(cmd_line, _countof(cmd_line), archive_path) ||
-      !SafeStrCat(cmd_line, _countof(cmd_line), L"\""))
+  if (!cmd_line.append(kCmdInstallArchive) ||
+      !cmd_line.append(L"=\"") ||
+      !cmd_line.append(archive_path) ||
+      !cmd_line.append(L"\""))
     return false;
 
   // Get any command line option specified for mini_installer and pass them
   // on to setup.exe
-  AppendCommandLineFlags(cmd_line, _countof(cmd_line) - lstrlen(cmd_line));
+  AppendCommandLineFlags(&cmd_line);
 
-  return (RunProcessAndWait(NULL, cmd_line, exit_code));
+  return RunProcessAndWait(NULL, cmd_line.get(), exit_code);
 }
 
 // Deletes given files and working dir.
@@ -621,52 +548,245 @@ void DeleteExtractedFiles(const wchar_t* base_path,
 
 // Creates a temporary directory under |base_path| and returns the full path
 // of created directory in |work_dir|. If successful return true, otherwise
-// false.
-bool CreateWorkDir(const wchar_t* base_path, wchar_t* work_dir) {
-  wchar_t temp_name[MAX_PATH];
-  if (!GetTempFileName(base_path, kTempPrefix, 0, temp_name))
-    return false;  // Didn't get any temp name to use. Return error.
+// false.  When successful, the returned |work_dir| will always have a trailing
+// backslash and this function requires that |base_path| always includes a
+// trailing backslash as well.
+// We do not use GetTempFileName here to avoid running into AV software that
+// might hold on to the temp file as soon as we create it and then we can't
+// delete it and create a directory in its place.  So, we use our own mechanism
+// for creating a directory with a hopefully-unique name.  In the case of a
+// collision, we retry a few times with a new name before failing.
+bool CreateWorkDir(const wchar_t* base_path, PathString* work_dir) {
+  if (!work_dir->assign(base_path) || !work_dir->append(kTempPrefix))
+    return false;
 
-  DWORD len = GetLongPathName(temp_name, work_dir, _countof(temp_name));
-  if (len >= _countof(temp_name) || len <= 0)
-    return false;  // Couldn't get full path to temp dir. Return error.
+  // Store the location where we'll append the id.
+  size_t end = work_dir->length();
 
-  // GetTempFileName creates the file as well so delete it before creating
-  // the directory in its place.
-  if (!::DeleteFile(work_dir) || !::CreateDirectory(work_dir, NULL))
-    return false;  // What's the use of temp dir if we can not create it?
-  ::lstrcat(work_dir, L"\\");
+  // Check if we'll have enough buffer space to continue.
+  // The name of the directory will use up 11 chars and then we need to append
+  // the trailing backslash and a terminator.  We've already added the prefix
+  // to the buffer, so let's just make sure we've got enough space for the rest.
+  if ((work_dir->capacity() - end) < (arraysize("fffff.tmp") + 1))
+    return false;
 
-  return true;
+  // Generate a unique id.  We only use the lowest 20 bits, so take the top
+  // 12 bits and xor them with the lower bits.
+  DWORD id = ::GetTickCount();
+  id ^= (id >> 12);
+
+  int max_attempts = 10;
+  while (max_attempts--) {
+    // This converts 'id' to a string in the format "78563412" on windows
+    // because of little endianness, but we don't care since it's just
+    // a name.
+    if (!HexEncode(&id, sizeof(id), work_dir->get() + end,
+                   work_dir->capacity() - end)) {
+      return false;
+    }
+
+    // We only want the first 5 digits to remain within the 8.3 file name
+    // format (compliant with previous implementation).
+    work_dir->truncate_at(end + 5);
+
+    // for consistency with the previous implementation which relied on
+    // GetTempFileName, we append the .tmp extension.
+    work_dir->append(L".tmp");
+    if (::CreateDirectory(work_dir->get(), NULL)) {
+      // Yay!  Now let's just append the backslash and we're done.
+      return work_dir->append(L"\\");
+    }
+    ++id;  // Try a different name.
+  }
+
+  return false;
 }
 
 // Creates and returns a temporary directory that can be used to extract
 // mini_installer payload.
-bool GetWorkDir(HMODULE module, wchar_t* work_dir) {
-  wchar_t base_path[MAX_PATH];
-  DWORD len = ::GetTempPath(_countof(base_path), base_path);
-  if (len >= _countof(base_path) || len <= 0 ||
-      !CreateWorkDir(base_path, work_dir)) {
-    // Problem in creating work dir under TEMP path, so try using current
-    // directory as base path.
-    len = ::GetModuleFileName(module, base_path, _countof(base_path));
-    if (len >= _countof(base_path) || len <= 0)
-      return false;  // Can't even get current directory? Return with error.
+bool GetWorkDir(HMODULE module, PathString* work_dir) {
+  PathString base_path;
+  DWORD len = ::GetTempPath(base_path.capacity(), base_path.get());
+  if (!len || len >= base_path.capacity() ||
+      !CreateWorkDir(base_path.get(), work_dir)) {
+    // Problem creating the work dir under TEMP path, so try using the
+    // current directory as the base path.
+    len = ::GetModuleFileName(module, base_path.get(), base_path.capacity());
+    if (len >= base_path.capacity() || !len)
+      return false;  // Can't even get current directory? Return an error.
 
-    wchar_t* name = GetNameFromPathExt(base_path, len);
+    wchar_t* name = GetNameFromPathExt(base_path.get(), len);
+    if (!name)
+      return false;
+
     *name = L'\0';
 
-    return CreateWorkDir(base_path, work_dir);
+    return CreateWorkDir(base_path.get(), work_dir);
   }
+  return true;
+}
+
+// Returns true for ".." and "." directories.
+bool IsCurrentOrParentDirectory(const wchar_t* dir) {
+  return dir &&
+         dir[0] == L'.' &&
+         (dir[1] == L'\0' || (dir[1] == L'.' && dir[2] == L'\0'));
+}
+
+// Best effort directory tree deletion including the directory specified
+// by |path|, which must not end in a separator.
+// The |path| argument is writable so that each recursion can use the same
+// buffer as was originally allocated for the path.  The path will be unchanged
+// upon return.
+void RecursivelyDeleteDirectory(PathString* path) {
+  // |path| will never have a trailing backslash.
+  size_t end = path->length();
+  if (!path->append(L"\\*.*"))
+    return;
+
+  WIN32_FIND_DATA find_data = {0};
+  HANDLE find = ::FindFirstFile(path->get(), &find_data);
+  if (find != INVALID_HANDLE_VALUE) {
+    do {
+      // Use the short name if available to make the most of our buffer.
+      const wchar_t* name = find_data.cAlternateFileName[0] ?
+          find_data.cAlternateFileName : find_data.cFileName;
+      if (IsCurrentOrParentDirectory(name))
+        continue;
+
+      path->truncate_at(end + 1);  // Keep the trailing backslash.
+      if (!path->append(name))
+        continue;  // Continue in spite of too long names.
+
+      if (find_data.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) {
+        RecursivelyDeleteDirectory(path);
+      } else {
+        ::DeleteFile(path->get());
+      }
+    } while (::FindNextFile(find, &find_data));
+    ::FindClose(find);
+  }
+
+  // Restore the path and delete the directory before we return.
+  path->truncate_at(end);
+  ::RemoveDirectory(path->get());
+}
+
+// Enumerates subdirectories of |parent_dir| and deletes all subdirectories
+// that match with a given |prefix|.  |parent_dir| must have a trailing
+// backslash.
+// The process is done on a best effort basis, so conceivably there might
+// still be matches left when the function returns.
+void DeleteDirectoriesWithPrefix(const wchar_t* parent_dir,
+                                 const wchar_t* prefix) {
+  // |parent_dir| is guaranteed to always have a trailing backslash.
+  PathString spec;
+  if (!spec.assign(parent_dir) || !spec.append(prefix) || !spec.append(L"*.*"))
+    return;
+
+  WIN32_FIND_DATA find_data = {0};
+  HANDLE find = ::FindFirstFileEx(spec.get(), FindExInfoStandard, &find_data,
+                                  FindExSearchLimitToDirectories, NULL, 0);
+  if (find == INVALID_HANDLE_VALUE)
+    return;
+
+  PathString path;
+  do {
+    if (find_data.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) {
+      // Use the short name if available to make the most of our buffer.
+      const wchar_t* name = find_data.cAlternateFileName[0] ?
+          find_data.cAlternateFileName : find_data.cFileName;
+      if (IsCurrentOrParentDirectory(name))
+        continue;
+      if (path.assign(parent_dir) && path.append(name))
+        RecursivelyDeleteDirectory(&path);
+    }
+  } while (::FindNextFile(find, &find_data));
+  ::FindClose(find);
+}
+
+// Attempts to free up space by deleting temp directories that previous
+// installer runs have failed to clean up.
+void DeleteOldChromeTempDirectories() {
+  static const wchar_t* const kDirectoryPrefixes[] = {
+    kTempPrefix,
+    L"chrome_"  // Previous installers created directories with this prefix
+                // and there are still some lying around.
+  };
+
+  PathString temp;
+  // GetTempPath always returns a path with a trailing backslash.
+  DWORD len = ::GetTempPath(temp.capacity(), temp.get());
+  // GetTempPath returns 0 or number of chars copied, not including the
+  // terminating '\0'.
+  if (!len || len >= temp.capacity())
+    return;
+
+  for (int i = 0; i < arraysize(kDirectoryPrefixes); ++i) {
+    DeleteDirectoriesWithPrefix(temp.get(), kDirectoryPrefixes[i]);
+  }
+}
+
+// Checks the command line for specific mini installer flags.
+// If the function returns true, the command line has been processed and all
+// required actions taken.  The installer must exit and return the returned
+// |exit_code|.
+bool ProcessMiniInstallerCommandLine(int* exit_code) {
+  bool ret = false;
+  const wchar_t* cmd_line = ::GetCommandLineW();
+  int num_args = 0;
+  wchar_t** args = ::CommandLineToArgvW(cmd_line, &num_args);
+  if (args) {
+    for (int i = 1; i < num_args && !ret; ++i) {
+      // Currently there's only one mini installer specific switch defined.
+      if (lstrcmpiW(args[i], kMiniCmdCleanup) == 0) {
+        *exit_code = 0;
+        ret = true;
+      }
+    }
+    ::LocalFree(args);
+  }
+
+  return ret;
+}
+
+// Returns true if we should delete the temp files we create (default).
+// Returns false iff the user has manually created a ChromeInstallerCleanup
+// string value in the registry under HKCU\\Software\\[Google|Chromium]
+// and set its value to "0".  That explicitly forbids the mini installer from
+// deleting these files.
+// Support for this has been publicly mentioned in troubleshooting tips so
+// we continue to support it.
+bool ShouldDeleteExtractedFiles() {
+  wchar_t value[2] = {0};
+  if (ReadValueFromRegistry(HKEY_CURRENT_USER, kCleanupRegistryKey,
+                            kCleanupRegistryValueName, value,
+                            arraysize(value)) &&
+      value[0] == L'0') {
+    return false;
+  }
+
   return true;
 }
 
 // Main function. First gets a working dir, unpacks the resources and finally
 // executes setup.exe to do the install/upgrade.
 int WMain(HMODULE module) {
+  // Always start with deleting potential leftovers from previous installations.
+  // This can make the difference between success and failure.  We've seen
+  // many installations out in the field fail due to out of disk space problems
+  // so this could buy us some space.
+  DeleteOldChromeTempDirectories();
+
+  // If the --cleanup switch was specified on the command line, then that means
+  // we should only do the cleanup and then exit.
+  int exit_code = 101;
+  if (ProcessMiniInstallerCommandLine(&exit_code))
+    return exit_code;
+
   // First get a path where we can extract payload
-  wchar_t base_path[MAX_PATH];
-  if (!GetWorkDir(module, base_path))
+  PathString base_path;
+  if (!GetWorkDir(module, &base_path))
     return 101;
 
 #if defined(GOOGLE_CHROME_BUILD)
@@ -677,28 +797,27 @@ int WMain(HMODULE module) {
   SetInstallerFlags();
 #endif
 
-  wchar_t archive_path[MAX_PATH] = {0};
-  wchar_t setup_path[MAX_PATH] = {0};
-  if (!UnpackBinaryResources(module, base_path, archive_path, MAX_PATH,
-                             setup_path, MAX_PATH))
-    return 102;
+  PathString archive_path;
+  PathString setup_path;
+  if (!UnpackBinaryResources(module, base_path.get(), &archive_path,
+                             &setup_path)) {
+    exit_code = 102;
+  } else {
+    // While unpacking the binaries, we paged in a whole bunch of memory that
+    // we don't need anymore.  Let's give it back to the pool before running
+    // setup.
+    ::SetProcessWorkingSetSize(::GetCurrentProcess(), -1, -1);
+    if (!RunSetup(archive_path.get(), setup_path.get(), &exit_code))
+      exit_code = 103;
+  }
 
-  int exit_code = 103;
-  if (!RunSetup(archive_path, setup_path, &exit_code))
-    return exit_code;
-
-  wchar_t value[2];
-  if ((!ReadValueFromRegistry(HKEY_CURRENT_USER, kCleanupRegistryKey,
-                              kCleanupRegistryValueName, value,
-                              _countof(value))) ||
-      (value[0] != L'0'))
-    DeleteExtractedFiles(base_path, archive_path, setup_path);
+  if (ShouldDeleteExtractedFiles())
+    DeleteExtractedFiles(base_path.get(), archive_path.get(), setup_path.get());
 
   return exit_code;
 }
 
 }  // namespace mini_installer
-
 
 int MainEntryPoint() {
   int result = mini_installer::WMain(::GetModuleHandle(NULL));
