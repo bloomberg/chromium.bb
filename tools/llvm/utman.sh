@@ -2342,10 +2342,8 @@ linker-install() {
    cp tools/llvm/ld_script_x8664_untrusted "${LDSCRIPTS_DIR}"
 }
 
-# the driver is a simple python script which changes its behavior
-# depending under the name it is invoked as
-# TODO(jasonwkim) [2010/08/17 09:20:24 PDT (Tuesday)]
-# This routine can be deleted once the rest of the build scripts are updated
+# The driver is a simple python script which changes its behavior
+# depending on the name it is invoked as.
 driver-install() {
   StepBanner "DRIVER" "Installing driver adaptors to ${INSTALL_DIR}"
   # TODO(robertm): move the driver to their own dir
@@ -2353,9 +2351,8 @@ driver-install() {
   mkdir -p "${INSTALL_BIN}"
   rm -f "${INSTALL_BIN}/pnacl-*"
   cp tools/llvm/driver.py "${INSTALL_BIN}"
-  # TODO(jvoung): remove incarnation bcopt in favor of opt.
   for s in gcc g++ as arm-as i686-as x86_64-as \
-           bclink bcopt opt dis ld translate illegal nop \
+           bclink opt dis ld translate illegal nop \
            ar nm ranlib ; do
     local t="pnacl-$s"
     ln -fs driver.py "${INSTALL_BIN}/$t"

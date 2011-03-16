@@ -176,7 +176,7 @@ PNACL_TRANSLATOR=$(TIME_CMD) $(PNACL_BIN)/pnacl-translate
 PNACL_TRANSLATOR_SB=$(TIME_CMD) $(PNACL_BIN)/pnacl-translate --pnacl-sb
 BC_GCC=$(PNACL_BIN)/pnacl-gcc
 BC_GPP=$(PNACL_BIN)/pnacl-g++
-BC_OPT=$(PNACL_BIN)/pnacl-bcopt -O3
+BC_OPT=$(PNACL_BIN)/pnacl-opt
 BC_MERGE=$(PNACL_BIN)/pnacl-bclink
 BC_PRELINK=$(PNACL_BIN)/pnacl-ld
 

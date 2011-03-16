@@ -802,12 +802,6 @@ def Incarnation_bclink(argv):
              output=output)
   return 0
 
-# TODO(jvoung): remove this in favor of Incarnation_opt once all dependencies
-# have been removed (e.g., from spec2k). It was the same except that one
-# of them handled Incarnation_opt also handled ".ll" files.
-def Incarnation_bcopt(argv):
-  return Incarnation_opt(argv)
-
 def Incarnation_dis(argv):
   ParseArgs(argv, GCCPatterns)
   AssertParseComplete()
@@ -829,10 +823,12 @@ def Incarnation_dis(argv):
     Log.Fatal('Unknown file type')
   return 0
 
-def Incarnation_illegal(argv):
+def Incarnation_illegal(unused_argv):
+  # unused_argv does not contain argv[0], etc, so we refer to sys.argv here.
   Log.Fatal('ILLEGAL COMMAND: ' + StringifyCommand(sys.argv))
 
-def Incarnation_nop(argv):
+def Incarnation_nop(unused_argv):
+  # unused_argv does not contain argv[0], etc, so we refer to sys.argv here.
   Log.Info('IGNORING: ' + StringifyCommand(sys.argv))
   NiceExit(0)
 
@@ -1744,7 +1740,11 @@ def MakeSelUniversalScriptForFile(filename):
   script.append('rpc AddArg s("%s") *' % basename)
   return script
 
-def MakeSelUniversalScriptForLD(ld_flags, ld_script, main_input, files, outfile):
+def MakeSelUniversalScriptForLD(ld_flags,
+                                ld_script,
+                                main_input,
+                                files,
+                                outfile):
   """ Return sel_universal script text for invoking LD.nexe with the
       given ld_flags, main_input (which is treated specially), and
       other input files. If ld_script is part of the ld_flags, it must be
