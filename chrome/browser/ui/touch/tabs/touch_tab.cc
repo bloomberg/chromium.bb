@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/touch/tabs/touch_tab.h"
 
+#include "base/logging.h"
 #include "chrome/browser/themes/browser_theme_provider.h"
 #include "grit/app_resources.h"
 #include "grit/theme_resources.h"
