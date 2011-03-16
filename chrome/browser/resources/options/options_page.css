@@ -755,6 +755,13 @@ html[os=mac] label > input[type=radio] {
   margin-top: 2px;
 }
 
+/* This will 'disable' the label associated with any input whose next sibling is
+ * the span containing the label (usually a checkbox or radio).
+ */
+label > input[disabled] ~ span {
+  color: #888;
+}
+
 .suboption {
   -webkit-margin-start: 16px;
 }
