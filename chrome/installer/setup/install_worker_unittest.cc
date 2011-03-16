@@ -561,6 +561,9 @@ TEST_F(InstallWorkerTest, GoogleUpdateWorkItemsTest) {
                            &work_item_list);
 }
 
+// The Quick Enable tests only make sense for the Google Chrome build as it
+// interacts with registry values that are specific to Google Update.
+#if defined(GOOGLE_CHROME_BUILD)
 
 // Test scenarios under which the quick-enable-cf command should not exist after
 // the run.  We're permissive in that we allow the DeleteRegKeyWorkItem even if
@@ -782,3 +785,5 @@ TEST_F(QuickEnablePresentTest, UninstallMultiChromeFrame) {
   AddQuickEnableWorkItems(*installer_state, *machine_state_, &setup_path_,
                           new_version_.get(), &work_item_list_);
 }
+
+#endif  // defined(GOOGLE_CHROME_BUILD)
