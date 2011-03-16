@@ -16,8 +16,11 @@ if env.IsRunningUnderValgrind():
 
 # glibc linker script enforces gap; test needs to be updated to use
 # custom linker script in this case.
-
 if env.Bit('nacl_glibc'):
+  Return()
+
+# The PNaCl translators are not supposed to handle incoming native code
+if env.Bit('use_sandboxed_translator'):
   Return()
 
 # ----------------------------------------------------------

@@ -5,6 +5,10 @@
 
 Import('env')
 
+# The PNaCl translators are not supposed to handle incoming native code
+if env.Bit('use_sandboxed_translator'):
+  Return()
+
 # NOTE:  because we want to compile everything to bitcode before linking
 # NOTE:  assembler source files requires special trickery, for now we
 # NOTE:  have hacked tools/llvm/llvm-fake.py
