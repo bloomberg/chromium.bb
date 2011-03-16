@@ -111,11 +111,11 @@ class WebMediaPlayerImpl : public WebKit::WebMediaPlayer,
     void AbortDataSources();
 
     // Methods for PipelineImpl -> WebMediaPlayerImpl communication.
-    void PipelineInitializationCallback();
-    void PipelineSeekCallback();
-    void PipelineEndedCallback();
-    void PipelineErrorCallback();
-    void NetworkEventCallback();
+    void PipelineInitializationCallback(media::PipelineStatus status);
+    void PipelineSeekCallback(media::PipelineStatus status);
+    void PipelineEndedCallback(media::PipelineStatus status);
+    void PipelineErrorCallback(media::PipelineStatus error);
+    void NetworkEventCallback(media::PipelineStatus status);
 
     // Returns the message loop used by the proxy.
     MessageLoop* message_loop() { return render_loop_; }
@@ -132,19 +132,20 @@ class WebMediaPlayerImpl : public WebKit::WebMediaPlayer,
     void RepaintTask();
 
     // Notify |webmediaplayer_| that initialization has finished.
-    void PipelineInitializationTask();
+    void PipelineInitializationTask(media::PipelineStatus status);
 
     // Notify |webmediaplayer_| that a seek has finished.
-    void PipelineSeekTask();
+    void PipelineSeekTask(media::PipelineStatus status);
 
     // Notify |webmediaplayer_| that the media has ended.
-    void PipelineEndedTask();
+    void PipelineEndedTask(media::PipelineStatus status);
 
-    // Notify |webmediaplayer_| that a pipeline error has been set.
-    void PipelineErrorTask();
+    // Notify |webmediaplayer_| that a pipeline error has occurred during
+    // playback.
+    void PipelineErrorTask(media::PipelineStatus error);
 
     // Notify |webmediaplayer_| that there's a network event.
-    void NetworkEventTask();
+    void NetworkEventTask(media::PipelineStatus status);
 
     // The render message loop where WebKit lives.
     MessageLoop* render_loop_;
@@ -261,15 +262,15 @@ class WebMediaPlayerImpl : public WebKit::WebMediaPlayer,
 
   void Repaint();
 
-  void OnPipelineInitialize();
+  void OnPipelineInitialize(media::PipelineStatus status);
 
-  void OnPipelineSeek();
+  void OnPipelineSeek(media::PipelineStatus status);
 
-  void OnPipelineEnded();
+  void OnPipelineEnded(media::PipelineStatus status);
 
-  void OnPipelineError();
+  void OnPipelineError(media::PipelineStatus error);
 
-  void OnNetworkEvent();
+  void OnNetworkEvent(media::PipelineStatus status);
 
  private:
   // Helpers that set the network/ready state and notifies the client if
@@ -282,7 +283,7 @@ class WebMediaPlayerImpl : public WebKit::WebMediaPlayer,
 
   // Callback executed after |pipeline_| stops which signals Destroy()
   // to continue.
-  void PipelineStoppedCallback();
+  void PipelineStoppedCallback(media::PipelineStatus status);
 
   // Getter method to |client_|.
   WebKit::WebMediaPlayerClient* GetClient();

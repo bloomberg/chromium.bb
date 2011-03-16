@@ -321,12 +321,12 @@ void SimpleDataSource::CancelTask() {
 
 void SimpleDataSource::DoneInitialization_Locked(bool success) {
   lock_.AssertAcquired();
-  media::PipelineError error = media::PIPELINE_ERROR_NETWORK;
+  media::PipelineStatus status = media::PIPELINE_ERROR_NETWORK;
   if (success) {
     state_ = INITIALIZED;
 
     UpdateHostState();
-    error = media::PIPELINE_OK;
+    status = media::PIPELINE_OK;
   } else {
     state_ = UNINITIALIZED;
     url_loader_.reset();
@@ -334,7 +334,7 @@ void SimpleDataSource::DoneInitialization_Locked(bool success) {
 
   scoped_ptr<media::PipelineStatusCallback> initialize_callback(
       initialize_callback_.release());
-  initialize_callback->Run(error);
+  initialize_callback->Run(status);
 }
 
 void SimpleDataSource::UpdateHostState() {

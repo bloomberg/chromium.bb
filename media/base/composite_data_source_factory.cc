@@ -24,7 +24,7 @@ class CompositeDataSourceFactory::BuildRequest
 
  private:
   void CallNextFactory();
-  void OnBuildDone(PipelineError error, DataSource* data_source);
+  void OnBuildDone(PipelineStatus status, DataSource* data_source);
 
   FactoryList factories_;
 };
@@ -87,22 +87,22 @@ void CompositeDataSourceFactory::BuildRequest::CallNextFactory() {
 }
 
 void CompositeDataSourceFactory::BuildRequest::OnBuildDone(
-    PipelineError error,
+    PipelineStatus status,
     DataSource* data_source) {
 
-  if (error == PIPELINE_OK) {
+  if (status == PIPELINE_OK) {
     DCHECK(data_source);
-    RequestComplete(error, data_source);
+    RequestComplete(status, data_source);
     return;
   }
 
   DCHECK(!data_source);
-  if ((error == DATASOURCE_ERROR_URL_NOT_SUPPORTED) && !factories_.empty()) {
+  if ((status == DATASOURCE_ERROR_URL_NOT_SUPPORTED) && !factories_.empty()) {
     CallNextFactory();
     return;
   }
 
-  RequestComplete(error, data_source);
+  RequestComplete(status, data_source);
 }
 
 }  // namespace media

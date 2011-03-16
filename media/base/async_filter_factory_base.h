@@ -74,17 +74,17 @@ class AsyncDataSourceFactoryBase : public DataSourceFactory {
     void Start(RequestDoneCallback* done_callback);
 
     // Derived objects call this method to indicate that the build request
-    // has completed. If the build was successful |error| should be set to
+    // has completed. If the build was successful |status| should be set to
     // PIPELINE_OK and |data_source| should contain the DataSource object
     // that was built by this request. Ownership of |data_source| is being
     // passed in this call. If an error occurs during the build process, this
-    // method should be called with |error| set to an appropriate status code
+    // method should be called with |status| set to an appropriate status code
     // and |data_source| set to NULL.
     //
     // The derived object should be in a state where it can be deleted from
     // within this call. This class as well AsyncDataSourceFactoryBase use this
     // method to cleanup state associated with this request.
-    void RequestComplete(media::PipelineError error, DataSource* data_source);
+    void RequestComplete(media::PipelineStatus status, DataSource* data_source);
 
    protected:
     // Implemented by the derived object to start the build. Called by Start().
@@ -111,7 +111,7 @@ class AsyncDataSourceFactoryBase : public DataSourceFactory {
                                       BuildCallback* callback) = 0;
 
  private:
-  void RunAndDestroyCallback(PipelineError error,
+  void RunAndDestroyCallback(PipelineStatus status,
                              BuildCallback* callback) const;
 
   typedef Callback1<BuildRequest*>::Type RequestDoneCallback;

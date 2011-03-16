@@ -52,9 +52,17 @@ Display* g_display = NULL;
 Window g_window = 0;
 bool g_running = false;
 
-void Quit(MessageLoop* message_loop) {
-  message_loop->PostTask(FROM_HERE, new MessageLoop::QuitTask());
-}
+class MessageLoopQuitter {
+ public:
+  explicit MessageLoopQuitter(MessageLoop* loop) : loop_(loop) {}
+  void Quit(media::PipelineStatus status) {
+    loop_->PostTask(FROM_HERE, new MessageLoop::QuitTask());
+    delete this;
+  }
+ private:
+  MessageLoop* loop_;
+  DISALLOW_COPY_AND_ASSIGN(MessageLoopQuitter);
+};
 
 // Initialize X11. Returns true if successful. This method creates the X11
 // window. Further initialization is done in X11VideoRenderer.
@@ -126,23 +134,20 @@ bool InitPipeline(MessageLoop* message_loop,
   else
     collection->AddAudioRenderer(new media::NullAudioRenderer());
 
-  // Create and start the pipeline.
+  // Create the pipeline and start it.
   *pipeline = new media::PipelineImpl(message_loop);
-  (*pipeline)->Start(collection.release(), filename, NULL);
+  media::PipelineStatusNotification note;
+  (*pipeline)->Start(collection.release(), filename, note.Callback());
 
   // Wait until the pipeline is fully initialized.
-  while (true) {
-    base::PlatformThread::Sleep(100);
-    if ((*pipeline)->IsInitialized())
-      break;
-    if ((*pipeline)->GetError() != media::PIPELINE_OK) {
-      std::cout << "InitPipeline: " << (*pipeline)->GetError() << std::endl;
-      (*pipeline)->Stop(NULL);
-      return false;
-    }
+  note.Wait();
+  if (note.status() != media::PIPELINE_OK) {
+    std::cout << "InitPipeline: " << note.status() << std::endl;
+    (*pipeline)->Stop(NULL);
+    return false;
   }
 
-  // And starts the playback.
+  // And start the playback.
   (*pipeline)->SetPlaybackRate(1.0f);
   return true;
 }
@@ -156,10 +161,10 @@ void PeriodicalUpdate(
     MessageLoop* message_loop,
     bool audio_only) {
   if (!g_running) {
-    // interrupt signal is received during lat time period.
+    // interrupt signal was received during last time period.
     // Quit message_loop only when pipeline is fully stopped.
-    pipeline->Stop(media::TaskToCallbackAdapter::NewCallback(
-        NewRunnableFunction(Quit, message_loop)));
+    MessageLoopQuitter* quitter = new MessageLoopQuitter(message_loop);
+    pipeline->Stop(NewCallback(quitter, &MessageLoopQuitter::Quit));
     return;
   }
 
@@ -199,8 +204,8 @@ void PeriodicalUpdate(
           if (key == XK_Escape) {
             g_running = false;
             // Quit message_loop only when pipeline is fully stopped.
-            pipeline->Stop(media::TaskToCallbackAdapter::NewCallback(
-                NewRunnableFunction(Quit, message_loop)));
+            MessageLoopQuitter* quitter = new MessageLoopQuitter(message_loop);
+            pipeline->Stop(NewCallback(quitter, &MessageLoopQuitter::Quit));
             return;
           } else if (key == XK_space) {
             if (pipeline->GetPlaybackRate() < 0.01f) // paused

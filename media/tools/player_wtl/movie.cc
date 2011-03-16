@@ -84,14 +84,13 @@ bool Movie::Open(const wchar_t* url, WtlVideoRenderer* video_renderer) {
   collection->AddVideoRenderer(video_renderer);
 
   // Create and start our pipeline.
-  pipeline_->Start(collection.release(), WideToUTF8(std::wstring(url)), NULL);
-  while (true) {
-    base::PlatformThread::Sleep(100);
-    if (pipeline_->IsInitialized())
-      break;
-    if (pipeline_->GetError() != media::PIPELINE_OK)
-      return false;
-  }
+  media::PipelineStatusNotification note;
+  pipeline_->Start(collection.release(), WideToUTF8(std::wstring(url)),
+                   note.Callback());
+  // Wait until the pipeline is fully initialized.
+  note.Wait();
+  if (note.status() != PIPELINE_OK)
+    return false;
   pipeline_->SetPlaybackRate(play_rate_);
   return true;
 }

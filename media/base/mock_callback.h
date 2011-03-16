@@ -51,19 +51,19 @@ class MockCallback : public CallbackRunner<Tuple0> {
 
 // Helper class similar to MockCallback but is used where a
 // PipelineStatusCallback is needed.
-class MockStatusCallback : public CallbackRunner<Tuple1<PipelineError> > {
+class MockStatusCallback : public CallbackRunner<Tuple1<PipelineStatus> > {
  public:
   MockStatusCallback();
   virtual ~MockStatusCallback();
 
-  MOCK_METHOD1(RunWithParams, void(const Tuple1<PipelineError>& params));
+  MOCK_METHOD1(RunWithParams, void(const Tuple1<PipelineStatus>& params));
 
   // Can be used to verify the object is destroyed.
   MOCK_METHOD0(Destructor, void());
 
   // Convenience function to set expectations for the callback to execute and
   // deleted.
-  void ExpectRunAndDelete(PipelineError error);
+  void ExpectRunAndDelete(PipelineStatus status);
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockStatusCallback);
@@ -72,7 +72,7 @@ class MockStatusCallback : public CallbackRunner<Tuple1<PipelineError> > {
 // Convenience functions that automatically create and set an expectation for
 // the callback to run.
 MockCallback* NewExpectedCallback();
-MockStatusCallback* NewExpectedStatusCallback(PipelineError error);
+MockStatusCallback* NewExpectedStatusCallback(PipelineStatus status);
 
 }  // namespace media
 

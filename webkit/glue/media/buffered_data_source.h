@@ -98,7 +98,7 @@ class BufferedDataSource : public WebDataSource {
   void DoneRead_Locked(int error);
 
   // Calls |initialize_callback_| and reset it.
-  void DoneInitialization_Locked(media::PipelineError error);
+  void DoneInitialization_Locked(media::PipelineStatus status);
 
   // Callback method for |loader_| if URL for the resource requested is using
   // HTTP protocol. This method is called when response for initial request is

@@ -28,13 +28,13 @@ MockStatusCallback::~MockStatusCallback() {
 
 // Required by GMock to allow the RunWithParams() expectation
 // in ExpectRunAndDelete() to compile.
-bool operator==(const Tuple1<PipelineError>& lhs,
-                const Tuple1<PipelineError>& rhs) {
+bool operator==(const Tuple1<PipelineStatus>& lhs,
+                const Tuple1<PipelineStatus>& rhs) {
   return lhs.a == rhs.a;
 }
 
-void MockStatusCallback::ExpectRunAndDelete(PipelineError error) {
-  EXPECT_CALL(*this, RunWithParams(Tuple1<PipelineError>(error)));
+void MockStatusCallback::ExpectRunAndDelete(PipelineStatus status) {
+  EXPECT_CALL(*this, RunWithParams(Tuple1<PipelineStatus>(status)));
   EXPECT_CALL(*this, Destructor());
 }
 
@@ -44,10 +44,10 @@ MockCallback* NewExpectedCallback() {
   return callback;
 }
 
-MockStatusCallback* NewExpectedStatusCallback(PipelineError error) {
+MockStatusCallback* NewExpectedStatusCallback(PipelineStatus status) {
   StrictMock<MockStatusCallback>* callback =
       new StrictMock<MockStatusCallback>();
-  callback->ExpectRunAndDelete(error);
+  callback->ExpectRunAndDelete(status);
   return callback;
 }
 

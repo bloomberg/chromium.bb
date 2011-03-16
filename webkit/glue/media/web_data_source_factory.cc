@@ -21,7 +21,7 @@ class WebDataSourceFactory::BuildRequest
   virtual void DoStart();
 
  private:
-  void InitDone(media::PipelineError error);
+  void InitDone(media::PipelineStatus status);
 
   scoped_refptr<WebDataSource> data_source_;
   WebDataSourceBuildObserverHack* build_observer_;
@@ -84,17 +84,18 @@ void WebDataSourceFactory::BuildRequest::DoStart() {
   data_source_->Initialize(url(), NewCallback(this, &BuildRequest::InitDone));
 }
 
-void WebDataSourceFactory::BuildRequest::InitDone(media::PipelineError error) {
+void WebDataSourceFactory::BuildRequest::InitDone(
+    media::PipelineStatus status) {
   scoped_refptr<WebDataSource> data_source;
 
-  data_source = (error == media::PIPELINE_OK) ? data_source_ : NULL;
+  data_source = (status == media::PIPELINE_OK) ? data_source_ : NULL;
   data_source_ = NULL;
 
   if (build_observer_ && data_source.get()) {
     build_observer_->Run(data_source.get());
   }
 
-  RequestComplete(error, data_source);
+  RequestComplete(status, data_source);
   // Don't do anything after this line. This object is deleted by
   // RequestComplete().
 }

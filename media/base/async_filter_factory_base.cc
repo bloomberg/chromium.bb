@@ -48,7 +48,7 @@ void AsyncDataSourceFactoryBase::Build(const std::string& url,
 }
 
 void AsyncDataSourceFactoryBase::RunAndDestroyCallback(
-    PipelineError error,
+    PipelineStatus error,
     BuildCallback* callback) const {
   DCHECK_NE(error, PIPELINE_OK);
   DCHECK(callback);
@@ -84,7 +84,7 @@ void AsyncDataSourceFactoryBase::BuildRequest::Start(
 }
 
 void AsyncDataSourceFactoryBase::BuildRequest::RequestComplete(
-    PipelineError error,
+    PipelineStatus status,
     DataSource* data_source) {
   DCHECK(callback_.get());
   DCHECK(done_callback_.get());
@@ -102,7 +102,7 @@ void AsyncDataSourceFactoryBase::BuildRequest::RequestComplete(
   //       no modifications should be made to this object after this call.
   done_callback->Run(this);
 
-  callback->Run(error, data_source);
+  callback->Run(status, data_source);
 }
 
 const std::string& AsyncDataSourceFactoryBase::BuildRequest::url() const {

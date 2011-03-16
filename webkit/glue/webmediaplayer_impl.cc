@@ -33,6 +33,7 @@
 using WebKit::WebCanvas;
 using WebKit::WebRect;
 using WebKit::WebSize;
+using media::PipelineStatus;
 
 namespace {
 
@@ -171,29 +172,31 @@ void WebMediaPlayerImpl::Proxy::Detach() {
   }
 }
 
-void WebMediaPlayerImpl::Proxy::PipelineInitializationCallback() {
-  render_loop_->PostTask(FROM_HERE, NewRunnableMethod(this,
-      &WebMediaPlayerImpl::Proxy::PipelineInitializationTask));
+void WebMediaPlayerImpl::Proxy::PipelineInitializationCallback(
+    PipelineStatus status) {
+  render_loop_->PostTask(FROM_HERE, NewRunnableMethod(
+      this, &WebMediaPlayerImpl::Proxy::PipelineInitializationTask, status));
 }
 
-void WebMediaPlayerImpl::Proxy::PipelineSeekCallback() {
-  render_loop_->PostTask(FROM_HERE, NewRunnableMethod(this,
-      &WebMediaPlayerImpl::Proxy::PipelineSeekTask));
+void WebMediaPlayerImpl::Proxy::PipelineSeekCallback(PipelineStatus status) {
+  render_loop_->PostTask(FROM_HERE, NewRunnableMethod(
+      this, &WebMediaPlayerImpl::Proxy::PipelineSeekTask, status));
 }
 
-void WebMediaPlayerImpl::Proxy::PipelineEndedCallback() {
-  render_loop_->PostTask(FROM_HERE, NewRunnableMethod(this,
-      &WebMediaPlayerImpl::Proxy::PipelineEndedTask));
+void WebMediaPlayerImpl::Proxy::PipelineEndedCallback(PipelineStatus status) {
+  render_loop_->PostTask(FROM_HERE, NewRunnableMethod(
+      this, &WebMediaPlayerImpl::Proxy::PipelineEndedTask, status));
 }
 
-void WebMediaPlayerImpl::Proxy::PipelineErrorCallback() {
-  render_loop_->PostTask(FROM_HERE, NewRunnableMethod(this,
-      &WebMediaPlayerImpl::Proxy::PipelineErrorTask));
+void WebMediaPlayerImpl::Proxy::PipelineErrorCallback(PipelineStatus error) {
+  DCHECK_NE(error, media::PIPELINE_OK);
+  render_loop_->PostTask(FROM_HERE, NewRunnableMethod(
+      this, &WebMediaPlayerImpl::Proxy::PipelineErrorTask, error));
 }
 
-void WebMediaPlayerImpl::Proxy::NetworkEventCallback() {
-  render_loop_->PostTask(FROM_HERE, NewRunnableMethod(this,
-      &WebMediaPlayerImpl::Proxy::NetworkEventTask));
+void WebMediaPlayerImpl::Proxy::NetworkEventCallback(PipelineStatus status) {
+  render_loop_->PostTask(FROM_HERE, NewRunnableMethod(
+      this, &WebMediaPlayerImpl::Proxy::NetworkEventTask, status));
 }
 
 void WebMediaPlayerImpl::Proxy::AddDataSource(WebDataSource* data_source) {
@@ -213,38 +216,39 @@ void WebMediaPlayerImpl::Proxy::RepaintTask() {
   }
 }
 
-void WebMediaPlayerImpl::Proxy::PipelineInitializationTask() {
+void WebMediaPlayerImpl::Proxy::PipelineInitializationTask(
+    PipelineStatus status) {
   DCHECK(MessageLoop::current() == render_loop_);
   if (webmediaplayer_) {
-    webmediaplayer_->OnPipelineInitialize();
+    webmediaplayer_->OnPipelineInitialize(status);
   }
 }
 
-void WebMediaPlayerImpl::Proxy::PipelineSeekTask() {
+void WebMediaPlayerImpl::Proxy::PipelineSeekTask(PipelineStatus status) {
   DCHECK(MessageLoop::current() == render_loop_);
   if (webmediaplayer_) {
-    webmediaplayer_->OnPipelineSeek();
+    webmediaplayer_->OnPipelineSeek(status);
   }
 }
 
-void WebMediaPlayerImpl::Proxy::PipelineEndedTask() {
+void WebMediaPlayerImpl::Proxy::PipelineEndedTask(PipelineStatus status) {
   DCHECK(MessageLoop::current() == render_loop_);
   if (webmediaplayer_) {
-    webmediaplayer_->OnPipelineEnded();
+    webmediaplayer_->OnPipelineEnded(status);
   }
 }
 
-void WebMediaPlayerImpl::Proxy::PipelineErrorTask() {
+void WebMediaPlayerImpl::Proxy::PipelineErrorTask(PipelineStatus error) {
   DCHECK(MessageLoop::current() == render_loop_);
   if (webmediaplayer_) {
-    webmediaplayer_->OnPipelineError();
+    webmediaplayer_->OnPipelineError(error);
   }
 }
 
-void WebMediaPlayerImpl::Proxy::NetworkEventTask() {
+void WebMediaPlayerImpl::Proxy::NetworkEventTask(PipelineStatus status) {
   DCHECK(MessageLoop::current() == render_loop_);
   if (webmediaplayer_) {
-    webmediaplayer_->OnNetworkEvent();
+    webmediaplayer_->OnNetworkEvent(status);
   }
 }
 
@@ -744,9 +748,9 @@ void WebMediaPlayerImpl::Repaint() {
   GetClient()->repaint();
 }
 
-void WebMediaPlayerImpl::OnPipelineInitialize() {
+void WebMediaPlayerImpl::OnPipelineInitialize(PipelineStatus status) {
   DCHECK(MessageLoop::current() == main_loop_);
-  if (pipeline_->GetError() == media::PIPELINE_OK) {
+  if (status == media::PIPELINE_OK) {
     // Only keep one time range starting from 0.
     WebKit::WebTimeRanges new_buffered(static_cast<size_t>(1));
     new_buffered[0].start = 0.0f;
@@ -763,7 +767,7 @@ void WebMediaPlayerImpl::OnPipelineInitialize() {
       SetNetworkState(WebKit::WebMediaPlayer::Loaded);
     }
   } else {
-    // TODO(hclam): should use pipeline_->GetError() to determine the state
+    // TODO(hclam): should use |status| to determine the state
     // properly and reports error using MediaError.
     // WebKit uses FormatError to indicate an error for bogus URL or bad file.
     // Since we are at the initialization stage we can safely treat every error
@@ -775,9 +779,9 @@ void WebMediaPlayerImpl::OnPipelineInitialize() {
   Repaint();
 }
 
-void WebMediaPlayerImpl::OnPipelineSeek() {
+void WebMediaPlayerImpl::OnPipelineSeek(PipelineStatus status) {
   DCHECK(MessageLoop::current() == main_loop_);
-  if (pipeline_->GetError() == media::PIPELINE_OK) {
+  if (status == media::PIPELINE_OK) {
     // Update our paused time.
     if (paused_) {
       paused_time_ = pipeline_->GetCurrentTime();
@@ -789,17 +793,20 @@ void WebMediaPlayerImpl::OnPipelineSeek() {
   }
 }
 
-void WebMediaPlayerImpl::OnPipelineEnded() {
+void WebMediaPlayerImpl::OnPipelineEnded(PipelineStatus status) {
   DCHECK(MessageLoop::current() == main_loop_);
-  if (pipeline_->GetError() == media::PIPELINE_OK) {
+  if (status == media::PIPELINE_OK) {
     GetClient()->timeChanged();
   }
 }
 
-void WebMediaPlayerImpl::OnPipelineError() {
+void WebMediaPlayerImpl::OnPipelineError(PipelineStatus error) {
   DCHECK(MessageLoop::current() == main_loop_);
-  switch (pipeline_->GetError()) {
+  switch (error) {
     case media::PIPELINE_OK:
+      LOG(DFATAL) << "PIPELINE_OK isn't an error!";
+      break;
+
     case media::PIPELINE_ERROR_INITIALIZATION_FAILED:
     case media::PIPELINE_ERROR_REQUIRED_FILTER_MISSING:
     case media::PIPELINE_ERROR_COULD_NOT_RENDER:
@@ -830,9 +837,9 @@ void WebMediaPlayerImpl::OnPipelineError() {
   Repaint();
 }
 
-void WebMediaPlayerImpl::OnNetworkEvent() {
+void WebMediaPlayerImpl::OnNetworkEvent(PipelineStatus status) {
   DCHECK(MessageLoop::current() == main_loop_);
-  if (pipeline_->GetError() == media::PIPELINE_OK) {
+  if (status == media::PIPELINE_OK) {
     if (pipeline_->IsNetworkActive()) {
       SetNetworkState(WebKit::WebMediaPlayer::Loading);
     } else {
@@ -892,7 +899,7 @@ void WebMediaPlayerImpl::Destroy() {
   }
 }
 
-void WebMediaPlayerImpl::PipelineStoppedCallback() {
+void WebMediaPlayerImpl::PipelineStoppedCallback(PipelineStatus status) {
   pipeline_stopped_.Signal();
 }
 

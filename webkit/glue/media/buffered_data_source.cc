@@ -412,14 +412,15 @@ void BufferedDataSource::DoneRead_Locked(int error) {
   read_buffer_ = 0;
 }
 
-void BufferedDataSource::DoneInitialization_Locked(media::PipelineError error) {
+void BufferedDataSource::DoneInitialization_Locked(
+    media::PipelineStatus status) {
   DCHECK(MessageLoop::current() == render_loop_);
   DCHECK(initialize_callback_.get());
   lock_.AssertAcquired();
 
   scoped_ptr<media::PipelineStatusCallback> initialize_callback(
       initialize_callback_.release());
-  initialize_callback->Run(error);
+  initialize_callback->Run(status);
 }
 
 /////////////////////////////////////////////////////////////////////////////

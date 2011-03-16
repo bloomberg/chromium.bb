@@ -26,10 +26,10 @@ void FileDataSourceFactory::Build(const std::string& url,
 
   scoped_refptr<FileDataSource> file_data_source = new FileDataSource();
 
-  PipelineError error = file_data_source->Initialize(url);
+  PipelineStatus status = file_data_source->Initialize(url);
   DataSource* data_source =
-      (error == PIPELINE_OK) ? file_data_source.get() : NULL;
-  callback->Run(error, data_source);
+      (status == PIPELINE_OK) ? file_data_source.get() : NULL;
+  callback->Run(status, data_source);
   delete callback;
 }
 

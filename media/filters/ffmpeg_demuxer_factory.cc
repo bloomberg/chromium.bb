@@ -31,7 +31,7 @@ class DemuxerCallbackAsPipelineStatusCallback : public PipelineStatusCallback {
 
   virtual ~DemuxerCallbackAsPipelineStatusCallback() {}
 
-  virtual void RunWithParams(const Tuple1<PipelineError>& params) {
+  virtual void RunWithParams(const Tuple1<PipelineStatus>& params) {
     cb_->Run(params.a, demuxer_);
   }
 
@@ -54,8 +54,9 @@ class DemuxerCallbackAsDataSourceCallback :
 
   virtual ~DemuxerCallbackAsDataSourceCallback() {}
 
-  virtual void RunWithParams(const Tuple2<PipelineError, DataSource*>& params) {
-    PipelineError status = params.a;
+  virtual void RunWithParams(
+      const Tuple2<PipelineStatus, DataSource*>& params) {
+    PipelineStatus status = params.a;
     DataSource* data_source = params.b;
     if (status != PIPELINE_OK) {
       cb_->Run(status, static_cast<Demuxer*>(NULL));

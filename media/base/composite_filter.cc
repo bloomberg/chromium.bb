@@ -17,7 +17,7 @@ class CompositeFilter::FilterHostImpl : public FilterHost {
   FilterHost* host();
 
   // media::FilterHost methods.
-  virtual void SetError(PipelineError error);
+  virtual void SetError(PipelineStatus error);
   virtual base::TimeDelta GetTime() const;
   virtual base::TimeDelta GetDuration() const;
   virtual void SetTime(base::TimeDelta time);
@@ -45,7 +45,7 @@ CompositeFilter::CompositeFilter(MessageLoop* message_loop)
     : state_(kCreated),
       sequence_index_(0),
       message_loop_(message_loop),
-      error_(PIPELINE_OK) {
+      status_(PIPELINE_OK) {
   DCHECK(message_loop);
   runnable_factory_.reset(
       new ScopedRunnableMethodFactory<CompositeFilter>(this));
@@ -228,7 +228,7 @@ void CompositeFilter::ChangeState(State new_state) {
 
 void CompositeFilter::StartSerialCallSequence() {
   DCHECK_EQ(message_loop_, MessageLoop::current());
-  error_ = PIPELINE_OK;
+  status_ = PIPELINE_OK;
 
   if (!filters_.empty()) {
     sequence_index_ = 0;
@@ -242,7 +242,7 @@ void CompositeFilter::StartSerialCallSequence() {
 
 void CompositeFilter::StartParallelCallSequence() {
   DCHECK_EQ(message_loop_, MessageLoop::current());
-  error_ = PIPELINE_OK;
+  status_ = PIPELINE_OK;
 
   if (!filters_.empty()) {
     sequence_index_ = 0;
@@ -329,10 +329,10 @@ CompositeFilter::State CompositeFilter::GetNextState(State state) const {
 
 void CompositeFilter::SerialCallback() {
   DCHECK_EQ(message_loop_, MessageLoop::current());
-  if (error_ != PIPELINE_OK) {
+  if (status_ != PIPELINE_OK) {
     // We encountered an error. Terminate the sequence now.
     ChangeState(kError);
-    HandleError(error_);
+    HandleError(status_);
     return;
   }
 
@@ -360,10 +360,10 @@ void CompositeFilter::ParallelCallback() {
     sequence_index_++;
 
   if (sequence_index_ == filters_.size()) {
-    if (error_ != PIPELINE_OK) {
+    if (status_ != PIPELINE_OK) {
       // We encountered an error.
       ChangeState(kError);
-      HandleError(error_);
+      HandleError(status_);
       return;
     }
 
@@ -391,16 +391,14 @@ void CompositeFilter::OnCallSequenceDone() {
   }
 }
 
-void CompositeFilter::SendErrorToHost(PipelineError error) {
+void CompositeFilter::SendErrorToHost(PipelineStatus error) {
   if (host_impl_.get())
     host_impl_.get()->host()->SetError(error);
 }
 
-void CompositeFilter::HandleError(PipelineError error) {
-  if (error != PIPELINE_OK) {
-    SendErrorToHost(error);
-  }
-
+void CompositeFilter::HandleError(PipelineStatus error) {
+  DCHECK_NE(error, PIPELINE_OK);
+  SendErrorToHost(error);
   DispatchPendingCallback();
 }
 
@@ -435,7 +433,7 @@ bool CompositeFilter::CanForwardError() {
   return (state_ == kCreated) || (state_ == kPlaying) || (state_ == kPaused);
 }
 
-void CompositeFilter::SetError(PipelineError error) {
+void CompositeFilter::SetError(PipelineStatus error) {
   // TODO(acolwell): Temporary hack to handle errors that occur
   // during filter initialization. In this case we just forward
   // the error to the host even if it is on the wrong thread. We
@@ -461,7 +459,7 @@ void CompositeFilter::SetError(PipelineError error) {
   if (state_ == kStopPending || state_ == kStopped)
     return;
 
-  error_ = error;
+  status_ = error;
   if (CanForwardError())
     SendErrorToHost(error);
 }
@@ -477,7 +475,7 @@ FilterHost* CompositeFilter::FilterHostImpl::host() {
 }
 
 // media::FilterHost methods.
-void CompositeFilter::FilterHostImpl::SetError(PipelineError error) {
+void CompositeFilter::FilterHostImpl::SetError(PipelineStatus error) {
   parent_->SetError(error);
 }
 

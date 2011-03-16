@@ -18,7 +18,7 @@ class DataSource;
 class DataSourceFactory {
  public:
   // Ownership of the DataSource is transferred through this callback.
-  typedef Callback2<PipelineError, DataSource*>::Type BuildCallback;
+  typedef Callback2<PipelineStatus, DataSource*>::Type BuildCallback;
 
   virtual ~DataSourceFactory();
 
@@ -36,7 +36,7 @@ class Demuxer;
 class DemuxerFactory {
  public:
   // Ownership of the Demuxer is transferred through this callback.
-  typedef Callback2<PipelineError, Demuxer*>::Type BuildCallback;
+  typedef Callback2<PipelineStatus, Demuxer*>::Type BuildCallback;
 
   virtual ~DemuxerFactory();
 

@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -7,7 +7,7 @@
 // reference as part of initialization.
 //
 // This interface is intentionally verbose to cover the needs for the different
-// types of filters (see media/base/filters.h for filter definitionss).  Filters
+// types of filters (see media/base/filters.h for filter definitions).  Filters
 // typically use parts of the interface that are relevant to their function.
 // For example, an audio renderer filter typically calls SetTime as it feeds
 // data to the audio hardware.  A video renderer filter typically calls GetTime
@@ -26,7 +26,7 @@ class FilterHost {
  public:
   // Stops execution of the pipeline due to a fatal error.  Do not call this
   // method with PIPELINE_OK.
-  virtual void SetError(PipelineError error) = 0;
+  virtual void SetError(PipelineStatus error) = 0;
 
   // Gets the current time in microseconds.
   virtual base::TimeDelta GetTime() const = 0;

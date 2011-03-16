@@ -168,7 +168,7 @@ class BufferedDataSourceTest : public testing::Test {
         .WillByDefault(Return(partial_response));
     ON_CALL(*loader_, url())
         .WillByDefault(ReturnRef(gurl_));
-    media::PipelineError expected_init_error = media::PIPELINE_OK;
+    media::PipelineStatus expected_init_status = media::PIPELINE_OK;
     if (initialized_ok) {
       // Expected loaded or not.
       EXPECT_CALL(host_, SetLoaded(loaded));
@@ -184,13 +184,13 @@ class BufferedDataSourceTest : public testing::Test {
         EXPECT_CALL(host_, SetStreaming(true));
       }
     } else {
-      expected_init_error = media::PIPELINE_ERROR_NETWORK;
+      expected_init_status = media::PIPELINE_ERROR_NETWORK;
       EXPECT_CALL(*loader_, Stop());
     }
 
     // Actual initialization of the data source.
     data_source_->Initialize(url,
-        media::NewExpectedStatusCallback(expected_init_error));
+        media::NewExpectedStatusCallback(expected_init_status));
     message_loop_->RunAllPending();
 
     if (initialized_ok) {
