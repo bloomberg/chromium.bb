@@ -145,9 +145,9 @@ void MessageBubble::IsActiveChanged() {
   }
 }
 
-void MessageBubble::DoGrab() {
+void MessageBubble::SetNativeCapture() {
   if (grab_enabled_)
-    WidgetGtk::DoGrab();
+    WidgetGtk::SetNativeCapture();
 }
 
 void MessageBubble::Close() {

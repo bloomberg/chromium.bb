@@ -54,7 +54,7 @@ class MessageBubble : public InfoBubble,
                                    MessageBubbleDelegate* delegate);
 
   // Overridden from WidgetGtk.
-  virtual void Close();
+  virtual void Close() OVERRIDE;
 
   virtual gboolean OnButtonPress(GtkWidget* widget, GdkEventButton* event) {
     WidgetGtk::OnButtonPress(widget, event);
@@ -72,7 +72,7 @@ class MessageBubble : public InfoBubble,
 
   // Overridden from WidgetGtk.
   virtual void IsActiveChanged();
-  virtual void DoGrab();
+  virtual void SetNativeCapture();
 
  private:
   MessageBubble(views::WidgetGtk::Type type,

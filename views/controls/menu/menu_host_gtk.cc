@@ -92,7 +92,7 @@ void MenuHostGtk::SetMenuHostBounds(const gfx::Rect& bounds) {
 }
 
 void MenuHostGtk::ReleaseMenuHostCapture() {
-  ReleaseGrab();
+  ReleaseNativeCapture();
 }
 
 gfx::NativeWindow MenuHostGtk::GetMenuHostWindow() {
@@ -107,8 +107,8 @@ bool MenuHostGtk::ReleaseCaptureOnMouseReleased() {
   return false;
 }
 
-void MenuHostGtk::ReleaseGrab() {
-  WidgetGtk::ReleaseGrab();
+void MenuHostGtk::ReleaseNativeCapture() {
+  WidgetGtk::ReleaseNativeCapture();
   if (did_input_grab_) {
     did_input_grab_ = false;
     gdk_pointer_ungrab(GDK_CURRENT_TIME);
@@ -150,7 +150,7 @@ void MenuHostGtk::DoCapture() {
     gtk_grab_remove(current_grab_window);
 
   // Make sure all app mouse/keyboard events are targetted at us only.
-  DoGrab();
+  SetNativeCapture();
 
   // And do a grab.  NOTE: we do this to ensure we get mouse/keyboard
   // events from other apps, a grab done with gtk_grab_add doesn't get

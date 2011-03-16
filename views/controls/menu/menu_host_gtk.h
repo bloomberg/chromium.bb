@@ -24,27 +24,27 @@ class MenuHostGtk : public WidgetGtk, public MenuHost {
   virtual void InitMenuHost(gfx::NativeWindow parent,
                             const gfx::Rect& bounds,
                             View* contents_view,
-                            bool do_capture);
-  virtual bool IsMenuHostVisible();
-  virtual void ShowMenuHost(bool do_capture);
-  virtual void HideMenuHost();
-  virtual void DestroyMenuHost();
-  virtual void SetMenuHostBounds(const gfx::Rect& bounds);
-  virtual void ReleaseMenuHostCapture();
-  virtual gfx::NativeWindow GetMenuHostWindow();
+                            bool do_capture) OVERRIDE;
+  virtual bool IsMenuHostVisible() OVERRIDE;
+  virtual void ShowMenuHost(bool do_capture) OVERRIDE;
+  virtual void HideMenuHost() OVERRIDE;
+  virtual void DestroyMenuHost() OVERRIDE;
+  virtual void SetMenuHostBounds(const gfx::Rect& bounds) OVERRIDE;
+  virtual void ReleaseMenuHostCapture() OVERRIDE;
+  virtual gfx::NativeWindow GetMenuHostWindow() OVERRIDE;
 
  protected:
   virtual RootView* CreateRootView();
 
-  // Overriden to return false, we do NOT want to release capture on mouse
+  // Overridden to return false, we do NOT want to release capture on mouse
   // release.
-  virtual bool ReleaseCaptureOnMouseReleased();
+  virtual bool ReleaseCaptureOnMouseReleased() OVERRIDE;
 
-  // Overriden to also release input grab.
-  virtual void ReleaseGrab();
+  // Overridden to also release input grab.
+  virtual void ReleaseNativeCapture() OVERRIDE;
 
-  virtual void OnDestroy(GtkWidget* object);
-  virtual void HandleGrabBroke();
+  virtual void OnDestroy(GtkWidget* object) OVERRIDE;
+  virtual void HandleGrabBroke() OVERRIDE;
 
  private:
   void DoCapture();

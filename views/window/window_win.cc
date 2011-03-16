@@ -673,7 +673,7 @@ LRESULT WindowWin::OnNCMouseRange(UINT message,
     // We SetCapture() to ensure we only show the menu when the button down and
     // up are both on the caption.  Note: this causes the button up to be
     // WM_RBUTTONUP instead of WM_NCRBUTTONUP.
-    SetCapture();
+    SetNativeCapture();
   }
 
   WidgetWin::OnNCMouseRange(message, w_param, l_param);

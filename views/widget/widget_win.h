@@ -142,11 +142,6 @@ class WidgetWin : public ui::WindowImpl,
     return ::ShowWindow(GetNativeView(), command);
   }
 
-  HWND SetCapture() {
-    DCHECK(::IsWindow(GetNativeView()));
-    return ::SetCapture(GetNativeView());
-  }
-
   HWND GetParent() const {
     return ::GetParent(GetNativeView());
   }
@@ -208,6 +203,9 @@ class WidgetWin : public ui::WindowImpl,
   virtual void* GetNativeWindowProperty(const char* name) OVERRIDE;
   virtual TooltipManager* GetTooltipManager() const OVERRIDE;
   virtual bool IsScreenReaderActive() const OVERRIDE;
+  virtual void SetNativeCapture() OVERRIDE;
+  virtual void ReleaseNativeCapture() OVERRIDE;
+  virtual bool HasNativeCapture() const OVERRIDE;
   virtual gfx::Rect GetWindowScreenBounds() const OVERRIDE;
   virtual gfx::Rect GetClientAreaScreenBounds() const OVERRIDE;
   virtual void SetBounds(const gfx::Rect& bounds) OVERRIDE;
@@ -415,9 +413,6 @@ class WidgetWin : public ui::WindowImpl,
   scoped_ptr<TooltipManagerWin> tooltip_manager_;
 
   scoped_refptr<DropTargetWin> drop_target_;
-
-  // Whether or not we have capture the mouse.
-  bool has_capture_;
 
   // If true, the mouse is currently down.
   bool is_mouse_down_;

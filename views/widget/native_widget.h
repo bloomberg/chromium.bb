@@ -69,6 +69,13 @@ class NativeWidget {
   // Returns true if a system screen reader is active for the NativeWidget.
   virtual bool IsScreenReaderActive() const = 0;
 
+  // Sets or releases event capturing for this native widget.
+  virtual void SetNativeCapture() = 0;
+  virtual void ReleaseNativeCapture() = 0;
+
+  // Returns true if this native widget is capturing all events.
+  virtual bool HasNativeCapture() const = 0;
+
  protected:
   friend class Widget;
 

@@ -182,6 +182,9 @@ class WidgetGtk : public Widget,
   virtual void* GetNativeWindowProperty(const char* name) OVERRIDE;
   virtual TooltipManager* GetTooltipManager() const OVERRIDE;
   virtual bool IsScreenReaderActive() const OVERRIDE;
+  virtual void SetNativeCapture() OVERRIDE;
+  virtual void ReleaseNativeCapture() OVERRIDE;
+  virtual bool HasNativeCapture() const OVERRIDE;
   virtual gfx::Rect GetWindowScreenBounds() const OVERRIDE;
   virtual gfx::Rect GetClientAreaScreenBounds() const OVERRIDE;
   virtual void SetBounds(const gfx::Rect& bounds) OVERRIDE;
@@ -263,18 +266,9 @@ class WidgetGtk : public Widget,
 
   void set_mouse_down(bool mouse_down) { is_mouse_down_ = mouse_down; }
 
-  // Do we own the mouse grab?
-  bool has_capture() const { return has_capture_; }
-
   // Returns whether capture should be released on mouse release. The default
   // is true.
   virtual bool ReleaseCaptureOnMouseReleased();
-
-  // Does a mouse grab on this widget.
-  virtual void DoGrab();
-
-  // Releases a grab done by this widget.
-  virtual void ReleaseGrab();
 
   // Invoked when input grab is stolen by other GtkWidget in the same
   // application.
@@ -346,9 +340,6 @@ class WidgetGtk : public Widget,
 
   // If true, the mouse is currently down.
   bool is_mouse_down_;
-
-  // Have we done a mouse grab?
-  bool has_capture_;
 
   // The following are used to detect duplicate mouse move events and not
   // deliver them. Displaying a window may result in the system generating
