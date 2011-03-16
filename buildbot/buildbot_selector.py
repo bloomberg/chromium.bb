@@ -52,7 +52,7 @@ BOT_ASSIGNMENT = {
     'nacl-lucid64_m64_n64_dbg': 'bash buildbot/buildbot_linux.sh dbg 64',
     'nacl-lucid64_m64_n64_opt': 'bash buildbot/buildbot_linux.sh opt 64',
     'nacl-arm_opt': 'bash buildbot/buildbot_arm.sh opt',
-    'nacl-lucid64-pnacl1': 'bash buildbot/buildbot_linux.sh opt 64',
+    'nacl-lucid64-pnacl1': 'bash buildbot/buildbot_pnacl1.sh',
     'nacl-lucid64-pnacl2': 'bash buildbot/buildbot_linux.sh opt 64',
 }
 
