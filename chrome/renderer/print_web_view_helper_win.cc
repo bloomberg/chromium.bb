@@ -209,6 +209,9 @@ void PrintWebViewHelper::RenderPage(
   int width = static_cast<int>(content_width_in_points * params.max_shrink);
   int height = static_cast<int>(content_height_in_points * params.max_shrink);
 
+  bool result = (*metafile)->StartPage();
+  DCHECK(result);
+
 #if 0
   // TODO(maruel): This code is kept for testing until the 100% GDI drawing
   // code is stable. maruels use this code's output as a reference when the
@@ -254,6 +257,9 @@ void PrintWebViewHelper::RenderPage(
     *scale_factor /= webkit_scale_factor;
   }
 #endif
+
+  result = (*metafile)->FinishPage();
+  DCHECK(result);
 
   skia::VectorPlatformDevice* platform_device =
       static_cast<skia::VectorPlatformDevice*>(canvas.getDevice());

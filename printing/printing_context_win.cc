@@ -298,13 +298,11 @@ PrintingContext::Result PrintingContextWin::NewDocument(
 PrintingContext::Result PrintingContextWin::NewPage() {
   if (abort_printing_)
     return CANCEL;
-
   DCHECK(context_);
   DCHECK(in_print_job_);
 
-  // Inform the driver that the application is about to begin sending data.
-  if (StartPage(context_) <= 0)
-    return OnError();
+  // Intentional No-op. NativeMetafile::SafePlayback takes care of calling
+  // ::StartPage().
 
   return OK;
 }
@@ -314,8 +312,9 @@ PrintingContext::Result PrintingContextWin::PageDone() {
     return CANCEL;
   DCHECK(in_print_job_);
 
-  if (EndPage(context_) <= 0)
-    return OnError();
+  // Intentional No-op. NativeMetafile::SafePlayback takes care of calling
+  // ::EndPage().
+
   return OK;
 }
 
