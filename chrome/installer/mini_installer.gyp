@@ -25,6 +25,8 @@
         ],
         'sources': [
           'mini_installer/appid.h',
+          'mini_installer/decompress.cc',
+          'mini_installer/decompress.h',
           'mini_installer/mini_installer.cc',
           'mini_installer/mini_installer.h',
           'mini_installer/mini_installer.ico',
@@ -67,13 +69,11 @@
                       'crt\\src\\intel\\mt_lib\\memset.obj"',
                   '"$(VCInstallDir)..\\..\\Microsoft Visual Studio 9.0\\VC\\'
                       'crt\\src\\intel\\mt_lib\\P4_memset.obj"',
-                  'setupapi.lib',
                 ],
               },{
                 'AdditionalDependencies': [
                   '"$(VCInstallDir)crt\\src\\intel\\mt_lib\\memset.obj"',
                   '"$(VCInstallDir)crt\\src\\intel\\mt_lib\\P4_memset.obj"',
-                  'setupapi.lib',
                 ],
               }],
             ],

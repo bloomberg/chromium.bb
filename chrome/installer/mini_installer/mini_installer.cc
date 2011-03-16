@@ -33,6 +33,7 @@
 #include <shellapi.h>
 
 #include "chrome/installer/mini_installer/appid.h"
+#include "chrome/installer/mini_installer/decompress.h"
 #include "chrome/installer/mini_installer/mini_installer.h"
 #include "chrome/installer/mini_installer/mini_string.h"
 #include "chrome/installer/mini_installer/pe_resource.h"
@@ -427,20 +428,18 @@ bool UnpackBinaryResources(HMODULE module, const wchar_t* base_path,
 
   if (setup_path->length() > 0) {
     // Uncompress LZ compressed resource. Setup is packed with 'MSCF'
-    // as opposed to old DOS way of 'SZDD'. Hence use SetupInstallFile
-    // instead of LZCopy.
-    // Note that the API will automatically delete the original file
-    // if the extraction was successful.
-    // TODO(tommi): Use the cabinet API directly.
-    if (!SetupInstallFile(NULL, NULL, setup_path->get(), NULL,
-                          setup_dest_path.get(),
-                          SP_COPY_DELETESOURCE | SP_COPY_SOURCE_ABSOLUTE,
-                          NULL, NULL)) {
-      DeleteFile(setup_path->get());
-      return false;
+    // as opposed to old DOS way of 'SZDD'. Hence we don't use LZCopy.
+    bool success = mini_installer::Expand(setup_path->get(),
+                                          setup_dest_path.get());
+    ::DeleteFile(setup_path->get());
+    if (success) {
+      if (!setup_path->assign(setup_dest_path.get())) {
+        ::DeleteFile(setup_dest_path.get());
+        success = false;
+      }
     }
 
-    return setup_path->assign(setup_dest_path.get());
+    return success;
   }
 
   // setup.exe still not found. So finally check if it was sent as 'BN'

@@ -341,6 +341,9 @@
           # below into a separate lib and then link both setup.exe and
           # setup_unittests.exe against that.
           'sources': [
+            'installer/mini_installer/decompress.cc',
+            'installer/mini_installer/decompress.h',
+            'installer/mini_installer/decompress_test.cc',
             'installer/mini_installer/mini_string.cc',
             'installer/mini_installer/mini_string.h',
             'installer/mini_installer/mini_string_test.cc',
