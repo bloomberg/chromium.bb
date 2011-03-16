@@ -34,6 +34,7 @@ const wchar_t* const kTroublesomeDlls[] = {
   L"adialhk.dll",                 // Kaspersky Internet Security.
   L"acpiz.dll",                   // Unknown.
   L"avgrsstx.dll",                // AVG 8.
+  L"BabylonChromePI.dll",         // Babylon translator.
   L"btkeyind.dll",                // Widcomm Bluetooth.
   L"cmcsyshk.dll",                // CMC Internet Security.
   L"dockshellhook.dll",           // Stardock Objectdock.
@@ -75,6 +76,7 @@ const wchar_t* const kTroublesomeDlls[] = {
   L"syncor11.dll",                // SynthCore Midi interface.
   L"systools.dll",                // Panda Antivirus.
   L"tfwah.dll",                   // Threatfire (PC tools).
+  L"YCWebCameraSource.ax",        // Cyberlink Camera helper.
   L"wblind.dll",                  // Stardock Object desktop.
   L"wbhelp.dll",                  // Stardock Object desktop.
   L"winstylerthemehelper.dll"     // Tuneup utilities 2006.
