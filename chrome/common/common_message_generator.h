@@ -6,6 +6,7 @@
 
 #include "chrome/common/autofill_messages.h"
 #include "chrome/common/clipboard_messages.h"
+#include "chrome/common/dom_storage_messages.h"
 #include "chrome/common/indexed_db_messages.h"
 #include "chrome/common/safebrowsing_messages.h"
 #include "chrome/common/service_messages.h"

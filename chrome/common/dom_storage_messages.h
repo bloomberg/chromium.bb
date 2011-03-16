@@ -2,10 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_COMMON_DOM_STORAGE_MESSAGES_H_
-#define CHROME_COMMON_DOM_STORAGE_MESSAGES_H_
-#pragma once
-
+// Multiply-included message file, no traditional include guard.
 #include "chrome/common/dom_storage_common.h"
 #include "googleurl/src/gurl.h"
 #include "ipc/ipc_message_macros.h"
@@ -15,56 +12,28 @@
 #define IPC_MESSAGE_START DOMStorageMsgStart
 
 // Signals a storage event.
-struct DOMStorageMsg_Event_Params {
-  DOMStorageMsg_Event_Params();
-  ~DOMStorageMsg_Event_Params();
-
+IPC_STRUCT_BEGIN(DOMStorageMsg_Event_Params)
   // The key that generated the storage event.  Null if clear() was called.
-  NullableString16 key;
+  IPC_STRUCT_MEMBER(NullableString16, key)
 
   // The old value of this key.  Null on clear() or if it didn't have a value.
-  NullableString16 old_value;
+  IPC_STRUCT_MEMBER(NullableString16, old_value)
 
   // The new value of this key.  Null on removeItem() or clear().
-  NullableString16 new_value;
+  IPC_STRUCT_MEMBER(NullableString16, new_value)
 
   // The origin this is associated with.
-  string16 origin;
+  IPC_STRUCT_MEMBER(string16, origin)
 
   // The URL of the page that caused the storage event.
-  GURL url;
+  IPC_STRUCT_MEMBER(GURL, url)
 
   // The storage type of this event.
-  DOMStorageType storage_type;
-};
+  IPC_STRUCT_MEMBER(DOMStorageType, storage_type)
+IPC_STRUCT_END()
 
-namespace IPC {
-
-template <>
-struct ParamTraits<DOMStorageMsg_Event_Params> {
-  typedef DOMStorageMsg_Event_Params param_type;
-  static void Write(Message* m, const param_type& p);
-  static bool Read(const Message* m, void** iter, param_type* p);
-  static void Log(const param_type& p, std::string* l);
-};
-
-template <>
-struct ParamTraits<DOMStorageType> {
-  typedef DOMStorageType param_type;
-  static void Write(Message* m, const param_type& p);
-  static bool Read(const Message* m, void** iter, param_type* p);
-  static void Log(const param_type& p, std::string* l);
-};
-
-template <>
-struct ParamTraits<WebKit::WebStorageArea::Result> {
-  typedef WebKit::WebStorageArea::Result param_type;
-  static void Write(Message* m, const param_type& p);
-  static bool Read(const Message* m, void** iter, param_type* p);
-  static void Log(const param_type& p, std::string* l);
-};
-
-}  // namespace IPC
+IPC_ENUM_TRAITS(DOMStorageType)
+IPC_ENUM_TRAITS(WebKit::WebStorageArea::Result)
 
 // DOM Storage messages sent from the browser to the renderer.
 
@@ -122,4 +91,3 @@ IPC_SYNC_MESSAGE_CONTROL2_1(DOMStorageHostMsg_Clear,
                             GURL /* url */,
                             bool /* something_cleared */)
 
-#endif  // CHROME_COMMON_DOM_STORAGE_MESSAGES_H_

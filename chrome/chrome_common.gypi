@@ -52,7 +52,6 @@
           'common/content_settings_types.h',
           'common/devtools_messages.cc',
           'common/devtools_messages.h',
-          'common/dom_storage_messages.cc',
           'common/dom_storage_messages.h',
           'common/font_config_ipc_linux.cc',
           'common/font_config_ipc_linux.h',

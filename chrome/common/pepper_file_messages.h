@@ -2,10 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_COMMON_PEPPER_FILE_MESSAGES_H_
-#define CHROME_COMMON_PEPPER_FILE_MESSAGES_H_
-#pragma once
-
+// Multiply-included message file, no traditional include guard.
 #include "content/common/common_param_traits.h"
 #include "ipc/ipc_message_macros.h"
 #include "ipc/ipc_param_traits.h"
@@ -13,7 +10,9 @@
 #include "webkit/plugins/ppapi/dir_contents.h"
 #include "webkit/plugins/ppapi/file_path.h"
 
-#define IPC_MESSAGE_START PepperFileMsgStart
+// Singly-included section, still not converted
+#ifndef CHROME_COMMON_PEPPER_FILE_MESSAGES_H_
+#define CHROME_COMMON_PEPPER_FILE_MESSAGES_H_
 
 namespace IPC {
 
@@ -35,6 +34,10 @@ struct ParamTraits<webkit::ppapi::PepperFilePath> {
 };
 
 }  // namespace IPC
+
+#endif  // CHROME_COMMON_PEPPER_FILE_MESSAGES_H_
+
+#define IPC_MESSAGE_START PepperFileMsgStart
 
 // Trusted Pepper Filesystem messages from the renderer to the browser.
 
@@ -74,4 +77,3 @@ IPC_SYNC_MESSAGE_CONTROL1_2(PepperFileMsg_GetDirContents,
                             webkit::ppapi::DirContents, /* contents */
                             base::PlatformFileError /* error_code */)
 
-#endif  // CHROME_COMMON_PEPPER_FILE_MESSAGES_H_
