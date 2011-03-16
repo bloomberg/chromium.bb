@@ -12,6 +12,7 @@
 #include "base/basictypes.h"
 #include "base/hash_tables.h"
 #include "base/ref_counted.h"
+#include "base/synchronization/lock.h"
 #include "chrome/browser/chromeos/login/user_image_loader.h"
 #include "content/common/notification_observer.h"
 #include "content/common/notification_registrar.h"
@@ -19,6 +20,10 @@
 
 class FilePath;
 class PrefService;
+
+namespace base {
+template<typename> struct DefaultLazyInstanceTraits;
+}
 
 namespace chromeos {
 class RemoveUserDelegate;
@@ -149,7 +154,9 @@ class UserManager : public UserImageLoader::Delegate,
   User logged_in_user_;
 
   // Cached flag of whether currently logged-in user is owner or not.
+  // May be accessed on different threads, requires locking.
   bool current_user_is_owner_;
+  mutable base::Lock current_user_is_owner_lock_;
 
   // Cached flag of whether the currently logged-in user existed before this
   // login.
@@ -159,6 +166,8 @@ class UserManager : public UserImageLoader::Delegate,
   bool user_is_logged_in_;
 
   NotificationRegistrar registrar_;
+
+  friend struct base::DefaultLazyInstanceTraits<UserManager>;
 
   DISALLOW_COPY_AND_ASSIGN(UserManager);
 };

@@ -7,6 +7,7 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/metrics/user_metrics.h"
 #include "chrome/browser/notifications/notification_delegate.h"
 #include "chrome/browser/prefs/pref_service.h"
@@ -44,6 +45,8 @@ LocaleChangeGuard::LocaleChangeGuard(Profile* profile)
   DCHECK(profile_);
   registrar_.Add(this, NotificationType::LOAD_COMPLETED_MAIN_FRAME,
                  NotificationService::AllSources());
+  registrar_.Add(this, NotificationType::OWNERSHIP_CHECKED,
+                 NotificationService::AllSources());
 }
 
 void LocaleChangeGuard::RevertLocaleChange(const ListValue* list) {
@@ -56,11 +59,6 @@ void LocaleChangeGuard::RevertLocaleChange(const ListValue* list) {
   }
   if (reverted_)
     return;
-
-  PrefService* prefs = profile_->GetPrefs();
-  if (prefs == NULL)
-    return;
-
   reverted_ = true;
   UserMetrics::RecordAction(UserMetricsAction("LanguageChange_Revert"));
   profile_->ChangeAppLocale(
@@ -74,21 +72,44 @@ void LocaleChangeGuard::RevertLocaleChange(const ListValue* list) {
 void LocaleChangeGuard::Observe(NotificationType type,
                                 const NotificationSource& source,
                                 const NotificationDetails& details) {
-  if (type != NotificationType::LOAD_COMPLETED_MAIN_FRAME) {
-    NOTREACHED();
-    return;
-  }
   if (profile_ == NULL) {
     NOTREACHED();
     return;
   }
+  switch (type.value) {
+    case NotificationType::LOAD_COMPLETED_MAIN_FRAME:
+      // We need to perform locale change check only once, so unsubscribe.
+      registrar_.Remove(this, NotificationType::LOAD_COMPLETED_MAIN_FRAME,
+                        NotificationService::AllSources());
+      Check();
+      break;
+    case NotificationType::OWNERSHIP_CHECKED:
+      if (UserManager::Get()->current_user_is_owner()) {
+        PrefService* local_state = g_browser_process->local_state();
+        if (local_state) {
+          PrefService* prefs = profile_->GetPrefs();
+          if (prefs == NULL) {
+            NOTREACHED();
+            return;
+          }
+          std::string owner_locale =
+              prefs->GetString(prefs::kApplicationLocale);
+          if (!owner_locale.empty()) {
+            local_state->SetString(prefs::kOwnerLocale, owner_locale);
+            local_state->ScheduleSavePersistentPrefs();
+          }
+        }
+      }
+      break;
+    default:
+      NOTREACHED();
+      break;
+  }
+}
 
-  // We need to perform locale change check only once: so we want to
-  // unsubscribe from notifications in any case.
-  registrar_.RemoveAll();
-
+void LocaleChangeGuard::Check() {
   if (note_ != NULL || !from_locale_.empty() || !to_locale_.empty()) {
-    // Somehow we are notified more than once. Once is enough.
+    // Somehow we are invoked more than once. Once is enough.
     return;
   }
 
@@ -99,8 +120,10 @@ void LocaleChangeGuard::Observe(NotificationType type,
   }
 
   PrefService* prefs = profile_->GetPrefs();
-  if (prefs == NULL)
+  if (prefs == NULL) {
+    NOTREACHED();
     return;
+  }
 
   std::string to_locale = prefs->GetString(prefs::kApplicationLocale);
   if (to_locale != cur_locale) {
@@ -151,8 +174,10 @@ void LocaleChangeGuard::AcceptLocaleChange() {
   if (reverted_)
     return;
   PrefService* prefs = profile_->GetPrefs();
-  if (prefs == NULL)
+  if (prefs == NULL) {
+    NOTREACHED();
     return;
+  }
   if (prefs->GetString(prefs::kApplicationLocale) != to_locale_)
     return;
   UserMetrics::RecordAction(UserMetricsAction("LanguageChange_Accept"));

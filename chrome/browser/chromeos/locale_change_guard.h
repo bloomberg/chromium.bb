@@ -34,6 +34,7 @@ class LocaleChangeGuard : public NotificationObserver {
 
   void RevertLocaleChange(const ListValue* list);
   void AcceptLocaleChange();
+  void Check();
 
   // NotificationObserver implementation.
   virtual void Observe(NotificationType type,

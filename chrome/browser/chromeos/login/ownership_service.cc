@@ -29,9 +29,10 @@ OwnershipService::OwnershipService()
     : manager_(new OwnerManager),
       utils_(OwnerKeyUtils::Create()),
       ownership_status_(OWNERSHIP_UNKNOWN) {
-  notification_registrar_.Add(this,
-                              NotificationType::OWNERSHIP_TAKEN,
-                              NotificationService::AllSources());
+  notification_registrar_.Add(
+      this,
+      NotificationType::OWNER_KEY_FETCH_ATTEMPT_SUCCEEDED,
+      NotificationService::AllSources());
   if (g_ownership_service == this) {
     // Start getting ownership status.
     BrowserThread::PostTask(
@@ -117,7 +118,7 @@ void OwnershipService::StartVerifyAttempt(const std::string& data,
 void OwnershipService::Observe(NotificationType type,
                                const NotificationSource& source,
                                const NotificationDetails& details) {
-  if (type.value == NotificationType::OWNERSHIP_TAKEN) {
+  if (type.value == NotificationType::OWNER_KEY_FETCH_ATTEMPT_SUCCEEDED) {
     SetStatus(OWNERSHIP_TAKEN);
     notification_registrar_.RemoveAll();
   } else {

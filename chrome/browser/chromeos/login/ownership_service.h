@@ -9,6 +9,7 @@
 #include <string>
 #include <vector>
 
+#include "base/synchronization/lock.h"
 #include "chrome/browser/chromeos/login/owner_key_utils.h"
 #include "chrome/browser/chromeos/login/owner_manager.h"
 #include "content/browser/browser_thread.h"

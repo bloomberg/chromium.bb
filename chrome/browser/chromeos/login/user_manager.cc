@@ -7,6 +7,7 @@
 #include "base/compiler_specific.h"
 #include "base/file_path.h"
 #include "base/file_util.h"
+#include "base/lazy_instance.h"
 #include "base/logging.h"
 #include "base/nss_util.h"
 #include "base/path_service.h"
@@ -64,8 +65,7 @@ const int kDefaultImageResources[] = {
   IDR_LOGIN_DEFAULT_USER_4
 };
 
-// The one true UserManager.
-static UserManager* user_manager_ = NULL;
+base::LazyInstance<UserManager> g_user_manager(base::LINKER_INITIALIZED);
 
 // Stores path to the image in local state. Runs on UI thread.
 void SavePathToLocalState(const std::string& username,
@@ -132,13 +132,14 @@ bool IsDefaultImagePath(const std::string& path, size_t* image_id) {
 void UpdateOwnership(bool is_owner) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  UserManager* user_manager = UserManager::Get();
-  user_manager->set_current_user_is_owner(is_owner);
-
+  g_user_manager.Get().set_current_user_is_owner(is_owner);
+  NotificationService::current()->Notify(NotificationType::OWNERSHIP_CHECKED,
+                                         NotificationService::AllSources(),
+                                         NotificationService::NoDetails());
   if (is_owner) {
     // Also update cached value.
     UserCrosSettingsProvider::UpdateCachedOwner(
-      user_manager->logged_in_user().email());
+      g_user_manager.Get().logged_in_user().email());
   }
 }
 
@@ -147,6 +148,8 @@ void CheckOwnership() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
   bool is_owner = OwnershipService::GetSharedInstance()->CurrentUserIsOwner();
   VLOG(1) << "Current user " << (is_owner ? "is owner" : "is not owner");
+
+  g_user_manager.Get().set_current_user_is_owner(is_owner);
 
   // UserManager should be accessed only on UI thread.
   BrowserThread::PostTask(
@@ -258,9 +261,7 @@ std::string UserManager::User::GetNameTooltip() const {
 UserManager* UserManager::Get() {
   // Not thread-safe.
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  if (!user_manager_)
-    user_manager_ = new UserManager();
-  return user_manager_;
+  return &g_user_manager.Get();
 }
 
 // static
@@ -576,10 +577,12 @@ void UserManager::Observe(NotificationType type,
 }
 
 bool UserManager::current_user_is_owner() const {
+  base::AutoLock lk(current_user_is_owner_lock_);
   return current_user_is_owner_;
 }
 
 void UserManager::set_current_user_is_owner(bool current_user_is_owner) {
+  base::AutoLock lk(current_user_is_owner_lock_);
   current_user_is_owner_ = current_user_is_owner;
 }
 
