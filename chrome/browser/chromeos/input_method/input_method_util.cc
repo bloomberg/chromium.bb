@@ -638,9 +638,17 @@ std::string GetHardwareInputMethodId() {
     return GetFallbackInputMethodDescriptor().id;
   }
 
+  PrefService* local_state = g_browser_process->local_state();
+  if (!local_state->FindPreference(prefs::kHardwareKeyboardLayout)) {
+    // This could happen in unittests. We register the preference in
+    // BrowserMain::InitializeLocalState and that method is not called during
+    // unittests.
+    LOG(ERROR) << prefs::kHardwareKeyboardLayout << " is not registered";
+    return GetFallbackInputMethodDescriptor().id;
+  }
+
   const std::string input_method_id =
-      g_browser_process->local_state()->GetString(
-          prefs::kHardwareKeyboardLayout);
+      local_state->GetString(prefs::kHardwareKeyboardLayout);
   if (input_method_id.empty()) {
     // This is totally fine if it's empty. The hardware keyboard layout is
     // not stored if startup_manifest.json (OEM customization data) is not

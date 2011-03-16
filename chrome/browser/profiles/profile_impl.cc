@@ -295,8 +295,9 @@ ProfileImpl::ProfileImpl(const FilePath& path)
                  Source<Profile>(this));
 #endif
 
+  PrefService* local_state = g_browser_process->local_state();
   ssl_config_service_manager_.reset(
-      SSLConfigServiceManager::CreateDefaultManager(this));
+      SSLConfigServiceManager::CreateDefaultManager(GetPrefs(), local_state));
 
   pinned_tab_service_.reset(new PinnedTabService(this));
 

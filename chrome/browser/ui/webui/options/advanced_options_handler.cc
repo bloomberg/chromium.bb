@@ -11,6 +11,7 @@
 #include "base/command_line.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/download/download_manager.h"
 #include "chrome/browser/download/download_prefs.h"
 #include "chrome/browser/google/google_util.h"
@@ -39,7 +40,6 @@
 #include "ui/base/l10n/l10n_util.h"
 
 #if !defined(OS_CHROMEOS)
-#include "chrome/browser/browser_process.h"
 #include "chrome/browser/printing/cloud_print/cloud_print_setup_handler.h"
 #include "chrome/browser/ui/webui/options/advanced_options_utils.h"
 #endif
@@ -192,7 +192,8 @@ void AdvancedOptionsHandler::Initialize() {
   SetupPromptForDownload();
   SetupAutoOpenFileTypesDisabledAttribute();
   SetupProxySettingsSection();
-#if defined(OS_WIN)
+#if defined(OS_WIN) || defined(OS_LINUX) || defined(OS_FREEBSD) || \
+    defined(OS_OPENBSD)
   SetupSSLConfigSettings();
 #endif
 #if !defined(OS_CHROMEOS)
@@ -231,6 +232,16 @@ WebUIMessageHandler* AdvancedOptionsHandler::Attach(WebUI* web_ui) {
   cloud_print_proxy_email_.Init(prefs::kCloudPrintEmail, prefs, this);
   cloud_print_proxy_enabled_.Init(prefs::kCloudPrintProxyEnabled, prefs, this);
 #endif
+
+#if defined(OS_LINUX) || defined(OS_FREEBSD) || defined(OS_OPENBSD)
+  rev_checking_enabled_.Init(prefs::kCertRevocationCheckingEnabled,
+                             g_browser_process->local_state(), this);
+  ssl3_enabled_.Init(prefs::kSSL3Enabled, g_browser_process->local_state(),
+                     this);
+  tls1_enabled_.Init(prefs::kTLS1Enabled, g_browser_process->local_state(),
+                     this);
+#endif
+
   default_download_location_.Init(prefs::kDownloadDefaultDirectory,
                                   prefs, this);
   ask_for_save_location_.Init(prefs::kPromptForDownload, prefs, this);
@@ -292,6 +303,18 @@ void AdvancedOptionsHandler::RegisterMessages() {
   web_ui_->RegisterMessageCallback("disableRemoting",
       NewCallback(this,
                   &AdvancedOptionsHandler::DisableRemoting));
+#endif
+#if defined(OS_LINUX) || defined(OS_FREEBSD) || defined(OS_OPENBSD)
+  // Setup Linux specific callbacks.
+  web_ui_->RegisterMessageCallback("checkRevocationCheckboxAction",
+      NewCallback(this,
+                  &AdvancedOptionsHandler::HandleCheckRevocationCheckbox));
+  web_ui_->RegisterMessageCallback("useSSL3CheckboxAction",
+      NewCallback(this,
+                  &AdvancedOptionsHandler::HandleUseSSL3Checkbox));
+  web_ui_->RegisterMessageCallback("useTLS1CheckboxAction",
+      NewCallback(this,
+                  &AdvancedOptionsHandler::HandleUseTLS1Checkbox));
 #endif
 #if defined(OS_WIN)
   // Setup Windows specific callbacks.
@@ -426,6 +449,36 @@ void AdvancedOptionsHandler::HandleUseTLS1Checkbox(const ListValue* args) {
       (enabled ? "Options_TLS1_Enable" : "Options_TLS1_Disable");
   UserMetricsRecordAction(UserMetricsAction(metric.c_str()));
   net::SSLConfigServiceWin::SetTLS1Enabled(enabled);
+}
+#endif
+#if defined(OS_LINUX) || defined(OS_FREEBSD) || defined(OS_OPENBSD)
+void AdvancedOptionsHandler::HandleCheckRevocationCheckbox(
+    const ListValue* args) {
+  std::string checked_str = UTF16ToUTF8(ExtractStringValue(args));
+  bool enabled = checked_str == "true";
+  std::string metric =
+      (enabled ? "Options_CheckCertRevocation_Enable"
+               : "Options_CheckCertRevocation_Disable");
+  UserMetricsRecordAction(UserMetricsAction(metric.c_str()));
+  rev_checking_enabled_.SetValue(enabled);
+}
+
+void AdvancedOptionsHandler::HandleUseSSL3Checkbox(const ListValue* args) {
+  std::string checked_str = UTF16ToUTF8(ExtractStringValue(args));
+  bool enabled = checked_str == "true";
+  std::string metric =
+      (enabled ? "Options_SSL3_Enable" : "Options_SSL3_Disable");
+  UserMetricsRecordAction(UserMetricsAction(metric.c_str()));
+  ssl3_enabled_.SetValue(enabled);
+}
+
+void AdvancedOptionsHandler::HandleUseTLS1Checkbox(const ListValue* args) {
+  std::string checked_str = UTF16ToUTF8(ExtractStringValue(args));
+  bool enabled = checked_str == "true";
+  std::string metric =
+      (enabled ? "Options_TLS1_Enable" : "Options_TLS1_Disable");
+  UserMetricsRecordAction(UserMetricsAction(metric.c_str()));
+  tls1_enabled_.SetValue(enabled);
 }
 #endif
 
@@ -615,6 +668,29 @@ void AdvancedOptionsHandler::SetupProxySettingsSection() {
       "options.AdvancedOptions.SetupProxySettingsSection", disabled, label);
 }
 
+#if defined(OS_LINUX) || defined(OS_FREEBSD) || defined(OS_OPENBSD)
+void AdvancedOptionsHandler::SetupSSLConfigSettings() {
+  {
+    FundamentalValue checked(rev_checking_enabled_.GetValue());
+    FundamentalValue disabled(rev_checking_enabled_.IsManaged());
+    web_ui_->CallJavascriptFunction(
+        "options.AdvancedOptions.SetCheckRevocationCheckboxState", checked,
+        disabled);
+  }
+  {
+    FundamentalValue checked(ssl3_enabled_.GetValue());
+    FundamentalValue disabled(ssl3_enabled_.IsManaged());
+    web_ui_->CallJavascriptFunction(
+        "options.AdvancedOptions.SetUseSSL3CheckboxState", checked, disabled);
+  }
+  {
+    FundamentalValue checked(tls1_enabled_.GetValue());
+    FundamentalValue disabled(tls1_enabled_.IsManaged());
+    web_ui_->CallJavascriptFunction(
+        "options.AdvancedOptions.SetUseTLS1CheckboxState", checked, disabled);
+  }
+}
+#endif
 #if defined(OS_WIN)
 void AdvancedOptionsHandler::SetupSSLConfigSettings() {
   bool checkRevocationSetting = false;

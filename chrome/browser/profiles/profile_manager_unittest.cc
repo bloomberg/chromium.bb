@@ -8,11 +8,14 @@
 #include "base/file_util.h"
 #include "base/message_loop.h"
 #include "base/path_service.h"
+#include "chrome/browser/prefs/browser_prefs.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/test/testing_browser_process.h"
+#include "chrome/test/testing_pref_service.h"
 #include "content/browser/browser_thread.h"
 #include "content/common/notification_service.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -33,11 +36,22 @@ class ProfileManagerTest : public testing::Test {
     // Create a fresh, empty copy of this directory.
     file_util::Delete(test_dir_, true);
     file_util::CreateDirectory(test_dir_);
+
+    // Create a local_state PrefService.
+    browser::RegisterLocalState(&test_local_state_);
+    TestingBrowserProcess* testing_browser_process =
+        static_cast<TestingBrowserProcess*>(g_browser_process);
+    testing_browser_process->SetPrefService(&test_local_state_);
   }
+
   virtual void TearDown() {
     // Clean up test directory
     ASSERT_TRUE(file_util::Delete(test_dir_, true));
     ASSERT_FALSE(file_util::PathExists(test_dir_));
+
+    TestingBrowserProcess* testing_browser_process =
+        static_cast<TestingBrowserProcess*>(g_browser_process);
+    testing_browser_process->SetPrefService(NULL);
   }
 
   MessageLoopForUI message_loop_;
@@ -46,6 +60,8 @@ class ProfileManagerTest : public testing::Test {
 
   // the path to temporary directory used to contain the test operations
   FilePath test_dir_;
+
+  TestingPrefService test_local_state_;
 };
 
 TEST_F(ProfileManagerTest, CreateProfile) {

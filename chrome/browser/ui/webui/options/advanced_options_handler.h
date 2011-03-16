@@ -66,7 +66,8 @@ class AdvancedOptionsHandler
   // one item, the font size as a numeric value.
   void HandleDefaultFontSize(const ListValue* args);
 
-#if defined(OS_WIN)
+#if defined(OS_WIN) || defined(OS_LINUX) || defined(OS_FREEBSD) || \
+    defined(OS_OPENBSD)
   // Callback for the "Check SSL Revocation" checkbox.  This is needed so we
   // can support manual handling on Windows.
   void HandleCheckRevocationCheckbox(const ListValue* args);
@@ -149,7 +150,8 @@ class AdvancedOptionsHandler
   // Setup the proxy settings section UI.
   void SetupProxySettingsSection();
 
-#if defined(OS_WIN)
+#if defined(OS_WIN) || defined(OS_LINUX) || defined(OS_FREEBSD) || \
+    defined(OS_OPENBSD)
   // Setup the checked state for SSL related checkboxes.
   void SetupSSLConfigSettings();
 #endif
@@ -162,6 +164,13 @@ class AdvancedOptionsHandler
   BooleanPrefMember cloud_print_proxy_enabled_;
   bool cloud_print_proxy_ui_enabled_;
   scoped_ptr<CloudPrintSetupHandler> cloud_print_setup_handler_;
+#endif
+
+#if defined(OS_LINUX) || defined(OS_FREEBSD) || defined(OS_OPENBSD)
+  // SSLConfigService prefs.
+  BooleanPrefMember rev_checking_enabled_;
+  BooleanPrefMember ssl3_enabled_;
+  BooleanPrefMember tls1_enabled_;
 #endif
 
 #if defined(ENABLE_REMOTING) && !defined(OS_CHROMEOS)
