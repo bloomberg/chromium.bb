@@ -41,10 +41,15 @@ call vcvarsall.bat %VCBITS% && call scons.bat -j 8 ^
  -k --verbose --mode=%MODE%-win,nacl,doc platform=x86-%BITS%
 if %ERRORLEVEL% neq 0 exit /b %ERRORLEVEL%
 
-if %BITS% neq 64 goto SkipArchive
-if %BUILDBOT_SLAVE_TYPE% neq BuilderTester goto SkipArchive
+if %BUILDBOT_BUILDERNAME% equ vista64-m64-n64-dbg goto ArchiveIt
+if %BUILDBOT_BUILDERNAME% equ vista64-m64-n64-opt goto ArchiveIt
+goto SkipArchive
+:ArchiveIt
 echo @@@BUILD_STEP archive_build@@@
+set OLD_PATH=%PATH%
+set PATH=c:\cygwin\bin;%PATH%
 tar cvfz build.tgz scons-out/
+set PATH=%OLD_PATH%
 if %ERRORLEVEL% neq 0 exit /b %ERRORLEVEL%
 set HOME=c:\Users\chrome-bot
 \b\build\scripts\slave\gsutil -h Cache-Control:no-cache ^
