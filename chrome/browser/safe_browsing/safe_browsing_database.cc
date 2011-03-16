@@ -409,8 +409,9 @@ bool SafeBrowsingDatabaseNew::ResetDatabase() {
     // TODO(shess): It is simpler for the code to assume that presence
     // of a bloom filter always implies presence of a prefix set.
     prefix_set_.reset(new safe_browsing::PrefixSet(std::vector<SBPrefix>()));
-    CsdWhitelistAllUrls();
   }
+  // Wants to acquire the lock itself.
+  CsdWhitelistAllUrls();
 
   return true;
 }
