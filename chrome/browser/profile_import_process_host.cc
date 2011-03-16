@@ -170,10 +170,10 @@ bool ProfileImportProcessHost::ImportProcessClient::OnMessageReceived(
                         ImportProcessClient::OnBookmarksImportStart)
     IPC_MESSAGE_HANDLER(ProfileImportProcessHostMsg_NotifyBookmarksImportGroup,
                         ImportProcessClient::OnBookmarksImportGroup)
-    IPC_MESSAGE_HANDLER(ProfileImportProcessHostMsg_NotifyFavIconsImportStart,
-                        ImportProcessClient::OnFavIconsImportStart)
-    IPC_MESSAGE_HANDLER(ProfileImportProcessHostMsg_NotifyFavIconsImportGroup,
-                        ImportProcessClient::OnFavIconsImportGroup)
+    IPC_MESSAGE_HANDLER(ProfileImportProcessHostMsg_NotifyFaviconsImportStart,
+                        ImportProcessClient::OnFaviconsImportStart)
+    IPC_MESSAGE_HANDLER(ProfileImportProcessHostMsg_NotifyFaviconsImportGroup,
+                        ImportProcessClient::OnFaviconsImportGroup)
     IPC_MESSAGE_HANDLER(ProfileImportProcessHostMsg_NotifyPasswordFormReady,
                         ImportProcessClient::OnPasswordFormImportReady)
     IPC_MESSAGE_HANDLER(ProfileImportProcessHostMsg_NotifyKeywordsReady,

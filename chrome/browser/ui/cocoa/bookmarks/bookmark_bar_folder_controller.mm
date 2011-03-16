@@ -327,7 +327,7 @@ struct LayoutMetrics {
 #pragma mark Private Methods
 
 - (BookmarkButtonCell*)cellForBookmarkNode:(const BookmarkNode*)child {
-  NSImage* image = child ? [barController_ favIconForNode:child] : nil;
+  NSImage* image = child ? [barController_ faviconForNode:child] : nil;
   NSMenu* menu = child ? child->is_folder() ? folderMenu_ : buttonMenu_ : nil;
   BookmarkBarFolderButtonCell* cell =
       [BookmarkBarFolderButtonCell buttonCellForNode:child

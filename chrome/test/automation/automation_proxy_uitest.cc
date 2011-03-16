@@ -722,7 +722,7 @@ void ExternalTabUITestMockClient::ServeHTMLData(int tab_handle,
           &ExternalTabUITestMockClient::ReplyEOF))));
 }
 
-void ExternalTabUITestMockClient::IgnoreFavIconNetworkRequest() {
+void ExternalTabUITestMockClient::IgnoreFaviconNetworkRequest() {
   // Ignore favicon.ico
   EXPECT_CALL(*this, OnRequestStart(_, testing::AllOf(
           testing::Field(&AutomationURLRequest::url,
@@ -1278,7 +1278,7 @@ class ExternalTabUITestPopupEnabled : public ExternalTabUITest {
 TEST_F(ExternalTabUITestPopupEnabled, MAYBE_WindowDotOpen) {
   TimedMessageLoopRunner loop(MessageLoop::current());
   ASSERT_THAT(mock_, testing::NotNull());
-  mock_->IgnoreFavIconNetworkRequest();
+  mock_->IgnoreFaviconNetworkRequest();
   // Ignore navigation state changes.
   EXPECT_CALL(*mock_, OnNavigationStateChanged(_, _))
       .Times(testing::AnyNumber());
@@ -1343,7 +1343,7 @@ TEST_F(ExternalTabUITestPopupEnabled, MAYBE_WindowDotOpen) {
 TEST_F(ExternalTabUITestPopupEnabled, MAYBE_UserGestureTargetBlank) {
   TimedMessageLoopRunner loop(MessageLoop::current());
   ASSERT_THAT(mock_, testing::NotNull());
-  mock_->IgnoreFavIconNetworkRequest();
+  mock_->IgnoreFaviconNetworkRequest();
   // Ignore navigation state changes.
   EXPECT_CALL(*mock_, OnNavigationStateChanged(_, _))
       .Times(testing::AnyNumber());

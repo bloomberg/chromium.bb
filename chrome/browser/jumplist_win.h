@@ -144,7 +144,7 @@ class JumpList : public TabRestoreServiceObserver {
 
   // Starts loading a favicon for each URL in |icon_urls_|.
   // This function just sends a query to HistoryService.
-  bool StartLoadingFavIcon();
+  bool StartLoadingFavicon();
 
   // A callback function for HistoryService that notify when the "Most Visited"
   // list is available.

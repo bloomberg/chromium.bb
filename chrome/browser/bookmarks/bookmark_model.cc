@@ -737,7 +737,7 @@ BookmarkNode* BookmarkModel::CreateRootNodeFromStarredEntry(
 void BookmarkModel::OnFaviconDataAvailable(
     FaviconService::Handle handle,
     history::FaviconData favicon) {
-  SkBitmap fav_icon;
+  SkBitmap favicon_bitmap;
   BookmarkNode* node =
       load_consumer_.GetClientData(
           profile_->GetFaviconService(Profile::EXPLICIT_ACCESS), handle);
@@ -745,8 +745,8 @@ void BookmarkModel::OnFaviconDataAvailable(
   node->set_favicon_load_handle(0);
   if (favicon.is_valid() && gfx::PNGCodec::Decode(favicon.image_data->front(),
                                                   favicon.image_data->size(),
-                                                  &fav_icon)) {
-    node->set_favicon(fav_icon);
+                                                  &favicon_bitmap)) {
+    node->set_favicon(favicon_bitmap);
     FaviconLoaded(node);
   }
 }

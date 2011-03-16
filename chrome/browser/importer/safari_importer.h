@@ -50,12 +50,12 @@ class SafariImporter : public Importer {
  static bool CanImport(const FilePath& library_dir, uint16 *services_supported);
  private:
   FRIEND_TEST_ALL_PREFIXES(SafariImporterTest, BookmarkImport);
-  FRIEND_TEST_ALL_PREFIXES(SafariImporterTest, FavIconImport);
+  FRIEND_TEST_ALL_PREFIXES(SafariImporterTest, FaviconImport);
   FRIEND_TEST_ALL_PREFIXES(SafariImporterTest, HistoryImport);
 
   virtual ~SafariImporter();
 
-  // Multiple URLs can share the same FavIcon, this is a map
+  // Multiple URLs can share the same favicon; this is a map
   // of URLs -> IconIDs that we load as a temporary step before
   // actually loading the icons.
   typedef std::map<int64, std::set<GURL> > FaviconMap;
@@ -87,10 +87,10 @@ class SafariImporter : public Importer {
   void ParseHistoryItems(std::vector<history::URLRow>* history_items);
 
   // Loads the favicon Database file, returns NULL on failure.
-  sqlite3* OpenFavIconDB();
+  sqlite3* OpenFaviconDB();
 
   // Loads the urls associated with the favicons into favicon_map;
-  void ImportFavIconURLs(sqlite3* db, FaviconMap* favicon_map);
+  void ImportFaviconURLs(sqlite3* db, FaviconMap* favicon_map);
 
   // Loads and reencodes the individual favicons.
   void LoadFaviconData(sqlite3* db,

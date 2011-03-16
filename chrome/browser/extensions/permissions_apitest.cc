@@ -17,7 +17,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, PermissionsFail) {
   ASSERT_TRUE(RunExtensionTest("permissions/disabled")) << message_;
 
   // Since the experimental APIs require a flag, this will fail even though
-  // It's enabled.
+  // it's enabled.
   // TODO(erikkay) This test is currently broken because LoadExtension in
   // ExtensionBrowserTest doesn't actually fail, it just times out.  To fix this
   // I'll need to add an EXTENSION_LOAD_ERROR notification, which is probably
@@ -38,12 +38,12 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, ExperimentalPermissionsFail) {
       << message_;
 }
 
-IN_PROC_BROWSER_TEST_F(ExtensionApiTest, FavIconPermission) {
+IN_PROC_BROWSER_TEST_F(ExtensionApiTest, FaviconPermission) {
   ASSERT_TRUE(RunExtensionTest("permissions/favicon")) << message_;
 }
 
 // Test functions and APIs that are always allowed (even if you ask for no
-// permissions.
+// permissions).
 IN_PROC_BROWSER_TEST_F(ExtensionApiTest, AlwaysAllowed) {
   ASSERT_TRUE(RunExtensionTest("permissions/always_allowed")) << message_;
 }

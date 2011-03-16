@@ -21,7 +21,7 @@ namespace {
 // oversized IPC messages.
 const int kNumBookmarksToSend = 100;
 const int kNumHistoryRowsToSend = 100;
-const int kNumFavIconsToSend = 100;
+const int kNumFaviconsToSend = 100;
 }
 
 ProfileImportThread::ProfileImportThread()
@@ -156,20 +156,20 @@ void ProfileImportThread::NotifyBookmarksImportReady(
   }
 }
 
-void ProfileImportThread::NotifyFavIconsImportReady(
+void ProfileImportThread::NotifyFaviconsImportReady(
     const std::vector<history::ImportedFaviconUsage>& favicons) {
-  Send(new ProfileImportProcessHostMsg_NotifyFavIconsImportStart(
+  Send(new ProfileImportProcessHostMsg_NotifyFaviconsImportStart(
     favicons.size()));
 
   std::vector<history::ImportedFaviconUsage>::const_iterator it;
   for (it = favicons.begin(); it < favicons.end();
-       it = it + kNumFavIconsToSend) {
+       it = it + kNumFaviconsToSend) {
     std::vector<history::ImportedFaviconUsage> favicons_group;
     std::vector<history::ImportedFaviconUsage>::const_iterator end_group =
-        std::min(it + kNumFavIconsToSend, favicons.end());
+        std::min(it + kNumFaviconsToSend, favicons.end());
     favicons_group.assign(it, end_group);
 
-  Send(new ProfileImportProcessHostMsg_NotifyFavIconsImportGroup(
+  Send(new ProfileImportProcessHostMsg_NotifyFaviconsImportGroup(
       favicons_group));
   }
 }

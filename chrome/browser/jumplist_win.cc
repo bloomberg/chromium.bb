@@ -678,7 +678,7 @@ bool JumpList::AddWindow(const TabRestoreService::Window* window,
   return true;
 }
 
-bool JumpList::StartLoadingFavIcon() {
+bool JumpList::StartLoadingFavicon() {
   if (icon_urls_.empty())
     return false;
 
@@ -748,7 +748,7 @@ void JumpList::OnSegmentUsageAvailable(
   }
 
   // Send a query that retrieves the first favicon.
-  StartLoadingFavIcon();
+  StartLoadingFavicon();
 }
 
 void JumpList::OnFaviconDataAvailable(
@@ -764,7 +764,7 @@ void JumpList::OnFaviconDataAvailable(
   // if we need to load more favicons, we send another query and exit.
   if (!icon_urls_.empty())
     icon_urls_.pop_front();
-  if (StartLoadingFavIcon())
+  if (StartLoadingFavicon())
     return;
 
   // Finished loading all favicons needed by the application JumpList.

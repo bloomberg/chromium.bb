@@ -207,7 +207,7 @@ void FaviconHelper::OnFaviconDataForInitialURL(
 
   if (favicon.known_icon && !favicon.expired) {
     if (got_favicon_url_ && entry->favicon().url() != favicon.icon_url) {
-      // Mapping in the database is wrong. DownloadFavIconOrAskHistory will
+      // Mapping in the database is wrong. DownloadFaviconOrAskHistory will
       // update the mapping for this url and download the favicon if we don't
       // already have it.
       DownloadFaviconOrAskHistory(entry);

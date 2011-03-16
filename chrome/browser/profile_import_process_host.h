@@ -62,8 +62,8 @@ class ProfileImportProcessHost : public BrowserChildProcessHost {
     virtual void OnBookmarksImportGroup(
         const std::vector<ProfileWriter::BookmarkEntry>& bookmarks) {}
 
-    virtual void OnFavIconsImportStart(size_t total_favicons_count) {}
-    virtual void OnFavIconsImportGroup(
+    virtual void OnFaviconsImportStart(size_t total_favicons_count) {}
+    virtual void OnFaviconsImportGroup(
         const std::vector<history::ImportedFaviconUsage>& favicons_group) {}
 
     virtual void OnPasswordFormImportReady(

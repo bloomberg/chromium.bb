@@ -61,8 +61,8 @@ class PossibleURLModel : public ui::TableModel {
   std::vector<Result> results_;
 
   // Map Result::index -> Favicon.
-  typedef std::map<size_t, SkBitmap> FavIconMap;
-  FavIconMap favicon_map_;
+  typedef std::map<size_t, SkBitmap> FaviconMap;
+  FaviconMap favicon_map_;
 
   DISALLOW_COPY_AND_ASSIGN(PossibleURLModel);
 };

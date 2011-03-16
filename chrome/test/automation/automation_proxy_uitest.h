@@ -81,7 +81,7 @@ class ExternalTabUITestMockClient : public AutomationProxy {
 
   // Navigation using keyboard (TAB + Enter) inside the page.
   void NavigateThroughUserGesture();
-  void IgnoreFavIconNetworkRequest();
+  void IgnoreFaviconNetworkRequest();
 
   void ConnectToExternalTab(gfx::NativeWindow parent,
       const AttachExternalTabParams& attach_params);

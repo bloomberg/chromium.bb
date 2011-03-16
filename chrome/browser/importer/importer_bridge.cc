@@ -153,7 +153,7 @@ void ExternalProcessImporterBridge::AddIE7PasswordInfo(
 
 void ExternalProcessImporterBridge::SetFavicons(
     const std::vector<history::ImportedFaviconUsage>& favicons) {
-  profile_import_thread_->NotifyFavIconsImportReady(favicons);
+  profile_import_thread_->NotifyFaviconsImportReady(favicons);
 }
 
 void ExternalProcessImporterBridge::SetHistoryItems(

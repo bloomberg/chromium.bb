@@ -48,7 +48,7 @@ class ProfileImportThread : public ChildThread {
   void NotifyBookmarksImportReady(
       const std::vector<ProfileWriter::BookmarkEntry>& bookmarks,
           const std::wstring& first_folder_name, int options);
-  void NotifyFavIconsImportReady(
+  void NotifyFaviconsImportReady(
       const std::vector<history::ImportedFaviconUsage>& favicons);
   void NotifyPasswordFormReady(const webkit_glue::PasswordForm& form);
   void NotifyKeywordsReady(const std::vector<TemplateURL*>& template_urls,

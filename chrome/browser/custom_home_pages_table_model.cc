@@ -59,7 +59,7 @@ void CustomHomePagesTableModel::SetURLs(const std::vector<GURL>& urls) {
     entries_[i].url = urls[i];
     entries_[i].title.erase();
     entries_[i].icon.reset();
-    LoadTitleAndFavIcon(&(entries_[i]));
+    LoadTitleAndFavicon(&(entries_[i]));
   }
   // Complete change, so tell the view to just rebuild itself.
   if (observer_)
@@ -70,7 +70,7 @@ void CustomHomePagesTableModel::Add(int index, const GURL& url) {
   DCHECK(index >= 0 && index <= RowCount());
   entries_.insert(entries_.begin() + static_cast<size_t>(index), Entry());
   entries_[index].url = url;
-  LoadTitleAndFavIcon(&(entries_[index]));
+  LoadTitleAndFavicon(&(entries_[index]));
   if (observer_)
     observer_->OnItemsAdded(index, 1);
 }
@@ -152,7 +152,7 @@ void CustomHomePagesTableModel::SetObserver(ui::TableModelObserver* observer) {
   observer_ = observer;
 }
 
-void CustomHomePagesTableModel::LoadTitleAndFavIcon(Entry* entry) {
+void CustomHomePagesTableModel::LoadTitleAndFavicon(Entry* entry) {
   HistoryService* history_service =
       profile_->GetHistoryService(Profile::EXPLICIT_ACCESS);
   if (history_service) {
@@ -165,7 +165,7 @@ void CustomHomePagesTableModel::LoadTitleAndFavIcon(Entry* entry) {
   if (favicon_service) {
     entry->favicon_handle = favicon_service->GetFaviconForURL(entry->url,
         history::FAVICON, &query_consumer_,
-        NewCallback(this, &CustomHomePagesTableModel::OnGotFavIcon));
+        NewCallback(this, &CustomHomePagesTableModel::OnGotFavicon));
   }
 }
 
@@ -188,7 +188,7 @@ void CustomHomePagesTableModel::OnGotTitle(HistoryService::Handle handle,
   }
 }
 
-void CustomHomePagesTableModel::OnGotFavIcon(
+void CustomHomePagesTableModel::OnGotFavicon(
     FaviconService::Handle handle,
     history::FaviconData favicon) {
   int entry_index;

@@ -56,7 +56,7 @@ static const double kSnapshotMaxSizeRatio = 0.77;
 static const int kTitleHeight = 32;
 
 // The number of additional padding pixels to remove from the title width.
-static const int kFavIconPadding = 5;
+static const int kFaviconPadding = 5;
 
 class BrowserListener : public TabStripModelObserver {
  public:
@@ -429,7 +429,7 @@ void BrowserListener::InsertSnapshot(int index) {
   node.title = new WmOverviewTitle;
   node.title->Init(gfx::Size(std::max(0, cell_size.width() -
                                       WmOverviewFavicon::kIconSize -
-                                      kFavIconPadding),
+                                      kFaviconPadding),
                              kTitleHeight), node.snapshot);
   node.title->SetTitle(browser_->GetTabContentsAt(index)->GetTitle());
 

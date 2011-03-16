@@ -152,7 +152,7 @@ SkBitmap PossibleURLModel::GetIcon(int row) {
   }
 
   Result& result = results_[row];
-  FavIconMap::iterator i = favicon_map_.find(result.index);
+  FaviconMap::iterator i = favicon_map_.find(result.index);
   if (i != favicon_map_.end()) {
     // We already requested the favicon, return it.
     if (!i->second.isNull())

@@ -93,10 +93,10 @@ class ExternalProcessImporterClient
 
   // First message received when importing favicons. |total_favicons_size|
   // gives the total number of favicons to be imported.
-  virtual void OnFavIconsImportStart(size_t total_favicons_count) OVERRIDE;
+  virtual void OnFaviconsImportStart(size_t total_favicons_count) OVERRIDE;
 
   // Called when a group of favicons has been received.
-  virtual void OnFavIconsImportGroup(
+  virtual void OnFaviconsImportGroup(
       const std::vector<history::ImportedFaviconUsage>& favicons_group)
           OVERRIDE;
 

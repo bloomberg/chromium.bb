@@ -65,7 +65,7 @@ class FaviconService : public CancelableRequestProvider,
   // Requests any |icon_types| of favicon for a web page URL. |consumer| is
   // notified when the bits have been fetched. |icon_types| can be any
   // combination of IconType value, but only one icon will be returned in the
-  // priority of TOUCH_PRECOMPOSED_ICON, TOUCH_ICON and FAV_ICON.
+  // priority of TOUCH_PRECOMPOSED_ICON, TOUCH_ICON and FAVICON.
   //
   // Note: this version is intended to be used to retrieve the favicon of a
   // page that has been browsed in the past. |expired| in the callback is

@@ -8,7 +8,7 @@ namespace extension_history_api_constants {
 
 const char kAllHistoryKey[] = "allHistory";
 const char kEndTimeKey[] = "endTime";
-const char kFavIconUrlKey[] = "favIconUrl";
+const char kFaviconUrlKey[] = "favIconUrl";
 const char kIdKey[] = "id";
 const char kLastVisitdKey[] = "lastVisitTime";
 const char kMaxResultsKey[] = "maxResults";

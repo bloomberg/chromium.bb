@@ -8,7 +8,7 @@ namespace extension_tabs_module_constants {
 
 const char kAllFramesKey[] = "allFrames";
 const char kCodeKey[] = "code";
-const char kFavIconUrlKey[] = "favIconUrl";
+const char kFaviconUrlKey[] = "favIconUrl";
 const char kFileKey[] = "file";
 const char kFocusedKey[] = "focused";
 const char kFormatKey[] = "format";

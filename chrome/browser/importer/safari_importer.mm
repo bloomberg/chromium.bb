@@ -113,9 +113,9 @@ void SafariImporter::ImportBookmarks() {
   }
 
   // Import favicons.
-  sqlite_utils::scoped_sqlite_db_ptr db(OpenFavIconDB());
+  sqlite_utils::scoped_sqlite_db_ptr db(OpenFaviconDB());
   FaviconMap favicon_map;
-  ImportFavIconURLs(db.get(), &favicon_map);
+  ImportFaviconURLs(db.get(), &favicon_map);
   // Write favicons into profile.
   if (!favicon_map.empty() && !cancelled()) {
     std::vector<history::ImportedFaviconUsage> favicons;
@@ -124,7 +124,7 @@ void SafariImporter::ImportBookmarks() {
   }
 }
 
-sqlite3* SafariImporter::OpenFavIconDB() {
+sqlite3* SafariImporter::OpenFaviconDB() {
   // Construct ~/Library/Safari/WebIcons.db path
   NSString* library_dir = [NSString
       stringWithUTF8String:library_dir_.value().c_str()];
@@ -141,7 +141,7 @@ sqlite3* SafariImporter::OpenFavIconDB() {
   return favicons_db;
 }
 
-void SafariImporter::ImportFavIconURLs(sqlite3* db, FaviconMap* favicon_map) {
+void SafariImporter::ImportFaviconURLs(sqlite3* db, FaviconMap* favicon_map) {
   SQLStatement s;
   const char* stmt = "SELECT iconID, url FROM PageURL;";
   if (s.prepare(db, stmt) != SQLITE_OK)

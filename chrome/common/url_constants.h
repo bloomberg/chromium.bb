@@ -78,7 +78,7 @@ extern const char kChromeUIDownloadsURL[];
 extern const char kChromeUIExtensionIconURL[];
 extern const char kChromeUIExtensionsURL[];
 extern const char kChromeUIFlagsURL[];
-extern const char kChromeUIFavIconURL[];
+extern const char kChromeUIFaviconURL[];
 extern const char kChromeUIHistory2URL[];
 extern const char kChromeUIHistoryURL[];
 extern const char kChromeUIIPCURL[];

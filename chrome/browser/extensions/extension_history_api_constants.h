@@ -13,7 +13,7 @@ namespace extension_history_api_constants {
 // Keys.
 extern const char kAllHistoryKey[];
 extern const char kEndTimeKey[];
-extern const char kFavIconUrlKey[];
+extern const char kFaviconUrlKey[];
 extern const char kIdKey[];
 extern const char kLastVisitdKey[];
 extern const char kMaxResultsKey[];

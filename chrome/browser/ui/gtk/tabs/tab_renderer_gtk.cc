@@ -845,10 +845,10 @@ void TabRendererGtk::PaintIcon(gfx::Canvas* canvas) {
         } else {
           // If the favicon is an app icon, it is allowed to be drawn slightly
           // larger than the standard favicon.
-          int favIconHeightOffset = data_.app ? -2 : 0;
-          int favIconWidthDelta = data_.app ?
+          int faviconHeightOffset = data_.app ? -2 : 0;
+          int faviconWidthDelta = data_.app ?
               data_.favicon.width() - kFaviconSize : 0;
-          int favIconHeightDelta = data_.app ?
+          int faviconHeightDelta = data_.app ?
               data_.favicon.height() - kFaviconSize : 0;
 
           // TODO(pkasting): Use code in tab_icon_view.cc:PaintIcon() (or switch
@@ -856,12 +856,12 @@ void TabRendererGtk::PaintIcon(gfx::Canvas* canvas) {
           canvas->DrawBitmapInt(data_.favicon, 0, 0,
                                 data_.favicon.width(),
                                 data_.favicon.height(),
-                                favicon_bounds_.x() - favIconWidthDelta/2,
-                                favicon_bounds_.y() + favIconHeightOffset
-                                    - favIconHeightDelta/2
+                                favicon_bounds_.x() - faviconWidthDelta/2,
+                                favicon_bounds_.y() + faviconHeightOffset
+                                    - faviconHeightDelta/2
                                     + favicon_hiding_offset_,
-                                kFaviconSize + favIconWidthDelta,
-                                kFaviconSize + favIconHeightDelta,
+                                kFaviconSize + faviconWidthDelta,
+                                kFaviconSize + faviconHeightDelta,
                                 true);
         }
       }

@@ -421,10 +421,10 @@ IPC_MESSAGE_CONTROL3(ProfileImportProcessHostMsg_NotifyBookmarksImportStart,
 IPC_MESSAGE_CONTROL1(ProfileImportProcessHostMsg_NotifyBookmarksImportGroup,
                      std::vector<ProfileWriter::BookmarkEntry>)
 
-IPC_MESSAGE_CONTROL1(ProfileImportProcessHostMsg_NotifyFavIconsImportStart,
-                     int  /* total number of FavIcons */)
+IPC_MESSAGE_CONTROL1(ProfileImportProcessHostMsg_NotifyFaviconsImportStart,
+                     int  /* total number of favicons */)
 
-IPC_MESSAGE_CONTROL1(ProfileImportProcessHostMsg_NotifyFavIconsImportGroup,
+IPC_MESSAGE_CONTROL1(ProfileImportProcessHostMsg_NotifyFaviconsImportGroup,
                      std::vector<history::ImportedFaviconUsage> )
 
 IPC_MESSAGE_CONTROL1(ProfileImportProcessHostMsg_NotifyPasswordFormReady,

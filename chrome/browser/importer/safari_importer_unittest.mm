@@ -112,13 +112,13 @@ TEST_F(SafariImporterTest, BookmarkImport) {
   }
 }
 
-TEST_F(SafariImporterTest, FavIconImport) {
+TEST_F(SafariImporterTest, FaviconImport) {
   scoped_refptr<SafariImporter> importer(GetSafariImporter());
-  sqlite_utils::scoped_sqlite_db_ptr db(importer->OpenFavIconDB());
+  sqlite_utils::scoped_sqlite_db_ptr db(importer->OpenFaviconDB());
   ASSERT_TRUE(db.get() != NULL);
 
   SafariImporter::FaviconMap favicon_map;
-  importer->ImportFavIconURLs(db.get(), &favicon_map);
+  importer->ImportFaviconURLs(db.get(), &favicon_map);
 
   std::vector<history::ImportedFaviconUsage> favicons;
   importer->LoadFaviconData(db.get(), favicon_map, &favicons);

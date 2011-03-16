@@ -191,7 +191,7 @@ void ExternalProcessImporterClient::OnBookmarksImportGroup(
   }
 }
 
-void ExternalProcessImporterClient::OnFavIconsImportStart(
+void ExternalProcessImporterClient::OnFaviconsImportStart(
     size_t total_favicons_count) {
   if (cancelled_)
     return;
@@ -200,7 +200,7 @@ void ExternalProcessImporterClient::OnFavIconsImportStart(
   favicons_.reserve(total_favicons_count);
 }
 
-void ExternalProcessImporterClient::OnFavIconsImportGroup(
+void ExternalProcessImporterClient::OnFaviconsImportGroup(
     const std::vector<history::ImportedFaviconUsage>& favicons_group) {
   if (cancelled_)
     return;

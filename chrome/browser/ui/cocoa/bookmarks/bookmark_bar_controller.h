@@ -305,8 +305,8 @@ willAnimateFromState:(bookmarks::VisualState)oldState
 // Import bookmarks from another browser.
 - (IBAction)importBookmarks:(id)sender;
 
-// Provide a favIcon for a bookmark node.  May return nil.
-- (NSImage*)favIconForNode:(const BookmarkNode*)node;
+// Provide a favicon for a bookmark node.  May return nil.
+- (NSImage*)faviconForNode:(const BookmarkNode*)node;
 
 // Used for situations where the bookmark bar folder menus should no longer
 // be actively popping up. Called when the window loses focus, a click has

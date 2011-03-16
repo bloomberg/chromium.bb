@@ -502,16 +502,16 @@ void RecordAppLaunch(Profile* profile, GURL url) {
   return [self isInState:bookmarks::kShowingState] ? 0 : 1;
 }
 
-- (NSImage*)favIconForNode:(const BookmarkNode*)node {
+- (NSImage*)faviconForNode:(const BookmarkNode*)node {
   if (!node)
     return defaultImage_;
 
   if (node->is_folder())
     return folderImage_;
 
-  const SkBitmap& favIcon = bookmarkModel_->GetFavicon(node);
-  if (!favIcon.isNull())
-    return gfx::SkBitmapToNSImage(favIcon);
+  const SkBitmap& favicon = bookmarkModel_->GetFavicon(node);
+  if (!favicon.isNull())
+    return gfx::SkBitmapToNSImage(favicon);
 
   return defaultImage_;
 }
@@ -1004,7 +1004,7 @@ void RecordAppLaunch(Profile* profile, GURL url) {
                                                  action:nil
                                           keyEquivalent:@""] autorelease];
   [menu addItem:item];
-  [item setImage:[self favIconForNode:child]];
+  [item setImage:[self faviconForNode:child]];
   if (child->is_folder()) {
     NSMenu* submenu = [[[NSMenu alloc] initWithTitle:title] autorelease];
     [menu setSubmenu:submenu forItem:item];
@@ -1508,7 +1508,7 @@ void RecordAppLaunch(Profile* profile, GURL url) {
 // Return an autoreleased NSCell suitable for a bookmark button.
 // TODO(jrg): move much of the cell config into the BookmarkButtonCell class.
 - (BookmarkButtonCell*)cellForBookmarkNode:(const BookmarkNode*)node {
-  NSImage* image = node ? [self favIconForNode:node] : nil;
+  NSImage* image = node ? [self faviconForNode:node] : nil;
   NSMenu* menu = node && node->is_folder() ? buttonFolderContextMenu_ :
       buttonContextMenu_;
   BookmarkButtonCell* cell = [BookmarkButtonCell buttonCellForNode:node
@@ -1917,7 +1917,7 @@ static BOOL ValueInRangeInclusive(CGFloat low, CGFloat value, CGFloat high) {
     const BookmarkNode* cellnode = [button bookmarkNode];
     if (cellnode == node) {
       [[button cell] setBookmarkCellText:[button title]
-                                   image:[self favIconForNode:node]];
+                                   image:[self faviconForNode:node]];
       // Adding an image means we might need more room for the
       // bookmark.  Test for it by growing the button (if needed)
       // and shifting everything else over.
