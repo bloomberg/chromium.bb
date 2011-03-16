@@ -181,7 +181,7 @@ TEST_F(ResourceDispatcherTest, CrossSiteOnunloadCookie) {
   EXPECT_TRUE(tab->GetTabTitle(&tab_title));
   EXPECT_EQ(L"set cookie on unload", tab_title);
 
-  // Navigate to a new cross-site page, to dispatch unload event and set the
+  // Navigate to a new cross-site page, to dispatch unload event and set theq
   // cookie.
   CheckTitleTest("content-sniffer-test0.html",
                  "Content Sniffer Test 0", 1);
@@ -202,7 +202,7 @@ TEST_F(ResourceDispatcherTest, CrossSiteOnunloadCookie) {
 // app isn't stripped of debug symbols, this takes about five minutes to
 // complete and isn't conducive to quick turnarounds. As we don't currently
 // strip the app on the build bots, this is bad times.
-TEST_F(ResourceDispatcherTest, CrossSiteAfterCrash) {
+TEST_F(ResourceDispatcherTest, FAILS_CrossSiteAfterCrash) {
   // This test only works in multi-process mode
   if (ProxyLauncher::in_process_renderer())
     return;
