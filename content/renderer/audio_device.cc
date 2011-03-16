@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/renderer/audio_device.h"
+#include "content/renderer/audio_device.h"
 
 #include "base/singleton.h"
 #include "chrome/common/render_messages.h"

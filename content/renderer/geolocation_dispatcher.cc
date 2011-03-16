@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/renderer/geolocation_dispatcher.h"
+#include "content/renderer/geolocation_dispatcher.h"
 
 #include "chrome/common/render_messages.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebGeolocationPermissionRequest.h"

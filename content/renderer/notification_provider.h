@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_RENDERER_NOTIFICATION_PROVIDER_H_
-#define CHROME_RENDERER_NOTIFICATION_PROVIDER_H_
+#ifndef CONTENT_RENDERER_NOTIFICATION_PROVIDER_H_
+#define CONTENT_RENDERER_NOTIFICATION_PROVIDER_H_
 #pragma once
 
 #include "chrome/common/desktop_notifications/active_notification_tracker.h"
@@ -55,4 +55,4 @@ class NotificationProvider : public RenderViewObserver,
   DISALLOW_COPY_AND_ASSIGN(NotificationProvider);
 };
 
-#endif  // CHROME_RENDERER_NOTIFICATION_PROVIDER_H_
+#endif  // CONTENT_RENDERER_NOTIFICATION_PROVIDER_H_

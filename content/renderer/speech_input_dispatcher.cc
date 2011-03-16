@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/renderer/speech_input_dispatcher.h"
+#include "content/renderer/speech_input_dispatcher.h"
 
 #include "base/utf_string_conversions.h"
 #include "chrome/renderer/render_view.h"

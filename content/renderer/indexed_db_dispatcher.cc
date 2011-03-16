@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/renderer/indexed_db_dispatcher.h"
+#include "content/renderer/indexed_db_dispatcher.h"
 
 #include "chrome/renderer/render_thread.h"
 #include "chrome/renderer/render_view.h"

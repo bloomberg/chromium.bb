@@ -7,8 +7,8 @@
 // IO thread (main thread of render process), it intercepts audio messages
 // and process them on IO thread since these messages are time critical.
 
-#ifndef CHROME_RENDERER_AUDIO_MESSAGE_FILTER_H_
-#define CHROME_RENDERER_AUDIO_MESSAGE_FILTER_H_
+#ifndef CONTENT_RENDERER_AUDIO_MESSAGE_FILTER_H_
+#define CONTENT_RENDERER_AUDIO_MESSAGE_FILTER_H_
 #pragma once
 
 #include "base/gtest_prod_util.h"
@@ -118,4 +118,4 @@ class AudioMessageFilter : public IPC::ChannelProxy::MessageFilter {
   DISALLOW_COPY_AND_ASSIGN(AudioMessageFilter);
 };
 
-#endif  // CHROME_RENDERER_AUDIO_MESSAGE_FILTER_H_
+#endif  // CONTENT_RENDERER_AUDIO_MESSAGE_FILTER_H_

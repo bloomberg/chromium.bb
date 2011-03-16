@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_RENDERER_INDEXED_DB_DISPATCHER_H_
-#define CHROME_RENDERER_INDEXED_DB_DISPATCHER_H_
+#ifndef CONTENT_RENDERER_INDEXED_DB_DISPATCHER_H_
+#define CONTENT_RENDERER_INDEXED_DB_DISPATCHER_H_
 #pragma once
 
 #include "base/id_map.h"
@@ -173,4 +173,4 @@ class IndexedDBDispatcher : public IPC::Channel::Listener {
   DISALLOW_COPY_AND_ASSIGN(IndexedDBDispatcher);
 };
 
-#endif  // CHROME_RENDERER_INDEXED_DB_DISPATCHER_H_
+#endif  // CONTENT_RENDERER_INDEXED_DB_DISPATCHER_H_

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/renderer/device_orientation_dispatcher.h"
+#include "content/renderer/device_orientation_dispatcher.h"
 
 #include "chrome/common/render_messages.h"
 #include "chrome/common/render_messages_params.h"

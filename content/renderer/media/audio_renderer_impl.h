@@ -43,7 +43,7 @@
 #include "base/scoped_ptr.h"
 #include "base/shared_memory.h"
 #include "base/synchronization/lock.h"
-#include "chrome/renderer/audio_message_filter.h"
+#include "content/renderer/audio_message_filter.h"
 #include "media/audio/audio_io.h"
 #include "media/audio/audio_manager.h"
 #include "media/base/filters.h"

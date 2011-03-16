@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/renderer/cookie_message_filter.h"
+#include "content/renderer/cookie_message_filter.h"
 
 #include "chrome/common/render_messages.h"
 

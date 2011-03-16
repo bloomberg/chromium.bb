@@ -8,7 +8,6 @@
 
 #include "chrome/common/render_messages.h"
 #include "chrome/common/render_messages_params.h"
-#include "chrome/renderer/audio_message_filter.h"
 #include "chrome/renderer/render_view.h"
 #include "chrome/renderer/render_thread.h"
 #include "media/base/filter_host.h"

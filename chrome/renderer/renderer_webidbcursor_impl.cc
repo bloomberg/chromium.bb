@@ -4,9 +4,9 @@
 
 #include "chrome/renderer/renderer_webidbcursor_impl.h"
 
-#include "chrome/renderer/indexed_db_dispatcher.h"
 #include "chrome/renderer/render_thread.h"
 #include "content/common/indexed_db_messages.h"
+#include "content/renderer/indexed_db_dispatcher.h"
 
 using WebKit::WebExceptionCode;
 using WebKit::WebIDBCallbacks;

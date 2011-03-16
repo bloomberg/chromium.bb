@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_RENDERER_DEVICE_ORIENTATION_DISPATCHER_H_
-#define CHROME_RENDERER_DEVICE_ORIENTATION_DISPATCHER_H_
+#ifndef CONTENT_RENDERER_DEVICE_ORIENTATION_DISPATCHER_H_
+#define CONTENT_RENDERER_DEVICE_ORIENTATION_DISPATCHER_H_
 
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebDeviceOrientationClient.h"
 
@@ -39,4 +39,4 @@ class DeviceOrientationDispatcher : public RenderViewObserver,
   bool started_;
 };
 
-#endif  // CHROME_RENDERER_DEVICE_ORIENTATION_DISPATCHER_H_
+#endif  // CONTENT_RENDERER_DEVICE_ORIENTATION_DISPATCHER_H_
