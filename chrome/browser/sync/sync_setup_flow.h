@@ -62,7 +62,8 @@ class SyncSetupFlow : public HtmlDialogUIDelegate {
 
   // Fills |args| for the enter passphrase screen.
   static void GetArgsForEnterPassphrase(
-      const ProfileSyncService* service,
+      bool tried_creating_explicit_passphrase,
+      bool tried_setting_explicit_passphrase,
       DictionaryValue* args);
 
   // Triggers a state machine transition to advance_state.
@@ -168,6 +169,11 @@ class SyncSetupFlow : public HtmlDialogUIDelegate {
   // TODO(akalin): Add the necessary support to the other OSes and use
   // this for them.
   gfx::NativeWindow html_dialog_window_;
+
+  // Set to true if we've tried creating/setting an explicit passphrase, so we
+  // can appropriately reflect this in the UI.
+  bool tried_creating_explicit_passphrase_;
+  bool tried_setting_explicit_passphrase_;
 
   DISALLOW_COPY_AND_ASSIGN(SyncSetupFlow);
 };

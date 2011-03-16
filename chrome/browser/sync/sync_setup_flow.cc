@@ -390,7 +390,9 @@ SyncSetupFlow::SyncSetupFlow(SyncSetupWizard::State start_state,
       flow_handler_(new FlowHandler()),
       owns_flow_handler_(true),
       service_(service),
-      html_dialog_window_(NULL) {
+      html_dialog_window_(NULL),
+      tried_creating_explicit_passphrase_(false),
+      tried_setting_explicit_passphrase_(false) {
   flow_handler_->set_flow(this);
 }
 
@@ -509,12 +511,14 @@ void SyncSetupFlow::GetArgsForGaiaLogin(const ProfileSyncService* service,
 
 // static
 void SyncSetupFlow::GetArgsForEnterPassphrase(
-    const ProfileSyncService* service, DictionaryValue* args) {
+    bool tried_creating_explicit_passphrase,
+    bool tried_setting_explicit_passphrase,
+    DictionaryValue* args) {
   args->SetString("iframeToShow", "passphrase");
   args->SetBoolean("passphrase_creation_rejected",
-                   service->tried_creating_explicit_passphrase());
+                   tried_creating_explicit_passphrase);
   args->SetBoolean("passphrase_setting_rejected",
-                   service->tried_setting_explicit_passphrase());
+                   tried_setting_explicit_passphrase);
 }
 
 // static
@@ -639,7 +643,10 @@ void SyncSetupFlow::Advance(SyncSetupWizard::State advance_state) {
     }
     case SyncSetupWizard::ENTER_PASSPHRASE: {
       DictionaryValue args;
-      SyncSetupFlow::GetArgsForEnterPassphrase(service_, &args);
+      SyncSetupFlow::GetArgsForEnterPassphrase(
+          tried_creating_explicit_passphrase_,
+          tried_setting_explicit_passphrase_,
+          &args);
       flow_handler_->ShowPassphraseEntry(args);
       break;
     }
@@ -712,7 +719,7 @@ SyncSetupFlow* SyncSetupFlow::Run(ProfileSyncService* service,
   else if (start == SyncSetupWizard::CONFIGURE)
     SyncSetupFlow::GetArgsForConfigure(service, &args);
   else if (start == SyncSetupWizard::ENTER_PASSPHRASE)
-    SyncSetupFlow::GetArgsForEnterPassphrase(service, &args);
+    SyncSetupFlow::GetArgsForEnterPassphrase(false, false, &args);
   else if (start == SyncSetupWizard::PASSPHRASE_MIGRATION)
     args.SetString("iframeToShow", "firstpassphrase");
 
@@ -760,6 +767,7 @@ void SyncSetupFlow::OnUserConfigured(const SyncConfiguration& configuration) {
   if (configuration.use_secondary_passphrase &&
       !service_->IsUsingSecondaryPassphrase()) {
     service_->SetPassphrase(configuration.secondary_passphrase, true, true);
+    tried_creating_explicit_passphrase_ = true;
   }
 
   service_->OnUserChoseDatatypes(configuration.sync_everything,
@@ -769,6 +777,7 @@ void SyncSetupFlow::OnUserConfigured(const SyncConfiguration& configuration) {
 void SyncSetupFlow::OnPassphraseEntry(const std::string& passphrase) {
   Advance(SyncSetupWizard::SETTING_UP);
   service_->SetPassphrase(passphrase, true, false);
+  tried_setting_explicit_passphrase_ = true;
 }
 
 void SyncSetupFlow::OnPassphraseCancel() {
@@ -786,6 +795,7 @@ void SyncSetupFlow::OnFirstPassphraseEntry(const std::string& option,
 
   if (option == "explicit") {
     service_->SetPassphrase(passphrase, true, true);
+    tried_creating_explicit_passphrase_ = true;
   } else if (option == "nothanks") {
     // User opted out of encrypted sync, need to turn off encrypted
     // data types.

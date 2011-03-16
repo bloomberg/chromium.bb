@@ -65,8 +65,6 @@ ProfileSyncService::ProfileSyncService(ProfileSyncFactory* factory,
                                        Profile* profile,
                                        const std::string& cros_user)
     : last_auth_error_(AuthError::None()),
-      tried_creating_explicit_passphrase_(false),
-      tried_setting_explicit_passphrase_(false),
       observed_passphrase_required_(false),
       passphrase_required_for_decryption_(false),
       passphrase_migration_in_progress_(false),
@@ -680,8 +678,6 @@ void ProfileSyncService::OnPassphraseAccepted() {
 
   NotifyObservers();
   observed_passphrase_required_ = false;
-  tried_setting_explicit_passphrase_ = false;
-  tried_creating_explicit_passphrase_ = false;
 
   wizard_.Step(SyncSetupWizard::DONE);
 }
@@ -1118,10 +1114,6 @@ void ProfileSyncService::SetPassphrase(const std::string& passphrase,
     cached_passphrase_.is_creation = is_creation;
   }
 
-  if (is_explicit && is_creation)
-    tried_creating_explicit_passphrase_ = true;
-  else if (is_explicit)
-    tried_setting_explicit_passphrase_ = true;
 }
 
 void ProfileSyncService::EncryptDataTypes(

@@ -266,14 +266,6 @@ class ProfileSyncService : public browser_sync::SyncFrontend,
     return is_auth_in_progress_;
   }
 
-  bool tried_creating_explicit_passphrase() const {
-    return tried_creating_explicit_passphrase_;
-  }
-
-  bool tried_setting_explicit_passphrase() const {
-    return tried_setting_explicit_passphrase_;
-  }
-
   bool observed_passphrase_required() const {
     return observed_passphrase_required_;
   }
@@ -508,14 +500,6 @@ class ProfileSyncService : public browser_sync::SyncFrontend,
 
   // Cache of the last name the client attempted to authenticate.
   std::string last_attempted_user_email_;
-
-  // Whether the user has tried creating an explicit passphrase on this
-  // machine.
-  bool tried_creating_explicit_passphrase_;
-
-  // Whether the user has tried setting an explicit passphrase on this
-  // machine.
-  bool tried_setting_explicit_passphrase_;
 
   // Whether we have seen a SYNC_PASSPHRASE_REQUIRED since initializing the
   // backend, telling us that it is safe to send a passphrase down ASAP.
