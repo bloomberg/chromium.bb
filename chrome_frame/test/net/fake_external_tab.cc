@@ -218,25 +218,11 @@ void FakeExternalTab::Initialize() {
   g_browser_process->SetApplicationLocale("en-US");
 
   RenderProcessHost::set_run_renderer_in_process(true);
-
-  // Must register prefs before calling into the profile code.
-  PrefService* local_state = browser_process_->local_state();
-  local_state->RegisterStringPref(prefs::kApplicationLocale, "");
-  local_state->RegisterBooleanPref(prefs::kMetricsReportingEnabled, false);
-  browser::RegisterLocalState(local_state);
+  browser::RegisterLocalState(browser_process_->local_state());
 
   FilePath profile_path(ProfileManager::GetDefaultProfileDir(user_data()));
   Profile* profile = g_browser_process->profile_manager()->GetProfile(
       profile_path, false);
-  PrefService* prefs = profile->GetPrefs();
-  DCHECK(prefs != NULL);
-  WebCacheManager::RegisterPrefs(prefs);
-  // Override some settings to avoid hitting some preferences that have not
-  // been registered.
-  prefs->SetBoolean(prefs::kPasswordManagerEnabled, false);
-  prefs->SetBoolean(prefs::kAlternateErrorPagesEnabled, false);
-  prefs->SetBoolean(prefs::kSafeBrowsingEnabled, false);
-  prefs->Set(prefs::kProxy, *ProxyConfigDictionary::CreateDirect());
   // Create the child threads.
   g_browser_process->db_thread();
   g_browser_process->file_thread();
