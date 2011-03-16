@@ -224,12 +224,6 @@ class PolicyJson(skeleton_gatherer.SkeletonGatherer):
       self._AddNontranslateableChunk("      },\n")
     self._AddNontranslateableChunk("  },\n")
 
-  def _AddPlaceholders(self):
-    '''Adds the 'placeholders' section to the output.'''
-    self._AddNontranslateableChunk("  'placeholders':\n")
-    self._AddNontranslateableChunk(
-        pprint.pformat(self.data['placeholders'], indent=2, depth=2))
-
   # Although we use the RegexpGatherer base class, we do not use the
   # _RegExpParse method of that class to implement Parse().  Instead, we
   # parse using a DOM parser.
@@ -245,7 +239,6 @@ class PolicyJson(skeleton_gatherer.SkeletonGatherer):
     self._AddItems(self.data['policy_definitions'], 'policy', None, 2)
     self._AddNontranslateableChunk("  ],\n")
     self._AddMessages()
-    self._AddPlaceholders()
     self._AddNontranslateableChunk('\n}')
 
   def Escape(self, text):

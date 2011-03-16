@@ -38,6 +38,7 @@ class PolicyTemplateGeneratorUnittest(unittest.TestCase):
     config = {
       'app_name': '_app_name',
       'frame_name': '_frame_name',
+      'os_name': '_os_name',
     }
     if not 'messages' in policy_data:
       policy_data['messages'] = {}
@@ -189,20 +190,14 @@ class PolicyTemplateGeneratorUnittest(unittest.TestCase):
             {
               'name': 'Policy1',
               'caption': '1. app_name -- $1',
-              'label': '2. placeholder -- $2',
+              'label': '2. os_name -- $2',
               'desc': '3. frame_name -- $3',
               'type': 'string',
               'supported_on': []
             },
           ]
         }
-      ],
-      'placeholders': [
-         {
-           'key': '$2',
-           'value': 'Placeholder nr. 2.'
-         }
-       ],
+      ]
     }
     class LocalMockWriter(mock_writer.MockWriter):
       def WritePolicy(self, policy):
@@ -210,7 +205,7 @@ class PolicyTemplateGeneratorUnittest(unittest.TestCase):
           self.tester.assertEquals(policy['caption'],
                                    '1. app_name -- _app_name')
           self.tester.assertEquals(policy['label'],
-                                   '2. placeholder -- Placeholder nr. 2.')
+                                   '2. os_name -- _os_name')
           self.tester.assertEquals(policy['desc'],
                                    '3. frame_name -- _frame_name')
         elif policy['name'] == 'Group1':
@@ -281,7 +276,9 @@ class PolicyTemplateGeneratorUnittest(unittest.TestCase):
               'type': 'string',
               'caption': '',
               'desc': '',
-              'supported_on': ['chrome.aaa:8-', 'chrome.bbb:8-', 'chrome.ccc:8-']
+              'supported_on': [
+                'chrome.aaa:8-', 'chrome.bbb:8-', 'chrome.ccc:8-'
+              ]
             },
             {
               'name': 'Group1Policy2',

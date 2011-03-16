@@ -96,6 +96,13 @@
 #   because doing so would break the deployed wire format!
 #   For your editing convenience: highest ID currently used: 79
 #
+# Placeholders:
+#   The following placeholder strings are automatically substituted:
+#     $1 -> Google Chrome / Chromium
+#     $2 -> Google Chrome OS / Chromium OS
+#     $3 -> Google Chrome Frame / Chromium Frame
+#     $6 is reserved for doc_writer
+#
   'policy_definitions': [
     {
       'name': 'Homepage',
@@ -503,7 +510,7 @@
       If you choose to auto detect the proxy server, all other options are ignored.
 
       For detailed examples, visit:
-      <ph name="PROXY_HELP_URL">$2<ex>http://www.chromium.org/developers/design-documents/network-settings#TOC-Command-line-options-for-proxy-sett</ex></ph>
+      <ph name="PROXY_HELP_URL">http://www.chromium.org/developers/design-documents/network-settings#TOC-Command-line-options-for-proxy-sett<ex>http://www.chromium.org/developers/design-documents/network-settings#TOC-Command-line-options-for-proxy-sett</ex></ph>
 
       If you enable this setting, <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> ignores all proxy-related options specified from the command line.''',
       'policies': [
@@ -553,7 +560,7 @@
           If you choose to use a .pac proxy script, you must specify the URL to the script in 'URL to a proxy .pac file'.
 
           For detailed examples, visit:
-          <ph name="PROXY_HELP_URL">$2<ex>http://www.chromium.org/developers/design-documents/network-settings#TOC-Command-line-options-for-proxy-sett</ex></ph>
+          <ph name="PROXY_HELP_URL">http://www.chromium.org/developers/design-documents/network-settings#TOC-Command-line-options-for-proxy-sett<ex>http://www.chromium.org/developers/design-documents/network-settings#TOC-Command-line-options-for-proxy-sett</ex></ph>
 
           If you enable this setting, <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> ignores all proxy-related options specified from the command line.''',
         },
@@ -599,7 +606,7 @@
           If you choose manual proxy settings, you can specify further options in 'Address or URL of proxy server', 'URL to a proxy .pac file' and 'Comma-separated list of proxy bypass rules'.
 
           For detailed examples, visit:
-          <ph name="PROXY_HELP_URL">$2<ex>http://www.chromium.org/developers/design-documents/network-settings#TOC-Command-line-options-for-proxy-sett</ex></ph>
+          <ph name="PROXY_HELP_URL">http://www.chromium.org/developers/design-documents/network-settings#TOC-Command-line-options-for-proxy-sett<ex>http://www.chromium.org/developers/design-documents/network-settings#TOC-Command-line-options-for-proxy-sett</ex></ph>
 
           If you enable this setting, <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> ignores all proxy-related options specified from the command line.''',
         },
@@ -616,7 +623,7 @@
           This policy only takes effect if you have selected manual proxy settings at 'Choose how to specify proxy server settings'.
 
           For more options and detailed examples, visit:
-          <ph name="PROXY_HELP_URL">$2<ex>http://www.chromium.org/developers/design-documents/network-settings#TOC-Command-line-options-for-proxy-sett</ex></ph>''',
+          <ph name="PROXY_HELP_URL">http://www.chromium.org/developers/design-documents/network-settings#TOC-Command-line-options-for-proxy-sett<ex>http://www.chromium.org/developers/design-documents/network-settings#TOC-Command-line-options-for-proxy-sett</ex></ph>''',
         },
         {
           'name': 'ProxyPacUrl',
@@ -631,7 +638,7 @@
           This policy only takes effect if you have selected manual proxy settings at 'Choose how to specify proxy server settings'.
 
           For detailed examples, visit:
-          <ph name="PROXY_HELP_URL">$2<ex>http://www.chromium.org/developers/design-documents/network-settings#TOC-Command-line-options-for-proxy-sett</ex></ph>''',
+          <ph name="PROXY_HELP_URL">http://www.chromium.org/developers/design-documents/network-settings#TOC-Command-line-options-for-proxy-sett<ex>http://www.chromium.org/developers/design-documents/network-settings#TOC-Command-line-options-for-proxy-sett</ex></ph>''',
         },
         {
           'name': 'ProxyBypassList',
@@ -646,7 +653,7 @@
           This policy only takes effect if you have selected manual proxy settings at 'Choose how to specify proxy server settings'.
 
           For more detailed examples, visit:
-          <ph name="PROXY_HELP_URL">$2<ex>http://www.chromium.org/developers/design-documents/network-settings#TOC-Command-line-options-for-proxy-sett</ex></ph>''',
+          <ph name="PROXY_HELP_URL">http://www.chromium.org/developers/design-documents/network-settings#TOC-Command-line-options-for-proxy-sett<ex>http://www.chromium.org/developers/design-documents/network-settings#TOC-Command-line-options-for-proxy-sett</ex></ph>''',
           'label': '''Comma-separated list of proxy bypass rules''',
         },
       ],
@@ -1378,7 +1385,7 @@
 
       If you disable this setting, users will not be asked for a password to wake ChromeOS devices from sleep.
 
-      If you enable or disable this setting, users cannot change or override this setting in <ph name="PRODUCT_NAME">$1<ex>Google Chrome OS</ex></ph>.''',
+      If you enable or disable this setting, users cannot change or override this setting in <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph>.''',
     },
     {
       'name': 'InstantEnabled',
@@ -1448,7 +1455,7 @@
       'text': '''This is the list of policies that <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> respects.
 
       You don't need to change these settings by hand!  You can download easy-to-use templates from
-      <ph name="POLICY_TEMPLATE_DOWNLOAD_URL">$5<ex>
+      <ph name="POLICY_TEMPLATE_DOWNLOAD_URL">http://www.chromium.org/administrators/policy-templates<ex>
       http://www.chromium.org/administrators/policy-templates</ex></ph>.
 
       The list of supported policies is the same for Chromium and Google Chrome, but their Windows registry locations differ.
@@ -1484,20 +1491,5 @@
       'text': 'deprecated',
     }
   },
-  'placeholders': [
-    # Note: keys $1 and $3 are reserved for Chromium and Chromium Frame.
-    # Key $6 is reserved for doc_writer.
-    {
-      'key': '$2',
-      'value': 'http://www.chromium.org/developers/design-documents/network-settings#TOC-Command-line-options-for-proxy-sett'
-    },
-    {
-      'key': '$4',
-      'value': 'http://www.chromium.org/developers/how-tos/chrome-frame-getting-started'
-    },
-    {
-      'key': '$5',
-      'value': 'http://www.chromium.org/administrators/policy-templates'
-    },
-  ]
+  'placeholders': [],
 }

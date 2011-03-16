@@ -18,10 +18,8 @@ class PolicyTemplateGenerator:
   def _ImportMessage(self, msg_txt):
     # Replace the placeholder of app name.
     msg_txt = msg_txt.replace('$1', self._config['app_name'])
+    msg_txt = msg_txt.replace('$2', self._config['os_name'])
     msg_txt = msg_txt.replace('$3', self._config['frame_name'])
-    # Replace other placeholders.
-    for placeholder in self._policy_data['placeholders']:
-      msg_txt = msg_txt.replace(placeholder['key'], placeholder['value'])
     # Strip spaces and escape newlines.
     lines = msg_txt.split('\n')
     lines = [line.strip() for line in lines]

@@ -247,27 +247,6 @@ class PolicyTemplateChecker(object):
         self.warning_count += 1
         print 'In message %s: Warning: Unknown key: %s' % (key, vkey)
 
-  def _CheckPlaceholder(self, placeholder):
-    if not isinstance(placeholder, dict):
-      self._Error('Each placeholder must be a dictionary.',
-                  'placeholder', None, placeholder)
-      return
-
-    # Each placeholder must have a 'key'.
-    key = self._CheckContains(placeholder, 'key', str,
-                              parent_element='placeholder')
-
-    # Each placeholder must have a 'value'.
-    self._CheckContains(placeholder, 'value', str, parent_element='placeholder',
-                        identifier=key)
-
-    # There should not be any unknown keys in |placeholder|.
-    for k in placeholder:
-      if k not in ('key', 'value'):
-        self.warning_count += 1
-        name = str(placeholder.get('key'), placeholder)
-        print 'In placeholder %s: Warning: Unknown key: %s' % (name, k)
-
   def _LeadingWhitespace(self, line):
     match = LEADING_WHITESPACE.match(line)
     if match:
@@ -385,15 +364,6 @@ class PolicyTemplateChecker(object):
     if messages is not None:
       for message in messages:
         self._CheckMessage(message, messages[message])
-
-    # Check placeholders.
-    placeholders = self._CheckContains(data, 'placeholders', list,
-                                       parent_element=None,
-                                       container_name='The root element',
-                                       offending=None)
-    if placeholders is not None:
-      for placeholder in placeholders:
-        self._CheckPlaceholder(placeholder)
 
     # Second part: check formatting.
     self._CheckFormat(filename)
