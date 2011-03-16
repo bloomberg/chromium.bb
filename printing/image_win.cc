@@ -45,7 +45,7 @@ class DisableFontSmoothing {
 namespace printing {
 
 bool Image::LoadMetafile(const NativeMetafile& metafile) {
-    gfx::Rect rect(metafile.GetBounds());
+    gfx::Rect rect(metafile.GetPageBounds(1));
   DisableFontSmoothing disable_in_this_scope;
 
   // Create a temporary HDC and bitmap to retrieve the rendered data.

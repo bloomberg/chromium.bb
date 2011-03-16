@@ -17,7 +17,8 @@ namespace printing {
 TEST(PdfMetafileTest, Pdf) {
   // Test in-renderer constructor.
   printing::PdfMetafile pdf;
-  EXPECT_TRUE(pdf.Init() != NULL);
+  EXPECT_TRUE(pdf.Init());
+  EXPECT_TRUE(pdf.context() != NULL);
 
   // Render page 1 at origin (10.0, 10.0).
   gfx::Point origin_1(10.0f, 10.0f);

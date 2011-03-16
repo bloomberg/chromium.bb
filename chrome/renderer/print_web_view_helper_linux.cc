@@ -83,7 +83,7 @@ void PrintWebViewHelper::PrintPages(const ViewMsg_PrintPages_Params& params,
                                                         &sequence_number))) {
     return;
   }
-  if (!metafile->SaveTo(fd))
+  if (!metafile->SaveToFD(fd))
     return;
 
   // Tell the browser we've finished writing the file.
@@ -214,12 +214,15 @@ void PrintWebViewHelper::PrintPage(const ViewMsg_PrintPage_Params& params,
                                 &margin_bottom_in_points,
                                 &margin_left_in_points);
 
+  gfx::Size page_size(
+      content_width_in_points + margin_right_in_points +
+          margin_left_in_points,
+      content_height_in_points + margin_top_in_points +
+          margin_bottom_in_points);
+
   cairo_t* cairo_context =
-      metafile->StartPage(content_width_in_points,
-                          content_height_in_points,
+      metafile->StartPage(page_size,
                           margin_top_in_points,
-                          margin_right_in_points,
-                          margin_bottom_in_points,
                           margin_left_in_points);
   if (!cairo_context)
     return;

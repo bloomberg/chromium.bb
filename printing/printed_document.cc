@@ -261,12 +261,14 @@ void PrintedDocument::DebugDump(const PrintedPage& page) {
   filename += name();
   filename += ASCIIToUTF16("_");
   filename += ASCIIToUTF16(StringPrintf("%02d", page.page_number()));
-  filename += ASCIIToUTF16("_.emf");
 #if defined(OS_WIN)
+  filename += ASCIIToUTF16("_.emf");
   page.native_metafile()->SaveTo(
-      g_debug_dump_info.Get().debug_dump_path.Append(filename).value());
+      g_debug_dump_info.Get().debug_dump_path.Append(filename));
 #else  // OS_WIN
-  NOTIMPLEMENTED();  // TODO: convert SaveTo to accept a FilePath
+  filename += ASCIIToUTF16("_.pdf");
+  page.native_metafile()->SaveTo(
+      g_debug_dump_info.Get().debug_dump_path.Append(UTF16ToUTF8(filename)));
 #endif  // OS_WIN
 }
 

@@ -72,8 +72,8 @@ void PrintWebViewHelper::PrintPage(const ViewMsg_PrintPage_Params& params,
   scoped_ptr<printing::NativeMetafile> metafile(
       printing::NativeMetafileFactory::CreateMetafile());
   metafile->CreateDc(NULL, NULL);
-  DCHECK(metafile->hdc());
-  skia::PlatformDevice::InitializeDC(metafile->hdc());
+  DCHECK(metafile->context());
+  skia::PlatformDevice::InitializeDC(metafile->context());
 
   int page_number = params.page_number;
 
@@ -85,7 +85,7 @@ void PrintWebViewHelper::PrintPage(const ViewMsg_PrintPage_Params& params,
   RenderPage(params.params, &scale_factor, page_number, frame, &metafile);
 
   // Close the device context to retrieve the compiled metafile.
-  if (!metafile->CloseDc())
+  if (!metafile->Close())
     NOTREACHED();
 
   // Get the size of the compiled metafile.
@@ -140,8 +140,8 @@ void PrintWebViewHelper::CreatePreviewDocument(
   scoped_ptr<printing::NativeMetafile> metafile(
       printing::NativeMetafileFactory::CreateMetafile());
   metafile->CreateDc(NULL, NULL);
-  DCHECK(metafile->hdc());
-  skia::PlatformDevice::InitializeDC(metafile->hdc());
+  DCHECK(metafile->context());
+  skia::PlatformDevice::InitializeDC(metafile->context());
 
   // Calculate the dpi adjustment.
   float shrink = static_cast<float>(params.params.desired_dpi /
@@ -163,7 +163,7 @@ void PrintWebViewHelper::CreatePreviewDocument(
   }
 
   // Close the device context to retrieve the compiled metafile.
-  if (!metafile->CloseDc())
+  if (!metafile->Close())
     NOTREACHED();
 
   // Get the size of the compiled metafile.
@@ -194,7 +194,7 @@ void PrintWebViewHelper::CreatePreviewDocument(
 void PrintWebViewHelper::RenderPage(
     const ViewMsg_Print_Params& params, float* scale_factor, int page_number,
     WebFrame* frame, scoped_ptr<printing::NativeMetafile>* metafile) {
-  HDC hdc = (*metafile)->hdc();
+  HDC hdc = (*metafile)->context();
   DCHECK(hdc);
 
   double content_width_in_points;
@@ -259,7 +259,7 @@ void PrintWebViewHelper::RenderPage(
       static_cast<skia::VectorPlatformDevice*>(canvas.getDevice());
   if (platform_device->alpha_blend_used() && !params.supports_alpha_blend) {
     // Close the device context to retrieve the compiled metafile.
-    if (!(*metafile)->CloseDc())
+    if (!(*metafile)->Close())
       NOTREACHED();
 
     scoped_ptr<printing::NativeMetafile> metafile2(
@@ -284,11 +284,11 @@ void PrintWebViewHelper::RenderPage(
     FillRect(bitmap_dc, &rect, whiteBrush);
 
     metafile2->CreateDc(NULL, NULL);
-    HDC hdc = metafile2->hdc();
+    HDC hdc = metafile2->context();
     DCHECK(hdc);
     skia::PlatformDevice::InitializeDC(hdc);
 
-    RECT metafile_bounds = (*metafile)->GetBounds().ToRECT();
+    RECT metafile_bounds = (*metafile)->GetPageBounds(1).ToRECT();
     // Process the old metafile, placing all non-AlphaBlend calls into the
     // new metafile, and copying the results of all the AlphaBlend calls
     // from the bitmap DC.

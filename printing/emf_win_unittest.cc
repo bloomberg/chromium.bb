@@ -48,9 +48,9 @@ TEST(EmfTest, DC) {
   HDC hdc = CreateCompatibleDC(NULL);
   EXPECT_TRUE(hdc != NULL);
   EXPECT_TRUE(emf.CreateDc(hdc, &rect));
-  EXPECT_TRUE(emf.hdc() != NULL);
+  EXPECT_TRUE(emf.context() != NULL);
   // In theory, you'd use the HDC with GDI functions here.
-  EXPECT_TRUE(emf.CloseDc());
+  EXPECT_TRUE(emf.Close());
   uint32 size = emf.GetDataSize();
   EXPECT_EQ(size, EMF_HEADER_SIZE);
   std::vector<BYTE> data;
@@ -104,7 +104,7 @@ TEST_F(EmfPrintingTest, Enumerate) {
   context->NewPage();
   // Process one at a time.
   printing::Emf::Enumerator emf_enum(emf, context->context(),
-                                &emf.GetBounds().ToRECT());
+                                &emf.GetPageBounds(1).ToRECT());
   for (printing::Emf::Enumerator::const_iterator itr = emf_enum.begin();
        itr != emf_enum.end();
        ++itr) {
@@ -128,15 +128,15 @@ TEST_F(EmfPrintingTest, PageBreak) {
     return;
   printing::Emf emf;
   EXPECT_TRUE(emf.CreateDc(dc.Get(), NULL));
-  EXPECT_TRUE(emf.hdc() != NULL);
+  EXPECT_TRUE(emf.context() != NULL);
   int pages = 3;
   while (pages) {
     EXPECT_TRUE(emf.StartPage());
-    ::Rectangle(emf.hdc(), 10, 10, 190, 190);
-    EXPECT_TRUE(emf.EndPage());
+    ::Rectangle(emf.context(), 10, 10, 190, 190);
+    EXPECT_TRUE(emf.FinishPage());
     --pages;
   }
-  EXPECT_TRUE(emf.CloseDc());
+  EXPECT_TRUE(emf.Close());
   uint32 size = emf.GetDataSize();
   std::vector<BYTE> data;
   EXPECT_TRUE(emf.GetData(&data));
@@ -172,9 +172,9 @@ TEST(EmfTest, FileBackedDC) {
   EXPECT_TRUE(file_util::CreateTemporaryFileInDir(scratch_metafile_dir.path(),
                                                   &metafile_path));
   EXPECT_TRUE(emf.CreateFileBackedDc(hdc, &rect, metafile_path));
-  EXPECT_TRUE(emf.hdc() != NULL);
+  EXPECT_TRUE(emf.context() != NULL);
   // In theory, you'd use the HDC with GDI functions here.
-  EXPECT_TRUE(emf.CloseDc());
+  EXPECT_TRUE(emf.Close());
 
   uint32 size = emf.GetDataSize();
   EXPECT_EQ(size, EMF_HEADER_SIZE);

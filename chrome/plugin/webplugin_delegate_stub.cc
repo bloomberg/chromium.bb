@@ -277,10 +277,10 @@ void WebPluginDelegateStub::OnPrint(base::SharedMemoryHandle* shared_memory,
     NOTREACHED();
     return;
   }
-  HDC hdc = metafile->hdc();
+  HDC hdc = metafile->context();
   skia::PlatformDevice::InitializeDC(hdc);
   delegate_->Print(hdc);
-  if (!metafile->CloseDc()) {
+  if (!metafile->Close()) {
     NOTREACHED();
     return;
   }

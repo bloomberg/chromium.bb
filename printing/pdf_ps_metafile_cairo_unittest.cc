@@ -9,20 +9,17 @@
 #include <vector>
 
 #include "base/file_descriptor_posix.h"
+#include "base/file_path.h"
 #include "base/file_util.h"
 #include "base/string_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/gfx/size.h"
 
 typedef struct _cairo cairo_t;
 
 namespace {
 
-class PdfPsTest : public testing::Test {
- protected:
-  base::FileDescriptor DevNullFD() {
-    return base::FileDescriptor(open("/dev/null", O_WRONLY), true);
-  }
-};
+class PdfPsTest : public testing::Test {};
 
 }  // namespace
 
@@ -34,14 +31,14 @@ TEST_F(PdfPsTest, Pdf) {
   EXPECT_TRUE(pdf.Init());
 
   // Renders page 1.
-  cairo_t* context = pdf.StartPage(72, 72, 1, 2, 3, 4);
+  cairo_t* context = pdf.StartPage(gfx::Size(72 + 2 + 4, 72 + 1 + 3), 1, 4);
   EXPECT_TRUE(context != NULL);
   EXPECT_EQ(printing::PdfPsMetafile::FromCairoContext(context), &pdf);
   // In theory, we should use Cairo to draw something on |context|.
   EXPECT_TRUE(pdf.FinishPage());
 
   // Renders page 2.
-  context = pdf.StartPage(64, 64, 1, 2, 3, 4);
+  context = pdf.StartPage(gfx::Size(64 + 2 + 4, 64 + 1 + 3), 1, 4);
   EXPECT_TRUE(context != NULL);
   // In theory, we should use Cairo to draw something on |context|.
   EXPECT_TRUE(pdf.FinishPage());
@@ -70,12 +67,12 @@ TEST_F(PdfPsTest, Pdf) {
   EXPECT_EQ(header.find("%PDF", 0), 0u);
 
   // Tests if we can save data.
-  EXPECT_TRUE(pdf.SaveTo(DevNullFD()));
+  EXPECT_TRUE(pdf.SaveTo(FilePath("/dev/null")));
 
   // Test overriding the metafile with raw data.
   printing::PdfPsMetafile pdf3;
   EXPECT_TRUE(pdf3.Init());
-  context = pdf3.StartPage(72, 72, 1, 2, 3, 4);
+  context = pdf3.StartPage(gfx::Size(72 + 2 + 4, 72 + 1 + 3), 1, 4);
   EXPECT_TRUE(context != NULL);
   std::string test_raw_data = "Dummy PDF";
   EXPECT_TRUE(pdf3.SetRawData(test_raw_data.c_str(), test_raw_data.size()));

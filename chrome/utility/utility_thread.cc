@@ -263,12 +263,12 @@ bool UtilityThread::RenderPDFToWinMetafile(
   // Since we created the metafile using the screen DPI (but we actually want
   // the PDF DLL to print using the passed in render_dpi, we apply the following
   // transformation.
-  SetGraphicsMode(metafile->hdc(), GM_ADVANCED);
+  SetGraphicsMode(metafile->context(), GM_ADVANCED);
   XFORM xform = {0};
   int screen_dpi = GetDeviceCaps(GetDC(NULL), LOGPIXELSX);
   xform.eM11 = xform.eM22 =
       static_cast<float>(screen_dpi) / static_cast<float>(render_dpi);
-  ModifyWorldTransform(metafile->hdc(), &xform, MWT_LEFTMULTIPLY);
+  ModifyWorldTransform(metafile->context(), &xform, MWT_LEFTMULTIPLY);
 
   bool ret = false;
   std::vector<printing::PageRange>::const_iterator iter;
@@ -278,16 +278,16 @@ bool UtilityThread::RenderPDFToWinMetafile(
         break;
       metafile->StartPage();
       if (render_proc(&buffer.front(), buffer.size(), page_number,
-                      metafile->hdc(), render_dpi, render_dpi,
+                      metafile->context(), render_dpi, render_dpi,
                       render_area.x(), render_area.y(), render_area.width(),
                       render_area.height(), true, false, true, true))
         if (*highest_rendered_page_number < page_number)
           *highest_rendered_page_number = page_number;
         ret = true;
-      metafile->EndPage();
+      metafile->FinishPage();
     }
   }
-  metafile->CloseDc();
+  metafile->Close();
   return ret;
 }
 #endif  // defined(OS_WIN)

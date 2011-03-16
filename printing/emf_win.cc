@@ -85,7 +85,7 @@ bool Emf::CreateFromFile(const FilePath& metafile_path) {
 }
 
 
-bool Emf::CloseDc() {
+bool Emf::Close() {
   DCHECK(!emf_ && hdc_);
   emf_ = CloseEnhMetaFile(hdc_);
   DCHECK(emf_);
@@ -106,7 +106,7 @@ bool Emf::Playback(HDC hdc, const RECT* rect) const {
   RECT bounds;
   if (!rect) {
     // Get the natural bounds of the EMF buffer.
-    bounds = GetBounds().ToRECT();
+    bounds = GetPageBounds(1).ToRECT();
     rect = &bounds;
   }
   return PlayEnhMetaFile(hdc, emf_, rect) != 0;
@@ -123,11 +123,12 @@ bool Emf::SafePlayback(HDC context) const {
                          emf_,
                          &Emf::SafePlaybackProc,
                          reinterpret_cast<void*>(&base_matrix),
-                         &GetBounds().ToRECT()) != 0;
+                         &GetPageBounds(1).ToRECT()) != 0;
 }
 
-gfx::Rect Emf::GetBounds() const {
+gfx::Rect Emf::GetPageBounds(unsigned int page_number) const {
   DCHECK(emf_ && !hdc_);
+  DCHECK_EQ(1U, page_number);
   ENHMETAHEADER header;
   if (GetEnhMetaFileHeader(emf_, sizeof(header), &header) != sizeof(header)) {
     NOTREACHED();
@@ -173,8 +174,8 @@ bool Emf::GetData(std::vector<uint8>* buffer) const {
   return true;
 }
 
-bool Emf::SaveTo(const std::wstring& filename) const {
-  HANDLE file = CreateFile(filename.c_str(), GENERIC_WRITE,
+bool Emf::SaveTo(const FilePath& file_path) const {
+  HANDLE file = CreateFile(file_path.value().c_str(), GENERIC_WRITE,
                            FILE_SHARE_READ | FILE_SHARE_WRITE, NULL,
                            CREATE_ALWAYS, 0, NULL);
   if (file == INVALID_HANDLE_VALUE)
@@ -418,7 +419,7 @@ bool Emf::StartPage() {
                       reinterpret_cast<const BYTE *>(&record));
 }
 
-bool Emf::EndPage() {
+bool Emf::FinishPage() {
   DCHECK(hdc_);
   if (!hdc_)
     return false;
@@ -426,7 +427,6 @@ bool Emf::EndPage() {
   return !!GdiComment(hdc_, sizeof(record),
                       reinterpret_cast<const BYTE *>(&record));
 }
-
 
 Emf::Enumerator::Enumerator(const Emf& emf, HDC context, const RECT* rect) {
   context_.handle_table = NULL;

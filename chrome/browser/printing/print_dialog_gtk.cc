@@ -156,15 +156,10 @@ void PrintDialogGtk::SaveDocumentToDisk(const NativeMetafile* metafile,
     error = true;
   }
 
-  if (!error) {
-    base::FileDescriptor temp_file_fd;
-    temp_file_fd.fd = open(path_to_pdf_.value().c_str(), O_WRONLY);
-    temp_file_fd.auto_close = true;
-    if (!metafile->SaveTo(temp_file_fd)) {
-      LOG(ERROR) << "Saving metafile failed";
-      file_util::Delete(path_to_pdf_, false);
-      error = true;
-    }
+  if (!error && !metafile->SaveTo(path_to_pdf_)) {
+    LOG(ERROR) << "Saving metafile failed";
+    file_util::Delete(path_to_pdf_, false);
+    error = true;
   }
 
   // Done saving, let PrintDialogGtk::PrintDocument() continue.

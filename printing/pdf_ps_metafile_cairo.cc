@@ -15,6 +15,8 @@
 #include "base/logging.h"
 #include "printing/units.h"
 #include "skia/ext/vector_platform_device_linux.h"
+#include "ui/gfx/rect.h"
+#include "ui/gfx/size.h"
 
 namespace {
 
@@ -108,7 +110,6 @@ bool PdfPsMetafile::Init() {
   }
 
   cairo_set_user_data(context_, &kPdfMetafileKey, this, DestroyContextData);
-
   return true;
 }
 
@@ -123,7 +124,6 @@ bool PdfPsMetafile::Init(const void* src_buffer, uint32 src_buffer_size) {
 
   data_ = std::string(reinterpret_cast<const char*>(src_buffer),
                       src_buffer_size);
-
   return true;
 }
 
@@ -144,32 +144,22 @@ bool PdfPsMetafile::SetRawData(const void* src_buffer,
   return true;
 }
 
-cairo_t* PdfPsMetafile::StartPage(double width_in_points,
-                                  double height_in_points,
+cairo_t* PdfPsMetafile::StartPage(const gfx::Size& page_size,
                                   double margin_top_in_points,
-                                  double margin_right_in_points,
-                                  double margin_bottom_in_points,
                                   double margin_left_in_points) {
   DCHECK(IsSurfaceValid(surface_));
   DCHECK(IsContextValid(context_));
   // Passing this check implies page_surface_ is NULL, and current_page_ is
   // empty.
-  DCHECK_GT(width_in_points, 0.);
-  DCHECK_GT(height_in_points, 0.);
-
-  // We build in extra room for the margins. The Cairo PDF backend will scale
-  // the output to fit a page.
-  double width =
-      width_in_points + margin_left_in_points + margin_right_in_points;
-  double height =
-      height_in_points + margin_top_in_points + margin_bottom_in_points;
+  DCHECK_GT(page_size.width(), 0);
+  DCHECK_GT(page_size.height(), 0);
 
   // Don't let WebKit draw over the margins.
   cairo_surface_set_device_offset(surface_,
                                   margin_left_in_points,
                                   margin_top_in_points);
 
-  cairo_pdf_surface_set_size(surface_, width, height);
+  cairo_pdf_surface_set_size(surface_, page_size.width(), page_size.height());
   return context_;
 }
 
@@ -183,7 +173,7 @@ bool PdfPsMetafile::FinishPage() {
   return true;
 }
 
-void PdfPsMetafile::Close() {
+bool PdfPsMetafile::Close() {
   DCHECK(IsSurfaceValid(surface_));
   DCHECK(IsContextValid(context_));
 
@@ -198,6 +188,7 @@ void PdfPsMetafile::Close() {
 
   CleanUpContext(&context_);
   CleanUpSurface(&surface_);
+  return true;
 }
 
 uint32 PdfPsMetafile::GetDataSize() const {
@@ -217,7 +208,37 @@ bool PdfPsMetafile::GetData(void* dst_buffer, uint32 dst_buffer_size) const {
   return true;
 }
 
-bool PdfPsMetafile::SaveTo(const base::FileDescriptor& fd) const {
+cairo_t* PdfPsMetafile::context() const {
+  return context_;
+}
+
+bool PdfPsMetafile::SaveTo(const FilePath& file_path) const {
+  // We need to check at least these two members to ensure that either Init()
+  // has been called to initialize |data_|, or metafile has been closed.
+  DCHECK(!context_);
+  DCHECK(!data_.empty());
+
+  bool success = true;
+  if (file_util::WriteFile(file_path, data_.data(), GetDataSize())
+      != static_cast<int>(GetDataSize())) {
+    DLOG(ERROR) << "Failed to save file " << file_path.value().c_str();
+    success = false;
+  }
+  return success;
+}
+
+gfx::Rect PdfPsMetafile::GetPageBounds(unsigned int page_number) const  {
+  NOTIMPLEMENTED();
+  return gfx::Rect();
+}
+
+unsigned int PdfPsMetafile::GetPageCount() const {
+  NOTIMPLEMENTED();
+  return 1;
+}
+
+#if defined(OS_CHROMEOS)
+bool PdfPsMetafile::SaveToFD(const base::FileDescriptor& fd) const {
   // We need to check at least these two members to ensure that either Init()
   // has been called to initialize |data_|, or metafile has been closed.
   DCHECK(!context_);
@@ -244,6 +265,7 @@ bool PdfPsMetafile::SaveTo(const base::FileDescriptor& fd) const {
 
   return success;
 }
+#endif  // if defined(OS_CHROMEOS)
 
 PdfPsMetafile* PdfPsMetafile::FromCairoContext(cairo_t* context) {
   return reinterpret_cast<PdfPsMetafile*>(

@@ -9,6 +9,7 @@
 #include "base/mac/scoped_cftyperef.h"
 #include "base/sys_string_conversions.h"
 #include "ui/gfx/rect.h"
+#include "ui/gfx/size.h"
 
 using base::mac::ScopedCFTypeRef;
 
@@ -20,7 +21,7 @@ PdfMetafile::PdfMetafile()
 
 PdfMetafile::~PdfMetafile() {}
 
-CGContextRef PdfMetafile::Init() {
+bool PdfMetafile::Init() {
   // Ensure that Init hasn't already been called.
   DCHECK(!context_.get());
   DCHECK(!pdf_data_.get());
@@ -28,14 +29,14 @@ CGContextRef PdfMetafile::Init() {
   pdf_data_.reset(CFDataCreateMutable(kCFAllocatorDefault, 0));
   if (!pdf_data_.get()) {
     LOG(ERROR) << "Failed to create pdf data for metafile";
-    return NULL;
+    return false;
   }
   ScopedCFTypeRef<CGDataConsumerRef> pdf_consumer(
       CGDataConsumerCreateWithCFData(pdf_data_));
   if (!pdf_consumer.get()) {
     LOG(ERROR) << "Failed to create data consumer for metafile";
     pdf_data_.reset(NULL);
-    return NULL;
+    return false;
   }
   context_.reset(CGPDFContextCreate(pdf_consumer, NULL, NULL));
   if (!context_.get()) {
@@ -43,7 +44,7 @@ CGContextRef PdfMetafile::Init() {
     pdf_data_.reset(NULL);
   }
 
-  return context_.get();
+  return true;
 }
 
 bool PdfMetafile::Init(const void* src_buffer, uint32 src_buffer_size) {
@@ -84,16 +85,17 @@ CGContextRef PdfMetafile::StartPage(const gfx::Size& page_size,
   return context_.get();
 }
 
-void PdfMetafile::FinishPage() {
+bool PdfMetafile::FinishPage() {
   DCHECK(context_.get());
   DCHECK(page_is_open_);
 
   CGContextRestoreGState(context_);
   CGContextEndPage(context_);
   page_is_open_ = false;
+  return true;
 }
 
-void PdfMetafile::Close() {
+bool PdfMetafile::Close() {
   DCHECK(context_.get());
   DCHECK(!page_is_open_);
 
@@ -110,6 +112,7 @@ void PdfMetafile::Close() {
 #endif
   CGPDFContextClose(context_.get());
   context_.reset(NULL);
+  return true;
 }
 
 bool PdfMetafile::RenderPage(unsigned int page_number, CGContextRef context,
@@ -221,6 +224,10 @@ bool PdfMetafile::SaveTo(const FilePath& file_path) const {
   SInt32 error_code;
   CFURLWriteDataAndPropertiesToResource(path_url, pdf_data_, NULL, &error_code);
   return error_code == 0;
+}
+
+CGContextRef PdfMetafile::context() const {
+  return context_.get();
 }
 
 CGPDFDocumentRef PdfMetafile::GetPDFDocument() const {

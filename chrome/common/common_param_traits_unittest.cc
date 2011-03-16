@@ -242,7 +242,7 @@ TEST(IPCMessageTest, Metafile) {
   RECT test_rect = {0, 0, 100, 100};
   // Create a metafile using the screen DC as a reference.
   metafile->CreateDc(NULL, NULL);
-  metafile->CloseDc();
+  metafile->Close();
 
   IPC::Message msg(1, 2, IPC::Message::PRIORITY_NORMAL);
   IPC::ParamTraits<printing::NativeMetafile>::Write(&msg, *metafile);
@@ -254,9 +254,9 @@ TEST(IPCMessageTest, Metafile) {
       &msg, &iter, output.get()));
 
   EXPECT_EQ(metafile->GetDataSize(), output->GetDataSize());
-  EXPECT_EQ(metafile->GetBounds(), output->GetBounds());
-  EXPECT_EQ(::GetDeviceCaps(metafile->hdc(), LOGPIXELSX),
-      ::GetDeviceCaps(output->hdc(), LOGPIXELSX));
+  EXPECT_EQ(metafile->GetPageBounds(1), output->GetPageBounds(1));
+  EXPECT_EQ(::GetDeviceCaps(metafile->context(), LOGPIXELSX),
+      ::GetDeviceCaps(output->context(), LOGPIXELSX));
 
   // Also test the corrupt case.
   IPC::Message bad_msg(1, 2, IPC::Message::PRIORITY_NORMAL);
