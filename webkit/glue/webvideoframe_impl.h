@@ -8,14 +8,13 @@
 #include "media/base/video_frame.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebVideoFrame.h"
 
-using namespace WebKit;
-
 namespace webkit_glue {
 
-class WebVideoFrameImpl : public WebVideoFrame {
+class WebVideoFrameImpl : public WebKit::WebVideoFrame {
  public:
   // This converts a WebKit::WebVideoFrame to a media::VideoFrame.
-  static media::VideoFrame* toVideoFrame(WebVideoFrame* web_video_frame);
+  static media::VideoFrame* toVideoFrame(
+      WebKit::WebVideoFrame* web_video_frame);
 
   WebVideoFrameImpl(scoped_refptr<media::VideoFrame> video_frame);
   virtual ~WebVideoFrameImpl();

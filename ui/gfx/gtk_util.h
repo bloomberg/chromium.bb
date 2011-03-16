@@ -61,23 +61,21 @@ uint8_t* BGRAToRGBA(const uint8_t* pixels, int width, int height, int stride);
 
 }  // namespace gfx
 
-namespace {
-// A helper class that will g_object_unref |p| when it goes out of scope.
-// This never adds a ref, it only unrefs.
-template <typename Type>
-struct GObjectUnrefer {
-  void operator()(Type* ptr) const {
-    if (ptr)
-      g_object_unref(ptr);
-  }
-};
-}  // namespace
-
 // It's not legal C++ to have a templatized typedefs, so we wrap it in a
 // struct.  When using this, you need to include ::Type.  E.g.,
 // ScopedGObject<GdkPixbufLoader>::Type loader(gdk_pixbuf_loader_new());
 template<class T>
 struct ScopedGObject {
+  // A helper class that will g_object_unref |p| when it goes out of scope.
+  // This never adds a ref, it only unrefs.
+  template<class U>
+  struct GObjectUnrefer {
+    void operator()(U* ptr) const {
+      if (ptr)
+        g_object_unref(ptr);
+    }
+  };
+
   typedef scoped_ptr_malloc<T, GObjectUnrefer<T> > Type;
 };
 
