@@ -386,11 +386,14 @@ bool NaClArchSupported() {
 }
 
 void NaClSetAllCPUFeatures(CPUFeatures *features) {
-  memset(features, 1, sizeof(features));
+  /* Since CPUFeatures is a struct that contains only bools, we could
+   * use any non-zero byte here, but 0xff seems safest.
+   */
+  memset(features, 0xff, sizeof(*features));
 }
 
 void NaClClearCPUFeatures(CPUFeatures *features) {
-  memset(features, 0, sizeof(features));
+  memset(features, 0, sizeof(*features));
 }
 
 /* WARNING: This routine and subroutines it uses are not threadsafe.
