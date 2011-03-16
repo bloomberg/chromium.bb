@@ -2,12 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/renderer/p2p/socket_dispatcher.h"
+#include "content/renderer/p2p/socket_dispatcher.h"
 
 #include "base/message_loop_proxy.h"
 #include "content/common/p2p_messages.h"
-#include "ipc/ipc_message.h"
-#include "ipc/ipc_message_macros.h"
 
 P2PSocketDispatcher::P2PSocketDispatcher(RenderView* render_view)
     : RenderViewObserver(render_view),

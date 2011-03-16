@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/renderer/p2p/ipc_socket_factory.h"
+#include "content/renderer/p2p/ipc_socket_factory.h"
 
 #include "base/message_loop.h"
 #include "base/message_loop_proxy.h"
-#include "chrome/renderer/p2p/socket_client.h"
-#include "chrome/renderer/p2p/socket_dispatcher.h"
+#include "content/renderer/p2p/socket_client.h"
+#include "content/renderer/p2p/socket_dispatcher.h"
 #include "third_party/libjingle/source/talk/base/asyncpacketsocket.h"
 
 namespace {

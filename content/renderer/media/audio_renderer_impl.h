@@ -34,8 +34,8 @@
 // 3. Audio decoder thread (If there's one.)
 //    Responsible for decoding audio data and gives raw PCM data to this object.
 
-#ifndef CHROME_RENDERER_MEDIA_AUDIO_RENDERER_IMPL_H_
-#define CHROME_RENDERER_MEDIA_AUDIO_RENDERER_IMPL_H_
+#ifndef CONTENT_RENDERER_MEDIA_AUDIO_RENDERER_IMPL_H_
+#define CONTENT_RENDERER_MEDIA_AUDIO_RENDERER_IMPL_H_
 #pragma once
 
 #include "base/gtest_prod_util.h"
@@ -154,4 +154,4 @@ class AudioRendererImpl : public media::AudioRendererBase,
   DISALLOW_COPY_AND_ASSIGN(AudioRendererImpl);
 };
 
-#endif  // CHROME_RENDERER_MEDIA_AUDIO_RENDERER_IMPL_H_
+#endif  // CONTENT_RENDERER_MEDIA_AUDIO_RENDERER_IMPL_H_

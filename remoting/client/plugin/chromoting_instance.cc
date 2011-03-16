@@ -14,8 +14,8 @@
 // TODO(sergeyu): We should not depend on renderer here. Instead P2P
 // Pepper API should be used. Remove this dependency.
 // crbug.com/74951
-#include "chrome/renderer/p2p/ipc_network_manager.h"
-#include "chrome/renderer/p2p/ipc_socket_factory.h"
+#include "content/renderer/p2p/ipc_network_manager.h"
+#include "content/renderer/p2p/ipc_socket_factory.h"
 #include "ppapi/c/pp_input_event.h"
 #include "ppapi/cpp/completion_callback.h"
 #include "ppapi/cpp/rect.h"

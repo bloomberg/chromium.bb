@@ -11,7 +11,7 @@
 #include <vector>
 
 #include "base/scoped_ptr.h"
-#include "chrome/renderer/ggl/ggl.h"
+#include "content/renderer/ggl.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebGraphicsContext3D.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebString.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebView.h"

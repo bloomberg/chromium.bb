@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/renderer/media/ipc_video_decoder.h"
+#include "content/renderer/media/ipc_video_decoder.h"
 
 #include "base/task.h"
-#include "chrome/renderer/ggl/ggl.h"
 #include "content/common/child_process.h"
+#include "content/renderer/ggl.h"
 #include "media/base/callback.h"
 #include "media/base/filters.h"
 #include "media/base/filter_host.h"

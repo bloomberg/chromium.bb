@@ -7,8 +7,8 @@
 // renderer process in a way that is consistent with other platforms. It is
 // a C style API to ease porting of existing OpenGL software to Chrome.
 
-#ifndef CHROME_RENDERER_GGL_GGL_H_
-#define CHROME_RENDERER_GGL_GGL_H_
+#ifndef CONTENT_RENDERER_GGL_H_
+#define CONTENT_RENDERER_GGL_H_
 #pragma once
 
 #include "base/callback.h"
@@ -172,4 +172,4 @@ CommandBufferProxy* GetCommandBufferProxy(Context* context);
 
 }  // namespace ggl
 
-#endif  // CHROME_RENDERER_GGL_GGL_H_
+#endif  // CONTENT_RENDERER_GGL_H_

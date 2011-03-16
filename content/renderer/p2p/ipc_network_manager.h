@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_RENDERER_P2P_IPC_NETWORK_MANAGER_H_
-#define CHROME_RENDERER_P2P_IPC_NETWORK_MANAGER_H_
+#ifndef CONTENT_RENDERER_P2P_IPC_NETWORK_MANAGER_H_
+#define CONTENT_RENDERER_P2P_IPC_NETWORK_MANAGER_H_
 
 #include <vector>
 
@@ -29,4 +29,4 @@ class IpcNetworkManager : public talk_base::NetworkManager {
   P2PSocketDispatcher* socket_dispatcher_;
 };
 
-#endif  // CHROME_RENDERER_P2P_IPC_NETWORK_MANAGER_H_
+#endif  // CONTENT_RENDERER_P2P_IPC_NETWORK_MANAGER_H_

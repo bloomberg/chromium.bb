@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/renderer/p2p/ipc_network_manager.h"
+#include "content/renderer/p2p/ipc_network_manager.h"
 
 IpcNetworkManager::IpcNetworkManager(P2PSocketDispatcher* socket_dispatcher)
     : socket_dispatcher_(socket_dispatcher) {

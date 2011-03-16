@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_RENDERER_MEDIA_IPC_VIDEO_DECODER_H_
-#define CHROME_RENDERER_MEDIA_IPC_VIDEO_DECODER_H_
+#ifndef CONTENT_RENDERER_MEDIA_IPC_VIDEO_DECODER_H_
+#define CONTENT_RENDERER_MEDIA_IPC_VIDEO_DECODER_H_
 
 #include "base/time.h"
 #include "media/base/pts_heap.h"
@@ -89,4 +89,4 @@ class IpcVideoDecoder : public media::VideoDecoder,
   DISALLOW_COPY_AND_ASSIGN(IpcVideoDecoder);
 };
 
-#endif  // CHROME_RENDERER_MEDIA_IPC_VIDEO_DECODER_H_
+#endif  // CONTENT_RENDERER_MEDIA_IPC_VIDEO_DECODER_H_

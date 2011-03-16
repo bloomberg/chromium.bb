@@ -8,5 +8,5 @@ include_rules = [
 
   # TODO(sergeyu): Remove this dependency: crbug.com/74951 .
   "+webkit/plugins/ppapi",
-  "+chrome/renderer/p2p",
+  "+content/renderer/p2p",
 ]

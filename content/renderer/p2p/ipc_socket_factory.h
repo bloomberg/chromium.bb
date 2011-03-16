@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_RENDERER_P2P_IPC_SOCKET_FACTORY_H_
-#define CHROME_RENDERER_P2P_IPC_SOCKET_FACTORY_H_
+#ifndef CONTENT_RENDERER_P2P_IPC_SOCKET_FACTORY_H_
+#define CONTENT_RENDERER_P2P_IPC_SOCKET_FACTORY_H_
 
 #include "base/basictypes.h"
 #include "third_party/libjingle/source/talk/base/packetsocketfactory.h"
@@ -40,4 +40,4 @@ class IpcPacketSocketFactory : public talk_base::PacketSocketFactory {
   DISALLOW_COPY_AND_ASSIGN(IpcPacketSocketFactory);
 };
 
-#endif  // CHROME_RENDERER_P2P_IPC_SOCKET_FACTORY_H_
+#endif  // CONTENT_RENDERER_P2P_IPC_SOCKET_FACTORY_H_

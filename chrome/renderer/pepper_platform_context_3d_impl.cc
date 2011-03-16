@@ -5,9 +5,9 @@
 #include "chrome/renderer/pepper_platform_context_3d_impl.h"
 
 #include "chrome/renderer/command_buffer_proxy.h"
-#include "chrome/renderer/ggl/ggl.h"
 #include "chrome/renderer/gpu_channel_host.h"
 #include "chrome/renderer/render_thread.h"
+#include "content/renderer/ggl.h"
 #include "gpu/command_buffer/client/gles2_cmd_helper.h"
 #include "gpu/command_buffer/client/gles2_implementation.h"
 

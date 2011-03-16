@@ -12,6 +12,7 @@
     'content_gpu.gypi',
     'content_plugin.gypi',
     'content_ppapi_plugin.gypi',
+    'content_renderer.gypi',
     'content_worker.gypi',
   ],
 }

@@ -16,15 +16,15 @@
 //      P2PSocketsHost  <--------->  P2PSocketDispatcher
 //
 
-#ifndef CHROME_RENDERER_P2P_SOCKET_DISPATCHER_H_
-#define CHROME_RENDERER_P2P_SOCKET_DISPATCHER_H_
+#ifndef CONTENT_RENDERER_P2P_SOCKET_DISPATCHER_H_
+#define CONTENT_RENDERER_P2P_SOCKET_DISPATCHER_H_
 
 #include <vector>
 
 #include "base/id_map.h"
-#include "chrome/renderer/p2p/socket_client.h"
-#include "content/common/p2p_sockets.h"
 #include "chrome/renderer/render_view_observer.h"
+#include "content/common/p2p_sockets.h"
+#include "content/renderer/p2p/socket_client.h"
 
 namespace base {
 class MessageLoopProxy;
@@ -68,4 +68,4 @@ class P2PSocketDispatcher : public RenderViewObserver {
   DISALLOW_COPY_AND_ASSIGN(P2PSocketDispatcher);
 };
 
-#endif  // CHROME_RENDERER_P2P_SOCKET_DISPATCHER_H_
+#endif  // CONTENT_RENDERER_P2P_SOCKET_DISPATCHER_H_

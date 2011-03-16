@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/renderer/p2p/socket_client.h"
+#include "content/renderer/p2p/socket_client.h"
 
 #include "base/message_loop_proxy.h"
-#include "chrome/renderer/p2p/socket_dispatcher.h"
 #include "content/common/p2p_messages.h"
+#include "content/renderer/p2p/socket_dispatcher.h"
 
 P2PSocketClient::P2PSocketClient(P2PSocketDispatcher* dispatcher)
     : dispatcher_(dispatcher),

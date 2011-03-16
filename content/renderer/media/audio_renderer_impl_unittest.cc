@@ -5,7 +5,7 @@
 #include "base/process_util.h"
 #include "chrome/common/render_messages.h"
 #include "chrome/common/render_messages_params.h"
-#include "chrome/renderer/media/audio_renderer_impl.h"
+#include "content/renderer/media/audio_renderer_impl.h"
 #include "media/base/data_buffer.h"
 #include "media/base/media_format.h"
 #include "media/base/mock_callback.h"
