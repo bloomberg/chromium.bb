@@ -617,6 +617,14 @@
    ...
    obj:/bin/bash
 }
+{
+   bug_76386
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZNSs4_Rep9_S_createEjjRKSaIcE
+   ...
+   fun:_ZNSsC1EPKcRKSaIcE
+}
 
 #-----------------------------------------------------------------------
 # 2. intentional unit test errors, or stuff that is somehow a false positive
@@ -2082,16 +2090,6 @@
    fun:_ZNK7WebCore17HTMLPlugInElement11getInstanceEv
 }
 {
-   bug_43451
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_ZNSs4_Rep9_S_createEjjRKSaIcE
-   obj:/usr/lib/libstdc++.so.6.0.9
-   fun:_ZNSsC1EPKcRKSaIcE
-   fun:_ZN17RenderProcessImplC1Ev
-   fun:_Z12RendererMainRK18MainFunctionParams
-}
-{
    bug_43471
    Memcheck:Leak
    fun:_Znw*
@@ -2292,55 +2290,6 @@
    fun:_ZN22ResourceDispatcherHost4ReadEP10URLRequestPi
    fun:_ZN22ResourceDispatcherHost15OnReadCompletedEP10URLRequesti
    fun:_ZN13URLRequestJob18NotifyReadCompleteEi
-}
-{
-   bug_46570_b
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_ZNSs4_Rep9_S_createEjjRKSaIcE
-   ...
-   fun:_ZNSsC1EPKcRKSaIcE
-   fun:_ZN9file_util15GetShmemTempDirEP8FilePath
-   fun:_ZN9file_util31CreateAndOpenTemporaryShmemFileEP8FilePath
-   fun:_ZN4base12SharedMemory12CreateOrOpenERKSbIwSt11char_traitsIwESaIwEEij
-   fun:_ZN4base12SharedMemory6CreateERKSbIwSt11char_traitsIwESaIwEEbbj
-   fun:_ZN14SharedIOBuffer4InitEv
-   fun:_ZN20AsyncResourceHandler10OnWillReadEiPPN3net8IOBufferEPii
-   fun:_ZN23BufferedResourceHandler10OnWillReadEiPPN3net8IOBufferEPii
-   fun:_ZN27SafeBrowsingResourceHandler10OnWillReadEiPPN3net8IOBufferEPii
-   fun:_ZN22ResourceDispatcherHost4ReadEP10URLRequestPi
-   fun:_ZN22ResourceDispatcherHost15OnReadCompletedEP10URLRequesti
-   fun:_ZN13URLRequestJob18NotifyReadCompleteEi
-   fun:_ZN19URLRequestChromeJob13DataAvailableEP16RefCountedMemory
-   fun:_ZN20ChromeURLDataManager13DataAvailableEi13scoped_refptrI16RefCountedMemoryE
-   fun:_Z16DispatchToMethodI20ChromeURLDataManagerMS0_Fvi13scoped_refptrI16RefCountedMemoryEEiS3_EvPT_T0_RK6Tuple2IT1_T2_E
-   fun:_ZN14RunnableMethodI20ChromeURLDataManagerMS0_Fvi13scoped_refptrI16RefCountedMemoryEE6Tuple2IiS3_EE3RunEv
-}
-{
-   bug_46570_c
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_ZNSs4_Rep9_S_createEjjRKSaIcE
-   ...
-   fun:_ZNSsC1EPKcRKSaIcE
-   fun:_ZN9file_util15GetShmemTempDirEP8FilePath
-   fun:_ZN9file_util31CreateAndOpenTemporaryShmemFileEP8FilePath
-   fun:_ZN4base12SharedMemory12CreateOrOpenERKSbIwSt11char_traitsIwESaIwEEij
-   fun:_ZN4base12SharedMemory6CreateERKSbIwSt11char_traitsIwESaIwEEbbj
-   fun:_ZN14SharedIOBuffer4InitEv
-   fun:_ZN20AsyncResourceHandler10OnWillReadEiPPN3net8IOBufferEPii
-   fun:_ZN23BufferedResourceHandler10OnWillReadEiPPN3net8IOBufferEPii
-   fun:_ZN27SafeBrowsingResourceHandler10OnWillReadEiPPN3net8IOBufferEPii
-   fun:_ZN22OfflineResourceHandler10OnWillReadEiPPN3net8IOBufferEPii
-   fun:_ZN22ResourceDispatcherHost4ReadEP10URLRequestPi
-   fun:_ZN22ResourceDispatcherHost12StartReadingEP10URLRequest
-   fun:_ZN22ResourceDispatcherHost17OnResponseStartedEP10URLRequest
-   fun:_ZN10URLRequest15ResponseStartedEv
-   fun:_ZN13URLRequestJob21NotifyHeadersCompleteEv
-   fun:_ZN17URLRequestHttpJob21NotifyHeadersCompleteEv
-   fun:_ZN17URLRequestHttpJob14SaveNextCookieEv
-   fun:_ZN17URLRequestHttpJob23OnCanSetCookieCompletedEi
-   fun:_ZN17URLRequestHttpJob14SaveNextCookieEv
 }
 {
    bug_46570_d
