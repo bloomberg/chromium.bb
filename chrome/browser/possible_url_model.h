@@ -37,10 +37,7 @@ class PossibleURLModel : public ui::TableModel {
   const std::wstring& GetTitle(int row);
 
   virtual void OnFaviconAvailable(FaviconService::Handle h,
-                                  bool favicon_available,
-                                  scoped_refptr<RefCountedMemory> data,
-                                  bool expired,
-                                  GURL icon_url);
+                                  history::FaviconData favicon);
 
   // TableModel overrides
   virtual int RowCount() OVERRIDE;

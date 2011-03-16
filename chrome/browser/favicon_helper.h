@@ -121,10 +121,7 @@ class FaviconHelper : public TabContentsObserver {
 
   // See description above class for details.
   void OnFaviconDataForInitialURL(FaviconService::Handle handle,
-                                  bool know_favicon,
-                                  scoped_refptr<RefCountedMemory> data,
-                                  bool expired,
-                                  GURL icon_url);
+                                  history::FaviconData favicon);
 
   // If the favicon has expired, asks the renderer to download the favicon.
   // Otherwise asks history to update the mapping between page url and icon
@@ -133,10 +130,7 @@ class FaviconHelper : public TabContentsObserver {
 
   // See description above class for details.
   void OnFaviconData(FaviconService::Handle handle,
-                     bool know_favicon,
-                     scoped_refptr<RefCountedMemory> data,
-                     bool expired,
-                     GURL icon_url);
+                     history::FaviconData favicon);
 
   // Schedules a download for the specified entry. This adds the request to
   // download_requests_.

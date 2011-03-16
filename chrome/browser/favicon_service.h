@@ -38,41 +38,44 @@ class FaviconService : public CancelableRequestProvider,
   // opposed to not knowing anything). |expired| will be set to true if we
   // refreshed the favicon "too long" ago and should be updated if the page
   // is visited again.
-  typedef Callback5<Handle,                           // handle
-                    bool,                             // know_favicon
-                    scoped_refptr<RefCountedMemory>,  // data
-                    bool,                             // expired
-                    GURL>::Type                       // url of the favicon
+  typedef Callback2<Handle,                             // handle
+                    history::FaviconData>::Type  // the type of favicon
                     FaviconDataCallback;
 
   typedef CancelableRequest<FaviconDataCallback> GetFaviconRequest;
 
-  // Requests the favicon. |consumer| is notified when the bits have been
-  // fetched.
+  // Requests the |icon_type| of favicon. |consumer| is notified when the bits
+  // have been fetched.
   Handle GetFavicon(const GURL& icon_url,
+                    history::IconType icon_type,
                     CancelableRequestConsumerBase* consumer,
                     FaviconDataCallback* callback);
 
-  // Fetches the favicon at |icon_url|, sending the results to the given
-  // |callback|. If the favicon has previously been set via SetFavicon(), then
-  // the favicon URL for |page_url| and all redirects is set to |icon_url|. If
-  // the favicon has not been set, the database is not updated.
+  // Fetches the |icon_type| of favicon at |icon_url|, sending the results to
+  // the given |callback|. If the favicon has previously been set via
+  // SetFavicon(), then the favicon URL for |page_url| and all redirects is set
+  // to |icon_url|. If the favicon has not been set, the database is not
+  // updated.
   Handle UpdateFaviconMappingAndFetch(const GURL& page_url,
                                       const GURL& icon_url,
+                                      history::IconType icon_type,
                                       CancelableRequestConsumerBase* consumer,
                                       FaviconDataCallback* callback);
 
-  // Requests a favicon for a web page URL. |consumer| is notified
-  // when the bits have been fetched.
+  // Requests any |icon_types| of favicon for a web page URL. |consumer| is
+  // notified when the bits have been fetched. |icon_types| can be any
+  // combination of IconType value, but only one icon will be returned in the
+  // priority of TOUCH_PRECOMPOSED_ICON, TOUCH_ICON and FAV_ICON.
   //
   // Note: this version is intended to be used to retrieve the favicon of a
   // page that has been browsed in the past. |expired| in the callback is
   // always false.
   Handle GetFaviconForURL(const GURL& page_url,
+                          int icon_types,
                           CancelableRequestConsumerBase* consumer,
                           FaviconDataCallback* callback);
 
-  // Marks the favicon for the page as being out of date.
+  // Marks all types of favicon for the page as being out of date.
   void SetFaviconOutOfDateForPage(const GURL& page_url);
 
   // Allows the importer to set many favicons for many pages at once. The pages
@@ -84,7 +87,8 @@ class FaviconService : public CancelableRequestProvider,
   // Sets the favicon for a page.
   void SetFavicon(const GURL& page_url,
                   const GURL& icon_url,
-                  const std::vector<unsigned char>& image_data);
+                  const std::vector<unsigned char>& image_data,
+                  history::IconType icon_type);
 
  private:
   friend class base::RefCountedThreadSafe<FaviconService>;

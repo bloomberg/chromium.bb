@@ -100,10 +100,7 @@ class ExtensionIconSource : public ChromeURLDataManager::DataSource,
 
   // FaviconService callback
   void OnFaviconDataAvailable(FaviconService::Handle request_handle,
-                              bool know_favicon,
-                              scoped_refptr<RefCountedMemory> data,
-                              bool expired,
-                              GURL icon_url);
+                              history::FaviconData favicon);
 
   // ImageLoadingTracker::Observer
   virtual void OnImageLoaded(SkBitmap* image,

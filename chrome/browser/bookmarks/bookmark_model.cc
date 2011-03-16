@@ -736,19 +736,17 @@ BookmarkNode* BookmarkModel::CreateRootNodeFromStarredEntry(
 
 void BookmarkModel::OnFaviconDataAvailable(
     FaviconService::Handle handle,
-    bool know_favicon,
-    scoped_refptr<RefCountedMemory> data,
-    bool expired,
-    GURL icon_url) {
-  SkBitmap favicon;
+    history::FaviconData favicon) {
+  SkBitmap fav_icon;
   BookmarkNode* node =
       load_consumer_.GetClientData(
           profile_->GetFaviconService(Profile::EXPLICIT_ACCESS), handle);
   DCHECK(node);
   node->set_favicon_load_handle(0);
-  if (know_favicon && data.get() && data->size() &&
-      gfx::PNGCodec::Decode(data->front(), data->size(), &favicon)) {
-    node->set_favicon(favicon);
+  if (favicon.is_valid() && gfx::PNGCodec::Decode(favicon.image_data->front(),
+                                                  favicon.image_data->size(),
+                                                  &fav_icon)) {
+    node->set_favicon(fav_icon);
     FaviconLoaded(node);
   }
 }
@@ -763,7 +761,7 @@ void BookmarkModel::LoadFavicon(BookmarkNode* node) {
   if (!favicon_service)
     return;
   FaviconService::Handle handle = favicon_service->GetFaviconForURL(
-      node->GetURL(), &load_consumer_,
+      node->GetURL(), history::FAVICON, &load_consumer_,
       NewCallback(this, &BookmarkModel::OnFaviconDataAvailable));
   load_consumer_.SetClientData(favicon_service, handle, node);
   node->set_favicon_load_handle(handle);

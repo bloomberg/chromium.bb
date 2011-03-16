@@ -284,12 +284,14 @@ void WebUIFactory::GetFaviconForURL(Profile* profile,
       page_url.host() != extension_misc::kBookmarkManagerId) {
     ExtensionWebUI::GetFaviconForURL(profile, request, page_url);
   } else {
-    scoped_refptr<RefCountedMemory> icon_data(
+    history::FaviconData favicon;
+    favicon.image_data = scoped_refptr<RefCountedMemory>(
         WebUIFactory::GetFaviconResourceBytes(profile, page_url));
-    bool know_icon = icon_data.get() != NULL && icon_data->size() > 0;
+    favicon.known_icon = favicon.image_data.get() != NULL &&
+                             favicon.image_data->size() > 0;
     request->ForwardResultAsync(
         FaviconService::FaviconDataCallback::TupleType(request->handle(),
-            know_icon, icon_data, false, GURL()));
+                                                       favicon));
   }
 }
 

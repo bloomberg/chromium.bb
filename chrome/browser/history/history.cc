@@ -449,36 +449,40 @@ HistoryService::Handle HistoryService::GetPageThumbnail(
 }
 
 void HistoryService::GetFavicon(FaviconService::GetFaviconRequest* request,
-                                const GURL& icon_url) {
+                                const GURL& icon_url,
+                                history::IconType icon_type) {
   Schedule(PRIORITY_NORMAL, &HistoryBackend::GetFavicon, NULL, request,
-           icon_url, history::FAVICON);
+           icon_url, icon_type);
 }
 
 void HistoryService::UpdateFaviconMappingAndFetch(
     FaviconService::GetFaviconRequest* request,
     const GURL& page_url,
-    const GURL& icon_url) {
+    const GURL& icon_url,
+    history::IconType icon_type) {
   Schedule(PRIORITY_NORMAL, &HistoryBackend::UpdateFaviconMappingAndFetch, NULL,
            request, page_url, icon_url, history::FAVICON);
 }
 
 void HistoryService::GetFaviconForURL(
     FaviconService::GetFaviconRequest* request,
-    const GURL& page_url) {
+    const GURL& page_url,
+    int icon_types) {
   Schedule(PRIORITY_NORMAL, &HistoryBackend::GetFaviconForURL, NULL, request,
-           page_url, history::FAVICON);
+           page_url, icon_types);
 }
 
 void HistoryService::SetFavicon(const GURL& page_url,
                                 const GURL& icon_url,
-                                const std::vector<unsigned char>& image_data) {
+                                const std::vector<unsigned char>& image_data,
+                                history::IconType icon_type) {
   if (!CanAddURL(page_url))
     return;
 
   ScheduleAndForget(PRIORITY_NORMAL, &HistoryBackend::SetFavicon,
       page_url, icon_url,
       scoped_refptr<RefCountedMemory>(new RefCountedBytes(image_data)),
-      history::FAVICON);
+      icon_type);
 }
 
 void HistoryService::SetFaviconOutOfDateForPage(const GURL& page_url) {

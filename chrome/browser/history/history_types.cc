@@ -410,4 +410,17 @@ IconMapping::IconMapping()
 
 IconMapping::~IconMapping() {}
 
+
+FaviconData::FaviconData()
+  : known_icon(false),
+    expired(false),
+    icon_type(history::INVALID_ICON) {
+}
+
+FaviconData::~FaviconData() {}
+
+bool FaviconData::is_valid() {
+  return known_icon && image_data.get() && image_data->size();
+}
+
 }  // namespace history

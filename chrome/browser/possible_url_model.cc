@@ -163,7 +163,7 @@ SkBitmap PossibleURLModel::GetIcon(int row) {
     if (favicon_service) {
       CancelableRequestProvider::Handle h =
           favicon_service->GetFaviconForURL(
-              result.url, &consumer_,
+              result.url, history::FAVICON, &consumer_,
               NewCallback(this, &PossibleURLModel::OnFaviconAvailable));
       consumer_.SetClientData(favicon_service, h, result.index);
       // Add an entry to the map so that we don't attempt to request the
@@ -184,17 +184,15 @@ int PossibleURLModel::CompareValues(int row1, int row2, int column_id) {
 
 void PossibleURLModel::OnFaviconAvailable(
     FaviconService::Handle h,
-    bool favicon_available,
-    scoped_refptr<RefCountedMemory> data,
-    bool expired,
-    GURL icon_url) {
+    history::FaviconData favicon) {
   if (profile_) {
     FaviconService* favicon_service =
         profile_->GetFaviconService(Profile::EXPLICIT_ACCESS);
     size_t index = consumer_.GetClientData(favicon_service, h);
-    if (favicon_available) {
+    if (favicon.is_valid()) {
       // The decoder will leave our bitmap empty on error.
-      gfx::PNGCodec::Decode(data->front(), data->size(),
+      gfx::PNGCodec::Decode(favicon.image_data->front(),
+                            favicon.image_data->size(),
                             &(favicon_map_[index]));
 
       // Notify the observer.

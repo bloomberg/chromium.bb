@@ -846,7 +846,8 @@ void TabContents::SaveFavicon() {
   }
   std::vector<unsigned char> image_data;
   gfx::PNGCodec::EncodeBGRASkBitmap(favicon.bitmap(), false, &image_data);
-  service->SetFavicon(entry->url(), favicon.url(), image_data);
+  service->SetFavicon(
+      entry->url(), favicon.url(), image_data, history::FAVICON);
 }
 
 ConstrainedWindow* TabContents::CreateConstrainedDialog(

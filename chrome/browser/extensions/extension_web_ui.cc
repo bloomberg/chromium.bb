@@ -103,10 +103,13 @@ class ExtensionWebUIImageLoadingTracker : public ImageLoadingTracker::Observer {
   // |icon_data| may be backed by NULL. Once the result has been forwarded the
   // instance is deleted.
   void ForwardResult(scoped_refptr<RefCountedMemory> icon_data) {
-    bool know_icon = icon_data.get() != NULL && icon_data->size() > 0;
+    history::FaviconData favicon;
+    favicon.known_icon = icon_data.get() != NULL && icon_data->size() > 0;
+    favicon.image_data = icon_data;
+    favicon.icon_type = history::FAVICON;
     request_->ForwardResultAsync(
         FaviconService::FaviconDataCallback::TupleType(request_->handle(),
-            know_icon, icon_data, false, GURL()));
+                                                       favicon));
     delete this;
   }
 

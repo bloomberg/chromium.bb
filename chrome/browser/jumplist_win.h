@@ -160,10 +160,7 @@ class JumpList : public TabRestoreServiceObserver {
   // When finishing loading all favicons, this function posts a task that
   // decompresses collected favicons and updates a JumpList.
   void OnFaviconDataAvailable(HistoryService::Handle handle,
-                              bool know_favicon,
-                              scoped_refptr<RefCountedMemory> data,
-                              bool expired,
-                              GURL icon_url);
+                              history::FaviconData favicon);
 
  private:
   // Our consumers for HistoryService.

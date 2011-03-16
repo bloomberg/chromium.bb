@@ -320,7 +320,8 @@ void InstantLoader::TabContentsDelegateImpl::CommitHistory(
                                       &image_data);
     favicon_service->SetFavicon(active_entry->url(),
                                 active_entry->favicon().url(),
-                                image_data);
+                                image_data,
+                                history::FAVICON);
     if (supports_instant && !add_page_vector_.empty()) {
       // If we're using the instant API, then we've tweaked the url that is
       // going to be added to history. We need to also set the favicon for the
@@ -328,7 +329,8 @@ void InstantLoader::TabContentsDelegateImpl::CommitHistory(
       // for details).
       favicon_service->SetFavicon(add_page_vector_.back()->url,
                                   active_entry->favicon().url(),
-                                  image_data);
+                                  image_data,
+                                  history::FAVICON);
     }
   }
 }

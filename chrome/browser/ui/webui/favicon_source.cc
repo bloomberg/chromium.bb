@@ -33,11 +33,13 @@ void FaviconSource::StartDataRequest(const std::string& path,
     if (path.size() > 8 && path.substr(0, 8) == "iconurl/") {
       handle = favicon_service->GetFavicon(
           GURL(path.substr(8)),
+          history::FAVICON,
           &cancelable_consumer_,
           NewCallback(this, &FaviconSource::OnFaviconDataAvailable));
     } else {
       handle = favicon_service->GetFaviconForURL(
           GURL(path),
+          history::FAVICON,
           &cancelable_consumer_,
           NewCallback(this, &FaviconSource::OnFaviconDataAvailable));
     }
@@ -62,18 +64,15 @@ bool FaviconSource::ShouldReplaceExistingSource() const {
 
 void FaviconSource::OnFaviconDataAvailable(
     FaviconService::Handle request_handle,
-    bool know_favicon,
-    scoped_refptr<RefCountedMemory> data,
-    bool expired,
-    GURL icon_url) {
+    history::FaviconData favicon) {
   FaviconService* favicon_service =
       profile_->GetFaviconService(Profile::EXPLICIT_ACCESS);
   int request_id = cancelable_consumer_.GetClientData(favicon_service,
                                                       request_handle);
 
-  if (know_favicon && data.get() && data->size()) {
+  if (favicon.is_valid()) {
     // Forward the data along to the networking system.
-    SendResponse(request_id, data);
+    SendResponse(request_id, favicon.image_data);
   } else {
     SendDefaultResponse(request_id);
   }

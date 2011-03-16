@@ -52,7 +52,8 @@ void FaviconHelper::FetchFavicon(const GURL& url) {
   // renderer is going to notify us (well TabContents) when the favicon url is
   // available.
   if (GetFaviconService()) {
-    GetFaviconService()->GetFaviconForURL(url_, &cancelable_consumer_,
+    GetFaviconService()->GetFaviconForURL(url_, history::FAVICON,
+        &cancelable_consumer_,
         NewCallback(this, &FaviconHelper::OnFaviconDataForInitialURL));
   }
 }
@@ -83,7 +84,8 @@ void FaviconHelper::SetFavicon(
   if (GetFaviconService() && ShouldSaveFavicon(url)) {
     std::vector<unsigned char> image_data;
     gfx::PNGCodec::EncodeBGRASkBitmap(sized_image, false, &image_data);
-    GetFaviconService()->SetFavicon(url, image_url, image_data);
+    GetFaviconService()->SetFavicon(url, image_url, image_data,
+                                    history::FAVICON);
   }
 
   if (url == url_) {
@@ -182,33 +184,30 @@ NavigationEntry* FaviconHelper::GetEntry() {
 
 void FaviconHelper::OnFaviconDataForInitialURL(
     FaviconService::Handle handle,
-    bool know_favicon,
-    scoped_refptr<RefCountedMemory> data,
-    bool expired,
-    GURL icon_url) {
+    history::FaviconData favicon) {
   NavigationEntry* entry = GetEntry();
   if (!entry)
     return;
 
   got_favicon_from_history_ = true;
 
-  favicon_expired_ = (know_favicon && expired);
+  favicon_expired_ = (favicon.known_icon && favicon.expired);
 
-  if (know_favicon && !entry->favicon().is_valid() &&
-      (!got_favicon_url_ || entry->favicon().url() == icon_url)) {
+  if (favicon.known_icon && !entry->favicon().is_valid() &&
+      (!got_favicon_url_ || entry->favicon().url() == favicon.icon_url)) {
     // The db knows the favicon (although it may be out of date) and the entry
     // doesn't have an icon. Set the favicon now, and if the favicon turns out
     // to be expired (or the wrong url) we'll fetch later on. This way the
     // user doesn't see a flash of the default favicon.
-    entry->favicon().set_url(icon_url);
-    if (data.get() && data->size())
-      UpdateFavicon(entry, data);
+    entry->favicon().set_url(favicon.icon_url);
+    if (favicon.is_valid())
+      UpdateFavicon(entry, favicon.image_data);
     entry->favicon().set_is_valid(true);
   }
 
-  if (know_favicon && !expired) {
-    if (got_favicon_url_ && entry->favicon().url() != icon_url) {
-      // Mapping in the database is wrong. DownloadFaviconOrAskHistory will
+  if (favicon.known_icon && !favicon.expired) {
+    if (got_favicon_url_ && entry->favicon().url() != favicon.icon_url) {
+      // Mapping in the database is wrong. DownloadFavIconOrAskHistory will
       // update the mapping for this url and download the favicon if we don't
       // already have it.
       DownloadFaviconOrAskHistory(entry);
@@ -235,6 +234,7 @@ void FaviconHelper::DownloadFaviconOrAskHistory(NavigationEntry* entry) {
     if (profile()->IsOffTheRecord()) {
       GetFaviconService()->GetFavicon(
           entry->favicon().url(),
+          history::FAVICON,
           &cancelable_consumer_,
           NewCallback(this, &FaviconHelper::OnFaviconData));
     } else {
@@ -246,7 +246,9 @@ void FaviconHelper::DownloadFaviconOrAskHistory(NavigationEntry* entry) {
       // Issue the request and associate the current page ID with it.
       GetFaviconService()->UpdateFaviconMappingAndFetch(
           entry->url(),
-          entry->favicon().url(), &cancelable_consumer_,
+          entry->favicon().url(),
+          history::FAVICON,
+          &cancelable_consumer_,
           NewCallback(this, &FaviconHelper::OnFaviconData));
     }
   }
@@ -254,10 +256,7 @@ void FaviconHelper::DownloadFaviconOrAskHistory(NavigationEntry* entry) {
 
 void FaviconHelper::OnFaviconData(
     FaviconService::Handle handle,
-    bool know_favicon,
-    scoped_refptr<RefCountedMemory> data,
-    bool expired,
-    GURL icon_url) {
+    history::FaviconData favicon) {
   NavigationEntry* entry = GetEntry();
   if (!entry)
     return;
@@ -265,14 +264,14 @@ void FaviconHelper::OnFaviconData(
   // No need to update the favicon url. By the time we get here
   // UpdateFaviconURL will have set the favicon url.
 
-  if (know_favicon && data.get() && data->size()) {
+  if (favicon.is_valid()) {
     // There is a favicon, set it now. If expired we'll download the current
     // one again, but at least the user will get some icon instead of the
     // default and most likely the current one is fine anyway.
-    UpdateFavicon(entry, data);
+    UpdateFavicon(entry, favicon.image_data);
   }
 
-  if (!know_favicon || expired) {
+  if (!favicon.known_icon || favicon.expired) {
     // We don't know the favicon, or it is out of date. Request the current one.
     ScheduleDownload(entry->url(), entry->favicon().url(), kFaviconSize, NULL);
   }

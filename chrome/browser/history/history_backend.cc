@@ -1704,34 +1704,31 @@ void HistoryBackend::UpdateFaviconMappingAndFetchImpl(
   if (request->canceled())
     return;
 
-  bool know_favicon = false;
-  bool expired = true;
-  scoped_refptr<RefCountedBytes> data;
+  FaviconData favicon;
 
   if (thumbnail_db_.get()) {
-    IconType returned_icon_type;
     const FaviconID favicon_id =
         thumbnail_db_->GetFaviconIDForFaviconURL(
-            icon_url, icon_types, &returned_icon_type);
+            icon_url, icon_types, &favicon.icon_type);
     if (favicon_id) {
-      data = new RefCountedBytes;
-      know_favicon = true;
+      scoped_refptr<RefCountedBytes> data = new RefCountedBytes();
+      favicon.known_icon = true;
       Time last_updated;
       if (thumbnail_db_->GetFavicon(favicon_id, &last_updated, &data->data,
                                     NULL)) {
-        expired = (Time::Now() - last_updated) >
+        favicon.expired = (Time::Now() - last_updated) >
             TimeDelta::FromDays(kFaviconRefetchDays);
+        favicon.image_data = data;
       }
 
       if (page_url)
-        SetFaviconMapping(*page_url, favicon_id, returned_icon_type);
+        SetFaviconMapping(*page_url, favicon_id, favicon.icon_type);
     }
     // else case, haven't cached entry yet. Caller is responsible for
     // downloading the favicon and invoking SetFavicon.
   }
   request->ForwardResult(GetFaviconRequest::TupleType(
-                             request->handle(), know_favicon, data, expired,
-                             icon_url));
+                             request->handle(), favicon));
 }
 
 void HistoryBackend::GetFaviconForURL(
@@ -1741,26 +1738,24 @@ void HistoryBackend::GetFaviconForURL(
   if (request->canceled())
     return;
 
-  bool know_favicon = false;
-  bool expired = false;
-  GURL icon_url;
-
-  scoped_refptr<RefCountedBytes> data;
+  FaviconData favicon;
 
   if (db_.get() && thumbnail_db_.get()) {
     // Time the query.
     TimeTicks beginning_time = TimeTicks::Now();
 
     std::vector<IconMapping> icon_mappings;
-    data = new RefCountedBytes;
     Time last_updated;
+    scoped_refptr<RefCountedBytes> data = new RefCountedBytes();
     if (thumbnail_db_->GetIconMappingsForPageURL(page_url, &icon_mappings) &&
         (icon_mappings.front().icon_type & icon_types) &&
         thumbnail_db_->GetFavicon(icon_mappings.front().icon_id, &last_updated,
-                                  &data->data, &icon_url)) {
-      know_favicon = true;
-      expired = (Time::Now() - last_updated) >
+                                  &data->data, &favicon.icon_url)) {
+      favicon.known_icon = true;
+      favicon.expired = (Time::Now() - last_updated) >
           TimeDelta::FromDays(kFaviconRefetchDays);
+      favicon.icon_type = icon_mappings.front().icon_type;
+      favicon.image_data = data;
     }
 
     UMA_HISTOGRAM_TIMES("History.GetFavIconForURL",  // historical name
@@ -1768,8 +1763,7 @@ void HistoryBackend::GetFaviconForURL(
   }
 
   request->ForwardResult(
-      GetFaviconRequest::TupleType(request->handle(), know_favicon, data,
-                                   expired, icon_url));
+      GetFaviconRequest::TupleType(request->handle(), favicon));
 }
 
 void HistoryBackend::SetFavicon(

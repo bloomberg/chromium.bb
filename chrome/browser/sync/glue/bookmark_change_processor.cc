@@ -541,7 +541,8 @@ void BookmarkChangeProcessor::ApplyBookmarkFavicon(
   history->AddPage(bookmark_node->GetURL(), history::SOURCE_SYNCED);
   favicon_service->SetFavicon(bookmark_node->GetURL(),
                               fake_icon_url,
-                              icon_bytes_vector);
+                              icon_bytes_vector,
+                              history::FAVICON);
 }
 
 // static

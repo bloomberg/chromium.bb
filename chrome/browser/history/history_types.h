@@ -703,6 +703,30 @@ struct IconMapping {
   IconType icon_type;
 };
 
+// Defines the favicon stored in history backend.
+struct FaviconData {
+  FaviconData();
+  ~FaviconData();
+
+  // Returns true if the icon is known and image has data.
+  bool is_valid();
+
+  // Indicates whether the icon is known by the history backend.
+  bool known_icon;
+
+  // The bits of image.
+  scoped_refptr<RefCountedMemory> image_data;
+
+  // Indicates whether image is expired.
+  bool expired;
+
+  // The icon's URL.
+  GURL icon_url;
+
+  // The type of favicon.
+  history::IconType icon_type;
+};
+
 }  // namespace history
 
 #endif  // CHROME_BROWSER_HISTORY_HISTORY_TYPES_H_

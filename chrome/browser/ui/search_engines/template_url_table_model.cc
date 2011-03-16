@@ -91,20 +91,18 @@ class ModelEntry {
         return;
     }
     load_state_ = LOADING;
-    favicon_service->GetFavicon(favicon_url,
-                   &request_consumer_,
-                   NewCallback(this, &ModelEntry::OnFaviconDataAvailable));
+    favicon_service->GetFavicon(favicon_url, history::FAVICON,
+        &request_consumer_,
+        NewCallback(this, &ModelEntry::OnFaviconDataAvailable));
   }
 
   void OnFaviconDataAvailable(
       FaviconService::Handle handle,
-      bool know_favicon,
-      scoped_refptr<RefCountedMemory> data,
-      bool expired,
-      GURL icon_url) {
+      history::FaviconData favicon) {
     load_state_ = LOADED;
-    if (know_favicon && data.get() &&
-        gfx::PNGCodec::Decode(data->front(), data->size(), &favicon_)) {
+    if (favicon.is_valid() && gfx::PNGCodec::Decode(favicon.image_data->front(),
+                                                    favicon.image_data->size(),
+                                                    &favicon_)) {
       model_->FaviconAvailable(this);
     }
   }

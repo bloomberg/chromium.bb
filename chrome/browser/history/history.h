@@ -642,17 +642,20 @@ class HistoryService : public CancelableRequestProvider,
 
   // Used by the FaviconService to get a favicon from the history backend.
   void GetFavicon(FaviconService::GetFaviconRequest* request,
-                  const GURL& icon_url);
+                  const GURL& icon_url,
+                  history::IconType icon_type);
 
   // Used by the FaviconService to update the favicon mappings on the history
   // backend.
   void UpdateFaviconMappingAndFetch(FaviconService::GetFaviconRequest* request,
                                     const GURL& page_url,
-                                    const GURL& icon_url);
+                                    const GURL& icon_url,
+                                    history::IconType icon_type);
 
   // Used by the FaviconService to get a favicon from the history backend.
   void GetFaviconForURL(FaviconService::GetFaviconRequest* request,
-                        const GURL& page_url);
+                        const GURL& page_url,
+                        int icon_types);
 
   // Used by the FaviconService to mark the favicon for the page as being out
   // of date.
@@ -668,7 +671,8 @@ class HistoryService : public CancelableRequestProvider,
   // backend.
   void SetFavicon(const GURL& page_url,
                   const GURL& icon_url,
-                  const std::vector<unsigned char>& image_data);
+                  const std::vector<unsigned char>& image_data,
+                  history::IconType icon_type);
 
 
   // Sets the in-memory URL database. This is called by the backend once the

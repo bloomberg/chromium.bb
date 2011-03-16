@@ -197,8 +197,7 @@ TEST_F(BookmarkHTMLWriterTest, Test) {
   profile.GetHistoryService(Profile::EXPLICIT_ACCESS)->AddPage(url1,
       history::SOURCE_BROWSED);
   profile.GetFaviconService(Profile::EXPLICIT_ACCESS)->SetFavicon(url1,
-                                                                  url1_favicon,
-                                                                  icon_data);
+      url1_favicon, icon_data, history::FAVICON);
   message_loop.RunAllPending();
   const BookmarkNode* f2 = model->AddGroup(f1, 1, f2_title);
   model->AddURLWithCreationTime(f2, 0, url2_title, url2, t2);
@@ -221,8 +220,7 @@ TEST_F(BookmarkHTMLWriterTest, Test) {
   // Clear favicon so that it would be read from file.
   std::vector<unsigned char> empty_data;
   profile.GetFaviconService(Profile::EXPLICIT_ACCESS)->SetFavicon(url1,
-                                                                  url1_favicon,
-                                                                  empty_data);
+      url1_favicon, empty_data, history::FAVICON);
   message_loop.RunAllPending();
 
   // Read the bookmarks back in.

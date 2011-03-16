@@ -164,7 +164,7 @@ void CustomHomePagesTableModel::LoadTitleAndFavIcon(Entry* entry) {
       profile_->GetFaviconService(Profile::EXPLICIT_ACCESS);
   if (favicon_service) {
     entry->favicon_handle = favicon_service->GetFaviconForURL(entry->url,
-        &query_consumer_,
+        history::FAVICON, &query_consumer_,
         NewCallback(this, &CustomHomePagesTableModel::OnGotFavIcon));
   }
 }
@@ -190,10 +190,7 @@ void CustomHomePagesTableModel::OnGotTitle(HistoryService::Handle handle,
 
 void CustomHomePagesTableModel::OnGotFavIcon(
     FaviconService::Handle handle,
-    bool know_favicon,
-    scoped_refptr<RefCountedMemory> image_data,
-    bool is_expired,
-    GURL icon_url) {
+    history::FaviconData favicon) {
   int entry_index;
   Entry* entry =
       GetEntryByLoadHandle(&Entry::favicon_handle, handle, &entry_index);
@@ -202,11 +199,11 @@ void CustomHomePagesTableModel::OnGotFavIcon(
     return;
   }
   entry->favicon_handle = 0;
-  if (know_favicon && image_data.get() && image_data->size()) {
+  if (favicon.is_valid()) {
     int width, height;
     std::vector<unsigned char> decoded_data;
-    if (gfx::PNGCodec::Decode(image_data->front(),
-                              image_data->size(),
+    if (gfx::PNGCodec::Decode(favicon.image_data->front(),
+                              favicon.image_data->size(),
                               gfx::PNGCodec::FORMAT_BGRA, &decoded_data,
                               &width, &height)) {
       entry->icon.setConfig(SkBitmap::kARGB_8888_Config, width, height);

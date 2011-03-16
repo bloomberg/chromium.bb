@@ -35,10 +35,7 @@ class FaviconSource : public ChromeURLDataManager::DataSource {
  private:
   // Called when favicon data is available from the history backend.
   void OnFaviconDataAvailable(FaviconService::Handle request_handle,
-                              bool know_favicon,
-                              scoped_refptr<RefCountedMemory> data,
-                              bool expired,
-                              GURL url);
+                              history::FaviconData favicon);
 
   // Sends the default favicon.
   void SendDefaultResponse(int request_id);

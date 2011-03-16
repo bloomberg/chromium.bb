@@ -688,7 +688,7 @@ bool JumpList::StartLoadingFavIcon() {
   FaviconService* favicon_service =
       profile_->GetFaviconService(Profile::EXPLICIT_ACCESS);
   FaviconService::Handle handle = favicon_service->GetFaviconForURL(
-      url, &favicon_consumer_,
+      url, history::FAVICON, &favicon_consumer_,
       NewCallback(this, &JumpList::OnFaviconDataAvailable));
   return true;
 }
@@ -753,15 +753,12 @@ void JumpList::OnSegmentUsageAvailable(
 
 void JumpList::OnFaviconDataAvailable(
     FaviconService::Handle handle,
-    bool know_favicon,
-    scoped_refptr<RefCountedMemory> data,
-    bool expired,
-    GURL icon_url) {
+    history::FaviconData favicon) {
   // Attach the received data to the ShellLinkItem object.
   // This data will be decoded by JumpListUpdateTask.
-  if (know_favicon && data.get() && data->size()) {
+  if (favicon.is_valid()) {
     if (!icon_urls_.empty() && icon_urls_.front().second)
-      icon_urls_.front().second->SetIconData(data);
+      icon_urls_.front().second->SetIconData(favicon.image_data);
   }
 
   // if we need to load more favicons, we send another query and exit.

@@ -187,10 +187,7 @@ class HistoryMenuBridge : public NotificationObserver,
   // sets the image on the menu. Called on the same same thread that
   // GetFaviconForHistoryItem() was called on (UI thread).
   void GotFaviconData(FaviconService::Handle handle,
-                      bool know_favicon,
-                      scoped_refptr<RefCountedMemory> data,
-                      bool expired,
-                      GURL url);
+                      history::FaviconData favicon);
 
   // Cancels a favicon load request for a given HistoryItem, if one is in
   // progress.

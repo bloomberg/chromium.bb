@@ -71,10 +71,7 @@ class CustomHomePagesTableModel : public ui::TableModel {
   // Callback from history service. Updates the icon of the Entry whose
   // |favicon_handle| matches |handle| and notifies the observer of the change.
   void OnGotFavIcon(FaviconService::Handle handle,
-                    bool know_favicon,
-                    scoped_refptr<RefCountedMemory> image_data,
-                    bool is_expired,
-                    GURL icon_url);
+                    history::FaviconData favicon);
 
   // Returns the entry whose |member| matches |handle| and sets |entry_index| to
   // the index of the entry.

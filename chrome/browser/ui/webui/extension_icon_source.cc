@@ -201,23 +201,22 @@ void ExtensionIconSource::LoadFaviconImage(int request_id) {
 
   GURL favicon_url = GetData(request_id)->extension->GetFullLaunchURL();
   FaviconService::Handle handle = favicon_service->GetFaviconForURL(
-      favicon_url, &cancelable_consumer_,
+      favicon_url,
+      history::FAVICON,
+      &cancelable_consumer_,
       NewCallback(this, &ExtensionIconSource::OnFaviconDataAvailable));
   cancelable_consumer_.SetClientData(favicon_service, handle, request_id);
 }
 
 void ExtensionIconSource::OnFaviconDataAvailable(
     FaviconService::Handle request_handle,
-    bool know_favicon,
-    scoped_refptr<RefCountedMemory> data,
-    bool expired,
-    GURL icon_url) {
+    history::FaviconData favicon) {
   int request_id = cancelable_consumer_.GetClientData(
       profile_->GetFaviconService(Profile::EXPLICIT_ACCESS), request_handle);
   ExtensionIconRequest* request = GetData(request_id);
 
   // Fallback to the default icon if there wasn't a favicon.
-  if (!know_favicon || !data.get() || !data->size()) {
+  if (!favicon.is_valid()) {
     LoadDefaultImage(request_id);
     return;
   }
@@ -226,9 +225,10 @@ void ExtensionIconSource::OnFaviconDataAvailable(
     // If we don't need a grayscale image, then we can bypass FinalizeImage
     // to avoid unnecessary conversions.
     ClearData(request_id);
-    SendResponse(request_id, data);
+    SendResponse(request_id, favicon.image_data);
   } else {
-    FinalizeImage(ToBitmap(data->front(), data->size()), request_id);
+    FinalizeImage(ToBitmap(favicon.image_data->front(),
+                           favicon.image_data->size()), request_id);
   }
 }
 

@@ -422,7 +422,7 @@ void HistoryMenuBridge::GetFaviconForHistoryItem(HistoryItem* item) {
   FaviconService* service =
       profile_->GetFaviconService(Profile::EXPLICIT_ACCESS);
   FaviconService::Handle handle = service->GetFaviconForURL(item->url,
-      &favicon_consumer_,
+      history::FAVICON, &favicon_consumer_,
       NewCallback(this, &HistoryMenuBridge::GotFaviconData));
   favicon_consumer_.SetClientData(service, handle, item);
   item->icon_handle = handle;
@@ -430,10 +430,7 @@ void HistoryMenuBridge::GetFaviconForHistoryItem(HistoryItem* item) {
 }
 
 void HistoryMenuBridge::GotFaviconData(FaviconService::Handle handle,
-                                       bool know_favicon,
-                                       scoped_refptr<RefCountedMemory> data,
-                                       bool expired,
-                                       GURL url) {
+                                       history::FaviconData favicon) {
   // Since we're going to do Cocoa-y things, make sure this is the main thread.
   DCHECK([NSThread isMainThread]);
 
@@ -447,8 +444,9 @@ void HistoryMenuBridge::GotFaviconData(FaviconService::Handle handle,
   // Convert the raw data to Skia and then to a NSImage.
   // TODO(rsesek): Is there an easier way to do this?
   SkBitmap icon;
-  if (know_favicon && data.get() && data->size() &&
-      gfx::PNGCodec::Decode(data->front(), data->size(), &icon)) {
+  if (favicon.is_valid() &&
+      gfx::PNGCodec::Decode(favicon.image_data->front(),
+          favicon.image_data->size(), &icon)) {
     NSImage* image = gfx::SkBitmapToNSImage(icon);
     if (image) {
       // The conversion was successful.

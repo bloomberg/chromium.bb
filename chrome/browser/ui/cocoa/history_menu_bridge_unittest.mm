@@ -103,11 +103,8 @@ class HistoryMenuBridgeTest : public CocoaTest {
   }
 
   void GotFaviconData(FaviconService::Handle handle,
-                      bool know_favicon,
-                      scoped_refptr<RefCountedBytes> data,
-                      bool expired,
-                      GURL url) {
-    bridge_->GotFaviconData(handle, know_favicon, data, expired, url);
+                      history::FaviconData favicon) {
+    bridge_->GotFaviconData(handle, favicon);
   }
 
   CancelableRequestConsumerTSimple<HistoryMenuBridge::HistoryItem*>&
@@ -366,7 +363,7 @@ TEST_F(HistoryMenuBridgeTest, GotFaviconData) {
   // make icons look pretty.
   std::vector<unsigned char> raw;
   gfx::PNGCodec::EncodeBGRASkBitmap(bitmap, true, &raw);
-  scoped_refptr<RefCountedBytes> bytes(new RefCountedBytes(raw));
+  scoped_refptr<RefCountedBytes> bytes();
 
   // Set up the HistoryItem.
   HistoryMenuBridge::HistoryItem item;
@@ -374,7 +371,13 @@ TEST_F(HistoryMenuBridgeTest, GotFaviconData) {
   GetFaviconForHistoryItem(&item);
 
   // Pretend to be called back.
-  GotFaviconData(item.icon_handle, true, bytes, false, GURL());
+  history::FaviconData favicon;
+  favicon.known_icon = true;
+  favicon.image_data = new RefCountedBytes(raw);
+  favicon.expired = false;
+  favicon.icon_url = GURL();
+  favicon.icon_type = history::FAVICON;
+  GotFaviconData(item.icon_handle, favicon);
 
   // Make sure the callback works.
   EXPECT_FALSE(item.icon_requested);
