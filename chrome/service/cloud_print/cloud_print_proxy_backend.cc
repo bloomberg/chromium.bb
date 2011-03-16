@@ -383,6 +383,7 @@ void CloudPrintProxyBackend::Core::DoInitializeWithToken(
     subscription.channel.append("/proxy/");
     subscription.channel.append(proxy_id);
     subscription.from = kCloudPrintPushNotificationsSource;
+    push_notifications_channel_ = subscription.channel;
     talk_mediator_->AddSubscription(subscription);
     talk_mediator_->SetDelegate(this);
     talk_mediator_->SetAuthToken(email, cloud_print_xmpp_token,
