@@ -1550,8 +1550,8 @@ static void BuildMetaTables() {
    /* group15 */
    EncodeModRMOp(GROUP15, 0, NACLi_ILLEGAL, "fxsave");
    EncodeModRMOp(GROUP15, 1, NACLi_ILLEGAL, "fxrstor");
-   EncodeModRMOp(GROUP15, 2, NACLi_ILLEGAL, "ldmxcsr");  /* SSE */
-   EncodeModRMOp(GROUP15, 3, NACLi_ILLEGAL, "stmxcsr");
+   EncodeModRMOp(GROUP15, 2, NACLi_SSE, "ldmxcsr");
+   EncodeModRMOp(GROUP15, 3, NACLi_SSE, "stmxcsr");
    EncodeModRMOp(GROUP15, 4, NACLi_ILLEGAL, "invalid");
    EncodeModRMOp(GROUP15, 5, NACLi_SSE2, "lfence");
    EncodeModRMOp(GROUP15, 6, NACLi_SSE2, "mfence");
