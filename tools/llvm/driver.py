@@ -60,7 +60,7 @@ INITIAL_ENV = {
                           # TODO(pdox): Either eliminate gold native linking or
                           #             figure out why this is broken in the
                           #             first place.
-  'BIAS'        : 'ARM',  # This can be 'NONE', 'ARM', 'X8632', or 'X8664'.
+  'BIAS'        : 'NONE', # This can be 'NONE', 'ARM', 'X8632', or 'X8664'.
                           # When not set to none, this causes the front-end to
                           # act like a target-specific compiler. This bias is
                           # currently needed while compiling llvm-gcc, newlib,

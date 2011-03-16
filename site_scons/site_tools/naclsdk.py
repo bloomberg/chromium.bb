@@ -286,18 +286,17 @@ def _SetEnvForSdkManually(env):
 def AddBiasForPNaCl(env):
   assert(env.Bit('bitcode'))
 
-  # Activate after DEPS update.
-  #if env.Bit('target_arm'):
-  #  env.Append(CCFLAGS=['--pnacl-arm-bias'])
-  #  env.Append(CXXFLAGS=['--pnacl-arm-bias'])
-  #elif env.Bit('target_x86_32'):
-  #  env.Append(CCFLAGS=['--pnacl-i686-bias'])
-  #  env.Append(CXXFLAGS=['--pnacl-i686-bias'])
-  #elif env.Bit('target_x86_64'):
-  #  env.Append(CCFLAGS=['--pnacl-x86_64-bias'])
-  #  env.Append(CXXFLAGS=['--pnacl-x86_64-bias'])
-  #else:
-  #  raise Exception("Unknown architecture!")
+  if env.Bit('target_arm'):
+    env.Append(CCFLAGS=['--pnacl-arm-bias'])
+    env.Append(CXXFLAGS=['--pnacl-arm-bias'])
+  elif env.Bit('target_x86_32'):
+    env.Append(CCFLAGS=['--pnacl-i686-bias'])
+    env.Append(CXXFLAGS=['--pnacl-i686-bias'])
+  elif env.Bit('target_x86_64'):
+    env.Append(CCFLAGS=['--pnacl-x86_64-bias'])
+    env.Append(CXXFLAGS=['--pnacl-x86_64-bias'])
+  else:
+    raise Exception("Unknown architecture!")
 
 
 def ValidateSdk(env):
