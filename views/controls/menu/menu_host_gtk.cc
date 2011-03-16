@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -130,20 +130,27 @@ void MenuHostGtk::OnDestroy(GtkWidget* object) {
   WidgetGtk::OnDestroy(object);
 }
 
-void MenuHostGtk::HandleGrabBroke() {
-  did_input_grab_ = false;
-  // Grab can be broken by drag & drop, other menu or screen locker.
-  if (!destroying_) {
-    MenuController* menu_controller =
-        submenu_->GetMenuItem()->GetMenuController();
-    if (menu_controller && !menu_controller->drag_in_progress())
-      menu_controller->CancelAll();
+void MenuHostGtk::HandleXGrabBroke() {
+  // Grab may already be release in ReleaseGrab.
+  if (did_input_grab_ && !destroying_) {
+    did_input_grab_ = false;
+    CancelAllIfNoDrag();
   }
+  WidgetGtk::HandleXGrabBroke();
+}
 
-  WidgetGtk::HandleGrabBroke();
+void MenuHostGtk::HandleGtkGrabBroke() {
+  // Grab can be broken by drag & drop, other menu or screen locker.
+  if (did_input_grab_ && !destroying_) {
+    ReleaseNativeCapture();
+    CancelAllIfNoDrag();
+  }
+  WidgetGtk::HandleGtkGrabBroke();
 }
 
 void MenuHostGtk::DoCapture() {
+  DCHECK(!did_input_grab_);
+
   // Release the current grab.
   GtkWidget* current_grab_window = gtk_grab_get_current();
   if (current_grab_window)
@@ -168,6 +175,9 @@ void MenuHostGtk::DoCapture() {
   did_input_grab_ = pointer_grab_status == GDK_GRAB_SUCCESS &&
       keyboard_grab_status == GDK_GRAB_SUCCESS;
 
+  DCHECK_EQ(GDK_GRAB_SUCCESS, pointer_grab_status);
+  DCHECK_EQ(GDK_GRAB_SUCCESS, keyboard_grab_status);
+
 #if defined(HAVE_XINPUT2) && defined(TOUCH_UI)
   ::Window window = GDK_WINDOW_XID(window_contents()->window);
   Display* display = GDK_WINDOW_XDISPLAY(window_contents()->window);
@@ -177,6 +187,14 @@ void MenuHostGtk::DoCapture() {
 
   DCHECK(did_input_grab_);
   // need keyboard grab.
+}
+
+void MenuHostGtk::CancelAllIfNoDrag() {
+  MenuController* menu_controller =
+      submenu_->GetMenuItem()->GetMenuController();
+  if (menu_controller &&
+      !menu_controller->drag_in_progress())
+    menu_controller->CancelAll();
 }
 
 }  // namespace views

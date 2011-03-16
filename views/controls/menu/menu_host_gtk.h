@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -34,20 +34,20 @@ class MenuHostGtk : public WidgetGtk, public MenuHost {
   virtual gfx::NativeWindow GetMenuHostWindow() OVERRIDE;
 
  protected:
-  virtual RootView* CreateRootView();
+  virtual RootView* CreateRootView() OVERRIDE;
 
-  // Overridden to return false, we do NOT want to release capture on mouse
-  // release.
+  // WidgetGtk overrides:
   virtual bool ReleaseCaptureOnMouseReleased() OVERRIDE;
-
-  // Overridden to also release input grab.
   virtual void ReleaseNativeCapture() OVERRIDE;
-
   virtual void OnDestroy(GtkWidget* object) OVERRIDE;
-  virtual void HandleGrabBroke() OVERRIDE;
+  virtual void HandleGtkGrabBroke() OVERRIDE;
+  virtual void HandleXGrabBroke() OVERRIDE;
 
  private:
   void DoCapture();
+
+  // Cancell all menus unless drag is in progress.
+  void CancelAllIfNoDrag();
 
   // If true, DestroyMenuHost has been invoked.
   bool destroying_;

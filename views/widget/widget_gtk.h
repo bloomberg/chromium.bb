@@ -270,9 +270,13 @@ class WidgetGtk : public Widget,
   // is true.
   virtual bool ReleaseCaptureOnMouseReleased();
 
-  // Invoked when input grab is stolen by other GtkWidget in the same
+  // Invoked when gtk grab is stolen by other GtkWidget in the same
   // application.
-  virtual void HandleGrabBroke();
+  virtual void HandleGtkGrabBroke();
+
+  // Invoked when X input grab is broken. This typically happen
+  // when a window holding grab is closed without releasing grab.
+  virtual void HandleXGrabBroke();
 
   // Are we a subclass of WindowGtk?
   bool is_window_;

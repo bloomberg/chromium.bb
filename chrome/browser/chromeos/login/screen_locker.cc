@@ -361,14 +361,13 @@ class GrabWidget : public views::WidgetGtk {
   void TryUngrabOtherClients();
 
  private:
-  virtual void HandleGrabBroke() {
+  virtual void HandleGtkGrabBroke() {
     // Input should never be stolen from ScreenLocker once it's
     // grabbed.  If this happens, it's a bug and has to be fixed. We
     // let chrome crash to get a crash report and dump, and
     // SessionManager will terminate the session to logout.
-    CHECK(kbd_grab_status_ != GDK_GRAB_SUCCESS ||
-          mouse_grab_status_ != GDK_GRAB_SUCCESS)
-        << "Grab Broke. quitting";
+    CHECK_NE(GDK_GRAB_SUCCESS, kbd_grab_status_);
+    CHECK_NE(GDK_GRAB_SUCCESS, mouse_grab_status_);
   }
 
   chromeos::ScreenLocker* screen_locker_;
