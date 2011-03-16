@@ -956,6 +956,33 @@
     }, 
     {
       "api_calls": [
+        "chrome.extension.onRequest", 
+        "chrome.extension.sendRequest", 
+        "chrome.tabs.get", 
+        "chrome.tabs.getSelected", 
+        "chrome.tabs.update"
+      ], 
+      "description": "Creates a keyboard shortcut (C + Shift + P) to toggle the pinned state of the currently selected tab", 
+      "features": [
+        "background_page", 
+        "tabs"
+      ], 
+      "icon": null, 
+      "id": "65b2fe595b7ac38dddd89cca50f5efd0017b0bd4", 
+      "name": "Keyboard Pin", 
+      "path": "examples/api/tabs/pin/", 
+      "protocols": [], 
+      "search_string": "KEYBOARD PIN CREATES A KEYBOARD SHORTCUT (C + SHIFT + P) TO TOGGLE THE PINNED STATE OF THE CURRENTLY SELECTED TAB BACKGROUND_PAGE TABS CHROME.EXTENSION.ONREQUEST CHROME.EXTENSION.SENDREQUEST CHROME.TABS.GET CHROME.TABS.GETSELECTED CHROME.TABS.UPDATE", 
+      "source_files": [
+        "background.html", 
+        "inject.js", 
+        "manifest.json"
+      ], 
+      "source_hash": "e7e86d83a781a8c575641cc11136bd42e15d0f67", 
+      "zip_path": "examples/api/tabs/pin.zip"
+    }, 
+    {
+      "api_calls": [
         "chrome.extension.getBackgroundPage", 
         "chrome.extension.onRequest", 
         "chrome.pageAction.hide", 
