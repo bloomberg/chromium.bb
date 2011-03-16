@@ -138,7 +138,7 @@ class PresubmitUnittest(PresubmitTestsBase):
       'GetTrySlavesExecuter', 'GitAffectedFile', 'GitChange',
       'InputApi', 'ListRelevantPresubmitFiles', 'Main',
       'NotImplementedException', 'OutputApi', 'ParseFiles',
-      'PresubmitExecuter', 'PromptYesNo', 'ScanSubDirs',
+      'PresubmitExecuter', 'PresubmitOutput', 'ScanSubDirs',
       'SvnAffectedFile', 'SvnChange', 'cPickle', 'cStringIO',
       'exceptions', 'fnmatch', 'gclient_utils', 'glob', 'json',
       'logging', 'marshal', 'normpath', 'optparse', 'os', 'owners', 'pickle',
@@ -411,14 +411,14 @@ class PresubmitUnittest(PresubmitTestsBase):
     presubmit.random.randint(0, 4).AndReturn(1)
     self.mox.ReplayAll()
 
-    output = StringIO.StringIO()
     input_buf = StringIO.StringIO('y\n')
     change = presubmit.Change('mychange', '\n'.join(description_lines),
                               self.fake_root_dir, files, 0, 0)
-    self.failIf(presubmit.DoPresubmitChecks(
-        change, False, True, output, input_buf, None, False))
+    output = presubmit.DoPresubmitChecks(
+        change, False, True, None, input_buf, None, False)
+    self.failIf(output.should_continue())
     self.assertEqual(output.getvalue().count('!!'), 2)
-    self.checkstdout('Running presubmit hooks...\n')
+    self.assertEqual(output.getvalue().count('Running presubmit hooks...\n'), 1)
 
   def testDoPresubmitChecksPromptsAfterWarnings(self):
     join = presubmit.os.path.join
@@ -444,20 +444,20 @@ class PresubmitUnittest(PresubmitTestsBase):
     presubmit.random.randint(0, 4).AndReturn(1)
     self.mox.ReplayAll()
 
-    output = StringIO.StringIO()
     input_buf = StringIO.StringIO('n\n')  # say no to the warning
     change = presubmit.Change('mychange', '\n'.join(description_lines),
                               self.fake_root_dir, files, 0, 0)
-    self.failIf(presubmit.DoPresubmitChecks(
-        change, False, True, output, input_buf, None, True))
+    output = presubmit.DoPresubmitChecks(
+        change, False, True, None, input_buf, None, True)
+    self.failIf(output.should_continue())
     self.assertEqual(output.getvalue().count('??'), 2)
 
-    output = StringIO.StringIO()
     input_buf = StringIO.StringIO('y\n')  # say yes to the warning
-    self.failUnless(presubmit.DoPresubmitChecks(
-        change, False, True, output, input_buf, None, True))
+    output = presubmit.DoPresubmitChecks(
+        change, False, True, None, input_buf, None, True)
+    self.failUnless(output.should_continue())
     self.assertEquals(output.getvalue().count('??'), 2)
-    self.checkstdout('Running presubmit hooks...\nRunning presubmit hooks...\n')
+    self.assertEqual(output.getvalue().count('Running presubmit hooks...\n'), 1)
 
   def testDoPresubmitChecksNoWarningPromptIfErrors(self):
     join = presubmit.os.path.join
@@ -483,16 +483,14 @@ class PresubmitUnittest(PresubmitTestsBase):
     presubmit.random.randint(0, 4).AndReturn(1)
     self.mox.ReplayAll()
 
-    output = StringIO.StringIO()
-    input_buf = StringIO.StringIO()  # should be unused
     change = presubmit.Change('mychange', '\n'.join(description_lines),
                               self.fake_root_dir, files, 0, 0)
-    self.failIf(presubmit.DoPresubmitChecks(
-        change, False, True, output, input_buf, None, False))
+    output = presubmit.DoPresubmitChecks(change, False, True, None, None,
+        None, False)
     self.assertEqual(output.getvalue().count('??'), 2)
     self.assertEqual(output.getvalue().count('XX!!XX'), 2)
     self.assertEqual(output.getvalue().count('(y/N)'), 0)
-    self.checkstdout('Running presubmit hooks...\n')
+    self.assertEqual(output.getvalue().count('Running presubmit hooks...\n'), 1)
 
   def testDoDefaultPresubmitChecksAndFeedback(self):
     join = presubmit.os.path.join
@@ -519,20 +517,20 @@ def CheckChangeOnCommit(input_api, output_api):
     presubmit.random.randint(0, 4).AndReturn(0)
     self.mox.ReplayAll()
 
-    output = StringIO.StringIO()
     input_buf = StringIO.StringIO('y\n')
     # Always fail.
     change = presubmit.Change('mychange', '\n'.join(description_lines),
                               self.fake_root_dir, files, 0, 0)
-    self.failIf(presubmit.DoPresubmitChecks(
-        change, False, True, output, input_buf, DEFAULT_SCRIPT, False))
-    text = ('Warning, no presubmit.py found.\n'
+    output = presubmit.DoPresubmitChecks(
+        change, False, True, None, input_buf, DEFAULT_SCRIPT, False)
+    self.failIf(output.should_continue())
+    text = ('Running presubmit hooks...\n'
+            'Warning, no presubmit.py found.\n'
             'Running default presubmit script.\n'
             '** Presubmit ERRORS **\n!!\n\n'
             'Was the presubmit check useful? Please send feedback & hate mail '
             'to maruel@chromium.org!\n')
     self.assertEquals(output.getvalue(), text)
-    self.checkstdout('Running presubmit hooks...\n')
 
   def testDirectoryHandling(self):
     files = [
@@ -600,11 +598,11 @@ def CheckChangeOnCommit(input_api, output_api):
     self.failUnless(presubmit.DoPresubmitChecks(
         change, False, True, output, input_buf, DEFAULT_SCRIPT, False))
     self.assertEquals(output.getvalue(),
-                      ('Warning, no presubmit.py found.\n'
+                      ('Running presubmit hooks...\n'
+                       'Warning, no presubmit.py found.\n'
                        'Running default presubmit script.\n'
                        '** Presubmit Messages **\n'
                        'http://tracker.com/42\n\n'))
-    self.checkstdout('Running presubmit hooks...\n')
 
   def testGetTrySlavesExecuter(self):
     self.mox.ReplayAll()
@@ -677,10 +675,13 @@ def CheckChangeOnCommit(input_api, output_api):
         ['git', 'rev-parse', '--show-cdup'],
         cwd=self.fake_root_dir,
         stdout=presubmit.subprocess.PIPE).AndReturn(1)
+    output = self.mox.CreateMock(presubmit.PresubmitOutput)
+    output.should_continue().AndReturn(False)
+
     presubmit.DoPresubmitChecks(mox.IgnoreArg(), False, False,
                                 mox.IgnoreArg(),
                                 mox.IgnoreArg(),
-                                None, False).AndReturn(False)
+                                None, False).AndReturn(output)
     self.mox.ReplayAll()
 
     self.assertEquals(True,
@@ -1046,7 +1047,7 @@ class OuputApiUnittest(PresubmitTestsBase):
   def testMembersChanged(self):
     self.mox.ReplayAll()
     members = [
-      'MailTextResult', 'PresubmitAddText', 'PresubmitError',
+      'MailTextResult', 'PresubmitAddReviewers', 'PresubmitError',
       'PresubmitNotifyResult', 'PresubmitPromptWarning', 'PresubmitResult',
     ]
     # If this test fails, you should add the relevant test.
@@ -1054,57 +1055,58 @@ class OuputApiUnittest(PresubmitTestsBase):
 
   def testOutputApiBasics(self):
     self.mox.ReplayAll()
-    self.failUnless(presubmit.OutputApi.PresubmitError('').IsFatal())
-    self.failIf(presubmit.OutputApi.PresubmitError('').ShouldPrompt())
+    self.failUnless(presubmit.OutputApi.PresubmitError('').fatal)
+    self.failIf(presubmit.OutputApi.PresubmitError('').should_prompt)
 
-    self.failIf(presubmit.OutputApi.PresubmitPromptWarning('').IsFatal())
+    self.failIf(presubmit.OutputApi.PresubmitPromptWarning('').fatal)
     self.failUnless(
-        presubmit.OutputApi.PresubmitPromptWarning('').ShouldPrompt())
+        presubmit.OutputApi.PresubmitPromptWarning('').should_prompt)
 
-    self.failIf(presubmit.OutputApi.PresubmitNotifyResult('').IsFatal())
-    self.failIf(presubmit.OutputApi.PresubmitNotifyResult('').ShouldPrompt())
+    self.failIf(presubmit.OutputApi.PresubmitNotifyResult('').fatal)
+    self.failIf(presubmit.OutputApi.PresubmitNotifyResult('').should_prompt)
 
-    self.failIf(presubmit.OutputApi.PresubmitAddText('foo').IsFatal())
-    self.failIf(presubmit.OutputApi.PresubmitAddText('foo').ShouldPrompt())
+    self.failIf(presubmit.OutputApi.PresubmitAddReviewers(
+        ['foo']).fatal)
+    self.failIf(presubmit.OutputApi.PresubmitAddReviewers(
+        ['foo']).should_prompt)
 
     # TODO(joi) Test MailTextResult once implemented.
 
   def testOutputApiHandling(self):
     self.mox.ReplayAll()
 
-    output = StringIO.StringIO()
-    unused_input = StringIO.StringIO()
-    added_text = presubmit.OutputApi.PresubmitAddText('R=ben@example.com')
-    self.failUnless(added_text._Handle(output, unused_input))
-    self.failUnlessEqual(output.getvalue(), 'ADD: R=ben@example.com\n')
+    output = presubmit.PresubmitOutput()
+    presubmit.OutputApi.PresubmitAddReviewers(
+        ['ben@example.com']).handle(output)
+    self.failUnless(output.should_continue())
+    self.failUnlessEqual(output.reviewers, ['ben@example.com'])
 
-    output = StringIO.StringIO()
-    unused_input = StringIO.StringIO()
-    error = presubmit.OutputApi.PresubmitError('!!!')
-    self.failIf(error._Handle(output, unused_input))
+    output = presubmit.PresubmitOutput()
+    presubmit.OutputApi.PresubmitError('!!!').handle(output)
+    self.failIf(output.should_continue())
     self.failUnless(output.getvalue().count('!!!'))
 
-    output = StringIO.StringIO()
-    notify = presubmit.OutputApi.PresubmitNotifyResult('?see?')
-    self.failUnless(notify._Handle(output, unused_input))
+    output = presubmit.PresubmitOutput()
+    presubmit.OutputApi.PresubmitNotifyResult('?see?').handle(output)
+    self.failUnless(output.should_continue())
     self.failUnless(output.getvalue().count('?see?'))
 
-    output = StringIO.StringIO()
-    input_buf = StringIO.StringIO('y')
-    warning = presubmit.OutputApi.PresubmitPromptWarning('???')
-    self.failUnless(warning._Handle(output, input_buf))
+    output = presubmit.PresubmitOutput(input_stream=StringIO.StringIO('y'))
+    presubmit.OutputApi.PresubmitPromptWarning('???').handle(output)
+    output.prompt_yes_no('prompt: ')
+    self.failUnless(output.should_continue())
     self.failUnless(output.getvalue().count('???'))
 
-    output = StringIO.StringIO()
-    input_buf = StringIO.StringIO('n')
-    warning = presubmit.OutputApi.PresubmitPromptWarning('???')
-    self.failIf(warning._Handle(output, input_buf))
+    output = presubmit.PresubmitOutput(input_stream=StringIO.StringIO('y'))
+    presubmit.OutputApi.PresubmitPromptWarning('???').handle(output)
+    output.prompt_yes_no('prompt: ')
+    self.failUnless(output.should_continue())
     self.failUnless(output.getvalue().count('???'))
 
-    output = StringIO.StringIO()
-    input_buf = StringIO.StringIO('\n')
-    warning = presubmit.OutputApi.PresubmitPromptWarning('???')
-    self.failIf(warning._Handle(output, input_buf))
+    output = presubmit.PresubmitOutput(input_stream=StringIO.StringIO('\n'))
+    presubmit.OutputApi.PresubmitPromptWarning('???').handle(output)
+    output.prompt_yes_no('prompt: ')
+    self.failIf(output.should_continue())
     self.failUnless(output.getvalue().count('???'))
 
 
@@ -1865,7 +1867,7 @@ mac|success|blew
 
   def OwnersTest(self, is_committing, tbr=False, change_tags=None,
       suggested_reviewers=None, approvers=None,
-      uncovered_files=None, expected_results=None):
+      uncovered_files=None, expected_reviewers=None, expected_output=''):
     affected_file = self.mox.CreateMock(presubmit.SvnAffectedFile)
     affected_file.LocalPath().AndReturn('foo.cc')
     change = self.mox.CreateMock(presubmit.Change)
@@ -1896,46 +1898,44 @@ mac|success|blew
         fake_db.reviewers_for(set(['foo.cc'])).AndReturn(suggested_reviewers)
 
     self.mox.ReplayAll()
+    output = presubmit.PresubmitOutput()
     results = presubmit_canned_checks.CheckOwners(input_api,
         presubmit.OutputApi)
-    self.assertEquals(len(results), len(expected_results))
-    if results and expected_results:
-      output = StringIO.StringIO()
-      unused_input = StringIO.StringIO()
-      results[0]._Handle(output, unused_input)
-      self.assertEquals(output.getvalue(), expected_results[0])
+    if results:
+      results[0].handle(output)
+    if expected_reviewers is not None:
+      self.assertEquals(output.reviewers, expected_reviewers)
+    self.assertEquals(output.getvalue(), expected_output)
 
   def testCannedCheckOwners_WithReviewer(self):
-    self.OwnersTest(is_committing=False, change_tags={'R': 'ben@example.com'},
-        expected_results=[])
+    self.OwnersTest(is_committing=False, change_tags={'R': 'ben@example.com'})
     self.OwnersTest(is_committing=False, tbr=True,
-        change_tags={'R': 'ben@example.com'}, expected_results=[])
+        change_tags={'R': 'ben@example.com'})
 
   def testCannedCheckOwners_NoReviewer(self):
     self.OwnersTest(is_committing=False, change_tags={},
         suggested_reviewers=['ben@example.com'],
-        expected_results=['ADD: R=ben@example.com\n'])
+        expected_reviewers=['ben@example.com'])
     self.OwnersTest(is_committing=False, tbr=True, change_tags={},
         suggested_reviewers=['ben@example.com'],
-        expected_results=['ADD: R=ben@example.com\n'])
+        expected_reviewers=['ben@example.com'])
 
   def testCannedCheckOwners_CommittingWithoutOwnerLGTM(self):
     self.OwnersTest(is_committing=True,
         approvers=set(),
         uncovered_files=set(['foo.cc']),
-        expected_results=['Missing LGTM from an OWNER for: foo.cc\n'])
+        expected_output='Missing LGTM from an OWNER for: foo.cc\n')
 
   def testCannedCheckOwners_CommittingWithLGTMs(self):
     self.OwnersTest(is_committing=True,
         approvers=set(['ben@example.com']),
-        uncovered_files=set(),
-        expected_results=[])
+        uncovered_files=set())
 
   def testCannedCheckOwners_TBR(self):
     self.OwnersTest(is_committing=True, tbr=True,
         approvers=set(),
         uncovered_files=set(),
-        expected_results=['--tbr was specified, skipping OWNERS check\n'])
+        expected_output='--tbr was specified, skipping OWNERS check\n')
 
 if __name__ == '__main__':
   import unittest

@@ -482,29 +482,6 @@ def GetCodereviewSettingsInteractively():
   # svn-based hackery.
 
 
-class HookResults(object):
-  """Contains the parsed output of the presubmit hooks."""
-  def __init__(self, output_from_hooks=None):
-    self.reviewers = []
-    self.output = None
-    self._ParseOutputFromHooks(output_from_hooks)
-
-  def _ParseOutputFromHooks(self, output_from_hooks):
-    if not output_from_hooks:
-      return
-    lines = []
-    reviewers = []
-    reviewer_regexp = re.compile('ADD: R=(.+)')
-    for l in output_from_hooks.splitlines():
-      m = reviewer_regexp.match(l)
-      if m:
-        reviewers.extend(m.group(1).split(','))
-      else:
-        lines.append(l)
-    self.output = '\n'.join(lines)
-    self.reviewers = ','.join(reviewers)
-
-
 class ChangeDescription(object):
   """Contains a parsed form of the change description."""
   def __init__(self, subject, log_desc, reviewers):
@@ -772,31 +749,16 @@ def RunHook(committing, upstream_branch, rietveld_server, tbr, may_prompt):
     RunCommand(['git', 'config', '--replace-all',
                 'rietveld.extracc', ','.join(watchers)])
 
-  output = StringIO.StringIO()
-  should_continue = presubmit_support.DoPresubmitChecks(change, committing,
-      verbose=None, output_stream=output, input_stream=sys.stdin,
-      default_presubmit=None, may_prompt=False, tbr=tbr,
+  output = presubmit_support.DoPresubmitChecks(change, committing,
+      verbose=False, output_stream=sys.stdout, input_stream=sys.stdin,
+      default_presubmit=None, may_prompt=may_prompt, tbr=tbr,
       host_url=cl.GetRietveldServer())
-  hook_results = HookResults(output.getvalue())
-  if hook_results.output:
-    print hook_results.output
 
   # TODO(dpranke): We should propagate the error out instead of calling exit().
-  if should_continue and hook_results.output and (
-      '** Presubmit ERRORS **\n' in hook_results.output or
-      '** Presubmit WARNINGS **\n' in hook_results.output):
-    should_continue = False
+  if not output.should_continue():
+    sys.exit(1)
 
-  if not should_continue:
-    if may_prompt:
-      response = raw_input('Are you sure you want to continue? (y/N): ')
-      if not response.lower().startswith('y'):
-        sys.exit(1)
-    else:
-      sys.exit(1)
-
-
-  return hook_results
+  return output
 
 
 def CMDpresubmit(parser, args):
@@ -870,15 +832,13 @@ def CMDupload(parser, args):
     base_branch = cl.GetUpstreamBranch()
     args = [base_branch + "..."]
 
-  if not options.bypass_hooks:
+  if not options.bypass_hooks and not options.force:
     hook_results = RunHook(committing=False, upstream_branch=base_branch,
                            rietveld_server=cl.GetRietveldServer(), tbr=False,
-                           may_prompt=(not options.force))
-  else:
-    hook_results = HookResults()
+                           may_prompt=True)
+    if not options.reviewers and hook_results.reviewers:
+      options.reviewers = hook_results.reviewers
 
-  if not options.reviewers and hook_results.reviewers:
-    options.reviewers = hook_results.reviewers
 
   # --no-ext-diff is broken in some versions of Git, so try to work around
   # this by overriding the environment (but there is still a problem if the
@@ -1023,12 +983,11 @@ def SendUpstream(parser, args, cmd):
              'before attempting to %s.' % (base_branch, cmd))
       return 1
 
-  if not options.bypass_hooks:
+  if not options.bypass_hooks and not options.force:
     RunHook(committing=True, upstream_branch=base_branch,
             rietveld_server=cl.GetRietveldServer(), tbr=options.tbr,
-            may_prompt=(not options.force))
+            may_prompt=True)
 
-  if not options.force and not options.bypass_hooks:
     if cmd == 'dcommit':
       # Check the tree status if the tree status URL is set.
       status = GetTreeStatus()

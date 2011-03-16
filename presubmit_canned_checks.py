@@ -648,7 +648,7 @@ def CheckOwners(input_api, output_api, email_regexp=None,
     return []
 
   suggested_reviewers = owners_db.reviewers_for(affected_files)
-  return [output_api.PresubmitAddText('R=%s' % ','.join(suggested_reviewers))]
+  return [output_api.PresubmitAddReviewers(suggested_reviewers)]
 
 
 def _Approvers(input_api, email_regexp):

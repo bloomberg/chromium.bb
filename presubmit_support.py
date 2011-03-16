@@ -78,12 +78,6 @@ def normpath(path):
   return os.path.normpath(path)
 
 
-def PromptYesNo(input_stream, output_stream, prompt):
-  output_stream.write(prompt)
-  response = input_stream.readline().strip().lower()
-  return response == 'y' or response == 'yes'
-
-
 def _RightHandSideLinesImpl(affected_files):
   """Implements RightHandSideLines for InputApi and GclChange."""
   for af in affected_files:
@@ -92,14 +86,46 @@ def _RightHandSideLinesImpl(affected_files):
       yield (af, line[0], line[1])
 
 
+class PresubmitOutput(object):
+  def __init__(self, input_stream=None, output_stream=None):
+    self.input_stream = input_stream
+    self.output_stream = output_stream
+    self.reviewers = []
+    self.written_output = []
+    self.error_count = 0
+
+  def prompt_yes_no(self, prompt_string):
+    self.write(prompt_string)
+    if self.input_stream:
+      response = self.input_stream.readline().strip().lower()
+      if response not in ('y', 'yes'):
+        self.fail()
+    else:
+      self.fail()
+
+  def fail(self):
+    self.error_count += 1
+
+  def should_continue(self):
+    return not self.error_count
+
+  def write(self, s):
+    self.written_output.append(s)
+    if self.output_stream:
+      self.output_stream.write(s)
+
+  def getvalue(self):
+    return ''.join(self.written_output)
+
+
 class OutputApi(object):
   """This class (more like a module) gets passed to presubmit scripts so that
   they can specify various types of results.
   """
-  # Method could be a function
-  # pylint: disable=R0201
   class PresubmitResult(object):
     """Base class for result objects."""
+    fatal = False
+    should_prompt = False
 
     def __init__(self, message, items=None, long_text=''):
       """
@@ -113,19 +139,11 @@ class OutputApi(object):
         self._items = items
       self._long_text = long_text.rstrip()
 
-    def _Handle(self, output_stream, input_stream, may_prompt=True):
-      """Writes this result to the output stream.
-
-      Args:
-        output_stream: Where to write
-
-      Returns:
-        True if execution may continue, False otherwise.
-      """
-      output_stream.write(self._message)
-      output_stream.write('\n')
+    def handle(self, output):
+      output.write(self._message)
+      output.write('\n')
       if len(self._items) > 0:
-        output_stream.write('  ' + ' \\\n  '.join(map(str, self._items)) + '\n')
+        output.write('  ' + ' \\\n  '.join(map(str, self._items)) + '\n')
       if self._long_text:
         # Sometimes self._long_text is a ascii string, a codepage string
         # (on windows), or a unicode object.
@@ -134,41 +152,27 @@ class OutputApi(object):
         except UnicodeDecodeError:
           long_text = self._long_text.decode('ascii', 'replace')
 
-        output_stream.write('\n***************\n%s\n***************\n' %
+        output.write('\n***************\n%s\n***************\n' %
             long_text)
+      if self.fatal:
+        output.fail()
 
-      if self.ShouldPrompt() and may_prompt:
-        if not PromptYesNo(input_stream, output_stream,
-                           'Are you sure you want to continue? (y/N): '):
-          return False
+  class PresubmitAddReviewers(PresubmitResult):
+    """Add some suggested reviewers to the change."""
+    def __init__(self, reviewers):
+      super(OutputApi.PresubmitAddReviewers, self).__init__('')
+      self.reviewers = reviewers
 
-      return not self.IsFatal()
-
-    def IsFatal(self):
-      """An error that is fatal stops g4 mail/submit immediately, i.e. before
-      other presubmit scripts are run.
-      """
-      return False
-
-    def ShouldPrompt(self):
-      """Whether this presubmit result should result in a prompt warning."""
-      return False
-
-  class PresubmitAddText(PresubmitResult):
-    """Propagates a line of text back to the caller."""
-    def __init__(self, message, items=None, long_text=''):
-      super(OutputApi.PresubmitAddText, self).__init__("ADD: " + message,
-          items, long_text)
+    def handle(self, output):
+      output.reviewers.extend(self.reviewers)
 
   class PresubmitError(PresubmitResult):
     """A hard presubmit error."""
-    def IsFatal(self):
-      return True
+    fatal = True
 
   class PresubmitPromptWarning(PresubmitResult):
     """An warning that prompts the user if they want to continue."""
-    def ShouldPrompt(self):
-      return True
+    should_prompt = True
 
   class PresubmitNotifyResult(PresubmitResult):
     """Just print something to the screen -- but it's not even a warning."""
@@ -993,6 +997,7 @@ class PresubmitExecuter(object):
     os.chdir(main_path)
     return result
 
+
 # TODO(dpranke): make all callers pass in tbr, host_url?
 def DoPresubmitChecks(change,
                       committing,
@@ -1029,25 +1034,27 @@ def DoPresubmitChecks(change,
     SHOULD be sys.stdin.
 
   Return:
-    True if execution can continue, False if not.
+    A PresubmitOutput object. Use output.should_continue() to figure out
+    if there were errors or warnings and the caller should abort.
   """
-  print "Running presubmit hooks..."
+  output = PresubmitOutput(input_stream, output_stream)
+  output.write("Running presubmit hooks...\n")
   start_time = time.time()
   presubmit_files = ListRelevantPresubmitFiles(change.AbsoluteLocalPaths(True),
                                                change.RepositoryRoot())
   if not presubmit_files and verbose:
-    output_stream.write("Warning, no presubmit.py found.\n")
+    output.write("Warning, no presubmit.py found.\n")
   results = []
   executer = PresubmitExecuter(change, committing, tbr, host_url)
   if default_presubmit:
     if verbose:
-      output_stream.write("Running default presubmit script.\n")
+      output.write("Running default presubmit script.\n")
     fake_path = os.path.join(change.RepositoryRoot(), 'PRESUBMIT.py')
     results += executer.ExecPresubmitScript(default_presubmit, fake_path)
   for filename in presubmit_files:
     filename = os.path.abspath(filename)
     if verbose:
-      output_stream.write("Running %s\n" % filename)
+      output.write("Running %s\n" % filename)
     # Accept CRLF presubmit script.
     presubmit_script = gclient_utils.FileRead(filename, 'rU')
     results += executer.ExecPresubmitScript(presubmit_script, filename)
@@ -1056,44 +1063,37 @@ def DoPresubmitChecks(change,
   notifications = []
   warnings = []
   for result in results:
-    if not result.IsFatal() and not result.ShouldPrompt():
-      notifications.append(result)
-    elif result.ShouldPrompt():
+    if result.fatal:
+      errors.append(result)
+    elif result.should_prompt:
       warnings.append(result)
     else:
-      errors.append(result)
+      notifications.append(result)
 
-  error_count = 0
   for name, items in (('Messages', notifications),
                       ('Warnings', warnings),
                       ('ERRORS', errors)):
     if items:
-      output_stream.write('** Presubmit %s **\n' % name)
+      output.write('** Presubmit %s **\n' % name)
       for item in items:
-        # Access to a protected member XXX of a client class
-        # pylint: disable=W0212
-        if not item._Handle(output_stream, input_stream,
-                            may_prompt=False):
-          error_count += 1
-        output_stream.write('\n')
+        item.handle(output)
+        output.write('\n')
 
   total_time = time.time() - start_time
   if total_time > 1.0:
-    print "Presubmit checks took %.1fs to calculate." % total_time
+    output.write("Presubmit checks took %.1fs to calculate.\n" % total_time)
 
   if not errors and warnings and may_prompt:
-    if not PromptYesNo(input_stream, output_stream,
-                       'There were presubmit warnings. '
-                       'Are you sure you wish to continue? (y/N): '):
-      error_count += 1
+    output.prompt_yes_no('There were presubmit warnings. '
+                         'Are you sure you wish to continue? (y/N): ')
 
   global _ASKED_FOR_FEEDBACK
   # Ask for feedback one time out of 5.
   if (len(results) and random.randint(0, 4) == 0 and not _ASKED_FOR_FEEDBACK):
-    output_stream.write("Was the presubmit check useful? Please send feedback "
-                        "& hate mail to maruel@chromium.org!\n")
+    output.write("Was the presubmit check useful? Please send feedback "
+                 "& hate mail to maruel@chromium.org!\n")
     _ASKED_FOR_FEEDBACK = True
-  return (error_count == 0)
+  return output
 
 
 def ScanSubDirs(mask, recursive):
@@ -1179,18 +1179,19 @@ def Main(argv):
       print "Found %d files." % len(options.files)
     else:
       print "Found 1 file."
-  return not DoPresubmitChecks(change_class(options.name,
-                                            options.description,
-                                            options.root,
-                                            options.files,
-                                            options.issue,
-                                            options.patchset),
-                               options.commit,
-                               options.verbose,
-                               sys.stdout,
-                               sys.stdin,
-                               options.default_presubmit,
-                               options.may_prompt)
+  results = DoPresubmitChecks(change_class(options.name,
+                                           options.description,
+                                           options.root,
+                                           options.files,
+                                           options.issue,
+                                           options.patchset),
+                              options.commit,
+                              options.verbose,
+                              sys.stdout,
+                              sys.stdin,
+                              options.default_presubmit,
+                              options.may_prompt)
+  return not results.should_continue()
 
 
 if __name__ == '__main__':

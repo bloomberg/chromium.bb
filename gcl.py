@@ -1169,16 +1169,19 @@ def DoPresubmitChecks(change_info, committing, may_prompt):
                                        change_info.GetFiles(),
                                        change_info.issue,
                                        change_info.patchset)
-  result = presubmit_support.DoPresubmitChecks(change=change,
+  output = presubmit_support.DoPresubmitChecks(change=change,
                                                committing=committing,
                                                verbose=False,
                                                output_stream=sys.stdout,
                                                input_stream=sys.stdin,
                                                default_presubmit=root_presubmit,
                                                may_prompt=may_prompt)
-  if not result and may_prompt:
+  if not output.should_continue() and may_prompt:
+    # TODO(dpranke): move into DoPresubmitChecks(), unify cmd line args.
     print "\nPresubmit errors, can't continue (use --no_presubmit to bypass)"
-  return result
+
+  # TODO(dpranke): Return the output object and make use of it.
+  return output.should_continue()
 
 
 @no_args
