@@ -328,7 +328,7 @@ struct NCValTestCase NCValTests[] = {
   {
     "test 14",
     "test 14: ldmxcsr, stmxcsr",
-    /* sawfailure= */ 1, /* illegalinst= */ 2,
+    /* sawfailure= */ 0, /* illegalinst= */ 0,
     /* instructions= */ 10,
     /* vaddr= */ 0x80000000,
     "90 0f ae 10 90 0f ae 18 \n"
