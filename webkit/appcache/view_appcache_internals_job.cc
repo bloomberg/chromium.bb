@@ -6,6 +6,7 @@
 
 #include "webkit/appcache/view_appcache_internals_job.h"
 
+#include "base/base64.h"
 #include "base/logging.h"
 #include "base/format_macros.h"
 #include "base/utf_string_conversions.h"
@@ -84,9 +85,9 @@ void AddLiTag(const std::string& element_title,
 }
 
 void WrapInHREF(const std::string& in, std::string* out) {
-  out->append("<a href='");
+  out->append("<a href=");
   out->append(in);
-  out->append("'>");
+  out->append(">");
   out->append(in);
   out->append("</a><br/>");
 }
@@ -97,6 +98,9 @@ void AddHTMLFromAppCacheToOutput(
   for (std::vector<appcache::AppCacheInfo>::const_iterator info =
            appcaches.begin();
        info != appcaches.end(); ++info) {
+    std::string manifest_url_base64;
+    base::Base64Encode(info->manifest_url.spec(), &manifest_url_base64);
+
     out->append("<p>");
     std::string anchored_manifest;
     WrapInHREF(info->manifest_url.spec(), &anchored_manifest);
@@ -107,7 +111,7 @@ void AddHTMLFromAppCacheToOutput(
       out->append(kFormattedDisabledAppCacheMsg);
     }
     out->append("<br/>");
-    DrawCommandButton(kRemoveAppCache, info->manifest_url.spec(), out);
+    DrawCommandButton(kRemoveAppCache, manifest_url_base64, out);
     out->append("<ul>");
 
     AddLiTag(kSize,
@@ -133,9 +137,12 @@ std::string GetAppCacheManifestToRemove(const std::string& query) {
     // Not a recognized format.
     return std::string();
   }
-  std::string manifest_str = query.substr(strlen("remove="));
-  return UnescapeURLComponent(
-      manifest_str, UnescapeRule::NORMAL | UnescapeRule::URL_SPECIAL_CHARS);
+  std::string manifest_url_base64 = UnescapeURLComponent(
+      query.substr(strlen("remove=")),
+      UnescapeRule::NORMAL | UnescapeRule::URL_SPECIAL_CHARS);
+  std::string manifest_url;
+  base::Base64Decode(manifest_url_base64, &manifest_url);
+  return manifest_url;
 }
 
 struct ManifestURLComparator {
